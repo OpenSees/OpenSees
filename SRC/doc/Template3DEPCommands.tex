@@ -1,0 +1,357 @@
+% Boris Jeremic (@ucdavis.edu)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{OpenSees Commands to Create Material Models using Template Elasto--Plastic Framework}
+\label{EPTemplate_commands}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Yield Surface Command}
+\label{YS_Command}
+
+\begin{verbatim}
+set ys "-YieldSurfaceType <parameter list>"
+\end{verbatim}
+
+This  command sets the yield surface variable \texttt{ys} to be
+the  specified  type.  A  list  of  paramaters can be passed to
+define the yield surface and the number of parameters depend on
+the  type  of yield surface. Valid strings for YieldSurfaceType
+are \texttt{DP}, \texttt{VM}, \texttt{CC}, and \texttt{RMC01},  
+which  are described in the following subsections.
+
+\subsubsection{Drucker-Prager Yield Surface} 
+\label{dp_ys}
+\begin{verbatim}
+set ys "-DP"
+\end{verbatim}
+
+\texttt{DP}  stands  for  Drucker-Prager type, i.e. cone shaped
+yield  surface. In this case, no parameter needs to be supplied
+since the slope $\alpha$ is treated as an internal variable.
+
+\subsubsection{von Mises Yield Surface} 
+\label{vm_ys}
+\begin{verbatim}
+set ys "-VM"
+\end{verbatim}
+
+\texttt{VM}  stands  for  von  Mises type, i.e. cylinder shaped
+yield  surface. In this case, no parameter needs to be supplied
+since  the  size  of  the  cylinder  is  treated as an internal
+variable.
+
+\subsubsection{Cam-Clay Yield Surface} 
+\label{cc_ys}
+\begin{verbatim}
+set ys "-CC M?"
+\end{verbatim}
+
+\texttt{CC}  stands  for  Cam-Clay  type, i.e. ellipsoid shaped
+yield surface. For \texttt{CC} type yield surface, the slope of
+the  critical  state  line  in  p--q  space, i.e. M, need to be
+supplied.
+
+\subsubsection{Rounded Mohr-Coulomb (Willam-Warnke) Yield Surface} 
+\label{rmc01_ys}
+\begin{verbatim}
+set ys "-RMC01"
+\end{verbatim}
+
+\texttt{RMC01} stands for rounded Mohr-Coulomb (Willam-Warnke) type, 
+i.e. cone shaped
+yield  surface. In this case, no parameter needs to be supplied, 
+this is similar to the Drucker-Prager yield surface.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Potential Surface Command}
+\label{PS_Command}
+
+\begin{verbatim}
+set ps "-PotentialSurfaceType <parameter list>"
+\end{verbatim}
+
+This command sets the potential surface variable \texttt{ps} to
+be  the  specified  type. A list of paramaters can be passed to
+define  the  potential  surface  and  the  number of parameters
+depend  on  the  type  of  potential surface. Valid strings for
+PotentialSurfaceType    are   \texttt{DP},   \texttt{VM},   and
+\texttt{CC}, which are described in the following subsections.
+
+\subsubsection{Drucker-Prager Potential Surface} 
+\label{dp_ps}
+\begin{verbatim}
+set ps "-DP"
+\end{verbatim}
+
+\texttt{DP}  stands  for  Drucker-Prager type, i.e. cone shaped
+potential  surface.  In  this  case,  no  parameter needs to be
+supplied  since  the  slope  $\alpha$ is treated as an internal
+variable.
+
+\subsubsection{von Mises Potential Surface} 
+\label{vm_ps}
+\begin{verbatim}
+set ps "-VM"
+\end{verbatim}
+
+\texttt{VM}  stands  for  von  Mises type, i.e. cylinder shaped
+potential  surface.  In  this  case,  no  parameter needs to be
+supplied  since  the  size  of  the  cylinder  is treated as an
+internal variable.
+
+\subsubsection{Cam-Clay Potential Surface} 
+\label{cc_ps}
+\begin{verbatim}
+set ps "-CC M?"
+\end{verbatim}
+
+\texttt{CC}  stands  for  Cam-Clay  type, i.e. ellipsoid shaped
+potential  surface. For \texttt{CC} type potential surface, the
+slope of the critical state line in p--q space, i.e. M, need to
+be supplied.
+
+\subsubsection{Rounded Mohr-Coulomb (Willam-Warnke) Potential Surface} 
+\label{rmc01_ps}
+\begin{verbatim}
+set ps "-RMC01"
+\end{verbatim}
+
+\texttt{RMC01} stands for rounded Mohr-Coulomb (Willam-Warnke) type, 
+i.e. cone shaped
+Potential  surface. In this case, no parameter needs to be supplied, 
+this is similar to the Drucker-Prager Potential surface.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Evolution Law Command}
+\label{EL_Command}
+
+\begin{verbatim}
+set el "-EvolutionLawType <parameter list>"
+\end{verbatim}
+
+This  command sets the evolution law variable \texttt{el} to be
+the  specified  type.  A  list  of  paramaters can be passed to
+define  the  potential  surface  and  the  number of parameters
+depend  on  the  type  of  potential surface. Valid strings for
+EvolutionLawType are \texttt{Leq}, \texttt{NLp}, and \texttt{},
+which are described in the following subsections.
+
+\subsubsection{Linear Scalar Evolution Law} 
+\label{leq_el}
+\begin{verbatim}
+set el "-Leq a?"
+\end{verbatim}
+
+\texttt{Leq}  stands  for  Linear  Scalar  Evolution  Law. This
+hardening  rule  is  based on the equivalent deviatoric plastic
+strain $\epsilon_q^{pl}$. In this case, linear hardening coefficient
+\texttt{a}  needs  to  be  supplied. This hardening rule can be
+applied  to  any scalar internal variable, such as the slope of
+Drucker--Prager  yield  surface, the diameter of von Mises yield
+surface, and so on.
+
+\subsubsection{Nonlinear Scalar Evolution Law} 
+\label{nlp_el}
+
+%\texttt{set} \texttt{el} \texttt{"-NLp} $e_o$? $\lambda$? $\kappa$? \texttt{"}
+\begin{verbatim}
+set el "-NLp e0? lambda? kappa? "
+\end{verbatim}
+
+\texttt{NLp}  stands  for  Nonlinear Scalar Evolution Law. This
+hardening  rule  is  based  on  the  volumetic  plastic  strain
+$\epsilon_p^{pl}$.  In  this  case, parameters including void ration
+\texttt{e0},  \texttt{lambda} and  \texttt{kappa}  need   to  be  supplied. This
+hardening rule is primarily for the evolution of the tip stress
+$p^{'}_{o}$ in Cam-Clay model.
+
+\subsubsection{Linear Tensorial Evolution Law} 
+\label{LEij}
+\begin{verbatim}
+set et "-LEij a?"
+\end{verbatim}
+
+\texttt{LEij}  stands  for  Linear Tensorial Evolution Law. This
+hardening    rule    is    based    on   the   plastic   strain
+$\epsilon_{ij}^{pl}$. In this case, linear hardening
+coefficient  \texttt{a}  needs  to  be supplied. This hardening
+rule can be applied to any tensorial internal variable, such as
+the  the  center  $\alpha_{ij}$ of Drucker--Prager yield surface
+or von Mises yield surface, and so on.
+
+\subsubsection{Nonlinear Tensorial Evolution Law (Armstrong-Frederick model )} 
+\label{NLEij}
+%\texttt{set et "-NLEij} $h_a$? $C_r$? \texttt{"}
+\begin{verbatim}
+set et "-NLEij ha? Cr?" 
+\end{verbatim}
+
+\texttt{NLEij}  stands  for  Nonlinear Tensorial Evolution Law
+from Armstrong--Frederick nonlinear model. This kinematic hardening law is
+based on the plastic strain $\epsilon_{ij}^{pl}$. In this case,
+nonlinear  hardening  coefficients  \texttt{ha}  and \texttt{Cr} need to be
+supplied.  This  hardening rule can be applied to any tensorial
+internal  variable,  such  as  the  the center $\alpha_{ij}$ of
+Drucker--Prager yield surface or von Mises yield surface, and so
+on.
+
+%%\subsection{Nonlinear Tensorial Evolution Law (Manzari-Dafalias model)}
+%%\label{LEij}
+%%%\begin{verbatim}
+%%\texttt{set et "-NLEijMD} $h_a$? $C_r$? \texttt{"} 
+%%%\end{verbatim}
+
+%%\texttt{NLEij}  stands  for  Nonlinear  Tensorial Evolution Law
+%%from Manzari--Dafalias model. This kinematic hardening law is
+%%based on the plastic strain $\epsilon_{ij}^{pl}$. In this case,
+%%nonlinear  hardening  coefficients  $h_a$  and $C_r$ need to be
+%%supplied.  This  hardening rule can be applied to any tensorial
+%%internal  variable,  such  as  the  the center $\alpha_{ij}$ of
+%%Drucker--Prager yield surface or von Mises yield surface, and so
+%%on.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{EPState Command}
+\label{ep_Command}
+%\texttt{set sts} \texttt{"} $\sigma_{xx}?~\sigma_{xy}?~\sigma_{xz}?~\sigma_{yx}?~\sigma_{yy}?
+%~\sigma_{yz}?~\sigma_{zx}?~\sigma_{zy}?~\sigma_{zz}?$\texttt{"}
+\begin{verbatim}
+<set sts "Sxx? Sxy? Sxz? Syx? Syy? Syz? Szx? Szy? Szz?"> 
+\end{verbatim}
+
+\begin{verbatim}
+set eps "<-NOD nt?> -NOS ns? sc1? sc2? ... <-stressp sts>"
+\end{verbatim}
+
+First  statement  sets  the  initial  stress tensor to variable
+\texttt{sts} (if it is not stated here, no initial stress by default).  
+Second  statement  assigns to the Elasto-Plastic
+state  variable  \texttt{eps}  the  specified state parameters,
+including
+%%Young's  Modulus at atmospheric pressure $E_o$, current Young's
+%%Modulus  E,  Poisson's ratio $\nu$, mass density $\rho$, 
+number of  tensorial  internal variables \texttt{nt} 
+(if it is not stated here, $nt=0$ by default), 
+number of scalar internal variables \texttt{ns} 
+and corresponding initial values \texttt{sc1}, \texttt{sc2}, ...,   
+and  initial  stresses  defined  in \texttt{\$sts} 
+(if it has been previously defined).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Template Elasto-Plastic Material Command}
+\label{temp_Command}
+%\texttt{nDMaterial Template3Dep} mTag? -YS \$ys? -PS \$ps? -EPS \$eps? 
+%$<$-ELS1 \$el?$>$ $<$-ELT1? \$et?$>$
+\begin{verbatim}
+nDMaterial Template3Dep mTag? -YS $ys? -PS $ps? -EPS $eps? <-ELS1 $el?> 
+<$-ELT1 et?>
+\end{verbatim}
+
+A   template   elasto-plastic   material  is  constructed  using
+\texttt{nDMaterial}  command.  The  argument  \texttt{mTag} is used to
+uniquely  identify  this  nDMaterial  object  among  nDMaterial
+objects  in  the  BasicBuilder  object.  The  other  parameters
+include  previously  defined  yield surface object \texttt{ys},
+potential  surface  object  \texttt{ps},  elasto-plastic  state
+object  \texttt{eps},  scalar evolution law object \texttt{el},
+and tensorial evolution law object \texttt{et}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Examples}
+\label{ep_command_Examples}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{von Mises Model} \
+
+\begin{small}
+\begin{verbatim}
+# Yield surface 
+set ys "-VM"
+
+# Potential surface
+set ps "-VM"
+
+# Scalar evolution law: linear hardening coef = 1.0
+set ES1  "-Leq  1.10"
+
+# EPState
+#______________k=f(Cu)
+set EPS "-NOD 0 -NOS 1 20"#
+
+# Creating nDMaterial using Template Elastic-Plastic Model
+nDMaterial Template3Dep 1 -YS $ys -PS $ps -EPS $EPS -ELS1 $ES1
+
+\end{verbatim}
+\end{small}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Drucker--Prager Model} \
+
+\begin{small}
+\begin{verbatim}
+# Yield surface 
+set ys "-DP"
+
+# Potential surface
+set ps "-DP 0.1"
+
+# Scalar evolution law: linear hardening coef = 1.0
+set ES1  "-Leq  1.10"
+
+# Initial stress
+set sts "0.10 0 0  0 0.10 0  0 0 0.10"
+
+# EPState
+#______________alpha___k
+set EPS "-NOD 0 -NOS 2 0.2 0.0 -stressp $sts"
+#
+# where
+#alpha = 2 sin(phi) / (3^0.5) / (3-sin(phi) ), phi is the friction angle
+# and k is the cohesion
+
+# Creating nDMaterial using Template Elastic-Plastic Model
+nDMaterial Template3Dep 1 -YS $ys -PS $ps -EPS $EPS -ELS1 $ES1
+
+\end{verbatim}
+\end{small}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Cam-clay Model} \
+
+\begin{small}
+\begin{verbatim}
+# Yield surface M = 1.2
+set ys "-CC 1.2"
+
+# Potential surface M = 1.2
+set ps "-CC 1.2"
+
+# Scalar evolution law___void ratio___Lamda___Kappa 
+set ES1  "-NLp           0.85        0.19   0.06"
+
+# Initial stress
+set sts "0.10 0 0  0 0.10 0  0 0 0.10"
+
+#________________po
+set EPS "-NOS 1 200.1 -stressp $sts"
+
+#
+nDMaterial Template3Dep 1 -YS $ys -PS $ps -EPS $EPS -ELS1 $ES1
+
+\end{verbatim}
+\end{small}
+
+
+
+

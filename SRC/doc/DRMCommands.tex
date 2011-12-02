@@ -1,0 +1,36 @@
+% Boris Jeremic (@ucdavis.edu)
+\section{OpenSees Command for the Domain Reduction Method} 
+
+The syntax of the DRM command is : 
+
+{\texttt{pattern PBowlLoading}} loadpattrnTag? {\texttt{-pbele}} PBElmentFile? 
+\texttt{-acce}  acceFile? \texttt{-disp} dispFile? \texttt{-dt}
+dt?  $<$\texttt{-factor} factor?$>$ \texttt{-xp} +X? \texttt{-xm} -X?
+\texttt{-yp}  -Y? \texttt{-ym} -Y? \texttt{-zp} +Z? \texttt{-zm} 
+-Z? \\
+%
+where pattern and PBowlLoading are key words. loadpattrnTag? is
+the tag for this loadPattern. A user needs to supply an element
+file,   acceleration  file,  displacement  file  following  the
+identifiers      {\texttt{-pbele}},      \texttt{-acce}     and
+\texttt{-disp},  respectively. dt? is the time increment in the
+input data and is a parameter following identifier \texttt{-dt}.
+factor?  is  an  optional  parameter for scaling the equivalent
+forces.  If  not  supplied,  a  default value 1.0 will be used.
+In  particular,  the interior boundary of the boundary layer is
+input  by  a set of coordinates, i.e. +X, -X, +Y, -Y, +Z and -Z,
+as shown in Figure \ref{PBDefinition}.
+%
+\begin{figure}[!htbp]
+\begin{center}
+\vspace{0.5cm}
+\includegraphics[width=8.5cm]{/home/jeremic/tex/works/Thesis/JinxiuLiao/newthesis/figures/PB_Command.eps}
+\caption{\label{PBDefinition}  Sketch  showing  coordinates of the
+interior boundary.}
+\end{center}
+\end{figure}
+
+
+
+
+

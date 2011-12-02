@@ -1,0 +1,80 @@
+%File: ~/OOP/system_of_eqn/linearSOE/DomainSolver.tex
+%What: "@(#) DomainSolver.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/system\_of\_eqn/linearSOE/DomainSolver.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class DomainSolver: public LinearSOESolver  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent  MovableObject \\
+\indent\indent  Solver \\
+\indent\indent\indent  LinearSOESolver \\
+\indent\indent\indent\indent {\bf DomainSolver} \\
+
+\noindent {\bf Description}  \\
+\indent DomainSolver is an abstract class. DomainSolver objects
+are responsible for performing the numerical operations required for
+the domain decomposition methods.  \\
+
+\noindent {\bf Interface}  \\
+\indent\indent // Constructor  \\
+\indent\indent {\em DomainSolver(int classsTag);}  \\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em virtual~ $\tilde{}$DomainSolver();}\\ \\
+\indent\indent // Public Methods \\
+\indent\indent {\em virtual int condenseA(int numInt) =0;} \\
+\indent\indent {\em virtual int condenseRHS(int numInt, Vector *u = 0) =0;} \\
+\indent\indent {\em virtual int computeCondensedMatVect(int numInt, Vector \&u) =0;} \\
+\indent\indent {\em virtual Matrix \&getCondensedA(void) =0;} \\
+\indent\indent {\em virtual Vector \&getCondensedRHS(void) =0;} \\
+\indent\indent {\em virtual Vector \&getCondensedMatVect(void) =0;} \\
+\indent\indent {\em virtual int setComputedXext(const Vector \&u) =0;} \\
+\indent\indent {\em virtual int solveXint(void) =0;} \\
+
+
+
+
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em DomainSolver(int classsTag);}  \\
+{\em classTag} is needed by the LinearSOESolver objects constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$DomainSolver();}\\ 
+
+\noindent {\bf Public Methods}  \\
+\indent {\em virtual int condenseA(int numInt) =0;} \\
+Causes the condenser to form $A_{ee}^* = A_{ee} -A_{ei} A_{ii}^{-1} A_{ie}$, where
+$A_{ii}$ is the first {\em numInt} rows of the $A$ matrix.  The
+original $A$ is changed as a result. $A_{ee}^*$ is to be stored in $A_{ee}$. \\
+
+{\em virtual int condenseRHS(int numInt) =0;} \\
+Causes the condenser to form $B_e^* = B_e - A_{ei} A_{ii}^{-1} B_i$, where $A_{ii}$ 
+is the first {\em numInt} rows of $A$. The original $B$ is changed as a result. 
+$B_e^*$ is to be stored in $B_e$. \\
+
+{\em virtual int computeCondensedMatVect(Vector \&u, int numInt) =0;} \\
+Causes the condenser to form $A_{ee} u$. \\
+
+{\em virtual Matrix \&getCondensedA(void) =0;} \\
+Returns the contents of $A_{ee}$ as a matrix. \\
+
+{\em virtual Vector \&getCondensedRHS(void) =0;} \\
+Returns the contents of $B_e$ as a Vector. \\
+
+{\em virtual Vector \&getCondensedMatVect(void) =0;} \\
+Returns the contents of the last call to {\em
+computeCondensedMatVect()}. \\
+
+{\em virtual int setComputedXext(const Vector \&u) =0;} \\
+Sets the computed value of the unknowns in $X_e$ corresponding to the
+external equations to {\em u}. The number of external equations is
+given by the size of vector $u$.\\
+
+{\em  virtual int solveXint(void) =0;} \\
+To compute the internal equation numbers $X_i$ given the value set
+for the external equations in the last call to {\em setComputedXext()}. \\
+

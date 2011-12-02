@@ -1,0 +1,132 @@
+% File: ~/domain/constraints/SP\_Constraint.tex 
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/domain/constraints/SP\_Constraint.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class SP\_Constraint: public DomainComponent \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent DomainComponent \\
+\indent\indent\indent {\bf SP\_Constraint} \\
+
+\noindent {\bf Description}  \\
+\indent An SP\_Constraint represents a single point constraint in the
+domain. A single point constraint specifies the response of a particular
+degree-of-freedom at a node. The declaration that all methods are
+virtual allows for time varying constraints to be introduced. \\
+
+\noindent {\bf Class Interface}  \\
+\indent\indent // Constructors  \\
+\indent\indent {\em SP\_Constraint(int tag, int nodeTag, int ndof,
+double value, bool isConstant = true);} \\
+\indent\indent {\em SP\_Constraint(int tag, int nodeTag, int ndof, int classTag);}\\ 
+\indent\indent {\em SP\_Constraint(int classTag);} \\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em virtual $\tilde{ }$ SP\_Constraint();} \\ \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em virtual int getNodeTag(void) const;} \\
+\indent\indent {\em virtual int getDOF\_Number(void) const;} \\
+\indent\indent {\em virtual int applyConstraint(double loadFactor)
+const;} \\ 
+\indent\indent {\em virtual double getValue(void) const;} \\
+\indent\indent {\em virtual bool isHomogeneous(void) const;}\\ 
+\indent\indent {\em virtual void setLoadPatternTag(int loadPaternTag);}\\
+\indent\indent {\em virtual int  getLoadPatternTag(void) const;}\\ \\
+\indent\indent // Public Methods for Output \\
+\indent\indent {\em virtual int sendSelf(int commitTag, Channel \&theChannel);} \\ 
+\indent\indent {\em virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);} \\ 
+\indent\indent {\em virtual void Print(OPS_Stream \&s, int flag = 0);} \\
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em SP\_Constraint(int tag, int nodeTag, int ndof, double value);} \\
+To construct a single point constraint to constrain the trial
+displacement of the {\em ndof}'th dof at node {\em node} to the value
+given by {\em value}. The integer value {\em tag} is used to identify
+the SP\_Constraint among all other SP\_Constraints. If
+{\em value} is equal to $0.0$ the method {\em isHomogeneous()} will
+always return {\em true}, otherwise {\em false}. \\ 
+
+\indent {\em SP\_Constraint(int tag, int node, int ndof, int classTag);} \\
+Provided for subclasses to use. The subclasses can vary the value of the
+imposed displacement when {\em getValue()} is invoked. If this
+constructor is used the {\em isHomogeneous()} method will always
+return {\em false}. The integer value {\em tag} is used to identify
+the SP\_Constraint among all other SP\_Constraints. \\
+
+
+\indent {\em SP\_Constraint(int classTag);} \\
+Provided for the FEM\_ObjectBroker to be able to instantiate an
+object; the data for this object will be read from a Channel object
+when {\em recvSelf()} is invoked. $0$ and {\em classTag} are passed to
+the DomainComponent constructor. \\
+
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual $\tilde{ }$ SP\_Constraint();} \\
+Does nothing. Provided so that a subclasses destructor can be
+invoked. \\
+
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual int getNodeTag(void) const;} \\
+Returns the value of {\em node} passed in the constructor, this should be 
+the tag of the node that is being constrained. \\
+
+{\em virtual int getDOF\_Number(void) const;} \\
+Returns the value of {\em ndof} that was passed in the constructor,
+this identifies the dof number corresponding to the constraint. \\
+
+\indent {\em virtual int applyConstraint(double loadFactor);}\\ 
+To set the value of the constraint for the load factor given by {\em
+loadFactor}. The constraint is set equal to {\em loadFactor} * {\em
+value} if the constraint is not constant, or {\em value} if the
+constraint was identified as constant in the constructor. \\
+
+\indent {\em virtual bool isHomogeneous(void) const;}\\
+To return a boolean indicating whether or not the constraint is a
+homogeneous constraint. A homogeneous constraint is one where the value
+of the constraint, {\em value}, is always $0$. This information can be used by the
+ConstraintHandler to reduce the number of equations in the system. \\
+
+{\em virtual double getValue(void) const;} \\
+To return the value of the constraint determined in the last call to
+{\em applyConstraint()}. This base class returns {\em value} passed in
+the constructor.  \\ 
+
+\indent {\em virtual void setLoadPatternTag(int loadPaternTag);}\\
+To set the LoadPattern tag associated with the object to be {\em
+loadPatternTag}. \\
+
+\indent {\em virtual int  getLoadPatternTag(void) const;}\\ 
+To return the load pattern tag associated with the load. \\
+
+{\em virtual int sendSelf(int commitTag, Channel \&theChannel);} \\ 
+Creates a Vector, and stores the SP\_Constraints tag, nodeTag, ndof and value in
+the Vector. It then passes the Vector as an argument to {\em
+theChannel} objects {\em sendVector()} method, along with the objects 
+database tag and {\em commitTag}. Subclasses must invoke this method
+in their implementation of {\em sendSelf()}, so that the {\em node}
+and {\em ndof} values in remote object can be set. Returns $0$ if
+successful, a negative number if the Channel object, {\em theChannel},
+failed to send the data. \\ 
+
+{\em virtual int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);} \\ 
+Creates a Vector, and receives the Vector from the channel object
+using the {\em recvVector()} method call and the objects own database
+tag and {\em commitTag}. Using the information contained in the Vector, the 
+SP\_Constraints tag, nodeTag, ndof and value are set. Subclasses must
+invoke this method in their implementation of {\em recvSelf()}, so
+that the {\em node} and {\em ndof} values can be set. Returns $0$ if
+successful, a negative number if the Channel object, {\em
+theChannel}, failed to receive the data. \\   
+
+{\em virtual void Print(OPS_Stream \&s, int flag = 0) const;} \\
+Prints out the SP\_Constraints tag, then {\em node}, {\em ndof} and
+{\em value}. 
+

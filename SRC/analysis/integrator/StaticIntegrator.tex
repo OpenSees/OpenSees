@@ -1,0 +1,136 @@
+%File: ~/OOP/analysis/integrator/StaticIntegrator.tex
+%What: "@(#) StaticIntegrator.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/integrator/StaticIntegrator.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class StaticIntegrator: public Integrator  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent Integrator \\
+\indent\indent\indent IncrementalIntegrator \\
+\indent\indent\indent\indent {\bf StaticIntegrator} \\
+\indent\indent\indent\indent\indent LoadControl \\
+\indent\indent\indent\indent\indent ArcLength \\
+\indent\indent\indent\indent\indent DisplacementControl \\
+
+\noindent {\bf Description} \\ 
+\indent StaticIntegrator is an abstract class. It is a subclass of
+IncrementalIntegrator provided to implement the common methods among
+integrator classes used in performing a static analysis on the
+FE\_Model. The StaticIntegrator class provides an implementation of
+the methods to form the FE\_Element and DOF\_Group contributions to
+the tangent and residual. A pure virtual method {\em newStep()} is
+also defined in the interface, this is the method first called at each
+iteration in a static analysis, see the StaticAnalysis class. \\
+
+In static nonlinear finite element problems we seek a solution
+($\U$, $\lambda$) to the nonlinear vector function
+
+\begin{equation}
+\R(\U, \lambda) = \lambda \P - \F_R(\U) = \zero
+\label{staticGenForm}
+\end{equation}
+
+The most widely used technique for solving the non-linear finite
+element equation, equation~\ref{femGenForm}, is to use an incremental
+scheme. In the incremental formulation, a solution to the equation is
+sought at successive incremental steps.  
+
+\begin{equation}
+\R(\U_{n}, \lambda_n) = \lambda_n \P - \F_R(\U_{n})
+\label{staticIncForm}
+\end{equation}
+
+The solution of this equation is typically obtained using an iterative
+procedure, in which a sequence of approximations
+($\U_{n}^{(i)}$, $\lambda_n^{(i)}$), $i=1,2, ..$ is obtained which
+converges to the solution ($\U_n$, $\lambda_n)$. The most
+frequently used iterative schemes, such as Newton-Raphson, modified
+Newton, and quasi Newton schemes, are based on a Taylor expansion of
+equation~\ref{staticIncForm} about ($\U_{n}$, $\lambda_n$):     
+
+\begin{equation} 
+\R(\U_{n},\lambda_n) = \lambda_n^{(i)} \P 
+ - \f_{R}\left(\U_{n}^{(i)} \right) - \left[
+\begin{array}{cc}
+\K_n^{(i)} & -\P \\
+\end{array} \right] 
+\left\{
+\begin{array}{c}
+\U_{n} - \U_{n}^{(i)}  \\ 
+\lambda_n - \lambda_n^{(i)} 
+\end{array} \right\}
+\label{staticFormTaylor}
+\end{equation} 
+
+\noindent which  a system of of $N$ equations with ($N+1$)
+unknowns. Two solve this, an additional equation is required, the
+constraint equation. The constraint equation used depends on the
+static integration scheme, of which there are a number, for example
+load control, arc length, and displacement control. \\
+
+\pagebreak
+\noindent {\bf Class Interface} \\
+\indent\indent // Constructors \\
+\indent\indent {\em StaticIntegrator(int classTag);}\\  \\
+\indent\indent // Destructor \\
+\indent\indent {\em virtual $\tilde{ }$StaticIntegrator();}\\  \\
+\indent\indent // Public Methods \\
+\indent\indent {\em virtual int formEleTangent(FE\_Element *theEle);} \\
+\indent\indent {\em virtual int formEleResidual(FE\_Element *theEle);} \\
+\indent\indent {\em virtual int formNodTangent(DOF\_Group *theDof);} \\
+\indent\indent {\em virtual int formNodUnbalance(DOF\_Group *theDof);} \\
+\indent\indent {\em virtual int newStep(void) =0;} \\
+
+\noindent {\bf Constructors} \\
+\indent {\em StaticIntegrator(int classTag);}\\ 
+The integer {\em classTag} is passed to the
+IncrementalIntegrator classes constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{ }$StaticIntegrator();}\\ 
+Does nothing. Provided so that the subclasses destructors will be called.\\
+
+\noindent {\bf Public Methods}\\
+\indent {\em virtual int formEleTangent(FE\_Element *theEle);} \\
+To form the tangent matrix of the FE\_Element, {\em theEle}, is
+instructed to zero this matrix and then add it's $K$ matrix to the
+tangent, i.e. it performs the following: 
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+theEle-$>$zeroTang() \\
+theEle-$>$addKtoTang() 
+\end{tabbing}
+\noindent The method returns $0$. \\
+
+{\em virtual int formEleResidual(FE\_Element *theEle);} \\
+To form the residual vector of the FE\_Element, {\em theEle}, is
+instructed to zero the vector and then add it's $R$ vector to
+the residual, i.e. it performs the following: 
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+theEle-$>$zeroResidual() \\
+theEle-$>$addRtoResid() 
+\end{tabbing}
+\noindent The method returns $0$. \\
+
+{\em virtual int formNodTangent(DOF\_Group *theDof);} \\
+This should never be called in a static analysis. An error message is
+printed if it is. Returns -1. \\
+
+
+{\em virtual int formNodUnbalance(DOF\_Group *theDof);} \\
+To form the unbalance vector of the DOF\_Group, {\em theDof}, is
+instructed to zero the vector and then add it's $P$ vector to the
+unbalance, i.e. it performs the following: 
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+theDof-$>$zeroUnbalance() \\
+theDof-$>$addPtoUnbal() 
+\end{tabbing}
+\noindent The method returns $0$. \\
+
+

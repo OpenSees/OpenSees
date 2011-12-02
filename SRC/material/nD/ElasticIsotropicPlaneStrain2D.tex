@@ -1,0 +1,102 @@
+%File: ~/OOP/material/nD/ElasticIsotropicPlaneStrain2D.tex
+%What: "@(#) ElasticIsotropicPlaneStrain2D.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/material/nD/ElasticIsotropicPlaneStrain2D.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ElasticIsotropicPlaneStrain2D : public ElasticIsotropicMaterial \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent Material \\
+\indent\indent\indent NDMaterial \\
+\indent\indent\indent\indent ElasticIsotropicMaterial \\
+\indent\indent\indent\indent\indent {\bf ElasticIsotropicPlaneStrain2D} \\
+
+\noindent {\bf Description}  \\
+ElasticIsotropicPlaneStrain2D provides the implementation of an
+elastic isotropic material which exhibits plane strain behavior in two
+dimensions. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em ElasticIsotropicPlaneStrain2D (int tag, double E,
+double v);}  \\ \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$ElasticIsotropicPlaneStrain2D ();}\\ \\
+\indent // Public Methods \\
+\indent {\em int setTrialStrain (const Vector \&strain); } \\
+\indent {\em const Vector \&getStress (void); } \\
+\indent {\em const Matrix \&getTangent (void); } \\
+\indent {\em int commitState (void); } \\
+\indent {\em int revertToLastCommit (void); } \\
+\indent {\em int revertToStart (void); } \\
+\indent {\em NDMaterial *getCopy (void); } \\
+
+\noindent {\bf Constructor}  \\
+\indent {\em ElasticIsotropicPlaneStrain2D (int tag, double E, double v);}  \\
+To construct an ElasticIsotropicPlaneStrain2D whose unique integer tag
+among NDMaterials in the domain is given by {\em tag}.  The material
+model have Young's modulus {\em E} and Poisson's ratio {\em v}. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em $\tilde{ }$ElasticIsotropicPlaneStrain2D ();} \\
+Does nothing. \\ 
+
+\noindent {\bf Public Methods} \\
+\indent {\em int setTrialStrain (const Vector \&strain); }  \\
+Sets the value of the current trial strain vector, $\myepsilon$,
+to be {\em strain}. Returns $0$. \\
+
+\begin{displaymath}
+\myepsilon := \left[
+   \begin{array}{c}
+       \epsilon_{xx} \\
+       \epsilon_{yy}   \\
+       2 \gamma_{xy}   
+   \end{array} 
+ \right]
+\end{displaymath}
+
+\indent {\em const Vector \&getStress (void); } \\
+Returns the material stress vector, $\mysigma$, for the current
+trial strain. \\
+
+\begin{displaymath}
+\mysigma := \left[
+   \begin{array}{c}
+       \sigma_{xx} \\
+       \sigma_{yy}   \\
+       \tau_{xy}   
+   \end{array} 
+ \right]
+\end{displaymath}
+
+\indent {\em const Matrix \&getTangent (void); } \\
+Returns the material tangent stiffness matrix, $\D$. \\
+
+\begin{displaymath}
+\D := \frac{E}{(1+\nu)(1-2\nu)} \left[
+   \begin{array}{ccc}
+         1-\nu &     \nu &      0 \\
+           \nu &   1-\nu &      0 \\
+             0 &       0 & 1-2\nu
+   \end{array} 
+ \right]
+\end{displaymath}
+
+\indent {\em int commitState (void); } \\
+Returns $0$. \\
+
+\indent {\em int revertToLastCommit (void); } \\
+Returns $0$. \\
+
+\indent {\em int revertToStart (void); } \\
+Returns $0$. \\
+
+\indent {\em NDMaterial *getCopy (void); } \\
+Returns a pointer to a new ElasticIsotropicPlaneStrain2D, with the
+same values for {\em tag}, {\em E}, and $\nu$. It is up to the
+caller to ensure that the destructor is invoked. \\

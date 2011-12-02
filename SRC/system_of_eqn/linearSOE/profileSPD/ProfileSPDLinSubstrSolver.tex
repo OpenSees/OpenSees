@@ -1,0 +1,85 @@
+%File: ~/OOP/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinSubstrSolver.tex
+%What: "@(#) ProfileSPDLinSubstrSolver.tex, revA"
+
+UNDER CONSTRUCTION
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{
+}$/system\_of\_eqn/linearSOE/profileSPD/ProfileSPDLinSubstrSolver.h$>$ \\ 
+
+\noindent {\bf Class Decleration}  \\
+\indent class ProfileSPDLinSubstrSolver: public DomainSolver, public
+ProfileSPDLinSubstrSolver  \\ 
+
+\noindent {\bf Class Hierarchy} \\
+\indent  MovableObject \\
+\indent\indent  Solver \\
+\indent\indent\indent  LinearSOESolver \\
+\indent\indent\indent\indent  DomainSolver \\
+\indent\indent\indent\indent  ProfileSPDLinDirectSolver \\
+\indent\indent\indent\indent\indent {\bf ProfileSPDLinSubstrSolver} \\
+
+\noindent {\bf Description}  \\
+\indent A ProfileSPDLinSubstrSolver object will perform the numerical
+substructuring operations on a ProfileSPDLinSOE object. EXPAND. \\
+
+\noindent {\bf Interface}  \\
+\indent\indent // Constructor  \\
+\indent\indent {\em ProfileSPDLinSubstrSolver(double tol = 1.0e-12);}  \\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em $\tilde{ }$ProfileSPDLinSubstrSolver();}\\ \\
+\indent\indent // Public Methods \\
+\indent\indent {\em int condenseA(int numInt);} \\
+\indent\indent {\em int condenseRHS(int numInt, Vector *u = 0);} \\
+\indent\indent {\em int computeCondensedMatVect(int numInt, Vector \&u);} \\
+\indent\indent {\em Matrix \&getCondensedA(void);} \\
+\indent\indent {\em Vector \&getCondensedRHS(void);} \\
+\indent\indent {\em Vector \&getCondensedMatVect(void);} \\
+\indent\indent {\em int setComputedXext(const Vector \&u);} \\
+\indent\indent {\em  int solveXint(void);} \\
+
+
+
+
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em ProfileSPDLinSubstrSolver(double tol = 1.0e-12);}  \\
+
+\noindent {\bf Destructor} \\
+\indent {\em $\tilde{ }$ProfileSPDLinSubstrSolver();}\\ 
+
+\noindent {\bf Public Methods}  \\
+\indent {\em int condenseA(int numInt);} \\
+Causes the condenser to form $A_{ee}^* = A_{ee} -A_{ei} A_{ii}^{-1} A_{ie}$, where
+$A_{ii}$ is the first {\em numInt} rows of the $A$ matrix.  The
+original $A$ is changed as a result. $A_{ee}^*$ is to be stored in $A_{ee}$. \\
+
+{\em int condenseRHS(int numInt);} \\
+Causes the condenser to form $B_e^* = B_e - A_{ei} A_{ii}^{-1} B_i$, where $A_{ii}$ 
+is the first {\em numInt} rows of $A$. The original $B$ is changed as a result. 
+$B_e^*$ is to be stored in $B_e$. \\
+
+{\em int computeCondensedMatVect(Vector \&u, int numInt);} \\
+Causes the condenser to form $A_{ee} u$. \\
+
+{\em Matrix \&getCondensedA(void);} \\
+Returns the contents of $A_{ee}$ as a matrix. \\
+
+{\em Vector \&getCondensedRHS(void);} \\
+Returns the contents of $B_e$ as a Vector. \\
+
+{\em Vector \&getCondensedMatVect(void);} \\
+Returns the contents of the last call to {\em
+computeCondensedMatVect()}. \\
+
+{\em int setComputedXext(const Vector \&u);} \\
+Sets the computed value of the unknowns in $X_e$ corresponding to the
+external equations to {\em u}. The number of external equations is
+given by the size of vector $u$.\\
+
+{\em  int solveXint(void);} \\
+To compute the internal equation numbers $X_i$ given the value set
+for the external equations in the last call to {\em setComputedXext()}. \\
+
+
