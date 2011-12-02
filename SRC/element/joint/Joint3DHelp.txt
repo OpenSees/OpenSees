@@ -1,0 +1,60 @@
+######################################################################################
+Joint2D:element
+
+element Joint3D Tag? Nd1? Nd2? Nd3? Nd4? Nd5? Nd6? NdC? Mat12? Mat34? Mat56? LrgDisp?
+
+Tag?     - an integer identifying the element tag in the domain
+Nd1?     - an integer indicating the node 1 tag (-x' connected to column)
+Nd2?     - an integer indicating the node 2 tag (+x' connected to column)
+Nd3?     - an integer indicating the node 3 tag (-y' connected to column)
+Nd4?     - an integer indicating the node 4 tag (+y' connected to column)
+Nd5?     - an integer indicating the node 5 tag (-z' connected to column)
+Nd6?     - an integer indicating the node 6 tag (+z' connected to column)
+NdC?     - an integer tag for internal node (must not exist in the domain).
+Matx'?   - an integer indicating the uniaxial material for rotational spring on plane y'z'
+Maty'?   - an integer indicating the uniaxial material for rotational spring on plane x'z'
+Matz'?   - an integer indicating the uniaxial material for rotational spring on plane y'x'
+LrgDisp? - an integer indicating the flag for considering large deformation effects
+
+
+Joint3D is a three dimensional element, with six nodes. It generates an internal node
+with three extra degrees of freedom to represent the shear modes. The external nodes
+are connected to the internal node by multi-point constraints.
+
+The local x' axis is defined on nodes Nd1 and Nd2; y' and z' axes are defined on Nd3, Nd4 , and Nd5 and Nd6 respectively. The middle point of Nd3 and Nd4, and Nd5 and Nd6 must be located on the middle point of Nd1 and Nd2 so it would be possible to construct a shear block on these six nodes.
+
+The tag for the internal node must be an unused tag that does not belong to any other
+existing node.
+
+The shear modes are defined as the shear deformation of the joint block for rotations along each local axes. Three rotational springs provide the stiffness for the three shear modes. Each rotational spring is defnied in a plane which shares the same normal vector as the local axis, so the imposed moment of each spring has the same direction as its corresponding local axis.
+
+The multi-point constraints are developed for the joint element and they are
+responsible for simulating the shear block kinematics and maintaining the opsite faces parallel. These six multi-point constraints are automatically added
+to the domain and they connect the central node to external nodes.
+
+These constraints might be set for the large deformations, using the LrgDisp flag.
+If the LrgDisp flag is set to zero, the element will use a constant constraint matrix,
+calculated based on the initial configuration and the element can not undergo the exact
+deformation for large deformations. Non-zero value for LrgDisp indicates a time varying
+constraint matrix that can go through large deformations with more precise results. In
+this case the constraint matrix is updated for every time step, based on the current
+nodal positions. Value 1 for LrgDisp indicates time varying constraint without length
+correction. If value 2 is chosen, the time varying constraint will be applied with
+length correction to maintain the initial length of the multi-point constraints.
+
+Joint2D must be used along with 'Penalty', or 'Transformation' constraint handler
+to allow the multi point constraints work perfectly.
+
+The valid queries to a Joint2D element when creating an element recorder are
+'internalNode', 'deformation', `plasticDeformation`, 'force', 'deformationANDforce',
+'size', 'stiff' and 'materials ...'. 	   
+
+--------------------------------------------------------------------------------
+Example:
+                        element Joint3D  12  1  2  3  4  5  6  16  11  12  13  0
+
+This command constructs a Joint3D element with tag 12 that is connected to nodes 1, 2,
+3 , 4 ,5 and 6. The element will generate a central node with tag 16, and it uses the uniaxial material objects with tags 11 , 12 , and 13 alond x', y' and z' local axes. The joint element introduced. The generated multipoint constraint
+matrices will not be time variant and they do not include large deformations effects.
+
+######################################################################################

@@ -1,0 +1,59 @@
+// File: ~/element/Element.h
+//
+// Written: fmk 
+// Created: Fri Sept 20 12:27:47: 1996
+// Revision: A
+//
+// Description: This file contains the class definition for Element.
+// Element is an abstract base class and thus no objects of it's type
+// can be instantiated. It has pure virtual functions which must be
+// implemented in it's derived classes. 
+//
+// What: "@(#) Element.h, revA"
+
+#ifndef Element_h
+#define Element_h
+
+#include <ID.h>
+
+#include <DomainComponent.h>
+
+class Matrix;
+class Vector;
+
+class Element : public DomainComponent
+{
+  public:
+    Element(int tag);    
+    virtual ~Element(){ };
+
+    virtual int getNumNodes(void) const =0;
+    virtual const ID &getNodes(void) const =0;
+
+    // pure virtual functions
+    virtual int getNumDOF(void) =0;
+    
+    virtual int computeState(void) = 0;
+    virtual void commitState(void) = 0;    
+    
+    virtual const Matrix &getStiff(void)=0;
+    virtual const Matrix &getDamp(void)=0;    
+    virtual const Matrix &getMass(void)=0;    
+    virtual const Matrix &getMatrix(double factorK, 
+				    double factorD, 
+				    double factorM)=0;
+
+    virtual int computeResidual(void) = 0;
+    virtual const Vector &getResistingForce(void) =0;
+    
+    virtual void Print(ostream &s) const =0;   
+    friend ostream &operator<<(ostream &s, const Element &E);    
+    
+  protected:
+    
+  private:
+};
+
+
+#endif
+

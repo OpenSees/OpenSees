@@ -1,0 +1,181 @@
+% Boris Jeremic (@ucdavis.edu)
+
+\section{Large Deformation Hyperelastic Material Model Commands}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Compressible Neo-Hookean Material Commands}
+\label{CompNH}
+
+\begin{verbatim}
+nDMaterial NeoHookean3D matTag? K? G? <rho?> 
+\end{verbatim}
+or
+\begin{verbatim}
+nDMaterial NeoHookeanCompressible3D matTag? K? G? <rho?> 
+\end{verbatim}
+
+This model is the traditional compressible Neo-Hookean material model.
+A compressible Neo-Hookean material is constructed using \texttt{nDMaterial} command.
+The argument \texttt{matTag} is used to uniquely identify this nDMaterial object among 
+nDMaterial objects in the BasicBuilder object. 
+The parameter \texttt{K} defines the material reference bulk modulus. 
+The parameter \texttt{G} defines the material reference shear modulus. 
+The optional parameter \texttt{rho} defines the material reference density, 
+the default value of rho is zero.  
+  
+Although this is named compressible Neo-Hookean material, it can also be used for 
+near-compressible or incompressible material. In this case, 
+make \texttt{K} a value far bigger than \texttt{G}.  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Decoupled Neo-Hookean Material Commands}
+\label{DNH}
+
+\begin{verbatim}
+nDMaterial DecoupledNH3D matTag? K? G? <rho?> 
+\end{verbatim}
+or
+\begin{verbatim}
+nDMaterial DecoupledNeoHookean3D matTag? K? G? <rho?> 
+\end{verbatim}
+
+This model is a decoupled model for its volumetric and isochoric parts.
+A decoupled Neo-Hookean material is constructed using \texttt{nDMaterial} command.
+The argument \texttt{matTag} is used to uniquely identify this nDMaterial object among 
+nDMaterial objects in the BasicBuilder object. 
+The parameter \texttt{K} defines the material reference bulk modulus. 
+The parameter \texttt{G} defines the material reference shear modulus. 
+The optional parameter \texttt{rho} defines the material reference density, 
+the default value of rho is zero.  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Decoupled Logarithmic Material Commands}
+\label{DLog}
+
+\begin{verbatim}
+nDMaterial DecoupledLog3D matTag? K? G? <rho?> 
+\end{verbatim}
+or
+\begin{verbatim}
+nDMaterial DecoupledLogarithmic3D matTag? K? G? <rho?> 
+\end{verbatim}
+
+This model is a decoupled model for its volumetric and isochoric parts.
+A decoupled logarithmic material is constructed using \texttt{nDMaterial} command.
+The argument \texttt{matTag} is used to uniquely identify this nDMaterial object among 
+nDMaterial objects in the BasicBuilder object. 
+The parameter \texttt{K} defines the material reference bulk modulus. 
+The parameter \texttt{G} defines the material reference shear modulus. 
+The optional parameter \texttt{rho} defines the material reference density, 
+the default value of rho is zero. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Decoupled Mooney-Rivlin-Simo Material Commands}
+\label{DMRS}
+
+\begin{verbatim}
+nDMaterial DecoupledMRS3D matTag? c1? c2? K? <rho?> 
+\end{verbatim}
+or
+\begin{verbatim}
+nDMaterial DecoupledMooneyRivlinSimo3D matTag? c1? c2? K? <rho?> 
+\end{verbatim}
+
+This model is a decoupled model for its volumetric and isochoric parts.
+Its isochoric part is Mooney-Rivlin model and its volumetric part is 
+Simo-Pister model. 
+A decoupled Mooney-Rivlin-Simo material is constructed using \texttt{nDMaterial} command.
+The argument \texttt{matTag} is used to uniquely identify this nDMaterial object among 
+nDMaterial objects in the BasicBuilder object. The parameter \texttt{c1} and \texttt{c2}
+define the material constants. 
+The parameter \texttt{K} defines the material reference bulk modulus. 
+The optional parameter \texttt{rho} defines the material reference density, 
+the default value of rho is zero. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Decoupled Ogden-Simo Material Commands}
+\label{DOS}
+
+\begin{verbatim}
+nDMaterial DecoupledOS3D matTag? N? c1? ... cN? m1? ... mN? K? <rho?> 
+\end{verbatim}
+or
+\begin{verbatim}
+nDMaterial DecoupledOgdenSimo3D matTag? N? c1? ... cN? m1? ... mN? K? <rho?> 
+\end{verbatim}
+
+This model is a decoupled model for its volumetric and isochoric parts.
+Its isochoric part is Ogden model and its volumetric part is Simo-Pister model. 
+A decoupled Ogden-Simo material is constructed using \texttt{nDMaterial} command.
+The argument \texttt{matTag} is used to uniquely identify this nDMaterial object among 
+nDMaterial objects in the BasicBuilder object. The parameter \texttt{N},  
+\texttt{c1}, ..., \texttt{cN}, and \texttt{m1}, ..., \texttt{mN} define the material constants. 
+The parameter \texttt{K} defines the material reference bulk modulus. 
+The optional parameter \texttt{rho} defines the material reference density, 
+the default value of rho is zero. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Decoupled Mooney-Rivlin Material Commands}
+\label{DMR}
+
+\begin{verbatim}
+nDMaterial DecoupledMR3D matTag? c1? c2? <rho?> 
+\end{verbatim}
+or
+\begin{verbatim}
+nDMaterial DecoupledMooneyRivlin3D matTag? c1? c2? <rho?> 
+\end{verbatim}
+
+This model is a decoupled isochoric model. 
+A decoupled Mooney-Rivlin-Simo material is constructed using \texttt{nDMaterial} command.
+The argument \texttt{matTag} is used to uniquely identify this nDMaterial object among 
+nDMaterial objects in the BasicBuilder object. The parameter \texttt{c1} and \texttt{c2}
+define the material constants.  
+The optional parameter \texttt{rho} defines the material reference density, 
+the default value of rho is zero. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Decoupled Ogden Material Commands}
+\label{DO}
+
+\begin{verbatim}
+nDMaterial DecoupledOgden3D matTag? N? c1? ... cN? m1? ... mN? <rho?> 
+\end{verbatim}
+
+This model is a decoupled isochoric model. 
+A decoupled Ogden-Simo material is constructed using \texttt{nDMaterial} command.
+The argument \texttt{matTag} is used to uniquely identify this nDMaterial object among 
+nDMaterial objects in the BasicBuilder object. The parameter \texttt{N},  
+\texttt{c1}, ..., \texttt{cN}, and \texttt{m1}, ..., \texttt{mN} define the material constants. 
+The optional parameter \texttt{rho} defines the material reference density, 
+the default value of rho is zero. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Decoupled Simo-Pister Material Commands}
+\label{DSP}
+
+\begin{verbatim}
+nDMaterial DecoupledSP3D matTag? K? <rho?> 
+\end{verbatim}
+or
+\begin{verbatim}
+nDMaterial DecoupledSimoPister3D matTag? K? <rho?> 
+\end{verbatim}
+
+
+This model is a decoupled volumetric model. 
+A decoupled Simo-Pister material is constructed using \texttt{nDMaterial} command.
+The argument \texttt{matTag} is used to uniquely identify this nDMaterial object among 
+nDMaterial objects in the BasicBuilder object.
+The parameter \texttt{K} defines the material reference bulk modulus.   
+The optional parameter \texttt{rho} defines the material reference density, 
+the default value of rho is zero. 
+
