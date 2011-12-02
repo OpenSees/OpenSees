@@ -1,0 +1,457 @@
+############################################################################
+#
+#  Program:  OpenSees
+#
+#  Purpose:  A Top-level Makefile to create the libraries needed
+#            to use the OpenSees framework.
+#
+#   version created for LINUX setup at UC Davis
+#  Written: jeremic@ucdavis.edu; zhyang@ucdavis.edu 
+#  Created: 01/2001
+#
+#  Send bug reports, comments or suggestions to jeremic@ucdavis.edu
+#
+############################################################################
+
+# %---------------------------------%
+# |  SECTION 1: PROGRAM             |
+# %---------------------------------%
+#
+# Specify the location and name of the OpenSees interpreter program
+# that will be created (if this all works!)
+
+OpenSees_PROGRAM = $(HOME)/bin/OpenSees
+
+
+
+# %---------------------------------%
+# |  SECTION 2: MAKEFILE CONSTANTS  |
+# %---------------------------------%
+#
+# Specify the constants the are used as control structure variables in the Makefiles.
+
+#OPERATING_SYSTEM = LINUX
+
+#GRAPHICS = UsingOpenGL, UsingX11
+#GRAPHICS = UsingOpenGL
+GRAPHICS = UsingX11
+
+#PROGRAMMING_MODE = SEQUENTIAL, THREADS OR DISTRIBUTED_MPI
+PROGRAMMING_MODE = SEQUENTIAL
+
+#COMPILER = GCC, KAI 
+COMPILER = GCC
+
+#DEBUG_MODE = DEBUG, NO_DEBUG
+DEBUG_MODE = DEBUG
+
+#RELIABILITY = YES_RELIABILITY, NO_RELIABILITY
+RELIABILITY = YES_RELIABILITY
+
+
+# %---------------------------------%
+# |  SECTION 3: PATHS               |
+# %---------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries or if you have
+# any of the libraries already leave the directory location blank AND
+# remove the directory from DIRS.
+
+BASE  = /usr/local
+#  PUT YOUR HOME DIRECTOREY HERE
+HOME  = /home/jeremic
+FE    = $(HOME)/OpenSees/SRC
+
+
+BLASdir      = $(HOME)/OpenSees/OTHER/BLAS
+CBLASdir     = $(HOME)/OpenSees/OTHER/CBLAS
+LAPACKdir    = $(HOME)/OpenSees/OTHER/LAPACK
+ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
+UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
+METISdir     = $(HOME)/OpenSees/OTHER/METIS
+SRCdir       = $(HOME)/OpenSees/SRC
+
+
+ifeq ($(PROGRAMMING_MODE), THREADS)
+SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_MT
+else
+SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_3.0/SRC
+endif
+
+
+
+DIRS        = $(BLASdir) \
+              $(CBLASdir) \
+              $(SUPERLUdir) \
+              $(LAPACKdir) \
+              $(ARPACKdir) \
+              $(UMFPACKdir) \
+              $(METISdir) \
+              $(SRCdir) \
+# %-------------------------------------------------------%
+# | SECTION 4: LIBRARIES                                  |
+# |                                                       |
+# | The following section defines the libraries that will |
+# | be created and/or linked with when the libraries are  |
+# | being created or linked with.                         |
+# %-------------------------------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries leave the
+# libraries blank. You have to get your own copy of the tcl/tk 
+# library!! 
+#
+# Note: For libraries that will be created (any in DIRS above)
+# make sure the directory exsists where you want the library to go!
+
+FE_LIBRARY          = $(HOME)/lib/libOpenSees.a
+NDARRAY_LIBRARY     = $(HOME)/lib/libndarray.a  # BJ_UCD jeremic@ucdavis.edu 
+MATMOD_LIBRARY      = $(HOME)/lib/libmatmod.a   # BJ_UCD jeremic@ucdavis.edu 
+BJMISC_LIBRARY      = $(HOME)/lib/libBJmisc.a  # BJ_UCD jeremic@ucdavis.edu
+LAPACK_LIBRARY      = $(HOME)/lib/libLapack.a
+BLAS_LIBRARY        = $(HOME)/lib/libBlas.a
+SUPERLU_LIBRARY     = $(HOME)/lib/libSuperLU.a
+CBLAS_LIBRARY       = $(HOME)/lib/libCBlas.a
+ARPACK_LIBRARY      = $(HOME)/lib/libArpack.a
+UMFPACK_LIBRARY     = $(HOME)/lib/libUmfpack.a
+METIS_LIBRARY       = $(HOME)/lib/libMetis.a
+TCL_LIBRARY         = /usr/lib/libtk8.3.so\
+                      /usr/lib/libtcl8.3.so
+BLITZ_LIBRARY       = $(HOME)/lib/libblitz.a
+
+ifeq ($(GRAPHICS), UsingX11)
+GRAPHIC_LIBRARY = /usr/X11R6/lib/libX11.a
+else
+GRAPHIC_LIBRARY     = /usr/lib/libGL.a\
+                      /usr/X11R6/lib/libX11.a\
+                      /usr/X11R6/lib/libXext.a\
+                      /usr/lib/libGLU.a
+endif
+
+ifeq ($(RELIABILITY), YES_RELIABILITY)
+RELIABILITY_LIBRARY = $(HOME)/lib/libReliability.a
+else
+RELIABILITY_LIBRARY = 
+endif
+
+
+
+
+
+# WATCH OUT .. These libraries are removed when 'make wipe' is invoked.
+# $(FE_LIBRARY) \
+#WIPE_LIBS	= $(NDARRAY_LIBRARY)  $(MAT_MOD_LIBRARY)  $(FE_LIBRARY)
+WIPE_LIBS	= $(FE_LIBRARY) \
+           $(NDARRAY_LIBRARY) \
+           $(MATMOD_LIBRARY) \
+           $(SUPERLU_LIBRARY) \
+           $(ARPACK_LIBRARY) \
+           $(UMFPACK_LIBRARY) \
+           $(METIS_LIBRARY) \
+           $(LAPACK_LIBRARY) \
+           $(BLAS_LIBRARY) \
+           $(CBLAS_LIBRARY) \
+         		$(RELIABILITY_LIBRARY)
+# %---------------------------------------------------------%
+# | SECTION 5: COMPILERS                                    |
+# |                                                         |
+# | The following macros specify compilers, linker/loaders, |
+# | the archiver, and their options.  You need to make sure |
+# | these are correct for your system.                      |
+# %---------------------------------------------------------%
+
+# ################################################### 
+# # Compilers
+# ################################################### 
+# # DEFAULT
+# ################################################### 
+# CC++	  = g++
+# CC     = gcc
+# FC	    = g77
+
+
+# Boris Jeremic@ucdavis.edu
+###################################################  Portland Group
+# ########  PGI PGI  PGI PGI PGI PGI PGI PGI  PGI PGI PGI PGI      
+# CC++            =  pgCC
+# CC              =  pgcc
+# FC              =  pgf77
+# LINKER           = pgCC 
+# 
+# C++FLAGS        =  -g -D_UNIX -Minfo=all 
+# CFLAGS          =  -g	 -Minfo=all 
+# FFLAGS          =  -g
+# LINKFLAGS       =  -g
+# ####..
+# ######..CCFLAGS = -c -O2 -Munroll -Mnoframe -tp p6 -Minfo=all -Minline -Mconcur -o $*.o  ##>0.350u 29.360s 0:29.73 99.9%    0+0k 0+0io 284pf+0w
+# ######..CCFLAGS = -c -O2 -Munroll -Mnoframe -tp p6 -Minfo=all -Minline -o $*.o  ##>0.350u 29.360s 0:29.73 99.9%    0+0k 0+0io 284pf+0w
+# ######..CCFLAGS = -c -Mprof=lines -o $*.o  ##
+# ######..CCFLAGS = -c -g -o $*.o  ##>0.330u 38.820s 0:39.18 99.9%     0+0k 0+0io 283pf+0w
+# ######..CCFLAGS = -c  -Mvect  -O2 -o $*.o  ##  1.930u 6.880s 0:08.83 99.7%     0+0k 0+0io 151pf+0w
+# ##CCFLAGS = -c -g -Minfo=all -o $*.o  ## 
+######..LINKFLAGS = -Mconcur 
+##LINKFLAGS = -lm
+
+# ################################  Kuck and Associates Inc.
+# ######  KAI KAI  KAI KAI KAI KAI KAI KAI  KAI KAI KAI KAI      
+# CC++ =  KCC
+# CC =   KCC
+# FC   =  g77
+# #FC   =  pgf90
+# LINKER= KCC 
+# 
+# C++FLAGS        =  -g -D_UNIX -Wall 
+# CFLAGS          =  -g	 -Wall
+# FFLAGS          =  -g
+# # ####..
+# ##..##..CCFLAGS = -c  --strict_warnings +K0 --cpfe_only --display_error_number  -o $*.o   
+# ##..##..CCFLAGS = -c  --strict_warnings +K0 --display_error_number  -o $*.o    
+# ##..##..CCFLAGS = -c  --strict_warnings  --inline_auto_space_time=1.0 -O --display_error_number -o $*.o # 60.680u 6.590s 1:12.85 92.3% 0+0k 0+0io 61184pf+0w
+# ##..##..CCFLAGS = -c  +K3  --strict_warnings  -O --abstract_pointer --abstract_float  --display_error_number -o $*.o #  1.570u 7.090s 0:08.67 99.8%     0+0k 0+0io 292pf+0w
+# ##..CCFLAGS = -c  +K2  --strict_warnings  -O --display_error_number -o $*.o 
+# ##..##..CCFLAGS = -c   --strict_warnings --inline_auto_space_time=1.0 +K3 --display_error_number -o $*.o # 196.760u 6.930s 3:26.86 98.4% 0+0k 0+0io 61538pf+0w
+# ##..##..CCFLAGS = -c   --strict_warnings --inline_auto_space_time=75.0 +K3 --display_error_number -o $*.o # 196.760u 6.930s 3:26.86 98.4% 0+0k 0+0io 61538pf+0w
+# ##..
+# ##..
+
+
+########################################    GNU
+CC++            =  g++
+CC              =  gcc
+FC              =  g77
+F90             =
+LINKER          =  g++
+
+
+
+#GRAPHICS = UsingOpenGL, UsingX11
+ifeq ($(GRAPHICS), UsingOpenGL)
+GRAPHIC_FLAG = -D_GLX
+else
+GRAPHIC_FLAG = -D_X11
+endif
+
+ifeq ($(PROGRAMMING_MODE), THREADS)
+PROGRAMMING_FLAG = -D_THREADS -D_PTHREAD
+else
+PROGRAMMING_FLAG = 
+endif
+
+ifeq ($(DEBUG_MODE), DEBUG)
+DEBUG_FLAG = -D_G3DEBUG
+else
+DEBUG_FLAG =
+endif
+
+ifeq ($(RELIABILITY), YES_RELIABILITY)
+RELIABILITY_FLAG = -D_RELIABILITY
+else
+RELIABILITY_FLAG =
+endif
+
+
+
+
+#C++FLAGS        =  -O2 -D_UNIX
+#CFLAGS          =  -O2
+#FFLAGS          =  -O2
+#LINKFLAGS       =  
+
+C++FLAGS        =  -g -D_LINUX -D_UNIX  -Wall $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(PROGRAMMING_FLAG) 
+CFLAGS          =  -g -Wall $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(PROGRAMMING_FLAG) 
+FFLAGS          =  -Wall -O
+LINKFLAGS       =  -g
+#####..
+##..CC++ = g++
+##..CC   = gcc
+##..FC	  = g77
+##..LINKER= g++
+
+########################################     EGCS
+# ##..
+# ##..CC++ = egcs
+# ##..LINKER= egcs
+#   
+########################################    MPI CC
+
+##CC++ = mpiCC
+##CC   = mpicc
+##LINKER= mpiCC
+
+##..########################################     INSURE++  CODEWIZARD
+##..CC++            =  insure
+##..CC              =  gcc
+##..FC              =  g77
+##..LINKER           =  g++ 
+##..
+##..C++FLAGS        =  -g -Zvm -Zvm -Zvm -D_UNIX -Wall
+##..CFLAGS          =  -g	 -Wall
+##..FFLAGS          =  -g
+##..LINKFLAGS       =  -g
+##..
+##..CC++ = insure
+##..CC   = gcc
+##..LINKER= insure
+##..#CC++ = codewizard
+##..#CC   = gcc
+##..#LINKER= codewizard
+##..
+
+########################################       I B M   AIX
+##..# AIX C++   on IBM AIX
+##..CC++ = xlC
+##..CC   = xlc
+##..LINKER= xlC
+
+
+########################################     BORLAND
+# DOS DOS DOS DOS DOS DOS DOS DOS DOS DOS DOS DOS DOS DOS DOS
+##..CC = bcc
+##..CCFLAGS = -c -w -rd -C -N -P -f87 -I\cmp\bc\include -L\cmp\bc\lib -i64 -mh -o $*.o
+##..
+
+
+
+AR          = ar 
+ARFLAGS     = cqls
+RANLIB      = ranlib
+RANLIBFLAGS =
+
+# Compiler Flags
+#
+# NOTES:
+#    C++ FLAGS TAKE need _UNIX or _WIN32 for preprocessor directives
+#         - the _WIN32 for the Windows95/98 or NT operating system.
+#    C FLAGS used -DUSE_VENDOR_BLAS (needed in SuperLU) if UNIX in C++ FLAGS
+#
+
+# DEFINED ABOVE
+# C++FLAGS        = -Wall -g -D_UNIX
+# CFLAGS          = -Wall -g
+# FFLAGS          = -Wall -g
+
+#C++FLAGS        = -Wall -O2 -D_UNIX
+#CFLAGS          = -Wall -O2
+#FFLAGS          = -Wall -O
+
+
+# DEFINED ABOVE
+# # Linker
+# #LINKER          = $(CC++)
+# #LINKER          = g++
+# LINKER          = pgCC
+# LINKFLAGS       =  -g
+
+# Misc
+MAKE            = make
+CD              = cd
+ECHO            = echo
+RM              = rm
+RMFLAGS         = -f
+SHELL           = /bin/sh
+
+# %---------------------------------------------------------%
+# | SECTION 6: COMPILATION                                  |
+# |                                                         |
+# | The following macros specify the macros used in         |
+# | to compile the source code into object code.            |
+# %---------------------------------------------------------%
+
+.SUFFIXES:
+.SUFFIXES:	.C .c .f .f90 .cpp .o .cpp
+
+#
+# %------------------%
+# | Default command. |
+# %------------------%
+#
+.DEFAULT:
+	@$(ECHO) "Unknown target $@, try:  make help"
+#
+# %-----------------------------------------------%
+# |  Command to build .o files from source files. |
+# %-----------------------------------------------%
+#
+
+.cpp.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $< -o $@
+
+.C.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $< -o $@
+
+.c.o:
+	@$(ECHO) Making $@ from $<
+	$(CC) $(CFLAGS) -c $< -o $@
+
+.f.o:      
+	@$(ECHO) Making $@ from $<
+	$(FC) $(FFLAGS) -c $< -o $@
+
+.f77.o:      
+	@$(ECHO) Making $@ from $<
+	$(FC) $(FFLAGS) -c $< -o $@
+
+.f90.o:      
+	@$(ECHO) Making $@ from $<
+	$(FC90) $(FFLAGS) -c $< -o $@
+
+# %---------------------------------------------------------%
+# | SECTION 7: OTHER LIBRARIES                              |
+# |                                                         |
+# | The following macros specify other libraries that must  |
+# | be linked with when creating executables. These are     |
+# | platform specific and typically order does matter!!     |
+# %---------------------------------------------------------%
+MACHINE_LINKLIBS  = -L$(BASE)/lib \
+                    -L$(HOME)/lib \
+
+
+
+#MPI_LIB_DIR     = /usr/local/mpi/mpich/lib/ # BJ_UCD
+
+MACHINE_NUMERICAL_LIBS  = -lm \
+  $(ARPACK_LIBRARY) \
+  $(SUPERLU_LIBRARY) \
+  $(UMFPACK_LIBRARY) \
+  $(LAPACK_LIBRARY)  \
+  $(BLAS_LIBRARY) \
+  $(CBLAS_LIBRARY) \
+  $(GRAPHIC_LIBRARY)\
+  $(RELIABILITY_LIBRARY)\
+  -lg2c -ldl
+#  $(MPI_LIB_DIR) \ # BJ_UCD
+
+
+ifeq ($(PROGRAMMING_MODE), THREADS)
+MACHINE_SPECIFIC_LIBS = -lpthread
+else
+MACHINE_SPECIFIC_LIBS = 
+endif
+
+
+# %---------------------------------------------------------%
+# | SECTION 8: INCLUDE FILES                                |
+# |                                                         |
+# | The following macros specify include files needed for   |
+# | compilation.                                            |
+# %---------------------------------------------------------%
+# BJ_UCD  MPI_INCLUDE_DIR = -I/usr/local/mpi/mpich/include
+
+
+MACHINE_INCLUDES        = -I/usr/local/BerkeleyDB.4.0/include \
+                          -I/usr/include/mysql \
+                          -I/usr/include      \
+                          -I$(BASE)/include   \
+                          -I$(HOME)/include   \
+                     			  -I$(UMFPACKdir) \
+                          -I$(SUPERLUdir) \
+# BJ_UCD		  -I$(MPI_INCLUDE_DIR) 
+
+
+# this file contains all the OpenSees/SRC includes
+include $(FE)/Makefile.incl
+
+TCL_INCLUDES = -I/usr/local/include
+
+INCLUDES =  $(MACHINE_INCLUDES)   $(TCL_INCLUDES) $(FE_INCLUDES)

@@ -1,0 +1,1211 @@
+///////////////////////////////////////////////////////////////////////////////
+//   COPYLEFT (C): Woody's viral GPL-like license (by BJ):
+//                 ``This    source  code is Copyrighted in
+//                 U.S.,  for  an  indefinite  period,  and anybody
+//                 caught  using it without our permission, will be
+//                 mighty good friends of ourn, cause we don't give
+//                 a  darn.  Hack it. Compile it. Debug it. Run it.
+//                 Yodel  it.  Enjoy it. We wrote it, that's all we
+//                 wanted to do.''
+//
+//
+// COPYRIGHT (C):     :-))
+// PROJECT:           Object Oriented Finite Element Program
+// FILE:              
+// CLASS:             
+// MEMBER FUNCTIONS:
+//
+// MEMBER VARIABLES
+//
+// PURPOSE:           
+//
+// RETURN:
+// VERSION:
+// LANGUAGE:          C++
+// TARGET OS:         
+// DESIGNER:          Zhao Cheng, Boris Jeremic
+// PROGRAMMER:        Zhao Cheng, 
+// DATE:              Fall 2005
+// UPDATE HISTORY:    
+//
+///////////////////////////////////////////////////////////////////////////////
+//
+
+#include <string.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <Domain.h>
+
+#include <tcl.h>
+#include <ErrorHandler.h>
+#include <TclModelBuilder.h>
+#include <OPS_Globals.h>
+#include <ConsoleErrorHandler.h>
+
+#include <stresst.h>
+
+#include "NewTemplate3Dep.h"
+
+#include "MaterialParameter.h"
+
+#include "ElasticState.h"
+#include "Isotropic_Elastic.h"
+#include "elnp_Elastic.h"
+#include "PressureDependent_Elastic.h"
+#include "DM04_Elastic.h"
+
+#include "YieldFunction.h"
+#include "DP_YF.h"
+#include "VM_YF.h"
+#include "CC_YF.h"
+#include "DM04_YF.h"
+
+#include "PlasticFlow.h"
+#include "DP_PF.h"
+#include "VM_PF.h"
+#include "CC_PF.h"
+#include "DM04_PF.h"
+
+#include "ScalarEvolution.h"
+#include "Linear_Eeq.h"
+#include "CC_Ev.h"
+
+
+#include "TensorEvolution.h"
+#include "Linear_Eij.h"
+#include "AF_Eij.h"
+#include "DM04_alpha_Eij.h"
+#include "DM04_z_Eij.h"
+
+int n_mc = 0;
+int n_is = 0;
+int n_it = 0;
+
+MaterialParameter*  EvaluateMaterialParameter(ClientData, Tcl_Interp*, TCL_Char* tclString);
+ElasticState*       EvaluateElasticState(ClientData, Tcl_Interp*, TCL_Char* tclString);
+YieldFunction*      EvaluateYieldFunction(ClientData, Tcl_Interp*, TCL_Char* tclString);
+PlasticFlow*        EvaluatePlasticFlow(ClientData, Tcl_Interp*, TCL_Char* tclString);
+ScalarEvolution**   EvaluateSE(ClientData, Tcl_Interp*, TCL_Char* tclString);
+TensorEvolution**   EvaluateTE(ClientData, Tcl_Interp*, TCL_Char* tclString);
+
+
+static void cleanup(TCL_Char **argv) {
+    Tcl_Free((char *) argv);
+}
+
+
+//************************************************************************************************
+//************************************************************************************************
+NewTemplate3Dep*
+TclModelBuilder_addNewTemplate3Dep(ClientData clientData, Tcl_Interp *interp,  int argc,
+          TCL_Char **argv, TclModelBuilder *theTclBuilder, int eleArgStart)
+{
+  int tag = 0;
+  MaterialParameter*  MatP= NULL;
+  ElasticState*       ES = NULL;
+  YieldFunction*      YF = NULL;
+  PlasticFlow*        PF = NULL;
+  ScalarEvolution**   SSE = NULL;
+  TensorEvolution**   TTE = NULL;
+  int CI = 0;
+
+  int loc = eleArgStart;
+
+  if (Tcl_GetInt(interp, argv[loc++], &tag) != TCL_OK) {
+    opserr << "Warning:  NewTemplate3Dep - invalid tag " << argv[loc] << endln;
+    exit (1);
+  }
+
+  while (loc < argc) {
+    
+    if ( strcmp(argv[loc],"-MaterialParameter") == 0 ) {
+      MatP = EvaluateMaterialParameter(clientData, interp, argv[loc+1]);
+      if (MatP == NULL) {
+        opserr << "Warning:  TclNewTemplate3Dep - could not create elastic state from " << argv[loc+1] << endln;
+        exit (1);
+      }
+      loc += 2;
+    }
+    
+    else if ( strcmp(argv[loc],"-ElasticState") == 0 ) {
+      ES = EvaluateElasticState(clientData, interp, argv[loc+1]);
+      if (ES == NULL) {
+        opserr << "Warning:  TclNewTemplate3Dep - could not create elastic state from " << argv[loc+1] << endln;
+        exit (1);
+      }
+      loc += 2;
+    }
+
+    else if ( strcmp(argv[loc],"-YieldFunction") == 0 ) {
+      YF = EvaluateYieldFunction(clientData, interp, argv[loc+1]);
+      if (YF == NULL) {
+        opserr << "Warning:  TclNewTemplate3Dep - could not create a yield function from " << argv[loc+1] << endln;
+        exit (1);
+      }
+      loc += 2;
+    }
+
+    else if ( strcmp(argv[loc],"-PlasticFlow") == 0 ) {
+      PF = EvaluatePlasticFlow(clientData, interp, argv[loc+1]);
+      if (PF == NULL) {
+        opserr << "Warning:  TclNewTemplate3Dep - could not create a yield function from " << argv[loc+1] << endln;
+        exit (1);
+      }
+      loc += 2;
+    }
+
+    else if ( strcmp(argv[loc],"-ScalarEvolution") == 0 ) {
+      SSE = EvaluateSE(clientData, interp, argv[loc+1]);
+      if (SSE == NULL) {
+        opserr << "Warning:  TclNewTemplate3Dep - could not create a scalar evolution from " << argv[loc+1] << endln;
+        exit (1);
+      }
+      loc += 2;
+    }
+
+    else if ( strcmp(argv[loc],"-TensorEvolution") == 0 ) {
+      TTE = EvaluateTE(clientData, interp, argv[loc+1]);
+      if (TTE == NULL) {
+        opserr << "Warning:  TclNewTemplate3Dep - could not create a tensor evolution from " << argv[loc+1] << endln;
+        exit (1);
+      }
+      loc += 2;
+    }
+
+    else if ( strcmp(argv[loc],"-Algorithm") == 0 ) {
+      if (Tcl_GetInt(interp, argv[loc+1], &CI) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid  algorithm index " << argv[loc] << endln;
+        exit (1);
+      }
+      loc += 2;
+    }
+    
+    else {
+        opserr << "Warning:  TclNewTemplate3Dep - unknown keyword/command : " << argv[loc] << endln;
+        exit (1);
+      }
+
+  }
+
+  NewTemplate3Dep *theMaterial = 0;
+
+  if ( (MatP != NULL) && (ES != NULL) && (YF != NULL) && (PF != NULL) && (SSE != NULL) )
+    theMaterial = new NewTemplate3Dep(tag, MatP, ES, YF, PF, SSE, TTE, CI);
+  else if ( (MatP != NULL) && (ES != NULL) && (YF != NULL) && (PF != NULL) && (SSE == NULL) )
+    theMaterial = new NewTemplate3Dep(tag, MatP, ES, YF, PF, TTE, CI);
+  else
+    opserr << "Warning: invalid args used to create a NewTemplate3Dep material." << endln;
+
+  return theMaterial;
+}
+
+
+//**************************************************************************************
+// Function - to create an MaterialParameter  object
+MaterialParameter *EvaluateMaterialParameter(ClientData clientData, Tcl_Interp *interp, TCL_Char *tclString)
+{
+  int argc;
+  TCL_Char **argv;
+
+  // split the list
+  if (Tcl_SplitList(interp, tclString, &argc, &argv) != TCL_OK)
+    exit (1);
+
+  if (argc == 0)
+    exit (1);
+
+  int loc = 0;
+  double* mc = NULL;
+  double* is = NULL;
+  stresstensor* it = NULL;
+  MaterialParameter *inp = NULL;
+
+  while (loc < argc) {
+    
+    if ( strcmp(argv[loc],"MaterialConstant") == 0  ) {      
+
+      loc++;  
+      
+      if (Tcl_GetInt(interp, argv[loc], &n_mc) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[loc] << endln;
+        exit (1);
+      } 
+ 
+      //opserr << "n_mc = " << n_mc << endln;
+      
+      if (n_mc > 0)
+        mc = new double[n_mc];
+
+      if (mc == 0) {
+        opserr << "Warning:  TclNewTemplate3Dep - could not create material constants " << endln;
+        exit (1);
+      }
+
+      for (int i = 0; i < n_mc; i++) {
+        loc++;
+        if (Tcl_GetDouble(interp, argv[loc], &mc[i]) != TCL_OK) {
+          opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[loc] << endln;
+          exit (1);
+        }
+      }            
+    }
+    
+    else if ( strcmp(argv[loc],"InternalScalar") == 0 ) {
+ 
+      loc++;
+
+      if (Tcl_GetInt(interp, argv[loc], &n_is) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[loc] << endln;
+        exit (1);
+      } 
+      
+      //opserr << "n_is = " << n_is << endln;
+      
+      if (n_is > 0) {
+        is = new double[n_is];
+        if (is == 0) {
+          opserr << "Warning:  TclNewTemplate3Dep - could not create scalar variables " << endln;
+          exit (1);
+        }
+
+        for (int i = 0; i < n_is; i++) {
+          loc++;
+          if (Tcl_GetDouble(interp, argv[loc], &is[i]) != TCL_OK) {
+            opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[loc] << endln;
+            exit (1);
+          }
+        }
+      }
+    }
+    
+    else if ( strcmp(argv[loc],"InternalTensor") == 0 ) {
+
+      loc++;
+
+      if (Tcl_GetInt(interp, argv[loc], &n_it) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[loc] << endln;
+        exit (1);
+      } 
+
+      if (n_it > 0) {
+        it = new stresstensor[n_it];
+        double a[9];
+        if (it == 0) {
+          opserr << "Warning:  TclNewTemplate3Dep - could not create tensor variables " << endln;
+          exit (1);
+        }
+ 
+        //opserr << "n_it = " << n_it << endln;
+        
+        for (int i = 0; i < n_it; i++) {
+          for (int j = 0; j < 9; j++) {
+            loc++;
+            if (Tcl_GetDouble(interp, argv[loc], &a[j]) != TCL_OK) {
+              opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[loc] << endln;
+              exit (1);
+            }
+          }
+          it[i].val(1,1) = a[0]; it[i].val(1,2) = a[1]; it[i].val(1,3) = a[2];
+          it[i].val(2,1) = a[3]; it[i].val(2,2) = a[4]; it[i].val(2,3) = a[5];
+          it[i].val(3,1) = a[6]; it[i].val(3,2) = a[7]; it[i].val(3,3) = a[8];
+        }
+      }         
+    }
+
+    loc++;       
+  }
+
+  // now parse the list & construct the required object
+  if ( (mc != NULL) && (is != NULL) && (it != NULL) )
+    inp = new MaterialParameter(mc, n_mc, is, n_is, it, n_it);
+  else if ( (mc != NULL) && (is != NULL) && (it == NULL) )
+    inp = new MaterialParameter(mc, n_mc, is, n_is);
+  else if ( (mc != NULL) && (is == NULL) && (it != NULL) )
+    inp = new MaterialParameter(mc, n_mc, it, n_it);
+  else if ( (mc != NULL) && (is == NULL) && (it == NULL) )
+    inp = new MaterialParameter(mc, n_mc);
+  else {
+    opserr << "Warning:  TclNewTemplate3Dep - could not create input parameter " << endln;
+    exit (1);
+  }
+
+  cleanup(argv);
+  return inp;
+}
+
+
+//**************************************************************************************
+// Function - to create a Elastic State object
+ElasticState *EvaluateElasticState(ClientData clientData, Tcl_Interp *interp, TCL_Char *tclString)
+{
+  int argc;
+  TCL_Char **argv;
+
+  // split the list
+  if (Tcl_SplitList(interp, tclString, &argc, &argv) != TCL_OK) {
+    exit (1);
+  }
+
+  if (argc == 0)
+    exit (1);
+
+  // now parse the list & construct the required object
+  ElasticState *ElS = NULL;
+
+  // 1. Linear elastic model
+  if ( strcmp(argv[0],"Isotropic") == 0 ) {
+    int a1 = 0;
+    int a2 = 0;
+    stresstensor initStre;
+    straintensor initStra;
+
+    if (argc > 2 ) {
+      if (Tcl_GetInt(interp, argv[1], &a1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[1] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[2], &a2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2] << endln;
+        exit (1);
+      }
+    }
+    if (argc > (2 + 9) ) {
+      double a[9];
+        for (int j = 0; j < 9; j++) {
+          if (Tcl_GetDouble(interp, argv[4+1+j], &a[j]) != TCL_OK) {
+            opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2+1+j] << endln;
+            exit (1);
+          }
+        }
+        initStre.val(1,1) = a[0]; initStre.val(1,2) = a[1]; initStre.val(1,3) = a[2];
+        initStre.val(2,1) = a[3]; initStre.val(2,2) = a[4]; initStre.val(2,3) = a[5];
+        initStre.val(3,1) = a[6]; initStre.val(3,2) = a[7]; initStre.val(3,3) = a[8];
+    }
+    if (argc > (2 + 18) ) {
+      double a[9];
+        for (int j = 0; j < 9; j++) {
+          if (Tcl_GetDouble(interp, argv[2+10+j], &a[j]) != TCL_OK) {
+            opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2+10+j] << endln;
+            exit (1);
+          }
+        }
+        initStra.val(1,1) = a[0]; initStra.val(1,2) = a[1]; initStra.val(1,3) = a[2];
+        initStra.val(2,1) = a[3]; initStra.val(2,2) = a[4]; initStra.val(2,3) = a[5];
+        initStra.val(3,1) = a[6]; initStra.val(3,2) = a[7]; initStra.val(3,3) = a[8];
+    }
+
+    ElS = new Isotropic_Elastic(a1, a2, initStre, initStra);
+  }
+
+  // 2. elnp elastic model
+  else if ( strcmp(argv[0],"elnp") == 0  ||  strcmp(argv[0],"Cam-Clay") == 0 ) {
+    int a1 = 0;
+    int a2 = 0;
+    int a3 = 0;
+    int a4 = 0;
+    stresstensor initStre;
+    straintensor initStra;
+
+    if (argc > 4 ) {
+      if (Tcl_GetInt(interp, argv[1], &a1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[1] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[2], &a2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[3], &a3) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[3] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[4], &a4) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[4] << endln;
+        exit (1);
+      }          
+    }
+    if (argc > (4 + 9) ) {
+      double a[9];
+        for (int j = 0; j < 9; j++) {
+          if (Tcl_GetDouble(interp, argv[4+1+j], &a[j]) != TCL_OK) {
+            opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[4+1+j] << endln;
+            exit (1);
+          }
+        }
+        initStre.val(1,1) = a[0]; initStre.val(1,2) = a[1]; initStre.val(1,3) = a[2];
+        initStre.val(2,1) = a[3]; initStre.val(2,2) = a[4]; initStre.val(2,3) = a[5];
+        initStre.val(3,1) = a[6]; initStre.val(3,2) = a[7]; initStre.val(3,3) = a[8];
+    }
+    if (argc > (4 + 18) ) {
+      double a[9];
+        for (int j = 0; j < 9; j++) {
+          if (Tcl_GetDouble(interp, argv[4+10+j], &a[j]) != TCL_OK) {
+            opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[4+10+j] << endln;
+            exit (1);
+          }
+        }
+        initStra.val(1,1) = a[0]; initStra.val(1,2) = a[1]; initStra.val(1,3) = a[2];
+        initStra.val(2,1) = a[3]; initStra.val(2,2) = a[4]; initStra.val(2,3) = a[5];
+        initStra.val(3,1) = a[6]; initStra.val(3,2) = a[7]; initStra.val(3,3) = a[8];
+    }
+
+    ElS = new elnp_Elastic(a1, a2, a3, a4, initStre, initStra);
+  }
+
+  // 3. PressureDependent elastic model
+  else if (strcmp(argv[0],"PressureDependent") == 0) {
+    int a1 = 0;
+    int a2 = 0;
+    int a3 = 0;
+    int a4 = 0;
+    int a5 = 0;
+    stresstensor initStre;
+    straintensor initStra;
+
+    if (argc > 5 ) {
+      if (Tcl_GetInt(interp, argv[1], &a1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[1] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[2], &a2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[3], &a3) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[3] << endln;
+        exit (1);
+      }    
+      if (Tcl_GetInt(interp, argv[4], &a4) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[4] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[5], &a5) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[5] << endln;
+        exit (1);
+      } 
+    }
+    if (argc > (5 + 9) ) {
+      double a[9];
+        for (int j = 0; j < 9; j++) {
+          if (Tcl_GetDouble(interp, argv[5+1+j], &a[j]) != TCL_OK) {
+            opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[5+1+j] << endln;
+            exit (1);
+          }
+        }
+        initStre.val(1,1) = a[0]; initStre.val(1,2) = a[1]; initStre.val(1,3) = a[2];
+        initStre.val(2,1) = a[3]; initStre.val(2,2) = a[4]; initStre.val(2,3) = a[5];
+        initStre.val(3,1) = a[6]; initStre.val(3,2) = a[7]; initStre.val(3,3) = a[8];
+    }
+    if (argc > (5 + 18) ) {
+      double a[9];
+        for (int j = 0; j < 9; j++) {
+          if (Tcl_GetDouble(interp, argv[4+10+j], &a[j]) != TCL_OK) {
+            opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[5+10+j] << endln;
+            exit (1);
+          }
+        }
+        initStra.val(1,1) = a[0]; initStra.val(1,2) = a[1]; initStra.val(1,3) = a[2];
+        initStra.val(2,1) = a[3]; initStra.val(2,2) = a[4]; initStra.val(2,3) = a[5];
+        initStra.val(3,1) = a[6]; initStra.val(3,2) = a[7]; initStra.val(3,3) = a[8];
+    }
+
+    ElS = new PressureDependent_Elastic(a1, a2, a3, a4, a5, initStre, initStra);
+  }
+
+  // 4. DM04 elastic model
+  else if ( strcmp(argv[0],"Dafalias-Manzari") == 0 ) {
+    int a1 = 0;
+    int a2 = 0;
+    int a3 = 0;
+    int a4 = 0;
+    int a5 = 0;
+    stresstensor initStre;
+    straintensor initStra;
+
+    if (argc > 5 ) {
+      if (Tcl_GetInt(interp, argv[1], &a1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[1] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[2], &a2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[3], &a3) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[3] << endln;
+        exit (1);
+      }    
+      if (Tcl_GetInt(interp, argv[4], &a4) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[4] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[5], &a5) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[5] << endln;
+        exit (1);
+      }      
+    }
+    if (argc > (5 + 9) ) {
+      double a[9];
+        for (int j = 0; j < 9; j++) {
+          if (Tcl_GetDouble(interp, argv[5+1+j], &a[j]) != TCL_OK) {
+            opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[5+1+j] << endln;
+            exit (1);
+          }
+        }
+        initStre.val(1,1) = a[0]; initStre.val(1,2) = a[1]; initStre.val(1,3) = a[2];
+        initStre.val(2,1) = a[3]; initStre.val(2,2) = a[4]; initStre.val(2,3) = a[5];
+        initStre.val(3,1) = a[6]; initStre.val(3,2) = a[7]; initStre.val(3,3) = a[8];
+    }
+    if (argc > (5 + 18) ) {
+      double a[9];
+        for (int j = 0; j < 9; j++) {
+          if (Tcl_GetDouble(interp, argv[5+10+j], &a[j]) != TCL_OK) {
+            opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[5+10+j] << endln;
+            exit (1);
+          }
+        }
+        initStra.val(1,1) = a[0]; initStra.val(1,2) = a[1]; initStra.val(1,3) = a[2];
+        initStra.val(2,1) = a[3]; initStra.val(2,2) = a[4]; initStra.val(2,3) = a[5];
+        initStra.val(3,1) = a[6]; initStra.val(3,2) = a[7]; initStra.val(3,3) = a[8];
+    }
+
+    ElS = new DM04_Elastic(a1, a2, a3, a4, a5, initStre, initStra);
+  }
+
+  // if others
+  else {
+    opserr << "Warning: invalid elastic state object: " << argv[0] << endln;
+    exit(1);
+  }
+
+  cleanup(argv);
+  return ElS;
+}
+
+
+//**************************************************************************************
+// Function - to create a Yield Function
+YieldFunction *EvaluateYieldFunction(ClientData clientData, Tcl_Interp *interp, TCL_Char *tclString)
+{
+  int argc;
+  TCL_Char **argv;
+
+  // split the list
+  if (Tcl_SplitList(interp, tclString, &argc, &argv) != TCL_OK) {
+    exit (1);
+  }
+
+  if (argc == 0)
+    exit (1);
+
+  // now parse the list & construct the required object
+  YieldFunction *YF = NULL;
+
+  // 1. von Mises Yield Function
+  if ((strcmp(argv[0],"Von-Mises") == 0) || (strcmp(argv[0],"von-Mises") == 0)) {
+    int a1 = -1;  int b1 = 0;
+    int a2 = -1;  int b2 = 0;
+
+    if (argc <= 2)  {
+        opserr << "Warning:  TclNewTemplate3Dep - Yield Function (VM) - input parameters < 2" << endln;
+        exit (1);
+    }
+
+    if (argc > 2 ) {
+      if (Tcl_GetInt(interp, argv[1], &a1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[1] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[2], &b1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2] << endln;
+        exit (1);
+      }
+    }
+    if (argc > 4 ) {
+      if (Tcl_GetInt(interp, argv[3], &a2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[3] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[4], &b2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[4] << endln;
+        exit (1);
+      }
+    }
+  
+    YF = new VM_YF(a1,b1, a2,b2);
+  }
+
+  // 2. Drucker-Prager Yield Function
+  else if ( (strcmp(argv[0],"Drucker-Prager") == 0) ) {
+    int a1 = -1;  int b1 = 0;
+    int a2 = -1;  int b2 = 0;
+    int a3 = -1;  int b3 = 0;
+
+    if (argc <= 2)  {
+        opserr << "Warning:  TclNewTemplate3Dep - Yield Function (DP) - input parameters < 2" << endln;
+        exit (1);
+    }
+
+    if (argc > 2 ) {
+      if (Tcl_GetInt(interp, argv[1], &a1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[1] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[2], &b1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2] << endln;
+        exit (1);
+      }
+    }
+    if (argc > 4 ) {
+      if (Tcl_GetInt(interp, argv[3], &a2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[3] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[4], &b2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[4] << endln;
+        exit (1);
+      }
+    }   
+    if (argc > 6 ) {
+      if (Tcl_GetInt(interp, argv[5], &a3) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[5] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[6], &b3) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[6] << endln;
+        exit (1);
+      }
+    }
+
+    YF = new DP_YF(a1,b1, a2,b2, a3, b3);
+  }
+
+  // 3. Cam-Clay Yield Function
+  else if ( (strcmp(argv[0],"Cam-Clay") == 0) ) {
+    int a1 = -1;  int b1 = 0;
+    int a2 = -1;  int b2 = 0;
+
+    if (argc <= 4)  {
+        opserr << "Warning:  TclNewTemplate3Dep - Yield Function (CC) - input parameters < 4" << endln;
+        exit (1);
+    }
+
+    if (argc > 4 ) {
+      if (Tcl_GetInt(interp, argv[1], &a1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[1] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[2], &b1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[3], &a2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[3] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[4], &b2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[4] << endln;
+        exit (1);
+      }
+    }  
+
+    YF = new CC_YF(a1,b1, a2,b2);
+  }
+
+  // 4. Dafalias-Manzari Yield Function
+  else if ( strcmp(argv[0],"Dafalias-Manzari") == 0 ) {
+    int a1 = -1;  int b1 = 0;
+    int a2 = -1;  int b2 = 0;
+
+    if (argc <= 2)  {
+        opserr << "Warning:  TclNewTemplate3Dep - Yield Function (DM) - input parameters < 2" << endln;
+        exit (1);
+    }
+
+    if (argc > 2 ) {
+      if (Tcl_GetInt(interp, argv[1], &a1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[1] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[2], &b1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[3], &a2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[3] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[4], &b2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[4] << endln;
+        exit (1);
+      }
+    }   
+
+    YF = new DM04_YF(a1,b1, a2,b2);
+  }                                            
+
+  // if others
+  else {
+    opserr << "Warning: invalid yield function: " << argv[0] << endln;
+    exit (1);
+  }
+
+  cleanup(argv);
+  return YF;
+}
+
+
+//**************************************************************************************
+// Function - to create a Plastic Flow object
+PlasticFlow *EvaluatePlasticFlow(ClientData clientData, Tcl_Interp *interp, TCL_Char *tclString)
+{
+  int argc;
+  TCL_Char **argv;
+
+  // split the list
+  if (Tcl_SplitList(interp, tclString, &argc, &argv) != TCL_OK) {
+    exit (1);
+  }
+
+  if (argc == 0)
+    exit (1);
+
+  // now parse the list & construct the required object
+  PlasticFlow *PF = NULL;
+
+  // 1. von Mises Plastic Flow
+  if ((strcmp(argv[0],"Von-Mises") == 0) || (strcmp(argv[0],"von-Mises") == 0)) {
+    int a1 = -1;  int b1 = 0;
+
+    //if (argc <= 2)  {
+    //    opserr << "Warning:  TclNewTemplate3Dep - Plastic Flow (VM) - input parameters < 2" << endln;
+    //    exit (1);
+    //}
+
+    if (argc > 2 ) {
+      if (Tcl_GetInt(interp, argv[1], &a1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[1] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[2], &b1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2] << endln;
+        exit (1);
+      }
+    } 
+
+    PF = new VM_PF(a1,b1);
+  }
+
+  // 2. Drucker-Parger Plastic Flow
+  else if ( (strcmp(argv[0],"Drucker-Prager") == 0) ) {
+    int a1 = -1;  int b1 = 0;
+    int a2 = -1;  int b2 = 0;
+
+    if (argc <= 2)  {
+        opserr << "Warning:  TclNewTemplate3Dep - Plastic Flow (DP) - input parameters < 2" << endln;
+        exit (1);
+    }
+
+    if (argc > 2 ) {
+      if (Tcl_GetInt(interp, argv[1], &a1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[1] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[2], &b1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2] << endln;
+        exit (1);
+      }
+    }
+    if (argc > 4 ) {
+      if (Tcl_GetInt(interp, argv[3], &a2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[3] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[4], &b2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[4] << endln;
+        exit (1);
+      }
+    }   
+    
+    PF = new DP_PF(a1,b1, a2,b2);
+  }
+
+  // 3. Cam-Clay Plastic Flow
+  else if ( (strcmp(argv[0],"Cam-Clay") == 0) ) {
+    int a1 = -1;  int b1 = 0;
+    int a2 = -1;  int b2 = 0;
+
+    if (argc <= 4)  {
+        opserr << "Warning:  TclNewTemplate3Dep - Plastic Flow (CC) - input parameters < 4" << endln;
+        exit (1);
+    }
+
+    if (argc > 2 ) {
+      if (Tcl_GetInt(interp, argv[1], &a1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[1] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[2], &b1) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[2] << endln;
+        exit (1);
+      }
+    }
+    if (argc > 4 ) {
+      if (Tcl_GetInt(interp, argv[3], &a2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[3] << endln;
+        exit (1);
+      }
+      if (Tcl_GetInt(interp, argv[4], &b2) != TCL_OK) {
+        opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[4] << endln;
+        exit (1);
+      }
+    }   
+
+    PF = new CC_PF(a1,b1, a2,b2);
+  }
+
+  // 4. Dafalias--Manzari Plastic Flow
+  else if ( strcmp(argv[0],"Dafalias-Manzari") == 0 ) {
+    int a[12] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};  
+    int b[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
+
+    if (argc <= 22)  {
+        opserr << "Warning:  TclNewTemplate3Dep - Plastic Flow (DM) - input parameters < 22" << endln;
+        exit (1);
+    }
+
+    if (argc > 24 ) {
+      for (int i = 0; i < 12; i++) {
+        if (Tcl_GetInt(interp, argv[i*2+1], &a[i]) != TCL_OK) {
+          opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[i*2+1] << endln;
+          exit (1);
+        }
+        if (Tcl_GetInt(interp, argv[i*2+2], &b[i]) != TCL_OK) {
+          opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[i*2+2] << endln;
+          exit (1);
+        }
+      }
+    }  
+
+    PF = new DM04_PF( a[0],b[0], a[1],b[1], a[2],b[2], a[3],b[3], a[4],b[4], a[5],b[5], a[6],b[6], 
+                      a[7],b[7], a[8],b[8], a[9],b[9], a[10],b[10], a[11],b[11]);
+  }
+
+  // if others
+  else {
+    opserr << "Warning: invalid plastic flow: " << argv[0] << endln;
+    exit (1);
+  }
+
+  cleanup(argv);
+  return PF;
+}
+
+
+// Function - to create scalar evolution array
+ScalarEvolution** EvaluateSE(ClientData clientData, Tcl_Interp *interp, TCL_Char *tclString)
+{
+  int argc;
+  TCL_Char **argv;
+
+  // split the list
+  if (Tcl_SplitList(interp, tclString, &argc, &argv) != TCL_OK) {
+    exit (1);
+  }
+
+  int loc = 0;
+  ScalarEvolution** ISS = NULL;
+
+  if (n_is > 0) {
+    ISS = new ScalarEvolution* [n_is];
+    if ( ISS == NULL) {
+      opserr << "Warning:  TclNewTemplate3Dep - invalid input " << endln;
+      exit (1);
+    }
+  }
+  else
+    return NULL;
+
+     for(int i = 0; i < n_is; i++) {
+
+       // Linear
+       if ( strcmp(argv[loc],"Linear") == 0 ) {
+         int a1 = 0;          
+         loc++; 
+         if (Tcl_GetInt(interp, argv[loc], &a1) != TCL_OK) {
+           opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[loc] << endln;
+           exit (1);
+         }
+         ISS[i] = new Linear_Eeq(a1);
+         loc++;
+       }
+
+       // CC
+       else if ( strcmp(argv[0],"Cam-Clay") == 0 ) {
+         int a[4] = {0,0,0,0};
+         for (int j = 0; j < 4; j++) {
+           loc++;
+           if (Tcl_GetInt(interp, argv[loc], &a[j]) != TCL_OK) {
+             opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[loc] << endln;
+             exit (1);
+           }
+         }   
+         ISS[i] = new CC_Ev(a[0], a[1], a[2], a[3]);
+         loc++;
+       }
+
+       // other
+       else {
+         opserr << "Warning:  TclNewTemplate3Dep - unknown scalar evolution: " << argv[loc] << endln;
+         exit (1);       
+       }
+           
+     }
+
+  cleanup(argv);
+  return ISS;
+}
+
+// Function - to create tensor evolution array
+TensorEvolution** EvaluateTE(ClientData clientData, Tcl_Interp *interp, TCL_Char *tclString)
+{
+  int argc;
+  TCL_Char **argv;
+
+  // split the list
+  if (Tcl_SplitList(interp, tclString, &argc, &argv) != TCL_OK) {
+    exit (1);
+  }
+
+  int loc = 0;
+  TensorEvolution** ITT = NULL;
+
+  if (n_it > 0) {
+    ITT = new TensorEvolution* [n_is];
+    if ( ITT == NULL) {
+      opserr << "Warning:  TclNewTemplate3Dep - invalid input " << endln;
+      exit (1);
+    }
+  }
+  else
+    return NULL;
+
+     for(int i = 0; i < n_it; i++) {
+
+       // Linear
+       if ( strcmp(argv[loc],"Linear") == 0 ) {
+         int a1 = 0;          
+         loc++; 
+         if (Tcl_GetInt(interp, argv[loc], &a1) != TCL_OK) {
+           opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[loc] << endln;
+           exit (1);
+         }
+         ITT[i] = new Linear_Eij(a1);
+         loc++;
+       }
+
+       // AF
+       else if ( strcmp(argv[0],"Armstrong-Frederick") == 0 ) {
+         int a[3] = {0,0,0};
+         for (int j = 0; j < 3; j++) {
+           loc++;
+           if (Tcl_GetInt(interp, argv[loc], &a[j]) != TCL_OK) {
+             opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[loc] << endln;
+             exit (1);
+           }
+         }  
+         ITT[i] = new AF_Eij(a[0], a[1], a[2]);
+         loc++;
+       }
+
+       // DM04-alpha
+       else if ( strcmp(argv[loc],"Dafalias-Manzari") == 0 ) {
+         int a[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+         for (int j = 0; j < 14; j++) {
+           loc++;
+           if (Tcl_GetInt(interp, argv[loc], &a[j]) != TCL_OK) {
+             opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[loc] << endln;
+             exit (1);
+           }
+         }   
+         ITT[i] = new DM04_alpha_Eij(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]);
+         loc++;
+       }
+
+       // DM04-z
+       else if ( strcmp(argv[loc],"Dafalias-Manzari-fabric") == 0 ) {
+         int a[5] = {0,0,0,0,0};
+         for (int j = 0; j < 5; j++) {
+           loc++;
+           if (Tcl_GetInt(interp, argv[loc], &a[j]) != TCL_OK) {
+             opserr << "Warning:  TclNewTemplate3Dep - invalid input " << argv[loc] << endln;
+             exit (1);
+           }
+         }   
+         ITT[i] = new DM04_z_Eij(a[0], a[1], a[2], a[3], a[4]);
+         loc++;
+       }
+
+       // other
+       else {
+         opserr << "Warning:  TclNewTemplate3Dep - unknown tensor evolution: " << argv[loc] << endln;
+         exit (1);              
+       }
+    
+     }
+
+  cleanup(argv);
+  return ITT;
+}
+
+
+
+
+
+MaterialParameter *
+getMaterialParameter(int classTag)
+{
+  switch(classTag) {
+
+  case MATERIAL_PARAMATER_TAGS_MaterialParameter:
+    return new MaterialParameter();
+    
+  default:
+    opserr << "TclNewTemplate3Dep::getMaterialParameter - unknown type: " << classTag << endln;
+    return 0;
+  }
+  return 0;
+}
+
+ElasticState      *
+getElasticState(int classTag)
+{
+  switch(classTag) {
+
+  case ELASTICSTATE_TAGS_Isotropic_Elastic:
+    return new Isotropic_Elastic();
+
+  case ELASTICSTATE_TAGS_elnp_Elastic:
+    return new elnp_Elastic();    
+
+  case ELASTICSTATE_TAGS_PressureDependent_Elastic:
+    return new PressureDependent_Elastic();
+
+  case ELASTICSTATE_TAGS_DM04_Elastic:
+    return new DM04_Elastic();
+
+  default:
+    opserr << "TclNewTemplate3Dep::getElasticState - unknown type: " << classTag << endln;
+    return 0;
+  }
+
+  return 0;
+}
+
+YieldFunction     *
+getYieldFunction(int classTag)
+{
+  switch(classTag) {
+
+  case YIELDFUNCTION_TAGS_VM_YF:
+    return new VM_YF();
+
+    /*
+  case YIELDFUNCTION_TAGS_RMC_YF:
+    return new RMC_YF();
+    */
+
+  case YIELDFUNCTION_TAGS_DP_YF:
+    return new DP_YF();
+
+  case YIELDFUNCTION_TAGS_CC_YF:
+    return new CC_YF();
+
+  case YIELDFUNCTION_TAGS_DM04_YF:
+    return new DM04_YF();
+
+  default:
+    opserr << "TclNewTemplate3Dep::getYieldFunction - unknown type: " << classTag << endln;
+    return 0;
+  }
+
+
+  return 0;
+}
+
+PlasticFlow       *
+getPlasticFlow(int classTag)
+{
+  switch(classTag) {
+
+  case PLASTICFLOW_TAGS_VM_PF:
+    return new VM_PF();
+
+    /*
+  case PLASTICFLOW_TAGS_RMC_PF:
+    return new RMC_PF();
+    */
+
+  case PLASTICFLOW_TAGS_DP_PF:
+    return new DP_PF();
+
+  case PLASTICFLOW_TAGS_CC_PF:
+    return new CC_PF();
+
+  case PLASTICFLOW_TAGS_DM04_PF:
+    return new DM04_PF();
+
+  default:
+    opserr << "TclNewTemplate3Dep::getPlasticFlow - unknown type: " << classTag << endln;
+    return 0;
+  }
+
+
+  return 0;
+}
+
+ScalarEvolution   *
+getScalarEvolution(int classTag)
+{
+  switch(classTag) {
+
+  case SCALAR_EVOLUTION_TAGS_Linear_Eeq:
+    return new Linear_Eeq();
+
+  case SCALAR_EVOLUTION_TAGS_CC_Ev:
+    return new CC_Ev();
+
+  default:
+    opserr << "TclNewTemplate3Dep::getScalarEvolution - unknown type: " << classTag << endln;
+    return 0;
+  }
+
+  return 0;
+}
+
+TensorEvolution   *
+getTensorEvolution(int classTag)
+{
+  switch(classTag) {
+
+  case TENSOR_EVOLUTION_TAGS_Linear_Eij:
+    return new Linear_Eij();
+
+  case TENSOR_EVOLUTION_TAGS_AF_Eij:
+    return new AF_Eij();
+
+  case TENSOR_EVOLUTION_TAGS_DM04_alpha_Eij:
+    return new DM04_alpha_Eij();
+
+  case TENSOR_EVOLUTION_TAGS_DM04_z_Eij:
+    return new DM04_z_Eij();
+
+  default:
+    opserr << "TclNewTemplate3Dep::getTensorEvolution - unknown type: " << classTag << endln;
+    return 0;
+  }
+
+  return 0;
+}

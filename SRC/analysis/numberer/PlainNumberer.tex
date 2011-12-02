@@ -1,0 +1,76 @@
+%File: ~/OOP/analysis/numberer/PlainNumberer.tex
+%What: "@(#) PlainNumberer.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/numberer/PlainNumberer.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class PlainNumberer: public DOF\_Numberer  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent DOF\_Numberer \\
+\indent\indent\indent {\bf PlainNumberer} \\
+
+\noindent {\bf Description} \\ 
+\indent The PlainNumberer class is a DOF\_Numberer. An object of this
+class assigns the equation numbers to thee DOF\_Groups based on the
+order in which they are obtained from the DOF\_GroupIter object
+obtained from the AnalyisModel. The class is useful for situations
+where the SystemOfEqn or Solver objects will impose a renumbering on
+the equations, which makes performing a complex numbering of the
+degrees-of-freedom a waste of computational effort. \\
+
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em PlainNumberer();}\\ \\
+\indent // Destructor \\
+\indent {\em virtual~ $\tilde{}$PlainNumberer();}\\  \\
+\indent // Public Methods \\
+\indent {\em virtual int numberDOF(int lastDOF\_Group = -1);} \\
+\indent {\em virtual int numberDOF(ID \&lastDOF\_Groups);} \\
+\indent {\em virtual int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent {\em virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ \\
+
+
+\noindent {\bf Constructor} \\
+\indent {\em PlainNumberer();}\\ 
+The integer {\em NUMBERER\_TAG\_PlainNumberer} is passed to the
+DOF\_Numberer classes constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em $\tilde{ }$PlainNumberer();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }\\
+\indent {\em virtual int numberDOF(int lastDOF\_Group = -1);} \\
+The PlainNumberer will twice obtain the DOF\_GroupIter from the
+AnalysisModel. It iterates twice through the DOF\_Groups first
+assigning the dofs with eqn numbers assigned -2 a number and 
+then on the next pass the dofs assigned -3. The PlainNumberer then
+invokes {\em setID()} on each FE\_Element in the
+AnalysisModel. Finally it invokes {\em setEqnNum(numEqn)} on the
+AnalyisModel. Returns a positive integer equal to the last equation
+number set if successful, a negative number if not; the value of 
+which depends on the type of the PlainNumberer. A PlainNumberer will
+not use the {\em lastDOF\_Group} integer, if one is supplied a warning
+message is printed. \\ 
+
+\indent {\em virtual int numberDOF(ID \&lastDOF\_Groups);} \\
+The method is identical to that outlined above. A PlainNumberer will
+not use the {\em lastDOF\_Groups} ID, if this method is invoked a warning
+message is printed. \\ 
+
+
+\indent {\em virtual int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+Returns $0$. \\
+
+\indent {\em virtual int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker \&theBroker);}\\
+Returns $0$.
+
+
+
+
+

@@ -1,0 +1,72 @@
+///*
+//################################################################################
+//# COPYRIGHT (C):     :-))                                                      #
+//# PROJECT:           OpenSees                                                  #
+//# PURPOSE:           XX yield criterion                                        #
+//# CLASS:             XXYieldSurface                                            #
+//#                                                                              #
+//# VERSION:                                                                     #
+//# LANGUAGE:                                                                    #
+//# TARGET OS:                                                                   #
+// DESIGNER(S):       Boris Jeremic and Zhaohui Yang [jeremic,zhyang]@ucdavis.edu|
+// PROGRAMMER(S):     You                                                        |
+//#                                                                              #
+//#                                                                              #
+//# DATE:                                                                        #
+//# UPDATE HISTORY:                                                              #
+//#                                                                              #
+//#                                                                              #
+//#                                                                              #
+//#                                                                              #
+//# SHORT EXPLANATION:                                                           #
+//#                                                                              #
+//#                                                                              #
+//#                                                                              #
+//#                                                                              #
+//#                                                                              #
+//#                                                                              #
+//################################################################################
+//*/
+
+#ifndef XX_YS_H
+#define XX_YS_H
+
+#include <stresst.h>
+#include <BJtensor.h>
+#include "EPState.h"
+#include "YS.h"
+
+
+class XXYieldSurface : public YieldSurface
+{
+  // Private vars to define the XX Yield Surface
+  private:
+    
+  
+  public:
+    YieldSurface *newObj();  //create a clone of itself
+    
+    XXYieldSurface ( ) {}    // Default constructor
+    ~XXYieldSurface ( );     // Destructor
+
+    double f(const EPState *EPS) const;
+    tensor dFods(const EPState *EPS) const;
+
+    // Redefine 1st derivative of F over scalar internal variables
+    double xi_s1( const EPState *EPS ) const;
+
+    // Redefine 1st derivative of F over tensorial internal variables
+    tensor xi_t1(const EPState *EPS) const;
+
+    void print() { cout << *this; }; 
+  
+    //================================================================================
+    // Overloaded Insertion Operator
+    // prints an XX YieldSurface's contents 
+    //================================================================================
+    friend ostream& operator<< (ostream& os, const XXYieldSurface & YS);
+
+};
+
+#endif
+

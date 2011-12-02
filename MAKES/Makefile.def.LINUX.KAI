@@ -1,0 +1,220 @@
+############################################################################
+#
+#  Program:  OpenSees
+#
+#  Purpose:  A Top-level Makefile to create the libraries needed
+#	     to use the OpenSees framework. Works for Linux 7.1 and 
+#            above, modified to use the OpenGl libraries.
+#
+#  Written: fmk 
+#  Created: 10/99
+#
+#  Send bug reports, comments or suggestions to fmckenna@ce.berkeley.edu
+#
+############################################################################
+
+# %---------------------------------%
+# |  SECTION 1: PROGRAM             |
+# %---------------------------------%
+#
+# Specify the location and name of the OpenSees interpreter program
+# that will be created (if this all works!)
+
+OpenSees_PROGRAM = $(HOME)/bin/OpenSees
+
+# %---------------------------------%
+# |  SECTION 2: PATHS               |
+# %---------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries or if you have
+# any of the libraries already leave the directory location blank AND
+# remove the directory from DIRS.
+
+BASE		= /usr/local
+HOME		= /home/fmk
+FE		= $(HOME)/OpenSees/SRC
+
+BLASdir      = $(HOME)/OpenSees/OTHER/BLAS
+CBLASdir     = $(HOME)/OpenSees/OTHER/CBLAS
+LAPACKdir    = $(HOME)/OpenSees/OTHER/LAPACK
+SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_3.0/SRC
+ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
+UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
+METISdir       = $(HOME)/OpenSees/OTHER/METIS
+SRCdir       = $(HOME)/OpenSees/SRC
+
+
+DIRS        = $(BLASdir) $(CBLASdir) $(LAPACKdir) \
+	$(SUPERLUdir) $(ARPACKdir) $(UMFPACKdir) $(SRCdir) $(METISdir)
+
+# %-------------------------------------------------------%
+# | SECTION 3: LIBRARIES                                  |
+# |                                                       |
+# | The following section defines the libraries that will |
+# | be created and/or linked with when the libraries are  | 
+# | being created or linked with.                         |
+# %-------------------------------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries leave the
+# libraries blank. You have to get your own copy of the tcl/tk 
+# library!! 
+#
+# Note: For libraries that will be created (any in DIRS above)
+# make sure the directory exsists where you want the library to go!
+
+FE_LIBRARY      = $(HOME)/lib/libOpenSees.a
+NDARRAY_LIBRARY = $(HOME)/lib/libndarray.a # BJ_UCD jeremic@ucdavis.edu
+MATMOD_LIBRARY  = $(HOME)/lib/libmatmod.a  # BJ_UCD jeremic@ucdavis.edu
+BJMISC_LIBRARY  = $(HOME)/lib/libBJmisc.a  # BJ_UCD jeremic@ucdavis.edu
+LAPACK_LIBRARY  = $(HOME)/lib/libLapack.a
+BLAS_LIBRARY    = $(HOME)/lib/libBlas.a
+SUPERLU_LIBRARY = $(HOME)/lib/libSuperLU.a
+CBLAS_LIBRARY   = $(HOME)/lib/libCBlas.a
+ARPACK_LIBRARY  = $(HOME)/lib/libArpack.a
+UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
+METIS_LIBRARY   = $(HOME)/lib/libMetis.a
+TCL_LIBRARY = /usr/lib/libtk8.3.so /usr/lib/libtcl8.3.so
+GRAPHIC_LIBRARY = /usr/lib/libGL.a /usr/X11R6/lib/libX11.a /usr/X11R6/lib/libXext.a \
+	/usr/lib/libGLU.a
+BLITZ_LIBRARY = $(HOME)/blitz/lib/libblitz.a
+
+# WATCH OUT .. These libraries are removed when 'make wipe' is invoked.
+WIPE_LIBS	= $(FE_LIBRARY) \
+		$(LAPACK_LIBRARY) \
+		$(BLAS_LIBRARY) \
+		$(CBLAS_LIBRARY) \
+		$(SUPERLU_LIBRARY) \
+		$(ARPACK_LIBRARY) \
+		$(UMFPACK_LIBRARY) \
+	        $(METIS_LIBRARY)
+
+# %---------------------------------------------------------%
+# | SECTION 4: COMPILERS                                    |
+# |                                                         |
+# | The following macros specify compilers, linker/loaders, |
+# | the archiver, and their options.  You need to make sure |
+# | these are correct for your system.                      |
+# %---------------------------------------------------------%
+
+# Compilers
+CC++	= /usr/local/KAI/KCC_BASE/bin/KCC
+CC      = /usr/local/KAI/KCC_BASE/bin/KCC
+FC	= /usr/bin/g77
+
+AR		= ar 
+ARFLAGS		= cqls
+RANLIB		= ranlib
+RANLIBFLAGS     =
+
+GRAPHICS = UsingOpenGL
+
+
+# Compiler Flags
+#
+# NOTES:
+#    C++ FLAGS TAKE need _UNIX or _WIN32 for preprocessor dircetives
+#         - the _WIN32 for the Windows95/98 or NT operating system.
+#    C FLAGS used -DUSE_VENDOR_BLAS (needed in SuperLU) if UNIX in C++ FLAGS
+#
+
+#C++FLAGS        =  -D_KAI -D_UNIX -D_LINUX -D_GLX +K3 -O3 --display_error_number --strict_warnings
+C++FLAGS        =  -D_KAI -D_UNIX -D_LINUX -D_GLX +K3 -O3 --display_error_number --backend -ffloat-store
+CFLAGS          =  -D_KAI -D_UNIX -D_LINUX -D_GLX +K3 -O3 --c
+FFLAGS          =  -Wall -O
+
+# Linker
+LINKER          = $(CC++)
+LINKFLAGS       = 
+
+# Misc
+MAKE		= make
+CD              = cd
+ECHO            = echo
+RM              = rm
+RMFLAGS         = -f
+SHELL           = /bin/sh
+
+# %---------------------------------------------------------%
+# | SECTION 5: COMPILATION                                  |
+# |                                                         |
+# | The following macros specify the macros used in         |
+# | to compile the source code into object code.            |
+# %---------------------------------------------------------%
+
+.SUFFIXES:
+.SUFFIXES:	.C .c .f .f90 .cpp .o .cpp
+
+#
+# %------------------%
+# | Default command. |
+# %------------------%
+#
+.DEFAULT:
+	@$(ECHO) "Unknown target $@, try:  make help"
+#
+# %-------------------------------------------%
+# |  Command to build .o files from .f files. |
+# %-------------------------------------------%
+#
+
+.cpp.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $< -o $@
+
+.C.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $< -o $@
+.c.o:
+	@$(ECHO) Making $@ from $<
+	$(CC) $(CFLAGS) -c $< -o $@
+.f.o:      
+	@$(ECHO) Making $@ from $<
+	$(FC) $(FFLAGS) -c $< -o $@
+
+# %---------------------------------------------------------%
+# | SECTION 6: OTHER LIBRARIES                              |
+# |                                                         |
+# | The following macros specify other libraries that must  |
+# | be linked with when creating executables. These are     |
+# | platform specific and typically order does matter!!     |
+# %---------------------------------------------------------%
+MACHINE_LINKLIBS  = -L$(BASE)/lib \
+		-L$(HOME)/lib 
+
+MACHINE_NUMERICAL_LIBS  = -lm \
+		$(ARPACK_LIBRARY) \
+		$(SUPERLU_LIBRARY) \
+		$(UMFPACK_LIBRARY) \
+	        -llapack -lblas $(CBLAS_LIBRARY) \
+		$(GRAPHIC_LIBRARY) -lg2c -ldl
+
+MACHINE_SPECIFIC_LIBS = 
+
+
+# %---------------------------------------------------------%
+# | SECTION 7: INCLUDE FILES                                |
+# |                                                         |
+# | The following macros specify include files needed for   |
+# | compilation.                                            |
+# %---------------------------------------------------------%
+			
+MACHINE_INCLUDES        = -I/usr/local/KAI/KCC_BASE/include \
+			  -I/usr/include \
+			  -I$(BASE)/include \
+			  -I/usr/include/cxx \
+			  -I$(HOME)/include -I$(HOME)/blitz
+
+# this file contains all the OpenSees/SRC includes
+include $(FE)/Makefile.incl
+
+TCL_INCLUDES = 
+
+INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES)
+
+
+
+
+
+
+
+

@@ -1,0 +1,8 @@
+#Joey Yang UC Davis
+#04/10/2002
+#Script to run triaxial simulation and then start visualizing tool Joey3Dtcl
+#!/bin/tcsh
+#
+OpenSees TriSimu_Sand.tcl
+Joey3Dtcl
+
