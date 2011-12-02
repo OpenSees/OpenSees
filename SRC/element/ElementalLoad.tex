@@ -1,0 +1,54 @@
+%File: ~/OOP/element/ElementalLoad.tex
+%What: "@(#) ElementalLoad.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/element/ElementalLoad.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ElementalLoad: public Load \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent DomainComponent \\
+\indent\indent\indent Load \\
+\indent\indent\indent\indent {\bf ElementalLoad} \\
+
+\noindent {\bf Description}  \\
+\indent ElementalLoad is an abstract class, i.e. no instances of
+ElementalLoad will exist. The ElementalLoad class provides the
+interface that all ElementalLoad writers must provide when
+introducing new ElementalLoad classes. \\ 
+
+\noindent {\bf Class Interface} \\
+\indent\indent // Constructors \\
+\indent\indent {\em ElementalLoad(int elementTag, int tag, int classTag);}  \\ 
+\indent\indent {\em ElementalLoad(int classTag);}  \\ \\
+\indent\indent // Destructor \\
+\indent\indent {\em virtual~ $\tilde{}$ElementalLoad();}\\ \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em virtual int getElementTag(void) const;} \\
+
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em ElementalLoad(int elementTag, int tag, int classTag);}  \\
+Provided to allow subclasses to construct an ElementalLoad object
+associated with the Element whose unique identifier in the Domain will
+be {\em elementTag}. The integers {\em tag} and and {\em classTags}
+are passed to the Load constructor. \\ 
+
+\indent {\em ElementalLoad(int classTag);}  \\
+Provided so that a FEM\_ObjectBroker can construct an object. $0$ and
+{\em classTag} are passed to the Load classes constructor. The data
+for the object is filled in when {\em recvSelf()} is invoked on the
+object.\\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$ElementalLoad();}\\ 
+Does nothing. Provided so that the ElementalLoad subclasses destructor
+will be called. \\
+
+\noindent {\bf Public Methods }  \\
+\indent\indent {\em virtual int getElementTag(void) const;} \\
+Returns the integer {\em elementTag} passed in the constructor. 

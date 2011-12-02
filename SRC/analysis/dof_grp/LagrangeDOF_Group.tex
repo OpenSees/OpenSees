@@ -1,0 +1,90 @@
+% File: ~/OOP/analysis/dof_grp/LagrangeDOF_Group.tex 
+%What: "@(#) DOF_Group.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/dof\_grp/LagrangeDOF\_Group.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class LagrangeDOF\_Group: public DOF\_Group;  \\
+
+
+\noindent {\bf Class Hierarchy}  \\
+\indent DOF\_Group \\
+\indent\indent {\bf LagrangeDOF\_Group} \\ 
+
+\noindent {\bf Description}  \\
+\indent LagrangeDOF\_Group is a subclass of DOF\_Group. It is used to
+introduce the lagrange multipliers associated with single and
+multi-point constraints into the system of equation.
+
+\noindent {\bf Class Interface}  \\
+\indent // Constructors  \\
+\indent {\em LagrangeDOF\_Group(int tag, SP\_Constraint \&spPtr);}  \\
+\indent {\em LagrangeDOF\_Group(int tag, MP\_Constraint \&mpPtr);}  \\ \\
+\indent // Destructor  \\
+\indent {\em virtual~ $\tilde{}$LagrangeDOF\_Group();}  \\\\
+\indent // Public Methods - Tangent \& Residual  \\ 
+\indent {\em virtual const Matrix \&getTangent(Integrator *theIntegrator)} \\
+\indent {\em virtual const Vector \&getUnbalance(Integrator *theIntegrator); }\\
+\indent // Public Methods - update trial response quantities  \\ 
+\indent {\em virtual int setNodeDisp(const Vector \&u);} \\
+\indent {\em virtual int setNodeVel(const Vector \&$\dot u$);}\\
+\indent {\em virtual int setNodeAccel(const Vector \&$\ddot u$);}\\
+\indent {\em virtual int incrNodeDisp(const Vector \&u);} \\
+\indent {\em virtual int incrNodeVel(const Vector \&$\dot u$);}\\
+\indent {\em virtual int incrNodeAccel(const Vector \&$\ddot u$);}\\
+
+\noindent {\bf Constructors}  \\
+\indent {\em LagrangeDOF\_Group(int tag, SP\_Constraint \&spPtr);}  \\
+Invokes the DOF\_Group constructor with {\em tag) and the integer $1$. \\
+
+\indent {\em LagrangeDOF\_Group(int tag, MP\_Constraint \&mpPtr);}  \\ \\
+Invokes the DOF\_Group constructor with {\em tag) and an integer equal
+to the size of the ID object returned from the MP\_Constraint {\em
+mpPtr} when {\em getRetainedDOFs()} is invoked on the object. \\
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~ $\tilde{}$LagrangeDOF\_Group();}  \\
+Does nothing. \\
+
+\noindent {\bf Public Methods} \\
+\indent {\em virtual const Matrix \&getTangent(Integrator
+*theIntegrator)} \\
+Invokes {\em zero{}) on the tangent matrix and returns this matrix. 
+The LagrangeMP\_FE and LagrangeSP\_FE objects add to the tangent. \\
+
+
+\indent {\em virtual const Vector \&getUnbalance(Integrator
+*theIntegrator); }\\
+Invokes {\em zero{}) on the residual vector and returns this vector. 
+The LagrangeMP\_FE and LagrangeSP\_FE objects add to the residual. \\
+
+\indent {\em virtual int setNodeDisp(const Vector \&u);} \\
+Does nothing. The lagrange multipliers are associated with no Nodes
+in the Domain. \\
+
+
+{\em virtual int setNodeVel(const Vector \&$u^{.}$);}\\
+Does nothing. The lagrange multipliers are associated with no Nodes
+in the Domain. \\
+
+{\em virtual int setNodeAccel(const Vector \&$u^{..}$);}\\
+Does nothing. The lagrange multipliers are associated with no Nodes
+in the Domain. \\
+
+\indent {\em virtual int incrNodeDisp(const Vector \&u);} \\
+Does nothing. The lagrange multipliers are associated with no Nodes
+in the Domain. \\
+
+\indent {\em virtual int incrNodeVel(const Vector \&$u^{.}$);}\\
+Does nothing. The lagrange multipliers are associated with no Nodes
+in the Domain. \\
+
+\indent {\em virtual int incrNodeAccel(const Vector \&$u^{..}$);}\\
+Does nothing. The lagrange multipliers are associated with no Nodes
+in the Domain. \\
+
+
+
+
+

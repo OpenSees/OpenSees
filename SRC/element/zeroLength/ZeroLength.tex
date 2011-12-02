@@ -1,0 +1,232 @@
+%File: ~/OOP/element/zeroLength/ZeroLength.tex
+%What: "@(#) ZeroLength.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/element/ZeroLength.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ZeroLength: public Element \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent DomainComponent \\
+\indent\indent\indent Element \\
+\indent\indent\indent\indent {\bf ZeroLength} \\
+
+\noindent {\bf Description}  \\
+\indent 
+The ZeroLength class represents an element defined by two nodes at the same geometric
+location, hence it has zero length.
+The nodes are connected by 
+of uniaxial materials to represent the force-deformation relationship for the element. 
+
+ZeroLength elements are constructed with a {\em tag} in a domain of {\em dimension} 1, 2, or 3,
+connected by nodes {\em Nd1} and {\em Nd2}. 
+The vector {\em x} defines the local x-axis for the element and the vector {\em yprime}
+lies in the local x-y plane for the element.  The local z-axis is the cross product between 
+{\em x} and {\em yprime}, and the local y-axis is the cross product between the local z-axis
+and {\em x}.
+\\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructors \\
+\indent {\em    ZeroLength(int tag, 			      
+	       int dimension,
+	       int Nd1, int Nd2, 
+	       const Vector\& x,
+	       const Vector\& yprime,
+	       UniaxialMaterial\& theMaterial,
+	       int direction );} \\
+
+\indent {\em    ZeroLength(int tag, 			      
+	       int dimension,
+	       int Nd1, int Nd2, 
+	       const Vector\& x,
+	       const Vector\& yprime,
+	       int n1dMat,
+	       UniaxialMaterial** theMaterial,  
+	       const ID\& direction );} \\
+
+\indent {\em    ZeroLength();} \\ \\
+\indent // Destructor \\
+\indent {\em    ~ZeroLength();} \\ \\
+
+\indent    // public methods to obtain inforrmation about dof \& connectivity \\
+\indent {\em    int getNumExternalNodes(void) const;} \\
+\indent {\em    const ID \&getExternalNodes(void);} \\
+\indent {\em    int getNumDOF(void);} \\	
+\indent {\em    void setDomain(Domain *theDomain);} \\
+
+\indent    // public methods to set the state of the element    \\
+\indent {\em    int commitState(void);} \\
+\indent {\em    int revertToLastCommit(void);} \\        
+\indent {\em    int revertToStart(void);} \\        
+
+\indent    // public methods to obtain stiffness, mass, damping and residual information    \\
+\indent {\em    const Matrix \&getTangentStiff(void);} \\
+\indent {\em    const Matrix \&getSecantStiff(void);} \\    
+\indent {\em    const Matrix \&getDamp(void);} \\    
+\indent {\em    const Matrix \&getMass(void);} \\    
+
+\indent {\em    void zeroLoad(void);} \\	
+\indent {\em    int addLoad(const Vector \&addP);} \\
+\indent {\em    int addInertiaLoadToUnbalance(const Vector \&accel);} \\    
+\indent {\em    const Vector \&getResistingForce(void);} \\
+\indent {\em    const Vector \&getResistingForceIncInertia(void);} \\            
+
+\indent    // public methods for element output \\
+\indent {\em    int sendSelf(int commitTag, Channel \&theChannel);} \\
+\indent {\em    int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker \&theBroker);} \\
+\indent {\em    int displaySelf(Renderer \&theViewer, int displayMode, float fact);} \\    
+\indent {\em    void Print(OPS_Stream \&s, int flag =0);} \\    
+
+\indent {\em    int setResponse(char **argv, int argc, Information \&eleInformation);} \\
+\indent {\em    int getResponse(int responseID, Information \&eleInformation);} \\
+    
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em    ZeroLength(int tag, 			      
+	       int dimension,
+	       int Nd1, int Nd2, 
+	       const Vector\& x,
+	       const Vector\& yprime,
+	       UniaxialMaterial\& theMaterial,
+	       int direction );} \\
+Construct a ZeroLength element with {\em tag} .
+The force-deformation relationship for the element is given by a pointer {\em theMaterial} to a
+{\bf UniaxialMaterial} model acting in local {\em direction}.
+The local {\em direction} is 1, 2, 3, for translation in the local x, y, z axes or 4, 5, 6 
+for rotation about the local x, y, z axes. 
+\\
+
+\indent {\em    ZeroLength(int tag, 			      
+	       int dimension,
+	       int Nd1, int Nd2, 
+	       const Vector\& x,
+	       const Vector\& yprime,
+	       int n1dMat,
+	       UniaxialMaterial** theMaterial,  
+	       const ID\& direction );} \\
+Construct a ZeroLength element with {\em tag} .
+The force-deformation relationship is given by the {\em n1dMat} pointers
+{\em theMaterial} to {\bf UniaxialMaterial} models. 
+{\em direction} is an {\bf ID}  of length {\em n1dMat} that gives
+the local direction for each corresponding entry in the array {\em theMaterial}
+The local {\em direction} is 1, 2, 3, for translation in the local x, y, z axes or 4, 5, 6 
+for rotation about the local x, y, z axes. 
+\\
+
+\indent {\em    ZeroLength();} \\ 
+This is the constructor invoked by an {\bf FEM\_ObjectBroker} object. It
+constructs an empty ZeroLength element with two nodes.
+The {\em recvSelf()} method is
+invoked on the object for it to set the internal data. 
+\\
+
+\noindent {\bf Destructor} \\
+\indent {\em    ~ZeroLength();} \\ 
+Element destructor deletes memory for storing material model pointers. 
+\\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em    int getNumExternalNodes(void) const;} \\
+Returns 2.
+\\
+
+\indent {\em    const ID \&getExternalNodes(void);} \\
+Return {\bf ID} of size $2$ with the node tags defining the element.
+\\
+
+\indent {\em    int getNumDOF(void);} \\	
+Return the number of DOF for the element, which depends on the dimension of the problem
+and the number of DOF associated with each node.
+\\
+
+\indent {\em    void setDomain(Domain *theDomain);} \\
+Initialize element and define data structures.
+\\
+
+\indent {\em    int commitState(void);} \\
+Commit state of element by commiting state of materials.
+Return 0 if successful, !0 otherwise.
+\\
+
+\indent {\em    int revertToLastCommit(void);} \\        
+Revert state of element to last commit by reverting to last committed state of materials.
+Return 0 if successful, !0 otherwise.
+\\
+
+\indent {\em    int revertToStart(void);} \\        
+Revert state of element to initial sate by reverting to initial state of materials.
+Return 0 if successful, !0 otherwise.
+\\
+
+\indent {\em    const Matrix \&getTangentStiff(void);} \\
+Return tangent stiffness matrix for element.
+\\
+
+\indent {\em    const Matrix \&getSecantStiff(void);} \\    
+Return secant stiffness matrix of element.  The secant stiffness is
+defined by the secant for the materials.
+\\
+
+\indent {\em    const Matrix \&getDamp(void);} \\    
+Return a zero damping matrix.
+\\
+
+\indent {\em    const Matrix \&getMass(void);} \\    
+Return a zero mass matrix.
+\\
+
+\indent {\em    void zeroLoad(void);} \\	
+The element has no loads, so this operation has no effect.
+\\
+
+\indent {\em    int addLoad(const Vector \&addP);} \\
+The element has no loads, so this operation has no effect and returns 0.
+\\
+
+\indent {\em    int addInertiaLoadToUnbalance(const Vector \&accel);} \\    
+The element has no mass, so this operation has no effect and returns 0.
+\\
+
+\indent {\em    const Vector \&getResistingForce(void);} \\
+Return resisting force vector.
+\\
+
+\indent {\em    const Vector \&getResistingForceIncInertia(void);} \\            
+Return resisting force vector with inertia included.
+\\
+
+\indent {\em    int sendSelf(int commitTag, Channel \&theChannel);} \\
+Send information about element over a channel.
+\\
+
+\indent {\em    int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker \&theBroker);} \\
+Receive information about element over a channel.
+\\
+
+\indent {\em    int displaySelf(Renderer \&theViewer, int displayMode, float fact);} \\    
+Display element.
+\\
+
+\indent {\em    void Print(OPS_Stream \&s, int flag =0);} \\    
+Print information about element.
+\\
+
+\indent {\em    int setResponse(char **argv, int argc, Information \&eleInformation);} \\
+Set response quantities as "force", "deformation", "material", or "stiff".  Return response
+ID  or -1 if error.  Currently, only the one uniaxial material can be set.
+\\
+
+\indent {\em    int getResponse(int responseID, Information \&eleInformation);} \\
+Get response information for {\em responseID}.  Return 0 if successful, -1 otherwise.
+\\
+
+
+
+
+
+

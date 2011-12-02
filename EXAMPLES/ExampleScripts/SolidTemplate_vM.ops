@@ -1,0 +1,162 @@
+#[jeremic,zhyang]@ucdavis.edu
+# tcl example file using Template3Dep material
+# --von Mises model
+# Inelastic static analysis -- Triaxial test
+#
+#two load stages:
+# stage 1: isotropic compression
+# stage 2: triaxial shearing
+#May 7, 2001
+
+
+# ################################
+# create the modelbuilder
+# #################################
+
+model BasicBuilder -ndm 3 -ndf 3
+
+set g   9.81
+set p   5.0
+set np -5.0
+set lf1 0.1
+set NN1 10
+# ################################
+# build the model
+# #################################
+
+node 1 1.0 1.0 0.0
+node 2 0.0 1.0 0.0
+node 3 0.0 0.0 0.0
+node 4 1.0 0.0 0.0
+node 5 1.0 1.0 1.0
+node 6 0.0 1.0 1.0
+node 7 0.0 0.0 1.0
+node 8 1.0 0.0 1.0
+
+#triaxial test boundary
+fix 1 0 1 1
+fix 2 1 1 1
+fix 3 1 0 1
+fix 4 0 0 1
+ 
+
+#Elastic-plastic model
+#================================================================
+# von Mises model
+# Yield surface
+set ys "-VM"
+
+# Potential surface
+set ps "-VM"
+
+# Scalar evolution law
+set ES1  "-Leq "
+
+#Tensorial evolution law
+set ET1  "-Linear"
+
+# Elastic model
+nDMaterial ElasticIsotropic3D 1 70000.0 0.2 1.8
+
+# EPState
+#_____________Cu(undrained shear strength)
+set EPS "-NOD 1 -NOS 2 10.0 0.0"
+
+# Creating nDMaterial using Template Elastic-PLastic Model
+nDMaterial Template3Dep 2 1 -YS $ys -PS $ps -EPS $EPS -ELS1 $ES1 -ELT1 $ET1
+
+#____________tag_____8 nodes______matID__bforce1_bforce2_bforce3_rho
+element Brick8N  1  5 6 7 8 1 2 3 4   1      0.0     0.0  -10.0  1.0
+    
+#stage 1
+#===========================================================
+#isotropic load
+pattern Plain 2 "Linear" {
+load 1 $np 0   0   -pattern 2
+load 3 0   $p  0   -pattern 2
+load 4 $np $p  0   -pattern 2
+load 5 $np $np $np -pattern 2
+load 6 $p  $np $np -pattern 2
+load 7 $p  $p  $np -pattern 2
+load 8 $np $p  $np -pattern 2
+}
+
+##Add elemental load-- SelfWeight
+#puts "applying self-weight..."
+#eleLoad -ele 1 -type -EightNodeBrickW
+
+#Set up recorder
+recorder Node -file node_iso.out  -time -node 5 -dof 3 disp
+#recorder plot node_iso.out "disp load"  10 10 300 300 -columns 2 1
+recorder Element -ele 1 -time -file stress_iso.out stress
+#recorder plot stress_iso.out "time Stress"  10 400 300 300 -columns 3 1
+
+system UmfPack
+constraints Penalty 1e12 1e12
+test NormDispIncr 1.0e-8 30 0
+integrator LoadControl $lf1 1 $lf1 $lf1
+algorithm Newton
+numberer RCM
+analysis Static
+
+analyze $NN1
+
+puts "Isotropic consolidation done..."
+
+#stage 2
+#===========================================================
+#Axial loading
+wipeAnalysis
+#loadConst
+
+equalDOF 5 6 3 3
+equalDOF 5 7 3 3
+equalDOF 5 8 3 3
+       	  
+
+#set previous load constant
+loadConst -time 0.0
+
+# Before shifting to disp. control, apply reference load on the top
+pattern Plain 3 "Linear" {
+load 5 0.0 0.0 $np 
+load 6 0.0 0.0 $np
+load 7 0.0 0.0 $np 
+load 8 0.0 0.0 $np
+}
+
+# Stop the old recorders by destroying them
+remove recorders
+
+#Set up recorder for axial loading stage
+recorder Node -file node_z.out -time -node all -dof 3 disp
+#recorder plot node_z.out "disp load vertical" 10 10 300 300 -columns 6 1
+
+# Elemental Recorder
+#  arg's            output
+# force     --    nodal force
+# stiff     --    current stiffness matrix
+# plastify  -- 	  number of gauss points, gauss coor. and accumulated deviatoric plastic strain
+# stress    -- 	  number of gauss points, stresses(Sigma_x, y, z, xy, xz, yz
+
+
+#recorder Element -ele 1 -file element.out force
+#recorder plot element.out "nodal force displ horizontal" 10 800 300 300 -columns 1 3
+recorder Element -ele 1 -time -file element.out plastify
+#recorder plot element.out "Plastified?" 10 400 300 300 -columns  6 1
+
+
+set NN2 50
+set ndz -0.0001
+
+system UmfPack
+constraints Penalty 1e12 1e12
+test NormDispIncr 1.0e-08 30  0
+integrator DisplacementControl 5 3 $ndz 1 $ndz $ndz
+algorithm Newton
+numberer RCM
+analysis Static
+
+analyze $NN2
+
+wipe

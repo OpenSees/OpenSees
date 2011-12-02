@@ -1,0 +1,50 @@
+%File: ~/recorder/DatastoreRecorder.tex
+%What: "@(#) DatastoreRecorder.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/recorder/DatastoreRecorder.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class DatastoreRecorder: public Recorder\\
+
+\noindent {\bf Class Hierarchy} \\
+\indent Recorder \\
+\indent\indent {\bf DatastoreRecorder} \\
+
+\noindent {\bf Description}  \\
+\noindent A DatastoreRecorder object is used in the program to invoke
+{\em commitState()} on an FE\_Datastore object when {\em commit()} is
+invoked on a Domain. The class is included in the framework so that
+the Domain class does not have to be modified for FE\_Datastore
+objects. \\ 
+
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em DatastoreRecorder(FE\_Datastore \&theDatastore);}\\ \\ 
+\indent // Destructor \\
+\indent {\em $\tilde{ }$DatastoreRecorder();}\\ \\
+\indent // Public Methods  \\
+\indent {\em int record(int commitTag);}\\
+\indent {\em int playback(int commitTag);}\\
+\indent {\em void restart(void);}\\ 
+
+\noindent {\bf Constructor}  \\
+\indent {\em DatastoreRecorder(FE\_Datastore \&theDatastore);}\\ 
+Saves a pointer to the object {\em theDatastore}. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$DatastoreRecorder();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em int record(int commitTag);}\\
+Returns the result of invoking {\em commitState(commitTag)} on {\em
+theDatastore} object. \\ 
+
+\indent {\em int playback(int commitTag);}\\
+Returns the result of invoking {\em restoreState(commitTag)} on {\em
+theDatastore} object. \\ 
+
+\indent {\em void restart(void);}\\ 
+Does nothing.

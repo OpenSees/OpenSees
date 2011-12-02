@@ -1,0 +1,154 @@
+\documentclass[12pt]{article}
+
+\usepackage{headerfooter}
+\usepackage{epsfig}
+\usepackage{verbatimfiles}
+\usepackage{fullpage}
+\usepackage{amsmath}
+
+\newcommand{\HRule}{\rule{\linewidth}{.3mm}}
+
+\bibliographystyle{plain}
+\begin{document}
+
+\begin{center}
+{\bf \Large Uniaxial Return Mapping Algorithm}
+
+{\bf August 21, 2001} 
+
+{\bf Michael H. Scott} 
+
+{\bf PEER, University of California, Berkeley}
+\end{center}
+
+This document outlines the return mapping algorithm for a rate-independent
+uniaxial material
+model with combined isotropic and kinematic hardening. The algorithm and its
+derivation are given in Simo and Hughes~\cite{Simo:1998}.
+
+The material parameters are the elastic modulus, $E$, yield stress,
+$\sigma_y$, isotropic hardening modulus, $H_{iso}$, and kinematic hardening
+modulus, $H_{kin}$. Path dependence is tracked by the plastic strain,
+$\varepsilon^p$, internal hardening variable, $\alpha$, and back
+stress, $\kappa$.
+
+\section*{Model Description}
+The model assumes an elastic stress-strain relationship with elastic modulus $E$.
+The onset of plastic flow occurs upon yielding, after which the elastoplastic
+tangent is given by $\frac{E(H_{iso}+H_{kin})}{E+H_{iso}+H_{kin}}$, as shown
+in figure~\ref{fig:StressStrain}.
+
+\begin{figure}[htpb]
+\begin{center}
+\input{./fig_files/StressStrain.pstex_t}
+\end{center}
+\caption{Elastic and elastoplastic tangent}
+\label{fig:StressStrain}
+\end{figure}
+
+Isotropic hardening can be thought of as an ``expansion'' of the elastic region.
+The internal hardening variable, $\alpha$, tracks the growth of the elastic
+region.
+Kinematic hardening corresponds to a ``translation'' of the elastic region.
+The back stress, $\kappa$, is the center of the elastic region. When there is
+no kinematic hardening, $\kappa$ is zero.
+These two hardening rules are shown in figure~\ref{fig:HardeningBehavior}, and
+they can be combined to give mixed hardening behavior.
+
+\begin{figure}[htpb]
+\begin{center}
+\input{./fig_files/HardeningBehavior.pstex_t}
+\end{center}
+\caption{Isotropic and kinematic hardening behavior}
+\label{fig:HardeningBehavior}
+\end{figure}
+
+\section*{Continuum Equations}
+
+\begin{enumerate}
+\item{} Elastic stress-strain relationship
+\begin{equation}
+\sigma = E \left( \varepsilon-\varepsilon^p \right)
+\end{equation}
+
+\item{} Flow rule
+\begin{equation}
+\dot{\varepsilon}^p = \gamma \mbox{sign}\left( \sigma-\kappa \right)
+\end{equation}
+
+\item{} Isotropic and kinematic hardening laws
+\begin{align}
+\dot{\alpha} &= \gamma \\
+\dot{\kappa} &= \gamma H_{kin} \mbox{sign}\left( \sigma-\kappa \right)
+\end{align}
+
+\item{} Yield condition
+\begin{equation}
+f(\sigma, \kappa, \alpha) = \left| \sigma-\kappa \right| -
+\left( \sigma_y + H_{iso}\alpha \right) \leq 0
+\end{equation}
+
+\item{} Kuhn-Tucker complementary conditions
+\begin{align}
+\gamma &\geq 0 \\
+f(\sigma, \kappa, \alpha) &\leq 0 \\
+\gamma f(\sigma, \kappa, \alpha) &= 0
+\end{align}
+
+\item{} Consistency condition
+\begin{equation}
+\gamma \dot{f}(\sigma, \kappa, \alpha) = 0 \:\:\:\:\:
+\mbox{(if $f(\sigma, \kappa, \alpha)$ = 0)}
+\end{equation}
+
+\end{enumerate}
+
+\section*{Return Mapping Algorithm}
+
+\begin{enumerate}
+
+\item{} Committed state at time $t_n$
+\begin{equation}
+\left\{ \varepsilon_n^p, \alpha_n, \kappa_n \right\}
+\end{equation}
+
+\item{} Given trial strain at time $t_{n+1}$,
+\begin{equation}
+\varepsilon_{n+1} = \varepsilon_n + \Delta\varepsilon_n,
+\end{equation}
+
+\noindent determine the corresponding stress, $\sigma_{n+1}$, and
+tangent, $D_{n+1}$; proceed to step 3.
+
+\item{} Compute trial stress and test for plastic loading
+\begin{align}
+\sigma_{n+1}^{trial} &= E \left( \varepsilon_{n+1} - \varepsilon_n^p \right) \\
+\xi_{n+1}^{trial} &= \sigma_{n+1}^{trial} - \kappa_n \\
+f_{n+1}^{trial} &= \left| \xi_{n+1}^{trial} \right| -
+                  \left( \sigma_y + H_{iso}\alpha_n \right)
+\end{align}
+
+\begin{center}
+If $f_{n+1} \leq 0$, this is an elastic step; set
+$\sigma_{n+1} = \sigma_{n+1}^{trial}, D_{n+1} = E$, and exit. \\
+Else, this is a plastic step; proceed to step 4.
+\end{center}
+
+\item{} Return mapping
+\begin{align}
+\Delta\gamma &= \frac{f_{n+1}^{trial}}{E+H_{iso}+H_{kin}} \\
+\sigma_{n+1} &= \sigma_{n+1}^{trial} - \Delta\gamma E \mbox{sign}(\xi_{n+1}^{trial}) \\
+\varepsilon_{n+1}^p &= \varepsilon_n^p + \Delta\gamma \mbox{sign}(\xi_{n+1}^{trial}) \\
+\kappa_{n+1} &= \kappa_n + \Delta\gamma H_{kin} \mbox{sign}(\xi_{n+1}^{trial}) \\
+\alpha_{n+1} &= \alpha_n + \Delta\gamma \\
+D_{n+1} &= \frac{E(H_{iso}+H_{kin})}{E+H_{iso}+H_{kin}}
+\end{align}
+
+\end{enumerate}
+
+\begin{thebibliography}{99}
+\bibitem{Simo:1998} J.C. Simo and T.J.R. Hughes,
+\emph{Computational Inelasticity}. Springer-Verlag, 1998.
+\end{thebibliography}
+
+\end{document}

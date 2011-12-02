@@ -1,0 +1,196 @@
+%File: ~/OOP/analysis/integrator/IncrementalIntegrator.tex
+%What: "@(#) IncrementalIntegrator.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/integrator/IncrementalIntegrator.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class IncrementalIntegrator: public Integrator  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent Integrator \\
+\indent\indent\indent {\bf IncrementalIntegrator} \\
+
+\noindent {\bf Description} \\ 
+\indent IncrementalIntegrator is an abstract class. A subclass of it
+is used when performing a static or transient analysis using an
+incremental displacement approach. Subclasses of
+IncrementalIntegrators provide methods informing the FE\_Element and
+DOF\_Group objects how to build the tangent and residual matrices and
+vectors. They also provide the method for updating the response
+quantities at the DOFs with appropriate values; these values being
+some function of the solution to the linear system of equations. \\ 
+
+\noindent {\bf Class Interface} \\
+\indent\indent // Constructor \\
+\indent\indent {\em IncrementalIntegrator(int classTag);}\\  \\
+\indent\indent // Destructor \\
+\indent\indent {\em virtual $\tilde{ }$IncrementalIntegrator();}\\ \\
+\indent\indent // Public Methods \\
+\indent\indent {\em void setLinks(AnalysisModel \&theMoedl, LinearSOE
+\&theSOE);} \\  
+\indent\indent {\em virtual int formTangent(void);} \\
+\indent\indent {\em virtual int formUnbalance(void);} \\
+\indent\indent {\em virtual int formEleTangent(FE\_Element *theEle) =0;} \\
+\indent\indent {\em virtual int formEleResidual(FE\_Element *theEle) =0;} \\
+\indent\indent {\em virtual int formNodTangent(DOF\_Group *theDof) =0;} \\
+\indent\indent {\em virtual int formNodUnbalance(DOF\_Group *theDof) =0;} \\
+\indent\indent {\em virtual int update(const Vector \&$\Delta U$) =0;}\\ 
+\indent\indent {\em virtual int commit(void);} \\ \\
+\indent\indent // Public Method added for Domain Decomposition \\
+\indent\indent {\em virtual int getLastResponse(Vector \&result, const ID
+\&id);} \\ \\
+\indent\indent // Protected Methods  \\
+\indent\indent {\em LinearSOE *getLinearSOEPtr(void) const;} \\
+\indent\indent {\em AnalysisModel *getAnalysisModelPtr(void) const;} \\
+\indent\indent {\em virtual int formNodalUnbalance(void);} \\
+\indent\indent {\em virtual int formElementResidual(void);} \\
+
+\noindent {\bf Constructor} \\
+\indent {\em IncrementalIntegrator(int classTag);}\\ 
+The integer {\em classTag} is passed to the Integrator classes
+constructor. Pointers to the AnalysisModel and LinearSOE are set to
+$0$.\\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$IncrementalIntegrator();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods}\\
+\indent {\em void setLinks(AnalysisModel \&theModel, LinearSOE
+\&theSOE);} \\  
+Invoked by the Analysis object to set up the links the
+IncrementalIntegrator objects needs to perform its operations.
+Sets the pointers to the AnalysisModel and LinearSOE objects to point
+to {\em theAnalaysisModel} and {\em theSOE}. \\
+
+{\em virtual int formTangent(void);} \\
+Invoked to form the structure tangent matrix. The method first loops
+over all the FE\_Elements in the AnalysisModel telling them to form
+their tangent and then it loops over the FE\_Elements again adding the
+tangent to the LinearSOE objects A matrix. It performs the following:
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+FE\_EleIter \&theEles = theAnalysisModel.getFEs();\\
+theSOE.zeroA();\\
+while((elePtr = theEles1()) $\neq$ 0) \+ \\
+if (theSOE.addA(elePtr-$>$getTangent(this),
+elePtr-$>$getID(), $1.0$) $<$ 0) \+ \\
+return $-1$; \-\- 
+\end{tabbing}
+\noindent Returns $0$ if successful, otherwise an error
+message is printed an a $-1$ is returned if {\em setLinks()} has not
+been called, or $-2$ if failure to add an FE\_Elements tangent to the
+LinearSOE. The two loops are introduced to allow for efficient
+parallel programming. THIS MAY CHANGE TO REDUCE MEMORY DEMANDS.\\  
+
+{\em virtual int formUnbalance(void);} \\
+Invoked to form the unbalance. The method fist zeros out the $B$
+vector of the LinearSOE object and then invokes formElementResidual()
+and formNodalUnbalance() on itself. \\
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+theSOE.zeroB();\\
+this-$>$fromElementResidual(); \\
+this-$>$formNodalUnbalance() \\
+\end{tabbing}
+
+\noindent If an error occurs in either of these two methods or if {\em
+setLinks()} has not been called, an error message is printed and a
+negative number is returned. Returns $0$ if successful. \\ 
+
+
+\indent {\em virtual int formEleTangent(FE\_Element *theEle) =0;} \\
+To inform the FE\_Element how to build its tangent matrix for addition
+to the system of equations. The subclasses must provide the
+implementation of this method. \\
+
+{\em virtual int formEleResidual(FE\_Element *theEle) =0;} \\
+To inform the FE\_Element how to build its residual vector for addition
+to the system of equations. The subclasses must provide the
+implementation of this method. \\
+
+{\em virtual int formNodTangent(DOF\_Group *theDof) =0;} \\
+To inform the DOF\_Group how to build its tangent matrix for addition
+to the system of equations. The subclasses must provide the
+implementation of this method. This is required in transient analysis
+as th Node objects have mass. THIS MAY CHANGE.\\
+
+{\em virtual int formNodUnbalance(DOF\_Group *theDof) =0;} \\
+To inform the DOF\_Group how to build its residual vector for addition
+to the system of equations. The subclasses must provide the
+implementation of this method. \\
+
+{\em virtual int update(const Vector \&$\Delta U$) =0;} \\
+When invoked causes the integrator object to update the DOF\_Group
+responses with the appropriate values based on the computed solution
+to the system of equation object. The subclasses must provide an
+implementation of this method. \\
+
+{\em virtual int commit(void) =0;} \\
+Invoked by the SolutionAlgorithm to inform the Integrator that current
+state of domain is on solution path. Returns the result of invoking
+{\em commitDomain()} on the AnalysisModel object associated with the
+Integrator. \\
+
+
+\noindent {\bf Public Method added for Domain Decomposition}\\
+\indent {\em virtual int getLastResponse(Vector \&result, const ID \&id);} \\
+Returns in {\em result} values for the last solution to the system of
+equation object whose location in the solution vector is given by {\em
+id}. For a location specified by a negative integer in {\em id} 0.0 will be
+returned in {\em result}. Returns a $0$ if successful, a warning
+message and a negative number is returned if an error occurs. $-1$ if
+{\em setSize()} has not been called and a $-2$ if location in {\em id} is
+greater than $order-1$ of $b$ vector.\\
+
+\noindent {\bf Protected Methods}  \\
+\indent {\em LinearSOE *getLinearSOEPtr(void) const;} \\
+A const member function which returns a pointer to the LinearSOE
+associated with the IncrementalIntegrator object, i.e. {\em theSOE}
+passed in {\em setLinks()}. \\
+
+{\em AnalysisModel *getAnalysisModelPtr(void) const;} \\
+A const member function which returns a pointer to the AnalysisModel
+associated with the IncrementalIntegrator object, i.e. {\em theModel}
+passed in {\em setLinks()}. \\
+
+
+{\em virtual int formNodalUnbalance(void);} \\
+The method first
+loops over all the DOF\_Group objects telling them to form their
+unbalance and then adds this Vector to the $b$ vector of the LinearSOE
+object, i.e. it performs the following: \\
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+DOF\_EleIter \&theDofs = theAnalysisModel.getDOFs();\\
+theSOE.zeroB();\\
+while((dofPtr = theDofs()) $\neq$ 0) \+ \\
+theSOE.addB(dofPtr-$>$getUnbalance(theIntegrator),
+dofPtr-$>$getID()) \\
+\end{tabbing}
+\noindent Returns $0$ if successful, otherwise a  negative number is
+returned and a warning message is printed if an error occurred. Note,
+no test is made to ensure {\em setLinks()} has been invoked.\\
+
+
+{\em virtual int formElementResidual(void);} \\
+Invoked to form residual vector (the C vector in theSOE). The method
+iterates twice over the FE\_elements in the AnalysisModel, the first
+time telling the FE\_Elements top form their residual and the second
+time to add this residual to the LinearSOE objects $b$ vector, i.e. it
+performs the following:
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+FE\_EleIter \&theEles = theAnalysisModel.getFEs();\\
+while((elePtr = theEles()) $\neq$ 0) \{ \+ \\
+theSOE.addA(elePtr-$>$getResidual(this), elePtr-$>$getID()) \+ \\ 
+\end{tabbing}
+\noindent Returns $0$ if successful, otherwise a warning message is
+printed and a negative number is returned if an error occurs. Note, no
+test is made to ensure {\em setLinks()} has been invoked.\\
+
+
+
+

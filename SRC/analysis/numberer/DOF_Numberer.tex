@@ -1,0 +1,157 @@
+%File: ~/OOP/analysis/numberer/DOF_Numberer.tex
+%What: "@(#) DOF_Numberer.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/numberer/DOF\_Numberer.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class DOF\_Numberer: public MovableObject  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent {\bf DOF\_Numberer} \\
+
+\noindent {\bf Description} \\ 
+\indent The DOF\_Numberer class is a base class. Its purpose is
+to define the interface common among all subclasses.  A DOF\_Numberer
+object is responsible for assigning the equation numbers to the
+individual dofs in each of the  DOF\_Groups in the AnalysisModel. The
+base DOF\_Numberer uses a GraphNumberer object to first number the
+DOF\_Groups, based on the ordering of the DOF\_Group objects, it
+assigns the equation numbers to the individual
+degrees-of-freedom. Subtypes may wish to implement the numbering in
+a more efficient manner by using the FE\_Element and DOF\_Group objects
+directly. \\
+
+
+\noindent {\bf Class Interface} \\
+\indent // Constructors \\
+\indent {\em DOF\_Numberer(GraphNumberer \&theGraphNumberer);}\\ 
+\indent {\em DOF\_Numberer(int classTag);}\\ 
+\indent {\em DOF\_Numberer();}\\  \\
+\indent // Destructor \\
+\indent {\em virtual~ $\tilde{}$DOF\_Numberer();}\\  \\
+\indent // Public Methods \\
+\indent {\em void setLinks(AnalysisModel \&theModel);} \\ 
+\indent {\em virtual int numberDOF(int lastDOF\_Group = -1);} \\
+\indent {\em virtual int numberDOF(ID \&lastDOF\_Groups);} \\
+\indent {\em virtual int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent {\em virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ \\
+\indent // Protected Methods  \\
+\indent {\em AnalysisModel *getAnalysisModelPtr(void) const;} \\
+\indent {\em GraphNumberer *getGraphNumbererPtr(void) const;} \\
+
+
+\noindent {\bf Constructors} \\
+\indent {\em DOF\_Numberer(GraphNumberer \&theGraphNumberer);}\\ 
+The integer {\em NUMBERER\_TAG\_DOF\_Numberer}
+(defined in $<$classtags.h$>$) is passed to the MovableObject classes
+constructor. Sets the GraphNumberer to be used in the numbering to {\em
+theGraphNumberer()}. \\
+
+\indent {\em DOF\_Numberer(int classTag);}\\ 
+Provided for subclasses. The integer {\em classTag} is passed to the
+MovableObject classes constructor. \\
+
+
+\indent {\em DOF\_Numberer();}\\ 
+Provided for FEM\_ObjectBroker. The integer {\em NUMBERER\_TAG\_DOF\_Numberer}
+(defined in $<$classtags.h$>$) is passed to the MovableObject classes
+constructor. Sets the GraphNumberer to be used in the numbering to be
+$0$, the GraphNumberer object is created and linked in a {\em
+recvSelf()} method invocation. \\
+
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$DOF\_Numberer();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }\\
+\indent {\em void setLinks(AnalysisModel \&theModel);} \\
+Invoked to set a link to the AnalysisModel from which the
+DOF\_Numberer will number (provide the equation number in the
+SystemOfEqn object) the degrees-of-freedoms in each DOF\_Group
+objects.\\  
+
+\indent {\em virtual int numberDOF(int lastDOF\_Group = -1);} \\
+Invoked to assign the equation numbers to the dofs in the DOF\_Groups
+and the FE\_Elements, ensuring that the dof's in the DOF\_Group whose
+tag is given by {\em lastDOF\_Group} are numbered last in a $-2$ or
+$-3$ group. The initial values of these equation numbers have been set
+by the ConstraintHandler object to be $-1$, $-2$ or $-3$, all dofs
+with a $-3$ are to be assigned higher equation numbers than those
+assigned a $-2$. To set the {\em numEqn} in the AnalysisModel and to
+return the number of equations {\em numEqn} if successful, a negative
+number if not.  
+
+This base class performs the ordering by getting an ID containing the
+ordered DOF\_Group tags, obtained by invoking {\em
+number(theModel-$>$getDOFGroupGraph(), lastDOF\_Group)} on the
+GraphNumberer, {\em theGraphNumberer}, passed in the constructor. The
+base class then makes two passes through the DOF\_Group objects in the
+AnalysisModel by looping through this ID; in the first pass assigning the
+equation numbers incrementally to any degree-of-freedom marked with a
+$-2$ and in the second pass assigning the equation numbers
+incrementally to any degree-of-freedom marked with a $-3$. It then
+iterates through the FE\_Elements in the AnalsisModel invoking {\em
+setID()} on each object. Finally {\em setNumEqn(numEqn)} is invoked on
+the AnalysisModel. Return {\em numEqn} if successful, a warning
+message and a negative number is returned if an error occurs; $-1$ is
+returned if {\em setLinks()} has not yet been invoked, $-2$ if no
+GraphNumberer was passed in the constructor, $-3$ if the
+number of {\em DOF\_Groups} in AnalysisModel and size of ID returned
+are not the same, and a $-4$ if there is no DOF\_Group corresponding
+to one of the tags given in the ID.\\
+
+
+
+\indent {\em virtual int numberDOF(ID \&lastDOF\_Groups);} \\
+Invoked to assign the equation numbers to the dofs in the DOF\_Groups
+and the FE\_Elements, ensuring that the dof's in the DOF\_Groups whose
+tag is given in {\em lastDOF\_Groups} are numbered last in a $-2$ or
+$-3$ group. The initial values of these equation numbers have been set
+by the ConstraintHandler object to be $-1$, $-2$ or $-3$, all dofs
+with a $-3$ are to be assigned higher equation numbers than those
+assigned a $-2$. To set the {\em numEqn} in the AnalysisModel and to
+return the number of equations {\em numEqn} if successful, a negative
+number if not.  
+
+This method in the base class is almost identical to the one just
+described. The only difference is that the ID identifying the order of
+the DOF\_Groups is obtained by invoking {\em
+number(theModel-$>$getDOFGroupGraph(), lastDOF\_Groups)} on the
+GraphNumberer. \\
+
+
+
+\indent {\em virtual int sendSelf(Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ 
+The DOF\_Numberer sends the class identifier and database tag of the
+GraphNumberer in a ID to the channel, if no GraphNumberer is
+associated a $-1$ is sent as the class tag. The object then invokes
+{\em sendSelf()} on the GraphNumberer. \\ 
+
+\indent {\em virtual int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker \&theBroker);}\\
+The DOF\_Numberer receives the class identifier and database tag of
+the GraphNumberer in an ID from the channel, if no GraphNumberer is
+associated a $-1$ is received. The DOF\_Numberer will then ask {\em
+theBroker} for a GraphNumberer with that class identifier, it sets the
+database tag for the GraphNumberer and it then invokes {\em
+recvSelf()} on that GraphNumberer. \\  
+
+\noindent {\bf Protected Methods}  \\
+\indent {\em AnalysisModel *getAnalysisModelPtr(void) const;} \\
+A const member function to return the AnalysisModel object associated with
+the DOF\_Numberer, {\em theModel}. \\
+
+\indent {\em GraphNumberer *getGraphNumbererPtr(void) const;} \\
+A const member function to return the GraphNumberer object associated with
+the DOF\_Numberer, {\em theGraphNumberer}. \\
+
+
+
+
+
+
+

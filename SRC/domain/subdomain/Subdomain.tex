@@ -1,0 +1,262 @@
+% File: ~/domain/domain/subdomain/Subdomain.tex 
+% What: "@(#) Subdomain.tex, revA"
+
+UNDER CONSTRUCTION
+
+\noindent {\bf Files}   \\
+\indent \#include $<$/domain/subdomain/Subdomain.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class Subdomain: public Domain, public Element  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent  Domain  \\ 
+\indent MovableObject \\
+\indent TaggedObject \\
+\indent\indent DomainComponent \\
+\indent\indent\indent  Element \\
+\indent\indent\indent\indent {\bf Subdomain} \\
+
+\noindent {\bf Description}  \\
+\indent  A Subdomain is a Domain that can be an Element in an
+enclosing Domain. For this reason, it inherits from both Domain and
+Subdomain. It also extends the Domain interface to deal with the
+distintion between whether Nodes in the Subdomain are internal to the
+Subdomain, or external. An external Node is a Node shared by two
+Elements residing in different Subdomains. \\
+
+
+\noindent {\bf Class Interface}  \\
+\indent {\bf Constructors}  \\
+\indent {\em Subdomain(int tag);}  \\
+\indent {\em Subdomain(int tag, \\
+\indent\indent\indent\indent TaggedObjectStorage \&theInternalNodeStorage,\\
+\indent\indent\indent\indent TaggedObjectStorage \&theExternalNodeStorage,\\
+\indent\indent\indent\indent TaggedObjectStorage \&theElementsStorage, \\
+\indent\indent\indent\indent TaggedObjectStorage \&theLCsStorage, \\
+\indent\indent\indent\indent TaggedObjectStorage \&theMPsStorage, \\
+\indent\indent\indent\indent TaggedObjectStorage \&theSPsStorage);} \\ \\
+\indent // Destructor  \\
+\indent {\em virtual~ $\tilde{}$Subdomain();}  \\ \\
+\indent // Public Methods modified from Domain class}  \\
+\indent {\em virtual bool addNode(Node *theNodePtr);} \\
+\indent {\em virtual Node *removeNode(int tag); } \\
+\indent {\em virtual Node *getNode(int tag); } \\
+\indent {\em virtual int getNumNodes(void); } \\
+\indent{\em virtual NodeIter \&getNodes();} \\
+\indent {\em virtual void setAnalysis(DomainDecompositionAnalysis *theAnalysis);}\\
+\indent {\em void commit(void);} \\ \\
+\indent // Public Methods inherited from Element now implemented \\
+\indent {\em virtual int getNumExternalNodes(void) const;    }\\
+\indent {\em virtual const ID \&getExternalNodes(void);}\\
+\indent {\em virtual int getNumDOF(void);}\\
+\indent {\em virtual void commitState(void);}\\ 
+\indent {\em virtual const Matrix \&getStiff(void);}\\
+\indent {\em virtual const Matrix \&getMass(void);    }\\
+\indent {\em virtual const Matrix \&getDamp(void);    }\\
+\indent {\em virtual const Vector \&getResistingForce(void);}\\
+\indent {\em virtual const Vector \&getResistingForceWithInertia(void);}\\
+\indent {\em virtual bool isSubdomain(void);}\\
+\indent {\em int sendSelf(Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);}\\ 
+\indent {\em int recvSelf(Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);}\\ \\
+\indent  // Public Methods introduced for the Subdomain class \\
+\indent {\em virtual bool addExternalNode(Node *theNodePtr);} \\
+\indent{\em virtual NodeIter \&getInternalNodeIter();} \\
+\indent{\em virtual const ID \&getExternalNodeIter();} \\
+\indent {\em virtual int computeTang(void);}\\
+\indent {\em virtual int computeResidual(void);}\\
+\indent {\em virtual const Matrix \&getTang(void);    }\\
+\indent {\em void setFE\_ElementPtr(FE\_Element *theFEelePtr);}\\
+\indent {\em const Vector \&getLastExternalSysResponse(void);}\\
+\indent {\em virtual int computeNodalResponse(void);}\\
+\indent {\em double getCost(void); }\\ \\
+\indent // Protected Methods  \\
+\indent{\em FE\_Element *getFE\_ElementPtr(void); }\\
+
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em Subdomain(int tag);}  \\
+Constructs an empty Subdomain with a number given by {\em tag}. The
+storage of the Elements, constraints and loads are handled by the base
+Domain class, the storage of the internal and external nodes are
+handle by the Subdomain class. For storage of the Nodes objects of
+type ArrayOfTaggedObjects are used. The constructors for these objects
+take initial sizes of the arrays, the sizes used are:
+InternalNodeArray = 8024, ExternalNodeArray = 256. The initial sizes
+are not upperbounds on the number of components that can be added. \\
+
+
+\indent {\em Subdomain(int tag, \\
+\indent\indent\indent\indent TaggedObjectStorage \&theInternalNodeStorage,\\
+\indent\indent\indent\indent TaggedObjectStorage \&theExternalNodeStorage,\\
+\indent\indent\indent\indent TaggedObjectStorage \&theElementsStorage, \\
+\indent\indent\indent\indent TaggedObjectStorage \&theLCsStorage, \\
+\indent\indent\indent\indent TaggedObjectStorage \&theMPsStorage, \\
+\indent\indent\indent\indent TaggedObjectStorage \&theSPsStorage);} \\
+Constructs an empty Subdomain with a number given by {\em tag}. The
+components of the subdomain are stored in the storage objects given in
+the argument for the constructor. \\ 
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~ $\tilde{}$Subdomain();}  \\
+Invokes the destructor on the storage objects for both the internal
+and external nodes. \\ 
+
+
+\noindent {\bf Public Methods modified from Domain class}  \\
+\indent {\em virtual bool addNode(Node *theNodePtr);} \\
+A Method to add the node pointed to by {\em theNoedPtr} to the
+Subdomain. This node is an internal node to the domain and is
+returned in calls to {\em getNodes()} and {\em getInternalNodes()}. 
+Invokes {\em setDomain(this)} on the Node and {\em domainChanged()} on
+itself.\\ 
+
+{\em virtual Node *removeNode(int tag); } \\
+To remove a Node whose tag is given by {\em tag} from the
+Subdomain. Returns $0$ if the Node is not in the Subdoamin, otherwise
+it removes the pointer to the node from the storage object, invokes
+{\em domainChange()} on itself, and returns the pointer to the
+Node. If the Node is external, the destructor is called on the
+DummyNode. Invokes {\em domainChanged()} on itself. \\ 
+
+{\em virtual Node *getNode(int tag); } \\
+To return a pointer to the Node whose tag is given by {\em tag} from
+the Subdomain. Returns $0$ if the Node is not in the Subdoamin,
+otherwise returns a pointer to the Node, if external a pointer to the
+DummyNode is returned. \\ 
+
+{\em virtual int getNumNodes(void); } \\
+Returns the number of external and internal Nodes. \\
+
+\indent{\em virtual NodeIter \&getNodes();} \\
+Returns an iter to all nodes that have been added to the subdomain. \\
+
+{\em virtual void setAnalysis(DomainDecompositionAnalysis *theAnalysis);}\\
+Sets the corresponding DomainDecompositionAnalysis object to be {\em
+theAnalysis}. \\
+
+{\em void commit(void);} \\
+invokes the base Domain classes {\em commit()} method. It then goes through
+all the Nodes in the Subdomain, invoking {\em commitState()} on the Nodes. \\
+
+
+\noindent {\bf Public Methods inherited from Element now implemented} \\
+\indent {\em virtual int getNumExternalNodes(void) const;    }\\
+Returns the number of external nodes that have been successfully added
+to the subdomain as external nodes and have yet to be removed from the
+subdomain. \\ 
+
+{\em virtual const ID \&getExternalNodes(void);}\\
+Returns an ID containing the tags of all nodes added to the subdomain
+as external nodes and have yet to be removed from the subdomain. \\
+
+{\em virtual int getNumDOF(void);}\\
+Returns the num of external dof associated with the subdomain, the number
+returned is the result of invoking {\em getNumExternalEqn()} on
+the DomainDecompAnalysis object assocaited with the Subdomain. If
+no Analysis yet associated with the Subdomain $0$ is returned. \\
+
+{\em virtual void commitState(void);}\\ 
+Invokes {\em commit()} on itself. \\
+    
+{\em virtual const Matrix \&getStiff(void);}\\
+For this class does nothing but print an error message. Subtypes may
+provide a condensed stiffness matrix, $T^tKT$ corresponding to
+external nodes. Returns a zero matrix of dimensions (1x1). \\
+
+{\em virtual const Matrix \&getMass(void);    }\\
+For this class does nothing but print an error message. Subtypes may
+provide a condensed mass matrix, $T^tMT$ or a mass matrix with zero
+diag elements. Returns a zero matrix of dimensions (1x1). \\
+
+{\em virtual const Matrix \&getDamp(void);    }\\
+For this class does nothing but print an error message. Subtypes may
+provide a condensed damping matrix, $T^tDT$ or a damping matrix
+corresponding to some comination of the condensed stifffness and mass
+matrices. Returns a zero matrix of dimensions (1x1). \\
+
+{\em virtual const Vector \&getResistingForce(void);}\\
+Returns the Vector obtained from invoking {\em getCondensedRHS()} on
+the DomainDecompositionAnalysis object. \\
+
+{\em virtual bool isSubdomain(void);}\\
+Returns {\em true}. Subtypes can change this. The result of changing
+this will be that the corresponding FE\_Elements will ask for the
+stiffness, mass and damping matrices to form the tangent and will ask
+for the residual to form the residual for the system of equations. \\
+
+{\em int sendSelf(Channel \&theChannel, FEM\_ObjectBroker \&theBroker);}\\
+Sends an ID of size 2 to the channel, sending {\em theAnalysis-$>$getClassTag()} and the integer $0$,
+if a link exists to a DomainDecompAnalyssi object. 
+{\em sendSelf()} is then invoked on theDomainDecompAnalysis object if the link exists. \\
+
+{\em int recvSelf(Channel \&theChannel, FEM\_ObjectBroker \&theBroker);}\\
+Receives an ID of size 2 from the channel. If the integer $0$ is sent {\em theBroker}
+is asked to construct a new DomainDecompositionAnalysis object using the class tag also sent.
+Returns resultt of invoking {\em recvSelf()} on this object. \\
+
+\noindent {\bf Public Methods introduced for the Subdomain class} \\
+\indent {\em virtual bool addExternalNode(Node *theNodePtr);} \\
+A Method to add the node pointed to by {\em theNoedPtr} to the
+Subdomain. This node is an external node to the subdomain and is
+returned in calls to {\em getExternalNodes()} and {\em
+getNodes()}. A DummyNode is created and added to the external nodes storage object. 
+Invokes {\em setDomain(this)} on the DummyNode and {\em domainChanged()} on itself.\\
+
+\indent{\em virtual NodeIter \&getInternalNodeIter();} \\
+Returns an iter to the internal nodes of the subdomain, nodes that are
+added using the {\em addNode()} command.\\
+
+\indent{\em virtual const ID \&getExternalNodeIter();} \\
+Returns an ID identifyng the node numbers of all nodes that have been
+added using the {\em addExternalNode(Node *)} method. \\
+
+
+{\em virtual int computeTang(void);}\\
+The method first starts a Timer object running. {\em formTang()}, 
+is then invoked on the DomainDecompositionAnalysis object. The
+Timer is then stopped and the real time is added to the {\em realCost}. 
+Returns the result of invoking {\em formTang}. \\
+
+{\em virtual int computeResidual(void);}\\
+The method first starts a Timer object running. {\em formResidual()}, 
+is then invoked on the DomainDecompositionAnalysis object. The
+Timer is then stopped and the real time is added to the {\em realCost}. 
+Returns the result of invoking {\em formResidual}. \\
+
+{\em virtual const Matrix \&getTang(void);    }\\
+Returns the Matrix obtained from invoking {\em getTangent()} on
+the DomainDecompositionAnalysis object. \\
+
+
+{\em void setFE\_ElementPtr(FE\_Element *theFEelePtr);}\\
+Sets the corresponding {\em FE\_Element} to be that poited to by {\em
+theFEelePtr} . \\
+
+{\em const Vector \&getLastExternalSysResponse(void);}\\
+Returns the Vector obtained by calling {\em getLastSysResponse()} on
+the associated FE\_Element. \\
+
+{\em virtual int computeNodalResponse(void);}\\
+To set the nodal responses for the nodes in the subdomain. Returns the
+result of invoking {\em computeInternalResponse()} on the DomainDecomposition
+analysis object associated with the subdomain.\\ 
+
+{\em double getCost(void); }\\
+Returns the current value of {\em realCost}, restting the value of {\em realCost} to be 0.0. The
+value of {\em realCost} is added to when {\em computeTang()} and {\em computeREsidual} are invoked on the
+Subdomain. \\
+
+\noindent {\bf Protected Member Functions}  \\
+\indent{\em FE\_Element *getFE\_ElementPtr(void); }\\
+Returns a pointer to the last FE\_Element set using {\em
+setFE\_ElementPtr}. If no FE\_Element has been set $0$ is returned. \\
+
+
+
+
+
+

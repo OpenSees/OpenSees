@@ -1,0 +1,74 @@
+%File: ~/OOP/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinDirectSolver.tex
+%What: "@(#) ProfileSPDLinDirectSolver.tex, revA"
+
+UNDER CONSTRUCTION
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{
+}$/system\_of\_eqn/linearSOE/profileSPD/ProfileSPDLinDirectSolver.h$>$
+\\ 
+
+\noindent {\bf Class Decleration}  \\
+\indent class ProfileSPDLinDirectSolver: public LinearSOESolver  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent  Solver \\
+\indent\indent\indent LinearSOESolver \\
+\indent\indent\indent\indent ProfileSPDLinSolver \\
+\indent\indent\indent\indent\indent {\bf ProfileSPDLinDirectSolver} \\
+
+\noindent {\bf Description}  \\
+\indent A ProfileSPDLinDirectSolver object can be constructed to solve
+a ProfileSPDLinSOE object. It does this by direct means, using the
+$LDL^t$ variation of the cholesky factorization. The matrx $A$ is
+factored one column at a time using a left-looking approach. No BLAS
+or LAPACK routines are called for the factorization or subsequent
+substitution. \\ 
+
+\noindent {\bf Interface}  \\
+\indent\indent Constructor \\
+\indent\indent {\em ProfileSPDLinDirectSolver();}  \\ \\
+\indent\indent Destructor \\
+\indent\indent {\em  $\tilde{ }$ProfileSPDLinDirectySolver();}\\  \\
+\indent\indent Public Methods \\
+\indent\indent {\em int solve(void);} \\
+\indent\indent {\em int setSize(void);} \\
+\indent\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ 
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em ProfileSPDLinDirectSolver();}  \\
+A unique class tag (defined in $<$classTags.h$>$) is passed to the
+ProfileSPDLinSolver constructor. \\
+
+
+\noindent {\bf Destructor} \\
+\indent {\em $\tilde{ }$ProfileSPDLinDirectSolver();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Member Functions }  \\
+\indent {\em virtual int solve(void);} \\
+The solver first copies the B vector into X.
+FILL IN
+The solve process changes $A$ and $X$. \\   
+
+
+\indent {\em int setSize(void);} \\
+Does nothing but return $0$. \\
+
+\indent {\em  int sendSelf(int commitTag, Channel \&theChannel);} \\ 
+Does nothing but return $0$. \\
+
+\indent {\em  int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);} \\ 
+Does nothing but return $0$. \\
+
+
+
+
+
+
+

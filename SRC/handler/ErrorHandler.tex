@@ -1,0 +1,72 @@
+%File: ~/handler/ErrorHandler.tex
+%What: "@(#) ErrorHandler.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/handler/ErrorHandler.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ErrorHandler \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf ErrorHandler} \\
+
+\noindent {\bf Description}  \\
+\indent The ErrorHandler class is an abstract class which is
+introduced to allow error information to be processed during the
+execution of the program. The interface defines two pure virtual
+methods {\em warning()} and {\em fatal()}. {\em warning()} is a method
+which is called by an object when an error has occured but the program
+can continue running after the error has been logged; {\em fatal()} is
+invoked when the error is so serious that the program must be
+terminated. \\ 
+
+QUESTION: SHOULD THE DOMAIN/RECORDER CLASSES HAVE A shutdown() METHOD? \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em ErrorHandler();}\\ \\
+\indent // Destructor \\
+\indent {\em virtual $\tilde{ }$ErrorHandler();}\\ \\
+\indent // Public Methods  \\
+\indent {\em virtual void warning(const char *msg, ...) =0;}\\
+\indent {\em virtual void fatal(const char *msg, ...) =0;}\\ \\
+\indent // Protected Methods  \\
+\indent {\em void outputMessage(OPS_Stream \&theStream, const char *msg, va\_list args);} \\
+
+\noindent {\bf Constructor}  \\
+\indent {\em ErrorHandler();}  \\ 
+Does nothing.\\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$ErrorHandler();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual void warning(const char *msg, ...) =0;}\\
+Invoked by an object when an error has occurred. The program will
+continue running after this method has been invoked. The first
+argument is a pointer to a format string that specifies how
+subsequent (or arguments accessed via the variable-length ellipses
+argument are converted for output. As for {\em printf()}, the format
+string is composed of ordinary characters (not \%) which are copied to
+the log unmodified and conversion specifications, which fetches the
+next argument from the ellipses. Conversion specification is
+introduced by the \% character and followed by one of the following
+flags {\bf d}, {\bf f} and {\bf s}, for integers, doubles and strings
+respectively. \\
+
+
+\indent {\em virtual void playback(const char *msg, ...) =0;}\\ 
+Invoked by an object when an error has occurred. The program will be
+terminated by this method. The arguments are the same as for the {\em
+record()} method.\\ 
+
+\noindent {\bf Protected Methods }  \\
+\indent {\em void outputMessage(OPS_Stream \&theStream, const char *msg,
+va\_list args);}\\ 
+Will print to the OPS_Stream {\em theStream} the error message, where
+{\em msg} is the format string  and {\em va\_list} is the list created
+from the varying number of arguments passed to the {\em warning()} or
+{\em fatal()} methods. It is up to the calling object to both create
+{\em va\_start()} and destroy {\em va\_end()} this list. 
+

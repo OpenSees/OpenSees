@@ -1,0 +1,114 @@
+% File: ~/domain/node/DummyNode.tex 
+
+\noindent {\bf DummyNode} \\
+
+\noindent {\bf Files}   \\
+\indent \#include $<$DummyNode.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class DummyNode: public DomainComponent  \\
+
+
+
+\noindent {\bf Class Hierarchy} \\
+\indent DomainComponent \\
+\indent\indent {\bf DummyNode} \\
+
+\noindent {\bf Description}  \\
+\indent DummyNodes are a type of node created and used by Subdomains for their
+exterior nodes. They reference a real node and most methods invoked on
+them are in turn invoked by the dummy node on the real node. The calls
+asking the real node to change its current state are ignored. The
+calls involving DOF\_Group are handled by the dummy node. \\
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em DummyNode(Node &theRealNode);}  \\
+To construct a dummy node which is associated with the node pointed to
+by {\em theRealNode}. \\
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~$\tilde{}$ DummyNode();} \\
+
+%%%%%%%% Public Member Functions - In addition to DOMAIN
+\noindent {\bf Public Member Functions }  \\
+\indent {\em virtual void setDOF\_GroupPtr(DOF\_Group *theDOF\_Grp);} \\
+Each DummyNode, when involved with a StaticCondensationAnalysis
+analysis, will be associated with a DOF\_Group object. It is the
+DOF\_Group that contains the ID of equation numbers. When invoked this
+method sets that link for the DummyNode object. \\ 
+
+
+{\em virtual DOF\_Group *getDOF\_GroupPtr(void);} \\
+Method which returns a pointer to the DOF\_Group object that was set
+using {\em setDOF\_GroupPtr}. If no pointer has been set a $0$ is
+returned. \\
+
+
+{\em virtual int getNumberDOF(void) const;}\\
+Returns the result of invoking {\em getNumberDOF()} on its associated
+Node object. \\ 
+
+{\em virtual Vector \&getMass(void) const;}\\
+Returns the result of invoking {\em getMass()} on its associated
+Node object. \\ 
+
+
+{\em virtual void setMass(Vector \&mass);} \\
+Invokes {\em getNumberDOF()} on its associated
+Node object. \\ 
+
+
+{\em virtual const Vector \&getCrds(void) const;}  \\
+Returns the result of invoking {\em getCrds()} on its associated
+Node object. \\ 
+
+{\em  virtual const Vector \&getDisp(void) const;}  \\
+Returns the result of invoking {\em getDisp()} on its associated
+Node object. \\ 
+
+
+{\em  virtual const Vector \&getVel(void) const;}  \\
+Returns the result of invoking {\em getVel()} on its associated
+Node object. \\ 
+
+
+{\em  virtual const Vector \&getAccel(void) const;}  \\
+Returns the result of invoking {\em getAccel()} on its associated
+Node object. \\ 
+
+
+{\em  virtual const Vector \&getTrialDisp(void) const;}  \\
+Returns the result of invoking {\em getTrialDisp()} on its associated
+Node object. \\ 
+
+
+{\em  virtual const Vector \&getTrialVel(void) const;}  \\
+Returns the result of invoking {\em getTrialVel()} on its associated
+Node object. \\ 
+
+
+{\em  virtual const Vector \&getTrialAccel(void) const;}  \\
+Returns the result of invoking {\em getTrialAccel()} on its associated
+Node object. \\ 
+
+
+{\em void addUnbalancedLoad(const Vector \&additionalLoad);} \\
+Returns the result of invoking {\em addUnbalancedLoad()} on its associated
+Node object. \\ 
+
+{\em virtual const Vector \&getUnbalancedLoad(void) const;} \\
+Returns the result of invoking {\em getUnbalancedLoad()} on its associated
+Node object. \\ 
+
+
+
+The following commands do nothing, they just return. \\
+\indent{\em  void setTrialDisp(const Vector \&newTrialDisp);} \\
+\indent{\em  void setTrialVel(const Vector \&newTrialVel);} \\
+\indent{\em  void setTrialAccel(const Vector \&newTrialAccel);} \\
+\indent{\em  void setIncrTrialDisp(const Vector \&trialIncrDisp);} \\
+\indent{\em  void setIncrTrialVel(const Vector \&trialIncrVel);} \\
+\indent{\em  void setIncrTrialAccel(const Vector \&trialIncrAccel);} \\
+\indent{\em void zeroUnbalancedLoad(void);} \\
+\indent{\em void commitState(void);} \\

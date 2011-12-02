@@ -1,0 +1,48 @@
+%File: ~/OOP/system_of_eqn/SystemOfEqn.tex
+%What: "@(#) SystemOfEqn.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/system\_of\_eqn/SystemOfEqn.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class SystemOfEqn:  public MovableObject \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent {\bf SystemOfEqn} \\
+\indent\indent\indent LinearSOE \\
+\indent\indent\indent EigenSOE \\
+
+\noindent {\bf Description}  \\
+\indent SystemOfEqn is an abstract class. A SystemOfEqn object
+is responsible for storing the system of equations it represents.
+A Solver object, which is associated with the SystemOfEqn object, is
+responsible for performing the numerical operations to solve for the
+system of equations. \\ 
+
+\noindent {\bf Class Interface} \\
+\indent\indent {// Constructors}  \\ 
+\indent\indent {\em SystemOfEqn(int classTag);}  \\ \\
+\indent\indent {// Destructor}  \\ 
+\indent\indent {\em virtual~ $\tilde{}$SystemOfEqn();}\\  \\
+\indent\indent {// Public Methods}  \\ 
+\indent\indent {\em virtual int solve(void) =0;} \\
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em SystemOfEqn(int classTag);}  \\
+The integer {\em classTag} is provided to the constructor for the
+MovableObject.  \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$SystemOfEqn();}\\ 
+Does nothing. Declared to allow the subclass destructor to be called. \\
+
+\noindent {\bf Public Method }  \\
+\indent {\em virtual int solve(void) =0;} \\
+Invoked to cause the system of equation object to solve itself. To
+return $0$ if successful, negative number if not.
+
+
+
+

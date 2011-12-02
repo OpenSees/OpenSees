@@ -1,0 +1,98 @@
+%File: ~/OOP/convergenceTest/CTestNormUnbalance.tex
+%What: "@(#) CTestNormUnbalance.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{}$/convergenceTest/CTestNormUnbalance.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class CTestNormUnbalance: public ConvergenceTest  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent ConvergenceTest \\
+\indent\indent\indent {\bf CTestNormUnbalance} \\
+
+\noindent {\bf Description}  \\
+\indent A CTestNormUnbalance object is an object which can be used in an
+algorithmic class to test if convergence has been achieved. The
+CTestNormUnbalance class tests using the norm of the right hand side
+Vector of a LinearSOE object and a user specified tolerance value. \\
+
+
+\noindent {\bf Class Interface} \\
+\indent\indent {// Constructors}  \\ 
+\indent\indent {\em CTestNormUnbalance(double tol, int maxNumIter, int
+printFlag);}  \\  
+\indent\indent {\em CTestNormUnbalance();}  \\ \\
+\indent\indent {// Destructor}  \\ 
+\indent\indent {\em $\tilde{ }$CTestNormUnbalance();} \\ \\
+\indent\indent {// Public Methods}  \\ 
+\indent\indent {\em int setTolerance(double newTol);} \\
+\indent\indent {\em int setEquiSolnAlgo(EquiSolnAlgo \&theAlgo);} \\
+\indent\indent {\em int start(void);} \\
+\indent\indent {\em int test(void);} \\
+\indent\indent {\em int sendSelf(Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);}\\ 
+\indent\indent {\em int recvSelf(Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);}\\ 
+
+\noindent {\bf Constructors}  \\
+\indent {\em CTestNormUnbalance(double tol, int maxNumIter, int printFlag);}  \\ 
+\indent {\em CTestNormUnbalance(double tol, int );}  \\
+The integer {\em CLASS\_TAGS\_CTestNormUnbalance}, defined in
+$<$classTags.h$>$, is passed to the ConvergenceTest constructor. 
+Sets the tolerance used in {\em test()} to be {\em tol}, the max
+number of iterations to be performed to {\em maxNumIter} and the print
+flag used to determine what, if anything, is printed on each test to
+{\em printFlag}. \\
+
+\indent {\em CTestNormUnbalance();}  \\
+To be used by the FEM\_ObjectBroker object in parallel programs. The
+integer {\em CLASS\_TAGS\_CTestNormUnbalance}, defined in
+$<$classTags.h$>$, is passed to the ConvergenceTest constructor. Sets
+the tolerance used in {\em test()} to be {\em 0.0} and {\em maxNumIter} 
+to be $0$. These will be set when {\em recvSelf()} is invoked on the object. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{}$CTestNormUnbalance();} \\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em int setTolerance(double newTol);} \\
+Sets the tolerance used in {\em test()} to be {\em newTol}. \\
+
+\indent {\em int setEquiSolnAlgo(EquiSolnAlgo \&theAlgo);} \\
+It sets a pointer to {\em theAlgo}'s LinearSOE object. Returns $0$ if
+successful, a $-1$ is returned and an error message printed if no
+LinearSOE object has been set in {\em theAlgo}. \\
+
+\indent {\em virtual void start(void);} \\
+Sets an integer indicating the current number of iterations, {\em
+currentNumIter} to $1$. Returns $0$ if successfull, an error message
+and $-1$ are returned if no LinearSOE object has been set. \\ 
+
+\indent {\em int test(void);} \\
+Returns {currentNumIter} if if the two norm of the LinearSOE objects B
+Vector is less than the tolerance {\em tol}. If no LinearSOE has been
+set $-2$ is returned. If the {\em currentNumIter} $>=$ {\em
+maxNumIter} an error message is printed and $-2$ is returned. If none
+of these conditions is met, the {\em currentnumIter} is incremented 
+and $-1$ is returned. If the print flag is $0$ nothing is printed to
+opserr during the method, if $1$ the current iteration and norm are
+printed to opserr, and if $2$ the norm and number of iterations to convergence
+are printed to opserr. \\ 
+
+
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+Creates a Vector of size 2, puts the tolerance value {\em tol} and {\em numIncr}
+in this, and then invokes {\em sendVector()} on {\em
+theChannel}. Returns $0$ if successful. A warning message is printed
+and a negative number if the Channel object fails to send the Vector.\\ 
+
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ 
+Creates a Vector of size 2, invokes {\em recvVector()} on {\em
+theChannel}, and sets the values of {\em tol} and {\em numIncr}.
+Returns $0$ if successful. If the Channel object fails to receive the
+Vector, {\em tol} is set to $1.0e-8$, {\em numIter} to $25$, a warning
+message is printed, and a negative number returned.
