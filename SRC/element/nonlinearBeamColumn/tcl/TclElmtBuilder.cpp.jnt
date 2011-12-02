@@ -1,0 +1,1301 @@
+// File: ~/tcl/TclElmtBuilder.C
+// 
+// Written: Remo M. de Souza
+// Created: 08/99
+// based on TclPlaneFrame.C by fmk and rms
+//
+// Description: This file contains the implementation of the commands used 
+// to add sections and nonlinear frame elements to the model.
+
+#include <stdlib.h>
+#include <string.h>
+#include <iostream.h>
+
+#include <Domain.h>
+#include <Node.h>
+#include <ArrayOfTaggedObjects.h>
+#include <Matrix.h>
+
+#include <Section2d.h>
+#include <FiberSection2d.h>
+#include <UniaxialFiber2d.h>
+
+#include <Section3d.h>
+#include <FiberSection3d.h>
+#include <UniaxialFiber3d.h>
+
+#include <FiberSectionRepr.h>
+
+#include <NLBeamColumn2d.h>
+#include <NLBeamColumn3d.h>
+
+#include <QuadPatch.h>
+#include <CircPatch.h>
+#include <QuadCell.h>
+#include <StraightReinfLayer.h>
+#include <CircReinfLayer.h>
+#include <ReinfBar.h>
+
+#include <TclModelBuilder.h>
+
+
+#define ARRAYSIZE 30
+
+//
+// some static variables used in the functions
+//
+
+static Domain *theTclModelBuilderDomain = 0;
+static TclModelBuilder *theTclModelBuilder =0;
+static int currentSectionTag = 0;
+
+
+
+// 
+// to create a NL frame element and add to the domain
+//
+int
+TclModelBuilder_addFrameElement(ClientData clientData, Tcl_Interp *interp,
+				int inArgc, const char **inArgv,
+				Domain *theDomain,
+				TclModelBuilder *theBuilder)
+				
+{
+  theTclModelBuilderDomain = theDomain;
+  theTclModelBuilder = theBuilder;
+    
+  int NDM, NDF;
+     
+  NDM = theTclModelBuilder->getNDM();   // dimension of the structure (1d, 2d, or 3d)
+  NDF = theTclModelBuilder->getNDF();   // number of degrees of freedom per node
+
+  // split possible lists present in argv
+  char *List = 0;
+
+  List = Tcl_Merge (inArgc, inArgv);
+  if (List == 0)
+  {
+      interp->result = "WARNING - TclModelBuilder_addFrameElement - problem merging list";
+      return TCL_ERROR;
+  }
+
+//  cerr << "List :" << List << endl;
+
+  // remove braces from list
+  for (int i = 0; List[i] != '\0'; i++)
+  {
+    if ((List[i] == '{')  ||  (List[i] == '}'))
+      List[i] = ' ';
+  }
+
+  int argc;
+  char **argv = 0;
+       
+  if (Tcl_SplitList(interp, List, &argc, &argv) != TCL_OK)
+  {
+      interp->result = "WARNING - TclModelBuilder_addFrameElement - problem spliting list";
+      return TCL_ERROR;
+  }
+      
+  Tcl_Free (List);
+  
+//  cerr << "argc : " << argc; 
+//  for (int i=0; i<argc; i++)
+//  {
+//    cerr <<"string " << i << " : " << argv[i] << endl;
+//  }
+
+  
+  // create plane frame elements
+  if (NDM == 2 & NDF == 3)     
+  {
+       
+    int elemTag, iNode, jNode, numIntgrPts, secTag;
+    
+    if (argc < 7)
+    {
+      interp->result = "WARNING bad command - want: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dXj? dYj?>";
+      return TCL_ERROR;
+    }
+    int argi = 2;  
+    if (Tcl_GetInt(interp, argv[argi++], &elemTag) != TCL_OK)
+    {
+      interp->result = "WARNING invalid eleTag: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dXj? dYj?>";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[argi++], &iNode) != TCL_OK)
+    {
+      interp->result = "WARNING invalid iNode:  element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dXj? dYj?>";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[argi++], &jNode) != TCL_OK)
+    {
+      interp->result = "WARNING invalid jNode: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dXj? dYj?>";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[argi++], &numIntgrPts) != TCL_OK)
+    {
+      interp->result = "WARNING invalid numIntgrPts: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dXj? dYj?>";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[argi++], &secTag) != TCL_OK)
+    {
+      interp->result = "WARNING invalid secTag - element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dXj? dYj?>";
+      return TCL_ERROR;
+    }
+
+    // allow some additional options at end of command
+    int i;
+    int    PDeltaFlag = 0;
+    double massDens = 0;;
+    Vector jntOffset(4);
+
+    while (argi != argc) 
+    {
+      if (strcmp(argv[argi],"-PDelta") == 0) 
+      {
+          // include PDelta effects 
+          argi++;
+          PDeltaFlag = 1;
+      }
+
+      else if (strcmp(argv[argi],"-mass") == 0) 
+      {
+         // allow user to specify mass (per unit length)
+         argi++;
+         if (argi == argc || Tcl_GetDouble(interp, argv[argi++], &massDens) != TCL_OK)
+         {
+            interp->result = "WARNING invalid massDens - element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dXj? dYj?>";
+            return TCL_ERROR;
+         } 
+      }
+
+      else if (strcmp(argv[argi],"-jntOffset") == 0) 
+      {
+         // allow user to specify load pattern other than current
+         argi++;
+
+         for (i = 0; i < 4; i++)
+         {
+            if (argi == argc || Tcl_GetDouble(interp, argv[argi++], &jntOffset(i)) != TCL_OK) 
+            {
+               interp->result = "WARNING invalid jntOffset value  - element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dXj? dYj?>";
+               return TCL_ERROR;
+            }
+         }
+      }
+      else
+      {
+        interp->result = "WARNING bad command  - element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dXj? dYj?>";
+        cerr << "invalid: " << argv[argi] << endl;
+        return TCL_ERROR;
+      }
+    }
+
+    Section2d *theSection = theTclModelBuilder->getSection2d(secTag);
+
+    if (theSection == 0) 
+    {
+      cerr << "WARNING TclElmtBuilder - frameElement - no Section found with ID ";
+      cerr << secTag << endl;
+      return TCL_ERROR;
+    }
+
+    // create the element
+
+    // make copies of the sections for the whole beam
+
+    Section2d **sections = new Section2d* [numIntgrPts];
+    
+    if (!sections)
+    {
+      interp->result = "WARNING - Insufficient memory to create sections";
+      return TCL_ERROR;
+    }
+
+    for (int j=0; j<numIntgrPts; j++)
+    {
+      sections[j] = theSection->getCopy();
+
+      if (!sections[j])
+      {
+         interp->result = "WARNING - Insufficient memory to create sections";
+         return TCL_ERROR;
+      }
+    }
+
+    cerr << "Pdelta " << PDeltaFlag << endl;
+    cerr << "massDens " << massDens << endl;
+    cerr << "jntOffset " << jntOffset << endl;
+ 
+
+    Element *element;
+    if (strcmp(argv[1],"nonlinearBeamColumn") == 0)
+
+      element = new NLBeamColumn2d (elemTag, iNode, jNode, numIntgrPts, sections, PDeltaFlag, massDens, jntOffset);
+
+    else
+    {
+      interp->result = "WARNING TclElmtBuilder - addFrameElement - invalid elemType";
+      return TCL_ERROR;
+    }
+     
+    if (element == 0)
+    {
+      interp->result = "WARNING - ran out of memory to create element";
+      return TCL_ERROR;
+    }
+   
+   if (theTclModelBuilderDomain->addElement(element,true) == false) 
+   {
+      cerr << "WARNING TclElmtBuilder - addFrameElement - could not add element to domain ";
+      cerr << elemTag << endl;
+      return TCL_ERROR;
+    }
+  }
+
+  
+  
+  // create 3d frame element 
+
+  else if (NDM == 3 & NDF == 6)
+  {
+    int    eleTag, iNode, jNode, numIntgrPts, secTag;
+    double GJ;          // torsional stiffness
+    Vector vecxzPlane(3);// vector that defines local xz plane
+
+    if (argc < 12)
+    {
+      interp->result = "WARNING bad command - want: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?>";
+      return TCL_ERROR;
+    }
+    int argi = 2;
+    if (Tcl_GetInt(interp, argv[argi++], &eleTag) != TCL_OK)
+    {
+      interp->result = "WARNING invalid eleTag: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[argi++], &iNode) != TCL_OK)
+    {
+      interp->result = "WARNING invalid iNode: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[argi++], &jNode) != TCL_OK)
+    {
+      interp->result = "WARNING invalid jNode: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[argi++], &numIntgrPts) != TCL_OK)
+    {
+      interp->result = "WARNING invalid numIntgrPts: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[argi++], &secTag) != TCL_OK)
+    {
+      interp->result = "WARNING invalid secTag: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[argi++], &vecxzPlane(0)) != TCL_OK)
+    {
+      interp->result = "WARNING invalid vecxzPlaneX: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?";
+      return TCL_ERROR;
+    }
+   
+    if (Tcl_GetDouble(interp, argv[argi++], &vecxzPlane(1)) != TCL_OK)
+    {
+      interp->result = "WARNING invalid vecxzPlaneY: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?";
+      return TCL_ERROR;
+    }
+   
+    if (Tcl_GetDouble(interp, argv[argi++], &vecxzPlane(2)) != TCL_OK)
+    {
+      interp->result = "WARNING invalid vecxzPlaneZ: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?";
+      return TCL_ERROR;
+    }
+   
+    if (Tcl_GetDouble(interp, argv[argi++], &GJ) != TCL_OK)
+    {
+      interp->result = "WARNING invalid GJ: element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?";
+      return TCL_ERROR;
+    }
+
+    // allow some additional options at end of command
+    int i;
+    int    PDeltaFlag = 0;
+    double massDens = 0;;
+    Vector jntOffset(6);
+
+    while (argi != argc) 
+    {
+      if (strcmp(argv[argi],"-PDelta") == 0) 
+      {
+          // include PDelta effects 
+          argi++;
+          PDeltaFlag = 1;
+      }
+
+      else if (strcmp(argv[argi],"-mass") == 0) 
+      {
+         // allow user to specify mass (per unit length)
+         argi++;
+         if (argi == argc || Tcl_GetDouble(interp, argv[argi++], &massDens) != TCL_OK)
+         {
+            interp->result = "WARNING invalid massDens - element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?>";
+            return TCL_ERROR;
+         } 
+      }
+
+      else if (strcmp(argv[argi],"-jntOffset") == 0) 
+      {
+         // allow user to specify load pattern other than current
+         argi++;
+
+         for (i = 0; i < 6; i++)
+         {
+            if (argi == argc || Tcl_GetDouble(interp, argv[argi++], &jntOffset(i)) != TCL_OK) 
+            {
+               interp->result = "WARNING invalid jntOffset value - element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?>"; 
+               return TCL_ERROR;
+            }
+         }
+      }
+      else
+      {
+        interp->result = "WARNING bad command  - element nonlinearBeamColumn eleTag? iNode? jNode? numIntgrPts? secTag? vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ? GJ? <-PDelta> <-mass massDens?> <-jntOffset dXi? dYi? dZi? dXj? dYj? dZj?>"; 
+        cerr << "invalid: " << argv[argi] << endl;
+        return TCL_ERROR;
+      }
+    }
+    
+    Section3d *theSection = theTclModelBuilder->getSection3d(secTag);
+
+    if (theSection == 0) 
+    {
+       cerr << "WARNING Tcl3dFrame - frameElement - no Section found with ID ";
+       cerr << secTag << endl;
+       return TCL_ERROR;
+    }
+
+    // create the element
+
+    // make copies of the sections for the whole beam
+
+    Section3d **sections = new Section3d* [numIntgrPts];
+    
+    if (!sections)
+    {
+      interp->result = "WARNING - Insufficient memory to create sections";
+      return TCL_ERROR; 
+    }
+
+    for (int j=0; j<numIntgrPts; j++)
+    {
+       sections[j] = theSection->getCopy();
+
+       if (!sections[j])
+       {
+         interp->result = "WARNING - Insufficient memory to create sections";
+         return TCL_ERROR;
+       }
+    }
+    
+    Element *element;
+
+    if (strcmp(argv[1],"nonlinearBeamColumn") == 0)
+      element = new NLBeamColumn3d (eleTag, iNode, jNode, vecxzPlane, numIntgrPts, sections, GJ, PDeltaFlag, massDens, jntOffset);
+//      element = new NLBeamColumn3d (eleTag, iNode, jNode, vecxzPlane, numIntgrPts, sections, GJ, PDeltaFlag, massDens);
+    else
+    {
+       interp->result = "WARNING TclElmtBuilder - addFrameElement - invalid elemType";
+       return TCL_ERROR;
+    }
+
+    if (element == 0)
+    {
+      interp->result = "WARNING - ran out of memory to create element";
+      return TCL_ERROR;
+    }
+   
+    if (theTclModelBuilderDomain->addElement(element,true) == false) 
+    {
+      cerr << "WARNING TclElmtBuilder - addFrameElement - could not add element to domain ";
+      cerr << eleTag << endl;
+      return TCL_ERROR;
+    }     
+  }
+  
+  else
+  {
+     cerr << "WARNING NDM = " << NDM << " and NDF = " << NDF << "is imcompatible with available frame elements";
+     return TCL_ERROR;
+  }      
+
+  Tcl_Free ((char *)argv);
+        
+  // if get here we have sucessfully created the element and added it to the domain
+
+  return TCL_OK;
+}
+
+
+
+
+int TclModelBuilder_addSection(ClientData clientData, Tcl_Interp *interp, int argc,
+	                       const char **argv,
+			       Domain *theDomain,
+			       TclModelBuilder *theBuilder)
+{
+    theTclModelBuilderDomain = theDomain;
+    theTclModelBuilder = theBuilder;
+
+    // make sure at least one other argument to contain section type
+   if (argc < 2) 
+   {
+      interp->result = "WARNING need to specify a section type ";
+      return TCL_ERROR;
+   }    
+
+   // check argv[1] for type of section and create the object
+   if (strcmp(argv[1], "fiberSec") == 0) 
+   {
+      int secTag;
+      int maxNumPatches = ARRAYSIZE; 
+      int maxNumReinfLayers = ARRAYSIZE;
+
+      int buildSection(Tcl_Interp *interp, int secTag);
+		
+      if (argc < 4) 
+      {
+         return TCL_ERROR;
+      } 
+
+      if (Tcl_GetInt(interp, argv[2], &secTag) != TCL_OK)
+      {
+         interp->result = "WARNING bad command - want: \nsection fiberSec secTag { \n\tpatch <patch arguments> \n\tlayer <layer arguments> \n}";
+         return TCL_ERROR;
+      }
+      //cerr << "\nsecTag: " <<  secTag;
+      currentSectionTag = secTag;
+      
+      // create the fiber section representation (with the geometric information) 
+      
+      SectionRepres *fiberSectionRepr = new FiberSectionRepr(secTag, maxNumPatches, maxNumReinfLayers);  
+
+      if (fiberSectionRepr == 0)
+      {
+         interp->result = "WARNING - ran out of memory to create section representation";
+         return TCL_ERROR;
+      }
+
+      if (theTclModelBuilder->addSectionRepres(*fiberSectionRepr) < 0)
+      {
+         interp->result = "WARNING - cannot add section representation";
+         return TCL_ERROR;
+      }
+
+      // parse the information inside the braces (patches and reinforcing layers)
+      if (Tcl_Eval(interp, argv[3]) != TCL_OK)
+      {
+         cerr << "WARNING - error reading information in { } ";
+	 return TCL_ERROR;
+      }
+
+      // build the fiber section (for analysis)
+      if (buildSection(interp, secTag) != TCL_OK)
+      {
+         cerr << "WARNING - error constructing the section ";
+         return TCL_ERROR;
+      }
+       
+      currentSectionTag = 0;
+   }
+   else 
+   {
+      interp->result = "WARNING section type is not available";
+      return TCL_ERROR;
+   }
+   return TCL_OK;
+}
+
+
+
+
+// add patch to fiber section
+int TclModelBuilder_addPatch(ClientData clientData, Tcl_Interp *interp, int argc, 
+			     const char **argv,
+			     Domain *theDomain,
+			     TclModelBuilder *theBuilder)
+{
+    theTclModelBuilderDomain = theDomain;
+    theTclModelBuilder = theBuilder;			     
+
+    // check if a section is being processed
+   if (currentSectionTag == 0)
+   {
+      interp->result = "WARNING subcommand 'patch' is only valid inside a 'section' command";
+      return TCL_ERROR;
+   }	   
+    
+   // make sure at least one other argument to contain patch type
+   if (argc < 2) 
+   {
+      interp->result = "WARNING need to specify a patch type ";
+      return TCL_ERROR;
+   }    
+
+   // check argv[1] for type of patch  and create the object
+   if (strcmp(argv[1], "quadr") == 0) 
+   {
+      int numSubdivIJ, numSubdivJK, matTag, secTag;
+      double vertexCoordY, vertexCoordZ;
+      Matrix vertexCoords(4,2);
+      int j, argi;
+
+      if (argc < 13)
+      {
+         interp->result = "WARNING invalid number of parameters: patch quad matTag numSubdivIJ numSubdivJK yVertI zVertI yVertJ zVertJ yVertK zVertK yVertL zVertL";
+         return TCL_ERROR;
+      }
+  
+      argi = 2;
+      
+      if (Tcl_GetInt(interp, argv[argi++], &matTag) != TCL_OK)
+      {
+         interp->result = "WARNING invalid matTag: patch quad matTag numSubdivIJ numSubdivJK yVertI zVertI yVertJ zVertJ yVertK zVertK yVertL zVertL";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tmatTag: " << matTag;
+
+      if (Tcl_GetInt(interp, argv[argi++], &numSubdivIJ) != TCL_OK)
+      {
+         interp->result = "WARNING invalid numSubdivIJ: patch quad matTag numSubdivIJ numSubdivJK yVertI zVertI yVertJ zVertJ yVertK zVertK yVertL zVertL";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tnumSubdivIJ: " << numSubdivIJ;
+ 
+      if (Tcl_GetInt(interp, argv[argi++], &numSubdivJK) != TCL_OK)
+      {
+         interp->result = "WARNING invalid numSubdivJK: patch quad matTag numSubdivIJ numSubdivJK yVertI zVertI yVertJ zVertJ yVertK zVertK yVertL zVertL";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tnumSubdivJK: " << numSubdivJK;
+
+      for (j=0; j < 4; j++)
+      {
+         //cerr << "\n\tVertexCoord: " << j;
+         if (Tcl_GetDouble(interp, argv[argi++], &vertexCoordY) != TCL_OK)
+         {
+            interp->result = "WARNING invalid Coordinate y: ...yVertI zVertI yVertJ zVertJ yVertK zVertK yVertL zVertL";
+            return TCL_ERROR;
+         }
+         //cerr << "\n\t\tvertexCoordY: " << vertexCoordY; 
+
+         if (Tcl_GetDouble(interp, argv[argi++], &vertexCoordZ) != TCL_OK)
+         {
+            interp->result = "WARNING invalid Coordinate z: ...yVertI zVertI yVertJ zVertJ yVertK zVertK yVertL zVertL";
+            return TCL_ERROR;
+         }
+         //cerr << "\n\t\tvertexCoordZ: " << vertexCoordZ; 
+
+         vertexCoords(j,0) = vertexCoordY;
+         vertexCoords(j,1) = vertexCoordZ;
+      }
+       
+      // get section representation
+      secTag = currentSectionTag;
+      
+      SectionRepres *sectionRepres = theTclModelBuilder->getSectionRepres(secTag);
+      if (sectionRepres == 0) 
+      {
+         interp->result = "WARNING cannot retrieve section";
+         return TCL_ERROR;
+      }    
+     
+      if (sectionRepres->getType() != SEC_TAG_FiberSection)
+      {
+         interp->result = "WARNING section invalid: patch can only be added to fiber sections";
+         return TCL_ERROR;
+      }
+
+      FiberSectionRepr *fiberSectionRepr = (FiberSectionRepr *) sectionRepres;
+
+      // create patch
+
+      QuadPatch *patch = new QuadPatch(matTag, numSubdivIJ, numSubdivJK, vertexCoords);
+      if (!patch)
+      {
+         interp->result = "WARNING cannot alocate patch";
+         return TCL_ERROR;
+      }
+
+      //cerr << "\n\tpatch: " << *patch;
+      
+      // add patch to section representation
+
+      int error = fiberSectionRepr->addPatch(*patch);
+      delete patch;
+      
+      if (error)
+      {
+         interp->result = "WARNING cannot add patch to section";
+         return TCL_ERROR;
+      }  
+  }
+         
+   else if (strcmp(argv[1], "circ") == 0) 
+   {
+      int numSubdivRad, numSubdivCirc, matTag, secTag;
+      double yCenter, zCenter;
+      Vector centerPosition(2);
+      double intRad, extRad;
+      double startAng, endAng;
+
+      int argi;
+
+      argi = 2;
+      if (argc < 11)
+      {
+         interp->result = "WARNING invalid number of parameters: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad startAng endAng";
+         return TCL_ERROR;
+      }
+  
+      if (Tcl_GetInt(interp, argv[argi++], &matTag) != TCL_OK)
+      {
+         interp->result = "WARNING invalid matTag: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tmatTag: " << matTag;
+
+      if (Tcl_GetInt(interp, argv[argi++], &numSubdivCirc) != TCL_OK)
+      {
+         interp->result = "WARNING invalid numSubdivCirc: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tnumSubdivCirc: " << numSubdivCirc;
+
+      if (Tcl_GetInt(interp, argv[argi++], &numSubdivRad) != TCL_OK)
+      {
+         interp->result = "WARNING invalid numSubdivRad: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tnumSubdivRad: " << numSubdivRad;
+
+      if (Tcl_GetDouble(interp, argv[argi++], &yCenter) != TCL_OK)
+      {
+         interp->result = "WARNING invalid yCenter: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tyCenter: " << yCenter;
+
+      if (Tcl_GetDouble(interp, argv[argi++], &zCenter) != TCL_OK)
+      {
+         interp->result = "WARNING invalid zCenter: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tzCenter: " << zCenter;
+
+      if (Tcl_GetDouble(interp, argv[argi++], &intRad) != TCL_OK)
+      {
+         interp->result = "WARNING invalid intRad: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tintRad: " << intRad;
+
+      if (Tcl_GetDouble(interp, argv[argi++], &extRad) != TCL_OK)
+      {
+         interp->result = "WARNING invalid extRad: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\textRad: " << extRad;
+
+      if (Tcl_GetDouble(interp, argv[argi++], &startAng) != TCL_OK)
+      {
+         interp->result = "WARNING invalid startAng: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tstartAngle: " << startAng;
+
+      if (Tcl_GetDouble(interp, argv[argi++], &endAng) != TCL_OK)
+      {
+         interp->result = "WARNING invalid endAng: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tendAng: " << endAng;
+
+
+      // get section 
+      secTag = currentSectionTag;
+      
+      SectionRepres *sectionRepres = theTclModelBuilder->getSectionRepres(secTag);
+      if (sectionRepres == 0) 
+      {
+         interp->result = "WARNING cannot retrieve section";
+         return TCL_ERROR;
+      }    
+     
+      if (sectionRepres->getType() != SEC_TAG_FiberSection)
+      {
+         interp->result = "WARNING section invalid: patch can only be added to fiber sections";
+         return TCL_ERROR;
+      }
+
+      FiberSectionRepr *fiberSectionRepr = (FiberSectionRepr *) sectionRepres;
+
+      centerPosition(0) = yCenter; 
+      centerPosition(1) = zCenter; 
+   
+      // create patch
+
+      CircPatch *patch = new CircPatch(matTag, numSubdivCirc, numSubdivRad,
+                                       centerPosition, intRad, extRad, 
+                                       startAng, endAng);
+      if (!patch)
+      {
+         interp->result = "WARNING cannot alocate patch";
+         return TCL_ERROR;
+      }
+
+      //cerr << "\n\tpatch: " << *patch;
+      
+      // add patch to section
+
+      int error = fiberSectionRepr->addPatch(*patch);
+      delete patch;
+      
+      if (error)
+      {
+         interp->result = "WARNING cannot add patch to section";
+         return TCL_ERROR;
+      }
+   }
+
+   else
+   {
+      interp->result = "WARNING patch type is not available";
+      return TCL_ERROR;
+   }
+  
+   return TCL_OK;
+}
+
+
+
+
+// add layers of reinforcing bars to fiber section
+          
+int TclModelBuilder_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int argc, 
+                                const char **argv,
+			     Domain *theDomain,
+			     TclModelBuilder *theBuilder)
+{
+    theTclModelBuilderDomain = theDomain;
+    theTclModelBuilder = theBuilder;	      
+
+    
+   //cerr << "\nreading layer:";
+
+   // check if a section is being processed
+   if (currentSectionTag == 0)
+   {
+      interp->result = "WARNING subcommand 'patch' is only valid inside a 'section' command";
+      return TCL_ERROR;
+   }	   
+
+   // make sure at least one other argument to contain layer type
+   if (argc < 2) 
+   {
+      interp->result = "WARNING need to specify a layer type ";
+      return TCL_ERROR;
+   }    
+
+   // check argv[1] for type of layer and create the object
+   if (strcmp(argv[1], "straight") == 0) 
+   {
+      if (argc < 9)
+      {
+         interp->result = "WARNING invalid number of parameters: layer straight matTag numReinfBars reinfBarArea yStartPt zStartPt yEndPt zEndPt";
+         return TCL_ERROR;
+      }
+
+      int secTag, matTag, numReinfBars;
+      double reinfBarArea;
+      double yStartPt, zStartPt, yEndPt, zEndPt;
+     
+      int argi;
+
+      argi = 2;
+      
+      if (Tcl_GetInt(interp, argv[argi++], &matTag) != TCL_OK)
+      {
+         interp->result = "WARNING invalid matTag: layer straight matTag numReinfBars reinfBarArea  yStartPt zStartPt yEndPt zEndPt";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tmatTag: " << matTag;
+
+      if (Tcl_GetInt(interp, argv[argi++], &numReinfBars) != TCL_OK)
+      {
+         interp->result = "WARNING invalid numReinfBars: layer straight matTag numReinfBars reinfBarArea  yStartPt zStartPt yEndPt zEndPt";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tnumReinfBars: " << numReinfBars;
+
+      if (Tcl_GetDouble(interp, argv[argi++], &reinfBarArea) != TCL_OK)
+      {
+         interp->result = "WARNING invalid reinfBarArea: layer straight matTag numReinfBars reinfBarArea  yStartPt zStartPt yEndPt zEndPt";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\treinfBarArea: " << reinfBarArea;
+
+      if (Tcl_GetDouble(interp, argv[argi++], &yStartPt) != TCL_OK)
+      {
+         interp->result = "WARNING invalid yStartPt: layer straight matTag numReinfBars reinfBarArea  yStartPt zStartPt yEndPt zEndPt";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tyStartPt: " << yStartPt;
+    
+      if (Tcl_GetDouble(interp, argv[argi++], &zStartPt) != TCL_OK)
+      {
+         interp->result = "WARNING invalid zStartPt: layer straight matTag numReinfBars reinfBarArea  yStartPt zStartPt yEndPt zEndPt";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tzStartPt: " << zStartPt;
+       
+      if (Tcl_GetDouble(interp, argv[argi++], &yEndPt) != TCL_OK)
+      {
+         interp->result = "WARNING invalid yFinalPosit: layer straight matTag numReinfBars reinfBarArea  yStartPt zStartPt yEndPt zEndPt";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tyEndPt: " << yEndPt;
+    
+      if (Tcl_GetDouble(interp, argv[argi++], &zEndPt) != TCL_OK)
+      {
+         interp->result = "WARNING invalid zFinalPosit: layer straight matTag numReinfBars reinfBarArea  yStartPt zStartPt yEndPt zEndPt";
+         return TCL_ERROR;
+      }
+      
+      //cerr << "\n\tzEndPt: " << zEndPt;
+      
+      // get section 
+      secTag = currentSectionTag;
+
+      SectionRepres *sectionRepres = theTclModelBuilder->getSectionRepres(secTag);
+      if (sectionRepres == 0) 
+      {
+         interp->result = "WARNING cannot retrieve section";
+         return TCL_ERROR;
+      }    
+     
+      if (sectionRepres->getType() != SEC_TAG_FiberSection)
+      {
+         interp->result = "WARNING section invalid: patch can only be added to fiber sections";
+         return TCL_ERROR;
+      }
+
+      FiberSectionRepr *fiberSectionRepr = (FiberSectionRepr *) sectionRepres;
+ 
+      // create the reinforcing layer
+
+      Vector startPt(2), endPt(2);
+
+      startPt(0)  = yStartPt;
+      startPt(1)  = zStartPt;
+      endPt(0) = yEndPt;
+      endPt(1) = zEndPt;
+
+      StraightReinfLayer *reinfLayer = new StraightReinfLayer (matTag,
+                                                   numReinfBars, reinfBarArea,
+                                                   startPt, endPt);
+      if (!reinfLayer)
+      {
+         interp->result = "WARNING cannot alocate reinfLayer";
+         return TCL_ERROR;
+      }
+      //cerr << "\nStraigthReinfLayer: " << *reinfLayer;
+
+      // add reinfLayer to section
+      int error = fiberSectionRepr->addReinfLayer(*reinfLayer);
+      delete reinfLayer;
+      
+      if (error)
+      {
+         interp->result = "WARNING cannot add reinforcing layer to section";
+         return TCL_ERROR;
+      }
+      
+   }
+   else if (strcmp(argv[1], "circ") == 0) 
+   {
+      if (argc < 10)
+      {
+         interp->result = "WARNING invalid number of parameters: layer circ matTag numReinfBars reinfBarArea yCenter zCenter arcRadius startAng endAng";
+         return TCL_ERROR;
+      }
+
+      int secTag, matTag, numReinfBars;
+      double reinfBarArea;
+      double yCenter, zCenter, radius, startAng, endAng;
+     
+      int argi;
+
+      argi = 2;
+      
+      if (Tcl_GetInt(interp, argv[argi++], &matTag) != TCL_OK)
+      {
+         interp->result = "WARNING invalid matTag: layer circ matTag numReinfBars reinfBarArea yCenter zCenter radius startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tmatTag: " << matTag;
+
+      if (Tcl_GetInt(interp, argv[argi++], &numReinfBars) != TCL_OK)
+      {
+         interp->result = "WARNING invalid numReinfBars: layer circ matTag numReinfBars reinfBarArea yCenter zCenter radius startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tnumReinfBars: " << numReinfBars;
+
+      if (Tcl_GetDouble(interp, argv[argi++], &reinfBarArea) != TCL_OK)
+      {
+         interp->result = "WARNING invalid reinfBarArea: layer circ matTag numReinfBars reinfBarArea yCenter zCenter radius startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\treinfBarArea: " << reinfBarArea;
+
+      if (Tcl_GetDouble(interp, argv[argi++], &yCenter) != TCL_OK)
+      {
+         interp->result = "WARNING invalid yCenter: layer circ matTag numReinfBars reinfBarArea yCenter zCenter radius startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tyCenter: " << yCenter;
+    
+      if (Tcl_GetDouble(interp, argv[argi++], &zCenter) != TCL_OK)
+      {
+         interp->result = "WARNING invalid zCenter: layer circ matTag numReinfBars reinfBarArea yCenter zCenter radius startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tzCenter: " << zCenter;
+       
+      if (Tcl_GetDouble(interp, argv[argi++], &radius) != TCL_OK)
+      {
+         interp->result = "WARNING invalid radius: layer circ matTag numReinfBars reinfBarArea yCenter zCenter radius startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tradius: " << radius;
+    
+      if (Tcl_GetDouble(interp, argv[argi++], &startAng) != TCL_OK)
+      {
+         interp->result = "WARNING invalid startAng: layer circ matTag numReinfBars reinfBarArea yCenter zCenter radius startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tstartAng: " << startAng;
+
+      if (Tcl_GetDouble(interp, argv[argi++], &endAng) != TCL_OK)
+      {
+         interp->result = "WARNING invalid endAng: layer circ matTag numReinfBars reinfBarArea yCenter zCenter radius startAng endAng";
+         return TCL_ERROR;
+      }
+      //cerr << "\n\tendAng: " << endAng;
+
+      // get section 
+      secTag = currentSectionTag;
+      
+      SectionRepres *sectionRepres = theTclModelBuilder->getSectionRepres(secTag);
+      if (sectionRepres == 0) 
+      {
+         interp->result = "WARNING cannot retrieve section";
+         return TCL_ERROR;
+      }    
+     
+      if (sectionRepres->getType() != SEC_TAG_FiberSection)
+      {
+         interp->result = "WARNING section invalid: patch can only be added to fiber sections";
+         return TCL_ERROR;
+      }
+
+      FiberSectionRepr *fiberSectionRepr = (FiberSectionRepr *) sectionRepres;
+ 
+      // create the reinforcing layer
+
+      Vector center(2);
+
+      center(0) = yCenter; 
+      center(1) = zCenter; 
+
+      CircReinfLayer *reinfLayer = new CircReinfLayer (matTag, numReinfBars, reinfBarArea,
+                                                       center, radius, startAng, endAng);
+      if (!reinfLayer)
+      {
+         interp->result = "WARNING cannot alocate reinfLayer";
+         return TCL_ERROR;
+      }
+      //cerr << "\nCircReinfLayer: " << *reinfLayer;
+
+      // add reinfLayer to section
+      int error = fiberSectionRepr->addReinfLayer(*reinfLayer);
+      delete reinfLayer;
+      
+      if (error)
+      {
+         interp->result = "WARNING cannot add reinforcing layer to section";
+         return TCL_ERROR;
+      }
+      
+   }
+   else
+   {
+      interp->result = "WARNING reinforcing layer type is not available";
+      return TCL_ERROR;
+   }
+  
+   return TCL_OK;
+}    
+
+
+
+// build the section
+int buildSection(Tcl_Interp *interp, int secTag)
+{
+   
+  
+   //cerr << "\n building section:";
+ 
+   //cerr << "\nsecTag: " <<  secTag;
+
+   SectionRepres *sectionRepres = theTclModelBuilder->getSectionRepres(secTag);
+   if (sectionRepres == 0) 
+   {
+      interp->result = "WARNING cannot retrieve section";
+      return TCL_ERROR;
+   }    
+     
+   if (sectionRepres->getType() == SEC_TAG_FiberSection)
+   {
+      // build the section
+  
+      FiberSectionRepr *fiberSectionRepr = (FiberSectionRepr *) sectionRepres;
+
+      int i, j, k;
+      int numFibers;
+      
+      int numPatches;
+      Patch **patch;
+
+      int  numReinfLayers;
+      ReinfLayer **reinfLayer;
+
+      numPatches     = fiberSectionRepr->getNumPatches();
+      patch          = fiberSectionRepr->getPatches();
+      numReinfLayers = fiberSectionRepr->getNumReinfLayers();
+      reinfLayer     = fiberSectionRepr->getReinfLayers(); 
+   
+      numFibers = 0;
+      for (i = 0; i < numPatches; i++)
+         numFibers += patch[i]->getNumCells();
+      
+      for (i = 0; i < numReinfLayers; i++)
+         numFibers += reinfLayer[i]->getNumReinfBars();
+      
+      //cerr << "\nnumFibers: " << numFibers;
+      
+      Vector fiberPosition(2);
+      int    matTag;
+      
+      ID     fibersMaterial(numFibers);
+      Matrix fibersPosition(2,numFibers);
+      Vector fibersArea(numFibers);
+
+      int  numCells;
+      Cell **cell;
+    
+      k = 0;
+      for (i = 0; i < numPatches; i++)
+      {
+         //cerr << "\nPatch :" << i;
+      
+         numCells   = patch[i]->getNumCells();
+         matTag = patch[i]->getMaterialID();
+
+         //cerr << "\nmatTag: " << matTag(k);
+
+         cell = patch[i]->getCells();
+
+         if (cell == 0)
+         {
+            interp->result = "WARNING out of run to create fibers";
+            return TCL_ERROR;
+         }    
+         
+         //cerr << "\n\tnumCells :" << numCells;
+      
+         for (j = 0; j < numCells; j++)
+         {
+	    fibersMaterial(k) = matTag;
+            fibersArea(k)     = cell[j]->getArea();
+            fiberPosition     = cell[j]->getCentroidPosition();
+
+            fibersPosition(0,k) = fiberPosition(0);
+	    fibersPosition(1,k) = fiberPosition(1);
+	      
+            k++;
+         }
+  
+         for (j = 0; j < numCells; j++)
+           delete cell[j];
+  
+         delete [] cell;
+      }
+         
+      ReinfBar *reinfBar;
+      int numReinfBars;
+
+      for (i = 0; i < numReinfLayers; i++)
+      {
+         numReinfBars = reinfLayer[i]->getNumReinfBars();
+         reinfBar     = reinfLayer[i]->getReinfBars();
+         matTag  = reinfLayer[i]->getMaterialID();
+   
+         for (j = 0; j < numReinfBars; j++)
+         {
+	    fibersMaterial(k) = matTag; 
+            fibersArea(k)     = reinfBar[j].getArea();
+            fiberPosition     = reinfBar[j].getPosition();
+     
+	    fibersPosition(0,k) = fiberPosition(0);
+	    fibersPosition(1,k) = fiberPosition(1);
+	
+            k++;
+         }
+         delete [] reinfBar;
+      }
+
+      UniaxialMaterialModel *material;
+      
+
+      int NDM = theTclModelBuilder->getNDM();   // dimension of the structure (1d, 2d, or 3d)
+
+      
+      // creates 2d section
+      
+      if (NDM == 2)     
+      {
+         UniaxialFiber2d **fiber = new UniaxialFiber2d* [numFibers];
+          
+         if (fiber == 0)
+         {
+            interp->result = "WARNING unable to allocate fibers ";
+            return TCL_ERROR;
+         }    
+
+	 for (k = 0; k < numFibers; k++)
+	 {    
+            material = theTclModelBuilder->getMaterial(fibersMaterial(k));
+            if (material == 0)
+            {
+               interp->result = "WARNING invalid material ID for patch";
+               return TCL_ERROR;
+            }   
+	    
+	    fiber[k] = new UniaxialFiber2d(k, *material, fibersArea(k), fibersPosition(0,k));
+            if (!fiber[k]) 
+            {
+               interp->result = "WARNING unable to allocate fiber ";
+               return TCL_ERROR;
+            }    
+   
+            //cerr << *fiber[k];
+	 }
+	
+         FiberSection2d *section = new FiberSection2d(secTag, numFibers, fiber);
+   
+         if (section == 0)
+         {
+            interp->result = "WARNING - cannot construct section";
+            return TCL_ERROR;
+         }
+       
+         if (theTclModelBuilder->addSection2d (*section) < 0)
+         {
+            interp->result = "WARNING - cannot add section";
+            return TCL_ERROR;
+         }
+
+        //cerr << "section: " << *section;
+     
+      }
+      else if (NDM == 3)     
+      {
+      
+         UniaxialFiber3d **fiber = new UniaxialFiber3d* [numFibers];
+          
+         if (fiber == 0)
+         {
+            interp->result = "WARNING unable to allocate fibers ";
+            return TCL_ERROR;
+         }    
+
+	 Vector fiberPosition(2);
+	 
+	 for (k = 0; k < numFibers; k++)
+	 {    
+            material = theTclModelBuilder->getMaterial(fibersMaterial(k));
+            if (material == 0)
+            {
+               interp->result = "WARNING invalid material ID for patch";
+               return TCL_ERROR;
+            }   
+	    
+	    fiberPosition(0) = fibersPosition(0,k);
+	    fiberPosition(1) = fibersPosition(1,k);
+	    
+	    fiber[k] = new UniaxialFiber3d(k, *material, fibersArea(k), fiberPosition);
+            if (!fiber[k]) 
+            {
+               interp->result = "WARNING unable to allocate fiber ";
+               return TCL_ERROR;
+            }    
+   
+            //cerr << *fiber[k];
+	 }
+	
+         FiberSection3d *section = new FiberSection3d(secTag, numFibers, fiber);
+   
+         if (section == 0)
+         {
+            interp->result = "WARNING - cannot construct section";
+            return TCL_ERROR;
+         }
+       
+         if (theTclModelBuilder->addSection3d (*section) < 0)
+         {
+            interp->result = "WARNING - cannot add section";
+            return TCL_ERROR;
+         }
+
+        //cerr << "section: " << *section;
+       
+      }
+      else
+      {
+         cerr << "WARNING NDM = " << NDM << " is imcompatible with available frame elements";
+         return TCL_ERROR;
+      }                 
+   }
+   else 
+   {
+      interp->result = "WARNING section invalid: can only build fiber sections";
+      return TCL_ERROR;
+   }    
+
+   return TCL_OK;
+}
+
+
+

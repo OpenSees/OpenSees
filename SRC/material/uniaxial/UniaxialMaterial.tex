@@ -1,0 +1,78 @@
+%File: ~/OOP/material/UniaxialMaterial.tex
+%What: "@(#) UniaxialMaterial.tex, revA"
+
+INTERFACE MAY CHANGE IF MAKE MATERIAL MORE GENERAL. \\
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/material/UniaxialMaterial.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class UniaxialMaterial: public Material \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent Material \\
+\indent\indent\indent {\bf UniaxialMaterial} \\
+
+\noindent {\bf Description}  \\
+\indent UniaxialMaterial is an abstract class. The
+UniaxialMaterial class provides the interface that all
+UniaxialMaterial writers must provide when introducing new
+UniaxialMaterial subclasses. A UniaxialMaterial object 
+is responsible for keeping track of stress, strain and the
+constitution for a particular point in the domain. \\ 
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em UniaxialMaterial (int tag, int classTag);}  \\ \\
+\indent // Destructor \\
+\indent {\em virtual $\tilde{ }$UniaxialMaterial ();}\\ \\
+\indent // Public Methods \\
+\indent {\em virtual int setTrialStrain (double strain) = 0; } \\
+\indent {\em virtual double getStress (void) = 0; } \\
+\indent {\em virtual double getTangent (void) = 0; } \\
+\indent {\em virtual int commitState (void) = 0; } \\
+\indent {\em virtual int revertToLastCommit (void) = 0; } \\
+\indent {\em virtual int revertToStart (void) = 0; } \\
+\indent {\em virtual UniaxialMaterial *getCopy (void) = 0; } \\
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em UniaxialMaterial (int tag, int classTag);}  \\
+To construct a UniaxialMaterial whose unique integer among
+UniaxialMaterials in the domain is given by {\em tag}, and whose class
+identifier is given by {\em classTag}. These integers are passed to
+the Material class constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{ }$UniaxialMaterial ();} \\
+Does nothing. \\ 
+
+\noindent {\bf Public Methods} \\
+\indent {\em virtual int setTrialStrain (double strain) = 0; }  \\
+Sets the value of the trial strain, that value used by {\em
+getStress()} and {\em getTangent()}, to be {\em strain}. To
+return $0$ if successful, a negative number if not. \\
+
+\indent {\em virtual double getStress (void) = 0; } \\
+To return the current value of stress for the trial strain. \\
+
+\indent {\em virtual double getTangent (void) = 0; } \\
+To return the current value of the tangent for the trial strain. \\
+
+\indent {\em virtual int commitState (void) = 0; } \\
+To accept the current value of the trial strain as being on the
+solution path. To return $0$ if successful, a negative number if not. \\
+
+\indent {\em virtual int revertToLastCommit (void) = 0; } \\
+To cause the material to revert to the state at the last commit. To
+return $0$ if successful, a negative number if not. \\
+
+\indent {\em virtual int revertToStart (void) = 0; } \\
+Invoked to cause the material to revert to its original state in its
+undeformed configuration. To return $0$ if successful, a negative
+number if not. \\
+
+\indent {\em virtual UniaxialMaterial *getCopy (void) = 0; } \\
+To return an exact copy of the material. \\

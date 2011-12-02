@@ -1,0 +1,359 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE entity PUBLIC "-//UC Berkeley//DTD MoML 1//EN"
+    "http://ptolemy.eecs.berkeley.edu/xml/dtd/MoML_1.dtd">
+<entity name="Example1" class="ptolemy.actor.TypedCompositeActor">
+    <property name="_createdBy" class="ptolemy.kernel.attributes.VersionAttribute" value="6.1.devel">
+    </property>
+    <property name="SDF Director" class="ptolemy.domains.sdf.kernel.SDFDirector">
+        <property name="iterations" class="ptolemy.data.expr.Parameter" value="100">
+        </property>
+        <property name="timeResolution" class="ptolemy.moml.SharedParameter" value="1E-10">
+        </property>
+        <property name="entityId" class="org.kepler.moml.NamedObjId" value="urn:lsid:kepler-project.org:director:1:1">
+        </property>
+        <property name="class" class="ptolemy.kernel.util.StringAttribute" value="ptolemy.domains.sdf.kernel.SDFDirector">
+            <property name="id" class="ptolemy.kernel.util.StringAttribute" value="urn:lsid:kepler-project.org:directorclass:1:1">
+            </property>
+        </property>
+        <property name="semanticType000" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:1:1#Director">
+        </property>
+        <property name="semanticType111" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:2:1#Director">
+        </property>
+<property name="Documentation" class="org.kepler.moml.DocumentationAttribute">
+<property name="description" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="author" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Steve Neuendorffer</configure></property>
+<property name="version" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="userLevelDocumentation" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Under the SDF Director ("Synchronous Dataflow Director"), each actor is assumed to consume and produce exactly one token per channel on each firing. The SDF Director is often used to model simple signal-processing systems. Some Kepler examples? Signal-processing systems that use flow control or dynamic scheduling should use a PN Director, which is a superset of the SDF Director.
+SDF Directors are very efficient and require little overhead at runtime. However, the director must know the rate of consumption for all actor ports before runtime, and the consumption rate cannot change during execution. Actors that do not follow the one-token-per-channel firing convention (e.g., Repeat) should declare the number of tokens they produce or consume via the appropriate parameters. 
+
+Feedback loops, created when an actor cycles its own output into its Input Ports, can create "deadlock" errors under an SDF Director. The deadlock errors occur because the actor depends on its own output value as an initial input. To fix this problem, use a SampleDelay actor to inject an initial value into the workflow.
+
+By default, the SDF Director has no notion of time-all actors consume input tokens, perform their computation, and produce outputs in one atomic operation. Actors that depend on a notion of time may not work as expected. For example, a TimedPlotter actor will plot all values at time zero when used in SDF. 
+
+By default, the SDF Director requires that all actors in its workflow be connected. Otherwise, the director cannot account for concurrency between disconnected parts of the workflow. Usually, a PN Director should be used instead in this case; however, the allowDisconnectedGraphs parameter may also be set to true. The SDF Director will then schedule each disconnected 'island' independently.
+
+The iterations parameter can be used to limit the number of times the SDF Director fires. After the director has fired the specified number of times, it will always return false. The iterations parameter must contain an integer. The default is 0. Zero or any non-positive integer indicates that there is no limit (i.e., that execution can continue forever).
+The vectorizationFactor parameter can be used to increase the efficiency of a model. If the parameter is set to a positive integer (other than 1), the director will fire each actor the specified number of times more than normal on each iteration. The default value is 1, indicating that no vectorization should be done. Note: Changing this parameter changes the meaning of an embedded SDF model and may cause deadlock in a model that uses it. 
+
+Note: This description is based on materials from the Ptolemy II User Manual. See http://ptolemy.eecs.berkeley.edu/papers/05/ptIIdesign3-domains/ptIIdesign3-domains.pdf for more information.</configure></property>
+<property name="prop:allowDisconnectedGraphs" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Specify whether to allow disconnected actors in the workflow (by default, all actors are required to be connected). If disconnected actors are permitted, the SDF Director will schedule each disconnected 'island' independently. Nothing "forces" the director to finish executing all actors on one island before firing actors on another. However, the order of execution within each island should be correct. Usually, disconnected graphs in an SDF model indicate an error.</configure></property>
+<property name="prop:allowRateChanges" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Specify whether dynamic rate changes are permitted or not. By default, rate changes are not permitted, and the director will perform a check to disallow such models. If the parameter is selected, then models that require rate parameters to be modified during execution are valid, and the SDF Director will dynamically compute a new schedule at runtime. Note that in order to generate code from an SDF model, the parameter must be set to false.</configure></property>
+<property name="prop:constrainBufferSizes" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Specify whether buffer sizes are fixed. By default, buffers are fixed, and attempts to write to the buffer that cause the buffer to exceed its scheduled size result in an error. [[Not sure what "buffer" refers to here.]]</configure></property>
+<property name="prop:timeResolution" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The time precision used by this director. All time values are rounded to the nearest multiple of this number. The value is a double that defaults to "1E-10" (which is 10-10). The parameter is shared, meaning that if one instant in a workflow is changed, all instances will be updated.</configure></property>
+<property name="prop:iterations" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The number of times the SDF Director may be called before it returns false. If the value is less than or equal to zero, no limit is imposed and the execution can continue forever. Note that the amount of data processed by the SDF model is a function of both this parameter and the value of the vectorizationFactor. The value is an integer that defaults to zero.</configure></property>
+<property name="prop:vectorizationFactor" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The vectorizationFactor parameter can be used to increase the efficiency of a model. If the parameter is set to a positive integer (other than 1), the director will fire each actor the specified number of times more than normal on each iteration. The default value is 1, indicating that no vectorization should be done. Note: Changing this parameter changes the meaning of an embedded SDF model and may cause deadlock in a model that uses it.</configure></property>
+<property name="prop:synchronizeToRealTime" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Specify whether the execution should synchronize to real time or not. By default, the director does not synchronize to real time. If synchronize is selected, the director will only process the workflow when elapsed real time matches the product of the period parameter and the iteration count. Note: if the period parameter has a value of 0.0 (the default), then selecting this parameter has no effect.</configure></property>
+<property name="prop:period" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The time period of each iteration. The value is a double that defaults to 0.0, which means that the director does not increment model time. If the value greater than 0.0, the actor will increment model time each time it fires. If the SDF Director is at the top level, it will increment model time by the amount of time specified in its postfire() method. [[is there a default??]] If the director is not at the top level, then it will request the current time (plus the specified period) from the enclosing executive director.</configure></property>
+</property>        <property name="_location" class="ptolemy.kernel.util.Location" value="{55, 45}">
+        </property>
+    </property>
+    <property name="_windowProperties" class="ptolemy.actor.gui.WindowPropertiesAttribute" value="{bounds={166, 83, 875, 787}, maximized=false}">
+    </property>
+    <property name="_vergilSize" class="ptolemy.actor.gui.SizeAttribute" value="[600, 657]">
+    </property>
+    <property name="_vergilZoomFactor" class="ptolemy.data.expr.ExpertParameter" value="1.0">
+    </property>
+    <property name="_vergilCenter" class="ptolemy.data.expr.ExpertParameter" value="{300.0, 328.5}">
+    </property>
+    <entity name="OpenSees" class="edu.opensees.OpenSeesEvaluator">
+        <property name="fileName" class="ptolemy.data.expr.FileParameter" value="/tmp/OpenSees/EXAMPLES/kepler/Example1.tcl">
+        </property>
+        <property name="entityId" class="org.kepler.moml.NamedObjId" value="urn:lsid:kepler-project.org:actor:520:1">
+        </property>
+        <property name="class" class="ptolemy.kernel.util.StringAttribute" value="edu.opensees.OpenSeesEvaluator">
+            <property name="id" class="ptolemy.kernel.util.StringAttribute" value="urn:lsid:kepler-project.org:class:520:1">
+            </property>
+        </property>
+        <property name="semanticType000" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:1:1#ArithmeticMathOperationActor">
+        </property>
+        <property name="semanticType111" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:2:1#ArithmeticOperation">
+        </property>
+<property name="KeplerDocumentation" class="org.kepler.moml.DocumentationAttribute">
+<property name="description" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="author" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>edward lee, steve neuendorffer</configure></property>
+<property name="version" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="userLevelDocumentation" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The Scale actor reads any scalar value that supports multiplication (e.g., an integer, double, array, matrix, etc), and outputs a scaled version of the value.
+
+The actor transforms the input based on a scaling factor specified with the factor parameter. For data types where multiplication is not commutative (e.g., matrices), the order of the input value and the factor can be specified with the scaleOnLeft parameter. If scaleOnLeft is set to true (the default) the factor is multiplied on the left and the input on the right.
+
+The actor automatically assigns an output data type based on the input and factor types.  If the input is an array, the output is also an array, with the elements scaled. If the input is an array of arrays, only the elements of the innermost array will be scaled.</configure></property>
+<property name="prop:fileName" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The scaling factor. The parameter can contain any scalar value that supports multiplication. The default value is 1.</configure></property>
+</property>        <property name="_location" class="ptolemy.kernel.util.Location" value="[270.0, 280.0]">
+        </property>
+    </entity>
+    <entity name="Eigenvalue" class="edu.opensees.OpenSeesParameter">
+        <property name="parameterName" class="ptolemy.data.expr.FileParameter" value="set eigenvalue">
+        </property>
+        <property name="parameterValue" class="ptolemy.data.expr.FileParameter" value="10.0">
+        </property>
+        <property name="entityId" class="org.kepler.moml.NamedObjId" value="urn:lsid:kepler-project.org:actor:519:1">
+        </property>
+        <property name="class" class="ptolemy.kernel.util.StringAttribute" value="edu.opensees.OpenSeesParameter">
+            <property name="id" class="ptolemy.kernel.util.StringAttribute" value="urn:lsid:kepler-project.org:class:519:1">
+            </property>
+        </property>
+        <property name="semanticType000" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:1:1#ArithmeticMathOperationActor">
+        </property>
+        <property name="semanticType111" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:2:1#ArithmeticOperation">
+        </property>
+<property name="KeplerDocumentation" class="org.kepler.moml.DocumentationAttribute">
+<property name="description" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="author" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>edward lee, steve neuendorffer</configure></property>
+<property name="version" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="userLevelDocumentation" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The Scale actor reads any scalar value that supports multiplication (e.g., an integer, double, array, matrix, etc), and outputs a scaled version of the value.
+
+The actor transforms the input based on a scaling factor specified with the factor parameter. For data types where multiplication is not commutative (e.g., matrices), the order of the input value and the factor can be specified with the scaleOnLeft parameter. If scaleOnLeft is set to true (the default) the factor is multiplied on the left and the input on the right.
+
+The actor automatically assigns an output data type based on the input and factor types.  If the input is an array, the output is also an array, with the elements scaled. If the input is an array of arrays, only the elements of the innermost array will be scaled.</configure></property>
+<property name="prop:parameterName" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The scaling factor. The parameter can contain any scalar value that supports multiplication. The default value is 1.</configure></property>
+<property name="prop:parameterValue" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The scaling factor. The parameter can contain any scalar value that supports multiplication. The default value is 1.</configure></property>
+</property>        <property name="_location" class="ptolemy.kernel.util.Location" value="[170.0, 280.0]">
+        </property>
+    </entity>
+    <entity name="StringToInt" class="edu.opensees.StringToDouble">
+<property name="KeplerDocumentation" class="ptolemy.vergil.basic.KeplerDocumentationAttribute">
+<property name="description" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="author" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="version" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="userLevelDocumentation" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+</property>        <property name="entityId" class="org.kepler.moml.NamedObjId" value="urn:lsid:kepler-project.org:actor:521:1">
+        </property>
+        <property name="class" class="ptolemy.kernel.util.StringAttribute" value="edu.opensees.StringToDouble">
+            <property name="id" class="ptolemy.kernel.util.StringAttribute" value="urn:lsid:kepler-project.org:class:521:1">
+            </property>
+        </property>
+        <property name="semanticType000" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:1:1#ConversionActor">
+        </property>
+        <property name="semanticType111" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:2:1#DataStringOperation">
+        </property>
+        <property name="_location" class="ptolemy.kernel.util.Location" value="[370.0, 280.0]">
+        </property>
+    </entity>
+    <entity name="Ramp" class="ptolemy.actor.lib.Ramp">
+        <property name="firingCountLimit" class="ptolemy.data.expr.Parameter" value="0">
+        </property>
+        <property name="init" class="ptolemy.data.expr.Parameter" value="0.1">
+        </property>
+        <property name="step" class="ptolemy.actor.parameters.PortParameter" value="0.1">
+        </property>
+<property name="KeplerDocumentation" class="ptolemy.vergil.basic.KeplerDocumentationAttribute">
+<property name="description" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="author" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Yuhong Xiong, Edward A. Lee</configure></property>
+<property name="version" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="userLevelDocumentation" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The Ramp actor increments its initial value by a specified amount when the actor iterates. The actor outputs the incremented value.
+
+The first time the actor fires, it outputs the value of the init parameter. The increment value, specified with either the step port or parameter, will only be added on the following iteration. To add an increment to the first iteration, use the Accumulator actor.
+
+The actor accepts values of any type that support addition.</configure></property>
+<property name="port:output" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>An output port that broadcasts the incremented value.</configure></property>
+<property name="port:trigger" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>An input port that has no declared type (in other words, the port can accept any data type: double, int, array, etc.) If the port is connected, the actor will not fire until the trigger port receives an input token. Connecting the port is optional, but useful when scheduling the actor to perform at a certain time.</configure></property>
+<property name="port:step" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>An input port that accepts the amount by which the output is incremented on each iteration. The port accepts a value of any type that supports addition. The value is an integer and defaults to 1.</configure></property>
+<property name="prop:firingCountLimit" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The number of iterations that transpire before the actor indicates that it is finished. If firingCountLimit is set to zero, the actor has no limit imposed.</configure></property>
+<property name="prop:step" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The amount by which the output is incremented on each iteration. The port accepts a value of any type that supports addition. The default is the integer 1.</configure></property>
+<property name="prop:init" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The value produced by the Ramp on its first iteration. The default value is the integer 0.</configure></property>
+</property>        <property name="entityId" class="org.kepler.moml.NamedObjId" value="urn:lsid:kepler-project.org:actor:5:1">
+        </property>
+        <property name="class" class="ptolemy.kernel.util.StringAttribute" value="ptolemy.actor.lib.Ramp">
+            <property name="id" class="ptolemy.kernel.util.StringAttribute" value="urn:lsid:kepler-project.org:class:881:1">
+            </property>
+        </property>
+        <property name="semanticType000" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:1:1#IterativeMathOperationActor">
+        </property>
+        <property name="semanticType111" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:2:1#IterativeOperation">
+        </property>
+        <property name="semanticType222" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:2:1#WorkflowInput">
+        </property>
+        <property name="_location" class="ptolemy.kernel.util.Location" value="[15.0, 155.0]">
+        </property>
+    </entity>
+    <entity name="XY Plotter" class="ptolemy.actor.lib.gui.XYPlotter">
+        <property name="fillOnWrapup" class="ptolemy.data.expr.Parameter" value="true">
+        </property>
+        <property name="_windowProperties" class="ptolemy.actor.gui.WindowPropertiesAttribute" value="{bounds={399, 441, 512, 353}, maximized=false}">
+        </property>
+        <property name="_plotSize" class="ptolemy.actor.gui.SizeAttribute" value="[500, 300]">
+        </property>
+        <property name="startingDataset" class="ptolemy.data.expr.Parameter" value="0">
+        </property>
+<property name="KeplerDocumentation" class="ptolemy.vergil.basic.KeplerDocumentationAttribute">
+<property name="description" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="author" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Jie Liu</configure></property>
+<property name="version" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="userLevelDocumentation" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The XY Plotter reads x and y double tokens via its two input multiports. Each time the actor iterates, it reads one token from each input channel. The actor plots the (x,y) points and displays the graph. 
+
+X and Y tokens received on the first channel of the input port
+ are plotted together, as are the tokens received on the second channels, etc. The two input port
+ must have the same width (i.e., the same number of input channels).</configure></property>
+<property name="port:inputY" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>A multiport that accepts doubles representing y-values. The port must have the same width (i.e., number of input channels) as the inputX port.</configure></property>
+<property name="port:inputX" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>A multiport that accepts one or more doubles representing x-values. The port must have the same width (i.e., number of input channels) as the inputY port.</configure></property>
+<property name="prop:fillOnWrapup" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Specify whether to rescale the plot so that all data is visible. By default, the actor scales the plot to fill the display area.</configure></property>
+<property name="prop:legend" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Annotations that will be displayed with the plot graph. Specify a comma-separated list of values that correspond to the input data sets (e.g., rainfall, temperature, elevation).</configure></property>
+<property name="prop:startingDataset" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The starting dataset number to which data is plotted. [??not sure what this means/how users see this number] The value must be a non-negative integer. The default is 0.</configure></property>
+</property>        <property name="entityId" class="org.kepler.moml.NamedObjId" value="urn:lsid:kepler-project.org:actor:11:1">
+        </property>
+        <property name="class" class="ptolemy.kernel.util.StringAttribute" value="ptolemy.actor.lib.gui.XYPlotter">
+            <property name="id" class="ptolemy.kernel.util.StringAttribute" value="urn:lsid:kepler-project.org:class:887:1">
+            </property>
+        </property>
+        <property name="semanticType000" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:1:1#Plotter">
+        </property>
+        <property name="semanticType111" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:2:1#GraphicalOutput">
+        </property>
+        <property name="semanticType222" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:5:1#ScatterPlot">
+        </property>
+        <property name="_location" class="ptolemy.kernel.util.Location" value="[510.0, 170.0]">
+        </property>
+        <configure>
+<?plotml <!DOCTYPE plot PUBLIC "-//UC Berkeley//DTD PlotML 1//EN"
+"http://ptolemy.eecs.berkeley.edu/xml/dtd/PlotML_1.dtd">
+<plot>
+<title>XY Plotter</title>
+<xRange min="1.7976931348623157E308" max="-1.7976931348623157E308"/>
+<yRange min="1.7976931348623157E308" max="-1.7976931348623157E308"/>
+</plot>?>
+        </configure>
+    </entity>
+    <entity name="Display" class="ptolemy.actor.lib.gui.Display">
+        <property name="_windowProperties" class="ptolemy.actor.gui.WindowPropertiesAttribute" value="{bounds={734, 42, 430, 211}, maximized=false}">
+        </property>
+        <property name="_paneSize" class="ptolemy.actor.gui.SizeAttribute" value="[418, 158]">
+        </property>
+        <property name="rowsDisplayed" class="ptolemy.data.expr.Parameter" value="10">
+        </property>
+        <property name="columnsDisplayed" class="ptolemy.data.expr.Parameter" value="40">
+        </property>
+        <property name="suppressBlankLines" class="ptolemy.data.expr.Parameter" value="false">
+        </property>
+<property name="KeplerDocumentation" class="ptolemy.vergil.basic.KeplerDocumentationAttribute">
+<property name="description" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="author" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Yuhong Xiong, Edward A. Lee</configure></property>
+<property name="version" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="userLevelDocumentation" class="ptolemy.kernel.util.ConfigurableAttribute"><configure><p>The Display actor reads tokens of any type via its input multiport, and displays each token on a separate line in a text display window.</p>
+
+<p>Specify the size of the text display window with the rowsDisplayed and columnsDisplayed parameters. Simply resizing the window onscreen does not persistently change the size; when the saved workflow is re-opened, the new size is forgotten. </p>
+
+<p>If the input is a string token, then the actor strips the surrounding quotation marks before displaying the value.</p> 
+
+<p>Select the suppressBlankLines parameter to specify that the actor not add blank lines to the display. By default, the actor will add blank lines.</p>
+
+<p>Note: this actor can consume large amounts of memory. It is not advisable to use it to display large output streams.</p></configure></property>
+<property name="port:input" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>A multiport that accepts tokens of any type.</configure></property>
+<property name="prop:suppressBlankLines" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Specify whether the actor should display blank lines (the default) or suppress them.</configure></property>
+<property name="prop:rowsDisplayed" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The vertical size of the display, in rows. The value is an integer that defaults to 10.</configure></property>
+<property name="prop:columnsDisplayed" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The horizontal size of the display, in columns. The value is an integer that defaults to 40.</configure></property>
+<property name="prop:title" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The title of the text display window. If specified, the value will appear in the title bar of the text display window.</configure></property>
+</property>        <property name="entityId" class="org.kepler.moml.NamedObjId" value="urn:lsid:kepler-project.org:actor:7:1">
+        </property>
+        <property name="class" class="ptolemy.kernel.util.StringAttribute" value="ptolemy.actor.lib.gui.Display">
+            <property name="id" class="ptolemy.kernel.util.StringAttribute" value="urn:lsid:kepler-project.org:class:883:1">
+            </property>
+        </property>
+        <property name="semanticType000" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:1:1#TextualOutputActor">
+        </property>
+        <property name="semanticType111" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:2:1#TextualOutput">
+        </property>
+        <property name="_location" class="ptolemy.kernel.util.Location" value="[515.0, 280.0]">
+        </property>
+    </entity>
+    <entity name="File Writer" class="org.geon.FileWrite">
+        <property name="fileName" class="ptolemy.data.expr.FileParameter" value="/tmp/OpenSees/EXAMPLES/kepler/Example1.data">
+        </property>
+        <property name="append" class="ptolemy.data.expr.Parameter" value="false">
+        </property>
+        <property name="confirmOverwrite" class="ptolemy.data.expr.Parameter" value="true">
+        </property>
+<property name="KeplerDocumentation" class="ptolemy.vergil.basic.KeplerDocumentationAttribute">
+<property name="description" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="author" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>No author given</configure></property>
+<property name="version" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="userLevelDocumentation" class="ptolemy.kernel.util.ConfigurableAttribute"><configure><p>The FileWriter actor reads a string token and writes it to a file. The actor outputs the file path of the generated file.</p>
+
+<p>The actor is similar to the LineWriter, except that the FileWriter outputs the generated file path, while the LineWriter actor does not. FileWriter is also similar to TextFileWriter, except that the FileWriter actor adds line breaks, while the TextFileWriter does not.</p>
+
+<p>Specify whether the input is appended to the specified file (if it exists), or if an existing file is overwritten--with or without confirmation--via the append and confirmOverwrite parameters.</p></configure></property>
+<property name="port:input" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>An input port that receives a string to write to a file.</configure></property>
+<property name="port:url" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>An output port that broadcasts the file name of the generated file.</configure></property>
+<property name="prop:append" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Specify whether to append the generated file to an existing, specified file. By default, the actor will overwrite any preexisting file.</configure></property>
+<property name="prop:confirmOverwrite" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>Specify whether the actor should confirm before overwriting an existing file. By default, the actor will not ask for confirmation.</configure></property>
+<property name="prop:fileName" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The file name to which to write. See FileParameter for more information about specifying file names. The default value is "System.out".</configure></property>
+</property>        <property name="entityId" class="org.kepler.moml.NamedObjId" value="urn:lsid:kepler-project.org:actor:144:1">
+        </property>
+        <property name="class" class="ptolemy.kernel.util.StringAttribute" value="org.geon.FileWrite">
+            <property name="id" class="ptolemy.kernel.util.StringAttribute" value="urn:lsid:kepler-project.org:class:1003:1">
+            </property>
+        </property>
+        <property name="semanticType000" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:1:1#WriterOutputActor">
+        </property>
+        <property name="semanticType111" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:2:1#LocalOutput">
+        </property>
+        <property name="_location" class="ptolemy.kernel.util.Location" value="{525, 385}">
+        </property>
+    </entity>
+    <entity name="Vector Assembler" class="ptolemy.actor.lib.VectorAssembler">
+<property name="KeplerDocumentation" class="ptolemy.vergil.basic.KeplerDocumentationAttribute">
+<property name="description" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="author" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="version" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="userLevelDocumentation" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+</property>        <property name="entityId" class="org.kepler.moml.NamedObjId" value="urn:lsid:kepler-project.org:actor:52:1">
+        </property>
+        <property name="class" class="ptolemy.kernel.util.StringAttribute" value="ptolemy.actor.lib.VectorAssembler">
+            <property name="id" class="ptolemy.kernel.util.StringAttribute" value="urn:lsid:kepler-project.org:class:928:1">
+            </property>
+        </property>
+        <property name="semanticType000" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:1:1#VectorActor">
+        </property>
+        <property name="semanticType111" class="org.kepler.sms.SemanticType" value="urn:lsid:localhost:onto:2:1#DataStructureOperation">
+        </property>
+        <property name="_location" class="ptolemy.kernel.util.Location" value="[315.0, 445.0]">
+        </property>
+        <property name="keplerFormattedPTIIDocumentation" class="ptolemy.vergil.basic.DocAttribute">
+            <property name="author" class="ptolemy.kernel.util.StringAttribute" value="null">
+            </property>
+            <property name="version" class="ptolemy.kernel.util.StringAttribute" value="null">
+            </property>
+            <property name="since" class="ptolemy.kernel.util.StringAttribute">
+            </property>
+            <property name="description" class="ptolemy.data.expr.StringParameter" value="null">
+            </property>
+        </property>
+    </entity>
+    <relation name="relation" class="ptolemy.actor.TypedIORelation">
+        <property name="width" class="ptolemy.data.expr.Parameter" value="1">
+        </property>
+    </relation>
+    <relation name="relation2" class="ptolemy.actor.TypedIORelation">
+        <property name="width" class="ptolemy.data.expr.Parameter" value="1">
+        </property>
+    </relation>
+    <relation name="relation3" class="ptolemy.actor.TypedIORelation">
+        <property name="width" class="ptolemy.data.expr.Parameter" value="1">
+        </property>
+        <vertex name="vertex1" value="[135.0, 175.0]">
+        </vertex>
+    </relation>
+    <relation name="relation4" class="ptolemy.actor.TypedIORelation">
+        <property name="width" class="ptolemy.data.expr.Parameter" value="1">
+        </property>
+        <vertex name="vertex1" value="[470.0, 300.0]">
+        </vertex>
+    </relation>
+    <relation name="relation5" class="ptolemy.actor.TypedIORelation">
+        <property name="width" class="ptolemy.data.expr.Parameter" value="1">
+        </property>
+    </relation>
+    <link port="OpenSees.output" relation="relation2"/>
+    <link port="OpenSees.parameters" relation="relation"/>
+    <link port="Eigenvalue.output" relation="relation"/>
+    <link port="Eigenvalue.parameterValuePort" relation="relation3"/>
+    <link port="StringToInt.string" relation="relation2"/>
+    <link port="StringToInt.double" relation="relation4"/>
+    <link port="Ramp.output" relation="relation3"/>
+    <link port="XY Plotter.inputX" relation="relation3"/>
+    <link port="XY Plotter.inputY" relation="relation4"/>
+    <link port="Display.input" relation="relation4"/>
+    <link port="File Writer.input" relation="relation5"/>
+    <link port="Vector Assembler.input" relation="relation3"/>
+    <link port="Vector Assembler.input" relation="relation4"/>
+    <link port="Vector Assembler.output" relation="relation5"/>
+</entity>

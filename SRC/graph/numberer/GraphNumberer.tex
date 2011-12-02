@@ -1,0 +1,78 @@
+%File: ~/OOP/graph/numberer/GraphNumberer.tex
+
+%What: "@(#) GraphNumberer.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/graph/numberer/GraphNumberer.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class GraphNumberer: public MovableObject; \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent {\bf GraphNumberer} \\
+\indent\indent\indent RCM \\
+\indent\indent\indent MinDegree \\
+
+\noindent {\bf Description}  \\
+\indent GraphNumberer is an abstract class. The GraphNumberer
+class defines the interface that all programmers must provide when
+introducing new GraphNumberer subclasses. A GraphNumberer is an
+algorithmic class for numbering the Vertices of a Graph; that is
+assigning a unique integer value ($0$ through {\em numVertex} $-1$) to
+each Vertex (uses {\em tmp} variable of Vertex) of the Graph. \\
+
+
+\noindent {\bf Class Interface }  \\
+\indent // Constructor  \\
+\indent {\em GraphNumberer(int classTag);}  \\ \\
+\indent // Destructor  \\
+\indent {\em virtual~$\tilde{}$GraphNumberer();}  \\ \\
+\indent // Public Methods   \\
+\indent {\em virtual const ID \&number(Graph \&theGraph, int
+lastVertexTag = -1) =0;}\\
+\indent {\em virtual const ID \&number(Graph \&theGraph, const ID
+\&lastVertices) =0;}\\
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em GraphNumberer(int classTag);}  \\
+The integer {\em classTag} is passed to the MovableObject classes
+constructor.\\ 
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~$\tilde{}$GraphNumberer();}  \\
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual const ID \&number(Graph \&theGraph, int
+lastVertex = -1) =0;}\\
+This is the method invoked to perform the graph numbering, that is to
+assign a unique integer $1$ through {\em numVertex}, to each Vertex in
+the Graph. Returns an ordered ID containing the vertex references in the order
+of the numbering, i.e. $ID(0)$ contains the integer reference for the
+vertex assigned the number 1, $ID(1)$ contains the integer reference for the
+vertex assigned the number 2 and so on. A side effect of the numbering
+is that the {\em Tmp} variable of each vertex is set to the number
+assigned to that vertex. If {\em lastVertex} is not $-1$ the Vertex
+whose tag is given by {\em lastVertex} should be numbered last (it
+does not have to be though THIS MAY CHANGE).\\
+
+\indent {\em virtual const ID \&number(Graph \&theGraph, const ID
+\&lastVertices) =0;}\\
+This is the method invoked to perform the graph numbering, that is to
+assign a unique integer $1$ through {\em numVertex}, to each Vertex in
+the Graph. Returns an ordered ID containing the vertex references in the order
+of the numbering, i.e. $ID(0)$ contains the integer reference for the
+vertex assigned the number 1, $ID(1)$ contains the integer reference for the
+vertex assigned the number 2 and so on. A side effect of the numbering
+is that the {\em Tmp} variable of each vertex is set to the number
+assigned to that vertex. {\em lastVertices} is used as a hint to
+indicate that these Vertices should be numbered last (they do not have
+to be though THIS MAY CHANGE).
+
+
+
+
+
+

@@ -1,0 +1,11 @@
+This directory containes input files used during testing of OpenSees. Do not
+edit or commit new files here before you have emailed Frank
+(fmk@ce.berkeley.edu) or Boris (jeremic@ucdavis.edu).
+
+The initial set of test examples is taken from ExampleScripts, and the only
+difference is in smaller number of load steps (to save time).
+
+If you are developing new features for OpenSees, think of providing a set of
+test examples that will allow us to run through most (if not all) of your
+functions and test them.
+

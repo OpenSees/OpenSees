@@ -1,0 +1,158 @@
+%File: ~/OOP/domain/pattern/LoadPattern.tex
+%What: "@(#) LoadPattern.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$domain/pattern/LoadPattern.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class LoadPattern: public DomainComponent  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent DomainComponent \\
+\indent\indent\indent {\bf LoadPattern} \\
+
+\noindent {\bf Description} \\ 
+\indent The LoadPattern class is a concrete base class. A
+LoadPattern is a container class for Load and SP\_Constraint
+objects. Each LoadPattern object is assocaited with a TimeSeries
+object which, for a given pseudo time, will return the appropriate
+load factor to be applied to th load in the LoadPattern. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructors \\ 
+\indent {\em LoadPattern(int tag);}\\ 
+\indent {\em LoadPattern(int tag, int classTag);}\\ \\
+\indent // Destructor \\ 
+\indent {\em virtual $\tilde{ }$LoadPattern();}\\  \\
+\indent // Public Methods \\ 
+\indent {\em virtual void setTimeSeries(TimeSeries *theSeries);}\\
+\indent {\em virtual void setDomain(Domain *theDomain);}\\ \\
+\indent {\em  // Public Methods to add loads}\\
+\indent {\em  virtual bool addNodalLoad(NodalLoad *);}\\
+\indent {\em  virtual bool addElementalLoad(ElementalLoad *);}\\
+\indent {\em  virtual bool addSP\_Constraint(SP\_Constraint *);}\\ 
+\indent {\em  virtual NodalLoadIter     \&getNodalLoads(void);}\\
+\indent {\em  virtual ElementalLoadIter \&getElementalLoads(void);}\\
+\indent {\em  virtual SP\_ConstraintIter \&getSPs(void);}\\ \\
+\indent {\em  // Public Methods to remove loads}\\
+\indent {\em  virtual NodalLoad *removeNodalLoad(int tag);}\\
+\indent {\em  virtual ElementalLoad *removeElementalLoad(int tag);}\\
+\indent {\em  virtual SP\_Constraint *removeSP\_Constraint(int tag);}\\ \\
+\indent {\em  // Public Methods to apply loads}\\
+\indent {\em  virtual void applyLoad(double pseudoTime = 0.0);}\\
+\indent {\em  virtual void setLoadConstant(void);}\\ \\
+\indent {\em  // Public Methods for o/p}\\
+\indent {\em  virtual int sendSelf(int commitTag, Channel \&theChannel);}\\
+\indent {\em  virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\
+\indent {\em  virtual void Print(OPS_Stream \&s, int flag =0);}\\
+
+
+\noindent {\bf Constructor} \\ 
+\indent {\em LoadPattern(int tag);}\\ 
+The integer {\em tag} is passed to the DomainComponent classes
+constructor. Creates three ArrayOftaggedObjects objects to store
+pointers to the NodalLoad, ElementalLoad and SP\_Constraints and three
+iters. If not enough memory is available for these objects an error
+message is printed and the program is terminated. \\  
+
+\indent {\em LoadPattern(int tag, classTag);}\\ 
+This is the constructor provided for subclasses to use. The integers
+{\em tag} and {\em classTag} are passed to the DomainComponent classes
+constructor. \\ 
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{ }$LoadPattern();}\\ 
+Invokes the destructor on the TimeSeries object. Also invokes the
+destructor on any objects created in the constructor for storage of
+the pointers and for iters. It does not invoke the destructor on these
+objects, the Domain object is responsible for doing this.\\
+
+\noindent {\bf Public Methods} \\
+\indent {\em virtual void setTimeSeries(TimeSeries *theSeries);}\\
+If a TimeSeries object is associated with the pattern, the destructor
+is invoked on that TimeSeries object. It then sets the TimeSeries object
+associated with the LoadPattern to {\em theSeries}. \\
+
+\indent {\em virtual void setDomain(Domain *theDomain);}\\ 
+If any loads or constraint objects exist in the LoadPattern, the
+LoadPattern will invoke {\em setDomain()} on those objects. Finally
+invokes the DomainComponent classes {\em setDomain()} method. \\
+
+\indent {\em  virtual bool addNodalLoad(NodalLoad *theLoad);}\\
+Adds the NodalLoad object pointed to by {\em theLoad} to the
+LoadPattern. If the LoadPattern could add the pointer to its storage
+object for nodal loads, it will invoke {\em setDomain()}
+and {\em setLoadPattern()} on the load object if a Domain has been set. \\
+
+\indent {\em  virtual bool addElementalLoad(ElementalLoad *theLoad);}\\
+Adds the ElementalLoad pointed to by {\em theLoad} to the
+LoadPattern. If the LoadPattern could add the pointer to its storage
+object for elemental loads, it will invoke {\em setDomain()}
+and {\em setLoadPattern()} on the load object if a Domain has been set. \\
+
+\indent {\em  virtual bool addSP\_Constraint(SP\_Constraint *theSp);}\\ 
+Adds the SP\_Constraint pointed to by {\em theSp} to the
+LoadPattern. If the LoadPattern could add the pointer to its storage
+object for single-point constraints, it will invoke {\em setDomain()}
+and {\em setLoadPattern()} on the constraint object if a Domain has
+been set. \\
+
+\indent {\em  virtual NodalLoadIter     \&getNodalLoads(void);}\\
+Returns an iter to the nodal loads in the LoadPattern. \\
+
+\indent {\em  virtual ElementalLoadIter \&getElementalLoads(void);}\\
+Returns an iter to the elemental loads in the LoadPattern. \\
+
+\indent {\em  virtual SP\_ConstraintIter \&getSPs(void);}\\ 
+Returns an iter to the single-point constraints in the LoadPattern. \\
+    
+\indent {\em  virtual NodalLoad *removeNodalLoad(int tag);}\\
+To remove the nodal load whose identifier is given by {\em tag} from
+the LoadPattern and sets the laods associated Domain object to
+$0$. Returns a pointer to the load if succesfully removed, otherwise
+$0$ is returned. \\ 
+
+\indent {\em  virtual ElementalLoad *removeElementalLoad(int tag);}\\
+To remove the elemental load whose identifier is given by {\em tag} from
+the LoadPattern and set the loads associated Domain object to
+$0$. Returns a pointer to the load if succesfully removed, otherwise
+$0$ is returned. \\ 
+
+\indent {\em  virtual SP\_Constraint *removeSP\_Constraint(int tag);}\\ 
+To remove the single-point constraint whose identifier is given by {\em tag} from
+the LoadPattern and st its associated Doman object to $0$. Returns a
+pointer to the load if succesfully removed, otherwise $0$ is
+returned. \\ 
+
+\indent {\em  virtual void applyLoad(double pseudoTime = 0.0);}\\
+To apply the load for the pseudo time {\em pseudoTime}. From the
+associated TimeSeries object the LoadPattern will obtain a current
+load factor for the pseudo time. It will then invoke {\em
+applyLoad(load factor)} on the loads and {\em applyConstraint(load
+factor)} on the single-point constraints in the LoadPattern. If {\em
+setLoadConstant()} has been invoked, the saved load factor is used and
+no call is made to the TimeSeries object. If no TimeSeries is
+associated with the object a load factor of $0.0$ is used. \\
+
+\indent {\em  virtual void setLoadConstant(void);}\\ 
+Marks the LoadPattern as being constant. Subsequent calls to {\em
+applyLoad()} will use the current load factor. \\
+
+\indent {\em  virtual int sendSelf(int commitTag, Channel
+\&theChannel);}\\
+Creates a vector of size 4 into which it places the current load
+factor, the mark indicating whether LoadPattern is constant, and the
+database tag and class tag of the TimeSeris object. Invokes {\em
+sendVector()} on the Channel object and {\em sendSelf()} on the
+TimeSeries object. \\
+
+\indent {\em  virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\
+Does the mirror image of {\em sendSelf()}. \\
+
+\indent {\em  virtual void Print(OPS_Stream \&s, int flag =0);}\\
+Invokes {\em Print(s, flag)} on the TimeSeries, NodalLoads,
+ElementalLoads and SP\_Constraints. 

@@ -1,0 +1,164 @@
+# This file is part of MUMPS VERSION 4.7.3
+# This Version was built on Fri May 4 15:54:01 2007
+#
+#
+################################################################################
+#
+#   Makefile.inc.generic
+#
+#   This defines some parameters dependent on your platform; you should
+#   look for the approriate file in the directory ./Make.inc/ and copy it
+#   into a file called Makefile.inc. For example, from the MUMPS root
+#   directory, use 
+#   "cp Make.inc/Makefile.inc.generic ./Makefile.inc"
+#   (see the main README file for details)
+#
+#   If you do not find any suitable Makefile in Makefile.inc, use this file:
+#   "cp Make.inc/Makefile.inc.generic ./Makefile.inc" and modify it according
+#   to the comments given below. If you manage to build MUMPS on a new platform,
+#   and think that this could be useful to others, you may want to send us
+#   the corresponding Makefile.inc file.
+#
+################################################################################
+
+
+#Begin orderings
+# NOTE that PORD is distributed within MUMPS by default. If you would like to
+# use other orderings, you need to obtain the corresponding package and modify
+# the variables below accordingly.
+#
+# For example, to have Metis available within MUMPS:
+#          1/ download Metis and compile it
+#          2/ uncomment (suppress # in first column) lines 
+#             starting with LMETISDIR,  LMETIS
+#          3/ add -Dmetis in line ORDERINGSF
+#             ORDERINGSF  = -Dpord -Dmetis
+#          4/ Compile MUMPS 
+#             make clean; make   (to clean up previous installation)
+#
+#          Metis is now available as an internal ordering for MUMPS.
+
+
+#LSCOTCHDIR = $(HOME)/JY/emilio/bin/generic
+#LSCOTCH   = -L$(LSCOTCHDIR) -lesmumps  -lfax -lorder -lscotch -lsymbol -ldof -lgraph -lcommon -lm
+
+LPORDDIR = ../PORD/lib/
+IPORD    = -I../PORD/include/
+LPORD    = -L$(LPORDDIR) -lpord
+
+#LMETISDIR = Directory containing Metis library
+#IMETIS    = # Metis doesn't need include files (Fortran interface avail.)
+#LMETIS    = -L$(LMETISDIR) -lmetis
+
+# Corresponding variables reused later
+#ORDERINGS = -Dmetis -Dpord
+ORDERINGSF  = -Dpord
+ORDERINGSC  = $(ORDERINGSF)
+LORDERINGS = $(LMETIS) $(LPORD) $(LSCOTCH)
+IORDERINGS = $(IMETIS) $(IPORD) $(ISCOTCH)
+
+#End orderings
+########################################################################
+# DEFINE HERE SOME COMMON COMMANDS, THE COMPILER NAMES, ETC...
+
+
+TACC_MKL_LIB=/opt/intel/mkl-8.1.1/lib/em64t
+TACC_MKL_INCLUDE=/opt/intel/mkl-8.1.1/include
+TACC_SCALAPACK_LIB=/opt/apps/scalapack/scalapack-1.7/lib/
+TACC_SCALAPACK_INCLUDE=/opt/apps/scalapack/scalapack-1.7/lib/
+
+# PLAT : use it to add a default suffix to the generated libraries
+PLAT    = MPI-LINUX
+# RM : remove files
+RM      = /bin/rm -f
+# CC : C compiler
+CC      = mpicc
+# FC : Fortran 90 compiler
+FC      = mpif90
+# FL : Fortran linker
+FL      = $(FC)
+# CL : C linker
+CL      = $(CC)
+# AR : Archive object in a library
+AR      = ar vr
+# RANLIB : generate index of an archive file
+#   (optionnal use "RANLIB = echo" in case of problem)
+RANLIB  = ranlib
+#RANLIB  = echo
+
+# SCALAP should define the SCALAPACK and  BLACS libraries.
+
+SCALAP  = -L$(TACC_SCALAPACK_LIB) \
+	-lscalapack \
+	$(TACC_SCALAPACK_LIB)/blacsF77init_MPI-LINUX-0.a \
+	$(TACC_SCALAPACK_LIB)blacsCinit_MPI-LINUX-0.a \
+	$(TACC_SCALAPACK_LIB)/blacs_MPI-LINUX-0.a \
+	$(TACC_SCALAPACK_LIB)blacsCinit_MPI-LINUX-0.a \
+	$(TACC_SCALAPACK_LIB)/blacs_MPI-LINUX-0.a 
+
+#
+#	$(TACC_SCALAPACK_LIB)/blacsF77init_MPI-LINUX-0.a 
+
+
+#
+
+
+
+# INCLUDE DIRECTORY FOR MPI
+INCPAR  = -I$(TACC_MKL_INCUDE) -I/usr/include
+
+# LIBRARIES USED BY THE PARALLEL VERSION OF MUMPS: $(SCALAP) and MPI
+LIBPAR  = $(SCALAP) -L/usr/lib 	
+
+# The parallel version is not concerned by the next two lines.
+# They are related to the sequential library provided by MUMPS,
+# to use instead of ScaLAPACK and MPI.
+INCSEQ  = -I../libseq
+LIBSEQ  = -L../libseq -lmpiseq
+
+# DEFINE HERE YOUR BLAS LIBRARY
+
+LIBBLAS = -Wl,-rpath,$TACC_MKL_LIB \
+	-L$(TACC_MKL_LIB) -lmkl_em64t -lguide
+
+#	$(TACC_MKL_LIB)/libmkl_scalapack_lp64.a \
+#	$(TACC_MKL_LIB)/libmkl_blacs_lp64.a \
+#	$(TACC_MKL_LIB)/libmkl_intel_lp64.a \
+#	$(TACC_MKL_LIB)/libmkl_sequential.a \
+#	$(TACC_MKL_LIB)/libmkl_core.a 
+
+# DEFINE YOUR PTHREAD LIBRARY
+LIBOTHERS = 
+
+# FORTRAN/C COMPATIBILITY:
+#  Use:
+#    -DAdd_ if your Fortran compiler adds an underscore at the end
+#              of symbols,
+#     -DAdd__ if your Fortran compiler adds 2 underscores,
+#
+#     -DUPPER if your Fortran compiler uses uppercase symbols
+#
+#     leave empty if your Fortran compiler does not change the symbols.
+#
+
+CDEFS = -DAdd_
+
+#CDEFS =
+
+#COMPILER OPTIONS
+OPTF    =  -cm -O2 -xT
+OPTC    = -O2  -I. -DWITHOUT_PTHREAD  -xT
+OPTL    = 
+
+# CHOOSE BETWEEN USING THE SEQUENTIAL OR THE PARALLEL VERSION.
+
+#Sequential:
+#INC = $(INCSEQ)
+#LIB = $(LIBSEQ)
+#LIBSEQNEEDED = libseqneeded
+
+#Parallel:
+INC = $(INCPAR)
+LIB = $(LIBPAR)
+LIBSEQNEEDED = 
+

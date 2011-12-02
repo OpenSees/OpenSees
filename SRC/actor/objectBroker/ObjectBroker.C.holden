@@ -1,0 +1,30 @@
+// File: ~/actor/ObjectBroker.C
+//
+// Written: fmk
+// Created: Fri Sept 20 12:27:47: 1996
+// Revision: A
+//
+// Purpose: This file contains the class definition for ObjectBroker.
+// ObjectBroker is meant to be an abstract base class and thus no objects of 
+// it's type can be instantiated. An ObjectBroker is an object which creates
+// movable objects of the appropriate type.
+//
+// What: "@(#) ObjectBroker.C, revA"
+
+#include <ObjectBroker.h>
+#include <RCM.h>
+#include <SimpleNumberer.h>
+#include <iostream.h>
+
+
+ObjectBroker::ObjectBroker()
+{
+}
+
+ObjectBroker::~ObjectBroker()
+{
+}
+
+
+
+

@@ -1,0 +1,75 @@
+
+//================================================================================
+// COPYRIGHT (C):     :-))                                                       |
+// PROJECT:           OpenSees                                                   |
+// PURPOSE:                                                                      |
+//                                                                               |
+//                                                                               |
+// CLASS:             EvolutionLaw_L_XX  (linear Evolution law)                  |
+//                                                                               |
+//                                                                               |
+// VERSION:                                                                      |
+// LANGUAGE:          C++                                                        |
+// TARGET OS:         DOS || UNIX || . . .                                       |
+// DESIGNER(S):       Boris Jeremic and Zhaohui Yang [jeremic,zhyang]@ucdavis.edu|
+// PROGRAMMER(S):     You                                                        |
+//                                                                               |
+//                                                                               |
+// DATE:                                                                         |
+// UPDATE HISTORY:                                                               |
+//                                                                               |
+//                                                                               |
+//                                                                               |
+//                                                                               |
+// SHORT EXPLANATION: This is a linear evolution law for the evoltion of a       |
+//                    scalar variable ? which depends on plastic equi. strain    |
+//                    i.e. dk = a*de_eq_p                                        |
+//                                                                               |
+//================================================================================
+
+#ifndef EL_LXX_H
+#define EL_LXX_H
+
+#include <math.h>
+
+#include <iostream.h>
+#include <iomanip.h>
+
+#include "EL_S.h"
+
+class EvolutionLaw_L_XX : public EvolutionLaw_S
+{
+  // Private vars to define the evolution law
+
+  private:
+    double  a;  //coefficient to define the linear hardening rule of a scalar hardening var
+
+  public:
+    
+    EvolutionLaw_L_XX( double ad = 1.0 );
+    EvolutionLaw_S *newObj();   //create a clone of itself
+    
+    double h_s( );    // Evaluating hardening function h
+    	     
+    void print();
+
+  private:
+    // some accessor functions
+    double geta() const;      // Linear coefficient used to evolve internal var
+    void   seta( double ad);
+
+    //================================================================================
+    // Overloaded Insertion Operator	   
+    // prints Linear EvolutionLaw's contents 
+    //================================================================================
+    friend ostream& operator<< (ostream& os, const EvolutionLaw_L_XX & LEL);
+
+    
+};
+
+
+#endif
+
+
+
+

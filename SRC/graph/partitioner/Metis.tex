@@ -1,0 +1,131 @@
+%File: ~/OOP/graph/graph/Metis.tex
+%What: "@(#) Metis.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/graph/partitioner/Metis.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class GraphPartitioner:  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent GraphPartitioner \\
+\indent\indent {\bf Metis} \\
+
+\noindent {\bf Description}  \\
+\indent Metis is a GraphPartitioner. The Metis graph partitioner calls
+procedures defined in the METIS library to partition the graph. METIS
+is currently being developed by G.~Karypis and V.~Kumar at the
+University of Minnesota. At the present time the Graph to be
+partitioned MUST have the vertices labeled $0$ through $numVertex-1$. \\
+
+The METIS library uses two integer arrays to represent the graph, {\em
+xadj} and {\em adjncy}. $xadj(i)$ stores the location in {\em adjncy}
+of the start of the $i$'th Vertices adjacent Vertices. {\em adjncy}
+contains the tags of all the adjacent vertices. For example, the graph
+which is represented by the following matrix $A$:
+
+
+$$ A =
+\left[
+\begin{array}{ccccc}
+1 & 0 & 1 & 1 & 0  \\
+1 & 1 & 0 & 0 & 0  \\
+0 & 1 & 1 & 0 & 0 \\
+0 & 0 & 0 & 1 & 1 \\
+1 & 1 & 0 & 0 & 1
+\end{array}
+\right] 
+$$
+
+is represented by:
+
+$$
+xadj =
+\left[
+\begin{array}{cccccccccccccc}
+0 & 2 & 3 & 4 & 5 & 7
+\end{array}
+\right] 
+$$
+
+and
+
+$$
+adjncy =
+\left[
+\begin{array}{cccccccccccccc}
+2 & 3 & 0 & 1 & 4 & 0 & 1
+\end{array}
+\right] 
+$$
+
+\noindent note that there is no space allocated for the diagonal
+components. \\
+
+\noindent {\bf Class Interface}  \\
+\indent\indent // Constructors  \\
+\indent\indent {\em Metis();}  \\ \\
+\indent\indent {\em Metis(int pType, int mType, int coarsenTo, int 
+rType, int ipType);}  \\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em virtual~$\tilde{}$Metis();}  \\ \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em virtual int partition(Graph \&theGraph, int numPart) =0;} \\
+\indent\indent {\em bool setDefaultOptions(void);}\\
+\indent\indent {\em bool setOptions(int pType, int mType, int coarsenTo, int 
+rTypem, int ipType);}  \\ \\
+\indent\indent // Private Method  \\
+\indent\indent {\em bool checkOptions(void) const;} \\
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em Metis();}  \\
+To construct a Metis object which will use the default settings when
+partitioning. \\ 
+
+\indent {\em Metis(int pType, int mType, int coarsenTo, int 
+rTypem, int ipType);}  \\
+To construct a Metis object which will use the setting passed into the
+constructor as options to metis's {\em PMETIS()} routine. {\em
+checkOptions()} is invoked to ensure the settings are valid. \\
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~$\tilde{}$Metis();}  \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual int partition(Graph \&theGraph, int numPart) =0;} \\
+This is the method invoked to partition the graph into {\em numPart}
+partitions. On completion of the routine each vertex will be assigned
+a color $1$ through {\em numPart}, the color assigned indicating the
+partition to which the vertex belongs. 
+
+To partition a number of integer arrays are created, {\em options[5]},
+{\em partition[numVertex+1]}, {\em xadj[numVertex+1]} and {\em
+adjncy[2*numEdge]} (CURRENTLY ASSUMING GRAPH IS SYMMETRIC - THIS MAY
+CHANGE \& xadj and partition 1 LARGER THAN REQUIRED). If not enough
+memory is available for the arrays, a warning message is printed and
+$-2$ is returned. The data for {\em xadj} and {\em adjncy} are
+determined from the Vertices of the Graph by iterating over each
+Vertex from $0$ through {\em numVertex} $-1$. If default options are
+specified {\em options[0]} is set to $0$, otherwise $1$ with {\em
+options[1:4] = coarsenTo, mType, ipType, rType}. if {\em pType} equals
+$1$ {\em PMETIS} is called, otherwise {\em KMETIS} is called. Both are
+called with the following arguments: {\em numVertex, xadj,adjncy, 0,
+0, \&weightFlag, options, numPart, \&numbering, \&edgecut, partition} 
+The colors of the partitions are then set equal to the color indicated
+in {\em partition}.  The integer arrays are destroyed and $0$
+returned. \\
+
+\indent {\em bool setDefaultOptions(void);}\\
+Sets the default options. \\
+
+\indent {\em bool setOptions(int pType, int mType, int coarsenTo, int 
+rType, int ipType);}  \\ 
+Sets the options for the partitioning to those passed as
+arguments. Then invokes {\em checkOptions()} to see if the options are
+valid. HOW ABOUT REFERRINGR TO MANUAL TO SEE WHAT OPTIONS MEAN. \\
+
+\noindent {\bf Private Method}  \\
+\indent {\em bool checkOptions(void) const;}
+If options are not valid sets the default options. EXPAND ON VALID
+OPTIONS OR REFER TO METIS MANUAL. \\

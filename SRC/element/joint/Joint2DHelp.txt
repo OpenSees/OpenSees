@@ -1,0 +1,96 @@
+######################################################################################
+Joint2D:element
+
+element Joint2D Tag? Nd1? Nd2? Nd3? Nd4? NdC? [Mat1? Mat2? Mat3? Mat4?] MatC? LrgDisp?
+
+Tag?     - an integer identifying the element tag in the domain
+Nd1?     - an integer indicating the node 1 tag
+Nd2?     - an integer indicating the node 2 tag
+Nd3?     - an integer indicating the node 3 tag
+Nd4?     - an integer indicating the node 4 tag
+NdC?     - an integer tag for internal node (must not exist in the domain).
+[Mat1?]  - an integer indicating the uniaxial material for rotational spring at node 1
+[Mat2?]  - an integer indicating the uniaxial material for rotational spring at node 2
+[Mat3?]  - an integer indicating the uniaxial material for rotational spring at node 3
+[Mat4?]  - an integer indicating the uniaxial material for rotational spring at node 4
+MatC?    - an integer indicating the uniaxial material for the panel rotational spring
+LrgDisp? - an integer indicating the flag for considering large deformation effects
+
+
+Joint2D is a two dimensional element, with four nodes. It generates an internal node
+with an extra degree of freedom to represent the shear deformation. The external nodes
+are connected to the internal node by multi-point constraints.
+
+The external nodes Nd1, Nd2, Nd3 and Nd4 must be located on the mid points of a
+virtual parallelogram, so the joint panel can be constructed on them. They should also
+be entered in a clockwise or counter-clockwise order.
+
+The tag for the internal node must be an unused tag that does not belong to any other
+existing node.
+
+It is possible to introduce rotational springs at the external nodes to allow
+member-end rotations, or simply leave them fixed. If uniaxial materials Mat1, Mat2,
+Mat3 and Mat4 are not introduced, the member-end rotations will be assumed fixed and
+frame elements will rigidly connected to the joint panel. It is possible to introduce
+the springs separately or leave them fixed by entering zero as material tags.
+
+A uniaxial material model is required for the rotational spring relating the panel
+shear deformation to the shear equivalent moment. MatC indicates the material tag for
+the shear panel and it must belong to a valid existing material tag.
+
+The multi-point constraints are developed for the joint element and they are
+responsible for simulating the shear panel kinematics and maintaining a parallelogram
+shape for the joint element. These four multi-point constraints are automatically added
+to the domain and they connect the central node to external nodes.
+
+These constraints might be set for the large deformations, using the LrgDisp flag.
+If the LrgDisp flag is set to zero, the element will use a constant constraint matrix,
+calculated based on the initial configuration and the element can not undergo the exact
+deformation for large deformations. Non-zero value for LrgDisp indicates a time varying
+constraint matrix that can go through large deformations with more precise results. In
+this case the constraint matrix is updated for every time step, based on the current
+nodal positions. Value 1 for LrgDisp indicates time varying constraint without length
+correction. If value 2 is chosen, the time varying constraint will be applied with
+length correction to maintain the initial length of the multi-point constraints.
+
+Joint2D must be used along with 'Penalty', or 'Transformation' constraint handler
+to allow the multi point constraints work perfectly.
+
+The valid queries to a Joint2D element when creating an element recorder are
+'internalNode', 'deformation', `plasticDeformation`, 'force', 'deformationANDforce',
+'size', 'stiff' and 'materials ...'. 	   
+
+--------------------------------------------------------------------------------
+Example:
+                        element Joint2D  12  1  2  3  4  5  16  0
+                        element Joint2D  12  1  2  3  4  5  0  0  0  0  16  0
+
+Both commands construct a Joint2D element with tag 12 that is connected to nodes 1, 2,
+3 and 4. The element will generate a central node with tag 5, and it uses the uniaxial
+material object with tag 16 as the shear panel spring. The joint element introduced
+here will be a joint, without rotational springs at external nodes, i.e. fixed
+member-end rotations for all the external nodes. The generated multipoint constraint
+matrices will not be time variant and they do not include large deformations effects.
+
+
+Example:
+                        element Joint2D  13  6  7  8  9  10  18  0  18  0  17  1
+
+Constructs a Joint2D element with tag 13 that is connected to nodes 6, 7, 8 and 9.
+The element will generate a central node with tag 10, and it uses the uniaxial material
+object with tag 17 as the shear panel spring. Nodes 6 and 8 will have rotations, ruled
+by uniaxial material 18, while node 7 and 9 are rotationally fixed. This element can be
+used to model a semi-rigid steel joint with member-end rotations at beam-ends. The
+generated multipoint constraint matrices will be time variant and they include large
+deformations effects, but it does not make use of the length correction.
+
+Example:
+                        element Joint2D  14  11 12  13  14 15  20  20  20  20  19  2
+
+Constructs a Joint2D element with tag 14 that is connected to nodes 11, 12, 13 and 14.
+The element will generate a center node with tag 15, and it uses the uniaxial material
+object with tag 20 for member-end rotational springs at external nodes and a material
+with tag 19 as the shear panel spring. The generated multipoint constraint matrices will
+be time varying to cover large deformations and if utilizes MP constraint length
+correction to correct the nodal positions and maintain the initial joint size.
+######################################################################################

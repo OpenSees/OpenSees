@@ -1,0 +1,52 @@
+%File: ~/OOP/analysis/analysis/DomainUser.tex
+%What: "@(#) DomainUser.tex, revA"
+
+\noindent {\bf DomainUser} \\
+
+\noindent {\bf Files}   \\
+\indent \#include $<$DomainUser.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class DomainUser;  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf DomainUser} \\
+\indent\indent Analysis \\
+\indent\indent Design \\
+\indent\indent DomainDisplay \\
+
+\noindent {\bf Description} \\ 
+\indent The DomainUser class is an abstract base class. Its purpose is
+to define the interface common among all subclasses.  A DomainUser is
+a user of the domain, example subtypes being Analysis and Design. The
+class defines the pure virtual function {\em domainChange()}: it is
+this method that is invoked by the domain on all domain users once the
+domain has changed, i.e. the connectivity has changed. \\
+
+\noindent {\bf Constructors} 
+\\ \indent {\em DomainUser(theDomain \&theDomain);}\\ 
+All DomainUser are associated with a single domain, this constructor
+sets up the link between the DomainUser and the domain, setting its link
+with theDomain. The constructor invokes {\em addDomainUser(*this)} on
+the domain. \\  
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$DomainUser();}\\ 
+All DomainUser are associated with a single domain, the destructor
+removes the link in the domain by invoking {\em removeDomainUser(*this)}
+on the domain. \\
+
+\noindent {\bf Pure Virtual Public Member Functions}\\
+\indent {\em virtual void domainChange(void) = 0;} \\
+Invoked by the associated domain to inform the domainUser that the
+connectivity of the domain has changed. \\
+
+
+\noindent {\bf Protected Member Functions}  \\
+\indent {\em Domain \&getDomain(void) const;} \\
+A const method which returns a pointer to the Domain object on which
+the DomainUser performs its DomainUser.
+
+
+
+

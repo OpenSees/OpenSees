@@ -1,0 +1,57 @@
+% File: ~/domain/domain/loadBalancer/SwapHeavierToLighterNeighbours.tex 
+% What: "@(#) SwapHeavierToLighterNeighbours.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/domain/loadBalancer/SwapHeavierToLighterNeighbours.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class SwapHeavierToLighterNeighbours: public LoadBalancer \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent  LoadBalancer \\
+\indent\indent {\bf SwapHeavierToLighterNeighbours} \\
+
+
+\noindent {\bf Description}  \\
+\indent A SwapHeavierToLighterNeighbours is an object used to balance a
+PartitionedDomain. It does this by shedding the boundary vertices on
+the heaviest loaded partition (subdomain). \\
+
+\noindent {\bf Class Interface}  \\
+\indent\indent  // Constructors  \\
+\indent\indent {\em SwapHeavierToLighterNeighbours(); }\\ 
+\indent\indent {\em SwapHeavierToLighterNeighbours(double
+factorGreater, int numReleases);} \\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em virtual~ $\tilde{}$SwapHeavierToLighterNeighbours();}  \\ \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em virtual int balance(Graph \&theWeightedGraph) =0;} \\ \\
+
+
+\noindent {\bf  Constructors  }\\
+\indent {\em SwapHeavierToLighterNeighbours(); }\\ 
+Sets {\em numRealeases} to $1$ and {\em factorGreater} to $1.0$. These
+are the paramemeters used in the {\em balance()} method. \\
+
+\indent {\em SwapHeavierToLighterNeighbours(double factorGreater, int
+numReleases);}\\ 
+Sets the parameters used in the {\em balance()} method. \\
+
+\noindent {\bf Destructor } \\
+\indent {\em virtual~ $\tilde{}$SwapHeavierToLighterNeighbours();}  \\ 
+Does nothing. \\
+
+\noindent {\bf  Public Methods} \\
+\indent {\em virtual int balance(Graph \&theWeightedGraph) =0;} \\ 
+For {\em numRelease} times the Vertices of {\em theWeightedGraph} are
+iterated through. For each Vertex, $i$, the weight of the Vertex is compared
+to those of it's adjacent Vertices, $other$, (this is done by looping through
+the adjacency ID of the Vertex), if the vertex weight is {\em
+factorGreater} times greater than the other Vertices load then {\em
+swapBoundary(i, other)} is invoked on the DomainPartitioner. Returns
+$0$ if successfull, otherwise a negative number and a warning message
+are returned if either no link has been set to the DomainPartitioner
+or {\em swapBoundary()} returns a negative number. \\
+
+
+

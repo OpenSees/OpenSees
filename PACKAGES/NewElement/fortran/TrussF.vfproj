@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectType="typeDynamicLibrary" ProjectCreator="Intel Fortran" Keyword="Dll" Version="11.0" ProjectIdGuid="{516149DD-CACF-41A8-A12A-CE7953CF92A4}">
+	<Platforms>
+		<Platform Name="Win32"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32" OutputDirectory=".\win32" IntermediateDirectory=".\win32\Debug" ConfigurationType="typeDynamicLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" ReentrantCode="reentrancyNone" Interfaces="true" WarnInterfaces="true" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" Traceback="true" BoundsCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFLinkerTool" OutputFile=".\$(ProjectName).dll" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\..\win32\lib\debug" GenerateDebugInformation="true" SubSystem="subSystemWindows" LinkDLL="true" AdditionalDependencies="minPackageC.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|Win32" OutputDirectory=".\win32" IntermediateDirectory=".\win32\Release" ConfigurationType="typeDynamicLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" ReentrantCode="reentrancyNone" ExternalNameInterpretation="extNameLowerCase" CallingConvention="callConventionCRef" ExternalNameUnderscore="true" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLinkerTool" OutputFile=".\$(ProjectName).dll" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\..\win32\lib\release" SubSystem="subSystemWindows" ImportLibrary="$(IntDir).trussf.lib" LinkDLL="true" AdditionalDependencies="minPackageC.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<File RelativePath=".\elementAPI.f"/>
+		<File RelativePath=".\elementTypes.f"/>
+		<File RelativePath=".\trussF.f"/></Filter></Files>
+	<Globals/></VisualStudioProject>

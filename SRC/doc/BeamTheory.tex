@@ -1,0 +1,266 @@
+\documentclass[12pt]{article}
+
+\usepackage{headerfooter}
+\usepackage{epsfig}
+\usepackage{verbatimfiles}
+\usepackage{fullpage}
+\usepackage{amsmath}
+
+\newcommand{\HRule}{\rule{\linewidth}{.3mm}}
+
+\bibliographystyle{plain}
+\begin{document}
+
+\newcommand{\pd}[2]{\frac{\partial{#1}}{\partial{#2}}}
+
+\begin{center}
+{\bf \Large Beam-Column Elements in OpenSees}
+
+{\bf August 22, 2001} 
+
+{\bf Michael H. Scott} 
+
+{\bf PEER, University of California, Berkeley}
+\end{center}
+
+This document provides a brief description of the interaction between a beam-column
+element and the SectionForceDeformation and CoordTransformation classes in OpenSees.
+Material and geometric nonlinearities are abstracted, or separated, from the
+element formulation by using the SectionForceDeformation and CoordTransformation
+classes. As a result, an element can be programmed in the ``basic system'' to account
+for material nonlinearities, then use one of many transformation types to pick
+up geometric nonlinearities.
+A displacement based, distributed plasticity formulation is presented as an
+example of how a beam-column element is formulated in the basic system.
+
+\section{Geometric Nonlinearity}
+In general, the transformation of nodal displacements, {\bf u}, in the global system
+to deformations, {\bf v}, in the basic system is described by a nonlinear
+function,
+
+\begin{equation}
+\label{eq:v=v(u)}
+{\bf v} = {\bf v}({\bf u}).
+\end{equation}
+
+In a similar manner, the transformation of basic forces, {\bf q}, to forces
+{\bf p} in the global frame of reference is given by
+
+\begin{equation}
+\label{eq:p=p(q,u)}
+{\bf p} = {\bf p}({\bf q}({\bf u}), {\bf u}),
+\end{equation}
+
+\noindent where {\bf p} is implicitly a function of {\bf u} via the basic forces,
+{\bf q}, as well as an explicit function of {\bf u}. The explicit dependence on
+{\bf u} takes into account {\em approximate} geometric nonlinearities such as
+P-$\Delta$. These transformations are shown schematically in
+figure~\ref{fig:Transformation}.
+
+\begin{figure}[htpb]
+\begin{center}
+\leavevmode
+\hbox{%
+\epsfxsize=6.0in
+\epsffile{./fig_files/BeamTransf.eps}}
+\end{center}
+\caption{Transformations between global and basic systems}
+\label{fig:Transformation}
+\end{figure}
+
+As seen in figure~\ref{fig:BeamClass}, a beam-column element acquires geometric
+nonlinearity from the CoordTransformation class, and material nonlinearity from the
+SectionForceDeformation class.
+
+\section{Material Nonlinearity}
+At every cross-section along the element length, a force-deformation
+relationship holds, providing section stress resultants, {\bf s}, as a
+function of section deformations, {\bf e},
+
+\begin{equation}
+\label{eq:s=s(e)}
+{\bf s}(x) = {\bf s}({\bf e}(x)).
+\end{equation}
+
+\noindent Linearizing the force-deformation relationship with respect to
+deformations reveals the section tangent stiffness, ${\bf k}_s$,
+
+\begin{align}
+\Delta{\bf s} &= \pd{\bf s}{\bf e} \Delta{\bf e} \\
+\Delta{\bf s} &= {\bf k}_s \Delta{\bf e},
+\end{align}
+
+\noindent where ${\bf k}_s = \pd{\bf s}{\bf e}$, the partial derivative of the
+section stress resultants with respect to the section deformations.
+
+A beam-column element obtains material nonlinearity through use of the
+SectionForceDeformation class, as seen in figure~\ref{fig:BeamClass}.
+
+\section{Class Hierarchy}
+Figure~\ref{fig:BeamClass} shows the class interaction between a beam-column
+element and the CoordTransformation and SectionForceDeformation classes.
+An element can use any one of Linear, PDelta, or Corotational transformations;
+and any one of ElasticSection or FiberSection constitutive models. When a new
+transformation or section class is added to the framework, the element can use
+the new class without modification.
+
+\begin{figure}[htpb]
+\begin{center}
+\leavevmode
+\hbox{%
+\epsfxsize=6.5in
+\epsffile{./fig_files/BeamClass.eps}}
+\end{center}
+\caption{DispBeamColumn class diagram}
+\label{fig:BeamClass}
+\end{figure}
+
+\section{Displacement Based Element Formulation}
+This section describes the formulation of a displacement based, distributed plasticity
+beam-column element. The governing compatibility and equilibrium equations are covered
+along with the consistent element stiffness. Bending deformations are assumed to be
+small, and shear deformations are neglected.
+
+\subsection{Compatibility}
+For displacement based elements, there is a strong form of compatibility between
+basic displacements, {\bf v}, and section deformations {\bf e}, satisfied
+pointwise along the element length,
+
+\begin{equation}
+\label{eq:e=av}
+{\bf e}(x) =
+\left[ \begin{array}{c} \varepsilon(x) \\ \kappa(x) \end{array} \right] =
+{\bf a}(x) {\bf v},
+\end{equation}
+
+\noindent where {\bf a} is the strain-displacement matrix. The section deformations
+are the axial strain, $\varepsilon$, and curvature, $\kappa$. Assuming linear axial
+displacement and transverse displacement based on cubic Hermitian polynomials,
+the shape functions in the basic system are
+
+\begin{equation}
+\label{eq:N}
+{\bf N}(x) =
+\left[ \begin{array}{c} N_1(x) \\ \\ N_2(x) \\ \\ N_3(x) \end{array} \right] =
+\left[ \begin{array}{c} \frac{x}{L} \\ \\
+L\left( \frac{x}{L} - 2\frac{x^2}{L^2} + \frac{x^3}{L^3} \right) \\ \\
+L\left( -\frac{x^2}{L^2} + \frac{x^3}{L^3} \right)
+\end{array}
+\right].
+\end{equation}
+
+\noindent The strain-displacement matrix contains the shape function derivatives.
+Axial strain is the first derivative of the axial displacement, and
+curvature is the second derivative of the transverse displacement,
+
+\begin{equation}
+{\bf a}(x) = \left[ \begin{array}{ccc}
+N_{1,x} & 0 & 0 \\ \\
+0 & N_{2,xx} & N_{3,xx}
+\end{array}
+\right].
+\end{equation}
+
+\noindent Using the shape functions defined in equation~\ref{eq:N}, the
+strain-displacement matrix is then,
+
+\begin{equation}
+{\bf a}(x) = \frac{1}{L} \left[ \begin{array}{ccc}
+1 & 0 & 0 \\ \\
+0 & -4+6\frac{x}{L} & -2+6\frac{x}{L}
+\end{array}
+\right].
+\end{equation}
+
+\noindent The basic displacements, {\bf v}, can be obtained by invoking
+the method {\em getBasicTrialDisp()}.
+After computing section deformations from basic displacements via
+equation~\ref{eq:e=av}, the
+method {\em setTrialSectionDeformation()} may be invoked with the updated
+deformations, {\bf e}.
+
+\subsection{Equilibrium}
+Using the principle of virtual displacements (virtual work),
+equilibrium between element end forces, {\bf q}, and section stress
+resultants, {\bf s},
+is satisfied weakly, or in an average sense, along the element length,
+
+\begin{equation}
+\label{eq:q}
+{\bf q} = \int_0^L {\bf a}(x)^T {\bf s}(x) \: dx,
+\end{equation}
+
+\noindent where the section stress resultants are the axial force, $P$, and bending
+moment, $M$,
+
+\begin{equation}
+{\bf s}(x) =
+\left[ \begin{array}{c} P(x) \\ M(x) \end{array} \right].
+\end{equation}
+
+To obtain the current value of section stress resultants, {\bf s}, the method
+{\em getStressResultant()} must be invoked. To perform the transformation from
+basic to global resisting force (equation~\ref{eq:p=p(q,u)}), the method
+{\em getGlobalResistingForce()} should be invoked.
+
+\subsection{Element Stiffness}
+To solve the structural system of equations, the element stiffness must be assembled
+along with the resisting force. The element stiffness is obtained by taking the
+partial derivative of equation~\ref{eq:p=p(q,u)} with respect to displacements,
+{\bf u}.
+
+\begin{align}
+{\bf k} &= \pd{\bf p}{\bf q}\pd{\bf q}{\bf u} + \left.\pd{\bf p}{\bf u}\right|_{\bf q} \\
+&= \pd{\bf p}{\bf q} \pd{\bf q}{\bf v} \pd{\bf v}{\bf u} +
+\left.\pd{\bf p}{\bf u}\right|_{\bf q} \\
+{\bf k} &= \label{eq:stiff} \pd{\bf p}{\bf q} {\bf k}_b \pd{\bf v}{\bf u} +
+\left.\pd{\bf p}{\bf u}\right|_{\bf q}
+\end{align}
+
+\noindent The basic element stiffness, ${\bf k}_b$, is the partial derivative
+of the basic forces, {\bf q}, with respect to the basic displacements, ${\bf v}$.
+Differentiating equation~\ref{eq:q} gives,
+
+\begin{align}
+{\bf k}_b &= \pd{\bf q}{\bf v} \\
+&= \int_0^L {\bf a}(x)^T \pd{\bf s}{\bf v} \: dx \\
+&= \int_0^L {\bf a}(x)^T \pd{\bf s}{\bf e} \pd{\bf e}{\bf v} \: dx \\
+{\bf k}_b &= \label{eq:kb} \int_0^L {\bf a}(x)^T {\bf k}_s(x) {\bf a}(x) \: dx
+\end{align}
+
+The section tangent stiffness matrix, ${\bf k}_s$, is returned upon invoking the
+method {\em getSectionTangent()}. After computing the basic stiffness, ${\bf k}_b$,
+the method {\em getGlobalStiffMatrix()} should be invoked to perform the
+transformation in equation~\ref{eq:stiff}. The remaining partial derivatives in
+equation~\ref{eq:stiff} are computed by the {\em getGlobalStiffMatrix()} method.
+
+\subsection{Numerical Quadrature}
+In general, the element integrals, equations~\ref{eq:q} and~\ref{eq:kb}, cannot
+be evaluated in closed form due to nonlinearities in the section constitutive model.
+These integrals must be approximately evaluated by numerical quadrature,
+
+\begin{align}
+\label{eq:qapprox} {\bf q} &\approx
+\sum_{i=1}^{N_s} {\bf a}(x_i)^T {\bf s}(x_i) \: W_i \\
+\label{eq:kbapprox}{\bf k}_b &\approx
+\sum_{i=1}^{N_s} {\bf a}(x_i)^T {\bf k}_s(x_i) {\bf a}(x_i) \: W_i ,
+\end{align}
+
+\noindent where $N_s$ is the number of integration points, i.e., the number of section
+sample points along the element length.
+
+Integration points, $\xi_i$, and weights, $\omega_i$, are typically
+defined over a fixed domain such as $\left[-1,1\right]$ or $\left[0,1\right]$, then
+mapped to the element domain $\left[0,L\right]$, where $L$ is the element length.
+Assuming points and weights defined on $\left[-1,1\right]$, the following
+relationships hold,
+
+\begin{align}
+x_i &= \frac{L}{2} \left( \xi_i+1 \right) \\
+W_i &= \frac{L}{2} \: \omega_i .
+\end{align}
+
+\noindent After mapping the points and weights to the element domain,
+equations~\ref{eq:qapprox} and~\ref{eq:kbapprox} can be evaluated.
+
+\end{document}
