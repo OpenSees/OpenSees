@@ -1,0 +1,86 @@
+//================================================================================
+# COPYRIGHT (C):     :-))                                                        #
+# PROJECT:           OpenSees                                                    #
+# PURPOSE:           General platform for elaso-plastic constitutive model       #
+#                    implementation                                              #
+#                                                                                #
+# CLASS:             EvolutionLaw_L_XX                                           #
+#                                                                                #
+# VERSION:                                                                       #
+# LANGUAGE:          C++                                                         #
+# TARGET OS:         DOS || UNIX || . . .                                        #
+# DESIGNER(S):       Boris Jeremic and Zhaohui Yang [jeremic,zhyang]@ucdavis.edu #
+# PROGRAMMER(S):     You                                                         #
+#                                                                                #
+#                                                                                #
+# DATE:                                                                          #
+# UPDATE HISTORY:                                                                #
+#                                                                                #
+#                                                                                #
+#                                                                                #
+# SHORT EXPLANATION: This is a linear evolution law for the evolution of a       #
+#                    scalar variable x which depends on plastic equi. strain     #
+#                    i.e. dk = a*de_eq_p                                         #
+//================================================================================
+*/
+
+#ifndef EL_LXX_CPP
+#define EL_LXX_CPP
+
+#include "EL_LXX.h"
+#include <basics.h>
+    
+//================================================================================
+// Default constructor
+//================================================================================
+EvolutionLaw_L_Eeq::EvolutionLaw_L_Eeq( double ad ) 
+a(ad)
+{
+
+}     
+
+//================================================================================
+//  Create a clone of itself 
+//================================================================================
+EvolutionLaw_S * EvolutionLaw_L_XX::newObj() 
+{    
+    EvolutionLaw_S *newEL = new EvolutionLaw_L_XX( *this );
+    
+    return newEL;
+}
+
+//================================================================================
+// Evaluating h_s  (For the evaluation of Kp)
+//================================================================================
+
+double EvolutionLaw_L_XX::h_s(  )
+{
+
+
+}
+
+
+//================================================================================
+//  Print vars defined in Linear Evolution Law
+//================================================================================
+void EvolutionLaw_L_XX::print()
+{
+    cout << (*this);
+}
+
+
+//================================================================================
+double EvolutionLaw_L_XX::geta() const
+{       
+    return a;
+}
+
+//================================================================================
+ostream& operator<< (ostream& os, const EvolutionLaw_L_XX & LEL)
+{
+
+
+}  
+
+#endif
+

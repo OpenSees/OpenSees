@@ -1,0 +1,93 @@
+%File: ~/OOP/graph/numberer/RCM.tex
+%What: "@(#) RCM.tex, revA"
+
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/graph/numberer/RCM.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class RCM: public GraphNumberer; \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent GraphNumberer \\
+\indent\indent\indent {\bf RCM} \\
+
+\noindent {\bf Description}  \\
+\indent RCM is a subclass of GraphNumberer which performs the
+numbering using the reverse Cuthill-McKee numbering algorithm. \\
+
+\noindent {\bf Class Interface }  \\
+\indent\indent // Constructor  \\
+\indent\indent {\em RCM(bool GPS = true);}  \\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em ~$\tilde{}$RCM();}  \\ \\
+\indent\indent // Public Methods   \\
+\indent\indent {\em const ID \&number(Graph \&theGraph, int
+lastVertexTag = -1) =0;}\\
+\indent\indent {\em const ID \&number(Graph \&theGraph, const ID
+\&startVertices) =0;}\\
+\indent\indent {\em int sendSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);} \\
+\indent\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker); } \\
+
+\noindent {\bf Constructor}  \\
+\indent {\em RCM(bool GPS = true);}  \\
+The integer {\em classTag} is passed to the MovableObject classes
+constructor. The flag {\em GPS} is used to mark whether the
+Gibbs-Poole-Stodlmyer algorithm is used to determine a starting vertex
+when no starting vertex is given. \\
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~$\tilde{}$RCM();}  \\
+Invokes the destructor on any ID object created when {\em number()} is
+invoked. \\
+
+\noindent {\bf Public Methods}  \\
+\indent {\em const ID \&number(Graph \&theGraph, int
+lastVertex = -1) =0;}\\
+If the present ID used for the result is not of size equal to the
+number of Vertices in {\em theGraph}, it deletes the old and
+constructs a new ID. Starts by iterating through the Vertices of the
+graph setting the {\em tmp} variable of each to $-1$. The Vertices are
+then numbered using a depth first sort of the Graph, with each
+unmarked Vertex in the Graph at a distance $d$ from starting Vertex
+being placed in the d'th level set. As this is RCM, the Vertices in
+level set $n$ are assigned a higher number than those in level set
+$n+1$ with the {\em tmp} variable of the starting Vertex being
+assigned {\em numVertices} $-1$. The {\em tags} of the Vertices are
+placed into the ID at location given by their {\em tmp} variable. These
+are replaced with the {\em ref} variable of each Vertex, which is
+returned on successful completion. 
+
+
+The Vertex chosen as the starting Vertex is the one whose tag is given
+by {\em lastVertex}. If this is $-1$ or the Vertex corresponding to
+{\em lastVertex} does not exist then another Vertex is chosen. If the
+{\em GPS} flag in constructor is {\em false} the first Vertex from the
+Graphs VertexIter is used; if {\em true} a RCM numbering using the
+first Vertex from the VertexIter is performed and the Vertices in the
+last level set are then used to create an ID {\em lastVertices} with
+which {\em number(theGraph, lastVertices)} can be invoked to determine
+the numbering. \\
+
+
+\indent {\em const ID \&number(Graph \&theGraph, const ID
+\&startVertices) =0;}\\
+This method is invoked to determine the best starting Vertex for a RCM
+using a Vertex whose tag is in {\em lastVertices}. To do a RCM
+numbering is performed using each of the Vertices in {\em
+startVertices} as the Vertex in level set $0$. The Vertex which
+results in the numbering with the smallest profile is chosen as 
+the starting Vertex. The RCM algorithm outlined above is then called
+with this starting Vertex. \\
+
+{\em int sendSelf(Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);} \\
+Returns $0$. \\
+
+{\em int recvSelf(Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker); } \\
+Returns $0$.
+

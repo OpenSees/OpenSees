@@ -1,0 +1,44 @@
+%File: ~/OOP/material/ElasticPPModel.tex
+%What: "@(#) ElasticPPModel.tex, revA"
+
+UNDER CONSTRUCTION. \\
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/material/ElasticPPModel.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ElasticPPMaterial: public MaterialModel \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent MaterialModel \\
+\indent\indent\indent UniaxialMaterial \\
+\indent\indent\indent\indent {\bf ElasticPPMaterial} \\
+
+\noindent {\bf Description}  \\
+\indent ElasticPPMaterial provides the abstraction of an elastic
+perfectly plastic uniaxial material, i.e. the stress-strain
+relationship is given by the linear equation $\sigma = E * \epsilon$
+while the material is elastic and $| \sigma = E * \epsilon_p |$  while
+the material is undergoing plastic deformation. SOME MORE THEORY. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em ElasticPPMaterial(int tag, double E, double ep);}  \\ \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$ElasticPPMaterial();}\\ \\
+\indent // Public Methods \\
+\indent {\em int setTrialStrain(double strain); } \\
+\indent {\em double getStress(void); } \\
+\indent {\em double getTangent(void); } \\
+\indent {\em int commitState(void); } \\
+\indent {\em int revertToLastCommit(void); } \\
+\indent {\em int revertToStart(void); } \\
+\indent {\em UniaxialMaterial *getCopy(void); } \\ \\
+\indent // Public Methods for Output\\
+\indent {\em    int sendSelf(int commitTag, Channel \&theChannel); }\\
+\indent {\em    int recvSelf(int commitTag, Channel \&theChannel, 
+		 FEM\_ObjectBroker \&theBroker); }\\
+\indent {\em    void Print(OPS_Stream \&s, int flag =0);} \\
+

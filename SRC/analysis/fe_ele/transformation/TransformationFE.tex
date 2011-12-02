@@ -1,0 +1,71 @@
+% File: ~/OOP/analysis/fe_ele/transformation/TransformationFE.tex 
+%What: "@(#) TransformationFE.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/fe\_ele/penalty/TransformationFE.h$>$  \\
+
+UNDER CONSTRUCTION. \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class TransformationFE: public FE\_Element ;  \\
+
+\noindent {\bf Class Hierarchy}  \\
+\indent FE\_Element \\
+\indent\indent {\bf TransformationFE} \\ 
+
+\noindent {\bf Description}  \\
+\indent TransformationFE is a subclass of FE\_Element used to enforce a
+multi point constraint, of the form $\U_c = \C_{cr} \U_r$, where $\U_c$ are
+the constrained degrees-of-freedom at the constrained node, $\U_r$ are
+the retained degrees-of-freedom at the retained node and $\C_{cr}$ a
+matrix defining the relationship between these degrees-of-freedom. 
+
+To enforce the constraint a matrix $\T^T \K \T$ is added to the
+tangent and $\T^T \R$ is added to the residual where $\T$ is a block
+diagonal matrix equal to WHAT?
+
+
+\noindent {\bf Class Interface}  \\
+\indent // Constructor  \\
+\indent {\em TransformationFE(Domain \&theDomain,
+TransformationConstraintHandler \&theHandler); \\ \\
+\indent // Destructor  \\
+\indent {\em virtual~ $\tilde{}$TransformationFE();}  \\ \\
+\indent // Public Methods \\
+
+\indent {\em    virtual const ID \&getDOFtags(void) const; }\\
+\indent {\em   virtual const ID \&getID(void) const;}\\
+\indent {\em    void setAnalysisModel(AnalysisModel \&theModel);}\\
+\indent {\em virtual void setID(void);} \\ 
+\indent {\em virtual const Matrix \&getTangent(Integrator
+*theIntegrator);} \\  
+\indent {\em virtual const Vector \&getResidual(Integrator
+*theIntegrator);} \\ 
+\indent {\em virtual const Vector \&getTangForce(const Vector
+\&disp, double fact = 1.0);    }\\
+\indent {\em    int addSP(SP\_Constraint \&theSP);}\\ \\
+\indent // Protected Methods \\
+\indent {\em transformResponse(const Vector \&modResponse, 
+Vector \&unmodResponse);}\\
+
+\noindent {\bf Constructor}  \\
+\indent {\em TransformationFE(Domain \&theDomain,
+TransformationConstraintHandler \&theHandler); \\
+
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~ $\tilde{}$TransformationFE();}  \\
+
+
+\noindent {\bf Public Methods}  \\
+\indent {\em virtual void setID(void);} \\
+
+\indent {\em virtual Matrix \&getTangent(Integrator *theIntegrator);} \\
+
+\indent {\em virtual const Vector \&getResidual(Integrator *theIntegrator);} \\
+
+
+{\em virtual const Vector \&getTangForce(const Vector \&disp, double
+fact = 1.0);    }\\
+
+

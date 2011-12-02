@@ -1,0 +1,79 @@
+# Makefile for model objects
+
+include ../../../Makefile.def
+
+OBJS       = TclModelBuilder.o myCommands.o TclUniaxialMaterialTester.o \
+	Block2D.o Block3D.o
+
+# Compilation control
+
+all: $(OBJS)  
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL)
+
+tcl: myCommands.o
+	@$(CD) $(FE)/tcl; $(MAKE) tcl;
+	@$(LINKER) $(LINKFLAGS) myCommands.o $(INTERPRETER_LIBS_MPI) \
+	$(FE_LIBRARY) $(MACHINE_LINKLIBS) $(PARALLEL_LIB) \
+	$(MACHINE_NUMERICAL_LIBS) $(TCL_LIBRARY)  \
+	$(MACHINE_SPECIFIC_LIBS) -o $(OpenSees_PROGRAM)
+
+tk: myCommands.o
+	@$(CD) $(FE)/tcl; $(MAKE) tk;
+	@$(LINKER) $(LINKFLAGS) myCommands.o $(INTERPRETER_LIBS_TK) \
+	$(FE_LIBRARY) $(MACHINE_LINKLIBS) $(PARALLEL_LIB) \
+	$(MACHINE_NUMERICAL_LIBS) $(TCL_LIBRARY)  \
+	$(MACHINE_SPECIFIC_LIBS) -o $(OpenSees_PROGRAM)
+
+else
+
+tcl: myCommands.o
+	@$(CD) $(FE)/tcl; $(MAKE) tcl;
+	@$(LINKER) $(LINKFLAGS) myCommands.o $(INTERPRETER_LIBS_TCL) \
+	$(FE_LIBRARY) $(MACHINE_LINKLIBS) \
+	$(MACHINE_NUMERICAL_LIBS) $(TCL_LIBRARY)  \
+	$(MACHINE_SPECIFIC_LIBS) -o $(OpenSees_PROGRAM)
+
+tk: myCommands.o
+	@$(CD) $(FE)/tcl; $(MAKE) tk;
+	@$(LINKER) $(LINKFLAGS) myCommands.o $(INTERPRETER_LIBS_TK) \
+	$(FE_LIBRARY) $(MACHINE_LINKLIBS) \
+	$(MACHINE_NUMERICAL_LIBS) $(TCL_LIBRARY)  \
+	$(MACHINE_SPECIFIC_LIBS) -o $(OpenSees_PROGRAM)
+endif
+
+
+INTERPRETER_LIBS_TCL = $(FE)/tcl/tclMain.o \
+	$(FE)/tcl/tclAppInit.o \
+	$(FE)/tcl/commands.o \
+	$(FE)/tcl/TclFeViewer.o \
+	$(FE)/tcl/TclVideoPlayer.o 
+
+INTERPRETER_LIBS_MPI = $(FE)/tcl/tclMain.o \
+	$(FE)/tcl/mpiMain.o \
+	$(FE)/tcl/commands.o \
+	$(FE)/actor/channel/MPI_Channel.o \
+	$(FE)/actor/machineBroker/MPI_MachineBroker.o \
+	$(FE)/domain/subdomain/ActorSubdomain.o \
+	$(FE)/domain/subdomain/ShadowSubdomain.o \
+	$(FE)/tcl/TclFeViewer.o \
+	$(FE)/tcl/TclVideoPlayer.o 
+
+INTERPRETER_LIBS_TK = $(FE)/tcl/tkMain.o \
+	$(FE)/tcl/tkAppInit.o \
+	$(FE)/tcl/commands.o \
+	$(FE)/tcl/TclFeViewer.o \
+	$(FE)/tcl/TclVideoPlayer.o 
+
+# Miscellaneous
+tidy:	
+	@$(RM) $(RMFLAGS) Makefile.bak *~ #*# core
+
+clean: tidy
+	@$(RM) $(RMFLAGS) $(OBJS) *.o g3
+
+spotless: clean
+
+wipe: spotless
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

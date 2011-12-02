@@ -1,0 +1,25 @@
+
+METIS 2.0 contains a number of changes over METIS 1.0.
+The major changes are the following:
+
+- A new faster k-way partitioning algorithm has been implemented
+  that produces good partitions for moderately large k (k>10), and
+  it is up to 5 times faster the previous recursive bisection
+  algorithm used in version 1.0.
+
+- The algorithms have been extended to handle non-power of 2 partitions.  
+
+- A stand-alone library is provided to directly use the partitioning
+  and ordering algorithms in METIS.
+
+- A number of modifications to the existing matching schemes have been
+  incorporated to better handle weighted graphs.
+
+- Some speed improvements over 1.0, up to 15\% faster in some cases.
+
+- Added code to check the validity of the input graph. This tends to
+  increase the time required during I/O. Validity checking is turned
+  off in the stand-alone library.
+
+- Better memory management. Hopefully this should solve memory problems.
+

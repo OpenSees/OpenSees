@@ -1,0 +1,94 @@
+//################################################################################
+//# COPYRIGHT (C):     :-))                                                      #
+//# PROJECT:           OpenSees                                                  #
+//# PURPOSE:           XX yield criterion                                        #
+//# CLASS:             XXPotentialSurface                                        #
+//#                                                                              #
+//# VERSION:                                                                     #
+//# LANGUAGE:          C++                                                       #
+//# TARGET OS:                                                                   #
+// DESIGNER(S):       Boris Jeremic and Zhaohui Yang [jeremic,zhyang]@ucdavis.edu|
+// PROGRAMMER(S):     You                                                        |
+//#                                                                              #
+//#                                                                              #
+//# DATE:                                                                        #
+//# UPDATE HISTORY:                                                              #
+//#                                                                              #
+//#                                                                              #
+//#                                                                              #
+//#                                                                              #
+//#                                                                              #
+//################################################################################
+//*/
+
+#ifndef XX_PS_CPP
+#define XX_PS_CPP
+
+#include "XX_PS.h"
+
+
+
+//================================================================================
+// Normal constructor
+//================================================================================
+
+XXPotentialSurface::XXPotentialSurface( )                              
+{
+
+} 
+
+//================================================================================
+// Destructor
+//================================================================================
+
+XXPotentialSurface::~XXPotentialSurface( )                              
+{
+
+} 
+
+    
+//================================================================================
+//create a clone of itself
+//================================================================================
+
+PotentialSurface * XXPotentialSurface::newObj() {  
+
+     PotentialSurface  *new_PS = new XXPotentialSurface( this->getalfa2() );
+     return new_PS;
+
+}
+
+
+
+//================================================================================
+// tensor dQ/dsigma_ij                        
+//================================================================================
+
+tensor XXPotentialSurface::dQods( ) const 
+{
+
+
+}
+
+
+//================================================================================
+// tensor d2Q/dsigma_ij_2  
+//================================================================================
+
+tensor XXPotentialSurface::d2Qods2(  ) const 
+{
+
+
+}
+
+
+//================================================================================
+ostream& operator<< (ostream& os, const XXPotentialSurface &PS)
+{
+
+
+}
+
+
+#endif
+

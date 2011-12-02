@@ -1,0 +1,22 @@
+# written: fmk
+
+This is in progress. 
+
+To test on unix, run make in this directory and then run OpenSees and source 
+in example2.tcl to see new user defined element. NOTE you may have to modify 
+your current Makefile.def, see changes to those in /MAKES.
+
+Contents:
+   example1.tcl - example script that runs with OpenSees interpreter
+   example2.tcl - example that uses the new user defined element
+   MyTruss.h/.cpp - new user defined element
+   MyTrussPackage.cpp - code required to get the new user defined element
+                        to work with OpenSees interpreter
+   Makefile     - Makefile to build the shared library on unix machine 
+
+NOTE TO FMK. going to have to work on changing auto_path in the interpreter
+to include the current directory. also may have to change 'load' command
+to be 'nodalLoad' as there is a conflict and i am overwriting tcl load command
+which is needed to run example2.tcl & also needed if use the package require 
+option.
+

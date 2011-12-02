@@ -1,0 +1,243 @@
+%File: ~/OOP/actor/Actor.tex
+%What: "@(#) Actor.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/actor/actor/Actor.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Actor \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf Actor} \\
+
+\noindent {\bf Description}  \\
+\indent Actor is meant as an abstract class, i.e. no instances of Actor
+should exist. An actor is associated with a shadow object. The shadow
+acts like a normal object in the users address space, data and
+processing that is done by the shadow may be stored and processed in a
+remote process, the actor resides in this remote address space. The
+actor and the shadow both have a channel, a communication port. This
+allows the two to communicate with each other.\\
+
+\noindent {\bf Class Interface }  \\
+\indent // Constructor  \\
+\indent {\em Actor(Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker, int numActorMethods);}  \\  \\
+\indent // Destructor \\
+\indent {\em virtual $\tilde{ }$Actor();}\\ \\
+\indent // Public Methods for Processing Functions \\
+\indent {\em virtual int addMethod(int tag, int (*fp)());}\\
+\indent {\em virtual int  getMethod();} \\
+\indent {\em virtual int  processMethod(int tag);}\\ \\
+\indent // Public Methods for Sending/Receiving Objects\\
+\indent {\em virtual int sendObject(MovableObject \&theObject, ChannelAddress
+*theAddress =0);}\\
+\indent {\em virtual int recvObject(MovableObject \&theObject, ChannelAddress
+*theAddress =0);}\\
+\indent {\em virtual int sendMessage(Message \&theMessage, ChannelAddress
+*theAddress =0);}\\
+\indent {\em virtual int recvMessage(Message \&theMessage);} \\
+\indent {\em virtual int sendMatrix(Matrix \&theMatrix, ChannelAddress
+*theAddress =0);}\\
+\indent {\em virtual int recvMatrix(Matrix \&theMatrix);} \\
+\indent {\em virtual int sendVector(Vector \&theVector, ChannelAddress
+*theAddress =0);}\\
+\indent {\em virtual int recvVector(Vector \&theVector);} \\
+\indent {\em virtual int sendID(ID \&theID, ChannelAddress *theAddress =0);}\\
+\indent {\em virtual int recvID(ID \&theID);} \\
+\indent {\em void Channel *getChannelPtr(void) const;}\\
+\indent {\em void FEM\_ObjectBroker *getObjectBrokerPtr(void) const;}\\
+\indent {\em void ChannelAddress *getChannelAddressPtr(void) const;}\\
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em Actor(Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker, int numActorMethods);}  \\ 
+This is called by the remote process upon initialization to construct
+the local actor object. It is used to create an Actor object in that
+remote address space which will communicate with objects in other
+processes through a channel object, {\em theChannel} and which uses
+{\em theBroker} to receive movable objects sent from other
+processes. The subclass will be able to add {\em numMethods} actor
+methods using {\em addMethod()} call. \\   
+
+The base classes constructor invokes {\em setUpActor()} on {\em
+theChannel} object. It then sets the Address of the remote shadow
+object which created the actor process by invoking {\em
+getLastSendersAddress()} on {\em theChannel}. \\
+
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{ }$Actor();}\\ 
+Provided so subclass destructor will be called. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual int addMethod(int tag, int (*fp)());}\\
+A method to add as a function to the actor object the function {\em
+fp}, this function is identified by the {\em tag} value. This
+function will be invoked by the actor on invocation of {\em 
+processMethod()} with {\em tag} as the argument. The object checks to
+see that the {\em tag} has not been used previously. If it has not and
+the number of functions so far added is less than {\em numActorMethods}
+the function is added and $0$ is returned, otherwise a $-1$ (if {\em
+tag} was already used) or $-2$ (if {\em numActorMethods} already
+added) or a $-3$ (if running out of space) is returned to indicate the
+function was not added. \\  
+
+{\em virtual int  getMethod();} \\
+A method which returns the next integer value sitting in the actors
+channel. This int value corresponds to the {\em tag} of the next
+method that the shadow object wants the actor to perform. If an error
+occurs $-1$ will be returned. \\
+
+{\em virtual int  processMethod(int tag);}\\
+This causes the actor object to invoke the function that was added to
+the actor with the {\em tag} identifier. If no method with {\em tag}
+exists a $-1$ is returned. \\
+
+
+{\em virtual int sendObject(MovableObject \&theObject, ChannelAddress
+*theAddress =0);}\\
+A method which will send {\em theObject}
+through the actors channel either to the address given by {\em
+theAddress} or to the address of the shadow object that created the
+actor if no address is specified.
+
+Returns the result of invoking {\em sendObj(0, theObject,theBroker,theAddress)} on
+the actors channel object if an address is specified, otherwise
+the result of invoking {\em
+sendObj(theMessage,theBroker,this->getShadowAdressPtr())} on the
+actors channel object is returned. \\ 
+
+{\em virtual int recvObject(MovableObject \&theObject, ChannelAddress
+*theAddress =0);}\\
+A method which will receive {\em theObject}
+from the actors channel either from the address given by {\em
+theAddress} or from the address of the shadow object that created the
+actor if no address is specified.
+
+Returns the result of invoking {\em recvObj(0, theObject,theBroker,theAddress)} on
+the actors channel object if an address is specified, otherwise
+the result of invoking {\em
+recvObj(theMessage,theBroker,this->getShadowAdressPtr())} on the actors channel
+object is returned. \\ 
+
+
+
+{\em virtual int sendMessage(Message \&theMessage, ChannelAddress
+*theAddress =0);}\\
+A method which will send the data in the message {\em theMessage} 
+through the actors channel either to the address given by {\em
+theAddress} or to the address of the shadow object that created the
+actor if no address is specified.
+
+Returns the result of invoking {\em sendMsg(0,0,theMessage,theAddress)} on
+the actors channel object if an address is specified, otherwise
+the result of invoking {\em
+sendMsg(theMessage,this->getShadowAdressPtr())} on the actors channel
+object is returned. \\ 
+
+
+{\em virtual int recvMessage(Message \&theMessage);} \\
+A method which will receive the data in the message {\em theMessage} from
+the actors channel either from the address given by {\em
+theAddress} or from the address of the shadow object that created the
+actor if no address is specified.
+
+Returns the result of invoking {\em recvMsg(0,0,theMessage,theAddress)} on
+the actors channel object if an address is specified, otherwise
+the result of invoking {\em
+recvMsg(0,0,theMessage,this->getShadowAdressPtr())} on the actors channel
+object is returned. \\ 
+
+{\em virtual int sendMatrix(Matrix \&theMatrix, ChannelAddress
+*theAddress =0);}\\
+A method which will send {\em theMatrix} 
+through the actors channel either to the address given by {\em
+theAddress} or to the address of the shadow object that created the
+actor if no address is specified.
+
+Returns the result of invoking {\em sendMatrix(0,0,theMatrix,theAddress)} on
+the actors channel object if an address is specified, otherwise
+the result of invoking {\em
+sendMatrix(0,0,theMatrix,this->getShadowAdressPtr())} on the actors channel
+object is returned. \\ 
+
+
+{\em virtual int recvMatrix(Matrix \&theMatrix);} \\
+A method which will receive {\em theMatrix} from
+the actors channel either from the address given by {\em
+theAddress} or from the address of the shadow object that created the
+actor if no address is specified.
+
+Returns the result of invoking {\em recvMatrix(0,0,theMatrix,theAddress)} on
+the actors channel object if an address is specified, otherwise
+the result of invoking {\em
+recvMatrix(0,0,theMatrix,this->getShadowAdressPtr())} on the actors channel
+object is returned. \\ 
+
+{\em virtual int sendVector(Vector \&theVector, ChannelAddress
+*theAddress =0);}\\
+A method which will send {\em theVector} 
+through the actors channel either to the address given by {\em
+theAddress} or to the address of the shadow object that created the
+actor if no address is specified.
+
+Returns the result of invoking {\em sendVector(0,0,theVector,theAddress)} on
+the actors channel object if an address is specified, otherwise
+the result of invoking {\em
+sendVector(0,0,theVector,this->getShadowAdressPtr())} on the actors channel
+object is returned. \\ 
+
+
+{\em virtual int recvVector(Vector \&theVector);} \\
+A method which will receive {\em theVector} from
+the actors channel either from the address given by {\em
+theAddress} or from the address of the shadow object that created the
+actor if no address is specified.
+
+Returns the result of invoking {\em recvVector(0,0,theVector,theAddress)} on
+the actors channel object if an address is specified, otherwise
+the result of invoking {\em
+recvVector(0,0,theVector,this->getShadowAdressPtr())} on the actors channel
+object is returned. \\ 
+
+
+{\em virtual int sendID(ID \&theID, ChannelAddress
+*theAddress =0);}\\
+A method which will send {\em theID} 
+through the actors channel either to the address given by {\em
+theAddress} or to the address of the shadow object that created the
+actor if no address is specified.
+
+Returns the result of invoking {\em sendID(0,0,theID,theAddress)} on
+the actors channel object if an address is specified, otherwise
+the result of invoking {\em
+sendID(0,0,theID,this->getShadowAdressPtr())} on the actors channel
+object is returned. \\ 
+
+
+{\em virtual int recvID(ID \&theID);} \\
+A method which will receive {\em theID} from
+the actors channel either from the address given by {\em
+theAddress} or from the address of the shadow object that created the
+actor if no address is specified.
+
+Returns the result of invoking {\em recvID(0,0,theID,theAddress)} on
+the actors channel object if an address is specified, otherwise
+the result of invoking {\em
+recvID(0,0,theID,this->getShadowAdressPtr())} on the actors channel
+object is returned. \\ 
+
+{\em void Channel *getChannelPtr(void) const;}\\
+A method which returns a pointer to the channel passed in the
+constructor. \\
+
+{\em void FEM\_ObjectBroker *getObjectBrokerPtr(void) const;}\\
+A method which returns a pointer to the FEM\_ObjectBroker passed in the
+constructor. \\
+
+{\em void ChannelAddress *getChannelAddressPtr(void) const;}\\
+A method which returns a pointer to the channel address for the shadow
+object that created the actor. \\
+
