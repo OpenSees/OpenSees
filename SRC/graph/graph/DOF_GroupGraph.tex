@@ -1,0 +1,41 @@
+%File: ~/OOP/graph/graph/DOF_GroupGraph.tex
+%What: "@(#) DOF_GroupGraph.tex, revA"
+
+\noindent {\bf DOF\_GroupGraph} \\
+
+\noindent {\bf Files}   \\
+\indent \#include $<$DOF\_GroupGraph.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class DOF\_GroupGraph: public ArrayGraph \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent Graph \\
+\indent\indent ArrayGraph \\
+\indent\indent\indent {\bf DOF\_GroupGraph} \\
+
+\noindent {\bf Description}  \\
+\indent DOF\_GroupGraph is a type of Graph. It is a graph of the DOF\_Group
+connectivity of the analysis model. It is utilised by the
+DOF\_Numberer to assign equation numbers to the individual DOFs in the
+DOF\_Groups of the model. It is a subtype of
+ArrayGraph, though it could just as easily be a subtype of any other
+type of Graph subclass that fully implements the graph interface. \\ 
+
+\noindent {\bf Constructors}  \\
+\indent {\em DOF\_GroupGraph(AnalysisModel \&theModel);}  \\
+The constructor is responsible for constructing the graph given {\em
+theModel}. It creates the vertices of the graph, one for every
+equation  (each DOF that has not been constrained out by the
+constraint handler)  in the model and adds all edges based on the FE\_Element
+connectivity. For this reason the model must be fully populated with
+the DOF\_Group\_Group and FE\_Element objects before the constructor is
+called. \\
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~$\tilde{}$ArrayGraph();}  \\
+The superclass ArrayGraph is responsible for destroying the vertices. \\
+
+\noindent {\bf Public Member Functions }  \\
+
+\noindent {\bf Protected Member Functions }  \\

@@ -1,0 +1,19 @@
+
+
+The examples in this directory can be run interactivily or or as batch jobs.
+
+1) for running jobs interactivily you need to login to dspoe.sdsc.edu and submit
+   the job from the command line using the poe command. FOr example to run Example1.tcl
+   on a single machine using 2 nodes you would type (replacing the path to OpenSees):
+
+     poe /gpfs/fmk/bin/OpenSees Example1.tcl -nodes 1 -tasks_per_node m
+
+2) for batch processing of a job you need to login to dslogin.sdsc.edu and you need
+   to submit your job from the command line using llsubmit and the submit files provided. 
+   For example to run Example1.tcl you need to:
+     a)  edit submit1 (replacing the path to OpenSees and the location of the DatastarExamples directory).
+     b)  at the command line prompt type: 
+
+      llsubmit submit1
+
+for further infomation of how to run files on datastar, i suggest you read the on-line documentation.

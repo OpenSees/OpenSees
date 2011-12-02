@@ -1,0 +1,10 @@
+#!/bin/csh
+#PBS -q dque
+#PBS -N Example1
+#PBS -l nodes=2:ppn=1
+#PBS -l walltime=0:01:00
+#PBS -o Example1.out
+#PBS -e Example1.err
+#PBS -V
+cd /gpfs/fmk/OpenSees/EXAMPLES/TeraGridExamples
+mpirun -v -machinefile $PBS_NODEFILE -np 2 /gpfs/fmk/bin/OpenSees Example1.tcl

@@ -1,0 +1,150 @@
+% Boris Jeremic (@ucdavis.edu)
+\section{Large Deformation Hyperelasto-Plastic Material Model Commands }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Yield Surface Commands}
+\label{fdys}
+
+\begin{verbatim}
+set fdy "-fdYieldSurfaceType <parameter list>" 
+\end{verbatim}
+
+This command sets the yield surface variables \texttt{fdY} or \texttt{fdYield} to be the
+specific type. A list of parameters can be defined the yield surface and the number of 
+parameters depend on the type of yield surface. Currently, fdYieldSurfaceType cab be 
+Von-Mises and Druker-Prager yield surfaces, which are described in the following subsections.
+
+
+%-----------------------------------------------------------------------------------
+\subsubsection{Von-Mises Yield Surface Commands}
+\label{fdVMys}
+
+\begin{verbatim}
+set fdy "-VM Y0?" 
+\end{verbatim}
+
+\texttt{VM} stands for Von-Mises type, i.e. cylinder shaped yield surface. The parameter \texttt{Y0} 
+defines the material yielding strength, i.e. when uniaxial loading, \texttt{Y0} is then the 
+uniaxial yielding strength.   
+ 
+%-----------------------------------------------------------------------------------
+\subsubsection{Druker-Prager Yield Surface Commands}
+\label{fdDPys}
+
+\begin{verbatim}
+set fdy "-DP fa? c? <ConeIndex?>" 
+\end{verbatim}
+
+\texttt{DP} stands for Druker-Prager type, i.e. cone shaped yield surface. 
+The parameter \texttt{fa} defines the material friction angle with the unit of degree. 
+The parameter \texttt{c} defines the material cohesion strength. 
+The optional parameter \texttt{ConeIndex} is the index to show what the type of cone is used:
+\begin{itemize}
+  \item \texttt{ConeIndex} = 0, compressive (outer) cone;
+  \item \texttt{ConeIndex} = 1, tensile (inner) cone;
+  \item \texttt{ConeIndex} = 2, mean cone;
+  \item \texttt{ConeIndex} = 3, inner-tangent cone;
+  \item default, compressive (outer) cone.
+\end{itemize}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Potential Surface Commands}
+\label{fdps}
+
+\begin{verbatim}
+set fdf "-fdPotentialSurfaceType <parameter list>" 
+\end{verbatim}
+
+This command sets the potential surface variables \texttt{fdY} or \texttt{fdYield} to be the
+specific type. A list of parameters can be defined the potential surface and the number of 
+parameters depend on the type of potential surface. Currently, fdPotentialSurfaceType cab be 
+Von-Mises and Druker-Prager potential surfaces, which are described in the following section.
+
+
+%-----------------------------------------------------------------------------------
+\subsubsection{Von-Mises Potential Surface Commands}
+\label{fdVMps}
+
+\begin{verbatim}
+set fdf "-VM Y0?" 
+\end{verbatim}
+
+\texttt{VM} stands for Von-Mises type, i.e. cylinder shaped potential surface. The parameter \texttt{Y0} 
+equals to the material yielding strength, i.e. when uniaxial loading, \texttt{Y0} is then the 
+uniaxial yielding strength.   
+ 
+%-----------------------------------------------------------------------------------
+\subsubsection{Druker-Prager Potential Surface Commands}
+\label{fdDPps}
+
+\begin{verbatim}
+set fdf "-DP da? <ConeIndex?>" 
+\end{verbatim}
+
+\texttt{DP} stands for Druker-Prager type, i.e. cone shaped yield surface. 
+The parameter \texttt{da} equals to the material dilatant angle with the unit of degree.
+The optional parameter \texttt{ConeIndex} is the index to show what the type of cone is used:
+\begin{itemize}
+  \item \texttt{ConeIndex} = 0, compressive (outer) cone;
+  \item \texttt{ConeIndex} = 1, tensile (inner) cone;
+  \item \texttt{ConeIndex} = 2, mean cone;
+  \item \texttt{ConeIndex} = 3, inner-tangent cone;
+  \item default, compressive (outer) cone.
+\end{itemize} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Evolution Law Commands}
+\label{fdEL}
+
+There are two types of evolution laws: 
+\begin{itemize}
+  \item Isotropic (scalar) evolution law: \texttt{fdES} or \texttt{fdEvolution\_S};
+  \item Kinematic (tensor) evolution law: \texttt{fdET} or \texttt{fdEvolution\_T}.
+\end{itemize} 
+
+%-----------------------------------------------------------------------------------
+\subsubsection{Linear and/or Saturated Isotropic Evolution Law} 
+\label{fdLSES}
+\begin{verbatim}
+set fdes "-LS H? <qs? beta?>"
+\end{verbatim}
+
+\texttt{LS}  stands  for  Linear  and/or Saturated Isotropic Evolution Law. 
+The parameter \texttt{H} is the linear isotropic hardening modulus.
+The optional parameters \texttt{qs} and \texttt{beta} are saturated type isotropic hardening constants;
+if they are used, then it is the combination of linear and saturated isotropic hardening.   
+This hardening rule can be applied  to  any scalar internal variable, 
+such as the diameter of Von-Mises yield surface.
+
+%-----------------------------------------------------------------------------------
+\subsubsection{Linear Kinematic Evolution Law} 
+\label{fdLET}
+\begin{verbatim}
+set fdet "-Linear H?"
+\end{verbatim}
+
+\texttt{Linear}  stands for Linear kinematic Evolution Law. 
+The parameter \texttt{H} is the linear isotropic hardening modulus. 
+This hardening rule can be applied to any tensorial internal variable, 
+such as the center of Von-Mises yield surface.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Hyperelasto-Plastic (Finite Deformation EP) Material Commands}
+\label{HEP_Command}
+
+\begin{verbatim}
+nDMaterial FDEP3D mTag? hTag? -fdY $fdy -fdF $fdf <-fdES $fdes> <-fdET $fdet> 
+\end{verbatim}
+
+A hyperelasto-plastic material is constructed using \texttt{nDMaterial} command.  
+The  argument  \texttt{mTag} is used to uniquely  identify this nDMaterial object 
+among nDMaterial objects  in  the  BasicBuilder  object. 
+The key word \texttt{FDEP3D} cab be replaced by \texttt{FiniteDeformationEP3D}.  
+The  argument  \texttt{hTag} is the previously defined hyperelastic material tag.
+The  other  parameters include  previously  defined  yield surface object \texttt{fdY},
+potential  surface  object  \texttt{fdF}, optional isotropic evolution law object \texttt{fdES},
+and optional kinematic evolution law object \texttt{fdET}.
+The key word \texttt{fdY} can be replaced by \texttt{fdYield}, 
+and \texttt{fdF} can be replaced by \texttt{fdFlow}.
+
+

@@ -1,0 +1,109 @@
+%File: ~/OOP/graph/graph/Vertex.tex
+%What: "@(#) Vertex.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/graph/graph/Vertex.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Vertex: public TaggedObject  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent\indent {\bf Vertex} \\
+
+\noindent {\bf Description}  \\
+\indent Vertex is the abstraction of a vertex in a graph. It has a
+color, weight and a temporary integer value associated with it. Also
+associated with it is an integer reference, which can be used to identify
+an object of some type the vertex is representing and in integer
+temporary variable for algorithms which work with graphs. \\
+
+\noindent {\bf Class Interface}  \\
+\indent // Constructor  \\
+\indent {\em Vertex(int tag, int ref, double weight=0, int color
+=0);}  \\\\ 
+\indent // Destructor  \\
+\indent {\em virtual~$\tilde{}$Vertex();}  \\\\
+\indent // Public Methods  \\
+\indent {\em virtual void setWeight(double newWeight);} \\
+\indent {\em virtual void setColor(int newColor);} \\
+\indent {\em virtual void setTmp(int newTmp);} \\
+\indent {\em virtual int getTag(void) const;}. \\
+\indent {\em virtual int getRef(void) const; } \\
+\indent {\em virtual double getWeight(void) const;} \\
+\indent {\em virtual int getColor(void) const; } \\
+\indent {\em virtual int getTmp(void) const; } \\
+\indent {\em virtual int addEdge(int otherTag); } \\
+\indent {\em virtual int getDegree(void) const;} \\
+\indent {\em virtual const ID \&getAdjacency(void) const;} \\
+\indent {\em virtual void printVertex(OPS_Stream \&s, int flag=0);} \\ 
+\indent {\em virtual void Print(OPS_Stream \&s, int flag =0);} \\
+
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em Vertex(int tag, int ref, double weight=0, int color =0);}  \\
+To construct a Vertex whose tag, reference, weight and color are as
+given by the arguments. The degree of the vertex is set to $0$. The
+integer {\em tag} is passed to the TaggedObject classes constructor.\\
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~$\tilde{}$Vertex();}  \\
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual void setWeight(double newWeight);} \\
+To set the weight of the vertex to {\em newWeight} \\    
+
+{\em virtual void setColor(int newColor);} \\
+To set the color of the vertex to {\em newColor} \\    
+
+{\em virtual void setTmp(int newTmp);} \\
+To set the temporary variable of the vertex to {\em newTmp} \\    
+
+{\em virtual int getTag(void) const;}. \\
+Returns the vertices tag.\\
+
+{\em virtual int getRef(void) const; } \\
+Returns the vertices integer reference.\\
+
+{\em virtual double getWeight(void) const;} \\
+Returns the vertices weight. \\
+
+{\em virtual int getColor(void) const; } \\
+Returns the vertices color. \\
+
+{\em virtual int getTmp(void) const; } \\
+Returns the vertices temporary variable. \\
+
+{\em virtual int addEdge(int otherTag); } \\
+If the adjacency list for that vertex does not already contain {\em
+otherTag}, {\em otherTag} is added to the adjacency list and the
+degree of the vertex is incremented by $1$. Returns a $0$ if
+sucessfull, a $1$ if edge already existed and a negative number if
+not. Note that no check is done by the vertex to see that a vertex
+with {\em otherTag} exists in the graph. The adjacency list for a
+Vertex is stored in an ID object containing the adjacent Vertices
+tags. A check is made to see if {\em otherTag} is in this ID using
+{\em getLocation()}, if it needs to be added the {\em [degree]}
+operator is invoked on the ID. \\ 
+
+{\em virtual int getDegree(void) const;} \\
+Returns the vertices degree. \\
+
+{\em virtual const ID \&getAdjacency(void) const;} \\
+Returns the vertices adjacency list, this is returned as an ID whose
+components are tags for vertices which have been successfully added.\\
+    
+{\em virtual void Print(OPS_Stream \&s, int flag=0);} \\
+Prints the vertex. If the {\em flag = 0} only the vertex tag and
+adjacency list is printed. If the {\em flag =1} the vertex tag, weight
+and adjacency are printed. If the {\em flag =2} the vertex tag, color
+and adjacency are printed. If the {\em flag =3} the vertex tag,
+weight, color and adjacency are printed. \\  
+
+
+
+
+
+

@@ -1,0 +1,426 @@
+% Boris Jeremic (@ucdavis.edu)
+\documentclass[dvips]{report}
+%\documentstyle[12pt]{report}
+
+%
+%Trick from  http://www.cantech.net.au/plug/1999-11/msg00038.html
+% for pages
+\makeatletter
+\let\normalappendix\appendix
+\let\normal@section\@section
+\let\normal@ssection\@ssection
+\newif\ifappendix
+\def\appextra{\ifappendix \setcounter{page}{1} \fi}
+\renewcommand{\appendix}
+    {\normalappendix\appendixtrue
+     \renewcommand{\thepage}{\thesection-\@arabic\c@page}}
+\def\@section[#1]#2{\normal@section[#1]{#2}\appextra}
+\def\@ssection#1{\normal@ssection{#1}\appextra}
+\makeatother
+
+
+%\usepackage{endfloat}
+\usepackage{remark}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{fancyheadings,psfig}
+\usepackage{amsmath}
+
+
+%%%%  HYPERREF  HYPERREF  HYPERREF  HYPERREF  HYPERREF 
+\usepackage[pdfauthor={Boris Jeremic}, 
+            colorlinks=true,
+            linkcolor=blue,
+            citecolor=blue,
+            urlcolor=blue,
+            dvips]{hyperref}
+
+
+%  \usepackage[  pdfauthor={Boris Jeremic'},
+%                pdftitle={Lecture Notes on 
+%                          Computational Geomechanics: 
+%                          Inelastic Finite Elements for 
+%                          Pressure Sensitive Materials},
+%                pdfcreator={ps2pdf},
+%                pdfsubject={Computational Geomecahnics Lecture Notes},
+%                pdfkeywords={Compuptational Geomechanics, Finite Elements},
+%                colorlinks,
+%                linkcolor=blue,
+%                citecolor=blue,
+%                hypertex
+%              ]{hyperref}
+%  
+
+%\usepackage{fancyhdr}
+%\pagestyle{fancy}
+%\cfoot{\NavigationBar}
+%\newcommand{\Navigationbar}{%
+%\Acrobatmenu{PrevPage}{previous}
+%\Acrobatmenu{NextPage}{next}
+%\Acrobatmenu{FirstPage}{first}
+%\Acrobatmenu{LastPage}{last}
+%\Acrobatmenu{GoBack}{back}
+%\Acrobatmenu{Quit}{quit}%}%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%11pt %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%11pt % this is for 11pt
+%11pt \setlength{\textwidth}{16.6cm}
+%11pt \setlength{\textheight}{22.7cm}
+%11pt \setlength{\hoffset}{-2.0cm}
+%11pt \setlength{\voffset}{-2.1cm}
+%11pt
+%11pt
+% % draft special command for postscript       IZBACI ZA SLUZBENU VERZIJU
+% %
+% %
+% \special{!userdict begin
+% /bop-hook{
+% gsave
+% 60 50 translate     %start position
+% 90 rotate            % orientation
+% /Times-Roman findfont %font
+% 50 scalefont         % scaling of font
+% setfont
+% 0 0 moveto
+% 0.75 setgray          % gray level ( 1 -> white ;  0 black )
+% (Draft Proposal to NSF-CAREER)    % text you want to see
+% %show    % or: true charpath for hollow letters
+% true charpath
+% stroke grestore}def end}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\today
+{\number\day.\space \ifcase\month\or
+January\or
+February\or
+March\or
+April\or
+May\or
+June\or
+July\or
+August\or
+September\or
+October\or
+November\or
+December\fi,\space
+\number\year}
+
+
+
+
+
+% ----------------------------------------------------------------------
+%
+% TIME OF DAY
+%
+%
+\newcount\hh
+\newcount\mm
+\mm=\time
+\hh=\time
+\divide\hh by 60
+\divide\mm by 60
+\multiply\mm by 60
+\mm=-\mm
+\advance\mm by \time
+\def\hhmm{\number\hh:\ifnum\mm<10{}0\fi\number\mm}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%JB
+% from UCthesis.sty
+\setcounter{topnumber}{4}
+\def\topfraction{.8}
+\setcounter{bottomnumber}{1}
+\def\bottomfraction{.8}
+\setcounter{totalnumber}{4}
+\def\textfraction{.2}
+\def\floatpagefraction{.8}
+\setcounter{dbltopnumber}{2}
+\def\dbltopfraction{.7}
+\def\dblfloatpagefraction{.5}
+%JB
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% nDarray LOGO definition
+\newcommand{\nDarray}
+{{\bf \lowercase{n}\kern-0.05em \lower0.3ex\hbox{D}\lowercase{array}}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% C++ logo
+\def\Cplusplus{{ C\raise.3ex\hbox{\small ++}}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FEMtools LOGO definition
+\newcommand{\FEMtools}
+{{\bf \uppercase{F}\kern-0.25em\uppercase{E}\kern-0.25em\uppercase{M}\lowercase{tools}}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FEI  LOGO definition
+\newcommand{\FEI}
+{{\sf \uppercase{F}\kern-0.20em\uppercase{E}\kern-0.20em\uppercase{I}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% ovo je za cirilicu
+\input ../vuk.def
+\newfont{\cyr}{wncyr10 scaled 1200 }
+\newfont{\cyb}{wncyb10 scaled 1200 }
+\newfont{\cyi}{wncyi10 scaled 1200 }
+\newfont{\cysc}{wncysc10 scaled 1200 }
+\newfont{\cyss}{wncyss10 scaled 1200 }
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% JB sig
+\newfont{\cyrjb}{wncyr10 scaled 800 }
+\newcommand{\JB}
+{{\cyrjb \lower0.50ex\hbox{\uppercase{J}}\kern-.58em\hbox{\uppercase{B}}}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  razmak izmedju redova   IZBACI ZA SLUZBENU VERZIJU
+%
+%
+%baselinestretch
+%
+\renewcommand{\baselinestretch}{1.40}
+\small\normalsize  % trick from Kopka and Daly p47.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ovo su zaglavlja       IZBACI ZA SLUZBENU VERZIJU
+%
+%
+%
+\setlength{\textwidth}{16.5cm}
+\setlength{\textheight}{23.2cm}
+\setlength{\hoffset}{-2.1cm}
+\setlength{\voffset}{-2.5cm}
+
+%{\cyr Boris Jeremi\cj{}}  \JB{}: \todaycyr , \hhmm}
+\lhead{\small \it OpenSees Commands, UCD CompGeomech works}
+\rhead{\rm\thepage}
+\chead{}
+\lfoot{\small \it Boris Jeremi{\'c}}
+\cfoot{}
+\rfoot{\small \it Version: \today, \hhmm}
+\addtolength{\headheight}{14pt}
+
+\setlength{\headrulewidth}{0.1mm}
+\setlength{\footrulewidth}{0.1mm}
+
+\pagestyle{fancy}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\def\myfootnote{\footnote}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% draft special command for postscript       IZBACI ZA SLUZBENU VERZIJU
+%
+%
+\special{!userdict begin
+/bop-hook{
+gsave
+25 30 translate     %start position
+90 rotate            % orientation
+/Times-Roman findfont %font
+25 scalefont         % scaling of font
+setfont
+0 0 moveto
+0.60 setgray          % gray level ( 1 -> white ;  0 black )
+(UCD CompGeomech)    % text you want to see
+%show    % or: true charpath for hollow letters
+true charpath
+stroke grestore}def end}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  %                      NFSS
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  \fontfamily{cmr}
+%  \fontseries{m}
+%  \fontshape{n}
+%  \fontsize{12}{15pt}
+%  \selectfont
+%
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%JB
+% from UCthesis.sty
+\setcounter{topnumber}{4}
+\def\topfraction{.8}
+\setcounter{bottomnumber}{1}
+\def\bottomfraction{.8}
+\setcounter{totalnumber}{4}
+\def\textfraction{.2}
+\def\floatpagefraction{.8}
+\setcounter{dbltopnumber}{2}
+\def\dbltopfraction{.7}
+\def\dblfloatpagefraction{.5}
+%JB
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newremark{remark}{Remark}[section]
+
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  \includeonly{%
+%               /home/jeremic/tex/works/BasicFE,%
+%               /home/jeremic/tex/works/ConTen,%
+%               /home/jeremic/tex/works/FED,%
+%               /home/jeremic/tex/works/IsoFE3D,%
+%               /home/jeremic/tex/works/SolProc%
+%               /home/jeremic/tex/works/LSGIntroduction,%%
+%               /home/jeremic/tex/works/LSGBackground,%
+%               /home/jeremic/tex/works/LSBasic,%
+%               /home/jeremic/tex/works/LSHE,%
+%               /home/jeremic/tex/works/LSELPL,%
+%               /home/jeremic/tex/works/LSFEF02,%
+%               /home/jeremic/tex/works/LSFEMD,%
+%               /home/jeremic/tex/works/LSSolProc,%
+%               /home/jeremic/tex/works/LST,%
+%               /home/jeremic/tex/works/BM,%
+%               /home/jeremic/tex/works/ND_FEM,%
+%               /home/jeremic/tex/works/Results,%
+%  %%
+%               /home/jeremic/tex/works/LSNotation,%
+%               /home/jeremic/tex/works/LSHEappendix,%
+%               /home/jeremic/tex/works/BMapp,%
+%               /home/jeremic/tex/works/ND_FEMapp%
+%              }
+%  % \includeonly{%
+%  %              ../BasicFE,%
+%  %              ../ConTen,%
+%  %              ../FED,%
+%  %              ../IsoFE3D,%
+%  %              ../SolProc%
+%  %             }
+%  %\includeonly{%
+%  %             /home/jeremic/tex/works/FORMULATION,%
+%  %             /home/jeremic/tex/works/SolProc,%
+%  %             /home/jeremic/tex/works/LSTglob%
+%  %            }
+
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\begin{document}
+%
+
+
+\begin{titlepage}
+
+
+%\fbox{\fbox
+%{\parbox{15.0cm}{
+
+\vspace{5.5cm}
+
+
+\begin{center}
+{\huge \bf OpenSees } \\
+\vspace{0.8cm}
+{\huge \bf UCD  Computational Geomechanics:} \\
+\vspace{0.8cm}
+{\huge \bf  Command Manual} \\
+\end{center}
+
+
+
+\vspace{5.5cm}
+
+\begin{center}
+{\large by: } \\
+%\vspace{0.2cm}
+%{\large Boris Jeremi{\'c}  }\\
+\vspace{0.0cm}
+{\large \href{http://sokocalo.engr.ucdavis.edu/~jeremic/}{Boris Jeremi{\'c}}  }\\
+\vspace{0.1cm}
+{\large  with  contributions  by: }\\
+\vspace{0.0cm}
+{\large Zhao Cheng, 
+        Zhaohui  Yang,  
+        Jinxiu Liao, 
+        Xiaoyan Wu, 
+        Guanzhou Jie, 
+        Kallol Sett, 
+        Vlado Vukadin, 
+        Matthias Preisig}\\
+\vspace{0.3cm}
+{\large Department of Civil and  Environmental Engineering}\\
+\vspace{0.0cm}
+{\large University of California, Davis}\\
+
+\vspace{2.8cm}
+{\it Version: \today{}, \hhmm{} }\\
+
+\end{center}
+
+
+
+
+\vspace*{1.1cm}
+
+%% %%  \vspace{0.5cm}
+%% \begin{center}
+%% \strut\psfig{figure=Loza03.ps,height=0.50cm}
+%% \end{center}
+
+
+%}
+%}}
+\end{titlepage}
+
+
+
+%%%%%%%.......
+%%%%%%%.......
+   \tableofcontents
+   \listoffigures
+
+%%%%%%%%%
+\chapter{OpenSees Commands}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{/home/jeremic/tex/works/OpenSeesCommands/Elastic3DCommands.tex}
+\newpage
+\input{/home/jeremic/tex/works/OpenSeesCommands/Template3DEPCommands.tex}
+\newpage
+\input{/home/jeremic/tex/works/OpenSeesCommands/BrickCommands.tex}
+\newpage
+\input{/home/jeremic/tex/works/OpenSeesCommands/upUCommands.tex}
+\newpage
+\input{/home/jeremic/tex/works/OpenSeesCommands/DRMCommands.tex}
+\newpage
+\input{/home/jeremic/tex/works/OpenSeesCommands/FiniteDefElementLagrangianCommand.tex}
+\newpage
+\input{/home/jeremic/tex/works/OpenSeesCommands/FiniteDefHyperelasticCommands.tex}
+\newpage
+\input{/home/jeremic/tex/works/OpenSeesCommands/FiniteDefHyperelasticPlasticCommands.tex}
+
+
+%%%%%%%.......
+%\bibliography{thesis}
+\bibliography{refmech,refcomp}
+
+
+
+\bibliographystyle{acm}
+
+
+\end{document}
+\bye
+
+
+
+
+

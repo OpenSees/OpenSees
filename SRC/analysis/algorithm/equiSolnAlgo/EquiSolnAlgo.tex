@@ -1,0 +1,93 @@
+%File ~/OOP/analysis/algorithm/EquiSolnAlgo.tex
+%What: "@(#) EquiSolnAlgo.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{
+}$/analysis/algorithm/equiSolnAlgo/EquiSolnAlgo.h$>$  \\ 
+
+\noindent {\bf Class Declaration}  \\
+\indent class EquiSolnAlg: public SolutionAlgo;  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent SolutionAlgorithm \\
+\indent\indent\indent {\bf EquiSolnAlgo} \\
+
+\noindent {\bf Description} \\ 
+\indent The EquiSolnAlgo class is an abstract base class. Its
+purpose is to define the interface common among all subtypes. An
+EquiSolnAlgo object defines the sequence of operations 
+performed by the the Integrator and the LinearSOE objects in
+solving the equilibrium equation $R(U) = 0$ given the current state of
+the domain at each time step in a direct integration analysis or load
+increment in a static analysis. \\
+
+\noindent {\bf Class Interface} \\ 
+\indent\indent // Constructor  \\ 
+\indent\indent {\em EquiSolnAlgo(int classTag);}\\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em virtual~ $\tilde{}$EquiSolnAlgo();}\\ \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em void setLinks(AnalysisModel \&theModel, \\
+\indent\indent\indent\indent\indent IncrementalIntegrator \&theIntegrator, \\
+\indent\indent\indent\indent\indent LinearSOE \&theSOE);} \\
+\indent\indent {\em virtual int solveCurrentStep(void) = 0;} \\ \\
+\indent\indent // Public Methods for Output \\
+\indent\indent {\em virtual void Print(OPS_Stream \&s, int flag = 0)
+=0;}\\ \\
+\indent\indent // Public Methods for Pointers - not Protected for ConvergenceTest\\
+\indent\indent {\em AnalysisModel *getAnalysisModelPtr(void) const;}
+\\ 
+\indent\indent {\em IncrementalIntegrator
+*getIncrementalIntegratorPtr(void) const;} \\ 
+\indent\indent {\em LinSysOfEqn *getLinearSOEptr(void) const;} \\ 
+
+\noindent {\bf Constructor} \\ 
+\indent {\em EquiSolnAlgo(int classTag);}\\ 
+The integer {\em classTag} is passed to the SolutionAlgorithm classes
+constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$EquiSolnAlgo();}\\ 
+Does nothing. \\
+
+
+\noindent {\bf Public Methods}  \\
+\indent {\em void setLinks(AnalysisModel \&theModel, \\
+\indent\indent\indent\indent IncrementalIntegrator \&theIntegrator, \\
+\indent\indent\indent\indent LinearSOE \&theSOE);} \\
+Sets up the links needed by an object of this class, or a derived
+class, to an AnalysisMode, IncrementalIntegrator and LinearSOE
+object. Pointers to these objects can be obtained by subtypes using
+the protected methods defined below. \\ 
+
+\indent {\em virtual int solveCurrentStep(void) = 0;} \\
+A method implemented by each subclass which specifies the steps taken
+in order to get the system into an equilibrium state. It is a pure
+virtual function, i.e. all subclasses or their descendents must
+implement this routine. To return $0$ if algorithm succeeds, a negative
+value otherwise. \\ 
+
+\indent {\em virtual void Print(OPS_Stream \&s, int flag = 0) =0;}\\
+The Integrator is to send information to the stream based on the
+integer {\em flag}. \\
+
+\indent {\em AnalysisModel *getAnalysisModelPtr(void) const;} \\
+A const member function which returns a pointer to the AnalysisModel
+associated with the EquiSolnAlgo object, {\em theModel} passed in {\em
+setLinks()}. $0$ returned if one not yet associated. \\
+
+{\em IncrementalIntegrator *getIncrementalIntegratorPtr(void) const;} \\
+A const member function which returns a pointer to the StaticMethod
+associated with the StaticSolnAlgo object, {\em theIntegrator} passed
+in {\em setLinks()}. $0$ returned if one not yet associated. \\
+ 
+{\em LinSysOfEqn *getLinearSOEptr(void) const;} \\
+A const member function which returns a pointer to the LinearSOE
+associated with the EquiSolnAlgo object, {\em theLinearSOE} passed in
+{\em setLinks()}. $0$ returned if one not yet associated. \\
+
+
+
+
+

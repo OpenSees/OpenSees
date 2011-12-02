@@ -1,0 +1,13 @@
+
+
+The examples in this directory can be as batch jobs on TeraGrid. To
+run a job you need to login to tg-login.teragrid.org and you need
+   to submit your job from the command line using qsub and the submit files provided. 
+   For example to run Example1.tcl you need to:
+     a)  edit submit1 (replacing the path to OpenSees and the location of the TeraGridExamples directory).
+     b)  at the command line prompt type: 
+
+      qsub submit1
+
+For further infomation of how to run files on TeraGrid, i suggest you read the on-line documentation.
+

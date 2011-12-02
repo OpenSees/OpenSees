@@ -1,0 +1,124 @@
+%File: ~/OOP/graph/graph/Graph.tex
+%What: "@(#) Graph.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/graph/graph/Graph.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Graph:  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf Graph} \\
+
+\noindent {\bf Description}  \\
+\indent Graph is a base class. A Graph is a container class
+responsible for holding the vertex set and edge set. The class is
+responsible for: \begin{enumerate} \item providing methods to add
+vertices and edges. \item accessing the vertices and
+edges. \end{enumerate} All the methods for the class are declared as
+virtual to allow subclasses to be introduced. \\
+
+
+
+\noindent {\bf Class Interface}  \\
+\indent\indent // Constructors  \\
+\indent\indent {\em Graph();}  \\
+\indent\indent {\em Graph(int numVertices);} \\
+\indent\indent {\em Graph(TaggedObjectStorage \&theVerticesStorage);} \\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em virtual~$\tilde{}$Graph();}  \\ \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em virtual bool addVertex(Vertex *vertexPtr, bool
+checkAdjacency = true);} \\
+\indent\indent {\em virtual int addEdge(int vertexTag, int
+otherVertexTag);  } \\ 
+\indent\indent {\em virtual Vertex *getVertexPtr(int vertexTag);} \\
+\indent\indent {\em virtual VertexIter \&getVertices(void);} \\
+\indent\indent {\em virtual int getNumVertex(void) const;} \\
+\indent\indent {\em virtual int getNumEdge(void) const;} \\
+\indent\indent {\em virtual Vertex *removeVertex(int vertexTag, bool
+removeEdgeFlag = true );} \\
+\indent\indent {\em virtual void Print(OPS_Stream \&s, int flag = 0);} \\
+\indent\indent {\em friend OPS_Stream \&operator<<(OPS_Stream \&s, const Graph 
+\&G);} \\
+
+\noindent {\bf Constructors}  \\
+\indent {\em Graph();}  \\
+To create an empty Graph. Creates an ArrayOfTagged object of initial
+size $32$ in which to store the Vertices. The ArrayOfTagged object is
+used to store the Vertices.\\
+
+\indent {\em Graph(int numVertices);} \\
+To create an empty Graph. Creates an ArrayOfTagged object of initial
+size {\em numVertices} in which to store the Vertices. The
+ArrayOfTagged object is used to store the Vertices. \\ 
+
+\indent {\em Graph(TaggedObjectStorage \&theVerticesStorage);}\\ 
+To create an empty Graph. The {\em theVerticesStorage} object is used to
+store the Vertices. {\em clearAll()} is invoked on this object to
+ensure it is empty. \\
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~$\tilde{}$Graph();}  \\
+Invokes {\em clearAll()} on the storage object used to store the
+Vertices. It then invokes delete on the storage object used, which was
+either passed or created in the constructor. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual bool addVertex(Vertex *vertexPtr, bool
+checkAdjacency = true);} \\
+Causes the graph to add a vertex to the graph. If {\em checkAdjacency}
+is {\em true}, a check is made to ensure that all the Vertices in the
+adjacency list of the Vertex are in the Graph. If a vertex in the
+adjacency is not in the Graph the vertex is not added, a warning
+message is printed and {\em false} is returned. If successful,
+returns the result of invoking {\em addComponent()} on the
+TaggedStorage object used to store the Vertices. \\
+
+
+
+{\em virtual int addEdge(int vertexTag, int otherVertexTag); } \\
+Causes the Graph to add an edge {\em (vertexTag,otherVertexTag)} to
+the Graph. A check is first made to see if vertices with tags given by
+{\em vertexTag} and {\em otherVertexTag} exist in the graph. If they
+do not exist a $-1$ is returned, otherwise the method invokes {\em
+addEdge()} on each of the corresponding vertices in the 
+graph. Increments {\em numEdge} by $1$ and returns $0$ if sucessfull,
+a $1$ if the edge already existed, and a $-2$ if one {\em addEdge()}
+was successful, but the other was not.\\  
+
+{\em virtual Vertex *getVertexPtr(int vertexTag);} \\
+A method which returns a pointer to the vertex whose tag is given by {\em
+vertexTag}. If no such vertex exists in the graph $0$ is
+returned. Invokes {\em getComponentPtr(vertexTag)} on the vertex
+storage object and casts this to a Vertex * if not null. \\
+
+{\em virtual VertexIter \&getVertices(void);} \\
+A method which returns a reference to the graphs VertexIter. This iter
+can be used for iterating through the vertices of the graph. \\
+
+{\em virtual int getNumVertex(void) const;} \\
+A method to return the number of vertices in the graph. Invokes {\em
+getNumComponents()} on the Vertex storage object.\\
+
+{\em virtual int getNumEdge(void) const;} \\
+A method to return the number of edges in the graph, returns {\em
+numEdge}. \\ 
+
+\indent {\em virtual Vertex *removeVertex(int vertexTag, bool
+removeEdgeFlag = true );} \\
+To remove the Vertex from the Graph whose tag is equal to {\em
+vertexTag}. If {\em removeEdgeFlag} is {\em true} will also remove the
+Vertex from the remaining Vertices adjacency lists. returns a pointer
+to the removed Vertex if successful, $0$ if the Vertex was not in the
+Graph. Invokes {\em removeComponent(vertexTag)} on the vertex
+storage object and casts this to a Vertex * if not null. DOES NOT YET
+DEAL WITH {\em removeEdgeFlag}. \\
+
+{\em virtual void Print(OPS_Stream \&s, int flag =0);} \\
+A method to print the graph. Invokes {\em Print(s, flag)} on the vertex
+storage object. \\
+
+\indent {\em friend OPS_Stream \&operator<<(OPS_Stream \&s, const Graph 
+\&G);} \\
+Invokes {\em Print()} on the Graph {\em G}.

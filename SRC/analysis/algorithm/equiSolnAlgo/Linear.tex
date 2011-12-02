@@ -1,0 +1,92 @@
+%File ~/OOP/analysis/algorithm/Linear.tex
+%What: "@(#) Linear.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/algorithm/equiSolnAlgo/Linear.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Linear: public EquiSolnAlg;  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent SolutionAlgorithm \\
+\indent\indent\indent EquiSolnAlgo \\
+\indent\indent\indent\indent {\bf Linear} \\
+
+\noindent {\bf Description} \\ 
+\indent The Linear class is an algorithmic class which uses the
+linear solution algorithm to solve the equations. This is based on
+a Taylor expansion of the linear system $\R(\U) = \zero$ about an
+approximate solution $\U_{a}$.
+
+\begin{equation} 
+\R(\U) = 
+\R(\U_{a}) +
+\left[ {\frac{\partial \R}{\partial \U} \vert}_{\U_{a}}\right]
+\left( \U - \U_{a} \right) 
+\end{equation}
+\noindent which can be expressed as:
+\begin{equation} \
+\K_{a} \Delta \U = \R(\U_{a})
+\end{equation}
+which is solved for $\Delta \U$ to give the approximation 
+$\U = \U_{a} + \Delta \U$. \\
+
+To start the iteration $\U_a = \U_{trial}$, i.e. the current trial
+response quantities are chosen as approximate solution quantities. \\
+
+
+\noindent {\bf Class Interface} \\ 
+\indent\indent // Constructor \\ 
+\indent\indent {\em Linear();}\\ \\
+\indent\indent // Destructor \\
+\indent\indent {\em ~ $\tilde{}$Linear();}\\  \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em int solveCurrentStep(void);} \\ \\
+\indent\indent // Public Methods  for Output \\
+\indent\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\
+\indent\indent {\em int recvSelf(int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker);}\\ 
+\indent\indent {\em int Print(OPS_Stream \&s, int flag =0);} \\
+
+
+\noindent {\bf Constructor} \\ 
+\indent {\em Linear();}\\ 
+The integer {\em EquiALGORITHM\_TAGS\_Linear} (defined in
+$<$classTags.h$>$) is passed to the EquiSolnAlgo classes
+constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em ~ $\tilde{}$Linear();}\\ 
+
+\noindent {\bf Public Methods}  \\
+\indent {\em int solveCurrentStep(void);} \\
+This method performs the linear solution algorithm:
+\begin{tabbing}
+while \= \+ whilewhilewhilewhilewhilewhilewhilewhilewhile \= \kill
+theIntegrator-$>$formTangent() \+ // form $\K_{a}$ \- \\
+theIntegrator-$>$formUnbalance() // form $\R(\U_{a})$ \\
+theSOE-$>$solveX() // solve for $\Delta \U$ \\
+theIntegrator-$>$update(theSOE-$>$getX()) // set $\U = \U_{a} + \Delta \U$ \-  
+\end{tabbing}
+
+The method returns a 0 if successful, otherwise warning message is
+printed and a negative number is returned; a $-1$ if error during {\em
+formTangent()}, a $-2$ if error during {\em formUnbalance()}, a $-3$
+if error during {\em solve()}, a $-4$ if error during {\em
+update()}. If an error occurs in any of the above operations the
+method stops at that routine, none of the subsequent operations are
+invoked. A $-5$ is returned if any one of the links has not been
+setup. \\
+
+
+{\em int sendSelf(int commitTag, Channel \&theChannel);}\\
+Does  nothing. Returns 0. \\
+
+
+{\em int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);}\\ 
+Does nothing. Returns 0. \\
+
+{\em int Print(OPS_Stream \&s, int flag =0);} \\
+Sends the string 'Linear Algorithm' to the stream.
