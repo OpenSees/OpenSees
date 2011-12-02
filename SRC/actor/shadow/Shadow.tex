@@ -1,0 +1,162 @@
+%File: ~/OOP/actor/Shadow.tex
+%What: "@(#) Shadow.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/actor/shadow/Shadow.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Shadow \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf Shadow} \\
+
+\noindent {\bf Description}  \\
+\indent Shadow is meant as an abstract class, i.e. no instances of Shadow
+should exist. A Shadow object is associated with an Actor object which
+may exist in another process. The Shadow acts like a normal object in
+the users address space, data and processing that is done by the
+Shadow may be stored and processed in a remote process, the Actor object
+resides in this remote address space. The Actor and the Shadow both
+have a Channel, a communication port. This allows the two to
+communicate with each other.\\ 
+
+\noindent {\bf Class Interface}  \\
+\indent // Constructors  \\
+\indent\indent {\em Shadow(Channel \&theChannel, \\
+\indent\indent\indent\indent\indent FEM\_ObjectBroker \&theBroker, \\
+\indent\indent\indent\indent\indent ChannelAddress \&theActorsAddress);}\\
+\indent\indent {\em Shadow(char *program, \\
+\indent\indent\indent\indent\indent Channel \&theChannel, \\
+\indent\indent\indent\indent\indent FEM\_ObjectBroker \&theBroker, \\
+\indent\indent\indent\indent\indent MachineBroker \&theMachineBroker, \\
+\indent\indent\indent\indent\indent int compDemand, \\
+\indent\indent\indent\indent\indent bool startShadow);}  \\\\
+\indent\indent // Destructor \\
+\indent\indent {\em virtual $\tilde{ }$Shadow();}\\  \\
+\indent\indent // Protected Methods for Sending Objects to Remote Actor \\
+\indent\indent {\em virtual void sendObject(MovableObject \&theObject);}\\
+\indent\indent {\em virtual void recvObject(MovableObject \&theObject);} \\
+\indent\indent {\em virtual void sendMessage(Message \&theMessage);}\\
+\indent\indent {\em virtual void recvMessage(Message \&theMessage);} \\
+\indent\indent {\em virtual void sendMatrix(Matrix \&theMatrix);}\\
+\indent\indent {\em virtual void recvMatrix(Matrix \&theMatrix);} \\
+\indent\indent {\em virtual void sendVector(Vector \&theVector);}\\
+\indent\indent {\em virtual void recvVector(Vector \&theVector);} \\
+\indent\indent {\em virtual void sendID(ID \&theID);}\\
+\indent\indent {\em virtual void recvID(ID \&theID);} \\
+\indent\indent {\em void Channel *getChannelPtr(void) const;}\\
+\indent\indent {\em void FEM\_ObjectBroker *getObjectBrokerPtr(void) const;}\\
+\indent\indent {\em void ObjectBroker *getActorAddressPtr(void) const;}\\
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em Shadow(Channel \&theChannel, \\
+\indent\indent\indent\indent FEM\_ObjectBroker \&theBroker, \\
+\indent\indent\indent\indent ChannelAddress \&theActorsAddress);}\\
+This constructor is used when the actor process is already up and
+running. The constructor sets its channel to be {\em theChannel}, its 
+associated object broker to be {\em theBroker}, and the address to
+which it will send data to be {\em thaActorsAddress}. \\ 
+
+\indent {\em Shadow(char *program, \\
+\indent\indent\indent\indent Channel \&theChannel, \\
+\indent\indent\indent\indent FEM\_ObjectBroker \&theBroker, \\
+\indent\indent\indent\indent MachineBroker \&theMachineBroker, \\
+\indent\indent\indent\indent int compDemand, \\
+\indent\indent\indent\indent bool startShadow);}  \\
+This constructor is used to get an actor process up and running. If 
+{\em startShadow} is {\em true}, the constructor invokes 
+{\em startActor(program,theChannel,compDemand)} on  
+{\em theMachineBroker} object. It then invokes {\em setUpShadow()} on
+{\em theChannel} and {\em getLastSendersAddress()} on {\em theChannel}
+to set up store the address of the actors channel, {\em
+theActorsAddress}; this is done in case multiple shadow objects use a
+single channel. 
+If an error occurs an error message is printed and the program terminated.\\ 
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$Shadow();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Member Functions }  \\
+
+\noindent {\bf Protected Member Functions }  \\
+\indent {\em virtual void sendObject(MovableObject \&theObject);}\\
+A method which will send the MovableObject {\em theObject} to
+the actor object through the shadows channel. It returns the
+result of invoking {\em sendObj(0,0,theObject, theBroker, theActorsAddress)} on the
+shadow's associated channel {\em theChannel}. \\ 
+
+
+{\em virtual void recvObject(MovableObject \&theObject);} \\
+A method which will cause the object to read the MovableObject {\em
+theObject} from the channel. It will return the
+result of invoking {\em recvObj(0,0,theObject, theBroker, theActorsAddress)} on the
+shadows associated channel {\em theChannel}. \\ 
+
+\indent {\em virtual void sendMessage(Message \&theMessage);}\\
+A method which will send the message {\em theMessage} to
+the actor object through the shadows channel. It will return the
+result of invoking {\em sendMsg(0,0,theMessage, theActorsAddress)} on the
+shadows associated channel {\em theChannel}. \\ 
+
+
+{\em virtual void recvMessage(Message \&theMessage);} \\
+A method which will cause the object to read the message {\em
+theMessage} from the channel. It will return the
+result of invoking {\em recvMsg(0,0,theMessage, theActorsAddress)} on the
+shadows associated channel {\em theChannel}. \\ 
+
+
+\indent {\em virtual void sendMatrix(Matrix \&theMatrix);}\\
+A method which will send the Matrix {\em theMatrix} to
+the actor object through the shadows channel. It will return the
+result of invoking {\em sendMatrix(0,0,theMatrix, theActorsAddress)} on the
+shadows associated channel {\em theChannel}. \\ 
+
+
+{\em virtual void recvMatrix(Matrix \&theMatrix);} \\
+A method which will cause the object to read the Matrix {\em
+theMatrix} from the channel. It will return the
+result of invoking {\em recvMatrix(0,0,theMatrix, theActorsAddress)} on the
+shadows associated channel {\em theChannel}. \\ 
+
+\indent {\em virtual void sendVector(Vector \&theVector);}\\
+A method which will send the Vector {\em theVector} to
+the actor object through the shadows channel. It will return the
+result of invoking {\em sendVector(0,0,theVector, theActorsAddress)} on the
+shadows associated channel {\em theChannel}. \\ 
+
+
+{\em virtual void recvVector(Vector \&theVector);} \\
+A method which will cause the object to read the Vector {\em
+theVector} from the channel. It will return the
+result of invoking {\em recvVector(0,0,theVector, theActorsAddress)} on the
+shadows associated channel {\em theChannel}. \\ 
+
+
+\indent {\em virtual void sendID(ID \&theID);}\\
+A method which will send the ID {\em theID} to
+the actor object through the shadows channel. It will return the
+result of invoking {\em sendID(0,0,theID, theActorsAddress)} on the
+shadows associated channel {\em theChannel}. \\ 
+
+
+{\em virtual void recvID(ID \&theID);} \\
+A method which will cause the object to read the ID {\em
+theID} from the channel. It will return the
+result of invoking {\em recvID(0,0,theID, theActorsAddress)} on the
+shadows associated channel {\em theChannel}. \\ 
+
+
+{\em void Channel *getChannelPtr(void) const;}\\
+A method which returns a pointer to the channel currently set. \\
+
+{\em void FEM\_ObjectBroker *getObjectBrokerPtr(void) const;}\\
+A method which returns a pointer to the FEM\_ObjectBroker passed in the
+constructor. \\
+
+{\em void ObjectBroker *getActorAddressPtr(void) const;}\\
+A method which returns a pointer to the channel in the actors address
+space. \\
+

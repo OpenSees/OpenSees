@@ -1,0 +1,53 @@
+%File: ~/OOP/system_of_eqn/linearSOE/LinearSOESolver.tex
+%What: "@(#) LinearSOESolver.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/system\_of\_eqn/linearSOE/LinearSOESolver.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class LinearSOESolver: public Solver  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent  Solver \\
+\indent\indent\indent {\bf LinearSOESolver} \\
+
+\noindent {\bf Description}  \\
+\indent LinearSOESolver is an abstract class. A LinearSOESolver object is
+responsible for solving the LinearSOE object that it is associated
+with. That is, to find $x$ such that the matrix equation $Ax=b$ is
+satisfied. \\
+
+\noindent {\bf Interface}  \\
+\indent\indent {// Constructor} \\
+\indent\indent {\em LinearSOESolver(int classTag);}  \\ \\
+\indent\indent {// Destructor} \\
+\indent\indent {\em virtual~ $\tilde{}$LinearSOESolver();}\\  \\
+\indent\indent {// Public Methods }  \\
+\indent\indent {\em virtual int solve(void) =0;} \\
+\indent\indent {\em virtual int setSize(void) =0;} \\
+
+\noindent {\bf Constructor}  \\
+\indent {\em LinearSOESolver(int classTag);}  \\
+The integer {\em classTag} is passed to the Solver. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$LinearSOESolver();}\\ 
+Does nothing. Provided so the subclasses destructor will be called. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual int solve(void) =0;} \\
+Causes the LinearSOESolver to solve the system of equations $Ax=b$ for $x$.
+Returns $0$ if successful , negative number if not; the actual value depending on
+the type of LinearSOESolver. The result of the solve are to be stored
+in the $x$ vector of the LinearSOE by the object.\\
+
+\indent {\em virtual int setSize(void) =0;} \\
+This is invoked by the {\em LinearSOE} object when {\em setSize()} has
+been invoked on it. Solvers may sometimes need to store additional
+data that needs to be updated if the size of the system of equation
+changes. \\
+
+
+
+

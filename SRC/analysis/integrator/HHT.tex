@@ -1,0 +1,252 @@
+%File: ~/OOP/analysis/integrator/HHT.tex
+%What: "@(#) HHT.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/integrator/HHT.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class HHT: public TransientIntegrator  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent Integrator \\
+\indent\indent\indent IncrementalIntegrator \\
+\indent\indent\indent\indent TransientIntegrator \\
+\indent\indent\indent\indent\indent {\bf HHT} \\
+
+\noindent {\bf Description} \\ 
+\indent HHT is a subclass of TransientIntegrator which implements
+the Hilber-Hughes-Taylor (HHT) method. In the HHT method, to determine the
+velocities, accelerations and displacements at time $t + \Delta t$,
+by solving the following equilibrium equation
+
+\[ \R (\U_{t + \Delta t}) = \P(t + \Delta t) -
+\F_I(\Udd_{t+\Delta t}) - \F_R(\Ud_{t + \alpha \Delta t},\U_{t +
+\alpha \Delta t}) \] 
+
+\noindent where
+
+\[ \U_{t + \alpha} = \left( 1 - \alpha \right) \U_t + \alpha \U_{t +
+\Delta t} \]
+
+\[ \Ud_{t + \alpha} = \left( 1 - \alpha \right) \Ud_t + \alpha \Ud_{t +
+\Delta t} \]
+
+\noindent and the velocities and accelerations at time $t + \Delta t$
+are determined using the Newmark relations. The HHT method results in
+the following for determining the response at $t + \Delta t$
+
+\[ \left[ \frac{1}{\beta \Delta t^2} \M + \frac{\alpha \gamma}{\beta
+\Delta t} \C + \alpha \K \right] \Delta \U_{t + \Delta t}^{(i)} = \P(t
++ \Delta t) - \F_I\left(\Udd_{t+\Delta  t}^{(i-1)}\right)
+- \F_R\left(\Ud_{t + \alpha \Delta t}^{(i-1)},\U_{t + \alpha \Delta
+t}^{(i-1)}\right) \] 
+\\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructors \\
+\indent {\em HHT();}\\ 
+\indent {\em HHT(double alpha);}\\ 
+\indent {\em HHT(double alpha, double alphaM, double betaK);}\\ \\
+\indent // Destructor \\
+\indent {\em virtual~ $\tilde{}$HHT();}\\ \\
+\indent // Public Methods \\
+\indent {\em int formEleTangent(FE\_Element *theEle);} \\
+\indent {\em int formNodTangent(DOF\_Group *theDof);} \\
+\indent {\em int domainChanged(void);}\\
+\indent {\em int newStep(double deltaT);}\\
+\indent {\em int update(const Vector \&$\Delta U$);} \\ 
+\indent {\em int commit(void);}\\ \\
+\indent // Public Methods for Output\\
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ 
+\indent {\em int Print(OPS_Stream \&s, int flag = 0);}\\
+
+\noindent {\bf Constructors} \\
+\indent {\em HHT();}\\ 
+The integer INTEGRATOR\_TAGS\_HHT is passed to the TransientIntegrator
+constructor. $\alpha$, $\beta$ and $\gamma$ are set to 0.0. This
+constructor should only be invoked by an FEM\_ObjectBroker. \\
+
+\indent {\em HHT(double alpha);}\\ 
+Sets $\alpha$ to {\em alpha}, $\gamma$ to $(1.5 - \alpha)$ and $\beta$
+to $0.25*\alpha^2$. In addition, a flag is set indicating that Rayleigh
+damping will not be used. \\
+
+\indent {\em HHT(double alpha, double alphaM, double betaK);}\\ 
+This constructor is invoked if Rayleigh damping is to be used, 
+i.e. $\D = \alpha_M M + \beta_K K$. Sets $\alpha$ to {\em alpha},
+$\gamma$ to $(1.5 - \alpha)$, $\beta$ to $0.25*\alpha^2$, $\alpha_M$ to
+{\em alphaM} and $\beta_K$ to {\em betaK}. Sets a flag indicating
+whether the incremental solution is done in terms of displacement or
+acceleration to {\em dispFlag} and a flag indicating that Rayleigh
+damping will be used. \\ 
+
+Sets $\alpha$ to {\em alpha}, $\gamma$ to $(1.5 - \alpha)$ and $\beta$
+to $0.25*\alpha^2$. In addition, a flag is set indicating that Rayleigh
+damping will not be used. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$HHT();}\\ 
+Invokes the destructor on the Vector objects created. \\
+
+\noindent {\bf Public Methods}\\
+\indent {\em int formEleTangent(FE\_Element *theEle);} \\
+This tangent for each FE\_Element is defined to be $\K_e = c1\alpha \K
++ c2\alpha \D + c3 \M$, where c1,c2 and c3 were determined in the last invocation
+of the {\em newStep()} method. Returns $0$ after performing the
+following operations:  
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+if (RayleighDamping == false) \{ \+ \\
+theEle-$>$zeroTang() \\
+theEle-$>$addKtoTang(c1) \\
+theEle-$>$addCtoTang(c2) \\
+theEle-$>$addMtoTang(c3)  \- \\
+\} else \{ \+ \\
+theEle-$>$zeroTang() \\
+theEle-$>$addKtoTang(c1 + c2 * $\beta_K$) \\
+theEle-$>$addMtoTang(c3 + c2 * $\alpha_M$)  \- \\ 
+\}
+\end{tabbing}
+
+{\em int formNodTangent(DOF\_Group *theDof);} \\
+This performs the following:
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+if (RayleighDamping == false)  \+ \\
+theDof-$>$addMtoTang(c3)  \- \\
+else \+ \\
+theDof-$>$addMtoTang(c3 + c2 * $\alpha_M$)  \- \\ 
+\end{tabbing}
+
+
+{\em int domainChanged(void);}\\
+If the size of the LinearSOE has changed, the object deletes any old Vectors
+created and then creates $8$ new Vector objects of size equal to {\em
+theLinearSOE-$>$getNumEqn()}. There is a Vector object created to store
+the current displacement, velocity and accelerations at times $t$ and
+$t + \Delta t$, and the displacement and velocity at time $t + \alpha
+\Delta t$. The response quantities at time $t + \Delta t$ are
+then set by iterating over the DOF\_Group objects in the model and
+obtaining their committed values. 
+Returns $0$ if successful, otherwise a warning message and a negative
+number is returned: $-1$ if no memory was available for constructing
+the Vectors. \\
+
+
+{\em int newStep(double $\Delta t$);}\\
+The following are performed when this method is invoked:
+\begin{enumerate}
+\item First sets the values of the three constants {\em c1}, {\em c2}
+and {\em c3}, {\em c1} is set to $1.0$, {\em c2} to $
+\gamma / (\beta * \Delta t)$ and {\em c3} to $1/ (\beta * \Delta t^2)$.
+\item Then the Vectors for response quantities at time $t$ are set
+equal to those at time $t + \Delta t$.
+\begin{tabbing}
+while \= while \= while \= while \= \kill
+\>\> $ \U_t = \U_{t + \Delta t}$ \\
+\>\> $ \Ud_t = \Ud_{t + \Delta t} $ \\
+\>\> $ \Udd_t = \Udd_{t + \Delta t} $ 
+\end{tabbing}
+\item Then the velocity and accelerations approximations at time $t +
+\Delta t$ and the displacement and velocity at time $t + \alpha \Delta t$
+are set using the difference approximations.
+\begin{tabbing}
+while \= while \= while \= while \= \kill
+\>\> $ \U_{t + \alpha \Delta t} = \U_t$ \\
+\>\> $ \dot \U_{t + \Delta t} = 
+ \left( 1 - \frac{\gamma}{\beta}\right) \dot \U_t + \Delta t \left(1
+- \frac{\gamma}{2 \beta}\right) \ddot \U_t $ \\
+\>\> $ \Ud_{t + \alpha \Delta t} = (1 - \alpha) \Ud_t + \alpha \Ud_{t +
+\Delta t}$ \\
+\>\> $ \ddot \U_{t + \Delta t} = 
+ - \frac{1}{\beta \Delta t} \dot \U_t + \left( 1 - \frac{1}{2
+\beta} \right) \ddot \U_t  $ \\
+\>\> theModel-$>$setResponse$(\U_{t + \alpha \Delta t}, \Ud_{t+\alpha
+\Delta t}, \Udd_{t+\Delta t})$ 
+\end{tabbing}
+\item The response quantities at the DOF\_Group objects are updated
+with the new approximations by invoking {\em setResponse()} on the
+AnalysisModel with displacements and velocities at time $t + \alpha
+\Delta t$ and the accelerations at time $t + \Delta t$.
+\begin{tabbing}
+while \= while \= while \= while \= \kill
+\>\> theModel-$>$setResponse$(\U_{t + \alpha \Delta t}, \Ud_{t+\alpha
+\Delta t}, \Udd_{t+\Delta t})$ 
+\end{tabbing}
+\item current time is obtained from the AnalysisModel, incremented by
+$\Delta t$, and {\em applyLoad(time, 1.0)} is invoked on the
+AnalysisModel. 
+\item Finally {\em updateDomain()} is invoked on the AnalysisModel.
+\end{enumerate}
+The method returns $0$ if successful, otherwise a negative number is
+returned: $-1$ if $\gamma$ or $\beta$ are $0$, $-2$ if {\em dispFlag}
+was true and $\Delta t$ is $0$, and $-3$ if {\em domainChanged()}
+failed or has not been called. \\
+
+
+
+{\em int update(const Vector \&$\Delta U$);} \\
+Invoked this first causes the object to increment the DOF\_Group
+response quantities at time $t + \Delta t$. The displacement Vector is  
+incremented by $ c1 * \Delta U$, the velocity Vector by $
+c2 * \Delta U$, and the acceleration Vector by $c3 * \Delta U$. 
+The displacement Vector at time $t + \alpha \Delta t$ is incremented
+by $c1 \alpha \Delta U$ and the velocity Vector by $c2 \alpha \Delta U$.
+The response quantities at the DOF\_Group objects are then updated
+with the new approximations by invoking {\em setResponse()} on the
+AnalysisModel with displacement and velocity at time $t + \alpha
+\Delta t$ and the accelerations at time $t + \Delta t$. 
+Finally {\em updateDomain()} is invoked on the AnalysisModel. 
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+\>\> $ \U_{t + \Delta t} += \Delta \U$ \\
+\>\> $ \dot \U_{t + \Delta t} += \frac{\gamma}{\beta \Delta t} \Delta \U $\\
+\>\> $ \ddot \U_{t + \Delta t} += \frac{1}{\beta {\Delta t}^2} \Delta \U $\\
+\>\> $ \U_{t + \alpha \Delta t} += \alpha \Delta \U $ \\
+\>\> $ \Ud_{t + \alpha \Delta t} += \frac{\alpha \gamma}{\beta \Delta t}
+\Delta \U $\\ 
+\>\> theModel-$>$setResponse$(\U_{t + \alpha \Delta t}, \Ud_{t+\alpha
+\Delta t}, \Udd_{t+\Delta t})$ \\
+\>\> theModel-$>$updateDomain()
+\end{tabbing}
+Returns
+$0$ if successful. A warning message is printed and a negative number
+returned if an error occurs: $-1$ if no associated AnalysisModel, $-2$
+if the Vector objects have not been created, $-3$ if the Vector
+objects and $\Delta U$ are of different sizes. \\
+
+
+{\em int commit(void);}\\
+First the response quantities at the DOF\_Group objects are updated
+with the new approximations by invoking {\em setResponse()} on the
+AnalysisModel with displacement, velocity and accelerations at time $t +
+\Delta t$. Finally {\em updateDomain()} and {\em commitDomain()} are
+invoked on the AnalysisModel. 
+Returns $0$ if successful, a warning
+message and a negative number if not: $-1$ if no AnalysisModel
+associated with the object and $-2$ if {\em commitDomain()} failed. \\
+
+
+{\em int sendSelf(int commitTag, Channel \&theChannel); } \\ 
+Places in a Vector of size 6 the values of $\alpha$, $\beta$, $\gamma$, 
+RayleighDampingFlag, $\alpha_M$ and $\beta_K$.  Then
+invokes {\em sendVector()} on the Channel with this Vector. Returns
+$0$ if successful, a warning message is printed and a $-1$ is
+returned if {\em theChannel} fails to send the Vector. \\ 
+
+{\em int recvSelf(int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker); } \\ 
+Receives in a Vector of size 6 the values of $\alpha$, $\beta$, $\gamma$, 
+RayleighDampingFlag, $\alpha_M$ and $\beta_K$. Returns $0$
+if successful. A warning message is printed, and a $-1$ is returned if
+{\em theChannel} fails to receive the Vector.\\
+
+{\em int Print(OPS_Stream \&s, int flag = 0);}\\
+The object sends to $s$ its type, the current time, $\alpha$, $\gamma$ and
+$\beta$. If Rayleigh damping is specified, the constants $\alpha_M$ and
+$\beta_K$ are also printed.
+
+

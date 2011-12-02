@@ -1,0 +1,350 @@
+% File: ~/OOP/analysis/model/FE_Element.tex 
+%What: "@(#) FE_Element.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/fe\_ele/FE\_Element.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class FE\_Element;  \\
+
+\noindent {\bf Description}  \\
+\indent FE\_Element is a base class, subtypes of which are used to
+enforce the constraints on the domain. An object of type FE\_Element
+represents an element of the domain in the analysis. It enforces no
+constraints other than single point homogeneous boundary conditions,
+imposed on any of the elements nodes. It provides a similar interface
+to that of an Element but modified to provide features useful to an
+Analysis class.  The FE\_Element is responsible for: \begin{enumerate}
+\item Holding information about the mapping between equation numbers
+and the degrees-of-freedom at the 
+element ends, this mapping is determined from the DOF\_Group objects
+associated with the elements Node objects. \item Providing methods to
+allow the integrator to combine the elements stiffness, mass and
+damping matrices into the elements contribution to the structure
+tangent matrix and the elements resisting force to the structure
+unbalance. Obtaining the stiffness, damping and mass matrices from the
+elements. \item Providing methods so other forces can be
+determined. \end{enumerate} While the FE\_Element class is
+associated with an element in the domain, subclasses do not have to
+be. It is the subclasses that are used to implement the constraints
+imposed on the nodal displacements in the domain. \\
+
+\noindent {\bf Class Interface}  \\
+\indent\indent // Constructors  \\
+\indent\indent {\em FE\_Element(Element *theElementPtr);}  \\
+\indent\indent {\em FE\_Element(int numDOFGroup, int numDOF);}  \\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em virtual~ $\tilde{}$FE\_Element();}  \\ \\
+\indent\indent // Public Methods - Mapping  \\
+\indent\indent {\em virtual const ID \&getDOFtags(void) const;} \\
+\indent\indent {\em virtual const ID \&getID(void) const;} \\
+\indent\indent {\em void setAnalysisModel(AnalysisModel \&theModel);} \\
+\indent\indent {\em virtual void setID(void);} \\ \\
+\indent\indent // Public Methods to form and obtain Tangent \& Residual \\
+\indent\indent {\em virtual const Matrix \&getTangent(Integrator
+*theIntegrator);} \\ 
+\indent\indent {\em virtual const Vector \&getResidual(Integrator
+*theIntegrator);} \\  \\
+\indent\indent // Public Methods to allow Integrator to Build Tangent \\
+\indent\indent {\em virtual void zeroTangent(void);} \\
+\indent\indent {\em virtual void addKtToTang(double fact = 1.0); }\\
+\indent\indent {\em virtual void addKsToTang(double fact = 1.0); }\\
+\indent\indent {\em virtual void addCtoTang(double fact = 1.0); }\\
+\indent\indent {\em virtual void addMtoTang(double fact = 1.0); }\\ \\
+\indent\indent // Public Methods to allow Integrator to Build Residual \\
+\indent\indent {\em virtual void zeroResidual(void);} \\
+\indent\indent {\em virtual void addRtoResidual(double fact = 1.0);}\\
+\indent\indent {\em virtual void addRIncInertiaToResidual(double fact = 1.0); }\\ 
+\indent\indent {\em virtual void addK\_Force(const Vector \&disp,
+double fact = 1.0); }\\ 
+\indent\indent {\em virtual void addKtForce(const Vector \&disp,
+double fact = 1.0); }\\ 
+\indent\indent {\em virtual void addKsForce(const Vector \&disp,
+double fact = 1.0); }\\ 
+\indent\indent {\em virtual void addD\_Force(const Vector \&vel,
+double fact = 1.0); }\\ 
+\indent\indent {\em virtual void addM\_Force(const Vector \&accel,
+double fact = 1.0); }\\  \\
+\indent\indent // Public Methods to allow Element-by-Element strategies \\
+\indent\indent {\em virtual const Vector \&getTangForce(const Vector
+\&disp, double fact = 1.0);    }\\
+\indent\indent {\em virtual const Vector \&getKtForce(const Vector
+\&disp, double fact = 1.0);    }\\ 
+\indent\indent {\em virtual const Vector \&getKsForce(const Vector
+\&disp, double fact = 1.0);    }\\ 
+\indent\indent {\em virtual const Vector \&getD\_Force(const Vector
+\&vel, double fact = 1.0); }\\
+\indent\indent {\em virtual const Vector \&getM\_Force(const Vector
+\&accel, double fcat = 1.0);}\\ \\
+\indent\indent // Public Methods added for Domain Decomposition \\
+\indent\indent {\em Integrator *getLastIntegrator(void);} \\
+\indent\indent {\em const Vector \&getLastResponse(void);} \\
+
+\noindent {\bf Constructors}  \\
+\indent {\em FE\_Element(Element *theElemen);}  \\
+Constructs an empty FE\_Element with an associated element given by {\em
+theElement}.  During construction it determines the number of unknown
+dofs from the element. Constructs an ID for the mapping between dof's of
+the element and equation numbers in the system of equation and an ID
+to hold the tag of the DOF\_Group objects associated with each Node of
+the element. If the result of invoking {\em
+theElementPtr-$>$isSubdomain()} is {\em true} invokes {\em
+setFE\_Element(this)} on the Subdomain; if false creates a Matrix 
+for the tangent and a Vector for the residual to be stored. An error
+message is printed and the program is terminated if no Domain object
+is associated with the Element, a Node of the Element does not exist
+in the Domain, each Node has not yet been associated with a DOF\_Group
+object, or there is not enough memory for the Vectors and Matrices
+required. \\  
+
+{\em FE\_Element(int numDOFGroup, int numDOF);}  \\
+Provided for subclasses. Constructs an empty FE\_Element with the
+number of unknown dofs given by {\em numDOF} and the number of
+associated DOF\_Group objects given by {\em numDOFGroup}, two empty IDs
+are constructed to hold the mapping and the tags of the
+DOF\_Groups. The subclass must fill in the ID for the tags of the
+DOF\_Groups in order that {\em setID()} will work. No element is
+associated with this FE\_Element. No space is allocated for the
+tangent and residual matrix and vector, this is the responsibility of
+the subclass. \\  
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~ $\tilde{}$FE\_Element();}  \\
+Deletes the IDs, Vectors and Matrices created by the constructor. \\
+
+\noindent {\bf Public Methods - Mapping}  \\
+\indent {\em virtual const ID \&getDOFtags(void) const;} \\
+Returns a const ID containing the unique tag number of the
+DOF\_Group objects associated with that FE\_Element. For this base class,
+these are obtained from the DOF\_Groups associated with the Node objects
+that are associated with the Element object passed in the constructor. This
+ID is computed only once, during the creation of the object. \\
+
+{\em virtual const ID \&getID(void) const;} \\
+Returns a const ID containing the equation numbers associated with its
+matrices and vectors. This ID will contain $0$'s unless the {\em
+setID()} method has been called.\\
+
+{\em void setAnalysisModel(AnalysisModel \&theModel);} \\
+To set a link to the AnalysisModel in which the FE\_element
+resides; this link is needed in {\em setID()}. Is invoked by the
+AnalysisModel when the FE\_element is added to the AnalysisModel. \\
+
+
+{\em virtual void setID(void);} \\
+Causes the FE\_Element to determine the mapping between it's equation
+numbers and the degrees-of-freedom. The $i-1$ component of the ID
+contains the equation number that is associated with $i$'th
+degree-of-freedom (a consequence of C indexing for IDs). The method is
+to be invoked by the DOF\_Numberer after the DOF\_Groups have been assigned
+their equation numbers. The base class uses the ID containing the tags of
+the DOF\_Group objects to determine this by looping over the
+DOF\_Group objects (identified in the DOF\_Group ID and obtained from
+the AnalysisModel) and getting their mapping by invoking {\em
+getID()}. Returns $0$ if successful, a warning message and a
+negative number is returned if an error occurs:
+$-1$ returned if no AnalysisModel link has been set, $-2$ if a
+DOF\_Group object does not exist in the AnalysisModel and a $-3$ if
+there are more dof's in the DOF\_Groups than dof's identified for the
+FE\_Element. \\
+
+
+\noindent {\bf Public Methods - Tangent and Residual}  \\
+\indent {\em virtual const Matrix \&getTangent(Integrator
+*theIntegrator);} \\ 
+Causes the FE\_Element to determine it's contribution to the tangent
+matrix and to return this matrix. If the Element is a
+Subdomain it invokes {\em computeTangent()} and {\em getTang()} on the
+Subdomain. Otherwise {\em formEleTangent(this)} is invoked on {\em
+theIntegrator} and the new tangent matrix is returned.
+Subclasses must provide their own implementation. If no Element is
+passed in the constructor, a warning message is
+printed and an error Matrix of size 1X1 is returned. \\
+
+
+\indent {\em virtual const Vector \&getResidual(Integrator
+*theIntegrator);} \\
+Causes the FE\_Element to determine it's contribution to the residual
+vector and to return this vector. If the Element is a Subdomain it invokes
+{\em computeResidual()} and {\em getResistingForce()} on the Subdomain.
+Otherwise {\em formEleResidual(this)} is invoked on {\em theIntegrator}
+and the resuting residual vector is returned. 
+Subclasses must provide their own implementation. If no Element is
+passed in the constructor, a warning message and an error vector is
+returned. \\
+
+
+\indent {\em virtual void zeroTangent(void);} \\
+Zeros the tangent matrix. If the Element is not a Subdomain invokes
+{\em Zero()} on the tangent matrix. Subclasses must provide their own
+implementation. Nothing is done and a warning message is printed if no
+Element was passed in the constructor or the Element passed was a
+Subdomain. \\ 
+
+
+{\em virtual void addKtToTang(double fact = 1.0); }\\
+Adds the product of {\em fact} times the element's tangent stiffness
+matrix to the tangent. If no element is associated with the
+FE\_Element nothing is added, if the element is not a Subdomain {\em
+addMatrix(theEle-$>$getTangentStiff(),fact} is invoked on the tangent
+matrix. Nothing is done and a warning message is printed if no Element
+was passed in the constructor or the Element passed was a
+Subdomain. \\  
+
+{\em virtual void addKsToTang(double fact = 1.0); }\\
+Adds the product of {\em fact} times the element's secant stiffness
+matrix to the tangent. If no element is associated with the
+FE\_Element nothing is added, if the element is not a Subdomain {\em
+addMatrix(theEle-$>$getSecantStiff(),fact} is invoked on the tangent
+matrix. Nothing is done and a warning message is printed if no Element
+was passed in the constructor or the Element passed was a
+Subdomain. \\  
+
+
+{\em virtual void addCtoTang(double fact = 1.0); }\\
+Adds the product of {\em fact} times the element's damping
+matrix to the tangent. If no element is associated with the
+FE\_Element nothing is added, if the element is not a Subdomain 
+{\em addMatrix(theEle-$>$getDamp(),fact} is invoked on the tangent
+matrix. Nothing is done and a warning message is printed if no Element was
+passed in the constructor or the Element passed was a Subdomain. \\  
+
+
+{\em virtual void addMtoTang(double fact = 1.0); }\\
+Adds the product of {\em fact} times the element's mass
+matrix to the tangent. If no element is associated with the
+FE\_Element nothing is added, if the element is not a Subdomain 
+{\em addMatrix(theEle-$>$getMass(),fact} is invoked on the tangent
+matrix. Nothing is done and a warning message is printed if no Element was
+passed in the constructor or the Element passed was a Subdomain. \\  
+
+\indent {\em virtual void zeroResidual(void);} \\
+Zeros the residual vector. If the Element is not a Subdomain invokes
+{\em Zero()} on the residual vector. Subclasses must provide their own
+implementation. Nothing is done and a warning message is printed if no
+Element was passed in the constructor or the Element passed was a
+Subdomain.\\ 
+
+
+{\em virtual void addRtoResidual(double fact = 1.0); }\\
+Adds to the residual vector the product of the elements residual load
+vector and {\em fact}. If no element is associated with the
+FE\_Element nothing is added, if the associated element is not a
+Subdomain {\em addVector(myEle-$>$getResistingForce(),fact)} is
+invoked on the residual. Nothing is done and a warning message is
+printed if no Element was passed in the constructor or the Element
+passed was a Subdomain. \\   
+
+{\em virtual void addRIncInertiaToResidual(double fact = 1.0); }\\
+Adds to the residual vector the product of the elements residual load
+vector with inertia forces included and {\em fact}. If no element is
+associated with the FE\_Element nothing is added, if the associated
+element is not a Subdomain {\em
+addVector(myEle-$>$getResistingForceIncInertia(),fact)} is 
+invoked on the residual. Nothing is done and a warning message is
+printed if no Element was passed in the constructor or the Element
+passed was a Subdomain. \\   
+
+{\em virtual void addKtForce(const Vector \&disp, double fact = 1.0);    }\\
+Adds to the residual the product of elements current tangent stiffness matrix
+and a Vector whose values are obtained by taking the product of {\em
+fact} and those elements of the Vector {\em disp} associated with 
+the FE\_Elements equation numbers. If no element is associated with the
+FE\_Element or the Element is a Subdomain nothing is added and an
+warning message is printed. An error message is also printed if invoking
+{\em addMatrixVector()} on the residual vector returns $< 0$.\\
+
+{\em virtual void addKsForce(const Vector \&disp, double fact = 1.0);    }\\
+Adds to the residual the product of elements current tangent stiffness matrix
+and a Vector whose values are obtained by taking the product of {\em
+fact} and those elements of the Vector {\em disp} associated with 
+the FE\_Elements equation numbers. If no element is associated with the
+FE\_Element or the Element is a Subdomain nothing is added and an
+warning message is printed. An error message is also printed if invoking
+{\em addMatrixVector()} on the residual vector returns $< 0$.\\
+
+
+{\em virtual void addD\_Force(const Vector \&vel, double fcat = 1.0); }\\
+Adds to the residual the product of elements current damping matrix
+and a Vector whose values are obtained by taking the product of {\em
+fact} and those elements of the Vector {\em vel} associated with 
+the FE\_Elements equation numbers. If no element is associated with the
+FE\_Element or the Element is a Subdomain nothing is added and an
+warning message is printed. An error message is also printed if invoking
+{\em addMatrixVector()} on the residual vector returns $< 0$.\\
+
+
+{\em virtual void addM\_Force(const Vector \&accel, double fact = 1.0); }\\
+Adds to the residual the product of elements current mass matrix
+and a Vector whose values are obtained by taking the product of {\em
+fact} and those elements of the Vector {\em accel} associated with 
+the FE\_Elements equation numbers. If no element is associated with the
+FE\_Element or the Element is a Subdomain nothing is added and an
+warning message is printed. An error message is also printed if invoking
+{\em addMatrixVector()} on the residual vector returns $< 0$.\\
+
+{\em virtual const Vector \&getTangForce(const Vector \&disp, double
+fact = 1.0);    }\\
+Returns the product of FE\_Elements current tangent matrix
+and a Vector whose values are obtained by taking the product of {\em
+fact} and those elements of the Vector {\em disp} associated with 
+the FE\_Elements equation numbers. If the element associated with the
+FE\_Element is a subdomain, the tangent is obtained by invoking {\em
+getTang()} on the subdomain, otherwise the tangent is formed by
+invoking {\em formEleTang(this)} on the integrator object last used in
+a {\em getTangent()} or {\em getResidual()}.
+If no element is associated with the
+FE\_Element a zero vector is returned and an error message is
+printed. An error message is also printed if invoking
+{\em addMatrixVector()} on the force vector returns $< 0$. \\
+
+{\em virtual const Vector \&getKtForce(const Vector \&disp, double
+fact = 1.0);    }\\
+Returns the product of elements current tangent stiffness matrix
+and a Vector whose values are obtained by taking the product of {\em
+fact} and those elements of the Vector {\em disp} associated with 
+the FE\_Elements equation numbers. If no element is associated with the
+FE\_Element or the associated element is a Subdomain an error vector
+is returned and a warning message printed. \\
+
+{\em virtual const Vector \&getKsForce(const Vector \&disp, double
+fact = 1.0);    }\\
+Returns the product of elements current secant stiffness matrix
+and a Vector whose values are obtained by taking the product of {\em
+fact} and those elements of the Vector {\em disp} associated with 
+the FE\_Elements equation numbers. If no element is associated with the
+FE\_Element or the associated element is a Subdomain an error vector
+is returned and a warning message printed. \\
+
+
+{\em virtual const Vector \&getD\_Force(const Vector \&vel, double
+fact = 1.0); }\\
+Returns the product of elements current damping matrix
+and a Vector whose values are obtained by taking the product of {\em
+fact} and those elements of the Vector {\em vel} associated with 
+the FE\_Elements equation numbers. If no element is associated with the
+FE\_Element or the associated element is a Subdomain a warning message
+is printed and an error Vector is returned. \\
+
+{\em virtual const Vector \&getM\_Force(const Vector \&accel, double
+fcat = 1.0);}\\
+Returns the product of elements current mass matrix
+and a Vector whose values are obtained by taking the product of {\em
+fact} and those elements of the Vector {\em accel} associated with 
+the FE\_Elements equation numbers. If no element is associated with the
+FE\_Element or the associated element is a Subdomain a warning message
+is printed and an error Vector is returned. \\
+
+{\em Integrator *getLastIntegrator(void);} \\
+Method which returns the last integrator supplied in a {\em
+formTangent()} or a {\em formResidual()}  invocation. \\
+
+{\em const Vector \&getLastResponse(void);} \\
+A method which invokes {\em getLastResponse()} on the Integrator
+object that was last passed as an argument to any of the routines.
+The FE\_Elements ID and the force Vector object is passed as arguments.
+Returns the force Vector object if successful. If no element is
+associated with the FE\_Element or no integrator has yet to be passed,
+a warning message is printed and an error Vector is returned. \\
+
+

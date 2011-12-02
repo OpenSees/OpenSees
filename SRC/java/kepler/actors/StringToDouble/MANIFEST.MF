@@ -1,0 +1,8 @@
+Manifest-Version: 1.4.2
+KAR-Version: 1.0
+lsid: urn:lsid:kepler-project.org:kar:521:1
+
+Name: StringToDouble.xml
+lsid: urn:lsid:kepler-project.org:actor:521:1
+type: actorMetadata
+
