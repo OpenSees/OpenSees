@@ -1,0 +1,70 @@
+%File: ~/OOP/analysis/integrator/MinUnbalDispNorm.tex
+%What: "@(#) MinUnbalDispNorm.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/integrator/MinUnbalDispNorm.h$>$  \\
+
+UNDER CONSTRUCTION.\\
+
+\noindent {\bf Class Declaration}  \\
+\indent class MinUnbalDispNorm: public StaticIntegrator  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent Integrator \\
+\indent\indent\indent IncrementalIntegrator \\
+\indent\indent\indent\indent StaticIntegrator \\
+\indent\indent\indent\indent\indent {\bf MinUnbalDispNorm} \\
+
+\noindent {\bf Description} \\ 
+\indent MinUnbalDispNorm is a subclass of StaticIntegrator, it is
+used to when performing a static analysis on the FE\_Model using the
+minimum unbalanced displacement norm method. In this method WHAT
+
+SOME THEORY.\\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructors \\
+\indent {\em MinUnbalDispNorm(double $\delta \lambda_1$, int Jd,
+double $\delta \lambda_{min}$, double $\delta \lambda_{max}$);}\\ \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$MinUnbalDispNorm();}\\  \\
+\indent // Public Methods \\
+\indent {\em int newStep(void);} \\
+\indent {\em int update(const Vector \&$\Delta U$);} \\
+\indent {\em int domainChanged(void);} \\ \\
+\indent // Public Methods for Output\\
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ 
+\indent {\em int Print(OPS_Stream \&s, int flag = 0);}\\
+
+\noindent {\bf Constructors} \\
+\indent {\em MinUnbalDispNorm(int node, int dof, double $\delta Uc_1$, int Jd,  
+double $\delta Uc_{min}$, double $\delta Uc_{max}$);}\\ 
+The integer INTEGRATOR\_TAGS\_MinUnbalDispNorm (defined in
+$<$classTags.h$>$) is passed to the StaticIntegrator classes
+constructor. 
+
+
+\noindent {\bf Destructor} \\
+\indent {\em $\tilde{ }$MinUnbalDispNorm();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods}\\
+
+{\em int newStep(void);} \\
+WHAT DO I DO?\\
+
+{\em int update(const Vector \&$\Delta U$);} \\
+WHAT DO I DO?\\
+
+{\em int sendSelf(int commitTag, Channel \&theChannel); } \\ 
+WHAT DO I DO?\\
+
+{\em int recvSelf(int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker); } \\ 
+WHAT DO I DO?\\
+
+{\em int Print(OPS_Stream \&s, int flag = 0);}\\
+WHAT DO I DO?

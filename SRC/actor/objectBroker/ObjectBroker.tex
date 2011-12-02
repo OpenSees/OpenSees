@@ -1,0 +1,35 @@
+%File: ~/OOP/actor/ObjectBroker.tex
+%What: "@(#) ObjectBroker.tex, revA"
+
+\noindent {\bf ObjectBroker} \\
+
+\noindent {\bf Files}   \\
+\indent \#include $<$ObjectBroker.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class ObjectBroker \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf ObjectBroker} \\
+
+\noindent {\bf Description}  \\
+\indent ObjectBroker is an abstract class, i.e. no instances of ObjectBroker
+should exist. ObjectBrokers are objects in remote processes which
+create new objects in the remote process. It has one method
+
+\noindent {\bf Constructors}  \\
+\indent {\em ObjectBroker();}  \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$ObjectBroker();}\\ 
+
+\noindent {\bf Public Member Functions }  \\
+{\em virtual MovableObject *getNewObject(Channel \&channel) =0;} \\
+This method returns a pointer to an object of the type whose class
+type is given by the integer class ID value that is waiting at the Channel.
+The method must first instantiate the correct type of object, it then
+can invoke {\em recv(channel)} on this object. To get from a pointer
+of MovableObject to one of its descendents type casting must be
+used. \\ 
+
+\noindent {\bf Protected Member Functions }  \\

@@ -1,0 +1,79 @@
+%File ~/OOP/analysis/algorithm/DomainDecompAlgo.tex
+%What: "@(#) DomainDecompAlgo.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{
+}$/analysis/algorithm/domainDecompAlgo/DomainDecompAlgo.h$>$  \\  
+
+\noindent {\bf Class Decleration}  \\
+\indent class DomainDEcompAlgo: public SolutionAlgorithm;  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent SolutionAlgorithm \\
+\indent\indent\indent {\bf DomainDecompAlgo} \\
+
+\noindent {\bf Description} \\ 
+\indent The DomainDecompAlgo class is the SolutionAlgorithm subclass
+used in a DomainDecompAnalysis. The class is responsible for updating
+the DOF\_Group responses given the current solution to the interface
+problem. \\ 
+
+\noindent {\bf Class Interface} \\ 
+\indent\indent // Constructor \\ 
+\indent\indent {\em DomainDecompAlgo();}\\ \\
+\indent\indent // Destructor \\
+\indent\indent {\em $\tilde{ }$DomainDecompAlgo();}\\  \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em int solveCurrentStep(void);} \\
+\indent\indent {\em void setLinks(AnalysisModel \&theModel, \\
+\indent\indent\indent\indent\indent IncrementalIntegrator  \&theIntegrator, \\
+\indent\indent\indent\indent\indent LinearSOE   \&theSOE, \\
+\indent\indent\indent\indent\indent DomainSolver   \&theSolver,	  \\
+\indent\indent\indent\indent\indent Subdomain   \&theSubdomain);}\\
+\indent\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\
+\indent\indent {\em int recvSelf(int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker);} \\
+
+
+\noindent {\bf Constructor} \\ 
+\indent {\em DomainDecompAlgo();}\\ 
+
+\noindent {\bf Destructor} \\
+\indent {\em $\tilde{ }$DomainDecompAlgo();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods}  \\
+\indent {\em int solveCurrentStep(void);} \\
+This is a method which will set the external dof response in X of the
+system of equation. The responses set will be those X in the higher
+level SOE object corresponding to the subdomain. It performs the following:
+\begin{tabbing}
+while \= while \= \+ \kill
+theSubdomain-$>$getLastExternalSysResponse(); \\
+theSolver-$>$setComputedXext(extResponse); \\
+theSolver-$>$solveXint(); \\
+theIntegrator-$>$update(theSOE-$>$getX()); 
+\end{tabbing}
+\noindent Returns $0$. WILL CHANGE TO CHECK THAT THOSE METHODS INVOKED ALL
+RETURN $0$ OTHERWISE PRINT WARNING AND RETURN NEGATIVE.
+
+{\em void setLinks(AnalysisModel         \&theModel, \\
+\indent\indent\indent IncrementalIntegrator  \&theIntegrator, \\
+\indent\indent\indent LinearSOE              \&theSOE, \\
+\indent\indent\indent DomainSolver           \&theSolver, \\
+\indent\indent\indent Subdomain              \&theSubdomain);	 } \\
+This is the function called by the DomainDecompAnalysis object to set
+the links for the class. \\
+
+{\em int sendSelf(int commitTag, Channel \&theChannel) \\
+Returns $0$. \\
+
+{\em int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);} \\
+Returns $0$. \\
+
+
+
+
+

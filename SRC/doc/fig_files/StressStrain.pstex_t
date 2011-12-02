@@ -1,0 +1,21 @@
+\begin{picture}(0,0)%
+\includegraphics{fig_files/StressStrain.pstex}%
+\end{picture}%
+\setlength{\unitlength}{3947sp}%
+%
+\begingroup\makeatletter\ifx\SetFigFont\undefined%
+\gdef\SetFigFont#1#2#3#4#5{%
+  \reset@font\fontsize{#1}{#2pt}%
+  \fontfamily{#3}\fontseries{#4}\fontshape{#5}%
+  \selectfont}%
+\fi\endgroup%
+\begin{picture}(2712,2574)(3301,-5323)
+\put(3826,-4636){\makebox(0,0)[lb]{\smash{\SetFigFont{12}{14.4}{\rmdefault}{\mddefault}{\updefault}{$E$}%
+}}}
+\put(3301,-3436){\makebox(0,0)[lb]{\smash{\SetFigFont{12}{14.4}{\rmdefault}{\mddefault}{\updefault}{$\sigma_y$}%
+}}}
+\put(4801,-4036){\makebox(0,0)[lb]{\smash{\SetFigFont{12}{14.4}{\rmdefault}{\mddefault}{\updefault}{$E$}%
+}}}
+\put(5626,-3286){\makebox(0,0)[lb]{\smash{\SetFigFont{12}{14.4}{\rmdefault}{\mddefault}{\updefault}{$\frac{E(H_{iso}+H_{kin})}{E+H_{iso}+H_{kin}}$}%
+}}}
+\end{picture}

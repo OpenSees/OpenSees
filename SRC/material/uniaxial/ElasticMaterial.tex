@@ -1,0 +1,98 @@
+%File: ~/OOP/material/ElasticMaterial.tex
+%What: "@(#) ElasticMaterial.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/material/ElasticMaterial.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ElasticMaterial: public MaterialModel \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent MaterialModel \\
+\indent\indent\indent UniaxialMaterial \\
+\indent\indent\indent\indent {\bf ElasticMaterial} \\
+
+\noindent {\bf Description}  \\
+\indent ElasticMaterial provides the abstraction of an elastic
+uniaxial material, i.e. the stress-strain relationship is given by the
+linear equation $\sigma = E * \epsilon$. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em ElasticMaterial(int tag, double E);}  \\ \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$ElasticMaterial();}\\ \\
+\indent // Public Methods \\
+\indent {\em int setTrialStrain(double strain); } \\
+\indent {\em double getStress(void); } \\
+\indent {\em double getTangent(void); } \\
+\indent {\em int commitState(void); } \\
+\indent {\em int revertToLastCommit(void); } \\
+\indent {\em int revertToStart(void); } \\
+\indent {\em UniaxialMaterial *getCopy(void); } \\ \\
+\indent // Public Methods for Output\\
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel); }\\
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker); }\\
+\indent {\em void Print(OPS_Stream \&s, int flag =0);} \\
+
+\noindent {\bf Constructor}  \\
+\indent {\em ElasticMaterial(int tag, int classTag);}  \\
+To construct an ElasticMaterial with an integer identifier {\em
+tag}, an elastic tangent modulus of $E$ and a current strain
+$\epsilon$ of $0.0$. The integers {\em tag} and
+MAT\_TAG\_ElasticMaterial, defined in $<$classTags.h$>$, are passed 
+to the UniaxialMaterial classes constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$ElasticMaterial();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods} \\
+\indent {\em int setTrialStrain(double strain); }  \\
+Sets the value of the trial strain, $\epsilon$ to be {\em
+strain}. Returns $0$.\\
+
+\indent {\em double getStress(void); } \\
+Returns the product of $E * \epsilon$, where $\epsilon$ is the current
+trial strain. \\
+
+\indent {\em double getTangent(void); } \\
+Returns the value of $E$ passed in the constructor. \\
+
+\indent {\em int commitState(void); } \\
+Returns $0$. \\
+
+\indent {\em int revertToLastCommit(void); } \\
+Returns $0$. \\
+
+\indent {\em int revertToStart(void); } \\
+Returns $0$. \\
+
+\indent {\em UniaxialMaterial *getCopy(void); } \\
+returns a pointer to a new ElasticMaterial object, constructed
+using the same values of {\em tag} and $E$. It is up to the caller to
+ensure that the destructor is invoked. \\
+
+\indent {\em    int sendSelf(int commitTag, Channel \&theChannel); }\\
+Creates a Vector of size $2$ into which it places  {\em tag} and
+{\em E}. Invokes {\em sendVector()} on  {\em theChannel} using the
+ElasticMaterialObjects {\em dbTag}, the integer {\em commitTag} and
+the Vector as arguments. Returns $0$ if successful, a warning message
+and a negative number are returned if the Channel object fails to send
+the Vector. \\
+
+\indent {\em    int recvSelf(int commitTag, Channel \&theChannel, 
+		 FEM\_ObjectBroker \&theBroker); }\\
+Creates a Vector of size $2$. Invokes {\em recvVector()} on  {\em
+theChannel} using the ElasticMaterialObjects {\em dbTag}, the integer
+{\em commitTag} and the Vector as arguments. Using the data in the
+Vector to set it's {\em tag} and $E$. Returns $0$ if successful, a
+warning message is printed, {\em tag} and $E$ are set to $0.0$, and a
+negative number is returned if the Channel object fails to receive
+the Vector. \\
+
+\indent {\em    void Print(OPS_Stream \&s, int flag =0);} \\
+Prints to the stream {\em s} the objects {\em tag} and $E$ values. \\

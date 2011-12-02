@@ -1,0 +1,103 @@
+%File: ~/database/FE\_Datastore.tex
+%What: "@(#) FE\_Datastore.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/database/FE\_Datastore.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class FE\_Datastore: public ModelBuilder, public Channel \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent ModelBuilder \\
+\indent Channel \\
+\indent\indent {\bf FE\_Datastore} \\
+
+\noindent {\bf Description}  \\
+\indent FE\_Datastore is an abstract class. An FE\_Datastore object is
+used in the program to store/restore the geometry and state information 
+in the domain at particular instances. How, where and how the data is
+stored depends on the implementation provided by the concrete
+subclasses. \\  
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em FE\_Datastore(Domain \&theDomain, FEM\_ObjectBroker \&theBroker);}\\ \\
+\indent // Destructor \\
+\indent {\em virtual~ $\tilde{}$FE\_Datastore();}\\ \\
+\indent // Public Methods  \\
+\indent {\em virtual int getDbTag(void) =0;}\\
+\indent {\em virtual int commitState(int commitTag);}\\
+\indent {\em virtual int restoreState(int commitTag);}\\\\
+\indent {\em virtual int validateBaseRelationsWrite(int commitTag)=0;}\\
+\indent {\em virtual int validateBaseRelationsRead(int commitTag)=0;}\\ \\
+\indent // Protected Methods  \\
+\indent {\em FEM\_ObjectBroker *getObjectBroker(void);}\\
+
+\noindent {\bf Constructor}  \\
+\indent {\em FE\_Datastore(Domain \&theDomain);}  \\ \\
+The Domain object {\em theDomain} is passed to the ModelBuilder
+constructor. A pointer is kept to {\em theBroker} object.\\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$FE\_Datastore();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual int getDbTag(void) =0;}\\
+To return a unique integer identifier at each call. This identifier
+will be used by the objects to store/retrieve their information
+to/from the database. \\
+
+\indent {\em virtual int commitState(int commitTag) = 0;}\\
+Invoked to store the current state of the domain in the database. The
+integer {\em commitTag} is used to identify the state for subsequent
+calls to restore the information from the database. To return
+$0$ if successful, a negative number if not. 
+
+In the implementation for the FE\_Datastore class, the object first
+invokes {\em validateBaseRelationsWrite()} on itself. If this method 
+returns $0$, the object then loops over all the components of the
+Domain object invoking {\em sendSelf(commitTag, this)} on each of
+these objects. Returns $0$ if successful, a negative number if
+not. For each domain component that could not send itself a warning
+message is printed. \\ 
+
+\indent {\em virtual int restoreState(int commitTag) = 0;}\\
+Invoked to restore the state of the domain from a database. The state
+of the domain at the end of this call is to be the same as the state
+of the domain when {\em commitState(commitTag)} was invoked. To return
+$0$ if successful, a negative number if not. 
+
+In the implementation for the FE\_Datastore class, the object first
+invokes {\em validateBaseRelationsRead()} on itself. If this method 
+returns $0$, the object then loops over all the components of the
+Domain object invoking {\em recvSelf(commitTag, this)} on each of
+these objects. Returns $0$ if successful, a negative number if
+not. For each domain component that could not send itself a warning
+message is printed. \\ 
+
+
+\indent {\em virtual int validateBaseRelationsWrite(int commitTag)=0;}\\
+This method is invoked before the information can be sent to the
+database. It is required to ensure that: \begin{enumerate} 
+\item Each Node, Element, SP\_Constraint, MP\_Constraint, NodalLoad and
+ElementalLoad which is to save information in the database has a
+database tag.
+\item That the information in the base tables is up to date so that a
+later call to {\em validateBaseRelationsRead(commitTag)} will be successful.
+\end{enumerate}
+\noindent To return $0$ if the base relations are up to date, to return
+$1$ if they are up to date and the component data has been sent to the
+database, and a negative number if the method fails. \\
+
+\indent {\em virtual int validateBaseRelationsRead(int commitTag) =0;}\\
+This method is invoked before the information can be extracted from the
+database. It is required to ensure that the Domain has the same
+type of DomainComponent objects and that each of these has the same
+database tag as when {\em validateBaseRealationsWrie(commitTag)} was
+invoked.  To return $0$ if the base relations are up to date, to return
+$1$ if they are up to date and the component data has been received from the
+database, and a negative number if the method fails. \\
+
+\indent {\em FEM\_ObjectBroker *getObjectBroker(void);}\\
+Returns a pointer to {\em theBroker} object passed in the constructor. 

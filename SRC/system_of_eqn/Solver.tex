@@ -1,0 +1,44 @@
+%File: ~/OOP/system_of_eqn/Solver.tex
+%What: "@(#) Solver.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/system\_of\_eqn/Solver.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Solver:  public MovableObject \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent {\bf Solver} \\
+
+\noindent {\bf Description}  \\
+\indent Solver is an abstract class. A Solver object is responsible for performing
+the numerical operations on its associated SystemOfEqn object. \\
+
+\noindent {\bf Class Interface} \\
+\indent\indent {// Constructors}  \\ 
+\indent\indent {\em Solver(int classTag);}  \\ \\
+\indent\indent {// Destructor}  \\ 
+\indent\indent {\em virtual~ $\tilde{}$Solver();}\\  \\
+\indent\indent {// Public Methods}  \\ 
+\indent\indent {\em virtual int solve(void) =0;} \\
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em Solver(int classTag);}  \\
+The integer {\em classTag} is passed to the MovableObject classes
+constructor. \\ 
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$Solver();}\\ 
+Does nothing. Provided so the subclasses destructor will be called. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual int solve(void) =0;} \\
+Causes the solver to solve the system of equations. Returns $0$ if
+successful , negative number if not; the actual value depending on
+the type of Solver.\\
+
+
+
+

@@ -1,0 +1,103 @@
+% File: ~/OOP/analysis/fe_ele/lagrange/LagrangeMP_FE.tex 
+%What: "@(#) LagrangeMP_FE.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/fe\_ele/lagrange/LagrangeMP\_FE.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class LagrangeMP\_FE: public FE\_Element ;  \\
+
+\noindent {\bf Class Hierarchy}  \\
+\indent FE\_Element \\
+\indent\indent {\bf LagrangeMP\_FE} \\ 
+
+\noindent {\bf Description}  \\
+\indent LagrangeMP\_FE is a subclass of FE\_Element used to enforce a
+multi point constraint, of the form $\U_c = \C_{cr} \U_r$, where $\U_c$ are
+the constrained degrees-of-freedom at the constrained node, $\U_r$ are
+the retained degrees-of-freedom at the retained node and $\C_{cr}$ a
+matrix defining the relationship between these degrees-of-freedom. 
+
+To enforce the constraint the following are added to the tangent and
+the residual:
+\[ \left[ \begin{array}{cc} 0 & \alpha\C^t \\ \alpha\C & 0 \end{array}
+\right] ,
+\left\{ \begin{array}{c} 0 \\ 0 \end{array} \right\} \]
+\noindent 
+\noindent at the locations
+corresponding to the constrained degree-of-freedoms specified by the
+MP\_Constraint, i.e. $[\U_c$ $\U_r]$, and the lagrange multiplier
+degrees-of-freedom introduced by the LagrangeConstraintHandler for
+this constraint, $\C = [-\I$ $\C_{cr}]$. Nothing is added to the residual. \\  
+
+
+\noindent {\bf Class Interface}  \\
+\indent // Constructor  \\
+\indent {\em LagrangeMP\_FE(Domain \&theDomain, MP\_Constraint
+\&theMP, double alpha);} \\ \\
+\indent // Destructor  \\
+\indent {\em virtual~ $\tilde{}$LagrangeMP\_FE();}  \\ \\
+\indent // Public Methods \\
+\indent {\em virtual void setID(void);} \\ 
+\indent {\em virtual const Matrix \&getTangent(Integrator
+*theIntegrator);} \\  
+\indent {\em virtual const Vector \&getResidual(Integrator
+*theIntegrator);} \\  
+\indent {\em virtual const Vector \&getTangForce(const Vector
+\&disp, double fact = 1.0);    }\\
+
+\noindent {\bf Constructor}  \\
+\indent {\em LagrangeMP\_FE(Domain \&theDomain, MP\_Constraint \&theMP,
+double alpha);}\\
+To construct a LagrangeMP\_FE element to enforce the constraint
+specified by the MP\_Constraint {\em theMP} using a default value for
+$\alpha$ of $alpha$. The FE\_Element class constructor is called with
+the integers $3$ and the two times the size of the {\em retainedID}
+plus the size of the {\em constrainedID} at the MP\_Constraint {\em
+theMP} plus . A Matrix and a Vector object are created for adding the
+contributions to the tangent and the residual. The residual is
+zeroed. If the
+MP\_Constraint is not time varying, then the contribution to the
+tangent is determined. Links are set to the retained and constrained
+nodes. The DOF\_Group tag ID is set using the tag of the constrained
+Nodes DOF\_Group, the tag of the retained Node Dof\_group and the tag
+of the LagrangeDOF\_Group, {\em theGroup}. A warning message is printed and 
+the program is terminated if either not enough memory is available for
+the Matrices and Vector or the constrained and retained Nodes of their
+DOF\_Groups do not exist. \\
+
+
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~ $\tilde{}$LagrangeMP\_FE();}  \\
+Invokes delete on any Matrix or Vector objects created in the
+constructor that have not yet been destroyed. \\
+
+\noindent {\bf Public Methods}  \\
+\indent {\em virtual void setID(void);} \\
+Causes the LagrangeMP\_FE to determine the mapping between it's equation
+numbers and the degrees-of-freedom. This information is obtained by
+using the mapping information at the DOF\_Group objects associated with
+the constrained and retained nodes and the LagrangeDOF\_Group, {\em
+theGroup}. Returns $0$ if
+successful. Prints a warning message and returns a negative number if
+an error occurs: $-2$ if the
+Node has no associated DOF\_Group, $-3$ if the constrained DOF
+specified is invalid for this Node (sets corresponding ID component to
+$-1$ so nothing is added to the tangent) and $-4$ if the ID in the
+DOF\_Group is too small for the Node (again setting corresponding ID
+component to $-1$). \\ 
+
+\indent {\em virtual const Matrix \&getTangent(Integrator *theIntegrator);} \\
+If the MP\_Constraint is time-varying, from the MP\_Constraint
+{\em theMP} it obtains the current $C_{cr}$ matrix; it then adds the
+contribution to the tangent matrix. Returns this tangent Matrix.
+
+\indent {\em virtual const Vector \&getResidual(Integrator *theIntegrator);} \\
+Returns the residual, a $\zero$ Vector. \\
+
+{\em virtual const Vector \&getTangForce(const Vector \&disp, double
+fact = 1.0);    }\\
+CURRENTLY just returns the $0$ residual. THIS WILL NEED TO CHANGE FOR
+ELE-BY-ELE SOLVERS. 
+

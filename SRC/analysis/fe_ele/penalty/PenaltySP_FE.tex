@@ -1,0 +1,102 @@
+% File: ~/OOP/analysis/fe_ele/penalty/PenaltySP_FE.tex 
+%What: "@(#) PenaltySP_FE.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/fe\_ele/penalty/PenaltySP\_FE.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class PenaltySP\_FE: public FE\_Element ;  \\
+
+\noindent {\bf Class Hierarchy}  \\
+\indent FE\_Element \\
+\indent\indent {\bf PenaltySP\_FE} \\ 
+
+\noindent {\bf Description}  \\
+\indent PenaltySP\_FE is a subclass of FE\_Element used to enforce a
+single point constraint. It does this by adding $\alpha$ to the
+tangent and $\alpha * (U\_s - U\_t)$ to the residual at the locations
+corresponding to the constrained degree-of-freedom specified by the
+SP\_Constraint, where $U_s$ is the specified value of the constraint
+and $U_t$ the current trial displacement at the node corresponding to
+the constraint.\\
+
+
+\noindent {\bf Class Interface}  \\
+\indent\indent // Constructor  \\
+\indent\indent {\em PenaltySP\_FE(Domain \&theDomain, SP\_Constraint
+\&theSP, double alpha = 1.0e8);} \\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em virtual~ $\tilde{}$PenaltySP\_FE();}  \\ \\
+\indent\indent // Public Methods \\
+\indent\indent {\em virtual void setID(void);} \\ 
+\indent\indent {\em virtual const Matrix \&getTangent(Integrator
+*theIntegrator);} \\  
+\indent\indent {\em virtual const Vector \&getResidual(Integrator
+*theIntegrator);} \\ 
+\indent\indent {\em virtual const Vector \&getTangForce(const Vector
+\&disp, double fact = 1.0);    }\\
+
+\noindent {\bf Constructor}  \\
+\indent {\em PenaltySP\_FE(Domain \&theDomain, SP\_Constraint \&theSP,
+double alpha = 1.0e8);}\\
+To construct a PenaltySP\_FE element to enforce the constraint
+specified by the SP\_Constraint {\em theSP} using a value for
+$\alpha$ of {\em alpha} (which, if none is specified, defaults to
+$1.0e8$). The FE\_Element class constructor is called with 
+the integers $1$ and $1$. A Matrix and a Vector object of order $1$
+are created to return the tangent and residual contributions, with the
+tangent entry being set at $\alpha$. A link to the Node in the  Domain
+corresponding to the SP\_Constraint is also set. A warning message is
+printed and program terminates if there is not enough memory or no
+Node associated with the SP\_Constraint exists in the Domain.\\
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~ $\tilde{}$PenaltySP\_FE();}  \\
+Invokes the destructor on the Matrix and Vector objects created in the
+constructor. \\
+
+\noindent {\bf Public Methods}  \\
+\indent {\em virtual void setID(void);} \\
+Causes the PenaltySP\_FE to determine the mapping between it's equation
+numbers and the degrees-of-freedom. From the Node object link, created
+in the constructor, the DOF\_group corresponding to the Node
+associated with the constraint is determined. From this {\em
+DOF\_Group} object the mapping for the constrained degree of freedom
+is determined and the ID in the base class is set. Returns $0$ if
+successful. Prints a warning message and returns a negative number if
+an error occurs: $-2$ if the
+Node has no associated DOF\_Group, $-3$ if the constrained DOF
+specified is invalid for this Node and $-4$ if the ID in the
+DOF\_Group is too small for the Node. \\ 
+
+\indent {\em virtual const Matrix \&getTangent(Integrator *theIntegrator);} \\
+Returns the tangent Matrix created in the constructor. \\
+
+\indent {\em virtual const Vector \&getResidual(Integrator *theIntegrator);} \\
+Sets the FE\_Elements contribution to the residual to be
+$\alpha * (U_s - U_t)$, where $U_s$ is the specified value of the
+constraint and $U_t$ the current trial displacement at the node
+corresponding to constrained degree-of-freedom. Prints a warning
+message and sets this contribution to $0$ if the specified constrained
+degree-of-freedom is invalid. Returns this residual Vector set.
+
+
+{\em virtual const Vector \&getTangForce(const Vector \&disp, double
+fact = 1.0);    }\\
+Sets the FE\_Elements contribution to the residual to be
+$\alpha * (U\_s - disp\_t)$, where $U\_s$ is the specified value of the
+constraint and $disp\_t$ the value in {\em disp}
+corresponding to constrained degree-of-freedom. Prints a warning
+message and sets this contribution to $0$ if the mapping, determined in
+{\em setID()}, for the the specified constrained degree-of-freedom lies 
+outside {\em disp}. \\  
+
+
+
+
+
+
+
+
+
+

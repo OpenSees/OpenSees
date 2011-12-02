@@ -1,0 +1,189 @@
+%File: ~/OOP/analysis/analysis/DirectIntegrationAnalysis.tex
+%What: "@(#) DirectIntegrationAnalysis.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/analysis/DirectIntegrationAnalysis.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class DirectIntegrationAnalysis: public TransientAnalysis;  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent Analysis \\
+\indent\indent TransientAnalysis \\
+\indent\indent\indent {\bf DirectIntegrationAnalysis} \\
+
+\noindent {\bf Description} \\ 
+\indent DirectIntegrationAnalysis is a subclass of TransientAnalysis. It
+is used to perform a transient analysis using an incremental approach
+on the Domain. The following are the aggregates of such an analysis type: 
+\begin{itemize}
+\item {\bf AnalysisModel} - a container class holding the FE\_Element
+and DOF\_Group objects created by the ConstraintHandler object. 
+\item {\bf ConstraintHandler} - a class which creates the DOF\_Group
+and FE\_Element objects, the type of objects created depending on how
+the specified constraints in the domain are to be handled. 
+\item {\bf DOF\_Numberer} - a class responsible for providing equation
+numbers to the individual degrees of freedom in each DOF\_Group object.
+\item {\bf LinearSOE} - a numeric class responsible for the creation
+and subsequent solution of large systems of linear equations of the
+form $Ax = b$, where $A$ is a matrix and $x$ and $b$ are vectors.
+\item {\bf TransientIntegrator} - an algorithmic class which provides
+methods which are invoked by the FE\_Element to determine their
+current tangent and residual matrices; that is this is the class that
+sets up the system of equations.  It also provides the {\em
+update()} method which is invoked to set up the appropriate dof
+response values once the solution algorithm has formed and solved the
+system of equations.
+\item {\bf EquiSolnAlgo} - an algorithmic class specifying the
+sequence of operations to be performed in setting up and solving the
+finite element equation which can be represented by the equation K(U)
+U = P(U). 
+\end{itemize}
+
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor  \\
+\indent {\em DirectIntegrationAnalysis(double tStart, double tFinal,
+double $\delta t$, \\
+\indent\indent\indent\indent\indent\indent Domain \&theDomain, \\
+\indent\indent\indent\indent\indent\indent ConstraintHandler \&theHandler, \\
+\indent\indent\indent\indent\indent\indent DOF\_Numberer \&theNumberer, \\
+\indent\indent\indent\indent\indent\indent AnalysisModel \&theModel,\\
+\indent\indent\indent\indent\indent\indent EquiSolnAlgo \&theSolnAlgo,\\
+\indent\indent\indent\indent\indent\indent LinearSOE \&theSOE, \\
+\indent\indent\indent\indent\indent\indent TransientIntegrator
+\&theIntegrator);}  \\ \\
+\indent // Destructor \\
+\indent {\em virtual~ $\tilde{}$DirectIntegrationAnalysis();}\\  \\
+\indent // Public Methods \\
+\indent {\em int analyze(void);} \\
+\indent {\em void clearAll(void);} \\
+\indent {\em void domainChange(void);}\\ \\
+\indent // Public Methods to vary the type of Analysis\\
+\indent {\em void setDeltaT(double $\delta t$);} \\ 
+\indent {\em int setAlgorithm(EquiSolnAlgo \&theAlgorithm);} \\
+\indent {\em int setIntegrator(StaticIntegrator \&theIntegrator);}\\
+\indent {\em int setLinearSOE(LinearSOE \&theSOE);} \\
+
+\noindent {\bf Constructor} \\
+\indent {\em DirectIntegrationAnalysis(double tStart, double tFinal,
+double $\delta t$, \\
+\indent\indent\indent\indent\indent\indent Domain \&theDomain, \\
+\indent\indent\indent\indent\indent\indent ConstraintHandler \&theHandler, \\
+\indent\indent\indent\indent\indent\indent DOF\_Numberer \&theNumberer, \\
+\indent\indent\indent\indent\indent\indent AnalysisModel \&theModel,\\
+\indent\indent\indent\indent\indent\indent EquiSolnAlgo \&theSolnAlgo,\\
+\indent\indent\indent\indent\indent\indent LinearSOE \&theSOE, \\
+\indent\indent\indent\indent\indent\indent TransientIntegrator
+\&theIntegrator);} \\ 
+
+{\em tStart}, {\em tFinish} and {\em thDomain} are passed to the
+TransientAnalysis class constructor. The constructor is responsible
+for setting up all links needed by the objects in the aggregation. It
+invokes {\em setLinks(theDomain)} on {\em theModel}, {\em
+setLinks(theDomain,theModel,theIntegrator)} on {\em theHandler}, 
+{\em setLinks(theModel)} on {\em theNumberer},  {\em
+setLinks(theModel, theSOE)} on {\em theIntegrator} and  {\em
+setLinks(theModel,theAnalysis, theIntegrator, theSOE)} on {\em
+theSolnAlgo}. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em $\tilde{ }$DirectIntegrationAnalysis();}\\ 
+Does nothing. {\em clearAll()} must be invoked if the destructor on
+the objects in the aggregation need to be invoked. \\
+
+\noindent {\bf Public Methods}\\
+\indent {\em int analyze(void);} \\
+Invoked to perform a transient analysis on the FE\_Model. The method
+checks to see if the domain has changed before it performs the
+analysis. The DirectIntegrationAnalysis object performs the following:
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+    double time = tStart; \\
+    while (theDomain-$>$getCurrntTime() $<$ tFinish) \{ \+ \\
+       if (theDomain-$>$hasDomainChanged() == true) \+\\
+           this-$>$domainChanged(); \- \\
+
+	theIntegrator-$>$newStep($\delta t$); \\
+	theAlgorithm-$>$solveCurrentStep(); \\
+        theIntegrator-$>$commit(); \- \\
+    \}
+\end{tabbing}
+\noindent The type of analysis performed, depends on the type of the
+objects in the analysis aggregation. If any of the methods invoked
+returns a negative number, an error message is printed, {\em
+revertToLastCommit()} is invoked on the Domain, and a negative number
+is immediately returned. Returns a $0$ if the algorithm is successful. \\
+
+{\em void clearAll(void);} \\
+Will invoke the destructor on all the objects in the aggregation. NOTE
+this means they must have been constructed using {\em new()},
+otherwise a segmentation fault can occur.\\
+
+{\em void domainChange(void);}\\
+This is a method invoked by a domain which indicates to the analysis
+that the domain has changed. The method invokes the following:
+\begin{enumerate} 
+\item It invokes {\em clearAll()} on {\em theModel} which causes the
+AnalysisModel to clear out its list of FE\_Elements and DOF\_Groups,
+and {\em clearAll()} on {\em theHandler}.
+\item It then invokes {\em handle()} on {\em theHandler}. This causes
+the constraint handler to recreate the appropriate FE\_Element and
+DOF\_Groups to perform the analysis subject to the boundary conditions
+in the modified domain.
+\item It then invokes {\em number()} on {\em theNumberer}. This causes
+the DOF numberer to assign equation numbers to the individual
+dof's. Once the equation numbers have been set the numberer then
+invokes {\em setID()} on all the FE\_Elements in the model. Finally
+the numberer invokes {\em setNumEqn()} on the model.
+\item It then invokes {\em domainChanged()} on {\em theIntegrator} and
+{\em theAlgorithm} to inform these objects that changes have occurred
+in the model.
+\item It invokes {\em setSize(theModel.getDOFGraph())} on {\em
+theSOE} which causes the system of equation to determine its size
+based on the connectivity of the dofs in the analysis model. 
+\item Finally it invokes {\em domainChanged()} on {\em theIntegrator} and 
+{\em theAlgorithm}. 
+Returns $0$ if successful. At any stage above, if an error occurs the
+method is stopped, a warning message is printed and a negative number
+is returned. \\ 
+\end{enumerate}
+
+{\em int setDeltaT(double $\delta t$);} \\
+Sets the time increment used in the {\em analyze()} method to $\delta
+t$. Returns $0$.\\
+
+\indent {\em int setAlgorithm(EquiSolnAlgo \&newAlgorithm);}\\
+To change the algorithm between analysis. It first invokes the
+destructor on the old SolutionAlgorithm object associated with the
+analysis. It then sets the SolutionAlgorithm 
+associated with the analysis to be {\em newAlgorithm} and sets the
+links for this object by invoking {\em setLinks()}. Checks then to
+see if the domain has changed, if true it invokes {\em
+domainChanged()}, otherwise it invokes {\em domainChanged()} on the
+new SolutionAlgorithm. Returns $0$ if successful, a warning message
+and a negative number if not.\\
+
+\indent {\em int setIntegrator(TransientIntegrator \&newIntegrator);}\\
+To change the integration scheme between analysis. It first invokes the
+destructor on the old Integrator object associated with the
+analysis. It then sets the SolutionAlgorithm 
+associated with the analysis to be {\em newAlgorithm} and sets the
+links for this object by invoking {\em setLinks()}. It also invokes
+{\em setLinks()} on the ConstraintHandler and SolutionAlgorithm
+objects. Checks then to see if the domain has changed, if true it
+invokes {\em domainChanged()}, otherwise it invokes {\em
+domainChanged()} on the new Integrator. Returns $0$ if
+successful, a warning message and a negative number if not.\\
+
+\indent {\em int setLinearSOE(LinearSOE \&newSOE);}\\
+To change the linear system of equation object between analysis. It
+first invokes the destructor on the old LinearSOE object associated
+with the analysis. It then sets the SolutionAlgorithm 
+associated with the analysis to be {\em newSOE}.
+links for this object by invoking {\em setLinks()}. It then invokes
+{\em setLinks()} on the ConstraintHandler and SolutionAlgorithm
+objects. Checks then to see if the domain has changed, if true it
+invokes {\em domainChanged()}, otherwise it invokes {\em
+setSize()} on the new LinearSOE. Returns $0$ if successful, a warning
+message and a negative number if not.\\ 

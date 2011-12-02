@@ -1,0 +1,95 @@
+% Boris Jeremic (@ucdavis.edu)
+\section{OpenSees Command to Create Elastic Isotropic/Anisotropic 3D Material }
+
+
+There  are  two  types  of  3D  elastic  isotropic material models
+(i.e.  linear  elastic  and  nonlinear or pressure
+sensitive elastic materials)
+ and one cross
+anisotropic elastic material model that  you
+can  create.
+% Section \ref{LinEla} discusses the
+%linear  elastic  material  command, while Section \ref{NonlEla}
+%examines the nonlinear elastic material command.
+
+
+\subsection{ElasticIsotropic3D command}
+\label{LinEla}
+%\texttt{nDMaterial ElasticIsotropic3D MatTag? $E_o$? $\nu?$ $\rho?$}
+\begin{verbatim}
+nDMaterial ElasticIsotropic3D matTag? E0? nu? rho?
+\end{verbatim}
+
+The  \texttt{ElasticIsotropic3D}  material  is the standard linear elastic
+isotropic  three  dimensional  material  implemented  based  on
+tensor  operation.  The arguments to construct the material are
+its tag, \texttt{matTag}, Young's Modulus at atmospheric pressure \texttt{E0},
+Poisson's ratio \texttt{nu}, and mass density \texttt{rho}.
+
+
+
+
+\subsection{PressureDependentElastic3D command}
+\label{NonlEla}
+%\texttt{nDMaterial PressureDependentElastic3D MatTag? $E_o$? $\nu?$ 
+%$\rho?$ $n?$ $p_{ref}?$ $p_{cutoff}?$}
+\begin{verbatim}
+nDMaterial PressureDependentElastic3D matTag? E0? nu? rho? n? pr? pc? 
+\end{verbatim}
+
+The  \texttt{PressureDependentElastic3D}  material  is the standard
+nonlinear   elastic   isotropic   three   dimensional  material
+implemented based on tensor operation. The first four arguments
+are  the  same  as  linear elastic command described above. 
+The pressure  dependent  elastic  modulus is to be determined using
+the following formula \ref{NonLineEl011}
+% ( Manzari and Dafalias
+%\cite{Manzari97})
+.  
+There  are  three  more  arguments for this command. 
+\texttt{n} is  the  exponent, 
+\texttt{pr} ($p_{ref}$) is  the  atmospheric pressure, 
+while \texttt{pc} ($p_{cut-off}$) is the cut-off pressure. 
+When $p'$ ( the mean effective normal stress) is less than $p_{cut-off}$,
+then $p'~=~p_{cut-off}$.
+%
+\begin{equation}
+E = E_o \left(\frac{p'}{p_{ref}}\right)^{n}
+\label{NonLineEl011}
+\end{equation}
+%
+
+\subsection{Elastic Cross Anisotropic 3D command}
+\label{ECA3D}
+\begin{verbatim}
+nDMaterial ElasticCrossAnisotropic matTag? Eh? Ev? nuhv? nuhh? Ghv?
+\end{verbatim}
+
+The  \texttt{ElasticCrossAnisotropic}  material  is the standard linear elastic
+cross anisotropic three dimensional material implemented  based  on
+tensor  operation.  
+The arguments to construct the material are 
+its tag, \texttt{matTag}, 
+the elastic modulus in the cross plane, \texttt{Eh}, 
+the elastic modulus in the plane vertical to the cross plane, \texttt{Ev},
+Poisson's ratio between the cross plane and its vertical plane, \texttt{nuhv},
+Poisson's ratio between in the cross plane, \texttt{nuhh},
+and the shear modulus between the cross plane and its vertical plane, \texttt{Ghv}.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
