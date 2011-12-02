@@ -1,0 +1,62 @@
+%File: ~/OOP/domain/pattern/RectangularSeries.tex
+%What: "@(#) RectangularSeries.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$domain/pattern/RectangularSeries.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class RectangularSeries: public DomainComponent  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent TimeSeries \\
+\indent\indent\indent {\bf RectangularSeries} \\
+
+\noindent {\bf Description} \\ 
+\indent The RectangularSeries class is a concrete subclass of TimeSeries.
+The relationship between the pseudo time and the load factor is
+defined by the simple relationship: factor $=$ cFactor when tStart $<=$
+pseudo time $<=$ tFinish, otherwise factor $ =0.0$. \\
+
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\ 
+\indent {\em RectangularSeries(double tStart, double tFinish, double factor = 1.0);}\\ \\
+\indent // Destructor \\ 
+\indent {\em virtual $\tilde{ }$RectangularSeries();}\\  \\
+\indent // Public Methods \\ 
+\indent {\em  virtual double getFactor(double pseudoTime);}\\
+\indent {\em  virtual int sendSelf(int commitTag, Channel \&theChannel);}\\
+\indent {\em  virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\
+\indent {\em  virtual void Print(OPS_Stream \&s, int flag =0);}\\
+
+\noindent {\bf Constructor} \\ 
+\indent {\em RectangularSeries(double tStart, double tFinish, double cFactor = 1.0);}\\ 
+The tag TSERIES\_TAG\_RectangularSeries is passed to the TimeSeries
+constructor. Saves the values {\em tStart}, {\em tFinish} and {\em
+cfactor}. \\
+
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{ }$RectangularSeries();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods} \\
+\indent {\em  virtual double getFactor(double pseudoTime);}\\
+Returns cFactor if tStart $<=$ pseudo time $<=$ tFinish, otherwise
+returns $0.0$. \\ 
+
+\indent {\em  virtual int sendSelf(int commitTag, Channel
+\&theChannel);}\\
+Creates a vector of size 3 into which it places {\em tStart}, {\em
+tFinish} and {\em cFactor}, and it then invokes {\em sendVector()} on
+the Channel object. \\ 
+
+\indent {\em  virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\
+Does the mirror image of {\em sendSelf()}. \\
+
+\indent {\em  virtual void Print(OPS_Stream \&s, int flag =0) =0;}\\
+Prints the string 'RectangularSeries' and the values {\em tStart}, {\em
+tFinish} and {\em factor}. 

@@ -1,0 +1,87 @@
+#zcheng, jeremic@ucdavis.edu
+# tcl example file using Template3Dep material
+# --von Mises model
+# Inelastic static analysis -- Triaxial test
+#
+#single load stage: Shear
+#May 2004
+
+# ################################
+# create the modelbuilder
+# #################################
+
+model BasicBuilder -ndm 3 -ndf 3
+
+set g   9.81
+set p   5.0
+# ################################
+# build the model
+# #################################
+
+node 1 1.0 1.0 0.0
+node 2 0.0 1.0 0.0
+node 3 0.0 0.0 0.0
+node 4 1.0 0.0 0.0
+node 5 1.0 1.0 1.0
+node 6 0.0 1.0 1.0
+node 7 0.0 0.0 1.0
+node 8 1.0 0.0 1.0
+
+#fixed bottom
+fix 1 1 1 1
+fix 2 1 1 1
+fix 3 1 1 1
+fix 4 1 1 1
+ 
+
+#Elastic-plastic model
+#================================================================
+# von Mises model
+set ys "-VM"
+set ps "-VM"
+set ES1  "-Leq "
+set ET1  "-Linear"
+set stressp "0.10 0 0 0 0.10 0 0 0 0.10"
+
+#________________Cu(undrained shear strength)
+set EPS "-NOD 1 -NOS 2 2.0 0.0 -stressp $stressp"
+
+#Elastic model
+nDMaterial ElasticIsotropic3D 2 1000000.0 0.0 1.8
+
+nDMaterial Template3Dep 1 2 -YS $ys -PS $ps -EPS $EPS -ELS1 $ES1 -ELT1 $ET1
+
+#____________tag_____8 nodes______matID__bforce1_bforce2_bforce3_rho
+element Brick8N  1  5 6 7 8 1 2 3 4   1      0.0   0.0     0.0   1.0
+    
+#stage 1
+#===========================================================
+#isotropic load
+set np 2.0
+pattern Plain 2 "Linear" {
+load 5  $np    0.0   0.0   -pattern 2
+load 6  $np    0.0   0.0   -pattern 2
+load 7  $np    0.0   0.0   -pattern 2
+load 8  $np    0.0   0.0   -pattern 2
+}
+
+set lf1 0.1
+set NN1 10
+system UmfPack
+constraints Plain
+test NormDispIncr 1.0e-5 30 1
+integrator LoadControl $lf1 1 $lf1 $lf1
+algorithm Newton
+numberer RCM
+analysis Static
+
+analyze $NN1
+
+print node 5
+print node 6
+print node 7
+print node 8
+
+
+wipe
+

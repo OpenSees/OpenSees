@@ -1,0 +1,62 @@
+% File: ~/domain/domain/loadBalancer/LoadBalancer.tex 
+% What: "@(#) LoadBalancer.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/domain/loadBalancer/LoadBalancer.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class LoadBalancer \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf LoadBalancer} \\
+
+
+\noindent {\bf Description}  \\
+\indent A LoadBalancer is an object used to balance a
+PartitionedDomain. The LoadBalancer does this by invoking methods in
+the DomainPartitioner object with which it is associated. \\
+
+\noindent {\bf Class Interface}  \\
+\indent\indent  // Constructor  \\
+\indent\indent {\em LoadBalancer(); }\\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em virtual~ $\tilde{}$LoadBalancer();}  \\ \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em virtual void setLinks(DomainPartitioner
+\&thePartitioner);} \\ 
+\indent\indent {\em virtual int balance(Graph \&theWeightedGraph) =0;} \\ \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em DomainPartitioner *getDomainPartitioner(void); }\\
+
+
+\noindent {\bf  Constructor  }\\
+\indent {\em LoadBalancer(); }\\ 
+Sets the pointer to the assocaited PartitionedDomain to be $0$. \\
+
+\noindent {\bf Destructor } \\
+\indent {\em virtual~ $\tilde{}$LoadBalancer();}  \\ 
+Does nothing. Provided so the subclasses destructor will be called. \\
+
+\noindent {\bf  Public Methods} \\
+\indent {\em virtual void setLinks(DomainPartitioner
+\&thePartitioner);} \\
+Sets the pointer to the DomainPartitioner object associated with the
+LoadBalancer to point to {\em thePartitioner}. \\
+
+{\em virtual int balance(Graph \&theWeightedGraph) =0;} \\ 
+Each subclass must provide an implementation of this method. This
+method is invoked to balance the PartitionedDomain. The Graph {\em
+theWeightedGraph} is a weighted graph in which the vertices represent
+the Subdomains, the edges Subdomains sharing common boundary nodes and
+the weight the cost of the previous Subdomain calculations (determined
+by invoking {\em getCost()} on the Subdomains). \\
+
+
+\noindent {\bf Protected Methods}  \\
+\indent {\em DomainPartitioner *getDomainPartitioner(void); }\\
+Returns a pointer to the DomainPartitioner. If no DomainPartitioner
+has been set, a warning message is printed and $0$ returned. \\
+
+
+
+

@@ -1,0 +1,72 @@
+%File: ~/OOP/system_of_eqn/linearSOE/bandGEN/BandGenLinLapackSolver.tex
+%What: "@(#) BandGenLinLapackSolver.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/system\_of\_eqn/linearSOE/bandGEN/BandGenLinLapackSolver.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class BandGenLinLapackSolver: public BandGenLinSolver  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent  Solver \\
+\indent\indent\indent LinearSOESolver \\
+\indent\indent\indent\indent BandGenLinSolver \\
+\indent\indent\indent\indent\indent {\bf BandGenLinLapackSolver} \\
+
+\noindent {\bf Description}  \\
+\indent A BandGenLinLapackSolver object can be constructed to solve
+a BandGenLinSOE object. It obtains the solution by making calls on the
+the LAPACK library. The class is defined to be a friend of the 
+BandGenLinSOE class (see $<$BandGenLinSOE.h$>$). \\
+
+
+\noindent {\bf Interface}  \\
+\indent\indent // Constructor \\
+\indent\indent {\em BandGenLinLapackSolver();}  \\ \\
+\indent\indent // Destructor \\
+\indent\indent {\em $\tilde{ }$BandGenLinLapackSolver();}\\  \\
+\indent\indent // Public Methods \\
+\indent\indent {\em int solve(void);} \\
+\indent\indent {\em int setSize(void);} \\
+\indent\indent {\em  int sendSelf(int commitTag, Channel \&theChannel);} \\ 
+\indent\indent {\em  int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);} \\ 
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em BandGenLinLapackSolver();}  \\
+A unique class tag (defined in $<$classTags.h$>$) is passed to the
+BandGenLinSolver constructor. Sets the size of {\em iPiv} to $0$, {\em
+iPiv} being an integer array needed by the LAPACK routines. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em  $\tilde{ }$BandGenLinLapackSolver();}\\ 
+Invokes delete on {\em iPiv} to free the memory allocated to store the
+array. \\ 
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual int solve(void);} \\
+The solver first copies the B vector into X and then solves the
+BandGenLinSOE system by calling the LAPACK routines {\em
+dgbsv()}, if the system is marked as not having been factored, and {\em
+dgbtrs()} if system is marked as having been factored. If the
+solution is successfully obtained, i.e. the LAPACK routines return $0$
+in the INFO argument, it marks the system has having been
+factored and returns $0$, otherwise it prints a warning message and
+returns INFO. The solve process changes $A$ and $X$. \\   
+
+\indent {\em int setSize(void);} \\
+Is used to construct a 1d integer array, {\em iPiv} that is needed by
+the LAPACK solvers. It checks to see if current size of {\em iPiv} is
+large enough, if not it deletes the cold and creates a larger
+array. Returns $0$ if sucessfull, prints a warning message and returns
+a $-1$ if not enough memory is available for this new array. \\
+
+
+\indent {\em  int sendSelf(int commitTag, Channel \&theChannel);} \\ 
+Does nothing but return $0$. \\
+
+\indent {\em  int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);} \\ 
+Does nothing but return $0$. \\

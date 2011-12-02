@@ -1,0 +1,107 @@
+%File: ~/OOP/analysis/handler/ConstraintHandler.tex
+%What: "@(#) ConstraintHandler.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/handler/ConstraintHandler.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ConstraintHandler: public MovableObject  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent {\bf ConstraintHandler} \\
+
+\noindent {\bf Description} \\ 
+\indent The ConstraintHandler class is an abstract base class. Its purpose is
+to define the interface common among all subclasses.  A constraint
+handler is responsible for: \begin{enumerate} \item creating the
+FE\_Element and DOF\_Group objects and adding them to the
+AnalysisModel. \item setting the initial dof equation numbers to $-1$,
+$-2$ or $-3$. A $-1$ indicates to the DOF\_Numberer object that no
+equation number is to be allocated for this dof, a $-3$ that this dof
+is to be among the last group of dof to be numbered. \item deleting
+the DOF\_Group and FE\_Element objects that it created.\end{enumerate}
+
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em ConstraintHandler(int classTag);}\\  \\
+\indent // Destructor \\
+\indent {\em virtual~ $\tilde{}$ConstraintHandler();}\\  \\
+\indent // Public Methods\\
+\indent {\em virtual void setLinks(Domain \&theDomain, \\
+\indent\indent\indent\indent AnalysisModel \&theModel, \\
+\indent\indent\indent\indent Integrator \&theIntegrator);} \\
+\indent {\em virtual int handle(const ID *nodeToBeNumberedLast
+=0) =0;} \\ 
+\indent {\em virtual void clearAll(void) =0;} \\ \\
+\indent // Protected Methods  \\
+\indent {\em Domain *getDomainPtr(void) const;} \\
+\indent {\em AnalysisModel *getAnalysisModelPtr(void) const;} \\
+\indent {\em Integrator *getIntegratorPtr(void) const;} \\
+
+
+\noindent {\bf Constructor} \\
+\indent {\em ConstraintHandler(int classTag);}\\ 
+The integer {\em classTag} is passed to the MovableObject constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$ConstraintHandler();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }\\
+\indent {\em virtual void setLinks(Domain \&theDomain, \\
+\indent\indent\indent\indent\indent AnalysisModel \&theModel, \\
+\indent\indent\indent\indent\indent Integrator \&theIntegrator);} \\
+Invoked to set the links that the ConstraintHandler will need. These
+include links to the Domain, {\em theDomain}, for which the
+ConstraintHandler object will apply the constraints and the
+AnalysisModel, {\em theModel}, to which the ConstraintHandler will add
+the FE\_Element and DOF\_Group objects. \\
+
+\indent {\em virtual int handle(const ID *nodesToBeNumberedLast =0) =0;} \\
+Invoked to handle the constraints imposed on the domain by the
+SP\_Constraints and MP\_Constraints. The ConstraintHandler object does
+this by instantiating the appropriate FE\_ELement and DOF\_Group objects 
+and adding them to the AnalysisModel. For all the dofs in each
+DOF\_Group the ConstraintHandler sets initial equation numbers as
+either $-1$, $-2$ or $-3$: A $-1$ indicates to the DOF\_Numberer object
+that no equation number is to be allocated for this dof, a $-2$ that
+an equation number is to be given for the dof, and a $-3$ that an
+equation number is to be allocated and that this dof is to
+be among the last group of dof to be numbered,i.e. all dof initially
+assigned a $-3$ are to be given a higher equation number than those
+given a $-2$. Those dof with a $-3$ should include all those dof
+associated with the nodes whose tags are in {\em
+nodesToBeNumberedLast}. Returns a positive number if successfully, a
+negative integer if not; the positive number is to be set at the
+number of dof assigned a value $-3$ (this will be the number of
+external dof for a subdomain), the negative value of which depends on
+the type of ConstraintHandler. For subdomains the constraint handler
+is responsible for setting the FE\_Element by calling {\em
+setFE\_elementPtr}. \\    
+
+{\em virtual void clearAll(void) =0;} \\
+Invoked to inform the ConstraintHandler object that the FE\_Elements
+and DOF\_Groups it constructed are no longer part of the AnalysisModel. The
+ConstraintHandler can delete these objects if necessary; or the
+ConstraintHandler can store them and use them in subsequent calls to
+{\em handle()}. \\ 
+
+\noindent {\bf Protected Methods}  \\
+\indent {\em Domain *getDomainPtr(void) const;} \\
+A const member function to return the Domain object associated with
+the ConstraintHandler, {\em theDomain}. \\
+
+{\em AnalysisModel *getAnalysisModelPtr(void) const;} \\
+A const member function to return the AnalysisModel object associated with
+the ConstraintHandler, {\em theModel}. \\
+
+{\em Integrator *getIntegratorPtr(void) const;} \\
+A const member function to return the Integrator object associated with
+the ConstraintHandler, {\em theIntegrator}. 
+
+
+
+
+

@@ -1,0 +1,170 @@
+#################################################################################################
+# This file contains the nodes, elements and constraints for two-dimensional                    #
+# beam column elements constructed using the GiD mesh generator in                              #
+# conjunction with the file "PileElements.bas"                                                  #
+#                                                                                               #
+# prepared by:                                                                                  #
+# Scott Brandenberg                                                                             #
+# University of California, Davis                                                               #
+#################################################################################################
+
+############################################################################
+# Start Pile Elements                                                      
+
+element elasticBeamColumn          1          3         6       50.00000 68900000.00000       50.00000          1
+element elasticBeamColumn          2          6        26       50.00000 68900000.00000       50.00000          1
+element elasticBeamColumn          3         26        77       50.00000 68900000.00000       50.00000          1
+element elasticBeamColumn          4          2         3       50.00000 68900000.00000       50.00000          1
+element elasticBeamColumn          5          6         8        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn          6          8        10        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn          7         10        11        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn          8         11        13        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn          9         13        16        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         10         16        17        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         11         17        19        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         12         19        22        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         13         22        23        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         14         23        27        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         15         27        34        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         16         34        40        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         17         40        46        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         18         46        50        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         19         50        55        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         20         55        60        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         21         60        66        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         22         66        69        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         23         69        74        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         24         74        82        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         25         82        91        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         26         91       104        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         27        104       112        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         28        112       119        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         29        119       126        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         30        126       134        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         31        134       141        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         32        141       148        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         33        148       156        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         34        156       164        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         35        164       169        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         36        169       178        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         37        178       183        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         38        183       189        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         39        189       196        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         40        196       203        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         41        203       209        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         42        209       216        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         43        216       221        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         44        221       229        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         45        229       235        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         46        235       241        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         47        241       247        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         48        247       253        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         49        253       262        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         50        262       267        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         51        267       275        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         52        275       281        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         53        281       288        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         54        288       293        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         55         26        29        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         56         29        32        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         57         32        36        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         58         36        38        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         59         38        42        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         60         42        44        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         61         44        48        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         62         48        52        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         63         52        53        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         64         53        57        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         65         57        62        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         66         62        64        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         67         64        67        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         68         67        71        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         69         71        75        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         70         75        83        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         71         83        94        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         72         94        99        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         73         99       107        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         74        107       116        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         75        116       121        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         76        121       130        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         77        130       135        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         78        135       143        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         79        143       149        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         80        149       153        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         81        153       162        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         82        162       167        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         83        167       174        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         84        174       180        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         85        180       188        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         86        188       194        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         87        194       200        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         88        200       206        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         89        206       211        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         90        211       218        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         91        218       226        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         92        226       232        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         93        232       237        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         94        237       243        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         95        243       250        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         96        250       256        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         97        256       260        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         98        260       265        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn         99        265       272        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        100        272       280        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        101        280       286        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        102        286       292        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        103        292       298        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        104        298       302        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        105         77        79        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        106         79        85        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        107         85        88        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        108         88        90        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        109         90        96        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        110         96        98        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        111         98       101        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        112        101       106        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        113        106       110        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        114        110       114        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        115        114       117        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        116        117       124        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        117        124       127        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        118        127       131        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        119        131       138        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        120        138       139        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        121        139       145        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        122        145       152        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        123        152       158        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        124        158       160        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        125        160       166        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        126        166       171        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        127        171       176        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        128        176       182        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        129        182       185        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        130        185       191        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        131        191       198        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        132        198       202        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        133        202       207        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        134        207       214        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        135        214       220        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        136        220       223        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        137        223       228        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        138        228       233        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        139        233       239        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        140        239       245        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        141        245       252        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        142        252       258        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        143        258       264        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        144        264       269        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        145        269       274        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        146        274       278        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        147        278       284        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        148        284       289        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        149        289       295        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        150        295       300        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        151        300       303        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        152        303       305        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        153        305       307        0.17900 68900000.00000        0.02400          1
+element elasticBeamColumn        154        307       309        0.17900 68900000.00000        0.02400          1
+
+# End Pile Elements
+############################################################################

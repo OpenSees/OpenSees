@@ -1,0 +1,72 @@
+%File: ~/OOP/actor/Message.tex
+%What: "@(#) Message.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/actor/message/Message.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Message \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf Message} \\
+
+\noindent {\bf Description}  \\
+\indent Messages are objects that can be sent between Channels. They
+are provided to allow data of arbitrary length and type, e.g. structs,
+to be sent between processes running on similar machine
+architectures. WARNING Sending Messages between machines with different
+architectures can result in erroniuos data being received. Each
+Message object keeps a pointer to the data it represents and an integer
+outlining the data size. There is no copy of the data kept by the
+Message. \\
+
+
+\noindent {\bf Constructors}  \\
+\indent // Constructors  \\
+\indent {\em Message();}  \\
+\indent {\em Message(double *, int num);}\\
+\indent {\em Message(int *, int num);}\\
+\indent {\em Message(char *, int num);} \\ \\
+\indent // Destructor \\
+\indent {\em virtual~ $\tilde{}$Message();}\\  \\
+\indent // Public Member Functions  \\
+\indent {\em virtual int putData(char *theData, int startLoc, int endLoc);}; \\  
+\indent {\em virtual const char *getData(void);}\\
+\indent {\em virtual int   getSize(void);} \\
+
+\noindent {\bf Constructors}  \\
+\indent {\em Message();}  \\
+To construct an empty message. \\
+
+\indent {\em Message(double *data, int num);}\\
+To construct a message for sending/receiving an array containing {\em
+num} doubles. \\
+
+\indent {\em Message(int *data, int num);}\\
+To construct a message for sending/receiving an array containing {\em
+num} ints. \\
+
+\indent {\em Message(char *data, int num);} \\
+To construct a message for sending/receiving a string of {\em num}
+characters or a struct. \\ 
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$Message();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em    virtual int putData(char *theData, int startLoc, int
+endLoc);}; \\ 
+A method which will put the data given by the character pointer {\em
+theData} of size {\em endLoc -startLoc} into the data array pointed to
+by the Message starting at location $startLoc$ in this array. Returns $0$ if
+successful; an error message is printed and a $-1$ is returned if
+not. The routine {\em bcopy()} is used to copy the data. \\ 
+
+{\em  virtual const char *getData(void);}\\
+A method which returns a const char * pointer to the messages data. \\
+
+{\em  virtual int   getSize(void);} \\
+A method to get the size of the array. The unit of size is that of a
+character. 
+

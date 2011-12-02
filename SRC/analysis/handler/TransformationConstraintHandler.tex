@@ -1,0 +1,56 @@
+%File: ~/OOP/analysis/handler/TransformationConstraintHandler.tex
+%What: "@(#) TransformationConstraintHandler.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{
+}$/analysis/handler/TransformationConstraintHandler.h$>$  \\ 
+
+UNDER CONSTRUCTION.\\
+
+\noindent {\bf Class Declaration}  \\
+\indent class TransformationConstraintHandler: public ConstraintHandler  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent ConstraintHandler \\
+\indent\indent\indent {\bf TransformationConstraintHandler} \\
+
+\noindent {\bf Description} \\ 
+\indent The TransformationConstraintHandler class is a class which deals with
+both single and multi point constraints using the Transformation method. 
+This is done by, in addition to creating a DOF\_Group object
+for each Node and an FE\_Element for each Element in the Domain,
+creating either a TransformationSP\_FE or a TransformationMP\_FE object for each
+constraint in the Domain. It is these objects that enforce the
+constraints by moifying the tangent matrix and residual vector. \\ 
+
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em TransformationConstraintHandler();}\\  \\ 
+\indent // Destructor \\
+\indent {\em virtual~ $\tilde{}$TransformationConstraintHandler();}\\  \\
+\indent // Public Methods\\
+\indent {\em virtual int handle(const ID *nodeToBeNumberedLast
+=0); } \\ 
+\indent {\em virtual void clearAll(void);} \\ 
+\indent {\em int enforceSPs(void); }\\
+\indent {\em int doneDOFids(void); }\\
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel); } \\
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker); } \\
+
+
+\noindent {\bf Constructor} \\
+\indent {\em TransformationConstraintHandler();}\\ 
+The integer {\em HANDLER\_TAG\_TransformationConstraintHandler} (defined in
+$<$classTags.h$>$) is passed to the TransformationConstraintHandler
+constructor. 
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$TransformationConstraintHandler();}\\ 
+Currently invokes {\em clearAll()}, this will change when {\em
+clearAll()} is rewritten. \\
+
+\noindent {\bf Public Methods }\\
+\indent {\em virtual int handle(const ID *nodeToBeNumberedLast =0) =0;} \\
