@@ -1,0 +1,76 @@
+%File: ~/OOP/material/nD/ElasticIsotropicMaterial.tex
+%What: "@(#) ElasticIsotropicMaterial.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/material/nD/ElasticIsotropicMaterial.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ElasticIsotropicMaterial : public NDMaterial \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent Material \\
+\indent\indent\indent NDMaterial \\
+\indent\indent\indent\indent {\bf ElasticIsotropicMaterial} \\
+
+\noindent {\bf Description}  \\
+ElasticIsotropicMaterial is an abstract class.  It provides the
+interface to which all elastic isotropic material implementations
+must conform.  It also serves as a prototype for all elastic isotropic
+material implementations, as described by the Prototype pattern in
+{\em Design Patterns} by Gamma et al. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em ElasticIsotropicMaterial (int tag, double E,
+double v);}  \\ \\
+\indent // Destructor \\
+\indent {\em virtual $\tilde{ }$ElasticIsotropicMaterial ();}\\ \\
+\indent // Public Methods \\
+\indent {\em virtual int setTrialStrain (const Vector \&strain); } \\
+\indent {\em virtual const Vector \&getStress (void); } \\
+\indent {\em virtual const Matrix \&getTangent (void); } \\
+\indent {\em virtual int commitState (void); } \\
+\indent {\em virtual int revertToLastCommit (void); } \\
+\indent {\em virtual int revertToStart (void); } \\
+\indent {\em virtual NDMaterial *getCopy (void); } \\
+\indent {\em virtual ElasticIsotropicMaterial *getModel (const char *type); } \\
+
+\noindent {\bf Constructor}  \\
+\indent {\em ElasticIsotropicMaterial (int tag, int classTag);}  \\
+To construct an ElasticIsotropicMaterial whose unique integer tag
+among NDMaterials in the domain is given by {\em tag}, and whose class
+tag is given by {\em classTag}.  These tags are passed to the
+NDMaterial class constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{ }$ElasticIsotropicMaterial ();} \\
+Does nothing. \\ 
+
+\noindent {\bf Public Methods} \\
+\indent {\em virtual int setTrialStrain (const Vector \&strain); }  \\
+Outputs an error indicating this method is a subclass reponsibility. \\
+
+\indent {\em virtual const Vector \&getStress (void); } \\
+Outputs an error indicating this method is a subclass reponsibility. \\
+
+\indent {\em virtual const Matrix \&getTangent (void); } \\
+Outputs an error indicating this method is a subclass reponsibility. \\
+
+\indent {\em virtual int commitState (void); } \\
+Outputs an error indicating this method is a subclass reponsibility. \\
+
+\indent {\em virtual int revertToLastCommit (void); } \\
+Outputs an error indicating this method is a subclass reponsibility. \\
+
+\indent {\em virtual int revertToStart (void); } \\
+Outputs an error indicating this method is a subclass reponsibility. \\
+
+\indent {\em virtual NDMaterial *getCopy (void); } \\
+Outputs an error indicating this method is a subclass reponsibility. \\
+
+\indent {\em virtual ElasticIsotropicMaterial *getModel (const char *type); } \\
+Returns a specific implementation of an ElasticIsotropicMaterial by
+switching on {\em type}.  Outputs an error if {\em type} is not valid.
+This is the prototype method.

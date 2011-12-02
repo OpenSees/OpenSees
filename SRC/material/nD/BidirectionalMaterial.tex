@@ -1,0 +1,106 @@
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/material/nD/BidirectionalMaterial.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class BidirectionalMaterial : public NDMaterial \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent Material \\
+\indent\indent\indent NDMaterial \\
+\indent\indent\indent\indent {\bf BidirectionalMaterial} \\
+
+\noindent {\bf Description}  \\
+\indent BidirectionalMaterial is an implementation of NDMaterial. 
+BidirectionalMaterial is a two-dimensional elasto-plastic material model with
+combined linear isotropic and kinematic hardening. The yield surface is
+circular with a specified radius. A radial return map algorithm is used
+in the state determination. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructors \\
+\indent {\em BidirectionalMaterial(int tag, double E, double fy, double Hiso, double Hkin);} \\ 
+\indent {\em BidirectionalMaterial();} \\ \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$BidirectionalMaterial();} \\ \\
+\indent // Public Methods \\
+\indent {\em int setTrialStrain(const Vector \&strain); } \\
+\indent {\em const Vector \&getStrain(void); } \\
+\indent {\em const Vector \&getStress(void); } \\
+\indent {\em const Matrix \&getTangent(void); } \\
+\indent {\em int commitState(void); } \\
+\indent {\em int revertToLastCommit(void); } \\
+\indent {\em int revertToStart(void); } \\
+\indent {\em NDMaterial *getCopy(void); } \\ \\
+\indent // Public Methods for Output\\
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel); } \\
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker); } \\
+\indent {\em void Print(OPS_Stream \&s, int flag = 0);} \\
+
+\noindent {\bf Constructors} \\
+\indent {\em BidirectionalMaterial(int tag, double E, double fy, double Hiso, double Hkin);} \\
+Constructs a BidirectionalMaterial whose unique integer among
+NDMaterials in the domain is given by {\em tag}.
+Sets the elastic modulus to {\em E}, initial yield stress
+to {\em fy}, and isotropic and kinematic hardening moduli to 
+{\em Hiso} and {\em Hkin}, respectively. Sets all committed history
+variables to $0.0$. The integers {\em tag} and ND\_TAG\_Bidirectional, 
+defined in $<$classTags.h$>$, are passed to the NDMaterial 
+constructor. \\ 
+
+\indent {\em BidirectionalMaterial();} \\
+Constructs a BidirectionalMaterial with tag 0. All material parameters
+and committed history variables are set to $0.0$. The integers 0 and 
+ND\_TAG\_Bidirectional, defined in $<$classTags.h$>$, are passed to 
+the NDMaterial constructor. \\ 
+
+\noindent {\bf Destructor} \\
+\indent {\em $\tilde{ }$BidirectionalMaterial();} \\
+Does nothing. \\
+
+\noindent {\bf Public Methods} \\
+\indent {\em int setTrialStrain(const Vector \&strain); } \\
+Sets the trial strain of this material to be {\em strain}. Returns 0. \\
+
+\indent {\em const Vector \&getStrain(void); } \\
+Returns the current trial strain of this material. \\
+
+\indent {\em const Vector \&getStress(void); } \\
+Returns the current stress computed by the radial return mapping algorithm. This
+is the 2d generalization of the 1d algorithm described in Simo \& Hughes (1998),
+Box $1.5$. \\
+
+\indent {\em const Matrix \&getTangent(void); } \\
+Returns the tangent consistent with the stress computed by the radial
+return mapping algorithm in {\em getStress()}. \\
+
+\indent {\em int commitState(void); } \\
+Sets the committed history variables to be their corresponding trial
+values. Returns 0. \\
+
+\indent {\em int revertToLastCommit(void); } \\
+Does nothing. Returns 0. \\
+
+\indent {\em int revertToStart(void); } \\
+Sets all committed history variables to $0.0$. Returns 0. \\
+
+\indent {\em NDMaterial *getCopy(void); } \\
+Returns a pointer to a new instance of BidirectionalMaterial with the 
+same tag, elastic modulus, initial yield stress, and 
+hardening moduli. Copies the committed history variables to the 
+new object. It is up to the caller to invoke the destructor. \\
+
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel); }\\
+Returns 0 if successful and a negative number if any of the 
+send operation fails. \\
+
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker); }\\
+Returns 0 if successful and a negative number if any of the 
+receive operation fails. \\
+
+\indent {\em void Print(OPS_Stream \&s, int flag);} \\
+Prints the tag of this object and its elastic modulus, initial yield
+stress, and hardening moduli to the stream {\em s}.

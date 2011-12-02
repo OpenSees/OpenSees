@@ -1,0 +1,224 @@
+% File: ~/domain/domain/partitioner/DomainPartitioner.tex 
+% What: "@(#) DomainPartitioner.tex, revA"
+
+UNDER CONSTRUCTION
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/domain/partitioner/DomainPartitioner.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class DomainPartitioner \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf DomainPartitioner} \\
+
+
+\noindent {\bf Description}  \\
+\indent A DomainPartitioner is an object used to partition and load balance
+a PartitionedDomain. The DomainPartitioner uses the element graph of
+the domain to partition and load balance. Derived types can use the
+node graph of the domain. The partitioner uses a GraphPartitioner and
+a LoadBalancingAlgo to partition and load balance the domain. \\
+
+\noindent {\bf Class Interface}  \\
+\indent  // Constructors  \\
+\indent {\em DomainPartitioner(GraphPartitioner \&theGraphPartitioner,\\
+\indent\indent\indent	LoadBalancer \&theLoadBalancer);} \\
+\indent {\em DomainPartitioner(GraphPartitioner
+\&theGraphPartitioner);}\\ \\
+\indent Destructor  \\
+\indent {\em virtual~ $\tilde{}$DomainPartitioner();}  \\ \\
+\indent // Public Methods  \\
+\indent{\em virtual void setPartitionedDomain(PartitionedDomain
+\&theDomain);}\\
+\indent {\em virtual int partition(int numParts);}\\
+\indent {\em virtual void balance(Graph \&theWeightedGraph)} \\ \\
+\indent // Public Methods Used by the LoadBalancer  \\
+\indent {\em virtual Graph \&getNumPartitions(void)} \\
+\indent {\em virtual Graph \&getPartitionGraph(void)} \\
+\indent {\em virtual Graph \&getColoredGraph(void); } \\
+\indent {\em virtual void swapVertex(int from, int to, int vertexTag,
+bool notAdjacentOther = true); } \\ 
+\indent {\em virtual void swapBoundary(int from, int to, bool
+notAdjacentOther = true); } \\ 
+\indent {\em virtual int releaseVertex(int from, \\
+\indent\indent\indent\indent\indent\indent int vertexTag, \\
+\indent\indent\indent\indent\indent\indent Graph \&theWeightedPartitionGraph, \\
+\indent\indent\indent\indent\indent\indent double factorGreater, \\
+\indent\indent\indent\indent\indent\indent bool adjacentVertexOonly); } \\
+\indent {\em virtual int releaseBoundary(int from, \\
+\indent\indent\indent\indent\indent\indent Graph \&theWeightedPartitionGraph, \\
+\indent\indent\indent\indent\indent\indent double factorGreater, \\
+\indent\indent\indent\indent\indent\indent bool adjacentVertexOonly); } \\
+
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em DomainPartitioner(GraphPartitioner \&theGraphPartitioner,\\
+\indent\indent\indent	LoadBalancer \&theLoadBalancer);} \\
+Constructs a DomainPartitioner which will use {\em
+theGraphPartitioner} to initially partition the PartitionedDomain
+using the element graph and the {\em theLoadBalancer} to load balance 
+the PartitionedDomain. The max number of subdomains that the Domain can be 
+partitioned is currently set at 8.\\
+
+\indent {\em DomainPartitioner(GraphPartitioner \&theGraphPartitioner);}\\
+Constructs a DomainPartitioner which will use {\em
+theGraphPartitioner} to initially partition the PartitionedDomain. The
+max number of subdomains that the Domain can be partitioned is
+currently set at 8.\\ 
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~ $\tilde{}$DomainPartitioner();}  \\
+
+
+\noindent {\bf Public Member Functions}  \\
+\indent{\em virtual void setPartitionedDomain(PartitionedDomain
+\&theDomain);}\\
+Sets the link with the PartitionedDomain that is to be partitioned. \\
+
+{\em virtual int partition(int numParts);}\\
+Method invoked to partition the Domain. It first checks to see that
+the PartitionedDomain has at least {\em numParts} Subdomains, with tags
+1 through {\em numParts}; if not prints an error message and returns -1. 
+It then asks the domain for the element graph. This graph is then partitioned 
+using the GraphPartitioner into {\em numParts}; if partitioning fails an error 
+message is printed and  $-10 +$ number returned from GraphPartitioner is
+returned. If successfull the domain is partitioned according to the
+following rules: \begin{itemize}
+\item All nodes which are internal to a partition are added using the
+{\em addNode()} method of the Subdomain. These nodes are removed from
+the PartionedDomain using {\em removeNode()}. 
+\item External nodes (these are nodes shared across partitions as a
+result of element connectivity or MP\_Constraints are added to those
+Subdomains whose elements reference them. They are added using the
+{\em addExternalNode()} command. 
+\item SP\_Constraints whose node is interior to a Subdomain are removed
+from the PartitionedDomain and added to the Subdomain. 
+\item MP\_Constraints whose two nodes are interior to a Subdomain are
+removed from the PartitionedDomain and added to the Subdomain.
+\item The elements are sent to the partition whose tag is given by the
+color of the vertex in the partitioned (colored) element graph. The
+elements are removed from the PartitionedDomain using {\em
+removeElement()} and added to the Subdomain using {\em addElement()}.
+\item For the loads, a check is made to ensure that each Subdomain has
+a LoadCase with a tag equal to the tags in the LoadCases that have
+been added to the PartitionedDomain; if not new LoadCases are created
+and added to the Subdomain. It then iterates through all the
+NodalLoads in the LoadCases in the PartionedDomain, if the
+corresponding node is external the NodalLoad is removed and added to
+the corresponding LoadCase in the Subdomain. ELEMENTAL LOADS are not
+yet dealt with. 
+\end{itemize}
+
+The DomainPartitioner invokes {\em hasDomainChanged()} on each Subdomain; if the Subdomain 
+has changed {\em invokeChangeOnAnalysis()}. Finally {\em
+hasDomainChanged()} is invoked on the PartitionedDomain; if it has
+changed {\em invokeChangeOnAnalysis()}. {\em partitionFlag} is set to
+true. \\ 
+
+
+{\em virtual void balance(Graph \&theWeightedGraph)} \\
+Checks first to see that the {\em partitionFlag} has been set; if it
+hasn'nt an error message is printed and a $-1$ is returned. If a
+LoadBalancer was passed in the constructor {\em balance()} is invoked
+on this object; if no LoadBalancer was passed nothing is done and
+method returns$0$. If balancing is performed, the DomainPartitioner
+invokes {\em hasDomainChanged()} on each Subdomain; if the Subdomain
+has changed {\em invokeChangeOnAnalysis()}. Finally {\em
+hasDomainChanged()} is invoked on the PartitionedDomain; if it has
+changed {\em invokeChangeOnAnalysis()}. {\em partitionFlag} is set to
+true. \\ 
+
+Method which invokes {\em setPartitioner(this)} on the
+LoadBalancingAlgo. It then invokes {\em balance(load)} on this
+object, where {\em load} is vector of size {\em numParts}
+containing the load of each subdomain. \\ 
+
+\noindent {\bf Public Member Functions Used by the Balancing Algorithm}  \\
+\indent {\em virtual Graph \&getNumPartitions(void)} \\
+Returns the number of partitions in the PartitionedDomain. \\
+
+\indent {\em virtual Graph \&getPartitionGraph(void)} \\
+Method which returns the partition graph. This is a graph with a
+vertex for every partition and an edge between partitions if there
+exists an element in one partition which is connected to an element
+in the other partition. \\
+
+{\em virtual Graph \&getColoredGraph(void); } \\
+A method which returns the current colored graph representing the
+partitioning of the elements in the subdomains. Does this by invoking
+{\em getElementGraph()} on the PartitionedDomain. Note that this is
+the same graph that was colored by the DomainPartitioner in
+partitioning the PartitionedDomain. \\ 
+
+{\em virtual void swapVertex(int from, int to, int vertexTag, bool
+notAdjacentOther = true); } \\ 
+Method which will take the element given by vertex reference of the
+vertex whose tag is given by {\em vertexTag} from subdomain {\em from}
+and place it in subdomain {\em to}. If {\em notAdjacentOther} is {\em
+true} a check is made to ensure that the vertex to be swapped is not
+adjacent to a vertex in any other partition. Returns $0$ if
+successfull, returns an error message and $-1$ if PartitionedDomain
+has not been partitioned, $-2$ if {\em from} Subdomain does not exist,
+$-3$ if {\em to Subdomain} does not exist, $-4$ if a vertex given by
+{\em tag} does not exist, returns $-5$ if {\em notAdjacentOther} was
+true and the vertex was adjacent to a vertex in another partition, and
+returns $-6$ if no Element with a tag similar to {\em tag} exists
+(this should not happen if element graph is built correctly). \\
+The Element, Nodes, NodalLoads, SP\_Constraints and MP\_Constraints
+that need to be moved between the two Subdomains, or between the
+PartitionedDomain and Subdomains are also moved. NO ELEMENTAL LOADS 
+are moved yet. \\
+
+
+{\em virtual void swapBoundary(int from, int to, bool notAdjacentOther
+= true); } \\ 
+Method which when invoked will take all the boundary elements in
+subdomain {\em from} that are connected to elements in subdomain {\em
+to} and place them in subdomain {\em to}. If {\em adjacentVertexOther} is
+{\em true} no Elements which are connected to elements in subdomains other 
+than {\em to} and {\em from} are moved. Returns $0$ if successfull, returns 
+an error message and $-1$ if PartitionedDomain has not been partitioned, $-2$ 
+if {\em from} Subdomain does not exist, $-3$ if {\em to Subdomain}
+does not exist. \\ The Elements, Nodes, NodalLoads, SP\_Constraints
+and MP\_Constraints that need to be moved between the two Subdomains,
+or between the PartitionedDomain and Subdomains are also moved. NO
+ELEMENTAL LOADS are moved yet. It performs the operation by creating
+an ID of vertices and then using code similar to that used in {\em
+swapVertex()}; {\em swapVErtex()} is not called repeatedly as this was
+found to be too slow. \\ 
+
+{\em virtual int releaseVertex(int from, \\
+\indent\indent\indent\indent\indent int vertexTag, \\
+\indent\indent\indent\indent\indent Graph \&theWeightedPartitionGraph, \\
+\indent\indent\indent\indent\indent double factorGreater, \\
+\indent\indent\indent\indent\indent bool adjacentVertexOonly); } \\
+Method which when invoked will take the element given by vertex
+reference of the vertex whose tag is given by {\em vertexTag} from
+subdomain {\em from} and place it in the subdomain to which it is most
+attracted (to which it is most connected). If it is equally attracted
+to two subdomains it is sent to the one with the lightest load (the
+loads on the subdomains are given in the {\em
+theWeightedPartitionGraph}. If the {\em mustReleaseToLighter} is {\em
+true} a check is first made to see if the load on the intended
+subdomain is lighter than the load in {\em from} and that the ratio in
+load between from and the new domain is greater than {\em
+factorGreater}; if this is the case the element is swapped, if not the
+element is not swapped. An additional requirement that the vertex that
+is to be swapped is not adjacent to any other partition can also be
+set. \\ 
+The method determines which partition the vertex is to be sent to and
+then returns the result of invoking {\em swapVertex()} on itself, with
+this partition used as the {\em to} argument in the arguments. \\
+
+{\em virtual int releaseBoundary(int from, \\
+\indent\indent\indent\indent\indent Graph \&theWeightedPartitionGraph, \\
+\indent\indent\indent\indent\indent double factorGreater, \\
+\indent\indent\indent\indent\indent bool adjacentVertexOonly); } \\
+Method which when invoked will release all the elements on the
+boundary of subdomain {\em from}. It performs the operation by
+creating an ID of all the vertices on the boundary of the {\em from}
+Subdomain. Then {\em releaseBoundary()} is invoked on all these vertices. \\
+
+

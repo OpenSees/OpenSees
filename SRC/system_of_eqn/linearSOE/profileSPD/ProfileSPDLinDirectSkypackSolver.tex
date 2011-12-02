@@ -1,0 +1,94 @@
+%File: ~/OOP/system_of_eqn/linearSOE/bandSPD/ProfileSPDLinDirectSkypackSolver.tex
+%What: "@(#) ProfileSPDLinDirectSkypackSolver.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/system\_of\_eqn/linearSOE/profileSPD/ProfileSPDLinDirectSkypackSolver.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class ProfileSPDLinDirectSkypackSolver: public LinearSOESolver  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent  Solver \\
+\indent\indent\indent LinearSOESolver \\
+\indent\indent\indent\indent ProfileSPDLinSolver \\
+\indent\indent\indent\indent\indent {\bf ProfileSPDLinDirectSkypackSolver} \\
+
+\noindent {\bf Description}  \\
+\indent A ProfileSPDLinDirectSkypackSolver object can be constructed
+to solve a ProfileSPDLinSOE object. It does this by direct means using
+the routines supplied in the SKYPACK library, a library which uses the
+BLAS levels 1,2 and 3 for the factorization and substitution. 
+
+The routines in SKYPACK require a number of work areas: {\em int
+block[3]} and {\em double invD[size]}. In addition, to allow the use
+of the BLAS 2 and 3, work areas {\em double rw[mRows x mCols]}, {\em
+double tw[mRows x mRows]} and {\em int index[max(mCols,mRows)]} are 
+created. \\
+
+
+\noindent {\bf Interface}  \\
+\indent\indent Constructors \\
+\indent\indent {\em ProfileSPDLinDirectSkypackSolver();}  \\ 
+\indent\indent {\em ProfileSPDLinDirectSkypackSolver(int mCols, mRows);}  \\ \\
+\indent\indent Destructor \\
+\indent\indent {\em  $\tilde{}$ProfileSPDLinDirectSkypackSolver();}\\  \\
+\indent\indent Public Methods \\
+\indent\indent {\em int solve(void);} \\
+\indent\indent {\em  int setSize(void);} \\
+\indent\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ 
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em ProfileSPDLinDirectSkypackSolver();}  \\
+A unique class tag (defined in $<$classTags.h$>$) is passed to the
+ProfileSPDLinSolver constructor. Sets {\em mCols} and {\em mRows}
+equal to $0$ and does not try and allocate any memory for the work arrays.\\
+
+\indent {\em ProfileSPDLinDirectSkypackSolver(int mCols, int mRows);}  \\
+A unique class tag (defined in $<$classTags.h$>$) is passed to the
+ProfileSPDLinSolver constructor. Sets {\em mCols} and {\em mRows} and
+allocates space in memory for the work arrays {\em rw}, {\em tw} and
+{\em index}. If not enough memory is available in memory, {\em mCols}
+and {\em mRows} is set equal to $0$ and an error message is printed. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em $\tilde{}$ProfileSPDLinDirectSkypackSolver();}\\ 
+Invokes delete on any work areas that have been constructed. \\
+
+\noindent {\bf Public Member Functions }  \\
+\indent {\em  int solve(void);} \\
+The solver first copies the B vector into X and then solves the
+BandSPDLinSOE system. If the matrix has not been factored, the matrix
+is first factored using the SKYPACK routine {\em skysf2()}, if {\em
+mCols} and {\em mRows} equal $0$, or {\em skypf2()}. {\em skysf2()} is
+a routine which uses the BLAS level 1 routines, {\em skypf2()} is a
+routine which uses BLAS levels 2 and 3. If {\em skypf2()}
+has been called, {\em invD} is set up. Once the matrix has been
+factored, {\em skyss()} is called. If the solution is sucessfully
+obtained, i.e. the {\em skyss()} routine returns $0$ in the INFO
+argument, $0$ is returned, otherwise it prints a warning message and
+returns INFO. The solve process changes $A$ and $X$. \\   
+
+\indent {\em  int setSize(void);} \\
+Is responsible for setting the {\em block} information required by the
+SKYPACK routines (block[0]=1; block[1]=size, block[2]=1) and for
+creating space for the {\em invD} work array. Returns $0$ if
+successfull, otherwise a warning message is printed and a $-1$ is
+returned. \\
+
+\indent {\em  int sendSelf(int commitTag, Channel \&theChannel);} \\ 
+Does nothing but return $0$. \\
+
+\indent {\em  int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);} \\ 
+Does nothing but return $0$. \\
+
+
+
+
+
+
+

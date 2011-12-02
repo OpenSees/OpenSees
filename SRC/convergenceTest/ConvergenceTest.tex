@@ -1,0 +1,53 @@
+%File: ~/OOP/convergenceTest/ConvergenceTest.tex
+%What: "@(#) ConvergenceTest.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{}$/convergenceTest/ConvergenceTest.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ConvergenceTest: public MovableObject  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent {\bf ConvergenceTest} \\
+
+\noindent {\bf Description}  \\
+\indent A ConvergenceTest object is an object which can be used in an
+algorithmic class to test if convergence has been achieved for an 
+iteration. The ConvergenceTest class is an abstract class, defining
+the interface that all subclasses must provide. \\
+
+\noindent {\bf Class Interface} \\
+\indent\indent {// Constructors}  \\ 
+\indent\indent {\em ConvergenceTest(int classTag);}  \\ \\
+\indent\indent {// Destructor}  \\ 
+\indent\indent {\em virtual $\tilde{}$ConvergenceTest();} \\ \\
+\indent\indent {// Public Methods}  \\ 
+\indent\indent {\em virtual int setEquiSolnAlgo(EquiSolnAlgo \&theAlgo) =0;} \\
+\indent\indent {\em virtual int start(void) =0;} \\
+\indent\indent {\em virtual int test(void) =0;} \\
+
+\noindent {\bf Constructors}  \\
+\indent {\em ConvergenceTest();}  \\
+The integer {\em classTag} is passed to the MovableObject constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{}$ConvergenceTest();} \\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual int setEquiSolnAlgo(EquiSolnAlgo \&theAlgo) =0;} \\
+To set the corresponding EquiSolnAlgo class. \\
+
+\indent {\em virtual int test(void) =0;} \\
+To return a postive number if the convergence criteria defined for the
+object has been satisfied, the positibe number equal to the number of times 
+since {\em start} that {\em test()} has been invoked. Otherwise a negative number 
+is to be returned. A {\em -2} 
+is returned if the test fails to meet the criteria and no more tests are to be 
+performed due to limits set, i.e. the maximum number of iterations, otherwise a
+{\em -1} is to be returned.  \\
+
+\indent {\em virtual int start(void) =0;} \\
+This is invoked at the start of each iteration. To return {\em 0} if sucessfull, i.e 
+that testing can proceed, a negative number if not. \\

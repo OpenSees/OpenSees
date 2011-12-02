@@ -1,0 +1,278 @@
+############################################################################
+#
+#  Program:  OpenSees
+#
+#  Purpose:  A Top-level Makefile to create the libraries needed
+#            to use the OpenSees framework.
+#
+#   version created for SDSC datastar sequential
+#
+#  Written: fmk
+#  Created: 01/2003
+#
+#
+############################################################################
+
+# %---------------------------------%
+# |  SECTION 1: PROGRAM             |
+# %---------------------------------%
+#
+# Specify the location and name of the OpenSees interpreter program
+# that will be created (if this all works!)
+
+OpenSees_PROGRAM = $(HOME)/bin/OpenSees
+
+# %---------------------------------%
+# |  SECTION 2: MAKEFILE CONSTANTS  |
+# %---------------------------------%
+#
+# Specify the constants the are used as control structure variables in the Makefiles.
+
+OPERATING_SYSTEM = LINUX
+GRAPHICS = UsingOpenGL
+PROGRAMMING_MODE = SEQUENTIAL
+
+#DEBUG_MODE = DEBUG, NO_DEBUG
+DEBUG_MODE = NO_DEBUG
+
+#RELIABILITY = YES_RELIABILITY, NO_RELIABILITY
+RELIABILITY = NO_RELIABILITY
+
+
+# %---------------------------------%
+# |  SECTION 3: PATHS               |
+# %---------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries or if you have
+# any of the libraries already leave the directory location blank AND
+# remove the directory from DIRS.
+
+BASE  = 
+#  PUT YOUR HOME DIRECTOREY HERE
+HOME  = /users03/ucb/ux455280
+FE    = $(HOME)/OpenSees/SRC
+
+
+BLASdir      = $(HOME)/OpenSees/OTHER/BLAS
+CBLASdir     = $(HOME)/OpenSees/OTHER/CBLAS
+LAPACKdir    = $(HOME)/OpenSees/OTHER/LAPACK
+ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
+UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
+METISdir     = $(HOME)/OpenSees/OTHER/METIS
+SRCdir       = $(HOME)/OpenSees/SRC
+SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_3.0/SRC
+
+DIRS        = $(BLASdir) \
+              $(CBLASdir) \
+              $(SUPERLUdir) \
+              $(LAPACKdir) \
+              $(ARPACKdir) \
+              $(UMFPACKdir) \
+              $(METISdir) \
+              $(SRCdir) 
+
+# %-------------------------------------------------------%
+# | SECTION 4: LIBRARIES                                  |
+# |                                                       |
+# | The following section defines the libraries that will |
+# | be created and/or linked with when the libraries are  |
+# | being created or linked with.                         |
+# %-------------------------------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries leave the
+# libraries blank. You have to get your own copy of the tcl/tk 
+# library!! 
+#
+# Note: For libraries that will be created (any in DIRS above)
+# make sure the directory exsists where you want the library to go!
+
+FE_LIBRARY          = $(HOME)/lib/libOpenSees.a
+NDARRAY_LIBRARY     = $(HOME)/lib/libndarray.a  # BJ_UCD jeremic@ucdavis.edu 
+MATMOD_LIBRARY      = $(HOME)/lib/libmatmod.a   # BJ_UCD jeremic@ucdavis.edu 
+BJMISC_LIBRARY      = $(HOME)/lib/libBJmisc.a  # BJ_UCD jeremic@ucdavis.edu
+LAPACK_LIBRARY      = $(HOME)/lib/libLapack.a
+BLAS_LIBRARY        = $(HOME)/lib/libBlas.a
+SUPERLU_LIBRARY     = $(HOME)/lib/libSuperLU.a
+CBLAS_LIBRARY       = $(HOME)/lib/libCBlas.a
+ARPACK_LIBRARY      = $(HOME)/lib/libArpack.a
+UMFPACK_LIBRARY     = $(HOME)/lib/libUmfpack.a
+METIS_LIBRARY       = $(HOME)/lib/libMetis.a
+
+TCL_LIBRARY         = /usr/lib/libtk8.3.so \
+	 	/usr/lib/libtcl8.3.so
+
+GRAPHIC_LIBRARY     = -L/usr/include/GL -lGL -lGLU 
+
+
+#RELIABILITY_LIBRARY = $(HOME)/lib/libReliability.a
+RELIABILITY_LIBRARY = 
+
+
+# WATCH OUT .. These libraries are removed when 'make wipe' is invoked.
+
+WIPE_LIBS	= $(FE_LIBRARY) \
+           $(NDARRAY_LIBRARY) \
+           $(MATMOD_LIBRARY) \
+           $(SUPERLU_LIBRARY) \
+           $(ARPACK_LIBRARY) \
+           $(UMFPACK_LIBRARY) \
+           $(METIS_LIBRARY) \
+           $(LAPACK_LIBRARY) \
+           $(BLAS_LIBRARY) \
+           $(CBLAS_LIBRARY) \
+	   $(RELIABILITY_LIBRARY)
+
+# %---------------------------------------------------------%
+# | SECTION 5: COMPILERS                                    |
+# |                                                         |
+# | The following macros specify compilers, linker/loaders, |
+# | the archiver, and their options.  You need to make sure |
+# | these are correct for your system.                      |
+# %---------------------------------------------------------%
+
+# ################################################### 
+# # Compilers
+# ################################################### 
+
+CC++            =  xlC_r
+
+CC              =  xlc_r
+
+FC              =  xlf_r
+
+F90             =  xlf90_r
+
+LINKER          =  xlC_r
+
+AR		= ar 
+
+ARFLAGS		= cqls
+
+RANLIB		= ranlib
+
+RANLIBFLAGS     = 
+
+
+GRAPHIC_FLAG = -D_GLX
+PROGRAMMING_FLAG = 
+
+#RELIABILITY_FLAG = -D_RELIABILITY
+RELIABILITY_FLAG =
+
+#DEBUG_FLAG = -D_G3DEBUG 
+DEBUG_FLAG =
+
+C++FLAGS         = -D_LINUX -D_UNIX  $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) \
+	$(PROGRAMMING_FLAG) -O3 -qstrict -D_KAI
+
+CFLAGS          = -O3 -qstrict $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(PROGRAMMING_FLAG)  -D_KAI
+FFLAGS          = -O3 -qstrict -qextname
+LINKFLAGS       = 
+
+
+# Misc
+MAKE            = $(HOME)/bin/make
+CD              = cd
+ECHO            = echo
+RM              = rm
+RMFLAGS         = -f
+SHELL           = /bin/sh
+
+# %---------------------------------------------------------%
+# | SECTION 6: COMPILATION                                  |
+# |                                                         |
+# | The following macros specify the macros used in         |
+# | to compile the source code into object code.            |
+# %---------------------------------------------------------%
+
+.SUFFIXES:
+.SUFFIXES:	.C .c .f .f90 .cpp .o .cpp
+
+#
+# %------------------%
+# | Default command. |
+# %------------------%
+#
+.DEFAULT:
+	@$(ECHO) "Unknown target $@, try:  make help"
+#
+# %-----------------------------------------------%
+# |  Command to build .o files from source files. |
+# %-----------------------------------------------%
+#
+
+
+.cpp.o: 
+	@$(ECHO) Making $@ from $< $@ with $(CC++) $(C++FLAGS) $(INCLUDES) -c $<
+	@$(CC++) $(C++FLAGS) $(INCLUDES) -c $<
+
+
+.C.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $<
+
+.c.o:
+	@$(ECHO) Making $@ from $<
+	$(CC) $(CFLAGS) -c  $< 
+
+.f.o:      
+	@$(ECHO) Making $@ from $<
+	$(FC) $(FFLAGS) -c  $< 
+
+.f77.o:      
+	@$(ECHO) Making $@ from $<
+	$(FC) $(FFLAGS) -c $< 
+
+.f90.o:      
+	@$(ECHO) Making $@ from $<
+	$(FC90) $(FFLAGS) -c $<
+
+# %---------------------------------------------------------%
+# | SECTION 7: OTHER LIBRARIES                              |
+# |                                                         |
+# | The following macros specify other libraries that must  |
+# | be linked with when creating executables. These are     |
+# | platform specific and typically order does matter!!     |
+# %---------------------------------------------------------%
+MACHINE_LINKLIBS  = -L$(BASE)/lib \
+                    -L$(HOME)/lib \
+
+
+
+
+MACHINE_NUMERICAL_LIBS  = -lm \
+  $(ARPACK_LIBRARY) \
+  $(SUPERLU_LIBRARY) \
+  $(UMFPACK_LIBRARY) \
+  $(LAPACK_LIBRARY)  \
+  $(BLAS_LIBRARY) \
+  $(CBLAS_LIBRARY) \
+  $(GRAPHIC_LIBRARY)\
+  $(RELIABILITY_LIBRARY)
+
+
+
+#MACHINE_SPECIFIC_LIBS = -lpthread
+MACHINE_SPECIFIC_LIBS = -lpng -lessl -lGL -lX11 -lf
+
+
+# %---------------------------------------------------------%
+# | SECTION 8: INCLUDE FILES                                |
+# |                                                         |
+# | The following macros specify include files needed for   |
+# | compilation.                                            |
+# %---------------------------------------------------------%
+
+
+MACHINE_INCLUDES        = -I/usr/local/BerkeleyDB.4.0/include \
+                          -I/usr/include/mysql \
+                          -I$(HOME)/include   \
+	                  -I$(UMFPACKdir) \
+                          -I$(SUPERLUdir) 
+
+# this file contains all the OpenSees/SRC includes
+include $(FE)/Makefile.incl
+
+#TCL_INCLUDES = -I/home/fmk/tcl8.3.3/generic
+
+INCLUDES =  $(MACHINE_INCLUDES)   $(TCL_INCLUDES) $(FE_INCLUDES)

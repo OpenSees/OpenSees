@@ -1,0 +1,252 @@
+%File: ~/database/FileDatastore.tex
+%What: "@(#) FileDatastore.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/database/FileDatastore.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class FileDatastore: public FE\_Datastore \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent ModelBuilder \\
+\indent Channel \\
+\indent\indent FE\_Datastore \\
+\indent\indent\indent {\bf FileDatastore} \\
+
+\noindent {\bf Description}  \\
+\indent FileDatastore is a concrete class. An FileDatastore object is
+used in the program to store/restore the geometry and state information 
+in the domain at particular instances. This information is stored in
+binary form in files. As no standard format is used for the storage of
+integers and double values, files used to store the data on one type
+of machine, may not be read by a FileDatastore object on another type
+of machine where the storage of integers and doubles is different. \\
+
+For each of the base relations, i.e. Domain, Nodes, Elements,
+SP\_Constraints, MP\_Constraints, NodalLoads and ElementalLoads, a
+separate file is used to store the information. Files are also used
+for each size of ID, Vector and Matrix stored. At present, Messages
+are not stored, only ID and Vector objects of size $<= 200$ can be
+stored, the max $noRows * noCols$ of Matrices that can be stored
+is $<= 2000$, and only a single relation is created for Matrices which
+have similar sizes but differing dimensions. The data is stored in the
+files following the schema outlined previously.\\
+
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em FileDatastore(char *name, Domain \&theDomain, FEM\_ObjectBroker \&theBroker);}  \\ \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$FileDatastore();}\\ \\
+\indent // Public Methods  inherited from the ModelBuilder Class \\
+\indent {\em int buildFE\_Model(void);}\\ \\
+\indent // Public Methods  inherited from the FE\_Datastore Class \\
+\indent {\em int getDbTag(void);}\\
+\indent {\em int validateBaseRelationsWrite(int commitTag); }\\
+\indent {\em int validateBaseRelationsRead(int commitTag); }\\ \\
+\indent// Public Methods  inherited from the Channel Class \\
+\indent {\em char *addToProgram(void); }\\
+\indent {\em int setUpShadow(void);}\\
+\indent {\em int setUpActor(void);}\\
+\indent {\em int setNextAddress(const ChannelAddress \&otherChannelAddress);}\\
+\indent {\em ChannelAddress *getLastSendersAddress(void);}\\
+\indent {\em int sendObj(int commitTag, \\
+\indent\indent\indent\indent\indent		MovableObject \&theObject, \\
+\indent\indent\indent\indent\indent		ChannelAddress *theAddress =0);}\\
+\indent {\em int recvObj(int commitTag, \\
+\indent\indent\indent\indent\indent		MovableObject \&theObject, \\
+\indent\indent\indent\indent\indent		FEM\_ObjectBroker \&theBroker, \\
+\indent\indent\indent\indent\indent		ChannelAddress *theAddress =0);}\\
+		
+\indent {\em int sendMsg(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent		const Message \&, \\
+\indent\indent\indent\indent\indent		ChannelAddress *theAddress =0);}\\
+\indent {\em int recvMsg(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent		Message \&, \\
+\indent\indent\indent\indent\indent		ChannelAddress *theAddress =0);}\\
+\indent {\em int sendMatrix(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent		   const Matrix \&theMatrix, \\
+\indent\indent\indent\indent\indent		   ChannelAddress *theAddress =0);}\\
+\indent {\em int recvMatrix(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent		   Matrix \&theMatrix,  \\
+\indent\indent\indent\indent\indent		   ChannelAddress *theAddress =0);}\\
+\indent {\em int sendVector(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent const Vector \&theVector, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0);}\\
+\indent {\em int recvVector(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent		   Vector \&theVector,  \\
+\indent\indent\indent\indent\indent		   ChannelAddress *theAddress =0);}\\
+\indent {\em int sendID(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent	   const ID \&theID, \\
+\indent\indent\indent\indent\indent	   ChannelAddress *theAddress =0);}\\
+\indent {\em int recvID(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent	   ID \&theID, \\
+\indent\indent\indent\indent\indent	   ChannelAddress *theAddress =0);}\\
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em FileDatastore(char *name, Domain \&theDomain, FEM\_ObjectBroker \&theBroker);}  \\ 
+Opens the files for the domain and base component relations, files have names {\em
+name.relation}, and stores the end of file locations. Creates three arrays
+of file pointers for the ID, Vector and Matrix files and then zeros
+these arrays. If the files could not be opened, or there is not enough
+memory for the arrays an error message is printed and the program
+is terminated. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$FileDatastore();}\\ 
+Each file that is opened is closed and the arrays of file pointers
+obtained from the heap in the constructor are returned to the heap. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em int buildFE\_Model(void);}\\ 
+To build the finite element model from data in the database. It does
+this by invoking {\em restor(0)} on itself. \\
+
+\indent {\em int getDbTag(void);}\\
+Increments the integer containing the current dbTag and returns this
+integer. \\
+
+\indent {\em int validateBaseRelationsWrite(int commitTag); }\\
+The object first checks to see if the Domain has already been
+committed to the database with a similar {\em commitTag}. If it has, a
+check is made to ensure that the current domain stamp and the one at
+the time of this last commit are the same. If they are different, an
+error message is printed and $-1$ is returned. A check is then made to
+see if the component base relations have been updated for this current domain
+stamp. If they have not been the base relations are updated, and each
+domain component is asked to send its data to the database. Finally
+the Domain relation is updated with the current time, load factor and
+domain stamp. Returns $1$ if the component base relations needed to be updated
+and the component information sent, $0$ if just the Domain relation
+needed to be updated. A warning message and a negative number is
+printed if an error occurs. \\
+
+
+\indent {\em int validateBaseRelationsRead(int commitTag); }\\ 
+The object first obtains from the Domain relation the information for
+{\em commitTag}. If no information exists, an error message is printed
+and a $-1$ is returned. A check is then made to see if the domain
+stamp for this entity and the Domain objects current stamp are the
+same. If different, {\em clearAll()} is invoked on the Domain, and
+from the component base relations new domain components are created,
+are asked to {\em recvSelf()} from {\em *this} and these new
+components are added to the Domain. Finally the current time, domain
+stamp and load factor are set using the information in the entity. 
+Returns $1$ if the domain needed to be cleared and new component
+objects created, $0$ if just the Domain object needed to be updated
+with current time and load factor. A warning message and a negative
+number is printed if an error occurs. \\
+
+\indent {\em char *addToProgram(void); }\\
+Returns $0$. \\
+
+\indent {\em int setUpShadow(void);}\\
+Returns $0$. \\
+
+\indent {\em int setUpActor(void);}\\
+Returns $0$. \\
+
+\indent {\em int setNextAddress(const ChannelAddress \&otherChannelAddress);}\\
+Returns $0$. \\
+
+\indent {\em ChannelAddress *getLastSendersAddress(void);}\\
+Returns $0$. \\
+
+\indent {\em int sendObj(int commitTag, \\
+\indent\indent\indent\indent\indent		MovableObject \&theObject, \\
+\indent\indent\indent\indent\indent		ChannelAddress *theAddress =0);}\\
+Returns the result of invoking {\em sendSelf(commitTag, *this)} on
+{\em theObject}. \\
+
+\indent {\em int recvObj(int commitTag, \\
+\indent\indent\indent\indent\indent		MovableObject \&theObject, \\
+\indent\indent\indent\indent\indent		FEM\_ObjectBroker \&theBroker, \\
+\indent\indent\indent\indent\indent		ChannelAddress *theAddress =0);}\\
+Returns the result of invoking {\em recvSelf(commitTag, *this, theBroker)} on
+{\em theObject}. \\
+		
+\indent {\em int sendMsg(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent		const Message \&, \\
+\indent\indent\indent\indent\indent		ChannelAddress *theAddress =0);}\\
+Prints an error message and returns $-1$ as not yet implemented. \\
+
+\indent {\em int recvMsg(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent		Message \&, \\
+\indent\indent\indent\indent\indent		ChannelAddress *theAddress =0);}\\
+Prints an error message and returns $-1$ as not yet implemented. \\
+
+\indent {\em int sendMatrix(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent		   const Matrix \&theMatrix, \\
+\indent\indent\indent\indent\indent		   ChannelAddress *theAddress =0);}\\
+First determines the size of the matrix, $noRows * noCols$. If a files
+for matrices of this size has not yet been created, one is created now
+and the cell in the array of file pointers is set. If file can not be
+created a warning message is printed and program is terminated. A sequential search
+is made in the file to see if information is already stored for a Matrix with
+this {\em dbTag} and {\em commitTag}. The data is then written at this
+location, or eof if no location was found. The end of file location
+for Matrices of this size is updated. If successful $0$ is
+returned. A warning message and a negative number is returned if the
+operation fails: $-1$ if Matrix size is too large. \\
+
+\indent {\em int recvMatrix(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent Matrix \&theMatrix,  \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0);}\\
+First determines the size of the matrix, $noRows * noCols$. If a files
+for matrices of this size has not yet been created, an error message
+is printed and $-1$ is returned.  A sequential search
+is made in the file to see if information is already stored for a Matrix with
+this {\em dbTag} and {\em commitTag}. If no information is stored a
+$-1$ is returned. If information is stored, the information is
+retrieved and the data in the Matrix is set. returns $0$ if
+successful. \\
+
+\indent {\em int sendVector(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent const Vector \&theVector, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0);}\\
+If a file
+for Vectors of this size has not yet been created, one is created now
+and the cell in the array of file pointers is set. If file can not be
+created a warning message is printed and program is terminated. A sequential search
+is made in the file to see if information is already stored for a Vector with
+this {\em dbTag} and {\em commitTag}. The data is then written at this
+location, or eof if no location was found. The end of file location
+for Vectors of this size is updated. If successful $0$ is
+returned. A warning message and a negative number is returned if the
+operation fails: $-1$ if Vector size is too large. \\
+
+\indent {\em int recvVector(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent		   Vector \&theVector,  \\
+\indent\indent\indent\indent\indent		   ChannelAddress *theAddress =0);}\\
+If a file for Vectors of this size has not yet been created, an error message
+is printed and $-1$ is returned.  A sequential search
+is made in the file to see if information is already stored for a Vector with
+this {\em dbTag} and {\em commitTag}. If no information is stored a
+$-1$ is returned. If information is stored, the information is
+retrieved and the data in the Vector is set. Returns $0$ if
+successful. \\
+
+\indent {\em int sendID(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent	   const ID \&theID, \\
+\indent\indent\indent\indent\indent	   ChannelAddress *theAddress =0);}\\
+If a file
+for IDs of this size has not yet been created, one is created now
+and the cell in the array of file pointers is set. If file can not be
+created a warning message is printed and program is terminated. A sequential search
+is made in the file to see if information is already stored for a ID with
+this {\em dbTag} and {\em commitTag}. The data is then written at this
+location, or eof if no location was found. The end of file location
+for IDss of this size is updated. If successful $0$ is
+returned. A warning message and a negative number is returned if the
+operation fails: $-1$ if ID size is too large. \\
+
+\indent {\em int recvID(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent	   ID \&theID, \\
+\indent\indent\indent\indent\indent	   ChannelAddress *theAddress =0);}\\
+If a file for IDs of this size has not yet been created, an error message
+is printed and $-1$ is returned.  A sequential search
+is made in the file to see if information is already stored for a ID with
+this {\em dbTag} and {\em commitTag}. If no information is stored a
+$-1$ is returned. If information is stored, the information is
+retrieved and the data in the ID is set. Returns $0$ if successful. 

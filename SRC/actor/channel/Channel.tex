@@ -1,0 +1,227 @@
+%File: ~/OOP/actor/Channel.tex
+%What: "@(#) Channel.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/actor/channel/Channel.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Channel \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf Channel} \\
+
+\noindent {\bf Description}  \\
+\indent Channel is an abstract class, i.e. no instances of Channel
+should exist. A Channel is a point of communication in a program, a
+mailbox to/from which data enters/leaves a program. Channels are
+objects through which the objects in the current processes address
+space can interact with objects in another processes address space. A
+channel in one process space is associated with a channel in the
+address space of another process space. The interaction is in the form
+of data sent between the two processes along the connection line. \\ 
+
+\indent // Constructor  \\
+\indent {\em Channel();}  \\ \\
+\indent // Destructor \\
+\indent {\em virtual~ $\tilde{}$Channel();}\\  \\
+\indent // Public Methods  \\
+\indent {\em char *addToProgram(void) =0;} \\
+\indent {\em virtual int setUpShadow(void) =0;} \\
+\indent {\em virtual int setUpActor(void) =0;} \\
+\indent {\em virtual int setNextAddress(ChannelAddress \&theNextAddress) =0;}\\
+\indent {\em virtual ChannelAddress *getLastSendersAddress(void) =0;}\\
+\indent {\em virtual int getDbTag(void);} \\
+
+\indent {\em int sendObj(int commitTag, \\
+\indent\indent\indent\indent\indent MovableObject \&theObject, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+\indent {\em int recvObj(int commitTag, \\
+\indent\indent\indent\indent\indent MovableObject \&theObject, \\
+\indent\indent\indent\indent\indent FEM\_ObjectBroker \&theBroker, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+ 
+\indent {\em int sendMsg(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent const Message \&, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+\indent {\em int recvMsg(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent Message \&, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+\indent {\em int sendMatrix(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent    const Matrix \&theMatrix, \\
+\indent\indent\indent\indent\indent    ChannelAddress *theAddress =0) =0;}\\
+\indent {\em int recvMatrix(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent    Matrix \&theMatrix,  \\
+\indent\indent\indent\indent\indent    ChannelAddress *theAddress =0) =0;}\\
+\indent {\em int sendVector(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent const Vector \&theVector, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+\indent {\em int recvVector(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent    Vector \&theVector,  \\
+\indent\indent\indent\indent\indent    ChannelAddress *theAddress =0) =0;}\\
+\indent {\em int sendID(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent const ID \&theID, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+\indent {\em int recvID(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent ID \&theID, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em Channel();}  \\
+Does nothing. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$Channel();}\\ 
+Does nothing. Provided so that a subclasses destructor will be invoked. \\
+
+\noindent {\bf Public Methods}  \\
+\indent {\em char *addToProgram(void) =0;} \\
+When creating remote actors the channels created in the actor space
+need to know how to contact the shadows channels. This information is
+provided in the string returned from this method. It is used by the
+machine broker when starting the remote process. It places this
+information as the last arguments to the program. \\
+
+\indent {\em virtual int setUpShadow(void) =0;} \\
+A method invoked in the local address space by a shadow object. The
+method is to be invoked concurrently with a {\em setUpShadow()}
+invocation on a channel object in all the remote actor processes.\\
+
+{\em virtual int setUpActor(void) =0;} \\
+A method invoked in the remote address space by the actor. The method
+is invoked concurrently with a corresponding {\em setUpShadow()}
+invocation on a channel in a local actor process by the shadow object
+that created the running actor process. If the method fails returns a
+negative number. For actors with only one Channel this should cause
+the termination of the actor. \\
+
+{\em virtual int setNextAddress(ChannelAddress \&theNextAddress) =0;}\\
+A method invoked to set specify the next address that the next
+messages to be sent if {\em sendMessage()} or received if {\em
+recvMessage()} is invoked with a null pointer. \\
+
+\indent {\em virtual int getDbTag(void);} \\
+To return the next available database tag, must be an integer value
+greater than $0$, $0$ is used my the objects to check if they have yet
+been assigned a database tag. The method defined for the Channel base
+class always returns $0$, only database channel objects need worry
+about assigning unique integer values. \\
+
+\indent {\em int sendObj(int commitTag, \\
+\indent\indent\indent\indent\indent MovableObject \&theObject, \\
+\indent\indent\indent\indent\indent ChannelAddress
+*theAddress =0) =0;}\\
+To send the object {\em theObject} and the commit tag {\em commitTag}
+to a remote Channel whose address is given by {\em theAddress}. If
+{\em theAddress} is $0$, the Channel sends to the Channel with the
+address last set in a {\em send..()}, {\em recv..()}, or {\em
+setNextAddress()} operation. To return $0$ if successful, a negative
+number if not. \\  
+
+\indent {\em int recvObj(int commitTag, \\
+\indent\indent\indent\indent\indent MovableObject \&theObject, \\
+\indent\indent\indent\indent\indent FEM\_ObjectBroker \&theBroker, \\
+\indent\indent\indent\indent\indent ChannelAddress
+*theAddress =0) =0;}\\
+To receive the object {\em theObject} with the commit tag {\em commitTag}
+from a remote Channel whose address is given by {\em theAddress}. If
+{\em theAddress} is $0$, the Channel receives from the Channel with the
+address last set in a {\em send..()}, {\em recv..()}, or {\em
+setNextAddress()} operation. To return $0$ if successful, a negative
+number if not. \\  
+
+
+
+\indent {\em int sendMsg(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent const Message \&theMessage, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+A method which is invoked to send the data in the Message object {\em
+theMessage} to another Channel object. The object will obtain the
+data and size of the data to be sent by invoking {\em getData()} and
+{\em getSize()} on {\em theMessage}. The channel object is then
+responsible for sending that data to the remote channel address given
+by {\em theAddress}. If {\em theAddress} is $0$, the Channel sends to
+the Channel with the address last set in a {\em send..()}, {\em
+recv..()}, or {\em setNextAddress()} operation. To return $0$ if
+successful, a negative number if not. \\  
+
+
+\indent {\em int recvMsg(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent Message \& theMessage, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+A method which is invoked to send the data in the Message object {\em
+theMessage} to another Channel object. The object will obtain the
+the size of the data that is being received by invoking {\em getSize()}
+on {\em theMessage}. The channel object is then responsible for
+receiving that amount of data from the channel whose address is given
+by {\em theAddress}. If {\em theAddress} is $0$, the Channel receives from
+the Channel with the address last set in a {\em send..()}, {\em
+recv..()}, or {\em setNextAddress()} operation. To return $0$ if
+successful, a negative number if not. \\  
+
+
+\indent {\em int sendMatrix(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent const Matrix \&theMatrix, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+A method for sending a Matrix {\em theMatrix} to a
+remote Channel, whose address is given by {\em theAddress}, with the
+integer identifiers {\em dbTag} and {\em commitTag}. If {\em theAddress} 
+is $0$, the Channel sends to the Channel with the address last set in
+a {\em send..()}, {\em recv..()}, or {\em setNextAddress()}
+operation. To return $0$ if successful, a negative number if not. \\ 
+
+
+\indent {\em int recvMatrix(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent Matrix \&theMatrix,  \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+A method for receiving a Matrix {\em theMatrix} from a
+remote Channel, whose address is given by {\em theAddress}, with the
+integer identifiers {\em dbTag} and {\em commitTag}. If {\em theAddress} 
+is $0$, the Channel receives from the Channel at the address last set
+in a {\em send..()}, {\em recv..()}, or {\em setNextAddress()}
+operation. To return $0$ if successful, a negative number if not. \\ 
+
+\indent {\em int sendVector(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent const Vector \&theVector, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+A method for sending a Vector {\em theVector} to a
+remote Channel, whose address is given by {\em theAddress}, with the
+integer identifiers {\em dbTag} and {\em commitTag}. If {\em theAddress} 
+is $0$, the Channel sends to the Channel with the address last set in
+a {\em send..()}, {\em recv..()}, or {\em setNextAddress()}
+operation. To return $0$ if successful, a negative number if not. \\ 
+
+
+\indent {\em int recvVector(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent Vector \&theVector,  \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+A method for receiving a Vector {\em theVector} from a
+remote Channel, whose address is given by {\em theAddress}, with the
+integer identifiers {\em dbTag} and {\em commitTag}. If {\em theAddress} 
+is $0$, the Channel receives from the Channel at the address last set
+in a {\em send..()}, {\em recv..()}, or {\em setNextAddress()}
+operation. To return $0$ if successful, a negative number if not. \\ 
+
+\indent {\em int sendID(int dbTag, int commitTag,  \\
+\indent\indent\indent\indent\indent const ID \&theID, \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+A method for sending a ID {\em theID} to a
+remote Channel, whose address is given by {\em theAddress}, with the
+integer identifiers {\em dbTag} and {\em commitTag}. If {\em theAddress} 
+is $0$, the Channel sends to the Channel with the address last set in
+a {\em send..()}, {\em recv..()}, or {\em setNextAddress()}
+operation. To return $0$ if successful, a negative number if not. \\ 
+
+
+\indent {\em int recvID(int dbTag, int commitTag, \\
+\indent\indent\indent\indent\indent ID \&theID,  \\
+\indent\indent\indent\indent\indent ChannelAddress *theAddress =0) =0;}\\
+A method for receiving a ID {\em theID} from a
+remote Channel, whose address is given by {\em theAddress}, with the
+integer identifiers {\em dbTag} and {\em commitTag}. If {\em theAddress} 
+is $0$, the Channel receives from the Channel at the address last set
+in a {\em send..()}, {\em recv..()}, or {\em setNextAddress()}
+operation. To return $0$ if successful, a negative number if not.
+
+
