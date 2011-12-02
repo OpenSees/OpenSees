@@ -1,0 +1,59 @@
+%File: ~/OOP/analysis/analysis/TransientAnalysis.tex
+%What: "@(#) TransientAnalysis.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/analysis/TransientAnalysis.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class TransientAnalysis: public Analysis;  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent Analysis \\
+\indent\indent {\bf TransientAnalysis} \\
+
+\noindent {\bf Description} \\ 
+\indent The TransientAnalysis class is an abstract class. Its purpose is
+to define the interface common among all subclasses. A TransientAnalysis
+object is responsible for performing a transient analysis on the domain. \\
+
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em TransientAnalysis(Domain \&theDomain, double tStart,
+double tFinish);}\\  
+\indent // Destructor \\
+\indent {\em virtual~$\tilde{}$TransientAnalysis();}\\ \\
+\indent // Public Methods\\
+\indent {\em virtual void setTimeStart(double tStart);}\\
+\indent {\em virtual void setTimeFinish(double tFinish);}\\ \\
+\indent // Protected Data \\
+\indent {\em double tStart} \\
+\indent {\em double tFinish} \\
+
+\noindent {\bf Constructor} \\
+\indent {\em TransientAnalysis(Domain \&theDomain, double tStart,
+double tFinish);}\\  
+The Domain {\em theDomain} is passed to the Analysis classes
+constructor. Sets the starting time and finishing time for the
+transient analysis to {\em tStart} and {\em tFinish}. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~$\tilde{}$TransientAnalysis();}\\ 
+Does nothing. \\
+
+\noindent {\bf Pure Virtual Public Member Functions}\\
+\indent {\em virtual int analyze(void) =0;} \\
+Invoked to perform a dynamic analysis on the model. The type of analysis
+performed, depends on the type of the objects in the analysis
+aggregation. Returns a $0$ if successful, otherwise a negative number
+is returned; the value of which depends on the type of the analysis. \\
+
+{\em virtual void setTimeStart(double tStart);}\\
+To set the starting time of the TransientAnalysis to {\em tStart}. It
+invokes {\em setCurrntTime(tStart)} on the associated domain object.\\
+
+{\em virtual void setTimeFinish(double tFinish);}\\
+To set the finishing time of the TransientAnalysis to {\em tFinish}. \\
+
+\noindent {\bf Protected Member Data}\\
+\indent {\em double tStart, tFinish} 

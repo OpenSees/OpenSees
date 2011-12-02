@@ -1,0 +1,46 @@
+%File: ~/OOP/system_of_eqn/linearSOE/bandSPD/BandSPDLinSolver.tex
+%What: "@(#) BandSPDLinSolver.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/system\_of\_eqn/linearSOE/bandSPD/BandSPDLinSolver.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class BandSPDLinSolver: public LinearSOESolver  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent  Solver \\
+\indent\indent\indent LinearSOESolver \\
+\indent\indent\indent\indent {\bf BandSPDLinSolver} \\
+
+\noindent {\bf Description}  \\
+\indent BandSPDLinSolver is an abstract class. The BandSPDLinSolver
+class provides access for each subclass to the BandSPDLinSOE object
+through the pointer {\em theSOE}, which is a protected pointer. \\
+
+\noindent {\bf Interface}  \\
+\indent\indent // Constructor \\
+\indent\indent {\em BandSPDLinSolver(int classTag);}  \\ \\
+\indent\indent // Destructor \\
+\indent\indent {\em virtual~ $\tilde{}$BandSPDLinSolver();}\\  \\
+\indent\indent // Public Methods \\
+\indent\indent {\em virtual int setLinearSOE(BandSPDLinSOE \&theSOE);} \\
+
+\noindent {\bf Constructor}  \\
+\indent {\em BandSPDLinSolver(int classTag);}  \\
+The integer {\em classTag} is passed to the LinearSOESolver classes
+constructor. \\ 
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$BandSPDLinSolver();}\\ 
+Does nothing. Provided so the subclasses destructor will be called. \\
+
+\noindent {\bf Public Methods}  \\
+\indent {\em virtual int setLinearSOE(BandSPDLinSOE \&theSOE);} \\
+The method sets up the link between the BandSPDLinSOE object and the
+BandSPDLinSolver, that it is sets the pointer the subclasses use.  \\
+
+
+
+
+

@@ -1,0 +1,91 @@
+%File: ~/OOP/actor/MovableObject.tex
+%What: "@(#) MovableObject.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<$/actor/actor/MovableObject.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class MovableObject \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf MovableObject} \\
+
+\noindent {\bf Description}  \\
+\indent MovableObject is an abstract class, i.e. no instances of MovableObject
+should exist. MovableObjects are objects which are able to
+send/receive themselves to/from Channel objects. With each movable
+object is associated a unique class identifier, it is this id which
+will allow object brokers in remote processes to create an object of
+the correct type. In addition when databases are being used, each
+MovableObject will have a unique database tag, it is this integer
+which will allow the objects to retrieve their own data from the database. \\ 
+
+
+\noindent {\bf Class Interface }  \\
+\indent\indent // Constructor  \\
+\indent\indent {\em MovableObject(int classTag, int dbTag);}  \\
+\indent\indent {\em MovableObject(int classTag);}  \\ \\
+\indent\indent // Destructor \\
+\indent\indent {\em virtual~ $\tilde{}$MovableObject();}\\  \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em int getClassTag(void) const;}\\
+\indent\indent {\em int getDbTag(void) const;}\\
+\indent\indent {\em void setDbTag(int dbTag);}\\
+\indent\indent {\em virtual int sendSelf(int commitTag, Channel \&theChannel) =0;} \\ 
+\indent\indent {\em virtual int recvSelf(int commitTag, Channel
+\&theChannel, FEM\_ObjectBroker \&theBroker) =0;} \\ 
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em MovableObject(int classTag, int dbTag);}  \\
+The constructor sets the objects class identifier to {\em classTag}:
+this is a unique id for each class of instantiable movable
+objects. The identifier will allow an object broker to recognize the
+object type to be instantiated. Sets the objects database tag to {\em
+dbTag}: this is a unique id for identifying the object in a database. \\
+
+
+\indent {\em MovableObject(int classTag);}  \\
+The constructor sets the objects class identifier to {\em classTag} 
+and sets the objects database tag to {\em 0}. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$MovableObject();}\\ 
+
+\noindent {\bf Public Methods }  \\
+\indent {\em int getClassTag(void) const;}\\
+A method which returns the class id, {\em classTag}, provided in
+the constructor. \\
+
+{\em int getDbTag(void) const;}\\
+A method which returns the database tag, {\em dbTag}, provided in
+the constructor or last set in {\em setDbTag()}. \\
+
+{\em void setDbTag(int dbTag);}\\
+A method to set the database tag to be equal to {\em dbTag}. \\
+
+{\em virtual int sendSelf(int commitTag, Channel \&theChannel) =0;} \\ 
+This is a pure virtual method, one must be written for each
+instantiable subclass of MovableObject. Each object has to send the
+data needed to be able to reproduce that object in a remote
+process. The object uses the methods provided by {\em theChannel}
+object to send the data to another channel at the remote actor, the
+address of the channel is set before this method is called.
+An object of similar type at the remote actor is invoked with a  {\em
+receiveSelf()} to receive the data. Returns $0$ if successful
+(successful in that the data got to the channel), or a $-1$ if no
+data was sent. \\  
+
+{\em virtual int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker) =0;} \\ 
+This is a pure virtual method, one must be written for each
+instantiable subclass of MovableObject. Each object has to receive the
+data needed to be able to recreate itself in the new process after it
+has been sent through {\em theChannel}. If the object is an
+aggregation containing other objects, new objects of the correct type
+can be constructed using {\em theBroker}. To return $0$ if successful
+or a $-1$ if not. \\
+
+
+
+

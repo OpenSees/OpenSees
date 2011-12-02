@@ -1,0 +1,42 @@
+%File: ~/OOP/actor/machineBroker/MachineBroker.tex
+%What: "@(#) MachineBroker.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/actor/machineBroker/MachineBroker.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class MachineBroker \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf MachineBroker} \\
+
+\noindent {\bf Description}  \\
+\indent MachineBrokers are objects that are used to start remote
+processes running on the parallel machine. \\
+
+
+\noindent {\bf Constructor}  \\
+\indent // Constructor  \\
+\indent {\em MachineBroker();}  \\\\
+\indent // Destructor \\
+\indent {\em virtual $\tilde{ }$MachineBroker();}\\  \\
+\indent // Public Member Functions  \\
+\indent {\em virtual int startActor(char *actorProgram, Channel \&theChannel,
+int compDemand =0) =0;}\\
+
+\noindent {\bf Constructor}  \\
+\indent {\em MachineBroker();}  \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$MachineBroker();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual int startActor(char *actorProgram, Channel \&theChannel,
+int compDemand =0) =0;}\\
+Invoked to start the program, {\em actorProgram}, on the parallel
+machine. The remote actor process uses information supplied by {\em
+theChannel} to allow the remote process to connect to the local
+process. The integer {\em compDemand} provides an indication of the
+computational demands of the remote process in a heterogeneous
+environment. 

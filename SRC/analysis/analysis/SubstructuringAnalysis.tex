@@ -1,0 +1,56 @@
+%File: ~/OOP/analysis/analysis/SubstructuringAnalysis.tex
+%What: "@(#) SubstructuringAnalysis.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<$/analysis/analysis/SubstructuringAnalysis.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class SubstructuringAnalysis: public DomainDecompositionAnalysis;  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject
+\indent Analysis \\
+\indent\indent DomainDecompositionAnalysis \\
+\indent\indent\indent {\bf SubstructuringAnalysis} \\
+
+\noindent {\bf Description} \\ 
+\indent SubstructuringAnalysis is a subclass of DomainDecompositionAnalysis.
+It is used when performing an analysis using the substructuring method.
+It differs from the DomainDecompositionAnalysis class only in that the
+constructor ensures that a SubstructuringSolver is given for the Solver.
+
+\noindent {\bf Constructors} \\
+\indent {\em SubstructuringAnalysis(Subdomain \&theDomain, \\
+\indent\indent\indent\indent\indent\indent\indent ConstraintHandler \&theHandler, \\
+\indent\indent\indent\indent\indent\indent\indent DOF\_Numberer \&theNumberer, \\
+\indent\indent\indent\indent\indent\indent\indent AnalysisModel \&theModel,\\
+\indent\indent\indent\indent\indent\indent\indent DomainDecompAlgo \&theSolnAlgo,\\
+\indent\indent\indent\indent\indent\indent\indent IncrementalIntegrator \&theIntegrator,\\
+\indent\indent\indent\indent\indent\indent\indent LinearSOE \&theSOE, \\
+\indent\indent\indent\indent\indent\indent\indent SubstructuringSolver \&theSolver);} \\
+
+The constructor is responsible for ensuring a Substructuring solver is
+passed in as an argument. The base class does the rest. For this reason
+WE WILL FORGET THIS CLASS. \\
+
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$SubstructuringAnalysis();}\\ 
+Invokes {\em removeDomainUser(this)} on the domain object. \\
+
+\noindent {\bf Public Member Functions}\\
+
+\noindent {\em Protected Member Functions} \\
+
+
+
+
+
+
+
+
+
+
+
+
+

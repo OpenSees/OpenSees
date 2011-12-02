@@ -1,0 +1,60 @@
+%File: ~/OOP/earthquake/EarthquakePattern.tex
+%What: "@(#) EarthquakePattern.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/domain/pattern/EarthquakePattern.h$>$  \\
+
+NEEDS MODIFICATION TO ALLOW MULTIPLE EARTHQUAKE PATTERNS, SO DON''T
+HAVE TO SET R IN NODES EACH APPLYLOAD.\\
+
+\noindent {\bf Class Declaration}  \\
+\indent class EarthquakePattern: public LoadPattern  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent DomainComponent \\
+\indent\indent\indent LoadPattern \\
+\indent\indent\indent\indent {\bf EarthquakePattern} \\
+
+\noindent {\bf Description} \\ 
+\indent The EarthquakePattern class is an abstract class. An
+EarthquakePattern is an object which adds earthquake loads to
+models. This abstract class keeps track of the GroundMotion objects
+and implements the {\em applyLoad()} method. It is up to the concrete
+subclasses to set the appropriate values of {\em R} at each node in
+the model.\\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\ 
+\indent {\em EarthquakePattern(int tag, int classTag);}\\ \\
+\indent // Destructor \\ 
+\indent {\em virtual $\tilde{ }$EarthquakePattern();}\\  \\
+\indent // Public Methods \\ 
+\indent {\em virtual void applyLoad(double time);} \\ 
+\indent // Protected Methods \\ \\
+\indent {\em int addMotion(GroundMotion \&theMotion)} \\
+
+\noindent {\bf Constructor} \\ 
+\indent {\em EarthquakePattern(int tag, int classTag);}\\ 
+The integers {\em tag} and {\em classTag} are passed to the
+LoadPattern classes constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$EarthquakePattern();}\\ 
+Invokes the destructor on all GroundMotions added to the
+Earthquakepattern. It then invokes the destructor on the array holding
+pointers to the GroundMotion objects.\\
+
+\indent {\em virtual void applyLoad(double time, double loadFactor =
+1.0) = 0;} \\ 
+Obtains from each GroundMotion, the velocity and acceleration for the
+time specified. These values are placed in two Vectors of size equal
+to the number of GroundMotion objects. For each node in the Domain
+{\em addInertiaLoadToUnbalance()} is invoked with the acceleration Vector
+objects. SIMILAR OPERATION WITH VEL and ACCEL NEEDS TO BE INVOKED ON
+ELEMENTS .. NEED TO MODIFY ELEMENT INTERFACE \\
+
+\indent {\em int addMotion(GroundMotion \&theMotion)} \\
+Adds the GroundMotion, {\em theMotion} to the list of GroundMotion
+objects. \\

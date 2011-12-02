@@ -1,0 +1,80 @@
+%File: ~/OOP/actor/objectBroker/FEM\_ObjectBroker.tex
+%What: "@(#) FEM\_ObjectBroker.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/actor/objectBroker/FEM\_ObjectBroker.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class FEM\_ObjectBroker \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf FEM\_ObjectBroker} \\
+
+\noindent {\bf Description}  \\
+\indent FEM\_ObjectBrokers is an object used to create a new blank 
+of a certain type in a process. The explicit type of object
+created depends on the method invoked and the integer {\em classTag}
+passed as an argument to the method. Once the object has been created, {\em
+recvSelf()} can be invoked on the object to instantiate the object
+with it's data. \\
+
+
+\noindent {\bf Constructor}  \\
+\indent // Constructor  \\
+\indent {\em FEM\_ObjectBroker();}  \\\\
+\indent // Destructor \\
+\indent {\em virtual $\tilde{ }$FEM\_ObjectBroker();}\\  \\
+\indent // Public Methods to get new Domain objects \\
+\indent {\em virtual Element       *getNewElement(int classTag); } \\
+\indent {\em virtual Node          *getNewNode(int classTag); } \\
+\indent {\em virtual MP\_Constraint *getNewMP(int classTag); } \\
+\indent {\em virtual SP\_Constraint *getNewSP(int classTag); } \\
+\indent {\em virtual NodalLoad     *getNewNodalLoad(int classTag); } \\
+\indent {\em virtual ElementalLoad *getNewElementalLoad(int classTag); } \\
+\indent {\em virtual UniaxialMaterial
+*getNewUniaxialMaterial(int classTag); } \\  \\
+\indent // Public Methods to get New Matrix,Vector and ID objects -
+NOT USED \\
+\indent {\em virtual Matrix	  *getPtrNewMatrix(int classTag, int
+noRows, int noCols); } \\ 
+\indent {\em virtual Vector	  *getPtrNewVector(int classTag, int size); } \\
+\indent {\em virtual ID	          *getPtrNewID(int classTag, int size); } \\\\
+\indent // Public Methods to get new Analysis objects - NOT NEEDED SEQUENTIAL\\
+\indent {\em virtual ConvergenceTest *getNewConvergenceTest(int classTag); } \\ 
+\indent {\em virtual ConstraintHandler   *getNewConstraintHandler(int classTag); } \\
+\indent {\em virtual DOF\_Numberer        *getNewNumberer(int classTag); } \\
+\indent {\em virtual AnalysisModel       *getNewAnalysisModel(int
+classTag); } \\ 
+\indent {\em virtual EquiSolnAlgo        *getNewEquiSolnAlgo(int
+classTag); } \\ 
+\indent {\em virtual DomainDecompAlgo
+*getNewDomainDecompAlgo(int classTag); } \\ 
+\indent {\em virtual StaticIntegrator
+*getNewStaticIntegrator(int classTag); } \\ 
+\indent {\em virtual TransientIntegrator
+*getNewTransientIntegrator(int classTag); } \\ 
+\indent {\em virtual LinearSOE *getNewLinearSOE(int classTagSOE,
+int classTagSolver); } \\ 
+\indent {\em virtual LinearSOESolver *getNewLinearSolver(void); } \\
+\indent {\em virtual LinearSOE *getPtrNewDDLinearSOE(int classTagSOE, 
+int classTagDDSolver); } \\
+\indent {\em virtual DomainSolver *getNewDomainSolver(void); } \\
+\indent {\em virtual DomainDecompositionAnalysis *
+getNewDomainDecompAnalysis(int classTag, Subdomain \&theDomain); } \\
+\indent {\em virtual Subdomain 	  *getSubdomainPtr(int classTag); } \\ \\
+\indent // Public Methods for Parallel Model Generation  \\
+\indent {\em virtual PartitionedModelBuilder *
+getPtrNewPartitionedModelBuilder(Subdomain \&theSub, int classTag); } \\
+\indent {\em virtual GraphNumberer *getPtrNewGraphNumberer(int classTag); } \\
+
+
+
+\noindent {\bf Constructor}  \\
+\indent {\em FEM\_ObjectBroker();}  \\
+Does nothing. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{ }$FEM\_ObjectBroker();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
