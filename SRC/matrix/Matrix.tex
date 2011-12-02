@@ -1,0 +1,344 @@
+%File: ~/OOP/matrix/Matrix.tex
+%What: "@(#) Matrix.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{}$/matrix/Matrix.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Matrix:  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf Matrix} \\
+
+\noindent {\bf Description}  \\
+\indent The Matrix class provides the matrix abstraction. A matrix of
+order numRows X numCols is an ordered 2d array of numbers arranged in
+numRows rows and numCols columns. For example, a matrix $A$ of order 2
+X 3:
+$$ A =
+\left[
+\begin{array}{ccc}
+a_{0,0} & a_{0,1}  & a_{0,2}  \\
+a_{1,0} & a_{1,1} & a_{1,2}  \\
+\end{array}
+\right] 
+$$
+
+The Matrix class provides the implementation of a general unsymmetric
+matrix. The data for the matrix is stored in a 1d double array of size
+numRows*numCols with the data for $a_{i,j}$ located at j*numRows + i
+in the 1d array. This is similar to the ordering of a Fortran 2d array
+and will permit calls to numerical Fortran libraries, e.g. BLAS, for
+certain method calls at a future stage. At present no subclassing is
+permitted (THIS MAY CHANGE), the reason for this is that the Matrix
+objects are envisioned to be small scale matrices primarily used for
+the passing of data between objects in the system. To allow subclassing
+could reduce the efficiency of the program due to the manner in which 
+virtual functions are implemented.\\ 
+
+\noindent {\bf Class Interface} \\
+\indent {// Constructors}  \\ 
+\indent {\em  Matrix();}  \\
+\indent {\em  Matrix(int nrows, int ncols);}  \\
+\indent {\em  Matrix(double *data, int nRows, int nCols)}  \\
+\indent {\em  Matrix(const Matrix \&M); }  \\ \\
+\indent {// Destructor}  \\ 
+\indent {\em  $\tilde{}$Matrix();} \\ \\
+\indent {// Public Methods}  \\ 
+\indent {\em  inline int noRows() const;} \\
+\indent {\em  inline int noCols() const;} \\
+\indent {\em  void Zero();} \\
+\indent {\em  int Assemble(const Matrix \&M,const ID \&rows,
+const ID \&cols,  double fact = 1.0);} \\
+\indent {\em  int Solve(const Vector \&b, Vector \&x);} \\
+\indent {\em  int Solve(const Matrix \&b, G3MAtrix \&x);} \\
+\indent {\em  Vector Solve(const Vector \&V);} \\
+\indent {\em  int addMatrix(double factThis, const Matrix \&other, double factOther);}\\
+\indent {\em  int addMatrixProduct(double factThis, const Matrix \&A, const Matrix \&B, double factOther);}\\
+\indent {\em  int addMatrixTripleProduct(double factThis, const Matrix \&A, const Matrix \&B, double factOther);}\\
+\indent {\em  int addMatrixTripleProduct(double factThis, const Matrix \&T, const Matrix \&B, double factOther);}\\
+\indent {\em  int addMatrixTripleProduct(double factThis, const Matrix \&A, const Matrix \&B, const Matrix \&C, double factOther);}\\\\ 
+\indent {// Overloaded Operator Functions}  \\ 
+\indent {\em  inline double \&operator()(int row, int col);} \\
+\indent {\em  inline Matrix operator()(const ID \&rows, const
+ID \&cols) const;}\\  
+\indent {\em  Matrix \&operator=(const Matrix \&M);}\\
+\indent {\em  Matrix \&operator+=(double fact);} \\
+\indent {\em  Matrix \&operator-=(double fact);} \\
+\indent {\em  Matrix \&operator*=(double fact);} \\
+\indent {\em Matrix \&operator/=(double fact); } \\
+\indent {\em Matrix operator+(double fact) const;} \\
+\indent {\em Matrix operator-(double fact) const;} \\
+\indent {\em Matrix operator*(double fact) const;} \\
+\indent {\em Matrix operator/(double fact) const;} \\
+\indent {\em Vector operator*(const Vector \&V) const;} \\
+\indent {\em Vector operator{ }$\hat{ }$(const
+Vector \&V) const; } \\ 
+\indent {\em Matrix operator+(const Matrix \&M) const;} \\
+\indent {\em Matrix operator-(const Matrix \&M) const;} \\
+\indent {\em Matrix operator*(const Matrix \&M) const;} \\
+\indent {\em Matrix operator{ }$\hat{ }$(const Matrix \&M) const;} \\ 
+\indent {\em Matrix \&operator+=(const Matrix \&M); } \\
+\indent {\em Matrix \&operator-=(const Matrix \&M); } \\
+\indent {\em void Output(ostream \&s) const;} \\
+\indent {\em void Input(istream \&s);} \\
+\indent {\em friend ostream \&operator$<<$(ostream \&s, const
+Matrix \&M);} \\ 
+\indent {\em friend istream \&operator$>>$(istream \&s, const
+Matrix \&M);} \\ 
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em Matrix();}  \\
+To construct a Matrix with numRows = $0$, and numCols = $0$. No memory
+is allocated to store the data.\\ 
+
+\indent {\em  Matrix(int nrows, int ncols);}  \\
+To construct a Matrix with numRows = {\em nrows}, and numCols =
+{\em ncols} and all coefficients equal to $0$. Allocates memory for
+the storage of the data. If numRows $<$ $0$, numCols $<$ $0$ or not
+enough memory is available available, an error message is printed and
+a Matrix with numRows = $0$ and numCols = $0$ is returned. Before the
+Matrix is returned, {\em Zero()} is called on the Matrix.\\ 
+
+\indent {\em  Matrix(double *data, int nrows, int ncols);}  \\
+To construct a Matrix with numRows = {\em nrows}, and numCols =
+{\em ncols} and all coefficients equal to $0$. The memory for storage
+of the data is found at the location pointed to by {\em data}. Note
+that this memory must have been previously allocated and it must be of
+appropriate size, erroneous results and segmentation faults can occur
+otherwise. No additional memory is allocated for the storage of the
+data. \\ 
+
+\indent {\em Matrix(const Matrix \&M); }  \\
+To construct a Matrix using another Matrix. The new Matrix will be a
+general matrix that is identical to the Matrix {\em M}, i.e. same size
+and identical components. If not enough memory is available, an error
+message is printed and a Matrix with numRows = $0$ and numCols = $0$
+is returned. The constructor tests for the type of $M$ to see whether
+the performance can be improved, by avoiding having to call $M$'s
+overloaded (i,j) operators if $M$ is of type genMatrix. \\ 
+
+\noindent {\bf Destructor} \\
+\indent {\em  $\tilde{}$Matrix();} \\ 
+Free's up any memory allocated in the constructor. Note that if the
+third constructor had been invoked, the memory passed is not released
+back to the system (this must be done later by the user of this
+constructor). \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em  inline int noRows() const;} \\
+Returns the number of rows, numRows, of the Matrix. The method is
+declared inline for the compiler to produce faster code which does not
+require a method call. \\
+
+\indent {\em  inline int noCols() const;} \\
+Returns the number of columns, numCols, of the Matrix. \\
+
+\indent {\em  void Zero();} \\
+Zero's out the Matrix, i.e. sets all the components of the matrix to
+$0$. The method tests for the type of Matrix, to see whether the
+performance can be improved by avoiding having to call the overloaded
+(i,j) operators if the Matrix is of type genMatrix. \\ 
+
+\indent {\em  Assemble(const Matrix \&M, 
+const ID \&rows, const ID \&cols,
+double fact = 1.0);} \\
+Assembles into the current Matrix the Matrix {\em M}. The contents of the
+current matrix at location ({\em rows(i),cols(j)}) is set equal to the
+current value plus {\em fact} times the value of the matrix {\em M}
+at location ({\em i,j }). A warning is printed for every {\em rows(i),
+cols(j)} specified which is outside the bounds of the matrix. \\
+
+\indent {\em  Vector Solve(const Vector \&V);} \\
+Will solve the equation {\em $Ax=V$} for the Vector {\em x}, which is
+returned. At the moment the current matrix is assumed to be symmetric
+positive definite. THIS IS TO CHANGE. A Vector is created using
+{\em V}. If this Vector is not of the correct size or if an error occurs
+during factorization a warning message is printed and the Vector {\em x}
+is returned. \\ 
+
+\indent {\em  void addMatrix(const Matrix \&other, double fact
+= 1.0);} \\ 
+To add a factor {\em fact} times the Matrix {\em other} to the current
+Matrix. The size of the other Matrix is first checked to see sizes are 
+compatible; if size are not compatible nothing is done and a warning
+message is printed. The method tests for the type of {\em other}, to see
+whether the performance can be improved by avoiding having to call
+{\em other}'s overloaded (i,j) operators, if {\em other} is of type
+genMatrix. \\ 
+
+
+\noindent {\bf Overloaded Operator Functions}  \\
+\indent {\em  inline double \&operator()(int row, int col) const;} \\
+Returns the data at location({\em row,col}) in the Matrix. Assumes
+({\em row,col}) is a valid location in the Matrix, a segmentation
+fault or erroneous results can occur if this is not the case.\\
+
+\indent {\em  inline double \&operator()(int row, int col);} \\
+Used to set the data at location({\em row,col}) in the Matrix. Assumes
+({\em row,col}) is a valid location in the Matrix, a segmentation
+fault or erroneous results can occur if this is not the case. \\
+
+\indent {\em  Matrix operator()(const ID \&rows, const ID \&
+cols) const;}\\ 
+Returns a new Matrix of dimension ({\em rows.Size()}, {\em
+cols.Size()}). The contents of the new matrix are given by the
+contents of the current matrix at the locations given by the {\em
+rows} and {\em cols} objects. For example the contents of the new
+matrix at location ({\em i,j}) are equal to the contents of the
+current matrix at location ({\em rows(i),cols(j)}). Assumes ({\em
+row,col}) is a valid location in the Matrix, a segmentation fault or
+erroneous results can occur if this is not the case. \\
+
+\indent {\em  Matrix \&operator=(const Matrix \&M);}\\
+Sets the current Matrix to be equal to the Matrix given by {\em M}. If
+the Matrices are of different sizes, the current data is deallocated
+and additional space allocated before the contents are copied. If not
+enough space can be allocated for the new data, an error message is
+printed and a Matrix of size $0$ x $0$ is returned. The method tests
+for the type of {\em M}, to see whether the performance can be
+improved by avoiding having to call $M$'s overloaded (i,j) operators,
+if $M$ is of type genMatrix. This method must be implemented by each
+subclass. \\ 
+
+\indent {\em  Matrix \&operator+=(double fact);} \\
+A method to add {\em fact} to each component of the current Matrix. 
+The method tests for the type of the current Matrix, to see whether
+the performance can be improved by avoiding having to call the
+overloaded (i,j) operators, if the current Matrix is of type
+genMatrix. \\ 
+
+\indent {\em Matrix \&operator-=(double fact);} \\
+A method to subtract {\em fact} from each component of the current Matrix. 
+The method tests for the type of the current Matrix, to see whether
+the performance can be improved by avoiding having to call the
+overloaded (i,j) operators, if the current Matrix is of type
+genMatrix. \\ 
+
+\indent {\em Matrix \&operator*=(double fact);} \\
+A method to multiply each component of the current Matrix by {\em fact}. 
+The method tests for the type of the current Matrix, to see whether
+the performance can be improved by avoiding having to call the
+overloaded (i,j) operators, if the current Matrix is of type
+genMatrix. \\ 
+
+\indent {\em Matrix \&operator/=(double fact); } \\
+A method which will divide each component of the current Matrix
+by {\em fact}. If {\em fact} is equal to zero, an error message is
+printed and the contents of the Matrix are set to
+MATRIX\_VERY\_LARGE\_VALUE (defined in $<$Matrix.h$>$). The method
+tests for the type of the current Matrix, to see whether the
+performance can be improved by avoiding having to call the overloaded
+(i,j) operators, if the current Matrix is of type genMatrix. \\ 
+
+\indent {\em Matrix operator+(double fact) const;} \\
+A method to return a new Matrix, whose components are equal to the
+components of the current Matrix plus the value {\em fact}. A new
+Matrix object is constructed, using the current Matrix as the
+argument to the constructor. The {\em +=} operator is then invoked 
+on this Matrix with {\em fact} as the argument, and the new Matrix is
+then returned. \\ 
+
+\indent {\em Matrix operator-(double fact) const;} \\
+A method to return a new Matrix, whose components are equal to the
+components of the current Matrix minus the value {\em fact}. A new
+Matrix object is constructed, using the current Matrix as the
+argument to the constructor. The {\em -=} operator is then invoked 
+on this Matrix with {\em fact} as the argument, and this new Matrix is
+then returned. \\ 
+
+
+\indent {\em Matrix operator*(double fact) const;} \\
+A method to return a new Matrix, whose components are equal to the
+components of the current Matrix times the value {\em fact}. A new
+Matrix object is constructed, using the current Matrix as the
+argument to the constructor. The {\em *=} operator is then invoked 
+on this Matrix with {\em fact} as the argument, and this new Matrix is
+then returned. \\ 
+
+\indent {\em Matrix operator/(double fact) const;} \\
+A method to return a new Matrix whose components are equal to the
+components of the current Matrix divided the value {\em fact}. A new
+Matrix object is constructed by using the current Matrix as the
+argument to the constructor. The {\em /=} operator is then invoked 
+on this Matrix with {\em fact} as the argument, and this new Matrix is
+then returned. \\ 
+
+\indent {\em Vector operator*(const Vector \&V) const;} \\
+A method to return a new Vector, of size numRows, whose components are
+equal to the product of the current Matrix times the Vector {\em
+V}. If the current Matrix and Vector {\em V} are not compatible,
+i.e. V.Size() is not equal to numCols, an error message is printed and 
+a zero Vector of size equal to the number of rows in the current
+Matrix is returned. The method tests for the type of the current
+Matrix, to see whether the performance can be improved by avoiding
+having to call the overloaded (i,j) operators, if the current Matrix
+is of type genMatrix. \\ 
+
+\indent {\em Vector operator { }$ \hat{ }$(const Vector
+\&V) const; } \\ 
+A method to return a new Vector, of size numCols, whose components are
+equal to the product of the transpose of the current Matrix times the
+Vector {\em V}. If the current Matrix and Vector {\em V} are not
+compatible, i.e. V.Size() is not equal to numRows, an error message is
+printed and a zero Vector of size equal to the number of columns in
+the current Matrix is returned. The method tests for the type of the
+current Matrix, to see whether the performance can be improved by
+avoiding having to call the overloaded (i,j) operators, if the current
+Matrix is of type genMatrix. \\ 
+
+\indent {\em Matrix operator+(const Matrix \&M) const;} \\
+A method to return a new Matrix equal to the sum of the current Matrix
+and the Matrix {\em M}. It does this by creating a new matrix passing
+itself as an argument to the constructor. The {\em addMatrix()} method
+is then invoked on this new Matrix with $M$ and $-1$ as the
+arguments. The new Matrix is then returned. \\ 
+
+\indent {\em Matrix operator-(const Matrix \&M) const;} \\
+A method to return a new Matrix equal to the the current Matrix minus
+the Matrix {\em M}. It does this by creating a new matrix passing
+itself as an argument to the constructor. The {\em addMatrix()} method
+is then invoked on this new Matrix with $M$ and $-1$ as the
+arguments. The new Matrix is then returned. \\ 
+
+\indent {\em Matrix operator*(const Matrix \&M) const;} \\
+A method to return a new Matrix equal to the product of the current
+Matrix and the Matrix {\em M}. It does this by first creating a new
+Matrix of size numRows and M.numCols. The contents of this new Matrix
+are then determined and the resulting Matrix is returned. If the two
+matrices are of incompatible sizes, a warning message is printed and a
+zeroed Matrix is returned. The method tests for the type of the
+current Matrix, to see whether the performance can be improved by
+avoiding having to call the overloaded (i,j) operators, if {\em M} 
+is of type genMatrix. \\
+
+\indent {\em Matrix operator{ }$ \hat{ }$(const Matrix \&M)
+const;} \\ 
+A method to return a new Matrix equal to the product of the transpose
+of the current Matrix and the Matrix {\em M}. It does this by first
+creating a new Matrix of size numRows and M.numRows. The contents of
+this new Matrix are then determined and the resulting Matrix is
+returned. If the two matrices are of incompatible sizes, a warning
+message is printed and a zeroed Matrix is returned. The method tests
+for the type of the current Matrix, to see whether the performance can
+be improved by avoiding having to call the overloaded (i,j) operators,
+if {\em M} is of type genMatrix. \\
+
+\indent {\em void Output(ostream \&s) const;} \\
+To print the contents of the Matrix to the output stream {\em s}. The
+method will print the contents one row at a time. \\ 
+
+\indent {\em void Input(istream \&s);} \\
+To read the contents of the Matrix from the input stream {\em s}. The method expects the components one row at a time. \\
+
+{\em friend ostream \&operator$<<$(ostream \&s, const Matrix \&M);} \\
+A function to print out the contents of the Matrix {\em M} to the
+output stream {\em s}. Does this by invoking {\em Output()} on the
+Matrix {\em M}.\\ 
+
+{\em friend ostream \&operator$>>$(istream \&s, const Matrix \&M);} \\
+A function to print out the contents of the Matrix {\em M} to the
+output stream {\em s}. Does this by invoking {\em Output()} on the
+Matrix {\em M}.\\ 
+

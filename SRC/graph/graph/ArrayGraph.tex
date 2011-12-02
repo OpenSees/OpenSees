@@ -1,0 +1,120 @@
+%File: ~/OOP/graph/graph/ArrayGraph.tex
+%What: "@(#) ArrayGraph.tex, revA"
+
+UNDER CONSTRUCTION - removeVertex \& printSpecial NEED TO BE ADDED. \\
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/graph/graph/ArrayGraph.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class ArrayGraph: public Graph \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent Graph \\
+\indent\indent {\bf ArrayGraph} \\
+
+\noindent {\bf Description}  \\
+\indent ArrayGraph is a subtype of Graph. The vertices for this type
+of graph are held in a simple array data structure whose initial size
+is specified at construction. This size can increase if
+needed. The array storage scheme is more efficient than a List storage
+scheme in terms of accessing the vertices; in very large problems
+where memory is limited this type of scheme may have problems getting
+enough contiguous meory in which case a List might be a better
+choice. {\bf There is a question as to whether or not the public
+methods should be declared as virtual. Good OOP programming would have
+all methods declared as virtual, however as subclasses cannot gain
+access to the private member data there does not seem to be much point
+in declaring them, except for the destructor, virtual in this
+instance.} \\ 
+
+
+\noindent {\bf Class Interface}  \\
+\indent\indent // Constructors  \\
+\indent\indent {\em ArrayGraph(int arraySize);}  \\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em virtual~$\tilde{}$ArrayGraph();}  \\ \\
+\indent\indent // Public Methods   \\
+\indent\indent {\em virtual int addVertex(Vertex *vertexPtr);}  \\
+\indent\indent {\em virtual int addEdge(int vertexTag, int otherVertexTag); } \\
+\indent\indent {\em virtual Vertex *getVertexPtr(int vertexTag);} \\
+\indent\indent {\em virtual VertexIter \&getVertices(void);} \\
+\indent\indent {\em virtual int getNumVertex(void) const;} \\
+\indent\indent {\em virtual int getNumEdge(void) const;} \\
+\indent\indent {\em virtual void Print(ostream \&s) const =0;} \\ \\
+\indent\indent // Protected Methods \\
+\indent\indent {\em virtual int getArraySize(void) const;} \\
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em ArrayGraph(int arraySize);}  \\
+To construct an empty ArrayGraph. Creates a Vertex ** array, {\em
+theVertices} of size {\em arraySize} and sets the number of vertices,
+{\em numVertex}, and number of edges {\em numEdge} to $0$. If it fails
+to get an array of appropriate size it sets its {\em arraySize} to
+$0$; subclasses can check if successfull construction by invoking the
+protected member function {\em getArraySize()}. \\
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~$\tilde{}$ArrayGraph();}  \\
+Goes through {\em theVertices} and anywhere it finds a non-zero pointer,
+invokes the vertex destructor on that pointer. It then invokes the
+destructor on theVertices array. \\
+
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual int addVertex(Vertex *vertexPtr);}  \\
+Method to add a vertex to the graph. If the adjacency list
+of the vertex is not empty the graph will first check to see all
+vertices in the the the vertices adjacency list exist in the graph
+before the vertex is added. It then checks if it neeeds a new array
+and if so creates one, i.e. if the {\em arraySize} $=$ {\em
+numVertex} it creates a new array, whose size is double the original
+and copies the pointers to the vertices, before invoking {\em
+delete()} on the old array. It now tries to add the vertex in the
+array at location {\em vertexTag}. If this fails it adds at the first
+empty location it comes to. Returns a 0 if successfull addition, a
+$-1$ otherwise and a message to cerr explaining the problem. \\ 
+
+{\em virtual int addEdge(int vertexTag, int otherVertexTag); } \\
+Causes the Graph to add an edge {\em (vertexTag,otherVertexTag)} to
+the Graph. A check is first made to see if vertices with tags given by
+{\em vertexTag} and {\em otherVertexTag} exist in the graph. If they
+do not exist a $-1$ is returned, otherwise the method invokes {\em
+addEdge()} on each of the corresponding vertices in the 
+graph. Returns $0$ or a positive integer if sucessfull (positive if
+edge has already been added), a negative number if not.\\ 
+
+
+{\em virtual Vertex *getVertexPtr(int vertexTag);} \\
+A method which returns a pointer to the vertex whose tag is given by {\em
+vertexTag}. The method first looks at location {\em vertexTag} for the
+vertex, otherwise it must search through the array until it finds the
+vertex it is looking for. If no such vertex exists in the graph $0$ is
+returned.\\ 
+
+{\em virtual VertexIter \&getVertices(void);} \\
+A method which first invokes {\em reset()} on the graphs ArrayVertexIter
+and then returns a reference to this iter.\\
+
+{\em virtual int getNumVertex(void) const;} \\
+A method to return the number of vertices in the graph, returns numVertex. \\
+
+{\em virtual int getNumEdge(void) const;} \\
+A method to return the number of edges in the graph, returns numEdge. \\
+
+
+{\em virtual void Print(ostream \&s) const =0;} \\
+A method to print the graph. It first prints out numVertex and numEdge
+and then on each newline prints the vertexTag and the edges for that
+vertex. It does this by going through theVertices array and invoking
+{\em Print()}  on each non-zero pointer.\\
+
+\noindent {\bf Protected Methods }  \\
+\indent {\em virtual int getArraySize(void) const;} \\
+A method to return the size of the graphs array. \\
+
+
+
+
+

@@ -1,0 +1,94 @@
+% File: ~/tagged/storage/TaggedObjectStorage.tex 
+% What: "@(#) TaggedObjectStorage.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/tagged/storage/TaggedObjectStorage.h$>$ \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class TaggedObjectStorage  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent  {\bf TaggedObjectStorage} \\
+
+\noindent {\bf Description}  \\
+\indent TaggedObjectStorage is used as a container object to store and
+provide access to objects of type TaggedObject. Each TaggedObject
+object stored in a TaggedObjectStorage object must have a unique
+integer tag to distinguish it from other the other objects stored. The
+TaggedObjectStorage class is an abstract base class, it just defines
+the interface all concrete subclasses must provide. The interface
+defines methods to add and to remove the components, and methods to
+obtain access to the components. \\
+
+\noindent {\bf Class Interface}  \\
+\indent // Constructor  \\
+\indent {\em TaggedObjectStorage();} \\\\
+\indent // Destructor \\
+\indent {\em virtual  ~TaggedObjectStorage();} \\  \\
+\indent // Pure Virtual Public Methods \\
+\indent {\em virtual int  setSize(int newSize) =0;}\\
+\indent {\em virtual bool addComponent(TaggedObject *newComponent)=0;}\\
+\indent {\em virtual TaggedObject *removeComponent(int tag) =0;}\\
+\indent {\em virtual int getNumComponents(void) const =0;}\\
+\indent {\em virtual TaggedObject *getComponentPtr(int tag) =0;}\\
+\indent {\em virtual TaggedObjectIter \&getComponents(void) =0;}\\
+\indent {\em virtual TaggedObjectStorage *getEmptyCopy(void) =0;}\\
+\indent {\em virtual void clearAll(bool invokeDestructor = true) =0;}\\
+\indent {\em virtual void Print(ostream \&s, int flag =0) =0;}\\
+
+\noindent {\bf Constructor} \\
+\indent {\em TaggedObjectStorage();} \\
+Does nothing.\\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual ~TaggedObjectStorage();} \\ 
+Does nothing. Provided so that the concrete subclasses destructor will
+be invoked. The subclasses destructor is NOT to delete the objects
+stored in the object. {\em clearAll()} can be invoked by the
+programmer if this is required. \\
+
+\noindent {\bf Public Member Functions} \\
+\indent {\em virtual int setSize(int newSize) =0;}\\
+To provide an indication to the container object that {\em newSize}
+components are likely to be added. This is only a hint, it should be
+acceptable for more or less objects than {\em newSize} to be added to
+the container. \\
+
+\indent {\em virtual bool addComponent(TaggedObject *newComponent);}\\
+To add the object {\em newComponent} to the container. To return
+{\em true} if the object was added to the container, {\em false}
+otherwise. The object should not be added if another object with a
+similar tag already exists in the container.\\
+ 
+\indent {\em virtual TaggedObject *removeComponent(int tag) =0;}\\
+To remove the component whose tag is given by {\em tag} from the
+container. To return a pointer to the removed object if successful,
+$0$ if not.\\ 
+
+\indent {\em virtual int  getNumComponents(void) const =0;}\\
+To return the number of components currently stored in the container. \\
+
+\indent {\em virtual TaggedObject *getComponentPtr(int tag) =0;}\\
+To return a pointer to the TaggedObject whose identifier is given by
+{\em tag}. If the object has not been added to the container $0$ is to
+be returned. \\
+
+\indent {\em virtual TaggedObjectIter \&getComponents(void) =0;}\\
+To return an iter for iterating through the objects that have been
+added to the container. \\
+
+\indent {\em virtual TaggedObjectStorage *getEmptyCopy(void) =0;}\\
+To return an empty copy of the container. \\
+
+\indent {\em virtual void clearAll(bool invokeDestructor = true) =0;}\\
+To remove all objects from the container and {\bf to invoke the
+destructor on these objects} if {\em invokeDestructor} is {\em true}. \\
+
+\indent {\em virtual void Print(ostream \&s, int flag =0) =0;}\\
+To invoke {\em Print(s,flag)} on all objects which have been added to
+the container. 
+
+
+
+
+

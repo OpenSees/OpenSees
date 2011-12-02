@@ -1,0 +1,184 @@
+%File: ~/OOP/analysis/integrator/CentralDifference.tex
+%What: "@(#) CentralDifference.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/integrator/CentralDifference.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class CentralDifference: public TransientIntegrator  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent Integrator \\
+\indent\indent\indent IncrementalIntegrator \\
+\indent\indent\indent\indent TransientIntegrator \\
+\indent\indent\indent\indent\indent {\bf CentralDifference} \\
+
+\noindent {\bf Description} \\ 
+\indent CentralDifference is a subclass of TransientIntegrator which implements
+the CentralDifference method. In the CentralDifference method, to determine the
+velocities, accelerations and displacements at time $t + \Delta t$,
+the equilibrium equation (expressed for the TransientIntegrator) is
+typically solved at time $t$ for $\U_{t+\Delta t}$, i.e. solve: 
+
+\[ \R (\U_{t+ \Delta t}) = \P(t) - \F_I(\Udd_{t})
+- \F_R(\Ud_{t},\U_{t}) \]
+
+\noindent where we use following to relate $\Ud_{t}$ and $\Udd_{t}$ to
+$\U_{t}$ and the displacement quantities at times $t$ and $t - \Delta
+t$: 
+
+\[
+\dot \U_{t} = \frac{1}{2 \Delta t} \left(
+\U_{t + \Delta t} -  \U_{t - \Delta t} \right)
+\]
+
+\[
+\ddot \U_{t} = \frac{1}{\Delta t^2} \left(
+\U_{t + \Delta t} - 2 \U_t + \U_{t - \Delta t}\right)
+\]
+
+
+\noindent which results in the following 
+
+\[ \left[ \frac{1}{\Delta t^2} \M + \frac{1}{2 \Delta t}
+\C \right] \U_{t + \Delta t} = \P(t) - F_I \left(\Udd_t^{(i-1)}
+\right)
+-F_R\left( \Ud_t^{(i-1)}, \U_t)\right) \]
+\\
+
+\noindent {\bf Class Interface} \\
+\indent\indent // Constructors \\
+\indent\indent {\em CentralDifference(bool dispFlag = true);}\\ 
+\indent\indent {\em CentralDifference(double gamma, double beta, bool dispFlag = true);}\\ \\
+\indent\indent // Destructor \\
+\indent\indent {\em virtual~ $\tilde{}$CentralDifference();}\\ \\
+\indent\indent // Public Methods \\
+\indent\indent {\em int formEleTangent(FE\_Element *theEle);} \\
+\indent\indent {\em int formNodTangent(DOF\_Group *theDof);} \\
+\indent\indent {\em int domainChanged(void);}\\
+\indent\indent {\em int newStep(double deltaT);}\\
+\indent\indent {\em int update(const Vector \&$\Delta U$);} \\ \\
+\indent\indent // Public Methods for Output\\
+\indent\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ 
+\indent\indent {\em int Print(ostream \&s, int flag = 0);}\\
+
+
+\noindent {\bf Constructors} \\
+\indent {\em CentralDifference(bool dispFlag = true);}\\ 
+Sets $\gamma$ to $1/2$ and $\beta$ to $1/4$. Sets a flag indicating
+whether the incremental solution is done in terms of displacement,
+$\Delta \U$, if {\em dispFlag} is {\em true}, or  
+acceleration, $\Delta \ddot \U$, if {\em dispFlag} is {\em false}. \\
+
+\indent {\em CentralDifference(double gamma, double beta, bool dispFlag = true);}\\ 
+Sets $\gamma$ to {\em gamma} and $\beta$ to {\em beta}. Sets a flag
+indicating whether the incremental solution is done in terms of
+displacement or acceleration to {\em dispFlag}. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$CentralDifference();}\\ 
+Invokes the destructor on the Vector objects created. \\
+
+\noindent {\bf Public Methods}\\
+\indent {\em int formEleTangent(FE\_Element *theEle);} \\
+This tangent for each FE\_Element is defined to be $\K_e = c1 \K + c2
+\D + c3 \M$, where c1,c2 and c3 were determined in the last invocation
+of the {\em newStep()} method.  The method returns $0$ after
+performing the following operations:
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+theEle-$>$zeroTang() \\
+theEle-$>$addKtoTang(c1) \\
+theEle-$>$addCtoTang(c2) \\
+theEle-$>$addMtoTang(c3) 
+\end{tabbing}
+
+
+{\em int formNodTangent(DOF\_Group *theDof);} \\
+The method returns $0$ after performing the following operations:
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+theDof-$>$zeroUnbalance() \\
+theDof-$>$addMtoTang(c3) 
+\end{tabbing}
+
+
+{\em int domainChanged(void);}\\
+If the size of the LinearSOE has changed, the object deletes any old Vectors
+created and then creates $6$ new Vector objects of size equal to {\em
+theLinearSOE-$>$getNumEqn()}. There is a Vector object created to store
+the current displacement, velocity and accelerations at times $t$ and
+$t + \Delta t$. The response quantities at time $t + \Delta t$ are
+then set by iterating over the DOF\_Group objects in the model and
+obtaining their committed values. 
+Returns $0$ if successful, otherwise a warning message and a negative
+number is returned: $-1$ if no memory was available for constructing
+the Vectors. \\
+
+{\em int newStep(double $\Delta t$);}\\
+The following are performed when this method is invoked:
+\begin{enumerate}
+\item First sets the values of the three constants {\em c1}, {\em c2}
+and {\em c3} depending on the flag indicating whether incremental
+displacements or accelerations are being solved for at each iteration.
+If {\em dispFlag} was {\em true}, {\em c1} is set to $1.0$, {\em c2} to $
+\gamma / (\beta * deltaT)$ and {\em c3} to $1/ (\beta * deltaT^2)$. If
+the flag is {\em false} {\em c1} is set to $\beta * deltaT^2$, {\em c2} to $
+\gamma * deltaT$ and {\em c3} to $1.0$. 
+\item Then the Vectors for response quantities at time $t$ are set
+equal to those at time $t + \Delta t$.
+\item Then the velocity and accelerations approximations at time $t +
+\delta t$ are set using the difference approximations if {\em
+dispFlag} was {\em true}. (displacement and velocity if {\em false}).
+\item The response quantities at the DOF\_Group objects are updated
+with the new approximations by invoking {\em setResponse()} on the
+AnalysisModel with new quantities for time $t + \Delta t$.
+\item current time is obtained from the AnalysisModel, incremented by
+$\Delta t$, and {\em applyLoad(time, 1.0)} is invoked on the
+AnalysisModel. 
+\item Finally {\em updateDomain()} is invoked on the AnalysisModel.
+\end{enumerate}
+The method returns $0$ if successful, otherwise a negative number is
+returned: $-1$ if $\gamma$ or $\beta$ are $0$, $-2$ if {\em dispFlag}
+was true and $\Delta t$ is $0$, and $-3$ if {\em domainChanged()}
+failed or has not been called. \\
+
+{\em int update(const Vector \&$\Delta U$);} \\
+Invoked this causes the object to increment the DOF\_Group
+response quantities at time $t + \Delta t$. The displacement Vector is  
+incremented by $ c1 * \Delta U$, the velocity Vector by $
+c2 * \Delta U$, and the acceleration Vector by $c3 * \Delta U$. 
+The response at the DOF\_Group objects are then updated by invoking
+{\em setResponse()} on the AnalysisModel with quantities at time $t +
+\Delta t$. Finally {\em updateDomain()} is invoked on the
+AnalysisModel. Returns
+$0$ if successful. A warning message is printed and a negative number
+returned if an error occurs: $-1$ if no associated AnalysisModel, $-2$
+if the Vector objects have not been created, $-3$ if the Vector
+objects and $\delta U$ are of different sizes. \\
+
+{\em int sendSelf(int commitTag, Channel \&theChannel); } \\ 
+Places the $\beta$ and $\gamma$ and {\em dispFlag} into a vector if size 3
+and invokes {\em sendVector} on the Channel with this Vector. Returns
+$0$ if successful, a warning message is printed and a $-1$ is
+returned if {\em theChannel} fails to send the Vector. \\ 
+
+{\em int recvSelf(int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker); } \\ 
+Receives in a Vector of size 3 the values of $\beta$, $\gamma$ and
+{\em dispFlag}. Returns $0$ if successful, a warning message is printed,
+$\delta \lambda$ is set to $0$, and a $-1$ is returned if {\em
+theChannel} fails to receive the Vector.\\
+
+{\em int Print(ostream \&s, int flag = 0);}\\
+The object sends to $s$ its type, the current time, $\gamma$ and
+$\beta$. 
+
+
+
+
+
+

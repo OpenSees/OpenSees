@@ -1,0 +1,53 @@
+%File: ~/OOP/material/Concrete01.tex
+%What: "@(#) Concrete01.tex, revA"
+
+UNDER CONSTRUCTION.\\
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/material/Concrete01.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Concrete01: public MaterialModel \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent MaterialModel \\
+\indent\indent\indent UniaxialMaterial \\
+\indent\indent\indent\indent {\bf Concrete01} \\
+
+\noindent {\bf Description}  \\
+\indent 
+Provides a uniaxial Kent-Scott-Park concrete model with linear
+unloading/reloading according to the work of Karsan-Jirsa and no
+strength in tension. The model contains a compressive strength of fpc,
+a strain at the compressive strength of epsc0, a crushing strength of
+fpcu, and a strain at the crushing strength of epscu. Compressive
+concrete parameters should be input as negative numeric values for
+this model to behave properly. Specification of minimum and maximum
+failure strains through the -min and -max switches is optional. The
+argument matTag is used to uniquely identify the material object among
+material objects in the BasicBuilder object. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em Concrete01(int tag, double fpc, double eco, double fpcu,
+double ecu,double epsmin=NEG\_INF\_STRAIN, double
+epsmax=POS\_INF\_STRAIN);} \\ \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$Concrete01();}\\ \\
+\indent // Public Methods \\
+\indent {\em int setTrialStrain(double strain); } \\
+\indent {\em double getStress(void); } \\
+\indent {\em double getTangent(void); } \\
+\indent {\em int commitState(void); } \\
+\indent {\em int revertToLastCommit(void); } \\
+\indent {\em int revertToStart(void); } \\
+\indent {\em UniaxialMaterial *getCopy(void); } \\ \\
+\indent // Public Methods for Output\\
+\indent {\em    int sendSelf(int commitTag, Channel \&theChannel); }\\
+\indent {\em    int recvSelf(int commitTag, Channel \&theChannel, 
+		 FEM\_ObjectBroker \&theBroker); }\\
+\indent {\em    void Print(ostream \&s, int flag =0);} \\
+
+

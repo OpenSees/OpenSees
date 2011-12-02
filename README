@@ -1,0 +1,58 @@
+OpenSees - Release 1
+This is the first release of the OpenSees framework. Feedback and
+comments would be greatly appreciated.
+
+This directory contains the following:
+	COPYRIGHT a file containing the copyright information on the
+	code that has so far been developed.
+
+	SRC the source code for all the classes developed for OpenSees can
+	be found in this subdirectory.
+
+	Makefile this is a makefile that may be provided to the unix 
+        make program. It will create the libraries specified by YOU the
+	user in Makefile.def. NOTE TO RUN PROPERLY YOU NEED TO HAVE
+	PREINSTALLED THE TCL/TK LIBRARIES AND INCLUDE FILES. These 
+	can be found at http://dev.scriptics.com/software/tcltk.
+	If you are running LINUX you probably already have the files.
+
+	Makefile.def this is the one file you must edit. You need to
+	set paths, library names, your favorite compiler and compiler 
+	options.
+
+	MAKES is a subdirectory containg example Makefile.def's.
+
+	DOCUMENTS is a subdirectory containing 3 postscript files.
+
+	EXAMPLES is a subdirectory containg example subdirectories.
+
+	OTHER is a subdirectory containing a number of subdirectories
+	containing the source code for the numerical libraries that the user
+	may need to install if not already on the users machine:
+		BLAS - contains the blas routines called.
+		CBLAS - contains the cblas routines called (SuperLU).
+		LAPACK - contains the lapack routines called.	
+		ARPACK- containts the ARPACK routines called.
+		UMFPACK- containts the ARPACK routines called.
+		SuperLU - contains the SuperLU routines called.
+
+	Win32 is a dircetory for windows users. It contains 
+	two projects 1: g3.dsw (a microsoft visualc++ project)
+		     2: g3Fortran.mdp (a microsoft powerstation
+	                fortran project)
+	which can be used to build the g3 interpreter on windows machines.
+	NOTE TO RUN PROPERLY YOU NEED TO HAVE PREINSTALLED THE TCL/TK 
+        LIBRARIES AND INCLUDE FILES, which can be obtained as outlined above.
+
+
+
+
+
+
+
+
+
+
+
+
+

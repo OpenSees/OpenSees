@@ -1,0 +1,208 @@
+%File: ~/OOP/element/ZeroLength/ZeroLength.tex
+%What: "@(#) ZeroLengthSection.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/element/zeroLength/ZeroLengthSection.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ZeroLengthSection : public Element \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent DomainComponent \\
+\indent\indent\indent Element \\
+\indent\indent\indent\indent {\bf ZeroLengthSection} \\
+
+\noindent {\bf Description}  \\
+\indent 
+The ZeroLengthSection class represents an element defined by two nodes at the same geometric
+location, hence it has zero length.
+The nodes are connected by a SectionForceDeformation object which
+represents the force-deformation relationship for the element. 
+
+ZeroLengthSection elements are constructed with a {\em tag} in a domain of {\em dimension} 2 or 3,
+connected by nodes {\em Nd1} and {\em Nd2}. 
+The vector {\em x} defines the local x-axis for the element and the vector {\em yprime}
+lies in the local x-y plane for the element.  The local z-axis is the cross product between 
+{\em x} and {\em yprime}, and the local y-axis is the cross product between the local z-axis
+and {\em x}.
+\\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructors \\
+\indent {\em    ZeroLengthSection(int tag, 			      
+	       int dimension,
+	       int Nd1, int Nd2, 
+	       const Vector\& x,
+	       const Vector\& yprime,
+	       SectionForceDeformation\& theSection);} \\
+\indent {\em    ZeroLengthSection();} \\ \\
+\indent // Destructor \\
+\indent {\em    ~ZeroLengthSection();} \\ \\
+\indent    // public methods to obtain inforrmation about dof \& connectivity \\
+\indent {\em    int getNumExternalNodes(void) const;} \\
+\indent {\em    const ID \&getExternalNodes(void);} \\
+\indent {\em    int getNumDOF(void);} \\	
+\indent {\em    void setDomain(Domain *theDomain);} \\
+
+\indent    // public methods to set the state of the element    \\
+\indent {\em    int commitState(void);} \\
+\indent {\em    int revertToLastCommit(void);} \\        
+\indent {\em    int revertToStart(void);} \\        
+
+\indent    // public methods to obtain stiffness, mass, damping and residual information    \\
+\indent {\em    const Matrix \&getTangentStiff(void);} \\
+\indent {\em    const Matrix \&getSecantStiff(void);} \\    
+\indent {\em    const Matrix \&getDamp(void);} \\    
+\indent {\em    const Matrix \&getMass(void);} \\    
+
+\indent {\em    void zeroLoad(void);} \\	
+\indent {\em    int addLoad(const Vector \&addP);} \\
+\indent {\em    int addInertiaLoadToUnbalance(const Vector \&accel);} \\    
+\indent {\em    const Vector \&getResistingForce(void);} \\
+\indent {\em    const Vector \&getResistingForceIncInertia(void);} \\            
+
+\indent    // public methods for element output \\
+\indent {\em    int sendSelf(int commitTag, Channel \&theChannel);} \\
+\indent {\em    int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker \&theBroker);} \\
+\indent {\em    int displaySelf(Renderer \&theViewer, int displayMode, float fact);} \\    
+\indent {\em    void Print(ostream \&s, int flag =0);} \\    
+
+\indent {\em    int setResponse(char **argv, int argc, Information \&eleInformation);} \\
+\indent {\em    int getResponse(int responseID, Information \&eleInformation);} \\
+    
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em    ZeroLengthSection(int tag, 			      
+	       int dimension,
+	       int Nd1, int Nd2, 
+	       const Vector\& x,
+	       const Vector\& yprime,
+	       SectionForceDeformation\& theSection);} \\
+Construct a ZeroLengthSection element with {\em tag} .
+The force-deformation relationship for the element is obtained by invoking
+{\em getCopy()} on the {\bf SectionForceDeformation} pointer {\em theSection}.
+The section model acts in the local space defined by the {\em x} and
+{\em yprime} vectors. The section axial force-deformation acts along the 
+element local x-axis and the section y-z axes directly corresponsd to the
+local element y-z axes. \\
+
+\indent {\em    ZeroLengthSection();} \\ 
+This is the constructor invoked by an {\bf FEM\_ObjectBroker} object. It
+constructs an empty ZeroLengthSection element with two nodes.
+The {\em recvSelf()} method is
+invoked on the object for it to set the internal data. 
+\\
+
+\noindent {\bf Destructor} \\
+\indent {\em    ~ZeroLengthSection();} \\ 
+Element destructor deletes memory for storing the section model pointer. 
+\\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em    int getNumExternalNodes(void) const;} \\
+Returns 2.
+\\
+
+\indent {\em    const ID \&getExternalNodes(void);} \\
+Return {\bf ID} of size $2$ with the node tags defining the element.
+\\
+
+\indent {\em    int getNumDOF(void);} \\	
+Return the number of DOF for the element, which depends on the dimension of the problem
+and the number of DOF associated with each node.
+\\
+
+\indent {\em    void setDomain(Domain *theDomain);} \\
+Initialize element and define data structures.  Sets up the element
+transformation matrix, $A$, which defines the kinematic relationship between
+nodal displacements and section deformations.
+\\
+
+\indent {\em    int commitState(void);} \\
+Commit state of element by commiting state of the section.
+Return 0 if successful, !0 otherwise.
+\\
+
+\indent {\em    int revertToLastCommit(void);} \\        
+Revert state of element to last commit by reverting to last committed state of the section.
+Return 0 if successful, !0 otherwise.
+\\
+
+\indent {\em    int revertToStart(void);} \\        
+Revert state of element to initial sate by reverting to initial state of the section.
+Return 0 if successful, !0 otherwise.
+\\
+
+\indent {\em    const Matrix \&getTangentStiff(void);} \\
+Return tangent stiffness matrix for element.  The element tangent is computed
+from the section tangent matrix, $k_b$, as $K_e = A^T k_b A$.  The section
+tangent is obtained by calling {\em getSectionTangent()}.
+\\
+
+\indent {\em    const Matrix \&getSecantStiff(void);} \\    
+Returns the tangent stiffness matrix for the element as the secant stiffness
+is not defined for SectionForceDeformation objects.
+\\
+
+\indent {\em    const Matrix \&getDamp(void);} \\    
+Return a zero damping matrix.
+\\
+
+\indent {\em    const Matrix \&getMass(void);} \\    
+Return a zero mass matrix.
+\\
+
+\indent {\em    void zeroLoad(void);} \\	
+The element has no loads, so this operation has no effect.
+\\
+
+\indent {\em    int addLoad(const Vector \&addP);} \\
+The element has no loads, so this operation has no effect and returns 0.
+\\
+
+\indent {\em    int addInertiaLoadToUnbalance(const Vector \&accel);} \\    
+The element has no mass, so this operation has no effect and returns 0.
+\\
+
+\indent {\em    const Vector \&getResistingForce(void);} \\
+Return resisting force vector for element.  The element resisting force is computed
+from the section stress resultants, $s$, as $P_e = A^T s$.  The section
+stress resulant is obtained by calling {\em getStressResultant()}.
+\\
+
+\indent {\em    const Vector \&getResistingForceIncInertia(void);} \\            
+Returns the result of {\em getResistingForce()} as there is no element mass.
+\\
+
+\indent {\em    int sendSelf(int commitTag, Channel \&theChannel);} \\
+Send information about element and the section over a channel.
+\\
+
+\indent {\em    int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker \&theBroker);} \\
+Receive information about element and section from a channel.
+\\
+
+\indent {\em    int displaySelf(Renderer \&theViewer, int displayMode, float fact);} \\    
+Display element.
+\\
+
+\indent {\em    void Print(ostream \&s, int flag =0);} \\    
+Prints the element node tags and section model to the stream {em s}.
+\\
+
+\indent {\em    int setResponse(char **argv, int argc, Information \&eleInformation);} \\
+Currently returns -1.
+\\
+
+\indent {\em    int getResponse(int responseID, Information \&eleInformation);} \\
+Currently returns -1.
+\\
+
+
+
+
+
+

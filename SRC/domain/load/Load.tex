@@ -1,0 +1,51 @@
+% File: ~/domain/loadcase/Load.tex 
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/domain/load/Load.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Load: public DomainComponent  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent DomainComponent \\
+\indent\indent\indent {\bf Load} \\
+
+\noindent {\bf Description}  \\
+\indent Load is an abstract base class. A Load object is used to add
+load to the domain. The Load class defines one method in its interface
+{\em applyLoad()}, a method all subclasses must implement. \\
+
+
+\noindent {\bf Class Interface}  \\
+\indent // Constructor  \\
+\indent {\em Load(tag, int classTag);}  \\ \\
+\indent // Destructor  \\
+\indent {\em virtual $\tilde{ }$ Load();} \\ \\
+\indent // Public Methods   \\
+\indent {\em virtual void applyLoad(loadFactor) = 0;} \\
+\indent {\em virtual void setLoadPatternTag(int loadPaternTag);}\\
+\indent {\em virtual int  getLoadPatternTag(void) const;}\\
+
+\noindent {\bf Constructor}  \\
+\indent {\em Load(tag, int classTag);}  \\
+Constructs a load with a tag given by {\em tag} and a class tag is
+given by {\em classTag}. These are passed to the DomainComponent constructor. \\
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~$\tilde{}$ Load();} \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual void applyLoad(double loadFactor) = 0;} \\
+The load object is to add {\em loadFactor} times the load to the
+corresponding residual value at its associated element(s) or node(s). \\
+
+\indent {\em virtual void setLoadPatternTag(int loadPaternTag);}\\
+To set the tag of the enclosing load pattern for the load to be 
+{\em loadPatternTag}. \\
+
+\indent {\em virtual int  getLoadPatternTag(void) const;}\\
+To return the current load pattern tag associated with the load. If no
+load pattern tag has been set $-1$ is returned.
+

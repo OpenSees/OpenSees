@@ -1,0 +1,58 @@
+%File: ~/recorder/MaxNodeDispRecorder.tex
+%What: "@(#) MaxNodeDispRecorder.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/recorder/MaxNodeDispRecorder.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class MaxNodeDispRecorder: public Recorder\\
+
+\noindent {\bf Class Hierarchy} \\
+\indent Recorder \\
+\indent\indent {\bf MaxNodeDispRecorder} \\
+
+\noindent {\bf Description}  \\
+\indent The MaxNodeDispRecorder class is used to store information
+about the absolute maximum nodal displacement at a number of specified
+Nodes for a specified degree of freedom during an analysis. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em MaxNodeDispRecorder(int dof, const ID \&nodeTags, Domain
+\&theDomain);}\\ \\ 
+\indent // Destructor \\
+\indent {\em $\tilde{ }$MaxNodeDispRecorder();}\\ \\
+\indent // Public Methods  \\
+\indent {\em int record(int commitTag);}\\
+\indent {\em int playback(int commitTag);}\\
+\indent {\em void restart(void);}\\ 
+
+\noindent {\bf Constructor}  \\
+\indent {\em MaxNodeDispRecorder(int dof, const ID \&nodeTags,
+Domain \&theDomain);}\\ 
+Creates a $0$ Vector object of size equal to the size of {\em
+nodeTags} to store the maximum nodal displacements
+and creates an ID object equal to {\em nodeTags} to store the Node
+tags. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$MaxNodeDispRecorder();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em int record(int commitTag);}\\
+For each node in {\em nodeTags} the value of the {\em dof}'th committed
+displacement is obtained. If the absolute value of this is greater
+than the value currently stored in the Vector of max displacements,
+the value in the Vector is updated. If no Node exists in {\em
+theDomain} with the tag or the Node does not have a {\em dof}'th
+degree-of-freedom associated with it $0$ is entered in the
+Vector. Returns $0$. \\
+
+\indent {\em int playback(int commitTag);}\\
+Prints to {\em cerr} the Vector containing the maximum absolute nodal
+displacements. Note, at the end of the analysis, what is printed is
+independent of {\em commitTag}. Returns $0$. \\
+
+\indent {\em void restart(void);}\\ 
+Zeros the Vector of maximum nodal displacements.

@@ -1,0 +1,159 @@
+% File: ~/domain/constraints/MP\_Constraint.tex 
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/domain/constraints/MP\_Constraint.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class MP\_Constraint: public DomainComponent  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent DomainComponent \\
+\indent\indent\indent {\bf MP\_Constraint} \\
+
+\noindent {\bf Description}  \\
+\indent An MP\_Constraint represents a multiple point constraint in the
+domain. A multiple point constraint imposes a relationship between the
+displacement for certain dof at two nodes in the model, typically called
+the {\em retained} node and the {\em constrained} node: $U_c = C_{cr} U_r$
+
+
+An MP\_Constraint is responsible for providing information on the
+relationship between the dof, this is in the form of a constraint
+Matrix, $C_{cr}$, and two ID objects, {\em retainedID} and {\em
+constrainedID} indicating the dof's at the nodes 
+represented by $C_{cr}$. For example, for the following constraint
+imposing a relationship between the displacements at node $1$, the 
+constrained node, with the displacements at node $2$, the retained
+node in a problem where the x,y,z components are identified as the
+0,1,2 degrees-of-freedom:
+
+$$ u_{1,x} = 2 u_{2,x} + u_{2,z} $$
+$$ u_{1,y} = 3 u_{2,z}$$
+
+the constraint matrix is:
+$$ C_{cr} =
+\left[
+\begin{array}{cc}
+2 & 1  \\
+0 & 3  \\
+\end{array}
+\right] 
+$$
+
+{\em constrainedID} = $[0$ $1]$ and {\em retainedID} $= [0$ $2]$. \\
+
+\noindent {\bf Class Interface}  \\
+\indent\indent  // Constructors  \\
+\indent\indent {\em MP\_Constraint(int tag, int nodeRetain, int nodeConstr,
+Matrix \&constraint, \\
+\indent\indent\indent\indent\indent\indent ID \&constrainedDOF, ID
+\&retainedDOF);}\\ 
+\indent\indent {\em MP\_Constraint(int tag, int nodeRetain, int nodeConstr, \\
+\indent\indent\indent\indent\indent\indent ID \&constrainedDOF, ID
+\&retainedDOF, int classTag);}\\
+\indent\indent {\em MP\_Constraint(int classTag);}\\ \\
+\indent\indent  // Destructor  \\
+\indent\indent {\em virtual $\tilde{ }$ MP\_Constraint();} \\ \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em virtual int getNodeRetained(void) const; } \\
+\indent\indent {\em virtual int getNodeConstrained(void) const; }\\
+\indent\indent {\em virtual const ID \& getConstrainedDOFs(void) const;}\\
+\indent\indent {\em virtual const ID \& getRetainedDOFs(void) const;}\\
+\indent\indent {\em virtual int applyConstraint(double timeStamp);} \\
+\indent\indent {\em virtual bool isTimeVarying(void) const;} \\
+\indent\indent {\em virtual const Matrix \&getConstraint(void) const;}\\\\
+\indent\indent // Public Methods for Output \\
+\indent\indent {\em virtual int sendSelf(int commitTag, Channel \&theChannel);} \\ 
+\indent\indent {\em virtual int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);} \\ 
+\indent\indent {\em virtual void Print(ostream \&s, int flag = 0);} \\
+
+\noindent {\bf Constructors}  \\
+\indent {\em MP\_Constraint(int tag, int nodeRetain, int nodeConstr,
+Matrix \&constraint, \\
+\indent\indent\indent\indent\indent\indent
+ ID \&constrainedDOF, ID \&retainedDOF);}\\ 
+To construct a multiple point constraint where the constrained node is
+given by {\em nodeConstr}, the retained node by {\em nodeRetain}, the
+{\em constrainedID} by {\em constrainedDOF}, the {\em retainedID} by
+{\em retainedDOF} and $C_{cr}$ by {\em constraint}. 
+The integers {\em tag} and  CNSTRNT\_TAG\_MP\_Constraint
+are passed to the DomainComponent classes constructor. New Matrix and ID objects are
+created to hold the information. \\
+
+\indent {\em MP\_Constraint(int tag, int nodeRetain, int nodeConstr, \\
+\indent\indent\indent\indent\indent\indent ID \&constrainedDOF, ID
+\&retainedDOF, int classTag);}\\
+For the subclasses to use. The subclasses can vary the contents of the
+Matrix returned when {\em getConstraint()} is invoked. 
+The integers {\em tag} {\em classTag} are
+passed to the DomainComponent classes constructor. New ID objects are
+created to hold the information. \\
+
+\indent {\em MP\_Constraint(int classTag);} \\
+Provided for the FEM\_ObjectBroker to construct a blank object. The
+data for the object is filled in when {\em recvSelf()} is invoked on
+the object. $0$ and {\em classTag} are passed to the DomainComponent
+constructor. \\ 
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~$\tilde{}$ MP\_Constraint();} \\
+Invokes the destructor on both the ID and the Matrix object, if a
+Matrix object is passed in the constructor. \\
+
+\noindent {\bf Public Methods}  \\
+\indent {\em virtual int getNodeRetained(void) const; } \\
+Returns the value of {\em nodeRetain} passed in the constructor,
+i.e. the tag of the retained node. \\
+
+{\em virtual int getNodeConstrained(void) const;    }\\
+Returns the value of {\em nodeConstr} passed in the constructor, i.e. the
+tag of the constrained node. \\
+
+{\em virtual const ID \&getConstrainedDOFs(void) const;   }\\     
+Returns, as a const, the {\em constrainedID} formed in the constructor. \\
+
+{\em virtual const ID \&getRetainedDOFs(void) const;   }\\     
+Returns, as a const, the {\em retainedID} formed in the
+constructor. \\
+
+{\em virtual int applyConstraint(double timeStamp)}\\     
+A method to invoked to inform the MP\_Constraint to determine $C_{cr}$,
+for the time {\em timeStamp}. {\bf The base class will do nothing, as
+Matrix is assumed to be constant.} \\
+
+{\em virtual const Matrix \&getConstraint(void) const;} \\
+Returns the current constraint Matrix, that determined in the last
+call to {\em applyConstraint()}. For the MP\_Constraint class, $C_{cr}$
+determined in the constructor is returned. \\
+
+{\em virtual int sendSelf(int commitTag, Channel \&theChannel);} \\
+Creates a Vector, stores the MP\_Constraints tag, nodeRetain,
+nodeConstrained and value in the Vector, and sends the Vector to the
+Channel using the objects own database tag and {\em commitTag}. It then
+sends the {\em participatingDOF} ID and the {\em constraint}
+Matrix, again using the objects database tag and {\em
+commitTag}. Returns $0$ if successful, a negative number if the
+Channel object, {\em theChannel}, failed to send the data. \\ 
+
+{\em virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);} \\ 
+Creates a Vector, receives the Vector from the Channel using {\em
+commitTag} and the objects database tag, and sets theMP\_Constraints
+tag, nodeRetain, nodeConstrained from the the Vector. Creates a
+Vector and a Matrix, and then receives the {\em participatingDOF} ID
+and the {\em constraint} Matrix into these objects. Returns $0$ if
+successful, a negative number if the Channel object, {\em
+theChannel}, failed to receive the data.\\ 
+
+{\em virtual void Print(ostream \&s, int flag = 0);} \\
+Prints out the MP\_Constraints tag, then the tags of the constrained
+and retained nodes, then the two ID's and finally the constraint Matrix.\\
+
+
+
+
+
+

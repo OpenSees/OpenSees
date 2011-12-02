@@ -1,0 +1,25 @@
+include ../../Makefile.def
+
+OBJS       = DatastoreRecorder.o MaxNodeDispRecorder.o \
+	ElementRecorder.o TclRecorderCommands.o FilePlotter.o \
+	NodeRecorder.o
+
+# Compilation control
+
+all:         $(OBJS)
+	@$(CD) $(FE)/recorder/response; $(MAKE);
+
+# Miscellaneous
+tidy:	
+	@$(RM) $(RMFLAGS) Makefile.bak *~ #*# core
+
+clean: tidy
+	@$(RM) $(RMFLAGS) $(OBJS) *.o
+
+spotless: clean
+	@$(CD) $(FE)/recorder/response; $(MAKE) wipe;
+
+wipe: spotless
+
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

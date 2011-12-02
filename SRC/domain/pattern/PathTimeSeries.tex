@@ -1,0 +1,91 @@
+%File: ~/OOP/domain/pattern/PathTimeSeries.tex
+%What: "@(#) PathTimeSeries.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$domain/pattern/PathTimeSeries.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class PathTimeSeries: public DomainComponent  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent TimeSeries \\
+\indent\indent\indent {\bf PathTimeSeries} \\
+
+\noindent {\bf Description} \\ 
+\indent The PathTimeSeries class is a concrete subclass of TimeSeries.
+The relationship between the pseudo time and the load factor follows
+a user specified path. The path points are specified at user specified
+time values. For a pseudo time not at a path point, linear interpolation
+is performed to determine the load factor. If the time specified is
+beyond the last path point a load factor of $0.0$ will be returned.\\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructors \\ 
+\indent {\em PathTimeSeries(Vector \&thePath, Vector \&time; double cFactor);}\\ 
+\indent {\em PathTimeSeries(char *fileName, Vector \&time; double cFactor);}\\ 
+\indent {\em PathTimeSeries();}\\ \\
+\indent // Destructor \\ 
+\indent {\em virtual $\tilde{ }$PathTimeSeries();}\\  \\
+\indent // Public Methods \\ 
+\indent {\em  virtual double getFactor(double pseudoTime);}\\
+\indent {\em  virtual int sendSelf(int commitTag, Channel \&theChannel);}\\
+\indent {\em  virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\
+\indent {\em  virtual void Print(ostream \&s, int flag =0);}\\
+
+\noindent {\bf Constructor} \\ 
+\indent {\em PathTimeSeries(Vector \&thePath, Vector \&time; 
+double cFactor);}\\ 
+Used to construct a PathTimeSeries when the data points and time
+values are specified in a Vectors. The tag
+TSERIES\_TAG\_PathTimeSeries is passed to the TimeSeries 
+constructor. Sets the constant factor used in the relation to {\em
+cFactor}. Constructs two new Vectors equal to {\em thePath} and {\em
+time}. Prints a warning message if no space is available for the
+Vectors or if the two Vectors are not of the same size.\\ 
+
+\indent {\em PathTimeSeries(char *filePath, file *timeName; double
+cFactor);}\\  
+Used to construct a PathTimeSeries when the data points and time
+values are specified in files. The tag TSERIES\_TAG\_PathTimeSeries is
+passed to the TimeSeries constructor. Sets the constant factor used in
+the relation to {\em cFactor}. Opens the two files and counts the
+number of entries in each, if different prints a warning message and
+returns. Constructs the two vectors for the data and reads the data
+from the files into the two vectors. Prints a warning message if no
+space is available for the Vectors.\\
+
+\indent {\em PathTimeSeries();}\\ \\
+For a FEM\_ObjectBroker to instantiate an empty PathTimeSeries, recvSelf()
+must be invoked on this object. The tag TSERIES\_TAG\_PathTimeSeries is
+passed to the TimeSeries constructor. \\
+
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{ }$PathTimeSeries();}\\ 
+Invokes the destructor on the two Vectors created to hold the data. \\
+
+\noindent {\bf Public Methods} \\
+\indent {\em  virtual double getFactor(double pseudoTime);}\\
+Determines the load factor based on the {\em pseudoTime} and the data
+points. Returns $0.0$ if {\em pseudoTime} is greater than time of last
+data point, otherwise returns a linear interpolation of the data
+points times the factor {\em cFactor}. \\
+
+\indent {\em  virtual int sendSelf(int commitTag, Channel
+\&theChannel);}\\
+Creates a vector of size 4 into which it places {\em cFactor}, the
+size of {\em thePath} and two  database tag for {\em 
+thaPath} and {\em time} Vectors.  Invokes {\em sendVector()} on the
+Channel with this newly created Vector object, and then again with the
+{\em time} and {\em thePath} Vectors.\\
+
+\indent {\em  virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\
+Does the mirror image of {\em sendSelf()}. \\
+
+\indent {\em  virtual void Print(ostream \&s, int flag =0) =0;}\\
+Prints the string 'PathTimeSeries', the factor{\em cFactor}, and the time
+increment {\em dT}. If {\em flag} is equal to $1.0$ {\em
+thePath} and {\em time} Vector are also printed\\

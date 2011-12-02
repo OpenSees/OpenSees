@@ -1,0 +1,151 @@
+%File: ~/OOP/matrix/ID.tex
+%What: "@(#) ID.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/matrix/ID.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ID:  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf ID} \\
+
+\noindent {\bf Description}  \\
+\indent The ID class provides the abstraction for an integer Vector. 
+The class is introduced in addition to the Vector class, to save memory
+and casting when integer arrays are required. An ID of order {\em
+size} is an ordered 1d array of {\em size} integer values. For example
+an ID id of order 5:  \\
+
+\indent\indent $id = [id_0$ $id_1$ $id_2$ $id_3$ $id_4]$ \\
+
+In the ID class, the data is stored in a 1d integer array of length
+equal to arraySize, where order <= arraySize. Creating an ID with
+storage capacity greater than that required allows the ID object to
+grow without the need to deallocate and allocate more memory. At
+present time none of the methods are declared as being virtual. THIS
+MAY CHANGE. \\
+
+\noindent {\bf Class Interface} \\
+\indent {// Constructors}  \\ 
+\indent {\em ID();}  \\
+\indent {\em  ID(int idSize);}  \\
+\indent {\em  ID(int idSize, int arraySize);}  \\
+\indent {\em  ID(const ID \&M); }  \\ \\
+\indent {// Destructor} \\
+\indent {\em virtual~ $\tilde{}$ID();}\\  \\
+\indent {// Public Methods }  \\
+\indent {\em virtual int Size() const;} \\
+\indent {\em virtual void Zero();} \\
+\indent {\em virtual int getLocation(int x) const;} \\
+\indent {\em virtual int removeValue(int x);} \\ \\
+\indent {// Overloaded Operator Functions}  \\
+\indent {\em virtual double \&operator()(int x);} \\
+\indent {\em virtual double \&operator[](int x);} \\
+\indent {\em virtual ID \&operator=(const ID \&M);}\\
+\indent {\em friend ostream \&operator$<<$(ostream \&s, const ID
+\&id);} \\  
+\indent {\em friend istream \&operator$<<$(istream \&s, const ID
+\&id);} \\ 
+
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em ID();}  \\
+To construct an ID of size $0$. No memory is allocated for the storage
+of the data. \\
+
+\indent {\em  ID(int idSize);}  \\
+To construct a ID of size {\em idSize}. The constructor creates an
+integer array of size {\em idSize} to store the data and zeroes this
+array by invoking {\em Zero()} on itself. If not enough memory is
+available an error message is printed and an ID of size $0$ is
+returned. \\  
+
+\indent {\em  ID(int idSize, int arraySize);}  \\
+To construct a ID of size {\em idSize}. The constructor creates an
+integer array of size {\em arraySize} to store the data and zeroes
+this array. If {\em arraySize} is less than {\em idSize}, the new {\em
+arraySize} is set equal to {\em idSize}. If not enough memory is
+available an error message is printed and the program is
+terminated. This constructor is provided to allow an ID to grow. \\  
+
+\indent {\em  \indent  ID(const ID \&M); }  \\
+To construct an ID using another ID {\em M}. The new ID will be
+identical to the ID $M$, same order and same size of array to hold the
+integer values. If not enough memory is available a
+warning message is printed and both the order and arraySize of the ID
+are set to $0$. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$ID();}\\ 
+Will invoke delete on the integer array used to store the components. \\
+
+\noindent {\bf Public Member Functions }  \\
+\indent {\em virtual int Size() const;} \\
+Returns the order of the ID. \\
+
+\indent {\em virtual void Zero();} \\
+Zeros out the ID, i.e. sets all the components of the ID to
+$0$. This is accomplished by zeroing the first {\em this.Size()}
+components of the array. \\
+
+\indent {\em virtual int getLocation(int x) const;} \\
+Will return the location the first location in the ID of the integer
+{\em x}. If {\em x} is not in the ID a $-1$ is returned. \\
+
+\indent {\em virtual int removeValue(int x);} \\
+Will return the last location in the ID of the integer
+{\em x}. If {\em x} is not in the ID a $-1$ is returned. All the integer
+components {\em x} are removed from the ID and the length of the ID is
+reduced by the number of the removed components. The {\em arraySize}
+remains unchanged. \\ 
+
+
+\noindent {\bf Overloaded Operator Functions}  \\
+\indent {\em virtual virtual double \&operator()(int x) const;} \\
+Returns the data at location {\em x} in the ID. Assumes ({\em x})
+is a valid location in the ID, a segmentation fault or erroneous
+results can occur if this is not the case. \\
+
+\indent {\em virtual double \&operator()(int x);} \\
+Used to set the data at location({\em x}) in the ID. Assumes ({\em x})
+is a valid location in the ID, a segmentation fault or erroneous
+results can occur if this is not the case. \\
+
+\indent {\em virtual double \&operator[](int x);} \\
+Used to set the data at location({\em x}) in the ID. If {\em x} is outside
+the order of the ID the ID is order of the ID is enlarged to {\em
+x+1}. When increasing the order, a check is first made to see if the
+current array is large enough; if it is the components between the old
+end and the new component are set to $0$ and the order of the ID is set
+to {\em x+1}, if not a new array is created. The size of this array is
+max($2*$old array size, x). A copy of the components of the old array
+into the new array is made, with any new components set to $0$. If not
+enough space is available or {\em x} is less than $0$, a warning
+message is printed and the contents of ID\_ERROR returned. \\
+
+
+\indent {\em virtual ID \&operator=(const ID \&M);}\\
+Sets the current ID to be equal to the ID given by {\em M}. If the
+IDs are of different sizes, the current data is deallocated and
+more space allocated before the contents are copied. If not enough
+memory is available, the order and {\em arraySize} of the current ID
+is set to $0$ and the ID is returned without copying the components. \\
+
+
+{\em friend ostream \&operator$<<$(ostream \&s, const ID \&id);} \\
+A function to print out the contents of the ID {\em id} to the output stream
+{\em s}. Prints out the components into the stream and then sends a
+newline character. \\
+
+{\em friend istream \&operator$>>$(istream \&s, const ID \&id);} \\
+A function to read the contents of the ID {\em id} from the input
+stream {\em s}. Sets the components of {\em id} equal to the next {\em
+id.Size()} entries in the stream.\\ 
+
+
+
+
+
+

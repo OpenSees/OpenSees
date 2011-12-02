@@ -1,0 +1,112 @@
+%File: ~/OOP/element/truss/Truss.tex
+%What: "@(#) Element.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/element/truss/Truss.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class Truss: public Element \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent DomainComponent \\
+\indent\indent\indent Element \\
+\indent\indent\indent\indent {\bf Truss} \\
+
+\noindent {\bf Description}  \\
+\indent The Truss class provides the truss abstraction. The Truss
+object can exist in one, two or three-dimesional problems. Each Truss
+object is associated with two Node objects and a UniaxialMaterial
+object. \\ 
+
+\noindent {\bf Class Interface} \\
+\indent\indent // Constructor \\
+\indent\indent {\em Truss(int tag, \\
+\indent\indent\indent\indent int dimension, \\
+\indent\indent\indent\indent int Nd1, int Nd2,  \\
+\indent\indent\indent\indent UniaxialMaterial &theMaterial, \\
+\indent\indent\indent\indent double A, double M=0.0); } \\
+\indent\indent {\em Truss();}  \\ \\
+\indent\indent // Destructor \\
+\indent\indent {\em ~$\tilde{}$Truss();}\\ \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em int getNumExternalNodes(void) const;} \\
+\indent\indent {\em const ID \&getExternalNodes(void);} \\
+\indent\indent {\em int getNumDOF(void);}\\
+\indent\indent {\em int commitState(void);} \\{
+\indent\indent {\em int revertToLastCommit(void);} \\{
+\indent\indent {\em int revertToStart(void);} \\{
+\indent\indent {\em Matrix \&getTangentStiff(void);} \\{
+\indent\indent {\em Matrix \&getSecantStiff(void);} \\{
+\indent\indent {\em Matrix \&getDamp(void);} \\
+\indent\indent {\em Matrix \&getMass(void);} \\
+\indent\indent {\em void zeroLoad(void);	}\\
+\indent\indent {\em int addLoad(const Vector \&load);} \\
+\indent\indent {\em Vector \&getResistingForce(void);} \\
+\indent\indent {\em Vector \&getResistingForceIncInertia(void);} \\
+\indent\indent {\em void Print(ostream \&s, int flag) const;} \\
+
+
+\noindent {\bf Constructor}  \\
+\indent\indent {\em Truss(int tag,  \\
+\indent\indent\indent\indent int dimension, \\
+\indent\indent\indent\indent int Nd1, int Nd2,  \\
+\indent\indent\indent\indent UniaxialMaterial &theMaterial, \\
+\indent\indent\indent\indent double A, double M=0.0); } \\
+
+\indent {\em Truss();}  \\
+This is the constructor invoked by an FEM\_ObjectBroker object. It
+constructs an empty Truss element. The {\em recvSelf()} method must be
+invoked on the object for it to set the internal data. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$Truss();}\\ 
+
+\noindent {\bf Public Methods }  \\
+\indent {\em int getNumExternalNodes(void) const;} \\
+Returns 2; \\
+
+\indent {\em const ID \&getExternalNodes(void);} \\
+Returns an ID object of size $2$ containing the two node identifiers $Nd1$
+and $Nd2$. \\
+
+\indent {\em int getNumDOF(void);}\\
+To return the number of dof associated with the Truss. This depends on
+the dimension of the problem and the number of dof associated with the
+nodes.  \\
+
+{\em int commitState(void);} \\
+The Truss element returns the result of invoking {\em commitState()}
+on it's associated UniaxialMaterial object. \\
+
+{\em int revertToLastCommit(void);} \\
+The Truss element returns the result of invoking {\em revertToLastCommit()}
+on it's associated UniaxialMaterial object. \\
+
+{\em int revertToStart(void);} \\
+The Truss element returns the result of invoking {\em revertToStart()}
+on it's associated UniaxialMaterial object. \\
+
+{\em Matrix \&getTangentStiff(void);} \\
+
+{\em Matrix \&getSecantStiff(void);} \\
+
+{\em Matrix \&getDamp(void);} \\
+
+{\em Matrix \&getMass(void);} \\
+
+{\em void zeroLoad(void);}\\
+Does nothing. \\
+
+{\em int addLoad(const Vector \&load);} \\
+
+{\em Vector \&getResistingForce(void);} \\
+
+{\em Vector \&getResistingForceIncInertia(void);} \\
+
+{\em void Print(ostream \&s, int flag) const;} \\
+
+
+
+

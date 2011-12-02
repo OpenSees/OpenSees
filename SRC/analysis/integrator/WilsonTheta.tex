@@ -1,0 +1,290 @@
+%File: ~/OOP/analysis/integrator/WilsonTheta.tex
+%What: "@(#) WilsonTheta.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/integrator/WilsonTheta.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class WilsonTheta: public TransientIntegrator  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent Integrator \\
+\indent\indent\indent IncrementalIntegrator \\
+\indent\indent\indent\indent TransientIntegrator \\
+\indent\indent\indent\indent\indent {\bf WilsonTheta} \\
+
+\noindent {\bf Description} \\ 
+\indent WilsonTheta is a subclass of TransientIntegrator which implements
+the Wilson$\Theta$ method. In the Wilson$\Theta$ method, to determine the 
+velocities, accelerations and displacements at time $t + \theta \Delta
+t$, $\theta \ge 1.37$, for $\U_{t+ \theta \Delta t}$ 
+
+\[ \R (\U_{t + \theta \Delta t}) = \P(t + \theta \Delta t) -
+\F_I(\Udd_{t+ \theta \Delta t}) 
+- \F_R(\Ud_{t + \theta \Delta t},\U_{t + \theta \Delta t}) \]
+
+\noindent where we use following functions to relate $\Ud_{t + \theta
+\Delta t}$ and $\Udd_{t + \theta \Delta t}$ to $\U_{t + \theta \Delta
+t}$ and the response quantities at time $t$:
+
+\[
+\dot \U_{t + \theta \Delta t} = \frac{3}{\theta \Delta t} \left(
+\U_{t + \theta \Delta t} - \U_t \right)
+ - 2 \dot \U_t + \frac{\theta \Delta t}{2} \ddot \U_t 
+\]
+
+\[
+\ddot \U_{t + \theta \Delta t} = \frac{6}{\theta^2 \Delta t^2}
+\left( \U_{t+\theta \Delta t} - \U_t \right)
+ - \frac{6}{\theta \Delta t} \dot \U_t -2 \Udd_t
+\]
+
+\noindent which  results in the following for determining the responses at
+$t + \theta \Delta t$ 
+
+\[ \left[ \frac{6}{\theta^2 \Delta t^2} \M + \frac{3}{\theta \Delta t}
+\C + \K \right] \Delta \U_{t + \theta \Delta t}^{(i)} = \P(t + \theta
+\Delta t) - \F_I\left(\Udd_{t+\theta \Delta  t}^{(i-1)}\right) 
+- \F_R\left(\Ud_{t + \theta \Delta t}^{(i-1)},\U_{t + \theta \Delta
+t}^{(i-1)}\right) \]
+
+
+\noindent The response quantities at time $t + \Delta t$ are then
+determined using the following
+
+\[
+\Udd_{t + \Delta t} = \Udd_t + \frac{1}{\theta} \left( \Udd_{t +
+\theta \Delta t} - \Udd_t \right)
+\]
+
+\[ \Ud_{t + \Delta t} = \Ud_t + \frac{\Delta t}{2}\left( \Udd_{t +
+\Delta t} + \Udd_t \right) \]
+
+\[ \U_{t + \Delta t} = \U_t + \Delta t\Ud_t + \frac{\Delta t^2}{6}\left(
+\Udd_{t + \Delta t} + 2 \Udd_t \right) \]
+\\
+
+\pagebreak
+\noindent {\bf Class Interface} \\
+\indent // Constructors \\
+\indent {\em WilsonTheta();}\\ 
+\indent {\em WilsonTheta(double theta);}\\ 
+\indent {\em WilsonTheta(double theta, double alphaM, double betaK);}\\ \\
+\indent // Destructor \\
+\indent {\em virtual~ $\tilde{}$WilsonTheta();}\\ \\
+\indent // Public Methods \\
+\indent {\em int formEleTangent(FE\_Element *theEle);} \\
+\indent {\em int formNodTangent(DOF\_Group *theDof);} \\
+\indent {\em int domainChanged(void);}\\
+\indent {\em int newStep(double deltaT);}\\
+\indent {\em int update(const Vector \&$\Delta U$);} \\ 
+\indent {\em int commit(void);}\\ \\
+\indent // Public Methods for Output\\
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ 
+\indent {\em int Print(ostream \&s, int flag = 0);}\\
+
+\noindent {\bf Constructors} \\
+\indent {\em WilsonTheta();}\\ 
+The integer INTEGRATOR\_TAGS\_WilsonTheta is passed to the TransientIntegrator
+constructor. $\Theta$ is set to 0.0. This constructor should only be
+invoked by an FEM\_ObjectBroker. \\
+
+
+
+\indent {\em WilsonTheta(double theta);}\\ 
+Sets $\Theta$ to {\em theta}, $\gamma$ to $(1.5 - \alpha)$ and $\beta$
+to $0.25*\alpha^2$. addition, a flag is set indicating that Rayleigh
+damping will not be used. \\ 
+
+\indent {\em WilsonTheta(double theta);}\\ 
+Sets $\Theta$ to {\em theta}, $\gamma$ to $(1.5 - \alpha)$ and $\beta$
+to $0.25*\alpha^2$. In addition, a flag is set indicating that Rayleigh
+damping will not be used. \\
+
+\indent {\em WilsonTheta(double theta, double alphaM, double betaK);}\\ 
+This constructor is invoked if Rayleigh damping is to be used, 
+i.e. $\D = \alpha_M M + \beta_K K$. Sets $\Theta$ to {\em theta},
+$\gamma$ to $(1.5 - \alpha)$, $\beta$ to $0.25*\alpha^2$, $\alpha_M$ to
+{\em alphaM} and $\beta_K$ to {\em betaK}. Sets a flag indicating whether the
+incremental solution is done in terms of displacement or acceleration
+to {\em dispFlag} and a flag indicating that Rayleigh damping will 
+be used. \\ 
+
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$WilsonTheta();}\\ 
+Invokes the destructor on the Vector objects created. \\
+
+\noindent {\bf Public Methods}\\
+\indent {\em int formEleTangent(FE\_Element *theEle);} \\
+This tangent for each FE\_Element is defined to be $\K_e = c1 \K
++ c2  \D + c3 \M$, where c1,c2 and c3 were determined in the last invocation
+of the {\em newStep()} method. Returns $0$ after performing the
+following operations:  
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+if (RayleighDamping == false) \{ \+ \\
+theEle-$>$zeroTang() \\
+theEle-$>$addKtoTang(c1) \\
+theEle-$>$addCtoTang(c2) \\
+theEle-$>$addMtoTang(c3)  \- \\
+\} else \{ \+ \\
+theEle-$>$zeroTang() \\
+theEle-$>$addKtoTang(c1 + c2 * $\beta_K$) \\
+theEle-$>$addMtoTang(c3 + c2 * $\alpha_M$)  \- \\ 
+\}
+\end{tabbing}
+
+{\em int formNodTangent(DOF\_Group *theDof);} \\
+This performs the following:
+\begin{tabbing}
+while \= \+ while \= while \= \kill
+theDof-$>$zeroUnbalance() \\
+if (RayleighDamping == false)  \+ \\
+theDof-$>$addMtoTang(c3)  \- \\
+else \+ \\
+theDof-$>$addMtoTang(c3 + c2 * $\alpha_M$)  \- \\ 
+\end{tabbing}
+
+
+{\em int domainChanged(void);}\\
+If the size of the LinearSOE has changed, the object deletes any old Vectors
+created and then creates $6$ new Vector objects of size equal to {\em
+theLinearSOE-$>$getNumEqn()}. There is a Vector object created to store
+the current displacement, velocity and accelerations at times $t$ and
+$t + \Delta t$ (between {\em newStep()} and {\em commit()} the $t +
+\Delta t$ quantities store $t + \Theta \Delta t$ quantities).
+The response quantities at time $t + \Delta t$ are
+then set by iterating over the DOF\_Group objects in the model and
+obtaining their committed values. 
+Returns $0$ if successful, otherwise a warning message and a negative
+number is returned: $-1$ if no memory was available for constructing
+the Vectors. \\
+
+
+{\em int newStep(double $\Delta t$);}\\
+The following are performed when this method is invoked:
+\begin{enumerate}
+\item First sets the values of the three constants {\em c1}, {\em c2}
+and {\em c3}: {\em c1} is set to $1.0$, 
+{\em c2} to $3 / (\Theta
+\Delta t)$ and {\em c3} to $6 / (\Theta \Delta t)^2)$. 
+\item Then the Vectors for response quantities at time $t$ are set
+equal to those at time $t + \Delta t$.
+\begin{tabbing}
+while \= while \= while \= while \= \kill
+\>\> $ \U_t = \U_{t + \Delta t}$ \\
+\>\> $ \Ud_t = \Ud_{t + \Delta t} $ \\
+\>\> $ \Udd_t = \Udd_{t + \Delta t} $ 
+\end{tabbing}
+\item Then the velocity and accelerations approximations
+at time $t + \Theta \Delta t$ are set using the difference
+approximations,
+\begin{tabbing}
+while \= while \= while \= while \= \kill
+\>\> $ \U_{t + \theta \Delta t} = \U_t $ \\
+\>\> $ \dot \U_{t + \theta \Delta t} = - 2 \dot \U_t + \frac{\theta
+\Delta t}{2} \ddot \U_t  $\\
+\>\> $ \ddot \U_{t + \theta \Delta t} = - \frac{6}{\theta \Delta t}
+\dot \U_t -2 \Udd_t $ 
+\end{tabbing}
+\item The response quantities at the DOF\_Group objects are updated
+with the new approximations by invoking {\em setResponse()} on the
+AnalysisModel with quantities at time $t + \Theta \Delta t$.
+\begin{tabbing}
+while \= while \= while \= while \= \kill
+\>\> theModel-$>$setResponse$(\U_{t + \theta \Delta t}, \Ud_{t+\theta
+\Delta t}, \Udd_{t+ \theta \Delta t})$ 
+\end{tabbing}
+\item current time is obtained from the AnalysisModel, incremented by
+$\Theta \Delta t$, and {\em applyLoad(time, 1.0)} is invoked on the
+AnalysisModel. 
+\item Finally {\em updateDomain()} is invoked on the AnalysisModel.
+\end{enumerate}
+The method returns $0$ if successful, otherwise a negative number is
+returned: $-1$ if $\gamma$ or $\beta$ are $0$, $-2$ if {\em dispFlag}
+was true and $\Delta t$ is $0$, and $-3$ if {\em domainChanged()}
+failed or has not been called. \\
+
+
+
+{\em int update(const Vector \&$\Delta U$);} \\
+Invoked this first causes the object to increment the DOF\_Group
+response quantities at time $t + \Theta \Delta t$. The displacement Vector is  
+incremented by $ c1 * \Delta U$, the velocity Vector by $
+c2 * \Delta U$, and the acceleration Vector by $c3 * \Delta U$. 
+The response quantities at the DOF\_Group objects are then updated
+with the new approximations by invoking {\em setResponse()} on the
+AnalysisModel with displacements, velocities and accelerations at time
+$t + \Theta \Delta t$.
+Finally {\em updateDomain()} is invoked on the AnalysisModel. 
+\begin{tabbing}
+while \= while \= while \= while \= \kill
+\>\> $ \U_{t + \theta \Delta t} += \Delta \U$ \\
+\>\> $ \dot \U_{t + \theta \Delta t} += \frac{3}{\theta \Delta t}
+\Delta \U  $\\
+\>\> $ \ddot \U_{t + \theta \Delta t} += \frac{6}{\theta^2 \Delta
+t^2} \Delta \U $ \\ 
+\>\> theModel-$>$setResponse$(\U_{t + \alpha \theta t}, \Ud_{t+\theta
+\Delta t}, \Udd_{t+ \theta \Delta t})$ \\
+\>\> theModel-$>$updateDomain()
+\end{tabbing}
+Returns $0$ if successful. A warning message is printed and a negative number
+returned if an error occurs: $-1$ if no associated AnalysisModel, $-2$
+if the Vector objects have not been created, $-3$ if the Vector
+objects and $\Delta U$ are of different sizes. \\
+
+
+
+{\em int commit(void);}\\
+First the quantities at time $t + \Delta t$ are determined using the
+quantities at time $t$ and $t + \Theta \Delta t$.
+Then the response quantities at the DOF\_Group objects are updated
+with the new approximations by invoking {\em setResponse()} on the
+AnalysisModel with displacement, velocity and accelerations at time $t +
+\Delta t$. The time is obtained from the AnalysisModel and $(\Theta
+-1) \Delta t$ is subtracted from the value. The time is set in the
+Domain by invoking {\em setCurrentDomainTime(time)} on the
+AnalysisModel. Finally {\em updateDomain()} and {\em commitDomain()}
+are invoked on the AnalysisModel. 
+\begin{tabbing}
+while \= while \= while \= while \= \kill
+\>\> $\Udd_{t + \Delta t} = \Udd_t + \frac{1}{\theta} \left( \Udd_{t +
+\theta \Delta t} - \Udd_t \right)$ \\
+\>\> $ \Ud_{t + \Delta t} = \Ud_t + \frac{\Delta t}{2}\left( \Udd_{t +
+\Delta t} + \Udd_t \right) $ \\
+\>\> $ \U_{t + \Delta t} = \U_t + \Delta t\Ud_t + \frac{\Delta t^2}{6}\left(
+\Udd_{t + \Delta t} + 2 \Udd_t \right) $ \\
+\>\> theModel-$>$setResponse$(\U_{t + \Delta t}, \Ud_{t+
+\Delta t}, \Udd_{t+\Delta t})$ \\
+\>\> time = theModel-$>$getDomainTime() \\
+\>\> time -= $(\theta -1) * \Delta t$ \\
+\>\> theModel-$>$setTime(time) \\
+\>\> theModel-$>$commitDomain()
+\end{tabbing}
+Returns $0$ if successful, a warning
+message and a negative number if not: $-1$ if no AnalysisModel
+associated with the object and $-2$ if {\em commitDomain()} failed. \\
+
+
+{\em int sendSelf(int commitTag, Channel \&theChannel); } \\ 
+Places $\Theta$, rayleigh damping flag, $\alpha_M$ and $\beta_K$ in a
+vector if size 4 and invokes {\em sendVector} on the Channel with this
+Vector. Returns $0$ if successful, a warning message is printed and a
+$-1$ is returned if {\em theChannel} fails to send the Vector. \\ 
+
+{\em int recvSelf(int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker); } \\ 
+Receives in a Vector of size 4 the value of $\Theta$, the rayleigh
+damping flag, $\alpha_M$ and $\beta_K$.. Returns $0$ if
+successful, a warning message is printed,  $\Theta$ is set to $0$, the
+rayleigh damping flag to {\em false}, and a $-1$ is returned if {\em
+theChannel} fails to receive the Vector.\\ 
+
+{\em int Print(ostream \&s, int flag = 0);}\\
+The object sends to $s$ its type, the current time, $\alpha$, $\gamma$ and
+$\beta$. 
+

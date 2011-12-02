@@ -1,0 +1,124 @@
+%File: ~/OOP/material/section/SectionForceDeformation.tex
+%What: "@(#) SectionForceDeformation.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/material/section/SectionForceDeformation.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class SectionForceDeformation : public Material \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent Material \\
+\indent\indent\indent {\bf SectionForceDeformation} \\
+
+\noindent {\bf Description}  \\
+\indent SectionForceDeformation provides the interface which all
+SectionForceDeformation models must implement. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em SectionForceDeformation (int tag, int classTag);} \\
+\indent // Destructor \\
+\indent {\em virtual $\tilde{ }$SectionForceDeformation ();}\\ \\
+\indent // Public Methods \\
+\indent {\em virtual int setTrialSectionDeformation (const Vector \&def) = 0; } \\
+\indent {\em virtual const Vector \&getSectionDeformation (void) = 0; } \\
+\indent {\em virtual const Vector \&getStressResultant (void) = 0; } \\
+\indent {\em virtual const Vector \&getPrevStressResultant (void) = 0; } \\
+\indent {\em virtual const Matrix \&getSectionTangent (void) = 0; } \\
+\indent {\em virtual const Matrix \&getPrevSectionTangent (void) = 0; } \\
+\indent {\em virtual const Matrix \&getSectionFlexibility (void); } \\
+\indent {\em virtual const Matrix \&getPrevSectionFlexibility (void); } \\
+\indent {\em virtual int commitState (void) = 0; } \\
+\indent {\em virtual int revertToLastCommit (void) = 0; } \\
+\indent {\em virtual int revertToStart (void) = 0; } \\
+\indent {\em virtual SectionForceDeformation *getCopy (void) = 0; } \\
+\indent {\em virtual const ID \&getType (void) = 0; } \\
+\indent {\em virtual int getOrder (void) = 0; } \\ \\
+\indent // Public Methods for Output\\
+\indent {\em virtual int sendSelf (int commitTag, Channel
+\&theChannel) = 0; }\\
+\indent {\em virtual int recvSelf (int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker) = 0; }\\
+\indent {\em virtual void Print (ostream \&s, int flag = 0) = 0;} \\
+
+\noindent {\bf Constructor}  \\
+\indent {\em SectionForceDeformation (int tag, int classTag);}  \\
+To construct a SectionForceDeformation object whose unique integer tag among
+SectionForceDeformation objects in the domain is given by {\em tag}, and whose class
+identifier is given by {\em classTag}. These integers are passed to
+the Material class constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{ }$SectionForceDeformation ();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods} \\
+\indent {\em virtual int setTrialSectionDeformation (const Vector \&def) = 0; }  \\
+To set the value of the trial section deformation vector, $\esec$ to be {\em
+def}. To return $0$ if successful, a negative number if not.\\
+
+\indent {\em virtual const Vector \&getSectionDeformation (void) = 0; } \\
+To return the trial section deformation vector, $\esec$. \\
+
+\indent {\em virtual const Vector \&getStressResultant (void) = 0; } \\
+To return the section resisting forces, $\ssec$, at the current trial state. \\
+
+\indent {\em virtual const Vector \&getPrevStressResultant (void) = 0; } \\
+To return the section resisting forces, $\ssec$, from the previous trial state. \\
+
+\indent {\em virtual const Matrix \&getSectionTangent (void) = 0; } \\
+To return the section tangent stiffness matrix, $\ksec$, at the current trial state. \\
+
+\indent {\em virtual const Matrix \&getPrevSectionTangent (void) = 0; } \\
+To return the section tangent stiffness matrix, $\ksec$, from the previous trialstate. \\
+
+\indent {\em virtual const Matrix \&getSectionFlexibility (void); } \\
+Obtains the section tangent stiffness matrix, $\ksec$, and returns its
+inverse, the section flexibility matrix, $\fsec$, via an
+explicit matrix inversion.  NOTE: The explicit matrix
+inversion provides default behavior and may be overridden in
+subclasses to suit specific SectionForceDeformation implementations. \\
+
+\indent {\em virtual const Matrix \&getPrevSectionFlexibility (void); } \\
+Returns the section flexibility matrix, $\fsec$, from the previous trial
+state. NOTE: This function provides default behavior and may be
+overridden in subclasses to suit specific SectionForceDeformation
+implementations. \\
+
+\indent {\em virtual int commitState (void) = 0; } \\
+To commit the section state.  Returns $0$ if successful and a negative
+number if not. \\
+
+\indent {\em virtual int revertToLastCommit (void) = 0; } \\
+To revert the section to its last committed state.  Returns $0$ if
+successful and a negative number if not. \\
+
+\indent {\em virtual int revertToStart (void) = 0; } \\
+To revert the section to its initial state. Returns $0$ if successful
+and a negative number if not. \\
+
+\indent {\em virtual SectionForceDeformation *getCopy (void) = 0; } \\
+To return a pointer to a new SectionForceDeformation object, which is a copy 
+of this instance. It is up to the caller to ensure that the destructor is invoked. \\
+
+\indent {\em virtual const ID \&getType (void) = 0; } \\
+To return the section ID code that indicates the ordering and type of
+response quantities returned by the section. Lets the calling object
+(e.g. an Element) know how to interpret the quantites returned by this
+SectionForceDeformation model. \\
+
+\indent {\em virtual int getOrder (void) = 0; } \\
+To return the number of response quantities provided by the section. \\
+
+\indent {\em    int sendSelf (int commitTag, Channel \&theChannel); }\\
+FILL IN. \\
+
+\indent {\em    int recvSelf (int commitTag, Channel \&theChannel, 
+		 FEM\_ObjectBroker \&theBroker); }\\
+FILL IN. \\
+
+\indent {\em    void Print(ostream \&s, int flag = 0) = 0;} \\
+To print section information to the stream {\em s} based on the value of {\em flag}. \\

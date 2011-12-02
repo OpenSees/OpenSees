@@ -1,0 +1,44 @@
+%File: ~/OOP/material/ParallelModel.tex
+%What: "@(#) ParallelModel.tex, revA"
+
+UNDER CONSTRUCTION. POSSIBLE NAME CHANGE IF MATERIAL GENERAL.\\
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/material/ParallelModel.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ParallelModel: public MaterialModel \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent MaterialModel \\
+\indent\indent\indent UniaxialMaterial \\
+\indent\indent\indent\indent {\bf ParallelModel} \\
+
+\noindent {\bf Description}  \\
+\indent A ParallelModel object is an aggregation of
+UniaxialMaterial objects all considered acting in parallel. SOME
+THEORY. \\ 
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em ParallelModel(int tag, int numModel,
+UniaxialMaterial **theModels);}  \\ \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$ParallelModel();}\\ \\
+\indent // Public Methods \\
+\indent {\em int setTrialStrain(double strain); } \\
+\indent {\em double getStress(void); } \\
+\indent {\em double getTangent(void); } \\
+\indent {\em int commitState(void); } \\
+\indent {\em int revertToLastCommit(void); } \\
+\indent {\em int revertToStart(void); } \\
+\indent {\em UniaxialMaterial *getCopy(void); } \\ \\
+\indent // Public Methods for Output\\
+\indent {\em    int sendSelf(int commitTag, Channel \&theChannel); }\\
+\indent {\em    int recvSelf(int commitTag, Channel \&theChannel, 
+		 FEM\_ObjectBroker \&theBroker); }\\
+\indent {\em    void Print(ostream \&s, int flag =0);} \\
+
+

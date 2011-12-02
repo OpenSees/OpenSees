@@ -1,0 +1,75 @@
+% headerfooter.sty 13 Apr 89
+
+% Use with LaTeX version 2.09:
+% \documentstyle[headerfooter]{article}
+
+% Copyright (c) 1987 by Stephen Gildea
+% Permission to copy all or part of this work is granted, provided
+% that the copies are not made or distributed for resale, and that
+% the copyright notice and this notice are retained.
+% 
+% THIS WORK IS PROVIDED ON AN "AS IS" BASIS.  THE AUTHOR PROVIDES NO
+% WARRANTY WHATSOEVER, EITHER EXPRESS OR IMPLIED, REGARDING THE WORK,
+% INCLUDING WARRANTIES WITH RESPECT TO ITS MERCHANTABILITY OR FITNESS
+% FOR ANY PARTICULAR PURPOSE.
+
+% If you make any improvements, I'd like to hear about them.
+
+% Stephen Gildea
+% MIT Earth Resources Lab
+% Cambridge, Mass. 02139
+% mit-erl!gildea
+% gildea@erl.mit.edu
+
+% \pageheader{LEFT}{CENTER}{RIGHT}
+% \pagefooter{LEFT}{CENTER}{RIGHT}
+
+% There is no reason why these commands should not be available
+% to the user.  Of course, I did fancy up the interface a bit.
+% By mit-erl!gildea 11 October 1986
+% minor changes 14 Oct 87 gildea
+% added \pageheaderlinetrue feature 9 Dec 88 gildea
+% added \pagefooterlinetrue feature 13 Apr 89 gildea
+
+% All of these commands take three arguments, which are printed at
+% the left, center, and right of each page.  All three args must be
+% provided even if some of them are empty.  The odd and even
+% variations are only useful if you are using the twoside option.
+
+% Example: \pagefooter{}{\thepage}{}
+
+% Say \pageheaderlinetrue if you want the header underlined.
+% Say \pagefooterlinetrue if you want a rule above the footer.
+
+\newif\ifpageheaderline	\pageheaderlinefalse
+\newif\ifpagefooterline	\pagefooterlinefalse
+
+\newdimen\pageheaderlineskip  \pageheaderlineskip=1.5pt
+
+\newdimen\pagefooterlineskip  \pagefooterlineskip=\pageheaderlineskip
+
+\def\@headerline#1#2#3{%
+	\ifpageheaderline
+          \vbox{\hbox to \textwidth{\rlap{#1}\hss{#2}\hss\llap{#3}}%
+                \vskip\pageheaderlineskip \hrule}%
+        \else{\rlap{#1}\hss{#2}\hss\llap{#3}}\fi}
+
+\def\@footerline#1#2#3{%
+	\ifpagefooterline
+          \vbox{\hrule \vskip\pagefooterlineskip
+                \hbox to \textwidth{\rlap{#1}\hss{#2}\hss\llap{#3}}}%
+        \else{\rlap{#1}\hss{#2}\hss\llap{#3}}\fi}
+
+\newcommand\oddpageheader[3]{\def\@oddhead{\@headerline{#1}{#2}{#3}}}
+
+\newcommand\evenpageheader[3]{\def\@evenhead{\@headerline{#1}{#2}{#3}}}
+
+\newcommand\oddpagefooter[3]{\def\@oddfoot{\@footerline{#1}{#2}{#3}}}
+
+\newcommand\evenpagefooter[3]{\def\@evenfoot{\@footerline{#1}{#2}{#3}}}
+
+\newcommand\pageheader[3]{%
+	\oddpageheader{#1}{#2}{#3}\evenpageheader{#1}{#2}{#3}}
+
+\newcommand\pagefooter[3]{%
+	\oddpagefooter{#1}{#2}{#3}\evenpagefooter{#1}{#2}{#3}}

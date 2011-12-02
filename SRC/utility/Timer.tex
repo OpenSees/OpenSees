@@ -1,0 +1,79 @@
+%File: ~/OOP/timer/Timer.tex
+%What: "@(#) Timer.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{}$/Timer/Timer.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Timer: public MovableObject  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent {\bf Timer} \\
+
+\noindent {\bf Description}  \\
+\indent A Timer object is an object which can be used to measure
+system resources, i.e. cpu time and memory usage. Currently for Unix
+systems only. COMPILE FLAG NEEDED.\\
+
+\noindent {\bf Class Interface} \\
+\indent {// Constructors}  \\ 
+\indent {\em Timer(int classTag);}  \\ \\
+\indent {// Destructor}  \\ 
+\indent {\em virtual $\tilde{}$Timer();} \\ \\
+\indent {// Public Methods}  \\ 
+\indent {\em  void start(void);}\\
+\indent {\em  void pause(void);}\\
+\indent {\em  double getReal(void) const;}\\
+\indent {\em  double getCPU(void) const;}\\
+\indent {\em  int getNumPageFaults(void) const;}\\
+\indent {\em  virtual void Print(ostream \&s) const; }\\
+\indent {\em  friend ostream \&operator$<<$(ostream \&s, const Timer \&E); }\\
+
+\noindent {\bf Constructors}  \\
+\indent {\em Timer();}  \\
+Does nothing. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{}$Timer();} \\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em  void start(void);}\\
+Sets the accounting variables to mark the start of accounting period
+using the unix functions {\em times()} and {\em getrusage}.\\
+
+\indent {\em  void pause(void);}\\
+Sets the accounting variables to mark the end of accounting period
+using the unix functions {\em times()} and {\em getrusage}.\\
+
+
+\indent {\em  double getReal(void) const;}\
+Uses the difference between the starting and ending accounting
+variables to determine the elapsed real time between the last calls to
+{\em start()} and {\em pause()}. Returns this value in units of seconds.\\
+
+\indent {\em  double getCPU(void) const;}\\
+Uses the difference between the starting and ending accounting
+variables to determine the CPU time allocated the process between the
+last calls to {\em start()} and {\em pause()}. Returns this value in
+units of seconds.\\
+
+\indent {\em  int getNumPageFaults(void) const;}\\
+Uses the difference between the starting and ending accounting
+variables to determine the number of page faults that required reading
+of pages from disk between the last calls to {\em start()} and {\em
+pause()}. Returns this value. \\
+
+
+\indent {\em virtual void Print(ostream \&s) const; }\\
+Uses the difference between the starting and ending accounting
+variables to determine the real time, CPU time, operating system time
+allocate the process, total number of page faults, number of page
+faults that required reading of pages from memory, and number of page
+faults that required no reading from disk between the last calls to
+{\em start()} and {\em pause()}. Send these values to {\em s}. \\
+
+\indent {\em friend ostream \&operator$<<$(ostream \&s, const Timer \&E); }\\
+Invokes {\em Print(s)} on the Timer object {\em E}. 
+

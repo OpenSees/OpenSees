@@ -1,0 +1,199 @@
+%File: ~/OOP/material/section/ElasticSection2D.tex
+%What: "@(#) ElasticSection2D.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/material/section/ElasticSection2D.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ElasticSection2D : public SectionForceDeformation \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent Material \\
+\indent\indent\indent SectionForceDeformation \\
+\indent\indent\indent\indent {\bf ElasticSection2D} \\
+
+\noindent {\bf Description}  \\
+\indent ElasticSection2D provides the implementation of a
+section which exhibits uncoupled elastic behavior in axial, moment,
+and shear response. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em ElasticSection2D (int tag, double E, double A, double I,
+double G, double alpha = 5/6.0);} \\ 
+\indent {\em ElasticSection2D ();} \\ \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$ElasticSection2D ();} \\ \\
+\indent // Public Methods \\
+\indent {\em int setTrialSectionDeformation (const Vector \&def); } \\
+\indent {\em const Vector \&getSectionDeformation (void); } \\
+\indent {\em const Vector \&getStressResultant (void); } \\
+\indent {\em const Vector \&getPrevStressResultant (void); } \\
+\indent {\em const Matrix \&getSectionTangent (void); } \\
+\indent {\em const Matrix \&getPrevSectionTangent (void); } \\
+\indent {\em const Matrix \&getSectionFlexibility (void); } \\
+\indent {\em const Matrix \&getPrevSectionFlexibility (void); } \\
+\indent {\em int commitState (void); } \\
+\indent {\em int revertToLastCommit (void); } \\
+\indent {\em int revertToStart (void); } \\
+\indent {\em SectionForceDeformation *getCopy (void); } \\
+\indent {\em const ID \&getType (void); } \\
+\indent {\em int getOrder (void); } \\ \\
+\indent // Public Methods for Output\\
+\indent {\em int sendSelf (int commitTag, Channel \&theChannel); }\\
+\indent {\em int recvSelf (int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker); }\\
+\indent {\em void Print (ostream \&s, int flag = 0);} \\
+
+\noindent {\bf Constructor}  \\
+\indent {\em ElasticSection2D (int tag, double E, double I, double A,
+double G, double alpha);}  \\
+To construct an ElasticSection2D with an integer identifier {\em
+tag}, an elastic modulus of $E$, a second moment of area $I$,
+a section area of $A$, an elastic shear modulus of $G$, and a shape factor
+of $alpha$. The integers {\em tag} and MAT\_TAG\_ElasticSection2D, defined in
+$<$classTags.h$>$, are passed to the SectionForceDeformation
+class constructor. \\
+
+\indent {\em ElasticSection2D ();} \\
+Constructs a blank ElasticSection2D object. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em $\tilde{}$ElasticSection2D ();} \\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods} \\
+\indent {\em int setTrialSectionDeformation (const Vector \&def); }  \\
+Sets the value of the section deformation vector, $\esec$ to be {\em
+def}. The section deformation vector, $\esec$, is defined by
+
+\begin{equation}
+\esec := \left[
+   \begin{array}{c}
+       \epsilon_a \\
+       \kappa_z   \\
+       \gamma_y
+   \end{array} 
+ \right]
+\end{equation}
+
+where $\epsilon_a$ is the axial strain, $\kappa_z$ is the curvature about
+the local z-axis, and $\gamma_y$ is the shear strain along the local y-axis.
+Returns $0$. \\
+
+\indent {\em const Vector \&getSectionDeformation (void); } \\
+Returns the current value of the section deformation vector, $\esec$. \\
+
+\indent {\em const Vector \&getStressResultant (void); } \\
+Returns the section stress resultants, $\ssec$, the product of the 
+section stiffness matrix, $\ksec$, and the section deformation 
+vector, $\esec$,
+
+\begin{equation}
+\ssec = \ksec \esec = \left[
+   \begin{array}{c}
+       P \\
+       M_z   \\
+       V_y
+   \end{array} 
+ \right]
+\end{equation}
+
+where $P$ is the axial force, $M_z$ is the bending moment about the
+local z-axis, and $V_y$ is the shear force along the local y-axis. \\
+
+\indent {\em const Vector \&getPrevStressResultant (void); } \\
+Returns the value of $\ssec$ calculated at the previous state determination. \\
+
+\indent {\em const Matrix \&getSectionTangent (void); } \\
+Returns the section stiffness matrix, $\ksec$, where 
+
+\begin{equation}
+\ksec = \left[
+   \begin{array}{ccc}
+       EA &  0 &  0 \\
+        0 & EI &  0 \\
+        0 &  0 & \alpha GA
+   \end{array} 
+ \right]
+\end{equation} \\
+
+\indent {\em const Matrix \&getPrevSectionTangent (void); } \\
+Returns the section stiffness matrix, $\ksec$. \\
+
+\indent {\em const Matrix \&getSectionFlexibility (void); } \\
+Overrides the base class implementation and returns the section
+flexibility matrix, $\fsec$, where
+
+\begin{equation}
+\fsec = \left[
+   \begin{array}{ccc}
+       \frac{1}{EA} &            0 &                  0  \\
+                  0 & \frac{1}{EI} &                  0  \\
+                  0 &            0 & \frac{1}{\alpha GA}
+   \end{array} 
+ \right]
+\end{equation} \\
+
+\indent {\em const Matrix \&getPrevSectionFlexibility (void); } \\
+Overrides the base class implementation and returns the section
+flexibility matrix, $\fsec$. \\
+
+\indent {\em int commitState (void); } \\
+Returns $0$. \\
+
+\indent {\em int revertToLastCommit (void); } \\
+Returns $0$. \\
+
+\indent {\em int revertToStart (void); } \\
+Returns $0$. \\
+
+\indent {\em SectionForceDeformation *getCopy (void); } \\
+Returns a pointer to a new ElasticSection2D object, constructed
+using the same values of {\em tag}, $E$, $A$, $I$, $G$, and $\alpha.  
+It is up to the caller to ensure that the destructor is invoked. \\
+
+\indent {\em const ID \&getType (void); } \\
+Returns the section ID code that indicates the ordering of
+section response quantities. For this section, axial response is the
+first quantity, bending about the local z-axis is the second, and
+shear along the local y-axis is third. \\
+
+\begin{equation}
+code := \left[
+   \begin{array}{c}
+       2 \\
+       1 \\
+       3 
+   \end{array} 
+ \right]
+\end{equation} \\
+
+\indent {\em int getOrder (void); } \\
+Returns 3. \\
+
+\indent {\em    int sendSelf(int commitTag, Channel \&theChannel); }\\
+Creates a Vector of size $6$ into which it places  {\em tag},
+$E$, $A$, $I$, $G$, and $\alpha$. Invokes {\em sendVector()} on  {\em theChannel} using the
+ElasticSection2D objects {\em dbTag}, the integer {\em commitTag} and
+the Vector as arguments. Returns $0$ if successful, a warning message
+and a negative number are returned if the Channel object fails to send
+the Vector. \\
+
+\indent {\em    int recvSelf(int commitTag, Channel \&theChannel, 
+		 FEM\_ObjectBroker \&theBroker); }\\
+Creates a Vector of size $6$. Invokes {\em recvVector()} on  {\em
+theChannel} using the ElasticSection2D objects {\em dbTag}, the integer
+{\em commitTag} and the Vector as arguments. Using the data in the
+Vector to set its {\em tag}, $E$, $A$, $I$, $G$, and $\alpha$. Returns $0$ if successful, a
+warning message is printed and a negative number is returned if the Channel 
+object fails to receive the Vector. \\
+
+\indent {\em    void Print(ostream \&s, int flag =0);} \\
+Prints to the stream {\em s} the objects {\em tag}, $E$, $A$, $I$, $G$, and
+$\alpha$ values. \\
+
+
+
