@@ -1,0 +1,35 @@
+
+element SimpleJoint2D eleTag? iNode? jNode? kNode? lNode? Panel? LrgDisp?
+
+eleTag?  - an integer tag identifying the element in the domain 
+iNode?   - an integer indicating the node at end 1 of the beam 
+jNode?   - an integer indicating the node at end 2 of the beam 
+kNode?   - an integer indicating the node at end 3 of the beam 
+lNode?   - an integer indicating the node at end 4 of the beam 
+Panel?   - an integer indicating uniaxial material tag for the shear panel
+LrgDisp? - an integer for large deformations flag
+newNode? - an integer indicating the tag of a new node added at center of joint
+NewEle?  - an integer indicating the tag of the rotational element used in the joint for the shear panel.
+
+SimpleJoint2D is a four-node element. It automatically creates a center node with a tag larger than 1000000.
+SimpleJoint2D also defines special multi-point constraints to simulate a shear panel deformation and it can
+be used along with 'Penalty', or 'Transformation' constraint handlers.
+
+A uniaxial material model can be used as the rotational spring relating shear deformation to sheer 
+equivalent moment. for LrgDisp flag, zero indicates that the element will use a constant constraint matrix, 
+calculated based on initial configuration. A non-zero value indicates that the MP constraint matrix will be 
+time varying. Value 1 for time varying 
+
+constraint that updates for each load step, without length correction. Value 2 for time varying constraint 
+with length correction.
+
+The valid queries to a SimpleJoint2D element when creating an ElementRecorder are 'internalNode',
+ 'deformation', 'moment', or 'material ...'. 	   
+
+--------------------------------------------------------------------------------
+Example: element SimpleJoint2D 2 1 2 3 4 1 0 22 24
+
+Constructs a SimpleJoint2D element with tag 2 that is connected to nodes 1 , 2, 3 and 4.
+The element uses the uniaxialmaterial objects with tag 1, with constant constraint matrix 
+(no large deformation). The new node added to the domain at the center of the joint will be 
+numbered 24 and the new rotational element added to model shear in the joint will be 24.

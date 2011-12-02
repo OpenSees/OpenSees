@@ -1,0 +1,191 @@
+%File: ~/OOP/system_of_eqn/linearSOE/bandSPD/BandSPDLinSOE.tex
+%What: "@(#) BandSPDLinSOE.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/system\_of\_eqn/linearSOE/bandSPD/BandSPDLinSOE.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class BandSPDLinSOE: public LinearSOE \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent SystemOfEqn \\
+\indent\indent\indent LinearSOE \\
+\indent\indent\indent\indent {\bf BandSPDLinSOE} \\
+
+\noindent {\bf Description}  \\
+\indent BandSPDLinSOE is class which is used to store a banded symmetric system
+with ku superdiagonals. The $A$ matrix is stored in a
+1d double array with (ku+1)*n elements, where n is the size of the
+system. $A_{i,j}$ is stored at location $(ku+1+i-j) +
+j*(ku+1)$, where $i$ and $j$ range from $0$ to$n-1$, i.e. C
+notation. For example when $n=5$, $ku = 2$: 
+
+$$
+\left[
+\begin{array}{ccccc}
+a_{0,0} & a_{0,1}  & a_{0,1} & 0 & 0 \\
+a_{1,0} & a_{1,1} & a_{1,2} & a_{1,3} & 0 \\
+a_{2,0} & a_{2,1} & a_{2,2} & a_{2,3} & a_{2,4}  \\
+0 & a_{3,1} & a_{3,2} & a_{3,3} & a_{3,4} \\
+0 & 0 & a_{4,2} & a_{4,3} & a_{4,4} \\
+\end{array}
+\right] 
+$$
+
+is stored in:
+
+$$
+\left[
+\begin{array}{cccccccccccccccccccc}
+* & * & a_{0,0} & * & a_{0,1}  & a_{1,1} & a_{0,2} & a_{1,2} & a_{2,2} &
+a_{1,3} & a_{2,3} & a_{3,3} & a_{2,4} & a_{3,4} & a_{4,4}\\
+\end{array}
+\right] 
+$$
+
+The $X$ and $B$ vectors are stored in 1d double arrays of length $N$. \\
+
+\noindent {\bf Interface}  \\
+\indent\indent {// Constructors} \\
+\indent\indent {\em BandSPDLinSOE(BandSPDLinSolver \&theSolver);}  \\
+\indent\indent {\em BandSPDLinSOE(int N, int ku, BandSPDLinSolver
+\&theSolver);}\\ \\
+\indent\indent {// Destructor} \\
+\indent\indent {\em  $\tilde{}$BandSPDLinSOE();}\\ \\
+\indent\indent {// Public Methods }  \\
+\indent\indent {\em  int setBandSPDSolver(BandSPDLinSolver \&newSolver);}\\
+\indent\indent {\em int setSize(const Graph \&theGraph) =0; } \\
+\indent\indent {\em int getNumEqn(void) =0; } \\
+\indent\indent {\em int addA(const Matrix \&theMatrix, const ID \& loc,
+doublefact = 1.0) =0;} \\
+\indent\indent {\em int addB(const Vector \& theVector, const ID \& loc,
+double fact = 1.0) =0;} \\
+\indent\indent {\em int setB(const Vector \& theVector, 
+double fact = 1.0) =0;} \\
+\indent\indent {\em void zeroA(void) =0;} \\
+\indent\indent {\em void zeroB(void) =0;} \\
+\indent\indent {\em const Vector \&getX(void) = 0;} \\
+\indent\indent {\em const Vector \&getB(void) = 0;} \\
+\indent\indent {\em double normRHS(void) =0;} \\
+\indent\indent {\em void setX(int loc, double value) =0;}\\
+\indent\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ 
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em BandSPDLinSOE(BandSPDLinSolver \&solver);}  \\
+The {\em solver} and a unique class tag (defined in $<$classTags.h$>$)
+are passed to the LinearSOE constructor. The system size is set
+to $0$ and the matrix $A$ is marked as not having been factored. Invokes
+{\em setLinearSOE(*this)} on the {\em solver}. No memory is
+allocated for the 3 1d arrays. \\  
+
+{\em BandSPDLinSOE(int N, int ku, BandSPDLinSolver \&theSolver);}\\
+The {\em solver} and a unique class tag (defined in $<$classTags.h$>$)
+are passed to the LinearSOE constructor. 
+Sets the size of the system to $N$, the number of superdiagonals to 
+{\em ku}. Allocates memory for the arrays; if not enough
+memory is available a warning message is printed and the system size
+is set to $0$. Sets the solver to be called when solving the
+equations to {\em theSolver}. Invokes {\em setLinearSOE(*this)} and
+{\em setSize()} on the {\em theSolver}, printing a warning message if
+{\em setSize()} returns a negative number. Also creates Vector objects
+for $x$ and $b$ using the {\em (double *,int)} Vector constructor. \\
+
+
+\noindent {\bf Destructor} \\
+\indent {\em  $\tilde{}$BandSPDLinSOE();}\\ 
+Calls delete on any arrays created. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em  int setBandSPDSolver(BandSPDLinSolver \&newSolver);}\\
+Invokes {\em setLinearSOE(*this)} on {\em newSolver}.
+If the system size is not equal to $0$, it also invokes {\em setSize()}
+on {\em newSolver}, printing a warning and returning the returned value if this
+method returns a number less than $0$. Finally it returns the result
+of invoking the LinearSOE classes {\em setSolver()} method. \\
+
+\indent {\em int getNumEqn(void) =0; } \\
+A method which returns the current size of the system. \\
+
+\indent {\em  int setSize(const Graph \&G); } \\ 
+The size of the system is determined by looking at the adjacency ID of
+each Vertex in the Graph object {\em G}. This is done by first setting
+{\em ku} equal to $0$ and then checking for each Vertex
+in {\em G}, whether any of the vertex tags in the Vertices adjacency
+ID results in {\em ku} being increased. Knowing {\em ku} and the size
+of the system (the number of Vertices in {\em G}, a check to see if
+the previously allocated 1d arrays for $A$, $x$ and $b$ are large
+enough. If the memory portions allocated for the 1d arrays are not big
+enough, the old space is returned to the heap and new space is
+allocated from the heap. Prints a warning message if not enough
+memory is available on the heap for the 1d arrays and returns a
+$-1$. If memory is available, the components of the arrays are zeroed
+and $A$ is marked as being unfactored. If the system size has
+increased, new Vector objects for $x$ and $b$ using the {\em (double
+*,int)} Vector constructor are created. Finally, the result of
+invoking {\em setSize()} on the associated Solver object is
+returned. \\ 
+
+
+\indent {\em int addA(const Matrix \&M, const ID \& loc,
+doublefact = 1.0) =0;} \\
+First tests that {\em loc} and {\em M} are of compatible sizes; if not
+a warning message is printed and a $-1$ is returned. The LinearSOE
+object then assembles {\em fact} times the Matrix {\em 
+M} into the matrix $A$. The Matrix is assembled into $A$ at the
+locations given by the ID object {\em loc}, i.e. $a_{loc(i),loc(j)} +=
+fact * M(i,j)$. If the location specified is outside the range,
+i.e. $(-1,-1)$ the corresponding entry in {\em M} is not added to
+$A$. If {\em fact} is equal to $0.0$ or $1.0$, more efficient steps
+are performed. Returns $0$.  \\
+
+
+{\em int addB(const Vector \& V, const ID \& loc,
+double fact = 1.0) =0;} \\
+First tests that {\em loc} and {\em V} are of compatible sizes; if not
+a warning message is printed and a $-1$ is returned. The LinearSOE
+object then assembles {\em fact} times the Vector {\em V} into
+the vector $b$. The Vector is assembled into $b$ at the locations
+given by the ID object {\em loc}, i.e. $b_{loc(i)} += fact * V(i)$. If a
+location specified is outside the range, e.g. $-1$, the corresponding
+entry in {\em V} is not added to $b$. If {\em fact} is equal to $0.0$,
+$1.0$ or $-1.0$, more efficient steps are performed. Returns $0$. \\
+
+
+{\em int setB(const Vector \& V, double fact = 1.0) =0;} \\
+First tests that {\em V} and the size of the system are of compatible
+sizes; if not a warning message is printed and a $-1$ is returned. The
+LinearSOE object then sets the vector {\em b} to be {\em fact} times
+the Vector {\em V}. If {\em fact} is equal to $0.0$, $1.0$ or $-1.0$,
+more efficient steps are performed. Returns $0$. \\ 
+
+{\em void zeroA(void) =0;} \\
+Zeros the entries in the 1d array for $A$ and marks the system as not
+having been factored. \\
+
+{\em void zeroB(void) =0;} \\
+Zeros the entries in the 1d array for $b$. \\
+
+{\em const Vector \&getX(void) = 0;} \\
+Returns the Vector object created for $x$. \\
+
+{\em const Vector \&getB(void) = 0;} \\
+Returns the Vector object created for $b$. \\
+
+{\em double normRHS(void) =0;} \\
+Returns the 2-norm of the vector $x$. \\
+
+{\em void setX(int loc, double value) =0;}\\
+If {\em loc} is within the range of $x$, sets $x(loc) = value$. \\
+
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+Returns $0$. The object does not send any data or connectivity
+information as this is not needed in the finite element design. \\
+
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);}\\ 
+Returns $0$. The object does not receive any data or connectivity
+information as this is not needed in the finite element design.

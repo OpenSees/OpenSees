@@ -1,0 +1,238 @@
+\documentclass[12pt]{article}
+
+\usepackage{headerfooter}
+\usepackage{epsfig}
+\usepackage{verbatimfiles}
+\usepackage{fullpage}
+\usepackage{amsmath}
+
+\newcommand{\HRule}{\rule{\linewidth}{.3mm}}
+
+\bibliographystyle{plain}
+\begin{document}
+
+\newcommand{\pd}[2]{\frac{\partial{#1}}{\partial{#2}}}
+
+\begin{center}
+{\bf \Large The OpenSees Truss Element}
+
+{\bf August 22, 2001} 
+
+{\bf Michael H. Scott} 
+
+{\bf PEER, University of California, Berkeley}
+\end{center}
+
+This document provides a brief description of the interaction between a truss
+element and the UniaxialMaterial class in OpenSees.
+Material nonlinearity is abstracted, or separated, from the
+element formulation by using the UniaxialMaterial class.
+Figure~\ref{fig:TrussClass} shows the class interaction between a truss
+element and the UniaxialMaterial class. A truss element can use any one of
+ElasticMaterial or HardeningMaterial models. When a new uniaxial material class
+is added to the framework, the truss can use the new class without modification.
+
+\begin{figure}[htpb]
+\begin{center}
+\leavevmode
+\hbox{%
+\epsffile{./fig_files/TrussClass.eps}}
+\end{center}
+\caption{Truss class diagram}
+\label{fig:TrussClass}
+\end{figure}
+
+The formulation of a linear geometry, material nonlinear truss element is covered
+in the remainder of this document. First, the linear transformation is described,
+followed by the truss element formulation.
+
+\section{Geometric Transformation}
+A linear transformation of displacements and forces between the global and basic
+frames of reference is assumed. The transformation of global displacements,{\bf u},
+to a single axial displacement, $v_1$, is given by the linear relation,
+
+\begin{equation}
+\label{eq:v=Tu}
+{\bf v} = \left[ \begin{array}{c} v_1 \end{array} \right] = {\bf T}{\bf u}.
+\end{equation}
+
+\noindent Based on force equilibrium, the transformation of axial force in the
+basic system to global forces is also linear,
+
+\begin{equation}
+\label{eq:p=Tq}
+{\bf p} = {\bf T}^T{\bf q} = {\bf T}^T \left[ \begin{array}{c} q_1 \end{array} \right].
+\end{equation}
+
+The transformation between global and basic systems is shown schematically in
+figure~\ref{fig:TrussTransf}. The transformation matrix, {\bf T}, is given in terms
+of the element orientation, $\theta$, in the global system,
+
+\begin{equation}
+{\bf T} = \left[ \begin{array}{cccc} -\cos\theta & -\sin\theta & \cos\theta & \sin\theta
+\end{array} \right].
+\end{equation}
+
+\begin{figure}[htpb]
+\begin{center}
+\leavevmode
+\hbox{%
+\epsfxsize=6.0in
+\epsffile{./fig_files/TrussTransf.eps}}
+\end{center}
+\caption{Linear geometric transformation}
+\label{fig:TrussTransf}
+\end{figure}
+
+\section{Truss Element Formulation}
+This section describes the formulation of a displacement based truss element.
+The governing compatibility and equilibrium equations are covered along with the consistent
+element stiffness. Axial deformations are assumed to be small.
+
+\subsection{Compatibility}
+For the truss element, there is a strong form of compatibility between
+basic displacements, {\bf v}, and section deformations {\bf e}, satisfied
+pointwise along the element length,
+
+\begin{equation}
+\label{eq:e=av}
+{\bf e}(x) =
+\left[ \begin{array}{c} \varepsilon(x) \end{array} \right] =
+{\bf a}(x) \: v_1,
+\end{equation}
+
+\noindent where {\bf a} is the strain-displacement matrix and $v_1$ is computed
+from equation~\ref{eq:v=Tu}. There is one section deformation,
+the axial strain, $\varepsilon$. Assuming linear axial
+displacement the shape function in the basic system is
+
+\begin{equation}
+\label{eq:N}
+{\bf N}(x) =
+\left[ \begin{array}{c} N_1(x) \end{array} \right] =
+\left[ \begin{array}{c} \frac{x}{L} \end{array}
+\right].
+\end{equation}
+
+\noindent The strain-displacement matrix contains the shape function derivative.
+Axial strain is the first derivative of the axial displacement,
+
+\begin{equation}
+{\bf a}(x) = \left[ \begin{array}{c}
+N_{1,x} \end{array}
+\right].
+\end{equation}
+
+\noindent Using the shape function defined in equation~\ref{eq:N}, the
+strain-displacement matrix is then,
+
+\begin{equation}
+{\bf a}(x) = \left[ \begin{array}{c} \frac{1}{L}
+\end{array}
+\right].
+\end{equation}
+
+\noindent Thus, the axial strain, $\varepsilon$, is constant along the element
+length and equation~\ref{eq:e=av} reduces to
+
+\begin{equation}
+\varepsilon(x) = \frac{v_1}{L}.
+\end{equation}
+
+After computing the axial strain, the method {\em setTrialStrain()} should be invoked
+with the updated strain.
+
+\subsection{Equilibrium}
+Using the principle of virtual displacements (virtual work),
+equilibrium between element end force, {\bf q}, and section stress
+resultant, {\bf s},
+is satisfied weakly, or in an average sense, along the element length,
+
+\begin{equation}
+\label{eq:q}
+{\bf q} =  \left[ \begin{array}{c} q_1 \end{array} \right] =
+\int_0^L {\bf a}(x)^T {\bf s}(x) \: dx,
+\end{equation}
+
+\noindent where the section stress resultant is the axial force, $P$.
+For the truss element, the stress resultant is computed by integrating
+constant material stress, $\sigma$, over the cross-section area, $A$,
+
+\begin{equation}
+{\bf s}(x) =
+\left[ \begin{array}{c} P(x) \end{array} \right] =
+\left[ \begin{array}{c} \sigma A \end{array} \right],
+\end{equation}
+
+\noindent where $\sigma$ is constant since the axial strain does
+not vary along the element length. The integral in equation~\ref{eq:q}
+reduces to
+
+\begin{equation}
+q_1 = \sigma A,
+\end{equation}
+
+\noindent since ${\bf a}(x) = \frac{1}{L}$.
+To obtain the current value of material stress, $\sigma$, the method
+{\em getStress()} must be invoked. Then the truss force can be transformed
+to the global system via equation~\ref{eq:p=Tq}, i.e.,
+
+\begin{equation}
+{\bf p} = {\bf T}^T q_1.
+\end{equation}
+
+\subsection{Element Stiffness}
+To solve the structural system of equations, the element stiffness must be assembled
+along with the resisting force. The element stiffness is obtained by taking the
+partial derivative of equation~\ref{eq:p=Tq} with respect to displacements,
+{\bf u}.
+
+\begin{align}
+{\bf k} &= \pd{\bf p}{\bf u}\\
+&= \pd{\bf p}{\bf q} \pd{\bf q}{\bf v} \pd{\bf v}{\bf u} \\
+{\bf k} &= \label{eq:k} {\bf T}^T {\bf k}_b {\bf T}
+\end{align}
+
+\noindent The basic element stiffness, ${\bf k}_b$, is the partial derivative
+of the basic forces, {\bf q}, with respect to the basic displacements, ${\bf v}$.
+Differentiating equation~\ref{eq:q} gives,
+
+\begin{align}
+{\bf k}_b &= \pd{\bf q}{\bf v} \\
+&= \int_0^L {\bf a}(x)^T \pd{\bf s}{\bf v} \: dx \\
+&= \int_0^L {\bf a}(x)^T \pd{\bf s}{\bf e} \pd{\bf e}{\bf v} \: dx \\
+{\bf k}_b &= \int_0^L {\bf a}(x)^T {\bf k}_s(x) {\bf a}(x) \: dx \\
+\end{align}
+
+\noindent Recalling that ${\bf a}(x) = \frac{1}{L}$, integration along the
+element length gives,
+
+\begin{equation}
+{\bf k}_b = \label{eq:kb} \frac{{\bf k}_s}{L},
+\end{equation}
+
+\noindent for a prismatic element where ${\bf k}_s$ is constant.
+
+The section tangent stiffness matrix can be manipulated further and put
+in terms of the material tangent. Recalling that ${\bf s} = \sigma A$ and
+${\bf e} = \varepsilon$,
+
+\begin{align}
+{\bf k}_s &= \pd{\bf s}{\bf e} \\
+&= \pd{\bf s}{\varepsilon}\pd{\varepsilon}{\bf e} \\
+&= \pd{\sigma}{\varepsilon} A \\
+{\bf k}_s &= \label{eq:ks} D_t A,
+\end{align}
+
+\noindent where $D_t$ is the material tangent, which is returned upon invoking
+the method {\em getTangent()}. Combining equations~\ref{eq:k},~\ref{eq:kb},
+and~\ref{eq:ks}, the familiar truss stiffness equation is recovered,
+
+\begin{equation}
+{\bf k} = {\bf T}^T \frac{D_t A}{L} {\bf T}.
+\end{equation}
+
+
+
+
+\end{document}

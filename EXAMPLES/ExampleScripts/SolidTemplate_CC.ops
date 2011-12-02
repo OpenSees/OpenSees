@@ -1,0 +1,140 @@
+#[jeremic,zhyang]@ucdavis.edu
+# tcl example file using Template3Dep material
+# -- Cam Clay material model -- Normally Consolidated
+# Inelastic static analysis
+#
+#two load stages:
+# stage 1: isotropic compression
+# stage 2: triaxial shearing
+#May 7, 2001
+
+
+# ################################
+# create the modelbuilder
+# #################################
+
+model BasicBuilder -ndm 3 -ndf 3
+
+set g  -9.81
+set p   50.0
+set np -50.0
+set lf1 0.01
+set NN1 100
+# ################################
+# build the model
+# #################################
+
+node 1 1.0 1.0 0.0
+node 2 0.0 1.0 0.0
+node 3 0.0 0.0 0.0
+node 4 1.0 0.0 0.0
+node 5 1.0 1.0 1.0
+node 6 0.0 1.0 1.0
+node 7 0.0 0.0 1.0
+node 8 1.0 0.0 1.0
+
+#triaxial test boundary
+fix 1 0 1 1
+fix 2 1 1 1
+fix 3 1 0 1
+fix 4 0 0 1
+ 
+
+#Elastic-plastic model
+#================================================================
+# Cam clay model
+# yield surface M = 1.2
+set ys "-CC 1.2"
+
+# Potential surface M = 1.2
+set ps "-CC 1.2"
+
+#Scalar evolution law___void ratio___Lamda___Kappa 
+set ES1  "-NLp           0.85        0.19   0.06"
+
+#Tensorial evolution law
+set ET1  "-Linear  0.0"
+
+# initial stress
+set stressp "0.20 0 0  0 0.20 0  0 0 0.20"
+
+#____________E______Eo_____v__rho________________po
+set EPS "70000.0 70000.0 0.3 1.8 -NOD 1 -NOS 1 200.1 -stressp $stressp"
+
+#
+nDMaterial Template3Dep 1 -YS $ys -PS $ps -EPS $EPS -ELS1 $ES1 -ELT1 $ET1
+
+#____________tag_____8 nodes______matID__bforce1_bforce2_bforce3_rho
+element Brick8N  1  5 6 7 8 1 2 3 4   1      0.0     0.0    $g    1.8
+    
+#stage 1
+#===========================================================
+#isotropic load
+pattern Plain 2 "Linear" {
+load 1 $np 0   0   -pattern 2
+load 3 0   $p  0   -pattern 2
+load 4 $np $p  0   -pattern 2
+load 5 $np $np $np -pattern 2
+load 6 $p  $np $np -pattern 2
+load 7 $p  $p  $np -pattern 2
+load 8 $np $p  $np -pattern 2
+}
+
+#Set up recorder
+recorder Node -file node_iso.out -time -node 5 -dof 3 disp
+#recorder plot node_iso.out "disp load"  10 10 300 300 -columns 2 1
+
+system UmfPack
+constraints Penalty 1e12 1e12
+test NormDispIncr 1.0e-8 30 0
+integrator LoadControl $lf1 1 $lf1 $lf1
+algorithm Newton
+numberer RCM
+analysis Static
+
+analyze $NN1
+
+
+#stage 2
+#===========================================================
+#Axial loading
+wipeAnalysis
+#loadConst
+
+equalDOF 5 6 3 3
+equalDOF 5 7 3 3
+equalDOF 5 8 3 3
+       	  
+
+#set previous load constant
+loadConst time 0
+
+# Before shifting to disp. control, apply reference load on the top
+pattern Plain 3 "Linear" {
+load 5 0.0 0.0 $np 
+load 6 0.0 0.0 $np
+load 7 0.0 0.0 $np 
+load 8 0.0 0.0 $np
+}
+
+#Set up recorder for axial loading stage
+recorder Node -file node_z.out -time -node 5 -dof 3 disp
+#recorder plot node_z.out "disp load vertical" 10 400 300 300 -columns 1 2
+
+recorder Element -ele 1 -file element.out force
+#recorder plot element.out "nodal force displ horizontal" 10 800 300 300 -columns 1 3
+
+set NN2 200
+set ndz -0.0001
+
+system UmfPack
+constraints Penalty 1e12 1e12
+test NormDispIncr 1.0e-08 30  0
+integrator DisplacementControl 5 3 $ndz 1 $ndz $ndz
+algorithm Newton
+numberer RCM
+analysis Static
+
+analyze $NN2
+
+wipe

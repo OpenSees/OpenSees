@@ -1,0 +1,130 @@
+%File: ~/OOP/analysis/integrator/LoadControl.tex
+%What: "@(#) LoadControl.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/integrator/LoadControl.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class LoadControl: public StaticIntegrator  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent Integrator \\
+\indent\indent\indent IncrementalIntegrator \\
+\indent\indent\indent\indent StaticIntegrator \\
+\indent\indent\indent\indent\indent {\bf LoadControl} \\
+
+\noindent {\bf Description} \\ 
+\indent LoadControl is a subclass of StaticIntegrator, it is
+used to when performing a static analysis on the FE\_Model using the
+load control method. In the load control method, the following
+constraint equation is added to equation~\ref{staticFormTaylor} of the
+StaticIntegrator class: 
+
+\[ 
+\lambda_n^{(i)} - \lambda_{n-1} = \delta \lambda_n
+\]
+
+\noindent where $\delta \lambda_n$ depends on $\delta \lambda_{n-1}$,
+the load increment at the previous time step, $J_{n-1}$,
+the number of iterations required to achieve convergence in the
+previos load step, and $Jd$, the desired number of iteraions. $\delta
+\lambda_n$ is bounded by $\delta \lambda_{min}$  and $\delta \lambda_{max}$. \\
+
+
+\[ 
+\delta \lambda_n = max \left( \delta \lambda_{min}, min \left(
+\frac{Jd}{J_{n-1}} \delta \lambda_{n-1}, \delta \lambda_{max} \right) \right)
+\]
+
+Knowing $\lambda_n^{(i)}$ prior to each iteration, the $N+1$ unknowns
+in equation~\ref{staticFormTaylor}, is reduced to $N$ unknowns and
+results in the following equation:
+
+\begin{equation} 
+\R(\U_{n}) = \lambda_n^{(i)} \P 
+ - \f_{R}\left(\U_{n}^{(i)} \right) - 
+\K_n^{(i)} 
+(\U_{n} - \U_{n}^{(i)})  
+\label{staticFormLoadControl}
+\end{equation} 
+
+\noindent {\bf Class Interface} \\
+\indent // Constructors \\
+\indent {\em LoadControl(double $\delta \lambda_1$, int Jd, 
+double $\delta \lambda_{min}$, double $\delta \lambda_{max}$);}\\ \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$LoadControl();}\\  \\
+\indent // Public Methods \\
+\indent {\em int newStep(void);} \\
+\indent {\em int update(const Vector \&$\Delta U$);} \\
+\indent {\em int setDeltaLambda(double $\delta
+\lambda$;)} \\ \\
+\indent // Public Methods for Output\\
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ 
+\indent {\em int Print(OPS_Stream \&s, int flag = 0);}\\
+
+\noindent {\bf Constructors} \\
+\indent {\em LoadControl(double $\delta \lambda_1$, int Jd, 
+double $\delta \lambda_{min}$, double $\delta \lambda_{max}$);}\\ \\
+The integer INTEGRATOR\_TAGS\_LoadControl (defined in
+$<$classTags.h$>$) is passed to the StaticIntegrator classes
+constructor. $\delta \lambda_1$ is the load factor used in the first
+step. The arguments $Jd$, $\delta \lambda_{min}$, and $\delta
+\lambda_{max}$ are used in the determination of the increment in the
+load factor at each step. \\
+
+
+
+\noindent {\bf Destructor} \\
+\indent {\em $\tilde{ }$LoadControl();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods}\\
+
+{\em int newStep(void);} \\
+The object obtains the current value of $\lambda$ from the AnalysisModel
+object. It increments this by $\delta \lambda_n $.
+
+\[ 
+\delta \lambda_n = max \left( \delta \lambda_{min}, min \left(
+\frac{Jd}{J_{n-1}} \delta \lambda_{n-1}, \delta \lambda_{max} \right) \right)
+\]
+
+\noindent It will then invoke
+{\em applyLoadDomain(0.0, $\lambda$)} on the AnalysisModel
+object. Returns $0$ if successful. A warning message is printed and a
+$-1$ is returned if no AnalysisModel is associated with the object. \\
+
+{\em int update(const Vector \&$\Delta U$);} \\
+Invoked this causes the object to first increment the DOF\_Group
+displacements with $\Delta U$, by invoking {\em incrDisp($\Delta U)$}
+on the AnalysisModel, and then to update the domain, by invoking {\em
+updateDomain()} on the AnalysisModel. Returns $0$ if successful, a
+warning message and a $-1$ is returned if no AnalysisModel is
+associated with the object. \\
+
+
+\indent {\em int setDeltaLambda(double $\delta \lambda$;)} \\
+Sets the value of the load increment in {\em newStep()} to be $\delta
+\lambda$. Returns $0$.\\
+
+{\em int sendSelf(int commitTag, Channel \&theChannel); } \\ 
+Places in a vector if size 5 the value of $\delta \lambda_{n-1}$,
+$Jd$, $J_{n-1}$, $\delta \lambda_{min}$ and $\delta \lambda_{max}$)
+and then sends the Vector. Returns $0$ if successful, a warning
+message is printed and a $-1$ is returned if {\em theChannel} fails to
+send the Vector. \\ 
+
+{\em int recvSelf(int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker); } \\ 
+Receives in a Vector of size 5 the data that was sent in {\em sendSelf()}.
+Returns $0$ if successful, a warning message is printed, $\delta
+\lambda$ is set to $0$, and a $-1$ is returned if {\em theChannel} 
+fails to receive the Vector.\\
+
+{\em int Print(OPS_Stream \&s, int flag = 0);}\\
+The object sends to $s$ its type, the current value of $\lambda$, and
+$\delta \lambda$. 

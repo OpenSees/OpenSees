@@ -1,0 +1,51 @@
+%File: ~/recorder/Recorder.tex
+%What: "@(#) Recorder.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/recorder/Recorder.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Recorder \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf Recorder} \\
+
+\noindent {\bf Description}  \\
+\indent The Recorder class is an abstract class which is introduced to allow
+information to be saved during the analysis. The interface defines two
+pure virtual methods {\em record()} and {\em playback()}. {\em
+record()} is a method which is called by the Domain object during a
+{\em commit()}. The {\em playback()} method can be called by the analyst after
+the analysis has been performed. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em Recorder();}\\ \\
+\indent // Destructor \\
+\indent {\em virtual $\tilde{ }$Recorder();}\\ \\
+\indent // Public Methods  \\
+\indent {\em virtual int record(int commitTag) =0;}\\
+\indent {\em virtual int playback(int commitTag) =0;}\\
+\indent {\em virtual void restart(void) =0;}\\ 
+
+\noindent {\bf Constructor}  \\
+\indent {\em Recorder();}  \\ 
+Does nothing.\\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$Recorder();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual int record(int commitTag) =0;}\\
+Invoked by the Domain object after {\em commit()} has been invoked on all the
+domain component objects. What the Recorder records depends on the
+concrete subtype. \\
+
+\indent {\em virtual int playback(int commitTag) =0;}\\
+Invoked by the analyst after the analysis has been performed. What the
+Recorder does depends on the concrete subtype. \\
+
+\indent {\em virtual void restart(void) =0;}\\ 
+Invoked by the Domain object when {\em revertToStart()} is invoked on
+the Domain object. What the Recorder does depends on the concrete subtype. 

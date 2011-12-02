@@ -1,0 +1,88 @@
+%File: ~/OOP/analysis/integrator/Integrator.tex
+%What: "@(#) Integrator.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/integrator/Integrator.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Integrator: public MovableObject;  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent {\bf Integrator} \\
+
+\noindent {\bf Description} \\ 
+\indent The Integrator class is an abstract base class. Its purpose is
+to define the interface common among all subclasses. An integrator
+method is responsible for defining how the system of equations are set
+up (this it does by specifying how the FE\_Element and DOF\_Group
+objects of the analysis model construct the vectors and matrices asked
+of them by the Analysis). It is also responsible for updating the
+response quantities at the DOFs with the appropriate values; the values
+are determined from the solution to the system of equations. \\
+
+\noindent {\bf Class Interface} \\
+\indent\indent // Constructor \\
+\indent\indent {\em Integrator(int classTag);}\\ \\
+\indent\indent // Destructor \\
+\indent\indent {\em virtual $\tilde{ }$Integrator();}\\  \\
+\indent\indent // Public Methods \\
+\indent\indent {\em virtual int domainChanged(void); } \\
+\indent\indent {\em  virtual int formEleTangent(FE\_Element *theEle) =0;} \\
+\indent\indent {\em  virtual int formNodTangent(DOF\_Group *theDof) =0;} \\
+\indent\indent {\em  virtual int formEleResidual(FE\_Element *theEle) =0;} \\
+\indent\indent {\em  virtual int formNodUnbalance(DOF\_Group *theDof)
+=0;} \\ \\
+\indent\indent // Public Method added for Domain Decomposition \\
+\indent\indent {\em virtual  int getLastResponse(Vector \&result, const
+ID \&id) =0;} \\ \\
+\indent\indent // Public Method added for Output \\
+\indent\indent {\em virtual void Print(OPS_Stream \&s, int flag = 0) =0;}\\
+
+\noindent {\bf Constructor} \\
+\indent {\em Integrator(int classTag);}\\ 
+{\em classTag} is passed to the MovableObject classes constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~$\tilde{}$Integrator();}\\ 
+Does nothing. Provided so the subclass destructors will be invoked. \\
+
+\noindent {\bf Public Methods}\\
+\indent {\em virtual int domainChanged(void); } \\
+Is called by the Analysis object. Refer to the Analysis classes to see
+when it is invoked. To return $0$ if successful, a negative number if
+not. This base class returns $0$.\\
+
+\indent {\em  virtual int formEleTangent(FE\_Element *theEle) =0;} \\
+Called upon to determine the FE\_Element {\em theEle}s matrix
+contribution to the SystemOfEqn object. To return $0$ if successful,
+a negative number otherwise. \\ 
+ 
+
+\indent {\em  virtual int formNodTangent(DOF\_Group *theDof) =0;} \\
+Called upon to determine the DOF\_Group {\em theDof}s matrix
+contribution to the SystemOfEqn object. To return $0$ if successful,
+a negative number otherwise. \\ 
+
+
+\indent {\em  virtual int formEleResidual(FE\_Element *theEle) =0;} \\
+Called upon to determine the FE\_Element {\em theEle}s vector
+contribution to the SystemOfEqn object. To return $0$ if successful,
+a negative number otherwise. \\ 
+
+
+\indent {\em virtual int formNodUnbalance(DOF\_Group *theDof) =0;} \\
+Called upon to determine the DOF\_Group {\em theDof}s vector
+contribution to the SystemOfEqn object. To return $0$ if successful,
+a negative number otherwise. \\ 
+
+{\em virtual int getLastResponse(Vector \&result, const ID \&id) =0;} \\
+Called upon to get the result quantities for the components specified
+in the ID {\em id} and to place them in the Vector {\em result}. This
+is provided for domain decomposition methods. To return $0$ if
+successful, a negative number otherwise. \\ 
+
+\indent {\em virtual void Print(OPS_Stream \&s, int flag = 0) =0;}\\
+The Integrator is to send information to the stream based on the
+integer {\em flag}. 
+

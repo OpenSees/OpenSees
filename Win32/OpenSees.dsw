@@ -1,0 +1,470 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "actor"=.\proj\actor\actor.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "analysis"=.\proj\analysis\analysis.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "cblas"=.\proj\cblas\cblas.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "convergence"=.\proj\convergence\convergence.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "database"=.\proj\database\database.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "domain"=.\proj\domain\domain.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "element"=.\proj\element\element.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "graph"=.\proj\graph\graph.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "handler"=.\proj\handler\handler.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "material"=.\proj\material\material.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "matrix"=.\proj\matrix\matrix.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "modelbuilder"=.\proj\modelbuilder\modelbuilder.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "openSees"=.\proj\openSees\openSees.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name actor
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name analysis
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name cblas
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name convergence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name database
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name domain
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name element
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name graph
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name handler
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name material
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name matrix
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name modelbuilder
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name recorder
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name renderer
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name string
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name superLU
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name system
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tagged
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name utility
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name reliability
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "openSeesTk"=.\proj\openSeesTk\openSeesTk.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name actor
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name analysis
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name cblas
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name convergence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name database
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name domain
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name element
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name graph
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name handler
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name material
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name matrix
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name modelbuilder
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name recorder
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name reliability
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name renderer
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name string
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name superLU
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name system
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tagged
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name utility
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "quickMain"=.\proj\quickMain\quickMain.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name actor
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name analysis
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name cblas
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name convergence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name domain
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name element
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name graph
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name material
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name matrix
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name modelbuilder
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name recorder
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name superLU
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name system
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tagged
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name utility
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name database
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name handler
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name renderer
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name string
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "recorder"=.\proj\recorder\recorder.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "reliability"=.\proj\reliability\reliability.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "renderer"=.\proj\renderer\renderer.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "string"=.\proj\string\string.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "superLU"=.\proj\superLU\superLU.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "system"=.\proj\system\system.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "tagged"=.\proj\tagged\tagged.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "utility"=.\proj\utility\utility.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+
