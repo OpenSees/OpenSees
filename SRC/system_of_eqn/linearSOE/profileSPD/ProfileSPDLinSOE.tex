@@ -1,0 +1,215 @@
+%File: ~/OOP/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinSOE.tex
+%What: "@(#) ProfileSPDLinSOE.tex, revA"
+
+\noindent {\bf ProfileSPDLinSOE} \\
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$ProfileSPDLinSOE.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class ProfileSPDLinSOE: public LinearSOE \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent SystemOfEqn \\
+\indent\indent\indent LinearSOE \\
+\indent\indent\indent\indent {\bf ProfileSPDLinSOE} \\
+
+\noindent {\bf Description}  \\
+\indent ProfileSPDLinSOE is class which is used to store a symmetric
+system of equations using a profile storage scheme. The upper
+triangular part of $A$ is stored in a 1d double array with the diagonals of
+$A$ located at positions given by an integer array $iLoc$. 
+For example when $n=5$ and $A$ as shown below:
+
+$$
+\left[
+\begin{array}{ccccc}
+a_{0,0} & a_{0,1}  & 0 & 0 & a_{0,4} \\
+a_{1,0} & a_{1,1} & a_{1,2} & a_{1,3} & 0 \\
+a_{2,0} & a_{2,1} & a_{2,2} & a_{2,3} & a_{2,4}  \\
+0 & a_{3,1} & a_{3,2} & a_{3,3} & a_{3,4} \\
+0 & 0 & a_{4,2} & a_{4,3} & a_{4,4} \\
+\end{array}
+\right] 
+$$
+
+this is stored using:
+
+
+$$ A =
+\left[
+\begin{array}{cccccccccccccccccccc}
+a_{0,0} & a_{0,1}  & a_{1,1} & a_{1,2} & a_{2,2} & a_{1,3} &
+a_{2,3} & a_{3,3} & a_{0,4} & 0 & a_{2,4} & a_{3,4} & a_{4,4}\\
+\end{array}
+\right] 
+$$
+
+and 
+
+$$ iLoc =
+\left[
+\begin{array}{cccccccccccccccccccc}
+1 & 3 & 5 & 8 & 13 \\
+\end{array}
+\right] 
+$$
+Note $iLoc$ stores the diagonal locations using Fortran indexing. This
+is to facilitate calls to Fortran libraries, e.g. Digital's DXML.
+The $x$ and $b$ vectors are stored in 1d double arrays of length $N$. \\
+
+
+\noindent {\bf Interface}  \\
+\indent\indent {// Constructors} \\
+\indent\indent {\em ProfileSPDLinSOE(Solver \&theSolver);}  \\
+\indent\indent {\em ProfileSPDLinSOE(int N, int *iLoc,
+		  ProfileSPDLinSolver \&theSolver);}\\ \\
+\indent\indent {// Destructor} \\
+\indent\indent {\em  $\tilde{}$ProfileSPDLinSOE();}\\ \\
+\indent\indent {// Public Methods }  \\
+\indent\indent {\em  int setProfileSPDSolver(ProfileSPDLinSolver \&newSolver);}\\
+\indent\indent {\em int setSize(const Graph \&theGraph) =0; } \\
+\indent\indent {\em int getNumEqn(void) =0; } \\
+\indent\indent {\em int addA(const Matrix \&theMatrix, const ID \& loc,
+doublefact = 1.0) =0;} \\
+\indent\indent {\em int addB(const Vector \& theVector, const ID \& loc,
+double fact = 1.0) =0;} \\
+\indent\indent {\em int setB(const Vector \& theVector, 
+double fact = 1.0) =0;} \\
+\indent\indent {\em void zeroA(void) =0;} \\
+\indent\indent {\em void zeroB(void) =0;} \\
+\indent\indent {\em const Vector \&getX(void) = 0;} \\
+\indent\indent {\em const Vector \&getB(void) = 0;} \\
+\indent\indent {\em double normRHS(void) =0;} \\
+\indent\indent {\em void setX(int loc, double value) =0;}\\
+\indent\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ 
+
+\noindent {\bf Constructors}  \\
+\indent {\em ProfileSPDLinSOE(Solver \&theSolver);}  \\
+The {\em solver} and a unique class tag (defined in $<$classTags.h$>$)
+are passed to the LinearSOE constructor. The system size is set
+to $0$ and the matrix $A$ is marked as not having been factored. Invokes
+{\em setLinearSOE(*this)} on the {\em solver}. No memory is
+allocated for the 1d arrays. \\  
+
+
+{\em ProfileSPDLinSOE(int N, int *newIloc,
+		  ProfileSPDLinSolver \&theSolver); }\\
+The {\em solver} and a unique class tag (defined in $<$classTags.h$>$)
+are passed to the LinearSOE constructor. The system size is set
+to $N$ and the matrix $A$ is marked as not having been
+factored or condensed. Obtains memory from the heap for the 1d arrays storing the
+data for $A$, $x$, $b$ and $iLoc$ and stores the size of these arrays. If not
+enough memory is available for these arrays a warning message is
+printed and the system size is set to $0$. The size of $A$ is given
+by $newIloc(N-1)$, if this is not a valid address in {\em newIloc} a
+segmentation fault or erronious results will result. The contents of
+$iLoc$ are set equal to those of {\em newIloc}. Invokes {\em
+setLinearSOE(*this)} and {\em setSize()} on {\em solver},
+printing a warning message if {\em setSize()} returns a negative
+number. Also creates Vector objects for $x$ and $b$ using the {\em
+(double *,int)} Vector constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$ProfileSPDLinSOE();}\\ 
+Calls delete on any arrays created. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em  int setProfileSPDSolver(ProfileSPDLinSolver \&newSolver);}\\
+Invokes {\em setLinearSOE(*this)} on {\em newSolver}.
+If the system size is not equal to $0$, it also invokes {\em setSize()}
+on {\em newSolver}, printing a warning and returning the returned value if this
+method returns a number less than $0$. Finally it returns the result
+of invoking the LinearSOE classes {\em setSolver()} method. \\
+
+\indent {\em int getNumEqn(void) =0; } \\
+A method which returns the current size of the system. \\
+
+\indent {\em  int setSize(const Graph \&G); } \\ 
+The size of the system is determined by looking at the adjacency ID of
+each Vertex in the Graph object {\em G}. This is done by first
+determining the column height for each Vertex $i$ in {\em G}, done by
+setting $iLoc(i)$ equal to $0$ and then checking for each Vertex
+in {\em G}, whether any of the vertex tags in the Vertices adjacency
+ID results in $iLoc(i)$ being increased. Knowing the col height of
+each column, the values of {\em iLoc} can be determined. Knowing {\em
+iLoc} and the size of the system (the number of Vertices in {\em G}, 
+a check to see if the previously allocated 1d arrays for $A$, $x$ and
+$b$ are large enough. If the memory portions allocated for the 1d
+arrays are not big enough, the old space is returned to the heap and
+new space is allocated from the heap. Printins a warning message if
+not enough memory is available on the heap for the 1d arrays and
+returns a $-1$. If memory is available, the components of the arrays
+are zeroed and $A$ is marked as being unfactored. If the system size
+has increased, new Vector objects for $x$ and $b$ using the {\em
+(double *,int)} Vector constructor are created. Finally, the result of 
+invoking {\em setSize()} on the associated Solver object is
+returned. \\ 
+
+
+\indent {\em int addA(const Matrix \&M, const ID \& loc,
+doublefact = 1.0) =0;} \\
+First tests that {\em loc} and {\em M} are of compatable sizes; if not
+a warning message is printed and a $-1$ is returned. The LinearSOE
+object then assembles {\em fact} times the Matrix {\em 
+M} into the matrix $A$. The Matrix is assembled into $A$ at the
+locations given by the ID object {\em loc}, i.e. $a_{loc(i),loc(j)} +=
+fact * M(i,j)$. If the location specified is outside the range,
+i.e. $(-1,-1)$ the corrseponding entry in {\em M} is not added to
+$A$. If {\em fact} is equal to $0.0$ or $1.0$, more efficient steps
+are performed. Returns $0$.  \\
+
+
+{\em int addB(const Vector \& V, const ID \& loc,
+double fact = 1.0) =0;} \\
+First tests that {\em loc} and {\em V} are of compatable sizes; if not
+a warning message is printed and a $-1$ is returned. The LinearSOE
+object then assembles {\em fact} times the Vector {\em V} into
+the vector $b$. The Vector is assembled into $b$ at the locations
+given by the ID object {\em loc}, i.e. $b_{loc(i)} += fact * V(i)$. If a
+location specified is outside the range, e.g. $-1$, the corresponding
+entry in {\em V} is not added to $b$. If {\em fact} is equal to $0.0$,
+$1.0$ or $-1.0$, more efficient steps are performed. Returns $0$. \\
+
+
+{\em int setB(const Vector \& V, double fact = 1.0) =0;} \\
+First tests that {\em V} and the size of the system are of compatable
+sizes; if not a warning message is printed and a $-1$ is returned. The
+LinearSOE object then sets the vector {\em b} to be {\em fact} times
+the Vector {\em V}. If {\em fact} is equal to $0.0$, $1.0$ or $-1.0$,
+more efficient steps are performed. Returns $0$. \\ 
+
+{\em void zeroA(void) =0;} \\
+Zeros the entries in the 1d array for $A$ and marks the system as not
+having been factored. \\
+
+{\em void zeroB(void) =0;} \\
+Zeros the entries in the 1d array for $b$. \\
+
+{\em const Vector \&getX(void) = 0;} \\
+Returns the Vector object created for $x$. \\
+
+{\em const Vector \&getB(void) = 0;} \\
+Returns the Vector object created for $b$. \\
+
+{\em double normRHS(void) =0;} \\
+Returns the 2-norm of the vector $x$. \\
+
+{\em void setX(int loc, double value) =0;}\\
+If {\em loc} is within the range of $x$, sets $x(loc) = value$. \\
+
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+Returns $0$. The object does not send any data or connectivity
+information as this is not needed in the finite element design. \\
+
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);}\\ 
+Returns $0$. The object does not receive any data or connectivity
+information as this is not needed in the finite element design.
+
+
+
+

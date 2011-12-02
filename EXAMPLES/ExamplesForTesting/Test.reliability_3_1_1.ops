@@ -1,0 +1,217 @@
+#
+#                      
+#   ---> O7----12----O8
+#        | 14      15|
+#        11          13
+#        |           | 
+#   ---> O5----7-----O6
+#        | 9      10 |
+#        6           8
+#        |           | 
+#   ---> O2----2-----O3
+#        | 4       5 |
+#        1           3 
+#        |           | 
+# _______O1__________O4__________
+#  ///   ///   ///   ///   ///
+#
+#
+#
+# ------- STRUCTURAL MODEL SPECIFICATIONS: ------- 
+# FINITE ELEMENT MODEL BUILDER 
+model basic -ndm 2 -ndf 2 
+
+# RELIABILITY MODEL BUILDER 
+reliability
+
+# NODES 
+node 1 0.0 0.0 
+node 2 0.0 3000.0 
+node 3 5000.0 3000.0 
+node 4 5000.0 0.0 
+node 5 0.0 6000.0 
+node 6 5000.0 6000.0 
+node 7 0.0 9000.0 
+node 8 5000.0 9000.0 
+ 
+# MATERIAL PROPERTIES 
+set  alpha     0.9
+set  ko        10000.0
+set  n         1.5
+set  gamma     1000.0
+set  beta      3000.0
+set  Ao        191.0
+set  deltaA    0.0
+set  deltaNu   0.0
+set  deltaEta  0.0
+uniaxialMaterial BoucWen     1 $alpha $ko $n  $gamma $beta $Ao $deltaA $deltaNu $deltaEta  1.0e-10
+
+# ELEMENTS 
+element truss 1 1 2 1000.0 1 
+element truss 2 2 3 1000.0 1 
+element truss 3 3 4 1000.0 1 
+element truss 4 4 2 1000.0 1 
+element truss 5 3 1 1000.0 1 
+element truss 6 2 5 1000.0 1 
+element truss 7 5 6 1000.0 1 
+element truss 8 6 3 1000.0 1 
+element truss 9 3 5 1000.0 1 
+element truss 10 6 2 1000.0 1 
+element truss 11 5 7 1000.0 1 
+element truss 12 7 8 1000.0 1 
+element truss 13 8 6 1000.0 1 
+element truss 14 6 7 1000.0 1 
+element truss 15 8 5 1000.0 1 
+ 
+# BOUNDARY CONDITIONS 
+fix 1 1 1 
+fix 4 1 1 
+ 
+# LOADS 
+set load 80000.0
+pattern Plain 1 Linear { 
+load 2 $load 0.0 
+load 5 $load 0.0 
+load 7 $load 0.0 
+} 
+ 
+# RECORDER 
+recorder Node nodeDisp.out disp -time -node 7 -dof 1
+
+# STRUCTURAL ANALYSIS MODEL
+constraints Plain
+numberer RCM
+test NormUnbalance 1.0e-6 25 0
+integrator LoadControl 0.025 1 0.025 0.025
+algorithm Newton
+system ProfileSPD
+sensitivityIntegrator -static
+sensitivityAlgorithm -computeAtEachStep 
+analysis Static 
+
+# UNCERTAINTY CHARACTERIZATION
+set corr 0.3
+set cov 0.03
+set covLoad 0.05
+set rvCounter 0
+
+set h alpha
+for { set i 1 } { $i <= 15 } { incr i } {
+	set rvCounter [expr $rvCounter+1]
+	randomVariablePositioner $rvCounter  -createRV3 normal $alpha  0.01  -element $i   -material $h  
+}
+correlateGroup  [expr $rvCounter-14] $rvCounter $corr
+
+set h ko
+for { set i 1 } { $i <= 15 } { incr i } {
+	set rvCounter [expr $rvCounter+1]
+	randomVariablePositioner $rvCounter  -createRV3 lognormal [expr $$h]  [expr $cov*$$h]  -element $i   -material $h  
+}
+correlateGroup  [expr $rvCounter-14] $rvCounter $corr
+
+set h n
+for { set i 1 } { $i <= 15 } { incr i } {
+	set rvCounter [expr $rvCounter+1]
+	randomVariablePositioner $rvCounter  -createRV3 lognormal [expr $$h]  [expr $cov*$$h]  -element $i   -material $h  
+}
+correlateGroup  [expr $rvCounter-14] $rvCounter $corr
+
+set h Ao
+for { set i 1 } { $i <= 15 } { incr i } {
+	set rvCounter [expr $rvCounter+1]
+	randomVariablePositioner $rvCounter  -createRV3 lognormal [expr $$h]  [expr $cov*$$h]  -element $i   -material $h  
+}
+correlateGroup  [expr $rvCounter-14] $rvCounter $corr
+
+set h gamma
+for { set i 1 } { $i <= 15 } { incr i } {
+	set rvCounter [expr $rvCounter+1]
+	randomVariablePositioner $rvCounter  -createRV3 lognormal [expr $$h]  [expr $cov*$$h]  -element $i   -material $h  
+}
+correlateGroup  [expr $rvCounter-14] $rvCounter $corr
+
+set h beta
+for { set i 1 } { $i <= 15 } { incr i } {
+	set rvCounter [expr $rvCounter+1]
+	randomVariablePositioner $rvCounter  -createRV3 lognormal [expr $$h]  [expr $cov*$$h]  -element $i   -material $h  
+}
+correlateGroup [expr $rvCounter-14] $rvCounter $corr
+
+set stdv_horz 25.0
+set stdv_vert 25.0
+set rvCounter [expr $rvCounter+1]
+set mean 0.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_horz   -node 1  -coord 1
+set rvCounter [expr $rvCounter+1]
+set mean 0.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_vert   -node 1  -coord 2
+set rvCounter [expr $rvCounter+1]
+set mean 0.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_horz   -node 2  -coord 1
+set rvCounter [expr $rvCounter+1]
+set mean 3000.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_vert   -node 2  -coord 2
+set rvCounter [expr $rvCounter+1]
+set mean 5000.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_horz   -node 3  -coord 1
+set rvCounter [expr $rvCounter+1]
+set mean 3000.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_vert   -node 3  -coord 2
+set rvCounter [expr $rvCounter+1]
+set mean 5000.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_horz   -node 4  -coord 1
+set rvCounter [expr $rvCounter+1]
+set mean 0.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_vert   -node 4  -coord 2
+set rvCounter [expr $rvCounter+1]
+set mean 0.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_horz   -node 5  -coord 1
+set rvCounter [expr $rvCounter+1]
+set mean 6000.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_vert   -node 5  -coord 2
+set rvCounter [expr $rvCounter+1]
+set mean 5000.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_horz   -node 6  -coord 1
+set rvCounter [expr $rvCounter+1]
+set mean 6000.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_vert   -node 6  -coord 2
+set rvCounter [expr $rvCounter+1]
+set mean 0.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_horz   -node 7  -coord 1
+set rvCounter [expr $rvCounter+1]
+set mean 9000.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_vert   -node 7  -coord 2
+set rvCounter [expr $rvCounter+1]
+set mean 5000.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_horz   -node 8  -coord 1
+set rvCounter [expr $rvCounter+1]
+set mean 9000.0
+randomVariablePositioner $rvCounter  -createRV3 normal $mean  $stdv_vert   -node 8  -coord 2
+
+set rvCounter [expr $rvCounter+1]
+randomVariable $rvCounter lognormal $load  [expr $covLoad*$load] 
+randomVariablePositioner $rvCounter          -rvNum $rvCounter -loadPattern 1 -loadAtNode 2  1
+randomVariablePositioner [expr $rvCounter+1] -rvNum $rvCounter -loadPattern 1 -loadAtNode 5  1
+randomVariablePositioner [expr $rvCounter+2] -rvNum $rvCounter -loadPattern 1 -loadAtNode 7  1
+
+# PERFORMANCE FUNCTIONS (2% TOTAL/INTERSTORY DRIFT)
+performanceFunction 1 "0.02*3000.0 - ( {u_7_1} - {u_5_1} )"
+#performanceFunction 2 "0.02*3000.0 - ( {u_5_1} - {u_2_1} )"
+#performanceFunction 3 "0.02*9000.0 - {u_7_1}"
+#performanceFunction 4 "0.02*6000.0 - {u_5_1}"
+#performanceFunction 5 "0.02*3000.0 - {u_2_1}"
+
+# RELIABILITY ANALYSIS MODEL
+probabilityTransformation    Nataf            -print 0
+reliabilityConvergenceCheck  Standard         -e1 1.0e-3    -e2 1.0e-3  -print 1
+gFunEvaluator                OpenSees         -analyze 40
+gradGEvaluator               OpenSees 
+searchDirection              iHLRF
+meritFunctionCheck           AdkZhang         -multi 2.0    -add 10.0   -factor 0.5  
+stepSizeRule                 Armijo           -maxNum 50    -base 0.5   -initial 1.0 2  -print 0
+startPoint                   Mean
+findDesignPoint              StepSearch       -maxNumIter 100 -printDesignPointX designPointX.out
+randomNumberGenerator        CStdLib
+
+# RUN THE ANALYSIS
+runFORMAnalysis FORMoutput.out

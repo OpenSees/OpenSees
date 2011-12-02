@@ -1,0 +1,30 @@
+\begin{picture}(0,0)%
+\includegraphics{fig_files/HardeningBehavior.pstex}%
+\end{picture}%
+\setlength{\unitlength}{3947sp}%
+%
+\begingroup\makeatletter\ifx\SetFigFont\undefined%
+\gdef\SetFigFont#1#2#3#4#5{%
+  \reset@font\fontsize{#1}{#2pt}%
+  \fontfamily{#3}\fontseries{#4}\fontshape{#5}%
+  \selectfont}%
+\fi\endgroup%
+\begin{picture}(5112,2499)(1426,-5248)
+\put(6001,-3436){\makebox(0,0)[lb]{\smash{\SetFigFont{12}{14.4}{\rmdefault}{\mddefault}{\updefault}{$\sigma_y$}%
+}}}
+\put(5701,-4261){\makebox(0,0)[lb]{\smash{\SetFigFont{12}{14.4}{\rmdefault}{\mddefault}{\updefault}{$\kappa$}%
+}}}
+%   
+\put(6376,-3886){\makebox(0,0)[lb]{\smash{\SetFigFont{12}{14.4}{\rmdefault}{\mddefault}{\updefault}{$2\sigma_y$}%
+}}}
+\put(1426,-3136){\makebox(0,0)[lb]{\smash{\SetFigFont{12}{14.4}{\rmdefault}{\mddefault}{\updefault}{$\sigma_y$}%
+}}}
+\put(1426,-2911){\makebox(0,0)[lb]{\smash{\SetFigFont{12}{14.4}{\rmdefault}{\mddefault}{\updefault}{$\hat{\sigma}_y$}%
+}}}
+\put(4501,-3136){\makebox(0,0)[lb]{\smash{\SetFigFont{12}{14.4}{\rmdefault}{\mddefault}{\updefault}{$\sigma_y$}%
+}}}
+\put(1426,-5011){\makebox(0,0)[lb]{\smash{\SetFigFont{12}{14.4}{\rmdefault}{\mddefault}{\updefault}{-$\hat{\sigma}_y$}%
+}}}
+\put(3226,-4036){\makebox(0,0)[lb]{\smash{\SetFigFont{12}{14.4}{\rmdefault}{\mddefault}{\updefault}{$2\hat{\sigma}_y$}%
+}}}
+\end{picture}

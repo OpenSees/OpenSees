@@ -1,0 +1,18 @@
+
+1. add the java files in the op
+to your local kepler installation you need to:
+1. in src/edu mkdir opensees
+2  copy the files in opensees directory here to that location.
+3. in src/actors mkdir OpenSeesEvaluator
+4. copy file in actors/OpenSeesEvaluator to that directory
+5. in src/actors mkdir OpenSeesParameter
+6. copy file in actors/OpenSeesParameter to that directory
+7. in src/actors mkdir StringToDouble
+8. copy file in actors/StringToDouble to that directory
+
+9. cd to the parent directory to this
+10.  open the Makefile and edit the location of kepler (here it is /usr/local/kepler)
+11. type make kepler 
+
+12. cd to the location of your local kepler installation and build using:
+13. ant full-clean ptolemy buildkarlib run-dev 

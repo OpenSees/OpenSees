@@ -1,0 +1,98 @@
+%File: ~/OOP/modelbuilder/PartitionedModelBuilder.tex
+%What: "@(#) PartitionedModelBuilder.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/modelbuilder/PartitionedModelBuilder.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class PartitionedModelBuilder: public ModelBuilder, public MovableObject  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent  PartitionedModelBuilder \\
+\indent  MovableObject \\
+\indent\indent {\bf PartitionedModelBuilder} \\
+
+\noindent {\bf Description} \\ 
+\indent The PartitionedModelBuilder class is an abstract class. A subclass
+of PartitionedModelBuilder is a class which creates a partitioned finite element
+discretization of a structure: that is it discretizes the structure to
+be modeled into Elements, Nodes, Constraints, etc. and adds these
+components to the Subdomains of a PartitionedDomain.
+PartitionedModelBuilders can be used for creating models for analysis
+involving domain decomposition methods where there exist natural
+partitions or where a model has previously been partitioned and this
+information has been saved. \\
+
+\noindent {\bf Class Interface} \\
+\indent\indent // Constructors \\ 
+\indent\indent {\em PartitionedModelBuilder(PartitionedDomain
+\&theDomain, int classTag);}\\ 
+\indent\indent {\em PartitionedModelBuilder(Subdomain \&aSubdomain, int
+classTag);} \\ \\
+\indent\indent {\em PartitionedModelBuilder(PartitionedDomain
+\&theDomain, int classTag);}\\ \\
+\indent\indent // Destructor \\ 
+\indent\indent {\em virtual $\tilde{ }$PartitionedModelBuilder();}\\  \\
+\indent\indent // Public Methods \\ 
+\indent\indent {\em virtual buildFE\_Model(void);} \\
+\indent\indent {\em virtual int buildInterface(int numSubdomains) =0;} \\ 
+\indent\indent {\em virtual int buildSubdomain(int partition, int
+numPartitions, Subdomain \&theSubdomain) =0;} \\ \\
+\indent\indent // Protected Methods \\ 
+\indent\indent {\em  PartitionedDomain *getPartitionedDomainPtr(void)
+const;} \\
+
+\noindent {\bf Constructors} \\ 
+\indent {\em PartitionedModelBuilder(PartitionedDomain \&domain, int
+classTag);}\\  
+Typically, a PartitionedModelBuilder is associated with a PartitionedDomain,
+this constructor sets up a link for the PartitionedModelBuilder and the domain,
+setting its link to the Domain object {\em domain}. The Domain {\em
+domain} is passed to the constructor for ModelBuilder, and the integer
+{\em classTag} is passed to the MovableObject classes constructor. \\
+
+\indent {\em PartitionedModelBuilder(Subomain \&domain, int classTag);}\\  
+This is the constructor that is called when a PartitionedModelBuilder
+is to be created by an FE\_ObjectBroker. The only method that can be
+invoked on such an object is {\em buildSubdomain()}. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$PartitionedModelBuilder();}\\ 
+Does nothing. \\
+
+
+\noindent {\bf Public Methods} \\
+\indent {\em virtual buildFE\_Model(void);} \\
+The PartitionedModelBuilder will first check that the
+PartitionedModelBuilder was constructed with a PartitioneDomain, if
+not a warning message is printed and a $-1$ is returned. If o.k. the object 
+then determines the number of Subdomains, {\em numSub} in the
+PartitionedDomain. It then invokes {\em buildInterface(numSub)} on 
+itself. Then for each Subdomain in the PartitionedDomain it invokes
+{\em buildSubdomain(numSub, *this)}. If building the interface or any
+of the subdomains fails, a warning message is printed and a negative
+number is returned. Returns $0$ if sucessfull. \\
+
+\indent {\em virtual int buildInterface(int numSubdomains) =0;}\\ 
+This method must be provided by the subclasses. It is used to add any
+boundary nodes, nodal loads and constraints to the PartitionedDomain
+object. The integer {\em numSubdomains} is passed to provide
+information about the number of subdomains in the
+PartitionedDomain. To return $0$ if successfull, a negative number if not. \\
+
+
+\indent {\em virtual int buildSubdomain(int partition, int
+numPartitions, Subdomain \&theSubdomain) =0;} \\
+This method must be provided by the subclasses. It is used to add
+nodes, elements, loads and constraints to the subdomain {\em
+theSubdomain}. The integers {\em partition} and {\em numPartitions}
+are used to identify which partition is being built and the total
+number of partitions. To return $0$ if succesfull, a negative number
+if not. \\
+
+
+\noindent {\bf Protected Methods} \\
+\indent {\em  PartitionedDomain *getPartitionedDomainPtr(void) const;} \\
+Returns a pointer to the PartitionedDomain object passed in the constructor.\\
+
+

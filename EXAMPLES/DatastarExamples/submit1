@@ -1,0 +1,38 @@
+#!/usr/bin/ksh
+
+#@environment = COPY_ALL;\
+#AIXTHREAD_COND_DEBUG=OFF;\
+#AIXTHREAD_MUTEX_DEBUG=OFF;\
+#AIXTHREAD_RWLOCK_DEBUG=OFF;\
+#AIXTHREAD_SCOPE=S;\
+#MP_ADAPTER_USE=dedicated;\
+#MP_CPU_USE=unique;\
+#MP_CSS_INTERRUPT=no;\
+#MP_EAGER_LIMIT=65536;\
+#MP_EUIDEVELOP=min;\
+#MP_EUIDEVICE=sn_single;\
+#MP_EUILIB=us;\
+#MP_POLLING_INTERVAL=100000;\
+#MP_PULSE=0;\
+#MP_SHARED_MEMORY=yes;\
+#MP_SINGLE_THREAD=yes;\
+#RT_GRQ=ON;\
+#SPINLOOPTIME=0;\
+#YIELDLOOPTIME=0;\
+#OMP_NUM_THREADS=1;
+
+#@ wall_clock_limit = 0:01:00
+#@class = normal
+#@node_usage = not_shared
+#@node = 1
+#@tasks_per_node = 2
+#@job_type = parallel
+#@network.MPI = sn_single,not_shared,US,HIGH
+#@notification = never
+#@job_name= job.&(jobid)
+#@output = submit1_out.$(jobid)
+#@error = submit1_err.$(jobid)
+#@initialdir = /gpfs/fmk/OpenSees/EXAMPLES/DatastarExamples
+#@queue
+
+poe /gpfs/fmk/bin/OpenSees Example1.tcl 
