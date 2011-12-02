@@ -1,0 +1,407 @@
+%File: ~/OOP/element/Node.tex
+%What: "@(#) Node.tex, revA"
+
+NEW METHOD POSSIBLY NEEEDED TO SPECIFY THE NUMBER OF PREVIOUSLY
+COMMITTED RESPONSES TO KEEP .. NEEDED FOR EXPLICIT DYNAMIC INTEGRATORS\\
+
+\noindent {\bf Files}   \\
+\indent \#include $<$/domain/node/Node.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Node: public DomainComponent  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent TaggedObject \\
+\indent MovableObject \\
+\indent\indent DomainComponent \\
+\indent\indent\indent {\bf Node} \\
+
+\noindent {\bf Description}  \\
+\indent Nodes are points in space connected by the elements. Nodes
+have original position, trial displacement, velocity and acceleration, 
+and committed displacement, velocity and acceleration (the last
+committed trial quantities). Nodes also store information about any
+load acting on the node, nodal mass and the nodal participation
+matrix. In addition, each Node object keeps track of it's associated
+DOF\_Group object. The Node interface provides methods to set and
+retrieve these quantities.\\  
+
+
+\noindent {\bf Class Interface}  \\
+\indent\indent // Constructors  \\
+\indent\indent {\em Node(int classTag);}  \\
+\indent\indent {\em Node(int tag, int classTag);}  \\
+\indent\indent {\em Node(int tag, int ndof, double Crd1);}  \\
+\indent\indent {\em Node(int tag, int ndof, double Crd1, double Crd2);}  \\
+\indent\indent {\em Node(int tag, int ndof, double Crd1, double Crd2, double Crd3);}\\
+\indent\indent {\em Node(const Node \&theCopy);}\\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em virtual $\tilde{ }$ Node();} \\ \\
+\indent\indent // Public Methods dealing with DOF at the Node\\
+\indent\indent {\em virtual int  getNumberDOF(void) const;}\\
+\indent\indent {\em virtual void setDOF\_GroupPtr(DOF\_Group *theDOF\_Grp);} \\
+\indent\indent {\em virtual DOF\_Group *getDOF\_GroupPtr(void);} \\ \\
+\indent\indent // Public Method for obtaining nodal coordinates\\
+\indent\indent {\em virtual const Vector \&getCrds(void) const;}  \\ \\
+\indent\indent // Public Method for obtaining committed and trial responses\\ 
+\indent\indent {\em  virtual const Vector \&getDisp(void) ;}  \\
+\indent\indent {\em  virtual const Vector \&getVel(void) ;}  \\
+\indent\indent {\em  virtual const Vector \&getAccel(void) ;}  \\
+\indent\indent {\em  virtual const Vector \&getTrialDisp(void) ;}  \\
+\indent\indent {\em  virtual const Vector \&getTrialVel(void) ;}  \\
+\indent\indent {\em  virtual const Vector \&getTrialAccel(void) ;}  \\ 
+\indent\indent {\em  virtual const Vector \&getIncrDisp(void) ;}  \\\\
+\indent\indent // Public Method for updating trial responses\\
+\indent\indent {\em virtual int setTrialDisp(const Vector \&newTrialDisp);} \\
+\indent\indent {\em virtual int setTrialVel(const Vector \&newTrialVel);} \\
+\indent\indent {\em virtual int setTrialAccel(const Vector \&newTrialAccel);} \\
+\indent\indent {\em virtual int incrTrialDisp(const Vector \&trialIncrDisp);} \\
+\indent\indent {\em virtual int incrTrialVel(const Vector \&trialIncrVel);} \\
+\indent\indent {\em virtual int incrTrialAccel(const Vector \&trialIncrAccel);} \\ \\
+\indent\indent // Public Method for setting and obtaining unbalanced load\\
+\indent\indent {\em virtual void zeroUnbalancedLoad(void);} \\
+\indent\indent {\em virtual int addUnbalancedLoad(const Vector
+\&additionalLoad, double fact = 1.0);} \\ 
+\indent\indent {\em virtual int addInertiaLoadToUnbalance(const Vector
+\&accel, double fact = 1.0);} \\ 
+\indent\indent {\em virtual const Vector \&getUnbalancedLoad(void);} \\
+\indent\indent {\em virtual const Vector \&getUnbalancedLoadIncInertia(void);} \\ \\
+\indent\indent // Public Method for setting state \\
+\indent\indent {\em virtual int commitState(void);} \\
+\indent\indent {\em virtual int revertToLastCommit(void);} \\
+\indent\indent {\em virtual int revertToStart(void);} \\ \\
+\indent\indent // Public Method for dynamic and modal analysis\\
+\indent\indent {\em virtual const Matrix \&getMass(void) ;}\\
+\indent\indent {\em virtual int setMass(const Matrix \&mass);} \\
+\indent\indent {\em virtual int setNumColR(int numCol);} \\
+\indent\indent {\em virtual int setR(int row, int col, double Value);} \\
+\indent\indent {\em virtual const Vector \& getRV(const Vector \&V);}\\ \\
+\indent\indent // Public Method for Output \\
+\indent\indent {\em virtual int sendSelf(int commitTag, Channel
+\&theChannel);} \\
+\indent\indent {\em virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);} \\ 
+\indent\indent {\em void Print(ostream \&s, int flag = 0);} \\
+\indent\indent {\em int displaySelf(Renderer \&theRenderer, int flag,
+float fact);} \\
+
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em Node(int classTag);}  \\
+To construct a node which has no data, other than the {\em classTag}
+identifier; $0$ and {\em classTag} are passed to the DomainComponent
+constructor. This is the constructor called by an
+FEM\_ObjectBroker. The data must be filled in subsequently by a call
+to {\em recvSelf()}. \\ 
+
+\indent {\em Node(int tag, int classTag);}  \\
+To construct a node whose unique integer among nodes in the
+domain is given by {\em tag} and whose classTag is given by {\em
+classTag}. This constructor can be used by 
+subclasses who wish to handle their own data management. \\ 
+
+\indent {\em Node(int tag, int ndof, double Crd1);}  \\
+To construct a node for 1d problems whose unique integer among nodes in the
+domain is given by {\em tag} and whose original position in 1d space
+is given by (Crd1). With the node is associated {\em ndof} number
+of degrees of freedom. The class tag is NOD\_TAG\_Node (defined in
+classTags.h). A Vector object is created to hold the coordinates. No
+storage objects are created to hold the trial and committed response
+quantities, mass, load quantities; these are created as needed to
+reduce the memory demands on the system in certain situations. \\ 
+
+\indent {\em Node(int tag, int ndof, double Crd1, double Crd2);}  \\
+To construct a node for 2d problems whose unique integer among nodes in the
+domain is given by {\em tag} and whose original position in 2d space
+is given by (Crd1,Crd2). With the node is associated {\em ndof} number
+of degrees of freedom. The class tag is NOD\_TAG\_Node. A Vector object
+is created to hold the coordinates. No
+storage objects are created to hold the trial and committed response
+quantities, mass, load quantities; these are created as needed to
+reduce the memory demands on the system in certain situations. \\ 
+
+\indent {\em Node(int tag, int ndof, double Crd1, double Crd2, double Crd3);}\\
+To construct a node for 3d problems whose unique integer among nodes in the
+domain is given by {\em tag} and whose original position in 3d space
+is given by (Crd1,Crd2,Crd3). With the node is associated {\em ndof} number
+of degrees of freedom. The class tag is NOD\_TAG\_Node. A Vector object
+is created to hold the coordinates. No
+storage objects are created to hold the trial and committed response
+quantities, mass, load quantities; these are created as needed to
+reduce the memory demands on the system in certain situations. \\ 
+
+
+
+\indent {\em Node(const Node \&theCopy);}\\
+To construct a node which is an exact copy of {\em theCopy}. \\
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~$\tilde{}$ Node();} \\
+Invokes the destructor on all the storage objects created to hold the coordinates,
+response quantities, mass and load quantities. \\
+
+\noindent {\bf Public Member Functions }  \\
+\indent {\em virtual int  getNumberDOF(void) const;}\\
+Returns the number of degrees-of-freedom, {\em ndof}, associated with
+the node. \\
+
+\indent {\em virtual void setDOF\_GroupPtr(DOF\_Group *theDOF\_Grp);} \\
+Each node, when involved with an analysis, will be associated with a
+DOF\_Group object. It is the DOF\_Group that contains the ID of equation
+numbers. When invoked this method sets the pointer to that DOF\_Group object. \\
+
+{\em virtual DOF\_Group *getDOF\_GroupPtr(void);} \\
+Method which returns a pointer to the DOF\_Group object that was set
+using {\em setDOF\_GroupPtr}. If no pointer has been set a $0$ is
+returned. \\
+
+{\em virtual const Vector \&getCrds(void) const;}  \\
+Returns the original coordinates in a Vector. The size of the vector
+is 2 if node object was created for a 2d problem and the size is 3 if
+created for a 3d problem. \\
+
+{\em  virtual const Vector \&getDisp(void) ;}  \\
+Returns the last committed displacement as a Vector, the vector of
+size {\em ndof}. If no Vector has yet been allocated, two Vector
+objects are created to store the committed and trial response
+quantities created; if not enough space is available an error message
+is printed and program terminated. \\ 
+
+{\em  virtual const Vector \&getVel(void) ;}  \\
+Returns the last committed velocity as a Vector, the vector of size
+{\em ndof}. If no Vector has yet been allocated, two Vector
+objects are created to store the committed and trial response
+quantities created; if not enough space is available an error message
+is printed and program terminated. \\ 
+
+
+{\em  virtual const Vector \&getAccel(void) ;}  \\
+Returns the last committed acceleration as a Vector, the vector of
+size {\em ndof}. If no Vector has yet been allocated, two Vector 
+objects are created to store the committed and trial response
+quantities created; if not enough space is available an error message
+is printed and program terminated. \\ 
+
+{\em  virtual const Vector \&getTrialDisp(void) ;}  \\
+Returns the current trial displacements as a Vector, the vector of size {\em ndof}.
+If no Vector has yet been allocated, a new Vector is created and returned;
+if not enough space is available an error message is printed and the
+program is terminated. \\ 
+
+
+{\em  virtual const Vector \&getTrialVel(void) ;}  \\
+Returns the current trial velocities as a Vector, the vector of size {\em ndof}.
+If no Vector has yet been allocated, a new Vector is created and returned;
+if not enough space is available an error message is printed and the
+program is terminated. \\ 
+
+{\em  virtual const Vector \&getTrialAccel(void) ;}  \\
+Returns the current trial accelerations as a Vector, the vector of size {\em ndof}.
+If no Vector has yet been allocated, a new Vector is created and returned;
+if not enough space is available an error message is printed and the
+program is terminated. \\ 
+
+
+{\em  virtual const Vector \&getIncrDisp(void) ;}  \\
+Returns the incremental displacement as a Vector. The incremental displacement is 
+equal to the difference between the current trial displacement and committed
+displacement (trial - committed).
+If no Vector has yet been allocated, three Vector 
+objects are created to store the committed, trial and incremental response
+quantities; if not enough space is available an error message
+is printed and program terminated. \\ 
+
+
+{\em virtual int setTrialDisp(const Vector \&newTrialDisp);} \\
+Sets the current trial displacement to be that given by
+{\em newTrialDisp}. Sets th incremental displacement to be trial $-$ committtd.
+If no space has yet been allocated for
+the trial displacements, two Vector objects are now created to store
+the trial and committed response quantities; if not enough memory 
+is available on the heap to create these new Vectors an error message
+is printed and the program is terminated. Returns $0$ if successful,
+an error message is printed and a $-2$ is returned if {\em
+newTrialDisp} is not of size {\em ndof}. \\
+
+
+{\em virtual int setTrialVel(const Vector \&newTrialVel);} \\
+Sets the current trial velocity to be that given by
+{\em newTrialVel}. If no space has yet been allocated for
+the trial velocities, two Vector objects are now created to store
+the trial and committed response quantities; if not enough memory 
+is available on the heap to create these new Vectors an error message
+is printed and the program is terminated. Returns $0$ if successful,
+an error message is printed and a $-2$ is returned if {\em
+newTrialVel} is not of size {\em ndof}. \\
+
+{\em virtual int setTrialAccel(const Vector \&newTrialAccel);} \\
+Sets the current trial acceleration to be that given by
+{\em newTrialAccel}. If no space has yet been allocated for
+the trial accelerations, two Vector objects are now created to store
+the trial and committed response quantities; if not enough memory 
+is available on the heap to create these new Vectors an error message
+is printed and the program is terminated. Returns $0$ if successful,
+an error message is printed and a $-2$ is returned if {\em
+newTrialAccel} is not of size {\em ndof}. \\
+
+{\em virtual int incrTrialDisp(const Vector \&trialIncrDisp);} \\
+Sets the current trial displacement to be that given by the addition
+of the last trial displacement, assumed $0$ if not yet set, and {\em
+trialIncrDisp}. Increments the incremental displacement by {\em trialIncrDisp}.
+If no space has yet been allocated for the displacements, three Vector objects 
+are now created to store
+the trial, committed and incremental response quantities; if not enough memory 
+is available on the heap to create these new Vectors an error message
+is printed and the program is terminated. Returns $0$ if successful,
+an error message is printed and a $-2$ is returned if {\em
+trialIncrDisp} is not of size {\em ndof}. \\
+
+{\em virtual int incrTrialVel(const Vector \&trialIncrVel);} \\
+Sets the current trial velocity to be that given by the addition
+of the last trial velocity, assumed $0$ if not yet set, and {\em
+trialIncrVel}. If no space has yet been allocated for
+the trial velocities, two Vector objects are now created to store
+the trial and committed response quantities; if not enough memory 
+is available on the heap to create these new Vectors an error message
+is printed and the program is terminated. Returns $0$ if successful,
+an error message is printed and a $-2$ is returned if {\em
+trialIncrVel} is not of size {\em ndof}. \\
+
+{\em virtual int incrTrialAccel(const Vector \&trialIncrAccel);} \\
+Sets the current trial Acceleration to be that given by the addition
+of the last trial Acceleration, assumed $0$ if not yet set, and
+{\em trialIncrAccel}.  If no space has yet been allocated for
+the trial accelerations, two Vector objects are now created to store
+the trial and committed response quantities; if not enough memory 
+is available on the heap to create these new Vectors an error message
+is printed and the program is terminated. Returns $0$ if successful,
+an error message is printed and a $-2$ is returned if {\em
+trialIncrAccel} is not of size {\em ndof}. \\
+
+{\em virtual void zeroUnbalancedLoad(void);} \\
+Causes the node to zero out its unbalanced load vector. \\
+
+{\em virtual int addUnbalancedLoad(const Vector \&additionalLoad, double fact);} \\
+The Node is responsible for adding {\em fact} times {\em
+additionalLoad} to the current unbalanced load at the Node. If {\em
+additionalLoad} is not of size {\em ndof} no load is added, an error
+message is printed and a $-1$ is returned. If no space has yet been
+allocated for the unbalanced load a new Vector is now created;  
+if not enough space is available for this Vector an error message is
+printed and the program is terminated. Returns $0$ if successful.  \\ 
+
+\indent {\em virtual int addInertiaLoadToUnbalance(const Vector
+\&accel, double fact = 1.0);} \\ 
+To add {\bf minus} {\em fact} times the product $M * R * accel$ to the
+current unbalanced load. Nothing is done if no mass or R matrix have
+been set. Prints a warning and returns a $-1$ if the size of accel and
+the number of columns in $R$ are not the same. If no space has yet been
+allocated for the unbalanced load a new Vector is now created;  
+if not enough space is available for this Vector an error message is
+printed and the program is terminated. Returns $0$ if successful.  \\ 
+
+{\em virtual const Vector \&getUnbalancedLoad(void);} \\
+Returns the current unbalanced load. If no space has yet been
+allocated for the unbalanced load a new Vector of size {\em numDOF} is
+now created; if not enough space is available for this Vector an error
+message is printed and the program is terminated. \\ 
+
+{\em virtual const Vector \&getUnbalancedLoadIncInertia(void);} \\
+Returns the current unbalanced load Vector, as defined above, MINUS the product
+of the nodes mass matrix and the trial nodal accelerations. The result
+is saved in another vector which is returned. If no space has yet been
+allocated for this new Vector, a Vector of size {\em numDOF} is now
+created; if not enough space is available for this Vector an error
+message is printed and the program is terminated. \\ 
+
+{\em virtual int commitState(void);} \\
+Causes the node to set the committed model displacements, velocities and
+accelerations to be equal to the current trial displacements, velocities and
+accelerations. The incremental displacement is set to $0$. No assignment is done 
+for any of the quantities for
+which no memory has been allocated. Returns $0$.\\
+
+{\em virtual int revertToLastCommit(void);} \\
+Causes the node to set the trial nodal displacements, velocities and
+accelerations to be equal to the current committed displacements, velocities and
+accelerations. The incremental displacement is set to $0$. No assignment is done 
+for any of the trial quantities for which no memory has been allocated. Returns $0$.\\
+
+{\em virtual int revertToStart(void);} \\
+Causes the node to set the trial and committed nodal displacements,
+velocities and accelerations to zero. No assignment is done for any of
+the trial quantities for which no memory has been allocated. Returns $0$.\\
+
+
+{\em virtual const Matrix \&getMass(void) ;}\\
+Returns the mass matrix set for the node, which is a matrix of size
+{\em ndof,ndof}. This matrix is equal to that set in {\em setMass()}
+or zero if {\em setMass()} has not been called. If no storage space
+has been allocated for the mass, a matrix is now created. An error
+message is printed and the program terminated if no space is available
+on the heap for this matrix.\\
+
+{\em virtual int setMass(const Matrix \&mass);} \\
+Sets the value of the mass at the node. A check is made to ensure that
+the {\em mass} has the same dimensions of the mass matrix associated with the
+Node; if incompatible size an error message is printed and -1 returned. If no
+mass matrix yet allocated, one is created; if no space is available an
+error message is printed and the program terminated. Returns 0 if successful. \\
+
+\indent {\em virtual int setNumColR(int numCol);} \\
+Creates a Matrix to store the R matrix. The matrix is of dimension
+{\em ndof} and {\em numCol}. If not enough space is available for this
+matrix an error message is printed and the program is terminated. Zeros the
+matrix R and returns $0$ if successful. \\
+
+\indent {\em virtual int setR(int row, int col, double Value);} \\
+Sets the {\em \(row,col\)} entry of R to be equal to {\em Value}. If
+no matrix R has been specified or the position in R is out of range a
+warning message is printed and a $-1$ is returned. Returns $0$ if
+successful. \\
+
+
+\indent {\em virtual const Vector \& getRV(const Vector \&V);} \\
+This is a method provided for Element objects, the Node object returns
+the product of the matrix $R$ and the vector $V$. If the matrix 
+and vector are of inappropriate size a warning message is printed and
+a zero vector is returned. \\
+
+{\em virtual int sendSelf(int commitTag, Channel \&theChannel);} \\
+Causes the Node object to send the data needed to init itself on a
+remote machine to the Channel object {\em theChannel}. 
+The data sent includes the tag, number of dof, coordinates, committed
+response quantities, unbalanced load, mass and participation matrix. 
+To do this the Node creates an ID object into which it stores its tag,
+the {\em ndof} and a flag indicating whether any additional
+information, i.e. mass, response quantities also need to be sent. In
+addition four database tags are also included in this ID object. The
+database tags, if not already obtained, are requested from the Channel
+object (these are needed as each object can only store a single object
+of a particular size using it's own database tags -- additional tags
+are needed when multiple objects of the same size are needed.
+The objects that have been created are then sent. \\
+
+{\em virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);} \\ 
+Invoked on a remote machine to read its data that was sent by a node
+object in another actor when {\em sendSelf()} was invoked. As in {\em
+sendSelf()}, the Node object creates an ID object. It asks the Channel
+object to fill this object with data. Based on the data it creates
+Matrix and Vector objects to store the Nodes data and asks the Channel
+object to fill these with data. The data placed here by the Channel
+object correspond to the data put there by the sending Node object.\\
+
+
+{\em void Print(ostream \&s, int flag = 0);} \\
+Causes the Node to print out its tag, mass matrix, and committed
+response quantities. \\ 
+
+\indent {\em int displaySelf(Renderer \&theRenderer, int flag,
+float fact);} \\
+Causes the Node to display itself. If {\em flag} is $1$ the Node will
+cause its tag to be printed to the display. 
+
+
+

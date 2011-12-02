@@ -1,0 +1,128 @@
+%File ~/OOP/analysis/algorithm/ModifiedNewton.tex
+%What: "@(#) ModifiedNewton.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{
+}$/analysis/algorithm/equiSolnAlgo/ModifiedNewton.h$>$  \\ 
+
+\noindent {\bf Class Declaration}  \\
+\indent class ModifiedNewton: public EquiSolnAlg;  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent SolutionAlgorithm \\
+\indent\indent\indent EquiSolnAlgo \\
+\indent\indent\indent\indent {\bf ModifiedNewton} \\
+
+\noindent {\bf Description} \\ 
+\indent The ModifiedNewton class is an algorithmic class which obtains a
+solution to a non-linear system using the modified Newton-Raphson iteration
+scheme. The Newton-Rapson iteration scheme is based on a Taylor expansion of the
+non-linear system of equations $\R(\U) = \zero$ about an approximate
+solution $\U{(i)}$:
+\begin{equation} 
+\R(\U) = 
+\R(\U^{(i)}) +
+\left[ {\frac{\partial \R}{\partial \U} \vert}_{\U^{(i)}}\right]
+\left( \U - \U^{(i)} \right) 
+\end{equation}
+
+\noindent which can be expressed as:
+\begin{equation} \
+\K^{(i)}  \Delta \U{(i)} = \R(\U^{(i)})
+\end{equation}
+which is solved for $\Delta \U^{(i)}$ to give approximation for
+$\U^{(i+1)} = \U^{(i)} + \Delta \U^{(i)}$. To start the
+iteration $\U^{(1)} = \U_{trial}$, i.e. the current trial
+response quantities are chosen as initial response quantities. \\
+
+in the modified version the tangent is formed only once, i.e
+\begin{equation} \
+\K^{(1)}  \Delta \U^{(i)} = \R(\U^{(i)})
+\end{equation}
+
+To stop the iteration, a test must be performed to see if convergence
+has been achieved at each iteration. Each NewtonRaphson object is
+associated with a ConvergenceTest object. It is this object which
+determines if convergence has been achieved. \\
+
+\noindent {\bf Class Interface} \\ 
+\indent // Constructors \\ 
+\indent {\em ModifiedNewton(ConvergenceTest \&theTest);}\\ 
+\indent {\em ModifiedNewton();}\\ \\
+\indent // Destructor \\
+\indent {\em ~ $\tilde{}$ModifiedNewton();}\\  \\
+\indent // Public Member Functions \\
+\indent {\em int solveCurrentStep(void);} \\
+\indent {\em void setTest(ConvergenceTest \&theTest);} \\\\
+\indent // Public Methods  for Output \\
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker);}\\ 
+\indent {\em int Print(ostream \&s, int flag =0);} \\
+
+
+\noindent {\bf Constructors} \\ 
+\indent {\em ModifiedNewton(int theMaxNumIter, ConvergenceTest \&theTest);}\\ 
+The constructor takes as an argument the ConvregenceTest object {\em
+theTest}, the object which is used at the end of each iteration to
+determine if convergence has been obtained. The
+integer {\em EquiALGORITHM\_TAGS\_ModifiedNewton} (defined in
+$<$classTags.h$>$) is passed to the EquiSolnAlgo classes
+constructor. \\ 
+
+\indent {\em ModifiedNewton();}\\
+Provided for FEM\_ObjectBroker to instantiate a blank object with a
+class tag of EquiALGORITHM\_TAGS\_ModofiedNewton. {\em
+recvSelf()} must be invoked on this object. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em ~ $\tilde{}$ModifiedNewton();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Member Functions}  \\
+\indent {\em int solveCurrentStep(void);} \\
+When invoked the object first sets itself as the EquiSolnAlgo object
+that the ConvergenceTest is testing and then it performs the
+modified Newton-Raphson iteration algorithm: 
+\begin{tabbing}
+while \= \+ while \= \kill
+theTest-$>$start(); \\
+theIntegrator-$>$formTangent(); \\
+do \{ \+ \\
+theIntegrator-$>$formUnbalance(); \\
+theSOE-$>$solveX(); \\
+theIntegrator-$>$update(theSOE-$>$getX()); \- \\
+\} while (theTest-$>$test() $==$ false)\- \\
+\end{tabbing}
+
+
+\noindent The method returns a 0 if successful, otherwise a negative number is
+returned; a $-1$ if error during {\em formTangent()}, a $-2$ if
+error during {\em formUnbalance()}, a $-3$ if error during {\em
+solve()}, and a $-4$ if error during {\em update()}.
+If an error occurs in any of the above operations the method stops at
+that routine, none of the subsequent operations are invoked. A $-5$ is
+returned if any one of the links has not been setup.\\
+
+{\em void setTest(ConvergenceTest \&theTest);} \\
+A method to set the tolerance criteria of the algorithm to be equal to
+the value {\em theTol}. \\
+
+{\em int sendSelf(int commitTag, Channel \&theChannel);}\\
+Creates an ID object, puts the values of the {\em theTest} objects
+class and database tags into this ID.
+It then invokes {\em sendVector()} on the Channel object {\em
+theChannel} to send the data to the remote object. It then invokes
+{\em sendSelf()} on {\em theTest}. Returns $0$ if successful, the
+ channel error if not. \\
+
+{\em int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker);}\\ 
+Creates an ID object, invokes {\em recvVector()} on the Channel
+object. Uses the data in the ID to create a ConvergenceTest object of
+appropriate type and sets its dbTag. It then invokes {\em recvSelf()}
+on this test object.  \\
+
+{\em int Print(ostream \&s, int flag =0);} \\
+Sends the string 'ModifiedNewton' to the stream if {\em flag} equals $0$.

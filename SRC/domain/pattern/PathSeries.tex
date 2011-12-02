@@ -1,0 +1,93 @@
+%File: ~/OOP/domain/pattern/PathSeries.tex
+%What: "@(#) PathSeries.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$domain/pattern/PathSeries.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class PathSeries: public DomainComponent  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent TimeSeries \\
+\indent\indent\indent {\bf PathSeries} \\
+
+\noindent {\bf Description} \\ 
+\indent The PathSeries class is a concrete subclass of TimeSeries.
+The relationship between the pseudo time and the load factor follows
+a user specified path. The path points are specified at constant time
+intervals. For a pseudo time not at a path point, linear interpolation
+is performed to determine the load factor. If the time specified is
+beyond the last path point a load factor of $0.0$ will be returned.\\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructors \\ 
+\indent {\em PathSeries(Vector \&thePath, double dT; double cFactor);}\\ 
+\indent {\em PathSeries(char *fileName, double dT; double cFactor);}\\ 
+\indent {\em PathSeries();}\\ \\
+\indent // Destructor \\ 
+\indent {\em virtual $\tilde{ }$PathSeries();}\\  \\
+\indent // Public Methods \\ 
+\indent {\em  virtual double getFactor(double pseudoTime);}\\
+\indent {\em  virtual int sendSelf(int commitTag, Channel \&theChannel);}\\
+\indent {\em  virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\
+\indent {\em  virtual void Print(ostream \&s, int flag =0);}\\
+
+\noindent {\bf Constructor} \\ 
+\indent {\em PathSeries(Vector \&thePath, double dT; double cFactor);}\\ 
+Used to construct a PathSeries when the data points are specified in a
+Vector. The tag TSERIES\_TAG\_PathSeries is passed to the TimeSeries
+The tag TSERIES\_TAG\_PathSeries is passed to the TimeSeries
+constructor. Sets the constant factor used in the relation to {\em
+cFactor}. Constructs a new Vector equal to {\em thePath} containing the
+data points which are specified at {\em dT} time intervals. Prints a
+warning message if no space is available for the Vector.\\
+
+\indent {\em PathSeries(char *fileName, double dT; double cFactor);}\\ 
+Used to construct a PathSeries when the data points are specified in a
+file. The tag TSERIES\_TAG\_PathSeries is passed to the TimeSeries
+constructor. Sets the constant factor used in the relation to {\em
+cFactor}. Opens the file containing and reads in the data points into
+a new Vector which are specified at {\em dT} time intervals. Prints a
+warning message if no space is available for the Vector or if the file
+could not be found.\\
+
+
+\indent {\em PathSeries();}\\ 
+For a FEM\_ObjectBroker to instantiate an empty PathSeries, recvSelf()
+must be invoked on this object. The tag TSERIES\_TAG\_PathSeries is
+passed to the TimeSeries constructor. \\
+
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{ }$PathSeries();}\\ 
+Invokes the destructor on the Vector created to hold the data
+points. \\
+
+
+\noindent {\bf Public Methods} \\
+\indent {\em  virtual double getFactor(double pseudoTime);}\\
+Determines the load factor based on the {\em pseudoTime} and the data
+points. Returns $0.0$ if {\em pseudoTime} is greater than time of last
+data point, otherwise returns a linear interpolation of the data
+points times the factor {\em cFactor}. \\
+
+\indent {\em  virtual int sendSelf(int commitTag, Channel
+\&theChannel);}\\
+Creates a vector of size 4 into which it places {\em cFactor}, {\em
+dT}, the size of {\em thePath} and another database tag for {\em
+thaPath} Vector.  Invokes {\em sendVector()} on the Channel with this
+newly created Vector object, and the {\em sendVEctor()} on {\em
+thePath}. \\
+
+\indent {\em  virtual int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\
+Does the mirror image of {\em sendSelf()}. \\
+
+\indent {\em  virtual void Print(ostream \&s, int flag =0) =0;}\\
+Prints the string 'PathSeries', the factor{\em cFactor}, and the time
+increment {\em dT}. If {\em flag} is equal to $1.0$ the load path
+Vector is also printed.
+
+

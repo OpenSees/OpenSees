@@ -1,0 +1,11 @@
+# TEST01.STD : a file in "standard" matrix format
+# A large matrix for testing the inverse function
+r = 5  c = 5
+# (elements must be separated by at least one white space)
+:::
+ 2.0000 -2.0000  0.0000  0.0000 -1.0000 
+-2.0000  3.0000 -2.0000  0.0000  0.0000 
+ 0.0000 -2.0000  5.0000 -3.0000  0.0000 
+ 0.0000  0.0000 -3.0000 10.0000  4.0000 
+-1.0000  0.0000  0.0000  4.0000 10.0000 
+

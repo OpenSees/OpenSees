@@ -1,0 +1,237 @@
+%File: ~/OOP/analysis/integrator/ArcLength1.tex
+%What: "@(#) ArcLength1.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/integrator/ArcLength1.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ArcLength1: public StaticIntegrator  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent Integrator \\
+\indent\indent\indent IncrementalIntegrator \\
+\indent\indent\indent\indent StaticIntegrator \\
+\indent\indent\indent\indent\indent {\bf ArcLength1} \\
+
+\noindent {\bf Description} \\ 
+\indent ArcLength1 is a subclass of StaticIntegrator, it is
+used to when performing a static analysis on the FE\_Model using a
+simplified form of the arc length method. In the arc length method
+implemented by this class, the following constraint equation is added to
+equation~\ref{staticFormTaylor} of the StaticIntegrator class: 
+
+\begin{equation}
+\Delta \U_n^T \Delta \U_n  + \alpha^2 \Delta \lambda_n^2  = \Delta s^2
+\end{equation}
+
+where 
+
+\[
+\Delta \U_n = \sum_{j=1}^{i} \Delta \U_n^{(j)} = \Delta \U_n^{(i)} +
+d\U^{(i)} 
+\]
+
+\[
+\Delta \lambda_n = \sum_{j=1}^{i} \Delta \lambda_n^{(j)} = \Delta \lambda_n^{(i)} +
+d\lambda^{(i)} 
+\]
+
+\noindent this equation cannot be added directly into
+equation~\ref{staticFormTaylor} to produce a linear system of $N+1$
+unknowns. To add this equation we make some assumptions ala Yang
+(REF), which in so doing allows us to solve a system of $N$
+unknowns using the method of ??(REF).  Rewriting
+equation~\ref{staticFormTaylor} as  
+
+\[
+\K_n^{(i)} \Delta \U_n^{(i)} = \Delta \lambda_n^{(i)} \P +
+\lambda_n^{(i)} \P - \F_R(\U_n^{(i)}) = \Delta \lambda_n^{(i)} \P + \R_n^{(i)}
+\]
+
+\noindent The idea of ?? is to separate this into two equations:
+
+\def\Uh{\dot{\bf U}}
+\def\Ub{\overline{\bf U}}
+
+\[
+\K_n^{(i)} \Delta \Uh_n^{(i)} = \P
+\]
+
+\[
+\K_n^{(i)} \Delta \Ub_n^{(i)} = \R_n^{(i)}
+\]
+
+\noindent where now
+
+\begin{equation}
+ \Delta \U_n^{(i)} = \Delta \lambda_n^{(i)} \Delta \Uh_n^{(i)} +
+\Delta \Ub_n^{(i)}  
+\label{splitForm}
+\end{equation}
+
+\noindent We now rewrite the constraint equation based on two conditions:
+
+\begin{enumerate}
+\item {\bf $i = 1$}: assuming $\R_n^{(1)} = \zero$, i.e. the system is
+in equilibrium at the start of the iteration, the following is obtained
+
+\[  \Delta \U_n^{(1)} = \Delta \lambda_n^{(1)} \Delta \Uh_n^{(1)} + \zero \]
+
+\[ \Delta \lambda_n^{(1)} = \begin{array}{c} + \\ - \end{array}
+\sqrt{\frac{\Delta s^2}{\Uh^T \Uh + \alpha^2}} \]
+
+\noindent The question now is whether {\bf +} or {\bf -} should be
+used. In this class, $d \lambda$ from the previous iteration $(n-1)$
+is used, if it was positive {\bf +} is assumed, otherwise {\bf -}. This may
+change. There are other ideas: ?(REF) number of negatives on diagonal
+of decomposed matrix, ...
+
+\item {\bf $i > 1$}
+
+\[ \left( \Delta \U_n^{(i)} + d\U^{(i)} \right)^T \left( \Delta \U_n^{(i)} +
+d\U^{(i)} \right) + \alpha^2 \left( \Delta \lambda_n^{(i)} + d\lambda^{(i)}
+\right)^2 = \Delta s^2 \]
+
+\[
+\Delta {\U_n^{(i)}}^T\Delta \U_n^{(i)} + 2{d\U^{(i)}}^T\Delta \U_n^{(i)} + {d\U^{(i)}}^T d\U^{(i)}
++ \alpha^2 \Delta {\lambda_n^{(i)}}^2
++ 2 \alpha^2 d\lambda^{(i)} \Delta \lambda_n^{(i)} + \alpha^2 {d\lambda^{(i)}}^2
+= \Delta s^2
+\]
+
+\noindent assuming the constraint equation was solved at $i-1$,
+i.e. ${d\U^{(i)}}^T d\U^{(i)} + \alpha^2 {d\lambda^{(i)}}^2 = \Delta s^2$, this reduces to
+
+\[
+\Delta {\U_n^{(i)}}^T\Delta \U_n^{(i)} + 2{d\U^{(i)}}^T\Delta \U_n^{(i)} + 
+\alpha^2 \Delta {\lambda_n^{(i)}}^2
++ 2 \alpha^2 d\lambda^{(i)} \Delta \lambda_n^{(i)} 
+= 0
+\]
+
+ \noindent For our ArcLength1 method we make the ADDITIONAL assumption that
+$ 2{d\U^{(i)}}^T\Delta \U_n^{(i)} 
++ 2 \alpha^2 d\lambda^{(i)} \Delta \lambda_n^{(i)} $ $>>$
+$ 
+\Delta {\U_n^{(i)}}^T\Delta \U_n^{(i)} +
+\alpha^2 \Delta {\lambda_n^{(i)}}^2
+$
+the constraint equation at step $i$ reduces to
+
+\[
+{d\U^{(i)}}^T\Delta \U_n^{(i)} 
++ \alpha^2 d\lambda^{(i)} \Delta \lambda_n^{(i)} = 0
+\]
+
+\noindent hence if the class was to solve an $N+1$ system of equations at
+each step, the system would be:
+
+\[ \left[
+\begin{array}{cc}
+\K_n^{(i)} & -\P \\
+{d\U^{(i)}}^T & \alpha^2 d\lambda^{(i)} 
+\end{array} \right] 
+\left\{
+\begin{array}{c}
+\Delta \U_n^{(i)} \\
+\Delta \lambda_n^{(i)}
+\end{array} \right\} = \left\{
+\begin{array}{c}
+\lambda_n^{(i)} \P - \F_R(\U_n^{(i)}) \\
+0
+\end{array} \right\}
+\]
+
+\noindent instead of solving an $N+1$ system, equation~\ref{splitForm}
+is used to give
+
+\[
+{d\U^{(i)}}^T \left(\Delta \lambda_n^{(i)} \Delta \Uh_n^{(i)} + \Delta
+\Ub_n^{(i)}\right) 
++ \alpha^2 d\lambda^{(i)} \Delta \lambda_n^{(i)} = 0
+\]
+
+\noindent which knowing $\Uh_n^{(i)}$ and $\Ub_n^{(i)}$ can
+be solved for $\Delta \lambda_n^{(i)}$ 
+
+\[
+\Delta \lambda_n^{(i)} = -\frac{{d\U^{(i)}}^T \Delta \Ub_n^{(i)}}{{d\U^{(i)}}^T \Delta
+\Uh_n^{(i)} + \alpha^2 d\lambda^{(i)}}
+\]
+
+\end{enumerate}
+\noindent {\bf Class Interface} \\
+\indent // Constructors \\
+\indent {\em ArcLength1(double arc, double $\alpha$ = 1.0);}\\ \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$ArcLength1();}\\  \\
+\indent // Public Methods \\
+\indent {\em int newStep(void);} \\
+\indent {\em int update(const Vector \&$\Delta U$);} \\
+\indent {\em int domainChanged(void); }\\ \\
+\indent // Public Methods for Output\\
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel);}\\ 
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker);}\\ 
+\indent {\em int Print(ostream \&s, int flag = 0);}\\
+
+\noindent {\bf Constructors} \\
+\indent {\em ArcLength1(double dS, double alpha = 1.0);}\\ \\
+The integer INTEGRATOR\_TAGS\_ArcLength1 (defined in
+$<$classTags.h$>$) is passed to the StaticIntegrator classes
+constructor. The value of $\alpha$ is set to {\em alpha} and 
+$\Delta s$ to {\em dS}. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em $\tilde{ }$ArcLength1();}\\ 
+Invokes the destructor on the Vector objects created in {\em
+domainChanged()}. \\
+
+\noindent {\bf Public Methods}\\
+
+{\em int newStep(void);} \\
+{\em newStep()} performs the first iteration, that is it solves for 
+$\lambda_n^{(1)}$ and $\Delta \U_n^{(1)}$ and updates the model with
+$\Delta \U_n^{(1)}$ and increments the load factor by
+$\lambda_n^{(1)}$. To do this it must set the rhs of the LinearSOE to
+$\P$, invoke {\em formTangent()} on itself and solve the LinearSOE to
+get $\Delta \Uh_n^{(1)}$. \\
+
+{\em int update(const Vector \&$\Delta U$);} \\
+Note the argument $\Delta U$ should be equal to $\Delta \Ub_n^{(i)}$.
+The object then determines $\Delta \Uh_n^{(i)}$ by setting the rhs of
+the linear system of equations to be $\P$ and then solving the
+linearSOE. It then solves for
+$\Delta \lambda_n^{(i)}$ and $\Delta \U_n^{(i)}$ and updates the model with
+$\Delta \U_n^{(i)}$ and increments the load factor by $\Delta
+\lambda_n^{(i)}$. Sets the vector $x$ in the LinearSOE object to be
+equal to $\Delta \U_n^{(i)}$ before returning (this is for the
+convergence test stuff. \\
+
+
+\indent {\em int domainChanged(void); }\\ 
+The object creates the Vector objects it needs. Vectors are created to
+stor $\P$, $\Delta \Ub_n^{(i)}$, $\Delta \Uh_n^{(i)}$, $\Delta
+\Ub_n^{(i)}$, $dU^{(i)}$. To form $\P$, the current load factor is
+obtained from the model, it is incremented by $1.0$, {\em
+formUnbalance()} is invoked on the object, and the $b$ vector is
+obtained from the linearSOE. This is $\P$, the load factor on the
+model is then decremented by $1.0$. \\
+
+{\em int sendSelf(int commitTag, Channel \&theChannel); } \\ 
+Places the values of $\Delta s$ and $\alpha$ in a
+vector of size $2$ and invokes {\em sendVector()} on {\em theChannel}.
+Returns $0$ if successful, a warning message is printed and
+a $-1$ is returned if {\em theChannel} fails to send the Vector. \\
+
+{\em int recvSelf(int commitTag, Channel \&theChannel, 
+FEM\_ObjectBroker \&theBroker); } \\ 
+Receives in a Vector of size 2 the values of $\Delta s$ and $\alpha$.
+Returns $0$ if successful, a warning message is printed, $\delta
+\lambda$ is set to $0$, and a $-1$ is returned if {\em theChannel}
+fails to receive the Vector.\\
+
+{\em int Print(ostream \&s, int flag = 0);}\\
+The object sends to $s$ its type, the current value of $\lambda$, and
+$\delta \lambda$. 

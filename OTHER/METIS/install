@@ -1,0 +1,89 @@
+
+Copyright 1995, Regents of the University of Minnesota.
+METIS was written by George Karypis (karypis@cs.umn.edu)
+
+Introduction ------------------------------------------------------------
+
+METIS is a system for partitioning unstructured graphs and for producing
+fill reducing orderings for sparse matrices.
+The documentation of METIS can be found in the Doc/manual.ps file.
+Also the 'Doc' directory contains two papers that present experimental
+and theoretical results for the various algorithms implemented in METIS.
+These files are Doc/mlevel_serial.ps, Doc/mlevel_kway.ps, and 
+Doc/mlevel_analysis.ps
+
+METIS is written in ANSI C and should compile on Unix systems that have
+a ANSI C compiler. It has been extensively tested on the following
+architectures:
+
+   AIX 3.2.5
+   SunOS 4.1 
+   Solaris 2.4 (SunOS 5.4)
+   IRIX 5.3
+   Unicos
+
+
+Installation Instructions -----------------------------------------------
+
+In order to build METIS you need
+  (a) a C compiler that is ANSI compatible 
+  (b) make 
+
+Edit the Makefile that resides in the same directory 
+as this file according to the requirements of your system.
+
+In particular, modify the BINDIR variable to point to a valid path in 
+which the executables of METIS will be stored. 
+Modify the CC variable to be the name of the ANSI C compiler in your
+system. The GNU C compiler (gcc) will do.  Note that on most Sun systems, 
+the 'cc' compiler is not ANSI C compatible.
+Finally, add any additional libraries that are required in your system
+at the end of the LIBS variable.
+
+After saving the modified Makefile, type 'make' at the prompt 
+to build METIS and METISlib.
+
+Upon successful completion, make creates 4 files in the directory 
+specified by BINDIR. These are
+  metis
+  ometis
+  pmetis
+  kmetis
+
+Note that, 'ometis',  'pmetis', and 'kmetis' are symbolic links to 
+'metis'.  Do not rename these links, because as described in the 
+user manual, 'ometis',  'pmetis', and 'kmetis' are used to provide 
+a simple interface to the METIS package.
+
+In order to build METISlib you need to edit the Makefile.lib
+to specify the C compiler (as you did with Makefile).
+Also you need to edit (if required) he AR and RANLIB variables.
+After saving the modified Makefile.lib, type 'make lib' at the prompt 
+to build the libmetis.a file. This is METIS's stand-alone library.
+
+
+Problems? ---------------------------------------------------------------
+On systems other than the ones mentioned above, building METIS may fail.
+The most common problem is due to the lack of certain header files.
+In that case you need to edit the files 
+  multilevel.h
+  GKlib.h
+to provide the proper paths.
+
+
+
+Contact Information -----------------------------------------------------
+
+If you have any comments, suggestions, or bug reports, please send them
+to me. My email address is 
+  karypis@cs.umn.edu
+
+Any bug fixes and upgrades of the METIS packages is available on WWW at
+URL: http://www.cs.umn.edu/~karypis/metis/metis.html
+
+
+August 22, 1995
+George Karypis
+
+
+

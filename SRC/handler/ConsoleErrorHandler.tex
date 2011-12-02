@@ -1,0 +1,46 @@
+%File: ~/handler/ConsoleErrorHandler.tex
+%What: "@(#) ConsoleErrorHandler.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/handler/ConsoleErrorHandler.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ConsoleErrorHandler \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent ErrorHandler \\
+\indent\indent {\bf ConsoleErrorHandler} \\
+
+\noindent {\bf Description}  \\
+\indent The ConsoleErrorHandler class is a concrete subclass of error
+handler which sends the error messages to the cerr stream. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em ConsoleErrorHandler();}\\ \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$ConsoleErrorHandler();}\\ \\
+\indent // Public Methods  \\
+\indent {\em void warning(const char *msg, ...);}\\
+\indent {\em void fatal(const char *msg, ...);}\\ 
+
+\noindent {\bf Constructor}  \\
+\indent {\em ConsoleErrorHandler();}  \\ 
+Does nothing.\\
+
+\noindent {\bf Destructor} \\
+\indent {\em ~ $\tilde{}$ConsoleErrorHandler();}\\ 
+Does nothing. \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em void warning(const char *msg, ...) =0;}\\
+Creates a va\_list using {\em va\_start()} on the ellipses arguments
+and invokes the {\em outputMessage(cerr, msg, va\_list)} routine in
+the parent class. It then invokes  {\em va\_end()} on this va\_list
+and returns.\\ 
+
+\indent {\em void fatal(const char *msg, ...) =0;}\\
+Creates a va\_list using {\em va\_start()} on the ellipses arguments
+and invokes the {\em outputMessage(cerr, msg, va\_list)} routine in
+the parent class. It then invokes {\em va\_end()} on this va\_list,
+and finally terminates the program with an {\em exit()}. 

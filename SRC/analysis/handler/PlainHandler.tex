@@ -1,0 +1,80 @@
+%File: ~/OOP/analysis/handler/PlainHandler.tex
+%What: "@(#) PlainHandler.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/handler/PlainHandler.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class PlainHandler: public ConstraintHandler  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent ConstraintHandler \\
+\indent\indent\indent {\bf PlainHandler} \\
+
+\noindent {\bf Description} \\ 
+\indent The PlainHandler class is a class which only deals with
+homogeneous single point constraints. To do this it creates regular
+FE\_Element and DOF\_Group objects and enforces the constraints by
+specifying that degrees-of-freedom which are constrained are not
+assigned an equation number. Pointers to the DOF\_Group and
+FE\_Element objects are kept in two arrays. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em PlainHandler();}\\  \\
+\indent // Destructor \\
+\indent {\em $\tilde{ }$PlainHandler();}\\  \\
+\indent // Public Methods\\
+\indent {\em int handle(const ID *nodeToBeNumberedLast
+=0);} \\ 
+\indent {\em void clearAll(void);} \\ \\
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel); } \\
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel,
+FEM\_ObjectBroker \&theBroker); } \\
+
+\noindent {\bf Constructor} \\
+\indent {\em PlainHandler();}\\ 
+The integer {\em HANDLER\_TAG\_PlainHandler} (defined in
+$<$classTags.h$>$) is passed to the PlainHandler constructor. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$PlainHandler();}\\ 
+Invokes the destructor on all the FE\_Element and DOF\_Group objects
+created in {\em handle}. Then invokes the destructor on the two
+pointer arrays. \\
+
+\noindent {\bf Public Methods }\\
+\indent {\em int handle(const ID *nodeToBeNumberedLast =0);} \\
+Determines the number of FE\_Elements and DOF\_Groups needed from the
+Domain (a one to one mapping between Elements and FE\_Elements and
+Nodes and DOF\_Groups) Creates two arrays of pointers to store the
+FE\_elements and DOF\_Groups, returning a warning message and a $-2$
+or $-3$ if not enough memory is available for these arrays. Then the
+object will iterate through the Nodes of the Domain, creating a
+DOF\_Group for each node and setting the initial id for each dof to
+$-2$ if no SP\_Constraint exists for the dof, or $-1$ if a
+SP\_Constraint exists or $-3$ if the node identifier is in {\em
+nodesToBeNumberedLast}. The object then iterates through the Elements
+of the Domain creating a FE\_Element for each Element, if the Element
+is a Subdomain {\em setFE\_ElementPtr()} is invoked on the Subdomain
+with the new FE\_Element as the argument. If not enough memory is
+available for any DOF\_Group or FE\_element a warning message is
+printed and a $-4$ or $-5$ is returned. If any MP\_Constraint objects
+exist in the Domain a warning message is printed and $-6$ is
+returned. If all is successful, the method returns the number of
+degrees-of-freedom associated with the DOF\_Groups in {\em
+nodesToBeNumberedLast}. \\ 
+
+{\em void clearAll(void) =0;} \\
+Currently this invokes delete on all the FE\_element and DOF\_Group
+objects created in {\em handle()} and the arrays used to store
+pointers to these objects. FOR ANALYSIS INVOLVING DYNAMIC LOAD
+BALANCING, RE-MESHING AND CONTACT THIS MUST CHANGE. \\
+
+{\em int sendSelf(int commitTag, Channel \&theChannel); } \\
+Returns $0$. \\
+
+{\em int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker); } \\
+Returns $0$. 

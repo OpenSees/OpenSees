@@ -1,0 +1,95 @@
+%File: ~/OOP/analysis/handler/PenaltyConstraintHandler.tex
+%What: "@(#) PenaltyConstraintHandler.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{
+}$/analysis/handler/PenaltyConstraintHandler.h$>$  \\ 
+
+\noindent {\bf Class Declaration}  \\
+\indent class PenaltyConstraintHandler: public ConstraintHandler  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent MovableObject \\
+\indent\indent ConstraintHandler \\
+\indent\indent\indent {\bf PenaltyConstraintHandler} \\
+
+\noindent {\bf Description} \\ 
+\indent The PenaltyConstraintHandler class is a class which deals with
+both single and multi point constraints using the penalty method. 
+This is done by, in addition to creating a DOF\_Group object
+for each Node and an FE\_Element for each Element in the Domain,
+creating either a PenaltySP\_FE or a PenaltyMP\_FE object for each
+constraint in the Domain. It is these objects that enforce the
+constraints by moifying the tangent matrix and residual vector. \\ 
+
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\
+\indent {\em PenaltyConstraintHandler(double alphaSP, double
+alphaMP);}\\  \\ 
+\indent // Destructor \\
+\indent {\em virtual~ $\tilde{}$PenaltyConstraintHandler();}\\  \\
+\indent // Public Methods\\
+\indent {\em virtual int handle(const ID *nodeToBeNumberedLast
+=0); } \\ 
+\indent {\em virtual void clearAll(void);} \\ \\
+\indent {\em int sendSelf(int commitTag, Channel \&theChannel); } \\
+\indent {\em int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker); } \\
+
+
+\noindent {\bf Constructor} \\
+\indent {\em PenaltyConstraintHandler(double alphaSp, double alphaMP);}\\ 
+The integer {\em HANDLER\_TAG\_PenaltyConstraintHandler} (defined in
+$<$classTags.h$>$) is passed to the PenaltyConstraintHandler
+constructor. Stores {\em alphaSP} and {\em alphaMP} which are needed
+to construct the PenaltySP\_FE and PenaltyMP\_FE objects in {\em
+handle()}. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual~ $\tilde{}$PenaltyConstraintHandler();}\\ 
+Currently invokes {\em clearAll()}, this will change when {\em
+clearAll()} is rewritten. \\
+
+\noindent {\bf Public Methods }\\
+\indent {\em virtual int handle(const ID *nodeToBeNumberedLast =0) =0;} \\
+Determines the number of FE\_Elements and DOF\_Groups needed from the
+Domain (a one to one mapping between Elements and FE\_Elements,
+SP\_Constraints and PenaltySP\_FEs, MP\_Constraints and PenaltyMP\_FEs and
+Nodes and DOF\_Groups). Creates two arrays of pointers to store the
+FE\_Elements and DOF\_Groups, returning a warning message and a $-2$
+or $-3$ if not enough memory is available for these arrays. Then the
+object will iterate through the Nodes of the Domain, creating a
+DOF\_Group for each node and setting the initial id for each dof to
+$-2$ or $-3$ if the node identifier is in {\em
+nodesToBeNumberedLast}. The object then iterates through the Elements
+of the Domain creating a FE\_Element for each Element, if the Element
+is a Subdomain {\em setFE\_ElementPtr()} is invoked on the Subdomain
+with the new FE\_Element as the argument. If not enough memory is
+available for any DOF\_Group or FE\_element a warning message is
+printed and a $-4$ or $-5$ is returned. 
+The object then iterates through the SP\_Constraints
+of the Domain creating a PenaltySP\_FE for each constraint, using the
+Domain, the constraint and {\em alphaSP} as the arguments in the
+constructor.
+The object then iterates through the MP\_Constraints
+of the Domain creating a PenaltyMP\_FE for each constraint, using the
+Domain, the constraint and {\em alphaMP} as the arguments in the constructor.
+Finally the method returns the
+number of degrees-of-freedom associated with the DOF\_Groups in {\em
+nodesToBeNumberedLast}. \\
+
+{\em virtual void clearAll(void) =0;} \\
+Currently this invokes delete on all the FE\_element and DOF\_Group
+objects created in {\em handle()} and the arrays used to store
+pointers to these objects. FOR ANALYSIS INVOLVING DYNAMIC LOAD
+BALANCING, RE-MESHING AND CONTACT THIS MUST CHANGE. \\
+
+{\em int sendSelf(int commitTag, Channel \&theChannel); } \\
+Sends in a Vector of size 2 {\em alphaSP} and {\em alphaMP}. Returns
+$0$ if successful. \\
+
+{\em int recvSelf(int commitTag, Channel \&theChannel, FEM\_ObjectBroker
+\&theBroker); } \\
+Receives in a Vector of size 2 the values {\em alphaSP} and {\em
+alphaMP}. Returns $0$ if successful. 

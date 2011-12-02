@@ -1,0 +1,314 @@
+% File: ~/domain/domain/partitioned/PartitionedDomain.tex 
+% What: "@(#) PartitionedDomain.tex, revA"
+
+UNDER CONSTRUCTION
+
+\noindent {\bf Files}   \\
+\indent \#include $<$/domain/domain/partitioned/PartitionedDomain.h$>$  \\
+
+\noindent {\bf Class Decleration}  \\
+\indent class PartitionedDomain: public Domain  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent  Domain \\
+\indent\indent {\bf PartitionedDomain} \\
+
+
+\noindent {\bf Description}  \\
+\indent PartitionedDomain is an extension of Domain. A partitioned
+domain is an aggregation of subdomains. All elements, nodes, loadcases
+are added to the PartitionedDomain. The components can be moved among 
+subdomains (keeping in mind that subdomains are themselves subclasses
+of domain and therefore must obey the requirements for adding and
+removing elements specified in the interface for Domain) by invoking
+the {\em remove..()} and {\em add...()} methods on the subdomain. \\
+
+
+\noindent {\bf Class Interface}  \\
+\indent\indent // Constructors  \\
+\indent\indent {\em PartitionedDomain(DomainPartitioner \&thePartitioner); } \\
+\indent\indent {\em PartitionedDomain(int numNodes, int numElements, int
+numLCs, int numSPs, int numMPs, \\ 
+\indent\indent\indent\indent int numSubdomains, DomainPartitioner
+\&thePartitioner); } \\  \\
+\indent\indent //  Destructor  \\
+\indent\indent {\em virtual~ $\tilde{}$PartitionedDomain();}  \\ \\
+\indent\indent // Public Member Functions - which extend the Domain class \\
+\indent\indent {\em virtual int partition(int numPartitions);}\\
+\indent\indent {\em virtual bool addSubdomain(Subdomain *theSubdomainPtr);}  \\
+\indent\indent {\em virtual int getNumSubdomains(void);}\\
+\indent\indent {\em virtual Subdomain *getSubdomainPtr(int tag);}\\
+\indent\indent {\em virtual SubdomainIter \&getSubdomains(void);} \\
+\indent\indent {\em Node *removeExternalNode(int tag); } \\
+\indent\indent {\em Graph \&getSubdomainGraph(void); } \\ \\
+\indent\indent // Public Member Functions - inherited from Domain but
+rewritten \\
+\indent\indent {\em virtual bool addElement(Element *theElementPtr, bool
+check = false);}  \\
+\indent\indent {\em virtual bool addNode(Node *theNodePtr, bool check = false);}  \\
+\indent\indent {\em virtual bool addSP\_Constraint(SP\_Constraint *theSPptr, bool
+check = false);}  \\
+\indent\indent {\em virtual bool addMP(MP\_Constraint *theMPptr, bool check = false);}  \\
+\indent\indent {\em virtual bool addLoadCase(LoadCase *theLCptr);}  \\
+\indent\indent {\em virtual ElementIter \&getElements(void);} \\
+\indent\indent {\em virtual  Element *getElement(int tag) const;}\\
+\indent\indent {\em virtual  Node *getNode(int tag) const;}\\
+\indent\indent {\em virtual  LoadCase *getLoadCasePtr(int tag) const;}\\
+\indent\indent {\em virtual bool setCurrentLoadCase(int LCtag);} \\
+\indent\indent {\em virtual void applyLoad(double time = 0.0,
+double loadFactor = 1.0);} \\
+\indent\indent {\em virtual void linearize(void);} \\
+\indent\indent {\em virtual void commit(void);} \\
+\indent\indent {\em virtual int getCurrentLoadCase(void);} \\
+\indent\indent {\em virtual int getNumElements(void) const;}\\
+\indent\indent {\em virtual int getNumNodes(void) const = 0;}\\
+\indent\indent {\em virtual int getNumSPs(void) const;}\\
+\indent\indent {\em virtual int getNumMPs(void) const;}\\
+\indent\indent {\em virtual int getNumLCs(void) const;}\\    
+\indent\indent {\em virtual Domain *getEmptyDomainCopy(void);}\\
+\indent\indent {\em virtual Element *removeElement(int tag);}\\
+\indent\indent {\em virtual Node *removeNode(int tag, bool checkNeeded
+= true);}\\ 
+\indent\indent {\em virtual LoadCase *removeLoadCase(int tag);}\\        
+\indent\indent {\em virtual SP\_Constraint *removeSP\_Constraint(int
+tag);}\\ 
+\indent\indent {\em virtual MP\_Constraint *removeMP\_Constraint(int
+tag);} \\ \\
+\indent\indent // Protected Methods   \\
+\indent {\em DomainPartitioner \&getPartitioner(void) const;} \\
+{\em virtual int buildEleGraph(Graph \&theEleGraph)} \\
+
+
+
+\noindent {\bf Constructors}  \\
+\indent {\em PartitionedDomain(DomainPartitioner \&thePartitioner); } \\
+Constructs an empty PartitionedDomain. A link with the domain
+partitioner {\em thePartitioner} is set up. The {\em thePartitioner}
+is used by the domain to partition and load balance the partitioned domain. \\
+
+\indent {\em PartitionedDomain(int numNodes, int numElements, int
+numLCs, int numSPs, int numMPs, \\ 
+\indent\indent\indent int numSubdomains, DomainPartitioner
+\&thePartitioner); } \\ 
+Constructs an empty PartitionedDomain, storage is allocated for the components
+that are to be added using the estimated number of components passed
+as arguments. A link with the domain partitioner {\em thePartitioner}
+is set up. The {\em thePartitioner} is used by the domain to partition
+and load balance the partitioned domain. \\
+
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~ $\tilde{}$PartitionedDomain();}  \\
+Deletes the storage components. \\
+
+\noindent {\bf Public Member Functions - which extend the Domain class}  \\
+\indent {\em virtual int partition(int numPartitions);}\\
+Method which first checks that subdomains with tags 1 through {\em numPartitions} exist in the 
+PartitionedDomain. Then it invokes {\em setPartitionedDomain(*this)} on the DomainPartitioner
+and finally it returns the result of invoking {\em partition(numPartitions} on
+the DomainPartitioner, which will return 0 if succesfull, a negative number if not. \\
+
+{\em virtual bool addSubdomain(Subdomain *theSubdomainPtr);}  \\
+Adds the subdomain pointed to by theSubdomainPtr to the domain. The domain
+is responsible for checking that no other subdomain with a similar tag,
+has been previously added to the domain. If successfull
+the domain is responsible for invoking {\em setDomain(this)} on the
+Subdomain. The domain is also responsible for invoking {\em
+domainChange()}. The call returns {\em false} if the subdomain was not added, 
+otherwise {\em true} is returned. \\  
+
+{\em virtual int getNumSubdomains(void);}\\
+Method which returns the number of Subdomains (partitions). \\
+
+{\em virtual Subdomain *getSubdomainPtr(int tag);}\\
+Returns the Subdomain whose tag is given by {\em tag}. \\
+
+{\em virtual SubdomainIter \&getSubdomains(void);} \\
+Returns an iter for the Subdomains of the PartitionedDomain. \\
+
+
+{\em Node *removeExternalNode(int tag); } \\
+A method to remove a Node whose tag is given by {\em tag} from the PartitionedDomain, 
+but will not remove the Node from any Subdomains. \\
+
+{\em Graph \&getSubdomainGraph(void); } \\
+This will create a new graph each time it is invoked; deleting the old graph. THIS WILL
+BE CHANGED.  A vertex is created for each Subdomain, with an edge to each Subdomain the 
+Subdomain is connected to, a tag equal to the Subdomain tag,  and a weight equal to the 
+result of invoking {\em getCost()} on the Subdomain. \\
+
+\noindent {\bf Public Member Functions - inherited from Domain but rewritten}\\
+\indent {\em virtual bool addElement(Element *theElementPtr, bool
+check = false);}  \\
+To add the element pointed to by theElementPtr to the domain. If {\em check}
+is {\em true} the domain is responsible for checking to see that: 1)
+no other element with a similar tag, element number, exists in any of
+the subdomains. If check is successfull the partitioned domain
+attempts to add the element to the storage arrey. The call returns
+{\em false} if the element was not added, otherwise {\em true} is 
+returned.\\   
+
+{\em virtual bool addNode(Node *theNodePtr, bool check = false);}  \\
+Adds the node pointed to by theNodePtr to the domain. If {\em check}
+is {\em true} the domain is responsible for checking that no other
+node with a similar tag, node number, exists in any of the
+subdomains. If successfull the partition domain attempts to add the
+node by invoking {\em Domain::addNode}. The call returns {\em false} if
+the node was not added, otherwise {\em true} is returned. \\  
+
+
+{\em virtual bool addSP\_Constraint(SP\_Constraint *theSPptr, bool
+check = false);}  \\
+Adds the single point constraint pointed to by theSPptr to the 
+domain. The domain performs some checks is {\em check} is true. If
+successful the domain adds the constraint using {\em
+Domain::addSP\_Constraint()}. The call returns {\em false} if
+the constraint was not added, otherwise {\em true} is returned. \\  
+
+{\em virtual bool addMP(MP\_Constraint *theMPptr, bool check = false);}  \\
+Adds the multiple point constraint pointed to by theMPptr, to the
+domain. The domain performs some checks is {\em check} is true. If
+successful the domain adds the constraint using {\em
+Domain::addMP\_Constraint()}. The call returns {\em false} if
+the constraint was not added, otherwise {\em true} is returned. \\  
+
+
+{\em virtual bool addLoadCase(LoadCase *theLCptr);}  \\
+\\
+
+%%%%%%%% Public Member Functions - ACCESS
+\noindent {\bf Pure Virtual Public Member Functions - Access}  \\
+\indent {\em virtual ElementIter \&getElements(void);} \\
+It returns an {\em PartionedDomEleIter} for the elements of the domain. This
+is an iter which goes through all the subdomains, invoking {\em
+getElements()} on the subdomain to get an ElementIter. The
+PartitionedDomEleIter uses this iter to go through the elements of the
+subdomain until it begins returning $0$; at which point it goes on to
+the next subdomain. \\
+
+{\em virtual  Element *getElement(int tag) const;}\\
+Returns a pointer to the element whose tag is given by {\em tag}. If
+no such element exists $0$ is returned. This is done by invoking {\em
+getElement(tag)} on the subdomains until the element is found or no
+more subdomains exist; in which case a $0$ is returned. \\
+
+{\em virtual  Node *getNode(int tag) const;}\\
+Returns a pointer to the node whose tag is given by {\em tag}. If
+no such node exists $0$ is returned. This is done by invoking {\em
+getNode(tag)} on the subdomains until the element is found or no
+more subdomains exist; in which case a $0$ is returned. \\
+
+{\em virtual  LoadCase *getLoadCasePtr(int tag) const;}\\
+Returns a pointer to the element whose tag is given by {\em tag}. If
+no such load case exists $0$ is returned. \\
+
+\indent {\em virtual bool setCurrentLoadCase(int LCtag);} \\
+Sets the current load case of the domain to be that whose tag is given
+by LCtag. It iterates through all the subdomains invoking the same
+operation on them. Returns {\em false} if no such load case exists, otherwise
+returns {\em true}. \\
+
+\indent {\em virtual void setCurrentTime(double newTime);} \\
+Sets the current load case of the domain to be that whose tag is given
+by {\em newTime}. It iterates through all the subdomains invoking the
+same operation on them. \\
+
+{\em virtual void applyLoad(double time = 0.0, double loadFactor
+= 1.0);} \\
+The partioned domain iterates through all the subdomains invoking {\em
+applyLoad(double timeStamp)} on them. \\
+
+{\em virtual void linearize(void);} \\
+The partioned domain iterates through all the subdomains invoking {\em
+linearize()} on them. \\
+
+
+{\em virtual void commit(void);} \\
+The partioned domain iterates through all the subdomains invoking {\em
+commit()} on them. \\
+
+%%%%%%%% Public Member Functions - QUERY
+\noindent {\bf Public Member Functions - Query}  \\
+\indent {\em virtual int getCurrentLoadCase(void);} \\
+Returns the tag of the current load case set for the domain. If no
+load case is set $-1$ is returned. \\
+
+\indent {\em virtual double getCurrentTime(void);} \\
+Returns the currentTime set for the domain. If no load case is set $0$
+is returned. \\ 
+
+\noindent {\bf Pure Virtual Public Member Functions - Query}  \\
+\indent {\em virtual int getNumElements(void) const;}\\
+Returns the number of elements in the domain. This number is obtained
+by summing the contributions from each subdomain. \\
+
+{\em virtual int getNumNodes(void) const = 0;}\\
+Returns the number of nodes in the domain.
+This number is obtained by summing the contributions from each subdomain. \\
+
+{\em virtual int getNumSPs(void) const;}\\
+Returns the number of SP\_Constraints in the domain. 
+This number is obtained by summing the contributions from each subdomain. \\
+
+{\em virtual int getNumMPs(void) const;}\\
+Returns the number of MP\_Constraints in the domain. 
+This number is obtained by summing the contributions from each subdomain. \\
+
+{\em virtual int getNumLCs(void) const;}\\    
+Returns the number of LoadCases in the domain. \
+This number is obtained by summing the contributions from each subdomain. \\
+
+{\em virtual Domain *getEmptyDomainCopy(void);}\\
+Returns an empty copy of the actual domain.\\
+
+{\em virtual Element *removeElement(int tag);}\\
+To remove the element whose tag is given by {\em tag} from the
+domain. The method Returns $0$ if no such element exists in the domain. Otherwise 
+the domain invokes {\em setDomain(0)} on the element and {\em
+setDomainChange(true,true,false)} on itself before a pointer to the
+element is returned. \\
+
+{\em virtual Node *removeNode(int tag, bool checkNeeded = true);}\\    
+To remove the node whose tag is given by {\em tag} from the domain. 
+Returns $0$ if no such node exists in the domain. Otherwise
+if the {\em checkNeeded} is {\em true} before the node is removed a
+check is made to see that the node is not referenced by any element,
+constraint or load. If it is referenced the Node will not be
+removed and $0$ is returned. If the node is to be removed the domain
+invokes {\em setDomain(0)} on the node and {\em
+setDomainChange(true,false,true)} on itself before a pointer to the
+Node is returned.\\
+
+{\em virtual LoadCase *removeLoadCase(int tag);}\\        
+To remove the load case whose tag is given by {\em tag} from the domain. 
+Returns $0$ if the load case was not in the domain, otherwise
+returns a pointer to the load case that was removed. Invokes {\em
+setDomain(0)} on the load case before it is returned.\\
+
+{\em virtual SP\_Constraint *removeSP\_Constraint(int tag);}\\
+To remove the SP\_Constraint whose tag is given by {\em tag} from the
+domain. Returns $0$ if the constraint was not in the domain, otherwise
+the domain invokes {\em setDomain(0)} on the constraint and {\em
+setDomainChange(true,false,false)} on itself before a pointer to the
+constraint is returned.\\  
+
+{\em virtual MP\_Constraint *removeMP\_Constraint(int tag);} \\
+To remove the MP\_Constraint whose tag is given by {\em tag} from the
+domain. Returns $0$ if the constraint was not in the domain, otherwise
+the domain invokes {\em setDomain(0)} on the constraint and {\em
+setDomainChange(true,false,false)} on itself before a pointer to the
+constraint is returned.\\  
+
+
+
+
+\noindent {\bf Protected Member Functions}  \\
+\indent {\em DomainPartitioner \&getPartitioner(void) const;} \\
+Will return a pointer to the DomainPartitioner object associated with the
+PartitionedDomain. \\
+
+{\em virtual int buildEleGraph(Graph \&theEleGraph)} \\
+A method which will cause the domain to discard the current element
+graph and build a new one based on the element connectivity. Returns
+$0$ if successfull otherwise $-1$ is returned along with an error
+message to cerr. \\
