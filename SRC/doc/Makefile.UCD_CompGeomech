@@ -1,0 +1,65 @@
+# Makefile for generating postscript or PDF file
+# $(TARGET).pdf from $(TARGET).tex
+TARGET =  UCD_CG_OpenSees_Commands
+
+
+
+
+FILES =     upUCommands.tex\
+            FiniteDefElementLagrangianCommand.tex\
+            FiniteDefHyperelasticPlasticCommands.tex\
+            FiniteDefHyperelasticCommands.tex\
+            Elastic3DCommands.tex\
+            Template3DEPCommands.tex\
+            DRMCommands.tex\
+            BrickCommands.tex
+
+all: $(TARGET).pdf
+
+ps: $(TARGET).ps
+
+ispell:
+	ispell    upUCommands.tex
+	ispell    FiniteDefElementLagrangianCommand.tex
+	ispell    FiniteDefHyperelasticPlasticCommands.tex
+	ispell    FiniteDefHyperelasticCommands.tex
+	ispell    Elastic3DCommands.tex
+	ispell    Template3DEPCommands.tex
+	ispell    DRMCommands.tex
+	ispell    BrickCommands.tex
+
+
+
+$(TARGET).pdf: $(TARGET).tex $(TARGET).ps # $(FILES)
+	ps2pdf.sh $(TARGET).ps
+	ps2pdf.sh $(TARGET)_2up.ps
+	cp *.pdf  /home/jeremic/public_html/OpenSees/
+	chmod a+rx /home/jeremic/public_html/OpenSees/
+	chmod a+r /home/jeremic/public_html/OpenSees/UCD_CG_OpenSees_Commands*
+#
+
+
+$(TARGET).ps: $(TARGET).dvi
+	dvps $(TARGET)
+	2up $(TARGET)
+	cp $(TARGET).2up.ps $(TARGET)_2up.ps
+
+
+$(TARGET).dvi: $(TARGET).tex  $(FILES)#	$(TARGET).bbl
+	latex $(TARGET).tex
+	latex $(TARGET).tex
+	latex $(TARGET).tex
+
+
+
+clean:
+	cleantex $(TARGET)
+	cleantex 
+	rm -f $(TARGET).out
+	rm -f $(TARGET).pdf
+	rm -f $(TARGET).ps
+	rm -f $(TARGET)_2up.ps
+	rm -f $(TARGET)_2up.pdf
+	rm -f $(TARGET).2up.ps
+	rm -f $(TARGET).2up.pdf
+

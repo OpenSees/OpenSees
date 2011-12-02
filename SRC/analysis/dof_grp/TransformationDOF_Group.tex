@@ -1,0 +1,50 @@
+% File: ~/OOP/analysis/dof_grp/TransformationDOF_Group.tex 
+%What: "@(#) DOF_Group.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/analysis/dof\_grp/TransformationDOF\_Group.h$>$  \\
+
+UNDER CONSTRUCTION.\\
+
+\noindent {\bf Class Declaration}  \\
+\indent class TransformationDOF\_Group: public DOF\_Group;  \\
+
+
+\noindent {\bf Class Hierarchy}  \\
+\indent DOF\_Group \\
+\indent\indent {\bf TransformationDOF\_Group} \\ 
+
+\noindent {\bf Description}  \\
+\indent TransformationDOF\_Group is a subclass of DOF\_Group. This
+object stores the transformation matrix $\T$ used by the
+TransformationFE objects when a node has been constrained with an MP
+or SP\_Constraint.
+
+
+\noindent {\bf Class Interface}  \\
+\indent // Constructors  \\
+\indent {\em TransformationDOF\_Group(int tag, Node *theNode,
+	MP\_Constraint \&mpPtr);}  \\
+\indent {\em TransformationDOF\_Group(int tag, Node *theNode);}  \\ \\
+\indent // Destructor  \\
+\indent {\em virtual~ $\tilde{}$TransformationDOF\_Group();}  \\\\
+\indent // Public Methods - dealing with the ID and Transformation
+matrix  \\ 
+\indent {\em    int doneID(void);    }\\
+\indent {\em    const ID \&getID(void) const; }\\
+\indent {\em    virtual void setID(int dof, int value);    }\\
+\indent {\em    Matrix *getT(void);}\\
+\indent {\em    virtual int getNumDOF(void) const;    }\\
+\indent {\em    virtual int getNumFreeDOF(void) const;}\\
+\indent {\em    virtual int getNumConstrainedDOF(void) const;}\\\\
+\indent // Public Methods - Tangent \& Residual  \\ 
+\indent {\em virtual const Matrix \&getTangent(Integrator *theIntegrator)} \\
+\indent {\em virtual const Vector \&getUnbalance(Integrator *theIntegrator); }\\
+\indent // Public Methods - update trial response quantities  \\ 
+\indent {\em virtual int setNodeDisp(const Vector \&u);} \\
+\indent {\em virtual int setNodeVel(const Vector \&$\dot u$);}\\
+\indent {\em virtual int setNodeAccel(const Vector \&$\ddot u$);}\\
+\indent {\em virtual int incrNodeDisp(const Vector \&u);} \\
+\indent {\em virtual int incrNodeVel(const Vector \&$\dot u$);}\\
+\indent {\em virtual int incrNodeAccel(const Vector \&$\ddot u$);}\\
+

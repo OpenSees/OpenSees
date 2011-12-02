@@ -1,0 +1,46 @@
+%File: ~/OOP/graph/graph/GraphPartitioner.tex
+%What: "@(#) GraphPartitioner.tex, revA"
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/graph/partitioner/GraphPartitioner.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class GraphPartitioner:  \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf GraphPartitioner} \\
+\indent\indent Metis \\
+
+\noindent {\bf Description}  \\
+\indent GraphPartitioner is an abstract class. The GraphPartitioner
+class defines the interface that all programmers must provide when
+introducing new GraphPartitioner subclasses. A GraphPartitioner is an
+algorithm for partitioning (coloring) the vertices of a graph; that is
+assigning a color (1 through the number of partitions) to each vertex
+of the graph. \\
+
+\noindent {\bf Class Interface}  \\
+\indent\indent // Constructor \\
+\indent\indent {\em GraphPartitioner();}  \\ \\
+\indent\indent // Destructor  \\
+\indent\indent {\em virtual~$\tilde{}$GraphPartitioner();}  \\ \\
+\indent\indent // Public Methods  \\
+\indent\indent {\em virtual int partition(Graph \&theGraph, int numPart) =0;} \\
+
+\noindent {\bf Constructor}  \\
+\indent {\em GraphPartitioner();}  \\
+To construct a GraphPartitioner. \\
+
+\noindent {\bf Destructor}  \\
+\indent {\em virtual~$\tilde{}$GraphPartitioner();}  \\
+
+\noindent {\bf Public Methods }  \\
+\indent {\em virtual int partition(Graph \&theGraph, int numPart) =0;} \\
+This is the method invoked to partition the graph into {\em numPart}
+partitions. On completion of the routine each vertex will be assigned
+a color $1$ through {\em numPart}, the color assigned indicating the
+partition to which the vertex belongs. Returns a $0$ if successful, a
+negative number if not; the value depending on the subclass.  \\
+
+
+

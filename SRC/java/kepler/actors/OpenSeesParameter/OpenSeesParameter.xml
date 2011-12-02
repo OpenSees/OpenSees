@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+   <entity name="OpenSeesPartameter" class="ptolemy.kernel.ComponentEntity">
+<property name="entityId"  value="urn:lsid:kepler-project.org:actor:519:1" class="org.kepler.moml.NamedObjId"/>
+<property name="KeplerDocumentation" class="org.kepler.moml.DocumentationAttribute">
+<property name="description" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="author" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>edward lee, steve neuendorffer</configure></property>
+<property name="version" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>null</configure></property>
+<property name="userLevelDocumentation" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The Scale actor reads any scalar value that supports multiplication (e.g., an integer, double, array, matrix, etc), and outputs a scaled version of the value.
+
+The actor transforms the input based on a scaling factor specified with the factor parameter. For data types where multiplication is not commutative (e.g., matrices), the order of the input value and the factor can be specified with the scaleOnLeft parameter. If scaleOnLeft is set to true (the default) the factor is multiplied on the left and the input on the right.
+
+The actor automatically assigns an output data type based on the input and factor types.  If the input is an array, the output is also an array, with the elements scaled. If the input is an array of arrays, only the elements of the innermost array will be scaled.</configure></property>
+<property name="prop:parameterName" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The scaling factor. The parameter can contain any scalar value that supports multiplication. The default value is 1.</configure></property>
+<property name="prop:parameterValue" class="ptolemy.kernel.util.ConfigurableAttribute"><configure>The scaling factor. The parameter can contain any scalar value that supports multiplication. The default value is 1.</configure></property>
+</property>
+<property name="class" value="edu.opensees.OpenSeesParameter" class="ptolemy.kernel.util.StringAttribute">
+  <property name="id" value="urn:lsid:kepler-project.org:class:519:1" class="ptolemy.kernel.util.StringAttribute"/>
+</property>
+<property name="parameterValuePort" class="org.kepler.moml.PortAttribute">
+  <property name="direction" value="input" class="ptolemy.kernel.util.StringAttribute"/>
+  <property name="dataType" value="unknown" class="ptolemy.kernel.util.StringAttribute"/>
+  <property name="isMultiport" value="false" class="ptolemy.kernel.util.StringAttribute"/>
+</property>
+<property name="output" class="org.kepler.moml.PortAttribute">
+  <property name="direction" value="output" class="ptolemy.kernel.util.StringAttribute"/>
+  <property name="dataType" value="string" class="ptolemy.kernel.util.StringAttribute"/>
+  <property name="isMultiport" value="false" class="ptolemy.kernel.util.StringAttribute"/>
+</property>
+<property name="semanticType00" value="urn:lsid:localhost:onto:1:1#ArithmeticMathOperationActor" class="org.kepler.sms.SemanticType"/>
+<property name="semanticType11" value="urn:lsid:localhost:onto:2:1#ArithmeticOperation" class="org.kepler.sms.SemanticType"/>
+</entity>
+

@@ -1,0 +1,63 @@
+The example subdirectories include:
+
+        Example1:  contains a main() C++ routine which creates and
+	    performs the analysis of the example1 problem outlined
+	    in 'Adding an Element to G3'
+
+                main.C - example C++ main driver (could be simpler)
+
+
+               typing 'make' builds the executable example1
+               typing 'make wipe' removes example1 and .o files
+
+	ExampleScripts:  contains TCL scripts which define and analyze
+	    R/C frames. to run these examples enter the interpreter
+            and source in these files with the command:
+		              source <fileName>
+
+		RCFrame1.tcl - pushover analysis
+		RCFrame2.tcl - pushover analysis with a simple
+			TCL procedure that performs the analysis
+		RCFrame3.tcl - linear elastic analysis
+		RCFrame4.tcl - linear and nonlinear EQ analysis
+		RCFrame5.tcl - pushover analysis with frame defined
+			using a node and element generating TCL
+			procedure
+                RCFrameDisplay.tcl - commands for opening a window
+	                used to display the RCFrame1-5 examples
+	        RigidFrame3D.tcl - a nonlinear EQ analysis of a 3d fframe
+                        with elastic columns and nonlinear beams with rigid 
+                        diaphragm constraints
+		genPlaneFrame.tcl - defines node and element generating
+			TCL procedure
+
+
+        PlaneFrame:  contains a main() C++ routine which uses
+		the PlaneFrame model builder and performs a linear
+	        static analysis.
+
+                main.C - example C++ main driver (could be simpler)
+	        quick.in - an example PlaneFrame input file.
+
+               typing 'make' builds the executable PlaneFrame
+               typing 'make wipe' removes PlaneFrame and .o files
+
+
+        TclModelBuilder: contains the files outlined in the document
+		'Adding an Element to g3'. 
+
+                myG3 - an executable.
+                myCommands.C - contains procedure for adding new commands to g3
+                TclPlaneTruss.h/.C - an example of a tcl model builder
+                MyTruss.h/.C - files to add the new truss member
+		example1.tcl, example2.tcl - the two tcl scripts
+		     presented in the cocument 'Adding an Element to g3'
+
+		examples - a dircetory containg some more scripts
+
+                to load a script in the running interpreter type
+                    source testX.tcl
+                
+                typing 'make' builds the executable myG3
+                typing 'make wipe' remove myG3 and .o files  
+

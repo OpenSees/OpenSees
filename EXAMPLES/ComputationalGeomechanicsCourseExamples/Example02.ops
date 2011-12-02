@@ -1,0 +1,172 @@
+#!/home/jeremic/bin/OpenSees.debug
+# put your path and exec name above aftetr #! to make script self-executable
+# jeremic@ucdavis.edu
+# 15 April 2004
+# solid model, 8 node brick, inelastic material, testing integrators and
+# constraint equations
+# Examples for the course:  
+# Computational Geomechanics: 
+# Inelastic Finite Elements for Pressure Sensitive Materials  
+
+
+
+# ################################
+# create the modelbuilder
+# #################################
+
+model BasicBuilder -ndm 3 -ndf 3
+
+# ################################
+# build the model
+# #################################
+# nodes
+node 1 1.0 1.0 0.0
+node 2 0.0 1.0 0.0
+node 3 0.0 0.0 0.0
+node 4 1.0 0.0 0.0
+node 5 1.0 1.0 1.0
+node 6 0.0 1.0 1.0
+node 7 0.0 0.0 1.0
+node 8 1.0 0.0 1.0
+
+
+# displacement boundary conditions
+fix 1   0 0 1
+fix 2   1 0 1
+fix 3   1 1 1
+fix 4   0 1 1
+#fix 5 1 0 1
+#fix 6 1 0 1
+#fix 7 1 0 1
+#fix 8 1 0 1
+
+
+
+#---------------------------------------------------------------------------------------- 
+#Elastic-plastic model
+#================================================================
+# von Mises model
+# Yield surface
+set DPys "-VM"
+
+# Potential surface
+set DPps "-VM"
+
+#Scalar evolution law
+set ES1  "-Leq "
+
+#Tensorial evolution law
+set ET1  "-Linear"
+
+# initial stress
+set stressp "-0.10 0 0 0 -0.10 0 0 0 -0.10"
+
+# EPState
+#____________E______Eo_____v__rho________________Cu(undrained shear strength)
+set EPS "70000.0 70000.0 0.2 1.8 -NOD 1 -NOS 2 10.0 0.0 -stressp $stressp"
+
+
+# Creating nDMaterial using Template Elastic-PLastic Model
+nDMaterial Template3Dep 1 -YS $DPys -PS $DPps -EPS $EPS -ELS1 $ES1 -ELT1 $ET1
+#---------------------------------------------------------------------------------------- 
+
+
+##----------------------------------------------------------------------------------------
+## elastic material
+#nDMaterial ElasticIsotropic3D 1 100.0   0.2   1.8
+##----------------------------------------------------------------------------------------
+
+
+##            tag     8 nodes          matID  bforce1 bforce2 bforce3   massdensity
+element Brick8N  1  5 6 7 8 1 2 3 4   1      0.0     0.0      0.0     1.8
+#element stdBrick  1  1 2 3 4 5 6 7 8   1      0.0     0.0    -9.81    1.8
+
+pattern Plain 1 Linear {
+   load  5      0    0  -2.50
+   load  6      0    0  -2.50
+   load  7      0    0  -2.50
+   load  8      0    0  -2.50
+}
+
+
+# ################################
+# create the analysis
+# #################################
+
+
+constraints Penalty 1e9 1e9
+
+
+
+#
+# Different types of load/displacement control
+#
+
+set lf1 1
+integrator LoadControl $lf1 
+
+# 
+# set dU 0.0002
+# integrator DisplacementControl  5   3   $dU 
+# 
+
+# set delta_l 0.0075
+# integrator ArcLength $delta_l 1.0
+
+
+# set Arclength 0.0075
+# set psi_u 1
+# set psi_f 0
+# set u_ref 1
+# integrator HSConstraint $Arclength $psi_u $psi_f $u_ref
+
+
+
+
+
+#
+# Convergence Tests
+#
+# this is needed by Newton 
+#test NormDispIncr 1.0e-6 30 1
+test NormUnbalance 1.0e-6 30 1
+
+
+
+algorithm Newton
+
+
+numberer RCM
+system UmfPack
+analysis Static
+
+
+# ################################
+# perform the analysis
+# #################################
+
+for {set i 1} {$i <=2} {incr i} {
+    puts $i
+    analyze 1
+
+
+#print node 1
+#print node 2
+#print node 3
+#print node 4
+print node 5
+#print node 6
+#print node 7
+#print node 8
+##
+##
+#print -ele 1
+  }
+
+
+#print node 5
+#print -ele 1
+
+wipe
+
+

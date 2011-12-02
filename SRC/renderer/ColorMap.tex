@@ -1,0 +1,53 @@
+%File: ~/OOP/renderer/ColorMap.tex
+%What: "@(#) ColorMap.tex, revA"
+
+THIS INTERFACE IS GONNA CHANGE. 1) MOVABLE\_OBJECT SO CAN RENDER IN
+PARALLEL, 2) SET\_MINMAX() and 3) ONLY ONE CALL TO GET RGB VALUES, i.e.
+getRGB(value, \&r, \&g, \&b) \\
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/earthquake/ColorMap.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class ColorMap   \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf ColorMap} \\
+
+\noindent {\bf Description} \\ 
+\indent 
+The ColorMap is an abstract class, it defines the interface all
+concrete subclasses must provide. A ColorMap object is used to
+determine the mapping between scalar quantities to be displayed in an
+image and the rgb values that are displayed. \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\ 
+\indent {\em ColorMap();}\\ \\
+\indent // Destructor \\ 
+\indent {\em virtual $\tilde{ }$ColorMap();}\\  \\
+\indent // Public Methods\\ 
+\indent {\em virtual float getRed(float value) =0;}\\
+\indent {\em virtual float getGreen(float value) =0;}\\
+\indent {\em virtual float getBlue(float value) =0;}\\
+
+\noindent {\bf Constructor} \\ 
+\indent {\em ColorMap();}\\ 
+Does nothing. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{ }$ColorMap();}\\  
+Does Noting. \\
+
+\noindent {\bf Public Methods} \\
+\indent {\em virtual float getRed(float value) =0;}\\
+To return the red intensity of the rgb triple for the scalar quantity
+{\em value}. \\
+
+\indent {\em virtual float getGreen(float value) =0;}\\
+To return the green intensity of the rgb triple for the scalar quantity
+{\em value}. \\
+
+\indent {\em virtual float getBlue(float value) =0;}\\
+To return the blue intensity of the rgb triple for the scalar quantity
+{\em value}. \\
