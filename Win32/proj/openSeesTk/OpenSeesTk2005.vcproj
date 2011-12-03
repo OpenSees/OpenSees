@@ -162,7 +162,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386 /FORCE:MULTIPLE"
-				AdditionalDependencies="OpenGL32.lib wsock32.lib glu32.lib damage.lib fedeas.lib drain.lib reliability.lib database.lib renderer.lib blas.lib lapack.lib feap.lib arpack.lib umfpack.lib actor.lib analysis.lib cblas.lib convergence.lib domain.lib element.lib graph.lib material.lib matrix.lib modelbuilder.lib recorder.lib superLU.lib system.lib tagged.lib tcl.lib utility.lib tcl85.lib tk85.lib ifconsol.lib libifcoremt.lib libm.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="OpenGL32.lib wsock32.lib glu32.lib DoddRestrepo.lib damage.lib fedeas.lib drain.lib reliability.lib database.lib renderer.lib blas.lib lapack.lib feap.lib arpack.lib umfpack.lib actor.lib analysis.lib cblas.lib convergence.lib domain.lib element.lib graph.lib material.lib matrix.lib modelbuilder.lib recorder.lib superLU.lib system.lib tagged.lib tcl.lib utility.lib tcl85.lib tk85.lib ifconsol.lib libifcoremt.lib libm.lib odbc32.lib odbccp32.lib"
 				OutputFile=".\..\..\bin/openSeesTk.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
