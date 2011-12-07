@@ -1424,6 +1424,7 @@ SRC/api/elementAPI_Dummy.cpp -text
 SRC/api/elementAPI_TCL.cpp -text
 SRC/api/packages.cpp -text
 SRC/api/packages.h -text
+SRC/api/win32Functions.cpp -text
 SRC/bool.h -text
 SRC/classTags.h -text
 SRC/convergenceTest/CTestEnergyIncr.cpp -text
