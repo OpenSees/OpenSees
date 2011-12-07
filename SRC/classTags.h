@@ -512,6 +512,7 @@
 #define ELE_TAG_SSPquadUP        19
 #define ELE_TAG_SSPbrick         22
 #define ELE_TAG_SSPbrickUP       23
+#define ELE_TAG_BeamContact2Dp   24
 
 #define ELE_TAG_TPB1D 17
 #define ELE_TAG_TFP_Bearing 20

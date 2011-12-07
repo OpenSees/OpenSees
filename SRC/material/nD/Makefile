@@ -4,14 +4,6 @@ include ../../../Makefile.def
 
 OBJS       = NDMaterial.o \
 	BeamFiberMaterial.o \
-	BoundingCamClay3D.o \
-	BoundingCamClay.o \
-	BoundingCamClayPlaneStrain.o \
-	ContactMaterial2D.o \
-	ContactMaterial3D.o \
-	DruckerPrager3D.o \
-	DruckerPrager.o \
-	DruckerPragerPlaneStrain.o \
 	ElasticIsotropicAxiSymm.o\
 	ElasticIsotropicBeamFiber2d.o \
 	ElasticIsotropicBeamFiber.o \
@@ -22,7 +14,6 @@ OBJS       = NDMaterial.o \
 	ElasticIsotropicThreeDimensional.o \
  	PressureDependentElastic3D.o \
 	FeapMaterial.o \
-	InitialStateAnalysisWrapper.o \
 	J2AxiSymm.o \
 	J2PlaneStrain.o \
 	J2PlaneStress.o \
@@ -40,6 +31,7 @@ all: $(OBJS)
 	@$(CD) $(FE)/material/nD/feap; $(MAKE);
 	@$(CD) $(FE)/material/nD/cyclicSoil; $(MAKE);
 	@$(CD) $(FE)/material/nD/reinforcedConcretePlaneStress; $(MAKE); 
+	@$(CD) $(FE)/material/nD/UWmaterials; $(MAKE);
 
 # Miscellaneous
 
@@ -56,6 +48,7 @@ spotless: clean
 	@$(CD) $(FE)/material/nD/feap; $(MAKE) wipe;
 	@$(CD) $(FE)/material/nD/cyclicSoil; $(MAKE) wipe;
 	@$(CD) $(FE)/material/nD/reinforcedConcretePlaneStress; $(MAKE) wipe; 
+	@$(CD) $(FE)/material/nD/UWmaterials; $(MAKE) wipe;
 
 wipe: spotless
 

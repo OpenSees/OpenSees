@@ -435,7 +435,7 @@ SSPquadUP::getDamp(void)
 			mDamp(JJp2,IIp1) = -J0*mThickness*Mmem(1,Ip1);
 			mDamp(II,JJp2)   = -J0*mThickness*Mmem(0,I);
 			mDamp(IIp1,JJp2) = -J0*mThickness*Mmem(1,Ip1);
-
+			
 			// contribution of permeability matrix
 			mDamp(IIp2,JJp2) = -mPerm(i,j);
 		}
@@ -1054,8 +1054,8 @@ SSPquadUP::GetStab(void)
 	I = fourThree*mThickness*J0*(DyadicProd(g1,g1) + DyadicProd(g2,g2));
 
 	// stabilization terms
-	Hss = ( I(0,0)*Jinv(1,1)*Jinv(1,1) + I(0,1)*Jinv(0,1)*Jinv(1,1) + I(1,1)*Jinv(0,1)*Jinv(0,1) )*0.25;
-	Htt = ( I(0,0)*Jinv(1,0)*Jinv(1,0) + I(0,1)*Jinv(0,0)*Jinv(1,0) + I(1,1)*Jinv(0,0)*Jinv(0,0) )*0.25;
+	Hss = ( I(0,0)*Jinv(1,0)*Jinv(1,0) + I(0,1)*Jinv(0,0)*Jinv(1,0) + I(1,1)*Jinv(0,0)*Jinv(0,0) )*0.25;
+	Htt = ( I(0,0)*Jinv(1,1)*Jinv(1,1) + I(0,1)*Jinv(0,1)*Jinv(1,1) + I(1,1)*Jinv(0,1)*Jinv(0,1) )*0.25;
 	Hst = ( I(0,0)*Jinv(1,1)*Jinv(1,0) + I(0,1)*(Jinv(1,0)*Jinv(0,1) + Jinv(1,1)*Jinv(0,0)) + I(1,1)*Jinv(0,1)*Jinv(0,0) )*0.25;
 
 	// get material tangent

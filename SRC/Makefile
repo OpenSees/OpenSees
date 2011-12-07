@@ -408,11 +408,12 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/zeroLength/ZeroLengthContactNTS2D.o \
 	$(FE)/element/zeroLength/ZeroLengthInterface2D.o \
 	$(FE)/element/surfaceLoad/SurfaceLoad.o \
-	$(FE)/element/simpleContact/SimpleContact2D.o \
-	$(FE)/element/simpleContact/SimpleContact3D.o \
-	$(FE)/element/simpleContact/BeamContact2D.o \
-	$(FE)/element/simpleContact/BeamContact3D.o \
-	$(FE)/element/simpleContact/BeamEndContact3D.o \
+	$(FE)/element/UWelements/SimpleContact2D.o \
+	$(FE)/element/UWelements/SimpleContact3D.o \
+	$(FE)/element/UWelements/BeamContact2D.o \
+	$(FE)/element/UWelements/BeamContact2Dp.o \
+	$(FE)/element/UWelements/BeamContact3D.o \
+	$(FE)/element/UWelements/BeamEndContact3D.o \
 	$(FE)/element/feap/elmt01.o \
 	$(FE)/element/feap/elmt02.o \
 	$(FE)/element/feap/elmt03.o \
@@ -565,15 +566,15 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/J2AxiSymm.o \
 	$(FE)/material/nD/J2ThreeDimensional.o \
 	$(FE)/material/nD/J2PlateFiber.o \
-	$(FE)/material/nD/DruckerPrager.o \
-	$(FE)/material/nD/DruckerPrager3D.o \
-	$(FE)/material/nD/DruckerPragerPlaneStrain.o \
-	$(FE)/material/nD/ContactMaterial3D.o \
-	$(FE)/material/nD/ContactMaterial2D.o \
-	$(FE)/material/nD/BoundingCamClay.o \
-	$(FE)/material/nD/BoundingCamClay3D.o \
-	$(FE)/material/nD/BoundingCamClayPlaneStrain.o \
-	$(FE)/material/nD/InitialStateAnalysisWrapper.o \
+	$(FE)/material/nD/UWmaterials/DruckerPrager.o \
+	$(FE)/material/nD/UWmaterials/DruckerPrager3D.o \
+	$(FE)/material/nD/UWmaterials/DruckerPragerPlaneStrain.o \
+	$(FE)/material/nD/UWmaterials/ContactMaterial3D.o \
+	$(FE)/material/nD/UWmaterials/ContactMaterial2D.o \
+	$(FE)/material/nD/UWmaterials/BoundingCamClay.o \
+	$(FE)/material/nD/UWmaterials/BoundingCamClay3D.o \
+	$(FE)/material/nD/UWmaterials/BoundingCamClayPlaneStrain.o \
+	$(FE)/material/nD/UWmaterials/InitialStateAnalysisWrapper.o \
 	$(FE)/material/nD/FeapMaterial.o \
 	$(FE)/material/nD/feap/TclFeapMaterialCommand.o \
 	$(FE)/material/nD/feap/FeapMaterial01.o \

@@ -78,7 +78,7 @@ OPS_NewDruckerPragerMaterial(void)
   int numArgs = OPS_GetNumRemainingInputArgs();
 
   if (numArgs < 13) {
-    opserr << "Want: nDMaterial DruckerPrager tag? massDensity? K? G? sigma_y? rho? rho_bar? Kinf? Ko? delta1? delta2? H? theta? <atm?>" << endln;
+    opserr << "Want: nDMaterial DruckerPrager tag? K? G? sigma_y? rho? rho_bar? Kinf? Ko? delta1? delta2? H? theta? massDensity? <atm?>" << endln;
     return 0;	
   }
   

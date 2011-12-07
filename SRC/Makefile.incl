@@ -28,6 +28,7 @@ FE_INCLUDES  = -I$(FE)/matrix \
 	       -I$(FE)/material/nD/FiniteDeformation/fdYield \
 	       -I$(FE)/material/nD/FiniteDeformation/fdEvolution \
 	       -I$(FE)/material/nD/cyclicSoil \
+		   -I$(FE)/material/nD/UWmaterials \
 	       -I$(FE)/material/section \
                -I$(FE)/material/section/repres/cell \
                -I$(FE)/material/section/repres/patch \
@@ -105,6 +106,7 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/element/adapter \
                -I$(FE)/element/twoNodeLink \
                -I$(FE)/element/updatedLagrangianBeamColumn \
+			   -I$(FE)/element/UWelements \
                -I$(FE)/analysis    \
                -I$(FE)/analysis/analysis \
                -I$(FE)/analysis/handler \
