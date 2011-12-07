@@ -1,0 +1,30 @@
+OS_FLAG = -D_MACOSX
+#OS_FLAG = -D_LINUX
+
+CC++	= g++
+CC      = gcc
+FC	= /usr/local/bin/gfortran
+
+LINKER          = $(CC++)
+LINKFLAGS       =  -Wl 
+
+CD		= cd
+
+C++FLAGS	= -O3 
+CFLAGS		= -O2
+FFLAGS		= -O 
+
+INCLUDES = -I../core -I../../core
+
+.cpp.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $< -o $@
+.C.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $< -o $@
+.c.o:
+	@$(ECHO) Making $@ from $<
+	$(CC) $(CFLAGS) -c $< -o $@
+.f.o:      
+	@$(ECHO) Making $@ from $<
+	$(FC) $(FFLAGS) -c $< -o $@
