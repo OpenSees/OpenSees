@@ -1564,9 +1564,6 @@ istream &operator>>(istream &s, Matrix &V)
 ****************/
 
 
-
-
-
 int
 Matrix::Assemble(const Matrix &V, int init_row, int init_col, double fact) 
 {
@@ -1603,6 +1600,40 @@ Matrix::Assemble(const Matrix &V, int init_row, int init_col, double fact)
 }
 
 
+int
+Matrix::Assemble(const Vector &V, int init_row, int init_col, double fact) 
+{
+  int pos_Rows, pos_Cols;
+  int res = 0;
+  
+  int VnumRows = V.sz;
+  int VnumCols = 1;
+  
+  int final_row = init_row + VnumRows - 1;
+  int final_col = init_col + VnumCols - 1;
+  
+  if ((init_row >= 0) && (final_row < numRows) && (init_col >= 0) && (final_col < numCols))
+  {
+     for (int i=0; i<VnumCols; i++) 
+     {
+        pos_Cols = init_col + i;
+        for (int j=0; j<VnumRows; j++) 
+        {
+           pos_Rows = init_row + j;
+      
+	   (*this)(pos_Rows,pos_Cols) += V(j)*fact;
+        }
+     }
+  }  
+  else 
+  {
+     opserr << "WARNING: Matrix::Assemble(const Matrix &V, int init_row, int init_col, double fact): ";
+     opserr << "position outside bounds \n";
+     res = -1;
+  }
+
+  return res;
+}
 
 
 int
@@ -1641,6 +1672,40 @@ Matrix::AssembleTranspose(const Matrix &V, int init_row, int init_col, double fa
 }
 
 
+int
+Matrix::AssembleTranspose(const Vector &V, int init_row, int init_col, double fact) 
+{
+  int pos_Rows, pos_Cols;
+  int res = 0;
+  
+  int VnumRows = V.sz;
+  int VnumCols = 1;
+  
+  int final_row = init_row + VnumCols - 1;
+  int final_col = init_col + VnumRows - 1;
+  
+  if ((init_row >= 0) && (final_row < numRows) && (init_col >= 0) && (final_col < numCols))
+  {
+     for (int i=0; i<VnumRows; i++) 
+     {
+        pos_Cols = init_col + i;
+        for (int j=0; j<VnumCols; j++) 
+        {
+           pos_Rows = init_row + j;
+      
+	   (*this)(pos_Rows,pos_Cols) += V(i)*fact;
+        }
+     }
+  }  
+  else 
+  {
+     opserr << "WARNING: Matrix::AssembleTranspose(const Matrix &V, int init_row, int init_col, double fact): ";
+     opserr << "position outside bounds \n";
+     res = -1;
+  }
+
+  return res;
+}
 
 
 int

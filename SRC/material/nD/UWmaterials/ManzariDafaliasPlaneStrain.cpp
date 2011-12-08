@@ -27,13 +27,19 @@
 #include <FEM_ObjectBroker.h>
 
 //static vectors and matrices
-Vector BoundingCamClayPlaneStrain::strain(3);
-Vector BoundingCamClayPlaneStrain::stress(3);
-Matrix BoundingCamClayPlaneStrain::tangent(3,3);
+Vector ManzariDafaliasPlaneStrain::strain(3);
+Vector ManzariDafaliasPlaneStrain::stress(3);
+Matrix ManzariDafaliasPlaneStrain::tangent(3,3);
 
 // full constructor
-ManzariDafaliasPlaneStrain::ManzariDafaliasPlaneStrain(int tag, double mDen) 
-  : ManzariDafalias(tag, ND_TAG_ManzariDafaliasPlaneStrain)
+ManzariDafaliasPlaneStrain::ManzariDafaliasPlaneStrain( int tag, double Ko, double Go, double v, double b, double Patm,
+													    double Ao, double ho, double Cm, double Me, double Mc,
+														double kBE, double kBC, double kDE, double kDC, double ecRef,
+														double lambda, double Pref, double m, double Fmax, double Cf,
+														double eo, double mDen)
+:ManzariDafalias(tag, ND_TAG_ManzariDafaliasPlaneStrain, Ko, Go, v, b, Patm, Ao, ho, Cm, Me, Mc,
+											             kBE, kBC, kDE, kDC, ecRef, lambda, Pref, m, Fmax, Cf,
+											             eo, mDen)
 {
 }
 

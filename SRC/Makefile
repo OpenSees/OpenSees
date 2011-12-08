@@ -574,6 +574,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/UWmaterials/BoundingCamClay.o \
 	$(FE)/material/nD/UWmaterials/BoundingCamClay3D.o \
 	$(FE)/material/nD/UWmaterials/BoundingCamClayPlaneStrain.o \
+	$(FE)/material/nD/UWmaterials/ManzariDafalias.o \
+        $(FE)/material/nD/UWmaterials/ManzariDafalias3D.o \
+        $(FE)/material/nD/UWmaterials/ManzariDafaliasPlaneStrain.o \
 	$(FE)/material/nD/UWmaterials/InitialStateAnalysisWrapper.o \
 	$(FE)/material/nD/FeapMaterial.o \
 	$(FE)/material/nD/feap/TclFeapMaterialCommand.o \

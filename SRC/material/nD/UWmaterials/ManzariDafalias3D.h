@@ -37,7 +37,11 @@ class ManzariDafalias3D : public ManzariDafalias
   public : 
 
   //full constructor
-  ManzariDafalias3D(int tag, double mDen);
+  ManzariDafalias3D( int tag, double Ko, double Go, double v, double b, double Patm,
+	                          double Ao, double ho, double Cm, double Me, double Mc,
+							  double kBE, double kBC, double kDE, double kDC, double ecRef,
+							  double lambda, double Pref, double m, double Fmax, double Cf,
+							  double eo, double mDen);
   //null constructor
   ManzariDafalias3D();
 

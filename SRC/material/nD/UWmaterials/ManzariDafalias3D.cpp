@@ -27,10 +27,17 @@
 #include <FEM_ObjectBroker.h>
 
 // full constructor
-ManzariDafalias3D::ManzariDafalias3D(int tag, double mDen) 
-  : ManzariDafalias(tag, ND_TAG_ManzariDafalias3D)
+ManzariDafalias3D::ManzariDafalias3D( int tag, double Ko, double Go, double v, double b, double Patm,
+	                                           double Ao, double ho, double Cm, double Me, double Mc,
+											   double kBE, double kBC, double kDE, double kDC, double ecRef,
+											   double lambda, double Pref, double m, double Fmax, double Cf,
+											   double eo, double mDen)
+:ManzariDafalias(tag, ND_TAG_ManzariDafalias3D, Ko, Go, v, b, Patm, Ao, ho, Cm, Me, Mc,
+											    kBE, kBC, kDE, kDC, ecRef, lambda, Pref, m, Fmax, Cf,
+											    eo, mDen)
 {
 }
+
 
 // null constructor
 ManzariDafalias3D::ManzariDafalias3D() 
@@ -72,9 +79,7 @@ int
 ManzariDafalias3D::setTrialStrain(const Vector &strain_from_element) 
 {
 	mEpsilon = strain_from_element;
-
     this->plastic_integrator();
-	
 	return 0 ;
 }
 

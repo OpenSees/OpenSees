@@ -312,6 +312,10 @@
 #define ND_TAG_BoundingCamClayPlaneStrain       14010
 // Initial state analysis material wrapper - C.McGann
 #define ND_TAG_InitialStateAnalysisWrapper      14011
+// Manzari Dafalias material - P. Arduino
+#define ND_TAG_ManzariDafalias                  14012
+#define ND_TAG_ManzariDafalias3D                14013
+#define ND_TAG_ManzariDafaliasPlaneStrain       14014
 
 #define ND_TAG_ReinforcedConcretePlaneStress  104
 #define ND_TAG_FAReinforcedConcretePlaneStress  105
