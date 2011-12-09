@@ -2,20 +2,17 @@ include ../../Makefile.def
 
 ifeq ($(OS_FLAG), -D_LINUX)
 
-all:   $(LIBRARY_CPP) $(LIBRARY_C) $(LIBRARY_F)
 
-LIBRARY_C    	= elasticPPc.so
+OBJS 		= elasticPPc.o elasticPlaneStressC.o
 
-OBJS_C 		= elasticPPc.o elasticPlaneStress.o
+all: $(OBJS)
+	$(CC++) -shared -Wl,-soname,$(LIBRARY) -o elasticPPc.so elasticPPc.o -lc
 
-$(LIBRARY_C): $(OBJS_C)
-	$(CC++) -shared -Wl,-soname,$(LIBRARY) -o $(LIBRARY_CPP) $(OBJS_CPP) -lc
-
-elasticPPC.o: elasticPPC.c
-	$(CC++) -fPIC $(INCLUDES) -g -c -Wall elasticPPC.c
+elasticPPc.o: elasticPPc.c
+	$(CC++) -fPIC $(INCLUDES) -g -c -Wall elasticPPc.c
 
 elasticPlaneStressC.o: elasticPlaneStressC.c
-	$(CC++) -fPIC $(INCLUDES) -g -c -Wall elasticPlaneStress.c
+	$(CC++) -fPIC $(INCLUDES) -g -c -Wall elasticPlaneStressC.c
 
 else
 

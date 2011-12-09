@@ -2,14 +2,11 @@ include ../../Makefile.def
 
 ifeq ($(OS_FLAG), -D_LINUX)
 
-all:   $(LIBRARY_C) 
+LIBRARY 	= trussC.so
+OBJS		= trussC.o 
 
-LIBRARY_C    	= trussC.so
-
-OBJS_C 		= TrussC.o 
-
-$(LIBRARY_C): $(OBJS_C)
-	$(CC++) -shared -Wl,-soname,$(LIBRARY) -o $(LIBRARY_CPP) $(OBJS_CPP) -lc
+all: $(OBJS)
+	$(CC++) -shared -Wl,-soname,$(LIBRARY) -o $(LIBRARY) $(OBJS) -lc
 
 trussC.o: trussC.c
 	$(CC++) -fPIC $(INCLUDES) -g -c -Wall trussC.c

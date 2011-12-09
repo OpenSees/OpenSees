@@ -79,7 +79,7 @@ proc doModel {K periodN U period tFinish inputT} {
 	pattern UniformExcitation 1 1 -accel  $AccelSeries -vel0 $vel0  ;		# create Unifform excitation
 	fix 1 1
 	recorder Node    -file DUniform.out -time -node 2 -dof 1 disp;		# displacements of free nodes
-	recorder plot DUniform.out  "DISP"  10 10 625 450 -dT [expr 10*0.01] -columns 1 2 -columns 1 3
+#	recorder plot DUniform.out  "DISP"  10 10 625 450 -dT [expr 10*0.01] -columns 1 2 -columns 1 3
 
     } else {
 
@@ -90,7 +90,7 @@ proc doModel {K periodN U period tFinish inputT} {
 	    imposedMotion 1  1 1
 	};    
 	recorder Node -file DMultiSupport.out -time -node 1 2 -dof 1 disp;		# displacements of free nodes
-	recorder plot DMultiSupport.out  "DISP"  10 10 625 450 -dT [expr 10*0.01] -columns 1 2 -columns 1 3
+#	recorder plot DMultiSupport.out  "DISP"  10 10 625 450 -dT [expr 10*0.01] -columns 1 2 -columns 1 3
     }
 
     #

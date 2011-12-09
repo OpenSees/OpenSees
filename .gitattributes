@@ -24,12 +24,12 @@ DEVELOPER/integrator/example1.tcl -text
 DEVELOPER/makeCore.tcl -text
 DEVELOPER/material/Makefile -text
 DEVELOPER/material/c/Makefile -text
-DEVELOPER/material/c/elasticPPC.c -text
+DEVELOPER/material/c/elasticPPc.c -text
 DEVELOPER/material/c/elasticPlaneStressC.c -text
 DEVELOPER/material/c/example1.tcl -text
 DEVELOPER/material/c/example2.tcl -text
-DEVELOPER/material/cpp/ElasticPPCPP.cpp -text
-DEVELOPER/material/cpp/ElasticPPCPP.h -text
+DEVELOPER/material/cpp/ElasticPPcpp.cpp -text
+DEVELOPER/material/cpp/ElasticPPcpp.h -text
 DEVELOPER/material/cpp/Makefile -text
 DEVELOPER/material/cpp/example1.tcl -text
 DEVELOPER/material/fortran/Makefile -text

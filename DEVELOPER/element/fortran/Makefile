@@ -2,18 +2,27 @@ include ../../Makefile.def
 
 ifeq ($(OS_FLAG), -D_LINUX)
 
-all:   $(LIBRARY_F)
+LIBRARY    	= trussf.so
+OBJS 		= elementtypes.mod elementapi.mod trussF.o 
 
-LIBRARY_F    	= trussf.so
-
-OBJS_F 		= elementtypes.mod elementapi.mod trussF.o 
-
-$(LIBRARY_F): $(OBJS_F)
+all: $(OBJS)
 	$(CC++) -shared -Wl,-soname,$(LIBRARY) -o $(LIBRARY)  trussF.o -lc
+
+
+
+elementapi.mod: elementAPI.f elementtypes.mod
+	$(FC)  -c  elementAPI.f
+
+elementtypes.mod: elementTypes.f
+	$(FC)  -c  elementTypes.f
+
+trussF.o:
+	$(FC) -fPIC -c trussF.f 
+
 
 else
 
-LIBRARY_F    	= trussf.dylib
+LIBRARY    	= trussf.dylib
 
 OTHER_OBJS = dynamicLoadFunctions.o
 OBJS = elementtypes.mod elementapi.mod 

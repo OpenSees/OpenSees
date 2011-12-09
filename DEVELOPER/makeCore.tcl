@@ -1,6 +1,7 @@
-set openSeesDir "/Users/fmk/OpenSees"
-set coreDir "/Users/fmk/OpenSees/DEVELOPER/core"
-set coreList "/Users/fmk/OpenSees/DEVELOPER/coreList";
+set currentDir [pwd]
+set openSeesDir "$currentDir/.."
+set coreDir  "$currentDir/core"
+set coreList "$currentDir/coreList";
 
 
 # procedure to go through the directories and clean out stuff

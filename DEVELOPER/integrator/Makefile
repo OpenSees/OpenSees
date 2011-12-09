@@ -4,15 +4,13 @@ ifeq ($(OS_FLAG), -D_LINUX)
 
 LIBRARY         = Trapezoidal.so
 
-all:   $(LIBRARY)
-
 OBJS = Trapezoidal.o 
 
-$(LIBRARY): $(OBJS)
+all: $(OBJS)
 	$(CC++) -shared -Wl,-soname,$(LIBRARY) -o $(LIBRARY) $(OBJS) -lc
 
-TrussCPP.o: TrussCPP.cpp
-	$(CC++) -fPIC $(INCLUDES) -g -c -Wall TrussCPP.cpp
+Trapezoidal.o: Trapezoidal.cpp
+	$(CC++) -fPIC $(INCLUDES) -g -c -Wall Trapezoidal.cpp
 
 else
 
