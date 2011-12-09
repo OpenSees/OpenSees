@@ -45,7 +45,7 @@
 #endif
 
 OPS_Export void
-elasticPPC (matObj *thisObj, 
+elasticPPc (matObj *thisObj, 
 	    modelState *model, 
 	    double *strain, 
 	    double *tang, 
