@@ -6,7 +6,8 @@ ifeq ($(OS_FLAG), -D_LINUX)
 OBJS 		= elasticPPc.o elasticPlaneStressC.o
 
 all: $(OBJS)
-	$(CC++) -shared -Wl,-soname,$(LIBRARY) -o elasticPPc.so elasticPPc.o -lc
+	$(CC++) -shared -Wl,-soname,elasticPPc.so -o elasticPPc.so elasticPPc.o -lc
+	$(CC++) -shared -Wl,-soname,elasticPPc.so -o elasticPlaneStressC.so elasticPlaneStressC.o -lc
 
 elasticPPc.o: elasticPPc.c
 	$(CC++) -fPIC $(INCLUDES) -g -c -Wall elasticPPc.c

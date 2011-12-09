@@ -5,8 +5,6 @@
 
 wipe; # clear opensees model
 
-# create data directory
-file mkdir Data
 
 #-----------------------------
 # Define the model
@@ -49,7 +47,7 @@ fix   4 1 1
 
 # define the recorder
 #---------------------
-recorder Node -file Data/RCUniaxialCompression.out -time -node 2 -dof disp
+recorder Node -file RCUniaxialCompression.out -time -node 2 -dof disp
 
 # define load pattern
 #---------------------
