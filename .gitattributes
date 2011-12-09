@@ -2,6 +2,7 @@
 /COPYRIGHT -text
 DEVELOPER/Makefile -text
 DEVELOPER/Makefile.def -text
+DEVELOPER/UnixInstructions.txt -text
 DEVELOPER/WindowsInstructions.txt -text
 DEVELOPER/core/Analysis.cpp -text
 DEVELOPER/core/Analysis.h -text
