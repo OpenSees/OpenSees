@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\SRC\api;&quot;..\..\..\SRC\element\UP-ucsd&quot;;..\..\..\src\material\uniaxial\backbone;..\..\..\src\element\dispBeamColumnInt;..\..\..\src\material\section\integration;..\..\..\SRC\material\nD\NewTemplate3Dep;..\..\..\SRC\tagged\storage;..\..\..\SRC\domain\node;..\..\..\SRC\material\uniaxial\limitState\limitCurve;..\..\..\SRC\material\uniaxial\limitState;..\..\..\SRC\package;..\..\..\src\material\nd\cyclicSoil;..\..\..\src\damage;..\..\..\src\material\nd\FiniteDeformation\fdEvolution;..\..\..\src\material\nd\FiniteDeformation\fdFlow;..\..\..\src\material\nd\FiniteDeformation\fdYield;..\..\..\src\material\nd\finitedeformation;..\..\..\src\element\fournodequad;..\..\..\src\material\uniaxial\fedeas;..\..\..\src\material\uniaxial\drain;..\..\..\src\domain\domain;..\..\..\src\renderer;..\..\..\src\material\nD\soil;..\..\..\src\material\nD\template3dep;..\..\..\src\recorder\response;..\..\..\src\material\backbone;..\..\..\src\material\state;..\..\..\src\material\state\strength;..\..\..\src\material\state\deformation;..\..\..\src\material\state\stiffness;..\..\..\src\material\section\repres\section;..\..\..\src\material\section\repres\cell;..\..\..\src\material\section\repres\patch;..\..\..\src\material\section\repres\reinfBar;..\..\..\src\material\section\repres\reinfLayer;..\..\..\src\material\section\fiber;..\..\..\src\element\nonlinearBeamColumn\fiber;..\..\..\src\element\nonlinearBeamColumn\matrixutil;..\..\..\src\material\section;..\..\..\src\handler;..\..\..\src\material\uniaxial;..\..\..\src\material\nD;..\..\..\src\element;..\..\..\src\actor\channel;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\modelbuilder;..\..\..\src\domain\component;..\..\..\src\material;..\..\..\src\modelbuilder\tcl;..\..\..\src\material\nd\template3dep;..\..\..\src\nDarray;..\..\..\src\material\uniaxial\py;..\..\..\src\material\uniaxial\snap;..\..\..\src\material\yieldSurface\yieldSurfaceBC;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldSurface\plasticHardeningMaterial;..\..\..\src\material\section\yieldSurface;..\..\..\src\material\nd\feap;&quot;c:\Program Files\tcl\include&quot;;&quot;c:\Program Files\tcl&quot;"
+				AdditionalIncludeDirectories="..\..\..\src\material\nD\UWmaterials;..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\SRC\api;&quot;..\..\..\SRC\element\UP-ucsd&quot;;..\..\..\src\material\uniaxial\backbone;..\..\..\src\element\dispBeamColumnInt;..\..\..\src\material\section\integration;..\..\..\SRC\material\nD\NewTemplate3Dep;..\..\..\SRC\tagged\storage;..\..\..\SRC\domain\node;..\..\..\SRC\material\uniaxial\limitState\limitCurve;..\..\..\SRC\material\uniaxial\limitState;..\..\..\SRC\package;..\..\..\src\material\nd\cyclicSoil;..\..\..\src\damage;..\..\..\src\material\nd\FiniteDeformation\fdEvolution;..\..\..\src\material\nd\FiniteDeformation\fdFlow;..\..\..\src\material\nd\FiniteDeformation\fdYield;..\..\..\src\material\nd\finitedeformation;..\..\..\src\element\fournodequad;..\..\..\src\material\uniaxial\fedeas;..\..\..\src\material\uniaxial\drain;..\..\..\src\domain\domain;..\..\..\src\renderer;..\..\..\src\material\nD\soil;..\..\..\src\material\nD\template3dep;..\..\..\src\recorder\response;..\..\..\src\material\backbone;..\..\..\src\material\state;..\..\..\src\material\state\strength;..\..\..\src\material\state\deformation;..\..\..\src\material\state\stiffness;..\..\..\src\material\section\repres\section;..\..\..\src\material\section\repres\cell;..\..\..\src\material\section\repres\patch;..\..\..\src\material\section\repres\reinfBar;..\..\..\src\material\section\repres\reinfLayer;..\..\..\src\material\section\fiber;..\..\..\src\element\nonlinearBeamColumn\fiber;..\..\..\src\element\nonlinearBeamColumn\matrixutil;..\..\..\src\material\section;..\..\..\src\handler;..\..\..\src\material\uniaxial;..\..\..\src\material\nD;..\..\..\src\element;..\..\..\src\actor\channel;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\modelbuilder;..\..\..\src\domain\component;..\..\..\src\material;..\..\..\src\modelbuilder\tcl;..\..\..\src\material\nd\template3dep;..\..\..\src\nDarray;..\..\..\src\material\uniaxial\py;..\..\..\src\material\uniaxial\snap;..\..\..\src\material\yieldSurface\yieldSurfaceBC;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldSurface\plasticHardeningMaterial;..\..\..\src\material\section\yieldSurface;..\..\..\src\material\nd\feap;&quot;c:\Program Files\tcl\include&quot;;&quot;c:\Program Files\tcl&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_TCL85;_LIMITSTATEMATERIAL"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="5"
@@ -67,7 +67,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\SRC\api;&quot;..\..\..\SRC\element\UP-ucsd&quot;;..\..\..\src\material\uniaxial\backbone;..\..\..\src\element\dispBeamColumnInt;..\..\..\src\material\section\integration;..\..\..\SRC\material\nD\NewTemplate3Dep;..\..\..\SRC\tagged\storage;..\..\..\SRC\domain\node;..\..\..\SRC\material\uniaxial\limitState\limitCurve;..\..\..\SRC\material\uniaxial\limitState;..\..\..\SRC\package;..\..\..\src\material\nd\cyclicSoil;..\..\..\src\damage;..\..\..\src\material\nd\FiniteDeformation\fdEvolution;..\..\..\src\material\nd\FiniteDeformation\fdFlow;..\..\..\src\material\nd\FiniteDeformation\fdYield;..\..\..\src\material\nd\finitedeformation;..\..\..\src\element\fournodequad;..\..\..\src\material\uniaxial\fedeas;..\..\..\src\material\uniaxial\drain;..\..\..\src\domain\domain;..\..\..\src\renderer;..\..\..\src\material\nD\soil;..\..\..\src\material\nD\template3dep;..\..\..\src\recorder\response;..\..\..\src\material\backbone;..\..\..\src\material\state;..\..\..\src\material\state\strength;..\..\..\src\material\state\deformation;..\..\..\src\material\state\stiffness;..\..\..\src\material\section\repres\section;..\..\..\src\material\section\repres\cell;..\..\..\src\material\section\repres\patch;..\..\..\src\material\section\repres\reinfBar;..\..\..\src\material\section\repres\reinfLayer;..\..\..\src\material\section\fiber;..\..\..\src\element\nonlinearBeamColumn\fiber;..\..\..\src\element\nonlinearBeamColumn\matrixutil;..\..\..\src\material\section;..\..\..\src\handler;..\..\..\src\material\uniaxial;..\..\..\src\material\nD;..\..\..\src\element;..\..\..\src\actor\channel;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\modelbuilder;..\..\..\src\domain\component;..\..\..\src\material;..\..\..\src\modelbuilder\tcl;..\..\..\src\material\nd\template3dep;..\..\..\src\nDarray;..\..\..\src\material\uniaxial\py;..\..\..\src\material\uniaxial\snap;..\..\..\src\material\yieldSurface\yieldSurfaceBC;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldSurface\plasticHardeningMaterial;..\..\..\src\material\section\yieldSurface;..\..\..\src\material\nd\feap;&quot;c:\Program Files\tcl\include&quot;;&quot;c:\Program Files\tcl&quot;"
+				AdditionalIncludeDirectories="..\..\..\src\material\nD\UWmaterials;..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\SRC\api;&quot;..\..\..\SRC\element\UP-ucsd&quot;;..\..\..\src\material\uniaxial\backbone;..\..\..\src\element\dispBeamColumnInt;..\..\..\src\material\section\integration;..\..\..\SRC\material\nD\NewTemplate3Dep;..\..\..\SRC\tagged\storage;..\..\..\SRC\domain\node;..\..\..\SRC\material\uniaxial\limitState\limitCurve;..\..\..\SRC\material\uniaxial\limitState;..\..\..\SRC\package;..\..\..\src\material\nd\cyclicSoil;..\..\..\src\damage;..\..\..\src\material\nd\FiniteDeformation\fdEvolution;..\..\..\src\material\nd\FiniteDeformation\fdFlow;..\..\..\src\material\nd\FiniteDeformation\fdYield;..\..\..\src\material\nd\finitedeformation;..\..\..\src\element\fournodequad;..\..\..\src\material\uniaxial\fedeas;..\..\..\src\material\uniaxial\drain;..\..\..\src\domain\domain;..\..\..\src\renderer;..\..\..\src\material\nD\soil;..\..\..\src\material\nD\template3dep;..\..\..\src\recorder\response;..\..\..\src\material\backbone;..\..\..\src\material\state;..\..\..\src\material\state\strength;..\..\..\src\material\state\deformation;..\..\..\src\material\state\stiffness;..\..\..\src\material\section\repres\section;..\..\..\src\material\section\repres\cell;..\..\..\src\material\section\repres\patch;..\..\..\src\material\section\repres\reinfBar;..\..\..\src\material\section\repres\reinfLayer;..\..\..\src\material\section\fiber;..\..\..\src\element\nonlinearBeamColumn\fiber;..\..\..\src\element\nonlinearBeamColumn\matrixutil;..\..\..\src\material\section;..\..\..\src\handler;..\..\..\src\material\uniaxial;..\..\..\src\material\nD;..\..\..\src\element;..\..\..\src\actor\channel;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\modelbuilder;..\..\..\src\domain\component;..\..\..\src\material;..\..\..\src\modelbuilder\tcl;..\..\..\src\material\nd\template3dep;..\..\..\src\nDarray;..\..\..\src\material\uniaxial\py;..\..\..\src\material\uniaxial\snap;..\..\..\src\material\yieldSurface\yieldSurfaceBC;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldSurface\plasticHardeningMaterial;..\..\..\src\material\section\yieldSurface;..\..\..\src\material\nd\feap;&quot;c:\Program Files\tcl\include&quot;;&quot;c:\Program Files\tcl&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_TCL85;_LIMITSTATEMATERIAL"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
@@ -753,52 +753,52 @@
 			Name="nD"
 			Filter="">
 			<File
-				RelativePath="..\..\..\SRC\material\nD\BoundingCamClay.cpp">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\BoundingCamClay.h">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\BoundingCamClay3D.cpp">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay3D.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\BoundingCamClay3D.h">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay3D.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\BoundingCamClayPlaneStrain.cpp">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClayPlaneStrain.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\BoundingCamClayPlaneStrain.h">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClayPlaneStrain.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\ContactMaterial2D.cpp">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial2D.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\ContactMaterial2D.h">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial2D.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\ContactMaterial3D.cpp">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial3D.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\ContactMaterial3D.h">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial3D.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\DruckerPrager.cpp">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\DruckerPrager.h">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\DruckerPrager3D.cpp">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager3D.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\DruckerPrager3D.h">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager3D.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\DruckerPragerPlaneStrain.cpp">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\DruckerPragerPlaneStrain.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\DruckerPragerPlaneStrain.h">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\DruckerPragerPlaneStrain.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\nD\ElasticIsotropicBeamFiber2d.cpp">
@@ -807,10 +807,28 @@
 				RelativePath="..\..\..\SRC\material\nD\ElasticIsotropicBeamFiber2d.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\InitialStateAnalysisWrapper.cpp">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\nD\InitialStateAnalysisWrapper.h">
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3D.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3D.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrain.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrain.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\nD\NDMaterial.cpp">
