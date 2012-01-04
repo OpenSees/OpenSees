@@ -96,7 +96,6 @@ class FOSeriesSimulation
 	double cvar;
 	double betares;
 	int numSimulation;
-	NormalRV *aStdNormRV;
 	bool print;
 
 };

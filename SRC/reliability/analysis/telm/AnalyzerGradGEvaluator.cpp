@@ -55,9 +55,9 @@ AnalyzerGradGEvaluator::AnalyzerGradGEvaluator(
 					Tcl_Interp *passedTclInterp,
 					ReliabilityDomain *passedReliabilityDomain,
                     Domain* passedDomain,
-					GFunEvaluator* passedGFunEvaluator,
+					FunctionEvaluator* passedGFunEvaluator,
 					bool PdoGradientCheck)
-:GradGEvaluator(passedReliabilityDomain, passedGFunEvaluator, passedTclInterp)
+:GradientEvaluator(passedReliabilityDomain, passedGFunEvaluator)
 {
 	
 	doGradientCheck = PdoGradientCheck;

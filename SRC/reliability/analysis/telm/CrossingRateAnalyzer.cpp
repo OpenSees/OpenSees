@@ -7,8 +7,8 @@
 #include <CrossingRateAnalyzer.h>
 CrossingRateAnalyzer::CrossingRateAnalyzer(ReliabilityDomain* passedReliabilityDomain,
 					   FindDesignPointAlgorithm* passedFindDesignPointAlgorithm,
-					   GFunEvaluator* passedGFunEvaluator,
-					   GradGEvaluator* passedGradGEvaluator,
+					   FunctionEvaluator* passedGFunEvaluator,
+					   GradientEvaluator* passedGradGEvaluator,
 					   int passedanalysisType,
 					   double passedlittleDt,
   			         bool passedprint)
@@ -215,11 +215,16 @@ double CrossingRateAnalyzer::computeRate()
 double CrossingRateAnalyzer::computeRate1()
 {
 	char string[500];
-	NormalRV aStdNormRV(1,0.0,1.0,0.0);
+	static NormalRV aStdNormRV(1,0.0,1.0);
 
 	// Get the 'dgdu' vector from the sensitivity evaluator
 	// (The returned matrix containes 'node#' 'dir#' 'dgdu' in rows)
-	Matrix DgDdispl = theGradGEvaluator->getDgDdispl();
+
+	// This will go away -- MHS 10/7/2011
+	//Matrix DgDdispl = theGradGEvaluator->getDgDdispl();
+	Matrix DgDdispl(5,5); // So it will compile
+
+
 	// Add extra term to limit-state function
 	// (should add an alternative option where user give additional limit-state functions)
 	// (... because this works only when g is linear in u)
@@ -238,7 +243,8 @@ double CrossingRateAnalyzer::computeRate1()
 		sprintf(expression,"+(%10.8f)*(%8.5f)*\\$ud(%d,%d)",dt_small, dgduValue, nodeNumber, dofNumber);
 		strcpy(expressionPtr,expression);
 		// Add it to the limit-state function
-		theLSF->addExpression(expressionPtr);
+		// Need a better way to do this -- MHS 10/7/2011
+		//theLSF->addExpression(expressionPtr);
 	}
 	delete [] expressionPtr;
 	expressionPtr=0;
@@ -258,7 +264,8 @@ double CrossingRateAnalyzer::computeRate1()
 		DSPTfailed = true;
 	}
 	// Zero out the added expression in the limit-state function
-	theLSF->removeAddedExpression();
+	// Need a better way to do this -- MHS 10/7/2011
+	//theLSF->removeAddedExpression();
 
 	double pf2;
 	if (!DSPTfailed) {

@@ -8,7 +8,7 @@
 StatRandomVibrationSimulation::StatRandomVibrationSimulation
 								(ReliabilityDomain* passedReliabilityDomain,
 								 Domain* passedDomain,
-						         GFunEvaluator* passedGFunEvaluator,
+						         FunctionEvaluator* passedGFunEvaluator,
 							     ProbabilityTransformation* passedTransformation,
 						         double passedStartTime,
 						         double passedEndTime,
@@ -359,7 +359,7 @@ void StatRandomVibrationSimulation::crudeFisrtpassageSimulation()
 		///// dynamic response analysis /////
 		bool FEconvergence = true;
 //		xRV=startPoint;
-		result = theGFunEvaluator->runGFunAnalysis(*xRV);
+		result = theGFunEvaluator->runAnalysis(*xRV);
 //		(*samplExc)=theRandomProcess->getExcitation(numSteps, delta);
 //		ofstream outputSample2;
 //		outputSample2.open("samplexc.txt", ios::out);

@@ -111,7 +111,7 @@ Vector
 AllIndependentTransformation::x_to_z(const Vector &px)
 {
 	RandomVariable *theRV;
-	NormalRV aStandardNormalRV(1, 0.0, 1.0, 0.0);
+	static NormalRV aStandardNormalRV(1, 0.0, 1.0);
 //	opserr << " input something113 \n";
 //	Vector z(nrv);
 //	opserr << " input something114 \n";
@@ -155,7 +155,7 @@ AllIndependentTransformation::meanSensitivityOf_x_to_u(const Vector &px, int rvN
 	}
 	DzDmean = new Vector(nrv);
 //	Vector DzDmean(x.Size());
-	NormalRV aStandardNormalRV(1,0.0,1.0,0.0); 
+	static NormalRV aStandardNormalRV(1,0.0,1.0); 
 	RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtr(rvNumber);
 	if (strcmp(theRV->getType(),"NORMAL")==0) {
 		double mu = theRV->getParameter1();
@@ -204,7 +204,7 @@ AllIndependentTransformation::stdvSensitivityOf_x_to_u(const Vector &px, int rvN
 	}
 	DzDstdv = new Vector(nrv);
 //	Vector DzDstdv(x.Size());
-	NormalRV aStandardNormalRV(1,0.0,1.0,0.0); 
+	static NormalRV aStandardNormalRV(1,0.0,1.0); 
 	RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtr(rvNumber);
 	if (strcmp(theRV->getType(),"NORMAL")==0) {
 		double mu = theRV->getParameter1();
@@ -295,7 +295,7 @@ Matrix
 AllIndependentTransformation::getJacobian_z_x(const Vector &px, const Vector &pz)
 {	
 	RandomVariable *theRV;
-	NormalRV aStandardNormalRV(1, 0.0, 1.0, 0.0);
+	static NormalRV aStandardNormalRV(1, 0.0, 1.0);
 //	Matrix jacobianMatrix_z_x(nrv,nrv);
 	for ( int i=0 ; i<nrv ; i++ )
 	{
@@ -334,7 +334,7 @@ Vector
 AllIndependentTransformation::z_to_x(const Vector &pz)
 {
 	RandomVariable *theRV;
-	NormalRV aStandardNormalRV(1, 0.0, 1.0, 0.0);
+	static NormalRV aStandardNormalRV(1, 0.0, 1.0);
 //	Vector x(nrv);
 	for ( int i=0 ; i<nrv ; i++ )
 	{

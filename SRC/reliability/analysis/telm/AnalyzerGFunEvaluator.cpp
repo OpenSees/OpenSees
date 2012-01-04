@@ -40,11 +40,12 @@
 //
 
 #include <AnalyzerGFunEvaluator.h>
+
 AnalyzerGFunEvaluator::AnalyzerGFunEvaluator(Tcl_Interp *passedTclInterp,
 						  ReliabilityDomain *passedReliabilityDomain,
           				  Domain* passedDomain,
 						  Analyzer* passedAnalyzer)
-  :GFunEvaluator(), theTclInterp(passedTclInterp), theReliabilityDomain(passedReliabilityDomain)
+  :FunctionEvaluator(), theTclInterp(passedTclInterp), theReliabilityDomain(passedReliabilityDomain), g(0.0), numberOfEvaluations(0)
 {
 	theDomain=passedDomain;
 	theAnalyzer=passedAnalyzer;
@@ -69,6 +70,12 @@ AnalyzerGFunEvaluator::evaluateG(const Vector &x)
 	g = PerformanceFunction();
 	return 0;
 }
+double
+AnalyzerGFunEvaluator::getG(void)
+{
+  return g;
+}
+
 double AnalyzerGFunEvaluator::PerformanceFunction()
 {
 	Node* theNode =0;
@@ -223,7 +230,7 @@ AnalyzerGFunEvaluator::createRecorders()
 	// Download active limit-state function
 	int lsf = theReliabilityDomain->getTagOfActiveLimitStateFunction();
 	LimitStateFunction *theLimitStateFunction = theReliabilityDomain->getLimitStateFunctionPtr(lsf);
-	char *theExpression = theLimitStateFunction->getExpression();
+	const char *theExpression = theLimitStateFunction->getExpression();
 
 	// Initial declarations
 	char tempchar[100]="";

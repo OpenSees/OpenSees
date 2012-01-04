@@ -9,7 +9,7 @@
 FirstPassageAnalyzer::FirstPassageAnalyzer
 					 (ReliabilityDomain* passedReliabilityDomain,
 					  FindDesignPointAlgorithm* passedFindDesignPointAlgorithm,
-					  GFunEvaluator* passedGFunEvaluator,
+					  FunctionEvaluator* passedGFunEvaluator,
 					  FOSeriesSimulation* passedFOSeriesSimulation,
 					  int passedanalysisType,
 					  bool passedtwoside)

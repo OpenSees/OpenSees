@@ -39,13 +39,7 @@ GeneralRandGenerator::GeneralRandGenerator(int passedType, int passedSeed)
 :RandomNumberGenerator()
 {
 	generatedNumbers = 0;
-	aStdNormRV = 0;
-	aStdNormRV = new NormalRV(1,0.0,1.0,0.0);
-	if (aStdNormRV==0) {
-		opserr << "GeneralRandGenerator - " << endln
-			<< " out of memory while instantiating internal objects." << endln;
-		exit(-1);
-	}
+
 	Type=passedType;
 
 	uint32 seed32;
@@ -125,6 +119,8 @@ GeneralRandGenerator::generate_nIndependentStdNormalNumbers(int n, int seedIn)
 	int j;
 	Vector randomArray(n);
 
+	static NormalRV aStdNormRV(1, 0.0, 1.0);
+
 	// Create array of standard normal random numbers
 	if (seedIn != 0) {
 		uint32 seed32=seedIn;
@@ -143,7 +139,7 @@ GeneralRandGenerator::generate_nIndependentStdNormalNumbers(int n, int seedIn)
 		//    z = invPhi( F(x) )
 		//       where F(x) for the uniform distribution 
 		//       from 0 to 1 in fact is equal to x itself.
-		randomArray(j) = aStdNormRV->getInverseCDFvalue(randomNumberBetween0And1); 
+		randomArray(j) = aStdNormRV.getInverseCDFvalue(randomNumberBetween0And1); 
 	}
 	if (generatedNumbers == 0) {
 		generatedNumbers = new Vector(n);
@@ -154,9 +150,6 @@ GeneralRandGenerator::generate_nIndependentStdNormalNumbers(int n, int seedIn)
 		generatedNumbers = new Vector(n);
 	}
 	(*generatedNumbers) = randomArray;
-
-	delete aStdNormRV;
-	aStdNormRV=0;
 
 	return 0;
 }
@@ -209,6 +202,9 @@ GeneralRandGenerator::generate_singleStdNormalNumber(void)
 		seed32=seed;
 		theUniformGenerator->RandomInit(seed32);
 	}
+
+	static NormalRV aStdNormRV(1, 0.0, 1.0);
+
 	randomNumberBetween0And1 = theUniformGenerator->Random();
 	// Treat two special cases
 	if (randomNumberBetween0And1 == 0.0) {
@@ -219,7 +215,7 @@ GeneralRandGenerator::generate_singleStdNormalNumber(void)
 	//    z = invPhi( F(x) )
 	//       where F(x) for the uniform distribution 
 	//       from 0 to 1 in fact is equal to x itself.
-	randomNumber=aStdNormRV->getInverseCDFvalue(randomNumberBetween0And1); 
+	randomNumber=aStdNormRV.getInverseCDFvalue(randomNumberBetween0And1); 
 	return randomNumber;
 }
 

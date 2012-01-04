@@ -34,7 +34,7 @@
 #define AnalyzerGFunEvaluator_h
 
 #include <Analyzer.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <ReliabilityDomain.h>
 #include <Domain.h>
 #include <TaggedObjectStorage.h>
@@ -58,59 +58,61 @@ using std::setprecision;
 using std::ofstream;
 
 
-class AnalyzerGFunEvaluator : public GFunEvaluator
+class AnalyzerGFunEvaluator : public FunctionEvaluator
 {
 
 public:
-	AnalyzerGFunEvaluator(Tcl_Interp *passedTclInterp,
-						  ReliabilityDomain *passedReliabilityDomain,
-						  Domain* passedDomain,
-						  Analyzer *passedAnalyzer);
-	~AnalyzerGFunEvaluator();
-
-	int		runGFunAnalysis(const Vector &x);
-	int		evaluateG(const Vector &x);
-	int		tokenizeSpecials(TCL_Char *theExpression, Tcl_Obj *paramList);
-
-	double		evaluateGMHS(const Vector &x) {return 0.0;}
-
-	void    setNsteps(int nsteps);
-	double  getDt();
-	int getNstep();
-	//////////////////////////////////////////////////////////
-	//// added by K Fujimura /////////////////////////////////
-	//////////////////////////////////////////////////////////
-	void activateSensitivty(void);
-	void inactivateSensitivty(void);
-	void setGFunEachStepEvaluator(GFunEachStepEvaluator *pGFunEachStepEvaluator);
-	void inactivateGFunEachStepEvaluator();
-	void setThreshold(double value){pfthreshold=value;}
-	double getThreshold(){return pfthreshold;}
-	void setPerformFuncCoeffs(TaggedObjectStorage* pobject)
-	{ thePerformFuncCoeffs=pobject;}
-	void setPerformFuncCoeffIter(PerformanceFunctionCoefficientIter* pobject)
-	{ thePfCoeffIter=pobject;}
-	Matrix* getEachStepResult();
-	Matrix* getEachStepConvFlag();
-
-
-protected:
-
-private:
-	int createRecorders();
-	int removeRecorders();
-	double PerformanceFunction();
-	char *rec_node_occurrence(char tempchar[100], bool createRecorders, int &line, int &column);
-	char *rec_element_occurrence(char tempchar[100], bool createRecorders, int &line, int &column);
-	Analyzer *theAnalyzer;
-
-	Domain* theDomain;
-    TaggedObjectStorage* thePerformFuncCoeffs;
-	PerformanceFunctionCoefficientIter* thePfCoeffIter;
-	double pfthreshold;
-
-	Tcl_Interp *theTclInterp;
-	ReliabilityDomain *theReliabilityDomain;
+  AnalyzerGFunEvaluator(Tcl_Interp *passedTclInterp,
+			ReliabilityDomain *passedReliabilityDomain,
+			Domain* passedDomain,
+			Analyzer *passedAnalyzer);
+  ~AnalyzerGFunEvaluator();
+  
+  int evaluateG(const Vector &x);
+  double getG(void);
+  int runGFunAnalysis(const Vector &x);
+  int tokenizeSpecials(TCL_Char *theExpression, Tcl_Obj *paramList);
+  
+  void    setNsteps(int nsteps);
+  double  getDt();
+  int getNstep();
+  //////////////////////////////////////////////////////////
+  //// added by K Fujimura /////////////////////////////////
+  //////////////////////////////////////////////////////////
+  void activateSensitivty(void);
+  void inactivateSensitivty(void);
+  void setGFunEachStepEvaluator(GFunEachStepEvaluator *pGFunEachStepEvaluator);
+  void inactivateGFunEachStepEvaluator();
+  void setThreshold(double value){pfthreshold=value;}
+  double getThreshold(){return pfthreshold;}
+  void setPerformFuncCoeffs(TaggedObjectStorage* pobject)
+  { thePerformFuncCoeffs=pobject;}
+  void setPerformFuncCoeffIter(PerformanceFunctionCoefficientIter* pobject)
+  { thePfCoeffIter=pobject;}
+  Matrix* getEachStepResult();
+  Matrix* getEachStepConvFlag();
+  
+  
+ protected:
+  
+ private:
+  int createRecorders();
+  int removeRecorders();
+  double PerformanceFunction();
+  char *rec_node_occurrence(char tempchar[100], bool createRecorders, int &line, int &column);
+  char *rec_element_occurrence(char tempchar[100], bool createRecorders, int &line, int &column);
+  Analyzer *theAnalyzer;
+  
+  Domain* theDomain;
+  TaggedObjectStorage* thePerformFuncCoeffs;
+  PerformanceFunctionCoefficientIter* thePfCoeffIter;
+  double pfthreshold;
+  
+  Tcl_Interp *theTclInterp;
+  ReliabilityDomain *theReliabilityDomain;
+  
+  double g;
+  int numberOfEvaluations;
 };
 
 #endif

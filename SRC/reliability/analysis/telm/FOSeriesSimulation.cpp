@@ -30,12 +30,7 @@ FOSeriesSimulation::FOSeriesSimulation(int passedMaxSim,
 			<< " out of memory while instantiating internal objects." << endln;
 		exit(-1);
 	}
-	aStdNormRV = new NormalRV(1,0.0,1.0,0.0);
-	if (aStdNormRV==0) {
-		opserr << "FOSeriesSimulation::FOSeriesSimulation() - " << endln
-			<< " out of memory while instantiating internal objects." << endln;
-		exit(-1);
-	}
+
 	ytrial=0;
 	PfVec=0;
 	Weight=0;
@@ -79,12 +74,7 @@ FOSeriesSimulation::FOSeriesSimulation
 			<< " out of memory while instantiating internal objects." << endln;
 		exit(-1);
 	}
-	aStdNormRV = new NormalRV(1,0.0,1.0,0.0);
-	if (aStdNormRV==0) {
-		opserr << "FOSeriesSimulation::FOSeriesSimulation() - " << endln
-			<< " out of memory while instantiating internal objects." << endln;
-		exit(-1);
-	}
+
 	ytrial=0;
 	PfVec=0;
 	Weight=0;
@@ -271,6 +261,7 @@ void FOSeriesSimulation::analyze0(void)
 	double cum2=0.0;
 	int n1=CheckInterVal;
 
+	static NormalRV aStdNormRV(1,0.0,1.0);
 
 	opserr.setFloatField(SCIENTIFIC);
 	opserr<<"\n";
@@ -319,7 +310,7 @@ void FOSeriesSimulation::analyze0(void)
 		  if(sp>0.0) {
 			  dev=sqrt(sp);
               cvar=dev/pfres;
-			  betares = -aStdNormRV->getInverseCDFvalue(pfres);
+			  betares = -aStdNormRV.getInverseCDFvalue(pfres);
               if(cvar<=Eps) iconv=1;
 			  opserr.width(10);
 			  opserr<<i;
@@ -375,6 +366,7 @@ void FOSeriesSimulation::analyze1(void)
 	double cum2=0.0;
 	int n1=CheckInterVal;
 
+	static NormalRV aStdNormRV(1, 0.0, 1.0);
 
 	coef=this->hFunc(true);
 	sample=0.0;
@@ -414,7 +406,7 @@ void FOSeriesSimulation::analyze1(void)
 		  if(sp>0.0) {
 			  dev=sqrt(sp);
               cvar=dev/pfres;
-			  betares = -aStdNormRV->getInverseCDFvalue(pfres);
+			  betares = -aStdNormRV.getInverseCDFvalue(pfres);
               if(cvar<=Eps) iconv=1;
 			  opserr.width(10);
 			  opserr<<i;
@@ -481,6 +473,8 @@ void FOSeriesSimulation::analyze2(void)
 	int n1=CheckInterVal;
 	double uniform,ptemp,qtemp,ytemp,positive;
 
+	static NormalRV aStdNormRV(1, 0.0, 1.0);
+
 	sample=0.0;
 	for(i=0;i<MaxSim;i++){
 	    iComp=this->selectComp();
@@ -499,7 +493,7 @@ void FOSeriesSimulation::analyze2(void)
 		uniform=theRandomNumberGenerator->generate_singleUniformNumber();
 		ptemp=1.0+(*PfVec)(iComp)*(uniform-1.0);
         qtemp=1.0-ptemp;
-		ytemp=aStdNormRV->getInverseCDFvalue(ptemp);
+		ytemp=aStdNormRV.getInverseCDFvalue(ptemp);
 		for(j=0;j<Nrv;j++) (*ytrial)(j)+=ytemp*(*AlphaVec[iComp])(j);
 		numFail=0;
 		for(int j=0;j<Ncomp;j++){
@@ -528,7 +522,7 @@ void FOSeriesSimulation::analyze2(void)
 	 		  dev=sqrt(sp);
               cvar=dev/pfres;
 			  if(pfres>=1.0) pfres=0.99999999999999;
-			  betares = -aStdNormRV->getInverseCDFvalue(pfres);
+			  betares = -aStdNormRV.getInverseCDFvalue(pfres);
               if(cvar<=Eps) iconv=1;
 
 			  sprintf(outputString,"%10d%15.5e%15.5e%15.5e%15.5e" 
@@ -572,11 +566,13 @@ int FOSeriesSimulation::makeWeights()
 		exit(-1);
 	}
 
+	static NormalRV aStdNormRV(1, 0.0, 1.0);
+
 	double beta,pf;
 	pfsum=0.0;
 	for(int i=0; i<Ncomp; i++){
 		beta=(*BetaVec)(i);
-		pf=1.0 - aStdNormRV->getCDFvalue(beta);
+		pf=1.0 - aStdNormRV.getCDFvalue(beta);
 		(*PfVec)(i)=pf;
 		pfsum+=pf;
 	}

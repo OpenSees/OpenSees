@@ -35,8 +35,8 @@
 #include <SearchDirection.h>
 #include <ProbabilityTransformation.h>
 #include <NatafProbabilityTransformation.h>
-#include <GFunEvaluator.h>
-#include <GradGEvaluator.h>
+#include <FunctionEvaluator.h>
+#include <GradientEvaluator.h>
 #include <RandomVariable.h>
 #include <CorrelationCoefficient.h>
 #include <MatrixOperations.h>
@@ -61,8 +61,8 @@ using std::setprecision;
 NewSearchWithStepSizeAndStepDirection::NewSearchWithStepSizeAndStepDirection(
 					int passedMaxNumberOfIterations, 
 					ReliabilityDomain *passedReliabilityDomain,
-					GFunEvaluator *passedGFunEvaluator,
-					GradGEvaluator *passedGradGEvaluator,
+					FunctionEvaluator *passedGFunEvaluator,
+					GradientEvaluator *passedGradGEvaluator,
 					StepSizeRule *passedStepSizeRule,
 					SearchDirection *passedSearchDirection,
 					ProbabilityTransformation *passedProbabilityTransformation,
@@ -71,7 +71,7 @@ NewSearchWithStepSizeAndStepDirection::NewSearchWithStepSizeAndStepDirection(
 					bool pStartAtOrigin,
 					int pprintFlag,
 					char *pFileNamePrint)
-:FindDesignPointAlgorithm(passedReliabilityDomain)
+  :FindDesignPointAlgorithm(), theReliabilityDomain(passedReliabilityDomain)
 {
 	maxNumberOfIterations			= passedMaxNumberOfIterations;
 	theGFunEvaluator				= passedGFunEvaluator;
@@ -212,7 +212,11 @@ NewSearchWithStepSizeAndStepDirection::findDesignPoint()
 	if (startAtOrigin)
 	  u->Zero();
 	else {
-	  theReliabilityDomain->getStartPoint(*x);
+	  //theReliabilityDomain->getStartPoint(*x);
+	  for (int i = 0; i < numberOfRandomVariables; i++) {
+	    RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(i);
+	    (*x)(i) = theRV->getStartValue();
+	  }
 
 	  result = theProbabilityTransformation->transform_x_to_u(*x, *u);
 	  if (result < 0) { 
@@ -296,12 +300,12 @@ NewSearchWithStepSizeAndStepDirection::findDesignPoint()
 			if(!fdf) theGFunEvaluator->activateSensitivty();
 			else theGFunEvaluator->inactivateSensitivty();
 			/////// modifed by K Fujimura//////////////////
-			result = theGFunEvaluator->runGFunAnalysis(*x);
+			result = theGFunEvaluator->runAnalysis(*x);
 			if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
-			result = theGFunEvaluator->evaluateG(*x);
+			result = theGFunEvaluator->evaluateExpression();
 			if (result < 0) { errorMessage_evalg(); delxinit(); return -1; }
 			gFunctionValue_old = gFunctionValue;
-			gFunctionValue = theGFunEvaluator->getG();
+			gFunctionValue = theGFunEvaluator->getResult();
 		}
 		// Set scale parameter
 		if (iter == 1)	{
@@ -316,9 +320,9 @@ NewSearchWithStepSizeAndStepDirection::findDesignPoint()
 		/// work ///
 
 		// Gradient in original space
-		result = theGradGEvaluator->computeGradG(gFunctionValue,*x);
+		result = theGradGEvaluator->computeGradient(gFunctionValue,*x);
 		if (result < 0) { errorMessage_compGradg(); delxinit(); return -1; }
-		(*gradientOfgFunction) = theGradGEvaluator->getGradG();
+		(*gradientOfgFunction) = theGradGEvaluator->getGradient();
 
 		int noutput=(*gradientOfgFunction).Size();
 		output.setf(ios::right);
@@ -1085,11 +1089,11 @@ NewSearchWithStepSizeAndStepDirection::lineSearch()
 		xTest = theProbabilityTransformation->get_x();
 		*/
 		theProbabilityTransformation->transform_u_to_x(uTest, xTest);
-		result = theGFunEvaluator->runGFunAnalysis(xTest);
+		result = theGFunEvaluator->runAnalysis(xTest);
 		if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
-		result = theGFunEvaluator->evaluateG(xTest);
+		result = theGFunEvaluator->evaluateExpression();
 		if (result < 0) { errorMessage_evalg(); delxinit(); return -1; }
-		gTest = theGFunEvaluator->getG();
+		gTest = theGFunEvaluator->getResult();
 		opserr << " ampTest "<<ampTest<<endln;
 		opserr << " gTest "<<gTest<<endln;
 		result = theReliabilityConvergenceCheck->checkG(gTest);
@@ -1140,11 +1144,11 @@ NewSearchWithStepSizeAndStepDirection::lineSearch()
 			//if (result < 0) { errorMessage_utox(); delxinit(); return -1; }
 			//xTest = theProbabilityTransformation->get_x();
 			result = theProbabilityTransformation->transform_u_to_x(uTest, xTest);
-			result = theGFunEvaluator->runGFunAnalysis(xTest);
+			result = theGFunEvaluator->runAnalysis(xTest);
 			if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
-			result = theGFunEvaluator->evaluateG(xTest);
+			result = theGFunEvaluator->evaluateExpression();
 			if (result < 0) { errorMessage_evalg(); delxinit(); return -1; }
-			gTest = theGFunEvaluator->getG();
+			gTest = theGFunEvaluator->getResult();
 			result = theReliabilityConvergenceCheck->checkG(gTest);
 			opserr << " gTest "<<gTest<<endln;
 			nlineSearch++;
@@ -1183,15 +1187,15 @@ NewSearchWithStepSizeAndStepDirection::lineSearch()
 		result = theProbabilityTransformation->getJacobian_x_to_u(*x, *jacobian_x_u);
 		if(!fdf) theGFunEvaluator->activateSensitivty();
 		else theGFunEvaluator->inactivateSensitivty();
-		result = theGFunEvaluator->runGFunAnalysis(*x);
+		result = theGFunEvaluator->runAnalysis(*x);
 		if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
-		result = theGFunEvaluator->evaluateG(*x);
+		result = theGFunEvaluator->evaluateExpression();
 		if (result < 0) { errorMessage_evalg(); delxinit(); return -1; }
-		gFunctionValue = theGFunEvaluator->getG();
+		gFunctionValue = theGFunEvaluator->getResult();
 		// Gradient in original space
-		result = theGradGEvaluator->computeGradG(gFunctionValue,*x);
+		result = theGradGEvaluator->computeGradient(gFunctionValue,*x);
 		if (result < 0) { errorMessage_compGradg(); delxinit(); return -1; }
-		(*gradientOfgFunction) = theGradGEvaluator->getGradG();
+		(*gradientOfgFunction) = theGradGEvaluator->getGradient();
 //		int noutput=gradientOfgFunction.Size();
 //		output.setf(ios::right);
 //		output.setf(ios::scientific, ios::floatfield);

@@ -26,7 +26,7 @@
 
 #include <ReliabilityDomain.h>
 #include <Domain.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <RandomProcess.h>
 #include <RandomNumberGenerator.h>
 #include <GeneralRandGenerator.h>
@@ -49,7 +49,7 @@ class RandomVibrationSimulation
  public:
   RandomVibrationSimulation(ReliabilityDomain* passedReliabilityDomain,
 			    Domain* passedDomain,
-			    GFunEvaluator* passedGFunEvaluator,
+			    FunctionEvaluator* passedGFunEvaluator,
 			    ProbabilityTransformation* passedTransformation,
 			    double passedFragMin,
 			    double passedFragInt,
@@ -77,7 +77,7 @@ class RandomVibrationSimulation
 
 	ReliabilityDomain* theReliabilityDomain;
 	Domain* theDomain;
-	GFunEvaluator* theGFunEvaluator;
+	FunctionEvaluator* theGFunEvaluator;
 	RandomProcess* theRandomProcess;
 	RandomNumberGenerator* theRandomNumberGenerator;
 	ProbabilityTransformation* theTransformation;

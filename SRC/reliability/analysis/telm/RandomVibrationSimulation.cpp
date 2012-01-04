@@ -2,7 +2,7 @@
 RandomVibrationSimulation::RandomVibrationSimulation
 						 (ReliabilityDomain* passedReliabilityDomain,
 						  Domain* passedDomain,
-						  GFunEvaluator* passedGFunEvaluator,
+						  FunctionEvaluator* passedGFunEvaluator,
 						  ProbabilityTransformation* passedTransformation,
 						  double passedFragMin,
 						  double passedFragInt,

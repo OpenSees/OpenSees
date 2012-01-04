@@ -34,8 +34,8 @@
 #ifndef AnalyzerGradGEvaluator_h
 #define AnalyzerGradGEvaluator_h
 
-#include <GradGEvaluator.h>
-#include <GFunEvaluator.h>
+#include <GradientEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <Vector.h>
 #include <Matrix.h>
 #include <Domain.h>
@@ -49,14 +49,14 @@
 #include <fstream>
 using std::ofstream;
 
-class AnalyzerGradGEvaluator : public GradGEvaluator
+class AnalyzerGradGEvaluator : public GradientEvaluator
 {
 
 public:
 	AnalyzerGradGEvaluator(Tcl_Interp *passedTclInterp, 
 				           ReliabilityDomain *passedReliabilityDomain,
                            Domain* passedDomain,
-						   GFunEvaluator* passedGFunEvaluator,
+						   FunctionEvaluator* passedGFunEvaluator,
 				           bool doGradientCheck);
 	~AnalyzerGradGEvaluator();
 

@@ -54,7 +54,6 @@ private:
 	UniformGenerator* theUniformGenerator;
 	Vector *generatedNumbers;
 	int seed;
-	NormalRV *aStdNormRV;
 	int	randomNumberBetween0And32767;
 	double randomNumberBetween0And1;
 	double randomNumber;

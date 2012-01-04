@@ -43,7 +43,7 @@ class NonStatFirstPassageAnalyzer : public FirstPassageAnalyzer
  public:
   NonStatFirstPassageAnalyzer(ReliabilityDomain* passedReliabilityDomain,
     			      FindDesignPointAlgorithm* passedFindDesignPointAlgorithm,
-			      GFunEvaluator* passedGFunEvaluator,
+			      FunctionEvaluator* passedGFunEvaluator,
 			      FOSeriesSimulation* passedFOSeriesSimulation,
 			      int passedanalysisType,
 			      int interpolationType,

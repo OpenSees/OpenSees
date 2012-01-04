@@ -58,7 +58,7 @@ class NonStatRandomVibrationSimulation : public RandomVibrationSimulation
  public:
   NonStatRandomVibrationSimulation(ReliabilityDomain* passedReliabilityDomain,
 				   Domain* passedDomain,
-				   GFunEvaluator* passedGFunEvaluator,
+				   FunctionEvaluator* passedGFunEvaluator,
 				   ProbabilityTransformation* passedTransformation,
 				   double passedStartTime,
 				   double passedEndTime,

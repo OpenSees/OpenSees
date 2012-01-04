@@ -8,7 +8,7 @@
 NonStatRandomVibrationSimulation::NonStatRandomVibrationSimulation
 								(ReliabilityDomain* passedReliabilityDomain,
 								 Domain* passedDomain,
-						         GFunEvaluator* passedGFunEvaluator,
+						         FunctionEvaluator* passedGFunEvaluator,
 							     ProbabilityTransformation* passedTransformation,
 						         double passedStartTime,
 						         double passedEndTime,
@@ -153,7 +153,7 @@ void NonStatRandomVibrationSimulation::crudeInstantaneousSimulation()
 
 		///// dynamic response analysis /////
 		bool FEconvergence = true;
-		result = theGFunEvaluator->runGFunAnalysis(*xRV);
+		result = theGFunEvaluator->runAnalysis(*xRV);
 		if (result < 0) {
 			// In this case a failure happened during the analysis
 			// Hence, register this as failure
@@ -285,7 +285,7 @@ void NonStatRandomVibrationSimulation::crudeFisrtpassageSimulation()
 		this->generateRV();
 		///// dynamic response analysis /////
 		bool FEconvergence = true;
-		result = theGFunEvaluator->runGFunAnalysis(*xRV);
+		result = theGFunEvaluator->runAnalysis(*xRV);
 //		Vector* samplExc=new Vector(numSteps);
 //		(*samplExc)=theRandomProcess->getExcitation(numSteps, delta);
 //		ofstream outputSample2;

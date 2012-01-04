@@ -32,9 +32,9 @@
 #include <ReliabilityDomain.h>
 #include <FindDesignPointAlgorithm.h>
 #include <Domain.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
+#include <GradientEvaluator.h>
 #include <NormalRV.h>
-#include <GradGEvaluator.h>
 #include <RandomProcess.h>
 using std::ifstream;
 using std::ofstream;
@@ -50,8 +50,8 @@ class CrossingRateAnalyzer
   public:
 	CrossingRateAnalyzer(ReliabilityDomain* passedReliabilityDomain,
 						 FindDesignPointAlgorithm* passedFindDesignPointAlgorithm,
-						 GFunEvaluator* passedGFunEvaluator,
-						 GradGEvaluator* passedGradGEvaluator,
+						 FunctionEvaluator* passedGFunEvaluator,
+						 GradientEvaluator* passedGradGEvaluator,
 						 int passedanalysisType=2,
 						 double passedlittleDt=0.1,
   						 bool passedprint=false);
@@ -70,8 +70,8 @@ class CrossingRateAnalyzer
   private:
 	ReliabilityDomain* theReliabilityDomain;
 	FindDesignPointAlgorithm* theFindDesignPointAlgorithm;
-    GFunEvaluator*   theGFunEvaluator;
-	GradGEvaluator* theGradGEvaluator;
+	FunctionEvaluator*   theGFunEvaluator;
+	GradientEvaluator* theGradGEvaluator;
 	RandomProcess* theRandomProcess;
 	double computeRate1(void);
 	double computeRate2(void);

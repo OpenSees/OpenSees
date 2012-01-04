@@ -45,7 +45,7 @@ class StatRandomVibrationSimulation : public RandomVibrationSimulation
   public:
 	StatRandomVibrationSimulation(ReliabilityDomain* passedReliabilityDomain,
 								  Domain* passedDomain,
-						          GFunEvaluator* passedGFunEvaluator,
+						          FunctionEvaluator* passedGFunEvaluator,
 							      ProbabilityTransformation* passedTransformation,
 						          double passedStartTime,
 						          double passedEndTime,

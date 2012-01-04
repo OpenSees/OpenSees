@@ -24,7 +24,7 @@
 #include <math.h>
 #include <ThresholdIncInitialPointBuilder.h>
 ThresholdIncInitialPointBuilder::ThresholdIncInitialPointBuilder(ReliabilityDomain *passedReliabilityDomain,
-						GFunEvaluator* passedGFunEvaluator,
+						FunctionEvaluator* passedGFunEvaluator,
 						FindDesignPointAlgorithm* passedFindDesignPointAlgorithm,
 						//NewSearchWithStepSizeAndStepDirection* passedFindDesignPointAlgorithm,
 						int passedmaxDivide,
@@ -71,8 +71,7 @@ void ThresholdIncInitialPointBuilder::clear()
 Vector ThresholdIncInitialPointBuilder::buildInitialPoint(int nstep)
 {
 
-	NormalRV *aStdNormRV=0;
-	aStdNormRV = new NormalRV(1,0.0,1.0,0.0);
+	static NormalRV aStdNormRV(1,0.0,1.0);
 
 	if(xinitial !=0){delete xinitial;xinitial=0;}
 	xinitial=new Vector(*xmean);
@@ -141,14 +140,14 @@ Vector ThresholdIncInitialPointBuilder::buildInitialPoint(int nstep)
 			(*xtemp)=(*xcompleted)*ampf;
 			theGFunEvaluator->inactivateSensitivty();
 			theGFunEvaluator->setThreshold(0.0);
-			res1=theGFunEvaluator->runGFunAnalysis(*xtemp);
+			res1=theGFunEvaluator->runAnalysis(*xtemp);
 			numAna++;
-			res2=theGFunEvaluator->evaluateG(*xtemp);
+			res2=theGFunEvaluator->evaluateExpression();
 			if ( res1<0 || res2<0) {
 				opserr << "GFuncError OutCrossingAnalysis::MakeInitialPoint" << res1 << res2 << "\n";
 				exit(-1);
 			}
-			xresp=-theGFunEvaluator->getG();
+			xresp=-theGFunEvaluator->getResult();
 			ampresp=xresp/tmpcompletedThreshold;
 			if(print){
 			output << "\n";

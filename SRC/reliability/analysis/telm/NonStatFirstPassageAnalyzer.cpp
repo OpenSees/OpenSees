@@ -5,7 +5,7 @@
 #include <NonStatFirstPassageAnalyzer.h>
 NonStatFirstPassageAnalyzer::NonStatFirstPassageAnalyzer(ReliabilityDomain* passedReliabilityDomain,
 							 FindDesignPointAlgorithm* passedFindDesignPointAlgorithm,
-							 GFunEvaluator* passedGFunEvaluator,
+							 FunctionEvaluator* passedGFunEvaluator,
 							 FOSeriesSimulation* passedFOSeriesSimulation,
 							 int passedanalysisType,
 							 int passedinterpolationType,

@@ -27,7 +27,7 @@
 
 #include <ReliabilityDomain.h>
 #include <FindDesignPointAlgorithm.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <RandomProcess.h>
 #include <FOSeriesSimulation.h>
 #include <OutCrossingResults.h>
@@ -50,7 +50,7 @@ class FirstPassageAnalyzer
   public:
   FirstPassageAnalyzer(ReliabilityDomain* passedReliabilityDomain,
 		       FindDesignPointAlgorithm* passedFindDesignPointAlgorithm,
-		       GFunEvaluator* passedGFunEvaluator,
+		       FunctionEvaluator* passedGFunEvaluator,
 		       FOSeriesSimulation* passedFOSeriesSimulation,
 		       int passedAnalysisType,
 		       bool passedtwoside);
@@ -71,7 +71,7 @@ class FirstPassageAnalyzer
   ReliabilityDomain* theReliabilityDomain;
   RandomProcess* theRandomProcess;
   FindDesignPointAlgorithm* theFindDesignPointAlgorithm;
-  GFunEvaluator* theGFunEvaluator;
+  FunctionEvaluator* theGFunEvaluator;
   FOSeriesSimulation* theFOSeriesSimulation;
   //	OutCrossingResults* theOutCrossingResult;
   //	OutCrossingResults** thecomponentResults;

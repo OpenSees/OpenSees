@@ -7,7 +7,7 @@
 #include <InitialPointBuilder.h>
 InitialPointBuilder::InitialPointBuilder
 					(ReliabilityDomain* passedReliabilityDomain,
-	                 GFunEvaluator* passedGFunEvaluator)
+	                 FunctionEvaluator* passedGFunEvaluator)
 {
 	theReliabilityDomain=passedReliabilityDomain;
 	numRV = theReliabilityDomain->getNumberOfRandomVariables();

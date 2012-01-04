@@ -28,6 +28,7 @@
 // $Source: /usr/local/cvs/OpenSees/SRC/reliability/analysis/telm/GFunEachStepEvaluator.cpp,v $
 
 #include <GFunEachStepEvaluator.h>
+#include <ReliabilityDomain.h>
 
 GFunEachStepEvaluator::GFunEachStepEvaluator(Tcl_Interp *passedTclInterp,
 											 ReliabilityDomain *passedReliabilityDomain,
@@ -155,8 +156,11 @@ double GFunEachStepEvaluator::setLimitState
 {
     PerformanceFunctionCoeff* thePFCoeff;
 
-	char *theExpression = theLSF->getExpression();
-	char *theTokExpression = theLSF->getTokenizedExpression();
+	const char *theExpression = theLSF->getExpression();
+	
+	// This parsing should go away -- MHS 10/7/2011
+	//char *theTokExpression = theLSF->getTokenizedExpression();
+	char *theTokExpression = ""; // So that it compiles
 
 	char separators[5] = "}{";
 	char *dollarSign = "$";

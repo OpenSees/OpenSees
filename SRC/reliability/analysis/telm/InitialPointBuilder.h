@@ -13,7 +13,7 @@
 #include <RandomProcess.h>
 #include <OutCrossingResults.h>
 #include <ReliabilityDomain.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <Matrix.h>
 using std::ifstream;
 using std::ofstream;
@@ -29,7 +29,7 @@ class InitialPointBuilder
 {
  public:
   InitialPointBuilder(ReliabilityDomain *theReliabilityDomain,
-		      GFunEvaluator* theGFunEvaluator);
+		      FunctionEvaluator* theGFunEvaluator);
  virtual  ~InitialPointBuilder();
 	
  void setRandomProcess(RandomProcess* passedRandomProcess);
@@ -50,7 +50,7 @@ class InitialPointBuilder
  
  void clearInitialPointBuilder();
  RandomProcess* theRandomProcess;
- GFunEvaluator* theGFunEvaluator;
+ FunctionEvaluator* theGFunEvaluator;
  ReliabilityDomain* theReliabilityDomain;
  int NumTotalPulse;
  double dt;

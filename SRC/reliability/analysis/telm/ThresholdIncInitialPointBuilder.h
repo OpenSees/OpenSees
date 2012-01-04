@@ -46,7 +46,7 @@ class ThresholdIncInitialPointBuilder : public InitialPointBuilder
 {
   public:
 	ThresholdIncInitialPointBuilder(ReliabilityDomain *theReliabilityDomain,
-						GFunEvaluator* theGFunEvaluator,
+						FunctionEvaluator* theGFunEvaluator,
 						FindDesignPointAlgorithm* theFindDesignPointAlgorithm,
 						//NewSearchWithStepSizeAndStepDirection* theFindDesignPointAlgorithm,
 						int maxDivide=20,
