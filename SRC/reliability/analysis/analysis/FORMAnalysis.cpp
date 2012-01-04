@@ -88,7 +88,7 @@ FORMAnalysis::analyze()
 	// Declare variables used in this method
 	double stdv, mean, Go, Glast, beta, pf1;
 	int numberOfSteps, numberOfEvaluations;
-	static NormalRV aStdNormRV(1,0.0,1.0,0.0);
+	static NormalRV aStdNormRV(1,0.0,1.0);
 
 	// reliability domain info
 	int numRV = theReliabilityDomain->getNumberOfRandomVariables();
@@ -186,7 +186,9 @@ FORMAnalysis::analyze()
 			kappa /= kappa.Norm();
 		}
 		
-	  
+
+		// One day, we will use recorders -- MHS 19/7/2011
+		/*
 		// Store key results in the limit-state functions
 		theLimitStateFunction->setFORM_beta(beta);
 		theLimitStateFunction->setFORM_pf1(pf1);
@@ -200,6 +202,7 @@ FORMAnalysis::analyze()
 		theLimitStateFunction->setSecondLast_u(uSecondLast);
 		theLimitStateFunction->setSecondLast_alpha(alphaSecondLast);
 		theLimitStateFunction->setLastSearchDirection(lastSearchDirection);
+		*/
 
 
 	  outputFile << "#  Limit-state function value at start point: ......... " 
