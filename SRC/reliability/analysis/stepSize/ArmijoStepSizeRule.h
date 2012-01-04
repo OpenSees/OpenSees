@@ -35,8 +35,8 @@
 #define ArmijoStepSizeRule_h
 
 #include <StepSizeRule.h>
-#include <GFunEvaluator.h>
-#include <GradGEvaluator.h>
+#include <FunctionEvaluator.h>
+#include <GradientEvaluator.h>
 #include <ProbabilityTransformation.h>
 #include <MeritFunctionCheck.h>
 #include <RootFinding.h>
@@ -45,7 +45,7 @@ class ArmijoStepSizeRule : public StepSizeRule
 {
 
 public:
-	ArmijoStepSizeRule(GFunEvaluator *passedGFunEvaluator, 
+	ArmijoStepSizeRule(FunctionEvaluator *passedGFunEvaluator, 
 		ProbabilityTransformation *theProbabilityTransformation,
 		MeritFunctionCheck *theMeritFunctionCheck,
 		RootFinding *theRootFindingAlgorithm, 
@@ -74,8 +74,8 @@ protected:
 
 private:
 	double stepSize;
-	GFunEvaluator *theGFunEvaluator;
-	GradGEvaluator *theGradGEvaluator;
+	FunctionEvaluator *theGFunEvaluator;
+	GradientEvaluator *theGradGEvaluator;
 	ProbabilityTransformation *theProbabilityTransformation;
 	MeritFunctionCheck *theMeritFunctionCheck;
 	RootFinding *theRootFindingAlgorithm;

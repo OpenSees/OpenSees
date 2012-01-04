@@ -32,7 +32,7 @@
 //
 
 #include <ArmijoStepSizeRule.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <StepSizeRule.h>
 #include <ProbabilityTransformation.h>
 #include <MeritFunctionCheck.h>
@@ -49,18 +49,18 @@ using std::setw;
 using std::setprecision;
 using std::setiosflags;
 
-ArmijoStepSizeRule::ArmijoStepSizeRule(	GFunEvaluator *passedGFunEvaluator,
-						ProbabilityTransformation *passedProbabilityTransformation,
-						MeritFunctionCheck *passedMeritFunctionCheck,
-						RootFinding *passedRootFindingAlgorithm, 
-						double Pbase,
-						int    PmaxNumReductions,
-						double Pb0,
-						int    PnumberOfShortSteps,
-						double Pradius,
-						double PsurfaceDistance,
-						double Pevolution,
-						int pprintFlag)
+ArmijoStepSizeRule::ArmijoStepSizeRule(FunctionEvaluator *passedGFunEvaluator,
+				       ProbabilityTransformation *passedProbabilityTransformation,
+				       MeritFunctionCheck *passedMeritFunctionCheck,
+				       RootFinding *passedRootFindingAlgorithm, 
+				       double Pbase,
+				       int    PmaxNumReductions,
+				       double Pb0,
+				       int    PnumberOfShortSteps,
+				       double Pradius,
+				       double PsurfaceDistance,
+				       double Pevolution,
+				       int pprintFlag)
 :StepSizeRule()
 {
 	theGFunEvaluator = passedGFunEvaluator;
@@ -245,7 +245,7 @@ ArmijoStepSizeRule::computeStepSize(const Vector &u_old,
 		// Evaluate the limit-state function
 		FEconvergence = true;
 		theGFunEvaluator->inactivateSensitivty(); ///added by K.F.
-		result = theGFunEvaluator->runGFunAnalysis(x_new);
+		result = theGFunEvaluator->runAnalysis(x_new);
 /*		if (result < 0) {
 			// In this case the FE analysis did not converge
 			// In this case; do not accept the new point!
@@ -253,13 +253,13 @@ ArmijoStepSizeRule::computeStepSize(const Vector &u_old,
 			opserr << "step size rejected due to non-converged FE analysis ..." << endln
 				<< " .......: ";
 		}
-*/		result = theGFunEvaluator->evaluateG(x_new);
+*/		result = theGFunEvaluator->evaluateExpression();
 		if (result < 0) {
 			opserr << "ArmijoStepSizeRule::computeStepSize() - could not  " << endln
 				<< " tokenize the limit-state function. " << endln;
 			return -1;
 		}
-		g_new = theGFunEvaluator->getG();
+		g_new = theGFunEvaluator->getResult();
 
 	}
 
@@ -375,7 +375,7 @@ ArmijoStepSizeRule::computeStepSize(const Vector &u_old,
 
 			// Evaluate the limit-state function
 			FEconvergence = true;
-			result = theGFunEvaluator->runGFunAnalysis(x_new);
+			result = theGFunEvaluator->runAnalysis(x_new);
 /*			if (result < 0) {
 				// In this case the FE analysis did not converge
 				// May still accept the new point!
@@ -384,13 +384,13 @@ ArmijoStepSizeRule::computeStepSize(const Vector &u_old,
 					<< " .......: ";
 				logfile << "step size rejected due to non-converged FE analysis ..." << endln;
 			}
-*/			result = theGFunEvaluator->evaluateG(x_new);
+*/			result = theGFunEvaluator->evaluateExpression();
 			if (result < 0) {
 				opserr << "ArmijoStepSizeRule::computeStepSize() - could not  " << endln
 					<< " tokenize the limit-state function. " << endln;
 				return -1;
 			}
-			g_new = theGFunEvaluator->getG();
+			g_new = theGFunEvaluator->getResult();
 
 
 			// Possibly project the point onto the limit-state surface
