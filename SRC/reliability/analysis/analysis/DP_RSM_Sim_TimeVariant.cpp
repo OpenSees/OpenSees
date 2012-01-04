@@ -49,10 +49,10 @@ void itoa(int n, char *s, int base);
 //////////////////////////////////////////////////////////////////////
 
 DP_RSM_Sim_TimeVariant::DP_RSM_Sim_TimeVariant(ReliabilityDomain *passedReliabilityDomain,
-					GFunEvaluator *passedGFunEvaluator,
+					FunctionEvaluator *passedGFunEvaluator,
 					ProbabilityTransformation *passedProbabilityTransformation,
 					char *passedOutputFileName,
-					GradGEvaluator * passedGradGEvaluator, Vector * pDesignPt, int numAxis, 
+					GradientEvaluator * passedGradGEvaluator, Vector * pDesignPt, int numAxis, 
 					char * typeExpPtRule,Tcl_Interp *passedTclInterp, 
 					Matrix * passedHessian, char * passedHessianFile, char * typeSurfaceDesign, 
 					char * typeRespSurfaceSimulation, Vector * gridInfo,
