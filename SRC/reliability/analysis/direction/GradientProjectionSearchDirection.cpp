@@ -35,39 +35,34 @@
 #include <SearchDirection.h>
 #include <StepSizeRule.h>
 #include <ProbabilityTransformation.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <RootFinding.h>
 #include <Vector.h>
 #include <Matrix.h>
 
 
-GradientProjectionSearchDirection::GradientProjectionSearchDirection(
-										StepSizeRule *passedStepSizeRule,
-										ProbabilityTransformation *passedProbabilityTransformation,
-										GFunEvaluator *passedGFunEvaluator,
-										RootFinding *passedRootFindingAlgorithm)
-:SearchDirection()
+GradientProjectionSearchDirection::GradientProjectionSearchDirection(StepSizeRule *passedStepSizeRule,
+								     ProbabilityTransformation *passedProbabilityTransformation,
+								     FunctionEvaluator *passedGFunEvaluator,
+								     RootFinding *passedRootFindingAlgorithm)
+  :SearchDirection()
 {
-	theStepSizeRule = passedStepSizeRule;
-	theProbabilityTransformation = passedProbabilityTransformation;
-	theGFunEvaluator = passedGFunEvaluator;
-	theRootFindingAlgorithm = passedRootFindingAlgorithm;
+  theStepSizeRule = passedStepSizeRule;
+  theProbabilityTransformation = passedProbabilityTransformation;
+  theFunctionEvaluator = passedGFunEvaluator;
+  theRootFindingAlgorithm = passedRootFindingAlgorithm;
 }
 
 GradientProjectionSearchDirection::~GradientProjectionSearchDirection()
 {
+
 }
-
-
-
 
 const Vector&
 GradientProjectionSearchDirection::getSearchDirection()
 {
-	return searchDirection;
+  return searchDirection;
 }
-
-
 
 int
 GradientProjectionSearchDirection::computeSearchDirection(int stepNumber, 
@@ -75,89 +70,82 @@ GradientProjectionSearchDirection::computeSearchDirection(int stepNumber,
 							  double passed_g, 
 							  const Vector &gradG)
 {
-
-
-	// Initial declarations
-	int i,j;
-	Vector u_new;
-	double initialStepSize;
-	Vector Direction;
-
-
-	// Problem size 
-	int nrv = u.Size();
-
-	
-	// Unit matrix
-	Matrix I(nrv,nrv);
-	for (i=0; i<nrv; i++) {
-		for (j=0; j<nrv; j++) {
-			if (i==j) {
-				I(i,j) = 1.0;
-			}
-			else {
-				I(i,j) = 0.0;
-			}
-		}
-	}
-
-
-	// Matrix of "outer" product of gradient vector
-	Matrix dGdG(nrv,nrv);
-	for (i=0; i<nrv; i++) {
-		for (j=0; j<nrv; j++) {
-			dGdG(i,j) = gradG(i)*gradG(j);
-		}
-	}
-
-	// Get initial step size from the step size algorithm
-	initialStepSize = theStepSizeRule->getInitialStepSize();
-
-
-	// As long as it is not the first step; do the usual thing
-	// (shouldn't happen if the user restarts the search...)
-	if (stepNumber != 1) {
-
-		// Compute the initial search direction vector
-		Vector direction = (-1)* (I - (1.0/(gradG^gradG))*dGdG ) * u;
-
-		// Initial step 
-		u_new = u + initialStepSize*direction;
-
-		// Set the direction of the Newton search
-		Direction = gradG;
-	}
-	// If it's the first step; do the Newton thing from the
-	// start point in the direction of the iHLRF search direction. 
-	else {
-
-		u_new = u;
-
-		// Compute the alpha-vector
-		Vector alpha = gradG * ( (-1) / gradG.Norm() );
-
-		// Compute the direction vector
-		double alpha_times_u = alpha ^ u ;
-		Vector direction = alpha * ( passed_g / gradG.Norm() + alpha_times_u ) - u;
-
-		// Set the direction of the Newton search
-		Direction = (-1)*direction;
-	}
-
-
-	// Do the search to bring the trial point 'u_new' onto the lsf surface
-	double tangent = gradG.Norm();
-	Vector u_newest = theRootFindingAlgorithm->findLimitStateSurface(2,passed_g, Direction, u_new);
-
-
-	// Return the final search direction
-	// (remember to scale it so that u_new = u_old + lambda*d really brings us to u_new
-	searchDirection = (1.0/initialStepSize)*(u_newest-u);
-
-	return 0;
-
+  // Initial declarations
+  int i,j;
+  Vector u_new;
+  double initialStepSize;
+  Vector Direction;
+  
+  
+  // Problem size 
+  int nrv = u.Size();
+  
+  
+  // Unit matrix
+  Matrix I(nrv,nrv);
+  for (i=0; i<nrv; i++) {
+    for (j=0; j<nrv; j++) {
+      if (i==j) {
+	I(i,j) = 1.0;
+      }
+      else {
+	I(i,j) = 0.0;
+      }
+    }
+  }
+  
+  
+  // Matrix of "outer" product of gradient vector
+  Matrix dGdG(nrv,nrv);
+  for (i=0; i<nrv; i++) {
+    for (j=0; j<nrv; j++) {
+      dGdG(i,j) = gradG(i)*gradG(j);
+    }
+  }
+  
+  // Get initial step size from the step size algorithm
+  initialStepSize = theStepSizeRule->getInitialStepSize();
+  
+  
+  // As long as it is not the first step; do the usual thing
+  // (shouldn't happen if the user restarts the search...)
+  if (stepNumber != 1) {
+    
+    // Compute the initial search direction vector
+    Vector direction = (-1)* (I - (1.0/(gradG^gradG))*dGdG ) * u;
+    
+    // Initial step 
+    u_new = u + initialStepSize*direction;
+    
+    // Set the direction of the Newton search
+    Direction = gradG;
+  }
+  // If it's the first step; do the Newton thing from the
+  // start point in the direction of the iHLRF search direction. 
+  else {
+    
+    u_new = u;
+    
+    // Compute the alpha-vector
+    Vector alpha = gradG * ( (-1) / gradG.Norm() );
+    
+    // Compute the direction vector
+    double alpha_times_u = alpha ^ u ;
+    Vector direction = alpha * ( passed_g / gradG.Norm() + alpha_times_u ) - u;
+    
+    // Set the direction of the Newton search
+    Direction = (-1)*direction;
+  }
+  
+  
+  // Do the search to bring the trial point 'u_new' onto the lsf surface
+  double tangent = gradG.Norm();
+  Vector u_newest = theRootFindingAlgorithm->findLimitStateSurface(2,passed_g, Direction, u_new);
+  
+  
+  // Return the final search direction
+  // (remember to scale it so that u_new = u_old + lambda*d really brings us to u_new
+  searchDirection = (1.0/initialStepSize)*(u_newest-u);
+  
+  return 0;
 }
-
-
-
-

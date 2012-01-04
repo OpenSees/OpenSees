@@ -37,33 +37,31 @@
 #include <SearchDirection.h>
 #include <StepSizeRule.h>
 #include <ProbabilityTransformation.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <RootFinding.h>
 #include <Vector.h>
 
 class GradientProjectionSearchDirection : public SearchDirection
 {
+ public:
+  GradientProjectionSearchDirection(StepSizeRule *theStepSizeRule,
+				    ProbabilityTransformation *theProbabilityTransformation,
+				    FunctionEvaluator *theGFunEvaluator,
+				    RootFinding *theRootFindingAlgorithm);
+  ~GradientProjectionSearchDirection();
+  
+  int computeSearchDirection(int stepNumber, const Vector &u,
+			     double g, const Vector &gradG);
+  const Vector &getSearchDirection();
+  
+ protected:
 
-public:
-	GradientProjectionSearchDirection(StepSizeRule *theStepSizeRule,
-									  ProbabilityTransformation *theProbabilityTransformation,
-									  GFunEvaluator *theGFunEvaluator,
-									  RootFinding *theRootFindingAlgorithm);
-	~GradientProjectionSearchDirection();
-
-	int computeSearchDirection(int stepNumber, const Vector &u,
-				   double g, const Vector &gradG);
-	const Vector &getSearchDirection();
-
-protected:
-
-private:
-	Vector searchDirection;
-	StepSizeRule *theStepSizeRule;
-	ProbabilityTransformation *theProbabilityTransformation;
-	GFunEvaluator *theGFunEvaluator;
-	RootFinding *theRootFindingAlgorithm;
-
+ private:
+  Vector searchDirection;
+  StepSizeRule *theStepSizeRule;
+  ProbabilityTransformation *theProbabilityTransformation;
+  FunctionEvaluator *theFunctionEvaluator;
+  RootFinding *theRootFindingAlgorithm;
 };
 
 #endif
