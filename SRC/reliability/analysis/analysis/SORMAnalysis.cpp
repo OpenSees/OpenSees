@@ -85,7 +85,7 @@ SORMAnalysis::analyze(void)
 	int i;
 	double pf2Breitung;
 	double betaBreitung;
-	static NormalRV aStdNormRV(1,0.0,1.0,0.0);
+	static NormalRV aStdNormRV(1,0.0,1.0);
 
 
 	// Number of limit-state functions
@@ -124,8 +124,11 @@ SORMAnalysis::analyze(void)
 			
 
 		// Get FORM results from the limit-state function
-		beta = theLimitStateFunction->getFORM_beta();
-		pf1 = theLimitStateFunction->getFORM_pf1();
+		// We should be using recorders -- MHS 10/7/2011
+		//beta = theLimitStateFunction->getFORM_beta();
+		beta = 0.0;
+		//pf1 = theLimitStateFunction->getFORM_pf1();
+		pf1 = 0.5;
 
 
 		// Compute failure probability by "Breitung"
@@ -148,9 +151,12 @@ SORMAnalysis::analyze(void)
 
 
 		// Put results into reliability domain
+		// We should be using recorders -- MHS 10/7/2011
+		/*
 		theLimitStateFunction->setSORM_numCurvatures(numberOfCurvatures);
 		theLimitStateFunction->setSORM_us_pf2_breitung(pf2Breitung);
 		theLimitStateFunction->setSORM_us_beta_breitung(betaBreitung);
+		*/
 
 
 		// Print SORM results to the output file
