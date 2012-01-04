@@ -37,7 +37,7 @@
 #include <ReliabilityDomain.h>
 #include <ProbabilityTransformation.h>
 #include <RandomNumberGenerator.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 
 #include <fstream>
 #include <tcl.h>
@@ -49,7 +49,7 @@ class ImportanceSamplingAnalysis : public ReliabilityAnalysis
 public:
 	ImportanceSamplingAnalysis(ReliabilityDomain *passedReliabilityDomain,
 				   ProbabilityTransformation *passedProbabilityTransformation,
-				   GFunEvaluator *passedGFunEvaluator,
+				   FunctionEvaluator *passedGFunEvaluator,
 				   RandomNumberGenerator *passedRandomNumberGenerator,
 				   bool passedStartAtOrigin,
 				   Tcl_Interp *passedInterp,
@@ -69,7 +69,7 @@ protected:
 private:
 	ReliabilityDomain *theReliabilityDomain;
 	ProbabilityTransformation *theProbabilityTransformation;
-	GFunEvaluator *theGFunEvaluator;
+	FunctionEvaluator *theGFunEvaluator;
 	RandomNumberGenerator *theRandomNumberGenerator;
 	bool startAtOrigin;
 	Tcl_Interp *interp;

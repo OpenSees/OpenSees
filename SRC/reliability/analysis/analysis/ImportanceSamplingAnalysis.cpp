@@ -37,8 +37,7 @@
 #include <LimitStateFunctionIter.h>
 #include <ProbabilityTransformation.h>
 #include <NatafProbabilityTransformation.h>
-#include <GFunEvaluator.h>
-#include <BasicGFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <RandomNumberGenerator.h>
 #include <RandomVariable.h>
 #include <NormalRV.h>
@@ -62,7 +61,7 @@ using std::setiosflags;
 
 ImportanceSamplingAnalysis::ImportanceSamplingAnalysis(	ReliabilityDomain *passedReliabilityDomain,
 										ProbabilityTransformation *passedProbabilityTransformation,
-										GFunEvaluator *passedGFunEvaluator,
+										FunctionEvaluator *passedGFunEvaluator,
 										RandomNumberGenerator *passedRandomNumberGenerator,
 							bool passedStartAtOrigin,
 										Tcl_Interp *passedInterp,
@@ -115,7 +114,7 @@ ImportanceSamplingAnalysis::analyze(void)
 	Vector z(numRV);
 	Vector u(numRV);
 	Vector randomArray(numRV);
-	static NormalRV aStdNormRV(1,0.0,1.0,0.0);
+	static NormalRV aStdNormRV(1,0.0,1.0);
 	bool failureHasOccured = false;
 
 	det_covariance = pow(samplingStdv, numRV);
@@ -171,7 +170,11 @@ ImportanceSamplingAnalysis::analyze(void)
 	if (startAtOrigin)
 	  startPointY.Zero();
 	else {
-	  theReliabilityDomain->getStartPoint(x);
+	  //theReliabilityDomain->getStartPoint(x);
+	  for (int j = 0; j < numRV; j++) {
+	    RandomVariable *theParam = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+	    x(j) = theParam->getStartValue();
+	  }
 	  result = theProbabilityTransformation->transform_x_to_u(x, startPointY);
 	  if (result < 0) {
 	    opserr << "ImportanceSamplingAnalysis::analyze() - could not " << endln
@@ -256,7 +259,7 @@ ImportanceSamplingAnalysis::analyze(void)
 		
 		// Evaluate limit-state function
 		FEconvergence = true;
-		result = theGFunEvaluator->runGFunAnalysis(x);
+		result = theGFunEvaluator->runAnalysis(x);
 		if (result < 0) {
 			// In this case a failure happened during the analysis
 			// Hence, register this as failure
@@ -281,12 +284,12 @@ ImportanceSamplingAnalysis::analyze(void)
 			Tcl_SetVar2Ex(interp,"RELIABILITY_lsf",NULL,Tcl_NewIntObj(lsfTag),TCL_NAMESPACE_ONLY);
 
 			// Get value of limit-state function
-			result = theGFunEvaluator->evaluateG(x);
+			result = theGFunEvaluator->evaluateExpression();
 			if (result < 0) {
 				opserr << "ImportanceSamplingAnalysis::analyze() - could not tokenize limit-state function. " << endln;
 				return -1;
 			}
-			gFunctionValue = theGFunEvaluator->getG();
+			gFunctionValue = theGFunEvaluator->getResult();
 			if (!FEconvergence) {
 				gFunctionValue = -1.0;
 			}
@@ -508,10 +511,13 @@ ImportanceSamplingAnalysis::analyze(void)
 					pf_sim	 = q_bar(lsfIndex);
 					cov_sim	 = cov_of_q_bar(lsfIndex);
 					num_sim  = k;
+					// Use a recorder -- MHS 10/7/2011
+					/*
 					theLimitStateFunction->setSIM_beta(beta_sim);
 					theLimitStateFunction->setSIM_pfsim(pf_sim);
 					theLimitStateFunction->setSIM_pfcov(cov_sim);
 					theLimitStateFunction->setSIM_numsim(num_sim);
+					*/
 				}
 
 
