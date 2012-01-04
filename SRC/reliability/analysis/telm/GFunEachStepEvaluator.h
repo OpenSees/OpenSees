@@ -29,7 +29,9 @@
 #ifndef GFunEachStepEvaluator_h
 #define GFunEachStepEvaluator_h
 
-#include <ReliabilityDomain.h>
+class ReliabilityDomain;
+class LimitStateFunction;
+
 #include <Domain.h>
 #include <Node.h>
 #include <PerformanceFunctionCoefficientIter.h>
@@ -42,6 +44,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>    
+
 using std::ofstream;
 using std::ifstream;
 using std::ios;
