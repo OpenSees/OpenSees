@@ -35,59 +35,56 @@
 #define RandomVariable_h
 
 #include <ReliabilityDomainComponent.h>
-#include <string.h>
+#include <Vector.h>
 
 class RandomVariable : public ReliabilityDomainComponent
 {
 
 public:
-	RandomVariable(int tag, int classTag, double startValue = 0.0);
+	RandomVariable(int tag, int classTag);
 	virtual ~RandomVariable();
-
-	virtual void Print(OPS_Stream &s, int flag =0);
-	virtual double getPDFvalue(double rvValue) = 0;
-	virtual double getCDFvalue(double rvValue) = 0;
-	virtual double getInverseCDFvalue(double rvValue) = 0; 
-	virtual double getCDFMeanSensitivity(double x) {return 0.0;}
-	virtual double getCDFStdvSensitivity(double x) {return 0.0;}
+	
+	// pure virtual defining variable type and properties
 	virtual const char* getType() = 0;
 	virtual double getMean() = 0;
 	virtual double getStdv() = 0;
-	virtual double getParameter1();
-	virtual double getParameter2();
-	virtual double getParameter3();
-	virtual double getParameter4();
-
-	virtual int setStartValue(double newVal) {startValue = newVal;return 0;}
-	virtual double getStartValue() {return startValue;}
-
+	virtual const Vector &getParameters() = 0;
+	virtual double getParameter1() {opserr << "RV::gp1"; return 0.0;}
+	virtual double getParameter2() {opserr << "RV::gp2"; return 0.0;}
+	virtual double getParameter3() {opserr << "RV::gp3"; return 0.0;}
+	virtual double getParameter4() {opserr << "RV::gp4"; return 0.0;}
+	virtual int setParameters(double mean, double stdv) {/*MHS 9/28/2011*/return 0;}
+	
+	// RV functionality
+	virtual double getPDFvalue(double rvValue) = 0;
+	virtual double getCDFvalue(double rvValue) = 0;
+	virtual double getInverseCDFvalue(double rvValue) = 0; 
+	
+	// starting point methods
+	virtual int setStartValue(double newVal) = 0;
+	virtual double getStartValue() = 0;
+	
+	// NYI
+	virtual double getCDFMeanSensitivity(double x) {return 0.0;}
+	virtual double getCDFStdvSensitivity(double x) {return 0.0;}
+	
+	// other public functions
+	virtual void Print(OPS_Stream &s, int flag = 0);
 	int setNewTag(int tag);
+	
+	double gammaFunction(double x);
+	double incompleteGammaFunction(double a, double x);
+	double betaFunction(double passed_q, double passed_r);
+	double errorFunction(double x);
+	double inverseErrorFunction(double y);
 
+protected:
+	static const double pi;
+	static const double euler;
+	
 private:
-	double startValue;
+
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
