@@ -9,16 +9,14 @@ all:
 	     @$(CD) $(FE)/reliability/analysis/curvature; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/designPoint; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/direction; $(MAKE);
-	     @$(CD) $(FE)/reliability/analysis/gFunction; $(MAKE);
+	     @$(CD) $(FE)/reliability/analysis/gradient; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/hessianApproximation; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/meritFunction; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/misc; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/randomNumber; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/rootFinding; $(MAKE);
-	     @$(CD) $(FE)/reliability/analysis/sensitivity; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/stepSize; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/transformation; $(MAKE);
-	     @$(CD) $(FE)/reliability/analysis/telm; $(MAKE);
 
 
 # Miscellaneous
@@ -36,15 +34,13 @@ wipe: spotless
 	     @$(CD) $(FE)/reliability/analysis/curvature; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/designPoint; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/direction; $(MAKE) wipe;
-	     @$(CD) $(FE)/reliability/analysis/gFunction; $(MAKE) wipe;
+	     @$(CD) $(FE)/reliability/analysis/gradient; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/hessianApproximation; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/meritFunction; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/misc; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/randomNumber; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/rootFinding; $(MAKE) wipe;
-	     @$(CD) $(FE)/reliability/analysis/sensitivity; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/stepSize; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/transformation; $(MAKE) wipe;
-	     @$(CD) $(FE)/reliability/analysis/telm; $(MAKE) wipe;
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
