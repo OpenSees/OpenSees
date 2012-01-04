@@ -45,7 +45,7 @@ class FindDesignPointAlgorithm
 {
 
 public:
-	FindDesignPointAlgorithm(ReliabilityDomain *theReliabilityDomain);
+	FindDesignPointAlgorithm();
 	virtual ~FindDesignPointAlgorithm();
 
 	virtual int findDesignPoint() =0;
@@ -80,7 +80,6 @@ public:
 	/////E added by K Fujimura /////
 
 protected:
-	ReliabilityDomain *theReliabilityDomain;
 
 private:
 

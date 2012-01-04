@@ -38,8 +38,9 @@
 #include <SearchDirection.h>
 #include <ProbabilityTransformation.h>
 #include <NatafProbabilityTransformation.h>
-#include <GFunEvaluator.h>
-#include <GradGEvaluator.h>
+#include <LimitStateFunction.h>
+#include <FunctionEvaluator.h>
+#include <GradientEvaluator.h>
 #include <RandomVariable.h>
 #include <CorrelationCoefficient.h>
 #include <MatrixOperations.h>
@@ -47,7 +48,6 @@
 #include <ReliabilityConvergenceCheck.h>
 #include <Matrix.h>
 #include <Vector.h>
-#include <GammaRV.h>
 
 #include <fstream>
 #include <iomanip>
@@ -63,8 +63,8 @@ using std::setprecision;
 SearchWithStepSizeAndStepDirection::SearchWithStepSizeAndStepDirection(
 					int passedMaxNumberOfIterations,
 					ReliabilityDomain *passedReliabilityDomain,
-					GFunEvaluator *passedGFunEvaluator,
-					GradGEvaluator *passedGradGEvaluator,
+					FunctionEvaluator *passedFunctionEvaluator,
+					GradientEvaluator *passedGradientEvaluator,
 					StepSizeRule *passedStepSizeRule,
 					SearchDirection *passedSearchDirection,
 					ProbabilityTransformation *passedProbabilityTransformation,
@@ -73,11 +73,11 @@ SearchWithStepSizeAndStepDirection::SearchWithStepSizeAndStepDirection(
 					bool pStartAtOrigin,
 					int pprintFlag,
 					char *pFileNamePrint)
-:FindDesignPointAlgorithm(passedReliabilityDomain)
+  :FindDesignPointAlgorithm(), theReliabilityDomain(passedReliabilityDomain)
 {
 	maxNumberOfIterations			= passedMaxNumberOfIterations;
-	theGFunEvaluator				= passedGFunEvaluator;
-	theGradGEvaluator				= passedGradGEvaluator;
+	theFunctionEvaluator				= passedFunctionEvaluator;
+	theGradientEvaluator				= passedGradientEvaluator;
 	theStepSizeRule					= passedStepSizeRule;
 	theSearchDirection				= passedSearchDirection;
 	theProbabilityTransformation	= passedProbabilityTransformation;
@@ -90,11 +90,8 @@ SearchWithStepSizeAndStepDirection::SearchWithStepSizeAndStepDirection(
 	if (printFlag != 0) {
 		strcpy(fileNamePrint,pFileNamePrint);
 	}
-	else {
-		strcpy(fileNamePrint,"searchpoints.out");
-	}
 	
-	int nrv = passedReliabilityDomain->getNumberOfRandomVariables();
+	int nrv = theReliabilityDomain->getNumberOfRandomVariables();
 	x = new Vector(nrv);
 	u = new Vector(nrv);
 	alpha = new Vector(nrv);
@@ -149,28 +146,31 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 	Vector gradientInStandardNormalSpace_old(numberOfRandomVariables);
 	
 	
-	theGFunEvaluator->initializeNumberOfEvaluations();
+	theFunctionEvaluator->initializeNumberOfEvaluations();
 
 	
 	// Prepare output file to store the search points
-	ofstream outputFile2( fileNamePrint, ios::out );
-	if (printFlag == 0) {
-		outputFile2 << "The user has not specified to store any search points." << endln;
-		outputFile2 << "This is just a dummy file. " << endln;
-	}
+	/*
+	if (printFlag != 0) 
+		ofstream outputFile2( fileNamePrint, ios::out );
+	*/
 
 	// Get starting point
 	if (startAtOrigin) 
-	  u->Zero();
+		u->Zero();
 	else {
-	  theReliabilityDomain->getStartPoint(*x);
+		//theReliabilityDomain->getStartPoint(*x);
+		for (int j = 0; j < numberOfRandomVariables; j++) {
+			RandomVariable *theParam = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+			(*x)(j) = theParam->getStartValue();
+		}
 
-	  // Transform starting point into standard normal space
-	  result = theProbabilityTransformation->transform_x_to_u(*x, *u);
-	  if (result < 0) {
-	    opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-		   << " could not transform from x to u." << endln;
-	    return -1;
+		// Transform starting point into standard normal space
+		result = theProbabilityTransformation->transform_x_to_u(*x, *u);
+		if (result < 0) {
+			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+			   << " could not transform from x to u." << endln;
+			return -1;
 	  }
 	}
 
@@ -199,6 +199,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 
 
 		// Possibly print the point to output file
+		/*
 		int iii;
 		if (printFlag != 0) {
 
@@ -215,27 +216,39 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 				}
 			}
 		}
-
+		*/
 
 		// Evaluate limit-state function unless it has been done in 
 		// a trial step by the "stepSizeAlgorithm"
 		if (evaluationInStepSize == 0) {
-			result = theGFunEvaluator->runGFunAnalysis(*x);
-			if (result < 0) {
-				opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-					<< " could not run analysis to evaluate limit-state function. " << endln;
+			// set perturbed values in the variable namespace
+			if (theFunctionEvaluator->setVariables(*x) < 0) {
+				opserr << "ERROR SearchWithStepSizeAndStepDirection -- error setting variables in namespace" << endln;
 				return -1;
 			}
-			result = theGFunEvaluator->evaluateG(*x);
-			if (result < 0) {
-				opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-					<< " could not tokenize limit-state function. " << endln;
+			
+			// run analysis
+			if (theFunctionEvaluator->runAnalysis(*x) < 0) {
+				opserr << "ERROR SearchWithStepSizeAndStepDirection -- error running analysis" << endln;
 				return -1;
 			}
+			
+			// evaluate LSF and obtain result
+			int lsfTag = theReliabilityDomain->getTagOfActiveLimitStateFunction();
+			LimitStateFunction *theLimitStateFunction = theReliabilityDomain->getLimitStateFunctionPtr(lsfTag);
+			const char *lsfExpression = theLimitStateFunction->getExpression();
+			theFunctionEvaluator->setExpression(lsfExpression);
+			
+			if (theFunctionEvaluator->evaluateExpression() < 0) {
+				opserr << "ERROR FiniteDifferenceGradient -- error evaluating LSF expression" << endln;
+				return -1;
+			}
+			
+			// return values
 			gFunctionValue_old = gFunctionValue;
-			gFunctionValue = theGFunEvaluator->getG();
+			gFunctionValue = theFunctionEvaluator->getResult();
+			
 		}
-
 
 		// Set scale parameter
 		if (steps == 1)	{
@@ -249,22 +262,16 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 
 
 		// Gradient in original space
-		result = theGradGEvaluator->computeGradG(gFunctionValue,*x);
+		result = theGradientEvaluator->computeGradient(gFunctionValue, *x);
 		if (result < 0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not compute gradients of the limit-state function. " << endln;
 			return -1;
 		}
-		gradientOfgFunction = theGradGEvaluator->getGradG();
+		gradientOfgFunction = theGradientEvaluator->getGradient();
 
 		// Check if all components of the vector is zero
-		zeroFlag = 0;
-		for (j=0; j<gradientOfgFunction.Size(); j++) {
-			if (gradientOfgFunction[j] != 0.0) {
-				zeroFlag = 1;
-			}
-		}
-		if (zeroFlag == 0) {
+		if (gradientOfgFunction.Norm() == 0.0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " all components of the gradient vector is zero. " << endln;
 			return -1;
@@ -307,11 +314,11 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 			opserr << "Design point found!" << endln;
 
 
+			/*
 			// Print the design point to file, if desired
 			int iii;
 			if (printFlag != 0) {
 				if (printFlag == 3) {
-				  /*
 					result = theProbabilityTransformation->set_u(u);
 					if (result < 0) {
 						opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
@@ -326,7 +333,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 						return -1;
 					}
 					x = theProbabilityTransformation->get_x();
-				  */
+
 				  result = theProbabilityTransformation->transform_u_to_x(*u, *x);
 				  if (result < 0) {
 				    opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
@@ -347,6 +354,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 					}
 				}
 			}
+			*/
 
 
 			// Compute the gamma vector
@@ -378,10 +386,12 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 			
 			Glast = gFunctionValue;
 
-			numberOfEvaluations = theGFunEvaluator->getNumberOfEvaluations();
+			numberOfEvaluations = theFunctionEvaluator->getNumberOfEvaluations();
 			
 			// compute sensitivity pf beta wrt to LSF parameters (if they exist)
-			const Matrix &dGdPar = theGradGEvaluator->getDgDpar();
+			// Note this will need to change because now parameters have multiple derived classes
+			/*
+			const Matrix &dGdPar = theGradientEvaluator->getDgDpar();
 			int numPars = dGdPar.noRows();
 			if (numPars > 0 && dGdPar.noCols() > 1) {
 				opserr << "Sensitivity of beta wrt LSF parameters: ";
@@ -392,7 +402,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 		
 				opserr << dBetadPar;
 			}
-	
+			*/
 			return 1;
 		}
 
@@ -477,7 +487,11 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 	// Print a message if max number of iterations was reached
 	// (Note: in this case the last trial point was never transformed/printed)
 	opserr << "Maximum number of iterations was reached before convergence." << endln;
-
+	
+	/*
+	if (printFlag != 0)
+		outputFile2.close();
+	*/
 	
 	return -1;
 }

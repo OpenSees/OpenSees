@@ -38,8 +38,8 @@
 #include <StepSizeRule.h>
 #include <SearchDirection.h>
 #include <ProbabilityTransformation.h>
-#include <GFunEvaluator.h>
-#include <GradGEvaluator.h>
+#include <FunctionEvaluator.h>
+#include <GradientEvaluator.h>
 #include <HessianApproximation.h>
 #include <ReliabilityConvergenceCheck.h>
 #include <Matrix.h>
@@ -58,8 +58,8 @@ public:
 	SearchWithStepSizeAndStepDirection(
 					int passedMaxNumberOfIterations, 
 					ReliabilityDomain *passedReliabilityDomain,
-					GFunEvaluator *passedGFunEvaluator,
-					GradGEvaluator *passedGradGEvaluator,
+					FunctionEvaluator *passedGFunEvaluator,
+					GradientEvaluator *passedGradGEvaluator,
 					StepSizeRule *passedStepSizeRule,
 					SearchDirection *passedSearchDirection,
 					ProbabilityTransformation *passedProbabilityTransformation,
@@ -91,8 +91,9 @@ protected:
 private:	
 
 	// The reliability domain and tools for the analysis
-	GFunEvaluator *theGFunEvaluator;
-	GradGEvaluator *theGradGEvaluator;
+	ReliabilityDomain *theReliabilityDomain;
+	FunctionEvaluator *theFunctionEvaluator;
+	GradientEvaluator *theGradientEvaluator;
 	StepSizeRule *theStepSizeRule;
 	SearchDirection *theSearchDirection;
 	ProbabilityTransformation *theProbabilityTransformation;

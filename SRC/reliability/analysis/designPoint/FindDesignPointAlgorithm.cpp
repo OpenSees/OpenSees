@@ -35,13 +35,14 @@
 #include <ReliabilityDomain.h>
 
  
-FindDesignPointAlgorithm::FindDesignPointAlgorithm(ReliabilityDomain *passedReliabilityDomain)
+FindDesignPointAlgorithm::FindDesignPointAlgorithm()
 {
-	theReliabilityDomain = passedReliabilityDomain;
+
 }
 
 FindDesignPointAlgorithm::~FindDesignPointAlgorithm()
 {
+
 }
 
 
