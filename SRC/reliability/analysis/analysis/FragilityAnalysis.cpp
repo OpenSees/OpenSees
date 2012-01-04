@@ -104,7 +104,7 @@ FragilityAnalysis::analyze(void)
 	// Initial declarations
 	Vector pf(numIntervals+1);
 	Vector pdf(numIntervals+1);
-	static NormalRV aStdNormRV(1,0.0,1.0,0.0);
+	static NormalRV aStdNormRV(1,0.0,1.0);
 	int numPars, numPos;
 	double thedGdPar = 0, currentValue, beta;
 	Vector currentValues(numIntervals+1);
@@ -158,7 +158,7 @@ FragilityAnalysis::analyze(void)
 			}
 			else {
 				char separators[5] = "_}{";
-				char *theExpression = theLimitStateFunction->getExpression();
+				const char *theExpression = theLimitStateFunction->getExpression();
 				char lsf_forTokenizing[1000];
 				strcpy(lsf_forTokenizing,theExpression);
 				char *tokenPtr = strtok( lsf_forTokenizing, separators);
