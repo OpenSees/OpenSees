@@ -32,48 +32,38 @@
 //
 
 #include <WeibullRV.h>
-#include <math.h>
-#include <string.h>
-#include <GammaRV.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 WeibullRV::WeibullRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_weibull, passedStartValue)
+					 double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_weibull), startValue(0)
 {
-	setParameters(passedMean,passedStdv);
+	int setp = setParameters(passedMean,passedStdv);
+	if (setp < 0)
+		opserr << "Error setting parameters in Weibull RV with tag " << this->getTag() << endln;
 }
-WeibullRV::WeibullRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_weibull, passedStartValue)
+
+
+WeibullRV::WeibullRV(int passedTag,
+					 const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_weibull), startValue(0)
 {
-	u = passedParameter1;
-	k = passedParameter2;
-}
-WeibullRV::WeibullRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_weibull, passedMean)
-{
-	setParameters(passedMean,passedStdv);
-}
-WeibullRV::WeibullRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_weibull)
-{
-	u = passedParameter1;
-	k = passedParameter2;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 2) {
+		opserr << "Weibull RV requires 2 parameters, u and k, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		u = 0;
+		k = 0;
+		
+	} else {
+		
+		u = passedParameters(0);
+		k = passedParameters(1);
+		
+	}
 }
 
 
@@ -82,12 +72,67 @@ WeibullRV::~WeibullRV()
 }
 
 
-void
-WeibullRV::Print(OPS_Stream &s, int flag)
+const char *
+WeibullRV::getType()
 {
-  s << "Weibull RV #" << this->getTag() << endln;
-  s << "\tu = " << u << endln;
-  s << "\tk = " << k << endln;
+	return "WEIBULL";
+}
+
+
+double 
+WeibullRV::getMean()
+{
+	double result = u * gammaFunction(1.0+1.0/k);
+	return result;
+}
+
+
+double 
+WeibullRV::getStdv()
+{
+	double a = gammaFunction(1.0+2.0/k);
+	double b = gammaFunction(1.0+1.0/k);
+	double result = u*sqrt(a-b*b);
+	return result;
+}
+
+
+const Vector &
+WeibullRV::getParameters(void) {
+	static Vector temp(2);
+	temp(0) = u;
+	temp(1) = k;
+	return temp;
+}
+
+
+int
+WeibullRV::setParameters(double mean, double stdv)
+{
+	double cov = stdv/mean;
+	double c = 1+cov*cov;
+	double k_prev = log(1/(c-1));
+	double del = 1.0;
+	
+	// now use Newtons method with nice f/f' function
+	int ncount = 1;
+	int nmax = 100;
+	
+	while (del > 1.0e-8 && ncount <= nmax) {
+		k = k_prev - (c*pow(gammaFunction(1/k_prev),2)-2*k_prev*gammaFunction(2/k_prev)) / 
+		( 2*gammaFunction(2/k_prev+1)*(-harmonicNumber(1/k_prev)+harmonicNumber(2/k_prev)) );
+		del = fabs(k-k_prev);
+		k_prev = k;
+		ncount++;
+	}
+	if (ncount >= nmax) {
+		opserr << "Warning: Weibull distribution did not converge during setParameters()" << endln;
+		return -1;
+	}
+	
+	u = mean/gammaFunction(1+1/k);
+	
+	return 0;
 }
 
 
@@ -126,58 +171,27 @@ WeibullRV::getInverseCDFvalue(double probValue)
 }
 
 
-const char *
-WeibullRV::getType()
+void
+WeibullRV::Print(OPS_Stream &s, int flag)
 {
-	return "WEIBULL";
+	s << "Weibull RV #" << this->getTag() << endln;
+	s << "\tu = " << u << endln;
+	s << "\tk = " << k << endln;
 }
 
-
-double 
-WeibullRV::getMean()
-{
-	GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
-	double result = u * aGammaRV.gammaFunction(1.0+1.0/k);
-	return result;
-}
-
-
-
-double 
-WeibullRV::getStdv()
-{
-	GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
-	double a = aGammaRV.gammaFunction(1.0+2.0/k);
-	double b = aGammaRV.gammaFunction(1.0+1.0/k);
-	double result = u*sqrt(a-b*b);
-	return result;
-}
-
-
-double
-WeibullRV::getParameter1()
-{
-  return u;
-}
-
-double
-WeibullRV::getParameter2()
-{
-  return k;
-}
 
 double 
 WeibullRV::harmonicNumber(double n)
 {
 	double Hn;
-	double pi = acos(-1.0);
+	//double pi = acos(-1.0);
 	double zeta3 = 1.2020569031595942854;
 	double zeta5 = 1.0369277551433699263;
-	double eulergamma = 0.57721566490153286061;
+	//double eulergamma = 0.57721566490153286061;
 	
 	if (n > 1) {
 		// asymptotic harmonic number series approximation
-		Hn = log(n) + eulergamma + 1/(2*n) - 1/(12*n*n) + 1/120/pow(n,4) - 1/252/pow(n,6);
+		Hn = log(n) + euler + 1/(2*n) - 1/(12*n*n) + 1/120/pow(n,4) - 1/252/pow(n,6);
 	}
 	else if (n > 0.25) {
 		// Taylor series expansion about n = 1/2
@@ -190,32 +204,4 @@ WeibullRV::harmonicNumber(double n)
 	}
 	
 	return Hn;
-}
-
-void
-WeibullRV::setParameters(double mean, double stdv)
-{
-	double cov = stdv/mean;
-	double c = 1+cov*cov;
-	double k_prev = log(1/(c-1));
-	double del = 1.0;
-	GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
-	
-	// now use Newtons method with nice f/f' function
-	int ncount = 1;
-	int nmax = 100;
-	
-	while (del > 1.0e-8 && ncount <= nmax) {
-		k = k_prev - (c*pow(aGammaRV.gammaFunction(1/k_prev),2)-2*k_prev*aGammaRV.gammaFunction(2/k_prev)) / 
-			( 2*aGammaRV.gammaFunction(2/k_prev+1)*(-harmonicNumber(1/k_prev)+harmonicNumber(2/k_prev)) );
-		del = fabs(k-k_prev);
-		k_prev = k;
-		ncount++;
-	}
-	if (ncount >= nmax) {
-		opserr << "warning: Weibull distribution did not converge during setParameters()" << endln;
-	}
-	
-	u = mean/aGammaRV.gammaFunction(1+1/k);
-
 }

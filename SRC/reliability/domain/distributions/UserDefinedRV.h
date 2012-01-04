@@ -41,22 +41,32 @@ class UserDefinedRV : public RandomVariable
 {
 
 public:
-	UserDefinedRV(int tag, const Vector &xPoints, const Vector &PDFpoints, double startValue);
 	UserDefinedRV(int tag, const Vector &xPoints, const Vector &PDFpoints);
 	~UserDefinedRV();
-	void Print(OPS_Stream &s, int flag =0);
-	double getPDFvalue(double rvValue);
-	double getCDFvalue(double rvValue);
-	double getInverseCDFvalue(double probValue);
-	const char * getType();
+
+	// pure virtual defining variable type and properties
+	const char* getType();
 	double getMean();
 	double getStdv();
+	
+	// RV functionality
+	double getPDFvalue(double rvValue);
+	double getCDFvalue(double rvValue);
+	double getInverseCDFvalue(double rvValue); 
+	
+	// starting point methods
+	int setStartValue(double newVal) {startValue = newVal; return 0;}
+	double getStartValue() {return startValue;}
+	
+	// other
+	void Print(OPS_Stream &s, int flag = 0);
 
 protected:
 
 private:
 	Vector xPoints;
 	Vector PDFpoints;
+	double startValue;
 };
 
 #endif

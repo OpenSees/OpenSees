@@ -32,47 +32,38 @@
 //
 
 #include <GumbelRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 GumbelRV::GumbelRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_gumbel, passedStartValue)
+				   double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_gumbel), startValue(0)
 {
-	setParameters(passedMean,passedStdv);
+	int setp = setParameters(passedMean,passedStdv);
+	if (setp < 0)
+		opserr << "Error setting parameters in Gumbel RV with tag " << this->getTag() << endln;
 }
-GumbelRV::GumbelRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_gumbel, passedStartValue)
+
+
+GumbelRV::GumbelRV(int passedTag,
+				   const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_gumbel), startValue(0)
 {
-	u = passedParameter1;
-	alpha = passedParameter2;
-}
-GumbelRV::GumbelRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_gumbel, passedMean)
-{
-	setParameters(passedMean,passedStdv);
-}
-GumbelRV::GumbelRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_gumbel)
-{
-	u = passedParameter1;
-	alpha = passedParameter2;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 2) {
+		opserr << "Gumbel RV requires 2 parameters, u and alpha, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		u = 0;
+		alpha = 0;
+		
+	} else {
+		
+		u = passedParameters(0);
+		alpha = passedParameters(1);
+		
+	}
 }
 
 
@@ -80,21 +71,49 @@ GumbelRV::~GumbelRV()
 {
 }
 
-void
-GumbelRV::setParameters(double mean, double stdv)
+
+const char *
+GumbelRV::getType()
 {
-	double pi = acos(-1.0);
-	double eulergamma = 0.57721566490153286061;
-	u = mean - (eulergamma*sqrt(6.0)*stdv)/pi;
-	alpha = pi / ( sqrt(6.0) * stdv );
+	return "GUMBEL";
 }
 
-void
-GumbelRV::Print(OPS_Stream &s, int flag)
+
+double 
+GumbelRV::getMean()
 {
-  s << "Gumbel RV #" << this->getTag() << endln;
-  s << "\tu = " << u << endln;
-  s << "\talpha = " << alpha << endln;
+	//double eulergamma = 0.57721566490153286061;
+	return u+euler/alpha;
+}
+
+
+double 
+GumbelRV::getStdv()
+{
+	//static const double pi = std::acos(-1.0);
+	return pi/(sqrt(6.0)*alpha);
+}
+
+
+const Vector &
+GumbelRV::getParameters(void) {
+	static Vector temp(2);
+	temp(0) = u;
+	temp(1) = alpha;
+	return temp;
+}
+
+
+int
+GumbelRV::setParameters(double mean, double stdv)
+{
+	//static const double pi = std::acos(-1.0);
+	//double eulergamma = 0.57721566490153286061;
+	
+	u = mean - (euler*sqrt(6.0)*stdv)/pi;
+	alpha = pi / ( sqrt(6.0) * stdv );
+	
+	return 0;
 }
 
 
@@ -119,38 +138,10 @@ GumbelRV::getInverseCDFvalue(double probValue)
 }
 
 
-const char *
-GumbelRV::getType()
+void
+GumbelRV::Print(OPS_Stream &s, int flag)
 {
-	return "GUMBEL";
-}
-
-
-double 
-GumbelRV::getMean()
-{
-	double eulergamma = 0.57721566490153286061;
-	return u+eulergamma/alpha;
-}
-
-
-
-double 
-GumbelRV::getStdv()
-{
-	double pi = acos(-1.0);
-	return pi/(sqrt(6.0)*alpha);
-}
-
-
-double
-GumbelRV::getParameter1()
-{
-  return u;
-}
-
-double
-GumbelRV::getParameter2()
-{
-  return alpha;
+	s << "Gumbel RV #" << this->getTag() << endln;
+	s << "\tu = " << u << endln;
+	s << "\talpha = " << alpha << endln;
 }

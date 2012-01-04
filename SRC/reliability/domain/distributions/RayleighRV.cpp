@@ -32,30 +32,26 @@
 //
 
 #include <RayleighRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 RayleighRV::RayleighRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_rayleigh, passedStartValue)
+					   const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_rayleigh), startValue(0)
 {
-	u = passedParameter1;
-}
-RayleighRV::RayleighRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_rayleigh)
-{
-	u = passedParameter1;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 1) {
+		opserr << "Rayleigh RV requires 1 parameter, u, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		u = 0;
+		
+	} else {
+		
+		u = passedParameters(0);
+		
+	}
 }
 
 
@@ -64,11 +60,34 @@ RayleighRV::~RayleighRV()
 }
 
 
-void
-RayleighRV::Print(OPS_Stream &s, int flag)
+const char *
+RayleighRV::getType()
 {
-  s << "Rayleigh RV #" << this->getTag() << endln;
-  s << "\tu = " << u << endln;
+	return "RAYLEIGH";
+}
+
+
+double 
+RayleighRV::getMean()
+{
+	//double pi = acos(-1.0);
+	return 0.5*sqrt(pi) * u;
+}
+
+
+double 
+RayleighRV::getStdv()
+{
+	//double pi = acos(-1.0);
+	return 0.5 * sqrt(4.0-pi) * u;
+}
+
+
+const Vector &
+RayleighRV::getParameters(void) {
+	static Vector temp(1);
+	temp(0) = u;
+	return temp;
 }
 
 
@@ -107,34 +126,9 @@ RayleighRV::getInverseCDFvalue(double probValue)
 }
 
 
-const char *
-RayleighRV::getType()
+void
+RayleighRV::Print(OPS_Stream &s, int flag)
 {
-	return "RAYLEIGH";
-}
-
-
-double 
-RayleighRV::getMean()
-{
-	double pi = acos(-1.0);
-	return 0.5*sqrt(pi) * u;
-}
-
-
-
-double 
-RayleighRV::getStdv()
-{
-	double pi = acos(-1.0);
-	return 0.5 * sqrt(4.0-pi) * u;
-}
-
-
-
-
-double
-RayleighRV::getParameter1()  
-{
-  return u;
+	s << "Rayleigh RV #" << this->getTag() << endln;
+	s << "\tu = " << u << endln;
 }

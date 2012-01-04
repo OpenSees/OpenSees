@@ -32,51 +32,38 @@
 //
 
 #include <ShiftedRayleighRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 ShiftedRayleighRV::ShiftedRayleighRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedrayleigh, passedStartValue)
+					double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedrayleigh), startValue(0)
 {
-	double pi = 3.14159265358979;
-	u = 2.0 * passedStdv / sqrt(3.0*pi+4.0);
-	x0 = passedMean + passedStdv*sqrt(pi) / sqrt(3.0*pi+4.0);
+	int setp = setParameters(passedMean,passedStdv);
+	if (setp < 0)
+		opserr << "Error setting parameters in ShiftedRayleigh RV with tag " << this->getTag() << endln;
 }
-ShiftedRayleighRV::ShiftedRayleighRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedrayleigh, passedStartValue)
+
+
+ShiftedRayleighRV::ShiftedRayleighRV(int passedTag,
+					const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedrayleigh), startValue(0)
 {
-	u = passedParameter1;
-	x0 = passedParameter2;
-}
-ShiftedRayleighRV::ShiftedRayleighRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedrayleigh, passedMean)
-{
-	double pi = 3.14159265358979;
-	u = 2.0 * passedStdv / sqrt(3.0*pi+4.0);
-	x0 = passedMean + passedStdv*sqrt(pi) / sqrt(3.0*pi+4.0);
-}
-ShiftedRayleighRV::ShiftedRayleighRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedrayleigh)
-{
-	u = passedParameter1;
-	x0 = passedParameter2;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 2) {
+		opserr << "ShiftedRayleigh RV requires 2 parameters, u and x0, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		u = 0;
+		x0 = 0;
+		
+	} else {
+		
+		u = passedParameters(0);
+		x0 = passedParameters(1);
+		
+	}
 }
 
 
@@ -85,9 +72,46 @@ ShiftedRayleighRV::~ShiftedRayleighRV()
 }
 
 
-void
-ShiftedRayleighRV::Print(OPS_Stream &s, int flag)
+const char *
+ShiftedRayleighRV::getType()
 {
+	return "SHIFTEDRAYLEIGH";
+}
+
+
+double 
+ShiftedRayleighRV::getMean()
+{
+	//double pi = 3.14159265358979;
+	return x0 + 0.5 * u * sqrt(pi);
+}
+
+
+double 
+ShiftedRayleighRV::getStdv()
+{
+	//double pi = 3.14159265358979;
+	return 0.5 * u * sqrt(4.0-pi);
+}
+
+
+const Vector &
+ShiftedRayleighRV::getParameters(void) {
+	static Vector temp(2);
+	temp(0) = u;
+	temp(1) = x0;
+	return temp;
+}
+
+
+int
+ShiftedRayleighRV::setParameters(double mean, double stdv)
+{
+	//double pi = 3.14159265358979;
+	u = 2.0 * stdv / sqrt(3.0*pi+4.0);
+	x0 = mean + stdv*sqrt(pi) / sqrt(3.0*pi+4.0);
+	
+	return 0;
 }
 
 
@@ -126,38 +150,10 @@ ShiftedRayleighRV::getInverseCDFvalue(double probValue)
 }
 
 
-const char *
-ShiftedRayleighRV::getType()
+void
+ShiftedRayleighRV::Print(OPS_Stream &s, int flag)
 {
-	return "SHIFTEDRAYLEIGH";
-}
-
-
-double 
-ShiftedRayleighRV::getMean()
-{
-	double pi = 3.14159265358979;
-	return x0 + 0.5 * u * sqrt(pi);
-}
-
-
-
-double 
-ShiftedRayleighRV::getStdv()
-{
-	double pi = 3.14159265358979;
-	return 0.5 * u * sqrt(4.0-pi);
-}
-
-
-double
-ShiftedRayleighRV::getParameter1()
-{
-  return u;
-}
-
-double
-ShiftedRayleighRV::getParameter2()
-{
-  return x0;
+	s << "ShiftedRayleigh RV #" << this->getTag() << endln;
+	s << "\tu = " << u << endln;
+	s << "\tx0 = " << x0 << endln;
 }

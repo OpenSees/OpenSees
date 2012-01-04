@@ -32,49 +32,38 @@
 //
 
 #include <LaplaceRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 LaplaceRV::LaplaceRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_laplace, passedStartValue)
+					 double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_laplace), startValue(0)
 {
-	alpha = passedMean;
-	beta = sqrt(2.0)/passedStdv;
+	int setp = setParameters(passedMean,passedStdv);
+	if (setp < 0)
+		opserr << "Error setting parameters in Laplace RV with tag " << this->getTag() << endln;
 }
-LaplaceRV::LaplaceRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_laplace, passedStartValue)
+
+
+LaplaceRV::LaplaceRV(int passedTag,
+				   const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_laplace), startValue(0)
 {
-	alpha = passedParameter1;
-	beta = passedParameter2;
-}
-LaplaceRV::LaplaceRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_laplace, passedMean)
-{
-	alpha = passedMean;
-	beta = sqrt(2.0)/passedStdv;
-}
-LaplaceRV::LaplaceRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_laplace)
-{
-	alpha = passedParameter1;
-	beta = passedParameter2;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 2) {
+		opserr << "Laplace RV requires 2 parameters, alpha and beta, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		alpha = 0;
+		beta = 0;
+		
+	} else {
+		
+		alpha = passedParameters(0);
+		beta = passedParameters(1);
+		
+	}
 }
 
 
@@ -83,9 +72,43 @@ LaplaceRV::~LaplaceRV()
 }
 
 
-void
-LaplaceRV::Print(OPS_Stream &s, int flag)
+const char *
+LaplaceRV::getType()
 {
+	return "LAPLACE";
+}
+
+
+double 
+LaplaceRV::getMean()
+{
+	return alpha;
+}
+
+
+double 
+LaplaceRV::getStdv()
+{
+	return sqrt(2.0)/beta;
+}
+
+
+const Vector &
+LaplaceRV::getParameters(void) {
+	static Vector temp(2);
+	temp(0) = alpha;
+	temp(1) = beta;
+	return temp;
+}
+
+
+int
+LaplaceRV::setParameters(double mean, double stdv)
+{
+	alpha = mean;
+	beta = sqrt(2.0)/stdv;
+	
+	return 0;
 }
 
 
@@ -117,36 +140,10 @@ LaplaceRV::getInverseCDFvalue(double rvValue)
 }
 
 
-const char *
-LaplaceRV::getType()
+void
+LaplaceRV::Print(OPS_Stream &s, int flag)
 {
-	return "LAPLACE";
-}
-
-
-double 
-LaplaceRV::getMean()
-{
-	return alpha;
-}
-
-
-
-double 
-LaplaceRV::getStdv()
-{
-	return sqrt(2.0)/beta;
-}
-
-
-double
-LaplaceRV::getParameter1()
-{
-  return alpha;
-}
-
-double
-LaplaceRV::getParameter2()
-{
-  return beta;
+	s << "Laplace RV #" << this->getTag() << endln;
+	s << "\talpha = " << alpha << endln;
+	s << "\tbeta = " << beta << endln;
 }

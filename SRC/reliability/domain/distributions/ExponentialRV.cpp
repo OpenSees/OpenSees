@@ -32,47 +32,36 @@
 //
 
 #include <ExponentialRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 ExponentialRV::ExponentialRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_exponential, passedStartValue)
+							 double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_exponential), startValue(0)
 {
-	// Note: this constructor is void.
-	opserr << "WARNING: This type of random variable is not uniquely defined by mean and stdv." << endln;
+	int setp = setParameters(passedMean,passedStdv);
+	if (setp < 0)
+		opserr << "Error setting parameters in Exponential RV with tag " << this->getTag() << endln;
 }
+
+
 ExponentialRV::ExponentialRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_exponential, passedStartValue)
+							 const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_exponential), startValue(0)
 {
-	lambda = passedParameter1;
-}
-ExponentialRV::ExponentialRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_exponential, passedMean)
-{
-	// Note: this constructor is void.
-	opserr << "WARNING: This type of random variable is not uniquely defined by mean and stdv." << endln;
-}
-ExponentialRV::ExponentialRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_exponential)
-{
-	lambda = passedParameter1;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 1) {
+		opserr << "Exponential RV requires 1 parameter, lambda, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		lambda = 0;
+		
+	} else {
+		
+		lambda = passedParameters(0);
+		
+	}
 }
 
 
@@ -81,9 +70,40 @@ ExponentialRV::~ExponentialRV()
 }
 
 
-void
-ExponentialRV::Print(OPS_Stream &s, int flag)
+const char *
+ExponentialRV::getType()
 {
+	return "EXPONENTIAL";
+}
+
+
+double 
+ExponentialRV::getMean()
+{
+	return 1.0/lambda;
+}
+
+
+double 
+ExponentialRV::getStdv()
+{
+	return 1.0/lambda;
+}
+
+
+const Vector &
+ExponentialRV::getParameters(void) {
+	static Vector temp(1);
+	temp(0) = lambda;
+	return temp;
+}
+
+
+int
+ExponentialRV::setParameters(double mean, double stdv)
+{
+	lambda = 1.0/mean;
+	return 0;
 }
 
 
@@ -122,30 +142,10 @@ ExponentialRV::getInverseCDFvalue(double probValue)
 }
 
 
-const char *
-ExponentialRV::getType()
+void
+ExponentialRV::Print(OPS_Stream &s, int flag)
 {
-	return "EXPONENTIAL";
+	s << "Exponential RV #" << this->getTag() << endln;
+	s << "\tlambda = " << lambda << endln;
 }
 
-
-double 
-ExponentialRV::getMean()
-{
-	return 1/lambda;
-}
-
-
-
-double 
-ExponentialRV::getStdv()
-{
-	return 1/lambda;
-}
-
-
-double
-ExponentialRV::getParameter1()
-{
-  return lambda;
-}

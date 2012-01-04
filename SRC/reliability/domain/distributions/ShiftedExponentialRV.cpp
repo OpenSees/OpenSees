@@ -32,49 +32,38 @@
 //
 
 #include <ShiftedExponentialRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 ShiftedExponentialRV::ShiftedExponentialRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedexponential, passedStartValue)
+								double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedexponential), startValue(0)
 {
-	lambda = 1/passedStdv;
-	x0 = passedMean - passedStdv;
+	int setp = setParameters(passedMean,passedStdv);
+	if (setp < 0)
+		opserr << "Error setting parameters in ShiftedExponential RV with tag " << this->getTag() << endln;
 }
-ShiftedExponentialRV::ShiftedExponentialRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedexponential, passedStartValue)
+
+
+ShiftedExponentialRV::ShiftedExponentialRV(int passedTag,
+						const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedexponential), startValue(0)
 {
-	lambda = passedParameter1;
-	x0 = passedParameter2;
-}
-ShiftedExponentialRV::ShiftedExponentialRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedexponential, passedMean)
-{
-	lambda = 1/passedStdv;
-	x0 = passedMean - passedStdv;
-}
-ShiftedExponentialRV::ShiftedExponentialRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedexponential)
-{
-	lambda = passedParameter1;
-	x0 = passedParameter2;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 2) {
+		opserr << "ShiftedExponential RV requires 2 parameters, lambda and x0, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		lambda = 0;
+		x0 = 0;
+		
+	} else {
+		
+		lambda = passedParameters(0);
+		x0 = passedParameters(1);
+		
+	}
 }
 
 
@@ -83,9 +72,43 @@ ShiftedExponentialRV::~ShiftedExponentialRV()
 }
 
 
-void
-ShiftedExponentialRV::Print(OPS_Stream &s, int flag)
+const char *
+ShiftedExponentialRV::getType()
 {
+	return "SHIFTEDEXPONENTIAL";
+}
+
+
+double 
+ShiftedExponentialRV::getMean()
+{
+	return x0 + 1/lambda;
+}
+
+
+double 
+ShiftedExponentialRV::getStdv()
+{
+	return 1/lambda;
+}
+
+
+const Vector &
+ShiftedExponentialRV::getParameters(void) {
+	static Vector temp(2);
+	temp(0) = lambda;
+	temp(1) = x0;
+	return temp;
+}
+
+
+int
+ShiftedExponentialRV::setParameters(double mean, double stdv)
+{
+	lambda = 1/stdv;
+	x0 = mean - stdv;
+	
+	return 0;
 }
 
 
@@ -124,36 +147,10 @@ ShiftedExponentialRV::getInverseCDFvalue(double probValue)
 }
 
 
-const char *
-ShiftedExponentialRV::getType()
+void
+ShiftedExponentialRV::Print(OPS_Stream &s, int flag)
 {
-	return "SHIFTEDEXPONENTIAL";
-}
-
-
-double 
-ShiftedExponentialRV::getMean()
-{
-	return x0 + 1/lambda;
-}
-
-
-
-double 
-ShiftedExponentialRV::getStdv()
-{
-	return 1/lambda;
-}
-
-
-double
-ShiftedExponentialRV::getParameter1()
-{
-  return lambda;
-}
-
-double
-ShiftedExponentialRV::getParameter2()
-{
-  return x0;
+	s << "ShiftedExponential RV #" << this->getTag() << endln;
+	s << "\tlambda = " << lambda << endln;
+	s << "\tx0 = " << x0 << endln;
 }

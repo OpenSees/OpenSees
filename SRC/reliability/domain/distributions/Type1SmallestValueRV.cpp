@@ -32,53 +32,38 @@
 //
 
 #include <Type1SmallestValueRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 Type1SmallestValueRV::Type1SmallestValueRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type1smallestvalue, passedStartValue)
+										   double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_type1smallestvalue), startValue(0)
 {
-	double gamma = 0.5772156649;
-	double pi = 3.14159265358979;
-	u = passedMean + gamma * passedStdv * sqrt(6.0) / pi;
-	alpha = pi / (passedStdv*sqrt(6.0));
+	int setp = setParameters(passedMean,passedStdv);
+	if (setp < 0)
+		opserr << "Error setting parameters in Type1SmallestValue RV with tag " << this->getTag() << endln;
 }
-Type1SmallestValueRV::Type1SmallestValueRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type1smallestvalue, passedStartValue)
+
+
+Type1SmallestValueRV::Type1SmallestValueRV(int passedTag,
+										   const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_type1smallestvalue), startValue(0)
 {
-	u = passedParameter1;
-	alpha = passedParameter2;
-}
-Type1SmallestValueRV::Type1SmallestValueRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type1smallestvalue, passedMean)
-{
-	double gamma = 0.5772156649;
-	double pi = 3.14159265358979;
-	u = passedMean + gamma * passedStdv * sqrt(6.0) / pi;
-	alpha = pi / (passedStdv*sqrt(6.0));
-}
-Type1SmallestValueRV::Type1SmallestValueRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type1smallestvalue)
-{
-	u = passedParameter1;
-	alpha = passedParameter2;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 2) {
+		opserr << "Type1SmallestValue RV requires 2 parameters, u and alpha, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		u = 0;
+		alpha = 0;
+		
+	} else {
+		
+		u = passedParameters(0);
+		alpha = passedParameters(1);
+		
+	}
 }
 
 
@@ -87,9 +72,47 @@ Type1SmallestValueRV::~Type1SmallestValueRV()
 }
 
 
-void
-Type1SmallestValueRV::Print(OPS_Stream &s, int flag)
+const char *
+Type1SmallestValueRV::getType()
 {
+	return "TYPE1SMALLESTVALUE";
+}
+
+
+double 
+Type1SmallestValueRV::getMean()
+{
+	//double gamma = 0.5772156649;
+	return u - euler/alpha;
+}
+
+
+double 
+Type1SmallestValueRV::getStdv()
+{
+	//double pi = 3.14159265358979;
+	return pi/(sqrt(6.0)*alpha);
+}
+
+
+const Vector &
+Type1SmallestValueRV::getParameters(void) {
+	static Vector temp(2);
+	temp(0) = u;
+	temp(1) = alpha;
+	return temp;
+}
+
+
+int
+Type1SmallestValueRV::setParameters(double mean, double stdv)
+{
+	//double gamma = 0.5772156649;
+	//double pi = 3.14159265358979;
+	u = mean + euler * stdv * sqrt(6.0) / pi;
+	alpha = pi / (stdv*sqrt(6.0));
+	
+	return 0;
 }
 
 
@@ -114,40 +137,12 @@ Type1SmallestValueRV::getInverseCDFvalue(double probValue)
 }
 
 
-const char *
-Type1SmallestValueRV::getType()
+void
+Type1SmallestValueRV::Print(OPS_Stream &s, int flag)
 {
-	return "TYPE1SMALLESTVALUE";
+	s << "Type1SmallestValue RV #" << this->getTag() << endln;
+	s << "\tu = " << u << endln;
+	s << "\talpha = " << alpha << endln;
 }
 
 
-double 
-Type1SmallestValueRV::getMean()
-{
-	double gamma = 0.5772156649;
-	return u - gamma/alpha;
-}
-
-
-
-double 
-Type1SmallestValueRV::getStdv()
-{
-	double pi = 3.14159265358979;
-	return pi/(sqrt(6.0)*alpha);
-}
-
-
-
-
-double
-Type1SmallestValueRV::getParameter1()  
-{
-  return u;
-}
-
-double
-Type1SmallestValueRV::getParameter2()  
-{
-  return alpha;
-}

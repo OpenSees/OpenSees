@@ -32,53 +32,38 @@
 //
 
 #include <Type1LargestValueRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 Type1LargestValueRV::Type1LargestValueRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type1largestvalue, passedStartValue)
+										 double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_type1largestvalue), startValue(0)
 {
-	double pi = 3.14159265358979;
-	double gamma = 0.5772156649;
-	u = passedMean - (gamma*sqrt(6.0)*passedStdv)/pi;
-	alpha = pi / ( sqrt(6.0) * passedStdv );
+	int setp = setParameters(passedMean,passedStdv);
+	if (setp < 0)
+		opserr << "Error setting parameters in Type1LargestValue RV with tag " << this->getTag() << endln;
 }
-Type1LargestValueRV::Type1LargestValueRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type1largestvalue, passedStartValue)
+
+
+Type1LargestValueRV::Type1LargestValueRV(int passedTag,
+										 const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_type1largestvalue), startValue(0)
 {
-	u = passedParameter1;
-	alpha = passedParameter2;
-}
-Type1LargestValueRV::Type1LargestValueRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type1largestvalue, passedMean)
-{
-	double pi = 3.14159265358979;
-	double gamma = 0.5772156649;
-	u = passedMean - (gamma*sqrt(6.0)*passedStdv)/pi;
-	alpha = pi / ( sqrt(6.0) * passedStdv );
-}
-Type1LargestValueRV::Type1LargestValueRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type1largestvalue)
-{
-	u = passedParameter1;
-	alpha = passedParameter2;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 2) {
+		opserr << "Type1LargestValue RV requires 2 parameters, u and alpha, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		u = 0;
+		alpha = 0;
+		
+	} else {
+		
+		u = passedParameters(0);
+		alpha = passedParameters(1);
+		
+	}
 }
 
 
@@ -87,9 +72,48 @@ Type1LargestValueRV::~Type1LargestValueRV()
 }
 
 
-void
-Type1LargestValueRV::Print(OPS_Stream &s, int flag)
+const char *
+Type1LargestValueRV::getType()
 {
+	return "TYPE1LARGESTVALUE";
+}
+
+
+double 
+Type1LargestValueRV::getMean()
+{
+	//double gamma = 0.5772156649;
+	return u+euler/alpha;
+}
+
+
+double 
+Type1LargestValueRV::getStdv()
+{
+	//double pi = 3.14159265358979;
+	return pi/(sqrt(6.0)*alpha);
+}
+
+
+const Vector &
+Type1LargestValueRV::getParameters(void) {
+	static Vector temp(2);
+	temp(0) = u;
+	temp(1) = alpha;
+	return temp;
+}
+
+
+int
+Type1LargestValueRV::setParameters(double mean, double stdv)
+{
+	//static const double pi = std::acos(-1.0);
+	//double eulergamma = 0.57721566490153286061;
+	
+	u = mean - (euler*sqrt(6.0)*stdv)/pi;
+	alpha = pi / ( sqrt(6.0) * stdv );
+	
+	return 0;
 }
 
 
@@ -114,40 +138,10 @@ Type1LargestValueRV::getInverseCDFvalue(double probValue)
 }
 
 
-const char *
-Type1LargestValueRV::getType()
+void
+Type1LargestValueRV::Print(OPS_Stream &s, int flag)
 {
-	return "TYPE1LARGESTVALUE";
-}
-
-
-double 
-Type1LargestValueRV::getMean()
-{
-	double gamma = 0.5772156649;
-	return u+gamma/alpha;
-}
-
-
-
-double 
-Type1LargestValueRV::getStdv()
-{
-	double pi = 3.14159265358979;
-	return pi/(sqrt(6.0)*alpha);
-}
-
-
-
-
-double
-Type1LargestValueRV::getParameter1() 
-{
-  return u;
-}
-
-double
-Type1LargestValueRV::getParameter2() 
-{
-  return alpha;
+	s << "Type1LargestValue RV #" << this->getTag() << endln;
+	s << "\tu = " << u << endln;
+	s << "\talpha = " << alpha << endln;
 }

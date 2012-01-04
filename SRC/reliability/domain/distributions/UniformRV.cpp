@@ -32,51 +32,38 @@
 //
 
 #include <UniformRV.h>
-#include <math.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 UniformRV::UniformRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_uniform, passedStartValue)
+					 double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_uniform), startValue(0)
 {
-	a = passedMean - sqrt(3.0)*passedStdv;
-	b = passedMean + sqrt(3.0)*passedStdv;
+	int setp = setParameters(passedMean,passedStdv);
+	if (setp < 0)
+		opserr << "Error setting parameters in Uniform RV with tag " << this->getTag() << endln;
 }
 
-UniformRV::UniformRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag,RANDOM_VARIABLE_uniform, passedStartValue)
-{
-	a = passedParameter1;
-	b = passedParameter2;
-}
 
-UniformRV::UniformRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_uniform, passedMean)
+UniformRV::UniformRV(int passedTag,
+					 const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_uniform), startValue(0)
 {
-	a = passedMean - sqrt(3.0)*passedStdv;
-	b = passedMean + sqrt(3.0)*passedStdv;
-}
-
-UniformRV::UniformRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag,RANDOM_VARIABLE_uniform)
-{
-	a = passedParameter1;
-	b = passedParameter2;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 2) {
+		opserr << "Uniform RV requires 2 parameters, a and b, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		a = 0;
+		b = 0;
+		
+	} else {
+		
+		a = passedParameters(0);
+		b = passedParameters(1);
+		
+	}
 }
 
 
@@ -85,12 +72,47 @@ UniformRV::~UniformRV()
 }
 
 
-void
-UniformRV::Print(OPS_Stream &s, int flag)
+const char *
+UniformRV::getType()
 {
-  s << "Uniform RV #" << this->getTag() << endln;
-  s << "\ta = " << a << endln;
-  s << "\tb = " << b << endln;
+	return "UNIFORM";
+}
+
+
+double 
+UniformRV::getMean()
+{
+	//return (a+b)/2.0;
+	return 0.5*(a+b);
+}
+
+
+double 
+UniformRV::getStdv()
+{
+	static const double oneOverTwoRootThree = 1.0/(2.0*sqrt(3.0));
+	
+	//return (b-a)/(2.0*sqrt(3.0));
+	return (b-a)*oneOverTwoRootThree;
+}
+
+
+const Vector &
+UniformRV::getParameters(void) {
+	static Vector temp(2);
+	temp(0) = a;
+	temp(1) = b;
+	return temp;
+}
+
+
+int
+UniformRV::setParameters(double mean, double stdv)
+{
+	a = mean - sqrt(3.0)*stdv;
+	b = mean + sqrt(3.0)*stdv;
+	
+	return 0;
 }
 
 
@@ -132,40 +154,10 @@ UniformRV::getInverseCDFvalue(double probValue)
 }
 
 
-const char *
-UniformRV::getType()
+void
+UniformRV::Print(OPS_Stream &s, int flag)
 {
-	return "UNIFORM";
-}
-
-
-double 
-UniformRV::getMean()
-{
-  //return (a+b)/2.0;
-  return 0.5*(a+b);
-}
-
-
-double 
-UniformRV::getStdv()
-{
-  static const double oneOverTwoRootThree = 1.0/(2.0*sqrt(3.0));
-
-  //return (b-a)/(2.0*sqrt(3.0));
-  return (b-a)*oneOverTwoRootThree;
-}
-
-
-
-double 
-UniformRV::getParameter1()  
-{
-  return a;
-}
-
-double
-UniformRV::getParameter2()  
-{
-  return b;
+	s << "Uniform RV #" << this->getTag() << endln;
+	s << "\ta = " << a << endln;
+	s << "\tb = " << b << endln;
 }

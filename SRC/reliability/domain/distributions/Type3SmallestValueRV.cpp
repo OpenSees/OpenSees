@@ -32,52 +32,30 @@
 //
 
 #include <Type3SmallestValueRV.h>
-#include <GammaRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 Type3SmallestValueRV::Type3SmallestValueRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type3smallestvalue, passedStartValue)
+										   const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_type3smallestvalue), startValue(0)
 {
-	// Note: this constructor is void.
-	opserr << "WARNING: This type of random variable is not uniquely defined by mean and stdv." << endln;
-}
-Type3SmallestValueRV::Type3SmallestValueRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type3smallestvalue, passedStartValue)
-{
-	epsilon = passedParameter1;
-	u = passedParameter2;
-	k = passedParameter3;
-}
-Type3SmallestValueRV::Type3SmallestValueRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type3smallestvalue, passedMean)
-{
-	// Note: this constructor is void.
-	opserr << "WARNING: This type of random variable is not uniquely defined by mean and stdv." << endln;
-}
-Type3SmallestValueRV::Type3SmallestValueRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type3smallestvalue)
-{
-	epsilon = passedParameter1;
-	u = passedParameter2;
-	k = passedParameter3;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 3) {
+		opserr << "Type3SmallestValue RV requires 3 parameters, epsilon and u and k, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		epsilon = 0;
+		u = 0;
+		k = 0;
+		
+	} else {
+		
+		epsilon	= passedParameters(0);
+		u = passedParameters(1);
+		k = passedParameters(2);
+		
+	}
 }
 
 
@@ -86,9 +64,39 @@ Type3SmallestValueRV::~Type3SmallestValueRV()
 }
 
 
-void
-Type3SmallestValueRV::Print(OPS_Stream &s, int flag)
+const char *
+Type3SmallestValueRV::getType()
 {
+	return "TYPE3SMALLESTVALUE";
+}
+
+
+double 
+Type3SmallestValueRV::getMean()
+{
+	double result;
+	result = epsilon + (u-epsilon) * gammaFunction(1.0+1.0/k);
+	return result;
+}
+
+
+
+double 
+Type3SmallestValueRV::getStdv()
+{
+	double a = gammaFunction(1.0+2.0/k);
+	double b = gammaFunction(1.0+1.0/k);
+	return (u-epsilon) * sqrt(a-b*b);
+}
+
+
+const Vector &
+Type3SmallestValueRV::getParameters(void) {
+	static Vector temp(3);
+	temp(0) = epsilon;
+	temp(1) = u;
+	temp(2) = k;
+	return temp;
 }
 
 
@@ -127,48 +135,13 @@ Type3SmallestValueRV::getInverseCDFvalue(double probValue)
 }
 
 
-const char *
-Type3SmallestValueRV::getType()
+void
+Type3SmallestValueRV::Print(OPS_Stream &s, int flag)
 {
-	return "TYPE3SMALLESTVALUE";
+	s << "Type3SmallestValue RV #" << this->getTag() << endln;
+	s << "\tepsilon = " << epsilon << endln;
+	s << "\tu = " << u << endln;
+	s << "\tk = " << k << endln;
 }
 
 
-double 
-Type3SmallestValueRV::getMean()
-{
-	double result;
-	GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
-	result = epsilon + (u-epsilon) * aGammaRV.gammaFunction(1.0+1.0/k);
-	return result;
-}
-
-
-
-double 
-Type3SmallestValueRV::getStdv()
-{
-	GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
-	double a = aGammaRV.gammaFunction(1.0+2.0/k);
-	double b = aGammaRV.gammaFunction(1.0+1.0/k);
-	return (u-epsilon) * sqrt(a-b*b);
-}
-
-
-double
-Type3SmallestValueRV::getParameter1()
-{
-  return epsilon;
-}
-
-double
-Type3SmallestValueRV::getParameter2()
-{
-  return u;
-}
-
-double
-Type3SmallestValueRV::getParameter3() 
-{
-  return k;
-}

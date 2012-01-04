@@ -32,99 +32,41 @@
 //
 
 #include <ChiSquareRV.h>
-#include <GammaRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 ChiSquareRV::ChiSquareRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_chisquare, passedStartValue)
+						 double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_chisquare), startValue(0)
 {
-	nu = 0.5*passedMean;
+	int setp = setParameters(passedMean,passedStdv);
+	if (setp < 0)
+		opserr << "Error setting parameters in ChiSquare RV with tag " << this->getTag() << endln;
 }
 
-ChiSquareRV::ChiSquareRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_chisquare, passedStartValue)
-{
-	nu = passedParameter1;
-}
 
-ChiSquareRV::ChiSquareRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_chisquare, passedMean)
+ChiSquareRV::ChiSquareRV(int passedTag,
+						 const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_chisquare), startValue(0)
 {
-	nu = 0.5*passedMean;
-}
-ChiSquareRV::ChiSquareRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_chisquare)
-{
-	nu = passedParameter1;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 1) {
+		opserr << "ChiSquare RV requires 1 parameter, nu, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		nu = 0;
+		
+	} else {
+		
+		nu = passedParameters(0);
+		
+	}
 }
 
 
 ChiSquareRV::~ChiSquareRV()
 {
-}
-
-
-void
-ChiSquareRV::Print(OPS_Stream &s, int flag)
-{
-}
-
-
-double
-ChiSquareRV::getPDFvalue(double rvValue)
-{
-	double result;
-	if ( 0.0 < rvValue ) {
-		GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
-		double a = aGammaRV.gammaFunction(0.5*nu);
-		result = pow(0.5*rvValue,0.5*nu-1.0)*exp(-0.5*rvValue)/(2.0*a);
-	}
-	else {
-		result = 0.0;
-	}
-	return result;
-}
-
-
-double
-ChiSquareRV::getCDFvalue(double rvValue)
-{
-	double result;
-	if ( 0.0 < rvValue ) {
-		GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
-		double a = aGammaRV.incompleteGammaFunction(0.5*nu,0.5*rvValue);
-		double b = aGammaRV.gammaFunction(0.5*nu);
-		result = a/b;
-	}
-	else {
-		result = 0.0;
-	}
-	return result;
-}
-
-
-double
-ChiSquareRV::getInverseCDFvalue(double rvValue)
-{
-	return 0.0;
 }
 
 
@@ -142,15 +84,71 @@ ChiSquareRV::getMean()
 }
 
 
-
 double 
 ChiSquareRV::getStdv()
 {
 	return sqrt(2*nu);
 }
 
-double
-ChiSquareRV::getParameter1()
+
+const Vector &
+ChiSquareRV::getParameters(void) {
+	static Vector temp(1);
+	temp(0) = nu;
+	return temp;
+}
+
+
+int
+ChiSquareRV::setParameters(double mean, double stdv)
 {
-  return nu;
+	nu = 0.5*mean;
+	
+	return 0;
+}
+
+
+double
+ChiSquareRV::getPDFvalue(double rvValue)
+{
+	double result;
+	if ( 0.0 < rvValue ) {
+		double a = gammaFunction(0.5*nu);
+		result = pow(0.5*rvValue,0.5*nu-1.0)*exp(-0.5*rvValue)/(2.0*a);
+	}
+	else {
+		result = 0.0;
+	}
+	return result;
+}
+
+
+double
+ChiSquareRV::getCDFvalue(double rvValue)
+{
+	double result;
+	if ( 0.0 < rvValue ) {
+		double a = incompleteGammaFunction(0.5*nu,0.5*rvValue);
+		double b = gammaFunction(0.5*nu);
+		result = a/b;
+	}
+	else {
+		result = 0.0;
+	}
+	return result;
+}
+
+
+double
+ChiSquareRV::getInverseCDFvalue(double rvValue)
+{
+	return 0.0;
+}
+
+
+void
+ChiSquareRV::Print(OPS_Stream &s, int flag)
+{
+	s << "ChiSquare RV #" << this->getTag() << endln;
+	s << "\tnu = " << nu << endln;
 }

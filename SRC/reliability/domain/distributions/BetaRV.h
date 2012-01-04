@@ -40,35 +40,31 @@ class BetaRV : public RandomVariable
 {
 
 public:
-	BetaRV(int tag, 
-			 double parameter1,
-			 double parameter2,
-			 double parameter3,
-			 double parameter4,
-			 double startValue);
-	BetaRV(int tag, 
-			 double parameter1,
-			 double parameter2,
-			 double parameter3,
-			 double parameter4);
+	BetaRV(int tag, const Vector &parameters);
 	~BetaRV();
-	void Print(OPS_Stream &s, int flag =0);
-	double getPDFvalue(double rvValue);
-	double getCDFvalue(double rvValue);
-	double getInverseCDFvalue(double probValue);
-	const char * getType();
+	
+	// pure virtual defining variable type and properties
+	const char* getType();
 	double getMean();
 	double getStdv();
-	double getParameter1();
-	double getParameter2();
-	double getParameter3();
-	double getParameter4();
-	double betaFunction(double passed_q, double passed_r);
-
+	const Vector &getParameters();
+	
+	// RV functionality
+	double getPDFvalue(double rvValue);
+	double getCDFvalue(double rvValue);
+	double getInverseCDFvalue(double rvValue); 
+	
+	// starting point methods
+	int setStartValue(double newVal) {startValue = newVal; return 0;}
+	double getStartValue() {return startValue;}
+	
+	// other
+	void Print(OPS_Stream &s, int flag = 0);
 
 protected:
 
 private:
+	double startValue;
 	double a;
 	double b;
 	double q;

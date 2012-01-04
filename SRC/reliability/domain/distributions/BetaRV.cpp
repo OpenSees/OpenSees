@@ -32,38 +32,31 @@
 //
 
 #include <BetaRV.h>
-#include <GammaRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 BetaRV::BetaRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_beta, passedStartValue)
+			   const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_beta), startValue(0)
 {
-	a = passedParameter1;
-	b = passedParameter2;
-	q = passedParameter3;
-	r = passedParameter4;
-}
-BetaRV::BetaRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_beta)
-{
-	a = passedParameter1;
-	b = passedParameter2;
-	q = passedParameter3;
-	r = passedParameter4;
-
-	this->setStartValue(getMean());
+	if (passedParameters.Size() != 4) {
+		opserr << "Beta RV requires 4 parameters, a b q and r, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		a = 0;
+		b = 0;
+		q = 0;
+		r = 0;
+		
+	} else {
+		
+		a = passedParameters(0);
+		b = passedParameters(1);
+		q = passedParameters(2);
+		r = passedParameters(3);
+	}
+	
 }
 
 
@@ -72,9 +65,35 @@ BetaRV::~BetaRV()
 }
 
 
-void
-BetaRV::Print(OPS_Stream &s, int flag)
+const char *
+BetaRV::getType()
 {
+	return "BETA";
+}
+
+
+double 
+BetaRV::getMean()
+{
+	return (a*r+b*q)/(q+r);
+}
+
+
+double 
+BetaRV::getStdv()
+{
+	return ((b-a)/(q+r)) * sqrt(q*r/(q+r+1));
+}
+
+
+const Vector &
+BetaRV::getParameters(void) {
+	static Vector temp(4);
+	temp(0) = a;
+	temp(1) = b;
+	temp(2) = q;
+	temp(3) = r;
+	return temp;
 }
 
 
@@ -191,79 +210,10 @@ BetaRV::getInverseCDFvalue(double probValue)
 }
 
 
-const char *
-BetaRV::getType()
+void
+BetaRV::Print(OPS_Stream &s, int flag)
 {
-	return "BETA";
-}
-
-
-double 
-BetaRV::getMean()
-{
-	return (a*r+b*q)/(q+r);
-}
-
-
-
-double 
-BetaRV::getStdv()
-{
-	return ((b-a)/(q+r)) * sqrt(q*r/(q+r+1));
-}
-
-
-double
-BetaRV::getParameter1()
-{
-  return a;
-}
-
-double
-BetaRV::getParameter2()
-{
-  return b;
-}
-
-double
-BetaRV::getParameter3()
-{
-  return q;
-}
-
-double
-BetaRV::getParameter4()
-{
-  return r;
-}
-
-
-
-double 
-BetaRV::betaFunction(double q, double r)
-{
-/*	OLD CODE: 
-	GammaRV *aGammaRV = new GammaRV(1, 0.0, 1.0, 0.0);
-	double par1,par2,par3;
-	par1 = aGammaRV->gammaFunction(q);
-	par2 = aGammaRV->gammaFunction(q);
-	par3 = aGammaRV->gammaFunction(q+r);
-	delete aGammaRV;
-	return par1*par2/par3;
-*/
-
-	// Matlab definition of the beta function:
-	//    y = exp(gammaln(q)+gammaln(r)-gammaln(q+r));
-	//    ... where gammaln(.) = ln(gamma(.))
-	// So, try this instead:
-	GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
-	double gammaq,gammar,gammaqpr;
-	gammaq = aGammaRV.gammaFunction(q);
-	gammar = aGammaRV.gammaFunction(r);
-	gammaqpr = aGammaRV.gammaFunction(q+r);
-	double loggammaq,loggammar,loggammaqpr;
-	loggammaq = log(gammaq);
-	loggammar = log(gammar);
-	loggammaqpr = log(gammaqpr);
-	return exp(loggammaq+loggammar-loggammaqpr);
+	s << "Beta RV #" << this->getTag() << endln;
+	s << "\ta = " << a << ", b = " << b << endln;
+	s << "\tq = " << q << ", r = " << r << endln;
 }

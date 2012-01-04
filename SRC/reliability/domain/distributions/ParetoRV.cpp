@@ -32,32 +32,27 @@
 //
 
 #include <ParetoRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <cmath>
+#include <Vector.h>
 
 ParetoRV::ParetoRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_pareto, passedStartValue)
+				   const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_pareto), startValue(0)
 {
-	k = passedParameter1;
-	u = passedParameter2;
-}
-ParetoRV::ParetoRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_pareto)
-{
-	k = passedParameter1;
-	u = passedParameter2;
-	this->setStartValue(getMean());
+	if (passedParameters.Size() != 2) {
+		opserr << "Pareto RV requires 2 parameters, k and u, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		k = 0;
+		u = 0;
+		
+	} else {
+		
+		k = passedParameters(0);
+		u = passedParameters(1);
+	}
+	
 }
 
 
@@ -66,9 +61,33 @@ ParetoRV::~ParetoRV()
 }
 
 
-void
-ParetoRV::Print(OPS_Stream &s, int flag)
+const char *
+ParetoRV::getType()
 {
+	return "PARETO";
+}
+
+
+double 
+ParetoRV::getMean()
+{
+	return k*u/(k-1);
+}
+
+
+double 
+ParetoRV::getStdv()
+{
+	return sqrt(k/(k-2))*(u/(k-1));
+}
+
+
+const Vector &
+ParetoRV::getParameters(void) {
+	static Vector temp(2);
+	temp(0) = k;
+	temp(1) = u;
+	return temp;
 }
 
 
@@ -107,35 +126,10 @@ ParetoRV::getInverseCDFvalue(double rvValue)
 }
 
 
-const char *
-ParetoRV::getType()
+void
+ParetoRV::Print(OPS_Stream &s, int flag)
 {
-	return "PARETO";
-}
-
-
-double 
-ParetoRV::getMean()
-{
-	return k*u/(k-1);
-}
-
-
-
-double 
-ParetoRV::getStdv()
-{
-	return sqrt(k/(k-2))*(u/(k-1));
-}
-
-double
-ParetoRV::getParameter1()
-{
-  return k;
-}
-
-double
-ParetoRV::getParameter2()  
-{
-  return u;
+	s << "Pareto RV #" << this->getTag() << endln;
+	s << "\tk = " << k << endln;
+	s << "\tu = " << u << endln;
 }

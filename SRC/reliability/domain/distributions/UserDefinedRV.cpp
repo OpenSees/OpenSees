@@ -32,32 +32,118 @@
 //
 
 #include <UserDefinedRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
 #include <Vector.h>
-
-UserDefinedRV::UserDefinedRV(int passedTag, const Vector &pxPoints,
-			     const Vector &pPDFpoints, double pStartValue)
-  :RandomVariable(passedTag, RANDOM_VARIABLE_userdefined, pStartValue),
-   xPoints(pxPoints), PDFpoints(pPDFpoints)
-{
-
-}
+#include <cmath>
 
 UserDefinedRV::UserDefinedRV(int passedTag, const Vector &pxPoints,
 			     const Vector &pPDFpoints)
   :RandomVariable(passedTag, RANDOM_VARIABLE_userdefined),
-   xPoints(pxPoints), PDFpoints(pPDFpoints)
+   xPoints(pxPoints), PDFpoints(pPDFpoints), startValue(0)
 {
-  this->setStartValue(getMean());
+	// This used to be in TclReliabilityBuilder
+	int numPoints = xPoints.Size();
+	
+	// Normalize the PDF
+	double sum = 0.0;
+	for ( int i=1; i<numPoints; i++ ) {
+		sum += 0.5 * (PDFpoints(i)+PDFpoints(i-1)) * (xPoints(i)-xPoints(i-1));
+	}
+	double diff;
+	if ( fabs(sum-1.0) < 1.0e-6) {
+		// It's normalized enough...!
+	}
+	else if (sum < 1.0) {
+		diff = (1.0-sum)/(xPoints(numPoints-1)-xPoints(0));
+		opserr << "WARNING: The PDF of random variable " << this->getTag() << " is normalized by " << endln
+		<< "         uniformly increasing the PDF values by " << diff << endln;
+		for (int i=0; i<numPoints; i++) {
+			PDFpoints(i) = PDFpoints(i) + diff;
+		}
+	}
+	else {
+		diff = (sum-1.0)/(xPoints(numPoints-1)-xPoints(0));
+		opserr << "WARNING: The PDF of random variable " << this->getTag() << " is normalized by " << endln
+		<< "         uniformly decreasing the PDF values by " << diff << endln;
+		for (int i=0; i<numPoints; i++) {
+			PDFpoints(i) = PDFpoints(i) - diff;
+		}
+	}
+	
+	// Check if the PDF became negative somewhere
+	for (int i=0; i<numPoints; i++) {
+		if ( PDFpoints(i) < 0.0 ) {
+			opserr << "ERROR: Some PDF values of random variable " << this->getTag() << endln
+			<< "became negative after normalization. " << endln;
+		}
+	}
+	
+	// Check that it has been normalized
+	sum = 0.0;
+	for ( int i=1; i<numPoints; i++ ) {
+		sum += 0.5 * (PDFpoints(i)+PDFpoints(i-1)) * (xPoints(i)-xPoints(i-1));
+	}
+	if ( fabs(1.0-sum) > 1.0e-6 ) {
+		opserr << "ERROR: Did not succeed in normalizing user-defined distribution." << endln;
+	}
+	
 }
 
 
 UserDefinedRV::~UserDefinedRV()
 {
 
+}
+
+
+const char *
+UserDefinedRV::getType()
+{
+	return "USERDEFINED";
+}
+
+
+double 
+UserDefinedRV::getMean()
+{
+	double sum = 0.0;
+	double a, b;
+	for ( int i=1; i<xPoints.Size(); i++ ) {
+		a = (PDFpoints(i)-PDFpoints(i-1))/(xPoints(i)-xPoints(i-1));
+		b = PDFpoints(i-1) - a * xPoints(i-1);
+		sum += a*(xPoints(i))*(xPoints(i))*(xPoints(i))/3.0
+			+  0.5*b*(xPoints(i))*(xPoints(i))
+			-  a*(xPoints(i-1))*(xPoints(i-1))*(xPoints(i-1))/3.0
+			-  0.5*b*(xPoints(i-1))*(xPoints(i-1));
+	}
+	return sum;
+}
+
+
+double 
+UserDefinedRV::getStdv()
+{
+	double sum = 0.0;
+	double a, b;
+	double mu = getMean();
+	for ( int i=1; i<xPoints.Size(); i++ ) {
+		a = (PDFpoints(i)-PDFpoints(i-1))/(xPoints(i)-xPoints(i-1));
+		b = PDFpoints(i-1) - a * xPoints(i-1);
+		double x1 = xPoints(i-1);
+		double x2 = xPoints(i);
+		sum += 0.25*a*x2*x2*x2*x2
+			-  2.0/3.0*mu*a*x2*x2*x2
+			+ mu*mu*b*x2
+			- mu*b*x2*x2
+			+ b*x2*x2*x2/3.0
+			+ 0.5*mu*mu*a*x2*x2
+			- 0.25*a*x1*x1*x1*x1
+			+ 2.0/3.0*mu*a*x1*x1*x1
+			- mu*mu*b*x1
+			+ mu*b*x1*x1
+			- b*x1*x1*x1/3.0
+			- 0.5*mu*mu*a*x1*x1;
+	}
+	return sqrt(sum);
 }
 
 
@@ -159,54 +245,3 @@ UserDefinedRV::getInverseCDFvalue(double p)
 }
 
 
-const char *
-UserDefinedRV::getType()
-{
-	return "USERDEFINED";
-}
-
-
-double 
-UserDefinedRV::getMean()
-{
-	double sum = 0.0;
-	double a, b;
-	for ( int i=1; i<xPoints.Size(); i++ ) {
-		a = (PDFpoints(i)-PDFpoints(i-1))/(xPoints(i)-xPoints(i-1));
-		b = PDFpoints(i-1) - a * xPoints(i-1);
-		sum += a*(xPoints(i))*(xPoints(i))*(xPoints(i))/3.0
-			+  0.5*b*(xPoints(i))*(xPoints(i))
-			-  a*(xPoints(i-1))*(xPoints(i-1))*(xPoints(i-1))/3.0
-			-  0.5*b*(xPoints(i-1))*(xPoints(i-1));
-	}
-	return sum;
-}
-
-
-
-double 
-UserDefinedRV::getStdv()
-{
-	double sum = 0.0;
-	double a, b;
-	double mu = getMean();
-	for ( int i=1; i<xPoints.Size(); i++ ) {
-		a = (PDFpoints(i)-PDFpoints(i-1))/(xPoints(i)-xPoints(i-1));
-		b = PDFpoints(i-1) - a * xPoints(i-1);
-		double x1 = xPoints(i-1);
-		double x2 = xPoints(i);
-		sum += 0.25*a*x2*x2*x2*x2
-			-  2.0/3.0*mu*a*x2*x2*x2
-			+ mu*mu*b*x2
-			- mu*b*x2*x2
-			+ b*x2*x2*x2/3.0
-			+ 0.5*mu*mu*a*x2*x2
-			- 0.25*a*x1*x1*x1*x1
-			+ 2.0/3.0*mu*a*x1*x1*x1
-			- mu*mu*b*x1
-			+ mu*b*x1*x1
-			- b*x1*x1*x1/3.0
-			- 0.5*mu*mu*a*x1*x1;
-	}
-	return sqrt(sum);
-}

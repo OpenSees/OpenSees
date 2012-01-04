@@ -40,39 +40,34 @@ class UniformRV : public RandomVariable
 {
 
 public:
-	UniformRV(int tag, 
-			 double mean,
-			 double stdv,
-			 double startValue);
-	UniformRV(int tag, 
-			 double parameter1,
-			 double parameter2,
-			 double parameter3,
-			 double parameter4,
-			 double startValue);
-	UniformRV(int tag, 
-			 double mean,
-			 double stdv);
-	UniformRV(int tag, 
-			 double parameter1,
-			 double parameter2,
-			 double parameter3,
-			 double parameter4);
+	UniformRV(int tag, double mean, double stdv);
+	UniformRV(int tag, const Vector &parameters);
 	~UniformRV();
-	void Print(OPS_Stream &s, int flag =0);
-	double getPDFvalue(double rvValue);
-	double getCDFvalue(double rvValue);
-	double getInverseCDFvalue(double probValue);
-	const char * getType();
+	
+	// pure virtual defining variable type and properties
+	const char* getType();
 	double getMean();
 	double getStdv();
-	double getParameter1();
-	double getParameter2();
+	const Vector &getParameters();
+	int setParameters(double mean, double stdv);
+	
+	// RV functionality
+	double getPDFvalue(double rvValue);
+	double getCDFvalue(double rvValue);
+	double getInverseCDFvalue(double rvValue); 
+	
+	// starting point methods
+	int setStartValue(double newVal) {startValue = newVal; return 0;}
+	double getStartValue() {return startValue;}
+	
+	// other
+	void Print(OPS_Stream &s, int flag = 0);
 
 
 protected:
 
 private:
+	double startValue;
 	double a;
 	double b;
 

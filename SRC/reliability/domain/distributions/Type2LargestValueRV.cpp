@@ -32,48 +32,37 @@
 //
 
 #include <Type2LargestValueRV.h>
-#include <GammaRV.h>
-#include <math.h>
-#include <string.h>
-#include <classTags.h>
-#include <OPS_Globals.h>
+#include <Vector.h>
+#include <cmath>
 
 Type2LargestValueRV::Type2LargestValueRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type2largestvalue, passedStartValue)
+										 double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_type2largestvalue), startValue(0)
 {
-	setParameters(passedMean,passedStdv);
+	int setp = setParameters(passedMean,passedStdv);
+	if (setp < 0)
+		opserr << "Error setting parameters in Type2LargestValue RV with tag " << this->getTag() << endln;
 }
-Type2LargestValueRV::Type2LargestValueRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4,
-		 double passedStartValue)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type2largestvalue, passedStartValue)
+
+
+Type2LargestValueRV::Type2LargestValueRV(int passedTag,
+										 const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_type2largestvalue), startValue(0)
 {
-	u = passedParameter1;
-	k = passedParameter2;
-}
-Type2LargestValueRV::Type2LargestValueRV(int passedTag, 
-		 double passedMean,
-		 double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type2largestvalue, passedMean)
-{
-	setParameters(passedMean,passedStdv);
-}
-Type2LargestValueRV::Type2LargestValueRV(int passedTag, 
-		 double passedParameter1,
-		 double passedParameter2,
-		 double passedParameter3,
-		 double passedParameter4)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type2largestvalue)
-{
-	u = passedParameter1;
-	k = passedParameter2;
-	this->setStartValue(getMean());
+	
+	if (passedParameters.Size() != 2) {
+		opserr << "Type2LargestValue RV requires 2 parameters, u and k, for RV with tag " <<
+		this->getTag() << endln;
+		
+		// this will create terminal errors
+		u = 0;
+		k = 0;
+		
+	} else {
+		
+		u = passedParameters(0);
+		k = passedParameters(1);
+	}
 }
 
 
@@ -82,9 +71,49 @@ Type2LargestValueRV::~Type2LargestValueRV()
 }
 
 
-void
-Type2LargestValueRV::Print(OPS_Stream &s, int flag)
+const char *
+Type2LargestValueRV::getType()
 {
+	return "TYPE2LARGESTVALUE";
+}
+
+
+double 
+Type2LargestValueRV::getMean()
+{
+	double result;
+	result = u * gammaFunction(1.0-1.0/k);
+	return result;
+}
+
+
+double 
+Type2LargestValueRV::getStdv()
+{
+	double a = gammaFunction(1.0-2.0/k);
+	double b = gammaFunction(1.0-1.0/k);
+	double result = u*sqrt(a-b*b);
+	return result;
+}
+
+
+const Vector &
+Type2LargestValueRV::getParameters(void) {
+	static Vector temp(2);
+	temp(0) = u;
+	temp(1) = k;
+	return temp;
+}
+
+
+int
+Type2LargestValueRV::setParameters(double mean, double stdv)
+{
+	double cov = stdv/mean;
+	double xk = 1.5;
+	function131(xk,cov,mean);
+	
+	return 0;
 }
 
 
@@ -123,66 +152,23 @@ Type2LargestValueRV::getInverseCDFvalue(double probValue)
 }
 
 
-const char *
-Type2LargestValueRV::getType()
-{
-	return "TYPE2LARGESTVALUE";
-}
-
-
-double 
-Type2LargestValueRV::getMean()
-{
-	double result;
-	GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
-	result = u * aGammaRV.gammaFunction(1.0-1.0/k);
-	return result;
-}
-
-
-
-double 
-Type2LargestValueRV::getStdv()
-{
-	GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
-	double a = aGammaRV.gammaFunction(1.0-2.0/k);
-	double b = aGammaRV.gammaFunction(1.0-1.0/k);
-	double result = u*sqrt(a-b*b);
-	return result;
-}
-
-
-double
-Type2LargestValueRV::getParameter1()
-{
-  return u;
-}
-
-double
-Type2LargestValueRV::getParameter2()
-{
-  return k;
-}
-
-
 void
-Type2LargestValueRV::setParameters(double mean, double stdv)
+Type2LargestValueRV::Print(OPS_Stream &s, int flag)
 {
-	double cov = stdv/mean;
-	double xk = 1.5;
-	function131(xk, cov,mean);
+	s << "Type2LargestValue RV #" << this->getTag() << endln;
+	s << "\tu = " << u << endln;
+	s << "\tk = " << k << endln;
 }
 
 
 void
 Type2LargestValueRV::function131(double xk, double cov, double mean)
 {
-	GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
 	xk = xk + 1.0;
 	double x1 = 1.0 - 1.0/xk;
 	double x2 = 1.0 - 2.0/xk;
-	double gm1 = aGammaRV.gammaFunction(x1);
-	double gm2 = aGammaRV.gammaFunction(x2);
+	double gm1 = gammaFunction(x1);
+	double gm2 = gammaFunction(x2);
 	double vy = sqrt(gm2/gm1/gm1 - 1.0);
 	if (cov-vy < 0.0) 
 		function131(xk,cov,mean);
@@ -191,15 +177,16 @@ Type2LargestValueRV::function131(double xk, double cov, double mean)
 	else 
 		function132(xk,cov,mean);
 }
+
+
 void
 Type2LargestValueRV::function132(double xk, double cov, double mean)
 {
 	xk = xk - 0.1;
 	double x1 = 1.0 - 1.0/xk;
 	double x2 = 1.0 - 2.0/xk;
-	GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
-	double gm1 = aGammaRV.gammaFunction(x1);
-	double gm2 = aGammaRV.gammaFunction(x2);
+	double gm1 = gammaFunction(x1);
+	double gm2 = gammaFunction(x2);
 	double vy = sqrt(gm2/gm1/gm1 - 1.0);
 	if (cov-vy < 0.0) 
 		function133(xk,cov,mean);
@@ -208,15 +195,16 @@ Type2LargestValueRV::function132(double xk, double cov, double mean)
 	else 
 		function132(xk,cov,mean);
 }
+
+
 void
 Type2LargestValueRV::function133(double xk, double cov, double mean)
 {
 	xk = xk + 0.01;
 	double x1 = 1.0 - 1.0/xk;
 	double x2 = 1.0 - 2.0/xk;
-	GammaRV aGammaRV(1, 0.0, 1.0, 0.0);
-	double gm1 = aGammaRV.gammaFunction(x1);
-	double gm2 = aGammaRV.gammaFunction(x2);
+	double gm1 = gammaFunction(x1);
+	double gm2 = gammaFunction(x2);
 	double vy = sqrt(gm2/gm1/gm1 - 1.0);
 	if (cov-vy < 0.0) 
 		function133(xk,cov,mean);
@@ -224,9 +212,9 @@ Type2LargestValueRV::function133(double xk, double cov, double mean)
 		function134(xk,cov,mean);
 	else 
 		function134(xk,cov,mean);
-
-
 }
+
+
 void
 Type2LargestValueRV::function134(double xk, double gm1, double mean)
 {
