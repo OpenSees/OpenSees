@@ -3182,6 +3182,13 @@ SRC/reliability/analysis/gFunction/TclGFunEvaluator.cpp -text
 SRC/reliability/analysis/gFunction/TclGFunEvaluator.h -text
 SRC/reliability/analysis/gFunction/TclMatlabGFunEvaluator.cpp -text
 SRC/reliability/analysis/gFunction/TclMatlabGFunEvaluator.h -text
+SRC/reliability/analysis/gradient/FiniteDifferenceGradient.cpp -text
+SRC/reliability/analysis/gradient/FiniteDifferenceGradient.h -text
+SRC/reliability/analysis/gradient/GradientEvaluator.cpp -text
+SRC/reliability/analysis/gradient/GradientEvaluator.h -text
+SRC/reliability/analysis/gradient/ImplicitGradient.cpp -text
+SRC/reliability/analysis/gradient/ImplicitGradient.h -text
+SRC/reliability/analysis/gradient/Makefile -text
 SRC/reliability/analysis/hessianApproximation/Hessian.cpp -text
 SRC/reliability/analysis/hessianApproximation/Hessian.h -text
 SRC/reliability/analysis/hessianApproximation/HessianApproximation.cpp -text
