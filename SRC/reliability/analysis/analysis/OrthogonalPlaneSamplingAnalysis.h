@@ -32,14 +32,14 @@
 #if !defined ORTHOGONALPLANESAMPLINGANALYSIS_H__
 #define      ORTHOGONALPLANESAMPLINGANALYSIS_H__
 
-#include "SamplingAnalysis.h"
-#include "ZeroFindingAlgorithm.h"
+#include <SamplingAnalysis.h>
+#include <ZeroFindingAlgorithm.h>
 
 #include <ReliabilityAnalysis.h>
 #include <ReliabilityDomain.h>
 #include <ProbabilityTransformation.h>
 #include <RandomNumberGenerator.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 
 #include <fstream>
 using std::ofstream;
@@ -60,7 +60,7 @@ public:
 	OrthogonalPlaneSamplingAnalysis(   Tcl_Interp *interp,
 		                ReliabilityDomain *passedReliabilityDomain,
 						ProbabilityTransformation *passedProbabilityTransformation,
-						GFunEvaluator *passedGFunEvaluator,
+						FunctionEvaluator *passedGFunEvaluator,
 						RandomNumberGenerator *passedRandomNumberGenerator,
 						int passedNumberOfSimulations,
 						int passedMaxNumOfIterations,
@@ -92,7 +92,7 @@ private:
 
  	ReliabilityDomain *theReliabilityDomain;
 	ProbabilityTransformation *theProbabilityTransformation;
-	GFunEvaluator *theGFunEvaluator;
+	FunctionEvaluator *theGFunEvaluator;
 	RandomNumberGenerator *theRandomNumberGenerator;
 	int maxNumOfIterations; // in zerofinding algorithm
 	double targetCOV;
