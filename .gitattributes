@@ -3417,6 +3417,15 @@ SRC/reliability/domain/modulatingFunction/ModulatingFunctionIter.cpp -text
 SRC/reliability/domain/modulatingFunction/ModulatingFunctionIter.h -text
 SRC/reliability/domain/modulatingFunction/TrapezoidalModulatingFunction.cpp -text
 SRC/reliability/domain/modulatingFunction/TrapezoidalModulatingFunction.h -text
+SRC/reliability/domain/performanceFunction/LimitStateFunction.cpp -text
+SRC/reliability/domain/performanceFunction/LimitStateFunction.h -text
+SRC/reliability/domain/performanceFunction/LimitStateFunctionIter.cpp -text
+SRC/reliability/domain/performanceFunction/LimitStateFunctionIter.h -text
+SRC/reliability/domain/performanceFunction/Makefile -text
+SRC/reliability/domain/performanceFunction/PerformanceFunction.cpp -text
+SRC/reliability/domain/performanceFunction/PerformanceFunction.h -text
+SRC/reliability/domain/performanceFunction/PerformanceFunctionIter.cpp -text
+SRC/reliability/domain/performanceFunction/PerformanceFunctionIter.h -text
 SRC/reliability/domain/spectrum/JonswapSpectrum.cpp -text
 SRC/reliability/domain/spectrum/JonswapSpectrum.h -text
 SRC/reliability/domain/spectrum/Makefile -text
