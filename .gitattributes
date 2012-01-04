@@ -3404,6 +3404,13 @@ SRC/reliability/domain/filter/StandardLinearOscillatorDisplacementFilter.cpp -te
 SRC/reliability/domain/filter/StandardLinearOscillatorDisplacementFilter.h -text
 SRC/reliability/domain/filter/StandardLinearOscillatorVelocityFilter.cpp -text
 SRC/reliability/domain/filter/StandardLinearOscillatorVelocityFilter.h -text
+SRC/reliability/domain/functionEvaluator/FunctionEvaluator.cpp -text
+SRC/reliability/domain/functionEvaluator/FunctionEvaluator.h -text
+SRC/reliability/domain/functionEvaluator/Makefile -text
+SRC/reliability/domain/functionEvaluator/MatlabEvaluator.cpp -text
+SRC/reliability/domain/functionEvaluator/MatlabEvaluator.h -text
+SRC/reliability/domain/functionEvaluator/TclEvaluator.cpp -text
+SRC/reliability/domain/functionEvaluator/TclEvaluator.h -text
 SRC/reliability/domain/modulatingFunction/ConstantModulatingFunction.cpp -text
 SRC/reliability/domain/modulatingFunction/ConstantModulatingFunction.h -text
 SRC/reliability/domain/modulatingFunction/GammaModulatingFunction.cpp -text
