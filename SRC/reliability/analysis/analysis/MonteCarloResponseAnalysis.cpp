@@ -40,7 +40,6 @@
 #include <NormalRV.h>
 #include <Vector.h>
 #include <Matrix.h>
-#include <NormalRV.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -125,17 +124,8 @@ int MonteCarloResponseAnalysis::analyze(){
 	Vector u(numRV);
 	Vector randomArray(numRV);
 
-	NormalRV *aStdNormRV = 0;
-	aStdNormRV = new NormalRV(1,0.0,1.0,0.0);
 	ofstream *outputFile = 0;
 
-
-	
-	// Check if computer ran out of memory
-	if (aStdNormRV==0) {
-		opserr << "MonteCarloResponseAnalysis::analyze() - out of memory while instantiating internal objects." << endln;
-		return -1;
-	}
 
 	
 	// Prepare output file
@@ -277,7 +267,6 @@ int MonteCarloResponseAnalysis::analyze(){
 	// Clean up
 	resultsOutputFile.close();
 //	delete theMatrixOperations;
-	delete aStdNormRV;
 
 	return 0;
 
