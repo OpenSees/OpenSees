@@ -159,7 +159,7 @@ double
 CorrelatedStandardNormal::getCDFowen(double b1, double b2, int popt)
 {
 	double cdf = 0.0;
-	static NormalRV uRV(1, 0.0, 1.0, 0.0);
+	static NormalRV uRV(1, 0.0, 1.0);
 	
 	// single integral form by Owen 1956
 	double thresh = 0.99;
@@ -188,7 +188,7 @@ double
 CorrelatedStandardNormal::getCDFsheppard(double b1, double b2, int popt)
 {
 	double cdf = 0.0;
-	static NormalRV uRV(1, 0.0, 1.0, 0.0);
+	static NormalRV uRV(1, 0.0, 1.0);
 	
 	// single integral form by Sheppard 1900
 	if (b1 >= 0 && b2 >= 0)
@@ -210,7 +210,7 @@ double
 CorrelatedStandardNormal::getCDFadaptive(double b1, double b2, int popt)
 {
 	double cdf = 0.0;
-	static NormalRV uRV(1, 0.0, 1.0, 0.0);
+	static NormalRV uRV(1, 0.0, 1.0);
 	double integral = 0.0;
 	
 	// adaptive quadrature from Quan
@@ -231,7 +231,7 @@ double
 CorrelatedStandardNormal::getCDF(double b1, double b2)
 {
 	double cdf = 0.0;
-	static NormalRV uRV(1, 0.0, 1.0, 0.0);
+	static NormalRV uRV(1, 0.0, 1.0);
 	int popt = 0;
 	
 	// treat several special cases before attempting to integrate numerically
