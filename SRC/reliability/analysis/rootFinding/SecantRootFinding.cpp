@@ -33,7 +33,7 @@
 
 #include <SecantRootFinding.h>
 #include <RootFinding.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <ProbabilityTransformation.h>
 #include <ReliabilityDomain.h>
 #include <RandomVariable.h>
@@ -44,7 +44,7 @@
 SecantRootFinding::SecantRootFinding(
 						ReliabilityDomain *passedReliabilityDomain,
 						ProbabilityTransformation *passedProbabilityTransformation,
-						GFunEvaluator *passedGFunEvaluator,
+						FunctionEvaluator *passedGFunEvaluator,
 						int passedMaxIter,
 						double ptol,
 						double pmaxStepLength)
@@ -152,19 +152,19 @@ SecantRootFinding::findLimitStateSurface(int space, double g, Vector pDirection,
 
 
 			// Evaluate limit-state function
-			result = theGFunEvaluator->runGFunAnalysis(theTempPoint);
+			result = theGFunEvaluator->runAnalysis(theTempPoint);
 			if (result < 0) {
 				opserr << "GFunVisualizationAnalysis::analyze() - " << endln
 					<< " could not run analysis to evaluate limit-state function. " << endln;
 				return -1;
 			}
-			result = theGFunEvaluator->evaluateG(theTempPoint);
+			result = theGFunEvaluator->evaluateExpression();
 			if (result < 0) {
 				opserr << "GFunVisualizationAnalysis::analyze() - " << endln
 					<< " could not tokenize limit-state function. " << endln;
 				return -1;
 			}
-			g_new = theGFunEvaluator->getG();
+			g_new = theGFunEvaluator->getResult();
 		}
 		else {
 			g_new = g;

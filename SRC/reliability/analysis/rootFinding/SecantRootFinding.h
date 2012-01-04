@@ -36,7 +36,7 @@
 
 #include <RootFinding.h>
 #include <ProbabilityTransformation.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <ReliabilityDomain.h>
 
 class SecantRootFinding : public RootFinding
@@ -45,7 +45,7 @@ class SecantRootFinding : public RootFinding
 public:
 	SecantRootFinding(ReliabilityDomain *theReliabilityDomain,
 					  ProbabilityTransformation *theProbabilityTransformation,
-					  GFunEvaluator *theGFunEvaluator,
+					  FunctionEvaluator *theGFunEvaluator,
 					  int maxIter,
 					  double tol,
 					  double maxStepLength);
@@ -60,7 +60,7 @@ protected:
 private:
 	ReliabilityDomain *theReliabilityDomain;
 	ProbabilityTransformation *theProbabilityTransformation;
-	GFunEvaluator *theGFunEvaluator;
+	FunctionEvaluator *theGFunEvaluator;
 
 	int maxIter;
 	double tol;
