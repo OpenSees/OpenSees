@@ -33,13 +33,13 @@
 #if !defined AFX_GRIDPLANE_H 
 #define AFX_GRIDPLANE_H 
 
-#include "ReliabilityDomainComponent.h"
+#include <ReliabilityDomainComponent.h>
 
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <ProbabilityTransformation.h>
 #include <ReliabilityDomain.h>
-#include "ExperimentalPointRule1D.h"
-#include "PrincipalAxis.h"
+#include <ExperimentalPointRule1D.h>
+#include <PrincipalAxis.h>
 
 class GridPlane  
 {
@@ -53,7 +53,7 @@ public:
 	GridPlane(int pTag, Vector * pDesignPt, 
 							   PrincipalAxis * firstAxis, PrincipalAxis * secondAxis, Matrix * pRotation, 
 							   ProbabilityTransformation * pProbabilityTransformation,
-							   GFunEvaluator * pGFunEvaluator );
+							   FunctionEvaluator * pGFunEvaluator );
 
 	virtual ~GridPlane();
 
@@ -99,7 +99,7 @@ private:
 	bool FEConvergence;
 	Matrix * gridValues;
 
-	GFunEvaluator * theGFunEvaluator;
+	FunctionEvaluator * theGFunEvaluator;
 	ProbabilityTransformation * theProbabilityTransformation;
 	Vector * theDesignPt; //Uspace
 

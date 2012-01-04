@@ -30,7 +30,7 @@
 //
  
 
-#include "GridPlane.h"
+#include <GridPlane.h>
 #include <math.h>
 
 //////////////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@
 GridPlane::GridPlane(int pTag, Vector * pDesignPt, 
 							   PrincipalAxis * firstAxis, PrincipalAxis * secondAxis, Matrix * pRotation, 
 							   ProbabilityTransformation * pProbabilityTransformation,
-							   GFunEvaluator * pGFunEvaluator )
+							   FunctionEvaluator * pGFunEvaluator )
 {
 	numOfPlane = pTag;
 
@@ -93,14 +93,14 @@ double GridPlane::getValueOnGrid(double p_x, double p_y)
 	theProbabilityTransformation->transform_u_to_x(u, x);		
  
 
-	int result = theGFunEvaluator->runGFunAnalysis(x);
+	int result = theGFunEvaluator->runAnalysis(x);
 	if (result < 0) {
 		opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 			<< " could not run analysis to evaluate limit-state function. " << endln;
 		FEConvergence = false;
 		return -1;
 	}
-	result = theGFunEvaluator->evaluateG(x);
+	result = theGFunEvaluator->evaluateExpression();
 		if (result < 0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 			<< " could not tokenize limit-state function. " << endln;
@@ -108,7 +108,7 @@ double GridPlane::getValueOnGrid(double p_x, double p_y)
 			return -1;
 
 	}
-    double gFunctionValue = theGFunEvaluator->getG();
+    double gFunctionValue = theGFunEvaluator->getResult();
 
 	return gFunctionValue;
 }
@@ -364,25 +364,29 @@ double GridPlane::getValueG2OnGrid(double p_x, double p_y, double valueOfG, doub
 		Vector x;
 		theProbabilityTransformation->transform_u_to_x(u, x);
 
-		int result = theGFunEvaluator->runGFunAnalysis(x);
+		int result = theGFunEvaluator->runAnalysis(x);
 		if (result < 0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not run analysis to evaluate limit-state function. " << endln;
 			FEConvergence = false;
 			exit(-1);
 		}
-		result = theGFunEvaluator->evaluateG(x);
+		result = theGFunEvaluator->evaluateExpression();
 			if (result < 0) {
 				opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not tokenize limit-state function. " << endln;
 			exit(-1);
 		}
-		valueOfG = theGFunEvaluator->getG(); 
-		gFunctionValue2 = theGFunEvaluator->getG2(valueOfG, littleDt);
-		gFunctionValue2 -= valueOfG;
+		valueOfG = theGFunEvaluator->getResult(); 
+		// This needs to be fixed -- MHS 10/7/2011
+		//gFunctionValue2 = theGFunEvaluator->getG2(valueOfG, littleDt);
+		//gFunctionValue2 -= valueOfG;
+		gFunctionValue2 = valueOfG; // So it will compile -- MHS
 	}
 	else {
-		gFunctionValue2 = theGFunEvaluator->getG2(valueOfG, littleDt);
+		// This needs to be fixed -- MHS 10/7/2011
+	  //gFunctionValue2 = theGFunEvaluator->getG2(valueOfG, littleDt);
+	  gFunctionValue2 = valueOfG; // So it will compile -- MHS
 	}
 
 	
