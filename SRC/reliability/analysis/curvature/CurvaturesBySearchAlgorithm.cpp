@@ -71,16 +71,17 @@ CurvaturesBySearchAlgorithm::computeCurvatures(ReliabilityDomain *theReliability
 	double sumSquared;
 	double norm_uLastMinus_u;
 
+	int nrv = theReliabilityDomain->getNumberOfRandomVariables();
+
 	// "Download" limit-state function from reliability domain
 	int lsf = theReliabilityDomain->getTagOfActiveLimitStateFunction();
 	LimitStateFunction *theLimitStateFunction = 
 		theReliabilityDomain->getLimitStateFunctionPtr(lsf);
 
 	// The design point in the original space
-	const Vector &x_star = theLimitStateFunction->getFORM_x();
-
-	// Number of random variables
-	int nrv = x_star.Size();
+	// Recorders needed -- MHS 10/7/2011
+	//const Vector &x_star = theLimitStateFunction->getFORM_x();
+	Vector x_star(nrv);
 
 	// Declare vector to store all principal axes
 	Vector principalAxes( nrv * numberOfCurvatures );
@@ -88,22 +89,28 @@ CurvaturesBySearchAlgorithm::computeCurvatures(ReliabilityDomain *theReliability
 	// Start point of new searches: Perturb x^star by 10% of each standard deviation
 	Vector startPoint(nrv);
 	RandomVariable *aRandomVariable;
-	int numberOfRandomVariables = theReliabilityDomain->getNumberOfRandomVariables();
-	int i;
-	for (i=0; i<nrv; i++) {
+	for (int i=0; i<nrv; i++) {
 		aRandomVariable = theReliabilityDomain->getRandomVariablePtr(i+1);
 		startPoint(i) = aRandomVariable->getStartValue();
 	}
 
 	// Compute curvatures by repeated searches
-	for (i=0; i<numberOfCurvatures; i++) {
+	for (int i=0; i<numberOfCurvatures; i++) {
 
 		// Get hold of 'u', 'alpha' and search direction at the two last steps
+	  // Recorders needed -- MHS /10/7/2011
+	  /*
 	  const Vector &last_u = theLimitStateFunction->getFORM_u();
 	  const Vector &secondLast_u = theLimitStateFunction->getSecondLast_u();
 	  const Vector &lastAlpha = theLimitStateFunction->getFORM_alpha();
 	  const Vector &secondLastAlpha = theLimitStateFunction->getSecondLast_alpha();
 	  const Vector &lastDirection = theLimitStateFunction->getLastSearchDirection();
+	  */
+	  Vector last_u(nrv);
+	  Vector secondLast_u(nrv);
+	  Vector lastAlpha(nrv);
+	  Vector secondLastAlpha(nrv);
+	  Vector lastDirection(nrv);
 
 		// Compute curvature according to Der Kiureghian & De Stefano (1992), Eq.26:
 
