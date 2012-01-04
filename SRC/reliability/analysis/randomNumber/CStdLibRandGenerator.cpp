@@ -104,7 +104,7 @@ CStdLibRandGenerator::generate_nIndependentStdNormalNumbers(int n, int seedIn)
 	int j;
 	int randomNumberBetween0AndRAND_MAX;
 	double randomNumberBetween0And1;
-	static NormalRV aStdNormRV(1,0.0,1.0,0.0);
+	static NormalRV aStdNormRV(1,0.0,1.0);
 
 	if (generatedNumbers == 0) {
 		generatedNumbers = new Vector(n);
@@ -194,7 +194,7 @@ CStdLibRandGenerator::generate_singleUniformNumber(double lower, double upper)
 double
 CStdLibRandGenerator::generate_singleStdNormalNumber(void)
 {
-	static NormalRV aStdNormRV(1,0.0,1.0,0.0);
+	static NormalRV aStdNormRV(1,0.0,1.0);
 
 	if(seed==0) {
 		seed=time(NULL);
