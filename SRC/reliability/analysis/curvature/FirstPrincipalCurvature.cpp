@@ -58,11 +58,20 @@ FirstPrincipalCurvature::computeCurvatures(ReliabilityDomain *theReliabilityDoma
 	LimitStateFunction *theLimitStateFunction = 
 		theReliabilityDomain->getLimitStateFunctionPtr(lsf);
 
+	int nrv = theReliabilityDomain->getNumberOfRandomVariables();
+
 	// Get hold of 'u' and 'alpha' at the two last steps
+	// Recorders needed -- MHS 10/7/2011
+	/*
 	const Vector &last_u = theLimitStateFunction->getFORM_u();
 	const Vector &secondLast_u = theLimitStateFunction->getSecondLast_u();
 	const Vector &lastAlpha = theLimitStateFunction->getFORM_alpha();
 	const Vector &secondLastAlpha = theLimitStateFunction->getSecondLast_alpha();
+	*/
+	Vector last_u(nrv);
+	Vector secondLast_u(nrv);
+	Vector lastAlpha(nrv);
+	Vector secondLastAlpha(nrv);
 
 	// Compute curvature according to Der Kiureghian & De Stefano (1992), Eq.26:
 
