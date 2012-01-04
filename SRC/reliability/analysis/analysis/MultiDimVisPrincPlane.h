@@ -34,7 +34,7 @@
 #define AFX_MULTIDIMVISPRINCPLANE_H
 
 
-#include "GFunVisualizationAnalysis.h"
+#include <GFunVisualizationAnalysis.h>
 
 // command: MultiDimVisualPrinPlane -funSurf function -designPt dp.out  -output vis.out  -ndir $n <gridInfo {0  minY  maxY nPts0 1 minX1  maxX1 nPts1 2 minX2  maxX2 nPts2 ...}>
  //command: MultiDimVisualPrinPlane -funSurf surface -designPt dp.out  -output vis.out -ndir $n <gridInfo {} -timevariant -littleDt dt> //not yet implemented
@@ -49,10 +49,10 @@ public:
 	int setGridInfo( Vector * gridInfo, int pNumOfPPlane);
 	int analyze();
 	MultiDimVisPrincPlane(     ReliabilityDomain *passedReliabilityDomain,
-					GFunEvaluator *passedGFunEvaluator,
+					FunctionEvaluator *passedGFunEvaluator,
 					ProbabilityTransformation *passedProbabilityTransformation,
 					char *passedOutputFileName,
-					GradGEvaluator * passedGradGEvaluator,Vector * DesignPtr,int pNumOfPPlane, int type, 
+					GradientEvaluator * passedGradGEvaluator,Vector * DesignPtr,int pNumOfPPlane, int type, 
 					Vector *pVector,Tcl_Interp *passedTclInterp, 
 					Matrix * passedHessian, char * passedHessianFile, int pAnalysisType, double pLittleDt);
 	virtual ~MultiDimVisPrincPlane();
@@ -65,10 +65,10 @@ private:
 	char  * HessianFileName;
 	Tcl_Interp * theInterp;
 	Vector * theDesignPtXSpace;
-	GradGEvaluator * theGradGEvaluator;
+	GradientEvaluator * theGradGEvaluator;
 	Matrix * HessianMatrix;
 	Vector * theDesignPoint; //U space
-	GFunEvaluator * theGFunEvaluator;
+	FunctionEvaluator * theGFunEvaluator;
 	ProbabilityTransformation * theProbabilityTransformation;
 	char outputFileName[20];
 	ReliabilityDomain * theReliabilityDomain;

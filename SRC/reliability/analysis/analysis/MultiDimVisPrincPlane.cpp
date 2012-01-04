@@ -30,10 +30,10 @@
 //
  
 
-#include "MultiDimVisPrincPlane.h"
-#include  "Matrix.h"
-#include  "Vector.h"
-#include "MatrixOperations.h"
+#include <MultiDimVisPrincPlane.h>
+#include <Matrix.h>
+#include <Vector.h>
+#include <MatrixOperations.h>
 #include <ostream>
 #include <math.h>
 
@@ -48,10 +48,10 @@ void itoa(int n, char *s, int base);
 
 MultiDimVisPrincPlane::MultiDimVisPrincPlane(
                     ReliabilityDomain *passedReliabilityDomain,
-					GFunEvaluator *passedGFunEvaluator,
+					FunctionEvaluator *passedGFunEvaluator,
 					ProbabilityTransformation *passedProbabilityTransformation,
 					char *passedOutputFileName,
-					GradGEvaluator * passedGradGEvaluator, Vector * pDesignPt, int numPPlane, int pType, Vector *pVector,Tcl_Interp *passedTclInterp, 
+					GradientEvaluator * passedGradGEvaluator, Vector * pDesignPt, int numPPlane, int pType, Vector *pVector,Tcl_Interp *passedTclInterp, 
 					Matrix * passedHessian, char * passedHessianFile, int pAnalysisType, double pLittleDt
 					): ReliabilityAnalysis()
 {
