@@ -32,9 +32,9 @@
 #if !defined(GuConte_PRINCIPALPLANE)
 #define GuConte_PRINCIPALPLANE
 
-#include "ReliabilityDomainComponent.h"
+#include <ReliabilityDomainComponent.h>
 
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <ProbabilityTransformation.h>
 #include <ReliabilityDomain.h>
 class PrincipalPlane 
@@ -43,7 +43,7 @@ public:
 	PrincipalPlane(int pTag, Vector * pDesignPt, 
 		       Vector * pEigenVector, Matrix * pRotation, 
 		       ProbabilityTransformation * pProbabilityTransformation,
-		       GFunEvaluator *, double);
+		       FunctionEvaluator *, double);
 	~PrincipalPlane();
 
 	int setGridValueG2(int i, int j, double value);
@@ -79,7 +79,7 @@ private:
 	Matrix * gridValues;
 	Matrix * gridValuesG2;
 	double theCurvature;
-	GFunEvaluator * theGFunEvaluator;
+	FunctionEvaluator * theGFunEvaluator;
 	ProbabilityTransformation * theProbabilityTransformation;
 	Vector * theDesignPt;
 	int numOfPlane;

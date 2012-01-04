@@ -29,14 +29,14 @@
 // Written by  Quan Gu UCSD
 //
 
-#include "PrincipalPlane.h"
-# include "Matrix.h"
+#include <PrincipalPlane.h>
+#include <Matrix.h>
 #include <math.h>
 
 PrincipalPlane::PrincipalPlane(int pTag, Vector * pDesignPt, 
 			       Vector * pEigenVector, Matrix * pRotation, 
 			       ProbabilityTransformation * pProbabilityTransformation,
-			       GFunEvaluator * pGFunEvaluator, double pCurv)
+			       FunctionEvaluator * pGFunEvaluator, double pCurv)
 {
 	if (pDesignPt !=0)
 		theDesignPt=new Vector(*pDesignPt);
@@ -117,20 +117,20 @@ double PrincipalPlane::getValueOnGrid(double p_x, double p_y)
   
   // ----remove sensitivity algorithm ---
   
-  int  result = theGFunEvaluator->runGFunAnalysis(x);
+  int  result = theGFunEvaluator->runAnalysis(x);
   if (result < 0) {
     opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 	   << " could not run analysis to evaluate limit-state function. " << endln;
     FEConvergence = false;
     return -1;
   }
-  result = theGFunEvaluator->evaluateG(x);
+  result = theGFunEvaluator->evaluateExpression();
   if (result < 0) {
     opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 	   << " could not tokenize limit-state function. " << endln;
     exit(-1);
   }
-  double gFunctionValue = theGFunEvaluator->getG();
+  double gFunctionValue = theGFunEvaluator->getResult();
   
   return gFunctionValue;
 }
@@ -369,25 +369,29 @@ double PrincipalPlane::getValueG2OnGrid(double p_x, double p_y, double valueOfG,
 		  return -1;
 		}
 
-		result = theGFunEvaluator->runGFunAnalysis(x);
+		result = theGFunEvaluator->runAnalysis(x);
 		if (result < 0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not run analysis to evaluate limit-state function. " << endln;
 			FEConvergence = false;
 			exit(-1);
 		}
-		result = theGFunEvaluator->evaluateG(x);
+		result = theGFunEvaluator->evaluateExpression();
 			if (result < 0) {
 				opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not tokenize limit-state function. " << endln;
 			exit(-1);
 		}
-		valueOfG = theGFunEvaluator->getG(); 
-		gFunctionValue2 = theGFunEvaluator->getG2(valueOfG, littleDt);
-		gFunctionValue2 -= valueOfG;
+		valueOfG = theGFunEvaluator->getResult(); 
+		// This needs to be fixed -- MHS 10/7/2011
+		//gFunctionValue2 = theGFunEvaluator->getG2(valueOfG, littleDt);
+		//gFunctionValue2 -= valueOfG;
+		gFunctionValue2 = valueOfG; // So it compiles
 	}
 	else {
-		gFunctionValue2 = theGFunEvaluator->getG2(valueOfG, littleDt);
+	  // This needs to be fixed -- MHS 10/7/2011
+	  //gFunctionValue2 = theGFunEvaluator->getG2(valueOfG, littleDt);
+	  gFunctionValue2 = valueOfG;
 	}
 
 	
