@@ -219,7 +219,7 @@ double
 MVNcdf::MVNcdffunc(const Vector &allbeta, const Matrix &rhoin, double modifier)
 {
 	int m = allbeta.Size();
-	static NormalRV uRV(1, 0.0, 1.0, 0.0);
+	static NormalRV uRV(1, 0.0, 1.0);
 	Vector beta(m);
 	Matrix rho(m,m);
 	int i,j,result;

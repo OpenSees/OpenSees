@@ -220,7 +220,7 @@ double
 SCIS::SCISfunc(const Vector &allbeta, const Matrix &rhoin, double modifier)
 {
 	int n = allbeta.Size();
-	static NormalRV uRV(1, 0.0, 1.0, 0.0);
+	static NormalRV uRV(1, 0.0, 1.0);
 	Vector beta(n);
 	Matrix rho(n,n);
 	int i,ii,j,k,N;
