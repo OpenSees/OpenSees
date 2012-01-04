@@ -36,8 +36,8 @@
 
 
 #include <ProbabilityTransformation.h>
-#include <GFunEvaluator.h>
-#include <GradGEvaluator.h>
+#include <FunctionEvaluator.h>
+#include <GradientEvaluator.h>
 #include <HessianApproximation.h>
 #include <ReliabilityDomain.h>
 #include <Matrix.h>
@@ -50,8 +50,8 @@ public:
   Hessian(int size,
 	  ReliabilityDomain *passedReliabilityDomain,
 	  ProbabilityTransformation *,
-	  GFunEvaluator *passedGFunEvaluator,
-	  GradGEvaluator *passedGradGEvaluator,
+	  FunctionEvaluator *passedGFunEvaluator,
+	  GradientEvaluator *passedGradGEvaluator,
 	  double tol);
   
   ~Hessian();
@@ -99,8 +99,8 @@ public:
   Matrix * theHessian;   // in U space
   Matrix * theReducedHessian;   // in U space
   ProbabilityTransformation * theProbabilityTransformation;
-  GFunEvaluator * theGFunEvaluator;
-  GradGEvaluator * theGradGEvaluator;
+  FunctionEvaluator * theGFunEvaluator;
+  GradientEvaluator * theGradGEvaluator;
 };
 
 #endif // !defined HESSIAN_H

@@ -30,7 +30,7 @@
 //
  
 
-#include "Hessian.h"
+#include <Hessian.h>
 //#include <fstream>
 //#include <iomanip>
 #include <iostream>
@@ -49,8 +49,8 @@ using std::ios;
 
 Hessian::Hessian(int pSize,ReliabilityDomain *passedReliabilityDomain, 
 		 ProbabilityTransformation *passedProbabilityTransformation,
-		 GFunEvaluator *passedGFunEvaluator,
-		 GradGEvaluator *passedGradGEvaluator, double tol)
+		 FunctionEvaluator *passedGFunEvaluator,
+		 GradientEvaluator *passedGradGEvaluator, double tol)
 {
   theProbabilityTransformation = passedProbabilityTransformation;
   theReliabilityDomain = passedReliabilityDomain;
@@ -221,30 +221,30 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 	//jacobian_u_x.addMatrix(0.0,theProbabilityTransformation->getJacobian_u_x(),1.0);
 	theProbabilityTransformation->getJacobian_u_to_x(x, jacobian_u_x);	
 
-	result = theGFunEvaluator->runGFunAnalysis(x);
+	result = theGFunEvaluator->runAnalysis(x);
 	if (result < 0) {
 		opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 			<< " could not run analysis to evaluate limit-state function. " << endln;
 		return -1;
 	}
-	result = theGFunEvaluator->evaluateG(x);
+	result = theGFunEvaluator->evaluateExpression();
 	if (result < 0) {
 		opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 			<< " could not tokenize limit-state function. " << endln;
 		return -1;
 	}
-	double gFunctionValue = theGFunEvaluator->getG();
+	double gFunctionValue = theGFunEvaluator->getResult();
 
 
 
 	// Gradient in original space
-	result = theGradGEvaluator->computeGradG(gFunctionValue,x);
+	result = theGradGEvaluator->computeGradient(gFunctionValue,x);
 	if (result < 0) {
 		opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 			<< " could not compute gradients of the limit-state function. " << endln;
 		return -1;
 	}
-	Vector gradientOfgFunction = theGradGEvaluator->getGradG();
+	Vector gradientOfgFunction = theGradGEvaluator->getGradient();
 
 	
 /*	debug.precision(16);
@@ -336,27 +336,27 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 		  return -1;
 		}
 
-		result = theGFunEvaluator->runGFunAnalysis(x);
+		result = theGFunEvaluator->runAnalysis(x);
 				if (result < 0) {
 					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 						<< " could not run analysis to evaluate limit-state function. " << endln;
 					return -1;
 				}
-		result = theGFunEvaluator->evaluateG(x);
+		result = theGFunEvaluator->evaluateExpression();
 				if (result < 0) {
 					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 						<< " could not tokenize limit-state function. " << endln;
 					return -1;
 				}
-    	gFunctionValue = theGFunEvaluator->getG();
+    	gFunctionValue = theGFunEvaluator->getResult();
 		// Gradient in original space
-		result = theGradGEvaluator->computeGradG(gFunctionValue,x);
+		result = theGradGEvaluator->computeGradient(gFunctionValue,x);
 				if (result < 0) {
 					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 						<< " could not compute gradients of the limit-state function. " << endln;
 					return -1;
 				}
-			gradientOfgFunction = theGradGEvaluator->getGradG();
+			gradientOfgFunction = theGradGEvaluator->getGradient();
 			// Gradient in standard normal space
 
 		gradientInStandardNormalSpace = jacobian_x_u ^ gradientOfgFunction;
@@ -838,27 +838,27 @@ int Hessian::refineHessian(int time, int colOfHessian)
       return -1;
     }
 
-		result = theGFunEvaluator->runGFunAnalysis(x);
+		result = theGFunEvaluator->runAnalysis(x);
 				if (result < 0) {
 					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 						<< " could not run analysis to evaluate limit-state function. " << endln;
 					return -1;
 				}
-		result = theGFunEvaluator->evaluateG(x);
+		result = theGFunEvaluator->evaluateExpression();
 				if (result < 0) {
 					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 						<< " could not tokenize limit-state function. " << endln;
 					return -1;
 				}
-    double	gFunctionValue = theGFunEvaluator->getG();
+    double	gFunctionValue = theGFunEvaluator->getResult();
 		// Gradient in original space
-		result = theGradGEvaluator->computeGradG(gFunctionValue,x);
+		result = theGradGEvaluator->computeGradient(gFunctionValue,x);
 				if (result < 0) {
 					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 						<< " could not compute gradients of the limit-state function. " << endln;
 					return -1;
 				}
-			gradientOfgFunction = theGradGEvaluator->getGradG();
+			gradientOfgFunction = theGradGEvaluator->getGradient();
 			// Gradient in standard normal space
 
 	
@@ -914,27 +914,27 @@ int Hessian::refineHessian(int time, int colOfHessian)
 		}
 
 
-			result = theGFunEvaluator->runGFunAnalysis(x);
+			result = theGFunEvaluator->runAnalysis(x);
 					if (result < 0) {
 						opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 							<< " could not run analysis to evaluate limit-state function. " << endln;
 						return -1;
 					}
-			result = theGFunEvaluator->evaluateG(x);
+			result = theGFunEvaluator->evaluateExpression();
 					if (result < 0) {
 						opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 							<< " could not tokenize limit-state function. " << endln;
 						return -1;
 					}
-    		gFunctionValue = theGFunEvaluator->getG();
+    		gFunctionValue = theGFunEvaluator->getResult();
 			// Gradient in original space
-			result = theGradGEvaluator->computeGradG(gFunctionValue,x);
+			result = theGradGEvaluator->computeGradient(gFunctionValue,x);
 					if (result < 0) {
 						opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 							<< " could not compute gradients of the limit-state function. " << endln;
 						return -1;
 					}
-				gradientOfgFunction = theGradGEvaluator->getGradG();
+				gradientOfgFunction = theGradGEvaluator->getGradient();
 				// Gradient in standard normal space
 
 		 
