@@ -7,6 +7,8 @@ all:
 	     @$(CD) $(FE)/reliability/domain/components; $(MAKE);
 	     @$(CD) $(FE)/reliability/domain/distributions; $(MAKE);
 	     @$(CD) $(FE)/reliability/domain/filter; $(MAKE);
+	     @$(CD) $(FE)/reliability/domain/functionEvaluator; $(MAKE);
+	     @$(CD) $(FE)/reliability/domain/performanceFunction; $(MAKE);
 	     @$(CD) $(FE)/reliability/domain/modulatingFunction; $(MAKE);
 	     @$(CD) $(FE)/reliability/domain/spectrum; $(MAKE);
 
@@ -23,6 +25,8 @@ wipe: spotless
 	     @$(CD) $(FE)/reliability/domain/components; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/domain/distributions; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/domain/filter; $(MAKE) wipe;
+	     @$(CD) $(FE)/reliability/domain/functionEvaluator; $(MAKE) wipe;
+	     @$(CD) $(FE)/reliability/domain/performanceFunction; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/domain/modulatingFunction; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/domain/spectrum; $(MAKE) wipe;
 
