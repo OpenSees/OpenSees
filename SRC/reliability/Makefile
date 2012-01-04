@@ -47,10 +47,9 @@ RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
 		$(FE)/reliability/analysis/direction/PolakHeSearchDirectionAndMeritFunction.o \
 		$(FE)/reliability/analysis/direction/SQPsearchDirectionMeritFunctionAndHessian.o \
 		$(FE)/reliability/analysis/direction/GradientProjectionSearchDirection.o \
-		$(FE)/reliability/analysis/gFunction/BasicGFunEvaluator.o \
-		$(FE)/reliability/analysis/gFunction/GFunEvaluator.o \
-		$(FE)/reliability/analysis/gFunction/OpenSeesGFunEvaluator.o \
-		$(FE)/reliability/analysis/gFunction/TclGFunEvaluator.o \
+		$(FE)/reliability/analysis/gradient/GradientEvaluator.o \
+		$(FE)/reliability/analysis/gradient/FiniteDifferenceGradient.o \
+		$(FE)/reliability/analysis/gradient/ImplicitGradient.o \
 		$(FE)/reliability/analysis/hessianApproximation/HessianApproximation.o \
 		$(FE)/reliability/analysis/hessianApproximation/Hessian.o \
 		$(FE)/reliability/analysis/meritFunction/AdkZhangMeritFunctionCheck.o \
@@ -64,9 +63,6 @@ RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
 		$(FE)/reliability/analysis/rootFinding/SecantRootFinding.o \
 		$(FE)/reliability/analysis/rootFinding/SafeGuardedZeroFindingAlgorithm.o \
 		$(FE)/reliability/analysis/rootFinding/ZeroFindingAlgorithm.o \
-		$(FE)/reliability/analysis/sensitivity/OpenSeesGradGEvaluator.o \
-		$(FE)/reliability/analysis/sensitivity/FiniteDifferenceGradGEvaluator.o \
-		$(FE)/reliability/analysis/sensitivity/GradGEvaluator.o \
 		$(FE)/reliability/analysis/stepSize/ArmijoStepSizeRule.o \
 		$(FE)/reliability/analysis/stepSize/FixedStepSizeRule.o \
 		$(FE)/reliability/analysis/stepSize/StepSizeRule.o \
@@ -120,8 +116,6 @@ RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
 		$(FE)/reliability/domain/components/CorrelationCoefficientIter.o \
 		$(FE)/reliability/domain/components/ParameterPositioner.o \
 		$(FE)/reliability/domain/components/ParameterPositionerIter.o \
-		$(FE)/reliability/domain/components/LimitStateFunction.o \
-		$(FE)/reliability/domain/components/LimitStateFunctionIter.o \
 		$(FE)/reliability/domain/components/RandomVariable.o \
 		$(FE)/reliability/domain/components/RandomVariableIter.o \
 		$(FE)/reliability/domain/components/RandomVariablePositioner.o \
@@ -150,6 +144,12 @@ RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
 		$(FE)/reliability/domain/distributions/ShiftedRayleighRV.o \
 		$(FE)/reliability/domain/distributions/Type3SmallestValueRV.o \
 		$(FE)/reliability/domain/distributions/UserDefinedRV.o \
+		$(FE)/reliability/domain/functionEvaluator/FunctionEvaluator.o \
+		$(FE)/reliability/domain/functionEvaluator/TclEvaluator.o \
+		$(FE)/reliability/domain/performanceFunction/PerformanceFunction.o \
+		$(FE)/reliability/domain/performanceFunction/PerformanceFunctionIter.o \
+		$(FE)/reliability/domain/performanceFunction/LimitStateFunction.o \
+		$(FE)/reliability/domain/performanceFunction/LimitStateFunctionIter.o \
 		$(FE)/reliability/domain/modulatingFunction/ModulatingFunction.o \
 		$(FE)/reliability/domain/modulatingFunction/ModulatingFunctionIter.o \
 		$(FE)/reliability/domain/modulatingFunction/ConstantModulatingFunction.o \
