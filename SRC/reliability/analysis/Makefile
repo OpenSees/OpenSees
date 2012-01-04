@@ -17,6 +17,7 @@ all:
 	     @$(CD) $(FE)/reliability/analysis/rootFinding; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/stepSize; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/transformation; $(MAKE);
+	     @$(CD) $(FE)/reliability/analysis/telm; $(MAKE);
 
 
 # Miscellaneous
@@ -42,5 +43,6 @@ wipe: spotless
 	     @$(CD) $(FE)/reliability/analysis/rootFinding; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/stepSize; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/transformation; $(MAKE) wipe;
+	     @$(CD) $(FE)/reliability/analysis/telm; $(MAKE) wipe;
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
