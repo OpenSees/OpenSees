@@ -35,8 +35,8 @@
 #include <ReliabilityAnalysis.h>
 #include <ReliabilityDomain.h>
 #include <RandomVariablePositioner.h>
-#include <GFunEvaluator.h>
-#include <GradGEvaluator.h>
+#include <FunctionEvaluator.h>
+#include <GradientEvaluator.h>
 #include <Matrix.h>
 #include <Vector.h>
 #include <tcl.h>
@@ -59,10 +59,10 @@ using std::setiosflags;
 
 
 FOSMAnalysis::FOSMAnalysis(ReliabilityDomain *passedReliabilityDomain,
-							   GFunEvaluator *passedGFunEvaluator,
-							   GradGEvaluator *passedGradGEvaluator,
-							   Tcl_Interp *passedTclInterp,
-							   TCL_Char *passedFileName)
+			   FunctionEvaluator *passedGFunEvaluator,
+			   GradientEvaluator *passedGradGEvaluator,
+			   Tcl_Interp *passedTclInterp,
+			   TCL_Char *passedFileName)
 :ReliabilityAnalysis()
 {
 	theReliabilityDomain	= passedReliabilityDomain;
@@ -113,7 +113,7 @@ FOSMAnalysis::analyze(void)
 	// Perform analysis using mean vector
 	Vector meanEstimates(numLsf);
 	int result;
-	result = theGFunEvaluator->runGFunAnalysis(meanVector);
+	result = theGFunEvaluator->runAnalysis(meanVector);
 	if (result < 0) {
 		opserr << "FOSMAnalysis::analyze() - " << endln
 			<< " could not run analysis to evaluate limit-state function. " << endln;
@@ -133,19 +133,21 @@ FOSMAnalysis::analyze(void)
 		// set namespace variable for tcl functions
 		Tcl_SetVar2Ex(theTclInterp,"RELIABILITY_lsf",NULL,Tcl_NewIntObj(lsfTag),TCL_NAMESPACE_ONLY);
 		
-		result = theGFunEvaluator->evaluateG(meanVector);
+		result = theGFunEvaluator->evaluateExpression();
 		if (result < 0) {
 			opserr << "FOSMAnalysis::analyze() - " << endln
 			   << " could not tokenize limit-state function. " << endln;
 			return -1;
 		}
 		
-		meanEstimates(lsf) = theGFunEvaluator->getG();
+		meanEstimates(lsf) = theGFunEvaluator->getResult();
 	}
 
 
 	// Evaluate the gradients of limit-state functions
 	Matrix matrixOfGradientVectors(nrv,numLsf);
+	// The following needs to be retooled -- MHS 10/7/2011
+	/*
 	result = theGradGEvaluator->computeAllGradG(meanEstimates,meanVector);
 	if (result < 0) {
 		opserr << "FOSMAnalysis::analyze() -- could not" << endln
@@ -153,7 +155,7 @@ FOSMAnalysis::analyze(void)
 		return -1;
 	}
 	matrixOfGradientVectors = theGradGEvaluator->getAllGradG();
-
+	*/
 
 	// Establish covariance matrix
 	Matrix covMatrix(nrv,nrv);

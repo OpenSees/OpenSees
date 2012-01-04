@@ -36,8 +36,8 @@
 
 #include <ReliabilityAnalysis.h>
 #include <ReliabilityDomain.h>
-#include <GFunEvaluator.h>
-#include <GradGEvaluator.h>
+#include <FunctionEvaluator.h>
+#include <GradientEvaluator.h>
 #include <Matrix.h>
 #include <Vector.h>
 #include <tcl.h>
@@ -50,8 +50,8 @@ class FOSMAnalysis : public ReliabilityAnalysis
 
 public:
 	FOSMAnalysis(ReliabilityDomain *theReliabilityDomain,
-				   GFunEvaluator *theGFunEvaluator,
-				   GradGEvaluator *theGradGEvaluator,
+				   FunctionEvaluator *theGFunEvaluator,
+				   GradientEvaluator *theGradGEvaluator,
 				   Tcl_Interp *theTclInterp,
 				   TCL_Char *fileName);
 	~FOSMAnalysis();
@@ -62,8 +62,8 @@ protected:
 
 private:
 	ReliabilityDomain *theReliabilityDomain;
-	GFunEvaluator *theGFunEvaluator;
-	GradGEvaluator *theGradGEvaluator;
+	FunctionEvaluator *theGFunEvaluator;
+	GradientEvaluator *theGradGEvaluator;
 	Tcl_Interp *theTclInterp;
 	char fileName[256];
 };
