@@ -76,8 +76,7 @@ public:
 	virtual ~ReliabilityDomain();
 
 	// Member functions to add components to the domain
-	virtual bool addRandomVariable(RandomVariable *theRandomVariable,
-				       double startValue = 0.0);
+	virtual bool addRandomVariable(RandomVariable *theRandomVariable);
 	virtual bool addCorrelationCoefficient(CorrelationCoefficient *theCorrelationCoefficient);
 	virtual bool addLimitStateFunction(LimitStateFunction *theLimitStateFunction);
 	virtual bool addCutset(Cutset *theCutset);
@@ -97,8 +96,6 @@ public:
 	// Following two methods to map index to tag and vice versa
 	RandomVariable *getRandomVariablePtrFromIndex(int index);
 	int getRandomVariableIndex(int tag);
-	void getStartPoint(Vector &start);
-	int setStartPoint(int tag, double start);
 
 	LimitStateFunction *getLimitStateFunctionPtr(int tag);
 	// Following two methods to map index to tag and vice versa
@@ -206,7 +203,6 @@ private:
 	// Should put these in another class eventually because
 	// we may need to do the same thing for lsf, cc, etc. -- MHS
 	int *rvIndex;
-	double *startValue;
 	enum {rvSize_init = 100};
 	enum {rvSize_grow = 20};
 	int rvSize;
