@@ -12,8 +12,8 @@ RandomVibrationAnalysis::RandomVibrationAnalysis
 						 InitialPointBuilder* passedInitialPointBuilder,
 						 CrossingRateAnalyzer* passedCrossingRateAnalyzer,
 						 FirstPassageAnalyzer* passedFirstPassageAnalyzer,
-						 GFunEvaluator* passedGFunEvaluator,
-   						 GradGEvaluator* passedGradGEvaluator,
+						 FunctionEvaluator* passedGFunEvaluator,
+   						 GradientEvaluator* passedGradGEvaluator,
 						 ReliabilityConvergenceCheck* passedReliabilityConvergenceCheck,
 						 double passedStartTime,
 						 double passedEndTime,
@@ -664,8 +664,10 @@ double RandomVibrationAnalysis::setLimitState(LimitStateFunction* theLSF)
 
     PerformanceFunctionCoeff* thePFCoeff;
 
-	char *theExpression = theLSF->getExpression();
-	char *theTokExpression = theLSF->getTokenizedExpression();
+	const char *theExpression = theLSF->getExpression();
+	// This parsing should go away -- MHS 10/7/2011
+	//char *theTokExpression = theLSF->getTokenizedExpression();
+	char *theTokExpression = "";
 
 	char separators[5] = "}{";
 	char *dollarSign = "$";
@@ -774,8 +776,7 @@ void RandomVibrationAnalysis::setScale(double scale)
 void  RandomVibrationAnalysis::saveDesResults(int loc, int presult,
 											  int plsf, double pthre)
 {
-	NormalRV *aStdNormRV=0;
-	aStdNormRV = new NormalRV(1,0.0,1.0,0.0);
+  static NormalRV aStdNormRV(1,0.0,1.0);
 
 	(*xDesTmp)=theFindDesignPointAlgorithm->get_x();
 	(*uDesTmp)=theFindDesignPointAlgorithm->get_u();
@@ -784,7 +785,7 @@ void  RandomVibrationAnalysis::saveDesResults(int loc, int presult,
 	numAnaIncSens=theFindDesignPointAlgorithm->getNumberOfSensAna();
 	numIterinFORM=theFindDesignPointAlgorithm->getNumberOfSteps();
 	betaTmp =(*alphaTmp)^(theFindDesignPointAlgorithm->get_u());
-	pfTmp = 1.0 - aStdNormRV->getCDFvalue(betaTmp);
+	pfTmp = 1.0 - aStdNormRV.getCDFvalue(betaTmp);
 	double check1=theReliabilityConvergenceCheck->getCheck1();
 	double check2=theReliabilityConvergenceCheck->getCheck2();
 	double check1_init=theFindDesignPointAlgorithm->get_check1_init();
@@ -811,9 +812,6 @@ void  RandomVibrationAnalysis::saveDesResults(int loc, int presult,
 	theOutCrossingResults->setcheck1_init(loc,check1_init);
 	theOutCrossingResults->setcheck2_init(loc,check2_init);
 	theOutCrossingResults->setiresult(loc,presult);
-
-	delete aStdNormRV;
-	aStdNormRV=0;
 }
 double RandomVibrationAnalysis::crossingRate(void)
 {

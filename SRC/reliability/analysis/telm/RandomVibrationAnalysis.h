@@ -63,8 +63,8 @@ class RandomVibrationAnalysis
 							InitialPointBuilder* passedInitialPointBuilder,
 							CrossingRateAnalyzer* passedCrossingRateAnalyzer,
 							FirstPassageAnalyzer* passedFirstPassageAnalyzer,
-							GFunEvaluator* passedGFunEvaluator,
-							GradGEvaluator* passedGradGEvaluator,
+							FunctionEvaluator* passedGFunEvaluator,
+							GradientEvaluator* passedGradGEvaluator,
 							ReliabilityConvergenceCheck* passedReliabilityConvergenceCheck,
 							double passedStartTime,
 							double passedEndTime,
@@ -109,8 +109,8 @@ class RandomVibrationAnalysis
 	ReliabilityDomain* theReliabilityDomain;
 	FindDesignPointAlgorithm* theFindDesignPointAlgorithm;
 	//NewSearchWithStepSizeAndStepDirection* theFindDesignPointAlgorithm;
-    GFunEvaluator* theGFunEvaluator;
-    GradGEvaluator* theGradGEvaluator;
+    FunctionEvaluator* theGFunEvaluator;
+    GradientEvaluator* theGradGEvaluator;
 	ReliabilityConvergenceCheck* theReliabilityConvergenceCheck;
 
 	InitialPointBuilder* theInitialPointBuilder;
