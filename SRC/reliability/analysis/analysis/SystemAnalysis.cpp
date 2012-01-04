@@ -127,7 +127,7 @@ SystemAnalysis::initialize()
 		allBetas = new Vector(numLsf);
 		allPf1s = new Vector(numLsf);
 		rhos = new Matrix(numLsf,numLsf);
-		NormalRV uRV(1, 0.0, 1.0, 0.0);
+		NormalRV uRV(1, 0.0, 1.0);
 		
 		// read data from file into arrays
 		for (i=0; i < numLsf; i++ ) {
@@ -172,9 +172,13 @@ SystemAnalysis::initialize()
 		  //int i = theLimitStateFunction->getIndex();
 		  int i = theReliabilityDomain->getLimitStateFunctionIndex(tag);
 
-		  beta = theLimitStateFunction->getFORM_beta();
-		  pf1 = theLimitStateFunction->getFORM_pf1();
-		  const Vector &alpha = theLimitStateFunction->getFORM_alpha();
+		  // We should be using recorders -- MHS 10/7/2011
+		  //beta = theLimitStateFunction->getFORM_beta();
+		  beta = 0.0;
+		  //pf1 = theLimitStateFunction->getFORM_pf1();
+		  pf1 = 0.5;
+		  //const Vector &alpha = theLimitStateFunction->getFORM_alpha();
+		  Vector alpha(nrv); // To make it compile -- MHS 10/7/2011
 
 			// Put FORM results into vector of all betas and alphas
 			// Note that the first index of 'allAlphas' here denote 'nrv'
