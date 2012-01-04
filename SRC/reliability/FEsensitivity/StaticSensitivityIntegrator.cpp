@@ -98,9 +98,10 @@ StaticSensitivityIntegrator::formSensitivityRHS(int passedGradNumber)
 	}
 
 	// Loop through the loadPatterns and add the dPext/dh contributions
-	Vector oneDimVectorWithOne(1);
+	static Vector oneDimVectorWithOne(1);
 	oneDimVectorWithOne(0) = 1.0;
-	ID oneDimID(1);
+	static ID oneDimID(1);
+
 	Node *aNode;
 	DOF_Group *aDofGroup;
 	int nodeNumber, dofNumber, relevantID, i, sizeRandomLoads, numRandomLoads;
