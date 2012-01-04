@@ -34,8 +34,8 @@
 #include <OutCrossingAnalysis.h>
 #include <ReliabilityAnalysis.h>
 #include <ReliabilityDomain.h>
-#include <GFunEvaluator.h>
-#include <GradGEvaluator.h>
+#include <FunctionEvaluator.h>
+#include <GradientEvaluator.h>
 #include <FindDesignPointAlgorithm.h>
 #include <CorrelatedStandardNormal.h>
 #include <math.h>
@@ -55,8 +55,8 @@ using std::setiosflags;
 
 OutCrossingAnalysis::OutCrossingAnalysis(
 				ReliabilityDomain *theRelDom,
-				GFunEvaluator *theGFunEval,
-				GradGEvaluator *theSensEval,
+				FunctionEvaluator *theGFunEval,
+				GradientEvaluator *theSensEval,
 				FindDesignPointAlgorithm *theFindDesPt,
 				int pAnalysisType,
 				int p_stepsToStart,
@@ -99,7 +99,7 @@ OutCrossingAnalysis::analyze(void)
 
 	// Declare variables used in this method
 	int numRV = theReliabilityDomain->getNumberOfRandomVariables();
-	static NormalRV aStdNormRV(1,0.0,1.0,0.0);
+	static NormalRV aStdNormRV(1,0.0,1.0);
 	int numVel, i, j, k, kk, nodeNumber, dofNumber; 
 	double dgduValue, accuSum;
 	Vector uStar2(numRV);
@@ -237,7 +237,10 @@ OutCrossingAnalysis::analyze(void)
 
 					// Get the 'dgdu' vector from the sensitivity evaluator
 					// (The returned matrix containes 'node#' 'dir#' 'dgdu' in rows)
-					const Matrix &DgDdispl = theGradGEvaluator->getDgDdispl();
+					
+					// This should be retooled -- MHS 10/7/2011
+					//const Matrix &DgDdispl = theGradGEvaluator->getDgDdispl();
+					Matrix DgDdispl(5,5); // So that it compiles
 
 
 					// Add extra term to limit-state function
@@ -259,7 +262,8 @@ OutCrossingAnalysis::analyze(void)
 						strcpy(expressionPtr,expression);
 
 						// Add it to the limit-state function
-						theLimitStateFunction->addExpression(expressionPtr);
+						// There's a better way to do this -- MHS 10/7/2011
+						//theLimitStateFunction->addExpression(expressionPtr);
 					}
 
 					// Inform the user
@@ -277,7 +281,8 @@ OutCrossingAnalysis::analyze(void)
 
 
 					// Zero out the added expression in the limit-state function
-					theLimitStateFunction->removeAddedExpression();
+					// There's a better way to do this -- MHS 10/7/2011
+					//theLimitStateFunction->removeAddedExpression();
 
 
 					if (!DSPTfailed) {

@@ -36,8 +36,8 @@
 #define OutCrossingAnalysis_h
 
 #include <ReliabilityDomain.h>
-#include <GFunEvaluator.h>
-#include <GradGEvaluator.h>
+#include <FunctionEvaluator.h>
+#include <GradientEvaluator.h>
 #include <FindDesignPointAlgorithm.h>
 #include <ReliabilityAnalysis.h>
 #include <tcl.h>
@@ -51,8 +51,8 @@ class OutCrossingAnalysis : public ReliabilityAnalysis
 public:
   OutCrossingAnalysis(
 		      ReliabilityDomain *theRelDom,
-		      GFunEvaluator *theGFunEval,
-		      GradGEvaluator *theSensEval,
+		      FunctionEvaluator *theGFunEval,
+		      GradientEvaluator *theSensEval,
 		      FindDesignPointAlgorithm *theFindDesPt,
 		      int AnalysisType,
 		      int stepsToStart,
@@ -72,8 +72,8 @@ public:
  private:
   
   ReliabilityDomain *theReliabilityDomain;
-  GFunEvaluator *theGFunEvaluator;
-  GradGEvaluator *theGradGEvaluator;
+  FunctionEvaluator *theGFunEvaluator;
+  GradientEvaluator *theGradGEvaluator;
   FindDesignPointAlgorithm *theFindDesignPointAlgorithm;
   int analysisType;
   int stepsToStart;
