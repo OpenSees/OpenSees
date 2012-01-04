@@ -288,7 +288,7 @@ NatafProbabilityTransformation::getJacobian_z_x(const Vector &x,
 						const Vector &z, 
 						Vector &Jzx)
 {	
-	static NormalRV aStandardNormalRV(1, 0.0, 1.0, 0.0);
+	static NormalRV aStandardNormalRV(1, 0.0, 1.0);
 
 	RandomVariable *theRV;
 	RandomVariableIter &rvIter = 
@@ -332,7 +332,7 @@ NatafProbabilityTransformation::getJacobian_z_x(const Vector &x,
 int
 NatafProbabilityTransformation::z_to_x(const Vector &z, Vector &x)
 {
-  static NormalRV aStandardNormalRV(1, 0.0, 1.0, 0.0);
+  static NormalRV aStandardNormalRV(1, 0.0, 1.0);
 
 	RandomVariable *theRV;
 	RandomVariableIter &rvIter = 
@@ -373,7 +373,7 @@ NatafProbabilityTransformation::z_to_x(const Vector &z, Vector &x)
 int
 NatafProbabilityTransformation::x_to_z(const Vector &x, Vector &z)
 {
-	static NormalRV aStandardNormalRV(1, 0.0, 1.0, 0.0);
+	static NormalRV aStandardNormalRV(1, 0.0, 1.0);
 	RandomVariable *theRV;
 	RandomVariableIter &rvIter = 
 	  theReliabilityDomain->getRandomVariables();
@@ -421,7 +421,7 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 
 	// 3) DzDmean and DzDstdv = a vector of zeros and then:
 	double DzDmean = 0.0;
-	static NormalRV aStandardNormalRV(1,0.0,1.0,0.0); 
+	static NormalRV aStandardNormalRV(1,0.0,1.0); 
 	RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtr(rvTag);
 	if (theRV == 0) {
 	  opserr << "NatafProbTransf::meanSensitivityOf_x_to_u -- r.v. with tag " << rvTag
@@ -536,7 +536,7 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 
 	// 3) DzDmean and DzDstdv = a vector of zeros and then:
 	double DzDstdv = 0.0;
-	static NormalRV aStandardNormalRV(1,0.0,1.0,0.0); 
+	static NormalRV aStandardNormalRV(1,0.0,1.0); 
 	RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtr(rvTag);
 	if (theRV == 0) {
 	  opserr << "NatafProbTransf::stdvSensitivityOf_x_to_u -- r.v. with tag " << rvTag
@@ -1487,7 +1487,7 @@ NatafProbabilityTransformation::integrand(int rv_i,
 {
 	RandomVariable *theRv_i = theReliabilityDomain->getRandomVariablePtr(rv_i);
 	RandomVariable *theRv_j = theReliabilityDomain->getRandomVariablePtr(rv_j);
-	static NormalRV aStandardNormalRV(1,0.0,1.0,0.0); 
+	static NormalRV aStandardNormalRV(1,0.0,1.0); 
 
 	double x_i = theRv_i->getInverseCDFvalue(aStandardNormalRV.getCDFvalue(z_i));
 	double x_j = theRv_j->getInverseCDFvalue(aStandardNormalRV.getCDFvalue(z_j));
