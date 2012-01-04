@@ -32,10 +32,10 @@
 //
 
 #include <GFunVisualizationAnalysis.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <ReliabilityDomain.h>
 #include <ReliabilityAnalysis.h>
-#include <GradGEvaluator.h>
+#include <GradientEvaluator.h>
 #include <MeritFunctionCheck.h>
 #include <Vector.h>
 #include <Matrix.h>
@@ -53,7 +53,7 @@ using std::ifstream;
 
 GFunVisualizationAnalysis::GFunVisualizationAnalysis(
 					ReliabilityDomain *passedReliabilityDomain,
-					GFunEvaluator *passedGFunEvaluator,
+					FunctionEvaluator *passedGFunEvaluator,
 					ProbabilityTransformation *passedProbabilityTransformation,
 					bool passedStartAtOrigin,
 					TCL_Char *passedOutputFileName,
@@ -264,7 +264,11 @@ GFunVisualizationAnalysis::getCurrentAxes12Point(int i, int j)
 
 		// Here the start point is actually given in the orginal space
 
-	  theReliabilityDomain->getStartPoint(iPoint);
+	  //theReliabilityDomain->getStartPoint(iPoint);
+	  for (int j = 0; j < nrv; j++) {
+	    RandomVariable *theParam = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+	    iPoint(j) = theParam->getStartValue();
+	  }
 
 		// Transform it into the u-space if that's where the user wants to be
 		if (space==2) {
@@ -409,7 +413,7 @@ GFunVisualizationAnalysis::setStartPoint(Vector *pStartPoint)
 }
 
 int
-GFunVisualizationAnalysis::setGradGEvaluator(GradGEvaluator *pGradGEvaluator)
+GFunVisualizationAnalysis::setGradGEvaluator(GradientEvaluator *pGradGEvaluator)
 {
 	theGradGEvaluator = pGradGEvaluator;
 
@@ -492,19 +496,19 @@ GFunVisualizationAnalysis::findGSurface(Vector thePoint)
 
 
 	// Evaluate limit-state function
-	result = theGFunEvaluator->runGFunAnalysis(theTempPoint);
+	result = theGFunEvaluator->runAnalysis(theTempPoint);
 	if (result < 0) {
 		opserr << "GFunVisualizationAnalysis::analyze() - " << endln
 			<< " could not run analysis to evaluate limit-state function. " << endln;
 		return -1;
 	}
-	result = theGFunEvaluator->evaluateG(theTempPoint);
+	result = theGFunEvaluator->evaluateExpression();
 	if (result < 0) {
 		opserr << "GFunVisualizationAnalysis::analyze() - " << endln
 			<< " could not tokenize limit-state function. " << endln;
 		return -1;
 	}
-	g = theGFunEvaluator->getG();
+	g = theGFunEvaluator->getResult();
 
 
 	// FIND THE POINT IN WHICHEVER SPACE USER HAS SPECIFIED
@@ -540,19 +544,19 @@ GFunVisualizationAnalysis::evaluateGFunction(Vector thePoint, bool isFirstPoint)
 	Matrix Jxu(nrv, nrv);
 
 	// Evaluate limit-state function
-	result = theGFunEvaluator->runGFunAnalysis(thePoint);
+	result = theGFunEvaluator->runAnalysis(thePoint);
 	if (result < 0) {
 		opserr << "GFunVisualizationAnalysis::analyze() - " << endln
 			<< " could not run analysis to evaluate limit-state function. " << endln;
 		return -1;
 	}
-	result = theGFunEvaluator->evaluateG(thePoint);
+	result = theGFunEvaluator->evaluateExpression();
 	if (result < 0) {
 		opserr << "GFunVisualizationAnalysis::analyze() - " << endln
 			<< " could not tokenize limit-state function. " << endln;
 		return -1;
 	}
-	g = theGFunEvaluator->getG();
+	g = theGFunEvaluator->getResult();
 
 
 
@@ -637,13 +641,13 @@ GFunVisualizationAnalysis::evaluateGFunction(Vector thePoint, bool isFirstPoint)
 		convFile << myString;
 
 		// Compute gradients
-		result = theGradGEvaluator->computeGradG(g,thePoint);
+		result = theGradGEvaluator->computeGradient(g,thePoint);
 		if (result < 0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not compute gradients of the limit-state function. " << endln;
 			return -1;
 		}
-		Vector gradientOfgFunction = theGradGEvaluator->getGradG();
+		Vector gradientOfgFunction = theGradGEvaluator->getGradient();
 		//gradientOfgFunction = jacobian_x_u ^ gradientOfgFunction;
 		gradientOfgFunction = Jxu ^ gradientOfgFunction;
 

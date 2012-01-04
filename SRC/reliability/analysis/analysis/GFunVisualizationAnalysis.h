@@ -38,11 +38,11 @@
 using std::ifstream;
 
 #include <ReliabilityAnalysis.h>
-#include <GFunEvaluator.h>
+#include <FunctionEvaluator.h>
 #include <FindDesignPointAlgorithm.h>
 #include <ProbabilityTransformation.h>
 #include <ReliabilityDomain.h>
-#include <GradGEvaluator.h>
+#include <GradientEvaluator.h>
 #include <MeritFunctionCheck.h>
 #include <ReliabilityConvergenceCheck.h>
 #include <RootFinding.h>
@@ -54,7 +54,7 @@ class GFunVisualizationAnalysis : public ReliabilityAnalysis
 public:
 	GFunVisualizationAnalysis(
 					ReliabilityDomain *theReliabilityDomain,
-					GFunEvaluator *theGFunEvaluator,
+					FunctionEvaluator *theGFunEvaluator,
 					ProbabilityTransformation *theProbabilityTransformation,
 					bool startAtOrigin,
 					TCL_Char *outputFileName,
@@ -77,7 +77,7 @@ public:
 	
 	int setRootFindingAlgorithm(RootFinding *theRootFinder);
 	int setStartPoint(Vector *theStartPoint);
-	int setGradGEvaluator(GradGEvaluator *theGradGEvaluator);
+	int setGradGEvaluator(GradientEvaluator *theGradGEvaluator);
 	int setMeritFunctionCheck(MeritFunctionCheck *theMeritFunctionCheck);
 	int setReliabilityConvergenceCheck(ReliabilityConvergenceCheck *theReliabilityConvergenceCheck);
 
@@ -92,10 +92,10 @@ private:
 	double evaluateGFunction(Vector thePoint, bool printDivision);
 
 	ReliabilityDomain *theReliabilityDomain;
-	GFunEvaluator *theGFunEvaluator;
+	FunctionEvaluator *theGFunEvaluator;
 	ProbabilityTransformation *theProbabilityTransformation;
 	MeritFunctionCheck *theMeritFunctionCheck;
-	GradGEvaluator *theGradGEvaluator;
+	GradientEvaluator *theGradGEvaluator;
 	ReliabilityConvergenceCheck *theReliabilityConvergenceCheck;
 	RootFinding *theRootFindingAlgorithm;
 
