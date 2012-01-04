@@ -37,7 +37,7 @@
 #include <ReliabilityAnalysis.h>
 #include <ReliabilityDomain.h>
 #include <FindDesignPointAlgorithm.h>
-#include <GradGEvaluator.h>
+#include <GradientEvaluator.h>
 #include <tcl.h>
 
 #include <fstream>
@@ -49,7 +49,7 @@ class ParametricReliabilityAnalysis : public ReliabilityAnalysis
 public:
 	ParametricReliabilityAnalysis(ReliabilityDomain *theReliabilityDomain,
 					  FindDesignPointAlgorithm *theFindDesignPointAlgorithm,
-					  GradGEvaluator *theGradGEvaluator,
+					  GradientEvaluator *theGradGEvaluator,
 					  int parameterNumber,
 					  double first,
 					  double last,
@@ -65,7 +65,7 @@ protected:
 private:
 	ReliabilityDomain *theReliabilityDomain;
 	FindDesignPointAlgorithm *theFindDesignPointAlgorithm;
-	GradGEvaluator *theGradGEvaluator;
+	GradientEvaluator *theGradGEvaluator;
 	char fileName[256];
 	double first, last;
 	int parameterNumber, numIntervals;

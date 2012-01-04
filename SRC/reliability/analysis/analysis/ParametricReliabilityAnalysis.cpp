@@ -35,7 +35,7 @@
 #include <ReliabilityAnalysis.h>
 #include <ReliabilityDomain.h>
 #include <FindDesignPointAlgorithm.h>
-#include <GradGEvaluator.h>
+#include <GradientEvaluator.h>
 #include <ParameterPositioner.h>
 #include <NormalRV.h>
 #include <tcl.h>
@@ -53,7 +53,7 @@ using std::setiosflags;
 
 ParametricReliabilityAnalysis::ParametricReliabilityAnalysis(ReliabilityDomain *passedReliabilityDomain,
 									 FindDesignPointAlgorithm *passedFindDesignPointAlgorithm,
-									 GradGEvaluator *passedGradGEvaluator,
+									 GradientEvaluator *passedGradGEvaluator,
 									 int pParameterNumber,
 									 double pFirst,
 									 double pLast,
@@ -106,7 +106,7 @@ ParametricReliabilityAnalysis::analyze(void)
 	// Initial declarations
 	Vector pf(numIntervals+1);
 	Vector pdf(numIntervals+1);
-	static NormalRV aStdNormRV(1,0.0,1.0,0.0);
+	static NormalRV aStdNormRV(1,0.0,1.0);
 	int numPars, numPos;
 	double thedGdPar = 0, currentValue, beta;
 	Vector currentValues(numIntervals+1);
@@ -155,7 +155,10 @@ ParametricReliabilityAnalysis::analyze(void)
 			// check that par(i) exists in the LSF
 			int llength = 0;
 			int foundit = 0;
-			Tcl_Obj *passedList = theLimitStateFunction->getParameters();
+			// This Tcl stuff should disappear -- MHS 10/7/2011
+			//Tcl_Obj *passedList = theLimitStateFunction->getParameters();
+			Tcl_Obj *passedList = 0; // Added by MHS 10/7/2011
+
 			Tcl_Obj *paramList = Tcl_DuplicateObj(passedList);
 			Tcl_Obj *objPtr;
 			Tcl_ListObjLength(theTclInterp,paramList,&llength);
@@ -219,7 +222,9 @@ ParametricReliabilityAnalysis::analyze(void)
 				pf(counter) = 1.0 - aStdNormRV.getCDFvalue(beta);
 
 				// Compute PDF, first; derivative of lsf wrt. parameter
-				const Matrix &dGdPar = theGradGEvaluator->getDgDpar();
+				// Needs to be retooled -- MHS 10/7/2011
+				//const Matrix &dGdPar = theGradGEvaluator->getDgDpar();
+				Matrix dGdPar(5,5); // So it will compile
 
 				// Find the right element
 				numPars = dGdPar.noRows();
