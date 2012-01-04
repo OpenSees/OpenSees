@@ -30,7 +30,7 @@
 //
  
 
-#include "DP_RSM_Sim.h"
+#include <DP_RSM_Sim.h>
 #include <MatrixOperations.h>
 #include <ostream>
 #include <math.h>
@@ -47,10 +47,10 @@ void itoa(int, char *, int base);
 //////////////////////////////////////////////////////////////////////
 
 DP_RSM_Sim::DP_RSM_Sim(ReliabilityDomain *passedReliabilityDomain,
-					GFunEvaluator *passedGFunEvaluator,
+					FunctionEvaluator *passedGFunEvaluator,
 					ProbabilityTransformation *passedProbabilityTransformation,
 					char *passedOutputFileName,
-					GradGEvaluator * passedGradGEvaluator, Vector * pDesignPt, int numAxis, 
+					GradientEvaluator * passedGradGEvaluator, Vector * pDesignPt, int numAxis, 
 					char * typeExpPtRule,Tcl_Interp *passedTclInterp, 
 					Matrix * passedHessian, char * passedHessianFile, char * typeSurfaceDesign, 
 					char * typeRespSurfaceSimulation, Vector * gridInfo,

@@ -33,17 +33,17 @@
 #if !defined(AFX_DP_RSM_SIM_TimeVariant_H)
 #define AFX_DP_RSM_SIM_TimeVariant_H
 
-#include "ReliabilityAnalysis.h"
-#include "GridPlane.h"
-#include "Hessian.h"
-#include "GradGEvaluator.h"
-#include "UnivariateDecomposition.h"
-#include "UniformExperimentalPointRule1D.h"
-#include "BivariateDecomposition.h"
-#include "RespSurfaceSimulation.h"
+#include <ReliabilityAnalysis.h>
+#include <GridPlane.h>
+#include <Hessian.h>
+#include <GradientEvaluator.h>
+#include <UnivariateDecomposition.h>
+#include <UniformExperimentalPointRule1D.h>
+#include <BivariateDecomposition.h>
+#include <RespSurfaceSimulation.h>
 
 
-#include "ReliabilityAnalysis.h"
+#include <ReliabilityAnalysis.h>
 
 class DP_RSM_Sim_TimeVariant : public ReliabilityAnalysis  
 {
@@ -51,10 +51,10 @@ class DP_RSM_Sim_TimeVariant : public ReliabilityAnalysis
 public:
 
 	DP_RSM_Sim_TimeVariant(ReliabilityDomain *passedReliabilityDomain,
-					GFunEvaluator *passedGFunEvaluator,
+					FunctionEvaluator *passedGFunEvaluator,
 					ProbabilityTransformation *passedProbabilityTransformation,
 					char *passedOutputFileName,
-					GradGEvaluator * passedGradGEvaluator, Vector * pDesignPt, int numAxis, 
+					GradientEvaluator * passedGradGEvaluator, Vector * pDesignPt, int numAxis, 
 					char * typeExpPtRule,Tcl_Interp *passedTclInterp, 
 					Matrix * passedHessian, char * passedHessianFile, char * typeSurfaceDesign, 
 					char * typeRespSurfaceSimulation, Vector * gridInfo,
@@ -78,8 +78,8 @@ private:
 	ExperimentalPointRule1D * theExpPtRule;
 
 	Tcl_Interp * theInterp;
-	GradGEvaluator * theGradGEvaluator;
-	GFunEvaluator * theGFunEvaluator;
+	GradientEvaluator * theGradGEvaluator;
+	FunctionEvaluator * theGFunEvaluator;
 	ProbabilityTransformation * theProbabilityTransformation;
 	ReliabilityDomain * theReliabilityDomain;
 
