@@ -1,6 +1,7 @@
 include ../../../../Makefile.def
 
 OBJS       = 	NatafProbabilityTransformation.o \
+	AllIndependentTransformation.o \
 	ProbabilityTransformation.o
 
 # Compilation control
