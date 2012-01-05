@@ -1,7 +1,6 @@
 include ../../../../Makefile.def
 
-OBJS       = AllIndependentTransformation.o \
-	NewNewmarkSensitivityIntegrator.o \
+OBJS       = NewNewmarkSensitivityIntegrator.o \
 	RandomVibrationSimulatorResult.o \
 	Analyzer.o \
 	NewSearchWithStepSizeAndStepDirection.o \
