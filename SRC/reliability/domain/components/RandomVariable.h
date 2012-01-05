@@ -49,10 +49,6 @@ public:
 	virtual double getMean() = 0;
 	virtual double getStdv() = 0;
 	virtual const Vector &getParameters() = 0;
-	virtual double getParameter1() {opserr << "RV::gp1"; return 0.0;}
-	virtual double getParameter2() {opserr << "RV::gp2"; return 0.0;}
-	virtual double getParameter3() {opserr << "RV::gp3"; return 0.0;}
-	virtual double getParameter4() {opserr << "RV::gp4"; return 0.0;}
 	virtual int setParameters(double mean, double stdv) {/*MHS 9/28/2011*/return 0;}
 	
 	// RV functionality

@@ -40,6 +40,7 @@
 // define common math constants needed by the random variables
 const double RandomVariable::pi = std::acos(-1.0);
 const double RandomVariable::euler = 0.57721566490153286061;
+#define isnan(x) ((x)!=(x))
 
 
 RandomVariable::RandomVariable(int tag, int classTag)
@@ -78,6 +79,7 @@ RandomVariable::gammaFunction(double x)
 #ifdef _LINUX
 	return tgamma(x);
 #endif
+    
 	double res;
 	//static const double pi = std::acos(-1.0);
 	
@@ -290,8 +292,8 @@ RandomVariable::errorFunction(double x)
 {
 #ifdef _LINUX
 	return erf(x);
-#else
-#define isnan(x) ((x)!=(x))
+#endif
+
 	// ErrorFunction(x) = 2/sqrt(pi) * integral from 0 to x of exp(-t^2) dt.
 	double a1,a2,a3,a4,a5;
 	double b1,b2,b3,b4;
@@ -421,7 +423,6 @@ RandomVariable::errorFunction(double x)
 		result = (-0.5 + result) - 0.5;
 	
 	return result;
-#endif
 }
 
 
