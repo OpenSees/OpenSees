@@ -3320,6 +3320,8 @@ SRC/reliability/analysis/telm/rancombi.cpp -text
 SRC/reliability/analysis/telm/randomc.h -text
 SRC/reliability/analysis/telm/ranrotb.cpp -text
 SRC/reliability/analysis/telm/ranrotw.cpp -text
+SRC/reliability/analysis/transformation/AllIndependentTransformation.cpp -text
+SRC/reliability/analysis/transformation/AllIndependentTransformation.h -text
 SRC/reliability/analysis/transformation/Makefile -text
 SRC/reliability/analysis/transformation/NatafProbabilityTransformation.cpp -text
 SRC/reliability/analysis/transformation/NatafProbabilityTransformation.h -text
