@@ -691,8 +691,9 @@ ReliabilityDomain::removeRandomVariable(int tag)
     }
     
     // Shift indices down by one
-    for (int i = index; i < numRandomVariables-1; i++)
+    for (int i = index; i < numRandomVariables-1; i++) {
       rvIndex[i] = rvIndex[i+1];
+    }
     
     // Now remove the component
     theRandomVariablesPtr->removeComponent(tag);
