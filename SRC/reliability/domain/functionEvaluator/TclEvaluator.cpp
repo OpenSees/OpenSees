@@ -52,9 +52,10 @@ TclEvaluator::TclEvaluator(Tcl_Interp *passedTclInterp,
    theOpenSeesDomain(passedOpenSeesDomain)
   
 {
-  int exprLen = strlen(passed_fileName);
-  fileName = new char[exprLen+1];
-  strcpy(fileName,passed_fileName);
+    theExpression = 0;
+    int exprLen = strlen(passed_fileName);
+    fileName = new char[exprLen+1];
+    strcpy(fileName,passed_fileName);
 }
 
 TclEvaluator::TclEvaluator(Tcl_Interp *passedTclInterp,
@@ -63,7 +64,8 @@ TclEvaluator::TclEvaluator(Tcl_Interp *passedTclInterp,
   :FunctionEvaluator(), theTclInterp(passedTclInterp), theReliabilityDomain(passedReliabilityDomain),
    theOpenSeesDomain(passedOpenSeesDomain)
 {
-  fileName = 0;
+    theExpression = 0;
+    fileName = 0;
 }
 
 TclEvaluator::~TclEvaluator()
