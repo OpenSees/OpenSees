@@ -3236,8 +3236,6 @@ SRC/reliability/analysis/stepSize/FixedStepSizeRule.h -text
 SRC/reliability/analysis/stepSize/Makefile -text
 SRC/reliability/analysis/stepSize/StepSizeRule.cpp -text
 SRC/reliability/analysis/stepSize/StepSizeRule.h -text
-SRC/reliability/analysis/telm/AllIndependentTransformation.cpp -text
-SRC/reliability/analysis/telm/AllIndependentTransformation.h -text
 SRC/reliability/analysis/telm/Analyzer.cpp -text
 SRC/reliability/analysis/telm/Analyzer.h -text
 SRC/reliability/analysis/telm/AnalyzerGFunEvaluator.cpp -text
