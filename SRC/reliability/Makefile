@@ -68,7 +68,7 @@ RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
 		$(FE)/reliability/analysis/stepSize/StepSizeRule.o \
 		$(FE)/reliability/analysis/transformation/NatafProbabilityTransformation.o \
 		$(FE)/reliability/analysis/transformation/ProbabilityTransformation.o \
-		$(FE)/reliability/analysis/telm/AllIndependentTransformation.o \
+		$(FE)/reliability/analysis/transformation/AllIndependentTransformation.o \
 		$(FE)/reliability/analysis/telm/NewNewmarkSensitivityIntegrator.o \
 		$(FE)/reliability/analysis/telm/RandomVibrationSimulatorResult.o \
 		$(FE)/reliability/analysis/telm/Analyzer.o \
