@@ -300,11 +300,12 @@ NatafProbabilityTransformation::getJacobian_z_x(const Vector &x,
 	  int i = theReliabilityDomain->getRandomVariableIndex(rvTag);
 
 	  if (strcmp(theRV->getType(),"NORMAL")==0) {
-	    double sigma = theRV->getParameter2();
+	    double sigma = theRV->getStdv();
 	    Jzx(i) = 1.0 / sigma;
 	  }
 	  else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
-	    double zeta = fabs(theRV->getParameter2());
+          Vector paramTemp = theRV->getParameters();
+	    double zeta = fabs(paramTemp(1));
 	    if (x(i) == 0.0) {
 	      opserr << "NatafProbabilityTransformation::getJacobian_z_x() -- Error: value " << endln
 		     << "of lognormal random variable is zero in original space. " << endln;
@@ -344,13 +345,15 @@ NatafProbabilityTransformation::z_to_x(const Vector &z, Vector &x)
 	  int i = theReliabilityDomain->getRandomVariableIndex(rvTag);
 
 	  if (strcmp(theRV->getType(),"NORMAL")==0) {
-	    double mju = theRV->getParameter1();
-	    double sigma = theRV->getParameter2();
+	    double mju = theRV->getMean();
+	    double sigma = theRV->getStdv();
 	    x(i) = z(i) * sigma + mju;
 	  }
 	  else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
-	    double lambda = theRV->getParameter1();
-	    double zeta = theRV->getParameter2();
+	    Vector paramTemp = theRV->getParameters();
+          double lambda = paramTemp(0);
+	    double zeta = paramTemp(1);
+          
 	    if (zeta < 0.0) { // interpret this as negative lognormal random variable
 	      x(i) = -exp ( -z(i) * zeta + lambda );
 	    }
@@ -384,13 +387,14 @@ NatafProbabilityTransformation::x_to_z(const Vector &x, Vector &z)
 	  int i = theReliabilityDomain->getRandomVariableIndex(rvTag);
 
 	  if (strcmp(theRV->getType(),"NORMAL")==0) {
-	    double mju = theRV->getParameter1();
-	    double sigma = theRV->getParameter2();
+	    double mju = theRV->getMean();
+	    double sigma = theRV->getStdv();
 	    z(i) =   ( x(i) - mju ) / sigma;
 	  }
 	  else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
-	    double lambda = theRV->getParameter1();
-	    double zeta = theRV->getParameter2();
+	    Vector paramTemp = theRV->getParameters();
+          double lambda = paramTemp(0);
+          double zeta = paramTemp(1);
 	    if (zeta < 0.0) { /// interpret this as a negative lognormal random variable
 	      z(i) = -( log ( fabs(x(i)) ) - lambda ) / zeta;
 	    }
@@ -431,13 +435,10 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 	int rvIndex = theReliabilityDomain->getRandomVariableIndex(rvTag);
 
 	if (strcmp(theRV->getType(),"NORMAL")==0) {
-	  double mu = theRV->getParameter1();
-	  double sigma = theRV->getParameter2();
+	  double sigma = theRV->getStdv();
 	  DzDmean = -1.0 / sigma;
 	}
 	else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
-		double lambda = theRV->getParameter1();
-		double zeta = fabs(theRV->getParameter2()); // more here for negative lognormal?
 		double mean = fabs(theRV->getMean()); // more here for negative lognormal?
 		double stdv = theRV->getStdv();
 
@@ -453,8 +454,9 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 	}
 	else if (strcmp(theRV->getType(),"UNIFORM")==0) {
 		double pz = 0.39894228048*exp(-z(rvIndex)*z(rvIndex)/2.0);
-		double a = theRV->getParameter1();
-		double b = theRV->getParameter2();
+        Vector paramTemp = theRV->getParameters();
+        double a = paramTemp(0);
+        double b = paramTemp(1);
 		DzDmean = -1.0/(pz*(b-a));
 	}
 	else {
@@ -546,13 +548,11 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 	int rvIndex = theReliabilityDomain->getRandomVariableIndex(rvTag);
 
 	if (strcmp(theRV->getType(),"NORMAL")==0) {
-		double mu = theRV->getParameter1();
-		double sigma = theRV->getParameter2();
+		double mu = theRV->getMean();
+		double sigma = theRV->getStdv();
 		DzDstdv = - (x(rvIndex)-mu) / (sigma*sigma);
 	}
 	else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
-		double lambda = theRV->getParameter1();
-		double zeta = fabs(theRV->getParameter2()); // more here for negative lognormal?
 		double mean = fabs(theRV->getMean()); // more here for negative lognormal?
 		double stdv = theRV->getStdv();
 
@@ -567,8 +567,9 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 	}
 	else if (strcmp(theRV->getType(),"UNIFORM")==0) {
 		double pz = 0.39894228048*exp(-z(rvIndex)*z(rvIndex)/2.0);
-		double a = theRV->getParameter1();
-		double b = theRV->getParameter2();
+        Vector paramTemp = theRV->getParameters();
+        double a = paramTemp(0);
+        double b = paramTemp(1);
 		double DzDmean = -1.0/(pz*(b-a));
 		double e = -DzDmean/(b-a);
 		DzDstdv = 1.732050807*(a+b-2.0*x(rvIndex))*e;
@@ -768,8 +769,9 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			newCorrelation = 1.023 * correlation;
 		}
 		else if ( strcmp(typeRv1,"NORMAL") == 0  &&  strcmp(typeRv2,"BETA") == 0  ) {
-			double ba = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba; 
+            Vector paramTemp = rv2Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u2 = ( rv2Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s2 = rv2Ptr->getStdv() / ba;
 			newCorrelation = (1.026 + 0.001*correlation - 0.178*u2
 				+ 0.268*s2 - 0.001*correlation*correlation
@@ -814,8 +816,9 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			newCorrelation = (1.019 + 0.014*cov1 + 0.010*correlation*correlation + 0.249*cov1*cov1)*correlation;
 		}
 		else if ( strcmp(typeRv1,"LOGNORMAL") == 0  &&  strcmp(typeRv2,"BETA") == 0  ) {
-			double ba = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba; 
+			Vector paramTemp = rv2Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u2 = ( rv2Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s2 = rv2Ptr->getStdv() / ba;
 			double uu = u2*u2;
 			double ss = s2*s2;
@@ -873,8 +876,9 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			newCorrelation = (1.023+0.000*correlation-0.007*cov1+0.002*correlation*correlation+0.127*cov1*cov1-0.000*correlation*cov1)*correlation;
 		}
 		else if ( strcmp(typeRv1,"GAMMA") == 0  &&  strcmp(typeRv2,"BETA") == 0  ) {
-			double ba = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba; 
+            Vector paramTemp = rv2Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u2 = ( rv2Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s2 = rv2Ptr->getStdv() / ba;
 			double uu=u2*u2;
 			double ss=s2*s2;
@@ -940,8 +944,9 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			newCorrelation = (1.133+0.029*correlation*correlation)*correlation;
 		}
 		else if ( (strcmp(typeRv1,"EXPONENTIAL") == 0 || strcmp(typeRv1,"SHIFTEDEXPONENTIAL") == 0 )  &&  strcmp(typeRv2,"BETA") == 0  ) {
-			double ba = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba; 
+            Vector paramTemp = rv2Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u2 = ( rv2Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s2 = rv2Ptr->getStdv() / ba;
 			double uu=u2*u2;
 			double ss=s2*s2;
@@ -986,8 +991,9 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			newCorrelation = (1.038-0.008*correlation*correlation)*correlation;
 		}
 		else if ( (strcmp(typeRv1,"RAYLEIGH") == 0 || strcmp(typeRv1,"SHIFTEDRAYLEIGH") == 0 )  &&  strcmp(typeRv2,"BETA") == 0  ) {
-			double ba = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba; 
+            Vector paramTemp = rv2Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u2 = ( rv2Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s2 = rv2Ptr->getStdv() / ba;
 			double temp = 1.037-0.042*correlation-0.182*u2+0.369*s2-0.001*correlation*correlation
 				+0.182*u2*u2-1.150*s2*s2+0.084*correlation*u2;
@@ -1025,8 +1031,9 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			newCorrelation = (1.047-0.047*correlation*correlation)*correlation;
 		}
 		else if ( strcmp(typeRv1,"UNIFORM") == 0  &&  strcmp(typeRv2,"BETA") == 0  ) {
-			double ba = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba; 
+            Vector paramTemp = rv2Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u2 = ( rv2Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s2 = rv2Ptr->getStdv() / ba;
 			double temp = 1.040+0.015*correlation-0.176*u2+0.432*s2-0.008*correlation*correlation
 				+0.176*u2*u2-1.286*s2*s2-0.137*correlation*s2;
@@ -1046,8 +1053,9 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 		}
 		/////////////////////////////////////////////////////////////////////////////////
 		else if ( strcmp(typeRv1,"BETA") == 0  &&  strcmp(typeRv2,"NORMAL") == 0  ) {
-			double ba = rv1Ptr->getParameter4() - rv1Ptr->getParameter3();
-			double u1 = ( rv1Ptr->getMean() - rv1Ptr->getParameter3() ) / ba; 
+			Vector paramTemp = rv1Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u1 = ( rv1Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s1 = rv1Ptr->getStdv() / ba;
 			newCorrelation = (1.026 + 0.001*correlation - 0.178*u1
 				+ 0.268*s1 - 0.001*correlation*correlation
@@ -1055,8 +1063,9 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 
 		}
 		else if ( strcmp(typeRv1,"BETA") == 0  &&  strcmp(typeRv2,"LOGNORMAL") == 0  ) {
-			double ba = rv1Ptr->getParameter4() - rv1Ptr->getParameter3();
-			double u1 = ( rv1Ptr->getMean() - rv1Ptr->getParameter3() ) / ba; 
+            Vector paramTemp = rv1Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u1 = ( rv1Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s1 = rv1Ptr->getStdv() / ba;
 			double uu = u1*u1;
 			double ss = s1*s1;
@@ -1076,12 +1085,16 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 
 		}
 		else if ( strcmp(typeRv1,"BETA") == 0  &&  strcmp(typeRv2,"GAMMA") == 0  ) {
-			double ba2 = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba2; 
+			Vector paramTemp2 = rv2Ptr->getParameters();
+            double ba2 = paramTemp2(3) - paramTemp2(2);
+			double u2 = ( rv2Ptr->getMean() - paramTemp2(2) ) / ba2; 
 			double s2 = rv2Ptr->getStdv() / ba2;
-			double ba = rv1Ptr->getParameter4() - rv1Ptr->getParameter3();
-			double u1 = ( rv1Ptr->getMean() - rv1Ptr->getParameter3() ) / ba; 
+            
+            Vector paramTemp1 = rv1Ptr->getParameters();
+			double ba = paramTemp1(3) - paramTemp1(2);
+			double u1 = ( rv1Ptr->getMean() - paramTemp1(2) ) / ba; 
 			double s1 = rv1Ptr->getStdv() / ba;
+            
 			double uu=u1*u1;
 			double ss=s1*s1;
 			double xu=correlation*u1;
@@ -1113,12 +1126,16 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 
 		}
 		else if ( strcmp(typeRv1,"BETA") == 0  &&  (strcmp(typeRv2,"EXPONENTIAL") == 0 || strcmp(typeRv2,"SHIFTEDEXPONENTIAL") == 0 ) ) {
-			double ba = rv1Ptr->getParameter4() - rv1Ptr->getParameter3();
-			double u1 = ( rv1Ptr->getMean() - rv1Ptr->getParameter3() ) / ba; 
-			double s1 = rv1Ptr->getStdv() / ba;
-			double ba2 = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba2; 
+			Vector paramTemp2 = rv2Ptr->getParameters();
+            double ba2 = paramTemp2(3) - paramTemp2(2);
+			//double u2 = ( rv2Ptr->getMean() - paramTemp2(2) ) / ba2; 
 			double s2 = rv2Ptr->getStdv() / ba2;
+            
+            Vector paramTemp1 = rv1Ptr->getParameters();
+			double ba = paramTemp1(3) - paramTemp1(2);
+			double u1 = ( rv1Ptr->getMean() - paramTemp1(2) ) / ba; 
+			double s1 = rv1Ptr->getStdv() / ba;
+            
 			double uu=u1*u1;
 			double ss=s1*s1;
 			double xu=correlation*u1;
@@ -1131,28 +1148,34 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 
 		}
 		else if ( strcmp(typeRv1,"BETA") == 0  &&  (strcmp(typeRv2,"RAYLEIGH") == 0 || strcmp(typeRv2,"SHIFTEDRAYLEIGH") == 0 ) ) {
-			double ba = rv1Ptr->getParameter4() - rv1Ptr->getParameter3();
-			double u1 = ( rv1Ptr->getMean() - rv1Ptr->getParameter3() ) / ba; 
+			Vector paramTemp = rv1Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u1 = ( rv1Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s1 = rv1Ptr->getStdv() / ba;
 			double temp = 1.037-0.042*correlation-0.182*u1+0.369*s1-0.001*correlation*correlation
 				+0.182*u1*u1-1.150*s1*s1+0.084*correlation*u1;
 			newCorrelation = temp*correlation;
 		}
 		else if ( strcmp(typeRv1,"BETA") == 0  &&  strcmp(typeRv2,"UNIFORM") == 0  ) {
-			double ba = rv1Ptr->getParameter4() - rv1Ptr->getParameter3();
-			double u1 = ( rv1Ptr->getMean() - rv1Ptr->getParameter3() ) / ba; 
+			Vector paramTemp = rv1Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u1 = ( rv1Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s1 = rv1Ptr->getStdv() / ba;
 			double temp = 1.040+0.015*correlation-0.176*u1+0.432*s1-0.008*correlation*correlation
 				+0.176*u1*u1-1.286*s1*s1-0.137*correlation*s1;
 			newCorrelation = temp * correlation;
 		}
 		else if ( strcmp(typeRv1,"BETA") == 0  &&  strcmp(typeRv2,"BETA") == 0  ) {
-			double ba1 = rv1Ptr->getParameter4() - rv1Ptr->getParameter3();
-			double u1 = ( rv1Ptr->getMean() - rv1Ptr->getParameter3() ) / ba1; 
-			double s1 = rv1Ptr->getStdv() / ba1;
-			double ba2 = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba2; 
+			Vector paramTemp2 = rv2Ptr->getParameters();
+            double ba2 = paramTemp2(3) - paramTemp2(2);
+			double u2 = ( rv2Ptr->getMean() - paramTemp2(2) ) / ba2; 
 			double s2 = rv2Ptr->getStdv() / ba2;
+            
+            Vector paramTemp1 = rv1Ptr->getParameters();
+			double ba1 = paramTemp1(3) - paramTemp1(2);
+			double u1 = ( rv1Ptr->getMean() - paramTemp1(2) ) / ba1; 
+			double s1 = rv1Ptr->getStdv() / ba1;
+            
 			double o=u1;
 			double p=s1;
 			double q=u2;
@@ -1160,8 +1183,8 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			double u=o+q;
 			double s=p+r;
 			double oo=o*o;
-			double pp=p*cov1;
-			double qq=q*q;
+			//double pp=p*cov1;
+			//double qq=q*q;
 			double rr=r*r;
 			double oq=o*q;
 			double pr=p*r;
@@ -1189,25 +1212,28 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			newCorrelation = temp * correlation;
 		}
 		else if ( strcmp(typeRv1,"BETA") == 0  &&  (strcmp(typeRv2,"TYPE1LARGESTVALUE") == 0 || strcmp(typeRv2,"GUMBEL") == 0)  ) {
-			double ba = rv1Ptr->getParameter4() - rv1Ptr->getParameter3();
-			double u1 = ( rv1Ptr->getMean() - rv1Ptr->getParameter3() ) / ba; 
+			Vector paramTemp = rv1Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u1 = ( rv1Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s1 = rv1Ptr->getStdv() / ba;
 			double temp = 1.055-0.066*correlation-0.194*u1+0.391*s1+0.003*correlation*correlation
 				+0.194*u1*u1-1.134*s1*s1+0.130*correlation*u1+0.003*correlation*s1;
 			newCorrelation = temp * correlation;
 		}
 		else if ( strcmp(typeRv1,"BETA") == 0  &&  strcmp(typeRv2,"TYPE1SMALLESTVALAUE") == 0  ) {
-			double ba = rv1Ptr->getParameter4() - rv1Ptr->getParameter3();
-			double u1 = ( rv1Ptr->getMean() - rv1Ptr->getParameter3() ) / ba; 
+            Vector paramTemp = rv1Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u1 = ( rv1Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s1 = rv1Ptr->getStdv() / ba;
 			double temp = 1.055+0.066*correlation-0.194*u1+0.391*s1+0.003*correlation*correlation
 				+0.194*u1*u1-1.134*s1*s1-0.130*correlation*u1-0.003*correlation*s1;
 			newCorrelation = temp * correlation;
 		}
 		else if ( strcmp(typeRv1,"BETA") == 0  &&  strcmp(typeRv2,"TYPE2LARGESTVALUE") == 0  ) {
-			double ba1 = rv1Ptr->getParameter4() - rv1Ptr->getParameter3();
-			double u1 = ( rv1Ptr->getMean() - rv1Ptr->getParameter3() ) / ba1; 
-			double s1 = rv1Ptr->getStdv() / ba1;
+			Vector paramTemp = rv1Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u1 = ( rv1Ptr->getMean() - paramTemp(2) ) / ba; 
+			double s1 = rv1Ptr->getStdv() / ba;
 			double uu=u1*u1;
 			double ss=s1*s1;
 			double xu=correlation*u1;
@@ -1226,8 +1252,9 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			newCorrelation = temp * correlation;
 		}
 		else if ( strcmp(typeRv1,"BETA") == 0  &&  (strcmp(typeRv2,"TYPE3SMALLESTVALUE") == 0 || strcmp(typeRv2,"WEIBULL") == 0) ) {
-			double ba = rv1Ptr->getParameter4() - rv1Ptr->getParameter3();
-			double u1 = ( rv1Ptr->getMean() - rv1Ptr->getParameter3() ) / ba; 
+			Vector paramTemp = rv1Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u1 = ( rv1Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s1 = rv1Ptr->getStdv() / ba;
 			double temp = 1.054+0.002*correlation-0.176*u1+0.366*s1-0.201*cov2
 				-0.002*correlation*correlation+0.176*u1*u1-1.098*s1*s1+0.340*cov2*cov2
@@ -1255,8 +1282,9 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			newCorrelation = (1.055+0.015*correlation*correlation)*correlation;
 		}
 		else if ( (strcmp(typeRv1,"TYPE1LARGESTVALUE") == 0 || strcmp(typeRv1,"GUMBEL") == 0)  &&  strcmp(typeRv2,"BETA") == 0  ) {
-			double ba = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba; 
+			Vector paramTemp = rv2Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u2 = ( rv2Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s2 = rv2Ptr->getStdv() / ba;
 			double temp = 1.055-0.066*correlation-0.194*u2+0.391*s2+0.003*correlation*correlation
 				+0.194*u2*u2-1.134*s2*s2+0.130*correlation*u2+0.003*correlation*s2;
@@ -1295,8 +1323,9 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			newCorrelation = (1.055+0.015*correlation*correlation)*correlation;
 		}
 		else if ( strcmp(typeRv1,"TYPE1SMALLESTVALAUE") == 0  &&  strcmp(typeRv2,"BETA") == 0  ) {
-			double ba = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba; 
+            Vector paramTemp = rv2Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u2 = ( rv2Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s2 = rv2Ptr->getStdv() / ba;
 			double temp = 1.055+0.066*correlation-0.194*u2+0.391*s2+0.003*correlation*correlation
 				+0.194*u2*u2-1.134*s2*s2-0.130*correlation*u2-0.003*correlation*s2;
@@ -1337,9 +1366,10 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			newCorrelation = (1.033+0.305*cov1+0.074*correlation*correlation+0.405*cov1*cov1)*correlation;
 		}
 		else if ( strcmp(typeRv1,"TYPE2LARGESTVALUE") == 0  &&  strcmp(typeRv2,"BETA") == 0  ) {
-			double ba2 = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba2; 
-			double s2 = rv2Ptr->getStdv() / ba2;
+            Vector paramTemp = rv2Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u2 = ( rv2Ptr->getMean() - paramTemp(2) ) / ba; 
+			double s2 = rv2Ptr->getStdv() / ba;
 			double uu=u2*u2;
 			double ss=s2*s2;
 			double xu=correlation*u2;
@@ -1397,8 +1427,9 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 			newCorrelation = (1.061-0.237*cov1-0.005*correlation*correlation+0.379*cov1*cov1)*correlation;
 		}
 		else if ( (strcmp(typeRv1,"TYPE3SMALLESTVALUE") == 0 || strcmp(typeRv1,"WEIBULL") == 0)  &&  strcmp(typeRv2,"BETA") == 0  ) {
-			double ba = rv2Ptr->getParameter4() - rv2Ptr->getParameter3();
-			double u2 = ( rv2Ptr->getMean() - rv2Ptr->getParameter3() ) / ba; 
+            Vector paramTemp = rv2Ptr->getParameters();
+			double ba = paramTemp(3) - paramTemp(2);
+			double u2 = ( rv2Ptr->getMean() - paramTemp(2) ) / ba; 
 			double s2 = rv2Ptr->getStdv() / ba;
 			double temp = 1.054+0.002*correlation-0.176*u2+0.366*s2-0.201*cov1
 				-0.002*correlation*correlation+0.176*u2*u2-1.098*s2*s2+0.340*cov1*cov1
