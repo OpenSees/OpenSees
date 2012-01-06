@@ -3790,7 +3790,6 @@ SRC/utility/Timer.tex -text
 SRC/utility/utility.tex -text
 Win32/DoddRestrepo/DoddRestrepo/DoddRestrepo.vfproj -text
 Win32/OpenSees.opt -text
-Win32/OpenSees2010.sln -text
 Win32/OpenSeesFortran.mak -text
 Win32/OpenSeesFortran.mdp -text svneol=unset#unset
 Win32/OpenSeesVC2005.sln -text
