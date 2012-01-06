@@ -320,7 +320,7 @@ FiniteDifferenceGradGEvaluator::getDgDdispl()
 	int lsf = theReliabilityDomain->getTagOfActiveLimitStateFunction();
 	LimitStateFunction *theLimitStateFunction = 
 		theReliabilityDomain->getLimitStateFunctionPtr(lsf);
-	char *theExpression = theLimitStateFunction->getExpression();
+	const char *theExpression = theLimitStateFunction->getExpression();
 	char lsf_copy[500];
 	strcpy(lsf_copy,theExpression);
 

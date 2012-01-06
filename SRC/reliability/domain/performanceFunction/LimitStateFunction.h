@@ -36,7 +36,7 @@
 #define LimitStateFunction_h
 
 #include <PerformanceFunction.h>
-#include <FunctionEvaluator.h>
+//#include <FunctionEvaluator.h>
 #include <map>
 #include <string>
 using namespace std;
