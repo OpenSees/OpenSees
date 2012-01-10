@@ -220,7 +220,7 @@ static MeritFunctionCheck *theMeritFunctionCheck = 0;
 static ProbabilityTransformation *theProbabilityTransformation = 0;
 static ReliabilityConvergenceCheck *theReliabilityConvergenceCheck = 0;
 static Vector *theStartPoint = 0;
-static bool startAtOrigin = false;
+static bool startAtOrigin = true;
 static RootFinding *theRootFindingAlgorithm = 0;
 static FindCurvatures *theFindCurvatures = 0;
 static FindDesignPointAlgorithm *theFindDesignPointAlgorithm = 0;
@@ -2526,6 +2526,23 @@ TclReliabilityModelBuilder_addProbabilityTransformation(ClientData clientData, T
 		}
 
 		theProbabilityTransformation = new NatafProbabilityTransformation(theReliabilityDomain,printFlag);
+  }
+	// GET INPUT PARAMETER (string) AND CREATE THE OBJECT
+	else if (strcmp(argv[1],"AllIndependent") == 0) {
+
+		int printFlag = 0; 
+		
+		if (argc > 2) {
+			if (strcmp(argv[2],"-print") == 0) {
+
+				if (Tcl_GetInt(interp, argv[3], &printFlag) != TCL_OK) {
+					opserr << "ERROR: invalid input: printFlag to Nataf transformation \n";
+					return TCL_ERROR;
+				}
+			}
+		}
+
+		theProbabilityTransformation = new AllIndependentTransformation(theReliabilityDomain,printFlag);
   }
   else {
 	opserr << "ERROR: unrecognized type of ProbabilityTransformation \n";
