@@ -117,7 +117,7 @@ AllIndependentTransformation::x_to_z(const Vector &px)
 //	opserr << " input something114 \n";
 	for ( int i=0 ; i<nrv ; i++ )
 	{
-		theRV = theReliabilityDomain->getRandomVariablePtr(i+1);
+		theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(i);
 		if (strcmp(theRV->getType(),"NORMAL")==0) {
 			double mju = theRV->getMean();
 			double sigma = theRV->getStdv();
@@ -299,7 +299,7 @@ AllIndependentTransformation::getJacobian_z_x(const Vector &px, const Vector &pz
 //	Matrix jacobianMatrix_z_x(nrv,nrv);
 	for ( int i=0 ; i<nrv ; i++ )
 	{
-		theRV = theReliabilityDomain->getRandomVariablePtr(i+1);
+		theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(i);
 		if (strcmp(theRV->getType(),"NORMAL")==0) {
 			double sigma = theRV->getStdv();
 			(*jacobian_z_x)(i,i) = 1.0 / sigma;
@@ -339,7 +339,7 @@ AllIndependentTransformation::z_to_x(const Vector &pz)
 //	Vector x(nrv);
 	for ( int i=0 ; i<nrv ; i++ )
 	{
-		theRV = theReliabilityDomain->getRandomVariablePtr(i+1);
+		theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(i);
 		if (strcmp(theRV->getType(),"NORMAL")==0) {
 			double mju = theRV->getMean();
 			double sigma = theRV->getStdv();
