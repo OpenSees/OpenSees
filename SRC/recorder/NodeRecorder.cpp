@@ -656,10 +656,11 @@ NodeRecorder::initialize(void)
 
   if (theNodes != 0) 
     delete [] theNodes;
-  
+
   numValidNodes = 0;
 
   if (theNodalTags != 0) {
+
     int numNode = theNodalTags->Size();
     theNodes = new Node *[numNode];
     if (theNodes == 0) {
@@ -675,10 +676,11 @@ NodeRecorder::initialize(void)
 	numValidNodes++;
       }
     }
-
   } else {
+
     int numNodes = theDomain->getNumNodes();
     theNodes = new Node *[numNodes];
+    opserr << "NodeRecorder::initialize - numNodes: " << numNodes << endln;
     if (theNodes == 0) {
       opserr << "NodeRecorder::domainChanged - out of memory\n";
       return -1;
@@ -695,7 +697,7 @@ NodeRecorder::initialize(void)
   //
   // resize the response vector
   //
-  
+
   int timeOffset = 0;
   if (echoTimeFlag == true)
     timeOffset = 1;
@@ -757,11 +759,10 @@ NodeRecorder::initialize(void)
       dataFlag = 6;
 
   ***********************************************************/
-
   int numDOF = theDofs->Size();
-
+  
   // write out info to handler if parallel execution
-  int numNode = theNodalTags->Size();
+  //  
 
   ID xmlOrder(numValidNodes);
 
@@ -770,6 +771,7 @@ NodeRecorder::initialize(void)
 
   if (theNodalTags != 0 && addColumnInfo == 1) {
 
+    int numNode = theNodalTags->Size();
     int count = 0;
     int nodeCount = 0;
 
