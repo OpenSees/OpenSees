@@ -144,6 +144,7 @@
 #define MAT_TAG_pyUCLA  			49
 #define MAT_TAG_Maxwell			50
 #define MAT_TAG_Cast			51
+#define MAT_TAG_ElasticMultiLinear			46
 
 
 // Terje:

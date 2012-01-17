@@ -2695,6 +2695,8 @@ SRC/material/uniaxial/ElasticBilin.h -text
 SRC/material/uniaxial/ElasticMaterial.cpp -text
 SRC/material/uniaxial/ElasticMaterial.h -text
 SRC/material/uniaxial/ElasticMaterial.tex -text
+SRC/material/uniaxial/ElasticMultiLinear.cpp -text
+SRC/material/uniaxial/ElasticMultiLinear.h -text
 SRC/material/uniaxial/ElasticPPMaterial.cpp -text
 SRC/material/uniaxial/ElasticPPMaterial.h -text
 SRC/material/uniaxial/ElasticPPMaterial.tex -text

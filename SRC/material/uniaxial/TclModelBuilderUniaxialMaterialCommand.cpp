@@ -97,6 +97,7 @@ extern void *OPS_New_pyUCLA(void);
 extern void *OPS_Maxwell(void);
 extern void *OPS_Cast(void);
 extern void *OPS_Dodd_Restrepo(void);
+extern void *OPS_NewElasticMultiLinear(void);
 
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
@@ -215,7 +216,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       // Parsing was successful, allocate the material
       theMaterial = new ElasticMaterial(tag, E, eta);       
 
-    } else if ((strcmp(argv[1],"ElasticBilin") == 0) || (strcmp(argv[1],"ElasticBiinear") == 0)) {
+    } else if ((strcmp(argv[1],"ElasticBilin") == 0) || (strcmp(argv[1],"ElasticBilinear") == 0)) {
       void *theMat = OPS_NewElasticBilin();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
@@ -248,6 +249,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	       (strcmp(argv[1],"Restrepo") == 0)) {
 
       void *theMat = OPS_Dodd_Restrepo();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"ElasticMultiLinear") == 0) {
+      void *theMat = OPS_NewElasticMultiLinear();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
