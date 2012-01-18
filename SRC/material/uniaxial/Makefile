@@ -3,6 +3,7 @@ include ../../../Makefile.def
  OBJS       = UniaxialMaterial.o \
 	ElasticMaterial.o \
 	Elastic2Material.o \
+	ElasticMultiLinear.o \
         ElasticPPMaterial.o \
         ElasticBilin.o \
 	ParallelMaterial.o \
@@ -11,7 +12,6 @@ include ../../../Makefile.def
 	Cast.o \
         HardeningMaterial.o \
 	Concrete01.o \
-	Concrete04.o \
 	Concrete04.o \
 	Concrete06.o \
 	Concrete07.o \
