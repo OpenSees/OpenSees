@@ -500,6 +500,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/WrapperUniaxialMaterial.o \
 	$(FE)/material/uniaxial/ElasticMaterial.o \
 	$(FE)/material/uniaxial/Elastic2Material.o \
+	$(FE)/material/uniaxial/ElasticMultiLinear.o \
 	$(FE)/material/uniaxial/ReinforcingSteel.o \
 	$(FE)/material/uniaxial/TclReinforcingSteel.o \
 	$(FE)/material/uniaxial/ElasticPPMaterial.o \
