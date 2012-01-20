@@ -119,10 +119,6 @@ Vector::Vector(const Vector &other)
 }	
 
 
-
-
-
-
 // ~Vector():
 // 	destructor, deletes the [] data
 
@@ -1132,9 +1128,6 @@ Vector::Assemble(const Vector &V, int init_pos, double fact)
 
   return res;
 }
-
-
-
 
 int
 Vector::Extract(const Vector &V, int init_pos, double fact) 
