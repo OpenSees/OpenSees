@@ -220,7 +220,7 @@ static MeritFunctionCheck *theMeritFunctionCheck = 0;
 static ProbabilityTransformation *theProbabilityTransformation = 0;
 static ReliabilityConvergenceCheck *theReliabilityConvergenceCheck = 0;
 static Vector *theStartPoint = 0;
-static bool startAtOrigin = true;
+static bool startAtOrigin = false;
 static RootFinding *theRootFindingAlgorithm = 0;
 static FindCurvatures *theFindCurvatures = 0;
 static FindDesignPointAlgorithm *theFindDesignPointAlgorithm = 0;
@@ -989,7 +989,8 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 		return TCL_ERROR;
 	}
 	
-	
+	// Set xrv in namespace here -- MHS
+
 	return TCL_OK;
 	
 }
@@ -3792,13 +3793,11 @@ TclReliabilityModelBuilder_addStartPoint(ClientData clientData, Tcl_Interp *inte
 	}
 	else if (strcmp(argv[1],"Origin") == 0) {
 		
-	  /*
 	  RandomVariableIter rvIter = theReliabilityDomain->getRandomVariables();
 	  while ((aRandomVariable = rvIter()) != 0) {
 	    int tag = aRandomVariable->getTag();
-	    theReliabilityDomain->setStartPoint(tag, 0.0);
+	    aRandomVariable->setStartValue(0.0);
 	  }
-	  */
 	  startAtOrigin = true;
 	}
 	else if (strcmp(argv[1],"Given") == 0) {
