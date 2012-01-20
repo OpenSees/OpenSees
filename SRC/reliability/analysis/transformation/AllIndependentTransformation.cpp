@@ -103,12 +103,13 @@ int
 AllIndependentTransformation::transform_x_to_u(const Vector &x, Vector &u)
 {
 //	opserr << " input something112 \n";
-	u = x_to_z(x);
+//	u = x_to_z(x);
+  x_to_z(x, u);
 	return 0;
 }
 
-Vector
-AllIndependentTransformation::x_to_z(const Vector &px)
+int
+AllIndependentTransformation::x_to_z(const Vector &px, Vector &z)
 {
 	RandomVariable *theRV;
 	static NormalRV aStandardNormalRV(1, 0.0, 1.0);
@@ -121,25 +122,25 @@ AllIndependentTransformation::x_to_z(const Vector &px)
 		if (strcmp(theRV->getType(),"NORMAL")==0) {
 			double mju = theRV->getMean();
 			double sigma = theRV->getStdv();
-			(*z)(i) =   ( px(i) - mju ) / sigma;
+			z(i) =   ( px(i) - mju ) / sigma;
 		}
 		else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
 			Vector paramTemp = theRV->getParameters();
             double lambda = paramTemp(0);
 			double zeta = paramTemp(1);
 			if (zeta < 0.0) { /// interpret this as a negative lognormal random variable
-				(*z)(i) = -( log ( fabs(px(i)) ) - lambda ) / zeta;
+				z(i) = -( log ( fabs(px(i)) ) - lambda ) / zeta;
 			}
 			else {
-				(*z)(i) = ( log ( px(i) ) - lambda ) / zeta;
+				z(i) = ( log ( px(i) ) - lambda ) / zeta;
 			}
 		}
 		else {
-			(*z)(i) = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFvalue(px(i)));
+		  z(i) = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFvalue(px(i)));
 		}
 	}
 //	opserr << " input something114 \n";
-	return (*z);
+	return 0;
 }
 
 
@@ -148,7 +149,8 @@ Vector
 AllIndependentTransformation::meanSensitivityOf_x_to_u(const Vector &px, int rvNumber)
 {
 //	Vector z = x_to_z(px);
-	(*z) = x_to_z(px);
+  //(*z) = x_to_z(px);
+  x_to_z(px, *z);
 
 	if(DzDmean != 0 ){
 		delete DzDmean;
@@ -195,7 +197,8 @@ Vector
 AllIndependentTransformation::stdvSensitivityOf_x_to_u(const Vector &px, int rvNumber)
 {
 //	Vector z = x_to_z(x);
-	(*z) = x_to_z(px);
+  //(*z) = x_to_z(px);
+  x_to_z(px, *z);
 
 	// 3) DzDmean and DzDstdv = a vector of zeros and then:
 	if(DzDstdv != 0 ){
@@ -248,7 +251,8 @@ AllIndependentTransformation::stdvSensitivityOf_x_to_u(const Vector &px, int rvN
 int 
 AllIndependentTransformation::transform_u_to_x(const Vector &u, Vector &x)
 {
-	x = z_to_x(u);
+  //x = z_to_x(u);
+  z_to_x(u, x);
 	return 0;
 }
 
@@ -271,12 +275,15 @@ AllIndependentTransformation::transform_u_to_x_andComputeJacobian()
 int
 AllIndependentTransformation::getJacobian_x_to_u(const Vector &x, Matrix &Jxu)
 {
-	(*jacobian_u_x) = getJacobian_z_x(x,(*u));
+  //(*jacobian_u_x) = getJacobian_z_x(x,(*u));
+  Vector Jux(nrv);
+  this->getJacobian_z_x(x, *u, Jux);
 
-    for(int i=0; i<nrv; i++) 
-	(*jacobian_x_u)(i,i) = 1.0/(*jacobian_u_x)(i,i);
+  for(int i=0; i<nrv; i++) 
+    //(*jacobian_x_u)(i,i) = 1.0/(*jacobian_u_x)(i,i);
+    Jxu(i,i) = 1.0/Jux(i);
 
-	return 0;
+  return 0;
 }
 
 
@@ -284,15 +291,22 @@ AllIndependentTransformation::getJacobian_x_to_u(const Vector &x, Matrix &Jxu)
 int
 AllIndependentTransformation::getJacobian_u_to_x(const Vector &pu, Matrix &Jux)
 {
-	*x = z_to_x(pu);
+  //*x = z_to_x(pu);
+  z_to_x(pu, *x);
 
-	(*jacobian_u_x) = getJacobian_z_x((*x),*u);
+  //(*jacobian_u_x) = getJacobian_z_x((*x),*u);
+  Vector Jzx(nrv);
+  this->getJacobian_z_x(*x, *u, Jzx);
 
-	return 0;
+  //Jux = *jacobian_u_x;
+  for (int i =0; i < nrv; i++)
+    Jux(i,i) = Jzx(i);
+  
+  return 0;
 }
 
-Matrix
-AllIndependentTransformation::getJacobian_z_x(const Vector &px, const Vector &pz)
+int
+AllIndependentTransformation::getJacobian_z_x(const Vector &px, const Vector &pz, Vector &Jzx)
 {	
 	RandomVariable *theRV;
 	static NormalRV aStandardNormalRV(1, 0.0, 1.0);
@@ -302,7 +316,7 @@ AllIndependentTransformation::getJacobian_z_x(const Vector &px, const Vector &pz
 		theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(i);
 		if (strcmp(theRV->getType(),"NORMAL")==0) {
 			double sigma = theRV->getStdv();
-			(*jacobian_z_x)(i,i) = 1.0 / sigma;
+			Jzx(i) = 1.0 / sigma;
 		}
 		else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
             Vector paramTemp = theRV->getParameters();
@@ -311,7 +325,7 @@ AllIndependentTransformation::getJacobian_z_x(const Vector &px, const Vector &pz
 				opserr << "NatafProbabilityTransformation::getJacobian_z_x() -- Error: value " << endln
 				    << "of lognormal random variable is zero in original space. " << endln;
 			}
-			(*jacobian_z_x)(i,i) = 1.0 / ( zeta * px(i)  );
+			Jzx(i) = 1.0 / ( zeta * px(i)  );
 		}
 		else {
 			double pdf = aStandardNormalRV.getPDFvalue(pz(i));
@@ -319,48 +333,48 @@ AllIndependentTransformation::getJacobian_z_x(const Vector &px, const Vector &pz
 				opserr << "ERROR: NatafProbabilityTransformation::getJacobian_z_x() -- " << endln
 					<< " the PDF value is zero, probably due to too large step. " << endln;
 			}
-			(*jacobian_z_x)(i,i) = theRV->getPDFvalue(px(i)) / pdf;
-			if ((*jacobian_z_x)(i,i)==0.0) {
+			Jzx(i) = theRV->getPDFvalue(px(i)) / pdf;
+			if (Jzx(i)==0.0) {
 			}
 		}
 	}
 
-	return *jacobian_z_x;
+	return 0;
 }
 
 
 
 
-Vector
-AllIndependentTransformation::z_to_x(const Vector &pz)
+int
+AllIndependentTransformation::z_to_x(const Vector &pz, Vector &x)
 {
 	RandomVariable *theRV;
 	static NormalRV aStandardNormalRV(1, 0.0, 1.0);
-//	Vector x(nrv);
+
 	for ( int i=0 ; i<nrv ; i++ )
 	{
 		theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(i);
 		if (strcmp(theRV->getType(),"NORMAL")==0) {
 			double mju = theRV->getMean();
 			double sigma = theRV->getStdv();
-			(*xtemp)(i) = pz(i) * sigma + mju;
+			x(i) = pz(i) * sigma + mju;
 		}
 		else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
             Vector paramTemp = theRV->getParameters();
             double lambda = paramTemp(0);
 			double zeta = paramTemp(1);
 			if (zeta < 0.0) { // interpret this as negative lognormal random variable
-				(*xtemp)(i) = -exp ( -pz(i) * zeta + lambda );
+				x(i) = -exp ( -pz(i) * zeta + lambda );
 			}
 			else {
-				(*xtemp)(i) = exp ( pz(i) * zeta + lambda );
+				x(i) = exp ( pz(i) * zeta + lambda );
 			}
 		}
 		else {
-			(*xtemp)(i) = theRV->getInverseCDFvalue(  aStandardNormalRV.getCDFvalue(pz(i))  );
+			x(i) = theRV->getInverseCDFvalue(  aStandardNormalRV.getCDFvalue(pz(i))  );
 		}
 	}
-	return *xtemp;
+	return 0;
 }
 
 void AllIndependentTransformation::setReliabilityDomain(ReliabilityDomain* theRelDom)

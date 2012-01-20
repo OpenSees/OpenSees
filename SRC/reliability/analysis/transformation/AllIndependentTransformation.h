@@ -75,9 +75,10 @@ private:
 	int printFlag;
 
 	// Private member functions
-	Matrix getJacobian_z_x(const Vector &x, const Vector &z);
-	Vector z_to_x(const Vector &z);
-	Vector x_to_z(const Vector &x);
+	// Representing diag matrix as vector
+	int getJacobian_z_x(const Vector &x, const Vector &z, Vector &Jzx);
+	int z_to_x(const Vector &z, Vector &x);
+	int x_to_z(const Vector &x, Vector &z);
 
 };
 
