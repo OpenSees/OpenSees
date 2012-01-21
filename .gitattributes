@@ -114,6 +114,8 @@ DEVELOPER/core/Response.h -text
 DEVELOPER/core/SP_Constraint.cpp -text
 DEVELOPER/core/SP_Constraint.h -text
 DEVELOPER/core/SP_ConstraintIter.h -text
+DEVELOPER/core/SimulationInformation.cpp -text
+DEVELOPER/core/SimulationInformation.h -text
 DEVELOPER/core/SingleDomAllSP_Iter.cpp -text
 DEVELOPER/core/SingleDomAllSP_Iter.h -text
 DEVELOPER/core/SingleDomEleIter.cpp -text
