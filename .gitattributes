@@ -54,6 +54,8 @@ DEVELOPER/core/FiberResponse.cpp -text
 DEVELOPER/core/FiberResponse.h -text
 DEVELOPER/core/File.cpp -text
 DEVELOPER/core/File.h -text
+DEVELOPER/core/FileIter.cpp -text
+DEVELOPER/core/FileIter.h -text
 DEVELOPER/core/G3Globals.h -text
 DEVELOPER/core/Graph.cpp -text
 DEVELOPER/core/Graph.h -text
