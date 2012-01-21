@@ -134,6 +134,8 @@ DEVELOPER/core/StandardStream.cpp -text
 DEVELOPER/core/StandardStream.h -text
 DEVELOPER/core/StaticIntegrator.cpp -text
 DEVELOPER/core/StaticIntegrator.h -text
+DEVELOPER/core/StringContainer.cpp -text
+DEVELOPER/core/StringContainer.h -text
 DEVELOPER/core/Subdomain.cpp -text
 DEVELOPER/core/Subdomain.h -text
 DEVELOPER/core/SubdomainNodIter.cpp -text
