@@ -146,4 +146,12 @@ SRC/graph/graph/VertexIter.h
 SRC/classTags.h
 SRC/api/elementAPI.h
 SRC/coordTransformation/CrdTransf.h
+SRC/utility/SimulationInformation.h
+SRC/utility/SimulationInformation.cpp
+SRC/utility/StringContainer.h
+SRC/utility/StringContainer.cpp
+SRC/utility/File.h
+SRC/utility/File.cpp
+SRC/utility/FileIter.h
+SRC/utility/FileIter.cpp
 SRC/api/win32Functions.cpp

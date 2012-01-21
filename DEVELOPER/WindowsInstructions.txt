@@ -1,28 +1,28 @@
 1. Open ViualStudio
 2. File -> New Project
-3. Give it name of New class and location of current class files (ElasticPPCPP and C:\???\OpenSeesDeveloper\material
-4. Select OK.
+3. Give it name of New class and location of current class files (ElasticPPcpp and C:\???\OpenSeesDeveloper\material (VisualStudio2010 want VisualStudio C++ Win32 - Win32 Project)
+4. Select OK (visual Studio20
 5. New windows pops up, Select Application Settins
 6. Select DLL AND select Empty Project
 7. Select Finish
 
-a new project pops up in the workspace with class name (ElasticPPCPP)
+a new project pops up in the workspace with class name (ElasticPPcpp)
 8. Right click on source files, select add Existing Item.
-9. browse to the class file (should be up 1 directory, select it (elasticPPcPP.cpp)
+9. browse to the class file (should be up 1 directory, select it (elasticPPcpp.cpp)
 10.Right click on heared files, select add existing item.
-11. browse to header file, select it (elasticOOCPP.h)
+11. browse to header file, select it (elasticPPcpp.h)
 
-12. right click on Project (ElasticPPCPP), select build.
+12. right click on Project (ElasticPPcpp), select build.
 
 It fails in compilation, as cannot find file elementAPI.h
 13. right click on Project (ElasticPPCPP), select Properties.
 14. select C/C++ folder icon
-15. In Configuration pull down menu, select all Configurations
+15. In Configuration pull down menu, select all configurations
 16. Click 3 dots to right of Additional Include Directories
 17. In window that pops up, select folder
-18. add to line ..\..\core (this directory contains the elementAPI.h file).
+18. add to line ..\..\core (this directory contains the elementAPI.h file). (keep adding ..\ till it works!)
 19. select ok.
-20 right click on project (ElasticPPCPP), select build
+20 right click on project (ElasticPPcpp), select build
 
 It fails in Linking, a lot of unresolved external symbols.
 21. Right click on source files, select add Existing Item.
