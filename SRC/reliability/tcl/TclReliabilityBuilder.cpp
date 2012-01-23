@@ -3239,25 +3239,29 @@ TclReliabilityModelBuilder_addFunctionEvaluator(ClientData clientData, Tcl_Inter
 
 	// GET INPUT PARAMETER (string) AND CREATE THE OBJECT
 	if (strcmp(argv[1],"Matlab") == 0) {
-		opserr << "ERROR: The Matlab g-function evaluator is not implemented in this " << endln
+		opserr << "ERROR: The Matlab function evaluator is not implemented in this " << endln
 			<< " version of your OpenSees executable file. Please contact the " << endln
 			<< " developer for more information." << endln;
 		return TCL_ERROR;
 	}
 	else if (strcmp(argv[1],"Tcl") == 0) {
+        if (argc == 2)
+            theFunctionEvaluator = new TclEvaluator(interp, theReliabilityDomain, theStructuralDomain);
 
-		if (argc != 4) {
-			opserr << "ERROR: Wrong number of arguments to Tcl g-function evaluator." << endln;
-			return TCL_ERROR;
-		}
-
-		if (strcmp(argv[2],"-file") != 0 && strcmp(argv[2],"-command") != 0) {
-			opserr << "ERROR: Wrong input to Tcl g-function evaluator." << endln;
-			return TCL_ERROR;
-		}
-		theFunctionEvaluator = new TclEvaluator(interp, theReliabilityDomain, 
+		else if (argc == 4) {
+            if (strcmp(argv[2],"-file") != 0 && strcmp(argv[2],"-command") != 0) {
+                opserr << "ERROR: Tcl function evaluator only takes -file and -command arguments." << endln;
+                return TCL_ERROR;    
+            } else {
+                theFunctionEvaluator = new TclEvaluator(interp, theReliabilityDomain, 
 							theStructuralDomain, argv[3]);
-
+            }
+        }
+        
+        else {
+            opserr << "ERROR: Wrong input to Tcl function evaluator." << endln;
+			return TCL_ERROR;
+		}
 	}
 
 /////////////////////////////////////////
