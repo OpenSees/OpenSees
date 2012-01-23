@@ -2526,12 +2526,21 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     
     // now must determine the type of solver to create from rest of args
     int factLVALUE = 10;
-    if (argc == 4) {
-      if (Tcl_GetInt(interp, argv[3], &factLVALUE) != TCL_OK)
-	return TCL_ERROR;
+	int factorOnce=0;
+	int count = 2;
+	while (count < argc) {
+      if ((strcmp(argv[count],"-lValueFact") == 0) || (strcmp(argv[count],"-lvalueFact") == 0)) {
+		 if (Tcl_GetInt(interp, argv[count+1], &factLVALUE) != TCL_OK)
+			return TCL_ERROR;
+	     count++;
+	  } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
+	     factorOnce = 1;
+      }
+      count++;
     }
+  
     UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
-    theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE);      
+    theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce);      
   }	  
 #ifdef _ITPACK
 //  else if (strcmp(argv[1],"Itpack") == 0) {

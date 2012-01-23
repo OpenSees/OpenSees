@@ -46,12 +46,12 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
-UmfpackGenLinSOE::UmfpackGenLinSOE(UmfpackGenLinSolver &the_Solver, int fact_LVALUE)
+UmfpackGenLinSOE::UmfpackGenLinSOE(UmfpackGenLinSolver &the_Solver, int fact_LVALUE, int factONCE)
 :LinearSOE(the_Solver, LinSOE_TAGS_UmfpackGenLinSOE),
  size(0), nnz(0), A(0), B(0), X(0), colA(0), rowStartA(0),
  lValue(0), index(0),
  vectX(0), vectB(0), Asize(0), Bsize(0),
- factored(false), factLVALUE(fact_LVALUE)
+ factored(false), factLVALUE(fact_LVALUE), factorOnce(factONCE)
 {
     the_Solver.setLinearSOE(*this);
 }
@@ -256,6 +256,9 @@ UmfpackGenLinSOE::setSize(Graph &theGraph)
 int 
 UmfpackGenLinSOE::addA(const Matrix &m, const ID &id, double fact)
 {
+	if (factored == true)
+		return 0;
+
     // check for a quick return 
     if (fact == 0.0)  
 	return 0;
@@ -384,6 +387,9 @@ UmfpackGenLinSOE::setB(const Vector &v, double fact)
 void 
 UmfpackGenLinSOE::zeroA(void)
 {
+	if (factorOnce == 1 && factored == true)
+		return;
+
     double *Aptr = A;
     for (int i=0; i<Asize; i++)
 	*Aptr++ = 0;
