@@ -112,7 +112,7 @@ TclEvaluator::setVariables(const Vector &x)
 
     xval = x(i);
 
-    // put in x(1) format
+    // put in xrv(1) format
     sprintf(theIndex,"%d",rvTag);
     if (Tcl_SetVar2Ex(theTclInterp,"xrv",theIndex,Tcl_NewDoubleObj(xval),TCL_GLOBAL_ONLY) == NULL) {
       opserr << "ERROR TclEvaluator -- error in setVariables xrv" << endln;
@@ -120,18 +120,10 @@ TclEvaluator::setVariables(const Vector &x)
       return -1;
     }
     
-    // put in x(1,lsfTag) format (useful for reporting design point)
+    // put in xrv(1,lsfTag) format (useful for reporting design point)
     sprintf(theIndex,"%d,%d",rvTag,lsf);
     if (Tcl_SetVar2Ex(theTclInterp,"xrv",theIndex,Tcl_NewDoubleObj(xval),TCL_GLOBAL_ONLY) == NULL) {
       opserr << "ERROR TclEvaluator -- error in setVariables xrv" << endln;
-      opserr << theTclInterp->result << endln;
-      return -1;
-    }
-    
-    // for legacy reasons, also put random variables in x_1 format
-    sprintf(theIndex,"x_%d",rvTag);
-    if (Tcl_SetVar2Ex(theTclInterp,theIndex,NULL,Tcl_NewDoubleObj(xval),TCL_LEAVE_ERR_MSG) == NULL) {
-      opserr << "ERROR TclEvaluator -- error in setVariables x" << endln;
       opserr << theTclInterp->result << endln;
       return -1;
     }
