@@ -56,9 +56,13 @@ public:
 	virtual double getCDFvalue(double rvValue) = 0;
 	virtual double getInverseCDFvalue(double rvValue) = 0; 
 	
-	// starting point methods
-	virtual int setStartValue(double newVal) = 0;
-	virtual double getStartValue() = 0;
+	// starting realization
+	virtual int setStartValue(double newVal) {startValue = newVal; return 0;}
+	virtual double getStartValue() {return startValue;}
+
+	// current realization
+	virtual int setCurrentValue(double newVal) {rvValue = newVal; return 0;}
+	virtual double getCurrentValue() {return rvValue;}
 	
 	// NYI
 	virtual double getCDFMeanSensitivity(double x) {return 0.0;}
@@ -79,7 +83,8 @@ protected:
 	static const double euler;
 	
 private:
-
+	double startValue;
+	double rvValue;
 };
 
 #endif
