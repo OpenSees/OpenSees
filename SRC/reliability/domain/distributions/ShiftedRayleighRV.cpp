@@ -36,8 +36,8 @@
 #include <cmath>
 
 ShiftedRayleighRV::ShiftedRayleighRV(int passedTag, 
-					double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedrayleigh), startValue(0)
+				     double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedrayleigh)
 {
 	int setp = setParameters(passedMean,passedStdv);
 	if (setp < 0)
@@ -46,8 +46,8 @@ ShiftedRayleighRV::ShiftedRayleighRV(int passedTag,
 
 
 ShiftedRayleighRV::ShiftedRayleighRV(int passedTag,
-					const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedrayleigh), startValue(0)
+				     const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedrayleigh)
 {
 	
 	if (passedParameters.Size() != 2) {

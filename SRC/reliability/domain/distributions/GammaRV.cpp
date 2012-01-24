@@ -35,9 +35,8 @@
 #include <NormalRV.h>
 #include <cmath>
 
-GammaRV::GammaRV(int passedTag, 
-				 double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_gamma), startValue(0)
+GammaRV::GammaRV(int passedTag, double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_gamma)
 {
 	int setp = setParameters(passedMean,passedStdv);
 	if (setp < 0)
@@ -45,9 +44,8 @@ GammaRV::GammaRV(int passedTag,
 }
 
 
-GammaRV::GammaRV(int passedTag, 
-				 const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_gamma), startValue(0)
+GammaRV::GammaRV(int passedTag, const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_gamma)
 {
 	if (passedParameters.Size() != 2) {
 		opserr << "Gamma RV requires 2 parameters, k and lambda, for RV with tag " <<

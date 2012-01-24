@@ -35,9 +35,8 @@
 #include <Vector.h>
 #include <cmath>
 
-ChiSquareRV::ChiSquareRV(int passedTag, 
-						 double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_chisquare), startValue(0)
+ChiSquareRV::ChiSquareRV(int passedTag, double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_chisquare)
 {
 	int setp = setParameters(passedMean,passedStdv);
 	if (setp < 0)
@@ -45,9 +44,8 @@ ChiSquareRV::ChiSquareRV(int passedTag,
 }
 
 
-ChiSquareRV::ChiSquareRV(int passedTag,
-						 const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_chisquare), startValue(0)
+ChiSquareRV::ChiSquareRV(int passedTag, const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_chisquare)
 {
 	
 	if (passedParameters.Size() != 1) {

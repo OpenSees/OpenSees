@@ -38,7 +38,7 @@
 UserDefinedRV::UserDefinedRV(int passedTag, const Vector &pxPoints,
 			     const Vector &pPDFpoints)
   :RandomVariable(passedTag, RANDOM_VARIABLE_userdefined),
-   xPoints(pxPoints), PDFpoints(pPDFpoints), startValue(0)
+   xPoints(pxPoints), PDFpoints(pPDFpoints)
 {
 	// This used to be in TclReliabilityBuilder
 	int numPoints = xPoints.Size();

@@ -36,9 +36,8 @@
 #include <cmath>
 #include <float.h>
 
-NormalRV::NormalRV(int passedTag, 
-				   double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_normal), startValue(0)
+NormalRV::NormalRV(int passedTag, double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_normal)
 {
 	int setp = setParameters(passedMean,passedStdv);
 	if (setp < 0)
@@ -47,9 +46,8 @@ NormalRV::NormalRV(int passedTag,
 }
 
 
-NormalRV::NormalRV(int passedTag, 
-				   const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_normal), startValue(0)
+NormalRV::NormalRV(int passedTag, const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_normal)
 {
 	if (passedParameters.Size() != 2) {
 		opserr << "Normal RV requires 2 parameters, mu and sigma, for RV with tag " <<

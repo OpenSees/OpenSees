@@ -36,8 +36,8 @@
 #include <cmath>
 
 Type3SmallestValueRV::Type3SmallestValueRV(int passedTag, 
-										   const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type3smallestvalue), startValue(0)
+					   const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_type3smallestvalue)
 {
 	
 	if (passedParameters.Size() != 3) {

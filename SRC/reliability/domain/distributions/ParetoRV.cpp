@@ -35,9 +35,8 @@
 #include <cmath>
 #include <Vector.h>
 
-ParetoRV::ParetoRV(int passedTag, 
-				   const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_pareto), startValue(0)
+ParetoRV::ParetoRV(int passedTag, const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_pareto)
 {
 	if (passedParameters.Size() != 2) {
 		opserr << "Pareto RV requires 2 parameters, k and u, for RV with tag " <<

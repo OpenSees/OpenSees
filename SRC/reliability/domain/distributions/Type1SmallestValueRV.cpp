@@ -36,8 +36,8 @@
 #include <cmath>
 
 Type1SmallestValueRV::Type1SmallestValueRV(int passedTag, 
-										   double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type1smallestvalue), startValue(0)
+					   double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_type1smallestvalue)
 {
 	int setp = setParameters(passedMean,passedStdv);
 	if (setp < 0)
@@ -46,8 +46,8 @@ Type1SmallestValueRV::Type1SmallestValueRV(int passedTag,
 
 
 Type1SmallestValueRV::Type1SmallestValueRV(int passedTag,
-										   const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type1smallestvalue), startValue(0)
+					   const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_type1smallestvalue)
 {
 	
 	if (passedParameters.Size() != 2) {

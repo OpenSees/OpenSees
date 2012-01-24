@@ -36,8 +36,8 @@
 #include <cmath>
 
 WeibullRV::WeibullRV(int passedTag, 
-					 double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_weibull), startValue(0)
+		     double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_weibull)
 {
 	int setp = setParameters(passedMean,passedStdv);
 	if (setp < 0)
@@ -46,8 +46,8 @@ WeibullRV::WeibullRV(int passedTag,
 
 
 WeibullRV::WeibullRV(int passedTag,
-					 const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_weibull), startValue(0)
+		     const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_weibull)
 {
 	
 	if (passedParameters.Size() != 2) {

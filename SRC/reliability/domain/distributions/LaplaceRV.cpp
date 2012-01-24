@@ -35,9 +35,8 @@
 #include <Vector.h>
 #include <cmath>
 
-LaplaceRV::LaplaceRV(int passedTag, 
-					 double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_laplace), startValue(0)
+LaplaceRV::LaplaceRV(int passedTag, double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_laplace)
 {
 	int setp = setParameters(passedMean,passedStdv);
 	if (setp < 0)
@@ -45,9 +44,8 @@ LaplaceRV::LaplaceRV(int passedTag,
 }
 
 
-LaplaceRV::LaplaceRV(int passedTag,
-				   const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_laplace), startValue(0)
+LaplaceRV::LaplaceRV(int passedTag, const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_laplace)
 {
 	
 	if (passedParameters.Size() != 2) {

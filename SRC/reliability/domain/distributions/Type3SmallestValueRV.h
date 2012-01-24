@@ -54,10 +54,6 @@ public:
 	double getCDFvalue(double rvValue);
 	double getInverseCDFvalue(double rvValue); 
 	
-	// starting point methods
-	int setStartValue(double newVal) {startValue = newVal; return 0;}
-	double getStartValue() {return startValue;}
-	
 	// other
 	void Print(OPS_Stream &s, int flag = 0);
 
@@ -67,7 +63,6 @@ private:
 	double epsilon;
 	double u;
 	double k;
-	double startValue;
 
 };
 

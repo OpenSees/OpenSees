@@ -35,9 +35,8 @@
 #include <Vector.h>
 #include <cmath>
 
-ExponentialRV::ExponentialRV(int passedTag, 
-							 double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_exponential), startValue(0)
+ExponentialRV::ExponentialRV(int passedTag, double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_exponential)
 {
 	int setp = setParameters(passedMean,passedStdv);
 	if (setp < 0)
@@ -45,9 +44,8 @@ ExponentialRV::ExponentialRV(int passedTag,
 }
 
 
-ExponentialRV::ExponentialRV(int passedTag, 
-							 const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_exponential), startValue(0)
+ExponentialRV::ExponentialRV(int passedTag, const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_exponential)
 {
 	
 	if (passedParameters.Size() != 1) {

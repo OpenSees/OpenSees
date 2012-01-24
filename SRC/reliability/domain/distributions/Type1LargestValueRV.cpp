@@ -36,8 +36,8 @@
 #include <cmath>
 
 Type1LargestValueRV::Type1LargestValueRV(int passedTag, 
-										 double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type1largestvalue), startValue(0)
+					 double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_type1largestvalue)
 {
 	int setp = setParameters(passedMean,passedStdv);
 	if (setp < 0)
@@ -46,8 +46,8 @@ Type1LargestValueRV::Type1LargestValueRV(int passedTag,
 
 
 Type1LargestValueRV::Type1LargestValueRV(int passedTag,
-										 const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_type1largestvalue), startValue(0)
+					 const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_type1largestvalue)
 {
 	
 	if (passedParameters.Size() != 2) {

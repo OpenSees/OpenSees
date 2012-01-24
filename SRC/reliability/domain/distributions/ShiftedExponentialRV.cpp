@@ -36,8 +36,8 @@
 #include <cmath>
 
 ShiftedExponentialRV::ShiftedExponentialRV(int passedTag, 
-								double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedexponential), startValue(0)
+					   double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedexponential)
 {
 	int setp = setParameters(passedMean,passedStdv);
 	if (setp < 0)
@@ -46,8 +46,8 @@ ShiftedExponentialRV::ShiftedExponentialRV(int passedTag,
 
 
 ShiftedExponentialRV::ShiftedExponentialRV(int passedTag,
-						const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedexponential), startValue(0)
+					   const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_shiftedexponential)
 {
 	
 	if (passedParameters.Size() != 2) {

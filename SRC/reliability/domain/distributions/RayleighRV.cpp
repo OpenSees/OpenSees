@@ -35,9 +35,8 @@
 #include <Vector.h>
 #include <cmath>
 
-RayleighRV::RayleighRV(int passedTag, 
-					   const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_rayleigh), startValue(0)
+RayleighRV::RayleighRV(int passedTag, const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_rayleigh)
 {
 	
 	if (passedParameters.Size() != 1) {

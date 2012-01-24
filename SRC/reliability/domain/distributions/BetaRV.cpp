@@ -35,9 +35,8 @@
 #include <Vector.h>
 #include <cmath>
 
-BetaRV::BetaRV(int passedTag, 
-			   const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_beta), startValue(0)
+BetaRV::BetaRV(int passedTag, const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_beta)
 {
 	if (passedParameters.Size() != 4) {
 		opserr << "Beta RV requires 4 parameters, a b q and r, for RV with tag " <<

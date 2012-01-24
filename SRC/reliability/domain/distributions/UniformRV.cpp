@@ -35,9 +35,8 @@
 #include <Vector.h>
 #include <cmath>
 
-UniformRV::UniformRV(int passedTag, 
-					 double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_uniform), startValue(0)
+UniformRV::UniformRV(int passedTag, double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_uniform)
 {
 	int setp = setParameters(passedMean,passedStdv);
 	if (setp < 0)
@@ -45,9 +44,8 @@ UniformRV::UniformRV(int passedTag,
 }
 
 
-UniformRV::UniformRV(int passedTag,
-					 const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_uniform), startValue(0)
+UniformRV::UniformRV(int passedTag, const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_uniform)
 {
 	
 	if (passedParameters.Size() != 2) {

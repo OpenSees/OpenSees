@@ -35,9 +35,8 @@
 #include <Vector.h>
 #include <cmath>
 
-GumbelRV::GumbelRV(int passedTag, 
-				   double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_gumbel), startValue(0)
+GumbelRV::GumbelRV(int passedTag, double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_gumbel)
 {
 	int setp = setParameters(passedMean,passedStdv);
 	if (setp < 0)
@@ -45,9 +44,8 @@ GumbelRV::GumbelRV(int passedTag,
 }
 
 
-GumbelRV::GumbelRV(int passedTag,
-				   const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_gumbel), startValue(0)
+GumbelRV::GumbelRV(int passedTag, const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_gumbel)
 {
 	
 	if (passedParameters.Size() != 2) {

@@ -36,9 +36,8 @@
 #include <cmath>
 #include <Vector.h>
 
-LognormalRV::LognormalRV(int passedTag, 
-						 double passedMean, double passedStdv)
-:RandomVariable(passedTag, RANDOM_VARIABLE_lognormal), startValue(0)
+LognormalRV::LognormalRV(int passedTag, double passedMean, double passedStdv)
+:RandomVariable(passedTag, RANDOM_VARIABLE_lognormal)
 {
 	if (passedMean<0.0) {
 		isPositive = false;
@@ -55,9 +54,8 @@ LognormalRV::LognormalRV(int passedTag,
 }
 
 
-LognormalRV::LognormalRV(int passedTag, 
-						 const Vector &passedParameters)
-:RandomVariable(passedTag, RANDOM_VARIABLE_lognormal), startValue(0)
+LognormalRV::LognormalRV(int passedTag, const Vector &passedParameters)
+:RandomVariable(passedTag, RANDOM_VARIABLE_lognormal)
 {
 	if (passedParameters.Size() != 2) {
 		opserr << "Lognormal RV requires 2 parameters, lambda and zeta, for RV with tag " <<
@@ -72,7 +70,7 @@ LognormalRV::LognormalRV(int passedTag,
 		
 		lambda = passedParameters(0);
 		zeta = passedParameters(1);
-		
+
 		if (lambda<0.0) {
 			isPositive = false;
 			lambda = -lambda;
