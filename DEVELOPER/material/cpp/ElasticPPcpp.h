@@ -35,8 +35,6 @@
 
 #include <UniaxialMaterial.h>
 
-#define MAT_TAG_ElasticPPcpp 5002
-
 class ElasticPPcpp : public UniaxialMaterial
 {
   public:
@@ -70,11 +68,14 @@ class ElasticPPcpp : public UniaxialMaterial
     double fyp, fyn;	// positive and negative yield stress
     double ezero;	// initial strain
     double E;		// elastic modulus
-    double trialStrain;	// trial strain
     double ep;		// plastic strain at last commit
 
+    double trialStrain;	// trial strain
     double trialStress;      // current trial stress
     double trialTangent;     // current trial tangent
+    double commitStrain;     // last commited strain
+    double commitStress;     // last commited stress
+    double commitTangent;    // last committed  tangent
 };
 
 
