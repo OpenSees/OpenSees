@@ -60,7 +60,7 @@ SimulationInformation::SimulationInformation()
   this->start();
 }
 
-#include <XmlFileStream.h>
+//#include <XmlFileStream.h>
 
 SimulationInformation::~SimulationInformation()
 { 
