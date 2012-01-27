@@ -34,8 +34,6 @@
 #ifndef CorrelatedStandardNormal_h
 #define CorrelatedStandardNormal_h
 
-#include <NormalRV.h>
-
 class CorrelatedStandardNormal
 {
 
