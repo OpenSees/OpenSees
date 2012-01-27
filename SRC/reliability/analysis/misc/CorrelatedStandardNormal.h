@@ -59,7 +59,8 @@ private:
 		double fa, double fb, double fc, double beta1, double beta2);
 	void testCDF();
 	
-	double rho; 
+	double rho;
+    
 
 };
 

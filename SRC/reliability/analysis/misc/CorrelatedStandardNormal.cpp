@@ -28,7 +28,7 @@
 
 #include <CorrelatedStandardNormal.h>
 #include <ReliabilityDomain.h>
-#include <RandomVariable.h>
+#include <NormalRV.h>
 #include <math.h>
 #include <string.h>
 #include <float.h>
@@ -159,6 +159,7 @@ double
 CorrelatedStandardNormal::getCDFowen(double b1, double b2, int popt)
 {	
 	// single integral form by Owen 1956
+    static NormalRV uRV(1, 0.0, 1.0);
     double cdf = 0.0;
 	double thresh = 0.99;
 	double integral = 0.0;
@@ -175,27 +176,29 @@ CorrelatedStandardNormal::getCDFowen(double b1, double b2, int popt)
 		integral = SimpsonOwen(0,rho,b1,b2);
 	}
 	
-	cdf = standardNormalPhi(b1)*standardNormalPhi(b2) + integral;
+	cdf = uRV.getCDFvalue(b1) * uRV.getCDFvalue(b2) + integral;
 	if (popt == 1)
 		opserr << " Owen = " << cdf;
 		
 	return cdf;
 }
 
+
 double
 CorrelatedStandardNormal::getCDFsheppard(double b1, double b2, int popt)
 {
 	// single integral form by Sheppard 1900
+    static NormalRV uRV(1, 0.0, 1.0);
     double cdf = 0.0;
     
 	if (b1 >= 0 && b2 >= 0)
-		cdf = 1.0 + SimpsonSheppard(rho,b1,b2) - standardNormalPhi(-b1) - standardNormalPhi(-b2);
+		cdf = 1.0 + SimpsonSheppard(rho,b1,b2) - uRV.getCDFvalue(-b1) - uRV.getCDFvalue(-b2);
 	else if (b1 < 0 && b2 < 0)
 		cdf = SimpsonSheppard(rho,-b1,-b2);
 	else if (b1 < 0 && b2 >= 0)
-		cdf = 1.0 - standardNormalPhi(-b1) - SimpsonSheppard(-rho,-b1,b2);
+		cdf = 1.0 - uRV.getCDFvalue(-b1) - SimpsonSheppard(-rho,-b1,b2);
 	else
-		cdf = 1.0 - standardNormalPhi(-b2) - SimpsonSheppard(-rho,b1,-b2);
+		cdf = 1.0 - uRV.getCDFvalue(-b2) - SimpsonSheppard(-rho,b1,-b2);
 	
 	if (popt == 1)
 		opserr << " Sheppard = " << cdf;
@@ -203,10 +206,12 @@ CorrelatedStandardNormal::getCDFsheppard(double b1, double b2, int popt)
 	return cdf;
 }
 
+
 double
 CorrelatedStandardNormal::getCDFadaptive(double b1, double b2, int popt)
 {
 	// adaptive quadrature from Quan
+    static NormalRV uRV(1, 0.0, 1.0);
 	double cdf = 0.0;
 	double integral = 0.0;
 	
@@ -214,7 +219,7 @@ CorrelatedStandardNormal::getCDFadaptive(double b1, double b2, int popt)
 	double fb = bivariatePDF(b1,b2,rho/2.0);
 	double fc = bivariatePDF(b1,b2,rho);
 	integral = getAdaptiveIntegralValue(1.0e-12, 0.0,rho, fa,fb,fc, b1,b2);
-	cdf = standardNormalPhi(b1)*standardNormalPhi(b2) + integral;
+	cdf = uRV.getCDFvalue(b1) * uRV.getCDFvalue(b2) + integral;
 	
 	if (popt == 1)
 		opserr << " Adaptive = " << cdf;
@@ -226,6 +231,7 @@ CorrelatedStandardNormal::getCDFadaptive(double b1, double b2, int popt)
 double
 CorrelatedStandardNormal::getCDF(double b1, double b2)
 {
+    static NormalRV uRV(1, 0.0, 1.0);
 	double cdf = 0.0;
 	int popt = 0;
 	
@@ -233,18 +239,18 @@ CorrelatedStandardNormal::getCDF(double b1, double b2)
 	if ( 1.0 - rho <= DBL_EPSILON ) {
 		// rho = 1
 		if (b1 >= b2 && b1 >= 0)
-			cdf = 2.0 - standardNormalPhi(b1) - standardNormalPhi(-b1) - standardNormalPhi(-b2);
+			cdf = 2.0 - uRV.getCDFvalue(b1) - uRV.getCDFvalue(-b1) - uRV.getCDFvalue(-b2);
 		else if (b2 > b1 && b2 >= 0)
-			cdf = 2.0 - standardNormalPhi(b2) - standardNormalPhi(-b1) - standardNormalPhi(-b2);
+			cdf = 2.0 - uRV.getCDFvalue(b2) - uRV.getCDFvalue(-b1) - uRV.getCDFvalue(-b2);
 		else if (-b1 >= -b2)
-			cdf = 1.0 - standardNormalPhi(-b1);
+			cdf = 1.0 - uRV.getCDFvalue(-b1);
 		else
-			cdf = 1.0 - standardNormalPhi(-b2);
+			cdf = 1.0 - uRV.getCDFvalue(-b2);
 		
 	} else if ( 1.0 + rho <= DBL_EPSILON ) {
 		// rho = -1
 		if (b1 + b2 >= 0)
-			cdf = 1.0 - standardNormalPhi(-b1) - standardNormalPhi(-b2);
+			cdf = 1.0 - uRV.getCDFvalue(-b1) - uRV.getCDFvalue(-b2);
 		else
 			cdf = 0.0;
 		
@@ -287,6 +293,7 @@ CorrelatedStandardNormal::getAdaptiveIntegralValue(double tol, double lowerBound
 		return int1+int2;
 	}
 }
+
 
 void
 CorrelatedStandardNormal::testCDF()
