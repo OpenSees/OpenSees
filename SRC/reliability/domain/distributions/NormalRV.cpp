@@ -124,11 +124,10 @@ NormalRV::getPDFvalue(double rvValue)
 double
 NormalRV::getCDFvalue(double rvValue)
 {
-	static const double oneOverRootTwo = 1.0/sqrt(2.0);
-	//double result = 0.5 + errorFunction( ((rvValue-mu)/sigma)/sqrt(2.0) )/2.0;
-
-	//Phi(x) = 0.5 * erfc(-x/sqrt(2))
-	double result = 0.5 * (1.0 + errorFunction( ((rvValue-mu)/sigma)*oneOverRootTwo ));
+    // should add error checking for when sigma is zero
+    
+    // now use base class functions
+	double result = standardNormalPhi( (rvValue-mu)/sigma );
 
 	return result;
 }
@@ -137,16 +136,9 @@ NormalRV::getCDFvalue(double rvValue)
 double
 NormalRV::getInverseCDFvalue(double probValue)
 {
-	double trval = probValue;
-	if (trval <= 0.0) {
-		//opserr << "WARNING: Invalid probability value (" << trval << ") input <= 0 to NormalRV::getInverseCDFvalue()" << endln;
-		trval = 2.0*DBL_EPSILON;
-	} else if (trval >= 1.0) {
-		//opserr << "WARNING: Invalid probability value (" << trval << ") input >= 1 to NormalRV::getInverseCDFvalue()" << endln;
-		trval = 1.0-2.0*DBL_EPSILON;
-	}
-	static const double rootTwo = sqrt(2.0);
-	double result = getMean() + getStdv() * rootTwo * inverseErrorFunction(2.0*trval-1.0);
+	// now use base class functions
+	double result = getMean() + getStdv() * standardNormalInversePhi(probValue);
+    
 	return result;
 }
 

@@ -155,9 +155,9 @@ GammaRV::getInverseCDFvalue(double probValue)
 	
 	// bootstrap with estimate from equivalent normal distribution
 	static NormalRV normRV( 1, getMean(), getStdv());
+    double x_old = normRV.getInverseCDFvalue(probValue);
 	
 	double tol = 1.0e-8;
-	double x_old = normRV.getInverseCDFvalue(probValue);
 	double result = x_old;
 
 	double x_new;

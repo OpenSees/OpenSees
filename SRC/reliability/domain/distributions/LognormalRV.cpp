@@ -156,11 +156,10 @@ LognormalRV::getCDFvalue(double rvValue)
 {
 	double result;
 
-	static NormalRV aStandardNormalRV( 1, 0.0, 1.0);
-	
+    // now use base class functions
 	if (isPositive) {
 		if ( 0.0 < rvValue ) {
-			result = aStandardNormalRV.getCDFvalue((log(rvValue)-lambda)/zeta);
+			result = standardNormalPhi( (log(rvValue)-lambda)/zeta );
 		}
 		else {
 			result = 0.0;
@@ -168,7 +167,7 @@ LognormalRV::getCDFvalue(double rvValue)
 	}
 	else {
 		if ( rvValue < 0.0 ) {
-			result = aStandardNormalRV.getCDFvalue((log(fabs(rvValue))-lambda)/zeta);
+			result = standardNormalPhi( (log(fabs(rvValue))-lambda)/zeta );
 			result = 1.0-result;
 		}
 		else {
@@ -218,22 +217,17 @@ LognormalRV::getCDFvalue(double rvValue)
 double
 LognormalRV::getInverseCDFvalue(double probValue)
 {
-	if ( probValue > 1.0 || probValue < 0.0) {
-		opserr << "Invalid probability value input to inverse CDF function" << endln;
-		return 0.0;
-	}
-	else {
-		static NormalRV aStandardNormalRV( 1, 0.0, 1.0);
-
-		if (isPositive) {
-			double inverseNormal = aStandardNormalRV.getInverseCDFvalue(probValue);
-			return exp(inverseNormal*zeta + lambda);
-		}
-		else {
-			double inverseNormal = aStandardNormalRV.getInverseCDFvalue(1.0-probValue);
-			return (-exp(inverseNormal*zeta + lambda));
-		}
-	}
+    double inverseNormal = 0;
+    
+    // now use base class functions
+    if (isPositive) {
+        inverseNormal = standardNormalInversePhi(probValue);
+        return exp(inverseNormal*zeta + lambda);
+    }
+    else {
+        inverseNormal = standardNormalInversePhi(1.0-probValue);
+        return (-exp(inverseNormal*zeta + lambda));
+    }
 }
 
 
