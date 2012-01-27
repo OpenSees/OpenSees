@@ -55,6 +55,28 @@ RandomVariable::~RandomVariable()
 }
 
 
+double 
+RandomVariable::transform_x_to_u(void)
+{
+    return 0.0;
+}
+
+
+int 
+RandomVariable::transform_u_to_x(double uVal)
+{
+    return 0;
+}
+
+
+double
+RandomVariable::gradient_x_to_u(double uVal)
+{
+    return 0.0;
+    
+}
+
+
 void
 RandomVariable::Print(OPS_Stream &s, int flag)
 {

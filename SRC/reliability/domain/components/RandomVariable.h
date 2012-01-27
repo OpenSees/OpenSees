@@ -63,6 +63,11 @@ public:
 	// current realization
 	virtual int setCurrentValue(double newVal) {rvValue = newVal; return 0;}
 	virtual double getCurrentValue() {return rvValue;}
+    
+    // standardization of random variables
+    virtual double transform_x_to_u(void);
+    virtual int transform_u_to_x(double uVal);
+    virtual double gradient_x_to_u(double uVal);
 	
 	// NYI
 	virtual double getCDFMeanSensitivity(double x) {return 0.0;}

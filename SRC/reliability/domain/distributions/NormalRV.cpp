@@ -143,6 +143,28 @@ NormalRV::getInverseCDFvalue(double probValue)
 }
 
 
+double 
+NormalRV::transform_x_to_u(void)
+{
+    return (this->getCurrentValue()-mu)/sigma;
+}
+
+
+int 
+NormalRV::transform_u_to_x(double uVal)
+{
+    return uVal*sigma + mu;
+}
+
+
+double
+NormalRV::gradient_x_to_u(double uVal)
+{
+    return sigma;
+    
+}
+
+
 void
 NormalRV::Print(OPS_Stream &s, int flag)
 {

@@ -55,6 +55,11 @@ public:
 	double getPDFvalue(double rvValue);
 	double getCDFvalue(double rvValue);
 	double getInverseCDFvalue(double rvValue); 
+    
+    // standardization of random variables
+    double transform_x_to_u(void);
+    int transform_u_to_x(double uVal);
+    double gradient_x_to_u(double uVal);
 	
 	// other
 	void Print(OPS_Stream &s, int flag = 0);
