@@ -641,7 +641,7 @@ GFunVisualizationAnalysis::evaluateGFunction(Vector thePoint, bool isFirstPoint)
 		convFile << myString;
 
 		// Compute gradients
-		result = theGradGEvaluator->computeGradient(g,thePoint);
+		result = theGradGEvaluator->computeGradient(g);
 		if (result < 0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not compute gradients of the limit-state function. " << endln;

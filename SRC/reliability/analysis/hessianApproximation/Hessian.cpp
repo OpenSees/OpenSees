@@ -238,7 +238,7 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 
 
 	// Gradient in original space
-	result = theGradGEvaluator->computeGradient(gFunctionValue,x);
+	result = theGradGEvaluator->computeGradient(gFunctionValue);
 	if (result < 0) {
 		opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 			<< " could not compute gradients of the limit-state function. " << endln;
@@ -350,7 +350,7 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 				}
     	gFunctionValue = theGFunEvaluator->getResult();
 		// Gradient in original space
-		result = theGradGEvaluator->computeGradient(gFunctionValue,x);
+		result = theGradGEvaluator->computeGradient(gFunctionValue);
 				if (result < 0) {
 					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 						<< " could not compute gradients of the limit-state function. " << endln;
@@ -852,7 +852,7 @@ int Hessian::refineHessian(int time, int colOfHessian)
 				}
     double	gFunctionValue = theGFunEvaluator->getResult();
 		// Gradient in original space
-		result = theGradGEvaluator->computeGradient(gFunctionValue,x);
+		result = theGradGEvaluator->computeGradient(gFunctionValue);
 				if (result < 0) {
 					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 						<< " could not compute gradients of the limit-state function. " << endln;
@@ -928,7 +928,7 @@ int Hessian::refineHessian(int time, int colOfHessian)
 					}
     		gFunctionValue = theGFunEvaluator->getResult();
 			// Gradient in original space
-			result = theGradGEvaluator->computeGradient(gFunctionValue,x);
+			result = theGradGEvaluator->computeGradient(gFunctionValue);
 					if (result < 0) {
 						opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 							<< " could not compute gradients of the limit-state function. " << endln;

@@ -320,7 +320,7 @@ NewSearchWithStepSizeAndStepDirection::findDesignPoint()
 		/// work ///
 
 		// Gradient in original space
-		result = theGradGEvaluator->computeGradient(gFunctionValue,*x);
+		result = theGradGEvaluator->computeGradient(gFunctionValue);
 		if (result < 0) { errorMessage_compGradg(); delxinit(); return -1; }
 		(*gradientOfgFunction) = theGradGEvaluator->getGradient();
 
@@ -1193,7 +1193,7 @@ NewSearchWithStepSizeAndStepDirection::lineSearch()
 		if (result < 0) { errorMessage_evalg(); delxinit(); return -1; }
 		gFunctionValue = theGFunEvaluator->getResult();
 		// Gradient in original space
-		result = theGradGEvaluator->computeGradient(gFunctionValue,*x);
+		result = theGradGEvaluator->computeGradient(gFunctionValue);
 		if (result < 0) { errorMessage_compGradg(); delxinit(); return -1; }
 		(*gradientOfgFunction) = theGradGEvaluator->getGradient();
 //		int noutput=gradientOfgFunction.Size();
