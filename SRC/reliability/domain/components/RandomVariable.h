@@ -72,11 +72,17 @@ public:
 	virtual void Print(OPS_Stream &s, int flag = 0);
 	int setNewTag(int tag);
 	
+    // utility functions for gamma and beta
 	double gammaFunction(double x);
 	double incompleteGammaFunction(double a, double x);
 	double betaFunction(double passed_q, double passed_r);
+    
+    // standard normal utility functions
 	double errorFunction(double x);
 	double inverseErrorFunction(double y);
+    double standardNormalPhi(double u);
+    double standardNormalInversePhi(double p);
+    
 
 protected:
 	static const double pi;
