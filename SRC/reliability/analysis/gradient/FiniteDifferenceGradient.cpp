@@ -70,7 +70,7 @@ FiniteDifferenceGradient::getGradient()
 
 
 int
-FiniteDifferenceGradient::computeGradient(double g, const Vector &passed_x)
+FiniteDifferenceGradient::computeGradient(double g)
 {
 	
 	// Initialize gradient vector

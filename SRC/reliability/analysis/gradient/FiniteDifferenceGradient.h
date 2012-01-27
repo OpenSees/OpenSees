@@ -50,7 +50,7 @@ public:
 				 Domain *passedOpenSeesDomain);
 	~FiniteDifferenceGradient();
 	
-	int		computeGradient(double gFunValue, const Vector &passed_x);
+	int		computeGradient(double gFunValue);
 	Vector	getGradient();
 	
 protected:

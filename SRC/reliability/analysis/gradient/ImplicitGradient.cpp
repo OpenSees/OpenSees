@@ -72,7 +72,7 @@ ImplicitGradient::getGradient()
 
 
 int
-ImplicitGradient::computeGradient(double g, const Vector &passed_x)
+ImplicitGradient::computeGradient(double g)
 {
   // Compute gradients if this is a path-INdependent analysis
   // (This command only has effect if it IS path-independent.)
