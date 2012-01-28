@@ -218,7 +218,7 @@ NewSearchWithStepSizeAndStepDirection::findDesignPoint()
 	    (*x)(i) = theRV->getStartValue();
 	  }
 
-	  result = theProbabilityTransformation->transform_x_to_u(*x, *u);
+	  result = theProbabilityTransformation->transform_x_to_u(*u);
 	  if (result < 0) { 
 	    errorMessage_xtou(); delxinit();  return -1; 
 	  }
@@ -275,7 +275,7 @@ NewSearchWithStepSizeAndStepDirection::findDesignPoint()
 		if (result < 0) { 
 			errorMessage_xtou(); delxinit();  return -1; 
 		}
-		result = theProbabilityTransformation->getJacobian_x_to_u(*x, *jacobian_x_u);
+		result = theProbabilityTransformation->getJacobian_x_to_u(*jacobian_x_u);
 
 		// Possibly print the point to output file
 		int iii;
@@ -1184,7 +1184,7 @@ NewSearchWithStepSizeAndStepDirection::lineSearch()
 		// lineserch point is found! check gradient now 
 	  	opserr << " now obtain Gradient  "<<endln;
 		//(*jacobian_x_u) = theProbabilityTransformation->getJacobian_x_u();
-		result = theProbabilityTransformation->getJacobian_x_to_u(*x, *jacobian_x_u);
+		result = theProbabilityTransformation->getJacobian_x_to_u(*jacobian_x_u);
 		if(!fdf) theGFunEvaluator->activateSensitivty();
 		else theGFunEvaluator->inactivateSensitivty();
 		result = theGFunEvaluator->runAnalysis(*x);

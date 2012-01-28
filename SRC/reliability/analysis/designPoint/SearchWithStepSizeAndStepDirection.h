@@ -44,6 +44,7 @@
 #include <ReliabilityConvergenceCheck.h>
 #include <Matrix.h>
 #include <Vector.h>
+#include <Domain.h>
 #include <ReliabilityDomain.h>
 
 #include <fstream>
@@ -58,6 +59,7 @@ public:
 	SearchWithStepSizeAndStepDirection(
 					int passedMaxNumberOfIterations, 
 					ReliabilityDomain *passedReliabilityDomain,
+                    Domain *passedOpenSeesDomain,
 					FunctionEvaluator *passedGFunEvaluator,
 					GradientEvaluator *passedGradGEvaluator,
 					StepSizeRule *passedStepSizeRule,
@@ -92,6 +94,7 @@ private:
 
 	// The reliability domain and tools for the analysis
 	ReliabilityDomain *theReliabilityDomain;
+    Domain *theOpenSeesDomain;
 	FunctionEvaluator *theFunctionEvaluator;
 	GradientEvaluator *theGradientEvaluator;
 	StepSizeRule *theStepSizeRule;

@@ -58,6 +58,7 @@ TclEvaluator::TclEvaluator(Tcl_Interp *passedTclInterp,
     strcpy(fileName,passed_fileName);
 }
 
+
 TclEvaluator::TclEvaluator(Tcl_Interp *passedTclInterp,
 			   ReliabilityDomain *passedReliabilityDomain,
 			   Domain *passedOpenSeesDomain)
@@ -68,6 +69,7 @@ TclEvaluator::TclEvaluator(Tcl_Interp *passedTclInterp,
     fileName = 0;
 }
 
+
 TclEvaluator::~TclEvaluator()
 {
   if (theExpression != 0)
@@ -75,6 +77,7 @@ TclEvaluator::~TclEvaluator()
   if (fileName != 0)
     delete [] fileName;
 }
+
 
 int
 TclEvaluator::setVariables(const Vector &x)
@@ -89,6 +92,7 @@ TclEvaluator::setVariables(const Vector &x)
     theParam = theOpenSeesDomain->getParameterFromIndex(i);
     int paramTag = theParam->getTag();
     
+    // KRM we need to be consistent, here we should use the input vector of values
     xval = theParam->getValue();
 
     // put in par(1) format
@@ -110,6 +114,7 @@ TclEvaluator::setVariables(const Vector &x)
     theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(i);
     int rvTag = theRV->getTag();
 
+    // again, should use something from the input vector of values
     xval = x(i);
 
     // put in xrv(1) format
@@ -132,6 +137,7 @@ TclEvaluator::setVariables(const Vector &x)
   return 0;
 }
 
+
 int 
 TclEvaluator::setExpression(const char *passedExpression)
 {
@@ -145,11 +151,13 @@ TclEvaluator::setExpression(const char *passedExpression)
   return 0;
 }
 
+
 int 
 TclEvaluator::addToExpression(const char *in) 
 {
   return 0;
 }
+
 
 int
 TclEvaluator::evaluateExpression() 
@@ -170,6 +178,7 @@ TclEvaluator::getResult()
   return current_val;
 }
 
+
 int
 TclEvaluator::runAnalysis(const Vector &x)
 {	
@@ -182,6 +191,7 @@ TclEvaluator::runAnalysis(const Vector &x)
   }
   
   // Put random variables into the structural domain according to the RandomVariablePositioners
+    // KRM - now would need to put all parameters into the domain?
   int rvIndex;
   RandomVariablePositionerIter rvPosIter = theReliabilityDomain->getRandomVariablePositioners();
   RandomVariablePositioner *theRVPos;

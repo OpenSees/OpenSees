@@ -36,7 +36,6 @@
 #define TclEvaluator_h
 
 #include <FunctionEvaluator.h>
-#include <Vector.h>
 #include <Domain.h>
 #include <ReliabilityDomain.h>
 #include <tcl.h>

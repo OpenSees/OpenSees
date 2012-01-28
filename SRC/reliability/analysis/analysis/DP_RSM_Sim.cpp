@@ -95,7 +95,7 @@ DP_RSM_Sim::DP_RSM_Sim(ReliabilityDomain *passedReliabilityDomain,
 
 	int numRV = theReliabilityDomain->getNumberOfRandomVariables();
 	theDesignPoint = new Vector(numRV);	
-	theProbabilityTransformation->transform_x_to_u(*theDesignPtXSpace, *theDesignPoint);
+	theProbabilityTransformation->transform_x_to_u(*theDesignPoint);
 	
 	if (strcmp(typeExpPtRule, "Uniform") ==0 ) {
 		theExpPtRule= new UniformExperimentalPointRule1D();

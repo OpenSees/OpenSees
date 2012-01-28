@@ -258,7 +258,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 	theDesignPointInUSpace->addVector(0.0, theProbabilityTransformation->get_u(),1.0);
 	*/
 
-	result = theProbabilityTransformation->transform_x_to_u(*theDesignPoint, *theDesignPointInUSpace);
+	result = theProbabilityTransformation->transform_x_to_u(*theDesignPointInUSpace);
 	if (result < 0) {
 	  opserr << "OrthogonalSamplingAnalysis::analyze() - could not " << endln
 		 << " transform x to u. " << endln;

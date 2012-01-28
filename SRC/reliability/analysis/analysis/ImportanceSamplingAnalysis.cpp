@@ -175,7 +175,7 @@ ImportanceSamplingAnalysis::analyze(void)
 	    RandomVariable *theParam = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
 	    x(j) = theParam->getStartValue();
 	  }
-	  result = theProbabilityTransformation->transform_x_to_u(x, startPointY);
+	  result = theProbabilityTransformation->transform_x_to_u(startPointY);
 	  if (result < 0) {
 	    opserr << "ImportanceSamplingAnalysis::analyze() - could not " << endln
 		   << " transform x to u. " << endln;

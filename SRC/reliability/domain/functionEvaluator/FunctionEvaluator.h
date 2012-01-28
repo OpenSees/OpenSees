@@ -35,7 +35,7 @@
 #ifndef FunctionEvaluator_h
 #define FunctionEvaluator_h
 
-#include <Vector.h>
+#include <Matrix.h>
 
 ///// added by K Fujimura /////
 #include <GFunEachStepEvaluator.h>

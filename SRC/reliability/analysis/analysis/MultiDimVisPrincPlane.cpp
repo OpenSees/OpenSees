@@ -87,7 +87,7 @@ MultiDimVisPrincPlane::MultiDimVisPrincPlane(
 
 	int numRV = theReliabilityDomain->getNumberOfRandomVariables();
 	theDesignPoint = new Vector(numRV);
-	theProbabilityTransformation->transform_x_to_u(*theDesignPtXSpace, *theDesignPoint);	
+	theProbabilityTransformation->transform_x_to_u(*theDesignPoint);	
 
 	thePrincipalPlanes = new PrincipalPlane * [20]; // uplimit 20 for now.refer arrayOfTaggedObject.. theComponents = new TaggedObject *[size]
 	

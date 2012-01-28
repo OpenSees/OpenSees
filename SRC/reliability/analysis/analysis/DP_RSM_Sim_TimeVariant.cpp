@@ -102,7 +102,7 @@ DP_RSM_Sim_TimeVariant::DP_RSM_Sim_TimeVariant(ReliabilityDomain *passedReliabil
 
 	int numRV = theReliabilityDomain->getNumberOfRandomVariables();
 	theDesignPoint = new Vector(numRV);
-	theProbabilityTransformation->transform_x_to_u(*theDesignPtXSpace, *theDesignPoint);
+	theProbabilityTransformation->transform_x_to_u(*theDesignPoint);
 
 	if (strcmp(typeExpPtRule, "Uniform") ==0 ) {
 		theExpPtRule= new UniformExperimentalPointRule1D();

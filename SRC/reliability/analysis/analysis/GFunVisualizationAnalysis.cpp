@@ -288,7 +288,7 @@ GFunVisualizationAnalysis::getCurrentAxes12Point(int i, int j)
 			}
 			thePoint = theProbabilityTransformation->get_u();
 		  */
-		  result = theProbabilityTransformation->transform_x_to_u(iPoint, fPoint);
+		  result = theProbabilityTransformation->transform_x_to_u(iPoint);
 		  if (result < 0) {
 		    opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 			   << " could not transform from x to u." << endln;
@@ -610,7 +610,7 @@ GFunVisualizationAnalysis::evaluateGFunction(Vector thePoint, bool isFirstPoint)
 		u = theProbabilityTransformation->get_u();
 		*/
 
-		result = theProbabilityTransformation->transform_x_to_u(thePoint, uPoint);
+		result = theProbabilityTransformation->transform_x_to_u(uPoint);
 		if (result < 0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not transform from x to u." << endln;
@@ -634,7 +634,7 @@ GFunVisualizationAnalysis::evaluateGFunction(Vector thePoint, bool isFirstPoint)
 		theProbabilityTransformation->get_x();
 		Matrix jacobian_x_u = theProbabilityTransformation->getJacobian_x_u();
 		*/
-		result = theProbabilityTransformation->getJacobian_x_to_u(thePoint, Jxu);
+		result = theProbabilityTransformation->getJacobian_x_to_u(Jxu);
 
 		// Print limit-state fnc value and distance to origin to file
 		sprintf(myString,"%20.14e  %20.14e  ", g,u.Norm());

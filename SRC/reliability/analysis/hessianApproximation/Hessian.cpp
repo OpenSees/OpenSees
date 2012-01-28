@@ -189,7 +189,7 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 	Vector u = theProbabilityTransformation->get_u();
 	*/
 	Vector u;
-	int result = theProbabilityTransformation->transform_x_to_u(x, u);
+	int result = theProbabilityTransformation->transform_x_to_u(u);
 	if (result < 0) {
 		opserr << "SHessian::formHessianByFDM - " << endln
 			<< " could not transform from x to u." << endln;
@@ -215,7 +215,7 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 
 	// --- compute standard sensitivity --
 	//	jacobian_x_u.addMatrix(0.0,theProbabilityTransformation->getJacobian_x_u(),1.0);
-	theProbabilityTransformation->getJacobian_x_to_u(u, jacobian_x_u);	
+	theProbabilityTransformation->getJacobian_x_to_u(jacobian_x_u);	
 
 	
 	//jacobian_u_x.addMatrix(0.0,theProbabilityTransformation->getJacobian_u_x(),1.0);
@@ -618,7 +618,7 @@ int Hessian::formReducedHessian(Vector *Designpoint_X, Matrix *pHessian)
 	Vector u = theProbabilityTransformation->get_u();
 	*/
 	Vector u;
-	int result = theProbabilityTransformation->transform_x_to_u(x, u);
+	int result = theProbabilityTransformation->transform_x_to_u(u);
 	if (result < 0) {
 	  opserr << "SHessian::formHessianByFDM - " << endln
 		 << " could not transform from x to u." << endln;
@@ -788,7 +788,7 @@ int Hessian::refineHessian(int time, int colOfHessian)
 	Matrix jacobian_x_u = theProbabilityTransformation->getJacobian_x_u();
 	*/
 	Matrix jacobian_x_u;
-	int result = theProbabilityTransformation->getJacobian_x_to_u(u, jacobian_x_u);
+	int result = theProbabilityTransformation->getJacobian_x_to_u(jacobian_x_u);
 	if (result < 0) {
 		opserr << "Hessian::formHessianByFDM - " << endln
 			<< " could not transform from u to x." << endln;

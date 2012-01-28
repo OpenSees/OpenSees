@@ -42,6 +42,7 @@
 #include <FunctionEvaluator.h>
 #include <GradientEvaluator.h>
 #include <RandomVariable.h>
+#include <RandomVariableIter.h>
 #include <CorrelationCoefficient.h>
 #include <MatrixOperations.h>
 #include <HessianApproximation.h>
@@ -63,6 +64,7 @@ using std::setprecision;
 SearchWithStepSizeAndStepDirection::SearchWithStepSizeAndStepDirection(
 					int passedMaxNumberOfIterations,
 					ReliabilityDomain *passedReliabilityDomain,
+                    Domain *passedOpenSeesDomain,
 					FunctionEvaluator *passedFunctionEvaluator,
 					GradientEvaluator *passedGradientEvaluator,
 					StepSizeRule *passedStepSizeRule,
@@ -73,7 +75,8 @@ SearchWithStepSizeAndStepDirection::SearchWithStepSizeAndStepDirection(
 					bool pStartAtOrigin,
 					int pprintFlag,
 					char *pFileNamePrint)
-  :FindDesignPointAlgorithm(), theReliabilityDomain(passedReliabilityDomain)
+  :FindDesignPointAlgorithm(), theReliabilityDomain(passedReliabilityDomain), 
+        theOpenSeesDomain(passedOpenSeesDomain)
 {
 	maxNumberOfIterations			= passedMaxNumberOfIterations;
 	theFunctionEvaluator				= passedFunctionEvaluator;
@@ -145,10 +148,11 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 	Vector gradientOfgFunction(numberOfRandomVariables);
 	Vector gradientInStandardNormalSpace_old(numberOfRandomVariables);
 	
+    Matrix Jxu(numberOfRandomVariables, numberOfRandomVariables);
+	Matrix Jux(numberOfRandomVariables, numberOfRandomVariables);
 	
 	theFunctionEvaluator->initializeNumberOfEvaluations();
 
-	
 	// Prepare output file to store the search points
 	/*
 	if (printFlag != 0) 
@@ -156,67 +160,48 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 	*/
 
 	// Get starting point
-	if (startAtOrigin) 
+    // KRM this is now taken care of elsewhere, the values of start point are set within the parameters themselves
+	/*if (startAtOrigin) 
 		u->Zero();
 	else {
 		//theReliabilityDomain->getStartPoint(*x);
 		for (int j = 0; j < numberOfRandomVariables; j++) {
 			RandomVariable *theParam = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
 			(*x)(j) = theParam->getStartValue();
+            
+            // KRM now we need to make a call to setParamter with this value or just use the existing
+            // value stored in the parameter
 		}
 
 		// Transform starting point into standard normal space
-		result = theProbabilityTransformation->transform_x_to_u(*x, *u);
+		result = theProbabilityTransformation->transform_x_to_u(*u);
 		if (result < 0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 			   << " could not transform from x to u." << endln;
 			return -1;
 	  }
 	}
+     */
+    
+    // get starting x values from parameter directly
+    for (int j = 0; j < numberOfRandomVariables; j++) {
+        RandomVariable *theParam = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+        (*x)(j) = theParam->getStartValue();
+    }
+    
+    // Transform starting point into standard normal space to initialize u vector
+    result = theProbabilityTransformation->transform_x_to_u(*u);
+    if (result < 0) {
+        opserr << "SearchWithStepSizeAndStepDirection::findDesignPoint() - " << endln
+               << " could not transform from x to u." << endln;
+        return -1;
+    }
 
-	Matrix Jxu(numberOfRandomVariables, numberOfRandomVariables);
-	Matrix Jux(numberOfRandomVariables, numberOfRandomVariables);
 
 	// Loop to find design point
 	steps = 1;
 	while ( steps <= maxNumberOfIterations )
 	{
-		// Transform to x-space
-		result = theProbabilityTransformation->transform_u_to_x(*u, *x);
-		if (result < 0) {
-		  opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-			 << " could not transform from u to x." << endln;
-		  return -1;
-		}
-		// Get Jacobian x-space to u-space
-		result = theProbabilityTransformation->getJacobian_x_to_u(*x, Jxu);
-		if (result < 0) {
-		  opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-			 << " could not transform Jacobian from x to u." << endln;
-		  return -1;
-		}
-
-
-
-		// Possibly print the point to output file
-		/*
-		int iii;
-		if (printFlag != 0) {
-
-			if (printFlag == 1) {
-				outputFile2.setf(ios::scientific, ios::floatfield);
-				for (iii=0; iii<x->Size(); iii++) {
-					outputFile2<<setprecision(5)<<setw(15)<<(*x)(iii)<<endln;
-				}
-			}
-			else if (printFlag == 2) {
-				outputFile2.setf(ios::scientific, ios::floatfield);
-				for (iii=0; iii<u->Size(); iii++) {
-					outputFile2<<setprecision(5)<<setw(15)<<(*u)(iii)<<endln;
-				}
-			}
-		}
-		*/
 
 		// Evaluate limit-state function unless it has been done in 
 		// a trial step by the "stepSizeAlgorithm"
@@ -262,7 +247,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 
 
 		// Gradient in original space
-		result = theGradientEvaluator->computeGradient(gFunctionValue, *x);
+		result = theGradientEvaluator->computeGradient(gFunctionValue);
 		if (result < 0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not compute gradients of the limit-state function. " << endln;
@@ -270,13 +255,20 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 		}
 		gradientOfgFunction = theGradientEvaluator->getGradient();
 
-		// Check if all components of the vector is zero
+		// Check if all components of the vector are zero
 		if (gradientOfgFunction.Norm() == 0.0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " all components of the gradient vector is zero. " << endln;
 			return -1;
 		}
-
+        
+		// Get Jacobian x-space to u-space
+		result = theProbabilityTransformation->getJacobian_x_to_u(Jxu);
+		if (result < 0) {
+            opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+            << " could not transform Jacobian from x to u." << endln;
+            return -1;
+		}
 
 		// Gradient in standard normal space
 		gradientInStandardNormalSpace_old = *gradientInStandardNormalSpace;
@@ -307,12 +299,11 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 
 		// Check convergence
 		result = theReliabilityConvergenceCheck->check(*u,gFunctionValue,*gradientInStandardNormalSpace);
+        
 		if (result > 0 || steps == maxNumberOfIterations)  {
 		
-
 			// Inform the user of the happy news!
 			opserr << "Design point found!" << endln;
-
 
 			/*
 			// Print the design point to file, if desired
@@ -358,7 +349,6 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 
 
 			// Compute the gamma vector
-			//const Matrix &jacobian_u_x = theProbabilityTransformation->getJacobian_u_x();
 			// Get Jacobian u-space to x-space
 			result = theProbabilityTransformation->getJacobian_u_to_x(*u, Jux);
 			if (result < 0) {
@@ -477,6 +467,25 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 			udiff = u->Norm() - u_old.Norm();
 			stepSizeMod *= 0.75;
 		}
+        
+        // Transform to x-space
+		result = theProbabilityTransformation->transform_u_to_x(*u, *x);
+		if (result < 0) {
+            opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+            << " could not transform from u to x." << endln;
+            return -1;
+		}
+        
+        // update domain with new x values
+        RandomVariable *theRV;
+        RandomVariableIter &rvIter = theReliabilityDomain->getRandomVariables();
+        //for ( int i=0 ; i<nrv ; i++ ) {
+        while ((theRV = rvIter()) != 0) {
+            int rvTag = theRV->getTag();
+            //int i = theRV->getIndex();
+            int i = theReliabilityDomain->getRandomVariableIndex(rvTag);
+            theRV->setCurrentValue( (*x)(i) );
+        }
 
 		// Increment the loop parameter
 		steps++;

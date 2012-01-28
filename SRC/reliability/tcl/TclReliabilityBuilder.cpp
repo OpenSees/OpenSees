@@ -988,8 +988,6 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 		delete theRandomVariable; // otherwise memory leak
 		return TCL_ERROR;
 	}
-	
-	// Set xrv in namespace here -- MHS
 
 	return TCL_OK;
 	
@@ -1417,173 +1415,8 @@ TclReliabilityModelBuilder_addRandomVariablePositioner(ClientData clientData, Tc
 		return TCL_ERROR;
 	}
 
-	// CHECK IF THE USER WANTS TO CREATE THE RANDOM VARIABLE HERE
-	if (strcmp(argv[argvCounter],"-createRV3") == 0) {
-		argvCounter++;
-
-		if (strcmp(argv[argvCounter],"userdefined") == 0) {
-			opserr << "ERROR: Can't create a user-defined random variable like this." << endln;
-			return TCL_ERROR;
-		}
-
-		char theTclCommand[100];
-		TCL_Char *rvType;
-		double mean,stdv;
-
-		rvNumber = tag;
-		rvType = argv[argvCounter++];
-
-		// READ MEAN
-		if (Tcl_GetDouble(interp, argv[argvCounter], &mean) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv mean \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-		// READ STDV
-		if (Tcl_GetDouble(interp, argv[argvCounter], &stdv) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv stdv \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-
-		// LET TCL CREATE THE RANDOM VARIABLE
-		sprintf(theTclCommand,"randomVariable %d %s %15.10e %15.10e",rvNumber,rvType,mean,stdv);
-		Tcl_Eval( interp, theTclCommand );
-
-	}
-	else if (strcmp(argv[argvCounter],"-createRV4") == 0) {
-		argvCounter++;
-
-		if (strcmp(argv[argvCounter],"userdefined") == 0) {
-			opserr << "ERROR: Can't create a user-defined random variable like this." << endln;
-			return TCL_ERROR;
-		}
-
-		char theTclCommand[100];
-		TCL_Char *rvType;
-		double mean,stdv,startPt;
-
-		rvNumber = tag;
-		rvType = argv[argvCounter++];
-
-		// READ MEAN
-		if (Tcl_GetDouble(interp, argv[argvCounter], &mean) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv mean \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-		// READ STDV
-		if (Tcl_GetDouble(interp, argv[argvCounter], &stdv) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv stdv \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-		// READ STARTVALUE
-		if (Tcl_GetDouble(interp, argv[argvCounter], &startPt) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv startPt \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-
-		// LET TCL CREATE THE RANDOM VARIABLE
-		sprintf(theTclCommand,"randomVariable %d %s %15.10e %15.10e %15.10e",rvNumber,rvType,mean,stdv,startPt);
-		Tcl_Eval( interp, theTclCommand );
-	}
-	else if (strcmp(argv[argvCounter],"-createRV5") == 0) {
-		argvCounter++;
-
-		if (strcmp(argv[argvCounter],"userdefined") == 0) {
-			opserr << "ERROR: Can't create a user-defined random variable like this." << endln;
-			return TCL_ERROR;
-		}
-
-		char theTclCommand[100];
-		TCL_Char *rvType;
-		double par1, par2, par3, par4;
-
-		rvNumber = tag;
-		rvType = argv[argvCounter++];
-
-		// READ PARAMETER 1
-		if (Tcl_GetDouble(interp, argv[argvCounter], &par1) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv parameter 1 \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-		// READ PARAMETER 2
-		if (Tcl_GetDouble(interp, argv[argvCounter], &par2) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv parameter 2 \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-		// READ PARAMETER 3
-		if (Tcl_GetDouble(interp, argv[argvCounter], &par3) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv parameter 3 \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-		// READ PARAMETER 4
-		if (Tcl_GetDouble(interp, argv[argvCounter], &par4) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv parameter 4 \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-
-		// LET TCL CREATE THE RANDOM VARIABLE
-		sprintf(theTclCommand,"randomVariable %d %s %15.10e %15.10e %15.10e %15.10e",rvNumber,rvType,par1,par2,par3,par4);
-		Tcl_Eval( interp, theTclCommand );
-	}
-	else if (strcmp(argv[argvCounter],"-createRV6") == 0) {
-		argvCounter++;
-
-		if (strcmp(argv[argvCounter],"userdefined") == 0) {
-			opserr << "ERROR: Can't create a user-defined random variable like this." << endln;
-			return TCL_ERROR;
-		}
-
-		char theTclCommand[100];
-		TCL_Char *rvType;
-		double par1, par2, par3, par4, startPt;
-
-		rvNumber = tag;
-		rvType = argv[argvCounter++];
-
-		// READ PARAMETER 1
-		if (Tcl_GetDouble(interp, argv[argvCounter], &par1) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv parameter 1 \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-		// READ PARAMETER 2
-		if (Tcl_GetDouble(interp, argv[argvCounter], &par2) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv parameter 2 \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-		// READ PARAMETER 3
-		if (Tcl_GetDouble(interp, argv[argvCounter], &par3) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv parameter 3 \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-		// READ PARAMETER 4
-		if (Tcl_GetDouble(interp, argv[argvCounter], &par4) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv parameter 4 \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-		// READ START VALUE
-		if (Tcl_GetDouble(interp, argv[argvCounter], &startPt) != TCL_OK) {
-			opserr << "ERROR: invalid input in positioner: rv startPt \n";
-			return TCL_ERROR;
-		}
-		argvCounter++;
-
-		// LET TCL CREATE THE RANDOM VARIABLE
-		sprintf(theTclCommand,"randomVariable %d %s %15.10e %15.10e %15.10e %15.10e %15.10e",rvNumber,rvType,par1,par2,par3,par4,startPt);
-		Tcl_Eval( interp, theTclCommand );
-	}
-	else if (strcmp(argv[argvCounter],"-rvNum") == 0) {
+	// ASSOCIATE with existing RV
+    if (strcmp(argv[argvCounter],"-rvNum") == 0) {
 		argvCounter++;
 		
 		// READ THE RANDOM VARIABLE NUMBER
@@ -3627,7 +3460,7 @@ TclReliabilityModelBuilder_addFindDesignPointAlgorithm(ClientData clientData, Tc
 		}
 		
 		theFindDesignPointAlgorithm = new SearchWithStepSizeAndStepDirection(
-					maxNumIter, theReliabilityDomain, 
+					maxNumIter, theReliabilityDomain, theStructuralDomain,
 					theFunctionEvaluator,
 					theGradientEvaluator,
 					theStepSizeRule,
@@ -6324,8 +6157,8 @@ TclReliabilityModelBuilder_MultiDimVisPrincPlane(ClientData clientData, Tcl_Inte
 ///////
 ///  Command:  transformXtoU  -fileX pointx.out   -fileU pointu.out   
 ///            
-
-
+// KRM - I see no reason for this code to be in TclReliabilityBuilder, will delete soon 
+// not being used by any other classes
 
 int 
 TclReliabilityModelBuilder_transformXtoU(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -6337,11 +6170,8 @@ TclReliabilityModelBuilder_transformXtoU(ClientData clientData, Tcl_Interp *inte
 		exit(-1);
 	}
 	
-	
-	
 	int nrv = theReliabilityDomain->getNumberOfRandomVariables();
 
-	
 	char filenameX[30]="pointx.out";
 	char filenameU[30]="pointu.out";
 
@@ -6397,13 +6227,8 @@ TclReliabilityModelBuilder_transformXtoU(ClientData clientData, Tcl_Interp *inte
 		exit(-1);			
 	}
 
-	/*
-	theProbabilityTransformation->set_x(pointX);
-	theProbabilityTransformation->transform_x_to_u();
-	Vector pointU = theProbabilityTransformation->get_u();
-	*/
 	Vector pointU;
-	theProbabilityTransformation->transform_x_to_u(pointX, pointU);
+	theProbabilityTransformation->transform_x_to_u(pointU);
 
 	ofstream outputFile( filenameU, ios::out);
 	outputFile.precision(16);
@@ -6415,8 +6240,6 @@ TclReliabilityModelBuilder_transformXtoU(ClientData clientData, Tcl_Interp *inte
  
 	outputFile.close();
 
-
-
 	return TCL_OK;
 
 }
@@ -6424,19 +6247,17 @@ TclReliabilityModelBuilder_transformXtoU(ClientData clientData, Tcl_Interp *inte
 ///////
 ///  Command:  transformUtoX  -fileX pointx.out   -fileU pointu.out   
 ///            
-
+// KRM - I see no reason for this code to be in TclReliabilityBuilder, will delete soon 
+// not being used by any other classes
 
 int 
 TclReliabilityModelBuilder_transformUtoX(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
 
-
     if (theProbabilityTransformation ==0){
 		opserr<<"Fatal: theProbabilityTransformation does not exist!"<<endln;
 		exit(-1);
 	}
-	
-	
 	
 	int nrv = theReliabilityDomain->getNumberOfRandomVariables();
 
@@ -6496,12 +6317,8 @@ TclReliabilityModelBuilder_transformUtoX(ClientData clientData, Tcl_Interp *inte
 		opserr<<"warning: no data in file: "<<filenameX<<endln;
 		exit(-1);			
 	}
-	/*
-	theProbabilityTransformation->set_u(pointU);
-	theProbabilityTransformation->transform_u_to_x();
-	Vector pointX = theProbabilityTransformation->get_x();
-	*/
-	Vector pointX;
+	
+    Vector pointX;
 	theProbabilityTransformation->transform_u_to_x(pointU, pointX);
 
 	ofstream outputFile( filenameX, ios::out);
