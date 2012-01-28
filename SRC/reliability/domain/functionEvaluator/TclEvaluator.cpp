@@ -106,6 +106,8 @@ TclEvaluator::setVariables(const Vector &x)
   }
   
   // Set values of random variables in the Tcl intepreter
+    // KRM note this won't work properly because the input vector x is not of the same size as
+    // the indices of available RVs.  We should remove this part of the code altogether.
   int nrv = theReliabilityDomain->getNumberOfRandomVariables();
   int lsf = theReliabilityDomain->getTagOfActiveLimitStateFunction();
 
@@ -191,7 +193,8 @@ TclEvaluator::runAnalysis(const Vector &x)
   }
   
   // Put random variables into the structural domain according to the RandomVariablePositioners
-    // KRM - now would need to put all parameters into the domain?
+    // KRM - now would need to put all parameters into the domain? Also note this method is not 
+    // called by ImplicitGradient, so update on parameters would need to go elsewhere if needed.
   int rvIndex;
   RandomVariablePositionerIter rvPosIter = theReliabilityDomain->getRandomVariablePositioners();
   RandomVariablePositioner *theRVPos;

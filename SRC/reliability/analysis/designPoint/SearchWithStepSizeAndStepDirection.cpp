@@ -135,7 +135,8 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 
 	// Declaration of data used in the algorithm
 	int numberOfRandomVariables = theReliabilityDomain->getNumberOfRandomVariables();
-	int j, zeroFlag, result;
+    int numberOfParameters = theOpenSeesDomain->getNumParameters();
+	int zeroFlag, result;
 	int evaluationInStepSize = 0;
 	
 	double gFunctionValue = 1.0;
@@ -186,7 +187,12 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
     // get starting x values from parameter directly
     for (int j = 0; j < numberOfRandomVariables; j++) {
         RandomVariable *theParam = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
-        (*x)(j) = theParam->getStartValue();
+        double rvVal = theParam->getStartValue();
+        (*x)(j) = rvVal;
+        
+        // now we should update the parameter value 
+        // KRM should this be a parameter reference now?
+        theParam->setCurrentValue(rvVal);
     }
     
     // Transform starting point into standard normal space to initialize u vector
@@ -363,7 +369,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 			tempProduct.addMatrixTransposeVector(0.0, Jux, *alpha, 1.0);
 
 			// Only diagonal elements of (J_xu*J_xu^T) are used
-			for (j = 0; j < numberOfRandomVariables; j++) {
+			for (int j = 0; j < numberOfRandomVariables; j++) {
 			  double sum = 0.0;
 			  double jk;
 			  for (int k = 0; k < numberOfRandomVariables; k++) {

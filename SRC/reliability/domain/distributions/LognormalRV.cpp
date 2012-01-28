@@ -234,16 +234,20 @@ LognormalRV::getInverseCDFvalue(double probValue)
 double 
 LognormalRV::transform_x_to_u(void)
 {
-    // check this works with negative LN
-    return (log(this->getCurrentValue())-lambda)/zeta;
+    if (isPositive)
+        return (log(this->getCurrentValue())-lambda)/zeta;
+    else
+        return -(log(fabs(this->getCurrentValue())) - lambda)/zeta;
 }
 
 
 int 
 LognormalRV::transform_u_to_x(double uVal)
 {
-    // check this works with negative LN
-    return exp(uVal*zeta + lambda);
+    if (isPositive)
+        return exp(uVal*zeta + lambda);
+    else
+        return -exp(-uVal*zeta + lambda);
 }
 
 
