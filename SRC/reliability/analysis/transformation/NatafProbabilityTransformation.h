@@ -47,9 +47,9 @@ public:
 						  int printFlag);
 	~NatafProbabilityTransformation();
 
-	int transform_x_to_u(const Vector &x, Vector &u);
+	int transform_x_to_u(Vector &u);
 	int transform_u_to_x(const Vector &u, Vector &x);
-	int getJacobian_x_to_u(const Vector &x, Matrix &Jxu);
+	int getJacobian_x_to_u(Matrix &Jxu);
 	int getJacobian_u_to_x(const Vector &u, Matrix &Jux);
 
 	Vector meanSensitivityOf_x_to_u(const Vector &x, int rvTag);
@@ -76,9 +76,9 @@ private:
 	// Private member functions
 	void setCorrelationMatrix(int pertMeanOfThisRV, int pertStdvOfThisRV, double h);
 	// Representing diag matrix as vector
-	int getJacobian_z_x(const Vector &x, const Vector &z, Vector &Jzx);
+	int getJacobian_z_x(const Vector &z, Vector &Jzx);
 	int z_to_x(const Vector &z, Vector &x);
-	int x_to_z(const Vector &x, Vector &z);
+	int x_to_z(Vector &z);
 
 	// Auxiliary member functions for manual evaluation of 
 	// the integral equation to find Nataf correlation

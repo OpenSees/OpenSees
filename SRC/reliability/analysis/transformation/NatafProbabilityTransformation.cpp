@@ -118,6 +118,7 @@ NatafProbabilityTransformation::lapackCholesky(void)
   return INFO;
 }
 
+
 NatafProbabilityTransformation::~NatafProbabilityTransformation()
 {
 	if (correlationMatrix != 0) 
@@ -129,10 +130,9 @@ NatafProbabilityTransformation::~NatafProbabilityTransformation()
 }
 
 int 
-NatafProbabilityTransformation::transform_x_to_u(const Vector &x, Vector &u)
+NatafProbabilityTransformation::transform_x_to_u(Vector &u)
 {
-  //Vector z = x_to_z(*x);
-  //u->addMatrixVector(0.0, *inverseLowerCholesky, z, 1.0);
+  // will get x values directly from the RVs themselves, returns vector u populated
 
   char UPLO = 'L';
   char TRANS = 'N';
@@ -144,7 +144,7 @@ NatafProbabilityTransformation::transform_x_to_u(const Vector &x, Vector &u)
   int INFO;
 
   Vector z(lapackB, nrv);
-  this->x_to_z(x, z);
+  this->x_to_z(z);
 
 #ifdef _WIN32
   DTRTRS(&UPLO, &TRANS, &DIAG, &N, &NRHS, lapackA, &LDA, lapackB, &LDB, &INFO);
@@ -166,6 +166,9 @@ NatafProbabilityTransformation::transform_x_to_u(const Vector &x, Vector &u)
 int 
 NatafProbabilityTransformation::transform_u_to_x(const Vector &u, Vector &x)
 {
+    // will populate vector x given values in vector u, assumes that calling 
+    // routine will take care of setParameter() if RVs should be updated with new x vals
+    
   Vector z(nrv);
 
   // Unrolled for lower triangular matrix
@@ -204,16 +207,17 @@ NatafProbabilityTransformation::transform_u_to_x(const Vector &u, Vector &x)
   return 0;
 }
 
+
 int 
-NatafProbabilityTransformation::getJacobian_x_to_u(const Vector &x, Matrix &Jxu)
+NatafProbabilityTransformation::getJacobian_x_to_u(Matrix &Jxu)
 {
   Vector z(nrv);
 
-  this->x_to_z(x, z);
+  this->x_to_z(z);
   
   // Jzx is diagonal!
   Vector Jzx(nrv);
-  this->getJacobian_z_x(x, z, Jzx);
+  this->getJacobian_z_x(z, Jzx);
 
   // Do Jxu = inv(Jzx) * L
   // Divide ith row of lowChol by ith diagonal entry of Jzx
@@ -225,6 +229,7 @@ NatafProbabilityTransformation::getJacobian_x_to_u(const Vector &x, Matrix &Jxu)
 
   return 0;
 }
+
 
 int
 NatafProbabilityTransformation::getJacobian_u_to_x(const Vector &u, Matrix &Jux)
@@ -244,7 +249,7 @@ NatafProbabilityTransformation::getJacobian_u_to_x(const Vector &u, Matrix &Jux)
 
   // Jzx is diagonal!
   Vector Jzx(nrv);
-  this->getJacobian_z_x(x, z, Jzx);
+  this->getJacobian_z_x(z, Jzx);
 
   char UPLO = 'L';
   char TRANS = 'N';
@@ -283,131 +288,68 @@ NatafProbabilityTransformation::getJacobian_u_to_x(const Vector &u, Matrix &Jux)
   return 0;
 }
 
+
 int
-NatafProbabilityTransformation::getJacobian_z_x(const Vector &x, 
-						const Vector &z, 
-						Vector &Jzx)
+NatafProbabilityTransformation::getJacobian_z_x(const Vector &z, Vector &Jzx)
 {	
-	static NormalRV aStandardNormalRV(1, 0.0, 1.0);
 
 	RandomVariable *theRV;
-	RandomVariableIter &rvIter = 
-	  theReliabilityDomain->getRandomVariables();
+	RandomVariableIter &rvIter = theReliabilityDomain->getRandomVariables();
 	//for ( int i=0 ; i<nrv ; i++ ) {
 	while ((theRV = rvIter()) != 0) {
-	  int rvTag = theRV->getTag();
-	  //int i = theRV->getIndex();
-	  int i = theReliabilityDomain->getRandomVariableIndex(rvTag);
-
-	  if (strcmp(theRV->getType(),"NORMAL")==0) {
-	    double sigma = theRV->getStdv();
-	    Jzx(i) = 1.0 / sigma;
-	  }
-	  else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
-          Vector paramTemp = theRV->getParameters();
-	    double zeta = fabs(paramTemp(1));
-	    if (x(i) == 0.0) {
-	      opserr << "NatafProbabilityTransformation::getJacobian_z_x() -- Error: value " << endln
-		     << "of lognormal random variable is zero in original space. " << endln;
+        int rvTag = theRV->getTag();
+        //int i = theRV->getIndex();
+        int i = theReliabilityDomain->getRandomVariableIndex(rvTag);
+        double temp = theRV->gradient_x_to_u(z(i));
+        
+        if (temp == 0.0) {
+            opserr << "NatafProbabilityTransformation::getJacobian_z_x() -- Error: gradient value " << endln
+                << "of RV with tag " << rvTag << " is zero. " << endln;
+            Jzx(i) = 0;
 	    }
-	    Jzx(i) = 1.0 / ( zeta * x(i)  );
-	  }
-	  else {
-	    double pdf = aStandardNormalRV.getPDFvalue(z(i));
-	    if (pdf == 0.0) {
-	      opserr << "ERROR: NatafProbabilityTransformation::getJacobian_z_x() -- " << endln
-		     << " the PDF value is zero, probably due to too large step. " << endln;
-	    }
-	    Jzx(i) = theRV->getPDFvalue(x(i)) / pdf;
-	    if (Jzx(i)==0.0) {
-	    }
-	  }
-	}
+        else {
+            Jzx(i) = 1.0/theRV->gradient_x_to_u(z(i));
+        }
+    }
 	
 	return 0;
 }
 
 
-
-
 int
 NatafProbabilityTransformation::z_to_x(const Vector &z, Vector &x)
 {
-  static NormalRV aStandardNormalRV(1, 0.0, 1.0);
 
 	RandomVariable *theRV;
-	RandomVariableIter &rvIter = 
-	  theReliabilityDomain->getRandomVariables();
+	RandomVariableIter &rvIter = theReliabilityDomain->getRandomVariables();
 	//for ( int i=0 ; i<nrv ; i++ ) {
 	while ((theRV = rvIter()) != 0) {
-	  int rvTag = theRV->getTag();
-	  //int i = theRV->getIndex();
-	  int i = theReliabilityDomain->getRandomVariableIndex(rvTag);
-
-	  if (strcmp(theRV->getType(),"NORMAL")==0) {
-	    double mju = theRV->getMean();
-	    double sigma = theRV->getStdv();
-	    x(i) = z(i) * sigma + mju;
-	  }
-	  else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
-	    Vector paramTemp = theRV->getParameters();
-          double lambda = paramTemp(0);
-	    double zeta = paramTemp(1);
-          
-	    if (zeta < 0.0) { // interpret this as negative lognormal random variable
-	      x(i) = -exp ( -z(i) * zeta + lambda );
-	    }
-	    else {
-	      x(i) = exp ( z(i) * zeta + lambda );
-	    }
-	  }
-	  else {
-	    x(i) = theRV->getInverseCDFvalue(  aStandardNormalRV.getCDFvalue(z(i))  );
-	  }
-	}
+        int rvTag = theRV->getTag();
+        //int i = theRV->getIndex();
+        int i = theReliabilityDomain->getRandomVariableIndex(rvTag);
+        x(i) = theRV->transform_u_to_x(z(i));
+    }
 
 	return 0;
 }
-
-
-
 
 
 int
-NatafProbabilityTransformation::x_to_z(const Vector &x, Vector &z)
+NatafProbabilityTransformation::x_to_z(Vector &z)
 {
-	static NormalRV aStandardNormalRV(1, 0.0, 1.0);
 	RandomVariable *theRV;
-	RandomVariableIter &rvIter = 
-	  theReliabilityDomain->getRandomVariables();
+	RandomVariableIter &rvIter = theReliabilityDomain->getRandomVariables();
 	//for ( int i=0 ; i<nrv ; i++ ) {
-	while ((theRV = rvIter()) != 0) {
-	  int rvTag = theRV->getTag();
-	  //int i = theRV->getIndex();
-	  int i = theReliabilityDomain->getRandomVariableIndex(rvTag);
-
-	  if (strcmp(theRV->getType(),"NORMAL")==0) {
-	    double mju = theRV->getMean();
-	    double sigma = theRV->getStdv();
-	    z(i) =   ( x(i) - mju ) / sigma;
-	  }
-	  else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
-	    Vector paramTemp = theRV->getParameters();
-          double lambda = paramTemp(0);
-          double zeta = paramTemp(1);
-	    if (zeta < 0.0) { /// interpret this as a negative lognormal random variable
-	      z(i) = -( log ( fabs(x(i)) ) - lambda ) / zeta;
-	    }
-	    else {
-	      z(i) = ( log ( x(i) ) - lambda ) / zeta;
-	    }
-	  }
-	  else {
-	    z(i) = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFvalue(x(i)));
-	  }
+    while ((theRV = rvIter()) != 0) {
+        int rvTag = theRV->getTag();
+        //int i = theRV->getIndex();
+        int i = theReliabilityDomain->getRandomVariableIndex(rvTag);
+        z(i) = theRV->transform_x_to_u();
 	}
+
 	return 0;
 }
+
 
 Vector
 NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rvTag)
@@ -421,7 +363,7 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 
 	// 2) Vector z = x_to_z(x); 
 	Vector z(nrv);
-	this->x_to_z(x, z);
+	this->x_to_z(z);
 
 	// 3) DzDmean and DzDstdv = a vector of zeros and then:
 	double DzDmean = 0.0;
@@ -534,7 +476,7 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 
 	// 2) Vector z = x_to_z(x); 
 	Vector z(nrv);
-	this->x_to_z(x, z);
+	this->x_to_z(z);
 
 	// 3) DzDmean and DzDstdv = a vector of zeros and then:
 	double DzDstdv = 0.0;
@@ -633,15 +575,6 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 
 	return returnVector;
 }
-
-
-
-
-
-
-
-
-
 
 
 void
@@ -1483,15 +1416,12 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 }
 
 
-
-
-
-
 double
 NatafProbabilityTransformation::phi2(double z_i, 
 									 double z_j,
 									 double rho)
 {
+    // KRM - this can get removed after calls are modified to use CorrelatedStandardNormal class
 	double par = z_i*z_i + z_j*z_j - 2.0*rho*z_i*z_j;
 
 	double theExp = exp(-par/(2.0*(1.0-rho*rho)));
@@ -1760,16 +1690,3 @@ NatafProbabilityTransformation::solveForCorrelation(int rv_i, int rv_j, double r
 	return result;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

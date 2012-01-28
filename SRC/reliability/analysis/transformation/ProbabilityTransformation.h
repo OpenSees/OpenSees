@@ -44,9 +44,9 @@ public:
 	ProbabilityTransformation();
 	virtual ~ProbabilityTransformation();
 
-	virtual int transform_x_to_u(const Vector &x, Vector &u) = 0;
+	virtual int transform_x_to_u(Vector &u) = 0;
 	virtual int transform_u_to_x(const Vector &u, Vector &x) = 0;
-	virtual int getJacobian_x_to_u(const Vector &x, Matrix &Jxu) = 0;
+	virtual int getJacobian_x_to_u(Matrix &Jxu) = 0;
 	virtual int getJacobian_u_to_x(const Vector &u, Matrix &Jux) = 0;
 
 	virtual Vector meanSensitivityOf_x_to_u(const Vector &x, int rvTag) = 0;

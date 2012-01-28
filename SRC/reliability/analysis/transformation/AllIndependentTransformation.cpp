@@ -29,6 +29,7 @@
 #include <ProbabilityTransformation.h>
 #include <AllIndependentTransformation.h>
 #include <RandomVariable.h>
+#include <RandomVariableIter.h>
 #include <CorrelationCoefficient.h>
 #include <NormalRV.h>
 #include <Vector.h>
@@ -100,46 +101,26 @@ AllIndependentTransformation::~AllIndependentTransformation()
 
 
 int 
-AllIndependentTransformation::transform_x_to_u(const Vector &x, Vector &u)
+AllIndependentTransformation::transform_x_to_u(Vector &u)
 {
-//	opserr << " input something112 \n";
-//	u = x_to_z(x);
-  x_to_z(x, u);
+    x_to_z(u);
 	return 0;
 }
 
+
 int
-AllIndependentTransformation::x_to_z(const Vector &px, Vector &z)
+AllIndependentTransformation::x_to_z(Vector &z)
 {
-	RandomVariable *theRV;
-	static NormalRV aStandardNormalRV(1, 0.0, 1.0);
-//	opserr << " input something113 \n";
-//	Vector z(nrv);
-//	opserr << " input something114 \n";
-	for ( int i=0 ; i<nrv ; i++ )
-	{
-		theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(i);
-		if (strcmp(theRV->getType(),"NORMAL")==0) {
-			double mju = theRV->getMean();
-			double sigma = theRV->getStdv();
-			z(i) =   ( px(i) - mju ) / sigma;
-		}
-		else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
-			Vector paramTemp = theRV->getParameters();
-            double lambda = paramTemp(0);
-			double zeta = paramTemp(1);
-			if (zeta < 0.0) { /// interpret this as a negative lognormal random variable
-				z(i) = -( log ( fabs(px(i)) ) - lambda ) / zeta;
-			}
-			else {
-				z(i) = ( log ( px(i) ) - lambda ) / zeta;
-			}
-		}
-		else {
-		  z(i) = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFvalue(px(i)));
-		}
+    RandomVariable *theRV;
+	RandomVariableIter &rvIter = theReliabilityDomain->getRandomVariables();
+	//for ( int i=0 ; i<nrv ; i++ ) {
+    while ((theRV = rvIter()) != 0) {
+        int rvTag = theRV->getTag();
+        //int i = theRV->getIndex();
+        int i = theReliabilityDomain->getRandomVariableIndex(rvTag);
+        z(i) = theRV->transform_x_to_u();
 	}
-//	opserr << " input something114 \n";
+    
 	return 0;
 }
 
@@ -150,7 +131,7 @@ AllIndependentTransformation::meanSensitivityOf_x_to_u(const Vector &px, int rvN
 {
 //	Vector z = x_to_z(px);
   //(*z) = x_to_z(px);
-  x_to_z(px, *z);
+  x_to_z(*z);
 
 	if(DzDmean != 0 ){
 		delete DzDmean;
@@ -198,7 +179,7 @@ AllIndependentTransformation::stdvSensitivityOf_x_to_u(const Vector &px, int rvN
 {
 //	Vector z = x_to_z(x);
   //(*z) = x_to_z(px);
-  x_to_z(px, *z);
+  x_to_z(*z);
 
 	// 3) DzDmean and DzDstdv = a vector of zeros and then:
 	if(DzDstdv != 0 ){
@@ -251,8 +232,8 @@ AllIndependentTransformation::stdvSensitivityOf_x_to_u(const Vector &px, int rvN
 int 
 AllIndependentTransformation::transform_u_to_x(const Vector &u, Vector &x)
 {
-  //x = z_to_x(u);
-  z_to_x(u, x);
+    //x = z_to_x(u);
+    z_to_x(u, x);
 	return 0;
 }
 
@@ -273,11 +254,11 @@ AllIndependentTransformation::transform_u_to_x_andComputeJacobian()
 */
 
 int
-AllIndependentTransformation::getJacobian_x_to_u(const Vector &x, Matrix &Jxu)
+AllIndependentTransformation::getJacobian_x_to_u(Matrix &Jxu)
 {
   //(*jacobian_u_x) = getJacobian_z_x(x,(*u));
   Vector Jux(nrv);
-  this->getJacobian_z_x(x, *u, Jux);
+  this->getJacobian_z_x(*u, Jux);
 
   for(int i=0; i<nrv; i++) 
     //(*jacobian_x_u)(i,i) = 1.0/(*jacobian_u_x)(i,i);
@@ -296,7 +277,7 @@ AllIndependentTransformation::getJacobian_u_to_x(const Vector &pu, Matrix &Jux)
 
   //(*jacobian_u_x) = getJacobian_z_x((*x),*u);
   Vector Jzx(nrv);
-  this->getJacobian_z_x(*x, *u, Jzx);
+  this->getJacobian_z_x(*u, Jzx);
 
   //Jux = *jacobian_u_x;
   for (int i =0; i < nrv; i++)
@@ -305,40 +286,29 @@ AllIndependentTransformation::getJacobian_u_to_x(const Vector &pu, Matrix &Jux)
   return 0;
 }
 
+
 int
-AllIndependentTransformation::getJacobian_z_x(const Vector &px, const Vector &pz, Vector &Jzx)
+AllIndependentTransformation::getJacobian_z_x(const Vector &z, Vector &Jzx)
 {	
 	RandomVariable *theRV;
-	static NormalRV aStandardNormalRV(1, 0.0, 1.0);
-//	Matrix jacobianMatrix_z_x(nrv,nrv);
-	for ( int i=0 ; i<nrv ; i++ )
-	{
-		theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(i);
-		if (strcmp(theRV->getType(),"NORMAL")==0) {
-			double sigma = theRV->getStdv();
-			Jzx(i) = 1.0 / sigma;
-		}
-		else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
-            Vector paramTemp = theRV->getParameters();
-            double zeta = fabs(paramTemp(1));
-			if (px(i) == 0.0) {
-				opserr << "NatafProbabilityTransformation::getJacobian_z_x() -- Error: value " << endln
-				    << "of lognormal random variable is zero in original space. " << endln;
-			}
-			Jzx(i) = 1.0 / ( zeta * px(i)  );
-		}
-		else {
-			double pdf = aStandardNormalRV.getPDFvalue(pz(i));
-			if (pdf == 0.0) {
-				opserr << "ERROR: NatafProbabilityTransformation::getJacobian_z_x() -- " << endln
-					<< " the PDF value is zero, probably due to too large step. " << endln;
-			}
-			Jzx(i) = theRV->getPDFvalue(px(i)) / pdf;
-			if (Jzx(i)==0.0) {
-			}
-		}
-	}
-
+	RandomVariableIter &rvIter = theReliabilityDomain->getRandomVariables();
+	//for ( int i=0 ; i<nrv ; i++ ) {
+	while ((theRV = rvIter()) != 0) {
+        int rvTag = theRV->getTag();
+        //int i = theRV->getIndex();
+        int i = theReliabilityDomain->getRandomVariableIndex(rvTag);
+        double temp = theRV->gradient_x_to_u(z(i));
+        
+        if (temp == 0.0) {
+            opserr << "NatafProbabilityTransformation::getJacobian_z_x() -- Error: gradient value " << endln
+            << "of RV with tag " << rvTag << " is zero. " << endln;
+            Jzx(i) = 0;
+	    }
+        else {
+            Jzx(i) = 1.0/theRV->gradient_x_to_u(z(i));
+        }
+    }
+	
 	return 0;
 }
 
