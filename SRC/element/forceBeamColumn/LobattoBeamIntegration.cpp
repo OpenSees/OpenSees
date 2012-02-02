@@ -42,7 +42,8 @@ LobattoBeamIntegration::getCopy(void)
 }
 
 void
-LobattoBeamIntegration::getSectionLocations(int numSections, double L,
+LobattoBeamIntegration::getSectionLocations(int numSections, 
+					    double L,
 					    double *xi)
 {
   switch(numSections) {
@@ -127,6 +128,11 @@ LobattoBeamIntegration::getSectionLocations(int numSections, double L,
     xi[8] =  0.9195339082;
     xi[9] =  1.0;
     break;
+
+  default:
+    opserr << "LobattoBeamIntegration -- max # integration points is 10\n";
+    break;
+  
   }
   
   for (int i = 0; i < numSections; i++)
@@ -219,6 +225,11 @@ LobattoBeamIntegration::getSectionWeights(int numSections, double L,
     wt[8] = 0.1333059908;
     wt[9] = 0.02222222222;
     break;
+
+  default:
+    opserr << "LobattoBeamIntegration -- max # integration points is 10\n";
+    break;
+
   }
   
   for (int i = 0; i < numSections; i++)

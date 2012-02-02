@@ -42,7 +42,8 @@ LegendreBeamIntegration::getCopy(void)
 }
 
 void
-LegendreBeamIntegration::getSectionLocations(int numSections, double L,
+LegendreBeamIntegration::getSectionLocations(int numSections, 
+					     double L,
 					     double *xi)
 {
   switch(numSections) {
@@ -133,6 +134,7 @@ LegendreBeamIntegration::getSectionLocations(int numSections, double L,
     break;
 
   default:
+    opserr << "LegendreBeamIntegration -- max # integration points is 10\n";
     break;
   }
 
@@ -232,6 +234,7 @@ LegendreBeamIntegration::getSectionWeights(int numSections, double L,
     break;
 
   default:
+    opserr << "LegendreBeamIntegration -- max # integration points is 10\n";
     break;
   }
   
