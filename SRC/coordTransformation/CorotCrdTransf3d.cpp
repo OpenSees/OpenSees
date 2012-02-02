@@ -1042,18 +1042,10 @@ CorotCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
     pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
     //opserr << "pl: " << pl;
 
-    // add P0 (reactions to loads in basic system)
-    pl[0] += p0(0);
-    pl[1] += p0(1);
-    pl[7] += p0(2);
-    pl[2] += p0(3);
-    pl[8] += p0(4);
-    
     // transform resisting forces  from local to global coordinates
     static Vector pg(12);
     pg.addMatrixTransposeVector(0.0, T, pl, 1.0);   // pg = T ^ pl; residual
     //opserr << "pg: " << pg;
-    
     
     /*
     this->compTransfMatrixBasicGlobalNew();
