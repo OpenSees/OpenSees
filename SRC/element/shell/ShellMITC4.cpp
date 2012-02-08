@@ -210,11 +210,15 @@ void  ShellMITC4::setDomain( Domain *theDomain )
   //node pointers
   for ( i = 0; i < 4; i++ ) {
      nodePointers[i] = theDomain->getNode( connectedExternalNodes(i) ) ;
-     
      if (nodePointers[i] == 0) {
        opserr << "ShellMITC4::setDomain - no node " << connectedExternalNodes(i);
        opserr << " exists in the model\n";
      }
+     const Vector &nodeDisp=nodePointers[i]->getTrialDisp();
+     if (nodeDisp.Size() != 6) {
+       opserr << "ShellMITC4::setDomain - node " << connectedExternalNodes(i);
+       opserr << " NEEDS 6 dof - GARBAGE RESULTS or SEGMENTATION FAULT WILL FOLLOW\n";
+     }       
   }
 
   //compute drilling stiffness penalty parameter
