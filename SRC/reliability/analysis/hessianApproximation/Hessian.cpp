@@ -221,15 +221,20 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 	//jacobian_u_x.addMatrix(0.0,theProbabilityTransformation->getJacobian_u_x(),1.0);
 	theProbabilityTransformation->getJacobian_u_to_x(x, jacobian_u_x);	
 
+	if (theGFunEvaluator->setVariables(x) < 0) {
+	  opserr << "ERROR Hessian -- error setting variables in namespace" << endln;
+	  return -1;
+	}
+
 	result = theGFunEvaluator->runAnalysis(x);
 	if (result < 0) {
-		opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+		opserr << "Hessian - " << endln
 			<< " could not run analysis to evaluate limit-state function. " << endln;
 		return -1;
 	}
 	result = theGFunEvaluator->evaluateExpression();
 	if (result < 0) {
-		opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+		opserr << "Hessian - " << endln
 			<< " could not tokenize limit-state function. " << endln;
 		return -1;
 	}
@@ -240,7 +245,7 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 	// Gradient in original space
 	result = theGradGEvaluator->computeGradient(gFunctionValue);
 	if (result < 0) {
-		opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+		opserr << "Hessian - " << endln
 			<< " could not compute gradients of the limit-state function. " << endln;
 		return -1;
 	}
@@ -336,15 +341,20 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 		  return -1;
 		}
 
+		if (theGFunEvaluator->setVariables(x) < 0) {
+		  opserr << "ERROR Hessian -- error setting variables in namespace" << endln;
+		  return -1;
+		}
+
 		result = theGFunEvaluator->runAnalysis(x);
 				if (result < 0) {
-					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+					opserr << "Hessian - " << endln
 						<< " could not run analysis to evaluate limit-state function. " << endln;
 					return -1;
 				}
 		result = theGFunEvaluator->evaluateExpression();
 				if (result < 0) {
-					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+					opserr << "Hessian - " << endln
 						<< " could not tokenize limit-state function. " << endln;
 					return -1;
 				}
@@ -352,7 +362,7 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 		// Gradient in original space
 		result = theGradGEvaluator->computeGradient(gFunctionValue);
 				if (result < 0) {
-					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+					opserr << "Hessian - " << endln
 						<< " could not compute gradients of the limit-state function. " << endln;
 					return -1;
 				}
@@ -838,15 +848,19 @@ int Hessian::refineHessian(int time, int colOfHessian)
       return -1;
     }
 
+	if (theGFunEvaluator->setVariables(x) < 0) {
+	  opserr << "ERROR Hessian -- error setting variables in namespace" << endln;
+	  return -1;
+	}
 		result = theGFunEvaluator->runAnalysis(x);
 				if (result < 0) {
-					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+					opserr << "Hessian - " << endln
 						<< " could not run analysis to evaluate limit-state function. " << endln;
 					return -1;
 				}
 		result = theGFunEvaluator->evaluateExpression();
 				if (result < 0) {
-					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+					opserr << "Hessian - " << endln
 						<< " could not tokenize limit-state function. " << endln;
 					return -1;
 				}
@@ -854,7 +868,7 @@ int Hessian::refineHessian(int time, int colOfHessian)
 		// Gradient in original space
 		result = theGradGEvaluator->computeGradient(gFunctionValue);
 				if (result < 0) {
-					opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+					opserr << "Hessian - " << endln
 						<< " could not compute gradients of the limit-state function. " << endln;
 					return -1;
 				}
@@ -913,16 +927,20 @@ int Hessian::refineHessian(int time, int colOfHessian)
 		  return -1;
 		}
 
+	if (theGFunEvaluator->setVariables(x) < 0) {
+	  opserr << "ERROR Hessian -- error setting variables in namespace" << endln;
+	  return -1;
+	}
 
 			result = theGFunEvaluator->runAnalysis(x);
 					if (result < 0) {
-						opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+						opserr << "Hessian - " << endln
 							<< " could not run analysis to evaluate limit-state function. " << endln;
 						return -1;
 					}
 			result = theGFunEvaluator->evaluateExpression();
 					if (result < 0) {
-						opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+						opserr << "Hessian - " << endln
 							<< " could not tokenize limit-state function. " << endln;
 						return -1;
 					}
@@ -930,7 +948,7 @@ int Hessian::refineHessian(int time, int colOfHessian)
 			// Gradient in original space
 			result = theGradGEvaluator->computeGradient(gFunctionValue);
 					if (result < 0) {
-						opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+						opserr << "Hessian - " << endln
 							<< " could not compute gradients of the limit-state function. " << endln;
 						return -1;
 					}
