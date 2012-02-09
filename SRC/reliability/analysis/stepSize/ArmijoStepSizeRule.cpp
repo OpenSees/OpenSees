@@ -245,6 +245,12 @@ ArmijoStepSizeRule::computeStepSize(const Vector &u_old,
 		// Evaluate the limit-state function
 		FEconvergence = true;
 		theGFunEvaluator->inactivateSensitivty(); ///added by K.F.
+
+		if (theGFunEvaluator->setVariables(x_new) < 0) {
+			opserr << "ERROR ArmijoStepSizeRule -- error setting variables in namespace" << endln;
+			return -1;
+		}
+			
 		result = theGFunEvaluator->runAnalysis(x_new);
 /*		if (result < 0) {
 			// In this case the FE analysis did not converge
