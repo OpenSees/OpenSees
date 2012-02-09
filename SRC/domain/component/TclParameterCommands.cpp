@@ -31,6 +31,15 @@
 
 #include <Parameter.h>
 
+#ifdef _RELIABILITY
+
+#include <RVParameter.h>
+#include <ReliabilityDomain.h>
+
+extern ReliabilityDomain *theReliabilityDomain;
+
+#endif
+
 int
 TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
 				int argc, TCL_Char **argv,
@@ -71,6 +80,50 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
 
     return TCL_OK;
   }
+
+  // First, check special case of a blank parameter
+  if (argc == 3 && strcmp(argv[0],"parameter") == 0) {
+    Parameter *newParameter = new Parameter(paramTag, 0, 0, 0);
+	
+    double value;
+    if (Tcl_GetDouble(interp,argv[2],&value) != TCL_OK)
+      return TCL_ERROR;
+
+    newParameter->setValue(value);
+
+    theTclDomain->addParameter(newParameter);
+
+    char buffer[40];
+    sprintf(buffer, "%d", paramTag);
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
+    return TCL_OK;
+  }
+
+#ifdef _RELIABILITY
+  if (strcmp(argv[0],"parameter") == 0 && strcmp(argv[2],"randomVariable") == 0) {
+    int rvTag;
+    if (Tcl_GetInt(interp, argv[3], &rvTag) != TCL_OK) {
+      return TCL_ERROR;    
+    }
+
+    if (theReliabilityDomain == 0) {
+      opserr << "ERROR parameter " << paramTag << " -- reliability domain has not been created" << endln;      
+    }
+
+    RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtr(rvTag);
+    if (theRV == 0) {
+      opserr << "ERROR parameter " << paramTag << " -- random variable with tag " << rvTag << " not defined" << endln;
+      return TCL_ERROR;
+    }
+
+    Parameter *newParameter = new RVParameter(paramTag, theRV);
+
+    theTclDomain->addParameter(newParameter);
+
+    return TCL_OK;
+  }
+#endif
 
   // Now handle the parameter according to which command is invoked
   if (strcmp(argv[0],"parameter") == 0 || strcmp(argv[0],"addToParameter") == 0) {

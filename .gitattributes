@@ -1753,6 +1753,8 @@ SRC/domain/component/MaterialStageParameter.cpp -text
 SRC/domain/component/MaterialStageParameter.h -text
 SRC/domain/component/Parameter.cpp -text
 SRC/domain/component/Parameter.h -text
+SRC/domain/component/RVParameter.cpp -text
+SRC/domain/component/RVParameter.h -text
 SRC/domain/component/TclParameterCommands.cpp -text
 SRC/domain/component/TclUpdateMaterialCommand.cpp -text
 SRC/domain/constraints/ImposedMotionSP.cpp -text
