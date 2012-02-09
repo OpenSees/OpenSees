@@ -194,7 +194,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
         // KRM should this be a parameter reference now?
         theParam->setCurrentValue(rvVal);
     }
-    
+
     // Transform starting point into standard normal space to initialize u vector
     result = theProbabilityTransformation->transform_x_to_u(*u);
     if (result < 0) {
@@ -202,7 +202,6 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
                << " could not transform from x to u." << endln;
         return -1;
     }
-
 
 	// Loop to find design point
 	steps = 1;
@@ -231,7 +230,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 			theFunctionEvaluator->setExpression(lsfExpression);
 			
 			if (theFunctionEvaluator->evaluateExpression() < 0) {
-				opserr << "ERROR FiniteDifferenceGradient -- error evaluating LSF expression" << endln;
+				opserr << "ERROR SearchWithStepSizeAndStepDirection -- error evaluating LSF expression" << endln;
 				return -1;
 			}
 			
@@ -413,6 +412,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 		  opserr << " STEP #" << steps <<": ";
 
 
+
 		// Update Hessian approximation, if any
 		if (  (theHessianApproximation!=0) && (steps!=1)  ) {
 			theHessianApproximation->updateHessianApproximation(u_old,
@@ -434,6 +434,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 			return -1;
 		}
 		*searchDirection = theSearchDirection->getSearchDirection();
+
 
 
 		// Determine step size
