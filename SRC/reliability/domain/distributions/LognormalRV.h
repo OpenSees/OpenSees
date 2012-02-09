@@ -58,7 +58,7 @@ public:
     
     // standardization of random variables
     double transform_x_to_u(void);
-    int transform_u_to_x(double uVal);
+    double transform_u_to_x(double uVal);
     double gradient_x_to_u(double uVal);
 	
 	// other

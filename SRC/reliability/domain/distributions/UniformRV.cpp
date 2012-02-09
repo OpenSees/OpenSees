@@ -160,7 +160,7 @@ UniformRV::transform_x_to_u(void)
 }
 
 
-int 
+double
 UniformRV::transform_u_to_x(double uVal)
 {
     return getInverseCDFvalue(standardNormalPhi(uVal));

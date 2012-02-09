@@ -241,7 +241,7 @@ LognormalRV::transform_x_to_u(void)
 }
 
 
-int 
+double
 LognormalRV::transform_u_to_x(double uVal)
 {
     if (isPositive)

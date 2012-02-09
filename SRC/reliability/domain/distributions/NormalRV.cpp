@@ -150,7 +150,7 @@ NormalRV::transform_x_to_u(void)
 }
 
 
-int 
+double
 NormalRV::transform_u_to_x(double uVal)
 {
     return uVal*sigma + mu;
