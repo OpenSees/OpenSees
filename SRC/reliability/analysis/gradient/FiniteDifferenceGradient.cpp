@@ -100,26 +100,40 @@ FiniteDifferenceGradient::computeGradient(double g)
 		Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
 		int tag = theParam->getTag();
 		double result = 0;
-		
+
 		// check for analytic gradient first
 		const char *gradExpression = theLimitStateFunction->getGradientExpression(tag);
 		if (gradExpression != 0) {
 			theFunctionEvaluator->setExpression(gradExpression);
+
+			if (theFunctionEvaluator->setVariables(param_vect) < 0) {
+				opserr << "ERROR FiniteDifferenceGradient -- error setting variables in namespace" << endln;
+				return -1;
+			}
+			
 			if (theFunctionEvaluator->evaluateExpression() < 0) {
 				opserr << "ERROR FiniteDifferenceGradient -- error evaluating gradient expression" << endln;
 				return -1;
 			}
 			
 			result = theFunctionEvaluator->getResult();
+
+			// Reset limit state function in evaluator -- subsequent calls could receive gradient expression
+			const char *lsfExpression = theLimitStateFunction->getExpression();
+			theFunctionEvaluator->setExpression(lsfExpression);
+
 		}
 		
 		// if no analytic gradient automatically do finite differences
 		else {
 			// use parameter defined perturbation
 			double h = theParam->getPerturbation();
+
 			param_pert = param_vect;
 			param_pert(i) += h;
 			
+			theParam->setValue(param_pert(i));
+
 			// set perturbed values in the variable namespace
 			if (theFunctionEvaluator->setVariables(param_pert) < 0) {
 				opserr << "ERROR FiniteDifferenceGradient -- error setting variables in namespace" << endln;
@@ -134,6 +148,7 @@ FiniteDifferenceGradient::computeGradient(double g)
 			
 			// evaluate LSF and obtain result
 			const char *lsfExpression = theLimitStateFunction->getExpression();
+
 			theFunctionEvaluator->setExpression(lsfExpression);
 			
 			if (theFunctionEvaluator->evaluateExpression() < 0) {
@@ -144,12 +159,20 @@ FiniteDifferenceGradient::computeGradient(double g)
 			// Add gradient contribution
 			double g_perturbed = theFunctionEvaluator->getResult();
 			result = (g_perturbed-g)/h;
+			theParam->setValue(param_vect(i));
+
+			// reset original values in the variable namespace
+			if (theFunctionEvaluator->setVariables(param_vect) < 0) {
+			  opserr << "ERROR FiniteDifferenceGradient -- error setting variables in namespace" << endln;
+			  return -1;
+			}
 		}
 		
 		(*grad_g)(i) = result;
 		
 	}
 	
+
 	return 0;
 	
 }
