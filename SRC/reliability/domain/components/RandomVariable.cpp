@@ -44,7 +44,8 @@ const double RandomVariable::euler = 0.57721566490153286061;
 
 
 RandomVariable::RandomVariable(int tag, int classTag)
-  :ReliabilityDomainComponent(tag,classTag)
+  :ReliabilityDomainComponent(tag,classTag),
+   startValue(0.0), rvValue(0.0)
 {
 
 }
@@ -62,10 +63,10 @@ RandomVariable::transform_x_to_u(void)
 }
 
 
-int 
+double
 RandomVariable::transform_u_to_x(double uVal)
 {
-    return 0;
+    return 0.0;
 }
 
 

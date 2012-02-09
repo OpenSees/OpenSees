@@ -66,7 +66,7 @@ public:
     
     // standardization of random variables
     virtual double transform_x_to_u(void);
-    virtual int transform_u_to_x(double uVal);
+    virtual double transform_u_to_x(double uVal);
     virtual double gradient_x_to_u(double uVal);
 	
 	// NYI
