@@ -259,13 +259,7 @@ ArmijoStepSizeRule::computeStepSize(const Vector &u_old,
 			opserr << "step size rejected due to non-converged FE analysis ..." << endln
 				<< " .......: ";
 		}
-*/		result = theGFunEvaluator->evaluateExpression();
-		if (result < 0) {
-			opserr << "ArmijoStepSizeRule::computeStepSize() - could not  " << endln
-				<< " tokenize the limit-state function. " << endln;
-			return -1;
-		}
-		g_new = theGFunEvaluator->getResult();
+*/		g_new = theGFunEvaluator->evaluateExpression();
 
 	}
 
@@ -390,14 +384,7 @@ ArmijoStepSizeRule::computeStepSize(const Vector &u_old,
 					<< " .......: ";
 				logfile << "step size rejected due to non-converged FE analysis ..." << endln;
 			}
-*/			result = theGFunEvaluator->evaluateExpression();
-			if (result < 0) {
-				opserr << "ArmijoStepSizeRule::computeStepSize() - could not  " << endln
-					<< " tokenize the limit-state function. " << endln;
-				return -1;
-			}
-			g_new = theGFunEvaluator->getResult();
-
+*/			g_new = theGFunEvaluator->evaluateExpression();
 
 			// Possibly project the point onto the limit-state surface
 			// (it is assumed that the user has provided a projection object 

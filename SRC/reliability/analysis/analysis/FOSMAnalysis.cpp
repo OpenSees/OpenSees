@@ -133,14 +133,7 @@ FOSMAnalysis::analyze(void)
 		// set namespace variable for tcl functions
 		Tcl_SetVar2Ex(theTclInterp,"RELIABILITY_lsf",NULL,Tcl_NewIntObj(lsfTag),TCL_NAMESPACE_ONLY);
 		
-		result = theGFunEvaluator->evaluateExpression();
-		if (result < 0) {
-			opserr << "FOSMAnalysis::analyze() - " << endln
-			   << " could not tokenize limit-state function. " << endln;
-			return -1;
-		}
-		
-		meanEstimates(lsf) = theGFunEvaluator->getResult();
+		meanEstimates(lsf) = theGFunEvaluator->evaluateExpression();
 	}
 
 

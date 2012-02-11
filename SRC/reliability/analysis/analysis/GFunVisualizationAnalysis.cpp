@@ -502,13 +502,7 @@ GFunVisualizationAnalysis::findGSurface(Vector thePoint)
 			<< " could not run analysis to evaluate limit-state function. " << endln;
 		return -1;
 	}
-	result = theGFunEvaluator->evaluateExpression();
-	if (result < 0) {
-		opserr << "GFunVisualizationAnalysis::analyze() - " << endln
-			<< " could not tokenize limit-state function. " << endln;
-		return -1;
-	}
-	g = theGFunEvaluator->getResult();
+	g = theGFunEvaluator->evaluateExpression();
 
 
 	// FIND THE POINT IN WHICHEVER SPACE USER HAS SPECIFIED
@@ -550,14 +544,7 @@ GFunVisualizationAnalysis::evaluateGFunction(Vector thePoint, bool isFirstPoint)
 			<< " could not run analysis to evaluate limit-state function. " << endln;
 		return -1;
 	}
-	result = theGFunEvaluator->evaluateExpression();
-	if (result < 0) {
-		opserr << "GFunVisualizationAnalysis::analyze() - " << endln
-			<< " could not tokenize limit-state function. " << endln;
-		return -1;
-	}
-	g = theGFunEvaluator->getResult();
-
+	g = theGFunEvaluator->evaluateExpression();
 
 
 	// Possibly compute and print out more comprehensive results

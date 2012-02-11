@@ -158,13 +158,8 @@ SecantRootFinding::findLimitStateSurface(int space, double g, Vector pDirection,
 					<< " could not run analysis to evaluate limit-state function. " << endln;
 				return -1;
 			}
-			result = theGFunEvaluator->evaluateExpression();
-			if (result < 0) {
-				opserr << "GFunVisualizationAnalysis::analyze() - " << endln
-					<< " could not tokenize limit-state function. " << endln;
-				return -1;
-			}
-			g_new = theGFunEvaluator->getResult();
+			g_new = theGFunEvaluator->evaluateExpression();
+
 		}
 		else {
 			g_new = g;

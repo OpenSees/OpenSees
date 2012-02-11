@@ -124,13 +124,7 @@ double PrincipalPlane::getValueOnGrid(double p_x, double p_y)
     FEConvergence = false;
     return -1;
   }
-  result = theGFunEvaluator->evaluateExpression();
-  if (result < 0) {
-    opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-	   << " could not tokenize limit-state function. " << endln;
-    exit(-1);
-  }
-  double gFunctionValue = theGFunEvaluator->getResult();
+  double gFunctionValue = theGFunEvaluator->evaluateExpression();
   
   return gFunctionValue;
 }
@@ -376,13 +370,8 @@ double PrincipalPlane::getValueG2OnGrid(double p_x, double p_y, double valueOfG,
 			FEConvergence = false;
 			exit(-1);
 		}
-		result = theGFunEvaluator->evaluateExpression();
-			if (result < 0) {
-				opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-				<< " could not tokenize limit-state function. " << endln;
-			exit(-1);
-		}
-		valueOfG = theGFunEvaluator->getResult(); 
+		valueOfG = theGFunEvaluator->evaluateExpression();
+
 		// This needs to be fixed -- MHS 10/7/2011
 		//gFunctionValue2 = theGFunEvaluator->getG2(valueOfG, littleDt);
 		//gFunctionValue2 -= valueOfG;

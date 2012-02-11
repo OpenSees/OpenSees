@@ -302,10 +302,8 @@ NewSearchWithStepSizeAndStepDirection::findDesignPoint()
 			/////// modifed by K Fujimura//////////////////
 			result = theGFunEvaluator->runAnalysis(*x);
 			if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
-			result = theGFunEvaluator->evaluateExpression();
-			if (result < 0) { errorMessage_evalg(); delxinit(); return -1; }
 			gFunctionValue_old = gFunctionValue;
-			gFunctionValue = theGFunEvaluator->getResult();
+            gFunctionValue = theGFunEvaluator->evaluateExpression();
 		}
 		// Set scale parameter
 		if (iter == 1)	{
@@ -1091,9 +1089,7 @@ NewSearchWithStepSizeAndStepDirection::lineSearch()
 		theProbabilityTransformation->transform_u_to_x(uTest, xTest);
 		result = theGFunEvaluator->runAnalysis(xTest);
 		if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
-		result = theGFunEvaluator->evaluateExpression();
-		if (result < 0) { errorMessage_evalg(); delxinit(); return -1; }
-		gTest = theGFunEvaluator->getResult();
+		gTest = theGFunEvaluator->evaluateExpression();
 		opserr << " ampTest "<<ampTest<<endln;
 		opserr << " gTest "<<gTest<<endln;
 		result = theReliabilityConvergenceCheck->checkG(gTest);
@@ -1146,9 +1142,7 @@ NewSearchWithStepSizeAndStepDirection::lineSearch()
 			result = theProbabilityTransformation->transform_u_to_x(uTest, xTest);
 			result = theGFunEvaluator->runAnalysis(xTest);
 			if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
-			result = theGFunEvaluator->evaluateExpression();
-			if (result < 0) { errorMessage_evalg(); delxinit(); return -1; }
-			gTest = theGFunEvaluator->getResult();
+			gTest = theGFunEvaluator->evaluateExpression();
 			result = theReliabilityConvergenceCheck->checkG(gTest);
 			opserr << " gTest "<<gTest<<endln;
 			nlineSearch++;
@@ -1189,9 +1183,7 @@ NewSearchWithStepSizeAndStepDirection::lineSearch()
 		else theGFunEvaluator->inactivateSensitivty();
 		result = theGFunEvaluator->runAnalysis(*x);
 		if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
-		result = theGFunEvaluator->evaluateExpression();
-		if (result < 0) { errorMessage_evalg(); delxinit(); return -1; }
-		gFunctionValue = theGFunEvaluator->getResult();
+		gFunctionValue = theGFunEvaluator->evaluateExpression();
 		// Gradient in original space
 		result = theGradGEvaluator->computeGradient(gFunctionValue);
 		if (result < 0) { errorMessage_compGradg(); delxinit(); return -1; }

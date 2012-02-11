@@ -57,9 +57,7 @@ class TclEvaluator : public FunctionEvaluator
 	int setExpression(const char *expression);
 	int addToExpression(const char *expression);
 	
-	int evaluateExpression(void);
-	double getResult(void);
-	
+	double evaluateExpression(void);
 	int runAnalysis(const Vector &x);
   
  protected:

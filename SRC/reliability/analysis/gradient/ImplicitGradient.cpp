@@ -111,48 +111,38 @@ ImplicitGradient::computeGradient(double g)
       // check for analytic gradient first on dg/dimplicit
       const char *gradExpression = theLimitStateFunction->getGradientExpression(tag);
       if (gradExpression != 0) {
-	theFunctionEvaluator->setExpression(gradExpression);
-	if (theFunctionEvaluator->evaluateExpression() < 0) {
-	  opserr << "ERROR ImplicitGradient -- error evaluating gradient expression" << endln;
-	  return -1;
-	}
-	
-	partials(i) = theFunctionEvaluator->getResult();
+          theFunctionEvaluator->setExpression(gradExpression);
+          partials(i) = theFunctionEvaluator->evaluateExpression();
       }
       
       // if no analytic gradient automatically do finite differences to get dg/dimplicit
       // Mackie 7/31/2011: note this is unfortuante code duplication with FDG, although they are 
       // doing slightly different things.
       else {
-	// use parameter defined perturbation
-	double h = theParam->getPerturbation();
-	param_pert = param_vect;
-	param_pert(i) += h;
+        // use parameter defined perturbation
+        double h = theParam->getPerturbation();
+        param_pert = param_vect;
+        param_pert(i) += h;
+
+        // set perturbed values in the variable namespace
+        if (theFunctionEvaluator->setVariables(param_pert) < 0) {
+          opserr << "ERROR ImplicitGradient -- error setting variables in namespace" << endln;
+          return -1;
+        }
+
+        // run analysis
+        if (theFunctionEvaluator->runAnalysis(param_pert) < 0) {
+          opserr << "ERROR ImplicitGradient -- error running analysis" << endln;
+          return -1;
+        }
 	
-	// set perturbed values in the variable namespace
-	if (theFunctionEvaluator->setVariables(param_pert) < 0) {
-	  opserr << "ERROR ImplicitGradient -- error setting variables in namespace" << endln;
-	  return -1;
-	}
-	
-	// run analysis
-	if (theFunctionEvaluator->runAnalysis(param_pert) < 0) {
-	  opserr << "ERROR ImplicitGradient -- error running analysis" << endln;
-	  return -1;
-	}
-	
-	// evaluate LSF and obtain result
-	const char *lsfExpression = theLimitStateFunction->getExpression();
-	theFunctionEvaluator->setExpression(lsfExpression);
-	
-	if (theFunctionEvaluator->evaluateExpression() < 0) {
-	  opserr << "ERROR ImplicitGradient -- error evaluating LSF expression" << endln;
-	  return -1;
-	}
-	
-	// Add gradient contribution
-	double g_perturbed = theFunctionEvaluator->getResult();
-	partials(i) = (g_perturbed-g)/h;
+        // evaluate LSF and obtain result
+        const char *lsfExpression = theLimitStateFunction->getExpression();
+        theFunctionEvaluator->setExpression(lsfExpression);
+        
+        // Add gradient contribution
+        double g_perturbed = theFunctionEvaluator->evaluateExpression();
+        partials(i) = (g_perturbed-g)/h;
       }
     }
   }			
@@ -173,8 +163,8 @@ ImplicitGradient::computeGradient(double g)
     for (int j = 0; j < nparam; j++) {
       Parameter *theImplicit = theOpenSeesDomain->getParameterFromIndex(j);
       if (theImplicit->isImplicit()) {
-	result = partials(j) * theImplicit->getSensitivity(i);
-	(*grad_g)(i) += result;
+        result = partials(j) * theImplicit->getSensitivity(i);
+        (*grad_g)(i) += result;
       }
     }
     

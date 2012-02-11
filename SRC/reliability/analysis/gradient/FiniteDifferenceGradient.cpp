@@ -111,12 +111,7 @@ FiniteDifferenceGradient::computeGradient(double g)
 				return -1;
 			}
 			
-			if (theFunctionEvaluator->evaluateExpression() < 0) {
-				opserr << "ERROR FiniteDifferenceGradient -- error evaluating gradient expression" << endln;
-				return -1;
-			}
-			
-			result = theFunctionEvaluator->getResult();
+			result = theFunctionEvaluator->evaluateExpression();
 
 			// Reset limit state function in evaluator -- subsequent calls could receive gradient expression
 			const char *lsfExpression = theLimitStateFunction->getExpression();
@@ -148,16 +143,10 @@ FiniteDifferenceGradient::computeGradient(double g)
 			
 			// evaluate LSF and obtain result
 			const char *lsfExpression = theLimitStateFunction->getExpression();
-
 			theFunctionEvaluator->setExpression(lsfExpression);
 			
-			if (theFunctionEvaluator->evaluateExpression() < 0) {
-				opserr << "ERROR FiniteDifferenceGradient -- error evaluating LSF expression" << endln;
-				return -1;
-			}
-			
 			// Add gradient contribution
-			double g_perturbed = theFunctionEvaluator->getResult();
+			double g_perturbed = theFunctionEvaluator->evaluateExpression();
 			result = (g_perturbed-g)/h;
 			theParam->setValue(param_vect(i));
 

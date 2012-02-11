@@ -284,16 +284,10 @@ ImportanceSamplingAnalysis::analyze(void)
 			Tcl_SetVar2Ex(interp,"RELIABILITY_lsf",NULL,Tcl_NewIntObj(lsfTag),TCL_NAMESPACE_ONLY);
 
 			// Get value of limit-state function
-			result = theGFunEvaluator->evaluateExpression();
-			if (result < 0) {
-				opserr << "ImportanceSamplingAnalysis::analyze() - could not tokenize limit-state function. " << endln;
-				return -1;
-			}
-			gFunctionValue = theGFunEvaluator->getResult();
+			gFunctionValue = theGFunEvaluator->evaluateExpression();
 			if (!FEconvergence) {
 				gFunctionValue = -1.0;
 			}
-
 
 			
 			// ESTIMATION OF FAILURE PROBABILITY

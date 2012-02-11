@@ -229,14 +229,8 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 			const char *lsfExpression = theLimitStateFunction->getExpression();
 			theFunctionEvaluator->setExpression(lsfExpression);
 			
-			if (theFunctionEvaluator->evaluateExpression() < 0) {
-				opserr << "ERROR SearchWithStepSizeAndStepDirection -- error evaluating LSF expression" << endln;
-				return -1;
-			}
-			
-			// return values
 			gFunctionValue_old = gFunctionValue;
-			gFunctionValue = theFunctionEvaluator->getResult();
+			gFunctionValue = theFunctionEvaluator->evaluateExpression();
 			
 		}
 

@@ -56,8 +56,7 @@ public:
 	virtual int setVariables(const Vector &x) = 0;
 	virtual int setExpression(const char *expression) = 0;
 	virtual int addToExpression(const char *expression) = 0;
-	virtual int evaluateExpression(void) = 0;
-	virtual double getResult(void) = 0;
+	virtual double evaluateExpression(void) = 0;
 	virtual int runAnalysis(const Vector &x) = 0;
 	
 	/*

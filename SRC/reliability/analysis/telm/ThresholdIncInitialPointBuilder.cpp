@@ -142,12 +142,11 @@ Vector ThresholdIncInitialPointBuilder::buildInitialPoint(int nstep)
 			theGFunEvaluator->setThreshold(0.0);
 			res1=theGFunEvaluator->runAnalysis(*xtemp);
 			numAna++;
-			res2=theGFunEvaluator->evaluateExpression();
-			if ( res1<0 || res2<0) {
-				opserr << "GFuncError OutCrossingAnalysis::MakeInitialPoint" << res1 << res2 << "\n";
+			if ( res1<0 ) {
+				opserr << "GFuncError OutCrossingAnalysis::MakeInitialPoint" << res1 << "\n";
 				exit(-1);
 			}
-			xresp=-theGFunEvaluator->getResult();
+			xresp=-theGFunEvaluator->evaluateExpression();
 			ampresp=xresp/tmpcompletedThreshold;
 			if(print){
 			output << "\n";

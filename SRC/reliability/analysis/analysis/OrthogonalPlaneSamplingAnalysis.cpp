@@ -393,13 +393,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 		else { //if (result > 0) {   // converge
 			
 			// Get value of limit-state function
-			result = theGFunEvaluator->evaluateExpression();
-			if (result < 0) {
-				opserr << "OrthogonalSamplingAnalysis::analyze() - could not " << endln
-					<< " tokenize limit-state function. " << endln;
-				return -1;
-			}
-			gFunctionValue = theGFunEvaluator->getResult();
+			gFunctionValue = theGFunEvaluator->evaluateExpression();
 
 			// ------- save data into zeroFinding algorithm ---
 			theAlgorithm->saveXG1(beta, gFunctionValue);
@@ -463,13 +457,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 					gFunctionValue =-1.0;
 				}
 				else { // converge
-					result = theGFunEvaluator->evaluateExpression();
-					if (result < 0) {
-						opserr << "OrthogonalSamplingAnalysis::analyze() - could not " << endln
-							<< " tokenize limit-state function. " << endln;
-						return -1;
-					}
-					gFunctionValue = theGFunEvaluator->getResult();
+					gFunctionValue = theGFunEvaluator->evaluateExpression();
 					
 					// ------- save data into zeroFinding algorithm ---
 					theAlgorithm->saveXG1(b, gFunctionValue);
@@ -526,7 +514,6 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 					result = theGFunEvaluator->runAnalysis(x);
 					numOfGFunEvaluations++;
 
-
 					if(result<0) {  // diverge
 						opserr<<"something wrong with orthogonalPlaneSamplingAnalysis. need save point "<<endln;
 						needCallingZeroFinding =false; 
@@ -537,13 +524,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 					
 					}
 					else { // converge
-						result = theGFunEvaluator->evaluateExpression();
-						if (result < 0) {
-							opserr << "OrthogonalSamplingAnalysis::analyze() - could not " << endln
-								<< " tokenize limit-state function. " << endln;
-							return -1;
-						}
-						gFunctionValue = theGFunEvaluator->getResult();
+						gFunctionValue = theGFunEvaluator->evaluateExpression();
 						
 						// ------- save data into zeroFinding algorithm ---
 						theAlgorithm->saveXG1(a, gFunctionValue);
@@ -602,13 +583,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 						needCallingZeroFinding =false;
 					}
 					else { // converge
-						result = theGFunEvaluator->evaluateExpression();
-						if (result < 0) {
-							opserr << "OrthogonalSamplingAnalysis::analyze() - could not " << endln
-								<< " tokenize limit-state function. " << endln;
-							return -1;
-						}
-						gFunctionValue = theGFunEvaluator->getResult();
+						gFunctionValue = theGFunEvaluator->evaluateExpression();
 
 						// ------- save data into zeroFinding algorithm ---
 						theAlgorithm->saveXG1(a, gFunctionValue);
@@ -794,7 +769,6 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 
 				result = theGFunEvaluator->runAnalysis(x);
 				numOfGFunEvaluations++;
-				
 
 				if(result<0) {  // diverge
 					FEconvergence  =  false; 
@@ -802,13 +776,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 					gFunctionValue =-1.0;
 				}
 				else { // converge
-					result = theGFunEvaluator->evaluateExpression();
-					if (result < 0) {
-						opserr << "OrthogonalSamplingAnalysis::analyze() - could not " << endln
-							<< " tokenize limit-state function. " << endln;
-						return -1;
-					}
-					gFunctionValue = theGFunEvaluator->getResult();
+					gFunctionValue = theGFunEvaluator->evaluateExpression();
 					theAlgorithm->saveXG1(b,gFunctionValue);
  
 					G2 = this->getG2FromG1( gFunctionValue, littleDt);
@@ -877,13 +845,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 					// save point ....
 					}
 					else { // converge
-						result = theGFunEvaluator->evaluateExpression();
-						if (result < 0) {
-							opserr << "OrthogonalSamplingAnalysis::analyze() - could not " << endln
-								<< " tokenize limit-state function. " << endln;
-							return -1;
-						}
-						gFunctionValue = theGFunEvaluator->getResult();
+						gFunctionValue = theGFunEvaluator->evaluateExpression();
 						theAlgorithm->saveXG1(a,gFunctionValue);				
 						G2 = this->getG2FromG1( gFunctionValue, littleDt);
 						theAlgorithm->saveXG2(a,G2);
@@ -935,24 +897,16 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 					  return -1;
 					}
 
-
 					result = theGFunEvaluator->runAnalysis(x);
 					numOfGFunEvaluations++;
 					
-
 					if(result<0) {  // diverge, ignore its contribution
 					
 						contribution = false;  
 						needCallingZeroFinding =false;
 					}
 					else { // converge
-						result = theGFunEvaluator->evaluateExpression();
-						if (result < 0) {
-							opserr << "OrthogonalSamplingAnalysis::analyze() - could not " << endln
-								<< " tokenize limit-state function. " << endln;
-							return -1;
-						}
-						gFunctionValue = theGFunEvaluator->getResult();
+						gFunctionValue = theGFunEvaluator->evaluateExpression();
 						theAlgorithm->saveXG1(a,gFunctionValue);					
 						G2 = this->getG2FromG1( gFunctionValue, littleDt);
 						theAlgorithm->saveXG2(a,G2);
@@ -1093,21 +1047,13 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 						result = theGFunEvaluator->runAnalysis(x);
 						numOfGFunEvaluations++;
 						
-
 						if(result<0) {  // diverge, ignore its contribution
 							
 							contribution = false;  //correct
 							needCallingZeroFinding =false;
 						}
 						else { // converge
-							result = theGFunEvaluator->evaluateExpression();
-							if (result < 0) {
-								opserr << "OrthogonalSamplingAnalysis::analyze() - could not " << endln
-									<< " tokenize limit-state function. " << endln;
-								return -1;
-							}
-							gFunctionValue = theGFunEvaluator->getResult();
-							
+							gFunctionValue = theGFunEvaluator->evaluateExpression();							
 							G2 = this->getG2FromG1( gFunctionValue, littleDt);
 							theAlgorithm->saveXG2(a,G2);
 
@@ -1341,13 +1287,7 @@ double OrthogonalPlaneSamplingAnalysis::getSampledValue(double x)
 	}
 	else { // converge
 		theAlgorithm->setFEconvergence(true);
-		result = theGFunEvaluator->evaluateExpression();
-		if (result < 0) {
-			opserr << "OrthogonalSamplingAnalysis::analyze() - could not " << endln
-				<< " tokenize limit-state function. " << endln;
-			return -1;
-		}
-		gFunValue = theGFunEvaluator->getResult();
+		gFunValue = theGFunEvaluator->evaluateExpression();
 						
 		// ------- save data into zeroFinding algorithm ---
 		theAlgorithm->saveXG1(x, gFunValue);

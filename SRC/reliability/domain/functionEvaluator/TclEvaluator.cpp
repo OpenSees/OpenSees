@@ -143,41 +143,40 @@ TclEvaluator::setVariables(const Vector &x)
 int 
 TclEvaluator::setExpression(const char *passedExpression)
 {
-  if (theExpression != 0)
-    delete [] theExpression;
-  
-  int exprLen = strlen(passedExpression);
-  theExpression = new char[exprLen+1];
-  strcpy(theExpression,passedExpression);
-  
-  return 0;
+    if (theExpression != 0)
+        delete [] theExpression;
+
+    int exprLen = strlen(passedExpression);
+    theExpression = new char[exprLen+1];
+    strcpy(theExpression,passedExpression);
+
+    return 0;
 }
 
 
 int 
 TclEvaluator::addToExpression(const char *in) 
 {
-  return 0;
+    return 0;
 }
 
 
-int
+double 
 TclEvaluator::evaluateExpression() 
 {
-  if (Tcl_ExprDouble( theTclInterp, theExpression, &current_val) != TCL_OK) {
-    opserr << "TclEvaluator::evaluateExpression -- expression \"" << theExpression;
-    opserr << "\" caused error:" << endln << theTclInterp->result << endln;
-    return -1;
-  }
-  
-  return 0;
-}
+    if (theExpression == 0) {
+        opserr << "TclEvaluator::evaluateExpression -- must set the expression before trying ";
+        opserr << "to evaluate" << endln;
+        return -1;
+    }
+    
+    if (Tcl_ExprDouble( theTclInterp, theExpression, &current_val) != TCL_OK) {
+        opserr << "TclEvaluator::evaluateExpression -- expression \"" << theExpression;
+        opserr << "\" caused error:" << endln << theTclInterp->result << endln;
+        return -1;
+    }
 
-
-double
-TclEvaluator::getResult()
-{
-  return current_val;
+    return current_val;
 }
 
 

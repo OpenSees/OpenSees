@@ -232,14 +232,7 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 			<< " could not run analysis to evaluate limit-state function. " << endln;
 		return -1;
 	}
-	result = theGFunEvaluator->evaluateExpression();
-	if (result < 0) {
-		opserr << "Hessian - " << endln
-			<< " could not tokenize limit-state function. " << endln;
-		return -1;
-	}
-	double gFunctionValue = theGFunEvaluator->getResult();
-
+	double gFunctionValue = theGFunEvaluator->evaluateExpression();
 
 
 	// Gradient in original space
@@ -352,13 +345,8 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 						<< " could not run analysis to evaluate limit-state function. " << endln;
 					return -1;
 				}
-		result = theGFunEvaluator->evaluateExpression();
-				if (result < 0) {
-					opserr << "Hessian - " << endln
-						<< " could not tokenize limit-state function. " << endln;
-					return -1;
-				}
-    	gFunctionValue = theGFunEvaluator->getResult();
+		gFunctionValue = theGFunEvaluator->evaluateExpression();
+
 		// Gradient in original space
 		result = theGradGEvaluator->computeGradient(gFunctionValue);
 				if (result < 0) {
@@ -858,14 +846,9 @@ int Hessian::refineHessian(int time, int colOfHessian)
 						<< " could not run analysis to evaluate limit-state function. " << endln;
 					return -1;
 				}
-		result = theGFunEvaluator->evaluateExpression();
-				if (result < 0) {
-					opserr << "Hessian - " << endln
-						<< " could not tokenize limit-state function. " << endln;
-					return -1;
-				}
-    double	gFunctionValue = theGFunEvaluator->getResult();
-		// Gradient in original space
+		double	gFunctionValue = theGFunEvaluator->evaluateExpression();
+
+        // Gradient in original space
 		result = theGradGEvaluator->computeGradient(gFunctionValue);
 				if (result < 0) {
 					opserr << "Hessian - " << endln
@@ -938,14 +921,9 @@ int Hessian::refineHessian(int time, int colOfHessian)
 							<< " could not run analysis to evaluate limit-state function. " << endln;
 						return -1;
 					}
-			result = theGFunEvaluator->evaluateExpression();
-					if (result < 0) {
-						opserr << "Hessian - " << endln
-							<< " could not tokenize limit-state function. " << endln;
-						return -1;
-					}
-    		gFunctionValue = theGFunEvaluator->getResult();
-			// Gradient in original space
+			gFunctionValue = theGFunEvaluator->evaluateExpression();
+
+            // Gradient in original space
 			result = theGradGEvaluator->computeGradient(gFunctionValue);
 					if (result < 0) {
 						opserr << "Hessian - " << endln
