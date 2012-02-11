@@ -49,7 +49,6 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <math.h>
 
 using std::ifstream;
 using std::ios;
@@ -100,6 +99,8 @@ FOSMAnalysis::analyze(void)
 	// Establish vector of standard deviations
 	Vector stdvVector(nrv);
 
+    // note that now reliability domain components are persistent, so it matters if FOSM is run
+    // after a FORM analysis, for example.  Reset to mean value because this is by definition
 	RandomVariableIter rvIter = theReliabilityDomain->getRandomVariables();
 	RandomVariable *aRandomVariable;
 	//for (int i=1; i<=nrv; i++) {
@@ -108,13 +109,23 @@ FOSMAnalysis::analyze(void)
 		int i = theReliabilityDomain->getRandomVariableIndex(tag);
 		meanVector(i) = aRandomVariable->getMean();
 		stdvVector(i) = aRandomVariable->getStdv();
+        
+        // make sure the RV starts at mean
+        aRandomVariable->setCurrentValue(meanVector(i));
 	}
-
+    
 	// Perform analysis using mean vector
 	Vector meanEstimates(numLsf);
-	int result;
-	result = theGFunEvaluator->runAnalysis(meanVector);
-	if (result < 0) {
+    
+    // set values in the variable namespace
+    if (theGFunEvaluator->setVariables(meanVector) < 0) {
+        opserr << "FOSMAnalysis::analyze() - " << endln
+            << " could not set variables in namespace. " << endln;
+        return -1;
+    }
+    
+    // run analysis
+	if (theGFunEvaluator->runAnalysis(meanVector) < 0) {
 		opserr << "FOSMAnalysis::analyze() - " << endln
 			<< " could not run analysis to evaluate limit-state function. " << endln;
 		return -1;
@@ -132,23 +143,14 @@ FOSMAnalysis::analyze(void)
 		
 		// set namespace variable for tcl functions
 		Tcl_SetVar2Ex(theTclInterp,"RELIABILITY_lsf",NULL,Tcl_NewIntObj(lsfTag),TCL_NAMESPACE_ONLY);
+        
+        // set and evaluate LSF
+        const char *lsfExpression = theLSF->getExpression();
+        theGFunEvaluator->setExpression(lsfExpression);
 		
 		meanEstimates(lsf) = theGFunEvaluator->evaluateExpression();
 	}
-
-
-	// Evaluate the gradients of limit-state functions
-	Matrix matrixOfGradientVectors(nrv,numLsf);
-	// The following needs to be retooled -- MHS 10/7/2011
-	/*
-	result = theGradGEvaluator->computeAllGradG(meanEstimates,meanVector);
-	if (result < 0) {
-		opserr << "FOSMAnalysis::analyze() -- could not" << endln
-			<< " compute gradients of the limit-state function. " << endln;
-		return -1;
-	}
-	matrixOfGradientVectors = theGradGEvaluator->getAllGradG();
-	*/
+    
 
 	// Establish covariance matrix
 	Matrix covMatrix(nrv,nrv);
@@ -192,6 +194,9 @@ FOSMAnalysis::analyze(void)
 	Vector gradient(nrv);
 	double responseVariance;
 	
+    // Store gradients for now (probably a better way than this, but gets rid of old allGradG)
+	Matrix matrixOfGradientVectors(nrv,numLsf);
+    
 	//lsfIter.reset();
 	//while ((theLSF = lsfIter()) != 0) {
 		//int lsf = theLSF->getTag();
@@ -204,10 +209,14 @@ FOSMAnalysis::analyze(void)
 		
 		// Set tag of active limit-state function
 		theReliabilityDomain->setTagOfActiveLimitStateFunction(lsfTag);
-
-		// Extract relevant gradient
-		for (int i=0; i < nrv; i++)
-			gradient(i) = matrixOfGradientVectors(i,lsf);
+        
+        // Gradient in original space
+		if (theGradGEvaluator->computeGradient( meanEstimates(lsf) ) < 0 ) {
+			opserr << "FOSMAnalysis:analyze() - " << endln
+                << " could not compute gradients of the limit-state function. " << endln;
+			return -1;
+		}
+		gradient = theGradGEvaluator->getGradient();
 
 		// Estimate of standard deviation of response
 		responseVariance = (covMatrix^gradient)^gradient;
@@ -221,8 +230,10 @@ FOSMAnalysis::analyze(void)
 
 		// Compute importance measure (dgdx*stdv)
 		Vector importance(nrv);
-		for (int i = 0; i < nrv ; i++)
-		  importance(i) = gradient(i) * stdvVector(i);
+		for (int i = 0; i < nrv ; i++) {
+            importance(i) = gradient(i) * stdvVector(i);
+            matrixOfGradientVectors(i,lsf) = gradient(i);
+        }
 
 		importance /= importance.Norm();
 
@@ -261,8 +272,8 @@ FOSMAnalysis::analyze(void)
 		outputFile.flush();
 
 	}
-
-
+    
+    
 	// Estimation of response covariance matrix
 	Matrix responseCovMatrix(numLsf,numLsf);
 	double responseCovariance;

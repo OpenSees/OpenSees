@@ -51,6 +51,7 @@ public:
 	// Methods provided by base class
 	int     initializeNumberOfEvaluations();
 	int     getNumberOfEvaluations();
+    int     incrementEvaluations(void) {numberOfEvaluations++; return 0;}
 	
 	// pure virtual
 	virtual int setVariables(const Vector &x) = 0;

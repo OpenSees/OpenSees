@@ -89,7 +89,7 @@ SearchWithStepSizeAndStepDirection::SearchWithStepSizeAndStepDirection(
 	//startPoint						= pStartPoint;
 	startAtOrigin = pStartAtOrigin;
 	printFlag						= pprintFlag;
-	numberOfEvaluations =0;
+	numberOfEvaluations = 0;
 	if (printFlag != 0) {
 		strcpy(fileNamePrint,pFileNamePrint);
 	}
@@ -434,15 +434,18 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 		// Determine step size
 		result = theStepSizeRule->computeStepSize(
 			*u, *gradientInStandardNormalSpace, gFunctionValue, *searchDirection, steps);
-		if (result < 0) {  // (something went wrong)
+		if (result < 0) {  
+            // something went wrong
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not compute step size. " << endln;
 			return -1;
 		}
-		else if (result == 0) {  // (nothing was evaluated in step size)
+		else if (result == 0) {  
+            // nothing was evaluated in step size
 			evaluationInStepSize = 0;
 		}
-		else if (result == 1) {  // (the gfun was evaluated)
+		else if (result == 1) {  
+            // the gfun was evaluated
 			evaluationInStepSize = 1;
 			gFunctionValue_old = gFunctionValue;
 			gFunctionValue = theStepSizeRule->getGFunValue();

@@ -176,6 +176,7 @@ TclEvaluator::evaluateExpression()
         return -1;
     }
 
+    this->incrementEvaluations();
     return current_val;
 }
 
