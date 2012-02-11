@@ -160,29 +160,6 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 		ofstream outputFile2( fileNamePrint, ios::out );
 	*/
 
-	// Get starting point
-    // KRM this is now taken care of elsewhere, the values of start point are set within the parameters themselves
-	/*if (startAtOrigin) 
-		u->Zero();
-	else {
-		//theReliabilityDomain->getStartPoint(*x);
-		for (int j = 0; j < numberOfRandomVariables; j++) {
-			RandomVariable *theParam = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
-			(*x)(j) = theParam->getStartValue();
-            
-            // KRM now we need to make a call to setParamter with this value or just use the existing
-            // value stored in the parameter
-		}
-
-		// Transform starting point into standard normal space
-		result = theProbabilityTransformation->transform_x_to_u(*u);
-		if (result < 0) {
-			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-			   << " could not transform from x to u." << endln;
-			return -1;
-	  }
-	}
-     */
     
     // get starting x values from parameter directly
     for (int j = 0; j < numberOfRandomVariables; j++) {

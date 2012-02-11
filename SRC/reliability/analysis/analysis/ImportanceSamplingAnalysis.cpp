@@ -64,13 +64,13 @@ ImportanceSamplingAnalysis::ImportanceSamplingAnalysis(	ReliabilityDomain *passe
 										FunctionEvaluator *passedGFunEvaluator,
 										RandomNumberGenerator *passedRandomNumberGenerator,
 							bool passedStartAtOrigin,
-										Tcl_Interp *passedInterp,
-										int passedNumberOfSimulations,
-										double passedTargetCOV,
-										double passedSamplingStdv,
-										int passedPrintFlag,
-										TCL_Char *passedFileName,
-										int passedAnalysisTypeTag)
+                            Tcl_Interp *passedInterp,
+							long int passedNumberOfSimulations,
+                            double passedTargetCOV,
+							double passedSamplingStdv,
+							int passedPrintFlag,
+							TCL_Char *passedFileName,
+							int passedAnalysisTypeTag)
 :ReliabilityAnalysis()
 {
 	theReliabilityDomain = passedReliabilityDomain;
@@ -102,11 +102,12 @@ ImportanceSamplingAnalysis::analyze(void)
 {
 
 	// Alert the user that the simulation analysis has started
-	opserr << "Sampling Analysis is running ... " << endln;
+	opserr << "ImportanceSampling Analysis is running ... " << endln;
 
 	// Declaration of some of the data used in the algorithm
 	double gFunctionValue;
-	int result, I, k = 1, seed = 1;
+	int result, I, seed = 1;
+    long int k = 1;
 	double det_covariance, phi, h, q;
 	int numRV = theReliabilityDomain->getNumberOfRandomVariables();
 	int numLsf = theReliabilityDomain->getNumberOfLimitStateFunctions();
@@ -163,25 +164,25 @@ ImportanceSamplingAnalysis::analyze(void)
 	}
 
 
-	// Transform start point into standard normal space, 
-	// unless it is the origin that is to be sampled around
+    // get starting x values from parameter directly
+    for (int j = 0; j < numRV; j++) {
+        RandomVariable *theParam = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+        double rvVal = theParam->getStartValue();
+        x(j) = rvVal;
+        
+        // now we should update the parameter value 
+        // KRM should this be a parameter reference now?
+        theParam->setCurrentValue(rvVal);
+    }
+    
+	// Transform start point into standard normal space
 	Vector startPointY(numRV);
-
-	if (startAtOrigin)
-	  startPointY.Zero();
-	else {
-	  //theReliabilityDomain->getStartPoint(x);
-	  for (int j = 0; j < numRV; j++) {
-	    RandomVariable *theParam = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
-	    x(j) = theParam->getStartValue();
-	  }
-	  result = theProbabilityTransformation->transform_x_to_u(startPointY);
-	  if (result < 0) {
+	result = theProbabilityTransformation->transform_x_to_u(startPointY);
+	if (result < 0) {
 	    opserr << "ImportanceSamplingAnalysis::analyze() - could not " << endln
 		   << " transform x to u. " << endln;
 	    return -1;
-	  }
-	}
+    }
 
 	// Initial declarations
 	Vector cov_of_q_bar(numLsf);
@@ -211,7 +212,8 @@ ImportanceSamplingAnalysis::analyze(void)
 
 		// Keep the user posted
 		if (printFlag == 1 || printFlag == 2) {
-			opserr << "Sample #" << k << ":" << endln;
+            sprintf(myString,"%li",k);
+			opserr << "Sample #" << myString << ":" << endln;
 		}
 
 		
@@ -257,10 +259,16 @@ ImportanceSamplingAnalysis::analyze(void)
 		  return -1;
 		}
 		
+        // set values in the variable namespace
+        if (theGFunEvaluator->setVariables(x) < 0) {
+            opserr << "ImportanceSamplingAnalysis::analyze() - " << endln
+                << " could not set variables in namespace. " << endln;
+            return -1;
+        }
+        
 		// Evaluate limit-state function
 		FEconvergence = true;
-		result = theGFunEvaluator->runAnalysis(x);
-		if (result < 0) {
+		if (theGFunEvaluator->runAnalysis(x) < 0) {
 			// In this case a failure happened during the analysis
 			// Hence, register this as failure
 			FEconvergence = false;
@@ -283,9 +291,12 @@ ImportanceSamplingAnalysis::analyze(void)
 			// set namespace variable for tcl procedures
 			Tcl_SetVar2Ex(interp,"RELIABILITY_lsf",NULL,Tcl_NewIntObj(lsfTag),TCL_NAMESPACE_ONLY);
 
-			// Get value of limit-state function
-			gFunctionValue = theGFunEvaluator->evaluateExpression();
-			if (!FEconvergence) {
+            // set and evaluate LSF
+            const char *lsfExpression = theLimitStateFunction->getExpression();
+            theGFunEvaluator->setExpression(lsfExpression);
+            
+            gFunctionValue = theGFunEvaluator->evaluateExpression();
+            if (!FEconvergence) {
 				gFunctionValue = -1.0;
 			}
 
@@ -481,7 +492,7 @@ ImportanceSamplingAnalysis::analyze(void)
 			if ( q_bar(lsfIndex) == 0.0 ) {
 
 				resultsOutputFile << "#######################################################################" << endln;
-				resultsOutputFile << "#  SAMPLING ANALYSIS RESULTS, LIMIT-STATEFUNCDTION NUMBER   "
+				resultsOutputFile << "#  SAMPLING ANALYSIS RESULTS, LIMIT-STATE FUNCTION NUMBER   "
 					<<setiosflags(ios::left)<<setprecision(1)<<setw(4)<<lsfTag <<"      #" << endln;
 				resultsOutputFile << "#                                                                     #" << endln;
 				resultsOutputFile << "#  Failure did not occur, or zero response!                           #" << endln;
@@ -594,7 +605,7 @@ ImportanceSamplingAnalysis::analyze(void)
 
 
 	// Print summary of results to screen 
-	opserr << "Simulation Analysis completed." << endln;
+	opserr << "ImportanceSampling Analysis completed." << endln;
 
 	// Clean up
 	resultsOutputFile.close();

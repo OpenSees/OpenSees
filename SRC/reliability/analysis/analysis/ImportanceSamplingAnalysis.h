@@ -53,7 +53,7 @@ public:
 				   RandomNumberGenerator *passedRandomNumberGenerator,
 				   bool passedStartAtOrigin,
 				   Tcl_Interp *passedInterp,
-				   int passedNumberOfSimulations,
+				   long int passedNumberOfSimulations,
 				   double passedTargetCOV,
 				   double samplingStdv,
 				   int printFlag,
@@ -73,7 +73,7 @@ private:
 	RandomNumberGenerator *theRandomNumberGenerator;
 	bool startAtOrigin;
 	Tcl_Interp *interp;
-	int numberOfSimulations;
+	long int numberOfSimulations;
 	double targetCOV;
 	double samplingStdv;
 	int printFlag;

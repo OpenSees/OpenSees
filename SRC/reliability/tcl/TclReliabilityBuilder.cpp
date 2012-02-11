@@ -4251,7 +4251,7 @@ TclReliabilityModelBuilder_runImportanceSamplingAnalysis(ClientData clientData, 
 
 
 	// Declaration of input parameters
-	int numberOfSimulations	= 1000;
+	long int numberOfSimulations	= 1000;
 	double targetCOV		= 0.05;
 	double samplingVariance	= 1.0;
 	int printFlag			= 0;
@@ -4328,10 +4328,11 @@ TclReliabilityModelBuilder_runImportanceSamplingAnalysis(ClientData clientData, 
 		}
 		else if (strcmp(argv[i],"-maxNum") == 0) {
 			// GET INPUT PARAMETER (integer)
-			if (Tcl_GetInt(interp, argv[i+1], &numberOfSimulations) != TCL_OK) {
-				opserr << "ERROR: invalid input: numberOfSimulations \n";
-				return TCL_ERROR;
-			}
+            numberOfSimulations = atol(argv[i+1]);
+			//if (Tcl_GetInt(interp, argv[i+1], &numberOfSimulations) != TCL_OK) {
+			//	opserr << "ERROR: invalid input: numberOfSimulations \n";
+			//	return TCL_ERROR;
+			//}
 		}
 		else if (strcmp(argv[i],"-targetCOV") == 0) {
 			// GET INPUT PARAMETER (double)
