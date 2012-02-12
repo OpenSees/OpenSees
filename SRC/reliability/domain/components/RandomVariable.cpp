@@ -59,21 +59,24 @@ RandomVariable::~RandomVariable()
 double 
 RandomVariable::transform_x_to_u(void)
 {
-    return 0.0;
+    double cdf = getCDFvalue(this->getCurrentValue());
+    return standardNormalInversePhi(cdf);
 }
 
 
 double
 RandomVariable::transform_u_to_x(double uVal)
 {
-    return 0.0;
+    return getInverseCDFvalue(standardNormalPhi(uVal));
 }
 
 
 double
 RandomVariable::gradient_x_to_u(double uVal)
 {
-    return 0.0;
+    static const double oneOverRootTwoPi = 1.0/sqrt(2.0*pi);
+	double pdf = oneOverRootTwoPi * exp ( -0.5 * pow(uVal, 2.0) );
+    return pdf/getPDFvalue(this->getCurrentValue());
     
 }
 

@@ -152,31 +152,6 @@ UniformRV::getInverseCDFvalue(double probValue)
 }
 
 
-double 
-UniformRV::transform_x_to_u(void)
-{
-    double cdf = getCDFvalue(this->getCurrentValue());
-    return standardNormalInversePhi(cdf);
-}
-
-
-double
-UniformRV::transform_u_to_x(double uVal)
-{
-    return getInverseCDFvalue(standardNormalPhi(uVal));
-}
-
-
-double
-UniformRV::gradient_x_to_u(double uVal)
-{
-    static const double oneOverRootTwoPi = 1.0/sqrt(2.0*pi);
-	double pdf = oneOverRootTwoPi * exp ( -0.5 * pow(uVal, 2.0) );
-    return pdf/getPDFvalue(this->getCurrentValue());
-    
-}
-
-
 void
 UniformRV::Print(OPS_Stream &s, int flag)
 {

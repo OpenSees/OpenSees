@@ -208,7 +208,7 @@ ImportanceSamplingAnalysis::analyze(void)
 
 
 	bool isFirstSimulation = true;
-	while( (k<=numberOfSimulations && govCov>targetCOV || k<=2) ) {
+	while( ( k <= numberOfSimulations && govCov > targetCOV || k <= 2 ) ) {
 
 		// Keep the user posted
 		if (printFlag == 1 || printFlag == 2) {
@@ -278,12 +278,10 @@ ImportanceSamplingAnalysis::analyze(void)
 		LimitStateFunctionIter &lsfIter = theReliabilityDomain->getLimitStateFunctions();
 		LimitStateFunction *theLimitStateFunction;
 		// Loop over number of limit-state functions
-		//for (int lsf=0; lsf<numLsf; lsf++ ) {
-		while ((theLimitStateFunction = lsfIter()) != 0) {
-		  //int lsf = theLimitStateFunction->getIndex();
-		  int lsfTag = theLimitStateFunction->getTag();
-		  int lsf = theReliabilityDomain->getLimitStateFunctionIndex(lsfTag);
-
+		for (int lsf = 0; lsf < numLsf; lsf++ ) {
+		//while ((theLimitStateFunction = lsfIter()) != 0) {
+            theLimitStateFunction = theReliabilityDomain->getLimitStateFunctionPtrFromIndex(lsf);
+            int lsfTag = theLimitStateFunction->getTag();
 
 			// Set tag of "active" limit-state function
 			theReliabilityDomain->setTagOfActiveLimitStateFunction(lsfTag);
@@ -356,6 +354,8 @@ ImportanceSamplingAnalysis::analyze(void)
 
 				g_storage(lsf) = gFunctionValue;
 				
+                // KRM 2/12/2012, note there is something not right with response statistics
+                // when the mean is less than 0.  
 				if (sum_q(lsf) > 0.0) {
 					
 					// Compute coefficient of variation (of mean)
@@ -484,12 +484,12 @@ ImportanceSamplingAnalysis::analyze(void)
 
 		LimitStateFunctionIter &lsfIter = theReliabilityDomain->getLimitStateFunctions();
 		LimitStateFunction *theLimitStateFunction;
-		//for (int lsf=1; lsf<=numLsf; lsf++ ) {
-		while ((theLimitStateFunction = lsfIter()) != 0) {
-		  //int lsf = theLimitStateFunction->getIndex();
-		  int lsfTag = theLimitStateFunction->getTag();
-		  int lsfIndex = theReliabilityDomain->getLimitStateFunctionIndex(lsfTag);
-			if ( q_bar(lsfIndex) == 0.0 ) {
+		for (int lsf = 0; lsf < numLsf; lsf++ ) {
+		//while ((theLimitStateFunction = lsfIter()) != 0) {
+            theLimitStateFunction = theReliabilityDomain->getLimitStateFunctionPtrFromIndex(lsf);
+            int lsfTag = theLimitStateFunction->getTag();
+
+			if ( q_bar(lsf) == 0.0 ) {
 
 				resultsOutputFile << "#######################################################################" << endln;
 				resultsOutputFile << "#  SAMPLING ANALYSIS RESULTS, LIMIT-STATE FUNCTION NUMBER   "
@@ -512,9 +512,9 @@ ImportanceSamplingAnalysis::analyze(void)
 
 				// Store results
 				if (analysisTypeTag == 1) {
-					beta_sim = -aStdNormRV.getInverseCDFvalue(q_bar(lsfIndex));
-					pf_sim	 = q_bar(lsfIndex);
-					cov_sim	 = cov_of_q_bar(lsfIndex);
+					beta_sim = -aStdNormRV.getInverseCDFvalue(q_bar(lsf));
+					pf_sim	 = q_bar(lsf);
+					cov_sim	 = cov_of_q_bar(lsf);
 					num_sim  = k;
 					// Use a recorder -- MHS 10/7/2011
 					/*
@@ -553,10 +553,10 @@ ImportanceSamplingAnalysis::analyze(void)
 						<<setiosflags(ios::left)<<setprecision(1)<<setw(4)<<lsfTag <<"      #" << endln;
 					resultsOutputFile << "#                                                                     #" << endln;
 					resultsOutputFile << "#  Estimated mean: .................................... " 
-						<<setiosflags(ios::left)<<setprecision(5)<<setw(12)<<q_bar(lsfIndex) 
+						<<setiosflags(ios::left)<<setprecision(5)<<setw(12)<<q_bar(lsf) 
 						<< "  #" << endln;
 					resultsOutputFile << "#  Estimated standard deviation: ...................... " 
-						<<setiosflags(ios::left)<<setprecision(5)<<setw(12)<<responseStdv(lsfIndex) 
+						<<setiosflags(ios::left)<<setprecision(5)<<setw(12)<<responseStdv(lsf) 
 						<< "  #" << endln;
 					resultsOutputFile << "#                                                                     #" << endln;
 					resultsOutputFile << "#######################################################################" << endln << endln << endln;
@@ -568,30 +568,32 @@ ImportanceSamplingAnalysis::analyze(void)
 			resultsOutputFile << "#######################################################################" << endln;
 			resultsOutputFile << "#  RESPONSE CORRELATION COEFFICIENTS                                  #" << endln;
 			resultsOutputFile << "#                                                                     #" << endln;
-			if (numLsf <=1) {
+			if (numLsf <= 1) {
 				resultsOutputFile << "#  Only one limit-state function!                                     #" << endln;
 			}
 			else {
 				resultsOutputFile << "#   gFun   gFun     Correlation                                       #" << endln;
 				resultsOutputFile.setf(ios::fixed, ios::floatfield);
+
 				LimitStateFunctionIter lsfIterI = theReliabilityDomain->getLimitStateFunctions();
 				LimitStateFunctionIter lsfIterJ = theReliabilityDomain->getLimitStateFunctions();
 				LimitStateFunction *lsfI, *lsfJ;
-				//for (i=0; i<numLsf; i++) {
-				while ((lsfI = lsfIterI()) != 0) {
-				  int iTag = lsfI->getTag();
-				  int i = theReliabilityDomain->getLimitStateFunctionIndex(iTag);
-				  lsfIterJ.reset();
-				  //for (int j=i+1; j<numLsf; j++) {
-				  while ((lsfJ = lsfIterJ()) != 0) {
-				    int jTag = lsfJ->getTag();
-				    int j = theReliabilityDomain->getLimitStateFunctionIndex(jTag);
-				    resultsOutputFile << "#    " <<setw(3)<< iTag <<"    "<<setw(3)<< jTag <<"     ";
-				    if (responseCorrelation(i,j)<0.0) { resultsOutputFile << "-"; }
-				    else { resultsOutputFile << " "; }
-				    resultsOutputFile <<setprecision(7)<<setw(11)<<fabs(responseCorrelation(i,j));
-				    resultsOutputFile << "                                      #" << endln;
-				  }
+				for (int i = 0; i < numLsf; i++) {
+				//while ((lsfI = lsfIterI()) != 0) {
+                    lsfI = theReliabilityDomain->getLimitStateFunctionPtrFromIndex(i);
+                    int iTag = lsfI->getTag();
+
+                    for (int j=i+1; j < numLsf; j++) {
+                    //while ((lsfJ = lsfIterJ()) != 0) {
+                        lsfJ = theReliabilityDomain->getLimitStateFunctionPtrFromIndex(j);
+                        int jTag = lsfJ->getTag();
+
+                        resultsOutputFile << "#    " <<setw(3)<< iTag <<"    "<<setw(3)<< jTag <<"     ";
+                        if (responseCorrelation(i,j)<0.0) { resultsOutputFile << "-"; }
+                        else { resultsOutputFile << " "; }
+                        resultsOutputFile <<setprecision(7)<<setw(11)<<fabs(responseCorrelation(i,j));
+                        resultsOutputFile << "                                      #" << endln;
+                    }
 				}
 			}
 			resultsOutputFile << "#                                                                     #" << endln;
@@ -599,9 +601,6 @@ ImportanceSamplingAnalysis::analyze(void)
 		}
 
 	}
-
-
-
 
 
 	// Print summary of results to screen 
