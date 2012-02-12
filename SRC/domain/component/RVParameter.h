@@ -37,7 +37,7 @@ class Domain;
 class RVParameter : public Parameter
 {
  public:
-  RVParameter(int tag, RandomVariable *theRV);
+  RVParameter(int tag, RandomVariable *theRV, Parameter *theParam = 0);
   virtual ~RVParameter();
   
   virtual void Print(OPS_Stream &s, int flag =0);
@@ -52,6 +52,7 @@ class RVParameter : public Parameter
   virtual bool isImplicit(void) {return true;}
   virtual double getSensitivity(int index) {return 0.0;}
   virtual double getPerturbation(void);
+  virtual const char *getType(void) {return "RandomVariable";}
 
   virtual void setDomain(Domain *theDomain);
   virtual int sendSelf(int commitTag, Channel &theChannel);  
@@ -61,6 +62,7 @@ class RVParameter : public Parameter
   
  private:
   RandomVariable *myRV;
+  Parameter *myParam;
   double currentValue;
 };
 
