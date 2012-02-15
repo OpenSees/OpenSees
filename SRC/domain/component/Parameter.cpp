@@ -214,10 +214,17 @@ Parameter::activate(bool active)
   return ok;
 }
 
+double
+Parameter::getSensitivity(int index)
+{
+  opserr << "HELLO" << endln; 
+  return 1.0;
+}
+
 void
 Parameter::Print(OPS_Stream &s, int flag)  
 {
-  s << "Parameter, tag = " << this->getTag() << endln;
+  s << "Parameter, tag = " << this->getTag() << " " << this->getValue() << endln;
   //s << "\tparameterID = " << parameterID << endln;
 }
 

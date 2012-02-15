@@ -55,8 +55,10 @@ RVParameter::update(double newValue)
 
   myRV->setCurrentValue(newValue);
 
-  if (myParam != 0)
+  if (myParam != 0) {
     myParam->setValue(newValue);
+    myParam->update(newValue);
+  }
 
   return 0;
 }
@@ -64,7 +66,10 @@ RVParameter::update(double newValue)
 int
 RVParameter::activate(bool active)
 {
-  return 0;
+  if (myParam != 0)
+    return myParam->activate(active);
+  else
+    return 0;
 }
 
 double
@@ -81,8 +86,22 @@ RVParameter::setValue(double newValue)
 
   myRV->setCurrentValue(newValue);
 
-  if (myParam != 0)
+  if (myParam != 0) {
     myParam->setValue(newValue);
+    myParam->update(newValue);
+  }
+}
+
+bool
+RVParameter::isImplicit(void)
+{
+  return false;
+}
+
+double
+RVParameter::getSensitivity(int index)
+{
+  return Parameter::getSensitivity(index);
 }
 
 double

@@ -34,6 +34,7 @@
 #ifdef _RELIABILITY
 
 #include <RVParameter.h>
+#include <NodeResponseParameter.h>
 #include <ReliabilityDomain.h>
 
 extern ReliabilityDomain *theReliabilityDomain;
@@ -100,39 +101,63 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
     return TCL_OK;
   }
 
-#ifdef _RELIABILITY
-  if (strcmp(argv[0],"parameter") == 0 && strcmp(argv[2],"randomVariable") == 0) {
-    int rvTag;
-    if (Tcl_GetInt(interp, argv[3], &rvTag) != TCL_OK) {
-      return TCL_ERROR;    
-    }
 
-    if (theReliabilityDomain == 0) {
-      opserr << "ERROR parameter " << paramTag << " -- reliability domain has not been created" << endln;      
-    }
+  if (argc >= 6 && strcmp(argv[0],"parameter") == 0 && strcmp(argv[2],"node") == 0 
+      && strcmp(argv[4],"disp") == 0) {
 
-    RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtr(rvTag);
-    if (theRV == 0) {
-      opserr << "ERROR parameter " << paramTag << " -- random variable with tag " << rvTag << " not defined" << endln;
-      return TCL_ERROR;
-    }
+      int nodeTag;
+      if (Tcl_GetInt(interp, argv[3], &nodeTag) != TCL_OK) {
+	return TCL_ERROR;    
+      }
+      Node *theNode = theTclDomain->getNode(nodeTag);
 
-    Parameter *newParameter = new RVParameter(paramTag, theRV);
+      int dof;
+      if (Tcl_GetInt(interp, argv[5], &dof) != TCL_OK) {
+	return TCL_ERROR;    
+      }
 
-    theTclDomain->addParameter(newParameter);
+      Parameter *newParameter = new NodeResponseParameter(paramTag, theNode, Disp, dof);
 
-    return TCL_OK;
+      theTclDomain->addParameter(newParameter);
+      
+      char buffer[40];
+      sprintf(buffer, "%d", paramTag);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+      
+      return TCL_OK;
   }
-#endif
+
+
+
+  RandomVariable *theRV = 0;
 
   // Now handle the parameter according to which command is invoked
   if (strcmp(argv[0],"parameter") == 0 || strcmp(argv[0],"addToParameter") == 0) {
 
-    int argStart = 0;
-
     DomainComponent *theObject;
 
-    if (strstr(argv[2],"element") != 0) {
+    if (strstr(argv[2],"randomVariable") != 0) {
+#ifdef _RELIABILITY
+      int rvTag;
+      if (Tcl_GetInt(interp, argv[3], &rvTag) != TCL_OK) {
+	return TCL_ERROR;    
+      }
+      
+      if (theReliabilityDomain == 0) {
+	opserr << "ERROR parameter " << paramTag << " -- reliability domain has not been created" << endln;      
+      }
+      
+      theRV = theReliabilityDomain->getRandomVariablePtr(rvTag);
+      if (theRV == 0) {
+	opserr << "ERROR parameter " << paramTag << " -- random variable with tag " << rvTag << " not defined" << endln;
+	return TCL_ERROR;
+      }
+#endif
+    }
+
+    int argStart = (theRV) ? 4 : 2;
+
+    if (argc > argStart && strstr(argv[argStart],"element") != 0) {
 
       if (argc < 4) {
 	opserr << "WARNING parameter -- insufficient number of arguments for parameter with tag " << paramTag << '\n';
@@ -140,7 +165,7 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
       }
 
       int eleTag;
-      if (Tcl_GetInt(interp, argv[3], &eleTag) != TCL_OK) {
+      if (Tcl_GetInt(interp, argv[argStart+1], &eleTag) != TCL_OK) {
 	opserr << "WARNING parameter -- invalid element tag\n";
 	return TCL_ERROR;    
       }
@@ -148,16 +173,16 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
       // Retrieve element from domain
       theObject = (DomainComponent *) theTclDomain->getElement(eleTag);
 
-      argStart = 4;
+      argStart = (theRV) ? 6 : 4;
     }
-    else if (strstr(argv[2],"node") != 0) {
+    else if (argc > argStart && strstr(argv[argStart],"node") != 0) {
       if (argc < 4) {
 	opserr << "WARNING parameter -- insufficient number of arguments for parameter with tag " << paramTag << '\n';
 	return TCL_ERROR;
       }
 
       int nodeTag;
-      if (Tcl_GetInt(interp, argv[3], &nodeTag) != TCL_OK) {
+      if (Tcl_GetInt(interp, argv[argStart+1], &nodeTag) != TCL_OK) {
 	opserr << "WARNING parameter -- invalid node tag\n";
 	return TCL_ERROR;    
       }
@@ -165,16 +190,16 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
       // Retrieve element from domain
       theObject = (DomainComponent *) theTclDomain->getNode(nodeTag);
 
-      argStart = 4;
+      argStart = (theRV) ? 6 : 4;
     }
-    else if (strstr(argv[2],"loadPattern") != 0) {
+    else if (argc > argStart && strstr(argv[argStart],"loadPattern") != 0) {
       if (argc < 4) {
 	opserr << "WARNING parameter -- insufficient number of arguments for parameter with tag " << paramTag << '\n';
 	return TCL_ERROR;
       }
 
       int loadTag;
-      if (Tcl_GetInt(interp, argv[3], &loadTag) != TCL_OK) {
+      if (Tcl_GetInt(interp, argv[argStart+1], &loadTag) != TCL_OK) {
 	opserr << "WARNING parameter -- invalid load pattern tag\n";
 	return TCL_ERROR;    
       }
@@ -182,9 +207,9 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
       // Retrieve element from domain
       theObject = (DomainComponent *) theTclDomain->getLoadPattern(loadTag);
 
-      argStart = 4;
+      argStart = (theRV) ? 6 : 4;
     }
-    else {
+    else if (argc > argStart) {
       opserr << "WARNING - unable to assign parameter to object of type "
 	     << argv[2] << '\n';
       return TCL_ERROR;
@@ -200,16 +225,27 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
 	       << " already exists in domain\n";
 	return TCL_ERROR;
       }
-      else {
-	Parameter *newParameter = new Parameter(paramTag, theObject,
-						(const char **)&argv[argStart],
-						argc-argStart);
-	
-	theTclDomain->addParameter(newParameter);
-	char buffer[40];
-	sprintf(buffer, "%d", paramTag);
-	Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
+      Parameter *newParameter;
+      if (argc > argStart)
+	newParameter = new Parameter(paramTag, theObject,
+				     (const char **)&argv[argStart],
+				     argc-argStart);
+      else
+	newParameter = new Parameter(paramTag, 0, 0, 0);
+
+      if (theRV != 0) {
+	RVParameter *newRVParameter = new RVParameter(paramTag, theRV, newParameter);
+	theTclDomain->addParameter(newRVParameter);
       }
+      else {
+	theTclDomain->addParameter(newParameter);
+      }
+
+      char buffer[40];
+      sprintf(buffer, "%d", paramTag);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
     }
     // Add to an existing parameter
     if (strcmp(argv[0],"addToParameter") == 0) {

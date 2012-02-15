@@ -49,10 +49,10 @@ class RVParameter : public Parameter
   virtual void setValue(double newValue);
 
   // To make it compile -- MHS 9/28/2011
-  virtual bool isImplicit(void) {return true;}
-  virtual double getSensitivity(int index) {return 0.0;}
+  virtual bool isImplicit(void);
+  virtual double getSensitivity(int index);
   virtual double getPerturbation(void);
-  virtual const char *getType(void) {return "RandomVariable";}
+  //virtual const char *getType(void) {return "RandomVariable";}
 
   virtual void setDomain(Domain *theDomain);
   virtual int sendSelf(int commitTag, Channel &theChannel);  
