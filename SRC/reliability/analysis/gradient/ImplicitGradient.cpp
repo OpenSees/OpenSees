@@ -74,6 +74,7 @@ ImplicitGradient::getGradient()
 int
 ImplicitGradient::computeGradient(double g)
 {
+  opserr << "ImplicitGradient::compute" << endln;
   // Compute gradients if this is a path-INdependent analysis
   // (This command only has effect if it IS path-independent.)
   //if (theSensAlgo != 0 && !(theSensAlgo->shouldComputeAtEachStep()) ) {
@@ -136,6 +137,8 @@ ImplicitGradient::computeGradient(double g)
           return -1;
         }
 	
+	theFunctionEvaluator->setVariables(param_pert);
+
         // evaluate LSF and obtain result
         const char *lsfExpression = theLimitStateFunction->getExpression();
         theFunctionEvaluator->setExpression(lsfExpression);
@@ -143,10 +146,12 @@ ImplicitGradient::computeGradient(double g)
         // Add gradient contribution
         double g_perturbed = theFunctionEvaluator->evaluateExpression();
         partials(i) = (g_perturbed-g)/h;
+
+	theFunctionEvaluator->setVariables(param_vect);
       }
     }
   }			
-  
+  opserr << partials;
   // now loop through to create gradient vector
   // Mackie 7/31/2011: big consideration here is that you CANNOT have an explicit parameter appear in the 
   // same LSF as an implicit parameter.  For example, if there are two parameters: theta1 is modulus E and 
@@ -169,6 +174,6 @@ ImplicitGradient::computeGradient(double g)
     }
     
   }
-  
+  opserr << *grad_g << endln;
   return 0;
 }

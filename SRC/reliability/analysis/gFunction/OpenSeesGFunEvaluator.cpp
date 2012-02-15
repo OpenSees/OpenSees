@@ -58,7 +58,7 @@ OpenSeesGFunEvaluator::OpenSeesGFunEvaluator(Tcl_Interp *passedTclInterp,
 					     Domain *passedOpenSeesDomain,
 					     TCL_Char *passedFileName)
   :GFunEvaluator(), theTclInterp(passedTclInterp), theReliabilityDomain(passedReliabilityDomain),
-   theOpenSeesDomain(passedOpenSeesDomain)
+   theOpenSeesDomain(passedOpenSeesDomain), g(0.0)
 {
 	// here the user has provided a file with the analysis commmands
 	strcpy(fileName,passedFileName);
@@ -72,7 +72,7 @@ OpenSeesGFunEvaluator::OpenSeesGFunEvaluator(Tcl_Interp *passedTclInterp,
 					     Domain *passedOpenSeesDomain,
 					     int p_nsteps, double p_dt)
   :GFunEvaluator(), theTclInterp(passedTclInterp), theReliabilityDomain(passedReliabilityDomain),
-   theOpenSeesDomain(passedOpenSeesDomain)
+   theOpenSeesDomain(passedOpenSeesDomain), g(0.0)
 {
 	// here the user has specified number of steps and possibly dt
 	fileName[0] = '\0';
@@ -132,10 +132,10 @@ OpenSeesGFunEvaluator::setTclRandomVariables(const Vector &x)
   return 0;
 }
 
-double
-OpenSeesGFunEvaluator::evaluateGMHS(const Vector &x) 
+int
+OpenSeesGFunEvaluator::evaluateG(const Vector &x) 
 {
-  double g = 0.0;
+  g = 0.0;
 
   // Set random variable values in Tcl namespace
   if (this->setTclRandomVariables(x) != 0) {
@@ -153,13 +153,19 @@ OpenSeesGFunEvaluator::evaluateGMHS(const Vector &x)
   if (Tcl_ExprDouble( theTclInterp, theExpression, &g) != TCL_OK) {
     opserr << "OpenSeesGFunEvaluator::evaluateGnoRecompute -- expression \"" << theExpression;
     opserr << "\" caused error:" << endln << theTclInterp->result << endln;
-    return 0.0;
+    return -1;
   }
 
-  return g;
+  numberOfEvaluations++;
+
+  return 0;
 }
 
-
+double
+OpenSeesGFunEvaluator::getG(void)
+{
+  return g;
+}
 
 
 /*

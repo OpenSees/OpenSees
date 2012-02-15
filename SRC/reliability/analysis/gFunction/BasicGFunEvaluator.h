@@ -45,11 +45,13 @@ class BasicGFunEvaluator : public GFunEvaluator
 
  public:
   BasicGFunEvaluator(Tcl_Interp *passedTclInterp, 
-		     ReliabilityDomain *passedReliabilityDomain);
+		     ReliabilityDomain *passedReliabilityDomain,
+		     Domain *passedOpenSeesDomain);
   ~BasicGFunEvaluator();
 
-  double evaluateGMHS(const Vector &x);
-  int setNamespaceRandomVariables(const Vector &x);
+  int evaluateG(const Vector &x);
+  double getG(void);
+
   int runGFunAnalysis(const Vector &x) {return 0;}
 
   int tokenizeSpecials(TCL_Char *theExpression, Tcl_Obj *paramList);
@@ -57,8 +59,20 @@ class BasicGFunEvaluator : public GFunEvaluator
  protected:
 
  private:
+
+  int setTclRandomVariables(const Vector &x);
+
+  int	uParse(char *tempchar, int *node, int *dirn, char* disp, char* varName, char* arrName);
+  int	nodeParse(char *tempchar, int *node, int *dirn, char* disp, char* varName, char* arrName);
+  int	elementParse(char *tempchar, int *element, char* varName, char* eleArgs);
+  int	nodeTclVariable(int nodeNumber, int direction, char* dispOrWhat, char* varName, char* arrName);
+  int	elementTclVariable(int eleNumber, char* varName, char* restString);
+
   Tcl_Interp *theTclInterp;
   ReliabilityDomain *theReliabilityDomain;
+  Domain *theOpenSeesDomain;
+
+  double g;
 };
 
 #endif

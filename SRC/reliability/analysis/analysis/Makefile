@@ -23,8 +23,7 @@ OBJS       = 	FORMAnalysis.o \
 	SurfaceDesign.o \
 	UnivariateDecomposition.o \
 	UniformExperimentalPointRule1D.o \
-	ImportanceSamplingAnalysis.o \
-	UniformExperimentalPointRule2D.o 
+	ImportanceSamplingAnalysis.o 
 
 
 # Compilation control

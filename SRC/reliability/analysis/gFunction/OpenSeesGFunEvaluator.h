@@ -59,9 +59,12 @@ class OpenSeesGFunEvaluator : public GFunEvaluator
   ~OpenSeesGFunEvaluator();
   
 
-  int		runGFunAnalysis(const Vector &x) {return 0;}
-  int		tokenizeSpecials(TCL_Char *theExpression, Tcl_Obj *passedList) {return 0;}
-  double evaluateGMHS(const Vector &x);
+  int evaluateG(const Vector &x);
+  double getG(void);
+  int runGFunAnalysis(const Vector &x) {return 0;}
+
+  int tokenizeSpecials(TCL_Char *theExpression, Tcl_Obj *passedList) {return 0;}
+
   /*  
   void		setNsteps(int nsteps);
   double	getDt();
@@ -82,7 +85,8 @@ class OpenSeesGFunEvaluator : public GFunEvaluator
   char fileName[256];
   int nsteps;
   double dt;
-	
+  
+  double g;
 };
 
 #endif

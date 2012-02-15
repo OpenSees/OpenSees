@@ -49,7 +49,7 @@ TclGFunEvaluator::TclGFunEvaluator(Tcl_Interp *passedTclInterp,
 					Domain *passedOpenSeesDomain,
 					TCL_Char *passed_fileName)
   :GFunEvaluator(), theTclInterp(passedTclInterp), theReliabilityDomain(passedReliabilityDomain),
-   theOpenSeesDomain(passedOpenSeesDomain)
+   theOpenSeesDomain(passedOpenSeesDomain), g(0.0)
 
 {
 	strcpy(fileName,passed_fileName);
@@ -108,10 +108,10 @@ TclGFunEvaluator::setTclRandomVariables(const Vector &x)
   return 0;
 }
 
-double
-TclGFunEvaluator::evaluateGMHS(const Vector &x) 
+int
+TclGFunEvaluator::evaluateG(const Vector &x) 
 {
-  double g = 0.0;
+  g = 0.0;
 
   // Set random variable values in Tcl namespace
   if (this->setTclRandomVariables(x) != 0) {
@@ -129,9 +129,17 @@ TclGFunEvaluator::evaluateGMHS(const Vector &x)
   if (Tcl_ExprDouble( theTclInterp, theExpression, &g) != TCL_OK) {
     opserr << "TclGFunEvaluator::evaluateGnoRecompute -- expression \"" << theExpression;
     opserr << "\" caused error:" << endln << theTclInterp->result << endln;
-    return 0.0;
+    return -1;
   }
 
+  numberOfEvaluations++;
+
+  return 0;
+}
+
+double
+TclGFunEvaluator::getG(void)
+{
   return g;
 }
 

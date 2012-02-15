@@ -50,10 +50,11 @@ class TclGFunEvaluator : public GFunEvaluator
 		   TCL_Char *fileName);
   ~TclGFunEvaluator();
   
+  int evaluateG(const Vector &x);
+  double getG(void);
   int runGFunAnalysis(const Vector &x);
+
   int tokenizeSpecials(TCL_Char *theExpression, Tcl_Obj *passedList);
-  
-  double evaluateGMHS(const Vector &x);
   
  protected:
   
@@ -66,7 +67,8 @@ class TclGFunEvaluator : public GFunEvaluator
   Domain *theOpenSeesDomain;
   
   char fileName[256];
-	
+  
+  double g;
 };
 
 #endif

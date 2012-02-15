@@ -88,12 +88,16 @@ TclEvaluator::setVariables(const Vector &x)
   
   // Set values of parameters in the Tcl intepreter
   int nparam = theOpenSeesDomain->getNumParameters();
+
   for (int i = 0; i < nparam; i++) {
     theParam = theOpenSeesDomain->getParameterFromIndex(i);
     int paramTag = theParam->getTag();
     
     // KRM we need to be consistent, here we should use the input vector of values
     xval = theParam->getValue();
+    theParam->update(xval);
+    //xval = x(i);
+    //opserr << "TclEval xval i " << i << ' ' << xval << endln;
 
     // put in par(1) format
     sprintf(theIndex,"%d",paramTag);

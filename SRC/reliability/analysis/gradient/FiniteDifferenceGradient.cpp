@@ -79,10 +79,11 @@ FiniteDifferenceGradient::computeGradient(double g)
 	// get limit-state function from reliability domain
 	int lsf = theReliabilityDomain->getTagOfActiveLimitStateFunction();
 	LimitStateFunction *theLimitStateFunction = theReliabilityDomain->getLimitStateFunctionPtr(lsf);
+	const char *lsfExpression = theLimitStateFunction->getExpression();
 	
 	// get parameters created in the domain
 	int nparam = theOpenSeesDomain->getNumParameters();
-	
+
 	// initialize vector containing parameter values
 	Vector param_vect(nparam);
 	Vector param_pert(nparam);
@@ -92,19 +93,46 @@ FiniteDifferenceGradient::computeGradient(double g)
 		param_vect(i) = theParam->getValue();
 	}
 	
+	// set perturbed values in the variable namespace
+	if (theFunctionEvaluator->setVariables(param_vect) < 0) {
+	  opserr << "ERROR FiniteDifferenceGradient -- error setting variables in namespace" << endln;
+	  return -1;
+	}
+	
+	// run analysis
+	if (theFunctionEvaluator->runAnalysis(param_vect) < 0) {
+	  opserr << "ERROR FiniteDifferenceGradient -- error running analysis" << endln;
+	  return -1;
+	}
+	
+	// evaluate LSF and obtain result
+	theFunctionEvaluator->setExpression(lsfExpression);
+	
+	// Add gradient contribution
+	g = theFunctionEvaluator->evaluateExpression();
+
+	//opserr << "param vect " << param_vect;
+
 	// now loop through to create gradient vector
 	// note this is a for loop because there may be some conflict from a nested iterator already 
 	// called at a higher level.
 	for (int i = 0; i < nparam; i++) {
+
 		// get parameter tag
 		Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
+		//opserr << theParam->getType() << endln;
+		//if (strcmp(theParam->getType(),"FEModel") != 0)
+		//continue;
+		if (theParam->isImplicit())
+		  continue;
+
 		int tag = theParam->getTag();
 		double result = 0;
 
 		// check for analytic gradient first
 		const char *gradExpression = theLimitStateFunction->getGradientExpression(tag);
 		if (gradExpression != 0) {
-			theFunctionEvaluator->setExpression(gradExpression);
+		  theFunctionEvaluator->setExpression(gradExpression);
 
 			if (theFunctionEvaluator->setVariables(param_vect) < 0) {
 				opserr << "ERROR FiniteDifferenceGradient -- error setting variables in namespace" << endln;
@@ -114,19 +142,19 @@ FiniteDifferenceGradient::computeGradient(double g)
 			result = theFunctionEvaluator->evaluateExpression();
 
 			// Reset limit state function in evaluator -- subsequent calls could receive gradient expression
-			const char *lsfExpression = theLimitStateFunction->getExpression();
 			theFunctionEvaluator->setExpression(lsfExpression);
-
 		}
 		
 		// if no analytic gradient automatically do finite differences
 		else {
 			// use parameter defined perturbation
 			double h = theParam->getPerturbation();
-
+			//opserr << "h = " << h << endln;
 			param_pert = param_vect;
 			param_pert(i) += h;
 			
+			//opserr << "param_pert " << param_pert;
+
 			theParam->setValue(param_pert(i));
 
 			// set perturbed values in the variable namespace
@@ -141,14 +169,17 @@ FiniteDifferenceGradient::computeGradient(double g)
 				return -1;
 			}
 			
+			theFunctionEvaluator->setVariables(param_pert);
+
 			// evaluate LSF and obtain result
-			const char *lsfExpression = theLimitStateFunction->getExpression();
 			theFunctionEvaluator->setExpression(lsfExpression);
 			
 			// Add gradient contribution
 			double g_perturbed = theFunctionEvaluator->evaluateExpression();
 			result = (g_perturbed-g)/h;
 			theParam->setValue(param_vect(i));
+
+			//opserr << "g_pert " << g_perturbed << ", g0 = " << g << endln;
 
 			// reset original values in the variable namespace
 			if (theFunctionEvaluator->setVariables(param_vect) < 0) {

@@ -62,6 +62,7 @@ using std::setiosflags;
 #include <ParameterIter.h>
 #include <ParameterPositioner.h>
 #include <ParameterPositionerIter.h>
+#include <RVParameter.h>
 
 #include <NormalRV.h>
 #include <LognormalRV.h>
@@ -979,8 +980,10 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 		theRandomVariable->setStartValue(startPt);
 	else 
 		theRandomVariable->setStartValue(theRandomVariable->getMean());
-	
-	
+
+	// set the current value to the mean
+	theRandomVariable->setCurrentValue(theRandomVariable->getMean());
+
 	// Add the random variable to the domain
 	if (theReliabilityDomain->addRandomVariable(theRandomVariable) == false) {
 		opserr << "ERROR: failed to add random variable to the domain (wrong number of arguments?)\n";
@@ -988,6 +991,9 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 		delete theRandomVariable; // otherwise memory leak
 		return TCL_ERROR;
 	}
+
+	//RVParameter *theRVParam = new RVParameter(tag, theRandomVariable);
+	//theStructuralDomain->addParameter(theRVParam);
 
 	return TCL_OK;
 	

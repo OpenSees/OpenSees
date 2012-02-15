@@ -53,27 +53,18 @@ public:
 	virtual ~GFunEvaluator();
 
 	// Methods provided by base class
+	virtual int evaluateG(const Vector &x) = 0;
+	virtual double getG(void) = 0;
+	virtual int runGFunAnalysis(const Vector &x) {return 0;}
+
+
+
+
 	///// changed by K Fujimura /////
-	virtual int		runGFunAnalysis(const Vector &x) = 0;
-	virtual int		evaluateG(const Vector &x) {g = this->evaluateGMHS(x); return 0;}
 	//virtual int		evaluateGnoRecompute(const char* lsfExpression);
-	double	getG();
 	int     initializeNumberOfEvaluations();
 	int     getNumberOfEvaluations();
 	
-	virtual double evaluateGMHS(const Vector &x) {return 0.0;}
-
-	// Methods in base class for evaluating LSF
-	/*
-	int		setTclRandomVariables(const Vector &x);
-	int		uParse(char *tempchar, int *node, int *dirn, char* disp, char* varName, char* arrName);
-	int		nodeParse(char *tempchar, int *node, int *dirn, char* disp, char* varName, char* arrName);
-	int		elementParse(char *tempchar, int *element, char* varName, char* eleArgs);
-	int		nodeTclVariable(int nodeNumber, int direction, char* dispOrWhat, char* varName, char* arrName);
-	int		elementTclVariable(int eleNumber, char* varName, char* restString);
-	*/
-	// Methods to be implemented by specific classes
-	virtual int		tokenizeSpecials(TCL_Char *theExpression, Tcl_Obj *paramList) = 0;
 
 	// Methods implemented by SOME specific classes (random vibrations stuff)
 	virtual void    setNsteps(int nsteps);
@@ -101,7 +92,7 @@ protected:
 	//Tcl_Interp *theTclInterp;
 	//ReliabilityDomain *theReliabilityDomain;
 	//Domain *theOpenSeesDomain;
-	double g;
+
 	int numberOfEvaluations;
 
 private:

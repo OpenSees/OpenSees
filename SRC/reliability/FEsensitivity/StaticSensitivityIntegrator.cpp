@@ -155,7 +155,6 @@ StaticSensitivityIntegrator::saveSensitivity(const Vector &v, int gradNum, int n
 int 
 StaticSensitivityIntegrator::commitSensitivity(int gradNum, int numGrads)
 {
-
 	// Loop through the FE_Elements and set unconditional sensitivities
     FE_Element *elePtr;
     FE_EleIter &theEles = theAnalysisModel->getFEs();    

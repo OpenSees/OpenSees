@@ -3,6 +3,7 @@ include ../../../../Makefile.def
 OBJS       = 	BasicGFunEvaluator.o \
 	GFunEvaluator.o \
 	OpenSeesGFunEvaluator.o \
+	OpenSeesTclGFunEvaluator.o \
 	TclGFunEvaluator.o
 
 # Compilation contol
