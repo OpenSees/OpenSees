@@ -31,10 +31,11 @@
 
 #include <Parameter.h>
 
-#ifdef _RELIABILITY
-
 #include <RVParameter.h>
 #include <NodeResponseParameter.h>
+
+#ifdef _RELIABILITY
+
 #include <ReliabilityDomain.h>
 
 extern ReliabilityDomain *theReliabilityDomain;
