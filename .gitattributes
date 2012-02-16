@@ -1752,6 +1752,8 @@ SRC/domain/component/MatParameter.cpp -text
 SRC/domain/component/MatParameter.h -text
 SRC/domain/component/MaterialStageParameter.cpp -text
 SRC/domain/component/MaterialStageParameter.h -text
+SRC/domain/component/NodeResponseParameter.cpp -text
+SRC/domain/component/NodeResponseParameter.h -text
 SRC/domain/component/Parameter.cpp -text
 SRC/domain/component/Parameter.h -text
 SRC/domain/component/RVParameter.cpp -text
