@@ -217,8 +217,9 @@ Parameter::activate(bool active)
 double
 Parameter::getSensitivity(int index)
 {
-  opserr << "HELLO" << endln; 
-  return 1.0;
+  //return 1.0;
+
+  return (index == gradIndex) ? 1.0 : 0.0;
 }
 
 void
