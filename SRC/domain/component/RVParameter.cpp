@@ -110,6 +110,12 @@ RVParameter::getPerturbation(void)
   return 0.001*myRV->getStdv();
 }
 
+int 
+RVParameter::getPointerTag(void) 
+{
+    return myRV->getTag();
+}
+
 void
 RVParameter::Print(OPS_Stream &s, int flag)  
 {

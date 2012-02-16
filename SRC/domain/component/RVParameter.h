@@ -52,7 +52,8 @@ class RVParameter : public Parameter
   virtual bool isImplicit(void);
   virtual double getSensitivity(int index);
   virtual double getPerturbation(void);
-  //virtual const char *getType(void) {return "RandomVariable";}
+  virtual const char *getType(void) {return "RandomVariable";}
+  virtual int getPointerTag(void);
 
   virtual void setDomain(Domain *theDomain);
   virtual int sendSelf(int commitTag, Channel &theChannel);  

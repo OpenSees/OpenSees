@@ -53,6 +53,7 @@ class NodeResponseParameter : public Parameter
   virtual double getSensitivity(int index);
   virtual double getPerturbation(void);
   virtual const char *getType(void) {return "FEResponse";}
+  virtual int getPointerTag(void);
 
   virtual void setDomain(Domain *theDomain);
   virtual int sendSelf(int commitTag, Channel &theChannel);  

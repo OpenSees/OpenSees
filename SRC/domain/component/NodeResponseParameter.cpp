@@ -100,6 +100,12 @@ NodeResponseParameter::getPerturbation(void)
   return 0.001*this->getValue();
 }
 
+int 
+NodeResponseParameter::getPointerTag(void) 
+{
+    return myNode->getTag();
+}
+
 void
 NodeResponseParameter::Print(OPS_Stream &s, int flag)  
 {
