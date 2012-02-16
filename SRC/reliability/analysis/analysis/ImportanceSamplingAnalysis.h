@@ -35,6 +35,7 @@
 
 #include <ReliabilityAnalysis.h>
 #include <ReliabilityDomain.h>
+#include <Domain.h>
 #include <ProbabilityTransformation.h>
 #include <RandomNumberGenerator.h>
 #include <FunctionEvaluator.h>
@@ -48,10 +49,10 @@ class ImportanceSamplingAnalysis : public ReliabilityAnalysis
 
 public:
 	ImportanceSamplingAnalysis(ReliabilityDomain *passedReliabilityDomain,
+                               Domain *passedOpenSeesDomain,
 				   ProbabilityTransformation *passedProbabilityTransformation,
 				   FunctionEvaluator *passedGFunEvaluator,
 				   RandomNumberGenerator *passedRandomNumberGenerator,
-				   bool passedStartAtOrigin,
 				   Tcl_Interp *passedInterp,
 				   long int passedNumberOfSimulations,
 				   double passedTargetCOV,
@@ -68,10 +69,10 @@ protected:
 	
 private:
 	ReliabilityDomain *theReliabilityDomain;
+    Domain *theOpenSeesDomain;
 	ProbabilityTransformation *theProbabilityTransformation;
 	FunctionEvaluator *theGFunEvaluator;
 	RandomNumberGenerator *theRandomNumberGenerator;
-	bool startAtOrigin;
 	Tcl_Interp *interp;
 	long int numberOfSimulations;
 	double targetCOV;

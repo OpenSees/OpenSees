@@ -382,7 +382,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 	//	opserr<<"the "<<k<<"th iteration. x is:" <<x<<endln;
 
 	// ----- step 3, u'_n is solved out by G(U'_(n-1), u'_n)=0 -----
-		result = theGFunEvaluator->runAnalysis(x);
+		result = theGFunEvaluator->runAnalysis();
 		numOfGFunEvaluations++;
 
 		if (result <0) {
@@ -448,7 +448,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 					return -1;
 				}
 
-				result = theGFunEvaluator->runAnalysis(x);
+				result = theGFunEvaluator->runAnalysis();
 				numOfGFunEvaluations++;
 				
 				if(result<0) {  // diverge
@@ -511,7 +511,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 						return -1;
 					}
 				
-					result = theGFunEvaluator->runAnalysis(x);
+					result = theGFunEvaluator->runAnalysis();
 					numOfGFunEvaluations++;
 
 					if(result<0) {  // diverge
@@ -574,7 +574,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 						return -1;
 					}
 				
-					result = theGFunEvaluator->runAnalysis(x);
+					result = theGFunEvaluator->runAnalysis();
 					numOfGFunEvaluations++;
 					
 					if(result<0) {  // diverge, ignore its contribution
@@ -767,7 +767,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 				  return -1;
 				}
 
-				result = theGFunEvaluator->runAnalysis(x);
+				result = theGFunEvaluator->runAnalysis();
 				numOfGFunEvaluations++;
 
 				if(result<0) {  // diverge
@@ -829,7 +829,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 						return -1;
 					}
 
-					result = theGFunEvaluator->runAnalysis(x);
+					result = theGFunEvaluator->runAnalysis();
 					numOfGFunEvaluations++;
 
 
@@ -897,7 +897,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 					  return -1;
 					}
 
-					result = theGFunEvaluator->runAnalysis(x);
+					result = theGFunEvaluator->runAnalysis();
 					numOfGFunEvaluations++;
 					
 					if(result<0) {  // diverge, ignore its contribution
@@ -1044,7 +1044,7 @@ int OrthogonalPlaneSamplingAnalysis::analyze(void)
 							return -1;
 						}
 						
-						result = theGFunEvaluator->runAnalysis(x);
+						result = theGFunEvaluator->runAnalysis();
 						numOfGFunEvaluations++;
 						
 						if(result<0) {  // diverge, ignore its contribution
@@ -1275,7 +1275,7 @@ double OrthogonalPlaneSamplingAnalysis::getSampledValue(double x)
 		return -1;
 	}
 				
-	result = theGFunEvaluator->runAnalysis(Xu);
+	result = theGFunEvaluator->runAnalysis();
 	numOfGFunEvaluations++;
 	
 	

@@ -34,18 +34,17 @@
 #include <FOSMAnalysis.h>
 #include <ReliabilityAnalysis.h>
 #include <ReliabilityDomain.h>
-#include <RandomVariablePositioner.h>
 #include <FunctionEvaluator.h>
 #include <GradientEvaluator.h>
 #include <Matrix.h>
 #include <Vector.h>
-#include <tcl.h>
-#include <math.h>
 
 #include <RandomVariableIter.h>
 #include <LimitStateFunctionIter.h>
 #include <CorrelationCoefficientIter.h>
 
+#include <tcl.h>
+#include <math.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -58,16 +57,17 @@ using std::setiosflags;
 
 
 FOSMAnalysis::FOSMAnalysis(ReliabilityDomain *passedReliabilityDomain,
-			   FunctionEvaluator *passedGFunEvaluator,
-			   GradientEvaluator *passedGradGEvaluator,
-			   Tcl_Interp *passedTclInterp,
-			   TCL_Char *passedFileName)
-:ReliabilityAnalysis()
+                           Domain *passedOpenSeesDomain,
+                           FunctionEvaluator *passedGFunEvaluator,
+                           GradientEvaluator *passedGradGEvaluator,
+                           Tcl_Interp *passedTclInterp,
+                           TCL_Char *passedFileName)
+:ReliabilityAnalysis(), theReliabilityDomain(passedReliabilityDomain), 
+theOpenSeesDomain(passedOpenSeesDomain)
 {
-	theReliabilityDomain	= passedReliabilityDomain;
-	theGFunEvaluator		= passedGFunEvaluator;
-	theGradGEvaluator = passedGradGEvaluator;
-	theTclInterp			= passedTclInterp;
+	theGFunEvaluator	= passedGFunEvaluator;
+	theGradGEvaluator   = passedGradGEvaluator;
+	theTclInterp		= passedTclInterp;
 	strcpy(fileName,passedFileName);
 }
 
@@ -88,44 +88,58 @@ FOSMAnalysis::analyze(void)
 
 	// Open output file
 	ofstream outputFile( fileName, ios::out );
+    int result;
 
 	// Get number of random variables and limit-state function
-	int nrv = theReliabilityDomain->getNumberOfRandomVariables();
-	int numLsf = theReliabilityDomain->getNumberOfLimitStateFunctions();
+    int nrv = theReliabilityDomain->getNumberOfRandomVariables();
+    int numberOfParameters = theOpenSeesDomain->getNumParameters();
+    int numLsf = theReliabilityDomain->getNumberOfLimitStateFunctions();
 	LimitStateFunction *theLSF;
 	
 	// Get mean point
 	Vector meanVector(nrv);
 	// Establish vector of standard deviations
 	Vector stdvVector(nrv);
-
-    // note that now reliability domain components are persistent, so it matters if FOSM is run
-    // after a FORM analysis, for example.  Reset to mean value because this is by definition
-	RandomVariableIter rvIter = theReliabilityDomain->getRandomVariables();
-	RandomVariable *aRandomVariable;
-	//for (int i=1; i<=nrv; i++) {
-	while ((aRandomVariable = rvIter()) != 0) {
-		int tag = aRandomVariable->getTag();
-		int i = theReliabilityDomain->getRandomVariableIndex(tag);
-		meanVector(i) = aRandomVariable->getMean();
-		stdvVector(i) = aRandomVariable->getStdv();
-        
-        // make sure the RV starts at mean
-        aRandomVariable->setCurrentValue(meanVector(i));
-	}
     
+    
+    // generate map from parameters to random variables 
+    // vector RVmap stores index of parameter that corresponds to each RV
+    // this method should be method into reliability domain or somewhere accessible to all analyses
+    Vector RVmap(nrv);
+    for (int j = 0; j < numberOfParameters; j++) {
+        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(j);
+        if ( strcmp( theParam->getType(), "RandomVariable" ) == 0 ) {
+            result = theParam->getPointerTag();
+            RVmap( theReliabilityDomain->getRandomVariableIndex(result) ) = j;
+        }
+    }
+    
+
+    // set start point to be the mean for FOSM
+    for (int j = 0; j < nrv; j++) {
+        RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(RVmap(j));
+        
+        meanVector(j) = theRV->getMean();
+        stdvVector(j) = theRV->getStdv();
+        
+        // now we should update the parameter value
+        theParam->update( meanVector(j) );
+    }
+        
+        
 	// Perform analysis using mean vector
 	Vector meanEstimates(numLsf);
     
     // set values in the variable namespace
-    if (theGFunEvaluator->setVariables(meanVector) < 0) {
+    if (theGFunEvaluator->setVariables() < 0) {
         opserr << "FOSMAnalysis::analyze() - " << endln
             << " could not set variables in namespace. " << endln;
         return -1;
     }
     
     // run analysis
-	if (theGFunEvaluator->runAnalysis(meanVector) < 0) {
+	if (theGFunEvaluator->runAnalysis() < 0) {
 		opserr << "FOSMAnalysis::analyze() - " << endln
 			<< " could not run analysis to evaluate limit-state function. " << endln;
 		return -1;
@@ -140,9 +154,6 @@ FOSMAnalysis::analyze(void)
 		
 		// Set tag of "active" limit-state function
 		theReliabilityDomain->setTagOfActiveLimitStateFunction(lsfTag);
-		
-		// set namespace variable for tcl functions
-		Tcl_SetVar2Ex(theTclInterp,"RELIABILITY_lsf",NULL,Tcl_NewIntObj(lsfTag),TCL_NAMESPACE_ONLY);
         
         // set and evaluate LSF
         const char *lsfExpression = theLSF->getExpression();
@@ -155,7 +166,7 @@ FOSMAnalysis::analyze(void)
 	// Establish covariance matrix
 	Matrix covMatrix(nrv,nrv);
 	for (int i = 0; i < nrv; i++) {
-	  covMatrix(i,i) = stdvVector(i)*stdvVector(i);
+        covMatrix(i,i) = stdvVector(i)*stdvVector(i);
 	}
 
 	double covariance, correlation;
@@ -191,6 +202,7 @@ FOSMAnalysis::analyze(void)
 
 	// Post-processing loop over limit-state functions
 	Vector responseStdv(numLsf);
+    Vector all_grad(numberOfParameters);
 	Vector gradient(nrv);
 	double responseVariance;
 	
@@ -216,7 +228,11 @@ FOSMAnalysis::analyze(void)
                 << " could not compute gradients of the limit-state function. " << endln;
 			return -1;
 		}
-		gradient = theGradGEvaluator->getGradient();
+		all_grad = theGradGEvaluator->getGradient();
+        
+        // gradient comes back with all parameters, isolate just the RV gradients
+        for (int j = 0; j < nrv; j++)
+            gradient(j) = all_grad(RVmap(j));
 
 		// Estimate of standard deviation of response
 		responseVariance = (covMatrix^gradient)^gradient;
@@ -253,7 +269,9 @@ FOSMAnalysis::analyze(void)
 		outputFile << "#                                                                     #" << endln;
 		outputFile << "#      Rvtag        Importance measure (dgdx*stdv)                    #" << endln;
 		outputFile.setf( ios::scientific, ios::floatfield );
-		rvIter.reset();
+		
+        RandomVariableIter rvIter = theReliabilityDomain->getRandomVariables();
+        RandomVariable *aRandomVariable;
 		//for (int i=0;  i<nrv; i++) {
 		while ((aRandomVariable = rvIter()) != 0) {
 		  int tag = aRandomVariable->getTag();

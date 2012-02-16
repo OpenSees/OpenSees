@@ -117,7 +117,7 @@ double PrincipalPlane::getValueOnGrid(double p_x, double p_y)
   
   // ----remove sensitivity algorithm ---
   
-  int  result = theGFunEvaluator->runAnalysis(x);
+  int  result = theGFunEvaluator->runAnalysis();
   if (result < 0) {
     opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 	   << " could not run analysis to evaluate limit-state function. " << endln;
@@ -363,7 +363,7 @@ double PrincipalPlane::getValueG2OnGrid(double p_x, double p_y, double valueOfG,
 		  return -1;
 		}
 
-		result = theGFunEvaluator->runAnalysis(x);
+		result = theGFunEvaluator->runAnalysis();
 		if (result < 0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not run analysis to evaluate limit-state function. " << endln;

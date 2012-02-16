@@ -53,12 +53,12 @@ class TclEvaluator : public FunctionEvaluator
 				 Domain *passedOpenSeesDomain);
 	~TclEvaluator();
 
-	int setVariables(const Vector &x);
+	int setVariables(void);
 	int setExpression(const char *expression);
 	int addToExpression(const char *expression);
 	
 	double evaluateExpression(void);
-	int runAnalysis(const Vector &x);
+	int runAnalysis(void);
   
  protected:
   

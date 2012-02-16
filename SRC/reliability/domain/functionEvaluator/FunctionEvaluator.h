@@ -54,11 +54,11 @@ public:
     int     incrementEvaluations(void) {numberOfEvaluations++; return 0;}
 	
 	// pure virtual
-	virtual int setVariables(const Vector &x) = 0;
+	virtual int setVariables(void) = 0;
 	virtual int setExpression(const char *expression) = 0;
 	virtual int addToExpression(const char *expression) = 0;
 	virtual double evaluateExpression(void) = 0;
-	virtual int runAnalysis(const Vector &x) = 0;
+	virtual int runAnalysis(void) = 0;
 	
 	/*
 	// Methods in base class for evaluating LSF

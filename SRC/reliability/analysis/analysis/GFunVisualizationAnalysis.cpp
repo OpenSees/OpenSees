@@ -496,7 +496,7 @@ GFunVisualizationAnalysis::findGSurface(Vector thePoint)
 
 
 	// Evaluate limit-state function
-	result = theGFunEvaluator->runAnalysis(theTempPoint);
+	result = theGFunEvaluator->runAnalysis();
 	if (result < 0) {
 		opserr << "GFunVisualizationAnalysis::analyze() - " << endln
 			<< " could not run analysis to evaluate limit-state function. " << endln;
@@ -538,7 +538,7 @@ GFunVisualizationAnalysis::evaluateGFunction(Vector thePoint, bool isFirstPoint)
 	Matrix Jxu(nrv, nrv);
 
 	// Evaluate limit-state function
-	result = theGFunEvaluator->runAnalysis(thePoint);
+	result = theGFunEvaluator->runAnalysis();
 	if (result < 0) {
 		opserr << "GFunVisualizationAnalysis::analyze() - " << endln
 			<< " could not run analysis to evaluate limit-state function. " << endln;

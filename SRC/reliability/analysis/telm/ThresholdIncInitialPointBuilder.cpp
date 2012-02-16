@@ -140,7 +140,7 @@ Vector ThresholdIncInitialPointBuilder::buildInitialPoint(int nstep)
 			(*xtemp)=(*xcompleted)*ampf;
 			theGFunEvaluator->inactivateSensitivty();
 			theGFunEvaluator->setThreshold(0.0);
-			res1=theGFunEvaluator->runAnalysis(*xtemp);
+			res1=theGFunEvaluator->runAnalysis();
 			numAna++;
 			if ( res1<0 ) {
 				opserr << "GFuncError OutCrossingAnalysis::MakeInitialPoint" << res1 << "\n";

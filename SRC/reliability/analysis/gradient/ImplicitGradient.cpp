@@ -74,106 +74,117 @@ ImplicitGradient::getGradient()
 int
 ImplicitGradient::computeGradient(double g)
 {
-  opserr << "ImplicitGradient::compute" << endln;
-  // Compute gradients if this is a path-INdependent analysis
-  // (This command only has effect if it IS path-independent.)
-  //if (theSensAlgo != 0 && !(theSensAlgo->shouldComputeAtEachStep()) ) {
-  if (theSensAlgo != 0)
-    theSensAlgo->computeSensitivities();
-  //}
-  
-  // Initialize gradient vector
-  grad_g->Zero();
-  
-  // get limit-state function from reliability domain
-  int lsf = theReliabilityDomain->getTagOfActiveLimitStateFunction();
-  LimitStateFunction *theLimitStateFunction = theReliabilityDomain->getLimitStateFunctionPtr(lsf);
-  
-  // get parameters created in the domain
-  int nparam = theOpenSeesDomain->getNumParameters();
-  Vector partials(nparam);
-  
-  // initialize vector containing parameter values
-  Vector param_vect(nparam);
-  Vector param_pert(nparam);
-  
-  for (int i = 0; i < nparam; i++) {
-    Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
-    param_vect(i) = theParam->getValue();
-  }
-  
-  // first check for dg/dimplicit partials
-  for (int i = 0; i < nparam; i++) {
-    // get parameter tag
-    Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
-    int tag = theParam->getTag();
-    
-    if (theParam->isImplicit()) {
-      // check for analytic gradient first on dg/dimplicit
-      const char *gradExpression = theLimitStateFunction->getGradientExpression(tag);
-      if (gradExpression != 0) {
-          theFunctionEvaluator->setExpression(gradExpression);
-          partials(i) = theFunctionEvaluator->evaluateExpression();
-      }
-      
-      // if no analytic gradient automatically do finite differences to get dg/dimplicit
-      // Mackie 7/31/2011: note this is unfortuante code duplication with FDG, although they are 
-      // doing slightly different things.
-      else {
-        // use parameter defined perturbation
-        double h = theParam->getPerturbation();
-        param_pert = param_vect;
-        param_pert(i) += h;
+    opserr << "ImplicitGradient::compute" << endln;
+    // Compute gradients if this is a path-INdependent analysis
+    // (This command only has effect if it IS path-independent.)
+    //if (theSensAlgo != 0 && !(theSensAlgo->shouldComputeAtEachStep()) ) {
+    if (theSensAlgo != 0)
+        theSensAlgo->computeSensitivities();
+    //}
 
-        // set perturbed values in the variable namespace
-        if (theFunctionEvaluator->setVariables(param_pert) < 0) {
-          opserr << "ERROR ImplicitGradient -- error setting variables in namespace" << endln;
-          return -1;
+    // Initialize gradient vector
+    grad_g->Zero();
+
+    // get limit-state function from reliability domain
+    int lsf = theReliabilityDomain->getTagOfActiveLimitStateFunction();
+    LimitStateFunction *theLimitStateFunction = theReliabilityDomain->getLimitStateFunctionPtr(lsf);
+    const char *lsfExpression = theLimitStateFunction->getExpression();
+  
+    // get parameters created in the domain
+    int nparam = theOpenSeesDomain->getNumParameters();
+    Vector partials(nparam);
+  
+  
+    // first check for dg/dimplicit partials
+    for (int i = 0; i < nparam; i++) {
+        // get parameter tag
+        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
+        int tag = theParam->getTag();
+
+        if (theParam->isImplicit()) {
+            // check for analytic gradient first on dg/dimplicit
+            const char *gradExpression = theLimitStateFunction->getGradientExpression(tag);
+            if (gradExpression != 0) {
+                theFunctionEvaluator->setExpression(gradExpression);
+                
+                if (theFunctionEvaluator->setVariables() < 0) {
+                    opserr << "ERROR ImplicitGradient -- error setting variables in namespace" << endln;
+                    return -1;
+                }
+                
+                partials(i) = theFunctionEvaluator->evaluateExpression();
+                
+                // Reset limit state function in evaluator -- subsequent calls could receive gradient expression
+                theFunctionEvaluator->setExpression(lsfExpression);
+            }
+
+            // if no analytic gradient automatically do finite differences to get dg/dimplicit
+            // Mackie 7/31/2011: note this is unfortuante code duplication with FDG, although they are 
+            // doing slightly different things.
+            else {
+                // use parameter defined perturbation
+                double h = theParam->getPerturbation();
+                double original = theParam->getValue();
+                theParam->update(original+h);
+                
+                // set perturbed values in the variable namespace
+                if (theFunctionEvaluator->setVariables() < 0) {
+                    opserr << "ERROR ImplicitGradient -- error setting variables in namespace" << endln;
+                    return -1;
+                }
+
+                // run analysis
+                if (theFunctionEvaluator->runAnalysis() < 0) {
+                    opserr << "ERROR ImplicitGradient -- error running analysis" << endln;
+                    return -1;
+                }
+
+                // evaluate LSF and obtain result
+                theFunctionEvaluator->setExpression(lsfExpression);
+                
+                // Add gradient contribution
+                double g_perturbed = theFunctionEvaluator->evaluateExpression();
+                partials(i) = (g_perturbed-g)/h;
+                
+                // return values to previous state
+                theParam->update(original);
+
+                // reset original values in the variable namespace
+                if (theFunctionEvaluator->setVariables() < 0) {
+                    opserr << "ERROR ImplicitGradient -- error setting variables in namespace" << endln;
+                    return -1;
+                }
+            }
+        }
+    }	
+    
+    opserr << partials;
+    
+
+    // now loop through to create gradient vector
+    // Mackie 7/31/2011: big consideration here is that you CANNOT have an explicit parameter appear in the 
+    // same LSF as an implicit parameter.  For example, if there are two parameters: theta1 is modulus E and 
+    // theta2 is nodal displacement, then g(theta) = theta1 + theta2
+    // is not a viable LSF.  Note that the implicit computation would need to consider 
+    // dg/dtheta1 + dg/du * du/dtheta1
+    // If you insist on solving this, use FiniteDifferenceGradient
+    for (int i = 0; i < nparam; i++) {
+        // get parameter tag
+        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
+        int tag = theParam->getTag();
+        double result = 0;
+
+        for (int j = 0; j < nparam; j++) {
+            Parameter *theImplicit = theOpenSeesDomain->getParameterFromIndex(j);
+            if (theImplicit->isImplicit()) {
+                result = partials(j) * theImplicit->getSensitivity(i);
+                (*grad_g)(i) += result;
+            }
         }
 
-        // run analysis
-        if (theFunctionEvaluator->runAnalysis(param_pert) < 0) {
-          opserr << "ERROR ImplicitGradient -- error running analysis" << endln;
-          return -1;
-        }
-	
-	theFunctionEvaluator->setVariables(param_pert);
-
-        // evaluate LSF and obtain result
-        const char *lsfExpression = theLimitStateFunction->getExpression();
-        theFunctionEvaluator->setExpression(lsfExpression);
-        
-        // Add gradient contribution
-        double g_perturbed = theFunctionEvaluator->evaluateExpression();
-        partials(i) = (g_perturbed-g)/h;
-
-	theFunctionEvaluator->setVariables(param_vect);
-      }
     }
-  }			
-  opserr << partials;
-  // now loop through to create gradient vector
-  // Mackie 7/31/2011: big consideration here is that you CANNOT have an explicit parameter appear in the 
-  // same LSF as an implicit parameter.  For example, if there are two parameters: theta1 is modulus E and 
-  // theta2 is nodal displacement, then g(theta) = theta1 + theta2
-  // is not a viable LSF.  Note that the implicit computation would need to consider 
-  // dg/dtheta1 + dg/du * du/dtheta1
-  // If you insist on solving this, use FiniteDifferenceGradient
-  for (int i = 0; i < nparam; i++) {
-    // get parameter tag
-    Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
-    int tag = theParam->getTag();
-    double result = 0;
+    opserr << *grad_g << endln;
     
-    for (int j = 0; j < nparam; j++) {
-      Parameter *theImplicit = theOpenSeesDomain->getParameterFromIndex(j);
-      if (theImplicit->isImplicit()) {
-        result = partials(j) * theImplicit->getSensitivity(i);
-        (*grad_g)(i) += result;
-      }
-    }
+    return 0;
     
-  }
-  opserr << *grad_g << endln;
-  return 0;
 }

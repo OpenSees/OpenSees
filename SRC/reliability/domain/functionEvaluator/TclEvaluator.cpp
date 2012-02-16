@@ -80,67 +80,33 @@ TclEvaluator::~TclEvaluator()
 
 
 int
-TclEvaluator::setVariables(const Vector &x)
+TclEvaluator::setVariables()
 {
-  char theIndex[80];
-  double xval;
-  Parameter *theParam;
-  
-  // Set values of parameters in the Tcl intepreter
-  int nparam = theOpenSeesDomain->getNumParameters();
+    char theIndex[80];
+    double xval;
+    Parameter *theParam;
 
-  for (int i = 0; i < nparam; i++) {
-    theParam = theOpenSeesDomain->getParameterFromIndex(i);
-    int paramTag = theParam->getTag();
-    
-    // KRM we need to be consistent, here we should use the input vector of values
-    xval = theParam->getValue();
-    theParam->update(xval);
-    //xval = x(i);
-    //opserr << "TclEval xval i " << i << ' ' << xval << endln;
+    // Set values of parameters in the Tcl intepreter
+    int nparam = theOpenSeesDomain->getNumParameters();
 
-    // put in par(1) format
-    sprintf(theIndex,"%d",paramTag);
-    if (Tcl_SetVar2Ex(theTclInterp,"par",theIndex,Tcl_NewDoubleObj(xval),TCL_LEAVE_ERR_MSG) == NULL) {
-      opserr << "ERROR TclEvaluator -- error in setVariables for parameter tag " << paramTag << endln;
-      opserr << "of type " << theTclInterp->result << endln;
-      return -1;
+    for (int i = 0; i < nparam; i++) {
+        theParam = theOpenSeesDomain->getParameterFromIndex(i);
+        int paramTag = theParam->getTag();
+
+        // now get parameter values directly
+        xval = theParam->getValue();
+
+        // put in par(1) format
+        sprintf(theIndex,"%d",paramTag);
+        if (Tcl_SetVar2Ex(theTclInterp,"par",theIndex,Tcl_NewDoubleObj(xval),TCL_LEAVE_ERR_MSG) == NULL) {
+            opserr << "ERROR TclEvaluator -- error in setVariables for parameter tag " << paramTag << endln;
+            opserr << "of type " << theTclInterp->result << endln;
+            return -1;
+        }
+
     }
-    
-  }
-  
-  // Set values of random variables in the Tcl intepreter
-    // KRM note this won't work properly because the input vector x is not of the same size as
-    // the indices of available RVs.  We should remove this part of the code altogether.
-  int nrv = theReliabilityDomain->getNumberOfRandomVariables();
-  int lsf = theReliabilityDomain->getTagOfActiveLimitStateFunction();
 
-  RandomVariable *theRV;
-  for (int i = 0; i < nrv; i++) {
-    theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(i);
-    int rvTag = theRV->getTag();
-
-    // again, should use something from the input vector of values
-    xval = x(i);
-
-    // put in xrv(1) format
-    sprintf(theIndex,"%d",rvTag);
-    if (Tcl_SetVar2Ex(theTclInterp,"xrv",theIndex,Tcl_NewDoubleObj(xval),TCL_GLOBAL_ONLY) == NULL) {
-      opserr << "ERROR TclEvaluator -- error in setVariables xrv" << endln;
-      opserr << theTclInterp->result << endln;
-      return -1;
-    }
-    
-    // put in xrv(1,lsfTag) format (useful for reporting design point)
-    sprintf(theIndex,"%d,%d",rvTag,lsf);
-    if (Tcl_SetVar2Ex(theTclInterp,"xrv",theIndex,Tcl_NewDoubleObj(xval),TCL_GLOBAL_ONLY) == NULL) {
-      opserr << "ERROR TclEvaluator -- error in setVariables xrv" << endln;
-      opserr << theTclInterp->result << endln;
-      return -1;
-    }
-  }
-
-  return 0;
+    return 0;
 }
 
 
@@ -186,37 +152,26 @@ TclEvaluator::evaluateExpression()
 
 
 int
-TclEvaluator::runAnalysis(const Vector &x)
+TclEvaluator::runAnalysis()
 {	
-  // Let's just make a direct call since we have the pointer to OpenSees domain
-  // This replaces above call to Tcl command; however, in the reset command
-  // revertToStart() is also called on theTransientIntegrator -- MHS needs to check
-  if (theOpenSeesDomain->revertToStart() != 0) {
-    opserr << "ERROR TclEvaluator -- error in resetting Domain" << endln;
-    return -1;
-  }
-  
-  // Put random variables into the structural domain according to the RandomVariablePositioners
-    // KRM - now would need to put all parameters into the domain? Also note this method is not 
-    // called by ImplicitGradient, so update on parameters would need to go elsewhere if needed.
-  int rvIndex;
-  RandomVariablePositionerIter rvPosIter = theReliabilityDomain->getRandomVariablePositioners();
-  RandomVariablePositioner *theRVPos;
-  while ((theRVPos = rvPosIter()) != 0) {
-    rvIndex = theRVPos->getRvIndex();
-    theRVPos->update(x(rvIndex));
-  }
-  
-  // Source the code file that the user has provided
-  if (fileName == 0) {
-    // no source file provided, this is akin to the basic evaluator of days gone by
-    
-  } else {
-    if (Tcl_Eval(theTclInterp, fileName) == TCL_ERROR) {
-      opserr << "ERROR TclEvaluator -- error in Tcl_Eval: " << theTclInterp->result << endln;
-      return -1;
+    // Let's just make a direct call since we have the pointer to OpenSees domain
+    // This replaces above call to Tcl command; however, in the reset command
+    // revertToStart() is also called on theTransientIntegrator -- MHS needs to check
+    if (theOpenSeesDomain->revertToStart() != 0) {
+        opserr << "ERROR TclEvaluator -- error in resetting Domain" << endln;
+        return -1;
     }
-  }
   
-  return 0;
+    // Source the code file that the user has provided
+    if (fileName == 0) {
+        // no source file provided, this is akin to the basic evaluator of days gone by
+
+    } else {
+        if (Tcl_Eval(theTclInterp, fileName) == TCL_ERROR) {
+            opserr << "ERROR TclEvaluator -- error in Tcl_Eval: " << theTclInterp->result << endln;
+            return -1;
+        }
+    }
+
+    return 0;
 }

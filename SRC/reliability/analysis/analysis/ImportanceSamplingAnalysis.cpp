@@ -36,7 +36,6 @@
 #include <LimitStateFunction.h>
 #include <LimitStateFunctionIter.h>
 #include <ProbabilityTransformation.h>
-#include <NatafProbabilityTransformation.h>
 #include <FunctionEvaluator.h>
 #include <RandomNumberGenerator.h>
 #include <RandomVariable.h>
@@ -44,11 +43,10 @@
 #include <Vector.h>
 #include <Matrix.h>
 #include <MatrixOperations.h>
-#include <NormalRV.h>
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -59,25 +57,22 @@ using std::setprecision;
 using std::setiosflags;
 
 
-ImportanceSamplingAnalysis::ImportanceSamplingAnalysis(	ReliabilityDomain *passedReliabilityDomain,
+ImportanceSamplingAnalysis::ImportanceSamplingAnalysis(ReliabilityDomain *passedReliabilityDomain,
+                                                       Domain *passedOpenSeesDomain,
 										ProbabilityTransformation *passedProbabilityTransformation,
 										FunctionEvaluator *passedGFunEvaluator,
 										RandomNumberGenerator *passedRandomNumberGenerator,
-							bool passedStartAtOrigin,
-                            Tcl_Interp *passedInterp,
+							Tcl_Interp *passedInterp,
 							long int passedNumberOfSimulations,
-                            double passedTargetCOV,
-							double passedSamplingStdv,
-							int passedPrintFlag,
-							TCL_Char *passedFileName,
+                            double passedTargetCOV, double passedSamplingStdv,
+							int passedPrintFlag, TCL_Char *passedFileName,
 							int passedAnalysisTypeTag)
-:ReliabilityAnalysis()
+:ReliabilityAnalysis(), theReliabilityDomain(passedReliabilityDomain), 
+theOpenSeesDomain(passedOpenSeesDomain)
 {
-	theReliabilityDomain = passedReliabilityDomain;
 	theProbabilityTransformation = passedProbabilityTransformation;
 	theGFunEvaluator = passedGFunEvaluator;
 	theRandomNumberGenerator = passedRandomNumberGenerator;
-	startAtOrigin = passedStartAtOrigin;
 	interp = passedInterp;
 	numberOfSimulations = passedNumberOfSimulations;
 	targetCOV = passedTargetCOV;
@@ -110,7 +105,9 @@ ImportanceSamplingAnalysis::analyze(void)
     long int k = 1;
 	double det_covariance, phi, h, q;
 	int numRV = theReliabilityDomain->getNumberOfRandomVariables();
+    int numParam = theOpenSeesDomain->getNumParameters();
 	int numLsf = theReliabilityDomain->getNumberOfLimitStateFunctions();
+    
 	Vector x(numRV);
 	Vector z(numRV);
 	Vector u(numRV);
@@ -119,6 +116,7 @@ ImportanceSamplingAnalysis::analyze(void)
 	bool failureHasOccured = false;
 
 	det_covariance = pow(samplingStdv, numRV);
+
 
 	// Pre-compute some factors to minimize computations inside simulation loop
 	static const double twopi = 2.0*acos(-1.0);
@@ -134,6 +132,7 @@ ImportanceSamplingAnalysis::analyze(void)
 	double CovIn;
 	char restartFileName[256];
 	sprintf(restartFileName,"%s_%s","restart",fileName);
+    
 
 	if (analysisTypeTag == 1) {
 		// Possible read data from file if this is a restart simulation
@@ -163,16 +162,34 @@ ImportanceSamplingAnalysis::analyze(void)
 		}
 	}
 
-
+    
+    // generate map from parameters to random variables 
+    // vector RVmap stores index of parameter that corresponds to each RV
+    // this method should be method into reliability domain or somewhere accessible to all analyses
+    Vector RVmap(numRV);
+    for (int j = 0; j < numParam; j++) {
+        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(j);
+        if ( strcmp( theParam->getType(), "RandomVariable" ) == 0 ) {
+            result = theParam->getPointerTag();
+            RVmap( theReliabilityDomain->getRandomVariableIndex(result) ) = j;
+        }
+    }
+    
+    
     // get starting x values from parameter directly
     for (int j = 0; j < numRV; j++) {
-        RandomVariable *theParam = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
-        double rvVal = theParam->getStartValue();
+        RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(RVmap(j));
+        
+        double rvVal = theRV->getStartValue();
+        if (analysisTypeTag == 2) {
+            rvVal = theRV->getMean();
+            opserr << "NOTE: The startPoint is set to the Mean due to the selected sampling analysis type." << endln;
+        }
         x(j) = rvVal;
         
-        // now we should update the parameter value 
-        // KRM should this be a parameter reference now?
-        theParam->setCurrentValue(rvVal);
+        // now we should update the parameter value
+        theParam->update(rvVal);
     }
     
 	// Transform start point into standard normal space
@@ -184,6 +201,7 @@ ImportanceSamplingAnalysis::analyze(void)
 	    return -1;
     }
 
+    
 	// Initial declarations
 	Vector cov_of_q_bar(numLsf);
 	Vector q_bar(numLsf);
@@ -234,33 +252,28 @@ ImportanceSamplingAnalysis::analyze(void)
 
 		// Compute the point in standard normal space
 		//u = startPointY + chol_covariance * randomArray;
-                u = startPointY;
+        u = startPointY;
 		u.addVector(1.0, randomArray, samplingStdv);
 
 		// Transform into original space
-		/*
-		result = theProbabilityTransformation->set_u(u);
-		if (result < 0) {
-			opserr << "ImportanceSamplingAnalysis::analyze() - could not set the u-vector for xu-transformation. " << endln;
-			return -1;
-		}
-
-		
-		result = theProbabilityTransformation->transform_u_to_x();
-		if (result < 0) {
-			opserr << "ImportanceSamplingAnalysis::analyze() - could not transform u to x. " << endln;
-			return -1;
-		}
-		x = theProbabilityTransformation->get_x();
-		*/
 		result = theProbabilityTransformation->transform_u_to_x(u, x);
 		if (result < 0) {
 		  opserr << "ImportanceSamplingAnalysis::analyze() - could not transform u to x. " << endln;
 		  return -1;
 		}
+        
+        // update domain with new x values
+        for (int j = 0; j < numRV; j++) {
+            RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+            Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(RVmap(j));
+            
+            // now we should update the parameter value
+            theParam->update( x(j) );
+        }
 		
+        
         // set values in the variable namespace
-        if (theGFunEvaluator->setVariables(x) < 0) {
+        if (theGFunEvaluator->setVariables() < 0) {
             opserr << "ImportanceSamplingAnalysis::analyze() - " << endln
                 << " could not set variables in namespace. " << endln;
             return -1;
@@ -268,9 +281,10 @@ ImportanceSamplingAnalysis::analyze(void)
         
 		// Evaluate limit-state function
 		FEconvergence = true;
-		if (theGFunEvaluator->runAnalysis(x) < 0) {
+		if (theGFunEvaluator -> runAnalysis() < 0) {
 			// In this case a failure happened during the analysis
 			// Hence, register this as failure
+            opserr << "ERROR ImportanceSamplingAnalysis -- error running analysis" << endln;
 			FEconvergence = false;
 		}
 
@@ -285,9 +299,6 @@ ImportanceSamplingAnalysis::analyze(void)
 
 			// Set tag of "active" limit-state function
 			theReliabilityDomain->setTagOfActiveLimitStateFunction(lsfTag);
-			
-			// set namespace variable for tcl procedures
-			Tcl_SetVar2Ex(interp,"RELIABILITY_lsf",NULL,Tcl_NewIntObj(lsfTag),TCL_NAMESPACE_ONLY);
 
             // set and evaluate LSF
             const char *lsfExpression = theLimitStateFunction->getExpression();

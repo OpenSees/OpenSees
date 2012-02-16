@@ -93,7 +93,7 @@ double GridPlane::getValueOnGrid(double p_x, double p_y)
 	theProbabilityTransformation->transform_u_to_x(u, x);		
  
 
-	int result = theGFunEvaluator->runAnalysis(x);
+	int result = theGFunEvaluator->runAnalysis();
 	if (result < 0) {
 		opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 			<< " could not run analysis to evaluate limit-state function. " << endln;
@@ -356,7 +356,7 @@ double GridPlane::getValueG2OnGrid(double p_x, double p_y, double valueOfG, doub
 		Vector x;
 		theProbabilityTransformation->transform_u_to_x(u, x);
 
-		int result = theGFunEvaluator->runAnalysis(x);
+		int result = theGFunEvaluator->runAnalysis();
 		if (result < 0) {
 			opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not run analysis to evaluate limit-state function. " << endln;

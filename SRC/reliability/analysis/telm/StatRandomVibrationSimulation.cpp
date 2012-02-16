@@ -359,7 +359,7 @@ void StatRandomVibrationSimulation::crudeFisrtpassageSimulation()
 		///// dynamic response analysis /////
 		bool FEconvergence = true;
 //		xRV=startPoint;
-		result = theGFunEvaluator->runAnalysis(*xRV);
+		result = theGFunEvaluator->runAnalysis();
 //		(*samplExc)=theRandomProcess->getExcitation(numSteps, delta);
 //		ofstream outputSample2;
 //		outputSample2.open("samplexc.txt", ios::out);

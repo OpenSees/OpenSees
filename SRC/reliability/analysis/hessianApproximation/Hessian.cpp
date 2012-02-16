@@ -221,12 +221,12 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 	//jacobian_u_x.addMatrix(0.0,theProbabilityTransformation->getJacobian_u_x(),1.0);
 	theProbabilityTransformation->getJacobian_u_to_x(x, jacobian_u_x);	
 
-	if (theGFunEvaluator->setVariables(x) < 0) {
+	if (theGFunEvaluator->setVariables() < 0) {
 	  opserr << "ERROR Hessian -- error setting variables in namespace" << endln;
 	  return -1;
 	}
 
-	result = theGFunEvaluator->runAnalysis(x);
+	result = theGFunEvaluator->runAnalysis();
 	if (result < 0) {
 		opserr << "Hessian - " << endln
 			<< " could not run analysis to evaluate limit-state function. " << endln;
@@ -334,12 +334,12 @@ int Hessian::formHessianByFDM(int numOfLimitStateFunction, Vector * theDesignPoi
 		  return -1;
 		}
 
-		if (theGFunEvaluator->setVariables(x) < 0) {
+		if (theGFunEvaluator->setVariables() < 0) {
 		  opserr << "ERROR Hessian -- error setting variables in namespace" << endln;
 		  return -1;
 		}
 
-		result = theGFunEvaluator->runAnalysis(x);
+		result = theGFunEvaluator->runAnalysis();
 				if (result < 0) {
 					opserr << "Hessian - " << endln
 						<< " could not run analysis to evaluate limit-state function. " << endln;
@@ -836,11 +836,11 @@ int Hessian::refineHessian(int time, int colOfHessian)
       return -1;
     }
 
-	if (theGFunEvaluator->setVariables(x) < 0) {
+	if (theGFunEvaluator->setVariables() < 0) {
 	  opserr << "ERROR Hessian -- error setting variables in namespace" << endln;
 	  return -1;
 	}
-		result = theGFunEvaluator->runAnalysis(x);
+		result = theGFunEvaluator->runAnalysis();
 				if (result < 0) {
 					opserr << "Hessian - " << endln
 						<< " could not run analysis to evaluate limit-state function. " << endln;
@@ -910,12 +910,12 @@ int Hessian::refineHessian(int time, int colOfHessian)
 		  return -1;
 		}
 
-	if (theGFunEvaluator->setVariables(x) < 0) {
+	if (theGFunEvaluator->setVariables() < 0) {
 	  opserr << "ERROR Hessian -- error setting variables in namespace" << endln;
 	  return -1;
 	}
 
-			result = theGFunEvaluator->runAnalysis(x);
+			result = theGFunEvaluator->runAnalysis();
 					if (result < 0) {
 						opserr << "Hessian - " << endln
 							<< " could not run analysis to evaluate limit-state function. " << endln;

@@ -16,7 +16,7 @@
 **   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
-** Reliability module developed by:        2                           **
+** Reliability module developed by:                                   **
 **   Terje Haukaas (haukaas@ce.berkeley.edu)                          **
 **   Armen Der Kiureghian (adk@ce.berkeley.edu)                       **
 **                                                                    **
@@ -653,7 +653,7 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 	
 	int param_indx = 0;
 	double param = 0;
-	static Vector parameters(4);
+	Vector param_temp(4);
 
 	// CHECK THAT AT LEAST ENOUGH ARGUMENTS ARE GIVEN
 	if (argc < 5) {
@@ -728,7 +728,7 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 				if (Tcl_GetDouble(interp, argv[argi], &param) != TCL_OK)
 					err_break = 1;
 				
-				parameters(param_indx) = param;
+				param_temp(param_indx) = param;
 				param_indx++;
 				argi++;
 			}
@@ -738,6 +738,15 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 		else
 			argi++;
     }
+    
+    // resize parameter vector based on actual inputs
+    Vector parameters;
+    if (param_indx > 0) {
+        parameters.resize(param_indx);
+        for (int kl = 0; kl < param_indx; kl++)
+            parameters(kl) = param_temp(kl);
+    }
+    
 
 	// GET INPUT PARAMETER (string) AND CREATE THE OBJECT
 	if (strcmp(argv[2],"normal") == 0) {
@@ -3474,7 +3483,6 @@ TclReliabilityModelBuilder_addFindDesignPointAlgorithm(ClientData clientData, Tc
 					theProbabilityTransformation,
 					theHessianApproximation,
 					theReliabilityConvergenceCheck,
-					startAtOrigin,
 					printFlag, fileNamePrint);
 		
 	}   //if StepSearch
@@ -3922,11 +3930,9 @@ TclReliabilityModelBuilder_runFOSMAnalysis(ClientData clientData, Tcl_Interp *in
 	}
 
 
-	theFOSMAnalysis = new FOSMAnalysis( theReliabilityDomain,
-											theFunctionEvaluator,
-											theGradientEvaluator,
-											interp,
-											argv[1]);
+	theFOSMAnalysis = new FOSMAnalysis( theReliabilityDomain, theStructuralDomain,
+											theFunctionEvaluator, theGradientEvaluator,
+											interp, argv[1]);
 
 	if (theFOSMAnalysis == 0) {
 		opserr << "ERROR: could not create theFOSMAnalysis \n";
@@ -4289,8 +4295,6 @@ TclReliabilityModelBuilder_runImportanceSamplingAnalysis(ClientData clientData, 
 //				}
 			}
 
-
-
 			else if ( (strcmp(argv[i+1],"responseStatistics") == 0) || (strcmp(argv[i+1],"saveGvalues") == 0) ) {
 
 				if (strcmp(argv[i+1],"responseStatistics") == 0) {
@@ -4304,16 +4308,7 @@ TclReliabilityModelBuilder_runImportanceSamplingAnalysis(ClientData clientData, 
 						<< " response statistics sampling." << endln;
 					return TCL_ERROR;
 				}
-				// Make sure that the mean point is the sampling center
-				int nrv = theReliabilityDomain->getNumberOfRandomVariables();
-				RandomVariable *aRandomVariable;
-				RandomVariableIter rvIter = theReliabilityDomain->getRandomVariables();
-				while ((aRandomVariable = rvIter()) != 0) {
-				  int tag = aRandomVariable->getTag();
-				  double mean = aRandomVariable->getMean();
-				  aRandomVariable->setStartValue(mean);
-				}
-				opserr << "NOTE: The startPoint is set to the Mean due to the selected sampling analysis type." << endln;
+				
 			}
 			else {
 				opserr << "ERROR: invalid input: type \n";
@@ -4369,15 +4364,12 @@ TclReliabilityModelBuilder_runImportanceSamplingAnalysis(ClientData clientData, 
 	
 	
 	theImportanceSamplingAnalysis 
-			= new ImportanceSamplingAnalysis(theReliabilityDomain, 
+			= new ImportanceSamplingAnalysis(theReliabilityDomain, theStructuralDomain, 
 							 theProbabilityTransformation, 
 							 theFunctionEvaluator, 
 							 theRandomNumberGenerator, 
-							 startAtOrigin,
-							 interp,
-							 numberOfSimulations, 
-							 targetCOV,
-							 samplingVariance,
+							 interp, 
+							 numberOfSimulations, targetCOV, samplingVariance,
 							 printFlag,
 							 argv[1],
 							 analysisTypeTag);

@@ -300,7 +300,7 @@ NewSearchWithStepSizeAndStepDirection::findDesignPoint()
 			if(!fdf) theGFunEvaluator->activateSensitivty();
 			else theGFunEvaluator->inactivateSensitivty();
 			/////// modifed by K Fujimura//////////////////
-			result = theGFunEvaluator->runAnalysis(*x);
+			result = theGFunEvaluator->runAnalysis();
 			if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
 			gFunctionValue_old = gFunctionValue;
             gFunctionValue = theGFunEvaluator->evaluateExpression();
@@ -1087,7 +1087,7 @@ NewSearchWithStepSizeAndStepDirection::lineSearch()
 		xTest = theProbabilityTransformation->get_x();
 		*/
 		theProbabilityTransformation->transform_u_to_x(uTest, xTest);
-		result = theGFunEvaluator->runAnalysis(xTest);
+		result = theGFunEvaluator->runAnalysis();
 		if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
 		gTest = theGFunEvaluator->evaluateExpression();
 		opserr << " ampTest "<<ampTest<<endln;
@@ -1140,7 +1140,7 @@ NewSearchWithStepSizeAndStepDirection::lineSearch()
 			//if (result < 0) { errorMessage_utox(); delxinit(); return -1; }
 			//xTest = theProbabilityTransformation->get_x();
 			result = theProbabilityTransformation->transform_u_to_x(uTest, xTest);
-			result = theGFunEvaluator->runAnalysis(xTest);
+			result = theGFunEvaluator->runAnalysis();
 			if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
 			gTest = theGFunEvaluator->evaluateExpression();
 			result = theReliabilityConvergenceCheck->checkG(gTest);
@@ -1181,7 +1181,7 @@ NewSearchWithStepSizeAndStepDirection::lineSearch()
 		result = theProbabilityTransformation->getJacobian_x_to_u(*jacobian_x_u);
 		if(!fdf) theGFunEvaluator->activateSensitivty();
 		else theGFunEvaluator->inactivateSensitivty();
-		result = theGFunEvaluator->runAnalysis(*x);
+		result = theGFunEvaluator->runAnalysis();
 		if (result < 0) { errorMessage_gfun(); delxinit(); return -1; }
 		gFunctionValue = theGFunEvaluator->evaluateExpression();
 		// Gradient in original space
