@@ -67,7 +67,6 @@ public:
 					ProbabilityTransformation *passedProbabilityTransformation,
 					HessianApproximation *theHessianApproximation,
 					ReliabilityConvergenceCheck *theReliabilityConvergenceCheck,
-					bool startAtOrigin,
 					int printFlag,
 					char *fileNamePrint);
 	~SearchWithStepSizeAndStepDirection();
@@ -123,12 +122,6 @@ private:
 	int steps;
 	double Gfirst;
 	double Glast;
-
-	// Data members set through the call when a job is to be done
-	//Vector *startPoint;
-	//Vector *designPoint_uStar;
-	bool startAtOrigin;
-
 	int printFlag;
 	char fileNamePrint[256];
 	int numberOfEvaluations;

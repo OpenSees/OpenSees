@@ -152,7 +152,7 @@ SecantRootFinding::findLimitStateSurface(int space, double g, Vector pDirection,
 
 
 			// Evaluate limit-state function
-			result = theGFunEvaluator->runAnalysis(theTempPoint);
+			result = theGFunEvaluator->runAnalysis();
 			if (result < 0) {
 				opserr << "GFunVisualizationAnalysis::analyze() - " << endln
 					<< " could not run analysis to evaluate limit-state function. " << endln;
