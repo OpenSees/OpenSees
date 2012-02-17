@@ -87,15 +87,13 @@ FiniteDifferenceGradient::computeGradient(double g)
 	// get parameters created in the domain
 	int nparam = theOpenSeesDomain->getNumParameters();
 
+    
 	// now loop through to create gradient vector
 	// note this is a for loop because there may be some conflict from a nested iterator already 
 	// called at a higher level.
 	for (int i = 0; i < nparam; i++) {
 		// get parameter tag
 		Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
-		//if (theParam->isImplicit())
-		//  continue;
-
 		int tag = theParam->getTag();
 		double result = 0;
 
@@ -120,7 +118,7 @@ FiniteDifferenceGradient::computeGradient(double g)
 			// use parameter defined perturbation
 			double h = theParam->getPerturbation();
             double original = theParam->getValue();
-            theParam->update(original + h);
+            theParam->update(original+h);
 
 			// set perturbed values in the variable namespace
 			if (theFunctionEvaluator->setVariables() < 0) {
@@ -145,12 +143,6 @@ FiniteDifferenceGradient::computeGradient(double g)
 			theParam->update(original);
 
 			//opserr << "g_pert " << g_perturbed << ", g0 = " << g << endln;
-
-			// reset original values in the variable namespace
-			if (theFunctionEvaluator->setVariables() < 0) {
-                opserr << "ERROR FiniteDifferenceGradient -- error setting variables in namespace" << endln;
-                return -1;
-			}
 		}
 		
 		(*grad_g)(i) = result;

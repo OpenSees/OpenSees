@@ -51,9 +51,13 @@ NodeResponseParameter::update(int newValue)
 int
 NodeResponseParameter::update(double newValue)
 {
-  currentValue = newValue;
+    // ignore passed value, get straight from node
+    // use setValue to assign a value to parameter directly
+    const Vector *u = myNode->getResponse(myType);
+    
+    currentValue = (*u)(myDOF-1);
 
-  return 0;
+    return 0;
 }
 
 /*
@@ -67,10 +71,6 @@ NodeResponseParameter::activate(bool active)
 double
 NodeResponseParameter::getValue(void)
 {
-  const Vector *u = myNode->getResponse(myType);
-
-  currentValue = (*u)(myDOF-1);
-
   return currentValue;
 }
 
@@ -97,7 +97,7 @@ NodeResponseParameter::getSensitivity(int index)
 double
 NodeResponseParameter::getPerturbation(void)
 {
-  return 0.001*this->getValue();
+    return 0.005;
 }
 
 int 

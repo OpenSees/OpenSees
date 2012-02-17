@@ -49,7 +49,7 @@ ShiftedExponentialRV::ShiftedExponentialRV(int passedTag,
 					   const Vector &passedParameters)
 :RandomVariable(passedTag, RANDOM_VARIABLE_shiftedexponential)
 {
-	
+    
 	if (passedParameters.Size() != 2) {
 		opserr << "ShiftedExponential RV requires 2 parameters, lambda and x0, for RV with tag " <<
 		this->getTag() << endln;

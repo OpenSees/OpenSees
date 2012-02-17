@@ -171,7 +171,23 @@ TclEvaluator::runAnalysis()
             opserr << "ERROR TclEvaluator -- error in Tcl_Eval: " << theTclInterp->result << endln;
             return -1;
         }
+        
+        // make sure the parameter variables in the namespace update to reflect the results
+        // of above analysis
+        Parameter *theParam;
+        
+        // Set values of parameters in the Tcl intepreter
+        int nparam = theOpenSeesDomain->getNumParameters();
+        
+        for (int i = 0; i < nparam; i++) {
+            theParam = theOpenSeesDomain->getParameterFromIndex(i);
+            if (theParam->isImplicit())
+                theParam->update(0.0);
+            
+        }
+        this->setVariables();
+        
     }
-
+    
     return 0;
 }

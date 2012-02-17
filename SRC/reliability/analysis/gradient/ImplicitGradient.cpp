@@ -119,13 +119,12 @@ ImplicitGradient::computeGradient(double g)
             }
 
             // if no analytic gradient automatically do finite differences to get dg/dimplicit
-            // Mackie 7/31/2011: note this is unfortuante code duplication with FDG, although they are 
-            // doing slightly different things.
             else {
-                // use parameter defined perturbation
+                // use parameter defined perturbation after updating implicit parameter
+                theParam->update(0.0);
                 double h = theParam->getPerturbation();
                 double original = theParam->getValue();
-                theParam->update(original+h);
+                theParam->setValue(original+h);
                 
                 // set perturbed values in the variable namespace
                 if (theFunctionEvaluator->setVariables() < 0) {
@@ -134,10 +133,10 @@ ImplicitGradient::computeGradient(double g)
                 }
 
                 // run analysis
-                if (theFunctionEvaluator->runAnalysis() < 0) {
-                    opserr << "ERROR ImplicitGradient -- error running analysis" << endln;
-                    return -1;
-                }
+                //if (theFunctionEvaluator->runAnalysis() < 0) {
+                //    opserr << "ERROR ImplicitGradient -- error running analysis" << endln;
+                //    return -1;
+                //}
 
                 // evaluate LSF and obtain result
                 theFunctionEvaluator->setExpression(lsfExpression);
@@ -147,19 +146,14 @@ ImplicitGradient::computeGradient(double g)
                 partials(i) = (g_perturbed-g)/h;
                 
                 // return values to previous state
-                theParam->update(original);
-
-                // reset original values in the variable namespace
-                if (theFunctionEvaluator->setVariables() < 0) {
-                    opserr << "ERROR ImplicitGradient -- error setting variables in namespace" << endln;
-                    return -1;
-                }
+                theParam->update(0.0);
+                
+                //opserr << "g_pert " << g_perturbed << ", g0 = " << g << endln;
             }
         }
     }	
     
-    opserr << partials;
-    
+    //opserr << partials;
 
     // now loop through to create gradient vector
     // Mackie 7/31/2011: big consideration here is that you CANNOT have an explicit parameter appear in the 
@@ -183,7 +177,6 @@ ImplicitGradient::computeGradient(double g)
         }
 
     }
-    opserr << *grad_g << endln;
     
     return 0;
     

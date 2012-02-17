@@ -47,7 +47,7 @@ UniformRV::UniformRV(int passedTag, double passedMean, double passedStdv)
 UniformRV::UniformRV(int passedTag, const Vector &passedParameters)
 :RandomVariable(passedTag, RANDOM_VARIABLE_uniform)
 {
-	
+    
 	if (passedParameters.Size() != 2) {
 		opserr << "Uniform RV requires 2 parameters, a and b, for RV with tag " <<
 		this->getTag() << endln;
