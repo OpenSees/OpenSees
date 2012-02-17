@@ -161,7 +161,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
             RVmap( theReliabilityDomain->getRandomVariableIndex(result) ) = j;
         }
     }
-    opserr << "RVmap: " << RVmap << endln;
+    //opserr << "RVmap: " << RVmap << endln;
   
     
     // get starting x values from parameter directly
@@ -239,8 +239,8 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
         for (int j = 0; j < numberOfRandomVariables; j++) 
             gradientOfgFunction(j) = temp_grad(RVmap(j));
         
-        opserr << "x = " << *x << "g = " << gFunctionValue << endln;
-        opserr << "dg/dx = " << gradientOfgFunction << endln;
+        //opserr << "x = " << *x << "g = " << gFunctionValue << endln;
+        //opserr << "dg/dx = " << gradientOfgFunction << endln;
         
         // Get Jacobian x-space to u-space
         result = theProbabilityTransformation->getJacobian_x_to_u(Jxu);
