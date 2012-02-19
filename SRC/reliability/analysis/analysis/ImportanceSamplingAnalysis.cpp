@@ -163,23 +163,11 @@ ImportanceSamplingAnalysis::analyze(void)
 	}
 
     
-    // generate map from parameters to random variables 
-    // vector RVmap stores index of parameter that corresponds to each RV
-    // this method should be method into reliability domain or somewhere accessible to all analyses
-    Vector RVmap(numRV);
-    for (int j = 0; j < numParam; j++) {
-        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(j);
-        if ( strcmp( theParam->getType(), "RandomVariable" ) == 0 ) {
-            result = theParam->getPointerTag();
-            RVmap( theReliabilityDomain->getRandomVariableIndex(result) ) = j;
-        }
-    }
-    
-    
     // get starting x values from parameter directly
     for (int j = 0; j < numRV; j++) {
         RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
-        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(RVmap(j));
+        int param_indx = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
+        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(param_indx);
         
         double rvVal = theRV->getStartValue();
         if (analysisTypeTag == 2) {
@@ -265,7 +253,8 @@ ImportanceSamplingAnalysis::analyze(void)
         // update domain with new x values
         for (int j = 0; j < numRV; j++) {
             RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
-            Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(RVmap(j));
+            int param_indx = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
+            Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(param_indx);
             
             // now we should update the parameter value
             theParam->update( x(j) );

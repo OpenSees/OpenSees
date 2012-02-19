@@ -57,8 +57,7 @@ FixedStepSizeRule::computeStepSize(const Vector &u,
 				   const Vector &grad_G, 
 				   double G, 
 				   const Vector &d,
-				   int stepNumber,
-									int reschk)
+				   int stepNumber, int reschk)
 /*FixedStepSizeRule::computeStepSize(const Vector &u, 
 				   const Vector &grad_G, 
 				   double G, 
@@ -67,10 +66,29 @@ FixedStepSizeRule::computeStepSize(const Vector &u,
 /////E added by K Fujimura /////
 
 {
-	// This method is in fact not neccesary 
-	// for the fixed step size rule. The 
-	// user has already given the step size. 
+	// This method is in fact not neccesary for the fixed step size rule. The 
+	// user has already given the step size. BUT limit the maximum jump that can occur 
 
+    Vector u_temp(u);
+    double udiff = 20.0;
+    double stepSizeMod = 4./3.;
+    
+    // Determine new iteration point (take the step), BUT limit the maximum jump that can occur
+    while ( fabs(udiff) > 15 ) {
+        u_temp = u;
+        stepSizeMod *= 3./4.;
+        
+        if (stepSizeMod < 1)
+            opserr << "FixedStepSizeRule:: reducing stepSize using modification factor of " << stepSizeMod << endln;
+        
+        //u = u_old + (searchDirection * stepSize);
+        u_temp.addVector(1.0, d, stepSize*stepSizeMod);
+        
+        udiff = u.Norm() - u_temp.Norm();
+    }
+    
+    stepSize = stepSize*stepSizeMod;
+    
 	return 0;  
 
 }

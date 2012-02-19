@@ -148,26 +148,13 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
     Matrix Jux(numberOfRandomVariables, numberOfRandomVariables);
 
     theFunctionEvaluator->initializeNumberOfEvaluations();
-    
-    
-    // generate map from parameters to random variables 
-    // vector RVmap stores index of parameter that corresponds to each RV
-    // this method should be method into reliability domain or somewhere accessible to all analyses
-    Vector RVmap(numberOfRandomVariables);
-    for (int j = 0; j < numberOfParameters; j++) {
-        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(j);
-        if ( strcmp( theParam->getType(), "RandomVariable" ) == 0 ) {
-            result = theParam->getPointerTag();
-            RVmap( theReliabilityDomain->getRandomVariableIndex(result) ) = j;
-        }
-    }
-    //opserr << "RVmap: " << RVmap << endln;
-  
+    theStepSizeRule->initialize();
     
     // get starting x values from parameter directly
     for (int j = 0; j < numberOfRandomVariables; j++) {
         RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
-        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(RVmap(j));
+        int param_indx = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
+        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(param_indx);
         
         double rvVal = theRV->getStartValue();
         (*x)(j) = rvVal;
@@ -236,8 +223,10 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
         
 
         // map gradient from all parameters to just RVs
-        for (int j = 0; j < numberOfRandomVariables; j++) 
-            gradientOfgFunction(j) = temp_grad(RVmap(j));
+        for (int j = 0; j < numberOfRandomVariables; j++) {
+            int param_indx = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
+            gradientOfgFunction(j) = temp_grad(param_indx);
+        }
         
         //opserr << "x = " << *x << "g = " << gFunctionValue << endln;
         //opserr << "dg/dx = " << gradientOfgFunction << endln;
@@ -364,62 +353,51 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 
 
         // Determine step size
-        result = theStepSizeRule->computeStepSize(*u, *gradientInStandardNormalSpace, 
-                                                  gFunctionValue, *searchDirection, steps);
-        if (result < 0) {  
-            // something went wrong
-            opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-                << " could not compute step size. " << endln;
-            return -1;
-        }
-        else if (result == 0) {  
-            // nothing was evaluated in step size
-            evaluationInStepSize = 0;
-        }
-        else if (result == 1) {  
-            // the gfun was evaluated
-            evaluationInStepSize = 1;
-            gFunctionValue_old = gFunctionValue;
-            gFunctionValue = theStepSizeRule->getGFunValue();
-        }
-        stepSize = theStepSizeRule->getStepSize();
-
-    
-        // save the previous displacement before modifying
-        u_old = *u;
-        double udiff = 20.0;
-        double stepSizeMod = 1.0;
-
-        // Determine new iteration point (take the step), BUT limit the maximum jump that can occur
-        while ( fabs(udiff) > 15 ) {
-        *u = u_old;
-
-        if (stepSizeMod < 1 && printFlag != 0)
-            opserr << "SearchWithStepSizeAndStepDirection:: reducing stepSize using modification factor of " << stepSizeMod << endln;
-
-            //u = u_old + (searchDirection * stepSize);
-            u->addVector(1.0, *searchDirection, stepSize*stepSizeMod);
-
-            udiff = u->Norm() - u_old.Norm();
-            stepSizeMod *= 0.75;
-        }
-    
+        bool continueStepSize = true;
+        while (continueStepSize) {
+            result = theStepSizeRule->computeStepSize(*u, *gradientInStandardNormalSpace, 
+                                                      gFunctionValue, *searchDirection, steps);
+            if (result < 0) {  
+                // something went wrong
+                opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+                    << " could not compute step size. " << endln;
+                return -1;
+            }
+            else if (result == 0) {  
+                // nothing was evaluated in step size (FixedStepSize)
+                evaluationInStepSize = 0;
+                continueStepSize = false;
+            }
+            else if (result == 1) {  
+                // the gfun was evaluated (Armijo)
+                evaluationInStepSize = 1;
+                gFunctionValue_old = gFunctionValue;
+                gFunctionValue = theStepSizeRule->getGFunValue();
+            }
+            stepSize = theStepSizeRule->getStepSize();
         
-        // Transform to x-space
-        result = theProbabilityTransformation->transform_u_to_x(*u, *x);
-        if (result < 0) {
-            opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-                << " could not transform from u to x." << endln;
-            return -1;
-        }
-        
-        // update domain with new x values
-        for (int j = 0; j < numberOfRandomVariables; j++) {
-            RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
-            Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(RVmap(j));
+            // save the previous displacement before modifying
+            u_old = *u;
+            u->addVector(1.0, *searchDirection, stepSize);
+
             
-            // now we should update the parameter value
-            theParam->update( (*x)(j) );
+            // Transform to x-space
+            result = theProbabilityTransformation->transform_u_to_x(*u, *x);
+            if (result < 0) {
+                opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+                    << " could not transform from u to x." << endln;
+                return -1;
+            }
+            
+            // update domain with new x values
+            for (int j = 0; j < numberOfRandomVariables; j++) {
+                RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+                int param_indx = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
+                Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(param_indx);
+                
+                // now we should update the parameter value
+                theParam->update( (*x)(j) );
+            }
         }
 
         

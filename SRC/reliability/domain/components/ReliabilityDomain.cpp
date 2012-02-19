@@ -32,6 +32,7 @@
 //
 
 #include <ReliabilityDomain.h>
+#include <Domain.h>
 #include <Vector.h>
 
 #include <CorrelationCoefficient.h>
@@ -39,6 +40,7 @@
 #include <RandomVariable.h>
 #include <LimitStateFunction.h>
 #include <RandomVariablePositioner.h>
+#include <Parameter.h>
 #include <ParameterPositioner.h>
 #include <ArrayOfTaggedObjects.h>
 #include <MapOfTaggedObjects.h>
@@ -56,8 +58,9 @@
 #include <FilterIter.h>
 #include <SpectrumIter.h>
 
-ReliabilityDomain::ReliabilityDomain():
-  numRandomVariables(0), numLimitStateFunctions(0), numCutsets(0)
+ReliabilityDomain::ReliabilityDomain(Domain *passedDomain):
+    theOpenSeesDomain(passedDomain),
+    numRandomVariables(0), numLimitStateFunctions(0), numCutsets(0)
 {
 
 	theRandomVariablesPtr = new ArrayOfTaggedObjects (256);
@@ -420,6 +423,56 @@ ReliabilityDomain::getSpectra(void)
   return *theSpectrumIter;
 }
 
+int 
+ReliabilityDomain::getRandomVariableIndexFromParameterIndex(int param_index)
+{
+    // note this map is not guaranteed (there are parameters that are not RVs)
+    int numberOfParameters = theOpenSeesDomain->getNumParameters();
+    int result = -1;
+    
+    if (param_index >= 0 && param_index < numberOfParameters) {
+        // map from parameters to random variables 
+        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(param_index);
+        if ( strcmp( theParam->getType(), "RandomVariable" ) == 0 )
+            result = getRandomVariableIndex( theParam->getPointerTag() );
+    }
+    else {
+        opserr << "ReliabilityDomain::getRandomVariableIndexFromParameterIndex -- index " << param_index 
+            << " out of bounds 0 ... " << numberOfParameters-1 << endln;
+        return -1;
+    }
+    
+    return result;
+}
+
+int 
+ReliabilityDomain::getParameterIndexFromRandomVariableIndex(int rv_index)
+{
+    // note this map IS guaranteed because there is a parameter for every RV
+    int numberOfParameters = theOpenSeesDomain->getNumParameters();
+    int result;
+    double RVmap[numRandomVariables];
+    
+    for (int j = 0; j < numberOfParameters; j++) {
+        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(j);
+        if ( strcmp( theParam->getType(), "RandomVariable" ) == 0 ) {
+            result = theParam->getPointerTag();
+            RVmap[ getRandomVariableIndex(result) ] = j;
+        }
+    }
+    
+    if (rv_index >= 0 && rv_index < numRandomVariables) {
+        // map from random variables to parameters
+        result = RVmap[rv_index];
+    }
+    else {
+        opserr << "ReliabilityDomain::getParameterIndexFromRandomVariableIndex -- index " << rv_index 
+            << " out of bounds 0 ... " << numRandomVariables-1 << endln;
+        return -1;
+    }
+    
+    return result;
+}
 
 RandomVariable *
 ReliabilityDomain::getRandomVariablePtr(int tag)

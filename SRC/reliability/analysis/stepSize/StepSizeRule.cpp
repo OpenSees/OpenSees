@@ -41,3 +41,7 @@ StepSizeRule::~StepSizeRule()
 {
 }
 
+int 
+StepSizeRule::initialize() {
+    return 0;
+}

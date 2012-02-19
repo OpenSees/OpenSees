@@ -426,7 +426,7 @@ TclReliabilityBuilder::TclReliabilityBuilder(Domain &passedDomain, Tcl_Interp *i
 	
 	// set the static pointers in this file
   theStructuralDomain	= &passedDomain;
-  theReliabilityDomain	= new ReliabilityDomain();
+  theReliabilityDomain	= new ReliabilityDomain(theStructuralDomain);
 
 
 }
@@ -3019,18 +3019,12 @@ TclReliabilityModelBuilder_addStepSizeRule(ClientData clientData, Tcl_Interp *in
 			}
 		}
 
-		theStepSizeRule = new ArmijoStepSizeRule(theFunctionEvaluator,
-							 theProbabilityTransformation,
-							 theMeritFunctionCheck,
+		theStepSizeRule = new ArmijoStepSizeRule(theReliabilityDomain, theFunctionEvaluator,
+							 theProbabilityTransformation, theMeritFunctionCheck,
 							 theRootFindingAlgorithm, 
-							 base,
-							 maxNumReductions,
-							 b0,
-							 numberOfShortSteps,
-							 radius,
-							 surfaceDistance,
-							 evolution,
-							 printFlag);
+							 base, maxNumReductions, b0,
+							 numberOfShortSteps, radius, surfaceDistance,
+							 evolution, printFlag);
 		
 
 	}

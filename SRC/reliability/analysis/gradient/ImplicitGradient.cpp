@@ -74,7 +74,6 @@ ImplicitGradient::getGradient()
 int
 ImplicitGradient::computeGradient(double g)
 {
-    opserr << "ImplicitGradient::compute" << endln;
     // Compute gradients if this is a path-INdependent analysis
     // (This command only has effect if it IS path-independent.)
     //if (theSensAlgo != 0 && !(theSensAlgo->shouldComputeAtEachStep()) ) {

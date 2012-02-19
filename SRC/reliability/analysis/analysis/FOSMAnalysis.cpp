@@ -101,24 +101,12 @@ FOSMAnalysis::analyze(void)
 	// Establish vector of standard deviations
 	Vector stdvVector(nrv);
     
-    
-    // generate map from parameters to random variables 
-    // vector RVmap stores index of parameter that corresponds to each RV
-    // this method should be method into reliability domain or somewhere accessible to all analyses
-    Vector RVmap(nrv);
-    for (int j = 0; j < numberOfParameters; j++) {
-        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(j);
-        if ( strcmp( theParam->getType(), "RandomVariable" ) == 0 ) {
-            result = theParam->getPointerTag();
-            RVmap( theReliabilityDomain->getRandomVariableIndex(result) ) = j;
-        }
-    }
-    
 
     // set start point to be the mean for FOSM
     for (int j = 0; j < nrv; j++) {
         RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
-        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(RVmap(j));
+        int param_indx = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
+        Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(param_indx);
         
         meanVector(j) = theRV->getMean();
         stdvVector(j) = theRV->getStdv();
@@ -231,8 +219,10 @@ FOSMAnalysis::analyze(void)
 		all_grad = theGradGEvaluator->getGradient();
         
         // gradient comes back with all parameters, isolate just the RV gradients
-        for (int j = 0; j < nrv; j++)
-            gradient(j) = all_grad(RVmap(j));
+        for (int j = 0; j < nrv; j++) {
+            int param_indx = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
+            gradient(j) = all_grad(param_indx);
+        }
 
 		// Estimate of standard deviation of response
 		responseVariance = (covMatrix^gradient)^gradient;

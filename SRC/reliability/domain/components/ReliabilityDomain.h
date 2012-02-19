@@ -72,7 +72,7 @@ class ReliabilityDomain
 {
 
 public:
-	ReliabilityDomain();
+	ReliabilityDomain(Domain *theOpenSeesDomain);
 	virtual ~ReliabilityDomain();
 
 	// Member functions to add components to the domain
@@ -96,6 +96,10 @@ public:
 	// Following two methods to map index to tag and vice versa
 	RandomVariable *getRandomVariablePtrFromIndex(int index);
 	int getRandomVariableIndex(int tag);
+    
+    // for parameter to RV map
+    int getRandomVariableIndexFromParameterIndex(int param_index);
+    int getParameterIndexFromRandomVariableIndex(int rv_index);
 
 	LimitStateFunction *getLimitStateFunctionPtr(int tag);
 	// Following two methods to map index to tag and vice versa
@@ -198,6 +202,9 @@ private:
 	ModulatingFunctionIter *theMFIter;
 	FilterIter *theFilterIter;
 	SpectrumIter *theSpectrumIter;
+    
+    // store RV to parameter map in the reliability domain
+    Domain *theOpenSeesDomain;
 
 	// Integer array: index[i] = tag of component i
 	// Should put these in another class eventually because

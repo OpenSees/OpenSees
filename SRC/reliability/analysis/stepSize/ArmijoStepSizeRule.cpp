@@ -49,7 +49,8 @@ using std::setw;
 using std::setprecision;
 using std::setiosflags;
 
-ArmijoStepSizeRule::ArmijoStepSizeRule(FunctionEvaluator *passedGFunEvaluator,
+ArmijoStepSizeRule::ArmijoStepSizeRule(ReliabilityDomain *passedRelDomain, 
+                                       FunctionEvaluator *passedGFunEvaluator,
 				       ProbabilityTransformation *passedProbabilityTransformation,
 				       MeritFunctionCheck *passedMeritFunctionCheck,
 				       RootFinding *passedRootFindingAlgorithm, 
@@ -63,7 +64,8 @@ ArmijoStepSizeRule::ArmijoStepSizeRule(FunctionEvaluator *passedGFunEvaluator,
 				       int pprintFlag)
 :StepSizeRule()
 {
-	theGFunEvaluator = passedGFunEvaluator;
+	theReliabilityDomain = passedRelDomain;
+    theGFunEvaluator = passedGFunEvaluator;
 	theProbabilityTransformation = passedProbabilityTransformation;
 	theMeritFunctionCheck = passedMeritFunctionCheck;
 	theRootFindingAlgorithm = passedRootFindingAlgorithm;
@@ -84,6 +86,13 @@ ArmijoStepSizeRule::~ArmijoStepSizeRule()
 }
 
 
+int
+ArmijoStepSizeRule::initialize()
+{
+    isCloseToSphere = false;
+
+    return 0;
+}
 
 double 
 ArmijoStepSizeRule::getStepSize()
@@ -215,24 +224,6 @@ ArmijoStepSizeRule::computeStepSize(const Vector &u_old,
 			isCloseToSphere = false;
 		}
 
-		/*
-		// Transform the trial point into original space
-		result = theProbabilityTransformation->set_u(u_new);
-		if (result < 0) {
-			opserr << "ArmijoStepSizeRule::computeStepSize() - could not set " << endln
-				<< " vector u in the xu-transformation. " << endln;
-			return -1;
-		}
-		//result = theProbabilityTransformation->transform_u_to_x_andComputeJacobian();
-		result = theProbabilityTransformation->transform_u_to_x();
-		if (result < 0) {
-			opserr << "ArmijoStepSizeRule::computeStepSize() - could not  " << endln
-				<< " transform u to x. " << endln;
-			return -1;
-		}
-		const Vector &x_new = theProbabilityTransformation->get_x();
-		//Matrix jacobian_x_u(theProbabilityTransformation->getJacobian_x_u());
-		*/
 
 		// Transform the trial point into original space
 		result = theProbabilityTransformation->transform_u_to_x(u_new, x_new);
@@ -394,7 +385,7 @@ ArmijoStepSizeRule::computeStepSize(const Vector &u_old,
 			// is being used...
 			// Q: Is the u_new point also being kept in the orchestrating algorithm?
 			if (theRootFindingAlgorithm != 0) {
-				theRootFindingAlgorithm->findLimitStateSurface(2,g_new, grad_G_old, u_new);
+				//theRootFindingAlgorithm->findLimitStateSurface(2,g_new, grad_G_old, u_new);
 			}
 		}
 

@@ -42,6 +42,7 @@ class StepSizeRule
 public:
 	StepSizeRule();
 	virtual ~StepSizeRule();
+    virtual int initialize(void);
         /////S added by K Fujimura /////
 	/*virtual int		computeStepSize(Vector u, Vector grad_G, double G, Vector d, int stepNumber,
 		int reschk=0) =0; */
