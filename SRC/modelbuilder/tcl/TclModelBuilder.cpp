@@ -1103,12 +1103,12 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
   int currentArg = 2+ndm;  
   while (currentArg < argc) {
     if (strcmp(argv[currentArg],"-mass") == 0) {
+      currentArg++;
       if (argc < currentArg+ndf) {
 	opserr << "WARNING incorrect number of nodal mass terms\n";
 	opserr << "node: " << nodeId << endln;
 	return TCL_ERROR;      
       }	
-      currentArg++;
       Matrix mass(ndf,ndf);
       double theMass;
       for (int i=0; i<ndf; i++) {
