@@ -53,10 +53,10 @@ AcceleratedNewton::AcceleratedNewton(int theTangentToUse)
   :EquiSolnAlgo(EquiALGORITHM_TAGS_AcceleratedNewton),
    theTest(0), tangent(theTangentToUse),
    theAccelerator(0), vAccel(0), 
-   numFactorizations(0), numIterations(0),
-   totalTimer(), totalTimeReal(0.0), totalTimeCPU(0.0),
-   solveTimer(), solveTimeReal(0.0), solveTimeCPU(0.0),
-   accelTimer(), accelTimeReal(0.0), accelTimeCPU(0.0)
+   numFactorizations(0), numIterations(0)
+//   totalTimer(), totalTimeReal(0.0), totalTimeCPU(0.0),
+//   solveTimer(), solveTimeReal(0.0), solveTimeCPU(0.0),
+//   accelTimer(), accelTimeReal(0.0), accelTimeCPU(0.0)
 {
 
 }
@@ -67,12 +67,12 @@ AcceleratedNewton::AcceleratedNewton(ConvergenceTest &theT,
   :EquiSolnAlgo(EquiALGORITHM_TAGS_AcceleratedNewton),
    theTest(&theT), tangent(theTangentToUse),
    theAccelerator(theAccel), vAccel(0), 
-   numFactorizations(0), numIterations(0),
-   totalTimer(), totalTimeReal(0.0), totalTimeCPU(0.0),
-   solveTimer(), solveTimeReal(0.0), solveTimeCPU(0.0),
-   accelTimer(), accelTimeReal(0.0), accelTimeCPU(0.0)
+   numFactorizations(0), numIterations(0)
+//   totalTimer(), totalTimeReal(0.0), totalTimeCPU(0.0),
+//   solveTimer(), solveTimeReal(0.0), solveTimeCPU(0.0),
+//   accelTimer(), accelTimeReal(0.0), accelTimeCPU(0.0)
 {
-
+ 
 }
 
 // Destructor
@@ -129,7 +129,7 @@ AcceleratedNewton::solveCurrentStep(void)
     return -6;
   }
 
-  totalTimer.start();
+  //totalTimer.start();
 
   // Evaluate system residual R(y_0)
   if (theIntegrator->formUnbalance() < 0) {
@@ -163,16 +163,16 @@ AcceleratedNewton::solveCurrentStep(void)
 
   do {
 
-    solveTimer.start();
+    //solveTimer.start();
     // Solve for displacement increment
     if (theSOE->solve() < 0) {
       opserr << "WARNING AcceleratedNewton::solveCurrentStep() -";
       opserr << "the LinearSysOfEqn failed in solve()\n";	
       return -3;
     }
-    solveTimer.pause();
-    solveTimeReal += solveTimer.getReal();
-    solveTimeCPU  += solveTimer.getCPU();
+//    solveTimer.pause();
+//    solveTimeReal += solveTimer.getReal();
+//    solveTimeCPU  += solveTimer.getCPU();
 
     // Get the modified Newton increment
     *vAccel = theSOE->getX();
@@ -180,15 +180,15 @@ AcceleratedNewton::solveCurrentStep(void)
     // Accelerate the displacement increment
     if (theAccelerator != 0) {
 
-      accelTimer.start();
+//      accelTimer.start();
       if (theAccelerator->accelerate(*vAccel, *theSOE, *theIntegrator) < 0) {
 	opserr << "WARNING AcceleratedNewton::solveCurrentStep() -";
 	opserr << "the Accelerator failed in accelerate()\n";
 	return -1;
       }
-      accelTimer.pause();
-      accelTimeReal += accelTimer.getReal();
-      accelTimeCPU  += accelTimer.getCPU();
+//      accelTimer.pause();
+//      accelTimeReal += accelTimer.getReal();
+//      accelTimeCPU  += accelTimer.getCPU();
     }
 
     // Update system with accelerated displacement increment v_{k+1}
@@ -228,9 +228,9 @@ AcceleratedNewton::solveCurrentStep(void)
 
   } while (result == -1);
 
-  totalTimer.pause();
-  totalTimeReal += totalTimer.getReal();
-  totalTimeCPU  += totalTimer.getCPU();
+//  totalTimer.pause();
+//  totalTimeReal += totalTimer.getReal();
+//  totalTimeCPU  += totalTimer.getCPU();
   
   if (result == -2) {
     opserr << "AcceleratedNewton::solveCurrentStep() -";

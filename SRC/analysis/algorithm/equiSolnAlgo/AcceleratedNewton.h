@@ -38,7 +38,7 @@
 
 #include <EquiSolnAlgo.h>
 #include <Vector.h>
-#include <Timer.h>
+//#include <Timer.h>
 
 class Accelerator;
 
@@ -56,12 +56,12 @@ class AcceleratedNewton: public EquiSolnAlgo
   
   int getNumFactorizations(void) {return numFactorizations;}
   int getNumIterations(void) {return numIterations;}
-  double getTotalTimeCPU(void)   {return totalTimeCPU;}
-  double getTotalTimeReal(void)  {return totalTimeReal;}
-  double getSolveTimeCPU(void)   {return solveTimeCPU;}
-  double getSolveTimeReal(void)  {return solveTimeReal;}
-  double getAccelTimeCPU(void)   {return accelTimeCPU;}
-  double getAccelTimeReal(void)  {return accelTimeReal;}
+  //double getTotalTimeCPU(void)   {return totalTimeCPU;}
+  //double getTotalTimeReal(void)  {return totalTimeReal;}
+  //double getSolveTimeCPU(void)   {return solveTimeCPU;}
+  //double getSolveTimeReal(void)  {return solveTimeReal;}
+  //double getAccelTimeCPU(void)   {return accelTimeCPU;}
+  //double getAccelTimeReal(void)  {return accelTimeReal;}
   
   virtual int sendSelf(int commitTag, Channel &theChannel);
   virtual int recvSelf(int commitTag, Channel &theChannel, 
@@ -82,17 +82,17 @@ class AcceleratedNewton: public EquiSolnAlgo
   int numFactorizations;
   int numIterations;
 
-  Timer totalTimer;
-  double totalTimeReal;
-  double totalTimeCPU;
+  //Timer totalTimer;
+  //double totalTimeReal;
+  //double totalTimeCPU;
 
-  Timer solveTimer;
-  double solveTimeReal;
-  double solveTimeCPU;
+  //Timer solveTimer;
+  //double solveTimeReal;
+  //double solveTimeCPU;
 
-  Timer accelTimer;
-  double accelTimeReal;
-  double accelTimeCPU;
+  //Timer accelTimer;
+  //double accelTimeReal;
+  //double accelTimeCPU;
 
   bool firstTangent;
 };
