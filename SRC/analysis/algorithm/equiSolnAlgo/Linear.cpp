@@ -49,8 +49,8 @@
 
 #include <Timer.h>
 // Constructor
-Linear::Linear(int theTangent)
-  :EquiSolnAlgo(EquiALGORITHM_TAGS_Linear), incrTangent(theTangent)
+Linear::Linear(int theTangent, int Fact)
+  :EquiSolnAlgo(EquiALGORITHM_TAGS_Linear), incrTangent(theTangent), factorOnce(Fact)
 {
 
 }
@@ -81,11 +81,15 @@ Linear::solveCurrentStep(void)
 	return -5;
     }
 
-    if (theIncIntegrator->formTangent(incrTangent) < 0) {
-	opserr << "WARNING Linear::solveCurrentStep() -";
-	opserr << "the Integrator failed in formTangent()\n";
-	return -1;
-    }	
+	if (factorOnce != 2) {
+		if (theIncIntegrator->formTangent(incrTangent) < 0) {
+		  opserr << "WARNING Linear::solveCurrentStep() -";
+		  opserr << "the Integrator failed in formTangent()\n";
+		  return -1;
+		}
+		if (factorOnce == 1)
+			factorOnce = 2;
+    }
 
     
     if (theIncIntegrator->formUnbalance() < 0) {

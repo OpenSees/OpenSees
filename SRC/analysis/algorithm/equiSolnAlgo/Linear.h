@@ -45,7 +45,7 @@
 class Linear: public EquiSolnAlgo
 {
   public:
-    Linear(int theTangent = CURRENT_TANGENT);
+    Linear(int theTangent = CURRENT_TANGENT, int factorOnce = 0);
     ~Linear();
 
     int solveCurrentStep(void);
@@ -61,6 +61,7 @@ class Linear: public EquiSolnAlgo
     
   private:
     int incrTangent;
+	int factorOnce;
 };
 
 #endif
