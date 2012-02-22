@@ -40,7 +40,7 @@
  //command: MultiDimVisualPrinPlane -funSurf surface -designPt dp.out  -output vis.out -ndir $n <gridInfo {} -timevariant -littleDt dt> //not yet implemented
 #include <PrincipalPlane.h>
 #include <Hessian.h>
-#include <GradGEvaluator.h>
+//#include <GradGEvaluator.h>
 
 
 class MultiDimVisPrincPlane : public ReliabilityAnalysis  
@@ -48,7 +48,7 @@ class MultiDimVisPrincPlane : public ReliabilityAnalysis
 public:
 	int setGridInfo( Vector * gridInfo, int pNumOfPPlane);
 	int analyze();
-	MultiDimVisPrincPlane(     ReliabilityDomain *passedReliabilityDomain,
+	MultiDimVisPrincPlane(ReliabilityDomain *passedReliabilityDomain,
 					FunctionEvaluator *passedGFunEvaluator,
 					ProbabilityTransformation *passedProbabilityTransformation,
 					char *passedOutputFileName,

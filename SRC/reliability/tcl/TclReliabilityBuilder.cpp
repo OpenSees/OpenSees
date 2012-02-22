@@ -95,8 +95,8 @@ using std::setiosflags;
 #include <HLRFSearchDirection.h>
 #include <ArmijoStepSizeRule.h>
 #include <FixedStepSizeRule.h>
-#include <OpenSeesGFunEvaluator.h>
-#include <OpenSeesGradGEvaluator.h>
+//#include <OpenSeesGFunEvaluator.h>
+//#include <OpenSeesGradGEvaluator.h>
 #include <TclEvaluator.h>
 #include <ImplicitGradient.h>
 #include <FiniteDifferenceGradient.h>

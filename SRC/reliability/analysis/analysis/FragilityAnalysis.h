@@ -37,7 +37,7 @@
 #include <ReliabilityAnalysis.h>
 #include <ReliabilityDomain.h>
 #include <FindDesignPointAlgorithm.h>
-#include <GradGEvaluator.h>
+//#include <GradGEvaluator.h>
 #include <tcl.h>
 
 #include <fstream>
