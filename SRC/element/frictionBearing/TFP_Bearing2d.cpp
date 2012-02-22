@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+static Vector vectorSize8(8);
 
 // typical constructor
 TFP_Bearing2d::TFP_Bearing2d(int tag, 
@@ -802,6 +803,20 @@ TFP_Bearing2d::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.tag("ResponseType",nodeData);
     }
     theResponse = new ElementResponse(this, 1, this->getResistingForce());
+    } else if (strcmp(argv[0],"v") == 0 || strcmp(argv[0],"V") == 0) {
+    
+    for (int i=0; i<8; i++) {
+      sprintf(nodeData,"V%d",i+1);
+      output.tag("ResponseType",nodeData);
+    }
+    theResponse = new ElementResponse(this, 2, vectorSize8);
+  } else if (strcmp(argv[0],"vp") == 0 || strcmp(argv[0],"Vp") == 0) {
+
+    for (int i=0; i<8; i++) {
+      sprintf(nodeData,"Vp%d",i+1);
+      output.tag("ResponseType",nodeData);
+    }
+    theResponse = new ElementResponse(this, 3, vectorSize8);
   }
 
 
@@ -823,10 +838,17 @@ TFP_Bearing2d::getResponse(int responseID, Information &eleInfo)
     return -1;
   case 1: // global forces
     return eleInfo.setVector(this->getResistingForce());
-    //  return eleInfo.setVector(res);
     
-  case 2:
-    return eleInfo.setVector(this->getRayleighDampingForces());
+  case 2: // v
+    for (int i=0; i<8; i++)
+      vectorSize8(i)=vTrial[i];
+    return eleInfo.setVector(vectorSize8);
+
+  case 3: // vp
+    for (int i=0; i<8; i++)
+      vectorSize8(i)=vpTrial[i];
+    return eleInfo.setVector(vectorSize8);
+
   default:
     return 0;
   }
