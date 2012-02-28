@@ -437,6 +437,7 @@ MAKES/Makefile.UCDAVIS -text
 MAKES/Makefile.def.ABE -text
 MAKES/Makefile.def.ALPHA -text
 MAKES/Makefile.def.DATASTAR -text
+MAKES/Makefile.def.EC2-DEBIAN -text
 MAKES/Makefile.def.EC2-FEDORA4 -text
 MAKES/Makefile.def.EC2-UBUNTU -text
 MAKES/Makefile.def.FEDORA3 -text
