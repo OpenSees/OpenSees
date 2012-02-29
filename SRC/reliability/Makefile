@@ -7,7 +7,6 @@ endif
 RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
 		$(FE)/domain/pattern/SimulatedRandomProcessSeries.o \
 		$(FE)/reliability/analysis/analysis/FORMAnalysis.o \
-		$(FE)/reliability/analysis/analysis/FragilityAnalysis.o \
 		$(FE)/reliability/analysis/analysis/GFunVisualizationAnalysis.o \
 		$(FE)/reliability/analysis/analysis/FOSMAnalysis.o \
 		$(FE)/reliability/analysis/analysis/ParametricReliabilityAnalysis.o \

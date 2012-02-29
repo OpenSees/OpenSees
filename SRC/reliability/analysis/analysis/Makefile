@@ -3,7 +3,6 @@ include ../../../../Makefile.def
 OBJS       = 	FORMAnalysis.o \
 	FOSMAnalysis.o \
 	BivariateDecomposition.o \
-	FragilityAnalysis.o \
 	GFunVisualizationAnalysis.o \
 	OutCrossingAnalysis.o \
 	ParametricReliabilityAnalysis.o \
