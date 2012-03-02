@@ -905,14 +905,14 @@ TFP_Bearing::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.tag("ResponseType",nodeData);
     }
     theResponse = new ElementResponse(this, 1, this->getResistingForce());
-  } else if (strcmp(argv[0],"v") == 0 || strcmp(argv[0],"V") == 0) {
+  } else if (strcmp(argv[0],"v") == 0 || strcmp(argv[0],"relativeDisp") == 0) {
     
     for (int i=0; i<8; i++) {
       sprintf(nodeData,"V%d",i+1);
       output.tag("ResponseType",nodeData);
     }
     theResponse = new ElementResponse(this, 2, vectorSize8);
-  } else if (strcmp(argv[0],"vp") == 0 || strcmp(argv[0],"Vp") == 0) {
+  } else if (strcmp(argv[0],"vp") == 0 || strcmp(argv[0],"plasticDisp") == 0) {
 
     for (int i=0; i<8; i++) {
       sprintf(nodeData,"Vp%d",i+1);
