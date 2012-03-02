@@ -41,6 +41,10 @@
 extern "C" int getrusage(int who, struct rusage *rusage);
 #endif
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 #ifndef CLK_TCK
 #define CLK_TCK sysconf(_SC_CLK_TCK)
 #endif
@@ -64,7 +68,9 @@ void
 Timer::start(void)
 {
 #ifdef _WIN32
-    // fill in later
+	SYSTEMTIME st;
+	GetSystemTime(&st);
+	opserr << "Timer::start (hr:min:millisec): " << (int)st.wHour << ":" << (int)st.wMinute << ":" << (int)st.wMilliseconds << endln;
 #else        
     t1 = times(&tmsstart);
     getrusage(0,r1us);
@@ -76,6 +82,9 @@ Timer::pause(void)
 {
 #ifdef _WIN32
     // fill in later
+		SYSTEMTIME st;
+	GetSystemTime(&st);
+	opserr << "Timer::stop (hr:min:millisec): " << (int)st.wHour << ":" << (int)st.wMinute << ":" << (int)st.wMilliseconds << endln;
 #else        
     t2 = times(&tmsend);
     getrusage(0,r2us);    
