@@ -98,6 +98,7 @@ extern void *OPS_Maxwell(void);
 extern void *OPS_Cast(void);
 extern void *OPS_Dodd_Restrepo(void);
 extern void *OPS_NewElasticMultiLinear(void);
+extern void *OPS_ImpactMaterial(void);
 
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
@@ -110,8 +111,6 @@ extern int
 TclCommand_HyperbolicGapMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 				 
 
-extern int
-TclCommand_ImpactMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 extern UniaxialMaterial *Tcl_addWrapperUniaxialMaterial(matObj *, ClientData clientData, Tcl_Interp *interp,
 							int argc, TCL_Char **argv);
@@ -218,6 +217,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if ((strcmp(argv[1],"ElasticBilin") == 0) || (strcmp(argv[1],"ElasticBilinear") == 0)) {
       void *theMat = OPS_NewElasticBilin();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if ((strcmp(argv[1],"ImpactMaterial") == 0) || (strcmp(argv[1],"Impact") == 0)) {
+      void *theMat = OPS_ImpactMaterial();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
@@ -3049,9 +3055,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       return TclCommand_HyperbolicGapMaterial(clientData, interp, argc, argv);
     }
 
-    else if (strcmp(argv[1],"ImpactMaterial") == 0) { 
-      return TclCommand_ImpactMaterial(clientData, interp, argc, argv);
-    }
 
     else if (strcmp(argv[1],"SteelMP") == 0) {
       // Check that there is the minimum number of arguments
