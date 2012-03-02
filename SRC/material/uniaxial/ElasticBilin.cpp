@@ -43,7 +43,6 @@ OPS_NewElasticBilin(void)
   UniaxialMaterial *theMaterial = 0;
 
   int argc = OPS_GetNumRemainingInputArgs();
-  opserr << argc;
 
   if (argc != 4 && argc != 7) {
     opserr << "WARNING incorrect num args want: uniaxialMaterial ElasticBilin tag E1P? E2P? eps2P? <E1N? E2N? eps2N?>" << endln;
