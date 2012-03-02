@@ -2527,6 +2527,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     // now must determine the type of solver to create from rest of args
     int factLVALUE = 10;
 	int factorOnce=0;
+	int printTime = 0;
 	int count = 2;
 	while (count < argc) {
       if ((strcmp(argv[count],"-lValueFact") == 0) || (strcmp(argv[count],"-lvalueFact") == 0)) {
@@ -2535,12 +2536,14 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	     count++;
 	  } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
 	     factorOnce = 1;
+      } else if ((strcmp(argv[count],"-printTime") == 0) || (strcmp(argv[count],"-time") ==0 )) {
+	     printTime = 1;
       }
       count++;
     }
   
     UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
-    theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce);      
+    theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
   }	  
 #ifdef _ITPACK
 //  else if (strcmp(argv[1],"Itpack") == 0) {
@@ -2912,14 +2915,19 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
   // check argv[1] for type of Algorithm and create the object
   if (strcmp(argv[1],"Linear") == 0) {
     int formTangent = CURRENT_TANGENT;
-    if (argc > 2) {
-      if (strcmp(argv[2],"-secant") == 0) {
-	formTangent = CURRENT_SECANT;
-      } else if (strcmp(argv[2],"-initial") == 0) {
-	formTangent = INITIAL_TANGENT;
+	int factorOnce = 0;
+	int count = 2;
+	while (count < argc) {
+      if ((strcmp(argv[count],"-secant") == 0) || (strcmp(argv[count],"-Secant") == 0)) {
+		 formTangent = CURRENT_SECANT;
+	  } else if ((strcmp(argv[count],"-initial") == 0) || (strcmp(argv[count],"-Initial") == 0)) {
+		 formTangent = INITIAL_TANGENT;
+	  } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
+	     factorOnce = 1;
       }
+      count++;
     }
-    theNewAlgo = new Linear(formTangent);
+    theNewAlgo = new Linear(formTangent, factorOnce);
   }
 
   else if (strcmp(argv[1],"Newton") == 0) {
