@@ -38,6 +38,7 @@
 #include <math.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <Timer.h>
 
 #ifdef _WIN32
 extern "C" int UMD21I(int *keep, double *cntl, int *icntl);
@@ -124,6 +125,11 @@ UmfpackGenLinSolver::solve(void)
     int job =0; // set to 1 if wish to do iterative refinment
     logical trans = FALSE_;
 
+	if (theSOE->printSolveTime == 1) {
+		Timer a;
+		a.start();
+	}
+
     if (theSOE->factored == false) {
 
       // make a copy of index
@@ -156,7 +162,11 @@ UmfpackGenLinSolver::solve(void)
     umd2so_(&n, &job, &trans, &lValue, &lIndex, Aptr, copyIndex, 
 	    keep, Bptr, Xptr, work, cntl, icntl, info, rinfo);
 #endif
-
+	
+	if (theSOE->printSolveTime == 1) {
+		Timer a;
+		a.pause();
+	}
     if (info[0] != 0) {	
        opserr << "WARNING UmfpackGenLinSolver::solve(void)- ";
        opserr << info[0] << " returned in substitution dgstrs()\n";
