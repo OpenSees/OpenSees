@@ -551,9 +551,10 @@ Matrix::Invert(Matrix &theInverse) const
 {
 
     int n = numRows;
-    int nrhs = theInverse.numCols;
+
 
 #ifdef _G3DEBUG    
+
     if (numRows != numCols) {
       opserr << "Matrix::Solve(B,X) - the matrix of dimensions [" << numRows << "," << numCols << "] is not square\n";
       return -1;
@@ -604,7 +605,6 @@ Matrix::Invert(Matrix &theInverse) const
       matrixWork[i] = data[i];
 
     int ldA = n;
-    int ldB = n;
     int info;
     double *Wptr = matrixWork;
     double *Aptr = theInverse.data;
@@ -1062,8 +1062,6 @@ Matrix::addMatrixTripleProduct(double thisFact,
     // NOTE: looping as per blas3 dgemm_: j,k,i
     
     int rowsB = B.numRows;
-    int colsB = B.numCols;
-    int colsC = numCols;
     double *ckjPtr  = &(C.data)[0];
     for (int j=0; j<numCols; j++) {
       double *aijPtrA = &matrixWork[j*rowsB];
