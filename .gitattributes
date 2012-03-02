@@ -442,6 +442,7 @@ MAKES/Makefile.def.EC2-FEDORA4 -text
 MAKES/Makefile.def.EC2-UBUNTU -text
 MAKES/Makefile.def.FEDORA3 -text
 MAKES/Makefile.def.FEDORA4 -text
+MAKES/Makefile.def.KRAKEN -text
 MAKES/Makefile.def.LINUX -text
 MAKES/Makefile.def.LINUX.KAI -text
 MAKES/Makefile.def.LINUX6 -text
