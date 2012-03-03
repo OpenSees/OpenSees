@@ -3052,6 +3052,7 @@ Domain::calculateNodalReactions(int flag)
 
   ElementIter &theElements = this->getElements();
   while ((theElement = theElements()) != 0)
-    theElement->addResistingForceToNodalReaction(flag);
+    if (theElement->isSubdomain() == false)
+      theElement->addResistingForceToNodalReaction(flag);
   return 0;
 }

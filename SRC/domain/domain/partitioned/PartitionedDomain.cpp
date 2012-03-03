@@ -1874,6 +1874,7 @@ PartitionedDomain::calculateNodalReactions(bool inclInertia)
   int res = this->Domain::calculateNodalReactions(inclInertia); 
 
   // do the same for all the subdomains
+  /*
   if (theSubdomains != 0) {
     ArrayOfTaggedObjectsIter theSubsIter(*theSubdomains);	
     TaggedObject *theObject;
@@ -1882,6 +1883,7 @@ PartitionedDomain::calculateNodalReactions(bool inclInertia)
       res += theSub->calculateNodalReactions(inclInertia); 
     }
   }
+  */
   return res;
 }
 
