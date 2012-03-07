@@ -43,15 +43,16 @@ class TFP_Bearing2d : public Element
   public:
     // constructors
   TFP_Bearing2d(int tag, 
-	      int Nd1, int Nd2, 
-	      double *r, 
-	      double *dio,
-	      double *di,
-	      double *mu,
-	      double *h,
-	      double H0,
-	      double a,
-	      double K);
+		int Nd1, int Nd2, 
+		double *r, 
+		double *dio,
+		double *di,
+		double *mu,
+		double *h,
+		double H0,
+		double a,
+		double K,
+		double vYield);
 
 
     TFP_Bearing2d();    
@@ -99,6 +100,7 @@ class TFP_Bearing2d : public Element
     double mu[4];
     double h[4];
     double K;
+    double vyield;
 
     // state variables
     double d[8];

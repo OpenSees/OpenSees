@@ -67,7 +67,7 @@ OPS_TFP_Bearing()
     return theEle;
   }
 
-  if (numRemainingArgs != 25 && numRemainingArgs != 24 && numRemainingArgs != 26) {
+  if (numRemainingArgs != 25 && numRemainingArgs != 24 && numRemainingArgs != 26 != numRemainingArgs != 27) {
     opserr << "ERROR - TFP_Bearing incorrect # args provided, want: element TFP_Bearing tag? iNode? jNode? ";
     opserr << "$R1 $R2 $R3 $R4 $do1 $do2 $do3 $do4 $din1 $din2 $din3 $din4 $mu1 $mu2 $mu3 $mu4";
     opserr << " $h1 $h2 $h3 $h4 $H0 <$a> <$K>\n";
@@ -76,7 +76,7 @@ OPS_TFP_Bearing()
 
   // get the id and end nodes 
   int iData[3];
-  double dData[23];
+  double dData[24];
   int numData;
 
   numData = 3;
@@ -91,11 +91,16 @@ OPS_TFP_Bearing()
     numData = 21;
     dData[21] = 0.0; // initial Axial Load = 0.0
     dData[22] = 1.0e12;
+    dData[23] = 0.01;
   } else if (numRemainingArgs == 25) {
     numData = 22;
     dData[22] = 1.0e12;
-  } else {
+    dData[23] = 0.01;
+  } else if (numRemainingArgs == 26) {
     numData = 23;
+    dData[23] = 0.01;
+  } else {
+    numData = 24;
   }
 
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
@@ -116,7 +121,8 @@ OPS_TFP_Bearing()
 			     &dData[16],
 			     dData[20],
 			     dData[21],
-			     dData[22]);
+			     dData[22],
+			     dData[23]);
   } else {
     theEle = new TFP_Bearing2d(eleTag, 
 			       iData[1], 
@@ -128,7 +134,8 @@ OPS_TFP_Bearing()
 			       &dData[16],
 			       dData[20],
 			       dData[21],
-			       dData[22]);
+			       dData[22],
+			       dData[23]);
   }
     
   if (theEle == 0) {
@@ -150,11 +157,12 @@ TFP_Bearing::TFP_Bearing(int tag,
 			 double *H,
 			 double h0,
 			 double a,
-			 double k)
+			 double k,
+			 double vYield)
   :Element(tag, ELE_TAG_TFP_Bearing),
   externalNodes(2),
   H0(h0), Ac(a), Ap(a),
-  numDOF(0), theMatrix(0), theVector(0)
+   numDOF(0), theMatrix(0), theVector(0), vyield(vYield)
 {	
 
   K = k;
@@ -451,7 +459,7 @@ TFP_Bearing::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, dou
 
   for (int i=0; i<4; i++) {
     int z=4+i;
-    double vyield=0.01;
+    //    double vyield=0.01;
     double qYield=mu[i]*N[i];
     double k0=qYield/vyield;
     

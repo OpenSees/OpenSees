@@ -55,11 +55,12 @@ TFP_Bearing2d::TFP_Bearing2d(int tag,
 			     double *H,
 			     double h0,
 			     double a,
-			     double k)
+			     double k,
+			     double vYield)
   :Element(tag, ELE_TAG_TFP_Bearing2d),     
    externalNodes(2),
    H0(h0), Ac(a), Ap(a),
-   numDOF(0), theMatrix(0), theVector(0)
+   numDOF(0), theMatrix(0), theVector(0), vyield(vYield)
 {	
   
   K = k;
@@ -356,7 +357,7 @@ TFP_Bearing2d::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, d
 
   for (int i=0; i<4; i++) {
     int z=4+i;
-    double vyield=0.01;
+    // double vyield=0.01;
     double qYield=mu[i]*N[i];
     double k0=qYield/vyield;
     
