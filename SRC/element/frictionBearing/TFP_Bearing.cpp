@@ -89,16 +89,16 @@ OPS_TFP_Bearing()
 
   if (numRemainingArgs == 24) {
     numData = 21;
-    dData[21] = 0.0; // initial Axial Load = 0.0
+    dData[21] = 10.0; // initial Axial Load = 0.0
     dData[22] = 1.0e12;
     dData[23] = 0.01;
   } else if (numRemainingArgs == 25) {
     numData = 22;
-    dData[22] = 1.0e12;
+    dData[22] = 1.0e12;    
     dData[23] = 0.01;
   } else if (numRemainingArgs == 26) {
     numData = 23;
-    dData[23] = 0.01;
+    dData[22] = 1.0e12;
   } else {
     numData = 24;
   }
@@ -121,8 +121,8 @@ OPS_TFP_Bearing()
 			     &dData[16],
 			     dData[20],
 			     dData[21],
-			     dData[22],
-			     dData[23]);
+			     dData[23],
+			     dData[22]);
   } else {
     theEle = new TFP_Bearing2d(eleTag, 
 			       iData[1], 
@@ -134,8 +134,8 @@ OPS_TFP_Bearing()
 			       &dData[16],
 			       dData[20],
 			       dData[21],
-			       dData[22],
-			       dData[23]);
+			       dData[23],
+			       dData[22]);
   }
     
   if (theEle == 0) {
