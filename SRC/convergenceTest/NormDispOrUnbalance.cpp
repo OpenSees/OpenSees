@@ -111,7 +111,7 @@ int NormDispOrUnbalance::test(void)
 
     if (currentIter <= maxNumIter) {
         norms(currentIter-1) = normX;
-        norms(2*maxNumIter+currentIter-1) = normB;
+        norms(maxNumIter+currentIter-1) = normB;
     }
     
     // print the data if required

@@ -106,12 +106,13 @@ int NormDispAndUnbalance::test(void)
     // get the X vector & determine it's norm & save the value in norms vector
     const Vector &x = theSOE->getX();
     double normX = x.pNorm(nType);
+
     const Vector &b = theSOE->getB();
     double normB = b.pNorm(nType);
 
     if (currentIter <= maxNumIter) {
         norms(currentIter-1) = normX;
-        norms(2*maxNumIter+currentIter-1) = normB;
+        norms(maxNumIter+currentIter-1) = normB;
     }
     
     // print the data if required
