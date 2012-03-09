@@ -3425,11 +3425,10 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
 
     else if (strcmp(argv[1],"NormDispIncr") == 0) 
       theNewTest = new CTestNormDispIncr(tol,numIter,printIt,normType);             
-    if (strcmp(argv[1],"NormDispAndUnbalance") == 0) 
+    else if (strcmp(argv[1],"NormDispAndUnbalance") == 0) 
       theNewTest = new NormDispAndUnbalance(tol,tol2, numIter,printIt,normType);       
-    if (strcmp(argv[1],"NormDispOrUnbalance") == 0) 
+    else if (strcmp(argv[1],"NormDispOrUnbalance") == 0) 
       theNewTest = new NormDispOrUnbalance(tol,tol2, numIter,printIt,normType);       
-
     else if (strcmp(argv[1],"EnergyIncr") == 0) 
       theNewTest = new CTestEnergyIncr(tol,numIter,printIt,normType);             
     else if (strcmp(argv[1],"RelativeNormUnbalance") == 0) 
