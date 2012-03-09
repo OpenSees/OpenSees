@@ -874,6 +874,8 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/convergenceTest/ConvergenceTest.o \
 	$(FE)/convergenceTest/CTestNormUnbalance.o \
 	$(FE)/convergenceTest/CTestNormDispIncr.o \
+	$(FE)/convergenceTest/NormDispAndUnbalance.o \
+	$(FE)/convergenceTest/NormDispOrUnbalance.o \
 	$(FE)/convergenceTest/CTestEnergyIncr.o \
 	$(FE)/convergenceTest/CTestRelativeNormUnbalance.o \
 	$(FE)/convergenceTest/CTestRelativeNormDispIncr.o \
