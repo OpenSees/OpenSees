@@ -3334,8 +3334,8 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
   int printIt = 0;
   int normType = 2;
 
-  if ((strcmp(argv[1],"NormDispAndUnbalance") != 0) || 
-      (strcmp(argv[1],"NormDispOrUnbalance") != 0)) {
+  if ((strcmp(argv[1],"NormDispAndUnbalance") == 0) || 
+      (strcmp(argv[1],"NormDispOrUnbalance") == 0)) {
     if (argc == 5) {
       if (Tcl_GetDouble(interp, argv[2], &tol) != TCL_OK)	
 	return TCL_ERROR;			  
