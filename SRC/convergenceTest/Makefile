@@ -8,7 +8,9 @@ OBJS       = ConvergenceTest.o \
 	CTestRelativeNormDispIncr.o \
 	CTestRelativeEnergyIncr.o \
 	CTestFixedNumIter.o \
-	CTestRelativeTotalNormDispIncr.o 
+	CTestRelativeTotalNormDispIncr.o \
+	NormDispAndUnbalance.o \
+	NormDispOrUnbalance.o
 
 all:            $(OBJS) 
 
