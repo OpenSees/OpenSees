@@ -1612,6 +1612,10 @@ SRC/convergenceTest/ConvergenceTest.cpp -text
 SRC/convergenceTest/ConvergenceTest.h -text
 SRC/convergenceTest/ConvergenceTest.tex -text
 SRC/convergenceTest/Makefile -text
+SRC/convergenceTest/NormDispAndUnbalance.cpp -text
+SRC/convergenceTest/NormDispAndUnbalance.h -text
+SRC/convergenceTest/NormDispOrUnbalance.cpp -text
+SRC/convergenceTest/NormDispOrUnbalance.h -text
 SRC/convergenceTest/convergence.tex -text
 SRC/coordTransformation/CorotCrdTransf2d.cpp -text
 SRC/coordTransformation/CorotCrdTransf2d.h -text
