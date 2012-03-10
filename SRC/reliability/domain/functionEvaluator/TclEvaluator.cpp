@@ -191,3 +191,37 @@ TclEvaluator::runAnalysis()
     
     return 0;
 }
+
+
+int
+TclEvaluator::setResponseVariable(const char *label, int lsfTag,
+				  int rvTag, double value)
+{
+  char theIndex[80];
+
+  sprintf(theIndex, "%d,%d", lsfTag, rvTag);
+
+  if (Tcl_SetVar2Ex(theTclInterp,label,theIndex,Tcl_NewDoubleObj(value),TCL_LEAVE_ERR_MSG) == NULL) {
+    opserr << "ERROR TclEvaluator -- error in setResponseVariable for object with tag " << rvTag << endln;
+    opserr << "of type " << theTclInterp->result << endln;
+    return -1;
+  }
+
+  return 0;
+}
+
+int
+TclEvaluator::setResponseVariable(const char *label, int lsfTag, double value)
+{
+  char theIndex[80];
+
+  sprintf(theIndex, "%d", lsfTag);
+
+  if (Tcl_SetVar2Ex(theTclInterp,label,theIndex,Tcl_NewDoubleObj(value),TCL_LEAVE_ERR_MSG) == NULL) {
+    opserr << "ERROR TclEvaluator -- error in setResponseVariable for object with tag " << lsfTag << endln;
+    opserr << "of type " << theTclInterp->result << endln;
+    return -1;
+  }
+
+  return 0;
+}

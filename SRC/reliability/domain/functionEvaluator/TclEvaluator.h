@@ -59,6 +59,10 @@ class TclEvaluator : public FunctionEvaluator
 	
 	double evaluateExpression(void);
 	int runAnalysis(void);
+
+	int setResponseVariable(const char *label, int lsfTag,
+				int rvTag, double value);
+	int setResponseVariable(const char *label, int lsfTag, double value);
   
  protected:
   

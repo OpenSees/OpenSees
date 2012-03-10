@@ -60,6 +60,12 @@ public:
 	virtual double evaluateExpression(void) = 0;
 	virtual int runAnalysis(void) = 0;
 	
+	// MHS hack for reliability recorders ... set value in namespace
+	virtual int setResponseVariable(const char *label, int lsfTag,
+					int rvTag, double value);
+	virtual int setResponseVariable(const char *label, int lsfTag, 
+					double value);
+
 	/*
 	// Methods in base class for evaluating LSF
 	int		setTclRandomVariables(const Vector &x);
