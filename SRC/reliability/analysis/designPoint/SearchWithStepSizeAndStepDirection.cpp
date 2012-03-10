@@ -287,6 +287,8 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
             //tempProduct.addMatrixTransposeVector(0.0, jacobian_u_x, alpha, 1.0);
             tempProduct.addMatrixTransposeVector(0.0, Jux, *alpha, 1.0);
             
+            int lsfTag = theReliabilityDomain->getTagOfActiveLimitStateFunction();
+	    double beta = 0.0;
             // Only diagonal elements of (J_xu*J_xu^T) are used
             for (int j = 0; j < numberOfRandomVariables; j++) {
                 double sum = 0.0;
@@ -297,7 +299,18 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
                     sum += jk*jk;
                 }
                 (*gamma)(j) = sqrt(sum) * tempProduct(j);
+
+		RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+		int rvTag = theRV->getTag();
+		theFunctionEvaluator->setResponseVariable("gammaFORM", lsfTag,
+							  rvTag, (*gamma)(j));
+		theFunctionEvaluator->setResponseVariable("alphaFORM", lsfTag,
+							  rvTag, (*alpha)(j));
+
+		beta += ((*alpha)(j))*((*u)(j));
             }
+	    theFunctionEvaluator->setResponseVariable("betaFORM", lsfTag, beta);
+						      
       
             Glast = gFunctionValue;
 
