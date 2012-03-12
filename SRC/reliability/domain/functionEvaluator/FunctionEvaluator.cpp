@@ -87,6 +87,13 @@ FunctionEvaluator::setResponseVariable(const char *label, int lsfTag,
   return 0;
 }
 
+int
+FunctionEvaluator::setResponseVariable(const char *label, int lsfTag,
+				       double value)
+{
+  return 0;
+}
+
 
 /*
 int 
