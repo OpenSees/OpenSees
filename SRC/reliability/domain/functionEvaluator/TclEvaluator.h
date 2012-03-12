@@ -63,6 +63,8 @@ class TclEvaluator : public FunctionEvaluator
 	int setResponseVariable(const char *label, int lsfTag,
 				int rvTag, double value);
 	int setResponseVariable(const char *label, int lsfTag, double value);
+	double getResponseVariable(const char *label, int lsfTag, int rvTag);
+	double getResponseVariable(const char *label, int lsfTag);
   
  protected:
   

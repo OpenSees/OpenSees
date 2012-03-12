@@ -65,6 +65,10 @@ public:
 					int rvTag, double value);
 	virtual int setResponseVariable(const char *label, int lsfTag, 
 					double value);
+	// and get value from namespace
+	virtual double getResponseVariable(const char *label, int lsfTag,
+					   int rvTag);
+	virtual double getResponseVariable(const char *label, int lsfTag);
 
 	/*
 	// Methods in base class for evaluating LSF

@@ -225,3 +225,43 @@ TclEvaluator::setResponseVariable(const char *label, int lsfTag, double value)
 
   return 0;
 }
+
+double
+TclEvaluator::getResponseVariable(const char *label, int lsfTag, int rvTag)
+{
+  char theIndex[80];
+
+  sprintf(theIndex, "%d,%d", lsfTag, rvTag);
+ 
+  Tcl_Obj *value = Tcl_GetVar2Ex(theTclInterp,label,theIndex,TCL_LEAVE_ERR_MSG);
+  if (value == NULL) {
+    opserr << "ERROR TclEvaluator -- error in getResponseVariable for object with tag " << rvTag << endln;
+    opserr << "of type " << theTclInterp->result << endln;
+    return -1;
+  }
+
+  double result;
+  Tcl_GetDoubleFromObj(theTclInterp, value, &result);
+
+  return result;
+}
+
+double
+TclEvaluator::getResponseVariable(const char *label, int lsfTag)
+{
+  char theIndex[80];
+
+  sprintf(theIndex, "%d", lsfTag);
+
+  Tcl_Obj *value = Tcl_GetVar2Ex(theTclInterp,label,theIndex,TCL_LEAVE_ERR_MSG);
+  if (value == NULL) {
+    opserr << "ERROR TclEvaluator -- error in getResponseVariable for object with tag " << lsfTag << endln;
+    opserr << "of type " << theTclInterp->result << endln;
+    return -1;
+  }
+
+  double result;
+  Tcl_GetDoubleFromObj(theTclInterp, value, &result);
+
+  return result;
+}

@@ -94,6 +94,18 @@ FunctionEvaluator::setResponseVariable(const char *label, int lsfTag,
   return 0;
 }
 
+double
+FunctionEvaluator::getResponseVariable(const char *label, int lsfTag, int rvTag)
+{
+  return 0.0;
+}
+
+double
+FunctionEvaluator::getResponseVariable(const char *label, int lsfTag)
+{
+  return 0.0;
+}
+
 
 /*
 int 
