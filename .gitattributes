@@ -3095,6 +3095,7 @@ SRC/reliability/EXAMPLES/CalRel_manual_2.tcl -text
 SRC/reliability/EXAMPLES/CalRel_manual_4.tcl -text
 SRC/reliability/EXAMPLES/CalRel_manual_7.tcl -text
 SRC/reliability/EXAMPLES/truss.tcl -text
+SRC/reliability/EXAMPLES/truss2.tcl -text
 SRC/reliability/FEsensitivity/Makefile -text
 SRC/reliability/FEsensitivity/NewmarkSensitivityIntegrator.cpp -text
 SRC/reliability/FEsensitivity/NewmarkSensitivityIntegrator.h -text
