@@ -2810,7 +2810,6 @@ SRC/material/uniaxial/Steel03.h -text
 SRC/material/uniaxial/SteelMP.cpp -text
 SRC/material/uniaxial/SteelMP.h -text
 SRC/material/uniaxial/TclHyperbolicGapMaterial.cpp -text
-SRC/material/uniaxial/TclImpactMaterial.cpp -text
 SRC/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.cpp -text
 SRC/material/uniaxial/TclNewUniaxialMaterial.cpp -text
 SRC/material/uniaxial/TclReinforcingSteel.cpp -text
