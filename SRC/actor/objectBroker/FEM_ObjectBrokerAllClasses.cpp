@@ -67,6 +67,7 @@
 #include <Concrete06.h>
 #include <Steel01.h>
 #include <Steel02.h>
+#include <ReinforcingSteel.h>
 #include <HardeningMaterial.h>
 #include <HystereticMaterial.h>
 #include <EPPGapMaterial.h>
@@ -789,6 +790,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Steel02:  
 	     return new Steel02();
+
+	case MAT_TAG_ReinforcingSteel:  
+	     return new ReinforcingSteel(0);
 
 	case MAT_TAG_Hardening:
 		return new HardeningMaterial();
