@@ -148,7 +148,7 @@ TclModelBuilder_addSnapMaterial(ClientData clientData, Tcl_Interp *interp, int a
 	    if ( argc < 19 ) {
 	      opserr << "WARNING insufficient arguments\n";
 	      printCommand(argc,argv);
-	      opserr << "Want: uniaxialMaterial Clough_Damage tag? ..." << endln;
+	      opserr << "Want: uniaxialMaterial Clough tag? 17 args" << endln;
 	      return 0;
 	    }
 	    
@@ -183,81 +183,81 @@ TclModelBuilder_addSnapMaterial(ClientData clientData, Tcl_Interp *interp, int a
 		double temp;
 		
 		for (int i = 3, j = 0; j < 12; i++, j++) {
-			if (Tcl_GetDouble(interp, argv[i], &temp) != TCL_OK) {
-				opserr << "WARNING invalid input, data " << i << endln;
-				printCommand(argc, argv);
-				return 0;
-			}
-			input(j) = temp;
+		  if (Tcl_GetDouble(interp, argv[i], &temp) != TCL_OK) {
+		    opserr << "WARNING invalid input, data " << i << endln;
+		    printCommand(argc, argv);
+		    return 0;
+		  }
+		  input(j) = temp;
 		}
 		
 		DamageModel *strength;
 		if ( (int) input(8) == 0 )
-		{
-			strength = NULL;
-		}
+		  {
+		    strength = NULL;
+		  }
 		else
-		{
-			strength = OPS_getDamageModel( (int) input(8) );
-			
-			if (strength == 0) {
-				opserr << "WARNING damage model for strength deterioration not found\n";
-				opserr << "Damage Model: " << input(8);
-				opserr << "\nClough material: " << tag << endln;
-				exit (-1);
-			}
-		}
+		  {
+		    strength = OPS_getDamageModel( (int) input(8) );
+		    
+		    if (strength == 0) {
+		      opserr << "WARNING damage model for strength deterioration not found\n";
+		      opserr << "Damage Model: " << input(8);
+		      opserr << "\nClough material: " << tag << endln;
+		      exit (-1);
+		    }
+		  }
 		
 		DamageModel *stiffness;
 		if ( (int) input(9) == 0 )
-		{
-			stiffness = NULL;
-		}
+		  {
+		    stiffness = NULL;
+		  }
 		else
-		{
-			stiffness = OPS_getDamageModel( (int) input(9) );
-			
-			if (stiffness == 0) {
-				opserr << "WARNING damage model for stiffness deterioration not found\n";
-				opserr << "Damage Model: " << input(9);
-				opserr << "\nClough material: " << tag << endln;
-				exit (-1);
-			}
-		}
+		  {
+		    stiffness = OPS_getDamageModel( (int) input(9) );
+		    
+		    if (stiffness == 0) {
+		      opserr << "WARNING damage model for stiffness deterioration not found\n";
+		      opserr << "Damage Model: " << input(9);
+		      opserr << "\nClough material: " << tag << endln;
+		      exit (-1);
+		    }
+		  }
 		
 		DamageModel *accelerated;
 		if ( (int) input(10) == 0 )
-		{
-			accelerated = NULL;
-		}
+		  {
+		    accelerated = NULL;
+		  }
 		else
-		{
-			accelerated = OPS_getDamageModel( (int) input(10) );
-			
-			if (accelerated == 0) {
-				opserr << "WARNING damage model for accelerated stiffness deterioration not found\n";
-				opserr << "Damage Model: " << input(10);
-				opserr << "\nClough material: " << tag << endln;
-				exit (-1);
+		  {
+		    accelerated = OPS_getDamageModel( (int) input(10) );
+		    
+		    if (accelerated == 0) {
+		      opserr << "WARNING damage model for accelerated stiffness deterioration not found\n";
+		      opserr << "Damage Model: " << input(10);
+		      opserr << "\nClough material: " << tag << endln;
+		      exit (-1);
 			}
-		}
-
+		  }
+		
 		DamageModel *capping;
 		if ( (int) input(11) == 0 )
-		{
-			capping = NULL;
-		}
+		  {
+		    capping = NULL;
+		  }
 		else
-		{
-			capping = OPS_getDamageModel( (int) input(11) );
-			
-			if (capping == 0) {
-				opserr << "WARNING damage model for capping deterioration not found\n";
-				opserr << "Damage Model: " << input(11);
-				opserr << "\nClough material: " << tag << endln;
-				exit (-1);
-			}
-		}
+		  {
+		    capping = OPS_getDamageModel( (int) input(11) );
+		    
+		    if (capping == 0) {
+		      opserr << "WARNING damage model for capping deterioration not found\n";
+		      opserr << "Damage Model: " << input(11);
+		      opserr << "\nClough material: " << tag << endln;
+		      exit (-1);
+		    }
+		  }
 		theMaterial = new CloughDamage (tag, input, strength, stiffness, accelerated, capping);
 	}
 	
