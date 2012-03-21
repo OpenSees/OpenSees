@@ -40,7 +40,8 @@ class ElasticMultiLinear : public UniaxialMaterial
 public:
     // constructor
     ElasticMultiLinear(int tag,
-        const Vector &strainPoints, const Vector &stressPoints);    
+		       const Vector &strainPoints, 
+		       const Vector &stressPoints);    
     ElasticMultiLinear();    
 
     // destructor
