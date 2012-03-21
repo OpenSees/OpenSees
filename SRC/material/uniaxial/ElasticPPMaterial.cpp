@@ -22,9 +22,6 @@
 // $Date: 2003-02-14 23:01:38 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/ElasticPPMaterial.cpp,v $
                                                                         
-                                                                        
-// File: ~/material/ElasticPPMaterial.C
-//
 // Written: fmk 
 // Created: 07/98
 // Revision: A
@@ -44,8 +41,9 @@
 
 ElasticPPMaterial::ElasticPPMaterial(int tag, double e, double eyp)
 :UniaxialMaterial(tag,MAT_TAG_ElasticPPMaterial),
- ezero(0.0), E(e), trialStrain(0.0), ep(0.0),
- trialStress(0.0), trialTangent(E)
+ ezero(0.0), E(e), ep(0.0),
+ trialStrain(0.0), trialStress(0.0), trialTangent(E),
+ commitStrain(0.0), commitStress(0.0), commitTangent(E)
 {
   fyp = E*eyp;
   fyn = -fyp;
@@ -54,8 +52,9 @@ ElasticPPMaterial::ElasticPPMaterial(int tag, double e, double eyp)
 ElasticPPMaterial::ElasticPPMaterial(int tag, double e, double eyp,
 				     double eyn, double ez )
 :UniaxialMaterial(tag,MAT_TAG_ElasticPPMaterial),
- ezero(ez), E(e), trialStrain(0.0), ep(0.0),
- trialStress(0.0), trialTangent(E)
+ ezero(ez), E(e), ep(0.0),
+ trialStrain(0.0), trialStress(0.0), trialTangent(E),
+ commitStrain(0.0), commitStress(0.0), commitTangent(E)
 {
     if (eyp < 0) {
 	opserr << "ElasticPPMaterial::ElasticPPMaterial() - eyp < 0, setting > 0\n";
@@ -72,8 +71,9 @@ ElasticPPMaterial::ElasticPPMaterial(int tag, double e, double eyp,
 
 ElasticPPMaterial::ElasticPPMaterial()
 :UniaxialMaterial(0,MAT_TAG_ElasticPPMaterial),
- fyp(0.0), fyn(0.0), ezero(0.0), E(0.0), trialStrain(0.0), ep(0.0),
- trialStress(0.0), trialTangent(0.0)
+ fyp(0.0), fyn(0.0), ezero(0.0), E(0.0), ep(0.0), 
+ trialStrain(0.0), trialStress(0.0), trialTangent(0.0),
+ commitStrain(0.0), commitStress(0.0), commitTangent(0.0)
 {
 
 }
@@ -174,6 +174,10 @@ ElasticPPMaterial::commitState(void)
       }
     }
 
+    commitStrain = trialStrain;
+    commitTangent=trialTangent;
+    commitStress = trialStress;
+
     return 0;
 }	
 
@@ -181,16 +185,24 @@ ElasticPPMaterial::commitState(void)
 int 
 ElasticPPMaterial::revertToLastCommit(void)
 {
-    return 0;
+  trialStrain = commitStrain;
+  trialTangent = commitTangent;
+  trialStress = commitStress;
+
+  return 0;
 }
 
 
 int 
 ElasticPPMaterial::revertToStart(void)
 {
-    ep = 0.0;
+  trialStrain = commitStrain = 0.0;
+  trialTangent = commitTangent = E;
+  trialStress = commitStress = 0.0;
 
-    return 0;
+  ep = 0.0;
+  
+  return 0;
 }
 
 
@@ -209,13 +221,16 @@ int
 ElasticPPMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(6);
+  static Vector data(9);
   data(0) = this->getTag();
   data(1) = ep;
   data(2) = E;
   data(3) = ezero;
   data(4) = fyp;
   data(5) = fyn;
+  data(6) = commitStrain;
+  data(7) = commitStress;
+  data(8) = commitTangent;
 
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
@@ -229,7 +244,7 @@ ElasticPPMaterial::recvSelf(int cTag, Channel &theChannel,
 				 FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(6);
+  static Vector data(9);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   if (res < 0) 
     opserr << "ElasticPPMaterial::recvSelf() - failed to recv data\n";
@@ -240,6 +255,12 @@ ElasticPPMaterial::recvSelf(int cTag, Channel &theChannel,
     ezero = data(3);
     fyp   = data(4);
     fyn   = data(5);  
+    commitStrain=data(6);
+    commitStress=data(7);
+    commitTangent=data(8);
+    trialStrain = commitStrain;
+    trialTangent = commitTangent;
+    trialStress = commitStress;
   }
 
   return res;
