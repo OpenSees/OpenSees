@@ -22,7 +22,7 @@
 // $Date$
 // $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
@@ -55,11 +55,12 @@ Vector FlatSliderSimple2d::theLoad(6);
 
 FlatSliderSimple2d::FlatSliderSimple2d(int tag, int Nd1, int Nd2,
     FrictionModel &thefrnmdl, double _uy, UniaxialMaterial **materials,
-    const Vector _y, const Vector _x, double sdI, double m,
-    int maxiter, double _tol)
+    const Vector _y, const Vector _x, double sdI, int addRay,
+    double m, int maxiter, double _tol)
     : Element(tag, ELE_TAG_FlatSliderSimple2d),
     connectedExternalNodes(2), theFrnMdl(0),
-    uy(_uy), x(_x), y(_y), shearDistI(sdI),
+    uy(_uy), x(_x), y(_y),
+    shearDistI(sdI), addRayleigh(addRay),
     mass(m), maxIter(maxiter), tol(_tol),
     L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
     Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3)
@@ -121,7 +122,8 @@ FlatSliderSimple2d::FlatSliderSimple2d(int tag, int Nd1, int Nd2,
 FlatSliderSimple2d::FlatSliderSimple2d()
     : Element(0, ELE_TAG_FlatSliderSimple2d),
     connectedExternalNodes(2), theFrnMdl(0),
-    uy(0.0), x(0), y(0), shearDistI(0.0),
+    uy(0.0), x(0), y(0),
+    shearDistI(0.0), addRayleigh(0),
     mass(0.0), maxIter(20), tol(1E-8),
     L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
     Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3)
@@ -434,6 +436,35 @@ const Matrix& FlatSliderSimple2d::getInitialStiff()
 }
 
 
+const Matrix& FlatSliderSimple2d::getDamp()
+{
+    // zero the matrix
+    theMatrix.Zero();
+
+    // call base class to setup Rayleigh damping
+    double factThis = 0.0;
+    if (addRayleigh == 1)  {
+        theMatrix = this->Element::getDamp();
+        factThis = 1.0;
+    }
+
+    // now add damping tangent from materials
+    static Matrix cb(3,3);
+    cb.Zero();
+    cb(0,0) = theMaterials[0]->getDampTangent();
+    cb(2,2) = theMaterials[1]->getDampTangent();
+    
+    // transform from basic to local system
+    static Matrix cl(6,6);
+    cl.addMatrixTripleProduct(0.0, Tlb, cb, 1.0);
+    
+    // transform from local to global system and add to cg
+    theMatrix.addMatrixTripleProduct(factThis, Tgl, cl, 1.0);
+
+    return theMatrix;
+}
+
+
 const Matrix& FlatSliderSimple2d::getMass()
 {
 	// zero the matrix
@@ -527,13 +558,16 @@ const Vector& FlatSliderSimple2d::getResistingForce()
 
 const Vector& FlatSliderSimple2d::getResistingForceIncInertia()
 {	
+    // this already includes damping forces from materials
 	theVector = this->getResistingForce();
 	
-	// add the damping forces if rayleigh damping
-	if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-		theVector += this->getRayleighDampingForces();
+	// add the damping forces from rayleigh damping
+    if (addRayleigh == 1)  {
+	    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+		    theVector += this->getRayleighDampingForces();
+    }
     
-	// now include the mass portion
+    // add inertia forces from element mass
 	if (mass != 0.0)  {
 		const Vector &accel1 = theNodes[0]->getTrialAccel();
 		const Vector &accel2 = theNodes[1]->getTrialAccel();    
@@ -552,15 +586,16 @@ const Vector& FlatSliderSimple2d::getResistingForceIncInertia()
 int FlatSliderSimple2d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(8);
+    static Vector data(9);
     data(0) = this->getTag();
     data(1) = uy;
     data(2) = shearDistI;
-    data(3) = mass;
-    data(4) = maxIter;
-    data(5) = tol;
-    data(6) = x.Size();
-    data(7) = y.Size();
+    data(3) = addRayleigh;
+    data(4) = mass;
+    data(5) = maxIter;
+    data(6) = tol;
+    data(7) = x.Size();
+    data(8) = y.Size();
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -603,14 +638,15 @@ int FlatSliderSimple2d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(8);
+    static Vector data(9);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     uy = data(1);
     shearDistI = data(2);
-    mass = data(3);
-    maxIter = (int)data(4);
-    tol = data(5);
+    addRayleigh = (int)data(3);
+    mass = data(4);
+    maxIter = (int)data(5);
+    tol = data(6);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -644,11 +680,11 @@ int FlatSliderSimple2d::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive remaining data
-    if ((int)data(6) == 3)  {
+    if ((int)data(7) == 3)  {
         x.resize(3);
         rChannel.recvVector(0, commitTag, x);
     }
-    if ((int)data(7) == 3)  {
+    if ((int)data(8) == 3)  {
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
@@ -727,7 +763,8 @@ void FlatSliderSimple2d::Print(OPS_Stream &s, int flag)
         s << "  uy: " << uy << endln;
         s << "  Material ux: " << theMaterials[0]->getTag() << endln;
         s << "  Material rz: " << theMaterials[1]->getTag() << endln;
-        s << "  shearDistI: " << shearDistI << "  mass: " << mass << endln;
+        s << "  shearDistI: " << shearDistI << "  addRayleigh: "
+            << addRayleigh << "  mass: " << mass << endln;
         s << "  maxIter: " << maxIter << "  tol: " << tol << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;

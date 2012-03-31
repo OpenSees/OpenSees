@@ -25,7 +25,7 @@
 #ifndef FlatSliderSimple2d_h
 #define FlatSliderSimple2d_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
@@ -50,7 +50,8 @@ public:
         FrictionModel &theFrnMdl, double uy,
         UniaxialMaterial **theMaterials,
         const Vector y = 0, const Vector x = 0,
-        double shearDistI = 0.0, double mass = 0.0,
+        double shearDistI = 0.0,
+        int addRayleigh = 0, double mass = 0.0,
         int maxIter = 20, double tol = 1E-12);
     FlatSliderSimple2d();
     
@@ -76,6 +77,7 @@ public:
     // public methods to obtain stiffness, mass, damping and residual information    
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
+    const Matrix &getDamp();
     const Matrix &getMass();
     
     void zeroLoad();
@@ -112,6 +114,7 @@ private:
     Vector x;           // local x direction
     Vector y;           // local y direction
     double shearDistI;  // shear distance from node I as fraction of length
+    int addRayleigh;    // flag to add Rayleigh damping
     double mass;        // mass of element
     int maxIter;        // maximum number of iterations
     double tol;         // tolerance for convergence criterion

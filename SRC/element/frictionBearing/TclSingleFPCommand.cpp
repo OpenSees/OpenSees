@@ -22,7 +22,7 @@
 // $Date$
 // $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
@@ -75,7 +75,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         if ((argc-eleArgStart) < 12)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: singleFPBearing eleTag iNode jNode frnMdlTag R h uy -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-mass m> <-iter maxIter tol>\n";
+            opserr << "Want: singleFPBearing eleTag iNode jNode frnMdlTag R h uy -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
         }    
         
@@ -84,6 +84,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         int recvMat = 0;
         double R, h, uy;
         double shearDistI = 0.0;
+        int doRayleigh = 0;
         double mass = 0.0;
         int maxIter = 20;
         double tol = 1E-12;
@@ -181,6 +182,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 int numOrient = 0;
                 while (j < argc &&
                     strcmp(argv[j],"-shearDist") != 0 &&
+                    strcmp(argv[j],"-doRayleigh") != 0 &&
                     strcmp(argv[j],"-mass") != 0 &&
                     strcmp(argv[j],"-iter") != 0)  {
                     numOrient++;
@@ -231,6 +233,10 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
             }
         }
         for (int i = 8+eleArgStart; i < argc; i++)  {
+            if (strcmp(argv[i], "-doRayleigh") == 0)
+                doRayleigh = 1;
+        }
+        for (int i = 8+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-mass") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK)  {
                     opserr << "WARNING invalid -mass value\n";
@@ -240,7 +246,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
             }
         }
         for (int i = 8+eleArgStart; i < argc; i++)  {
-            if (i+1 < argc && strcmp(argv[i], "-iter") == 0)  {
+            if (i+2 < argc && strcmp(argv[i], "-iter") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &maxIter) != TCL_OK)  {
                     opserr << "WARNING invalid maxIter\n";
                     opserr << "singleFPBearing element: " << tag << endln;
@@ -256,7 +262,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         
         // now create the singleFPBearing
         theElement = new SingleFPSimple2d(tag, iNode, jNode, *theFrnMdl, R, h, uy,
-            theMaterials, y, x, shearDistI, mass, maxIter, tol);
+            theMaterials, y, x, shearDistI, doRayleigh, mass, maxIter, tol);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";
@@ -285,7 +291,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         if ((argc-eleArgStart) < 16)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: singleFPBearing eleTag iNode jNode frnMdlTag R h uy -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-mass m> <-iter maxIter tol>\n";
+            opserr << "Want: singleFPBearing eleTag iNode jNode frnMdlTag R h uy -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
         }    
         
@@ -294,6 +300,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         int recvMat = 0;
         double R, h, uy;
         double shearDistI = 0.0;
+        int doRayleigh = 0;
         double mass = 0.0;
         int maxIter = 20;
         double tol = 1E-12;
@@ -424,6 +431,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 int numOrient = 0;
                 while (j < argc &&
                     strcmp(argv[j],"-shearDist") != 0 &&
+                    strcmp(argv[j],"-doRayleigh") != 0 &&
                     strcmp(argv[j],"-mass") != 0 &&
                     strcmp(argv[j],"-iter") != 0)  {
                     numOrient++;
@@ -488,6 +496,10 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
             }
         }
         for (i = 8+eleArgStart; i < argc; i++)  {
+            if (strcmp(argv[i], "-doRayleigh") == 0)
+                doRayleigh = 1;
+        }
+        for (i = 8+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-mass") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK)  {
                     opserr << "WARNING invalid -mass value\n";
@@ -497,7 +509,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
             }
         }
         for (int i = 8+eleArgStart; i < argc; i++)  {
-            if (i+1 < argc && strcmp(argv[i], "-iter") == 0)  {
+            if (i+2 < argc && strcmp(argv[i], "-iter") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &maxIter) != TCL_OK)  {
                     opserr << "WARNING invalid maxIter\n";
                     opserr << "singleFPBearing element: " << tag << endln;
@@ -513,7 +525,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         
         // now create the singleFPBearing
         theElement = new SingleFPSimple3d(tag, iNode, jNode, *theFrnMdl, R, h, uy,
-            theMaterials, y, x, shearDistI, mass, maxIter, tol);
+            theMaterials, y, x, shearDistI, doRayleigh, mass, maxIter, tol);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";

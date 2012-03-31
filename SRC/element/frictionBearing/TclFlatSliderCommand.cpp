@@ -22,7 +22,7 @@
 // $Date$
 // $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
@@ -73,7 +73,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         if ((argc-eleArgStart) < 10)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: flatSliderBearing eleTag iNode jNode frnMdlTag uy -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-mass m> <-iter maxIter tol>\n";
+            opserr << "Want: flatSliderBearing eleTag iNode jNode frnMdlTag uy -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
         }    
         
@@ -82,6 +82,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         int recvMat = 0;
         double uy;
         double shearDistI = 0.0;
+        int doRayleigh = 0;
         double mass = 0.0;
         int maxIter = 20;
         double tol = 1E-12;
@@ -169,6 +170,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
                 int numOrient = 0;
                 while (j < argc &&
                     strcmp(argv[j],"-shearDist") != 0 &&
+                    strcmp(argv[j],"-doRayleigh") != 0 &&
                     strcmp(argv[j],"-mass") != 0 &&
                     strcmp(argv[j],"-iter") != 0)  {
                     numOrient++;
@@ -219,6 +221,10 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
             }
         }
         for (int i = 6+eleArgStart; i < argc; i++)  {
+            if (strcmp(argv[i], "-doRayleigh") == 0)
+                doRayleigh = 1;
+        }
+        for (int i = 6+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-mass") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK)  {
                     opserr << "WARNING invalid -mass value\n";
@@ -228,7 +234,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
             }
         }
         for (int i = 6+eleArgStart; i < argc; i++)  {
-            if (i+1 < argc && strcmp(argv[i], "-iter") == 0)  {
+            if (i+2 < argc && strcmp(argv[i], "-iter") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &maxIter) != TCL_OK)  {
                     opserr << "WARNING invalid maxIter\n";
                     opserr << "flatSliderBearing element: " << tag << endln;
@@ -244,7 +250,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         
         // now create the flatSliderBearing
         theElement = new FlatSliderSimple2d(tag, iNode, jNode, *theFrnMdl, uy,
-            theMaterials, y, x, shearDistI, mass, maxIter, tol);
+            theMaterials, y, x, shearDistI, doRayleigh, mass, maxIter, tol);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";
@@ -273,7 +279,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         if ((argc-eleArgStart) < 14)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: flatSliderBearing eleTag iNode jNode frnMdlTag uy -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-mass m> <-iter maxIter tol>\n";
+            opserr << "Want: flatSliderBearing eleTag iNode jNode frnMdlTag uy -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
         }    
         
@@ -282,6 +288,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         int recvMat = 0;
         double uy;
         double shearDistI = 0.0;
+        int doRayleigh = 0;
         double mass = 0.0;
         int maxIter = 20;
         double tol = 1E-12;
@@ -402,6 +409,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
                 int numOrient = 0;
                 while (j < argc &&
                     strcmp(argv[j],"-shearDist") != 0 &&
+                    strcmp(argv[j],"-doRayleigh") != 0 &&
                     strcmp(argv[j],"-mass") != 0 &&
                     strcmp(argv[j],"-iter") != 0)  {
                     numOrient++;
@@ -466,6 +474,10 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
             }
         }
         for (i = 6+eleArgStart; i < argc; i++)  {
+            if (i+1 < argc && strcmp(argv[i], "-doRayleigh") == 0)
+                doRayleigh = 1;
+        }
+        for (i = 6+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-mass") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK)  {
                     opserr << "WARNING invalid -mass value\n";
@@ -475,7 +487,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
             }
         }
         for (int i = 6+eleArgStart; i < argc; i++)  {
-            if (i+1 < argc && strcmp(argv[i], "-iter") == 0)  {
+            if (i+2 < argc && strcmp(argv[i], "-iter") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &maxIter) != TCL_OK)  {
                     opserr << "WARNING invalid maxIter\n";
                     opserr << "flatSliderBearing element: " << tag << endln;
@@ -491,7 +503,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         
         // now create the flatSliderBearing
         theElement = new FlatSliderSimple3d(tag, iNode, jNode, *theFrnMdl, uy,
-            theMaterials, y, x, shearDistI, mass, maxIter, tol);
+            theMaterials, y, x, shearDistI, doRayleigh, mass, maxIter, tol);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";
