@@ -519,31 +519,30 @@ CoupledZeroLength::getInitialStiff(void)
 const Matrix &
 CoupledZeroLength::getDamp(void)
 {
-  if (useRayleighDamping == 1)
-    return this->Element::getDamp();
+    Matrix& damp = *theMatrix;
+    damp.Zero();
 
-    double E;
+    if (useRayleighDamping == 1)
+        damp = this->Element::getDamp();
 
-    E = theMaterial->getDampTangent();
-
-    Matrix& stiff = *theMatrix;
-    stiff.Zero();
+    double eta;
+    eta = theMaterial->getDampTangent();
 
     int numNodeDof = numDOF/2;
     int dirn1b = dirn1+numNodeDof;
     int dirn2b = dirn2+numNodeDof;
 
-    stiff(dirn1,dirn1)   = E;
-    stiff(dirn1b,dirn1b) = E;      
-    stiff(dirn1,dirn1b)  = -E;
-    stiff(dirn1b,dirn1)  = -E;      
+    damp(dirn1,dirn1)   += eta;
+    damp(dirn1b,dirn1b) += eta;      
+    damp(dirn1,dirn1b)  -= eta;
+    damp(dirn1b,dirn1)  -= eta;      
 
-    stiff(dirn2,dirn2)   = E;
-    stiff(dirn2b,dirn2b) = E;      
-    stiff(dirn2,dirn2b)  = -E;
-    stiff(dirn2b,dirn2)  = -E;      
-  
-    return stiff;
+    damp(dirn2,dirn2)   += eta;
+    damp(dirn2b,dirn2b) += eta;      
+    damp(dirn2,dirn2b)  -= eta;
+    damp(dirn2b,dirn2)  -= eta;      
+
+    return damp;
 }
 
 
@@ -580,54 +579,54 @@ CoupledZeroLength::addInertiaLoadToUnbalance(const Vector &accel)
 const Vector &
 CoupledZeroLength::getResistingForce()
 {
-  double force, strain;
-    
-  // zero the residual
-  theVector->Zero();
+    double force, strain;
 
-  // get resisting force for material
-  force = theMaterial->getStress();
-  strain = theMaterial->getStrain();
+    // zero the residual
+    theVector->Zero();
 
-  double Fx = force;
-  double Fy = force;
-  
-  if (strain != 0.0) {
-    Fx *= dX/strain;
-    Fy *= dY/strain;
-  } else {
-    double oldF = sqrt(fX*fX+fY*fY);
-    if (oldF != 0.0) {
-      Fx *= fX/oldF;
-      Fy *= fY/oldF;
+    // get resisting force for material
+    force = theMaterial->getStress();
+    strain = theMaterial->getStrain();
+
+    double Fx = force;
+    double Fy = force;
+
+    if (strain != 0.0) {
+        Fx *= dX/strain;
+        Fy *= dY/strain;
+    } else {
+        double oldF = sqrt(fX*fX+fY*fY);
+        if (oldF != 0.0) {
+            Fx *= fX/oldF;
+            Fy *= fY/oldF;
+        }
     }
-  }
-  //  opserr << "strain: " << strain << " dX: " << dX << " dY: " << dY << " Fx: " << Fx << " Fy: "<< Fy << endln;
-  int numNodeDof = numDOF/2;
-  int dirn1b = dirn1+numNodeDof;
-  int dirn2b = dirn2+numNodeDof;
-  
-  (*theVector)(dirn1)   = -Fx;
-  (*theVector)(dirn1b)  =  Fx;      
-  (*theVector)(dirn2)   = -Fy;
-  (*theVector)(dirn2b)  =  Fy;      
-  
-  //  opserr << "CoupledZeroLength::getResistingForce() " << force << " forces: " << *theVector;
+    //  opserr << "strain: " << strain << " dX: " << dX << " dY: " << dY << " Fx: " << Fx << " Fy: "<< Fy << endln;
+    int numNodeDof = numDOF/2;
+    int dirn1b = dirn1+numNodeDof;
+    int dirn2b = dirn2+numNodeDof;
 
-  return *theVector;
+    (*theVector)(dirn1)   = -Fx;
+    (*theVector)(dirn1b)  =  Fx;      
+    (*theVector)(dirn2)   = -Fy;
+    (*theVector)(dirn2b)  =  Fy;      
+
+    //  opserr << "CoupledZeroLength::getResistingForce() " << force << " forces: " << *theVector;
+
+    return *theVector;
 }
 
 
 const Vector &
 CoupledZeroLength::getResistingForceIncInertia()
 {	
-    // there is no mass, so return
-    
+    // this already includes damping forces from materials
     this->getResistingForce();
 
+    // add the damping forces from rayleigh damping
     if (useRayleighDamping == 1)
-      if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-	*theVector += this->getRayleighDampingForces();
+        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+            *theVector += this->getRayleighDampingForces();
 
     return *theVector;
 }

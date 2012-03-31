@@ -499,35 +499,35 @@ ZeroLength::getInitialStiff(void)
 const Matrix &
 ZeroLength::getDamp(void)
 {
-  if (useRayleighDamping == 1)
-    return this->Element::getDamp();
+    // damp is a reference to the matrix holding the damping matrix
+    Matrix& damp = *theMatrix;
 
-  double eta;
-  
-  // damp is a reference to the matrix holding the damping matrix
-  Matrix& damp = *theMatrix;
-  
-  // zero stiffness matrix
-  damp.Zero();
-  
-  // loop over 1d materials
-  Matrix& tran = *t1d;;
-  for (int mat=0; mat<numMaterials1d; mat++) {
-    
-    // get tangent for material
-    eta = theMaterial1d[mat]->getDampTangent();
-    
-    // compute contribution of material to tangent matrix
+    // zero damping matrix
+    damp.Zero();
+
+    // get Rayleigh damping matrix 
+    if (useRayleighDamping == 1)
+        damp = this->Element::getDamp();
+
+    // loop over 1d materials and add their damping tangents
+    double eta;
+    Matrix& tran = *t1d;;
+    for (int mat=0; mat<numMaterials1d; mat++) {
+
+        // get tangent for material
+        eta = theMaterial1d[mat]->getDampTangent();
+
+        // compute contribution of material to tangent matrix
+        for (int i=0; i<numDOF; i++)
+            for(int j=0; j<i+1; j++)
+                damp(i,j) +=  tran(mat,i) * eta * tran(mat,j);
+
+    } // end loop over 1d materials 
+
+    // complete symmetric damping matrix
     for (int i=0; i<numDOF; i++)
-      for(int j=0; j<i+1; j++)
-	damp(i,j) +=  tran(mat,i) * eta * tran(mat,j);
-    
-  } // end loop over 1d materials 
-  
-    // complete symmetric stiffness matrix
-  for (int i=0; i<numDOF; i++)
-    for(int j=0; j<i; j++)
-      damp(j,i) = damp(i,j);
+        for(int j=0; j<i; j++)
+            damp(j,i) = damp(i,j);
 
     return damp;
 }
@@ -568,20 +568,20 @@ const Vector &
 ZeroLength::getResistingForce()
 {
     double force;
-    
+
     // zero the residual
     theVector->Zero();
-    
+
     // loop over 1d materials
     for (int mat=0; mat<numMaterials1d; mat++) {
-	
-	// get resisting force for material
-	force = theMaterial1d[mat]->getStress();
-	
+
+        // get resisting force for material
+        force = theMaterial1d[mat]->getStress();
+
         // compute residual due to resisting force
         for (int i=0; i<numDOF; i++)
-	    (*theVector)(i)  += (*t1d)(mat,i) * force;
-	
+            (*theVector)(i)  += (*t1d)(mat,i) * force;
+
     } // end loop over 1d materials 
 
     return *theVector;
@@ -591,13 +591,13 @@ ZeroLength::getResistingForce()
 const Vector &
 ZeroLength::getResistingForceIncInertia()
 {	
-    // there is no mass, so return
-    
+    // this already includes damping forces from materials
     this->getResistingForce();
 
+    // add the damping forces from rayleigh damping
     if (useRayleighDamping == 1)
-      if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-	*theVector += this->getRayleighDampingForces();
+        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+            *theVector += this->getRayleighDampingForces();
 
     return *theVector;
 }
