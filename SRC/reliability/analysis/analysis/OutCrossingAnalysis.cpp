@@ -228,7 +228,8 @@ OutCrossingAnalysis::analyze(void)
 					if (useFirstDesignPt) {
 
 						Vector xStar = theFindDesignPointAlgorithm->get_x();
-						theFindDesignPointAlgorithm->setStartPt(&xStar);
+                        // KRM -- parameters now handle all values
+						//theFindDesignPointAlgorithm->setStartPt(&xStar);
 						
 					}
 					

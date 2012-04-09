@@ -542,7 +542,8 @@ NewSearchWithStepSizeAndStepDirection::findDesignPoint()
 ////////////////////////////////////////////////////////////////////////
 //			evaluationInStepSize = 1;
 			gFunctionValue_old = gFunctionValue;
-			gFunctionValue = theStepSizeRule->getGFunValue();
+            // KRM -- step size no longer storing gFun value, get it from algorithm itself
+			//gFunctionValue = theStepSizeRule->getGFunValue();
 		}
 		stepSize = theStepSizeRule->getStepSize();
 		int numReduction = theStepSizeRule->getNumReductions();

@@ -84,9 +84,8 @@ public:
 	double getFirstGFunValue();
 	double getLastGFunValue();
 	const Vector &getGradientInStandardNormalSpace();
-	int    getNumberOfEvaluations();
-  // Quan and Michele Jan 2006  
-	int setStartPt(Vector *);
+	int getNumberOfEvaluations();
+
 protected:
 
 private:	

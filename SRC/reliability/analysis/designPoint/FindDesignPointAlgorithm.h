@@ -62,9 +62,6 @@ public:
 	virtual double getLastGFunValue() =0;
 	virtual const Vector &getGradientInStandardNormalSpace() =0;
 	virtual int getNumberOfEvaluations() = 0;
-// Quan and Michele Jan 2006 
-	virtual int setStartPt(Vector *) =0;
-	
 	
 	/////S added by K Fujimura /////
 	virtual int    getNumberOfSensAna();

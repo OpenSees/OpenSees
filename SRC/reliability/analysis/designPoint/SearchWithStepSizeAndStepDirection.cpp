@@ -502,19 +502,11 @@ SearchWithStepSizeAndStepDirection::getGradientInStandardNormalSpace()
 }
 
 
-
 int
 SearchWithStepSizeAndStepDirection::getNumberOfEvaluations()
 {
 	return numberOfEvaluations;
 }
 
-
-// Quan and Michele
-int SearchWithStepSizeAndStepDirection::setStartPt(Vector * pStartPt)
-{
-  //startPoint->addVector(0.0,(*pStartPt),1.0);
-	return 0;
-}
 
 
