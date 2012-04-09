@@ -28,7 +28,9 @@
 
 
 //
-// Written by Terje Haukaas (haukaas@ce.berkeley.edu)
+// Written by: 
+// Kevin Mackie (kmackie@mail.ucf.edu)
+// Michael Scott (mhscott@engr.orst.edu)
 //
 
 #ifndef ArmijoStepSizeRule_h
@@ -62,28 +64,23 @@ public:
 		
 	~ArmijoStepSizeRule();
     int initialize(void);
-/////S added by K Fujimura /////
-	/*int		computeStepSize(Vector u, Vector grad_G, double G, Vector d, int stepNumber,     
-		int reschk=0); */
+    int getNumReductions();
 	int computeStepSize(const Vector &u, const Vector &grad_G,
-			    double G, const Vector &d, int stepNumber, int reschk =0);
-/////E added by K Fujimura /////
+			    double G, const Vector &d, int stepNumber, int reschk = 0);
 	double	getStepSize();
 	double	getInitialStepSize();
-	double  getGFunValue();
-	int getNumReductions();	///// added by K Fujimura /////
 
 protected:
 
 private:
-	double stepSize;
     ReliabilityDomain *theReliabilityDomain;
 	FunctionEvaluator *theGFunEvaluator;
 	GradientEvaluator *theGradGEvaluator;
 	ProbabilityTransformation *theProbabilityTransformation;
 	MeritFunctionCheck *theMeritFunctionCheck;
 	RootFinding *theRootFindingAlgorithm;
-	double gFunValue;
+
+   	double stepSize;
 	double base;
 	int maxNumReductions;
 	double b0;
@@ -91,9 +88,13 @@ private:
 	double radius;
 	double surfaceDistance;
 	double evolution;
-	bool isCloseToSphere;
 	int printFlag;
-	int numReduction;	///// added by K Fujimura /////
+	int numReduction;
+    
+    bool isCloseToSphere;
+    bool isOutsideSphere;
+	bool isSecondTime;
+	bool FEconvergence;
 
 };
 

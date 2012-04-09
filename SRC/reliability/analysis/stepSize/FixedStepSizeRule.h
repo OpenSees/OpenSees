@@ -28,7 +28,9 @@
 
 
 //
-// Written by Terje Haukaas (haukaas@ce.berkeley.edu)
+// Written by: 
+// Kevin Mackie (kmackie@mail.ucf.edu)
+// Michael Scott (mhscott@engr.orst.edu)
 //
 
 #ifndef FixedStepSizeRule_h
@@ -42,23 +44,15 @@ class FixedStepSizeRule : public StepSizeRule
 public:
 	FixedStepSizeRule(double stepSize);
 	~FixedStepSizeRule();
-	/////S added by K Fujimura /////
-	/*int		computeStepSize(Vector u, Vector grad_G, double G, Vector d, int stepNumber,
-		int reschk=0);*/
-	int		computeStepSize(const Vector &u, const Vector &grad_G, double G, const Vector &d, int stepNumber, int reschk=0);
-	/////E added by K Fujimura /////
+	int		computeStepSize(const Vector &u, const Vector &grad_G, double G, const Vector &d, int stepNumber, int reschk = 0);
 	double	getStepSize();
 	double	getInitialStepSize();
-	double getGFunValue();
-	int getNumReductions();	///// added by K Fujimura /////
 
 
 protected:
 
 private:
 	double stepSize;
-	double gFunValue;
-	int numReducntion;	///// added by K Fujimura /////
 
 };
 

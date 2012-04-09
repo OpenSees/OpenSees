@@ -42,6 +42,13 @@ StepSizeRule::~StepSizeRule()
 }
 
 int 
-StepSizeRule::initialize() {
+StepSizeRule::initialize() 
+{
     return 0;
+}
+
+int
+StepSizeRule::getNumReductions()
+{
+	return 0;    
 }

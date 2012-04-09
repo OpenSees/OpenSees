@@ -28,7 +28,9 @@
 
 
 //
-// Written by Terje Haukaas (haukaas@ce.berkeley.edu)
+// Written by: 
+// Kevin Mackie (kmackie@mail.ucf.edu)
+// Michael Scott (mhscott@engr.orst.edu)
 //
 
 #ifndef StepSizeRule_h
@@ -43,16 +45,12 @@ public:
 	StepSizeRule();
 	virtual ~StepSizeRule();
     virtual int initialize(void);
-        /////S added by K Fujimura /////
-	/*virtual int		computeStepSize(Vector u, Vector grad_G, double G, Vector d, int stepNumber,
-		int reschk=0) =0; */
-	virtual int		computeStepSize(const Vector &u, const Vector &grad_G, double G, const Vector &d, int stepNumber, int reschk =0) =0;
-	   /////E added by K Fujimura /////
-	virtual double	getStepSize() =0;
-	virtual double	getInitialStepSize() =0;
-	virtual double getGFunValue() =0;
-	virtual int getNumReductions() =0;
-	///// added by K Fujimura /////
+    virtual int getNumReductions();
+    
+    // pure virtual
+	virtual int	computeStepSize(const Vector &u, const Vector &grad_G, double G, const Vector &d, int stepNumber, int reschk = 0) =0;
+	virtual double getStepSize() =0;
+	virtual double getInitialStepSize() =0;
 
 protected:
 

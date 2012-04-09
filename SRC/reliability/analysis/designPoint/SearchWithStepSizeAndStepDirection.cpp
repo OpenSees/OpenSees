@@ -77,8 +77,8 @@ SearchWithStepSizeAndStepDirection::SearchWithStepSizeAndStepDirection(
         theOpenSeesDomain(passedOpenSeesDomain)
 {
 	maxNumberOfIterations			= passedMaxNumberOfIterations;
-	theFunctionEvaluator				= passedFunctionEvaluator;
-	theGradientEvaluator				= passedGradientEvaluator;
+	theFunctionEvaluator			= passedFunctionEvaluator;
+	theGradientEvaluator			= passedGradientEvaluator;
 	theStepSizeRule					= passedStepSizeRule;
 	theSearchDirection				= passedSearchDirection;
 	theProbabilityTransformation	= passedProbabilityTransformation;
@@ -288,7 +288,8 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
             tempProduct.addMatrixTransposeVector(0.0, Jux, *alpha, 1.0);
             
             int lsfTag = theReliabilityDomain->getTagOfActiveLimitStateFunction();
-	    double beta = 0.0;
+            double beta = 0.0;
+            
             // Only diagonal elements of (J_xu*J_xu^T) are used
             for (int j = 0; j < numberOfRandomVariables; j++) {
                 double sum = 0.0;
@@ -300,20 +301,18 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
                 }
                 (*gamma)(j) = sqrt(sum) * tempProduct(j);
 
-		RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
-		int rvTag = theRV->getTag();
-		theFunctionEvaluator->setResponseVariable("gammaFORM", lsfTag,
-							  rvTag, (*gamma)(j));
-		theFunctionEvaluator->setResponseVariable("alphaFORM", lsfTag,
-							  rvTag, (*alpha)(j));
+                // save individual entries of alpha hat and gamma hat 
+                RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+                int rvTag = theRV->getTag();
+                theFunctionEvaluator->setResponseVariable("gammaFORM", lsfTag, rvTag, (*gamma)(j));
+                theFunctionEvaluator->setResponseVariable("alphaFORM", lsfTag, rvTag, (*alpha)(j));
 
-		beta += ((*alpha)(j))*((*u)(j));
+                beta += ((*alpha)(j))*((*u)(j));
             }
-	    theFunctionEvaluator->setResponseVariable("betaFORM", lsfTag, beta);
+            theFunctionEvaluator->setResponseVariable("betaFORM", lsfTag, beta);
 						      
       
             Glast = gFunctionValue;
-
             numberOfEvaluations = theFunctionEvaluator->getNumberOfEvaluations();
 
             // compute sensitivity pf beta wrt to LSF parameters (if they exist)
@@ -365,6 +364,9 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
         *searchDirection = theSearchDirection->getSearchDirection();
 
 
+        // save the previous displacement before modifying
+        u_old = *u;
+        
         // Determine step size
         bool continueStepSize = true;
         while (continueStepSize) {
@@ -377,20 +379,16 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
                 return -1;
             }
             else if (result == 0) {  
-                // nothing was evaluated in step size (FixedStepSize)
+                // step was successful, continue to next iteration
                 evaluationInStepSize = 0;
                 continueStepSize = false;
             }
             else if (result == 1) {  
-                // the gfun was evaluated (Armijo)
-                evaluationInStepSize = 1;
-                gFunctionValue_old = gFunctionValue;
-                gFunctionValue = theStepSizeRule->getGFunValue();
+                // stepSize requests step size reduction
+                evaluationInStepSize = 0;
+                continueStepSize = true;
             }
             stepSize = theStepSizeRule->getStepSize();
-        
-            // save the previous displacement before modifying
-            u_old = *u;
             u->addVector(1.0, *searchDirection, stepSize);
 
             

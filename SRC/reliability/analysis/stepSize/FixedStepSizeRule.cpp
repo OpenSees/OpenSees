@@ -28,12 +28,13 @@
 
 
 //
-// Written by Terje Haukaas (haukaas@ce.berkeley.edu)
+// Written by: 
+// Kevin Mackie (kmackie@mail.ucf.edu)
+// Michael Scott (mhscott@engr.orst.edu)
 //
 
 #include <FixedStepSizeRule.h>
 #include <StepSizeRule.h>
-#include <ProbabilityTransformation.h>
 #include <math.h>
 #include <Vector.h>
 
@@ -42,7 +43,6 @@ FixedStepSizeRule::FixedStepSizeRule(double passedStepSize)
 :StepSizeRule()
 {
 	stepSize = passedStepSize;
-	gFunValue = -1;
 }
 
 FixedStepSizeRule::~FixedStepSizeRule()
@@ -52,19 +52,11 @@ FixedStepSizeRule::~FixedStepSizeRule()
 
 
 int
-/////S added by K Fujimura /////
 FixedStepSizeRule::computeStepSize(const Vector &u, 
 				   const Vector &grad_G, 
 				   double G, 
 				   const Vector &d,
 				   int stepNumber, int reschk)
-/*FixedStepSizeRule::computeStepSize(const Vector &u, 
-				   const Vector &grad_G, 
-				   double G, 
-				   const Vector &d,
-				   int stepNumber)*/
-/////E added by K Fujimura /////
-
 {
 	// This method is in fact not neccesary for the fixed step size rule. The 
 	// user has already given the step size. BUT limit the maximum jump that can occur 
@@ -106,19 +98,5 @@ double
 FixedStepSizeRule::getInitialStepSize()
 {
 	return stepSize;
-
-}
-
-double
-FixedStepSizeRule::getGFunValue()
-{
-	return 0.0;
-}
-
-///// added by K Fujimura /////
-int
-FixedStepSizeRule::getNumReductions()
-{
-	return 0;
 
 }
