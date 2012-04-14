@@ -178,34 +178,6 @@
 				</File>
 			</Filter>
 			<Filter
-				Name="gFunction"
-				Filter="">
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\gFunction\BasicGFunEvaluator.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\gFunction\BasicGFunEvaluator.h">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\gFunction\GFunEvaluator.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\gFunction\GFunEvaluator.h">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\gFunction\OpenSeesGFunEvaluator.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\gFunction\OpenSeesGFunEvaluator.h">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\gFunction\TclGFunEvaluator.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\gFunction\TclGFunEvaluator.h">
-				</File>
-			</Filter>
-			<Filter
 				Name="misc"
 				Filter="">
 				<File
@@ -235,22 +207,6 @@
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\reliability\analysis\randomNumber\RandomNumberGenerator.h">
-				</File>
-			</Filter>
-			<Filter
-				Name="sensitivity"
-				Filter="">
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\sensitivity\GradGEvaluator.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\sensitivity\GradGEvaluator.h">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\sensitivity\OpenSeesGradGEvaluator.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\sensitivity\OpenSeesGradGEvaluator.h">
 				</File>
 			</Filter>
 			<Filter
@@ -335,12 +291,6 @@
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\reliability\analysis\analysis\FOSMAnalysis.h">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\analysis\FragilityAnalysis.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\analysis\FragilityAnalysis.h">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\reliability\analysis\analysis\GFunVisualizationAnalysis.cpp">
@@ -536,12 +486,6 @@
 			<Filter
 				Name="rootFinding"
 				Filter="">
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\rootFinding\ModNewtonRootFinding.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\rootFinding\ModNewtonRootFinding.h">
-				</File>
 				<File
 					RelativePath="..\..\..\SRC\reliability\analysis\rootFinding\RootFinding.cpp">
 				</File>

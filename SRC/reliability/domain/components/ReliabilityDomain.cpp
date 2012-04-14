@@ -451,7 +451,7 @@ ReliabilityDomain::getParameterIndexFromRandomVariableIndex(int rv_index)
     // note this map IS guaranteed because there is a parameter for every RV
     int numberOfParameters = theOpenSeesDomain->getNumParameters();
     int result;
-    double RVmap[numRandomVariables];
+    int *RVmap = new int[numRandomVariables];
     
     for (int j = 0; j < numberOfParameters; j++) {
         Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(j);
@@ -470,7 +470,7 @@ ReliabilityDomain::getParameterIndexFromRandomVariableIndex(int rv_index)
             << " out of bounds 0 ... " << numRandomVariables-1 << endln;
         return -1;
     }
-    
+    delete [] RVmap;
     return result;
 }
 

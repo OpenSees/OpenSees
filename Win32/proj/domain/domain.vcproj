@@ -220,10 +220,22 @@
 				RelativePath="..\..\..\SRC\domain\component\MaterialStageParameter.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\domain\component\NodeResponseParameter.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\domain\component\NodeResponseParameter.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\domain\component\Parameter.cpp">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\domain\component\Parameter.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\domain\component\RVParameter.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\domain\component\RVParameter.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\domain\component\TclParameterCommands.cpp">

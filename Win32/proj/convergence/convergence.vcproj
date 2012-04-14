@@ -162,6 +162,18 @@
 		<File
 			RelativePath="..\..\..\SRC\convergenceTest\ConvergenceTest.h">
 		</File>
+		<File
+			RelativePath="..\..\..\SRC\convergenceTest\NormDispAndUnbalance.cpp">
+		</File>
+		<File
+			RelativePath="..\..\..\SRC\convergenceTest\NormDispAndUnbalance.h">
+		</File>
+		<File
+			RelativePath="..\..\..\SRC\convergenceTest\NormDispOrUnbalance.cpp">
+		</File>
+		<File
+			RelativePath="..\..\..\SRC\convergenceTest\NormDispOrUnbalance.h">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

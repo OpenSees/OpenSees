@@ -392,9 +392,6 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\TclHyperbolicGapMaterial.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\uniaxial\TclImpactMaterial.cpp">
-			</File>
-			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\TclModelBuilderUniaxialMaterialCommand.cpp">
 			</File>
 			<File
