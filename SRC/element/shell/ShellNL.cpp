@@ -62,7 +62,7 @@ OPS_NewShellNL(void)
   }
   
   int iData[11];
-  int numData = 6;
+  int numData = 11;
   if (OPS_GetInt(&numData, iData) != 0) {
     opserr << "WARNING invalid integer tag: element ShellNL\n";
     return 0;
@@ -71,7 +71,7 @@ OPS_NewShellNL(void)
   SectionForceDeformation *theSection = OPS_GetSectionForceDeformation(iData[10]);
 
   if (theSection == 0) {
-    opserr << "ERROR:  element ShellNL " << iData[0] << "section not found\n";
+    opserr << "ERROR:  element ShellNL " << iData[0] << "section " << iData[10] << " not found\n";
     return 0;
   }
   
@@ -141,14 +141,14 @@ connectedExternalNodes(9), load(0), Ki(0)
 ShellNL::ShellNL(  int tag,
                    int node1,
                    int node2,
-   	               int node3,
+		   int node3,
                    int node4,
                    int node5,
                    int node6,
-   	               int node7,
+		   int node7,
                    int node8,
-				   int node9,
-				   SectionForceDeformation &theMaterial ) :
+		   int node9,
+		   SectionForceDeformation &theMaterial ) :
 Element( tag, ELE_TAG_ShellNL ),
 connectedExternalNodes(9), load(0), Ki(0)
 {
