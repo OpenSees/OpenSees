@@ -99,7 +99,7 @@ using std::setiosflags;
 #include <SearchWithStepSizeAndStepDirection.h>
 #include <FORMAnalysis.h>
 #include <FOSMAnalysis.h>
-#include <ParametricReliabilityAnalysis.h>
+//#include <ParametricReliabilityAnalysis.h>
 #include <GFunVisualizationAnalysis.h>
 #include <OutCrossingAnalysis.h>
 #include <ImportanceSamplingAnalysis.h>
@@ -231,7 +231,7 @@ static SQPsearchDirectionMeritFunctionAndHessian *theSQPtriplePurpose = 0;
 static GFunVisualizationAnalysis *theGFunVisualizationAnalysis = 0;
 static FORMAnalysis *theFORMAnalysis = 0;
 static FOSMAnalysis *theFOSMAnalysis = 0;
-static ParametricReliabilityAnalysis *theParametricReliabilityAnalysis = 0;
+//static ParametricReliabilityAnalysis *theParametricReliabilityAnalysis = 0;
 static OutCrossingAnalysis *theOutCrossingAnalysis = 0;
 static SORMAnalysis *theSORMAnalysis = 0;
 static ImportanceSamplingAnalysis *theImportanceSamplingAnalysis = 0;
@@ -280,7 +280,7 @@ int TclReliabilityModelBuilder_addFindDesignPointAlgorithm(ClientData clientData
 int TclReliabilityModelBuilder_addFindCurvatures(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_runFORMAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_runFOSMAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
-int TclReliabilityModelBuilder_runParametricReliabilityAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+//int TclReliabilityModelBuilder_runParametricReliabilityAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_runGFunVisualizationAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_runOutCrossingAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_runSORMAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -363,7 +363,7 @@ TclReliabilityBuilder::TclReliabilityBuilder(Domain &passedDomain, Tcl_Interp *i
   Tcl_CreateCommand(interp, "randomNumberGenerator",TclReliabilityModelBuilder_addRandomNumberGenerator,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "runFORMAnalysis",TclReliabilityModelBuilder_runFORMAnalysis,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "runFOSMAnalysis",TclReliabilityModelBuilder_runFOSMAnalysis,(ClientData)NULL, NULL);
-  Tcl_CreateCommand(interp, "runParametricReliabilityAnalysis",TclReliabilityModelBuilder_runParametricReliabilityAnalysis,(ClientData)NULL, NULL);
+  //  Tcl_CreateCommand(interp, "runParametricReliabilityAnalysis",TclReliabilityModelBuilder_runParametricReliabilityAnalysis,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "runGFunVizAnalysis",TclReliabilityModelBuilder_runGFunVisualizationAnalysis,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "runOutCrossingAnalysis",TclReliabilityModelBuilder_runOutCrossingAnalysis,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "runSORMAnalysis",TclReliabilityModelBuilder_runSORMAnalysis,(ClientData)NULL, NULL);
@@ -467,8 +467,8 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
     delete theFORMAnalysis;
   if (theFOSMAnalysis != 0)
     delete theFOSMAnalysis;
-  if (theParametricReliabilityAnalysis != 0)
-    delete theParametricReliabilityAnalysis;
+  //  if (theParametricReliabilityAnalysis != 0)
+  //delete theParametricReliabilityAnalysis;
   if (theSORMAnalysis != 0)
     delete theSORMAnalysis;
   if (theImportanceSamplingAnalysis != 0)
@@ -526,7 +526,7 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
   
   theFORMAnalysis = 0;
   theFOSMAnalysis = 0;
-  theParametricReliabilityAnalysis = 0;
+  //  theParametricReliabilityAnalysis = 0;
   theSORMAnalysis = 0;
   theImportanceSamplingAnalysis = 0;
   theSystemAnalysis = 0;
@@ -575,7 +575,7 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
   Tcl_DeleteCommand(theInterp, "randomNumberGenerator");
   Tcl_DeleteCommand(theInterp, "runFORMAnalysis");
   Tcl_DeleteCommand(theInterp, "runFOSMAnalysis");
-  Tcl_DeleteCommand(theInterp, "runParametricReliabilityAnalysis");
+  //  Tcl_DeleteCommand(theInterp, "runParametricReliabilityAnalysis");
   Tcl_DeleteCommand(theInterp, "runGFunVizAnalysis");
   Tcl_DeleteCommand(theInterp, "runOutCrossingAnalysis");
   Tcl_DeleteCommand(theInterp, "runSORMAnalysis");
@@ -1012,7 +1012,11 @@ TclReliabilityModelBuilder_getMean(ClientData clientData, Tcl_Interp *interp, in
 		opserr << "ERROR: Invalid tag number to getMean command. " << endln;
 		return TCL_ERROR;
 	}
-	opserr << "Mean of random variable number " << tag << ": " << rv->getMean() << endln;
+
+	char buffer[40];
+	sprintf(buffer,"%35.20f",rv->getMean());
+	
+	Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
 	return TCL_OK;
 }
@@ -1035,8 +1039,12 @@ TclReliabilityModelBuilder_getStdv(ClientData clientData, Tcl_Interp *interp, in
 		opserr << "ERROR: Invalid tag number to getStdv command. " << endln;
 		return TCL_ERROR;
 	}
-	opserr << "Standard deviation of random variable number " << tag << ": " << rv->getStdv() << endln;
 	
+	char buffer[40];
+	sprintf(buffer,"%35.20f",rv->getStdv());
+	
+	Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
 	return TCL_OK;
 }
 
@@ -3661,7 +3669,7 @@ TclReliabilityModelBuilder_runFOSMAnalysis(ClientData clientData, Tcl_Interp *in
 
 
 
-
+/*
 //////////////////////////////////////////////////////////////////
 int 
 TclReliabilityModelBuilder_runParametricReliabilityAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -3773,6 +3781,7 @@ TclReliabilityModelBuilder_runParametricReliabilityAnalysis(ClientData clientDat
 
 	return TCL_OK;
 }
+*/
 
 //////////////////////////////////////////////////////////////////
 int 
