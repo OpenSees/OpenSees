@@ -39,9 +39,7 @@
 #include <Cutset.h>
 #include <RandomVariable.h>
 #include <LimitStateFunction.h>
-#include <RandomVariablePositioner.h>
 #include <Parameter.h>
-#include <ParameterPositioner.h>
 #include <ArrayOfTaggedObjects.h>
 #include <MapOfTaggedObjects.h>
 #include <ModulatingFunction.h>
@@ -49,8 +47,6 @@
 #include <Spectrum.h>
 
 #include <RandomVariableIter.h>
-#include <RandomVariablePositionerIter.h>
-#include <ParameterPositionerIter.h>
 #include <LimitStateFunctionIter.h>
 #include <CorrelationCoefficientIter.h>
 #include <CutsetIter.h>
@@ -67,8 +63,6 @@ ReliabilityDomain::ReliabilityDomain(Domain *passedDomain):
 	theCorrelationCoefficientsPtr = new ArrayOfTaggedObjects (256);
 	theLimitStateFunctionsPtr = new ArrayOfTaggedObjects (256);
 	theCutsetsPtr = new ArrayOfTaggedObjects (256);
-	theRandomVariablePositionersPtr = new ArrayOfTaggedObjects (256);
-	theParameterPositionersPtr = new ArrayOfTaggedObjects (256);
 	theModulatingFunctionsPtr = new ArrayOfTaggedObjects (256);
 	theFiltersPtr = new ArrayOfTaggedObjects (256);
 	theSpectraPtr = new ArrayOfTaggedObjects (256);
@@ -81,8 +75,6 @@ ReliabilityDomain::ReliabilityDomain(Domain *passedDomain):
 	tagOfActiveLimitStateFunction = 1;
 
 	theRVIter = new RandomVariableIter(theRandomVariablesPtr);
-	theRVPosIter = new RandomVariablePositionerIter(theRandomVariablePositionersPtr);
-	theParamPosIter = new ParameterPositionerIter(theParameterPositionersPtr);
 	theLSFIter = new LimitStateFunctionIter(theLimitStateFunctionsPtr);
 	theCutIter = new CutsetIter(theCutsetsPtr);
 	theCCIter = new CorrelationCoefficientIter(theCorrelationCoefficientsPtr);
@@ -118,14 +110,6 @@ ReliabilityDomain::~ReliabilityDomain()
     theCutsetsPtr->clearAll();
     delete theCutsetsPtr;
   }
-  if (theRandomVariablePositionersPtr != 0) {
-    theRandomVariablePositionersPtr->clearAll();
-    delete theRandomVariablePositionersPtr;
-  }
-  if (theParameterPositionersPtr != 0) {
-    theParameterPositionersPtr->clearAll();
-    delete theParameterPositionersPtr;
-  }
   if (theModulatingFunctionsPtr != 0) {
     theModulatingFunctionsPtr->clearAll();
     delete theModulatingFunctionsPtr;
@@ -158,10 +142,6 @@ ReliabilityDomain::~ReliabilityDomain()
 
   if (theRVIter != 0)
     delete theRVIter;
-  if (theRVPosIter != 0)
-    delete theRVPosIter;
-  if (theParamPosIter != 0)
-    delete theParamPosIter;
   if (theLSFIter != 0)
     delete theLSFIter;
   if (theCutIter != 0)
@@ -292,20 +272,6 @@ ReliabilityDomain::addCutset(Cutset *theCutset)
 
 
 bool
-ReliabilityDomain::addRandomVariablePositioner(RandomVariablePositioner *theRandomVariablePositioner)
-{
-	bool result = theRandomVariablePositionersPtr->addComponent(theRandomVariablePositioner);
-	return result;
-}
-
-bool
-ReliabilityDomain::addParameterPositioner(ParameterPositioner *theParameterPositioner)
-{
-	bool result = theParameterPositionersPtr->addComponent(theParameterPositioner);
-	return result;
-}
-
-bool
 ReliabilityDomain::addModulatingFunction(ModulatingFunction *theModulatingFunction)
 {
 	bool result = theModulatingFunctionsPtr->addComponent(theModulatingFunction);
@@ -365,20 +331,6 @@ ReliabilityDomain::getRandomVariables(void)
 {
   theRVIter->reset();
   return *theRVIter;
-}
-
-RandomVariablePositionerIter &
-ReliabilityDomain::getRandomVariablePositioners(void)
-{
-  theRVPosIter->reset();
-  return *theRVPosIter;
-}
-
-ParameterPositionerIter &
-ReliabilityDomain::getParameterPositioners(void)
-{
-  theParamPosIter->reset();
-  return *theParamPosIter;
 }
 
 LimitStateFunctionIter &
@@ -614,27 +566,6 @@ ReliabilityDomain::getCutsetIndex(int tag)
 }
 
 
-RandomVariablePositioner *
-ReliabilityDomain::getRandomVariablePositionerPtr(int tag)
-{
-	TaggedObject *theComponent = theRandomVariablePositionersPtr->getComponentPtr(tag);
-	if ( theComponent == 0 )
-		return 0;
-	RandomVariablePositioner *result = (RandomVariablePositioner *) theComponent;
-	return result;
-}
-
-ParameterPositioner *
-ReliabilityDomain::getParameterPositionerPtr(int tag)
-{
-	TaggedObject *theComponent = theParameterPositionersPtr->getComponentPtr(tag);
-	if ( theComponent == 0 )
-		return 0;
-	ParameterPositioner *result = (ParameterPositioner *) theComponent;
-	return result;
-}
-
-
 ModulatingFunction *
 ReliabilityDomain::getModulatingFunction(int tag)
 {
@@ -705,29 +636,6 @@ ReliabilityDomain::getObjectiveFunctionPtr(int tag)
 
 
 
-int
-ReliabilityDomain::removeRandomVariablePositioner(int tag)
-{
-	theRandomVariablePositionersPtr->removeComponent(tag);
-
-	return 0;
-}
-
-int
-ReliabilityDomain::removeParameterPositioner(int tag)
-{
-	theParameterPositionersPtr->removeComponent(tag);
-
-	return 0;
-}
-
-int
-ReliabilityDomain::removeAllParameterPositioners(void)
-{
-	theParameterPositionersPtr->clearAll();
-
-	return 0;
-}
 
 int
 ReliabilityDomain::removeRandomVariable(int tag)
@@ -888,16 +796,6 @@ int
 ReliabilityDomain::getNumberOfCutsets()
 {
 	return theCutsetsPtr->getNumComponents();
-}
-int
-ReliabilityDomain::getNumberOfRandomVariablePositioners()
-{
-	return theRandomVariablePositionersPtr->getNumComponents();
-}
-int
-ReliabilityDomain::getNumberOfParameterPositioners()
-{
-	return theParameterPositionersPtr->getNumComponents();
 }
 int
 ReliabilityDomain::getNumberOfModulatingFunctions()

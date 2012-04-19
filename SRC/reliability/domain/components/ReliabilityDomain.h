@@ -38,8 +38,6 @@
 #include <CorrelationCoefficient.h>
 #include <Cutset.h>
 #include <LimitStateFunction.h>
-#include <RandomVariablePositioner.h>
-#include <ParameterPositioner.h>
 #include <ModulatingFunction.h>
 #include <Filter.h>
 #include <Spectrum.h>
@@ -59,8 +57,6 @@ class DesignVariable;
 class DesignVariablePositioner;
 
 class RandomVariableIter;
-class RandomVariablePositionerIter;
-class ParameterPositionerIter;
 class LimitStateFunctionIter;
 class CutsetIter;
 class CorrelationCoefficientIter;
@@ -80,8 +76,6 @@ public:
 	virtual bool addCorrelationCoefficient(CorrelationCoefficient *theCorrelationCoefficient);
 	virtual bool addLimitStateFunction(LimitStateFunction *theLimitStateFunction);
 	virtual bool addCutset(Cutset *theCutset);
-	virtual bool addRandomVariablePositioner(RandomVariablePositioner *theRandomVariablePositioner);
-	virtual bool addParameterPositioner(ParameterPositioner *theParameterPositioner);
 	virtual bool addModulatingFunction(ModulatingFunction *theModulatingFunction);
 	virtual bool addFilter(Filter *theFilter);
 	virtual bool addSpectrum(Spectrum *theSpectrum);
@@ -112,8 +106,6 @@ public:
 	int getCutsetIndex(int tag);
 
 	CorrelationCoefficient *getCorrelationCoefficientPtr(int tag);
-	RandomVariablePositioner *getRandomVariablePositionerPtr(int tag);
-	ParameterPositioner *getParameterPositionerPtr(int tag);
 	ModulatingFunction *getModulatingFunction(int tag);
 	Filter *getFilter(int tag);
 	Spectrum *getSpectrum(int tag);
@@ -129,8 +121,6 @@ public:
 	int getNumberOfCorrelationCoefficients(void);
 	int getNumberOfLimitStateFunctions(void);
 	int getNumberOfCutsets(void);
-	int getNumberOfRandomVariablePositioners(void);
-	int getNumberOfParameterPositioners(void);
 	int getNumberOfModulatingFunctions(void);
 	int getNumberOfFilters(void);
 	int getNumberOfSpectra(void);
@@ -145,8 +135,6 @@ public:
 	void setTagOfActiveLimitStateFunction(int tag); // Probably not need anymore -- MHS
 
 	// Member functions to remove single components from the domain
-	int removeRandomVariablePositioner(int tag);
-	int removeParameterPositioner(int tag);
 	int removeRandomVariable(int tag);
 	int removeCorrelationCoefficient(int tag);
 	int removeLimitStateFunction(int tag);
@@ -163,8 +151,6 @@ public:
 	int removeAllParameterPositioners(void);
 
 	RandomVariableIter &getRandomVariables(void);
-	RandomVariablePositionerIter &getRandomVariablePositioners(void);
-	ParameterPositionerIter &getParameterPositioners(void);
 	LimitStateFunctionIter &getLimitStateFunctions(void);
 	CorrelationCoefficientIter &getCorrelationCoefficients(void);
 	CutsetIter &getCutsets(void);
@@ -181,8 +167,6 @@ private:
 	TaggedObjectStorage *theCorrelationCoefficientsPtr;
 	TaggedObjectStorage *theLimitStateFunctionsPtr;
 	TaggedObjectStorage *theCutsetsPtr;
-	TaggedObjectStorage *theRandomVariablePositionersPtr;
-	TaggedObjectStorage *theParameterPositionersPtr;
 	TaggedObjectStorage *theModulatingFunctionsPtr;
 	TaggedObjectStorage *theFiltersPtr;
 	TaggedObjectStorage *theSpectraPtr;
@@ -194,8 +178,6 @@ private:
 	TaggedObjectStorage *theDesignVariablePositionersPtr;
 
 	RandomVariableIter *theRVIter;
-	RandomVariablePositionerIter *theRVPosIter;
-	ParameterPositionerIter *theParamPosIter;
 	LimitStateFunctionIter *theLSFIter;
 	CutsetIter *theCutIter;
 	CorrelationCoefficientIter *theCCIter;
