@@ -69,8 +69,8 @@ class NewSensitivityAlgorithm: public SensitivityAlgorithm
   int numGrads;
   int numPos;
   //	int** gradPositioner;
-  RandomVariablePositioner** gradRVPositioner;
-  ParameterPositioner** gradParaPositioner;
+  //RandomVariablePositioner** gradRVPositioner;
+  //ParameterPositioner** gradParaPositioner;
   int** idGradPositioner;
   int* numGradPositioner;
   ofstream output;

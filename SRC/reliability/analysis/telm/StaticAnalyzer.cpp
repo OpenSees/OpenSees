@@ -27,7 +27,7 @@
 // $Source: /usr/local/cvs/OpenSees/SRC/reliability/analysis/telm/StaticAnalyzer.cpp,v $
 
 #include <StaticAnalyzer.h>
-#include <RandomVariablePositionerIter.h>
+//#include <RandomVariablePositionerIter.h>
 
 StaticAnalyzer::StaticAnalyzer
 				(ReliabilityDomain* passedReliabilityDomain,
@@ -103,6 +103,7 @@ int StaticAnalyzer::analyze(Vector x)
 //		}
 	}
 // setRandomVariables
+	/*
 	RandomVariablePositioner *theRandomVariablePositioner;
 	int rvNumber;
 	int i;
@@ -132,6 +133,8 @@ int StaticAnalyzer::analyze(Vector x)
 		}
 		output.flush();
 	}
+	*/
+
 	if(print){
 		output << "\n";
 		output << " Static Response Analysis \n";
@@ -196,6 +199,7 @@ int StaticAnalyzer::analyzeMean()
 //			output.flush();
 //		}
 	}
+	/*
 	RandomVariablePositioner *theRandomVariablePositioner;
 	int rvNumber;
 	int i;
@@ -226,6 +230,7 @@ int StaticAnalyzer::analyzeMean()
 			output.flush();
 		}
 	}
+	*/
 	if(print){
 		output << "\n";
 		output << " Static Response Analysis \n";

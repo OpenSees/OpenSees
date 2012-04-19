@@ -28,7 +28,7 @@
 
 
 #include <SelectLoadInitialStaticAnalysis.h>
-#include <RandomVariablePositionerIter.h>
+//#include <RandomVariablePositionerIter.h>
 
 SelectLoadInitialStaticAnalysis::SelectLoadInitialStaticAnalysis
 						  (ReliabilityDomain* passedReliabilityDomain,
@@ -232,6 +232,7 @@ void SelectLoadInitialStaticAnalysis::analyze(Vector x)
 		output.flush();
 	}
 //
+	/*
 	RandomVariablePositioner *theRandomVariablePositioner;
 	int rvNumber;
 	int i;
@@ -271,6 +272,7 @@ void SelectLoadInitialStaticAnalysis::analyze(Vector x)
 		}
 		output.flush();
 	}
+	*/
 
 	int result;
 	double dresult = 0;
@@ -286,6 +288,7 @@ void SelectLoadInitialStaticAnalysis::analyzeMean()
 {
 	if(NumLoadPatterns !=0 )modifyLoads();
 	this->reset();
+	/*
 	RandomVariablePositioner *theRandomVariablePositioner;
 	int rvNumber;
 	int i;
@@ -329,6 +332,8 @@ void SelectLoadInitialStaticAnalysis::analyzeMean()
 			output << " mean" << mean;
 		}
 	}
+	*/
+
 	int result;
 	double dresult = 0;
 	result=theReliabilityStaticAnalysis->analyze(Nstep);

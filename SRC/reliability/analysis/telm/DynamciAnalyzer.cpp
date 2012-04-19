@@ -28,7 +28,7 @@
 
 
 #include <DynamicAnalyzer.h>
-#include <RandomVariablePositionerIter.h>
+//#include <RandomVariablePositionerIter.h>
 
 DynamicAnalyzer::DynamicAnalyzer
 				(ReliabilityDomain* passedReliabilityDomain,
@@ -109,6 +109,7 @@ int DynamicAnalyzer::analyze(Vector x)
 //		}
 	}
 // setRandomVariables
+	/*
 	RandomVariablePositioner *theRandomVariablePositioner;
 	int rvNumber;
 	int i;
@@ -138,6 +139,7 @@ int DynamicAnalyzer::analyze(Vector x)
 			output.flush();
 		}
 	}
+	*/
 	if(print){
 		output << "\n";
 		output << " Dynamic Response Analysis \n";
@@ -203,6 +205,7 @@ int DynamicAnalyzer::analyzeMean()
 //			output.flush();
 //		}
 	}
+	/*
 	RandomVariablePositioner *theRandomVariablePositioner;
 	int rvNumber;
 	int i;
@@ -234,6 +237,7 @@ int DynamicAnalyzer::analyzeMean()
 		}
 		output.flush();
 	}
+	*/
 	if(print){
 		output << "\n";
 		output << " Dynamic Response Analysis \n";

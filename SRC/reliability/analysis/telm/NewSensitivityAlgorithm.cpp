@@ -31,9 +31,9 @@
 #include <Vector.h>
 #include <EquiSolnAlgo.h>
 #include <ReliabilityDomain.h>
-#include <RandomVariablePositioner.h>
-#include <RandomVariablePositionerIter.h>
-#include <ParameterPositionerIter.h>
+//#include <RandomVariablePositioner.h>
+//#include <RandomVariablePositionerIter.h>
+//#include <ParameterPositionerIter.h>
 
 #include <fstream>
 #include <iomanip>
@@ -71,8 +71,8 @@ NewSensitivityAlgorithm::NewSensitivityAlgorithm(ReliabilityDomain *passedReliab
 	// and whether they should be computed wrt. random variables
 	analysisTypeTag = passedAnalysisTypeTag;
 
-	gradRVPositioner=0;
-	gradParaPositioner=0;
+	//gradRVPositioner=0;
+	//gradParaPositioner=0;
 	idGradPositioner=0;
 	numGradPositioner=0;
 
@@ -160,7 +160,7 @@ NewSensitivityAlgorithm::computeSensitivities(bool fromFEM)
 			bool activeExist=false;
 			for(int i=0;i<numGradPositioner[idtemp];i++){
 				int ii=idGradPositioner[idtemp][i];
-				act=gradRVPositioner[ii]->activate(true);
+				//act=gradRVPositioner[ii]->activate(true);
 				if(act!=0)activeExist=true; 
 			}
 			if(activeExist){
@@ -246,7 +246,7 @@ NewSensitivityAlgorithm::computeSensitivities(bool fromFEM)
 			}
 			for(int i=0;i<numGradPositioner[idtemp];i++){
 				int ii=idGradPositioner[idtemp][i];
-				gradRVPositioner[ii]->activate(false);
+				//gradRVPositioner[ii]->activate(false);
 			}
 			// Commit unconditional history variables (also for elastic problems; strain sens may be needed anyway)
 			theSensitivityIntegrator->commitSensitivity(gradNumber, numGrads);
@@ -260,7 +260,7 @@ NewSensitivityAlgorithm::computeSensitivities(bool fromFEM)
 			bool activeExist=false;
 			for(int i=0;i<numGradPositioner[idtemp];i++){
 				int ii=idGradPositioner[idtemp][i];
-				act=gradParaPositioner[ii]->activate(true);
+				//act=gradParaPositioner[ii]->activate(true);
 				if(act!=0)activeExist=true; 
 			}
 			if(activeExist){
@@ -278,7 +278,7 @@ NewSensitivityAlgorithm::computeSensitivities(bool fromFEM)
 			}
 			for(int i=0;i<numGradPositioner[idtemp];i++){
 				int ii=idGradPositioner[idtemp][i];
-				gradParaPositioner[ii]->activate(false);
+				//gradParaPositioner[ii]->activate(false);
 			}
 			theSensitivityIntegrator->commitSensitivity(gradNumber, numGrads);
 			if(done) break;
@@ -308,6 +308,7 @@ NewSensitivityAlgorithm::shouldComputeAtEachStep(void)
 int 
 NewSensitivityAlgorithm::sensitivityDomainChanged(void)
 {
+  /*
 	if(gradRVPositioner!=0){
 		for(int i=0;i<numPos;i++) gradRVPositioner[i]=0;
 		delete [] gradRVPositioner;
@@ -318,6 +319,7 @@ NewSensitivityAlgorithm::sensitivityDomainChanged(void)
 		delete [] gradParaPositioner;
 		gradParaPositioner=0;
 	}
+  */
 	if(idGradPositioner!=0){
 		for(int i=0;i<numGrads;i++) delete [] idGradPositioner[i];
 		delete [] idGradPositioner;
@@ -327,28 +329,30 @@ NewSensitivityAlgorithm::sensitivityDomainChanged(void)
 		delete [] numGradPositioner;
 		numGradPositioner=0;
 	}
-	RandomVariablePositioner *theRandomVariablePositioner;
-	ParameterPositioner *theParameterPositioner;
+	//RandomVariablePositioner *theRandomVariablePositioner;
+	//ParameterPositioner *theParameterPositioner;
 
 	theSOE = theAlgorithm->getLinearSOEptr();
 	theIncInt = theAlgorithm->getIncrementalIntegratorPtr();
 	// Get number of random variables and random variable positioners
 	if (analysisTypeTag==1 || analysisTypeTag==3) {
 		numGrads = theReliabilityDomain->getNumberOfRandomVariables();
-		numPos = theReliabilityDomain->getNumberOfRandomVariablePositioners();
-		gradRVPositioner = new RandomVariablePositioner*[numPos];
+		//numPos = theReliabilityDomain->getNumberOfRandomVariablePositioners();
+		numPos = 0;
+		//gradRVPositioner = new RandomVariablePositioner*[numPos];
 		for(int i=0;i<numPos;i++){
-			theRandomVariablePositioner = theReliabilityDomain->getRandomVariablePositionerPtr(i+1);
-			gradRVPositioner[i]=theRandomVariablePositioner;
+		  //theRandomVariablePositioner = theReliabilityDomain->getRandomVariablePositionerPtr(i+1);
+		  //gradRVPositioner[i]=theRandomVariablePositioner;
 		}
 	}
 	else {
-		numPos = theReliabilityDomain->getNumberOfParameterPositioners();
+	  //numPos = theReliabilityDomain->getNumberOfParameterPositioners();
+	  numPos = 0;
 		numGrads = numPos;
-		gradParaPositioner = new ParameterPositioner*[numPos];
+		//gradParaPositioner = new ParameterPositioner*[numPos];
 		for(int i=0;i<numPos;i++){
-			theParameterPositioner = theReliabilityDomain->getParameterPositionerPtr(i+1);
-			gradParaPositioner[i]=theParameterPositioner;
+		  //theParameterPositioner = theReliabilityDomain->getParameterPositionerPtr(i+1);
+		  //gradParaPositioner[i]=theParameterPositioner;
 		}
 	}
 	theSensitivityIntegrator->sensitivityDomainChanged(numGrads);
@@ -356,8 +360,8 @@ NewSensitivityAlgorithm::sensitivityDomainChanged(void)
 	if (analysisTypeTag==1 || analysisTypeTag==3) {
 		// inactivate all positioner //
 		for (int i=1; i<=numPos; i++ ) {
-			theRandomVariablePositioner = theReliabilityDomain->getRandomVariablePositionerPtr(i);
-			theRandomVariablePositioner->activate(false);
+		  //theRandomVariablePositioner = theReliabilityDomain->getRandomVariablePositionerPtr(i);
+		  //theRandomVariablePositioner->activate(false);
 		}
 		int* itemp=new int[numGrads];
 		numGradPositioner = new int[numGrads];
@@ -365,6 +369,7 @@ NewSensitivityAlgorithm::sensitivityDomainChanged(void)
 		int numEach;
 		for (int gradNumber=1; gradNumber<=numGrads; gradNumber++ )  {
 			numEach=0;
+			/*
 			RandomVariablePositionerIter rvpIter = theReliabilityDomain->getRandomVariablePositioners();
 			//for (int i=1; i<=numPos; i++ ) {
 			
@@ -376,6 +381,7 @@ NewSensitivityAlgorithm::sensitivityDomainChanged(void)
 					numEach++;
 				}
 			}
+			*/
 			numGradPositioner[gradNumber-1]=numEach;
 			idGradPositioner[gradNumber-1]=new int[numEach];
 			for(int i=0; i<numEach; i++) 
@@ -384,6 +390,7 @@ NewSensitivityAlgorithm::sensitivityDomainChanged(void)
 		delete [] itemp;
 		itemp=0;
 	}else{
+	  /*
 		ParameterPositionerIter pIter = theReliabilityDomain->getParameterPositioners();
 		while ((theParameterPositioner = pIter()) != 0) {
 		//for (int i=1; i<=numPos; i++ ) {
@@ -407,6 +414,7 @@ NewSensitivityAlgorithm::sensitivityDomainChanged(void)
 		}
 		delete [] itemp;
 		itemp=0;
+	  */
 	}
 	return 0;
 }
