@@ -56,12 +56,8 @@ using std::setiosflags;
 #include <PerformanceFunction.h>
 #include <LimitStateFunction.h>
 #include <LimitStateFunctionIter.h>
-#include <RandomVariablePositioner.h>
-#include <RandomVariablePositionerIter.h>
 #include <Parameter.h>
 #include <ParameterIter.h>
-#include <ParameterPositioner.h>
-#include <ParameterPositionerIter.h>
 #include <RVParameter.h>
 
 #include <NormalRV.h>
@@ -266,8 +262,6 @@ int TclReliabilityModelBuilder_correlateGroup(ClientData clientData, Tcl_Interp 
 int TclReliabilityModelBuilder_correlationStructure(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_addLimitState(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_addGradLimitState(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
-int TclReliabilityModelBuilder_addRandomVariablePositioner(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
-int TclReliabilityModelBuilder_addParameterPositioner(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_addModulatingFunction(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_addFilter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_addSpectrum(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -304,7 +298,6 @@ int TclReliabilityModelBuilder_getPDF(ClientData clientData, Tcl_Interp *interp,
 int TclReliabilityModelBuilder_getCDF(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_getInverseCDF(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_getRVTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
-int TclReliabilityModelBuilder_getRVPositioners(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_getLSFTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 /////////////////////////////////////////////////////////
 ///S added by K Fujimura for Random Vibration Analysis ///
@@ -352,8 +345,6 @@ TclReliabilityBuilder::TclReliabilityBuilder(Domain &passedDomain, Tcl_Interp *i
   Tcl_CreateCommand(interp, "cutset", TclReliabilityModelBuilder_addCutset,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "performanceFunction", TclReliabilityModelBuilder_addLimitState,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "gradPerformanceFunction", TclReliabilityModelBuilder_addGradLimitState,(ClientData)NULL, NULL);
-  Tcl_CreateCommand(interp, "randomVariablePositioner",TclReliabilityModelBuilder_addRandomVariablePositioner,(ClientData)NULL, NULL);
-  Tcl_CreateCommand(interp, "parameterPositioner",TclReliabilityModelBuilder_addParameterPositioner,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "modulatingFunction",TclReliabilityModelBuilder_addModulatingFunction,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "filter",TclReliabilityModelBuilder_addFilter,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "spectrum",TclReliabilityModelBuilder_addSpectrum,(ClientData)NULL, NULL);
@@ -390,7 +381,6 @@ TclReliabilityBuilder::TclReliabilityBuilder(Domain &passedDomain, Tcl_Interp *i
   Tcl_CreateCommand(interp, "getCDF",TclReliabilityModelBuilder_getCDF,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "getInverseCDF",TclReliabilityModelBuilder_getInverseCDF,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "getRVTags",TclReliabilityModelBuilder_getRVTags,(ClientData)NULL, NULL);
-  Tcl_CreateCommand(interp, "getRVPositioners",TclReliabilityModelBuilder_getRVPositioners,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "getLSFTags",TclReliabilityModelBuilder_getLSFTags,(ClientData)NULL, NULL);
 /////////////////////////////////////////////////////////
 ///S added by K Fujimura for Random Vibration Analysis ///
@@ -567,8 +557,6 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
   Tcl_DeleteCommand(theInterp, "cutset");
   Tcl_DeleteCommand(theInterp, "performanceFunction");
   Tcl_DeleteCommand(theInterp, "gradPerformanceFunction");
-  Tcl_DeleteCommand(theInterp, "randomVariablePositioner");
-  Tcl_DeleteCommand(theInterp, "positionerPositioner");
   Tcl_DeleteCommand(theInterp, "modulatingFunction");
   Tcl_DeleteCommand(theInterp, "filter");
   Tcl_DeleteCommand(theInterp, "spectrum");
@@ -604,7 +592,6 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
   Tcl_DeleteCommand(theInterp, "getCDF");
   Tcl_DeleteCommand(theInterp, "getInverseCDF");
   Tcl_DeleteCommand(theInterp, "getRVTags");
-  Tcl_DeleteCommand(theInterp, "getRVPositioners");
   Tcl_DeleteCommand(theInterp, "getLSFTags");
 
   /////S added by K Fujimura /////
@@ -1411,275 +1398,6 @@ TclReliabilityModelBuilder_addGradLimitState(ClientData clientData, Tcl_Interp *
 
   return TCL_OK;
 }
-
-//////////////////////////////////////////////////////////////////
-int 
-TclReliabilityModelBuilder_addRandomVariablePositioner(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
-{
-	RandomVariablePositioner *theRandomVariablePositioner = 0;
-	int tag;
-	int rvNumber;
-	int tagOfObject;
-	DomainComponent *theObject;
-	int argvCounter = 1;
-
-
-	// READ THE TAG NUMBER
-	if (Tcl_GetInt(interp, argv[argvCounter++], &tag) != TCL_OK) {
-		opserr << "ERROR: Invalid input tag to random variable positioner." << endln;
-		return TCL_ERROR;
-	}
-
-	// ASSOCIATE with existing RV
-    if (strcmp(argv[argvCounter],"-rvNum") == 0) {
-		argvCounter++;
-		
-		// READ THE RANDOM VARIABLE NUMBER
-		if (Tcl_GetInt(interp, argv[argvCounter++], &rvNumber) != TCL_OK) {
-			opserr << "ERROR: invalid input: rvNumber \n";
-			return TCL_ERROR;
-		}
-
-		// CHECK THAT THE RANDOM VARIABLE ACTUALLY EXISTS
-		RandomVariable *theRandomVariable = 0;
-		theRandomVariable = theReliabilityDomain->getRandomVariablePtr(rvNumber);
-		if (theRandomVariable == 0){
-			opserr << "ERROR:: A non-existing random variable number " << rvNumber << " is being positioned in the model " << endln;
-			return TCL_ERROR;
-		}
-	}
-	else {
-		opserr << "ERROR: Illegal random variable specification in random " << endln
-			<< " variable positioner command. " << endln;
-		return TCL_ERROR;
-	}
-	
-	RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtr(rvNumber);
-	if (theRV == 0){
-	  opserr << "ERROR:: RandomVariable " << rvNumber << " not found in the reliability domain " << endln;
-	  return TCL_ERROR;
-	}
-	//int rvIndex = theRV->getIndex();
-	int rvIndex = theReliabilityDomain->getRandomVariableIndex(rvNumber);
-
-	if (strcmp(argv[argvCounter],"-parameter") == 0) {
-	  argvCounter++;
-	  int paramTag;
-	  if (Tcl_GetInt(interp, argv[argvCounter++], &paramTag) != TCL_OK) {
-	    opserr << "ERROR: invalid input in positioner: parameter tag \n";
-	    return TCL_ERROR;
-	  }
-
-	  Parameter *theParameter = theStructuralDomain->getParameter(paramTag);
-
-	  if (theParameter == 0) {
-	    opserr << "ERROR: parameter with tag " << paramTag 
-		   << " not found in structural domain\n";
-	    return TCL_ERROR;
-	  }
-	  else {
-	    theRandomVariablePositioner =
-	      new RandomVariablePositioner(tag, rvIndex, *theParameter, theRV);
-	  }
-	}
-
-	// IF UNCERTAIN *ELEMENT* PROPERTY
-	else if (strcmp(argv[argvCounter],"-element") == 0) {
-		argvCounter++;
-
-		if (Tcl_GetInt(interp, argv[argvCounter++], &tagOfObject) != TCL_OK) {
-			argvCounter++;
-			opserr << "ERROR: invalid input: tagOfObject \n";
-			return TCL_ERROR;
-		}
-
-		theObject = (DomainComponent *)theStructuralDomain->getElement(tagOfObject);
-
-		theRandomVariablePositioner =
-		  new RandomVariablePositioner(tag,
-					       rvIndex,
-					       theObject,
-					       &argv[argvCounter],
-					       argc-argvCounter,
-						   theRV);
-
-		//int rvnumber = theRandomVariablePositioner->getRvNumber();
-	}
-
-	// IF UNCERTAIN *LOAD*
-	else if (strcmp(argv[argvCounter],"-loadPattern") == 0) {
-		argvCounter++;
-
-		if (Tcl_GetInt(interp, argv[argvCounter++], &tagOfObject) != TCL_OK) {
-			opserr << "ERROR: invalid input: tagOfObject \n";
-			return TCL_ERROR;
-		}
-		theObject = (DomainComponent *)theStructuralDomain->getLoadPattern(tagOfObject);
-
-
-//		if (argc > 8) {
-//
-//			// GET INPUT PARAMETER (double)
-//			double factor = 1.0;
-//			if (Tcl_GetDouble(interp, argv[8], &factor) != TCL_OK) {
-//				opserr << "ERROR: invalid input: factor \n";
-//				return TCL_ERROR;
-//			}
-//			theRandomVariablePositioner = new RandomVariablePositioner(tag,rvIndex,theObject,&argv[5],argc-5,factor);
-//		}
-//		else {
-//			theRandomVariablePositioner = new RandomVariablePositioner(tag,rvIndex,theObject,&argv[5],argc-5);
-//		}
-		theRandomVariablePositioner =
-		  new RandomVariablePositioner(tag,
-					       rvIndex,
-					       theObject,
-					       &argv[argvCounter],
-					       argc-argvCounter,
-						   theRV);
-	}
-
-	// IF UNCERTAIN *NODE* PROPERTY
-	else if (strcmp(argv[argvCounter],"-node") == 0) {
-		argvCounter++;
-
-		if (Tcl_GetInt(interp, argv[argvCounter++], &tagOfObject) != TCL_OK) {
-			opserr << "ERROR: invalid input: tagOfObject \n";
-			return TCL_ERROR;
-		}
-		theObject = (DomainComponent *)theStructuralDomain->getNode(tagOfObject);
-
-		theRandomVariablePositioner =
-		  new RandomVariablePositioner(tag,
-					       rvIndex,
-					       theObject,
-					       &argv[argvCounter],
-					       argc-argvCounter,
-						   theRV);
-	}
-	else {
-		opserr << "ERROR: Unknown parameter in randomVariablePositioner" << endln;
-		return TCL_ERROR;
-	}
-
-	// ADD THE RANDOMVARIABLEPOSITIONER TO THE DOMAIN
-	if (theReliabilityDomain->addRandomVariablePositioner(theRandomVariablePositioner) == false) {
-		opserr << "ERROR: failed to add random variable positioner number " << tag << " to the domain." << endln;
-		delete theRandomVariablePositioner; // otherwise memory leak
-		return TCL_ERROR;
-	}
-
-	return TCL_OK;
-
-
-}
-
-
-
-
-//////////////////////////////////////////////////////////////////
-int 
-TclReliabilityModelBuilder_addParameterPositioner(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
-{
-	ParameterPositioner *theParameterPositioner = 0;
-	int tag;
-	int tagOfObject;
-	DomainComponent *theObject;
-	int argvCounter = 1;
-
-
-	// READ THE TAG NUMBER
-	if (Tcl_GetInt(interp, argv[argvCounter++], &tag) != TCL_OK) {
-		opserr << "ERROR: Invalid tag given to parameterPositioner. " << endln;
-		return TCL_ERROR;
-	}
-
-	if (strcmp(argv[argvCounter],"-parameter") == 0) {
-	  argvCounter++;
-	  int paramTag;
-	  if (Tcl_GetInt(interp, argv[argvCounter++], &paramTag) != TCL_OK) {
-	    opserr << "ERROR: invalid input in positioner: parameter tag \n";
-	    return TCL_ERROR;
-	  }
-
-	  Parameter *theParameter = theStructuralDomain->getParameter(paramTag);
-
-	  if (theParameter == 0) {
-	    opserr << "ERROR: parameter with tag " << paramTag 
-		   << " not found in structural domain\n";
-	    return TCL_ERROR;
-	  }
-	  else {
-	    theParameterPositioner =
-	      new ParameterPositioner(tag, *theParameter);
-	  }
-	}
-
-	// IF UNCERTAIN *LOAD*
-	else if (strcmp(argv[argvCounter],"-loadPattern") == 0) {
-		argvCounter++;
-		
-		if (Tcl_GetInt(interp, argv[argvCounter++], &tagOfObject) != TCL_OK) {
-		  opserr << "ERROR: invalid input: tagOfObject \n";
-		  return TCL_ERROR;
-		}
-		theObject = (DomainComponent *)theStructuralDomain->getLoadPattern(tagOfObject);
-
-		theParameterPositioner =
-		  new ParameterPositioner(tag,
-					  theObject,
-					  &argv[argvCounter],
-					  argc-argvCounter);
-	}
-
-	// IF UNCERTAIN element property
-	else if (strcmp(argv[argvCounter],"-element") == 0) {
-		argvCounter++;
-		
-		if (Tcl_GetInt(interp, argv[argvCounter++], &tagOfObject) != TCL_OK) {
-		  opserr << "ERROR: invalid input: tagOfObject \n";
-		  return TCL_ERROR;
-		}
-		theObject = (DomainComponent *)theStructuralDomain->getElement(tagOfObject);
-
-		theParameterPositioner =
-		  new ParameterPositioner(tag,
-					  theObject,
-					  &argv[argvCounter],
-					  argc-argvCounter);
-	}
-	// IF UNCERTAIN *NODE* PROPERTY
-	else if (strcmp(argv[argvCounter],"-node") == 0) {
-		argvCounter++;
-
-		if (Tcl_GetInt(interp, argv[argvCounter++], &tagOfObject) != TCL_OK) {
-			opserr << "ERROR: invalid input: tagOfObject \n";
-			return TCL_ERROR;
-		}
-		theObject = (DomainComponent *)theStructuralDomain->getNode(tagOfObject);
-
-		theParameterPositioner =
-		  new ParameterPositioner(tag,
-					  theObject,
-					  &argv[argvCounter],
-					  argc-argvCounter);
-	}	else {
-		opserr << "ERROR: Unknown parameter in parameterPositioner" << endln;
-		return TCL_ERROR;
-	}
-
-	// ADD THE PARAMETERPOSITIONER TO THE DOMAIN
-	if (theReliabilityDomain->addParameterPositioner(theParameterPositioner) == false) {
-		opserr << "ERROR: failed to add parameter positioner number " << tag << " to the domain." << endln;
-		delete theParameterPositioner; // otherwise memory leak
-		return TCL_ERROR;
-	}
-
-	return TCL_OK;
-
-}
-
-
 
 //////////////////////////////////////////////////////////////////
 int 
@@ -5262,223 +4980,6 @@ TclReliabilityModelBuilder_runGFunVisualizationAnalysis(ClientData clientData, T
 
 //////////////////////////////////////////////////////////////////
 int 
-TclReliabilityModelBuilder_rvReduction(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
-{
-
-	// Check that this is not done after transformation etc has been created
-	if (theProbabilityTransformation != 0 ) {
-		opserr << "ERROR: R.v. reduction cannot be performed after the " << endln
-			<< " probability transformation has been created." << endln;
-		return TCL_ERROR;
-	}
-
-
-	// Initial declarations
-	int i, j;
-	int rvNum;
-	bool result;
-	bool isInList, rv1isInList, rv2isInList;
-	Vector keepRvs;
-
-
-
-
-
-
-	// Read user-given numbers of random variables to keep
-	int numInList;
-	if (strcmp(argv[1],"-list") == 0) {
-		numInList = argc-2;
-		Vector tempKeepRvs(numInList);
-		for (i=1; i<=numInList; i++) {
-			if (Tcl_GetInt(interp, argv[i+1], &rvNum) != TCL_OK) {
-				opserr << "ERROR: Invalid input to r.v. reduction command." << endln;
-				return TCL_ERROR;
-			}
-			tempKeepRvs(i-1) = rvNum;
-		}
-		keepRvs = tempKeepRvs;
-	}
-	else if (strcmp(argv[1],"-file") == 0) {
-
-		// Check how many entries we should read
-		if (Tcl_GetInt(interp, argv[3], &numInList) != TCL_OK) {
-			opserr << "ERROR: Invalid input to r.v. reduction command." << endln;
-			return TCL_ERROR;
-		}
-
-		// Read entries
-		Vector tempKeepRvs(numInList);
-		ifstream inputFile( argv[2], ios::in );
-		if (inputFile.fail()) {
-			opserr << "File " << argv[2] << " could not be opened. " << endln;
-			return TCL_ERROR;
-		}
-		for (int i=0; i<numInList; i++) {
-				inputFile >> tempKeepRvs(i);
-		}
-		inputFile.close();
-		keepRvs = tempKeepRvs;
-	}
-	else {
-		opserr << "ERROR: Invalid argument to r.v. reduction. " << endln;
-		return TCL_ERROR;
-	}
-
-
-
-	// Handle re-creation of random variables
-	ArrayOfTaggedObjects aListOfRandomVariables(256);
-	int nrv = theReliabilityDomain->getNumberOfRandomVariables();
-	RandomVariable *aRandomVariable;
-	int newTag = 1;
-	for (i=1; i<=nrv; i++) {
-		isInList = false;
-		for (j=1; j<=numInList; j++) {
-			if (keepRvs(j-1)==i) {
-				isInList = true;
-				newTag = j;
-				break;
-			}
-		}
-		aRandomVariable = theReliabilityDomain->getRandomVariablePtr(i);
-		if (!isInList) {
-			delete aRandomVariable;
-		}
-		else {
-			aRandomVariable->setNewTag(newTag);
-			result = aListOfRandomVariables.addComponent(aRandomVariable);
-		}
-		theReliabilityDomain->removeRandomVariable(i);
-	}
-	// Add the new random variables to the reliability domain
-	for (i=1; i<=numInList; i++) {
-		theReliabilityDomain->addRandomVariable((RandomVariable*)aListOfRandomVariables.getComponentPtr(i));
-	}
-
-
-
-	// Handle the re-creation of correlation coefficients
-	int nCorr = theReliabilityDomain->getNumberOfCorrelationCoefficients();
-	int count = 1;
-	ArrayOfTaggedObjects aListOfCorrelationCoefficients(256);
-	CorrelationCoefficient *aCorrelationCoefficient;
-	CorrelationCoefficient *aNewCorrelationCoefficient;
-	int rv1, rv2, newRv1 = 1, newRv2 = 1;
-	double rho;
-	for (i=1; i<=nCorr; i++) {
-
-		// Get correlation data
-		aCorrelationCoefficient = theReliabilityDomain->getCorrelationCoefficientPtr(i);
-		rv1 = aCorrelationCoefficient->getRv1();
-		rv2 = aCorrelationCoefficient->getRv2();
-		rho = aCorrelationCoefficient->getCorrelation();
-
-		// Get random variable numbers and possibly create a new correlation coefficient
-		rv1isInList = false;
-		rv2isInList = false;
-		for (j=1; j<=numInList; j++) {
-			if (keepRvs(j-1)==rv1) {
-				rv1isInList = true;
-				newRv1 = j;
-			}
-			if (keepRvs(j-1)==rv2) {
-				rv2isInList = true;
-				newRv2 = j;
-			}
-		}
-		if (rv1isInList && rv2isInList) {
-			aNewCorrelationCoefficient = new CorrelationCoefficient(count,newRv1,newRv2,rho);
-			aListOfCorrelationCoefficients.addComponent(aNewCorrelationCoefficient);
-			count++;
-		}
-		delete aCorrelationCoefficient;
-		theReliabilityDomain->removeCorrelationCoefficient(i);
-	}
-	// Add the new correlation coefficients to the reliability domain
-	for (i=1; i<=(count-1); i++) {
-		theReliabilityDomain->addCorrelationCoefficient((CorrelationCoefficient*)aListOfCorrelationCoefficients.getComponentPtr(i));
-	}
-
-
-
-
-
-
-	// Handle the re-creation of random variable positioners
-	int nPos = theReliabilityDomain->getNumberOfRandomVariablePositioners();
-	RandomVariablePositioner *aRvPositioner;
-	ArrayOfTaggedObjects aListOfPositioners(256);
-	count =1;
-	int newRvIndex;
-	for (i=1; i<=nPos; i++) {
-		aRvPositioner = theReliabilityDomain->getRandomVariablePositionerPtr(i);
-		rvNum = aRvPositioner->getRvIndex();
-		isInList = false;
-		for (j=1; j<=numInList; j++) {
-			if (keepRvs(j-1)==rvNum) {
-				isInList = true;
-				newRvIndex = j;
-				break;
-			}
-		}
-		if (!isInList) {
-			delete aRvPositioner;
-		}
-		else {
-			aRvPositioner->setNewTag(count);
-			aRvPositioner->setRvIndex(newRvIndex);
-			aListOfPositioners.addComponent(aRvPositioner);
-			count++;
-		}
-		theReliabilityDomain->removeRandomVariablePositioner(i);
-	}
-	// Add the new random variable positioners to the reliability domain
-	for (i=1; i<=numInList; i++) {
-		theReliabilityDomain->addRandomVariablePositioner((RandomVariablePositioner*)aListOfPositioners.getComponentPtr(i));
-	}
-
-
-
-
-
-/*
-nrv = theReliabilityDomain->getNumberOfRandomVariables();
-RandomVariable *aRV;
-for (i=1; i<=nrv; i++) {
-	aRV = theReliabilityDomain->getRandomVariablePtr(i);
-	opserr << "Mean of rv# " << i << ": " << aRV->getMean() << endln;
-
-}
-nrv = theReliabilityDomain->getNumberOfCorrelationCoefficients();
-CorrelationCoefficient *aaRV;
-for (i=1; i<=nrv; i++) {
-	aaRV = theReliabilityDomain->getCorrelationCoefficientPtr(i);
-	opserr << "Rv1: " << aaRV->getRv1() << endln;
-	opserr << "Rv2: " << aaRV->getRv2() << endln;
-	opserr << "Corr: " << aaRV->getCorrelation() << endln;
-}
-nrv = theReliabilityDomain->getNumberOfRandomVariablePositioners();
-RandomVariablePositioner *aaaRV;
-for (i=1; i<=nrv; i++) {
-	aaaRV = theReliabilityDomain->getRandomVariablePositionerPtr(i);
-	opserr << "Rv in pos: " << aaaRV->getRvNumber() << endln;
-}
-
-while(true) {
-}
-*/
-
-
-	return TCL_OK;
-}
-
-
-
-
-
-//////////////////////////////////////////////////////////////////
-int 
 TclReliabilityModelBuilder_inputCheck(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
 	// Check that tagged objects are consequtive
@@ -5497,6 +4998,7 @@ TclReliabilityModelBuilder_inputCheck(ClientData clientData, Tcl_Interp *interp,
 	*/
 
 	// Clear out old parameter positioners so we don't produce a memory leak
+	/*
 	theReliabilityDomain->removeAllParameterPositioners();
 
 	ParameterIter &paramIter = theStructuralDomain->getParameters();
@@ -5513,7 +5015,7 @@ TclReliabilityModelBuilder_inputCheck(ClientData clientData, Tcl_Interp *interp,
 	  }
 	  i++;
 	}
-
+	*/
 	/*
 	num = theReliabilityDomain->getNumberOfRandomVariablePositioners();
 	for (i=1; i<=num; i++) {
@@ -5741,13 +5243,13 @@ TclReliabilityModelBuilder_runMonteCarloResponseAnalysis(ClientData clientData, 
 }
 
 
-
 ///////
 ///  Command:  updateParameterValue  -rv 1 -value 20.0  or updateParameter   -startPoint 
 ///            updateParameterValue  -dv 3 -value 20.0
 int 
 TclReliabilityModelBuilder_updateParameterValue(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
+  /*
 	// Do input check
 	char theCommand[15] = "inputCheck";
 	Tcl_Eval( interp, theCommand );
@@ -5810,7 +5312,6 @@ TclReliabilityModelBuilder_updateParameterValue(ClientData clientData, Tcl_Inter
 
 	};  // while
 
-	/*** FMK MHS QUAN
 	if (! usingStartPt) {
 		if (dvrvMark==0) { // rv
 
@@ -5847,13 +5348,11 @@ TclReliabilityModelBuilder_updateParameterValue(ClientData clientData, Tcl_Inter
 				
 	}	
 
-	*/
-	
+  */
 
 	return TCL_OK;
 
 }
-
 
 /*
 Hessian::Hessian(int pSize,ReliabilityDomain *passedReliabilityDomain, 
@@ -7127,21 +6626,6 @@ TclReliabilityModelBuilder_getRVTags(ClientData clientData, Tcl_Interp *interp, 
   return TCL_OK;
 }
 
-int
-TclReliabilityModelBuilder_getRVPositioners(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
-{
-  RandomVariablePositioner *theEle;
-  RandomVariablePositionerIter &eleIter = theReliabilityDomain->getRandomVariablePositioners();
-  
-  char buffer[20];
-  
-  while ((theEle = eleIter()) != 0) {
-    sprintf(buffer, "%d %d ", theEle->getRVTag(), theEle->getParamTag());
-    Tcl_AppendResult(interp, buffer, NULL);
-  }
-  
-  return TCL_OK;
-}
 int
 TclReliabilityModelBuilder_getLSFTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
