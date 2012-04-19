@@ -36,7 +36,7 @@
 #include <NatafProbabilityTransformation.h>
 #include <RandomNumberGenerator.h>
 #include <RandomVariable.h>
-#include <RandomVariablePositioner.h>
+//#include <RandomVariablePositioner.h>
 #include <NormalRV.h>
 #include <Vector.h>
 #include <Matrix.h>
@@ -202,6 +202,8 @@ int MonteCarloResponseAnalysis::analyze(){
 
 		// --------------- update structure parameter -----------------
 		
+		// No longer using positioners -- MHS 4/2012
+		/*
 		int numberOfRandomVariablePositioners = theReliabilityDomain->getNumberOfRandomVariablePositioners();
 		RandomVariablePositioner *theRandomVariablePositioner;
 		int rvNumber;
@@ -211,7 +213,8 @@ int MonteCarloResponseAnalysis::analyze(){
 			rvNumber				= theRandomVariablePositioner->getRvIndex();
 			theRandomVariablePositioner->update(x(rvNumber));
 		}
-			
+		*/
+
 		// ---------------------- run tcl file and  recorder ---------------------
 
 
