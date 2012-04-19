@@ -9,7 +9,6 @@ RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
 		$(FE)/reliability/analysis/analysis/FORMAnalysis.o \
 		$(FE)/reliability/analysis/analysis/GFunVisualizationAnalysis.o \
 		$(FE)/reliability/analysis/analysis/FOSMAnalysis.o \
-		$(FE)/reliability/analysis/analysis/ParametricReliabilityAnalysis.o \
 		$(FE)/reliability/analysis/analysis/OutCrossingAnalysis.o \
 		$(FE)/reliability/analysis/analysis/SamplingAnalysis.o \
 		$(FE)/reliability/analysis/analysis/ReliabilityAnalysis.o \
@@ -113,12 +112,8 @@ RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
 		$(FE)/reliability/analysis/telm/localMath.o \
 		$(FE)/reliability/domain/components/CorrelationCoefficient.o \
 		$(FE)/reliability/domain/components/CorrelationCoefficientIter.o \
-		$(FE)/reliability/domain/components/ParameterPositioner.o \
-		$(FE)/reliability/domain/components/ParameterPositionerIter.o \
 		$(FE)/reliability/domain/components/RandomVariable.o \
 		$(FE)/reliability/domain/components/RandomVariableIter.o \
-		$(FE)/reliability/domain/components/RandomVariablePositioner.o \
-		$(FE)/reliability/domain/components/RandomVariablePositionerIter.o \
 		$(FE)/reliability/domain/components/ReliabilityDomainComponent.o \
 		$(FE)/reliability/domain/components/ReliabilityDomain.o \
 		$(FE)/reliability/domain/components/PrincipalPlane.o \
