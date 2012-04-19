@@ -299,10 +299,6 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 #include <StaticSensitivityIntegrator.h>
 //#include <DynamicSensitivityIntegrator.h>
 #include <NewmarkSensitivityIntegrator.h>
-#include <RandomVariablePositioner.h>
-#include <RandomVariablePositionerIter.h>
-#include <ParameterPositioner.h>
-#include <ParameterPositionerIter.h>
 #include <NewNewmarkSensitivityIntegrator.h>
 #include <NewStaticSensitivityIntegrator.h>
 //#include <OrigSensitivityAlgorithm.h>
@@ -6092,15 +6088,6 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
 
 #ifdef _RELIABILITY
 // AddingSensitivity:BEGIN ///////////////////////////////////////
-    else if (strcmp(argv[1],"randomVariablePositioner") == 0) {
-		int rvPosTag;
-		if (Tcl_GetInt(interp, argv[2], &rvPosTag) != TCL_OK) {
-			opserr << "WARNING invalid input: rvPositionerTag \n";
-			return TCL_ERROR;
-		}
-		ReliabilityDomain *theReliabilityDomain = theReliabilityBuilder->getReliabilityDomain();
-		theReliabilityDomain->removeRandomVariablePositioner(rvPosTag);
-	}
     else if (strcmp(argv[1],"randomVariable") == 0) {
 		int rvTag;
 		if (Tcl_GetInt(interp, argv[2], &rvTag) != TCL_OK) {
@@ -6109,15 +6096,6 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
 		}
 		ReliabilityDomain *theReliabilityDomain = theReliabilityBuilder->getReliabilityDomain();
 		theReliabilityDomain->removeRandomVariable(rvTag);
-	}
-    else if (strcmp(argv[1],"parameterPositioner") == 0) {
-		int paramPosTag;
-		if (Tcl_GetInt(interp, argv[2], &paramPosTag) != TCL_OK) {
-			opserr << "WARNING invalid input: paramPositionerTag \n";
-			return TCL_ERROR;
-		}
-		ReliabilityDomain *theReliabilityDomain = theReliabilityBuilder->getReliabilityDomain();
-		theReliabilityDomain->removeParameterPositioner(paramPosTag);
 	}
     else if (strcmp(argv[1],"performanceFunction") == 0) {
 		int lsfTag;
@@ -6821,7 +6799,7 @@ sensNodeDisp(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     }
 
     int gradIndex = theParam->getGradIndex();
-    
+
     double value = theNode->getDispSensitivity(dof,gradIndex);
     
     char buffer[40];
