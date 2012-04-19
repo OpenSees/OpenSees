@@ -5,7 +5,6 @@ OBJS       = 	FORMAnalysis.o \
 	BivariateDecomposition.o \
 	GFunVisualizationAnalysis.o \
 	OutCrossingAnalysis.o \
-	ParametricReliabilityAnalysis.o \
 	SamplingAnalysis.o \
 	ReliabilityAnalysis.o \
 	SORMAnalysis.o \
