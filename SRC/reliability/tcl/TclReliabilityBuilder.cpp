@@ -290,7 +290,7 @@ int TclReliabilityModelBuilder_printReliability(ClientData clientData, Tcl_Inter
 int TclReliabilityModelBuilder_inputCheck(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_getMean(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_getStdv(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
-int TclReliabilityModelBuilder_rvReduction(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+//int TclReliabilityModelBuilder_rvReduction(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_getBetaFORM(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_getGammaFORM(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_getAlphaFORM(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -373,7 +373,7 @@ TclReliabilityBuilder::TclReliabilityBuilder(Domain &passedDomain, Tcl_Interp *i
   Tcl_CreateCommand(interp, "inputCheck",TclReliabilityModelBuilder_inputCheck,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "getMean",TclReliabilityModelBuilder_getMean,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "getStdv",TclReliabilityModelBuilder_getStdv,(ClientData)NULL, NULL);
-  Tcl_CreateCommand(interp, "rvReduction",TclReliabilityModelBuilder_rvReduction,(ClientData)NULL, NULL);
+  //  Tcl_CreateCommand(interp, "rvReduction",TclReliabilityModelBuilder_rvReduction,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "betaFORM",TclReliabilityModelBuilder_getBetaFORM,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "gammaFORM",TclReliabilityModelBuilder_getGammaFORM,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "alphaFORM",TclReliabilityModelBuilder_getAlphaFORM,(ClientData)NULL, NULL);
@@ -585,7 +585,7 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
   Tcl_DeleteCommand(theInterp, "inputCheck");
   Tcl_DeleteCommand(theInterp, "getMean");
   Tcl_DeleteCommand(theInterp, "getStdv");
-  Tcl_DeleteCommand(theInterp, "rvReduction");
+  //  Tcl_DeleteCommand(theInterp, "rvReduction");
   Tcl_DeleteCommand(theInterp, "betaFORM");
   Tcl_DeleteCommand(theInterp, "gammaFORM");
   Tcl_DeleteCommand(theInterp, "getPDF");
