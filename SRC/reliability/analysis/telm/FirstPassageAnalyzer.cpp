@@ -26,7 +26,8 @@ FirstPassageAnalyzer::FirstPassageAnalyzer
 
 	analysisType = passedanalysisType;
 	numRV	 = theReliabilityDomain->getNumberOfRandomVariables();
-	numRVPos = theReliabilityDomain->getNumberOfRandomVariablePositioners();
+	//numRVPos = theReliabilityDomain->getNumberOfRandomVariablePositioners();
+	numRVPos = 0;
 	delta=theGFunEvaluator->getDt();
 	numTimePoints=0;
 	twoside=passedtwoside;

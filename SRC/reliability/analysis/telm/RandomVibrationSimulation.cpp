@@ -21,7 +21,8 @@ RandomVibrationSimulation::RandomVibrationSimulation
 	theReliabilityDomain = passedReliabilityDomain;
 	theDomain=passedDomain;
 	numRV	 = theReliabilityDomain->getNumberOfRandomVariables();
-	numRVPos = theReliabilityDomain->getNumberOfRandomVariablePositioners();
+	//numRVPos = theReliabilityDomain->getNumberOfRandomVariablePositioners();
+	numRVPos = 0;
 	numLsf	 = theReliabilityDomain->getNumberOfLimitStateFunctions();
 	theRandomProcess = new RandomProcess(theDomain,theReliabilityDomain,false);
 	NumTotalPulse = theRandomProcess->getNumTotalPulse();

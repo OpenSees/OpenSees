@@ -57,7 +57,8 @@ RandomVibrationAnalysis::RandomVibrationAnalysis
 	}
 
 	numRV	 = theReliabilityDomain->getNumberOfRandomVariables();
-	numRVPos = theReliabilityDomain->getNumberOfRandomVariablePositioners();
+	//numRVPos = theReliabilityDomain->getNumberOfRandomVariablePositioners();
+	numRVPos = 0;
 	numLsf	 = theReliabilityDomain->getNumberOfLimitStateFunctions();
 
 	Scorg=theReliabilityConvergenceCheck->getScaleValue();
