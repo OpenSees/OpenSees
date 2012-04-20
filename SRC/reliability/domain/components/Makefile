@@ -3,10 +3,8 @@ include ../../../../Makefile.def
 OBJS       = 	CorrelationCoefficient.o CorrelationCoefficientIter.o \
 		Cutset.o CutsetIter.o \
 		RandomVariable.o RandomVariableIter.o \
-		RandomVariablePositioner.o RandomVariablePositionerIter.o \
 		ReliabilityDomainComponent.o \
 		ReliabilityDomain.o \
-		ParameterPositioner.o ParameterPositionerIter.o \
 	PrincipalPlane.o
 
 # Compilation control
