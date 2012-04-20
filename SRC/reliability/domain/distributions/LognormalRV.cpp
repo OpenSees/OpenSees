@@ -260,6 +260,82 @@ LognormalRV::gradient_x_to_u(double uVal)
 }
 
 
+double 
+LognormalRV::getCDFMeanSensitivity(void)
+{
+    // returns dF/dmu
+    Vector dFdP(2);
+    Vector dPdmu(2);
+    getCDFparameterSensitivity(dFdP);
+    getParameterMeanSensitivity(dPdmu);
+    
+    return dFdP^dPdmu;
+}
+
+
+double 
+LognormalRV::getCDFStdvSensitivity(void)
+{
+    // returns dF/dsigma
+    Vector dFdP(2);
+    Vector dPdsig(2);
+    getCDFparameterSensitivity(dFdP);
+    getParameterStdvSensitivity(dPdsig);
+    
+    return dFdP^dPdsig;
+}
+
+
+int 
+LognormalRV::getCDFparameterSensitivity(Vector &dFdP)
+{
+    // returns gradient of F(x) with respect to distribution parameters
+    double rvValue = this->getCurrentValue();
+    
+    // dFdlambda
+    dFdP(0) = -1/zeta/zeta/rvValue * getPDFvalue(rvValue);
+    
+    // dFdzeta
+    dFdP(1) = -1/zeta/zeta/zeta/rvValue*(log(rvValue)-lambda) * getPDFvalue(rvValue);
+    
+    return 0;
+}
+
+
+int
+LognormalRV::getParameterMeanSensitivity(Vector &dPdmu)
+{
+    // returns gradient of distribution parameters with respect to the mean
+    double mu = getMean();
+    double sig = getStdv();
+    
+    // dlambdadmu
+    dPdmu(0) = (mu*mu+2*sig*sig)/mu/(mu*mu+sig*sig);
+    
+    // dzetadmu
+    dPdmu(1) = -sig*sig/mu/(mu*mu+sig*sig)/zeta;
+    
+    return 0;
+}
+
+
+int
+LognormalRV::getParameterStdvSensitivity(Vector &dPdstdv)
+{
+    // returns gradient of distribution parameters with respect to the stdv
+    double mu = getMean();
+    double sig = getStdv();
+    
+    // dlambdadsig
+    dPdstdv(0) = -sig/(mu*mu+sig*sig);
+    
+    // dzetadsig
+    dPdstdv(1) = sig/(mu*mu+sig*sig)/zeta;
+    
+    return 0;
+}
+
+
 void
 LognormalRV::Print(OPS_Stream &s, int flag)
 {

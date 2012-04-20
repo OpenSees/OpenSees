@@ -405,7 +405,8 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 		opserr << "WARNING: Cannot compute reliability sensitivity results for " << endln
 			<< " type of random variable number " << rvTag << endln;
 		//DzDmean = 0.0;
-		DzDmean = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFMeanSensitivity(x(rvIndex)));
+		//DzDmean = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFMeanSensitivity(x(rvIndex)));
+        DzDmean = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFMeanSensitivity());
 	}
 
 	// 4) The hardest part: DinverseLowerCholeskyDmean
@@ -520,7 +521,8 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 		opserr << "WARNING: Cannot compute reliability sensitivity results for " << endln
 			<< " type of random variable number " << rvTag << endln;
 		//DzDstdv = 0.0;
-		DzDstdv = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFStdvSensitivity(x(rvIndex)));
+		//DzDstdv = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFStdvSensitivity(x(rvIndex)));
+        DzDstdv = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFStdvSensitivity());
 	}
 
 	// 4) The hardest part: DinverseLowerCholeskyDmean

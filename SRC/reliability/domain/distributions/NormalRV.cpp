@@ -165,6 +165,70 @@ NormalRV::gradient_x_to_u(double uVal)
 }
 
 
+double 
+NormalRV::getCDFMeanSensitivity(void)
+{
+    // returns dF/dmu
+    Vector dFdP(2);
+    Vector dPdmu(2);
+    getCDFparameterSensitivity(dFdP);
+    getParameterMeanSensitivity(dPdmu);
+    
+    return dFdP^dPdmu;
+}
+
+
+double 
+NormalRV::getCDFStdvSensitivity(void)
+{
+    // returns dF/dsigma
+    Vector dFdP(2);
+    Vector dPdsig(2);
+    getCDFparameterSensitivity(dFdP);
+    getParameterStdvSensitivity(dPdsig);
+    
+    return dFdP^dPdsig;
+}
+
+
+int 
+NormalRV::getCDFparameterSensitivity(Vector &dFdP)
+{
+    // returns gradient of F(x) with respect to distribution parameters
+    double rvValue = this->getCurrentValue();
+    
+    // dFdmu
+    dFdP(0) = -1 * getPDFvalue(rvValue);
+    
+    // dFdzeta
+    dFdP(1) = -(rvValue-mu)/sigma * getPDFvalue(rvValue);
+    
+    return 0;
+}
+
+
+int
+NormalRV::getParameterMeanSensitivity(Vector &dPdmu)
+{
+    // returns gradient of distribution parameters with respect to the mean
+    dPdmu(0) = 1;
+    dPdmu(1) = 0;
+    
+    return 0;
+}
+
+
+int
+NormalRV::getParameterStdvSensitivity(Vector &dPdstdv)
+{
+    // returns gradient of distribution parameters with respect to the stdv
+    dPdstdv(0) = 0;
+    dPdstdv(1) = 1;
+    
+    return 0;
+}
+
+
 void
 NormalRV::Print(OPS_Stream &s, int flag)
 {

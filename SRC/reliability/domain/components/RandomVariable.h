@@ -69,9 +69,12 @@ public:
     virtual double transform_u_to_x(double uVal);
     virtual double gradient_x_to_u(double uVal);
 	
-	// NYI
-	virtual double getCDFMeanSensitivity(double x) {return 0.0;}
-	virtual double getCDFStdvSensitivity(double x) {return 0.0;}
+	// sensitivity of CDF with respect to distribution parameters
+	virtual double getCDFMeanSensitivity(void) {return 0.0;}
+	virtual double getCDFStdvSensitivity(void) {return 0.0;}
+    virtual int getCDFparameterSensitivity(Vector &dFdP) {return 0;}
+    virtual int getParameterMeanSensitivity(Vector &dPdmu) {return 0;}
+    virtual int getParameterStdvSensitivity(Vector &dPdstdv) {return 0;}
 	
 	// other public functions
 	virtual void Print(OPS_Stream &s, int flag = 0);
