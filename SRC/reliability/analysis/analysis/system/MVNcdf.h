@@ -36,6 +36,7 @@
 
 #include <SystemAnalysis.h>
 #include <ReliabilityDomain.h>
+#include <FunctionEvaluator.h>
 #include <Vector.h>
 #include <Matrix.h>
 
@@ -43,8 +44,10 @@ class MVNcdf : public SystemAnalysis
 {
 
 public:
-	MVNcdf(ReliabilityDomain*, TCL_Char*, int, TCL_Char*, TCL_Char*, 
-				   long int Nmax = 2e5, double errMax = 1.0e-6);
+	MVNcdf(ReliabilityDomain*, 
+           FunctionEvaluator*,
+           TCL_Char*, int, TCL_Char*, TCL_Char*, 
+           long int Nmax = 2e5, double errMax = 1.0e-6);
 	~MVNcdf();
 
 	int		analyze(void);

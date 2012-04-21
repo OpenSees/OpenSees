@@ -58,9 +58,10 @@ using std::setiosflags;
 #include <math.h>
 #include <time.h>
 
-SCIS::SCIS(ReliabilityDomain *passedReliabilityDomain, TCL_Char *passedFileName, int aType, 
-		 TCL_Char *passedBeta, TCL_Char *passedRho, long int passedN, double passedTol)
-	:SystemAnalysis(passedReliabilityDomain, passedBeta, passedRho)
+SCIS::SCIS(ReliabilityDomain *passedReliabilityDomain, FunctionEvaluator *passedEvaluator, 
+           TCL_Char *passedFileName, int aType, 
+           TCL_Char *passedBeta, TCL_Char *passedRho, long int passedN, double passedTol)
+	:SystemAnalysis(passedReliabilityDomain, passedEvaluator, passedBeta, passedRho)
 {
 	strcpy(fileName,passedFileName);
 	analysisType = aType;

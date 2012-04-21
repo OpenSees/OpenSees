@@ -56,9 +56,10 @@ using std::setw;
 using std::setprecision;
 using std::setiosflags;
 
-MVNcdf::MVNcdf(ReliabilityDomain *passedReliabilityDomain, TCL_Char *passedFileName, int aType, 
-		 TCL_Char *passedBeta, TCL_Char *passedRho, long int passedN, double passedTol)
-	:SystemAnalysis(passedReliabilityDomain, passedBeta, passedRho)
+MVNcdf::MVNcdf(ReliabilityDomain *passedReliabilityDomain, FunctionEvaluator *passedEvaluator, 
+               TCL_Char *passedFileName, int aType, 
+               TCL_Char *passedBeta, TCL_Char *passedRho, long int passedN, double passedTol)
+	:SystemAnalysis(passedReliabilityDomain, passedEvaluator, passedBeta, passedRho)
 {
 	strcpy(fileName,passedFileName);
 	analysisType = aType;

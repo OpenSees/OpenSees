@@ -52,9 +52,9 @@ UniformRV::UniformRV(int passedTag, const Vector &passedParameters)
 		opserr << "Uniform RV requires 2 parameters, a and b, for RV with tag " <<
 		this->getTag() << endln;
 		
-		// this will create terminal errors
+		// this will degenerate into standard uniform
 		a = 0;
-		b = 0;
+		b = 1;
 		
 	} else {
 		
@@ -149,6 +149,78 @@ UniformRV::getInverseCDFvalue(double probValue)
 {
   //return probValue * b - probValue * a + a;
   return probValue * (b-a) + a;
+}
+
+
+double 
+UniformRV::getCDFMeanSensitivity(void)
+{
+    // returns dF/dmu
+    Vector dFdP(2);
+    Vector dPdmu(2);
+    getCDFparameterSensitivity(dFdP);
+    getParameterMeanSensitivity(dPdmu);
+    
+    return dFdP^dPdmu;
+}
+
+
+double 
+UniformRV::getCDFStdvSensitivity(void)
+{
+    // returns dF/dsigma
+    Vector dFdP(2);
+    Vector dPdsig(2);
+    getCDFparameterSensitivity(dFdP);
+    getParameterStdvSensitivity(dPdsig);
+    
+    return dFdP^dPdsig;
+}
+
+
+int 
+UniformRV::getCDFparameterSensitivity(Vector &dFdP)
+{
+    // returns gradient of F(x) with respect to distribution parameters
+    double rvValue = this->getCurrentValue();
+    
+    // dFda
+    dFdP(0) = -1/(b-a) + (rvValue-a)/(b-a)/(b-a);
+    
+    // dFdb
+    dFdP(1) = -(rvValue-a)/(b-a)/(b-a);
+    
+    return 0;
+}
+
+
+int
+UniformRV::getParameterMeanSensitivity(Vector &dPdmu)
+{
+    // returns gradient of distribution parameters with respect to the mean
+    
+    // dadmu
+    dPdmu(0) = 1;
+    
+    // dbdmu
+    dPdmu(1) = 1;
+    
+    return 0;
+}
+
+
+int
+UniformRV::getParameterStdvSensitivity(Vector &dPdstdv)
+{
+    // returns gradient of distribution parameters with respect to the stdv
+    
+    // dadsig
+    dPdstdv(0) = -sqrt(3.0);
+    
+    // dbdsig
+    dPdstdv(1) = sqrt(3.0);
+    
+    return 0;
 }
 
 

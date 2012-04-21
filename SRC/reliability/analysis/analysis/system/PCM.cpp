@@ -50,9 +50,10 @@ using std::setprecision;
 using std::setiosflags;
 
 
-PCM::PCM(ReliabilityDomain *passedReliabilityDomain, TCL_Char *passedFileName, int aType, 
+PCM::PCM(ReliabilityDomain *passedReliabilityDomain, FunctionEvaluator *passedEvaluator, 
+         TCL_Char *passedFileName, int aType, 
 		 TCL_Char *passedBeta, TCL_Char *passedRho)
-	:SystemAnalysis(passedReliabilityDomain, passedBeta, passedRho)
+	:SystemAnalysis(passedReliabilityDomain, passedEvaluator, passedBeta, passedRho)
 
 {
 	strcpy(fileName,passedFileName);

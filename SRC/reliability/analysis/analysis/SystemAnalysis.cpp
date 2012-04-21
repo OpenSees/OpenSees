@@ -34,6 +34,7 @@
 #include <SystemAnalysis.h>
 #include <ReliabilityDomain.h>
 #include <ReliabilityAnalysis.h>
+#include <FunctionEvaluator.h>
 #include <LimitStateFunction.h>
 #include <LimitStateFunctionIter.h>
 #include <Cutset.h>
@@ -54,10 +55,13 @@
 using std::ifstream;
 using std::ios;
 
-SystemAnalysis::SystemAnalysis(ReliabilityDomain *passedReliabilityDomain, TCL_Char *passedBeta, TCL_Char *passedRho)
+SystemAnalysis::SystemAnalysis(ReliabilityDomain *passedReliabilityDomain, 
+                               FunctionEvaluator *passedEvaluator, 
+                               TCL_Char *passedBeta, TCL_Char *passedRho)
 	:ReliabilityAnalysis()
 {
 	theReliabilityDomain = passedReliabilityDomain;
+    theFunctionEvaluator = passedEvaluator;
 	strcpy(betaFile,passedBeta);
 	strcpy(rhoFile,passedRho);
 	
@@ -101,8 +105,7 @@ SystemAnalysis::initialize()
 {
 	// Initial declarations
 	double beta;
-	double pf1;
-	int i, j, k, m, n;
+    NormalRV uRV(1, 0.0, 1.0);
 	
 	if (strlen(betaFile) > 1 && strlen(rhoFile) > 1) {
 		// read data for beta and rho from file, do not take from reliability domain
@@ -127,14 +130,13 @@ SystemAnalysis::initialize()
 		allBetas = new Vector(numLsf);
 		allPf1s = new Vector(numLsf);
 		rhos = new Matrix(numLsf,numLsf);
-		NormalRV uRV(1, 0.0, 1.0);
 		
 		// read data from file into arrays
-		for (i=0; i < numLsf; i++ ) {
+		for (int i=0; i < numLsf; i++ ) {
 			inputBeta >> (*allBetas)(i);
 			(*allPf1s)(i) = 1.0 - uRV.getCDFvalue( (*allBetas)(i) );
 			
-			for (j=0; j < numLsf; j++ ) {
+			for (int j=0; j < numLsf; j++ ) {
 				if (!inputRho.eof() )
 					inputRho >> (*rhos)(i,j);
 				else {
@@ -155,48 +157,42 @@ SystemAnalysis::initialize()
 		numLsf = theReliabilityDomain->getNumberOfLimitStateFunctions();
 
 		// Number of random variables
-		int nrv = theReliabilityDomain->getNumberOfRandomVariables();
+		int numRV = theReliabilityDomain->getNumberOfRandomVariables();
 
 		// Allocate vectors to store ALL the betas and alphas
 		allBetas = new Vector(numLsf);
 		allPf1s = new Vector(numLsf);
-		Matrix allAlphas(nrv,numLsf);
+		Matrix allAlphas(numRV,numLsf);
 
 		// Loop over number of limit-state functions and collect results
 		LimitStateFunction *theLimitStateFunction;
 		LimitStateFunctionIter &lsfIter = theReliabilityDomain->getLimitStateFunctions();
 		//for (i=0; i<numLsf; i++ ) {
 		while ((theLimitStateFunction = lsfIter()) != 0) {
+            int lsfTag = theLimitStateFunction->getTag();
+            //int i = theLimitStateFunction->getIndex();
+            int i = theReliabilityDomain->getLimitStateFunctionIndex(lsfTag);
 
-		  int tag = theLimitStateFunction->getTag();
-		  //int i = theLimitStateFunction->getIndex();
-		  int i = theReliabilityDomain->getLimitStateFunctionIndex(tag);
-
-		  // We should be using recorders -- MHS 10/7/2011
-		  //beta = theLimitStateFunction->getFORM_beta();
-		  beta = 0.0;
-		  //pf1 = theLimitStateFunction->getFORM_pf1();
-		  pf1 = 0.5;
-		  //const Vector &alpha = theLimitStateFunction->getFORM_alpha();
-		  Vector alpha(nrv); // To make it compile -- MHS 10/7/2011
-
-			// Put FORM results into vector of all betas and alphas
-			// Note that the first index of 'allAlphas' here denote 'nrv'
-			(*allBetas)(i) = beta;
-			(*allPf1s)(i) = pf1;
-			for (j=0; j<nrv; j++ ) {
-				allAlphas(j,i) = alpha(j);
-			}
+            // get betas
+            (*allBetas)(i) = theFunctionEvaluator->getResponseVariable("betaFORM", lsfTag);
+            (*allPf1s)(i) = 1.0 - uRV.getCDFvalue( (*allBetas)(i) );
+            
+            // get alpha vectors
+            for (int j = 0; j < numRV; j++) {
+                RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+                int rvTag = theRV->getTag();
+                allAlphas(j,i) = theFunctionEvaluator->getResponseVariable("alphaFORM", lsfTag, rvTag);
+            }
 		}
 		
 		// Compute vector of 'rhos', that is, dot products between the alphas
 		rhos = new Matrix(numLsf,numLsf);
 		
 		double dotProduct;
-		for (i=0; i<numLsf; i++ ) {
-			for (j=i+1; j<numLsf; j++ ) {
+		for (int i = 0; i<numLsf; i++ ) {
+			for (int j = i+1; j<numLsf; j++ ) {
 				dotProduct = 0.0;
-				for (k=0; k<nrv; k++ ) {
+				for (int k = 0; k < numRV; k++ ) {
 					dotProduct += allAlphas(k,i)*allAlphas(k,j);
 				}
 				(*rhos)(i,j) = dotProduct;
@@ -212,8 +208,8 @@ SystemAnalysis::initialize()
 	// Note this is upper-diagonal only
 	Pmn = new Matrix(numLsf,numLsf);
 	CorrelatedStandardNormal phi2(0.0);
-	for (m=0; m<numLsf; m++ ) {
-		for (n=m+1; n<numLsf; n++) {
+	for (int m = 0; m<numLsf; m++ ) {
+		for (int n = m+1; n<numLsf; n++) {
 			phi2.setCorrelation((*rhos)(m,n));
 			(*Pmn)(m,n) = phi2.getCDF(-(*allBetas)(m),-(*allBetas)(n));
 		}

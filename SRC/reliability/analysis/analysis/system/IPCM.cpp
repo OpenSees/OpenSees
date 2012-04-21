@@ -54,9 +54,10 @@ using std::setiosflags;
 #define isnan(x) ((x)!=(x))
 #endif
 
-IPCM::IPCM(ReliabilityDomain *passedReliabilityDomain, TCL_Char *passedFileName, int aType, 
-		 TCL_Char *passedBeta, TCL_Char *passedRho)
-	:SystemAnalysis(passedReliabilityDomain, passedBeta, passedRho)
+IPCM::IPCM(ReliabilityDomain *passedReliabilityDomain, FunctionEvaluator *passedEvaluator, 
+           TCL_Char *passedFileName, int aType, 
+           TCL_Char *passedBeta, TCL_Char *passedRho)
+	:SystemAnalysis(passedReliabilityDomain, passedEvaluator, passedBeta, passedRho)
 {
 	strcpy(fileName,passedFileName);
 	analysisType = aType;

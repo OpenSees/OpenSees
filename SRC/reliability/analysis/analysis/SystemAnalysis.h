@@ -37,6 +37,7 @@
 #include <ReliabilityAnalysis.h>
 #include <ReliabilityDomain.h>
 #include <RandomNumberGenerator.h>
+#include <FunctionEvaluator.h>
 
 #include <Matrix.h>
 #include <Vector.h>
@@ -46,7 +47,9 @@ class SystemAnalysis : public ReliabilityAnalysis
 {
 
 public:
-	SystemAnalysis(ReliabilityDomain *passedReliabilityDomain, TCL_Char *passedBeta, TCL_Char *passedRho);
+	SystemAnalysis(ReliabilityDomain *passedReliabilityDomain, 
+                   FunctionEvaluator *passedEvaluator, 
+                   TCL_Char *passedBeta, TCL_Char *passedRho);
 	virtual ~SystemAnalysis();
 	virtual int analyze(void) =0;
 	
@@ -74,6 +77,8 @@ private:
 	int			sign(int);
 	int			arrange(int, RandomNumberGenerator*, ID&);
 	int			combinations(Vector&, int, Matrix&);
+    
+    FunctionEvaluator* theFunctionEvaluator;
 	
 	char rhoFile[256];
 	char betaFile[256];

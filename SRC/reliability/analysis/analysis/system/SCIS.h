@@ -36,6 +36,7 @@
 
 #include <SystemAnalysis.h>
 #include <ReliabilityDomain.h>
+#include <FunctionEvaluator.h>
 #include <Vector.h>
 #include <Matrix.h>
 
@@ -43,8 +44,9 @@ class SCIS : public SystemAnalysis
 {
 
 public:
-	SCIS(ReliabilityDomain*, TCL_Char*, int, TCL_Char*, TCL_Char*, 
-				   long int Nmax = 1e4, double errMax = 1.0e-6);
+	SCIS(ReliabilityDomain*, FunctionEvaluator*, 
+            TCL_Char*, int, TCL_Char*, TCL_Char*, 
+            long int Nmax = 1e4, double errMax = 1.0e-6);
 	~SCIS();
 
 	int		analyze(void);

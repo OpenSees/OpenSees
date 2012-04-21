@@ -367,7 +367,6 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 
 	// 3) DzDmean and DzDstdv = a vector of zeros and then:
 	double DzDmean = 0.0;
-	static NormalRV aStandardNormalRV(1,0.0,1.0); 
 	RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtr(rvTag);
 	if (theRV == 0) {
 	  opserr << "NatafProbTransf::meanSensitivityOf_x_to_u -- r.v. with tag " << rvTag
@@ -375,39 +374,8 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 	}
 
 	int rvIndex = theReliabilityDomain->getRandomVariableIndex(rvTag);
-
-	if (strcmp(theRV->getType(),"NORMAL")==0) {
-	  double sigma = theRV->getStdv();
-	  DzDmean = -1.0 / sigma;
-	}
-	else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
-		double mean = fabs(theRV->getMean()); // more here for negative lognormal?
-		double stdv = theRV->getStdv();
-
-		double a = mean*mean+stdv*stdv;
-		DzDmean = 0.5*(-2.0*mean*mean*log(a)+4.0*mean*mean*log(mean)-3.0*stdv*stdv*log(a)+4.0*stdv*stdv*log(mean)+2.0*stdv*stdv*log(fabs(x(rvIndex))))
-			/(pow(log(a)-2.0*log(mean),1.5)*mean*a);
-		
-//		double z = ( log ( fabs(x(rvIndex)) ) - lambda ) / zeta; // more here for negative lognormal?
-//		double e = (stdv/mean)*(stdv/mean);
-//		double d = 1 + e;
-//		double f = 1.0 / (mean*d*zeta);
-//		DzDmean = f*(-d-e+e*z/zeta);
-	}
-	else if (strcmp(theRV->getType(),"UNIFORM")==0) {
-		double pz = 0.39894228048*exp(-z(rvIndex)*z(rvIndex)/2.0);
-        Vector paramTemp = theRV->getParameters();
-        double a = paramTemp(0);
-        double b = paramTemp(1);
-		DzDmean = -1.0/(pz*(b-a));
-	}
-	else {
-		opserr << "WARNING: Cannot compute reliability sensitivity results for " << endln
-			<< " type of random variable number " << rvTag << endln;
-		//DzDmean = 0.0;
-		//DzDmean = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFMeanSensitivity(x(rvIndex)));
-        DzDmean = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFMeanSensitivity());
-	}
+    DzDmean = theRV->getCDFMeanSensitivity();
+    opserr << "DzDmean is " << DzDmean << endln;
 
 	// 4) The hardest part: DinverseLowerCholeskyDmean
 	//						DinverseLowerCholeskyDstdv
@@ -429,14 +397,11 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 	Matrix OrigInverseLowerCholesky(nrv,nrv);
 	OrigLowerCholesky.Invert(OrigInverseLowerCholesky);
 
-	RandomVariable *aRandomVariable;
-	aRandomVariable = theReliabilityDomain->getRandomVariablePtr(rvTag);
-	double stdv = aRandomVariable->getStdv();
+	double stdv = theRV->getStdv();
 	double h = stdv/200.0;
-	setCorrelationMatrix(rvTag, 0, h);  // rvTag or rvIndex ... does it matter? -- MHS
+	setCorrelationMatrix(rvTag, 0, h);
 
 	MatrixOperations someMatrixOperations(*correlationMatrix);
-
 	int result = someMatrixOperations.computeCholeskyAndItsInverse();
 	if (result < 0) {
 		opserr << "NatafProbabilityTransformation::NatafProbabilityTransformation() - could not" << endln
@@ -451,7 +416,6 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 
 	// Return the final result (the four factors)
 	//return ( DinverseLowerCholeskyDmean * z + OrigInverseLowerCholesky * DzDmean );
-
 	Vector returnVector(z);
 	returnVector.addMatrixVector(0.0, DinverseLowerCholeskyDmean, z, 1.0);
 	//returnVector.addMatrixVector(1.0, OrigInverseLowerCholesky, DzDmean, 1.0);
@@ -481,7 +445,6 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 
 	// 3) DzDmean and DzDstdv = a vector of zeros and then:
 	double DzDstdv = 0.0;
-	static NormalRV aStandardNormalRV(1,0.0,1.0); 
 	RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtr(rvTag);
 	if (theRV == 0) {
 	  opserr << "NatafProbTransf::stdvSensitivityOf_x_to_u -- r.v. with tag " << rvTag
@@ -489,41 +452,8 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 	}
 
 	int rvIndex = theReliabilityDomain->getRandomVariableIndex(rvTag);
-
-	if (strcmp(theRV->getType(),"NORMAL")==0) {
-		double mu = theRV->getMean();
-		double sigma = theRV->getStdv();
-		DzDstdv = - (x(rvIndex)-mu) / (sigma*sigma);
-	}
-	else if (strcmp(theRV->getType(),"LOGNORMAL")==0) {
-		double mean = fabs(theRV->getMean()); // more here for negative lognormal?
-		double stdv = theRV->getStdv();
-
-		double a = mean*mean+stdv*stdv;
-		DzDstdv = 0.5*stdv*(log(a)-2.0*log(fabs(x(rvIndex))))/(pow(log(a)-2.0*log(mean),1.5)*a);
-		
-//		double z = ( log ( fabs(x(rvIndex)) ) - lambda ) / zeta; // more here for negative lognormal?
-//		double e = (stdv/mean)*(stdv/mean);
-//		double d = 1 + e;
-//		double f = 1.0 / (mean*d*zeta);
-//		DzDstdv = stdv*((1.0-z/zeta)*f/mean);
-	}
-	else if (strcmp(theRV->getType(),"UNIFORM")==0) {
-		double pz = 0.39894228048*exp(-z(rvIndex)*z(rvIndex)/2.0);
-        Vector paramTemp = theRV->getParameters();
-        double a = paramTemp(0);
-        double b = paramTemp(1);
-		double DzDmean = -1.0/(pz*(b-a));
-		double e = -DzDmean/(b-a);
-		DzDstdv = 1.732050807*(a+b-2.0*x(rvIndex))*e;
-	}
-	else {
-		opserr << "WARNING: Cannot compute reliability sensitivity results for " << endln
-			<< " type of random variable number " << rvTag << endln;
-		//DzDstdv = 0.0;
-		//DzDstdv = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFStdvSensitivity(x(rvIndex)));
-        DzDstdv = aStandardNormalRV.getInverseCDFvalue(theRV->getCDFStdvSensitivity());
-	}
+    DzDstdv = theRV->getCDFStdvSensitivity();
+    opserr << "DzDstdv is " << DzDstdv << endln;
 
 	// 4) The hardest part: DinverseLowerCholeskyDmean
 	//						DinverseLowerCholeskyDstdv
@@ -545,14 +475,11 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 	Matrix OrigInverseLowerCholesky(nrv,nrv);
 	OrigLowerCholesky.Invert(OrigInverseLowerCholesky);
 
-	RandomVariable *aRandomVariable;
-	aRandomVariable = theReliabilityDomain->getRandomVariablePtr(rvTag);
-	double stdv = aRandomVariable->getStdv();
+	double stdv = theRV->getStdv();
 	double h = stdv/200.0;
-	setCorrelationMatrix(0, rvTag, h); // rvTag or rvIndex ... does it matter? -- MHS
+	setCorrelationMatrix(0, rvTag, h);
 
 	MatrixOperations someMatrixOperations(*correlationMatrix);
-
 	int result = someMatrixOperations.computeCholeskyAndItsInverse();
 	if (result < 0) {
 		opserr << "NatafProbabilityTransformation::NatafProbabilityTransformation() - could not" << endln
@@ -595,9 +522,7 @@ NatafProbabilityTransformation::setCorrelationMatrix(int pertMeanOfThisRV, int p
 
 	// Put 'ones' on the diagonal
 	for ( int i=0 ; i<nrv ; i++ )
-	{
 		(*correlationMatrix)(i,i) = 1.0;
-	}
 
 	// Get number of correlation coefficients
 	int numberOfCorrelationCoefficients = 

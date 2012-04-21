@@ -36,6 +36,7 @@
 
 #include <SystemAnalysis.h>
 #include <ReliabilityDomain.h>
+#include <FunctionEvaluator.h>
 #include <Vector.h>
 #include <Matrix.h>
 
@@ -44,8 +45,9 @@ class IPCM : public SystemAnalysis
 
 public:
 	IPCM(ReliabilityDomain *passedReliabilityDomain,
-				   TCL_Char *fileName, int analysisType, 
-				   TCL_Char *betaName, TCL_Char *rhoName);
+                FunctionEvaluator *passedEvaluator,
+                TCL_Char *fileName, int analysisType, 
+                TCL_Char *betaName, TCL_Char *rhoName);
 	~IPCM();
 
 	int		analyze(void);
