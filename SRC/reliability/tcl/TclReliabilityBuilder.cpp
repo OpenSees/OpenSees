@@ -3837,6 +3837,12 @@ TclReliabilityModelBuilder_runSystemAnalysis(ClientData clientData, Tcl_Interp *
 		delete theSystemAnalysis;
 		theSystemAnalysis = 0;
 	}
+    
+    // Check for essential ingredients
+	if (theFunctionEvaluator == 0 ) {
+		opserr << "Need theFunctionEvaluator before a SystemAnalysis can be created" << endln;
+		return TCL_ERROR;
+	}
 
 	// Do input check
 	char theCommand[15] = "inputCheck";
@@ -3893,13 +3899,17 @@ TclReliabilityModelBuilder_runSystemAnalysis(ClientData clientData, Tcl_Interp *
 
 	// GET INPUT PARAMETER (string) AND CREATE THE OBJECT
 	if (strcmp(argv[2],"PCM") == 0)
-		theSystemAnalysis = new PCM(theReliabilityDomain, argv[1], aType, betaFile, rhoFile);
+		theSystemAnalysis = new PCM(theReliabilityDomain, theFunctionEvaluator, 
+                                    argv[1], aType, betaFile, rhoFile);
 	else if (strcmp(argv[2],"IPCM") == 0)
-		theSystemAnalysis = new IPCM(theReliabilityDomain, argv[1], aType, betaFile, rhoFile);
+		theSystemAnalysis = new IPCM(theReliabilityDomain, theFunctionEvaluator,
+                                     argv[1], aType, betaFile, rhoFile);
 	else if (strcmp(argv[2],"MVN") == 0)
-		theSystemAnalysis = new MVNcdf(theReliabilityDomain, argv[1], aType, betaFile, rhoFile, nMax, tol);
+		theSystemAnalysis = new MVNcdf(theReliabilityDomain, theFunctionEvaluator,
+                                       argv[1], aType, betaFile, rhoFile, nMax, tol);
 	else if (strcmp(argv[2],"SCIS") == 0)
-		theSystemAnalysis = new SCIS(theReliabilityDomain, argv[1], aType, betaFile, rhoFile, nMax, tol);
+		theSystemAnalysis = new SCIS(theReliabilityDomain, theFunctionEvaluator,
+                                     argv[1], aType, betaFile, rhoFile, nMax, tol);
 	else {
 		opserr << "ERROR: Invalid system reliability analysis type input:" << argv[2] << endln;
 		return TCL_ERROR;

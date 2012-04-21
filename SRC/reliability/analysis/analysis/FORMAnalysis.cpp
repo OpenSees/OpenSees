@@ -158,11 +158,12 @@ FORMAnalysis::analyze()
 
 			RandomVariableIter rvIter = theReliabilityDomain->getRandomVariables();
 			RandomVariable *theRV;
-			//for ( int j=1; j<=numRV; j++ ) {
-			while ((theRV = rvIter()) != 0) {
+			for (int j = 0; j < numRV; j++) {
+                theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
+			//while ((theRV = rvIter()) != 0) {
 				//int j = theRV->getIndex();
 				int rvTag = theRV->getTag();
-				int j = theReliabilityDomain->getRandomVariableIndex(rvTag);
+				//int j = theReliabilityDomain->getRandomVariableIndex(rvTag);
 				
 				DuStarDmean = theProbabilityTransformation->meanSensitivityOf_x_to_u(xStar,rvTag);
 				DuStarDstdv = theProbabilityTransformation->stdvSensitivityOf_x_to_u(xStar,rvTag);
@@ -181,9 +182,9 @@ FORMAnalysis::analyze()
 			}
 
 			// Don't scale them: WHY????? the output is gibberish otherwise
-			delta /= delta.Norm();
-			eta /= eta.Norm();
-			kappa /= kappa.Norm();
+			//delta /= delta.Norm();
+			//eta /= eta.Norm();
+			//kappa /= kappa.Norm();
 		}
 		
 
