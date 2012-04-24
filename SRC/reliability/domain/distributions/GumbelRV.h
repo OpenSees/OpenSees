@@ -56,6 +56,13 @@ public:
 	double getCDFvalue(double rvValue);
 	double getInverseCDFvalue(double rvValue); 
 	
+    // sensitivity of CDF with respect to distribution parameters
+    double getCDFMeanSensitivity(void);
+	double getCDFStdvSensitivity(void);
+    int getCDFparameterSensitivity(Vector &dFdP);
+    int getParameterMeanSensitivity(Vector &dPdmu);
+    int getParameterStdvSensitivity(Vector &dPdstdv);
+    
 	// other
 	void Print(OPS_Stream &s, int flag = 0);
 

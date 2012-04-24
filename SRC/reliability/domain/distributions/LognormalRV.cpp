@@ -293,10 +293,10 @@ LognormalRV::getCDFparameterSensitivity(Vector &dFdP)
     double rvValue = this->getCurrentValue();
     
     // dFdlambda
-    dFdP(0) = -1/zeta/zeta/rvValue * getPDFvalue(rvValue);
+    dFdP(0) = -rvValue * getPDFvalue(rvValue);
     
     // dFdzeta
-    dFdP(1) = -1/zeta/zeta/zeta/rvValue*(log(rvValue)-lambda) * getPDFvalue(rvValue);
+    dFdP(1) = -1/zeta*rvValue*(log(rvValue)-lambda) * getPDFvalue(rvValue);
     
     return 0;
 }

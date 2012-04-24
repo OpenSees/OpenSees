@@ -356,10 +356,11 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 {
 	// Returns the sensitivity of 'u' with respect to [mean, stdv]
 	// for the given random variable number (rvNumber)
+    NormalRV aStdNormRV(1,0.0,1.0);
 
 	// Need four factors:
-
-	// 1) (*inverseLowerCholesky)    DONE
+	// 1) (*inverseLowerCholesky)
+    // DONE
 
 	// 2) Vector z = x_to_z(x); 
 	Vector z(nrv);
@@ -374,7 +375,7 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 	}
 
 	int rvIndex = theReliabilityDomain->getRandomVariableIndex(rvTag);
-    DzDmean = theRV->getCDFMeanSensitivity();
+    DzDmean = theRV->getCDFMeanSensitivity() / aStdNormRV.getPDFvalue( z(rvIndex) );
     opserr << "DzDmean is " << DzDmean << endln;
 
 	// 4) The hardest part: DinverseLowerCholeskyDmean
@@ -409,9 +410,10 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 			<< " for the correlation matrix." << endln;
 	}
 	const Matrix &PerturbedInverseLowerCholesky = someMatrixOperations.getInverseLowerCholesky();
+    
 	//Matrix DinverseLowerCholeskyDmean = (OrigInverseLowerCholesky - PerturbedInverseLowerCholesky) * (1/h);
 	Matrix DinverseLowerCholeskyDmean(OrigInverseLowerCholesky);
-	DinverseLowerCholeskyDmean.addMatrix(1.0, PerturbedInverseLowerCholesky, -1/h);
+	DinverseLowerCholeskyDmean.addMatrix(1/h, PerturbedInverseLowerCholesky, -1/h);
 	setCorrelationMatrix(0, 0, 0.0);
 
 	// Return the final result (the four factors)
@@ -434,10 +436,11 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 {
 	// Returns the sensitivity of 'u' with respect to [mean, stdv]
 	// for the given random variable number (rvNumber)
+    NormalRV aStdNormRV(1,0.0,1.0);
 
 	// Need four factors:
-
-	// 1) (*inverseLowerCholesky)    DONE
+	// 1) (*inverseLowerCholesky)
+    // DONE
 
 	// 2) Vector z = x_to_z(x); 
 	Vector z(nrv);
@@ -452,7 +455,7 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 	}
 
 	int rvIndex = theReliabilityDomain->getRandomVariableIndex(rvTag);
-    DzDstdv = theRV->getCDFStdvSensitivity();
+    DzDstdv = theRV->getCDFStdvSensitivity() / aStdNormRV.getPDFvalue( z(rvIndex) );
     opserr << "DzDstdv is " << DzDstdv << endln;
 
 	// 4) The hardest part: DinverseLowerCholeskyDmean
@@ -487,9 +490,10 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 			<< " for the correlation matrix." << endln;
 	}
 	const Matrix &PerturbedInverseLowerCholesky = someMatrixOperations.getInverseLowerCholesky();
+    
 	//Matrix DinverseLowerCholeskyDstdv = (OrigInverseLowerCholesky - PerturbedInverseLowerCholesky) * (1/h);
 	Matrix DinverseLowerCholeskyDstdv(OrigInverseLowerCholesky);
-	DinverseLowerCholeskyDstdv.addMatrix(1.0, PerturbedInverseLowerCholesky, -1/h);
+	DinverseLowerCholeskyDstdv.addMatrix(1/h, PerturbedInverseLowerCholesky, -1/h);
 	setCorrelationMatrix(0, 0, 0.0);
 
 	// Return the final result (the four factors)

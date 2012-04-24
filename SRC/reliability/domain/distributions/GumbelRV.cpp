@@ -136,6 +136,79 @@ GumbelRV::getInverseCDFvalue(double probValue)
 }
 
 
+double 
+GumbelRV::getCDFMeanSensitivity(void)
+{
+    // returns dF/dmu
+    Vector dFdP(2);
+    Vector dPdmu(2);
+    getCDFparameterSensitivity(dFdP);
+    getParameterMeanSensitivity(dPdmu);
+    
+    return dFdP^dPdmu;
+}
+
+
+double 
+GumbelRV::getCDFStdvSensitivity(void)
+{
+    // returns dF/dsigma
+    Vector dFdP(2);
+    Vector dPdsig(2);
+    getCDFparameterSensitivity(dFdP);
+    getParameterStdvSensitivity(dPdsig);
+    
+    return dFdP^dPdsig;
+}
+
+
+int 
+GumbelRV::getCDFparameterSensitivity(Vector &dFdP)
+{
+    // returns gradient of F(x) with respect to distribution parameters
+    double rvValue = this->getCurrentValue();
+    
+    // dFdu
+    dFdP(0) = -1 * getPDFvalue(rvValue);
+    
+    // dFdalpha
+    dFdP(1) = -(u-rvValue)/alpha * getPDFvalue(rvValue);
+    
+    return 0;
+}
+
+
+int
+GumbelRV::getParameterMeanSensitivity(Vector &dPdmu)
+{
+    // returns gradient of distribution parameters with respect to the mean
+    
+    // dudmu
+    dPdmu(0) = 1;
+    
+    // dalphadmu
+    dPdmu(1) = 0;
+    
+    return 0;
+}
+
+
+int
+GumbelRV::getParameterStdvSensitivity(Vector &dPdstdv)
+{
+    // returns gradient of distribution parameters with respect to the stdv
+    double sig = getStdv();
+    
+    // dudsig
+    dPdstdv(0) = -sqrt(6)/pi*euler;
+    
+    // dalphadsig
+    dPdstdv(1) = -pi/sqrt(6)/sig/sig;
+    
+    return 0;
+}
+
+
 void
 GumbelRV::Print(OPS_Stream &s, int flag)
 {
