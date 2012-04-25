@@ -6372,23 +6372,18 @@ TclReliabilityModelBuilder_getBetaFORM(ClientData clientData, Tcl_Interp *interp
     return TCL_ERROR;
   }
 
+  if (theFunctionEvaluator == 0) {
+    opserr << "WARNING betaFORM -- no function evaluator defined\n";
+    return TCL_ERROR;	        
+  }
+
   int lsfTag;
   if (Tcl_GetInt(interp, argv[1], &lsfTag) != TCL_OK) {
     opserr << "WARNING betaFORM lsfTag? - could not read lsfTag\n";
     return TCL_ERROR;	        
   }   
 
-  LimitStateFunction *theLSF =
-    theReliabilityDomain->getLimitStateFunctionPtr(lsfTag);
-
-  if (theLSF == 0) {
-    opserr << "WARNING betaFORM LSF with tag " << lsfTag << " not found\n";
-    return TCL_ERROR;	        
-  }
-
-  // Need to use recorders -- MHS 10/7/2011
-  //double beta = theLSF->getFORM_beta();
-  double beta = 0.0;
+  double beta = theFunctionEvaluator->getResponseVariable("betaFORM",lsfTag);
 
   char buffer[40];
   sprintf(buffer,"%35.20f",beta);
@@ -6402,9 +6397,14 @@ TclReliabilityModelBuilder_getBetaFORM(ClientData clientData, Tcl_Interp *interp
 int 
 TclReliabilityModelBuilder_getGammaFORM(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-  if (argc < 2) {
+  if (argc < 3) {
     opserr << "ERROR: Invalid number of arguments to getGammaFORM command." << endln;
     return TCL_ERROR;
+  }
+
+  if (theFunctionEvaluator == 0) {
+    opserr << "WARNING gammaFORM -- no function evaluator defined\n";
+    return TCL_ERROR;	        
   }
 
   int lsfTag;
@@ -6413,50 +6413,28 @@ TclReliabilityModelBuilder_getGammaFORM(ClientData clientData, Tcl_Interp *inter
     return TCL_ERROR;	        
   }
 
-  LimitStateFunction *theLSF =
-    theReliabilityDomain->getLimitStateFunctionPtr(lsfTag);
-  
-  if (theLSF == 0) {
-    opserr << "WARNING gammaFORM LSF with tag " << lsfTag << " not found\n";
+  int rvTag;
+  if (Tcl_GetInt(interp, argv[2], &rvTag) != TCL_OK) {
+    opserr << "WARNING gammaFORM lsfTag? rvTag? - could not read rvTag\n";
+    return TCL_ERROR;	        
+  }   
+    
+  RandomVariable *theRV =
+    theReliabilityDomain->getRandomVariablePtr(rvTag);
+    
+  if (theRV == 0) {
+    opserr << "WARNING gammaFORM RV with tag " << rvTag << " not found\n";
     return TCL_ERROR;	        
   }
 
-  // Need to use recorders -- MHS 10/7/2011
-  //const Vector &gammaVec = theLSF->getFORM_gamma();
-  int nrv = theReliabilityDomain->getNumberOfRandomVariables();
-  Vector gammaVec(nrv);
-
-  char buffer[40];
-
-  if (argc > 2) {
-    int rvTag;
-    if (Tcl_GetInt(interp, argv[2], &rvTag) != TCL_OK) {
-      opserr << "WARNING gammaFORM lsfTag? rvTag? - could not read rvTag\n";
-      return TCL_ERROR;	        
-    }   
-    
-    RandomVariable *theRV =
-      theReliabilityDomain->getRandomVariablePtr(rvTag);
-    
-    if (theRV == 0) {
-      opserr << "WARNING gammaFORM RV with tag " << rvTag << " not found\n";
-      return TCL_ERROR;	        
-    }
+  int index = theReliabilityDomain->getRandomVariableIndex(rvTag);
   
-    int index = theReliabilityDomain->getRandomVariableIndex(rvTag);
-    double gamma = gammaVec(index);
+  double gamma = theFunctionEvaluator->getResponseVariable("gammaFORM",lsfTag,index);
+
+  char buffer[40];  
+  sprintf(buffer,"%35.20f",gamma);
     
-    sprintf(buffer,"%35.20f",gamma);
-    
-    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
-  }
-  else {
-    int nrv = gammaVec.Size();
-    for (int i = 0; i < nrv; i++) {
-      sprintf(buffer, "%35.20f ", gammaVec(i));
-      Tcl_AppendResult(interp, buffer, NULL);
-    }
-  }
+  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
   return TCL_OK;
 }
@@ -6465,9 +6443,14 @@ TclReliabilityModelBuilder_getGammaFORM(ClientData clientData, Tcl_Interp *inter
 int 
 TclReliabilityModelBuilder_getAlphaFORM(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-  if (argc < 2) {
+  if (argc < 3) {
     opserr << "ERROR: Invalid number of arguments to getAlphaFORM command." << endln;
     return TCL_ERROR;
+  }
+
+  if (theFunctionEvaluator == 0) {
+    opserr << "WARNING alphaFORM -- no function evaluator defined\n";
+    return TCL_ERROR;	        
   }
 
   int lsfTag;
@@ -6476,50 +6459,28 @@ TclReliabilityModelBuilder_getAlphaFORM(ClientData clientData, Tcl_Interp *inter
     return TCL_ERROR;	        
   }
 
-  LimitStateFunction *theLSF =
-    theReliabilityDomain->getLimitStateFunctionPtr(lsfTag);
-  
-  if (theLSF == 0) {
-    opserr << "WARNING alphaFORM LSF with tag " << lsfTag << " not found\n";
+  int rvTag;
+  if (Tcl_GetInt(interp, argv[2], &rvTag) != TCL_OK) {
+    opserr << "WARNING alphaFORM lsfTag? rvTag? - could not read rvTag\n";
+    return TCL_ERROR;	        
+  }   
+    
+  RandomVariable *theRV =
+    theReliabilityDomain->getRandomVariablePtr(rvTag);
+    
+  if (theRV == 0) {
+    opserr << "WARNING alphaFORM RV with tag " << rvTag << " not found\n";
     return TCL_ERROR;	        
   }
 
-  // Need to use recorders -- MHS 10/7/2011
-  //const Vector &gammaVec = theLSF->getFORM_alpha();
-  int nrv = theReliabilityDomain->getNumberOfRandomVariables();
-  Vector gammaVec(nrv);
+  int index = theReliabilityDomain->getRandomVariableIndex(rvTag);
   
-  char buffer[40];
+  double alpha = theFunctionEvaluator->getResponseVariable("alphaFORM",lsfTag,index);
 
-  if (argc > 2) {
-    int rvTag;
-    if (Tcl_GetInt(interp, argv[2], &rvTag) != TCL_OK) {
-      opserr << "WARNING alphaFORM lsfTag? rvTag? - could not read rvTag\n";
-      return TCL_ERROR;	        
-    }   
+  char buffer[40];  
+  sprintf(buffer,"%35.20f",alpha);
     
-    RandomVariable *theRV =
-      theReliabilityDomain->getRandomVariablePtr(rvTag);
-    
-    if (theRV == 0) {
-      opserr << "WARNING alphaFORM RV with tag " << rvTag << " not found\n";
-      return TCL_ERROR;	        
-    }
-  
-    int index = theReliabilityDomain->getRandomVariableIndex(rvTag);
-    double gamma = gammaVec(index);
-    
-    sprintf(buffer,"%35.20f",gamma);
-    
-    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
-  }
-  else {
-    int nrv = gammaVec.Size();
-    for (int i = 0; i < nrv; i++) {
-      sprintf(buffer, "%35.20f ", gammaVec(i));
-      Tcl_AppendResult(interp, buffer, NULL);
-    }
-  }
+  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
   return TCL_OK;
 }
