@@ -509,17 +509,19 @@
 #define ELE_TAG_GenericCopy      2104
 #define ELE_TAG_PY_MACRO2D      2105
 // elements added by U.W. - P.Arduino
-#define ELE_TAG_SimpleContact2D  11
-#define ELE_TAG_SimpleContact3D  12
-#define ELE_TAG_BeamContact3D    13
-#define ELE_TAG_SurfaceLoad      14
-#define ELE_TAG_BeamContact2D    15
-#define ELE_TAG_BeamEndContact3D 16
-#define ELE_TAG_SSPquad          18
-#define ELE_TAG_SSPquadUP        19
-#define ELE_TAG_SSPbrick         22
-#define ELE_TAG_SSPbrickUP       23
-#define ELE_TAG_BeamContact2Dp   24
+#define ELE_TAG_SimpleContact2D   11
+#define ELE_TAG_SimpleContact3D   12
+#define ELE_TAG_BeamContact3D     13
+#define ELE_TAG_SurfaceLoad       14
+#define ELE_TAG_BeamContact2D     15
+#define ELE_TAG_BeamEndContact3D  16
+#define ELE_TAG_SSPquad           18
+#define ELE_TAG_SSPquadUP         19
+#define ELE_TAG_SSPbrick          22
+#define ELE_TAG_SSPbrickUP        23
+#define ELE_TAG_BeamContact2Dp    24
+#define ELE_TAG_BeamContact3Dp    25
+#define ELE_TAG_BeamEndContact3Dp 26
 
 #define ELE_TAG_TPB1D 17
 #define ELE_TAG_TFP_Bearing 20

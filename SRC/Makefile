@@ -413,7 +413,9 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/BeamContact2D.o \
 	$(FE)/element/UWelements/BeamContact2Dp.o \
 	$(FE)/element/UWelements/BeamContact3D.o \
+	$(FE)/element/UWelements/BeamContact3Dp.o \
 	$(FE)/element/UWelements/BeamEndContact3D.o \
+	$(FE)/element/UWelements/BeamEndContact3Dp.o \
 	$(FE)/element/feap/elmt01.o \
 	$(FE)/element/feap/elmt02.o \
 	$(FE)/element/feap/elmt03.o \

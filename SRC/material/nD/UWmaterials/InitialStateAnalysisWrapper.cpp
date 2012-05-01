@@ -348,6 +348,9 @@ InitialStateAnalysisWrapper::setParameter(const char **argv, int argc, Parameter
 	}
 
 	return -1;
+	/*theMainMaterial->setParameter(argv, argc, param);
+
+	return 0;*/
 }
 
 int

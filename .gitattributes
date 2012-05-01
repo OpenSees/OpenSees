@@ -2004,8 +2004,12 @@ SRC/element/UWelements/BeamContact2Dp.cpp -text
 SRC/element/UWelements/BeamContact2Dp.h -text
 SRC/element/UWelements/BeamContact3D.cpp -text
 SRC/element/UWelements/BeamContact3D.h -text
+SRC/element/UWelements/BeamContact3Dp.cpp -text
+SRC/element/UWelements/BeamContact3Dp.h -text
 SRC/element/UWelements/BeamEndContact3D.cpp -text
 SRC/element/UWelements/BeamEndContact3D.h -text
+SRC/element/UWelements/BeamEndContact3Dp.cpp -text
+SRC/element/UWelements/BeamEndContact3Dp.h -text
 SRC/element/UWelements/Makefile -text
 SRC/element/UWelements/SSPbrick.cpp -text
 SRC/element/UWelements/SSPbrick.h -text

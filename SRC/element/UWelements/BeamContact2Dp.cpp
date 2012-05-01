@@ -1031,11 +1031,12 @@ BeamContact2Dp::getResponse(int responseID, Information &eleInfo)
 		}
 		return eleInfo.setVector(masterForce);
 
-	} else
+	} else {
 		// otherwise response quantity is unknown for the BeamContact2Dp class
 		opserr << "BeamContact2Dp::getResponse(int responseID = " << responseID << ", Information &eleInfo); "
 		  << " unknown request" << endln;
 		return -1;
+	}
 }
 
 int

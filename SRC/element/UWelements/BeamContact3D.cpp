@@ -131,7 +131,7 @@ OPS_BeamContact3D(void)
   // Parsing was successful, allocate the element
   theElement = new BeamContact3D(iData[0], iData[1], iData[2], iData[3], iData[4],
                                  dData[0], *theTransf, *theMaterial,
-                                 dData[1], dData[2]);
+                                 dData[1], dData[2], icSwitch);
 
   if (theElement == 0) {
     opserr << "WARNING could not create element of type BeamContact3DElement\n";

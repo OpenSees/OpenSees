@@ -26,7 +26,7 @@
 // Created: April 2008
 //
 
-#include <tcl.h>
+#include <TclModelBuilder.h>
 #include <HyperbolicGapMaterial.h>
 
 #include <Vector.h>
@@ -43,43 +43,47 @@ TclCommand_HyperbolicGapMaterial(ClientData clientData, Tcl_Interp *interp, int 
 
   if (argc < 8) {
     opserr << "WARNING insufficient number of arguments\n";
-    return 0;
+    return TCL_ERROR;
   }
   
   if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
     opserr << "WARNING invalid uniaxialMaterial tag\n";
-    return 0;
+    return TCL_ERROR;
   }
 
   if (Tcl_GetDouble(interp, argv[3], &Kmax) != TCL_OK) {
     opserr << "WARNING invalid Kmax\n";
-    return 0;	
+    return TCL_ERROR;	
   }
 
   if (Tcl_GetDouble(interp, argv[4], &Kur) != TCL_OK) {
     opserr << "WARNING invalid Kur\n";
-    return 0;	
+    return TCL_ERROR;	
   }
 
   if (Tcl_GetDouble(interp, argv[5], &Rf) != TCL_OK) {
     opserr << "WARNING invalid Rf\n";
-    return 0;	
+    return TCL_ERROR;	
   }
 
   if (Tcl_GetDouble(interp, argv[6], &Fult) != TCL_OK) {
     opserr << "WARNING invalid Fult\n";
-    return 0;	
+    return TCL_ERROR;	
   }
 
   if (Tcl_GetDouble(interp, argv[7], &gap) != TCL_OK) {
     opserr << "WARNING invalid gap\n";
-    return 0;	
+    return TCL_ERROR;	
   }
   
   theMaterial = new HyperbolicGapMaterial(tag, Kmax, Kur, Rf, Fult, gap);
 
-  if (theMaterial != 0) 
-    return OPS_addUniaxialMaterial(theMaterial);
-  else
-    return -1;
+  if (theMaterial != 0)  {
+    if (OPS_addUniaxialMaterial(theMaterial) == true)
+      return 0;
+    else
+      return -1;
+  }
+
+  return -1;
 }
