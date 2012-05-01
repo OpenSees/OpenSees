@@ -334,7 +334,7 @@ C
 C ... PUT SOLUTION INTO U IF NOT ALREADY THERE. 
 C       
   320 CONTINUE    
-      IF (MOD(IN,2).EQ.1) CALL DCOPY (N,WKSP(IB1),1,U,1)  
+      IF (MOD(IN,2).EQ.1) CALL ItDCOPY (N,WKSP(IB1),1,U,1)  
 C       
 C ... UNSCALE THE MATRIX, SOLUTION, AND RHS VECTORS.      
 C       
@@ -456,8 +456,8 @@ C
 C ... COMPUTE PSEUDO-RESIDUALS (FORWARD AND BACKWARD)     
 C       
       N = NN      
-      CALL DCOPY (N,RHS,1,WK,1)       
-      CALL DCOPY (N,U,1,CTWD,1)       
+      CALL ItDCOPY (N,RHS,1,WK,1)       
+      CALL ItDCOPY (N,U,1,CTWD,1)       
       CALL PSSOR1 (N,IA,JA,A,CTWD,WK,C,D)       
 C       
 C ... COMPUTE U(IN+1) -- CONTAINED IN THE VECTOR U1.      
@@ -483,7 +483,7 @@ C
 C ... IT HAS BEEN DECIDED TO CHANGE PARAMETERS. 
 C ...    (1) COMPUTE CTWD   
 C       
-      CALL DCOPY (N,D,1,CTWD,1)       
+      CALL ItDCOPY (N,D,1,CTWD,1)       
       CALL VFILL (N,WK,0.D0)
       CALL PFSOR (N,IA,JA,A,CTWD,WK)  
       CALL VEVPW (N,CTWD,C) 

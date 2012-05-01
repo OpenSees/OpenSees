@@ -39,7 +39,7 @@ C
 C          FROM ITPACK   BISRCH, CHEBY, CHGSI, CHGSME, DFAULT, ECHALL,
 C                        ECHOUT, ITERM, TIMER, ITJSI, IVFILL, PAR   
 C                        PERMAT, PERR, PERVEC, PJAC, PMULT, PRBNDX, 
-C                        PSTOP, PVTBV, QSORT, DAXPY, SBELM, SCAL,   
+C                        PSTOP, PVTBV, QSORT, ItDAXPY, SBELM, SCAL,   
 C                        DCOPY, DDOT, SUM3, TSTCHG, UNSCAL, VEVMW,  
 C                        VFILL, VOUT, WEVMW     
 C          SYSTEM        DABS, DLOG10, DBLE(AMAX0), DMAX1, DBLE(FLOAT), 
@@ -463,8 +463,8 @@ C
 C       
 C ... COMPUTE U(IN+1) AFTER CHANGE OF PARAMETERS
 C       
-   20 CALL DCOPY (N,U,1,U1,1) 
-      CALL DAXPY (N,GAMMA,D,1,U1,1)   
+   20 CALL ItDCOPY (N,U,1,U1,1) 
+      CALL ItDAXPY (N,GAMMA,D,1,U1,1)   
       GO TO 40    
 C       
 C ... COMPUTE U(IN+1) WITHOUT CHANGE OF PARAMETERS

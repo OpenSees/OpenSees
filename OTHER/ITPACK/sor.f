@@ -441,7 +441,7 @@ C
    30 CONTINUE    
       DELSNM = DELNNM       
       SPCRM1 = SPECR
-      CALL DCOPY (N,RHS,1,WK,1)       
+      CALL ItDCOPY (N,RHS,1,WK,1)       
       CALL PFSOR1 (N,IA,JA,A,U,WK)    
       IF (DELNNM.EQ.0.D0) GO TO 40    
       IF (IN.NE.0) SPECR = DELNNM/DELSNM

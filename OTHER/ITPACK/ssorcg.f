@@ -44,7 +44,7 @@ C                         ECHOUT, EIGVNS, EIGVSS, EQRT1S, ITERM, TIMER,
 C                         ITSRCG, IVFILL, OMEG, OMGCHG, OMGSTR,     
 C                         PARCON, PBETA, PBSOR, PERMAT, PERR,     
 C                         PERVEC, PFSOR, PJAC, PMULT, PRBNDX, PSTOP, PVT
-C                         QSORT, SBELM, SCAL, DCOPY, DDOT, SUM3,    
+C                         QSORT, SBELM, SCAL, ItDCOPY, DDOT, SUM3,    
 C                         UNSCAL, VEVMW, VEVPW, VFILL, VOUT, WEVMW, 
 C                         ZBRENT      
 C          SYSTEM         DABS, DLOG, DLOG10, DBLE(AMAX0), DMAX1, AMIN1,
@@ -293,8 +293,8 @@ C
 C       
 C ... INITIALIZE FORWARD PSEUDO-RESIDUAL
 C       
-  250 CALL DCOPY (N,RHS,1,WKSP(IB1),1)
-      CALL DCOPY (N,U,1,WKSP(IB2),1)  
+  250 CALL ItDCOPY (N,RHS,1,WKSP(IB1),1)
+      CALL ItDCOPY (N,U,1,WKSP(IB2),1)  
       CALL PFSOR (N,IA,JA,A,WKSP(IB2),WKSP(IB1))
       CALL VEVMW (N,WKSP(IB2),U)      
 C       
@@ -351,7 +351,7 @@ C
 C ... PUT SOLUTION INTO U IF NOT ALREADY THERE. 
 C       
   330 CONTINUE    
-      IF (MOD(IN,2).EQ.1) CALL DCOPY (N,WKSP(IB1),1,U,1)  
+      IF (MOD(IN,2).EQ.1) CALL ItDCOPY (N,WKSP(IB1),1,U,1)  
 C       
 C ... UNSCALE THE MATRIX, SOLUTION, AND RHS VECTORS.      
 C       
@@ -457,7 +457,7 @@ C
 C       
 C ... SPECIFICATIONS FOR FUNCTION SUBPROGRAMS   
 C       
-      DOUBLE PRECISION DDOT,PBETA,PVTBV 
+      DOUBLE PRECISION ItDDOT,PBETA,PVTBV 
       LOGICAL OMGCHG,OMGSTR 
 C       
 C *** BEGIN: ITPACK COMMON  
@@ -484,24 +484,24 @@ C
 C       
 C ... COMPUTE BACKWARD RESIDUAL       
 C       
-      CALL DCOPY (N,RHS,1,WK,1)       
-      CALL DCOPY (N,C,1,D,1)
+      CALL ItDCOPY (N,RHS,1,WK,1)       
+      CALL ItDCOPY (N,C,1,D,1)
       CALL VEVPW (N,D,U)    
       CALL PBSOR (N,IA,JA,A,D,WK)     
       CALL VEVMW (N,D,U)    
 C       
 C ... COMPUTE ACCELERATION PARAMETERS AND THEN U(IN+1) (IN U1)      
 C       
-      CALL DCOPY (N,D,1,DL,1) 
+      CALL ItDCOPY (N,D,1,DL,1) 
       CALL VFILL (N,WK,0.D0)
       CALL PFSOR (N,IA,JA,A,DL,WK)    
       CALL WEVMW (N,D,DL)   
-      DELNNM = DDOT(N,C,1,C,1)
+      DELNNM = ItDDOT(N,C,1,C,1)
       IF (DELNNM.EQ.0.D0) GO TO 30    
-      DNRM = DDOT(N,C,1,DL,1) 
+      DNRM = ItDDOT(N,C,1,DL,1) 
       IF (DNRM.EQ.0.D0) GO TO 30      
       IF (ISYM.EQ.0) GO TO 10 
-      RHOTMP = DDOT(N,C,1,C1,1)-DDOT(N,DL,1,C1,1) 
+      RHOTMP = ItDDOT(N,C,1,C1,1)-ItDDOT(N,DL,1,C1,1) 
       CALL PARCON (DNRM,T1,T2,T3,T4,GAMOLD,RHOTMP,3)      
       RHOOLD = RHOTMP       
       GO TO 20    
@@ -510,7 +510,7 @@ C
 C       
 C ... TEST FOR STOPPING     
 C       
-   30 BDELNM = DDOT(N,D,1,D,1)
+   30 BDELNM = ItDDOT(N,D,1,D,1)
       DNRM = BDELNM 
       CON = SPECR 
       CALL PSTOP (N,U,DNRM,CON,1,Q1)  
@@ -549,14 +549,14 @@ C
       GO TO 80    
    70 CALL VFILL (N,WK,0.D0)
       CALL PJAC (N,IA,JA,A,D,WK)      
-      DNRM = DDOT(N,WK,1,WK,1)
+      DNRM = ItDDOT(N,WK,1,WK,1)
    80 CALL OMEG (DNRM,3)    
 C       
 C ...    (3) COMPUTE NEW FORWARD RESIDUAL SINCE OMEGA HAS BEEN CHANGED. 
 C       
    90 CONTINUE    
-      CALL DCOPY (N,RHS,1,WK,1)       
-      CALL DCOPY (N,U1,1,C1,1)
+      CALL ItDCOPY (N,RHS,1,WK,1)       
+      CALL ItDCOPY (N,U1,1,C1,1)
       CALL PFSOR (N,IA,JA,A,C1,WK)    
       CALL VEVMW (N,C1,U1)  
 C       
