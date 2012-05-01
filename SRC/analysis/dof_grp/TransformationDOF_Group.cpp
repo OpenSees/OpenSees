@@ -686,26 +686,28 @@ TransformationDOF_Group::incrNodeAccel(const Vector &u)
 void
 TransformationDOF_Group::setEigenvector(int mode, const Vector &u)
 {
-    // call base class method and return if no MP_Constraint
-    if (theMP == 0) {
-	this->DOF_Group::setEigenvector(mode, u);
-	return;
-    }
-	
-   const ID &theID = this->getID();
-   for (int i=0; i<modNumDOF; i++) {
-	int loc = theID(i);
-	if (loc >= 0)
-	    (*modUnbalance)(i) = u(loc);
-	// DO THE SP STUFF
-    }    
-    Matrix *T = this->getT();
+  // call base class method and return if no MP_Constraint
+  if (theMP == 0) {
+    this->DOF_Group::setEigenvector(mode, u);
+    return;
+  }
+  
+  const ID &theID = this->getID();
+  for (int i=0; i<modNumDOF; i++) {
+    int loc = theID(i);
+    if (loc >= 0)
+      (*modUnbalance)(i) = u(loc);
+    else 	
+      (*modUnbalance)(i) = 0.0;	    
+  }    
+  Matrix *T = this->getT();
+
     if (T != 0) {
-	// *unbalance = (*T) * (*modUnbalance);
-	unbalance->addMatrixVector(0.0, *T, *modUnbalance, 1.0);
-	myNode->setEigenvector(mode, *unbalance);
+      // *unbalance = (*T) * (*modUnbalance);
+      unbalance->addMatrixVector(0.0, *T, *modUnbalance, 1.0);
+      myNode->setEigenvector(mode, *unbalance);
     } else
-	myNode->setEigenvector(mode, *modUnbalance);
+      myNode->setEigenvector(mode, *modUnbalance);
 }
 
 
