@@ -200,10 +200,10 @@ GumbelRV::getParameterStdvSensitivity(Vector &dPdstdv)
     double sig = getStdv();
     
     // dudsig
-    dPdstdv(0) = -sqrt(6)/pi*euler;
+    dPdstdv(0) = -sqrt(6.0)/pi*euler;
     
     // dalphadsig
-    dPdstdv(1) = -pi/sqrt(6)/sig/sig;
+    dPdstdv(1) = -pi/sqrt(6.0)/sig/sig;
     
     return 0;
 }
