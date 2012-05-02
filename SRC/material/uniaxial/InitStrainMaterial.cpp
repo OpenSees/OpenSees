@@ -254,3 +254,28 @@ InitStrainMaterial::Print(OPS_Stream &s, int flag)
   s << "\tMaterial: " << theMaterial->getTag() << endln;
   s << "\tinitital strain: " << epsInit << endln;
 }
+
+int 
+InitStrainMaterial::setParameter(const char **argv, int argc, Parameter &param)
+{
+  return theMaterial->setParameter(argv, argc, param);
+}
+
+double
+InitStrainMaterial::getStressSensitivity(int gradIndex, bool conditional)
+{
+  return theMaterial->getStressSensitivity(gradIndex, conditional);
+}
+
+double
+InitStrainMaterial::getInitialTangentSensitivity(int gradIndex)
+{
+  return theMaterial->getInitialTangentSensitivity(gradIndex);
+}
+
+int
+InitStrainMaterial::commitSensitivity(double strainGradient, 
+				      int gradIndex, int numGrads)
+{
+  return theMaterial->commitSensitivity(strainGradient, gradIndex, numGrads);
+}
