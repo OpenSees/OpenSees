@@ -562,3 +562,29 @@ RandomVariable::standardNormalInversePhi(double probValue)
 	return result;
 }
 
+
+double 
+RandomVariable::harmonicNumber(double n)
+{
+	double Hn;
+	//double pi = acos(-1.0);
+	double zeta3 = 1.2020569031595942854;
+	double zeta5 = 1.0369277551433699263;
+	//double eulergamma = 0.57721566490153286061;
+	
+	if (n > 1) {
+		// asymptotic harmonic number series approximation
+		Hn = log(n) + euler + 1/(2*n) - 1/(12*n*n) + 1/120/pow(n,4) - 1/252/pow(n,6);
+	}
+	else if (n > 0.25) {
+		// Taylor series expansion about n = 1/2
+		Hn = 2+2*pow(1-2*n,2) + (-4+pi*pi/2)*(n-0.5) + (-16+pow(pi,4)/6)*pow(n-0.5,3) + 
+        32*pow(n-0.5,4) - log(4.0) - 7/4*pow(1-2*n,2)*zeta3 - 31*pow(n-0.5,4)*zeta5;
+	}
+	else {
+		// Taylor series expansion about the origin
+		Hn = pow(pi,2)*n/6 + pow(pi,4)*pow(n,3)/90 - zeta3*pow(n,2) - zeta5*pow(n,4);
+	}
+	
+	return Hn;
+}

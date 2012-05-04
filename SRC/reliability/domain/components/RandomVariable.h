@@ -90,6 +90,7 @@ public:
 	double inverseErrorFunction(double y);
     double standardNormalPhi(double u);
     double standardNormalInversePhi(double p);
+    double harmonicNumber(double x);
     
 
 protected:

@@ -65,12 +65,6 @@ private:
 	double u;
 	double k;
 	
-	void function131(double xk, double cov, double mean);
-	void function132(double xk, double cov, double mean);
-	void function133(double xk, double cov, double mean);
-	void function134(double xk, double gm1, double mean);
-
-
 };
 
 #endif

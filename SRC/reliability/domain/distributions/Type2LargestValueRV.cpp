@@ -110,8 +110,27 @@ int
 Type2LargestValueRV::setParameters(double mean, double stdv)
 {
 	double cov = stdv/mean;
-	double xk = 1.5;
-	function131(xk,cov,mean);
+	double c = 1+cov*cov;
+	double k_prev = log(1/(c-1));
+	double del = 1.0;
+	
+	// now use Newtons method with nice f/f' function
+	int ncount = 1;
+	int nmax = 100;
+	
+	while (del > 1.0e-8 && ncount <= nmax) {
+		k = k_prev - (-c*pow(gammaFunction(-1/k_prev),2)-2*k_prev*gammaFunction(-2/k_prev)) / 
+            ( 2*gammaFunction(-2/k_prev+1)*(-harmonicNumber(-1/k_prev)+harmonicNumber(-2/k_prev)) );
+		del = fabs(k-k_prev);
+		k_prev = k;
+		ncount++;
+	}
+	if (ncount >= nmax) {
+		opserr << "Warning: Type2Largest distribution did not converge during setParameters()" << endln;
+		return -1;
+	}
+	
+	u = mean/gammaFunction(1-1/k);
 	
 	return 0;
 }
@@ -158,66 +177,4 @@ Type2LargestValueRV::Print(OPS_Stream &s, int flag)
 	s << "Type2LargestValue RV #" << this->getTag() << endln;
 	s << "\tu = " << u << endln;
 	s << "\tk = " << k << endln;
-}
-
-
-void
-Type2LargestValueRV::function131(double xk, double cov, double mean)
-{
-	xk = xk + 1.0;
-	double x1 = 1.0 - 1.0/xk;
-	double x2 = 1.0 - 2.0/xk;
-	double gm1 = gammaFunction(x1);
-	double gm2 = gammaFunction(x2);
-	double vy = sqrt(gm2/gm1/gm1 - 1.0);
-	if (cov-vy < 0.0) 
-		function131(xk,cov,mean);
-	else if (cov-vy == 0.0) 
-		function134(xk,cov,mean);
-	else 
-		function132(xk,cov,mean);
-}
-
-
-void
-Type2LargestValueRV::function132(double xk, double cov, double mean)
-{
-	xk = xk - 0.1;
-	double x1 = 1.0 - 1.0/xk;
-	double x2 = 1.0 - 2.0/xk;
-	double gm1 = gammaFunction(x1);
-	double gm2 = gammaFunction(x2);
-	double vy = sqrt(gm2/gm1/gm1 - 1.0);
-	if (cov-vy < 0.0) 
-		function133(xk,cov,mean);
-	else if (cov-vy == 0.0) 
-		function134(xk,cov,mean);
-	else 
-		function132(xk,cov,mean);
-}
-
-
-void
-Type2LargestValueRV::function133(double xk, double cov, double mean)
-{
-	xk = xk + 0.01;
-	double x1 = 1.0 - 1.0/xk;
-	double x2 = 1.0 - 2.0/xk;
-	double gm1 = gammaFunction(x1);
-	double gm2 = gammaFunction(x2);
-	double vy = sqrt(gm2/gm1/gm1 - 1.0);
-	if (cov-vy < 0.0) 
-		function133(xk,cov,mean);
-	else if (cov-vy == 0.0) 
-		function134(xk,cov,mean);
-	else 
-		function134(xk,cov,mean);
-}
-
-
-void
-Type2LargestValueRV::function134(double xk, double gm1, double mean)
-{
-	u = mean/gm1;
-	k = xk;
 }

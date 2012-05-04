@@ -65,7 +65,6 @@ protected:
 private:
 	double u;
 	double k;
-	double harmonicNumber(double n);
 	
 };
 
