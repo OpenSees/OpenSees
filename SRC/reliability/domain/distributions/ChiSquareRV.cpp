@@ -126,9 +126,7 @@ ChiSquareRV::getCDFvalue(double rvValue)
 {
 	double result;
 	if ( 0.0 < rvValue ) {
-		double a = incompleteGammaFunction(0.5*nu,0.5*rvValue);
-		double b = gammaFunction(0.5*nu);
-		result = a/b;
+		result = incompleteGammaFunction(0.5*nu,0.5*rvValue);
 	}
 	else {
 		result = 0.0;

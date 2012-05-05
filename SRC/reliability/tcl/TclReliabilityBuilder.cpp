@@ -216,8 +216,6 @@ static HessianApproximation *theHessianApproximation = 0;
 static MeritFunctionCheck *theMeritFunctionCheck = 0;
 static ProbabilityTransformation *theProbabilityTransformation = 0;
 static ReliabilityConvergenceCheck *theReliabilityConvergenceCheck = 0;
-static Vector *theStartPoint = 0;
-static bool startAtOrigin = false;
 static RootFinding *theRootFindingAlgorithm = 0;
 static FindCurvatures *theFindCurvatures = 0;
 static FindDesignPointAlgorithm *theFindDesignPointAlgorithm = 0;
@@ -445,8 +443,6 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
     delete theReliabilityConvergenceCheck;
   if (theProbabilityTransformation != 0)
     delete theProbabilityTransformation;
-  if (theStartPoint != 0)
-    delete theStartPoint;
   if (theRootFindingAlgorithm != 0)
     delete theRootFindingAlgorithm;
   if (theRandomNumberGenerator != 0)
@@ -515,7 +511,6 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
   theMeritFunctionCheck = 0;
   theReliabilityConvergenceCheck = 0;
   theProbabilityTransformation = 0;
-  theStartPoint = 0;
   theRootFindingAlgorithm = 0;
   theRandomNumberGenerator = 0;
   theFindDesignPointAlgorithm = 0;
@@ -637,6 +632,7 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 	double mean = 0;
 	double stdv = 0;
 	double startPt = 0;
+    int use_start_pt = 0;
 	
 	int param_indx = 0;
 	double param = 0;
@@ -699,6 +695,7 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 				return TCL_ERROR;
 			}
 			argi += 2;
+            use_start_pt = 1;
 		}
 		
 		// user input distribution specific parameters directly
@@ -782,7 +779,7 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 		if (param_indx > 0)
 			theRandomVariable = new RayleighRV(tag, parameters);
 		else {
-			opserr << "Random variable with tag " << tag << "cannot be created with only mean/stdv." << endln;
+			opserr << "Rayleigh random variable with tag " << tag << " cannot be created with only mean/stdv." << endln;
 			return TCL_ERROR;
 		}
 	}
@@ -798,7 +795,7 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 		if (param_indx > 0)
 			theRandomVariable = new BetaRV(tag, parameters);
 		else {
-			opserr << "Random variable with tag " << tag << "cannot be created with only mean/stdv." << endln;
+			opserr << "Beta random variable with tag " << tag << " cannot be created with only mean/stdv." << endln;
 			return TCL_ERROR;
 		}
 	}
@@ -828,7 +825,7 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 		if (param_indx > 0)
 			theRandomVariable = new Type3SmallestValueRV(tag, parameters);
 		else {
-			opserr << "Random variable with tag " << tag << "cannot be created with only mean/stdv." << endln;
+			opserr << "T3S random variable with tag " << tag << " cannot be created with only mean/stdv." << endln;
 			return TCL_ERROR;
 		}
 	}
@@ -865,7 +862,7 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 		if (param_indx > 0)
 			theRandomVariable = new ParetoRV(tag, parameters);
 		else {
-			opserr << "Random variable with tag " << tag << "cannot be created with only mean/stdv." << endln;
+			opserr << "Pareto random variable with tag " << tag << " cannot be created with only mean/stdv." << endln;
 			return TCL_ERROR;
 		}
 	}
@@ -874,6 +871,8 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 		// note userdefined is a special case and will not have any input read from the command line yet
 		// unless user defined mean and standard deviation for some reason, which will break this input
 		// because we assume argi starts at 3 here
+        
+        // KRM 4/22/2012 userdefined currently not implemented.
 		Vector xPoints;
 		Vector PDFpoints;
 		int numPoints = 0;
@@ -971,14 +970,14 @@ TclReliabilityModelBuilder_addRandomVariable(ClientData clientData,Tcl_Interp *i
 	}
 	
 	// set start point on object if user provided
-	// probably need this to be smarter because user may want to set 0 as the starting point
-	if (startPt != 0)
+	if (use_start_pt == 1) {
 		theRandomVariable->setStartValue(startPt);
-	else 
+        theRandomVariable->setCurrentValue(startPt);
+    }
+    else {
 		theRandomVariable->setStartValue(theRandomVariable->getMean());
-
-	// set the current value to the mean
-	theRandomVariable->setCurrentValue(theRandomVariable->getMean());
+        theRandomVariable->setCurrentValue(theRandomVariable->getMean());
+    }
 
 	// Add the random variable to the domain
 	if (theReliabilityDomain->addRandomVariable(theRandomVariable) == false) {
@@ -1661,6 +1660,8 @@ TclReliabilityModelBuilder_addModulatingFunction(ClientData clientData, Tcl_Inte
 
 	return TCL_OK;
 }
+
+
 //////////////////////////////////////////////////////////////////
 int 
 TclReliabilityModelBuilder_addFilter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -2032,13 +2033,6 @@ TclReliabilityModelBuilder_addSpectrum(ClientData clientData, Tcl_Interp *interp
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
 int 
 TclReliabilityModelBuilder_addRandomNumberGenerator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -2089,7 +2083,6 @@ TclReliabilityModelBuilder_addProbabilityTransformation(ClientData clientData, T
 	if (strcmp(argv[1],"Nataf") == 0) {
 
 		int printFlag = 0; 
-		
 		if (argc > 2) {
 			if (strcmp(argv[2],"-print") == 0) {
 
@@ -2101,37 +2094,36 @@ TclReliabilityModelBuilder_addProbabilityTransformation(ClientData clientData, T
 		}
 
 		theProbabilityTransformation = new NatafProbabilityTransformation(theReliabilityDomain,printFlag);
-  }
-	// GET INPUT PARAMETER (string) AND CREATE THE OBJECT
+    }
+    
 	else if (strcmp(argv[1],"AllIndependent") == 0) {
 
 		int printFlag = 0; 
-		
 		if (argc > 2) {
 			if (strcmp(argv[2],"-print") == 0) {
 
 				if (Tcl_GetInt(interp, argv[3], &printFlag) != TCL_OK) {
-					opserr << "ERROR: invalid input: printFlag to Nataf transformation \n";
+					opserr << "ERROR: invalid input: printFlag to AllIndependent transformation \n";
 					return TCL_ERROR;
 				}
 			}
 		}
 
 		theProbabilityTransformation = new AllIndependentTransformation(theReliabilityDomain,printFlag);
-  }
-  else {
-	opserr << "ERROR: unrecognized type of ProbabilityTransformation \n";
-	return TCL_ERROR;
-  }
+    }
+    
+    else {
+        opserr << "ERROR: unrecognized type of ProbabilityTransformation \n";
+        return TCL_ERROR;
+    }
 
-  if (theProbabilityTransformation == 0) {
-	opserr << "ERROR: could not create theProbabilityTransformation \n";
-	return TCL_ERROR;
-  }
-  return TCL_OK;
+    if (theProbabilityTransformation == 0) {
+        opserr << "ERROR: could not create theProbabilityTransformation \n";
+        return TCL_ERROR;
+    }
+    
+    return TCL_OK;
 }
-
-
 
 
 //////////////////////////////////////////////////////////////////
@@ -2292,9 +2284,6 @@ TclReliabilityModelBuilder_addSearchDirection(ClientData clientData, Tcl_Interp 
 	}
 	return TCL_OK;
 }
-
-
-
 
 
 
@@ -2479,8 +2468,6 @@ TclReliabilityModelBuilder_addMeritFunctionCheck(ClientData clientData, Tcl_Inte
 
 
 
-
-
 //////////////////////////////////////////////////////////////////
 int 
 TclReliabilityModelBuilder_addReliabilityConvergenceCheck(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -2554,7 +2541,8 @@ TclReliabilityModelBuilder_addReliabilityConvergenceCheck(ClientData clientData,
 		}
 			theReliabilityConvergenceCheck = new StandardReliabilityConvergenceCheck(e1,e2,scaleValue,print);
 	}
-	else if (strcmp(argv[argvCounter],"OptimalityCondition") == 0) {
+	
+    else if (strcmp(argv[argvCounter],"OptimalityCondition") == 0) {
 		argvCounter++;
 
 		double e1 = 1.0e-3;
@@ -2631,10 +2619,8 @@ TclReliabilityModelBuilder_addStepSizeRule(ClientData clientData, Tcl_Interp *in
 		theStepSizeRule = 0;
 	}
 
-
 	// Initial declarations
 	int argvCounter = 1;
-
 
 	if (strcmp(argv[argvCounter],"Armijo") == 0) {
 		argvCounter++;
@@ -2776,7 +2762,6 @@ TclReliabilityModelBuilder_addStepSizeRule(ClientData clientData, Tcl_Interp *in
 			}
 
 		}
-
 
 		theStepSizeRule = new FixedStepSizeRule(stepSize);
 	}
@@ -3012,7 +2997,7 @@ TclReliabilityModelBuilder_addGradientEvaluator(ClientData clientData, Tcl_Inter
 
 
 	else {
-		opserr << "ERROR: unrecognized type of GradGEvaluator \n";
+		opserr << "ERROR: unrecognized type of gradientEvaluator \n";
 		return TCL_ERROR;
 	}
 
@@ -3132,10 +3117,6 @@ TclReliabilityModelBuilder_addFindDesignPointAlgorithm(ClientData clientData, Tc
 			opserr << "Need theProbabilityTransformation before a FindDesignPointAlgorithm can be created" << endln;
 //			return TCL_ERROR;
 		}
-//		if (theStartPoint == 0 ) {
-//			opserr << "Need theStartPoint before a FindDesignPointAlgorithm can be created" << endln;
-//			return TCL_ERROR;
-//		}
 		if (theReliabilityConvergenceCheck == 0 ) {
 			opserr << "Need theReliabilityConvergenceCheck before a FindDesignPointAlgorithm can be created" << endln;
 			return TCL_ERROR;
@@ -3241,10 +3222,6 @@ TclReliabilityModelBuilder_addFindDesignPointAlgorithm(ClientData clientData, Tc
 //////////////////////////////////////////////////////////////////////////////////
 //			return TCL_ERROR;
 		}
-//		if (theStartPoint == 0 ) {
-//			opserr << "Need theStartPoint before a FindDesignPointAlgorithm can be created" << endln;
-//			return TCL_ERROR;
-//		}
 		if (theReliabilityConvergenceCheck == 0 ) {
 			opserr << "Need theReliabilityConvergenceCheck before a FindDesignPointAlgorithm can be created" << endln;
 			return TCL_ERROR;
@@ -3334,12 +3311,6 @@ TclReliabilityModelBuilder_addFindDesignPointAlgorithm(ClientData clientData, Tc
 int 
 TclReliabilityModelBuilder_addStartPoint(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-	// In case this is a replacement
-	if (theStartPoint != 0) {
-		delete theStartPoint;
-		theStartPoint = 0;
-	}
-
 
 	// Check that there are enough arguments
 	if (argc<2) {
@@ -3356,43 +3327,35 @@ TclReliabilityModelBuilder_addStartPoint(ClientData clientData, Tcl_Interp *inte
 
 		RandomVariableIter rvIter = theReliabilityDomain->getRandomVariables();
 		while ((aRandomVariable = rvIter()) != 0) {
-		  int tag = aRandomVariable->getTag();
-		  double mean = aRandomVariable->getMean();
-		  aRandomVariable->setStartValue(mean);
+            //int tag = aRandomVariable->getTag();
+            double mean = aRandomVariable->getMean();
+            aRandomVariable->setStartValue(mean);
 		}
-		startAtOrigin = false;
 	}
+    
 	else if (strcmp(argv[1],"Origin") == 0) {
 		
-	  RandomVariableIter rvIter = theReliabilityDomain->getRandomVariables();
-	  while ((aRandomVariable = rvIter()) != 0) {
-	    int tag = aRandomVariable->getTag();
-	    aRandomVariable->setStartValue(0.0);
-	  }
-	  startAtOrigin = true;
+        RandomVariableIter rvIter = theReliabilityDomain->getRandomVariables();
+        while ((aRandomVariable = rvIter()) != 0) {
+            //int tag = aRandomVariable->getTag();
+            aRandomVariable->setStartValue(0.0);
+        }
 	}
-	else if (strcmp(argv[1],"Given") == 0) {
-	  // This is now the default option
-	  startAtOrigin = false;
-	}
+    
 	else if (strcmp(argv[1],"-file") == 0) {
-	  opserr << "startPoint -file option is currently disabled" << endln;
-	  return TCL_ERROR;
-	  /*
-		theStartPoint = new Vector(nrv);
-
+        // space delimited file containing a starting point
 		ifstream inputFile( argv[2], ios::in );
 		if (inputFile.fail()) {
-			opserr << "File " << argv[2] << " could not be opened. " << endln;
+			opserr << "File " << argv[2] << " could not be opened for startPoint. " << endln;
 			return TCL_ERROR;
 		}
 
 		// Loop through file to see how many entries there are
 		double dummy;
 		int numEntries = 0;
-		while (inputFile >> dummy) {
+		while (inputFile >> dummy)
 			numEntries++;
-		}
+		
 		if (numEntries == 0) {
 			opserr << "ERROR: No entries in the file read by startPoint!" << endln;
 			return TCL_ERROR;
@@ -3402,29 +3365,24 @@ TclReliabilityModelBuilder_addStartPoint(ClientData clientData, Tcl_Interp *inte
 			return TCL_ERROR;
 		}
 
-		// Close the file
-		inputFile.close();
-
-		// Open it again, now being ready to store the results
-		ifstream inputFile2( argv[2], ios::in );
-		for (int i=0; i<nrv; i++){
-			inputFile2 >> (*theStartPoint)(i);
+		// rewind the file and pass values to the RVs
+        inputFile.seekg(0, ios::beg);
+        for (int i = 0; i < nrv; i++) {
+            aRandomVariable = theReliabilityDomain->getRandomVariablePtrFromIndex(i);
+			inputFile >> dummy;
+            aRandomVariable->setStartValue(dummy);
 		}
-		inputFile2.close();
-	  */
-
+        
+		inputFile.close();
 	}
+    
 	else {
-	  opserr << "ERROR: Invalid type of start point is given. " << endln;
-	  return TCL_ERROR;
+        opserr << "ERROR: Invalid type of start point is given. " << endln;
+        return TCL_ERROR;
 	}
 	
 	return TCL_OK;
 }
-
-
-
-
 
 
 
@@ -4006,24 +3964,12 @@ TclReliabilityModelBuilder_runImportanceSamplingAnalysis(ClientData clientData, 
 		if (strcmp(argv[i],"-type") == 0) {
 
 			if (strcmp(argv[i+1],"failureProbability") == 0) {
-
 				analysisTypeTag = 1;
-
-//				if (theStartPoint == 0 ) {
-//					opserr << "Need theStartPoint before a SimulationAnalyis can be created" << endln;
-//					return TCL_ERROR;
-//				}
 			}
 
 // Michele and Quan -------------------------
 			else if (strcmp(argv[i+1],"outCrossingFailureProbability") == 0) {
-
 				analysisTypeTag = 4;
-
-//				if (theStartPoint == 0 ) {
-//					opserr << "Need theStartPoint before a SimulationAnalyis can be created" << endln;
-//					return TCL_ERROR;
-//				}
 			}
 
 			else if ( (strcmp(argv[i+1],"responseStatistics") == 0) || (strcmp(argv[i+1],"saveGvalues") == 0) ) {
@@ -4896,7 +4842,6 @@ TclReliabilityModelBuilder_runGFunVisualizationAnalysis(ClientData clientData, T
 	     new GFunVisualizationAnalysis(theReliabilityDomain, 
 					   theFunctionEvaluator, 
 					   theProbabilityTransformation, 
-					   startAtOrigin,
 					   argv[1],
 					   argv[convFileArgv],
 					   convResults,
@@ -4942,7 +4887,7 @@ TclReliabilityModelBuilder_runGFunVisualizationAnalysis(ClientData clientData, T
 //			return TCL_ERROR;
 //		}
 		
-		theGFunVisualizationAnalysis->setStartPoint(theStartPoint);
+		//theGFunVisualizationAnalysis->setStartPoint(theStartPoint);
 	}
 
 	if (convResults == 1) {
@@ -6363,7 +6308,6 @@ TclReliabilityModelBuilder_runDP_RSM_SimTimeVariantAnalysis(ClientData clientDat
 }
 
 
-///getBetaFORM is not in K.F.
 int 
 TclReliabilityModelBuilder_getBetaFORM(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -6393,7 +6337,7 @@ TclReliabilityModelBuilder_getBetaFORM(ClientData clientData, Tcl_Interp *interp
   return TCL_OK;
 }
 
-///getGammaFORM is not in K.F.
+
 int 
 TclReliabilityModelBuilder_getGammaFORM(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -6439,7 +6383,7 @@ TclReliabilityModelBuilder_getGammaFORM(ClientData clientData, Tcl_Interp *inter
   return TCL_OK;
 }
 
-///getGammaFORM is not in K.F.
+
 int 
 TclReliabilityModelBuilder_getAlphaFORM(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -6485,6 +6429,7 @@ TclReliabilityModelBuilder_getAlphaFORM(ClientData clientData, Tcl_Interp *inter
   return TCL_OK;
 }
 
+
 int
 TclReliabilityModelBuilder_getPDF(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -6519,6 +6464,7 @@ TclReliabilityModelBuilder_getPDF(ClientData clientData, Tcl_Interp *interp, int
 
   return TCL_OK;
 }
+
 
 int
 TclReliabilityModelBuilder_getCDF(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -6555,6 +6501,7 @@ TclReliabilityModelBuilder_getCDF(ClientData clientData, Tcl_Interp *interp, int
   return TCL_OK;
 }
 
+
 int
 TclReliabilityModelBuilder_getInverseCDF(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -6590,6 +6537,7 @@ TclReliabilityModelBuilder_getInverseCDF(ClientData clientData, Tcl_Interp *inte
   return TCL_OK;
 }
 
+
 int
 TclReliabilityModelBuilder_getRVTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -6606,6 +6554,7 @@ TclReliabilityModelBuilder_getRVTags(ClientData clientData, Tcl_Interp *interp, 
   return TCL_OK;
 }
 
+
 int
 TclReliabilityModelBuilder_getLSFTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -6621,6 +6570,7 @@ TclReliabilityModelBuilder_getLSFTags(ClientData clientData, Tcl_Interp *interp,
   
   return TCL_OK;
 }
+
 
 /////////////////////////////////////////////////////////
 /// (from here to the end) added by K Fujimura for Random Vibration Analysis ///
@@ -6743,6 +6693,8 @@ TclReliabilityModelBuilder_addAnalyzer(ClientData clientData, Tcl_Interp *interp
 	}
 	return TCL_OK;
 }
+
+
 int 
 TclReliabilityModelBuilder_addInitialStaticAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -6753,7 +6705,6 @@ TclReliabilityModelBuilder_addInitialStaticAnalysis(ClientData clientData, Tcl_I
 	int loadtag=0;
     LoadPattern *thePattern=0;
 	bool loadfound= false;
-	int nfound=0;
 	int argvCounter = 1;
 	bool print = false;
 	temploads= new int[100];
@@ -7018,6 +6969,8 @@ TclReliabilityModelBuilder_addInitialPointBuilder(ClientData clientData, Tcl_Int
 	}
 	return TCL_OK;
 }
+
+
 int 
 TclReliabilityModelBuilder_addCrossingRateAnalyzer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -7091,6 +7044,8 @@ TclReliabilityModelBuilder_addCrossingRateAnalyzer(ClientData clientData, Tcl_In
 	}
 	return TCL_OK;
 }
+
+
 int 
 TclReliabilityModelBuilder_addFOSeriesSimulation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -7173,6 +7128,8 @@ TclReliabilityModelBuilder_addFOSeriesSimulation(ClientData clientData, Tcl_Inte
 	}
 	return TCL_OK;
 }
+
+
 int 
 TclReliabilityModelBuilder_addFirstPassageAnalyzer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -7279,6 +7236,8 @@ TclReliabilityModelBuilder_addFirstPassageAnalyzer(ClientData clientData, Tcl_In
 	}
 	return TCL_OK;
 }
+
+
 int 
 TclReliabilityModelBuilder_addRandomVibrationSimulation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -7568,6 +7527,8 @@ TclReliabilityModelBuilder_addRandomVibrationSimulation(ClientData clientData, T
 	theRandomVibrationSimulation->analyze();
 	return TCL_OK;
 }
+
+
 int 
 TclReliabilityModelBuilder_runRandomVibrationAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {

@@ -56,7 +56,6 @@ public:
 					ReliabilityDomain *theReliabilityDomain,
 					FunctionEvaluator *theGFunEvaluator,
 					ProbabilityTransformation *theProbabilityTransformation,
-					bool startAtOrigin,
 					TCL_Char *outputFileName,
 					TCL_Char *convFileName,
 					int convResults,
@@ -98,8 +97,6 @@ private:
 	GradientEvaluator *theGradGEvaluator;
 	ReliabilityConvergenceCheck *theReliabilityConvergenceCheck;
 	RootFinding *theRootFindingAlgorithm;
-
-	bool startAtOrigin;
 
 	char outputFileName[256];
 	char convFileName[256];

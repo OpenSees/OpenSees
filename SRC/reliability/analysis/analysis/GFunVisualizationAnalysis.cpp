@@ -55,7 +55,6 @@ GFunVisualizationAnalysis::GFunVisualizationAnalysis(
 					ReliabilityDomain *passedReliabilityDomain,
 					FunctionEvaluator *passedGFunEvaluator,
 					ProbabilityTransformation *passedProbabilityTransformation,
-					bool passedStartAtOrigin,
 					TCL_Char *passedOutputFileName,
 					TCL_Char *passedConvFileName,
 					int passedConvResults,
@@ -71,7 +70,6 @@ GFunVisualizationAnalysis::GFunVisualizationAnalysis(
 	theMeritFunctionCheck = 0;
 	theGradGEvaluator = 0;
 	theReliabilityConvergenceCheck = 0;
-	startAtOrigin = passedStartAtOrigin;
 
 	strcpy(outputFileName,passedOutputFileName);
 	strcpy(convFileName,passedConvFileName);
@@ -224,6 +222,8 @@ GFunVisualizationAnalysis::getCurrentAxes12Point(int i, int j)
 	Vector iPoint(nrv);
 	Vector fPoint(nrv);
 	int result;
+    // KRM to compile 4/22/2012
+    bool startAtOrigin = false;
 
 	// Find the start point in the space which the user 
 	// wants to visualize in. 

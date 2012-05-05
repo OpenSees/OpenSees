@@ -257,11 +257,6 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
             return -1;
         }
 
-        // check there are no sucessive large betas
-        int earlyexit = 0;
-        if ( u->Norm() > uSecondLast->Norm() > 10 )
-            earlyexit = 1;
-
         // Compute alpha-vector
         alpha->addVector(0.0, *gradientInStandardNormalSpace, -1.0/normOfGradient );
 
@@ -389,8 +384,8 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
                 continueStepSize = true;
             }
             stepSize = theStepSizeRule->getStepSize();
+            
             u->addVector(1.0, *searchDirection, stepSize);
-
             
             // Transform to x-space
             result = theProbabilityTransformation->transform_u_to_x(*u, *x);
