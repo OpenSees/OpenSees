@@ -260,32 +260,6 @@ LognormalRV::gradient_x_to_u(double uVal)
 }
 
 
-double 
-LognormalRV::getCDFMeanSensitivity(void)
-{
-    // returns dF/dmu
-    Vector dFdP(2);
-    Vector dPdmu(2);
-    getCDFparameterSensitivity(dFdP);
-    getParameterMeanSensitivity(dPdmu);
-    
-    return dFdP^dPdmu;
-}
-
-
-double 
-LognormalRV::getCDFStdvSensitivity(void)
-{
-    // returns dF/dsigma
-    Vector dFdP(2);
-    Vector dPdsig(2);
-    getCDFparameterSensitivity(dFdP);
-    getParameterStdvSensitivity(dPdsig);
-    
-    return dFdP^dPdsig;
-}
-
-
 int 
 LognormalRV::getCDFparameterSensitivity(Vector &dFdP)
 {

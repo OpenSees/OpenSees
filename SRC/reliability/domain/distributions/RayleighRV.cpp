@@ -125,6 +125,43 @@ RayleighRV::getInverseCDFvalue(double probValue)
 }
 
 
+int 
+RayleighRV::getCDFparameterSensitivity(Vector &dFdP)
+{
+    // returns gradient of F(x) with respect to distribution parameters
+    double rvValue = this->getCurrentValue();
+    
+    // dFdu
+    dFdP(0) = -rvValue/u * getPDFvalue(rvValue);
+    
+    return 0;
+}
+
+
+int
+RayleighRV::getParameterMeanSensitivity(Vector &dPdmu)
+{
+    // returns gradient of distribution parameters with respect to the mean
+    
+    // dudmu
+    dPdmu(0) = 2/sqrt(pi);
+    
+    return 0;
+}
+
+
+int
+RayleighRV::getParameterStdvSensitivity(Vector &dPdstdv)
+{
+    // returns gradient of distribution parameters with respect to the stdv
+    
+    // dudsig
+    dPdstdv(0) = 2/sqrt(4-pi);
+    
+    return 0;
+}
+
+
 void
 RayleighRV::Print(OPS_Stream &s, int flag)
 {

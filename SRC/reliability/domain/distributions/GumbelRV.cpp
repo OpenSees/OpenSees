@@ -136,32 +136,6 @@ GumbelRV::getInverseCDFvalue(double probValue)
 }
 
 
-double 
-GumbelRV::getCDFMeanSensitivity(void)
-{
-    // returns dF/dmu
-    Vector dFdP(2);
-    Vector dPdmu(2);
-    getCDFparameterSensitivity(dFdP);
-    getParameterMeanSensitivity(dPdmu);
-    
-    return dFdP^dPdmu;
-}
-
-
-double 
-GumbelRV::getCDFStdvSensitivity(void)
-{
-    // returns dF/dsigma
-    Vector dFdP(2);
-    Vector dPdsig(2);
-    getCDFparameterSensitivity(dFdP);
-    getParameterStdvSensitivity(dPdsig);
-    
-    return dFdP^dPdsig;
-}
-
-
 int 
 GumbelRV::getCDFparameterSensitivity(Vector &dFdP)
 {

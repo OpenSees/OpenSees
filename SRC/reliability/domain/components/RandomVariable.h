@@ -70,8 +70,8 @@ public:
     virtual double gradient_x_to_u(double uVal);
 	
 	// sensitivity of CDF with respect to distribution parameters
-	virtual double getCDFMeanSensitivity(void) {return 0.0;}
-	virtual double getCDFStdvSensitivity(void) {return 0.0;}
+	double getCDFMeanSensitivity(void);
+	double getCDFStdvSensitivity(void);
     virtual int getCDFparameterSensitivity(Vector &dFdP) {return 0;}
     virtual int getParameterMeanSensitivity(Vector &dPdmu) {return 0;}
     virtual int getParameterStdvSensitivity(Vector &dPdstdv) {return 0;}
@@ -96,6 +96,8 @@ public:
 protected:
 	static const double pi;
 	static const double euler;
+    static const double zeta3;
+    static const double zeta5;
 	
 private:
 	double startValue;

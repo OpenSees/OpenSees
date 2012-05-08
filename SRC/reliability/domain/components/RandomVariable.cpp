@@ -40,6 +40,8 @@
 // define common math constants needed by the random variables
 const double RandomVariable::pi = std::acos(-1.0);
 const double RandomVariable::euler = 0.57721566490153286061;
+const double RandomVariable::zeta3 = 1.2020569031595942854;
+const double RandomVariable::zeta5 = 1.0369277551433699263;
 #define isnan(x) ((x)!=(x))
 
 
@@ -78,6 +80,38 @@ RandomVariable::gradient_x_to_u(double uVal)
 	double pdf = oneOverRootTwoPi * exp ( -0.5 * pow(uVal, 2.0) );
     return pdf/getPDFvalue(this->getCurrentValue());
     
+}
+
+
+double 
+RandomVariable::getCDFMeanSensitivity(void)
+{
+    // size vector based on number of parameters in random variable
+    Vector temp = this->getParameters();
+    Vector dFdP(temp.Size());
+    Vector dPdmu(temp.Size());
+    
+    // returns dF/dmu
+    this->getCDFparameterSensitivity(dFdP);
+    this->getParameterMeanSensitivity(dPdmu);
+    
+    return dFdP^dPdmu;
+}
+
+
+double 
+RandomVariable::getCDFStdvSensitivity(void)
+{
+    // size vector based on number of parameters in random variable
+    Vector temp = this->getParameters();
+    Vector dFdP(temp.Size());
+    Vector dPdsig(temp.Size());
+    
+    // returns dF/dsigma
+    this->getCDFparameterSensitivity(dFdP);
+    this->getParameterStdvSensitivity(dPdsig);
+    
+    return dFdP^dPdsig;
 }
 
 
@@ -567,16 +601,17 @@ double
 RandomVariable::harmonicNumber(double n)
 {
 	double Hn;
-	//double pi = acos(-1.0);
-	double zeta3 = 1.2020569031595942854;
-	double zeta5 = 1.0369277551433699263;
-	//double eulergamma = 0.57721566490153286061;
 	
-	if (n > 1) {
+	if (n > 1.25) {
 		// asymptotic harmonic number series approximation
 		Hn = log(n) + euler + 1/(2*n) - 1/(12*n*n) + 1/120/pow(n,4) - 1/252/pow(n,6);
 	}
-	else if (n > 0.25) {
+    else if (n > 0.8) {
+        // Taylor series expansion about n = 1
+        Hn = 1+1/6*(pi*pi-6)*(n-1) + (1-zeta3)*pow(n-1,2) + (pow(pi,4)/90-1)*pow(n-1,3) +
+        (1-zeta5)*pow(n-1,4);
+    }
+	else if (n > 0.2) {
 		// Taylor series expansion about n = 1/2
 		Hn = 2+2*pow(1-2*n,2) + (-4+pi*pi/2)*(n-0.5) + (-16+pow(pi,4)/6)*pow(n-0.5,3) + 
         32*pow(n-0.5,4) - log(4.0) - 7/4*pow(1-2*n,2)*zeta3 - 31*pow(n-0.5,4)*zeta5;

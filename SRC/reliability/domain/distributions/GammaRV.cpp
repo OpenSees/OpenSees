@@ -190,6 +190,62 @@ GammaRV::getInverseCDFvalue(double probValue)
 }
 
 
+int 
+GammaRV::getCDFparameterSensitivity(Vector &dFdP)
+{
+    // returns gradient of F(x) with respect to distribution parameters
+    double rvValue = this->getCurrentValue();
+    double cdfValue = getCDFvalue(rvValue);
+    
+    // dFdk
+    // no closed form expression for this one, use finite differences
+    double k_old = k;
+    double dh = k/1000.0;
+    k += dh;
+    dFdP(0) = ( getCDFvalue(rvValue) - cdfValue )/dh;
+    k = k_old;
+    
+    // dFdlambda
+    dFdP(1) = rvValue/lambda * getPDFvalue(rvValue);
+    
+    return 0;
+}
+
+
+int
+GammaRV::getParameterMeanSensitivity(Vector &dPdmu)
+{
+    // returns gradient of distribution parameters with respect to the mean
+    double mu = getMean();
+    double sig = getStdv();
+    
+    // dkdmu
+    dPdmu(0) = 2*mu/sig/sig;
+    
+    // dlambdadmu
+    dPdmu(1) = 1/sig/sig;
+    
+    return 0;
+}
+
+
+int
+GammaRV::getParameterStdvSensitivity(Vector &dPdstdv)
+{
+    // returns gradient of distribution parameters with respect to the stdv
+    double mu = getMean();
+    double sig = getStdv();
+    
+    // dkdsig
+    dPdstdv(0) = -2*mu*mu/sig/sig/sig;
+    
+    // dlambdadsig
+    dPdstdv(1) = -2*mu/sig/sig/sig;
+    
+    return 0;
+}
+
+
 void
 GammaRV::Print(OPS_Stream &s, int flag)
 {

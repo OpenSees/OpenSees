@@ -62,8 +62,6 @@ public:
     double gradient_x_to_u(double uVal);
     
     // sensitivity of CDF with respect to distribution parameters
-    double getCDFMeanSensitivity(void);
-	double getCDFStdvSensitivity(void);
     int getCDFparameterSensitivity(Vector &dFdP);
     int getParameterMeanSensitivity(Vector &dPdmu);
     int getParameterStdvSensitivity(Vector &dPdstdv);

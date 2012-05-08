@@ -165,32 +165,6 @@ NormalRV::gradient_x_to_u(double uVal)
 }
 
 
-double 
-NormalRV::getCDFMeanSensitivity(void)
-{
-    // returns dF/dmu
-    Vector dFdP(2);
-    Vector dPdmu(2);
-    getCDFparameterSensitivity(dFdP);
-    getParameterMeanSensitivity(dPdmu);
-    
-    return dFdP^dPdmu;
-}
-
-
-double 
-NormalRV::getCDFStdvSensitivity(void)
-{
-    // returns dF/dsigma
-    Vector dFdP(2);
-    Vector dPdsig(2);
-    getCDFparameterSensitivity(dFdP);
-    getParameterStdvSensitivity(dPdsig);
-    
-    return dFdP^dPdsig;
-}
-
-
 int 
 NormalRV::getCDFparameterSensitivity(Vector &dFdP)
 {
@@ -200,7 +174,7 @@ NormalRV::getCDFparameterSensitivity(Vector &dFdP)
     // dFdmu
     dFdP(0) = -1 * getPDFvalue(rvValue);
     
-    // dFdzeta
+    // dFdsig
     dFdP(1) = -(rvValue-mu)/sigma * getPDFvalue(rvValue);
     
     return 0;

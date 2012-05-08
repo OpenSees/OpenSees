@@ -142,6 +142,50 @@ ChiSquareRV::getInverseCDFvalue(double rvValue)
 }
 
 
+int 
+ChiSquareRV::getCDFparameterSensitivity(Vector &dFdP)
+{
+    // returns gradient of F(x) with respect to distribution parameters
+    double rvValue = this->getCurrentValue();
+    double cdfValue = getCDFvalue(rvValue);
+    
+    // dFdnu
+    // no closed form expression for this one, use finite differences
+    double nu_old = nu;
+    double dh = nu/1000.0;
+    nu += dh;
+    dFdP(0) = ( getCDFvalue(rvValue) - cdfValue )/dh;
+    nu = nu_old;
+    
+    return 0;
+}
+
+
+int
+ChiSquareRV::getParameterMeanSensitivity(Vector &dPdmu)
+{
+    // returns gradient of distribution parameters with respect to the mean
+    
+    // dnudmu
+    dPdmu(0) = 0.5;
+    
+    return 0;
+}
+
+
+int
+ChiSquareRV::getParameterStdvSensitivity(Vector &dPdstdv)
+{
+    // returns gradient of distribution parameters with respect to the stdv
+    double sig = getStdv();
+    
+    // dnudsig
+    dPdstdv(0) = sig;
+    
+    return 0;
+}
+
+
 void
 ChiSquareRV::Print(OPS_Stream &s, int flag)
 {

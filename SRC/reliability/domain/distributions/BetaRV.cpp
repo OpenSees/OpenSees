@@ -44,7 +44,7 @@ BetaRV::BetaRV(int passedTag, const Vector &passedParameters)
 		
 		// this will create terminal errors
 		a = 0;
-		b = 0;
+		b = 1;
 		q = 0;
 		r = 0;
 		
@@ -206,6 +206,91 @@ BetaRV::getInverseCDFvalue(double probValue)
 	}
 
 	return result;
+}
+
+
+int 
+BetaRV::getCDFparameterSensitivity(Vector &dFdP)
+{
+    // returns gradient of F(x) with respect to distribution parameters
+    double rvValue = this->getCurrentValue();
+    double cdfValue = getCDFvalue(rvValue);
+    
+    // dFda
+    // no closed form expression for this one, use finite differences
+    double a_old = a;
+    double dh = a/1000.0;
+    a += dh;
+    dFdP(0) = ( getCDFvalue(rvValue) - cdfValue )/dh;
+    a = a_old;
+    
+    // dFdb
+    // no closed form expression for this one, use finite differences
+    double b_old = b;
+    dh = b/1000.0;
+    b += dh;
+    dFdP(1) = ( getCDFvalue(rvValue) - cdfValue )/dh;
+    b = b_old;
+    
+    // dFdq
+    // no closed form expression for this one, use finite differences
+    double q_old = q;
+    dh = q/1000.0;
+    q += dh;
+    dFdP(2) = ( getCDFvalue(rvValue) - cdfValue )/dh;
+    q = q_old;
+    
+    // dFdr
+    // no closed form expression for this one, use finite differences
+    double r_old = r;
+    dh = r/1000.0;
+    r += dh;
+    dFdP(3) = ( getCDFvalue(rvValue) - cdfValue )/dh;
+    r = r_old;    
+    
+    return 0;
+}
+
+
+int
+BetaRV::getParameterMeanSensitivity(Vector &dPdmu)
+{
+    // returns gradient of distribution parameters with respect to the mean
+    
+    // dadmu
+    dPdmu(0) = 0;
+    
+    // dbdmu
+    dPdmu(1) = 0;
+    
+    // dqdmu
+    dPdmu(2) = (q+q*q-r-q*r-2*r*r) / (a*r-b*r);
+    
+    // drdmu
+    dPdmu(3) = (2*q*q+q+q*r-r-r*r) /q/(a-b);
+    
+    return 0;
+}
+
+
+int
+BetaRV::getParameterStdvSensitivity(Vector &dPdstdv)
+{
+    // returns gradient of distribution parameters with respect to the stdv
+    
+    // dadsig
+    dPdstdv(0) = 0;
+    
+    // dbdsig
+    dPdstdv(1) = 0;
+    
+    // dqdsig
+    dPdstdv(2) = 2*q*q*r/(a-b)/pow(q*r/(1+q+r),1.5);
+    
+    // drdsig
+    dPdstdv(3) = 2*q*r*r/(a-b)/pow(q*r/(1+q+r),1.5);
+    
+    return 0;
 }
 
 

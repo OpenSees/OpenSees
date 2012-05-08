@@ -113,23 +113,63 @@ WeibullRV::setParameters(double mean, double stdv)
 	double c = 1+cov*cov;
 	double k_prev = log(1/(c-1));
 	double del = 1.0;
+    double del_prev = 10.0;
 	
 	// now use Newtons method with nice f/f' function
 	int ncount = 1;
 	int nmax = 100;
+    double tolk = 1.0e-8;
 	
-	while (del > 1.0e-8 && ncount <= nmax) {
+	while (del > tolk && ncount <= nmax) {
 		k = k_prev - (c*pow(gammaFunction(1/k_prev),2)-2*k_prev*gammaFunction(2/k_prev)) / 
             ( 2*gammaFunction(2/k_prev+1)*(-harmonicNumber(1/k_prev)+harmonicNumber(2/k_prev)) );
 		del = fabs(k-k_prev);
-		k_prev = k;
+        
+        if (del > del_prev) {
+            // be careful with non-convergent cases, exit to bisection method
+            break;
+        }
+        
+        k_prev = k;
+        del_prev = del;
 		ncount++;
 	}
-	if (ncount >= nmax) {
+    
+    // check whether we need to use bisection method to supplement
+    if (del > tolk) {
+        double left = 0.05;
+        double right = 1000;
+        int change = 0;
+        double fa = 0;
+        double fc = 0;
+        ncount = 1;
+        
+        while (change == 0 && ncount <= nmax) {
+            k = (left+right)/2.0;
+            fc = -c + gammaFunction(1+2/k)/gammaFunction(1+1/k)/gammaFunction(1+1/k);
+            fa = -c + gammaFunction(1+2/left)/gammaFunction(1+1/left)/gammaFunction(1+1/left);
+            if (fabs(fc) < tolk || (right-left)/2.0 < tolk) {
+                change = 1;
+                del = tolk;
+            }
+            
+            if ( fa>0 && fc>0 )
+                left = k;
+            else if ( fa<0 && fc<0 )
+                left = k;
+            else
+                right = k;
+            
+            ncount++;
+        }
+    }
+    
+    // unlikely but possible that k was not found using either method above
+    if (del > tolk) {
 		opserr << "Warning: Weibull distribution did not converge during setParameters()" << endln;
-		return -1;
-	}
-	
+        return -1;
+    }
+    
 	u = mean/gammaFunction(1+1/k);
 	
 	return 0;
@@ -167,7 +207,77 @@ WeibullRV::getCDFvalue(double rvValue)
 double
 WeibullRV::getInverseCDFvalue(double probValue)
 {
-	return u * pow((-log(1-probValue)),(1/k));
+	return u * pow(-log(1-probValue),1/k);
+}
+
+
+int 
+WeibullRV::getCDFparameterSensitivity(Vector &dFdP)
+{
+    // returns gradient of F(x) with respect to distribution parameters
+    double rvValue = this->getCurrentValue();
+    
+    // dFdu
+    dFdP(0) = -rvValue/u * getPDFvalue(rvValue);
+    
+    // dFdk
+    dFdP(1) = rvValue/k*log(rvValue/u) * getPDFvalue(rvValue);
+    
+    return 0;
+}
+
+
+int
+WeibullRV::getParameterMeanSensitivity(Vector &dPdmu)
+{
+    // returns gradient of distribution parameters with respect to the mean
+    double mu = getMean();
+    double sig = getStdv();
+    
+    // dudmu
+    // no closed form expression for this one, use finite differences
+    double u_old = u;
+    double k_old = k;
+    double dh = mu/1000.0;
+    setParameters(mu+dh,sig);
+    dPdmu(0) = (u-u_old)/dh;
+
+    // dkdmu
+    // use finite differences from above, or check with closed form
+    dPdmu(1) = (k-k_old)/dh;
+    
+    // reset original parameters
+    k = k_old;
+    u = u_old;
+   
+    return 0;
+}
+
+
+int
+WeibullRV::getParameterStdvSensitivity(Vector &dPdstdv)
+{
+    // returns gradient of distribution parameters with respect to the stdv
+    double mu = getMean();
+    double sig = getStdv();
+    
+    // dudsig
+    // no closed form expression for this one, use finite differences
+    double u_old = u;
+    double k_old = k;
+    double dh = sig/1000.0;
+    setParameters(mu,sig+dh);
+    dPdstdv(0) = (u-u_old)/dh;
+    
+    // dkdsig
+    // use finite differences from above, or check with closed form
+    dPdstdv(1) = (k-k_old)/dh;
+    
+    // reset original parameters
+    k = k_old;
+    u = u_old;
+    
+    return 0;
 }
 
 

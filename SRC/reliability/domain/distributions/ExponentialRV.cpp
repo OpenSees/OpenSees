@@ -140,6 +140,45 @@ ExponentialRV::getInverseCDFvalue(double probValue)
 }
 
 
+int 
+ExponentialRV::getCDFparameterSensitivity(Vector &dFdP)
+{
+    // returns gradient of F(x) with respect to distribution parameters
+    double rvValue = this->getCurrentValue();
+    
+    // dFdlambda
+    dFdP(0) = rvValue * exp(-lambda*rvValue);
+    
+    return 0;
+}
+
+
+int
+ExponentialRV::getParameterMeanSensitivity(Vector &dPdmu)
+{
+    // returns gradient of distribution parameters with respect to the mean
+    double mu = getMean();
+    
+    // dlambdadmu
+    dPdmu(0) = -1/mu/mu;
+    
+    return 0;
+}
+
+
+int
+ExponentialRV::getParameterStdvSensitivity(Vector &dPdstdv)
+{
+    // returns gradient of distribution parameters with respect to the stdv
+    double sig = getStdv();
+    
+    // dlambdadsig
+    dPdstdv(0) = -1/sig/sig;
+    
+    return 0;
+}
+
+
 void
 ExponentialRV::Print(OPS_Stream &s, int flag)
 {

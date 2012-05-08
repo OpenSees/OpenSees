@@ -152,32 +152,6 @@ UniformRV::getInverseCDFvalue(double probValue)
 }
 
 
-double 
-UniformRV::getCDFMeanSensitivity(void)
-{
-    // returns dF/dmu
-    Vector dFdP(2);
-    Vector dPdmu(2);
-    getCDFparameterSensitivity(dFdP);
-    getParameterMeanSensitivity(dPdmu);
-    
-    return dFdP^dPdmu;
-}
-
-
-double 
-UniformRV::getCDFStdvSensitivity(void)
-{
-    // returns dF/dsigma
-    Vector dFdP(2);
-    Vector dPdsig(2);
-    getCDFparameterSensitivity(dFdP);
-    getParameterStdvSensitivity(dPdsig);
-    
-    return dFdP^dPdsig;
-}
-
-
 int 
 UniformRV::getCDFparameterSensitivity(Vector &dFdP)
 {
