@@ -1158,9 +1158,12 @@ DispBeamColumn2d::setResponse(const char **argv, int argc,
 
     theResponse =  new ElementResponse(this, 4, Vector(3));
 
+  } else if (strcmp(argv[0],"RayleighForces") == 0 || strcmp(argv[0],"rayleighForces") == 0) {
+
+    theResponse =  new ElementResponse(this, 12, P);
+  }
+
   // section response -
-  } 
-    // section response -
   else if (strstr(argv[0],"sectionX") != 0) {
     if (argc > 2) {
       float sectionLoc = atof(argv[1]);
@@ -1263,6 +1266,9 @@ DispBeamColumn2d::getResponse(int responseID, Information &eleInfo)
 
   if (responseID == 1)
     return eleInfo.setVector(this->getResistingForce());
+
+  else if (responseID == 12)
+    return eleInfo.setVector(this->getRayleighDampingForces());
 
   else if (responseID == 2) {
       P(3) =  q(0);
