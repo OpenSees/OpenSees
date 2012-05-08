@@ -2260,8 +2260,13 @@ ForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
   else if (strcmp(argv[0],"integrationWeights") == 0)
     theResponse = new ElementResponse(this, 11, Vector(numSections));
 
-  // section response -
-  else if (strstr(argv[0],"sectionX") != 0) {
+  else if (strcmp(argv[0],"RayleighForces") == 0 || strcmp(argv[0],"rayleighForces") == 0) {
+
+    theResponse =  new ElementResponse(this, 12, theVector);
+
+
+    // section response -
+  } else if (strstr(argv[0],"sectionX") != 0) {
     if (argc > 2) {
       float sectionLoc = atof(argv[1]);
 
@@ -2369,6 +2374,9 @@ ForceBeamColumn2d::getResponse(int responseID, Information &eleInfo)
 
   if (responseID == 1)
     return eleInfo.setVector(this->getResistingForce());
+
+  else if (responseID == 12)
+    return eleInfo.setVector(this->getRayleighDampingForces());
   
   else if (responseID == 2) {
     double p0[3]; p0[0] = 0.0; p0[1] = 0.0; p0[2] = 0.0;
