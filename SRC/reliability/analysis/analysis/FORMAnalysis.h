@@ -36,6 +36,7 @@
 
 #include <ReliabilityAnalysis.h>
 #include <FindDesignPointAlgorithm.h>
+#include <FunctionEvaluator.h>
 #include <ProbabilityTransformation.h>
 #include <ReliabilityDomain.h>
 
@@ -49,6 +50,7 @@ class FORMAnalysis : public ReliabilityAnalysis
 public:
 	FORMAnalysis(ReliabilityDomain *passedReliabilityDomain,
 				 FindDesignPointAlgorithm *passedFindDesignPointAlgorithm,
+                 FunctionEvaluator *passedGFunEvaluator,
 				 ProbabilityTransformation *passedProbabilityTransformation,
 				 Tcl_Interp *passedInterp, TCL_Char *fileName, int relSensTag);
 	virtual ~FORMAnalysis();
@@ -60,6 +62,7 @@ protected:
 private:
 	ReliabilityDomain *theReliabilityDomain;
 	FindDesignPointAlgorithm *theFindDesignPointAlgorithm;
+    FunctionEvaluator *theFunctionEvaluator;
 	ProbabilityTransformation *theProbabilityTransformation;
 	Tcl_Interp *interp;
 	char fileName[256];

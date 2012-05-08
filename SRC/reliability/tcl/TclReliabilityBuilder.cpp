@@ -3552,7 +3552,8 @@ TclReliabilityModelBuilder_runFORMAnalysis(ClientData clientData, Tcl_Interp *in
 	// Create the analysis object
 	theFORMAnalysis 
 		= new FORMAnalysis( theReliabilityDomain, 
-							theFindDesignPointAlgorithm, 
+							theFindDesignPointAlgorithm,
+                            theFunctionEvaluator,
 							theProbabilityTransformation, 
 							interp, argv[1], relSensTag);
 
