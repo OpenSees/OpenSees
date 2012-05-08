@@ -137,6 +137,53 @@ Type1SmallestValueRV::getInverseCDFvalue(double probValue)
 }
 
 
+int 
+Type1SmallestValueRV::getCDFparameterSensitivity(Vector &dFdP)
+{
+    // returns gradient of F(x) with respect to distribution parameters
+    double rvValue = this->getCurrentValue();
+    
+    // dFdu
+    dFdP(0) = -1 * getPDFvalue(rvValue);
+    
+    // dFdalpha
+    dFdP(1) = -(u-rvValue)/alpha * getPDFvalue(rvValue);
+    
+    return 0;
+}
+
+
+int
+Type1SmallestValueRV::getParameterMeanSensitivity(Vector &dPdmu)
+{
+    // returns gradient of distribution parameters with respect to the mean
+    
+    // dudmu
+    dPdmu(0) = 1;
+    
+    // dalphadmu
+    dPdmu(1) = 0;
+    
+    return 0;
+}
+
+
+int
+Type1SmallestValueRV::getParameterStdvSensitivity(Vector &dPdstdv)
+{
+    // returns gradient of distribution parameters with respect to the stdv
+    double sig = getStdv();
+    
+    // dudsig
+    dPdstdv(0) = sqrt(6.0)/pi*euler;
+    
+    // dalphadsig
+    dPdstdv(1) = -pi/sqrt(6.0)/sig/sig;
+    
+    return 0;
+}
+
+
 void
 Type1SmallestValueRV::Print(OPS_Stream &s, int flag)
 {

@@ -82,7 +82,6 @@ ShiftedRayleighRV::getType()
 double 
 ShiftedRayleighRV::getMean()
 {
-	//double pi = 3.14159265358979;
 	return x0 + 0.5 * u * sqrt(pi);
 }
 
@@ -90,7 +89,6 @@ ShiftedRayleighRV::getMean()
 double 
 ShiftedRayleighRV::getStdv()
 {
-	//double pi = 3.14159265358979;
 	return 0.5 * u * sqrt(4.0-pi);
 }
 
@@ -107,7 +105,6 @@ ShiftedRayleighRV::getParameters(void) {
 int
 ShiftedRayleighRV::setParameters(double mean, double stdv)
 {
-	//double pi = 3.14159265358979;
 	u = 2.0 * stdv / sqrt(3.0*pi+4.0);
 	x0 = mean + stdv*sqrt(pi) / sqrt(3.0*pi+4.0);
 	
@@ -147,6 +144,52 @@ double
 ShiftedRayleighRV::getInverseCDFvalue(double probValue)
 {
 	return x0 + u * sqrt(-log(1-probValue));
+}
+
+
+int 
+ShiftedRayleighRV::getCDFparameterSensitivity(Vector &dFdP)
+{
+    // returns gradient of F(x) with respect to distribution parameters
+    double rvValue = this->getCurrentValue();
+    
+    // dFdu
+    dFdP(0) = -(rvValue-x0)/u * getPDFvalue(rvValue);
+    
+    // dFdx0
+    dFdP(1) = -1 * getPDFvalue(rvValue);
+    
+    return 0;
+}
+
+
+int
+ShiftedRayleighRV::getParameterMeanSensitivity(Vector &dPdmu)
+{
+    // returns gradient of distribution parameters with respect to the mean
+    
+    // dudmu
+    dPdmu(0) = 0;
+    
+    // dx0dmu
+    dPdmu(1) = 1;
+    
+    return 0;
+}
+
+
+int
+ShiftedRayleighRV::getParameterStdvSensitivity(Vector &dPdstdv)
+{
+    // returns gradient of distribution parameters with respect to the stdv
+    
+    // dudsig
+    dPdstdv(0) = 2/sqrt(4.0+3.0*pi);
+    
+    // dx0dsig
+    dPdstdv(1) = sqrt(pi)/sqrt(4.0+3.0*pi);
+    
+    return 0;
 }
 
 
