@@ -1036,8 +1036,8 @@ SSPquadUP::GetStab(void)
 		Mmem(2,2*i)   = dN(i,1);
 		Mmem(2,2*i+1) = dN(i,0);
 
-		Mben(0,2*i+1) = gamma[i];
-		Mben(1,2*i)   = gamma[i];
+		Mben(0,2*i)   = gamma[i];
+		Mben(1,2*i+1) = gamma[i];
 	}
 
 	// base vectors

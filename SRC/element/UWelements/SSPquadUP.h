@@ -99,6 +99,10 @@ class SSPquadUP : public Element
 	int setParameter(const char **argv, int argc, Parameter &param);
     int updateParameter(int parameterID, Information &info);
 
+	// allow PyLiq1 and TzLiq1 classes to get stresses from SSPquadUP class
+	friend class PyLiq1;
+	friend class TzLiq1;
+
   protected:
 
   private:

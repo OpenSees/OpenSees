@@ -81,9 +81,16 @@ class InitialStateAnalysisWrapper : public NDMaterial
 		int setParameter(const char **argv, int argc, Parameter &param);
   		int updateParameter(int responseID, Information &eleInformation);
 
+	    friend class PyLiq1;
+	    friend class TzLiq1;
+
+		int getMainClassTag();           // sends class tag of main material object
+
 	protected:
 
 		NDMaterial *theMainMaterial;     // pointer to main material object
+
+		//int getMainClassTag();           // sends class tag of main material object
 
 		// input variables
 		int mDIM;                        // number of dimensions in problem

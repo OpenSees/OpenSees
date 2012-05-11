@@ -226,6 +226,13 @@ InitialStateAnalysisWrapper::getInitialTangent()
 }
 
 int
+InitialStateAnalysisWrapper::getMainClassTag()
+// this function sends the class tag of the main material
+{
+	return theMainMaterial->getClassTag();
+}
+
+int
 InitialStateAnalysisWrapper::sendSelf(int commitTag, Channel &theChannel)
 {
 	int res;
@@ -348,9 +355,6 @@ InitialStateAnalysisWrapper::setParameter(const char **argv, int argc, Parameter
 	}
 
 	return -1;
-	/*theMainMaterial->setParameter(argv, argc, param);
-
-	return 0;*/
 }
 
 int

@@ -60,11 +60,14 @@
 #include <FourNodeQuad.h>
 #include <FluidSolidPorousMaterial.h>
 #include <PressureDependMultiYield.h>
+#include <InitialStateAnalysisWrapper.h>
 #include <PySimple1.h>
 #include <iostream>
 #include <string>
 #include <FourNodeQuadUP.h>
 #include <Nine_Four_Node_QuadUP.h>
+#include <SSPquad.h>
+#include <SSPquadUP.h>
 #include <TimeSeries.h>
 
 

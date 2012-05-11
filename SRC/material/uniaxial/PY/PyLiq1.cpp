@@ -348,14 +348,16 @@ PyLiq1::getEffectiveStress(void)
 			exit(-1);
 		}
 
-		// Check that the class tags for the solid elements are either for a FourNodeQuad object
-		// or for a FourNodeQuadUP object or for a 9_4_QuadUP
-		if(theElement1->getClassTag()!=ELE_TAG_FourNodeQuad && theElement1->getClassTag()!=ELE_TAG_FourNodeQuadUP && theElement1->getClassTag()!=ELE_TAG_Nine_Four_Node_QuadUP)
+		// Check that the class tags for the solid elements are either for a FourNodeQuad object, a FourNodeQuadUP object, 
+		// a 9_4_QuadUP object, a SSPquadUP object, or a SSPquad object
+		if(theElement1->getClassTag()!=ELE_TAG_FourNodeQuad && theElement1->getClassTag()!=ELE_TAG_FourNodeQuadUP && 
+		   theElement1->getClassTag()!=ELE_TAG_Nine_Four_Node_QuadUP && theElement1->getClassTag()!=ELE_TAG_SSPquadUP && theElement1->getClassTag()!=ELE_TAG_SSPquad)
 		{
 			opserr << "Element: " << theElement1->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
 			exit(-1);
 		}
-		if(theElement2->getClassTag()!=ELE_TAG_FourNodeQuad && theElement2->getClassTag()!=ELE_TAG_FourNodeQuadUP && theElement2->getClassTag()!=ELE_TAG_Nine_Four_Node_QuadUP)
+		if(theElement2->getClassTag()!=ELE_TAG_FourNodeQuad && theElement2->getClassTag()!=ELE_TAG_FourNodeQuadUP && 
+		   theElement2->getClassTag()!=ELE_TAG_Nine_Four_Node_QuadUP && theElement2->getClassTag()!=ELE_TAG_SSPquadUP && theElement2->getClassTag()!=ELE_TAG_SSPquad)
 		{
 			opserr << "Element: " << theElement2->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
 			exit(-1);
@@ -403,16 +405,20 @@ PyLiq1::getEffectiveStress(void)
 		}
 
 		// get mean stress from element1 if it is a FourNodeQuadUP object
-		if(theElement1->getClassTag()==ELE_TAG_FourNodeQuadUP)
-		{
-			// It's safe to cast *theElement1 onto the FourNodeQuadUP class because we already
-			// checked the class tags.
+		if(theElement1->getClassTag()==ELE_TAG_FourNodeQuadUP) {
+			// It's safe to cast *theElement1 onto the FourNodeQuadUP class because we already checked the class tags.
 			FourNodeQuadUP *theElement1 = (FourNodeQuadUP *)(theDomain->getElement(solidElem1));
 			meanStress=0.0;
-			for(int i=0;i<4;i++)
-			{
+			
+			for(int i=0;i<4;i++) {
 				NDMaterial *NDM = theElement1->theMaterial[i];
-				if(NDM->getClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getClassTag() !=ND_TAG_PressureDependMultiYield02){
+				if(NDM->getClassTag()==ND_TAG_InitialStateAnalysisWrapper) {
+					InitialStateAnalysisWrapper *NDM = (InitialStateAnalysisWrapper *)(theElement1->theMaterial);
+					if(NDM->getMainClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getMainClassTag()!=ND_TAG_PressureDependMultiYield02) {
+						opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
+				    	exit(-1);
+					}
+				} else if(NDM->getClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getClassTag() !=ND_TAG_PressureDependMultiYield02){
 					opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
 					exit(-1);
 				}
@@ -420,50 +426,133 @@ PyLiq1::getEffectiveStress(void)
 			}
 		}
 		// get mean stress from element 2 if it is a FourNodeQuadUP object
-		if(theElement2->getClassTag()==ELE_TAG_FourNodeQuadUP)
-		{
-			// It's safe to cast *theElement1 onto the FourNodeQuadUP class because we already
-			// checked the class tags.
+		if(theElement2->getClassTag()==ELE_TAG_FourNodeQuadUP) {
+			// It's safe to cast *theElement2 onto the FourNodeQuadUP class because we already checked the class tags.
 			FourNodeQuadUP *theElement2 = (FourNodeQuadUP *)(theDomain->getElement(solidElem2));
-			for(int i=0;i<4;i++)
-			{
+			for(int i=0;i<4;i++) {
 				NDMaterial *NDM = theElement2->theMaterial[i];
-				if(NDM->getClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getClassTag() !=ND_TAG_PressureDependMultiYield02){
+				if(NDM->getClassTag()==ND_TAG_InitialStateAnalysisWrapper) {
+					InitialStateAnalysisWrapper *NDM = (InitialStateAnalysisWrapper *)(theElement2->theMaterial);
+					if(NDM->getMainClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getMainClassTag()!=ND_TAG_PressureDependMultiYield02) {
+						opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
+				    	exit(-1);
+					}
+				} else if(NDM->getClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getClassTag() !=ND_TAG_PressureDependMultiYield02){
 					opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
 					exit(-1);
 				}
 				meanStress += 1.0/8.0*(2.0/3.0*(NDM->getStress())[0] + 1.0/3.0*(NDM->getStress())[1]);
 			}
 		}
+
 		// get mean stress from element1 if it is a 9_4_QuadUP object
-		if(theElement1->getClassTag()==ELE_TAG_Nine_Four_Node_QuadUP)
-		{
-			// It's safe to cast *theElement1 onto the FourNodeQuadUP class because we already
-			// checked the class tags.
+		if(theElement1->getClassTag()==ELE_TAG_Nine_Four_Node_QuadUP) {
+			// It's safe to cast *theElement1 onto the 9_4_QuadUP class because we already checked the class tags.
 			NineFourNodeQuadUP *theElement1 = (NineFourNodeQuadUP *)(theDomain->getElement(solidElem1));
 			meanStress=0.0;
-			for(int i=0;i<9;i++)
-			{
+			
+			for(int i=0;i<9;i++) {
 				NDMaterial *NDM = theElement1->theMaterial[i];
-				if(NDM->getClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getClassTag() !=ND_TAG_PressureDependMultiYield02){
+				if(NDM->getClassTag()==ND_TAG_InitialStateAnalysisWrapper) {
+					InitialStateAnalysisWrapper *NDM = (InitialStateAnalysisWrapper *)(theElement1->theMaterial);
+					if(NDM->getMainClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getMainClassTag()!=ND_TAG_PressureDependMultiYield02) {
+						opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
+				    	exit(-1);
+					}
+				} else if(NDM->getClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getClassTag() !=ND_TAG_PressureDependMultiYield02){
 					opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
 					exit(-1);
 				}
 				meanStress += 1.0/18.0*(2.0/3.0*(NDM->getStress())[0] + 1.0/3.0*(NDM->getStress())[1]);
 			}
 		}
-		if(theElement2->getClassTag()==ELE_TAG_Nine_Four_Node_QuadUP)
-		{
+		// get mean stress from element2 if it is a 9_4_QuadUP object
+		if(theElement2->getClassTag()==ELE_TAG_Nine_Four_Node_QuadUP) {
+            // It's safe to cast *theElement2 onto the 9_4_QuadUP class because we already checked the class tags.
 			NineFourNodeQuadUP *theElement2 = (NineFourNodeQuadUP *)(theDomain->getElement(solidElem2));
-			for(int i=0;i<9;i++)
-			{
+			for(int i=0;i<9;i++) {
 				NDMaterial *NDM = theElement2->theMaterial[i];
-				if(NDM->getClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getClassTag() !=ND_TAG_PressureDependMultiYield02){
+				if(NDM->getClassTag()==ND_TAG_InitialStateAnalysisWrapper) {
+					InitialStateAnalysisWrapper *NDM = (InitialStateAnalysisWrapper *)(theElement2->theMaterial);
+					if(NDM->getMainClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getMainClassTag()!=ND_TAG_PressureDependMultiYield02) {
+						opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
+				    	exit(-1);
+					}
+				} else if(NDM->getClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getClassTag() !=ND_TAG_PressureDependMultiYield02) {
 					opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
 					exit(-1);
 				}
 				meanStress += 1.0/18.0*(2.0/3.0*(NDM->getStress())[0] + 1.0/3.0*(NDM->getStress())[1]);
 			}
+		}
+
+		// get mean stress from element1 if it is a SSPquadUP object
+		if(theElement1->getClassTag()==ELE_TAG_SSPquadUP) {
+			// It's safe to cast *theElement1 onto the SSPquadUP class because we already checked the class tags.
+			SSPquadUP *theElement1 = (SSPquadUP *)(theDomain->getElement(solidElem1));
+			meanStress = 0.0;
+			
+			NDMaterial *NDM = theElement1->theMaterial;
+			if(NDM->getClassTag()==ND_TAG_InitialStateAnalysisWrapper) {
+				InitialStateAnalysisWrapper *NDM = (InitialStateAnalysisWrapper *)(theElement1->theMaterial);
+				if(NDM->getMainClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getMainClassTag()!=ND_TAG_PressureDependMultiYield02) {
+					opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
+				    exit(-1);
+				}
+			} else if(NDM->getClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getClassTag()!=ND_TAG_PressureDependMultiYield02) {
+				opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
+				exit(-1);
+			}
+			meanStress += 1.0/2.0*(2.0/3.0*(NDM->getStress())[0] + 1.0/3.0*(NDM->getStress())[1]);
+		}
+		// get mean stress from element 2 if it is a SSPquadUP object
+		if(theElement2->getClassTag()==ELE_TAG_SSPquadUP) {
+			// It's safe to cast *theElement1 onto the SSPquadUP class because we already checked the class tags.
+			SSPquadUP *theElement2 = (SSPquadUP *)(theDomain->getElement(solidElem2));
+			
+			NDMaterial *NDM = theElement2->theMaterial;
+			if(NDM->getClassTag()==ND_TAG_InitialStateAnalysisWrapper) {
+				InitialStateAnalysisWrapper *NDM = (InitialStateAnalysisWrapper *)(theElement2->theMaterial);
+				if(NDM->getMainClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getMainClassTag()!=ND_TAG_PressureDependMultiYield02) {
+					opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
+				    exit(-1);
+				}
+			} else if(NDM->getClassTag()!=ND_TAG_PressureDependMultiYield && NDM->getClassTag()!=ND_TAG_PressureDependMultiYield02){
+				opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
+				exit(-1);
+			}
+			meanStress += 1.0/2.0*(2.0/3.0*(NDM->getStress())[0] + 1.0/3.0*(NDM->getStress())[1]);
+		}
+
+		// get mean stress from element1 if it is a SSPquad object
+		if(theElement1->getClassTag()==ELE_TAG_SSPquad) {
+			// It's safe to cast *theElement1 onto the SSPquad class because we already checked the class tags.
+			SSPquad *theElement1 = (SSPquad *)(theDomain->getElement(solidElem1));
+			
+			// If the element is a SSPquad, check that the class tag for the material at each gauss point is FluidSolidPorous object
+			meanStress = 0.0;
+				
+			NDMaterial *NDM = theElement1->theMaterial;
+			if(NDM->getClassTag()!=ND_TAG_FluidSolidPorousMaterial){
+				opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
+				exit(-1);
+			}
+			FluidSolidPorousMaterial *theFSPM = (FluidSolidPorousMaterial *)(NDM);
+			meanStress += 1.0/2.0*(2.0/3.0*(NDM->getStress())[0] + 1.0/3.0*(NDM->getStress())[1] - theFSPM->trialExcessPressure);
+		}
+		// get mean stress from element2 if it is a SSPquad object
+		if(theElement2->getClassTag()==ELE_TAG_SSPquad) {
+			// It's safe to cast *theElement2 onto the SSPquad class because we already checked the class tags.
+			SSPquad *theElement2 = (SSPquad *)(theDomain->getElement(solidElem2));
+			
+			// If the element is a SSPquad, check that the class tag for the material at each gauss point is FluidSolidPorous object
+			NDMaterial *NDM = theElement2->theMaterial;
+			if(NDM->getClassTag()!=ND_TAG_FluidSolidPorousMaterial){
+				opserr << "Material: " << NDM->getTag() << " cannot be used to read effective stress for a PyLiq1 material." << endln;
+				exit(-1);
+			}
+			FluidSolidPorousMaterial *theFSPM = (FluidSolidPorousMaterial *)(NDM);
+			meanStress += 1.0/2.0*(2.0/3.0*(NDM->getStress())[0] + 1.0/3.0*(NDM->getStress())[1] - theFSPM->trialExcessPressure);
 		}
 		
 	}
