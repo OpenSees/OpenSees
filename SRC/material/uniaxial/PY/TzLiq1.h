@@ -27,13 +27,13 @@
 #include <Domain.h>
 #include <FourNodeQuad.h>
 #include <FluidSolidPorousMaterial.h>
-#include <InitialStateAnalysisWrapper.h>
+//#include <InitialStateAnalysisWrapper.h>
 #include <TzSimple1.h>
 #include <iostream>
 #include <FourNodeQuadUP.h>
 #include <Nine_Four_Node_QuadUP.h>
-#include <SSPquadUP.h>
-#include <SSPquad.h>
+//#include <SSPquadUP.h>
+//#include <SSPquad.h>
 #include <TimeSeries.h>
 
 
