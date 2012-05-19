@@ -335,12 +335,6 @@
 					RelativePath="..\..\..\SRC\reliability\analysis\analysis\OutCrossingAnalysis.h">
 				</File>
 				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\analysis\ParametricReliabilityAnalysis.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\reliability\analysis\analysis\ParametricReliabilityAnalysis.h">
-				</File>
-				<File
 					RelativePath="..\..\..\SRC\reliability\analysis\analysis\PrincipalAxis.cpp">
 				</File>
 				<File

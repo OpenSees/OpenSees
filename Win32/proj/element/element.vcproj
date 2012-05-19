@@ -999,10 +999,22 @@
 				RelativePath="..\..\..\SRC\element\UWelements\BeamContact3D.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\element\UWelements\BeamContact3Dp.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\UWelements\BeamContact3Dp.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\UWelements\BeamEndContact3D.cpp">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\UWelements\BeamEndContact3D.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\UWelements\BeamEndContact3Dp.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\UWelements\BeamEndContact3Dp.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\UWelements\SSPbrick.cpp">
