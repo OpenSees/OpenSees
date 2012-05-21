@@ -44,7 +44,7 @@
 #include <RandomVariable.h>
 #include <Parameter.h>
 #include <MatrixOperations.h>
-#include <HessianApproximation.h>
+#include <HessianEvaluator.h>
 #include <ReliabilityConvergenceCheck.h>
 #include <Matrix.h>
 #include <Vector.h>
@@ -69,7 +69,7 @@ SearchWithStepSizeAndStepDirection::SearchWithStepSizeAndStepDirection(
 					StepSizeRule *passedStepSizeRule,
 					SearchDirection *passedSearchDirection,
 					ProbabilityTransformation *passedProbabilityTransformation,
-					HessianApproximation *passedHessianApproximation,
+					HessianEvaluator *passedHessianEvaluator,
 					ReliabilityConvergenceCheck *passedReliabilityConvergenceCheck,
 					int pprintFlag,
 					char *pFileNamePrint)
@@ -82,7 +82,7 @@ SearchWithStepSizeAndStepDirection::SearchWithStepSizeAndStepDirection(
 	theStepSizeRule					= passedStepSizeRule;
 	theSearchDirection				= passedSearchDirection;
 	theProbabilityTransformation	= passedProbabilityTransformation;
-	theHessianApproximation			= passedHessianApproximation;
+	theHessianEvaluator             = passedHessianEvaluator;
 	theReliabilityConvergenceCheck  = passedReliabilityConvergenceCheck;
 	printFlag						= pprintFlag;
 	numberOfEvaluations = 0;
@@ -298,6 +298,42 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
       
             Glast = gFunctionValue;
             numberOfEvaluations = theFunctionEvaluator->getNumberOfEvaluations();
+            
+            // Update Hessian approximation, if any
+            if (  (theHessianEvaluator != 0) && (steps != 1)  ) {
+                //theHessianEvaluator->computeHessian(u_old,gFunctionValue_old,gradientInStandardNormalSpace_old,
+                //                            stepSize,*searchDirection,gFunctionValue,*gradientInStandardNormalSpace);
+                result = theHessianEvaluator->computeHessian(gFunctionValue);
+                if (result < 0) {
+                    opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
+                        << " could not compute hessian of the limit-state function. " << endln;
+                    return -1;
+                }
+                
+                // KRM 5-21-2012
+                // hessian no longer needs to be in design point algo, but I'm leaving it here as an example
+                // for when we update SORM on how to get hessian in both spaces                
+                //Matrix temp_hess(numberOfParameters,numberOfParameters);
+                //temp_hess = theHessianEvaluator->getHessian();
+                //Matrix hessU(numberOfRandomVariables,numberOfRandomVariables);
+                
+                // map hessian from all parameters to just RVs
+                //for (int j = 0; j < numberOfRandomVariables; j++) {
+                //    int param_indx_j = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
+                //    for (int k = 0; k <= j; k++) {
+                //        int param_indx_k = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(k);
+                //        hessU(j,k) = temp_hess(param_indx_j,param_indx_k);
+                //        hessU(k,j) = hessU(j,k);
+                //    }
+                //}
+                
+                // Get Jacobian x-space to u-space
+                //result = theProbabilityTransformation->getJacobian_x_to_u(Jxu);         
+                //Matrix hessU2(numberOfRandomVariables,numberOfRandomVariables);
+                
+                // Gradient in standard normal space
+                //hessU2.addMatrixTripleProduct(0.0,Jxu,hessU,1.0);
+            }
 
             // compute sensitivity pf beta wrt to LSF parameters (if they exist)
             // Note this will need to change because now parameters have multiple derived classes
@@ -329,11 +365,11 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
             opserr << " STEP #" << steps <<": ";
 
         // Update Hessian approximation, if any
-        if (  (theHessianApproximation != 0) && (steps != 1)  ) {
-            theHessianApproximation->updateHessianApproximation(u_old,gFunctionValue_old,
-                                                                gradientInStandardNormalSpace_old,
-                                                                stepSize,*searchDirection,
-                                                                gFunctionValue,*gradientInStandardNormalSpace);
+        if (  (theHessianEvaluator != 0) && (steps != 1)  ) {
+            //theHessianEvaluator->computeHessian(u_old,gFunctionValue_old,gradientInStandardNormalSpace_old,
+            //                            stepSize,*searchDirection,gFunctionValue,*gradientInStandardNormalSpace);
+            theHessianEvaluator->computeHessian(gFunctionValue);
+            opserr << theHessianEvaluator->getHessian() << endln;
         }
     
         
@@ -488,6 +524,5 @@ SearchWithStepSizeAndStepDirection::getNumberOfEvaluations()
 {
 	return numberOfEvaluations;
 }
-
 
 

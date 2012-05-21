@@ -34,7 +34,7 @@
 
 #include <ReliabilityAnalysis.h>
 #include <GridPlane.h>
-#include <Hessian.h>
+//#include <Hessian.h>
 #include <GradientEvaluator.h>
 #include <UnivariateDecomposition.h>
 #include <BivariateDecomposition.h>
@@ -94,7 +94,7 @@ class DP_RSM_Sim : public ReliabilityAnalysis
   Vector * theDesignPoint; //U space
   char outputFileName[20];
   Matrix * rotation;
-  Hessian * theHessian;
+  //Hessian * theHessian;
   int numOfPrincipalAxes;
   
   RandomNumberGenerator * theRandomNumberGenerator;

@@ -3220,6 +3220,11 @@ SRC/reliability/analysis/gradient/GradientEvaluator.h -text
 SRC/reliability/analysis/gradient/ImplicitGradient.cpp -text
 SRC/reliability/analysis/gradient/ImplicitGradient.h -text
 SRC/reliability/analysis/gradient/Makefile -text
+SRC/reliability/analysis/hessian/FiniteDifferenceHessian.cpp -text
+SRC/reliability/analysis/hessian/FiniteDifferenceHessian.h -text
+SRC/reliability/analysis/hessian/HessianEvaluator.cpp -text
+SRC/reliability/analysis/hessian/HessianEvaluator.h -text
+SRC/reliability/analysis/hessian/Makefile -text
 SRC/reliability/analysis/hessianApproximation/Hessian.cpp -text
 SRC/reliability/analysis/hessianApproximation/Hessian.h -text
 SRC/reliability/analysis/hessianApproximation/HessianApproximation.cpp -text

@@ -39,7 +39,7 @@
 // command: MultiDimVisualPrinPlane -funSurf function -designPt dp.out  -output vis.out  -ndir $n <gridInfo {0  minY  maxY nPts0 1 minX1  maxX1 nPts1 2 minX2  maxX2 nPts2 ...}>
  //command: MultiDimVisualPrinPlane -funSurf surface -designPt dp.out  -output vis.out -ndir $n <gridInfo {} -timevariant -littleDt dt> //not yet implemented
 #include <PrincipalPlane.h>
-#include <Hessian.h>
+//#include <Hessian.h>
 //#include <GradGEvaluator.h>
 
 
@@ -74,7 +74,7 @@ private:
 	ReliabilityDomain * theReliabilityDomain;
 	PrincipalPlane ** thePrincipalPlanes;
 	Matrix * rotation;
-	Hessian * theHessian;
+	//Hessian * theHessian;
 //	Vector * theDesignPt;
 	int numOfPrinPlane;
 	int type;

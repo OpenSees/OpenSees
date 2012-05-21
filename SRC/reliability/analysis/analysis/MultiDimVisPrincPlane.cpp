@@ -110,18 +110,15 @@ MultiDimVisPrincPlane::MultiDimVisPrincPlane(
 	this->setGridInfo(pVector, numOfPrinPlane);
 	HessianMatrix =0;
 	rotation =0;
-	theHessian=0;
+	//theHessian=0;
 	littleDt = pLittleDt;
 
 	if (passedHessian !=0){
 		//HessianMatrix = new Matrix( *passedHessian);
-		theHessian = new Hessian(numRV,
-		theReliabilityDomain,
-		theProbabilityTransformation,
-		theGFunEvaluator,
-		theGradGEvaluator, 1.0e-5);
+		//theHessian = new Hessian(numRV,theReliabilityDomain,theProbabilityTransformation,
+        //                         theGFunEvaluator,theGradGEvaluator, 1.0e-5);
 	
-		theHessian->formReducedHessian(theDesignPtXSpace, passedHessian); 
+		//theHessian->formReducedHessian(theDesignPtXSpace, passedHessian); 
 
 	}
 
@@ -137,7 +134,7 @@ MultiDimVisPrincPlane::~MultiDimVisPrincPlane()
 	delete thePrincipalPlanes;
     if (HessianMatrix !=0) delete HessianMatrix;
 	if (rotation !=0) delete rotation;
-	if (theHessian !=0) delete theHessian;
+	//if (theHessian !=0) delete theHessian;
 	if (HessianFileName !=0) delete HessianFileName;
 	
 
@@ -178,19 +175,16 @@ int MultiDimVisPrincPlane::analyze()
 
 	int numRV = theReliabilityDomain->getNumberOfRandomVariables();
   	
-	if (theHessian ==0){
-		theHessian = new Hessian(numRV,
-		theReliabilityDomain,
-		theProbabilityTransformation,
-		theGFunEvaluator,
-		theGradGEvaluator, 1.0e-5);
-		theHessian->formReducedHessian(theDesignPtXSpace);
-	}
+	//if (theHessian ==0){
+		//theHessian = new Hessian(numRV,	theReliabilityDomain,theProbabilityTransformation,
+        //                         theGFunEvaluator,theGradGEvaluator, 1.0e-5);
+		//theHessian->formReducedHessian(theDesignPtXSpace);
+	//}
 
 	if (HessianFileName !=0){  //recorder Hessian
 
 		Matrix tmpHessian(numRV, numRV);
-		tmpHessian.addMatrix(0.0, theHessian->getHessianApproximation(), 1.0);
+		//tmpHessian.addMatrix(0.0, theHessian->getHessianApproximation(), 1.0);
 
 		ofstream output(HessianFileName);
 		
@@ -213,14 +207,14 @@ int MultiDimVisPrincPlane::analyze()
 
     if (HessianMatrix !=0) delete HessianMatrix;
 	if (rotation !=0) delete rotation;
-	HessianMatrix = new Matrix(theHessian->getReducedHessian()); //A matrix, one dim less the nrv
-
+	//HessianMatrix = new Matrix(theHessian->getReducedHessian()); //A matrix, one dim less the nrv
+    HessianMatrix = new Matrix(1,1);
 
 	
 	Vector alpha =  (*theDesignPoint)/(*theDesignPoint).Norm();
 
 
-	rotation =  new Matrix(theHessian->getRotationMatrix(alpha)); 
+	//rotation =  new Matrix(theHessian->getRotationMatrix(alpha)); 
 
 
 	

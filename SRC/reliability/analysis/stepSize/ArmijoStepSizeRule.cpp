@@ -174,6 +174,12 @@ ArmijoStepSizeRule::computeStepSize(const Vector &u_old,
         }
     }
 
+    // KRM 4/9/2012
+    // things that are missing here include previous call to theRootFindingAlgorithm and 
+    // use of the meritFunctionCheck. Also need (potentially) to retain the ability to not
+    // evaluate the next g function if deemed out of the hypersphere here in the stepSize.
+    // Already possible, but designPointAlgorith needs some logic based on return value here.
+    
     // check exit status
 	if (numReduction > maxNumReductions) {
         return 0;

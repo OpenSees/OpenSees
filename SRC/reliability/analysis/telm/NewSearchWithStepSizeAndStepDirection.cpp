@@ -40,7 +40,7 @@
 #include <RandomVariable.h>
 #include <CorrelationCoefficient.h>
 #include <MatrixOperations.h>
-#include <HessianApproximation.h>
+#include <HessianEvaluator.h>
 #include <ReliabilityConvergenceCheck.h>
 #include <Matrix.h>
 #include <Vector.h>
@@ -66,7 +66,7 @@ NewSearchWithStepSizeAndStepDirection::NewSearchWithStepSizeAndStepDirection(
 					StepSizeRule *passedStepSizeRule,
 					SearchDirection *passedSearchDirection,
 					ProbabilityTransformation *passedProbabilityTransformation,
-					HessianApproximation *passedHessianApproximation,
+					HessianEvaluator *passedHessianEvaluator,
 					ReliabilityConvergenceCheck *passedReliabilityConvergenceCheck,
 					bool pStartAtOrigin,
 					int pprintFlag,
@@ -79,7 +79,7 @@ NewSearchWithStepSizeAndStepDirection::NewSearchWithStepSizeAndStepDirection(
 	theStepSizeRule					= passedStepSizeRule;
 	theSearchDirection				= passedSearchDirection;
 	theProbabilityTransformation	= passedProbabilityTransformation;
-	theHessianApproximation			= passedHessianApproximation;
+	theHessianEvaluator             = passedHessianEvaluator;
 	theReliabilityConvergenceCheck  = passedReliabilityConvergenceCheck;
 	startAtOrigin = pStartAtOrigin;
 	printFlag						= pprintFlag;
@@ -494,20 +494,17 @@ NewSearchWithStepSizeAndStepDirection::findDesignPoint()
 		opserr << " STEP #" << iter <<": ";
 
 		// Update Hessian approximation, if any
-		if (  (theHessianApproximation!=0) && (iter!=1)  ) {
-			theHessianApproximation->updateHessianApproximation(*u_old,
-											    gFunctionValue_old,
-											    *gradientInStandardNormalSpace_old,
-											    stepSize,
-											    *searchDirection,
-											    gFunctionValue,
-											    *gradientInStandardNormalSpace);
+		if (  (theHessianEvaluator != 0) && (iter != 1)  ) {
+			//theHessianApproximation->updateHessianApproximation(*u_old,gFunctionValue_old,
+			//		*gradientInStandardNormalSpace_old,stepSize,*searchDirection,
+            //        gFunctionValue,*gradientInStandardNormalSpace);
+            theHessianEvaluator->computeHessian(gFunctionValue_old);
 		}
 
 
 		// Determine search direction
-		result = theSearchDirection->computeSearchDirection(iter,
-			*u, gFunctionValue, *gradientInStandardNormalSpace );
+		result = theSearchDirection->computeSearchDirection(iter,*u, gFunctionValue, 
+                                            *gradientInStandardNormalSpace );
 		if (result < 0) {
 			opserr << "NewSearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
 				<< " could not compute search direction. " << endln;

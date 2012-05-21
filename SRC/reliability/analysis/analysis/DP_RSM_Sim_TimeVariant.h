@@ -35,7 +35,7 @@
 
 #include <ReliabilityAnalysis.h>
 #include <GridPlane.h>
-#include <Hessian.h>
+//#include <Hessian.h>
 #include <GradientEvaluator.h>
 #include <UnivariateDecomposition.h>
 #include <UniformExperimentalPointRule1D.h>
@@ -102,7 +102,7 @@ private:
 	Vector * theDesignPoint; //U space
 	char outputFileName[20];
 	Matrix * rotation;
-	Hessian * theHessian;
+	//Hessian * theHessian;
 	int numOfPrincipalAxes;
 
 	RandomNumberGenerator * theRandomNumberGenerator;

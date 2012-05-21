@@ -34,17 +34,18 @@
 #include <SQPsearchDirectionMeritFunctionAndHessian.h>
 #include <SearchDirection.h>
 #include <MeritFunctionCheck.h>
-#include <HessianApproximation.h>
+//#include <HessianApproximation.h>
 #include <Vector.h>
+#include <Matrix.h>
 #include <math.h>
 
 
 SQPsearchDirectionMeritFunctionAndHessian::SQPsearchDirectionMeritFunctionAndHessian(
 															double pc_bar, 
 															double pe_bar)
-:SearchDirection(), MeritFunctionCheck(), HessianApproximation()
+:SearchDirection(), MeritFunctionCheck()
 {
-	theHessianApproximation = 0;
+	//theHessianApproximation = 0;
 
 	// Parameters
 	alpha = 0.0;
@@ -75,12 +76,12 @@ SQPsearchDirectionMeritFunctionAndHessian::~SQPsearchDirectionMeritFunctionAndHe
 }
 
 
-int
-SQPsearchDirectionMeritFunctionAndHessian::setHessianApproximation(HessianApproximation *passedHessianApproximation)
-{
-	theHessianApproximation = passedHessianApproximation;
-	return 0;
-}
+//int
+//SQPsearchDirectionMeritFunctionAndHessian::setHessianApproximation(HessianApproximation *passedHessianApproximation)
+//{
+	//theHessianApproximation = passedHessianApproximation;
+	//return 0;
+//}
 
 
 
@@ -110,13 +111,13 @@ SQPsearchDirectionMeritFunctionAndHessian::computeSearchDirection(
 	// If it's the first step; set the Hessian approximation to unity
 	// and initialize history parameters. 
 	if (stepNumber == 1) {
-		if (theHessianApproximation != 0) {
-			theHessianApproximation->setHessianToIdentity(nrv);
-		}
-		else {
-			opserr << "WARNING: SQPsearchDirectionMeritFunctionAndHessian::computeSearchDirection() -- " << endln
-				<< "theHessianApproximation has not been set! " << endln;
-		}
+		//if (theHessianApproximation != 0) {
+		//	theHessianApproximation->setHessianToIdentity(nrv);
+		//}
+		//else {
+		//	opserr << "WARNING: SQPsearchDirectionMeritFunctionAndHessian::computeSearchDirection() -- " << endln
+		//		<< "theHessianApproximation has not been set! " << endln;
+		//}
 		delta = 1.0;
 		c = c_bar;
 		lambda = 1.0;
@@ -125,13 +126,13 @@ SQPsearchDirectionMeritFunctionAndHessian::computeSearchDirection(
 
 	// Get the Hessian approximation
 	Matrix Hessian;
-	if (theHessianApproximation != 0) {
-		Hessian = theHessianApproximation->getHessianApproximation();
-	}
-	else {
-		opserr << "WARNING: SQPsearchDirectionMeritFunctionAndHessian::computeSearchDirection() -- " << endln
-			<< "theHessianApproximation has not been set! " << endln;
-	}
+	//if (theHessianApproximation != 0) {
+	//	Hessian = theHessianApproximation->getHessianApproximation();
+	//}
+	//else {
+	//	opserr << "WARNING: SQPsearchDirectionMeritFunctionAndHessian::computeSearchDirection() -- " << endln
+	//		<< "theHessianApproximation has not been set! " << endln;
+	//}
 
 	
 	// Establish coefficient matrix

@@ -38,7 +38,7 @@
 #include <ProbabilityTransformation.h>
 #include <FunctionEvaluator.h>
 #include <GradientEvaluator.h>
-#include <HessianApproximation.h>
+#include <HessianEvaluator.h>
 #include <ReliabilityConvergenceCheck.h>
 #include <Matrix.h>
 #include <Vector.h>
@@ -61,7 +61,7 @@ public:
 					StepSizeRule *passedStepSizeRule,
 					SearchDirection *passedSearchDirection,
 					ProbabilityTransformation *passedProbabilityTransformation,
-					HessianApproximation *theHessianApproximation,
+					HessianEvaluator *theHessianEvaluator,
 					ReliabilityConvergenceCheck *theReliabilityConvergenceCheck,
 					bool startAtOrigin,
 					int printFlag,
@@ -109,7 +109,7 @@ private:
 	StepSizeRule *theStepSizeRule;
 	SearchDirection *theSearchDirection;
 	ProbabilityTransformation *theProbabilityTransformation;
-	HessianApproximation *theHessianApproximation;
+	HessianEvaluator *theHessianEvaluator;
 	ReliabilityConvergenceCheck *theReliabilityConvergenceCheck;
 
 	bool startAtOrigin;

@@ -36,10 +36,11 @@
 
 #include <SearchDirection.h>
 #include <MeritFunctionCheck.h>
-#include <HessianApproximation.h>
+//#include <HessianApproximation.h>
 #include <Vector.h>
+#include <Matrix.h>
 
-class SQPsearchDirectionMeritFunctionAndHessian : public SearchDirection, public MeritFunctionCheck, public HessianApproximation
+class SQPsearchDirectionMeritFunctionAndHessian : public SearchDirection, public MeritFunctionCheck
 {
 
 public:
@@ -75,9 +76,11 @@ public:
 
 
 	// METHODS FOR HESSIAN APPROXIMATION
+    // KRM 5-19-2012
+    // this needs to be updated so classes are not being mixed, use proper OO
 	const Matrix &getHessianApproximation();
 	int     setHessianToIdentity(int size);
-	int     setHessianApproximation(HessianApproximation *theHessianApproximation);
+	//int     setHessianApproximation(HessianApproximation *theHessianApproximation);
 	int     updateHessianApproximation(const Vector &u_old,
 					   double g_old,
 					   const Vector &gradG_old,
@@ -89,7 +92,7 @@ public:
 protected:
 
 private:
-	HessianApproximation *theHessianApproximation;
+	//HessianApproximation *theHessianApproximation;
 
 	// Parameters
 	double c_bar, e_bar, alpha;
