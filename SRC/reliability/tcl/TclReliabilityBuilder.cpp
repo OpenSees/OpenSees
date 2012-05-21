@@ -82,45 +82,57 @@ using std::setiosflags;
 
 #include <FunctionEvaluator.h>
 #include <GradientEvaluator.h>
+#include <HessianEvaluator.h>
+#include <TclEvaluator.h>
+#include <ImplicitGradient.h>
+#include <FiniteDifferenceGradient.h>
+#include <FiniteDifferenceHessian.h>
+
 #include <StepSizeRule.h>
 #include <SearchDirection.h>
 #include <ProbabilityTransformation.h>
 #include <NatafProbabilityTransformation.h>
 #include <FindDesignPointAlgorithm.h>
-#include <ReliabilityAnalysis.h>
 #include <HLRFSearchDirection.h>
 #include <ArmijoStepSizeRule.h>
 #include <FixedStepSizeRule.h>
+#include <SearchWithStepSizeAndStepDirection.h>
+#include <RandomNumberGenerator.h>
+#include <CStdLibRandGenerator.h>
+#include <FindCurvatures.h>
+#include <FirstPrincipalCurvature.h>
+#include <CurvaturesBySearchAlgorithm.h>
+#include <ReliabilityConvergenceCheck.h>
+#include <StandardReliabilityConvergenceCheck.h>
+#include <OptimalityConditionReliabilityConvergenceCheck.h>
+#include <MeritFunctionCheck.h>
+#include <AdkZhangMeritFunctionCheck.h>
+#include <PolakHeSearchDirectionAndMeritFunction.h>
+#include <SQPsearchDirectionMeritFunctionAndHessian.h>
+#include <GradientProjectionSearchDirection.h>
+
+#include <ReliabilityAnalysis.h>
 //#include <OpenSeesGFunEvaluator.h>
 //#include <OpenSeesGradGEvaluator.h>
-#include <TclEvaluator.h>
-#include <ImplicitGradient.h>
-#include <FiniteDifferenceGradient.h>
-#include <SearchWithStepSizeAndStepDirection.h>
 #include <FORMAnalysis.h>
 #include <FOSMAnalysis.h>
 //#include <ParametricReliabilityAnalysis.h>
 #include <GFunVisualizationAnalysis.h>
 #include <OutCrossingAnalysis.h>
 #include <ImportanceSamplingAnalysis.h>
-#include <RandomNumberGenerator.h>
-#include <CStdLibRandGenerator.h>
-#include <FindCurvatures.h>
-#include <FirstPrincipalCurvature.h>
-#include <CurvaturesBySearchAlgorithm.h>
 #include <SORMAnalysis.h>
 #include <SystemAnalysis.h>
 #include <PCM.h>
 #include <IPCM.h>
 #include <SCIS.h>
 #include <MVNcdf.h>
+
 #include <Filter.h>
 #include <KooFilter.h>
 #include <StandardLinearOscillatorDisplacementFilter.h>
 #include <StandardLinearOscillatorVelocityFilter.h>
 #include <StandardLinearOscillatorAccelerationFilter.h>
 #include <DeltaFilter.h>
-
 #include <ModulatingFunction.h>
 #include <GammaModulatingFunction.h>
 #include <ConstantModulatingFunction.h>
@@ -130,24 +142,14 @@ using std::setiosflags;
 #include <JonswapSpectrum.h>
 #include <NarrowBandSpectrum.h>
 #include <PointsSpectrum.h>
+
 #include <SensitivityAlgorithm.h>
-#include <ReliabilityConvergenceCheck.h>
-#include <StandardReliabilityConvergenceCheck.h>
-#include <OptimalityConditionReliabilityConvergenceCheck.h>
-#include <MeritFunctionCheck.h>
-#include <AdkZhangMeritFunctionCheck.h>
-#include <PolakHeSearchDirectionAndMeritFunction.h>
-#include <SQPsearchDirectionMeritFunctionAndHessian.h>
-#include <HessianApproximation.h>
-#include <GradientProjectionSearchDirection.h>
 #include <RootFinding.h>
 #include <SecantRootFinding.h>
 
 //Quan---
 #include <MonteCarloResponseAnalysis.h>
 #include <OrthogonalPlaneSamplingAnalysis.h>
-
-#include <Hessian.h>
 #include <MultiDimVisPrincPlane.h>
 #include <DP_RSM_Sim.h>
 #include <DP_RSM_Sim_TimeVariant.h>
@@ -212,7 +214,7 @@ static FunctionEvaluator *theFunctionEvaluator = 0;
 static GradientEvaluator *theGradientEvaluator = 0;
 static StepSizeRule *theStepSizeRule = 0;
 static SearchDirection *theSearchDirection = 0;
-static HessianApproximation *theHessianApproximation = 0;
+static HessianEvaluator *theHessianEvaluator = 0;
 static MeritFunctionCheck *theMeritFunctionCheck = 0;
 static ProbabilityTransformation *theProbabilityTransformation = 0;
 static ReliabilityConvergenceCheck *theReliabilityConvergenceCheck = 0;
@@ -268,7 +270,7 @@ int TclReliabilityModelBuilder_addStartPoint(ClientData clientData, Tcl_Interp *
 int TclReliabilityModelBuilder_addRootFinding(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_addRandomNumberGenerator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_addSearchDirection(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
-int TclReliabilityModelBuilder_addHessianApproximation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+int TclReliabilityModelBuilder_addHessianEvaluator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_addMeritFunctionCheck(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_addReliabilityConvergenceCheck(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_addStepSizeRule(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -353,7 +355,7 @@ TclReliabilityBuilder::TclReliabilityBuilder(Domain &passedDomain, Tcl_Interp *i
   Tcl_CreateCommand(interp, "gradientEvaluator",TclReliabilityModelBuilder_addGradientEvaluator,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "stepSizeRule",TclReliabilityModelBuilder_addStepSizeRule,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "searchDirection",	TclReliabilityModelBuilder_addSearchDirection,(ClientData)NULL, NULL);
-  Tcl_CreateCommand(interp, "hessianApproximation",	TclReliabilityModelBuilder_addHessianApproximation,(ClientData)NULL, NULL);
+  Tcl_CreateCommand(interp, "hessianEvaluator",	TclReliabilityModelBuilder_addHessianEvaluator,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "meritFunctionCheck",	TclReliabilityModelBuilder_addMeritFunctionCheck,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "reliabilityConvergenceCheck",	TclReliabilityModelBuilder_addReliabilityConvergenceCheck,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "probabilityTransformation",	TclReliabilityModelBuilder_addProbabilityTransformation,(ClientData)NULL, NULL);
@@ -435,8 +437,8 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
     delete theStepSizeRule;
   if (theSearchDirection != 0)
     delete theSearchDirection;
-  if (theHessianApproximation != 0)
-    delete theHessianApproximation;
+  if (theHessianEvaluator != 0)
+    delete theHessianEvaluator;
   if (theMeritFunctionCheck != 0)
     delete theMeritFunctionCheck;
   if (theReliabilityConvergenceCheck != 0)
@@ -507,7 +509,7 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
   theGradientEvaluator = 0;
   theStepSizeRule = 0;
   theSearchDirection = 0;
-  theHessianApproximation = 0;
+  theHessianEvaluator = 0;
   theMeritFunctionCheck = 0;
   theReliabilityConvergenceCheck = 0;
   theProbabilityTransformation = 0;
@@ -562,7 +564,7 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
   Tcl_DeleteCommand(theInterp, "gradGEvaluator");
   Tcl_DeleteCommand(theInterp, "stepSizeRule");
   Tcl_DeleteCommand(theInterp, "searchDirection");
-  Tcl_DeleteCommand(theInterp, "hessianApproximation");
+  Tcl_DeleteCommand(theInterp, "hessianEvaluator");
   Tcl_DeleteCommand(theInterp, "meritFunctionCheck");
   Tcl_DeleteCommand(theInterp, "reliabilityConvergenceCheck");
   Tcl_DeleteCommand(theInterp, "probabilityTransformation");
@@ -2266,10 +2268,12 @@ TclReliabilityModelBuilder_addSearchDirection(ClientData clientData, Tcl_Interp 
 		theSearchDirection = theSQPtriplePurpose;
 
 		// Set default Hessian approximation in case user forgets
-		theHessianApproximation = theSQPtriplePurpose;
+        // KRM 5-19-2012 all these mixed classes are going to need to change, hessian needs to go in 
+        // hessian, merit function needs to go in merit function, etc.
+		//theHessianEvaluator = theSQPtriplePurpose;
 
 		// Set the Hessian approximation in the search direction
-		theSQPtriplePurpose->setHessianApproximation(theHessianApproximation);
+		//theSQPtriplePurpose->setHessianApproximation(theHessianEvaluator);
 
 	
 	}
@@ -2289,17 +2293,70 @@ TclReliabilityModelBuilder_addSearchDirection(ClientData clientData, Tcl_Interp 
 
 //////////////////////////////////////////////////////////////////
 int 
-TclReliabilityModelBuilder_addHessianApproximation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+TclReliabilityModelBuilder_addHessianEvaluator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
 	// In case this is a replacement
-	if (theHessianApproximation != 0) {
-		delete theHessianApproximation;
-		theHessianApproximation = 0;
+	if (theHessianEvaluator != 0) {
+		delete theHessianEvaluator;
+		theHessianEvaluator = 0;
+	}
+    
+    
+	// GET INPUT PARAMETER (string) AND CREATE THE OBJECT
+	if (strcmp(argv[1],"FiniteDifference") == 0) {
+        
+		double perturbationFactor = 1000.0;
+		bool doGradientCheck = false;
+        
+		// Check that the necessary ingredients are present
+		if (theFunctionEvaluator == 0 ) {
+			opserr << "Need FunctionEvaluator before a FiniteDifferenceHessian can be created" << endln;
+			return TCL_ERROR;
+		}
+        
+		// Possibly read perturbation factor
+		if (argc>2) {
+			int numExtras;
+			if (argc==3 || argc==4) {
+				numExtras = 1;
+			}
+			else if (argc==5) {
+				numExtras = 2;
+			}
+			else {
+				opserr << "ERROR: Wrong number of arguments to FiniteDifferenceGradient. " << endln;
+				return TCL_ERROR;
+			}
+            
+			int counter = 2;
+            
+			for (int i=1; i<=numExtras; i++) {
+                
+				if (strcmp(argv[counter],"-pert") == 0) {
+					counter ++;
+                    
+					if (Tcl_GetDouble(interp, argv[counter], &perturbationFactor) != TCL_OK) {
+						opserr << "ERROR: invalid input: perturbationFactor \n";
+						return TCL_ERROR;
+					}
+					counter++;
+				}
+				else if (strcmp(argv[counter],"-check") == 0) {
+					counter++;
+					doGradientCheck = true;
+				}
+				else {
+					opserr << "ERROR: Error in input to FiniteDifferenceGradient. " << endln;
+					return TCL_ERROR;
+				}
+			}
+		}
+        
+		theHessianEvaluator = new FiniteDifferenceHessian(theFunctionEvaluator, theReliabilityDomain, 
+                                                            theStructuralDomain);
 	}
 
-
-	// GET INPUT PARAMETER (string) AND CREATE THE OBJECT
-	if (strcmp(argv[1],"SQP_BFGS") == 0) {
+	else if (strcmp(argv[1],"SQP_BFGS") == 0) {
 
 		// Check that the SQP search direction is already created
 		if (theSQPtriplePurpose == 0 ) {
@@ -2307,25 +2364,28 @@ TclReliabilityModelBuilder_addHessianApproximation(ClientData clientData, Tcl_In
 			return TCL_ERROR;
 		}
 
-		theHessianApproximation = theSQPtriplePurpose;
+        // KRM 5-19-2012 all these mixed classes are going to need to change, hessian needs to go in 
+        // hessian, merit function needs to go in merit function, etc.
+		//theHessianEvaluator = theSQPtriplePurpose;
 
 		// Set the Hessian approximation in the search direction
 		// (this needs to be changed for generatlity; new method of search direction)
-		theSQPtriplePurpose->setHessianApproximation(theHessianApproximation);
+		//theSQPtriplePurpose->setHessianApproximation(theHessianEvaluator);
 
 	}
+    
 	else {
-		opserr << "ERROR: unrecognized type of HessianApproximation \n";
+		opserr << "ERROR: unrecognized type of HessianEvaluator \n";
 		return TCL_ERROR;
 	}
 
-	if (theHessianApproximation == 0) {
-		opserr << "ERROR: could not create theHessianApproximation \n";
+	if (theHessianEvaluator == 0) {
+		opserr << "ERROR: could not create theHessianEvaluator \n";
 		return TCL_ERROR;
 	}
+    
 	return TCL_OK;
 }
-
 
 
 
@@ -3182,7 +3242,7 @@ TclReliabilityModelBuilder_addFindDesignPointAlgorithm(ClientData clientData, Tc
 					theStepSizeRule,
 					theSearchDirection,
 					theProbabilityTransformation,
-					theHessianApproximation,
+					theHessianEvaluator,
 					theReliabilityConvergenceCheck,
 					printFlag, fileNamePrint);
 		
@@ -5102,18 +5162,7 @@ TclReliabilityModelBuilder_runMonteCarloResponseAnalysis(ClientData clientData, 
 		return TCL_ERROR;
   }	
 
-/* refer 
-			MonteCarloResponseAnalysis(
-						ReliabilityDomain *passedReliabilityDomain,
-						ProbabilityTransformation *passedProbabilityTransformation,
-						RandomNumberGenerator *passedRandomNumberGenerator,
-						int passedNumberOfSimulations,
-						int printFlag,
-						TCL_Char *outputFileName,
-						TCL_Char *tclFileToRunFileName)
-{
-  
-  */
+
 	// Declaration of input parameters
 	int numberOfSimulations	= 1000;
 	int printFlag			= 0;
@@ -5319,18 +5368,10 @@ TclReliabilityModelBuilder_updateParameterValue(ClientData clientData, Tcl_Inter
 
 }
 
-/*
-Hessian::Hessian(int pSize,ReliabilityDomain *passedReliabilityDomain, 
-				 ProbabilityTransformation *passedProbabilityTransformation,
-				 GFunEvaluator *passedGFunEvaluator,
-				 GradGEvaluator *passedGradGEvaluator)
-				 */
 
 ///////
 ///  Command:  computeHessian -FDM -file $filename1 -designPoint $fileName -perturbation $pTol
 //////
-
-
 int 
 TclReliabilityModelBuilder_computeHessian(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -5396,19 +5437,21 @@ TclReliabilityModelBuilder_computeHessian(ClientData clientData, Tcl_Interp *int
 		exit(-1);
 	}
 	
-
-	Hessian * theHessian = new Hessian(size,theReliabilityDomain,theProbabilityTransformation,theFunctionEvaluator,theGradientEvaluator,pTol);
+    // KRM 5-19-2012
+    // this needs to be implemented properly using the reliability base classes (FunctionEvaluator, 
+    // GradientEvaluator, HessianEvaluator, etc.)
+	//Hessian * theHessian = new Hessian(size,theReliabilityDomain,theProbabilityTransformation,theFunctionEvaluator,theGradientEvaluator,pTol);
  
 	if (FDM) { 
-		theHessian->formReducedHessian(designPoint);
+		//theHessian->formReducedHessian(designPoint);
 		
 		
-		Matrix hessian=	theHessian->getHessianApproximation();
+		//Matrix hessian=	theHessian->getHessianApproximation();
 
 //		resultsOutputFile <<"Hessian in U space: \n";
 		for (int i=0; i<size; i++){
 			for (int j=0; j<size; j++){
-				resultsOutputFile <<hessian(i,j)<<"   ";
+				//resultsOutputFile <<hessian(i,j)<<"   ";
 			}
 			resultsOutputFile <<"\n";
 		}
@@ -5801,18 +5844,6 @@ TclReliabilityModelBuilder_transformUtoX(ClientData clientData, Tcl_Interp *inte
 // command: runDP_RSM_SimTimeInvariantAnalysis -designPt dp.out  -output results.out  -ndir $n <-experimentalPointRule Uniform -gridInfo {-1  minY  maxY nPts 0  minY  maxY nPts0 1 minX1  maxX1 nPts1 2 minX2  maxX2 nPts2 ...}> 
 //  -saveHessian hession.out <-surfaceDesign UnivariateDecomposition -simulation ImportanceSampling -tarCOV 0.1 -numSimulation 100000>
 
-
-/*ReliabilityDomain *passedReliabilityDomain,
-					GFunEvaluator *passedGFunEvaluator,
-					ProbabilityTransformation *passedProbabilityTransformation,
-					char *passedOutputFileName,
-					GradGEvaluator * passedGradGEvaluator, Vector * pDesignPt, int numAxis, 
-					char * typeExpPtRule,Tcl_Interp *passedTclInterp, 
-					Matrix * passedHessian, char * passedHessianFile, char * typeSurfaceDesign, 
-					char * typeRespSurfaceSimulation, Vector * gridInfo,
-					RandomNumberGenerator * pRandomNumberGenerator,
-					double pTargetCOV,
-					int pNumberOfSimulations*/
 int 
 TclReliabilityModelBuilder_runDP_RSM_SimTimeInvariantAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
@@ -6041,7 +6072,6 @@ TclReliabilityModelBuilder_runDP_RSM_SimTimeInvariantAnalysis(ClientData clientD
 
 // command: runDP_RSM_SimTimeVariantAnalysis -designPt dp.out  -output results.out  -ndir $n <-experimentalPointRule Uniform -gridInfo {-1  minY  maxY nPts 0  minY  maxY nPts0 1 minX1  maxX1 nPts1 ..}> 
 //  -saveHessian hession.out <-surfaceDesign UnivariateDecomposition -simulation ImportanceSampling -tarCOV 0.1 -numSimulation 100000 -littleDt dt -ImpulseInterval Dt>
-
 
 int 
 TclReliabilityModelBuilder_runDP_RSM_SimTimeVariantAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -6281,21 +6311,6 @@ TclReliabilityModelBuilder_runDP_RSM_SimTimeVariantAnalysis(ClientData clientDat
 					numberOfSimulations,
 					littleDt,
 					ImpulseInterval);
-
-
-
-				/*  ReliabilityDomain *passedReliabilityDomain,
-					GFunEvaluator *passedGFunEvaluator,
-					ProbabilityTransformation *passedProbabilityTransformation,
-					char *passedOutputFileName,
-					GradGEvaluator * passedGradGEvaluator, Vector * pDesignPt, int numAxis, 
-					char * typeExpPtRule,Tcl_Interp *passedTclInterp, 
-					Matrix * passedHessian, char * passedHessianFile, char * typeSurfaceDesign, 
-					char * typeRespSurfaceSimulation, Vector * gridInfo,
-					RandomNumberGenerator * pRandomNumberGenerator,
-					double pTargetCOV,
-					int pNumberOfSimulations, double pLittleDt,
-					double ImpulseInterval*/
 
 	if (passedHessian !=0) delete passedHessian;
 	if (hessianFileName !=0) delete hessianFileName;
