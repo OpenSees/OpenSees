@@ -10,7 +10,7 @@ all:
 	     @$(CD) $(FE)/reliability/analysis/designPoint; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/direction; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/gradient; $(MAKE);
-	     @$(CD) $(FE)/reliability/analysis/hessianApproximation; $(MAKE);
+	     @$(CD) $(FE)/reliability/analysis/hessian; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/meritFunction; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/misc; $(MAKE);
 	     @$(CD) $(FE)/reliability/analysis/randomNumber; $(MAKE);
@@ -36,7 +36,7 @@ wipe: spotless
 	     @$(CD) $(FE)/reliability/analysis/designPoint; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/direction; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/gradient; $(MAKE) wipe;
-	     @$(CD) $(FE)/reliability/analysis/hessianApproximation; $(MAKE) wipe;
+	     @$(CD) $(FE)/reliability/analysis/hessian; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/meritFunction; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/misc; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/analysis/randomNumber; $(MAKE) wipe;

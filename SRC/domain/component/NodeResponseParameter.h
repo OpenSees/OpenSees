@@ -48,7 +48,6 @@ class NodeResponseParameter : public Parameter
   virtual double getValue(void);
   virtual void setValue(double newValue);
 
-  // To make it compile -- MHS 9/28/2011
   virtual bool isImplicit(void);
   virtual double getSensitivity(int index);
   virtual double getPerturbation(void);

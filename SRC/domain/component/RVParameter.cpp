@@ -107,7 +107,7 @@ RVParameter::getSensitivity(int index)
 double
 RVParameter::getPerturbation(void)
 {
-  return 0.005*myRV->getStdv();
+  return 0.001*myRV->getStdv();
 }
 
 int 

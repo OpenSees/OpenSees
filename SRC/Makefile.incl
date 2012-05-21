@@ -154,9 +154,6 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/element/nonlinearBeamColumn/matrixutil \
                -I$(FE)/element/nonlinearBeamColumn/quadrule \
                -I$(FE)/coordTransformation \
-               -I$(FE)/optimization \
-               -I$(FE)/optimization/domain \
-               -I$(FE)/optimization/domain/component \
                -I$(FE)/reliability/analysis \
                -I$(FE)/reliability/analysis/analysis \
                -I$(FE)/reliability/analysis/analysis/system \
@@ -166,7 +163,7 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/reliability/analysis/direction \
                -I$(FE)/reliability/analysis/gFunction \
                -I$(FE)/reliability/analysis/gradient \
-               -I$(FE)/reliability/analysis/hessianApproximation \
+               -I$(FE)/reliability/analysis/hessian \
                -I$(FE)/reliability/analysis/meritFunction \
                -I$(FE)/reliability/analysis/misc \
                -I$(FE)/reliability/analysis/randomNumber \
@@ -183,8 +180,6 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/reliability/domain/spectrum \
                -I$(FE)/reliability/domain/functionEvaluator \
                -I$(FE)/reliability/domain/performanceFunction \
-               -I$(FE)/reliability/optimization \
-               -I$(FE)/reliability/analysis/telm \
                -I$(FE)/optimization/tcl \
                -I$(FE)/optimization/domain \
                -I$(FE)/optimization/domain/component \
