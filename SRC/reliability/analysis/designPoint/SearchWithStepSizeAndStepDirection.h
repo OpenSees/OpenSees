@@ -70,7 +70,8 @@ public:
 					int printFlag,
 					char *fileNamePrint);
 	~SearchWithStepSizeAndStepDirection();
-	
+    
+    int gradientStandardNormal(double gFunctionValue);
 	int findDesignPoint();
 
 	const Vector &get_x();
@@ -78,8 +79,7 @@ public:
 	const Vector &get_alpha();
 	const Vector &get_gamma();
 	int getNumberOfSteps();
-	const Vector &getSecondLast_u();
-	const Vector &getSecondLast_alpha();
+    double getFirstCurvature();
 	const Vector &getLastSearchDirection();
 	double getFirstGFunValue();
 	double getLastGFunValue();
@@ -117,6 +117,8 @@ private:
 	Vector *uSecondLast;
 	Vector *alphaSecondLast;
 	Vector *searchDirection;
+    Matrix *Jux;
+    Matrix *Jxu;
 	
 	int steps;
 	double Gfirst;
@@ -124,6 +126,7 @@ private:
 	int printFlag;
 	char fileNamePrint[256];
 	int numberOfEvaluations;
+    double firstCurvature;
 };
 
 #endif

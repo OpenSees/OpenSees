@@ -50,7 +50,7 @@ public:
 				 Domain *passedOpenSeesDomain);
 	~FiniteDifferenceHessian();
 	
-	int		computeHessian(double gFunValue);
+	int		computeHessian();
 	Matrix	getHessian();
 	
 protected:

@@ -102,6 +102,7 @@ using std::setiosflags;
 #include <FindCurvatures.h>
 #include <FirstPrincipalCurvature.h>
 #include <CurvaturesBySearchAlgorithm.h>
+#include <CurvatureFitting.h>
 #include <ReliabilityConvergenceCheck.h>
 #include <StandardReliabilityConvergenceCheck.h>
 #include <OptimalityConditionReliabilityConvergenceCheck.h>
@@ -3078,24 +3079,20 @@ TclReliabilityModelBuilder_addFindCurvatures(ClientData clientData, Tcl_Interp *
 		delete theFindCurvatures;
 		theFindCurvatures = 0;
 	}
+    
+    if (theFunctionEvaluator == 0 ) {
+        opserr << "Need theFunctionEvaluator before a findCurvatures can be created" << endln;
+        return TCL_ERROR;
+    }
 
-
-	// GET INPUT PARAMETER (string) AND CREATE THE OBJECT   // modified by Quan Gu July 2006
+	// GET INPUT PARAMETER (string) AND CREATE THE OBJECT
 	if (strcmp(argv[1],"firstPrincipal") == 0) {
-
-		theFindCurvatures = new FirstPrincipalCurvature();
-		if (argc>=3){
-			if (strcmp(argv[2],"-exe") == 0)
-				theFindCurvatures->computeCurvatures(theReliabilityDomain);
-		}
+        // KRM 5-22-2012
+        // combining former firstPrincipal and bySearchAlgorithm because they are doing same thing
+		theFindCurvatures = new FirstPrincipalCurvature(theReliabilityDomain, theFunctionEvaluator);
+		
 	}
 	else if (strcmp(argv[1],"bySearchAlgorithm") == 0) {
-
-		// Check that the necessary ingredients are present
-		if (theFindDesignPointAlgorithm == 0 ) {
-			opserr << "Need theFindDesignPointAlgorithm before a CurvaturesBySearchAlgorithm can be created" << endln;
-			return TCL_ERROR;
-		}
 
 		int numberOfCurvatures;
 
@@ -3105,8 +3102,25 @@ TclReliabilityModelBuilder_addFindCurvatures(ClientData clientData, Tcl_Interp *
 			return TCL_ERROR;
 		}
 
-		theFindCurvatures = new CurvaturesBySearchAlgorithm(numberOfCurvatures,theFindDesignPointAlgorithm);
+		theFindCurvatures = new CurvaturesBySearchAlgorithm(theReliabilityDomain, theFunctionEvaluator,
+                                                            numberOfCurvatures);
 	}
+    else if (strcmp(argv[1],"curvatureFitting") == 0) {
+        // needs Hessian
+        if (theHessianEvaluator == 0 ) {
+            opserr << "Need theHessianEvaluator before curvatureFitting can be created" << endln;
+            return TCL_ERROR;
+        }
+        
+        // needs probability transformation
+        if (theProbabilityTransformation == 0 ) {
+            opserr << "Need theProbabilityTransformation before curvatureFitting can be created" << endln;
+            return TCL_ERROR;
+        }
+        
+		theFindCurvatures = new CurvatureFitting(theReliabilityDomain, theStructuralDomain, theFunctionEvaluator,
+                                                 theHessianEvaluator, theProbabilityTransformation);
+    }
 	else {
 		opserr << "ERROR: unrecognized type of FindCurvatures \n";
 		return TCL_ERROR;
@@ -3812,16 +3826,15 @@ TclReliabilityModelBuilder_runSORMAnalysis(ClientData clientData, Tcl_Interp *in
 		theSORMAnalysis = 0;
 	}
 
-
 	// Do input check
 	char theCommand[15] = "inputCheck";
 	Tcl_Eval( interp, theCommand );
-
 
 	if (theFindCurvatures == 0 ) {
 		opserr << "Need theFindCurvatures before a SORMAnalysis can be created" << endln;
 		return TCL_ERROR;
 	}
+    
 	if (theFORMAnalysis == 0 ) {
 		opserr << "ERROR: The current SORM implementation requires a FORM analysis" << endln
 			<< " to have been executed previously in the same session." << endln;
@@ -3834,7 +3847,8 @@ TclReliabilityModelBuilder_runSORMAnalysis(ClientData clientData, Tcl_Interp *in
 	}
 
 	theSORMAnalysis 
-		= new SORMAnalysis(theReliabilityDomain, theFindCurvatures , argv[1]);
+		= new SORMAnalysis(theReliabilityDomain, theFunctionEvaluator,
+                           theFORMAnalysis, theFindCurvatures , argv[1]);
 
 	if (theSORMAnalysis == 0) {
 		opserr << "ERROR: could not create theSORMAnalysis \n";

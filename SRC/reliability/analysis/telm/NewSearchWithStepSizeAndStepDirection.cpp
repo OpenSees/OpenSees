@@ -498,7 +498,7 @@ NewSearchWithStepSizeAndStepDirection::findDesignPoint()
 			//theHessianApproximation->updateHessianApproximation(*u_old,gFunctionValue_old,
 			//		*gradientInStandardNormalSpace_old,stepSize,*searchDirection,
             //        gFunctionValue,*gradientInStandardNormalSpace);
-            theHessianEvaluator->computeHessian(gFunctionValue_old);
+            theHessianEvaluator->computeHessian();
 		}
 
 

@@ -1,7 +1,7 @@
 include ../../../../Makefile.def
 
 OBJS       = 	CurvaturesBySearchAlgorithm.o  FindCurvatures.o \
-		FirstPrincipalCurvature.o
+		FirstPrincipalCurvature.o CurvatureFitting.o
 
 
 # Compilation control

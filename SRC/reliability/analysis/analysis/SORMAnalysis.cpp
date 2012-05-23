@@ -32,7 +32,9 @@
 //
 
 #include <SORMAnalysis.h>
+#include <FORMAnalysis.h>
 #include <ReliabilityDomain.h>
+#include <FunctionEvaluator.h>
 #include <ReliabilityAnalysis.h>
 #include <FindCurvatures.h>
 #include <LimitStateFunction.h>
@@ -51,12 +53,16 @@ using std::setprecision;
 using std::setiosflags;
 
 
-SORMAnalysis::SORMAnalysis(	ReliabilityDomain *passedReliabilityDomain,
-							FindCurvatures *passedCurvaturesAlgorithm,
-						    TCL_Char *passedFileName)
+SORMAnalysis::SORMAnalysis(ReliabilityDomain *passedReliabilityDomain,
+                           FunctionEvaluator *passedEvaluator,
+                           FORMAnalysis *passedFORM,
+                           FindCurvatures *passedCurvaturesAlgorithm,
+                           TCL_Char *passedFileName)
 :ReliabilityAnalysis()
 {
 	theReliabilityDomain = passedReliabilityDomain;
+    theFunctionEvaluator = passedEvaluator;
+    theFORManalysis = passedFORM;
 	theCurvaturesAlgorithm = passedCurvaturesAlgorithm;
 	strcpy(fileName,passedFileName);
 }
@@ -77,20 +83,16 @@ SORMAnalysis::analyze(void)
 
 
 	// Declare variables used in this method
-	int numberOfCurvatures;
-	double beta;
-	double pf1;
-	double psi_beta;
-	double product;
-	int i;
-	double pf2Breitung;
-	double betaBreitung;
+	int numberOfCurvatures = 0;
+	double beta, pf1;
+	double psi_beta, product;
+	double pf2Breitung, betaBreitung;
 	static NormalRV aStdNormRV(1,0.0,1.0);
 
 
 	// Number of limit-state functions
 	int numLsf = theReliabilityDomain->getNumberOfLimitStateFunctions();
-
+    int numRV = theReliabilityDomain->getNumberOfRandomVariables();
 
 	// Open output file
 	ofstream outputFile( fileName, ios::out );
@@ -99,37 +101,33 @@ SORMAnalysis::analyze(void)
 	LimitStateFunction *theLimitStateFunction;
 
 	// Loop over number of limit-state functions
-	//for (int lsf=1; lsf<=numLsf; lsf++ ) {
-	while ((theLimitStateFunction = lsfIter()) != 0) {
-
-	  int lsf = theLimitStateFunction->getTag();
+	//while ((theLimitStateFunction = lsfIter()) != 0) {
+    for (int lsf = 0; lsf < numLsf; lsf++ ) {
+        theLimitStateFunction = theReliabilityDomain->getLimitStateFunctionPtrFromIndex(lsf);
+		int lsfTag = theLimitStateFunction->getTag();
+        
 		// Inform the user which limit-state function is being evaluated
-		opserr << "Limit-state function number: " << lsf << endln;
-
+		opserr << "Limit-state function number: " << lsfTag << endln;
 
 		// Set tag of "active" limit-state function
-		theReliabilityDomain->setTagOfActiveLimitStateFunction(lsf);
+		theReliabilityDomain->setTagOfActiveLimitStateFunction(lsfTag);
 
 		// Compute curvature(s)
-		if (theCurvaturesAlgorithm->computeCurvatures(theReliabilityDomain) < 0) {
+		if (theCurvaturesAlgorithm->computeCurvatures() < 0) {
 			opserr << "SORMAnalysis::analyze() - failed while finding " << endln
 				<< " curvatures for limit-state function number " << lsf << "." << endln;
 			return -1;
 		}
 
-
 		// Get results
 		const Vector &curvatures = theCurvaturesAlgorithm->getCurvatures();
 		numberOfCurvatures = curvatures.Size();
+        opserr << "SORM curvatures: " << curvatures << endln;
 			
-
-		// Get FORM results from the limit-state function
-		// We should be using recorders -- MHS 10/7/2011
-		//beta = theLimitStateFunction->getFORM_beta();
-		beta = 0.0;
-		//pf1 = theLimitStateFunction->getFORM_pf1();
-		pf1 = 0.5;
-
+		// Get FORM results from the function evaluator
+        beta = theFunctionEvaluator->getResponseVariable("betaFORM", lsfTag);
+		pf1 = 1.0 - aStdNormRV.getCDFvalue(beta);
+        
 
 		// Compute failure probability by "Breitung"
 		double denominator = aStdNormRV.getCDFvalue(-beta);
@@ -140,9 +138,8 @@ SORMAnalysis::analyze(void)
 		}
 		psi_beta = aStdNormRV.getPDFvalue(beta)/denominator;
 		product = 1.0;
-		for (i=0; i<numberOfCurvatures; i++ ) {
+		for (int i = 0; i < numberOfCurvatures; i++ )
 			product = product / sqrt(1.0+psi_beta*curvatures(i));
-		}
 		pf2Breitung = pf1 * product;
 
 
@@ -150,19 +147,15 @@ SORMAnalysis::analyze(void)
 		betaBreitung = -aStdNormRV.getInverseCDFvalue(pf2Breitung);
 
 
-		// Put results into reliability domain
-		// We should be using recorders -- MHS 10/7/2011
-		/*
-		theLimitStateFunction->setSORM_numCurvatures(numberOfCurvatures);
-		theLimitStateFunction->setSORM_us_pf2_breitung(pf2Breitung);
-		theLimitStateFunction->setSORM_us_beta_breitung(betaBreitung);
-		*/
+		// store key results using function evaluator
+        theFunctionEvaluator->setResponseVariable("betaSORM", lsfTag, betaBreitung);
+        theFunctionEvaluator->setResponseVariable("pfSORM", lsfTag, pf2Breitung);
 
 
 		// Print SORM results to the output file
 		outputFile << "#######################################################################" << endln;
 		outputFile << "#  SORM ANALYSIS RESULTS, LIMIT-STATE FUNCTION NUMBER "
-			<<setiosflags(ios::left)<<setprecision(1)<<setw(4)<<lsf <<"            #" << endln;
+			<<setiosflags(ios::left)<<setprecision(1)<<setw(4)<<lsfTag <<"            #" << endln;
 		outputFile << "#  (Curvatures found from search algorithm.)                          #" << endln;
 		outputFile << "#                                                                     #" << endln;
 		outputFile << "#  Number of principal curvatures used: ............... " 

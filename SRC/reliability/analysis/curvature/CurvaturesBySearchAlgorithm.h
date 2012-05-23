@@ -35,28 +35,32 @@
 #define CurvaturesBySearchAlgorithm_h
 
 #include <FindCurvatures.h>
-#include <FindDesignPointAlgorithm.h>
 #include <Vector.h>
+#include <FunctionEvaluator.h>
 #include <ReliabilityDomain.h>
 
 class CurvaturesBySearchAlgorithm : public FindCurvatures
 {
 
 public:
-  CurvaturesBySearchAlgorithm(int numberOfCurvatures, FindDesignPointAlgorithm *theFindDesignPointAlgorithm);
+  CurvaturesBySearchAlgorithm(ReliabilityDomain *passedReliabilityDomain,
+                              FunctionEvaluator *passedGFunEvaluator,
+                              int numberOfCurvatures);
   ~CurvaturesBySearchAlgorithm();
   
-  int		computeCurvatures(ReliabilityDomain *theReliabilityDomain);
+  int		computeCurvatures();
   const Vector	&getCurvatures();
   const Vector	&getPrincipalAxes();
   
 protected:
 
 private:	
-  Vector curvatures;
-  Vector principalAxes;
-  int numberOfCurvatures;
-  FindDesignPointAlgorithm *theFindDesignPointAlgorithm;
+    Vector curvatures;
+    Vector principalAxes;
+    int numberOfCurvatures;
+    
+    ReliabilityDomain *theReliabilityDomain;
+    FunctionEvaluator *theFunctionEvaluator;
 };
 
 #endif

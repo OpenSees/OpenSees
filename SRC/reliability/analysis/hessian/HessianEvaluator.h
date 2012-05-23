@@ -48,7 +48,7 @@ class HessianEvaluator
   virtual ~HessianEvaluator();
   
   // Methods provided by the sub-classes
-  virtual int computeHessian(double gFunValue) = 0;
+  virtual int computeHessian(void) = 0;
   virtual Matrix getHessian(void) = 0;
     
  protected:

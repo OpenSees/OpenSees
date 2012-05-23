@@ -33,21 +33,23 @@
 #ifndef FindCurvatures_h
 #define FindCurvatures_h
 
-#include <ReliabilityDomain.h>
 #include <Vector.h>
+#include <Matrix.h>
 
 class FindCurvatures
 {
 
 public:
-  FindCurvatures();
-  virtual ~FindCurvatures();
+    FindCurvatures();
+    virtual ~FindCurvatures();
+
+    virtual int		computeCurvatures() =0;
+    virtual const Vector	&getCurvatures() =0;
+    virtual const Vector	&getPrincipalAxes() =0;
+    
+    int gramSchmidt(const Vector &first, Matrix &R);
   
-  virtual int		computeCurvatures(ReliabilityDomain *theReliabilityDomain) =0;
-  virtual const Vector	&getCurvatures() =0;
-  virtual const Vector	&getPrincipalAxes() =0;
-  
- protected:
+protected:
 
 private:
 

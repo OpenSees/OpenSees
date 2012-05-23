@@ -36,24 +36,29 @@
 
 #include <FindCurvatures.h>
 #include <Vector.h>
+#include <FunctionEvaluator.h>
 #include <ReliabilityDomain.h>
 
 class FirstPrincipalCurvature : public FindCurvatures
 {
 
 public:
-  FirstPrincipalCurvature();
-  ~FirstPrincipalCurvature();
+    FirstPrincipalCurvature(ReliabilityDomain *passedReliabilityDomain,
+                            FunctionEvaluator *passedGFunEvaluator);
+    ~FirstPrincipalCurvature();
   
-  int		computeCurvatures(ReliabilityDomain *theReliabilityDomain);
-  const Vector	&getCurvatures();
-  const Vector	&getPrincipalAxes();
+    int		computeCurvatures();
+    const Vector	&getCurvatures();
+    const Vector	&getPrincipalAxes();
 
 protected:
 
 private:	
-  Vector curvatures;
-  Vector principalAxes;
+    ReliabilityDomain *theReliabilityDomain;
+    FunctionEvaluator *theFunctionEvaluator;
+    
+    Vector curvatures;
+    Vector principalAxes;
 
 };
 

@@ -36,6 +36,8 @@
 
 #include <ReliabilityAnalysis.h>
 #include <ReliabilityDomain.h>
+#include <FunctionEvaluator.h>
+#include <FORMAnalysis.h>
 #include <FindCurvatures.h>
 
 #include <fstream>
@@ -45,9 +47,11 @@ class SORMAnalysis : public ReliabilityAnalysis
 {
 
 public:
-	SORMAnalysis(	ReliabilityDomain *passedReliabilityDomain,
-					FindCurvatures *passedCurvaturesAlgorithm,
-					TCL_Char *fileName);
+	SORMAnalysis(ReliabilityDomain *passedReliabilityDomain,
+                 FunctionEvaluator *passedEvaluator,
+                 FORMAnalysis *passedFORM,
+                 FindCurvatures *passedCurvaturesAlgorithm,
+                 TCL_Char *fileName);
 	~SORMAnalysis();
 
 	int analyze(void);
@@ -56,6 +60,8 @@ protected:
 
 private:
 	ReliabilityDomain *theReliabilityDomain;
+    FunctionEvaluator *theFunctionEvaluator;
+    FORMAnalysis *theFORManalysis;
 	FindCurvatures *theCurvaturesAlgorithm;
 	char fileName[256];
 };

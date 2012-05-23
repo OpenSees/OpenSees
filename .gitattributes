@@ -3179,6 +3179,8 @@ SRC/reliability/analysis/convergenceCheck/ReliabilityConvergenceCheck.cpp -text
 SRC/reliability/analysis/convergenceCheck/ReliabilityConvergenceCheck.h -text
 SRC/reliability/analysis/convergenceCheck/StandardReliabilityConvergenceCheck.cpp -text
 SRC/reliability/analysis/convergenceCheck/StandardReliabilityConvergenceCheck.h -text
+SRC/reliability/analysis/curvature/CurvatureFitting.cpp -text
+SRC/reliability/analysis/curvature/CurvatureFitting.h -text
 SRC/reliability/analysis/curvature/CurvaturesBySearchAlgorithm.cpp -text
 SRC/reliability/analysis/curvature/CurvaturesBySearchAlgorithm.h -text
 SRC/reliability/analysis/curvature/FindCurvatures.cpp -text

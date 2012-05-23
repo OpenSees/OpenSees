@@ -90,6 +90,7 @@ SearchWithStepSizeAndStepDirection::SearchWithStepSizeAndStepDirection(
 		strcpy(fileNamePrint,pFileNamePrint);
 	}
 	
+    // size objects
 	int nrv = theReliabilityDomain->getNumberOfRandomVariables();
 	x = new Vector(nrv);
 	u = new Vector(nrv);
@@ -99,6 +100,8 @@ SearchWithStepSizeAndStepDirection::SearchWithStepSizeAndStepDirection(
 	uSecondLast = new Vector(nrv);
 	alphaSecondLast = new Vector(nrv);
 	searchDirection = new Vector(nrv);
+    Jux = new Matrix(nrv,nrv);
+    Jxu = new Matrix(nrv,nrv);
 }
 
 
@@ -121,34 +124,94 @@ SearchWithStepSizeAndStepDirection::~SearchWithStepSizeAndStepDirection()
 		delete alphaSecondLast;
     if (searchDirection != 0)
 		delete searchDirection;
-		
+    if (Jux != 0)
+        delete Jux;
+    if (Jxu != 0)
+        delete Jxu;
 }
 
 
+int
+SearchWithStepSizeAndStepDirection::gradientStandardNormal(double gFunctionValue)
+{
+    // constants
+    int numberOfRandomVariables = theReliabilityDomain->getNumberOfRandomVariables();
+    int numberOfParameters = theOpenSeesDomain->getNumParameters();
+    int result = 0;
+    double normOfGradient = 0;
+    
+    // temporary storage
+    Vector gradientOfgFunction(numberOfRandomVariables);
+    Vector temp_grad(numberOfParameters);
+    
+    
+    // Gradient in original space (make sure gFunctionValue is current)
+    result = theGradientEvaluator->computeGradient(gFunctionValue);
+    if (result < 0) {
+        opserr << "SearchWithStepSizeAndStepDirection::gradientStandardNormal() - " << endln
+               << " could not compute gradients of the limit-state function. " << endln;
+        return -1;
+    }
+    temp_grad = theGradientEvaluator->getGradient();
+    
+    // map gradient from all parameters to just RVs
+    for (int j = 0; j < numberOfRandomVariables; j++) {
+        int param_indx = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
+        gradientOfgFunction(j) = temp_grad(param_indx);
+    }
+    
+    //opserr << "x = " << *x << "g = " << gFunctionValue << endln;
+    //opserr << "dg/dx = " << gradientOfgFunction << endln;
+    
+    // Get Jacobian x-space to u-space
+    result = theProbabilityTransformation->getJacobian_x_to_u(*Jxu);
+    //opserr << *Jxu;
+    if (result < 0) {
+        opserr << "SearchWithStepSizeAndStepDirection::gradientStandardNormal() - " << endln
+               << " could not transform Jacobian from x to u." << endln;
+        return -1;
+    }
+    
+    // Gradient in standard normal space
+    gradientInStandardNormalSpace->addMatrixTransposeVector(0.0, *Jxu, gradientOfgFunction, 1.0);
+    
+    // Compute the norm of the gradient in standard normal space
+    normOfGradient = gradientInStandardNormalSpace->Norm();
+    
+    // Check that the norm is not zero
+    if (normOfGradient == 0.0) {
+        opserr << "SearchWithStepSizeAndStepDirection::gradientStandardNormal() - " << endln
+               << " the norm of the gradient is zero. " << endln;
+        return -1;
+    }
+    
+    // Compute alpha-vector
+    alpha->addVector(0.0, *gradientInStandardNormalSpace, -1.0/normOfGradient );
+    
+    return 0;
+}
+
+    
 int
 SearchWithStepSizeAndStepDirection::findDesignPoint()
 {
     // Declaration of data used in the algorithm
     int numberOfRandomVariables = theReliabilityDomain->getNumberOfRandomVariables();
-    int numberOfParameters = theOpenSeesDomain->getNumParameters();
-    int result;
+    int result = 0;
     int evaluationInStepSize = 0;
 
     double gFunctionValue = 1.0;
     double gFunctionValue_old = 1.0;
-    double normOfGradient = 0.0;
     double stepSize = 1.0;
 
     Vector u_old(numberOfRandomVariables);
     Vector uNew(numberOfRandomVariables);	
-    Vector gradientOfgFunction(numberOfRandomVariables);
-    Vector gradientInStandardNormalSpace_old(numberOfRandomVariables);
-
-    Matrix Jxu(numberOfRandomVariables, numberOfRandomVariables);
-    Matrix Jux(numberOfRandomVariables, numberOfRandomVariables);
 
     theFunctionEvaluator->initializeNumberOfEvaluations();
     theStepSizeRule->initialize();
+    
+    Jux->Zero();
+    Jxu->Zero();
     
     // get starting x values from parameter directly
     for (int j = 0; j < numberOfRandomVariables; j++) {
@@ -211,58 +274,18 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
             theReliabilityConvergenceCheck->setScaleValue(gFunctionValue);
         }
 
-        // Gradient in original space (make sure gFunctionValue is current)
-        result = theGradientEvaluator->computeGradient(gFunctionValue);
+
+        // Compute gradient in standard normal variable space
+        result = this->gradientStandardNormal(gFunctionValue);
         if (result < 0) {
             opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-                << " could not compute gradients of the limit-state function. " << endln;
-            return -1;
-        }
-        Vector temp_grad(numberOfParameters);
-        temp_grad = theGradientEvaluator->getGradient();
-        
-
-        // map gradient from all parameters to just RVs
-        for (int j = 0; j < numberOfRandomVariables; j++) {
-            int param_indx = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
-            gradientOfgFunction(j) = temp_grad(param_indx);
-        }
-        
-        //opserr << "x = " << *x << "g = " << gFunctionValue << endln;
-        //opserr << "dg/dx = " << gradientOfgFunction << endln;
-        
-        // Get Jacobian x-space to u-space
-        result = theProbabilityTransformation->getJacobian_x_to_u(Jxu);
-        //opserr << Jxu;
-        if (result < 0) {
-            opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-                << " could not transform Jacobian from x to u." << endln;
-            return -1;
-        }
-    
-        // Gradient in standard normal space
-        gradientInStandardNormalSpace_old = *gradientInStandardNormalSpace;
-        //gradientInStandardNormalSpace = jacobian_x_u ^ gradientOfgFunction;
-        //gradientInStandardNormalSpace.addMatrixTransposeVector(0.0, jacobian_x_u, gradientOfgFunction, 1.0);
-        gradientInStandardNormalSpace->addMatrixTransposeVector(0.0, Jxu, gradientOfgFunction, 1.0);
-    
-
-        // Compute the norm of the gradient in standard normal space
-        normOfGradient = gradientInStandardNormalSpace->Norm();
-
-        // Check that the norm is not zero
-        if (normOfGradient == 0.0) {
-            opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
-                << " the norm of the gradient is zero. " << endln;
+                   << " could not compute gradient in standard normal space." << endln;
             return -1;
         }
 
-        // Compute alpha-vector
-        alpha->addVector(0.0, *gradientInStandardNormalSpace, -1.0/normOfGradient );
-
-        
         // Check convergence
         result = theReliabilityConvergenceCheck->check(*u,gFunctionValue,*gradientInStandardNormalSpace);
+        
     
         if (result > 0 || steps == maxNumberOfIterations)  {
             // Inform the user of the happy news!
@@ -270,25 +293,22 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 
             // Compute the gamma vector
             // Get Jacobian u-space to x-space
-            result = theProbabilityTransformation->getJacobian_u_to_x(*u, Jux);
+            result = theProbabilityTransformation->getJacobian_u_to_x(*u, *Jux);
             if (result < 0) {
                 opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
                     << " could not transform from u to x." << endln;
                 return -1;
             }
 
-            //Vector tempProduct = jacobian_u_x ^ alpha;
             Vector tempProduct(numberOfRandomVariables);
-            //tempProduct.addMatrixTransposeVector(0.0, jacobian_u_x, alpha, 1.0);
-            tempProduct.addMatrixTransposeVector(0.0, Jux, *alpha, 1.0);
+            tempProduct.addMatrixTransposeVector(0.0, *Jux, *alpha, 1.0);
             
             // Only diagonal elements of (J_xu*J_xu^T) are used
             for (int j = 0; j < numberOfRandomVariables; j++) {
                 double sum = 0.0;
                 double jk;
                 for (int k = 0; k < numberOfRandomVariables; k++) {
-                    //jk = jacobian_x_u(j,k);
-                    jk = Jxu(j,k);
+                    jk = (*Jxu)(j,k);
                     sum += jk*jk;
                 }
                 (*gamma)(j) = sqrt(sum) * tempProduct(j);
@@ -303,7 +323,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
             if (  (theHessianEvaluator != 0) && (steps != 1)  ) {
                 //theHessianEvaluator->computeHessian(u_old,gFunctionValue_old,gradientInStandardNormalSpace_old,
                 //                            stepSize,*searchDirection,gFunctionValue,*gradientInStandardNormalSpace);
-                result = theHessianEvaluator->computeHessian(gFunctionValue);
+                result = theHessianEvaluator->computeHessian();
                 if (result < 0) {
                     opserr << "SearchWithStepSizeAndStepDirection::doTheActualSearch() - " << endln
                         << " could not compute hessian of the limit-state function. " << endln;
@@ -350,6 +370,20 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
                 opserr << dBetadPar;
             }
             */
+            
+            // compute the first principal curvature here (ADK and De Stefano 1992)
+            // so we do not need to store or provide access to SecondLast variables
+            double signumProduct = *alphaSecondLast ^ *u;
+            signumProduct -= *alphaSecondLast ^ *uSecondLast;
+            double alphaProduct = *alphaSecondLast ^ *alpha;
+            
+            // Compute norm of the difference vector and compute curvature
+            Vector uDiff = *u - *uSecondLast;
+            firstCurvature = acos(alphaProduct) / uDiff.Norm();
+            if (signumProduct < 0)
+                firstCurvature *= -1.0;
+            
+            
             return 1;
         }
     
@@ -362,16 +396,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
 
         // Let user know that we have to take a new step
         if (printFlag != 0)
-            opserr << " STEP #" << steps <<": ";
-
-        // Update Hessian approximation, if any
-        if (  (theHessianEvaluator != 0) && (steps != 1)  ) {
-            //theHessianEvaluator->computeHessian(u_old,gFunctionValue_old,gradientInStandardNormalSpace_old,
-            //                            stepSize,*searchDirection,gFunctionValue,*gradientInStandardNormalSpace);
-            theHessianEvaluator->computeHessian(gFunctionValue);
-            opserr << theHessianEvaluator->getHessian() << endln;
-        }
-    
+            opserr << " STEP #" << steps <<": ";  
         
         // Determine search direction
         result = theSearchDirection->computeSearchDirection(steps,
@@ -430,7 +455,7 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
                 theParam->update( (*x)(j) );
             }
         }
-
+        
         
         // Increment the loop parameter
         steps++;
@@ -481,16 +506,10 @@ SearchWithStepSizeAndStepDirection::getNumberOfSteps()
 	return (steps-1);
 }
 
-const Vector&
-SearchWithStepSizeAndStepDirection::getSecondLast_u()
+double
+SearchWithStepSizeAndStepDirection::getFirstCurvature()
 {
-	return *uSecondLast;
-}
-
-const Vector&
-SearchWithStepSizeAndStepDirection::getSecondLast_alpha()
-{
-	return *alphaSecondLast;
+    return firstCurvature;
 }
 
 const Vector&

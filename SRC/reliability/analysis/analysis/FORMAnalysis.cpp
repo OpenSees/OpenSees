@@ -132,7 +132,7 @@ FORMAnalysis::analyze()
 			outputFile << "#  Results shown for last iteration of analysis                       #" << endln;
 		}
 
-		// Get results from the "find desingn point algorithm"
+		// Get results from the design point algorithm
 		const Vector &xStar = theFindDesignPointAlgorithm->get_x();
 		const Vector &uStar = theFindDesignPointAlgorithm->get_u();
 		const Vector &alpha = theFindDesignPointAlgorithm->get_alpha();
@@ -140,10 +140,8 @@ FORMAnalysis::analyze()
 		numberOfSteps		= theFindDesignPointAlgorithm->getNumberOfSteps();
 		Go					= theFindDesignPointAlgorithm->getFirstGFunValue();
 		Glast				= theFindDesignPointAlgorithm->getLastGFunValue();
-		//const Vector &uSecondLast = theFindDesignPointAlgorithm->getSecondLast_u();
-		//const Vector &alphaSecondLast = theFindDesignPointAlgorithm->getSecondLast_alpha();
-		//const Vector &lastSearchDirection = theFindDesignPointAlgorithm->getLastSearchDirection();
 		numberOfEvaluations	= theFindDesignPointAlgorithm->getNumberOfEvaluations();
+        const Vector &lastSearchDirection = theFindDesignPointAlgorithm->getLastSearchDirection();
 	  
 		// Postprocessing
 		beta = alpha ^ uStar;
@@ -188,9 +186,16 @@ FORMAnalysis::analyze()
             int rvTag = theRV->getTag();
             theFunctionEvaluator->setResponseVariable("gammaFORM", lsfTag, rvTag, gamma(j));
             theFunctionEvaluator->setResponseVariable("alphaFORM", lsfTag, rvTag, alpha(j));
+            theFunctionEvaluator->setResponseVariable("designPointXFORM", lsfTag, rvTag, xStar(j));
+            theFunctionEvaluator->setResponseVariable("designPointUFORM", lsfTag, rvTag, uStar(j));
         }
         theFunctionEvaluator->setResponseVariable("betaFORM", lsfTag, beta);
-
+        theFunctionEvaluator->setResponseVariable("pfFORM", lsfTag, pf1);
+        
+        // get first curvature in case SORM wants it later
+        double firstCurvature = theFindDesignPointAlgorithm->getFirstCurvature();
+        theFunctionEvaluator->setResponseVariable("curvatureFORM", lsfTag, firstCurvature);
+        
 
         // report the rest to output file
 	  outputFile << "#  Limit-state function value at start point: ......... " 

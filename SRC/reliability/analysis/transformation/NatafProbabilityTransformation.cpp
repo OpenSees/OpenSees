@@ -376,7 +376,6 @@ NatafProbabilityTransformation::meanSensitivityOf_x_to_u(const Vector &x, int rv
 
 	int rvIndex = theReliabilityDomain->getRandomVariableIndex(rvTag);
     DzDmean = theRV->getCDFMeanSensitivity() / aStdNormRV.getPDFvalue( z(rvIndex) );
-    opserr << "DzDmean is " << DzDmean << endln;
 
 	// 4) The hardest part: DinverseLowerCholeskyDmean
 	//						DinverseLowerCholeskyDstdv
@@ -456,7 +455,6 @@ NatafProbabilityTransformation::stdvSensitivityOf_x_to_u(const Vector &x, int rv
 
 	int rvIndex = theReliabilityDomain->getRandomVariableIndex(rvTag);
     DzDstdv = theRV->getCDFStdvSensitivity() / aStdNormRV.getPDFvalue( z(rvIndex) );
-    opserr << "DzDstdv is " << DzDstdv << endln;
 
 	// 4) The hardest part: DinverseLowerCholeskyDmean
 	//						DinverseLowerCholeskyDstdv

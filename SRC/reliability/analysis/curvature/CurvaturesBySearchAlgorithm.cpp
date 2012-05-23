@@ -34,27 +34,28 @@
 #include <CurvaturesBySearchAlgorithm.h>
 #include <FindCurvatures.h>
 #include <LimitStateFunction.h>
-#include <FindDesignPointAlgorithm.h>
-#include <RandomVariable.h>
 #include <Vector.h>
 #include <math.h>
 
 
-CurvaturesBySearchAlgorithm::CurvaturesBySearchAlgorithm(int passedNumberOfCurvatures,
-									FindDesignPointAlgorithm *passedFindDesignPointAlgorithm)
+CurvaturesBySearchAlgorithm::CurvaturesBySearchAlgorithm(ReliabilityDomain *passedReliabilityDomain,
+                                                         FunctionEvaluator *passedFunctionEvaluator,
+                                                         int passedNumberOfCurvatures)
 :FindCurvatures(), curvatures(passedNumberOfCurvatures)
 {
-	numberOfCurvatures = passedNumberOfCurvatures;
-	theFindDesignPointAlgorithm = passedFindDesignPointAlgorithm;
+    theReliabilityDomain = passedReliabilityDomain;
+    theFunctionEvaluator = passedFunctionEvaluator;
+    numberOfCurvatures = passedNumberOfCurvatures;
 }
 
 CurvaturesBySearchAlgorithm::~CurvaturesBySearchAlgorithm()
 {
+    
 }
 
 
 int
-CurvaturesBySearchAlgorithm::computeCurvatures(ReliabilityDomain *theReliabilityDomain)
+CurvaturesBySearchAlgorithm::computeCurvatures()
 {
 
 	// Initial declarations
@@ -74,9 +75,9 @@ CurvaturesBySearchAlgorithm::computeCurvatures(ReliabilityDomain *theReliability
 	int nrv = theReliabilityDomain->getNumberOfRandomVariables();
 
 	// "Download" limit-state function from reliability domain
-	int lsf = theReliabilityDomain->getTagOfActiveLimitStateFunction();
+	int lsfTag = theReliabilityDomain->getTagOfActiveLimitStateFunction();
 	LimitStateFunction *theLimitStateFunction = 
-		theReliabilityDomain->getLimitStateFunctionPtr(lsf);
+		theReliabilityDomain->getLimitStateFunctionPtr(lsfTag);
 
 	// The design point in the original space
 	// Recorders needed -- MHS 10/7/2011

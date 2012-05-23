@@ -70,13 +70,9 @@ FiniteDifferenceHessian::getHessian()
 
 
 int
-FiniteDifferenceHessian::computeHessian(double g)
+FiniteDifferenceHessian::computeHessian()
 {
-	// note FiniteDifferentHessian presumes that the expression has already been evaluated once with
-    // default parameter values and the result is passed in with variable g. Therefore it is only 
-    // computing the perturbations from this default state
-    
-	// Initialize Hessian vector
+    // Initialize Hessian vector
 	grad_g->Zero();
 	
 	// get limit-state function from reliability domain
@@ -87,6 +83,22 @@ FiniteDifferenceHessian::computeHessian(double g)
 	// get parameters created in the domain
 	int nparam = theOpenSeesDomain->getNumParameters();
     Vector stored_g(nparam);
+    
+	// note FiniteDifferentHessian does not have g passed in so needs to establish base state
+    if (theFunctionEvaluator->setVariables() < 0) {
+        opserr << "ERROR FiniteDifferenceHessian -- error setting variables in namespace" << endln;
+        return -1;
+    }
+    
+    // run analysis
+    if (theFunctionEvaluator->runAnalysis() < 0) {
+        opserr << "ERROR FiniteDifferenceHessian -- error running analysis" << endln;
+        return -1;
+    }
+    
+    // evaluate LSF and obtain result
+    theFunctionEvaluator->setExpression(lsfExpression);
+    double g = theFunctionEvaluator->evaluateExpression();
     
 	// now loop through to create hessian matrix
 	// note this is a for loop because there may be some conflict from a nested iterator already 

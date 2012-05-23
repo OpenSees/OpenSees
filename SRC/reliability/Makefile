@@ -38,6 +38,7 @@ RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
 		$(FE)/reliability/analysis/curvature/CurvaturesBySearchAlgorithm.o \
 		$(FE)/reliability/analysis/curvature/FindCurvatures.o \
 		$(FE)/reliability/analysis/curvature/FirstPrincipalCurvature.o \
+        $(FE)/reliability/analysis/curvature/CurvatureFitting.o \
 		$(FE)/reliability/analysis/designPoint/SearchWithStepSizeAndStepDirection.o \
 		$(FE)/reliability/analysis/designPoint/FindDesignPointAlgorithm.o \
 		$(FE)/reliability/analysis/direction/HLRFSearchDirection.o \
