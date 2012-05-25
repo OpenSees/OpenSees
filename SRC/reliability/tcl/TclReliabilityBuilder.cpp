@@ -288,7 +288,6 @@ int TclReliabilityModelBuilder_runSORMAnalysis(ClientData clientData, Tcl_Interp
 int TclReliabilityModelBuilder_runSystemAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_runImportanceSamplingAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_printReliability(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
-int TclReliabilityModelBuilder_inputCheck(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_getMean(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_getStdv(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 //int TclReliabilityModelBuilder_rvReduction(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -371,7 +370,6 @@ TclReliabilityBuilder::TclReliabilityBuilder(Domain &passedDomain, Tcl_Interp *i
   Tcl_CreateCommand(interp, "runSystemAnalysis",TclReliabilityModelBuilder_runSystemAnalysis,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "runImportanceSamplingAnalysis",TclReliabilityModelBuilder_runImportanceSamplingAnalysis,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "printReliability",TclReliabilityModelBuilder_printReliability,(ClientData)NULL, NULL);
-  Tcl_CreateCommand(interp, "inputCheck",TclReliabilityModelBuilder_inputCheck,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "getMean",TclReliabilityModelBuilder_getMean,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "getStdv",TclReliabilityModelBuilder_getStdv,(ClientData)NULL, NULL);
   //  Tcl_CreateCommand(interp, "rvReduction",TclReliabilityModelBuilder_rvReduction,(ClientData)NULL, NULL);
@@ -580,7 +578,6 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
   Tcl_DeleteCommand(theInterp, "runSystemAnalysis");
   Tcl_DeleteCommand(theInterp, "runImportanceSamplingAnalysis");
   Tcl_DeleteCommand(theInterp, "printReliability");
-  Tcl_DeleteCommand(theInterp, "inputCheck");
   Tcl_DeleteCommand(theInterp, "getMean");
   Tcl_DeleteCommand(theInterp, "getStdv");
   //  Tcl_DeleteCommand(theInterp, "rvReduction");
@@ -625,6 +622,99 @@ TclReliabilityBuilder::getReliabilityDomain()
 {
 	return theReliabilityDomain;
 }
+
+
+int 
+inputCheck()
+{
+	// Check that tagged objects are consequtive
+	int i, num;
+	ReliabilityDomainComponent *component;
+    
+	// Clear out old parameter positioners so we don't produce a memory leak
+	/*
+     theReliabilityDomain->removeAllParameterPositioners();
+     
+     ParameterIter &paramIter = theStructuralDomain->getParameters();
+     Parameter *theParam;
+     i = 1;
+     while ((theParam = paramIter()) != 0) {
+     ParameterPositioner *theParamPos = 
+     new ParameterPositioner(i, *theParam);
+     theParamPos->setGradNumber(i);
+     if (theReliabilityDomain->addParameterPositioner(theParamPos) == false) {
+     opserr << "ERROR: failed to add parameter positioner " << i << endln;
+     delete theParamPos; // otherwise memory leak
+     return TCL_ERROR;
+     }
+     i++;
+     }
+     */
+	/*
+     num = theReliabilityDomain->getNumberOfRandomVariablePositioners();
+     for (i=1; i<=num; i++) {
+     component = theReliabilityDomain->getRandomVariablePositionerPtr(i);
+     if (component == 0) {
+     opserr << "ERROR: Non-consequtive random variable positioner list." << endln;
+     return TCL_ERROR;
+     }
+     }
+     */
+
+	num = theReliabilityDomain->getNumberOfFilters();
+	for (i=1; i<=num; i++) {
+		component = theReliabilityDomain->getFilter(i);
+		if (component == 0) {
+			opserr << "ERROR: Non-consecutive filter list." << endln;
+			return -1;
+		}
+	}
+	
+	num = theReliabilityDomain->getNumberOfModulatingFunctions();
+	for (i=1; i<=num; i++) {
+		component = theReliabilityDomain->getModulatingFunction(i);
+		if (component == 0) {
+			opserr << "ERROR: Non-consecutive modulating function list." << endln;
+			return -1;
+		}
+	}
+	
+	num = theReliabilityDomain->getNumberOfSpectra();
+	for (i=1; i<=num; i++) {
+		component = theReliabilityDomain->getSpectrum(i);
+		if (component == 0) {
+			opserr << "ERROR: Non-consecutive spectrum list." << endln;
+			return -1;
+		}
+	}
+    
+	// Check that the correlation matrix is positive definite
+	// theCorrelationMatrix
+    
+    // set defaults
+    if (theProbabilityTransformation == 0) {
+        opserr << "No probabilityTransformation specified, assuming AllIndependent" << endln;
+        theProbabilityTransformation = new AllIndependentTransformation(theReliabilityDomain,0);
+    }
+    
+    //reliabilityConvergenceCheck  Standard         -e1 1.0e-3    -e2 1.0e-3  -print 1
+    //functionEvaluator            Tcl
+    //gradientEvaluator            FiniteDifference -pert 1000
+    
+    if (theSearchDirection == 0) {
+        opserr << "No searchDirectin specified, assuming Standard" << endln;
+        theSearchDirection = new HLRFSearchDirection();
+    }
+
+    //meritFunctionCheck           AdkZhang         -multi 2.0    -add 10.0   -factor 0.5
+    //stepSizeRule                 Armijo           -maxNum 5    -base 0.5   -initial 1.0 2  -print 0
+    //startPoint                   Mean
+    //findDesignPoint              StepSearch       -maxNumIter 30   -printDesignPointX CalRel_manual_1_output/1_designX.out
+    //randomNumberGenerator        CStdLib
+    
+	return 0;
+}
+
 
 //////////////////////////////////////////////////////////////////
 int 
@@ -3574,36 +3664,27 @@ TclReliabilityModelBuilder_runFORMAnalysis(ClientData clientData, Tcl_Interp *in
 	}
 
 
-	// Do input check
-	char theCommand[15] = "inputCheck";
-	Tcl_Eval( interp, theCommand );
-
-
 	// Check number of arguments
 	if ( (argc!=2) && (argc!=4))  {
 		opserr << "ERROR: Wrong number of input parameter to FORM analysis" << endln;
 		return TCL_ERROR;
 	}
 
+    // Do input check
+	inputCheck();
 
 	// Check for essential tools
 	if (theFindDesignPointAlgorithm == 0 ) {
 		opserr << "Need theFindDesignPointAlgorithm before a FORMAnalysis can be created" << endln;
 		return TCL_ERROR;
 	}
+    if (theFunctionEvaluator == 0 ) {
+		opserr << "Need theFunctionEvaluator before a FORMAnalysis can be created" << endln;
+		return TCL_ERROR;
+	}
 	if (theProbabilityTransformation == 0 ) {
 		opserr << "Need theProbabilityTransformation before a FORMAnalysis can be created" << endln;
-	//////////////////////////////////////////////////////////////////////////////////
-/////////////S Modified by K Fujimura /////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////
-		opserr << "Assume all RV's are independent" << endln;
-		theProbabilityTransformation = 
-		new AllIndependentTransformation(theReliabilityDomain,0);
-//		return TCL_ERROR;
-//////////////////////////////////////////////////////////////////////////////////
-/////////////E Modified by K Fujimura /////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////
-
+		return TCL_ERROR;
 	}
 
 
@@ -3629,7 +3710,7 @@ TclReliabilityModelBuilder_runFORMAnalysis(ClientData clientData, Tcl_Interp *in
 							theFindDesignPointAlgorithm,
                             theFunctionEvaluator,
 							theProbabilityTransformation, 
-							interp, argv[1], relSensTag);
+							argv[1], relSensTag);
 
 
 	// Check that it really was created
@@ -3641,6 +3722,9 @@ TclReliabilityModelBuilder_runFORMAnalysis(ClientData clientData, Tcl_Interp *in
 
 	// Now run the analysis
 	theFORMAnalysis->analyze();
+    
+    Vector temp;
+    theFORMAnalysis->getStorage("alphaFORM",1,temp);
 
 	return TCL_OK;
 }
@@ -3659,19 +3743,16 @@ TclReliabilityModelBuilder_runFOSMAnalysis(ClientData clientData, Tcl_Interp *in
 		theFOSMAnalysis = 0;
 	}
 
-
-	// Do input check
-	char theCommand[15] = "inputCheck";
-	Tcl_Eval( interp, theCommand );
-
-
+    
 	// Check number of arguments
 	if (argc != 2)  {
 		opserr << "ERROR: Wrong number of input parameter to FOSM analysis" << endln;
 		return TCL_ERROR;
 	}
 
-
+    // Do input check
+	inputCheck();
+    
 	// Check for essential ingredients
 	if (theFunctionEvaluator == 0 ) {
 		opserr << "Need theGFunEvaluator before a FOSMAnalysis can be created" << endln;
@@ -3826,25 +3907,27 @@ TclReliabilityModelBuilder_runSORMAnalysis(ClientData clientData, Tcl_Interp *in
 		theSORMAnalysis = 0;
 	}
 
+    
+    // check minimum arguments
+    if (argc != 2)  {
+		opserr << "ERROR: Wrong number of arguments to SORM analysis" << endln;
+		return TCL_ERROR;
+	}
+    
 	// Do input check
-	char theCommand[15] = "inputCheck";
-	Tcl_Eval( interp, theCommand );
+	inputCheck();
 
+    // check for essential ingredients
 	if (theFindCurvatures == 0 ) {
 		opserr << "Need theFindCurvatures before a SORMAnalysis can be created" << endln;
 		return TCL_ERROR;
 	}
-    
 	if (theFORMAnalysis == 0 ) {
 		opserr << "ERROR: The current SORM implementation requires a FORM analysis" << endln
 			<< " to have been executed previously in the same session." << endln;
 		return TCL_ERROR;
 	}
-
-	if (argc != 2)  {
-		opserr << "ERROR: Wrong number of arguments to SORM analysis" << endln;
-		return TCL_ERROR;
-	}
+	
 
 	theSORMAnalysis 
 		= new SORMAnalysis(theReliabilityDomain, theFunctionEvaluator,
@@ -3877,9 +3960,9 @@ TclReliabilityModelBuilder_runSystemAnalysis(ClientData clientData, Tcl_Interp *
 		return TCL_ERROR;
 	}
 
-	// Do input check
-	char theCommand[15] = "inputCheck";
-	Tcl_Eval( interp, theCommand );
+    // Do input check
+	inputCheck();
+    
 	
 	int aType = 1;
 	char betaFile[MAX_FILENAMELENGTH] = "";
@@ -3970,25 +4053,13 @@ TclReliabilityModelBuilder_runImportanceSamplingAnalysis(ClientData clientData, 
 	}
 
 
-	// Do input check
-	char theCommand[15] = "inputCheck";
-	Tcl_Eval( interp, theCommand );
-
+    // Do input check
+	inputCheck();
 
 	// Check for essential tools
 	if (theProbabilityTransformation == 0 ) {
 		opserr << "Need theProbabilityTransformation before a SimulationAnalyis can be created" << endln;
-		//////////////////////////////////////////////////////////////////////////////////
-/////////////S Modified by K Fujimura /////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////
-		opserr << "Assume all RV's are independent" << endln;
-		theProbabilityTransformation = 
-		new AllIndependentTransformation(theReliabilityDomain,0);
-//		return TCL_ERROR;
-//////////////////////////////////////////////////////////////////////////////////
-/////////////E Modified by K Fujimura /////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////
-
+		return TCL_ERROR;
 	}
 	if (theFunctionEvaluator == 0 ) {
 		opserr << "Need theGFunEvaluator before a SimulationAnalyis can be created" << endln;
@@ -4157,11 +4228,10 @@ TclReliabilityModelBuilder_runOutCrossingAnalysis(ClientData clientData, Tcl_Int
 	}
 
 
-	// Do input check
-	char theCommand[15] = "inputCheck";
-	Tcl_Eval( interp, theCommand );
+    // Do input check
+	inputCheck();
 
-
+    // check for essential ingredients
 	if (theFindDesignPointAlgorithm == 0 ) {
 		opserr << "Need theFindDesignPointAlgorithm before an OutCrossingAnalysis can be created" << endln;
 		return TCL_ERROR;
@@ -4308,10 +4378,8 @@ TclReliabilityModelBuilder_runOrthogonalPlaneSamplingAnalysis(ClientData clientD
 	}
 
 
-	// Do input check
-	char theCommand[15] = "inputCheck";
-	Tcl_Eval( interp, theCommand );
-
+    // Do input check
+	inputCheck();
 
 	// Check for essential tools
 	if (theProbabilityTransformation == 0 ) {
@@ -4533,30 +4601,17 @@ TclReliabilityModelBuilder_runGFunVisualizationAnalysis(ClientData clientData, T
 	}
 
 
-	// Do input check
-	char theCommand[15] = "inputCheck";
-	Tcl_Eval( interp, theCommand );
+    // Do input check
+	inputCheck();
 
-
+    // check for essential ingredients
 	if (theFunctionEvaluator == 0 ) {
 		opserr << "Need theGFunEvaluator before a GFunVisualizationAnalysis can be created" << endln;
 		return TCL_ERROR;
 	}
-
 	if (theProbabilityTransformation == 0 ) {
 		opserr << "Need theProbabilityTransformation before a GFunVisualizationAnalysis can be created" << endln;
-		//////////////////////////////////////////////////////////////////////////////////
-///////////// Modified by K Fujimura /////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////
-		opserr << "Assume all RV's are independent" << endln;
-		theProbabilityTransformation = 
-		new AllIndependentTransformation(theReliabilityDomain,0);
-//		return TCL_ERROR;
-//////////////////////////////////////////////////////////////////////////////////
-///////////// Modified by K Fujimura /////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////
-
-		
+		return TCL_ERROR;		
 	}
 
 
@@ -5015,116 +5070,6 @@ TclReliabilityModelBuilder_runGFunVisualizationAnalysis(ClientData clientData, T
 
 
 
-
-
-//////////////////////////////////////////////////////////////////
-int 
-TclReliabilityModelBuilder_inputCheck(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
-{
-	// Check that tagged objects are consequtive
-	int i, num;
-	ReliabilityDomainComponent *component;
-
-	/*
-	num = theReliabilityDomain->getNumberOfRandomVariables();
-	for (i=1; i<=num; i++) {
-		component = theReliabilityDomain->getRandomVariablePtr(i);
-		if (component == 0) {
-			opserr << "ERROR: Non-consequtive random variable list." << endln;
-			return TCL_ERROR;
-		}
-	}
-	*/
-
-	// Clear out old parameter positioners so we don't produce a memory leak
-	/*
-	theReliabilityDomain->removeAllParameterPositioners();
-
-	ParameterIter &paramIter = theStructuralDomain->getParameters();
-	Parameter *theParam;
-	i = 1;
-	while ((theParam = paramIter()) != 0) {
-	  ParameterPositioner *theParamPos = 
-	    new ParameterPositioner(i, *theParam);
-	  theParamPos->setGradNumber(i);
-	  if (theReliabilityDomain->addParameterPositioner(theParamPos) == false) {
-	    opserr << "ERROR: failed to add parameter positioner " << i << endln;
-	    delete theParamPos; // otherwise memory leak
-	    return TCL_ERROR;
-	  }
-	  i++;
-	}
-	*/
-	/*
-	num = theReliabilityDomain->getNumberOfRandomVariablePositioners();
-	for (i=1; i<=num; i++) {
-		component = theReliabilityDomain->getRandomVariablePositionerPtr(i);
-		if (component == 0) {
-			opserr << "ERROR: Non-consequtive random variable positioner list." << endln;
-			return TCL_ERROR;
-		}
-	}
-	*/
-	/*
-	num = theReliabilityDomain->getNumberOfCorrelationCoefficients();
-	for (i=1; i<=num; i++) {
-		component = theReliabilityDomain->getCorrelationCoefficientPtr(i);
-		if (component == 0) {
-			opserr << "ERROR: Non-consequtive correlation coefficient list." << endln;
-			return TCL_ERROR;
-		}
-	}
-	*/
-
-	num = theReliabilityDomain->getNumberOfFilters();
-	for (i=1; i<=num; i++) {
-		component = theReliabilityDomain->getFilter(i);
-		if (component == 0) {
-			opserr << "ERROR: Non-consequtive filter list." << endln;
-			return TCL_ERROR;
-		}
-	}
-	
-	/*
-	num = theReliabilityDomain->getNumberOfLimitStateFunctions();
-	for (i=1; i<=num; i++) {
-		component = theReliabilityDomain->getLimitStateFunctionPtr(i);
-		if (component == 0) {
-			opserr << "ERROR: Non-consequtive limit-state (performance) function list." << endln;
-			return TCL_ERROR;
-		}
-	}
-	*/
-
-	num = theReliabilityDomain->getNumberOfModulatingFunctions();
-	for (i=1; i<=num; i++) {
-		component = theReliabilityDomain->getModulatingFunction(i);
-		if (component == 0) {
-			opserr << "ERROR: Non-consequtive modulating function list." << endln;
-			return TCL_ERROR;
-		}
-	}
-	
-	num = theReliabilityDomain->getNumberOfSpectra();
-	for (i=1; i<=num; i++) {
-		component = theReliabilityDomain->getSpectrum(i);
-		if (component == 0) {
-			opserr << "ERROR: Non-consequtive spectrum list." << endln;
-			return TCL_ERROR;
-		}
-	}
-
-
-
-	// Check that the correlation matrix is positive definite
-	// theCorrelationMatrix
-
-
-	return TCL_OK;
-}
-
-
-
 //////////////////////////////////////////////////////////////////
 int 
 TclReliabilityModelBuilder_printReliability(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -5154,9 +5099,7 @@ TclReliabilityModelBuilder_runMonteCarloResponseAnalysis(ClientData clientData, 
 	int seed=1;
 
 	// Do input check
-	char theCommand[15] = "inputCheck";
-	Tcl_Eval( interp, theCommand );
-
+	inputCheck();
 
 	// Check for essential tools
 	if (theProbabilityTransformation == 0 ) {

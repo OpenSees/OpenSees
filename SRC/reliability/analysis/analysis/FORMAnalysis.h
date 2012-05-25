@@ -39,9 +39,10 @@
 #include <FunctionEvaluator.h>
 #include <ProbabilityTransformation.h>
 #include <ReliabilityDomain.h>
+#include <ReliabilityStorage.h>
 
-#include <fstream>
 #include <tcl.h>
+#include <fstream>
 using std::ofstream;
 
 class FORMAnalysis : public ReliabilityAnalysis
@@ -52,10 +53,12 @@ public:
 				 FindDesignPointAlgorithm *passedFindDesignPointAlgorithm,
                  FunctionEvaluator *passedGFunEvaluator,
 				 ProbabilityTransformation *passedProbabilityTransformation,
-				 Tcl_Interp *passedInterp, TCL_Char *fileName, int relSensTag);
+				 TCL_Char *fileName, int relSensTag);
 	virtual ~FORMAnalysis();
 
+    int initStorage();
 	int analyze();
+    int getStorage(const char *variable, int lsfTag, Vector &stuff);
 
 protected:
 
@@ -64,9 +67,12 @@ private:
 	FindDesignPointAlgorithm *theFindDesignPointAlgorithm;
     FunctionEvaluator *theFunctionEvaluator;
 	ProbabilityTransformation *theProbabilityTransformation;
-	Tcl_Interp *interp;
+    
 	char fileName[256];
 	int relSensTag;
+    int numLsf;
+    
+    ReliabilityStorage **storage;
 };
 
 #endif

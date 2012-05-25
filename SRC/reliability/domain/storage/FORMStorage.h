@@ -3,7 +3,7 @@
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
-** (C) Copyright 2001, The Regents of the University of California    **
+** (C) Copyright 1999, The Regents of the University of California    **
 ** All Rights Reserved.                                               **
 **                                                                    **
 ** Commercial use of this program without express permission of the   **
@@ -16,48 +16,38 @@
 **   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
-** Reliability module developed by:                                   **
-**   Terje Haukaas (haukaas@ce.berkeley.edu)                          **
-**   Armen Der Kiureghian (adk@ce.berkeley.edu)                       **
-**                                                                    **
 ** ****************************************************************** */
+                                                        
                                                                         
-// $Revision: 1.4 $
-// $Date: 2003-03-04 00:46:05 $
-// $Source: /usr/local/cvs/OpenSees/SRC/reliability/tcl/TclReliabilityBuilder.h,v $
-
-
+// Written: Kevin Mackie 
 //
-// Written by Terje Haukaas (haukaas@ce.berkeley.edu)
-//
+// Description: This file contains the FORMStorage class interface
 
-#ifndef TclReliabilityBuilder_h
-#define TclReliabilityBuilder_h
+#ifndef FORMStorage_h
+#define FORMStorage_h
 
-#include <tcl.h>
-#include <ReliabilityDomain.h>
+#include <ReliabilityStorage.h>
+#include <Information.h>
+#include <Vector.h>
 
-int inputCheck();
 
-class TclReliabilityBuilder
+class FORMStorage : public ReliabilityStorage
 {
-public:
-	TclReliabilityBuilder(Domain &theDomain, Tcl_Interp *interp);
-	~TclReliabilityBuilder();
+ public:
+    FORMStorage();  
+    ~FORMStorage();
+  
+    const char *getClassType(void) const;
     
-	ReliabilityDomain *getReliabilityDomain();
-    
-protected:
+    int setVariable(const char *variable, Information &);
+    int getVariable(const char *variable, Information &);
 
 private:
-    Tcl_Interp *theInterp;
+    Vector *alpha;
+    Vector *uStar;
+    Vector *xStar;
+    Vector *gradient;
+    
 };
 
 #endif
-
-
-
-
-
-
-

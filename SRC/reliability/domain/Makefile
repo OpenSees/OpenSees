@@ -11,6 +11,7 @@ all:
 	     @$(CD) $(FE)/reliability/domain/performanceFunction; $(MAKE);
 	     @$(CD) $(FE)/reliability/domain/modulatingFunction; $(MAKE);
 	     @$(CD) $(FE)/reliability/domain/spectrum; $(MAKE);
+	     @$(CD) $(FE)/reliability/domain/storage; $(MAKE);
 
 # Miscellaneous
 tidy:	
@@ -29,5 +30,6 @@ wipe: spotless
 	     @$(CD) $(FE)/reliability/domain/performanceFunction; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/domain/modulatingFunction; $(MAKE) wipe;
 	     @$(CD) $(FE)/reliability/domain/spectrum; $(MAKE) wipe;
+	     @$(CD) $(FE)/reliability/domain/storage; $(MAKE) wipe;
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.

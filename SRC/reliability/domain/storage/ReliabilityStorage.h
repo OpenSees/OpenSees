@@ -3,7 +3,7 @@
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
-** (C) Copyright 2001, The Regents of the University of California    **
+** (C) Copyright 1999, The Regents of the University of California    **
 ** All Rights Reserved.                                               **
 **                                                                    **
 ** Commercial use of this program without express permission of the   **
@@ -16,48 +16,32 @@
 **   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
-** Reliability module developed by:                                   **
-**   Terje Haukaas (haukaas@ce.berkeley.edu)                          **
-**   Armen Der Kiureghian (adk@ce.berkeley.edu)                       **
-**                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.4 $
-// $Date: 2003-03-04 00:46:05 $
-// $Source: /usr/local/cvs/OpenSees/SRC/reliability/tcl/TclReliabilityBuilder.h,v $
+                                                                        
+#ifndef ReliabilityStorage_h
+#define ReliabilityStorage_h
 
+// Written: Kevin Mackie
 
-//
-// Written by Terje Haukaas (haukaas@ce.berkeley.edu)
-//
+#include <Information.h>
 
-#ifndef TclReliabilityBuilder_h
-#define TclReliabilityBuilder_h
-
-#include <tcl.h>
-#include <ReliabilityDomain.h>
-
-int inputCheck();
-
-class TclReliabilityBuilder
+class ReliabilityStorage
 {
-public:
-	TclReliabilityBuilder(Domain &theDomain, Tcl_Interp *interp);
-	~TclReliabilityBuilder();
-    
-	ReliabilityDomain *getReliabilityDomain();
-    
-protected:
+  public:
+    ReliabilityStorage();    
+    virtual ~ReliabilityStorage();
 
-private:
-    Tcl_Interp *theInterp;
+    virtual const char *getClassType(void) const;
+
+    virtual int setVariable(const char *variable, Information &);
+    virtual int getVariable(const char *variable, Information &);
+    
+  protected:
+    
+  private:
+
+    
 };
 
 #endif
-
-
-
-
-
-
-

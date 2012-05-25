@@ -3485,6 +3485,11 @@ SRC/reliability/domain/spectrum/Spectrum.cpp -text
 SRC/reliability/domain/spectrum/Spectrum.h -text
 SRC/reliability/domain/spectrum/SpectrumIter.cpp -text
 SRC/reliability/domain/spectrum/SpectrumIter.h -text
+SRC/reliability/domain/storage/FORMStorage.cpp -text
+SRC/reliability/domain/storage/FORMStorage.h -text
+SRC/reliability/domain/storage/Makefile -text
+SRC/reliability/domain/storage/ReliabilityStorage.cpp -text
+SRC/reliability/domain/storage/ReliabilityStorage.h -text
 SRC/reliability/tcl/Makefile -text
 SRC/reliability/tcl/TclReliabilityBuilder.cpp -text
 SRC/reliability/tcl/TclReliabilityBuilder.h -text

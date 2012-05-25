@@ -35,17 +35,20 @@
 #include <FindDesignPointAlgorithm.h>
 #include <ReliabilityDomain.h>
 #include <ReliabilityAnalysis.h>
-#include <Vector.h>
-#include <Matrix.h>
 #include <MatrixOperations.h>
 #include <NormalRV.h>
 #include <RandomVariable.h>
-#include <math.h>
 #include <ProbabilityTransformation.h>
+#include <FORMStorage.h>
+#include <ReliabilityStorage.h>
+
+#include <Vector.h>
+#include <Matrix.h>
 
 #include <RandomVariableIter.h>
 #include <LimitStateFunctionIter.h>
 
+#include <math.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -60,7 +63,7 @@ FORMAnalysis::FORMAnalysis(ReliabilityDomain *passedReliabilityDomain,
 						   FindDesignPointAlgorithm *passedFindDesignPointAlgorithm,
                            FunctionEvaluator *passedFunctionEvaluator,
 						   ProbabilityTransformation *passedProbabilityTransformation,
-						   Tcl_Interp *passedInterp, TCL_Char *passedFileName, int p_relSensTag)
+						   TCL_Char *passedFileName, int p_relSensTag)
 :ReliabilityAnalysis()
 {
 	theReliabilityDomain = passedReliabilityDomain;
@@ -69,16 +72,44 @@ FORMAnalysis::FORMAnalysis(ReliabilityDomain *passedReliabilityDomain,
 	theProbabilityTransformation = passedProbabilityTransformation;
 	strcpy(fileName,passedFileName);
 	relSensTag = p_relSensTag;
-	interp = passedInterp;
+    
+    storage = 0;
+    numLsf = 0;
 }
 
 
 FORMAnalysis::~FORMAnalysis()
 {
-
+    if (storage != 0) {
+        for (int i = 0; i < numLsf; i++)
+            if (storage[i] != 0)
+                delete storage[i];
+        
+        delete [] storage;
+    }
 }
 
 
+int
+FORMAnalysis::initStorage()
+{
+    // initialize storage
+    storage = new ReliabilityStorage *[numLsf];
+    if (storage == 0) {
+        opserr << "FORMAnalysis:: failed to allocate storage pointers" << endln;
+        exit(-1);
+    }
+    
+    for (int i = 0; i < numLsf; i++) {
+        storage[i] = new FORMStorage();
+        if (storage[i] == 0) {
+            opserr << "FORMAnalysis:: failed to get create FORMStorage" << endln;
+            exit(-1);
+        }
+    }   
+    
+    return 0;
+}
 
 int 
 FORMAnalysis::analyze()
@@ -94,13 +125,19 @@ FORMAnalysis::analyze()
 
 	// reliability domain info
 	int numRV = theReliabilityDomain->getNumberOfRandomVariables();
-	int numLsf = theReliabilityDomain->getNumberOfLimitStateFunctions();
+	numLsf = theReliabilityDomain->getNumberOfLimitStateFunctions();
 	LimitStateFunction *theLimitStateFunction;
 	
 	Vector delta(numRV);
 	Vector eta(numRV);
 	Vector kappa(numRV);
 	
+    // initialize storage
+    if (this->initStorage() < 0) {
+        opserr << "FORMAnalysis::analyze() error initializing storage, will not be able to use subsequent analyses " << endln
+            << "that depend on this one" << endln;
+    }
+    
 	// Open output file
 	ofstream outputFile( fileName, ios::out );
 
@@ -113,7 +150,7 @@ FORMAnalysis::analyze()
 
 		// Inform the user which limit-state function is being evaluated
 		opserr << "Limit-state function number: " << lsfTag << endln;
-		Tcl_SetVar2Ex(interp,"RELIABILITY_lsf",NULL,Tcl_NewIntObj(lsfTag),TCL_NAMESPACE_ONLY);
+		//Tcl_SetVar2Ex(interp,"RELIABILITY_lsf",NULL,Tcl_NewIntObj(lsfTag),TCL_NAMESPACE_ONLY);
 
 		// Set tag of "active" limit-state function
 		theReliabilityDomain->setTagOfActiveLimitStateFunction(lsfTag);
@@ -142,7 +179,7 @@ FORMAnalysis::analyze()
 		Glast				= theFindDesignPointAlgorithm->getLastGFunValue();
 		numberOfEvaluations	= theFindDesignPointAlgorithm->getNumberOfEvaluations();
         const Vector &lastSearchDirection = theFindDesignPointAlgorithm->getLastSearchDirection();
-	  
+        
 		// Postprocessing
 		beta = alpha ^ uStar;
 		pf1 = 1.0 - aStdNormRV.getCDFvalue(beta);
@@ -196,6 +233,13 @@ FORMAnalysis::analyze()
         double firstCurvature = theFindDesignPointAlgorithm->getFirstCurvature();
         theFunctionEvaluator->setResponseVariable("curvatureFORM", lsfTag, firstCurvature);
         
+        // store results using reliability storage
+        Information relInfo;
+        relInfo.setVector(alpha);
+        storage[lsf]->setVariable("alphaFORM",relInfo);
+        relInfo.setVector(theFindDesignPointAlgorithm->getGradientInStandardNormalSpace());
+        storage[lsf]->setVariable("gradientU",relInfo);
+
 
         // report the rest to output file
 	  outputFile << "#  Limit-state function value at start point: ......... " 
@@ -287,3 +331,19 @@ FORMAnalysis::analyze()
 	return 0;
 }
 
+
+int 
+FORMAnalysis::getStorage(const char *variable, int lsfTag, Vector &stuff)
+{
+    int lsf = theReliabilityDomain->getLimitStateFunctionIndex(lsfTag);
+    Information relOut;
+    
+    int tempres = storage[lsf]->getVariable(variable,relOut);
+    //check for tempres error
+    
+    Vector temp(relOut.getData());
+    stuff = temp;
+    stuff = relOut.getData();
+    
+    return 0;
+}

@@ -3,7 +3,7 @@
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
-** (C) Copyright 2001, The Regents of the University of California    **
+** (C) Copyright 1999, The Regents of the University of California    **
 ** All Rights Reserved.                                               **
 **                                                                    **
 ** Commercial use of this program without express permission of the   **
@@ -16,48 +16,45 @@
 **   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
-** Reliability module developed by:                                   **
-**   Terje Haukaas (haukaas@ce.berkeley.edu)                          **
-**   Armen Der Kiureghian (adk@ce.berkeley.edu)                       **
-**                                                                    **
 ** ****************************************************************** */
+                                                                                                                                                
                                                                         
-// $Revision: 1.4 $
-// $Date: 2003-03-04 00:46:05 $
-// $Source: /usr/local/cvs/OpenSees/SRC/reliability/tcl/TclReliabilityBuilder.h,v $
-
-
-//
-// Written by Terje Haukaas (haukaas@ce.berkeley.edu)
+// Written: Kevin Mackie
 //
 
-#ifndef TclReliabilityBuilder_h
-#define TclReliabilityBuilder_h
+#include <ReliabilityStorage.h>
+#include <Information.h>
 
-#include <tcl.h>
-#include <ReliabilityDomain.h>
-
-int inputCheck();
-
-class TclReliabilityBuilder
+ReliabilityStorage::ReliabilityStorage()
 {
-public:
-	TclReliabilityBuilder(Domain &theDomain, Tcl_Interp *interp);
-	~TclReliabilityBuilder();
-    
-	ReliabilityDomain *getReliabilityDomain();
-    
-protected:
 
-private:
-    Tcl_Interp *theInterp;
-};
-
-#endif
+}
 
 
+ReliabilityStorage::~ReliabilityStorage()
+{
+
+}
 
 
+static char unknownClassType[] = {"UnknownReliabilityStorage"};
+
+const char *
+ReliabilityStorage::getClassType(void) const
+{
+  return unknownClassType;
+}
 
 
+int 
+ReliabilityStorage::setVariable(const char *variable, Information &theInfo)
+{
+  return -1;
+}
 
+
+int 
+ReliabilityStorage::getVariable(const char *variable, Information &theInfo)
+{
+  return -1;
+}
