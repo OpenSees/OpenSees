@@ -3346,7 +3346,6 @@ TclReliabilityModelBuilder_addFindDesignPointAlgorithm(ClientData clientData, Tc
 					theStepSizeRule,
 					theSearchDirection,
 					theProbabilityTransformation,
-					theHessianEvaluator,
 					theReliabilityConvergenceCheck,
 					printFlag, fileNamePrint);
 		

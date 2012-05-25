@@ -40,7 +40,6 @@
 #include <ProbabilityTransformation.h>
 #include <FunctionEvaluator.h>
 #include <GradientEvaluator.h>
-#include <HessianEvaluator.h>
 #include <ReliabilityConvergenceCheck.h>
 #include <Matrix.h>
 #include <Vector.h>
@@ -65,7 +64,6 @@ public:
 					StepSizeRule *passedStepSizeRule,
 					SearchDirection *passedSearchDirection,
 					ProbabilityTransformation *passedProbabilityTransformation,
-					HessianEvaluator *theHessianEvaluator,
 					ReliabilityConvergenceCheck *theReliabilityConvergenceCheck,
 					int printFlag,
 					char *fileNamePrint);
@@ -98,12 +96,7 @@ private:
 	StepSizeRule *theStepSizeRule;
 	SearchDirection *theSearchDirection;
 	ProbabilityTransformation *theProbabilityTransformation;
-	HessianEvaluator *theHessianEvaluator;
 	ReliabilityConvergenceCheck *theReliabilityConvergenceCheck;
-
-	// Private member functions to do the job
-	int doTheActualSearch(bool doRvProjection);
-	int doRvProjection(Vector uOld, Vector uNew);
 
 	// Data members set when the object is created
 	int maxNumberOfIterations;
