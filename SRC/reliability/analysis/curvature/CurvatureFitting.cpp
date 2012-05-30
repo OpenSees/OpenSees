@@ -47,7 +47,7 @@ CurvatureFitting::CurvatureFitting(ReliabilityDomain *passedReliabilityDomain,
                                    FunctionEvaluator *passedFunctionEvaluator,
                                    HessianEvaluator *passedHessianEvaluator,
                                    ProbabilityTransformation *passedTransformation)
-:FindCurvatures(), curvatures(1)
+  :FindCurvatures(), eigenvalue(0), eigenvector(0), curvatures(1)
 {
     theReliabilityDomain = passedReliabilityDomain;
     theOpenSeesDomain = passedOpenSeesDomain;
@@ -58,9 +58,27 @@ CurvatureFitting::CurvatureFitting(ReliabilityDomain *passedReliabilityDomain,
 
 CurvatureFitting::~CurvatureFitting()
 {
-    
+  if (eigenvalue != 0)
+    delete [] eigenvalue;
+  if (eigenvector != 0)
+    delete [] eigenvector;
 }
 
+#ifdef _WIN32
+
+extern "C" int DGEEV(char *JOBVL, char *JOBVR, int *N, double *A, int *LDA,
+                     double *WR, double *WI,
+                     double *VL, int *LDVL, double *VR,
+                     int *LDVR, double *WORK, int *LWORK, int *INFO);
+
+#else
+
+extern "C" int dgeev_(char *JOBVL, char *JOBVR, int *N, double *A, int *LDA,
+                      double *WR, double *WI,
+                      double *VL, int *LDVL, double *VR,
+                      int *LDVR, double *WORK, int *LWORK, int *INFO);
+
+#endif
 
 int
 CurvatureFitting::computeCurvatures()
@@ -112,8 +130,11 @@ CurvatureFitting::computeCurvatures()
     
     // Get Jacobian x-space to u-space
     Matrix Jxu(nrv,nrv);
-    result = theProbabilityTransformation->getJacobian_x_to_u(Jxu);         
-    Matrix hessU2(nrv,nrv);
+    result = theProbabilityTransformation->getJacobian_x_to_u(Jxu); 
+
+
+    double *hessU2data = new double[nrv*nrv];
+    Matrix hessU2(hessU2data,nrv,nrv);
     
     // Gradient in standard normal space
     hessU2.addMatrixTripleProduct(0.0,Jxu,hessU,1.0);
@@ -123,10 +144,78 @@ CurvatureFitting::computeCurvatures()
     
     // still need to normalize by norm of gradient in standard normal space
     
+
+
     // eigenvalues of reduced A matrix
     
+    // do not compute left eigenvalues and eigenvectors
+    char *jobvl = "N";
 
-	return 0;
+    // compute right eigenvalues and eigenvectors
+    char *jobvr = "V";
+
+    // stiffness matrix data
+    double *Kptr = hessU2data;
+
+    // leading dimension of K
+    int ldK = nrv;
+
+    // allocate memory for eigenvalues (imaginary part)
+    double *alphaI = new double [nrv];
+
+    if (eigenvalue != 0)
+        delete [] eigenvalue;
+
+    // and real part
+    eigenvalue = new double [nrv];
+    curvatures.setData(eigenvalue, nrv);
+
+    // dummy left eigenvectors
+    double vl[1];
+
+    // leading dimension of dummy left eigenvectors
+    int ldvl = 1;
+
+    // allocate memory for right eigenvectors
+    if (eigenvector != 0)
+        delete [] eigenvector;
+    eigenvector = new double [nrv*nrv];
+
+    // leading dimension of right eigenvectors
+    int ldvr = nrv;
+
+    // dimension of the workspace array
+    int lwork = 4*nrv + 1;
+
+    // allocate memory for workspace array
+    double *work = new double [lwork];
+
+    // output information
+    int info = 0;
+
+    // call the LAPACK eigenvalue subroutine
+#ifdef _WIN32
+    DGEEV(jobvl, jobvr, &nrv, Kptr, &ldK, eigenvalue, alphaI,
+          vl, &ldvl, eigenvector, &ldvr, work, &lwork, &info);
+#else
+    dgeev_(jobvl, jobvr, &nrv, Kptr, &ldK, eigenvalue, alphaI,
+           vl, &ldvl, eigenvector, &ldvr, work, &lwork, &info);
+#endif
+
+    int lworkOpt = (int) work[0];
+    if (lwork < lworkOpt) {
+        opserr << "CurvatureFitting::computeCurvatures() - optimal workspace size "
+                << lworkOpt << " is larger than provided workspace size "
+                << lwork << " consider increasing workspace\n";
+    }
+
+    // clean up the memory
+    delete [] alphaI;
+    delete [] work;
+
+    delete [] hessU2data;
+
+    return 0;
 }
 
 

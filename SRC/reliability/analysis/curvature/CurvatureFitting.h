@@ -66,6 +66,8 @@ private:
     HessianEvaluator *theHessianEvaluator;
     ProbabilityTransformation *theProbabilityTransformation;
     
+    double *eigenvalue;
+    double *eigenvector;
     Vector curvatures;
     Vector principalAxes;
 
