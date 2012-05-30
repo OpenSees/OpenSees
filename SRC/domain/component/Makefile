@@ -3,6 +3,7 @@ include ../../../Makefile.def
 OBJS       = DomainComponent.o \
 	Parameter.o \
 	RVParameter.o \
+	DVParameter.o \
 	NodeResponseParameter.o \
 	TclParameterCommands.o \
 	MaterialStageParameter.o \
