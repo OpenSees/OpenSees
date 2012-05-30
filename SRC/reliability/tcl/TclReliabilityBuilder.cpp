@@ -3722,8 +3722,8 @@ TclReliabilityModelBuilder_runFORMAnalysis(ClientData clientData, Tcl_Interp *in
 	// Now run the analysis
 	theFORMAnalysis->analyze();
     
-    Vector temp;
-    theFORMAnalysis->getStorage("alphaFORM",1,temp);
+    //Vector temp;
+    //theFORMAnalysis->getStorage("alphaFORM",1,temp);
 
 	return TCL_OK;
 }

@@ -147,46 +147,63 @@ GammaRV::getInverseCDFvalue(double probValue)
 	// A Newton scheme to find roots - f(x)=0 - looks something like:
 	//         x(i+1) = x(i) - f(xi)/f'(xi)
 	// In our case the function f(x) is: f(x) = probValue - getCDFvalue(x)
-	// The derivative of the function can be found approximately by a
-	// finite difference scheme where e.g. stdv/200 is used as perturbation.
-	//
-	// Note to writer of above: Newton does not converge for all cases, particularly those
+
+	// KRM -- Note to writer of above: Newton does not converge for all cases, particularly those
 	// that look like CDFs when the start point is not close to the zero point.  
-	
-	// bootstrap with estimate from equivalent normal distribution
+	// Bootstrap with estimate from equivalent normal distribution
 	static NormalRV normRV( 1, getMean(), getStdv());
     double x_old = normRV.getInverseCDFvalue(probValue);
 	
-	double tol = 1.0e-8;
-	double result = x_old;
+	double tol = 1.0e-6;
+	double x_new = x_old;
+	double dx = x_old;
+    int step = 1;
+    int nmax = 50;
+    
+    if (probValue > 1.0e-3) {
+        while ( (step < nmax) && (fabs(dx/x_old) > tol) ) {
+            // compute dx
+            dx = (getCDFvalue(x_new) - probValue) / getPDFvalue(x_new);
 
-	double x_new;
-	double f;
-	double df;
-	for (int i = 1; i <= 50;  i++ )  {
-		// Evaluate function
-		f = getCDFvalue(x_old) - probValue;
-		
-		// evaluate derivative
-		df = getPDFvalue(x_old);
-		
-		if ( fabs(df) > 1e-8 ) {
-			// Take a Newton step
-			x_new = x_old - f/df;
-			
-			// Check convergence; quit or continue
-			if (fabs(f/df) < tol)
-				return x_new;
-		} else {
-			// gradient zero
-			return x_old;
-		}
-		
-		x_old = x_new;
+            // Take a Newton step
+            x_new = x_new - dx;
+            step++;
+        }
+    }
+    
+    // use bisection for small probabilities (x > 0 always for gamma). Here we (arbitrarily)
+    // limit the left extreme x to be 0.1
+    else {
+        double left = 0.1;
+        double right = 2.5*x_old;
+        int change = 0;
+        double fa = 0;
+        double fc = 0;
+        
+        while (change == 0 && step <= nmax) {
+            x_new = (left+right)/2.0;
+            fc = getCDFvalue(x_new) - probValue;
+            fa = getCDFvalue(left) - probValue;
+            if (fabs(fc) < tol || (right-left)/2.0 < tol)
+                change = 1;
+            
+            if ( fa>0 && fc>0 )
+                left = x_new;
+            else if ( fa<0 && fc<0 )
+                left = x_new;
+            else
+                right = x_new;
+            
+            step++;
+        }
 	}
 	
-	opserr << "WARNING: Did not converge to find inverse CDF!" << endln;
-	return result;
+    if ( step >= 50 ) {
+        opserr << "WARNING: GammaRV did not converge to find inverse CDF!" << endln;
+        // decide later what to do with this terminal case
+    }
+    
+	return x_new;
 }
 
 
