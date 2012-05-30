@@ -1751,6 +1751,8 @@ SRC/doc/uct10.sty -text
 SRC/doc/upUCommands.tex -text
 SRC/doc/verbatimfiles.sty -text
 SRC/domain/Makefile -text
+SRC/domain/component/DVParameter.cpp -text
+SRC/domain/component/DVParameter.h -text
 SRC/domain/component/DomainComponent.cpp -text
 SRC/domain/component/DomainComponent.h -text
 SRC/domain/component/DomainComponent.tex -text
