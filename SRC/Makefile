@@ -765,6 +765,7 @@ MODEL_BUILDER_LIBS = $(FE)/modelbuilder/ModelBuilder.o \
 DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/component/Parameter.o \
 	$(FE)/domain/component/RVParameter.o \
+	$(FE)/domain/component/DVParameter.o \
 	$(FE)/domain/component/NodeResponseParameter.o \
 	$(FE)/domain/component/MaterialStageParameter.o \
 	$(FE)/domain/component/TclUpdateMaterialCommand.o \
