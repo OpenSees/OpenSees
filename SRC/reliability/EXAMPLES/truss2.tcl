@@ -30,6 +30,7 @@ reliability
 randomVariable 62 lognormal -mean $E -stdv [expr 0.1*$E]
 randomVariable 25 lognormal -mean $A -stdv [expr 0.1*$A]
 randomVariable 33 lognormal -mean $fy -stdv [expr 0.1*$fy]
+randomVariable 12 lognormal -mean $fy -stdv [expr 0.1*$fy]
 
 #randomVariable 32 normal -mean $P -stdv [expr 0.2*$P]
 #randomVariable 89 normal -mean 0 -stdv 1
@@ -39,6 +40,8 @@ randomVariable 33 lognormal -mean $fy -stdv [expr 0.1*$fy]
 parameter 12 randomVariable 62 element 1 E
 parameter 13 randomVariable 25 element 1 A
 parameter 14 randomVariable 33 element 1 fy
+parameter 15 randomVariable 12
+
 #addToParameter 12 element 3 E
 #parameter 25 randomVariable 32 loadPattern 1 loadAtNode 2 1
 #parameter  3 randomVariable 89 node 1 coord 1
@@ -47,23 +50,13 @@ parameter 14 randomVariable 33 element 1 fy
 
 parameter 23 node 2 disp 1
 
-foreach tag [array names param] {
-    #randomVariablePositioner $tag -rvNum $tag -parameter $param($tag)
-}
-
 performanceFunction 76 "0.005-\$par(23)"
 #performanceFunction 81 "0.005-\[nodeDisp 2 1\]"
 #performanceFunction 23 "1500.0+\[sectionForce 1 1 2\]"
 
-
 #gradPerformanceFunction 76 12 "-\[sensNodeDisp 2 1 12\]"
 #gradPerformanceFunction 76 13 "-\[sensNodeDisp 2 1 13\]"
 #gradPerformanceFunction 81 62 "-\[sensNodeDisp 2 1 12\]"
-
-foreach {rvTag paramTag} [getRVPositioners] {
-    #gradPerformanceFunction 76 $rvTag "-\[sensNodeDisp 2 1 $paramTag\]"
-    #gradPerformanceFunction 23 $rvTag "\[sensSectionForce 1 1 2 $paramTag\]"
-}
 
 sensitivityIntegrator -static
 sensitivityAlgorithm -computeAtEachStep
@@ -82,16 +75,17 @@ startPoint                   Mean
 findDesignPoint              StepSearch       -maxNumIter 15  -printDesignPointX designPointX.out
 
 
-runFORMAnalysis  truss_FORM.out
+runFORMAnalysis  truss_FORM.out   -relSens 1
 
 foreach perf [getLSFTags] {
     puts "Performance Function $perf"
-    #puts "beta = [format %.7f [betaFORM $perf]]"
+    puts "beta = [format %.4f [betaFORM $perf]]"
     foreach rv [getRVTags] {
-	#puts "\t x*($rv) = [format %7.4f $xrv($rv,$perf)], alpha($rv) = [format %.7f [alphaFORM $perf $rv]], gamma($rv) = [format %.7f [gammaFORM $perf $rv]]"
+	#puts "\t x*($rv) = [format %7.4f $xrv($rv,$perf)], alpha($rv) = [format %.4f [alphaFORM $perf $rv]], gamma($rv) = [format %.4f [gammaFORM $perf $rv]]"
     }
 }
-#print
+
+print
 
 #analyze 1
 
