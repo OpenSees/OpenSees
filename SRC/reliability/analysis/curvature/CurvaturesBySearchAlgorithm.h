@@ -36,6 +36,7 @@
 
 #include <FindCurvatures.h>
 #include <Vector.h>
+#include <FORMAnalysis.h>
 #include <FunctionEvaluator.h>
 #include <ReliabilityDomain.h>
 
@@ -45,6 +46,7 @@ class CurvaturesBySearchAlgorithm : public FindCurvatures
 public:
   CurvaturesBySearchAlgorithm(ReliabilityDomain *passedReliabilityDomain,
                               FunctionEvaluator *passedGFunEvaluator,
+                              FORMAnalysis *passedFORMAnalysis,
                               int numberOfCurvatures);
   ~CurvaturesBySearchAlgorithm();
   
@@ -61,6 +63,7 @@ private:
     
     ReliabilityDomain *theReliabilityDomain;
     FunctionEvaluator *theFunctionEvaluator;
+    FORMAnalysis *theFORMAnalysis;
 };
 
 #endif

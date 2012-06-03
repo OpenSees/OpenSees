@@ -33,6 +33,7 @@
 #include <CurvatureFitting.h>
 #include <FindCurvatures.h>
 #include <LimitStateFunction.h>
+#include <FORMAnalysis.h>
 #include <Vector.h>
 #include <Matrix.h>
 #include <RandomVariable.h>
@@ -45,6 +46,7 @@ using std::ios;
 CurvatureFitting::CurvatureFitting(ReliabilityDomain *passedReliabilityDomain,
                                    Domain *passedOpenSeesDomain,
                                    FunctionEvaluator *passedFunctionEvaluator,
+                                   FORMAnalysis *passedFORMAnalysis,
                                    HessianEvaluator *passedHessianEvaluator,
                                    ProbabilityTransformation *passedTransformation)
   :FindCurvatures(), eigenvalue(0), eigenvector(0), curvatures(1)
@@ -52,6 +54,7 @@ CurvatureFitting::CurvatureFitting(ReliabilityDomain *passedReliabilityDomain,
     theReliabilityDomain = passedReliabilityDomain;
     theOpenSeesDomain = passedOpenSeesDomain;
     theFunctionEvaluator = passedFunctionEvaluator;
+    theFORMAnalysis = passedFORMAnalysis;
     theHessianEvaluator = passedHessianEvaluator;
     theProbabilityTransformation = passedTransformation;
 }
@@ -91,19 +94,22 @@ CurvatureFitting::computeCurvatures()
 	int nrv = theReliabilityDomain->getNumberOfRandomVariables();
     int numberOfParameters = theOpenSeesDomain->getNumParameters();
     
-    // get alpha from FunctionEvaluator
+    // get alpha from FunctionEvaluator (can get straight from FORM in the future)
     Vector alpha(nrv);
     Vector xStar(nrv);
+    Vector uStar(nrv);
     for (int j = 0; j < nrv; j++) {
         RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);
         int rvTag = theRV->getTag();
         alpha(j) = theFunctionEvaluator->getResponseVariable("alphaFORM", lsfTag, rvTag);
         xStar(j) = theFunctionEvaluator->getResponseVariable("designPointXFORM", lsfTag, rvTag);
+        uStar(j) = theFunctionEvaluator->getResponseVariable("designPointUFORM", lsfTag, rvTag);
+        theRV->setCurrentValue(xStar(j));
     }
     
     // Gram Schmidt orthogonalization on the alpha hat vector
-    Matrix temp(nrv,nrv);
-    this->gramSchmidt(alpha,temp);
+    Matrix Qmat(nrv,nrv);
+    this->gramSchmidt(alpha,Qmat);
     
     // compute Hessian
     int result = theHessianEvaluator->computeHessian();
@@ -114,39 +120,97 @@ CurvatureFitting::computeCurvatures()
     }
     
     // transform Hessian
+    Matrix hessU(nrv,nrv);
     Matrix temp_hess(numberOfParameters,numberOfParameters);
     temp_hess = theHessianEvaluator->getHessian();
-    Matrix hessU(nrv,nrv);
     
     // map hessian from all parameters to just RVs
+    Matrix hessX(nrv,nrv);
     for (int j = 0; j < nrv; j++) {
         int param_indx_j = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
         for (int k = 0; k <= j; k++) {
             int param_indx_k = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(k);
-            hessU(j,k) = temp_hess(param_indx_j,param_indx_k);
-            hessU(k,j) = hessU(j,k);
+            hessX(j,k) = temp_hess(param_indx_j,param_indx_k);
+            hessX(k,j) = hessX(j,k);
         }
     }
     
     // Get Jacobian x-space to u-space
     Matrix Jxu(nrv,nrv);
-    result = theProbabilityTransformation->getJacobian_x_to_u(Jxu); 
-
-
-    double *hessU2data = new double[nrv*nrv];
-    Matrix hessU2(hessU2data,nrv,nrv);
+    result = theProbabilityTransformation->getJacobian_x_to_u(Jxu);
+    if (result < 0) {
+        opserr << "CurvatureFitting::computeCurvatures() - " << endln
+               << " could not transform Jacobian from x to u." << endln;
+        return -1;
+    }
     
-    // Gradient in standard normal space
-    hessU2.addMatrixTripleProduct(0.0,Jxu,hessU,1.0);
+    // Hessian in standard normal space (if the transformation is linear)
+    hessU.addMatrixTripleProduct(0.0,Jxu,hessX,1.0);
     
-    // compute A matrix
-    hessU2.addMatrixTripleProduct(1.0,temp,hessU2,1.0);
+    // gradient in original space
+    Vector gradientX;
+    theFORMAnalysis->getStorage("gradientXFORM",lsfTag,gradientX);
     
-    // still need to normalize by norm of gradient in standard normal space
+    // Now add the nonlinear term
+    // note in the future there's probably a better way to do this directly with the 
+    // probability transformation and information coming from random variables, here
+    // use finite differences
+    Matrix hessNL(nrv,nrv);
+    double hU = 1/2000.0;
+    for (int i = 0; i < nrv; i++) {
+        for (int j = 0; j <= i; j++) {
+            Vector tHess(nrv);
+            for (int k = 0; k < nrv; k++) {
+                Vector uTemp(uStar);
+                Vector xTemp(xStar);
+                double tempsum = 0;
+                
+                // unperturbed value
+                tempsum += xTemp(k);
+                
+                // perturb ith u variable
+                uTemp(i) += hU;
+                result = theProbabilityTransformation->transform_u_to_x(uTemp,xTemp);
+                tempsum -= xTemp(k);
+                
+                // perturb jth u variable
+                uTemp = uStar;
+                uTemp(j) += hU;
+                result = theProbabilityTransformation->transform_u_to_x(uTemp,xTemp);
+                tempsum -= xTemp(k);
+                
+                // perturb both
+                uTemp = uStar;
+                uTemp(i) += hU;
+                uTemp(j) += hU;
+                result = theProbabilityTransformation->transform_u_to_x(uTemp,xTemp);
+                tempsum += xTemp(k);
+                
+                tHess(k) = tempsum/hU/hU;
+            }
+            
+            hessNL(i,j) = tHess ^ gradientX;
+            hessNL(j,i) = hessNL(i,j);
+        }
+    }
     
-
-
-    // eigenvalues of reduced A matrix
+    // norm of gradient in standard normal space
+    Vector gradientU;
+    theFORMAnalysis->getStorage("gradientUFORM",lsfTag,gradientU);
+    
+    // add linear and nonlinear parts of the hessU, then compute A matrix
+    hessU += hessNL;
+    Matrix Amat(nrv,nrv);
+    Amat.addMatrixTripleProduct(0.0,Qmat,hessU,1.0/gradientU.Norm());
+    
+    // reduce A matrix to first (n-1)x(n-1) entries
+    int nred = nrv-1;
+    double *Adata = new double[nred*nred];
+    Matrix Areduced(Adata,nred,nred);
+    for (int i = 0; i < nred; i++) {
+        for (int j = 0; j < nred; j++)
+            Areduced(i,j) = Amat(i,j);
+    }
     
     // do not compute left eigenvalues and eigenvectors
     char *jobvl = "N";
@@ -154,21 +218,21 @@ CurvatureFitting::computeCurvatures()
     // compute right eigenvalues and eigenvectors
     char *jobvr = "V";
 
-    // stiffness matrix data
-    double *Kptr = hessU2data;
+    // reduced A matrix data
+    double *Kptr = Adata;
 
     // leading dimension of K
-    int ldK = nrv;
+    int ldK = nred;
 
     // allocate memory for eigenvalues (imaginary part)
-    double *alphaI = new double [nrv];
+    double *alphaI = new double [nred];
 
     if (eigenvalue != 0)
         delete [] eigenvalue;
 
     // and real part
-    eigenvalue = new double [nrv];
-    curvatures.setData(eigenvalue, nrv);
+    eigenvalue = new double [nred];
+    curvatures.setData(eigenvalue, nred);
 
     // dummy left eigenvectors
     double vl[1];
@@ -179,13 +243,13 @@ CurvatureFitting::computeCurvatures()
     // allocate memory for right eigenvectors
     if (eigenvector != 0)
         delete [] eigenvector;
-    eigenvector = new double [nrv*nrv];
+    eigenvector = new double [nred*nred];
 
     // leading dimension of right eigenvectors
-    int ldvr = nrv;
+    int ldvr = nred;
 
     // dimension of the workspace array
-    int lwork = 4*nrv + 1;
+    int lwork = 64*nred + 1;
 
     // allocate memory for workspace array
     double *work = new double [lwork];
@@ -193,12 +257,13 @@ CurvatureFitting::computeCurvatures()
     // output information
     int info = 0;
 
-    // call the LAPACK eigenvalue subroutine
+    // call the LAPACK eigenvalue subroutine for reduced A matrix
+    
 #ifdef _WIN32
-    DGEEV(jobvl, jobvr, &nrv, Kptr, &ldK, eigenvalue, alphaI,
+    DGEEV(jobvl, jobvr, &nred, Kptr, &ldK, eigenvalue, alphaI,
           vl, &ldvl, eigenvector, &ldvr, work, &lwork, &info);
 #else
-    dgeev_(jobvl, jobvr, &nrv, Kptr, &ldK, eigenvalue, alphaI,
+    dgeev_(jobvl, jobvr, &nred, Kptr, &ldK, eigenvalue, alphaI,
            vl, &ldvl, eigenvector, &ldvr, work, &lwork, &info);
 #endif
 
@@ -213,7 +278,7 @@ CurvatureFitting::computeCurvatures()
     delete [] alphaI;
     delete [] work;
 
-    delete [] hessU2data;
+    delete [] Adata;
 
     return 0;
 }

@@ -46,7 +46,11 @@ private:
     Vector *alpha;
     Vector *uStar;
     Vector *xStar;
-    Vector *gradient;
+    Vector *gradientU;
+    Vector *gradientX;
+    double beta;
+    double pf;
+    double firstCurvature;
     
 };
 

@@ -36,6 +36,7 @@
 
 #include <FindCurvatures.h>
 #include <Vector.h>
+#include <FORMAnalysis.h>
 #include <FunctionEvaluator.h>
 #include <ReliabilityDomain.h>
 
@@ -44,7 +45,8 @@ class FirstPrincipalCurvature : public FindCurvatures
 
 public:
     FirstPrincipalCurvature(ReliabilityDomain *passedReliabilityDomain,
-                            FunctionEvaluator *passedGFunEvaluator);
+                            FunctionEvaluator *passedGFunEvaluator,
+                            FORMAnalysis *passedFORMAnalysis);
     ~FirstPrincipalCurvature();
   
     int		computeCurvatures();
@@ -56,6 +58,7 @@ protected:
 private:	
     ReliabilityDomain *theReliabilityDomain;
     FunctionEvaluator *theFunctionEvaluator;
+    FORMAnalysis *theFORMAnalysis;
     
     Vector curvatures;
     Vector principalAxes;

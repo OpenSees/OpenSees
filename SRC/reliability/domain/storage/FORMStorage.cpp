@@ -30,6 +30,10 @@
 FORMStorage::FORMStorage()
 {
     alpha = 0;
+    gradientU = 0;
+    gradientX = 0;
+    beta = 0;
+    firstCurvature = 0;
 }
 
 
@@ -37,6 +41,10 @@ FORMStorage::~FORMStorage()
 {
     if (alpha != 0)
         delete alpha;
+    if (gradientU != 0)
+        delete gradientU;
+    if (gradientX != 0)
+        delete gradientX;
 }
 
 
@@ -53,12 +61,19 @@ FORMStorage::setVariable(const char *variable, Information &theInfo)
     if (strcmp(variable,"alphaFORM") == 0) {
         alpha = new Vector(*(theInfo.theVector));
     }
-    else if (strcmp(variable,"gradientU") == 0) {
-        gradient = new Vector(*(theInfo.theVector));
+    
+    else if (strcmp(variable,"gradientUFORM") == 0) {
+        gradientU = new Vector(*(theInfo.theVector));
     }
-    else if (strcmp(variable,"beta") == 0) {
-        
+    
+    else if (strcmp(variable,"gradientXFORM") == 0) {
+        gradientX = new Vector(*(theInfo.theVector));
     }
+    
+    else if (strcmp(variable,"betaFORM") == 0) {
+
+    }
+    
     else {
         opserr << "FORMStorage:: unknown variable " << variable << 
             " in setVariable()" << endln;
@@ -79,17 +94,30 @@ FORMStorage::getVariable(const char *variable, Information &theInfo)
         else
             return -1;
     }
-    else if (strcmp(variable,"gradient") == 0) {
-        if (gradient != 0) {
+    
+    else if (strcmp(variable,"gradientUFORM") == 0) {
+        if (gradientU != 0) {
             theInfo.theType = VectorType;
-            theInfo.setVector(*gradient);
+            theInfo.setVector(*gradientU);
         }
         else
             return -1;
     }
-    else if (strcmp(variable,"beta") == 0) {
-        
+    
+    else if (strcmp(variable,"gradientXFORM") == 0) {
+        if (gradientX != 0) {
+            theInfo.theType = VectorType;
+            theInfo.setVector(*gradientX);
+        }
+        else
+            return -1;
     }
+    
+    else if (strcmp(variable,"betaFORM") == 0) {
+        theInfo.theType = DoubleType;
+        theInfo.setVector(beta);
+    }
+    
     else {
         opserr << "FORMStorage:: unknown variable " << variable << 
             " in getVariable()" << endln;

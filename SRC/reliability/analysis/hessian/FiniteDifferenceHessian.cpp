@@ -76,6 +76,8 @@ FiniteDifferenceHessian::computeHessian()
 	grad_g->Zero();
 	
 	// get limit-state function from reliability domain
+    // NOTE: this needs to change in the future to allow treatment of other 
+    // types of performanceFunctions (not just LSF)
 	int lsf = theReliabilityDomain->getTagOfActiveLimitStateFunction();
 	LimitStateFunction *theLimitStateFunction = theReliabilityDomain->getLimitStateFunctionPtr(lsf);
 	const char *lsfExpression = theLimitStateFunction->getExpression();

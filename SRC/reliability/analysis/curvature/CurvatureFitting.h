@@ -38,6 +38,7 @@
 #include <Domain.h>
 #include <Vector.h>
 #include <FunctionEvaluator.h>
+#include <FORMAnalysis.h>
 #include <HessianEvaluator.h>
 #include <ProbabilityTransformation.h>
 #include <ReliabilityDomain.h>
@@ -48,9 +49,10 @@ class CurvatureFitting : public FindCurvatures
 public:
     CurvatureFitting(ReliabilityDomain *passedReliabilityDomain,
                      Domain *passedOpenSeesDomain,
-                            FunctionEvaluator *passedGFunEvaluator,
-                            HessianEvaluator *passedHessianEvaluator,
-                            ProbabilityTransformation *passedTransformation);
+                     FunctionEvaluator *passedGFunEvaluator,
+                     FORMAnalysis *passedFORMAnalysis,
+                     HessianEvaluator *passedHessianEvaluator,
+                     ProbabilityTransformation *passedTransformation);
     ~CurvatureFitting();
   
     int		computeCurvatures();
@@ -63,6 +65,7 @@ private:
     ReliabilityDomain *theReliabilityDomain;
     Domain *theOpenSeesDomain;
     FunctionEvaluator *theFunctionEvaluator;
+    FORMAnalysis *theFORMAnalysis;
     HessianEvaluator *theHessianEvaluator;
     ProbabilityTransformation *theProbabilityTransformation;
     

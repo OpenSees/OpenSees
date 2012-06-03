@@ -56,6 +56,7 @@ public:
 	virtual double getFirstGFunValue() =0;
 	virtual double getLastGFunValue() =0;
 	virtual const Vector &getGradientInStandardNormalSpace() =0;
+    virtual const Vector &getGradientInOriginalSpace() =0;
 	virtual int getNumberOfEvaluations() = 0;
 	
 	/////S added by K Fujimura /////

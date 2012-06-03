@@ -33,6 +33,7 @@
 
 #include <CurvaturesBySearchAlgorithm.h>
 #include <FindCurvatures.h>
+#include <FORMAnalysis.h>
 #include <LimitStateFunction.h>
 #include <Vector.h>
 #include <math.h>
@@ -40,11 +41,13 @@
 
 CurvaturesBySearchAlgorithm::CurvaturesBySearchAlgorithm(ReliabilityDomain *passedReliabilityDomain,
                                                          FunctionEvaluator *passedFunctionEvaluator,
+                                                         FORMAnalysis *passedFORMAnalysis,
                                                          int passedNumberOfCurvatures)
 :FindCurvatures(), curvatures(passedNumberOfCurvatures)
 {
     theReliabilityDomain = passedReliabilityDomain;
     theFunctionEvaluator = passedFunctionEvaluator;
+    theFORMAnalysis = passedFORMAnalysis;
     numberOfCurvatures = passedNumberOfCurvatures;
 }
 

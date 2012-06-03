@@ -233,12 +233,14 @@ FORMAnalysis::analyze()
         double firstCurvature = theFindDesignPointAlgorithm->getFirstCurvature();
         theFunctionEvaluator->setResponseVariable("curvatureFORM", lsfTag, firstCurvature);
         
-        // store results using reliability storage
+        // store results using reliability storage (at the moment this duplicates the evaluator calls)
         Information relInfo;
         relInfo.setVector(alpha);
         storage[lsf]->setVariable("alphaFORM",relInfo);
         relInfo.setVector(theFindDesignPointAlgorithm->getGradientInStandardNormalSpace());
-        storage[lsf]->setVariable("gradientU",relInfo);
+        storage[lsf]->setVariable("gradientUFORM",relInfo);
+        relInfo.setVector(theFindDesignPointAlgorithm->getGradientInOriginalSpace());
+        storage[lsf]->setVariable("gradientXFORM",relInfo);
 
 
         // report the rest to output file

@@ -32,6 +32,7 @@
 
 #include <FirstPrincipalCurvature.h>
 #include <FindCurvatures.h>
+#include <FORMAnalysis.h>
 #include <LimitStateFunction.h>
 #include <Vector.h>
 #include <Matrix.h>
@@ -42,11 +43,13 @@
 using std::ios;
 
 FirstPrincipalCurvature::FirstPrincipalCurvature(ReliabilityDomain *passedReliabilityDomain,
-                                                 FunctionEvaluator *passedFunctionEvaluator)
+                                                 FunctionEvaluator *passedFunctionEvaluator,
+                                                 FORMAnalysis *passedFORMAnalysis)
 :FindCurvatures(), curvatures(1)
 {
     theReliabilityDomain = passedReliabilityDomain;
     theFunctionEvaluator = passedFunctionEvaluator;
+    theFORMAnalysis = passedFORMAnalysis;
 }
 
 FirstPrincipalCurvature::~FirstPrincipalCurvature()
@@ -68,7 +71,7 @@ FirstPrincipalCurvature::computeCurvatures()
 	// Get hold of first principal curvature from functionEvaluator
 	curvatures(0) = theFunctionEvaluator->getResponseVariable("curvatureFORM", lsfTag);
     
-    // get alpha
+    // get alpha (can get from FORMAnalysis directly in the future)
     Vector alpha(nrv);
     for (int j = 0; j < nrv; j++) {
         RandomVariable *theRV = theReliabilityDomain->getRandomVariablePtrFromIndex(j);

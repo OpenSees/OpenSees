@@ -82,6 +82,7 @@ public:
 	double getFirstGFunValue();
 	double getLastGFunValue();
 	const Vector &getGradientInStandardNormalSpace();
+	const Vector &getGradientInOriginalSpace();
 	int getNumberOfEvaluations();
 
 protected:
@@ -107,6 +108,7 @@ private:
 	Vector *alpha;
 	Vector *gamma;
 	Vector *gradientInStandardNormalSpace;
+    Vector *gradientInOriginalSpace;
 	Vector *uSecondLast;
 	Vector *alphaSecondLast;
 	Vector *searchDirection;

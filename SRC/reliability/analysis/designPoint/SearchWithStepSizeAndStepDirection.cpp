@@ -95,6 +95,7 @@ SearchWithStepSizeAndStepDirection::SearchWithStepSizeAndStepDirection(
 	alpha = new Vector(nrv);
 	gamma = new Vector(nrv);
 	gradientInStandardNormalSpace = new Vector(nrv);
+    gradientInOriginalSpace = new Vector(nrv);
 	uSecondLast = new Vector(nrv);
 	alphaSecondLast = new Vector(nrv);
 	searchDirection = new Vector(nrv);
@@ -116,6 +117,8 @@ SearchWithStepSizeAndStepDirection::~SearchWithStepSizeAndStepDirection()
 		delete gamma;
 	if (gradientInStandardNormalSpace != 0)
 		delete gradientInStandardNormalSpace;
+    if (gradientInOriginalSpace != 0)
+        delete gradientInOriginalSpace;
 	if (uSecondLast != 0)
 		delete uSecondLast;
 	if (alphaSecondLast != 0)
@@ -139,7 +142,6 @@ SearchWithStepSizeAndStepDirection::gradientStandardNormal(double gFunctionValue
     double normOfGradient = 0;
     
     // temporary storage
-    Vector gradientOfgFunction(numberOfRandomVariables);
     Vector temp_grad(numberOfParameters);
     
     
@@ -155,11 +157,8 @@ SearchWithStepSizeAndStepDirection::gradientStandardNormal(double gFunctionValue
     // map gradient from all parameters to just RVs
     for (int j = 0; j < numberOfRandomVariables; j++) {
         int param_indx = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
-        gradientOfgFunction(j) = temp_grad(param_indx);
+        (*gradientInOriginalSpace)(j) = temp_grad(param_indx);
     }
-    
-    //opserr << "x = " << *x << "g = " << gFunctionValue << endln;
-    //opserr << "dg/dx = " << gradientOfgFunction << endln;
     
     // Get Jacobian x-space to u-space
     result = theProbabilityTransformation->getJacobian_x_to_u(*Jxu);
@@ -171,7 +170,7 @@ SearchWithStepSizeAndStepDirection::gradientStandardNormal(double gFunctionValue
     }
     
     // Gradient in standard normal space
-    gradientInStandardNormalSpace->addMatrixTransposeVector(0.0, *Jxu, gradientOfgFunction, 1.0);
+    gradientInStandardNormalSpace->addMatrixTransposeVector(0.0, *Jxu, *gradientInOriginalSpace, 1.0);
     
     // Compute the norm of the gradient in standard normal space
     normOfGradient = gradientInStandardNormalSpace->Norm();
@@ -336,20 +335,17 @@ SearchWithStepSizeAndStepDirection::findDesignPoint()
             
             // compute the first principal curvature here (ADK and De Stefano 1992)
             // so we do not need to store or provide access to SecondLast variables
-            double signumProduct = *alphaSecondLast ^ *u;
-            signumProduct -= *alphaSecondLast ^ *uSecondLast;
             double alphaProduct = *alphaSecondLast ^ *alpha;
-            
-            // Compute norm of the difference vector and compute curvature
             Vector uDiff = *u - *uSecondLast;
+            double signumProduct = *alphaSecondLast ^ uDiff;
+            
             firstCurvature = acos(alphaProduct) / uDiff.Norm();
             if (signumProduct < 0)
                 firstCurvature *= -1.0;
             
-            
             return 1;
         }
-    
+
         
         // else we need to continue to perform iterations
         
@@ -499,6 +495,13 @@ const Vector&
 SearchWithStepSizeAndStepDirection::getGradientInStandardNormalSpace()
 {
 	return *gradientInStandardNormalSpace;
+}
+
+
+const Vector&
+SearchWithStepSizeAndStepDirection::getGradientInOriginalSpace()
+{
+	return *gradientInOriginalSpace;
 }
 
 

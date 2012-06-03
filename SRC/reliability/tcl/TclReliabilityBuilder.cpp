@@ -3174,12 +3174,17 @@ TclReliabilityModelBuilder_addFindCurvatures(ClientData clientData, Tcl_Interp *
         opserr << "Need theFunctionEvaluator before a findCurvatures can be created" << endln;
         return TCL_ERROR;
     }
+    if (theFORMAnalysis == 0 ) {
+		opserr << "Need theFORMAnalysis before a findCurvatures can be created" << endln;
+        return TCL_ERROR;
+	}
 
 	// GET INPUT PARAMETER (string) AND CREATE THE OBJECT
 	if (strcmp(argv[1],"firstPrincipal") == 0) {
         // KRM 5-22-2012
         // combining former firstPrincipal and bySearchAlgorithm because they are doing same thing
-		theFindCurvatures = new FirstPrincipalCurvature(theReliabilityDomain, theFunctionEvaluator);
+		theFindCurvatures = new FirstPrincipalCurvature(theReliabilityDomain, theFunctionEvaluator,
+                                                        theFORMAnalysis);
 		
 	}
 	else if (strcmp(argv[1],"bySearchAlgorithm") == 0) {
@@ -3193,7 +3198,7 @@ TclReliabilityModelBuilder_addFindCurvatures(ClientData clientData, Tcl_Interp *
 		}
 
 		theFindCurvatures = new CurvaturesBySearchAlgorithm(theReliabilityDomain, theFunctionEvaluator,
-                                                            numberOfCurvatures);
+                                                            theFORMAnalysis, numberOfCurvatures);
 	}
     else if (strcmp(argv[1],"curvatureFitting") == 0) {
         // needs Hessian
@@ -3209,7 +3214,7 @@ TclReliabilityModelBuilder_addFindCurvatures(ClientData clientData, Tcl_Interp *
         }
         
 		theFindCurvatures = new CurvatureFitting(theReliabilityDomain, theStructuralDomain, theFunctionEvaluator,
-                                                 theHessianEvaluator, theProbabilityTransformation);
+                                                 theFORMAnalysis, theHessianEvaluator, theProbabilityTransformation);
     }
 	else {
 		opserr << "ERROR: unrecognized type of FindCurvatures \n";
@@ -3722,9 +3727,6 @@ TclReliabilityModelBuilder_runFORMAnalysis(ClientData clientData, Tcl_Interp *in
 	// Now run the analysis
 	theFORMAnalysis->analyze();
     
-    //Vector temp;
-    //theFORMAnalysis->getStorage("alphaFORM",1,temp);
-
 	return TCL_OK;
 }
 
