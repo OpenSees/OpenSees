@@ -39,6 +39,7 @@ include ../../../Makefile.def
 	Steel02.o \
 	Concrete02.o \
 	Steel03.o \
+	MultiLinear.o \
 	Bond_SP01.o \
 	UniaxialJ2Plasticity.o \
 	HyperbolicGapMaterial.o \
