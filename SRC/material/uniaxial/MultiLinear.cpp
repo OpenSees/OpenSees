@@ -114,11 +114,7 @@ MultiLinear::MultiLinear(int tag, const Vector &s, const Vector &e)
   cStress = 0.0;
   cTangent = tTangent;
 
-  e0 = 0.0;
   tSlope = 0;
-  cSlope = 0;; 
-
-  this->Print(opserr);
 }
 
 
@@ -137,8 +133,6 @@ MultiLinear::~MultiLinear()
 int 
 MultiLinear::setTrialStrain(double strain, double strainRate)
 {
-  opserr << "setTrialStrain: " << tStrain << endln;
-
   if (fabs(tStrain - strain) < DBL_EPSILON)
     return 0;
 
@@ -192,19 +186,20 @@ MultiLinear::getTangent(void)
 int 
 MultiLinear::commitState(void)
 {
-  opserr << "COMMIT\n";
   // if yielded we need to reset the values               
   if (tSlope != 0) { // yielded
 
-    if (tStrain > data(0,1)) { // upper curve
+
+    if (tStrain > data(0,1)) {     // positive yield direction
+
+      // set elastic bounds
       data(0,1) = tStrain;
       data(0,3) = tStress;
       data(0,0) = tStrain - 2*data(0,5);
       data(0,2) = tStress - 2*data(0,5)*data(0,4);
 
-      double dSlopeStrain = tStrain-data(tSlope,1);
-      double dSlopeStress = tStress-data(tSlope,3);
-
+      // reset bounds for all those pts before yield
+      //  - pos & neg affected
       for (int i=1; i<tSlope; i++) {
 	data(i,1) = tStrain;
 	data(i,3) = tStress;
@@ -212,48 +207,33 @@ MultiLinear::commitState(void)
 	data(i,2) = data(i-1,2) - 2*data(i,5)*data(i,4);
       }
 
+      // reset bounds for all those pts after
+      //  - neg affected 
       data(tSlope,0) = data(tSlope-1,0) - 2*data(tSlope,5) 
 	+ data(tSlope,1) - data(tSlope-1,1);
       data(tSlope,2) = data(tSlope-1,2) 
 	+ (data(tSlope,0)-data(tSlope-1,0))*data(tSlope,4);
 
-      double dStrain = tStrain-cStrain;
-      double dStress = tStress-cStress;
       for (int i=tSlope+1; i<numSlope; i++) {
-	//	data(i,1) = data(i-1,1) + data(i,5);
-	//data(i,3) = data(i-1,3) + 2*data(i,5)*data(i,4);
-	//	data(i,1) += dStrain;
-	//		data(i,3) += dStress;
 	data(tSlope,0) = data(tSlope-1,0) - 2*data(tSlope,5) 
 	  + data(tSlope,1) - data(tSlope-1,1);
 	data(tSlope,2) = data(tSlope-1,2) 
 	  + (data(tSlope,0)-data(tSlope-1,0))*data(tSlope,4);
       }
 
-      /*      
-      data(tSlope,0) = data(tSlope-1,0) - data(tSlope,5) 
-	+ tStrain - data(tSlope-1,1);
-      data(tSlope,2) = data(tSlope-1,2) 
-	+ (data(tSlope,0)-data(tSlope-1,0))*data(tSlope,4);
-
-      double dStrain = tStrain-cStrain;
-      double dStress = tStress-cStress;
-      for (int i=tSlope+1; i<numSlope; i++) {
-	data(i,0) += dStrain;
-	data(i,2) += dStress;
-      }
-      */
-
-    } else {
+    } else {  // neg direction
+      
+      //
+      // set elastic bounds
+      //
 
       data(0,0) = tStrain;
       data(0,2) = tStress;
       data(0,1) = tStrain + 2*data(0,5);
       data(0,3) = tStress + 2*data(0,5)*data(0,4);
 
-      double dSlopeStrain = tStrain-data(tSlope,1);
-      double dSlopeStress = tStress-data(tSlope,3);
-
+      // reset bounds for all those pts before yield slope
+      //  - pos & neg affected 
       for (int i=1; i<tSlope; i++) {
 	data(i,0) = tStrain;
 	data(i,2) = tStress;
@@ -261,33 +241,26 @@ MultiLinear::commitState(void)
 	data(i,3) = data(i-1,3) + 2*data(i,5)*data(i,4);
       }
 
+      // reset bounds for all those pts after
+      //  - pos pts affected 
+
       data(tSlope,1) = data(tSlope-1,1) + 2*data(tSlope,5) 
 	+ data(tSlope,0) - data(tSlope-1,0);
       data(tSlope,3) = data(tSlope-1,3) 
 	+ (data(tSlope,1)-data(tSlope-1,1))*data(tSlope,4);
 
-      double dStrain = tStrain-cStrain;
-      double dStress = tStress-cStress;
       for (int i=tSlope+1; i<numSlope; i++) {
-	//	data(i,1) = data(i-1,1) + data(i,5);
-	//data(i,3) = data(i-1,3) + 2*data(i,5)*data(i,4);
-	//	data(i,1) += dStrain;
-	//		data(i,3) += dStress;
 	data(tSlope,1) = data(tSlope-1,1) + 2*data(tSlope,5) 
 	  + data(tSlope,0) - data(tSlope-1,0);
 	data(tSlope,3) = data(tSlope-1,3) 
 	  + (data(tSlope,1)-data(tSlope-1,1))*data(tSlope,4);
       }
-
     }
   }
   	
   cStress=tStress;
   cStrain=tStrain;
   cTangent = tTangent;
-
-  opserr << "MultiLinear:: commitState - end\n";
-  this->Print(opserr);
     
   return 0;
 }
@@ -321,8 +294,6 @@ MultiLinear::getCopy(void)
     new MultiLinear();
   theCopy->data = this->data;
   theCopy->numSlope = this->numSlope;
-  theCopy->tSlope = this->tSlope;
-  theCopy->cSlope = this->cSlope;
   
   theCopy->tStress = this->tStress;
   theCopy->tStrain = this->tStrain;

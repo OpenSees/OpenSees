@@ -48,7 +48,7 @@ class MultiLinear : public UniaxialMaterial
   double getStress(void);
   double getTangent(void);
   
-  double getInitialTangent(void) {return data(elasticPosSlope,2);};
+  double getInitialTangent(void) {return data(0,4);};
   
   int commitState(void);
   int revertToLastCommit(void);    
@@ -66,14 +66,9 @@ class MultiLinear : public UniaxialMaterial
   
  private:
   Matrix data;
-  double e0;
   int numSlope;
-  int maxSlope;
-  int elasticPosSlope;;
   int tSlope;
-  int cSlope;
 
-  int strainDirn;
   double tStrain;	     // current t strain
   double tStress;      // current t stress
   double tTangent;     // current t tangent
