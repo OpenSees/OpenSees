@@ -2747,6 +2747,8 @@ SRC/material/uniaxial/Maxwell.cpp -text
 SRC/material/uniaxial/Maxwell.h -text
 SRC/material/uniaxial/MinMaxMaterial.cpp -text
 SRC/material/uniaxial/MinMaxMaterial.h -text
+SRC/material/uniaxial/MultiLinear.cpp -text
+SRC/material/uniaxial/MultiLinear.h -text
 SRC/material/uniaxial/Neoprene.cpp -text
 SRC/material/uniaxial/Neoprene.h -text
 SRC/material/uniaxial/NewUniaxialMaterial.cpp -text
