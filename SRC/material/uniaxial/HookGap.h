@@ -27,12 +27,16 @@
 #define HookGap_h
 
 // Written: fmk 
-// Created: 06/12
+// Created: 07/98
+// Revision: A
 //
 // Description: This file contains the class definition for 
-// HookGapMaterial. HookGap provides the abstraction
+// HookGap. HookGap provides the abstraction
 // of an viscoelastic uniaxial material,
 // i.e. stress = E*strain + eta*strainrate
+//
+//
+// What: "@(#) HookGap.h, revA"
 
 
 #include <UniaxialMaterial.h>
@@ -41,7 +45,7 @@ class HookGap : public UniaxialMaterial
 {
   public:
     HookGap(int tag, double E, double gap);    
-    HookGap(int tag, double E, double gapP, double gapN);    
+    HookGap(int tag, double E, double gapN, double gapP);    
     HookGap();    
     ~HookGap();
 
@@ -51,7 +55,7 @@ class HookGap : public UniaxialMaterial
     int setTrial(double strain, double &stress, double &tangent, double strainRate = 0.0); 
     double getStrain(void) {return trialStrain;};
     double getStress(void);
-    double getTangent(void); 
+    double getTangent(void);
     double getInitialTangent(void);
 
     int commitState(void);
@@ -76,7 +80,6 @@ class HookGap : public UniaxialMaterial
     double E;
     double gapN;
     double gapP;
-
 };
 
 

@@ -23,8 +23,8 @@
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/HookGap.cpp,v $
                                                                         
                                                                         
-// Written: fmk
-// Created: 06/12
+// Written: fmk 
+// Created: 07/98
 // Revision: A
 //
 // Description: This file contains the class implementation for 
@@ -50,15 +50,15 @@ OPS_NewHookGap(void)
   UniaxialMaterial *theMaterial = 0;
 
   if (OPS_GetNumRemainingInputArgs() < 3) {
-    opserr << "Invalid #args,  want: uniaxialMaterial HookGap tag? E? gap? ... " << endln;
+    opserr << "Invalid #args,  want: uniaxialMaterial Elastic tag? E? gap? ... " << endln;
     return 0;
   }
-    
+  
   int iData[1];
   double dData[3];
   int numData = 1;
   if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING invalid tag or soilType uniaxialMaterial HookGapMaterial" << endln;
+    opserr << "WARNING invalid tag for uniaxialMaterial HookGapMaterial" << endln;
     return 0;
   }
 
@@ -66,17 +66,17 @@ OPS_NewHookGap(void)
   if (numData >= 3) {
     numData = 3;
     if (OPS_GetDoubleInput(&numData, dData) != 0) {
-      opserr << "Invalid pyData data for material uniaxial HookGap " << iData[0] << endln;
+      opserr << "Invalid data for uniaxialMaterial HookGap " << iData[0] << endln;
       return 0;	
     }
   } else {
     numData = 2;
     if (OPS_GetDoubleInput(&numData, dData) != 0) {
-      opserr << "Invalid pyData data for material uniaxial HookGap " << iData[0] << endln;
+      opserr << "Invalid data for uniaxialMaterial HookGap " << iData[0] << endln;
       return 0;	
     }
-    dData[2] =  dData[1];
-    dData[1] = -dData[1];
+    dData[1] = -dData[2];
+    dData[2] =  dData[1];;
   }
 
   // Parsing was successful, allocate the material
@@ -92,24 +92,24 @@ OPS_NewHookGap(void)
 
 HookGap::HookGap(int tag, double e, double gap)
 :UniaxialMaterial(tag,MAT_TAG_HookGap),
- trialStrain(0.0), E(e), gapN(-gap), gapP(gap)
+ trialStrain(0.0),  
+ E(e), gapN(-gap), gapP(gap)
 {
-    
+
 }
 
 HookGap::HookGap(int tag, double e, double gapNeg, double gapPos)
 :UniaxialMaterial(tag,MAT_TAG_HookGap),
- trialStrain(0.0), E(e), gapN(gapNeg), gapP(gapPos)
+ trialStrain(0.0),  
+ E(e), gapN(gapNeg), gapP(gapPos)
 {
-  if (gapN > gapP) {
-    gapN = gapPos;
-    gapP = gapNeg;
-  }
+
 }
 
 HookGap::HookGap()
 :UniaxialMaterial(0,MAT_TAG_HookGap),
- trialStrain(0.0), E(0), gapN(0), gapP(0)
+ trialStrain(0.0),  
+ E(0.0), gapN(0.0), gapP(0)
 {
 
 }
@@ -130,7 +130,7 @@ HookGap::setTrialStrain(double strain, double strainRate)
 int 
 HookGap::setTrial(double strain, double &stress, double &tangent, double strainRate)
 {
-    trialStrain = strain;
+    trialStrain     = strain;
     return 0;
 }
 
@@ -139,27 +139,28 @@ HookGap::getStress(void)
 {
   if (gapN <= trialStrain && trialStrain <= gapP)
     return 0;
-  else if (trialStrain > gapP)
+  else if (trialStrain > gapP) {
     return E*(trialStrain-gapP);
-  else
+  } else {
     return E*(trialStrain-gapN);
+  }
 }
-
 
 double 
 HookGap::getTangent(void)
 {
   if (gapN < trialStrain && trialStrain < gapP)
     return 0;
-  else
+  else 
     return E;
 }
 
 double 
 HookGap::getInitialTangent(void)
 {
-  return E;
+  return 0;
 }
+
 
 int 
 HookGap::commitState(void)
@@ -185,7 +186,7 @@ HookGap::revertToStart(void)
 UniaxialMaterial *
 HookGap::getCopy(void)
 {
-  HookGap *theCopy = new HookGap(this->getTag(),E,gapN, gapP);
+  HookGap *theCopy = new HookGap(this->getTag(), E, gapN, gapP);
     theCopy->trialStrain     = trialStrain;
     return theCopy;
 }
@@ -198,7 +199,7 @@ HookGap::sendSelf(int cTag, Channel &theChannel)
   data(0) = this->getTag();
   data(1) = E;
   data(2) = gapN;
-  data(2) = gapP;
+  data(3) = gapP;
 
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
@@ -233,7 +234,7 @@ HookGap::recvSelf(int cTag, Channel &theChannel,
 void 
 HookGap::Print(OPS_Stream &s, int flag)
 {
-    s << "Elastic tag: " << this->getTag() << endln;
+    s << "HookGap tag: " << this->getTag() << endln;
     s << "  E: " << E << " gapN: " << gapN << " gapP: " << gapP << endln;
 }
 
@@ -244,7 +245,7 @@ HookGap::setParameter(const char **argv, int argc, Parameter &param)
   if (strcmp(argv[0],"E") == 0)
     return param.addObject(1, this);
   
-  else if (strcmp(argv[0],"gap") == 0)
+  else if (strcmp(argv[0],"eta") == 0)
     return param.addObject(2, this);
 
   return -1;
@@ -259,7 +260,7 @@ HookGap::updateParameter(int parameterID, Information &info)
     return 0;
   case 2:
     gapP = info.theDouble;
-    gapP = -gapP;
+    gapN = -gapP;
     return 0;
   default:
     return -1;
