@@ -110,91 +110,92 @@
 #define PARAMETER_TAG_MatParameter       3
 
 
-#define MAT_TAG_ElasticMaterial			1
-#define MAT_TAG_ElasticPPMaterial		2
-#define MAT_TAG_ParallelMaterial		3
-#define MAT_TAG_Concrete01				4
-#define MAT_TAG_Steel01					5
-
-
-#define MAT_TAG_Hardening				6
-#define MAT_TAG_Hysteretic				7
-#define MAT_TAG_EPPGap					8
-#define MAT_TAG_Viscous					9
-#define MAT_TAG_Backbone				10
+#define MAT_TAG_ElasticMaterial			 1
+#define MAT_TAG_ElasticPPMaterial		 2
+#define MAT_TAG_ParallelMaterial		 3
+#define MAT_TAG_Concrete01			 4
+#define MAT_TAG_Steel01				 5
+#define MAT_TAG_Hardening			 6
+#define MAT_TAG_Hysteretic			 7
+#define MAT_TAG_EPPGap				 8
+#define MAT_TAG_Viscous				 9
+#define MAT_TAG_Backbone			10
 #define MAT_TAG_PathIndependent			11
 #define MAT_TAG_SeriesMaterial			12
-#define MAT_TAG_CableMaterial          13
-#define MAT_TAG_ENTMaterial				14
-#define MAT_TAG_Penalty					15
-#define MAT_TAG_MinMax					16
-#define MAT_TAG_BoucWen					17
-#define MAT_TAG_Pinching4					18
-#define MAT_TAG_BarSlip					19
-#define MAT_TAG_Fatigue			20
+#define MAT_TAG_CableMaterial                   13
+#define MAT_TAG_ENTMaterial			14
+#define MAT_TAG_Penalty				15
+#define MAT_TAG_MinMax				16
+#define MAT_TAG_BoucWen				17
+#define MAT_TAG_Pinching4			18
+#define MAT_TAG_BarSlip				19
+#define MAT_TAG_Fatigue			        20
+#define MAT_TAG_SmoothSteel01			21
+#define MAT_TAG_SmoothConcrete01		22
+#define MAT_TAG_Steel03				23
+#define MAT_TAG_ReinforcingSteel		24
+#define MAT_TAG_Concrete02			25
+#define MAT_TAG_Steel02				26
+#define MAT_TAG_Bond_SP01                       27
+#define MAT_TAG_Hysteretic2			28
+#define MAT_TAG_Concrete04                      30
+#define MAT_TAG_SecantConcrete                  31
+#define MAT_TAG_ContinuumUniaxial               32
+#define MAT_TAG_Concrete05                      33
+#define MAT_TAG_Concrete06                      34
+#define MAT_TAG_Concrete07                      37
+#define MAT_TAG_HyperbolicGapMaterial           38
+#define MAT_TAG_ImpactMaterial                  39
+#define MAT_TAG_ShearPanelMaterial		40
 #define MAT_TAG_SAWSMaterial			41
-#define MAT_TAG_Steel03					23
-#define MAT_TAG_ReinforcingSteel					24
-#define MAT_TAG_ShearPanelMaterial					40
 #define MAT_TAG_ConcreteL01			42
 #define MAT_TAG_ConcreteZ01			43
 #define MAT_TAG_TendonL01			44
 #define MAT_TAG_SteelZ01			45
-#define MAT_TAG_ElasticBilin			46
+#define MAT_TAG_ElasticMultiLinear		46
 #define MAT_TAG_InitStrain			47
 #define MAT_TAG_InitStress			48
 #define MAT_TAG_pyUCLA  			49
-#define MAT_TAG_Maxwell			50
-#define MAT_TAG_Cast			51
-#define MAT_TAG_ElasticMultiLinear			46
+#define MAT_TAG_Maxwell			        50
+#define MAT_TAG_Cast			        51
+#define MAT_TAG_MultiLinear			52
+#define MAT_TAG_ElasticBilin			53
+#define MAT_TAG_SMA                             54
+#define MAT_TAG_SelfCentering                   55
+#define MAT_TAG_Clough1	                        56
+#define MAT_TAG_Clough2	                        57
+#define MAT_TAG_Pinch1	                        58
+#define MAT_TAG_BiLinear                        59
+#define MAT_TAG_Pinching                        60
+#define MAT_TAG_HookGap 			61
 
+#define MAT_TAG_WrapperUniaxialMaterial      101
+#define MAT_TAG_UniaxialJ2Plasticity         102
 
-// Terje:
-#define MAT_TAG_SmoothSteel01			21
-#define MAT_TAG_SmoothConcrete01		22
+#define MAT_TAG_PySimple1                    205
+#define MAT_TAG_TzSimple1                    206
+#define MAT_TAG_QzSimple1                    207
+#define MAT_TAG_PyLiq1                       208
+#define MAT_TAG_TzLiq1                       209
+#define MAT_TAG_PySimple2                    210
+#define MAT_TAG_TzSimple2                    211
+#define MAT_TAG_QzSimple2                    212
 
-#define MAT_TAG_Concrete02				25
-#define MAT_TAG_Steel02					26
-
-#define MAT_TAG_Bond_SP01  27
-#define MAT_TAG_Hysteretic2				28
-#define MAT_TAG_Concrete04 30
-#define MAT_TAG_SecantConcrete 31
-#define MAT_TAG_ContinuumUniaxial 32
-#define MAT_TAG_Concrete05 33
-#define MAT_TAG_Concrete06 34
-#define MAT_TAG_Concrete07 37
-#define MAT_TAG_HyperbolicGapMaterial 38
-#define MAT_TAG_ImpactMaterial 39
-#define MAT_TAG_WrapperUniaxialMaterial 101
-#define MAT_TAG_UniaxialJ2Plasticity 102
-
-
-
-
-//B Jeremic
-#define MAT_TAG_PySimple1        205
-#define MAT_TAG_TzSimple1        206
-#define MAT_TAG_QzSimple1        207
-#define MAT_TAG_PyLiq1           208
-#define MAT_TAG_TzLiq1           209
-#define MAT_TAG_PySimple2        210
-#define MAT_TAG_TzSimple2        211
-#define MAT_TAG_QzSimple2        212
-
-#define MAT_TAG_FedeasMaterial         1000
+#define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
 #define MAT_TAG_FedeasBond2       1002
-#define MAT_TAG_FedeasConcrete1       1003
-#define MAT_TAG_FedeasConcrete2       1004
-#define MAT_TAG_FedeasConcrete3       1005
-#define MAT_TAG_FedeasHardening       1006
-#define MAT_TAG_FedeasHysteretic1       1007
-#define MAT_TAG_FedeasHysteretic2       1008
-#define MAT_TAG_FedeasSteel1       1009
-#define MAT_TAG_FedeasSteel2       1010
-#define MAT_TAG_PlasticDamage			       1011
+#define MAT_TAG_FedeasConcrete1   1003
+#define MAT_TAG_FedeasConcrete2   1004
+#define MAT_TAG_FedeasConcrete3   1005
+#define MAT_TAG_FedeasHardening   1006
+#define MAT_TAG_FedeasHysteretic1 1007
+#define MAT_TAG_FedeasHysteretic2 1008
+#define MAT_TAG_FedeasSteel1      1009
+#define MAT_TAG_FedeasSteel2      1010
+#define MAT_TAG_PlasticDamage	  1011
 
+#define MAT_TAG_LimitState	   1972
+#define MAT_TAG_Elastic2Material   1973
 
 #define MAT_TAG_DrainMaterial		2000
 #define MAT_TAG_DrainHardening		2001
@@ -217,18 +218,10 @@
 #define MAT_TAG_Concrete01WithSITC 3011
 
 
-#define MAT_TAG_Clough1	201
-#define MAT_TAG_Clough2	202
-#define MAT_TAG_Pinch1	203
-#define MAT_TAG_BiLinear	204
-#define MAT_TAG_Pinching	205
-
-#define MAT_TAG_LimitState	1972
-#define MAT_TAG_Elastic2Material	1973
 
 
-#define MAT_TAG_SMA 51
-#define MAT_TAG_SelfCentering 52
+
+
 
 
 #define SEC_TAG_Elastic2d   3
@@ -504,6 +497,8 @@
 #define ELE_TAG_TripleFPSimple3d    5113
 #define ELE_TAG_TripleFP2d          5114
 #define ELE_TAG_TripleFP3d          5115
+#define ELE_TAG_MultiFP2d          5116
+#define ELE_TAG_MultiFP3d          5117
 
 #define ELE_TAG_GenericClient    2103
 #define ELE_TAG_GenericCopy      2104
