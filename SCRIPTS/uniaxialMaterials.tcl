@@ -21,6 +21,62 @@ proc enable_buttons {} {
 # Define the data structures & procedures for Concrete01
 # ##############################################################
 
+set MultiLinear(materialId) 1
+set MultiLinear(e0) 0.05
+set MultiLinear(s0) 10.0
+set MultiLinear(e1) 0.15
+set MultiLinear(s1) 20.0
+set MultiLinear(e2) 0.30
+set MultiLinear(s2) 30.0
+set MultiLinear(e3) 0.60
+set MultiLinear(s3) 40.0
+
+#set MultiLinear(e3) 0.8
+#set MultiLinear(s3) 40.0
+
+$m add command -label MultiLinear -command "SetMultiLinear .multilinear"
+
+proc SetMultiLinear {w} {
+    global matID
+
+    # Turn off all buttons & create a top level window
+    disable_buttons
+    toplevel $w
+
+    set count 0
+    foreach field {materialId e0 s0 e1 s1 e2 s2 e3 s3} {
+	label $w.l$field -text $field
+	entry $w.e$field -textvariable MultiLinear($field) -relief sunken 
+	grid $w.l$field -row $count -column 0 -sticky e
+	grid $w.e$field -row $count -column 1 -sticky ew
+	incr count
+    }
+
+    button $w.ok -text OK -command "doneMultiLinear; destroy $w; enable_buttons"
+    grid $w.ok -row 0 -rowspan 3 -column 2 -sticky nsew
+
+    $w.ematerialId config -state normal
+    set MultiLinear(materialId) [expr $matID + 1]
+    $w.ematerialId delete 0 end
+    $w.ematerialId insert 0 $MultiLinear(materialId)
+    $w.ematerialId config -state disabled
+}
+
+
+proc doneMultiLinear { } {
+    global matID
+    global MultiLinear
+
+    set matID $MultiLinear(materialId)
+    uniaxialMaterial MultiLinear $matID $MultiLinear(e0) $MultiLinear(s0) $MultiLinear(e1) $MultiLinear(s1) $MultiLinear(e2) $MultiLinear(s2) $MultiLinear(e3) $MultiLinear(s3)
+
+    eval uniaxialTest $matID
+    set matID $MultiLinear(materialId)
+
+    SetValues
+    Reset
+}
+
 set Concrete01(materialId) 0
 set Concrete01(fc) 0
 set Concrete01(ec) 0
@@ -133,7 +189,7 @@ proc doneConcrete02 { } {
 # ##############################################################
 
 set Elastic(materialID) 0
-set Elastic(E) 0
+set Elastic(E) 50
 
 # add Elastic the materials menu
 $m add command -label Elastic -command "SetElastic .elastic"
@@ -404,18 +460,18 @@ proc doneHardening { } {
 # ##############################################################
 
 set Hysteretic(materialId) 0
-set Hysteretic(s1p) 0
-set Hysteretic(e1p) 0
-set Hysteretic(s2p) 0
-set Hysteretic(e2p) 0
-set Hysteretic(s3p) 0
-set Hysteretic(e3p) 0
-set Hysteretic(s1n) 0
-set Hysteretic(e1n) 0
-set Hysteretic(s2n) 0
-set Hysteretic(e2n) 0
-set Hysteretic(s3n) 0
-set Hysteretic(e3n) 0
+set Hysteretic(s1p) 10.0
+set Hysteretic(e1p) 0.1
+set Hysteretic(s2p) 20.0
+set Hysteretic(e2p) 0.3
+set Hysteretic(s3p) 30.0
+set Hysteretic(e3p) 0.7
+set Hysteretic(s1n) -10.0
+set Hysteretic(e1n) -0.1
+set Hysteretic(s2n) -20.0
+set Hysteretic(e2n) -0.2
+set Hysteretic(s3n) -30.0
+set Hysteretic(e3n) -0.7
 set Hysteretic(px) 0
 set Hysteretic(py) 0
 set Hysteretic(d1) 0
@@ -782,6 +838,55 @@ proc doneKinematicHardening { } {
     uniaxialMaterial KinematicHardening $matID $KinematicHardening(E) $KinematicHardening(Ekh) $KinematicHardening(sigY) 
     eval uniaxialTest $matID
     set matID $KinematicHardening(materialId)
+
+    SetValues
+    Reset
+}
+
+
+set HookGap(materialId) 1
+set HookGap(E) 70.0
+set HookGap(eN) -0.1
+set HookGap(eP) 0.3
+
+$m add command -label HookGap -command "SetHookGap .multilinear"
+
+proc SetHookGap {w} {
+    global matID
+
+    # Turn off all buttons & create a top level window
+    disable_buttons
+    toplevel $w
+
+    set count 0
+    foreach field {materialId E eN eP} {
+	label $w.l$field -text $field
+	entry $w.e$field -textvariable HookGap($field) -relief sunken 
+	grid $w.l$field -row $count -column 0 -sticky e
+	grid $w.e$field -row $count -column 1 -sticky ew
+	incr count
+    }
+
+    button $w.ok -text OK -command "doneHookGap; destroy $w; enable_buttons"
+    grid $w.ok -row 0 -rowspan 3 -column 2 -sticky nsew
+
+    $w.ematerialId config -state normal
+    set HookGap(materialId) [expr $matID + 1]
+    $w.ematerialId delete 0 end
+    $w.ematerialId insert 0 $HookGap(materialId)
+    $w.ematerialId config -state disabled
+}
+
+
+proc doneHookGap { } {
+    global matID
+    global HookGap
+
+    set matID $HookGap(materialId)
+    uniaxialMaterial HookGap $matID $HookGap(E) $HookGap(eN) $HookGap(eP)
+
+    eval uniaxialTest $matID
+    set matID $HookGap(materialId)
 
     SetValues
     Reset
