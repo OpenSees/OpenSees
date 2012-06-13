@@ -36,7 +36,6 @@
 #include <tcl.h>
 #include <elementAPI.h>
 
-#include <ElasticMaterial.h>	// fmk
 #include <Elastic2Material.h>	// ZHY
 #include <ElasticPPMaterial.h>	// fmk
 #include <ParallelMaterial.h>	// fmk
@@ -81,7 +80,7 @@
 #include <string.h>
 
 #include <UniaxialJ2Plasticity.h>   // Quan 
-
+extern void *OPS_NewElasticMaterial(void);
 extern void *OPS_NewBilinMaterial(void);
 extern void *OPS_NewSAWSMaterial(void);
 extern void *OPS_NewConcreteZ01Material(void);
@@ -100,6 +99,7 @@ extern void *OPS_Dodd_Restrepo(void);
 extern void *OPS_NewElasticMultiLinear(void);
 extern void *OPS_ImpactMaterial(void);
 extern void *OPS_New_MultiLinear(void);
+extern void *OPS_NewHookGap(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -182,38 +182,11 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     // Check argv[2] for uniaxial material type
     if (strcmp(argv[1],"Elastic") == 0) {
-      if (argc < 4 || argc > 5) {
-	opserr << "WARNING invalid number of arguments\n";
-	printCommand(argc,argv);
-	opserr << "Want: uniaxialMaterial Elastic tag? E? <eta?>" << endln;
+      void *theMat = OPS_NewElasticMaterial();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
 	return TCL_ERROR;
-      }    
-      
-      int tag;
-      double E;
-      double eta = 0.0;
-      
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING invalid uniaxialMaterial Elastic tag" << endln;
-	return TCL_ERROR;		
-      }
-      
-      if (Tcl_GetDouble(interp, argv[3], &E) != TCL_OK) {
-	opserr << "WARNING invalid E\n";
-	opserr << "uniaxiaMaterial Elastic: " << tag << endln;
-	return TCL_ERROR;	
-      }
-      
-      if (argc == 5) {
-	if (Tcl_GetDouble(interp,argv[4], &eta) != TCL_OK) {
-	  opserr << "WARNING invalid eta\n";
-	  opserr << "uniaxialMaterial Elastic: " << tag << endln;
-	  return TCL_ERROR;
-	}
-      }
-      
-      // Parsing was successful, allocate the material
-      theMaterial = new ElasticMaterial(tag, E, eta);       
 
     } else if ((strcmp(argv[1],"ElasticBilin") == 0) || (strcmp(argv[1],"ElasticBilinear") == 0)) {
       void *theMat = OPS_NewElasticBilin();
@@ -262,6 +235,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if (strcmp(argv[1],"ElasticMultiLinear") == 0) {
       void *theMat = OPS_NewElasticMultiLinear();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"HookGap") == 0) {
+      void *theMat = OPS_NewHookGap();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
