@@ -884,6 +884,12 @@
 				RelativePath="..\..\..\SRC\element\frictionBearing\FlatSliderSimple3d.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\MultiFP2d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\MultiFP2d.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\frictionBearing\SingleFPSimple2d.cpp">
 			</File>
 			<File

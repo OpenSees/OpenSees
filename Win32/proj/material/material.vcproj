@@ -254,6 +254,12 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\HardeningMaterial.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\HookGap.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\HookGap.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\HyperbolicGapMaterial.cpp">
 			</File>
 			<File
@@ -294,6 +300,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Src\material\uniaxial\MinMaxMaterial.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\MultiLinear.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\MultiLinear.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\NewUniaxialMaterial.cpp">
