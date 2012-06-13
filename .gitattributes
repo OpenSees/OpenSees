@@ -2732,6 +2732,8 @@ SRC/material/uniaxial/FedeasMaterial.cpp -text
 SRC/material/uniaxial/FedeasMaterial.h -text
 SRC/material/uniaxial/HardeningMaterial.cpp -text
 SRC/material/uniaxial/HardeningMaterial.h -text
+SRC/material/uniaxial/HookGap.cpp -text
+SRC/material/uniaxial/HookGap.h -text
 SRC/material/uniaxial/HyperbolicGapMaterial.cpp -text
 SRC/material/uniaxial/HyperbolicGapMaterial.h -text
 SRC/material/uniaxial/HystereticMaterial.cpp -text
