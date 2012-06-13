@@ -8,7 +8,8 @@ OBJS       = FlatSliderSimple2d.o \
 	TFP_Bearing2d.o \
 	TclFlatSliderCommand.o \
 	TclSingleFPCommand.o \
-	TPB1D.o
+	TPB1D.o \
+	MultiFP2d.o
 
 # Compilation control
 
