@@ -2178,6 +2178,8 @@ SRC/element/frictionBearing/FlatSliderSimple2d.h -text
 SRC/element/frictionBearing/FlatSliderSimple3d.cpp -text
 SRC/element/frictionBearing/FlatSliderSimple3d.h -text
 SRC/element/frictionBearing/Makefile -text
+SRC/element/frictionBearing/MultiFP2d.cpp -text
+SRC/element/frictionBearing/MultiFP2d.h -text
 SRC/element/frictionBearing/SingleFPSimple2d.cpp -text
 SRC/element/frictionBearing/SingleFPSimple2d.h -text
 SRC/element/frictionBearing/SingleFPSimple3d.cpp -text
