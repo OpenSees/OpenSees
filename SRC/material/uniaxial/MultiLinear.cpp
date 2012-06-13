@@ -30,13 +30,14 @@
 #include <MultiLinear.h>
 #include <Vector.h>
 #include <Matrix.h>
+#include <ID.h>
 #include <Channel.h>
 #include <math.h>
 #include <float.h>
 
 #include <elementAPI.h>
-#define OPS_Export 
-OPS_Export void *
+
+void *
 OPS_New_MultiLinear(void)
 {
   // Pointer to a uniaxial material that will be returned
@@ -85,14 +86,20 @@ MultiLinear::MultiLinear(int tag, const Vector &s, const Vector &e)
   :UniaxialMaterial(tag,MAT_TAG_MultiLinear),
    numSlope(0)
 {
-
   numSlope = e.Size();
   data.resize(numSlope, 6);
 
-  data(0,0) = -e(0);      // pos yeild strain
-  data(0,1) = e(0);     // neg yeild strain
-  data(0,2) = -s(0);      // pos yield stress
-  data(0,3) = s(0);     // neg yeild stress
+  for (int i=1; i<numSlope; i++) {
+    if (e(i) < e(i-1)) {
+      opserr << "ERROR: MultiLinear strain_i+1 < strain_i\n";
+      exit(-1);
+    }
+  }
+
+  data(0,0) = -e(0);      // neg yeild strain
+  data(0,1) = e(0);       // pos yeild strain
+  data(0,2) = -s(0);      // neg yield stress
+  data(0,3) = s(0);       // pos yeild stress
   data(0,4) = s(0)/e(0); // slope
   data(0,5) = e(0);      // dist - (0-1)/2
 
@@ -122,7 +129,13 @@ MultiLinear::MultiLinear()
 :UniaxialMaterial(0,MAT_TAG_MultiLinear),
  numSlope(0)
 {
-
+  tStrain = 0;
+  tStress = 0;
+  tTangent = 0;
+  cStrain = 0;
+  cStress = 0;
+  cTangent = 0;
+  tSlope = 0;
 }
 
 MultiLinear::~MultiLinear()
@@ -279,10 +292,23 @@ MultiLinear::revertToLastCommit(void)
 int 
 MultiLinear::revertToStart(void)
 {
-  tStrain = cStrain = 0.0;
-  tTangent = cTangent = data(elasticPosSlope,2);
-  tStress = cStress = 0.0;
 
+  data(0,1) =  data(0,5);       
+  data(0,3) =  data(0,5)*data(0,4);
+  data(0,0) = -data(0,1);
+  data(0,2) = -data(0,2);
+
+  for (int i=1; i<numSlope; i++) {
+    data(i,1) =  data(i-1,1) + data(i,5);
+    data(i,3) =  data(i-1,3) + data(i,5)*data(i,4);
+    data(i,1) = -data(i,0);
+    data(i,3) = -data(i,3);
+  }    
+
+  tStrain = cStrain = 0.0;
+  tStress = cStress = 0;
+  tTangent = data(0,4);
+  cTangent = tTangent;
   return 0;
 }
 
@@ -295,6 +321,7 @@ MultiLinear::getCopy(void)
   theCopy->data = this->data;
   theCopy->numSlope = this->numSlope;
   
+  theCopy->tSlope = this->tSlope;
   theCopy->tStress = this->tStress;
   theCopy->tStrain = this->tStrain;
   theCopy->tTangent = this->tTangent;
@@ -302,8 +329,6 @@ MultiLinear::getCopy(void)
   theCopy->cStrain = this->cStrain;
   theCopy->cTangent = this->cTangent;
 
-  theCopy->Print(opserr);
-  opserr << "END getCOPY\n";
   return theCopy;
 }
 
@@ -311,7 +336,21 @@ MultiLinear::getCopy(void)
 int 
 MultiLinear::sendSelf(int cTag, Channel &theChannel)
 {
-  int res = -1;
+  int res = 0;
+  static ID iData(2);
+  iData(0) = this->getTag();
+  iData(1) = numSlope;
+
+  res = theChannel.sendID(this->getDbTag(), cTag, iData);
+  if (res < 0) {
+    opserr << "ElasticMaterial::sendSelf() - failed to send data\n";
+    return res;
+  }
+
+  res = theChannel.sendMatrix(this->getDbTag(), cTag, data);
+  if (res < 0) 
+    opserr << "ElasticMaterial::sendSelf() - failed to send data\n";
+
   return res;
 }
 
@@ -319,7 +358,23 @@ int
 MultiLinear::recvSelf(int cTag, Channel &theChannel, 
 				 FEM_ObjectBroker &theBroker)
 {
-  int res = -1;
+  int res = 0;
+  static ID iData(2);
+  res = theChannel.recvID(this->getDbTag(), cTag, iData);
+  if (res < 0) {
+    opserr << "ElasticMaterial::recvSelf() - failed to recv data\n";
+    return res;
+  }
+
+  this->setTag(iData(0));
+  numSlope = iData(1);
+
+  data.resize(numSlope,6);
+
+  res = theChannel.recvMatrix(this->getDbTag(), cTag, data);
+  if (res < 0) 
+    opserr << "ElasticMaterial::recvSelf() - failed to recv data\n";
+
   return res;
 }
 
