@@ -344,7 +344,7 @@ StatFirstPassageAnalyzer::componentFisrtPassage2()
 		output<<"               ";
 		for(i=0;i<nprint;i++) output<<setw(15)<<Time0+delta*(float)iprint[i];
 		output<<"\n";
-		for(int j=0;j<NactiveMax;j++){
+		for(j=0;j<NactiveMax;j++){
 			for(i=0;i<nprint;i++) output<<setw(15)<<(*uDesComp[iprint[i]])(j);
 			output<<"\n";
 		}
