@@ -11,7 +11,9 @@ OBJS       = SimpleContact2D.o \
              SSPquad.o \
              SSPquadUP.o \
              SSPbrick.o \
-             SSPbrickUP.o
+             SSPbrickUP.o \
+	     Quad4FiberOverlay.o \
+	     Brick8FiberOverlay.o
 
 all:         $(OBJS)
 
