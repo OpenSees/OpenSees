@@ -48,10 +48,10 @@ class FEM_ObjectBroker;
 class Brick8FiberOverlay : public Element
 {
 	public:
-		Brick8FiberOverlay::Brick8FiberOverlay(int tag, int nd1, int nd2, int nd3, int nd4,int nd5, int nd6, int nd7, int nd8,
-		UniaxialMaterial &m, double Af,double beta1, double beta2, double beta3, double beta4);
+		Brick8FiberOverlay(int tag, int nd1, int nd2, int nd3, int nd4,int nd5, int nd6, int nd7, int nd8,
+		                   UniaxialMaterial &m, double Af,double beta1, double beta2, double beta3, double beta4);
 		Brick8FiberOverlay();
-		~Brick8FiberOverlay();
+	   ~Brick8FiberOverlay();
 		
 	// // initialization
     void setDomain(Domain *thedomain);
