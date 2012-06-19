@@ -38,7 +38,7 @@
 #include <UniaxialMaterial.h>
 #include <Renderer.h>
 #include <ElementResponse.h>
-#include <EntMaterial.h>
+#include <ENTMaterial.h>
 #include <MultiLinear.h>
 
 

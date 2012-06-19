@@ -1186,6 +1186,7 @@ SSPbrickUP::GetStab(void)
 	Matrix Mben(12,24);
 	Matrix FCF(12,12);
 	Matrix dNloc(8,3);
+	Matrix dNmod(8,3);
 	Matrix Jmat(3,3);
 	Matrix Jinv(3,3);
 	Matrix G(8,8);
@@ -1370,6 +1371,9 @@ SSPbrickUP::GetStab(void)
 	J[1] = (e1^(CrossProduct(e2,e5))) + (e1^(CrossProduct(e6,e3)));
     J[2] = (e1^(CrossProduct(e2,e4))) + (e6^(CrossProduct(e2,e3)));
     J[3] = (e5^(CrossProduct(e2,e3))) + (e1^(CrossProduct(e4,e3)));
+	J[1] = 0.0;
+	J[2] = 0.0;
+	J[3] = 0.0;
     J[4] = (e7^(CrossProduct(e2,e3))) + (e4^(CrossProduct(e5,e2))) + (e4^(CrossProduct(e3,e6)));
     J[5] = (e1^(CrossProduct(e7,e3))) + (e4^(CrossProduct(e5,e1))) + (e3^(CrossProduct(e5,e6)));
     J[6] = (e1^(CrossProduct(e2,e7))) + (e4^(CrossProduct(e1,e6))) + (e2^(CrossProduct(e5,e6)));
@@ -1400,15 +1404,16 @@ SSPbrickUP::GetStab(void)
     double J21411 = 8.0*(J[2]/9.0 + J[14]/15.0 + J[11]/27.0);
     double J31013 = 8.0*(J[3]/9.0 + J[10]/15.0 + J[13]/27.0);
     double J31310 = 8.0*(J[3]/9.0 + J[13]/15.0 + J[10]/27.0);
-    double J789   = 8.0*(J[0]/9.0 + J[7]/15.0 + J[8]/15.0 + J[9]/27.0);
+	double J789   = 8.0*(J[0]/9.0 + J[7]/15.0 + J[8]/15.0 + J[9]/27.0);
     double J897   = 8.0*(J[0]/9.0 + J[8]/15.0 + J[9]/15.0 + J[7]/27.0);
     double J798   = 8.0*(J[0]/9.0 + J[7]/15.0 + J[9]/15.0 + J[8]/27.0);
-    double J174   = 8.0*(J[4]/27.0 + J[17]/45.0);
-    double J185   = 8.0*(J[5]/27.0 + J[18]/45.0);
-    double J196   = 8.0*(J[6]/27.0 + J[19]/45.0);
+    double J174   = 8.0*(J[4]/27.0 + 64.0*J[17]/45.0);
+    double J185   = 8.0*(J[5]/27.0 + 64.0*J[18]/45.0);
+    double J196   = 8.0*(J[6]/27.0 + 64.0*J[19]/45.0);
+	double J16    = 8.0*J[16]/27.0;
 
 	// compute element volume 
-	mVol = 8.0*J[0] + (8.0/3.0)*(J[7] + J[8] + J[9]);
+	mVol = 8.0*(J[0] + (J[7] + J[8] + J[9])/3.0);
 
 	// kinematic vectors 
 	Vector bx(8);
@@ -1490,12 +1495,12 @@ SSPbrickUP::GetStab(void)
     double HutYZ = J0978*Jinv(1,1)*Jinv(1,2) + J0879*Jinv(2,1)*Jinv(2,2) + J417*(Jinv(1,1)*Jinv(2,2) + Jinv(2,1)*Jinv(1,2));
     double HutZZ = J0978*Jinv(1,2)*Jinv(1,2) + J0879*Jinv(2,2)*Jinv(2,2) + J417*(Jinv(1,2)*Jinv(2,2) + Jinv(2,2)*Jinv(1,2));
 
-    double HusXX = J0978*Jinv(0,0)*Jinv(0,0) + J0789*Jinv(2,0)*Jinv(2,0) + J417*(Jinv(0,0)*Jinv(2,0) + Jinv(2,0)*Jinv(0,0));
-    double HusXY = J0978*Jinv(0,0)*Jinv(0,1) + J0789*Jinv(2,0)*Jinv(2,1) + J417*(Jinv(0,0)*Jinv(2,1) + Jinv(2,0)*Jinv(0,1));
-    double HusXZ = J0978*Jinv(0,0)*Jinv(0,2) + J0789*Jinv(2,0)*Jinv(2,2) + J417*(Jinv(0,0)*Jinv(2,2) + Jinv(2,0)*Jinv(0,2));
-    double HusYY = J0978*Jinv(0,1)*Jinv(0,1) + J0789*Jinv(2,1)*Jinv(2,1) + J417*(Jinv(0,1)*Jinv(2,1) + Jinv(2,1)*Jinv(0,1));
-    double HusYZ = J0978*Jinv(0,1)*Jinv(0,2) + J0789*Jinv(2,1)*Jinv(2,2) + J417*(Jinv(0,1)*Jinv(2,2) + Jinv(2,1)*Jinv(0,2));
-    double HusZZ = J0978*Jinv(0,2)*Jinv(0,2) + J0789*Jinv(2,2)*Jinv(2,2) + J417*(Jinv(0,2)*Jinv(2,2) + Jinv(2,2)*Jinv(0,2));
+    double HusXX = J0978*Jinv(0,0)*Jinv(0,0) + J0789*Jinv(2,0)*Jinv(2,0) + J518*(Jinv(0,0)*Jinv(2,0) + Jinv(2,0)*Jinv(0,0));
+    double HusXY = J0978*Jinv(0,0)*Jinv(0,1) + J0789*Jinv(2,0)*Jinv(2,1) + J518*(Jinv(0,0)*Jinv(2,1) + Jinv(2,0)*Jinv(0,1));
+    double HusXZ = J0978*Jinv(0,0)*Jinv(0,2) + J0789*Jinv(2,0)*Jinv(2,2) + J518*(Jinv(0,0)*Jinv(2,2) + Jinv(2,0)*Jinv(0,2));
+    double HusYY = J0978*Jinv(0,1)*Jinv(0,1) + J0789*Jinv(2,1)*Jinv(2,1) + J518*(Jinv(0,1)*Jinv(2,1) + Jinv(2,1)*Jinv(0,1));
+    double HusYZ = J0978*Jinv(0,1)*Jinv(0,2) + J0789*Jinv(2,1)*Jinv(2,2) + J518*(Jinv(0,1)*Jinv(2,2) + Jinv(2,1)*Jinv(0,2));
+    double HusZZ = J0978*Jinv(0,2)*Jinv(0,2) + J0789*Jinv(2,2)*Jinv(2,2) + J518*(Jinv(0,2)*Jinv(2,2) + Jinv(2,2)*Jinv(0,2));
 
     double HstuXX = J897*Jinv(0,0)*Jinv(0,0) + J798*Jinv(1,0)*Jinv(1,0) + J789*Jinv(2,0)*Jinv(2,0) + J185*(Jinv(0,0)*Jinv(2,0) + Jinv(2,0)*Jinv(0,0)) 
 	                + J196*(Jinv(0,0)*Jinv(1,0) + Jinv(1,0)*Jinv(0,0)) + J174*(Jinv(1,0)*Jinv(2,0) + Jinv(2,0)*Jinv(1,0));
@@ -1520,7 +1525,7 @@ SSPbrickUP::GetStab(void)
     double IttZY = J0879*Jinv(0,2)*Jinv(2,1) + J417*Jinv(0,2)*Jinv(1,1) + J518*Jinv(1,2)*Jinv(1,1) + J619*Jinv(1,2)*Jinv(2,1);
     double IttZZ = J0879*Jinv(0,2)*Jinv(2,2) + J417*Jinv(0,2)*Jinv(1,2) + J518*Jinv(1,2)*Jinv(1,2) + J619*Jinv(1,2)*Jinv(2,2);
 
-    double IssXX = J0879*Jinv(1,0)*Jinv(2,0) + J417*Jinv(0,0)*Jinv(0,0) + J518*Jinv(1,0)*Jinv(0,0) + J619*Jinv(0,0)*Jinv(2,0);
+    double IssXX = J0789*Jinv(1,0)*Jinv(2,0) + J417*Jinv(0,0)*Jinv(0,0) + J518*Jinv(1,0)*Jinv(0,0) + J619*Jinv(0,0)*Jinv(2,0);
     double IssXY = J0789*Jinv(1,0)*Jinv(2,1) + J417*Jinv(0,0)*Jinv(0,1) + J518*Jinv(1,0)*Jinv(0,1) + J619*Jinv(0,0)*Jinv(2,1);
     double IssXZ = J0789*Jinv(1,0)*Jinv(2,2) + J417*Jinv(0,0)*Jinv(0,2) + J518*Jinv(1,0)*Jinv(0,2) + J619*Jinv(0,0)*Jinv(2,2);
     double IssYX = J0789*Jinv(1,1)*Jinv(2,0) + J417*Jinv(0,1)*Jinv(0,0) + J518*Jinv(1,1)*Jinv(0,0) + J619*Jinv(0,1)*Jinv(2,0);
@@ -1539,326 +1544,54 @@ SSPbrickUP::GetStab(void)
     double IuuZX = J0978*Jinv(1,2)*Jinv(0,0) + J417*Jinv(2,2)*Jinv(0,0) + J518*Jinv(1,2)*Jinv(2,0) + J619*Jinv(2,2)*Jinv(2,0);
     double IuuZY = J0978*Jinv(1,2)*Jinv(0,1) + J417*Jinv(2,2)*Jinv(0,1) + J518*Jinv(1,2)*Jinv(2,1) + J619*Jinv(2,2)*Jinv(2,1);
     double IuuZZ = J0978*Jinv(1,2)*Jinv(0,2) + J417*Jinv(2,2)*Jinv(0,2) + J518*Jinv(1,2)*Jinv(2,2) + J619*Jinv(2,2)*Jinv(2,2);
+	
+	double IstXX = J31013*Jinv(0,0)*Jinv(0,0) + J31310*Jinv(1,0)*Jinv(1,0) + J21411*Jinv(2,0)*Jinv(1,0) + J11512*Jinv(2,0)*Jinv(0,0) + J16*(Jinv(0,0)*Jinv(1,0) + Jinv(1,0)*Jinv(0,0));
+    double IstXY = J31013*Jinv(0,0)*Jinv(0,1) + J31310*Jinv(1,0)*Jinv(1,1) + J21411*Jinv(2,0)*Jinv(1,1) + J11512*Jinv(2,0)*Jinv(0,1) + J16*(Jinv(0,0)*Jinv(1,1) + Jinv(1,0)*Jinv(0,1));
+    double IstXZ = J31013*Jinv(0,0)*Jinv(0,2) + J31310*Jinv(1,0)*Jinv(1,2) + J21411*Jinv(2,0)*Jinv(1,2) + J11512*Jinv(2,0)*Jinv(0,2) + J16*(Jinv(0,0)*Jinv(1,2) + Jinv(1,0)*Jinv(0,2));
+    double IstYX = J31013*Jinv(0,1)*Jinv(0,0) + J31310*Jinv(1,1)*Jinv(1,0) + J21411*Jinv(2,1)*Jinv(1,0) + J11512*Jinv(2,1)*Jinv(0,0) + J16*(Jinv(0,1)*Jinv(1,0) + Jinv(1,1)*Jinv(0,0));
+    double IstYY = J31013*Jinv(0,1)*Jinv(0,1) + J31310*Jinv(1,1)*Jinv(1,1) + J21411*Jinv(2,1)*Jinv(1,1) + J11512*Jinv(2,1)*Jinv(0,1) + J16*(Jinv(0,1)*Jinv(1,1) + Jinv(1,1)*Jinv(0,1));
+    double IstYZ = J31013*Jinv(0,1)*Jinv(0,2) + J31310*Jinv(1,1)*Jinv(1,2) + J21411*Jinv(2,1)*Jinv(1,2) + J11512*Jinv(2,1)*Jinv(0,2) + J16*(Jinv(0,1)*Jinv(1,2) + Jinv(1,1)*Jinv(0,2));
+    double IstZX = J31013*Jinv(0,2)*Jinv(0,0) + J31310*Jinv(1,2)*Jinv(1,0) + J21411*Jinv(2,2)*Jinv(1,0) + J11512*Jinv(2,2)*Jinv(0,0) + J16*(Jinv(0,2)*Jinv(1,0) + Jinv(1,2)*Jinv(0,0));
+    double IstZY = J31013*Jinv(0,2)*Jinv(0,1) + J31310*Jinv(1,2)*Jinv(1,1) + J21411*Jinv(2,2)*Jinv(1,1) + J11512*Jinv(2,2)*Jinv(0,1) + J16*(Jinv(0,2)*Jinv(1,1) + Jinv(1,2)*Jinv(0,1));
+    double IstZZ = J31013*Jinv(0,2)*Jinv(0,2) + J31310*Jinv(1,2)*Jinv(1,2) + J21411*Jinv(2,2)*Jinv(1,2) + J11512*Jinv(2,2)*Jinv(0,2) + J16*(Jinv(0,2)*Jinv(1,2) + Jinv(1,2)*Jinv(0,2));
 
-    double IstXX = J31013*Jinv(0,0)*Jinv(0,0) + J31310*Jinv(1,0)*Jinv(1,0) + J21411*Jinv(2,0)*Jinv(1,0) + J11512*Jinv(2,0)*Jinv(0,0) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,0)*Jinv(1,0) + Jinv(1,0)*Jinv(0,0));
-    double IstXY = J31013*Jinv(0,0)*Jinv(0,1) + J31310*Jinv(1,0)*Jinv(1,1) + J21411*Jinv(2,0)*Jinv(1,1) + J11512*Jinv(2,0)*Jinv(0,1) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,0)*Jinv(1,1) + Jinv(1,0)*Jinv(0,1));
-    double IstXZ = J31013*Jinv(0,0)*Jinv(0,2) + J31310*Jinv(1,0)*Jinv(1,2) + J21411*Jinv(2,0)*Jinv(1,2) + J11512*Jinv(2,0)*Jinv(0,2) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,0)*Jinv(1,2) + Jinv(1,0)*Jinv(0,2));
-    double IstYX = J31013*Jinv(0,1)*Jinv(0,0) + J31310*Jinv(1,1)*Jinv(1,0) + J21411*Jinv(2,1)*Jinv(1,0) + J11512*Jinv(2,1)*Jinv(0,0) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,1)*Jinv(1,0) + Jinv(1,1)*Jinv(0,0));
-    double IstYY = J31013*Jinv(0,1)*Jinv(0,1) + J31310*Jinv(1,1)*Jinv(1,1) + J21411*Jinv(2,1)*Jinv(1,1) + J11512*Jinv(2,1)*Jinv(0,1) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,1)*Jinv(1,1) + Jinv(1,1)*Jinv(0,1));
-    double IstYZ = J31013*Jinv(0,1)*Jinv(0,2) + J31310*Jinv(1,1)*Jinv(1,2) + J21411*Jinv(2,1)*Jinv(1,2) + J11512*Jinv(2,1)*Jinv(0,2) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,1)*Jinv(1,2) + Jinv(1,1)*Jinv(0,2));
-    double IstZX = J31013*Jinv(0,2)*Jinv(0,0) + J31310*Jinv(1,2)*Jinv(1,0) + J21411*Jinv(2,2)*Jinv(1,0) + J11512*Jinv(2,2)*Jinv(0,0) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,2)*Jinv(1,0) + Jinv(1,2)*Jinv(0,0));
-    double IstZY = J31013*Jinv(0,2)*Jinv(0,1) + J31310*Jinv(1,2)*Jinv(1,1) + J21411*Jinv(2,2)*Jinv(1,1) + J11512*Jinv(2,2)*Jinv(0,1) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,2)*Jinv(1,1) + Jinv(1,2)*Jinv(0,1));
-    double IstZZ = J31013*Jinv(0,2)*Jinv(0,2) + J31310*Jinv(1,2)*Jinv(1,2) + J21411*Jinv(2,2)*Jinv(1,2) + J11512*Jinv(2,2)*Jinv(0,2) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,2)*Jinv(1,2) + Jinv(1,2)*Jinv(0,2));
+    double IutXX = J21114*Jinv(0,0)*Jinv(1,0) + J31013*Jinv(0,0)*Jinv(2,0) + J11215*Jinv(1,0)*Jinv(1,0) + J11512*Jinv(2,0)*Jinv(2,0) + J16*(Jinv(1,0)*Jinv(2,0) + Jinv(2,0)*Jinv(1,0));
+    double IutXY = J21114*Jinv(0,0)*Jinv(1,1) + J31013*Jinv(0,0)*Jinv(2,1) + J11215*Jinv(1,0)*Jinv(1,1) + J11512*Jinv(2,0)*Jinv(2,1) + J16*(Jinv(1,0)*Jinv(2,1) + Jinv(2,0)*Jinv(1,1));
+    double IutXZ = J21114*Jinv(0,0)*Jinv(1,2) + J31013*Jinv(0,0)*Jinv(2,2) + J11215*Jinv(1,0)*Jinv(1,2) + J11512*Jinv(2,0)*Jinv(2,2) + J16*(Jinv(1,0)*Jinv(2,2) + Jinv(2,0)*Jinv(1,2));
+    double IutYX = J21114*Jinv(0,1)*Jinv(1,0) + J31013*Jinv(0,1)*Jinv(2,0) + J11215*Jinv(1,1)*Jinv(1,0) + J11512*Jinv(2,1)*Jinv(2,0) + J16*(Jinv(1,1)*Jinv(2,0) + Jinv(2,1)*Jinv(1,0));
+    double IutYY = J21114*Jinv(0,1)*Jinv(1,1) + J31013*Jinv(0,1)*Jinv(2,1) + J11215*Jinv(1,1)*Jinv(1,1) + J11512*Jinv(2,1)*Jinv(2,1) + J16*(Jinv(1,1)*Jinv(2,1) + Jinv(2,1)*Jinv(1,1));
+    double IutYZ = J21114*Jinv(0,1)*Jinv(1,2) + J31013*Jinv(0,1)*Jinv(2,2) + J11215*Jinv(1,1)*Jinv(1,2) + J11512*Jinv(2,1)*Jinv(2,2) + J16*(Jinv(1,1)*Jinv(2,2) + Jinv(2,1)*Jinv(1,2));
+    double IutZX = J21114*Jinv(0,2)*Jinv(1,0) + J31013*Jinv(0,2)*Jinv(2,0) + J11215*Jinv(1,2)*Jinv(1,0) + J11512*Jinv(2,2)*Jinv(2,0) + J16*(Jinv(1,2)*Jinv(2,0) + Jinv(2,2)*Jinv(1,0));
+    double IutZY = J21114*Jinv(0,2)*Jinv(1,1) + J31013*Jinv(0,2)*Jinv(2,1) + J11215*Jinv(1,2)*Jinv(1,1) + J11512*Jinv(2,2)*Jinv(2,1) + J16*(Jinv(1,2)*Jinv(2,1) + Jinv(2,2)*Jinv(1,1));
+    double IutZZ = J21114*Jinv(0,2)*Jinv(1,2) + J31013*Jinv(0,2)*Jinv(2,2) + J11215*Jinv(1,2)*Jinv(1,2) + J11512*Jinv(2,2)*Jinv(2,2) + J16*(Jinv(1,2)*Jinv(2,2) + Jinv(2,2)*Jinv(1,2));
 
-    double IutXX = J21114*Jinv(0,0)*Jinv(1,0) + J31013*Jinv(0,0)*Jinv(2,0) + J11215*Jinv(1,0)*Jinv(1,0) + J11512*Jinv(2,0)*Jinv(2,0) 
-	               + (8.0/27.0)*J[16]*(Jinv(1,0)*Jinv(2,0) + Jinv(2,0)*Jinv(1,0));
-    double IutXY = J21114*Jinv(0,0)*Jinv(1,1) + J31013*Jinv(0,0)*Jinv(2,1) + J11215*Jinv(1,0)*Jinv(1,1) + J11512*Jinv(2,0)*Jinv(2,1) 
-	               + (8.0/27.0)*J[16]*(Jinv(1,0)*Jinv(2,1) + Jinv(2,0)*Jinv(1,1));
-    double IutXZ = J21114*Jinv(0,0)*Jinv(1,2) + J31013*Jinv(0,0)*Jinv(2,2) + J11215*Jinv(1,0)*Jinv(1,2) + J11512*Jinv(2,0)*Jinv(2,2) 
-	               + (8.0/27.0)*J[16]*(Jinv(1,0)*Jinv(2,2) + Jinv(2,0)*Jinv(1,2));
-    double IutYX = J21114*Jinv(0,1)*Jinv(1,0) + J31013*Jinv(0,1)*Jinv(2,0) + J11215*Jinv(1,1)*Jinv(1,0) + J11512*Jinv(2,1)*Jinv(2,0) 
-	               + (8.0/27.0)*J[16]*(Jinv(1,1)*Jinv(2,0) + Jinv(2,1)*Jinv(1,0));
-    double IutYY = J21114*Jinv(0,1)*Jinv(1,1) + J31013*Jinv(0,1)*Jinv(2,1) + J11215*Jinv(1,1)*Jinv(1,1) + J11512*Jinv(2,1)*Jinv(2,1) 
-	               + (8.0/27.0)*J[16]*(Jinv(1,1)*Jinv(2,1) + Jinv(2,1)*Jinv(1,1));
-    double IutYZ = J21114*Jinv(0,1)*Jinv(1,2) + J31013*Jinv(0,1)*Jinv(2,2) + J11215*Jinv(1,1)*Jinv(1,2) + J11512*Jinv(2,1)*Jinv(2,2) 
-	               + (8.0/27.0)*J[16]*(Jinv(1,1)*Jinv(2,2) + Jinv(2,1)*Jinv(1,2));
-    double IutZX = J21114*Jinv(0,2)*Jinv(1,0) + J31013*Jinv(0,2)*Jinv(2,0) + J11215*Jinv(1,2)*Jinv(1,0) + J11512*Jinv(2,2)*Jinv(2,0) 
-	               + (8.0/27.0)*J[16]*(Jinv(1,2)*Jinv(2,0) + Jinv(2,2)*Jinv(1,0));
-    double IutZY = J21114*Jinv(0,2)*Jinv(1,1) + J31013*Jinv(0,2)*Jinv(2,1) + J11215*Jinv(1,2)*Jinv(1,1) + J11512*Jinv(2,2)*Jinv(2,1) 
-	               + (8.0/27.0)*J[16]*(Jinv(1,2)*Jinv(2,1) + Jinv(2,2)*Jinv(1,1));
-    double IutZZ = J21114*Jinv(0,2)*Jinv(1,2) + J31013*Jinv(0,2)*Jinv(2,2) + J11215*Jinv(1,2)*Jinv(1,2) + J11512*Jinv(2,2)*Jinv(2,2) 
-	               + (8.0/27.0)*J[16]*(Jinv(1,2)*Jinv(2,2) + Jinv(2,2)*Jinv(1,2));
+    double IusXX = J21114*Jinv(0,0)*Jinv(0,0) + J11215*Jinv(1,0)*Jinv(0,0) + J31310*Jinv(1,0)*Jinv(2,0) + J21411*Jinv(2,0)*Jinv(2,0) + J16*(Jinv(0,0)*Jinv(2,0) + Jinv(2,0)*Jinv(0,0));
+    double IusXY = J21114*Jinv(0,0)*Jinv(0,1) + J11215*Jinv(1,0)*Jinv(0,1) + J31310*Jinv(1,0)*Jinv(2,1) + J21411*Jinv(2,0)*Jinv(2,1) + J16*(Jinv(0,0)*Jinv(2,1) + Jinv(2,0)*Jinv(0,1));
+    double IusXZ = J21114*Jinv(0,0)*Jinv(0,2) + J11215*Jinv(1,0)*Jinv(0,2) + J31310*Jinv(1,0)*Jinv(2,2) + J21411*Jinv(2,0)*Jinv(2,2) + J16*(Jinv(0,0)*Jinv(2,2) + Jinv(2,0)*Jinv(0,2));
+    double IusYX = J21114*Jinv(0,1)*Jinv(0,0) + J11215*Jinv(1,1)*Jinv(0,0) + J31310*Jinv(1,1)*Jinv(2,0) + J21411*Jinv(2,1)*Jinv(2,0) + J16*(Jinv(0,1)*Jinv(2,0) + Jinv(2,1)*Jinv(0,0));
+    double IusYY = J21114*Jinv(0,1)*Jinv(0,1) + J11215*Jinv(1,1)*Jinv(0,1) + J31310*Jinv(1,1)*Jinv(2,1) + J21411*Jinv(2,1)*Jinv(2,1) + J16*(Jinv(0,1)*Jinv(2,1) + Jinv(2,1)*Jinv(0,1));
+    double IusYZ = J21114*Jinv(0,1)*Jinv(0,2) + J11215*Jinv(1,1)*Jinv(0,2) + J31310*Jinv(1,1)*Jinv(2,2) + J21411*Jinv(2,1)*Jinv(2,2) + J16*(Jinv(0,1)*Jinv(2,2) + Jinv(2,1)*Jinv(0,2));
+    double IusZX = J21114*Jinv(0,2)*Jinv(0,0) + J11215*Jinv(1,2)*Jinv(0,0) + J31310*Jinv(1,2)*Jinv(2,0) + J21411*Jinv(2,2)*Jinv(2,0) + J16*(Jinv(0,2)*Jinv(2,0) + Jinv(2,2)*Jinv(0,0));
+    double IusZY = J21114*Jinv(0,2)*Jinv(0,1) + J11215*Jinv(1,2)*Jinv(0,1) + J31310*Jinv(1,2)*Jinv(2,1) + J21411*Jinv(2,2)*Jinv(2,1) + J16*(Jinv(0,2)*Jinv(2,1) + Jinv(2,2)*Jinv(0,1));
+    double IusZZ = J21114*Jinv(0,2)*Jinv(0,2) + J11215*Jinv(1,2)*Jinv(0,2) + J31310*Jinv(1,2)*Jinv(2,2) + J21411*Jinv(2,2)*Jinv(2,2) + J16*(Jinv(0,2)*Jinv(2,2) + Jinv(2,2)*Jinv(0,2));
 
-    double IusXX = J21114*Jinv(0,0)*Jinv(0,0) + J11215*Jinv(1,0)*Jinv(0,0) + J31310*Jinv(1,0)*Jinv(2,0) + J21411*Jinv(2,0)*Jinv(2,0) 
-	              + (8.0/27.0)*J[16]*(Jinv(0,0)*Jinv(2,0) + Jinv(2,0)*Jinv(0,0));
-    double IusXY = J21114*Jinv(0,0)*Jinv(0,1) + J11215*Jinv(1,0)*Jinv(0,1) + J31310*Jinv(1,0)*Jinv(2,1) + J21411*Jinv(2,0)*Jinv(2,1) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,0)*Jinv(2,1) + Jinv(2,0)*Jinv(0,1));
-    double IusXZ = J21114*Jinv(0,0)*Jinv(0,2) + J11215*Jinv(1,0)*Jinv(0,2) + J31310*Jinv(1,0)*Jinv(2,2) + J21411*Jinv(2,0)*Jinv(2,2) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,0)*Jinv(2,2) + Jinv(2,0)*Jinv(0,2));
-    double IusYX = J21114*Jinv(0,1)*Jinv(0,0) + J11215*Jinv(1,1)*Jinv(0,0) + J31310*Jinv(1,1)*Jinv(2,0) + J21411*Jinv(2,1)*Jinv(2,0) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,1)*Jinv(2,0) + Jinv(2,1)*Jinv(0,0));
-    double IusYY = J21114*Jinv(0,1)*Jinv(0,1) + J11215*Jinv(1,1)*Jinv(0,1) + J31310*Jinv(1,1)*Jinv(2,1) + J21411*Jinv(2,1)*Jinv(2,1) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,1)*Jinv(2,1) + Jinv(2,1)*Jinv(0,1));
-    double IusYZ = J21114*Jinv(0,1)*Jinv(0,2) + J11215*Jinv(1,1)*Jinv(0,2) + J31310*Jinv(1,1)*Jinv(2,2) + J21411*Jinv(2,1)*Jinv(2,2) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,1)*Jinv(2,2) + Jinv(2,1)*Jinv(0,2));
-    double IusZX = J21114*Jinv(0,2)*Jinv(0,0) + J11215*Jinv(1,2)*Jinv(0,0) + J31310*Jinv(1,2)*Jinv(2,0) + J21411*Jinv(2,2)*Jinv(2,0) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,2)*Jinv(2,0) + Jinv(2,2)*Jinv(0,0));
-    double IusZY = J21114*Jinv(0,2)*Jinv(0,1) + J11215*Jinv(1,2)*Jinv(0,1) + J31310*Jinv(1,2)*Jinv(2,1) + J21411*Jinv(2,2)*Jinv(2,1) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,2)*Jinv(2,1) + Jinv(2,2)*Jinv(0,1));
-    double IusZZ = J21114*Jinv(0,2)*Jinv(0,2) + J11215*Jinv(1,2)*Jinv(0,2) + J31310*Jinv(1,2)*Jinv(2,2) + J21411*Jinv(2,2)*Jinv(2,2) 
-	               + (8.0/27.0)*J[16]*(Jinv(0,2)*Jinv(2,2) + Jinv(2,2)*Jinv(0,2));
-
-	// shear modulus from material
+	// constitutive constants from material
 	const Matrix &CmatI = theMaterial->getInitialTangent();
-	//double mu = CmatI(3,3);
 	double C1 = CmatI(0,0);
 	double C2 = CmatI(0,1);
 	double C3 = CmatI(3,3);
+	double C4 = C2 + C3;
 
 	// define the 12x12 matrix FCF in 3x3 blocks
-	FCF.Zero();
-	/*double four3 = 4.0/3.0;
-	double two3  = -2.0/3.0;
-	double one3  = 1.0/3.0;
-
-	// assumed strain field with full deviatoric portion and constant factor
-	double A = 0.5;
-	double B = A*A;
-	// block11
-	FCF(0,0) = four3*HstXX + B*HstYY + HstZZ;
-	FCF(0,1) = (two3 + B)*HstXY;
-	FCF(0,2) = one3*HstXZ;
-	FCF(1,0) = (two3 + B)*HstXY;
-	FCF(1,1) = four3*HstYY + B*HstXX + HstZZ;
-	FCF(1,2) = one3*HstYZ;
-	FCF(2,0) = one3*HstXZ;
-	FCF(2,1) = one3*HstYZ;
-	FCF(2,2) = four3*HstZZ + HstXX + HstYY;
-
-	// block12
-	FCF(0,3) = four3*IttXX + A*IttYY + IttZZ;
-	FCF(0,4) = two3*IttXY + A*IttYX;
-	FCF(0,5) = two3*IttXZ + IttZX;
-	FCF(1,3) = two3*IttYX + A*IttXY;
-	FCF(1,4) = four3*IttYY + A*IttXX + A*IttZZ;
-	FCF(1,5) = two3*IttYZ + A*IttZY;
-	FCF(2,3) = two3*IttZX + IttXZ;
-	FCF(2,4) = two3*IttZY + A*IttYZ;
-	FCF(2,5) = four3*IttZZ + IttXX + A*IttYY;
-
-	// block13
-	FCF(0,6) = four3*IssXX + A*IssYY + IssZZ;
-	FCF(0,7) = two3*IssXY + A*IssYX;
-	FCF(0,8) = two3*IssXZ + A*IssZX;
-	FCF(1,6) = two3*IssYX + A*IssXY;
-	FCF(1,7) = four3*IssYY + A*IssXX + IssZZ;
-	FCF(1,8) = two3*IssYZ + IssZY;
-	FCF(2,6) = two3*IssZX + A*IssXZ;
-	FCF(2,7) = two3*IssZY + IssYZ;
-	FCF(2,8) = four3*IssZZ + IssYY + A*IssXX;
-
-	// block14
-	FCF(0,9) =  IstZZ + A*IstYY;
-	FCF(0,10) = A*IstYX;
-	FCF(0,11) = IstZX;
-	FCF(1,10) = A*IstXY;
-	FCF(1,10) = IstZZ + A*IstXX;
-	FCF(1,11) = IstZY;
-	FCF(2,9) =  IstXZ;
-	FCF(2,10) = IstYZ;
-	FCF(2,11) = IstYY + IstXX;
-
-	FCF(0,9) =  four3*IstXX + A*IstYY + IstZZ;
-	FCF(0,10) = two3*IstXY + A*IstYX;
-	FCF(0,11) = two3*IstXZ + IstZX;
-	FCF(1,9) =  two3*IstYX + A*IstXY;
-	FCF(1,10) = four3*IstYY + A*IstXX + IstZZ;
-	FCF(1,11) = two3*IstYZ + IstZY;
-	FCF(2,9) =  two3*IstZX + IstXZ;
-	FCF(2,10) = two3*IstZY + IstYZ;
-	FCF(2,11) = four3*IstZZ + IstYY + IstXX;
-
-	// block21
-	FCF(3,0) = four3*IttXX + IttZZ + A*IttYY;
-	FCF(3,1) = two3*IttYX + A*IttXY;
-	FCF(3,2) = two3*IttZX + IttXZ;
-	FCF(4,0) = two3*IttXY + A*IttYX;
-	FCF(4,1) = four3*IttYY + A*IttXX + A*IttZZ;
-	FCF(4,2) = two3*IttZY + A*IttYZ;
-	FCF(5,0) = two3*IttXZ + IttZX;
-	FCF(5,1) = two3*IttYZ + A*IttZY;
-	FCF(5,2) = four3*IttZZ + IttXX + A*IttYY;
-
-	// block22
-	FCF(3,3) = four3*HutXX + HutYY + HutZZ;
-	FCF(3,4) = one3*HutXY;
-	FCF(3,5) = one3*HutXZ;
-	FCF(4,3) = one3*HutXY;
-	FCF(4,4) = four3*HutYY + HutXX + B*HutZZ;
-	FCF(4,5) = (two3 + B)*HutYZ;
-	FCF(5,3) = one3*HutXZ;
-	FCF(5,4) = (two3 + B)*HutYZ;
-	FCF(5,5) = four3*HutZZ + HutXX + B*HutYY;
-
-	// block23
-	FCF(3,6) = four3*IuuXX + IuuYY + A*IuuZZ;
-	FCF(3,7) = two3*IuuXY + IuuYX;
-	FCF(3,8) = two3*IuuXZ + A*IuuZX;
-	FCF(4,6) = two3*IuuYX + IuuXY;
-	FCF(4,7) = four3*IuuYY + IuuXX + A*IuuZZ;
-	FCF(4,8) = two3*IuuYZ + A*IuuZY;
-	FCF(5,6) = two3*IuuZX + A*IuuXZ;
-	FCF(5,7) = two3*IuuZY + A*IuuYZ;
-	FCF(5,8) = four3*IuuZZ + A*(IuuXX + IuuYY);
-
-	// block24
-	FCF(3,9) =  IutYY + IutZZ;
-	FCF(3,10) = IutYX;
-	FCF(3,11) = IutZX;
-	FCF(4,9) =  IutXY;
-	FCF(4,10) = IutXX + A*IutZZ;
-	FCF(4,11) = A*IutZY;
-	FCF(5,9) =  IutXZ;
-	FCF(5,10) = A*IutYZ;
-	FCF(5,11) = IutXX + A*IutYY;
-
-	FCF(3,9) =  four3*IutXX + IutYY + IutZZ;
-	FCF(3,10) = two3*IutXY + IutYX;
-	FCF(3,11) = two3*IutXZ + IutZX;
-	FCF(4,9) =  two3*IutYX + IutXY;
-	FCF(4,10) = two3*IutYY + IutXX + A*IutZZ;
-	FCF(4,11) = two3*IutYZ + A*IutZY;
-	FCF(5,9) =  two3*IutZX + IutXZ;
-	FCF(5,10) = two3*IutZY + A*IutYZ;
-	FCF(5,11) = four3*IutZZ + IutXX + A*IutYY;
-
-	// block31
-	FCF(6,0) = four3*IssXX + A*IssYY + IssZZ;
-	FCF(6,1) = two3*IssYX + A*IssXY;
-	FCF(6,2) = two3*IssZX + A*IssXZ;
-	FCF(7,0) = two3*IssXY + A*IssYX;
-	FCF(7,1) = four3*IssYY + IssZZ + A*IssXX;
-	FCF(7,2) = two3*IssZY + IssYZ;
-	FCF(8,0) = two3*IssXZ + A*IssZX;
-	FCF(8,1) = two3*IssYZ + IssZY;
-	FCF(8,2) = four3*IssZZ + IssYY + A*IssXX;
-
-	// block32
-	FCF(6,3) = four3*IuuXX + IuuYY + A*IuuZZ;
-	FCF(6,4) = two3*IuuYX + IuuXY;
-	FCF(6,5) = two3*IuuZX + A*IuuXZ;
-	FCF(7,3) = two3*IuuXY + IuuYX;
-	FCF(7,4) = four3*IuuYY + IuuXX + A*IuuZZ;
-	FCF(7,5) = two3*IuuZY + A*IuuYZ;
-	FCF(8,3) = two3*IuuXZ + A*IuuZX;
-	FCF(8,4) = two3*IuuYZ + A*IuuZY;
-	FCF(8,5) = four3*IuuZZ + A*(IuuXX + IuuYY);
-
-	// block33
-	FCF(6,6) = four3*HusXX + HusYY + B*HusZZ;
-	FCF(6,7) = one3*HusXY;
-	FCF(6,8) = (two3 + B)*HusXZ;
-	FCF(7,6) = one3*HusXY;
-	FCF(7,7) = four3*HusYY + HusXX + HusZZ;
-	FCF(7,8) = one3*HusYZ;
-	FCF(8,6) = (two3 + B)*HusXZ;
-	FCF(8,7) = one3*HusYZ;
-	FCF(8,8) = four3*HusZZ + B*HusXX + HusYY;
-
-	// block34
-	FCF(6,9) =  IusYY + A*IusZZ;
-	FCF(6,10) = IusYX;
-	FCF(6,11) = A*IusZX;
-	FCF(7,9) =  IusXY;
-	FCF(7,10) = IusXX + IusZZ;
-	FCF(7,11) = IusZY;
-	FCF(8,9) =  A*IusXZ;
-	FCF(8,10) = IusYZ;
-	FCF(8,11) = IusYY + A*IusXX;
-
-	FCF(6,9) =  four3*IusXX + IusYY + A*IusZZ;
-	FCF(6,10) = two3*IusXY + IusYX;
-	FCF(6,11) = two3*IusXZ + A*IusZX;
-	FCF(7,9) =  two3*IusYX + IusXY;
-	FCF(7,10) = four3*IusYY + IusXX + IusZZ;
-	FCF(7,11) = two3*IusYZ + IusZY;
-	FCF(8,9) =  two3*IusZX + A*IusXZ;
-	FCF(8,10) = two3*IusZY + IusYZ;
-	FCF(8,11) = four3*IusZZ + IusYY + A*IusXX;
-	
-	// block41
-	FCF(9,0) =  IstZZ + A*IstYY;
-	FCF(9,1) =  A*IstXY;
-	FCF(9,2) =  IstXZ;
-	FCF(10,0) = A*IstYX;
-	FCF(10,1) = IstZZ + A*IstXX;
-	FCF(10,2) = IstYZ;
-	FCF(11,0) = IstZX;
-	FCF(11,1) = IstZY;
-	FCF(11,2) = IstYY + IstXX;
-
-	FCF(9,0) =  four3*IstXX + IstZZ + A*IstYY;
-	FCF(9,1) =  two3*IstYX + A*IstXY;
-	FCF(9,2) =  two3*IstZX + IstXZ;
-	FCF(10,0) = two3*IstXY + A*IstYX;
-	FCF(10,1) = four3*IstYY + IstZZ + A*IstXX;
-	FCF(10,2) = two3*IstZY + IstYZ;
-	FCF(11,0) = two3*IstXZ + IstZX;
-	FCF(11,1) = two3*IstYZ + IstZY;
-	FCF(11,2) = four3*IstZZ + IstYY + IstXX;
-
-	// block42
-	FCF(9,3) =  IutYY + IutZZ;
-	FCF(9,4) =  IutXY;
-	FCF(9,5) =  IutXZ;
-	FCF(10,3) = IutYX;
-	FCF(10,4) = IutXX + A*IutZZ;
-	FCF(10,5) = A*IutYZ;
-	FCF(11,3) = IutZX;
-	FCF(11,4) = A*IutZY;
-	FCF(11,5) = IutXX + A*IutYY;
-
-	FCF(9,3) =  four3*IutXX + IutYY + IutZZ;
-	FCF(9,4) =  two3*IutYX + IutXY;
-	FCF(9,5) =  two3*IutZX + IutXZ;
-	FCF(10,3) = two3*IutXY + IutYX;
-	FCF(10,4) = two3*IutYY + IutXX + A*IutZZ;
-	FCF(10,5) = two3*IutZY + A*IutYZ;
-	FCF(11,3) = two3*IutXZ + IutZX;
-	FCF(11,4) = two3*IutYZ + A*IutZY;
-	FCF(11,5) = four3*IutZZ + IutXX + A*IutYY;
-
-	// block43
-	FCF(9,6) =  IusYY + A*IusZZ;
-	FCF(9,7) =  IusXY;
-	FCF(9,8) =  A*IusXZ;
-	FCF(10,6) = IusYX;
-	FCF(10,7) = IusXX + IusZZ;
-	FCF(10,8) = IusYZ;
-	FCF(11,6) = A*IusZX;
-	FCF(11,7) = IusZY;
-	FCF(11,8) = IusYY + A*IusXX;
-
-	FCF(9,6) =  four3*IusXX + IusYY + IusZZ;
-	FCF(9,7) =  two3*IusYX + IusXY;
-	FCF(9,8) =  two3*IusZX + IusXZ;
-	FCF(10,6) = two3*IusXY + IusYX;
-	FCF(10,7) = four3*IusYY + IusXX + IusZZ;
-	FCF(10,8) = two3*IusZY + IusYZ;
-	FCF(11,6) = two3*IusXZ + IusZX;
-	FCF(11,7) = two3*IusYZ + IusZY;
-	FCF(11,8) = four3*IusZZ + IusYY + IusXX;
-
-	// block44
-	FCF(9,9)   = HstuYY + HstuZZ;
-	FCF(9,10)  = HstuXY;
-	FCF(9,11)  = HstuXZ;
-	FCF(10,9)  = HstuXY;
-	FCF(10,10) = HstuXX + HstuZZ;
-	FCF(10,11) = HstuYZ;
-	FCF(11,9)  = HstuXZ;
-	FCF(11,10) = HstuYZ;
-	FCF(11,11) = HstuXX + HstuYY;*/
-	
-	// full strain field 
     // block11
     FCF(0,0) = C1*HstXX + C3*(HstYY + HstZZ);
-    FCF(0,1) = (C2 + C3)*HstXY;
-    FCF(0,2) = (C2 + C3)*HstXZ;
-    FCF(1,0) = (C2 + C3)*HstXY;
+    FCF(0,1) = C4*HstXY;
+    FCF(0,2) = C4*HstXZ;
+    FCF(1,0) = FCF(0,1);
     FCF(1,1) = C1*HstYY + C3*(HstXX + HstZZ);
-    FCF(1,2) = (C2 + C3)*HstYZ;
-    FCF(2,0) = (C2 + C3)*HstXZ;
-    FCF(2,1) = (C2 + C3)*HstYZ;
+    FCF(1,2) = C4*HstYZ;
+    FCF(2,0) = FCF(0,2);
+    FCF(2,1) = FCF(1,2);
     FCF(2,2) = C1*HstZZ + C3*(HstYY + HstXX);
 
     // block12
@@ -1883,7 +1616,7 @@ SSPbrickUP::GetStab(void)
     FCF(2,7) = C2*IssZY + C3*IssYZ;
     FCF(2,8) = C1*IssZZ + C3*(IssYY + IssXX);
 
-    // block14
+    /*// block14
     FCF(0,9)  = C1*IstXX + C3*(IstYY + IstZZ);
     FCF(0,10) = C2*IstYX + C3*IstXY;
     FCF(0,11) = C2*IstZX + C3*IstXZ;
@@ -1892,7 +1625,18 @@ SSPbrickUP::GetStab(void)
     FCF(1,11) = C2*IstZY + C3*IstYZ;
     FCF(2,9)  = C2*IstXZ + C3*IstZX;
     FCF(2,10) = C2*IstYZ + C3*IstZY;
-    FCF(2,11) = C1*IstZZ + C3*(IstYY + IstXX);
+    FCF(2,11) = C1*IstZZ + C3*(IstYY + IstXX);*/
+
+	// block14
+    FCF(0,9)  = C3*(IstYY + IstZZ);
+    FCF(0,10) = C3*IstXY;
+    FCF(0,11) = C3*IstXZ;
+    FCF(1,9)  = C3*IstYX;
+    FCF(1,10) = C3*(IstXX + IstZZ);
+    FCF(1,11) = C3*IstYZ;
+    FCF(2,9)  = C3*IstZX;
+    FCF(2,10) = C3*IstZY;
+    FCF(2,11) = C3*(IstYY + IstXX);
 
     // block21
     FCF(3,0) = C1*IttXX + C3*(IttYY + IttZZ);
@@ -1907,13 +1651,13 @@ SSPbrickUP::GetStab(void)
 
     // block22
     FCF(3,3) = C1*HutXX + C3*(HutYY + HutZZ);
-    FCF(3,4) = (C2 + C3)*HutXY;
-    FCF(3,5) = (C2 + C3)*HutXZ;
-    FCF(4,3) = (C2 + C3)*HutXY;
+    FCF(3,4) = C4*HutXY;
+    FCF(3,5) = C4*HutXZ;
+    FCF(4,3) = FCF(3,4);
     FCF(4,4) = C1*HutYY + C3*(HutXX + HutZZ);
-    FCF(4,5) = (C2 + C3)*HutYZ;
-    FCF(5,3) = (C2 + C3)*HutXZ;
-    FCF(5,4) = (C2 + C3)*HutYZ;
+    FCF(4,5) = C4*HutYZ;
+    FCF(5,3) = FCF(3,5);
+    FCF(5,4) = FCF(4,5);
     FCF(5,5) = C1*HutZZ + C3*(HutYY + HutXX);
 
     // block23
@@ -1927,7 +1671,7 @@ SSPbrickUP::GetStab(void)
     FCF(5,7) = C2*IuuZY + C3*IuuYZ;
     FCF(5,8) = C1*IuuZZ + C3*(IuuYY + IuuXX);
 
-    // block24
+    /*// block24
     FCF(3,9)  = C1*IutXX + C3*(IutYY + IutZZ);
     FCF(3,10) = C2*IutYX + C3*IutXY;
     FCF(3,11) = C2*IutZX + C3*IutXZ;
@@ -1936,7 +1680,18 @@ SSPbrickUP::GetStab(void)
     FCF(4,11) = C2*IutZY + C3*IutYZ;
     FCF(5,9)  = C2*IutXZ + C3*IutZX;
     FCF(5,10) = C2*IutYZ + C3*IutZY;
-    FCF(5,11) = C1*IutZZ + C3*(IutYY + IutXX);
+    FCF(5,11) = C1*IutZZ + C3*(IutYY + IutXX);*/
+
+	// block24
+    FCF(3,9)  = C3*(IutYY + IutZZ);
+    FCF(3,10) = C3*IutXY;
+    FCF(3,11) = C3*IutXZ;
+    FCF(4,9)  = C3*IutYX;
+    FCF(4,10) = C3*(IutXX + IutZZ);
+    FCF(4,11) = C3*IutYZ;
+    FCF(5,9)  = C3*IutZX;
+    FCF(5,10) = C3*IutZY;
+    FCF(5,11) = C3*(IutYY + IutXX);
 
     // block31
     FCF(6,0) = C1*IssXX + C3*(IssYY + IssZZ);
@@ -1962,16 +1717,16 @@ SSPbrickUP::GetStab(void)
 
     // block33
     FCF(6,6) = C1*HusXX + C3*(HusYY + HusZZ);
-    FCF(6,7) = (C2 + C3)*HusXY;
-    FCF(6,8) = (C2 + C3)*HusXZ;
-    FCF(7,6) = (C2 + C3)*HusXY;
+    FCF(6,7) = C4*HusXY;
+    FCF(6,8) = C4*HusXZ;
+    FCF(7,6) = FCF(6,7);
     FCF(7,7) = C1*HusYY + C3*(HusXX + HusZZ);
-    FCF(7,8) = (C2 + C3)*HusYZ;
-    FCF(8,6) = (C2 + C3)*HusXZ;
-    FCF(8,7) = (C2 + C3)*HusYZ;
+    FCF(7,8) = C4*HusYZ;
+    FCF(8,6) = FCF(6,8);
+    FCF(8,7) = FCF(7,8);
     FCF(8,8) = C1*HusZZ + C3*(HusYY + HusXX);
 
-    // block34
+    /*// block34
     FCF(6,9)  = C1*IusXX + C3*(IusYY + IusZZ);
     FCF(6,10) = C2*IusYX + C3*IusXY;
     FCF(6,11) = C2*IusZX + C3*IusXZ;
@@ -1980,9 +1735,20 @@ SSPbrickUP::GetStab(void)
     FCF(7,11) = C2*IusZY + C3*IusYZ;
     FCF(8,9)  = C2*IusXZ + C3*IusZX;
     FCF(8,10) = C2*IusYZ + C3*IusZY;
-    FCF(8,11) = C1*IusZZ + C3*(IusYY + IusXX);
+    FCF(8,11) = C1*IusZZ + C3*(IusYY + IusXX);*/
 
-    // block41
+	// block34
+    FCF(6,9)  = C3*(IusYY + IusZZ);
+    FCF(6,10) = C3*IusXY;
+    FCF(6,11) = C3*IusXZ;
+    FCF(7,9)  = C3*IusYX;
+    FCF(7,10) = C3*(IusXX + IusZZ);
+    FCF(7,11) = C3*IusYZ;
+    FCF(8,9)  = C3*IusZX;
+    FCF(8,10) = C3*IusZY;
+    FCF(8,11) = C3*(IusYY + IusXX);
+
+    /*// block41
     FCF(9,0)  = C1*IstXX + C3*(IstYY + IstZZ);
     FCF(9,1)  = C2*IstXY + C3*IstYX;
     FCF(9,2)  = C2*IstXZ + C3*IstZX;
@@ -2013,45 +1779,84 @@ SSPbrickUP::GetStab(void)
     FCF(10,8) = C2*IusYZ + C3*IusZY;
     FCF(11,6) = C2*IusZX + C3*IusXZ;
     FCF(11,7) = C2*IusZY + C3*IusYZ;
-    FCF(11,8) = C1*IusZZ + C3*(IusYY + IusXX);
+    FCF(11,8) = C1*IusZZ + C3*(IusYY + IusXX);*/
 
-    // block44
+	// block41
+    FCF(9,0)  = C3*(IstYY + IstZZ);
+    FCF(9,1)  = C3*IstYX;
+    FCF(9,2)  = C3*IstZX;
+    FCF(10,0) = C3*IstXY;
+    FCF(10,1) = C3*(IstXX + IstZZ);
+    FCF(10,2) = C3*IstZY;
+    FCF(11,0) = C3*IstXZ;
+    FCF(11,1) = C3*IstYZ;
+    FCF(11,2) = C3*(IstYY + IstXX);
+
+    // block42
+    FCF(9,3)  = C3*(IutYY + IutZZ);
+    FCF(9,4)  = C3*IutYX;
+    FCF(9,5)  = C3*IutZX;
+    FCF(10,3) = C3*IutXY;
+    FCF(10,4) = C3*(IutXX + IutZZ);
+    FCF(10,5) = C3*IutZY;
+    FCF(11,3) = C3*IutXZ;
+    FCF(11,4) = C3*IutYZ;
+    FCF(11,5) = C3*(IutYY + IutXX);
+
+    // block43
+    FCF(9,6)  = C3*(IusYY + IusZZ);
+    FCF(9,7)  = C3*IusYX;
+    FCF(9,8)  = C3*IusZX;
+    FCF(10,6) = C3*IusXY;
+    FCF(10,7) = C3*(IusXX + IusZZ);
+    FCF(10,8) = C3*IusZY;
+    FCF(11,6) = C3*IusXZ;
+    FCF(11,7) = C3*IusYZ;
+    FCF(11,8) = C3*(IusYY + IusXX);
+
+    /*// block44
     FCF(9,9)   = C1*HstuXX + C3*(HstuYY + HstuZZ);
-    FCF(9,10)  = (C2 + C3)*HstuXY;
-    FCF(9,11)  = (C2 + C3)*HstuXZ;
-    FCF(10,9)  = (C2 + C3)*HstuXY;
+    FCF(9,10)  = C4*HstuXY;
+    FCF(9,11)  = C4*HstuXZ;
+    FCF(10,9)  = C4*HstuXY;
     FCF(10,10) = C1*HstuYY + C3*(HstuXX + HstuZZ);
-    FCF(10,11) = (C2 + C3)*HstuYZ;
-    FCF(11,9)  = (C2 + C3)*HstuXZ;
-    FCF(11,10) = (C2 + C3)*HstuYZ;
-    FCF(11,11) = C1*HstuZZ + C3*(HstuYY + HstuXX);
-	
-	// compute the stabilization stiffness matrix
-	Kstab.Zero();
-	//Kstab.addMatrixTripleProduct(1.0, Mben, FCF, mu);
-	Kstab.addMatrixTripleProduct(1.0, Mben, FCF, 1.0);
+    FCF(10,11) = C4*HstuYZ;
+    FCF(11,9)  = C4*HstuXZ;
+    FCF(11,10) = C4*HstuYZ;
+    FCF(11,11) = C1*HstuZZ + C3*(HstuYY + HstuXX);*/
+
+	// block44
+    FCF(9,9)   = C3*(HstuYY + HstuZZ);
+    FCF(9,10)  = C3*HstuXY;
+    FCF(9,11)  = C3*HstuXZ;
+    FCF(10,9)  = FCF(9,10);
+    FCF(10,10) = C3*(HstuXX + HstuZZ);
+    FCF(10,11) = C3*HstuYZ;
+    FCF(11,9)  = FCF(9,11);
+    FCF(11,10) = FCF(10,11);
+    FCF(11,11) = C3*(HstuYY + HstuXX);
 
 	// enhanced strain portion of the stabilization stiffness matrix
 	// define the constitutive coefficients
 	double CssXX = C1*Jinv(0,0)*Jinv(0,0) + C3*(Jinv(0,1)*Jinv(0,1) + Jinv(0,2)*Jinv(0,2));
-	double CssXY = (C2 + C3)*Jinv(0,0)*Jinv(0,1);
-	double CssXZ = (C2 + C3)*Jinv(0,0)*Jinv(0,2);
+	double CssXY = C4*Jinv(0,0)*Jinv(0,1);
+	double CssXZ = C4*Jinv(0,0)*Jinv(0,2);
 	double CssYY = C1*Jinv(0,1)*Jinv(0,1) + C3*(Jinv(0,0)*Jinv(0,0) + Jinv(0,2)*Jinv(0,2));
-	double CssYZ = (C2 + C3)*Jinv(0,1)*Jinv(0,2);
+	double CssYZ = C4*Jinv(0,1)*Jinv(0,2);
 	double CssZZ = C1*Jinv(0,2)*Jinv(0,2) + C3*(Jinv(0,0)*Jinv(0,0) + Jinv(0,1)*Jinv(0,1));
 
 	double CttXX = C1*Jinv(1,0)*Jinv(1,0) + C3*(Jinv(1,1)*Jinv(1,1) + Jinv(1,2)*Jinv(1,2));
-	double CttXY = (C2 + C3)*Jinv(1,0)*Jinv(1,1);
-	double CttXZ = (C2 + C3)*Jinv(1,0)*Jinv(1,2);
+	double CttXY = C4*Jinv(1,0)*Jinv(1,1);
+	double CttXZ = C4*Jinv(1,0)*Jinv(1,2);
 	double CttYY = C1*Jinv(1,1)*Jinv(1,1) + C3*(Jinv(1,0)*Jinv(1,0) + Jinv(1,2)*Jinv(1,2));
-	double CttYZ = (C2 + C3)*Jinv(1,1)*Jinv(1,2);
+	double CttYZ = C4*Jinv(1,1)*Jinv(1,2);
 	double CttZZ = C1*Jinv(1,2)*Jinv(1,2) + C3*(Jinv(1,0)*Jinv(1,0) + Jinv(1,1)*Jinv(1,1));
 
 	double CuuXX = C1*Jinv(2,0)*Jinv(2,0) + C3*(Jinv(2,1)*Jinv(2,1) + Jinv(2,2)*Jinv(2,2));
-	double CuuXY = (C2 + C3)*Jinv(2,0)*Jinv(2,1);
-	double CuuXZ = (C2 + C3)*Jinv(2,0)*Jinv(2,2);
+	double CuuXY = C4*Jinv(2,0)*Jinv(2,1);
+	double CuuXZ = C4*Jinv(2,0)*Jinv(2,2);
 	double CuuYY = C1*Jinv(2,1)*Jinv(2,1) + C3*(Jinv(2,0)*Jinv(2,0) + Jinv(2,2)*Jinv(2,2));
-	double CuuYZ = (C2 + C3)*Jinv(2,1)*Jinv(2,2);
+	double CuuYZ = C4*Jinv(2,1)*Jinv(2,2);
 	double CuuZZ = C1*Jinv(2,2)*Jinv(2,2) + C3*(Jinv(2,0)*Jinv(2,0) + Jinv(2,1)*Jinv(2,1));
 
 	double CstXX = C1*Jinv(0,0)*Jinv(1,0) + C3*(Jinv(0,1)*Jinv(1,1) + Jinv(0,2)*Jinv(1,2));
@@ -2092,11 +1897,11 @@ SSPbrickUP::GetStab(void)
 	FeCFe(0,0) = CssXX*J0789;
 	FeCFe(0,1) = CssXY*J0789;
 	FeCFe(0,2) = CssXZ*J0789;
-	FeCFe(1,0) = CssXY*J0789;
+	FeCFe(1,0) = FeCFe(0,1);
 	FeCFe(1,1) = CssYY*J0789;
 	FeCFe(1,2) = CssYZ*J0789;
-	FeCFe(2,0) = CssXZ*J0789;
-	FeCFe(2,1) = CssYZ*J0789;
+	FeCFe(2,0) = FeCFe(0,2);
+	FeCFe(2,1) = FeCFe(1,2);
 	FeCFe(2,2) = CssZZ*J0789;
 
 	// block12
@@ -2123,24 +1928,24 @@ SSPbrickUP::GetStab(void)
 
 	// block21
 	FeCFe(3,0) = CstXX*J619;
-	FeCFe(4,0) = CstXY*J619;
-	FeCFe(5,0) = CstXZ*J619;
 	FeCFe(3,1) = CstYX*J619;
-	FeCFe(4,1) = CstYY*J619;
-	FeCFe(5,1) = CstYZ*J619;
 	FeCFe(3,2) = CstZX*J619;
+	FeCFe(4,0) = CstXY*J619;
+	FeCFe(4,1) = CstYY*J619;
 	FeCFe(4,2) = CstZY*J619;
+	FeCFe(5,0) = CstXZ*J619;
+	FeCFe(5,1) = CstYZ*J619;
 	FeCFe(5,2) = CstZZ*J619;
 
 	// block22
 	FeCFe(3,3) = CttXX*J0879;
 	FeCFe(3,4) = CttXY*J0879;
 	FeCFe(3,5) = CttXZ*J0879;
-	FeCFe(4,3) = CttXY*J0879;
+	FeCFe(4,3) = FeCFe(3,4);
 	FeCFe(4,4) = CttYY*J0879;
 	FeCFe(4,5) = CttYZ*J0879;
-	FeCFe(5,3) = CttXZ*J0879;
-	FeCFe(5,4) = CttYZ*J0879;
+	FeCFe(5,3) = FeCFe(3,5);
+	FeCFe(5,4) = FeCFe(4,5);
 	FeCFe(5,5) = CttZZ*J0879;
 
 	// block23
@@ -2156,35 +1961,35 @@ SSPbrickUP::GetStab(void)
 
 	// block31
 	FeCFe(6,0) = CsuXX*J518;
-	FeCFe(7,0) = CsuXY*J518;
-	FeCFe(8,0) = CsuXZ*J518;
 	FeCFe(6,1) = CsuYX*J518;
-	FeCFe(7,1) = CsuYY*J518;
-	FeCFe(8,1) = CsuYZ*J518;
 	FeCFe(6,2) = CsuZX*J518;
+	FeCFe(7,0) = CsuXY*J518;
+	FeCFe(7,1) = CsuYY*J518;
 	FeCFe(7,2) = CsuZY*J518;
+	FeCFe(8,0) = CsuXZ*J518;
+	FeCFe(8,1) = CsuYZ*J518;
 	FeCFe(8,2) = CsuZZ*J518;
 
 	// block32
 	FeCFe(6,3) = CtuXX*J417;
-	FeCFe(7,3) = CtuXY*J417;
-	FeCFe(8,3) = CtuXZ*J417;
 	FeCFe(6,4) = CtuYX*J417;
-	FeCFe(7,4) = CtuYY*J417;
-	FeCFe(8,4) = CtuYZ*J417;
 	FeCFe(6,5) = CtuZX*J417;
+	FeCFe(7,3) = CtuXY*J417;
+	FeCFe(7,4) = CtuYY*J417;
 	FeCFe(7,5) = CtuZY*J417;
+	FeCFe(8,3) = CtuXZ*J417;
+	FeCFe(8,4) = CtuYZ*J417;
 	FeCFe(8,5) = CtuZZ*J417;
 
 	// block33
 	FeCFe(6,6) = CuuXX*J0978;
 	FeCFe(6,7) = CuuXY*J0978;
 	FeCFe(6,8) = CuuXZ*J0978;
-	FeCFe(7,6) = CuuXY*J0978;
+	FeCFe(7,6) = FeCFe(6,7);
 	FeCFe(7,7) = CuuYY*J0978;
 	FeCFe(7,8) = CuuYZ*J0978;
-	FeCFe(8,6) = CuuXZ*J0978;
-	FeCFe(8,7) = CuuYZ*J0978;
+	FeCFe(8,6) = FeCFe(6,8);
+	FeCFe(8,7) = FeCFe(7,8);
 	FeCFe(8,8) = CuuZZ*J0978;
 
 	// inverse of [FenT][C][Fen]
@@ -2293,13 +2098,69 @@ SSPbrickUP::GetStab(void)
 	FeCFhg(8,7) = CsuYZ*J0978 + CuuYZ*J518;
 	FeCFhg(8,8) = CsuZZ*J0978 + CuuZZ*J518;
 
-	// create KKM matrix
-	Matrix KKM(9,24);
-	KKM = FeCFeInv*FeCFhg*Mben;
+	/*// off-diagonal enhanced strain matrix [Fe]^T[C][F] is same as [Fe]^T[C][Fhg] with exception of last three columns
+	Matrix FeCF(9,12);
+	FeCF = FeCFhg;
 
-	// add enhanced strain terms to the stabilization matrix
-	Kstab.addMatrixTripleProduct(1.0, KKM, FeCFe, -1.0);
+	// block 14
+	FeCF(0,9)  = C3*(J21411*(Jinv(2,1)*Jinv(0,1) + Jinv(2,2)*Jinv(0,2)) + J31310*(Jinv(1,1)*Jinv(0,1) + Jinv(1,2)*Jinv(0,2)) + J16*(Jinv(0,1)*Jinv(0,1) + Jinv(0,2)*Jinv(0,2)));
+	FeCF(0,10) = C3*(J21411*Jinv(2,0)*Jinv(0,1) + J31310*Jinv(1,0)*Jinv(0,1) + J16*Jinv(0,0)*Jinv(0,1));
+	FeCF(0,11) = C3*(J21411*Jinv(2,0)*Jinv(0,2) + J31310*Jinv(1,0)*Jinv(0,2) + J16*Jinv(0,0)*Jinv(0,2));
+	FeCF(1,9)  = C3*(J21411*Jinv(2,1)*Jinv(0,0) + J31310*Jinv(1,1)*Jinv(0,0) + J16*Jinv(0,0)*Jinv(0,1));
+	FeCF(1,10) = C3*(J21411*(Jinv(2,0)*Jinv(0,0) + Jinv(2,2)*Jinv(0,2)) + J31310*(Jinv(1,0)*Jinv(0,0) + Jinv(1,2)*Jinv(0,2)) + J16*(Jinv(0,0)*Jinv(0,0) + Jinv(0,2)*Jinv(0,2)));
+	FeCF(1,11) = C3*(J21411*Jinv(2,1)*Jinv(0,2) + J31310*Jinv(1,1)*Jinv(0,2) + J16*Jinv(0,1)*Jinv(0,2));
+	FeCF(2,9)  = C3*(J21411*Jinv(2,2)*Jinv(0,0) + J31310*Jinv(1,2)*Jinv(0,0) + J16*Jinv(0,0)*Jinv(0,2));
+	FeCF(2,10) = C3*(J21411*Jinv(2,2)*Jinv(0,1) + J31310*Jinv(1,2)*Jinv(0,1) + J16*Jinv(0,1)*Jinv(0,2));
+	FeCF(2,11) = C3*(J21411*(Jinv(2,0)*Jinv(0,0) + Jinv(2,1)*Jinv(0,1)) + J31310*(Jinv(1,0)*Jinv(0,0) + Jinv(1,1)*Jinv(0,1)) + J16*(Jinv(0,0)*Jinv(0,0) + Jinv(0,1)*Jinv(0,1)));
 
+	// block 24
+	FeCF(3,9)  = C3*(J11512*(Jinv(2,1)*Jinv(1,1) + Jinv(2,2)*Jinv(1,2)) + J31013*(Jinv(1,1)*Jinv(0,1) + Jinv(1,2)*Jinv(0,2)) + J16*(Jinv(1,1)*Jinv(1,1) + Jinv(1,2)*Jinv(1,2)));
+	FeCF(3,10) = C3*(J11512*Jinv(2,0)*Jinv(1,1) + J31013*Jinv(1,1)*Jinv(0,0) + J16*Jinv(1,0)*Jinv(1,1));
+	FeCF(3,11) = C3*(J11512*Jinv(2,0)*Jinv(1,2) + J31013*Jinv(1,2)*Jinv(0,0) + J16*Jinv(1,0)*Jinv(1,2));
+	FeCF(4,9)  = C3*(J11512*Jinv(2,1)*Jinv(1,0) + J31013*Jinv(1,0)*Jinv(0,1) + J16*Jinv(1,0)*Jinv(1,1));
+	FeCF(4,10) = C3*(J11512*(Jinv(2,0)*Jinv(1,0) + Jinv(2,2)*Jinv(1,2)) + J31013*(Jinv(1,0)*Jinv(0,0) + Jinv(1,2)*Jinv(0,2)) + J16*(Jinv(1,0)*Jinv(1,0) + Jinv(1,2)*Jinv(1,2)));
+	FeCF(4,11) = C3*(J11512*Jinv(2,1)*Jinv(1,2) + J31013*Jinv(1,2)*Jinv(0,1) + J16*Jinv(1,1)*Jinv(1,2));
+	FeCF(5,9)  = C3*(J11512*Jinv(2,2)*Jinv(1,0) + J31013*Jinv(1,0)*Jinv(0,2) + J16*Jinv(1,0)*Jinv(1,2));
+	FeCF(5,10) = C3*(J11512*Jinv(2,2)*Jinv(1,1) + J31013*Jinv(1,1)*Jinv(0,2) + J16*Jinv(1,1)*Jinv(1,2));
+	FeCF(5,11) = C3*(J11512*(Jinv(2,0)*Jinv(1,0) + Jinv(2,1)*Jinv(1,1)) + J31013*(Jinv(1,0)*Jinv(0,0) + Jinv(1,1)*Jinv(0,1)) + J16*(Jinv(1,0)*Jinv(1,0) + Jinv(1,1)*Jinv(1,1)));
+
+	// block 34
+	FeCF(6,9)  = C3*(J11215*(Jinv(2,1)*Jinv(1,1) + Jinv(2,2)*Jinv(1,2)) + J21114*(Jinv(2,1)*Jinv(0,1) + Jinv(2,2)*Jinv(0,2)) + J16*(Jinv(2,1)*Jinv(2,1) + Jinv(2,2)*Jinv(2,2)));
+	FeCF(6,10) = C3*(J11215*Jinv(2,1)*Jinv(1,0) + J21114*Jinv(2,1)*Jinv(0,0) + J16*Jinv(2,0)*Jinv(2,1));
+	FeCF(6,11) = C3*(J11215*Jinv(2,2)*Jinv(1,0) + J21114*Jinv(2,2)*Jinv(0,0) + J16*Jinv(2,0)*Jinv(2,2));
+	FeCF(7,9)  = C3*(J11215*Jinv(2,0)*Jinv(1,1) + J21114*Jinv(2,0)*Jinv(0,1) + J16*Jinv(2,0)*Jinv(2,1));
+	FeCF(7,10) = C3*(J11215*(Jinv(2,0)*Jinv(1,0) + Jinv(2,2)*Jinv(1,2)) + J21114*(Jinv(2,0)*Jinv(0,0) + Jinv(2,2)*Jinv(0,2)) + J16*(Jinv(2,0)*Jinv(2,0) + Jinv(2,2)*Jinv(2,2)));
+	FeCF(7,11) = C3*(J11215*Jinv(2,2)*Jinv(1,1) + J21114*Jinv(2,2)*Jinv(0,1) + J16*Jinv(2,1)*Jinv(2,2));
+	FeCF(8,9)  = C3*(J11215*Jinv(2,0)*Jinv(1,2) + J21114*Jinv(2,0)*Jinv(0,2) + J16*Jinv(2,0)*Jinv(2,2));
+	FeCF(8,10) = C3*(J11215*Jinv(2,1)*Jinv(1,2) + J21114*Jinv(2,1)*Jinv(0,2) + J16*Jinv(2,1)*Jinv(2,2));
+	FeCF(8,11) = C3*(J11215*(Jinv(2,0)*Jinv(1,0) + Jinv(2,1)*Jinv(1,1)) + J21114*(Jinv(2,0)*Jinv(0,0) + Jinv(2,1)*Jinv(0,1)) + J16*(Jinv(2,0)*Jinv(2,0) + Jinv(2,1)*Jinv(2,1)));
+
+	// transpose the FeCF matrix to get the FCFe matrix
+	Matrix FCFe(12,9);
+	FCFe = Transpose(9,12,FeCF);*/
+	
+	// transpose the Kwu matrix
+	Matrix KuT(12,9);
+	KuT = Transpose(9,12,FeCFhg);
+
+	// compute the stabilization stiffness matrix
+	Kstab.Zero();
+
+	/*Matrix KKF(12,12);
+	Matrix FKK(12,12);
+	Matrix KKFKK(12,12);
+
+	KKF = KuT*FeCFeInv*FeCF;
+	FKK = FCFe*FeCFeInv*FeCFhg;
+	KKFKK = KuT*FeCFeInv*FeCFhg;*/
+
+	Matrix interior(12,12);
+
+	//interior = FCF - KKF - FKK + KKFKK;
+	interior = FCF - KuT*FeCFeInv*FeCFhg;
+
+	Kstab.addMatrixTripleProduct(1.0, Mben, interior, 1.0);
+	
 	return;
 }
 
@@ -2314,6 +2175,21 @@ SSPbrickUP::CrossProduct(Vector v1, Vector v2)
 	result(2) = v1(0)*v2(1) - v1(1)*v2(0);
 
 	return result;
+}
+
+Matrix  
+SSPbrickUP::Transpose(int d1, int d2, const Matrix &M)
+// transpose the input matrix
+{
+  	Matrix Mtran(d2,d1);
+
+  	for (int i = 0; i < d1; i++) {
+    	for (int j = 0; j < d2; j++) {
+        	Mtran(j,i) = M(i,j);
+		}
+  	}
+
+  	return Mtran;
 }
 
 void

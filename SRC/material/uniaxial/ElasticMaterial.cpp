@@ -75,7 +75,7 @@ OPS_NewElasticMaterial(void)
       opserr << "Invalid data for uniaxialMaterial Elastic " << iData[0] << endln;
       return 0;	
     }
-    dData[2] =  0.0;
+    dData[1] =  0.0;
   }
 
   // Parsing was successful, allocate the material

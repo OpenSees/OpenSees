@@ -106,6 +106,7 @@ class SSPbrickUP : public Element
     // member functions
 	void GetStab(void);                                 // compute stabilization stiffness matrix
 	Vector CrossProduct(Vector v1, Vector v2);          // cross product for two 3x1 vectors
+	Matrix Transpose(int d1, int d2, const Matrix &M);  // transpose operation
 	void GetSolidStiffness(void);                       // compute solid phase stiffness matrix
 	void GetSolidMass(void);                            // compute soild phase mass matrix
 	void GetPermeabilityMatrix(void);                   // compute permeability matrix
