@@ -110,7 +110,7 @@ UniaxialMaterial &m, double AreaFiber,double B1, double B2)
 	A.Normalize();
 	AA[0] = A(0)*A(0);
 	AA[1] = A(1)*A(1);
-	AA[2] =  2*A(1)*A(0);
+	AA[2] = A(1)*A(0);  // this must be 1* A1 A2 since strain uses gamma = 2 eps12
 	//set up integration paramaters (2 intgr pts)
 	pts[0][0] = nFi(0)+A(0)*(1-0.5773502691896258);   
 	pts[0][1] = nFi(1)+A(1)*(1-0.5773502691896258);					    
@@ -239,7 +239,7 @@ Quad4FiberOverlay::update()
 
 double
 Quad4FiberOverlay::computeCurrentStrain()
-{  // determine the current strain given trial displacements at nodes                  
+{  // determine the current strain given trial displacements at nodes   
 	u.Zero();
 	const Vector &disp1 = theNodes[0]->getTrialDisp();
 	const Vector &disp2 = theNodes[1]->getTrialDisp();
@@ -253,14 +253,15 @@ Quad4FiberOverlay::computeCurrentStrain()
 	u[5] = disp3(1);
 	u[6] = disp4(0);
 	u[7] = disp4(1);
-	strain = 0;
 	// Loop over the integration points
-	for(int ip = 0; ip < 2; ip++) {
+    strain = 0;
+	for(int ip = 0; ip < 2; ip++) {		        //This llop calculates twice the strain, since it is adding the strain at two GP...
 		this->getEltBb(pts[ip][0],pts[ip][1]);
 		for (int i = 0; i < SL_NUM_DOF; i++) {
-			strain += Bb(i)*u(i)/2.0;
+			strain += Bb(i)*u(i);
 		}
 	}
+	strain = strain/2.0; //Since it was calculated twice. this function should be redeveloped
 	return strain;
 }
 // // tangent stiff //////////////////////////////////////////////////////////////////////////////
@@ -319,12 +320,16 @@ Quad4FiberOverlay::getEltBb(double Xi, double Eta)
 		this->Dual();
 		for(int i=0; i<4; i++) {
 				for(int j =0; j<2;j++){
-				B(j,i) = dNidxAlphai(i,0)*dualg1(j) + dNidxAlphai(i,1)*dualg2(j); 
+				    B(j,i) = dNidxAlphai(i,0)*dualg1(j) + dNidxAlphai(i,1)*dualg2(j); 
 				}
+				//B(0,i) = dNidxAlphai(i,0)*dualg1(0) + dNidxAlphai(i,1)*dualg1(1); 
+				//B(1,i) = dNidxAlphai(i,0)*dualg2(0) + dNidxAlphai(i,1)*dualg2(1); 
+				//opserr << "B = " << B(0,i) << B(1,i) << endln;
 		}
+
 		for(int i =0; i<4;i++) {
 			Bb[(i+1)*2-2] = AA(0)*B(0,i)+AA(2)*B(1,i);
-			Bb[(i+1)*2-1] = AA(1)*B(1,i)+ AA(2)*B(0,i);
+			Bb[(i+1)*2-1] = AA(1)*B(1,i)+AA(2)*B(0,i);
 		}
 		return 0;
 }
@@ -338,10 +343,12 @@ Quad4FiberOverlay::getTangentStiff()
 			this->getEltBb(pts[ip][0],pts[ip][1]);
 			for (int i = 0; i < SL_NUM_DOF; i++){
 				for (int j = 0; j < SL_NUM_DOF; j++){
-					FiberK(i,j) += Lf*Af*Ef*wts[ip]*Bb(i) * Bb(j);
+					FiberK(i,j) += Lf/2.0*Af*Ef*wts[ip]*Bb(i) * Bb(j);
+					//opserr << "K = " << "(" <<i<<","<<j<<") ="<<FiberK(i,j) << endln;
 				}
 			}
 		}
+
 	return FiberK;
 }
 
@@ -374,7 +381,7 @@ Quad4FiberOverlay::getResistingForce()
 	for (int ip = 0; ip<2; ip++) { 
 		this->getEltBb(pts[ip][0],pts[ip][1]);
 		for (int i = 0; i < SL_NUM_DOF; i++){
-			P(i) += Lf*Af*wts[ip]*Bb(i)*theMaterial->getStress();
+			P(i) += Lf/2.0*Af*wts[ip]*Bb(i)*theMaterial->getStress();
 		}
 	}
 	return P;
