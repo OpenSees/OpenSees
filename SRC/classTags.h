@@ -392,6 +392,8 @@
 #define ELE_TAG_cont2d02    	2102	// provisional
 #define ELE_TAG_CST	    	4050
 
+
+
 #define ELE_TAG_Subdomain     	1
 #define ELEMENT_TAGS_WrapperElement 2001
 #define ELE_TAG_ElasticBeam2d   2000
@@ -523,6 +525,7 @@
 #define ELE_TAG_TPB1D 17
 #define ELE_TAG_TFP_Bearing 20
 #define ELE_TAG_TFP_Bearing2d 21
+#define ELE_TAG_TripleFrictionPendulum 777
 
 #define FRN_TAG_CoulombFriction     1
 #define FRN_TAG_VDependentFriction  2
