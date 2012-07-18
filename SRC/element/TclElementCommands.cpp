@@ -111,6 +111,8 @@ extern void *OPS_NewShellMITC4(void);
 extern void *OPS_NewShellNL(void);
 extern void *OPS_Quad4FiberOverlay(void);
 extern void *OPS_Brick8FiberOverlay(void);
+extern void *OPS_TripleFrictionPendulum(void);
+
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -444,6 +446,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   } else if ((strcmp(argv[1],"TFPbearing") == 0) || (strcmp(argv[1],"TFP") == 0)) {
     
     void *theEle = OPS_TFP_Bearing();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+
+
+  } else if (strcmp(argv[1],"TripleFrictionPendulum") == 0) {
+    
+    void *theEle = OPS_TripleFrictionPendulum();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
