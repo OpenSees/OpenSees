@@ -1,5 +1,5 @@
 /* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**    OpenSees System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
@@ -310,7 +310,6 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 
 int reliability(ClientData, Tcl_Interp *, int, TCL_Char **);
 int wipeReliability(ClientData, Tcl_Interp *, int, TCL_Char **);
-
 int optimization(ClientData, Tcl_Interp *, int, TCL_Char **);  //Quan  (2)
 
 #endif
@@ -515,7 +514,7 @@ FEM_ObjectBrokerAllClasses theBroker;
 
 // init the global variabled defined in OPS_Globals.h
 double        ops_Dt = 1.0;
-Element      *ops_TheActiveElement = 0;
+// Element      *ops_TheActiveElement = 0;
 bool          ops_InitialStateAnalysis = false; // McGann, U.Washington
 
 #ifdef _NOGRAPHICS
@@ -527,6 +526,10 @@ TclVideoPlayer *theTclVideoPlayer =0;
 // g3AppInit() is the method called by tkAppInit() when the
 // interpreter is being set up .. this is where all the
 // commands defined in this file are registered with the interpreter.
+
+
+int 
+printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
 setPrecision(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -680,6 +683,10 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "print", &printModel, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    // Talledo Start 
+    Tcl_CreateCommand(interp, "printGID", &printModelGID,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    // Talledo End
     Tcl_CreateCommand(interp, "analysis", &specifyAnalysis, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "system", &specifySOE, 
@@ -5712,7 +5719,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
       }  else if (typeSolver == 4) {
 	
 	SymBandEigenSolver *theEigenSolver = new SymBandEigenSolver(); 
-	theEigenSOE = new SymBandEigenSOE(*theEigenSolver, *theAnalysisModel);    
+	theEigenSOE = new SymBandEigenSOE(*theEigenSolver, *theAnalysisModel); 
 
       } else if (typeSolver == 8) {
 	
@@ -8646,3 +8653,362 @@ setParameter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   sprintf(interp->result,"%d",objectCount);
   return TCL_OK;
 }
+
+// Talledo Start
+int 
+printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  // This function print's a file with node and elements in a format useful for GID
+	int res = 0;
+	bool hasLinear = 0;
+	bool hasTri3  = 0;
+	bool hasQuad4 = 0;
+	bool hasQuad8 = 0;
+	bool hasQuad9 = 0;
+	bool hasBrick = 0;
+	int startEle = 1;
+	int endEle = 1;
+	int eleRange = 0;
+	int i = 2;
+
+    FileStream outputFile;
+    OPS_Stream *output = &opserr;
+
+	if (argc < 2) {
+		opserr << "WARNING printGID fileName? - no filename supplied\n";
+		return TCL_ERROR;
+	}
+	openMode mode = OVERWRITE;
+	if (argc >= 3)
+	{
+		if (strcmp(argv[i],"-append") == 0) 
+		{
+			mode = APPEND;
+			i++;
+		}
+		if (strcmp(argv[i],"-eleRange") == 0) {
+			//opserr<<"WARNING:commands: eleRange defined"<<endln;
+			eleRange = 1;
+			if (Tcl_GetInt(interp, argv[i+1], &startEle) != TCL_OK) {
+				opserr << "WARNING print node failed to get integer: " << argv[i+1] << endln;
+				return TCL_ERROR;
+			}
+			if (Tcl_GetInt(interp, argv[i+2], &endEle) != TCL_OK) {
+				opserr << "WARNING print node failed to get integer: " << argv[i+2] << endln;
+				return TCL_ERROR;
+			}
+			//opserr<<"startEle = "<<startEle<<" endEle = "<<endEle<<endln;
+		}
+	}
+		
+    if (outputFile.setFile(argv[1], mode) < 0) {
+        opserr << "WARNING printGID " << argv[1] << " failed to set the file\n";
+		return TCL_ERROR;
+	}
+    
+	// Cycle over Elements to understand what type of elements are there
+	ElementIter &theElements = theDomain.getElements();
+	Element *theElement;
+	while ((theElement = theElements()) != 0) {
+		int tag = theElement->getTag();
+		
+		// Check type of Element with Number of Nodes
+		// if 2 Nodes print the Element
+		int nNode = theElement->getNumExternalNodes();
+		if (nNode == 2) {
+			hasLinear = 1;
+		} else if (nNode == 4) {
+			hasQuad4 = 1;
+		} else if (nNode == 3) {
+			hasTri3 = 1;
+		} else if (nNode == 9) {
+			hasQuad9 = 1;
+		} else if (nNode == 8) {
+			const char *name = theElement->getClassType();
+			if (strcmp(name,"Brick") == 0) {
+				hasBrick = 1;
+			} else {
+				hasQuad8 = 1;
+			}
+		}
+	}
+	// **** Linear Elements - 2 Nodes
+	if (hasLinear == 1) {
+		// Print HEADER
+		outputFile << "MESH \"2NMESH\" dimension 3 ElemType Linear Nnode 2" << endln;
+		outputFile << "#color 0 0 255" << endln << endln;
+    
+		// Print node coordinates
+		outputFile << "Coordinates" << endln;
+		NodeIter &theNodes = theDomain.getNodes();
+		Node *theNode;
+		while ((theNode = theNodes()) != 0) {
+			int tag = theNode->getTag();
+			const Vector &crds = theNode->getCrds();
+			//outputFile << tag << "\t\t" << crds(0) << "\t" << crds(1) << "\t" << crds(2) << endln;
+			int l_tmp = crds.Size();
+			outputFile << tag << "\t\t";
+			for (int ii = 0; ii<l_tmp; ii++) {
+				outputFile << crds(ii) << "\t";
+			};
+			for (int ii = l_tmp; ii<3; ii++) {
+				outputFile << 0.0 << "\t";
+			};
+			outputFile << endln;
+		}
+		outputFile << "End coordinates" << endln << endln;
+
+		// Print elements connectivity
+		outputFile << "Elements" << endln;
+		ElementIter &theElements = theDomain.getElements();
+		Element *theElement;
+		while ((theElement = theElements()) != 0) {
+			int tag = theElement->getTag();
+			// Check if element tag is inside theRange
+			if (((tag<=endEle) & (tag>=startEle)) || (eleRange == 0)) {
+				// Check type of Element with Number of Nodes
+				// if 2 Nodes print the Element
+				int nNode = theElement->getNumExternalNodes();
+				if (nNode == 2) {
+					Node **NodePtrs;
+					NodePtrs = theElement->getNodePtrs();		
+					Vector tagNodes(nNode);
+					for (int i = 0; i < nNode; i++) {
+						tagNodes(i)=NodePtrs[i]->getTag();
+					}
+					outputFile << tag << "\t\t";
+					for (int i = 0; i < nNode; i++) {
+						outputFile << tagNodes(i) << "\t";
+					}
+					outputFile << endln;
+				}
+			}
+		}
+		outputFile << "End elements" << endln;
+	}
+	// **** Quadrilateral Elements - 4 Nodes
+	if (hasQuad4 == 1) {
+		// Print HEADER
+		outputFile << "MESH \"4NMESH\" dimension 3 ElemType Quadrilateral Nnode 4" << endln;
+		outputFile << "#color 0 255 0" << endln << endln;
+    
+		// Print node coordinates
+		outputFile << "Coordinates" << endln;
+		NodeIter &theNodes = theDomain.getNodes();
+		Node *theNode;
+		while ((theNode = theNodes()) != 0) {
+			int tag = theNode->getTag();
+			const Vector &crds = theNode->getCrds();
+			//outputFile << tag << "\t\t" << crds(0) << "\t" << crds(1) << "\t" << crds(2) << endln;
+			int l_tmp = crds.Size();
+			outputFile << tag << "\t\t";
+			for (int ii = 0; ii<l_tmp; ii++) {
+				outputFile << crds(ii) << "\t";
+			};
+			for (int ii = l_tmp; ii<3; ii++) {
+				outputFile << 0.0 << "\t";
+			};
+			outputFile << endln;
+		}
+		outputFile << "End coordinates" << endln << endln;
+
+		// Print elements connectivity
+		outputFile << "Elements" << endln;
+		ElementIter &theElements = theDomain.getElements();
+		Element *theElement;
+		while ((theElement = theElements()) != 0) {
+			int tag = theElement->getTag();
+			// Check if element tag is inside theRange
+			if (((tag<=endEle) & (tag>=startEle)) || (eleRange == 0)) {
+		
+				// Check type of Element with Number of Nodes
+				// if 2 Nodes print the Element
+				int nNode = theElement->getNumExternalNodes();
+				if (nNode == 4) {
+					Node **NodePtrs;
+					NodePtrs = theElement->getNodePtrs();		
+					Vector tagNodes(nNode);
+					for (int i = 0; i < nNode; i++) {
+						tagNodes(i)=NodePtrs[i]->getTag();
+					}
+					outputFile << tag << "\t\t";
+					for (int i = 0; i < nNode; i++) {
+						outputFile << tagNodes(i) << "\t";
+					}
+					outputFile << endln;
+				}
+			}
+		}
+		outputFile << "End elements" << endln;
+	}
+	// **** Triangular Elements - 3 Nodes
+	if (hasTri3 == 1) {
+		// Print HEADER
+		outputFile << "MESH \"3NMESH\" dimension 3 ElemType Triangle Nnode 3" << endln;
+		outputFile << "#color 0 255 0" << endln << endln;
+    
+		// Print node coordinates
+		outputFile << "Coordinates" << endln;
+		NodeIter &theNodes = theDomain.getNodes();
+		Node *theNode;
+		while ((theNode = theNodes()) != 0) {
+			int tag = theNode->getTag();
+			const Vector &crds = theNode->getCrds();
+			//outputFile << tag << "\t\t" << crds(0) << "\t" << crds(1) << "\t" << crds(2) << endln;
+			int l_tmp = crds.Size();
+			outputFile << tag << "\t\t";
+			for (int ii = 0; ii<l_tmp; ii++) {
+				outputFile << crds(ii) << "\t";
+			};
+			for (int ii = l_tmp; ii<3; ii++) {
+				outputFile << 0.0 << "\t";
+			};
+			outputFile << endln;
+		}
+		outputFile << "End coordinates" << endln << endln;
+
+		// Print elements connectivity
+		outputFile << "Elements" << endln;
+		ElementIter &theElements = theDomain.getElements();
+		Element *theElement;
+		while ((theElement = theElements()) != 0) {
+			int tag = theElement->getTag();
+			// Check if element tag is inside theRange
+			if (((tag<=endEle) & (tag>=startEle)) || (eleRange ==0)) {
+		
+				// Check type of Element with Number of Nodes
+				// if 3 Nodes print the Element
+				int nNode = theElement->getNumExternalNodes();
+				if (nNode == 3) {
+					Node **NodePtrs;
+					NodePtrs = theElement->getNodePtrs();		
+					Vector tagNodes(nNode);
+					for (int i = 0; i < nNode; i++) {
+						tagNodes(i)=NodePtrs[i]->getTag();
+					}
+					outputFile << tag << "\t\t";
+					for (int i = 0; i < nNode; i++) {
+						outputFile << tagNodes(i) << "\t";
+					}
+					outputFile << endln;
+				}
+			}
+		}
+		outputFile << "End elements" << endln;
+	}
+	// **** Quadrilateral Elements - 9 Nodes
+	if (hasQuad9 == 1) {
+		// Print HEADER
+		outputFile << "MESH \"9NMESH\" dimension 3 ElemType Linear Nnode 9" << endln;
+		outputFile << "#color 0 255 0" << endln << endln;
+    
+		// Print node coordinates
+		outputFile << "Coordinates" << endln;
+		NodeIter &theNodes = theDomain.getNodes();
+		Node *theNode;
+		while ((theNode = theNodes()) != 0) {
+			int tag = theNode->getTag();
+			const Vector &crds = theNode->getCrds();
+			//outputFile << tag << "\t\t" << crds(0) << "\t" << crds(1) << "\t" << crds(2) << endln;
+			int l_tmp = crds.Size();
+			outputFile << tag << "\t\t";
+			for (int ii = 0; ii<l_tmp; ii++) {
+				outputFile << crds(ii) << "\t";
+			};
+			for (int ii = l_tmp; ii<3; ii++) {
+				outputFile << 0.0 << "\t";
+			};
+			outputFile << endln;
+		}
+		outputFile << "End coordinates" << endln << endln;
+
+		// Print elements connectivity
+		outputFile << "Elements" << endln;
+		ElementIter &theElements = theDomain.getElements();
+		Element *theElement;
+		while ((theElement = theElements()) != 0) {
+			int tag = theElement->getTag();
+			// Check if element tag is inside theRange
+			if (((tag<=endEle) & (tag>=startEle)) || (eleRange ==0)) {
+		
+				// Check type of Element with Number of Nodes
+				// if 2 Nodes print the Element
+				int nNode = theElement->getNumExternalNodes();
+				if (nNode == 9) {
+					Node **NodePtrs;
+					NodePtrs = theElement->getNodePtrs();		
+					Vector tagNodes(nNode);
+					for (int i = 0; i < nNode; i++) {
+						tagNodes(i)=NodePtrs[i]->getTag();
+					}
+					outputFile << tag << "\t\t";
+					for (int i = 0; i < nNode; i++) {
+						outputFile << tagNodes(i) << "\t";
+					}
+					outputFile << endln;
+				}
+			}
+		}
+		outputFile << "End elements" << endln;
+	}
+	// **** Hexahedra Elements - 8 Nodes
+	if (hasBrick == 1) {
+		// Print HEADER
+		outputFile << "MESH \"8NMESH\" dimension 3 ElemType Hexahedra Nnode 8" << endln;
+		outputFile << "#color 255 0 0" << endln << endln;
+    
+		// Print node coordinates
+		outputFile << "Coordinates" << endln;
+		NodeIter &theNodes = theDomain.getNodes();
+		MeshRegion *myRegion = theDomain.getRegion(0);
+		Node *theNode;
+		while ((theNode = theNodes()) != 0) {
+			int tag = theNode->getTag();
+			const Vector &crds = theNode->getCrds();
+			//outputFile << tag << "\t\t" << crds(0) << "\t" << crds(1) << "\t" << crds(2) << endln;
+			int l_tmp = crds.Size();
+			outputFile << tag << "\t\t";
+			for (int ii = 0; ii<l_tmp; ii++) {
+				outputFile << crds(ii) << "\t";
+			};
+			for (int ii = l_tmp; ii<3; ii++) {
+				outputFile << 0.0 << "\t";
+			};
+			outputFile << endln;
+		}
+		outputFile << "End coordinates" << endln << endln;
+
+		// Print elements connectivity
+		outputFile << "Elements" << endln;
+		ElementIter &theElements = theDomain.getElements();
+		Element *theElement;
+		while ((theElement = theElements()) != 0) {
+			int tag = theElement->getTag();
+			// Check if element tag is inside theRange
+			if (((tag<=endEle) & (tag>=startEle)) || (eleRange == 0)) {
+		
+				// Check type of Element with Number of Nodes
+				// if 2 Nodes print the Element
+				int nNode = theElement->getNumExternalNodes();
+				if (nNode == 8) {
+					Node **NodePtrs;
+					NodePtrs = theElement->getNodePtrs();		
+					Vector tagNodes(nNode);
+					for (int i = 0; i < nNode; i++) {
+						tagNodes(i)=NodePtrs[i]->getTag();
+					}
+					outputFile << tag << "\t\t";
+					for (int i = 0; i < nNode; i++) {
+						outputFile << tagNodes(i) << "\t";
+					}
+					outputFile << endln;
+				}
+			}
+		}
+		outputFile << "End elements" << endln;
+	}
+
+	outputFile.close();
+	return res;
+}
+// Talledo End
