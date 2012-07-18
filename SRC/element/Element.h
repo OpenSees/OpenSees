@@ -61,6 +61,7 @@ class Element : public DomainComponent
     virtual const ID &getExternalNodes(void)  =0;	
     virtual Node **getNodePtrs(void)  =0;	
     virtual int getNumDOF(void) =0;
+    virtual double getCharacteristicLength(void);
 
     // methods dealing with committed state and update
     virtual int commitState(void);    
