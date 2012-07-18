@@ -9,6 +9,7 @@ OBJS       = FlatSliderSimple2d.o \
 	TclFlatSliderCommand.o \
 	TclSingleFPCommand.o \
 	TPB1D.o \
+	TripleFrictionPendulum.o \
 	MultiFP2d.o
 
 # Compilation control
