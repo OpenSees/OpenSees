@@ -2259,6 +2259,8 @@ SRC/element/frictionBearing/TPB1D.cpp -text
 SRC/element/frictionBearing/TPB1D.h -text
 SRC/element/frictionBearing/TclFlatSliderCommand.cpp -text
 SRC/element/frictionBearing/TclSingleFPCommand.cpp -text
+SRC/element/frictionBearing/TripleFrictionPendulum.cpp -text
+SRC/element/frictionBearing/TripleFrictionPendulum.h -text
 SRC/element/frictionBearing/frictionModel/CoulombFriction.cpp -text
 SRC/element/frictionBearing/frictionModel/CoulombFriction.h -text
 SRC/element/frictionBearing/frictionModel/FrictionModel.cpp -text
