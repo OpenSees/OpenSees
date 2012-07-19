@@ -3918,6 +3918,7 @@ Win32/OpenSees.opt -text
 Win32/OpenSeesFortran.mak -text
 Win32/OpenSeesFortran.mdp -text svneol=unset#unset
 Win32/OpenSeesVC2005.sln -text
+Win32/OpenSeesVC6.sln -text
 Win32/VC2005errno.cpp -text
 Win32/lib/IFCONSOL.LIB -text
 Win32/lib/LIBIFCORE.LIB -text
@@ -3967,6 +3968,7 @@ Win32/proj/modelbuilder/modelbuilder.dsp -text
 Win32/proj/modelbuilder/modelbuilder.mak -text
 Win32/proj/modelbuilder/modelbuilder.vcproj -text
 Win32/proj/openSees/OpenSees2005.vcproj -text
+Win32/proj/openSees/OpenSeesVC6.vcproj -text
 Win32/proj/openSees/openSees.dsp -text
 Win32/proj/openSees/openSees.mak -text
 Win32/proj/openSees/openSees.vcproj -text
