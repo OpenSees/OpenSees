@@ -925,6 +925,12 @@
 			<File
 				RelativePath="..\..\..\SRC\element\frictionBearing\TclSingleFPCommand.cpp">
 			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\TripleFrictionPendulum.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\TripleFrictionPendulum.h">
+			</File>
 			<Filter
 				Name="frictionModel"
 				Filter="">
@@ -1021,6 +1027,18 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\UWelements\BeamEndContact3Dp.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\UWelements\Brick8FiberOverlay.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\UWelements\Brick8FiberOverlay.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\UWelements\Quad4FiberOverlay.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\UWelements\Quad4FiberOverlay.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\UWelements\SSPbrick.cpp">
