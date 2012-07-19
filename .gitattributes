@@ -3971,6 +3971,7 @@ Win32/proj/openSees/openSees.dsp -text
 Win32/proj/openSees/openSees.mak -text
 Win32/proj/openSees/openSees.vcproj -text
 Win32/proj/openSeesTk/OpenSeesTk2005.vcproj -text
+Win32/proj/openSeesTk/OpenSeesTkVC6.vcproj -text
 Win32/proj/openSeesTk/openSeesTk.dsp -text
 Win32/proj/openSeesTk/openSeesTk.vcproj -text
 Win32/proj/optimization/optimization.vcproj -text
