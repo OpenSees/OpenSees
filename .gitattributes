@@ -3922,7 +3922,6 @@ Win32/OpenSeesVC6.sln -text
 Win32/VC2005errno.cpp -text
 Win32/lib/IFCONSOL.LIB -text
 Win32/lib/LIBIFCORE.LIB -text
-Win32/opensees.sln -text
 Win32/proj/OpenSeesMP/OpenSeesMP.vcproj -text svneol=unset#application/octet-stream
 Win32/proj/OpenSeesSP/OpenSeesSP.vcproj -text svneol=unset#application/octet-stream
 Win32/proj/ParallelOpenSeesManyInterpreters/ParallelOpenSeesManyInterpreters.vcproj -text
