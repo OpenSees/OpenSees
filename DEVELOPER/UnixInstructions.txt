@@ -1,5 +1,7 @@
 
-for Mac users you need to edit the first part of the Makefile.def
+for Mac users you need to edit the first part of the Makefile.def, uncomment
+the first line and comment or delete the second line!
+
 
 there are a number of example classes and example scripts to test these
 classes. In addition for elements and materials there are example c and 

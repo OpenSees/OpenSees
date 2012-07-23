@@ -366,6 +366,8 @@ bool
 Domain::addElement(Element *element)
 {
   int eleTag = element->getTag();
+  
+  ops_TheActiveElement = element;
 
   // check all the elements nodes exist in the domain
   const ID &nodes = element->getExternalNodes();
@@ -640,36 +642,41 @@ Domain::addParameter(Parameter *theParam)
   // add the param to the container object for the parameters
   bool result = theParameters->addComponent(theParam);
  
-  if (result == true) {
-    // mark the Domain as having been changed
-    //    this->domainChange();
+  if (result == false) {
+    opserr << "Domain::addParameter - parameter " << paramTag << "could not be added to container\n";
+    theParam->setDomain(this);
+    return result;
+  }
 
-    // Array is full
-    if (numParameters == paramSize) {
-
-      // Increase size and allocate new array
-      paramSize += paramSize_grow;
-      int *tmp_paramIndex = new int[paramSize];
-
-      // Copy values from old array to new
-      for (int i = 0; i < numParameters; i++)
-	tmp_paramIndex[i] = paramIndex[i];
-
-      // Get rid of old array
-      delete [] paramIndex;
-
-      // Set pointer to new array
-      paramIndex = tmp_paramIndex;
-    }
-
-    // Add to index
-    paramIndex[numParameters] = paramTag;
-    theParam->setGradIndex(numParameters);
-    numParameters++;    
-
-  } else 
-    opserr << "Domain::addParameter - parameter " << paramTag << "could not be added to container\n";      
-
+  // mark the Domain as having been changed
+  //    this->domainChange();
+  
+  // Array is full
+  if (numParameters == paramSize) {
+    
+    // Increase size and allocate new array
+    paramSize += paramSize_grow;
+    int *tmp_paramIndex = new int[paramSize];
+    
+    // Copy values from old array to new
+    for (int i = 0; i < numParameters; i++)
+      tmp_paramIndex[i] = paramIndex[i];
+    
+    // Get rid of old array
+    delete [] paramIndex;
+    
+    // Set pointer to new array
+    paramIndex = tmp_paramIndex;
+  }
+  
+  // Add to index
+  paramIndex[numParameters] = paramTag;
+  theParam->setGradIndex(numParameters);
+  numParameters++;    
+  
+  if (strcmp(theParam->getType(),"FEModel") != 0) {
+    //theParam->setGradIndex(-1);
+  }
 
   theParam->setDomain(this);
   return result;
@@ -1387,7 +1394,7 @@ Domain::getNumLoadPatterns(void) const
 int 
 Domain::getNumParameters(void) const
 {
-    return theParameters->getNumComponents();
+  return theParameters->getNumComponents();
 }
 
 const Vector &
@@ -1744,6 +1751,7 @@ Domain::update(void)
   Element *theEle;
 
   while ((theEle = theEles()) != 0) {
+    ops_TheActiveElement = theEle;
     ok += theEle->update();
   }
 
@@ -3047,6 +3055,7 @@ Domain::calculateNodalReactions(int flag)
 
   ElementIter &theElements = this->getElements();
   while ((theElement = theElements()) != 0)
-    theElement->addResistingForceToNodalReaction(flag);
+    if (theElement->isSubdomain() == false)
+      theElement->addResistingForceToNodalReaction(flag);
   return 0;
 }

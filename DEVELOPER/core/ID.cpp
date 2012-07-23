@@ -614,9 +614,8 @@ ID::insert(int x)
       
       return 0;
       
-    } else
-      return -1;
+    }
   }
-  return -1; // should never get here
+  return -1; 
 }
 

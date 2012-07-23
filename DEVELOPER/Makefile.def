@@ -1,5 +1,5 @@
-#OS_FLAG = -D_MACOSX
-OS_FLAG = -D_LINUX
+OS_FLAG = -D_MACOSX
+#OS_FLAG = -D_LINUX
 
 CC++	= g++
 CC      = gcc

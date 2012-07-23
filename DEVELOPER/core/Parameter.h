@@ -61,10 +61,11 @@ class Parameter : public TaggedObject, public MovableObject
   void setGradIndex(int gradInd) {gradIndex = gradInd;}
   int getGradIndex(void) {return gradIndex;}
 
-  // To make it compile -- MHS 9/28/2011
-  bool isImplicit(void) {return true;}
-  double getSensitivity(int index) {return 0.0;}
-  double getPerturbation(void) {return 0.1;}
+  virtual bool isImplicit(void) {return true;}
+  virtual double getSensitivity(int index);
+  virtual double getPerturbation(void) {return 0.001;}
+  virtual const char *getType(void) {return "FEModel";}
+  virtual int getPointerTag(void) {return -1;}
 
   virtual void setDomain(Domain *theDomain);
   virtual int sendSelf(int commitTag, Channel &theChannel);  

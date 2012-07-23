@@ -214,10 +214,18 @@ Parameter::activate(bool active)
   return ok;
 }
 
+double
+Parameter::getSensitivity(int index)
+{
+  //return 1.0;
+
+  return (index == gradIndex) ? 1.0 : 0.0;
+}
+
 void
 Parameter::Print(OPS_Stream &s, int flag)  
 {
-  s << "Parameter, tag = " << this->getTag() << endln;
+  s << "Parameter, tag = " << this->getTag() << " " << this->getValue() << endln;
   //s << "\tparameterID = " << parameterID << endln;
 }
 

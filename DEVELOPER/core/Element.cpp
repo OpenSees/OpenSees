@@ -34,6 +34,7 @@
 //
 
 #include <stdlib.h>
+#include <math.h>
 
 #include "Element.h"
 #include "ElementResponse.h"
@@ -42,6 +43,8 @@
 #include <Matrix.h>
 #include <Node.h>
 #include <Domain.h>
+
+Element  *ops_TheActiveElement = 0;
 
 Matrix **Element::theMatrices; 
 Vector **Element::theVectors1; 
@@ -58,6 +61,7 @@ Element::Element(int tag, int cTag)
   Kc(0), index(-1), nodeIndex(-1)
 {
     // does nothing
+  ops_TheActiveElement = this;
 }
 
 
@@ -583,3 +587,32 @@ Element::addResistingForceToNodalReaction(int flag)
 
   return result;
 }
+
+double Element::getCharacteristicLength(void)
+{
+  int numNodes = this->getNumExternalNodes();
+  Node **theNodes = this->getNodePtrs();
+  double cLength = 0.0;
+
+  for (int i=0; i<numNodes; i++) {
+    Node *nodeI = theNodes[i];
+    Vector iCoords = nodeI->getCrds();
+    int iDOF = nodeI->getNumberDOF();
+    for (int j=i+1; j<numNodes; j++) {
+      Node *nodeJ = theNodes[j];
+      Vector jCoords = nodeI->getCrds();      
+      int jDOF = nodeI->getNumberDOF();
+      double ijLength = 0;
+      for (int k=0; k<iDOF && k<jDOF; k++) {
+	ijLength += (jCoords(i)-iCoords(i))*(jCoords(i)-iCoords(i));
+      }	
+      ijLength = sqrt(ijLength);
+      if (ijLength > cLength)
+	cLength = ijLength;
+    }
+  }
+  return cLength;
+}
+      
+
+
