@@ -367,6 +367,9 @@ int TwoNodeLink::commitState()
     for (int i=0; i<numDir; i++)
 	    errCode += theMaterials[i]->commitState();
     
+    // commit the base class
+    errCode += this->Element::commitState();
+    
     return errCode;
 }
 

@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: $
-// $Date: $
-// $URL: $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 12/11
@@ -46,9 +46,11 @@ void *OPS_NewElasticMultiLinear()
     UniaxialMaterial *theMaterial = 0;
 
     int argc = OPS_GetNumRemainingInputArgs();
-    if (argc < 5) {
+    if (argc < 7) {
         opserr << "WARNING incorrect num args want: uniaxialMaterial ";
-        opserr << "ElasticMultiLinear tag strainPoints stressPoints" << endln;
+        opserr << "ElasticMultiLinear tag -strain strainPoints ";
+        opserr << "-stress stressPoints  ";
+        opserr << "(with at least two stress-strain points)\n";
         return 0;
     }
 
@@ -117,7 +119,7 @@ ElasticMultiLinear::ElasticMultiLinear(int tag,
     numDataPoints = strainPoints.Size();
     if (numDataPoints != stressPoints.Size())  {
         opserr << "ElasticMultiLinear::ElasticMultiLinear() "
-            << "- strain and stress arrays do not have same length\n";
+            << "- strain and stress arrays do not have same length.\n";
         exit(-1);        
     }
     trialIDmax = numDataPoints - 2;
@@ -262,7 +264,7 @@ int ElasticMultiLinear::sendSelf(int cTag, Channel &theChannel)
     res += theChannel.sendVector(this->getDbTag(), cTag, strainPoints);
     res += theChannel.sendVector(this->getDbTag(), cTag, stressPoints);
     if (res < 0) 
-        opserr << "ElasticMultiLinear::sendSelf() - failed to send data\n";
+        opserr << "ElasticMultiLinear::sendSelf() - failed to send data.\n";
 
     return res;
 }
@@ -275,22 +277,22 @@ int ElasticMultiLinear::recvSelf(int cTag, Channel &theChannel,
     static Vector data(5);
     res = theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0) 
-        opserr << "ElasticMultiLinear::recvSelf() - failed to recv data\n";
+        opserr << "ElasticMultiLinear::recvSelf() - failed to recv data.\n";
     else {
         this->setTag((int)data(0));
         trialIDmin    = (int)data(1);
         trialIDmax    = (int)data(2);
         numDataPoints = (int)data(3);
         initTangent   = data(4);
-    }
 
-    // receive the strain and stress arrays
-    strainPoints.resize(numDataPoints);
-    stressPoints.resize(numDataPoints);
-    res += theChannel.recvVector(this->getDbTag(), cTag, strainPoints);
-    res += theChannel.recvVector(this->getDbTag(), cTag, stressPoints);
-    if (res < 0) 
-        opserr << "ElasticMultiLinear::recvSelf() - failed to recv data\n";
+        // receive the strain and stress arrays
+        strainPoints.resize(numDataPoints);
+        stressPoints.resize(numDataPoints);
+        res += theChannel.recvVector(this->getDbTag(), cTag, strainPoints);
+        res += theChannel.recvVector(this->getDbTag(), cTag, stressPoints);
+        if (res < 0) 
+            opserr << "ElasticMultiLinear::recvSelf() - failed to recv arrays.\n";
+    }
 
     return res;
 }
