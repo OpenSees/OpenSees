@@ -18,14 +18,14 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.3 $
-// $Date: 2009-04-17 23:00:48 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/elastomericBearing/ElastomericBearing3d.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef ElastomericBearing3d_h
 #define ElastomericBearing3d_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 03/06
 // Revision: A
 //
@@ -53,35 +53,37 @@ public:
         double ke, double fy, double alpha,
         UniaxialMaterial **theMaterials,
         const Vector y, const Vector x = 0,
-        double shearDistI = 0.5, double mass = 0.0);
+        double shearDistI = 0.5,
+        int addRayleigh = 0, double mass = 0.0);
     ElastomericBearing3d();
-	
-	// destructor
+    
+    // destructor
     ~ElastomericBearing3d();
-	
+    
     // method to get class type
     const char *getClassType() const {return "ElastomericBearing3d";};
     
-    // public methods to obtain information about dof & connectivity    
+    // public methods to obtain information about dof & connectivity
     int getNumExternalNodes() const;
     const ID &getExternalNodes();
     Node **getNodePtrs();
     int getNumDOF();
     void setDomain(Domain *theDomain);
-	
-    // public methods to set the state of the element    
+    
+    // public methods to set the state of the element
     int commitState();
-    int revertToLastCommit();        
-    int revertToStart();        
+    int revertToLastCommit();
+    int revertToStart();
     int update();
-	
-    // public methods to obtain stiffness, mass, damping and residual information    
+    
+    // public methods to obtain stiffness, mass, damping and residual information
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
+    const Matrix &getDamp();
     const Matrix &getMass();
-	
+    
     void zeroLoad();
-	int addLoad(ElementalLoad *theLoad, double loadFactor);
+    int addLoad(ElementalLoad *theLoad, double loadFactor);
     int addInertiaLoadToUnbalance(const Vector &accel);
     
     const Vector &getResistingForce();
@@ -90,9 +92,9 @@ public:
     // public methods for element output
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);    
-    void Print(OPS_Stream &s, int flag = 0);    
-	
+    int displaySelf(Renderer &theViewer, int displayMode, float fact);
+    void Print(OPS_Stream &s, int flag = 0);
+    
     // public methods for element recorder
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
     int getResponse(int responseID, Information &eleInfo);
@@ -107,7 +109,7 @@ private:
     // private attributes - a copy for each object of the class
     ID connectedExternalNodes;          // contains the tags of the end nodes
     Node *theNodes[2];                  // array of nodes
-	UniaxialMaterial *theMaterials[4];  // array of uniaxial materials
+    UniaxialMaterial *theMaterials[4];  // array of uniaxial materials
     
     // parameters
     double k0;          // initial stiffness of hysteretic component
@@ -116,17 +118,18 @@ private:
     Vector x;           // local x direction
     Vector y;           // local y direction
     double shearDistI;  // shear distance from node I as fraction of length
+    int addRayleigh;    // flag to add Rayleigh damping
     double mass;        // mass of element
     double L;           // element length
-	
+    
     // state variables
-	Vector ub;          // displacements in basic system
+    Vector ub;          // displacements in basic system
     Vector ubPlastic;   // plastic displacements in basic system
-	Vector qb;          // forces in basic system
+    Vector qb;          // forces in basic system
     Matrix kb;          // stiffness matrix in basic system
     Vector ul;          // displacements in local system
-	Matrix Tgl;         // transformation matrix from global to local system
-	Matrix Tlb;         // transformation matrix from local to basic system
+    Matrix Tgl;         // transformation matrix from global to local system
+    Matrix Tlb;         // transformation matrix from local to basic system
     
     // committed history variables
     Vector ubPlasticC;  // plastic displacements in basic system
@@ -134,7 +137,7 @@ private:
     // initial stiffness matrix in basic system
     Matrix kbInit;
     
-	static Matrix theMatrix;
+    static Matrix theMatrix;
     static Vector theVector;
     static Vector theLoad;
 };

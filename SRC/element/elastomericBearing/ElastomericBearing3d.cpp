@@ -18,18 +18,16 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.3 $
-// $Date: 2009-04-17 23:00:48 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/elastomericBearing/ElastomericBearing3d.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
 // Description: This file contains the implementation of the
 // ElastomericBearing3d class.
-//
-// What: "@(#) ElastomericBearing3d.cpp, revA"
 
 #include "ElastomericBearing3d.h"
 
@@ -56,17 +54,18 @@ Vector ElastomericBearing3d::theLoad(12);
 
 ElastomericBearing3d::ElastomericBearing3d(int tag, int Nd1, int Nd2,
     double ke, double fy, double alpha, UniaxialMaterial **materials,
-    const Vector _y, const Vector _x, double sdI, double m)
+    const Vector _y, const Vector _x, double sdI, int addRay, double m)
     : Element(tag, ELE_TAG_ElastomericBearing3d),
     connectedExternalNodes(2),
-    k0(0.0), qYield(0.0), k2(0.0), x(_x), y(_y), shearDistI(sdI),
-    mass(m), L(0.0), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
+    k0(0.0), qYield(0.0), k2(0.0), x(_x), y(_y),
+    shearDistI(sdI), addRayleigh(addRay), mass(m),
+    L(0.0), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
-        opserr << "ElastomericBearing3d::setUp() - element: "
-            << this->getTag() << " failed to create an ID of size 2\n";
+        opserr << "ElastomericBearing3d::ElastomericBearing3d() - element: "
+            << this->getTag() << " - failed to create an ID of size 2.\n";
     }
     
     connectedExternalNodes(0) = Nd1;
@@ -120,24 +119,25 @@ ElastomericBearing3d::ElastomericBearing3d(int tag, int Nd1, int Nd2,
 ElastomericBearing3d::ElastomericBearing3d()
     : Element(0, ELE_TAG_ElastomericBearing3d),
     connectedExternalNodes(2),
-    k0(0.0), qYield(0.0), k2(0.0), x(0), y(0), shearDistI(0.5),
-    mass(0.0), L(0.0), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(6),
+    k0(0.0), qYield(0.0), k2(0.0), x(0), y(0),
+    shearDistI(0.5), addRayleigh(0), mass(0.0),
+    L(0.0), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(6),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6)
 {	
     // ensure the connectedExternalNode ID is of correct size & set values
-	if (connectedExternalNodes.Size() != 2)  {
-		opserr << "ElastomericBearing3d::ElastomericBearing3d() - "
-			<<  "failed to create an ID of size 2\n";
-		exit(-1);
+    if (connectedExternalNodes.Size() != 2)  {
+        opserr << "ElastomericBearing3d::ElastomericBearing3d() - element: "
+            << this->getTag() << " - failed to create an ID of size 2.\n";
+        exit(-1);
     }
     
     // set node pointers to NULL
-	for (int i=0; i<2; i++)
-		theNodes[i] = 0;
+    for (int i=0; i<2; i++)
+        theNodes[i] = 0;
     
     // set material pointers to NULL
-	for (int i=0; i<4; i++)
-		theMaterials[i] = 0;
+    for (int i=0; i<4; i++)
+        theMaterials[i] = 0;
 }
 
 
@@ -165,7 +165,7 @@ const ID& ElastomericBearing3d::getExternalNodes()
 
 Node** ElastomericBearing3d::getNodePtrs() 
 {
-	return theNodes;
+    return theNodes;
 }
 
 
@@ -179,46 +179,50 @@ void ElastomericBearing3d::setDomain(Domain *theDomain)
 {
     // check Domain is not null - invoked when object removed from a domain
     if (!theDomain)  {
-		theNodes[0] = 0;
-		theNodes[1] = 0;
+        theNodes[0] = 0;
+        theNodes[1] = 0;
         
-		return;
+        return;
     }
-
+    
     // first set the node pointers
     theNodes[0] = theDomain->getNode(connectedExternalNodes(0));
     theNodes[1] = theDomain->getNode(connectedExternalNodes(1));	
-	
+    
     // if can't find both - send a warning message
     if (!theNodes[0] || !theNodes[1])  {
-		if (!theNodes[0])  {
-			opserr << "WARNING ElastomericBearing3d::setDomain() - Nd1: " 
-				<< connectedExternalNodes(0) << " does not exist in the model for ";
-		} else  {
-			opserr << "WARNING ElastomericBearing3d::setDomain() - Nd2: " 
-				<< connectedExternalNodes(1) << " does not exist in the model for ";
-		}
-		opserr << "ElastomericBearing3d ele: " << this->getTag() << endln;
-		
-		return;
+        if (!theNodes[0])  {
+            opserr << "WARNING ElastomericBearing3d::setDomain() - Nd1: " 
+                << connectedExternalNodes(0)
+                << " does not exist in the model for";
+        } else  {
+            opserr << "WARNING ElastomericBearing3d::setDomain() - Nd2: " 
+                << connectedExternalNodes(1)
+                << " does not exist in the model for";
+        }
+        opserr << " element: " << this->getTag() << ".\n";
+        
+        return;
     }
-	
-	// now determine the number of dof and the dimension    
-	int dofNd1 = theNodes[0]->getNumberDOF();
-	int dofNd2 = theNodes[1]->getNumberDOF();	
-	
-	// if differing dof at the ends - print a warning message
+    
+    // now determine the number of dof and the dimension
+    int dofNd1 = theNodes[0]->getNumberDOF();
+    int dofNd2 = theNodes[1]->getNumberDOF();	
+    
+    // if differing dof at the ends - print a warning message
     if (dofNd1 != 6)  {
-		opserr << "ElastomericBearing3d::setDomain() - node 1: "
-			<< connectedExternalNodes(0) << " has incorrect number of DOF (not 6)\n";
-		return;
+        opserr << "ElastomericBearing3d::setDomain() - node 1: "
+            << connectedExternalNodes(0)
+            << " has incorrect number of DOF (not 6).\n";
+        return;
     }
     if (dofNd2 != 6)  {
-		opserr << "ElastomericBearing3d::setDomain() - node 2: "
-			<< connectedExternalNodes(1) << " has incorrect number of DOF (not 6)\n";
-		return;
+        opserr << "ElastomericBearing3d::setDomain() - node 2: "
+            << connectedExternalNodes(1)
+            << " has incorrect number of DOF (not 6).\n";
+        return;
     }
-	
+    
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
     
@@ -229,16 +233,19 @@ void ElastomericBearing3d::setDomain(Domain *theDomain)
 
 int ElastomericBearing3d::commitState()
 {
-	int errCode = 0;
+    int errCode = 0;
     
     // commit trial history variables
     ubPlasticC = ubPlastic;
-	
+    
     // commit material models
     for (int i=0; i<4; i++)
-	    errCode += theMaterials[i]->commitState();
+        errCode += theMaterials[i]->commitState();
     
-	return errCode;
+    // commit the base class
+    errCode += this->Element::commitState();
+    
+    return errCode;
 }
 
 
@@ -248,7 +255,7 @@ int ElastomericBearing3d::revertToLastCommit()
     
     // revert material models
     for (int i=0; i<4; i++)
-	    errCode += theMaterials[i]->revertToLastCommit();
+        errCode += theMaterials[i]->revertToLastCommit();
     
     return errCode;
 }
@@ -317,10 +324,10 @@ int ElastomericBearing3d::update()
     // elastic step -> no updates required
     if (Y <= 0.0)  {
         // set shear forces
-        qb(1) = k2*ub(1) + qTrial(0);
-        qb(2) = k2*ub(2) + qTrial(1);
+        qb(1) = qTrial(0) + k2*ub(1);
+        qb(2) = qTrial(1) + k2*ub(2);
         // set tangent stiffnesses
-        kb(1,1) = kb(2,2) = k2 + k0;
+        kb(1,1) = kb(2,2) = k0 + k2;
         kb(1,2) = kb(2,1) = 0.0;
     }
     // plastic step -> return mapping
@@ -331,13 +338,14 @@ int ElastomericBearing3d::update()
         ubPlastic(0) = ubPlasticC(0) + dGamma*qTrial(0)/qTrialNorm;
         ubPlastic(1) = ubPlasticC(1) + dGamma*qTrial(1)/qTrialNorm;
         // set shear forces
-        qb(1) = k2*ub(1) + qYield*qTrial(0)/qTrialNorm;
-        qb(2) = k2*ub(2) + qYield*qTrial(1)/qTrialNorm;
+        qb(1) = qYield*qTrial(0)/qTrialNorm + k2*ub(1);
+        qb(2) = qYield*qTrial(1)/qTrialNorm + k2*ub(2);
         // set tangent stiffnesses
-        kb(1,1) = k2 + qYield*k0*pow(qTrial(1),2)/pow(qTrialNorm,3);
-        kb(1,2) = -qYield*k0*qTrial(0)*qTrial(1)/pow(qTrialNorm,3);
-        kb(2,1) = -qYield*k0*qTrial(0)*qTrial(1)/pow(qTrialNorm,3);
-        kb(2,2) = k2 + qYield*k0*pow(qTrial(0),2)/pow(qTrialNorm,3);
+        double D = pow(qTrialNorm,3);
+        kb(1,1) =  qYield*k0*qTrial(1)*qTrial(1)/D + k2;
+        kb(1,2) = -qYield*k0*qTrial(0)*qTrial(1)/D;
+        kb(2,1) =  kb(1,2);
+        kb(2,2) =  qYield*k0*qTrial(0)*qTrial(0)/D + k2;
     }
     
     // 3) get moment and stiffness in basic x-direction
@@ -412,22 +420,53 @@ const Matrix& ElastomericBearing3d::getInitialStiff()
 }
 
 
-const Matrix& ElastomericBearing3d::getMass()
+const Matrix& ElastomericBearing3d::getDamp()
 {
-	// zero the matrix
+    // zero the matrix
     theMatrix.Zero();
     
-	// check for quick return
-	if (mass == 0.0)  {
-		return theMatrix;
-	}    
+    // call base class to setup Rayleigh damping
+    double factThis = 0.0;
+    if (addRayleigh == 1)  {
+        theMatrix = this->Element::getDamp();
+        factThis = 1.0;
+    }
     
-	double m = 0.5*mass;
-	for (int i = 0; i < 3; i++)  {
-		theMatrix(i,i)     = m;
-		theMatrix(i+3,i+3) = m;
-	}
-	
+    // now add damping tangent from materials
+    static Matrix cb(6,6);
+    cb.Zero();
+    cb(0,0) = theMaterials[0]->getDampTangent();
+    cb(3,3) = theMaterials[1]->getDampTangent();
+    cb(4,4) = theMaterials[2]->getDampTangent();
+    cb(5,5) = theMaterials[3]->getDampTangent();
+    
+    // transform from basic to local system
+    static Matrix cl(12,12);
+    cl.addMatrixTripleProduct(0.0, Tlb, cb, 1.0);
+    
+    // transform from local to global system and add to cg
+    theMatrix.addMatrixTripleProduct(factThis, Tgl, cl, 1.0);
+    
+    return theMatrix;
+}
+
+
+const Matrix& ElastomericBearing3d::getMass()
+{
+    // zero the matrix
+    theMatrix.Zero();
+    
+    // check for quick return
+    if (mass == 0.0)  {
+        return theMatrix;
+    }    
+    
+    double m = 0.5*mass;
+    for (int i=0; i<3; i++)  {
+        theMatrix(i,i)     = m;
+        theMatrix(i+6,i+6) = m;
+    }
+    
     return theMatrix; 
 }
 
@@ -440,40 +479,40 @@ void ElastomericBearing3d::zeroLoad()
 
 int ElastomericBearing3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 {  
-	opserr <<"ElastomericBearing3d::addLoad() - "
-		<< "load type unknown for element: "
-		<< this->getTag() << endln;
+    opserr <<"ElastomericBearing3d::addLoad() - "
+        << "load type unknown for element: "
+        << this->getTag() << ".\n";
     
-	return -1;
+    return -1;
 }
 
 
 int ElastomericBearing3d::addInertiaLoadToUnbalance(const Vector &accel)
 {
-	// check for quick return
-	if (mass == 0.0)  {
-		return 0;
-	}
-    
-	// get R * accel from the nodes
-	const Vector &Raccel1 = theNodes[0]->getRV(accel);
-	const Vector &Raccel2 = theNodes[1]->getRV(accel);
-	
-	if (6 != Raccel1.Size() || 6 != Raccel2.Size())  {
-		opserr << "ElastomericBearing3d::addInertiaLoadToUnbalance() - "
-			<< "matrix and vector sizes are incompatible\n";
-		return -1;
-	}
-    
-	// want to add ( - fact * M R * accel ) to unbalance
-	// take advantage of lumped mass matrix
-	double m = 0.5*mass;
-    for (int i = 0; i < 3; i++)  {
-        theLoad(i)   -= m * Raccel1(i);
-        theLoad(i+3) -= m * Raccel2(i);
+    // check for quick return
+    if (mass == 0.0)  {
+        return 0;
     }
     
-	return 0;
+    // get R * accel from the nodes
+    const Vector &Raccel1 = theNodes[0]->getRV(accel);
+    const Vector &Raccel2 = theNodes[1]->getRV(accel);
+    
+    if (6 != Raccel1.Size() || 6 != Raccel2.Size())  {
+        opserr << "ElastomericBearing3d::addInertiaLoadToUnbalance() - "
+            << "matrix and vector sizes are incompatible.\n";
+        return -1;
+    }
+    
+    // want to add ( - fact * M R * accel ) to unbalance
+    // take advantage of lumped mass matrix
+    double m = 0.5*mass;
+    for (int i=0; i<3; i++)  {
+        theLoad(i)   -= m * Raccel1(i);
+        theLoad(i+6) -= m * Raccel2(i);
+    }
+    
+    return 0;
 }
 
 
@@ -519,40 +558,44 @@ const Vector& ElastomericBearing3d::getResistingForce()
 
 const Vector& ElastomericBearing3d::getResistingForceIncInertia()
 {	
-	theVector = this->getResistingForce();
-	
-	// add the damping forces if rayleigh damping
-	if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-		theVector += this->getRayleighDampingForces();
+    // this already includes damping forces from materials
+    theVector = this->getResistingForce();
     
-	// now include the mass portion
-	if (mass != 0.0)  {
-		const Vector &accel1 = theNodes[0]->getTrialAccel();
-		const Vector &accel2 = theNodes[1]->getTrialAccel();    
-		
-		double m = 0.5*mass;
-		for (int i = 0; i < 3; i++)  {
-			theVector(i)   += m * accel1(i);
-			theVector(i+3) += m * accel2(i);
-		}
-	}
-	
-	return theVector;
+    // add the damping forces from rayleigh damping
+    if (addRayleigh == 1)  {
+        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+            theVector += this->getRayleighDampingForces();
+    }
+    
+    // add inertia forces from element mass
+    if (mass != 0.0)  {
+        const Vector &accel1 = theNodes[0]->getTrialAccel();
+        const Vector &accel2 = theNodes[1]->getTrialAccel();    
+
+        double m = 0.5*mass;
+        for (int i=0; i<3; i++)  {
+            theVector(i)   += m * accel1(i);
+            theVector(i+6) += m * accel2(i);
+        }
+    }
+    
+    return theVector;
 }
 
 
 int ElastomericBearing3d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(8);
+    static Vector data(9);
     data(0) = this->getTag();
     data(1) = k0;
     data(2) = qYield;
     data(3) = k2;
     data(4) = shearDistI;
-    data(5) = mass;
-    data(6) = x.Size();
-    data(7) = y.Size();
+    data(5) = addRayleigh;
+    data(6) = mass;
+    data(7) = x.Size();
+    data(8) = y.Size();
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -587,14 +630,16 @@ int ElastomericBearing3d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(8);
-    rChannel.recvVector(0, commitTag, data);    
+    static Vector data(9);
+    rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
     qYield = data(2);
     k2 = data(3);
     shearDistI = data(4);
-    mass = data(5);
+    addRayleigh = (int)data(5);
+    mass = data(6);
+    double ke = k0 + k2;
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -615,11 +660,11 @@ int ElastomericBearing3d::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive remaining data
-    if ((int)data(6) == 3)  {
+    if ((int)data(7) == 3)  {
         x.resize(3);
         rChannel.recvVector(0, commitTag, x);
     }
-    if ((int)data(7) == 3)  {
+    if ((int)data(8) == 3)  {
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
@@ -627,8 +672,8 @@ int ElastomericBearing3d::recvSelf(int commitTag, Channel &rChannel,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = k2 + k0;
-    kbInit(2,2) = k2 + k0;
+    kbInit(1,1) = ke;
+    kbInit(2,2) = ke;
     kbInit(3,3) = theMaterials[1]->getInitialTangent();
     kbInit(4,4) = theMaterials[2]->getInitialTangent();
     kbInit(5,5) = theMaterials[3]->getInitialTangent();
@@ -647,14 +692,14 @@ int ElastomericBearing3d::displaySelf(Renderer &theViewer,
     // the display factor (a measure of the distorted image)
     const Vector &end1Crd = theNodes[0]->getCrds();
     const Vector &end2Crd = theNodes[1]->getCrds();
-
+    
     static Vector v1(3);
     static Vector v2(3);
-
+    
     if (displayMode >= 0)  {
         const Vector &end1Disp = theNodes[0]->getDisp();
         const Vector &end2Disp = theNodes[1]->getDisp();
-
+        
         for (int i=0; i<3; i++)  {
             v1(i) = end1Crd(i) + end1Disp(i)*fact;
             v2(i) = end2Crd(i) + end2Disp(i)*fact;
@@ -663,7 +708,7 @@ int ElastomericBearing3d::displaySelf(Renderer &theViewer,
         int mode = displayMode * -1;
         const Matrix &eigen1 = theNodes[0]->getEigenvectors();
         const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-
+        
         if (eigen1.noCols() >= mode)  {
             for (int i=0; i<3; i++)  {
                 v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
@@ -676,7 +721,7 @@ int ElastomericBearing3d::displaySelf(Renderer &theViewer,
             }
         }
     }
-
+    
     return theViewer.drawLine (v1, v2, 1.0, 1.0);
 }
 
@@ -685,19 +730,20 @@ void ElastomericBearing3d::Print(OPS_Stream &s, int flag)
 {
     if (flag == 0)  {
         // print everything
-		s << "Element: " << this->getTag(); 
-		s << "  type: ElastomericBearing3d  iNode: " << connectedExternalNodes(0);
-		s << "  jNode: " << connectedExternalNodes(1) << endln;
+        s << "Element: " << this->getTag(); 
+        s << "  type: ElastomericBearing3d  iNode: " << connectedExternalNodes(0);
+        s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "  k0: " << k0 << "  qYield: " << qYield << "  k2: " << k2 << endln;
         s << "  Material ux: " << theMaterials[0]->getTag() << endln;
         s << "  Material rx: " << theMaterials[1]->getTag() << endln;
         s << "  Material ry: " << theMaterials[2]->getTag() << endln;
         s << "  Material rz: " << theMaterials[3]->getTag() << endln;
-        s << "  shearDistI: " << shearDistI << "  mass: " << mass << endln;
+        s << "  shearDistI: " << shearDistI << "  addRayleigh: "
+            << addRayleigh << "  mass: " << mass << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
     } else if (flag == 1)  {
-		// does nothing
+        // does nothing
     }
 }
 
@@ -762,7 +808,7 @@ Response* ElastomericBearing3d::setResponse(const char **argv, int argc,
         
         theResponse = new ElementResponse(this, 3, Vector(6));
     }
-	// local displacements
+    // local displacements
     else if (strcmp(argv[0],"localDisplacement") == 0 ||
         strcmp(argv[0],"localDisplacements") == 0)
     {
@@ -781,7 +827,7 @@ Response* ElastomericBearing3d::setResponse(const char **argv, int argc,
         
         theResponse = new ElementResponse(this, 4, theVector);
     }
-	// basic displacements
+    // basic displacements
     else if (strcmp(argv[0],"deformation") == 0 || strcmp(argv[0],"deformations") == 0 || 
         strcmp(argv[0],"basicDeformation") == 0 || strcmp(argv[0],"basicDeformations") == 0 ||
         strcmp(argv[0],"basicDisplacement") == 0 || strcmp(argv[0],"basicDisplacements") == 0)
@@ -815,10 +861,10 @@ int ElastomericBearing3d::getResponse(int responseID, Information &eleInfo)
     double kGeo1, MpDelta1, MpDelta2, MpDelta3, MpDelta4, MpDelta5, MpDelta6;
     
     switch (responseID)  {
-	case 1:  // global forces
+    case 1:  // global forces
         return eleInfo.setVector(this->getResistingForce());
         
-	case 2:  // local forces
+    case 2:  // local forces
         theVector.Zero();
         // determine resisting forces in local system
         theVector = Tlb^qb;
@@ -844,18 +890,18 @@ int ElastomericBearing3d::getResponse(int responseID, Information &eleInfo)
         theVector(10) += MpDelta6;
         return eleInfo.setVector(theVector);
         
-	case 3:  // basic forces
+    case 3:  // basic forces
         return eleInfo.setVector(qb);
         
-	case 4:  // local displacements
+    case 4:  // local displacements
         return eleInfo.setVector(ul);
         
-	case 5:  // basic displacements
+    case 5:  // basic displacements
         return eleInfo.setVector(ub);
         
     default:
-		return -1;
-	}
+        return -1;
+    }
 }
 
 
@@ -868,21 +914,21 @@ void ElastomericBearing3d::setUp()
     L = xp.Norm();
     
     if (L > DBL_EPSILON)  {
-		if (x.Size() == 0)  {
-		    x.resize(3);
-		    x = xp;
+        if (x.Size() == 0)  {
+            x.resize(3);
+            x = xp;
         } else  {
             opserr << "WARNING ElastomericBearing3d::setUp() - " 
-                << "element: " << this->getTag() << endln
-                << "ignoring nodes and using specified "
-                << "local x vector to determine orientation\n";
+                << "element: " << this->getTag()
+                << " - ignoring nodes and using specified "
+                << "local x vector to determine orientation.\n";
         }
     }
     // check that vectors for orientation are of correct size
     if (x.Size() != 3 || y.Size() != 3)  {
         opserr << "ElastomericBearing3d::setUp() - "
             << "element: " << this->getTag() << endln
-            << "incorrect dimension of orientation vectors\n";
+            << " - incorrect dimension of orientation vectors.\n";
         exit(-1);
     }
     
@@ -907,7 +953,7 @@ void ElastomericBearing3d::setUp()
     if (xn == 0 || yn == 0 || zn == 0)  {
         opserr << "ElastomericBearing3d::setUp() - "
             << "element: " << this->getTag() << endln
-            << "invalid orientation vectors\n";
+            << " - invalid orientation vectors.\n";
         exit(-1);
     }
     
