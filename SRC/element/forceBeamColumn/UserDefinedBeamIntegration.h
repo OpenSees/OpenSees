@@ -47,6 +47,9 @@ class UserDefinedBeamIntegration : public BeamIntegration
   int sendSelf(int cTag, Channel &theChannel);
   int recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
+  int setParameter(const char **argv, int argc, Parameter &param);
+  int updateParameter(int parameterID, Information &info);
+
   void Print(OPS_Stream &s, int flag = 0);  
 
  private:

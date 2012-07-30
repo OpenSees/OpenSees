@@ -27,6 +27,8 @@
 #include <Vector.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <Information.h>
+#include <Parameter.h>
 
 UserDefinedBeamIntegration::UserDefinedBeamIntegration(int nIP,
 						       const Vector &pt,
@@ -79,6 +81,43 @@ UserDefinedBeamIntegration::getSectionWeights(int numSections,
     wt[i] = wts(i);
   for ( ; i < numSections; i++)
     wt[i] = 1.0;
+}
+
+int
+UserDefinedBeamIntegration::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (argc < 2)
+    return -1;
+
+  int point = atoi(argv[1]);
+  if (point < 1)
+    return -1;
+
+  int Np = wts.Size();
+
+  if (strcmp(argv[0],"pt") == 0 && point <= Np)
+    return param.addObject(point, this);
+
+  else if (strcmp(argv[0],"wt") == 0 && point <= Np)
+    return param.addObject(10+point, this);
+
+  else
+    return -1;
+}
+
+int
+UserDefinedBeamIntegration::updateParameter(int parameterID, Information &info)
+{
+  if (parameterID <= 10) { // pt
+    pts(parameterID-1) = info.theDouble;
+    return 0;
+  }
+  else if (parameterID <= 20) { // wt
+    wts(parameterID-10-1) = info.theDouble;
+    return 0;
+  }
+  else
+    return -1;
 }
 
 BeamIntegration*
