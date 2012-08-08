@@ -698,7 +698,13 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
 						   theTclDomain, theTclBuilder);
     return result;
 
-  } else if (strcmp(argv[1],"forceBeamColumn") == 0 || strcmp(argv[1],"dispBeamColumn") == 0 || strcmp(argv[1],"elasticForceBeamColumn") == 0 || strcmp(argv[1],"nonlinearBeamColumn") == 0 || strcmp(argv[1],"dispBeamColumnWithSensitivity") == 0) {
+  } else if (strcmp(argv[1],"forceBeamColumn") == 0 || 
+	     strcmp(argv[1],"dispBeamColumn") == 0  || 
+	     strcmp(argv[1],"dispBeamColumnThermal") == 0  || 
+	     strcmp(argv[1],"elasticForceBeamColumn") == 0 || 
+	     strcmp(argv[1],"nonlinearBeamColumn") == 0 || 
+	     strcmp(argv[1],"dispBeamColumnWithSensitivity") == 0) {
+
     int result = TclModelBuilder_addForceBeamColumn(clientData, interp, argc, argv,
 						    theTclDomain, theTclBuilder);
     return result;

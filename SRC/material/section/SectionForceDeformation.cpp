@@ -37,7 +37,6 @@
 #include <Vector.h>
 #include <MaterialResponse.h>
 
-#include <stdlib.h>
 #include <string.h>
 
 double invert2by2Matrix(const Matrix &a, Matrix &b);
@@ -426,3 +425,28 @@ SectionForceDeformation::commitSensitivity(const Vector& defSens,
   return -1;
 }
 // AddingSensitivity:END ///////////////////////////////////////////
+
+//--- Adding Thermal Functions:[BEGIN]   by UoE OpenSees Group ----//
+int
+SectionForceDeformation::setTrialSectionDeformation (const Vector&) //JZ
+{
+  opserr << "SectionForceDeformation::setTrialSectionDeformation(strain) - should not be called\n";
+  return -1;
+}
+
+int
+SectionForceDeformation::setTrialSectionDeformation(const Vector& nouse, const Vector &data) //JZ
+{
+  opserr << "SectionForceDeformation::setTrialSectionDeformationTemperature (strain, tData) - should not be called\n";
+  return -1;
+}
+
+//static Vector errRes(3);
+
+const Vector &
+SectionForceDeformation::getTemperatureStress(const Vector &tData) //PK
+{
+  opserr << "SectionForceDeformation::getTemperatureStress(double *dataMixed) - should not be called\n";
+  return this->getStressResultant();
+}
+//--- Adding Thermal Functions:[END]   by UoE OpenSees Group ----//

@@ -2,6 +2,7 @@ include ../../../Makefile.def
 
 OBJS       = DispBeamColumn2d.o \
 	DispBeamColumn3d.o \
+	DispBeamColumn2dThermal.o \
 	DispBeamColumn2dWithSensitivity.o \
 	DispBeamColumn3dWithSensitivity.o
 

@@ -12,6 +12,9 @@ include ../../../Makefile.def
 	Cast.o \
         HardeningMaterial.o \
 	Concrete01.o \
+	Concrete02Thermal.o \
+	Steel02Thermal.o \
+	Steel01Thermal.o \
 	Concrete04.o \
 	Concrete06.o \
 	Concrete07.o \

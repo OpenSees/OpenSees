@@ -12,6 +12,7 @@ OBJS       = SectionForceDeformation.o \
 	MembranePlateFiberSection.o \
 	TclModelBuilderSectionCommand.o \
 	FiberSection2d.o \
+	FiberSection2dThermal.o \
 	FiberSection3d.o \
 	Bidirectional.o \
 	Elliptical.o \

@@ -169,6 +169,10 @@
 #define MAT_TAG_Pinching                        60
 #define MAT_TAG_HookGap 			61
 
+#define MAT_TAG_Steel01Thermal		        62
+#define MAT_TAG_Steel02Thermal			63
+#define MAT_TAG_Concrete02Thermal		64
+
 #define MAT_TAG_WrapperUniaxialMaterial      101
 #define MAT_TAG_UniaxialJ2Plasticity         102
 
@@ -224,29 +228,32 @@
 
 
 
-#define SEC_TAG_Elastic2d   3
-#define SEC_TAG_Elastic3d   4
-#define SEC_TAG_Generic1d	5
-#define SEC_TAG_GenericNd	6
-#define SEC_TAG_Aggregator	7
-#define SEC_TAG_Fiber		8
-#define SEC_TAG_FiberSection2d		9
-#define SEC_TAG_FiberSection3d		10
-#define SEC_TAG_FiberSectionGJ		11
-#define SEC_TAG_BeamFiberSection	12
-#define SEC_TAG_ElasticPlateSection	13
+#define SEC_TAG_Elastic2d                        3
+#define SEC_TAG_Elastic3d                        4
+#define SEC_TAG_Generic1d	                 5
+#define SEC_TAG_GenericNd	                 6
+#define SEC_TAG_Aggregator	                 7
+#define SEC_TAG_Fiber		                 8
+#define SEC_TAG_FiberSection2d		         9
+#define SEC_TAG_FiberSection3d		        10
+#define SEC_TAG_FiberSectionGJ		        11
+#define SEC_TAG_BeamFiberSection	        12
+#define SEC_TAG_ElasticPlateSection	        13
 #define SEC_TAG_ElasticMembranePlateSection	14
 #define SEC_TAG_MembranePlateFiberSection	15
-#define SEC_TAG_Bidirectional	16
-#define SEC_TAG_WSection2d	17
-#define SEC_TAG_Isolator2spring 18
-#define SEC_TAG_SoilFooting2d   19
-#define SEC_TAG_YieldSurface2d  30
-#define SEC_TAG_YieldSurface2D02  31
-#define SEC_TAG_YieldSurface2D01  32
-#define SEC_TAG_ElasticShear2d   33
-#define SEC_TAG_ElasticShear3d   34
-#define SEC_TAG_FiberSection2dInt		35
+#define SEC_TAG_Bidirectional	                16
+#define SEC_TAG_WSection2d	                17
+#define SEC_TAG_Isolator2spring                 18
+#define SEC_TAG_SoilFooting2d                   19
+#define SEC_TAG_YieldSurface2d                  20
+#define SEC_TAG_YieldSurface2D02                21
+#define SEC_TAG_YieldSurface2D01                22
+#define SEC_TAG_ElasticShear2d                  23
+#define SEC_TAG_ElasticShear3d                  24
+#define SEC_TAG_FiberSection2dInt		25
+#define SEC_TAG_FiberSection2dThermal		26
+
+
 
 #define SEC_TAG_McftSection2dfiber 7601
 
@@ -369,6 +376,10 @@
 #define PATTERN_TAG_LoadPattern		  1
 #define PATTERN_TAG_MultiSupportPattern	  3
 #define PATTERN_TAG_UniformExcitation     2
+#define PATTERN_TAG_FirePattern           3
+#define PATTERN_TAG_PBowlLoading	  4
+#define PATTERN_TAG_DRMLoadPattern        5
+
 #define LOAD_TAG_Beam2dUniformLoad        3
 #define LOAD_TAG_Beam2dPointLoad          4
 #define LOAD_TAG_Beam3dUniformLoad        5
@@ -377,8 +388,7 @@
 #define LOAD_TAG_Beam2dTempLoad           8
 #define LOAD_TAG_SurfaceLoader            9 // C.McGann, U.W.
 #define LOAD_TAG_SelfWeight              10 // C.McGann, U.W.
-#define PATTERN_TAG_PBowlLoading	  10
-#define PATTERN_TAG_DRMLoadPattern  11
+#define LOAD_TAG_Beam2dThermalAction      11
 
 
 
@@ -521,6 +531,7 @@
 #define ELE_TAG_BeamEndContact3Dp 26
 #define ELE_TAG_Quad4FiberOverlay 27
 #define ELE_TAG_Brick8FiberOverlay 28
+#define ELE_TAG_DispBeamColumn2dThermal 29
 
 #define ELE_TAG_TPB1D 17
 #define ELE_TAG_TFP_Bearing 20

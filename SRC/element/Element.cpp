@@ -348,6 +348,11 @@ Element::addLoad(ElementalLoad *theLoad, double loadFactor) {
   return 0;
 }
 
+int 
+Element::addLoad(ElementalLoad *theLoad, const Vector &loadFactors) {
+  return 0;
+}
+
 /*
 int 
 Element::addInertiaLoadToUnbalance(const Vector &accel)

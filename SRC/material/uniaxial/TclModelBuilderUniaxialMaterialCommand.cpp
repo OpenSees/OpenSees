@@ -101,6 +101,11 @@ extern void *OPS_ImpactMaterial(void);
 extern void *OPS_New_MultiLinear(void);
 extern void *OPS_NewHookGap(void);
 
+
+extern void *OPS_NewSteel01Thermal(void);
+extern void *OPS_NewSteel02Thermal(void);
+extern void *OPS_NewConcrete02Thermal(void);
+
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
 
@@ -197,6 +202,27 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if ((strcmp(argv[1],"ImpactMaterial") == 0) || (strcmp(argv[1],"Impact") == 0)) {
       void *theMat = OPS_ImpactMaterial();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"Steel01Thermal") == 0) {
+      void *theMat = OPS_NewSteel01Thermal();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"Steel02Thermal") == 0) {
+      void *theMat = OPS_NewSteel02Thermal();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"Concrete02Thermal") == 0) {
+      void *theMat = OPS_NewConcrete02Thermal();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 

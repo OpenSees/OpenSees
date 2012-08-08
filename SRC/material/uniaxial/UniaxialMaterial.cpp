@@ -77,6 +77,17 @@ UniaxialMaterial::~UniaxialMaterial()
 	// does nothing
 }
 
+
+
+int
+UniaxialMaterial::setTrialStrain(double strain, double temperature, double strainRate)
+{
+  int res = this->setTrialStrain(strain, strainRate);
+
+  return res;
+}
+
+
 int
 UniaxialMaterial::setTrial(double strain, double &stress, double &tangent, double strainRate)
 {
@@ -90,6 +101,31 @@ UniaxialMaterial::setTrial(double strain, double &stress, double &tangent, doubl
 
   return res;
 }
+
+
+int
+UniaxialMaterial::setTrial(double strain, double temperature, double &stress, double &tangent, double &thermalElongation, double strainRate)
+{
+  int res = this->setTrialStrain(strain, temperature, strainRate);
+
+  if (res == 0) {
+    static const char thermal[] = "ThermalElongation";
+    const char *thermalPointer = thermal;
+
+
+    Information info;
+    stress = this->getStress();
+    tangent = this->getTangent();
+    this->getVariable(thermalPointer, info);
+    thermalElongation = info.theDouble;
+
+  } else {
+    opserr << "UniaxialMaterial::setTrial() - material failed in setTrialStrain()\n"; 
+  }
+
+  return res;
+}
+
 
 // default operation for strain rate is zero
 double
@@ -108,17 +144,19 @@ UniaxialMaterial::getDampTangent(void)
 }
 
 // default operation for secant stiffness
+/*
 double
 UniaxialMaterial::getSecant (void)
 {
-	double strain = this->getStrain();
-	double stress = this->getStress();
+double strain = this->getStrain();
+double stress = this->getStress();
 
-	if (strain != 0.0)
-		return stress/strain;
-	else
-		return this->getTangent();
+if (strain != 0.0)
+return stress/strain;
+else
+return this->getTangent();
 }
+*/
 
 double 
 UniaxialMaterial::getRho(void)

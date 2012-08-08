@@ -80,6 +80,8 @@ class Element : public DomainComponent
     // methods for applying loads
     virtual void zeroLoad(void);	
     virtual int addLoad(ElementalLoad *theLoad, double loadFactor);
+    virtual int addLoad(ElementalLoad *theLoad, const Vector &loadFactors);
+
     virtual int addInertiaLoadToUnbalance(const Vector &accel);
     virtual int setRayleighDampingFactors(double alphaM, double betaK, double betaK0, double betaKc);
 

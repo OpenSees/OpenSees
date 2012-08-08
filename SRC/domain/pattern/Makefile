@@ -15,6 +15,7 @@ OBJS       = $(RELIABILITY_OBJS) \
 	EarthquakePattern.o \
 	LinearSeries.o \
 	LoadPattern.o \
+	FireLoadPattern.o \
 	LoadPatternIter.o \
 	PathSeries.o \
 	PathTimeSeries.o \

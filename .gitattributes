@@ -1898,6 +1898,8 @@ SRC/domain/load/Beam2dPointLoad.cpp -text
 SRC/domain/load/Beam2dPointLoad.h -text
 SRC/domain/load/Beam2dTempLoad.cpp -text
 SRC/domain/load/Beam2dTempLoad.h -text
+SRC/domain/load/Beam2dThermalAction.cpp -text
+SRC/domain/load/Beam2dThermalAction.h -text
 SRC/domain/load/Beam2dUniformLoad.cpp -text
 SRC/domain/load/Beam2dUniformLoad.h -text
 SRC/domain/load/Beam3dPointLoad.cpp -text
@@ -1954,6 +1956,8 @@ SRC/domain/pattern/DiscretizedRandomProcessSeries.h -text
 SRC/domain/pattern/EarthquakePattern.cpp -text
 SRC/domain/pattern/EarthquakePattern.h -text
 SRC/domain/pattern/EarthquakePattern.tex -text
+SRC/domain/pattern/FireLoadPattern.cpp -text
+SRC/domain/pattern/FireLoadPattern.h -text
 SRC/domain/pattern/LinearSeries.cpp -text
 SRC/domain/pattern/LinearSeries.h -text
 SRC/domain/pattern/LinearSeries.tex -text
@@ -2135,6 +2139,8 @@ SRC/element/brick/shp3d.cpp -text
 SRC/element/brick/shp3d.h -text
 SRC/element/dispBeamColumn/DispBeamColumn2d.cpp -text
 SRC/element/dispBeamColumn/DispBeamColumn2d.h -text
+SRC/element/dispBeamColumn/DispBeamColumn2dThermal.cpp -text
+SRC/element/dispBeamColumn/DispBeamColumn2dThermal.h -text
 SRC/element/dispBeamColumn/DispBeamColumn2dWithSensitivity.cpp -text
 SRC/element/dispBeamColumn/DispBeamColumn2dWithSensitivity.h -text
 SRC/element/dispBeamColumn/DispBeamColumn3d.cpp -text
@@ -2660,6 +2666,8 @@ SRC/material/section/FiberSection.cpp -text
 SRC/material/section/FiberSection.h -text
 SRC/material/section/FiberSection2d.cpp -text
 SRC/material/section/FiberSection2d.h -text
+SRC/material/section/FiberSection2dThermal.cpp -text
+SRC/material/section/FiberSection2dThermal.h -text
 SRC/material/section/FiberSection3d.cpp -text
 SRC/material/section/FiberSection3d.h -text
 SRC/material/section/FiberSectionGJ.cpp -text
@@ -2761,6 +2769,8 @@ SRC/material/uniaxial/Concrete01WithSITC.cpp -text
 SRC/material/uniaxial/Concrete01WithSITC.h -text
 SRC/material/uniaxial/Concrete02.cpp -text
 SRC/material/uniaxial/Concrete02.h -text
+SRC/material/uniaxial/Concrete02Thermal.cpp -text
+SRC/material/uniaxial/Concrete02Thermal.h -text
 SRC/material/uniaxial/Concrete04.cpp -text
 SRC/material/uniaxial/Concrete04.h -text
 SRC/material/uniaxial/Concrete05.cpp -text
@@ -2885,8 +2895,12 @@ SRC/material/uniaxial/SmoothPSConcrete.h -text
 SRC/material/uniaxial/Steel01.cpp -text
 SRC/material/uniaxial/Steel01.h -text
 SRC/material/uniaxial/Steel01.tex -text
+SRC/material/uniaxial/Steel01Thermal.cpp -text
+SRC/material/uniaxial/Steel01Thermal.h -text
 SRC/material/uniaxial/Steel02.cpp -text
 SRC/material/uniaxial/Steel02.h -text
+SRC/material/uniaxial/Steel02Thermal.cpp -text
+SRC/material/uniaxial/Steel02Thermal.h -text
 SRC/material/uniaxial/Steel03.cpp -text
 SRC/material/uniaxial/Steel03.h -text
 SRC/material/uniaxial/SteelMP.cpp -text

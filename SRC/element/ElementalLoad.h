@@ -46,6 +46,7 @@ class ElementalLoad : public Load
 
     virtual void setDomain(Domain *theDomain);
     virtual void applyLoad(double loadfactor);
+    virtual void applyLoad(const Vector &loadfactors);
     virtual const Vector &getData(int &type, double loadFactor) = 0;
     virtual const Vector &getSensitivityData(int gradIndex);
 
