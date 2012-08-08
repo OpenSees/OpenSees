@@ -768,6 +768,12 @@
 				RelativePath="..\..\..\SRC\element\dispBeamColumnInt\DispBeamColumn2dInt.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn2dThermal.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn2dThermal.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\dispBeamColumnInt\FiberSection2dInt.cpp">
 			</File>
 			<File

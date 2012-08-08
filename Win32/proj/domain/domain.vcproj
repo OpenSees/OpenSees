@@ -248,6 +248,12 @@
 			Name="load"
 			Filter="">
 			<File
+				RelativePath="..\..\..\SRC\domain\load\Beam2dThermalAction.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\domain\load\Beam2dThermalAction.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\domain\load\ElementalLoadIter.cpp">
 			</File>
 			<File
@@ -376,6 +382,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\domain\pattern\EarthquakePattern.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\domain\pattern\FireLoadPattern.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\domain\pattern\FireLoadPattern.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\domain\pattern\LoadPattern.cpp">

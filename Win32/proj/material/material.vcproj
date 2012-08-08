@@ -155,6 +155,12 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\Concrete02.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\Concrete02Thermal.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\Concrete02Thermal.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\Concrete04.cpp">
 			</File>
 			<File
@@ -383,10 +389,22 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\Steel01.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\Steel01Thermal.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\Steel01Thermal.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\Steel02.cpp">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\Steel02.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\Steel02Thermal.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\Steel02Thermal.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\Steel03.cpp">
@@ -1221,6 +1239,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\section\FiberSection2d.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\FiberSection2dThermal.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\FiberSection2dThermal.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\section\FiberSection3d.cpp">
