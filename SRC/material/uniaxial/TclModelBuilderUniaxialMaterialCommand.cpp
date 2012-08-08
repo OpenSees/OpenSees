@@ -40,14 +40,10 @@
 #include <ElasticPPMaterial.h>	// fmk
 #include <ParallelMaterial.h>	// fmk
 #include <HardeningMaterial.h>	// MHS
-#include <Steel01.h>			// MHS
-#include <Steel02.h>                    // FF 
 #include <Steel03.h>			// KM
 //#include <Concrete.h>			// FF
-#include <Concrete01.h>			// MHS
 #include <Concrete01WithSITC.h>		// Won Lee
 #include <ECC01.h>                      // Won Lee
-#include <Concrete02.h>			// MHS
 #include <Concrete04.h>
 #include <Concrete05.h>
 #include <Concrete06.h>			// LMS
@@ -82,6 +78,11 @@
 #include <UniaxialJ2Plasticity.h>   // Quan 
 extern void *OPS_NewElasticMaterial(void);
 extern void *OPS_NewBilinMaterial(void);
+extern void *OPS_NewSteel01(void);
+extern void *OPS_NewSteel02(void);
+extern void *OPS_NewConcrete01(void);
+extern void *OPS_NewConcrete02(void);
+
 extern void *OPS_NewSAWSMaterial(void);
 extern void *OPS_NewConcreteZ01Material(void);
 extern void *OPS_NewConcreteL01Material(void);
@@ -100,7 +101,6 @@ extern void *OPS_NewElasticMultiLinear(void);
 extern void *OPS_ImpactMaterial(void);
 extern void *OPS_New_MultiLinear(void);
 extern void *OPS_NewHookGap(void);
-
 
 extern void *OPS_NewSteel01Thermal(void);
 extern void *OPS_NewSteel02Thermal(void);
@@ -193,6 +193,37 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+
+    } else if (strcmp(argv[1],"Steel01") == 0) {
+      void *theMat = OPS_NewSteel01();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"Steel02") == 0) {
+      void *theMat = OPS_NewSteel02();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+
+    } else if (strcmp(argv[1],"Concrete01") == 0) {
+      void *theMat = OPS_NewConcrete01();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+
+    } else if (strcmp(argv[1],"Concrete02") == 0) {
+      void *theMat = OPS_NewConcrete02();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
     } else if ((strcmp(argv[1],"ElasticBilin") == 0) || (strcmp(argv[1],"ElasticBilinear") == 0)) {
       void *theMat = OPS_NewElasticBilin();
       if (theMat != 0) 
@@ -202,27 +233,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if ((strcmp(argv[1],"ImpactMaterial") == 0) || (strcmp(argv[1],"Impact") == 0)) {
       void *theMat = OPS_ImpactMaterial();
-      if (theMat != 0) 
-	theMaterial = (UniaxialMaterial *)theMat;
-      else 
-	return TCL_ERROR;
-
-    } else if (strcmp(argv[1],"Steel01Thermal") == 0) {
-      void *theMat = OPS_NewSteel01Thermal();
-      if (theMat != 0) 
-	theMaterial = (UniaxialMaterial *)theMat;
-      else 
-	return TCL_ERROR;
-
-    } else if (strcmp(argv[1],"Steel02Thermal") == 0) {
-      void *theMat = OPS_NewSteel02Thermal();
-      if (theMat != 0) 
-	theMaterial = (UniaxialMaterial *)theMat;
-      else 
-	return TCL_ERROR;
-
-    } else if (strcmp(argv[1],"Concrete02Thermal") == 0) {
-      void *theMat = OPS_NewConcrete02Thermal();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
@@ -296,6 +306,27 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if ((strcmp(argv[1],"MultiLinear") == 0)) {
       void *theMat = OPS_New_MultiLinear();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"Steel01Thermal") == 0) {
+      void *theMat = OPS_NewSteel01Thermal();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"Steel02Thermal") == 0) {
+      void *theMat = OPS_NewSteel02Thermal();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"Concrete02Thermal") == 0) {
+      void *theMat = OPS_NewConcrete02Thermal();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
@@ -712,176 +743,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	delete [] theMats;
     }
 
-    else if (strcmp(argv[1],"Steel01") == 0) {
-	// Check that there is the minimum number of arguments
-	if (argc < 6) {
-	    opserr << "WARNING insufficient arguments\n";
-	    printCommand(argc,argv);
-	    opserr << "Want: uniaxialMaterial Steel01 tag? fy? E0? b?";
-	    opserr << " <a1? a2? a3? a4?>" << endln;	
-	    return TCL_ERROR;
-	}
-
-	int tag;
-	
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid uniaxialMaterial Steel01 tag" << endln;
-	    return TCL_ERROR;
-	}
-
-	// Read required Steel01 material parameters
-	double fy, E, b;
-	
-	if (Tcl_GetDouble(interp, argv[3], &fy) != TCL_OK) {
-	    opserr << "WARNING invalid fy\n";
-	    opserr << "uniaxialMaterial Steel01: " << tag << endln;
-	    return TCL_ERROR;
-	}
-	
-	if (Tcl_GetDouble(interp, argv[4], &E) != TCL_OK) {
-	    opserr << "WARNING invalid E0\n";
-	    opserr << "uniaxialMaterial Steel01: " << tag << endln;
-	    return TCL_ERROR;
-	}
-
-	if (Tcl_GetDouble(interp, argv[5], &b) != TCL_OK) {
-	    opserr << "WARNING invalid b\n";
-	    opserr << "uniaxialMaterial Steel01: " << tag << endln;
-	    return TCL_ERROR;
-	}
-
-	// Read optional Steel01 material parameters
-	double a1, a2, a3, a4;
-
-	if (argc > 6) {
-	    if (argc < 10) {
-		opserr << "WARNING insufficient number of hardening parameters\n";
-		opserr << "uniaxialMaterial Steel01: " << tag << endln;
-		return TCL_ERROR;
-	    }
-	    
-	    if (Tcl_GetDouble(interp, argv[6], &a1) != TCL_OK) {
-		opserr << "WARNING invalid a1\n";
-		opserr << "uniaxialMaterial Steel01: " << tag << endln;
-		return TCL_ERROR;
-	    }
-	    
-	    if (Tcl_GetDouble(interp, argv[7], &a2) != TCL_OK) {
-		opserr << "WARNING invalid a2\n";
-		opserr << "uniaxialMaterial Steel01: " << tag << endln;
-		return TCL_ERROR;
-	    }
-	    
-	    if (Tcl_GetDouble(interp, argv[8], &a3) != TCL_OK) {
-		opserr << "WARNING invalid a3\n";
-		opserr << "uniaxialMaterial Steel01: " << tag << endln;
-		return TCL_ERROR;
-	    }
-
-	    if (Tcl_GetDouble(interp, argv[9], &a4) != TCL_OK) {
-		opserr << "WARNING invalid a4\n";
-		opserr << "uniaxialMaterial Steel01: " << tag << endln;
-		return TCL_ERROR;
-	    }
-
-		// Parsing was successful, allocate the material
-		theMaterial = new Steel01 (tag, fy, E, b, a1, a2, a3, a4);
-	}
-	else
-	  // Parsing was successful, allocate the material
-	  theMaterial = new Steel01 (tag, fy, E, b);
-    }
-
-    else if (strcmp(argv[1],"Steel2") == 0 || strcmp(argv[1],"Steel02") == 0) {
-      if (argc < 6) {
-	opserr << "WARNING invalid number of arguments\n";
-	printCommand(argc,argv);
-	opserr << "Want: uniaxialMaterial Steel02 tag? fy? E? b? <R0? cR1? cR2? <a1? a2? a3? a4?>>" << endln;
-	return 0;
-      }    
-      
-      double fy, E, b;
-      double R0, cR1, cR2;
-      double a1, a2, a3, a4, sigini;
-
-      int tag;
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING invalid tag\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-      if (Tcl_GetDouble(interp, argv[3], &fy) != TCL_OK) {
-	opserr << "WARNING invalid fy\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-      if (Tcl_GetDouble(interp, argv[4], &E) != TCL_OK) {
-	opserr << "WARNING invalid E\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-      if (Tcl_GetDouble(interp, argv[5], &b) != TCL_OK) {
-	opserr << "WARNING invalid b\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-      if (argc > 8) {
-	if (Tcl_GetDouble(interp, argv[6], &R0) != TCL_OK) {
-	  opserr << "WARNING invalid R0\n";
-	  printCommand(argc, argv);
-	  return 0;	
-	}
-	if (Tcl_GetDouble(interp, argv[7], &cR1) != TCL_OK) {
-	  opserr << "WARNING invalid cR1\n";
-	  printCommand(argc, argv);
-	  return 0;	
-	}
-	if (Tcl_GetDouble(interp, argv[8], &cR2) != TCL_OK) {
-	  opserr << "WARNING invalid cR2\n";
-	  printCommand(argc, argv);
-	  return 0;	
-	}
-	if (argc > 12) {
-	  if (Tcl_GetDouble(interp, argv[9], &a1) != TCL_OK) {
-	    opserr << "WARNING invalid a1\n";
-	    printCommand(argc, argv);
-	    return 0;	
-	  }
-	  if (Tcl_GetDouble(interp, argv[10], &a2) != TCL_OK) {
-	    opserr << "WARNING invalid a2\n";
-	    printCommand(argc, argv);
-	    return 0;	
-	  }
-	  if (Tcl_GetDouble(interp, argv[11], &a3) != TCL_OK) {
-	    opserr << "WARNING invalid a3\n";
-	    printCommand(argc, argv);
-	    return 0;	
-	  }
-	  if (Tcl_GetDouble(interp, argv[12], &a4) != TCL_OK) {
-	    opserr << "WARNING invalid a4\n";
-	    printCommand(argc, argv);	    return 0;	
-	  }
-
-	  if (argc > 13) {
-	    if (Tcl_GetDouble(interp, argv[13], &sigini) != TCL_OK) {
-	      opserr << "WARNING invalid initial stress\n";
-	      printCommand(argc, argv);
-	      return 0;	
-	    }
-
-	    theMaterial = new Steel02(tag, fy, E, b, R0, cR1, cR2, a1, a2, a3, a4, sigini);
-
-	  } else
-	  theMaterial = new Steel02(tag, fy, E, b, R0, cR1, cR2, a1, a2, a3, a4);
-	}
-	else
-	  theMaterial = new Steel02(tag, fy, E, b, R0, cR1, cR2);
-      }
-      else
-	theMaterial = new Steel02(tag, fy, E, b);
-      
-    }
-
 
     else if (strcmp(argv[1],"Steel03") == 0) {
       // Check that there is the minimum number of arguments
@@ -986,174 +847,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	theMaterial = new Steel03 (tag, fy, E, b, r, cR1, cR2);
       
     }
-
-    /* ****************************************************************************
-    else if (strcmp(argv[1],"Concrete") == 0 || strcmp(argv[1],"Concrete") == 0) {
-      if (argc < 9) {
-	opserr << "WARNING invalid number of arguments\n";
-	printCommand(argc,argv);
-	opserr << "Want: uniaxialMaterial Concrete tag? fc? epsc0? Ec? Kfc? ft? Ets?" << endln;
-	return 0;
-      }    
-      
-      double fc, eps0, Ec, Kfc;
-      double ft, Ets;
-      int tag;
-      
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING invalid uniaxialMaterial Concrete02 tag" << endln;
-	return TCL_ERROR;
-      }      
-
-      if (Tcl_GetDouble(interp, argv[3], &fc) != TCL_OK) {
-	opserr << "WARNING invalid fc\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-
-      if (Tcl_GetDouble(interp, argv[4], &eps0) != TCL_OK) {
-	opserr << "WARNING invalid eps0\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-
-      if (Tcl_GetDouble(interp, argv[5], &Ec) != TCL_OK) {
-	opserr << "WARNING invalid Ec\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-
-      if (Tcl_GetDouble(interp, argv[6], &Kfc) != TCL_OK) {
-	opserr << "WARNING invalid Kfc\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-
-      if (Tcl_GetDouble(interp, argv[7], &ft) != TCL_OK) {
-	opserr << "WARNING invalid ft\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-
-      if (Tcl_GetDouble(interp, argv[8], &Ets) != TCL_OK) {
-	opserr << "WARNING invalid Ets\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-      
-      theMaterial = new Concrete(tag, fc, eps0, Ec, Kfc, ft, Ets);
-    }
-    *************************************************************** */
-  
-    else if (strcmp(argv[1],"Concrete01") == 0) {
-      if (argc < 7) {
-	  opserr << "WARNING insufficient arguments\n";
-	  printCommand(argc,argv);
-	  opserr << "Want: uniaxialMaterial Concrete01 tag? fpc? epsc0? fpcu? epscu?" << endln;
-	    return TCL_ERROR;
-	}
-
-	int tag;
-
-	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	    opserr << "WARNING invalid uniaxialMaterial Concrete01 tag" << endln;
-	    return TCL_ERROR;
-	}
-
-	// Read required Concrete01 material parameters
-	double fpc, epsc0, fpcu, epscu;
-
-	if (Tcl_GetDouble(interp, argv[3], &fpc) != TCL_OK) {
-	    opserr << "WARNING invalid fpc\n";
-	    opserr << "Concrete01 material: " << tag << endln;
-	    return TCL_ERROR;
-	}
-
-	if (Tcl_GetDouble(interp, argv[4], &epsc0) != TCL_OK) {
-	    opserr << "WARNING invalid epsc0\n";
-	    opserr << "Concrete01 material: " << tag << endln;
-	    return TCL_ERROR;
-	}
-	
-	if (Tcl_GetDouble(interp, argv[5], &fpcu) != TCL_OK) {
-	    opserr << "WARNING invalid fpcu\n";
-	    opserr << "Concrete01 material: " << tag << endln;
-	    return TCL_ERROR;
-	}
-
-	if (Tcl_GetDouble(interp, argv[6], &epscu) != TCL_OK) {
-	    opserr << "WARNING invalid epscu\n";
-	    opserr << "Concrete01 material: " << tag << endln;
-	    return TCL_ERROR;
-	}
-
-	// Parsing was successful, allocate the material
-	theMaterial = new Concrete01(tag, fpc, epsc0, fpcu, epscu);
-    }
-
-    else if (strcmp(argv[1],"Concrete2") == 0 || strcmp(argv[1],"Concrete02") == 0) {
-      if (argc < 10) {
-	opserr << "WARNING invalid number of arguments\n";	
-	printCommand(argc,argv);
-	opserr << "Want: uniaxialMaterial Concrete02 tag? fpc? epsc0? fpcu? epscu? rat? ft? Ets?" << endln;
-	return 0;
-      }
-    
-      double fpc, epsc0, fpcu, epscu;
-      double rat, ft, Ets;
-      int tag;
-
- 
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING invalid uniaxialMaterial Concrete02 tag" << endln;
-	return TCL_ERROR;
-      }      
-      
-      if (Tcl_GetDouble(interp, argv[3], &fpc) != TCL_OK) {
-	opserr << "WARNING invalid fpc\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-
-      if (Tcl_GetDouble(interp, argv[4], &epsc0) != TCL_OK) {
-	opserr << "WARNING invalid epsc0\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-
-      if (Tcl_GetDouble(interp, argv[5], &fpcu) != TCL_OK) {
-	opserr << "WARNING invalid fpcu\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-
-      if (Tcl_GetDouble(interp, argv[6], &epscu) != TCL_OK) {
-	opserr << "WARNING invalid epscu\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-
-      if (Tcl_GetDouble(interp, argv[7], &rat) != TCL_OK) {
-	opserr << "WARNING invalid rat\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-
-      if (Tcl_GetDouble(interp, argv[8], &ft) != TCL_OK) {
-	opserr << "WARNING invalid ft\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-
-      if (Tcl_GetDouble(interp, argv[9], &Ets) != TCL_OK) {
-	opserr << "WARNING invalid Ets\n";
-	printCommand(argc, argv);
-	return 0;	
-      }
-      
-      theMaterial = new Concrete02(tag, fpc, epsc0, fpcu, epscu, rat, ft, Ets);
-    }
-    
     
     
     else if (strcmp(argv[1],"Hysteretic") == 0) {
