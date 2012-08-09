@@ -483,12 +483,13 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/frictionBearing/SingleFPSimple2d.o \
 	$(FE)/element/frictionBearing/SingleFPSimple3d.o \
 	$(FE)/element/frictionBearing/TclSingleFPCommand.o \
-	$(FE)/element/frictionBearing/frictionModel/CoulombFriction.o \
+	$(FE)/element/frictionBearing/frictionModel/Coulomb.o \
 	$(FE)/element/frictionBearing/frictionModel/FrictionModel.o \
 	$(FE)/element/frictionBearing/frictionModel/FrictionResponse.o \
 	$(FE)/element/frictionBearing/frictionModel/TclModelBuilderFrictionModelCommand.o \
-	$(FE)/element/frictionBearing/frictionModel/VDependentFriction.o \
-	$(FE)/element/frictionBearing/frictionModel/VPDependentFriction.o \
+	$(FE)/element/frictionBearing/frictionModel/VelPressureDep.o \
+	$(FE)/element/frictionBearing/frictionModel/VelDependent.o \
+	$(FE)/element/frictionBearing/frictionModel/VelDepMultiLinear.o \
 	$(FE)/element/twoNodeLink/TwoNodeLink.o \
 	$(FE)/element/pyMacro/PY_Macro2D.o \
 	$(FE)/element/twoNodeLink/TclTwoNodeLinkCommand.o \
