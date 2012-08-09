@@ -1015,5 +1015,7 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
     
   }
 
+  // If we get here, the element type is unknown
+  opserr << "ERROR -- element of type " << argv[1] << " not known" << endln;
   return TCL_ERROR;
 }
