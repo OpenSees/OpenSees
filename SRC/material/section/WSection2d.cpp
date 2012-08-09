@@ -33,6 +33,7 @@
 // which all six beam stress resultants are obtained.
 
 #include <stdlib.h>
+#include <math.h>
 
 #include <Channel.h>
 #include <Vector.h>
