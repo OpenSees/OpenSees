@@ -18,17 +18,15 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-04-17 23:02:41 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/frictionBearing/frictionModel/FrictionResponse.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
 // Description: This file contains the FrictionResponse class implementation
-//
-// What: "@(#) FrictionResponse.cpp, revA"
 
 #include <FrictionResponse.h>
 #include <FrictionModel.h>
@@ -82,7 +80,7 @@ FrictionResponse::~FrictionResponse()
 }
 
 
-int FrictionResponse::getResponse(void)
+int FrictionResponse::getResponse()
 {
     return theFriction->getResponse(responseID, myInfo);
 }

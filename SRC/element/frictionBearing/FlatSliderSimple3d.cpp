@@ -54,12 +54,12 @@ Vector FlatSliderSimple3d::theLoad(12);
 
 
 FlatSliderSimple3d::FlatSliderSimple3d(int tag, int Nd1, int Nd2,
-    FrictionModel &thefrnmdl, double _uy, UniaxialMaterial **materials,
+    FrictionModel &thefrnmdl, double kInit, UniaxialMaterial **materials,
     const Vector _y, const Vector _x, double sdI, int addRay,
     double m, int maxiter, double _tol)
     : Element(tag, ELE_TAG_FlatSliderSimple3d),
     connectedExternalNodes(2), theFrnMdl(0),
-    uy(_uy), x(_x), y(_y),
+    k0(kInit), x(_x), y(_y),
     shearDistI(sdI), addRayleigh(addRay),
     mass(m), maxIter(maxiter), tol(_tol),
     L(0.0), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
@@ -68,7 +68,7 @@ FlatSliderSimple3d::FlatSliderSimple3d(int tag, int Nd1, int Nd2,
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
         opserr << "FlatSliderSimple3d::FlatSliderSimple3d() - element: "
-            << this->getTag() << " failed to create an ID of size 2\n";
+            << this->getTag() << " - failed to create an ID of size 2.\n";
     }
     
     connectedExternalNodes(0) = Nd1;
@@ -78,13 +78,14 @@ FlatSliderSimple3d::FlatSliderSimple3d(int tag, int Nd1, int Nd2,
     for (int i=0; i<2; i++)
         theNodes[i] = 0;
     
-	// get a copy of the friction model
-	theFrnMdl = thefrnmdl.getCopy();
-	if (!theFrnMdl)  {
-		opserr << "FlatSliderSimple3d::FlatSliderSimple3d() - "
-			<< "failed to get copy of the friction model\n";
-		exit(-1);
-	}
+    // get a copy of the friction model
+    theFrnMdl = thefrnmdl.getCopy();
+    if (!theFrnMdl)  {
+        opserr << "FlatSliderSimple3d::FlatSliderSimple3d() - element: "
+            << this->getTag() << " - failed to get copy of the "
+            << "friction model.\n";
+        exit(-1);
+    }
     
     // check material input
     if (materials == 0)  {
@@ -95,13 +96,13 @@ FlatSliderSimple3d::FlatSliderSimple3d(int tag, int Nd1, int Nd2,
     
     // get copies of the uniaxial materials
     for (int i=0; i<4; i++)  {
-        if (materials[i] == 0) {
+        if (materials[i] == 0)  {
             opserr << "FlatSliderSimple3d::FlatSliderSimple3d() - "
                 "null uniaxial material pointer passed.\n";
             exit(-1);
         }
         theMaterials[i] = materials[i]->getCopy();
-        if (theMaterials[i] == 0) {
+        if (theMaterials[i] == 0)  {
             opserr << "FlatSliderSimple3d::FlatSliderSimple3d() - "
                 << "failed to copy uniaxial material.\n";
             exit(-1);
@@ -111,8 +112,8 @@ FlatSliderSimple3d::FlatSliderSimple3d(int tag, int Nd1, int Nd2,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = kbInit(0,0)*DBL_EPSILON;
-    kbInit(2,2) = kbInit(1,1);
+    kbInit(1,1) = k0;
+    kbInit(2,2) = k0;
     kbInit(3,3) = theMaterials[1]->getInitialTangent();
     kbInit(4,4) = theMaterials[2]->getInitialTangent();
     kbInit(5,5) = theMaterials[3]->getInitialTangent();
@@ -125,26 +126,26 @@ FlatSliderSimple3d::FlatSliderSimple3d(int tag, int Nd1, int Nd2,
 FlatSliderSimple3d::FlatSliderSimple3d()
     : Element(0, ELE_TAG_FlatSliderSimple3d),
     connectedExternalNodes(2), theFrnMdl(0),
-    uy(0.0), x(0), y(0),
+    k0(0.0), x(0), y(0),
     shearDistI(0.0), addRayleigh(0),
     mass(0.0), maxIter(20), tol(1E-8),
     L(0.0), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6)
-{	
+{
     // ensure the connectedExternalNode ID is of correct size & set values
-	if (connectedExternalNodes.Size() != 2)  {
-		opserr << "FlatSliderSimple3d::FlatSliderSimple3d() - "
-			<<  "failed to create an ID of size 2\n";
-		exit(-1);
+    if (connectedExternalNodes.Size() != 2)  {
+        opserr << "FlatSliderSimple3d::FlatSliderSimple3d() - element: "
+            << this->getTag() << " - failed to create an ID of size 2.\n";
+        exit(-1);
     }
     
     // set node pointers to NULL
-	for (int i=0; i<2; i++)
-		theNodes[i] = 0;
+    for (int i=0; i<2; i++)
+        theNodes[i] = 0;
     
     // set material pointers to NULL
-	for (int i=0; i<4; i++)
-		theMaterials[i] = 0;
+    for (int i=0; i<4; i++)
+        theMaterials[i] = 0;
 }
 
 
@@ -153,7 +154,7 @@ FlatSliderSimple3d::~FlatSliderSimple3d()
     // invoke the destructor on any objects created by the object
     // that the object still holds a pointer to
     if (theFrnMdl)
-		delete theFrnMdl;
+        delete theFrnMdl;
     
     for (int i=0; i<4; i++)
         if (theMaterials[i] != 0)
@@ -175,7 +176,7 @@ const ID& FlatSliderSimple3d::getExternalNodes()
 
 Node** FlatSliderSimple3d::getNodePtrs() 
 {
-	return theNodes;
+    return theNodes;
 }
 
 
@@ -189,46 +190,50 @@ void FlatSliderSimple3d::setDomain(Domain *theDomain)
 {
     // check Domain is not null - invoked when object removed from a domain
     if (!theDomain)  {
-		theNodes[0] = 0;
-		theNodes[1] = 0;
+        theNodes[0] = 0;
+        theNodes[1] = 0;
         
-		return;
+        return;
     }
     
     // first set the node pointers
     theNodes[0] = theDomain->getNode(connectedExternalNodes(0));
-    theNodes[1] = theDomain->getNode(connectedExternalNodes(1));	
-	
+    theNodes[1] = theDomain->getNode(connectedExternalNodes(1));
+    
     // if can't find both - send a warning message
     if (!theNodes[0] || !theNodes[1])  {
-		if (!theNodes[0])  {
-			opserr << "WARNING FlatSliderSimple3d::setDomain() - Nd1: " 
-				<< connectedExternalNodes(0) << " does not exist in the model for ";
-		} else  {
-			opserr << "WARNING FlatSliderSimple3d::setDomain() - Nd2: " 
-				<< connectedExternalNodes(1) << " does not exist in the model for ";
-		}
-		opserr << "FlatSliderSimple3d ele: " << this->getTag() << endln;
-		
-		return;
+        if (!theNodes[0])  {
+            opserr << "WARNING FlatSliderSimple3d::setDomain() - Nd1: " 
+                << connectedExternalNodes(0)
+                << " does not exist in the model for";
+        } else  {
+            opserr << "WARNING FlatSliderSimple3d::setDomain() - Nd2: " 
+                << connectedExternalNodes(1)
+                << " does not exist in the model for";
+        }
+        opserr << " element: " << this->getTag() << ".\n";
+        
+        return;
     }
-	
-	// now determine the number of dof and the dimension    
-	int dofNd1 = theNodes[0]->getNumberDOF();
-	int dofNd2 = theNodes[1]->getNumberDOF();	
-	
-	// if differing dof at the ends - print a warning message
+    
+    // now determine the number of dof and the dimension
+    int dofNd1 = theNodes[0]->getNumberDOF();
+    int dofNd2 = theNodes[1]->getNumberDOF();
+    
+    // if differing dof at the ends - print a warning message
     if (dofNd1 != 6)  {
-		opserr << "FlatSliderSimple3d::setDomain() - node 1: "
-			<< connectedExternalNodes(0) << " has incorrect number of DOF (not 6)\n";
-		return;
+        opserr << "FlatSliderSimple3d::setDomain() - node 1: "
+            << connectedExternalNodes(0)
+            << " has incorrect number of DOF (not 6).\n";
+        return;
     }
     if (dofNd2 != 6)  {
-		opserr << "FlatSliderSimple3d::setDomain() - node 2: "
-			<< connectedExternalNodes(1) << " has incorrect number of DOF (not 6)\n";
-		return;
+        opserr << "FlatSliderSimple3d::setDomain() - node 2: "
+            << connectedExternalNodes(1)
+            << " has incorrect number of DOF (not 6).\n";
+        return;
     }
-	
+    
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
     
@@ -239,19 +244,22 @@ void FlatSliderSimple3d::setDomain(Domain *theDomain)
 
 int FlatSliderSimple3d::commitState()
 {
-	int errCode = 0;
+    int errCode = 0;
     
     // commit trial history variables
     ubPlasticC = ubPlastic;
-	
+    
     // commit friction model
-	errCode += theFrnMdl->commitState();
+    errCode += theFrnMdl->commitState();
     
     // commit material models
     for (int i=0; i<4; i++)
-	    errCode += theMaterials[i]->commitState();
+        errCode += theMaterials[i]->commitState();
     
-	return errCode;
+    // commit the base class
+    errCode += this->Element::commitState();
+
+    return errCode;
 }
 
 
@@ -264,14 +272,14 @@ int FlatSliderSimple3d::revertToLastCommit()
     
     // revert material models
     for (int i=0; i<4; i++)
-	    errCode += theMaterials[i]->revertToLastCommit();
+        errCode += theMaterials[i]->revertToLastCommit();
     
     return errCode;
 }
 
 
 int FlatSliderSimple3d::revertToStart()
-{   
+{
     int errCode=0;
     
     // reset trial history variables
@@ -332,10 +340,7 @@ int FlatSliderSimple3d::update()
         kb = kbInit;
         if (qb(0) > 0.0)  {
             theMaterials[0]->setTrialStrain(ub0Old,0.0);
-            kb(0,0) *= DBL_EPSILON;
-            kb(3,3) *= DBL_EPSILON;
-            kb(4,4) *= DBL_EPSILON;
-            kb(5,5) *= DBL_EPSILON;
+            kb = DBL_EPSILON*kbInit;
             // update plastic displacements
             ubPlastic(0) = ub(1);
             ubPlastic(1) = ub(2);
@@ -356,9 +361,6 @@ int FlatSliderSimple3d::update()
         double N = -qb(0) - qb(1)*ul(5) + qb(2)*ul(4);
         theFrnMdl->setTrial(N, ubdotAbs);
         double qYield = (theFrnMdl->getFrictionForce());
-        
-        // get initial stiffness of hysteretic component
-        double k0 = qYield/uy;
         
         // get trial shear forces of hysteretic component
         Vector qTrial(2);
@@ -389,17 +391,21 @@ int FlatSliderSimple3d::update()
             qb(1) = qYield*qTrial(0)/qTrialNorm - N*ul(5);
             qb(2) = qYield*qTrial(1)/qTrialNorm + N*ul(4);
             // set tangent stiffnesses
-            kb(1,1) =  qYield*k0*pow(qTrial(1),2)/pow(qTrialNorm,3);
-            kb(1,2) = kb(2,1) = -qYield*k0*qTrial(0)*qTrial(1)/pow(qTrialNorm,3);
-            kb(2,2) =  qYield*k0*pow(qTrial(0),2)/pow(qTrialNorm,3);
+            double D = pow(qTrialNorm,3);
+            kb(1,1) =  qYield*k0*qTrial(1)*qTrial(1)/D;
+            kb(1,2) = -qYield*k0*qTrial(0)*qTrial(1)/D;
+            kb(2,1) =  kb(1,2);
+            kb(2,2) =  qYield*k0*qTrial(0)*qTrial(0)/D;
         }
         iter++;
     } while ((sqrt(pow(qb(1)-qbOld(0),2)+pow(qb(2)-qbOld(1),2)) >= tol) && (iter <= maxIter));
     
     // issue warning if iteration did not converge
     if (iter >= maxIter)   {
-        opserr << "WARNING: FlatSliderSimple3d::update() - did not find the shear force after "
-            << iter << " iterations and norm: " << sqrt(pow(qb(1)-qbOld(0),2)+pow(qb(2)-qbOld(1),2)) << endln;
+        opserr << "WARNING: FlatSliderSimple3d::update() - element: "
+            << this->getTag() << " - did not find the shear force after "
+            << iter << " iterations and norm: "
+            << sqrt(pow(qb(1)-qbOld(0),2)+pow(qb(2)-qbOld(1),2)) << ".\n";
         return -1;
     }
     
@@ -479,14 +485,14 @@ const Matrix& FlatSliderSimple3d::getDamp()
 {
     // zero the matrix
     theMatrix.Zero();
-
+    
     // call base class to setup Rayleigh damping
     double factThis = 0.0;
     if (addRayleigh == 1)  {
         theMatrix = this->Element::getDamp();
         factThis = 1.0;
     }
-
+    
     // now add damping tangent from materials
     static Matrix cb(6,6);
     cb.Zero();
@@ -501,27 +507,27 @@ const Matrix& FlatSliderSimple3d::getDamp()
     
     // transform from local to global system and add to cg
     theMatrix.addMatrixTripleProduct(factThis, Tgl, cl, 1.0);
-
+    
     return theMatrix;
 }
 
 
 const Matrix& FlatSliderSimple3d::getMass()
 {
-	// zero the matrix
+    // zero the matrix
     theMatrix.Zero();
     
-	// check for quick return
-	if (mass == 0.0)  {
-		return theMatrix;
-	}    
+    // check for quick return
+    if (mass == 0.0)  {
+        return theMatrix;
+    }    
     
-	double m = 0.5*mass;
-	for (int i=0; i<3; i++)  {
-		theMatrix(i,i)     = m;
-		theMatrix(i+6,i+6) = m;
-	}
-	
+    double m = 0.5*mass;
+    for (int i=0; i<3; i++)  {
+        theMatrix(i,i)     = m;
+        theMatrix(i+6,i+6) = m;
+    }
+    
     return theMatrix; 
 }
 
@@ -533,41 +539,41 @@ void FlatSliderSimple3d::zeroLoad()
 
 
 int FlatSliderSimple3d::addLoad(ElementalLoad *theLoad, double loadFactor)
-{  
-	opserr <<"FlatSliderSimple3d::addLoad() - "
-		<< "load type unknown for element: "
-		<< this->getTag() << endln;
+{
+    opserr <<"FlatSliderSimple3d::addLoad() - "
+        << "load type unknown for element: "
+        << this->getTag() << ".\n";
     
-	return -1;
+    return -1;
 }
 
 
 int FlatSliderSimple3d::addInertiaLoadToUnbalance(const Vector &accel)
 {
-	// check for quick return
-	if (mass == 0.0)  {
-		return 0;
-	}
+    // check for quick return
+    if (mass == 0.0)  {
+        return 0;
+    }
     
-	// get R * accel from the nodes
-	const Vector &Raccel1 = theNodes[0]->getRV(accel);
-	const Vector &Raccel2 = theNodes[1]->getRV(accel);
-	
-	if (6 != Raccel1.Size() || 6 != Raccel2.Size())  {
-		opserr << "FlatSliderSimple3d::addInertiaLoadToUnbalance() - "
-			<< "matrix and vector sizes are incompatible\n";
-		return -1;
-	}
+    // get R * accel from the nodes
+    const Vector &Raccel1 = theNodes[0]->getRV(accel);
+    const Vector &Raccel2 = theNodes[1]->getRV(accel);
     
-	// want to add ( - fact * M R * accel ) to unbalance
-	// take advantage of lumped mass matrix
-	double m = 0.5*mass;
+    if (6 != Raccel1.Size() || 6 != Raccel2.Size())  {
+        opserr << "FlatSliderSimple3d::addInertiaLoadToUnbalance() - "
+            << "matrix and vector sizes are incompatible.\n";
+        return -1;
+    }
+    
+    // want to add ( - fact * M R * accel ) to unbalance
+    // take advantage of lumped mass matrix
+    double m = 0.5*mass;
     for (int i=0; i<3; i++)  {
         theLoad(i)   -= m * Raccel1(i);
         theLoad(i+6) -= m * Raccel2(i);
     }
     
-	return 0;
+    return 0;
 }
 
 
@@ -610,29 +616,29 @@ const Vector& FlatSliderSimple3d::getResistingForce()
 
 
 const Vector& FlatSliderSimple3d::getResistingForceIncInertia()
-{	
+{
     // this already includes damping forces from materials
-	theVector = this->getResistingForce();
-	
-	// add the damping forces from rayleigh damping
+    theVector = this->getResistingForce();
+    
+    // add the damping forces from rayleigh damping
     if (addRayleigh == 1)  {
-	    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-		    theVector += this->getRayleighDampingForces();
+        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+            theVector += this->getRayleighDampingForces();
     }
     
-	// add inertia forces from element mass
-	if (mass != 0.0)  {
-		const Vector &accel1 = theNodes[0]->getTrialAccel();
-		const Vector &accel2 = theNodes[1]->getTrialAccel();    
-		
-		double m = 0.5*mass;
-		for (int i=0; i<3; i++)  {
-			theVector(i)   += m * accel1(i);
-			theVector(i+6) += m * accel2(i);
-		}
-	}
-	
-	return theVector;
+    // add inertia forces from element mass
+    if (mass != 0.0)  {
+        const Vector &accel1 = theNodes[0]->getTrialAccel();
+        const Vector &accel2 = theNodes[1]->getTrialAccel();
+
+        double m = 0.5*mass;
+        for (int i=0; i<3; i++)  {
+            theVector(i)   += m * accel1(i);
+            theVector(i+6) += m * accel2(i);
+        }
+    }
+    
+    return theVector;
 }
 
 
@@ -641,7 +647,7 @@ int FlatSliderSimple3d::sendSelf(int commitTag, Channel &sChannel)
     // send element parameters
     static Vector data(9);
     data(0) = this->getTag();
-    data(1) = uy;
+    data(1) = k0;
     data(2) = shearDistI;
     data(3) = addRayleigh;
     data(4) = mass;
@@ -692,9 +698,9 @@ int FlatSliderSimple3d::recvSelf(int commitTag, Channel &rChannel,
     
     // receive element parameters
     static Vector data(9);
-    rChannel.recvVector(0, commitTag, data);    
+    rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
-    uy = data(1);
+    k0 = data(1);
     shearDistI = data(2);
     addRayleigh = (int)data(3);
     mass = data(4);
@@ -762,7 +768,7 @@ int FlatSliderSimple3d::displaySelf(Renderer &theViewer,
     int displayMode, float fact)
 {
     int errCode = 0;
-
+    
     // first determine the end points of the element based on
     // the display factor (a measure of the distorted image)
     const Vector &end1Crd = theNodes[0]->getCrds();
@@ -771,11 +777,11 @@ int FlatSliderSimple3d::displaySelf(Renderer &theViewer,
     static Vector v1(3);
     static Vector v2(3);
     static Vector v3(3);
-
+    
     if (displayMode >= 0)  {
         const Vector &end1Disp = theNodes[0]->getDisp();
         const Vector &end2Disp = theNodes[1]->getDisp();
-
+        
         for (int i=0; i<3; i++)  {
             v1(i) = end1Crd(i) + end1Disp(i)*fact;
             v2(i) = end1Crd(i) + (end1Disp(i) + end2Disp(i))*fact;
@@ -785,7 +791,7 @@ int FlatSliderSimple3d::displaySelf(Renderer &theViewer,
         int mode = displayMode * -1;
         const Matrix &eigen1 = theNodes[0]->getEigenvectors();
         const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-
+        
         if (eigen1.noCols() >= mode)  {
             for (int i=0; i<3; i++)  {
                 v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
@@ -800,10 +806,10 @@ int FlatSliderSimple3d::displaySelf(Renderer &theViewer,
             }
         }
     }
-
+    
     errCode += theViewer.drawLine (v1, v2, 1.0, 1.0);
     errCode += theViewer.drawLine (v2, v3, 1.0, 1.0);
-
+    
     return errCode;
 }
 
@@ -812,11 +818,11 @@ void FlatSliderSimple3d::Print(OPS_Stream &s, int flag)
 {
     if (flag == 0)  {
         // print everything
-		s << "Element: " << this->getTag(); 
-		s << "  type: FlatSliderSimple3d  iNode: " << connectedExternalNodes(0);
-		s << "  jNode: " << connectedExternalNodes(1) << endln;
+        s << "Element: " << this->getTag(); 
+        s << "  type: FlatSliderSimple3d  iNode: " << connectedExternalNodes(0);
+        s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "  FrictionModel: " << theFrnMdl->getTag() << endln;
-        s << "  uy: " << uy << endln;
+        s << "  kInit: " << k0 << endln;
         s << "  Material ux: " << theMaterials[0]->getTag() << endln;
         s << "  Material rx: " << theMaterials[1]->getTag() << endln;
         s << "  Material ry: " << theMaterials[2]->getTag() << endln;
@@ -827,7 +833,7 @@ void FlatSliderSimple3d::Print(OPS_Stream &s, int flag)
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
     } else if (flag == 1)  {
-		// does nothing
+        // does nothing
     }
 }
 
@@ -861,7 +867,7 @@ Response* FlatSliderSimple3d::setResponse(const char **argv, int argc,
         output.tag("ResponseType","Mx_2");
         output.tag("ResponseType","My_2");
         output.tag("ResponseType","Mz_2");
-
+        
         theResponse = new ElementResponse(this, 1, theVector);
     }
     // local forces
@@ -896,7 +902,7 @@ Response* FlatSliderSimple3d::setResponse(const char **argv, int argc,
         
         theResponse = new ElementResponse(this, 3, Vector(6));
     }
-	// local displacements
+    // local displacements
     else if (strcmp(argv[0],"localDisplacement") == 0 ||
         strcmp(argv[0],"localDisplacements") == 0)
     {
@@ -915,7 +921,7 @@ Response* FlatSliderSimple3d::setResponse(const char **argv, int argc,
         
         theResponse = new ElementResponse(this, 4, theVector);
     }
-	// basic displacements
+    // basic displacements
     else if (strcmp(argv[0],"deformation") == 0 ||
         strcmp(argv[0],"deformations") == 0 || 
         strcmp(argv[0],"basicDeformation") == 0 ||
@@ -937,8 +943,14 @@ Response* FlatSliderSimple3d::setResponse(const char **argv, int argc,
         if (argc > 2)  {
             int matNum = atoi(argv[1]);
             if (matNum >= 1 && matNum <= 4)
-                theResponse =  theMaterials[matNum-1]->setResponse(&argv[2], argc-2, output);
+                theResponse = theMaterials[matNum-1]->setResponse(&argv[2], argc-2, output);
         }
+    }
+    // friction model output
+    else if (strcmp(argv[0],"frictionModel") == 0 || strcmp(argv[0],"frnMdl") == 0 ||
+        strcmp(argv[0],"frictionMdl") == 0 || strcmp(argv[0],"frnModel") == 0)  {
+            if (argc > 1)
+                theResponse = theFrnMdl->setResponse(&argv[1], argc-1, output);
     }
     
     output.endTag(); // ElementOutput
@@ -952,10 +964,10 @@ int FlatSliderSimple3d::getResponse(int responseID, Information &eleInfo)
     double MpDelta1, MpDelta2, MpDelta3, MpDelta4, Vdelta1, Vdelta2;
     
     switch (responseID)  {
-	case 1:  // global forces
+    case 1:  // global forces
         return eleInfo.setVector(this->getResistingForce());
         
-	case 2:  // local forces
+    case 2:  // local forces
         theVector.Zero();
         // determine resisting forces in local system
         theVector = Tlb^qb;
@@ -978,45 +990,45 @@ int FlatSliderSimple3d::getResponse(int responseID, Information &eleInfo)
         theVector(9)  -= Vdelta2;
         return eleInfo.setVector(theVector);
         
-	case 3:  // basic forces
+    case 3:  // basic forces
         return eleInfo.setVector(qb);
         
-	case 4:  // local displacements
+    case 4:  // local displacements
         return eleInfo.setVector(ul);
         
-	case 5:  // basic displacements
+    case 5:  // basic displacements
         return eleInfo.setVector(ub);
         
     default:
-		return -1;
-	}
+        return -1;
+    }
 }
 
 
 // Establish the external nodes and set up the transformation matrix for orientation
 void FlatSliderSimple3d::setUp()
-{ 
+{
     const Vector &end1Crd = theNodes[0]->getCrds();
     const Vector &end2Crd = theNodes[1]->getCrds();	
     Vector xp = end2Crd - end1Crd;
     L = xp.Norm();
     
     if (L > DBL_EPSILON)  {
-		if (x.Size() == 0)  {
-		    x.resize(3);
-		    x = xp;
+        if (x.Size() == 0)  {
+            x.resize(3);
+            x = xp;
         } else  {
             opserr << "WARNING FlatSliderSimple3d::setUp() - " 
-                << "element: " << this->getTag() << endln
-                << "ignoring nodes and using specified "
-                << "local x vector to determine orientation\n";
+                << "element: " << this->getTag()
+                << " - ignoring nodes and using specified "
+                << "local x vector to determine orientation.\n";
         }
     }
     // check that vectors for orientation are of correct size
     if (x.Size() != 3 || y.Size() != 3)  {
         opserr << "FlatSliderSimple3d::setUp() - "
-            << "element: " << this->getTag() << endln
-            << "incorrect dimension of orientation vectors\n";
+            << "element: " << this->getTag()
+            << " - incorrect dimension of orientation vectors.\n";
         exit(-1);
     }
     
@@ -1040,8 +1052,8 @@ void FlatSliderSimple3d::setUp()
     // check valid x and y vectors, i.e. not parallel and of zero length
     if (xn == 0 || yn == 0 || zn == 0)  {
         opserr << "FlatSliderSimple3d::setUp() - "
-            << "element: " << this->getTag() << endln
-            << "invalid orientation vectors\n";
+            << "element: " << this->getTag()
+            << " - invalid orientation vectors.\n";
         exit(-1);
     }
     
@@ -1069,7 +1081,7 @@ void FlatSliderSimple3d::setUp()
 
 
 double FlatSliderSimple3d::sgn(double x)
-{ 
+{
     if (x > 0)
         return 1.0;
     else if (x < 0)

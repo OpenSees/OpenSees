@@ -54,12 +54,12 @@ Vector FlatSliderSimple2d::theLoad(6);
 
 
 FlatSliderSimple2d::FlatSliderSimple2d(int tag, int Nd1, int Nd2,
-    FrictionModel &thefrnmdl, double _uy, UniaxialMaterial **materials,
+    FrictionModel &thefrnmdl, double kInit, UniaxialMaterial **materials,
     const Vector _y, const Vector _x, double sdI, int addRay,
     double m, int maxiter, double _tol)
     : Element(tag, ELE_TAG_FlatSliderSimple2d),
     connectedExternalNodes(2), theFrnMdl(0),
-    uy(_uy), x(_x), y(_y),
+    k0(kInit), x(_x), y(_y),
     shearDistI(sdI), addRayleigh(addRay),
     mass(m), maxIter(maxiter), tol(_tol),
     L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
@@ -68,7 +68,7 @@ FlatSliderSimple2d::FlatSliderSimple2d(int tag, int Nd1, int Nd2,
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
         opserr << "FlatSliderSimple2d::FlatSliderSimple2d() - element: "
-            << this->getTag() << " failed to create an ID of size 2\n";
+            << this->getTag() << " - failed to create an ID of size 2.\n";
     }
     
     connectedExternalNodes(0) = Nd1;
@@ -79,12 +79,13 @@ FlatSliderSimple2d::FlatSliderSimple2d(int tag, int Nd1, int Nd2,
         theNodes[i] = 0;
     
     // get a copy of the friction model
-	theFrnMdl = thefrnmdl.getCopy();
-	if (theFrnMdl == 0)  {
-		opserr << "FlatSliderSimple2d::FlatSliderSimple2d() - "
-			<< "failed to get copy of the friction model.\n";
-		exit(-1);
-	}
+    theFrnMdl = thefrnmdl.getCopy();
+    if (theFrnMdl == 0)  {
+        opserr << "FlatSliderSimple2d::FlatSliderSimple2d() - element: "
+            << this->getTag() << " - failed to get copy of the "
+            << "friction model.\n";
+        exit(-1);
+    }
     
     // check material input
     if (materials == 0)  {
@@ -95,13 +96,13 @@ FlatSliderSimple2d::FlatSliderSimple2d(int tag, int Nd1, int Nd2,
     
     // get copies of the uniaxial materials
     for (int i=0; i<2; i++)  {
-        if (materials[i] == 0) {
+        if (materials[i] == 0)  {
             opserr << "FlatSliderSimple2d::FlatSliderSimple2d() - "
                 "null uniaxial material pointer passed.\n";
             exit(-1);
         }
         theMaterials[i] = materials[i]->getCopy();
-        if (theMaterials[i] == 0) {
+        if (theMaterials[i] == 0)  {
             opserr << "FlatSliderSimple2d::FlatSliderSimple2d() - "
                 << "failed to copy uniaxial material.\n";
             exit(-1);
@@ -111,7 +112,7 @@ FlatSliderSimple2d::FlatSliderSimple2d(int tag, int Nd1, int Nd2,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = kbInit(0,0)*DBL_EPSILON;
+    kbInit(1,1) = k0;
     kbInit(2,2) = theMaterials[1]->getInitialTangent();
     
     // initialize other variables
@@ -122,26 +123,26 @@ FlatSliderSimple2d::FlatSliderSimple2d(int tag, int Nd1, int Nd2,
 FlatSliderSimple2d::FlatSliderSimple2d()
     : Element(0, ELE_TAG_FlatSliderSimple2d),
     connectedExternalNodes(2), theFrnMdl(0),
-    uy(0.0), x(0), y(0),
+    k0(0.0), x(0), y(0),
     shearDistI(0.0), addRayleigh(0),
     mass(0.0), maxIter(20), tol(1E-8),
     L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
     Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3)
-{	
+{
     // ensure the connectedExternalNode ID is of correct size
-	if (connectedExternalNodes.Size() != 2)  {
-		opserr << "FlatSliderSimple2d::FlatSliderSimple2d() - "
-			<<  "failed to create an ID of size 2\n";
-		exit(-1);
+    if (connectedExternalNodes.Size() != 2)  {
+        opserr << "FlatSliderSimple2d::FlatSliderSimple2d() - element: "
+            << this->getTag() << " - failed to create an ID of size 2.\n";
+        exit(-1);
     }
     
     // set node pointers to NULL
-	for (int i=0; i<2; i++)
-		theNodes[i] = 0;
+    for (int i=0; i<2; i++)
+        theNodes[i] = 0;
     
     // set material pointers to NULL
-	for (int i=0; i<2; i++)
-		theMaterials[i] = 0;
+    for (int i=0; i<2; i++)
+        theMaterials[i] = 0;
 }
 
 
@@ -150,7 +151,7 @@ FlatSliderSimple2d::~FlatSliderSimple2d()
     // invoke the destructor on any objects created by the object
     // that the object still holds a pointer to
     if (theFrnMdl)
-		delete theFrnMdl;
+        delete theFrnMdl;
     
     for (int i=0; i<2; i++)
         if (theMaterials[i] != 0)
@@ -172,7 +173,7 @@ const ID& FlatSliderSimple2d::getExternalNodes()
 
 Node** FlatSliderSimple2d::getNodePtrs() 
 {
-	return theNodes;
+    return theNodes;
 }
 
 
@@ -186,46 +187,50 @@ void FlatSliderSimple2d::setDomain(Domain *theDomain)
 {
     // check Domain is not null - invoked when object removed from a domain
     if (!theDomain)  {
-		theNodes[0] = 0;
-		theNodes[1] = 0;
-
-		return;
+        theNodes[0] = 0;
+        theNodes[1] = 0;
+        
+        return;
     }
     
     // first set the node pointers
     theNodes[0] = theDomain->getNode(connectedExternalNodes(0));
-    theNodes[1] = theDomain->getNode(connectedExternalNodes(1));	
-	
+    theNodes[1] = theDomain->getNode(connectedExternalNodes(1));
+    
     // if can't find both - send a warning message
     if (!theNodes[0] || !theNodes[1])  {
-		if (!theNodes[0])  {
-			opserr << "WARNING FlatSliderSimple2d::setDomain() - Nd1: " 
-				<< connectedExternalNodes(0) << " does not exist in the model for ";
-		} else  {
-			opserr << "WARNING FlatSliderSimple2d::setDomain() - Nd2: " 
-				<< connectedExternalNodes(1) << " does not exist in the model for ";
-		}
-		opserr << "FlatSliderSimple2d ele: " << this->getTag() << endln;
-		
-		return;
+        if (!theNodes[0])  {
+            opserr << "WARNING FlatSliderSimple2d::setDomain() - Nd1: " 
+                << connectedExternalNodes(0)
+                << " does not exist in the model for";
+        } else  {
+            opserr << "WARNING FlatSliderSimple2d::setDomain() - Nd2: " 
+                << connectedExternalNodes(1)
+                << " does not exist in the model for";
+        }
+        opserr << " element: " << this->getTag() << ".\n";
+        
+        return;
     }
-	
-	// now determine the number of dof and the dimension    
-	int dofNd1 = theNodes[0]->getNumberDOF();
-	int dofNd2 = theNodes[1]->getNumberDOF();	
-	
-	// if differing dof at the ends - print a warning message
+    
+    // now determine the number of dof and the dimension
+    int dofNd1 = theNodes[0]->getNumberDOF();
+    int dofNd2 = theNodes[1]->getNumberDOF();	
+    
+    // if differing dof at the ends - print a warning message
     if (dofNd1 != 3)  {
-		opserr << "FlatSliderSimple2d::setDomain() - node 1: "
-			<< connectedExternalNodes(0) << " has incorrect number of DOF (not 3)\n";
-		return;
+        opserr << "FlatSliderSimple2d::setDomain() - node 1: "
+            << connectedExternalNodes(0)
+            << " has incorrect number of DOF (not 3).\n";
+        return;
     }
     if (dofNd2 != 3)  {
-		opserr << "FlatSliderSimple2d::setDomain() - node 2: "
-			<< connectedExternalNodes(1) << " has incorrect number of DOF (not 3)\n";
-		return;
+        opserr << "FlatSliderSimple2d::setDomain() - node 2: "
+            << connectedExternalNodes(1)
+            << " has incorrect number of DOF (not 3).\n";
+        return;
     }
-	
+    
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
     
@@ -236,17 +241,20 @@ void FlatSliderSimple2d::setDomain(Domain *theDomain)
 
 int FlatSliderSimple2d::commitState()
 {
-	int errCode = 0;
+    int errCode = 0;
     
     // commit trial history variables
     ubPlasticC = ubPlastic;
-	
+    
     // commit friction model
-	errCode += theFrnMdl->commitState();
+    errCode += theFrnMdl->commitState();
     
     // commit material models
     for (int i=0; i<2; i++)
-	    errCode += theMaterials[i]->commitState();
+        errCode += theMaterials[i]->commitState();
+    
+    // commit the base class
+    errCode += this->Element::commitState();
     
     return errCode;
 }
@@ -257,18 +265,18 @@ int FlatSliderSimple2d::revertToLastCommit()
     int errCode = 0;
     
     // revert friction model
-	errCode += theFrnMdl->revertToLastCommit();
+    errCode += theFrnMdl->revertToLastCommit();
     
     // revert material models
     for (int i=0; i<2; i++)
-	    errCode += theMaterials[i]->revertToLastCommit();
+        errCode += theMaterials[i]->revertToLastCommit();
     
     return errCode;
 }
 
 
 int FlatSliderSimple2d::revertToStart()
-{   
+{
     int errCode = 0;
     
     // reset trial history variables
@@ -329,8 +337,7 @@ int FlatSliderSimple2d::update()
         kb = kbInit;
         if (qb(0) > 0.0)  {
             theMaterials[0]->setTrialStrain(ub0Old,0.0);
-            kb(0,0) *= DBL_EPSILON;
-            kb(2,2) *= DBL_EPSILON;
+            kb = DBL_EPSILON*kbInit;
             // update plastic displacement
             ubPlastic = ub(1);
         }
@@ -349,9 +356,6 @@ int FlatSliderSimple2d::update()
         double N = -qb(0) - qb(1)*ul(2);
         theFrnMdl->setTrial(N, ubdotAbs);
         double qYield = (theFrnMdl->getFrictionForce());
-        
-        // get initial stiffness of hysteretic component
-        double k0 = qYield/uy;
         
         // get trial shear force of hysteretic component
         double qTrial = k0*(ub(1) - ubPlasticC);
@@ -383,8 +387,9 @@ int FlatSliderSimple2d::update()
     
     // issue warning if iteration did not converge
     if (iter >= maxIter)  {
-        opserr << "WARNING: FlatSliderSimple2d::update() - did not find the shear force after "
-            << iter << " iterations and norm: " << fabs(qb(1)-qb1Old) << endln;
+        opserr << "WARNING: FlatSliderSimple2d::update() - element: "
+            << this->getTag() << " - did not find the shear force after "
+            << iter << " iterations and norm: " << fabs(qb(1)-qb1Old) << ".\n";
         return -1;
     }
     
@@ -440,14 +445,14 @@ const Matrix& FlatSliderSimple2d::getDamp()
 {
     // zero the matrix
     theMatrix.Zero();
-
+    
     // call base class to setup Rayleigh damping
     double factThis = 0.0;
     if (addRayleigh == 1)  {
         theMatrix = this->Element::getDamp();
         factThis = 1.0;
     }
-
+    
     // now add damping tangent from materials
     static Matrix cb(3,3);
     cb.Zero();
@@ -460,27 +465,27 @@ const Matrix& FlatSliderSimple2d::getDamp()
     
     // transform from local to global system and add to cg
     theMatrix.addMatrixTripleProduct(factThis, Tgl, cl, 1.0);
-
+    
     return theMatrix;
 }
 
 
 const Matrix& FlatSliderSimple2d::getMass()
 {
-	// zero the matrix
+    // zero the matrix
     theMatrix.Zero();
     
-	// check for quick return
-	if (mass == 0.0)  {
-		return theMatrix;
-	}
+    // check for quick return
+    if (mass == 0.0)  {
+        return theMatrix;
+    }
     
-	double m = 0.5*mass;
-	for (int i=0; i<2; i++)  {
-		theMatrix(i,i)     = m;
-		theMatrix(i+3,i+3) = m;
-	}
-	
+    double m = 0.5*mass;
+    for (int i=0; i<2; i++)  {
+        theMatrix(i,i)     = m;
+        theMatrix(i+3,i+3) = m;
+    }
+    
     return theMatrix; 
 }
 
@@ -492,41 +497,41 @@ void FlatSliderSimple2d::zeroLoad()
 
 
 int FlatSliderSimple2d::addLoad(ElementalLoad *theLoad, double loadFactor)
-{  
-	opserr <<"FlatSliderSimple2d::addLoad() - "
-		<< "load type unknown for element: "
-		<< this->getTag() << endln;
-
-	return -1;
+{
+    opserr <<"FlatSliderSimple2d::addLoad() - "
+        << "load type unknown for element: "
+        << this->getTag() << ".\n";
+    
+    return -1;
 }
 
 
 int FlatSliderSimple2d::addInertiaLoadToUnbalance(const Vector &accel)
 {
-	// check for quick return
-	if (mass == 0.0)  {
-		return 0;
-	}    
+    // check for quick return
+    if (mass == 0.0)  {
+        return 0;
+    }    
     
-	// get R * accel from the nodes
-	const Vector &Raccel1 = theNodes[0]->getRV(accel);
-	const Vector &Raccel2 = theNodes[1]->getRV(accel);
-	
-	if (3 != Raccel1.Size() || 3 != Raccel2.Size())  {
-		opserr << "FlatSliderSimple2d::addInertiaLoadToUnbalance() - "
-			<< "matrix and vector sizes are incompatible\n";
-		return -1;
-	}
+    // get R * accel from the nodes
+    const Vector &Raccel1 = theNodes[0]->getRV(accel);
+    const Vector &Raccel2 = theNodes[1]->getRV(accel);
     
-	// want to add ( - fact * M R * accel ) to unbalance
-	// take advantage of lumped mass matrix
-	double m = 0.5*mass;
+    if (3 != Raccel1.Size() || 3 != Raccel2.Size())  {
+        opserr << "FlatSliderSimple2d::addInertiaLoadToUnbalance() - "
+            << "matrix and vector sizes are incompatible.\n";
+        return -1;
+    }
+    
+    // want to add ( - fact * M R * accel ) to unbalance
+    // take advantage of lumped mass matrix
+    double m = 0.5*mass;
     for (int i=0; i<2; i++)  {
         theLoad(i)   -= m * Raccel1(i);
         theLoad(i+3) -= m * Raccel2(i);
     }
     
-	return 0;
+    return 0;
 }
 
 
@@ -557,29 +562,29 @@ const Vector& FlatSliderSimple2d::getResistingForce()
 
 
 const Vector& FlatSliderSimple2d::getResistingForceIncInertia()
-{	
+{
     // this already includes damping forces from materials
-	theVector = this->getResistingForce();
-	
-	// add the damping forces from rayleigh damping
+    theVector = this->getResistingForce();
+    
+    // add the damping forces from rayleigh damping
     if (addRayleigh == 1)  {
-	    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-		    theVector += this->getRayleighDampingForces();
+        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+            theVector += this->getRayleighDampingForces();
     }
     
     // add inertia forces from element mass
-	if (mass != 0.0)  {
-		const Vector &accel1 = theNodes[0]->getTrialAccel();
-		const Vector &accel2 = theNodes[1]->getTrialAccel();    
-		
-		double m = 0.5*mass;
-		for (int i=0; i<2; i++)  {
-			theVector(i)   += m * accel1(i);
-			theVector(i+3) += m * accel2(i);
-		}
-	}
-	
-	return theVector;
+    if (mass != 0.0)  {
+        const Vector &accel1 = theNodes[0]->getTrialAccel();
+        const Vector &accel2 = theNodes[1]->getTrialAccel();
+        
+        double m = 0.5*mass;
+        for (int i=0; i<2; i++)  {
+            theVector(i)   += m * accel1(i);
+            theVector(i+3) += m * accel2(i);
+        }
+    }
+    
+    return theVector;
 }
 
 
@@ -588,7 +593,7 @@ int FlatSliderSimple2d::sendSelf(int commitTag, Channel &sChannel)
     // send element parameters
     static Vector data(9);
     data(0) = this->getTag();
-    data(1) = uy;
+    data(1) = k0;
     data(2) = shearDistI;
     data(3) = addRayleigh;
     data(4) = mass;
@@ -641,7 +646,7 @@ int FlatSliderSimple2d::recvSelf(int commitTag, Channel &rChannel,
     static Vector data(9);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
-    uy = data(1);
+    k0 = data(1);
     shearDistI = data(2);
     addRayleigh = (int)data(3);
     mass = data(4);
@@ -706,7 +711,7 @@ int FlatSliderSimple2d::displaySelf(Renderer &theViewer,
     int displayMode, float fact)
 {
     int errCode = 0;
-
+    
     // first determine the end points of the element based on
     // the display factor (a measure of the distorted image)
     const Vector &end1Crd = theNodes[0]->getCrds();
@@ -715,11 +720,11 @@ int FlatSliderSimple2d::displaySelf(Renderer &theViewer,
     static Vector v1(3);
     static Vector v2(3);
     static Vector v3(3);
-
+    
     if (displayMode >= 0)  {
         const Vector &end1Disp = theNodes[0]->getDisp();
         const Vector &end2Disp = theNodes[1]->getDisp();
-
+        
         for (int i=0; i<2; i++)  {
             v1(i) = end1Crd(i) + end1Disp(i)*fact;
             v2(i) = end1Crd(i) + (end1Disp(i) + end2Disp(i))*fact;
@@ -729,7 +734,7 @@ int FlatSliderSimple2d::displaySelf(Renderer &theViewer,
         int mode = displayMode * -1;
         const Matrix &eigen1 = theNodes[0]->getEigenvectors();
         const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-
+        
         if (eigen1.noCols() >= mode)  {
             for (int i=0; i<2; i++)  {
                 v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
@@ -744,10 +749,10 @@ int FlatSliderSimple2d::displaySelf(Renderer &theViewer,
             }
         }
     }
-
+    
     errCode += theViewer.drawLine (v1, v2, 1.0, 1.0);
     errCode += theViewer.drawLine (v2, v3, 1.0, 1.0);
-
+    
     return errCode;
 }
 
@@ -756,11 +761,11 @@ void FlatSliderSimple2d::Print(OPS_Stream &s, int flag)
 {
     if (flag == 0)  {
         // print everything
-		s << "Element: " << this->getTag(); 
-		s << "  type: FlatSliderSimple2d  iNode: " << connectedExternalNodes(0);
-		s << "  jNode: " << connectedExternalNodes(1) << endln;
+        s << "Element: " << this->getTag(); 
+        s << "  type: FlatSliderSimple2d  iNode: " << connectedExternalNodes(0);
+        s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "  FrictionModel: " << theFrnMdl->getTag() << endln;
-        s << "  uy: " << uy << endln;
+        s << "  kInit: " << k0 << endln;
         s << "  Material ux: " << theMaterials[0]->getTag() << endln;
         s << "  Material rz: " << theMaterials[1]->getTag() << endln;
         s << "  shearDistI: " << shearDistI << "  addRayleigh: "
@@ -769,7 +774,7 @@ void FlatSliderSimple2d::Print(OPS_Stream &s, int flag)
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
     } else if (flag == 1)  {
-		// does nothing
+        // does nothing
     }
 }
 
@@ -778,13 +783,13 @@ Response* FlatSliderSimple2d::setResponse(const char **argv, int argc,
     OPS_Stream &output)
 {
     Response *theResponse = 0;
-
+    
     output.tag("ElementOutput");
     output.attr("eleType","FlatSliderSimple2d");
     output.attr("eleTag",this->getTag());
     output.attr("node1",connectedExternalNodes[0]);
     output.attr("node2",connectedExternalNodes[1]);
-
+    
     // global forces
     if (strcmp(argv[0],"force") == 0 ||
         strcmp(argv[0],"forces") == 0 ||
@@ -797,7 +802,7 @@ Response* FlatSliderSimple2d::setResponse(const char **argv, int argc,
         output.tag("ResponseType","Px_2");
         output.tag("ResponseType","Py_2");
         output.tag("ResponseType","Mz_2");
-
+        
         theResponse = new ElementResponse(this, 1, theVector);
     }
     // local forces
@@ -810,7 +815,7 @@ Response* FlatSliderSimple2d::setResponse(const char **argv, int argc,
         output.tag("ResponseType","N_2");
         output.tag("ResponseType","V_2");
         output.tag("ResponseType","M_2");
-
+        
         theResponse = new ElementResponse(this, 2, theVector);
     }
     // basic forces
@@ -820,10 +825,10 @@ Response* FlatSliderSimple2d::setResponse(const char **argv, int argc,
         output.tag("ResponseType","qb1");
         output.tag("ResponseType","qb2");
         output.tag("ResponseType","qb3");
-
+        
         theResponse = new ElementResponse(this, 3, Vector(3));
     }
-	// local displacements
+    // local displacements
     else if (strcmp(argv[0],"localDisplacement") == 0 ||
         strcmp(argv[0],"localDisplacements") == 0)
     {
@@ -836,7 +841,7 @@ Response* FlatSliderSimple2d::setResponse(const char **argv, int argc,
         
         theResponse = new ElementResponse(this, 4, theVector);
     }
-	// basic displacements
+    // basic displacements
     else if (strcmp(argv[0],"deformation") == 0 ||
         strcmp(argv[0],"deformations") == 0 || 
         strcmp(argv[0],"basicDeformation") == 0 ||
@@ -855,8 +860,14 @@ Response* FlatSliderSimple2d::setResponse(const char **argv, int argc,
         if (argc > 2)  {
             int matNum = atoi(argv[1]);
             if (matNum >= 1 && matNum <= 2)
-                theResponse =  theMaterials[matNum-1]->setResponse(&argv[2], argc-2, output);
+                theResponse = theMaterials[matNum-1]->setResponse(&argv[2], argc-2, output);
         }
+    }
+    // friction model output
+    else if (strcmp(argv[0],"frictionModel") == 0 || strcmp(argv[0],"frnMdl") == 0 ||
+        strcmp(argv[0],"frictionMdl") == 0 || strcmp(argv[0],"frnModel") == 0)  {
+            if (argc > 1)
+                theResponse = theFrnMdl->setResponse(&argv[1], argc-1, output);
     }
     
     output.endTag(); // ElementOutput
@@ -868,12 +879,12 @@ Response* FlatSliderSimple2d::setResponse(const char **argv, int argc,
 int FlatSliderSimple2d::getResponse(int responseID, Information &eleInfo)
 {
     double MpDelta1, MpDelta2;
-
-	switch (responseID)  {
-	case 1:  // global forces
+    
+    switch (responseID)  {
+    case 1:  // global forces
         return eleInfo.setVector(this->getResistingForce());
         
-	case 2:  // local forces
+    case 2:  // local forces
         theVector.Zero();
         // determine resisting forces in local system
         theVector = Tlb^qb;
@@ -885,18 +896,18 @@ int FlatSliderSimple2d::getResponse(int responseID, Information &eleInfo)
         theVector(5) += MpDelta2;
         return eleInfo.setVector(theVector);
         
-	case 3:  // basic forces
+    case 3:  // basic forces
         return eleInfo.setVector(qb);
         
-	case 4:  // local displacements
+    case 4:  // local displacements
         return eleInfo.setVector(ul);
         
-	case 5:  // basic displacements
+    case 5:  // basic displacements
         return eleInfo.setVector(ub);
         
     default:
-		return -1;
-	}
+        return -1;
+    }
 }
 
 
@@ -916,16 +927,16 @@ void FlatSliderSimple2d::setUp()
             y(0) = -x(1);  y(1) = x(0);  y(2) = 0.0;
         } else  {
             opserr << "WARNING FlatSliderSimple2d::setUp() - " 
-                << "element: " << this->getTag() << endln
-                << "ignoring nodes and using specified "
-                << "local x vector to determine orientation\n";
+                << "element: " << this->getTag()
+                << " - ignoring nodes and using specified "
+                << "local x vector to determine orientation.\n";
         }
     }
     // check that vectors for orientation are of correct size
     if (x.Size() != 3 || y.Size() != 3)  {
         opserr << "FlatSliderSimple2d::setUp() - "
-            << "element: " << this->getTag() << endln
-            << "incorrect dimension of orientation vectors\n";
+            << "element: " << this->getTag()
+            << " - incorrect dimension of orientation vectors.\n";
         exit(-1);
     }
     
@@ -949,8 +960,8 @@ void FlatSliderSimple2d::setUp()
     // check valid x and y vectors, i.e. not parallel and of zero length
     if (xn == 0 || yn == 0 || zn == 0)  {
         opserr << "FlatSliderSimple2d::setUp() - "
-            << "element: " << this->getTag() << endln
-            << "invalid orientation vectors\n";
+            << "element: " << this->getTag()
+            << " - invalid orientation vectors.\n";
         exit(-1);
     }
     
@@ -972,7 +983,7 @@ void FlatSliderSimple2d::setUp()
 
 
 double FlatSliderSimple2d::sgn(double x)
-{ 
+{
     if (x > 0)
         return 1.0;
     else if (x < 0)

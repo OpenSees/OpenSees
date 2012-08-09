@@ -18,17 +18,15 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-04-17 23:02:41 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/frictionBearing/frictionModel/FrictionModel.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
 // Description: This file contains the class implementation for FrictionModel.
-//
-// What: "@(#) FrictionModel.cpp, revA"
 
 #include <FrictionModel.h>
 #include <FrictionResponse.h>
@@ -38,24 +36,29 @@
 
 static MapOfTaggedObjects theFrictionModelObjects;
 
-bool OPS_addFrictionModel(FrictionModel *newComponent) {
-  return theFrictionModelObjects.addComponent(newComponent);
+
+bool OPS_addFrictionModel(FrictionModel *newComponent)
+{
+    return theFrictionModelObjects.addComponent(newComponent);
 }
 
-FrictionModel *OPS_getFrictionModel(int tag) {
 
-  TaggedObject *theResult = theFrictionModelObjects.getComponentPtr(tag);
-  if (theResult == 0) {
-    opserr << "FrictionModel *getFrictionModel(int tag) - none found with tag: " << tag << endln;
-    return 0;
-  }
-  FrictionModel *theMat = (FrictionModel *)theResult;
-
-  return theMat;
+FrictionModel *OPS_getFrictionModel(int tag)
+{
+    TaggedObject *theResult = theFrictionModelObjects.getComponentPtr(tag);
+    if (theResult == 0) {
+        opserr << "FrictionModel *getFrictionModel(int tag) - none found with tag: " << tag << endln;
+        return 0;
+    }
+    FrictionModel *theFrnMdl = (FrictionModel *)theResult;
+    
+    return theFrnMdl;
 }
 
-void OPS_clearAllFrictionModel(void) {
-  theFrictionModelObjects.clearAll();
+
+void OPS_clearAllFrictionModel()
+{
+    theFrictionModelObjects.clearAll();
 }
 
 
@@ -63,7 +66,7 @@ FrictionModel::FrictionModel(int tag, int classTag)
     : TaggedObject(tag), MovableObject(classTag),
     trialN(0.0), trialVel(0.0)
 {
-    
+    // does nothing
 }
 
 
@@ -73,66 +76,77 @@ FrictionModel::~FrictionModel()
 }
 
 
-double FrictionModel::getNormalForce(void)
+double FrictionModel::getNormalForce()
 {
     return trialN;
 }
 
 
-double FrictionModel::getVelocity(void)
+double FrictionModel::getVelocity()
 {
     return trialVel;
 }
 
 
-Response* FrictionModel::setResponse(char **argv, int argc, Information &info)
+Response* FrictionModel::setResponse(const char **argv, int argc,
+    OPS_Stream &theOutputStream)
 {
-    if (argc == 0) 
-        return 0;
+    Response *theResponse = 0;
+    
+    theOutputStream.tag("FrictionModelOutput");
+    theOutputStream.attr("frnMdlType", this->getClassType());
+    theOutputStream.attr("frnMdlTag", this->getTag());
     
     // normal force
-    else if (strcmp(argv[0],"normalForce") == 0)
-        return new FrictionResponse(this, 2, this->getNormalForce());
-    
+    if (strcmp(argv[0],"normalForce") == 0 || strcmp(argv[0],"N") == 0 ||
+        strcmp(argv[0],"normalFrc") == 0)  {
+        theOutputStream.tag("ResponseType", "N");
+        return new FrictionResponse(this, 1, this->getNormalForce());
+    }
     // velocity
-    if (strcmp(argv[0],"velocity") == 0)
-        return new FrictionResponse(this, 1, this->getVelocity());
-    
+    else if (strcmp(argv[0],"velocity") == 0 || strcmp(argv[0],"vel") == 0)  {
+        theOutputStream.tag("ResponseType", "vel");
+        return new FrictionResponse(this, 2, this->getVelocity());
+    }
     // friction force
-    else if (strcmp(argv[0],"frictionForce") == 0)
+    else if (strcmp(argv[0],"frictionForce") == 0 || strcmp(argv[0],"Ff") == 0 ||
+             strcmp(argv[0],"frnForce") == 0 || strcmp(argv[0],"frnFrc") == 0)  {
+        theOutputStream.tag("ResponseType", "frnFrc");
         return new FrictionResponse(this, 3, this->getFrictionForce());
-    
-    // friction coeff
-    else if (strcmp(argv[0],"frictionCoeff") == 0)
+    }
+    // coefficient of friction
+    else if (strcmp(argv[0],"frictionCoeff") == 0 || strcmp(argv[0],"mu") == 0 ||
+             strcmp(argv[0],"frnCoeff") == 0 || strcmp(argv[0],"COF") == 0)  {
+        theOutputStream.tag("ResponseType", "COF");
         return new FrictionResponse(this, 4, this->getFrictionCoeff());
-
-    // otherwise unknown
-    else
-        return 0;
+    }
+    
+    theOutputStream.endTag();
+    return theResponse;
 }
 
 
 int FrictionModel::getResponse(int responseID, Information &info)
 {
-    // each subclass must implement its own stuff    
+    // each subclass must implement its own stuff
     switch (responseID)  {
     case 1:
-        info.setDouble(trialN);
+        info.setDouble(this->getNormalForce());
         return 0;
         
     case 2:
-        info.setDouble(trialVel);
-        return 0;      
+        info.setDouble(this->getVelocity());
+        return 0;
         
     case 3:
         info.setDouble(this->getFrictionForce());
-        return 0;      
-                
+        return 0;
+        
     case 4:
         info.setDouble(this->getFrictionCoeff());
-        return 0;      
-
-    default:      
+        return 0;
+        
+    default:
         return -1;
     }
 }

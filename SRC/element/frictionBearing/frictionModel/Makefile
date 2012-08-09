@@ -1,11 +1,12 @@
 include ../../../../Makefile.def
 
-OBJS       = CoulombFriction.o \
+OBJS       = Coulomb.o \
 	FrictionModel.o \
 	FrictionResponse.o \
 	TclModelBuilderFrictionModelCommand.o \
-	VDependentFriction.o \
-	VPDependentFriction.o
+	VelDependent.o \
+	VelDepMultiLinear.o \
+	VelPressureDep.o
 
 # Compilation control
 

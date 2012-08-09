@@ -73,14 +73,14 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         if ((argc-eleArgStart) < 10)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: flatSliderBearing eleTag iNode jNode frnMdlTag uy -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
+            opserr << "Want: flatSliderBearing eleTag iNode jNode frnMdlTag kInit -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
         }    
         
         // get the id and end nodes 
         int iNode, jNode, frnMdlTag, matTag, argi, i, j;
         int recvMat = 0;
-        double uy;
+        double kInit;
         double shearDistI = 0.0;
         int doRayleigh = 0;
         double mass = 0.0;
@@ -113,8 +113,8 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
             opserr << "flatSliderBearing element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &uy) != TCL_OK)  {
-            opserr << "WARNING invalid uy\n";
+        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &kInit) != TCL_OK)  {
+            opserr << "WARNING invalid kInit\n";
             opserr << "flatSliderBearing element: " << tag << endln;
             return TCL_ERROR;
         }
@@ -249,7 +249,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         }
         
         // now create the flatSliderBearing
-        theElement = new FlatSliderSimple2d(tag, iNode, jNode, *theFrnMdl, uy,
+        theElement = new FlatSliderSimple2d(tag, iNode, jNode, *theFrnMdl, kInit,
             theMaterials, y, x, shearDistI, doRayleigh, mass, maxIter, tol);
         
         if (theElement == 0)  {
@@ -279,14 +279,14 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         if ((argc-eleArgStart) < 14)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: flatSliderBearing eleTag iNode jNode frnMdlTag uy -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
+            opserr << "Want: flatSliderBearing eleTag iNode jNode frnMdlTag kInit -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
         }    
         
         // get the id and end nodes 
         int iNode, jNode, frnMdlTag, matTag, argi, i, j;
         int recvMat = 0;
-        double uy;
+        double kInit;
         double shearDistI = 0.0;
         int doRayleigh = 0;
         double mass = 0.0;
@@ -319,8 +319,8 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
             opserr << "flatSliderBearing element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &uy) != TCL_OK)  {
-            opserr << "WARNING invalid uy\n";
+        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &kInit) != TCL_OK)  {
+            opserr << "WARNING invalid kInit\n";
             opserr << "flatSliderBearing element: " << tag << endln;
             return TCL_ERROR;
         }
@@ -502,7 +502,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         }
         
         // now create the flatSliderBearing
-        theElement = new FlatSliderSimple3d(tag, iNode, jNode, *theFrnMdl, uy,
+        theElement = new FlatSliderSimple3d(tag, iNode, jNode, *theFrnMdl, kInit,
             theMaterials, y, x, shearDistI, doRayleigh, mass, maxIter, tol);
         
         if (theElement == 0)  {

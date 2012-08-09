@@ -18,47 +18,49 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-04-17 23:02:41 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/frictionBearing/frictionModel/VDependentFriction.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
-#ifndef VDependentFriction_h
-#define VDependentFriction_h         
+#ifndef VelDependent_h
+#define VelDependent_h         
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
-// Description: This file contains the class definition for the VDependentFriction
+// Description: This file contains the class definition for the VelDependent
 // friction model after Constantinou et al. (1990). In the velocity dependent
 // friction model the friction force is given in terms of the friction coefficients
 // at low and high velocities and a constant describing the rate of transition.
-//
-// What: "@(#) VDependentFriction.h, revA"
+// If the normal force N is negative the friction force is zero.
 
 #include <FrictionModel.h>
 
-class VDependentFriction : public FrictionModel
+class VelDependent : public FrictionModel
 {
 public:
     // constructor
-    VDependentFriction();
-    VDependentFriction(int tag, double muSlow, double muFast, double transRate);
+    VelDependent();
+    VelDependent(int tag, double muSlow, double muFast, double transRate);
     
     // destructor
-    ~VDependentFriction();
+    ~VelDependent();
+    
+    const char *getClassType() const {return "VelDependent";};
     
     // public methods to set and obtain response
     int setTrial(double normalForce, double velocity = 0.0);
-    double getFrictionForce(void);
-    double getFrictionCoeff(void);
-    double getDFFrcDNFrc(void);
+    double getFrictionForce();
+    double getFrictionCoeff();
+    double getDFFrcDNFrc();
+    double getDFFrcDVel();
     
-    int commitState(void);
-    int revertToLastCommit(void);
-    int revertToStart(void);
+    int commitState();
+    int revertToLastCommit();
+    int revertToStart();
     
-    FrictionModel *getCopy(void);
+    FrictionModel *getCopy();
     
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, 
@@ -69,11 +71,12 @@ public:
 protected:
 
 private:
-    double muSlow;      // coefficient of friction at low velocity
-    double muFast;      // coefficient of friction at high velocity
-    double transRate;   // transition rate from low to high velocity
+    double muSlow;     // coefficient of friction at low velocity
+    double muFast;     // coefficient of friction at high velocity
+    double transRate;  // transition rate from low to high velocity
     
-    double mu;          // current coefficient of friction
+    double mu;         // current coefficient of friction (COF)
+    double DmuDvel;    // derivative of COF wrt to velocity
 };
 
 #endif

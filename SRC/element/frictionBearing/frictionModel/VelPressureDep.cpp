@@ -18,67 +18,103 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-04-17 23:02:41 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/frictionBearing/frictionModel/VPDependentFriction.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
 // Description: This file contains the class implementation for the
-// VPDependentFriction friction model.
+// VelPressureDep friction model.
 
-#include <VPDependentFriction.h>
+#include <VelPressureDep.h>
 #include <Channel.h>
 #include <Information.h>
 
 #include <math.h>
 
 
-VPDependentFriction::VPDependentFriction()
-    : FrictionModel(0, FRN_TAG_VPDependentFriction),
-    muSlow(0.0), muFast0(0.0), A(0.0), deltaMu(0.0),
-    alpha(0.0), transRate(0.0), mu(0.0)
+VelPressureDep::VelPressureDep()
+    : FrictionModel(0, FRN_TAG_VelPressureDep),
+    muSlow(0.0), muFast0(0.0), A(0.0),
+    deltaMu(0.0), alpha(0.0), transRate(0.0),
+    mu(0.0), DmuDn(0.0), DmuDvel(0.0)
 {
     // does nothing
 }
 
 
-VPDependentFriction::VPDependentFriction (int tag, double muslow,
+VelPressureDep::VelPressureDep(int tag, double muslow,
     double mufast0, double a, double deltamu, double _alpha, double transrate)
-    : FrictionModel(tag, FRN_TAG_VPDependentFriction),
+    : FrictionModel(tag, FRN_TAG_VelPressureDep),
     muSlow(muslow), muFast0(mufast0), A(a), deltaMu(deltamu),
-    alpha(_alpha), transRate(transrate), mu(0.0)
+    alpha(_alpha), transRate(transrate),
+    mu(0.0), DmuDn(0.0), DmuDvel(0.0)
 {
+    // check that COF are positive and not zero
     if (muSlow <= 0.0  || muFast0 <= 0.0)  {
-        opserr << "VPDependentFriction::VPDependentFriction - "
-            << "the friction coefficients have to be positive\n";
+        opserr << "VelPressureDep::VelPressureDep - "
+            << "the friction coefficients have to be positive.\n";
         exit(-1);
     }
+    // check that A is positive and not zero
+    if (A <= 0.0)  {
+        opserr << "VelPressureDep::VelPressureDep - "
+            << "the nominal contact area has to be positive.\n";
+        exit(-1);
+    }
+    // check that transRate is positive
+    if (transRate < 0.0)  {
+        opserr << "VelPressureDep::VelPressureDep - "
+            << "the transition rate has to be positive.\n";
+        exit(-1);
+    }
+    
+    // initialize variables
+    this->revertToStart();
 }
 
 
-VPDependentFriction::~VPDependentFriction()
+VelPressureDep::~VelPressureDep()
 {
     // does nothing
 }
 
 
-int VPDependentFriction::setTrial(double normalForce, double velocity)
-{	
+int VelPressureDep::setTrial(double normalForce, double velocity)
+{
     trialN   = normalForce;
     trialVel = velocity;
     
-    double muFast = muFast0 - deltaMu*tanh(alpha*trialN/A);
-    mu = muFast - (muFast-muSlow)*exp(-transRate*fabs(trialVel));
+    // determine COF at high velocities
+    double muFast;
+    if (trialN > 0.0)
+        muFast = muFast0 - deltaMu*tanh(alpha*trialN/A);
+    else
+        muFast = muFast0;
+    
+    // get COF for given trial velocity
+    double temp = (muFast-muSlow)*exp(-transRate*fabs(trialVel));
+    mu = muFast - temp;
+    
+    // get derivative of COF wrt normal force
+    DmuDn = deltaMu*alpha/A/pow(cosh(alpha*trialN/A),2)*
+            (exp(-transRate*fabs(trialVel))-1.0);
+    
+    // get derivative of COF wrt velocity
+    if (trialVel != 0.0)
+        DmuDvel = transRate*trialVel/fabs(trialVel)*temp;
+    else
+        DmuDvel = 0.0;
     
     return 0;
 }
 
 
-double VPDependentFriction::getFrictionForce(void)
-{    
+double VelPressureDep::getFrictionForce()
+{
     if (trialN > 0.0)
         return mu*trialN;
     else
@@ -86,63 +122,69 @@ double VPDependentFriction::getFrictionForce(void)
 }
 
 
-double VPDependentFriction::getFrictionCoeff(void)
+double VelPressureDep::getFrictionCoeff()
+{
+    return mu;
+}
+
+
+double VelPressureDep::getDFFrcDNFrc()
+{
+    if (trialN >= 0.0)
+        return mu + DmuDn*trialN;
+    else
+        return 0.0;
+}
+
+
+double VelPressureDep::getDFFrcDVel()
 {
     if (trialN > 0.0)
-        return mu;
+        return DmuDvel*trialN;
     else
         return 0.0;
 }
 
 
-double VPDependentFriction::getDFFrcDNFrc(void)
-{
-    double dFFdFN = mu + deltaMu*alpha*trialN/A/
-        pow(cosh(alpha*trialN/A),2)*
-        (exp(-transRate*fabs(trialVel))-1.0);
-    
-    if (trialN > 0.0) 
-        return dFFdFN;
-    else
-        return 0.0;
-}
-
-
-int VPDependentFriction::commitState(void)
+int VelPressureDep::commitState()
 {
     return 0;
 }
 
 
-int VPDependentFriction::revertToLastCommit(void)
+int VelPressureDep::revertToLastCommit()
 {
     return 0;
 }
 
 
-int VPDependentFriction::revertToStart(void)
+int VelPressureDep::revertToStart()
 {
     trialN   = 0.0;
     trialVel = 0.0;
-    mu       = 0.0;
+    mu       = muSlow;
+    DmuDn    = 0.0;
+    DmuDvel  = 0.0;
     
     return 0;
 }
 
 
-FrictionModel* VPDependentFriction::getCopy(void)
+FrictionModel* VelPressureDep::getCopy()
 {
-    VPDependentFriction *theCopy = new VPDependentFriction(this->getTag(),
+    VelPressureDep *theCopy = new VelPressureDep(this->getTag(),
         muSlow, muFast0, A, deltaMu, alpha, transRate);
     theCopy->trialN   = trialN;
     theCopy->trialVel = trialVel;
-    theCopy->mu = mu;
+    theCopy->mu       = mu;
+    theCopy->DmuDn    = DmuDn;
+    theCopy->DmuDvel  = DmuDvel;
     
     return theCopy;
 }
 
 
-int VPDependentFriction::sendSelf(int cTag, Channel &theChannel)
+int VelPressureDep::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
     static Vector data(7);
@@ -156,20 +198,21 @@ int VPDependentFriction::sendSelf(int cTag, Channel &theChannel)
     
     res = theChannel.sendVector(this->getDbTag(), cTag, data);
     if (res < 0) 
-        opserr << "VPDependentFriction::sendSelf() - failed to send data\n";
+        opserr << "VelPressureDep::sendSelf() - failed to send data.\n";
     
     return res;
 }
 
 
-int VPDependentFriction::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+int VelPressureDep::recvSelf(int cTag, Channel &theChannel,
+    FEM_ObjectBroker &theBroker)
 {
     int res = 0;
     static Vector data(7);
     
     res = theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0)  {
-        opserr << "VPDependentFriction::recvSelf() - failed to receive data\n";
+        opserr << "VelPressureDep::recvSelf() - failed to receive data.\n";
         this->setTag(0);      
         muSlow    = 0.0;
         muFast0   = 0.0;
@@ -188,13 +231,16 @@ int VPDependentFriction::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroke
         transRate = data(6);
     }
     
+    // initialize variables
+    this->revertToStart();
+    
     return res;
 }
 
 
-void VPDependentFriction::Print(OPS_Stream &s, int flag)
+void VelPressureDep::Print(OPS_Stream &s, int flag)
 {
-    s << "VPDependentFriction tag: " << this->getTag() << endln;
+    s << "VelPressureDep tag: " << this->getTag() << endln;
     s << "  muSlow: " << muSlow << endln;
     s << "  muFast0: " << muFast0 << "  A: " << A << "  deltaMu: " << deltaMu;
     s << "  alpha: " << alpha << endln;

@@ -47,7 +47,7 @@ class FlatSliderSimple3d : public Element
 public:
     // constructor
     FlatSliderSimple3d(int tag, int Nd1, int Nd2,
-        FrictionModel &theFrnMdl, double uy,
+        FrictionModel &theFrnMdl, double kInit,
         UniaxialMaterial **theMaterials,
         const Vector y = 0, const Vector x = 0,
         double shearDistI = 0.0,
@@ -61,20 +61,20 @@ public:
     // method to get class type
     const char *getClassType() const {return "FlatSliderSimple3d";};
     
-    // public methods to obtain information about dof & connectivity    
+    // public methods to obtain information about dof & connectivity
     int getNumExternalNodes() const;
     const ID &getExternalNodes();
     Node **getNodePtrs();
     int getNumDOF();
     void setDomain(Domain *theDomain);
     
-    // public methods to set the state of the element    
+    // public methods to set the state of the element
     int commitState();
-    int revertToLastCommit();        
-    int revertToStart();        
+    int revertToLastCommit();
+    int revertToStart();
     int update();
     
-    // public methods to obtain stiffness, mass, damping and residual information    
+    // public methods to obtain stiffness, mass, damping and residual information
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
     const Matrix &getDamp();
@@ -90,8 +90,8 @@ public:
     // public methods for element output
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);    
-    void Print(OPS_Stream &s, int flag = 0);    
+    int displaySelf(Renderer &theViewer, int displayMode, float fact);
+    void Print(OPS_Stream &s, int flag = 0);
     
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
     int getResponse(int responseID, Information &eleInformation);
@@ -110,7 +110,7 @@ private:
     UniaxialMaterial *theMaterials[4];  // array of uniaxial materials
     
     // parameters
-    double uy;          // yield displacement
+    double k0;          // initial stiffness of hysteretic component
     Vector x;           // local x direction
     Vector y;           // local y direction
     double shearDistI;  // shear distance from node I as fraction of length

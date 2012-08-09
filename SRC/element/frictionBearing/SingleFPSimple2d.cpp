@@ -54,21 +54,20 @@ Vector SingleFPSimple2d::theLoad(6);
 
 
 SingleFPSimple2d::SingleFPSimple2d(int tag, int Nd1, int Nd2,
-    FrictionModel &thefrnmdl, double r, double _h, double _uy,
+    FrictionModel &thefrnmdl, double reff, double kinit,
     UniaxialMaterial **materials, const Vector _y, const Vector _x,
-    double sdI, int addRay, double m, int maxiter, double _tol)
+    double sdI, int addRay, int vert, double m, int maxiter, double _tol)
     : Element(tag, ELE_TAG_SingleFPSimple2d),
-    connectedExternalNodes(2), theFrnMdl(0),
-    R(r), h(_h), uy(_uy), x(_x), y(_y),
-    shearDistI(sdI), addRayleigh(addRay),
+    connectedExternalNodes(2), theFrnMdl(0), Reff(reff), kInit(kinit),
+    x(_x), y(_y), shearDistI(sdI), addRayleigh(addRay), inclVertDisp(vert),
     mass(m), maxIter(maxiter), tol(_tol),
-    Reff(0.0), L(0.0), ub(3), ubPlastic(0.0), qb(3),
-    kb(3,3), ul(6), Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3)
+    L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6), Tgl(6,6), Tlb(3,6),
+    ubPlasticC(0.0), kbInit(3,3)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
         opserr << "SingleFPSimple2d::SingleFPSimple2d() - element: "
-            << this->getTag() << " failed to create an ID of size 2\n";
+            << this->getTag() << " - failed to create an ID of size 2.\n";
     }
     
     connectedExternalNodes(0) = Nd1;
@@ -78,13 +77,14 @@ SingleFPSimple2d::SingleFPSimple2d(int tag, int Nd1, int Nd2,
     for (int i=0; i<2; i++)
         theNodes[i] = 0;
     
-	// get a copy of the friction model
-	theFrnMdl = thefrnmdl.getCopy();
-	if (theFrnMdl == 0)  {
-		opserr << "SingleFPSimple2d::SingleFPSimple2d() - "
-			<< "failed to get copy of the friction model.\n";
-		exit(-1);
-	}
+    // get a copy of the friction model
+    theFrnMdl = thefrnmdl.getCopy();
+    if (theFrnMdl == 0)  {
+        opserr << "SingleFPSimple2d::SingleFPSimple2d() - element: "
+            << this->getTag() << " - failed to get copy of the "
+            << "friction model.\n";
+        exit(-1);
+    }
     
     // check material input
     if (materials == 0)  {
@@ -111,7 +111,7 @@ SingleFPSimple2d::SingleFPSimple2d(int tag, int Nd1, int Nd2,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = kbInit(0,0)*DBL_EPSILON;
+    kbInit(1,1) = kInit;
     kbInit(2,2) = theMaterials[1]->getInitialTangent();
     
     // initialize other variables
@@ -121,27 +121,26 @@ SingleFPSimple2d::SingleFPSimple2d(int tag, int Nd1, int Nd2,
 
 SingleFPSimple2d::SingleFPSimple2d()
     : Element(0, ELE_TAG_SingleFPSimple2d),
-    connectedExternalNodes(2), theFrnMdl(0),
-    R(0.0), h(0.0), uy(0.0), x(0), y(0),
-    shearDistI(0.0), addRayleigh(0),
+    connectedExternalNodes(2), theFrnMdl(0), Reff(0.0), kInit(0.0),
+    x(0), y(0), shearDistI(0.0), addRayleigh(0), inclVertDisp(0),
     mass(0.0), maxIter(20), tol(1E-8),
-    Reff(0.0), L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3),
-    ul(6), Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3)
-{	
+    L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6), Tgl(6,6),
+    Tlb(3,6), ubPlasticC(0.0), kbInit(3,3)
+{
     // ensure the connectedExternalNode ID is of correct size
-	if (connectedExternalNodes.Size() != 2)  {
-		opserr << "SingleFPSimple2d::SingleFPSimple2d() - "
-			<<  "failed to create an ID of size 2\n";
-		exit(-1);
+    if (connectedExternalNodes.Size() != 2)  {
+        opserr << "SingleFPSimple2d::SingleFPSimple2d() - element: "
+            << this->getTag() << " - failed to create an ID of size 2.\n";
+        exit(-1);
     }
     
     // set node pointers to NULL
-	for (int i=0; i<2; i++)
-		theNodes[i] = 0;
+    for (int i=0; i<2; i++)
+        theNodes[i] = 0;
     
     // set material pointers to NULL
-	for (int i=0; i<2; i++)
-		theMaterials[i] = 0;
+    for (int i=0; i<2; i++)
+        theMaterials[i] = 0;
 }
 
 
@@ -150,7 +149,7 @@ SingleFPSimple2d::~SingleFPSimple2d()
     // invoke the destructor on any objects created by the object
     // that the object still holds a pointer to
     if (theFrnMdl)
-		delete theFrnMdl;
+        delete theFrnMdl;
     
     for (int i=0; i<2; i++)
         if (theMaterials[i] != 0)
@@ -164,19 +163,19 @@ int SingleFPSimple2d::getNumExternalNodes() const
 }
 
 
-const ID& SingleFPSimple2d::getExternalNodes() 
+const ID& SingleFPSimple2d::getExternalNodes()
 {
     return connectedExternalNodes;
 }
 
 
-Node** SingleFPSimple2d::getNodePtrs() 
+Node** SingleFPSimple2d::getNodePtrs()
 {
-	return theNodes;
+    return theNodes;
 }
 
 
-int SingleFPSimple2d::getNumDOF() 
+int SingleFPSimple2d::getNumDOF()
 {
     return 6;
 }
@@ -186,72 +185,76 @@ void SingleFPSimple2d::setDomain(Domain *theDomain)
 {
     // check Domain is not null - invoked when object removed from a domain
     if (!theDomain)  {
-		theNodes[0] = 0;
-		theNodes[1] = 0;
+        theNodes[0] = 0;
+        theNodes[1] = 0;
         
-		return;
+        return;
     }
     
     // first set the node pointers
     theNodes[0] = theDomain->getNode(connectedExternalNodes(0));
-    theNodes[1] = theDomain->getNode(connectedExternalNodes(1));	
-	
+    theNodes[1] = theDomain->getNode(connectedExternalNodes(1));
+    
     // if can't find both - send a warning message
     if (!theNodes[0] || !theNodes[1])  {
-		if (!theNodes[0])  {
-			opserr << "WARNING SingleFPSimple2d::setDomain() - Nd1: " 
-				<< connectedExternalNodes(0) << " does not exist in the model for ";
-		} else  {
-			opserr << "WARNING SingleFPSimple2d::setDomain() - Nd2: " 
-				<< connectedExternalNodes(1) << " does not exist in the model for ";
-		}
-		opserr << "SingleFPSimple2d ele: " << this->getTag() << endln;
-		
-		return;
+        if (!theNodes[0])  {
+            opserr << "WARNING SingleFPSimple2d::setDomain() - Nd1: " 
+                << connectedExternalNodes(0)
+                << " does not exist in the model for";
+        } else  {
+            opserr << "WARNING SingleFPSimple2d::setDomain() - Nd2: " 
+                << connectedExternalNodes(1)
+                << " does not exist in the model for";
+        }
+        opserr << " element: " << this->getTag() << ".\n";
+        
+        return;
     }
-	
-	// now determine the number of dof and the dimension    
-	int dofNd1 = theNodes[0]->getNumberDOF();
-	int dofNd2 = theNodes[1]->getNumberDOF();	
-	
-	// if differing dof at the ends - print a warning message
+    
+    // now determine the number of dof and the dimension
+    int dofNd1 = theNodes[0]->getNumberDOF();
+    int dofNd2 = theNodes[1]->getNumberDOF();
+    
+    // if differing dof at the ends - print a warning message
     if (dofNd1 != 3)  {
-		opserr << "SingleFPSimple2d::setDomain() - node 1: "
-			<< connectedExternalNodes(0) << " has incorrect number of DOF (not 3)\n";
-		return;
+        opserr << "SingleFPSimple2d::setDomain() - node 1: "
+            << connectedExternalNodes(0)
+            << " has incorrect number of DOF (not 3).\n";
+        return;
     }
     if (dofNd2 != 3)  {
-		opserr << "SingleFPSimple2d::setDomain() - node 2: "
-			<< connectedExternalNodes(1) << " has incorrect number of DOF (not 3)\n";
-		return;
+        opserr << "SingleFPSimple2d::setDomain() - node 2: "
+            << connectedExternalNodes(1)
+            << " has incorrect number of DOF (not 3).\n";
+        return;
     }
-	
+    
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
     
     // set up the transformation matrix for orientation
     this->setUp();
-    
-    // length from center of dish to pivot point
-    Reff = R - h;
-}   	 
+}
 
 
 int SingleFPSimple2d::commitState()
 {
-	int errCode = 0;
+    int errCode = 0;
     
     // commit trial history variables
     ubPlasticC = ubPlastic;
-	
+    
     // commit friction model
-	errCode += theFrnMdl->commitState();
+    errCode += theFrnMdl->commitState();
     
     // commit material models
     for (int i=0; i<2; i++)
-	    errCode += theMaterials[i]->commitState();
+        errCode += theMaterials[i]->commitState();
     
-	return errCode;
+    // commit the base class
+    errCode += this->Element::commitState();
+    
+    return errCode;
 }
 
 
@@ -260,18 +263,18 @@ int SingleFPSimple2d::revertToLastCommit()
     int errCode = 0;
     
     // revert friction model
-	errCode += theFrnMdl->revertToLastCommit();
+    errCode += theFrnMdl->revertToLastCommit();
     
     // revert material models
     for (int i=0; i<2; i++)
-	    errCode += theMaterials[i]->revertToLastCommit();
+        errCode += theMaterials[i]->revertToLastCommit();
     
     return errCode;
 }
 
 
 int SingleFPSimple2d::revertToStart()
-{   
+{
     int errCode = 0;
     
     // reset trial history variables
@@ -323,7 +326,12 @@ int SingleFPSimple2d::update()
     
     // 1) get axial force and stiffness in basic x-direction
     double ub0Old = theMaterials[0]->getStrain();
-    theMaterials[0]->setTrialStrain(ub(0),ubdot(0));
+    if (inclVertDisp == 0)  {
+        theMaterials[0]->setTrialStrain(ub(0),ubdot(0));
+    } else  {
+        double ubVert = Reff - sqrt(pow(Reff,2) - pow(ub(1),2));
+        theMaterials[0]->setTrialStrain(ub(0)-ubVert,ubdot(0));
+    }
     qb(0) = theMaterials[0]->getStress();
     kb(0,0) = theMaterials[0]->getTangent();
     
@@ -332,8 +340,7 @@ int SingleFPSimple2d::update()
         kb = kbInit;
         if (qb(0) > 0.0)  {
             theMaterials[0]->setTrialStrain(ub0Old,0.0);
-            kb(0,0) *= DBL_EPSILON;
-            kb(2,2) *= DBL_EPSILON;
+            kb = DBL_EPSILON*kbInit;
             // update plastic displacement
             ubPlastic = ub(1);
         }
@@ -355,8 +362,9 @@ int SingleFPSimple2d::update()
         
         // get stiffness of elastic component
         double k2 = N/Reff;
+        
         // get initial stiffness of hysteretic component
-        double k0 = qYield/uy;
+        double k0 = kInit - k2;
         
         // get trial shear force of hysteretic component
         double qTrial = k0*(ub(1) - ubPlasticC);
@@ -370,7 +378,7 @@ int SingleFPSimple2d::update()
             // set shear force
             qb(1) = qTrial + k2*ub(1) - N*ul(2);
             // set tangent stiffness
-            kb(1,1) = k0 + k2;
+            kb(1,1) = kInit;
         }
         // plastic step -> return mapping
         else  {
@@ -388,8 +396,9 @@ int SingleFPSimple2d::update()
     
     // issue warning if iteration did not converge
     if (iter >= maxIter)  {
-        opserr << "WARNING: SingleFPSimple2d::update() - did not find the shear force after "
-            << iter << " iterations and norm: " << fabs(qb(1)-qb1Old) << endln;
+        opserr << "WARNING: SingleFPSimple2d::update() - element: "
+            << this->getTag() << " - did not find the shear force after "
+            << iter << " iterations and norm: " << fabs(qb(1)-qb1Old) << ".\n";
         return -1;
     }
     
@@ -445,14 +454,14 @@ const Matrix& SingleFPSimple2d::getDamp()
 {
     // zero the matrix
     theMatrix.Zero();
-
+    
     // call base class to setup Rayleigh damping
     double factThis = 0.0;
     if (addRayleigh == 1)  {
         theMatrix = this->Element::getDamp();
         factThis = 1.0;
     }
-
+    
     // now add damping tangent from materials
     static Matrix cb(3,3);
     cb.Zero();
@@ -465,27 +474,27 @@ const Matrix& SingleFPSimple2d::getDamp()
     
     // transform from local to global system and add to cg
     theMatrix.addMatrixTripleProduct(factThis, Tgl, cl, 1.0);
-
+    
     return theMatrix;
 }
 
 
 const Matrix& SingleFPSimple2d::getMass(void)
 {
-	// zero the matrix
+    // zero the matrix
     theMatrix.Zero();
-
-	// check for quick return
-	if (mass == 0.0)  {
-		return theMatrix;
-	}    
-
-	double m = 0.5*mass;
-	for (int i=0; i<2; i++)  {
-		theMatrix(i,i)     = m;
-		theMatrix(i+3,i+3) = m;
-	}
-	
+    
+    // check for quick return
+    if (mass == 0.0)  {
+        return theMatrix;
+    }    
+    
+    double m = 0.5*mass;
+    for (int i=0; i<2; i++)  {
+        theMatrix(i,i)     = m;
+        theMatrix(i+3,i+3) = m;
+    }
+    
     return theMatrix; 
 }
 
@@ -497,41 +506,41 @@ void SingleFPSimple2d::zeroLoad(void)
 
 
 int SingleFPSimple2d::addLoad(ElementalLoad *theLoad, double loadFactor)
-{  
-	opserr <<"SingleFPSimple2d::addLoad() - "
-		<< "load type unknown for element: "
-		<< this->getTag() << endln;
-
-	return -1;
+{
+    opserr <<"SingleFPSimple2d::addLoad() - "
+        << "load type unknown for element: "
+        << this->getTag() << ".\n";
+    
+    return -1;
 }
 
 
 int SingleFPSimple2d::addInertiaLoadToUnbalance(const Vector &accel)
 {
-	// check for quick return
-	if (mass == 0.0)  {
-		return 0;
-	}    
-
-	// get R * accel from the nodes
-	const Vector &Raccel1 = theNodes[0]->getRV(accel);
-	const Vector &Raccel2 = theNodes[1]->getRV(accel);
-	
-	if (3 != Raccel1.Size() || 3 != Raccel2.Size())  {
-		opserr << "SingleFPSimple2d::addInertiaLoadToUnbalance() - "
-			<< "matrix and vector sizes are incompatible\n";
-		return -1;
-	}
-
-	// want to add ( - fact * M R * accel ) to unbalance
-	// take advantage of lumped mass matrix
-	double m = 0.5*mass;
+    // check for quick return
+    if (mass == 0.0)  {
+        return 0;
+    }    
+    
+    // get R * accel from the nodes
+    const Vector &Raccel1 = theNodes[0]->getRV(accel);
+    const Vector &Raccel2 = theNodes[1]->getRV(accel);
+    
+    if (3 != Raccel1.Size() || 3 != Raccel2.Size())  {
+        opserr << "SingleFPSimple2d::addInertiaLoadToUnbalance() - "
+            << "matrix and vector sizes are incompatible.\n";
+        return -1;
+    }
+    
+    // want to add ( - fact * M R * accel ) to unbalance
+    // take advantage of lumped mass matrix
+    double m = 0.5*mass;
     for (int i=0; i<2; i++)  {
         theLoad(i)   -= m * Raccel1(i);
         theLoad(i+3) -= m * Raccel2(i);
     }
-
-	return 0;
+    
+    return 0;
 }
 
 
@@ -562,47 +571,46 @@ const Vector& SingleFPSimple2d::getResistingForce()
 
 
 const Vector& SingleFPSimple2d::getResistingForceIncInertia()
-{	
+{
     // this already includes damping forces from materials
-	theVector = this->getResistingForce();
-	
-	// add the damping forces from rayleigh damping
+    theVector = this->getResistingForce();
+    
+    // add the damping forces from rayleigh damping
     if (addRayleigh == 1)  {
         if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
             theVector += this->getRayleighDampingForces();
     }
     
-	// add inertia forces from element mass
-	if (mass != 0.0)  {
-		const Vector &accel1 = theNodes[0]->getTrialAccel();
-		const Vector &accel2 = theNodes[1]->getTrialAccel();    
-		
-		double m = 0.5*mass;
-		for (int i=0; i<2; i++)  {
-			theVector(i)   += m * accel1(i);
-			theVector(i+3) += m * accel2(i);
-		}
-	}
-	
-	return theVector;
+    // add inertia forces from element mass
+    if (mass != 0.0)  {
+        const Vector &accel1 = theNodes[0]->getTrialAccel();
+        const Vector &accel2 = theNodes[1]->getTrialAccel();
+        
+        double m = 0.5*mass;
+        for (int i=0; i<2; i++)  {
+            theVector(i)   += m * accel1(i);
+            theVector(i+3) += m * accel2(i);
+        }
+    }
+    
+    return theVector;
 }
 
 
 int SingleFPSimple2d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(11);
+    static Vector data(10);
     data(0) = this->getTag();
-    data(1) = R;
-    data(2) = h;
-    data(3) = uy;
-    data(4) = shearDistI;
-    data(5) = addRayleigh;
-    data(6) = mass;
-    data(7) = maxIter;
-    data(8) = tol;
-    data(9) = x.Size();
-    data(10) = y.Size();
+    data(1) = Reff;
+    data(2) = kInit;
+    data(3) = shearDistI;
+    data(4) = addRayleigh;
+    data(5) = mass;
+    data(6) = maxIter;
+    data(7) = tol;
+    data(8) = x.Size();
+    data(9) = y.Size();
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -645,17 +653,16 @@ int SingleFPSimple2d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(11);
+    static Vector data(10);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
-    R = data(1);
-    h = data(2);
-    uy = data(3);
-    shearDistI = data(4);
-    addRayleigh = (int)data(5);
-    mass = data(6);
-    maxIter = (int)data(7);
-    tol = data(8);
+    Reff = data(1);
+    kInit = data(2);
+    shearDistI = data(3);
+    addRayleigh = (int)data(4);
+    mass = data(5);
+    maxIter = (int)data(6);
+    tol = data(7);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -689,11 +696,11 @@ int SingleFPSimple2d::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive remaining data
-    if ((int)data(9) == 3)  {
+    if ((int)data(8) == 3)  {
         x.resize(3);
         rChannel.recvVector(0, commitTag, x);
     }
-    if ((int)data(10) == 3)  {
+    if ((int)data(9) == 3)  {
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
@@ -701,7 +708,7 @@ int SingleFPSimple2d::recvSelf(int commitTag, Channel &rChannel,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = kbInit(0,0)*DBL_EPSILON;
+    kbInit(1,1) = kInit;
     kbInit(2,2) = theMaterials[1]->getInitialTangent();
     
     // initialize other variables
@@ -715,7 +722,7 @@ int SingleFPSimple2d::displaySelf(Renderer &theViewer,
     int displayMode, float fact)
 {
     int errCode = 0;
-
+    
     // first determine the end points of the element based on
     // the display factor (a measure of the distorted image)
     const Vector &end1Crd = theNodes[0]->getCrds();
@@ -725,11 +732,11 @@ int SingleFPSimple2d::displaySelf(Renderer &theViewer,
     static Vector v1(3);
     static Vector v2(3);
     static Vector v3(3);
-
+    
     if (displayMode >= 0)  {
         const Vector &end1Disp = theNodes[0]->getDisp();
         const Vector &end2Disp = theNodes[1]->getDisp();
-
+        
         for (int i=0; i<2; i++)  {
             v1(i) = end1Crd(i) + end1Disp(i)*fact;
             v3(i) = end2Crd(i) + end2Disp(i)*fact;
@@ -740,7 +747,7 @@ int SingleFPSimple2d::displaySelf(Renderer &theViewer,
         int mode = displayMode * -1;
         const Matrix &eigen1 = theNodes[0]->getEigenvectors();
         const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-
+        
         if (eigen1.noCols() >= mode)  {
             for (int i=0; i<2; i++)  {
                 v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
@@ -756,10 +763,10 @@ int SingleFPSimple2d::displaySelf(Renderer &theViewer,
             }
         }
     }
-
+    
     errCode += theViewer.drawLine (v1, v2, 1.0, 1.0);
     errCode += theViewer.drawLine (v2, v3, 1.0, 1.0);
-
+    
     return errCode;
 }
 
@@ -768,11 +775,11 @@ void SingleFPSimple2d::Print(OPS_Stream &s, int flag)
 {
     if (flag == 0)  {
         // print everything
-		s << "Element: " << this->getTag(); 
-		s << "  type: SingleFPSimple2d  iNode: " << connectedExternalNodes(0);
-		s << "  jNode: " << connectedExternalNodes(1) << endln;
+        s << "Element: " << this->getTag(); 
+        s << "  type: SingleFPSimple2d  iNode: " << connectedExternalNodes(0);
+        s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "  FrictionModel: " << theFrnMdl->getTag() << endln;
-        s << "  R: " << R << "  h: " << h << "  uy: " << uy << endln;
+        s << "  Reff: " << Reff << "  kInit: " << kInit << endln;
         s << "  Material ux: " << theMaterials[0]->getTag() << endln;
         s << "  Material rz: " << theMaterials[1]->getTag() << endln;
         s << "  shearDistI: " << shearDistI << "  addRayleigh: "
@@ -781,7 +788,7 @@ void SingleFPSimple2d::Print(OPS_Stream &s, int flag)
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
     } else if (flag == 1)  {
-		// does nothing
+        // does nothing
     }
 }
 
@@ -790,13 +797,13 @@ Response* SingleFPSimple2d::setResponse(const char **argv, int argc,
     OPS_Stream &output)
 {
     Response *theResponse = 0;
-
+    
     output.tag("ElementOutput");
     output.attr("eleType","SingleFPSimple2d");
     output.attr("eleTag",this->getTag());
     output.attr("node1",connectedExternalNodes[0]);
     output.attr("node2",connectedExternalNodes[1]);
-
+    
     // global forces
     if (strcmp(argv[0],"force") == 0 ||
         strcmp(argv[0],"forces") == 0 ||
@@ -809,7 +816,7 @@ Response* SingleFPSimple2d::setResponse(const char **argv, int argc,
         output.tag("ResponseType","Px_2");
         output.tag("ResponseType","Py_2");
         output.tag("ResponseType","Mz_2");
-
+        
         theResponse = new ElementResponse(this, 1, theVector);
     }
     // local forces
@@ -822,7 +829,7 @@ Response* SingleFPSimple2d::setResponse(const char **argv, int argc,
         output.tag("ResponseType","N_2");
         output.tag("ResponseType","V_2");
         output.tag("ResponseType","M_2");
-
+        
         theResponse = new ElementResponse(this, 2, theVector);
     }
     // basic forces
@@ -832,10 +839,10 @@ Response* SingleFPSimple2d::setResponse(const char **argv, int argc,
         output.tag("ResponseType","qb1");
         output.tag("ResponseType","qb2");
         output.tag("ResponseType","qb3");
-
+        
         theResponse = new ElementResponse(this, 3, Vector(3));
     }
-	// local displacements
+    // local displacements
     else if (strcmp(argv[0],"localDisplacement") == 0 ||
         strcmp(argv[0],"localDisplacements") == 0)
     {
@@ -848,7 +855,7 @@ Response* SingleFPSimple2d::setResponse(const char **argv, int argc,
         
         theResponse = new ElementResponse(this, 4, theVector);
     }
-	// basic displacements
+    // basic displacements
     else if (strcmp(argv[0],"deformation") == 0 ||
         strcmp(argv[0],"deformations") == 0 || 
         strcmp(argv[0],"basicDeformation") == 0 ||
@@ -859,7 +866,7 @@ Response* SingleFPSimple2d::setResponse(const char **argv, int argc,
         output.tag("ResponseType","ub1");
         output.tag("ResponseType","ub2");
         output.tag("ResponseType","ub3");
-
+        
         theResponse = new ElementResponse(this, 5, Vector(3));
     }
     // material output
@@ -867,12 +874,18 @@ Response* SingleFPSimple2d::setResponse(const char **argv, int argc,
         if (argc > 2)  {
             int matNum = atoi(argv[1]);
             if (matNum >= 1 && matNum <= 2)
-                theResponse =  theMaterials[matNum-1]->setResponse(&argv[2], argc-2, output);
+                theResponse = theMaterials[matNum-1]->setResponse(&argv[2], argc-2, output);
         }
     }
-
+    // friction model output
+    else if (strcmp(argv[0],"frictionModel") == 0 || strcmp(argv[0],"frnMdl") == 0 ||
+        strcmp(argv[0],"frictionMdl") == 0 || strcmp(argv[0],"frnModel") == 0)  {
+            if (argc > 1)
+                theResponse = theFrnMdl->setResponse(&argv[1], argc-1, output);
+    }
+    
     output.endTag(); // ElementOutput
-
+    
     return theResponse;
 }
 
@@ -880,12 +893,12 @@ Response* SingleFPSimple2d::setResponse(const char **argv, int argc,
 int SingleFPSimple2d::getResponse(int responseID, Information &eleInfo)
 {
     double MpDelta1, MpDelta2;
-
-	switch (responseID)  {
-	case 1:  // global forces
+    
+    switch (responseID)  {
+    case 1:  // global forces
         return eleInfo.setVector(this->getResistingForce());
         
-	case 2:  // local forces
+    case 2:  // local forces
         theVector.Zero();
         // determine resisting forces in local system
         theVector = Tlb^qb;
@@ -897,18 +910,18 @@ int SingleFPSimple2d::getResponse(int responseID, Information &eleInfo)
         theVector(5) += MpDelta2;
         return eleInfo.setVector(theVector);
         
-	case 3:  // basic forces
+    case 3:  // basic forces
         return eleInfo.setVector(qb);
         
-	case 4:  // local displacements
+    case 4:  // local displacements
         return eleInfo.setVector(ul);
         
-	case 5:  // basic displacements
+    case 5:  // basic displacements
         return eleInfo.setVector(ub);
         
     default:
-		return -1;
-	}
+        return -1;
+    }
 }
 
 
@@ -928,16 +941,16 @@ void SingleFPSimple2d::setUp()
             y(0) = -x(1);  y(1) = x(0);  y(2) = 0.0;
         } else  {
             opserr << "WARNING SingleFPSimple2d::setUp() - " 
-                << "element: " << this->getTag() << endln
-                << "ignoring nodes and using specified "
-                << "local x vector to determine orientation\n";
+                << "element: " << this->getTag()
+                << " - ignoring nodes and using specified "
+                << "local x vector to determine orientation.\n";
         }
     }
     // check that vectors for orientation are of correct size
     if (x.Size() != 3 || y.Size() != 3)  {
         opserr << "SingleFPSimple2d::setUp() - "
-            << "element: " << this->getTag() << endln
-            << "incorrect dimension of orientation vectors\n";
+            << "element: " << this->getTag()
+            << " - incorrect dimension of orientation vectors.\n";
         exit(-1);
     }
     
@@ -961,8 +974,8 @@ void SingleFPSimple2d::setUp()
     // check valid x and y vectors, i.e. not parallel and of zero length
     if (xn == 0 || yn == 0 || zn == 0)  {
         opserr << "SingleFPSimple2d::setUp() - "
-            << "element: " << this->getTag() << endln
-            << "invalid orientation vectors\n";
+            << "element: " << this->getTag()
+            << " - invalid orientation vectors.\n";
         exit(-1);
     }
     
@@ -984,7 +997,7 @@ void SingleFPSimple2d::setUp()
 
 
 double SingleFPSimple2d::sgn(double x)
-{ 
+{
     if (x > 0)
         return 1.0;
     else if (x < 0)

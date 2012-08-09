@@ -538,9 +538,10 @@
 #define ELE_TAG_TFP_Bearing2d 21
 #define ELE_TAG_TripleFrictionPendulum 777
 
-#define FRN_TAG_CoulombFriction     1
-#define FRN_TAG_VDependentFriction  2
-#define FRN_TAG_VPDependentFriction 3
+#define FRN_TAG_Coulomb            1
+#define FRN_TAG_VelDependent       2
+#define FRN_TAG_VelPressureDep     3
+#define FRN_TAG_VelDepMultiLinear  4
 
 // Terje:
 #define ELE_TAG_FourNodeQuad02  9903

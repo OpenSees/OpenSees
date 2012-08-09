@@ -22,40 +22,56 @@
 // $Date$
 // $URL$
 
+#ifndef Coulomb_h
+#define Coulomb_h
+
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
-// Description: This file contains the FrictionResponse class interface
+// Description: This file contains the class definition for the Coulomb
+// friction model. In the Coulomb model the friction force is given by
+// mu*N, where mu is a constant coefficient of friction and N is a positive
+// normal force perpendicular to the sliding surface. If N is negative
+// the friction force is zero.
 
-#ifndef FrictionResponse_h
-#define FrictionResponse_h
+#include <FrictionModel.h>
 
-#include <Response.h>
-#include <Information.h>
-
-class FrictionModel;
-
-class ID;
-class Vector;
-class Matrix;
-
-class FrictionResponse : public Response
+class Coulomb : public FrictionModel
 {
 public:
-    FrictionResponse(FrictionModel *frn, int id);
-    FrictionResponse(FrictionModel *frn, int id, int val);
-    FrictionResponse(FrictionModel *frn, int id, double val);
-    FrictionResponse(FrictionModel *frn, int id, const ID &val);
-    FrictionResponse(FrictionModel *frn, int id, const Vector &val);
-    FrictionResponse(FrictionModel *frn, int id, const Matrix &val);
-    ~FrictionResponse();
+    // constructor
+    Coulomb();
+    Coulomb(int tag, double mu);
     
-    int getResponse();
+    // destructor
+    ~Coulomb();
     
+    const char *getClassType() const {return "Coulomb";};
+    
+    // public methods to set and obtain response
+    int setTrial(double normalForce, double velocity = 0.0);
+    double getFrictionForce();
+    double getFrictionCoeff();
+    double getDFFrcDNFrc();
+    double getDFFrcDVel();
+    
+    int commitState();
+    int revertToLastCommit();
+    int revertToStart();
+    
+    FrictionModel *getCopy();
+    
+    int sendSelf(int commitTag, Channel &theChannel);
+    int recvSelf(int commitTag, Channel &theChannel, 
+        FEM_ObjectBroker &theBroker);
+    
+    void Print(OPS_Stream &s, int flag = 0);
+    
+protected:
+
 private:
-    FrictionModel *theFriction;
-    int responseID;
+    double mu;  // coefficient of friction (COF)
 };
 
 #endif

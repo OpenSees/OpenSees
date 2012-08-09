@@ -941,10 +941,10 @@
 				Name="frictionModel"
 				Filter="">
 				<File
-					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\CoulombFriction.cpp">
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\Coulomb.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\CoulombFriction.h">
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\Coulomb.h">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\FrictionModel.cpp">
@@ -962,16 +962,22 @@
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\TclModelBuilderFrictionModelCommand.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VDependentFriction.cpp">
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VDependentFriction.h">
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.h">
 				</File>
 				<File
-					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VPDependentFriction.cpp">
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDepMultiLinear.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VPDependentFriction.h">
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDepMultiLinear.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelPressureDep.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelPressureDep.h">
 				</File>
 			</Filter>
 		</Filter>

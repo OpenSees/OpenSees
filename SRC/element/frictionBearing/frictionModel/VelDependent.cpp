@@ -18,63 +18,83 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-04-17 23:02:41 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/frictionBearing/frictionModel/VDependentFriction.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
 // Description: This file contains the class implementation for the
-// VDependentFriction friction model.
+// VelDependent friction model.
 
-#include <VDependentFriction.h>
+#include <VelDependent.h>
 #include <Channel.h>
 #include <Information.h>
 
 #include <math.h>
 
 
-VDependentFriction::VDependentFriction()
-    : FrictionModel(0, FRN_TAG_VDependentFriction),
-    muSlow(0.0), muFast(0.0), transRate(0.0), mu(0.0)
+VelDependent::VelDependent()
+    : FrictionModel(0, FRN_TAG_VelDependent),
+    muSlow(0.0), muFast(0.0), transRate(0.0),
+    mu(0.0), DmuDvel(0.0)
 {
     // does nothing
 }
 
 
-VDependentFriction::VDependentFriction (int tag, double muslow,
+VelDependent::VelDependent(int tag, double muslow,
     double mufast, double transrate)
-    : FrictionModel(tag, FRN_TAG_VDependentFriction),
-    muSlow(muslow), muFast(mufast), transRate(transrate), mu(0.0)
+    : FrictionModel(tag, FRN_TAG_VelDependent),
+    muSlow(muslow), muFast(mufast), transRate(transrate),
+    mu(0.0), DmuDvel(0.0)
 {
+    // check that COF are positive and not zero
     if (muSlow <= 0.0  || muFast <= 0.0)  {
-        opserr << "VDependentFriction::VDependentFriction - "
-            << "the friction coefficients have to be positive\n";
+        opserr << "VelDependent::VelDependent - "
+            << "the friction coefficients have to be positive.\n";
         exit(-1);
     }
+    // check that transRate is positive
+    if (transRate < 0.0)  {
+        opserr << "VelDependent::VelDependent - "
+            << "the transition rate has to be positive.\n";
+        exit(-1);
+    }
+    
+    // initialize variables
+    this->revertToStart();
 }
 
 
-VDependentFriction::~VDependentFriction()
+VelDependent::~VelDependent()
 {
     // does nothing
 }
 
 
-int VDependentFriction::setTrial(double normalForce, double velocity)
-{	
+int VelDependent::setTrial(double normalForce, double velocity)
+{
     trialN   = normalForce;
     trialVel = velocity;
     
-    mu = muFast - (muFast-muSlow)*exp(-transRate*fabs(trialVel));
+    // get COF for given trial velocity
+    double temp = (muFast-muSlow)*exp(-transRate*fabs(trialVel));
+    mu = muFast - temp;
+    
+    // get derivative of COF wrt velocity
+    if (trialVel != 0.0)
+        DmuDvel = transRate*trialVel/fabs(trialVel)*temp;
+    else
+        DmuDvel = 0.0;
     
     return 0;
 }
 
 
-double VDependentFriction::getFrictionForce(void)
+double VelDependent::getFrictionForce()
 {
     if (trialN > 0.0)
         return mu*trialN;
@@ -83,59 +103,67 @@ double VDependentFriction::getFrictionForce(void)
 }
 
 
-double VDependentFriction::getFrictionCoeff(void)
+double VelDependent::getFrictionCoeff()
 {
-    if (trialN > 0.0)
+    return mu;
+}
+
+
+double VelDependent::getDFFrcDNFrc()
+{
+    if (trialN >= 0.0)
         return mu;
     else
         return 0.0;
 }
 
 
-double VDependentFriction::getDFFrcDNFrc(void)
+double VelDependent::getDFFrcDVel()
 {
     if (trialN > 0.0)
-        return mu;
+        return DmuDvel*trialN;
     else
         return 0.0;
 }
 
 
-int VDependentFriction::commitState(void)
+int VelDependent::commitState()
 {
     return 0;
 }
 
 
-int VDependentFriction::revertToLastCommit(void)
+int VelDependent::revertToLastCommit()
 {
     return 0;
 }
 
 
-int VDependentFriction::revertToStart(void)
+int VelDependent::revertToStart()
 {
     trialN   = 0.0;
     trialVel = 0.0;
-    mu       = 0.0;
+    mu       = muSlow;
+    DmuDvel  = 0.0;
     
     return 0;
 }
 
 
-FrictionModel* VDependentFriction::getCopy(void)
+FrictionModel* VelDependent::getCopy()
 {
-    VDependentFriction *theCopy = new VDependentFriction(this->getTag(),
+    VelDependent *theCopy = new VelDependent(this->getTag(),
         muSlow, muFast, transRate);
     theCopy->trialN   = trialN;
     theCopy->trialVel = trialVel;
-    theCopy->mu = mu;
+    theCopy->mu       = mu;
+    theCopy->DmuDvel  = DmuDvel;
     
     return theCopy;
 }
 
 
-int VDependentFriction::sendSelf(int cTag, Channel &theChannel)
+int VelDependent::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
     static Vector data(4);
@@ -146,20 +174,21 @@ int VDependentFriction::sendSelf(int cTag, Channel &theChannel)
     
     res = theChannel.sendVector(this->getDbTag(), cTag, data);
     if (res < 0) 
-        opserr << "VDependentFriction::sendSelf() - failed to send data\n";
+        opserr << "VelDependent::sendSelf() - failed to send data.\n";
     
     return res;
 }
 
 
-int VDependentFriction::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+int VelDependent::recvSelf(int cTag, Channel &theChannel,
+    FEM_ObjectBroker &theBroker)
 {
     int res = 0;
     static Vector data(4);
     
     res = theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0)  {
-        opserr << "VDependentFriction::recvSelf() - failed to receive data\n";
+        opserr << "VelDependent::recvSelf() - failed to receive data.\n";
         this->setTag(0);      
         muSlow    = 0.0;
         muFast    = 0.0;
@@ -172,13 +201,16 @@ int VDependentFriction::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker
         transRate = data(3);
     }
     
+    // initialize variables
+    this->revertToStart();
+    
     return res;
 }
 
 
-void VDependentFriction::Print(OPS_Stream &s, int flag)
+void VelDependent::Print(OPS_Stream &s, int flag)
 {
-    s << "VDependentFriction tag: " << this->getTag() << endln;
+    s << "VelDependent tag: " << this->getTag() << endln;
     s << "  muSlow: " << muSlow << endln;
     s << "  muFast: " << muFast << endln;
     s << "  transRate: " << transRate << endln;

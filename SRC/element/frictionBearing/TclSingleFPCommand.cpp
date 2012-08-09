@@ -72,19 +72,20 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         } 
         
         // check the number of arguments is correct
-        if ((argc-eleArgStart) < 12)  {
+        if ((argc-eleArgStart) < 11)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: singleFPBearing eleTag iNode jNode frnMdlTag R h uy -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
+            opserr << "Want: singleFPBearing eleTag iNode jNode frnMdlTag Reff kInit -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-inclVertDisp> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
         }    
         
         // get the id and end nodes 
         int iNode, jNode, frnMdlTag, matTag, argi, i, j;
         int recvMat = 0;
-        double R, h, uy;
+        double Reff, kInit;
         double shearDistI = 0.0;
         int doRayleigh = 0;
+        int inclVertDisp = 0;
         double mass = 0.0;
         int maxIter = 20;
         double tol = 1E-12;
@@ -115,23 +116,18 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
             opserr << "singleFPBearing element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &R) != TCL_OK)  {
-            opserr << "WARNING invalid R\n";
+        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &Reff) != TCL_OK)  {
+            opserr << "WARNING invalid Reff\n";
             opserr << "singleFPBearing element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[6+eleArgStart], &h) != TCL_OK)  {
-            opserr << "WARNING invalid h\n";
-            opserr << "singleFPBearing element: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[7+eleArgStart], &uy) != TCL_OK)  {
-            opserr << "WARNING invalid uy\n";
+        if (Tcl_GetDouble(interp, argv[6+eleArgStart], &kInit) != TCL_OK)  {
+            opserr << "WARNING invalid kInit\n";
             opserr << "singleFPBearing element: " << tag << endln;
             return TCL_ERROR;
         }
         UniaxialMaterial *theMaterials[2];
-        for (i = 8+eleArgStart; i < argc; i++)  {
+        for (i = 7+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-P") == 0)  {
                 theMaterials[0] = 0;
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
@@ -149,7 +145,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 recvMat++;
             }
         }
-        for (i = 8+eleArgStart; i < argc; i++)  {
+        for (i = 7+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-Mz") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
                     opserr << "WARNING invalid matTag\n";
@@ -176,13 +172,14 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         // check for optional arguments
         Vector x = 0;
         Vector y = 0;
-        for (i = 8+eleArgStart; i < argc; i++)  {
+        for (i = 7+eleArgStart; i < argc; i++)  {
             if (strcmp(argv[i],"-orient") == 0)  {
                 j = i+1;
                 int numOrient = 0;
                 while (j < argc &&
                     strcmp(argv[j],"-shearDist") != 0 &&
                     strcmp(argv[j],"-doRayleigh") != 0 &&
+                    strcmp(argv[j],"-inclVertDisp") != 0 &&
                     strcmp(argv[j],"-mass") != 0 &&
                     strcmp(argv[j],"-iter") != 0)  {
                     numOrient++;
@@ -223,7 +220,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 }
             }
         }
-        for (int i = 8+eleArgStart; i < argc; i++)  {
+        for (int i = 7+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-shearDist") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &shearDistI) != TCL_OK)  {
                     opserr << "WARNING invalid -shearDist value\n";
@@ -232,11 +229,15 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 }
             }
         }
-        for (int i = 8+eleArgStart; i < argc; i++)  {
+        for (int i = 7+eleArgStart; i < argc; i++)  {
             if (strcmp(argv[i], "-doRayleigh") == 0)
                 doRayleigh = 1;
         }
-        for (int i = 8+eleArgStart; i < argc; i++)  {
+        for (int i = 7+eleArgStart; i < argc; i++)  {
+            if (strcmp(argv[i], "-inclVertDisp") == 0)
+                inclVertDisp = 1;
+        }
+        for (int i = 7+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-mass") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK)  {
                     opserr << "WARNING invalid -mass value\n";
@@ -245,7 +246,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 }
             }
         }
-        for (int i = 8+eleArgStart; i < argc; i++)  {
+        for (int i = 7+eleArgStart; i < argc; i++)  {
             if (i+2 < argc && strcmp(argv[i], "-iter") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &maxIter) != TCL_OK)  {
                     opserr << "WARNING invalid maxIter\n";
@@ -261,8 +262,8 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         }
         
         // now create the singleFPBearing
-        theElement = new SingleFPSimple2d(tag, iNode, jNode, *theFrnMdl, R, h, uy,
-            theMaterials, y, x, shearDistI, doRayleigh, mass, maxIter, tol);
+        theElement = new SingleFPSimple2d(tag, iNode, jNode, *theFrnMdl, Reff, kInit,
+            theMaterials, y, x, shearDistI, doRayleigh, inclVertDisp, mass, maxIter, tol);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";
@@ -288,19 +289,20 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         } 
 
         // check the number of arguments is correct
-        if ((argc-eleArgStart) < 16)  {
+        if ((argc-eleArgStart) < 15)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: singleFPBearing eleTag iNode jNode frnMdlTag R h uy -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
+            opserr << "Want: singleFPBearing eleTag iNode jNode frnMdlTag Reff kInit -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-inclVertDsip> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
         }    
         
         // get the id and end nodes 
         int iNode, jNode, frnMdlTag, matTag, argi, i, j;
         int recvMat = 0;
-        double R, h, uy;
+        double Reff, kInit;
         double shearDistI = 0.0;
         int doRayleigh = 0;
+        int inclVertDisp = 0;
         double mass = 0.0;
         int maxIter = 20;
         double tol = 1E-12;
@@ -331,23 +333,18 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
             opserr << "singleFPBearing element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &R) != TCL_OK)  {
-            opserr << "WARNING invalid R\n";
+        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &Reff) != TCL_OK)  {
+            opserr << "WARNING invalid Reff\n";
             opserr << "singleFPBearing element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[6+eleArgStart], &h) != TCL_OK)  {
-            opserr << "WARNING invalid h\n";
-            opserr << "singleFPBearing element: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[7+eleArgStart], &uy) != TCL_OK)  {
-            opserr << "WARNING invalid uy\n";
+        if (Tcl_GetDouble(interp, argv[6+eleArgStart], &kInit) != TCL_OK)  {
+            opserr << "WARNING invalid kInit\n";
             opserr << "singleFPBearing element: " << tag << endln;
             return TCL_ERROR;
         }
         UniaxialMaterial *theMaterials[4];
-        for (i = 8+eleArgStart; i < argc; i++)  {
+        for (i = 7+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-P") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
                     opserr << "WARNING invalid axial matTag\n";
@@ -364,7 +361,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 recvMat++;
             }
         }
-        for (i = 8+eleArgStart; i < argc; i++)  {
+        for (i = 7+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-T") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
                     opserr << "WARNING invalid torsional matTag\n";
@@ -381,7 +378,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 recvMat++;
             }
         }
-        for (i = 8+eleArgStart; i < argc; i++)  {
+        for (i = 7+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-My") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
                     opserr << "WARNING invalid moment y matTag\n";
@@ -398,7 +395,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 recvMat++;
             }
         }
-        for (i = 8+eleArgStart; i < argc; i++)  {
+        for (i = 7+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-Mz") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
                     opserr << "WARNING invalid moment z matTag\n";
@@ -425,13 +422,14 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         // check for optional arguments
         Vector x(0);
         Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
-        for (i = 8+eleArgStart; i < argc; i++)  {
+        for (i = 7+eleArgStart; i < argc; i++)  {
             if (strcmp(argv[i],"-orient") == 0)  {
                 j = i+1;
                 int numOrient = 0;
                 while (j < argc &&
                     strcmp(argv[j],"-shearDist") != 0 &&
                     strcmp(argv[j],"-doRayleigh") != 0 &&
+                    strcmp(argv[j],"-inclVertDisp") != 0 &&
                     strcmp(argv[j],"-mass") != 0 &&
                     strcmp(argv[j],"-iter") != 0)  {
                     numOrient++;
@@ -486,7 +484,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 }
             }
         }
-        for (i = 8+eleArgStart; i < argc; i++)  {
+        for (i = 7+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-shearDist") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &shearDistI) != TCL_OK)  {
                     opserr << "WARNING invalid -shearDist value\n";
@@ -495,11 +493,15 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 }
             }
         }
-        for (i = 8+eleArgStart; i < argc; i++)  {
+        for (i = 7+eleArgStart; i < argc; i++)  {
             if (strcmp(argv[i], "-doRayleigh") == 0)
                 doRayleigh = 1;
         }
-        for (i = 8+eleArgStart; i < argc; i++)  {
+        for (i = 7+eleArgStart; i < argc; i++)  {
+            if (strcmp(argv[i], "-inclVertDisp") == 0)
+                inclVertDisp = 1;
+        }
+        for (i = 7+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-mass") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK)  {
                     opserr << "WARNING invalid -mass value\n";
@@ -508,7 +510,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 }
             }
         }
-        for (int i = 8+eleArgStart; i < argc; i++)  {
+        for (int i = 7+eleArgStart; i < argc; i++)  {
             if (i+2 < argc && strcmp(argv[i], "-iter") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &maxIter) != TCL_OK)  {
                     opserr << "WARNING invalid maxIter\n";
@@ -524,8 +526,8 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         }
         
         // now create the singleFPBearing
-        theElement = new SingleFPSimple3d(tag, iNode, jNode, *theFrnMdl, R, h, uy,
-            theMaterials, y, x, shearDistI, doRayleigh, mass, maxIter, tol);
+        theElement = new SingleFPSimple3d(tag, iNode, jNode, *theFrnMdl, Reff, kInit,
+            theMaterials, y, x, shearDistI, doRayleigh, inclVertDisp, mass, maxIter, tol);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";

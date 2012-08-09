@@ -18,46 +18,50 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-04-17 23:02:41 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/frictionBearing/frictionModel/CoulombFriction.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
-#ifndef CoulombFriction_h
-#define CoulombFriction_h         
+#ifndef VelPressureDep_h
+#define VelPressureDep_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
-// Description: This file contains the class definition for the CoulombFriction
-// friction model. In the CoulombFriction model the friction force is given by
-// mu*N, where mu is a constant coefficient of friction.
-//
-// What: "@(#) CoulombFriction.h, revA"
+// Description: This file contains the class definition for the VelPressureDep
+// friction model after Constantinou et al. (1996). In the velocity and pressure
+// dependent friction model the friction force is given in terms of the friction
+// coefficients at low and high velocities with the latter one being a function of
+// pressure. If the normal force N is negative the friction force is zero.
 
 #include <FrictionModel.h>
 
-class CoulombFriction : public FrictionModel
+class VelPressureDep : public FrictionModel
 {
 public:
     // constructor
-    CoulombFriction();
-    CoulombFriction(int tag, double mu);
+    VelPressureDep();
+    VelPressureDep(int tag, double muSlow, double muFast0, double A,
+        double deltaMu, double alpha, double transRate);
     
     // destructor
-    ~CoulombFriction();
+    ~VelPressureDep();
+    
+    const char *getClassType() const {return "VelPressureDep";};
     
     // public methods to set and obtain response
     int setTrial(double normalForce, double velocity = 0.0);
-    double getFrictionForce(void);
-    double getFrictionCoeff(void);
-    double getDFFrcDNFrc(void);
+    double getFrictionForce();
+    double getFrictionCoeff();
+    double getDFFrcDNFrc();
+    double getDFFrcDVel();
     
-    int commitState(void);
-    int revertToLastCommit(void);
-    int revertToStart(void);
+    int commitState();
+    int revertToLastCommit();
+    int revertToStart();
     
-    FrictionModel *getCopy(void);
+    FrictionModel *getCopy();
     
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, 
@@ -68,7 +72,16 @@ public:
 protected:
 
 private:
-    double mu;      // coefficient of friction
+    double muSlow;     // coefficient of friction at low velocity
+    double muFast0;    // initial coefficient of friction at high velocity
+    double A;          // nominal contact area
+    double deltaMu;    // pressure parameter
+    double alpha;      // pressure parameter
+    double transRate;  // transition rate from low to high velocity
+    
+    double mu;         // current coefficient of friction (COF)
+    double DmuDn;      // derivative of COF wrt to normal force
+    double DmuDvel;    // derivative of COF wrt to velocity
 };
 
 #endif

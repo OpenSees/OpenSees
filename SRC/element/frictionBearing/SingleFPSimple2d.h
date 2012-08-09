@@ -47,41 +47,41 @@ class SingleFPSimple2d : public Element
 public:
     // constructors
     SingleFPSimple2d(int tag, int Nd1, int Nd2,
-        FrictionModel &theFrnMdl, double R, double h, double uy,
+        FrictionModel &theFrnMdl, double Reff, double kInit,
         UniaxialMaterial **theMaterials,
         const Vector y = 0, const Vector x = 0,
-        double shearDistI = 0.0,
-        int addRayleigh = 0, double mass = 0.0,
+        double shearDistI = 0.0, int addRayleigh = 0,
+        int inclVertDisp = 0, double mass = 0.0,
         int maxIter = 20, double tol = 1E-12);
     SingleFPSimple2d();
-	
-	// destructor
+    
+    // destructor
     ~SingleFPSimple2d();
-	
+    
     // method to get class type
     const char *getClassType() const {return "SingleFPSimple2d";};
     
-    // public methods to obtain information about dof & connectivity    
+    // public methods to obtain information about dof & connectivity
     int getNumExternalNodes() const;
     const ID &getExternalNodes();
     Node **getNodePtrs();
     int getNumDOF();
     void setDomain(Domain *theDomain);
-	
-    // public methods to set the state of the element    
+    
+    // public methods to set the state of the element
     int commitState();
-    int revertToLastCommit();        
-    int revertToStart();        
+    int revertToLastCommit();
+    int revertToStart();
     int update();
-	
-    // public methods to obtain stiffness, mass, damping and residual information    
+    
+    // public methods to obtain stiffness, mass, damping and residual information
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
     const Matrix &getDamp();
     const Matrix &getMass();
-
+    
     void zeroLoad();
-	int addLoad(ElementalLoad *theLoad, double loadFactor);
+    int addLoad(ElementalLoad *theLoad, double loadFactor);
     int addInertiaLoadToUnbalance(const Vector &accel);
     
     const Vector &getResistingForce();
@@ -90,9 +90,9 @@ public:
     // public methods for element output
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);    
-    void Print(OPS_Stream &s, int flag = 0);    
-	
+    int displaySelf(Renderer &theViewer, int displayMode, float fact);
+    void Print(OPS_Stream &s, int flag = 0);
+    
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
     int getResponse(int responseID, Information &eleInformation);
     
@@ -110,23 +110,22 @@ private:
     UniaxialMaterial *theMaterials[2];  // array of uniaxial materials
     
     // parameters
-    double R;           // radius of concave sliding dish
-    double h;           // height of articulated slider
-    double uy;          // yield displacement
-    Vector x;           // local x direction
-    Vector y;           // local y direction
+    double Reff;        // effective radius of concave sliding dish
+    double kInit;       // initial stiffness in local shear direction
+    Vector x;           // local x-direction
+    Vector y;           // local y-direction
     double shearDistI;  // shear distance from node I as fraction of length
     int addRayleigh;    // flag to add Rayleigh damping
+    int inclVertDisp;   // flag to include vertical displacements
     double mass;        // mass of element
     int maxIter;        // maximum number of iterations
     double tol;         // tolerance for convergence criterion
-    double Reff;        // length from center of dish to pivot point
     double L;           // element length
     
     // state variables
-	Vector ub;          // displacements in basic system
+    Vector ub;          // displacements in basic system
     double ubPlastic;   // plastic displacement in basic system
-	Vector qb;          // forces in basic system
+    Vector qb;          // forces in basic system
     Matrix kb;          // stiffness matrix in basic system
     Vector ul;          // displacements in local system
     Matrix Tgl;         // transformation matrix from global to local system

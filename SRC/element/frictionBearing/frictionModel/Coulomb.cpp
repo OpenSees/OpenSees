@@ -18,51 +18,55 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-04-17 23:02:41 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/frictionBearing/frictionModel/CoulombFriction.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
 // Description: This file contains the class implementation for the
-// CoulombFriction friction model.
+// Coulomb friction model.
 
-#include <CoulombFriction.h>
+#include <Coulomb.h>
 #include <Channel.h>
 #include <Information.h>
 
 #include <math.h>
 
 
-CoulombFriction::CoulombFriction()
-    : FrictionModel(0, FRN_TAG_CoulombFriction),
+Coulomb::Coulomb()
+    : FrictionModel(0, FRN_TAG_Coulomb),
     mu(0.0)
 {
     // does nothing
 }
 
 
-CoulombFriction::CoulombFriction (int tag, double _mu)
-    : FrictionModel(tag, FRN_TAG_CoulombFriction),
+Coulomb::Coulomb(int tag, double _mu)
+    : FrictionModel(tag, FRN_TAG_Coulomb),
     mu(_mu)
 {
+    // check that COF is positive and not zero
     if (mu <= 0.0)  {
-        opserr << "CoulombFriction::CoulombFriction - "
-            << "the friction coefficient has to be positive\n";
+        opserr << "Coulomb::Coulomb - "
+            << "the friction coefficient has to be positive.\n";
         exit(-1);
     }
+    
+    // initialize variables
+    this->revertToStart();
 }
 
 
-CoulombFriction::~CoulombFriction()
+Coulomb::~Coulomb()
 {
     // does nothing
 }
 
 
-int CoulombFriction::setTrial(double normalForce, double velocity)
+int Coulomb::setTrial(double normalForce, double velocity)
 {	
     trialN   = normalForce;
     trialVel = velocity;
@@ -71,7 +75,7 @@ int CoulombFriction::setTrial(double normalForce, double velocity)
 }
 
 
-double CoulombFriction::getFrictionForce(void)
+double Coulomb::getFrictionForce()
 {
     if (trialN > 0.0)
         return mu*trialN;
@@ -80,37 +84,40 @@ double CoulombFriction::getFrictionForce(void)
 }
 
 
-double CoulombFriction::getFrictionCoeff(void)
+double Coulomb::getFrictionCoeff()
 {
-    if (trialN > 0.0)
+    return mu;
+}
+
+
+double Coulomb::getDFFrcDNFrc()
+{
+    if (trialN >= 0.0)
         return mu;
     else
         return 0.0;
 }
 
 
-double CoulombFriction::getDFFrcDNFrc(void)
+double Coulomb::getDFFrcDVel()
 {
-    if (trialN > 0.0)
-        return mu;
-    else
-        return 0.0;
+    return 0.0;
 }
 
 
-int CoulombFriction::commitState(void)
+int Coulomb::commitState()
 {
     return 0;
 }
 
 
-int CoulombFriction::revertToLastCommit(void)
+int Coulomb::revertToLastCommit()
 {
     return 0;
 }
 
 
-int CoulombFriction::revertToStart(void)
+int Coulomb::revertToStart()
 {
     trialN   = 0.0;
     trialVel = 0.0;
@@ -119,9 +126,9 @@ int CoulombFriction::revertToStart(void)
 }
 
 
-FrictionModel* CoulombFriction::getCopy(void)
+FrictionModel* Coulomb::getCopy()
 {
-    CoulombFriction *theCopy = new CoulombFriction(this->getTag(), mu);
+    Coulomb *theCopy = new Coulomb(this->getTag(), mu);
     theCopy->trialN   = trialN;
     theCopy->trialVel = trialVel;
     
@@ -129,7 +136,7 @@ FrictionModel* CoulombFriction::getCopy(void)
 }
 
 
-int CoulombFriction::sendSelf(int cTag, Channel &theChannel)
+int Coulomb::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
     static Vector data(2);
@@ -138,20 +145,21 @@ int CoulombFriction::sendSelf(int cTag, Channel &theChannel)
     
     res = theChannel.sendVector(this->getDbTag(), cTag, data);
     if (res < 0) 
-        opserr << "CoulombFriction::sendSelf() - failed to send data\n";
+        opserr << "Coulomb::sendSelf() - failed to send data.\n";
     
     return res;
 }
 
 
-int CoulombFriction::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+int Coulomb::recvSelf(int cTag, Channel &theChannel,
+    FEM_ObjectBroker &theBroker)
 {
     int res = 0;
     static Vector data(2);
     
     res = theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0)  {
-        opserr << "CoulombFriction::recvSelf() - failed to receive data\n";
+        opserr << "Coulomb::recvSelf() - failed to receive data.\n";
         this->setTag(0);      
         mu = 0.0;
     }
@@ -160,12 +168,15 @@ int CoulombFriction::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &t
         mu = data(1);
     }
     
+    // initialize variables
+    this->revertToStart();
+    
     return res;
 }
 
 
-void CoulombFriction::Print(OPS_Stream &s, int flag)
+void Coulomb::Print(OPS_Stream &s, int flag)
 {
-    s << "CoulombFriction tag: " << this->getTag() << endln;
+    s << "Coulomb tag: " << this->getTag() << endln;
     s << "  mu: " << mu << endln;
 }

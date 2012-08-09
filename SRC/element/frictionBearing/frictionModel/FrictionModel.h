@@ -18,14 +18,14 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-04-17 23:02:41 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/frictionBearing/frictionModel/FrictionModel.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef FrictionModel_h
 #define FrictionModel_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
@@ -33,8 +33,6 @@
 // FrictionModel is an abstract base class and thus no objects of it's type
 // can be instantiated. It has pure virtual functions which must be
 // implemented in it's derived classes. 
-//
-// What: "@(#) FrictionModel.h, revA"
 
 #include <DomainComponent.h>
 #include <MovableObject.h>
@@ -54,22 +52,24 @@ public:
     
     // public methods to set and obtain response
     virtual int setTrial(double normalForce, double velocity = 0.0) = 0;
-    virtual double getNormalForce(void);
-    virtual double getVelocity(void);
-    virtual double getFrictionForce(void) = 0;
-    virtual double getFrictionCoeff(void) = 0;
-    virtual double getDFFrcDNFrc(void) = 0;
+    virtual double getNormalForce();
+    virtual double getVelocity();
+    virtual double getFrictionForce() = 0;
+    virtual double getFrictionCoeff() = 0;
+    virtual double getDFFrcDNFrc() = 0;
+    virtual double getDFFrcDVel() = 0;
     
-    virtual int commitState(void) = 0;
-    virtual int revertToLastCommit(void) = 0;
-    virtual int revertToStart(void) = 0;
+    virtual int commitState() = 0;
+    virtual int revertToLastCommit() = 0;
+    virtual int revertToStart() = 0;
     
-    virtual FrictionModel *getCopy(void) = 0;
+    virtual FrictionModel *getCopy() = 0;
     
-    virtual Response *setResponse(char **argv, int argc, Information &info);
+    virtual Response *setResponse(const char **argv, int argc,
+        OPS_Stream &theOutputStream);
     virtual int getResponse(int responseID, Information &info);
     
-    virtual int sendSelf(int commitTag, Channel &theChannel) = 0;  
+    virtual int sendSelf(int commitTag, Channel &theChannel) = 0;
     virtual int recvSelf(int commitTag, Channel &theChannel, 
         FEM_ObjectBroker &theBroker) = 0;
     
@@ -85,6 +85,6 @@ private:
 
 extern bool OPS_addFrictionModel(FrictionModel *newComponent);
 extern FrictionModel *OPS_getFrictionModel(int tag);
-extern void OPS_clearAllFrictionModel(void);
+extern void OPS_clearAllFrictionModel();
 
 #endif
