@@ -58,23 +58,19 @@ ElasticTubeSection3d::ElasticTubeSection3d
  e(4), eCommit(4), parameterID(0)
 {
   if (E <= 0.0)  {
-    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input E <= 0.0 ... setting E to 1.0\n";
-    E = 1.0;
+    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input E <= 0.0\n";
   }
 	
   if (G <= 0.0)  {
-    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input G <= 0.0 ... setting G to 1.0\n";
-    G = 1.0;
+    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input G <= 0.0\n";
   }
 	
   if (d <= 0.0)  {
-    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input d <= 0.0 ... setting d to 1.0\n";
-    d = 1.0;
+    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input d <= 0.0\n";
   }
     
   if (tw <= 0.0)  {
-    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input tw <= 0.0 ... setting tw to 1.0\n";
-    tw = 1.0;
+    opserr << "ElasticTubeSection3d::ElasticTubeSection3d -- Input tw <= 0.0\n";
   }    
   
   if (code(0) != SECTION_RESPONSE_P) {

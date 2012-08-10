@@ -61,36 +61,34 @@ ElasticShearSection3d::ElasticShearSection3d
  e(6), eCommit(6)
 {
     if (E <= 0.0)  {
-      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input E <= 0.0 ... setting E to 1.0\n";
-      E = 1.0;
+      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input E <= 0.0\n";
     }
     
     if (A <= 0.0)  {
-      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input A <= 0.0 ... setting A to 1.0\n";
-      A = 1.0;
+      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input A <= 0.0\n";
     }
 
     if (Iz <= 0.0)  {
-      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input Iz <= 0.0 ... setting Iz to 1.0\n";
-      Iz = 1.0;
+      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input Iz <= 0.0\n";
     }
     
     if (Iy <= 0.0)  {
-      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input Iy <= 0.0 ... setting Iy to 1.0\n";
-      Iy = 1.0;
+      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input Iy <= 0.0\n";
     }
 
     if (G <= 0.0)  {
-      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input G <= 0.0 ... setting G to 1.0\n";
-      G = 1.0;
+      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input G <= 0.0\n";
     }
     
     if (J <= 0.0)  {
-      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input J <= 0.0 ... setting J to 1.0\n";
-      J = 1.0;
+      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input J <= 0.0\n";
     }
     
-    if (code(0) != SECTION_RESPONSE_P) {
+    if (alpha <= 0.0)  {
+      opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input alpha <= 0.0\n";
+    }
+
+	if (code(0) != SECTION_RESPONSE_P) {
 	code(0) = SECTION_RESPONSE_P;	// P is the first quantity
 	code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
 	code(2) = SECTION_RESPONSE_VY;	// Vy is the third 

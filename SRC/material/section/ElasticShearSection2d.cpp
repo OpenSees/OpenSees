@@ -59,21 +59,26 @@ ElasticShearSection2d::ElasticShearSection2d
  e(3), eCommit(3), parameterID(0)
 {
     if (E <= 0.0)  {
-		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input E <= 0.0 ... setting E to 1.0\n";
-		E = 1.0;
+		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input E <= 0.0";
   }
 	
     if (A <= 0.0)  {
-		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input A <= 0.0 ... setting A to 1.0\n";
-		A = 1.0;
+		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input A <= 0.0";
     }
     
     if (I <= 0.0)  {
-		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input I <= 0.0 ... setting I to 1.0\n";
-		I = 1.0;
+		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input I <= 0.0";
     }    
 	
-    if (code(0) != SECTION_RESPONSE_P)
+    if (G <= 0.0)  {
+		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input G <= 0.0";
+    }    
+
+	if (alpha <= 0.0)  {
+		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input alpha <= 0.0";
+    }    
+
+		if (code(0) != SECTION_RESPONSE_P)
     {
 	code(0) = SECTION_RESPONSE_P;	// P is the first quantity
 	code(1) = SECTION_RESPONSE_MZ;	// Mz is the second

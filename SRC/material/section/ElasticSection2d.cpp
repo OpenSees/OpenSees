@@ -58,15 +58,15 @@ ElasticSection2d::ElasticSection2d
  e(2), eCommit(2)
 {
     if (E <= 0.0)  {
-		opserr << "ElasticSection2d::ElasticSection2d -- Input E <= 0.0 ... setting E to 1.0\n";
+		opserr << "ElasticSection2d::ElasticSection2d -- Input E <= 0.0\n";
   }
 	
     if (A <= 0.0)  {
-		opserr << "ElasticSection2d::ElasticSection2d -- Input A <= 0.0 ... setting A to 1.0\n";
+		opserr << "ElasticSection2d::ElasticSection2d -- Input A <= 0.0\n";
     }
     
     if (I <= 0.0)  {
-		opserr << "ElasticSection2d::ElasticSection2d -- Input I <= 0.0 ... setting I to 1.0\n";
+		opserr << "ElasticSection2d::ElasticSection2d -- Input I <= 0.0\n";
     }    
 	
     if (code(0) != SECTION_RESPONSE_P)
