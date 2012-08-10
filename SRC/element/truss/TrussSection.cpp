@@ -1070,14 +1070,19 @@ TrussSection::setResponse(const char **argv, int argc, OPS_Stream &output)
 	       (strcmp(argv[0],"localForce") == 0) || 
 	       (strcmp(argv[0],"basicForces") == 0)) {
       output.tag("ResponseType", "N");
-      theResponse =  new ElementResponse(this, 2, 0.0);
+      theResponse =  new ElementResponse(this, 2, Vector(1));
 
     } else if (strcmp(argv[0],"defo") == 0 || strcmp(argv[0],"deformation") == 0 ||
         strcmp(argv[0],"deformations") == 0 || strcmp(argv[0],"basicDefo") == 0 ||
         strcmp(argv[0],"basicDeformation") == 0 || strcmp(argv[0],"basicDeformations") == 0) {
 
             output.tag("ResponseType", "U");
-            theResponse = new ElementResponse(this, 3, 0.0);
+            theResponse = new ElementResponse(this, 3, Vector(1));
+
+    } else if (strcmp(argv[0],"basicStiffness") == 0) {
+
+            output.tag("ResponseType", "U");
+            theResponse = new ElementResponse(this, 4, Matrix(1,1));
 
     // a section quantity
     }  else if (strcmp(argv[0],"section") ==0) {
@@ -1097,6 +1102,9 @@ int
 TrussSection::getResponse(int responseID, Information &eleInfo)
 {
     double strain, force;
+    static Vector sVec(1);
+    static Vector fVec(1);
+    static Matrix kVec(1,1);
 
     switch (responseID) {
   case 1:
@@ -1120,7 +1128,8 @@ TrussSection::getResponse(int responseID, Information &eleInfo)
           }
 
       }      
-      return eleInfo.setDouble(force);    
+      fVec(0) = force;
+      return eleInfo.setVector(fVec);    
 
   case 3:
       if (L == 0.0) {
@@ -1128,7 +1137,28 @@ TrussSection::getResponse(int responseID, Information &eleInfo)
       } else {
           strain = this->computeCurrentStrain();
       }
-      return eleInfo.setDouble(L * strain);
+      sVec(0) = L*strain;
+      return eleInfo.setVector(sVec);
+
+    case 4:
+      if (L == 0.0) {
+          force = 0.0;
+      } else {
+
+          int order = theSection->getOrder();
+          const ID &code = theSection->getType();
+
+          const Matrix &ks = theSection->getSectionTangent();
+          force = 0.0;
+          int i;
+          for (i = 0; i < order; i++) {
+	    if (code(i) == SECTION_RESPONSE_P)
+	      force += ks(i,i);
+          }
+
+      }      
+      kVec(0,0) = force/L;
+      return eleInfo.setMatrix(kVec);
 
   default:
       return -1;
