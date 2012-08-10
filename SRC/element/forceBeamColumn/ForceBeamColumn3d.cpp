@@ -2517,38 +2517,74 @@ ForceBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
   if (argc < 1)
     return -1;
 
+  int result = -1;
+
   // If the parameter belongs to the element itself
   if (strcmp(argv[0],"rho") == 0)
     return param.addObject(1, this);
   
+  // section response -
+  if (strstr(argv[0],"sectionX") != 0) {
+    if (argc > 2) {
+      float sectionLoc = atof(argv[1]);
+
+      double xi[maxNumSections];
+      double L = crdTransf->getInitialLength();
+      beamIntegr->getSectionLocations(numSections, L, xi);
+      
+      sectionLoc /= L;
+
+      float minDistance = fabs(xi[0]-sectionLoc);
+      int sectionNum = 0;
+      for (int i = 1; i < numSections; i++) {
+	if (fabs(xi[i]-sectionLoc) < minDistance) {
+	  minDistance = fabs(xi[i]-sectionLoc);
+	  sectionNum = i;
+	}
+      }
+
+      return sections[sectionNum]->setParameter(&argv[2], argc-2, param);
+    }
+  }
+
   // If the parameter belongs to a section or lower
   if (strstr(argv[0],"section") != 0) {
     
     if (argc < 3)
       return -1;
     
-    // Get section and material tag numbers from user input
-    int paramSectionTag = atoi(argv[1]);
-    
-    // Find the right section and call its setParameter method
-    int ok = 0;
-    for (int i = 0; i < numSections; i++)
-      if (paramSectionTag == sections[i]->getTag())
-	ok += sections[i]->setParameter(&argv[2], argc-2, param);
+    // Get section number
+    int sectionNum = atoi(argv[1]);
+   
+   if (sectionNum > 0 && sectionNum <= numSections)
+      return sections[sectionNum-1]->setParameter(&argv[2], argc-2, param);
 
-    return ok;
+    else
+      return -1;
   }
   
-  else if (strstr(argv[0],"integration") != 0) {
+  if (strstr(argv[0],"integration") != 0) {
     
     if (argc < 2)
       return -1;
 
     return beamIntegr->setParameter(&argv[1], argc-1, param);
   }
-  else {
-    return -1;
+
+  // Default, send to everything
+  int ok;
+
+  for (int i = 0; i < numSections; i++) {
+    ok = sections[i]->setParameter(argv, argc, param);
+    if (ok != -1)
+      result = ok;
   }
+  
+  ok = beamIntegr->setParameter(argv, argc, param);
+  if (ok != -1)
+    result = ok;
+
+  return result;
 }
 
 int
