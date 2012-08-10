@@ -1132,7 +1132,7 @@ LinearCrdTransf2d::Print(OPS_Stream &s, int flag)
 
 
 // AddingSensitivity:BEGIN ///////////////////////////////
-// -- keep MSH function
+// -- keep MHS function
 const Vector &
 LinearCrdTransf2d::getGlobalResistingForceShapeSensitivity(const Vector &pb,
 							   const Vector &p0,
@@ -1234,14 +1234,6 @@ LinearCrdTransf2d::getBasicDisplSensitivity(int gradNumber)
 
   static Vector dvdh(3);
 
-  static Matrix A(6,6);
-
-  A(0,0) = A(3,3) =  cosTheta;
-  A(0,1) = A(3,4) =  sinTheta;
-  A(1,0) = A(4,3) = -sinTheta;
-  A(1,1) = A(4,4) =  cosTheta;
-  A(2,2) = A(5,5) =  1.0;
-
   double dcosThetadh = 0.0;
   double dsinThetadh = 0.0;
 
@@ -1272,46 +1264,31 @@ LinearCrdTransf2d::getBasicDisplSensitivity(int gradNumber)
     dcosThetadh = -dx*dy/(L*L*L);
   }
 
-  static Matrix dAdh(6,6);
-
-  dAdh(0,0) = dAdh(3,3) =  dcosThetadh;
-  dAdh(1,1) = dAdh(4,4) =  dcosThetadh;
-  dAdh(0,1) = dAdh(3,4) =  dsinThetadh;
-  dAdh(1,0) = dAdh(4,3) = -dsinThetadh;
-
   static Vector dudh(6);
-  dudh = A*dUdh + dAdh*U;
+  //dudh = A*dUdh + dAdh*U;
+  dudh(0) =  cosTheta*dUdh(0) + sinTheta*dUdh(1) + dcosThetadh*U(0) + dsinThetadh*U(1);
+  dudh(1) = -sinTheta*dUdh(0) + cosTheta*dUdh(1) - dsinThetadh*U(0) + dcosThetadh*U(1);
+  dudh(2) =  dUdh(2);
+  dudh(3) =  cosTheta*dUdh(3) + sinTheta*dUdh(4) + dcosThetadh*U(3) + dsinThetadh*U(4);
+  dudh(4) = -sinTheta*dUdh(3) + cosTheta*dUdh(4) - dsinThetadh*U(3) + dcosThetadh*U(4);
+  dudh(5) =  dUdh(5);
 
   static Vector u(6);
-  u = A*U;
-
-  static Matrix Abl(3,6);
-
-  Abl(0,0) = -1.0;
-
-  Abl(1,1) =  1.0/L;
-  Abl(2,1) =  1.0/L;
-
-  Abl(1,2) =  1;
-
-  Abl(0,3) =  1;
-
-  Abl(1,4) = -1.0/L;
-  Abl(2,4) = -1.0/L;
-
-  Abl(2,5) =  1;
-
-  static Matrix dAbldh(3,6);
+  //u = A*U;
+  u(0) =  cosTheta*U(0) + sinTheta*U(1);
+  u(1) = -sinTheta*U(0) + cosTheta*U(1);
+  u(2) =  U(2);
+  u(3) =  cosTheta*U(3) + sinTheta*U(4);
+  u(4) = -sinTheta*U(3) + cosTheta*U(4);
+  u(5) =  U(5);
 
   double dLdh = this->getdLdh();
   double doneOverLdh = -dLdh/(L*L);
 
-  dAbldh(1,1) = doneOverLdh;
-  dAbldh(2,1) = doneOverLdh;
-  dAbldh(1,4) = -doneOverLdh;
-  dAbldh(1,4) = -doneOverLdh;
-
-  dvdh = Abl*dudh + dAbldh*u;
+  //dvdh = Abl*dudh + dAbldh*u;
+  dvdh(0) = dudh(3) - dudh(0);
+  dvdh(1) = dudh(2) + (dudh(1)-dudh(4))/L + (u(1)-u(4))*doneOverLdh;
+  dvdh(2) = dudh(5) + (dudh(1)-dudh(4))/L + (u(1)-u(4))*doneOverLdh;
 
   return dvdh;
 }
@@ -1462,7 +1439,7 @@ LinearCrdTransf2d::getBasicTrialDispShapeSensitivity (void)
 
     return ub;
 }
-//--- End MSH
+//--- End MHS
  
 //-- Quan
 
