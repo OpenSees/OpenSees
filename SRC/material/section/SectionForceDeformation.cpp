@@ -254,10 +254,18 @@ SectionForceDeformation::setResponse(const char **argv, int argc,
 	output.tag("ResponseType","Unknown");
       }
     }
-
+    
     theResponse =  new MaterialResponse(this, 4, Vector(2*this->getOrder()));
+  }
   
-  }  
+  else if (strcmp(argv[0],"stiffness") == 0) {
+    theResponse =  new MaterialResponse(this, 12, this->getSectionTangent());
+  }
+
+  else if (strcmp(argv[0],"flexibility") == 0) {
+    theResponse =  new MaterialResponse(this, 13, this->getSectionFlexibility());
+  }
+  
 
   output.endTag(); // SectionOutput
   return theResponse;
@@ -285,6 +293,13 @@ SectionForceDeformation::getResponse(int responseID, Information &secInfo)
     
     return secInfo.setVector(theVec);
   }
+
+  case 12:
+    return secInfo.setMatrix(this->getSectionTangent());
+
+  case 13:
+    return secInfo.setMatrix(this->getSectionFlexibility());
+
   default:
     return -1;
   }
