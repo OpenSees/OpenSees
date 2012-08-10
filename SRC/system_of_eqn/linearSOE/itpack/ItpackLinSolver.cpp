@@ -92,7 +92,7 @@ ItpackLinSolver::setSize(void)
   int ncg = 4*maxIter;
   
   // Order of the black subsystem
-  int nb = theSOE->nnz; // I think this is the most it could be
+  int nb = theSOE->size-1; // I think this is what it should be
 
   switch(method) {
   case ItpackJCG:
@@ -312,6 +312,9 @@ ItpackLinSolver::solve(void)
 
   int ier = 0;
 
+  // Order of the black subsystem
+  int nb = theSOE->size-1; // I think this is what it should be
+
   // Fill the x vector with zeros as initial guess to solution of Ax=b
   //double val = 0.0;
   //vfill_(&n, xPtr, &val);
@@ -338,10 +341,12 @@ ItpackLinSolver::solve(void)
 	    iwksp, &nwksp, wksp, iparm, rparm, &ier);
     break;
   case ItpackRSCG:
+    iparm[8] = nb;
     rscg_(&n, iaPtr, jaPtr, aPtr, bPtr, xPtr,
 	  iwksp, &nwksp, wksp, iparm, rparm, &ier);
     break;
   case ItpackRSSI: case ItpackRS:
+    iparm[8] = nb;
     rssi_(&n, iaPtr, jaPtr, aPtr, bPtr, xPtr,
 	  iwksp, &nwksp, wksp, iparm, rparm, &ier);
     break;
