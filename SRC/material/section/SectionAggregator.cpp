@@ -806,6 +806,8 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
 
   if (theSection != 0)
     return theSection->setResponse(argv, argc, output);
+  else 
+    return this->SectionForceDeformation::setResponse(argv, argc, output);
 
   return 0;
 }
