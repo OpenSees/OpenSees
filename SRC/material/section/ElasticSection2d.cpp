@@ -59,17 +59,14 @@ ElasticSection2d::ElasticSection2d
 {
     if (E <= 0.0)  {
 		opserr << "ElasticSection2d::ElasticSection2d -- Input E <= 0.0 ... setting E to 1.0\n";
-		E = 1.0;
   }
 	
     if (A <= 0.0)  {
 		opserr << "ElasticSection2d::ElasticSection2d -- Input A <= 0.0 ... setting A to 1.0\n";
-		A = 1.0;
     }
     
     if (I <= 0.0)  {
 		opserr << "ElasticSection2d::ElasticSection2d -- Input I <= 0.0 ... setting I to 1.0\n";
-		I = 1.0;
     }    
 	
     if (code(0) != SECTION_RESPONSE_P)
