@@ -896,13 +896,21 @@ ZeroLength::setResponse(const char **argv, int argc, OPS_Stream &output)
         theResponse = new ElementResponse(this, 2, Vector(numMaterials1d));
 
     } else if (strcmp(argv[0],"defo") == 0 || strcmp(argv[0],"deformations") == 0 ||
-        strcmp(argv[0],"deformation") == 0) {
+	       strcmp(argv[0],"deformation") == 0 || strcmp(argv[0],"basicDeformation") == 0) {
 
             for (int i=0; i<numMaterials1d; i++) {
                 sprintf(outputData,"e%d",i+1);
                 output.tag("ResponseType",outputData);
             }
             theResponse = new ElementResponse(this, 3, Vector(numMaterials1d));
+
+    } else if (strcmp(argv[0],"basicStiffness") == 0) {
+
+            for (int i=0; i<numMaterials1d; i++) {
+                sprintf(outputData,"e%d",i+1);
+                output.tag("ResponseType",outputData);
+            }
+            theResponse = new ElementResponse(this, 13, Matrix(numMaterials1d,numMaterials1d));
 
     } else if ((strcmp(argv[0],"defoANDforce") == 0) ||
         (strcmp(argv[0],"deformationANDforces") == 0) ||
@@ -958,6 +966,13 @@ ZeroLength::getResponse(int responseID, Information &eleInformation)
         if (eleInformation.theVector != 0) {
             for (int i = 0; i < numMaterials1d; i++)
                 (*(eleInformation.theVector))(i) = theMaterial1d[i]->getStrain();
+        }
+        return 0;
+
+    case 13:
+        if (eleInformation.theMatrix != 0) {
+            for (int i = 0; i < numMaterials1d; i++)
+	      (*(eleInformation.theMatrix))(i,i) = theMaterial1d[i]->getTangent();
         }
         return 0;
 
