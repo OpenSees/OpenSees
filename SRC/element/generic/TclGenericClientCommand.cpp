@@ -18,11 +18,11 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.4 $
-// $Date: 2008-09-23 23:11:51 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/generic/TclGenericClientCommand.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 11/06
 // Revision: A
 //
@@ -44,40 +44,40 @@ int TclModelBuilder_addGenericClient(ClientData clientData, Tcl_Interp *interp, 
     TCL_Char **argv, Domain*theTclDomain,
     TclModelBuilder *theTclBuilder, int eleArgStart)
 {
-	// ensure the destructor has not been called
-	if (theTclBuilder == 0)  {
-		opserr << "WARNING builder has been destroyed - genericClient\n";    
-		return TCL_ERROR;
-	}
-	
-	// check the number of arguments is correct
-	if ((argc-eleArgStart) < 8)  {
-		opserr << "WARNING insufficient arguments\n";
-		printCommand(argc, argv);
-		opserr << "Want: element genericClient eleTag -node Ndi Ndj ... -dof dofNdi -dof dofNdj ... -server ipPort <ipAddr> <-ssl> <-udp> <-dataSize size>\n";
-		return TCL_ERROR;
-	}
-
+    // ensure the destructor has not been called
+    if (theTclBuilder == 0)  {
+        opserr << "WARNING builder has been destroyed - genericClient\n";
+        return TCL_ERROR;
+    }
+    
+    // check the number of arguments is correct
+    if ((argc-eleArgStart) < 8)  {
+        opserr << "WARNING insufficient arguments\n";
+        printCommand(argc, argv);
+        opserr << "Want: element genericClient eleTag -node Ndi Ndj ... -dof dofNdi -dof dofNdj ... -server ipPort <ipAddr> <-ssl> <-udp> <-dataSize size>\n";
+        return TCL_ERROR;
+    }
+    
     Element *theElement = 0;
-	int ndm = theTclBuilder->getNDM();
-	
-	// get the id and end nodes     
+    int ndm = theTclBuilder->getNDM();
+    
+    // get the id and end nodes
     int tag, node, dof, ipPort, argi, i, j;
     int numNodes = 0, numDOFj = 0, numDOF = 0;
     char *ipAddr = 0;
     int ssl = 0, udp = 0;
     int dataSize = 256;
-
-	if (Tcl_GetInt(interp, argv[1+eleArgStart], &tag) != TCL_OK)  {
-		opserr << "WARNING invalid genericClient eleTag\n";
-		return TCL_ERROR;
-	}
+    
+    if (Tcl_GetInt(interp, argv[1+eleArgStart], &tag) != TCL_OK)  {
+        opserr << "WARNING invalid genericClient eleTag\n";
+        return TCL_ERROR;
+    }
     // read the number of nodes
     if (strcmp(argv[2+eleArgStart], "-node") != 0)  {
-		opserr << "WARNING expecting -node flag\n";
-		opserr << "genericClient element: " << tag << endln;
-		return TCL_ERROR;
-	}
+        opserr << "WARNING expecting -node flag\n";
+        opserr << "genericClient element: " << tag << endln;
+        return TCL_ERROR;
+    }
     argi = 3+eleArgStart;
     i = argi;
     while (strcmp(argv[i], "-dof") != 0  && i < argc)  {
@@ -85,25 +85,25 @@ int TclModelBuilder_addGenericClient(ClientData clientData, Tcl_Interp *interp, 
         i++;
     }
     if (numNodes == 0)  {
-		opserr << "WARNING no nodes specified\n";
-		opserr << "genericClient element: " << tag << endln;
-		return TCL_ERROR;
-	}
+        opserr << "WARNING no nodes specified\n";
+        opserr << "genericClient element: " << tag << endln;
+        return TCL_ERROR;
+    }
     // create the ID arrays to hold the nodes and dofs
     ID nodes(numNodes);
     ID *dofs = new ID [numNodes];
     if (dofs == 0)  {
-		opserr << "WARNING out of memory\n";
-		opserr << "genericClient element: " << tag << endln;
-		return TCL_ERROR;
-	}
+        opserr << "WARNING out of memory\n";
+        opserr << "genericClient element: " << tag << endln;
+        return TCL_ERROR;
+    }
     // fill in the nodes ID
     for (i=0; i<numNodes; i++)  {
         if (Tcl_GetInt(interp, argv[argi], &node) != TCL_OK)  {
-		    opserr << "WARNING invalid node\n";
-		    opserr << "genericClient element: " << tag << endln;
-		    return TCL_ERROR;
-	    }
+            opserr << "WARNING invalid node\n";
+            opserr << "genericClient element: " << tag << endln;
+            return TCL_ERROR;
+        }
         nodes(i) = node;
         argi++; 
     }
@@ -111,27 +111,27 @@ int TclModelBuilder_addGenericClient(ClientData clientData, Tcl_Interp *interp, 
         // read the number of dofs per node j
         numDOFj = 0;
         if (strcmp(argv[argi], "-dof") != 0)  {
-		    opserr << "WARNING expect -dof\n";
-		    opserr << "genericClient element: " << tag << endln;
-		    return TCL_ERROR;
-	    }
+            opserr << "WARNING expect -dof\n";
+            opserr << "genericClient element: " << tag << endln;
+            return TCL_ERROR;
+        }
         argi++;
         i = argi;
         while (strcmp(argv[i], "-dof") != 0 && 
             strcmp(argv[i], "-server") != 0 && 
             i < argc)  {
-            numDOFj++;
-            numDOF++;
-            i++;
+                numDOFj++;
+                numDOF++;
+                i++;
         }
         // fill in the dofs ID array
         ID dofsj(numDOFj);
         for (i=0; i<numDOFj; i++)  {
             if (Tcl_GetInt(interp, argv[argi], &dof) != TCL_OK)  {
-		        opserr << "WARNING invalid dof\n";
-		        opserr << "genericClient element: " << tag << endln;
-		        return TCL_ERROR;
-	        }
+                opserr << "WARNING invalid dof\n";
+                opserr << "genericClient element: " << tag << endln;
+                return TCL_ERROR;
+            }
             dofsj(i) = dof-1;
             argi++; 
         }
@@ -140,18 +140,18 @@ int TclModelBuilder_addGenericClient(ClientData clientData, Tcl_Interp *interp, 
     if (strcmp(argv[argi], "-server") == 0)  {
         argi++;
         if (Tcl_GetInt(interp, argv[argi], &ipPort) != TCL_OK)  {
-	        opserr << "WARNING invalid ipPort\n";
-	        opserr << "genericClient element: " << tag << endln;
-	        return TCL_ERROR;
+            opserr << "WARNING invalid ipPort\n";
+            opserr << "genericClient element: " << tag << endln;
+            return TCL_ERROR;
         }
         argi++;
         if (argi < argc &&
             strcmp(argv[argi], "-dataSize") != 0 &&
             strcmp(argv[argi], "-ssl") != 0 &&
             strcmp(argv[argi], "-udp") != 0)  {
-            ipAddr = new char [strlen(argv[argi])+1];
-            strcpy(ipAddr,argv[argi]);
-            argi++;
+                ipAddr = new char [strlen(argv[argi])+1];
+                strcpy(ipAddr,argv[argi]);
+                argi++;
         }
         else  {
             ipAddr = new char [9+1];
@@ -166,41 +166,42 @@ int TclModelBuilder_addGenericClient(ClientData clientData, Tcl_Interp *interp, 
             }
             else if (strcmp(argv[i], "-dataSize") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &dataSize) != TCL_OK)  {
-		            opserr << "WARNING invalid dataSize\n";
-		            opserr << "genericClient element: " << tag << endln;
-		            return TCL_ERROR;
-	            }
+                    opserr << "WARNING invalid dataSize\n";
+                    opserr << "genericClient element: " << tag << endln;
+                    return TCL_ERROR;
+                }
             }
         }
     }
     else  {
         opserr << "WARNING expecting -server string but got ";
         opserr << argv[argi] << endln;
-	    opserr << "genericClient element: " << tag << endln;
+        opserr << "genericClient element: " << tag << endln;
         return TCL_ERROR;
     }
     
-	// now create the GenericClient
-    theElement = new GenericClient(tag, nodes, dofs, ipPort, ipAddr, ssl, udp, dataSize);
+    // now create the GenericClient
+    theElement = new GenericClient(tag, nodes, dofs, ipPort, ipAddr,
+        ssl, udp, dataSize);
     
     // cleanup dynamic memory
     if (dofs != 0)
         delete [] dofs;
     
     if (theElement == 0)  {
-		opserr << "WARNING ran out of memory creating element\n";
-		opserr << "genericClient element: " << tag << endln;
-		return TCL_ERROR;
-	}
-	
-	// then add the GenericClient to the domain
-	if (theTclDomain->addElement(theElement) == false)  {
-		opserr << "WARNING could not add element to the domain\n";
-		opserr << "genericClient element: " << tag << endln;
-		delete theElement;
-		return TCL_ERROR;
-	}
-
-	// if get here we have sucessfully created the genericClient and added it to the domain
-	return TCL_OK;
+        opserr << "WARNING ran out of memory creating element\n";
+        opserr << "genericClient element: " << tag << endln;
+        return TCL_ERROR;
+    }
+    
+    // then add the GenericClient to the domain
+    if (theTclDomain->addElement(theElement) == false)  {
+        opserr << "WARNING could not add element to the domain\n";
+        opserr << "genericClient element: " << tag << endln;
+        delete theElement;
+        return TCL_ERROR;
+    }
+    
+    // if get here we have sucessfully created the genericClient and added it to the domain
+    return TCL_OK;
 }

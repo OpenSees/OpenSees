@@ -17,15 +17,15 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision: 1.2 $
-// $Date: 2009/03/25 22:49:22 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/twoNodeLink/TwoNodeLink.h,v $
+
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef TwoNodeLink_h
 #define TwoNodeLink_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 08/08
 // Revision: A
 //
@@ -54,8 +54,9 @@ public:
     // constructors
     TwoNodeLink(int tag, int dimension, int Nd1, int Nd2,
         const ID &direction, UniaxialMaterial **theMaterials,
-        const Vector y = 0, const Vector x = 0, const Vector Mratio = 0,
-        const Vector shearDistI = 0, double mass = 0.0);
+        const Vector y = 0, const Vector x = 0,
+        const Vector Mratio = 0, const Vector shearDistI = 0,
+        int addRayleigh = 0, double mass = 0.0);
     TwoNodeLink();
     
     // destructor
@@ -64,7 +65,7 @@ public:
     // method to get class type
     const char *getClassType() const {return "TwoNodeLink";};
     
-    // public methods to obtain information about dof & connectivity    
+    // public methods to obtain information about dof & connectivity
     int getNumExternalNodes() const;
     const ID &getExternalNodes();
     Node **getNodePtrs();
@@ -73,8 +74,8 @@ public:
     
     // public methods to set the state of the element
     int commitState();
-    int revertToLastCommit();        
-    int revertToStart();        
+    int revertToLastCommit();
+    int revertToStart();
     int update();
     
     // public methods to obtain stiffness,
@@ -94,13 +95,13 @@ public:
     // public methods for element output
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);    
-    void Print(OPS_Stream &s, int flag = 0);    
+    int displaySelf(Renderer &theViewer, int displayMode, float fact);
+    void Print(OPS_Stream &s, int flag = 0);
     
     // public methods for element recorder
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
     int getResponse(int responseID, Information &eleInfo);
-    
+
 private:
     Etype elemType;
     
@@ -112,11 +113,11 @@ private:
     void addPDeltaStiff(Matrix &kLocal);
     
     // private attributes - a copy for each object of the class
-    int numDIM;					        // 1, 2, or 3 dimensions
-    int numDOF;						    // number of dof for TwoNodeLink
+    int numDIM;                         // 1, 2, or 3 dimensions
+    int numDOF;                         // number of dof for TwoNodeLink
     ID connectedExternalNodes;          // contains the tags of the end nodes
     Node *theNodes[2];                  // array of nodes
-	UniaxialMaterial **theMaterials;    // array of uniaxial materials
+    UniaxialMaterial **theMaterials;    // array of uniaxial materials
     
     // parameters
     int numDir;         // number of directions
@@ -126,6 +127,7 @@ private:
     Vector y;           // local y direction
     Vector Mratio;      // p-delta moment distribution ratios
     Vector shearDistI;  // shear distance from node I as fraction of length
+    int addRayleigh;    // flag to add Rayleigh damping
     double mass;        // total mass
     double L;           // element length
     
@@ -133,14 +135,14 @@ private:
     Vector ubdot;       // trial velocities in basic system
     Vector qb;          // measured forces in basic system
     Vector ul;          // displacements in local system
-	Matrix Tgl;         // transformation matrix from global to local system
-	Matrix Tlb;         // transformation matrix from local to basic system
+    Matrix Tgl;         // transformation matrix from global to local system
+    Matrix Tlb;         // transformation matrix from local to basic system
     
     Matrix *theMatrix;  // pointer to objects matrix (a class wide Matrix)
     Vector *theVector;  // pointer to objects vector (a class wide Vector)
     Vector *theLoad;    // pointer to the load vector
     
-    // static data - single copy for all objects of the class	
+    // static data - single copy for all objects of the class
     static Matrix TwoNodeLinkM2;   // class wide matrix for 2*2
     static Matrix TwoNodeLinkM4;   // class wide matrix for 4*4
     static Matrix TwoNodeLinkM6;   // class wide matrix for 6*6

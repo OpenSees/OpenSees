@@ -18,11 +18,11 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.4 $
-// $Date: 2009-06-02 21:10:45 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/adapter/ActuatorCorot.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 09/07
 // Revision: A
 //
@@ -58,13 +58,14 @@ Vector ActuatorCorot::ActuatorCorotV12(12);
 // responsible for allocating the necessary space needed
 // by each object and storing the tags of the end nodes.
 ActuatorCorot::ActuatorCorot(int tag, int dim, int Nd1, int Nd2,
-    double ea, int ipport, double r)
+    double ea, int ipport, int addRay, double r)
     : Element(tag, ELE_TAG_ActuatorCorot), numDIM(dim), numDOF(0),
-    connectedExternalNodes(2), EA(ea), ipPort(ipport), rho(r), L(0.0), Ln(0.0),
+    connectedExternalNodes(2), EA(ea), ipPort(ipport),
+    addRayleigh(addRay), rho(r), L(0.0), Ln(0.0),
     tPast(0.0), theMatrix(0), theVector(0), theLoad(0), R(3,3), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
-{    
+{
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
         opserr << "ActuatorCorot::ActuatorCorot() - element: "
@@ -85,11 +86,12 @@ ActuatorCorot::ActuatorCorot(int tag, int dim, int Nd1, int Nd2,
 // needs to be invoked upon
 ActuatorCorot::ActuatorCorot()
     : Element(0, ELE_TAG_ActuatorCorot), numDIM(0), numDOF(0),
-    connectedExternalNodes(2), EA(0.0), ipPort(0), rho(0.0), L(0.0), Ln(0.0),
-    tPast(0.0), theMatrix(0), theVector(0), theLoad(0), R(3,3), db(1), q(1),
+    connectedExternalNodes(2), EA(0.0), ipPort(0),
+    addRayleigh(0), rho(0.0), L(0.0), Ln(0.0), tPast(0.0),
+    theMatrix(0), theVector(0), theLoad(0), R(3,3), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
-{    
+{
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
         opserr << "ActuatorCorot::ActuatorCorot() - "
@@ -110,7 +112,7 @@ ActuatorCorot::~ActuatorCorot()
     // that the object still holds a pointer to
     if (theLoad != 0)
         delete theLoad;
-
+    
     if (daqDisp != 0)
         delete daqDisp;
     if (daqForce != 0)
@@ -119,7 +121,7 @@ ActuatorCorot::~ActuatorCorot()
         delete ctrlDisp;
     if (ctrlForce != 0)
         delete ctrlForce;
-
+    
     if (sendData != 0)
         delete sendData;
     if (sData != 0)
@@ -172,13 +174,13 @@ void ActuatorCorot::setDomain(Domain *theDomain)
     // set default values for error conditions
     numDOF = 2;
     theMatrix = &ActuatorCorotM2;
-    theVector = &ActuatorCorotV2;	
+    theVector = &ActuatorCorotV2;
     
     // first set the node pointers
     int Nd1 = connectedExternalNodes(0);
     int Nd2 = connectedExternalNodes(1);
     theNodes[0] = theDomain->getNode(Nd1);
-    theNodes[1] = theDomain->getNode(Nd2);	
+    theNodes[1] = theDomain->getNode(Nd2);
     
     // if can't find both - send a warning message
     if (!theNodes[0] || !theNodes[1])  {
@@ -194,7 +196,7 @@ void ActuatorCorot::setDomain(Domain *theDomain)
         return;
     }
     
-    // now determine the number of dof and the dimension    
+    // now determine the number of dof and the dimension
     int dofNd1 = theNodes[0]->getNumberDOF();
     int dofNd2 = theNodes[1]->getNumberDOF();	
     
@@ -204,7 +206,7 @@ void ActuatorCorot::setDomain(Domain *theDomain)
             << "have differing dof at ends for element: " << this->getTag() << endln;
         
         return;
-    }	
+    }
     
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
@@ -218,22 +220,22 @@ void ActuatorCorot::setDomain(Domain *theDomain)
     else if (numDIM == 2 && dofNd1 == 2)  {
         numDOF = 4;
         theMatrix = &ActuatorCorotM4;
-        theVector = &ActuatorCorotV4;	
+        theVector = &ActuatorCorotV4;
     }
     else if (numDIM == 2 && dofNd1 == 3)  {
         numDOF = 6;	
         theMatrix = &ActuatorCorotM6;
-        theVector = &ActuatorCorotV6;		
+        theVector = &ActuatorCorotV6;
     }
     else if (numDIM == 3 && dofNd1 == 3)  {
         numDOF = 6;	
         theMatrix = &ActuatorCorotM6;
-        theVector = &ActuatorCorotV6;			
+        theVector = &ActuatorCorotV6;
     }
     else if (numDIM == 3 && dofNd1 == 6)  {
         numDOF = 12;	    
         theMatrix = &ActuatorCorotM12;
-        theVector = &ActuatorCorotV12;			
+        theVector = &ActuatorCorotV12;
     }
     else  {
         opserr <<"ActuatorCorot::setDomain() - can not handle "
@@ -254,7 +256,7 @@ void ActuatorCorot::setDomain(Domain *theDomain)
             << " out of memory creating vector of size: " << numDOF << endln;
         
         return;
-    }          
+    }
     
     // now determine the length, cosines and fill in the transformation
     // NOTE t = -t(every one else uses for residual calc)
@@ -266,7 +268,7 @@ void ActuatorCorot::setDomain(Domain *theDomain)
     cosX[0] = cosX[1] = cosX[2] = 0.0;
     for (int i=0; i<numDIM; i++)
         cosX[i] = end2Crd(i)-end1Crd(i);
-
+    
     // get initial length
     L = sqrt(cosX[0]*cosX[0] + cosX[1]*cosX[1] + cosX[2]*cosX[2]);
     if (L == 0.0)  {
@@ -277,10 +279,10 @@ void ActuatorCorot::setDomain(Domain *theDomain)
     Ln = L;
     
     // set global orientations
-	cosX[0] /= L;
-	cosX[1] /= L;
-	cosX[2] /= L;
-
+    cosX[0] /= L;
+    cosX[1] /= L;
+    cosX[2] /= L;
+    
     // initialize rotation matrix
     R(0,0) = cosX[0];
     R(0,1) = cosX[1];
@@ -289,7 +291,7 @@ void ActuatorCorot::setDomain(Domain *theDomain)
         R(1,0) = -cosX[1];
         R(1,1) =  cosX[0];
         R(1,2) =  0.0;
-
+        
         R(2,0) = -cosX[0]*cosX[2];
         R(2,1) = -cosX[1]*cosX[2];
         R(2,2) =  cosX[0]*cosX[0] + cosX[1]*cosX[1];
@@ -298,12 +300,12 @@ void ActuatorCorot::setDomain(Domain *theDomain)
         R(1,0) =  0.0;
         R(1,1) = -cosX[2];
         R(1,2) =  cosX[1];
-
+        
         R(2,0) =  1.0;
         R(2,1) =  0.0;
         R(2,2) =  0.0;
     }
-
+    
     // orthonormalize last two rows of R
     double norm;
     for (int i=1; i<3; i++)  {
@@ -312,17 +314,22 @@ void ActuatorCorot::setDomain(Domain *theDomain)
         R(i,1) /= norm;
         R(i,2) /= norm;
     }
-
+    
     // set initial offsets
-   	d21[0] = L;
-	d21[1] = 0.0;
-	d21[2] = 0.0;
-}   	 
+    d21[0] = L;
+    d21[1] = 0.0;
+    d21[2] = 0.0;
+}
 
 
 int ActuatorCorot::commitState()
 {
-    return 0;
+    int errCode = 0;
+    
+    // commit the base class
+    errCode += this->Element::commitState();
+    
+    return errCode;
 }
 
 
@@ -379,12 +386,12 @@ int ActuatorCorot::update()
     // compute new length and deformation
     Ln = sqrt(d21[0]*d21[0] + d21[1]*d21[1] + d21[2]*d21[2]);
     db(0) = Ln - L;
-
+    
     return 0;
 }
 
 
-const Matrix& ActuatorCorot::getTangentStiff(void)
+const Matrix& ActuatorCorot::getTangentStiff()
 {
     // zero the matrix
     theMatrix->Zero();
@@ -428,7 +435,7 @@ const Matrix& ActuatorCorot::getTangentStiff(void)
 }
 
 
-const Matrix& ActuatorCorot::getInitialStiff(void)
+const Matrix& ActuatorCorot::getInitialStiff()
 {
     // zero the matrix
     theMatrix->Zero();
@@ -459,8 +466,21 @@ const Matrix& ActuatorCorot::getInitialStiff(void)
 }
 
 
+const Matrix& ActuatorCorot::getDamp()
+{
+    // zero the matrix
+    theMatrix->Zero();
+    
+    // call base class to setup Rayleigh damping
+    if (addRayleigh == 1)
+        (*theMatrix) = this->Element::getDamp();
+    
+    return *theMatrix;
+}
+
+
 const Matrix& ActuatorCorot::getMass()
-{   
+{
     // zero the matrix
     theMatrix->Zero();
     
@@ -485,7 +505,7 @@ void ActuatorCorot::zeroLoad()
 
 
 int ActuatorCorot::addLoad(ElementalLoad *theLoad, double loadFactor)
-{  
+{
     opserr <<"ActuatorCorot::addLoad() - "
         << "load type unknown for element: "
         << this->getTag() << endln;
@@ -502,7 +522,7 @@ int ActuatorCorot::addInertiaLoadToUnbalance(const Vector &accel)
     
     // get R * accel from the nodes
     const Vector &Raccel1 = theNodes[0]->getRV(accel);
-    const Vector &Raccel2 = theNodes[1]->getRV(accel);    
+    const Vector &Raccel2 = theNodes[1]->getRV(accel);
     
     int nodalDOF = numDOF/2;
     
@@ -531,7 +551,7 @@ int ActuatorCorot::addInertiaLoadToUnbalance(const Vector &accel)
 
 
 const Vector& ActuatorCorot::getResistingForce()
-{	
+{
     // get current time
     Domain *theDomain = this->getDomain();
     double t = theDomain->getCurrentTime();
@@ -575,9 +595,9 @@ const Vector& ActuatorCorot::getResistingForce()
     // local resisting force
     static Vector ql(3);
     
-	ql(0) = d21[0]/Ln*q(0);
-	ql(1) = d21[1]/Ln*q(0);
-	ql(2) = d21[2]/Ln*q(0);
+    ql(0) = d21[0]/Ln*q(0);
+    ql(1) = d21[1]/Ln*q(0);
+    ql(2) = d21[2]/Ln*q(0);
     
     static Vector qg(3);
     qg.addMatrixTransposeVector(0.0, R, ql, 1.0);
@@ -600,17 +620,19 @@ const Vector& ActuatorCorot::getResistingForce()
 
 
 const Vector& ActuatorCorot::getResistingForceIncInertia()
-{	
+{
     this->getResistingForce();
     
-    // add the damping forces if rayleigh damping
-    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-        (*theVector) += this->getRayleighDampingForces();
+    // add the damping forces from rayleigh damping
+    if (addRayleigh == 1)  {
+        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+            (*theVector) += this->getRayleighDampingForces();
+    }
     
-    // now include the mass portion
+    // add inertia forces from element mass
     if (L != 0.0 && rho != 0.0)  {
         const Vector &accel1 = theNodes[0]->getTrialAccel();
-        const Vector &accel2 = theNodes[1]->getTrialAccel();	
+        const Vector &accel2 = theNodes[1]->getTrialAccel();
         
         int numDOF2 = numDOF/2;
         double m = 0.5*rho*L;
@@ -627,13 +649,14 @@ const Vector& ActuatorCorot::getResistingForceIncInertia()
 int ActuatorCorot::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(6);
+    static Vector data(7);
     data(0) = this->getTag();
     data(1) = numDIM;
     data(2) = numDOF;
     data(3) = EA;
     data(4) = ipPort;
-    data(5) = rho;
+    data(5) = addRayleigh;
+    data(6) = rho;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -647,14 +670,15 @@ int ActuatorCorot::recvSelf(int commitTag, Channel &rChannel,
     FEM_ObjectBroker &theBroker)
 {
     // receive element parameters
-    static Vector data(6);
+    static Vector data(7);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     numDIM = (int)data(1);
     numDOF = (int)data(2);
     EA     = data(3);
     ipPort = (int)data(4);
-    rho    = data(5);
+    addRayleigh = (int)data(5);
+    rho    = data(6);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -673,20 +697,20 @@ int ActuatorCorot::displaySelf(Renderer &theViewer,
     
     static Vector v1(3);
     static Vector v2(3);
-
+    
     if (displayMode >= 0)  {
         const Vector &end1Disp = theNodes[0]->getDisp();
         const Vector &end2Disp = theNodes[1]->getDisp();
         
         for (int i=0; i<numDIM; i++)  {
             v1(i) = end1Crd(i) + end1Disp(i)*fact;
-            v2(i) = end2Crd(i) + end2Disp(i)*fact;    
+            v2(i) = end2Crd(i) + end2Disp(i)*fact;
         }
     } else  {
         int mode = displayMode * -1;
         const Matrix &eigen1 = theNodes[0]->getEigenvectors();
         const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-
+        
         if (eigen1.noCols() >= mode)  {
             for (int i=0; i<numDIM; i++)  {
                 v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
@@ -705,7 +729,7 @@ int ActuatorCorot::displaySelf(Renderer &theViewer,
 
 
 void ActuatorCorot::Print(OPS_Stream &s, int flag)
-{    
+{
     if (flag == 0)  {
         // print everything
         s << "Element: " << this->getTag() << endln;
@@ -713,6 +737,7 @@ void ActuatorCorot::Print(OPS_Stream &s, int flag)
             << ", jNode: " << connectedExternalNodes(1) << endln;
         s << "  EA: " << EA << ", L: " << L << ", Ln: " << Ln << endln;
         s << "  ipPort: " << ipPort << endln;
+        s << "  addRayleigh: " << addRayleigh;
         s << "  mass per unit length: " << rho << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
@@ -872,7 +897,7 @@ int ActuatorCorot::setupConnection()
             << "failed to setup connection\n";
         return -2;
     }
-
+    
     // get the data sizes and check values
     // sizes = {ctrlDisp, ctrlVel, ctrlAccel, ctrlForce, ctrlTime,
     //          daqDisp,  daqVel,  daqAccel,  daqForce,  daqTime,  dataSize}
@@ -883,7 +908,7 @@ int ActuatorCorot::setupConnection()
             << "wrong data sizes > 1 received\n";
         return -3;
     }
-
+    
     // allocate memory for the receive vectors
     int id = 1;
     rData = new double [sizes(10)];
@@ -897,7 +922,7 @@ int ActuatorCorot::setupConnection()
         id += sizes(3);
     }
     recvData->Zero();
-
+    
     // allocate memory for the send vectors
     id = 0;
     sData = new double [sizes(10)];
@@ -911,9 +936,9 @@ int ActuatorCorot::setupConnection()
         id += sizes(8);
     }
     sendData->Zero();
-
+    
     opserr << "\nActuatorCorot element " << this->getTag()
         << " now running...\n";
-
+    
     return 0;
 }

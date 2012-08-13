@@ -18,11 +18,11 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.4 $
-// $Date: 2008/09/23 23:11:51 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/generic/GenericCopy.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 11/06
 // Revision: A
 //
@@ -58,7 +58,7 @@ GenericCopy::GenericCopy(int tag, ID nodes, int srctag)
     numExternalNodes(0), numDOF(0),
     srcTag(srctag), theSource(0),
     initStiffFlag(false), massFlag(false)
-{   
+{
     // initialize nodes
     numExternalNodes = connectedExternalNodes.Size();
     theNodes = new Node* [numExternalNodes];
@@ -83,7 +83,7 @@ GenericCopy::GenericCopy()
     numExternalNodes(0), numDOF(0),
     srcTag(0), theSource(0),
     initStiffFlag(false), massFlag(false)
-{   
+{
     // initialize variables
     theNodes = 0;
 }
@@ -105,19 +105,19 @@ int GenericCopy::getNumExternalNodes() const
 }
 
 
-const ID& GenericCopy::getExternalNodes() 
+const ID& GenericCopy::getExternalNodes()
 {
     return connectedExternalNodes;
 }
 
 
-Node** GenericCopy::getNodePtrs() 
+Node** GenericCopy::getNodePtrs()
 {
     return theNodes;
 }
 
 
-int GenericCopy::getNumDOF() 
+int GenericCopy::getNumDOF()
 {
     return numDOF;
 }
@@ -191,18 +191,18 @@ void GenericCopy::setDomain(Domain *theDomain)
     
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
-}   	 
+}
 
 
 int GenericCopy::commitState()
-{   
+{
     // does nothing
     return 0;
 }
 
 
 int GenericCopy::revertToLastCommit()
-{ 
+{
     // does nothing
     return 0;
 }
@@ -249,7 +249,7 @@ const Matrix& GenericCopy::getInitialStiff()
 }
 
 
-/*const Matrix& GenericCopy::getDamp()
+const Matrix& GenericCopy::getDamp()
 {
     // zero the matrix
     theMatrix.Zero();
@@ -258,7 +258,7 @@ const Matrix& GenericCopy::getInitialStiff()
     theMatrix = theSource->getDamp();
     
     return theMatrix;
-}*/
+}
 
 
 const Matrix& GenericCopy::getMass()
@@ -283,7 +283,7 @@ void GenericCopy::zeroLoad()
 
 
 int GenericCopy::addLoad(ElementalLoad *theLoad, double loadFactor)
-{  
+{
     opserr <<"GenericCopy::addLoad() - "
         << "load type unknown for element: "
         << this->getTag() << endln;
@@ -293,7 +293,7 @@ int GenericCopy::addLoad(ElementalLoad *theLoad, double loadFactor)
 
 
 int GenericCopy::addInertiaLoadToUnbalance(const Vector &accel)
-{    
+{
     int ndim = 0, i;
     static Vector Raccel(numDOF);
     Raccel.Zero();
@@ -329,26 +329,31 @@ const Vector& GenericCopy::getResistingForce()
 
 
 const Vector& GenericCopy::getResistingForceIncInertia()
-{	
+{
     theVector = this->getResistingForce();
     
-    // add the damping forces if rayleigh damping
-    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-        theVector += this->getRayleighDampingForces();
-    
-    // now include the mass portion
     int ndim = 0, i;
+    static Vector vel(numDOF);
     static Vector accel(numDOF);
+    vel.Zero();
     accel.Zero();
     
-    // get mass matrix
+    // add the damping forces from element damping
+    Matrix C = this->getDamp();
+    // assemble vel vector
+    for (i=0; i<numExternalNodes; i++ )  {
+        vel.Assemble(theNodes[i]->getTrialVel(), ndim);
+        ndim += theNodes[i]->getNumberDOF();
+    }
+    theVector += C * vel;
+    
+    // add inertia forces from element mass
     Matrix M = this->getMass();
     // assemble accel vector
     for (i=0; i<numExternalNodes; i++ )  {
         accel.Assemble(theNodes[i]->getTrialAccel(), ndim);
         ndim += theNodes[i]->getNumberDOF();
     }
-    
     theVector += M * accel;
     
     return theVector;
@@ -380,7 +385,7 @@ int GenericCopy::recvSelf(int commitTag, Channel &rChannel,
     
     // receive element parameters
     static ID idData(3);
-    rChannel.recvID(0, commitTag, idData);    
+    rChannel.recvID(0, commitTag, idData);
     this->setTag(idData(0));
     numExternalNodes = idData(1);
     srcTag = idData(2);
@@ -527,7 +532,7 @@ Response* GenericCopy::setResponse(const char **argv, int argc,
 
 
 int GenericCopy::getResponse(int responseID, Information &eleInfo)
-{    
+{
     switch (responseID)  {
     case 1:  // global forces
         return eleInfo.setVector(this->getResistingForce());

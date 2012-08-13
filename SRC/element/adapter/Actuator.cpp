@@ -18,11 +18,11 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.4 $
-// $Date: 2009-06-02 21:10:45 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/adapter/Actuator.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 09/07
 // Revision: A
 //
@@ -58,9 +58,10 @@ Vector Actuator::ActuatorV12(12);
 // responsible for allocating the necessary space needed
 // by each object and storing the tags of the end nodes.
 Actuator::Actuator(int tag, int dim, int Nd1, int Nd2,
-    double ea, int ipport, double r)
+    double ea, int ipport, int addRay, double r)
     : Element(tag, ELE_TAG_Actuator), numDIM(dim), numDOF(0),
-    connectedExternalNodes(2), EA(ea), ipPort(ipport), rho(r), L(0.0),
+    connectedExternalNodes(2), EA(ea), ipPort(ipport),
+    addRayleigh(addRay), rho(r), L(0.0),
     tPast(0.0), theMatrix(0), theVector(0), theLoad(0), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
@@ -89,11 +90,12 @@ Actuator::Actuator(int tag, int dim, int Nd1, int Nd2,
 // needs to be invoked upon
 Actuator::Actuator()
     : Element(0, ELE_TAG_Actuator), numDIM(0), numDOF(0),
-    connectedExternalNodes(2), EA(0.0), ipPort(0), rho(0.0), L(0.0),
-    tPast(0.0), theMatrix(0), theVector(0), theLoad(0), db(1), q(1),
+    connectedExternalNodes(2), EA(0.0), ipPort(0),
+    addRayleigh(0), rho(0.0), L(0.0), tPast(0.0),
+    theMatrix(0), theVector(0), theLoad(0), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
-{    
+{
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
         opserr << "Actuator::Actuator() - "
@@ -119,7 +121,7 @@ Actuator::~Actuator()
     // that the object still holds a pointer to
     if (theLoad != 0)
         delete theLoad;
-
+    
     if (daqDisp != 0)
         delete daqDisp;
     if (daqForce != 0)
@@ -128,7 +130,7 @@ Actuator::~Actuator()
         delete ctrlDisp;
     if (ctrlForce != 0)
         delete ctrlForce;
-
+    
     if (sendData != 0)
         delete sendData;
     if (sData != 0)
@@ -180,13 +182,13 @@ void Actuator::setDomain(Domain *theDomain)
     // set default values for error conditions
     numDOF = 2;
     theMatrix = &ActuatorM2;
-    theVector = &ActuatorV2;	
+    theVector = &ActuatorV2;
     
     // first set the node pointers
     int Nd1 = connectedExternalNodes(0);
     int Nd2 = connectedExternalNodes(1);
     theNodes[0] = theDomain->getNode(Nd1);
-    theNodes[1] = theDomain->getNode(Nd2);	
+    theNodes[1] = theDomain->getNode(Nd2);
     
     // if can't find both - send a warning message
     if (!theNodes[0] || !theNodes[1])  {
@@ -202,9 +204,9 @@ void Actuator::setDomain(Domain *theDomain)
         return;
     }
     
-    // now determine the number of dof and the dimension    
+    // now determine the number of dof and the dimension
     int dofNd1 = theNodes[0]->getNumberDOF();
-    int dofNd2 = theNodes[1]->getNumberDOF();	
+    int dofNd2 = theNodes[1]->getNumberDOF();
     
     // if differing dof at the ends - print a warning message
     if (dofNd1 != dofNd2)  {
@@ -212,7 +214,7 @@ void Actuator::setDomain(Domain *theDomain)
             << "have differing dof at ends for element: " << this->getTag() << endln;
         
         return;
-    }	
+    }
     
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
@@ -226,22 +228,22 @@ void Actuator::setDomain(Domain *theDomain)
     else if (numDIM == 2 && dofNd1 == 2)  {
         numDOF = 4;
         theMatrix = &ActuatorM4;
-        theVector = &ActuatorV4;	
+        theVector = &ActuatorV4;
     }
     else if (numDIM == 2 && dofNd1 == 3)  {
         numDOF = 6;	
         theMatrix = &ActuatorM6;
-        theVector = &ActuatorV6;		
+        theVector = &ActuatorV6;
     }
     else if (numDIM == 3 && dofNd1 == 3)  {
         numDOF = 6;	
         theMatrix = &ActuatorM6;
-        theVector = &ActuatorV6;			
+        theVector = &ActuatorV6;
     }
     else if (numDIM == 3 && dofNd1 == 6)  {
         numDOF = 12;	    
         theMatrix = &ActuatorM12;
-        theVector = &ActuatorV12;			
+        theVector = &ActuatorV12;
     }
     else  {
         opserr <<"Actuator::setDomain() - can not handle "
@@ -249,7 +251,7 @@ void Actuator::setDomain(Domain *theDomain)
         
         return;
     }
-        
+    
     if (!theLoad)
         theLoad = new Vector(numDOF);
     else if (theLoad->Size() != numDOF)  {
@@ -262,7 +264,7 @@ void Actuator::setDomain(Domain *theDomain)
             << " out of memory creating vector of size: " << numDOF << endln;
         
         return;
-    }          
+    }
     
     // now determine the length, cosines and fill in the transformation
     // NOTE t = -t(every one else uses for residual calc)
@@ -273,7 +275,7 @@ void Actuator::setDomain(Domain *theDomain)
     cosX[0] = cosX[1] = cosX[2] = 0.0;
     for (int i=0; i<numDIM; i++)
         cosX[i] = end2Crd(i)-end1Crd(i);
-
+    
     // get initial length
     L = sqrt(cosX[0]*cosX[0] + cosX[1]*cosX[1] + cosX[2]*cosX[2]);
     if (L == 0.0)  {
@@ -281,17 +283,22 @@ void Actuator::setDomain(Domain *theDomain)
             << this->getTag() << " has zero length\n";
         return;
     }
-
+    
     // set global orientations
-	cosX[0] /= L;
-	cosX[1] /= L;
-	cosX[2] /= L;
-}   	 
+    cosX[0] /= L;
+    cosX[1] /= L;
+    cosX[2] /= L;
+}
 
 
 int Actuator::commitState()
 {
-    return 0;
+    int errCode = 0;
+    
+    // commit the base class
+    errCode += this->Element::commitState();
+    
+    return errCode;
 }
 
 
@@ -340,11 +347,11 @@ int Actuator::update()
 }
 
 
-const Matrix& Actuator::getTangentStiff(void)
+const Matrix& Actuator::getTangentStiff()
 {
     // zero the matrix
     theMatrix->Zero();
-
+    
     // transform the stiffness from the basic to the global system
     int numDOF2 = numDOF/2;
     double temp;
@@ -357,16 +364,16 @@ const Matrix& Actuator::getTangentStiff(void)
             (*theMatrix)(i+numDOF2,j+numDOF2) = temp;
         }
     }
-
+    
     return *theMatrix;
 }
 
 
-const Matrix& Actuator::getInitialStiff(void)
+const Matrix& Actuator::getInitialStiff()
 {
     // zero the matrix
     theMatrix->Zero();
-
+    
     // transform the stiffness from the basic to the global system
     int numDOF2 = numDOF/2;
     double temp;
@@ -379,7 +386,20 @@ const Matrix& Actuator::getInitialStiff(void)
             (*theMatrix)(i+numDOF2,j+numDOF2) = temp;
         }
     }
+    
+    return *theMatrix;
+}
 
+
+const Matrix& Actuator::getDamp()
+{
+    // zero the matrix
+    theMatrix->Zero();
+    
+    // call base class to setup Rayleigh damping
+    if (addRayleigh == 1)
+        (*theMatrix) = this->Element::getDamp();
+    
     return *theMatrix;
 }
 
@@ -427,7 +447,7 @@ int Actuator::addInertiaLoadToUnbalance(const Vector &accel)
     
     // get R * accel from the nodes
     const Vector &Raccel1 = theNodes[0]->getRV(accel);
-    const Vector &Raccel2 = theNodes[1]->getRV(accel);    
+    const Vector &Raccel2 = theNodes[1]->getRV(accel);
     
     int nodalDOF = numDOF/2;
     
@@ -456,7 +476,7 @@ int Actuator::addInertiaLoadToUnbalance(const Vector &accel)
 
 
 const Vector& Actuator::getResistingForce()
-{	
+{
     // get current time
     Domain *theDomain = this->getDomain();
     double t = theDomain->getCurrentTime();
@@ -515,17 +535,19 @@ const Vector& Actuator::getResistingForce()
 
 
 const Vector& Actuator::getResistingForceIncInertia()
-{	
+{
     this->getResistingForce();
     
-    // add the damping forces if rayleigh damping
-    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-        (*theVector) += this->getRayleighDampingForces();
+    // add the damping forces from rayleigh damping
+    if (addRayleigh == 1)  {
+        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+            (*theVector) += this->getRayleighDampingForces();
+    }
     
-    // now include the mass portion
+    // add inertia forces from element mass
     if (L != 0.0 && rho != 0.0)  {
         const Vector &accel1 = theNodes[0]->getTrialAccel();
-        const Vector &accel2 = theNodes[1]->getTrialAccel();	
+        const Vector &accel2 = theNodes[1]->getTrialAccel();
         
         int numDOF2 = numDOF/2;
         double m = 0.5*rho*L;
@@ -542,13 +564,14 @@ const Vector& Actuator::getResistingForceIncInertia()
 int Actuator::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(6);
+    static Vector data(7);
     data(0) = this->getTag();
     data(1) = numDIM;
     data(2) = numDOF;
     data(3) = EA;
     data(4) = ipPort;
-    data(5) = rho;
+    data(5) = addRayleigh;
+    data(6) = rho;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -562,14 +585,15 @@ int Actuator::recvSelf(int commitTag, Channel &rChannel,
     FEM_ObjectBroker &theBroker)
 {
     // receive element parameters
-    static Vector data(6);
+    static Vector data(7);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     numDIM = (int)data(1);
     numDOF = (int)data(2);
     EA     = data(3);
     ipPort = (int)data(4);
-    rho    = data(5);
+    addRayleigh = (int)data(5);
+    rho    = data(6);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -588,20 +612,20 @@ int Actuator::displaySelf(Renderer &theViewer,
     
     static Vector v1(3);
     static Vector v2(3);
-
+    
     if (displayMode >= 0)  {
         const Vector &end1Disp = theNodes[0]->getDisp();
         const Vector &end2Disp = theNodes[1]->getDisp();
         
         for (int i=0; i<numDIM; i++)  {
             v1(i) = end1Crd(i) + end1Disp(i)*fact;
-            v2(i) = end2Crd(i) + end2Disp(i)*fact;    
+            v2(i) = end2Crd(i) + end2Disp(i)*fact;
         }
     } else  {
         int mode = displayMode * -1;
         const Matrix &eigen1 = theNodes[0]->getEigenvectors();
         const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-
+        
         if (eigen1.noCols() >= mode)  {
             for (int i=0; i<numDIM; i++)  {
                 v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
@@ -620,7 +644,7 @@ int Actuator::displaySelf(Renderer &theViewer,
 
 
 void Actuator::Print(OPS_Stream &s, int flag)
-{    
+{
     if (flag == 0)  {
         // print everything
         s << "Element: " << this->getTag() << endln;
@@ -628,6 +652,7 @@ void Actuator::Print(OPS_Stream &s, int flag)
             << ", jNode: " << connectedExternalNodes(1) << endln;
         s << "  EA: " << EA << ", L: " << L << endln;
         s << "  ipPort: " << ipPort << endln;
+        s << "  addRayleigh: " << addRayleigh;
         s << "  mass per unit length: " << rho << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
@@ -787,7 +812,7 @@ int Actuator::setupConnection()
             << "failed to setup connection\n";
         return -2;
     }
-
+    
     // get the data sizes and check values
     // sizes = {ctrlDisp, ctrlVel, ctrlAccel, ctrlForce, ctrlTime,
     //          daqDisp,  daqVel,  daqAccel,  daqForce,  daqTime,  dataSize}
@@ -798,7 +823,7 @@ int Actuator::setupConnection()
             << "wrong data sizes > 1 received\n";
         return -3;
     }
-
+    
     // allocate memory for the receive vectors
     int id = 1;
     rData = new double [sizes(10)];
@@ -812,7 +837,7 @@ int Actuator::setupConnection()
         id += sizes(3);
     }
     recvData->Zero();
-
+    
     // allocate memory for the send vectors
     id = 0;
     sData = new double [sizes(10)];
@@ -826,9 +851,9 @@ int Actuator::setupConnection()
         id += sizes(8);
     }
     sendData->Zero();
-
+    
     opserr << "\nActuator element " << this->getTag()
         << " now running...\n";
-
+    
     return 0;
 }

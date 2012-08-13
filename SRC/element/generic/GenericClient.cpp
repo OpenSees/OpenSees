@@ -18,11 +18,11 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.6 $
-// $Date: 2009/06/02 21:09:49 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/generic/GenericClient.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 11/06
 // Revision: A
 //
@@ -69,7 +69,7 @@ GenericClient::GenericClient(int tag, ID nodes, ID *dof, int _port,
     db(0), vb(0), ab(0), t(0), qDaq(0), rMatrix(0),
     dbCtrl(1), vbCtrl(1), abCtrl(1),
     initStiffFlag(false), massFlag(false)
-{    
+{
     // initialize nodes
     numExternalNodes = connectedExternalNodes.Size();
     theNodes = new Node* [numExternalNodes];
@@ -123,7 +123,7 @@ GenericClient::GenericClient()
     db(0), vb(0), ab(0), t(0), qDaq(0), rMatrix(0),
     dbCtrl(1), vbCtrl(1), abCtrl(1),
     initStiffFlag(false), massFlag(false)
-{    
+{
     // initialize variables
     theNodes = 0;
     theDOF = 0;
@@ -181,19 +181,19 @@ int GenericClient::getNumExternalNodes() const
 }
 
 
-const ID& GenericClient::getExternalNodes() 
+const ID& GenericClient::getExternalNodes()
 {
     return connectedExternalNodes;
 }
 
 
-Node** GenericClient::getNodePtrs() 
+Node** GenericClient::getNodePtrs()
 {
     return theNodes;
 }
 
 
-int GenericClient::getNumDOF() 
+int GenericClient::getNumDOF()
 {
     return numDOF;
 }
@@ -254,13 +254,14 @@ void GenericClient::setDomain(Domain *theDomain)
     
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
-}   	 
+}
 
 
 int GenericClient::commitState()
 {
     int rValue = 0;
     
+    // commit the server side
     sData[0] = RemoteTest_commitState;
     rValue += theChannel->sendVector(0, 0, *sendData, 0);
     
@@ -357,7 +358,7 @@ const Matrix& GenericClient::getInitialStiff()
         theChannel->sendVector(0, 0, *sendData, 0);
         theChannel->recvVector(0, 0, *recvData, 0);
         
-        theInitStiff.Assemble(*rMatrix,basicDOF,basicDOF);        
+        theInitStiff.Assemble(*rMatrix,basicDOF,basicDOF);
         initStiffFlag = true;
     }
     
@@ -365,7 +366,7 @@ const Matrix& GenericClient::getInitialStiff()
 }
 
 
-/*const Matrix& GenericClient::getDamp()
+const Matrix& GenericClient::getDamp()
 {
     // zero the matrices
     theMatrix.Zero();
@@ -378,7 +379,7 @@ const Matrix& GenericClient::getInitialStiff()
     theMatrix.Assemble(*rMatrix,basicDOF,basicDOF);
     
     return theMatrix;
-}*/
+}
 
 
 const Matrix& GenericClient::getMass()
@@ -407,7 +408,7 @@ void GenericClient::zeroLoad()
 
 
 int GenericClient::addLoad(ElementalLoad *theLoad, double loadFactor)
-{  
+{
     opserr <<"GenericClient::addLoad() - "
         << "load type unknown for element: "
         << this->getTag() << endln;
@@ -417,7 +418,7 @@ int GenericClient::addLoad(ElementalLoad *theLoad, double loadFactor)
 
 
 int GenericClient::addInertiaLoadToUnbalance(const Vector &accel)
-{    
+{
     int ndim = 0, i;
     static Vector Raccel(numDOF);
     Raccel.Zero();
@@ -438,7 +439,7 @@ int GenericClient::addInertiaLoadToUnbalance(const Vector &accel)
 
 
 const Vector& GenericClient::getResistingForce()
-{    
+{
     // zero the residual
     theVector.Zero();
     
@@ -463,26 +464,31 @@ const Vector& GenericClient::getResistingForce()
 
 
 const Vector& GenericClient::getResistingForceIncInertia()
-{	
+{
     theVector = this->getResistingForce();
     
-    // add the damping forces if rayleigh damping
-    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-        theVector += this->getRayleighDampingForces();
-    
-    // now include the mass portion
     int ndim = 0, i;
+    static Vector vel(numDOF);
     static Vector accel(numDOF);
+    vel.Zero();
     accel.Zero();
-
-    // get mass matrix
+    
+    // add the damping forces from element damping
+    Matrix C = this->getDamp();
+    // assemble vel vector
+    for (i=0; i<numExternalNodes; i++ )  {
+        vel.Assemble(theNodes[i]->getTrialVel(), ndim);
+        ndim += theNodes[i]->getNumberDOF();
+    }
+    theVector += C * vel;
+    
+    // add inertia forces from element mass
     Matrix M = this->getMass();
     // assemble accel vector
     for (i=0; i<numExternalNodes; i++ )  {
         accel.Assemble(theNodes[i]->getTrialAccel(), ndim);
         ndim += theNodes[i]->getNumberDOF();
     }
-    
     theVector += M * accel;
     
     return theVector;
@@ -490,7 +496,7 @@ const Vector& GenericClient::getResistingForceIncInertia()
 
 
 /*const Vector& GenericClient::getTime()
-{	
+{
     sData[0] = RemoteTest_getTime;
     theChannel->sendVector(0, 0, *sendData, 0);
     theChannel->recvVector(0, 0, *recvData, 0);
@@ -500,7 +506,7 @@ const Vector& GenericClient::getResistingForceIncInertia()
 
 
 const Vector& GenericClient::getBasicDisp()
-{	
+{
     sData[0] = RemoteTest_getDisp;
     theChannel->sendVector(0, 0, *sendData, 0);
     theChannel->recvVector(0, 0, *recvData, 0);
@@ -510,7 +516,7 @@ const Vector& GenericClient::getBasicDisp()
 
 
 const Vector& GenericClient::getBasicVel()
-{	
+{
     sData[0] = RemoteTest_getVel;
     theChannel->sendVector(0, 0, *sendData, 0);
     theChannel->recvVector(0, 0, *recvData, 0);
@@ -520,7 +526,7 @@ const Vector& GenericClient::getBasicVel()
 
 
 const Vector& GenericClient::getBasicAccel()
-{	
+{
     sData[0] = RemoteTest_getAccel;
     theChannel->sendVector(0, 0, *sendData, 0);
     theChannel->recvVector(0, 0, *recvData, 0);
@@ -568,7 +574,7 @@ int GenericClient::recvSelf(int commitTag, Channel &rChannel,
     
     // receive element parameters
     static ID idData(7);
-    rChannel.recvID(0, commitTag, idData);    
+    rChannel.recvID(0, commitTag, idData);
     this->setTag(idData(0));
     numExternalNodes = idData(1);
     port = idData(2);
@@ -608,7 +614,7 @@ int GenericClient::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive the ip-address
-    Message theMessage(machineInetAddr, strlen(machineInetAddr));  
+    Message theMessage(machineInetAddr, strlen(machineInetAddr));
     rChannel.recvMsg(0, commitTag, theMessage);
     
     // set the vector sizes and zero them
@@ -844,7 +850,7 @@ Response* GenericClient::setResponse(const char **argv, int argc,
 
 
 int GenericClient::getResponse(int responseID, Information &eleInfo)
-{    
+{
     switch (responseID)  {
     case 1:  // global forces
         return eleInfo.setVector(this->getResistingForce());

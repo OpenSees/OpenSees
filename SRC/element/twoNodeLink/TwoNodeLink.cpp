@@ -18,11 +18,11 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.3 $
-// $Date: 2009/05/18 22:01:11 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/twoNodeLink/TwoNodeLink.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 08/08
 // Revision: A
 //
@@ -61,12 +61,12 @@ Vector TwoNodeLink::TwoNodeLinkV12(12);
 TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2, 
     const ID &direction, UniaxialMaterial **materials,
     const Vector _y, const Vector _x, const Vector Mr,
-    const Vector sdI, double m)
+    const Vector sdI, int addRay, double m)
     : Element(tag, ELE_TAG_TwoNodeLink),
     numDIM(dim), numDOF(0), connectedExternalNodes(2),
     theMaterials(0), numDir(direction.Size()), dir(0), trans(3,3),
-    x(_x), y(_y), Mratio(Mr), shearDistI(sdI), mass(m), L(0.0),
-    ub(0), ubdot(0), qb(0), ul(0), Tgl(0,0), Tlb(0,0),
+    x(_x), y(_y), Mratio(Mr), shearDistI(sdI), addRayleigh(addRay),
+    mass(m), L(0.0), ub(0), ubdot(0), qb(0), ul(0), Tgl(0,0), Tlb(0,0),
     theMatrix(0), theVector(0), theLoad(0)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
@@ -182,8 +182,8 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
 TwoNodeLink::TwoNodeLink()
     : Element(0, ELE_TAG_TwoNodeLink),     
     numDIM(0), numDOF(0), connectedExternalNodes(2),
-    theMaterials(0), numDir(0), dir(0), trans(3,3),
-    x(0), y(0), Mratio(0), shearDistI(0), mass(0.0), L(0.0),
+    theMaterials(0), numDir(0), dir(0), trans(3,3), x(0), y(0),
+    Mratio(0), shearDistI(0), addRayleigh(0), mass(0.0), L(0.0),
     ub(0), ubdot(0), qb(0), ul(0), Tgl(0,0), Tlb(0,0),
     theMatrix(0), theVector(0), theLoad(0)
 {
@@ -289,7 +289,7 @@ void TwoNodeLink::setDomain(Domain *theDomain)
         opserr << "TwoNodeLink::setDomain(): nodes " << Nd1 << " and " << Nd2
             << "have differing dof at ends for element: " << this->getTag() << endln;
         return;
-    }	
+    }
     
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
@@ -346,7 +346,7 @@ void TwoNodeLink::setDomain(Domain *theDomain)
         opserr << "TwoNodeLink::setDomain() - element: " << this->getTag()
             << " out of memory creating vector of size: " << numDOF << endln;
         return;
-    }          
+    }
     
     // setup the transformation matrix for orientation
     this->setUp();
@@ -365,7 +365,7 @@ int TwoNodeLink::commitState()
     
     // commit material models
     for (int i=0; i<numDir; i++)
-	    errCode += theMaterials[i]->commitState();
+        errCode += theMaterials[i]->commitState();
     
     // commit the base class
     errCode += this->Element::commitState();
@@ -380,7 +380,7 @@ int TwoNodeLink::revertToLastCommit()
     
     // revert material models
     for (int i=0; i<numDir; i++)
-	    errCode += theMaterials[i]->revertToLastCommit();
+        errCode += theMaterials[i]->revertToLastCommit();
     
     return errCode;
 }
@@ -498,8 +498,16 @@ const Matrix& TwoNodeLink::getDamp()
     // zero the matrix
     theMatrix->Zero();
     
-    // get damping values
+    // call base class to setup Rayleigh damping
+    double factThis = 0.0;
+    if (addRayleigh == 1)  {
+        (*theMatrix) = this->Element::getDamp();
+        factThis = 1.0;
+    }
+    
+    // now add damping tangent from materials
     static Matrix cb(numDir,numDir);
+    cb.Zero();
     for (int i=0; i<numDir; i++)  {
         cb(i,i) = theMaterials[i]->getDampTangent();
     }
@@ -508,10 +516,10 @@ const Matrix& TwoNodeLink::getDamp()
     static Matrix cl(numDOF,numDOF);
     cl.addMatrixTripleProduct(0.0, Tlb, cb, 1.0);
     
-    // transform from local to global system
-    theMatrix->addMatrixTripleProduct(0.0, Tgl, cl, 1.0);
+    // transform from local to global system and add to cg
+    theMatrix->addMatrixTripleProduct(factThis, Tgl, cl, 1.0);
     //static Matrix cg(numDOF,numDOF);
-    //cg.addMatrixTripleProduct(0.0, Tgl, cl, 1.0);
+    //cg.addMatrixTripleProduct(factThis, Tgl, cl, 1.0);
     //theMatrix->addMatrixTranspose(0.5, cg, 0.5);
     
     return *theMatrix;
@@ -575,7 +583,7 @@ int TwoNodeLink::addInertiaLoadToUnbalance(const Vector &accel)
     // take advantage of lumped mass matrix
     double m = 0.5*mass;
     for (int i=0; i<numDIM; i++)  {
-        (*theLoad)(i) -= m * Raccel1(i);
+        (*theLoad)(i)         -= m * Raccel1(i);
         (*theLoad)(i+numDOF2) -= m * Raccel2(i);
     }
     
@@ -611,22 +619,25 @@ const Vector& TwoNodeLink::getResistingForce()
 
 
 const Vector& TwoNodeLink::getResistingForceIncInertia()
-{	
+{
+    // this already includes damping forces from materials
     this->getResistingForce();
     
-    // add the damping forces if rayleigh damping
-    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-        (*theVector) += this->getRayleighDampingForces();
+    // add the damping forces from rayleigh damping
+    if (addRayleigh == 1)  {
+        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+            (*theVector) += this->getRayleighDampingForces();
+    }
     
-    // now include the mass portion
+    // add inertia forces from element mass
     if (mass != 0.0)  {
         const Vector &accel1 = theNodes[0]->getTrialAccel();
-        const Vector &accel2 = theNodes[1]->getTrialAccel();    
+        const Vector &accel2 = theNodes[1]->getTrialAccel();
         
         int numDOF2 = numDOF/2;
         double m = 0.5*mass;
         for (int i=0; i<numDIM; i++)  {
-            (*theVector)(i) += m * accel1(i);
+            (*theVector)(i)         += m * accel1(i);
             (*theVector)(i+numDOF2) += m * accel2(i);
         }
     }
@@ -638,15 +649,16 @@ const Vector& TwoNodeLink::getResistingForceIncInertia()
 int TwoNodeLink::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(8);
+    static Vector data(9);
     data(0) = this->getTag();
     data(1) = numDIM;
     data(2) = numDOF;
     data(3) = numDir;
-    data(4) = mass;
-    data(5) = x.Size();
-    data(6) = y.Size();
-    data(7) = Mratio.Size();
+    data(4) = addRayleigh;
+    data(5) = mass;
+    data(6) = x.Size();
+    data(7) = y.Size();
+    data(8) = Mratio.Size();
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -691,13 +703,14 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive element parameters
-    static Vector data(8);
-    rChannel.recvVector(0, commitTag, data);    
+    static Vector data(9);
+    rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     numDIM = (int)data(1);
     numDOF = (int)data(2);
     numDir = (int)data(3);
-    mass = data(4);
+    addRayleigh = (int)data(4);
+    mass = data(5);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -734,15 +747,15 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive remaining data
-    if ((int)data(5) == 3)  {
+    if ((int)data(6) == 3)  {
         x.resize(3);
         rChannel.recvVector(0, commitTag, x);
     }
-    if ((int)data(6) == 3)  {
+    if ((int)data(7) == 3)  {
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
-    if ((int)data(7) == 4)  {
+    if ((int)data(8) == 4)  {
         Mratio.resize(4);
         rChannel.recvVector(0, commitTag, Mratio);
         // check p-delta moment distribution ratios
@@ -823,7 +836,7 @@ void TwoNodeLink::Print(OPS_Stream &s, int flag)
             s << "  Material dir" << (*dir)(i) << ": ";
             s << theMaterials[i]->getTag() << endln;
         }
-        s << "  mass: " << mass << endln;
+        s << "  addRayleigh: " << addRayleigh << "  mass: " << mass << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
     } else if (flag == 1)  {
@@ -945,7 +958,7 @@ int TwoNodeLink::getResponse(int responseID, Information &eleInfo)
     case 3:  // basic forces
         return eleInfo.setVector(qb);
         
-	case 4:  // local displacements
+    case 4:  // local displacements
         return eleInfo.setVector(ul);
         
     case 5:  // basic displacements

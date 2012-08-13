@@ -18,21 +18,21 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.6 $
-// $Date: 2009/06/02 21:09:50 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/generic/GenericClient.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef GenericClient_h
 #define GenericClient_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 11/06
 // Revision: A
 //
 // Description: This file contains the class definition for GenericClient.
 // GenericClient is a generic element defined by any number of nodes and 
 // the degrees of freedom at those nodes. The element communicates with 
-// OpenFresco trough a tcp/ip connection.
+// OpenFresco through a tcp/ip connection.
 
 #include <Element.h>
 #include <Matrix.h>
@@ -64,7 +64,7 @@ public:
     GenericClient(int tag, ID nodes, ID *dof,
 		  int port, char *machineInetAddr = 0,
 		  int ssl = 0, int udp = 0, int dataSize = 256);
-    GenericClient();    
+    GenericClient();
     
     // destructor
     ~GenericClient();
@@ -72,23 +72,23 @@ public:
     // method to get class type
     const char *getClassType() const {return "GenericClient";};
     
-    // public methods to obtain information about dof & connectivity    
+    // public methods to obtain information about dof & connectivity
     int getNumExternalNodes() const;
     const ID &getExternalNodes();
     Node **getNodePtrs();
     int getNumDOF();
     void setDomain(Domain *theDomain);
     
-    // public methods to set the state of the element    
+    // public methods to set the state of the element
     int commitState();
-    int revertToLastCommit();        
+    int revertToLastCommit();
     int revertToStart();
     int update();
     
-    // public methods to obtain stiffness, mass, damping and residual information    
+    // public methods to obtain stiffness, mass, damping and residual information
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
-    //const Matrix &getDamp();
+    const Matrix &getDamp();
     const Matrix &getMass();
     
     void zeroLoad();
@@ -109,8 +109,8 @@ public:
     // public methods for element output
     int sendSelf(int commitTag, Channel &sChannel);
     int recvSelf(int commitTag, Channel &rChannel, FEM_ObjectBroker &theBroker);
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);    
-    void Print(OPS_Stream &s, int flag = 0);    
+    int displaySelf(Renderer &theViewer, int displayMode, float fact);
+    void Print(OPS_Stream &s, int flag = 0);
     
     // public methods for element recorder
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);

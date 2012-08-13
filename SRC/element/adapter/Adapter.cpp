@@ -18,11 +18,11 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.4 $
-// $Date: 2009/06/02 21:10:45 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/adapter/Adapter.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 09/07
 // Revision: A
 //
@@ -53,11 +53,11 @@ Vector Adapter::theLoad(1);
 // responsible for allocating the necessary space needed
 // by each object and storing the tags of the end nodes.
 Adapter::Adapter(int tag, ID nodes, ID *dof,
-    const Matrix &_kb, int ipport, const Matrix *_mb)
+    const Matrix &_kb, int ipport, int addRay, const Matrix *_mb)
     : Element(tag, ELE_TAG_Adapter),
     connectedExternalNodes(nodes), basicDOF(1),
-    numExternalNodes(0), numDOF(0), numBasicDOF(0),
-    kb(_kb), ipPort(ipport), mb(0), tPast(0.0), db(1), q(1),
+    numExternalNodes(0), numDOF(0), numBasicDOF(0), kb(_kb),
+    ipPort(ipport), addRayleigh(addRay), mb(0), tPast(0.0), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
 {
@@ -69,12 +69,12 @@ Adapter::Adapter(int tag, ID nodes, ID *dof,
             << "- failed to create node array\n";
         exit(-1);
     }
-
+    
     // set node pointers to NULL
     int i;
     for (i=0; i<numExternalNodes; i++)
         theNodes[i] = 0;
-
+    
     // initialize dof
     theDOF = new ID [numExternalNodes];
     if (!theDOF)  {
@@ -91,7 +91,7 @@ Adapter::Adapter(int tag, ID nodes, ID *dof,
     // initialize mass matrix
     if (_mb != 0)
         mb = new Matrix(*_mb);
-
+    
     // set the vector sizes and zero them
     basicDOF.resize(numBasicDOF);
     basicDOF.Zero();
@@ -107,8 +107,8 @@ Adapter::Adapter(int tag, ID nodes, ID *dof,
 Adapter::Adapter()
     : Element(0, ELE_TAG_Adapter),
     connectedExternalNodes(1), basicDOF(1),
-    numExternalNodes(0), numDOF(0), numBasicDOF(0),
-    kb(1,1), ipPort(0), mb(0), tPast(0.0), db(1), q(1),
+    numExternalNodes(0), numDOF(0), numBasicDOF(0), kb(1,1),
+    ipPort(0), addRayleigh(0), mb(0), tPast(0.0), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
 {
@@ -158,19 +158,19 @@ int Adapter::getNumExternalNodes() const
 }
 
 
-const ID& Adapter::getExternalNodes() 
+const ID& Adapter::getExternalNodes()
 {
     return connectedExternalNodes;
 }
 
 
-Node** Adapter::getNodePtrs() 
+Node** Adapter::getNodePtrs()
 {
     return theNodes;
 }
 
 
-int Adapter::getNumDOF() 
+int Adapter::getNumDOF()
 {
     return numDOF;
 }
@@ -206,7 +206,7 @@ void Adapter::setDomain(Domain *theDomain)
     for (i=0; i<numExternalNodes; i++)  {
         numDOF += theNodes[i]->getNumberDOF();
     }
-
+    
     // set the basicDOF ID
     int j, k = 0, ndf = 0;
     for (i=0; i<numExternalNodes; i++)  {
@@ -216,7 +216,7 @@ void Adapter::setDomain(Domain *theDomain)
         }
         ndf += theNodes[i]->getNumberDOF();
     }
-
+    
     // set the matrix and vector sizes and zero them
     theMatrix.resize(numDOF,numDOF);
     theMatrix.Zero();
@@ -227,12 +227,17 @@ void Adapter::setDomain(Domain *theDomain)
     
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
-}   	 
+}
 
 
 int Adapter::commitState()
 {
-    return 0;
+    int errCode = 0;
+    
+    // commit the base class
+    errCode += this->Element::commitState();
+    
+    return errCode;
 }
 
 
@@ -307,11 +312,24 @@ const Matrix& Adapter::getInitialStiff()
 }
 
 
+const Matrix& Adapter::getDamp()
+{
+    // zero the matrix
+    theMatrix.Zero();
+    
+    // call base class to setup Rayleigh damping
+    if (addRayleigh == 1)
+        theMatrix = this->Element::getDamp();
+    
+    return theMatrix;
+}
+
+
 const Matrix& Adapter::getMass()
 {
     // zero the matrix
     theMatrix.Zero();
-
+    
     // assemble mass matrix
     if (mb != 0)
         theMatrix.Assemble(*mb,basicDOF,basicDOF);
@@ -341,11 +359,11 @@ int Adapter::addInertiaLoadToUnbalance(const Vector &accel)
     // check for quick return
     if (mb == 0)
         return 0;
-
+    
     int ndim = 0, i;
     static Vector Raccel(numDOF);
     Raccel.Zero();
-
+    
     // get mass matrix
     Matrix M = this->getMass();
     // assemble Raccel vector
@@ -417,18 +435,20 @@ const Vector& Adapter::getResistingForce()
 
 
 const Vector& Adapter::getResistingForceIncInertia()
-{	
+{
     theVector = this->getResistingForce();
     
-    // add the damping forces if rayleigh damping
-    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-        theVector += this->getRayleighDampingForces();
+    // add the damping forces from rayleigh damping
+    if (addRayleigh == 1)  {
+        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+            theVector += this->getRayleighDampingForces();
+    }
     
-    // now include the mass portion
+    // add inertia forces from element mass
     int ndim = 0, i;
     static Vector accel(numDOF);
     accel.Zero();
-
+    
     // get mass matrix
     Matrix M = this->getMass();
     // assemble accel vector
@@ -446,11 +466,12 @@ const Vector& Adapter::getResistingForceIncInertia()
 int Adapter::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static ID idData(4);
+    static ID idData(5);
     idData(0) = this->getTag();
     idData(1) = numExternalNodes;
     idData(2) = ipPort;
-    idData(3) = (mb==0) ? 0 : 1;
+    idData(3) = addRayleigh;
+    idData(4) = (mb==0) ? 0 : 1;
     sChannel.sendID(0, commitTag, idData);
     
     // send the end nodes and dofs
@@ -479,11 +500,12 @@ int Adapter::recvSelf(int commitTag, Channel &rChannel,
         delete mb;
     
     // receive element parameters
-    static ID idData(4);
+    static ID idData(5);
     rChannel.recvID(0, commitTag, idData);
     this->setTag(idData(0));
     numExternalNodes = idData(1);
     ipPort = idData(2);
+    addRayleigh = idData(3);
     
     // initialize nodes and receive them
     connectedExternalNodes.resize(numExternalNodes);
@@ -518,7 +540,7 @@ int Adapter::recvSelf(int commitTag, Channel &rChannel,
     // receive the stiffness and mass matrices
     kb.resize(numBasicDOF,numBasicDOF);
     rChannel.recvMatrix(0, commitTag, kb);
-    if (idData(3))  {
+    if (idData(4))  {
         mb = new Matrix(numBasicDOF,numBasicDOF);
         rChannel.recvMatrix(0, commitTag, *mb);
     }
@@ -539,26 +561,26 @@ int Adapter::displaySelf(Renderer &theViewer,
     int displayMode, float fact)
 {
     int rValue = 0, i, j;
-
+    
     if (numExternalNodes > 1)  {
         if (displayMode >= 0)  {
             for (i=0; i<numExternalNodes-1; i++)  {
                 const Vector &end1Crd = theNodes[i]->getCrds();
                 const Vector &end2Crd = theNodes[i+1]->getCrds();
-
+                
                 const Vector &end1Disp = theNodes[i]->getDisp();
                 const Vector &end2Disp = theNodes[i+1]->getDisp();
-
+                
                 int end1NumCrds = end1Crd.Size();
                 int end2NumCrds = end2Crd.Size();
-
+                
                 Vector v1(3), v2(3);
-
+                
                 for (j=0; j<end1NumCrds; j++)
                     v1(j) = end1Crd(j) + end1Disp(j)*fact;
                 for (j=0; j<end2NumCrds; j++)
                     v2(j) = end2Crd(j) + end2Disp(j)*fact;
-
+                
                 rValue += theViewer.drawLine (v1, v2, 1.0, 1.0);
             }
         } else  {
@@ -566,15 +588,15 @@ int Adapter::displaySelf(Renderer &theViewer,
             for (i=0; i<numExternalNodes-1; i++)  {
                 const Vector &end1Crd = theNodes[i]->getCrds();
                 const Vector &end2Crd = theNodes[i+1]->getCrds();
-
+                
                 const Matrix &eigen1 = theNodes[i]->getEigenvectors();
                 const Matrix &eigen2 = theNodes[i+1]->getEigenvectors();
-
+                
                 int end1NumCrds = end1Crd.Size();
                 int end2NumCrds = end2Crd.Size();
-
+                
                 Vector v1(3), v2(3);
-
+                
                 if (eigen1.noCols() >= mode)  {
                     for (j=0; j<end1NumCrds; j++)
                         v1(j) = end1Crd(j) + eigen1(j,mode-1)*fact;
@@ -586,12 +608,12 @@ int Adapter::displaySelf(Renderer &theViewer,
                     for (j=0; j<end2NumCrds; j++)
                         v2(j) = end2Crd(j);
                 }
-
+                
                 rValue += theViewer.drawLine (v1, v2, 1.0, 1.0);
             }
         }
     }
-
+    
     return rValue;
 }
 
@@ -608,6 +630,7 @@ void Adapter::Print(OPS_Stream &s, int flag)
         s << endln;
         s << "  kb: " << kb << endln;
         s << "  ipPort: " << ipPort << endln;
+        s << "  addRayleigh: " << addRayleigh << endln;
         if (mb != 0)
             s << "  mb: " << *mb << endln;
         // determine resisting forces in global system
@@ -723,7 +746,7 @@ int Adapter::getResponse(int responseID, Information &eleInformation)
         if (eleInformation.theVector != 0)  {
             *(eleInformation.theVector) = this->getResistingForce();
         }
-        return 0;      
+        return 0;
         
     case 3:  // local forces
         if (eleInformation.theVector != 0)  {
@@ -735,13 +758,13 @@ int Adapter::getResponse(int responseID, Information &eleInformation)
         if (eleInformation.theVector != 0)  {
             *(eleInformation.theVector) = q;
         }
-        return 0;      
+        return 0;
         
     case 5:  // ctrl basic displacements
         if (eleInformation.theVector != 0)  {
             *(eleInformation.theVector) = *ctrlDisp;
         }
-        return 0;      
+        return 0;
         
     case 6:  // daq basic displacements
         if (eleInformation.theVector != 0)  {

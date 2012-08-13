@@ -18,14 +18,14 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.3 $
-// $Date: 2009-06-02 21:10:45 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/adapter/ActuatorCorot.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef ActuatorCorot_h
 #define ActuatorCorot_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 09/07
 // Revision: A
 //
@@ -63,7 +63,7 @@ class ActuatorCorot : public Element
 public:
     // constructors
     ActuatorCorot(int tag, int dim, int Nd1, int Nd2,
-        double EA, int ipPort, double rho = 0.0);
+        double EA, int ipPort, int addRayleigh = 0, double rho = 0.0);
     ActuatorCorot();
     
     // destructor
@@ -89,6 +89,7 @@ public:
     // and to obtain mass, damping and residual information
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
+    const Matrix &getDamp();
     const Matrix &getMass();
     
     void zeroLoad();
@@ -109,18 +110,19 @@ public:
     int getResponse(int responseID, Information &eleInformation);
     
 protected:
-    
+
 private:
     // private attributes - a copy for each object of the class
-    int numDIM;					    // actuator in 1d, 2d or 3d domain
-    int numDOF;						// number of dof for actuator
-    ID  connectedExternalNodes;		// contains the tags of the end nodes
+    int numDIM;                     // actuator in 1d, 2d or 3d domain
+    int numDOF;                     // number of dof for actuator
+    ID  connectedExternalNodes;     // contains the tags of the end nodes
     
     double EA;          // section stiffness of actuator
     int ipPort;         // ipPort
-    double rho;		    // rho: mass per unit length
-    double L;		    // undeformed actuator length
-    double Ln;		    // current actuator length
+    int addRayleigh;    // flag to add Rayleigh damping
+    double rho;         // rho: mass per unit length
+    double L;           // undeformed actuator length
+    double Ln;          // current actuator length
     double tPast;       // past time
     double d21[3];      // current displacement offsets in basic system
     
@@ -128,7 +130,7 @@ private:
     Vector *theVector;  // pointer to objects vector (a class wide Vector)
     Vector *theLoad;    // pointer to the load vector
     
-    Matrix R;	// rotation matrix
+    Matrix R;   // rotation matrix
     Vector db;  // deformation in basic system
     Vector q;   // force in basic system
     
@@ -145,7 +147,7 @@ private:
     
     Node *theNodes[2];
     
-    // static data - single copy for all objects of the class	
+    // static data - single copy for all objects of the class
     static Matrix ActuatorCorotM2;   // class wide matrix for 2*2
     static Matrix ActuatorCorotM4;   // class wide matrix for 4*4
     static Matrix ActuatorCorotM6;   // class wide matrix for 6*6
