@@ -1711,6 +1711,30 @@ BBarBrickUP::updateParameter(int parameterID, Information &info)
 			res = matRes;
 		}
 		return res;
+	case 7:
+	    for (int i = 0; i < 8; i++) {
+			matRes = materialPointers[i]->updateParameter(parameterID, info);
+		}
+		if (matRes != -1) {
+			res = matRes;
+		}
+		return res;
+	case 8:
+	    for (int i = 0; i < 8; i++) {
+			matRes = materialPointers[i]->updateParameter(parameterID, info);
+		}
+		if (matRes != -1) {
+			res = matRes;
+		}
+		return res;
+	case 9:
+	    for (int i = 0; i < 8; i++) {
+			matRes = materialPointers[i]->updateParameter(parameterID, info);
+		}
+		if (matRes != -1) {
+			res = matRes;
+		}
+		return res;
 	default:
 		return -1;
   }

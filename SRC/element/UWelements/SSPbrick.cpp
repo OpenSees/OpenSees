@@ -806,8 +806,21 @@ SSPbrick::setParameter(const char **argv, int argc, Parameter &param)
 
 	int res = -1;
 
+	// material state (elastic/plastic) for UW soil materials
 	if (strcmp(argv[0],"materialState") == 0) {
 		return param.addObject(5,this);
+	}
+	// frictional strength parameter for UW soil materials
+	if (strcmp(argv[0],"frictionalStrength") == 0) {
+		return param.addObject(7,this);
+	}
+	// non-associative parameter for UW soil materials
+	if (strcmp(argv[0],"nonassociativeTerm") == 0) {
+		return param.addObject(8,this);
+	}
+	// cohesion parameter for UW soil materials
+	if (strcmp(argv[0],"cohesiveIntercept") == 0) {
+		return param.addObject(9,this);
 	}
 
 	// quad pressure loading
@@ -866,6 +879,24 @@ SSPbrick::updateParameter(int parameterID, Information &info)
 			return 0;
 
 		case 5:
+			matRes = theMaterial->updateParameter(parameterID, info);
+			if (matRes != -1) {
+				res = matRes;
+			}
+			return res;
+		case 7:
+			matRes = theMaterial->updateParameter(parameterID, info);
+			if (matRes != -1) {
+				res = matRes;
+			}
+			return res;
+		case 8:
+			matRes = theMaterial->updateParameter(parameterID, info);
+			if (matRes != -1) {
+				res = matRes;
+			}
+			return res;
+		case 9:
 			matRes = theMaterial->updateParameter(parameterID, info);
 			if (matRes != -1) {
 				res = matRes;

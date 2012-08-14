@@ -1055,10 +1055,22 @@ FourNodeQuad::setParameter(const char **argv, int argc, Parameter &param)
 
   int res = -1;
 
-  // added: C.McGann, U.Washington
-  	if (strcmp(argv[0],"materialState") == 0) {
-		return param.addObject(5,this);
-	}
+  // material state (elastic/plastic) for UW soil materials
+  if (strcmp(argv[0],"materialState") == 0) {
+      return param.addObject(5,this);
+  }
+  // frictional strength parameter for UW soil materials
+  if (strcmp(argv[0],"frictionalStrength") == 0) {
+      return param.addObject(7,this);
+  }
+  // non-associative parameter for UW soil materials
+  if (strcmp(argv[0],"nonassociativeTerm") == 0) {
+      return param.addObject(8,this);
+  }
+  // cohesion parameter for UW soil materials
+  if (strcmp(argv[0],"cohesiveIntercept") == 0) {
+      return param.addObject(9,this);
+  }
 
   // quad pressure loading
   if (strcmp(argv[0],"pressure") == 0)
@@ -1119,13 +1131,38 @@ FourNodeQuad::updateParameter(int parameterID, Information &info)
 
 	case 5:
 		// added: C.McGann, U.Washington
-		for (int i = 0; i<4; i++) {
+		for (int i = 0; i < 4; i++) {
 			matRes = theMaterial[i]->updateParameter(parameterID, info);
 		}
 		if (matRes != -1) {
 			res = matRes;
 		}
 		return res;
+	case 7:
+	    for (int i = 0; i < 4; i++) {
+			matRes = theMaterial[i]->updateParameter(parameterID, info);
+		}
+		if (matRes != -1) {
+			res = matRes;
+		}
+		return res;
+	case 8:
+	    for (int i = 0; i < 4; i++) {
+			matRes = theMaterial[i]->updateParameter(parameterID, info);
+		}
+		if (matRes != -1) {
+			res = matRes;
+		}
+		return res;
+	case 9:
+	    for (int i = 0; i < 4; i++) {
+			matRes = theMaterial[i]->updateParameter(parameterID, info);
+		}
+		if (matRes != -1) {
+			res = matRes;
+		}
+		return res;
+		
 
 	default: 
 	  /*	  

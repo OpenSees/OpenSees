@@ -1654,9 +1654,21 @@ BrickUP::setParameter(const char **argv, int argc, Parameter &param)
   if (strcmp(argv[0],"vPerm") == 0)
     return param.addObject(4, this);
 
-  // added: C.McGann, U.Washington
+  // material state (elastic/plastic) for UW soil materials
   if (strcmp(argv[0],"materialState") == 0) {
-	  return param.addObject(5,this);
+      return param.addObject(5,this);
+  }
+  // frictional strength parameter for UW soil materials
+  if (strcmp(argv[0],"frictionalStrength") == 0) {
+      return param.addObject(7,this);
+  }
+  // non-associative parameter for UW soil materials
+  if (strcmp(argv[0],"nonassociativeTerm") == 0) {
+      return param.addObject(8,this);
+  }
+  // cohesion parameter for UW soil materials
+  if (strcmp(argv[0],"cohesiveIntercept") == 0) {
+      return param.addObject(9,this);
   }
 
   int res = -1;
@@ -1689,6 +1701,30 @@ BrickUP::updateParameter(int parameterID, Information &info)
 	case 5:
 		// added: C.McGann, U.Washington
 		for (int i = 0; i<8; i++) {
+			matRes = materialPointers[i]->updateParameter(parameterID, info);
+		}
+		if (matRes != -1) {
+			res = matRes;
+		}
+		return res;
+	case 7:
+	    for (int i = 0; i < 8; i++) {
+			matRes = materialPointers[i]->updateParameter(parameterID, info);
+		}
+		if (matRes != -1) {
+			res = matRes;
+		}
+		return res;
+	case 8:
+	    for (int i = 0; i < 8; i++) {
+			matRes = materialPointers[i]->updateParameter(parameterID, info);
+		}
+		if (matRes != -1) {
+			res = matRes;
+		}
+		return res;
+	case 9:
+	    for (int i = 0; i < 8; i++) {
 			matRes = materialPointers[i]->updateParameter(parameterID, info);
 		}
 		if (matRes != -1) {

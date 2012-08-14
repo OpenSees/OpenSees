@@ -693,8 +693,22 @@ SSPquad::setParameter(const char **argv, int argc, Parameter &param)
 		return -1;
 	}
 	int res = -1;
+
+	// material state (elastic/plastic) for UW soil materials
 	if (strcmp(argv[0],"materialState") == 0) {
 		return param.addObject(5,this);
+	}
+	// frictional strength parameter for UW soil materials
+	if (strcmp(argv[0],"frictionalStrength") == 0) {
+		return param.addObject(7,this);
+	}
+	// non-associative parameter for UW soil materials
+	if (strcmp(argv[0],"nonassociativeTerm") == 0) {
+		return param.addObject(8,this);
+	}
+	// cohesion parameter for UW soil materials
+	if (strcmp(argv[0],"cohesiveIntercept") == 0) {
+		return param.addObject(9,this);
 	}
 	
 	// quad pressure loading
@@ -702,7 +716,7 @@ SSPquad::setParameter(const char **argv, int argc, Parameter &param)
     	return param.addObject(2, this);
 	}
   	// a material parameter
-  	else if (strstr(argv[0],"material") != 0) {
+  	if (strstr(argv[0],"material") != 0) {
 
     	if (argc < 3) {
       		return -1;
@@ -747,6 +761,24 @@ SSPquad::updateParameter(int parameterID, Information &info)
 			//this->setPressureLoadAtNodes();	// update consistent nodal loads
 			return 0;
 		case 5:
+			matRes = theMaterial->updateParameter(parameterID, info);
+			if (matRes != -1) {
+				res = matRes;
+			}
+			return res;
+		case 7:
+			matRes = theMaterial->updateParameter(parameterID, info);
+			if (matRes != -1) {
+				res = matRes;
+			}
+			return res;
+		case 8:
+			matRes = theMaterial->updateParameter(parameterID, info);
+			if (matRes != -1) {
+				res = matRes;
+			}
+			return res;
+		case 9:
 			matRes = theMaterial->updateParameter(parameterID, info);
 			if (matRes != -1) {
 				res = matRes;

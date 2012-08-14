@@ -1811,10 +1811,22 @@ Brick::setParameter(const char **argv, int argc, Parameter &param)
 
   int res = -1;
 
-  // added: C.McGann, U.Washington
-  	if (strcmp(argv[0],"materialState") == 0) {
-		return param.addObject(5,this);
-	}
+  // material state (elastic/plastic) for UW soil materials
+  if (strcmp(argv[0],"materialState") == 0) {
+      return param.addObject(5,this);
+  }
+  // frictional strength parameter for UW soil materials
+  if (strcmp(argv[0],"frictionalStrength") == 0) {
+      return param.addObject(7,this);
+  }
+  // non-associative parameter for UW soil materials
+  if (strcmp(argv[0],"nonassociativeTerm") == 0) {
+      return param.addObject(8,this);
+  }
+  // cohesion parameter for UW soil materials
+  if (strcmp(argv[0],"cohesiveIntercept") == 0) {
+      return param.addObject(9,this);
+  }
 
   if (strstr(argv[0],"material") != 0) {
 
@@ -1847,7 +1859,7 @@ Brick::updateParameter(int parameterID, Information &info)
 	// added: C.McGann, U.Washington
   	int res = -1;
 	int matRes = res;
-	if (parameterID == 1 || parameterID == 5) {
+	if (parameterID == 1 || parameterID == 5 || parameterID == 7 || parameterID == 8 || parameterID == 9) {
 		for (int i = 0; i<8; i++) {
 			matRes = materialPointers[i]->updateParameter(parameterID, info);
 		}
