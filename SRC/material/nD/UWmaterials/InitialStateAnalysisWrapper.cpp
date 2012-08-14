@@ -352,6 +352,26 @@ InitialStateAnalysisWrapper::setParameter(const char **argv, int argc, Parameter
 		} else {
 			return -1;
 		}
+	} else if (strcmp(argv[0], "shearModulus") == 0) {
+		if (argc < 2) {
+			return -1;
+		}
+		int matTag = atoi(argv[1]);
+		if (this->getTag() == matTag) {
+			return param.addObject(10,this);
+		} else {
+			return -1;
+		}
+	} else if (strcmp(argv[0], "bulkModulus") == 0) {
+		if (argc < 2) {
+			return -1;
+		}
+		int matTag = atoi(argv[1]);
+		if (this->getTag() == matTag) {
+			return param.addObject(11,this);
+		} else {
+			return -1;
+		}
 	}
 
 	return -1;

@@ -48,7 +48,7 @@ class DruckerPrager : public NDMaterial
     // Full Constructor
     DruckerPrager(int tag, int classTag, double bulk, double shear,
 		  double s_y, double r, double r_bar, double Kinfinity, double Kinit, 
-		  double d1, double d2, double H, double t, double massDen, double atm = 101.0);
+		  double d1, double d2, double H, double t, double massDen = 0.0, double atm = 101.0);
 
   // Elastic Constructor
   //	  DruckerPrager(int tag, double bulk, double shear);
@@ -87,7 +87,7 @@ class DruckerPrager : public NDMaterial
   //material parameters
   double mKref;			// reference Bulk Modulus 
   double mGref;			// reference Shear Modulus
-  double mPatm;		// reference stress first invariant (pressure)
+  double mPatm;		    // reference stress first invariant (pressure)
   double mK;			// bulk modulus 
   double mG;			// shear modulus
   double msigma_y;		// yield strength 

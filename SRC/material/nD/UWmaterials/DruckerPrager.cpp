@@ -77,35 +77,42 @@ OPS_NewDruckerPragerMaterial(void)
 
   int numArgs = OPS_GetNumRemainingInputArgs();
 
-  if (numArgs < 13) {
-    opserr << "Want: nDMaterial DruckerPrager tag? K? G? sigma_y? rho? rho_bar? Kinf? Ko? delta1? delta2? H? theta? massDensity? <atm?>" << endln;
+  if (numArgs < 12) {
+    opserr << "Want: nDMaterial DruckerPrager tag? K? G? sigma_y? rho? rho_bar? Kinf? Ko? delta1? delta2? H? theta? <massDensity? atm?>" << endln;
     return 0;	
   }
   
   int tag;
-  double dData[13];
+  double dData[14];
 
   int numData = 1;
   if (OPS_GetInt(&numData, &tag) != 0) {
     opserr << "WARNING invalid nDMaterial DruckerPrager material  tag" << endln;
     return 0;
   }
-  if (numArgs == 13)
-    numData = 12;
-  else
-    numData = 13;
+  if (numArgs == 12) {
+      numData = 11;
+  } else if (numArgs == 13) {
+      numData = 13;
+  } else {
+	  numData = 14;
+  }
 
   if (OPS_GetDouble(&numData, dData) != 0) {
     opserr << "WARNING invalid material data for nDMaterial DruckerPrager material  with tag: " << tag << endln;
     return 0;
   }
 
-  if (numArgs  == 13)
+  if (numArgs == 12) {
+	theMaterial = new DruckerPrager(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+				    dData[6], dData[7], dData[8], dData[9], dData[10]);
+  } else if (numArgs  == 13) {
     theMaterial = new DruckerPrager(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
 				    dData[6], dData[7], dData[8], dData[9], dData[10], dData[11]);
-  else
+  } else {
     theMaterial = new DruckerPrager(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
 				    dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12]);
+  }
 
   if (theMaterial == 0) {
     opserr << "WARNING ran out of memory for nDMaterial DruckerPrager material  with tag: " << tag << endln;
@@ -134,7 +141,7 @@ DruckerPrager::DruckerPrager(int tag, int classTag, double bulk, double shear, d
     mIIdev(6,6),
     mState(5)
 {
-	massDen =  mDen;
+	massDen  =  mDen;
     mKref    =  bulk;
     mGref    =  shear;
     mPatm	 =  atm;
@@ -153,7 +160,7 @@ DruckerPrager::DruckerPrager(int tag, int classTag, double bulk, double shear, d
 		mTo = 1e10;
 	}
 	else { 
-		mTo      =  root23 * msigma_y / mrho;  // add something incase rho = 0
+		mTo = root23*msigma_y/mrho; 
 	}
 	// Use these values to deactivate yield surface 1 - Create Pure Tension Cutoff
 	//msigma_y = 1e10;
@@ -178,7 +185,7 @@ DruckerPrager ::DruckerPrager  ()
     mIIdev(6,6),
 	mState(5)
 {
-	massDen =  0.0;
+	massDen  =  0.0;
     mKref    =  0.0;
     mGref    =  0.0;
     mPatm	 =  101.0;
@@ -800,11 +807,15 @@ DruckerPrager::updateParameter(int responseID, Information &info)
 	if (responseID == 5) {
 		mElastFlag = info.theDouble;
 	}
+	// shearModulus called
 	if (responseID == 10) {
-    	mElastFlag = info.theDouble;
+    	mG = info.theDouble;
+		mCe  = mK*mIIvol + 2*mG*mIIdev;
 	}
-	if (responseID==11) {
-    	mElastFlag=info.theDouble;
+	// bulkModulus called
+	if (responseID == 11) {
+    	mK = info.theDouble;
+		mCe  = mK*mIIvol + 2*mG*mIIdev;
   	}
 
 	return 0;

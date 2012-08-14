@@ -816,7 +816,7 @@ SSPbrick::setParameter(const char **argv, int argc, Parameter &param)
 	}
 
   	// a material parameter
-  	else if (strstr(argv[0],"material") != 0) {
+  	if (strstr(argv[0],"material") != 0) {
 
     	if (argc < 3) {
       		return -1;

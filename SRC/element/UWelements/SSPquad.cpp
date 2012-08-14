@@ -696,6 +696,7 @@ SSPquad::setParameter(const char **argv, int argc, Parameter &param)
 	if (strcmp(argv[0],"materialState") == 0) {
 		return param.addObject(5,this);
 	}
+	
 	// quad pressure loading
   	if (strcmp(argv[0],"pressure") == 0) {
     	return param.addObject(2, this);
