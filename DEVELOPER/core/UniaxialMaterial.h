@@ -55,15 +55,17 @@ class UniaxialMaterial : public Material
     UniaxialMaterial (int tag, int classTag);    
     virtual ~UniaxialMaterial();
 
-    virtual int setTrialStrain (double strain, double strainRate = 0.0) = 0;
+    virtual int setTrialStrain (double strain, double strainRate =0) =0;
+    virtual int setTrialStrain (double strain, double temperature, double strainRate);
     virtual int setTrial (double strain, double &stress, double &tangent, double strainRate = 0.0);
+    virtual int setTrial (double strain, double temperature, double &stress, double &tangent, double &thermalElongation, double strainRate = 0.0);
+
     virtual double getStrain (void) = 0;
     virtual double getStrainRate (void);
     virtual double getStress (void) = 0;
     virtual double getTangent (void) = 0;
     virtual double getInitialTangent (void) = 0;
     virtual double getDampTangent (void);
-    virtual double getSecant (void);
     virtual double getRho(void);
     
     virtual int commitState (void) = 0;

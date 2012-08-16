@@ -366,7 +366,7 @@ bool
 Domain::addElement(Element *element)
 {
   int eleTag = element->getTag();
-  
+
   ops_TheActiveElement = element;
 
   // check all the elements nodes exist in the domain

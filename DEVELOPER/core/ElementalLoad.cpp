@@ -79,6 +79,13 @@ ElementalLoad::applyLoad(double loadFactor)
     theElement->addLoad(this, loadFactor);
 }
 
+void 
+ElementalLoad::applyLoad(const Vector &loadFactors) 
+{
+  if (theElement != 0)
+    theElement->addLoad(this, loadFactors);
+}
+
 const Vector&
 ElementalLoad::getSensitivityData(int gradIndex)
 {
