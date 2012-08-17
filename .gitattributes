@@ -2833,6 +2833,10 @@ SRC/material/uniaxial/Maxwell.cpp -text
 SRC/material/uniaxial/Maxwell.h -text
 SRC/material/uniaxial/MinMaxMaterial.cpp -text
 SRC/material/uniaxial/MinMaxMaterial.h -text
+SRC/material/uniaxial/ModIMKPeakOriented.cpp -text
+SRC/material/uniaxial/ModIMKPeakOriented.h -text
+SRC/material/uniaxial/ModIMKPinching.cpp -text
+SRC/material/uniaxial/ModIMKPinching.h -text
 SRC/material/uniaxial/MultiLinear.cpp -text
 SRC/material/uniaxial/MultiLinear.h -text
 SRC/material/uniaxial/Neoprene.cpp -text

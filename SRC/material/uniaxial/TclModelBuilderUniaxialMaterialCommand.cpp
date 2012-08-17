@@ -101,10 +101,13 @@ extern void *OPS_NewElasticMultiLinear(void);
 extern void *OPS_ImpactMaterial(void);
 extern void *OPS_New_MultiLinear(void);
 extern void *OPS_NewHookGap(void);
-
+//extern void *OPS_FRPConfinedConcrete(void);
 extern void *OPS_NewSteel01Thermal(void);
 extern void *OPS_NewSteel02Thermal(void);
 extern void *OPS_NewConcrete02Thermal(void);
+
+extern void *OPS_ModIMKPeakOriented(void);
+extern void *OPS_ModIMKPinching(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -310,6 +313,21 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"ModIMKPinching") == 0) {
+      void *theMat = OPS_ModIMKPinching();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"ModIMKPeakOriented") == 0) {
+      void *theMat = OPS_ModIMKPeakOriented();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
 
     } else if (strcmp(argv[1],"Steel01Thermal") == 0) {
       void *theMat = OPS_NewSteel01Thermal();
