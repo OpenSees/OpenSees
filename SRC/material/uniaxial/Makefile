@@ -72,6 +72,8 @@ include ../../../Makefile.def
 	SAWSMaterial.o \
 	ConfinedConcrete01.o \
 	ConfinedConcrete02.o \
+	ModIMKPeakOriented.o \
+	ModIMKPinching.o \
 	pyUCLA.o \
 	Dodd_Restrepo.o DoddRestrepo.o \
         TclModelBuilderUniaxialMaterialCommand.o
