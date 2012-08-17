@@ -168,10 +168,13 @@
 #define MAT_TAG_BiLinear                        59
 #define MAT_TAG_Pinching                        60
 #define MAT_TAG_HookGap 			61
+#define MAT_TAG_FRPConfinedConcrete             62
 
-#define MAT_TAG_Steel01Thermal		        62
-#define MAT_TAG_Steel02Thermal			63
-#define MAT_TAG_Concrete02Thermal		64
+#define MAT_TAG_Steel01Thermal		        63
+#define MAT_TAG_Steel02Thermal			64
+#define MAT_TAG_Concrete02Thermal		65
+#define MAT_TAG_ModIMKPinching                  66
+#define MAT_TAG_ModIMKPeakOriented              67
 
 #define MAT_TAG_WrapperUniaxialMaterial      101
 #define MAT_TAG_UniaxialJ2Plasticity         102
@@ -319,6 +322,9 @@
 #define ND_TAG_ManzariDafalias                  14012
 #define ND_TAG_ManzariDafalias3D                14013
 #define ND_TAG_ManzariDafaliasPlaneStrain       14014
+
+
+
 
 #define ND_TAG_ReinforcedConcretePlaneStress  104
 #define ND_TAG_FAReinforcedConcretePlaneStress  105

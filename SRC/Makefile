@@ -530,6 +530,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Steel01Thermal.o \
 	$(FE)/material/uniaxial/Steel02Thermal.o \
 	$(FE)/material/uniaxial/Concrete02Thermal.o \
+	$(FE)/material/uniaxial/ModIMKPinching.o \
+	$(FE)/material/uniaxial/ModIMKPeakOriented.o \
 	$(FE)/material/uniaxial/SmoothPSConcrete.o \
 	$(FE)/material/uniaxial/Concrete01WithSITC.o \
 	$(FE)/material/uniaxial/ECC01.o \
