@@ -133,6 +133,11 @@ class Cast : public UniaxialMaterial
 	// added by DL
 	double kp;   // Initial stiffness of Cast Fuse
 	double Pp;   // Monotonic yield strength of Cast Fuse
+	
+	double epsminr;   // added by MG
+	double epsmaxr;   // added by MG
+	double epsminrP;   // added by MG
+	double epsmaxrP;   // added by MG
 };
 
 

@@ -5,7 +5,6 @@
 **                                                                    **
 ** (C) Copyright 1999, The Regents of the University of California    **
 ** All Rights Reserved.                                               **
-**                                                                    **
 ** Commercial use of this program without express permission of the   **
 ** University of California, Berkeley, is strictly prohibited.  See   **
 ** file 'COPYRIGHT'  in main directory for information on usage and   **
@@ -42,23 +41,24 @@
 #include <Parameter.h>
 
 #include <math.h>
+
 #include <float.h>
 
 #include <elementAPI.h>
 #include <OPS_Globals.h>
 
-static int numCastMaterials = 0;
 
-
-
-#ifndef fmin
-using std::min;
-using std::max;
-#define fmin min
-#define fmax max
+#ifdef _USRDLL
+#define OPS_Export extern "C" _declspec(dllexport)
+#elif _MACOSX
+#define OPS_Export extern "C" __attribute__((visibility("default")))
+#else
+#define OPS_Export extern "C"
 #endif
 
-void *
+static int numCastMaterials = 0;
+
+OPS_Export void *
 OPS_Cast()
 {
 	if (numCastMaterials == 0) {
@@ -127,6 +127,10 @@ Cast::Cast(int tag, double NLegs, double _BO, double H, double _Fy,
   epssrP = 0.0;
   sigsrP = 0.0;
 
+  // added by MG
+  epsmaxrP = Pp/kp;
+  epsminrP = -epsmaxrP;
+
 }
 
 Cast::Cast(int tag, double NLegs, double _BO, double H, double _Fy,
@@ -162,6 +166,10 @@ Cast::Cast(int tag, double NLegs, double _BO, double H, double _Fy,
   sigs0P = 0.0;
   epssrP = 0.0;
   sigsrP = 0.0;
+
+  // added by MG
+ double  epsmaxrP = Pp/kp;
+ double  epsminrP = -epsmaxrP;
 }
 
 Cast::Cast(int tag, double NLegs, double _BO, double H,
@@ -199,6 +207,10 @@ Cast::Cast(int tag, double NLegs, double _BO, double H,
   sigs0P = 0.0;
   epssrP = 0.0;
   sigsrP = 0.0;
+
+  // added by MG
+double  epsmaxrP = Pp/kp;
+double  epsminrP = -epsmaxrP;
 }
 
 Cast::Cast(void):
@@ -240,6 +252,10 @@ Cast::setTrialStrain(double trialStrain, double strainRate)
   sigr   = sigsrP;  
   kon = konP;
 
+  //added by MG
+double  epsminr = epsminrP;
+double  epsmaxr = epsmaxrP;
+
   if (kon == 0 ) {
 	  if (fabs(deps) < 10.0*DBL_EPSILON) {
 		  
@@ -276,14 +292,39 @@ Cast::setTrialStrain(double trialStrain, double strainRate)
   if (kon == 2 && deps > 0.0) {
 
     kon = 1;
+
+	// MG: This variable is used to evaluate if the strain is enough since the
+	// previous reveral to consider an increase in strain hardening
+	double yieldcheck = (eps - epsr)/(epss0 - epsr);
+
     epsr = epsP;
-    sigr = sigP;
+
+	// MG: This ensures that in the case where post-yeilding is applied it isn't double counted
+  if (eps > 0 && sig > 0 || eps < 0 && sig < 0) {
+	  sigr = sigP * cos(2.0*epsP/l);
+  } else {
+      sigr = sigP;
+  }
 	// commented before  
-    epsmin = fmin(epsP, epsmin);
-	  
+	// MG: This is redundant
+    // epsmin = min(epsP, epsmin);
+
+	// MG: This stores the min strain that was used to calcualte the strain
+	// hardening before this load reversal.  In the case where there
+	// is a quick double back we won't consider strain hardening
+	// epsminr = epsmin;
+
     if (epsP < epsmin)
       epsmin = epsP;
-      double d1 = (epsmax - epsmin) / (2.0*(a4 * epsy));
+
+      //double d1 = (epsmax - epsmin) / (2.0*(a4 * epsy));
+	  
+	  // MG: recalculate d1 if the material hasn't yielded in this excursion
+	  if (fabs(yieldcheck) > 1){
+		  epsmaxr = epsmax;
+	  }
+
+	  double d1 = (epsmaxr - epsmin) / (2.0*(a2 * epsy));
       double shft = 1.0 + a3 * pow(d1, 0.8);
       epss0 = (Pp * shft - Esh * epsy * shft - sigr + kp * epsr) / (kp - Esh);
       sigs0 = Pp * shft + Esh * (epss0 - epsy * shft);
@@ -299,16 +340,40 @@ Cast::setTrialStrain(double trialStrain, double strainRate)
     // Constants a1 and a2 control this stress shift on compression side 
 
     kon = 2;
+
+	// MG: This variable is used to evaluate if strain the strain is enough since the
+	// previous reveral to consider strain hardening
+	double yieldcheck = (eps - epsr)/(epss0 - epsr);
+
     epsr = epsP;
-    sigr = sigP;
+
+	// MG: This ensures that in the case where post-yeilding is applied it isn't double counted
+  if (eps > 0 && sig > 0 || eps < 0 && sig < 0) {
+	  sigr = sigP * cos(2.0*epsP/l);
+  } else {
+      sigr = sigP;
+  }
+
 	  
 	// commented before
-    epsmax = fmax(epsP, epsmax);
+	// MG: This is redundant
+    // epsmax = max(epsP, epsmax);
+
+	// MG: This stores the max strain that was used to calcualte the strain
+	// hardening before this load reversal.  In the case where there
+	// is a quick double back we won't consider strain hardening
+	// epsmaxr = epsmax;
 	  
     if (epsP > epsmax)
       epsmax = epsP;
     
-    double d1 = (epsmax - epsmin) / (2.0*(a2 * epsy));
+    // double d1 = (epsmax - epsmin) / (2.0*(a2 * epsy));
+
+	// MG: recalculate d1 if the material hasn't yielded in this excursion
+	if (fabs(yieldcheck) > 1){
+	   double epsminr = epsmin;
+	} 
+	double d1 = (epsmax - epsminr) / (2.0*(a2 * epsy));
     double shft = 1.0 + a1 * pow(d1, 0.8);
     epss0 = (-Pp * shft + Esh * epsy * shft - sigr + kp * epsr) / (kp - Esh);
     sigs0 = -Pp * shft + Esh * (epss0 + epsy * shft);
@@ -328,15 +393,39 @@ Cast::setTrialStrain(double trialStrain, double strainRate)
 	
   // Added by DL to Change Paths and Pinch
   sig = sig*(sigs0-sigr);
-  
-  if (fabs(eps)>fabs(epsy)) {
-	  sig = sig/cos(1.5*eps/l) + sigr;
-  }else
-	  sig = sig + sigr;
-  
-  e = b + (1.0-b)/(dum1*dum2);
-  e = e*(sigs0-sigr)/(epss0-epsr);
  
+  sig = sig+sigr;
+  // MG: This vaiable is used in the tangent calc when post-yield stiffening is considered	
+  double sign = 1;
+
+  if ((eps-epsr) < 0){
+	  double sign = -1;
+  }else {
+	  double sign = 1;
+  }
+  
+  // MG: Checks which quadrant we are in and then consideres post-yield stiffneing when appropriate
+  // this is not technically correct but it fixes the problem that occurs when there is a load
+  // reversal in the elastic rebound
+
+  if (eps > 0 && sig > 0 || eps < 0 && sig < 0) {
+	  sig = sig/cos(2.0*eps/l);
+	  e = ((sigr - sigs0)*(b/(epsr - epss0) - (b - 1)/((epsr - epss0)*pow(pow((fabs(eps - epsr)/fabs(epsr - epss0)),R) + 1,(1/R))) + (sign*(eps - epsr)*pow(fabs(eps - epsr)/fabs(epsr - epss0),(R - 1))*(b - 1))/(fabs(epsr - epss0)*(epsr - epss0)*pow(pow(fabs(eps - epsr)/fabs(epsr - epss0),R) + 1,(1/R + 1)))))/cos((2*eps)/l) + (2*sin((2*eps)/l)*(sigr + ((b*(eps - epsr))/(epsr - epss0) - ((eps - epsr)*(b - 1))/((epsr - epss0)*pow(pow(fabs(eps - epsr)/fabs(epsr - epss0),R) + 1,(1/R))))*(sigr - sigs0)))/(l*pow(cos((2*eps)/l),2));
+  } else {
+      e = b + (1.0-b)/(dum1*dum2);
+      e = e*(sigs0-sigr)/(epss0-epsr);
+  }
+
+//  if (fabs(eps)>fabs(epsy)) {
+//	  sig = sig/cos(2.0*eps/l) + sigr;
+//  }else
+  //	  sig = sig + sigr;
+  
+ // e = b + (1.0-b)/(dum1*dum2);
+ // e = e*(sigs0-sigr)/(epss0-epsr);
+
+   
+
   return 0;
 }
 
@@ -374,6 +463,10 @@ Cast::commitState(void)
   sigP = sig;
   epsP = eps;
 
+  // Added by MG
+ double epsmaxrP = epsmaxr;
+ double epsminrP = epsminr;
+
   return 0;
 }
 
@@ -392,6 +485,10 @@ Cast::revertToLastCommit(void)
   e = eP;
   sig = sigP;
   eps = epsP;
+
+  // Added by MG
+double  epsmaxr = epsmaxrP;
+double  epsminr = epsminrP;
 
   return 0;
 }
@@ -418,6 +515,10 @@ Cast::revertToStart(void)
   epssrP = 0.0;
   sigsrP = 0.0;
 
+  // Added by MG
+double  epsmaxrP = Pp/kp;
+double epsminrP = -epsmaxrP;
+
   return 0;
 }
 
@@ -433,7 +534,7 @@ int
 Cast::sendSelf(int commitTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(28);
+  static Vector data(30);
 
   data(0) = this->getTag();
 	
@@ -469,6 +570,10 @@ Cast::sendSelf(int commitTag, Channel &theChannel)
   data(26) = Pp;
   data(27) = kp;
 
+  // Added by MG
+  data(28) = epsmaxrP;
+  data(29) = epsminrP;
+
   res = theChannel.sendVector(this->getDbTag(), commitTag, data);
   if (res < 0)
 	opserr << "Cast::sendSelf() - failed to send data\n";
@@ -481,7 +586,7 @@ Cast::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(28);
+  static Vector data(30);
   res = theChannel.recvVector(this->getDbTag(),commitTag, data);
   
   if (res < 0) {
@@ -523,6 +628,10 @@ Cast::recvSelf(int commitTag, Channel &theChannel,
 	  eP   = data(25);   
 	  Pp = data(26);
 	  kp = data(27);
+
+	  // Added by MG
+	  epsmaxrP = data(28);
+	  epsminrP = data(29);
   }
 	
   return res;
