@@ -2017,6 +2017,14 @@ Node::setCrds(double Crd1)
 {
   if (Crd != 0 && Crd->Size() >= 1)
     (*Crd)(0) = Crd1;
+
+  // Need to "setDomain" to make the change take effect. 
+  Domain *theDomain = this->getDomain();
+  ElementIter &theElements = theDomain->getElements();
+  Element *theElement;
+  while ((theElement = theElements()) != 0) {
+    theElement->setDomain(theDomain);
+  }
 }
 
 void
@@ -2025,6 +2033,14 @@ Node::setCrds(double Crd1, double Crd2)
   if (Crd != 0 && Crd->Size() >= 2) {
     (*Crd)(0) = Crd1;
     (*Crd)(1) = Crd2;
+
+    // Need to "setDomain" to make the change take effect. 
+    Domain *theDomain = this->getDomain();
+    ElementIter &theElements = theDomain->getElements();
+    Element *theElement;
+    while ((theElement = theElements()) != 0) {
+      theElement->setDomain(theDomain);
+    }
   }
 }
 
@@ -2035,6 +2051,14 @@ Node::setCrds(double Crd1, double Crd2, double Crd3)
     (*Crd)(0) = Crd1;
     (*Crd)(1) = Crd2;
     (*Crd)(2) = Crd3;
+
+    // Need to "setDomain" to make the change take effect. 
+    Domain *theDomain = this->getDomain();
+    ElementIter &theElements = theDomain->getElements();
+    Element *theElement;
+    while ((theElement = theElements()) != 0) {
+      theElement->setDomain(theDomain);
+    }
   }
 }
 
@@ -2043,5 +2067,13 @@ Node::setCrds(const Vector &newCrds)
 {
   if (Crd != 0 && Crd->Size() == newCrds.Size()) {
     (*Crd) = newCrds;
+
+    // Need to "setDomain" to make the change take effect. 
+    Domain *theDomain = this->getDomain();
+    ElementIter &theElements = theDomain->getElements();
+    Element *theElement;
+    while ((theElement = theElements()) != 0) {
+      theElement->setDomain(theDomain);
+    }
   }
 }
