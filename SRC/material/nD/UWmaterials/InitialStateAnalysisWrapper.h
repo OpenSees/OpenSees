@@ -33,6 +33,7 @@
 #include <NDMaterial.h>
 #include <Matrix.h>
 #include <Vector.h>
+#include <ID.h>
 
 class InitialStateAnalysisWrapper : public NDMaterial
 {

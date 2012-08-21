@@ -811,23 +811,17 @@ SSPbrick::setParameter(const char **argv, int argc, Parameter &param)
 		return param.addObject(5,this);
 	}
 	// frictional strength parameter for UW soil materials
-	if (strcmp(argv[0],"frictionalStrength") == 0) {
+	else if (strcmp(argv[0],"frictionalStrength") == 0) {
 		return param.addObject(7,this);
 	}
 	// non-associative parameter for UW soil materials
-	if (strcmp(argv[0],"nonassociativeTerm") == 0) {
+	else if (strcmp(argv[0],"nonassociativeTerm") == 0) {
 		return param.addObject(8,this);
 	}
 	// cohesion parameter for UW soil materials
-	if (strcmp(argv[0],"cohesiveIntercept") == 0) {
+	else if (strcmp(argv[0],"cohesiveIntercept") == 0) {
 		return param.addObject(9,this);
 	}
-
-	// quad pressure loading
-  	if (strcmp(argv[0],"pressure") == 0) {
-    	return param.addObject(2, this);
-	}
-
   	// a material parameter
   	if (strstr(argv[0],"material") != 0) {
 
@@ -873,11 +867,6 @@ SSPbrick::updateParameter(int parameterID, Information &info)
 			}
 			return res;
       
-		case 2:
-			//pressure = info.theDouble;
-			//this->setPressureLoadAtNodes();	// update consistent nodal loads
-			return 0;
-
 		case 5:
 			matRes = theMaterial->updateParameter(parameterID, info);
 			if (matRes != -1) {

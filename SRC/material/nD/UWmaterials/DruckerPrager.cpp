@@ -55,10 +55,6 @@ const double DruckerPrager :: one3   = 1.0 / 3.0 ;
 const double DruckerPrager :: two3   = 2.0 / 3.0 ;
 const double DruckerPrager :: root23 = sqrt( 2.0 / 3.0 ) ;
 
-//  0 = elastic+no param update; 1 = elastic+param update; 2 = elastoplastic+no param update (default)
-double		DruckerPrager::mElastFlag = 2;
-
-
 #include <elementAPI.h>
 #define OPS_Export 
 
@@ -162,6 +158,10 @@ DruckerPrager::DruckerPrager(int tag, int classTag, double bulk, double shear, d
 	else { 
 		mTo = root23*msigma_y/mrho; 
 	}
+	// set the elastic flag
+	//  0 = elastic+no param update; 1 = elastic+param update; 2 = elastoplastic+no param update (default)
+	mElastFlag = 2;
+
 	// Use these values to deactivate yield surface 1 - Create Pure Tension Cutoff
 	//msigma_y = 1e10;
 	//mTo      = 100;
@@ -779,8 +779,7 @@ int DruckerPrager::setParameter(const char **argv, int argc, Parameter &param)
 	if (argc < 2)
     	return -1;
 
-	int theMaterialTag;
-	theMaterialTag = atoi(argv[1]);
+	int theMaterialTag = atoi(argv[1]);
 
 	if (theMaterialTag == this->getTag()) {
 
@@ -801,14 +800,14 @@ DruckerPrager::updateParameter(int responseID, Information &info)
 {
 	// updateMaterialStage called
 	if (responseID == 1) {
-		mElastFlag = info.theInt;
+		mElastFlag = (int)info.theDouble;
 	}
     // materialState called
-	if (responseID == 5) {
-		mElastFlag = info.theDouble;
+	else if (responseID == 5) {
+		mElastFlag = (int)info.theDouble;
 	}
 	// frictionalStrength called
-	if (responseID == 7) {
+	else if (responseID == 7) {
 		mrho = info.theDouble;
 		// update tension cutoff
 		if (mrho == 0.0) { 
@@ -818,11 +817,11 @@ DruckerPrager::updateParameter(int responseID, Information &info)
 	    }
 	}
 	// nonassociativeTerm called
-	if (responseID == 8) {
+	else if (responseID == 8) {
 		mrho_bar = info.theDouble;
 	}
 	// cohesiveIntercept called
-	if (responseID == 9) {
+	else if (responseID == 9) {
 		msigma_y = info.theDouble;
 		// update tension cutoff
 		if (mrho == 0.0) { 
@@ -832,12 +831,12 @@ DruckerPrager::updateParameter(int responseID, Information &info)
 	    }
 	}
 	// shearModulus called
-	if (responseID == 10) {
+	else if (responseID == 10) {
     	mG = info.theDouble;
 		mCe  = mK*mIIvol + 2*mG*mIIdev;
 	}
 	// bulkModulus called
-	if (responseID == 11) {
+	else if (responseID == 11) {
     	mK = info.theDouble;
 		mCe  = mK*mIIvol + 2*mG*mIIdev;
   	}
@@ -847,52 +846,195 @@ DruckerPrager::updateParameter(int responseID, Information &info)
 
 int DruckerPrager::sendSelf(int commitTag, Channel &theChannel)
 {
-  // we place all the data needed to define material and it's state
-  // int a vector object
-  static Vector data(8);
-  int cnt = 0;
-  data(cnt++) = this->getTag();
-  data(cnt++) = mK;
-  data(cnt++) = mG;
-  data(cnt++) = mrho;
-  data(cnt++) = mrho_bar;
-  data(cnt++) = mHard;
-  data(cnt++) = mtheta;
-// NEED TO ADD STATE INFO!
+	// send int data
+    static ID idData(3);
+   	idData(0) = this->getTag();
+	idData(1) = mElastFlag;   
+    idData(2) = mFlag;
 
-
-  // send the vector object to the channel
-  if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
-    opserr << "DruckerPrager::sendSelf - failed to send vector to channel\n";
-    return -1;
-  }
+	int res = 0;
+	res += theChannel.sendID(this->getDbTag(), commitTag, idData);
+	if (res < 0) {
+		opserr << "WARNING: DruckerPrager - " << this->getTag() << " - failed to send ID data to channel" << endln;
+        return res;
+    }
   
-  return 0;
- 
+    // send double data
+	Vector data(212);
+    data(0)  = mKref;
+    data(1)  = mGref;
+    data(2)  = mK;
+    data(3)  = mG;
+    data(4)  = msigma_y;
+    data(5)  = mrho;
+    data(6)  = mrho_bar;
+    data(7)  = mKinf;
+    data(8)  = mKo;
+    data(9)  = mdelta1;
+    data(10) = mdelta2;
+    data(11) = mHard;
+    data(12) = mtheta;
+    data(13) = massDen;
+	data(14) = mPatm;
+	data(15) = mTo;
+	data(16) = mHprime;	
+    data(17) = mAlpha1_n;
+    data(18) = mAlpha1_n1;
+    data(19) = mAlpha2_n;
+    data(20) = mAlpha2_n1;
+
+	// send vector data
+	int i;
+	int cnt = 21;
+	for (i = 0; i < 6; i++) data(cnt+i) = mEpsilon(i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 6; i++) data(cnt+i) = mEpsilon_n_p(i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 6; i++) data(cnt+i) = mEpsilon_n1_p(i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 6; i++) data(cnt+i) = mSigma(i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 6; i++) data(cnt+i) = mBeta_n(i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 6; i++) data(cnt+i) = mBeta_n1(i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 6; i++) data(cnt+i) = mI1(i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 5; i++) data(cnt+i) = mState(i);
+	cnt = cnt+i+1;
+
+	// send matrix data
+	int j;
+    for (i = 0; i < 6; j++) {
+		for (j = 0; j < 6; j++) {
+			data(cnt+j) = mCe(i,j);
+		}
+		cnt = cnt+j+1;
+	}
+	for (i = 0; i < 6; j++) {
+		for (j = 0; j < 6; j++) {
+			data(cnt+i+j) = mCep(i,j);
+		}
+		cnt = cnt+j+1;
+	}
+	for (i = 0; i < 6; j++) {
+		for (j = 0; j < 6; j++) {
+			data(cnt+i+j) = mIIvol(i,j);
+		}
+		cnt = cnt+j+1;
+	}
+	for (i = 0; i < 6; j++) {
+		for (j = 0; j < 6; j++) {
+			data(cnt+i+j) = mIIdev(i,j);
+		}
+		cnt = cnt+j+1;
+	}
+    
+	res += theChannel.sendVector(this->getDbTag(), commitTag, data);
+	if (res < 0) {
+		opserr << "WARNING: DruckerPrager - " << this->getTag() << " - failed to send vector data to channel" << endln;
+		return res;
+    }
+    
+    return res;
 }
 
-int DruckerPrager::recvSelf(int commitTag, Channel &theChannel, 
-                                         FEM_ObjectBroker &theBroker)    
+int DruckerPrager::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)    
 {
-  // recv the vector object from the channel which defines material param and state
-  static Vector data(7);
-  if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
-    opserr << "DruckerPrager::recvSelf - failed to recv vector from channel\n";
-    return -1;
-  }
+	int res = 0;
 
-  // set the material parameters and state variables
-  int cnt = 0;
-  this->setTag( int(data(cnt++)) );
-  mK = data(cnt++);
-  mG = data(cnt++);
-  mrho = data(cnt++);
-  mrho_bar = data(cnt++);
-  mHard = data(cnt++);
-  mtheta = data(cnt++);
+	// receive int data
+	static ID idData(3);
+	res += theChannel.recvID(this->getDbTag(), commitTag, idData);
+	if (res < 0) {
+		opserr << "WARNING DruckerPrager - " << this->getTag() << " - could not receive ID data" << endln;
+		return res;
+	}
+	
+	// set int member variables
+	this->setTag((int)idData(0));
+	mElastFlag = idData(1);
+	mFlag = idData(2);
 
-  return 0;
+	// receive double data
+	Vector data(212);
+	res += theChannel.recvVector(this->getDbTag(), commitTag, data);
+	if (res < 0) {
+		opserr << "WARNING: DruckerPrager - " << this->getTag() << " - could not receive vector data" << endln;
+		return res;
+	}
 
+    // set double member variables
+	mKref      = data(0);
+    mGref      = data(1);
+    mK         = data(2);
+    mG         = data(3);
+    msigma_y   = data(4);
+    mrho       = data(5);
+    mrho_bar   = data(6);
+    mKinf      = data(7);
+    mKo        = data(8);
+    mdelta1    = data(9);
+    mdelta2    = data(10);
+    mHard      = data(11);
+    mtheta     = data(12);
+    massDen    = data(13);
+	mPatm      = data(14);
+	mTo        = data(15);
+	mHprime    = data(16);
+    mAlpha1_n  = data(17);
+    mAlpha1_n1 = data(18);
+    mAlpha2_n  = data(19);
+    mAlpha2_n1 = data(20);
+
+	// set vector member variables
+	int i;
+	int cnt = 21;
+	for (i = 0; i < 6; i++) mEpsilon(i) = data(cnt+i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 6; i++) mEpsilon_n_p(i) = data(cnt+i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 6; i++) mEpsilon_n1_p(i) = data(cnt+i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 6; i++) mSigma(i) = data(cnt+i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 6; i++) mBeta_n(i) = data(cnt+i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 6; i++) mBeta_n1(i) = data(cnt+i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 6; i++) mI1(i) = data(cnt+i);
+	cnt = cnt+i+1;
+	for (i = 0; i < 5; i++) mState(i) = data(cnt+i);
+	cnt = cnt+i+1;
+
+	// set matrix member variables
+	int j;
+    for (i = 0; i < 6; j++) {
+		for (j = 0; j < 6; j++) {
+			mCe(i,j) = data(cnt+j);
+		}
+		cnt = cnt+j+1;
+	}
+	for (i = 0; i < 6; j++) {
+		for (j = 0; j < 6; j++) {
+			mCep(i,j) = data(cnt+i+j);
+		}
+		cnt = cnt+j+1;
+	}
+	for (i = 0; i < 6; j++) {
+		for (j = 0; j < 6; j++) {
+			mIIvol(i,j) = data(cnt+i+j);
+		}
+		cnt = cnt+j+1;
+	}
+	for (i = 0; i < 6; j++) {
+		for (j = 0; j < 6; j++) {
+			mIIdev(i,j) = data(cnt+i+j);
+		}
+		cnt = cnt+j+1;
+	}
+
+	return res;
 }
 
 void DruckerPrager::Print(OPS_Stream &s, int flag )

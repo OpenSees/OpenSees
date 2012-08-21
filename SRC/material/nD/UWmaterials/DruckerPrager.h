@@ -41,6 +41,7 @@
 #include <NDMaterial.h>
 #include <Matrix.h>
 #include <Vector.h>
+#include <ID.h>
 
 class DruckerPrager : public NDMaterial
 {
@@ -119,10 +120,7 @@ class DruckerPrager : public NDMaterial
   double mAlpha2_n;		// alpha2_n
   double mAlpha2_n1;	// alpha2_n+1
   
-  static double  mElastFlag;    // Flag to determine elastic behavior
-  static double* mloadStagex;
-  static int	 matCount;
-  int matN;
+  int mElastFlag;    // Flag to determine elastic behavior
   int mFlag;
   
   Matrix mCe;			// elastic tangent stiffness matrix

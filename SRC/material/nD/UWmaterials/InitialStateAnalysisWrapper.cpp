@@ -235,42 +235,50 @@ InitialStateAnalysisWrapper::getMainClassTag()
 int
 InitialStateAnalysisWrapper::sendSelf(int commitTag, Channel &theChannel)
 {
-	int res;
-	int dataTag = this->getDbTag();
-
-	static Vector data(2);
-	data(0) = this->getTag();
-	data(1) = theMainMaterial->getClassTag();
-
-	res = theChannel.sendVector(dataTag, commitTag, data);
-	if (res < 0) {
-		opserr << "WARNING InitialStateAnalysisWrapper::sendSelf() - " << this->getTag() << " failed to send Vector\n";
-		return -1;
-	}
-
+	// send int data
+	static ID idData(4);
+	idData(0) = this->getTag();
+	idData(1) = theMainMaterial->getClassTag();
+	idData(2) = mDIM;
 	int matDbTag = theMainMaterial->getDbTag();
+	// check if main material has a database tag before sending to database channel
 	if (matDbTag == 0) {
 		matDbTag = theChannel.getDbTag();
 		if (matDbTag != 0) {
 			theMainMaterial->setDbTag(matDbTag);
 		}
 	}
+	idData(3) = matDbTag;
 
-	ID classTags(2);
-	classTags(0) = theMainMaterial->getClassTag();
-	classTags(1) = matDbTag;
-	
-	res = theChannel.sendID(dataTag, commitTag, classTags);
+	int res = 0;
+	res += theChannel.sendID(this->getDbTag(), commitTag, idData);
 	if (res < 0) {
-		opserr << "WARNING: InitialStateAnalysisWrapper::sendSelf() - " << this->getTag() << "failed to send ID\n";
+		opserr << "WARNING: InitialStateAnalysisWrapper - " << this->getTag() << " - failed to send ID data to channel" << endln;
 		return res;
-	}
-	
-	res = theMainMaterial->sendSelf(commitTag, theChannel);
+    }
+
+	// send double data
+	int vecSize = 3*mDIM - 3;
+	Vector data(2*vecSize);
+
+	int i;
+	int cnt = 0;
+	for (i = 0; i < vecSize; i++) data(cnt+i) = mEpsilon_o(i);
+	cnt = cnt+i+1;
+	for (i = 0; i < vecSize; i++) data(cnt+i) = mStrain(i);
+
+	res += theChannel.sendVector(this->getDbTag(), commitTag, data);
 	if (res < 0) {
-		opserr << "WARNING InitialStateAnalysisWrapper::sendSelf() - " << this->getTag() << " failed to send its Material\n";
-		return -3;
-	}
+		opserr << "WARNING: InitialStateAnalysisWrapper - " << this->getTag() << " - failed to send vector data to channel" << endln;
+		return res;
+    }
+
+	// instruct the main material to send itself
+	res += theMainMaterial->sendSelf(commitTag, theChannel);
+	if (res < 0) {
+		opserr << "WARNING: InitialStateAnalysisWrapper - " << this->getTag() << " - failed to send to main material" << endln;
+		return res;
+    }
 
 	return res;
 }
@@ -278,29 +286,23 @@ InitialStateAnalysisWrapper::sendSelf(int commitTag, Channel &theChannel)
 int
 InitialStateAnalysisWrapper::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-	int res;
-	int dataTag = this->getDbTag();
-
-	static Vector data(2);
-	res = theChannel.recvVector(dataTag, commitTag, data);
+	int res = 0;
+	
+    // receive int data
+	static ID idData(2);
+	res += theChannel.recvID(this->getDbTag(), commitTag, idData);
 	if (res < 0) {
-		opserr << "WARNING InitialStateAnalysisWrapper::recvSelf() - failed to receive Vector\n";
-		return -1;
+		opserr << "WARNING InitialStateAnalysisWrapper - " << this->getTag() << " - could not receive ID data" << endln;
+		return res;
 	}
 
-	this->setTag((int)data(0));
+	// set int member variables
+	this->setTag((int)idData(0));
+	mDIM = idData(2);
 
-	ID classTags(2);
-
-	res = theChannel.recvID(dataTag, commitTag, classTags);
-	if (res < 0)  {
-	  opserr << "InitialStateAnalysisWrapper::recvSelf() - failed to recv ID data\n";
-	  return res;
-	}
-
-	int matClassTag = classTags(0);
-	int matDbTag = classTags(1);
 	// check if material object exists and that it is the right type
+	int matClassTag = idData(1);
+	int matDbTag = idData(3);
 	if ((theMainMaterial == 0) || (theMainMaterial->getClassTag() != matClassTag)) {
 		
 		// if old, delete
@@ -311,19 +313,34 @@ InitialStateAnalysisWrapper::recvSelf(int commitTag, Channel &theChannel, FEM_Ob
 		// create new material object
 		theMainMaterial = theBroker.getNewNDMaterial(matClassTag);
 		if (theMainMaterial == 0) {
-			opserr << "InitialStateAnalysisWrapper::recvSelf() - " <<
-			"Broker could not create nDMaterial of classType: " << matClassTag << endln;
+			opserr << "InitialStateAnalysisWrapper - " << this->getTag() << " - Broker could not create nDMaterial - " << matClassTag << endln;
 			exit(-1);
 		}
 	}
 	
 	// set material dBtag and receive the material
 	theMainMaterial->setDbTag(matDbTag);
-	res = theMainMaterial->recvSelf(commitTag, theChannel, theBroker);
+	res += theMainMaterial->recvSelf(commitTag, theChannel, theBroker);
 	if (res < 0) {
 		opserr << "WARNING InitialStateAnalysisWrapper::recvSelf() - " << this->getTag() << " failed to receive its Material\n";
-		return -3;
+		return res;
 	}
+
+	// receive double data
+	int vecSize = 3*mDIM - 3;
+	Vector data(2*vecSize);
+	res += theChannel.recvVector(this->getDbTag(), commitTag, data);
+	if (res < 0) {
+		opserr << "WARNING: InitialStateAnalysisWrapper - " << this->getTag() << " - could not receive vector data" << endln;
+		return res;
+	}
+
+	// set vector member variables
+	int i;
+	int cnt = 0;
+	for (i = 0; i < vecSize; i++) mEpsilon_o(i) = data(cnt+i);
+	cnt = cnt+i+1;
+	for (i = 0; i < vecSize; i++) mStrain(i) = data(cnt+i);
 
 	return res;
 }
