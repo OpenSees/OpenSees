@@ -132,132 +132,143 @@ OPS_BeamContact3Dp(void)
 }
 
 // constructors:
-BeamContact3Dp::BeamContact3Dp(int tag, int Nd1, int Nd2, int NdS, double rad, CrdTransf &coordTransf,
-                               NDMaterial &theMat, double pen, int cSwitch)
+BeamContact3Dp::BeamContact3Dp(int tag, int Nd1, int Nd2, int NdS, 
+			       double rad, 
+			       CrdTransf &coordTransf,
+                               NDMaterial &theMat, 
+			       double pen, 
+			       int cSwitch)
  :Element(tag,ELE_TAG_BeamContact3Dp),    
-   crdTransf(0),
-   theMaterial(0),
-   externalNodes(BC3D_NUM_NODE),
-   mTangentStiffness(BC3D_NUM_DOF, BC3D_NUM_DOF),
-   mInternalForces(BC3D_NUM_DOF),
-   meye1(BC3D_NUM_NDM,BC3D_NUM_NDM),
-   mg1(BC3D_NUM_NDM),
-   mg2(BC3D_NUM_NDM),
-   mg_metric(2,2),
-   mn(BC3D_NUM_NDM),
-   mH(4),
-   mIcrd_a(BC3D_NUM_NDM),
-   mIcrd_b(BC3D_NUM_NDM),
-   mIcrd_s(BC3D_NUM_NDM),
-   mDcrd_a(BC3D_NUM_NDM),
-   mDcrd_b(BC3D_NUM_NDM),
-   mDcrd_s(BC3D_NUM_NDM),
-   mDisp_a_n(6),
-   mDisp_b_n(6),
-   mDisp_s_n(3),
-   mQa(BC3D_NUM_NDM,BC3D_NUM_NDM),
-   mQb(BC3D_NUM_NDM,BC3D_NUM_NDM),
-   mQc(BC3D_NUM_NDM,BC3D_NUM_NDM),
-   mc1(BC3D_NUM_NDM),
-   mBn(BC3D_NUM_DOF),
-   mBs(BC3D_NUM_DOF,2),
-   mBphi(3,12),
-   mIniContact(cSwitch)
+  crdTransf(0),
+  theMaterial(0),
+  externalNodes(BC3D_NUM_NODE),
+  mTangentStiffness(BC3D_NUM_DOF, BC3D_NUM_DOF),
+  mInternalForces(BC3D_NUM_DOF),
+  meye1(BC3D_NUM_NDM,BC3D_NUM_NDM),
+  mg1(BC3D_NUM_NDM),
+  mg2(BC3D_NUM_NDM),
+  mg_metric(2,2),
+  mn(BC3D_NUM_NDM),
+  mH(4),
+  mIcrd_a(BC3D_NUM_NDM),
+  mIcrd_b(BC3D_NUM_NDM),
+  mIcrd_s(BC3D_NUM_NDM),
+  mDcrd_a(BC3D_NUM_NDM),
+  mDcrd_b(BC3D_NUM_NDM),
+  mDcrd_s(BC3D_NUM_NDM),
+  mDisp_a_n(6),
+  mDisp_b_n(6),
+  mDisp_s_n(3),
+  mQa(BC3D_NUM_NDM,BC3D_NUM_NDM),
+  mQb(BC3D_NUM_NDM,BC3D_NUM_NDM),
+  mQc(BC3D_NUM_NDM,BC3D_NUM_NDM),
+  mc1(BC3D_NUM_NDM),
+  mBn(BC3D_NUM_DOF),
+  mBs(BC3D_NUM_DOF,2),
+  mBphi(3,12),
+  mSlip(2),
+  mIniContact(cSwitch)
 {
     externalNodes(0) = Nd1;
     externalNodes(1) = Nd2;
     externalNodes(2) = NdS;
 
     mRadius = rad;
-	mPenalty = pen;
-	mIniContact = cSwitch;
-
-	if (mIniContact == 0) {
-		inContact          = true;
-		was_inContact      = true;
-		in_bounds          = true;
-	} else {
-		inContact          = false;
-		was_inContact      = false;
-		in_bounds          = true;
-	}
-
-	// initialize penetration function and contact force
+    mPenalty = pen;
+    mIniContact = cSwitch;
+    
+    if (mIniContact == 0) {
+      inContact          = true;
+      was_inContact      = true;
+      in_bounds          = true;
+    } else {
+      inContact          = false;
+      was_inContact      = false;
+      in_bounds          = true;
+    }
+    
+    // initialize penetration function and contact force
     mGap    = 0.0;
     mLambda = 0.0;
-       
+    
     // get copy of the transformation & material object  
     crdTransf = coordTransf.getCopy3d();
     NDMaterial *theMatCopy = theMat.getCopy("ContactMaterial3D");
     if (theMatCopy != 0) {
-        theMaterial = (ContactMaterial3D *)theMatCopy;
+      theMaterial = (ContactMaterial3D *)theMatCopy;
     } else {
-        opserr << "BeamContact3Dp::BeamContact3Dp - material needs to be of type Contact3D for ele: " << this->getTag() << endln;
+      opserr << "BeamContact3Dp::BeamContact3Dp - material needs to be of type Contact3D for ele: " << this->getTag() << endln;
     }      
-       
+    
     // check them:         
     if (!crdTransf) {
-        opserr << "Error: BeamContact3d::BeamContact3d: could not create copy of coordinate transformation object" << endln;
-        exit(-1);
+      opserr << "Error: BeamContact3d::BeamContact3d: could not create copy of coordinate transformation object" << endln;
+      exit(-1);
     } 
     if (theMaterial == 0) {
-        opserr << "BeamContact3Dp::BeamContact3Dp - failed allocate material model pointer\n";
-        exit(-1);
+      opserr << "BeamContact3Dp::BeamContact3Dp - failed allocate material model pointer\n";
+      exit(-1);
     }
 }
 
+
 BeamContact3Dp::BeamContact3Dp()
  :Element(0,ELE_TAG_BeamContact3Dp),    
-   crdTransf(0),
-   theMaterial(0),
-   externalNodes(BC3D_NUM_NODE),
-   mTangentStiffness(BC3D_NUM_DOF, BC3D_NUM_DOF),
-   mInternalForces(BC3D_NUM_DOF),
-   meye1(BC3D_NUM_NDM,BC3D_NUM_NDM),
-   mg1(BC3D_NUM_NDM),
-   mg2(BC3D_NUM_NDM),
-   mg_metric(2,2),
-   mn(BC3D_NUM_NDM),
-   mH(4),
-   mIcrd_a(BC3D_NUM_NDM),
-   mIcrd_b(BC3D_NUM_NDM),
-   mIcrd_s(BC3D_NUM_NDM),
-   mDcrd_a(BC3D_NUM_NDM),
-   mDcrd_b(BC3D_NUM_NDM),
-   mDcrd_s(BC3D_NUM_NDM),
-   mDisp_a_n(6),
-   mDisp_b_n(6),
-   mDisp_s_n(3),
-   mQa(BC3D_NUM_NDM,BC3D_NUM_NDM),
-   mQb(BC3D_NUM_NDM,BC3D_NUM_NDM),
-   mQc(BC3D_NUM_NDM,BC3D_NUM_NDM),
-   mc1(BC3D_NUM_NDM),
-   mBn(BC3D_NUM_DOF),
-   mBs(BC3D_NUM_DOF,2),
-   mBphi(3,12)
+  crdTransf(0),
+  theMaterial(0),
+  externalNodes(BC3D_NUM_NODE),
+  mTangentStiffness(BC3D_NUM_DOF, BC3D_NUM_DOF),
+  mInternalForces(BC3D_NUM_DOF),
+  meye1(BC3D_NUM_NDM,BC3D_NUM_NDM),
+  mg1(BC3D_NUM_NDM),
+  mg2(BC3D_NUM_NDM),
+  mg_metric(2,2),
+  mn(BC3D_NUM_NDM),
+  mH(4),
+  mIcrd_a(BC3D_NUM_NDM),
+  mIcrd_b(BC3D_NUM_NDM),
+  mIcrd_s(BC3D_NUM_NDM),
+  mDcrd_a(BC3D_NUM_NDM),
+  mDcrd_b(BC3D_NUM_NDM),
+  mDcrd_s(BC3D_NUM_NDM),
+  mDisp_a_n(6),
+  mDisp_b_n(6),
+  mDisp_s_n(3),
+  mQa(BC3D_NUM_NDM,BC3D_NUM_NDM),
+  mQb(BC3D_NUM_NDM,BC3D_NUM_NDM),
+  mQc(BC3D_NUM_NDM,BC3D_NUM_NDM),
+  mc1(BC3D_NUM_NDM),
+  mBn(BC3D_NUM_DOF),
+  mBs(BC3D_NUM_DOF,2),
+  mBphi(3,12),
+  mSlip(2),
+  mIniContact(0)
 {
+
 }
 
 //  destructor:
 BeamContact3Dp::~BeamContact3Dp()
 {
-    if (theMaterial != 0) {
-        delete theMaterial;
-	}
-    
-	delete crdTransf;
+  /*
+  if (theMaterial != 0) 
+    delete theMaterial;
+
+  if (crdTransf != 0)
+  delete crdTransf;
+  */
 }
 
 int
 BeamContact3Dp::getNumExternalNodes(void) const
 {
-    return BC3D_NUM_NODE;
+  return BC3D_NUM_NODE;
 }
 
 const ID &
 BeamContact3Dp::getExternalNodes(void)
 {
-    return externalNodes;
+  return externalNodes;
 }
 
 
@@ -273,99 +284,103 @@ BeamContact3Dp::getNumDOF(void)
     return BC3D_NUM_DOF;
 }
 
+#include <ElementIter.h>
 
 void
 BeamContact3Dp::setDomain(Domain *theDomain)
 {
-    Vector a1(BC3D_NUM_NDM);       // tangent vector at end a
-    Vector b1(BC3D_NUM_NDM);       // tangent vector at end b
-    Vector x_c(BC3D_NUM_NDM);      // coordinate at projected point on centerline
-
-    meye1.Zero();
-    meye1(0,0) = 1.0;
-    meye1(1,1) = 1.0;
-    meye1(2,2) = 1.0;
-
-    int Nd1 = externalNodes(0);
-    int Nd2 = externalNodes(1);
-    int NdS = externalNodes(2);
-
-    theNodes[0] = theDomain->getNode(Nd1);
-    theNodes[1] = theDomain->getNode(Nd2);
-    theNodes[2] = theDomain->getNode(NdS);
-
-    for (int i = 0; i < 3; i++) {
-        if (theNodes[i] == 0)
-        return;  // don't go any further - otherwise segmentation fault
-    }  
-
-    //  initialize coordinate vectors and set to initial state
-    mIcrd_a = theNodes[0]->getCrds();
-    mIcrd_b = theNodes[1]->getCrds();
-    mIcrd_s = theNodes[2]->getCrds();    
-    mDcrd_a = mIcrd_a;
-    mDcrd_b = mIcrd_b;
-    mDcrd_s = mIcrd_s;
-    mDisp_a_n.Zero();
-    mDisp_b_n.Zero();
-    mDisp_s_n.Zero();
-
-    // Fill the coordinate transformation matrices mQa, mQb
-    // initialize the transformation
-    if (crdTransf->initialize(theNodes[0], theNodes[1])) {
-        opserr << "BeamContact3Dp::setDomain(): Error initializing coordinate transformation";  
-        exit(0);
+  Vector a1(BC3D_NUM_NDM);       // tangent vector at end a
+  Vector b1(BC3D_NUM_NDM);       // tangent vector at end b
+  Vector x_c(BC3D_NUM_NDM);      // coordinate at projected point on centerline
+  meye1.Zero();
+  meye1(0,0) = 1.0;
+  meye1(1,1) = 1.0;
+  meye1(2,2) = 1.0;
+  
+  int Nd1 = externalNodes(0);
+  int Nd2 = externalNodes(1);
+  int NdS = externalNodes(2);
+  
+  theNodes[0] = theDomain->getNode(Nd1);
+  theNodes[1] = theDomain->getNode(Nd2);
+  theNodes[2] = theDomain->getNode(NdS);
+  
+  for (int i = 0; i < 3; i++) {
+    if (theNodes[i] == 0) {
+      opserr << "BeamContact3Dp::setDomain() - no node with tag: " << theNodes[i] << endln;
+      return;  // don't go any further - otherwise segmentation fault
     }
-    // Note: the following intialization is already performed in crdTransf
-    //       but it doesnt return the values to beamContact element
-    Vector initXAxis(3);
-    Vector initYAxis(3);
-    Vector initZAxis(3);
-    crdTransf->getLocalAxes(initXAxis, initYAxis, initZAxis);
-    // fill mQa
-    for (int i = 0; i < 3; i++) {
-        mQa(i,0) = initXAxis(i);
-        mQa(i,1) = initYAxis(i);
-        mQa(i,2) = initZAxis(i);
-    }
-    // set mQb = mQa : beam column element requires zero initial twist
-    // if mQa = mQb -> mchi = 0
-    mQb = mQa;
-    mchi = 0;  
-    // fill tangent vectors = first column mQa, mQb = initXAxis
-    a1 = initXAxis;
-    b1 = a1;
-
-    // length of master segment L
-    mL = (mDcrd_b - mDcrd_a).Norm();  
-       
-    // perform projection to update local coordinate along centerline
-    //  of master segment.  projection function also sets mn, mc1
-    mxi = ((mDcrd_b - mDcrd_s)^(mDcrd_b - mDcrd_a)) / ((mDcrd_b - mDcrd_a)^(mDcrd_b - mDcrd_a)) ;  // initial approx
-    // initial basis function values for use in projection
-    mxi = project(mxi);
-
-    // initialize contact state based on projection
-    in_bounds = ( (mxi>0.000) && (mxi<1.0000) );
-    inContact = ( was_inContact && in_bounds );
-
-    // compute centerline projection coordinate
-    x_c = mDcrd_a*mH(0) + a1*mH(1) + mDcrd_b*mH(2) + b1*mH(3);
-
-    // update base vectors g1, g2 for determination of mg_metric
-    UpdateBase(mxi);
-       
-    // adjust cohesion force
-    //double area = 1.0*sqrt(mg_metric(0,0)*mg_metric(1,1)-mg_metric(0,1)*mg_metric(1,0));
-    double area = 1.0;
-    theMaterial->ScaleCohesion(area);
-    theMaterial->ScaleTensileStrength(area);
-       
-    // compute mBn, mBs
-    ComputeB();
-
-    // call the base class method
-    this->DomainComponent::setDomain(theDomain);
+  }  
+  
+  //  initialize coordinate vectors and set to initial state
+  mIcrd_a = theNodes[0]->getCrds();
+  mIcrd_b = theNodes[1]->getCrds();
+  mIcrd_s = theNodes[2]->getCrds();    
+  mDcrd_a = mIcrd_a;
+  mDcrd_b = mIcrd_b;
+  mDcrd_s = mIcrd_s;
+  mDisp_a_n.Zero();
+  mDisp_b_n.Zero();
+  mDisp_s_n.Zero();
+  
+  // Fill the coordinate transformation matrices mQa, mQb
+  // initialize the transformation
+  if (crdTransf->initialize(theNodes[0], theNodes[1])) {
+    opserr << "BeamContact3Dp::setDomain(): Error initializing coordinate transformation";  
+    exit(0);
+  }
+  // Note: the following intialization is already performed in crdTransf
+  //       but it doesnt return the values to beamContact element
+  Vector initXAxis(3);
+  Vector initYAxis(3);
+  Vector initZAxis(3);
+  
+  crdTransf->getLocalAxes(initXAxis, initYAxis, initZAxis);
+  // fill mQa
+  for (int i = 0; i < 3; i++) {
+    mQa(i,0) = initXAxis(i);
+    mQa(i,1) = initYAxis(i);
+    mQa(i,2) = initZAxis(i);
+  }
+  // set mQb = mQa : beam column element requires zero initial twist
+  // if mQa = mQb -> mchi = 0
+  mQb = mQa;
+  mchi = 0;  
+  // fill tangent vectors = first column mQa, mQb = initXAxis
+  a1 = initXAxis;
+  b1 = a1;
+  
+  // length of master segment L
+  mL = (mDcrd_b - mDcrd_a).Norm();  
+  
+  // perform projection to update local coordinate along centerline
+  //  of master segment.  projection function also sets mn, mc1
+  mxi = ((mDcrd_b - mDcrd_s)^(mDcrd_b - mDcrd_a)) / ((mDcrd_b - mDcrd_a)^(mDcrd_b - mDcrd_a)) ;  // initial approx
+  // initial basis function values for use in projection
+  mxi = project(mxi);
+  
+  // initialize contact state based on projection
+  in_bounds = ( (mxi>0.000) && (mxi<1.0000) );
+  inContact = ( was_inContact && in_bounds );
+  
+  // compute centerline projection coordinate
+  x_c = mDcrd_a*mH(0) + a1*mH(1) + mDcrd_b*mH(2) + b1*mH(3);
+  
+  // update base vectors g1, g2 for determination of mg_metric
+  UpdateBase(mxi);
+  
+  // adjust cohesion force
+  //double area = 1.0*sqrt(mg_metric(0,0)*mg_metric(1,1)-mg_metric(0,1)*mg_metric(1,0));
+  double area = 1.0;
+  
+  theMaterial->ScaleCohesion(area);
+  theMaterial->ScaleTensileStrength(area);
+  
+  // compute mBn, mBs
+  ComputeB();
+    
+  // call the base class method
+  this->DomainComponent::setDomain(theDomain);
 }        
 
 int
@@ -405,162 +420,162 @@ BeamContact3Dp::revertToLastCommit()
 int
 BeamContact3Dp::revertToStart()
 {
-	if (mIniContact == 0) {
-		inContact          = true;
-		was_inContact      = true;
-		in_bounds          = true;
-	} else {
-		inContact          = false;
-		was_inContact      = false;
-		in_bounds          = true;
-	}
-
-	// reset applicable member variables
-	mDcrd_a = mIcrd_a;
-	mDcrd_b = mIcrd_b;
-	mDcrd_s = mIcrd_s;
-	mDisp_a_n.Zero();
-	mDisp_b_n.Zero();
-	mDisp_s_n.Zero();
-
-    mL = (mDcrd_b - mDcrd_a).Norm();  
-       
-    mxi = ((mDcrd_b - mDcrd_s)^(mDcrd_b - mDcrd_a))/((mDcrd_b - mDcrd_a)^(mDcrd_b - mDcrd_a));
-    mxi = project(mxi);
-
-	in_bounds      = ( (mxi>0.000) && (mxi<1.0000) );
-    inContact      = ( was_inContact && in_bounds );
-
-    UpdateBase(mxi);
-    ComputeB();
-
-    return theMaterial->revertToStart();
+  if (mIniContact == 0) {
+    inContact          = true;
+    was_inContact      = true;
+    in_bounds          = true;
+  } else {
+    inContact          = false;
+    was_inContact      = false;
+    in_bounds          = true;
+  }
+  
+  // reset applicable member variables
+  mDcrd_a = mIcrd_a;
+  mDcrd_b = mIcrd_b;
+  mDcrd_s = mIcrd_s;
+  mDisp_a_n.Zero();
+  mDisp_b_n.Zero();
+  mDisp_s_n.Zero();
+  
+  mL = (mDcrd_b - mDcrd_a).Norm();  
+  
+  mxi = ((mDcrd_b - mDcrd_s)^(mDcrd_b - mDcrd_a))/((mDcrd_b - mDcrd_a)^(mDcrd_b - mDcrd_a));
+  mxi = project(mxi);
+  
+  in_bounds      = ( (mxi>0.000) && (mxi<1.0000) );
+  inContact      = ( was_inContact && in_bounds );
+  
+  UpdateBase(mxi);
+  ComputeB();
+  
+  return theMaterial->revertToStart();
 }
 
 int
 BeamContact3Dp::update(void)
 {
-    double tensileStrength;
-    Vector a1(BC3D_NUM_NDM);
-    Vector b1(BC3D_NUM_NDM);
-    Vector a1_n(BC3D_NUM_NDM);
-    Vector b1_n(BC3D_NUM_NDM);
-    Vector disp_a(6);
-    Vector disp_b(6);
-    Vector disp_s(3);
-    Vector disp_L(BC3D_NUM_NDM);
-    Vector rot_a(BC3D_NUM_NDM);
-    Vector rot_b(BC3D_NUM_NDM);
-    Vector x_c(BC3D_NUM_NDM);
-    Vector d(BC3D_NUM_NDM);
-
-    // update slave node coordinate
-    mDcrd_s = mIcrd_s + theNodes[2]->getTrialDisp();
-
-    // update nodes a, b  coordinates & rotations
-    disp_a = theNodes[0]->getTrialDisp();
-    disp_b = theNodes[1]->getTrialDisp();
-    disp_s = theNodes[2]->getTrialDisp();
-
-    for (int i = 0; i < 3; i++) {
-        // compute updated nodal coordinates a, b
-        mDcrd_a(i) = mIcrd_a(i) +  disp_a(i);
-        mDcrd_b(i) = mIcrd_b(i) +  disp_b(i);
-        // compute incremental rotations from step n to n+1
-        rot_a(i) = disp_a(i+3) - mDisp_a_n(i+3);
-        rot_b(i) = disp_b(i+3) - mDisp_b_n(i+3);
+  double tensileStrength;
+  Vector a1(BC3D_NUM_NDM);
+  Vector b1(BC3D_NUM_NDM);
+  Vector a1_n(BC3D_NUM_NDM);
+  Vector b1_n(BC3D_NUM_NDM);
+  Vector disp_a(6);
+  Vector disp_b(6);
+  Vector disp_s(3);
+  Vector disp_L(BC3D_NUM_NDM);
+  Vector rot_a(BC3D_NUM_NDM);
+  Vector rot_b(BC3D_NUM_NDM);
+  Vector x_c(BC3D_NUM_NDM);
+  Vector d(BC3D_NUM_NDM);
+  
+  // update slave node coordinate
+  mDcrd_s = mIcrd_s + theNodes[2]->getTrialDisp();
+  
+  // update nodes a, b  coordinates & rotations
+  disp_a = theNodes[0]->getTrialDisp();
+  disp_b = theNodes[1]->getTrialDisp();
+  disp_s = theNodes[2]->getTrialDisp();
+  
+  for (int i = 0; i < 3; i++) {
+    // compute updated nodal coordinates a, b
+    mDcrd_a(i) = mIcrd_a(i) +  disp_a(i);
+    mDcrd_b(i) = mIcrd_b(i) +  disp_b(i);
+    // compute incremental rotations from step n to n+1
+    rot_a(i) = disp_a(i+3) - mDisp_a_n(i+3);
+    rot_b(i) = disp_b(i+3) - mDisp_b_n(i+3);
+  }
+  
+  // Get tangent vectors from previous converged step
+  a1_n = Geta1();
+  b1_n = Getb1();
+  
+  // Perform linear update of tangent vectors such that
+  //  a1_{n+1} = a1_n + theta_{n->n+1}
+  //  theta_{n->n+1} = rot_a x a1_n
+  a1 = a1_n + CrossProduct(rot_a, a1_n);
+  b1 = b1_n + CrossProduct(rot_b, b1_n);
+  
+  // update centerline projection coordinate
+  // based upon coords & tangents at step n+1,  xi value @ step n
+  x_c = mDcrd_a*mH(0) + a1*mH(1) + mDcrd_b*mH(2) + b1*mH(3);
+  
+  // update the penetration function
+  d = mDcrd_s - x_c;
+  mGap = (mn^d) - mRadius;
+  double tol = 0.000001*mRadius;
+  if (mGap < tol && in_bounds) {
+    inContact = true;
+  } else {
+    mGap = 0.0;
+    inContact = false;
+  }
+  
+  // update normal contact force
+  if (was_inContact) {
+    mLambda = mPenalty*mGap;
+  } else {
+    mLambda = 0.0;
+  }
+  
+  // get tensile strength from material
+  tensileStrength = theMaterial->getTensileStrength();
+  
+  // determine trial strain vector based on contact state
+  if (inContact) {        
+    Vector strain(4);
+    Vector slip(2);
+    Vector phi_c(3);
+    Vector c2n(3);
+    Vector c3n(3);
+    Vector c2n1(3);
+    Vector c3n1(3);
+    Vector incDisp_ab(12);
+    Vector incDisp_s(3);
+    Vector dstar(3);
+    
+    for (int i = 0; i<3; i++) {
+      c2n(i) = mQc(i,1);
+      c3n(i) = mQc(i,2);
+      incDisp_ab(i)   = disp_a(i)   - mDisp_a_n(i);
+      incDisp_ab(i+3) = rot_a(i);
+      incDisp_ab(i+6) = disp_b(i)   - mDisp_b_n(i);
+      incDisp_ab(i+9) = rot_b(i);
     }
-
-    // Get tangent vectors from previous converged step
-    a1_n = Geta1();
-    b1_n = Getb1();
-
-    // Perform linear update of tangent vectors such that
-    //  a1_{n+1} = a1_n + theta_{n->n+1}
-    //  theta_{n->n+1} = rot_a x a1_n
-    a1 = a1_n + CrossProduct(rot_a, a1_n);
-    b1 = b1_n + CrossProduct(rot_b, b1_n);
-
-    // update centerline projection coordinate
-    // based upon coords & tangents at step n+1,  xi value @ step n
-    x_c = mDcrd_a*mH(0) + a1*mH(1) + mDcrd_b*mH(2) + b1*mH(3);
-
-    // update the penetration function
-    d = mDcrd_s - x_c;
-    mGap = (mn^d) - mRadius;
-	double tol = 0.000001*mRadius;
-	if (mGap < tol && in_bounds) {
-		inContact = true;
-	} else {
-		mGap = 0.0;
-		inContact = false;
-	}
-
-	// update normal contact force
-	if (was_inContact) {
-		mLambda = mPenalty*mGap;
-	} else {
-		mLambda = 0.0;
-	}
-
-    // get tensile strength from material
-    tensileStrength = theMaterial->getTensileStrength();
-
-    // determine trial strain vector based on contact state
-    if (inContact) {        
-        Vector strain(4);
-        Vector slip(2);
-        Vector phi_c(3);
-        Vector c2n(3);
-        Vector c3n(3);
-        Vector c2n1(3);
-        Vector c3n1(3);
-        Vector incDisp_ab(12);
-        Vector incDisp_s(3);
-        Vector dstar(3);
-
-        for (int i = 0; i<3; i++) {
-            c2n(i) = mQc(i,1);
-            c3n(i) = mQc(i,2);
-            incDisp_ab(i)   = disp_a(i)   - mDisp_a_n(i);
-            incDisp_ab(i+3) = rot_a(i);
-            incDisp_ab(i+6) = disp_b(i)   - mDisp_b_n(i);
-            incDisp_ab(i+9) = rot_b(i);
-        }
-
-        incDisp_s = disp_s - mDisp_s_n;
-
-        phi_c = mBphi * incDisp_ab;
-
-        c2n1 = c2n + CrossProduct(phi_c, c2n);
-        c3n1 = c3n + CrossProduct(phi_c, c3n);
-
-        dstar = mDcrd_s - x_c - mrho2*c2n1 - mrho3*c3n1;
-
-        slip(0) = mg1 ^ dstar;
-        slip(1) = mg2 ^ dstar;
-
-        // slip is treated in local (curvilinear) coordinates
-        strain(0) = mGap;
-        strain(1) = slip(0);
-        strain(2) = slip(1);
-        strain(3) = -mLambda;      
-
-        theMaterial->setTrialStrain(strain);
-		mSlip = slip;
-    } else {
-        Vector strain(4);
-
-        strain(0) = mGap;
-        strain(1) = 0.0;
-        strain(2) = 0.0;
-        strain(3) = -mLambda;
-
-        theMaterial->setTrialStrain(strain);
-		mSlip.Zero();
-    }
-
-    return 0;
+    
+    incDisp_s = disp_s - mDisp_s_n;
+    
+    phi_c = mBphi * incDisp_ab;
+    
+    c2n1 = c2n + CrossProduct(phi_c, c2n);
+    c3n1 = c3n + CrossProduct(phi_c, c3n);
+    
+    dstar = mDcrd_s - x_c - mrho2*c2n1 - mrho3*c3n1;
+    
+    slip(0) = mg1 ^ dstar;
+    slip(1) = mg2 ^ dstar;
+    
+    // slip is treated in local (curvilinear) coordinates
+    strain(0) = mGap;
+    strain(1) = slip(0);
+    strain(2) = slip(1);
+    strain(3) = -mLambda;      
+    
+    theMaterial->setTrialStrain(strain);
+    mSlip = slip;
+  } else {
+    Vector strain(4);
+    
+    strain(0) = mGap;
+    strain(1) = 0.0;
+    strain(2) = 0.0;
+    strain(3) = -mLambda;
+    
+    theMaterial->setTrialStrain(strain);
+    mSlip.Zero();
+  }
+  
+  return 0;
 }
 
 double
@@ -1334,115 +1349,162 @@ BeamContact3Dp::getResistingForceIncInertia()
 int
 BeamContact3Dp::sendSelf(int commitTag, Channel &theChannel)
 {
-    int res = 0;
+  int res = 0;
+  
+  // note: we don't check for dataTag == 0 for Element
+  // objects as that is taken care of in a commit by the Domain
+  // object - don't want to have to do the check if sending data
+  int dataTag = this->getDbTag();
+  
+  // BeamContact3Dp packs it's data into a Vector and sends this to theChannel
+  // along with it's dbTag and the commitTag passed in the arguments
+  
+  static Vector data(8);
+  data(0) = this->getTag();
+  data(1) = mRadius;
+  data(2) = mPenalty;
+  data(3) = mIniContact;
+  data(4) = theMaterial->getClassTag();
+  int matDbTag = theMaterial->getDbTag();
 
-    // note: we don't check for dataTag == 0 for Element
-    // objects as that is taken care of in a commit by the Domain
-    // object - don't want to have to do the check if sending data
-    int dataTag = this->getDbTag();
+  // NOTE: we do have to ensure that the material has a database
+  // tag if we are sending to a database channel.
+  if (matDbTag == 0) {
+    matDbTag = theChannel.getDbTag();
+    if (matDbTag != 0)
+      theMaterial->setDbTag(matDbTag);
+  }
+  data(5) = matDbTag;
+  data(6) = crdTransf->getClassTag();
+  int crdDbTag = crdTransf->getDbTag();
+  
+  // NOTE: we do have to ensure that the material has a database
+  // tag if we are sending to a database channel.
+  if (crdDbTag == 0) {
+    crdDbTag = theChannel.getDbTag();
+    if (crdDbTag != 0)
+      crdTransf->setDbTag(matDbTag);
+  }
+  
+  data(7) = crdDbTag;
 
-    // BeamContact3Dp packs it's data into a Vector and sends this to theChannel
-    // along with it's dbTag and the commitTag passed in the arguments
+  res = theChannel.sendVector(dataTag, commitTag, data);
+  if (res < 0) {
+    opserr <<"WARNING BeamContact3Dp::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+    return -1;
+  }          
 
-    static Vector data(6);
-    data(0) = this->getTag();
-    data(1) = mRadius;
-    data(2) = mPenalty;
-	data(3) = mIniContact;
-    data(4) = theMaterial->getClassTag();
+  // BeamContact3Dp then sends the tags of it's four nodes
+  res = theChannel.sendID(dataTag, commitTag, externalNodes);
+  if (res < 0) {
+    opserr <<"WARNING BeamContact3Dp::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+    return -2;
+  }
 
-    int matDbTag = theMaterial->getDbTag();
 
-    // NOTE: we do have to ensure that the material has a database
-    // tag if we are sending to a database channel.
-    if (matDbTag == 0) {
-        matDbTag = theChannel.getDbTag();
-        if (matDbTag != 0)
-          theMaterial->setDbTag(matDbTag);
-    }
-    data(5) = matDbTag;
+  // finally BeamContact3Dp asks it's material object to send itself
+  res = crdTransf->sendSelf(commitTag, theChannel);
+  if (res < 0) {
+    opserr <<"WARNING BeamContact3Dp::sendSelf() - " << this->getTag() << " failed to send its crdTransf\n";
+    return -4;
+  }
 
-    res = theChannel.sendVector(dataTag, commitTag, data);
-    if (res < 0) {
-        opserr <<"WARNING BeamContact3Dp::sendSelf() - " << this->getTag() << " failed to send Vector\n";
-        return -1;
-    }          
-
-    // BeamContact3Dp then sends the tags of it's four nodes
-    res = theChannel.sendID(dataTag, commitTag, externalNodes);
-    if (res < 0) {
-        opserr <<"WARNING BeamContact3Dp::sendSelf() - " << this->getTag() << " failed to send Vector\n";
-        return -2;
-    }
-
-    // finally BeamContact3Dp asks it's material object to send itself
-    res = theMaterial->sendSelf(commitTag, theChannel);
-    if (res < 0) {
-        opserr <<"WARNING BeamContact3Dp::sendSelf() - " << this->getTag() << " failed to send its Material\n";
-        return -3;
-    }
-
-    return 0;
+  // finally BeamContact3Dp asks it's material object to send itself
+  res = theMaterial->sendSelf(commitTag, theChannel);
+  if (res < 0) {
+    opserr <<"WARNING BeamContact3Dp::sendSelf() - " << this->getTag() << " failed to send its Material\n";
+    return -3;
+  }
+  
+  return 0;
 }
 
 int
 BeamContact3Dp::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    int res;
-    int dataTag = this->getDbTag();
-
-    // BeamContact3Dp creates a Vector, receives the Vector and then sets the
-    // internal data with the data in the Vector
-    static Vector data(6);
-    res = theChannel.recvVector(dataTag, commitTag, data);
-    if (res < 0) {
-        opserr <<"WARNING BeamContact3Dp::recvSelf() - failed to receive Vector\n";
-        return -1;
-    }          
-
-    this->setTag((int)data(0));
-	mRadius     = data(1);
-    mPenalty    = data(2);
-	mIniContact = (int)data(3);
- 
-    // BeamContact3Dp now receives the tags of it's four external nodes
-    res = theChannel.recvID(dataTag, commitTag, externalNodes);
-    if (res < 0) {
-        opserr <<"WARNING BeamContact3Dp::recvSelf() - " << this->getTag() << " failed to receive ID\n";
-        return -2;
+  int res;
+  int dataTag = this->getDbTag();
+  
+  // BeamContact3Dp creates a Vector, receives the Vector and then sets the
+  // internal data with the data in the Vector
+  static Vector data(8);
+  res = theChannel.recvVector(dataTag, commitTag, data);
+  if (res < 0) {
+    opserr <<"WARNING BeamContact3Dp::recvSelf() - failed to receive Vector\n";
+    return -1;
+  }          
+  
+  this->setTag((int)data(0));
+  mRadius     = data(1);
+  mPenalty    = data(2);
+  mIniContact = (int)data(3);
+  
+  // BeamContact3Dp now receives the tags of it's four external nodes
+  res = theChannel.recvID(dataTag, commitTag, externalNodes);
+  if (res < 0) {
+    opserr <<"WARNING BeamContact3Dp::recvSelf() - " << this->getTag() << " failed to receive ID\n";
+    return -2;
+  }
+  
+  int crdClass = (int)data(6);
+  int crdDb = (int)data(7);
+  
+  // check if we have a material object already & if we do if of right type
+  if ((crdTransf == 0) || (crdTransf->getClassTag() != crdClass)) {
+    
+    // if old one .. delete it
+    if (crdTransf != 0)
+      delete crdTransf;
+    
+    // create a new material object
+    crdTransf = theBroker.getNewCrdTransf(crdClass);
+    
+    if (crdTransf == 0) {
+      opserr <<"WARNING BeamContact3Dp::recvSelf() - " << this->getTag()
+	     << " failed to get a blank CrdTransf of type " << crdClass << endln;
+      return -3;
     }
+  }
+  
+  crdTransf->setDbTag(crdDb); // note: we set the dbTag before we receive the material
+  
+  res = crdTransf->recvSelf(commitTag, theChannel, theBroker);
+  if (res < 0) {
+    opserr <<"WARNING BeamContact3Dp::recvSelf() - "<< this->getTag() << "failed to receive its Material\n";
+    return -3;    
+  }
+  
+  // finally BeamContact3Dp creates a material object of the correct type,
+  // sets its database tag and asks this new object to recveive itself.
+  int matClass = (int)data(4);
+  int matDb = (int)data(5);
 
-    // finally BeamContact3Dp creates a material object of the correct type,
-    // sets its database tag and asks this new object to recveive itself.
-    int matClass = (int)data(4);
-    int matDb = (int)data(5);
-
-    // check if we have a material object already & if we do if of right type
-    if ((theMaterial == 0) || (theMaterial->getClassTag() != matClass)) {
-
-        // if old one .. delete it
-        if (theMaterial != 0)
-            delete theMaterial;
-
-        // create a new material object
-        NDMaterial *theMatCopy = theBroker.getNewNDMaterial(matClass);
-        theMaterial = (ContactMaterial3D *)theMatCopy;
-
-        if (theMaterial == 0) {
-            opserr <<"WARNING BeamContact3Dp::recvSelf() - " << this->getTag()
-              << " failed to get a blank Material of type " << matClass << endln;
-            return -3;
-        }
+  // check if we have a material object already & if we do if of right type
+  if ((theMaterial == 0) || (theMaterial->getClassTag() != matClass)) {
+    
+    // if old one .. delete it
+    if (theMaterial != 0)
+      delete theMaterial;
+    
+    // create a new material object
+    NDMaterial *theMatCopy = theBroker.getNewNDMaterial(matClass);
+    theMaterial = (ContactMaterial3D *)theMatCopy;
+    
+    if (theMaterial == 0) {
+      opserr <<"WARNING BeamContact3Dp::recvSelf() - " << this->getTag()
+	     << " failed to get a blank Material of type " << matClass << endln;
+      return -3;
     }
-
-    theMaterial->setDbTag(matDb); // note: we set the dbTag before we receive the material
-    res = theMaterial->recvSelf(commitTag, theChannel, theBroker);
-    if (res < 0) {
-        opserr <<"WARNING BeamContact3Dp::recvSelf() - "<< this->getTag() << "failed to receive its Material\n";
-        return -3;    
-    }
-
-    return 0;
+  }
+  
+  theMaterial->setDbTag(matDb); // note: we set the dbTag before we receive the material
+  res = theMaterial->recvSelf(commitTag, theChannel, theBroker);
+  if (res < 0) {
+    opserr <<"WARNING BeamContact3Dp::recvSelf() - "<< this->getTag() << "failed to receive its Material\n";
+    return -3;    
+  }
+  
+  return 0;
 }
 
 
@@ -1457,10 +1519,15 @@ void
 BeamContact3Dp::Print(OPS_Stream &s, int flag)
 {
     opserr << "BeamContact3Dp, element id:  " << this->getTag() << endln;
-    opserr << "   Connected external nodes:  " ;
-    for (int i = 0; i<BC3D_NUM_NODE; i++) {
-        opserr << externalNodes(i)<< " ";
-    }
+    opserr << "   Connected external nodes:  " << externalNodes;
+    opserr << "   Transformation: ";
+    if (crdTransf != 0)
+      crdTransf->Print(s,flag);
+    opserr << "\n    Material: ";
+    if (theMaterial != 0) 
+      theMaterial->Print(s,flag);
+    opserr << "\n";
+
     return;
 }
 

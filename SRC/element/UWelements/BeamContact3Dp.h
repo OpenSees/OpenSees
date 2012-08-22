@@ -171,7 +171,7 @@ class BeamContact3Dp : public Element
     Vector mBn;                                            // gap-displacement matrix
     Matrix mBs;                                            // slip-displacement matrix
     Matrix mBphi;
-	Vector mSlip;
+    Vector mSlip;
 };
 
 #endif

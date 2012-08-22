@@ -651,57 +651,57 @@ SSPbrick::getResistingForceIncInertia()
 int
 SSPbrick::sendSelf(int commitTag, Channel &theChannel)
 {
-	int res = 0;
+  int res = 0;
   
-	// note: we don't check for dataTag == 0 for Element
-	// objects as that is taken care of in a commit by the Domain
-	// object - don't want to have to do the check if sending data
-	int dataTag = this->getDbTag();
+  // note: we don't check for dataTag == 0 for Element
+  // objects as that is taken care of in a commit by the Domain
+  // object - don't want to have to do the check if sending data
+  int dataTag = this->getDbTag();
   
-	// SSPbrick packs its data into a Vector and sends this to theChannel
-	// along with its dbTag and the commitTag passed in the arguments
-  	static Vector data(6);
-  	data(0) = this->getTag();
-  	data(1) = b[0];
-  	data(2) = b[1];
-	data(3) = b[2];
-	data(4) = theMaterial->getClassTag();	      
+  // SSPbrick packs its data into a Vector and sends this to theChannel
+  // along with its dbTag and the commitTag passed in the arguments
+  static Vector data(6);
+  data(0) = this->getTag();
+  data(1) = b[0];
+  data(2) = b[1];
+  data(3) = b[2];
+  data(4) = theMaterial->getClassTag();	      
   
-  	// Now quad sends the ids of its materials
-  	int matDbTag = theMaterial->getDbTag();
+  // Now quad sends the ids of its materials
+  int matDbTag = theMaterial->getDbTag();
   
-  	static ID idData(12);
+  static ID idData(12);
   
-    // NOTE: we do have to ensure that the material has a database
-    // tag if we are sending to a database channel.
-    if (matDbTag == 0) {
-      matDbTag = theChannel.getDbTag();
-			if (matDbTag != 0)
-			  theMaterial->setDbTag(matDbTag);
-    }
-    data(5) = matDbTag;
-
-	res += theChannel.sendVector(dataTag, commitTag, data);
-  	if (res < 0) {
-    	opserr << "WARNING SSPbrick::sendSelf() - " << this->getTag() << " failed to send Vector\n";
-    	return res;
-  	}
-
-	// SSPbrick then sends the tags of its four nodes
-  	res += theChannel.sendID(dataTag, commitTag, mExternalNodes);
-  	if (res < 0) {
-    	opserr << "WARNING SSPbrick::sendSelf() - " << this->getTag() << " failed to send ID\n";
-    	return res;
-  	}
-
-  	// finally, SSPbrick asks its material object to send itself
-  	res = theMaterial->sendSelf(commitTag, theChannel);
-	if (res < 0) {
-		opserr << "WARNING SSPbrick::sendSelf() - " << this->getTag() << " failed to send its Material\n";
-		return -3;
-	}
-
-	return 0;
+  // NOTE: we do have to ensure that the material has a database
+  // tag if we are sending to a database channel.
+  if (matDbTag == 0) {
+    matDbTag = theChannel.getDbTag();
+    if (matDbTag != 0)
+      theMaterial->setDbTag(matDbTag);
+  }
+  data(5) = matDbTag;
+  
+  res += theChannel.sendVector(dataTag, commitTag, data);
+  if (res < 0) {
+    opserr << "WARNING SSPbrick::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+    return res;
+  }
+  
+  // SSPbrick then sends the tags of its four nodes
+  res += theChannel.sendID(dataTag, commitTag, mExternalNodes);
+  if (res < 0) {
+    opserr << "WARNING SSPbrick::sendSelf() - " << this->getTag() << " failed to send ID\n";
+    return res;
+  }
+  
+  // finally, SSPbrick asks its material object to send itself
+  res = theMaterial->sendSelf(commitTag, theChannel);
+  if (res < 0) {
+    opserr << "WARNING SSPbrick::sendSelf() - " << this->getTag() << " failed to send its Material\n";
+    return -3;
+  }
+  
+  return 0;
 }
 
 int
@@ -775,11 +775,15 @@ SSPbrick::displaySelf(Renderer &theViewer, int displayMode, float fact)
 void
 SSPbrick::Print(OPS_Stream &s, int flag)
 {
+  /*
 	opserr << "SSPbrick, element id:  " << this->getTag() << endln;
 	opserr << "   Connected external nodes:  ";
 	for (int i = 0; i < SSPB_NUM_NODE; i++) {
 		opserr << mExternalNodes(i) << " ";
 	}
+	opserr << endln;
+  */
+
 	return;
 }
 
