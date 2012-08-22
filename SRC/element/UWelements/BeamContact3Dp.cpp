@@ -396,7 +396,7 @@ BeamContact3Dp::commitState()
     ComputeB();
 
     // update Boolean Variables for contact condition
-	double tol = 0.000001*mRadius;
+    double tol = 0.000001*mRadius;
     was_inContact  = ( mGap < tol );   
     in_bounds      = ( (mxi > 0.000) && (mxi < 1.000) );
     inContact      = ( was_inContact && in_bounds );
@@ -1359,7 +1359,7 @@ BeamContact3Dp::sendSelf(int commitTag, Channel &theChannel)
   // BeamContact3Dp packs it's data into a Vector and sends this to theChannel
   // along with it's dbTag and the commitTag passed in the arguments
   
-  static Vector data(8);
+  static Vector data(13);
   data(0) = this->getTag();
   data(1) = mRadius;
   data(2) = mPenalty;
@@ -1387,6 +1387,12 @@ BeamContact3Dp::sendSelf(int commitTag, Channel &theChannel)
   }
   
   data(7) = crdDbTag;
+
+  data(8) = inContact;
+  data(9) = was_inContact;
+  data(10) = in_bounds;
+  data(11) = mGap;
+  data(12) = mLambda;
 
   res = theChannel.sendVector(dataTag, commitTag, data);
   if (res < 0) {
@@ -1427,7 +1433,7 @@ BeamContact3Dp::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
   
   // BeamContact3Dp creates a Vector, receives the Vector and then sets the
   // internal data with the data in the Vector
-  static Vector data(8);
+  static Vector data(13);
   res = theChannel.recvVector(dataTag, commitTag, data);
   if (res < 0) {
     opserr <<"WARNING BeamContact3Dp::recvSelf() - failed to receive Vector\n";
@@ -1438,6 +1444,11 @@ BeamContact3Dp::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
   mRadius     = data(1);
   mPenalty    = data(2);
   mIniContact = (int)data(3);
+  inContact = (int)data(8);
+  was_inContact = (int)data(9);
+  in_bounds = (int)data(10);
+  mGap = data(11);
+  mLambda = data(12);
   
   // BeamContact3Dp now receives the tags of it's four external nodes
   res = theChannel.recvID(dataTag, commitTag, externalNodes);
