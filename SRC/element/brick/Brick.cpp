@@ -1249,27 +1249,25 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
   idData(22) = connectedExternalNodes(6);
   idData(23) = connectedExternalNodes(7);
 
-
-
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
     opserr << "WARNING Brick::sendSelf() - " << this->getTag() << " failed to send ID\n";
     return res;
   }
 
-  if (idData(25) == 1) {
-    // send damping coefficients
-    static Vector dData(4);
-    dData(0) = alphaM;
-    dData(1) = betaK;
-    dData(2) = betaK0;
-    dData(3) = betaKc;
-    if (theChannel.sendVector(dataTag, commitTag, dData) < 0) {
-      opserr << "Brick::sendSelf() - failed to send double data\n";
-      return -1;
-    }    
-  }
+  static Vector dData(7);
+  dData(0) = alphaM;
+  dData(1) = betaK;
+  dData(2) = betaK0;
+  dData(3) = betaKc;
+  dData(4) = b[0];
+  dData(5) = b[1];
+  dData(6) = b[2];
 
+  if (theChannel.sendVector(dataTag, commitTag, dData) < 0) {
+    opserr << "Brick::sendSelf() - failed to send double data\n";
+    return -1;
+  }    
 
   // Finally, quad asks its material objects to send themselves
   for (i = 0; i < 8; i++) {
@@ -1301,18 +1299,18 @@ int  Brick::recvSelf (int commitTag,
 
   this->setTag(idData(24));
 
-  if (idData(25) == 1) {
-    // recv damping coefficients
-    static Vector dData(4);
-    if (theChannel.recvVector(dataTag, commitTag, dData) < 0) {
-      opserr << "DispBeamColumn2d::sendSelf() - failed to recv double data\n";
-      return -1;
-    }    
-    alphaM = dData(0);
-    betaK = dData(1);
-    betaK0 = dData(2);
-    betaKc = dData(3);
-  }
+  static Vector dData(7);
+  if (theChannel.recvVector(dataTag, commitTag, dData) < 0) {
+    opserr << "DispBeamColumn2d::sendSelf() - failed to recv double data\n";
+    return -1;
+  }    
+  alphaM = dData(0);
+  betaK = dData(1);
+  betaK0 = dData(2);
+  betaKc = dData(3);
+  b[0] = dData(4);
+  b[1] = dData(5);
+  b[2] = dData(6);
 
 
   connectedExternalNodes(0) = idData(16);
