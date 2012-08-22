@@ -105,34 +105,69 @@ ContactMaterial3D::ContactMaterial3D (int tag, double mu, double Gmod, double c,
    tangent_matrix(4,4)
 {
 #ifdef DEBUG
-        opserr << "ContactMaterial3D::ContactMaterial3D(...)" << endln;
+  opserr << "ContactMaterial3D::ContactMaterial3D(...)" << endln;
 #endif
-        frictionCoeff = mu;
-		mMu = mu;
-        stiffness = Gmod;
-        cohesion  = c;
-		mCo = c;
-        tensileStrength = t;
-		mTen = t;
+  frictionCoeff = mu;
+  mMu = mu;
+  stiffness = Gmod;
+  cohesion  = c;
+  mCo = c;
+  tensileStrength = t;
+  mTen = t;
+  
+  MyTag = tag;
 
-        MyTag = tag;
+  //  if (matCount == 0) {  
 
-        if (matCount == 0) {
-        	frictionCoeffx = new double[matCount+20];
-        	stiffnessx = new double[matCount+20];
-        }
+  if (frictionCoeffx == 0) {
+    frictionCoeffx = new double[40];
+    stiffnessx = new double[40];
+    for (int i=0; i<40; i++) {
+      frictionCoeffx[i] = 0;
+      stiffnessx[i] = 0;;
+    }
+  }
+  
+  frictionCoeffx[matCount] = mu;
+  stiffnessx[matCount] = Gmod;
+  matN = matCount;
+  matCount++;
+  
+  this->zero();
+}
 
-        frictionCoeffx[matCount] = mu;
-        stiffnessx[matCount] = Gmod;
-        matN = matCount;
-        matCount++;
 
-        this->zero();
+//full constructor
+ContactMaterial3D::ContactMaterial3D (const ContactMaterial3D &other)
+  : NDMaterial(other.getTag(),ND_TAG_ContactMaterial3D),
+    s_e_n(2),
+    s_e_nplus1(2),
+    r_nplus1(2),
+    g(2,2),
+    G(2,2),
+    strain_vec(4),
+    stress_vec(4),
+    tangent_matrix(4,4)
+{
+#ifdef DEBUG
+  opserr << "ContactMaterial3D::ContactMaterial3D(...)" << endln;
+#endif
+
+  this->frictionCoeff = other.frictionCoeff;
+  this-> mMu = other. mMu;
+  this->stiffness = other.stiffness;
+  this->cohesion  = other.cohesion; 
+  this->mCo = other.mCo;
+  this->tensileStrength = other.tensileStrength;
+  this->mTen = other.mTen;
+  this->MyTag = other.MyTag;
+  this->matN = other.matN;
+  this->zero();
 }
    
 //null constructor
 ContactMaterial3D::ContactMaterial3D ()
- : NDMaterial(0, ND_TAG_ContactMaterial3D),
+  : NDMaterial(0, ND_TAG_ContactMaterial3D),
    s_e_n(2),
    s_e_nplus1(2),
    r_nplus1(2),
@@ -143,26 +178,30 @@ ContactMaterial3D::ContactMaterial3D ()
    tangent_matrix(4,4)
 {
 #ifdef DEBUG
-        opserr << "ContactMaterial3D::ContactMaterial3D()" << endln;
+  opserr << "ContactMaterial3D::ContactMaterial3D()" << endln;
 #endif
-        frictionCoeff = 0.0;
-        stiffness = 1.0;
-        cohesion  = 0.0;
-	tensileStrength = 0.0;
-	
-	MyTag = 0;
-	
-	if (matCount == 0) {
-	  frictionCoeffx = new double[matCount+20];
-	  stiffnessx = new double[matCount+20];
-	}
-	
-	frictionCoeffx[matCount] = 0.0;
-	stiffnessx[matCount] = 1.0;
-	matN = matCount;
-	matCount++;
-	
-        this->zero();
+  frictionCoeff = 0.0;
+  mMu = 0.0;
+  stiffness = 1.0;
+  cohesion  = 0.0;
+  mCo  = 0.0;
+  tensileStrength = 0.0;
+  mTen = 0.0;
+  MyTag = 0;
+
+  if (frictionCoeffx == 0) {
+    frictionCoeffx = new double[40];
+    stiffnessx = new double[40];
+    for (int i=0; i<40; i++) {
+      frictionCoeffx[i] = 0;
+      stiffnessx[i] = 0;;
+    }
+  }
+  
+  matN = 0;
+  matCount++;
+  
+  this->zero();
 }
 
 //destructor
@@ -213,8 +252,8 @@ int ContactMaterial3D::setTrialStrain (const Vector &strain_from_element)
         double t_n;             // normal contact force
         double f_nplus1_trial;  // trial slip condition
 
-                frictionCoeff = frictionCoeffx[matN];
-                stiffness = stiffnessx[matN];
+	frictionCoeff = frictionCoeffx[matN];
+	stiffness = stiffnessx[matN];
 
 //opserr << "ContactMaterial3D::setTrialStrain: " << MyTag << "  frictionCoeff = " << frictionCoeff << "  stiffness = " << stiffness << endln;
 
@@ -438,7 +477,7 @@ int ContactMaterial3D::commitState (void)
         opserr << "ContactMaterial3D::commitState (void)" << endln;
 #endif
         s_e_n = s_e_nplus1;
-
+	
         return 0;
 }
  
@@ -476,7 +515,7 @@ NDMaterial * ContactMaterial3D::getCopy (void)
 NDMaterial * ContactMaterial3D::getCopy (const char *code)
 {
 #ifdef DEBUG
-        opserr << "ContactMaterial3D::getCopy (const char *code)" << endln;
+  opserr << "ContactMaterial3D::getCopy (const char *code)" << endln;
 #endif
   if (strcmp(code,"ContactMaterial3D")==0) {
     ContactMaterial3D * copy = new ContactMaterial3D(*this);
@@ -537,19 +576,21 @@ int ContactMaterial3D::setParameter(const char **argv, int argc, Parameter &para
 int ContactMaterial3D::sendSelf(int commitTag, Channel &theChannel)
 {
 #ifdef DEBUG
-        opserr << "ContactMaterial3D::sendSelf(int commitTag, Channel &theChannel)" << endln;
+  opserr << "ContactMaterial3D::sendSelf(int commitTag, Channel &theChannel)" << endln;
 #endif
   // we place all the data needed to define material and it's state
   // int a vector object
-  static Vector data(7);
-  int cnt = 0;
-  data(cnt++) = this->getTag();
-  data(cnt++) = frictionCoeff;
-  data(cnt++) = stiffness;
-  data(cnt++) = cohesion;
-  data(cnt++) = tensileStrength;
-  data(cnt++) = s_e_n(0);
-  data(cnt++) = s_e_n(1);
+  static Vector data(10);
+  data(0) = this->getTag();
+  data(1) = frictionCoeff;
+  data(2) = stiffness;
+  data(3) = cohesion;
+  data(4) = tensileStrength;
+  data(5) = s_e_n(0);
+  data(6) = s_e_n(1);
+  data(7) = matN;
+  data(8) = frictionCoeffx[matN];
+  data(9) = stiffnessx[matN];
 
   // send the vector object to the channel
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
@@ -557,34 +598,35 @@ int ContactMaterial3D::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }
 
-
   return 0;
  
 }
 
 
 int ContactMaterial3D::recvSelf(int commitTag, Channel &theChannel,
-                                         FEM_ObjectBroker &theBroker)    
+				FEM_ObjectBroker &theBroker)    
 {
 #ifdef DEBUG
-        opserr << "ContactMaterial3D::recvSelf(...)" << endln;
+  opserr << "ContactMaterial3D::recvSelf(...)" << endln;
 #endif
   // recv the vector object from the channel which defines material param and state
-  static Vector data(7);
+  static Vector data(10);
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "ContactMaterial3D::recvSelf - failed to recv vector from channel\n";
     return -1;
   }
-
+  
   // set the material parameters and state variables
-  int cnt = 0;
-  this->setTag(data(cnt++));
-  frictionCoeff = data(cnt++);
-  stiffness = data(cnt++);
-  cohesion = data(cnt++);
-  tensileStrength =data(cnt++);
-  s_e_n(0) = data(cnt++);
-  s_e_n(1) = data(cnt++);
+  this->setTag(data(0));
+  frictionCoeff = data(1);
+  stiffness = data(2);
+  cohesion = data(3);
+  tensileStrength =data(4);
+  s_e_n(0) = data(5);
+  s_e_n(1) = data(6);
+  matN = data(7);
+  frictionCoeffx[matN] = data(8);
+  stiffnessx[matN] = data(9);;
 
   s_e_nplus1 = s_e_n;
 
@@ -596,24 +638,24 @@ int ContactMaterial3D::recvSelf(int commitTag, Channel &theChannel,
 void ContactMaterial3D::Print(OPS_Stream &s, int flag )
 {
 #ifdef DEBUG
-        opserr << "ContactMaterial3D::Print(OPS_Stream &s, int flag )" << endln;
+  opserr << "ContactMaterial3D::Print(OPS_Stream &s, int flag )" << endln;
 #endif
-  s << "ContactMaterial3D" << endln;
+  s << "ContactMaterial3D (matN): " << matN << endln;
 }
 
 int ContactMaterial3D::updateParameter(int responseID, Information &info)
 {
-    if (responseID==20) {
-        frictionCoeffx[matN] = info.theDouble;
-    }
-       
-    if (responseID==21) {
-        stiffnessx[matN] = info.theDouble;
-    }
-
-	if (responseID == 1) {
-		mFrictFlag = info.theDouble;
-	}
-
+  if (responseID==20) {
+    frictionCoeffx[matN] = info.theDouble;
+  }
+  
+  if (responseID==21) {
+    stiffnessx[matN] = info.theDouble;
+  }
+  
+  if (responseID == 1) {
+    mFrictFlag = info.theDouble;
+  }
+  
   return 0;
 }

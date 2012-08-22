@@ -79,17 +79,17 @@ class InitialStateAnalysisWrapper : public NDMaterial
 
     	void Print(OPS_Stream &s, int flag =0);
 
-		int setParameter(const char **argv, int argc, Parameter &param);
-  		int updateParameter(int responseID, Information &eleInformation);
+	int setParameter(const char **argv, int argc, Parameter &param);
+	int updateParameter(int responseID, Information &eleInformation);
+	
+	friend class PyLiq1;
+	friend class TzLiq1;
 
-	    friend class PyLiq1;
-	    friend class TzLiq1;
-
-		int getMainClassTag();           // sends class tag of main material object
-
-	protected:
-
-		NDMaterial *theMainMaterial;     // pointer to main material object
+	int getMainClassTag();           // sends class tag of main material object
+	
+ protected:
+	
+	NDMaterial *theMainMaterial;     // pointer to main material object
 
 		//int getMainClassTag();           // sends class tag of main material object
 
