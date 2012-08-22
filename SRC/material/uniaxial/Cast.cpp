@@ -48,18 +48,10 @@
 #include <OPS_Globals.h>
 
 
-#ifdef _USRDLL
-#define OPS_Export extern "C" _declspec(dllexport)
-#elif _MACOSX
-#define OPS_Export extern "C" __attribute__((visibility("default")))
-#else
-#define OPS_Export extern "C"
-#endif
-
 static int numCastMaterials = 0;
 
-OPS_Export void *
-OPS_Cast()
+void *
+OPS_Cast(void)
 {
 	if (numCastMaterials == 0) {
 		numCastMaterials++;
