@@ -95,6 +95,13 @@ class ZeroLengthSection : public Element
     Response *setResponse(const char **argv, int argc, OPS_Stream &output);
     int getResponse(int responseID, Information &eleInformation);
     
+    int setParameter(const char **argv, int argc, Parameter &param);
+
+// AddingSensitivity:BEGIN //////////////////////////////////////////
+    const Vector &getResistingForceSensitivity(int gradIndex);
+    int commitSensitivity(int gradIndex, int numGrads);
+// AddingSensitivity:END ///////////////////////////////////////////
+
   protected:
     
   private:

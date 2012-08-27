@@ -776,3 +776,53 @@ ZeroLengthSection::computeSectionDefs(void)
 		for (int j = 0; j < numDOF/2; j++)
 			def(i) += -diff(j)*tran(i,j);
 }
+
+int
+ZeroLengthSection::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (argc < 1)
+    return -1;
+
+  return theSection->setParameter(argv, argc, param);
+}
+
+const Vector &
+ZeroLengthSection::getResistingForceSensitivity(int gradIndex)
+{
+  // Compute section deformation vector
+  this->computeSectionDefs();
+
+  // Set trial section deformation
+  theSection->setTrialSectionDeformation(*v);
+
+  // Get section stress resultants, the element basic forces
+  const Vector &dqdh = theSection->getStressResultantSensitivity(gradIndex, true);
+
+  // Compute element resisting force ... P = A^*q
+  P->addMatrixTransposeVector(0.0, *A, dqdh, 1.0);
+
+  return *P;
+}
+    
+int
+ZeroLengthSection::commitSensitivity(int gradIndex, int numGrads)
+{
+  // Get nodal displacement sensitivity
+  Vector diff(numDOF/2);
+  for (int i = 0; i < numDOF/2; i++) {
+    diff(i) = theNodes[1]->getDispSensitivity(i+1,gradIndex) - theNodes[0]->getDispSensitivity(i+1,gradIndex);
+  }
+
+  // Set some references to make the syntax nicer
+  Vector &dedh = *v;
+  const Matrix &tran = *A;
+
+  dedh.Zero();
+
+  // Compute element basic deformations ... v = A*(u2-u1)
+  for (int i = 0; i < order; i++)
+    for (int j = 0; j < numDOF/2; j++)
+      dedh(i) += -diff(j)*tran(i,j);
+
+  return theSection->commitSensitivity(dedh, gradIndex, numGrads);
+}

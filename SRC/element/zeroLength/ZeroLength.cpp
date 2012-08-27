@@ -1017,18 +1017,52 @@ ZeroLength::setParameter(const char **argv, int argc, Parameter &param)
   return result;
 }
 
-int
-ZeroLength::updateParameter (int parameterID, Information &info)
+const Vector &
+ZeroLength::getResistingForceSensitivity(int gradIndex)
 {
-  return 0;
+  // Recompute strains to be safe
+  this->update();
+
+  double dfdh;
+
+  // zero the residual
+  theVector->Zero();
+
+  // loop over 1d materials
+  for (int mat=0; mat<numMaterials1d; mat++) {
+
+    // get resisting force for material
+    dfdh = theMaterial1d[mat]->getStressSensitivity(gradIndex, true);
+
+    // compute residual due to resisting force
+    for (int i=0; i<numDOF; i++)
+      (*theVector)(i)  += (*t1d)(mat,i) * dfdh;
+    
+  } // end loop over 1d materials 
+  
+  return *theVector;
+}
+ 
+int
+ZeroLength::commitSensitivity(int gradIndex, int numGrads)
+{
+  // Get nodal displacement sensitivity
+  Vector diff(numDOF/2);
+  for (int i = 0; i < numDOF/2; i++) {
+    diff(i) = theNodes[1]->getDispSensitivity(i+1,gradIndex) - theNodes[0]->getDispSensitivity(i+1,gradIndex);
+  }
+
+  double depsdh;
+  int ret = 0;
+  for (int mat=0; mat<numMaterials1d; mat++) {
+    // compute strain and rate; set as current trial for material
+    depsdh = this->computeCurrentStrain1d(mat,diff);
+    ret += theMaterial1d[mat]->commitSensitivity(depsdh, gradIndex, numGrads);
+  }
+
+  return ret;  
 }
 
-int
-ZeroLength::activateParameter(int passedParameterID)
-{
-  
-  return 0;
-}
 
 
 
