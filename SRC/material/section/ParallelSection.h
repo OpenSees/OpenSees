@@ -50,13 +50,8 @@ class ParallelSection : public SectionForceDeformation
   public:
     ParallelSection(); 
 
-    ParallelSection(int tag, SectionForceDeformation &theSection,
-		      int numAdditions, UniaxialMaterial **theAdditions,
-		      const ID &code); 
-    ParallelSection(int tag, int numAdditions,
-		      UniaxialMaterial **theAdditions, const ID &code); 
-    ParallelSection(int tag, SectionForceDeformation &thesection,
-		      UniaxialMaterial &theAddition, int c);
+    ParallelSection(int tag, int numSections, 
+		    SectionForceDeformation **theSections);
 
     ~ParallelSection();
 
@@ -86,8 +81,6 @@ class ParallelSection : public SectionForceDeformation
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
     int getResponse(int responseID, Information &info);
 
-    int getVariable(const char *varName, Information &info);
-
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     int setParameter(const char **argv, int argc, Parameter &param);
     const Vector & getStressResultantSensitivity(int gradIndex, bool 
@@ -102,17 +95,16 @@ conditional);
   protected:
     
   private:
-    
-    SectionForceDeformation *theSection;
-    UniaxialMaterial **theAdditions;
 
-    ID *matCodes;
-    int numMats;
-    
+    int numSections;
+    SectionForceDeformation **theSections;
+
     Vector *e;    // Storage for section deformations
     Vector *s;    // Storage for stress resultants
     Matrix *ks;   // Storage for section stiffness
     Matrix *fs;   // Storage for section flexibility
+
+    int order;
     ID     *theCode;     // Storage for section type information
    
     int otherDbTag;
