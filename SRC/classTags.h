@@ -236,6 +236,7 @@
 #define SEC_TAG_Generic1d	                 5
 #define SEC_TAG_GenericNd	                 6
 #define SEC_TAG_Aggregator	                 7
+#define SEC_TAG_Parallel	                 77
 #define SEC_TAG_Fiber		                 8
 #define SEC_TAG_FiberSection2d		         9
 #define SEC_TAG_FiberSection3d		        10
@@ -485,6 +486,8 @@
 #define ELE_TAG_ForceBeamColumn3d 9879
 #define ELE_TAG_ElasticForceBeamColumn2d 98781
 #define ELE_TAG_ElasticForceBeamColumn3d 98791
+#define ELE_TAG_ForceBeamColumnCBDI2d 98782
+#define ELE_TAG_ForceBeamColumnCBDI3d 98792
 
 #define ELE_TAG_DispBeamColumn2dInt 9880
 
