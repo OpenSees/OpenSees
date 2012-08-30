@@ -44,8 +44,6 @@ StandardStream::~StandardStream()
 {
   if (fileOpen == 1)
     theFile.close();
-
-
 }
 
 int 
