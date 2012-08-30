@@ -1820,6 +1820,10 @@ SRC/domain/component/DVParameter.h -text
 SRC/domain/component/DomainComponent.cpp -text
 SRC/domain/component/DomainComponent.h -text
 SRC/domain/component/DomainComponent.tex -text
+SRC/domain/component/ElementStateParameter.cpp -text
+SRC/domain/component/ElementStateParameter.h -text
+SRC/domain/component/InitialStateParameter.cpp -text
+SRC/domain/component/InitialStateParameter.h -text
 SRC/domain/component/Makefile -text
 SRC/domain/component/MatParameter.cpp -text
 SRC/domain/component/MatParameter.h -text

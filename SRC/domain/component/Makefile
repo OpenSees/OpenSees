@@ -8,6 +8,8 @@ OBJS       = DomainComponent.o \
 	TclParameterCommands.o \
 	MaterialStageParameter.o \
 	MatParameter.o \
+	InitialStateParameter.o \
+	ElementStateParameter.o \
 	TclUpdateMaterialCommand.o
 
 # Compilation control
