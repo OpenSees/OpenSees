@@ -67,7 +67,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\MPICH2\include&quot;;..\..\..\other\SuperLU_DIST_2.0\SRC;&quot;c:\Program Files\tcl&quot;"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\MPICH2\include&quot;;..\..\..\other\SuperLU_DIST_2.5\SRC;&quot;c:\Program Files\tcl&quot;"
 				PreprocessorDefinitions="NO_TIMER,_WIN32,UpCase"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
@@ -106,136 +106,193 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\Cnames.h">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\Cnames.h">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\ddistribute.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\GetDiagU.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\dgsequ.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\comm.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\dlamch.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dcomplex.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\dlangs.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dcomplex.h">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\dlaqgs.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\ddistribute.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\dldperm.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dgsequ.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\dmemory.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dlamch.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\dsp_blas2.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dlangs.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\dsp_blas3.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dlaqgs.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\dutil.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dldperm.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\etree.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dmemory.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\get_perm_c.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dmyblas2.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\memory.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dreadhb.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\mmd.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dreadrb.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pddistribute.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dsp_blas2.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdgsequ.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dsp_blas3.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdgsmv.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\dutil.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdgsmv_AXglobal.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\etree.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdgsrfs.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\get_perm_c.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdgsrfs_ABXglobal.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\get_perm_c_parmetis.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdgssvx.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\html_mainpage.h">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdgssvx_ABglobal.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\lsame.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdgstrf_irecv.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\machines.h">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdgstrs.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\mc64ad.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdgstrs1.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\memory.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdgstrs_Bglobal.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\mmd.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdgstrs_lsum.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pddistribute.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdlangs.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgsequ.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdlaqgs.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgsmv.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pdutil.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgsmv_AXglobal.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\pxerbla.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgsrfs.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\slamch.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgsrfs_ABXglobal.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\sp_colorder.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgssvx.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\sp_ienv.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgssvx_ABglobal.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\superlu_ddefs.h">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgstrf.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\superlu_defs.h">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgstrs.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\superlu_grid.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgstrs1.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\superlu_timer.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgstrsL.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\supermatrix.h">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgstrs_Bglobal.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\symbfact.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdgstrs_lsum.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\util.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdlangs.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\util.h">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdlaqgs.c">
 			</File>
 			<File
-				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.0\SRC\xerbla.c">
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdsymbfact_distdata.c">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pdutil.c">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\psymbfact.c">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\psymbfact.h">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\psymbfact_util.c">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\pxerbla.c">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\slamch.c">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\sp_colorder.c">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\sp_ienv.c">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\superlu_ddefs.h">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\superlu_defs.h">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\superlu_enum_consts.h">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\superlu_grid.c">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\superlu_timer.c">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\superlu_zdefs.h">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\supermatrix.h">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\symbfact.c">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\util.c">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\util_dist.h">
+			</File>
+			<File
+				RelativePath="..\..\..\OTHER\SuperLU_DIST_2.5\SRC\xerbla.c">
 			</File>
 		</Filter>
 	</Files>

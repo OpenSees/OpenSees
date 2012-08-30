@@ -308,6 +308,18 @@
 				RelativePath="..\..\..\Src\material\uniaxial\MinMaxMaterial.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ModIMKPeakOriented.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ModIMKPeakOriented.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ModIMKPinching.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ModIMKPinching.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\MultiLinear.cpp">
 			</File>
 			<File
