@@ -168,7 +168,7 @@ class Domain
     virtual  void setCommittedTime(double newTime);        
     virtual  void applyLoad(double pseudoTime);
     virtual  void setLoadConstant(void);
-	virtual void  unsetLoadConstant(void);
+    virtual void  unsetLoadConstant(void);
     virtual  int  initialize(void);    
     virtual  int  setRayleighDampingFactors(double alphaM, double betaK, double betaK0, double betaKc);
 
