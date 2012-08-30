@@ -99,6 +99,8 @@ OPS_Stream *opserrPtr = &sserr;
 #include <SP_ConstraintIter.h> //Joey UC Davis
 #include <Parameter.h>
 #include <ParameterIter.h>
+#include <InitialStateParameter.h>
+#include <ElementStateParameter.h>
 
 // analysis model
 #include <AnalysisModel.h>
@@ -513,9 +515,9 @@ FE_Datastore *theDatabase  =0;
 FEM_ObjectBrokerAllClasses theBroker;
 
 // init the global variabled defined in OPS_Globals.h
-double        ops_Dt = 1.0;
-// Element      *ops_TheActiveElement = 0;
-bool          ops_InitialStateAnalysis = false; // McGann, U.Washington
+// double        ops_Dt = 1.0;
+// Element    *ops_TheActiveElement = 0;
+// bool          ops_InitialStateAnalysis = false; // McGann, U.Washington
 
 #ifdef _NOGRAPHICS
 
@@ -809,10 +811,10 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "sectionWeight", &sectionWeight, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
 
-	// command added for initial state analysis for nDMaterials
-	// Chris McGann, U.Washington
-	Tcl_CreateCommand(interp, "InitialStateAnalysis", &InitialStateAnalysis,
-			  (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    // command added for initial state analysis for nDMaterials
+    // Chris McGann, U.Washington
+    Tcl_CreateCommand(interp, "InitialStateAnalysis", &InitialStateAnalysis,
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 
     Tcl_CreateCommand(interp, "totalCPU", &totalCPU, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
@@ -1201,10 +1203,9 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   // NOTE : DON'T do the above on theVariableTimeStepAnalysis
   // as it and theTansientAnalysis are one in the same
 
-
   if (theDatabase != 0)
     delete theDatabase;
-  
+
   theDomain.clearAll();
 
 #ifdef _PARALLEL_PROCESSING
@@ -1214,10 +1215,9 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #ifdef _NOGRAPHICS
 
 #else
-
   if (theTclVideoPlayer != 0) {
-	  delete theTclVideoPlayer;
-	  theTclVideoPlayer = 0;
+    delete theTclVideoPlayer;
+    theTclVideoPlayer = 0;
   }
 #endif
 
@@ -1251,6 +1251,7 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 int 
 wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
+
 #ifdef _PARALLEL_PROCESSING
   if (OPS_PARTITIONED == true && OPS_NUM_SUBDOMAINS > 1) {
     SubdomainIter &theSubdomains = theDomain.getSubdomains();
@@ -1266,7 +1267,7 @@ wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
       theStaticAnalysis->clearAll();
       delete theStaticAnalysis;
   }
-  
+
   if (theTransientAnalysis != 0) {
       theTransientAnalysis->clearAll();
       delete theTransientAnalysis;  
@@ -7256,35 +7257,44 @@ sectionWeight(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 int
 InitialStateAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-	if (argc < 2) {
-		opserr << "WARNING: Incorrect number of arguments for InitialStateAnalysis command" << endln;
-		return TCL_ERROR;
-	}
-		
-	if (strcmp(argv[1],"on") == 0) {
-		opserr << "InitialStateAnalysis ON" << endln;
-		
-		// set global variable to true
-		ops_InitialStateAnalysis = true;
-		
-		return TCL_OK;
-		
-  	} else if (strcmp(argv[1],"off") == 0) {
-		opserr << "InitialStateAnalysis OFF" <<endln;
+  if (argc < 2) {
+    opserr << "WARNING: Incorrect number of arguments for InitialStateAnalysis command" << endln;
+    return TCL_ERROR;
+  }
+  
+  if (strcmp(argv[1],"on") == 0) {
+    opserr << "InitialStateAnalysis ON" << endln;
 
-		// call revert to start to zero the displacements
-		theDomain.revertToStart();
-		
-		// set global variable to false
-		ops_InitialStateAnalysis = false;
-		
-		return TCL_OK;
-		
-  	} else {
-		opserr << "WARNING: Incorrect arguments - want InitialStateAnalysis on, or InitialStateAnalysis off" << endln;
+    // set global variable to true
+    // FMK changes for parallel: 
+    // ops_InitialStateAnalysis = true;
 
-		return TCL_ERROR;		
-  	}
+    Parameter *theP = new InitialStateParameter(true);
+    theDomain.addParameter(theP);
+    delete theP;
+
+    return TCL_OK;
+    
+  } else if (strcmp(argv[1],"off") == 0) {
+    opserr << "InitialStateAnalysis OFF" <<endln;
+    
+    // call revert to start to zero the displacements
+    theDomain.revertToStart();
+    
+    // set global variable to false
+    // FMK changes for parallel
+    // ops_InitialStateAnalysis = false;
+    Parameter *theP = new InitialStateParameter(false);
+    theDomain.addParameter(theP);
+    delete theP;
+
+    return TCL_OK;
+    
+  } else {
+    opserr << "WARNING: Incorrect arguments - want InitialStateAnalysis on, or InitialStateAnalysis off" << endln;
+    
+    return TCL_ERROR;		
+  }
 }
 
 int 
@@ -8538,13 +8548,11 @@ EvalFileWithParameters(Tcl_Interp *interp,
 int
 setParameter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-  Element *theEle;
-  ElementIter &theEles = theDomain.getElements();
-
-  Parameter *theParameter = new Parameter(0, 0, 0, 0);
-  
   int argLoc = 1;
   double newValue = 0.0;
+  ID eleIDs(0, 32);
+  int numEle = 0;
+  int flag = 0;
 
   if (strstr(argv[argLoc],"-val") != 0) {
     if (Tcl_GetDouble(interp, argv[argLoc+1], &newValue) != TCL_OK) {
@@ -8559,8 +8567,8 @@ setParameter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   argLoc += 2;
   int objectCount = 0;
 
-  if (strstr(argv[argLoc],"-ele") != 0) {
-    
+  if (strstr(argv[argLoc],"-ele") != 0) {    
+
     if ((strcmp(argv[argLoc],"-ele") == 0) ||
 	(strcmp(argv[argLoc],"-eles") == 0) ||
 	(strcmp(argv[argLoc],"-element") == 0)) {
@@ -8571,44 +8579,20 @@ setParameter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
       
       argLoc++;
       int eleTag;
-      ID eleIDs(0, 32);
-      int numEle = 0;
       
       while (argLoc < argc && Tcl_GetInt(interp, argv[argLoc], &eleTag) == TCL_OK) {
 	eleIDs[numEle] = eleTag;
 	numEle++;
 	argLoc++;
       }
-      
-      if (argLoc == argc) {
-	opserr << "WARNING: No response type specified for element recorder. " << endln;
-	return TCL_ERROR;
-      }
-      
-      // note because of the way this parameter is updated only need to find one in the domain
-      if (numEle == 0) {
-	while (((theEle = theEles()) != 0)) {
-	  int theResult = theEle->setParameter(&argv[argLoc], argc-argLoc, *theParameter);
-	  if (theResult != -1) {
-	    objectCount++;
-	    theParameter->update(newValue);
-	    theParameter->clean();
-	  }
-	}
-      } else {
-	for (int i=0; i<numEle; i++) {
-	  int eleTag = eleIDs(i);
-	  theEle = theDomain.getElement(eleTag);
-	  int theResult = theEle->setParameter(&argv[argLoc], argc-argLoc, *theParameter);
-	  if (theResult != -1) {
-	    objectCount++;
-	    theParameter->update(newValue);
-	    theParameter->clean();
-	  }	  
-	}
-      }
+
+      if (numEle > 0)
+	flag = 1;
+
     } else if (strcmp(argv[argLoc],"-eleRange") == 0) {
       
+      flag = 2;
+
       // ensure no segmentation fault if user messes up
       if (argc < argLoc+3) {
 	opserr << "WARNING recorder Element .. -eleRange start? end?  .. - no ele tags specified\n";
@@ -8633,24 +8617,17 @@ setParameter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 	end = start;
 	start = swap;
       }
+      eleIDs[0] = start;
+      eleIDs[1] = end;
+
       argLoc += 3;
-      
-      for (int i=start; i<=end; i++) {
-	theEle = theDomain.getElement(i);
-	int theResult = theEle->setParameter(&argv[argLoc], argc-argLoc, *theParameter);
-	if (theResult != -1) {
-	  objectCount++;
-	  theParameter->update(newValue);
-	  theParameter->clean();
-	}	  
-      }	
     }
+
+    ElementStateParameter theParameter(newValue, &argv[argLoc], argc-argLoc, flag, &eleIDs);
+
+    theDomain.addParameter(&theParameter);
   }
 
-  delete theParameter;
-  
-  // return in result # of objects that responded
-  sprintf(interp->result,"%d",objectCount);
   return TCL_OK;
 }
 
