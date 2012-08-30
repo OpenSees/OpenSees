@@ -1,5 +1,5 @@
 /* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**    OpenSees System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
@@ -208,8 +208,8 @@ StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 
 // init the global variabled defined in OPS_Globals.h
-double        ops_Dt = 1.0;
-Domain       *ops_TheActiveDomain = 0;
+//double        ops_Dt = 1.0;
+//Domain       *ops_TheActiveDomain = 0;
 //Element      *ops_TheActiveElement = 0;
 */
 
