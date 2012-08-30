@@ -1,4 +1,3 @@
-
 /* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
@@ -37,8 +36,7 @@
 #include <ShadowSubdomain.h>
 #include <stdlib.h>
 
-#include <Node.h>
-#include <Element.h>
+#include <Node.h> #include <Element.h>
 #include <SP_Constraint.h>
 #include <MP_Constraint.h>
 #include <DomainDecompositionAnalysis.h>
@@ -164,8 +162,11 @@ ShadowSubdomain::~ShadowSubdomain()
   // send a message to the remote actor telling it to shut sown
   msgData(0) = ShadowActorSubdomain_DIE;
   this->sendID(msgData);
-  this->recvID(msgData);
-
+  /*
+  if (this->recvID(msgData) < 0) {
+    opserr << "ERROR - MPI - ShadowSubdomain::~ShadowSubdomain - DIE Error\n";
+  }
+  */
   delete theShadowSPs;
   delete theShadowMPs;
   delete theShadowLPs;
@@ -1074,6 +1075,9 @@ ShadowSubdomain::revertToStart(void)
 {
   msgData(0) = ShadowActorSubdomain_revertToStart;
   this->sendID(msgData);
+  if (this->recvID(msgData) != 0) {
+    opserr << "ShadowSubdomain::revertToStart ERROR ERROR\n";
+  }
   return 0;
 }
 

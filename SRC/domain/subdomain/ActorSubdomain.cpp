@@ -110,10 +110,9 @@ ActorSubdomain::run(void)
       
       const ID *theID;
       
-      //	opserr << "ActorSubdomain action: " << action << endln;
-      
-      switch (action) {
+      //     opserr << "ActorSubdomain ACTION: " << action << endln;
 
+      switch (action) {
 	  case ShadowActorSubdomain_setTag:
 	    tag = msgData(1); // subdomain tag
 	    this->setTag(tag);
@@ -624,6 +623,8 @@ ActorSubdomain::run(void)
 	    
 	  case ShadowActorSubdomain_revertToStart:
 	    this->revertToStart();
+	    this->sendID(msgData);
+
 	    break;	    	    
 
 	  case ShadowActorSubdomain_addRecorder:
@@ -637,8 +638,8 @@ ActorSubdomain::run(void)
 
 	  case ShadowActorSubdomain_removeRecorders:
 	    this->removeRecorders();
+	    this->barrierCheck(1);
 	    break;	    	    
-
 
 	  case ShadowActorSubdomain_removeRecorder:
 	    theType = msgData(1);
@@ -647,8 +648,8 @@ ActorSubdomain::run(void)
 	    
 
 	case ShadowActorSubdomain_wipeAnalysis:
-	    this->wipeAnalysis();	    
-	    break;
+	  this->wipeAnalysis();	    
+	  break;
 
 	  case ShadowActorSubdomain_setDomainDecompAnalysis:
 	    theType = msgData(1);
@@ -678,21 +679,15 @@ ActorSubdomain::run(void)
 	  break;
 	  
 	case ShadowActorSubdomain_setAnalysisIntegrator:
-	  opserr << "ActorSUbdoman:: - setAnalysisIntegrator 1\n";
 	  theType = msgData(1);
 	  theIntegrator = theBroker->getNewIncrementalIntegrator(theType);
-	  opserr << "ActorSUbdoman:: - setAnalysisIntegrator 2\n";
 	  if (theIntegrator != 0) {
-	  opserr << "ActorSUbdoman:: - setAnalysisIntegrator 3\n";
 	    this->recvObject(*theIntegrator);
-	  opserr << "ActorSUbdoman:: - setAnalysisIntegrator 4\n";
 	    this->setAnalysisIntegrator(*theIntegrator);
-	  opserr << "ActorSUbdoman:: - setAnalysisIntegrator 5\n";
 	    msgData(0) = 0;
 	  } else
 	    msgData(0) = -1;
 	  this->sendID(msgData);
-	  opserr << "ActorSUbdoman:: - setAnalysisIntegrator SENT\n";
 	  break;
 
 	case ShadowActorSubdomain_setAnalysisLinearSOE:
@@ -911,10 +906,12 @@ ActorSubdomain::run(void)
 	  default:
 	    opserr << "ActorSubdomain::invalid action " << action << "received\n";
 	    msgData(0) = -1;
-	}
+	    
+      }
+      //      opserr << "DONE ACTION: " << action << endln;
     }
 
-    this->sendID(msgData);
+    //    this->sendID(msgData);
     return 0;
 }
 
@@ -951,7 +948,7 @@ ActorSubdomain::update(void)
 {
   int res = this->Domain::update();
 
-  res = this->barrierCheck(res);
+  // res = this->barrierCheck(res);
 
   return res;
 }
