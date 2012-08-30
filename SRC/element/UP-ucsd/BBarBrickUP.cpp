@@ -103,18 +103,18 @@ connectedExternalNodes(8), applyLoad(0), load(0), Ki(0), kc(0), rho(0)
 
 //*********************************************************************
 //full constructor
-BBarBrickUP::BBarBrickUP(  int tag,
-                         int node1,
+BBarBrickUP::BBarBrickUP(int tag,
+			 int node1,
                          int node2,
-   	                     int node3,
+			 int node3,
                          int node4,
                          int node5,
                          int node6,
                          int node7,
-			             int node8,
+			 int node8,
 			 NDMaterial &theMaterial, double bulk, double rhof,
-			double p1, double p2, double p3,
-		   double b1, double b2, double b3) :
+			 double p1, double p2, double p3,
+			 double b1, double b2, double b3) :
 Element( tag, ELE_TAG_BBarBrickUP ),
 connectedExternalNodes(8), applyLoad(0), load(0), Ki(0), kc(bulk), rho(rhof)
 {
@@ -981,12 +981,12 @@ void  BBarBrickUP::formResidAndTangent( int tang_flag )
           resid( jj + p ) += residJ(p)  ;
 
           // Subtract equiv. body forces from the nodes
-		  if (applyLoad == 0) {
-	      	resid( jj + p ) -= dvol[i]*rhot*b[p]*Shape[3][j][i];
-		  } else {
-			resid( jj + p ) -= dvol[i]*rhot*appliedB[p]*Shape[3][j][i];
-		  }
-		}
+	  if (applyLoad == 0) {
+	    resid( jj + p ) -= dvol[i]*rhot*b[p]*Shape[3][j][i];
+	  } else {
+	    resid( jj + p ) -= dvol[i]*rhot*appliedB[p]*Shape[3][j][i];
+	  }
+	}
 
         // Subtract fluid body force
 		if (applyLoad == 0) {
