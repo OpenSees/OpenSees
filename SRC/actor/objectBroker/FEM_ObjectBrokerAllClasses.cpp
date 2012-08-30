@@ -349,6 +349,8 @@
 #include <Parameter.h>
 #include <MaterialStageParameter.h>
 #include <MatParameter.h>
+#include <InitialStateParameter.h>
+#include <ElementStateParameter.h>
 
 // time series
 #include <LinearSeries.h>
@@ -1874,6 +1876,14 @@ FEM_ObjectBrokerAllClasses::getParameter(int classTag)
 
   case PARAMETER_TAG_MatParameter:
     theRes = new MatParameter();
+    break;
+
+  case PARAMETER_TAG_InitialStateParameter:
+    theRes = new InitialStateParameter();
+    break;
+
+  case PARAMETER_TAG_ElementStateParameter:
+    theRes = new ElementStateParameter();
     break;
 
   default:
