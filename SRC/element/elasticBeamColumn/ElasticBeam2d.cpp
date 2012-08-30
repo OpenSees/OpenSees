@@ -723,6 +723,7 @@ ElasticBeam2d::getResponse (int responseID, Information &eleInfo)
     return eleInfo.setVector(this->getResistingForce());
     
   case 3: // local forces
+    this->getResistingForce();
     // Axial
     N = q(0);
     P(3) =  N;

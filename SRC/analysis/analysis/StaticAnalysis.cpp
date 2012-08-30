@@ -105,18 +105,25 @@ StaticAnalysis::clearAll(void)
   // invoke the destructor on all the objects in the aggregation
   if (theAnalysisModel != 0)     
     delete theAnalysisModel;
+
   if (theConstraintHandler != 0) 
     delete theConstraintHandler;
+
   if (theDOF_Numberer != 0)      
     delete theDOF_Numberer;
+
   if (theIntegrator != 0) 
     delete theIntegrator;
+
   if (theAlgorithm != 0)  
     delete theAlgorithm;
+
   if (theSOE != 0)
     delete theSOE;
+
   if (theTest != 0)
     delete theTest;
+
   if (theEigenSOE != 0)
     delete theEigenSOE;
 
@@ -174,7 +181,6 @@ StaticAnalysis::analyze(int numSteps)
 		return -1;
 	    }	
 	}
-
 
 	result = theIntegrator->newStep();
 	if (result < 0) {

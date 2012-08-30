@@ -78,6 +78,8 @@ OPS_MultiFP2d()
   int done = 0;
 
   int axialCase = 1; //
+  int  doWall = 0;
+  double gap = 0.0;
 
   opserr << "NUM REMAINING ARGS: " << numRemainingArgs << endln;
 
@@ -93,6 +95,16 @@ OPS_MultiFP2d()
     } else if (strcmp(nextArg, "-WT") == 0) {
       axialCase = 2;
     } 
+
+    else if (strcmp(nextArg, "-doWall") == 0) {
+      numData = 1;
+      if (OPS_GetDoubleInput(&numData, &gap) != 0) {
+	opserr << "WARNING invalid element data\n";
+	return 0;
+      }
+      doWall = 1;
+      numRemainingArgs--;
+    }
 
     else if (strcmp(nextArg, "-material") == 0) {
       if (numRemainingArgs == 3) { //user defined material
@@ -117,7 +129,7 @@ OPS_MultiFP2d()
 	theEle = new MultiFP2d(eleTag, iData[1],iData[2], 
 			       theFrictionMaterial, 
 			       theVerticalMaterial,
-			       dData[0], axialCase);
+			       dData[0], axialCase, doWall, gap);
 	done = 1;
       } else {
 	opserr << "WARNING incorrect #args for MultiFP ele " << eleTag << " for -material option" << endln;
@@ -150,7 +162,9 @@ OPS_MultiFP2d()
 			       mu,
 			       dData[15],
 			       dData[16],
-			       axialCase);    
+			       axialCase, 
+			       doWall, 
+			       gap);    
 	
 	done = 1;
       } else {
@@ -177,11 +191,11 @@ MultiFP2d::MultiFP2d(int tag,
 		     int Nd1, int Nd2, 
 		     UniaxialMaterial *friction,
 		     UniaxialMaterial *vertical,
-		     double w0, int aCase)
+		     double w0, int aCase, int wall, double theGap)
   :Element(tag, ELE_TAG_MultiFP2d),     
    externalNodes(2),
    numDOF(0), theMatrix(0), theVector(0),
-   type(0), axialCase(aCase)
+   type(0), axialCase(aCase), doWall(wall), gap(theGap)
 {	
   theFrictionModel = friction->getCopy();
   theVerticalModel = vertical->getCopy();
@@ -207,11 +221,13 @@ MultiFP2d::MultiFP2d(int tag,
 		     const Vector &mu,
 		     double Kv,
 		     double w0,
-		     int aCase)
+		     int aCase,
+		     int wall,
+		     double theGap)
   :Element(tag, ELE_TAG_MultiFP2d),     
    externalNodes(2),
    numDOF(0), theMatrix(0), theVector(0),
-   type(0), axialCase(aCase)
+   type(0), axialCase(aCase), doWall(wall), gap(theGap)
 {	
   theVerticalModel = new ENTMaterial(2, Kv);
 
@@ -231,7 +247,8 @@ MultiFP2d::MultiFP2d(int tag,
     fy(2) = mu(2);
     
     u(1) = 2*L0*(mu(1)-mu(0));
-    u(0) = u(1)/100.0;
+    //    u(0) = u(1)/100.0;
+    u(0) = 0.01;
     u(2) = L0*(mu(1)+mu(2) - 2*mu(0)) + L1*(mu(2) - mu(1));
     u(3) = u(2) + (u1bar/L1 + mu(1) - mu(2))*(L1+L2);
     u(4) = u(3)+(u2bar/L2 + mu(2) - u1bar/L1 - mu(1))*(L0+L2);
@@ -240,6 +257,9 @@ MultiFP2d::MultiFP2d(int tag,
     fy(4) = fy(3) + u2bar/L2 + mu(2) - u1bar/L1 - mu(1);
     
     theFrictionModel = new MultiLinear(1, fy, u); 
+
+    opserr << fy*w0;
+    opserr << u;
   }
 
   externalNodes(0) = Nd1;
@@ -256,10 +276,13 @@ MultiFP2d::MultiFP2d(int tag,
 MultiFP2d::MultiFP2d()
  :Element(0, ELE_TAG_MultiFP2d), 
   externalNodes(2),
-  numDOF(0), theMatrix(0), theVector(0)
+  numDOF(0), theMatrix(0), theVector(0), doWall(0), gap(0)
 {
   theNodes[0] = 0; 
   theNodes[1] = 0;
+
+  doWall = 0;
+  gap = 0.0;
 }
 
 //  destructor - provided to clean up any memory
@@ -399,15 +422,32 @@ MultiFP2d::update()
   double strainX = v2(0)-v1(0);
   double strainY = v2(1)-v1(1);
 
-  theFrictionModel->setTrialStrain(strainX);
   theVerticalModel->setTrialStrain(strainY);
 
-  int numD = numDOF/2;
+  double k1, f1;
 
-  double k1 = theFrictionModel->getTangent();
+  if (doWall == 0) {
+    theFrictionModel->setTrialStrain(strainX);
+    k1 = theFrictionModel->getTangent();
+    f1 = theFrictionModel->getStress();
+  } else { 
+    if (-gap < strainX && strainX < gap) {
+      theFrictionModel->setTrialStrain(strainX);
+      k1 = theFrictionModel->getTangent();
+      f1 = theFrictionModel->getStress();
+    } else if (strainX >= gap) {
+      theFrictionModel->setTrialStrain(gap);
+      k1 = theFrictionModel->getInitialTangent();
+      f1 = theFrictionModel->getStress() + (strainX-gap)*k1;
+    } else {
+      theFrictionModel->setTrialStrain(-gap);
+      k1 = theFrictionModel->getInitialTangent();
+      f1 = theFrictionModel->getStress() + (strainX+gap)*k1;
+    }
+  }
+
+  int numD = numDOF/2;
   double k2 = theVerticalModel->getTangent();
-  
-  double f1 = theFrictionModel->getStress();
   double f2 = theVerticalModel->getStress();
 
   double vLoad = cW;
@@ -418,6 +458,8 @@ MultiFP2d::update()
 
   k1 *= vLoad;
   f1 *= vLoad;
+
+  opserr << "MultiFP: d1: " << strainX << " f1: " << f1 << " k1: " << k1 << " P: " << vLoad << endln;
 
   theVector->Zero();
   
@@ -445,6 +487,7 @@ MultiFP2d::update()
 const Matrix &
 MultiFP2d::getTangentStiff(void)
 {
+  opserr << "Multi::tangent " << *theMatrix;
   return *theMatrix;
 }
 
@@ -476,6 +519,7 @@ MultiFP2d::getInitialStiff(void)
 const Vector &
 MultiFP2d::getResistingForce()
 {	
+  opserr << "Multi::resisting " << *theVector;
   return *theVector;
 }
 
@@ -496,11 +540,17 @@ MultiFP2d::Print(OPS_Stream &s, int flag)
 {
   s << "Element: " << this->getTag(); 
   s << " type: MultiFP2d  iNode: " << externalNodes(0);
-  s << " jNode: " << externalNodes(1) << endln;
+  s << " jNode: " << externalNodes(1);
+  if (doWall == 1) {
+    s << " gap: " << gap;
+  }
+  opserr << endln;
   s << "material for normalized lateral force displacement response\n";
   theFrictionModel->Print(s, flag);
   s << "material for vertical force displacement response\n";
   theVerticalModel->Print(s, flag);
+
+    
 }
 
 

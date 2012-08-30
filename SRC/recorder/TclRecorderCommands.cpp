@@ -278,7 +278,6 @@
 	   loc++;
 	 } 
 
-
 	 else if (strcmp(argv[loc],"-precision") == 0) {
 	   loc ++;
 	   if (Tcl_GetInt(interp, argv[loc], &precision) != TCL_OK)	
@@ -340,8 +339,6 @@
 	   eMode = TCP_STREAM;
 	   loc += 3;
 	 }	    
-
-
 
 	 else if ((strcmp(argv[loc],"-binary") == 0)) {
 	   // allow user to specify load pattern other than current

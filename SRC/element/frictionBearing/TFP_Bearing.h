@@ -51,8 +51,8 @@ class TFP_Bearing : public Element
 	      double *h,
 	      double H0,
 	      double a,
-	      double K,
-	      double vYield);
+	      double K);
+
 
     TFP_Bearing();    
     
@@ -99,7 +99,6 @@ class TFP_Bearing : public Element
     double mu[4];
     double h[4];
     double K;
-    double vyield;
 
     // state variables
     double d[8];
@@ -124,14 +123,32 @@ class TFP_Bearing : public Element
     double Ap;
     double dh;
     double N[4];
-    
+
     ID  externalNodes;  // contains the id's of end nodes
     Node *theNodes[2];  // node pointers
 
     int numDOF;
+
     Matrix *theMatrix;
+    Matrix *theInitialMatrix;
     Vector *theVector;
 
+    Matrix AfTrial;
+    Matrix AfCommit;
+
+    Matrix ksrestTrial;
+    Matrix ksrestCommit;    
+
+    Matrix keeTrial;
+    Matrix keeCommit;    
+    Matrix keiTrial;
+    Matrix keiCommit;    
+
+    Matrix stiffTrial;    
+    Matrix stiffCommit;
+
+    Matrix kthatTrial;
+    Matrix kthatCommit;
 };
 #endif
 

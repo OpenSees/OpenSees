@@ -906,13 +906,13 @@ void  BbarBrick::formResidAndTangent( int tang_flag )
       //residual
       for ( p = 0; p < ndf; p++ ) {
         resid( jj + p ) += residJ(p)  ;
-		if (applyLoad == 0) {
-	    	resid( jj + p ) -= dvol[i]*b[p]*shp[3][j];
-		} else {
-			resid( jj + p ) -= dvol[i]*appliedB[p]*shp[3][j];
-		}
+	if (applyLoad == 0) {
+	  resid( jj + p ) -= dvol[i]*b[p]*shp[3][j];
+	} else {
+	  resid( jj + p ) -= dvol[i]*appliedB[p]*shp[3][j];
+	}
       }
-
+      
       if ( tang_flag == 1 ) {
 
 	//BJtranD = BJtran * dd ;

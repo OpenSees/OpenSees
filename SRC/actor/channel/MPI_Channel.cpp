@@ -323,6 +323,8 @@ MPI_Channel::recvVector(int dbTag, int commitTag, Vector &theVector, ChannelAddr
       }		    
     }
 
+    //    opserr << "MPI:recvVector " << otherTag << " " << theVector.Size() << endln;
+
     // if o.k. get a ponter to the data in the Vector and 
     // place the incoming data there
     int nleft,nread;
@@ -374,6 +376,8 @@ MPI_Channel::sendVector(int dbTag, int commitTag, const Vector &theVector, Chann
     char *gMsg = (char *)data;
     nleft =  theVector.sz;
 
+    //    opserr << "MPI:sendVector " << otherTag << " " << theVector.Size() << endln;
+
     MPI_Send((void *)gMsg, nleft, MPI_DOUBLE, otherTag, 0, otherComm);
     
     return 0;
@@ -385,7 +389,6 @@ MPI_Channel::sendVector(int dbTag, int commitTag, const Vector &theVector, Chann
 int 
 MPI_Channel::recvID(int dbTag, int commitTag, ID &theID, ChannelAddress *theAddress)
 {	
-
     // first check address is the only address a MPI_Channel can send to
     MPI_ChannelAddress *theMPI_ChannelAddress = 0;
     if (theAddress != 0) {
@@ -407,6 +410,8 @@ MPI_Channel::recvID(int dbTag, int commitTag, ID &theID, ChannelAddress *theAddr
     int *data = theID.data;
     char *gMsg = (char *)data;;
     nleft =  theID.sz;
+
+    //    opserr << "MPI:recvID " << otherTag << " " << theID.Size() << endln;
 
     MPI_Status status;
     MPI_Recv((void *)gMsg, nleft, MPI_INT, otherTag, 0, otherComm, &status);
@@ -454,6 +459,8 @@ MPI_Channel::sendID(int dbTag, int commitTag, const ID &theID, ChannelAddress *t
     int *data = theID.data;
     char *gMsg = (char *)data;
     nleft =  theID.sz;
+
+    //    opserr << "MPI:sendID " << otherTag << " " << theID.Size() << endln;
 
     MPI_Send((void *)gMsg, nleft, MPI_INT, otherTag, 0, otherComm);
 

@@ -46,7 +46,9 @@
 
 // initialise the class wide variables
 
-static Vector vectorSize8(8);
+static int init = 1;
+
+static int elastic = 1;
 
 static int numMyBearing = 0;
 
@@ -55,7 +57,7 @@ OPS_TFP_Bearing()
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numMyBearing == 0) {
-    opserr << "TFP_Bearing element - Written by Tracy Becker, UC Berkeley Copyright 2011\n";
+    opserr << "TFP_Bearing::4582 element - Written by Tracy Becker, UC Berkeley Copyright 2011\n";
     numMyBearing++;
   }
 
@@ -67,7 +69,7 @@ OPS_TFP_Bearing()
     return theEle;
   }
 
-  if (numRemainingArgs != 25 && numRemainingArgs != 24 && numRemainingArgs != 26 != numRemainingArgs != 27) {
+  if (numRemainingArgs != 25 && numRemainingArgs != 24 && numRemainingArgs != 26) {
     opserr << "ERROR - TFP_Bearing incorrect # args provided, want: element TFP_Bearing tag? iNode? jNode? ";
     opserr << "$R1 $R2 $R3 $R4 $do1 $do2 $do3 $do4 $din1 $din2 $din3 $din4 $mu1 $mu2 $mu3 $mu4";
     opserr << " $h1 $h2 $h3 $h4 $H0 <$a> <$K>\n";
@@ -76,7 +78,7 @@ OPS_TFP_Bearing()
 
   // get the id and end nodes 
   int iData[3];
-  double dData[24];
+  double dData[23];
   int numData;
 
   numData = 3;
@@ -89,18 +91,13 @@ OPS_TFP_Bearing()
 
   if (numRemainingArgs == 24) {
     numData = 21;
-    dData[21] = 10.0; // initial Axial Load = 0.0
+    dData[21] = 0.0; // initial Axial Load = 0.0
     dData[22] = 1.0e12;
-    dData[23] = 0.01;
   } else if (numRemainingArgs == 25) {
     numData = 22;
-    dData[22] = 1.0e12;    
-    dData[23] = 0.01;
-  } else if (numRemainingArgs == 26) {
-    numData = 23;
     dData[22] = 1.0e12;
   } else {
-    numData = 24;
+    numData = 23;
   }
 
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
@@ -121,7 +118,6 @@ OPS_TFP_Bearing()
 			     &dData[16],
 			     dData[20],
 			     dData[21],
-			     dData[23],
 			     dData[22]);
   } else {
     theEle = new TFP_Bearing2d(eleTag, 
@@ -134,7 +130,6 @@ OPS_TFP_Bearing()
 			       &dData[16],
 			       dData[20],
 			       dData[21],
-			       dData[23],
 			       dData[22]);
   }
     
@@ -157,12 +152,14 @@ TFP_Bearing::TFP_Bearing(int tag,
 			 double *H,
 			 double h0,
 			 double a,
-			 double k,
-			 double vYield)
+			 double k)
   :Element(tag, ELE_TAG_TFP_Bearing),
   externalNodes(2),
   H0(h0), Ac(a), Ap(a),
-   numDOF(0), theMatrix(0), theVector(0), vyield(vYield)
+   numDOF(0), theMatrix(0), theInitialMatrix(0),theVector(0),
+   AfTrial(8,8),AfCommit(8,8),ksrestTrial(8,8),ksrestCommit(8,8),
+   keeTrial(4,4), keeCommit(4,4), keiTrial(4,4), keiCommit(4,4),
+   stiffTrial(8,8), stiffCommit(8,8), kthatTrial(4,4), kthatCommit(4,4)
 {	
 
   K = k;
@@ -214,9 +211,12 @@ TFP_Bearing::TFP_Bearing(int tag,
 
 // constructor which should be invoked by an FE_ObjectBroker only
 TFP_Bearing::TFP_Bearing()
- :Element(0, ELE_TAG_TFP_Bearing),
- externalNodes(2),
- numDOF(0), theMatrix(0), theVector(0)
+  :Element(0, ELE_TAG_TFP_Bearing),
+   externalNodes(2),
+   numDOF(0), theMatrix(0), theInitialMatrix(0),theVector(0),
+   AfTrial(8,8),AfCommit(8,8),ksrestTrial(8,8),ksrestCommit(8,8),
+   keeTrial(4,4), keeCommit(4,4), keiTrial(4,4), keiCommit(4,4),
+   stiffTrial(8,8), stiffCommit(8,8), kthatTrial(4,4), kthatCommit(4,4)
 {
   theNodes[0] = 0; 
   theNodes[1] = 0;
@@ -227,6 +227,8 @@ TFP_Bearing::~TFP_Bearing()
 {
   if (theMatrix != 0)
     delete theMatrix;
+  if (theInitialMatrix != 0)
+    delete theInitialMatrix;
   if (theVector != 0)
     delete theVector;
 }
@@ -309,7 +311,40 @@ TFP_Bearing::setDomain(Domain *theDomain)
     numDOF = 12;
   }
 
+  static Vector delU(4);
+  static Vector delP(4);
+
+  double vpi[8];
+
+  delU(0)=0.0;
+  delU(1)=0.0;
+  delU(2)=0.0;
+  delU(3)=0.0;
+
+  int contC = kt3Drma(vCommit, vpCommit, FrCommit, Ac, PCommit, vpi);
+
+  theMatrix->Zero();
+  theVector->Zero();
+
+  int numD = numDOF/2;
+
+  for (int i=0; i<2; i++) {
+    (*theVector)(i) = PTrial[i];
+    (*theVector)(i+numD) = PTrial[i+2];
+    
+    for (int j=0; j<2; j++) {
+      (*theMatrix)(i,j) = kthatTrial(i,j);
+      (*theMatrix)(i+numD,j+numD) = kthatTrial(i+2,j+2);
+      (*theMatrix)(i+numD,j) = kthatTrial(i+2,j);
+      (*theMatrix)(i,j+numD) = kthatTrial(i,j+2);
+    }
+  }
+  init = 1;
   this->update();
+  Ap = Ac;
+  theInitialMatrix = new Matrix(*theMatrix);
+  this->commitState();
+  init = 0;
 }   	 
 
 
@@ -327,6 +362,7 @@ TFP_Bearing::commitState()
     UCommit[i] = UTrial[i];
   }
   HCommit = HTrial;
+  //  opserr << "commitState: " << Ac << endln;
 
   Ac = Ap;
 
@@ -337,6 +373,13 @@ TFP_Bearing::commitState()
   //  Ac = nd2Reactions(2);
 
   //  opserr << "Ac: " << Ac << endln;
+  AfCommit=AfTrial;
+  ksrestCommit=ksrestTrial;
+  keeCommit = keeTrial;
+  keiCommit = keiTrial;
+  stiffCommit=stiffTrial;
+  kthatCommit=kthatTrial;
+
   return 0;
 }
 
@@ -354,7 +397,15 @@ TFP_Bearing::revertToLastCommit()
   }
   HTrial = HCommit;
 
-  Ac=Ap;
+  Ap=Ac;
+
+  AfTrial=AfCommit;
+  ksrestTrial=ksrestCommit;
+  keeTrial = keeCommit;
+  keiTrial = keiCommit;
+  stiffTrial=stiffCommit;
+  kthatTrial=kthatCommit;
+
   return 0;
 }
 
@@ -380,7 +431,7 @@ TFP_Bearing::revertToStart()
 }
 
 
-static Matrix kthat(4,4);
+//static Matrix kthat(4,4);
 static Matrix ksrest(8,8);
 
 static Matrix kt(8,8);
@@ -390,12 +441,17 @@ static Matrix Af(8,8);
 static Vector d(4);
 
 static Matrix kei(4,4);
+static Matrix kie(4,4);
 static Matrix kee(4,4);
+
+static Vector f(8);
+static Vector F(8);
 
 int
 TFP_Bearing::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, double *vpi) {
 
-  Vector vF (v, 8); 
+  //  opserr << "TFP::kt3Drma A: " << A << endln;
+    Vector vF (v, 8); 
   Vector vpF (vp, 8); 
   Vector FrF (Fr, 8); 
   Vector PF (P,4);  
@@ -417,12 +473,14 @@ TFP_Bearing::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, dou
 
   int cont = 0;
 
-  kthat.Zero(); 
+  kthatTrial.Zero(); 
   kt.Zero(); 
   ks.Zero(); 
   Af.Zero(); 
   kcont.Zero(); 
   krot.Zero();
+  f.Zero();
+  F.Zero();
 			
   for (int i=0; i<4; i++)
     N[i] = A;
@@ -431,9 +489,13 @@ TFP_Bearing::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, dou
     int z=4+i;
     Ri[i]=sqrt((r[i]-h[i])*(r[i]-h[i]) - v[z]*v[z]);
     Ri[z]=sqrt((r[i]-h[i])*(r[i]-h[i]) - v[i]*v[i]);
+
+    /*
     d[i] = r[i] - sqrt(r[i]*r[i]) - sqrt(v[i]*v[i]+v[z]*v[z]);
     N[i] = A + sqrt((P[0]-P[2])*(P[0]-P[2]) + (P[1]-P[3])*(P[1]-P[3])) * 
       sqrt(v[i]*v[i]+v[z]*v[z])/r[i];
+    */
+
     R[i] = Ri[i];
     R[z] = Ri[z];
   }
@@ -442,24 +504,30 @@ TFP_Bearing::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, dou
   for (int i=0; i<4; i++) {
     dh += d[i];
   }
-  
-  //  R[0] = (Ri[0]*Ri[2])/(Ri[2]+fabs(v[2])*Ri[0]);
-  //  R[1]=(Ri[1]*Ri[3])/(Ri[3]+fabs(v[3])*Ri[1]);
-  //  R[4]=(Ri[4]*Ri[6])/(Ri[6]+fabs(v[4])*Ri[6]);
-  //  R[5]=(Ri[5]*Ri[7])/(Ri[7]+fabs(v[5])*Ri[7]);
+
+  /*  
+  R[0] = (Ri[0]*Ri[2])/(Ri[2]+fabs(v[2])*Ri[0]);
+  R[1]=(Ri[1]*Ri[3])/(Ri[3]+fabs(v[3])*Ri[1]);
+  R[4]=(Ri[4]*Ri[6])/(Ri[6]+fabs(v[4])*Ri[6]);
+  R[5]=(Ri[5]*Ri[7])/(Ri[7]+fabs(v[5])*Ri[7]);
 
   double PNorm = 0.0;
   for (int i=0; i<4; i++) {
     PNorm += P[i]*P[i];
   }
   PNorm = sqrt(PNorm);
-  
   N[0]=A+PNorm*(sqrt(v[0]*v[0]+v[4]*v[4])/r[0]+sqrt(v[2]*v[2]+v[6]*v[6])/r[2]);
   N[1]=A+PNorm*(sqrt(v[1]*v[1]+v[5]*v[5])/r[1]+sqrt(v[3]*v[3]+v[7]*v[7])/r[3]);
+  */
+
+  N[0] = A;
+  N[1] = A;
+  N[2] = A;
+  N[3] = A;
 
   for (int i=0; i<4; i++) {
     int z=4+i;
-    //    double vyield=0.01;
+    double vyield=0.01;
     double qYield=mu[i]*N[i];
     double k0=qYield/vyield;
     
@@ -470,17 +538,32 @@ TFP_Bearing::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, dou
     // compute yield criterion of hysteretic component
     double qTrialNorm = sqrt(qTrialx*qTrialx+qTrialy*qTrialy);
     double Y = qTrialNorm - qYield;
- 
+
     // elastic step -> no updates for pastic displacements required
+    //    opserr << "Y: " << Y << endln;
+
     if (Y <= 0 ) {
+      //      opserr <<  "ELASTIC STEP:\n";
       // set tangent stiffnesses
-      ks(i,i) = k0 + N[i]/R[i];
-      ks(z,z) = k0 + N[i]/R[z];
+      //      opserr << "k0: " << k0 << " A: " << A << " R[i]: " << R[i] << endln;
+
+      ks(i,i) = k0 + A/Ri[i]; // fmk last A/R[i];
+      ks(z,z) = k0 + A/Ri[z]; // A/R[z];
       vpi[i] = vp[i];
       vpi[z] = vp[z];
 
+      f(i)=qTrialx + A/Ri[i]*v[i];
+      f(z)=qTrialy + A/Ri[z]*v[z];
+
     // plastic step -> return mapping
     } else {    
+      /*
+      opserr <<  "PLASTIC STEP:\n";
+      opserr << "Y: " << Y << " qTriaxx: " << qTrialx << " qTrialy: " << qTrialy << " " << qYield << endln;
+
+      opserr << k0 << " " << v[i] << " " << vs[i] << " " << vp[i] << endln;
+      opserr << k0 << " " << v[z] << " " << vs[z] << " " << vp[z] << endln;
+      */
       // compute consistency parameters
       double dGamma = Y/k0;
       // update plastic displacements
@@ -488,19 +571,29 @@ TFP_Bearing::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, dou
       vpi[z] = vp[z] + dGamma*qTrialy/qTrialNorm;
       //  set tangent stiffnesses
       double qTrialNorm3 = qTrialNorm*qTrialNorm*qTrialNorm;
-      ks(i,i) =  qYield*k0*qTrialy*qTrialy/qTrialNorm3 + N[i]/R[i];
+
+      ks(i,i) =  qYield*k0*qTrialy*qTrialy/qTrialNorm3 + N[i]/Ri[i];
       ks(i,z) = -qYield*k0*qTrialx*qTrialy/qTrialNorm3;
       ks(z,i) = -qYield*k0*qTrialx*qTrialy/qTrialNorm3;
-      ks(z,z) =  qYield*k0*qTrialx*qTrialx/qTrialNorm3 + N[i]/R[z];
-    }
+      ks(z,z) =  qYield*k0*qTrialx*qTrialx/qTrialNorm3 + N[i]/Ri[z];
 
-    //opserr << "ks: " << ks;
+      f(i)=qYield*qTrialx/qTrialNorm + A/Ri[i]*v[i];
+      f(z)=qYield*qTrialy/qTrialNorm  + A/Ri[z]*v[z];
+    }
+    
+    if (i==0) {
+      f(i) = f(i)+A*v[2]/Ri[2];
+      f(z) = f(z)+A*v[6]/Ri[6];
+    } else if (i == 1) {
+      f(i) = f(i)+A*v[3]/Ri[3];
+      f(z) = f(z)+A*v[7]/Ri[7];
+    }
 
     // restrainer contact stiffness
     double vt=sqrt(v[i]*v[i]+v[z]*v[z]); //local displacment of surface
-    double rt=(dOut[i]-dIn[i])/2.0;  //restrainer distance
+    double rt=(dOut[i]-dIn[i])/2.0*(r[i]-h[i])/r[i];  //restrainer distance
     double del=0.1;
-
+   
     if (vt>rt) {
       cont=1;
       double krim=k0*2;
@@ -518,9 +611,11 @@ TFP_Bearing::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, dou
       krot(i,z) =  F* (v[i]/sqrt(vi2+(v[z]+del)*(v[z]+del)) - v[i]/sqrt(vi2+(v[z]-del)*(v[z]-del)));
       krot(z,i) =  F* (v[z]/sqrt((v[i]+del)*(v[i]+del)+vz2) - v[z]/sqrt((v[i]-del)*(v[i]-del)+vz2));
       krot(z,z) =  F* ((v[z]+del)/sqrt(vi2+(v[z]+del)*v[z]+del) - (v[z]-del)/sqrt(vi2+(v[z]-del)*v[z]-del));
+
+      f(i)=f(i)+krim*(vt-rt)*v[i]/vt;
+      f(z)=f(i)+krim*(vt-rt)*v[z]/vt;
     }
   }
-
     
   double del = 0.1;
 
@@ -552,21 +647,23 @@ TFP_Bearing::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, dou
   Af(7,6) = Ri[7]*(-Ri[4]+Ri[6])/(Ri[6]+Ri[7]);
   Af(7,7) = Ri[7]*(-Ri[6]-Ri[5])/(Ri[6]+Ri[7]);
 
-
-  //  opserr << "Af: " << Af;
-  //  opserr << "ks: " << ks;
-  //  opserr << "ksrest: " << ksrest;
-
+  /*
+    opserr << "Af: " << Af;
+    opserr << "ks: " << ks;
+    opserr << "ksrest: " << ksrest;    
+  */
   static Matrix KsPlusKsrest(8,8);
 
 
   KsPlusKsrest = ks;
   KsPlusKsrest += ksrest;
-  KsPlusKsrest(0,2) = KsPlusKsrest(0,2) + N[0]/R[2];
-  KsPlusKsrest(1,3) = KsPlusKsrest(1,3) + N[1]/R[5];
-  KsPlusKsrest(4,6) = KsPlusKsrest(4,6) + N[4]/R[6];
-  KsPlusKsrest(5,7) = KsPlusKsrest(5,7) + N[5]/R[7];
-    
+  KsPlusKsrest(0,2) = KsPlusKsrest(0,2) + A/Ri[2];
+  KsPlusKsrest(1,3) = KsPlusKsrest(1,3) + A/Ri[3];
+  KsPlusKsrest(4,6) = KsPlusKsrest(4,6) + A/Ri[6];
+  KsPlusKsrest(5,7) = KsPlusKsrest(5,7) + A/Ri[7];
+
+  //  opserr << "ksPlusKsrest: " << KsPlusKsrest;
+
   kt.addMatrixTripleProduct(0.0, Af, KsPlusKsrest,1.0);
 
   //  opserr << "kt:" << kt;
@@ -575,16 +672,30 @@ TFP_Bearing::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, dou
 
   for (int i=0; i<4; i++) {
     for (int j=0; j<4; j++) {
-      kthat(i,j) = kt(i,j);
+      kthatTrial(i,j) = kt(i,j);
       Kee(i,j) = kt(i+4, j+4);
       kei(i,j) = kt(i+4, j);
+      kie(i,j) = kt(i, j+4);
     }
   }
+  //  opserr << "K11: " << kthat;
+  //  opserr << "K12: " << kie;
+  //  opserr << "K21: " << kei;
+  //  opserr << "K22: " << Kee;
 
   Kee.Invert(kee);
-  kthat.addMatrixTripleProduct(1.0, kei, kee, -1.0);
+  Matrix tmp1 = kee * kei;
+  Matrix tmp2 = kie* tmp1;
+
+  kthatTrial.addMatrix(1.0, tmp2, -1.0);
 
   //  opserr << "kthat: " << kthat;
+
+  /*
+  Vector vpiE(vpi, 8); opserr << "VPI:kt3: " << vpiE;
+  Vector p1(P, 4); opserr << "P:kt3: " << p1;
+  opserr << "f:kt3: " << f;
+  */
 
   return cont;
 }
@@ -593,13 +704,21 @@ TFP_Bearing::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, dou
 int
 TFP_Bearing::update()
 {
-  //  opserr << "UPDATE: " << this->getTag() << endln;
+  //  opserr << "TFP_Bearing::update(): Ap: " << Ap << " Ac: " << Ac << endln;
 
   static Vector delU(4);
   static Vector delP(4);
 
-  const Vector &v1 = theNodes[0]->getIncrDisp();
+  const Vector &v1 = theNodes[0]->getIncrDisp(); 
   const Vector &v2 = theNodes[1]->getIncrDisp();	
+
+  const Vector &d1 = theNodes[0]->getTrialDisp();
+  const Vector &d2 = theNodes[1]->getTrialDisp();	
+
+  double axialDefo = d1(2)-d2(2);
+
+  if (axialDefo > 0)
+    Ap = axialDefo*K;
 
   double vpi[8];
 
@@ -608,35 +727,27 @@ TFP_Bearing::update()
   delU(2)=v2(0);
   delU(3)=v2(1);
 
-  int contC = kt3Drma(vCommit, vpCommit, FrCommit, Ac, PCommit, vpi);
-
-  //  Vector vpiF (vpi,8);  
-  //  opserr << "delU: " << delU;
-  //  opserr << "vpiF: " << vpiF;
-
-  static Matrix stiffCommit(8,8);
-  stiffCommit = ks;
-  stiffCommit += ksrest;
-
   Vector PC(PCommit,4);
   Vector PT(PTrial, 4);
+  delP = kthatCommit*delU;
 
-  //  opserr << "PTrial 1:" << PTrial;
+  for (int i=0; i<8; i++) {
+    vpTrial[i] = vpCommit[i];
+    vTrial[i] = vCommit[i];
+    FrTrial[i] = FrCommit[i];
+  }
 
-  delP = kthat*delU;
-
-  PT = PC;
-  PT += delP;
-
-  for (int i=0; i<4; i++)
+  for (int i=0; i<4; i++) {
     UTrial[i] = UCommit[i] + delU(i);
+    PTrial[i] = PCommit[i] + delP(i);
+  }
 
   static Vector delU58(4);
   static Vector tmp1(4);
   
   tmp1.addMatrixVector(0.0, kei, delU, 1.0);
   delU58.addMatrixVector(0.0, kee, tmp1, -1.0);
-
+    
   static double dvData[8];
   static Vector dv(dvData,8);
   static Vector dFr(8);
@@ -646,56 +757,48 @@ TFP_Bearing::update()
     tmp2(i)=delU(i);
     tmp2(i+4)=delU58(i);
   }
+  
+  //  opserr << "delU delU58: " << tmp2;
 
+  Af = AfCommit; 
   dv = Af * tmp2;
 
-  //  opserr << "dv: " << dv;
-  //  Vector vC(vCommit, 8); opserr << "vCommit: " << vC;
+  dFr = ksrestCommit*dv; 
 
   for (int i=0; i<8; i++) {
     vTrial[i] = vCommit[i] + dvData[i];
     FrTrial[i] = FrCommit[i] + dFr(i);
   }
 
-  //  Vector vT(vTrial, 8); opserr << "vTrial: " << vT;
-
   HTrial = H0 + dh;
-  double vpit[8];
+  //  double vpit[8];
 
-  int contT = kt3Drma(vTrial, vpCommit, FrTrial, Ac, PTrial, vpit);
+  int contT = kt3Drma(vTrial, vpCommit, FrTrial, Ap, PTrial, vpi);
 
-  //  opserr << "vTrial: " << vT;
-  // Vector FT(FrTrial, 8); opserr << "FrTrial: " << FT;
-
-  // opserr << "Ptrial 2:" << PT;
-  // opserr << "kthat: " << kthat;
-
-  //   Vector vpiO(vpi, 8); opserr << "VPI 0: " << vpiO;
-
-  static Matrix stiffTrial(8,8);
-
+  static Vector tracyP(8);
+  tracyP = Af^f;
+  
   stiffTrial = ks;
   stiffTrial += ksrest;
   
   int subDiv = 0;
   for (int j=0; j<8; j++) { // j=1:8
-    int f=(stiffCommit(j,j)*2<stiffTrial(j,j) || stiffCommit(j,j)>2*stiffTrial(j,j));
-    if (f==1 || contT==1 || contC==1)
+    int f=(stiffTrial(j,j)*2<stiffCommit(j,j) || stiffTrial(j,j)>2*stiffCommit(j,j));
+    if (f==1 || contT==1) // fmk || contC==1)
       subDiv=1;
   }
 
-  //  opserr << "subDIV: " << subDiv << " contT: " << contT << " contC: " << contC << endln;
+  if (init == 1)
+    subDiv = 0;
 
+  //  opserr << "subDIV: " << subDiv << " contT: " << contT << endln;
   if (subDiv==1) {
 
     double dumax = 0.0001; 
-    //double dumax = 0.001; 
     double maxDelU = 0.0;
 
     for (int i=0; i<4; i++) {
       double delUi = fabs(delU(i));
-      //      opserr << "delUi: " << delUi << " maxDelU: " << maxDelU << endln;
-
       if (delUi > maxDelU)
 	maxDelU = delUi;
     }
@@ -703,58 +806,52 @@ TFP_Bearing::update()
     int n=ceil(maxDelU/dumax);
     //    opserr << "n: " << n << "maxDelU: " << maxDelU << " dumax: " << dumax << endln;
 
+    if (n < 50)
+      n = 50;
+    
     static Vector delu(4);
-    delu =  delU;
-    delu /= 1.0*n;
+    static Vector delp(4);
 
-    //    opserr << "delu: " << delu;
+    delu = delU;
 
+    if (n != 0.0)
+      delu /= 1.0*n;
+    
+    //    opserr << "n: " << n; 
+    //    opserr << " delu: " << delu;
+    
     static double padd[4];
     static double uadd[4];
     static double Ptemp[4];
-
+    
     static double vadd[8];
     static double vpTemp[8];
     static double FrTemp[8];
-
+    
     for (int i=0; i<4; i++) {
       padd[i] = 0.0; 
       uadd[i]=0.0; 
-    }
-    for (int i=0; i<8; i++) {
-      vadd[i]=0.0;
-      FrTemp[i]=FrCommit[i];
-      vpTemp[i] = vpCommit[i];
+      PTrial[i] = PCommit[i];
+      UTrial[i] = UCommit[i];
     }
     
+    for (int i=0; i<8; i++) {
+      vadd[i]=0.0;
+      vpTrial[i] = vpCommit[i];
+      FrTrial[i] = FrCommit[i];
+      vTrial[i] = vCommit[i];
+    }
+
     for (int j=0; j<n; j++) {
-
-      for (int i=0; i<4; i++) {
-	vTrial[i] = vCommit[i] + vadd[i];
-	Ptemp[i] = PCommit[i] + padd[i];
-      }
-
-      contT = kt3Drma(vTrial, vpTemp, FrTemp, Ac, Ptemp, vpi);    
-
-      //      Vector vpiJ(vpi, 8); opserr << "vpiJ: " << vpiJ;
-      
-      static Vector delp(4);
-
-      delp.addMatrixVector(0.0, kthat, delu, 1.0);
-
-      //      opserr << "delp: " << delp;
-      
-      for (int i=0; i<4; i++) {
-	padd[i] += delp(i);
-	uadd[i] += delu[i];
-      }
+      //      opserr << "ITERATION: " << j << endln; 
+      contT = kt3Drma(vTrial, vpTrial, FrTrial, Ap, PTrial, vpi);    
 
       // delu58=-kt(5:8,5:8)^-1*kt(5:8,1:4)*delu;
+      //      opserr << "kei: " << kei;
+      //      opserr << "kee: " << kee;
 
       tmp1.addMatrixVector(0.0, kei, delu, 1.0);
       delU58.addMatrixVector(0.0, kee, tmp1, -1.0);
-
-      //      opserr << "delU58: " << delU58;
       
       // dv=Af*[delu;delu58];
       static Vector tmp2(8);
@@ -762,39 +859,55 @@ TFP_Bearing::update()
 	tmp2(i)=delu[i];
 	tmp2(i+4)=delU58(i);
       }
-      
+          
       dv.addMatrixVector(0.0, Af, tmp2, 1.0);
 
-      ///      opserr << "tmp2: " << tmp2;
-      // opserr << "dv: " << dv;
+      //      opserr << "delu delu58: " << tmp2;
+      //      opserr << "dv: " << dv;
 
       dFr.addMatrixVector(0.0, ksrest, dv, 1.0);
 
+      static Vector delp(4);
+      delp.addMatrixVector(0.0, kthatTrial, delu, 1.0);
+      
+      for (int i=0; i<4; i++) {
+	padd[i] += delp(i);
+	uadd[i] += delu[i];
+	PTrial[i] += delp(i);
+      }      
+
       for (int i=0; i<8; i++) {
-	vadd[i] += dv(i); 
-	vpTemp[i]=vpi[i];
-	FrTemp[i] = FrTemp[i] + dFr(i);
+	vTrial[i] += dv(i); 
+	vpTrial[i]=vpi[i];
+	FrTrial[i] += dFr(i);
       }
-    }
-    
-    for (int i=0; i<8; i++) {
-      FrTrial[i] = FrTemp[i];
-      vTrial[i] = vCommit[i] + vadd[i];
-    }
-  
-    for (int i=0; i<4; i++) {
-      PTrial[i] = PCommit[i]+padd[i];
-      UTrial[i] = UCommit[i]+uadd[i];
-      vTrial[i] = vCommit[i]+vadd[i];
     }
   }
 
+  /*      OLD FMK*/ 
+  tracyP = Af^f;
+  static Vector F14(4);
+  static Vector F58(4);
+  for (int i=0; i<4; i++) {
+    F14(i)=tracyP(i);
+    F58(i)=tracyP(i+4);
+  }
 
+  static Vector FinalP(4);
+  FinalP = F14 - kie*kee*F58;
 
+  //  opserr << "FINALP: " << FinalP << "PTRIAL: ";
+  for (int i=0; i<4; i++) {
+    //    opserr << PTrial[i] << " ";
+    PTrial[i] = FinalP(i);
+  }
+  //  opserr << endln;
 
   for (int i=0; i<8; i++) {
     vpTrial[i] = vpi[i];
   }
+
+
   HTrial=H0+dh;
 
   theMatrix->Zero();
@@ -807,17 +920,12 @@ TFP_Bearing::update()
     (*theVector)(i+numD) = PTrial[i+2];
 
     for (int j=0; j<2; j++) {
-      (*theMatrix)(i,j) = kthat(i,j);
-      (*theMatrix)(i+numD,j+numD) = kthat(i+2,j+2);
-      (*theMatrix)(i+numD,j) = kthat(i+2,j);
-      (*theMatrix)(i,j+numD) = kthat(i,j+2);
+      (*theMatrix)(i,j) = kthatTrial(i,j);
+      (*theMatrix)(i+numD,j+numD) = kthatTrial(i+2,j+2);
+      (*theMatrix)(i+numD,j) = kthatTrial(i+2,j);
+      (*theMatrix)(i,j+numD) = kthatTrial(i,j+2);
     }
   }
-
-  const Vector &d1 = theNodes[0]->getTrialDisp();
-  const Vector &d2 = theNodes[1]->getTrialDisp();	
-
-  double axialDefo = d1(2)-d2(2);
 
   if (axialDefo >= 0) {
     (*theMatrix)(2,2) = K;
@@ -843,6 +951,11 @@ TFP_Bearing::update()
     Ap = force;
   }
 
+  AfTrial = Af;
+  ksrestTrial = ksrest;
+  keeTrial = kee;
+  keiTrial=kei;
+
   return 0;
 }
 
@@ -850,18 +963,22 @@ TFP_Bearing::update()
 const Matrix &
 TFP_Bearing::getTangentStiff(void)
 {
+  //  opserr << "TFP_Bearing::getTangentStiff(void)\n";
+  //  opserr << *theMatrix;
   return *theMatrix;
 }
 
 const Matrix &
 TFP_Bearing::getInitialStiff(void)
 {
-  return *theMatrix;
+  return *theInitialMatrix;  
 }
 
 const Vector &
 TFP_Bearing::getResistingForce()
 {	
+  //  opserr << "TFP_Bearing::getResistingForce(void)\n";
+  //  opserr << *theVector;
   return *theVector;
 }
 
@@ -913,21 +1030,8 @@ TFP_Bearing::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.tag("ResponseType",nodeData);
     }
     theResponse = new ElementResponse(this, 1, this->getResistingForce());
-  } else if (strcmp(argv[0],"v") == 0 || strcmp(argv[0],"relativeDisp") == 0) {
-    
-    for (int i=0; i<8; i++) {
-      sprintf(nodeData,"V%d",i+1);
-      output.tag("ResponseType",nodeData);
-    }
-    theResponse = new ElementResponse(this, 2, vectorSize8);
-  } else if (strcmp(argv[0],"vp") == 0 || strcmp(argv[0],"plasticDisp") == 0) {
-
-    for (int i=0; i<8; i++) {
-      sprintf(nodeData,"Vp%d",i+1);
-      output.tag("ResponseType",nodeData);
-    }
-    theResponse = new ElementResponse(this, 3, vectorSize8);
   }
+
 
   output.endTag();
   return theResponse;
@@ -949,16 +1053,8 @@ TFP_Bearing::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(this->getResistingForce());
     //  return eleInfo.setVector(res);
     
-  case 2: // v
-    for (int i=0; i<8; i++)
-      vectorSize8(i)=vTrial[i];
-    return eleInfo.setVector(vectorSize8);
-
-  case 3: // vp
-    for (int i=0; i<8; i++)
-      vectorSize8(i)=vpTrial[i];
-    return eleInfo.setVector(vectorSize8);
-
+  case 2:
+    return eleInfo.setVector(this->getRayleighDampingForces());
   default:
     return 0;
   }

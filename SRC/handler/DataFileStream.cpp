@@ -74,12 +74,6 @@ DataFileStream::~DataFileStream()
     theFile.close();
 
   if (theChannels != 0) {
-    static ID lastMsg(1);
-    if (sendSelfCount > 0) {
-      for (int i=0; i<sendSelfCount; i++) 
-	theChannels[i]->sendID(0, 0, lastMsg);
-    } else
-	theChannels[0]->recvID(0, 0, lastMsg);
     delete [] theChannels;
   }
 
@@ -94,12 +88,15 @@ DataFileStream::~DataFileStream()
       if (theColumns != 0)
 	if (theColumns[i] != 0)
 	  delete theColumns[i];
+
       if (theData != 0)
 	if (theData[i] != 0)
 	  delete [] theData[i];
+
       if (theRemoteData != 0)
 	if (theRemoteData[i] != 0)
 	  delete theRemoteData[i];
+
     }
 
     if (theData != 0) delete [] theData;
@@ -262,7 +259,6 @@ DataFileStream::attr(const char *name, const char *value)
 int 
 DataFileStream::write(Vector &data)
 {
-
   if (fileOpen == 0)
     this->open();
 
@@ -278,10 +274,12 @@ DataFileStream::write(Vector &data)
   //
   // otherwise parallel, send the data if not p0
   //
-
   if (sendSelfCount < 0) {
     if (data.Size() != 0) {
-      return theChannels[0]->sendVector(0, 0, data);
+      if ( theChannels[0]->sendVector(0, 0, data) < 0) {
+	return -1;
+      }
+      return 0;
     } else
       return 0;
   }
@@ -292,6 +290,7 @@ DataFileStream::write(Vector &data)
 
   // recv data
   for (int i=0; i<=sendSelfCount; i++) {
+
     int numColumns = (*sizeColumns)(i);
     double *dataI = theData[i];
     if (i == 0) {
@@ -300,8 +299,11 @@ DataFileStream::write(Vector &data)
       }
     } else { 
       if (numColumns != 0) {
-	theChannels[i-1]->recvVector(0, 0, *(theRemoteData[i]));
-      }
+	Vector *theV = theRemoteData[i];
+	if (theChannels[i-1]->recvVector(0, 0, *theV) < 0) {
+	  opserr << "DataFileStream::write - failed to recv data\n";
+	}
+      } 
     }
   }
 
@@ -332,7 +334,7 @@ DataFileStream::write(Vector &data)
 	  theFile << data[startLoc++] << ",";
     }
   }
-
+  
   return 0;
 }
 
@@ -666,7 +668,7 @@ DataFileStream::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
   if (fileNameLength != 0) {
     if (fileName != 0)
       delete [] fileName;
-    fileName = new char[fileNameLength+5];
+    fileName = new char[fileNameLength+10];
     if (fileName == 0) {
       opserr << "DataFileStream::recvSelf() - out of memory\n";
       return -1;
@@ -727,11 +729,11 @@ DataFileStream::setOrder(const ID &orderData)
     theRemoteData = new Vector *[sendSelfCount+1];
 
     for (int i=0; i<=sendSelfCount; i++) {
+      (*sizeColumns)(i) = 0;
       theColumns[i] = 0;
       theData[i] = 0;
       theRemoteData[i] = 0;
     }
-    
     
     int numColumns = orderData.Size();
     (*sizeColumns)(0) = numColumns;

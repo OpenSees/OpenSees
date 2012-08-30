@@ -37,11 +37,10 @@
 #include <FEM_ObjectBroker.h>
 
 #include <elementAPI.h>
-#define OPS_Export 
 
 static int numInitialStateAnalysisWrapperMaterials = 0;
 
-OPS_Export void *
+void *
 OPS_NewInitialStateAnalysisWrapperMaterial(void)
 {
 	if (numInitialStateAnalysisWrapperMaterials == 0) {

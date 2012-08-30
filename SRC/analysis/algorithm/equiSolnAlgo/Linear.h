@@ -61,7 +61,7 @@ class Linear: public EquiSolnAlgo
     
   private:
     int incrTangent;
-	int factorOnce;
+    int factorOnce;
 };
 
 #endif
