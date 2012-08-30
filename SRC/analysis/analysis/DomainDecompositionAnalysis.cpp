@@ -138,7 +138,6 @@ DomainDecompositionAnalysis::~DomainDecompositionAnalysis()
 void
 DomainDecompositionAnalysis::clearAll(void)
 {
-  opserr << "DomainDecompositionAnalysis::clearAll(void) START\n";
     // invoke the destructor on all the objects in the aggregation
   if (theModel != 0)
     delete theModel;
@@ -152,7 +151,7 @@ DomainDecompositionAnalysis::clearAll(void)
     delete theAlgorithm;
   if (theSOE != 0)
     delete theSOE;
-  opserr << "DomainDecompositionAnalysis::clearAll(void) FINISH\n";
+  
   // now set the pointers to NULL
   theModel =0;
   theHandler =0;

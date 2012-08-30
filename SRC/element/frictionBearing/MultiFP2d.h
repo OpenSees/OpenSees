@@ -45,7 +45,7 @@ class MultiFP2d : public Element
 	    int Nd1, int Nd2, 
 	    UniaxialMaterial *theFrictionModel,
 	    UniaxialMaterial *theVerticalModel,
-	    double w0, int axialCase, int doWall, double gap);
+	    double w0, int axialCase);
 
   MultiFP2d(int tag, 
 	    int Nd1, int Nd2,
@@ -56,7 +56,7 @@ class MultiFP2d : public Element
 	    const Vector &d,
 	    const Vector &mu,
 	    double Kvert,
-	    double w0, int axialCase, int doWall, double gap);
+	    double w0, int axialCase);
   
   MultiFP2d();    
   
@@ -110,9 +110,6 @@ class MultiFP2d : public Element
   int type;
   int axialCase;
   Matrix data;
-
-  int doWall;
-  double gap;
 };
 #endif
 

@@ -482,7 +482,8 @@ CoupledZeroLength::getTangentStiff(void)
       stiff(dirn2b,dirn2b) = sn*sn*E;
     }
     */
-
+    //      opserr << "dX: " << dX << " dY: " << dY << "strain: " << theMaterial->getStrain() << endln;
+    //      opserr << "CoupledZeroLength::getTangentStiff(void): E:" << E << "\n" << stiff;
   return stiff;
 }
 

@@ -399,7 +399,6 @@ TripleFrictionPendulum::update()
   } else {
     Wcr = MinFv;
   }
-
   // Isolator height
   Hisolator = end2Crd(2) - end1Crd(2);
   

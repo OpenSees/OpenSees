@@ -108,6 +108,7 @@ Bidirectional::getSectionTangent(void)
 	else {
 		// Consistency parameter
 		double dlam = f_n1/(E+Hkin+Hiso);
+
 		double n_n1[2];
 
 		// Normal vector

@@ -46,7 +46,6 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <ConvergenceTest.h>
-#include <ID.h>
 
 #include <Timer.h>
 // Constructor
@@ -125,21 +124,13 @@ Linear::setConvergenceTest(ConvergenceTest *theNewTest)
 int
 Linear::sendSelf(int cTag, Channel &theChannel)
 {
-  static ID iData(2);
-  iData(0) = incrTangent;
-  iData(1) = factorOnce;
-  return theChannel.sendID(cTag, 0, iData);
+    return 0;
 }
 
 int
 Linear::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  static ID iData(2);
-  theChannel.recvID(cTag, 0, iData);
-  incrTangent = iData(0);
-  factorOnce = iData(1);
-  
-  return 0;
+    return 0;
 }
 
 

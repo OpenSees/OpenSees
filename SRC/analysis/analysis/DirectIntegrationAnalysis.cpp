@@ -113,7 +113,6 @@ DirectIntegrationAnalysis::~DirectIntegrationAnalysis()
 void
 DirectIntegrationAnalysis::clearAll(void)
 {
-  opserr << "DirectIntegrationAnalysis::clearAll(void) - -START\n";
   // invoke the destructor on all the objects in the aggregation
   if (theAnalysisModel != 0)     
     delete theAnalysisModel;
@@ -146,7 +145,6 @@ DirectIntegrationAnalysis::clearAll(void)
     theSOE =0;
     theEigenSOE =0;
     theTest =0;
-  opserr << "DirectIntegrationAnalysis::clearAll(void) - -DONE\n";
 }    
 
 #include <NodeIter.h>

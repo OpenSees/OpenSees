@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+static Vector vectorSize8(8);
 
 // typical constructor
 TFP_Bearing2d::TFP_Bearing2d(int tag, 
@@ -54,12 +55,12 @@ TFP_Bearing2d::TFP_Bearing2d(int tag,
 			     double *H,
 			     double h0,
 			     double a,
-			     double k)
+			     double k,
+			     double vYield)
   :Element(tag, ELE_TAG_TFP_Bearing2d),     
    externalNodes(2),
    H0(h0), Ac(a), Ap(a),
-   numDOF(0), theMatrix(0), theInitialMatrix(0), theVector(0),
-   theMatrixC(0), theVectorC(0)
+   numDOF(0), theMatrix(0), theVector(0), vyield(vYield)
 {	
   
   K = k;
@@ -113,8 +114,7 @@ TFP_Bearing2d::TFP_Bearing2d(int tag,
 TFP_Bearing2d::TFP_Bearing2d()
  :Element(0, ELE_TAG_TFP_Bearing2d), 
   externalNodes(2),
-  numDOF(0), theMatrix(0), theInitialMatrix(0), theVector(0),
-  theMatrixC(0), theVectorC(0)
+  numDOF(0), theMatrix(0), theVector(0)
 {
   theNodes[0] = 0; 
   theNodes[1] = 0;
@@ -125,14 +125,8 @@ TFP_Bearing2d::~TFP_Bearing2d()
 {
   if (theMatrix != 0)
     delete theMatrix;
-  if (theInitialMatrix != 0)
-    delete theInitialMatrix;
   if (theVector != 0)
     delete theVector;
-  if (theMatrixC != 0)
-    delete theMatrixC;
-  if (theVectorC != 0)
-    delete theVectorC;
 }
 
 int
@@ -162,9 +156,6 @@ TFP_Bearing2d::getNumDOF(void) {
 //    to set a link to the enclosing Domain, ensure nodes exist in Domain
 //    and set pointers to these nodes, also determines the length and 
 //    transformation Matrix.
-
-static int setDomainFlag = 0;
-
 void
 TFP_Bearing2d::setDomain(Domain *theDomain)
 {
@@ -216,12 +207,7 @@ TFP_Bearing2d::setDomain(Domain *theDomain)
     numDOF = 6;
   }
 
-  setDomainFlag = 1;
   this->update();
-  theInitialMatrix = new Matrix(*theMatrix);
-  theMatrixC = new Matrix(*theMatrix);
-  theVectorC = new Vector(*theVector);
-  setDomainFlag = 0;
 }   	 
 
 
@@ -249,9 +235,6 @@ TFP_Bearing2d::commitState()
   //  Ac = nd2Reactions(2);
 
   //  opserr << "Ac: " << Ac << endln;
-  *theVectorC = *theVector;
-  *theMatrixC = *theMatrix;
-
   return 0;
 }
 
@@ -270,10 +253,6 @@ TFP_Bearing2d::revertToLastCommit()
   HTrial = HCommit;
 
   Ac=Ap;
-
-  *theVector = *theVectorC;
-  *theMatrix = *theMatrixC;
-
   return 0;
 }
 
@@ -301,18 +280,15 @@ TFP_Bearing2d::revertToStart()
 
 static Matrix kthat(4,4);
 static Matrix ksrest(8,8);
+
 static Matrix kt(8,8);
 static Matrix ks(8,8);
 static Matrix Af(8,8);
 
 static Vector d(4);
 
-static Matrix Kee(4,4);
-static Matrix kii(4,4);
 static Matrix kei(4,4);
-static Matrix keeI(4,4);
-static Matrix kieT(4,4);
-
+static Matrix kee(4,4);
 
 int
 TFP_Bearing2d::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, double *vpi) {
@@ -331,8 +307,8 @@ TFP_Bearing2d::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, d
   */
 
   static double Ri[8];
-  //  static double R[8];
-  //  static double N[4];
+  static double R[8];
+  static double N[4];
 
   static Matrix kcont(8,8);
   static Matrix krot(8,8);
@@ -346,26 +322,45 @@ TFP_Bearing2d::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, d
   kcont.Zero(); 
   krot.Zero();
 			
+  for (int i=0; i<4; i++)
+    N[i] = A;
   
   for (int i=0; i<4; i++) {
     int z=4+i;
     Ri[i]=sqrt((r[i]-h[i])*(r[i]-h[i]) - v[z]*v[z]);
     Ri[z]=sqrt((r[i]-h[i])*(r[i]-h[i]) - v[i]*v[i]);
+    d[i] = r[i] - sqrt(r[i]*r[i]) - sqrt(v[i]*v[i]+v[z]*v[z]);
+    N[i] = A + sqrt((P[0]-P[2])*(P[0]-P[2]) + (P[1]-P[3])*(P[1]-P[3])) * 
+      sqrt(v[i]*v[i]+v[z]*v[z])/r[i];
+    R[i] = Ri[i];
+    R[z] = Ri[z];
   }
   
   double dh =0;
   for (int i=0; i<4; i++) {
     dh += d[i];
-  }  
+  }
   
+  R[0] = (Ri[0]*Ri[2])/(Ri[2]+fabs(v[2])*Ri[0]);
+  R[1]=(Ri[1]*Ri[3])/(Ri[3]+fabs(v[3])*Ri[1]);
+  R[4]=(Ri[4]*Ri[6])/(Ri[6]+fabs(v[4])*Ri[6]);
+  R[5]=(Ri[5]*Ri[7])/(Ri[7]+fabs(v[5])*Ri[7]);
+
+  double PNorm = 0.0;
+  for (int i=0; i<4; i++) {
+    PNorm += P[i]*P[i];
+  }
+  PNorm = sqrt(PNorm);
+  
+  N[0]=A+PNorm*(sqrt(v[0]*v[0]+v[4]*v[4])/r[0]+sqrt(v[2]*v[2]+v[6]*v[6])/r[2]);
+  N[1]=A+PNorm*(sqrt(v[1]*v[1]+v[5]*v[5])/r[1]+sqrt(v[3]*v[3]+v[7]*v[7])/r[3]);
+
   for (int i=0; i<4; i++) {
     int z=4+i;
-    double vyield=0.01;
-    double qYield=mu[i]*A;
+    // double vyield=0.01;
+    double qYield=mu[i]*N[i];
     double k0=qYield/vyield;
-
-    //    opserr << "qYield: " << qYield << " K0: " << k0 << endln;
-
+    
     //get trial shear forces of hysteretic component
     double qTrialx = k0*(v[i] -vs[i]- vp[i]);
     double qTrialy = k0*(v[z] -vs[z]- vp[z]);
@@ -377,9 +372,8 @@ TFP_Bearing2d::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, d
     // elastic step -> no updates for pastic displacements required
     if (Y <= 0 ) {
       // set tangent stiffnesses
-      ks(i,i) = k0 + A/Ri[i];
-      ks(z,z) = k0 + A/Ri[z];
-
+      ks(i,i) = k0 + N[i]/R[i];
+      ks(z,z) = k0 + N[i]/R[z];
       vpi[i] = vp[i];
       vpi[z] = vp[z];
 
@@ -390,18 +384,19 @@ TFP_Bearing2d::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, d
       // update plastic displacements
       vpi[i] = vp[i] + dGamma*qTrialx/qTrialNorm;
       vpi[z] = vp[z] + dGamma*qTrialy/qTrialNorm;
-
       //  set tangent stiffnesses
       double qTrialNorm3 = qTrialNorm*qTrialNorm*qTrialNorm;
-      ks(i,i) =  qYield*k0*qTrialy*qTrialy/qTrialNorm3 + A/Ri[i];
+      ks(i,i) =  qYield*k0*qTrialy*qTrialy/qTrialNorm3 + N[i]/R[i];
       ks(i,z) = -qYield*k0*qTrialx*qTrialy/qTrialNorm3;
       ks(z,i) = -qYield*k0*qTrialx*qTrialy/qTrialNorm3;
-      ks(z,z) =  qYield*k0*qTrialx*qTrialx/qTrialNorm3 + A/Ri[z];
+      ks(z,z) =  qYield*k0*qTrialx*qTrialx/qTrialNorm3 + N[i]/R[z];
     }
+
+    //opserr << "ks: " << ks;
 
     // restrainer contact stiffness
     double vt=sqrt(v[i]*v[i]+v[z]*v[z]); //local displacment of surface
-    double rt=(dOut[i]-dIn[i])/2.0*(r[i]-h[i])/r[i];  //restrainer distance
+    double rt=(dOut[i]-dIn[i])/2.0;  //restrainer distance
     double del=0.1;
 
     if (vt>rt) {
@@ -417,7 +412,6 @@ TFP_Bearing2d::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, d
        
       //force rotation matrix
       double F=sqrt(Fr[i]*Fr[i]+Fr[z]*Fr[z]);
-
       krot(i,i) =  F* ((v[i]+del)/sqrt((v[i]+del)*(v[i]+del)+vz2) - (v[i]-del)/sqrt((v[i]-del)*(v[i]-del)+vz2));
       krot(i,z) =  F* (v[i]/sqrt(vi2+(v[z]+del)*(v[z]+del)) - v[i]/sqrt(vi2+(v[z]-del)*(v[z]-del)));
       krot(z,i) =  F* (v[z]/sqrt((v[i]+del)*(v[i]+del)+vz2) - v[z]/sqrt((v[i]-del)*(v[i]-del)+vz2));
@@ -425,81 +419,66 @@ TFP_Bearing2d::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, d
     }
   }
 
+    
   double del = 0.1;
+
   for (int i=0; i<8; i++)
     for (int j=0; j<8; j++)
       ksrest(i,j)=kcont(i,j)+krot(i,j)/(del * 2.0);
 
   //  opserr << "ksrest: " << ksrest;
+
   Af.Zero();
   Af(0,4) = Ri[0];
   Af(1,5) = Ri[1];
-
-  Af(2,0) = -Ri[2]/(Ri[2]+Ri[3]);
-  Af(2,1) =  Ri[2]/(Ri[2]+Ri[3]);
+  Af(2,0) = Ri[2]/(Ri[2]+Ri[3]); 
+  Af(2,2) = -Ri[2]/(Ri[2]+Ri[3]);
   Af(2,4) = -Ri[2]*(Ri[0]+Ri[3])/(Ri[2]+Ri[3]);
   Af(2,5) = Ri[2]*(-Ri[1]+Ri[3])/(Ri[2]+Ri[3]);
-
-  Af(3,0) = -Ri[3]/(Ri[2]+Ri[3]);
-  Af(3,1) = Ri[3]/(Ri[2]+Ri[3]);
+  Af(3,0) = Ri[3]/(Ri[2]+Ri[3]);
+  Af(3,2) = -Ri[3]/(Ri[2]+Ri[3]);
   Af(3,4) = Ri[3]*(-Ri[0]+Ri[2])/(Ri[2]+Ri[3]);
   Af(3,5) = Ri[3]*(-Ri[2]-Ri[1])/(Ri[2]+Ri[3]);
-
   Af(4,6) = Ri[4];
   Af(5,7) = Ri[5];
-
-  Af(6,2) = -Ri[6]/(Ri[6]+Ri[7]);
-  Af(6,3) = Ri[6]/(Ri[6]+Ri[7]);
+  Af(6,1) = Ri[6]/(Ri[6]+Ri[7]);
+  Af(6,3) = -Ri[6]/(Ri[6]+Ri[7]);
   Af(6,6) = -Ri[6]*(Ri[4]+Ri[7])/(Ri[6]+Ri[7]);
   Af(6,7) = Ri[6]*(-Ri[5]+Ri[7])/(Ri[6]+Ri[7]);
-
-  Af(7,2) = -Ri[7]/(Ri[6]+Ri[7]);
-  Af(7,3) = Ri[7]/(Ri[6]+Ri[7]);
-  Af(7,6) = Ri[7]*(-Ri[4]+Ri[7])/(Ri[6]+Ri[7]);
+  Af(7,1) = Ri[7]/(Ri[6]+Ri[7]);
+  Af(7,3) = -Ri[7]/(Ri[6]+Ri[7]);
+  Af(7,6) = Ri[7]*(-Ri[4]+Ri[6])/(Ri[6]+Ri[7]);
   Af(7,7) = Ri[7]*(-Ri[6]-Ri[5])/(Ri[6]+Ri[7]);
 
-  /*
-  opserr << "Af: " << Af;
-  opserr << "ks: " << ks;
-  opserr << "ksrest: " << ksrest;
-  */
+
+  //  opserr << "Af: " << Af;
+  //  opserr << "ks: " << ks;
+  //  opserr << "ksrest: " << ksrest;
 
   static Matrix KsPlusKsrest(8,8);
 
+
   KsPlusKsrest = ks;
   KsPlusKsrest += ksrest;
-
-  // add kg
-  KsPlusKsrest(0,2) += A/Ri[2];
-  KsPlusKsrest(1,3) += A/Ri[3];
-  KsPlusKsrest(4,6) += A/Ri[6];
-  KsPlusKsrest(5,7) += A/Ri[7];
-
-  //  opserr << "ksPlusksrest: " << KsPlusKsrest;
- 
+    
   kt.addMatrixTripleProduct(0.0, Af, KsPlusKsrest,1.0);
 
   //  opserr << "kt:" << kt;
+
+  static Matrix Kee(4,4);
 
   for (int i=0; i<4; i++) {
     for (int j=0; j<4; j++) {
       kthat(i,j) = kt(i,j);
       Kee(i,j) = kt(i+4, j+4);
       kei(i,j) = kt(i+4, j);
-      kieT(j,i) = kt(i, j+4); // transpose for matrix triple product routine
     }
   }
 
-  /*
-  opserr << "ktHat:\n" << kthat;
-  opserr << "kee:\n" << Kee;
-  opserr << "kei:\n" << kei;
-  */  
-  Kee.Invert(keeI);
+  Kee.Invert(kee);
+  kthat.addMatrixTripleProduct(1.0, kei, kee, -1.0);
 
-  //  opserr << "kee^-1:\n" << keeI;
-
-  kthat.addMatrixTripleProduct(1.0, kieT, keeI, kei, -1.0);
+  //  opserr << "kthat: " << kthat;
 
   return cont;
 }
@@ -508,6 +487,8 @@ TFP_Bearing2d::kt3Drma(double *v, double *vp, double *Fr, double A, double *P, d
 int
 TFP_Bearing2d::update()
 {
+  //  opserr << "UPDATE: " << this->getTag() << endln;
+
   static Vector delU(4);
   static Vector delP(4);
 
@@ -517,23 +498,14 @@ TFP_Bearing2d::update()
   double vpi[8];
 
   delU(0)=v1(0);
-  delU(1)=v2(0);
-  delU(2)=0.0;
+  delU(1)=0.0;
+  delU(2)=v2(0);
   delU(3)=0.0;
-
-  /*
-  if (delU.Norm() < 1.0e-18 && setDomainFlag == 0) {
-    opserr << "BEARING::update - returning small delU\n";
-    return 0;
-  }
-  */
-
-  opserr << theNodes[1]->getTrialDisp();
-  opserr << "TFP::update:: delU: " << delU;
 
   int contC = kt3Drma(vCommit, vpCommit, FrCommit, Ac, PCommit, vpi);
 
   //  Vector vpiF (vpi,8);  
+  //  opserr << "delU: " << delU;
   //  opserr << "vpiF: " << vpiF;
 
   static Matrix stiffCommit(8,8);
@@ -542,6 +514,8 @@ TFP_Bearing2d::update()
 
   Vector PC(PCommit,4);
   Vector PT(PTrial, 4);
+
+  //  opserr << "PTrial 1:" << PTrial;
 
   delP = kthat*delU;
 
@@ -555,7 +529,7 @@ TFP_Bearing2d::update()
   static Vector tmp1(4);
   
   tmp1.addMatrixVector(0.0, kei, delU, 1.0);
-  delU58.addMatrixVector(0.0, keeI, tmp1, -1.0);
+  delU58.addMatrixVector(0.0, kee, tmp1, -1.0);
 
   static double dvData[8];
   static Vector dv(dvData,8);
@@ -596,19 +570,13 @@ TFP_Bearing2d::update()
 
   stiffTrial = ks;
   stiffTrial += ksrest;
-
-  opserr << "stiffTrial:\n " << stiffTrial;
   
   int subDiv = 0;
   for (int j=0; j<8; j++) { // j=1:8
-    double change = fabs(stiffCommit(j,j)/stiffTrial(j,j));
-    //<stiffTrial(j,j) || stiffCommit(j,j)>1.25*stiffTrial(j,j));
-    int f=(change < 0.75 || change > 1.25);
+    int f=(stiffCommit(j,j)*2<stiffTrial(j,j) || stiffCommit(j,j)>2*stiffTrial(j,j));
     if (f==1 || contT==1 || contC==1)
       subDiv=1;
   }
-
-  opserr << "update::subDiv: " << subDiv << endln;
 
   //  opserr << "subDIV: " << subDiv << " contT: " << contT << " contC: " << contC << endln;
 
@@ -627,14 +595,11 @@ TFP_Bearing2d::update()
     }
 
     int n=ceil(maxDelU/dumax);
-    
-    opserr << "n: " << n << "maxDelU: " << maxDelU << " dumax: " << dumax << endln;
+    //    opserr << "n: " << n << "maxDelU: " << maxDelU << " dumax: " << dumax << endln;
 
     static Vector delu(4);
     delu =  delU;
     delu /= 1.0*n;
-
-    opserr << "n: " << n << "maxDelU: " << maxDelU << " delu: " << delu << endln;
 
     //    opserr << "delu: " << delu;
 
@@ -681,7 +646,7 @@ TFP_Bearing2d::update()
       // delu58=-kt(5:8,5:8)^-1*kt(5:8,1:4)*delu;
 
       tmp1.addMatrixVector(0.0, kei, delu, 1.0);
-      delU58.addMatrixVector(0.0, keeI, tmp1, -1.0);
+      delU58.addMatrixVector(0.0, kee, tmp1, -1.0);
 
       //      opserr << "delU58: " << delU58;
       
@@ -728,17 +693,21 @@ TFP_Bearing2d::update()
 
   int numD = numDOF/2;
 
-  (*theVector)(0) = PTrial[0];
-  (*theVector)(numD) = PTrial[1];
-  
-  (*theMatrix)(0,0) = kthat(0,0);
-  (*theMatrix)(0,numD) = kthat(0,1);
-  (*theMatrix)(numD,numD) = kthat(1,1);
-  (*theMatrix)(numD,0) = kthat(1,0);
-  
+  for (int i=0; i<1; i++) {
+    (*theVector)(i) = PTrial[i];
+    (*theVector)(i+numD) = PTrial[i+2];
+
+    for (int j=0; j<1; j++) {
+      (*theMatrix)(i,j) = kthat(i,j);
+      (*theMatrix)(i+numD,j+numD) = kthat(i+2,j+2);
+      (*theMatrix)(i+numD,j) = kthat(i+2,j);
+      (*theMatrix)(i,j+numD) = kthat(i,j+2);
+    }
+  }
+
   const Vector &d1 = theNodes[0]->getTrialDisp();
   const Vector &d2 = theNodes[1]->getTrialDisp();	
-  
+
   double axialDefo = d1(1)-d2(1);
 
   if (axialDefo >= 0) {
@@ -747,6 +716,7 @@ TFP_Bearing2d::update()
     (*theMatrix)(1+numD,1) = -K;
     (*theMatrix)(1+numD,1+numD) = K;
     
+
     double force = axialDefo*K;
     (*theVector)(1) = force;
     (*theVector)(1+numD) = -force;
@@ -771,21 +741,18 @@ TFP_Bearing2d::update()
 const Matrix &
 TFP_Bearing2d::getTangentStiff(void)
 {
-  opserr << "TFP_Bearing2d::tangent " << *theMatrix;
   return *theMatrix;
 }
 
 const Matrix &
 TFP_Bearing2d::getInitialStiff(void)
 {
-  opserr << "TFP_Bearing2d::initialtangent " << *theInitialMatrix;
-  return *theInitialMatrix;
+  return *theMatrix;
 }
 
 const Vector &
 TFP_Bearing2d::getResistingForce()
 {	
-  opserr << "TFP_Bearing2d::resisting " << *theVector;
   return *theVector;
 }
 
@@ -837,6 +804,20 @@ TFP_Bearing2d::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.tag("ResponseType",nodeData);
     }
     theResponse = new ElementResponse(this, 1, this->getResistingForce());
+    } else if (strcmp(argv[0],"v") == 0 || strcmp(argv[0],"V") == 0) {
+    
+    for (int i=0; i<8; i++) {
+      sprintf(nodeData,"V%d",i+1);
+      output.tag("ResponseType",nodeData);
+    }
+    theResponse = new ElementResponse(this, 2, vectorSize8);
+  } else if (strcmp(argv[0],"vp") == 0 || strcmp(argv[0],"Vp") == 0) {
+
+    for (int i=0; i<8; i++) {
+      sprintf(nodeData,"Vp%d",i+1);
+      output.tag("ResponseType",nodeData);
+    }
+    theResponse = new ElementResponse(this, 3, vectorSize8);
   }
 
 
@@ -858,10 +839,17 @@ TFP_Bearing2d::getResponse(int responseID, Information &eleInfo)
     return -1;
   case 1: // global forces
     return eleInfo.setVector(this->getResistingForce());
-    //  return eleInfo.setVector(res);
     
-  case 2:
-    return eleInfo.setVector(this->getRayleighDampingForces());
+  case 2: // v
+    for (int i=0; i<8; i++)
+      vectorSize8(i)=vTrial[i];
+    return eleInfo.setVector(vectorSize8);
+
+  case 3: // vp
+    for (int i=0; i<8; i++)
+      vectorSize8(i)=vpTrial[i];
+    return eleInfo.setVector(vectorSize8);
+
   default:
     return 0;
   }

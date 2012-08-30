@@ -48,10 +48,10 @@ public:
     // constructors
     NewmarkExplicit();
     NewmarkExplicit(double gamma,
-		    bool updDomFlag = false);
+        bool updDomFlag = false);
     NewmarkExplicit(double gamma,
-		    double alphaM, double betaK, double betaKi, double betaKc,
-		    bool updDomFlag = false); 
+        double alphaM, double betaK, double betaKi, double betaKc,
+        bool updDomFlag = false); 
     
     // destructor
     ~NewmarkExplicit();

@@ -101,10 +101,10 @@ ElementRecorder::ElementRecorder(const ID *ele,
 
 ElementRecorder::~ElementRecorder()
 {
-  if (theOutputHandler != 0) {
-    theOutputHandler->endTag(); // Data
+  theOutputHandler->endTag(); // Data
+
+  if (theOutputHandler != 0)
     delete theOutputHandler;
-  }
 
   //
   // invoke the destructor on the response objects
@@ -125,7 +125,7 @@ ElementRecorder::~ElementRecorder()
   // 
   // invoke destructor on response args
   //
-
+  
   for (int i=0; i<numArgs; i++)
     delete [] responseArgs[i];
   delete [] responseArgs;
@@ -178,6 +178,7 @@ ElementRecorder::record(int commitTag, double timeStamp)
     //
     // send the response vector to the output handler for o/p
     //
+
     theOutputHandler->write(*data);
   }
   
@@ -247,9 +248,8 @@ ElementRecorder::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }
 
-  static Vector dData(2);
-  dData(0) = deltaT;
-  dData(1) = nextTimeStampToRecord;
+  static Vector dData(1);
+  dData(1) = deltaT;
   if (theChannel.sendVector(0, commitTag, dData) < 0) {
     opserr << "ElementRecorder::sendSelf() - failed to send dData\n";
     return -1;
@@ -357,13 +357,14 @@ ElementRecorder::recvSelf(int commitTag, Channel &theChannel,
 
   numEle = eleSize;
 
-  static Vector dData(2);
+  static Vector dData(1);
   if (theChannel.recvVector(0, commitTag, dData) < 0) {
     opserr << "ElementRecorder::sendSelf() - failed to send dData\n";
     return -1;
   }
-  deltaT = dData(0);
-  nextTimeStampToRecord = dData(1);
+  deltaT = dData(1);
+
+
   //
   // resize & recv the eleID
   //
