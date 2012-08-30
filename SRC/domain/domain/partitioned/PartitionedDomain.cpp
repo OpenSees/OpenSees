@@ -163,7 +163,6 @@ PartitionedDomain::~PartitionedDomain()
 
   if (theEleIter != 0)
     delete theEleIter;
-
 }
 
 void
@@ -177,9 +176,7 @@ PartitionedDomain::clearAll(void)
     theSub->clearAll();
 
   theSubdomains->clearAll();
-
   this->Domain::clearAll();
-
   elements->clearAll();
 }
     
@@ -937,7 +934,7 @@ PartitionedDomain::update(void)
   }
 
 #ifdef _PARALLEL_PROCESSING
-  return this->barrierCheck(res);
+  //  return this->barrierCheck(res);
 #endif
   return res;
 }
@@ -1060,19 +1057,19 @@ PartitionedDomain::analysisStep(double dT)
 
   this->Domain::analysisStep(dT);
 
-    int res = 0;
-    // do the same for all the subdomains
-    if (theSubdomains != 0) {
-      ArrayOfTaggedObjectsIter theSubsIter(*theSubdomains);	
-      TaggedObject *theObject;
-      while ((theObject = theSubsIter()) != 0) {
-	Subdomain *theSub = (Subdomain *)theObject;	    
-	res += theSub->analysisStep(dT);
-	if (res != 0) 
-	  opserr << "PartitionedDomain::step - subdomain " << theSub->getTag() << " failed in step\n";
-      }
+  int res = 0;
+  // do the same for all the subdomains
+  if (theSubdomains != 0) {
+    ArrayOfTaggedObjectsIter theSubsIter(*theSubdomains);	
+    TaggedObject *theObject;
+    while ((theObject = theSubsIter()) != 0) {
+      Subdomain *theSub = (Subdomain *)theObject;	    
+      res += theSub->analysisStep(dT);
+      if (res != 0) 
+	opserr << "PartitionedDomain::step - subdomain " << theSub->getTag() << " failed in step\n";
     }
-    return res;
+  }
+  return res;
 }
 
 
@@ -1282,6 +1279,8 @@ PartitionedDomain::removeRecorders(void)
 
   if (this->Domain::removeRecorders() < 0)
     return -1;
+
+  this->barrierCheck(1.0);
 
   return 0;
 }
