@@ -70,7 +70,13 @@
 #include <FE_Datastore.h>
 #include <FEM_ObjectBroker.h>
 
+//
+// global variables
+//
+
 Domain       *ops_TheActiveDomain = 0;
+double        ops_Dt = 0.0;
+bool          ops_InitialStateAnalysis = false;
 
 Domain::Domain()
 :theRecorders(0), numRecorders(0),
@@ -366,7 +372,6 @@ bool
 Domain::addElement(Element *element)
 {
   int eleTag = element->getTag();
-
   ops_TheActiveElement = element;
 
   // check all the elements nodes exist in the domain
@@ -395,7 +400,6 @@ Domain::addElement(Element *element)
   if (result == true) {
     element->setDomain(this);
     element->update();
-
     // finally check the ele has correct number of dof
 #ifdef _G3DEBUG
     if (numDOF != element->getNumDOF()) { 
@@ -405,7 +409,6 @@ Domain::addElement(Element *element)
       return false;
     }
 #endif      
-
     // mark the Domain as having been changed
     this->domainChange();
   } else 
@@ -631,6 +634,12 @@ bool
 Domain::addParameter(Parameter *theParam)
 {
   int paramTag = theParam->getTag();
+
+  if (paramTag == 0) {
+    // don't add it .. just invoke setDomain on the parameter
+    theParam->setDomain(this);
+    return true;
+  }
  
   // check if a Parameter with a similar tag already exists in the Domain
   TaggedObject *other = theParameters->getComponentPtr(paramTag);
@@ -1044,7 +1053,7 @@ Parameter *
 Domain::removeParameter(int tag)
 {
   Parameter *theParam = (Parameter*) theParameters->getComponentPtr(tag);
-  
+
   if (theParam != 0) {
 
     // Find where RV is located
@@ -1053,16 +1062,17 @@ Domain::removeParameter(int tag)
       if (paramIndex[index] == tag)
 	break;
     }
-    
+
     // Shift indices down by one
     for (int i = index; i < numParameters-1; i++) {
       paramIndex[i] = paramIndex[i+1];
       Parameter *otherParam = this->getParameterFromIndex(i);
       otherParam->setGradIndex(i+1);
     }
-    
+
     // Now remove the component
     theParameters->removeComponent(tag);
+
     numParameters--;
   }
 
@@ -1707,7 +1717,7 @@ Domain::revertToStart(void)
     // first invoke revertToLastCommit  on all nodes and 
     // elements in the domain
     //
-    
+
     Node *nodePtr;
     NodeIter &theNodeIter = this->getNodes();
     while ((nodePtr = theNodeIter()) != 0) 
@@ -1719,18 +1729,17 @@ Domain::revertToStart(void)
 	elePtr->revertToStart();
     }
 
-// ADDED BY TERJE //////////////////////////////////
+    // ADDED BY TERJE //////////////////////////////////
     // invoke 'restart' on all recorders
     for (int i=0; i<numRecorders; i++) 
-		if (theRecorders[i] != 0)
-		theRecorders[i]->restart();
-/////////////////////////////////////////////////////
+      if (theRecorders[i] != 0)
+	theRecorders[i]->restart();
+    /////////////////////////////////////////////////////
 
     // set the current time and load factor in the domain to last committed
     committedTime = 0;
     currentTime = 0;
     dT = 0.0;
-
     // apply load for the last committed time
     this->applyLoad(currentTime);
 
