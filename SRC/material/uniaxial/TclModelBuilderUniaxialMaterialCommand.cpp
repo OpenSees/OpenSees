@@ -77,7 +77,7 @@
 
 #include <UniaxialJ2Plasticity.h>   // Quan 
 extern void *OPS_NewElasticMaterial(void);
-extern void *OPS_NewBilinMaterial(void);
+extern void *OPS_Bilin(void);
 extern void *OPS_NewSteel01(void);
 extern void *OPS_NewSteel02(void);
 extern void *OPS_NewConcrete01(void);
@@ -1517,7 +1517,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }
 
     else if ((strcmp(argv[1],"BilinMaterial") == 0) || (strcmp(argv[1],"Bilin") == 0)) {
-      void *theMat = OPS_NewBilinMaterial();
+      void *theMat = OPS_Bilin();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
