@@ -777,6 +777,8 @@ MODEL_BUILDER_LIBS = $(FE)/modelbuilder/ModelBuilder.o \
 
 DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/component/Parameter.o \
+	$(FE)/domain/component/InitialStateParameter.o \
+	$(FE)/domain/component/ElementStateParameter.o \
 	$(FE)/domain/component/RVParameter.o \
 	$(FE)/domain/component/DVParameter.o \
 	$(FE)/domain/component/NodeResponseParameter.o \

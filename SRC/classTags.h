@@ -105,10 +105,11 @@
 #define TSERIES_TAG_PeerMotion       11
 #define TSERIES_TAG_PeerNGAMotion       11
 
-#define PARAMETER_TAG_Parameter			1
+#define PARAMETER_TAG_Parameter			   1
 #define PARAMETER_TAG_MaterialStageParameter       2
-#define PARAMETER_TAG_MatParameter       3
-
+#define PARAMETER_TAG_MatParameter                 3
+#define PARAMETER_TAG_InitialStateParameter        4
+#define PARAMETER_TAG_ElementStateParameter        5
 
 #define MAT_TAG_ElasticMaterial			 1
 #define MAT_TAG_ElasticPPMaterial		 2
