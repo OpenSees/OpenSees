@@ -643,6 +643,10 @@ void DruckerPrager:: plastic_integrator( )
 
 		//update beta_n1
 		mBeta_n1 = mBeta_n - (two3*mHprime*gamma(0))*n;
+
+		//eta_n+1 = s_n+1 - beta_n+1;
+		eta = s - mBeta_n1;
+        norm_eta = sqrt(eta(0)*eta(0) + eta(1)*eta(1) + eta(2)*eta(2) + 2*(eta(3)*eta(3) + eta(4)*eta(4) + eta(5)*eta(5)));
 			
 		// update Cep
 		// note: Cep is contravariant
