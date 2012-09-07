@@ -2505,6 +2505,12 @@ SRC/material/Material.tex -text
 SRC/material/nD/BeamFiberMaterial.cpp -text
 SRC/material/nD/BeamFiberMaterial.h -text
 SRC/material/nD/BidirectionalMaterial.tex -text
+SRC/material/nD/CycLiqCP.cpp -text
+SRC/material/nD/CycLiqCP.h -text
+SRC/material/nD/CycLiqCP3D.cpp -text
+SRC/material/nD/CycLiqCP3D.h -text
+SRC/material/nD/CycLiqCPPlaneStrain.cpp -text
+SRC/material/nD/CycLiqCPPlaneStrain.h -text
 SRC/material/nD/ElasticCrossAnisotropic.cpp -text
 SRC/material/nD/ElasticCrossAnisotropic.h -text
 SRC/material/nD/ElasticIsotropicAxiSymm.cpp -text

@@ -1,0 +1,113 @@
+/* ****************************************************************** **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** ****************************************************************** */
+                                                                        
+// $Revision: 1 $
+// $Date: 2012-09-01 $
+// $Source: /usr/local/cvs/OpenSees/SRC/material/nD/soil/CycLiqCP3D.h,v $
+
+// Written: Rui Wang, Tsinghua University, September, 2012
+//
+// Cyclic constitutive model for liquefaction of sand 
+// 
+//
+// Please refer to Zhang and Wang, 2012 "Large post-liquefaction deformation of sand, part I: physical mechanism, constitutive description and numerical algorithm"
+// Acta Geotechnica
+//
+//  Cutting Plane Integration Scheme 
+//
+//
+
+#ifndef CycLiqCP3D_h
+#define CycLiqCP3D_h
+
+
+
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <math.h> 
+
+#include <Vector.h>
+#include <Matrix.h>
+#include <T2Vector.h>
+#include <NDMaterial.h>
+
+#include <CycLiqCP.h>
+
+class CycLiqCP3D : public CycLiqCP {
+
+//-------------------Declarations-------------------------------
+
+  public : 
+
+  //null constructor
+  CycLiqCP3D() ;
+
+  //full constructor
+  CycLiqCP3D(    int    tag,
+	           double G01,
+	           double kappa1,
+	           double h1,
+	           double Mfc1,       //critical state
+	           double dre11,
+	           double Mdc1,
+	           double dre21,
+	           double rdr1,
+	           double eta1,
+	           double dir1,
+	           double ein1,      //initial void ratio
+		       double rho1=0.0) ;
+
+  //destructor
+  ~CycLiqCP3D( ) ;
+
+  const char *getClassType(void) const {return "CycLiqCP3D";};
+  
+  //make a clone of this material
+  NDMaterial* getCopy ();
+
+ //send back type of material
+  const char* getType( ) const ;
+
+  //send back order of strain in vector form
+  int getOrder( ) const ;
+
+  //get the strain and integrate plasticity equations
+  int setTrialStrain( const Vector &strain_from_element) ;
+
+  //unused trial strain functions
+  int setTrialStrain( const Vector &v, const Vector &r ) ;
+  int setTrialStrainIncr( const Vector &v ) ;
+  int setTrialStrainIncr( const Vector &v, const Vector &r ) ;
+
+  //send back the strain
+  const Vector& getStrain( ) ;
+
+  //send back the stress 
+  const Vector& getStress( ) ;
+
+  //send back the tangent 
+  const Matrix& getTangent( ) ;
+  const Matrix& getInitialTangent( ) ;
+
+  private:
+
+  //static vectors and matrices sent back in get functions
+  static Vector strain_vec ;     //strain in vector notation
+  static Vector stress_vec ;     //stress in vector notation
+  static Matrix tangent_matrix ; //material tangent in matrix notation
+
+} ; //end of CycLiqCP declarations
+
+#endif
