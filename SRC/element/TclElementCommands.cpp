@@ -183,6 +183,11 @@ TclModelBuilder_addZeroLengthND(ClientData, Tcl_Interp *, int, TCL_Char **,
 extern int
 TclModelBuilder_addBeamWithHinges(ClientData, Tcl_Interp *, int, TCL_Char **,
 				  Domain*, TclModelBuilder *);
+// Minjie Zhu
+extern int
+TclModelBuilder_addPFEMElement2D(ClientData clientData, Tcl_Interp *interp,  int argc,
+                                 TCL_Char **argv, Domain*, TclModelBuilder *);
+
 // Quan
 extern int
 TclModelBuilder_addFourNodeQuadWithSensitivity(ClientData, Tcl_Interp *, int, TCL_Char **,
@@ -915,6 +920,12 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
     int eleArgStart = 1;
     int result = TclModelBuilder_addTwoNodeLink(clientData, interp, argc, argv,
 						theTclDomain, theTclBuilder, eleArgStart);
+    return result;
+  }
+
+  else if (strcmp(argv[1],"PFEMElement2D") == 0) {
+      int result = TclModelBuilder_addPFEMElement2D(clientData, interp, argc, argv,
+                                                    theTclDomain, theTclBuilder);
     return result;
   }
 
