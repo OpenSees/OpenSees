@@ -553,6 +553,8 @@
 #define ELE_TAG_TFP_Bearing2d 21
 #define ELE_TAG_TripleFrictionPendulum 777
 
+#define ELE_TAG_PFEMElement2D 2012
+
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
 #define FRN_TAG_VelPressureDep     3
@@ -619,6 +621,7 @@
 #define CNSTRNT_TAG_MP_Joint2D          5
 #define CNSTRNT_TAG_MP_SimpleJoint2D    6
 #define CNSTRNT_TAG_MP_Joint3D          7
+#define CNSTRNT_TAG_Pressure_Constraint    8
 
 
 #define MATRIX_TAG_Matrix 	1
@@ -632,6 +635,7 @@
 #define HANDLER_TAG_PenaltyConstraintHandler    	3
 #define HANDLER_TAG_TransformationConstraintHandler    	4
 #define HANDLER_TAG_PenaltyHandlerNoHomoSPMultipliers   5
+#define HANDLER_TAG_PFEMHandler                         6
 
 #define NUMBERER_TAG_DOF_Numberer      	1
 #define NUMBERER_TAG_PlainNumberer 	2
@@ -712,6 +716,7 @@
 #define INTEGRATOR_TAGS_TRBDF2                          34
 #define INTEGRATOR_TAGS_GeneralizedAlpha                35
 #define INTEGRATOR_TAGS_DisplacementPath                36
+#define INTEGRATOR_TAGS_FSI                             37
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2
@@ -738,6 +743,7 @@
 #define LinSOE_TAGS_MumpsSOE 23
 #define LinSOE_TAGS_MumpsParallelSOE 24
 #define LinSOE_TAGS_MPIDiagonalSOE 25
+#define LinSOE_TAGS_PFEMLinSOE    26
 
 
 #define SOLVER_TAGS_FullGenLinLapackSolver  	1
