@@ -90,6 +90,7 @@ DirectIntegrationAnalysis::DirectIntegrationAnalysis(Domain &the_Domain,
   theDOF_Numberer->setLinks(theModel);
   theIntegrator->setLinks(theModel, theLinSOE, theTest);
   theAlgorithm->setLinks(theModel, theTransientIntegrator, theLinSOE, theTest);
+  theSOE->setLinks(theModel);
 
   if (theTest != 0)
     theAlgorithm->setConvergenceTest(theTest);
