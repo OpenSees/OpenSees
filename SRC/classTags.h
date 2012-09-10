@@ -240,7 +240,9 @@
 #define SEC_TAG_Parallel	                 77
 #define SEC_TAG_Fiber		                 8
 #define SEC_TAG_FiberSection2d		         9
+#define SEC_TAG_NDFiberSection2d		         900
 #define SEC_TAG_FiberSection3d		        10
+#define SEC_TAG_NDFiberSection3d		         1000
 #define SEC_TAG_FiberSectionGJ		        11
 #define SEC_TAG_BeamFiberSection	        12
 #define SEC_TAG_ElasticPlateSection	        13
@@ -298,6 +300,7 @@
 #define ND_TAG_PlateFiberMaterial          2001
 #define ND_TAG_PlaneStrainMaterial          2003
 #define ND_TAG_BeamFiberMaterial		2002
+#define ND_TAG_BeamFiberMaterial2d		2004
 #define ND_TAG_CompressibleFluid		3001
 #define ND_TAG_GeneralizedPlasticity 3002
 #define ND_TAG_J2Plasticity02  3003
@@ -349,6 +352,8 @@
 
 #define FIBER_TAG_Uniaxial2d	1
 #define FIBER_TAG_Uniaxial3d	2
+#define FIBER_TAG_ND2d	3
+#define FIBER_TAG_ND3d	4
 
 #define BACKBONE_TAG_Capped		1
 #define BACKBONE_TAG_LinearCapped	2
