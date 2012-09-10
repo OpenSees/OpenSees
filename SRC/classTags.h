@@ -635,7 +635,6 @@
 #define HANDLER_TAG_PenaltyConstraintHandler    	3
 #define HANDLER_TAG_TransformationConstraintHandler    	4
 #define HANDLER_TAG_PenaltyHandlerNoHomoSPMultipliers   5
-#define HANDLER_TAG_PFEMHandler                         6
 
 #define NUMBERER_TAG_DOF_Numberer      	1
 #define NUMBERER_TAG_PlainNumberer 	2
