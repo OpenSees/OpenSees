@@ -2760,6 +2760,10 @@ SRC/material/section/Isolator2spring.h -text
 SRC/material/section/Makefile -text
 SRC/material/section/MembranePlateFiberSection.cpp -text
 SRC/material/section/MembranePlateFiberSection.h -text
+SRC/material/section/NDFiberSection2d.cpp -text
+SRC/material/section/NDFiberSection2d.h -text
+SRC/material/section/NDFiberSection3d.cpp -text
+SRC/material/section/NDFiberSection3d.h -text
 SRC/material/section/ParallelSection.cpp -text
 SRC/material/section/ParallelSection.h -text
 SRC/material/section/SectionAggregator.cpp -text
