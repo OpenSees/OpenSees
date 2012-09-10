@@ -51,6 +51,7 @@
 #include <SP_Constraint.h>
 #include <SP_ConstraintIter.h>
 #include <MP_Constraint.h>
+#include <Pressure_Constraint.h>
 
 #include <RigidRod.h>
 #include <RigidBeam.h>
@@ -227,6 +228,10 @@ TclCommand_addNodalMass(ClientData clientData, Tcl_Interp *interp, int argc,
 			TCL_Char **argv);
 int
 TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,   
+		      TCL_Char **argv);
+
+int
+TclCommand_addPC(ClientData clientData, Tcl_Interp *interp, int argc,   
 		      TCL_Char **argv);
 
 int
@@ -491,6 +496,9 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 
   Tcl_CreateCommand(interp, "sp", TclCommand_addSP,
 		    (ClientData)NULL, NULL);
+
+  Tcl_CreateCommand(interp, "pc", TclCommand_addPC,
+		    (ClientData)NULL, NULL);
   
   Tcl_CreateCommand(interp, "imposedMotion", 
 		    TclCommand_addImposedMotionSP,
@@ -678,6 +686,7 @@ TclModelBuilder::~TclModelBuilder()
   Tcl_DeleteCommand(theInterp, "fixY");
   Tcl_DeleteCommand(theInterp, "fixZ");
   Tcl_DeleteCommand(theInterp, "sp");
+  Tcl_DeleteCommand(theInterp, "pc");
   Tcl_DeleteCommand(theInterp, "imposedSupportMotion");
   Tcl_DeleteCommand(theInterp, "groundMotion");
   Tcl_DeleteCommand(theInterp, "equalDOF");
@@ -1155,7 +1164,7 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
 	}
 	disp(i) = theDisp;
       }
-      theNode->setTrialVel(disp);      
+      theNode->setTrialVel(disp); 
     } else
       currentArg++;
   }
@@ -2493,6 +2502,39 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
   return TCL_OK;
 }
 
+int
+TclCommand_addPC(ClientData clientData, Tcl_Interp *interp, int argc,   
+		      TCL_Char **argv)
+{
+    // ensure the destructor has not been called - 
+    if (theTclBuilder == 0) {
+        opserr << "WARNING builder has been destroyed - sp \n";    
+        return TCL_ERROR;
+    }
+
+    // check number of arguments
+    if (argc < 2) {
+        opserr << "WARNING bad command - want: pc nodeId";
+        printCommand(argc, argv);
+        return TCL_ERROR;
+    }    
+
+    // get the nodeID
+    int nodeId;
+    if (Tcl_GetInt(interp, argv[1], &nodeId) != TCL_OK) {
+        opserr << "WARNING invalid nodeId: " << argv[1] << " -  pc nodeId\n";
+        return TCL_ERROR;
+    }
+    Pressure_Constraint* pc = new Pressure_Constraint(nodeId, true);
+    if (theTclDomain->addPressure_Constraint(pc) == false) {
+        opserr << "WARNING failed to add Pressure_Constraint to the domain\n";
+        opserr << "node: " << nodeId << endln;
+        delete pc; // otherwise memory leak
+        return TCL_ERROR;
+    }
+
+    return TCL_OK;
+}
 
 
 int
