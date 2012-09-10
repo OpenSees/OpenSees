@@ -2712,6 +2712,10 @@ SRC/material/section/WSection2d.h -text
 SRC/material/section/fiber/Fiber.cpp -text
 SRC/material/section/fiber/Fiber.h -text
 SRC/material/section/fiber/Makefile -text
+SRC/material/section/fiber/NDFiber2d.cpp -text
+SRC/material/section/fiber/NDFiber2d.h -text
+SRC/material/section/fiber/NDFiber3d.cpp -text
+SRC/material/section/fiber/NDFiber3d.h -text
 SRC/material/section/fiber/UniaxialFiber2d.cpp -text
 SRC/material/section/fiber/UniaxialFiber2d.h -text
 SRC/material/section/fiber/UniaxialFiber3d.cpp -text

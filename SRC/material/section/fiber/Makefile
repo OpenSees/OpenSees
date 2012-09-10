@@ -1,6 +1,10 @@
 include ../../../../Makefile.def
 
-OBJS       = Fiber.o UniaxialFiber2d.o UniaxialFiber3d.o
+OBJS       = Fiber.o \
+	UniaxialFiber2d.o \
+	UniaxialFiber3d.o \
+	NDFiber2d.o \
+	NDFiber3d.o
 
 all:         $(OBJS)
 
