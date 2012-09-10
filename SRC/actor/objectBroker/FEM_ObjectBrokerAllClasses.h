@@ -57,6 +57,7 @@ class FEM_ObjectBrokerAllClasses : public FEM_ObjectBroker
     Node          *getNewNode(int classTag);
     MP_Constraint *getNewMP(int classTag);
     SP_Constraint *getNewSP(int classTag);
+    Pressure_Constraint *getNewPC(int classTag);
     NodalLoad     *getNewNodalLoad(int classTag);
     ElementalLoad *getNewElementalLoad(int classTag);
     
