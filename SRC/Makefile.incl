@@ -84,6 +84,7 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/element/zeroLength	\
                -I$(FE)/element/fourNodeQuad	\
                -I$(FE)/element/triangle	\
+               -I$(FE)/element/PFEMElement	\
                -I$(FE)/element/beamWithHinges \
                -I$(FE)/element/dispBeamColumn \
                -I$(FE)/element/dispBeamColumnInt \
@@ -192,6 +193,7 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE) \
                -I$(SUPERLUdir) \
                -I$(FE)/package \
-	       -I$(FE)/../OTHER/AMD
+	       -I$(FE)/../OTHER/AMD \
+               -I$(FE)/../OTHER/CSPARSE
                
                
