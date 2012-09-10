@@ -49,7 +49,7 @@ public:
 			 double tolUnbalance,
 			 int maxNumIter, 
 			 int printFlag, 
-			 int normType=2);
+                        int normType=2, int maxincr=3);
 
     // destructor
     ~NormDispOrUnbalance();
@@ -84,6 +84,9 @@ private:
     
     Vector norms;        // vector to hold the norms
     int nType;           // type of norm to use (1-norm, 2-norm, p-norm, max-norm)
+
+    int maxIncr;         // max number of norm increasing
+    int numIncr;         // number of norm increasing
 };
 
 #endif

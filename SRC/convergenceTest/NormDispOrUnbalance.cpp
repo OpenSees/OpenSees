@@ -34,17 +34,17 @@ NormDispOrUnbalance::NormDispOrUnbalance()
   : ConvergenceTest(CONVERGENCE_TEST_NormDispOrUnbalance),
     theSOE(0), tolDisp(0), tolUnbalance(0),
     maxNumIter(0), currentIter(0), printFlag(0), 
-    norms(25), nType(2)
+    norms(25), nType(2), maxIncr(0), numIncr(0)
 {
     
 }
 
 
-NormDispOrUnbalance::NormDispOrUnbalance(double theTolDisp, double theTolUnbalance, int maxIter, int printIt, int normType)
+NormDispOrUnbalance::NormDispOrUnbalance(double theTolDisp, double theTolUnbalance, int maxIter, int printIt, int normType, int maxincr)
   : ConvergenceTest(CONVERGENCE_TEST_NormDispOrUnbalance),
     theSOE(0), tolDisp(theTolDisp), tolUnbalance(theTolUnbalance),
     maxNumIter(maxIter), currentIter(0), printFlag(printIt),
-    norms(2*maxIter), nType(normType)
+    norms(2*maxIter), nType(normType), maxIncr(maxincr), numIncr(0)
 {
     
 }
@@ -60,10 +60,11 @@ ConvergenceTest* NormDispOrUnbalance::getCopy(int iterations)
 {
   NormDispOrUnbalance *theCopy ;
   theCopy = new NormDispOrUnbalance(this->tolDisp, 
-				     this->tolUnbalance,
-				     iterations, 
-				     this->printFlag, 
-				     this->nType) ;
+                                    this->tolUnbalance,
+                                    iterations, 
+                                    this->printFlag, 
+                                    this->nType,
+                                    this->maxIncr) ;
   
   theCopy->theSOE = this->theSOE ;
   
@@ -109,6 +110,10 @@ int NormDispOrUnbalance::test(void)
     const Vector &b = theSOE->getB();
     double normB = b.pNorm(nType);
 
+    if((currentIter>1 && norms(currentIter-2)<normX) || (currentIter>1 && norms(maxNumIter+currentIter-2)<normB)) {
+        numIncr++;
+    }
+
     if (currentIter <= maxNumIter) {
         norms(currentIter-1) = normX;
         norms(maxNumIter+currentIter-1) = normB;
@@ -118,12 +123,12 @@ int NormDispOrUnbalance::test(void)
     if (printFlag == 1) {
         opserr << "NormDispOrUnbalance::test() - iteration: " << currentIter;
         opserr << " current NormX: " << normX;
-        opserr << ", NormB: " << normB << "\n";
+        opserr << ", NormB: " << normB << ", NormIncr: " << numIncr << "\n";
     } 
     if (printFlag == 4) {
         opserr << "NormDispOrUnbalance::test() - iteration: " << currentIter;
         opserr << " current NormX: " << normX;
-        opserr << ", NormB: " << normB << "\n";
+        opserr << ", NormB: " << normB << ", NormIncr: " << numIncr << "\n";
         opserr << "\tdeltaX: " << x << "\tdeltaR: " << theSOE->getB();
     } 
     
@@ -141,7 +146,7 @@ int NormDispOrUnbalance::test(void)
             else if (printFlag == 2 || printFlag == 6) {
                 opserr << "NormDispOrUnbalance::test() - iteration: " << currentIter;
 		opserr << " current NormX: " << normX;
-		opserr << ", NormB: " << normB << "\n";
+		opserr << ", NormB: " << normB << ", NormIncr: " << numIncr << "\n";
             }
         }
         
@@ -150,15 +155,15 @@ int NormDispOrUnbalance::test(void)
     }
     
     // algo failed to converged after specified number of iterations - but RETURN OK
-    else if ((printFlag == 5 || printFlag == 6) && currentIter >= maxNumIter) {
+    else if ((printFlag == 5 || printFlag == 6) && (currentIter >= maxNumIter || numIncr > maxIncr)) {
         opserr << "WARNING: NormDispOrUnbalance::test() - failed to converge but going on - ";
 	opserr << " current NormX: " << normX;
-	opserr << ", NormB: " << normB << "\n";
+	opserr << ", NormB: " << normB  << ", NormIncr: " << numIncr << "\n";
         return currentIter;
     }
     
     // algo failed to converged after specified number of iterations - return FAILURE -2
-    else if (currentIter >= maxNumIter) { // failes to converge
+    else if (currentIter >= maxNumIter || numIncr > maxIncr) { // failes to converge
         opserr << "WARNING: NormDispOrUnbalance::test() - failed to converge \n";
         opserr << "after: " << currentIter << " iterations\n";	
         currentIter++;    
@@ -183,6 +188,7 @@ int NormDispOrUnbalance::start(void)
     // set iteration count = 1
     norms.Zero();
     currentIter = 1;
+    numIncr = 0;
     return 0;
 }
 
@@ -215,12 +221,13 @@ const Vector& NormDispOrUnbalance::getNorms()
 int NormDispOrUnbalance::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  Vector x(5);
+  Vector x(6);
   x(0) = tolDisp;
   x(4) = tolUnbalance;
   x(1) = maxNumIter;
   x(2) = printFlag;
   x(3) = nType;
+  x(5) = maxIncr;
   res = theChannel.sendVector(this->getDbTag(), cTag, x);
   if (res < 0) 
     opserr << "NormDispOrUnbalance::sendSelf() - failed to send data\n";
@@ -233,7 +240,7 @@ NormDispOrUnbalance::recvSelf(int cTag, Channel &theChannel,
 			  FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  Vector x(5);
+  Vector x(6);
   res = theChannel.recvVector(this->getDbTag(), cTag, x);    
 
 
@@ -243,6 +250,7 @@ NormDispOrUnbalance::recvSelf(int cTag, Channel &theChannel,
     maxNumIter = 25;
     printFlag = 0;
     nType = 2;
+    maxIncr = 3;
     norms.resize(maxNumIter);
   } else {
     tolDisp = x(0);
@@ -250,6 +258,7 @@ NormDispOrUnbalance::recvSelf(int cTag, Channel &theChannel,
     maxNumIter = (int)x(1);
     printFlag = (int)x(2);
     nType = (int)x(3);
+    maxIncr = (int)x(5);
     norms.resize(maxNumIter);
   } 
   return res;
