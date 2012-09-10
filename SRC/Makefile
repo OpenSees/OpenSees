@@ -366,7 +366,7 @@ DATABASE_LIBS = $(FE)/database/FileDatastore.o \
 
 MATRIX_LIBS   = $(FE)/matrix/Matrix.o \
 	$(FE)/matrix/Vector.o \
-	$(FE)/matrix/ID.o  \
+	$(FE)/matrix/ID.o  
 
 TAGGED_LIBS =   $(FE)/tagged/TaggedObject.o \
 	$(FE)/tagged/storage/ArrayOfTaggedObjects.o \
@@ -494,6 +494,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/pyMacro/PY_Macro2D.o \
 	$(FE)/element/twoNodeLink/TclTwoNodeLinkCommand.o \
 	$(FE)/element/triangle/Tri31.o \
+	$(FE)/element/PFEMElement/PFEMElement2D.o \
+	$(FE)/element/PFEMElement/TclModelBuilder_addPFEMElement.o \
 	$(FE)/element/UWelements/SSPquad.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \
@@ -758,6 +760,7 @@ SysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(FE)/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinDirectSolver.o \
 	$(FE)/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinSubstrSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSOE.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenRowLinSOE.o \
     $(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenRowLinSolver.o \
@@ -790,6 +793,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/domain/single/SingleDomEleIter.o \
 	$(FE)/domain/domain/single/SingleDomNodIter.o \
 	$(FE)/domain/domain/single/SingleDomSP_Iter.o \
+	$(FE)/domain/domain/single/SingleDomPC_Iter.o \
 	$(FE)/domain/domain/single/SingleDomAllSP_Iter.o \
 	$(FE)/domain/domain/single/SingleDomMP_Iter.o \
 	$(FE)/domain/domain/single/SingleDomParamIter.o \
@@ -803,6 +807,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/node/NodalLoad.o \
 	$(FE)/domain/constraints/SP_Constraint.o \
 	$(FE)/domain/constraints/MP_Constraint.o \
+	$(FE)/domain/constraints/Pressure_Constraint.o \
 	$(FE)/domain/constraints/ImposedMotionSP.o \
 	$(FE)/domain/constraints/ImposedMotionSP1.o \
 	$(FE)/domain/constraints/RigidDiaphragm.o \
