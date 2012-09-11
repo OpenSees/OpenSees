@@ -2798,6 +2798,8 @@ SRC/material/section/fiber/UniaxialFiber3d.h -text
 SRC/material/section/integration/Makefile -text
 SRC/material/section/integration/RCSectionIntegration.cpp -text
 SRC/material/section/integration/RCSectionIntegration.h -text
+SRC/material/section/integration/RCTBeamSectionIntegration.cpp -text
+SRC/material/section/integration/RCTBeamSectionIntegration.h -text
 SRC/material/section/integration/SectionIntegration.cpp -text
 SRC/material/section/integration/SectionIntegration.h -text
 SRC/material/section/integration/WideFlangeSectionIntegration.cpp -text
