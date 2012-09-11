@@ -247,13 +247,17 @@ bool
 PartitionedDomain::addSP_Constraint(SP_Constraint *load)
 {
   int nodeTag = load->getNodeTag();
+  bool ok = false;
   
   // check the Node exists in the Domain or one of Subdomains
 
   // if in Domain add it as external .. ignore Subdomains
   Node *nodePtr = this->getNode(nodeTag);
   if (nodePtr != 0) {
-    return (this->Domain::addSP_Constraint(load));    
+    ok = this->Domain::addSP_Constraint(load);
+    if (ok == false) {
+      return ok;
+    }
   }
 
   // find subdomain with node and add it .. break if find as internal node
@@ -261,15 +265,21 @@ PartitionedDomain::addSP_Constraint(SP_Constraint *load)
   Subdomain *theSub;
   while ((theSub = theSubdomains()) != 0) {
     bool res = theSub->hasNode(nodeTag);
-    if (res == true) 
-      return theSub->addSP_Constraint(load);
+    if (res == true) {
+      ok = theSub->addSP_Constraint(load);
+      if (ok == false) {
+	return ok;
+      }
+    }
   }
 
   // if no subdomain .. node not in model .. error message and return failure
-  opserr << "PartitionedDomain::addSP_Constraint - cannot add as node with tag" <<
-    nodeTag << "does not exist in model\n"; 
-
-  return false;
+  if (ok == false) {
+    opserr << "PartitionedDomain::addSP_Constraint - cannot add as node with tag" <<
+      nodeTag << "does not exist in model\n"; 
+  }
+  
+  return ok;
 }
 
 
@@ -297,13 +307,16 @@ bool
 PartitionedDomain::addSP_Constraint(SP_Constraint *load, int pattern)
 {
   int nodeTag = load->getNodeTag();
-  
+  bool ok = false;
+
   // check the Node exists in the Domain or one of Subdomains
 
   // if in Domain add it as external .. ignore Subdomains
   Node *nodePtr = this->getNode(nodeTag);
   if (nodePtr != 0) {
-    return (this->Domain::addSP_Constraint(load, pattern));    
+    ok = this->Domain::addSP_Constraint(load, pattern);
+    if (ok == false) 
+      return false;
   }
 
   // find subdomain with node and add it .. break if find as internal node
@@ -311,16 +324,21 @@ PartitionedDomain::addSP_Constraint(SP_Constraint *load, int pattern)
   Subdomain *theSub;
   while ((theSub = theSubdomains()) != 0) {
     bool res = theSub->hasNode(nodeTag);
-    if (res == true) 
-      return theSub->addSP_Constraint(load, pattern);
+    if (res == true)  {
+      ok = theSub->addSP_Constraint(load, pattern);
+      if (ok == false)
+	return false;
+    }
   }
 
     
   // if no subdomain .. node not in model .. error message and return failure
-  opserr << "PartitionedDomain::addSP_Constraint - cannot add as node with tag" <<
-    nodeTag << "does not exist in model\n"; 
+  if (ok == false) {
+    opserr << "PartitionedDomain::addSP_Constraint - cannot add as node with tag" <<
+      nodeTag << "does not exist in model\n"; 
+  }
 
-  return false;
+  return ok;
 }
 
 
