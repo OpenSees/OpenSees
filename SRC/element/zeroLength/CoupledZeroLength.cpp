@@ -872,17 +872,63 @@ CoupledZeroLength::setParameter(const char **argv, int argc, Parameter &param)
   return result;
 }
 
-int
-CoupledZeroLength::updateParameter (int parameterID, Information &info)
+const Vector &
+CoupledZeroLength::getResistingForceSensitivity(int gradIndex)
 {
-  return 0;
-}
+  // Recompute strains to be safe
+  this->update();
 
-int
-CoupledZeroLength::activateParameter(int passedParameterID)
-{
+  // zero the residual
+  theVector->Zero();
+
+  // get resisting force for material
+  double dfdh = theMaterial->getStressSensitivity(gradIndex, true);
+  double strain = theMaterial->getStrain();
+
+  double Fx = dfdh;
+  double Fy = dfdh;
+
+  if (strain != 0.0) {
+    Fx *= dX/strain;
+    Fy *= dY/strain;
+  } else {
+    double oldF = sqrt(fX*fX+fY*fY);
+    if (oldF != 0.0) {
+      Fx *= fX/oldF;
+      Fy *= fY/oldF;
+    }
+  }
+
+  int numNodeDof = numDOF/2;
+  int dirn1b = dirn1+numNodeDof;
+  int dirn2b = dirn2+numNodeDof;
+
+  (*theVector)(dirn1)   = -Fx;
+  (*theVector)(dirn1b)  =  Fx;      
+  (*theVector)(dirn2)   = -Fy;
+  (*theVector)(dirn2b)  =  Fy;      
   
-  return 0;
+  return *theVector;
 }
+ 
+int
+CoupledZeroLength::commitSensitivity(int gradIndex, int numGrads)
+{
+  // Get nodal displacement sensitivity
+  Vector diff(numDOF/2);
+  for (int i = 0; i < numDOF/2; i++) {
+    diff(i) = theNodes[1]->getDispSensitivity(i+1,gradIndex) - theNodes[0]->getDispSensitivity(i+1,gradIndex);
+  }
 
+  dX = diff(dirn1);
+  dY = diff(dirn2);
+  double depsdh = sqrt(dX*dX + dY*dY);
 
+  // strain neg if to left of X+Y = 0 line
+  if (dX < 0.0 || dY < 0.0) {
+    if (dX + dY < 0.0)
+      depsdh *= -1.0;
+  }
+
+  return theMaterial->commitSensitivity(depsdh, gradIndex, numGrads);
+}

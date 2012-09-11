@@ -97,9 +97,12 @@ class CoupledZeroLength : public Element {
     int getResponse(int responseID, Information &eleInformation);
     
     int setParameter(const char **argv, int argc, Parameter &param);
-    int updateParameter(int parameterID, Information &info);
-    int activateParameter(int parameterID);
     
+// AddingSensitivity:BEGIN //////////////////////////////////////////
+    const Vector &getResistingForceSensitivity(int gradIndex);
+    int commitSensitivity(int gradIndex, int numGrads);
+// AddingSensitivity:END ///////////////////////////////////////////
+
  protected:
     
  private:
