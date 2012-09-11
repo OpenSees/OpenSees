@@ -2569,6 +2569,8 @@ SRC/material/Material.h -text
 SRC/material/Material.tex -text
 SRC/material/nD/BeamFiberMaterial.cpp -text
 SRC/material/nD/BeamFiberMaterial.h -text
+SRC/material/nD/BeamFiberMaterial2d.cpp -text
+SRC/material/nD/BeamFiberMaterial2d.h -text
 SRC/material/nD/BidirectionalMaterial.tex -text
 SRC/material/nD/ConcreteMcftNonLinear5.cpp -text
 SRC/material/nD/ConcreteMcftNonLinear5.h -text
