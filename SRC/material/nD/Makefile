@@ -4,6 +4,7 @@ include ../../../Makefile.def
 
 OBJS       = NDMaterial.o \
 	BeamFiberMaterial.o \
+	BeamFiberMaterial2d.o \
 	ElasticIsotropicAxiSymm.o\
 	ElasticIsotropicBeamFiber2d.o \
 	ElasticIsotropicBeamFiber.o \
@@ -24,7 +25,9 @@ OBJS       = NDMaterial.o \
 	PlaneStressMaterial.o \
 	PlateFiberMaterial.o \
 	TclModelBuilderNDMaterialCommand.o \
-	WrapperNDMaterial.o
+	WrapperNDMaterial.o \
+	ConcreteMcftNonLinear5.o \
+	ConcreteMcftNonLinear7.o
 
 all: $(OBJS) 
 	@$(CD) $(FE)/material/nD/soil; $(MAKE);
