@@ -441,9 +441,13 @@ ParallelSection::getStressResultantSensitivity(int gradIndex,
   s->Zero();
 
   for (int i = 0; i < numSections; i++) {
-    const Vector &dsdh = theSections[i]->getStressResultantSensitivity(gradIndex,
-								       conditional);
-    s->addVector(1.0, dsdh, 1.0);
+    int orderi = theSections[i]->getOrder();
+    const ID &code = theSections[i]->getType();
+    const Vector &si = theSections[i]->getStressResultantSensitivity(gradIndex, conditional);
+    for (int j = 0; j < orderi; j++) 
+      for (int k = 0; k < order; k++) 
+	if (code(k) == (*theCode)(j))
+	  (*s)(k) += si(j);
   }
   
   return *s;
@@ -465,8 +469,17 @@ ParallelSection::commitSensitivity(const Vector& defSens,
 
   dedh = defSens;
 
-  for (int i = 0; i < numSections; i++)
-    ret += theSections[i]->commitSensitivity(dedh, gradIndex, numGrads);
+  for (int i = 0; i < numSections; i++) {
+    int orderi = theSections[i]->getOrder();
+    const ID &code = theSections[i]->getType();
+    Vector defi(orderi);
+    for (int j = 0; j < orderi; j++) 
+      for (int k = 0; k < order; k++) 
+	if (code(k) == (*theCode)(j))
+	  defi(j) = defSens(k);
+
+    ret += theSections[i]->commitSensitivity(defi, gradIndex, numGrads);
+  }
   
   return ret;
 }
