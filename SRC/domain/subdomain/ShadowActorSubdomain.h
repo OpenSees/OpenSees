@@ -52,6 +52,7 @@ static const int ShadowActorSubdomain_removeLoadPattern = 14;
 static const int ShadowActorSubdomain_removeNodalLoadFromPattern = 15;
 static const int ShadowActorSubdomain_removeElementalLoadFromPattern = 16;
 static const int ShadowActorSubdomain_removeSP_ConstraintFromPattern = 17;
+static const int ShadowActorSubdomain_removeSP_ConstraintNoTag = 18;
 static const int ShadowActorSubdomain_getElement = 20;
 static const int ShadowActorSubdomain_getNode = 21;
 static const int ShadowActorSubdomain_hasElement = 22;

@@ -395,7 +395,6 @@ ShadowSubdomain::addLoadPattern(LoadPattern *thePattern)
     this->sendObject(*thePattern);
     //    this->Domain::domainChange();
 
-
     theShadowLPs->addComponent(thePattern);    
     numLoadPatterns++;
 
@@ -598,8 +597,16 @@ ShadowSubdomain::removeSP_Constraint(int tag)
 int
 ShadowSubdomain::removeSP_Constraint(int theNode, int theDOF, int loadPatternTag)
 {
-  opserr << "ShadowSubdomain::removeSP_Constraint() - not yet implemented\n";
-  return 0;
+  msgData(0) = ShadowActorSubdomain_removeSP_ConstraintNoTag;
+  msgData(1) = theNode;
+  msgData(2) = theDOF;
+  msgData(3) = loadPatternTag;
+  
+  this->sendID(msgData);
+  this->recvID(msgData);
+  
+  return msgData(0);
+
 }
 
 int
@@ -1462,6 +1469,7 @@ ShadowSubdomain::Print(OPS_Stream &s, ID *nodeTags, ID *eleTags, int flag)
       msgData(1) = nodeTags->Size();
     else
       msgData(1) = 0;
+
     if (eleTags != 0)
       msgData(2) = eleTags->Size();
     else
@@ -1470,10 +1478,9 @@ ShadowSubdomain::Print(OPS_Stream &s, ID *nodeTags, ID *eleTags, int flag)
 
     this->sendID(msgData);
 
-    opserr << "ShadowSubdomain::Print() " << msgData;
-
     if (nodeTags != 0)
       this->sendID(*nodeTags);
+
     if (eleTags != 0)
       this->sendID(*eleTags);
 

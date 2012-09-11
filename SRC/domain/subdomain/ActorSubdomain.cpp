@@ -1,5 +1,5 @@
 /* ****************************************************************** **
-**    OpenSeess - Open System for Earthquake Engineering Simulation    **
+**    OpenSeess - Open System for Earthquake Engineering Simulation   **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
@@ -81,7 +81,8 @@ ActorSubdomain::run(void)
       }
 
       bool change;
-      int theType, theOtherType, tag, dbTag, loadPatternTag, startTag, endTag, axisDirn, numSP, i, numMode;
+      int theType, theOtherType, tag, dbTag, loadPatternTag;
+      int startTag, endTag, axisDirn, numSP, i, numMode, dof;
       Element *theEle;
       Node *theNod;
       SP_Constraint *theSP;
@@ -462,6 +463,16 @@ ActorSubdomain::run(void)
 	    theSP = this->removeSP_Constraint(tag);
 
 	    break;	    
+
+	  case ShadowActorSubdomain_removeSP_ConstraintNoTag:
+	    tag = msgData(1);
+	    dof = msgData(2);
+	    loadPatternTag = msgData(3);
+
+	    msgData(0) = this->removeSP_Constraint(tag, dof, loadPatternTag);
+	    this->sendID(msgData);
+
+	    break;	    
 	    
 	  case ShadowActorSubdomain_removeMP_Constraint:
 	    tag = msgData(1);
@@ -554,6 +565,7 @@ ActorSubdomain::run(void)
 	    
 	    theNodeTags = 0;
 	    theEleTags = 0;
+
 	    if (msgData(1) != 0) {
 	      theNodeTags = new ID(msgData(1));
 	      this->recvID(*theNodeTags);
@@ -581,8 +593,8 @@ ActorSubdomain::run(void)
 
 	  case ShadowActorSubdomain_setCommittedTime:
 	    this->recvVector(theVect);	    
-	    this->setCommittedTime(theVect(0));
 	    this->setCurrentTime(theVect(0));
+	    this->setCommittedTime(theVect(0));
 	    break;	    
 	    
 	  case ShadowActorSubdomain_setLoadConstant:
