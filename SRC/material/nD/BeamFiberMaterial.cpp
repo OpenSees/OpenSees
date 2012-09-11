@@ -375,18 +375,18 @@ BeamFiberMaterial::indexMap(int i)
   int ii;
 
   if (i == 3) 
-	  ii = 1;
+    ii = 1;
   else if (i == 5)
-	  ii = 2;
+    ii = 2;
   else if (i == 1)
-	  ii = 3;
+    ii = 3;
   else if (i == 2)
-	  ii = 4;
+    ii = 4;
   else if (i == 4)
-	  ii = 5;
+    ii = 5;
   else 
-	  ii = i;
-
+    ii = i;
+  
   return ii;
 }
 
@@ -492,4 +492,11 @@ BeamFiberMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
     opserr << "BeamFiberMaterial::sendSelf() - failed to send vector material\n";
   
   return res;
+}
+
+int
+BeamFiberMaterial::setParameter(const char **argv, int argc,
+				Parameter &param)
+{
+  return theMaterial->setParameter(argv, argc, param);
 }
