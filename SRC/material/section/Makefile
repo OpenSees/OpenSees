@@ -17,6 +17,7 @@ OBJS       = SectionForceDeformation.o \
 	NDFiberSection3d.o \
 	FiberSection2dThermal.o \
 	FiberSection3d.o \
+	FiberSectionGJ.o \
 	Bidirectional.o \
 	Elliptical.o \
 	TimoshenkoSection3d.o \

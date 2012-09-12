@@ -75,6 +75,7 @@ extern  void *OPS_NewContactMaterial2DMaterial(void);
 extern  void *OPS_NewContactMaterial3DMaterial(void);
 extern  void *OPS_NewInitialStateAnalysisWrapperMaterial(void);
 extern  void *OPS_NewManzariDafaliasMaterial(void);
+extern  void *OPS_CycLiqCPMaterial(void);
 
 NDMaterial *
 TclModelBuilder_addFeapMaterial(ClientData clientData, Tcl_Interp *interp,
@@ -200,6 +201,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     else if ((strcmp(argv[1],"DruckerPrager") == 0)){
 
       void *theMat = OPS_NewDruckerPragerMaterial();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"CycLiqCP") == 0)){
+
+      void *theMat = OPS_CycLiqCPMaterial();
       if (theMat != 0) 
 	theMaterial = (NDMaterial *)theMat;
       else 

@@ -24,6 +24,9 @@ OBJS       = NDMaterial.o \
 	PlaneStrainMaterial.o \
 	PlaneStressMaterial.o \
 	PlateFiberMaterial.o \
+	CycLiqCP.o \
+	CycLiqCP3D.o \
+	CycLiqCPPlaneStrain.o \
 	TclModelBuilderNDMaterialCommand.o \
 	WrapperNDMaterial.o \
 	ConcreteMcftNonLinear5.o \

@@ -61,8 +61,8 @@ double CycLiqCP::mElastFlag = 0;
 
 static int numCycLiqCPMaterials = 0;
 
-OPS_Export void *
-OPS_NewCycLiqCPMaterial(void)
+void *
+OPS_CycLiqCPMaterial(void)
 {
   if (numCycLiqCPMaterials == 0) {
     numCycLiqCPMaterials=1;
