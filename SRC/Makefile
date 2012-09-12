@@ -582,6 +582,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/J2AxiSymm.o \
 	$(FE)/material/nD/J2ThreeDimensional.o \
 	$(FE)/material/nD/J2PlateFiber.o \
+	$(FE)/material/nD/ConcreteMcftNonLinear5.o \
+	$(FE)/material/nD/ConcreteMcftNonLinear7.o \
 	$(FE)/material/nD/CycLiqCP.o \
 	$(FE)/material/nD/CycLiqCP3D.o \
 	$(FE)/material/nD/CycLiqCPPlaneStrain.o \
@@ -679,16 +681,20 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/fiber/Fiber.o \
 	$(FE)/material/section/fiber/UniaxialFiber2d.o \
 	$(FE)/material/section/fiber/UniaxialFiber3d.o \
+	$(FE)/material/section/fiber/NDFiber2d.o \
+	$(FE)/material/section/fiber/NDFiber3d.o \
 	$(FE)/material/section/ElasticSection2d.o \
 	$(FE)/material/section/ElasticSection3d.o \
 	$(FE)/material/section/ElasticShearSection2d.o \
 	$(FE)/material/section/ElasticShearSection3d.o \
 	$(FE)/material/section/ElasticTubeSection3d.o \
 	$(FE)/material/section/FiberSection2d.o \
+	$(FE)/material/section/NDFiberSection2d.o \
 	$(FE)/material/section/FiberSection2dThermal.o \
 	$(FE)/material/section/FiberSection3d.o \
-	$(FE)/material/section/FiberSectionGJ.o \
+	$(FE)/material/section/NDFiberSection3d.o \
 	$(FE)/material/section/SectionAggregator.o \
+	$(FE)/material/section/ParallelSection.o \
 	$(FE)/material/section/GenericSection1d.o \
 	$(FE)/material/section/ElasticPlateSection.o \
 	$(FE)/material/section/ElasticMembranePlateSection.o \
@@ -698,6 +704,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/integration/SectionIntegration.o \
 	$(FE)/material/section/integration/RCSectionIntegration.o \
 	$(FE)/material/section/integration/WideFlangeSectionIntegration.o \
+	$(FE)/material/section/integration/RCTBeamSectionIntegration.o \
 	$(FE)/material/section/repres/patch/Patch.o \
 	$(FE)/material/section/repres/patch/QuadPatch.o \
 	$(FE)/material/section/repres/patch/CircPatch.o \
