@@ -582,6 +582,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/J2AxiSymm.o \
 	$(FE)/material/nD/J2ThreeDimensional.o \
 	$(FE)/material/nD/J2PlateFiber.o \
+	$(FE)/material/nD/CycLiqCP.o \
+	$(FE)/material/nD/CycLiqCP3D.o \
+	$(FE)/material/nD/CycLiqCPPlaneStrain.o \
 	$(FE)/material/nD/UWmaterials/DruckerPrager.o \
 	$(FE)/material/nD/UWmaterials/DruckerPrager3D.o \
 	$(FE)/material/nD/UWmaterials/DruckerPragerPlaneStrain.o \
@@ -616,6 +619,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlaneStrainMaterial.o \
 	$(FE)/material/nD/PlateFiberMaterial.o \
 	$(FE)/material/nD/BeamFiberMaterial.o \
+	$(FE)/material/nD/BeamFiberMaterial2d.o \
 	$(FE)/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.o \
 	$(FE)/material/nD/TclModelBuilderNDMaterialCommand.o \
 	$(FE)/material/nD/cyclicSoil/MultiaxialCyclicPlasticity.o \

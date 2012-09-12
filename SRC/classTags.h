@@ -269,25 +269,30 @@
 #define SECTION_INTEGRATION_TAG_RCT 3
 #define SECTION_INTEGRATION_TAG_RCTUM 4
 
-#define ND_TAG_WrapperNDMaterial					9
-#define ND_TAG_ElasticIsotropic					10
+#define ND_TAG_WrapperNDMaterial		9
+#define ND_TAG_ElasticIsotropic			10
 #define ND_TAG_ElasticIsotropicPlaneStrain2d	11
 #define ND_TAG_ElasticIsotropicPlaneStress2d	12
 #define ND_TAG_ElasticIsotropicAxiSymm          13
-#define ND_TAG_ElasticIsotropicPlateFiber		14
-#define ND_TAG_ElasticIsotropicBeamFiber		15
-#define ND_TAG_ElasticIsotropicBeamFiber2d		18
-#define ND_TAG_ElasticIsotropicThreeDimensional         16
+#define ND_TAG_ElasticIsotropicPlateFiber	14
+#define ND_TAG_ElasticIsotropicBeamFiber	15
+#define ND_TAG_ElasticIsotropicThreeDimensional 16
 #define ND_TAG_ElasticCrossAnisotropic3D        17
+#define ND_TAG_ElasticIsotropicBeamFiber2d	18
+#define ND_TAG_CycLiqCP3D                       19
+#define ND_TAG_CycLiqCPPlaneStrain              20
+#define ND_TAG_PressureDependentElastic3D       22
+#define ND_TAG_Template3Dep 			31
+#define ND_TAG_NewTemplate3Dep 			32
+
+
 #define ND_TAG_J2PlaneStrain                  3005
 #define ND_TAG_J2PlaneStress                  3006
 #define ND_TAG_J2AxiSymm                      3007
 #define ND_TAG_J2ThreeDimensional             3009
-#define ND_TAG_J2PlateFiber					3010
-#define ND_TAG_J2BeamFiber					3011
-#define ND_TAG_PressureDependentElastic3D       22
-#define ND_TAG_Template3Dep 			        31
-#define ND_TAG_NewTemplate3Dep 			        32
+#define ND_TAG_J2PlateFiber		      3010
+#define ND_TAG_J2BeamFiber		      3011
+
 #define ND_TAG_FluidSolidPorousMaterial        100
 #define ND_TAG_PressureDependMultiYield		101
 #define ND_TAG_PressureIndependMultiYield		102
@@ -327,8 +332,6 @@
 #define ND_TAG_ManzariDafalias                  14012
 #define ND_TAG_ManzariDafalias3D                14013
 #define ND_TAG_ManzariDafaliasPlaneStrain       14014
-
-
 
 
 #define ND_TAG_ReinforcedConcretePlaneStress  104
