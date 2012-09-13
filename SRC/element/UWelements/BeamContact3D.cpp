@@ -220,18 +220,21 @@ BeamContact3D::BeamContact3D(int tag, int Nd1, int Nd2,
         }      
        
         // check them:         
-        if (!crdTransf)
-          {
+        if (!crdTransf) {
             opserr << "Error: BeamContact3d::BeamContact3d: could not create copy of coordinate transformation object" << endln;
             exit(-1);
-          }
+        }
        
         if (theMaterial == 0) {
           opserr << "BeamContact3D::BeamContact3D - failed allocate material model pointer\n";
           exit(-1);
         }
        
+        // element tag for debugging
         MyTag = tag;
+
+        // set initialization to true for setDomain function
+	    mInitialize = true;
 }
 
 BeamContact3D::BeamContact3D()
@@ -270,6 +273,20 @@ BeamContact3D::BeamContact3D()
 #ifdef DEBUG
         opserr << "BeamContact3D::BeamContact3D(): " << MyTag << endln;
 #endif
+    mRadius     = 0.0;
+    mTolGap     = 0.0;
+    mTolForce   = 0.0;
+    mIniContact = 0;
+	mGap        = 0.0;
+    mLambda     = 0.0;
+
+    inContact     = true;
+    was_inContact = true;
+    in_bounds     = true;
+    to_be_released     = false;
+    should_be_released = false;
+
+	mInitialize = false;
 }
 
 
@@ -279,10 +296,6 @@ BeamContact3D::~BeamContact3D()
 #ifdef DEBUG
         opserr << "BeamContact3D::~BeamContact3D(): " << MyTag << endln;
 #endif
-        if (theMaterial != 0)
-          delete theMaterial;
-       
-        delete crdTransf;
 }
 
 
@@ -323,6 +336,7 @@ BeamContact3D::getNumDOF(void)
     return BC3D_NUM_DOF;
 }
 
+#include <ElementIter.h>
 
 void
 BeamContact3D::setDomain(Domain *theDomain)
@@ -331,104 +345,97 @@ BeamContact3D::setDomain(Domain *theDomain)
         opserr << "BeamContact3D::setDomain(Domain *theDomain): " << MyTag << endln;
 #endif
 
-                Vector a1(BC3D_NUM_NDM);       // tangent vector at end a
-                Vector b1(BC3D_NUM_NDM);       // tangent vector at end b
-                Vector x_c(BC3D_NUM_NDM);      // coordinate at projected point on centerline
+  meye1.Zero();
+  meye1(0,0) = 1.0;
+  meye1(1,1) = 1.0;
+  meye1(2,2) = 1.0;
 
-                meye1.Zero();
-                meye1(0,0) = 1.0;
-                meye1(1,1) = 1.0;
-                meye1(2,2) = 1.0;
+  int Nd1 = externalNodes(0);
+  int Nd2 = externalNodes(1);
+  int NdS = externalNodes(2);
+  int NdL = externalNodes(3);
 
-        int Nd1 = externalNodes(0);
-        int Nd2 = externalNodes(1);
-        int NdS = externalNodes(2);
-        int NdL = externalNodes(3);
-
-        theNodes[0] = theDomain->getNode(Nd1);
-        theNodes[1] = theDomain->getNode(Nd2);
-        theNodes[2] = theDomain->getNode(NdS);
-        theNodes[3] = theDomain->getNode(NdL);
+  theNodes[0] = theDomain->getNode(Nd1);
+  theNodes[1] = theDomain->getNode(Nd2);
+  theNodes[2] = theDomain->getNode(NdS);
+  theNodes[3] = theDomain->getNode(NdL);
                
-                int i;
-        for (i = 0; i < 4; i++) {
-           if (theNodes[i] == 0)
-                return;  // don't go any further - otherwise segmentation fault
-        }  
+  for (int i = 0; i < 4; i++) {
+    if (theNodes[i] == 0) {
+      opserr << "BeamContact3D::setDomain() - no node with tag: " << theNodes[i] << endln;
+      return;  // don't go any further - otherwise segmentation fault
+    }  
+  }
 
-                //  initialize coordinate vectors and set to initial state
-                mIcrd_a = theNodes[0]->getCrds();
-        mIcrd_b = theNodes[1]->getCrds();
-                mIcrd_s = theNodes[2]->getCrds();    
-                mDcrd_a = mIcrd_a;
-                mDcrd_b = mIcrd_b;
-                mDcrd_s = mIcrd_s;
-                //mRot_a_n.Zero();
-                //mRot_b_n.Zero();
-                mDisp_a_n.Zero();
-                mDisp_b_n.Zero();
-                mDisp_s_n.Zero();
+  // only perform these steps during initial creation of element
+  if (mInitialize) {
 
-                // Fill the coordinate transformation matrices mQa, mQb
-                // initialize the transformation
-                if (crdTransf->initialize(theNodes[0], theNodes[1]))
-                {
-                        opserr << "BeamContact3D::setDomain(): Error initializing coordinate transformation";  
-                        exit(0);
-                }
-                // Note: the following intialization is already performed in crdTransf
-                //       but it doesnt return the values to beamContact element
-                Vector initXAxis(3);
-                Vector initYAxis(3);
-                Vector initZAxis(3);
-                crdTransf->getLocalAxes(initXAxis, initYAxis, initZAxis);
-                // fill mQa
-                for (i = 0; i < 3; i++) {
-                        mQa(i,0) = initXAxis(i);
-                        mQa(i,1) = initYAxis(i);
-                        mQa(i,2) = initZAxis(i);
-                }
-                // set mQb = mQa : beam column element requires zero initial twist
-                // if mQa = mQb -> mchi = 0
-                mQb = mQa;
-                mchi = 0;  
-                // fill tangent vectors = first column mQa, mQb = initXAxis
-                a1 = initXAxis;
-                b1 = a1;
+    //  initialize coordinate vectors and set to initial state
+    mIcrd_a = theNodes[0]->getCrds();
+    mIcrd_b = theNodes[1]->getCrds();
+    mIcrd_s = theNodes[2]->getCrds();    
+    mDcrd_a = mIcrd_a;
+    mDcrd_b = mIcrd_b;
+    mDcrd_s = mIcrd_s;
+    //mRot_a_n.Zero();
+    //mRot_b_n.Zero();
+    mDisp_a_n.Zero();
+    mDisp_b_n.Zero();
+    mDisp_s_n.Zero();
 
-                // length of master segment L
-                mL = (mDcrd_b - mDcrd_a).Norm();  
+    // Fill the coordinate transformation matrices mQa, mQb
+    // initialize the transformation
+    if (crdTransf->initialize(theNodes[0], theNodes[1]))
+    {
+    opserr << "BeamContact3D::setDomain(): Error initializing coordinate transformation";  
+    exit(0);
+    }
+    // Note: the following intialization is already performed in crdTransf
+    //       but it doesnt return the values to beamContact element
+    Vector initXAxis(3);
+    Vector initYAxis(3);
+    Vector initZAxis(3);
+    crdTransf->getLocalAxes(initXAxis, initYAxis, initZAxis);
+    // fill mQa
+    for (int i = 0; i < 3; i++) {
+        mQa(i,0) = initXAxis(i);
+        mQa(i,1) = initYAxis(i);
+        mQa(i,2) = initZAxis(i);
+    }
+    // set mQb = mQa : beam column element requires zero initial twist
+    // if mQa = mQb -> mchi = 0
+    mQb = mQa;
+    mchi = 0;  
+
+    // length of master segment L
+    mL = (mDcrd_b - mDcrd_a).Norm();  
        
-                // perform projection to update local coordinate along centerline
-                //  of master segment.  projection function also sets mn, mc1
-                mxi = ((mDcrd_b - mDcrd_s)^(mDcrd_b - mDcrd_a))
-                          / ((mDcrd_b - mDcrd_a)^(mDcrd_b - mDcrd_a)) ;  // initial approx
-                // initial basis function values for use in projection
-        mxi = project(mxi);
+    // perform projection to update local coordinate along centerline
+    //  of master segment.  projection function also sets mn, mc1
+    mxi = ((mDcrd_b - mDcrd_s)^(mDcrd_b - mDcrd_a)) / ((mDcrd_b - mDcrd_a)^(mDcrd_b - mDcrd_a)) ;  // initial approx
+    // initial basis function values for use in projection
+    mxi = project(mxi);
 
-                // initialize contact state based on projection
-                // in_bounds      = ( (mxi>=0.000) && (mxi<=1.0000) );
-                in_bounds      = ( (mxi>0.000) && (mxi<1.0000) );
-        inContact      = ( was_inContact && in_bounds );
+    // initialize contact state based on projection
+    // in_bounds      = ( (mxi>=0.000) && (mxi<=1.0000) );
+    in_bounds      = ( (mxi>0.000) && (mxi<1.0000) );
+    inContact      = ( was_inContact && in_bounds );
 
-                // compute centerline projection coordinate
-                x_c = mDcrd_a*mH(0) + a1*mH(1) + mDcrd_b*mH(2) + b1*mH(3);
-
-                // update base vectors g1, g2 for determination of mg_metric
-                UpdateBase(mxi);
+    // update base vectors g1, g2 for determination of mg_metric
+    UpdateBase(mxi);
        
-        // adjust cohesion force
-        //double area = 1.0*sqrt(mg_metric(0,0)*mg_metric(1,1)-mg_metric(0,1)*mg_metric(1,0));
-        double area = 1.0;
-        theMaterial->ScaleCohesion(area);
-        theMaterial->ScaleTensileStrength(area);
+    // adjust cohesion force
+    //double area = 1.0*sqrt(mg_metric(0,0)*mg_metric(1,1)-mg_metric(0,1)*mg_metric(1,0));
+    double area = 1.0;
+    theMaterial->ScaleCohesion(area);
+    theMaterial->ScaleTensileStrength(area);
+  }
        
-        // compute mBn, mBs
-        ComputeB();
+    // compute mBn, mBs
+    ComputeB();
 
-        // call the base class method
-        this->DomainComponent::setDomain(theDomain);
-
+    // call the base class method
+    this->DomainComponent::setDomain(theDomain);
 }        
 
 
@@ -574,191 +581,130 @@ BeamContact3D::update(void)
 #ifdef DEBUG
         opserr << "BeamContact3D::update(): " << MyTag << endln;
 #endif
+  if (mInitialize) {
+    double tensileStrength;
+    Vector a1(BC3D_NUM_NDM);
+    Vector b1(BC3D_NUM_NDM);
+    Vector a1_n(BC3D_NUM_NDM);
+    Vector b1_n(BC3D_NUM_NDM);
+    Vector disp_a(6);
+    Vector disp_b(6);
+    Vector disp_s(3);
+    Vector disp_L(BC3D_NUM_NDM);
+    Vector rot_a(BC3D_NUM_NDM);
+    Vector rot_b(BC3D_NUM_NDM);
+    Vector x_c(BC3D_NUM_NDM);
+    Vector d(BC3D_NUM_NDM);
 
-                double tensileStrength;
-                Vector a1(BC3D_NUM_NDM);
-                Vector b1(BC3D_NUM_NDM);
-                Vector a1_n(BC3D_NUM_NDM);
-                Vector b1_n(BC3D_NUM_NDM);
-                Vector disp_a(6);
-                Vector disp_b(6);
-                Vector disp_s(3);
-                Vector disp_L(BC3D_NUM_NDM);
-                Vector rot_a(BC3D_NUM_NDM);
-                Vector rot_b(BC3D_NUM_NDM);
-                Vector x_c(BC3D_NUM_NDM);
-                Vector d(BC3D_NUM_NDM);
+    // update slave node coordinate
+    mDcrd_s = mIcrd_s + theNodes[2]->getTrialDisp();
 
-                // update slave node coordinate
-                mDcrd_s = mIcrd_s + theNodes[2]->getTrialDisp();
+    // update Lagrange Multiplier Value
+    disp_L = theNodes[3]->getTrialDisp();
+    mLambda = disp_L(0);
 
-                // update Lagrange Multiplier Value
-                disp_L = theNodes[3]->getTrialDisp();
-                mLambda = disp_L(0);
+    // update nodes a, b  coordinates & rotations
+    disp_a = theNodes[0]->getTrialDisp();
+    disp_b = theNodes[1]->getTrialDisp();
+    disp_s = theNodes[2]->getTrialDisp();
 
-                // update nodes a, b  coordinates & rotations
-                disp_a = theNodes[0]->getTrialDisp();
-                disp_b = theNodes[1]->getTrialDisp();
-                disp_s = theNodes[2]->getTrialDisp();
+    int i;
+    for (i=0; i<3; i++) {
+      // compute updated nodal coordinates a, b
+      mDcrd_a(i) = mIcrd_a(i) +  disp_a(i);
+      mDcrd_b(i) = mIcrd_b(i) +  disp_b(i);
+      // compute incremental rotations from step n to n+1
+      //rot_a(i) = disp_a(i+3) - mRot_a_n(i);
+      //rot_b(i) = disp_b(i+3) - mRot_b_n(i);
+      rot_a(i) = disp_a(i+3) - mDisp_a_n(i+3);
+      rot_b(i) = disp_b(i+3) - mDisp_b_n(i+3);
+    }
 
-                int i;
-                for (i=0; i<3; i++) {
-                        // compute updated nodal coordinates a, b
-                        mDcrd_a(i) = mIcrd_a(i) +  disp_a(i);
-                        mDcrd_b(i) = mIcrd_b(i) +  disp_b(i);
-                        // compute incremental rotations from step n to n+1
-                        //rot_a(i) = disp_a(i+3) - mRot_a_n(i);
-                        //rot_b(i) = disp_b(i+3) - mRot_b_n(i);
-                        rot_a(i) = disp_a(i+3) - mDisp_a_n(i+3);
-                        rot_b(i) = disp_b(i+3) - mDisp_b_n(i+3);
-                       
-                }
+    // Get tangent vectors from previous converged step
+    a1_n = Geta1();
+    b1_n = Getb1();
 
-                // Get tangent vectors from previous converged step
-                a1_n = Geta1();
-                b1_n = Getb1();
+    // Perform linear update of tangent vectors such that
+    //  a1_{n+1} = a1_n + theta_{n->n+1}
+    //  theta_{n->n+1} = rot_a x a1_n
+    a1 = a1_n + CrossProduct(rot_a, a1_n);
+    b1 = b1_n + CrossProduct(rot_b, b1_n);
 
-                // Perform linear update of tangent vectors such that
-                //  a1_{n+1} = a1_n + theta_{n->n+1}
-                //  theta_{n->n+1} = rot_a x a1_n
-                a1 = a1_n + CrossProduct(rot_a, a1_n);
-                b1 = b1_n + CrossProduct(rot_b, b1_n);
+    // update centerline projection coordinate
+    // based upon coords & tangents at step n+1,  xi value @ step n
+    x_c = mDcrd_a*mH(0) + a1*mH(1) + mDcrd_b*mH(2) + b1*mH(3);
+     
+    // update value of the gap
+    d = mDcrd_s - x_c;
+    mGap = (mn^d) - mRadius;
 
-                // update centerline projection coordinate
-                // based upon coords & tangents at step n+1,  xi value @ step n
-                x_c = mDcrd_a*mH(0) + a1*mH(1) + mDcrd_b*mH(2) + b1*mH(3);
+    // get tensile strength from material
+    tensileStrength = theMaterial->getTensileStrength();
 
-                // update value of the gap
-                d = mDcrd_s - x_c;
-                mGap = (mn^d) - mRadius;
-
-                // get tensile strength from material
-                tensileStrength = theMaterial->getTensileStrength();
-
-                // set boolean variable for release condition
-                //should_be_released = ( mLambda <= -(tensileStrength + mTolForce ) );
-                should_be_released = ( mLambda <= - mTolForce );
+    // set boolean variable for release condition
+    //should_be_released = ( mLambda <= -(tensileStrength + mTolForce ) );
+    should_be_released = ( mLambda <= - mTolForce );
 
 #ifdef DEBUG
-        if (DEBUG_LEVEL > 0) {
-            opserr << "   CONTACT:            " << inContact << endln;
-            opserr << "   should be released: " << should_be_released << endln;
-            }
+    if (DEBUG_LEVEL > 0) {
+      opserr << "   CONTACT:            " << inContact << endln;
+      opserr << "   should be released: " << should_be_released << endln;
+    }
 #endif
 
-        if (inContact) {        
-            Vector strain(4);
-                        Vector slip(2);
-                        Vector phi_c(3);
-                        Vector c2n(3);
-                        Vector c3n(3);
-                        Vector c2n1(3);
-                        Vector c3n1(3);
-                        Vector incDisp_ab(12);
-                        Vector incDisp_s(3);
-                        Vector dstar(3);
+    if (inContact) {        
+      Vector strain(4);
+      Vector slip(2);
+      Vector phi_c(3);
+      Vector c2n(3);
+      Vector c3n(3);
+      Vector c2n1(3);
+      Vector c3n1(3);
+      Vector incDisp_ab(12);
+      Vector incDisp_s(3);
+      Vector dstar(3);
 
-                        for (i=0; i<3; i++) {
-                                c2n(i) = mQc(i,1);
-                                c3n(i) = mQc(i,2);
-                                incDisp_ab(i)   = disp_a(i)   - mDisp_a_n(i);
-                                incDisp_ab(i+3) = rot_a(i);
-                                incDisp_ab(i+6) = disp_b(i)   - mDisp_b_n(i);
-                                incDisp_ab(i+9) = rot_b(i);
-                        }
+      for (i=0; i<3; i++) {
+        c2n(i) = mQc(i,1);
+        c3n(i) = mQc(i,2);
+        incDisp_ab(i)   = disp_a(i)   - mDisp_a_n(i);
+        incDisp_ab(i+3) = rot_a(i);
+        incDisp_ab(i+6) = disp_b(i)   - mDisp_b_n(i);
+        incDisp_ab(i+9) = rot_b(i);
+      }
 
-                        incDisp_s = disp_s - mDisp_s_n;
+      incDisp_s = disp_s - mDisp_s_n;
 
-                        phi_c = mBphi * incDisp_ab;
+      phi_c = mBphi * incDisp_ab;
 
-                        c2n1 = c2n + CrossProduct(phi_c, c2n);
-                        c3n1 = c3n + CrossProduct(phi_c, c3n);
+      c2n1 = c2n + CrossProduct(phi_c, c2n);
+      c3n1 = c3n + CrossProduct(phi_c, c3n);
 
-            dstar = mDcrd_s - x_c - mrho2*c2n1 - mrho3*c3n1;
+      dstar = mDcrd_s - x_c - mrho2*c2n1 - mrho3*c3n1;
 
-                        slip(0) = mg1 ^ dstar;
-                        slip(1) = mg2 ^ dstar;
+      slip(0) = mg1 ^ dstar;
+      slip(1) = mg2 ^ dstar;
 
+      // slip is treated in local (curvilinear) coordinates
+      strain(0) = mGap;
+      strain(1) = slip(0);
+      strain(2) = slip(1);
+      strain(3) = mLambda;      
+      theMaterial->setTrialStrain(strain);
+	  mSlip = slip;
+    } else if (to_be_released) {
+      // prevents sliding & stabilizes behavior in lag step
+      Vector strain(4);
 
-Vector dummySlip(2);
-dummySlip.Zero();
-for (i = 0; i < 12; i++) {
-        dummySlip(0) += incDisp_ab(i) * mBs(i,0);
-        dummySlip(1) += incDisp_ab(i) * mBs(i,1);
-}
-
-for (i = 0; i < 3; i++) {
-        dummySlip(0) += incDisp_s(i) * mBs(12+i,0);
-        dummySlip(1) += incDisp_s(i) * mBs(12+i,1);
-}
-
-
-
-if ( (slip - dummySlip).Norm() > 1e-4 ) {
-#ifdef DEBUG
-        //opserr << "      slip = " << slip;
-        //opserr << " dummySlip = " << dummySlip;
-        //opserr << " ELE: " << MyTag << "      Norm = " << (slip - dummySlip).Norm()
-        //               << "      DIFF = " << (slip - dummySlip)  << endln;
-#endif
-}
-
-//slip(0) = -dummySlip(0);
-//slip(1) = -dummySlip(1);
- 
-/*
-opserr << "ELE = " << MyTag << endln;
-opserr << "mxi = " << mxi << endln;
-opserr << "mL = "  << mL  << ";" << endln;
-opserr << "mQa = [ " << mQa << " ];" << endln;
-opserr << "mQb = [ " << mQb << " ];" << endln;
-opserr << "mQc = [ " << mQc << " ];" << endln;
-opserr << "mDcrd_s = [ " << mDcrd_s << " ]';" << endln;
-opserr << "x_c  = [ " << x_c  << " ]';" endln;
-opserr << "disp_a = [ " << disp_a << " ]';" << endln;
-opserr << "disp_b = [ " << disp_b << " ]';" << endln;
-opserr << "mDisp_a_n = [ " << mDisp_a_n << " ]';" << endln;
-opserr << "mDisp_b_n = [ " << mDisp_b_n << " ]';" << endln;
-opserr << "incDisp_ab = [ "  << incDisp_ab << " ]'" << endln;
-opserr << "mrho2 = " << mrho2 << ";" << endln;
-opserr << "mrho3 = " << mrho3 << ";" << endln;
-opserr << "mn = [ " << mn << "]';" << endln;
-opserr << "mg1 = [ " << mg1 << " ]';" << endln;
-opserr << "mg2 = [ " << mg2 << " ]';" << endln;
-opserr << "phi_c = [ " << phi_c << " ]'" << endln;
-opserr << "c2n1 = [ " << c2n1 << "]'" << endln;
-opserr << "c3n1 = [ " << c3n1 << "]'" << endln;
-opserr << "dstar= [ " << dstar << " ]'" << endln;
-opserr << "mBphi = [ " << mBphi << " ]" << endln;
-opserr << "mBs = [ " << mBs << " ]" << endln;
-//opserr << "mBn = [ " << mBn << " ]" << endln;
-opserr << "slip = [ " << slip << " ]' " << endln;
-opserr << "dummySlip = [ " << dummySlip << " ]' " <<endln;
-opserr << endln; */
-
-
-            // slip is treated in local (curvilinear) coordinates
-            strain(0) = mGap;
-            strain(1) = slip(0);
-            strain(2) = slip(1);
-            strain(3) = mLambda;      
-            theMaterial->setTrialStrain(strain);
-			mSlip = slip;
-        }
-
-        else if (to_be_released) {
-                // prevents sliding & stabilizes behavior in lag step
-                        Vector strain(4);
-
-            strain(0) = mGap;
-            strain(1) = 0.0;
-            strain(2) = 0.0;
-            strain(3) = mLambda;    
-            theMaterial->setTrialStrain(strain);
-			mSlip.Zero();
-        }
-
-
+      strain(0) = mGap;
+      strain(1) = 0.0;
+      strain(2) = 0.0;
+      strain(3) = mLambda;    
+      theMaterial->setTrialStrain(strain);
+	  mSlip.Zero();
+    }
+  }
+  mInitialize = true;
 
   return 0;
 }
@@ -929,121 +875,8 @@ BeamContact3D::UpdateBase(double xi)
                 mg1 = G_metric(0,0)*g1 + G_metric(0,1)*g2;
                 mg2 = G_metric(1,0)*g1 + G_metric(1,1)*g2;
 
-/*              opserr << "ELE = " << MyTag << endln;
-                opserr << "g1 = [ " << g1 << "]" << endln;
-                opserr << "g2 = [ " << g2 << "]" << endln;
-                opserr << "mg1 = [ " << mg1 << "]" << endln;
-                opserr << "mg2 = [ " << mg2 << "]" << endln; */
-
                 return 0;
 }
-
-
-// Bn and Bs are computed at CommitState for the next step
-// this allows to only be calculated once
-/*void
-BeamContact3D::ComputeB(void)
-{
-#ifdef DEBUG
-        opserr << "BeamContact3D::ComputeB(): " << MyTag << endln;
-#endif
-
-        // vector n used below should be of same step
-
-                // initialize Bn, Bs;
-                mBn.Zero();
-                mBs.Zero();
-
-                int i, j;
-
-                Vector a1(3);
-                Vector b1(3);
-                Vector a1xn(3);
-                Vector b1xn(3);
-                Vector r(3);
-                Vector rxg1(3);
-                Vector rxg2(3);
-
-                Matrix Bx(3,12);
-
-                a1= Geta1();
-                b1 = Getb1();
-                a1xn = CrossProduct(a1, mn);
-                b1xn = CrossProduct(b1, mn);  
-
-                r(0) = mrho2*mQc(0,1) + mrho3*mQc(0,2);
-                r(1) = mrho2*mQc(1,1) + mrho3*mQc(1,2);
-                r(2) = mrho2*mQc(2,1) + mrho3*mQc(2,2);
-
-        // dgap = Bn' * dq
-        mBn(0)  = mn(0)*mH(0);
-        mBn(1)  = mn(1)*mH(0);
-        mBn(2)  = mn(2)*mH(0);
-
-                mBn(3)  = a1xn(0)*mH(1);
-        mBn(4)  = a1xn(1)*mH(1);
-        mBn(5)  = a1xn(2)*mH(1);
-
-        mBn(6)  = mn(0)*mH(2);
-        mBn(7)  = mn(1)*mH(2);
-        mBn(8)  = mn(2)*mH(2);
-
-                mBn(9)  = b1xn(0)*mH(3);
-        mBn(10) = b1xn(1)*mH(3);
-        mBn(11) = b1xn(2)*mH(3);
-
-        mBn(12) =  -mn(0);
-        mBn(13) =  -mn(1);
-        mBn(14) =  -mn(2);
-               
-                // Compute Bs in components
-                // for al = 1, 2
-                // Bs = [ -(g_n^al'*Bx + (r_n x g_n^al)'*Bphi)       g_n^al'   0'  ]
-                Bx.Zero();
-                Bx(0,0) =  mH(0);
-                Bx(1,1) =  mH(0);
-                Bx(2,2) =  mH(0);
-                Bx(1,3) = -mH(1)*mL*a1(2);
-                Bx(2,3) =  mH(1)*mL*a1(1);
-                Bx(0,4) =  mH(1)*mL*a1(2);
-                Bx(2,4) = -mH(1)*mL*a1(0);
-                Bx(0,5) = -mH(1)*mL*a1(1);
-                Bx(1,5) =  mH(1)*mL*a1(0);
-                Bx(0,6) =  mH(2);
-                Bx(1,7) =  mH(2);
-                Bx(2,8) =  mH(2);
-                Bx(1,9)  = -mH(3)*mL*b1(2);
-                Bx(2,9)  =  mH(3)*mL*b1(1);
-                Bx(0,10) =  mH(3)*mL*b1(2);
-                Bx(2,10) = -mH(3)*mL*b1(0);
-                Bx(0,11) = -mH(3)*mL*b1(1);
-                Bx(1,11) =  mH(3)*mL*b1(0);
-
-
-                // Compute Bphi using function
-                mBphi = ComputeBphi();
-               
-                // Assemble mBs
-                rxg1 = CrossProduct(r,mg1);
-                rxg2 = CrossProduct(r,mg2);
-
-
-                for (i = 0; i < 12; i++) {
-                        for (j = 0; j<3; j++) {
-                                mBs(i,0) -= mg1(j) * Bx(j,i) + rxg1(j) * mBphi(j,i);
-                                mBs(i,1) -= mg2(j) * Bx(j,i) + rxg2(j) * mBphi(j,i);
-                        }
-                }
-
-                for (j = 0; j < 3; j++) {
-                        mBs(12+j,0) = mg1(j);
-                        mBs(12+j,1) = mg2(j);
-                }
-
-        return;
-} */
-
-
 
 void
 BeamContact3D::ComputeB(void)
@@ -1446,16 +1279,6 @@ BeamContact3D::ComputeQc(double xi)
    
                 mQc = (Qc_chi * Qc_df) * mQa;
 
-/*opserr << "ELE: " << MyTag << endln;
-opserr << "xi = " << mxi << "     mchi = " << mchi << "     testchi = " << testchi << endln;
-opserr << "c1 = "  << c1;
-opserr << "temp = " << temp;
-opserr << "mQa = " << mQa;
-opserr << "mQb = " << mQb;
-opserr << "Qb_df = " << Qb_df;
-opserr << "Qc_df = " << Qc_df;
-opserr << "Qc_chi = " << Qc_chi;
-opserr << "mQc = " << mQc; */
                 return;
 }
 
@@ -1885,7 +1708,7 @@ BeamContact3D::sendSelf(int commitTag, Channel &theChannel)
         opserr << "BeamContact3D::sendSelf(int commitTag, Channel &theChannel)" << endln;
 #endif
        
-  int res;
+  int res = 0;
 
   // note: we don't check for dataTag == 0 for Element
   // objects as that is taken care of in a commit by the Domain
@@ -1895,12 +1718,13 @@ BeamContact3D::sendSelf(int commitTag, Channel &theChannel)
   // BeamContact3D packs it's data into a Vector and sends this to theChannel
   // along with it's dbTag and the commitTag passed in the arguments
 
-  static Vector data(5);
+  static Vector data(91);
   data(0) = this->getTag();
-  data(1) = BC3D_NUM_DOF;
+  data(1) = mRadius;
   data(2) = mTolGap;
-  data(3) = theMaterial->getClassTag();
-
+  data(3) = mTolForce;
+  data(4) = mIniContact;
+  data(5) = theMaterial->getClassTag();
   int matDbTag = theMaterial->getDbTag();
 
   // NOTE: we do have to ensure that the material has a database
@@ -1910,7 +1734,109 @@ BeamContact3D::sendSelf(int commitTag, Channel &theChannel)
     if (matDbTag != 0)
       theMaterial->setDbTag(matDbTag);
   }
-  data(4) = matDbTag;
+  data(6) = matDbTag;
+  data(7) = crdTransf->getClassTag();
+  int crdDbTag = crdTransf->getDbTag();
+
+  // NOTE: we do have to ensure that the material has a database
+  // tag if we are sending to a database channel.
+  if (crdDbTag == 0) {
+    crdDbTag = theChannel.getDbTag();
+    if (crdDbTag != 0)
+      crdTransf->setDbTag(crdDbTag);
+  }
+  data(8) = crdDbTag;
+  data(9)  = inContact;
+  data(10) = was_inContact;
+  data(11) = to_be_released;
+  data(12) = should_be_released;
+  data(13) = in_bounds;
+  data(14) = mGap;
+  data(15) = mLambda;
+  data(16) = mxi;
+  data(17) = mchi;
+  data(18) = mL;
+  data(19) = mrho2;
+  data(20) = mrho3;
+
+  data(21) = mH(0);
+  data(22) = mH(1);
+  data(23) = mH(2);
+  data(24) = mH(3);
+
+  data(25) = mn(0);
+  data(26) = mn(1);
+  data(27) = mn(2);
+
+  data(28) = mg1(0);
+  data(29) = mg1(1);
+  data(30) = mg1(2);
+  data(31) = mg2(0);
+  data(32) = mg2(1);
+  data(33) = mg2(2);
+  
+  data(34) = mQa(0,0);
+  data(35) = mQa(0,1);
+  data(36) = mQa(0,2);
+  data(37) = mQa(1,0);
+  data(38) = mQa(1,1);
+  data(39) = mQa(1,2);
+  data(40) = mQa(2,0);
+  data(41) = mQa(2,1);
+  data(42) = mQa(2,2);
+  
+  data(43) = mQb(0,0);
+  data(44) = mQb(0,1);
+  data(45) = mQb(0,2);
+  data(46) = mQb(1,0);
+  data(47) = mQb(1,1);
+  data(48) = mQb(1,2);
+  data(49) = mQb(2,0);
+  data(50) = mQb(2,1);
+  data(51) = mQb(2,2);
+
+  data(52) = mQc(0,0);
+  data(53) = mQc(0,1);
+  data(54) = mQc(0,2);
+  data(55) = mQc(1,0);
+  data(56) = mQc(1,1);
+  data(57) = mQc(1,2);
+  data(58) = mQc(2,0);
+  data(59) = mQc(2,1);
+  data(60) = mQc(2,2);
+
+  data(61) = mIcrd_a(0);
+  data(62) = mIcrd_a(1);
+  data(63) = mIcrd_a(2);
+  data(64) = mIcrd_b(0);
+  data(65) = mIcrd_b(1);
+  data(66) = mIcrd_b(2);
+  data(67) = mIcrd_s(0);
+  data(68) = mIcrd_s(1);
+  data(69) = mIcrd_s(2);
+
+  data(70) = mDcrd_a(0);
+  data(71) = mDcrd_a(1);
+  data(72) = mDcrd_a(2);
+  data(73) = mDcrd_b(0);
+  data(74) = mDcrd_b(1);
+  data(75) = mDcrd_b(2);
+
+  data(76) = mDisp_a_n(0);
+  data(77) = mDisp_a_n(1);
+  data(78) = mDisp_a_n(2);
+  data(79) = mDisp_a_n(3);
+  data(80) = mDisp_a_n(4);
+  data(81) = mDisp_a_n(5);
+  data(82) = mDisp_b_n(0);
+  data(83) = mDisp_b_n(1);
+  data(84) = mDisp_b_n(2);
+  data(85) = mDisp_b_n(3);
+  data(86) = mDisp_b_n(4);
+  data(87) = mDisp_b_n(5);
+  data(88) = mDisp_s_n(0);
+  data(89) = mDisp_s_n(1);
+  data(90) = mDisp_s_n(2);
 
   res = theChannel.sendVector(dataTag, commitTag, data);
   if (res < 0) {
@@ -1918,15 +1844,21 @@ BeamContact3D::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }          
 
-  // BeamContact3D then sends the tags of it's four nodes
-
+  // BeamContact3D then sends the tags of its four nodes
   res = theChannel.sendID(dataTag, commitTag, externalNodes);
   if (res < 0) {
     opserr <<"WARNING BeamContact3D::sendSelf() - " << this->getTag() << " failed to send Vector\n";
     return -2;
   }
 
-  // finally BeamContact3D asks it's material object to send itself
+  // BeamContact3D asks its crdTransf object to send itself
+  res = crdTransf->sendSelf(commitTag, theChannel);
+  if (res < 0) {
+    opserr <<"WARNING BeamContact3D::sendSelf() - " << this->getTag() << " failed to send its crdTransf\n";
+    return -4;
+  }
+
+  // BeamContact3D asks its material object to send itself
   res = theMaterial->sendSelf(commitTag, theChannel);
   if (res < 0) {
     opserr <<"WARNING BeamContact3D::sendSelf() - " << this->getTag() << " failed to send its Material\n";
@@ -1948,8 +1880,7 @@ BeamContact3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &th
 
   // BeamContact3D creates a Vector, receives the Vector and then sets the
   // internal data with the data in the Vector
-
-  static Vector data(5);
+  static Vector data(91);
   res = theChannel.recvVector(dataTag, commitTag, data);
   if (res < 0) {
     opserr <<"WARNING BeamContact3D::recvSelf() - failed to receive Vector\n";
@@ -1957,8 +1888,102 @@ BeamContact3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &th
   }          
 
   this->setTag((int)data(0));
-  // BC3D_NUM_DOF = (int)data(1);       // this must not be since BC3D_NUM_DOF is used to initialize variables and thus must not change
-  mTolGap = data(2);
+  mRadius            = data(1);
+  mTolGap            = data(2);
+  mTolForce          = data(3);
+  mIniContact        = (int)data(4);
+  inContact          = (int)data(9);
+  was_inContact      = (int)data(10);
+  to_be_released     = (int)data(11);
+  should_be_released = (int)data(12);
+  in_bounds          = (int)data(13);
+  mGap               = data(14);
+  mLambda            = data(15);
+  mxi                = data(16);
+  mchi               = data(17);
+  mL                 = data(18);
+  mrho2              = data(19);
+  mrho3              = data(20);
+
+  mH(0)              = data(21);
+  mH(1)              = data(22);
+  mH(2)              = data(23);
+  mH(3)              = data(24);
+
+  mn(0)              = data(25);
+  mn(1)              = data(26);
+  mn(2)              = data(27);
+
+  mg1(0)             = data(28);
+  mg1(1)             = data(29);
+  mg1(2)             = data(30);
+  mg2(0)             = data(31);
+  mg2(1)             = data(32);
+  mg2(2)             = data(33);
+
+  mQa(0,0)           = data(34);
+  mQa(0,1)           = data(35);
+  mQa(0,2)           = data(36);
+  mQa(1,0)           = data(37);
+  mQa(1,1)           = data(38);
+  mQa(1,2)           = data(39);
+  mQa(2,0)           = data(40);
+  mQa(2,1)           = data(41);
+  mQa(2,2)           = data(42);
+
+  mQb(0,0)           = data(43);
+  mQb(0,1)           = data(44);
+  mQb(0,2)           = data(45);
+  mQb(1,0)           = data(46);
+  mQb(1,1)           = data(47);
+  mQb(1,2)           = data(48);
+  mQb(2,0)           = data(49);
+  mQb(2,1)           = data(50);
+  mQb(2,2)           = data(51);
+
+  mQc(0,0)           = data(52);
+  mQc(0,1)           = data(53);
+  mQc(0,2)           = data(54);
+  mQc(1,0)           = data(55);
+  mQc(1,1)           = data(56);
+  mQc(1,2)           = data(57);
+  mQc(2,0)           = data(58);
+  mQc(2,1)           = data(59);
+  mQc(2,2)           = data(60);
+
+  mIcrd_a(0)         = data(61);
+  mIcrd_a(1)         = data(62);
+  mIcrd_a(2)         = data(63);
+  mIcrd_b(0)         = data(64);
+  mIcrd_b(1)         = data(65);
+  mIcrd_b(2)         = data(66);
+  mIcrd_s(0)         = data(67);
+  mIcrd_s(1)         = data(68);
+  mIcrd_s(2)         = data(69);
+
+  mDcrd_a(0)         = data(70);
+  mDcrd_a(1)         = data(71);
+  mDcrd_a(2)         = data(72);
+  mDcrd_b(0)         = data(73);
+  mDcrd_b(1)         = data(74);
+  mDcrd_b(2)         = data(75);
+
+  mDisp_a_n(0)       = data(76);
+  mDisp_a_n(1)       = data(77);
+  mDisp_a_n(2)       = data(78);
+  mDisp_a_n(3)       = data(79);
+  mDisp_a_n(4)       = data(80);
+  mDisp_a_n(5)       = data(81);
+  mDisp_b_n(0)       = data(82);
+  mDisp_b_n(1)       = data(83);
+  mDisp_b_n(2)       = data(84);
+  mDisp_b_n(3)       = data(85);
+  mDisp_b_n(4)       = data(86);
+  mDisp_b_n(5)       = data(87);
+  mDisp_s_n(0)       = data(88);
+  mDisp_s_n(1)       = data(89);
+  mDisp_s_n(2)       = data(90);
+  MyTag              = (int)data(0);
  
   // BeamContact3D now receives the tags of it's four external nodes
   res = theChannel.recvID(dataTag, commitTag, externalNodes);
@@ -1967,11 +1992,39 @@ BeamContact3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &th
     return -2;
   }
 
+  int crdClass = (int)data(7);
+  int crdDb = (int)data(8);
+  
+  // check if we have a material object already & if we do if of right type
+  if ((crdTransf == 0) || (crdTransf->getClassTag() != crdClass)) {
+    
+    // if old one .. delete it
+    if (crdTransf != 0)
+      delete crdTransf;
+    
+    // create a new material object
+    crdTransf = theBroker.getNewCrdTransf(crdClass);
+    
+    if (crdTransf == 0) {
+      opserr <<"WARNING BeamContact3D::recvSelf() - " << this->getTag()
+	     << " failed to get a blank CrdTransf of type " << crdClass << endln;
+      return -3;
+    }
+  }
+  
+  crdTransf->setDbTag(crdDb); // note: we set the dbTag before we receive the material
+  
+  res = crdTransf->recvSelf(commitTag, theChannel, theBroker);
+  if (res < 0) {
+    opserr <<"WARNING BeamContact3D::recvSelf() - "<< this->getTag() << "failed to receive its Material\n";
+    return -3;    
+  }
+
   // finally BeamContact3D creates a material object of the correct type,
   // sets its database tag and asks this new object to recveive itself.
 
-  int matClass = (int)data(3);
-  int matDb = (int)data(4);
+  int matClass = (int)data(5);
+  int matDb = (int)data(6);
 
   // check if we have a material object already & if we do if of right type
   if ((theMaterial == 0) || (theMaterial->getClassTag() != matClass)) {

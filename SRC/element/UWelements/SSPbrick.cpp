@@ -126,8 +126,7 @@ SSPbrick::SSPbrick(int tag, int Nd1, int Nd2, int Nd3, int Nd4, int Nd5, int Nd6
 	hut(8),
 	hus(8),
 	hst(8),
-	hstu(8),
-	applyLoad(0)
+	hstu(8)
 {
 	mExternalNodes(0) = Nd1;
 	mExternalNodes(1) = Nd2;
@@ -141,6 +140,8 @@ SSPbrick::SSPbrick(int tag, int Nd1, int Nd2, int Nd3, int Nd4, int Nd5, int Nd6
 	b[0] = b1;
 	b[1] = b2;
 	b[2] = b3;
+
+	applyLoad = 0;
 	
 	appliedB[0] = 0.0;
 	appliedB[1] = 0.0;
@@ -159,6 +160,8 @@ SSPbrick::SSPbrick(int tag, int Nd1, int Nd2, int Nd3, int Nd4, int Nd5, int Nd6
 		opserr << "SSPbrick::SSPbrick - failed to allocate material model pointer\n";
 		exit(-1);
 	}
+
+	mInitialize = true;
 }
 
 // null constructor
@@ -180,17 +183,24 @@ SSPbrick::SSPbrick()
 	hut(8),
 	hus(8),
 	hst(8),
-	hstu(8),
-	applyLoad(0)
+	hstu(8)
 {
+	b[0] = 0.0;
+	b[1] = 0.0;
+	b[2] = 0.0;
+
+	applyLoad = 0;
+	
+	appliedB[0] = 0.0;
+	appliedB[1] = 0.0;
+	appliedB[2] = 0.0;
+
+	mInitialize = false;
 }
 
 // destructor
 SSPbrick::~SSPbrick()
 {
-	if (theMaterial != 0) {
-        delete theMaterial;
-    }
 }
 
 int 
@@ -234,53 +244,119 @@ SSPbrick::setDomain(Domain *theDomain)
 			return;  // don't go any further - otherwise segmentation fault
 		}
 	}
-	Vector mIcrd_1(3);
-	Vector mIcrd_2(3);
-	Vector mIcrd_3(3);
-	Vector mIcrd_4(3);
-	Vector mIcrd_5(3);
-	Vector mIcrd_6(3);
-	Vector mIcrd_7(3);
-	Vector mIcrd_8(3);
+	
+	xi(0) = -0.125;
+	xi(1) =  0.125;
+	xi(2) =  0.125;
+	xi(3) = -0.125;
+	xi(4) = -0.125;
+	xi(5) =  0.125;
+	xi(6) =  0.125;
+	xi(7) = -0.125;
 
-	// initialize coordinate vectors
-	mIcrd_1 = theNodes[0]->getCrds();
-	mIcrd_2 = theNodes[1]->getCrds();
-	mIcrd_3 = theNodes[2]->getCrds();
-	mIcrd_4 = theNodes[3]->getCrds();
-	mIcrd_5 = theNodes[4]->getCrds();
-	mIcrd_6 = theNodes[5]->getCrds();
-	mIcrd_7 = theNodes[6]->getCrds();
-	mIcrd_8 = theNodes[7]->getCrds();
+	et(0) = -0.125;
+	et(1) = -0.125;
+	et(2) =  0.125;
+	et(3) =  0.125;
+	et(4) = -0.125;
+	et(5) = -0.125;
+	et(6) =  0.125;
+	et(7) =  0.125;
 
-	// initialize coordinate matrix
-	mNodeCrd(0,0) = mIcrd_1(0);
-	mNodeCrd(1,0) = mIcrd_1(1);
-	mNodeCrd(2,0) = mIcrd_1(2);
-	mNodeCrd(0,1) = mIcrd_2(0);
-	mNodeCrd(1,1) = mIcrd_2(1);
-	mNodeCrd(2,1) = mIcrd_2(2);
-	mNodeCrd(0,2) = mIcrd_3(0);
-	mNodeCrd(1,2) = mIcrd_3(1);
-	mNodeCrd(2,2) = mIcrd_3(2);
-	mNodeCrd(0,3) = mIcrd_4(0);
-	mNodeCrd(1,3) = mIcrd_4(1);
-	mNodeCrd(2,3) = mIcrd_4(2);
-	mNodeCrd(0,4) = mIcrd_5(0);
-	mNodeCrd(1,4) = mIcrd_5(1);
-	mNodeCrd(2,4) = mIcrd_5(2);
-	mNodeCrd(0,5) = mIcrd_6(0);
-	mNodeCrd(1,5) = mIcrd_6(1);
-	mNodeCrd(2,5) = mIcrd_6(2);
-	mNodeCrd(0,6) = mIcrd_7(0);
-	mNodeCrd(1,6) = mIcrd_7(1);
-	mNodeCrd(2,6) = mIcrd_7(2);
-	mNodeCrd(0,7) = mIcrd_8(0);
-	mNodeCrd(1,7) = mIcrd_8(1);
-	mNodeCrd(2,7) = mIcrd_8(2);
+	ze(0) = -0.125;
+	ze(1) = -0.125;
+	ze(2) = -0.125;
+	ze(3) = -0.125;
+	ze(4) =  0.125;
+	ze(5) =  0.125;
+	ze(6) =  0.125;
+	ze(7) =  0.125;
 
-	// establish stabilization terms (based on initial state, only need to compute once)
-	GetStab();
+	hst(0) =  0.125;
+	hst(1) = -0.125;
+	hst(2) =  0.125;
+	hst(3) = -0.125;
+	hst(4) =  0.125;
+	hst(5) = -0.125;
+	hst(6) =  0.125;
+	hst(7) = -0.125;
+
+	hut(0) =  0.125;
+	hut(1) =  0.125;
+	hut(2) = -0.125;
+	hut(3) = -0.125;
+	hut(4) = -0.125;
+	hut(5) = -0.125;
+	hut(6) =  0.125;
+	hut(7) =  0.125;
+
+	hus(0) =  0.125;
+	hus(1) = -0.125;
+	hus(2) = -0.125;
+	hus(3) =  0.125;
+	hus(4) = -0.125;
+	hus(5) =  0.125;
+	hus(6) =  0.125;
+	hus(7) = -0.125;
+
+	hstu(0) = -0.125;
+	hstu(1) =  0.125;
+	hstu(2) = -0.125;
+	hstu(3) =  0.125;
+	hstu(4) =  0.125;
+	hstu(5) = -0.125;
+	hstu(6) =  0.125;
+	hstu(7) = -0.125;
+
+	if (mInitialize) {
+		Vector mIcrd_1(3);
+    	Vector mIcrd_2(3);
+    	Vector mIcrd_3(3);
+    	Vector mIcrd_4(3);
+    	Vector mIcrd_5(3);
+    	Vector mIcrd_6(3);
+    	Vector mIcrd_7(3);
+    	Vector mIcrd_8(3);
+    
+    	// initialize coordinate vectors
+    	mIcrd_1 = theNodes[0]->getCrds();
+    	mIcrd_2 = theNodes[1]->getCrds();
+    	mIcrd_3 = theNodes[2]->getCrds();
+    	mIcrd_4 = theNodes[3]->getCrds();
+    	mIcrd_5 = theNodes[4]->getCrds();
+    	mIcrd_6 = theNodes[5]->getCrds();
+    	mIcrd_7 = theNodes[6]->getCrds();
+    	mIcrd_8 = theNodes[7]->getCrds();
+    
+    	// initialize coordinate matrix
+    	mNodeCrd(0,0) = mIcrd_1(0);
+    	mNodeCrd(1,0) = mIcrd_1(1);
+    	mNodeCrd(2,0) = mIcrd_1(2);
+    	mNodeCrd(0,1) = mIcrd_2(0);
+    	mNodeCrd(1,1) = mIcrd_2(1);
+    	mNodeCrd(2,1) = mIcrd_2(2);
+    	mNodeCrd(0,2) = mIcrd_3(0);
+    	mNodeCrd(1,2) = mIcrd_3(1);
+    	mNodeCrd(2,2) = mIcrd_3(2);
+    	mNodeCrd(0,3) = mIcrd_4(0);
+    	mNodeCrd(1,3) = mIcrd_4(1);
+    	mNodeCrd(2,3) = mIcrd_4(2);
+    	mNodeCrd(0,4) = mIcrd_5(0);
+    	mNodeCrd(1,4) = mIcrd_5(1);
+    	mNodeCrd(2,4) = mIcrd_5(2);
+    	mNodeCrd(0,5) = mIcrd_6(0);
+    	mNodeCrd(1,5) = mIcrd_6(1);
+    	mNodeCrd(2,5) = mIcrd_6(2);
+    	mNodeCrd(0,6) = mIcrd_7(0);
+    	mNodeCrd(1,6) = mIcrd_7(1);
+    	mNodeCrd(2,6) = mIcrd_7(2);
+    	mNodeCrd(0,7) = mIcrd_8(0);
+    	mNodeCrd(1,7) = mIcrd_8(1);
+    	mNodeCrd(2,7) = mIcrd_8(2);
+
+	    // establish stabilization terms (based on initial state, only need to compute once)
+	    GetStab();
+	}
 
 	// call the base-class method
 	this->DomainComponent::setDomain(theDomain);
@@ -660,35 +736,52 @@ SSPbrick::sendSelf(int commitTag, Channel &theChannel)
   
   // SSPbrick packs its data into a Vector and sends this to theChannel
   // along with its dbTag and the commitTag passed in the arguments
-  static Vector data(6);
+  static Vector data(747);
   data(0) = this->getTag();
   data(1) = b[0];
   data(2) = b[1];
   data(3) = b[2];
-  data(4) = theMaterial->getClassTag();	      
-  
-  // Now quad sends the ids of its materials
+  data(4) = mVol;
+  data(5) = theMaterial->getClassTag();
+
   int matDbTag = theMaterial->getDbTag();
-  
-  static ID idData(12);
-  
-  // NOTE: we do have to ensure that the material has a database
-  // tag if we are sending to a database channel.
+  // NOTE: we have to ensure that the material has a database tag if we are sending to a database channel
   if (matDbTag == 0) {
     matDbTag = theChannel.getDbTag();
     if (matDbTag != 0)
       theMaterial->setDbTag(matDbTag);
   }
-  data(5) = matDbTag;
+  data(6) = matDbTag;
+
+  int cnt = 7;
+  for (int i = 0; i < 20; i++) {
+      data(cnt+i) = J[i];
+  }
   
-  res += theChannel.sendVector(dataTag, commitTag, data);
+  cnt = 27;
+  for (int i = 0; i < 6; i++) {
+	  for (int j = 0; j < 24; j++) {
+		  data(cnt+j) = Bnot(i,j);
+	  }
+	  cnt = cnt+24;
+  }
+
+  cnt = 171;
+  for (int i = 0; i < 24; i++) {
+	  for (int j = 0; j < 24; j++) {
+		  data(cnt+j) = Kstab(i,j);
+	  }
+	  cnt = cnt+24;
+  }
+  
+  res = theChannel.sendVector(dataTag, commitTag, data);
   if (res < 0) {
     opserr << "WARNING SSPbrick::sendSelf() - " << this->getTag() << " failed to send Vector\n";
     return res;
   }
   
-  // SSPbrick then sends the tags of its four nodes
-  res += theChannel.sendID(dataTag, commitTag, mExternalNodes);
+  // SSPbrick then sends the tags of its eight nodes
+  res = theChannel.sendID(dataTag, commitTag, mExternalNodes);
   if (res < 0) {
     opserr << "WARNING SSPbrick::sendSelf() - " << this->getTag() << " failed to send ID\n";
     return res;
@@ -712,8 +805,8 @@ SSPbrick::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBrok
 
   	// SSPbrick creates a Vector, receives the Vector and then sets the 
   	// internal data with the data in the Vector
-  	static Vector data(6);
-  	res += theChannel.recvVector(dataTag, commitTag, data);
+  	static Vector data(747);
+  	res = theChannel.recvVector(dataTag, commitTag, data);
   	if (res < 0) {
     	opserr << "WARNING SSPbrick::recvSelf() - failed to receive Vector\n";
     	return res;
@@ -723,10 +816,31 @@ SSPbrick::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBrok
   	b[0] = data(1);
   	b[1] = data(2);
 	b[2] = data(3);
-	
+	mVol = data(4);
+
+	int cnt = 7;
+    for (int i = 0; i < 20; i++) {
+        J[i] = data(cnt+i);
+    }
+  
+    cnt = 27;
+    for (int i = 0; i < 6; i++) {
+	    for (int j = 0; j < 24; j++) {
+	  	    Bnot(i,j) = data(cnt+j);
+	    }
+	    cnt = cnt+24;
+    }
+
+    cnt = 171;
+    for (int i = 0; i < 24; i++) {
+	    for (int j = 0; j < 24; j++) {
+		    Kstab(i,j) = data(cnt+j);
+	    }
+	    cnt = cnt+24;
+    }
 
   	// SSPbrick now receives the tags of its four external nodes
-  	res += theChannel.recvID(dataTag, commitTag, mExternalNodes);
+  	res = theChannel.recvID(dataTag, commitTag, mExternalNodes);
   	if (res < 0) {
     	opserr << "WARNING SSPbrick::recvSelf() - " << this->getTag() << " failed to receive ID\n";
     	return res;
@@ -734,8 +848,8 @@ SSPbrick::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBrok
 
 	// finally, SSPbrick creates a material object of the correct type, sets its
 	// database tag, and asks this new object to receive itself
-	int matClass = (int)data(4);
-	int matDb    = (int)data(5);
+	int matClass = (int)data(5);
+	int matDb    = (int)data(6);
 
 	// check if material object exists and that it is the right type
 	if ((theMaterial == 0) || (theMaterial->getClassTag() != matClass)) {
@@ -919,69 +1033,6 @@ SSPbrick::GetStab(void)
 	Vector gut(8);
 	Vector gus(8);
 	Vector gstu(8);
-
-	xi(0) = -0.125;
-	xi(1) =  0.125;
-	xi(2) =  0.125;
-	xi(3) = -0.125;
-	xi(4) = -0.125;
-	xi(5) =  0.125;
-	xi(6) =  0.125;
-	xi(7) = -0.125;
-
-	et(0) = -0.125;
-	et(1) = -0.125;
-	et(2) =  0.125;
-	et(3) =  0.125;
-	et(4) = -0.125;
-	et(5) = -0.125;
-	et(6) =  0.125;
-	et(7) =  0.125;
-
-	ze(0) = -0.125;
-	ze(1) = -0.125;
-	ze(2) = -0.125;
-	ze(3) = -0.125;
-	ze(4) =  0.125;
-	ze(5) =  0.125;
-	ze(6) =  0.125;
-	ze(7) =  0.125;
-
-	hst(0) =  0.125;
-	hst(1) = -0.125;
-	hst(2) =  0.125;
-	hst(3) = -0.125;
-	hst(4) =  0.125;
-	hst(5) = -0.125;
-	hst(6) =  0.125;
-	hst(7) = -0.125;
-
-	hut(0) =  0.125;
-	hut(1) =  0.125;
-	hut(2) = -0.125;
-	hut(3) = -0.125;
-	hut(4) = -0.125;
-	hut(5) = -0.125;
-	hut(6) =  0.125;
-	hut(7) =  0.125;
-
-	hus(0) =  0.125;
-	hus(1) = -0.125;
-	hus(2) = -0.125;
-	hus(3) =  0.125;
-	hus(4) = -0.125;
-	hus(5) =  0.125;
-	hus(6) =  0.125;
-	hus(7) = -0.125;
-
-	hstu(0) = -0.125;
-	hstu(1) =  0.125;
-	hstu(2) = -0.125;
-	hstu(3) =  0.125;
-	hstu(4) =  0.125;
-	hstu(5) = -0.125;
-	hstu(6) =  0.125;
-	hstu(7) = -0.125;
 
 	// shape function derivatives (local crd) at center
 	dNloc(0,0) = -0.125;

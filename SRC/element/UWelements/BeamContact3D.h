@@ -150,6 +150,7 @@ class BeamContact3D : public Element
     bool to_be_released;
     bool should_be_released;
     bool in_bounds;    
+    bool mInitialize;
    
     // calculation variables
     double mxi;                 // centerline projection coordinate: 0 <= xi <= 1

@@ -32,11 +32,11 @@
 #include <ID.h>
 
 // number of nodes per element
-#define BC2D_NUM_NODE 3
+#define BC2Dp_NUM_NODE 3
 // number of dimensions
-#define BC2D_NUM_DIM  2
+#define BC2Dp_NUM_DIM  2
 // degrees of freedom per element
-#define BC2D_NUM_DOF  8
+#define BC2Dp_NUM_DOF  8
 
 class Domain;
 class Node;
@@ -110,7 +110,7 @@ class BeamContact2Dp : public Element
 	Matrix mTangentStiffness;        // tangent stiffness matrix
 	Vector mInternalForces;          // vector of internal forces
 	
-	Node *theNodes[BC2D_NUM_NODE];
+	Node *theNodes[BC2Dp_NUM_NODE];
 
 	// input quantities
 	double mLength;                  // length of beam element

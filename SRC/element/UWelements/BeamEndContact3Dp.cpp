@@ -104,16 +104,16 @@ OPS_BeamEndContact3Dp(void)
 // constructors
 BeamEndContact3Dp::BeamEndContact3Dp(int tag, int Nd1, int Nd2, int NdS, double rad, double pen, int cSwitch)
   :Element(tag,ELE_TAG_BeamEndContact3Dp),
-	mExternalNodes(BEC3_NUM_NODE),
-	mTangentStiffness(BEC3_NUM_DOF, BEC3_NUM_DOF),
-	mInternalForces(BEC3_NUM_DOF),
-	mEye1(BEC3_NUM_DIM, BEC3_NUM_DIM),
-	mIniNormal(BEC3_NUM_DIM),
-	mNormal(BEC3_NUM_DIM),
-	mIcrd_a(BEC3_NUM_DIM),
-	mIcrd_s(BEC3_NUM_DIM),
-    mDcrd_a(BEC3_NUM_DIM),
-	mDcrd_s(BEC3_NUM_DIM)
+	mExternalNodes(BEC3p_NUM_NODE),
+	mTangentStiffness(BEC3p_NUM_DOF, BEC3p_NUM_DOF),
+	mInternalForces(BEC3p_NUM_DOF),
+	mEye1(BEC3p_NUM_DIM, BEC3p_NUM_DIM),
+	mIniNormal(BEC3p_NUM_DIM),
+	mNormal(BEC3p_NUM_DIM),
+	mIcrd_a(BEC3p_NUM_DIM),
+	mIcrd_s(BEC3p_NUM_DIM),
+    mDcrd_a(BEC3p_NUM_DIM),
+	mDcrd_s(BEC3p_NUM_DIM)
 {
     mExternalNodes(0) = Nd1;
 	mExternalNodes(1) = NdS;
@@ -140,16 +140,16 @@ BeamEndContact3Dp::BeamEndContact3Dp(int tag, int Nd1, int Nd2, int NdS, double 
 
 BeamEndContact3Dp::BeamEndContact3Dp()
   :Element(0,ELE_TAG_BeamEndContact3Dp),
-	mExternalNodes(BEC3_NUM_NODE),
-	mTangentStiffness(BEC3_NUM_DOF, BEC3_NUM_DOF),
-	mInternalForces(BEC3_NUM_DOF),
-	mEye1(BEC3_NUM_DIM, BEC3_NUM_DIM),
-	mIniNormal(BEC3_NUM_DIM),
-	mNormal(BEC3_NUM_DIM),
-	mIcrd_a(BEC3_NUM_DIM),
-	mIcrd_s(BEC3_NUM_DIM),
-    mDcrd_a(BEC3_NUM_DIM),
-	mDcrd_s(BEC3_NUM_DIM)
+	mExternalNodes(BEC3p_NUM_NODE),
+	mTangentStiffness(BEC3p_NUM_DOF, BEC3p_NUM_DOF),
+	mInternalForces(BEC3p_NUM_DOF),
+	mEye1(BEC3p_NUM_DIM, BEC3p_NUM_DIM),
+	mIniNormal(BEC3p_NUM_DIM),
+	mNormal(BEC3p_NUM_DIM),
+	mIcrd_a(BEC3p_NUM_DIM),
+	mIcrd_s(BEC3p_NUM_DIM),
+    mDcrd_a(BEC3p_NUM_DIM),
+	mDcrd_s(BEC3p_NUM_DIM)
 {
 }
 
@@ -161,7 +161,7 @@ BeamEndContact3Dp::~BeamEndContact3Dp()
 int 
 BeamEndContact3Dp::getNumExternalNodes(void) const
 {
-    return BEC3_NUM_NODE;
+    return BEC3p_NUM_NODE;
 }
 
 const ID &
@@ -179,14 +179,14 @@ BeamEndContact3Dp::getNodePtrs(void)
 int 
 BeamEndContact3Dp::getNumDOF(void)
 {
-    return BEC3_NUM_DOF;
+    return BEC3p_NUM_DOF;
 }
 
 void
 BeamEndContact3Dp::setDomain(Domain *theDomain)
 {
 	double r;
-	Vector a1(BEC3_NUM_DIM);
+	Vector a1(BEC3p_NUM_DIM);
 	
 	mEye1.Zero();
 	mEye1(0,0) = 1.0;
@@ -271,9 +271,9 @@ BeamEndContact3Dp::update(void)
 // this function updates variables for an incremental step n to n+1
 {
 	Vector disp_a(6);
-	Vector rot_a(BEC3_NUM_DIM);
-    Vector omega(BEC3_NUM_DIM);
-	Matrix eMap(BEC3_NUM_DIM,BEC3_NUM_DIM);
+	Vector rot_a(BEC3p_NUM_DIM);
+    Vector omega(BEC3p_NUM_DIM);
+	Matrix eMap(BEC3p_NUM_DIM,BEC3p_NUM_DIM);
 
 	// update beam node coordinates and rotations
 	disp_a = theNodes[0]->getTrialDisp();
@@ -323,10 +323,10 @@ BeamEndContact3Dp::ExpMap(Vector th)
     double sf2;
     double sf3;
     double theta;                                  // vector norm
-    Vector theta_vec(BEC3_NUM_DIM);                // input vector
-    Matrix sk_theta(BEC3_NUM_DIM,BEC3_NUM_DIM);    // skew of vector
-    Matrix theta_theta(BEC3_NUM_DIM,BEC3_NUM_DIM); // dyadic product of vector
-    Matrix Q(BEC3_NUM_DIM,BEC3_NUM_DIM);           // Exonential Map Vector  
+    Vector theta_vec(BEC3p_NUM_DIM);                // input vector
+    Matrix sk_theta(BEC3p_NUM_DIM,BEC3p_NUM_DIM);    // skew of vector
+    Matrix theta_theta(BEC3p_NUM_DIM,BEC3p_NUM_DIM); // dyadic product of vector
+    Matrix Q(BEC3p_NUM_DIM,BEC3p_NUM_DIM);           // Exonential Map Vector  
 
 	// initialize theta variables
     Q.Zero();
@@ -369,7 +369,7 @@ Matrix
 BeamEndContact3Dp::GetSkew(Vector th)
 // this function returns the skew symmetric matrix of the given vector
 {
-	Matrix skew_th(BEC3_NUM_DIM,BEC3_NUM_DIM);
+	Matrix skew_th(BEC3p_NUM_DIM,BEC3p_NUM_DIM);
 
     skew_th(0,0) =  0.0;
     skew_th(0,1) = -th(2);
@@ -533,7 +533,7 @@ BeamEndContact3Dp::Print(OPS_Stream &s, int flag)
 {
 	opserr << "BeamEndContact3Dp, element id:  " << this->getTag() << endln;
 	opserr << "   Connected external nodes:  ";
-	for (int i = 0; i<BEC3_NUM_NODE; i++)
+	for (int i = 0; i<BEC3p_NUM_NODE; i++)
 	{
 		opserr << mExternalNodes(i) << " ";
 	}

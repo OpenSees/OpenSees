@@ -44,7 +44,7 @@ DruckerPrager(tag, ND_TAG_DruckerPrager3D, bulk, shear, s_y, r, r_bar, Kinfinity
    
 //destructor
 DruckerPrager3D :: ~DruckerPrager3D( ) 
-{ } 
+{} 
 
 
 //make a clone of this material
@@ -74,7 +74,6 @@ int DruckerPrager3D :: getOrder( ) const
 //get the strain and integrate plasticity equations
 int DruckerPrager3D :: setTrialStrain( const Vector &strain_from_element) 
 {
-	//}
 	mEpsilon = strain_from_element;
 	this->plastic_integrator( ) ;
 	return 0 ;

@@ -777,7 +777,6 @@ int
 J2Plasticity::recvSelf (int commitTag, Channel &theChannel, 
 			 FEM_ObjectBroker &theBroker)
 {
-
   // recv the vector object from the channel which defines material param and state
   static Vector data(10+9);
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {

@@ -121,12 +121,6 @@ class ContactMaterial3D : public NDMaterial
   
   //material parameters
   
-  static int matCount;
-  int matN;
-  
-  static double* frictionCoeffx;   // friction coefficient tan(phi)
-  static double* stiffnessx;       // shear stiffness of the interface
-  
   double frictionCoeff;
   double stiffness;
   double cohesion;        // interface cohesion (force)
@@ -173,7 +167,6 @@ class ContactMaterial3D : public NDMaterial
   
   Matrix tangent_matrix;  // material tangent
   
-  int MyTag;                  // material tag for debugging
 };
 
 #endif

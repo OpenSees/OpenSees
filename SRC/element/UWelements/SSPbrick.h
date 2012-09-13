@@ -119,6 +119,8 @@ class SSPbrick : public Element
 	// calculation variables
 	double J[20];                                       // jacobian determinant terms
 	double mVol;                                        // element volume
+
+	bool mInitialize;
 	
 	Matrix Bnot;                                        // mapping matrix for membrane modes
 	Matrix Kstab;                                       // stabilization stiffness matrix

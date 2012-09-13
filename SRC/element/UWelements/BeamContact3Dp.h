@@ -34,11 +34,11 @@
 #include <ID.h>
 
 // number of nodes per element
-#define BC3D_NUM_NODE 3
+#define BC3Dp_NUM_NODE 3
 // number of dimesnions
-#define BC3D_NUM_NDM  3
+#define BC3Dp_NUM_NDM  3
 // degrees of freedom per element
-#define BC3D_NUM_DOF  15
+#define BC3Dp_NUM_DOF  15
 
 class Domain;
 class Node;
@@ -127,7 +127,7 @@ class BeamContact3Dp : public Element
     Vector theVector;                                      // vector to return the residual
     Matrix mTangentStiffness;                              // Tangent Stiffness matrix
     Vector mInternalForces;                                // vector of Internal Forces
-    Node *theNodes[BC3D_NUM_NODE];
+    Node *theNodes[BC3Dp_NUM_NODE];
        
     // input quantities
     double mL;                                             // length of Beam Element            
@@ -140,6 +140,7 @@ class BeamContact3Dp : public Element
     bool inContact;
     bool was_inContact;
     bool in_bounds;    
+	bool mInitialize;
    
     // calculation variables
     double mxi;                                            // centerline projection coordinate: 0 <= xi <= 1

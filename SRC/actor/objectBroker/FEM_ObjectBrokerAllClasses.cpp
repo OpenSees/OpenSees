@@ -140,7 +140,6 @@
 
 #include <ContactMaterial2D.h>
 #include <ContactMaterial3D.h>
-#include <DruckerPrager.h>
 #include <DruckerPrager3D.h>           
 #include <DruckerPragerPlaneStrain.h>
 #include <BoundingCamClay.h>        
@@ -191,8 +190,11 @@
 #include <SSPquadUP.h>
 #include <SSPbrick.h>
 #include <SSPbrickUP.h>
+#include <BeamContact2D.h>
 #include <BeamContact2Dp.h>
+#include <BeamContact3D.h>
 #include <BeamContact3Dp.h>
+#include <BeamEndContact3D.h>
 #include <BeamEndContact3Dp.h>
 
 #include <Nine_Four_Node_QuadUP.h>
@@ -584,11 +586,20 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
 
+	case ELE_TAG_BeamContact2D:
+      return new BeamContact2D();
+
     case ELE_TAG_BeamContact2Dp:
       return new BeamContact2Dp();
 
+	case ELE_TAG_BeamContact3D:
+      return new BeamContact3D();
+
     case ELE_TAG_BeamContact3Dp:
       return new BeamContact3Dp();
+
+	case ELE_TAG_BeamEndContact3D:
+      return new BeamEndContact3D();
 
     case ELE_TAG_BeamEndContact3Dp:
       return new BeamEndContact3Dp();
@@ -1072,9 +1083,6 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_ContactMaterial3D:
     return new ContactMaterial3D();			
-
-  case ND_TAG_DruckerPrager:
-    return new DruckerPrager();			
 
   case ND_TAG_DruckerPrager3D:
     return new DruckerPrager3D();

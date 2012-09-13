@@ -66,7 +66,7 @@ Matrix J2ThreeDimensional :: tangent_matrix(6,6) ;
 //null constructor
 J2ThreeDimensional ::  J2ThreeDimensional( ) : 
 J2Plasticity( ) 
-{  }
+{ }
 
 
 //full constructor
@@ -83,7 +83,6 @@ J2ThreeDimensional(   int    tag,
   J2Plasticity( tag, ND_TAG_J2ThreeDimensional, 
 		K, G, yield0, yield_infty, d, H, viscosity, rho)
 { 
-
 }
 
 
@@ -94,14 +93,13 @@ J2ThreeDimensional(   int    tag,
                  double G ) :
 J2Plasticity( tag, ND_TAG_J2ThreeDimensional, K, G )
 { 
-
 }
 
 
 
 //destructor
 J2ThreeDimensional :: ~J2ThreeDimensional( ) 
-{ } 
+{} 
 
 
 //make a clone of this material

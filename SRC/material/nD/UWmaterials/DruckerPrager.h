@@ -74,8 +74,7 @@ class DruckerPrager : public NDMaterial
   int getResponse (int responseID, Information &matInformation);
   
   int sendSelf(int commitTag, Channel &theChannel);  
-  int recvSelf(int commitTag, Channel &theChannel, 
-	       FEM_ObjectBroker &theBroker); 
+  int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker); 
   
   void Print(OPS_Stream &s, int flag =0);
   int setParameter(const char **argv, int argc, Parameter &param);

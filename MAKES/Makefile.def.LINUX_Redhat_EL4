@@ -66,7 +66,7 @@ RELIABILITY = NO_RELIABILITY
 # any of the libraries already leave the directory location blank AND
 # remove the directory from DIRS.
 
-#  PUT YOUR HOME DIRECTOREY HERE
+#  PUT YOUR HOME DIRECTORY HERE
 # HOME  = /home/professors/pmackenz/Development
 HOME  = /home/projects/piles/Shared
 FE    = $(HOME)/OpenSees/SRC
@@ -84,6 +84,7 @@ SRCdir       = $(HOME)/OpenSees/SRC
 SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_4.1/SRC
 AMDdir       = $(HOME)/OpenSees/OTHER/AMD
 MPIdir       = /usr/lib64/openmpi/1.2.8-gcc/include/
+CSPARSEdir   = $(HOME)/OpenSees/OTHER/CSPARSE
 
 DIRS        = $(BLASdir) \
               $(CBLASdir) \
@@ -93,6 +94,7 @@ DIRS        = $(BLASdir) \
               $(UMFPACKdir) \
               $(METISdir) \
               $(SRCdir) \
+			  $(CSPARSEdir) \
               $(AMDdir)
 
 # %-------------------------------------------------------%
@@ -122,6 +124,7 @@ ARPACK_LIBRARY      = $(HOME)/lib/libArpack.a
 UMFPACK_LIBRARY     = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY       = $(HOME)/lib/libMetis.a
 AMD_LIBRARY         = $(HOME)/lib/libAMD.a
+CSPARSE_LIBRARY     = $(HOME)/lib/libcsparse.a
 
 # TCL_LIBRARY         = /usr/local/tcl/lib/libtcl8.4.so
 TCL_LIBRARY         = /usr/lib64/libtcl8.4.so /usr/lib64/libtk8.4.so
@@ -145,6 +148,7 @@ WIPE_LIBS	= $(FE_LIBRARY) \
            $(BLAS_LIBRARY) \
            $(CBLAS_LIBRARY) \
 	       $(RELIABILITY_LIBRARY) \
+		   $(CSPARSE_LIBRARY) \
            $(AMD_LIBRARY)
 
 # %---------------------------------------------------------%
@@ -273,6 +277,7 @@ MACHINE_NUMERICAL_LIBS  = -lm \
   $(CBLAS_LIBRARY) \
   $(GRAPHIC_LIBRARY)\
   $(RELIABILITY_LIBRARY)\
+  $(CSPARSE_LIBRARY) \
   $(AMD_LIBRARY)\
   -lg2c -ldl -lpng 
 

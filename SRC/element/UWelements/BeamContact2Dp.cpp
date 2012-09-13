@@ -115,26 +115,26 @@ OPS_BeamContact2Dp(void)
 BeamContact2Dp::BeamContact2Dp(int tag, int Nd1, int Nd2, int NdS, NDMaterial &theMat, double width, double pen, int cSwitch)
   :Element(tag,ELE_TAG_BeamContact2Dp),
     theMaterial(0),
-	mExternalNodes(BC2D_NUM_NODE),
-	mTangentStiffness(BC2D_NUM_DOF, BC2D_NUM_DOF),
-	mInternalForces(BC2D_NUM_DOF),
-	mEye1(BC2D_NUM_DIM, BC2D_NUM_DIM),
-	mEyeS(BC2D_NUM_DIM, BC2D_NUM_DIM),
-	mg_xi(BC2D_NUM_DIM),
-	mNormal(BC2D_NUM_DIM),
+	mExternalNodes(BC2Dp_NUM_NODE),
+	mTangentStiffness(BC2Dp_NUM_DOF, BC2Dp_NUM_DOF),
+	mInternalForces(BC2Dp_NUM_DOF),
+	mEye1(BC2Dp_NUM_DIM, BC2Dp_NUM_DIM),
+	mEyeS(BC2Dp_NUM_DIM, BC2Dp_NUM_DIM),
+	mg_xi(BC2Dp_NUM_DIM),
+	mNormal(BC2Dp_NUM_DIM),
 	mShape(4),
 	mDshape(4),
-	mBn(BC2D_NUM_DOF),
-	mBs(BC2D_NUM_DOF),
-	ma_1(BC2D_NUM_DIM),
-	mb_1(BC2D_NUM_DIM),
-	mc_1(BC2D_NUM_DIM),
-	mIcrd_a(BC2D_NUM_DIM),
-	mIcrd_b(BC2D_NUM_DIM),
-	mIcrd_s(BC2D_NUM_DIM),
-    mDcrd_a(BC2D_NUM_DIM),
-	mDcrd_b(BC2D_NUM_DIM),
-	mDcrd_s(BC2D_NUM_DIM),
+	mBn(BC2Dp_NUM_DOF),
+	mBs(BC2Dp_NUM_DOF),
+	ma_1(BC2Dp_NUM_DIM),
+	mb_1(BC2Dp_NUM_DIM),
+	mc_1(BC2Dp_NUM_DIM),
+	mIcrd_a(BC2Dp_NUM_DIM),
+	mIcrd_b(BC2Dp_NUM_DIM),
+	mIcrd_s(BC2Dp_NUM_DIM),
+    mDcrd_a(BC2Dp_NUM_DIM),
+	mDcrd_b(BC2Dp_NUM_DIM),
+	mDcrd_s(BC2Dp_NUM_DIM),
 	mDisp_a_n(3),
 	mDisp_b_n(3)
 {
@@ -180,26 +180,26 @@ BeamContact2Dp::BeamContact2Dp(int tag, int Nd1, int Nd2, int NdS, NDMaterial &t
 BeamContact2Dp::BeamContact2Dp()
   :Element(0,ELE_TAG_BeamContact2Dp),
     theMaterial(0),
-	mExternalNodes(BC2D_NUM_NODE),
-	mTangentStiffness(BC2D_NUM_DOF, BC2D_NUM_DOF),
-	mInternalForces(BC2D_NUM_DOF),
-	mEye1(BC2D_NUM_DIM, BC2D_NUM_DIM),
-	mEyeS(BC2D_NUM_DIM, BC2D_NUM_DIM),
-	mg_xi(BC2D_NUM_DIM),
-	mNormal(BC2D_NUM_DIM),
+	mExternalNodes(BC2Dp_NUM_NODE),
+	mTangentStiffness(BC2Dp_NUM_DOF, BC2Dp_NUM_DOF),
+	mInternalForces(BC2Dp_NUM_DOF),
+	mEye1(BC2Dp_NUM_DIM, BC2Dp_NUM_DIM),
+	mEyeS(BC2Dp_NUM_DIM, BC2Dp_NUM_DIM),
+	mg_xi(BC2Dp_NUM_DIM),
+	mNormal(BC2Dp_NUM_DIM),
 	mShape(4),
 	mDshape(4),
-	mBn(BC2D_NUM_DOF),
-	mBs(BC2D_NUM_DOF),
-	ma_1(BC2D_NUM_DIM),
-	mb_1(BC2D_NUM_DIM),
-	mc_1(BC2D_NUM_DIM),
-	mIcrd_a(BC2D_NUM_DIM),
-	mIcrd_b(BC2D_NUM_DIM),
-	mIcrd_s(BC2D_NUM_DIM),
-    mDcrd_a(BC2D_NUM_DIM),
-	mDcrd_b(BC2D_NUM_DIM),
-	mDcrd_s(BC2D_NUM_DIM),
+	mBn(BC2Dp_NUM_DOF),
+	mBs(BC2Dp_NUM_DOF),
+	ma_1(BC2Dp_NUM_DIM),
+	mb_1(BC2Dp_NUM_DIM),
+	mc_1(BC2Dp_NUM_DIM),
+	mIcrd_a(BC2Dp_NUM_DIM),
+	mIcrd_b(BC2Dp_NUM_DIM),
+	mIcrd_s(BC2Dp_NUM_DIM),
+    mDcrd_a(BC2Dp_NUM_DIM),
+	mDcrd_b(BC2Dp_NUM_DIM),
+	mDcrd_s(BC2Dp_NUM_DIM),
 	mDisp_a_n(3),
 	mDisp_b_n(3)
 {
@@ -216,7 +216,7 @@ BeamContact2Dp::~BeamContact2Dp()
 int 
 BeamContact2Dp::getNumExternalNodes(void) const
 {
-    return BC2D_NUM_NODE;
+    return BC2Dp_NUM_NODE;
 }
 
 const ID &
@@ -233,13 +233,13 @@ BeamContact2Dp::getNodePtrs(void)
 
 int BeamContact2Dp::getNumDOF(void)
 {
-    return BC2D_NUM_DOF;
+    return BC2Dp_NUM_DOF;
 }
 
 void
 BeamContact2Dp::setDomain(Domain *theDomain)
 {
-	Vector x_c(BC2D_NUM_DIM);
+	Vector x_c(BC2Dp_NUM_DIM);
 	
 	mEye1.Zero();
 	mEye1(0,0) = 1.0;
@@ -375,16 +375,16 @@ BeamContact2Dp::update(void)
 // this function updates variables for an incremental step n to n+1
 {
     double tensileStrength;
-	Vector a1(BC2D_NUM_DIM);
-    Vector b1(BC2D_NUM_DIM);
-	Vector a1_n(BC2D_NUM_DIM);
-    Vector b1_n(BC2D_NUM_DIM);
+	Vector a1(BC2Dp_NUM_DIM);
+    Vector b1(BC2Dp_NUM_DIM);
+	Vector a1_n(BC2Dp_NUM_DIM);
+    Vector b1_n(BC2Dp_NUM_DIM);
     Vector disp_a(3);
     Vector disp_b(3);
-    Vector disp_L(BC2D_NUM_DIM);
+    Vector disp_L(BC2Dp_NUM_DIM);
     double rot_a;
     double rot_b;
-    Vector x_c(BC2D_NUM_DIM);
+    Vector x_c(BC2Dp_NUM_DIM);
 
 	// update slave node coordinates
 	mDcrd_s = mIcrd_s + theNodes[2]->getTrialDisp();
@@ -488,11 +488,11 @@ BeamContact2Dp::Project(double xi)
 	double R;
 	double DR;
 	double dxi;
-	Vector a1(BC2D_NUM_DIM);
-    Vector b1(BC2D_NUM_DIM);
-	Vector x_c_p(BC2D_NUM_DIM);
-	Vector t_c(BC2D_NUM_DIM);
-	Vector ddx_c(BC2D_NUM_DIM);
+	Vector a1(BC2Dp_NUM_DIM);
+    Vector b1(BC2Dp_NUM_DIM);
+	Vector x_c_p(BC2Dp_NUM_DIM);
+	Vector t_c(BC2Dp_NUM_DIM);
+	Vector ddx_c(BC2Dp_NUM_DIM);
 
 	// initialize to previous projection location
 	xi_p = xi;
@@ -573,11 +573,11 @@ int
 BeamContact2Dp::UpdateBase(double xi)
 // this function computes the surface tangent vector g_xi
 {
-    Vector t_c(BC2D_NUM_DIM);
-	Vector ddx_c(BC2D_NUM_DIM);
-	Vector d_c1(BC2D_NUM_DIM);
-	Vector c_2(BC2D_NUM_DIM);
-	Vector d_c2(BC2D_NUM_DIM);
+    Vector t_c(BC2Dp_NUM_DIM);
+	Vector ddx_c(BC2Dp_NUM_DIM);
+	Vector d_c1(BC2Dp_NUM_DIM);
+	Vector c_2(BC2Dp_NUM_DIM);
+	Vector d_c2(BC2Dp_NUM_DIM);
 	
     // compute current projection tangent
 	t_c = Get_dxc_xi(xi);
@@ -614,9 +614,9 @@ BeamContact2Dp::Get_dxc_xi(double xi)
 	double dH2;
 	double dH3;
 	double dH4;
-	Vector a1(BC2D_NUM_DIM);
-	Vector b1(BC2D_NUM_DIM);
-	Vector dx(BC2D_NUM_DIM);
+	Vector a1(BC2Dp_NUM_DIM);
+	Vector b1(BC2Dp_NUM_DIM);
+	Vector dx(BC2Dp_NUM_DIM);
 
 	// first derivatives of Hermitian basis functions
     dH1 = -6.0*xi + 6.0*xi*xi;
@@ -642,9 +642,9 @@ BeamContact2Dp::Get_dxc_xixi(double xi)
 	double ddH2;
 	double ddH3;
 	double ddH4;
-	Vector a1(BC2D_NUM_DIM);
-	Vector b1(BC2D_NUM_DIM);
-	Vector ddx(BC2D_NUM_DIM);
+	Vector a1(BC2Dp_NUM_DIM);
+	Vector b1(BC2Dp_NUM_DIM);
+	Vector ddx(BC2Dp_NUM_DIM);
 	
 	// second derivatives of Hermitian basis functions
 	ddH1 = -6.0 + 12.0*xi;
@@ -670,8 +670,8 @@ BeamContact2Dp::ComputeB(void)
 	double Kb1n;
 	double Ka1g;
 	double Kb1g;
-	Vector a1(BC2D_NUM_DIM);
-	Vector b1(BC2D_NUM_DIM);
+	Vector a1(BC2Dp_NUM_DIM);
+	Vector b1(BC2Dp_NUM_DIM);
 
 	// initialize Bn and Bs
 	mBn.Zero();
@@ -742,7 +742,7 @@ Vector
 BeamContact2Dp::Geta1(void)
 // this function returns the tangent vector at node a from last converged step
 {
-	Vector a1(BC2D_NUM_DIM);
+	Vector a1(BC2Dp_NUM_DIM);
 
 	a1 = ma_1;
 
@@ -753,7 +753,7 @@ Vector
 BeamContact2Dp::Getb1(void)
 // this function returns the tangent vector at node a from last converged step
 {
-	Vector b1(BC2D_NUM_DIM);
+	Vector b1(BC2Dp_NUM_DIM);
 
 	b1 = mb_1;
 
@@ -772,8 +772,8 @@ BeamContact2Dp::getTangentStiff(void)
 		double Css = Cmat(1,1);
 		double Csn = Cmat(1,2);
 
-		for (int i = 0; i < BC2D_NUM_DOF; i++) {
-			for (int j = 0; j < BC2D_NUM_DOF; j++) {
+		for (int i = 0; i < BC2Dp_NUM_DOF; i++) {
+			for (int j = 0; j < BC2Dp_NUM_DOF; j++) {
 
 				mTangentStiffness(i,j) = mBs(i)*mBs(j)*Css - mPenalty*(Csn*mBs(i)*mBn(j) - mBn(i)*mBn(j));
 			}
@@ -955,7 +955,7 @@ BeamContact2Dp::Print(OPS_Stream &s, int flag)
 {
 	opserr << "BeamContact2Dp, element id:  " << this->getTag() << endln;
 	opserr << "   Connected external nodes:  ";
-	for (int i = 0; i<BC2D_NUM_NODE; i++)
+	for (int i = 0; i<BC2Dp_NUM_NODE; i++)
 	{
 		opserr << mExternalNodes(i) << " ";
 	}

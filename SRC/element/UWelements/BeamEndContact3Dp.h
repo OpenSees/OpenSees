@@ -32,11 +32,11 @@
 #include <ID.h>
 
 // number of nodes per element
-#define BEC3_NUM_NODE 2
+#define BEC3p_NUM_NODE 2
 // number of dimensions
-#define BEC3_NUM_DIM  3
+#define BEC3p_NUM_DIM  3
 // degrees of freedom per element
-#define BEC3_NUM_DOF  9
+#define BEC3p_NUM_DOF  9
 
 class Domain;
 class Node;
@@ -100,7 +100,7 @@ class BeamEndContact3Dp : public Element
 	Matrix mTangentStiffness;        // tangent stiffness matrix
 	Vector mInternalForces;          // vector of internal forces
 	
-	Node *theNodes[BEC3_NUM_NODE];
+	Node *theNodes[BEC3p_NUM_NODE];
 
 	// input quantities
 	int mBeamNode;                   // contains the tag of the second beam node

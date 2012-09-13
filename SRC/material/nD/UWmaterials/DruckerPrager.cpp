@@ -46,11 +46,6 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
-//#include <myDebug.h>
-#ifdef DEBUG_LEVEL
-#undef DEBUG_LEVEL
-#endif
-
 const double DruckerPrager :: one3   = 1.0 / 3.0 ;
 const double DruckerPrager :: two3   = 2.0 / 3.0 ;
 const double DruckerPrager :: root23 = sqrt( 2.0 / 3.0 ) ;
@@ -123,7 +118,7 @@ OPS_NewDruckerPragerMaterial(void)
 DruckerPrager::DruckerPrager(int tag, int classTag, double bulk, double shear, double s_y, double r,
 			                                        double r_bar, double Kinfinity, double Kinit, double d1,
 			                                        double d2, double H, double t, double mDen, double atm)
-  : NDMaterial(tag,ND_TAG_DruckerPrager),
+  : NDMaterial(tag,classTag),
     mEpsilon(6), 
     mEpsilon_n_p(6),
     mEpsilon_n1_p(6),
@@ -201,6 +196,8 @@ DruckerPrager ::DruckerPrager  ()
     mHard    =  0.0;
     mtheta   =  0.0;
 	mTo      =  0.0;
+
+	mElastFlag = 2;
 
     this->initialize();
 }
@@ -850,195 +847,136 @@ DruckerPrager::updateParameter(int responseID, Information &info)
 
 int DruckerPrager::sendSelf(int commitTag, Channel &theChannel)
 {
-	// send int data
-    static ID idData(3);
-   	idData(0) = this->getTag();
-	idData(1) = mElastFlag;   
-    idData(2) = mFlag;
-
 	int res = 0;
-	res += theChannel.sendID(this->getDbTag(), commitTag, idData);
-	if (res < 0) {
-		opserr << "WARNING: DruckerPrager - " << this->getTag() << " - failed to send ID data to channel" << endln;
-        return res;
-    }
-  
-    // send double data
-	Vector data(212);
-    data(0)  = mKref;
-    data(1)  = mGref;
-    data(2)  = mK;
-    data(3)  = mG;
-    data(4)  = msigma_y;
-    data(5)  = mrho;
-    data(6)  = mrho_bar;
-    data(7)  = mKinf;
-    data(8)  = mKo;
-    data(9)  = mdelta1;
-    data(10) = mdelta2;
-    data(11) = mHard;
-    data(12) = mtheta;
-    data(13) = massDen;
-	data(14) = mPatm;
-	data(15) = mTo;
-	data(16) = mHprime;	
-    data(17) = mAlpha1_n;
-    data(18) = mAlpha1_n1;
+
+    // place data in a vector
+	static Vector data(45);
+	data(0) = this->getTag();
+    data(1)  = mKref;
+    data(2)  = mGref;
+    data(3)  = mK;
+    data(4)  = mG;
+    data(5)  = msigma_y;
+    data(6)  = mrho;
+    data(7)  = mrho_bar;
+    data(8)  = mKinf;
+    data(9)  = mKo;
+    data(10) = mdelta1;
+    data(11) = mdelta2;
+    data(12) = mHard;
+    data(13) = mtheta;
+    data(14) = massDen;
+	data(15) = mPatm;
+	data(16) = mTo;
+	data(17) = mHprime;	
+    data(18) = mAlpha1_n;
     data(19) = mAlpha2_n;
-    data(20) = mAlpha2_n1;
+	data(20) = mElastFlag;
+	data(21) = mFlag;
 
-	// send vector data
-	int i;
-	int cnt = 21;
-	for (i = 0; i < 6; i++) data(cnt+i) = mEpsilon(i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 6; i++) data(cnt+i) = mEpsilon_n_p(i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 6; i++) data(cnt+i) = mEpsilon_n1_p(i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 6; i++) data(cnt+i) = mSigma(i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 6; i++) data(cnt+i) = mBeta_n(i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 6; i++) data(cnt+i) = mBeta_n1(i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 6; i++) data(cnt+i) = mI1(i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 5; i++) data(cnt+i) = mState(i);
-	cnt = cnt+i+1;
+	data(22) = mEpsilon(0);
+	data(23) = mEpsilon(1);
+	data(24) = mEpsilon(2);
+	data(25) = mEpsilon(3);
+	data(26) = mEpsilon(4);
+	data(27) = mEpsilon(5);
 
-	// send matrix data
-	int j;
-    for (i = 0; i < 6; j++) {
-		for (j = 0; j < 6; j++) {
-			data(cnt+j) = mCe(i,j);
-		}
-		cnt = cnt+j+1;
-	}
-	for (i = 0; i < 6; j++) {
-		for (j = 0; j < 6; j++) {
-			data(cnt+i+j) = mCep(i,j);
-		}
-		cnt = cnt+j+1;
-	}
-	for (i = 0; i < 6; j++) {
-		for (j = 0; j < 6; j++) {
-			data(cnt+i+j) = mIIvol(i,j);
-		}
-		cnt = cnt+j+1;
-	}
-	for (i = 0; i < 6; j++) {
-		for (j = 0; j < 6; j++) {
-			data(cnt+i+j) = mIIdev(i,j);
-		}
-		cnt = cnt+j+1;
-	}
-    
-	res += theChannel.sendVector(this->getDbTag(), commitTag, data);
+	data(28) = mEpsilon_n_p(0);
+	data(29) = mEpsilon_n_p(1);
+	data(30) = mEpsilon_n_p(2);
+	data(31) = mEpsilon_n_p(3);
+	data(32) = mEpsilon_n_p(4);
+	data(33) = mEpsilon_n_p(5);
+
+	data(34) = mBeta_n(0);
+	data(35) = mBeta_n(1);
+	data(36) = mBeta_n(2);
+	data(37) = mBeta_n(3);
+	data(38) = mBeta_n(4);
+	data(39) = mBeta_n(5);
+
+	data(40) = mState(0);
+	data(41) = mState(1);
+	data(42) = mState(2);
+	data(43) = mState(3);
+	data(44) = mState(4);
+	
+	res = theChannel.sendVector(this->getDbTag(), commitTag, data);
 	if (res < 0) {
-		opserr << "WARNING: DruckerPrager - " << this->getTag() << " - failed to send vector data to channel" << endln;
-		return res;
+		opserr << "WARNING: DruckerPrager::sendSelf - failed to send vector to channel" << endln;
+		return -1;
     }
     
-    return res;
+    return 0;
 }
 
 int DruckerPrager::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)    
 {
 	int res = 0;
 
-	// receive int data
-	static ID idData(3);
-	res += theChannel.recvID(this->getDbTag(), commitTag, idData);
+	// receive data
+	static Vector data(45);
+	res = theChannel.recvVector(this->getDbTag(), commitTag, data);
 	if (res < 0) {
-		opserr << "WARNING DruckerPrager - " << this->getTag() << " - could not receive ID data" << endln;
-		return res;
-	}
-	
-	// set int member variables
-	this->setTag((int)idData(0));
-	mElastFlag = idData(1);
-	mFlag = idData(2);
-
-	// receive double data
-	Vector data(212);
-	res += theChannel.recvVector(this->getDbTag(), commitTag, data);
-	if (res < 0) {
-		opserr << "WARNING: DruckerPrager - " << this->getTag() << " - could not receive vector data" << endln;
-		return res;
+		opserr << "WARNING: DruckerPrager::recvSelf - failed to receive vector from channel" << endln;
+		return -1;
 	}
 
-    // set double member variables
-	mKref      = data(0);
-    mGref      = data(1);
-    mK         = data(2);
-    mG         = data(3);
-    msigma_y   = data(4);
-    mrho       = data(5);
-    mrho_bar   = data(6);
-    mKinf      = data(7);
-    mKo        = data(8);
-    mdelta1    = data(9);
-    mdelta2    = data(10);
-    mHard      = data(11);
-    mtheta     = data(12);
-    massDen    = data(13);
-	mPatm      = data(14);
-	mTo        = data(15);
-	mHprime    = data(16);
-    mAlpha1_n  = data(17);
-    mAlpha1_n1 = data(18);
+    // set member variables
+	this->setTag((int)data(0));
+	mKref      = data(1);
+    mGref      = data(2);
+    mK         = data(3);
+    mG         = data(4);
+    msigma_y   = data(5);
+    mrho       = data(6);
+    mrho_bar   = data(7);
+    mKinf      = data(8);
+    mKo        = data(9);
+    mdelta1    = data(10);
+    mdelta2    = data(11);
+    mHard      = data(12);
+    mtheta     = data(13);
+    massDen    = data(14);
+	mPatm      = data(15);
+	mTo        = data(16);
+	mHprime    = data(17);
+    mAlpha1_n  = data(18);
     mAlpha2_n  = data(19);
-    mAlpha2_n1 = data(20);
+	mElastFlag = (int)data(20);
+	mFlag      = (int)data(21);
 
-	// set vector member variables
-	int i;
-	int cnt = 21;
-	for (i = 0; i < 6; i++) mEpsilon(i) = data(cnt+i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 6; i++) mEpsilon_n_p(i) = data(cnt+i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 6; i++) mEpsilon_n1_p(i) = data(cnt+i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 6; i++) mSigma(i) = data(cnt+i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 6; i++) mBeta_n(i) = data(cnt+i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 6; i++) mBeta_n1(i) = data(cnt+i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 6; i++) mI1(i) = data(cnt+i);
-	cnt = cnt+i+1;
-	for (i = 0; i < 5; i++) mState(i) = data(cnt+i);
-	cnt = cnt+i+1;
+	mEpsilon(0) = data(22);
+	mEpsilon(1) = data(23);
+	mEpsilon(2) = data(24);
+	mEpsilon(3) = data(25);
+	mEpsilon(4) = data(26);
+	mEpsilon(5) = data(27);
 
-	// set matrix member variables
-	int j;
-    for (i = 0; i < 6; j++) {
-		for (j = 0; j < 6; j++) {
-			mCe(i,j) = data(cnt+j);
-		}
-		cnt = cnt+j+1;
-	}
-	for (i = 0; i < 6; j++) {
-		for (j = 0; j < 6; j++) {
-			mCep(i,j) = data(cnt+i+j);
-		}
-		cnt = cnt+j+1;
-	}
-	for (i = 0; i < 6; j++) {
-		for (j = 0; j < 6; j++) {
-			mIIvol(i,j) = data(cnt+i+j);
-		}
-		cnt = cnt+j+1;
-	}
-	for (i = 0; i < 6; j++) {
-		for (j = 0; j < 6; j++) {
-			mIIdev(i,j) = data(cnt+i+j);
-		}
-		cnt = cnt+j+1;
-	}
+	mEpsilon_n_p(0) = data(28);
+	mEpsilon_n_p(1) = data(29);
+	mEpsilon_n_p(2) = data(30);
+	mEpsilon_n_p(3) = data(31);
+	mEpsilon_n_p(4) = data(32);
+	mEpsilon_n_p(5) = data(33);
 
-	return res;
+	mBeta_n(0) = data(34);
+	mBeta_n(1) = data(35);
+	mBeta_n(2) = data(36);
+	mBeta_n(3) = data(37);
+	mBeta_n(4) = data(38);
+	mBeta_n(5) = data(39);
+
+	mState(0) = data(40);
+	mState(1) = data(41);
+	mState(2) = data(42);
+	mState(3) = data(43);
+	mState(4) = data(44);
+
+	mCe  = mK*mIIvol + 2*mG*mIIdev;
+    mCep = mCe;
+
+	return 0;
 }
 
 void DruckerPrager::Print(OPS_Stream &s, int flag )
