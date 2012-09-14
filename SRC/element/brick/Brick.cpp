@@ -1825,6 +1825,14 @@ Brick::setParameter(const char **argv, int argc, Parameter &param)
   if (strcmp(argv[0],"cohesiveIntercept") == 0) {
       return param.addObject(9,this);
   }
+  // shear moduluse parameter for UW soil materials
+  if (strcmp(argv[0],"shearModulus") == 0) {
+      return param.addObject(10,this);
+  }
+  // bulk modulus parameter for UW soil materials
+  if (strcmp(argv[0],"bulkModulus") == 0) {
+      return param.addObject(11,this);
+  }
 
   if (strstr(argv[0],"material") != 0) {
 
@@ -1855,18 +1863,19 @@ int
 Brick::updateParameter(int parameterID, Information &info)
 {
 	// added: C.McGann, U.Washington
-  	int res = -1;
+    int res = -1;
 	int matRes = res;
-	if (parameterID == 1 || parameterID == 5 || parameterID == 7 || parameterID == 8 || parameterID == 9) {
-		for (int i = 0; i<8; i++) {
-			matRes = materialPointers[i]->updateParameter(parameterID, info);
-		}
+
+    if (parameterID == res) {
+        return -1;
+    } else {
+        for (int i = 0; i<8; i++) {
+            matRes = materialPointers[i]->updateParameter(parameterID, info);
+        }
 		if (matRes != -1) {
 			res = matRes;
 		}
 		return res;
-	} else {
-    	return -1;
-	}
+    }
 }
 

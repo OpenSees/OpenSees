@@ -940,6 +940,14 @@ SSPbrick::setParameter(const char **argv, int argc, Parameter &param)
 	else if (strcmp(argv[0],"cohesiveIntercept") == 0) {
 		return param.addObject(9,this);
 	}
+    // shear modulus parameter for UW soil materials
+	else if (strcmp(argv[0],"shearModulus") == 0) {
+		return param.addObject(10,this);
+	}
+    // bulk modulus parameter for UW soil materials
+	else if (strcmp(argv[0],"bulkModulus") == 0) {
+		return param.addObject(11,this);
+	}
   	// a material parameter
   	if (strstr(argv[0],"material") != 0) {
 
@@ -974,45 +982,16 @@ SSPbrick::updateParameter(int parameterID, Information &info)
 {
 	int res = -1;
 	int matRes = res;
-  	switch (parameterID) {
-    	case -1:
-      		return -1;
 
-		case 1:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-      
-		case 5:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 7:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 8:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 9:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-
-		default: 
-	  	    return -1;
-  	}
+    if (parameterID == res) {
+        return -1;
+    } else {
+        matRes = theMaterial->updateParameter(parameterID, info);
+		if (matRes != -1) {
+			res = matRes;
+		}
+		return res;
+    }    
 }
 
 void
