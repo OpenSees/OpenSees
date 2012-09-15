@@ -159,6 +159,10 @@ ElementStateParameter::sendSelf(int commitTag, Channel &theChannel)
 
   theChannel.sendID(commitTag, 0, iData);
 
+  static Vector dData(1);
+  dData(0) = currentValue;
+  theChannel.sendVector(commitTag, 0, dData);
+
   if (theEleIDs != 0)
     theChannel.sendID(commitTag, 0, *theEleIDs);
 
@@ -184,6 +188,11 @@ ElementStateParameter::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBr
   flag = iData(0);
   argc = iData(1);
   int numEle = iData(2);
+
+
+  static Vector dData(1);
+  theChannel.recvVector(commitTag, 0, dData);
+  currentValue = dData(0);
 
   fromFree = 1;
 
