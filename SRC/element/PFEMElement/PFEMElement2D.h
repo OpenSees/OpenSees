@@ -33,7 +33,7 @@
 
 #include <Matrix.h>
 #include <Vector.h>
-#include "Element.h"
+#include <Element.h>
 
 class PFEMElement2D : public Element
 {
@@ -90,6 +90,8 @@ private:
     double mu;   // viscocity
     double bx;    // body force
     double by;    // body force
+    double dNdx[3], dNdy[3];
+    double J;
 
     static Matrix K;
     static Vector P;

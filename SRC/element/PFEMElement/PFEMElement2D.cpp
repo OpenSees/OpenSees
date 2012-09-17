@@ -39,12 +39,14 @@ Vector PFEMElement2D::P(15);
 PFEMElement2D::PFEMElement2D(int tag, int nd1, int nd2, int nd3,
                              double r, double m, double b1, double b2)
     :Element(tag, ELE_TAG_PFEMElement2D), ntags(3),
-     rho(r), mu(m), bx(b1), by(b2)
+     rho(r), mu(m), bx(b1), by(b2), J(0.0)
 {
     ntags[0]=nd1; ntags[1]=nd2; ntags[2]=nd3;
     for(int i=0;i<3;i++)
     {
         nodes[i] = 0;
+        dNdx[i] = 0.0;
+        dNdy[i] = 0.0;
     }
 }
 
@@ -94,14 +96,6 @@ int PFEMElement2D::commitState()
 int
 PFEMElement2D::update()
 {
-    return 0;
-}
-
-const Matrix&
-PFEMElement2D::getMass()
-{
-    K.Zero();
-
     // get nodal coordinates 
     double x[3], y[3];
     for(int i=0; i<3; i++) {
@@ -112,10 +106,25 @@ PFEMElement2D::getMass()
     }
 
     // get Jacobi
-    double J = (x[1]-x[0])*(y[2]-y[0])-(x[2]-x[0])*(y[1]-y[0]);
-    double J2 = J/2.;
+    J = (x[1]-x[0])*(y[2]-y[0])-(x[2]-x[0])*(y[1]-y[0]);
 
     // get derivatives
+    double dndx[3] = {(y[1]-y[2])/J, (y[2]-y[0])/J, (y[0]-y[1])/J};
+    double dndy[3] = {(x[2]-x[1])/J, (x[0]-x[2])/J, (x[1]-x[0])/J};
+    for(int i=0; i<3; i++) {
+        dNdx[i] = dndx[i];
+        dNdy[i] = dndy[i];
+    }
+
+    return 0;
+}
+
+const Matrix&
+PFEMElement2D::getMass()
+{
+    K.Zero();
+
+    double J2 = J/2.;
     double pts[3][3] = {{0.5,0.5,0}, {0.5,0,0.5}, {0,0.5,0.5}};
     
     // lumped mass 
@@ -130,42 +139,12 @@ PFEMElement2D::getMass()
     return K;
 }
 
-
 const Matrix&
 PFEMElement2D::getDamp()
 {
-    this->getDampWithK();
-    for(int a=0; a<3; a++) {
-        for(int b=0; b<3; b++) {
-            K(5*a+1, 5*b+1) = K(5*a, 5*b) = 0.0; // no K
-        }
-    }
-
-
-    return K;
-}
-
-const Matrix&
-PFEMElement2D::getDampWithK()
-{
     K.Zero();
 
-    // get nodal coordinates 
-    double x[3], y[3];
-    for(int i=0; i<3; i++) {
-        const Vector& coord = nodes[i]->getCrds();
-        const Vector& disp = nodes[i]->getTrialDisp();
-        x[i] = coord[0] + disp[0];
-        y[i] = coord[1] + disp[1];
-    }
-
-    // get Jacobi
-    double J = (x[1]-x[0])*(y[2]-y[0])-(x[2]-x[0])*(y[1]-y[0]);
     double J2 = J/2.;
-
-    // get derivatives
-    double dNdx[3] = {(y[1]-y[2])/J, (y[2]-y[0])/J, (y[0]-y[1])/J};
-    double dNdy[3] = {(x[2]-x[1])/J, (x[0]-x[2])/J, (x[1]-x[0])/J};
 
     for(int a=0; a<3; a++) {
         for(int b=0; b<3; b++) {
@@ -184,23 +163,8 @@ PFEMElement2D::getTangentStiff()
 {
     K.Zero();
 
-    // get nodal coordinates 
-    double x[3], y[3];
-    for(int i=0; i<3; i++) {
-        const Vector& coord = nodes[i]->getCrds();
-        const Vector& disp = nodes[i]->getTrialDisp();
-        x[i] = coord[0] + disp[0];
-        y[i] = coord[1] + disp[1];
-    }
-
-    // get Jacobi
-    double J = (x[1]-x[0])*(y[2]-y[0])-(x[2]-x[0])*(y[1]-y[0]);
     double J2 = J/2.;
     double tau = 1./(rho/ops_Dt+8*mu/(3*4*J2));
-
-    // get derivatives
-    double dNdx[3] = {(y[1]-y[2])/J, (y[2]-y[0])/J, (y[0]-y[1])/J};
-    double dNdy[3] = {(x[2]-x[1])/J, (x[0]-x[2])/J, (x[1]-x[0])/J};
     double pts[3][3] = {{0.5,0.5,0}, {0.5,0,0.5}, {0,0.5,0.5}};
 
     for(int a=0; a<3; a++) {
@@ -244,15 +208,11 @@ PFEMElement2D::getResistingForceIncInertia()
 {
     P.Zero();
 
-    double x[3], y[3];
     Vector a(15), v(15), u(15);
     for(int i=0; i<3; i++) {
-        const Vector& coord = nodes[i]->getCrds();
         const Vector& accel = nodes[i]->getTrialAccel();
         const Vector& vel = nodes[i]->getTrialVel();
         const Vector& disp = nodes[i]->getTrialDisp();
-        x[i] = coord[0] + disp[0];
-        y[i] = coord[1] + disp[1];
         for(int j=0; j<5; j++) {
             a[5*i+j] = accel[j];
             v[5*i+j] = vel[j];
@@ -261,11 +221,10 @@ PFEMElement2D::getResistingForceIncInertia()
     }
 
     P.addMatrixVector(1.0, this->getMass(), a, 1.0);
-    P.addMatrixVector(1.0, this->getDampWithK(), v, 1.0);
+    P.addMatrixVector(1.0, this->getDamp(), v, 1.0);
     P.addMatrixVector(1.0, this->getTangentStiff(), u, 1.0);
  
     // get Jacobi
-    double J = (x[1]-x[0])*(y[2]-y[0])-(x[2]-x[0])*(y[1]-y[0]);
     double J2 = J/2.;
 
     // -F
@@ -320,7 +279,7 @@ PFEMElement2D::setDomain(Domain *domain)
             opserr<<"WARNING: wrong number of dof for node "<<ntags[i]<<" ";
             opserr<<"in PFEMElement2D - setDomain() "<<eletag<<"\n";
         }
-
+        
     }
 
 }
