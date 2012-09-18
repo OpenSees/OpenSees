@@ -228,7 +228,7 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 // #include <BandSPDLinThreadSolver.h>
 
 #include <SparseGenColLinSOE.h>
-#include <PFEMLinSOE.h>
+#include <PFEMSolver.h>
 #ifdef _THREADS
 #include <ThreadedSuperLU.h>
 #else
@@ -2435,6 +2435,10 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   }
 #endif
 
+  else if(strcmp(argv[1], "PFEM") == 0) {
+      PFEMSolver* theSolver = new PFEMSolver();
+      theSOE = new SparseGenColLinSOE(*theSolver);
+  }
 
   // SPARSE GENERAL SOE * SOLVER
   else if ((strcmp(argv[1],"SparseGeneral") == 0) || (strcmp(argv[1],"SuperLU") == 0) ||
@@ -2446,7 +2450,6 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     int npRow = 1;
     int npCol = 1;
     int np = 1;
-    bool PFEM = false;
 
     // defaults for threaded SuperLU
 
@@ -2472,9 +2475,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	if (count < argc)
 	  if (Tcl_GetInt(interp, argv[count], &npCol) != TCL_OK)
 	    return TCL_ERROR;		     
-      } else if(strcmp(argv[count],"-PFEM") == 0) {
-          PFEM = true;
-      }
+      } 
       count++;
     }
 
@@ -2519,11 +2520,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
     theSOE = new DistributedSparseGenColLinSOE(*theSolver);      
 #else
-    if(PFEM) {
-        theSOE = new PFEMLinSOE(*theSolver);      
-    } else {
-        theSOE = new SparseGenColLinSOE(*theSolver);
-    }
+    theSOE = new SparseGenColLinSOE(*theSolver);
 #endif
   }
 
