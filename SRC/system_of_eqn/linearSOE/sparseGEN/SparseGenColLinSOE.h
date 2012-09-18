@@ -83,6 +83,7 @@ class SparseGenColLinSOE : public LinearSOE
     friend class DistributedSuperLU;        
 #else
     friend class SuperLU;    
+    friend class PFEMSolver;
 #endif
 #endif
 
