@@ -34,13 +34,13 @@
 #include<LinearSOESolver.h>
 
 LinearSOE::LinearSOE(LinearSOESolver &theLinearSOESolver, int classtag)
-:MovableObject(classtag), theSolver(&theLinearSOESolver)
+    :MovableObject(classtag), theModel(0), theSolver(&theLinearSOESolver)
 {
 
 }
 
 LinearSOE::LinearSOE(int classtag)
-:MovableObject(classtag), theSolver(0)
+:MovableObject(classtag), theModel(0), theSolver(0)
 {
 
 }
@@ -89,7 +89,8 @@ LinearSOE::getSolver(void)
 int 
 LinearSOE::setLinks(AnalysisModel &theModel)
 {
-  return 0;
+    this->theModel = &theModel;
+    return 0;
 }
 
 
