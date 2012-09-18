@@ -222,10 +222,25 @@ int
 sectionDeformation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+sectionStiffness(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+sectionFlexibility(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
 sectionLocation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
 sectionWeight(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+basicDeformation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+basicForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+basicStiffness(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 // added: Chris McGann, U.Washington for initial state analysis of nDMaterials
 int
