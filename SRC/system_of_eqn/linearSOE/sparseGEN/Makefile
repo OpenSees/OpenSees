@@ -14,7 +14,7 @@ OBJS       = SparseGenColLinSOE.o \
 	DistributedSuperLU.o \
 	DistributedSparseGenColLinSOE.o \
 	DistributedSparseGenRowLinSOE.o \
-	PFEMLinSOE.o
+	PFEMSolver.o
 
 else
 
@@ -28,7 +28,7 @@ OBJS       = SparseGenColLinSOE.o \
 	DistributedSuperLU.o \
 	DistributedSparseGenColLinSOE.o \
 	DistributedSparseGenRowLinSOE.o \
-	PFEMLinSOE.o
+	PFEMSolver.o
 else
 
 OBJS       = SparseGenColLinSOE.o \
@@ -36,7 +36,7 @@ OBJS       = SparseGenColLinSOE.o \
 	SparseGenRowLinSOE.o \
 	SparseGenRowLinSolver.o \
 	SuperLU.o \
-	PFEMLinSOE.o
+	PFEMSolver.o
 endif
 endif
 
