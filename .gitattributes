@@ -3913,6 +3913,8 @@ SRC/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.h -text
 SRC/system_of_eqn/linearSOE/sparseGEN/Makefile -text
 SRC/system_of_eqn/linearSOE/sparseGEN/PFEMLinSOE.cpp -text
 SRC/system_of_eqn/linearSOE/sparseGEN/PFEMLinSOE.h -text
+SRC/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.cpp -text
+SRC/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h -text
 SRC/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSOE.cpp -text
 SRC/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSOE.h -text
 SRC/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSOE.tex -text
