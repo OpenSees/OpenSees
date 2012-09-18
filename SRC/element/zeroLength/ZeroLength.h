@@ -174,6 +174,8 @@ class ZeroLength : public Element
     static Vector ZeroLengthV4;   // class wide Vector for size 4
     static Vector ZeroLengthV6;   // class wide Vector for size 6
     static Vector ZeroLengthV12;  // class wide Vector for size 12
+
+    int mInitialize;  // tag to fix bug in recvSelf/setDomain when using database command
 };
 
 #endif

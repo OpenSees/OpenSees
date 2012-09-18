@@ -96,6 +96,9 @@ ZeroLength::ZeroLength(int tag,
 
   // establish the connected nodes and set up the transformation matrix for orientation
   this->setUp( Nd1, Nd2, x, yp);
+
+  // designate to setDomain that this is the initial construction of the element
+  mInitialize = 1;
 }
 
 
@@ -139,6 +142,9 @@ ZeroLength::ZeroLength(int tag,
 	
     // establish the connected nodes and set up the transformation matrix for orientation
     this->setUp( Nd1, Nd2, x, yp);
+
+    // designate to setDomain that this is the initial construction of the element
+    mInitialize = 1;
 }
 
 
@@ -156,6 +162,9 @@ ZeroLength::ZeroLength(void)
     // ensure the connectedExternalNode ID is of correct size 
     if (connectedExternalNodes.Size() != 2)
       opserr << "FATAL ZeroLength::ZeroLength - failed to create an ID of correct size\n";
+
+    // designate to setDomain that this is the null construction of the element
+    mInitialize = 0;
 }
 
 
@@ -335,11 +344,15 @@ ZeroLength::setDomain(Domain *theDomain)
     const Vector& vel2  = theNodes[1]->getTrialVel();
     Vector  diffV = vel2-vel1;
 
-    if (diffD != 0.0)
-      d0 = new Vector(diffD);
+    // to avoid incorrect results, do not set initial disp/vel upon call of null constructor
+    // when using database commands
+    if (mInitialize == 1) {
+      if (diffD != 0.0)
+        d0 = new Vector(diffD);
 
-    if (diffV != 0)
-      v0 = new Vector(diffV);
+      if (diffV != 0)
+        v0 = new Vector(diffV);
+    }      
 }   	 
 
 

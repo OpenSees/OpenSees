@@ -368,15 +368,71 @@ ZeroLengthContact3D::getResistingForceIncInertia()
 int
 ZeroLengthContact3D::sendSelf(int commitTag, Channel &theChannel)
 {
-   // doing nothing here
+    int res = 0;
+    int dataTag = this->getDbTag();
+
+    static Vector data(12);
+    data(0)  = this->getTag();
+    data(1)  = directionID;
+    data(2)  = Kn;
+    data(3)  = Kt;
+    data(4)  = fs;
+    data(5)  = cohesion;
+    data(6)  = ContactFlag;
+    data(7)  = gap_n;
+    data(8)  = origin(0);
+    data(9)  = origin(1);
+    data(10) = stickPt(0);
+    data(11) = stickPt(1);
+
+    res = theChannel.sendVector(dataTag, commitTag, data);
+    if (res < 0) {
+        opserr << "WARNING ZeroLengthContact3D::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+        return -1;
+    }
+
+    res = theChannel.sendID(dataTag, commitTag, connectedExternalNodes);
+    if (res < 0) {
+        opserr << "WARNING ZeroLengthContact3D::sendSelf() - " << this->getTag() << " failed to send ID\n";
+        return -1;
+    }
+
 	return 0;
 }
 
 int
 ZeroLengthContact3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-// doing nothing here
-	return 0;
+    int res;
+    int dataTag = this->getDbTag();
+
+    static Vector data(12);
+    res = theChannel.recvVector(dataTag, commitTag, data);
+    if (res < 0) {
+        opserr << "WARNING ZeroLengthContact3D::recvSelf() - failed to receive Vector\n";
+        return -1;
+    }
+
+    this->setTag((int)data(0));
+    directionID = (int)data(1);
+    Kn          = data(2);
+    Kt          = data(3);
+    fs          = data(4);
+    cohesion    = data(5);
+    ContactFlag = (int)data(6);
+    gap_n       = data(7);
+    origin(0)   = data(8);
+    origin(1)   = data(9);
+    stickPt(0)  = data(10);
+    stickPt(1)  = data(11);
+
+    res = theChannel.recvID(dataTag, commitTag, connectedExternalNodes);
+    if (res < 0) {
+        opserr << "WARNING ZeroLengthContact3D::recvSelf() - failed to receive ID\n";
+        return -1;
+    }
+
+    return 0;
 }
 
 
