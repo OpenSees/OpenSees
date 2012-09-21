@@ -39,7 +39,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386 /FORCE:MULTIPLE"
-				AdditionalDependencies="tcl.lib DoddRestrepo.lib wsock32.lib OpenGL32.lib glu32.lib handler.lib optimization.lib damage.lib fedeas.lib drain.lib reliability.lib database.lib renderer.lib blas.lib lapack.lib feap.lib arpack.lib umfpack.lib actor.lib analysis.lib cblas.lib convergence.lib domain.lib element.lib graph.lib material.lib matrix.lib modelbuilder.lib recorder.lib superLU.lib system.lib tagged.lib utility.lib tcl85.lib tk85.lib libm.lib IFCONSOL.lib LIBIFCORE.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="cssparse.lib tcl.lib DoddRestrepo.lib wsock32.lib OpenGL32.lib glu32.lib handler.lib optimization.lib damage.lib fedeas.lib drain.lib reliability.lib database.lib renderer.lib blas.lib lapack.lib feap.lib arpack.lib umfpack.lib actor.lib analysis.lib cblas.lib convergence.lib domain.lib element.lib graph.lib material.lib matrix.lib modelbuilder.lib recorder.lib superLU.lib system.lib tagged.lib utility.lib tcl85.lib tk85.lib libm.lib IFCONSOL.lib LIBIFCORE.lib odbc32.lib odbccp32.lib"
 				OutputFile=".\..\..\bin/OpenSees.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -93,7 +93,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386 /FORCE:MULTIPLE"
-				AdditionalDependencies="OpenGL32.lib wsock32.lib glu32.lib handler.lib DoddRestrepo.lib optimization.lib damage.lib tcl.lib fedeas.lib drain.lib reliability.lib database.lib renderer.lib blas.lib lapack.lib feap.lib arpack.lib umfpack.lib actor.lib analysis.lib cblas.lib convergence.lib domain.lib element.lib graph.lib material.lib matrix.lib modelbuilder.lib recorder.lib superLU.lib system.lib tagged.lib utility.lib tcl85.lib tk85.lib libm.lib ifconsol.lib libifcore.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="cssparse.lib OpenGL32.lib wsock32.lib glu32.lib handler.lib DoddRestrepo.lib optimization.lib damage.lib tcl.lib fedeas.lib drain.lib reliability.lib database.lib renderer.lib blas.lib lapack.lib feap.lib arpack.lib umfpack.lib actor.lib analysis.lib cblas.lib convergence.lib domain.lib element.lib graph.lib material.lib matrix.lib modelbuilder.lib recorder.lib superLU.lib system.lib tagged.lib utility.lib tcl85.lib tk85.lib libm.lib ifconsol.lib libifcore.lib odbc32.lib odbccp32.lib"
 				OutputFile=".\..\..\bin/OpenSees.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"

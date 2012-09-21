@@ -171,6 +171,12 @@
 				RelativePath="..\..\..\SRC\domain\domain\single\SingleDomNodIter.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\domain\domain\single\SingleDomPC_Iter.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\domain\domain\single\SingleDomPC_Iter.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\domain\domain\single\SingleDomParamIter.cpp">
 			</File>
 			<File
@@ -360,6 +366,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\domain\constraints\MP_Constraint.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\domain\constraints\Pressure_Constraint.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\domain\constraints\Pressure_Constraint.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\domain\constraints\RigidBeam.cpp">

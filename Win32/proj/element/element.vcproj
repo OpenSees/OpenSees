@@ -962,16 +962,16 @@
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\TclModelBuilderFrictionModelCommand.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.h">
-				</File>
-				<File
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDepMultiLinear.cpp">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDepMultiLinear.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.h">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelPressureDep.cpp">
@@ -1125,6 +1125,22 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\shell\ShellNL.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="pfem"
+			Filter="">
+			<File
+				RelativePath="..\..\..\SRC\element\PFEMElement\PFEMElement2D.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\PFEMElement\PFEMElement2D.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\PFEMElement\TclModelBuilder_addPFEMElement.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\PFEMElement\TclModelBuilder_addPFEMElement.h">
 			</File>
 		</Filter>
 		<File

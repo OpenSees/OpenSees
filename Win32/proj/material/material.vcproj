@@ -798,6 +798,12 @@
 			Name="nD"
 			Filter="">
 			<File
+				RelativePath="..\..\..\SRC\material\nD\BeamFiberMaterial2d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\BeamFiberMaterial2d.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClay.cpp">
 			</File>
 			<File
@@ -826,6 +832,24 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial3D.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CycLiqCP.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CycLiqCP.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CycLiqCP3D.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CycLiqCP3D.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CycLiqCPPlaneStrain.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CycLiqCPPlaneStrain.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager.cpp">
@@ -1289,6 +1313,36 @@
 				RelativePath="..\..\..\SRC\material\section\MembranePlateFiberSection.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\section\fiber\NDFiber2d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\fiber\NDFiber2d.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\fiber\NDFiber3d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\fiber\NDFiber3d.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\NDFiberSection2d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\NDFiberSection2d.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\NDFiberSection3d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\NDFiberSection3d.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\ParallelSection.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\ParallelSection.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\section\SectionAggregator.cpp">
 			</File>
 			<File
@@ -1448,6 +1502,12 @@
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\material\section\integration\RCSectionIntegration.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\material\section\integration\RCTBeamSectionIntegration.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\material\section\integration\RCTBeamSectionIntegration.h">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\material\section\integration\SectionIntegration.cpp">
