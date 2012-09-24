@@ -628,7 +628,7 @@ void DruckerPrager:: plastic_integrator( )
 			
 		dev_ep = mEpsilon_n1_p - one3*Invariant_ep*mI1;
 
-        norm_ep  = sqrt(dev_ep(0)*dev_ep(0) + dev_ep(1)*dev_ep(1) + dev_ep(2)*dev_ep(2)
+        norm_dev_ep  = sqrt(dev_ep(0)*dev_ep(0) + dev_ep(1)*dev_ep(1) + dev_ep(2)*dev_ep(2)
                      + 0.5*(dev_ep(3)*dev_ep(3) + dev_ep(4)*dev_ep(4) + dev_ep(5)*dev_ep(5)));
 
 		// update sigma
