@@ -4056,6 +4056,8 @@ Win32/proj/cblas/cblas.vcproj -text
 Win32/proj/convergence/convergence.dsp -text
 Win32/proj/convergence/convergence.mak -text
 Win32/proj/convergence/convergence.vcproj -text
+Win32/proj/cssparse/ReadMe.txt -text
+Win32/proj/cssparse/cssparse.vcproj -text
 Win32/proj/damage/damage.dsp -text
 Win32/proj/damage/damage.vcproj -text
 Win32/proj/database/database.dsp -text
