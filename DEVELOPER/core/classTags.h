@@ -105,10 +105,11 @@
 #define TSERIES_TAG_PeerMotion       11
 #define TSERIES_TAG_PeerNGAMotion       11
 
-#define PARAMETER_TAG_Parameter			1
+#define PARAMETER_TAG_Parameter			   1
 #define PARAMETER_TAG_MaterialStageParameter       2
-#define PARAMETER_TAG_MatParameter       3
-
+#define PARAMETER_TAG_MatParameter                 3
+#define PARAMETER_TAG_InitialStateParameter        4
+#define PARAMETER_TAG_ElementStateParameter        5
 
 #define MAT_TAG_ElasticMaterial			 1
 #define MAT_TAG_ElasticPPMaterial		 2
@@ -170,9 +171,11 @@
 #define MAT_TAG_HookGap 			61
 #define MAT_TAG_FRPConfinedConcrete             62
 
-#define MAT_TAG_Steel01Thermal		        62
-#define MAT_TAG_Steel02Thermal			63
-#define MAT_TAG_Concrete02Thermal		64
+#define MAT_TAG_Steel01Thermal		        63
+#define MAT_TAG_Steel02Thermal			64
+#define MAT_TAG_Concrete02Thermal		65
+#define MAT_TAG_ModIMKPinching                  66
+#define MAT_TAG_ModIMKPeakOriented              67
 
 #define MAT_TAG_WrapperUniaxialMaterial      101
 #define MAT_TAG_UniaxialJ2Plasticity         102
@@ -234,9 +237,12 @@
 #define SEC_TAG_Generic1d	                 5
 #define SEC_TAG_GenericNd	                 6
 #define SEC_TAG_Aggregator	                 7
+#define SEC_TAG_Parallel	                 77
 #define SEC_TAG_Fiber		                 8
 #define SEC_TAG_FiberSection2d		         9
+#define SEC_TAG_NDFiberSection2d		         900
 #define SEC_TAG_FiberSection3d		        10
+#define SEC_TAG_NDFiberSection3d		         1000
 #define SEC_TAG_FiberSectionGJ		        11
 #define SEC_TAG_BeamFiberSection	        12
 #define SEC_TAG_ElasticPlateSection	        13
@@ -263,25 +269,32 @@
 #define SECTION_INTEGRATION_TAG_RCT 3
 #define SECTION_INTEGRATION_TAG_RCTUM 4
 
-#define ND_TAG_WrapperNDMaterial					9
-#define ND_TAG_ElasticIsotropic					10
+#define ND_TAG_WrapperNDMaterial		9
+#define ND_TAG_ElasticIsotropic			10
 #define ND_TAG_ElasticIsotropicPlaneStrain2d	11
 #define ND_TAG_ElasticIsotropicPlaneStress2d	12
 #define ND_TAG_ElasticIsotropicAxiSymm          13
-#define ND_TAG_ElasticIsotropicPlateFiber		14
-#define ND_TAG_ElasticIsotropicBeamFiber		15
-#define ND_TAG_ElasticIsotropicBeamFiber2d		18
-#define ND_TAG_ElasticIsotropicThreeDimensional         16
+#define ND_TAG_ElasticIsotropicPlateFiber	14
+#define ND_TAG_ElasticIsotropicBeamFiber	15
+#define ND_TAG_ElasticIsotropicThreeDimensional 16
 #define ND_TAG_ElasticCrossAnisotropic3D        17
+#define ND_TAG_ElasticIsotropicBeamFiber2d	18
+#define ND_TAG_CycLiqCP3D                       19
+#define ND_TAG_CycLiqCPPlaneStrain              20
+#define ND_TAG_PressureDependentElastic3D       22
+#define ND_TAG_Damage2p 			23
+#define ND_TAG_Damage2p3D 			24
+#define ND_TAG_Damage2ppstress 			25
+
+
+
 #define ND_TAG_J2PlaneStrain                  3005
 #define ND_TAG_J2PlaneStress                  3006
 #define ND_TAG_J2AxiSymm                      3007
 #define ND_TAG_J2ThreeDimensional             3009
-#define ND_TAG_J2PlateFiber					3010
-#define ND_TAG_J2BeamFiber					3011
-#define ND_TAG_PressureDependentElastic3D       22
-#define ND_TAG_Template3Dep 			        31
-#define ND_TAG_NewTemplate3Dep 			        32
+#define ND_TAG_J2PlateFiber		      3010
+#define ND_TAG_J2BeamFiber		      3011
+
 #define ND_TAG_FluidSolidPorousMaterial        100
 #define ND_TAG_PressureDependMultiYield		101
 #define ND_TAG_PressureIndependMultiYield		102
@@ -294,6 +307,7 @@
 #define ND_TAG_PlateFiberMaterial          2001
 #define ND_TAG_PlaneStrainMaterial          2003
 #define ND_TAG_BeamFiberMaterial		2002
+#define ND_TAG_BeamFiberMaterial2d		2004
 #define ND_TAG_CompressibleFluid		3001
 #define ND_TAG_GeneralizedPlasticity 3002
 #define ND_TAG_J2Plasticity02  3003
@@ -322,8 +336,6 @@
 #define ND_TAG_ManzariDafaliasPlaneStrain       14014
 
 
-
-
 #define ND_TAG_ReinforcedConcretePlaneStress  104
 #define ND_TAG_FAReinforcedConcretePlaneStress  105
 #define ND_TAG_FAFourSteelRCPlaneStress  106
@@ -345,6 +357,8 @@
 
 #define FIBER_TAG_Uniaxial2d	1
 #define FIBER_TAG_Uniaxial3d	2
+#define FIBER_TAG_ND2d	3
+#define FIBER_TAG_ND3d	4
 
 #define BACKBONE_TAG_Capped		1
 #define BACKBONE_TAG_LinearCapped	2
@@ -483,6 +497,8 @@
 #define ELE_TAG_ForceBeamColumn3d 9879
 #define ELE_TAG_ElasticForceBeamColumn2d 98781
 #define ELE_TAG_ElasticForceBeamColumn3d 98791
+#define ELE_TAG_ForceBeamColumnCBDI2d 98782
+#define ELE_TAG_ForceBeamColumnCBDI3d 98792
 
 #define ELE_TAG_DispBeamColumn2dInt 9880
 
@@ -541,6 +557,8 @@
 #define ELE_TAG_TFP_Bearing 20
 #define ELE_TAG_TFP_Bearing2d 21
 #define ELE_TAG_TripleFrictionPendulum 777
+
+#define ELE_TAG_PFEMElement2D 2012
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
@@ -608,6 +626,7 @@
 #define CNSTRNT_TAG_MP_Joint2D          5
 #define CNSTRNT_TAG_MP_SimpleJoint2D    6
 #define CNSTRNT_TAG_MP_Joint3D          7
+#define CNSTRNT_TAG_Pressure_Constraint    8
 
 
 #define MATRIX_TAG_Matrix 	1
@@ -701,6 +720,7 @@
 #define INTEGRATOR_TAGS_TRBDF2                          34
 #define INTEGRATOR_TAGS_GeneralizedAlpha                35
 #define INTEGRATOR_TAGS_DisplacementPath                36
+#define INTEGRATOR_TAGS_FSI                             37
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2
@@ -727,6 +747,8 @@
 #define LinSOE_TAGS_MumpsSOE 23
 #define LinSOE_TAGS_MumpsParallelSOE 24
 #define LinSOE_TAGS_MPIDiagonalSOE 25
+#define LinSOE_TAGS_PFEMLinSOE 26
+#define LinSOE_TAGS_SProfileSPDLinSOE		27
 
 
 #define SOLVER_TAGS_FullGenLinLapackSolver  	1
@@ -754,6 +776,9 @@
 #define SOLVER_TAGS_MumpsSolver			      	23
 #define SOLVER_TAGS_MumpsParallelSolver			24
 #define SOLVER_TAGS_MPIDiagonalSolver 25
+#define SOLVER_TAGS_PFEMSolver 26
+#define SOLVER_TAGS_SProfileSPDLinSolver  	27
+
 
 #define RECORDER_TAGS_ElementRecorder		1
 #define RECORDER_TAGS_NodeRecorder		2
@@ -831,6 +856,8 @@
 #define SPECTRUM_constant                 2
 #define SPECTRUM_points                   3
 
+
+#define CHANNEL_TAGS_FileDatastore	  1
 
 #endif
 

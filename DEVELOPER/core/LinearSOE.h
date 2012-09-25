@@ -81,6 +81,7 @@ class LinearSOE : public MovableObject
     
   protected:
     int setSolver(LinearSOESolver &newSolver);	        
+    AnalysisModel* theModel;
     
   private:
     LinearSOESolver *theSolver;    

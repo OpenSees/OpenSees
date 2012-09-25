@@ -264,7 +264,7 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2, double Crd3)
 //  copy everything but the mass 
 //  we should really set the mass to 0.0
 Node::Node(const Node &otherNode, bool copyMass)
-:DomainComponent(otherNode.getTag(),NOD_TAG_Node), 
+  :DomainComponent(otherNode.getTag(),otherNode.getClassTag()), 
  numberDOF(otherNode.numberDOF), theDOF_GroupPtr(0),
  Crd(0), commitDisp(0), commitVel(0), commitAccel(0), 
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0),
@@ -2010,4 +2010,70 @@ Node::getResponse(NodeResponseType responseType)
     return NULL;
 
   return result;
+}
+
+void
+Node::setCrds(double Crd1)
+{
+  if (Crd != 0 && Crd->Size() >= 1)
+    (*Crd)(0) = Crd1;
+
+  // Need to "setDomain" to make the change take effect. 
+  Domain *theDomain = this->getDomain();
+  ElementIter &theElements = theDomain->getElements();
+  Element *theElement;
+  while ((theElement = theElements()) != 0) {
+    theElement->setDomain(theDomain);
+  }
+}
+
+void
+Node::setCrds(double Crd1, double Crd2)
+{
+  if (Crd != 0 && Crd->Size() >= 2) {
+    (*Crd)(0) = Crd1;
+    (*Crd)(1) = Crd2;
+
+    // Need to "setDomain" to make the change take effect. 
+    Domain *theDomain = this->getDomain();
+    ElementIter &theElements = theDomain->getElements();
+    Element *theElement;
+    while ((theElement = theElements()) != 0) {
+      theElement->setDomain(theDomain);
+    }
+  }
+}
+
+void
+Node::setCrds(double Crd1, double Crd2, double Crd3)
+{
+  if (Crd != 0 && Crd->Size() >= 3) {
+    (*Crd)(0) = Crd1;
+    (*Crd)(1) = Crd2;
+    (*Crd)(2) = Crd3;
+
+    // Need to "setDomain" to make the change take effect. 
+    Domain *theDomain = this->getDomain();
+    ElementIter &theElements = theDomain->getElements();
+    Element *theElement;
+    while ((theElement = theElements()) != 0) {
+      theElement->setDomain(theDomain);
+    }
+  }
+}
+
+void
+Node::setCrds(const Vector &newCrds) 
+{
+  if (Crd != 0 && Crd->Size() == newCrds.Size()) {
+    (*Crd) = newCrds;
+
+    // Need to "setDomain" to make the change take effect. 
+    Domain *theDomain = this->getDomain();
+    ElementIter &theElements = theDomain->getElements();
+    Element *theElement;
+    while ((theElement = theElements()) != 0) {
+      theElement->setDomain(theDomain);
+    }
+  }
 }

@@ -598,6 +598,7 @@ double Element::getCharacteristicLength(void)
   int numNodes = this->getNumExternalNodes();
   Node **theNodes = this->getNodePtrs();
   double cLength = 0.0;
+  double minSize = 10e14; //Tesser
 
   for (int i=0; i<numNodes; i++) {
     Node *nodeI = theNodes[i];
@@ -605,18 +606,20 @@ double Element::getCharacteristicLength(void)
     int iDOF = nodeI->getNumberDOF();
     for (int j=i+1; j<numNodes; j++) {
       Node *nodeJ = theNodes[j];
-      Vector jCoords = nodeI->getCrds();      
+      Vector jCoords = nodeJ->getCrds();      
       int jDOF = nodeI->getNumberDOF();
       double ijLength = 0;
       for (int k=0; k<iDOF && k<jDOF; k++) {
-	ijLength += (jCoords(i)-iCoords(i))*(jCoords(i)-iCoords(i));
+	ijLength += (jCoords(k)-iCoords(k))*(jCoords(k)-iCoords(k)); //Tesser
       }	
       ijLength = sqrt(ijLength);
       if (ijLength > cLength)
 	cLength = ijLength;
+      if (ijLength < minSize) 
+	minSize = ijLength;
     }
   }
-  return cLength;
+  return minSize;
 }
       
 

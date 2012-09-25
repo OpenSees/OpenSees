@@ -94,6 +94,8 @@ DEVELOPER/core/Message.cpp -text
 DEVELOPER/core/Message.h -text
 DEVELOPER/core/MovableObject.cpp -text
 DEVELOPER/core/MovableObject.h -text
+DEVELOPER/core/NDMaterial.cpp -text
+DEVELOPER/core/NDMaterial.h -text
 DEVELOPER/core/NodalLoad.cpp -text
 DEVELOPER/core/NodalLoad.h -text
 DEVELOPER/core/NodalLoadIter.cpp -text

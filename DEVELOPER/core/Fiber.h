@@ -47,6 +47,7 @@
 class Matrix;
 class ID;
 class UniaxialMaterial;
+class NDMaterial;
 class Information;
 class Response;
 
@@ -72,8 +73,10 @@ class Fiber : public TaggedObject, public MovableObject
     virtual int getResponse(int responseID, Information &info);
 
     virtual void getFiberLocation(double &y, double &z) =0;
-    virtual UniaxialMaterial *getMaterial(void) =0;
     virtual double getArea(void) =0;
+
+    virtual UniaxialMaterial *getMaterial(void) {return 0;}
+    virtual NDMaterial *getNDMaterial(void) {return 0;}
 
     virtual const Vector &getFiberSensitivity(int gradNumber, bool cond);
     virtual int commitSensitivity(const Vector &dedh, int gradNumber,

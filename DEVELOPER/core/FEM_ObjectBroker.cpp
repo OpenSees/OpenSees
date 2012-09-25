@@ -104,6 +104,12 @@ FEM_ObjectBroker::getNewSP(int classTag)
   return 0;
 }
 
+Pressure_Constraint *
+FEM_ObjectBroker::getNewPC(int classTag)
+{
+  return 0;
+}
+
 NodalLoad     *
 FEM_ObjectBroker::getNewNodalLoad(int classTag)
 {
