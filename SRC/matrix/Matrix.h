@@ -122,10 +122,12 @@ class Matrix
     
     // methods added by Remo
     int  Assemble(const Matrix &V, int init_row, int init_col, double fact = 1.0);
-	int  Assemble(const Vector &V, int init_row, int init_col, double fact = 1.0);
+    int  Assemble(const Vector &V, int init_row, int init_col, double fact = 1.0);
     int  AssembleTranspose(const Matrix &V, int init_row, int init_col, double fact = 1.0);
     int  AssembleTranspose(const Vector &V, int init_row, int init_col, double fact = 1.0);
     int  Extract(const Matrix &V, int init_row, int init_col, double fact = 1.0);
+
+    int Eigen3(const Matrix &M);
 
     friend OPS_Stream &operator<<(OPS_Stream &s, const Matrix &M);
     //    friend istream &operator>>(istream &s, Matrix &M);    
