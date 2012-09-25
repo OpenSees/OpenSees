@@ -137,6 +137,8 @@ SRC/analysis/integrator/TransientIntegrator.cpp
 SRC/analysis/integrator/TransientIntegrator.h
 SRC/material/uniaxial/UniaxialMaterial.cpp
 SRC/material/uniaxial/UniaxialMaterial.h
+SRC/material/nD/NDMaterial.cpp
+SRC/material/nD/NDMaterial.h
 SRC/matrix/Vector.cpp
 SRC/matrix/Vector.h
 SRC/graph/graph/Vertex.cpp
