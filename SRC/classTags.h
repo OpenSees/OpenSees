@@ -282,8 +282,10 @@
 #define ND_TAG_CycLiqCP3D                       19
 #define ND_TAG_CycLiqCPPlaneStrain              20
 #define ND_TAG_PressureDependentElastic3D       22
-#define ND_TAG_Template3Dep 			31
-#define ND_TAG_NewTemplate3Dep 			32
+#define ND_TAG_Damage2p 			23
+#define ND_TAG_Damage2p3D 			24
+#define ND_TAG_Damage2ppstress 			25
+
 
 
 #define ND_TAG_J2PlaneStrain                  3005
