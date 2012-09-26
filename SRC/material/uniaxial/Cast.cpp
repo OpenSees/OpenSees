@@ -391,9 +391,9 @@ double  epsmaxr = epsmaxrP;
   double sign = 1;
 
   if ((eps-epsr) < 0){
-	  double sign = -1;
+	  sign = -1;
   }else {
-	  double sign = 1;
+	  sign = 1;
   }
   
   // MG: Checks which quadrant we are in and then consideres post-yield stiffneing when appropriate
