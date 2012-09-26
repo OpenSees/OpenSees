@@ -18,6 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
+// $Revision: 1.7 $
+// $Date: 2009/03/05 00:52:38 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/ModIMKPeakOriented.cpp,v $
                                                                         
 // Written: Dimitrios G. Lignos, PhD, Assistant Professor, McGill University 
@@ -35,62 +37,63 @@
 
 #include <OPS_Globals.h>
 
+
 static int numModIMKPeakOrientedMaterials = 0;
 
 void *
 OPS_ModIMKPeakOriented(void)
 {
-  if (numModIMKPeakOrientedMaterials == 0) {
-    numModIMKPeakOrientedMaterials++;
-    OPS_Error("Modified Ibarra-Medina-Krawinkler Model with Peak-Oriented Hysteretic Response - D.Lignos (McGill Univeristy)\n", 1);
-  }
-  
-  // Pointer to a uniaxial material that will be returned
-  UniaxialMaterial *theMaterial = 0;
-  
-  int    iData[1];
-  double dData[23];
-  int numData = 1;
-  // Check tag
-  if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING invalid uniaxialMaterial  ModIMKPeakOriented tag" << endln;
-    return 0;
-  }
-  
-  numData = 23;
-  if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid Args want: uniaxialMaterial ModIMKPeakOriented tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?"; 
-    opserr << "Ls?, Lk?, La?, Ld?, Cs?, Ca?, Cs?, Cd?, thetaPpos?, thetaPneg?, thetaPCpos?, thetaPCneg? "; 
-    opserr << "ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?";
-    
-    return 0;	
-  }
-  
-  // Parsing was successful, allocate the material with zero index
-  theMaterial = new ModIMKPeakOriented(iData[0], 
-				       dData[0], dData[1], dData[2], dData[3],
-				       dData[4], dData[5], dData[6], dData[7],
-				       dData[8], dData[9], dData[10], dData[11],
-				       dData[12], dData[13], dData[14], dData[15],
-				       dData[16], dData[17], dData[18], dData[19],
-				       dData[20], dData[21], dData[22]);
-  
-  if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial of type ModIMKPeakOriented Material\n";
-    return 0;
-  }
-  
+	if (numModIMKPeakOrientedMaterials == 0) {
+		numModIMKPeakOrientedMaterials++;
+		OPS_Error("Modified Ibarra-Medina-Krawinkler Model with Peak-Oriented Hysteretic Response\n", 1);
+	}
+	
+	// Pointer to a uniaxial material that will be returned
+	UniaxialMaterial *theMaterial = 0;
+	
+	int    iData[1];
+	double dData[23];
+	int numData = 1;
+	// Check tag
+	if (OPS_GetIntInput(&numData, iData) != 0) {
+		opserr << "WARNING invalid uniaxialMaterial  ModIMKPeakOriented tag" << endln;
+		return 0;
+	}
+	
+	numData = 23;
+	if (OPS_GetDoubleInput(&numData, dData) != 0) {
+		opserr << "Invalid Args want: uniaxialMaterial ModIMKPeakOriented tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?"; 
+		opserr << "Ls?, Ld?, La?, Lk?, Cs?, Cd?, Ca?, Ck?, thetaPpos?, thetaPneg?, thetaPCpos?, thetaPCneg? "; 
+		opserr << "ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?";
+		
+		return 0;	
+	}
+	
+	// Parsing was successful, allocate the material with zero index
+	theMaterial = new ModIMKPeakOriented(iData[0], 
+							dData[0], dData[1], dData[2], dData[3],
+							dData[4], dData[5], dData[6], dData[7],
+							dData[8], dData[9], dData[10], dData[11],
+							dData[12], dData[13], dData[14], dData[15],
+						    dData[16], dData[17], dData[18], dData[19],
+							dData[20], dData[21], dData[22]);
+	
+	if (theMaterial == 0) {
+		opserr << "WARNING could not create uniaxialMaterial of type ModIMKPeakOriented Material\n";
+		return 0;
+	}
+
   return theMaterial;
 }
 
 
 ModIMKPeakOriented::ModIMKPeakOriented(int tag, double ke, double alfaPos, double alfaNeg, double my_pos, double my_neg, 
-									   double ls, double lk, double la, double ld, double cs, double ck, double ca, double cc,
+									   double ls, double ld, double la, double lk, double cs, double cd, double ca, double ck,
 									   double thetaPpos, double thetaPneg, double thetaPCpos, double thetaPCneg,
 									   double resfacPos, double resfacNeg, double fracDispPos, double fracDispNeg,
 									   double dPos, double dNeg)
 :UniaxialMaterial(tag,MAT_TAG_ModIMKPeakOriented), Ke(ke), AlfaPos(alfaPos), AlfaNeg(alfaNeg), My_pos(my_pos), My_neg(my_neg), 
-			      Ls(ls), Lk(lk), La(la), Ld(ld), Cs(cs), Ck(ck), Ca(ca), Cc(cc),ThetaPpos(thetaPpos), ThetaPneg(thetaPneg), 
+			      Ls(ls), Ld(ld), La(la), Lk(lk), Cs(cs), Cd(cd), Ca(ca), Ck(ck),ThetaPpos(thetaPpos), ThetaPneg(thetaPneg), 
                   ThetaPCpos(thetaPCpos), ThetaPCneg(thetaPCneg), ResfacPos(resfacPos), ResfacNeg(resfacNeg), 
                   FracDispPos(fracDispPos), FracDispNeg(fracDispNeg),DPos(dPos), DNeg(dNeg)
 {
@@ -101,8 +104,8 @@ ModIMKPeakOriented::ModIMKPeakOriented(int tag, double ke, double alfaPos, doubl
 
 ModIMKPeakOriented::ModIMKPeakOriented()
 :UniaxialMaterial(0,MAT_TAG_ModIMKPeakOriented),
-Ke(0.0), AlfaPos(0.0), AlfaNeg(0.0), My_pos(0.0), My_neg(0.0), Ls(0.0), Lk(0.0), La(0.0), Ld(0.0), 
-Cs(0.0), Ck(0.0), Ca(0.0), Cc(0.0), ThetaPpos(0.0), ThetaPneg(0.0), 
+Ke(0.0), AlfaPos(0.0), AlfaNeg(0.0), My_pos(0.0), My_neg(0.0), Ls(0.0), Ld(0.0), La(0.0), Lk(0.0), 
+Cs(0.0), Cd(0.0), Ca(0.0), Ck(0.0), ThetaPpos(0.0), ThetaPneg(0.0), 
 ThetaPCpos(0.0), ThetaPCneg(0.0), ResfacPos(0.0), ResfacNeg(0.0), 
 FracDispPos(0.0), FracDispNeg(0.0), DPos(0.0), DNeg(0.0)
 {
@@ -137,7 +140,7 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 	
 	// Reference Energy Capacity based on Lignos (2008)
 		Enrgts = Ls * My_pos;
-		Enrgtk = Lk * My_pos;
+		Enrgtk = 2.0 * Lk * My_pos;
 		Enrgta = La * My_pos;
 		Enrgtd = Ld * My_pos;
 	
@@ -189,6 +192,8 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 		f = 0.0;
 	
 		Unl = 1;
+		
+		RSE = 0.0;
 	
 		if(deltaD >= 0.0){
 			kon = 1;
@@ -206,7 +211,7 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 				kon = 1;	
 				Unl = 0;
 				
-				double RSE = 0.5 * fP * fP / ekunload;
+				RSE = 0.5 * fP * fP / ekunload;
 				double a2 = Enrgtk-(Enrgtot-RSE);
 				double betak;
 					
@@ -320,7 +325,7 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 				kon = 2;
 				Unl = 0;
 		
-				double RSE = 0.5 * fP * fP/ekunload;						
+				RSE = 0.5 * fP * fP/ekunload;						
 				double a2 = Enrgtk-(Enrgtot-RSE);
 					
 					
@@ -425,11 +430,12 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 			
 		double Enrgi = 0.0;
 			
-		if (Ls!=0.0 && Lk!=0.0 && La!=0.0 && Ld != 0.0) {
+		//if (Ls!=0.0 && Lk!=0.0 && La!=0.0 && Ld != 0.0) {
 			Enrgi = 0.5 * (f+fP) * deltaD;
 			Enrgc = Enrgc + Enrgi;
 			Enrgtot = Enrgtot + Enrgi;
-		}
+		    RSE = 0.5*f*f/ekunload;
+		//} 
 			
 	//	UPDATING OF DETERIORATION PARAMETERS ----------------------------
 			
@@ -452,12 +458,19 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 				
 			if(Ls != 0.0){
 				betas = pow(Enrgc/(Enrgts-Enrgtot),Cs);  	
+			} else {
+				betas = 0.0;
 			}
+			
 			if(La != 0.0){
 				betaa = pow(Enrgc/(Enrgta-Enrgtot),Ca);
+			} else {
+				betaa = 0.0;
 			}
 			if(Ld != 0.0){
-				betac = pow(Enrgc/(Enrgtd-Enrgtot),Cs);
+				betac = pow(Enrgc/(Enrgtd-Enrgtot),Cd);
+			} else {
+				betac = 0.0;
 			}
 			if(fabs(betas) >= 1.0) {
 				betas = 1.0;
@@ -477,9 +490,9 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 			
 		if(deltaD > 0.0 && f > 0.0 || deltaD < 0.0 && f >=0.0 && d <=sp) {
 					
-			fyNeg = fyNeg*(1.0-betas);			
-			AlfaNeg=AlfaNeg*(1.0-betas);			
-			fCapRefNeg=fCapRefNeg*(1.0-betac);
+			fyNeg = fyNeg*(1.0-betas*DNeg);			
+			AlfaNeg=AlfaNeg*(1.0-betas*DNeg);			
+			fCapRefNeg=fCapRefNeg*(1.0-betac*DNeg);
 			dmin = dmin*(1.0+betaa);
 			
 			double dyNeg = fyNeg/Ke;
@@ -498,9 +511,9 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 				
 		} else if (deltaD < 0.0 && f < 0.0 || deltaD > 0.0 && f <=0.0 && d >= sn) {
 			
-			fyPos = fyPos*(1.0-betas);
-			AlfaPos=AlfaPos*(1.0-betas);
-			fCapRefPos=fCapRefPos*(1.0-betac);
+			fyPos = fyPos*(1.0-betas*DPos);
+			AlfaPos=AlfaPos*(1.0-betas*DPos);
+			fCapRefPos=fCapRefPos*(1.0-betac*DPos);
 			dmax = dmax*(1.0+betaa);	
 				
 			double dyPos = fyPos/Ke;
@@ -527,6 +540,7 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 	dP = d;
 	fP = f;
 	ekP = ek;
+	Tangent = ek;
 	
     return 0;
 }
@@ -622,7 +636,8 @@ int ModIMKPeakOriented::commitState(void)
 	Cekexcurs = ekexcurs;
 	CekP = ekP;
 	Cflagdeg = flagdeg;
-	
+	CRSE=RSE; 
+
 	return 0;
 }
 
@@ -685,7 +700,8 @@ int ModIMKPeakOriented::revertToLastCommit(void)
 	ekexcurs = Cekexcurs;
 	ekP = CekP;
 	flagdeg = Cflagdeg;
-	
+	RSE=CRSE; 
+
     return 0;
 }
 
@@ -696,7 +712,8 @@ int ModIMKPeakOriented::revertToStart(void)
 	dP = 0.0;
 	fP = 0.0;
 	ek = Ke;
-	
+	RSE=CRSE=0.0; 
+
 	Unl = 1;
 	kon = 0;
 	flagStop = 0;
@@ -724,7 +741,7 @@ int ModIMKPeakOriented::revertToStart(void)
 		
 	Enrgts = Ls * My_pos;
 	Enrgtd = Ld * My_pos;
-	Enrgtk = Lk * My_pos;
+	Enrgtk = 2.0 * Lk * My_pos;
 	Enrgta = La * My_pos;
 
 	fPeakPos = My_pos + ekhardPos * ThetaPpos;
@@ -783,7 +800,7 @@ int ModIMKPeakOriented::revertToStart(void)
 	
 	CEnrgts = Ls * My_pos;
 	CEnrgtd = Ld * My_pos;
-	CEnrgtk = Lk * My_pos;
+	CEnrgtk = 2.0 * Lk * My_pos;
 	CEnrgta = La * My_pos;
 	
 	CfPeakPos = My_pos + ekhardPos * ThetaPpos;
@@ -813,8 +830,8 @@ int ModIMKPeakOriented::revertToStart(void)
 UniaxialMaterial *
 ModIMKPeakOriented::getCopy(void)
 {
-    ModIMKPeakOriented *theCopy = new ModIMKPeakOriented(this->getTag(), Ke, AlfaPos, AlfaNeg, My_pos, My_neg, Ls, Lk, La, Ld, 
-														 Cs, Ca, Cs, Cc, ThetaPpos, ThetaPneg,ThetaPCpos, ThetaPCneg, ResfacPos, ResfacNeg,FracDispPos, FracDispNeg,DPos, DNeg);
+    ModIMKPeakOriented *theCopy = new ModIMKPeakOriented(this->getTag(), Ke, AlfaPos, AlfaNeg, My_pos, My_neg, Ls, Ld, La, Lk, 
+														 Cs, Cd, Ca, Ck, ThetaPpos, ThetaPneg,ThetaPCpos, ThetaPCneg, ResfacPos, ResfacNeg,FracDispPos, FracDispNeg,DPos, DNeg);
     // Converged state variables
 	theCopy->Cstrain = Cstrain;
 	theCopy->Cstress = Cstress;
@@ -926,6 +943,9 @@ ModIMKPeakOriented::getCopy(void)
 	theCopy->ekhardNeg = ekhardNeg;
 	theCopy->ekexcurs = ekexcurs;
 	theCopy->ekP = ekP;
+
+	theCopy->RSE=RSE;
+	theCopy->CRSE=CRSE; 
 	
     return theCopy;
 }
@@ -934,7 +954,7 @@ int
 ModIMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(65);
+  static Vector data(67);
     data(0) = this->getTag();
 
   // Material properties
@@ -944,13 +964,13 @@ ModIMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
     data(4) = My_pos;
     data(5) = My_neg;
 	data(6) = Ls;
-	data(7) = Lk;
+	data(7) = Ld;
 	data(8) = La;
-	data(9) = Ld;
+	data(9) = Lk;
 	data(10) = Cs;
-	data(11) = Ca;
-	data(12) = Ck;
-	data(13) = Cc;
+	data(11) = Cd;
+	data(12) = Ca;
+	data(13) = Ck;
 	data(14) = ThetaPpos;
 	data(15) = ThetaPneg;
 	data(16) = ThetaPCpos;
@@ -1021,6 +1041,9 @@ ModIMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
 	data(63) = CflstNeg;
 	data(64) = Cflagdeg;
 	
+	data(65) = RSE;
+	data(66) = CRSE;
+	
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
     opserr << "ModIMKPeakOriented::sendSelf() - failed to send data\n";
@@ -1033,7 +1056,7 @@ ModIMKPeakOriented::recvSelf(int cTag, Channel &theChannel,
 			       FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(65);
+  static Vector data(67);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
@@ -1049,13 +1072,13 @@ ModIMKPeakOriented::recvSelf(int cTag, Channel &theChannel,
       My_pos = data(4);
 	  My_neg = data(5);
 	  Ls = data(6);
-	  Lk = data(7);
+	  Ld = data(7);
 	  La = data(8);
-	  Ld = data(9);
+	  Lk = data(9);
 	  Cs = data(10);
-	  Ca = data(11);
-	  Ck = data(12);
-	  Cc = data(13);
+	  Cd = data(11);
+	  Ca = data(12);
+	  Ck = data(13);
 	  ThetaPpos = data(14);
 	  ThetaPneg = data(15);
 	  ThetaPCpos = data(16);
@@ -1124,6 +1147,8 @@ ModIMKPeakOriented::recvSelf(int cTag, Channel &theChannel,
 	  CflstPos = data(62);
 	  CflstNeg = data(63);
 	  Cflagdeg = data(64);
+	  RSE = data(65);
+	  CRSE = data(66);
   }
     
   return res;
@@ -1139,13 +1164,13 @@ ModIMKPeakOriented::Print(OPS_Stream &s, int flag)
     s << "  My_pos: " << My_pos << endln;
 	s << "  My_neg: " << My_neg << endln;
 	s << "  Ls: " << Ls << endln;
-	s << "  Lk: " << Lk << endln;
-	s << "  La: " << La << endln;
 	s << "  Ld: " << Ld << endln;
+	s << "  La: " << La << endln;
+	s << "  Lk: " << Lk << endln;
 	s << "  Cs: " << Cs << endln;
+	s << "  Cd: " << Cd << endln;
 	s << "  Ca: " << Ca << endln;
 	s << "  Ck: " << Ck << endln;
-	s << "  Cc: " << Cc << endln;
 	s << "  ThetaPpos: " << ThetaPpos << endln;
 	s << "  ThetaPneg: " << ThetaPneg << endln;
 	s << "  ThetaPCpos: " << ThetaPCpos << endln;

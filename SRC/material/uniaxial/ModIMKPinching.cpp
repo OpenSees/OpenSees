@@ -42,57 +42,57 @@ static int numModIMKPinchingMaterials = 0;
 void *
 OPS_ModIMKPinching(void)
 {
-  if (numModIMKPinchingMaterials == 0) {
-    numModIMKPinchingMaterials++;
-    OPS_Error("Modified Ibarra-Medina-Krawinkler Model with Pinched Hysteretic Response - D.Lignos McGill Univeristy\n", 1);
-  }
-  
-  // Pointer to a uniaxial material that will be returned
-  UniaxialMaterial *theMaterial = 0;
-  
-  int    iData[1];
-  double dData[26];
-  int numData = 1;
-  // Check tag
-  if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING invalid uniaxialMaterial  ModIMKPinching tag" << endln;
-    return 0;
-  }
-  
-  numData = 26;
-  if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid Args want: uniaxialMaterial ModIMKPinching tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?"; 
-    opserr << "FprPos?, FprNeg?, A_pinch?, Ls?, Lk?, La?, Ld?, Cs?, Ca?, Cs?, Cd?, thetaPpos?, thetaPneg?"; 
-    opserr << "thetaPCpos?, thetaPCneg?, ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?";
-    
-    return 0;	
-  }
-  
-  // Parsing was successful, allocate the material with zero index
-  theMaterial = new ModIMKPinching(iData[0], 
-				   dData[0], dData[1], dData[2], dData[3],
-				   dData[4], dData[5], dData[6], dData[7],
-				   dData[8], dData[9], dData[10], dData[11],
-				   dData[12], dData[13], dData[14], dData[15],
-				   dData[16], dData[17], dData[18], dData[19],
-				   dData[20], dData[21], dData[22], dData[23], dData[24], dData[25]);
-  
-  if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial of type ModIMKPinching Material\n";
-    return 0;
-  }
-  
+	if (numModIMKPinchingMaterials == 0) {
+		numModIMKPinchingMaterials++;
+		OPS_Error("Modified Ibarra-Medina-Krawinkler Model with Pinched Hysteretic Response\n", 1);
+	}
+	
+	// Pointer to a uniaxial material that will be returned
+	UniaxialMaterial *theMaterial = 0;
+	
+	int    iData[1];
+	double dData[26];
+	int numData = 1;
+	// Check tag
+	if (OPS_GetIntInput(&numData, iData) != 0) {
+		opserr << "WARNING invalid uniaxialMaterial  ModIMKPinching tag" << endln;
+		return 0;
+	}
+	
+	numData = 26;
+	if (OPS_GetDoubleInput(&numData, dData) != 0) {
+		opserr << "Invalid Args want: uniaxialMaterial ModIMKPinching tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?"; 
+		opserr << "FprPos?, FprNeg?, A_pinch?, Ls?, Ld?, La?, Lk?, Cs?, Cd?, Ca?, Ck?, thetaPpos?, thetaPneg?"; 
+		opserr << "thetaPCpos?, thetaPCneg?, ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?";
+		
+		return 0;	
+	}
+	
+	// Parsing was successful, allocate the material with zero index
+	theMaterial = new ModIMKPinching(iData[0], 
+							dData[0], dData[1], dData[2], dData[3],
+							dData[4], dData[5], dData[6], dData[7],
+							dData[8], dData[9], dData[10], dData[11],
+							dData[12], dData[13], dData[14], dData[15],
+						    dData[16], dData[17], dData[18], dData[19],
+							dData[20], dData[21], dData[22], dData[23], dData[24], dData[25]);
+	
+	if (theMaterial == 0) {
+		opserr << "WARNING could not create uniaxialMaterial of type ModIMKPinching Material\n";
+		return 0;
+	}
+
   return theMaterial;
 }
 
 
 ModIMKPinching::ModIMKPinching(int tag, double ke, double alfaPos, double alfaNeg, double my_pos, double my_neg, 
-									   double fprPos, double fprNeg, double a_pinch, double ls, double lk, double la,
-									   double lc, double cs, double ck, double ca, double cc, double thetaPpos, double thetaPneg,
+									   double fprPos, double fprNeg, double a_pinch, double ls, double ld, double la,
+									   double lk, double cs, double cd, double ca, double ck, double thetaPpos, double thetaPneg,
 									   double thetaPCpos, double thetaPCneg, double resfacPos, double resfacNeg,
 									   double fracDispPos, double fracDispNeg, double dPos, double dNeg)
 :UniaxialMaterial(tag,MAT_TAG_ModIMKPinching), Ke(ke), AlfaPos(alfaPos), AlfaNeg(alfaNeg), My_pos(my_pos), My_neg(my_neg), 
-			      FprPos(fprPos), FprNeg(fprNeg), A_pinch(a_pinch), Ls(ls), Lk(lk), La(la), Lc(lc), Cs(cs), Ck(ck), Ca(ca), Cc(cc), 
+			      FprPos(fprPos), FprNeg(fprNeg), A_pinch(a_pinch), Ls(ls), Ld(ld), La(la), Lk(lk), Cs(cs), Cd(cd), Ca(ca), Ck(ck), 
                   ThetaPpos(thetaPpos), ThetaPneg(thetaPneg), ThetaPCpos(thetaPCpos), ThetaPCneg(thetaPCneg), ResfacPos(resfacPos), ResfacNeg(resfacNeg), 
                   FracDispPos(fracDispPos), FracDispNeg(fracDispNeg),DPos(dPos), DNeg(dNeg)
 {
@@ -104,7 +104,7 @@ ModIMKPinching::ModIMKPinching(int tag, double ke, double alfaPos, double alfaNe
 ModIMKPinching::ModIMKPinching()
 :UniaxialMaterial(0,MAT_TAG_ModIMKPinching),
 Ke(0.0), AlfaPos(0.0), AlfaNeg(0.0), My_pos(0.0), My_neg(0.0), FprPos(0.0), FprNeg(0.0), A_pinch(0.0),
-Ls(0.0), Lk(0.0), La(0.0), Lc(0.0), Cs(0.0), Ck(0.0), Ca(0.0), Cc(0.0), ThetaPpos(0.0), ThetaPneg(0.0), 
+Ls(0.0), Ld(0.0), La(0.0), Lk(0.0), Cs(0.0), Cd(0.0), Ca(0.0), Ck(0.0), ThetaPpos(0.0), ThetaPneg(0.0), 
 ThetaPCpos(0.0), ThetaPCneg(0.0), ResfacPos(0.0), ResfacNeg(0.0), 
 FracDispPos(0.0), FracDispNeg(0.0), DPos(0.0), DNeg(0.0)
 {
@@ -139,9 +139,9 @@ ModIMKPinching::setTrialStrain(double strain, double strainRate)
 	
 	// Reference Energy Capacity as defined Lignos (2008)
 		Enrgts = Ls * My_pos;
-		Enrgtk = Lk * My_pos;
+		Enrgtk = 2.0 * Lk * My_pos;
 		Enrgta = La * My_pos;
-		Enrgtd = Lc * My_pos;
+		Enrgtd = Ld * My_pos;
 	    
 		ekP = 0.0;
 		ekunload = Ke;
@@ -510,18 +510,18 @@ ModIMKPinching::setTrialStrain(double strain, double strainRate)
 			
 		double Enrgi = 0.0;
 			
-		if (Ls!=0.0 && Lk!=0.0 && La!=0.0 && Lc != 0.0) {
+		//if (Ls!=0.0 && Lk!=0.0 && La!=0.0 && Lc != 0.0) {
 			Enrgi = 0.5 * (f+fP) * deltaD;
 			Enrgc = Enrgc + Enrgi;
 			Enrgtot = Enrgtot + Enrgi;
-		}
+		//}
 			
 	//	UPDATING OF DETERIORATION PARAMETERS ----------------------------
 			
 		// Check the remaining capacity of the system
 		double betas = 0.0;
 		double betaa = 0.0;
-		double betac = 0.0;
+		double betad = 0.0;
 			
 		if(flagdeg == 1){
 				
@@ -530,20 +530,29 @@ ModIMKPinching::setTrialStrain(double strain, double strainRate)
 			} else if (Enrgtot >= Enrgta && Enrgta != 0.0) {  
 				betaa = 1.0;
 			} else if(Enrgtot >= Enrgtd && Enrgtd == 0.0) {  
-				betac = 1.0;
+				betad = 1.0;
 			}
 			
 		} else {
 				
 			if(Ls != 0.0){
 				betas = pow(Enrgc/(Enrgts-Enrgtot),Cs);  	
+			} else {
+				betas = 0.0;
 			}
+
 			if(La != 0.0){
 				betaa = pow(Enrgc/(Enrgta-Enrgtot),Ca);
+			} else {
+				betaa = 0.0;
 			}
-			if(Lc != 0.0){
-				betac = pow(Enrgc/(Enrgtd-Enrgtot),Cs);
+
+			if(Ld != 0.0){
+				betad = pow(Enrgc/(Enrgtd-Enrgtot),Cd);
+			} else {
+				betad = 0.0;
 			}
+
 			if(fabs(betas) >= 1.0) {
 				betas = 1.0;
 				flagStop = 1;
@@ -552,8 +561,8 @@ ModIMKPinching::setTrialStrain(double strain, double strainRate)
 				betaa = 1.0;
 				flagStop = 1;
 			}
-			if(fabs(betac) >= 1.0){ 
-				betac = 1.0;
+			if(fabs(betad) >= 1.0){ 
+				betad = 1.0;
 				flagStop = 1;
 			}
 		}
@@ -568,7 +577,7 @@ ModIMKPinching::setTrialStrain(double strain, double strainRate)
 			fyNeg = fyNeg * (1.0 - betas * DNeg);	
 			fpDegNeg = fpDegNeg * (1.0 - betas * DNeg);
 			AlfaNeg=AlfaNeg * (1.0 - betas * DNeg);			
-			fCapRefNeg=fCapRefNeg * (1.0-betac * DNeg);
+			fCapRefNeg=fCapRefNeg * (1.0-betad * DNeg);
 			
 			dmin = dmin * (1.0+betaa);
 			
@@ -592,7 +601,7 @@ ModIMKPinching::setTrialStrain(double strain, double strainRate)
 			fyPos = fyPos*(1.0-betas * DPos);
 			fpDegPos = fpDegPos * (1.0 - betas * DPos);
 			AlfaPos=AlfaPos*(1.0 - betas * DPos);
-			fCapRefPos=fCapRefPos*(1.0 - betac * DPos);
+			fCapRefPos=fCapRefPos*(1.0 - betad * DPos);
 			
 			dmax = dmax*(1.0+betaa);	
 				
@@ -620,6 +629,7 @@ ModIMKPinching::setTrialStrain(double strain, double strainRate)
 	dP = d;
 	fP = f;
 	ekP = ek;
+	Tangent = ek;
 	
     return 0;
 }
@@ -801,8 +811,8 @@ int ModIMKPinching::revertToStart(void)
 	Enrgtot = 0.0;
 		
 	Enrgts = Ls * My_pos;
-	Enrgtd = Lc * My_pos;
-	Enrgtk = Lk * My_pos;
+	Enrgtd = Ld * My_pos;
+	Enrgtk = 2.0 * Lk * My_pos;
 	Enrgta = La * My_pos;
 
 	cpPos = My_pos/Ke + ThetaPpos;
@@ -857,8 +867,8 @@ int ModIMKPinching::revertToStart(void)
 	CEnrgtot = 0.0;
 	
 	CEnrgts = Ls * My_pos;
-	CEnrgtd = Lc * My_pos;
-	CEnrgtk = Lk * My_pos;
+	CEnrgtd = Ld * My_pos;
+	CEnrgtk = 2.0 * Lk * My_pos;
 	CEnrgta = La * My_pos;
 	
 	CcpNeg = My_pos/Ke + ThetaPpos;
@@ -893,8 +903,8 @@ int ModIMKPinching::revertToStart(void)
 UniaxialMaterial *
 ModIMKPinching::getCopy(void)
 {
-    ModIMKPinching *theCopy = new ModIMKPinching(this->getTag(), Ke, AlfaPos, AlfaNeg, My_pos, My_neg, FprPos, FprNeg, A_pinch, Ls, Lk, La, Lc, 
-														 Cs, Ca, Cs, Cc, ThetaPpos, ThetaPneg,ThetaPCpos, ThetaPCneg, ResfacPos, ResfacNeg,FracDispPos, FracDispNeg,DPos, DNeg);
+    ModIMKPinching *theCopy = new ModIMKPinching(this->getTag(), Ke, AlfaPos, AlfaNeg, My_pos, My_neg, FprPos, FprNeg, A_pinch, Ls, Ld, La, Lk, 
+														 Cs, Cd, Ca, Ck, ThetaPpos, ThetaPneg,ThetaPCpos, ThetaPCneg, ResfacPos, ResfacNeg,FracDispPos, FracDispNeg,DPos, DNeg);
     // Converged state variables
 	theCopy->Cstrain = Cstrain;
 	theCopy->Cstress = Cstress;
@@ -1023,13 +1033,13 @@ ModIMKPinching::sendSelf(int cTag, Channel &theChannel)
 	data(7) = FprNeg;
 	data(8) = A_pinch;
 	data(9) = Ls;
-	data(10) = Lk;
+	data(10) = Ld;
 	data(11) = La;
-	data(12) = Lc;
+	data(12) = Lk;
 	data(13) = Cs;
-	data(14) = Ca;
-	data(15) = Ck;
-	data(16) = Cc;
+	data(14) = Cd;
+	data(15) = Ca;
+	data(16) = Ck;
 	data(17) = ThetaPpos;
 	data(18) = ThetaPneg;
 	data(19) = ThetaPCpos;
@@ -1128,13 +1138,13 @@ ModIMKPinching::recvSelf(int cTag, Channel &theChannel,
 	  FprNeg = data(7);
 	  A_pinch = data(8);
 	  Ls = data(9);
-	  Lk = data(10);
+	  Ld = data(10);
 	  La = data(11);
-	  Lc = data(12);
+	  Lk = data(12);
 	  Cs = data(13);
-	  Ca = data(14);
-	  Ck = data(15);
-	  Cc = data(16);
+	  Cd = data(14);
+	  Ca = data(15);
+	  Ck = data(16);
 	  ThetaPpos = data(17);
 	  ThetaPneg = data(18);
 	  ThetaPCpos = data(19);
@@ -1218,13 +1228,13 @@ ModIMKPinching::Print(OPS_Stream &s, int flag)
 	s << "  FprNeg: " << FprNeg << endln;
     s << "  A_Pinch: " << A_pinch << endln;	
 	s << "  Ls: " << Ls << endln;
-	s << "  Lk: " << Lk << endln;
+	s << "  Ld: " << Ld << endln;
 	s << "  La: " << La << endln;
-	s << "  Ld: " << Lc << endln;
+	s << "  Lk: " << Lk << endln;
 	s << "  Cs: " << Cs << endln;
+	s << "  Cd: " << Cd << endln;
 	s << "  Ca: " << Ca << endln;
 	s << "  Ck: " << Ck << endln;
-	s << "  Cc: " << Cc << endln;
 	s << "  ThetaPpos: " << ThetaPpos << endln;
 	s << "  ThetaPneg: " << ThetaPneg << endln;
 	s << "  ThetaPCpos: " << ThetaPCpos << endln;

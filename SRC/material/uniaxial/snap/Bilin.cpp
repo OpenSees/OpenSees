@@ -53,7 +53,7 @@ OPS_Bilin(void)
   numData = 23;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
     opserr << "Invalid Args want: uniaxialMaterial Bilin tag? Ke? AsPos? AsNeg? My_pos? My_neg? LamdaS? ";
-    opserr << "LamdaK?  LamdaA? LamdaD? Cs? Ck? Ca? Cd? Thetap_pos? Thetap_neg? Thetapc_pos? Thetapc_neg?KPos? ";
+    opserr << "LamdaD?  LamdaA? LamdaK? Cs? Cd? Ca? Ck? Thetap_pos? Thetap_neg? Thetapc_pos? Thetapc_neg?KPos? ";
     opserr << "KNeg? Thetau_pos? Thetau_neg? PDPlus?  PDNeg\n";
     return 0;	
   }
@@ -75,7 +75,7 @@ OPS_Bilin(void)
 }
 
 Bilin::Bilin(int tag, double p_Ke,double p_AsPos,double p_AsNeg,double p_My_pos,double p_My_neg,double p_LamdaS,
-	     double p_LamdaK,double p_LamdaA,double p_LamdaD,double p_Cs,double p_Ck,double p_Ca,double p_Cd,
+	     double p_LamdaD,double p_LamdaA,double p_LamdaK,double p_Cs,double p_Cd,double p_Ca,double p_Ck,
 	     double p_Thetap_pos,double p_Thetap_neg,double p_Thetapc_pos,double p_Thetapc_neg,double p_KPos,double p_KNeg,
 	     double p_Thetau_pos,double p_Thetau_neg,double p_PDPlus,double p_PDNeg) 
 :UniaxialMaterial(tag, 0),Ke(p_Ke), AsPos(p_AsPos), AsNeg(p_AsNeg), My_pos(p_My_pos), My_neg(p_My_neg), 
@@ -91,7 +91,7 @@ Bilin::Bilin(int tag, double p_Ke,double p_AsPos,double p_AsNeg,double p_My_pos,
 Bilin::Bilin()
 :UniaxialMaterial(0, 0),
  Ke(0), AsPos(0), AsNeg(0), My_pos(0), My_neg(0), 
- LamdaS(0), LamdaK(0),LamdaA(0),LamdaD(0), Cs(0), Ck(0), Ca(0),Cd(0),
+ LamdaS(0), LamdaD(0),LamdaA(0),LamdaK(0), Cs(0), Cd(0), Ca(0),Ck(0),
  Thetap_pos(0), Thetap_neg(0), Thetapc_pos(0),Thetapc_neg(0),
  KPos(0), KNeg(0),Thetau_pos(0), Thetau_neg(0), PDPlus(0), PDNeg(0)
 {
@@ -125,143 +125,139 @@ double deltaD,d,temp_1,temp,betas,betak,betad,
 	d=strain; 
 	dP = CU;	   
  
-  if (d>0.0) 
-   {
+	if (d>0.0) {
      
-     //function call
-     interPoint(temp_1,temp,0.0,fCapRefPos,capSlope*Ke,0.0,KPos*My_pos,0.0); 
-     if (d<temp_1){ 
-       iNoFpos = 0;
-       LP=0;
-     }
-   } else {
-   interPoint(temp_1,temp,0.0,fCapRefNeg,capSlopeNeg*Ke,0.0,KNeg*My_neg,0.0); 
-   if (d>temp_1)
-     {
-       iNoFneg = 0;
-       LN=0;
-     }
- }
- //// Other variables
+		interPoint(temp_1,temp,0.0,fCapRefPos,capSlope*Ke,0.0,KPos*My_pos,0.0); 
+		if (d<temp_1){ 
+			iNoFpos = 0;
+			LP=0;
+		}
+   
+	} else {
+   
+		interPoint(temp_1,temp,0.0,fCapRefNeg,capSlopeNeg*Ke,0.0,KNeg*My_neg,0.0); 
+   
+		if (d>temp_1) {
+       
+			iNoFneg = 0;
+			LN=0;
+		}
+   }
+ 
+	// Other variables
  
 	flagdeg = 0;
- 
-	betas = 0.0;
- 
-	betak = 0.0;  
- 
-	betad = 0.0;
+ 	betas = 0.0;
+ 	betak = 0.0;  
+ 	betad = 0.0;
  
 	// Initialize parameters in the first cycle
  
 	if (kon==0) {
-		//Because I included the statement revertToLastCommit above:
    
-	 alphaNeg=AsNeg;
-	 alphaPos=AsPos;
+		alphaNeg=AsNeg; // updated per inelastic cycle
+		alphaPos=AsPos; // updated per inelastic cycle
 	 
-	 ekhardPos = Ke*AsPos;
-	 ekhardNeg = Ke*AsNeg;
+		ekhardPos = Ke*AsPos;
+		ekhardNeg = Ke*AsNeg;
 
-	 capSlope	    = -(My_pos + ekhardPos * Thetap_pos)/(Thetapc_pos*Ke); 
-	 capSlopeNeg    = -(-My_neg + ekhardNeg * Thetap_neg)/(Thetapc_neg*Ke); 
+		capSlope	    = -(My_pos + ekhardPos * Thetap_pos)/(Thetapc_pos*Ke); 
+		capSlopeNeg    = -(-My_neg + ekhardNeg * Thetap_neg)/(Thetapc_neg*Ke); 
        
-	 ekP  = Ke;
-  
-	 flagControlResponse = 0;    
-	 Tangent=Ke;     
-      
-	 Enrgts = My_pos*LamdaS;
-	 Enrgtk = My_pos*LamdaK;
-	 Enrgtd = My_pos*LamdaD;
+		ekP  = Ke;
+		
+		flagControlResponse = 0;    
+		Tangent=Ke;     
+	 
+		Enrgts = My_pos*LamdaS;
+		Enrgtk = 2.0*My_pos*LamdaK;
+		Enrgtd = My_pos*LamdaD;
    
-	 dmax = My_pos/Ke;
-	 dmin = (My_neg/Ke); 
+		dmax = My_pos/Ke;
+		dmin = (My_neg/Ke); 
+	 
+		ekP = Ke;
+	 
+		ekunload = Ke;
+		ekexcurs = Ke;
    
-	 ekP = Ke;
+		Enrgtot = 0.0;
+		Enrgc = 0.0;
    
-	 ekunload = Ke;
-	 ekexcurs = Ke;
+		fyPos = My_pos; // updated per inelastic cycle
+		fyNeg = My_neg; // updated per inelastic cycle
+	 
+		dyPos=My_pos/Ke;
+		dyNeg=(My_neg/Ke);
+   	 
+		resSn = My_pos;
+		resSp = My_neg;
    
-	 Enrgtot = 0.0;
-	 Enrgc = 0.0;
+		cpPos = Thetap_pos+My_pos/Ke;
+		cpNeg = (-Thetap_neg+My_neg/Ke);
    
-	 fyPos = My_pos;
-	 fyNeg = My_neg;
-	
-	 dyPos=My_pos/Ke;
-	 dyNeg=(My_neg/Ke);
-   
-	 resSn = My_pos;
-	 resSp = My_neg;
-   
-	 cpPos = Thetap_pos+My_pos/Ke;
-	 cpNeg = (-Thetap_neg+My_neg/Ke);
-   
-	 fPeakPos=My_pos+ekhardPos*((Thetap_pos+My_pos/Ke)-My_pos/Ke);
-	 fPeakNeg=My_neg+ekhardNeg*((-Thetap_neg+My_neg/Ke)-(My_neg/Ke));
-   
+		fPeakPos=My_pos+ekhardPos*((Thetap_pos+My_pos/Ke)-My_pos/Ke);
+		fPeakNeg=My_neg+ekhardNeg*((-Thetap_neg+My_neg/Ke)-(My_neg/Ke));
  
-	 if (cpPos<My_pos/Ke) {
-     
-		 fPeakPos =My_pos*cpPos/(My_pos/Ke);
-	 }
-	 if (cpNeg>(My_neg/Ke)) {
-     
-		 fPeakNeg =My_neg*cpNeg/(My_neg/Ke);
-	 }
+		if (cpPos<My_pos/Ke) {
+		
+			fPeakPos =My_pos*cpPos/(My_pos/Ke);
+		}
+		if (cpNeg>(My_neg/Ke)) {
+			fPeakNeg =My_neg*cpNeg/(My_neg/Ke);
+		}
    
-	 fCapPos = fPeakPos;
-	 fCapNeg = fPeakNeg;
+		fCapPos = fPeakPos;
+		fCapNeg = fPeakNeg;
+	 
+		LP = 0;
+		LN = 0;
+	 
+		fLimPos = 0;
+		fLimNeg = 0;
+	 
+		dLimPos = 0;
+		dLimNeg = 0;
+	 
+		dBoundPos = 0; 
+		dBoundNeg = 0; 
    
-	 LP = 0;
-	 LN = 0;
+		iNoFpos = 0;
+		iNoFneg = 0;
    
-	 fLimPos = 0;
-	 fLimNeg = 0;
-   
-	 dLimPos = 0;
-	 dLimNeg = 0;
-   
-	 dBoundPos = 0; 
-	 dBoundNeg = 0; 
-   
-	 iNoFpos = 0;
-	 iNoFneg = 0;
-   
-	 interup=0;
-   
-	 fCapRefPos=-capSlope*Ke*(Thetap_pos+My_pos/Ke)+fPeakPos;
-	 fCapRefNeg=-capSlopeNeg*Ke*(-Thetap_neg+My_neg/Ke)+fPeakNeg;
+		interup=0;
+	 
+		fCapRefPos=-capSlope*Ke*(Thetap_pos+My_pos/Ke)+fPeakPos;
+		fCapRefNeg=-capSlopeNeg*Ke*(-Thetap_neg+My_neg/Ke)+fPeakNeg;
+	 
+		capSlopeOrig = capSlope;
+		capSlopeOrigNeg = capSlopeNeg;
   
-	 capSlopeOrig = capSlope;
-	 capSlopeOrigNeg = capSlopeNeg;
-  
-	 flagstopdeg	= 0;
+		flagstopdeg	= 0;
    
-	 f1 = 0.0;  
-	 f2 = 0.0;
+		f1 = 0.0;  
+		f2 = 0.0;
+	 
+		fmin = 0.0;
+		fmax = 0.0;
    
-	 fmin = 0.0;
-	 fmax = 0.0;
-   
-	 RSE = 0.0;
-      
-	 if(deltaD>=0.0){
+		RSE = 0.0;
+	 
+		if(deltaD>=0.0){
+		 
+			kon = 1;
+	 
+		} else {
      
-		 kon = 1;
-   
-	 } else {
-     
-		 kon = 2;
-   
-	 }
- }
+			kon = 2;
+	
+		}
+	}
 
 	// 	******************* S T A R T S   B I G   L O O P  ****************
  // 	IF   D E L T A > 0 - - - - - - - - - - - - - - - - - - - - - - - -  
  if (deltaD>=0.0) {
-   if (iNoFpos==1) {
+	 if (iNoFpos==1) {
      interPoint(dNewLoadPos,fNewLoadPos,dyNeg,fyNeg,ekhardNeg,0.0,0.0,0.0);
    }
    //If there is a corner changing delta from negative to positive      
@@ -273,7 +269,7 @@ double deltaD,d,temp_1,temp,betas,betak,betad,
        dLimNeg = dP;
      }
      
-     if (resSn>0){
+     if (resSn>0.0){
        RSE = 0.5*fP*fP/ekunload;
      } else {
        RSE=0.5*(fP+resSn)*(sn-dP)+0.5*resSn*resSn/(Ke*alphaPos);
@@ -285,19 +281,25 @@ double deltaD,d,temp_1,temp,betas,betak,betad,
      }
      
      if((LamdaK!=0.0) && (d<sp) && fabs(capSlope)>=1.0e-3 && (fabs(capSlopeNeg)>=1.0e-3)){
-       betak = pow(((Enrgc-RSE)/(Enrgtk-(Enrgtot-RSE))),Ck);
-       if(((Enrgtot-RSE)>=Enrgtk)||(betak>=1.0)) {
-	 betak = 1.0;
-       }
-       if( flagstopdeg !=1 && flagdeg !=1) {	        
-	 ekunload = ekexcurs*(1-betak);
-       } else {
-	 ekunload = ekexcurs;
-       }
-       if(ekunload<=0.1*Ke) {
-	 ekunload = 0.1*Ke;
-       }
-     }
+       
+		 betak = pow(((Enrgc-RSE)/(Enrgtk-(Enrgtot-RSE))),Ck);
+      
+		 if(((Enrgtot-RSE)>=Enrgtk)||(betak>=1.0)) {
+			 betak = 1.0;
+		 }
+       
+		 if( flagstopdeg !=1 && flagdeg !=1) {	        
+			 ekunload = ekexcurs*(1.0-betak);
+       
+		 } else {
+			 ekunload = ekexcurs; // no update happens
+		 }
+      
+		 if(ekunload<=0.1*Ke) {
+			 ekunload = 0.1*Ke;
+		 }
+     
+	 }
      
      
      //// sn CALCULATION-------------------------------------------------
@@ -552,7 +554,7 @@ double deltaD,d,temp_1,temp,betas,betak,betad,
        dLimPos = dP;
      }
      
-     if (resSp<0) {
+     if (resSp<0.0) {
        RSE = 0.5*fP*fP/ekunload;
      } else {
        RSE=0.5*(fP+resSn)*(dP-sp)+0.5*resSp*resSp/(Ke*alphaNeg);
@@ -817,12 +819,13 @@ double deltaD,d,temp_1,temp,betas,betak,betad,
 }
 // BIG LOOP Ends ****************************************************
 
-	double Enrgi = 0.5*(f+fP)*deltaD;
-
+	double Enrgi = 0.0;
+	
+	Enrgi = 0.5 * (f+fP) * deltaD;
 	Enrgc = Enrgc + Enrgi;
 	Enrgtot = Enrgtot + Enrgi;
-
-      RSE = 0.5*f*f/ekunload;
+	
+	RSE = 0.5*f*f/ekunload;
 
 ////	Flag to deteriorate parameters on the opposite side of the loop --	
 
@@ -1253,8 +1256,8 @@ Tangent=Ke;
 UniaxialMaterial *
 Bilin::getCopy(void)
 {
-    Bilin *theCopy = new Bilin(this->getTag(),Ke,AsPos,AsNeg,My_pos,My_neg,LamdaS,LamdaK,
-		LamdaA,LamdaD,Cs,Ck,Ca,Cd,Thetap_pos,Thetap_neg,Thetapc_pos,Thetapc_neg,KPos,KNeg,
+    Bilin *theCopy = new Bilin(this->getTag(),Ke,AsPos,AsNeg,My_pos,My_neg,LamdaS,LamdaD,
+		LamdaA,LamdaK,Cs,Cd,Ca,Ck,Thetap_pos,Thetap_neg,Thetapc_pos,Thetapc_neg,KPos,KNeg,
 		Thetau_pos,Thetau_neg,PDPlus,PDNeg);
 
     //Fixed Model parameters: need to change according to material properties
@@ -1405,13 +1408,13 @@ Bilin::sendSelf(int cTag, Channel &theChannel)
    data(4)=My_pos;
    data(5)=My_neg;
    data(6)=LamdaS;
-   data(7)=LamdaK;
+   data(7)=LamdaD;
    data(8)=LamdaA;
-   data(9)=LamdaD;
+   data(9)=LamdaK;
    data(10)=Cs;
-   data(11)=Ck;
+   data(11)=Cd;
    data(12)=Ca;
-   data(13)=Cd;
+   data(13)=Ck;
    data(14)=Thetap_pos;
    data(15)=Thetap_neg;
    data(16)=Thetapc_pos;
@@ -1580,13 +1583,13 @@ Bilin::recvSelf(int cTag, Channel &theChannel,
    My_pos=data(4);
    My_neg=data(5);
    LamdaS=data(6);
-   LamdaK=data(7);
+   LamdaD=data(7);
    LamdaA=data(8);
-   LamdaD=data(9);
+   LamdaK=data(9);
    Cs=data(10);
-   Ck=data(11);
+   Cd=data(11);
    Ca=data(12);
-   Cd=data(13);
+   Ck=data(13);
    Thetap_pos=data(14);
    Thetap_neg=data(15);
    Thetapc_pos=data(16);
@@ -1745,8 +1748,8 @@ Bilin::Print(OPS_Stream &s, int flag)
 void
 Bilin::interPoint(double &xInt, double &yInt, double x1, double y1, double m1, double x2, double y2, double m2)
 {
-xInt = (-m2*x2+y2+m1*x1-y1) / (m1-m2);
-yInt = m1*xInt-m1*x1+y1;
+	xInt = (-m2*x2+y2+m1*x1-y1) / (m1-m2);
+	yInt = m1*xInt-m1*x1+y1;
 }
 void Bilin::snCalc(void)
 {

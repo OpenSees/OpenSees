@@ -18,15 +18,15 @@
 **                                                                    **
 ** ****************************************************************** */
 
-//Bilinear material with strength and stiffness deterioration
-//Based on SNAP Stanford element (modified Ib.&Kraw. element)
+//Modified Ibarra-Medina-Krawinkler with Bilinear hysteretic response
 
 //**********************************************************************                                                                     
 // Code Developed by: Dimitrios G. Lignos
 // Assistant Professor, McGill University, Montreal Canada
-// Written by: Theodore Karavasilis
+// Originally Written by: Theodore Karavasilis
 // Lecturer
 // Department of Engineering Science, University of Oxford, Oxford, U.K.
+// Re-Written by: D. G. Lignos, August 29th 2012
 //**********************************************************************
 
 #ifndef Bilin_h
@@ -39,8 +39,8 @@ class Bilin : public UniaxialMaterial
   public:
   Bilin(int tag, 
 	double Ke,         double As,         double AsNeg,   double My_pos,    double My_neg,
-	double LamdaS,     double LamdaK,     double LamdaA,  double LamdaD,    double Cs,         
-        double Ck,         double Ca,         double Cd,      double Thetap_pos,double Thetap_neg,
+	double LamdaS,     double LamdaD, double LamdaA,  double LamdaK,    double Cs,         
+        double Cd,         double Ca,         double Ck,      double Thetap_pos,double Thetap_neg,
         double Thetapc_pos,double Thetapc_neg,double K,       double KNeg,      double Thetau_pos,
         double Thetau_neg, double PDPlus,     double PDNeg);
   Bilin(); 

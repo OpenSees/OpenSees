@@ -38,7 +38,7 @@ class ModIMKPeakOriented : public UniaxialMaterial
 {
   public:
     ModIMKPeakOriented(int tag, double Ke, double AlfaPos, double AlfaNeg, double My_pos, double My_neg, 
-					   double Ls, double Lk, double La, double Ld, double Cs, double Ck, double Ca, double Cc,
+					   double Ls, double Ld, double La, double Lk, double Cs, double Cd, double Ca, double Ck,
 					   double ThetaPpos, double ThetaPneg, double ThetaPCpos, double ThetaPCneg,
 					   double ResfacPos, double ResfacNeg, double FracDispPos, double FracDispNeg,
 					   double DPos, double DNeg);    
@@ -90,14 +90,14 @@ class ModIMKPeakOriented : public UniaxialMaterial
 	double My_neg;
 	
 	double Ls;
-	double Lk;
-	double La;
 	double Ld;
+	double La;
+	double Lk;
 	
 	double Cs;
-	double Ck;
+	double Cd;
 	double Ca;
-	double Cc;
+	double Ck;
 	
 	double ThetaPpos;
 	double ThetaPneg;
@@ -170,6 +170,8 @@ class ModIMKPeakOriented : public UniaxialMaterial
 	double ekhardNeg, CekhardNeg;
 	double ekexcurs, Cekexcurs;
 	double ekP, CekP;
+	
+	double RSE, CRSE;
 	
 };
 

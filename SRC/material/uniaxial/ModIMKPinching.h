@@ -38,7 +38,7 @@ class ModIMKPinching : public UniaxialMaterial
 {
   public:
     ModIMKPinching(int tag, double Ke, double AlfaPos, double AlfaNeg, double My_pos, double My_neg, double FprPos, double FprNeg, double A_pinch,
-					   double Ls, double Lk, double La, double Lc, double Cs, double Ck, double Ca, double Cc,
+					   double Ls, double Ld, double La, double Lk, double Cs, double Cd, double Ca, double Ck,
 					   double ThetaPpos, double ThetaPneg, double ThetaPCpos, double ThetaPCneg,
 					   double ResfacPos, double ResfacNeg, double FracDispPos, double FracDispNeg,
 					   double DPos, double DNeg);    
@@ -94,14 +94,14 @@ class ModIMKPinching : public UniaxialMaterial
 	double A_pinch;
 	
 	double Ls;
-	double Lk;
+	double Ld;
 	double La;
-	double Lc;
+	double Lk;
 	
 	double Cs;
-	double Ck;
+	double Cd;
 	double Ca;
-	double Cc;
+	double Ck;
 	
 	double ThetaPpos;
 	double ThetaPneg;
