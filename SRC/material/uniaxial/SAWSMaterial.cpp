@@ -1140,7 +1140,7 @@ SAWSMaterial::setTrialStrain(double strain, double strainRate)
     }
 
   }
-
+return 0;
 
 }
 
