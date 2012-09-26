@@ -1,6 +1,5 @@
-c.... *****************************************************************<-70
-      subroutine ELMT05(d,ul,xl,ix,tl,s,r,ndf,ndm,nst,isw,dm,
-     1                  nen,n,nh1,nh2,nh3,h,ctan,ior,iow)
+      SUBROUTINE ELMT05(d,ul,xl,ix,tl,s,r,ndf,ndm,nst,isw,dm,
+     1                   nen,n,nh1,nh2,nh3,h,ctan,ior,iow)
 
 c .....................................................................
 c     elmt05 - Two dimensional truss element
@@ -11,10 +10,10 @@ c     revision: A
 c .....................................................................
       implicit none
 
-      integer ix(*),ndf,ndm,nst,isw,nh1,nh2,nh3,nen,n,ior,iow
+      integer ix(*),ndf,ndm,nst,isw,nh1,nh2,nh3,nen,n,ior,iow,dm
       real*8  d(*), ul(ndf,nen,*), xl(ndm,*), tl(*), s(nst,*), r(*)
       
-      real*8  p(*), h(*), ctan(*)
+      real*8  h(*), ctan(*)
       
       integer  i,j
       real*8  cs, sn, L, dx, dy, k, m, A, E, rho, tran(4), eps, force
