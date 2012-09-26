@@ -216,8 +216,8 @@ OPS_Stream *opserrPtr = &sserr;
 extern MachineBroker *theMachineBroker;
 extern Channel **theChannels;
 extern int numChannels;
-extern int rank;
-extern int np;
+extern int OPS_rank;
+extern int OPS_np;
 
 int
 main(int argc, char **argv)
@@ -227,13 +227,13 @@ main(int argc, char **argv)
   theMachineBroker = &theMachine;
   OPS_MACHINE = &theMachine;
 
-  rank = theMachine.getPID();
-  np = theMachine.getNP();
+  OPS_rank = theMachine.getPID();
+  OPS_np = theMachine.getNP();
 
-  if (rank == 0) {
-    OPS_theChannels = new Channel *[np-1];
+  if (OPS_rank == 0) {
+    OPS_theChannels = new Channel *[OPS_np-1];
     theChannels = OPS_theChannels;
-    numChannels = np-1;
+    numChannels = OPS_np-1;
   } else {
     OPS_theChannels = new Channel *[1];
     theChannels = OPS_theChannels;
@@ -249,7 +249,7 @@ main(int argc, char **argv)
   char **args = 0;
   char *dataArgs = 0;
 
-  if (rank == 0) {
+  if (OPS_rank == 0) {
 
     for (int i=0; i<argc; i++)
       if (argv[i] == NULL) {
@@ -273,7 +273,7 @@ main(int argc, char **argv)
 
     Message msgChar(dataArgs, sizeArg);
 
-    for (int j=0; j<np-1; j++) {
+    for (int j=0; j<OPS_np-1; j++) {
       Channel *otherChannel = theMachine.getRemoteProcess();
       OPS_theChannels[j] = otherChannel;
       otherChannel->sendID(0,0,data);
@@ -322,7 +322,7 @@ main(int argc, char **argv)
   TCL_LOCAL_MAIN_HOOK(&argc, &argv);
 #endif
 
-  g3TclMain(numArg, args, TCL_LOCAL_APPINIT, rank, np);
+  g3TclMain(numArg, args, TCL_LOCAL_APPINIT, OPS_rank, OPS_np);
 
   // some clean up to shut the remotes down if still running
   //  theDomain.clearAll();
@@ -334,7 +334,7 @@ main(int argc, char **argv)
   // mpi clean up
   //
 
-  fprintf(stderr, "Process Terminating %d\n", rank);
+  fprintf(stderr, "Process Terminating %d\n", OPS_rank);
   
   return 0;
 }
