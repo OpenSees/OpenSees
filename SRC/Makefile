@@ -765,6 +765,8 @@ SysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(FE)/system_of_eqn/linearSOE/diagonal/DiagonalDirectSolver.o \
 	$(FE)/system_of_eqn/linearSOE/diagonal/DistributedDiagonalSOE.o \
 	$(FE)/system_of_eqn/linearSOE/diagonal/DistributedDiagonalSolver.o \
+	$(FE)/system_of_eqn/linearSOE/profileSPD/SProfileSPDLinSOE.o \
+	$(FE)/system_of_eqn/linearSOE/profileSPD/SProfileSPDLinSolver.o \
 	$(FE)/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/profileSPD/DistributedProfileSPDLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinSolver.o \
