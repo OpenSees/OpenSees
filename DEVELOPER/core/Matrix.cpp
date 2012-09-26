@@ -36,6 +36,8 @@
 #include "ID.h"
 
 #include <stdlib.h>
+#include <iostream>
+using std::nothrow;
 
 #define MATRIX_WORK_AREA 400
 #define INT_WORK_AREA 20
@@ -65,8 +67,8 @@ Matrix::Matrix()
 {
   // allocate work areas if the first
   if (matrixWork == 0) {
-    matrixWork = new double[sizeDoubleWork];
-    intWork = new int[sizeIntWork];
+    matrixWork = new (nothrow) double[sizeDoubleWork];
+    intWork = new (nothrow) int[sizeIntWork];
     if (matrixWork == 0 || intWork == 0) {
       opserr << "WARNING: Matrix::Matrix() - out of memory creating work area's\n";
       exit(-1);
@@ -81,8 +83,8 @@ Matrix::Matrix(int nRows,int nCols)
 
   // allocate work areas if the first matrix
   if (matrixWork == 0) {
-    matrixWork = new double[sizeDoubleWork];
-    intWork = new int[sizeIntWork];
+    matrixWork = new (nothrow) double[sizeDoubleWork];
+    intWork = new (nothrow) int[sizeIntWork];
     if (matrixWork == 0 || intWork == 0) {
       opserr << "WARNING: Matrix::Matrix() - out of memory creating work area's\n";
       exit(-1);
@@ -105,7 +107,7 @@ Matrix::Matrix(int nRows,int nCols)
     data = 0;
 
     if (dataSize > 0) {
-      data = new double[dataSize];
+      data = new (nothrow) double[dataSize];
       //data = (double *)malloc(dataSize*sizeof(double));
       if (data == 0) {
 	opserr << "WARNING:Matrix::Matrix(int,int): Ran out of memory on init ";
@@ -125,8 +127,8 @@ Matrix::Matrix(double *theData, int row, int col)
 {
   // allocate work areas if the first matrix
   if (matrixWork == 0) {
-    matrixWork = new double[sizeDoubleWork];
-    intWork = new int[sizeIntWork];
+    matrixWork = new (nothrow) double[sizeDoubleWork];
+    intWork = new (nothrow) int[sizeIntWork];
     if (matrixWork == 0 || intWork == 0) {
       opserr << "WARNING: Matrix::Matrix() - out of memory creating work area's\n";
       exit(-1);
@@ -154,8 +156,8 @@ Matrix::Matrix(const Matrix &other)
 {
   // allocate work areas if the first matrix
   if (matrixWork == 0) {
-    matrixWork = new double[sizeDoubleWork];
-    intWork = new int[sizeIntWork];
+    matrixWork = new (nothrow) double[sizeDoubleWork];
+    intWork = new (nothrow) int[sizeIntWork];
     if (matrixWork == 0 || intWork == 0) {
       opserr << "WARNING: Matrix::Matrix() - out of memory creating work area's\n";
       exit(-1);
@@ -167,7 +169,7 @@ Matrix::Matrix(const Matrix &other)
     dataSize = other.dataSize;
 
     if (dataSize != 0) {
-      data = new double[dataSize];
+      data = new (nothrow) double[dataSize];
       // data = (double *)malloc(dataSize*sizeof(double));
       if (data == 0) {
 	opserr << "WARNING:Matrix::Matrix(Matrix &): ";
@@ -262,7 +264,7 @@ Matrix::resize(int rows, int cols) {
 
     fromFree = 0;
     // create new space
-    data = new double[newSize];
+    data = new (nothrow) double[newSize];
     // data = (double *)malloc(dataSize*sizeof(double));
     if (data == 0) {
       opserr << "Matrix::resize(" << rows << "," << cols << ") - out of memory\n";
@@ -377,7 +379,7 @@ Matrix::Solve(const Vector &b, Vector &x) const
       if (matrixWork != 0) {
 	delete [] matrixWork;
       }
-      matrixWork = new double[dataSize];
+      matrixWork = new (nothrow) double[dataSize];
       sizeDoubleWork = dataSize;
       
       if (matrixWork == 0) {
@@ -393,7 +395,7 @@ Matrix::Solve(const Vector &b, Vector &x) const
       if (intWork != 0) {
 	delete [] intWork;
       }
-      intWork = new int[n];
+      intWork = new (nothrow) int[n];
       sizeIntWork = n;
       
       if (intWork == 0) {
@@ -474,7 +476,7 @@ Matrix::Solve(const Matrix &b, Matrix &x) const
       if (matrixWork != 0) {
 	delete [] matrixWork;
       }
-      matrixWork = new double[dataSize];
+      matrixWork = new (nothrow) double[dataSize];
       sizeDoubleWork = dataSize;
       
       if (matrixWork == 0) {
@@ -490,7 +492,7 @@ Matrix::Solve(const Matrix &b, Matrix &x) const
       if (intWork != 0) {
 	delete [] intWork;
       }
-      intWork = new int[n];
+      intWork = new (nothrow) int[n];
       sizeIntWork = n;
       
       if (intWork == 0) {
@@ -574,7 +576,7 @@ Matrix::Invert(Matrix &theInverse) const
       if (matrixWork != 0) {
 	delete [] matrixWork;
       }
-      matrixWork = new double[dataSize];
+      matrixWork = new (nothrow) double[dataSize];
       sizeDoubleWork = dataSize;
       
       if (matrixWork == 0) {
@@ -590,7 +592,7 @@ Matrix::Invert(Matrix &theInverse) const
       if (intWork != 0) {
 	delete [] intWork;
       }
-      intWork = new int[n];
+      intWork = new (nothrow) int[n];
       sizeIntWork = n;
       
       if (intWork == 0) {
@@ -1181,7 +1183,7 @@ Matrix::operator=(const Matrix &other)
       
       int theSize = other.numCols*other.numRows;
       
-      data = new double[theSize];
+      data = new (nothrow) double[theSize];
       
       this->dataSize = theSize;
       this->numCols = other.numCols;

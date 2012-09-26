@@ -34,6 +34,8 @@
 #include "Vector.h"
 #include "Matrix.h"
 #include "ID.h"
+#include <iostream>
+using std::nothrow;
 
 #include <math.h>
 
@@ -64,7 +66,7 @@ Vector::Vector(int size)
   // get some space for the vector
   //  theData = (double *)malloc(size*sizeof(double));
   if (size > 0) {
-    theData = new double [size];
+    theData = new (nothrow) double [size];
 
     if (theData == 0) {
       opserr << "Vector::Vector(int) - out of memory creating vector of size " << size << endln;
@@ -107,7 +109,7 @@ Vector::Vector(const Vector &other)
 #endif
 
   //  theData = (double *)malloc(other.sz*sizeof(double));    
-  theData = new double [other.sz];    
+  theData = new (nothrow) double [other.sz];    
   
   if (theData == 0) {
     opserr << "Vector::Vector(int) - out of memory creating vector of size " << sz << endln;
@@ -168,7 +170,7 @@ Vector::resize(int newSize){
     
     // create new memory
     // theData = (double *)malloc(newSize*sizeof(double));    
-    theData = new double[newSize];
+    theData = new (nothrow) double[newSize];
     if (theData == 0) {
       opserr << "Vector::resize() - out of memory for size " << newSize << endln;
       sz = 0;
@@ -634,7 +636,7 @@ Vector::operator[](int x)
 #endif
   
   if (x >= sz) {
-    double *dataNew = new double[x+1];
+    double *dataNew = new (nothrow) double[x+1];
     for (int i=0; i<sz; i++)
       dataNew[i] = theData[i];
     for (int j=sz; j<x; j++)
@@ -727,7 +729,7 @@ Vector::operator=(const Vector &V)
 	  this->sz = V.sz;
 	  
 	  // Check that we are not creating an empty Vector
-	  theData = (sz != 0) ? new double[sz] : 0;
+	  theData = (sz != 0) ? new (nothrow) double[sz] : 0;
       }
 
 
