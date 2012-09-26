@@ -176,8 +176,8 @@ extern Channel          **OPS_theChannels;
 extern MachineBroker *theMachineBroker;
 extern Channel **theChannels;
 extern int numChannels;
-extern int rank;
-extern int np;
+extern int OPS_rank;
+extern int OPS_np;
 
 int
 main(int argc, char **argv)
@@ -187,18 +187,18 @@ main(int argc, char **argv)
   // theMachineBroker = &theMachine;
   theMachineBroker = new MPI_MachineBroker(&theBroker, argc, argv);
 
-  rank = theMachineBroker->getPID();
-  np = theMachineBroker->getNP();
+  OPS_rank = theMachineBroker->getPID();
+  OPS_np = theMachineBroker->getNP();
 
   //
   // depending on rank we do something
   //
-  if (rank != 0) {
+  if (OPS_rank != 0) {
 
     //
     // on slave processes we spin waiting to create & run actors
     //
-    fprintf(stderr, "Slave Process Running %d\n", rank);
+    fprintf(stderr, "Slave Process Running %d\n", OPS_rank);
     theMachineBroker->runActors();
 
   } else {
@@ -206,7 +206,7 @@ main(int argc, char **argv)
     //
     // on process 0 we create some ShadowSubdomains & then start the OpenSees interpreter
     //
-    fprintf(stderr, "Master Process Running OpenSees Interpreter %d\n", rank);   
+    fprintf(stderr, "Master Process Running OpenSees Interpreter %d\n", OPS_rank);   
 
     //
     // set some global parameters
@@ -214,14 +214,14 @@ main(int argc, char **argv)
     OPS_OBJECT_BROKER = &theBroker;
     //    OPS_MACHINE = &theMachine;
     OPS_MACHINE = theMachineBroker;
-    OPS_PARALLEL_PROCESSING = np;
+    OPS_PARALLEL_PROCESSING = OPS_np;
 
-    if (np%2 == 0) {
-      OPS_NUM_SUBDOMAINS = np;
+    if (OPS_np%2 == 0) {
+      OPS_NUM_SUBDOMAINS = OPS_np;
       OPS_USING_MAIN_DOMAIN = true;
       OPS_MAIN_DOMAIN_PARTITION_ID = 1;
     } else
-      OPS_NUM_SUBDOMAINS = np - 1;
+      OPS_NUM_SUBDOMAINS = OPS_np - 1;
 
     OPS_PARTITIONED    = false;
     
@@ -275,7 +275,7 @@ main(int argc, char **argv)
   // mpi clean up
   //
 
-  fprintf(stderr, "Process Terminating %d\n", rank);
+  fprintf(stderr, "Process Terminating %d\n", OPS_rank);
 
   if (theMachineBroker != 0)
     delete theMachineBroker;
