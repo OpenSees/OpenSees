@@ -222,6 +222,9 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 #include <DiagonalSOE.h>
 #include <DiagonalDirectSolver.h>
 
+#include <SProfileSPDLinSolver.h>
+#include <SProfileSPDLinSOE.h>
+
 // #include <ProfileSPDLinDirectBlockSolver.h>
 // #include <ProfileSPDLinDirectThreadSolver.h>
 // #include <ProfileSPDLinDirectSkypackSolver.h>
@@ -2363,7 +2366,14 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
   } 
 
+
   // PROFILE SPD SOE * SOLVER
+  else if (strcmp(argv[1],"SProfileSPD") == 0) {
+    // now must determine the type of solver to create from rest of args
+    SProfileSPDLinSolver *theSolver = new SProfileSPDLinSolver(); 	
+    theSOE = new SProfileSPDLinSOE(*theSolver);      
+  }
+
   else if (strcmp(argv[1],"ProfileSPD") == 0) {
     // now must determine the type of solver to create from rest of args
     ProfileSPDLinSolver *theSolver = new ProfileSPDLinDirectSolver(); 	
