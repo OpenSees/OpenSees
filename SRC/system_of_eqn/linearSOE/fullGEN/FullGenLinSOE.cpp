@@ -43,6 +43,8 @@
 
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <iostream>
+using std::nothrow;
 
 FullGenLinSOE::FullGenLinSOE(FullGenLinSolver &theSolvr)
 :LinearSOE(theSolvr, LinSOE_TAGS_FullGenLinSOE),
@@ -62,7 +64,7 @@ FullGenLinSOE::FullGenLinSOE(int N, FullGenLinSolver &theSolvr)
 {
     size = N;
 
-    A = new double[size*size];
+    A = new (nothrow) double[size*size];
 	
     if (A == 0) {
 	opserr << "WARNING :FullGenLinSOE::FullGenLinSOE :";
@@ -75,8 +77,8 @@ FullGenLinSOE::FullGenLinSOE(int N, FullGenLinSolver &theSolvr)
 	for (int i=0; i<Asize; i++)
 	    A[i] = 0;
     
-	B = new double[size];
-	X = new double[size];
+	B = new (nothrow) double[size];
+	X = new (nothrow) double[size];
 	
 	if (B == 0 || X == 0) {
 	    opserr << "WARNING :FullGenLinSOE::FullGenLinSOE :";
@@ -135,7 +137,7 @@ FullGenLinSOE::setSize(Graph &theGraph)
 	if (A != 0) 
 	    delete [] A;
 
-	A = new double[size*size];
+	A = new (nothrow) double[size*size];
 	
         if (A == 0) {
             opserr << "WARNING FullGenLinSOE::FullGenLinSOE :";
@@ -160,8 +162,8 @@ FullGenLinSOE::setSize(Graph &theGraph)
 	if (X != 0) delete [] X;
 
 	// create the new
-	B = new double[size];
-	X = new double[size];
+	B = new (nothrow) double[size];
+	X = new (nothrow) double[size];
 	
         if (B == 0 || X == 0) {
             opserr << "WARNING FullGenLinSOE::FullGenLinSOE :";

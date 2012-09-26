@@ -49,8 +49,8 @@ MPIDiagonalSolver::setLinearSOE(MPIDiagonalSOE &theSetSOE)
 int 
 MPIDiagonalSolver::setSize(void)
 {
-  int size = theSOE->size;
-  int processID = theSOE->processID;
+  //int size = theSOE->size;
+  //int processID = theSOE->processID;
   return 0;
 }
 
@@ -60,9 +60,12 @@ MPIDiagonalSolver::solve(void)
 {
 
   int processID = theSOE->processID;
-
-  MPI_Request requests[2*theSOE->actualNeighbors];
-  MPI_Status statuses[2*theSOE->actualNeighbors];
+  int numNeighbours = theSOE->actualNeighbors;
+  MPI_Request *theRequests = new MPI_Request[numNeighbours];
+  MPI_Status  *theStatuses = new MPI_Status[numNeighbours];
+ 
+  //MPI_Request requests[2*numNeighbours];
+  //MPI_Status statuses[2*numNeighbours];
   bool debug_on = false;
   static int size = theSOE->size;
   static int numShared = theSOE->numShared;
@@ -138,7 +141,7 @@ MPIDiagonalSolver::solve(void)
     int ct =0;
     for (int i=0; i<maxNeighbors; i++) {
       if ((i != processID ) && (myNeighbors[i]==1)) {
-	MPI_Irecv(((theSOE->myActualNeighborsSharedBs).find(i)->second), maxShared, MPI_DOUBLE, i, MPI_ANY_TAG, MPI_COMM_WORLD, &requests[ct++]);
+	MPI_Irecv(((theSOE->myActualNeighborsSharedBs).find(i)->second), maxShared, MPI_DOUBLE, i, MPI_ANY_TAG, MPI_COMM_WORLD, &theRequests[ct++]);
       }
     }
     for (int i=0; i<maxNeighbors; i++) {
@@ -162,12 +165,12 @@ MPIDiagonalSolver::solve(void)
       if ((i != processID ) && (myNeighbors[i]==1)) {
 	int upto = myNeighborsSizes[i];
 	double* tmpptr = (theSOE->myActualNeighborsBsToSend).find(i)->second;
-	MPI_Isend(tmpptr, upto, MPI_DOUBLE, i, i, MPI_COMM_WORLD,&requests[ct++]);
+	MPI_Isend(tmpptr, upto, MPI_DOUBLE, i, i, MPI_COMM_WORLD, &theRequests[ct++]);
       }
     }
     /////////////////////////gnp next change ENDS
     
-    MPI_Waitall(ct,requests,statuses);
+    MPI_Waitall(ct,theRequests,theStatuses);
 
     for (int i=0; i<maxNeighbors; i++) {
       if ((i != processID ) && (myNeighbors[i]==1)) {
@@ -192,6 +195,9 @@ MPIDiagonalSolver::solve(void)
     /// for general case and comment below call 
     //    dvem(size, B,1,A,1,X,1);
     
+	delete []theRequests;
+	delete []theStatuses;
+
     //if we get here we are done and return
     return 0;
   }

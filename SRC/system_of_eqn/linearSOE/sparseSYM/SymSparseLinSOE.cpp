@@ -26,6 +26,8 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
+#include <iostream>
+using std::nothrow;
 
 SymSparseLinSOE::SymSparseLinSOE(SymSparseLinSolver &the_Solver, int lSparse)
 :LinearSOE(the_Solver, LinSOE_TAGS_SymSparseLinSOE),
@@ -134,7 +136,7 @@ int SymSparseLinSOE::setSize(Graph &theGraph)
     }
     nnz = newNNZ;
  
-    colA = new int[newNNZ];	
+    colA = new (nothrow) int[newNNZ];	
     if (colA == 0) {
         opserr << "WARNING SymSparseLinSOE::SymSparseLinSOE :";
 	opserr << " ran out of memory for colA with nnz = ";
@@ -153,8 +155,8 @@ int SymSparseLinSOE::setSize(Graph &theGraph)
 	if (rowStartA != 0) delete [] rowStartA;
 
 	// create the new
-	B = new double[size];
-	X = new double[size];
+	B = new (nothrow) double[size];
+	X = new (nothrow) double[size];
 	rowStartA = new int[size+1]; 
 	
 	if (B == 0 || X == 0 || rowStartA == 0) {
@@ -258,7 +260,7 @@ int SymSparseLinSOE::addA(const Matrix &in_m, const ID &in_id, double fact)
 
    // construct m and id based on non-negative id values.
    int newPt = 0;
-   int *id = new int[idSize];
+   int *id = new (nothrow) int[idSize];
    
    for (int jj = 0; jj < idSize; jj++) {
        if (in_id(jj) >= 0 && in_id(jj) < size) {
@@ -269,7 +271,7 @@ int SymSparseLinSOE::addA(const Matrix &in_m, const ID &in_id, double fact)
 
    idSize = newPt;
    if (idSize == 0)  return 0;
-   double *m = new double[idSize*idSize];
+   double *m = new (nothrow) double[idSize*idSize];
 
    int newII = 0;
    for (int ii = 0; ii < in_id.Size(); ii++) {
@@ -288,8 +290,8 @@ int SymSparseLinSOE::addA(const Matrix &in_m, const ID &in_id, double fact)
 
    // forming the new id based on invp.
 
-   int *newID = new int[idSize];
-   int *isort = new int[idSize];
+   int *newID = new (nothrow) int[idSize];
+   int *isort = new (nothrow) int[idSize];
    if (newID == 0 || isort ==0) {
        opserr << "WARNING SymSparseLinSOE::SymSparseLinSOE :";
        opserr << " ran out of memory for vectors (newID, isort)";
@@ -413,8 +415,8 @@ int SymSparseLinSOE::addB(const Vector &in_v, const ID &in_id, double fact)
 
    // construct v and id based on non-negative id values.
    int newPt = 0;
-   int *id = new int[idSize];
-   double *v = new double[idSize];
+   int *id = new (nothrow) int[idSize];
+   double *v = new (nothrow) double[idSize];
 
    for (int ii = 0; ii < idSize; ii++) {
        if (in_id(ii) >= 0 && in_id(ii) < size) {
@@ -430,7 +432,7 @@ int SymSparseLinSOE::addB(const Vector &in_v, const ID &in_id, double fact)
        delete [] v;
        return 0;
    }
-    int *newID = new int[idSize];
+    int *newID = new (nothrow) int[idSize];
     if (newID == 0) {
        opserr << "WARNING SymSparseLinSOE::SymSparseLinSOE :";
        opserr << " ran out of memory for vectors (newID)";

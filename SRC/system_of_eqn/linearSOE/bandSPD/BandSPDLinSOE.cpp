@@ -41,6 +41,8 @@
 
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <iostream>
+using std::nothrow;
 
 BandSPDLinSOE::BandSPDLinSOE(BandSPDLinSolver &the_Solver)
 :LinearSOE(the_Solver, LinSOE_TAGS_BandSPDLinSOE),
@@ -82,7 +84,7 @@ BandSPDLinSOE::BandSPDLinSOE(int N, int numSuper,
     size = N;
     half_band = numSuper+1;
 
-    A = new double[half_band*size];
+    A = new (nothrow) double[half_band*size];
 	
     if (A == 0) {
 	opserr << "FATAL:BandSPDLinSOE::BandSPDLinSOE :";
@@ -96,8 +98,8 @@ BandSPDLinSOE::BandSPDLinSOE(int N, int numSuper,
 	for (int j=0; j<Asize; j++)
 	    A[j] = 0;
     
-	B = new double[size];
-	X = new double[size];
+	B = new (nothrow) double[size];
+	X = new (nothrow) double[size];
 	
 	if (B == 0 || X == 0 ) {
 	    opserr << "FATAL:BandSPDLinSOE::BandSPDLinSOE :";
@@ -172,7 +174,7 @@ BandSPDLinSOE::setSize(Graph &theGraph)
 	if (A != 0) 
 	    delete [] A;
 
-	A = new double[half_band*size];
+	A = new (nothrow) double[half_band*size];
 	
         if (A == 0) {
             opserr << "WARNING BandSPDLinSOE::setSize() :";
@@ -198,8 +200,8 @@ BandSPDLinSOE::setSize(Graph &theGraph)
 	if (X != 0) delete [] X;
 
 	// create the new
-	B = new double[size];
-	X = new double[size];
+	B = new (nothrow) double[size];
+	X = new (nothrow) double[size];
 	
         if (B == 0 || X == 0) {
             opserr << "WARNING BandSPDLinSOE::setSize():";

@@ -40,6 +40,9 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
+#include <iostream>
+using std::nothrow;
+
 SProfileSPDLinSOE::SProfileSPDLinSOE(SProfileSPDLinSolver &the_Solver)
 :LinearSOE(the_Solver, LinSOE_TAGS_SProfileSPDLinSOE),
  size(0), profileSize(0), A(0), B(0), X(0), doubleB(0), doubleX(0),
@@ -80,7 +83,7 @@ SProfileSPDLinSOE::SProfileSPDLinSOE(int N, int *iLoc,
     size = N;
     profileSize = iLoc[N-1];
     
-    A = new float[iLoc[N-1]];
+    A = new (nothrow) float[iLoc[N-1]];
 	
     if (A == 0) {
 	opserr << "FATAL:BandSPDLinSOE::BandSPDLinSOE :";
@@ -94,13 +97,13 @@ SProfileSPDLinSOE::SProfileSPDLinSOE(int N, int *iLoc,
 	for (int k=0; k<Asize; k++)
 	    A[k] = 0;
     
-	B = new float[size];
-	X = new float[size];
-	doubleB = new double[size];
-	doubleX = new double[size];
-	iDiagLoc = new int[size];
+	B = new (nothrow) float[size];
+	X = new (nothrow) float[size];
+	doubleB = new (nothrow) double[size];
+	doubleX = new (nothrow) double[size];
+	iDiagLoc = new (nothrow) int[size];
     
-	if (B == 0 || X == 0 || iDiagLoc == 0 ) {
+	if (B == 0 || X == 0 || iDiagLoc == 0 || doubleX == 0 || doubleB == 0) {
 	    opserr << "WARNING SProfileSPDLinSOE::SProfileSPDLinSOE :";
 	    opserr << " ran out of memory for vectors (size) (";
 	    opserr << size << ") \n";
@@ -161,7 +164,7 @@ SProfileSPDLinSOE::setSize(Graph &theGraph)
     // if not delete old and create new
     if (size > Bsize) { 
 	if (iDiagLoc != 0) delete [] iDiagLoc;
-	iDiagLoc = new int[size];
+	iDiagLoc = new (nothrow) int[size];
 
 	if (iDiagLoc == 0) {
 	    opserr << "WARNING SProfileSPDLinSOE::setSize() : ";
@@ -221,7 +224,7 @@ SProfileSPDLinSOE::setSize(Graph &theGraph)
 	    delete [] A;
 	
 	// get new space
-	A = new float[profileSize];
+	A = new (nothrow) float[profileSize];
 	
         if (A == 0) {
             opserr << "SProfileSPDLinSOE::SProfileSPDLinSOE :";
@@ -250,12 +253,12 @@ SProfileSPDLinSOE::setSize(Graph &theGraph)
 	if (doubleX != 0) delete [] doubleX;
 
 	// create the new	
-	B = new float[size];
-	X = new float[size];
-	doubleB = new double[size];
-	doubleX = new double[size];
+	B = new (nothrow)  float[size];
+	X = new (nothrow) float[size];
+	doubleB = new (nothrow) double[size];
+	doubleX = new (nothrow) double[size];
 	
-        if (B == 0 || X == 0 ) {
+        if (B == 0 || X == 0 || doubleB == 0 || doubleX == 0) {
             opserr << "SProfileSPDLinSOE::SProfileSPDLinSOE :";
 	    opserr << " ran out of memory for vectors (size) (";
 	    opserr << size << ") \n";

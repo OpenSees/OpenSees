@@ -39,7 +39,8 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <AnalysisModel.h>
-
+#include <iostream>
+using std::nothrow;
 
 FullGenEigenSOE::FullGenEigenSOE(FullGenEigenSolver &theSolver,  
     AnalysisModel &aModel)
@@ -78,7 +79,7 @@ int FullGenEigenSOE::setSize(Graph &theGraph)
         if (A != 0) 
             delete [] A;
 
-        A = new double[newSize];
+        A = new (nothrow) double[newSize];
         if (A == 0) {
             opserr << "WARNING FullGenEigenSOE::setSize() - "
                 << "ran out of memory for A (size,size) ("
@@ -99,7 +100,7 @@ int FullGenEigenSOE::setSize(Graph &theGraph)
         if (M != 0) 
             delete [] M;
 
-        M = new double[newSize];
+        M = new (nothrow) double[newSize];
         if (M == 0) {
             opserr << "WARNING FullGenEigenSOE::setSize() - "
                 << "ran out of memory for M (size,size) ("

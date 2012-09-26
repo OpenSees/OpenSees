@@ -42,6 +42,8 @@
 
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <iostream>
+using std::nothrow;
 
 SparseGenColLinSOE::SparseGenColLinSOE(SparseGenColLinSolver &the_Solver)
 :LinearSOE(the_Solver, LinSOE_TAGS_SparseGenColLinSOE),
@@ -96,7 +98,7 @@ SparseGenColLinSOE::SparseGenColLinSOE(int N, int NNZ, int *ColStartA, int *RowA
  factored(false)
 {
 
-    A = new double[NNZ];
+    A = new (nothrow) double[NNZ];
 	
     if (A == 0) {
 	opserr << "WARNING :SparseGenColLinSOE::SparseGenColLinSOE :";
@@ -109,8 +111,8 @@ SparseGenColLinSOE::SparseGenColLinSOE(int N, int NNZ, int *ColStartA, int *RowA
 	for (int i=0; i<Asize; i++)
 	    A[i] = 0;
     
-	B = new double[size];
-	X = new double[size];
+	B = new (nothrow) double[size];
+	X = new (nothrow) double[size];
 	
 	if (B == 0 || X == 0) {
 	    opserr << "WARNING :SparseGenColLinSOE::SparseGenColLinSOE :";
@@ -182,8 +184,8 @@ SparseGenColLinSOE::setSize(Graph &theGraph)
 	if (rowA != 0)
 	    delete [] rowA;
 	
-	A = new double[newNNZ];
-	rowA = new int[newNNZ];
+	A = new (nothrow) double[newNNZ];
+	rowA = new (nothrow) int[newNNZ];
 	
         if (A == 0 || rowA == 0) {
             opserr << "WARNING SparseGenColLinSOE::SparseGenColLinSOE :";
@@ -210,9 +212,9 @@ SparseGenColLinSOE::setSize(Graph &theGraph)
 	if (colStartA != 0) delete [] colStartA;
 
 	// create the new
-	B = new double[size];
-	X = new double[size];
-	colStartA = new int[size+1]; 
+	B = new (nothrow) double[size];
+	X = new (nothrow) double[size];
+	colStartA = new (nothrow) int[size+1]; 
 	
         if (B == 0 || X == 0 || colStartA == 0) {
             opserr << "WARNING SparseGenColLinSOE::SparseGenColLinSOE :";

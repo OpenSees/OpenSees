@@ -38,6 +38,8 @@
 #include <math.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <iostream>
+using std::nothrow;
 
 BandGenLinSOE::BandGenLinSOE(BandGenLinSolver &theSolvr)
 :LinearSOE(theSolvr, LinSOE_TAGS_BandGenLinSOE),
@@ -71,7 +73,7 @@ BandGenLinSOE::BandGenLinSOE(int N, int numSuperDiag, int numSubDiag,
  X(0), vectX(0), vectB(0), Asize(0), Bsize(0), factored(false)
 {
     Asize = N * (2*numSubD + numSuperD +1);
-    A = new double[Asize];
+    A = new (nothrow)double[Asize];
 	
     if (A == 0) {
 	opserr << "WARNING BandGenLinSOE::BandGenLinSOE :";
@@ -83,8 +85,8 @@ BandGenLinSOE::BandGenLinSOE(int N, int numSuperDiag, int numSubDiag,
 	for (int i=0; i<Asize; i++)
 	    A[i] = 0;
     
-	B = new double[size];
-	X = new double[size];
+	B = new (nothrow)double[size];
+	X = new (nothrow)double[size];
 	
 	if (B == 0 || X == 0) {
 	    opserr << "WARNING BandGenLinSOE::BandGenLinSOE :";
@@ -169,7 +171,7 @@ BandGenLinSOE::setSize(Graph &theGraph)
 	if (A != 0) 
 	    delete [] A;
 
-	A = new double[newSize];
+	A = new (nothrow)double[newSize];
 	
         if (A == 0) {
             opserr << "WARNING BandGenLinSOE::BandGenLinSOE :";
@@ -195,8 +197,8 @@ BandGenLinSOE::setSize(Graph &theGraph)
 	if (X != 0) delete [] X;
 
 	// create the new
-	B = new double[size];
-	X = new double[size];
+	B = new (nothrow) double[size];
+	X = new (nothrow) double[size];
 	
         if (B == 0 || X == 0) {
             opserr << "WARNING BandGenLinSOE::BandGenLinSOE :";

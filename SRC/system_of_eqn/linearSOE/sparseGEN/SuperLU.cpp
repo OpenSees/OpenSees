@@ -38,6 +38,8 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <DataFileStream.h>
+#include <iostream>
+using std::nothrow;
 
 SuperLU::SuperLU(int perm, 
 		 double drop_tolerance, 
@@ -236,15 +238,15 @@ SuperLU::setSize()
 
 	if (perm_r != 0)
 	  delete [] perm_r;
-	perm_r = new int[n];		
+	perm_r = new (nothrow) int[n];		
 
 	if (perm_c != 0)
 	  delete [] perm_c;
-	perm_c = new int[n];		
+	perm_c = new (nothrow) int[n];		
 
 	if (etree != 0)
 	  delete [] etree;
-	etree = new int[n];		
+	etree = new (nothrow) int[n];		
 
 	if (perm_r == 0 || perm_c == 0 || etree == 0) {
 	  opserr << "WARNING SuperLU::setSize()";
