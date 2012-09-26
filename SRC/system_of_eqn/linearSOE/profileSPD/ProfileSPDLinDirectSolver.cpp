@@ -42,6 +42,7 @@
 
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+//#include <Timer.h>
 
 ProfileSPDLinDirectSolver::ProfileSPDLinDirectSolver(double tol)
 :ProfileSPDLinSolver(SOLVER_TAGS_ProfileSPDLinDirectSolver),
@@ -114,6 +115,8 @@ ProfileSPDLinDirectSolver::setSize(void)
 int 
 ProfileSPDLinDirectSolver::solve(void)
 {
+  //  Timer timer;
+  //  timer.start();
 
     // check for quick returns
     if (theSOE == 0) {
@@ -293,7 +296,10 @@ ProfileSPDLinDirectSolver::solve(void)
     opserr << "BBBB " << theSOE->getB();
     opserr << "XXXX " << theSOE->getX();
     */
-    
+
+    // timer.pause();
+    // timer.Print(opserr);
+
     return 0;
 }
 
