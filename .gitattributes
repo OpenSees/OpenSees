@@ -3904,6 +3904,10 @@ SRC/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinSolver.tex -text
 SRC/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinSubstrSolver.cpp -text
 SRC/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinSubstrSolver.h -text
 SRC/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinSubstrSolver.tex -text
+SRC/system_of_eqn/linearSOE/profileSPD/SProfileSPDLinSOE.cpp -text
+SRC/system_of_eqn/linearSOE/profileSPD/SProfileSPDLinSOE.h -text
+SRC/system_of_eqn/linearSOE/profileSPD/SProfileSPDLinSolver.cpp -text
+SRC/system_of_eqn/linearSOE/profileSPD/SProfileSPDLinSolver.h -text
 SRC/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.cpp -text
 SRC/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.h -text
 SRC/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenRowLinSOE.cpp -text

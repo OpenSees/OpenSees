@@ -12,7 +12,9 @@ OBJS       = ProfileSPDLinSOE.o \
 	ProfileSPDLinDirectSkypackSolver.o \
 	ProfileSPDLinSolverGather.o \
 	ProfileSPDLinSOEGather.o \
-	DistributedProfileSPDLinSOE.o
+	DistributedProfileSPDLinSOE.o \
+	SProfileSPDLinSOE.o \
+	SProfileSPDLinSolver.o 
 
 all:         $(OBJS)
 
