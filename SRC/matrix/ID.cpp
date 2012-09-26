@@ -35,6 +35,8 @@
 #include <map>
 #include <list>
 
+#include <iostream>
+using std::nothrow;
 
 int ID::ID_NOT_VALID_ENTRY = 0;
 
@@ -66,7 +68,7 @@ ID::ID(int size)
   // create the space for the data & check space was available
   //  data = (int *)malloc(size*sizeof(int));
   if (size > 0) {
-    data = new int[size]; 
+    data = new (nothrow) int[size]; 
     if (data == 0) {
       opserr << "ID::ID(int): ran out of memory with size " << size << endln;
       exit(-1);
@@ -105,7 +107,7 @@ ID::ID(int size, int arraySz)
 
   // create the space
   //  data = (int *)malloc(arraySize*sizeof(int));
-  data = new int[arraySize];
+  data = new (nothrow) int[arraySize];
   if (data == 0) {
     opserr << "ID::ID(int, int): ran out of memory with arraySize: " << arraySize << endln;
     exit(-1);
@@ -151,7 +153,7 @@ ID::ID(const ID &other)
 {
   // create the space
   //  data = (int *)malloc(arraySize*sizeof(int));
-  data = new int[arraySize]; 
+  data = new (nothrow) int[arraySize]; 
   if (data == 0) {
     opserr << "ID::ID(ID): ran out of memory with arraySize " << arraySize << endln,
     exit(-1);
@@ -276,7 +278,7 @@ ID::unique(void)
     }
 
     sz = uniquesl.size();
-    int* newdata = new int[sz];
+    int* newdata = new (nothrow) int[sz];
     for (std::list<int>::iterator pos=uniquesl.begin(); pos!=uniquesl.end(); pos++)
         newdata[count++] = *pos;
 
@@ -323,7 +325,7 @@ ID::operator[](int x)
     if (newArraySize <= x) 
       newArraySize = x+1;
     //    int *newData = (int *)malloc(newArraySize*sizeof(int));    
-    int *newData = new int[newArraySize];
+    int *newData = new (nothrow) int[newArraySize];
 
     if (newData != 0) {
 
@@ -388,7 +390,7 @@ ID::resize(int newSize){
 
     // otherwise we go get more space
     
-    int *newData = new int[newSize];
+    int *newData = new (nothrow) int[newSize];
     if (newData != 0) {
       // copy the old
       for (int i=0; i<sz; i++)
@@ -436,7 +438,7 @@ ID::operator=(const ID &V)
 		  //free((void *)data);
 		  delete [] data;
 		//		data = (int *)malloc(arraySize*sizeof(int));		
-		data = new int[arraySize];
+		data = new (nothrow) int[arraySize];
 		// check we got the memory requested
 		if (data == 0) {
 		    opserr << "WARNING ID::=(ID) - ran out of memory ";
@@ -594,7 +596,7 @@ ID::insert(int x)
     return 0;
   } else {
     int newArraySize = (sz+1) * 2;
-    int *newData = new int[newArraySize];
+    int *newData = new (nothrow) int[newArraySize];
     if (newData != 0) {
       
       // copy the old
