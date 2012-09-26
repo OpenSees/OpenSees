@@ -1,4 +1,4 @@
-      Subroutine Steel (Es,EpsLast,FpsLast,YpTanLast,EpsOld,Fy,Epy, ! Input
+      Subroutine STEEL (Es,EpsLast,FpsLast,YpTanLast,EpsOld,Fy,Epy, ! Input
      *           EpSH,Epsu,Fpsu,Youngs,SHPower,                     ! Input
      *           Epr,Fpr,Epa,Fpa,Epo,EpoMax,EpsuSh,YoungsUn,        ! Changeable
      *           Power,BFlag,LMR,EprM,FprM,EpaM,FpaM,YpTanM,PowerM, ! Changeable
