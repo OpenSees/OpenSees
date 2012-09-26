@@ -40,6 +40,10 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
+#include <iostream>
+using std::nothrow;
+
+
 ProfileSPDLinSOE::ProfileSPDLinSOE(ProfileSPDLinSolver &the_Solver)
 :LinearSOE(the_Solver, LinSOE_TAGS_ProfileSPDLinSOE),
  size(0), profileSize(0), A(0), B(0), X(0), vectX(0), vectB(0),
@@ -80,7 +84,7 @@ ProfileSPDLinSOE::ProfileSPDLinSOE(int N, int *iLoc,
     size = N;
     profileSize = iLoc[N-1];
     
-    A = new double[iLoc[N-1]];
+    A = new (nothrow) double[iLoc[N-1]];
 	
     if (A == 0) {
 	opserr << "FATAL:BandSPDLinSOE::BandSPDLinSOE :";
@@ -94,9 +98,9 @@ ProfileSPDLinSOE::ProfileSPDLinSOE(int N, int *iLoc,
 	for (int k=0; k<Asize; k++)
 	    A[k] = 0;
     
-	B = new double[size];
-	X = new double[size];
-	iDiagLoc = new int[size];
+	B = new (nothrow) double[size];
+	X = new (nothrow) double[size];
+	iDiagLoc = new (nothrow) int[size];
     
 	if (B == 0 || X == 0 || iDiagLoc == 0 ) {
 	    opserr << "WARNING ProfileSPDLinSOE::ProfileSPDLinSOE :";
@@ -155,7 +159,7 @@ ProfileSPDLinSOE::setSize(Graph &theGraph)
     // if not delete old and create new
     if (size > Bsize) { 
 	if (iDiagLoc != 0) delete [] iDiagLoc;
-	iDiagLoc = new int[size];
+	iDiagLoc = new (nothrow) int[size];
 
 	if (iDiagLoc == 0) {
 	    opserr << "WARNING ProfileSPDLinSOE::setSize() : ";
@@ -215,7 +219,7 @@ ProfileSPDLinSOE::setSize(Graph &theGraph)
 	    delete [] A;
 	
 	// get new space
-	A = new double[profileSize];
+	A = new (nothrow) double[profileSize];
 	
         if (A == 0) {
             opserr << "ProfileSPDLinSOE::ProfileSPDLinSOE :";
