@@ -436,8 +436,8 @@ extern int OPS_ResetInput(ClientData clientData,
 MachineBroker *theMachineBroker =0;
 Channel **theChannels =0;
 int numChannels =0;
-int rank =0;
-int np =0;
+int OPS_rank =0;
+int OPS_np =0;
 
 
 
@@ -2440,7 +2440,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     ProfileSPDLinSolver *theSolver = new ProfileSPDLinDirectSolver(); 	
     DistributedProfileSPDLinSOE *theParallelSOE = new DistributedProfileSPDLinSOE(*theSolver);
     theSOE = theParallelSOE;
-    theParallelSOE->setProcessID(rank);
+    theParallelSOE->setProcessID(OPS_rank);
     theParallelSOE->setChannels(numChannels, theChannels);
   }
 #endif
@@ -2691,7 +2691,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #elif _PARALLEL_INTERPRETERS
     MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl7, icntl14);
     MumpsParallelSOE *theParallelSOE = new MumpsParallelSOE(*theSolver);
-    theParallelSOE->setProcessID(rank);
+    theParallelSOE->setProcessID(OPS_rank);
     theParallelSOE->setChannels(numChannels, theChannels);
     theSOE = theParallelSOE;
 #else
@@ -2834,13 +2834,13 @@ specifyNumberer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **
   else if ((strcmp(argv[1],"ParallelPlain") == 0) || (strcmp(argv[1],"Parallel") == 0)) {
     ParallelNumberer *theParallelNumberer = new ParallelNumberer;
     theNumberer = theParallelNumberer;       
-    theParallelNumberer->setProcessID(rank);
+    theParallelNumberer->setProcessID(OPS_rank);
     theParallelNumberer->setChannels(numChannels, theChannels);
   } else if (strcmp(argv[1],"ParallelRCM") == 0) {
     RCM *theRCM = new RCM(false);	
     ParallelNumberer *theParallelNumberer = new ParallelNumberer(*theRCM);    	
     theNumberer = theParallelNumberer;       
-    theParallelNumberer->setProcessID(rank);
+    theParallelNumberer->setProcessID(OPS_rank);
     theParallelNumberer->setChannels(numChannels, theChannels);
   }   
 
@@ -3774,7 +3774,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       DistributedDisplacementControl *theDDC  = new DistributedDisplacementControl(node,dof-1,increment,
 										   numIter, minIncr, maxIncr);
 
-      theDDC->setProcessID(rank);
+      theDDC->setProcessID(OPS_rank);
       theDDC->setChannels(numChannels, theChannels);
       theStaticIntegrator = theDDC;
 
