@@ -297,6 +297,7 @@ EXAMPLES/ExampleScripts/SPtcl/elements.dat -text
 EXAMPLES/ExampleScripts/SPtcl/nodes.dat -text
 EXAMPLES/ExampleScripts/SPtcl/nodes_ptop.dat -text
 EXAMPLES/ExampleScripts/Solid_PressureSensitiveE3D.tcl -text
+EXAMPLES/ExampleScripts/TestDamage2p.tcl -text
 EXAMPLES/ExampleScripts/TimeSeriesTest.tcl -text
 EXAMPLES/ExampleScripts/coupledZeroLength.tcl -text
 EXAMPLES/ExampleScripts/example1.tcl -text
