@@ -39,6 +39,7 @@ spotless: clean
 	@$(CD) $(FE)/system_of_eqn/linearSOE/diagonal; $(MAKE) wipe;
 	@$(CD) $(FE)/system_of_eqn/linearSOE/petsc; $(MAKE) wipe;
 	@$(CD) $(FE)/system_of_eqn/linearSOE/mumps; $(MAKE) wipe;
+	@$(CD) $(FE)/system_of_eqn/linearSOE/itpack; $(MAKE) wipe;
 
 wipe: spotless
 
