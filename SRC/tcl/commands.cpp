@@ -5782,11 +5782,31 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 #ifdef _MUMPS
 	
       }  else if (typeSolver == 6) {  
-	
+
 	int icntl14 = 20;
-	MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl14);
+#ifdef _PARALLEL_PROCESSING
+
+	MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl7, icntl14);
 	LinearSOE *theArpackSOE = new MumpsParallelSOE(*theSolver);
 	theEigenSOE = new ArpackSOE(*theArpackSOE, shift);    
+
+#elif _PARALLEL_INTERPRETERS
+
+	MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl7, icntl14);
+	MumpsParallelSOE *theParallelSOE = new MumpsParallelSOE(*theSolver);
+	theParallelSOE->setProcessID(rank);
+	theParallelSOE->setChannels(numChannels, theChannels);
+	theSOE = theParallelSOE;
+	LinearSOE *theArpackSOE = new MumpsParallelSOE(*theSolver);
+	theEigenSOE = new ArpackSOE(*theArpackSOE, shift);    
+
+#else
+	MumpsSolver *theSolver = new MumpsSolver(icntl7, icntl14);
+	LinearSOE *theArpackSOE = new MumpsSOE(*theSolver);
+	theEigenSOE = new ArpackSOE(*theArpackSOE, shift);    
+	theSOE = new MumpsSOE(*theSolver);
+#endif
+
 #endif
       }  else if (typeSolver == 7) {  
 	SparseGenColLinSolver *theSolver =0;    
