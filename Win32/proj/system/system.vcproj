@@ -184,6 +184,18 @@
 			<File
 				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\profileSPD\ProfileSPDLinSubstrSolver.h">
 			</File>
+			<File
+				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\profileSPD\SProfileSPDLinSOE.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\profileSPD\SProfileSPDLinSOE.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\profileSPD\SProfileSPDLinSolver.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\profileSPD\SProfileSPDLinSolver.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="symSparse"

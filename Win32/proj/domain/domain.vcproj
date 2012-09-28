@@ -491,21 +491,6 @@
 				<File
 					RelativePath="..\..\..\SRC\domain\pattern\drm\PlaneDRMInputHandler.h">
 				</File>
-				<File
-					RelativePath="..\..\..\SRC\domain\pattern\drm\TclPatternCommand.cpp">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
-					</FileConfiguration>
-				</File>
 			</Filter>
 		</Filter>
 		<Filter
