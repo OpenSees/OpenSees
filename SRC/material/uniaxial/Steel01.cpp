@@ -79,7 +79,7 @@ OPS_NewSteel01()
   if (numData == 3) {
     dData[3] = STEEL_01_DEFAULT_A1;
     dData[4] = STEEL_01_DEFAULT_A2;
-    dData[5] = STEEL_01_DEFAULT_A2;
+    dData[5] = STEEL_01_DEFAULT_A3;
     dData[6] = STEEL_01_DEFAULT_A4;
   }
 
