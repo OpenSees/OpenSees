@@ -5795,7 +5795,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 	MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl7, icntl14);
 	MumpsParallelSOE *theParallelSOE = new MumpsParallelSOE(*theSolver);
-	theParallelSOE->setProcessID(rank);
+	theParallelSOE->setProcessID(OPS_rank);
 	theParallelSOE->setChannels(numChannels, theChannels);
 	theSOE = theParallelSOE;
 	LinearSOE *theArpackSOE = new MumpsParallelSOE(*theSolver);
