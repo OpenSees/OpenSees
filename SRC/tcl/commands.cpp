@@ -5783,6 +5783,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	
       }  else if (typeSolver == 6) {  
 
+	int icntl7 = 7;
 	int icntl14 = 20;
 #ifdef _PARALLEL_PROCESSING
 
