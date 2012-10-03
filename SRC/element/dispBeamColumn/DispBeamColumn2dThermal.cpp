@@ -715,9 +715,17 @@ DispBeamColumn2dThermal::addLoad(ElementalLoad *theLoad, double loadFactor)
     q0[2] += M2;
   }
 
+  else if (type == LOAD_TAG_Beam2dThermalAction) {
+     // load not inside fire load pattern
+	 static Vector factors(9);
+	 factors.Zero();
+	 factors(0) = loadFactor;
+	 return this->addLoad(theLoad, factors);
+  }
+
   else {
-    opserr << "DispBeamColumn2dThermal::DispBeamColumn2dThermal -- load type unknown for element with tag: "
-	   << this->getTag() << "DispBeamColumn2dThermal::addLoad()\n"; 
+	   opserr << "DispBeamColumn2dThermal::addLoad(double) -- load type " << theLoad->getClassType() 
+		  << "unknown for element with tag: " << this->getTag() << "\n"; 
     
     return -1;
   }
@@ -749,7 +757,7 @@ DispBeamColumn2dThermal::addLoad(ElementalLoad *theLoad, const Vector &factors)
     loadFactor8=factors(7);
     loadFactor9=factors(8);
 
-  
+
     //opserr << "loadfactor: "
     //<< loadFactor << "     DispBeamColumn2dThermal::addLoad()\n";
     //opserr << "loadfactor2: "
@@ -841,9 +849,8 @@ DispBeamColumn2dThermal::addLoad(ElementalLoad *theLoad, const Vector &factors)
   }
   
   else {
-    opserr << "DispBeamColumn2dThermal::DispBeamColumn2dThermal -- load type unknown for element with tag: "
-	   << this->getTag() << "DispBeamColumn2dThermal::addLoad()\n"; 
-    
+	  opserr << "DispBeamColumn2dThermal::addLoad(Vector) -- load type " << theLoad->getClassType() 
+		  << "unknown for element with tag: " << this->getTag() << "\n"; 
     return -1;
   }
   
