@@ -748,12 +748,14 @@ Steel02Thermal::getVariable(const char *variable, Information &info)
     if (theVector != 0) {
       double tempT, ET, Elong, TempTmax;
       tempT = (*theVector)(0);
+	  ET = (*theVector)(1);
+	  Elong = (*theVector)(2);
       TempTmax = (*theVector)(3);
       this->getElongTangent(tempT, ET, Elong, TempTmax);
-      static Vector data(4);
-      ET = (*theVector)(1);
-      Elong = (*theVector)(2);
-
+	  (*theVector)(0) = tempT;
+      (*theVector)(1) = ET;
+      (*theVector)(2) = Elong;
+	  (*theVector)(3) = TempTmax;
     }
     return 0;
   }

@@ -758,28 +758,29 @@ Concrete02Thermal::Compr_Envlp (double epsc, double &sigc, double &Ect)
 int
 Concrete02Thermal::getVariable(const char *varName, Information &theInfo)
 {
-  if (strcmp(varName, "ThermalElongation") == 0) {
-    theInfo.theDouble = ThermalElongation;    
+  if (strcmp(varName,"ec") == 0) {
+    theInfo.theDouble = epsc0;
     return 0;
-  } else if (strcmp(varName, "ElongTangent") == 0) {
+  } else if (strcmp(varName,"ElongTangent") == 0) {
     Vector *theVector = theInfo.theVector;
     if (theVector != 0) {
       double tempT, ET, Elong, TempTmax;
       tempT = (*theVector)(0);
-      tempT = (*theVector)(3);
+	  ET = (*theVector)(1);
+	  Elong = (*theVector)(2);
+      TempTmax = (*theVector)(3);
       this->getElongTangent(tempT, ET, Elong, TempTmax);
-      static Vector data(4);
-      ET = (*theVector)(1);
-      Elong = (*theVector)(2);
+	  (*theVector)(0) = tempT;
+      (*theVector)(1) = ET;
+      (*theVector)(2) = Elong;
+	  (*theVector)(3) = TempTmax;
     }
     return 0;
-  } else if (strcmp(varName, "ec") == 0) {
-    theInfo.theDouble = epsc0;
-    return 0;
-  } 
-  
+  }
   return -1;
 }
+
+
 
 //this function is no use, just for the definiation of pure virtual function.
 int
