@@ -719,7 +719,7 @@ DispBeamColumn2dThermal::addLoad(ElementalLoad *theLoad, double loadFactor)
      // load not inside fire load pattern
 	 static Vector factors(9);
 	 factors.Zero();
-	 factors(0) = loadFactor;
+	 factors += loadFactor;
 	 return this->addLoad(theLoad, factors);
   }
 
