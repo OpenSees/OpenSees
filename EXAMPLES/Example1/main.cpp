@@ -72,9 +72,6 @@
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 
-double        ops_Dt = 0;
-// Domain       *ops_TheActiveDomain = 0;
-Element      *ops_TheActiveElement = 0;
 
 
 
