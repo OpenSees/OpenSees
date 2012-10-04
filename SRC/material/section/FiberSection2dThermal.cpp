@@ -483,7 +483,9 @@ FiberSection2dThermal::setTrialSectionDeformation(const Vector &deforms, const V
     
     // determine material strain and set it
     double strain = d0 - y*d1;
-    double tangent, stress, ThermalElongation;
+    double tangent =0.0;
+	double stress = 0.0; 
+	double ThermalElongation = 0.0;
     //double tangent, stress, ThermalElongation;
     //  res += theMat->setTrialTemperature(strain, FiberTemperature, stress, tangent, ThermalElongation);//***JZ
     
@@ -503,6 +505,7 @@ FiberSection2dThermal::setTrialSectionDeformation(const Vector &deforms, const V
     tData = iData.getData();
     tangent = tData(1);
     ThermalElongation = tData(2);
+
 
    //strain = strain - LocElong[i];
    strain = strain - ThermalElongation;
@@ -785,7 +788,8 @@ FiberSection2dThermal::getTemperatureStress(const Vector &dataMixed)
     
     
     // determine material strain and set it
-    double tangent, stress, ThermalElongation;
+    double tangent =0.0;
+	double ThermalElongation =0.0;
     
     //opserr << "get temp stresses1 " << FiberTempMax << endln;
     
@@ -898,8 +902,8 @@ FiberSection2dThermal::getTemperatureStress(const Vector &dataMixed)
 
     // determine material strain and set it
     //double strain = d0 - y*d1;
-    double strain = 0;
-    double tangent, stress, ThermalElongation;
+    double tangent =0.0;
+	double ThermalElongation = 0.0;
   //  res += theMat->setTrialTemperature(strain, FiberTemperature, stress, tangent, ThermalElongation);//***JZ
 
    //theMat->setTrialTemperature(strain, FiberTemperature, stress, tangent, ThermalElongation);//***JZ
