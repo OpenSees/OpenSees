@@ -105,9 +105,11 @@ UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
 METISdir       = $(HOME)/OpenSees/OTHER/METIS
 METISdir       = $(HOME)/OpenSees/OTHER/ITPACK
 SRCdir       = $(HOME)/OpenSees/SRC
+CSPARSEdir     = $(HOME)/OpenSees/OTHER/CSPARSE
 
 DIRS        = $(BLASdir) \
 	$(CBLASdir) \
+	$(CSPARSEdir) \
 	$(LAPACKdir) \
 	$(AMDdir) \
 	$(SUPERLUdir) \
@@ -124,12 +126,17 @@ DISTRIBUTED_SUPERLU_LIBRARY     = $(HOME)/lib/libDistributedSuperLU.a
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 DIRS        = $(BLASdir) \
 	$(CBLASdir) \
+	$(CSPARSEdir) \
 	$(LAPACKdir) \
+	$(AMDdir) \
 	$(SUPERLUdir) \
 	$(ARPACKdir) \
-	$(AMDdir) \
 	$(UMFPACKdir) \
 	$(SRCdir) \
+	$(METISdir) \
+	$(SUPERLUdir) \
+	$(ARPACKdir) \
+	$(UMFPACKdir) \
 	$(METISdir) \
 	$(ITPACKdir) 
 
@@ -215,6 +222,8 @@ AMD_LIBRARY  = $(HOME)/lib/libAMD.a
 UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY   = $(HOME)/lib/libMetis.a
 ITPACK_LIBRARY   = $(HOME)/lib/libItpack.a
+CSPARSE_LIBRARY = $(HOME)/lib/libCSparse.a
+
 TCL_LIBRARY = -framework Tcl -framework Tk
 
 
@@ -224,6 +233,7 @@ WIPE_LIBS	= $(FE_LIBRARY) \
 		$(MATMOD_LIBRARY) \
 		$(LAPACK_LIBRARY) \
 		$(AMD_LIBRARY) \
+		$(CSPARSE_LIBRARY) \
 		$(BLAS_LIBRARY) \
 		$(CLBLAS_LIBRARY) \
 		$(SUPERLU_LIBRARY) \
@@ -245,6 +255,7 @@ ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 CC++	= /usr/local/bin/g++
 CC      = /usr/local/bin/gcc
 FC	= /usr/local/bin/gfortran
+
 LINKER          = $(CC++)
 LINKFLAGS       =  -Wl 
 #LINKFLAGS       =  -Wl
@@ -437,6 +448,7 @@ MACHINE_NUMERICAL_LIBS  =  \
 	        $(ITPACK_LIBRARY) \
 	        $(LAPACK_LIBRARY) \
 	        $(CLAPACK_LIBRARY) \
+	        $(CSPARSE_LIBRARY) \
 	        $(CLBLAS_LIBRARY) \
 		$(BLAS_LIBRARY) \
 		$(CBLAS_LIBRARY) \
