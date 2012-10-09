@@ -1,8 +1,10 @@
 include ../../Makefile.def
 
-INCLUDES = -I.
 
-CFLAGS = $(COPTIONS) $(OPTFLAGS) $(INCLUDES)
+.c.o:
+	@$(ECHO) Making $@ from $<
+	$(CC) $(CFLAGS) -I. -c $< -o $@
+
 LD = $(CC) -L. 
 
 

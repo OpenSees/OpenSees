@@ -1,7 +1,12 @@
 include ../../Makefile.def
 
+ifndef $(CSPARSE_LIBRARY)
+   @$(ECHO) "CSPAPRSE_LIBRARY not DEFINED" \
+   CSPARSE_LIBRARY = libcsparse.a.a
+endif
 
-all: libcsparse.a
+
+all: $(CSPARSE_LIBRARY)
 
 CS = cs_add.o cs_amd.o cs_chol.o cs_cholsol.o cs_counts.o cs_cumsum.o \
 	cs_droptol.o cs_dropzeros.o cs_dupl.o cs_entry.o \
@@ -13,7 +18,8 @@ CS = cs_add.o cs_amd.o cs_chol.o cs_cholsol.o cs_counts.o cs_cumsum.o \
 	cs_maxtrans.o cs_dmperm.o cs_updown.o cs_print.o cs_norm.o cs_load.o \
 	cs_dfs.o cs_reach.o cs_spsolve.o cs_ereach.o cs_leaf.o cs_randperm.o
 
-libcsparse.a: $(CS)
+$(CSPARSE_LIBRARY): $(CS)
+	   @$(ECHO) "creating $(CSPAPRSE_LIBRARY)" 
 	@$(RM) $(RMFLAGS) $(CSPARSE_LIBRARY)
 	@$(AR) $(ARFLAGS) $(CSPARSE_LIBRARY) $(CS)
 	@$(RANLIB) $(CSPARSE_LIBRARY)
