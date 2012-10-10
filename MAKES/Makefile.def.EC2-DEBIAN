@@ -34,7 +34,6 @@
 # cd OpenSees
 # make
 
-
 # if parallel
 # apt-get install mpich2
 # edit this file and change PROGAMMING MODE TO BE PARALLEL
@@ -90,6 +89,7 @@ SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_4.1/SRC
 ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
 UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
 METISdir       = $(HOME)/OpenSees/OTHER/METIS
+CSPARSEdir       = $(HOME)/OpenSees/OTHER/CSPARSE
 SRCdir       = $(HOME)/OpenSees/SRC
 
 
@@ -100,11 +100,12 @@ DIRS        = $(SUPERLUdir) \
 	$(UMFPACKdir) \
 	$(AMDdir) \
 	$(METISdir) \
+	$(CSPARSEdir) \
 	$(SRCdir) 
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 
-DIRS        = $(BLASdir) $(CBLASdir) $(LAPACKdir) $(AMDdir) \
+DIRS        = $(BLASdir) $(CBLASdir) $(LAPACKdir) $(AMDdir) $(CSPARSEdir) \
 	$(SUPERLUdir) $(ARPACKdir) $(UMFPACKdir) $(SRCdir) $(METISdir)
 
 endif
@@ -137,6 +138,7 @@ METIS_LIBRARY   = $(HOME)/lib/libMetis.a
 TCL_LIBRARY = -ltcl8.5
 BLITZ_LIBRARY = $(HOME)/blitz/lib/libblitz.a
 GRAPHIC_LIBRARY     = 
+CSPARSE_LIBRARY   = $(HOME)/lib/libCSparse.a
 
 # WATCH OUT .. These libraries are removed when 'make wipe' is invoked.
 WIPE_LIBS	= $(FE_LIBRARY) \
@@ -144,6 +146,7 @@ WIPE_LIBS	= $(FE_LIBRARY) \
 		$(BLAS_LIBRARY) \
 		$(CBLAS_LIBRARY) \
 		$(SUPERLU_LIBRARY) \
+		$(CSPARSE_LIBRARY) \
 		$(ARPACK_LIBRARY) \
 		$(UMFPACK_LIBRARY) \
 	        $(METIS_LIBRARY)
@@ -245,6 +248,7 @@ MACHINE_NUMERICAL_LIBS  = -lm \
 		$(ARPACK_LIBRARY) \
 		$(SUPERLU_LIBRARY) \
 		$(UMFPACK_LIBRARY) \
+		$(CSPARSE_LIBRARY) \
 	        $(LAPACK_LIBRARY) $(BLAS_LIBRARY) $(CBLAS_LIBRARY) \
 		$(AMD_LIBRARY) $(GRAPHIC_LIBRARY)\
 		-ldl -lgfortran 

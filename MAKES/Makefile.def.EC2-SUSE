@@ -18,20 +18,21 @@
 # ssh -i XXX.pem root@YYY.amazonaws.com
 #
 
-# Instructuction for building OpenSees on Redhat Enterprise Linux
-# using amazon EC-2 instance ami-cc5af9a5 64bit
+# Instructuction for building OpenSees on SUSE Linux
+# using amazon EC-2 instance ami-ca32efa3 64bit
 
 # sudo in and type the following:
 # mkdir lib
 # mkdir bin
-# sudo yum install subversion
+# sudu yast2 -i subversion
 # svn co svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk OpenSees
-# sudo yum install emacs
-# sudo yum install make
-# sudo yum install tcl
-# sudo yum install tcl-devel
-# sudo yum install gcc
-# sudo yum install gcc-gfortran
+# sudu yast2 -i emacs
+# sudu yast2 -i make
+# sudu yast2 -i tcl
+# sudu yast2 -i tcl-devel
+# sudu yast2 -i gcc
+# sudu yast2 -i gcc-c++
+# sudu yast2 -i gcc-fortran
 # cd OpenSees
 # cp ./MAKES/Makefile.def.EC2-REDHAT-ENTERPRISE ./Makefile.def
 # make
