@@ -76,7 +76,7 @@ MembranePlateFiberSection::MembranePlateFiberSection( ) :
 SectionForceDeformation( 0, SEC_TAG_MembranePlateFiberSection ), 
 strainResultant(8) 
 { 
-  for ( int i = 0; i < 5; i++ )
+  for ( int i = 0; i < numFibers; i++ )
       theFibers[i] = 0 ;
 }
 
@@ -93,7 +93,7 @@ strainResultant(8)
   this->h  = thickness ;
 
   int i ;
-  for ( i = 0; i < 5; i++ )
+  for ( i = 0; i < numFibers; i++ )
       theFibers[i] = Afiber.getCopy( "PlateFiber" ) ;
 
 }
@@ -104,7 +104,7 @@ strainResultant(8)
 MembranePlateFiberSection::~MembranePlateFiberSection( ) 
 { 
   int i ;
-  for ( i = 0; i < 5; i++ )
+  for ( i = 0; i < numFibers; i++ )
      delete theFibers[i] ; 
 } 
 
@@ -144,7 +144,7 @@ int MembranePlateFiberSection::commitState( )
   int success = 0 ;
 
   int i ;
-  for ( i = 0; i < 5; i++ )
+  for ( i = 0; i < numFibers; i++ )
     success += theFibers[i]->commitState( ) ;
 
   return success ;
@@ -158,7 +158,7 @@ int MembranePlateFiberSection::revertToLastCommit( )
   int success = 0 ;
 
   int i ;
-  for ( i = 0; i < 5; i++ )
+  for ( i = 0; i < numFibers; i++ )
     success += theFibers[i]->revertToLastCommit( ) ;
 
   return success ;
@@ -170,7 +170,7 @@ int MembranePlateFiberSection::revertToStart( )
   int success = 0 ;
 
   int i ;
-  for ( i = 0; i < 5; i++ )
+  for ( i = 0; i < numFibers; i++ )
     success += theFibers[i]->revertToStart( ) ;
 
   return success ;
@@ -186,7 +186,7 @@ MembranePlateFiberSection::getRho( )
 
   double rhoH = 0.0 ;
 
-  for ( int i = 0; i < 5; i++ ) {
+  for ( int i = 0; i < numFibers; i++ ) {
     
     weight = ( 0.5*h ) * wg[i] ;
 
@@ -205,7 +205,7 @@ setTrialSectionDeformation( const Vector &strainResultant_from_element)
 {
   this->strainResultant = strainResultant_from_element ;
 
-  static Vector strain(5) ;
+  static Vector strain(numFibers) ;
 
   int success = 0 ;
 
@@ -213,7 +213,7 @@ setTrialSectionDeformation( const Vector &strainResultant_from_element)
 
   double z ;
 
-  for ( i = 0; i < 5; i++ ) {
+  for ( i = 0; i < numFibers; i++ ) {
 
       z = ( 0.5*h ) * sg[i] ;
   
@@ -246,7 +246,7 @@ const Vector& MembranePlateFiberSection::getSectionDeformation( )
 const Vector&  MembranePlateFiberSection::getStressResultant( )
 {
 
-  static Vector stress(5) ;
+  static Vector stress(numFibers) ;
 
   int i ;
 
@@ -254,7 +254,7 @@ const Vector&  MembranePlateFiberSection::getStressResultant( )
 
   stressResultant.Zero( ) ;
 
-  for ( i = 0; i < 5; i++ ) {
+  for ( i = 0; i < numFibers; i++ ) {
 
       z = ( 0.5*h ) * sg[i] ;
 
@@ -306,7 +306,7 @@ const Matrix&  MembranePlateFiberSection::getSectionTangent( )
 
   tangent.Zero( ) ;
 
-  for ( i = 0; i < 5; i++ ) {
+  for ( i = 0; i < numFibers; i++ ) {
 
       z = ( 0.5*h ) * sg[i] ;
 
@@ -463,7 +463,7 @@ void  MembranePlateFiberSection::Print( OPS_Stream &s, int flag )
   s << "MembranePlateFiberSection: \n " ;
   s <<  "  Thickness h = "        <<  h  <<  endln ;
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < numFibers; i++) {
     theFibers[i]->Print( s, flag ) ;
   }
 
@@ -484,10 +484,10 @@ MembranePlateFiberSection::sendSelf(int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(11);
+  static ID idData(2*numFibers+1);
   
   int i;
-  for (i = 0; i < 5; i++) {
+  for (i = 0; i < numFibers; i++) {
     idData(i) = theFibers[i]->getClassTag();
     matDbTag = theFibers[i]->getDbTag();
     // NOTE: we do have to ensure that the material has a database
@@ -497,10 +497,10 @@ MembranePlateFiberSection::sendSelf(int commitTag, Channel &theChannel)
 			if (matDbTag != 0)
 			  theFibers[i]->setDbTag(matDbTag);
     }
-    idData(i+5) = matDbTag;
+    idData(i+numFibers) = matDbTag;
   }
   
-  idData(10) = this->getTag();
+  idData(2*numFibers) = this->getTag();
 
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -510,7 +510,7 @@ MembranePlateFiberSection::sendSelf(int commitTag, Channel &theChannel)
   }
 
   // Finally, quad asks its material objects to send themselves
-  for (i = 0; i < 5; i++) {
+  for (i = 0; i < numFibers; i++) {
     res += theFibers[i]->sendSelf(commitTag, theChannel);
     if (res < 0) {
       opserr << "WARNING MembranePlateFiberSection::sendSelf() - " << this->getTag() << " failed to send its Material\n";
@@ -529,7 +529,7 @@ MembranePlateFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
   
   int dataTag = this->getDbTag();
 
-  static ID idData(11);
+  static ID idData(2*numFibers+1);
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -537,14 +537,14 @@ MembranePlateFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
     return res;
   }
 
-  this->setTag(idData(10));
+  this->setTag(idData(2*numFibers));
 
   int i;
 
   if (theFibers[0] == 0) {
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < numFibers; i++) {
       int matClassTag = idData(i);
-      int matDbTag = idData(i+5);
+      int matDbTag = idData(i+numFibers);
       // Allocate new material with the sent class tag
       theFibers[i] = theBroker.getNewNDMaterial(matClassTag);
       if (theFibers[i] == 0) {
@@ -564,9 +564,9 @@ MembranePlateFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
   }
   // Number of materials is the same, receive materials into current space
   else {
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < numFibers; i++) {
       int matClassTag = idData(i);
-      int matDbTag = idData(i+5);
+      int matDbTag = idData(i+numFibers);
       // Check that material is of the right type; if not,
       // delete it and create a new one of the right type
       if (theFibers[i]->getClassTag() != matClassTag) {
@@ -594,3 +594,33 @@ MembranePlateFiberSection::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
  
 
 
+Response*
+MembranePlateFiberSection::setResponse(const char **argv, int argc,
+				       OPS_Stream &output)
+{
+  Response *theResponse =0;
+
+  if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+    
+    int passarg = 2;
+    int key = atoi(argv[1]);    
+    
+    if (key > 0 && key <= numFibers) {
+      theResponse =  theFibers[key-1]->setResponse(&argv[passarg], argc-passarg, output);
+    }
+
+    return theResponse;
+  }
+
+  // If not a fiber response, call the base class method
+  return SectionForceDeformation::setResponse(argv, argc, output);
+}
+
+
+int 
+MembranePlateFiberSection::getResponse(int responseID, Information &sectInfo)
+{
+  // Just call the base class method ... don't need to define
+  // this function, but keeping it here just for clarity
+  return SectionForceDeformation::getResponse(responseID, sectInfo);
+}
