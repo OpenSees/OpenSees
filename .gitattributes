@@ -111,6 +111,9 @@ DEVELOPER/core/ObjectBroker.h -text
 DEVELOPER/core/Parameter.cpp -text
 DEVELOPER/core/Parameter.h -text
 DEVELOPER/core/ParameterIter.h -text
+DEVELOPER/core/Pressure_Constraint.cpp -text
+DEVELOPER/core/Pressure_Constraint.h -text
+DEVELOPER/core/Pressure_ConstraintIter.h -text
 DEVELOPER/core/Recorder.cpp -text
 DEVELOPER/core/Recorder.h -text
 DEVELOPER/core/Renderer.cpp -text

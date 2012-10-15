@@ -166,6 +166,8 @@ class FEM_ObjectBroker
 
     virtual Parameter *getParameter(int classTag);
 
+    virtual Channel *getNewChannel(int classTag);
+
     virtual int addUniaxialMaterial(int classTag, const char *lib, const char *funcName, UniaxialMaterial *(*)(void));
     
   protected:

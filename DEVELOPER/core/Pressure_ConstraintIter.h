@@ -18,75 +18,41 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.3 $
-// $Date: 2005-11-07 23:52:13 $
-// $Source: /usr/local/cvs/OpenSees/SRC/actor/channel/Channel.cpp,v $
+// $Revision: 1.1.1.1 $
+// $Date: 2000-09-15 08:23:18 $
+// $Source: /usr/local/cvs/OpenSees/SRC/domain/domain/Pressure_ConstraintIter.h,v $
                                                                         
                                                                         
-// File: ~/actor/channel/Channel.C
+// File: ~/domain/domain/Pressure_ConstraintIter.h
 //
-// Written: fmk
-// Created: 11/96
+// Written: fmk 
+// Created: Fri Sep 20 15:27:47: 1996
 // Revision: A
 //
-// Purpose: This file contains the implementation of Channel.
-//
-// What: "@(#) Channel.C, revA"
+// Description: This file contains the class definition for 
+// Pressure_ConstraintIter. Pressure_ConstraintIter is an abstract base class.
+// An Pressure_ConstraintIter object is an iter for returning  the
+// single point constraints  of an object of class Domain. 
+// Pressure_ConstraintIters must be written for each subclass of Domain.
 
-#include <Channel.h>
-#include <Message.h>
-#include <MovableObject.h>
-#include <FEM_ObjectBroker.h>
-#include <OPS_Globals.h>
+#ifndef Pressure_ConstraintIter_h
+#define Pressure_ConstraintIter_h
 
-int Channel::numChannel = 0;
+class Pressure_Constraint;
 
-Channel::Channel ()
-  :MovableObject(-1)
+class Pressure_ConstraintIter
 {
-  numChannel++;
-  tag = numChannel;
-}
+  public:
+    Pressure_ConstraintIter() {};
+    virtual ~Pressure_ConstraintIter() {};
+    
+    virtual Pressure_Constraint *operator()(void) =0;
+    
+  protected:
 
-Channel::Channel (int classTag)
-  :MovableObject(classTag)
-{
-  numChannel++;
-  tag = numChannel;
-}
+  private:
 
-Channel::~Channel()
-{
-  
-}    
+};
 
-int
-Channel::isDatastore(void)
-{
-  return 0;
-}
+#endif
 
-int
-Channel::getDbTag(void)
-{
-  return 0;
-}
-
-int
-Channel::getTag(void)
-{
-  return tag;
-}
-
-int 
-Channel::sendSelf(int commitTag, Channel &theChannel) {
-  opserr << "Channel::sendSelf() - not implemented\n";
-  return -1;
-}
-
-int 
-Channel::recvSelf(int commitTag, Channel &theChannel, 
-		  FEM_ObjectBroker &theBroker) {
-  opserr << "Channel::recvSelf() - not implemented\n";
-  return -1;
-}

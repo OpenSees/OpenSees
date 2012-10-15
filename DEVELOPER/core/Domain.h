@@ -219,7 +219,9 @@ class Domain
 
     virtual int sendSelf(int commitTag, Channel &theChannel);  
     virtual int recvSelf(int commitTag, Channel &theChannel, 
-			 FEM_ObjectBroker &theBroker);    
+			 FEM_ObjectBroker &theBroker);
+
+    //    virtual int setDbTag(int newTag);
 
     // nodal methods required in domain interface for parallel interprter
     virtual double getNodeDisp(int nodeTag, int dof, int &errorFlag);
@@ -241,7 +243,7 @@ class Domain
     double dT;                        // difference between committed and current time
     int	   currentGeoTag;             // an integer used to mark if domain has changed
     bool   hasDomainChangedFlag;      // a bool flag used to indicate if GeoTag needs to be ++
-    int    theDbTag;                   // the Domains unique database tag == 0
+    //    int    theDbTag;                   // the Domains unique database tag == 0
     int    lastGeoSendTag;            // the value of currentGeoTag when sendSelf was last invoked
     int dbEle, dbNod, dbSPs, dbPCs, dbMPs, dbLPs, dbParam; // database tags for storing info
 
