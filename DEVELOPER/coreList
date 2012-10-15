@@ -144,6 +144,12 @@ SRC/material/uniaxial/UniaxialMaterial.cpp
 SRC/material/uniaxial/UniaxialMaterial.h
 SRC/material/nD/NDMaterial.cpp
 SRC/material/nD/NDMaterial.h
+SRC/material/nD/PlaneStrainMaterial.cpp
+SRC/material/nD/PlaneStrainMaterial.h
+SRC/material/nD/PlateFiberMaterial.cpp
+SRC/material/nD/PlateFiberMaterial.h
+SRC/material/nD/PlaneStressMaterial.cpp
+SRC/material/nD/PlaneStressMaterial.h
 SRC/matrix/Vector.cpp
 SRC/matrix/Vector.h
 SRC/graph/graph/Vertex.cpp

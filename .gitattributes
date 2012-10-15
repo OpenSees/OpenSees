@@ -111,6 +111,12 @@ DEVELOPER/core/ObjectBroker.h -text
 DEVELOPER/core/Parameter.cpp -text
 DEVELOPER/core/Parameter.h -text
 DEVELOPER/core/ParameterIter.h -text
+DEVELOPER/core/PlaneStrainMaterial.cpp -text
+DEVELOPER/core/PlaneStrainMaterial.h -text
+DEVELOPER/core/PlaneStressMaterial.cpp -text
+DEVELOPER/core/PlaneStressMaterial.h -text
+DEVELOPER/core/PlateFiberMaterial.cpp -text
+DEVELOPER/core/PlateFiberMaterial.h -text
 DEVELOPER/core/Pressure_Constraint.cpp -text
 DEVELOPER/core/Pressure_Constraint.h -text
 DEVELOPER/core/Pressure_ConstraintIter.h -text
