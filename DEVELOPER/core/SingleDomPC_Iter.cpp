@@ -18,52 +18,65 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.3 $
-// $Date: 2005-11-07 23:52:13 $
-// $Source: /usr/local/cvs/OpenSees/SRC/actor/channel/Channel.cpp,v $
+// $Revision: 1.0 $
+// $Date: 2012-08-22 12:09:28 $
+// $Source: /usr/local/cvs/OpenSees/SRC/domain/domain/single/SingleDomPC_Iter.cpp,v $
                                                                         
                                                                         
-// File: ~/actor/channel/Channel.C
+// File: ~/OOP/domain/domain/SingleDomPC_Iter.C
 //
-// Written: fmk
-// Created: 11/96
+// Written: Minjie
+// Created: Aug 22 2012
 // Revision: A
 //
-// Purpose: This file contains the implementation of Channel.
-//
-// What: "@(#) Channel.C, revA"
+// Description: This file contains the method definitions for class 
+// SingleDomPC_Iter. SingleDomPC_Iter is a class for iterating through the 
+// elements of a domain. 
 
-#include <Channel.h>
-#include <Message.h>
-#include <MovableObject.h>
-#include <FEM_ObjectBroker.h>
-int Channel::numChannel = 0;
+#include "SingleDomPC_Iter.h"
 
-Channel::Channel ()
+#include <Pressure_Constraint.h>
+#include <TaggedObjectIter.h>
+#include <TaggedObjectStorage.h>
+
+
+// SingleDomPC_Iter(SingleDomain &theDomain):
+//	constructor that takes the model, just the basic iter
+
+SingleDomPC_Iter::SingleDomPC_Iter(TaggedObjectStorage *theStorage)
+  :myIter(theStorage->getComponents())
 {
-	numChannel++;
-	tag = numChannel;
 }
 
-Channel::~Channel()
+SingleDomPC_Iter::~SingleDomPC_Iter()
 {
-    
 }    
 
-int
-Channel::isDatastore(void)
+
+void
+SingleDomPC_Iter::reset(void)
 {
-  return 0;
+    myIter.reset();
 }
 
-int
-Channel::getDbTag(void)
+
+Pressure_Constraint *
+SingleDomPC_Iter::operator()(void)
 {
-  return 0;
+    // check if we still have Pressure_Constraints in the model
+    // if not return 0, indicating we are done
+    TaggedObject *theComponent = myIter();
+    if (theComponent == 0)
+	return 0;
+    else {
+	Pressure_Constraint *result = (Pressure_Constraint *)theComponent;
+	return result;
+    }
 }
 
-int
-Channel::getTag(void)
-{
-		return tag;
-}
+    
+    
+
+
+    
+    

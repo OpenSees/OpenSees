@@ -133,6 +133,7 @@ DEVELOPER/core/SingleDomMP_Iter.cpp -text
 DEVELOPER/core/SingleDomMP_Iter.h -text
 DEVELOPER/core/SingleDomNodIter.cpp -text
 DEVELOPER/core/SingleDomNodIter.h -text
+DEVELOPER/core/SingleDomPC_Iter.cpp -text
 DEVELOPER/core/SingleDomPC_Iter.h -text
 DEVELOPER/core/SingleDomParamIter.cpp -text
 DEVELOPER/core/SingleDomParamIter.h -text

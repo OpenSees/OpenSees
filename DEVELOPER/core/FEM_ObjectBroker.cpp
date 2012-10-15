@@ -56,11 +56,6 @@ FEM_ObjectBroker::getNewActor(int classTag, Channel *theChannel)
   return 0;
 }
 
-Channel *
-FEM_ObjectBroker::getNewChannel(int classTag) {
-  return 0;
-}
-
 
 PartitionedModelBuilder          *
 FEM_ObjectBroker::getPtrNewPartitionedModelBuilder(Subdomain &theSubdomain,

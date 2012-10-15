@@ -38,20 +38,19 @@
 // What: "@(#) Channel.h, revA"
 
 
-#include <MovableObject.h>
 
 class ChannelAddress;
 class Message;
+class MovableObject;
 class Matrix;
 class Vector;
 class ID;
 class FEM_ObjectBroker;
 
-class Channel: public MovableObject
+class Channel
 {
   public:
     Channel ();    
-    Channel (int classTag);    
     virtual ~Channel();
 
     // methods to set up the channel in an actor space
@@ -109,11 +108,6 @@ class Channel: public MovableObject
     virtual int recvID(int dbTag, int commitTag, 
 		    ID &theID, 
 		    ChannelAddress *theAddress =0) =0;      
-
-    virtual int sendSelf(int commitTag, Channel &theChannel);  
-
-    virtual int recvSelf(int commitTag, Channel &theChannel, 
-			 FEM_ObjectBroker &theBroker);
 
   protected:
     

@@ -67,7 +67,6 @@ Subdomain::Subdomain(int tag)
 :Element(tag,ELE_TAG_Subdomain),
  Domain(),
  mapBuilt(false),map(0),mappedVect(0),mappedMatrix(0),
- theLastChannel(0),
  realCost(0.0),cpuCost(0),pageCost(0),
  theAnalysis(0), extNodes(0), theFEele(0) 
 {
@@ -107,7 +106,6 @@ Subdomain::Subdomain(int tag,
    mapBuilt(false),map(0),mappedVect(0),mappedMatrix(0),
    internalNodes(&theInternalNodeStorage),
    externalNodes(&theExternalNodeStorage), 
-   theLastChannel(0),
    realCost(0.0),cpuCost(0),pageCost(0),
    theAnalysis(0), extNodes(0), theFEele(0)
 {
@@ -125,6 +123,7 @@ Subdomain::Subdomain(int tag,
 	opserr << "Subdomain::Subdomain() - ran out of memory\n";
 	exit(-1);
     }    
+
 }    
 
 
@@ -144,10 +143,8 @@ Subdomain::~Subdomain()
 
   if (map != 0)
     delete map;
-
   if (mappedVect != 0)
     delete mappedVect;
-
   if (mappedMatrix != 0)
     delete mappedMatrix;
 }
@@ -838,154 +835,35 @@ Subdomain::doesIndependentAnalysis(void)
 int 
 Subdomain::sendSelf(int cTag, Channel &theChannel)
 {
-  if (theChannel.isDatastore() == 1) {
-
-    int dbTag = this->getDbTag();
-
-    theLastChannel = &theChannel;
-    
-    this->Domain::sendSelf(cTag, theChannel);
-    
-    int numIntNod, numExtNod;
-    numIntNod = internalNodes->getNumComponents();
-    numExtNod = externalNodes->getNumComponents();
-
-    ID domainData(4);
-    domainData(0) = numIntNod;
-    domainData(1) = numExtNod;
-
-    if (dbIntNod == 0) {
-      dbIntNod = theChannel.getDbTag();
-      dbExtNod = theChannel.getDbTag();
-    } 
-    
-    domainData(2) = dbIntNod;
-    domainData(3) = dbExtNd;
-
-  if (theChannel.sendID(theDbTag, commitTag, domainData) < 0) {
-    opserr << "Domain::send - channel failed to send the initial ID\n";
-    return -1;
-  }    
-
-  if (lastChannel != theChannel.getTag() || lastGeoSendTag != currentGeoTag) {
-    lastChannel = theChannel.getTag();
-
-    // get internal node data & send
-    if (numIntNod != 0) {
-      ID nodeData(numIntNod*2);
-      Node *theNode;
-      TaggedObject *theObject;
-      TaggedObjectIter &theNodeIter = internalNodes->getComponents();
-      int loc =0;
-
-      // loop over nodes in domain adding their classTag and dbTag to the ID
-      while ((theObject = theNodeIter()) != 0) {
-	theNode = (Node *)theObject;
-	nodeData(loc) = theNode->getClassTag();
-	int dbTag = theNode->getDbTag();
-	
-	// if dbTag still 0 get one from Channel; 
-	// if this tag != 0 set the dbTag in node
-	if (dbTag == 0) {// go get a new tag and setDbTag in ele if this not 0 
-	  dbTag = theChannel.getDbTag();
-	  if (dbTag != 0)
-	    theNode->setDbTag(dbTag);
-	}
-      
-	nodeData(loc+1) = dbTag;
-	loc+=2;
-      }    
-
-      // now send the ID
-      if (theChannel.sendID(dbNod, currentGeoTag, nodeData) < 0) {
-	opserr << "Domain::send - channel failed to send the node ID\n";
-	return -2;
-      }
-    }
-
-    // get internal node data & send
-    if (numExtNod != 0) {
-      ID nodeData(numExtNod*2);
-      Node *theNode;
-      TaggedObject *theObject;
-      TaggedObjectIter &theNodeIter = internalNodes->getComponents();
-      int loc =0;
-
-      // loop over nodes in domain adding their classTag and dbTag to the ID
-      while ((theObject = theNodeIter()) != 0) {
-	theNode = (Node *)theObject;
-	nodeData(loc) = theNode->getClassTag();
-	int dbTag = theNode->getDbTag();
-
-	if (dbTag == 0) {// go get a new tag and setDbTag in ele if this not 0 
-	  dbTag = theChannel.getDbTag();
-	  if (dbTag != 0)
-	    theNode->setDbTag(dbTag);
-	}
-      
-	nodeData(loc+1) = dbTag;
-	loc+=2;
-      }    
-
-      // now send the ID
-      if (theChannel.sendID(dbNod, currentGeoTag, nodeData) < 0) {
-	opserr << "Domain::send - channel failed to send the node ID\n";
-	return -2;
-      }
-    }
-
-    // finally send the internal & external nodes
-    Node *theNode;
-    TaggedObject *theObject;
-
-    TaggedObjectIter &theInternalNodeIter = internalNodes->getComponents();
-    while ((theObject = theInternalNodeIter()) != 0) {
-      theNode = (Node *)theObject;
-      if (theNode->sendSelf(commitTag, theChannel) < 0) {
-	opserr << "Domain::send - node with tag " << theNode->getTag() << " failed in sendSelf\n";
-	return -7;
-      }
-    }
-
-    TaggedObjectIter &theExternalNodeIter = externalNodes->getComponents();
-    while ((theObject = theExternalNodeIter()) != 0) {
-      theNode = (Node *)theObject;
-      if (theNode->sendSelf(commitTag, theChannel) < 0) {
-	opserr << "Domain::send - node with tag " << theNode->getTag() << " failed in sendSelf\n";
-	return -7;
-      }
-    }
-
-  } else {
     int dataTag = this->getDbTag();
     if (theAnalysis != 0) {
-      ID data(2);
-      data(0) = theAnalysis->getClassTag();
-      data(1) = 0;
-      theChannel.sendID(dataTag, cTag, data);
-      
-      return theAnalysis->sendSelf(cTag, theChannel);
+	ID data(2);
+	data(0) = theAnalysis->getClassTag();
+	data(1) = 0;
+	theChannel.sendID(dataTag, cTag, data);
+        
+	return theAnalysis->sendSelf(cTag, theChannel);
     }
     else {
-      opserr << "Subdomain::sendSelf - no analysis set\n";
+	opserr << "Subdomain::sendSelf - no analysis set\n";
+    
     }
-  }
-  return -1;
+    return -1;
 }
 
 int 
 Subdomain::recvSelf(int cTag, Channel &theChannel, 
 		    FEM_ObjectBroker &theBroker)
 {
-  int dataTag = this->getDbTag();
-  ID data(2);
-  theChannel.recvID(dataTag, cTag, data);
-  if (data(1) == 0) {
-    theAnalysis = theBroker.getNewDomainDecompAnalysis(data(0),*this);
-    if (theAnalysis != 0)
-      return theAnalysis->recvSelf(cTag, theChannel,theBroker);
-  }
-  return -1;
+    int dataTag = this->getDbTag();
+    ID data(2);
+    theChannel.recvID(dataTag, cTag, data);
+    if (data(1) == 0) {
+      theAnalysis = theBroker.getNewDomainDecompAnalysis(data(0),*this);
+      if (theAnalysis != 0)
+	return theAnalysis->recvSelf(cTag, theChannel,theBroker);
+    }
+    return -1;
 }
 
 double    

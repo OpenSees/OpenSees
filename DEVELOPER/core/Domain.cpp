@@ -83,7 +83,7 @@ bool          ops_InitialStateAnalysis = false;
 Domain::Domain()
 :theRecorders(0), numRecorders(0),
  currentTime(0.0), committedTime(0.0), dT(0.0), currentGeoTag(0),
- hasDomainChangedFlag(false), lastGeoSendTag(-1),
+ hasDomainChangedFlag(false), theDbTag(0), lastGeoSendTag(-1),
  dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false),  nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
@@ -135,7 +135,7 @@ Domain::Domain(int numNodes, int numElements, int numSPs, int numMPs,
 	       int numLoadPatterns)
 :theRecorders(0), numRecorders(0),
  currentTime(0.0), committedTime(0.0), dT(0.0), currentGeoTag(0),
- hasDomainChangedFlag(false), lastGeoSendTag(-1),
+ hasDomainChangedFlag(false), theDbTag(0), lastGeoSendTag(-1),
  dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0),
@@ -188,7 +188,7 @@ Domain::Domain(TaggedObjectStorage &theNodesStorage,
 	       TaggedObjectStorage &theLoadPatternsStorage)
 :theRecorders(0), numRecorders(0),
  currentTime(0.0), committedTime(0.0), dT(0.0), currentGeoTag(0),
- hasDomainChangedFlag(false), lastGeoSendTag(-1),
+ hasDomainChangedFlag(false), theDbTag(0), lastGeoSendTag(-1),
  dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
@@ -249,7 +249,7 @@ Domain::Domain(TaggedObjectStorage &theNodesStorage,
 Domain::Domain(TaggedObjectStorage &theStorage)
 :theRecorders(0), numRecorders(0),
  currentTime(0.0), committedTime(0.0), dT(0.0), currentGeoTag(0),
- hasDomainChangedFlag(false), lastGeoSendTag(-1),
+ hasDomainChangedFlag(false), theDbTag(0), lastGeoSendTag(-1),
  dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
@@ -2459,8 +2459,6 @@ Domain::sendSelf(int cTag, Channel &theChannel)
   domainData(10) = dbLPs;
   domainData(12) = dbParam;
 
-  int theDbTag = this->getDbTag();
-
   if (theChannel.sendID(theDbTag, commitTag, domainData) < 0) {
     opserr << "Domain::send - channel failed to send the initial ID\n";
     return -1;
@@ -2501,16 +2499,12 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     // create the ID and get the node iter
     if (numNod != 0) {
       ID nodeData(numNod*2);
-      //      Node *theNode;
-      //      NodeIter &theNodes = this->getNodes();
       Node *theNode;
-      TaggedObject *theObject;
-      TaggedObjectIter &theNodeIter = theNodes->getComponents();
+      NodeIter &theNodes = this->getNodes();
       int loc =0;
 
       // loop over nodes in domain adding their classTag and dbTag to the ID
-      while ((theObject = theNodeIter()) != 0) {
-	theNode = (Node *)theObject;
+      while ((theNode = theNodes()) != 0) {
 	nodeData(loc) = theNode->getClassTag();
 	int dbTag = theNode->getDbTag();
 	
@@ -2795,11 +2789,6 @@ Domain::sendSelf(int cTag, Channel &theChannel)
   return commitTag;
 }
 
-int 
-Domain::setDbTag(int newTag) 
-{
-  theDbTag = newTag;
-}
 
 int 
 Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker) 

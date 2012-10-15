@@ -46,37 +46,16 @@ int FE_Datastore::lastDbTag(0);
 // 	constructor that takes the FE_Datastore's unique tag and the number
 //	of external nodes for the FE_Datastore.
 
-FE_Datastore::FE_Datastore(Domain &thDomain, FEM_ObjectBroker &theBroker, int cTag) 
-  :Channel(cTag), theObjectBroker(&theBroker), theDomain(&thDomain)
+FE_Datastore::FE_Datastore(Domain &thDomain, FEM_ObjectBroker &theBroker) 
+  :theObjectBroker(&theBroker), theDomain(&thDomain)
 {
 
-}
-
-FE_Datastore::FE_Datastore(int classTag) 
-  :Channel(classTag)
-{
-  theObjectBroker = 0;
-  theDomain = 0;
 }
 
 
 FE_Datastore::~FE_Datastore() 
 {
     // does nothing
-}
-
-int
-FE_Datastore::setDomain(Domain *theD)
-{
-  theDomain = theD;
-  return 0;
-}
-
-int
-FE_Datastore::setBroker(FEM_ObjectBroker *theB)
-{
-  theObjectBroker = theB;
-  return 0;
 }
 
 int
@@ -139,7 +118,6 @@ int
 FE_Datastore::commitState(int commitTag)
 {
   // invoke sendSelf on the domain object with this as an arg
-
   int res = 0;
   if (theDomain != 0) {
     res = theDomain->sendSelf(commitTag, *this);

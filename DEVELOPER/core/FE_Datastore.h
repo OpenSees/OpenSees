@@ -47,12 +47,8 @@ class FEM_ObjectBroker;
 class FE_Datastore: public Channel
 {
   public:
-    FE_Datastore(Domain &theDomain, FEM_ObjectBroker &theBroker, int classTag = -1);
-    FE_Datastore(int classTag);    
+    FE_Datastore(Domain &theDomain, FEM_ObjectBroker &theBroker);    
     virtual ~FE_Datastore();
-
-    virtual int setDomain(Domain *theDomain);
-    virtual int setBroker(FEM_ObjectBroker *theBroker);
 
     // methods defined in the Channel class interface which mean nothing for a Datastore
     char *addToProgram(void);

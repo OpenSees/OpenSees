@@ -167,32 +167,29 @@ class Subdomain: public Element, public Domain
     Vector *mappedVect;
     Matrix *mappedMatrix;
 
+
     FE_Element *getFE_ElementPtr(void);
     TaggedObjectStorage  *internalNodes;
     TaggedObjectStorage  *externalNodes;    
 
     DomainDecompositionAnalysis *getDDAnalysis(void);
 
-    Channel *theLastChannel;
-    int dbIntNd, dbExtNd;
-
   private:
     double realCost;
     double cpuCost;
     int pageCost;
-
     DomainDecompositionAnalysis *theAnalysis;
     ID *extNodes;
     FE_Element *theFEele;
     
     //    TaggedObjectStorage  *realExternalNodes;        
+
     SingleDomNodIter   *internalNodeIter;
     SingleDomNodIter   *externalNodeIter;    
     SubdomainNodIter   *theNodIter;
 
     //    PartitionedModelBuilder *thePartitionedModelBuilder;
     static Matrix badResult;
-    int dbIntNod, dbExtNod;
 };
 
 #endif

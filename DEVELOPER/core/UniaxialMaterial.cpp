@@ -61,18 +61,6 @@ UniaxialMaterial *OPS_getUniaxialMaterial(int tag) {
   return theMat;
 }
 
-
-int OPS_removeUniaxialMaterial(int tag) {
-
-  TaggedObject *theResult = theUniaxialMaterialObjects.removeComponent(tag);
-  if (theResult == 0) {
-    opserr << "UniaxialMaterial *removeUniaxialMaterial(int tag) - none found with tag: " << tag << endln;
-    return -1;
-  }
-  return 0;
-}
-
-
 void OPS_clearAllUniaxialMaterial(void) {
   theUniaxialMaterialObjects.clearAll();
 }
