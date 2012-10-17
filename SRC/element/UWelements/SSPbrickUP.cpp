@@ -1218,7 +1218,6 @@ SSPbrickUP::GetStab(void)
 	Matrix Mben(12,24);
 	Matrix FCF(12,12);
 	Matrix dNloc(8,3);
-	Matrix dNmod(8,3);
 	Matrix Jmat(3,3);
 	Matrix Jinv(3,3);
 	Matrix G(8,8);
@@ -1403,9 +1402,6 @@ SSPbrickUP::GetStab(void)
 	J[1] = (e1^(CrossProduct(e2,e5))) + (e1^(CrossProduct(e6,e3)));
     J[2] = (e1^(CrossProduct(e2,e4))) + (e6^(CrossProduct(e2,e3)));
     J[3] = (e5^(CrossProduct(e2,e3))) + (e1^(CrossProduct(e4,e3)));
-	J[1] = 0.0;
-	J[2] = 0.0;
-	J[3] = 0.0;
     J[4] = (e7^(CrossProduct(e2,e3))) + (e4^(CrossProduct(e5,e2))) + (e4^(CrossProduct(e3,e6)));
     J[5] = (e1^(CrossProduct(e7,e3))) + (e4^(CrossProduct(e5,e1))) + (e3^(CrossProduct(e5,e6)));
     J[6] = (e1^(CrossProduct(e2,e7))) + (e4^(CrossProduct(e1,e6))) + (e2^(CrossProduct(e5,e6)));
