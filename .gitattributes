@@ -518,6 +518,7 @@ MAKES/Makefile.def.DATASTAR -text
 MAKES/Makefile.def.EC2-DEBIAN -text
 MAKES/Makefile.def.EC2-FEDORA4 -text
 MAKES/Makefile.def.EC2-REDHAT-ENTERPRISE -text
+MAKES/Makefile.def.EC2-STARCLUSTER32 -text
 MAKES/Makefile.def.EC2-SUSE -text
 MAKES/Makefile.def.EC2-UBUNTU -text
 MAKES/Makefile.def.FEDORA3 -text
