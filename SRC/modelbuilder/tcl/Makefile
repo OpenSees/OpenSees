@@ -99,7 +99,7 @@ INTERPRETER_LIBS_MPI_PARAMETERS = $(FE)/tcl/tclMain.o \
 INTERPRETER_LIBS_TK = $(FE)/tcl/tkMain.o \
 	$(FE)/tcl/tkAppInit.o \
 	$(FE)/tcl/commands.o \
-	$(FE)/modelbuilder/tcl/myCommands.o
+	$(FE)/modelbuilder/tcl/myCommands.o $(GRAPHIC_LIBS_TCL)
 
 GRAPHIC_LIBS_TCL = $(FE)/tcl/TclFeViewer.o \
 	$(FE)/tcl/TclVideoPlayer.o 
