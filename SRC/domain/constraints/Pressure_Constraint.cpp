@@ -96,7 +96,7 @@ int Pressure_Constraint::recvSelf(int commitTag, Channel &theChannel,
     // if o.k. set the data
     this->setTag((int)data(0));
     nodeConstrained = (int)data(1);
-    fluid = (bool)data(2);
+    fluid = (data(2) != 0);
 
     return 0;
 }

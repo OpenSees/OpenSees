@@ -45,7 +45,7 @@ bool OPS_addTimeSeries(TimeSeries *newComponent) {
 }
 
 bool OPS_removeTimeSeries(int tag) {
-  return theTimeSeriesObjects.removeComponent(tag);
+  return (theTimeSeriesObjects.removeComponent(tag) != 0);
 }
 
 TimeSeries *OPS_getTimeSeries(int tag) {
