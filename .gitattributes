@@ -12,6 +12,10 @@ DEVELOPER/core/ArrayOfTaggedObjects.cpp -text
 DEVELOPER/core/ArrayOfTaggedObjects.h -text
 DEVELOPER/core/ArrayOfTaggedObjectsIter.cpp -text
 DEVELOPER/core/ArrayOfTaggedObjectsIter.h -text
+DEVELOPER/core/BeamFiberMaterial.cpp -text
+DEVELOPER/core/BeamFiberMaterial.h -text
+DEVELOPER/core/BeamFiberMaterial2d.cpp -text
+DEVELOPER/core/BeamFiberMaterial2d.h -text
 DEVELOPER/core/BinaryFileStream.cpp -text
 DEVELOPER/core/BinaryFileStream.h -text
 DEVELOPER/core/Channel.cpp -text

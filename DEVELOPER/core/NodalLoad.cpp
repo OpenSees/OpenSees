@@ -187,7 +187,7 @@ NodalLoad::recvSelf(int cTag, Channel &theChannel,
     this->setTag(data(0));
     myNode = data(1);
     int loadSize = data(2);
-    konstant = data(3);
+    konstant = (data(3) != 0);
     this->setLoadPatternTag(data(4));
     if (loadSize != 0) {
 	load = new Vector(data(2));
