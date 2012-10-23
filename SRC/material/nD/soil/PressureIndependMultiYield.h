@@ -137,6 +137,7 @@ private:
 	T2Vector currentStrain;
 	T2Vector strainRate;
 	static T2Vector subStrainRate;
+    double * mGredu;
 
 	void elast2Plast(void);
 	// Called by constructor

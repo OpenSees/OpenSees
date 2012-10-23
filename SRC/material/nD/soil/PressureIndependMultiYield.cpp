@@ -167,6 +167,7 @@ PressureIndependMultiYield::PressureIndependMultiYield (int tag, int nd,
   committedSurfaces = new MultiYieldSurface[numberOfYieldSurf+1];
   activeSurfaceNum = committedActiveSurf = 0;
 
+  mGredu = gredu;
   setUpSurfaces(gredu);  // residualPress is calculated inside.
 }
 
@@ -556,23 +557,38 @@ int PressureIndependMultiYield::setParameter(const char **argv, int argc, Parame
 
     if (strcmp(argv[0],"updateMaterialStage") == 0) {
       return param.addObject(1, this);
-    }
-    else if (strcmp(argv[0],"shearModulus") == 0)
+    } else if (strcmp(argv[0],"shearModulus") == 0) {
       return param.addObject(10, this);
-	else if (strcmp(argv[0],"bulkModulus") == 0)
+	} else if (strcmp(argv[0],"bulkModulus") == 0) {
       return param.addObject(11, this);
+    } else if (strcmp(argv[0],"frictionAngle") == 0) {
+      return param.addObject(12, this);
+    } else if (strcmp(argv[0],"cohesion") == 0) {
+      return param.addObject(13, this);
+    }
   }
   return -1;
 }
 
 int PressureIndependMultiYield::updateParameter(int responseID, Information &info)
-{
-  if (responseID == 1)
+{    
+  if (responseID == 1) {
     loadStagex[matN] = info.theInt;
-  else if (responseID==10)
+  } else if (responseID==10) {
     refShearModulus = info.theDouble;
-  else if (responseID==11)
+  } else if (responseID==11) {
     refBulkModulus = info.theDouble;
+  } else if (responseID==12) {
+    frictionAnglex[matN] = info.theDouble;
+    setUpSurfaces(mGredu);
+    paramScaling();
+    initSurfaceUpdate();
+  } else if (responseID==13) {
+    cohesionx[matN] = info.theDouble;
+    setUpSurfaces(mGredu);
+    paramScaling();
+    initSurfaceUpdate();
+  }
 
   // used by BBarFourNodeQuadUP element
   else if (responseID==20 && ndmx[matN] == 2)
@@ -892,25 +908,25 @@ const Vector & PressureIndependMultiYield::getCommittedStress (void)
 	if (ndm==3) {
 		static Vector temp7(7), temp6(6);
 		temp6 = currentStress.t2Vector();
-    temp7[0] = temp6[0];
-    temp7[1] = temp6[1];
-    temp7[2] = temp6[2];
-    temp7[3] = temp6[3];
-    temp7[4] = temp6[4];
-    temp7[5] = temp6[5];
-    temp7[6] = scale;
-	return temp7;
+        temp7[0] = temp6[0];
+        temp7[1] = temp6[1];
+        temp7[2] = temp6[2];
+        temp7[3] = temp6[3];
+        temp7[4] = temp6[4];
+        temp7[5] = temp6[5];
+        temp7[6] = scale;
+	    return temp7;
 	}
-  else {
-    static Vector temp5(5), temp6(6);
+    else {
+        static Vector temp5(5), temp6(6);
 		temp6 = currentStress.t2Vector();
-    temp5[0] = temp6[0];
-    temp5[1] = temp6[1];
-    temp5[2] = temp6[2];
-    temp5[3] = temp6[3];
-    temp5[4] = scale;
-    return temp5;
-  }
+        temp5[0] = temp6[0];
+        temp5[1] = temp6[1];
+        temp5[2] = temp6[2];
+        temp5[3] = temp6[3];
+        temp5[4] = scale;
+        return temp5;
+    }
 }
 
 

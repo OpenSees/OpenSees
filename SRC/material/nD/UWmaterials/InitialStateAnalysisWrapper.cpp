@@ -388,6 +388,26 @@ InitialStateAnalysisWrapper::setParameter(const char **argv, int argc, Parameter
 		} else {
 			return -1;
 		}
+	} else if (strcmp(argv[0], "frictionAngle") == 0) {
+		if (argc < 2) {
+			return -1;
+		}
+		int matTag = atoi(argv[1]);
+		if (this->getTag() == matTag) {
+			return param.addObject(12,this);
+		} else {
+			return -1;
+		}
+	} else if (strcmp(argv[0], "cohesion") == 0) {
+		if (argc < 2) {
+			return -1;
+		}
+		int matTag = atoi(argv[1]);
+		if (this->getTag() == matTag) {
+			return param.addObject(13,this);
+		} else {
+			return -1;
+		}
 	}
 
 	return -1;

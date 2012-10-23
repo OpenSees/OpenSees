@@ -155,6 +155,7 @@ private:
      static double* residualPressx;
      static double* stressRatioPTx;
      static Matrix theTangent;
+     double * mGredu;
 
 	 int matN;
      int e2p;

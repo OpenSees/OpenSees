@@ -309,6 +309,7 @@ PressureDependMultiYield02::PressureDependMultiYield02 (int tag, int nd,
   theSurfaces = new MultiYieldSurface[numOfSurfaces+1]; //first surface not used
   committedSurfaces = new MultiYieldSurface[numOfSurfaces+1];
 
+  mGredu = gredu;
   setUpSurfaces(gredu);  // residualPress and stressRatioPT are calculated inside.
 }
 
@@ -854,7 +855,7 @@ int PressureDependMultiYield02::getOrder (void) const
 
 int PressureDependMultiYield02::setParameter(const char **argv, int argc, Parameter &param)
 {
-  if (argc < 1)
+  /*if (argc < 1)
     return -1;
 
   if (strcmp(argv[0],"updateMaterialStage") == 0) {
@@ -873,6 +874,29 @@ int PressureDependMultiYield02::setParameter(const char **argv, int argc, Parame
   else if (strcmp(argv[0],"bulkModulus") == 0)
     return param.addObject(11, this);
 
+  return -1;*/
+
+  if (argc < 2)
+    return -1;
+
+  int theMaterialTag;
+  theMaterialTag = atoi(argv[1]);
+
+  // check for material tag
+  if (theMaterialTag == this->getTag()) {
+
+    if (strcmp(argv[0],"updateMaterialStage") == 0) {
+      return param.addObject(1, this);
+    } else if (strcmp(argv[0],"shearModulus") == 0) {
+      return param.addObject(10, this);
+	} else if (strcmp(argv[0],"bulkModulus") == 0) {
+      return param.addObject(11, this);
+    } else if (strcmp(argv[0],"frictionAngle") == 0) {
+      return param.addObject(12, this);
+    } else if (strcmp(argv[0],"cohesion") == 0) {
+      return param.addObject(13, this);
+    }
+  }
   return -1;
 }
 
@@ -883,12 +907,32 @@ int PressureDependMultiYield02::updateParameter(int responseID, Information &inf
     loadStagex[matN] = responseID;
   */
 
-  if (responseID == 1)
+  /*if (responseID == 1)
     loadStagex[matN] = info.theInt;
   else if (responseID==10)
     refShearModulusx[matN]=info.theDouble;
   else if (responseID==11)
     refBulkModulusx[matN]=info.theDouble;
+  // used by BBarFourNodeQuadUP element
+  else if (responseID==20 && ndmx[matN] == 2)
+		ndmx[matN] = 0;*/
+
+  if (responseID == 1) {
+    loadStagex[matN] = info.theInt;
+  } else if (responseID==10) {
+    refShearModulusx[matN] = info.theDouble;
+  } else if (responseID==11) {
+    refBulkModulusx[matN] = info.theDouble;
+  } else if (responseID==12) {
+    frictionAnglex[matN] = info.theDouble;
+    setUpSurfaces(mGredu);
+    initSurfaceUpdate();
+  } else if (responseID==13) {
+    cohesionx[matN] = info.theDouble;
+    setUpSurfaces(mGredu);
+    initSurfaceUpdate();
+  }
+
   // used by BBarFourNodeQuadUP element
   else if (responseID==20 && ndmx[matN] == 2)
 		ndmx[matN] = 0;
