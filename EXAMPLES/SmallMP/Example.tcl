@@ -3,6 +3,8 @@ set numP  [getNP]
 set count 0;
 source ReadRecord.tcl
 
+set tStart [clock clicks -milliseconds]
+
 foreach gMotion [glob -nocomplain -directory GM *.AT2] {
     if {[expr $count % $numP] == $pid}  {
 	source model.tcl
@@ -22,9 +24,10 @@ foreach gMotion [glob -nocomplain -directory GM *.AT2] {
 	    
 	    if {$nPts != 0} {
 		
-		recorder EnvelopeNode -file $gMotionName.out -node 3 4 -dof 1 2 3 disp
+		recorder Node -file $gMotionName.out -node 3 4 -dof 1 2 3 disp
 		
 		doDynamic $dT $nPts
+#		doDynamic $dT 2
 
 		file delete $gMotionName.dat
 
@@ -46,4 +49,8 @@ foreach gMotion [glob -nocomplain -directory GM *.AT2] {
 }
 
 
-
+set tEnd [clock clicks -milliseconds]
+set duration [expr $tEnd-$tStart]
+if {$pid == 0} {
+    puts "Duration $duration"
+}
