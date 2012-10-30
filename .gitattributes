@@ -2997,6 +2997,8 @@ SRC/material/uniaxial/Pinching4Material.cpp -text
 SRC/material/uniaxial/Pinching4Material.h -text
 SRC/material/uniaxial/PrestressedSteelMaterial.cpp -text
 SRC/material/uniaxial/PrestressedSteelMaterial.h -text
+SRC/material/uniaxial/RambergOsgoodSteel.cpp -text
+SRC/material/uniaxial/RambergOsgoodSteel.h -text
 SRC/material/uniaxial/ReinforcingSteel.cpp -text
 SRC/material/uniaxial/ReinforcingSteel.h -text
 SRC/material/uniaxial/SAWSMaterial.cpp -text
