@@ -62,8 +62,9 @@ class GenericClient : public Element
 public:
     // constructors
     GenericClient(int tag, ID nodes, ID *dof,
-		  int port, char *machineInetAddr = 0,
-		  int ssl = 0, int udp = 0, int dataSize = 256);
+          int port, char *machineInetAddr = 0,
+          int ssl = 0, int udp = 0, int dataSize = 256,
+          int addRayleigh = 1);
     GenericClient();
     
     // destructor
@@ -133,6 +134,7 @@ private:
     int ssl;                    // secure socket layer flag
     int udp;                    // udp socket flag
     int dataSize;               // data size of send/recv vectors
+    int addRayleigh;            // flag to add Rayleigh damping
     
     static Matrix theMatrix;        // objects matrix
     static Matrix theInitStiff;     // initial stiffness matrix

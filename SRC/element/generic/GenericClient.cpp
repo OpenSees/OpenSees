@@ -60,11 +60,12 @@ Vector GenericClient::theLoad(1);
 // responsible for allocating the necessary space needed
 // by each object and storing the tags of the end nodes.
 GenericClient::GenericClient(int tag, ID nodes, ID *dof, int _port,
-    char *machineinetaddr, int _ssl, int _udp, int datasize)
+    char *machineinetaddr, int _ssl, int _udp, int datasize, int addRay)
     : Element(tag, ELE_TAG_GenericClient),
     connectedExternalNodes(nodes), basicDOF(1),
     numExternalNodes(0), numDOF(0), numBasicDOF(0), port(_port),
-    machineInetAddr(0), ssl(_ssl), udp(_udp), dataSize(datasize),
+    machineInetAddr(0), ssl(_ssl), udp(_udp),
+    dataSize(datasize), addRayleigh(addRay),
     theChannel(0), sData(0), sendData(0), rData(0), recvData(0),
     db(0), vb(0), ab(0), t(0), qDaq(0), rMatrix(0),
     dbCtrl(1), vbCtrl(1), abCtrl(1),
@@ -118,7 +119,8 @@ GenericClient::GenericClient()
     : Element(0, ELE_TAG_GenericClient),
     connectedExternalNodes(1), basicDOF(1),
     numExternalNodes(0), numDOF(0), numBasicDOF(0),
-    port(0), machineInetAddr(0), ssl(0), udp(0), dataSize(0),
+    port(0), machineInetAddr(0), ssl(0), udp(0),
+    dataSize(0), addRayleigh(0),
     theChannel(0), sData(0), sendData(0), rData(0), recvData(0),
     db(0), vb(0), ab(0), t(0), qDaq(0), rMatrix(0),
     dbCtrl(1), vbCtrl(1), abCtrl(1),
@@ -229,7 +231,7 @@ void GenericClient::setDomain(Domain *theDomain)
     for (i=0; i<numExternalNodes; i++)  {
         numDOF += theNodes[i]->getNumberDOF();
     }
-
+    
     // set the basicDOF ID
     int j, k = 0, ndf = 0;
     for (i=0; i<numExternalNodes; i++)  {
@@ -239,7 +241,7 @@ void GenericClient::setDomain(Domain *theDomain)
         }
         ndf += theNodes[i]->getNumberDOF();
     }
-
+    
     // set the matrix and vector sizes and zero them
     theMatrix.resize(numDOF,numDOF);
     theMatrix.Zero();
@@ -261,9 +263,12 @@ int GenericClient::commitState()
 {
     int rValue = 0;
     
-    // commit the server side
+    // commit remote element
     sData[0] = RemoteTest_commitState;
     rValue += theChannel->sendVector(0, 0, *sendData, 0);
+    
+    // commit the base class
+    rValue += this->Element::commitState();
     
     return rValue;
 }
@@ -323,7 +328,7 @@ int GenericClient::update()
         ndim += theDOF[i].Size();
     }
     
-    // set the trial response at the element
+    // set trial response at remote element
     sData[0] = RemoteTest_setTrialResponse;
     rValue += theChannel->sendVector(0, 0, *sendData, 0);
     
@@ -336,11 +341,11 @@ const Matrix& GenericClient::getTangentStiff()
     // zero the matrices
     theMatrix.Zero();
     rMatrix->Zero();
-
+    
+    // get tangent stiffness from remote element
     sData[0] = RemoteTest_getTangentStiff;
     theChannel->sendVector(0, 0, *sendData, 0);
     theChannel->recvVector(0, 0, *recvData, 0);
-    
     theMatrix.Assemble(*rMatrix,basicDOF,basicDOF);
     
     return theMatrix;
@@ -353,7 +358,8 @@ const Matrix& GenericClient::getInitialStiff()
         // zero the matrices
         theInitStiff.Zero();
         rMatrix->Zero();
-
+        
+        // get initial stiffness from remote element
         sData[0] = RemoteTest_getInitialStiff;
         theChannel->sendVector(0, 0, *sendData, 0);
         theChannel->recvVector(0, 0, *recvData, 0);
@@ -371,11 +377,16 @@ const Matrix& GenericClient::getDamp()
     // zero the matrices
     theMatrix.Zero();
     rMatrix->Zero();
-
+    
+    // call base class to setup Rayleigh damping
+    if (addRayleigh == 1)  {
+        theMatrix = this->Element::getDamp();
+    }
+    
+    // now add damping from remote element
     sData[0] = RemoteTest_getDamp;
     theChannel->sendVector(0, 0, *sendData, 0);
     theChannel->recvVector(0, 0, *recvData, 0);
-    
     theMatrix.Assemble(*rMatrix,basicDOF,basicDOF);
     
     return theMatrix;
@@ -388,7 +399,8 @@ const Matrix& GenericClient::getMass()
         // zero the matrices
         theMass.Zero();
         rMatrix->Zero();
-
+        
+        // get mass matrix from remote element
         sData[0] = RemoteTest_getMass;
         theChannel->sendVector(0, 0, *sendData, 0);
         theChannel->recvVector(0, 0, *recvData, 0);
@@ -422,7 +434,7 @@ int GenericClient::addInertiaLoadToUnbalance(const Vector &accel)
     int ndim = 0, i;
     static Vector Raccel(numDOF);
     Raccel.Zero();
-
+    
     // get mass matrix
     Matrix M = this->getMass();
     // assemble Raccel vector
@@ -443,7 +455,7 @@ const Vector& GenericClient::getResistingForce()
     // zero the residual
     theVector.Zero();
     
-    // get daq resisting forces
+    // get resisting forces from remote element
     sData[0] = RemoteTest_getForce;
     theChannel->sendVector(0, 0, *sendData, 0);
     theChannel->recvVector(0, 0, *recvData, 0);
@@ -473,7 +485,8 @@ const Vector& GenericClient::getResistingForceIncInertia()
     vel.Zero();
     accel.Zero();
     
-    // add the damping forces from element damping
+    // add the damping forces from remote element damping
+    // (if addRayleigh==1, C matrix already includes rayleigh damping)
     Matrix C = this->getDamp();
     // assemble vel vector
     for (i=0; i<numExternalNodes; i++ )  {
@@ -482,6 +495,7 @@ const Vector& GenericClient::getResistingForceIncInertia()
     }
     theVector += C * vel;
     
+    ndim = 0;
     // add inertia forces from element mass
     Matrix M = this->getMass();
     // assemble accel vector
@@ -538,7 +552,7 @@ const Vector& GenericClient::getBasicAccel()
 int GenericClient::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static ID idData(7);
+    static ID idData(8);
     idData(0) = this->getTag();
     idData(1) = numExternalNodes;
     idData(2) = port;
@@ -546,8 +560,9 @@ int GenericClient::sendSelf(int commitTag, Channel &sChannel)
     idData(4) = ssl;
     idData(5) = udp;
     idData(6) = dataSize;
+    idData(7) = addRayleigh;
     sChannel.sendID(0, commitTag, idData);
-
+    
     // send the end nodes and dofs
     sChannel.sendID(0, commitTag, connectedExternalNodes);
     for (int i=0; i<numExternalNodes; i++)
@@ -573,7 +588,7 @@ int GenericClient::recvSelf(int commitTag, Channel &rChannel,
         delete [] machineInetAddr;
     
     // receive element parameters
-    static ID idData(7);
+    static ID idData(8);
     rChannel.recvID(0, commitTag, idData);
     this->setTag(idData(0));
     numExternalNodes = idData(1);
@@ -582,6 +597,7 @@ int GenericClient::recvSelf(int commitTag, Channel &rChannel,
     ssl = idData(4);
     udp = idData(5);
     dataSize = idData(6);
+    addRayleigh = idData(7);
     
     // initialize nodes and receive them
     connectedExternalNodes.resize(numExternalNodes);
@@ -635,26 +651,26 @@ int GenericClient::displaySelf(Renderer &theViewer,
     int displayMode, float fact)
 {
     int rValue = 0, i, j;
-
+    
     if (numExternalNodes > 1)  {
         if (displayMode >= 0)  {
             for (i=0; i<numExternalNodes-1; i++)  {
                 const Vector &end1Crd = theNodes[i]->getCrds();
                 const Vector &end2Crd = theNodes[i+1]->getCrds();
-
+                
                 const Vector &end1Disp = theNodes[i]->getDisp();
                 const Vector &end2Disp = theNodes[i+1]->getDisp();
-
+                
                 int end1NumCrds = end1Crd.Size();
                 int end2NumCrds = end2Crd.Size();
-
+                
                 Vector v1(3), v2(3);
-
+                
                 for (j=0; j<end1NumCrds; j++)
                     v1(j) = end1Crd(j) + end1Disp(j)*fact;
                 for (j=0; j<end2NumCrds; j++)
                     v2(j) = end2Crd(j) + end2Disp(j)*fact;
-
+                
                 rValue += theViewer.drawLine (v1, v2, 1.0, 1.0);
             }
         } else  {
@@ -662,15 +678,15 @@ int GenericClient::displaySelf(Renderer &theViewer,
             for (i=0; i<numExternalNodes-1; i++)  {
                 const Vector &end1Crd = theNodes[i]->getCrds();
                 const Vector &end2Crd = theNodes[i+1]->getCrds();
-
+                
                 const Matrix &eigen1 = theNodes[i]->getEigenvectors();
                 const Matrix &eigen2 = theNodes[i+1]->getEigenvectors();
-
+                
                 int end1NumCrds = end1Crd.Size();
                 int end2NumCrds = end2Crd.Size();
-
+                
                 Vector v1(3), v2(3);
-
+                
                 if (eigen1.noCols() >= mode)  {
                     for (j=0; j<end1NumCrds; j++)
                         v1(j) = end1Crd(j) + eigen1(j,mode-1)*fact;
@@ -682,7 +698,7 @@ int GenericClient::displaySelf(Renderer &theViewer,
                     for (j=0; j<end2NumCrds; j++)
                         v2(j) = end2Crd(j);
                 }
-
+                
                 rValue += theViewer.drawLine (v1, v2, 1.0, 1.0);
             }
         }
@@ -704,6 +720,7 @@ void GenericClient::Print(OPS_Stream &s, int flag)
         s << endln;
         s << "  ipAddress: " << machineInetAddr
             << ", ipPort: " << port << endln;
+        s << "  addRayleigh: " << addRayleigh << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
     } else if (flag == 1)  {
