@@ -721,6 +721,7 @@
 #define INTEGRATOR_TAGS_GeneralizedAlpha                35
 #define INTEGRATOR_TAGS_DisplacementPath                36
 #define INTEGRATOR_TAGS_FSI                             37
+#define INTEGRATOR_TAGS_TRBDF3                          38
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2

@@ -935,6 +935,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/TransientIntegrator.o \
 	$(FE)/analysis/integrator/Newmark.o \
 	$(FE)/analysis/integrator/TRBDF2.o \
+    $(FE)/analysis/integrator/TRBDF3.o \
 	$(FE)/analysis/integrator/HHT.o \
 	$(FE)/analysis/integrator/GeneralizedAlpha.o \
 	$(FE)/analysis/integrator/Newmark1.o \

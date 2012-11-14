@@ -171,6 +171,7 @@ extern TransientIntegrator *OPS_NewHHT(void);
 extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 
 #include <TRBDF2.h>
+#include <TRBDF3.h>
 #include <WilsonTheta.h>
 #include <HHT1.h>
 #include <Newmark1.h> 
@@ -3787,7 +3788,11 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   else if ((strcmp(argv[1],"TRBDF2") == 0) || (strcmp(argv[1],"Bathe") == 0)) {
     theTransientIntegrator = new TRBDF2();           
   }
-  
+
+  else if ((strcmp(argv[1],"TRBDF3") == 0) || (strcmp(argv[1],"Bathe3") == 0)) {
+      theTransientIntegrator = new TRBDF3();     
+  }
+    
   else if (strcmp(argv[1],"Newmark") == 0) {
     theTransientIntegrator = OPS_NewNewmark();
 
