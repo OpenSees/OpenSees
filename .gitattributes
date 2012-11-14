@@ -1694,6 +1694,8 @@ SRC/analysis/integrator/StaticIntegrator.h -text
 SRC/analysis/integrator/StaticIntegrator.tex -text
 SRC/analysis/integrator/TRBDF2.cpp -text
 SRC/analysis/integrator/TRBDF2.h -text
+SRC/analysis/integrator/TRBDF3.cpp -text
+SRC/analysis/integrator/TRBDF3.h -text
 SRC/analysis/integrator/TransientIntegrator.cpp -text
 SRC/analysis/integrator/TransientIntegrator.h -text
 SRC/analysis/integrator/TransientIntegrator.tex -text

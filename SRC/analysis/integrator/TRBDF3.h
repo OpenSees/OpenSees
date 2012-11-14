@@ -20,24 +20,30 @@
 
 // $Revision: 1.1 $
 // $Date: 2009-03-20 18:36:30 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/TRBDF2.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/TRBDF3.h,v $
 
-#ifndef TRBDF2_h
-#define TRBDF2_h
+#ifndef TRBDF3_h
+#define TRBDF3_h
 
-// Written : fmk 
-// Created : 02/09
+// Written : krm
+// Created : 11/2012
 //
-// Description: This file contains the class definition for TRBDF2.
-// TRBDF2 is an algorithmic class for performing a transient analysis
-// using the TRBDF2 integration scheme.
+// Description: This file contains the class definition for TRBDF3.
+// TRBDF3 is an algorithmic class for performing a transient analysis
+// using the so-called TRBDF3 integration scheme. It is based in part on the 
+// two part algorithm of Bathe that is now coded as TRBDF2:
 // ref: K.J.Bathe, "Conserving Energy and Momentum in Nonlinear Dynamics: A Simple
 //      Implicit Time Integration Scheme", Computers ans Structures 85(2007),437-445
+// but further subdivides the step into a total of 3 sub-steps with the first being
+// trapezoid rule, second three point backward Euler, and third is Houbolt (although 
+// technically he notes in the paper that he uses a 3 sub-step procedure with 2 trapezoid
+// steps followed by Houbolt).
 //
-// note: the implementation does not do sub-step, it just alternates between trapezoidal
-// and euler methods, if user specifies dt/2 step size result will be as per paper.
+// note: the implementation does not do sub-step, it just cycles between trapezoidal, 
+// euler methods, and Houbolt. So to compare to paper or to Newmark or some other analysis, 
+// user should specify dt/3 step size.
 //
-// What: "@(#) TRBDF2.h, revA"
+// What: "@(#) TRBDF3.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -45,11 +51,11 @@ class DOF_Group;
 class FE_Element;
 class Vector;
 
-class TRBDF2 : public TransientIntegrator
+class TRBDF3 : public TransientIntegrator
 {
 public:
-    TRBDF2();
-    ~TRBDF2();
+    TRBDF3();
+    ~TRBDF3();
     
     // methods which define what the FE_Element and DOF_Groups add
     // to the system of equation object.
@@ -73,7 +79,8 @@ public:
     int step;      // a flag indicating whether trap or euler step
     double dt;     // last dt, if not same as previous we do trapezoidal step
     
-    double c1, c2, c3;              // some constants we need to kee
+    double c1, c2, c3;              // some constants we need to keep
+    Vector *Utm2, *Utm2dot, *Utm2dotdot;  // response quantities at time t-2
     Vector *Utm1, *Utm1dot, *Utm1dotdot;  // response quantities at time t-1
     Vector *Ut, *Utdot, *Utdotdot;         // response quantities at time t
     Vector *U, *Udot, *Udotdot;            // response quantities at time t+deltaT
