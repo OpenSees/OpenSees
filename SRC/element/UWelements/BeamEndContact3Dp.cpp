@@ -60,7 +60,7 @@ OPS_BeamEndContact3Dp(void)
   	int numRemainingInputArgs = OPS_GetNumRemainingInputArgs();
 
   	if (numRemainingInputArgs < 6) {
-    	opserr << "Invalid #args, want: element BeamEndContact3Dp eleTag? iNode? jNode? slaveNode? radius? penalty? <cFlag>?\n";
+    	opserr << "Invalid #args, want: element BeamEndContact3Dp eleTag? iNode? jNode? sNode? radius? penalty? <cFlag>?\n";
 		return 0;
   	}
 

@@ -2270,7 +2270,7 @@ SSPbrickUP::GetPermeabilityMatrix(void)
 // this function computes the permeability matrix for the element
 {
 	Matrix k(3,3);
-	double root3 = sqrt(3.0);
+	double root3 = 8.0/(sqrt(3.0));
 	Vector s = root3*xi;
 	Vector t = root3*et;
 	Vector u = root3*ze;
@@ -2335,7 +2335,7 @@ SSPbrickUP::GetPermeabilityMatrix(void)
 		dNT(2,0) = dN(0,2); dNT(2,1) = dN(1,2); dNT(2,2) = dN(2,2); dNT(2,3) = dN(3,2); dNT(2,4) = dN(4,2); dNT(2,5) = dN(5,2); dNT(2,6) = dN(6,2); dNT(2,7) = dN(7,2);
 
 		double detJ =  Jmat(0,0)*Jmat(1,1)*Jmat(2,2) + Jmat(0,1)*Jmat(1,2)*Jmat(2,0) + Jmat(0,2)*Jmat(1,0)*Jmat(2,1)
-		              -Jmat(0,2)*Jmat(1,1)*Jmat(2,0) + Jmat(0,1)*Jmat(1,0)*Jmat(2,2) + Jmat(0,0)*Jmat(1,2)*Jmat(2,1);
+		              -Jmat(0,2)*Jmat(1,1)*Jmat(2,0) - Jmat(0,1)*Jmat(1,0)*Jmat(2,2) - Jmat(0,0)*Jmat(1,2)*Jmat(2,1);
 
 		mPerm.addMatrixTripleProduct(1.0, dNT, k, detJ);
 		mPressStab.addMatrixTransposeProduct(1.0, dNT, dNT, detJ*mAlpha);

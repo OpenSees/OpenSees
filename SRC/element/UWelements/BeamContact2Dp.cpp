@@ -167,7 +167,7 @@ BeamContact2Dp::BeamContact2Dp(int tag, int Nd1, int Nd2, int NdS, NDMaterial &t
 	if (theMatCopy != 0) {
 	  theMaterial = (ContactMaterial2D *)theMatCopy;
 	} else {
-	  opserr << "BeamContact2Dp::BeamContact2Dp - material needs to be of type ContactMaterial2D for ele: " << this->getTag() << endln;
+	  opserr << "BeamContact2Dp::BeamContact2Dp - material needs to be ContactMaterial2D for ele: " << this->getTag() << endln;
 	}
 
 	// check material
@@ -313,7 +313,8 @@ BeamContact2Dp::commitState()
 	ComputeB();
 
 	// update contact state 
-	was_inContact = (mGap < 0.0);
+    double tol = 0.000001*mRadius;
+	was_inContact = (mGap < tol);
 	in_bounds     = ((mXi > 0.000) && (mXi < 1.000));
 	inContact     = (was_inContact && in_bounds);
 
@@ -415,7 +416,8 @@ BeamContact2Dp::update(void)
 
 	// update penetration function
 	mGap = (mNormal^(mDcrd_s - x_c)) - mRadius;
-	if (mGap < 0.0 && in_bounds) {
+    double tol = 0.000001*mRadius;
+	if (mGap < tol && in_bounds) {
 		inContact = true;
 	} else {
 		mGap = 0.0;
@@ -423,7 +425,8 @@ BeamContact2Dp::update(void)
 	}
 
 	// update normal contact force
-	if (was_inContact) {
+	//if (was_inContact) {
+    if (inContact) {
 		mLambda = mPenalty*mGap;
 	} else {
 		mLambda = 0.0;
