@@ -382,7 +382,7 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag)
 	  LoadPattern *newLoadPattern = theLoadPattern->getCopy();
 	  if (newLoadPattern == 0) {
 	    opserr << "DomaiPartitioner::partition - out of memory creating LoadPatterns\n";
-	    return -1;
+ 	    return -1;
 	  }
 	  theSubdomain->addLoadPattern(newLoadPattern);
 	}
@@ -421,7 +421,6 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag)
       }      
     }
 
-
   
     SP_ConstraintIter &theSPs = theLoadPattern->getSPs();
     SP_Constraint *spPtr;
@@ -457,43 +456,19 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag)
     while ((theLoad = theLoads()) != 0) {
       int loadEleTag = theLoad->getElementTag();
 
-      // find subdomain with node and add it .. break if find as internal node
       SubdomainIter &theSubdomains = myDomain->getSubdomains();
       Subdomain *theSub;
       bool added = false;
       while (((theSub = theSubdomains()) != 0) && (added == false)) {
 	bool res = theSub->hasElement(loadEleTag);
 	if (res == true) {
-	  // opserr << "PartitionedDomain::addLoadPattern(LoadPattern *loadPattern) SUB " << theSub->getTag() << *load;
-	  int res = theSub->addElementalLoad(theLoad, loadPatternTag);
+	  theLoadPattern->removeElementalLoad(theLoad->getTag());
+	  theSub->addElementalLoad(theLoad, loadPatternTag);
 	  if (res < 0)
 	    opserr << "DomainPartitioner::partition() - failed to add ElementalLoad\n";
 	  added = true;
 	}
-      }     
-
-      /*
-      int partition = -1;
-      VertexIter &theVertices = theElementGraph->getVertices();
-      while (((vertexPtr = theVertices()) != 0) && partition == -1) {
-	int eleTag = vertexPtr->getRef();      
-	if (eleTag == loadEleTag) 
-	  partition = vertexPtr->getColor();
-      }
-      
-      if (partition == -1) {
-	opserr << "DomainPartitioner::partition() - failed to find corresponding Element for ElementalLoad\n";
-      } else {
-	if (partition != mainPartition) {
-	  Subdomain *theSubdomain = myDomain->getSubdomainPtr(partition); 
-	  theLoadPattern->removeElementalLoad(theLoad->getTag());
-	  int res = theSubdomain->addSP_Constraint(spPtr, loadPatternTag);
-	  if (res < 0)
-	    opserr << "DomainPartitioner::partition() - failed to add ElementalLoad\n";
-	}
-      }
-      */
-
+      }   
     }
   }
 

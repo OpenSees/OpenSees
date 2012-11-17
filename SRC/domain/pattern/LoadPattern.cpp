@@ -318,6 +318,7 @@ LoadPattern::removeElementalLoad(int tag)
     TaggedObject *obj = theElementalLoads->removeComponent(tag);
     if (obj == 0)
 	return 0;
+
     ElementalLoad *result = (ElementalLoad *)obj;
     result->setDomain(0);
     currentGeoTag++;
