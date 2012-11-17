@@ -1035,8 +1035,11 @@ void PressureIndependMultiYield::setUpSurfaces (double * gredu)
 			residualPress = 0.;
 		}
 
+		/*
 		opserr << "\nNDMaterial " <<this->getTag()<<": Friction angle = "<<frictionAngle
 			<<", Cohesion = "<<cohesion<<"\n"<<endln;
+		*/
+
 
 		if (frictionAngle == 0.) pressDependCoeff = 0.; // ignore user defined pressDependCoeff
 
