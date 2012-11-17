@@ -2,7 +2,7 @@
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
-**                                                                    **
+**                                                     1               **
 ** (C) Copyright 1999, The Regents of the University of California    **
 ** All Rights Reserved.                                               **
 **                                                                    **
@@ -58,7 +58,7 @@ void *
 OPS_NewShellMITC4(void)
 {
   if (numShellMITC4 == 0) {
-    opserr << "Using ShellMITC4 - Developed by: Leopoldo Tesser, Diego A. Talledo, Véronique Le Corvec\n";
+    opserr << "Using ShellMITC4 - Developed by: Leopoldo Tesser, Diego A. Talledo, Veronique Le Corvec\n";
     numShellMITC4++;
   }
 
@@ -242,6 +242,7 @@ void  ShellMITC4::setDomain( Domain *theDomain )
   computeBasis( ) ;
 
   this->DomainComponent::setDomain(theDomain);
+
 }
 
 
@@ -1283,6 +1284,7 @@ ShellMITC4::formResidAndTangent( int tang_flag )
 
     if ( tang_flag == 1 ) {
       dd = materialPointers[i]->getSectionTangent( ) ;
+
       dd *= dvol[i] ;
     } //end if tang_flag
 
