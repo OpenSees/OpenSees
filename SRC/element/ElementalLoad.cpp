@@ -65,6 +65,11 @@ ElementalLoad::setDomain(Domain *theDomain)
 {
   this->DomainComponent::setDomain(theDomain);
 
+  if (theDomain == 0) {
+    theElement = 0;
+    return;
+  }
+
   theElement = theDomain->getElement(eleTag);
   if (theElement == 0) {
     opserr << "WARNING - ElementalLoad::setDomain - no ele with tag ";
