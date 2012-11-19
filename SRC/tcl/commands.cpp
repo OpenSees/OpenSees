@@ -728,6 +728,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 
     Tcl_CreateCommand(interp, "eleForce", &eleForce, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "eleDynamicalForce", &eleDynamicalForce, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "eleResponse", &eleResponse, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "nodeDisp", &nodeDisp, 
@@ -6462,6 +6464,61 @@ eleForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       return TCL_ERROR;
     
     const Vector &force = theEle->getResistingForce();
+    int size = force.Size();
+
+    if (dof >= 0) {
+
+      if (size < dof)
+	return TCL_ERROR;
+
+      double value = force(dof);
+      
+      // now we copy the value to the tcl string that is returned
+      sprintf(interp->result,"%35.20f",value);
+
+    } else {
+      char buffer[40];
+      for (int i=0; i<size; i++) {
+	sprintf(buffer,"%35.20f",force(i));
+	Tcl_AppendResult(interp, buffer, NULL);
+      }
+    }
+
+    return TCL_OK;
+}
+
+
+
+int 
+eleDynamicalForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+    // make sure at least one other argument to contain type of system
+    if (argc < 2) {
+	opserr << "WARNING want - eleForce eleTag? <dof?>\n";
+	return TCL_ERROR;
+   }    
+
+    int tag;
+    int dof = -1;
+
+    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+	opserr << "WARNING eleForce eleTag? dof? - could not read nodeTag? \n";
+	return TCL_ERROR;	        
+    }    
+
+    if (argc > 2) {
+      if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+	opserr << "WARNING eleForce eleTag? dof? - could not read dof? \n";
+	return TCL_ERROR;	        
+      }   
+    }     
+    
+    dof--;
+    Element *theEle = theDomain.getElement(tag);
+    if (theEle == 0)
+      return TCL_ERROR;
+    
+    const Vector &force = theEle->getResistingForceIncInertia();
     int size = force.Size();
 
     if (dof >= 0) {
