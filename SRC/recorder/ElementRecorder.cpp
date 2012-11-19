@@ -211,6 +211,7 @@ ElementRecorder::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }
 
+  initializationDone = false;
   //
   // into an ID, place & send (*eleID) size, numArgs and length of all responseArgs
   //

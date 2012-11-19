@@ -294,7 +294,7 @@ EnvelopeElementRecorder::sendSelf(int commitTag, Channel &theChannel)
     opserr << "EnvelopeElementRecorder::sendSelf() - does not send data to a datastore\n";
     return -1;
   }
-
+  initializationDone = false;
   //
   // into an ID, place & send eleID size, numArgs and length of all responseArgs
   //

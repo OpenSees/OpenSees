@@ -207,11 +207,12 @@ NodeRecorder::record(int commitTag, double timeStamp)
     return -1;
   }
 
-  if (initializationDone != true) 
+  if (initializationDone == false) {
     if (this->initialize() != 0) {
       opserr << "NodeRecorder::record() - failed in initialize()\n";
       return -1;
     }
+  }
 
   int numDOF = theDofs->Size();
   
@@ -479,6 +480,8 @@ NodeRecorder::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }
 
+  initializationDone = false;
+
   static ID idData(7); 
   idData.Zero();
   if (theDofs != 0)
@@ -632,7 +635,6 @@ NodeRecorder::recvSelf(int commitTag, Channel &theChannel,
     opserr << "NodeRecorder::sendSelf() - failed to send the DataOutputHandler\n";
     return -1;
   }
-
   return 0;
 }
 

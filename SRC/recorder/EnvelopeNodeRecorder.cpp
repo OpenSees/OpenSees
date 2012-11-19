@@ -485,6 +485,7 @@ EnvelopeNodeRecorder::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }
 
+  initializationDone = false;
   static ID idData(6); 
   idData.Zero();
 
