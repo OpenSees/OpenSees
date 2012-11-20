@@ -6895,13 +6895,23 @@ int
 calculateNodalReactions(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
     // make sure at least one other argument to contain type of system
-  bool incInertia = false;
-  if (argc == 2) 
-    if ((strcmp(argv[1],"-incIneria") == 0) || strcmp(argv[1],"-incIneria") == 0)
-      incInertia = true;
-  
+  int incInertia = 0;
+
+  if (argc == 2)  {
+    if ((strcmp(argv[1],"-incInertia") == 0)
+	|| (strcmp(argv[1],"-dynamical") == 0)
+	|| (strcmp(argv[1],"-Dynamic") == 0)
+	|| (strcmp(argv[1],"-dynamic") == 0))
+
+      incInertia = 1;
+    
+    else if ((strcmp(argv[1],"-rayleigh") == 0))
+
+      incInertia = 2;
+  }
 
   theDomain.calculateNodalReactions(incInertia);
+
   return TCL_OK;
 }
 
