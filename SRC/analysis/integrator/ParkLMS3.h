@@ -20,33 +20,27 @@
 
 // $Revision: 1.1 $
 // $Date: 2009-03-20 18:36:30 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/TRBDF3.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/ParkLMS3.h,v $
 
-#ifndef TRBDF3_h
-#define TRBDF3_h
+#ifndef ParkLMS3_h
+#define ParkLMS3_h
 
 // Written : krm
 // Created : 11/2012
 //
-// Description: This file contains the class definition for TRBDF3.
-// TRBDF3 is an algorithmic class for performing a transient analysis
-// using the so-called TRBDF3 integration scheme. It is based in part on the 
-// two part algorithm of Bathe that is now coded as TRBDF2. Note that TRBDF2 
-// is actually described in an earlier paper by Bathe, as well as the basis 
-// for TRBDF3 used here:
-// ref: K.J.Bathe and M.M.I. Baige, "On a composite implicit time integration procedure
-//      for nonlinear dynamics", Computers ans Structures 83(2005),2513-2524
+// Description: This file contains the class definition for ParkLMS3.
+// ParkLMS3 is an algorithmic class for performing a transient analysis
+// using Park 1975 linear multistep (3 step) method.
+// ref: K.C.Park "Evaluating time integration methods for nonlinear dynamic 
+//      analysis" in: T. Belytschko, T.L. Geers (Eds.), Finite Element Analysis 
+//      of Transient Nonlinear Behavior, AMD 14, ASME, New York (1975): 35–58.
+// It is 2nd order accurate and unconditionally stable.
 //
-// But here we further subdivide the step into a total of 3 sub-steps with the first being
-// trapezoid rule, second three point backward Euler, and third is Houbolt (although 
-// technically he notes in the paper that he uses a 3 sub-step procedure with 2 trapezoid
-// steps followed by Houbolt).
+// Since it is not necessarily selfstarting, we bootstrap using steps of 
+// the trapezoid rule. Note this should not be used with variable step size 
+// otherwise frequent step size changes will render this a trapezoidal integrator.
 //
-// note: the implementation does not do sub-step, it just cycles between trapezoidal, 
-// euler methods, and Houbolt. So to compare to paper or to Newmark or some other analysis, 
-// user should specify dt/3 step size.
-//
-// What: "@(#) TRBDF3.h, revA"
+// What: "@(#) ParkLMS3.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -54,11 +48,11 @@ class DOF_Group;
 class FE_Element;
 class Vector;
 
-class TRBDF3 : public TransientIntegrator
+class ParkLMS3 : public TransientIntegrator
 {
 public:
-    TRBDF3();
-    ~TRBDF3();
+    ParkLMS3();
+    ~ParkLMS3();
     
     // methods which define what the FE_Element and DOF_Groups add
     // to the system of equation object.
@@ -78,8 +72,8 @@ public:
  protected:
 
  private:
-    int step;      // a flag indicating whether trap or euler step
-    double dt;     // last dt, if not same as previous we do trapezoidal step
+    int step;       // keep track of previous points performed
+    double dt;      // last dt, if not same as previous we do trapezoidal step
     
     double c1, c2, c3;                  // some constants we need to keep
     Vector *Utm2, *Utm2dot;             // response quantities at time t-2

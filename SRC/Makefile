@@ -960,6 +960,9 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/CollocationHSIncrReduct.o \
     $(FE)/analysis/integrator/CollocationHSIncrLimit.o \
 	$(FE)/analysis/integrator/CollocationHSFixedNumIter.o \
+    $(FE)/analysis/integrator/Houbolt.o \
+    $(FE)/analysis/integrator/ParkLMS3.o \
+    $(FE)/analysis/integrator/BackwardEuler.o \
 	$(FE)/analysis/model/AnalysisModel.o \
 	$(FE)/analysis/model/FE_EleIter.o \
 	$(FE)/analysis/model/DOF_GrpIter.o \

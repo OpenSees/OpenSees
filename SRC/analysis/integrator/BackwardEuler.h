@@ -20,33 +20,29 @@
 
 // $Revision: 1.1 $
 // $Date: 2009-03-20 18:36:30 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/TRBDF3.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/BackwardEuler.h,v $
 
-#ifndef TRBDF3_h
-#define TRBDF3_h
+#ifndef BackwardEuler_h
+#define BackwardEuler_h
 
 // Written : krm
 // Created : 11/2012
 //
-// Description: This file contains the class definition for TRBDF3.
-// TRBDF3 is an algorithmic class for performing a transient analysis
-// using the so-called TRBDF3 integration scheme. It is based in part on the 
-// two part algorithm of Bathe that is now coded as TRBDF2. Note that TRBDF2 
-// is actually described in an earlier paper by Bathe, as well as the basis 
-// for TRBDF3 used here:
-// ref: K.J.Bathe and M.M.I. Baige, "On a composite implicit time integration procedure
-//      for nonlinear dynamics", Computers ans Structures 83(2005),2513-2524
+// Description: This file contains the class definition for BackwardEuler.
+// BackwardEuler is an algorithmic class for performing a transient analysis
+// using 2 or 3 point backward Euler scheme (controlled by option input).
+
+// optn 0 ref: K.J.Bathe, "Conserving Energy and Momentum in Nonlinear Dynamics: A Simple
+//      Implicit Time Integration Scheme", Computers and Structures 85(2007),437-445
+// optn 1 ref: T.Liu, C.Zhao, Q.Li, and L.Zhang. "An efficient backward Euler
+//      time-integration method for nonlinear dynamic analysis of structure."
+//      Computers and Structures 106-107 (2012): 20-28
 //
-// But here we further subdivide the step into a total of 3 sub-steps with the first being
-// trapezoid rule, second three point backward Euler, and third is Houbolt (although 
-// technically he notes in the paper that he uses a 3 sub-step procedure with 2 trapezoid
-// steps followed by Houbolt).
+// It is 2nd order accurate. Since it is not necessarily selfstarting, we bootstrap using steps of 
+// the trapezoid rule. Note this should not be used with variable step size 
+// otherwise frequent step size changes will render this a trapezoidal integrator.
 //
-// note: the implementation does not do sub-step, it just cycles between trapezoidal, 
-// euler methods, and Houbolt. So to compare to paper or to Newmark or some other analysis, 
-// user should specify dt/3 step size.
-//
-// What: "@(#) TRBDF3.h, revA"
+// What: "@(#) BackwardEuler.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -54,11 +50,11 @@ class DOF_Group;
 class FE_Element;
 class Vector;
 
-class TRBDF3 : public TransientIntegrator
+class BackwardEuler : public TransientIntegrator
 {
 public:
-    TRBDF3();
-    ~TRBDF3();
+    BackwardEuler(int);
+    ~BackwardEuler();
     
     // methods which define what the FE_Element and DOF_Groups add
     // to the system of equation object.
@@ -78,11 +74,11 @@ public:
  protected:
 
  private:
-    int step;      // a flag indicating whether trap or euler step
-    double dt;     // last dt, if not same as previous we do trapezoidal step
+    int step;       // keep track of previous points performed
+    int optn;       // type of BE scheme to use
+    double dt;      // last dt, if not same as previous we do trapezoidal step
     
     double c1, c2, c3;                  // some constants we need to keep
-    Vector *Utm2, *Utm2dot;             // response quantities at time t-2
     Vector *Utm1, *Utm1dot;             // response quantities at time t-1
     Vector *Ut, *Utdot, *Utdotdot;      // response quantities at time t
     Vector *U, *Udot, *Udotdot;         // response quantities at time t+deltaT

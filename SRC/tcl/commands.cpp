@@ -194,6 +194,9 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 #include <CollocationHSIncrReduct.h>
 #include <CollocationHSIncrLimit.h>
 #include <CollocationHSFixedNumIter.h>
+#include <Houbolt.h>
+#include <ParkLMS3.h>
+#include <BackwardEuler.h>
 
 
 // analysis
@@ -3793,6 +3796,25 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 
   else if ((strcmp(argv[1],"TRBDF3") == 0) || (strcmp(argv[1],"Bathe3") == 0)) {
       theTransientIntegrator = new TRBDF3();     
+  }
+
+  else if (strcmp(argv[1],"Houbolt") == 0) {
+      theTransientIntegrator = new Houbolt();     
+  }
+
+  else if (strcmp(argv[1],"ParkLMS3") == 0) {
+      theTransientIntegrator = new ParkLMS3();     
+  }
+    
+  else if (strcmp(argv[1],"BackwardEuler") == 0) {
+      int optn = 0;
+      if (argc == 3) {
+          if (Tcl_GetInt(interp, argv[2], &optn) != TCL_OK) {
+              opserr << "WARNING integrator BackwardEuler <option> - undefined option specified\n";	  
+              return TCL_ERROR;	
+          }
+      }
+      theTransientIntegrator = new BackwardEuler(optn);     
   }
     
   else if (strcmp(argv[1],"Newmark") == 0) {

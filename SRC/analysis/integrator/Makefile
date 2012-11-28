@@ -41,7 +41,10 @@ OBJS       = IncrementalIntegrator.o \
 	CollocationHSIncrReduct.o \
     CollocationHSIncrLimit.o \
 	AlphaOSGeneralized.o \
-	AlphaOS.o 
+	AlphaOS.o \
+    Houbolt.o \
+    ParkLMS3.o \
+    BackwardEuler.o
 
 all:         $(OBJS)
 

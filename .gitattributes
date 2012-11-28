@@ -1617,6 +1617,8 @@ SRC/analysis/integrator/ArcLength.tex -text
 SRC/analysis/integrator/ArcLength1.cpp -text
 SRC/analysis/integrator/ArcLength1.h -text
 SRC/analysis/integrator/ArcLength1.tex -text
+SRC/analysis/integrator/BackwardEuler.cpp -text
+SRC/analysis/integrator/BackwardEuler.h -text
 SRC/analysis/integrator/CentralDifference.cpp -text
 SRC/analysis/integrator/CentralDifference.h -text
 SRC/analysis/integrator/CentralDifference.tex -text
@@ -1660,6 +1662,8 @@ SRC/analysis/integrator/HHTHSIncrReduct.cpp -text
 SRC/analysis/integrator/HHTHSIncrReduct.h -text
 SRC/analysis/integrator/HSConstraint.cpp -text
 SRC/analysis/integrator/HSConstraint.h -text
+SRC/analysis/integrator/Houbolt.cpp -text
+SRC/analysis/integrator/Houbolt.h -text
 SRC/analysis/integrator/IncrementalIntegrator.cpp -text
 SRC/analysis/integrator/IncrementalIntegrator.h -text
 SRC/analysis/integrator/IncrementalIntegrator.tex -text
@@ -1689,6 +1693,8 @@ SRC/analysis/integrator/NewmarkHSIncrLimit.cpp -text
 SRC/analysis/integrator/NewmarkHSIncrLimit.h -text
 SRC/analysis/integrator/NewmarkHSIncrReduct.cpp -text
 SRC/analysis/integrator/NewmarkHSIncrReduct.h -text
+SRC/analysis/integrator/ParkLMS3.cpp -text
+SRC/analysis/integrator/ParkLMS3.h -text
 SRC/analysis/integrator/StaticIntegrator.cpp -text
 SRC/analysis/integrator/StaticIntegrator.h -text
 SRC/analysis/integrator/StaticIntegrator.tex -text

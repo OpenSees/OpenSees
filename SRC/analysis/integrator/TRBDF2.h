@@ -64,8 +64,7 @@ public:
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
-    void Print(OPS_Stream &s, int flag = 0);        
-    int revertToStart();
+    void Print(OPS_Stream &s, int flag = 0);
     
  protected:
 
@@ -74,9 +73,9 @@ public:
     double dt;     // last dt, if not same as previous we do trapezoidal step
     
     double c1, c2, c3;              // some constants we need to kee
-    Vector *Utm1, *Utm1dot, *Utm1dotdot;  // response quantities at time t-1
-    Vector *Ut, *Utdot, *Utdotdot;         // response quantities at time t
-    Vector *U, *Udot, *Udotdot;            // response quantities at time t+deltaT
+    Vector *Utm1, *Utm1dot;         // response quantities at time t-1
+    Vector *Ut, *Utdot, *Utdotdot;  // response quantities at time t
+    Vector *U, *Udot, *Udotdot;     // response quantities at time t+deltaT
 };
 
 #endif
