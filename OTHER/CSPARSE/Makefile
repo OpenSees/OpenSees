@@ -1,10 +1,5 @@
 include ../../Makefile.def
 
-ifndef $(CSPARSE_LIBRARY)
-   @$(ECHO) "CSPAPRSE_LIBRARY not DEFINED" \
-   CSPARSE_LIBRARY = libcsparse.a.a
-endif
-
 
 all: $(CSPARSE_LIBRARY)
 
