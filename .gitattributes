@@ -527,6 +527,7 @@ MAKES/Makefile.def.EC2-REDHAT-ENTERPRISE -text
 MAKES/Makefile.def.EC2-STARCLUSTER32 -text
 MAKES/Makefile.def.EC2-SUSE -text
 MAKES/Makefile.def.EC2-UBUNTU -text
+MAKES/Makefile.def.EC2-WINDOWS-CYGWIN -text
 MAKES/Makefile.def.FEDORA3 -text
 MAKES/Makefile.def.FEDORA4 -text
 MAKES/Makefile.def.KRAKEN -text
