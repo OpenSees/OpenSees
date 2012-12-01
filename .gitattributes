@@ -2578,6 +2578,15 @@ SRC/handler/TestTCP_Stream.cpp -text
 SRC/handler/XmlFileStream.cpp -text
 SRC/handler/XmlFileStream.h -text
 SRC/handler/handler.tex -text
+SRC/interpreter/DL_Interpreter.cpp -text
+SRC/interpreter/DL_Interpreter.h -text
+SRC/interpreter/Makefile -text
+SRC/interpreter/PythonInterpreter.cpp -text
+SRC/interpreter/PythonInterpreter.h -text
+SRC/interpreter/TclInterpreter.cpp -text
+SRC/interpreter/TclInterpreter.h -text
+SRC/interpreter/pythonMain.cpp -text
+SRC/interpreter/tclMain.cpp -text
 SRC/java/Makefile -text
 SRC/java/OpenSeesEvaluator.cpp -text
 SRC/java/OpenSeesEvaluator.h -text
