@@ -69,12 +69,13 @@ Beam3dPointLoad::sendSelf(int commitTag, Channel &theChannel)
 {
   int dbTag = this->getDbTag();
 
-  static Vector vectData(5);
+  static Vector vectData(6);
   vectData(0) = Px;
   vectData(1) = Py;
   vectData(2) = Pz;
   vectData(3) = x;  
   vectData(4) = eleTag;
+  vectData(5) = this->getTag();
 
   int result = theChannel.sendVector(dbTag, commitTag, vectData);
   if (result < 0) {
@@ -90,14 +91,15 @@ Beam3dPointLoad::recvSelf(int commitTag, Channel &theChannel,  FEM_ObjectBroker 
 {
   int dbTag = this->getDbTag();
 
-  static Vector vectData(5);
+  static Vector vectData(6);
 
   int result = theChannel.recvVector(dbTag, commitTag, vectData);
   if (result < 0) {
-    opserr << "Beam3dPointLoad::sendSelf - failed to send data\n";
+    opserr << "Beam3dPointLoad::recvSelf - failed to recv data\n";
     return result;
-  }
 
+  }
+  this->setTag(vectData(5));
   Px = vectData(0);;
   Py = vectData(1);;
   Pz = vectData(2);;

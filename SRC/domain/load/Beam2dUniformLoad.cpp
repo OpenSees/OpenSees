@@ -71,10 +71,11 @@ Beam2dUniformLoad::sendSelf(int commitTag, Channel &theChannel)
 {
   int dbTag = this->getDbTag();
 
-  static Vector vectData(3);
+  static Vector vectData(4);
   vectData(0) = wTrans;
   vectData(1) = wAxial;
   vectData(2) = eleTag;
+  vectData(3) = this->getTag();
 
   int result = theChannel.sendVector(dbTag, commitTag, vectData);
   if (result < 0) {
@@ -90,14 +91,15 @@ Beam2dUniformLoad::recvSelf(int commitTag, Channel &theChannel,  FEM_ObjectBroke
 {
   int dbTag = this->getDbTag();
 
-  static Vector vectData(3);
+  static Vector vectData(4);
 
   int result = theChannel.recvVector(dbTag, commitTag, vectData);
   if (result < 0) {
-    opserr << "Beam2dUniformLoad::sendSelf - failed to send data\n";
+    opserr << "Beam2dUniformLoad::recvSelf - failed to recv data\n";
     return result;
   }
 
+  this->setTag(vectData(3));
   wTrans = vectData(0);;
   wAxial = vectData(1);;
   eleTag = vectData(2);
@@ -108,7 +110,7 @@ Beam2dUniformLoad::recvSelf(int commitTag, Channel &theChannel,  FEM_ObjectBroke
 void 
 Beam2dUniformLoad::Print(OPS_Stream &s, int flag)
 {
-  s << "Beam2dUniformLoad - Reference load" << endln;
+  s << "Beam2dUniformLoad - tag " << this->getTag() << endln;
   s << "  Transverse: " << wTrans << endln;
   s << "  Axial:      " << wAxial << endln;
   s << "  Element acted on: " << eleTag << endln;

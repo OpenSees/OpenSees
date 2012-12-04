@@ -96,7 +96,7 @@ Beam3dUniformLoad::recvSelf(int commitTag, Channel &theChannel,
 
   int result = theChannel.recvVector(dbTag, commitTag, vectData);
   if (result < 0) {
-    opserr << "Beam3dUniformLoad::sendSelf - failed to send data\n";
+    opserr << "Beam3dUniformLoad::recvSelf - failed to recv data\n";
     return result;
   }
 

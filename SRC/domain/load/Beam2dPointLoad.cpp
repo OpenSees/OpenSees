@@ -70,11 +70,12 @@ Beam2dPointLoad::sendSelf(int commitTag, Channel &theChannel)
 {
   int dbTag = this->getDbTag();
 
-  static Vector vectData(4);
+  static Vector vectData(5);
   vectData(0) = Ptrans;
   vectData(1) = Paxial;
   vectData(2) = x;  
   vectData(3) = eleTag;
+  vectData(4) = this->getTag();
 
   int result = theChannel.sendVector(dbTag, commitTag, vectData);
   if (result < 0) {
@@ -90,14 +91,15 @@ Beam2dPointLoad::recvSelf(int commitTag, Channel &theChannel,  FEM_ObjectBroker 
 {
   int dbTag = this->getDbTag();
 
-  static Vector vectData(4);
+  static Vector vectData(5);
 
   int result = theChannel.recvVector(dbTag, commitTag, vectData);
   if (result < 0) {
-    opserr << "Beam2dPointLoad::sendSelf - failed to send data\n";
+    opserr << "Beam2dPointLoad::recvSelf - failed to recv data\n";
     return result;
   }
 
+  this->setTag(vectData(4));
   Ptrans = vectData(0);
   Paxial = vectData(1);
   x      = vectData(2);  
