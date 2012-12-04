@@ -416,6 +416,35 @@ FE_Element::addKiToTang(double fact)
   }	
 }    
 
+void
+FE_Element::addKpToTang(double fact, int numP)
+{
+  if (myEle != 0) {
+    // check for a quick return	
+    if (fact == 0.0) 
+      return;
+    else if (myEle->isSubdomain() == false) {
+      const Matrix *thePrevMat = myEle->getPreviousK(numP);
+      if (thePrevMat != 0)
+	theTangent->addMatrix(1.0, *thePrevMat, fact);
+    } else {
+      opserr << "WARNING FE_Element::addKpToTang() - ";
+      opserr << "- this should not be called on a Subdomain!\n";
+    }    	    	    	
+  }	
+}    
+
+int
+FE_Element::storePreviousK(int numP)
+{
+  int res = 0;
+  if (myEle != 0) {
+    res = myEle->storePreviousK(numP);
+  } 
+  
+  return res;
+}
+
 
 void  
 FE_Element::zeroResidual(void)
