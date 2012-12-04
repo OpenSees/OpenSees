@@ -835,7 +835,7 @@ Domain::addElementalLoad(ElementalLoad *load, int pattern)
     // now add it to the pattern
     TaggedObject *thePattern = theLoadPatterns->getComponentPtr(pattern);
     if (thePattern == 0) {
-      opserr << "Domain::addNodalLoad() - no pattern with tag " << pattern << 
+      opserr << "Domain::addElementalLoad() - no pattern with tag " << pattern << 
 	"exits in  the model, not adding the ele load " << *load << endln;
 
 	return false;
@@ -843,7 +843,7 @@ Domain::addElementalLoad(ElementalLoad *load, int pattern)
     LoadPattern *theLoadPattern = (LoadPattern *)thePattern;
     bool result = theLoadPattern->addElementalLoad(load);
     if (result == false) {
-      opserr << "Domain::addNodalLoad() - no pattern with tag" << 
+      opserr << "Domain::addElementalLoad() - no pattern with tag" << 
 	pattern << "in  the model, not adding the ele load" << *load << endln;
       return false;
     }
@@ -3257,7 +3257,6 @@ Domain::calculateNodalReactions(int flag)
 {
   Node *theNode;
   Element *theElement;
-
   NodeIter &theNodes = this->getNodes();
   while ((theNode = theNodes()) != 0) {
     theNode->resetReactionForce(flag);
