@@ -40,7 +40,7 @@ Matrix  PlaneStressMaterial::tangent(3,3) ;
 //      0  1  2  3  4  5
 // ND: 11 22 33 12 23 31
 // PS: 11 22 12 33 23 31
-int PlateFiberMaterial::iMap[] = {0, 1, 3, 2, 4, 5};
+int PlaneStressMaterial::iMap[] = {0, 1, 3, 2, 4, 5};
 
 //null constructor
 PlaneStressMaterial::PlaneStressMaterial( ) : 
