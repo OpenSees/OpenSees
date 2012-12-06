@@ -40,6 +40,11 @@
 Vector BeamFiberMaterial::stress(3);
 Matrix BeamFiberMaterial::tangent(3,3);
 
+//      0  1  2  3  4  5
+// ND: 11 22 33 12 23 31
+// BF: 11 12 31 22 33 23
+int BeamFiberMaterial::iMap[] = {0, 3, 4, 1, 5, 2};
+
 BeamFiberMaterial::BeamFiberMaterial(void)
 : NDMaterial(0, ND_TAG_BeamFiberMaterial),
 Tstrain22(0.0), Tstrain33(0.0), Tgamma23(0.0),
@@ -201,14 +206,16 @@ BeamFiberMaterial::setTrialStrain(const Vector &strainFromElement)
     //swap matrix indices to sort out-of-plane components 
     for (i=0; i<6; i++) {
 
-      ii = this->indexMap(i);
+      //ii = this->indexMap(i);
+      ii = iMap[i];
 
       threeDstressCopy(ii) = threeDstress(i);
 
       for (j=0; j<6; j++) {
 
-	jj = this->indexMap(j);
-	
+	//jj = this->indexMap(j);
+	jj = iMap[j];
+
 	threeDtangentCopy(ii,jj) = threeDtangent(i,j);
 
       }//end for j
@@ -258,7 +265,8 @@ BeamFiberMaterial::getStress()
   //swap matrix indices to sort out-of-plane components 
   for (i=0; i<6; i++) {
 
-    ii = this->indexMap(i);
+    //ii = this->indexMap(i);
+    ii = iMap[i];
 
     threeDstressCopy(ii) = threeDstress(i);
   }
@@ -285,11 +293,13 @@ BeamFiberMaterial::getTangent()
   int i, j , ii, jj;
   for (i=0; i<6; i++) {
 
-    ii = this->indexMap(i);
+    //ii = this->indexMap(i);
+    ii = iMap[i];
 
     for (j=0; j<6; j++) {
       
-      jj = this->indexMap(j);
+      //jj = this->indexMap(j);
+      jj = iMap[j];
       
       threeDtangentCopy(ii,jj) = threeDtangent(i,j);
       
@@ -312,8 +322,10 @@ BeamFiberMaterial::getTangent()
   //int Solve(const Matrix &M, Matrix &res) const;
   //condensation 
   dd22.Solve(dd21, dd22invdd21);
-  this->tangent   = dd11; 
-  this->tangent  -= (dd12*dd22invdd21);
+  //this->tangent   = dd11; 
+  //this->tangent  -= (dd12*dd22invdd21);
+  dd11.addMatrixProduct(1.0, dd12, dd22invdd21, -1.0);
+  this->tangent = dd11; 
 
   return this->tangent;
 }
@@ -334,11 +346,13 @@ BeamFiberMaterial::getInitialTangent()
   int i, j , ii, jj;
   for (i=0; i<6; i++) {
 
-    ii = this->indexMap(i);
+    //ii = this->indexMap(i);
+    ii = iMap[i];
 
     for (j=0; j<6; j++) {
       
-      jj = this->indexMap(j);
+      //jj = this->indexMap(j);
+      jj = iMap[j];
       
       threeDtangentCopy(ii,jj) = threeDtangent(i,j);
       
@@ -361,8 +375,10 @@ BeamFiberMaterial::getInitialTangent()
   //int Solve(const Matrix &M, Matrix &res) const;
   //condensation 
   dd22.Solve(dd21, dd22invdd21);
-  this->tangent   = dd11; 
-  this->tangent  -= (dd12*dd22invdd21);
+  //this->tangent   = dd11; 
+  //this->tangent  -= (dd12*dd22invdd21);
+  dd11.addMatrixProduct(1.0, dd12, dd22invdd21, -1.0);
+  this->tangent = dd11;
 
   return this->tangent;
 }
