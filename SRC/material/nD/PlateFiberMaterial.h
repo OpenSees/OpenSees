@@ -114,7 +114,7 @@ class PlateFiberMaterial: public NDMaterial{
     static Matrix tangent ;
 
     int indexMap( int i ) ;
-
+    static int iMap[6];
 } ; //end of PlateFiberMaterial declarations
 
 
