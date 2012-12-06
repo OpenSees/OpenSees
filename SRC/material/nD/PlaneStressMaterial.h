@@ -86,6 +86,7 @@ class PlaneStressMaterial: public NDMaterial{
 
     //send back the tangent 
     const Matrix& getTangent( ) ;
+    const Matrix& getInitialTangent( ) ;
 
     //density
     double getRho( ) ;
@@ -117,7 +118,7 @@ class PlaneStressMaterial: public NDMaterial{
     static Matrix tangent ;
 
     int indexMap( int i ) ;
-
+    static int iMap[6];
 } ; //end of PlaneStressMaterial declarations
 
 
