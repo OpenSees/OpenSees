@@ -319,7 +319,7 @@ SurfaceLoad::getResistingForce()
 const Vector &
 SurfaceLoad::getResistingForceIncInertia()
 {       
-  	return theVector;
+  	return getResistingForce();
 }
 
 int

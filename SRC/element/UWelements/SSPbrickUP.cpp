@@ -2241,15 +2241,12 @@ SSPbrickUP::GetSolidMass(void)
 	mSolidM.Zero();
 	
 	// get solid mass density from the material
-	double sDens = theMaterial->getRho();
+	double density = theMaterial->getRho();
 
 	// return zero matrix if density is zero
-	if (sDens == 0.0) {
+	if (density == 0.0) {
 		return;
 	}
-
-	// compute mass density of the mixture
-	double density = (1.0 - mPorosity)*sDens + mPorosity*fDens;
 	
 	// use jacobian determinant to get nodal mass values
 	double massTerm;
