@@ -110,6 +110,10 @@ class J2Plasticity : public NDMaterial {
 
   double getRho(void) {return rho;}
 
+  virtual int setParameter(const char **argv, int argc, Parameter &param);
+  virtual int updateParameter(int parameterID, Information &info);
+  virtual int activateParameter(int paramID);
+
   protected :
 
   //material parameters
@@ -162,6 +166,7 @@ class J2Plasticity : public NDMaterial {
 
   double rho;
   
+  int parameterID;
 
 } ; //end of J2Plasticity declarations
 

@@ -50,6 +50,9 @@
 #include <J2PlateFiber.h>
 #include <J2ThreeDimensional.h> 
 
+#include <Information.h>
+#include <Parameter.h>
+
 #include <string.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -84,7 +87,8 @@ NDMaterial( ),
 epsilon_p_n(3,3),
 epsilon_p_nplus1(3,3),
 stress(3,3),
-strain(3,3)
+strain(3,3),
+parameterID(0)
 { 
   bulk        = 0.0 ;
   shear       = 0.0 ;
@@ -171,7 +175,8 @@ J2Plasticity :: J2Plasticity(int    tag,
   epsilon_p_n(3,3),
   epsilon_p_nplus1(3,3),
   stress(3,3),
-  strain(3,3)
+  strain(3,3),
+  parameterID(0)
 {
   bulk        = K ;
   shear       = G ;
@@ -252,7 +257,8 @@ NDMaterial(tag, classTag),
 epsilon_p_n(3,3),
 epsilon_p_nplus1(3,3),
 stress(3,3),
-strain(3,3)
+strain(3,3),
+parameterID(0)
 {
   bulk        = K ;
   shear       = G ; 
@@ -736,6 +742,48 @@ J2Plasticity::revertToStart( ) {
 	// normal call for revertToStart (not initialStateAnalysis)
     this->zero( ) ;
   }
+
+  return 0;
+}
+
+int
+J2Plasticity::setParameter(const char **argv, int argc,
+				      Parameter &param)
+{
+  if (strcmp(argv[0],"K") == 0)
+    return param.addObject(1, this);
+  
+  else if (strcmp(argv[0],"G") == 0 || strcmp(argv[0],"mu") == 0)
+    return param.addObject(2, this);
+  
+  else if (strcmp(argv[0],"rho") == 0)
+    return param.addObject(3, this);
+
+  return -1;
+}
+
+int 
+J2Plasticity::updateParameter(int parameterID, Information &info)
+{ 
+  switch(parameterID) {
+  case 1:
+    bulk = info.theDouble;
+    return 0;
+  case 2:
+    shear = info.theDouble;
+    return 0;
+  case 3:
+    rho = info.theDouble;
+    return 0;
+  default:
+    return -1;
+  }
+}
+
+int
+J2Plasticity::activateParameter(int paramID)
+{
+  parameterID = paramID;
 
   return 0;
 }
