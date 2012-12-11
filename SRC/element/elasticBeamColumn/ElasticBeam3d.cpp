@@ -219,12 +219,12 @@ ElasticBeam3d::setDomain(Domain *theDomain)
     
 
     if (theNodes[0] == 0) {
-      opserr << "ElasticBeam3d::setDomain -- Node 1: " << connectedExternalNodes(0) << " does not exist\n";
+      opserr << "ElasticBeam3d::setDomain  tag: " << this->getTag() << " -- Node 1: " << connectedExternalNodes(0) << " does not exist\n";
       exit(-1);
     }
 			      
     if (theNodes[1] == 0) {
-      opserr << "ElasticBeam3d::setDomain -- Node 2: " << connectedExternalNodes(1) << " does not exist\n";
+      opserr << "ElasticBeam3d::setDomain  tag: " << this->getTag() << " -- Node 2: " << connectedExternalNodes(1) << " does not exist\n";
       exit(-1);
     }
 
@@ -232,13 +232,13 @@ ElasticBeam3d::setDomain(Domain *theDomain)
     int dofNd2 = theNodes[1]->getNumberDOF();    
     
     if (dofNd1 != 6) {
-      opserr << "ElasticBeam3d::setDomain -- Node 1: " << connectedExternalNodes(0) 
+      opserr << "ElasticBeam3d::setDomain  tag: " << this->getTag() << " -- Node 1: " << connectedExternalNodes(0) 
 	     << " has incorrect number of DOF\n";
       exit(-1);
     }
     
     if (dofNd2 != 6) {
-      opserr << "ElasticBeam3d::setDomain -- Node 2: " << connectedExternalNodes(1) 
+      opserr << "ElasticBeam3d::setDomain  tag: " << this->getTag() << " -- Node 2: " << connectedExternalNodes(1) 
 	     << " has incorrect number of DOF\n";
       exit(-1);
     }
@@ -246,14 +246,14 @@ ElasticBeam3d::setDomain(Domain *theDomain)
     this->DomainComponent::setDomain(theDomain);
     
     if (theCoordTransf->initialize(theNodes[0], theNodes[1]) != 0) {
-	opserr << "ElasticBeam3d::setDomain -- Error initializing coordinate transformation\n";
+	opserr << "ElasticBeam3d::setDomain  tag: " << this->getTag() << " -- Error initializing coordinate transformation\n";
 	exit(-1);
     }
     
     double L = theCoordTransf->getInitialLength();
 
     if (L == 0.0) {
-      opserr << "ElasticBeam3d::setDomain -- Element has zero length\n";
+      opserr << "ElasticBeam3d::setDomain  tag: " << this->getTag() << " -- Element has zero length\n";
       exit(-1);
     }
 }
