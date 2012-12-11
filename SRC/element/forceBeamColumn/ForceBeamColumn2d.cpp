@@ -1295,6 +1295,8 @@ ForceBeamColumn2d::getResistingForceIncInertia()
     
     double L = crdTransf->getInitialLength();
     double m = 0.5*rho*L;
+
+    opserr << "ForceBeamColumn2d::getResistingForceIncInnertia() " << m << endln << accel1 << accel2;
     
     theVector(0) += m*accel1(0);
     theVector(1) += m*accel1(1);
