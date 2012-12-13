@@ -18,6 +18,7 @@ include ../../../Makefile.def
 	Concrete04.o \
 	Concrete06.o \
 	Concrete07.o \
+	RambergOsgoodSteel.o \
 	Steel01.o \
         HystereticMaterial.o \
 	EPPGapMaterial.o \

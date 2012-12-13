@@ -48,7 +48,7 @@
 class Maxwell : public UniaxialMaterial
 {
   public:
-    Maxwell(int tag, double K, double C, double Alpha, double L);    
+  Maxwell(int tag, double K, double C, double Alpha, double L, int returnD = 0);    
     Maxwell(); 
     ~Maxwell();
 
@@ -79,21 +79,22 @@ class Maxwell : public UniaxialMaterial
   protected:
     
   private:
-	// Fixed Input Material Variables
-	double K;
+    // Fixed Input Material Variables
+    double K;
     double C;
     double Alpha;
     double L;
-		
-	// Trial State Variables
-	double Tstrain; // Trial Strain
-	double Tstress; // Trial Stress
-	double Ttangent; // Not a state variable but declared for convenience
-	
-	// Committeed State Variables
-	double Cstrain; // Committed Strain
-	double Cstress; // Committed Stress
-	double Ctangent; 
+    int returnD;
+    
+    // Trial State Variables
+    double Tstrain; // Trial Strain
+    double Tstress; // Trial Stress
+    double Ttangent; // Not a state variable but declared for convenience
+    
+    // Committeed State Variables
+    double Cstrain; // Committed Strain
+    double Cstress; // Committed Stress
+    double Ctangent; 
 };
 
 

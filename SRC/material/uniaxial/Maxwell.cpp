@@ -50,10 +50,18 @@ OPS_Maxwell()
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
   
-  int    iData[1];
+  int    iData[2];
   double dData[4];
-  int numData = 1;
+  iData[1] = 0;
+
+  int numRData = OPS_GetNumRemainingInputArgs();
+  if (numRData != 5 && numRData != 6) {
+    opserr << "Invalid #args for command uniaxialMaterial Maxwell\n";
+    return 0;
+  }
+
   // Check tag
+  int numData = 1;
   if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING invalid uniaxialMaterial  Maxwell tag" << endln;
     return 0;
@@ -64,10 +72,19 @@ OPS_Maxwell()
     opserr << "Invalid Args want: uniaxialMaterial Maxwell tag? K? C? Alpha? Length L?"<< endln;
     return 0;	
   }
+
+  if (numRData == 6) {
+    char *cArray = 0;
+    OPS_GetStringCopy(&cArray);
+    if ((strcmp(cArray, "-returnD") == 0) || (strcmp(cArray, "-D") == 0)) 
+      iData[1] = 1;
+    delete [] cArray;
+  }      
   
   // Parsing was successful, allocate the material with zero index
   theMaterial = new Maxwell(iData[0], 
-			    dData[0], dData[1], dData[2], dData[3]);
+			    dData[0], dData[1], dData[2], dData[3], 
+			    iData[1]);
   
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type Maxwell Material\n";
@@ -78,8 +95,8 @@ OPS_Maxwell()
 }
 
 
-Maxwell::Maxwell(int tag, double k, double c, double a, double l)
-:UniaxialMaterial(tag,MAT_TAG_Maxwell), K(k), C(c), Alpha(a), L(l)
+Maxwell::Maxwell(int tag, double k, double c, double a, double l, int retD)
+  :UniaxialMaterial(tag,MAT_TAG_Maxwell), K(k), C(c), Alpha(a), L(l), returnD(retD)
 {
   if (Alpha < 0.0) {
     opserr << "Maxwell::Maxwell -- Alpha < 0.0, setting to 1.0\n";
@@ -136,6 +153,8 @@ Maxwell::setTrialStrain(double strain, double strainRate)
   // Total Stress Calculation (Tstress) is increment Stress Plus Previous Total Stress
   Tstress = Dstress + Tstress;
   Tstrain = strain;
+
+  double DTangent = Tstress/Tstrain;
   
   return 0;
 }
@@ -162,8 +181,12 @@ Maxwell::getInitialTangent(void)
 double
 Maxwell::getDampTangent(void)
 {
-  double DTangent = Tstress/Tstrain;
-  return DTangent;	
+  if (returnD == 1) {
+    double DTangent = Tstress/Tstrain;
+    return DTangent;
+  }
+
+  return 0.0;
 }
 
 
@@ -218,7 +241,7 @@ Maxwell::revertToStart(void)
 UniaxialMaterial *
 Maxwell::getCopy(void)
 {
-  Maxwell *theCopy = new Maxwell(this->getTag(), K, C, Alpha, L);
+  Maxwell *theCopy = new Maxwell(this->getTag(), K, C, Alpha, L, returnD);
   // Converged state variables
   theCopy->Cstrain = Cstrain;
   theCopy->Cstress = Cstress;
@@ -236,8 +259,9 @@ int
 Maxwell::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(8);
+  static Vector data(9);
   data(0) = this->getTag();
+  data(8) = returnD;
 
   // Material properties
   data(1) = K;
@@ -262,16 +286,19 @@ Maxwell::recvSelf(int cTag, Channel &theChannel,
 			       FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(8);
+  static Vector data(9);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
+
   
   if (res < 0) {
       opserr << "Maxwell::recvSelf() - failed to receive data\n";
       this->setTag(0);      
   }
   else {
+
     this->setTag((int)data(0));
-    
+    returnD = (int)data(8);
+
     // Material properties
     K = data(1);
     C = data(2);
