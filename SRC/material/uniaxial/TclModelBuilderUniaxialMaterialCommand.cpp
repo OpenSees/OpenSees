@@ -80,6 +80,7 @@ extern void *OPS_NewElasticMaterial(void);
 extern void *OPS_Bilin(void);
 extern void *OPS_NewSteel01(void);
 extern void *OPS_NewSteel02(void);
+extern void *OPS_RambergOsgoodSteel(void);
 extern void *OPS_NewConcrete01(void);
 extern void *OPS_NewConcrete02(void);
 
@@ -278,6 +279,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;
+
+    } else if ((strcmp(argv[1],"RambergOsgood") == 0) || (strcmp(argv[1],"RambergOsgoodSteel") == 0)) {
+      void *theMat = OPS_RambergOsgoodSteel();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
 
     } else if (strcmp(argv[1],"HookGap") == 0) {
       void *theMat = OPS_NewHookGap();
