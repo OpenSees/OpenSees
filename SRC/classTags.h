@@ -176,6 +176,7 @@
 #define MAT_TAG_Concrete02Thermal		65
 #define MAT_TAG_ModIMKPinching                  66
 #define MAT_TAG_ModIMKPeakOriented              67
+#define MAT_TAG_RambergOsgoodSteel              68
 
 #define MAT_TAG_WrapperUniaxialMaterial      101
 #define MAT_TAG_UniaxialJ2Plasticity         102
