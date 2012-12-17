@@ -277,6 +277,9 @@ FeapMaterial::revertToStart(void)
   for (int i = 0; i < 2*numHV; i++)
     hstv[i] = 0.0;
   
+  for (int i = 0; i < 6; i++)
+    eps[i] = 0.0;
+
   return 0;
 }
 
