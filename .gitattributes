@@ -2489,6 +2489,8 @@ SRC/element/zeroLength/ZeroLengthInterface2D.cpp -text
 SRC/element/zeroLength/ZeroLengthInterface2D.h -text
 SRC/element/zeroLength/ZeroLengthND.cpp -text
 SRC/element/zeroLength/ZeroLengthND.h -text
+SRC/element/zeroLength/ZeroLengthRocking.cpp -text
+SRC/element/zeroLength/ZeroLengthRocking.h -text
 SRC/element/zeroLength/ZeroLengthSection.cpp -text
 SRC/element/zeroLength/ZeroLengthSection.h -text
 SRC/element/zeroLength/ZeroLengthSection.tex -text

@@ -449,6 +449,7 @@
 #define ELE_TAG_ZeroLengthContactNTS2D	 5005
 #define ELE_TAG_ZeroLengthInterface2D	 5006
 #define ELE_TAG_CoupledZeroLength	 5007
+#define ELE_TAG_ZeroLengthRocking   5008
 #define ELE_TAG_NLBeamColumn2d	 6000
 #define ELE_TAG_NLBeamColumn3d	 6001
 #define ELE_TAG_LargeDispBeamColumn3d	 6002
@@ -726,6 +727,7 @@
 #define INTEGRATOR_TAGS_Houbolt                         39
 #define INTEGRATOR_TAGS_ParkLMS3                        40
 #define INTEGRATOR_TAGS_BackwardEuler                   41
+#define INTEGRATOR_TAGS_EnergyConserved                 42
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2

@@ -167,6 +167,10 @@ extern int
 TclModelBuilder_addZeroLengthContact3D(ClientData, Tcl_Interp *, int, TCL_Char **,
 				       Domain*, TclModelBuilder *);
 
+// KRM added for rocking element
+extern int
+TclModelBuilder_addZeroLengthRocking(ClientData, Tcl_Interp *, int, TCL_Char **,
+                                       Domain*, TclModelBuilder *);
 
 // MHS
 extern int
@@ -816,17 +820,18 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
     int result = TclModelBuilder_addZeroLengthSection(clientData, interp, argc, argv,
 						      theTclDomain, theTclBuilder);
     return result;
-    
+  } else if (strcmp(argv[1],"zeroLengthRocking") == 0) {
+      int result = TclModelBuilder_addZeroLengthRocking(clientData, interp, argc, argv,
+                            theTclDomain, theTclBuilder);
+    return result;
   } else if (strcmp(argv[1],"zeroLengthContact2D") == 0) {
     int result = TclModelBuilder_addZeroLengthContact2D(clientData, interp, argc, argv,
 							theTclDomain, theTclBuilder);
     return result;
-    
   } else if (strcmp(argv[1],"zeroLengthContact3D") == 0) {
     int result = TclModelBuilder_addZeroLengthContact3D(clientData, interp, argc, argv,
 							theTclDomain, theTclBuilder);
     return result;
-
   } else if (strcmp(argv[1],"zeroLengthND") == 0) {
     int result = TclModelBuilder_addZeroLengthND(clientData, interp, argc, argv,
 						 theTclDomain, theTclBuilder);

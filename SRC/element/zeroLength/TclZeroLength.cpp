@@ -36,6 +36,7 @@
 #include <ZeroLengthND.h>
 #include <ZeroLengthSection.h>
 #include <ZeroLengthContact2D.h>
+#include <ZeroLengthRocking.h>
 #include <ZeroLengthContact3D.h>
 #include <TclModelBuilder.h>
 #include <ID.h>
@@ -843,4 +844,195 @@ TclModelBuilder_addZeroLengthND(ClientData clientData, Tcl_Interp *interp,
 	  return TCL_ERROR;
 	
 	return TCL_OK;
+}
+
+
+int
+TclModelBuilder_addZeroLengthRocking(ClientData clientData, Tcl_Interp *interp,
+                              int argc, TCL_Char **argv,
+                              Domain *theDomain,
+                              TclModelBuilder *theBuilder) {
+    
+    int ndm = theBuilder->getNDM(); // the spatial dimension of the problem
+    
+    //
+    // first scan the command line to obtain eleID, iNode, jNode, and the orientation 
+    // of ele xPrime and yPrime not along the global x and y axis
+    //
+    
+    int eleTag, iNode, jNode;
+    
+    // a quick check on number of args
+    if (argc < 9) {
+        opserr << "WARNING too few arguments " <<
+        "want - element ZeroLengthRocking eleTag? iNode? jNode? " <<
+        "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
+        
+        return TCL_ERROR;
+    }
+    
+    // get the ele tag 
+    if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK) {
+        opserr << "WARNING invalied eleTag " << argv[2] <<
+        "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
+        "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
+        return TCL_ERROR;
+    }
+    
+    // get the two end nodes
+    if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK) {
+        opserr << "WARNING invalied iNode " << argv[3] << 
+        "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
+        "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
+        
+        return TCL_ERROR;
+    }
+    
+    if (Tcl_GetInt(interp, argv[4], &jNode) != TCL_OK) {
+        opserr << "WARNING invalid jNode " << argv[4] <<
+        "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
+        "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
+        return TCL_ERROR;
+    }
+    
+    // look for rocking required inputs
+    double kr = 0;
+    double R = 0;
+    double theta = 0;
+    double kap = 1.0e12;
+    
+    // rotational stiffness
+    if (Tcl_GetDouble(interp, argv[5], &kr) != TCL_OK) {
+        opserr << "WARNING invalid kr " << argv[5] <<
+        "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
+        "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
+        return TCL_ERROR;
+    }
+    
+    // rocking radius
+    if (Tcl_GetDouble(interp, argv[6], &R) != TCL_OK) {
+        opserr << "WARNING invalid radius " << argv[6] <<
+        "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
+        "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
+        return TCL_ERROR;
+    }
+    
+    // theta0
+    if (Tcl_GetDouble(interp, argv[7], &theta) != TCL_OK) {
+        opserr << "WARNING invalid theta0 " << argv[7] <<
+        "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
+        "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
+        return TCL_ERROR;
+    }
+    
+    // kappa
+    if (Tcl_GetDouble(interp, argv[8], &kap) != TCL_OK) {
+        opserr << "WARNING invalid kappa " << argv[8] <<
+        "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
+        "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
+        return TCL_ERROR;
+    }
+    
+    // create the vectors for the element orientation
+    Vector x(3); x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
+    Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
+    double xi = 1.0e-8;
+    double dTol = 1.0e-7;
+    double vTol = 1.0e-7;
+    int argi = 9;
+    
+    while (argi < argc) {
+        if (strcmp(argv[argi],"-orient") == 0) {
+            if (argc < (argi+7)) {
+                opserr << "WARNING not enough paramaters after -orient flag for ele " << eleTag <<
+                "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
+                "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";	      
+                return TCL_ERROR;
+                
+            } else {
+                argi++;
+                double value;
+                // read the x values
+                for (int i=0; i<3; i++)  {
+                    if (Tcl_GetDouble(interp, argv[argi], &value) != TCL_OK) {
+                        opserr << "WARNING invalid -orient value for ele  " << eleTag << argv[i] <<
+                        "- element ZeroLength eleTag? iNode? jNode? " <<
+                        "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
+                        return TCL_ERROR;
+                    } else {
+                        argi++;
+                        x(i) = value;
+                    }
+                }
+                // read the y values
+                for (int j=0; j<3; j++)  {
+                    if (Tcl_GetDouble(interp, argv[argi], &value) != TCL_OK) {
+                        opserr << "WARNING invalid -orient value for ele  " <<
+                        eleTag << argv[argi] <<
+                        "- element ZeroLength eleTag? iNode? jNode? " <<
+                        "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";
+                        return TCL_ERROR;
+                    } else {
+                        argi++;
+                        y(j) = value;
+                    }
+                }
+            }
+            
+        } else if (strcmp(argv[argi],"-xi") == 0) {
+            if (argc < (argi+2)) {
+                opserr << "WARNING not enough paramaters after -xi flag for ele " << eleTag << endln;
+                return TCL_ERROR;
+            } else {
+                argi++;
+                if (Tcl_GetDouble(interp, argv[argi], &xi) != TCL_OK) {
+                    opserr << "WARNING invalid -xi value for ele  " << eleTag << endln;
+                    return TCL_ERROR;
+                } else
+                    argi++;
+            }
+            
+        } else if (strcmp(argv[argi],"-dTol") == 0) {
+            if (argc < (argi+2)) {
+                opserr << "WARNING not enough paramaters after -dTol flag for ele " << eleTag << endln;
+                return TCL_ERROR;
+            } else {
+                argi++;
+                if (Tcl_GetDouble(interp, argv[argi], &dTol) != TCL_OK) {
+                    opserr << "WARNING invalid -dTol value for ele  " << eleTag << endln;
+                    return TCL_ERROR;
+                } else
+                    argi++;
+            }
+
+        } else if (strcmp(argv[argi],"-vTol") == 0) {
+            if (argc < (argi+2)) {
+                opserr << "WARNING not enough paramaters after -vTol flag for ele " << eleTag << endln;
+                return TCL_ERROR;
+            } else {
+                argi++;
+                if (Tcl_GetDouble(interp, argv[argi], &vTol) != TCL_OK) {
+                    opserr << "WARNING invalid -vTol value for ele  " << eleTag << endln;
+                    return TCL_ERROR;
+                } else
+                    argi++;
+            }
+            
+        } else
+            argi++;
+    }
+    
+    //
+    // now we create the element and add it to the domain
+    //
+    Element *theEle;
+    theEle = new ZeroLengthRocking(eleTag, ndm, iNode, jNode, x, y, 
+                                   kr, R, theta, kap, xi, dTol, vTol);
+    if (theEle == 0)
+        return TCL_ERROR;
+    
+    if (theDomain->addElement(theEle) == false)
+        return TCL_ERROR;
+     
+    return TCL_OK;
 }
