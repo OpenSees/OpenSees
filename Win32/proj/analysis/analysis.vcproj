@@ -382,6 +382,12 @@
 				RelativePath="..\..\..\SRC\analysis\integrator\ArcLength1.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\analysis\integrator\BackwardEuler.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\analysis\integrator\BackwardEuler.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\analysis\integrator\CentralDifference.cpp">
 			</File>
 			<File
@@ -496,6 +502,12 @@
 				RelativePath="..\..\..\SRC\analysis\integrator\HSConstraint.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\analysis\integrator\Houbolt.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\analysis\integrator\Houbolt.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\analysis\integrator\IncrementalIntegrator.cpp">
 			</File>
 			<File
@@ -562,6 +574,12 @@
 				RelativePath="..\..\..\SRC\analysis\integrator\NewmarkHSIncrReduct.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\analysis\integrator\ParkLMS3.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\analysis\integrator\ParkLMS3.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\analysis\integrator\StaticIntegrator.cpp">
 			</File>
 			<File
@@ -572,6 +590,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\analysis\integrator\TRBDF2.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\analysis\integrator\TRBDF3.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\analysis\integrator\TRBDF3.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\analysis\integrator\TransientIntegrator.cpp">

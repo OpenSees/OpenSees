@@ -359,6 +359,12 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\fedeas\PlasticDamageMaterial.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\RambergOsgoodSteel.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\RambergOsgoodSteel.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\ReinforcingSteel.cpp">
 			</File>
 			<File

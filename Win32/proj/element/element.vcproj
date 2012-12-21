@@ -237,6 +237,12 @@
 				RelativePath="..\..\..\SRC\element\zeroLength\ZeroLengthND.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\element\zeroLength\ZeroLengthRocking.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\zeroLength\ZeroLengthRocking.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\zeroLength\ZeroLengthSection.cpp">
 			</File>
 			<File

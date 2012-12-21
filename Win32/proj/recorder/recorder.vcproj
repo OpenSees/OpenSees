@@ -144,6 +144,18 @@
 				RelativePath="..\..\..\SRC\recorder\NodeRecorder.cpp">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\recorder\NormElementRecorder.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\recorder\NormElementRecorder.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\recorder\NormEnvelopeElementRecorder.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\recorder\NormEnvelopeElementRecorder.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\recorder\PatternRecorder.cpp">
 			</File>
 			<File
