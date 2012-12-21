@@ -170,13 +170,14 @@
 #define MAT_TAG_Pinching                        60
 #define MAT_TAG_HookGap 			61
 #define MAT_TAG_FRPConfinedConcrete             62
-
 #define MAT_TAG_Steel01Thermal		        63
 #define MAT_TAG_Steel02Thermal			64
 #define MAT_TAG_Concrete02Thermal		65
 #define MAT_TAG_ModIMKPinching                  66
 #define MAT_TAG_ModIMKPeakOriented              67
 #define MAT_TAG_RambergOsgoodSteel              68
+
+
 
 #define MAT_TAG_WrapperUniaxialMaterial      101
 #define MAT_TAG_UniaxialJ2Plasticity         102
@@ -802,7 +803,9 @@
 #define RECORDER_TAGS_DamageRecorder		12
 #define RECORDER_TAGS_PatternRecorder		13
 #define RECORDER_TAGS_TclFeViewer		14
-
+#define RECORDER_TAGS_NormElementRecorder	16
+#define RECORDER_TAGS_NormNodeRecorder	        17
+#define RECORDER_TAGS_NormEnvelopeElementRecorder	18
 
 #define OPS_STREAM_TAGS_FileStream		1
 #define OPS_STREAM_TAGS_StandardStream		2
