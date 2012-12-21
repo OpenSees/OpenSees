@@ -57,7 +57,7 @@ class NodeRecorder: public Recorder
 		 OPS_Stream &theOutputHandler,
 		 double deltaT = 0.0,
 		 bool echoTimeFlag = true,
-		 TimeSeries *timeSeries = 0); 
+		 TimeSeries **timeSeries = 0); 
     
     ~NodeRecorder();
 
@@ -97,7 +97,8 @@ class NodeRecorder: public Recorder
 
     int addColumnInfo;
 
-    TimeSeries *theTimeSeries;
+    TimeSeries **theTimeSeries;
+    double *timeSeriesValues;
 };
 
 #endif

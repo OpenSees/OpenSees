@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.22 $
-// $Date: 2010-02-04 01:03:34 $
-// $Source: /usr/local/cvs/OpenSees/SRC/recorder/EnvelopeNodeRecorder.cpp,v $
-                                                                        
 // Written: fmk 
 //
 // Description: This file contains the class definition for EnvelopeNodeRecorder.
@@ -54,7 +50,7 @@ EnvelopeNodeRecorder::EnvelopeNodeRecorder()
  theDomain(0), theHandler(0),
  deltaT(0.0), nextTimeStampToRecord(0.0), 
  first(true), initializationDone(false), 
- numValidNodes(0), addColumnInfo(0), theTimeSeries(0)
+ numValidNodes(0), addColumnInfo(0), theTimeSeries(0), timeSeriesValues(0)
 {
 
 }
@@ -66,14 +62,14 @@ EnvelopeNodeRecorder::EnvelopeNodeRecorder(const ID &dofs,
 					   OPS_Stream &theOutputHandler,
 					   double dT, 
 					   bool echoTime,
-					   TimeSeries *theSeries)
+					   TimeSeries **theSeries)
 :Recorder(RECORDER_TAGS_EnvelopeNodeRecorder),
  theDofs(0), theNodalTags(0), theNodes(0),
  currentData(0), data(0), 
  theDomain(&theDom), theHandler(&theOutputHandler),
  deltaT(dT), nextTimeStampToRecord(0.0), 
  first(true), initializationDone(false), numValidNodes(0), echoTimeFlag(echoTime), 
- addColumnInfo(0),theTimeSeries(theSeries)
+ addColumnInfo(0), theTimeSeries(theSeries), timeSeriesValues(0)
 {
   // verify dof are valid 
   int numDOF = dofs.Size();
@@ -107,6 +103,12 @@ EnvelopeNodeRecorder::EnvelopeNodeRecorder(const ID &dofs,
     }
   } 
 
+  if (theTimeSeries != 0) {
+    timeSeriesValues = new double [numDOF];
+    for (int i=0; i<numDOF; i++)
+      timeSeriesValues[i] = 0.0;
+  }
+
   //
   // set the data flag used as a switch to get the response in a record
   //
@@ -136,6 +138,10 @@ EnvelopeNodeRecorder::EnvelopeNodeRecorder(const ID &dofs,
   } else if (((strcmp(dataToStore, "rayleighForces") == 0))
 	     || ((strcmp(dataToStore, "rayleighDampingForces") == 0))) {
     dataFlag = 9;
+
+  } else if ((strcmp(dataToStore, "dispNorm") == 0)) {
+    dataFlag = 10000;
+
   } else if ((strncmp(dataToStore, "eigen",5) == 0)) {
     int mode = atoi(&(dataToStore[5]));
     if (mode > 0)
@@ -193,6 +199,9 @@ EnvelopeNodeRecorder::~EnvelopeNodeRecorder()
   //
   // clean up the memory
   //
+
+  int numDOF = theDofs->Size();
+
   if (theDofs != 0)
     delete theDofs;
 
@@ -213,6 +222,12 @@ EnvelopeNodeRecorder::~EnvelopeNodeRecorder()
 
   if (theTimeSeries != 0)
     delete theTimeSeries;
+
+  if (theTimeSeries != 0) {
+    for (int i=0; i<numDOF; i++)
+      delete theTimeSeries[i];
+    delete theTimeSeries;
+  }
 }
 
 int 
@@ -246,7 +261,10 @@ EnvelopeNodeRecorder::record(int commitTag, double timeStamp)
     double timeSeriesTerm = 0.0;
 
     if (theTimeSeries != 0) {
-      timeSeriesTerm += theTimeSeries->getFactor(timeStamp);
+      for (int i=0; i<numDOF; i++) {
+	if (theTimeSeries[i] != 0) 
+	  timeSeriesValues[i] = theTimeSeries[i]->getFactor(timeStamp);
+      }
     }
 
     //
@@ -264,12 +282,21 @@ EnvelopeNodeRecorder::record(int commitTag, double timeStamp)
     
     for (int i=0; i<numValidNodes; i++) {
       int cnt = i*numDOF;
+
+      if (dataFlag == 10000)
+	cnt = i;
+
       Node *theNode = theNodes[i];
 
       if (dataFlag == 0) {
 	const Vector &response = theNode->getTrialDisp();
 	for (int j=0; j<numDOF; j++) {
 	  int dof = (*theDofs)(j);
+
+	  if (theTimeSeries != 0) {
+	    timeSeriesTerm = timeSeriesValues[j];
+	  }
+
 	  if (response.Size() > dof) {
 	    (*currentData)(cnt) = response(dof) + timeSeriesTerm;
 	  }else 
@@ -277,9 +304,34 @@ EnvelopeNodeRecorder::record(int commitTag, double timeStamp)
 	  
 	  cnt++;
 	}
+
+      } else if (dataFlag == 10000) {
+	const Vector &response = theNode->getTrialDisp();
+	double sum = 0.0;
+	for (int j=0; j<numDOF; j++) {
+	  int dof = (*theDofs)(j);
+
+	  if (theTimeSeries != 0) {
+	    timeSeriesTerm = timeSeriesValues[j];
+	  }
+
+	  if (response.Size() > dof) {
+	    sum += (response(dof) + timeSeriesTerm) * (response(dof) + timeSeriesTerm);    
+	  } else 
+	    sum += timeSeriesTerm * timeSeriesTerm;    
+	}
+
+	(*currentData)(cnt) = sqrt(sum);
+	cnt++;
+
       } else if (dataFlag == 1) {
 	const Vector &response = theNode->getTrialVel();
 	for (int j=0; j<numDOF; j++) {
+
+	  if (theTimeSeries != 0) {
+	    timeSeriesTerm = timeSeriesValues[j];
+	  }
+
 	  int dof = (*theDofs)(j);
 	  if (response.Size() > dof) {
 	    (*currentData)(cnt) = response(dof) + timeSeriesTerm;
@@ -291,6 +343,11 @@ EnvelopeNodeRecorder::record(int commitTag, double timeStamp)
       } else if (dataFlag == 2) {
 	const Vector &response = theNode->getTrialAccel();
 	for (int j=0; j<numDOF; j++) {
+
+	  if (theTimeSeries != 0) {
+	    timeSeriesTerm = timeSeriesValues[j];
+	  }
+
 	  int dof = (*theDofs)(j);
 	  if (response.Size() > dof) {
 	    (*currentData)(cnt) = response(dof) + timeSeriesTerm;
@@ -480,17 +537,19 @@ EnvelopeNodeRecorder::sendSelf(int commitTag, Channel &theChannel)
 {
   addColumnInfo = 1;
 
+  int numDOF = theDofs->Size();
+
   if (theChannel.isDatastore() == 1) {
     opserr << "EnvelopeNodeRecorder::sendSelf() - does not send data to a datastore\n";
     return -1;
   }
 
   initializationDone = false;
-  static ID idData(6); 
+  static ID idData(7); 
   idData.Zero();
 
   if (theDofs != 0)
-    idData(0) = theDofs->Size();
+    idData(0) = numDOF;
   if (theNodalTags != 0)
     idData(1) = theNodalTags->Size();
   if (theHandler != 0) {
@@ -506,6 +565,10 @@ EnvelopeNodeRecorder::sendSelf(int commitTag, Channel &theChannel)
 
   idData(5) = this->getTag();
 
+  if (theTimeSeries == 0)
+    idData[6] = 0;
+  else
+    idData[6] = 1;
 
   if (theChannel.sendID(0, commitTag, idData) < 0) {
     opserr << "EnvelopeNodeRecorder::sendSelf() - failed to send idData\n";
@@ -537,6 +600,29 @@ EnvelopeNodeRecorder::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }
 
+  if (theTimeSeries != 0) {
+    ID timeSeriesTags(numDOF);
+    for (int i=0; i<numDOF; i++) {
+      if (theTimeSeries[i] != 0) {
+	timeSeriesTags[i] = theTimeSeries[i]->getClassTag();
+      } else
+	timeSeriesTags[i] = -1;
+    }
+    if (theChannel.sendID(0, commitTag, timeSeriesTags) < 0) {
+      opserr << "EnvelopeNodeRecorder::sendSelf() - failed to send time series tags\n";
+      return -1;
+    }    
+    for (int i=0; i<numDOF; i++) {
+      if (theTimeSeries[i] != 0) {	
+	if (theTimeSeries[i]->sendSelf(commitTag, theChannel) < 0) {
+	  opserr << "EnvelopeNodeRecorder::sendSelf() - time series failed in send\n";
+	  return -1;
+
+	}
+      }
+    }
+  }
+
   return 0;
 }
 
@@ -551,7 +637,7 @@ EnvelopeNodeRecorder::recvSelf(int commitTag, Channel &theChannel,
     return -1;
   }
 
-  static ID idData(6); 
+  static ID idData(7); 
   if (theChannel.recvID(0, commitTag, idData) < 0) {
     opserr << "EnvelopeNodeRecorder::recvSelf() - failed to send idData\n";
     return -1;
@@ -635,6 +721,27 @@ EnvelopeNodeRecorder::recvSelf(int commitTag, Channel &theChannel,
   if (theHandler->recvSelf(commitTag, theChannel, theBroker) < 0) {
     opserr << "EnvelopeNodeRecorder::sendSelf() - failed to send the DataOutputHandler\n";
     return -1;
+  }
+
+
+  if (idData[6] == 1) {
+    theTimeSeries = new TimeSeries *[numDOFs];
+    ID timeSeriesTags(numDOFs);
+    if (theChannel.recvID(0, commitTag, timeSeriesTags) < 0) {
+      opserr << "EnvelopeNodeRecorder::recvSelf() - failed to recv time series tags\n";
+      return -1;
+    }    
+    for (int i=0; i<numDOFs; i++) {
+      if (timeSeriesTags[i] == -1)
+	theTimeSeries[i] = 0;
+      else {
+	theTimeSeries[i] = theBroker.getNewTimeSeries(timeSeriesTags(i));
+	if (theTimeSeries[i]->recvSelf(commitTag, theChannel, theBroker) < 0) {
+	  opserr << "EnvelopeNodeRecorder::recvSelf() - time series failed in recv\n";
+	  return -1;
+	}
+      }
+    }
   }
 
   return 0;
@@ -724,6 +831,8 @@ EnvelopeNodeRecorder::initialize(void)
     strcpy(dataType,"R");
   } else if (dataFlag == 8) {
     strcpy(dataType,"R");
+  } else if (dataFlag == 10000) {
+    strcpy(dataType,"|D|");
   } else if (dataFlag > 10) {
     sprintf(dataType,"E%d", dataFlag-10);
   } else
@@ -736,6 +845,9 @@ EnvelopeNodeRecorder::initialize(void)
 
   int numDOF = theDofs->Size();
   int numValidResponse = numValidNodes*numDOF;
+
+  if (dataFlag == 10000)
+    numValidResponse = numValidNodes;  
 
   if (echoTimeFlag == true) {
     numValidResponse *= 2;

@@ -59,7 +59,7 @@ class EnvelopeNodeRecorder: public Recorder
 			 OPS_Stream &theOutputHandler,
 			 double deltaT = 0.0,
 			 bool echoTimeFlag = false,
-			 TimeSeries *theTimeSeries =0); 
+			 TimeSeries **theTimeSeries =0); 
     
     ~EnvelopeNodeRecorder();
 
@@ -98,8 +98,8 @@ class EnvelopeNodeRecorder: public Recorder
     bool echoTimeFlag;   // flag indicating whether time to be included in o/p
 
     int addColumnInfo;
-    TimeSeries *theTimeSeries;
-
+    TimeSeries **theTimeSeries;
+    double *timeSeriesValues;
 };
 
 #endif
