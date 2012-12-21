@@ -349,6 +349,8 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/EnvelopeDriftRecorder.o \
 	$(FE)/recorder/PatternRecorder.o \
 	$(FE)/recorder/ElementRecorder.o \
+	$(FE)/recorder/NormEnvelopeElementRecorder.o \
+	$(FE)/recorder/NormElementRecorder.o \
 	$(FE)/recorder/EnvelopeElementRecorder.o \
 	$(FE)/recorder/TclRecorderCommands.o \
 	$(FE)/recorder/response/Response.o \
@@ -503,6 +505,11 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/SSPbrickUP.o \
 	$(FE)/element/UWelements/Quad4FiberOverlay.o \
 	$(FE)/element/UWelements/Brick8FiberOverlay.o
+
+#	$(FE)/material/nD/Damage2p.o \
+#	$(FE)/material/nD/Damage2p3D.o \
+#	$(FE)/material/nD/Damage2ppstress.o \
+
 
 MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/UniaxialMaterial.o \
