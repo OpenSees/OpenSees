@@ -50,7 +50,8 @@
  #include <DriftRecorder.h>
  #include <EnvelopeDriftRecorder.h>
  #include <ElementRecorder.h>
-
+ #include <NormElementRecorder.h>
+ #include <NormEnvelopeElementRecorder.h>
 
  #include <NodeIter.h>
  #include <ElementIter.h>
@@ -143,7 +144,7 @@
 
      // an Element Recorder or ElementEnvelope Recorder
      if ((strcmp(argv[1],"Element") == 0) || (strcmp(argv[1],"EnvelopeElement") == 0)
-	 || (strcmp(argv[1],"ElementEnvelope") == 0)) {
+	 || (strcmp(argv[1],"NormElement") == 0) || (strcmp(argv[1],"NormEnvelopeElement") == 0)) {
 
 
        int numEle = 0;
@@ -158,6 +159,8 @@
        int precision = 6;
        const char *inetAddr = 0;
        int inetPort;
+
+       ID *specificIndices = 0;
 
        while (flags == 0 && loc < argc) {
 
@@ -264,7 +267,30 @@
 	   loc += 2;
 	 } 
 
-	 else if ((strcmp(argv[loc],"-time") == 0) || (strcmp(argv[loc],"-load") == 0)) { 
+	 else if ((strcmp(argv[loc],"-dof") == 0) || (strcmp(argv[loc],"-dofs") == 0)) {
+
+	   // ensure no segmentation fault if user messes up
+	   if (argc < loc+2) {
+	     opserr << "WARNING recorder Element .. -ele tag1? .. - no ele tags specified\n";
+	     return TCL_ERROR;
+	   }
+
+	   //
+	   // read in a list of indices until end of command or other flag
+	   //
+	   loc++;
+	   int index;
+	   int numIndex = 0;
+	   specificIndices = new ID(0, 6);
+	   while (loc < argc && Tcl_GetInt(interp, argv[loc], &index) == TCL_OK) {
+	     (*specificIndices)[numIndex] = index -1;  // opensees to c indexing
+	     numIndex++;
+	     loc++;
+	   }
+	   Tcl_ResetResult(interp);
+
+
+	 } else if ((strcmp(argv[loc],"-time") == 0) || (strcmp(argv[loc],"-load") == 0)) { 
 	   // allow user to specify const load
 	   echoTime = true;
 	   loc++;
@@ -391,21 +417,52 @@
 
        theOutputStream->setPrecision(precision);
 
-       if (strcmp(argv[1],"Element") == 0) 
+       if (strcmp(argv[1],"Element") == 0) {
+
 	 (*theRecorder) = new ElementRecorder(eleIDs, 
 					      data, 
 					      argc-eleData, 
 					      echoTime, 
 					      theDomain, 
 					      *theOutputStream,
-					      dT);
-       else
+					      dT,
+					      specificIndices);
+
+       } else if (strcmp(argv[1],"EnvelopeElement") == 0) {
+
 	 (*theRecorder) = new EnvelopeElementRecorder(eleIDs, 
 						      data, 
 						      argc-eleData, 
 						      theDomain, 
 						      *theOutputStream,
-						      dT, echoTime);
+						      dT, 
+						      echoTime,
+						      specificIndices);
+
+       } else if (strcmp(argv[1],"NormElement") == 0) {
+
+	 (*theRecorder) = new NormElementRecorder(eleIDs, 
+						  data, 
+						  argc-eleData, 
+						  echoTime,
+						  theDomain, 
+						  *theOutputStream,
+						  dT, 
+						  specificIndices);
+
+
+       } else {
+
+	 (*theRecorder) = new NormEnvelopeElementRecorder(eleIDs, 
+							  data, 
+							  argc-eleData, 
+							  theDomain, 
+							  *theOutputStream,
+							  dT, 
+							  echoTime,
+							  specificIndices);
+	 
+       }       
 
        if (eleIDs != 0)
 	 delete eleIDs;
@@ -977,14 +1034,17 @@
        // create ID's to contain the node tags & the dofs
        ID *theNodes = 0;
        ID theDofs(0, 6);
+       ID theTimeSeriesID(0, 6);
 
        int precision = 6;
-       TimeSeries *theTimeSeries = 0;
+       TimeSeries **theTimeSeries = 0;
 
        const char *inetAddr = 0;
        int inetPort;
 
        while (flags == 0 && pos < argc) {
+
+	 //	 opserr << "argv[pos]: " << argv[pos] << " " << pos << endln;
 
 	 if (strcmp(argv[pos],"-time") == 0) {
 	   echoTimeFlag = true;
@@ -1061,22 +1121,44 @@
 	 }
 
 	 else if (strcmp(argv[pos],"-timeSeries") == 0) {
-	   pos ++;
-	   theTimeSeries = TclSeriesCommand(clientData, interp, argv[pos]);
+	   
 	   pos++;
-	 }
+	   int numTimeSeries = 0;
+	   int dof;
 
+	   for (int j=pos; j< argc; j++)  {
+	     if (Tcl_GetInt(interp, argv[pos], &dof) != TCL_OK) {
+	       j = argc;
+	       Tcl_ResetResult(interp);
+	     } else {
+	       theTimeSeriesID[numTimeSeries] = dof;  // -1 for c indexing of the dof's
+	       numTimeSeries++;
+	       pos++;
+	     }
+	   }
+
+	   theTimeSeries = new TimeSeries *[numTimeSeries];
+	   for (int j=0; j<numTimeSeries; j++) {
+	     int timeSeriesTag = theTimeSeriesID(j);
+	     if (timeSeriesTag != 0 && timeSeriesTag != -1) {
+	       theTimeSeries[j] = OPS_getTimeSeries(theTimeSeriesID(j));
+	     } else {
+	       theTimeSeries[j] = 0;
+	     }
+	   }
+	 }
+       
 	 else if (strcmp(argv[pos],"-precision") == 0) {
 	   pos ++;
 	   if (Tcl_GetInt(interp, argv[pos], &precision) != TCL_OK)	
 	     return TCL_ERROR;		  
 	   pos++;
 	 }
-
+	 
 	 else if ((strcmp(argv[pos],"-node") == 0) || 
 		  (strcmp(argv[pos],"-nodes") == 0)) {
 	   pos++;
-
+	   
 	   // read in the node tags or 'all' can be used
 	   if (strcmp(argv[pos],"all") == 0) {
 	     opserr << "recoder Node - error -all option has been removed, use -nodeRange instaed\n";
@@ -1095,7 +1177,7 @@
 	       }
 	   }
 	 } 
-
+	 
 	 else if (strcmp(argv[pos],"-nodeRange") == 0) {
 
 	   // ensure no segmentation fault if user messes up
@@ -1165,6 +1247,7 @@
 	       numDOF++;
 	       pos++;
 	     }
+	   
 	 }
  // AddingSensitivity:BEGIN //////////////////////////////////////
 	 else if (strcmp(argv[pos],"-sensitivity") == 0) {
@@ -1209,6 +1292,16 @@
 
        theOutputStream->setPrecision(precision);
 
+       if (theTimeSeries != 0 && theTimeSeriesID.Size() < theDofs.Size()) {
+	 opserr << "ERROR: recorder Node/EnvelopNode # TimeSeries must equal # dof - IGNORING TimeSeries OPTION\n";
+	 for (int i=0; i<theTimeSeriesID.Size(); i++) {
+	   if (theTimeSeries[i] != 0)
+	     delete theTimeSeries[i];
+	   delete [] theTimeSeries;
+	   theTimeSeries = 0;
+	 }
+       }
+	 
        if (strcmp(argv[1],"Node") == 0) {
 
 	 (*theRecorder) = new NodeRecorder(theDofs, 
@@ -1221,7 +1314,7 @@
 					   echoTimeFlag,
 					   theTimeSeries);
 
-       } else
+       } else {
 
 	 (*theRecorder) = new EnvelopeNodeRecorder(theDofs, 
 						   theNodes, 
@@ -1231,6 +1324,7 @@
 						   dT, 
 						   echoTimeFlag,
 						   theTimeSeries);
+       }
 
        if (theNodes != 0)
 	 delete theNodes;

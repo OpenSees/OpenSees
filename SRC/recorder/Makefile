@@ -11,6 +11,8 @@ OBJS       = Recorder.o \
 	ElementRecorder.o \
 	NodeRecorder.o \
 	EnvelopeElementRecorder.o \
+	NormElementRecorder.o \
+	NormEnvelopeElementRecorder.o \
 	EnvelopeNodeRecorder.o \
 	TclRecorderCommands.o \
 	DriftRecorder.o \
