@@ -58,7 +58,8 @@ class ElementRecorder: public Recorder
 		    bool echoTime, 
 		    Domain &theDomain, 
 		    OPS_Stream &theOutputHandler,
-		    double deltaT = 0.0);
+		    double deltaT = 0.0,
+		    const ID *dof = 0);
 
     ~ElementRecorder();
 
@@ -77,7 +78,10 @@ class ElementRecorder: public Recorder
     int initialize(void);
 
     int numEle;
+    int numDOF;
+
     ID *eleID;
+    ID *dof;
 
     Response **theResponses;
 

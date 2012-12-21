@@ -46,7 +46,7 @@
 
 ElementRecorder::ElementRecorder()
 :Recorder(RECORDER_TAGS_ElementRecorder),
- numEle(0), eleID(0), theResponses(0), 
+ numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), 
  theDomain(0), theOutputHandler(0),
  echoTimeFlag(true), deltaT(0), nextTimeStampToRecord(0.0), data(0), 
  initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
@@ -60,9 +60,10 @@ ElementRecorder::ElementRecorder(const ID *ele,
 				 bool echoTime, 
 				 Domain &theDom, 
 				 OPS_Stream &theOutputHandler,
-				 double dT)
+				 double dT,
+				 const ID *theDOFs)
 :Recorder(RECORDER_TAGS_ElementRecorder),
- numEle(0), eleID(0), theResponses(0), 
+ numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), 
  theDomain(&theDom), theOutputHandler(&theOutputHandler),
  echoTimeFlag(echoTime), deltaT(dT), nextTimeStampToRecord(0.0), data(0),
  initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
@@ -73,6 +74,11 @@ ElementRecorder::ElementRecorder(const ID *ele,
     eleID = new ID(*ele);
     if (eleID == 0 || eleID->Size() != numEle)
       opserr << "ElementRecorder::ElementRecorder() - out of memory\n";
+  } 
+
+  if (theDOFs != 0) {
+    dof = new ID(*theDOFs);
+    numDOF = dof->Size();
   } 
 
   //
@@ -112,6 +118,9 @@ ElementRecorder::~ElementRecorder()
 
   if (eleID != 0)
     delete eleID;
+  
+  if (dof != 0)
+    delete dof;
 
   if (theResponses != 0) {
     for (int i = 0; i < numEle; i++)
@@ -169,10 +178,21 @@ ElementRecorder::record(int commitTag, double timeStamp)
 	else {
 	  Information &eleInfo = theResponses[i]->getInformation();
 	  const Vector &eleData = eleInfo.getData();
-	  for (int j=0; j<eleData.Size(); j++)
-	    (*data)(loc++) = eleData(j);
+	  if (numDOF == 0) {
+	    for (int j=0; j<eleData.Size(); j++)
+	      (*data)(loc++) = eleData(j);
+	  } else {
+	    int dataSize = data->Size();
+	    for (int j=0; j<numDOF; j++) {
+	      int index = (*dof)(j);
+	      if (index >= 0 && index < dataSize)
+		(*data)(loc++) = eleData(index);		
+	      else
+		(*data)(loc++) = 0.0;		
+	    }
+	  }
 	}
-      } 
+      }
     }
 
     //
@@ -216,7 +236,7 @@ ElementRecorder::sendSelf(int commitTag, Channel &theChannel)
   // into an ID, place & send (*eleID) size, numArgs and length of all responseArgs
   //
 
-  static ID idData(6);
+  static ID idData(7);
   if (eleID != 0)
     idData(0) = eleID->Size();
   else
@@ -242,6 +262,7 @@ ElementRecorder::sendSelf(int commitTag, Channel &theChannel)
 
 
   idData(5) = this->getTag();
+  idData(6) = numDOF;
 
   if (theChannel.sendID(0, commitTag, idData) < 0) {
     opserr << "ElementRecorder::sendSelf() - failed to send idData\n";
@@ -262,10 +283,18 @@ ElementRecorder::sendSelf(int commitTag, Channel &theChannel)
 
   if (eleID != 0)
     if (theChannel.sendID(0, commitTag, *eleID) < 0) {
-      opserr << "ElementRecorder::sendSelf() - failed to send idData\n";
+      opserr << "ElementRecorder::sendSelf() - failed to send eleID\n";
       return -1;
     }
+  
 
+  // send dof
+  if (dof != 0)
+    if (theChannel.sendID(0, commitTag, *dof) < 0) {
+      opserr << "ElementRecorder::sendSelf() - failed to send dof\n";
+      return -1;
+    }
+  
   //
   // create a single char array holding all strings
   //    will use string terminating character to differentiate strings on other side
@@ -339,7 +368,7 @@ ElementRecorder::recvSelf(int commitTag, Channel &theChannel,
   // into an ID of size 2 recv eleID size and length of all responseArgs
   //
 
-  static ID idData(6);
+  static ID idData(7);
   if (theChannel.recvID(0, commitTag, idData) < 0) {
     opserr << "ElementRecorder::recvSelf() - failed to recv idData\n";
     return -1;
@@ -350,6 +379,7 @@ ElementRecorder::recvSelf(int commitTag, Channel &theChannel,
   int msgLength = idData(2);
 
   this->setTag(idData(5));
+  numDOF = idData(6);
 
   if (idData(4) == 1)
     echoTimeFlag = true;
@@ -365,6 +395,7 @@ ElementRecorder::recvSelf(int commitTag, Channel &theChannel,
   }
   deltaT = dData(0);
   nextTimeStampToRecord = dData(1);
+
   //
   // resize & recv the eleID
   //
@@ -372,11 +403,27 @@ ElementRecorder::recvSelf(int commitTag, Channel &theChannel,
   if (eleSize != 0) {
     eleID = new ID(eleSize);
     if (eleID == 0) {
-      opserr << "ElementRecorder::recvSelf() - failed to recv idData\n";
+      opserr << "ElementRecorder::recvSelf() - failed to create eleID\n";
       return -1;
     }
     if (theChannel.recvID(0, commitTag, *eleID) < 0) {
-      opserr << "ElementRecorder::recvSelf() - failed to recv idData\n";
+      opserr << "ElementRecorder::recvSelf() - failed to recv eleOD\n";
+      return -1;
+    }
+  }
+
+  //
+  // resize & recv the dof
+  //
+
+  if (numDOF != 0) {
+    dof = new ID(numDOF);
+    if (dof == 0) {
+      opserr << "ElementRecorder::recvSelf() - failed to create dof\n";
+      return -1;
+    }
+    if (theChannel.recvID(0, commitTag, *dof) < 0) {
+      opserr << "ElementRecorder::recvSelf() - failed to recv dof\n";
       return -1;
     }
   }
@@ -540,10 +587,18 @@ ElementRecorder::initialize(void)
 	  Information &eleInfo = theResponses[i]->getInformation();
 	  const Vector &eleData = eleInfo.getData();
 	  int dataSize = eleData.Size();
-	  numDbColumns += dataSize;
+	  if (numDOF == 0)
+	    numDbColumns += dataSize;
+	  else
+	    numDbColumns += numDOF;
+
 	  if (addColumnInfo == 1) {
-	    for (int j=0; j<dataSize; j++)
-	      responseOrder[responseCount++] = i+1;
+	    if (numDOF == 0)
+	      for (int j=0; j<dataSize; j++)
+		responseOrder[responseCount++] = i+1;
+	    else
+	      for (int j=0; j<numDOF; j++)
+		responseOrder[responseCount++] = i+1;
 	  }
 	}
       }

@@ -45,14 +45,15 @@ class FE_Datastore;
 class EnvelopeElementRecorder: public Recorder
 {
   public:
-  EnvelopeElementRecorder();
+    EnvelopeElementRecorder();
     EnvelopeElementRecorder(const ID *eleID, 
 			    const char **argv, 
 			    int argc,
 			    Domain &theDomain, 
 			    OPS_Stream &theOutputHandler,
 			    double deltaT = 0.0,
-			    bool echoTimeFlag = true); 
+			    bool echoTimeFlag = true,
+			    const ID *dof =0); 
 
 
     ~EnvelopeElementRecorder();
@@ -71,7 +72,11 @@ class EnvelopeElementRecorder: public Recorder
     int initialize(void);
 
     int numEle;
+    int numDOF;
+    
     ID *eleID;
+    ID *dof;
+
     Response **theResponses;
 
     Domain *theDomain;

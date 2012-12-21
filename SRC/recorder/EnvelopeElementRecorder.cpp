@@ -48,7 +48,7 @@
 
 EnvelopeElementRecorder::EnvelopeElementRecorder()
 :Recorder(RECORDER_TAGS_EnvelopeElementRecorder),
- numEle(0), eleID(0), theResponses(0), theDomain(0),
+ numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), theDomain(0),
  theHandler(0), deltaT(0), nextTimeStampToRecord(0.0), 
  data(0), currentData(0), first(true),
  initializationDone(false), responseArgs(0), numArgs(0), echoTimeFlag(false), addColumnInfo(0)
@@ -62,9 +62,11 @@ EnvelopeElementRecorder::EnvelopeElementRecorder(const ID *ele,
 						 int argc,
 						 Domain &theDom, 
 						 OPS_Stream &theOutputHandler,
-						 double dT, bool echoTime)
+						 double dT, 
+						 bool echoTime,
+						 const ID *indexValues)
 :Recorder(RECORDER_TAGS_EnvelopeElementRecorder),
- numEle(0), eleID(0), theResponses(0), theDomain(&theDom),
+ numEle(0), eleID(0), numDOF(0), dof(0), theResponses(0), theDomain(&theDom),
  theHandler(&theOutputHandler), deltaT(dT), nextTimeStampToRecord(0.0), 
  data(0), currentData(0), first(true),
  initializationDone(false), responseArgs(0), numArgs(0), echoTimeFlag(echoTime), addColumnInfo(0)
@@ -75,6 +77,11 @@ EnvelopeElementRecorder::EnvelopeElementRecorder(const ID *ele,
     eleID = new ID(*ele);
     if (eleID == 0 || eleID->Size() != numEle)
       opserr << "ElementRecorder::ElementRecorder() - out of memory\n";
+  }
+
+  if (indexValues != 0) {
+    dof = new ID(*indexValues);
+    numDOF = dof->Size();
   }
 
   //
@@ -108,6 +115,9 @@ EnvelopeElementRecorder::~EnvelopeElementRecorder()
 
   if (eleID != 0)
     delete eleID;
+
+  if (dof != 0)
+    delete dof;
 
   if (theHandler != 0 && currentData != 0) {
 
@@ -188,8 +198,23 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
 	  // from the response determine no of cols for each
 	  Information &eleInfo = theResponses[i]->getInformation();
 	  const Vector &eleData = eleInfo.getData();
-	  for (int j=0; j<eleData.Size(); j++) 
-	    (*currentData)(loc++) = eleData(j);
+	  //	  for (int j=0; j<eleData.Size(); j++) 
+	  //	    (*currentData)(loc++) = eleData(j);
+	  double normV = 0;
+	  if (numDOF == 0) {
+	    for (int j=0; j<eleData.Size(); j++)
+	      normV += eleData(j) * eleData(j);
+	  } else {
+	    int dataSize = eleData.Size();
+	    for (int j=0; j<numDOF; j++) {
+	      int index = (*dof)(j);
+	      if (index >= 0 && index < dataSize)
+		normV += eleData(index) * eleData(index);		
+	      else
+		(*currentData)(loc++) = 0.0;		
+	    }
+	  }
+	  (*currentData)(loc++) = sqrt(normV);		
 	}
       }
     }
@@ -202,8 +227,6 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
       if (first == true) {
 	for (int i=0; i<sizeData; i++) {
 	  (*data)(0,i) = (*currentData)(i);
-	  (*data)(1,i) = (*currentData)(i);
-	  (*data)(2,i) = fabs((*currentData)(i));
 	  first = false;
 	  writeIt = true;
 	} 
@@ -212,15 +235,6 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
 	  double value = (*currentData)(i);
 	  if ((*data)(0,i) > value) {
 	    (*data)(0,i) = value;
-	    double absValue = fabs(value);
-	    if ((*data)(2,i) < absValue) 
-	      (*data)(2,i) = absValue;
-	    writeIt = true;
-	  } else if ((*data)(1,i) < value) {
-	    (*data)(1,i) = value;
-	    double absValue = fabs(value);
-	    if ((*data)(2,i) < absValue) 
-	      (*data)(2,i) = absValue;
 	    writeIt = true;
 	  }
 	}
@@ -230,13 +244,8 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
       bool writeIt = false;
       if (first == true) {
 	for (int i=0; i<sizeData; i++) {
-	  
 	  (*data)(0,i*2) = timeStamp;
-	  (*data)(1,i*2) = timeStamp;
-	  (*data)(2,i*2) = timeStamp;
 	  (*data)(0,i*2+1) = (*currentData)(i);
-	  (*data)(1,i*2+1) = (*currentData)(i);
-	  (*data)(2,i*2+1) = fabs((*currentData)(i));
 	  first = false;
 	  writeIt = true;
 	} 
@@ -246,20 +255,6 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
 	  if ((*data)(0,2*i+1) > value) {
 	    (*data)(0,i*2) = timeStamp;
 	    (*data)(0,i*2+1) = value;
-	    double absValue = fabs(value);
-	    if ((*data)(2,i*2+1) < absValue) {
-	      (*data)(2,i*2+1) = absValue;
-	      (*data)(2,i*2) = timeStamp;
-	    }
-	    writeIt = true;
-	  } else if ((*data)(1,i*2+1) < value) {
-	    (*data)(1,i*2) = timeStamp;
-	    (*data)(1,i*2+1) = value;
-	    double absValue = fabs(value);
-	    if ((*data)(2,i*2+1) < absValue) { 
-	      (*data)(2,i*2) = timeStamp;
-	      (*data)(2,i*2+1) = absValue;
-	    }
 	    writeIt = true;
 	  }
 	}
@@ -299,7 +294,7 @@ EnvelopeElementRecorder::sendSelf(int commitTag, Channel &theChannel)
   // into an ID, place & send eleID size, numArgs and length of all responseArgs
   //
 
-  static ID idData(6);
+  static ID idData(7);
   if (eleID != 0)
     idData(0) = eleID->Size();
   else
@@ -308,6 +303,7 @@ EnvelopeElementRecorder::sendSelf(int commitTag, Channel &theChannel)
   idData(1) = numArgs;
 
   idData(5) = this->getTag();
+  idData(6) = numDOF;
 
   int msgLength = 0;
   for (int i=0; i<numArgs; i++) 
@@ -345,6 +341,13 @@ EnvelopeElementRecorder::sendSelf(int commitTag, Channel &theChannel)
   if (eleID != 0)
     if (theChannel.sendID(0, commitTag, *eleID) < 0) {
       opserr << "EnvelopeElementRecorder::sendSelf() - failed to send idData\n";
+      return -1;
+    }
+
+  // send dof
+  if (dof != 0)
+    if (theChannel.sendID(0, commitTag, *dof) < 0) {
+      opserr << "ElementRecorder::sendSelf() - failed to send dof\n";
       return -1;
     }
 
@@ -421,7 +424,7 @@ EnvelopeElementRecorder::recvSelf(int commitTag, Channel &theChannel,
   // into an ID of size 2 recv eleID size and length of all responseArgs
   //
 
-  static ID idData(6);
+  static ID idData(7);
   if (theChannel.recvID(0, commitTag, idData) < 0) {
     opserr << "EnvelopeElementRecorder::recvSelf() - failed to recv idData\n";
     return -1;
@@ -430,6 +433,7 @@ EnvelopeElementRecorder::recvSelf(int commitTag, Channel &theChannel,
   int eleSize = idData(0);
   numArgs = idData(1);
   int msgLength = idData(2);
+  numDOF = idData(6);
 
   this->setTag(idData(5));
 
@@ -461,6 +465,23 @@ EnvelopeElementRecorder::recvSelf(int commitTag, Channel &theChannel,
     }
     if (theChannel.recvID(0, commitTag, *eleID) < 0) {
       opserr << "ElementRecorder::recvSelf() - failed to recv idData\n";
+      return -1;
+    }
+  }
+
+
+  //
+  // resize & recv the dof
+  //
+
+  if (numDOF != 0) {
+    dof = new ID(numDOF);
+    if (dof == 0) {
+      opserr << "ElementRecorder::recvSelf() - failed to create dof\n";
+      return -1;
+    }
+    if (theChannel.recvID(0, commitTag, *dof) < 0) {
+      opserr << "ElementRecorder::recvSelf() - failed to recv dof\n";
       return -1;
     }
   }
@@ -604,15 +625,17 @@ EnvelopeElementRecorder::initialize(void)
 	  Information &eleInfo = theResponses[ii]->getInformation();
 	  const Vector &eleData = eleInfo.getData();
 	  int dataSize = eleData.Size();
-	  numDbColumns += dataSize;
-	  
+	  //	  numDbColumns += dataSize;
+	  numDbColumns += 1;
+	
 	  if (addColumnInfo == 1) {
-	    if (echoTimeFlag == true) 
-	      for (int j=0; j<2*dataSize; j++)
+	    if (echoTimeFlag == true) {
+	      for (int j=0; j<2; j++)
 		responseOrder[responseCount++] = i+1;
-	    else
-	      for (int j=0; j<dataSize; j++)
-		responseOrder[responseCount++] = i+1;
+		  responseOrder[responseCount++] = i+1;
+	    } else {
+	      responseOrder[responseCount++] = i+1;
+	    }
 	  }
 	  
 	  if (echoTimeFlag == true) {
@@ -672,7 +695,7 @@ EnvelopeElementRecorder::initialize(void)
 	// from the response type determine no of cols for each
 	Information &eleInfo = theResponses[numResponse]->getInformation();
 	const Vector &eleData = eleInfo.getData();
-	numDbColumns += eleData.Size();
+	numDbColumns += 1;
 	numResponse++;
 
 	if (echoTimeFlag == true) {
@@ -695,7 +718,7 @@ EnvelopeElementRecorder::initialize(void)
     numDbColumns *= 2;
   }
 
-  data = new Matrix(3, numDbColumns);
+  data = new Matrix(1, numDbColumns);
   currentData = new Vector(numDbColumns);
   if (data == 0 || currentData == 0) {
     opserr << "EnvelopeElementRecorder::EnvelopeElementRecorder() - out of memory\n";
