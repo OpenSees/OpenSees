@@ -81,7 +81,7 @@ InitStressMaterial::InitStressMaterial(int tag,
 				       UniaxialMaterial &material,
 				       double sigini)
   :UniaxialMaterial(tag,MAT_TAG_InitStress), theMaterial(0),
-   sigInit(sigini)
+   epsInit(0.0), sigInit(sigini)
 {
   theMaterial = material.getCopy();
 
@@ -105,6 +105,8 @@ InitStressMaterial::InitStressMaterial(int tag,
     tStress = theMaterial->getStress();
     dSig = sigInit-tStress;
   } while ((fabs(tStress-sigInit) > tol) && (count <= 100));
+
+  epsInit = tStrain;
 
   if ((fabs(tStress-sigInit) < tol)) 
     theMaterial->setTrialStrain(epsInit);
