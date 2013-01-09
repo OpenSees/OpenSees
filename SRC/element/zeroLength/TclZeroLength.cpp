@@ -274,11 +274,10 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
 	    argi++;
 	} else 	if (strcmp(argv[argi],"-doRayleigh") == 0)  {
 	  doRayleighDamping = 1;
-	  if (argi < argc) 
-	    if ((Tcl_GetInt(interp, argv[argi+1], &doRayleighDamping) == TCL_OK))
-	      argi++;
-	    
 	  argi++;
+	  if (argi < argc) 
+	    if ((Tcl_GetInt(interp, argv[argi], &doRayleighDamping) == TCL_OK))
+	      argi++;
 	}  else
 	  argi++;
     }
@@ -414,12 +413,14 @@ TclModelBuilder_addZeroLengthSection(ClientData clientData, Tcl_Interp *interp,
 	    }
 	  }
 	}
-      } else if (strcmp(argv[argi],"-doRayleigh") == 0)  {
-	doRayleighDamping = 0;
-	argi++;
-      } else
-	argi++;
-
+	} else 	if (strcmp(argv[argi],"-doRayleigh") == 0)  {
+	  doRayleighDamping = 1;
+	  argi++;
+	  if (argi < argc) 
+	    if ((Tcl_GetInt(interp, argv[argi], &doRayleighDamping) == TCL_OK))
+	      argi++;	    
+	}  else
+	  argi++;
     }
     
     //

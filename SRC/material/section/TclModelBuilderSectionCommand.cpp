@@ -1214,7 +1214,8 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	  }    
 	  
 	  int tag;
-	  double tol, k1, Fy, kb, kvo, hb, Pe, Po;
+	  double tol, k1, Fy, kb, kvo, hb, Pe;
+      double Po = 0.0;
 
 	  if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
 	    opserr << "WARNING invalid Iso2spring tag" << endln;
