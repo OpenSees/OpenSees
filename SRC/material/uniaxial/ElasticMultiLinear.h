@@ -41,7 +41,8 @@ public:
     // constructor
     ElasticMultiLinear(int tag,
 		       const Vector &strainPoints, 
-		       const Vector &stressPoints);    
+		       const Vector &stressPoints,
+               double eta = 0.0);    
     ElasticMultiLinear();    
 
     // destructor
@@ -50,37 +51,40 @@ public:
     const char *getClassType() const {return "ElasticMultiLinear";};
 
     int setTrialStrain(double strain, double strainRate = 0.0); 
-    double getStrain();          
-    double getStress();
-    double getTangent();
-
+    double getStrain() {return trialStrain;};
+    double getStrainRate() {return trialStrainRate;};
+    double getStress() {return trialStress;};
+    double getTangent() {return trialTangent;};
     double getInitialTangent() {return initTangent;};
+    double getDampTangent() {return eta;};
 
     int commitState();
-    int revertToLastCommit();    
-    int revertToStart();    
+    int revertToLastCommit();
+    int revertToStart();
 
     UniaxialMaterial *getCopy();
 
-    int sendSelf(int commitTag, Channel &theChannel);  
-    int recvSelf(int commitTag, Channel &theChannel, 
-        FEM_ObjectBroker &theBroker);    
+    int sendSelf(int commitTag, Channel &theChannel);
+    int recvSelf(int commitTag, Channel &theChannel,
+        FEM_ObjectBroker &theBroker);
 
     void Print(OPS_Stream &s, int flag = 0);
 
 protected:
 
 private:
-    Vector strainPoints;    // strain points on multi-linear curve
-    Vector stressPoints;    // stress points on multi-linear curve
-    int trialID;            // trial ID into strain, stress arrays
-    int trialIDmin;         // minimum of trial ID
-    int trialIDmax;         // maximum of trial ID
-    int numDataPoints;      // number of data points defining curve
-    double initTangent;     // initial tangent (on positive side)
-    double trialStrain;     // trial strain
-    double trialStress;     // trial stress
-    double trialTangent;    // trial tangent
+    Vector strainPoints;     // strain points on multi-linear curve
+    Vector stressPoints;     // stress points on multi-linear curve
+    double eta;              // damping tangent modulus
+    int trialID;             // trial ID into strain, stress arrays
+    int trialIDmin;          // minimum of trial ID
+    int trialIDmax;          // maximum of trial ID
+    int numDataPoints;       // number of data points defining curve
+    double initTangent;      // initial tangent (on positive side)
+    double trialStrain;      // trial strain
+    double trialStrainRate;  // trial strain rate
+    double trialStress;      // trial stress
+    double trialTangent;     // trial tangent
 };
 
 #endif
