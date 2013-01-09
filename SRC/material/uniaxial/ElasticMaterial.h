@@ -34,9 +34,6 @@
 // ElasticMaterial. ElasticMaterial provides the abstraction
 // of an viscoelastic uniaxial material,
 // i.e. stress = E*strain + eta*strainrate
-//
-//
-// What: "@(#) ElasticMaterial.h, revA"
 
 
 #include <UniaxialMaterial.h>
@@ -44,8 +41,9 @@
 class ElasticMaterial : public UniaxialMaterial
 {
   public:
-    ElasticMaterial(int tag, double E, double eta = 0.0);    
-    ElasticMaterial();    
+    ElasticMaterial(int tag, double E, double eta = 0.0);
+    ElasticMaterial(int tag, double Epos, double eta, double Eneg);
+    ElasticMaterial();
     ~ElasticMaterial();
 
     const char *getClassType(void) const {return "ElasticMaterial";};
@@ -55,9 +53,9 @@ class ElasticMaterial : public UniaxialMaterial
     double getStrain(void) {return trialStrain;};
     double getStrainRate(void) {return trialStrainRate;};
     double getStress(void);
-    double getTangent(void) {return E;};
+    double getTangent(void);
     double getDampTangent(void) {return eta;};
-    double getInitialTangent(void) {return E;};
+    double getInitialTangent(void) {return Epos;};
 
     int commitState(void);
     int revertToLastCommit(void);    
@@ -86,7 +84,8 @@ class ElasticMaterial : public UniaxialMaterial
   private:
     double trialStrain;
     double trialStrainRate;
-    double E;
+    double Epos;
+    double Eneg;
     double eta;
 
     // AddingSensitivity:BEGIN //////////////////////////////////////////
