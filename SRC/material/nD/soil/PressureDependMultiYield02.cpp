@@ -1300,7 +1300,7 @@ PressureDependMultiYield02::setResponse (const char **argv, int argc, OPS_Stream
 
 	else if (strcmp(argv[0],"backbone") == 0) {
 	    int numOfSurfaces = numOfSurfacesx[matN];
-        static Matrix curv(numOfSurfaces+1,(argc-1)*2);
+	    Matrix curv(numOfSurfaces+1,(argc-1)*2);
 		for (int i=1; i<argc; i++)
 			curv(0,(i-1)*2) = atoi(argv[i]);
 		return new MaterialResponse(this, 4, curv);
