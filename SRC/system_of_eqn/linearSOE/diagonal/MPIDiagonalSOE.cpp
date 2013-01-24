@@ -244,7 +244,7 @@ MPIDiagonalSOE::setSize(Graph &theGraph)
     exit(-1);
   }
   
-  fprintf(stderr, "MAX-SHARED  %d \n", maxShared);
+ // fprintf(stderr, "MAX-SHARED  %d \n", maxShared);
   
   //  cached neighbors 
   actualNeighbors =0;
@@ -374,7 +374,7 @@ MPIDiagonalSOE::setSize(Graph &theGraph)
  
  
   te = MPI_Wtime();
-  fprintf(stderr, "SetSize TIME  %g \n", te-ts);
+  //fprintf(stderr, "SetSize TIME  %g \n", te-ts);
 
   return result;
 }
