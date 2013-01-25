@@ -865,19 +865,34 @@
 			Name="elastomericBearing"
 			Filter="">
 			<File
-				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearing2d.cpp">
+				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWen2d.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearing2d.h">
+				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWen2d.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearing3d.cpp">
+				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWen3d.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearing3d.h">
+				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWen3d.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingCommand.cpp">
+				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearingPlasticity2d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearingPlasticity2d.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearingPlasticity3d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearingPlasticity3d.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingBoucWenCommand.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingPlasticityCommand.cpp">
 			</File>
 		</Filter>
 		<Filter

@@ -18,21 +18,21 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
+// $Revision: 4945 $
+// $Date: 2012-07-27 16:05:47 -0700 (Fri, 27 Jul 2012) $
+// $URL: svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk/SRC/element/elastomericBearing/ElastomericBearingBoucWen2d.h $
 
-#ifndef ElastomericBearing2d_h
-#define ElastomericBearing2d_h
+#ifndef ElastomericBearingBoucWen2d_h
+#define ElastomericBearingBoucWen2d_h
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/06
 // Revision: A
 //
-// Description: This file contains the class definition for ElastomericBearing2d.
-// ElastomericBearing2d is an elastomeric bearing such as a lead-rubber bearing
+// Description: This file contains the class definition for ElastomericBearingBoucWen2d.
+// ElastomericBearingBoucWen2d is an elastomeric bearing such as a lead-rubber bearing
 // or a high-damping rubber bearing defined by two nodes. This simplified version
-// uses a unidirectional plasticity model to simulate the shear behavior and two
+// uses a unidirectional Bouc-Wen model to simulate the shear behavior and two
 // uniaxial material models to simulate the axial and moment behaviors. Because
 // the axial and shear springs are uncoupled the influence of the axial load on
 // the shear behavior is not accounted for. However, the total P-Delta moment is
@@ -45,23 +45,25 @@ class Channel;
 class UniaxialMaterial;
 class Response;
 
-class ElastomericBearing2d : public Element
+class ElastomericBearingBoucWen2d : public Element
 {
 public:
     // constructors
-    ElastomericBearing2d(int tag, int Nd1, int Nd2,
-        double ke, double fy, double alpha,
+    ElastomericBearingBoucWen2d(int tag, int Nd1, int Nd2,
+        double kInit, double fy, double alpha, double eta, 
         UniaxialMaterial **theMaterials,
         const Vector y = 0, const Vector x = 0,
+        double beta = 0.5, double gamma = 0.5,
         double shearDistI = 0.5,
-        int addRayleigh = 0, double mass = 0.0);
-    ElastomericBearing2d();
+        int addRayleigh = 0, double mass = 0.0,
+        int maxIter = 25, double tol = 1E-12);
+    ElastomericBearingBoucWen2d();
     
     // destructor
-    ~ElastomericBearing2d();
+    ~ElastomericBearingBoucWen2d();
     
     // method to get class type
-    const char *getClassType() const {return "ElastomericBearing2d";};
+    const char *getClassType() const {return "ElastomericBearingBoucWen2d";};
     
     // public methods to obtain information about dof & connectivity
     int getNumExternalNodes() const;
@@ -115,16 +117,23 @@ private:
     double k0;          // initial stiffness of hysteretic component
     double qYield;      // yield force of hysteretic component
     double k2;          // stiffness of elastic component
+    double eta;         // yielding exponent
+    double beta;        // hysteretic shape parameter
+    double gamma;       // hysteretic shape parameter
+    double A;           // restoring force amplitude parameter
     Vector x;           // local x direction
     Vector y;           // local y direction
     double shearDistI;  // shear distance from node I as fraction of length
     int addRayleigh;    // flag to add Rayleigh damping
     double mass;        // mass of element
+    int maxIter;        // maximum number of iterations
+    double tol;         // tolerance for convergence criterion
     double L;           // element length
     
     // state variables
     Vector ub;          // displacements in basic system
-    double ubPlastic;   // plastic displacement in basic system
+    double z;           // hysteretic evolution parameter
+    double dzdu;        // tangent of hysteretic evolution parameter
     Vector qb;          // forces in basic system
     Matrix kb;          // stiffness matrix in basic system
     Vector ul;          // displacements in local system
@@ -132,7 +141,8 @@ private:
     Matrix Tlb;         // transformation matrix from local to basic system
     
     // committed history variables
-    double ubPlasticC;  // plastic displacement in basic system
+    Vector ubC;         // displacement in basic system
+    double zC;          // hysteretic evolution parameter
     
     // initial stiffness matrix in basic system
     Matrix kbInit;

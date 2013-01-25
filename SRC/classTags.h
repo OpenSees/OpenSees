@@ -509,12 +509,14 @@
 #define ELE_TAG_SimpleJoint2D    9901
 #define ELE_TAG_Joint2D    9902
 #define ELE_TAG_Joint3D    9903
-#define ELE_TAG_ElastomericBearing3d 9904
-#define ELE_TAG_ElastomericBearing2d 9905
+#define ELE_TAG_ElastomericBearingPlasticity3d 9904
+#define ELE_TAG_ElastomericBearingPlasticity2d 9905
 #define ELE_TAG_TwoNodeLink 9906
 #define ELE_TAG_ActuatorCorot 9907
 #define ELE_TAG_Actuator 9908
 #define ELE_TAG_Adapter 9909
+#define ELE_TAG_ElastomericBearingBoucWen2d 9910
+#define ELE_TAG_ElastomericBearingBoucWen3d 9911
 
 #define ELE_TAG_FlatSliderSimple2d  5100
 #define ELE_TAG_FlatSliderSimple3d  5101

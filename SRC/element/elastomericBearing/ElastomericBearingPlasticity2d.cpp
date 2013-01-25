@@ -27,9 +27,9 @@
 // Revision: A
 //
 // Description: This file contains the implementation of the
-// ElastomericBearing2d class.
+// ElastomericBearingPlasticity2d class.
 
-#include "ElastomericBearing2d.h"
+#include "ElastomericBearingPlasticity2d.h"
 
 #include <Domain.h>
 #include <Node.h>
@@ -47,15 +47,16 @@
 
 
 // initialize the class wide variables
-Matrix ElastomericBearing2d::theMatrix(6,6);
-Vector ElastomericBearing2d::theVector(6);
-Vector ElastomericBearing2d::theLoad(6);
+Matrix ElastomericBearingPlasticity2d::theMatrix(6,6);
+Vector ElastomericBearingPlasticity2d::theVector(6);
+Vector ElastomericBearingPlasticity2d::theLoad(6);
 
 
-ElastomericBearing2d::ElastomericBearing2d(int tag, int Nd1, int Nd2,
-    double ke, double fy, double alpha, UniaxialMaterial **materials,
-    const Vector _y, const Vector _x, double sdI, int addRay, double m)
-    : Element(tag, ELE_TAG_ElastomericBearing2d),
+ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d(int tag,
+    int Nd1, int Nd2, double kInit, double fy, double alpha,
+    UniaxialMaterial **materials, const Vector _y, const Vector _x,
+    double sdI, int addRay, double m)
+    : Element(tag, ELE_TAG_ElastomericBearingPlasticity2d),
     connectedExternalNodes(2),
     k0(0.0), qYield(0.0), k2(0.0), x(_x), y(_y),
     shearDistI(sdI), addRayleigh(addRay), mass(m),
@@ -64,8 +65,9 @@ ElastomericBearing2d::ElastomericBearing2d(int tag, int Nd1, int Nd2,
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
-        opserr << "ElastomericBearing2d::ElastomericBearing2d() - element: "
+        opserr << "ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d() - element: "
             << this->getTag() << " - failed to create an ID of size 2.\n";
+        exit(-1);
     }
     
     connectedExternalNodes(0) = Nd1;
@@ -76,13 +78,13 @@ ElastomericBearing2d::ElastomericBearing2d(int tag, int Nd1, int Nd2,
         theNodes[i] = 0;
     
     // initialize parameters
-    k0 = (1.0-alpha)*ke;
+    k0 = (1.0-alpha)*kInit;
     qYield = (1.0-alpha)*fy;
-    k2 = alpha*ke;
+    k2 = alpha*kInit;
     
     // check material input
     if (materials == 0)  {
-        opserr << "ElastomericBearing2d::ElastomericBearing2d() - "
+        opserr << "ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d() - "
             << "null material array passed.\n";
         exit(-1);
     }
@@ -90,13 +92,13 @@ ElastomericBearing2d::ElastomericBearing2d(int tag, int Nd1, int Nd2,
     // get copies of the uniaxial materials
     for (int i=0; i<2; i++)  {
         if (materials[i] == 0) {
-            opserr << "ElastomericBearing2d::ElastomericBearing2d() - "
+            opserr << "ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d() - "
                 "null uniaxial material pointer passed.\n";
             exit(-1);
         }
         theMaterials[i] = materials[i]->getCopy();
         if (theMaterials[i] == 0) {
-            opserr << "ElastomericBearing2d::ElastomericBearing2d() - "
+            opserr << "ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d() - "
                 << "failed to copy uniaxial material.\n";
             exit(-1);
         }
@@ -105,7 +107,7 @@ ElastomericBearing2d::ElastomericBearing2d(int tag, int Nd1, int Nd2,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = ke;
+    kbInit(1,1) = kInit;
     kbInit(2,2) = theMaterials[1]->getInitialTangent();
     
     // initialize other variables
@@ -113,17 +115,16 @@ ElastomericBearing2d::ElastomericBearing2d(int tag, int Nd1, int Nd2,
 }
 
 
-ElastomericBearing2d::ElastomericBearing2d()
-    : Element(0, ELE_TAG_ElastomericBearing2d),
-    connectedExternalNodes(2),
-    k0(0.0), qYield(0.0), k2(0.0), x(0), y(0),
-    shearDistI(0.5), addRayleigh(0), mass(0.0),
+ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d()
+    : Element(0, ELE_TAG_ElastomericBearingPlasticity2d),
+    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0),
+    x(0), y(0), shearDistI(0.5), addRayleigh(0), mass(0.0),
     L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
     Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3)
-{	
+{
     // ensure the connectedExternalNode ID is of correct size
     if (connectedExternalNodes.Size() != 2)  {
-        opserr << "ElastomericBearing2d::ElastomericBearing2d() - element: "
+        opserr << "ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d() - element: "
             << this->getTag() << " - failed to create an ID of size 2.\n";
         exit(-1);
     }
@@ -138,7 +139,7 @@ ElastomericBearing2d::ElastomericBearing2d()
 }
 
 
-ElastomericBearing2d::~ElastomericBearing2d()
+ElastomericBearingPlasticity2d::~ElastomericBearingPlasticity2d()
 {
     // invoke the destructor on any objects created by the object
     // that the object still holds a pointer to
@@ -148,31 +149,31 @@ ElastomericBearing2d::~ElastomericBearing2d()
 }
 
 
-int ElastomericBearing2d::getNumExternalNodes() const
+int ElastomericBearingPlasticity2d::getNumExternalNodes() const
 {
     return 2;
 }
 
 
-const ID& ElastomericBearing2d::getExternalNodes() 
+const ID& ElastomericBearingPlasticity2d::getExternalNodes()
 {
     return connectedExternalNodes;
 }
 
 
-Node** ElastomericBearing2d::getNodePtrs() 
+Node** ElastomericBearingPlasticity2d::getNodePtrs()
 {
     return theNodes;
 }
 
 
-int ElastomericBearing2d::getNumDOF() 
+int ElastomericBearingPlasticity2d::getNumDOF()
 {
     return 6;
 }
 
 
-void ElastomericBearing2d::setDomain(Domain *theDomain)
+void ElastomericBearingPlasticity2d::setDomain(Domain *theDomain)
 {
     // check Domain is not null - invoked when object removed from a domain
     if (!theDomain)  {
@@ -189,11 +190,11 @@ void ElastomericBearing2d::setDomain(Domain *theDomain)
     // if can't find both - send a warning message
     if (!theNodes[0] || !theNodes[1])  {
         if (!theNodes[0])  {
-            opserr << "WARNING ElastomericBearing2d::setDomain() - Nd1: " 
+            opserr << "WARNING ElastomericBearingPlasticity2d::setDomain() - Nd1: "
                 << connectedExternalNodes(0)
                 << " does not exist in the model for";
         } else  {
-            opserr << "WARNING ElastomericBearing2d::setDomain() - Nd2: " 
+            opserr << "WARNING ElastomericBearingPlasticity2d::setDomain() - Nd2: "
                 << connectedExternalNodes(1)
                 << " does not exist in the model for";
         }
@@ -204,17 +205,17 @@ void ElastomericBearing2d::setDomain(Domain *theDomain)
     
     // now determine the number of dof and the dimension
     int dofNd1 = theNodes[0]->getNumberDOF();
-    int dofNd2 = theNodes[1]->getNumberDOF();	
+    int dofNd2 = theNodes[1]->getNumberDOF();
     
     // if differing dof at the ends - print a warning message
     if (dofNd1 != 3)  {
-        opserr << "ElastomericBearing2d::setDomain() - node 1: "
+        opserr << "ElastomericBearingPlasticity2d::setDomain() - node 1: "
             << connectedExternalNodes(0)
             << " has incorrect number of DOF (not 3).\n";
         return;
     }
     if (dofNd2 != 3)  {
-        opserr << "ElastomericBearing2d::setDomain() - node 2: "
+        opserr << "ElastomericBearingPlasticity2d::setDomain() - node 2: "
             << connectedExternalNodes(1)
             << " has incorrect number of DOF (not 3).\n";
         return;
@@ -225,10 +226,10 @@ void ElastomericBearing2d::setDomain(Domain *theDomain)
     
     // set up the transformation matrix for orientation
     this->setUp();
-}   	 
+}
 
 
-int ElastomericBearing2d::commitState()
+int ElastomericBearingPlasticity2d::commitState()
 {
     int errCode = 0;
     
@@ -246,7 +247,7 @@ int ElastomericBearing2d::commitState()
 }
 
 
-int ElastomericBearing2d::revertToLastCommit()
+int ElastomericBearingPlasticity2d::revertToLastCommit()
 {
     int errCode = 0;
     
@@ -258,8 +259,8 @@ int ElastomericBearing2d::revertToLastCommit()
 }
 
 
-int ElastomericBearing2d::revertToStart()
-{   
+int ElastomericBearingPlasticity2d::revertToStart()
+{
     int errCode = 0;
     
     // reset trial history variables
@@ -281,7 +282,7 @@ int ElastomericBearing2d::revertToStart()
 }
 
 
-int ElastomericBearing2d::update()
+int ElastomericBearingPlasticity2d::update()
 {
     // get global trial displacements and velocities
     const Vector &dsp1 = theNodes[0]->getTrialDisp();
@@ -344,7 +345,7 @@ int ElastomericBearing2d::update()
 }
 
 
-const Matrix& ElastomericBearing2d::getTangentStiff()
+const Matrix& ElastomericBearingPlasticity2d::getTangentStiff()
 {
     // zero the matrix
     theMatrix.Zero();
@@ -373,7 +374,7 @@ const Matrix& ElastomericBearing2d::getTangentStiff()
 }
 
 
-const Matrix& ElastomericBearing2d::getInitialStiff()
+const Matrix& ElastomericBearingPlasticity2d::getInitialStiff()
 {
     // zero the matrix
     theMatrix.Zero();
@@ -389,7 +390,7 @@ const Matrix& ElastomericBearing2d::getInitialStiff()
 }
 
 
-const Matrix& ElastomericBearing2d::getDamp()
+const Matrix& ElastomericBearingPlasticity2d::getDamp()
 {
     // zero the matrix
     theMatrix.Zero();
@@ -418,7 +419,7 @@ const Matrix& ElastomericBearing2d::getDamp()
 }
 
 
-const Matrix& ElastomericBearing2d::getMass()
+const Matrix& ElastomericBearingPlasticity2d::getMass()
 {
     // zero the matrix
     theMatrix.Zero();
@@ -426,7 +427,7 @@ const Matrix& ElastomericBearing2d::getMass()
     // check for quick return
     if (mass == 0.0)  {
         return theMatrix;
-    }    
+    }
     
     double m = 0.5*mass;
     for (int i=0; i<2; i++)  {
@@ -434,39 +435,39 @@ const Matrix& ElastomericBearing2d::getMass()
         theMatrix(i+3,i+3) = m;
     }
     
-    return theMatrix; 
+    return theMatrix;
 }
 
 
-void ElastomericBearing2d::zeroLoad()
+void ElastomericBearingPlasticity2d::zeroLoad()
 {
     theLoad.Zero();
 }
 
 
-int ElastomericBearing2d::addLoad(ElementalLoad *theLoad, double loadFactor)
-{  
-    opserr <<"ElastomericBearing2d::addLoad() - "
+int ElastomericBearingPlasticity2d::addLoad(ElementalLoad *theLoad, double loadFactor)
+{
+    opserr <<"ElastomericBearingPlasticity2d::addLoad() - "
         << "load type unknown for element: "
         << this->getTag() << ".\n";
-
+    
     return -1;
 }
 
 
-int ElastomericBearing2d::addInertiaLoadToUnbalance(const Vector &accel)
+int ElastomericBearingPlasticity2d::addInertiaLoadToUnbalance(const Vector &accel)
 {
     // check for quick return
     if (mass == 0.0)  {
         return 0;
-    }    
+    }
     
     // get R * accel from the nodes
     const Vector &Raccel1 = theNodes[0]->getRV(accel);
     const Vector &Raccel2 = theNodes[1]->getRV(accel);
     
     if (3 != Raccel1.Size() || 3 != Raccel2.Size())  {
-        opserr << "ElastomericBearing2d::addInertiaLoadToUnbalance() - "
+        opserr << "ElastomericBearingPlasticity2d::addInertiaLoadToUnbalance() - "
             << "matrix and vector sizes are incompatible.\n";
         return -1;
     }
@@ -483,7 +484,7 @@ int ElastomericBearing2d::addInertiaLoadToUnbalance(const Vector &accel)
 }
 
 
-const Vector& ElastomericBearing2d::getResistingForce()
+const Vector& ElastomericBearingPlasticity2d::getResistingForce()
 {
     // zero the residual
     theVector.Zero();
@@ -514,8 +515,8 @@ const Vector& ElastomericBearing2d::getResistingForce()
 }
 
 
-const Vector& ElastomericBearing2d::getResistingForceIncInertia()
-{	
+const Vector& ElastomericBearingPlasticity2d::getResistingForceIncInertia()
+{
     // this already includes damping forces from materials
     theVector = this->getResistingForce();
     
@@ -541,7 +542,7 @@ const Vector& ElastomericBearing2d::getResistingForceIncInertia()
 }
 
 
-int ElastomericBearing2d::sendSelf(int commitTag, Channel &sChannel)
+int ElastomericBearingPlasticity2d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
     static Vector data(9);
@@ -579,7 +580,7 @@ int ElastomericBearing2d::sendSelf(int commitTag, Channel &sChannel)
 }
 
 
-int ElastomericBearing2d::recvSelf(int commitTag, Channel &rChannel,
+int ElastomericBearingPlasticity2d::recvSelf(int commitTag, Channel &rChannel,
     FEM_ObjectBroker &theBroker)
 {
     // delete material memory
@@ -597,7 +598,6 @@ int ElastomericBearing2d::recvSelf(int commitTag, Channel &rChannel,
     shearDistI = data(4);
     addRayleigh = (int)data(5);
     mass = data(6);
-    double ke = k0 + k2;
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -610,7 +610,7 @@ int ElastomericBearing2d::recvSelf(int commitTag, Channel &rChannel,
     for (int i=0; i<2; i++)  {
         theMaterials[i] = theBroker.getNewUniaxialMaterial(matClassTags(i));
         if (theMaterials[i] == 0) {
-            opserr << "ElastomericBearing2d::recvSelf() - "
+            opserr << "ElastomericBearingPlasticity2d::recvSelf() - "
                 << "failed to get blank uniaxial material.\n";
             return -2;
         }
@@ -630,7 +630,7 @@ int ElastomericBearing2d::recvSelf(int commitTag, Channel &rChannel,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = ke;
+    kbInit(1,1) = k0 + k2;
     kbInit(2,2) = theMaterials[1]->getInitialTangent();
     
     // initialize other variables
@@ -640,7 +640,7 @@ int ElastomericBearing2d::recvSelf(int commitTag, Channel &rChannel,
 }
 
 
-int ElastomericBearing2d::displaySelf(Renderer &theViewer,
+int ElastomericBearingPlasticity2d::displaySelf(Renderer &theViewer,
     int displayMode, float fact)
 {
     // first determine the end points of the element based on
@@ -681,12 +681,13 @@ int ElastomericBearing2d::displaySelf(Renderer &theViewer,
 }
 
 
-void ElastomericBearing2d::Print(OPS_Stream &s, int flag)
+void ElastomericBearingPlasticity2d::Print(OPS_Stream &s, int flag)
 {
     if (flag == 0)  {
         // print everything
         s << "Element: " << this->getTag(); 
-        s << "  type: ElastomericBearing2d  iNode: " << connectedExternalNodes(0);
+        s << "  type: ElastomericBearingPlasticity2d";
+        s << "  iNode: " << connectedExternalNodes(0);
         s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "  k0: " << k0 << "  qYield: " << qYield << "  k2: " << k2 << endln;
         s << "  Material ux: " << theMaterials[0]->getTag() << endln;
@@ -701,13 +702,13 @@ void ElastomericBearing2d::Print(OPS_Stream &s, int flag)
 }
 
 
-Response* ElastomericBearing2d::setResponse(const char **argv, int argc,
+Response* ElastomericBearingPlasticity2d::setResponse(const char **argv, int argc,
     OPS_Stream &output)
 {
     Response *theResponse = 0;
     
     output.tag("ElementOutput");
-    output.attr("eleType","ElastomericBearing2d");
+    output.attr("eleType","ElastomericBearingPlasticity2d");
     output.attr("eleTag",this->getTag());
     output.attr("node1",connectedExternalNodes[0]);
     output.attr("node2",connectedExternalNodes[1]);
@@ -785,7 +786,7 @@ Response* ElastomericBearing2d::setResponse(const char **argv, int argc,
 }
 
 
-int ElastomericBearing2d::getResponse(int responseID, Information &eleInfo)
+int ElastomericBearingPlasticity2d::getResponse(int responseID, Information &eleInfo)
 {
     double kGeo1, MpDelta1, MpDelta2, MpDelta3;
     
@@ -827,7 +828,7 @@ int ElastomericBearing2d::getResponse(int responseID, Information &eleInfo)
 
 
 // set up the transformation matrix for orientation
-void ElastomericBearing2d::setUp()
+void ElastomericBearingPlasticity2d::setUp()
 {
     const Vector &end1Crd = theNodes[0]->getCrds();
     const Vector &end2Crd = theNodes[1]->getCrds();	
@@ -841,7 +842,7 @@ void ElastomericBearing2d::setUp()
             y.resize(3);
             y(0) = -x(1);  y(1) = x(0);  y(2) = 0.0;
         } else  {
-            opserr << "WARNING ElastomericBearing2d::setUp() - " 
+            opserr << "WARNING ElastomericBearingPlasticity2d::setUp() - " 
                 << "element: " << this->getTag()
                 << " - ignoring nodes and using specified "
                 << "local x vector to determine orientation.\n";
@@ -849,7 +850,7 @@ void ElastomericBearing2d::setUp()
     }
     // check that vectors for orientation are of correct size
     if (x.Size() != 3 || y.Size() != 3)  {
-        opserr << "ElastomericBearing2d::setUp() - "
+        opserr << "ElastomericBearingPlasticity2d::setUp() - "
             << "element: " << this->getTag()
             << " - incorrect dimension of orientation vectors.\n";
         exit(-1);
@@ -874,7 +875,7 @@ void ElastomericBearing2d::setUp()
     
     // check valid x and y vectors, i.e. not parallel and of zero length
     if (xn == 0 || yn == 0 || zn == 0)  {
-        opserr << "ElastomericBearing2d::setUp() - "
+        opserr << "ElastomericBearingPlasticity2d::setUp() - "
             << "element: " << this->getTag()
             << " - invalid orientation vectors.\n";
         exit(-1);
@@ -897,8 +898,8 @@ void ElastomericBearing2d::setUp()
 }
 
 
-double ElastomericBearing2d::sgn(double x)
-{ 
+double ElastomericBearingPlasticity2d::sgn(double x)
+{
     if (x > 0)
         return 1.0;
     else if (x < 0)
