@@ -547,6 +547,7 @@ MAKES/Makefile.def.OSG -text
 MAKES/Makefile.def.RANGER -text
 MAKES/Makefile.def.RHSL5 -text
 MAKES/Makefile.def.SOLARIS -text
+MAKES/Makefile.def.STAMPEDE -text
 MAKES/Makefile.def.TERAGRID.IA_64 -text
 MAKES/Makefile.def.UCDAVIS -text
 MAKES/Makefile.def.UCDAVIS02 -text
