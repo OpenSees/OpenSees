@@ -94,18 +94,19 @@ int VelDepMultiLinear::setTrial(double normalForce, double velocity)
 {
     trialN   = normalForce;
     trialVel = velocity;
+    double absTrialVel = fabs(trialVel);
     
     // find the current interval
     double vel1 = velocityPoints(trialID);
     double vel2 = velocityPoints(trialID+1);
-    if (trialVel >= vel2 && trialID < trialIDmax)  {
-        while (trialVel >= vel2 && trialID < trialIDmax)  {
+    if (absTrialVel >= vel2 && trialID < trialIDmax)  {
+        while (absTrialVel >= vel2 && trialID < trialIDmax)  {
             trialID++;
             vel1 = vel2;
             vel2 = velocityPoints(trialID+1);
         }
-    } else if (trialVel < vel1 && trialID > trialIDmin)  {
-        while (trialVel <= vel1 && trialID > trialIDmin)  {
+    } else if (absTrialVel < vel1 && trialID > trialIDmin)  {
+        while (absTrialVel <= vel1 && trialID > trialIDmin)  {
             trialID--;
             vel2 = vel1;
             vel1 = velocityPoints(trialID);
@@ -118,7 +119,7 @@ int VelDepMultiLinear::setTrial(double normalForce, double velocity)
     DmuDvel = (mu2-mu1)/(vel2-vel1);
     
     // get the COF for the selected interval
-    mu = mu1 + DmuDvel*(trialVel-vel1);
+    mu = mu1 + DmuDvel*(absTrialVel-vel1);
     
     return 0;
 }

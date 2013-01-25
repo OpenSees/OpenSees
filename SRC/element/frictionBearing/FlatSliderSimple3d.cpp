@@ -69,6 +69,7 @@ FlatSliderSimple3d::FlatSliderSimple3d(int tag, int Nd1, int Nd2,
     if (connectedExternalNodes.Size() != 2)  {
         opserr << "FlatSliderSimple3d::FlatSliderSimple3d() - element: "
             << this->getTag() << " - failed to create an ID of size 2.\n";
+        exit(-1);
     }
     
     connectedExternalNodes(0) = Nd1;
@@ -128,7 +129,7 @@ FlatSliderSimple3d::FlatSliderSimple3d()
     connectedExternalNodes(2), theFrnMdl(0),
     k0(0.0), x(0), y(0),
     shearDistI(0.0), addRayleigh(0),
-    mass(0.0), maxIter(20), tol(1E-8),
+    mass(0.0), maxIter(25), tol(1E-12),
     L(0.0), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6)
 {

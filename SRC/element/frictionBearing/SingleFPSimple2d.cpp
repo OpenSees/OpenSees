@@ -68,6 +68,7 @@ SingleFPSimple2d::SingleFPSimple2d(int tag, int Nd1, int Nd2,
     if (connectedExternalNodes.Size() != 2)  {
         opserr << "SingleFPSimple2d::SingleFPSimple2d() - element: "
             << this->getTag() << " - failed to create an ID of size 2.\n";
+        exit(-1);
     }
     
     connectedExternalNodes(0) = Nd1;
@@ -123,7 +124,7 @@ SingleFPSimple2d::SingleFPSimple2d()
     : Element(0, ELE_TAG_SingleFPSimple2d),
     connectedExternalNodes(2), theFrnMdl(0), Reff(0.0), kInit(0.0),
     x(0), y(0), shearDistI(0.0), addRayleigh(0), inclVertDisp(0),
-    mass(0.0), maxIter(20), tol(1E-8),
+    mass(0.0), maxIter(25), tol(1E-12),
     L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6), Tgl(6,6),
     Tlb(3,6), ubPlasticC(0.0), kbInit(3,3)
 {

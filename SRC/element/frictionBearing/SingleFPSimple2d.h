@@ -52,7 +52,7 @@ public:
         const Vector y = 0, const Vector x = 0,
         double shearDistI = 0.0, int addRayleigh = 0,
         int inclVertDisp = 0, double mass = 0.0,
-        int maxIter = 20, double tol = 1E-12);
+        int maxIter = 25, double tol = 1E-12);
     SingleFPSimple2d();
     
     // destructor

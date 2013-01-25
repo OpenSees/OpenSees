@@ -84,7 +84,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         double shearDistI = 0.0;
         int doRayleigh = 0;
         double mass = 0.0;
-        int maxIter = 20;
+        int maxIter = 25;
         double tol = 1E-12;
         
         if (Tcl_GetInt(interp, argv[1+eleArgStart], &tag) != TCL_OK)  {
@@ -290,7 +290,7 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         double shearDistI = 0.0;
         int doRayleigh = 0;
         double mass = 0.0;
-        int maxIter = 20;
+        int maxIter = 25;
         double tol = 1E-12;
         
         if (Tcl_GetInt(interp, argv[1+eleArgStart], &tag) != TCL_OK)  {

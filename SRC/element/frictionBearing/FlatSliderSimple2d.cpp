@@ -69,6 +69,7 @@ FlatSliderSimple2d::FlatSliderSimple2d(int tag, int Nd1, int Nd2,
     if (connectedExternalNodes.Size() != 2)  {
         opserr << "FlatSliderSimple2d::FlatSliderSimple2d() - element: "
             << this->getTag() << " - failed to create an ID of size 2.\n";
+        exit(-1);
     }
     
     connectedExternalNodes(0) = Nd1;
@@ -125,7 +126,7 @@ FlatSliderSimple2d::FlatSliderSimple2d()
     connectedExternalNodes(2), theFrnMdl(0),
     k0(0.0), x(0), y(0),
     shearDistI(0.0), addRayleigh(0),
-    mass(0.0), maxIter(20), tol(1E-8),
+    mass(0.0), maxIter(25), tol(1E-12),
     L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
     Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3)
 {
@@ -324,7 +325,7 @@ int FlatSliderSimple2d::update()
     ubdot = Tlb*uldot;
     
     // get absolute velocity
-    double ubdotAbs = ubdot(1);
+    double ubdotAbs = fabs(ubdot(1));
     
     // 1) get axial force and stiffness in basic x-direction
     double ub0Old = theMaterials[0]->getStrain();
