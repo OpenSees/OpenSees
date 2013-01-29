@@ -468,7 +468,6 @@ ActorSubdomain::run(void)
 	    tag = msgData(1);
 	    dof = msgData(2);
 	    loadPatternTag = msgData(3);
-
 	    msgData(0) = this->removeSP_Constraint(tag, dof, loadPatternTag);
 	    this->sendID(msgData);
 

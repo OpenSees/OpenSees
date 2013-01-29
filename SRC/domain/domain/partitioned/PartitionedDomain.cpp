@@ -682,6 +682,7 @@ PartitionedDomain::removeSP_Constraint(int tag)
 int 
 PartitionedDomain::removeSP_Constraint(int nodeTag, int dof, int loadPatternTag)
 {
+
   // we first see if its in the original domain
   int result = this->Domain::removeSP_Constraint(nodeTag, dof, loadPatternTag);
 

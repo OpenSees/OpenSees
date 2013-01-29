@@ -36,7 +36,8 @@
 #include <ShadowSubdomain.h>
 #include <stdlib.h>
 
-#include <Node.h> #include <Element.h>
+#include <Node.h> 
+#include <Element.h>
 #include <SP_Constraint.h>
 #include <MP_Constraint.h>
 #include <DomainDecompositionAnalysis.h>
@@ -601,12 +602,11 @@ ShadowSubdomain::removeSP_Constraint(int theNode, int theDOF, int loadPatternTag
   msgData(1) = theNode;
   msgData(2) = theDOF;
   msgData(3) = loadPatternTag;
-  
+
   this->sendID(msgData);
   this->recvID(msgData);
-  
-  return msgData(0);
 
+  return msgData(0);
 }
 
 int
