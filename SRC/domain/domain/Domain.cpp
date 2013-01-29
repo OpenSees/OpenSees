@@ -1025,6 +1025,9 @@ Domain::removeSP_Constraint(int theNode, int theDOF, int loadPatternTag)
   if (found == true)
     theSP = this->removeSP_Constraint(spTag);
 
+  // mark the domain has having changed regardless if SP constrain was there or not
+  this->domainChange();
+
   if (theSP != 0) {
     delete theSP;
     return 1;
