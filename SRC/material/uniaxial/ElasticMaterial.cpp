@@ -317,10 +317,14 @@ ElasticMaterial::getStressSensitivity(int gradIndex, bool conditional)
 {
   if (parameterID == 1)
     return trialStrain;
-  else if (parameterID == 2)
+  if (parameterID == 2 && trialStrain > 0.0)
+    return trialStrain;
+  if (parameterID == 3 && trialStrain < 0.0)
+    return trialStrain;
+  if (parameterID == 4)
     return trialStrainRate;
-  else
-    return 0.0;
+
+  return 0.0;
 }
 
 
