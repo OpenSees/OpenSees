@@ -472,9 +472,12 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/adapter/TclActuatorCommand.o \
 	$(FE)/element/adapter/TclActuatorCorotCommand.o \
 	$(FE)/element/adapter/TclAdapterCommand.o \
-	$(FE)/element/elastomericBearing/ElastomericBearing2d.o \
-	$(FE)/element/elastomericBearing/ElastomericBearing3d.o \
-	$(FE)/element/elastomericBearing/TclElastomericBearingCommand.o \
+	$(FE)/element/elastomericBearing/ElastomericBearingBoucWen2d.o \
+	$(FE)/element/elastomericBearing/ElastomericBearingBoucWen3d.o \
+	$(FE)/element/elastomericBearing/TclElastomericBearingBoucWenCommand.o \
+	$(FE)/element/elastomericBearing/ElastomericBearingPlasticity2d.o \
+	$(FE)/element/elastomericBearing/ElastomericBearingPlasticity3d.o \
+	$(FE)/element/elastomericBearing/TclElastomericBearingPlasticityCommand.o \
 	$(FE)/element/frictionBearing/MultiFP2d.o \
 	$(FE)/element/frictionBearing/TripleFrictionPendulum.o \
 	$(FE)/element/frictionBearing/TFP_Bearing.o \
