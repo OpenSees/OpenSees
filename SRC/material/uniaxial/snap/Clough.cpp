@@ -531,20 +531,22 @@ int Clough::setTrialStrain( double d, double strainRate)
 	//	UPDATING OF DETERIORATION PARAMETERS ----------------------------
 	//	Check the remaining capacity of the system
 	
-	if( flagDeg == 1 || flagDeg == 2 ) {
-		if( ( Enrgtot >= Enrgts && Enrgts != 0.0) || ( Enrgtot >= Enrgtk && Enrgtk != 0.0) || 
-			( Enrgtot >= Enrgta && Enrgta != 0.0) || ( Enrgtot >= Enrgtd && Enrgtd != 0.0))
-		  //			opserr << "Total Energy greater than capacity\n";
-		
-		//	Update beta values for strength, acc. stiff. and capping
+	if (flagDeg == 1 || flagDeg == 2 ) {
+	  if (( Enrgtot >= Enrgts && Enrgts != 0.0) || ( Enrgtot >= Enrgtk && Enrgtk != 0.0) || 
+	     ( Enrgtot >= Enrgta && Enrgta != 0.0) || ( Enrgtot >= Enrgtd && Enrgtd != 0.0))
 
-		if( ecaps != 0.0 ) betas = pow ((Enrgc/(Enrgts-Enrgtot)) , cs );
-		if( betas>=1.0 ){
-			opserr << "Warning: Clough::SetTrial  : Total Strength loss\n" << "\a";	
-			betas = 1.0;
-		}
+	    opserr << "Total Energy greater than capacity\n";
+	  
+	  
+	  //	Update beta values for strength, acc. stiff. and capping
+	  if (ecaps != 0.0 ) betas = pow ((Enrgc/(Enrgts-Enrgtot)) , cs );
 
-		if( ecapa != 0.0 ) betaa = pow ((Enrgc/(Enrgta-Enrgtot)) , ca );
+	  if (betas>=1.0 ){
+	    opserr << "Warning: Clough::SetTrial  : Total Strength loss\n" << "\a";	
+	    betas = 1.0;
+	  }
+	  
+	  if (ecapa != 0.0 ) betaa = pow ((Enrgc/(Enrgta-Enrgtot)) , ca );
 		if( betaa>=1.0 ){
 			opserr << "Warning: Clough::SetTrial  : Total accelerated stiffness loss\n" << "\a";
 			betaa = 1.0;
