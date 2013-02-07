@@ -68,111 +68,116 @@ class ModIMKPeakOriented : public UniaxialMaterial
 		 FEM_ObjectBroker &theBroker);    
     
     void Print(OPS_Stream &s, int flag =0);
+
+    Response *setResponse (const char **argv, int argc, 
+			   OPS_Stream &theOutputStream);
+
+    int getResponse (int responseID, Information &matInformation);    
     
   protected:
     
   private:
-	
-	// Subroutines to be used inside the material
-	void envelPosCap2(double fy, double alphaPos, double alphaCap, double cpDsp, double& d,
-					  double& f, double& ek, double elstk, double fyieldPos, double Resfac,
-					  double fracDisp, int& flagStop);
-	
-	void envelNegCap2(double fy, double alphaNeg, double alphaCap, double cpDsp, double& d,
-					  double& f, double& ek, double elstk, double fyieldNeg, double Resfac,
-					  double fracDisp, int& flagStop);
-	
-	// Fixed Input Material Variables
-	double Ke;
+    
+    // Subroutines to be used inside the material
+    void envelPosCap2(double fy, double alphaPos, double alphaCap, double cpDsp, double& d,
+		      double& f, double& ek, double elstk, double fyieldPos, double Resfac,
+		      double fracDisp, int& flagStop);
+    
+    void envelNegCap2(double fy, double alphaNeg, double alphaCap, double cpDsp, double& d,
+		      double& f, double& ek, double elstk, double fyieldNeg, double Resfac,
+		      double fracDisp, int& flagStop);
+    
+    // Fixed Input Material Variables
+    double Ke;
     double AlfaPos;
     double AlfaNeg;
     double My_pos;
-	double My_neg;
-	
-	double Ls;
-	double Ld;
-	double La;
-	double Lk;
-	
-	double Cs;
-	double Cd;
-	double Ca;
-	double Ck;
-	
-	double ThetaPpos;
-	double ThetaPneg;
-	double ThetaPCpos;
-	double ThetaPCneg;
-	
-	double ResfacPos;
-	double ResfacNeg;
-	double FracDispPos;
-	double FracDispNeg;
-	
-	double DPos;
-	double DNeg;
-
+    double My_neg;
+    
+    double Ls;
+    double Ld;
+    double La;
+    double Lk;
+    
+    double Cs;
+    double Cd;
+    double Ca;
+    double Ck;
+    
+    double ThetaPpos;
+    double ThetaPneg;
+    double ThetaPCpos;
+    double ThetaPCneg;
+    
+    double ResfacPos;
+    double ResfacNeg;
+    double FracDispPos;
+    double FracDispNeg;
+    
+    double DPos;
+    double DNeg;
+    
     // State Variables
-	double Cstrain;     // Deformation
-	double Cstress;     // Force
-	double Tangent, Ctangent;   // Tangent Stiffness
-	
-	// Trial and Committeed State Variables
-	double dP, CdP;         // Committed Strain
-	double fP, CfP;         // Committed Stress
-	double ek, Cek;         // Committed Tangent 
-	
-	int Unl, CUnl;
-	int kon, Ckon;
-	int flagStop, CflagStop;
-	int flagdeg, Cflagdeg;
-	
-	double dmax, Cdmax;
-	double dmin, Cdmin;
-	double fmin, Cfmin;
-	double fmax, Cfmax;
-	
-	double fyPos, CfyPos;
-	double fyNeg, CfyNeg;
-	
-	double dlstPos, CdlstPos;
-	double dlstNeg, CdlstNeg;
-	
-	double flstPos, CflstPos;
-	double flstNeg, CflstNeg;
-	
-	double sn, Csn;
-	double sp, Csp;
-	
-	double Enrgc, CEnrgc;
-	double Enrgtot, CEnrgtot;
-	
-	double Enrgts, CEnrgts;
-	double Enrgtd, CEnrgtd;
-	double Enrgtk, CEnrgtk;
-	double Enrgta, CEnrgta;
-	
-	double fPeakPos, CfPeakPos;
-	double fPeakNeg, CfPeakNeg;
-	
-	double capSlopePos, CcapSlopePos;
-	double capSlopeNeg, CcapSlopeNeg;
-		
-	double fCapRefPos, CfCapRefPos;
-	double fCapRefNeg, CfCapRefNeg;
-	
-	double ekunload, Cekunload;
-	
-	double cpNeg, CcpNeg;
-	double cpPos, CcpPos;
-	
-	double ekhardPos, CekhardPos;
-	double ekhardNeg, CekhardNeg;
-	double ekexcurs, Cekexcurs;
-	double ekP, CekP;
-	
-	double RSE, CRSE;
-	
+    double Cstrain;     // Deformation
+    double Cstress;     // Force
+    double Tangent, Ctangent;   // Tangent Stiffness
+    
+    // Trial and Committeed State Variables
+    double dP, CdP;         // Committed Strain
+    double fP, CfP;         // Committed Stress
+    double ek, Cek;         // Committed Tangent 
+    
+    int Unl, CUnl;
+    int kon, Ckon;
+    int flagStop, CflagStop;
+    int flagdeg, Cflagdeg;
+    
+    double dmax, Cdmax;
+    double dmin, Cdmin;
+    double fmin, Cfmin;
+    double fmax, Cfmax;
+    
+    double fyPos, CfyPos;
+    double fyNeg, CfyNeg;
+    
+    double dlstPos, CdlstPos;
+    double dlstNeg, CdlstNeg;
+    
+    double flstPos, CflstPos;
+    double flstNeg, CflstNeg;
+    
+    double sn, Csn;
+    double sp, Csp;
+    
+    double Enrgc, CEnrgc;
+    double Enrgtot, CEnrgtot;
+    
+    double Enrgts, CEnrgts;
+    double Enrgtd, CEnrgtd;
+    double Enrgtk, CEnrgtk;
+    double Enrgta, CEnrgta;
+    
+    double fPeakPos, CfPeakPos;
+    double fPeakNeg, CfPeakNeg;
+    
+    double capSlopePos, CcapSlopePos;
+    double capSlopeNeg, CcapSlopeNeg;
+    
+    double fCapRefPos, CfCapRefPos;
+    double fCapRefNeg, CfCapRefNeg;
+    
+    double ekunload, Cekunload;
+    
+    double cpNeg, CcpNeg;
+    double cpPos, CcpPos;
+    
+    double ekhardPos, CekhardPos;
+    double ekhardNeg, CekhardNeg;
+    double ekexcurs, Cekexcurs;
+    double ekP, CekP;
+    
+    double RSE, CRSE;
+    double dres;
 };
 
 
