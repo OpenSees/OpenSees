@@ -446,6 +446,7 @@ Subdomain::wipeAnalysis(void)
     theAnalysis->clearAll();
     delete theAnalysis;
   }
+  theAnalysis = 0;
 }
 
 void
