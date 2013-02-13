@@ -132,7 +132,7 @@ SP_Constraint::getLoadPatternTag(void) const
 int 
 SP_Constraint::sendSelf(int cTag, Channel &theChannel)
 {
-    static Vector data(7);  // we send as double to avoid having 
+    static Vector data(8);  // we send as double to avoid having 
                      // to send two messages.
     data(0) = this->getTag(); 
     data(1) = nodeTag;
@@ -144,6 +144,8 @@ SP_Constraint::sendSelf(int cTag, Channel &theChannel)
 	data(4) = 0.0;
     data(5) = valueR;
     data(6) = this->getLoadPatternTag();
+
+    data(7) = nextTag;
 
     int result = theChannel.sendVector(this->getDbTag(), cTag, data);
     if (result != 0) {
@@ -158,7 +160,7 @@ int
 SP_Constraint::recvSelf(int cTag, Channel &theChannel, 
 			FEM_ObjectBroker &theBroker)
 {
-    static Vector data(7);  // we sent the data as double to avoid having to send
+    static Vector data(8);  // we sent the data as double to avoid having to send
                      // two messages
     int result = theChannel.recvVector(this->getDbTag(), cTag, data);
     if (result < 0) {
@@ -179,6 +181,9 @@ SP_Constraint::recvSelf(int cTag, Channel &theChannel,
     valueR = data(5);
     valueC = valueR;
     this->setLoadPatternTag((int)data(6));
+
+    nextTag = data(7);
+
     return 0;
 }
 
