@@ -543,6 +543,7 @@ MAKES/Makefile.def.LONESTAR -text
 MAKES/Makefile.def.MacOS10.4 -text
 MAKES/Makefile.def.MacOS10.5 -text
 MAKES/Makefile.def.MacOS10.6 -text
+MAKES/Makefile.def.MacOS10.8 -text
 MAKES/Makefile.def.OSG -text
 MAKES/Makefile.def.RANGER -text
 MAKES/Makefile.def.RHSL5 -text
