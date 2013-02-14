@@ -89,7 +89,7 @@ Bilin::Bilin(int tag, double p_Ke,double p_AsPos,double p_AsNeg,double p_My_pos,
 }
 
 Bilin::Bilin()
-:UniaxialMaterial(0, MA_TAG_Bilin),
+:UniaxialMaterial(0, MAT_TAG_Bilin),
  Ke(0), AsPos(0), AsNeg(0), My_pos(0), My_neg(0), 
  LamdaS(0), LamdaD(0),LamdaA(0),LamdaK(0), Cs(0), Cd(0), Ca(0),Ck(0),
  Thetap_pos(0), Thetap_neg(0), Thetapc_pos(0),Thetapc_neg(0),
