@@ -110,6 +110,9 @@
 #define PARAMETER_TAG_MatParameter                 3
 #define PARAMETER_TAG_InitialStateParameter        4
 #define PARAMETER_TAG_ElementStateParameter        5
+#define PARAMETER_TAG_ElementParameter             6
+
+
 
 #define MAT_TAG_ElasticMaterial			 1
 #define MAT_TAG_ElasticPPMaterial		 2
@@ -176,7 +179,7 @@
 #define MAT_TAG_ModIMKPinching                  66
 #define MAT_TAG_ModIMKPeakOriented              67
 #define MAT_TAG_RambergOsgoodSteel              68
-
+#define MAT_TAG_PinchingLimitStateMaterial      69	
 
 
 #define MAT_TAG_WrapperUniaxialMaterial      101
