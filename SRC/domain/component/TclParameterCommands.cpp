@@ -30,6 +30,7 @@
 #include <TclModelBuilder.h>
 
 #include <Parameter.h>
+#include <ElementParameter.h>
 
 #include <RVParameter.h>
 #include <NodeResponseParameter.h>
@@ -53,7 +54,7 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
     opserr << "WARNING builder has been destroyed\n";
     return TCL_ERROR;
   }
-  
+
   // check at least two arguments so don't segemnt fault on strcmp
   if (argc < 2) {
     opserr << "WARNING need to specify a parameter tag\n";
@@ -64,12 +65,12 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
   // Figure out which parameter we are dealing with
   int paramTag;
   if (Tcl_GetInt(interp, argv[1], &paramTag) != TCL_OK) {
-
     return TCL_ERROR;    
   }
 
   Parameter *theParameter = theTclDomain->getParameter(paramTag);
-  
+  int eleTag = -1;
+
   // First, check special case of a blank parameter
   if (argc == 2 && strcmp(argv[0],"parameter") == 0) {
     Parameter *newParameter = new Parameter(paramTag, 0, 0, 0);
@@ -165,14 +166,13 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
 	return TCL_ERROR;
       }
 
-      int eleTag;
       if (Tcl_GetInt(interp, argv[argStart+1], &eleTag) != TCL_OK) {
 	opserr << "WARNING parameter -- invalid element tag\n";
 	return TCL_ERROR;    
       }
 
       // Retrieve element from domain
-      theObject = (DomainComponent *) theTclDomain->getElement(eleTag);
+      //  FMK theObject = (DomainComponent *) theTclDomain->getElement(eleTag);
 
       argStart = (theRV) ? 6 : 4;
     }
@@ -228,11 +228,17 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
       }
 
       Parameter *newParameter;
-      if (argc > argStart)
-	newParameter = new Parameter(paramTag, theObject,
-				     (const char **)&argv[argStart],
-				     argc-argStart);
-      else
+      if (argc > argStart) {
+	if (eleTag == -1) 
+	  newParameter = new Parameter(paramTag, theObject,
+				       (const char **)&argv[argStart],
+				       argc-argStart);
+	else
+	  newParameter = new ElementParameter(paramTag, eleTag,
+					      (const char **)&argv[argStart],
+					      argc-argStart);
+	  
+      }  else
 	newParameter = new Parameter(paramTag, 0, 0, 0);
 
       if (theRV != 0) {
@@ -257,7 +263,10 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
 	return TCL_ERROR;
       }
       else {
-	theParameter->addComponent(theObject, (const char **)&argv[argStart], argc-argStart);
+	if (eleTag == -1) 
+	  theParameter->addComponent(theObject, (const char **)&argv[argStart], argc-argStart);
+	else
+	  theParameter->addComponent(eleTag, (const char **)&argv[argStart], argc-argStart);	  
       }
     }
 
@@ -279,7 +288,8 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
-    theParameter->update(newValue);
+    //    theParameter->update(newValue);
+    theTclDomain->updateParameter(paramTag, newValue);
 
   }
 

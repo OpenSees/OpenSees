@@ -2,6 +2,7 @@ include ../../../Makefile.def
 
 OBJS       = DomainComponent.o \
 	Parameter.o \
+	ElementParameter.o \
 	RVParameter.o \
 	DVParameter.o \
 	NodeResponseParameter.o \
