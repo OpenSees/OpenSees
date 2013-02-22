@@ -1,5 +1,4 @@
 model basic -ndm 2 -ndf 2
-reliability
 
 set L 20.0
 set E 30000.0
