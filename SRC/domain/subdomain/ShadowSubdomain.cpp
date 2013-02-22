@@ -1599,7 +1599,7 @@ ShadowSubdomain::addParameter(Parameter *param)
   
   this->sendObject(*param);
   
-  return true;
+  return 0;
 }
 
 
@@ -1632,7 +1632,6 @@ ShadowSubdomain::updateParameter(int tag, double value)
     msgData(0) = ShadowActorSubdomain_updateParameterDOUBLE;
     msgData(1) = tag;
     this->sendID(msgData);
-
 
     static Vector data(1); 
     data(0) = value;

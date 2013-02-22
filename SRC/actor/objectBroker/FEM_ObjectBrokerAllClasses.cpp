@@ -353,6 +353,7 @@
 #include <DRMLoadPatternWrapper.h>
 
 #include <Parameter.h>
+#include <ElementParameter.h>
 #include <MaterialStageParameter.h>
 #include <MatParameter.h>
 #include <InitialStateParameter.h>
@@ -1899,6 +1900,10 @@ FEM_ObjectBrokerAllClasses::getParameter(int classTag)
   switch(classTag) {
   case  PARAMETER_TAG_Parameter:
     theRes = new Parameter;
+    break;
+
+  case  PARAMETER_TAG_ElementParameter:
+    theRes = new ElementParameter;
     break;
 
   case PARAMETER_TAG_MaterialStageParameter:
