@@ -61,6 +61,7 @@
 #include <SP_Constraint.h>
 #include <Recorder.h>
 #include <Parameter.h>
+#include <ParameterIter.h>
 
 #include <MapOfTaggedObjects.h>
 #include <MapOfTaggedObjectsIter.h>
@@ -1389,42 +1390,64 @@ int
 PartitionedDomain::partition(int numPartitions, bool usingMain, int mainPartitionID)
 {
   int result = 0;
-    // need to create element graph before create new subdomains
-    // DO NOT REMOVE THIS LINE __ EVEN IF COMPILER WARNING ABOUT UNUSED VARIABLE
-    Graph &theEleGraph = this->getElementGraph();
-    
-    // now we call partition on the domainPartitioner which does the partitioning
-    DomainPartitioner *thePartitioner = this->getPartitioner();
-    if (thePartitioner != 0) {
-      thePartitioner->setPartitionedDomain(*this);
-      result =  thePartitioner->partition(numPartitions, usingMain, mainPartitionID);
-    } else {
-      opserr << "PartitionedDomain::partition(int numPartitions) - no associated partitioner\n";
-      return -1;
+  // need to create element graph before create new subdomains
+  // DO NOT REMOVE THIS LINE __ EVEN IF COMPILER WARNING ABOUT UNUSED VARIABLE
+  Graph &theEleGraph = this->getElementGraph();
+  
+  // now we call partition on the domainPartitioner which does the partitioning
+  DomainPartitioner *thePartitioner = this->getPartitioner();
+  if (thePartitioner != 0) {
+    thePartitioner->setPartitionedDomain(*this);
+    result =  thePartitioner->partition(numPartitions, usingMain, mainPartitionID);
+  } else {
+    opserr << "PartitionedDomain::partition(int numPartitions) - no associated partitioner\n";
+    return -1;
+  }
+  
+  //
+  // add recorder objects
+  //
+
+  // do the same for all the subdomains
+  if (theSubdomains != 0) {
+    ArrayOfTaggedObjectsIter theSubsIter(*theSubdomains);	
+    TaggedObject *theObject;
+    while ((theObject = theSubsIter()) != 0) {
+      Subdomain *theSub = (Subdomain *)theObject;	    
+      for (int i=0; i<numRecorders; i++) {
+	int res = theSub->addRecorder(*theRecorders[i]);
+	if (res != 0) {
+	    opserr << "PartitionedDomain::partition(void)";
+	    opserr << " - failed to add Recorder to subdomain\n";
+	  return res;
+	}	  
+      }  
     }
-
-    //
-    // add recorder objects
-    //
-
-    // do the same for all the subdomains
+  }
+  
+  //
+  // add parameters
+  //
+  ParameterIter     &theParameters = this->getParameters();
+  Parameter *theParameter;
+  while ((theParameter = theParameters()) != 0) {
     if (theSubdomains != 0) {
       ArrayOfTaggedObjectsIter theSubsIter(*theSubdomains);	
       TaggedObject *theObject;
       while ((theObject = theSubsIter()) != 0) {
 	Subdomain *theSub = (Subdomain *)theObject;	    
-	for (int i=0; i<numRecorders; i++) {
-	  int res = theSub->addRecorder(*theRecorders[i]);
+	  int res = theSub->addParameter(theParameter);
 	  if (res != 0) {
-	    opserr << "PartitionedDomain::revertToLastCommit(void)";
-	    opserr << " - failed in Subdomain::revertToLastCommit()\n";
+	    opserr << "PartitionedDomain::partition(void)";
+	    opserr << " - failed to add Parameter to subdomain\n";
 	    return res;
 	  }	  
-	}  
-      }
+      }  
     }
+    theParameter->setDomain(this);  // needed as some components will move
+  }
 
-    return result;
+  return result;
 }
 
 
@@ -1945,8 +1968,6 @@ PartitionedDomain::removeParameter(int tag)
 int 
 PartitionedDomain::updateParameter(int tag, int value)
 {
-  int res = this->Domain::updateParameter(tag, value);
-
   // do the same for all the subdomains
   if (theSubdomains != 0) {
     ArrayOfTaggedObjectsIter theSubsIter(*theSubdomains);	
@@ -1957,6 +1978,8 @@ PartitionedDomain::updateParameter(int tag, int value)
       theSub->updateParameter(tag, value);
     }
   }
+
+  int res = this->Domain::updateParameter(tag, value);
 
   return res;
 }
@@ -1965,8 +1988,6 @@ PartitionedDomain::updateParameter(int tag, int value)
 int 
 PartitionedDomain::updateParameter(int tag, double value)
 {
-  int res = this->Domain::updateParameter(tag, value);
-
   // do the same for all the subdomains
   if (theSubdomains != 0) {
     ArrayOfTaggedObjectsIter theSubsIter(*theSubdomains);	
@@ -1976,6 +1997,8 @@ PartitionedDomain::updateParameter(int tag, double value)
       theSub->updateParameter(tag, value);
     }
   }
+
+  int res = this->Domain::updateParameter(tag, value);
 
   return res;
 }
