@@ -1200,6 +1200,7 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
   wipeAnalysis(clientData, interp, argc, argv);
 
+
   /*
   // to build the model make sure the ModelBuilder has been constructed
   // and that the model has not already been constructed
@@ -1222,7 +1223,6 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   // NOTE : DON'T do the above on theVariableTimeStepAnalysis
   // as it and theTansientAnalysis are one in the same
-
   if (theDatabase != 0)
     delete theDatabase;
 
@@ -1264,7 +1264,6 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   // the domain deletes the record objects, 
   // just have to delete the private array
-
   return TCL_OK;  
 }
 
@@ -1543,7 +1542,6 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     if (partitionModel() < 0) {
       opserr << "WARNING before analysis; partition failed - too few elements\n";
       OpenSeesExit(clientData, interp, argc, argv);
-      opserr << "WARNING called OpenSeesExit\n";
       return TCL_ERROR;
     }
 #endif
@@ -8504,7 +8502,8 @@ const char * getInterpPWD(Tcl_Interp *interp) {
 }
 
 
-int OpenSeesExit(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+int 
+OpenSeesExit(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
   theDomain.clearAll();
 
@@ -8516,8 +8515,8 @@ int OpenSeesExit(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
   if (theMachineBroker != 0) {
     theMachineBroker->shutdown();
     fprintf(stderr, "Process Terminating\n");
-    delete theMachineBroker;
-    theMachineBroker = 0;
+    //    delete theMachineBroker;
+    //    theMachineBroker = 0;
   }
 #endif
 
@@ -8529,8 +8528,8 @@ int OpenSeesExit(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
   if (theMachineBroker != 0) {
     theMachineBroker->shutdown();
     fprintf(stderr, "Process Terminating\n");
-    delete theMachineBroker;
-    theMachineBroker = 0;
+    //    delete theMachineBroker;
+    //    theMachineBroker = 0;
   }
 #endif
 
