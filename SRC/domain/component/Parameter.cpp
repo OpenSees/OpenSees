@@ -68,7 +68,8 @@ Parameter::Parameter(int passedTag,
 }
 
 Parameter::Parameter(const Parameter &param):
-  TaggedObject(param.getTag()), MovableObject(PARAMETER_TAG_Parameter)
+  TaggedObject(param.getTag()), MovableObject(PARAMETER_TAG_Parameter),
+   theComponents(0), numComponents(0), maxNumComponents(0)
 {
   theInfo = param.theInfo;
   numComponents = param.numComponents;
@@ -108,12 +109,11 @@ Parameter::Parameter(int tag, int classTag)
 Parameter::Parameter()
   :TaggedObject(0), MovableObject(PARAMETER_TAG_Parameter), 
    theObjects(0), 
-   numComponents(0), maxNumComponents(0),
+   theComponents(0), numComponents(0), maxNumComponents(0),
    numObjects(0), maxNumObjects(0), parameterID(0), gradIndex(-1)
 {
 
 }
-
 
 
 Parameter::~Parameter()
