@@ -134,6 +134,7 @@ DomainPartitioner::setPartitionedDomain(PartitionedDomain &theDomain)
 int
 DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag)
 {
+
   usingMainDomain = usingMain;
   mainPartition = mainPartitionTag;
 
@@ -155,7 +156,7 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag)
   //    theElementGraph = new Graph(myDomain->getElementGraph());
 
   theElementGraph = &(myDomain->getElementGraph());
-  
+
   int theError = thePartitioner.partition(*theElementGraph, numParts);
 
   if (theError < 0) {
@@ -218,6 +219,8 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag)
   }
   
   numPartitions = numParts;
+
+  //  opserr << "DomainPartitioner::partition() - nodes \n";  
   
   // we now create a MapOfTaggedObjectStorage to store the NodeLocations
   // and create a new NodeLocation for each node; adding it to the map object
@@ -352,10 +355,18 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag)
     int partition = vertexPtr->getColor();
     if (partition != mainPartition) {          
       int eleTag = vertexPtr->getRef();
+
+      //      opserr << "removing ele: " << eleTag << endln;
+      
       Element *elePtr = myDomain->removeElement(eleTag);  
+      //      opserr << *elePtr;
+
       if (elePtr != 0) {
+	//	opserr << "adding ele - start\n";
 	Subdomain *theSubdomain = myDomain->getSubdomainPtr(partition);  
 	theSubdomain->addElement(elePtr);
+
+	//	opserr << "adding ele - done\n";
       } else {
 	opserr << "DomainPartitioner::partioner - element GONE! - eleTag " << eleTag << endln;
       }

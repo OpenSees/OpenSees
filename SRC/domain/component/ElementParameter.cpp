@@ -76,7 +76,7 @@ ElementParameter::~ElementParameter()
 {
   if (argv != 0)
     delete [] argv[0]; // stored in 1 array
- 
+
   delete [] argv;
 
   if (theChannels != 0)

@@ -868,7 +868,6 @@ Domain::addElementalLoad(ElementalLoad *load, int pattern)
 
 void
 Domain::clearAll(void) {
-  
   // clear the loads and constraints from any load pattern
   LoadPatternIter &thePatterns = this->getLoadPatterns();
   LoadPattern *thePattern;
@@ -890,14 +889,13 @@ Domain::clearAll(void) {
   for (i=0; i<numRecorders; i++)
 	  if (theRecorders[i] != 0)
     delete theRecorders[i];
-
   numRecorders = 0; 
-  
+
   if (theRecorders != 0) {
     delete [] theRecorders;
     theRecorders = 0;
   }
-  
+
   for (i=0; i<numRegions; i++)
     delete theRegions[i];
   numRegions = 0;
@@ -906,7 +904,7 @@ Domain::clearAll(void) {
     delete [] theRegions;
     theRegions = 0;
   }
-  
+
   // set the time back to 0.0
   currentTime = 0.0;
   committedTime = 0.0;
