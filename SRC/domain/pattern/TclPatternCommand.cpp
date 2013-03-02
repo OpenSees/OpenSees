@@ -64,6 +64,7 @@
 #include <DRMLoadPattern.h>
 #include <DRMInputHandler.h>
 #include <PlaneDRMInputHandler.h>
+#include <DRMLoadPatternWrapper.h>
 
 #include <string.h>
 
@@ -461,48 +462,313 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
     
     if ((strcmp(argv[2],"-inputdata") == 0) || (strcmp(argv[2],"-InputData") == 0)) {
       InputDataFileName = argv[3];
-    }
     
-    // now parse the input file name to extract the pattern input data
-    std::ifstream ifile(InputDataFileName);
-    int num_steps; ifile >> num_steps;
-    double dt; ifile >> dt;
-    int steps_cached; ifile >> steps_cached;
-    double* ele_d = new double[3];
-    ifile >> ele_d[0];
-    ifile >> ele_d[1];
-    ifile >> ele_d[2];
-    double* drm_box_crds = new double[6];
-    for (int i=0; i<6; i++)
-      ifile >> drm_box_crds[i];
-    int n1; ifile >> n1;
-    int n2; ifile >> n2;
-    
-    std::string inps;
-    int nf = 6;
-    char** files = new char*[nf];
-    int* f_d = new int[3*(nf-1)];
-    int ne1,ne2;
-    for (int i=0; i<nf; i++) {
-      ifile >> inps;
-      files[i] = (char*) inps.c_str();
-      if (i <(nf-1)) {
-	ifile >> ne1;
-	ifile >> ne2;	
-	f_d[3*i] = (ne1+1)*(ne2+1);
-	f_d[3*i+1] = ne1;
-	f_d[3*i+2] = ne2;
-      }
-    }
-    
-    Mesh3DSubdomain * myMesher = new Mesh3DSubdomain(theDomain);
-    PlaneDRMInputHandler* patternhandler = new PlaneDRMInputHandler(1.0,files,nf,dt,0,num_steps,f_d,15,n1,n2,
-								    drm_box_crds,drm_box_crds,ele_d,
-								    myMesher, steps_cached,theDomain);
-    DRMLoadPattern* ptr = new DRMLoadPattern(1,1.0,patternhandler,theDomain);
-    ptr->setMaps();
-    thePattern = ptr;
+      // now parse the input file name to extract the pattern input data
+      std::ifstream ifile(InputDataFileName);
+      int num_steps; ifile >> num_steps;
+      double dt; ifile >> dt;
+      int steps_cached; ifile >> steps_cached;
+      double* ele_d = new double[3];
+      ifile >> ele_d[0];
+      ifile >> ele_d[1];
+      ifile >> ele_d[2];
+      double* drm_box_crds = new double[6];
+      for (int i=0; i<6; i++)
+	ifile >> drm_box_crds[i];
+      int n1; ifile >> n1;
+      int n2; ifile >> n2;
       
+      std::string inps;
+      int nf = 6;
+      char** files = new char*[nf];
+      int* f_d = new int[3*(nf-1)];
+      int ne1,ne2;
+      for (int i=0; i<nf; i++) {
+	ifile >> inps;
+	files[i] = (char*) inps.c_str();
+	if (i <(nf-1)) {
+	  ifile >> ne1;
+	  ifile >> ne2;	
+	  f_d[3*i] = (ne1+1)*(ne2+1);
+	  f_d[3*i+1] = ne1;
+	  f_d[3*i+2] = ne2;
+	}
+      }
+      
+      Mesh3DSubdomain * myMesher = new Mesh3DSubdomain(theDomain);
+      PlaneDRMInputHandler* patternhandler = new PlaneDRMInputHandler(1.0,files,nf,dt,0,num_steps,f_d,15,n1,n2,
+								      drm_box_crds,drm_box_crds,ele_d,
+								      myMesher, steps_cached,theDomain);
+      DRMLoadPattern* ptr = new DRMLoadPattern(1,1.0,patternhandler,theDomain);
+      ptr->setMaps();
+      thePattern = ptr;
+    } else {
+
+      //     TCL_Char * ifp = 0;
+      double INVALID = 0.7111722273337;
+      int c_arg = 3;
+      int end = argc-1;
+      double dt=INVALID; 
+      double* ele_d = new double[3];
+      double* drm_box_crds = new double[6];
+      for (int i=0; i<3; i++) {
+	ele_d[i] = INVALID;
+	drm_box_crds[2*i] = INVALID;
+	drm_box_crds[2*i+1] = INVALID;
+      }
+      
+      int nf =6;
+      char** files = new char*[nf];
+      files[5] = "./NONE";
+      int* f_d = new int[15];
+      int num_steps=1;
+      int steps_cached=10;
+      int n1,n2;
+      n2=0;
+      double factor =1.0;
+      
+      
+      while ( c_arg < end ) {
+	
+	if ((strcmp(argv[c_arg],"-dt") == 0) || (strcmp(argv[c_arg],"-deltaT") == 0) ) {
+	  c_arg++;
+	  if (Tcl_GetDouble(interp,argv[c_arg], &dt) != TCL_OK) {
+	    opserr << " Error reading deltaT for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	}
+	
+	if ((strcmp(argv[c_arg],"-numSteps") == 0) || (strcmp(argv[c_arg],"-numberOfSteps") == 0) ) {
+	  c_arg++;
+	  if (Tcl_GetInt(interp,argv[c_arg], &num_steps) != TCL_OK) {
+	    opserr << " Error reading number of steps for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	}
+	
+	else if ((strcmp(argv[c_arg],"-stepsCached") == 0) || (strcmp(argv[c_arg],"-cache") == 0) ) {
+	  c_arg++;
+	  if (Tcl_GetInt(interp,argv[c_arg], &steps_cached) != TCL_OK) {
+	    opserr << " Error reading number of steps for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	}
+	
+	else if ((strcmp(argv[c_arg],"-gridSize") == 0) || (strcmp(argv[c_arg],"-eleSize") == 0) ) {
+	  c_arg++;
+	  if (Tcl_GetDouble(interp,argv[c_arg], &ele_d[0]) != TCL_OK) {
+	    opserr << " Error reading deltaT for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  if (Tcl_GetDouble(interp,argv[c_arg], &ele_d[1]) != TCL_OK) {
+	    opserr << " Error reading deltaT for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  if (Tcl_GetDouble(interp,argv[c_arg], &ele_d[2]) != TCL_OK) {
+	    opserr << " Error reading deltaT for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	}
+	
+	else if ((strcmp(argv[c_arg],"-gridDataFace1") == 0) ) {
+	  c_arg++;
+	  if (Tcl_GetInt(interp,argv[c_arg], &f_d[1]) != TCL_OK) {
+	    opserr << " Error reading grid data f1 for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  if (Tcl_GetInt(interp,argv[c_arg], &f_d[2]) != TCL_OK) {
+	    opserr << " Error reading grid data f1 for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  f_d[0] = (f_d[1]+1)*(f_d[2]+1);
+	}
+	
+	else if ((strcmp(argv[c_arg],"-gridDataFace2") == 0) ) {
+	  c_arg++;
+	  if (Tcl_GetInt(interp,argv[c_arg], &f_d[4]) != TCL_OK) {
+	    opserr << " Error reading grid data f2 for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  if (Tcl_GetInt(interp,argv[c_arg], &f_d[5]) != TCL_OK) {
+	    opserr << " Error reading grid data f2 for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  f_d[3] = (f_d[4]+1)*(f_d[5]+1);
+	}
+	
+	else if ((strcmp(argv[c_arg],"-gridDataFace3") == 0) ) {
+	  c_arg++;
+	  if (Tcl_GetInt(interp,argv[c_arg], &f_d[7]) != TCL_OK) {
+	    opserr << " Error reading grid data f3 for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  if (Tcl_GetInt(interp,argv[c_arg], &f_d[8]) != TCL_OK) {
+	    opserr << " Error reading grid data f3 for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  f_d[6] = (f_d[7]+1)*(f_d[8]+1);
+	}
+	
+	else if ((strcmp(argv[c_arg],"-gridDataFace4") == 0) ) {
+	  c_arg++;
+	  if (Tcl_GetInt(interp,argv[c_arg], &f_d[10]) != TCL_OK) {
+	    opserr << " Error reading grid data f4 for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  if (Tcl_GetInt(interp,argv[c_arg], &f_d[11]) != TCL_OK) {
+	    opserr << " Error reading grid data f4 for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  f_d[9] = (f_d[10]+1)*(f_d[11]+1);
+	}
+	
+	else if ((strcmp(argv[c_arg],"-gridDataFace5") == 0) ) {
+	  c_arg++;
+	  if (Tcl_GetInt(interp,argv[c_arg], &f_d[13]) != TCL_OK) {
+	    opserr << " Error reading grid data f5 for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  if (Tcl_GetInt(interp,argv[c_arg], &f_d[14]) != TCL_OK) {
+	    opserr << " Error reading grid data f5 for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  f_d[12] = (f_d[13]+1)*(f_d[14]+1);
+	}
+	
+	else if ((strcmp(argv[c_arg],"-filePathFace1") == 0) ) {
+	  c_arg++;
+	  std::string tmp(argv[c_arg]);
+	  files[0] = new char[tmp.size()+1];
+	  strcpy(files[0],tmp.c_str());
+	  c_arg++;
+	}
+	
+	else if ((strcmp(argv[c_arg],"-filePathFace2") == 0) ) {
+	  c_arg++;
+	  std::string tmp(argv[c_arg]);
+	  files[1] = new char[tmp.size()+1];
+	  strcpy(files[1],tmp.c_str());
+	  c_arg++;
+	}
+	
+	else if ((strcmp(argv[c_arg],"-filePathFace3") == 0) ) {
+	  c_arg++;
+	  std::string tmp(argv[c_arg]);
+	  files[2] = new char[tmp.size()+1];
+	  strcpy(files[2],tmp.c_str());
+	  c_arg++;
+	}
+	
+	else if ((strcmp(argv[c_arg],"-filePathFace4") == 0) ) {
+	  c_arg++;
+	  std::string tmp(argv[c_arg]);
+	  files[3] = new char[tmp.size()+1];
+	  strcpy(files[3],tmp.c_str());
+	  c_arg++;
+	}
+	
+	else if ((strcmp(argv[c_arg],"-filePathFace5a") == 0) ) {
+	  c_arg++;
+	  std::string tmp(argv[c_arg]);
+	  files[4] = new char[tmp.size()+1];
+	  strcpy(files[4],tmp.c_str());
+	  c_arg++;
+	}
+	
+	else if ((strcmp(argv[c_arg],"-filePathFace5b") == 0) ) {
+	  c_arg++;
+	  std::string tmp(argv[c_arg]);
+	  files[5] = new char[tmp.size()+1];
+	  strcpy(files[5],tmp.c_str());
+	  c_arg++;
+	}
+	
+	else if ((strcmp(argv[c_arg],"-fileFace5aGridPoints") == 0) ) {
+	  c_arg++;	
+	  if (Tcl_GetInt(interp,argv[c_arg], &n1) != TCL_OK) {
+	    opserr << " Error reading grid data f5 for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	}
+	
+	else if ((strcmp(argv[c_arg],"-fileFace5bGridPoints") == 0) ) {
+	  c_arg++;	
+	  if (Tcl_GetInt(interp,argv[c_arg], &n2) != TCL_OK) {
+	    opserr << " Error reading grid data f5 for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	}
+	
+	else if ((strcmp(argv[c_arg],"-factor") == 0) || (strcmp(argv[c_arg],"-Factor") == 0) ) {
+	  c_arg++;
+	  if (Tcl_GetDouble(interp,argv[c_arg], &factor) != TCL_OK) {
+	    opserr << " Error reading number of steps for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	}
+	
+	else if ((strcmp(argv[c_arg],"-DRMBoxCrds") == 0) ) {
+	  c_arg++;
+	  if (Tcl_GetDouble(interp,argv[c_arg], &drm_box_crds[0]) != TCL_OK) {
+	    opserr << " Error reading DRM box Crds, xmin for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  if (Tcl_GetDouble(interp,argv[c_arg], &drm_box_crds[1]) != TCL_OK) {
+	    opserr << " Error reading DRM box Crds, xmax for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  if (Tcl_GetDouble(interp,argv[c_arg], &drm_box_crds[2]) != TCL_OK) {
+	    opserr << " Error reading DRM box Crds, ymin for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  if (Tcl_GetDouble(interp,argv[c_arg], &drm_box_crds[3]) != TCL_OK) {
+	    opserr << " Error reading DRM box Crds, ymax for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  if (Tcl_GetDouble(interp,argv[c_arg], &drm_box_crds[4]) != TCL_OK) {
+	    opserr << " Error reading DRM box Crds, zmin for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	  if (Tcl_GetDouble(interp,argv[c_arg], &drm_box_crds[5]) != TCL_OK) {
+	    opserr << " Error reading DRM box Crds, zmax for DRMLoadPattern \n";
+	    exit(-1);
+	  }
+	  c_arg++;
+	}
+	
+      }
+      
+      thePattern = new DRMLoadPatternWrapper(patternID,factor,files,nf,dt,num_steps,f_d,15,n1,n2,
+					     drm_box_crds,ele_d,
+					     steps_cached);
+      
+      commandEndMarker = c_arg;
+
+    }
     
   }// end else if DRMLoadPattern
 
