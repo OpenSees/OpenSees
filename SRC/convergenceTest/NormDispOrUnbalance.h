@@ -49,7 +49,7 @@ public:
 			 double tolUnbalance,
 			 int maxNumIter, 
 			 int printFlag, 
-                        int normType=2, int maxincr=3);
+                        int normType=2, int maxincr=-1);
 
     // destructor
     ~NormDispOrUnbalance();

@@ -46,7 +46,7 @@ NormDispAndUnbalance::NormDispAndUnbalance(double theTolDisp, double theTolUnbal
     maxNumIter(maxIter), currentIter(0), printFlag(printIt),
     norms(2*maxIter), nType(normType), maxIncr(maxincr), numIncr(0)
 {
-    
+    if(maxIncr < 0) maxIncr = maxNumIter;
 }
 
 

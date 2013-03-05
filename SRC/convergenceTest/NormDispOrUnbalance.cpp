@@ -46,7 +46,7 @@ NormDispOrUnbalance::NormDispOrUnbalance(double theTolDisp, double theTolUnbalan
     maxNumIter(maxIter), currentIter(0), printFlag(printIt),
     norms(2*maxIter), nType(normType), maxIncr(maxincr), numIncr(0)
 {
-    
+    if(maxIncr < 0) maxIncr = maxNumIter;
 }
 
 
@@ -110,7 +110,7 @@ int NormDispOrUnbalance::test(void)
     const Vector &b = theSOE->getB();
     double normB = b.pNorm(nType);
 
-    if((currentIter>1 && norms(currentIter-2)<normX) || (currentIter>1 && norms(maxNumIter+currentIter-2)<normB)) {
+    if((currentIter>1 && norms(currentIter-2)<normX) && (currentIter>1 && norms(maxNumIter+currentIter-2)<normB)) {
         numIncr++;
     }
 
