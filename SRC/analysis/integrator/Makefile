@@ -9,6 +9,7 @@ OBJS       = IncrementalIntegrator.o \
 	GeneralizedAlpha.o \
 	WilsonTheta.o \
 	Newmark.o \
+	PFEMIntegrator.o \
 	CentralDifference.o \
 	Integrator.o \
 	LoadControl.o \

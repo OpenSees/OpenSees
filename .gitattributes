@@ -1701,6 +1701,8 @@ SRC/analysis/integrator/NewmarkHSIncrLimit.cpp -text
 SRC/analysis/integrator/NewmarkHSIncrLimit.h -text
 SRC/analysis/integrator/NewmarkHSIncrReduct.cpp -text
 SRC/analysis/integrator/NewmarkHSIncrReduct.h -text
+SRC/analysis/integrator/PFEMIntegrator.cpp -text
+SRC/analysis/integrator/PFEMIntegrator.h -text
 SRC/analysis/integrator/ParkLMS3.cpp -text
 SRC/analysis/integrator/ParkLMS3.h -text
 SRC/analysis/integrator/StaticIntegrator.cpp -text
