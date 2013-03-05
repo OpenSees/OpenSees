@@ -51,21 +51,34 @@
 #define Pressure_Constraint_h
 
 #include <DomainComponent.h>
+#include <ID.h>
+
+class Node;
 
 class Pressure_Constraint : public DomainComponent
 {
 public:
     // constructors
     explicit Pressure_Constraint(int classTag);
-    Pressure_Constraint(int classTag, int nodeId, bool Fluid);
-    Pressure_Constraint(int nodeId, bool Fluid);
+    Pressure_Constraint(int classTag, int nodeId, double g);
+    Pressure_Constraint(int nodeId, double g);
 
     // destructor
     virtual ~Pressure_Constraint();
 
     // method to get information about the constraint
-    virtual int getNodeConstrained()const;
-    virtual bool isFluid()const;
+    virtual void setDomain(Domain* theDomain);
+    virtual int getPressureNode();
+    virtual const ID& getFluidElements();
+    virtual const ID& getOtherElements();
+    virtual void connect(int eleId, bool fluid=true);
+    virtual void disconnect(int eleId);
+    virtual void disconnect();
+    virtual bool isFluid() const;
+    virtual bool isInterface() const;
+    virtual bool isStructure() const;
+    virtual bool isIsolated() const;
+    virtual void newStep(double dt, Vector& U, Vector& Udot, Vector& Udotdot);
 
     // methods for output
     virtual int sendSelf(int commitTag, Channel &theChannel);
@@ -76,8 +89,12 @@ public:
 
 private:
 
-    int nodeConstrained;     // constrained node
-    bool fluid;
+    static int findNodeTag(Domain* theDomain);
+
+    int pTag;
+    ID fluidEleTags;
+    ID otherEleTags;
+    double gravity;
 };
 
 #endif
