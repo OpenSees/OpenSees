@@ -1549,6 +1549,8 @@ SRC/analysis/analysis/DomainUser.tex -text
 SRC/analysis/analysis/EigenAnalysis.cpp -text
 SRC/analysis/analysis/EigenAnalysis.h -text
 SRC/analysis/analysis/Makefile -text
+SRC/analysis/analysis/PFEMAnalysis.cpp -text
+SRC/analysis/analysis/PFEMAnalysis.h -text
 SRC/analysis/analysis/StaticAnalysis.cpp -text
 SRC/analysis/analysis/StaticAnalysis.h -text
 SRC/analysis/analysis/StaticAnalysis.tex -text
