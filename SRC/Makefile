@@ -502,6 +502,9 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/triangle/Tri31.o \
 	$(FE)/element/PFEMElement/PFEMElement2D.o \
 	$(FE)/element/PFEMElement/TclModelBuilder_addPFEMElement.o \
+	$(FE)/element/PFEMElement/TclPFEMCommands.o \
+	$(FE)/element/PFEMElement/PFEMMesher2D.o \
+	$(FE)/element/PFEMElement/PFEMMesher3D.o \
 	$(FE)/element/UWelements/SSPquad.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \
@@ -742,17 +745,17 @@ ifeq ($(PROGRAMMING_MODE), THREADS)
 SUPER_LU_OBJ = $(FE)/system_of_eqn/linearSOE/sparseGEN/ThreadedSuperLU.o
 endif
 
-##ifeq ($(PROGRAMMING_MODE), PARALLEL)
-#SUPER_LU_OBJ = $(FE)/system_of_eqn/linearSOE/sparseGEN/SuperLU.o \
-#	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
-#	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o 
-#endif
+# ifeq ($(PROGRAMMING_MODE), PARALLEL)
+# SUPER_LU_OBJ = $(FE)/system_of_eqn/linearSOE/sparseGEN/SuperLU.o \
+# 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
+# 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o 
+# endif
 
-#ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
-#SUPER_LU_OBJ = $(FE)/system_of_eqn/linearSOE/sparseGEN/SuperLU.o \
-#	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
-#	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o 
-#endif
+# ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
+# SUPER_LU_OBJ = $(FE)/system_of_eqn/linearSOE/sparseGEN/SuperLU.o \
+# 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
+# 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o 
+# endif
 
 CUDA_CLASSES = 
 
@@ -785,6 +788,7 @@ SysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(FE)/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinDirectSolver.o \
 	$(FE)/system_of_eqn/linearSOE/profileSPD/ProfileSPDLinSubstrSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSOE.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenRowLinSOE.o \
@@ -895,6 +899,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/analysis/TransientAnalysis.o \
 	$(FE)/analysis/analysis/DirectIntegrationAnalysis.o \
 	$(FE)/analysis/analysis/VariableTimeStepDirectIntegrationAnalysis.o \
+	$(FE)/analysis/analysis/PFEMAnalysis.o \
 	$(FE)/analysis/analysis/DomainDecompositionAnalysis.o \
 	$(FE)/analysis/analysis/StaticDomainDecompositionAnalysis.o \
 	$(FE)/analysis/analysis/TransientDomainDecompositionAnalysis.o \
@@ -947,6 +952,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/DistributedDisplacementControl.o \
 	$(FE)/analysis/integrator/TransientIntegrator.o \
 	$(FE)/analysis/integrator/Newmark.o \
+	$(FE)/analysis/integrator/PFEMIntegrator.o \
 	$(FE)/analysis/integrator/TRBDF2.o \
     $(FE)/analysis/integrator/TRBDF3.o \
 	$(FE)/analysis/integrator/HHT.o \
