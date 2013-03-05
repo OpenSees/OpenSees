@@ -30,160 +30,338 @@
 //
 
 #include <PFEMSolver.h>
-#include <ID.h>
-#include <AnalysisModel.h>
-#include <SparseGenColLinSOE.h>
-#include <Pressure_Constraint.h>
-#include <Pressure_ConstraintIter.h>
-#include <Domain.h>
-#include <Node.h>
-#include <DOF_Group.h>
+#include <PFEMLinSOE.h>
+#include <iostream>
+#include <cmath>
 
 PFEMSolver::PFEMSolver()
-    :SparseGenColLinSolver(SOLVER_TAGS_PFEMSolver), 
-     mID(0), pID(0), piID(0), mIDall(0), 
-     Mid(0), Mhatid(0), Gid(0), Gtid(0), Lid(0), Qtid(0), 
-     G(0), Gt(0), L(0), Qt(0)
+    :LinearSOESolver(SOLVER_TAGS_PFEMSolver), theSOE(0), Msym(0), Mnum(0)
 {
 }
 
 PFEMSolver::~PFEMSolver()
 {
-    if(mID != 0) delete mID;
-    if(pID != 0) delete pID;
-    if(piID != 0) delete piID;
-    if(mIDall != 0) delete mIDall;
-    if(Mid != 0) delete Mid;
-    if(Mhatid != 0) delete Mhatid;
-    if(Gid != 0) delete Gid;
-    if(Gtid != 0) delete Gtid;
-    if(Lid != 0) delete Lid;
-    if(Qtid != 0) delete Qtid;
-    if(G != 0) cs_spfree(G);
-    if(Gt != 0) cs_spfree(Gt);
-    if(L != 0) cs_spfree(L);
-    if(Qt != 0) cs_spfree(Qt);
+    if(Msym != 0) {
+        cs_sfree(Msym);
+    }
+    if(Mnum != 0) {
+        cs_nfree(Mnum);
+    }
 }
 
 int
 PFEMSolver::solve()
 {
-    double* A = theSOE->A;
-    double* B = theSOE->B;
-    double* X = theSOE->X;
+    cs* M = theSOE->M;
+    cs* Gft = theSOE->Gft;
+    cs* Git = theSOE->Git;
+    cs* L = theSOE->L;
+    cs* Qt = theSOE->Qt;
+    Vector& Mhat = theSOE->Mhat;
+    Vector& Mf = theSOE->Mf;
+    Vector& X = theSOE->X;
+    Vector& B = theSOE->B;
+    ID& dofType = theSOE->dofType;
+    ID& dofID = theSOE->dofID;
 
-    // fill matrices
-    for(int ind=0; ind<Gid->Size(); ind++) {   // local index
-        G->x[ind] = -A[(*Gid)(ind)];            // global index
-    }
-    for(int ind=0; ind<Gtid->Size(); ind++) {   // local index
-        Gt->x[ind] = A[(*Gtid)(ind)];           // global index
-    }
-    for(int ind=0; ind<Lid->Size(); ind++) {   // local index
-        L->x[ind] = A[(*Lid)(ind)];            // global index
-    }
-    for(int ind=0; ind<Qtid->Size(); ind++) {   // local index
-        Qt->x[ind] = A[(*Qtid)(ind)];           // global index
-    }
+    int Msize = M->n;
+    int Isize = Git->n;
+    int Ssize = Msize-Isize;
+    int Fsize = Mf.Size();
+    int Psize = L->n;
+    int Pisize = Mhat.Size();
+    int size = X.Size();
 
-    // predictor : delta U* = Md^{-1} * rm
-    double* deltaUs = new double[mID->Size()];
-    for(int j=0; j<mID->Size(); j++) {   // local column id
-        int col = (*mID)(j);             // global column id
-        int ind = (*Mid)(j);             // global index
-        if(A[ind] == 0.0) {
-            opserr<<"Zero mass at location "<<j<<" ";
-            opserr<<" - PFEMLinSOE::solve()\n";
+    // numeric LU factorization of M
+    if(Msize > 0) {
+        if(Msym == 0) {
+            opserr<<"WARNING: setSize has not been called";
+            opserr<<" -- PFEMSolver::solve\n";
             return -1;
         }
-        deltaUs[j] = B[col]/A[ind];          // Md^{-1}*rm
-    }
-
-    // pressure : (L+Gt*Md^{-1}*G) * delta P = rp - Gt*delta U*
-    cs* GtMd = cs_spalloc(Gt->m, Gt->n, Gt->nzmax, 1, 0);
-    GtMd->p[0] = 0;
-    for(int j=0; j<mID->Size(); j++) {        // local column id
-        int ind = (*Mid)(j);                  // global index
-        GtMd->p[j+1] = Gt->p[j+1];            // copy column start
-        for(int Gtind=Gt->p[j]; Gtind<Gt->p[j+1]; Gtind++) { // local index
-            GtMd->x[Gtind] = Gt->x[Gtind] / A[ind];     // Gt*Md^{-1}
-            GtMd->i[Gtind] = Gt->i[Gtind];              // copy row
+        if(Mnum != 0) {
+            cs_nfree(Mnum);
+            Mnum = 0;
         }
-    } 
-
-    cs* S1 = cs_multiply(GtMd, G);            // Gt*Md^{-1}*G
-    cs* S = cs_add(L, S1, 1.0, 1.0);          // L + Gt*Md^{-1}*G
-    cs_spfree(S1);
-    cs_spfree(GtMd);
-
-    // right hand side : rp - Gt*delta U*
-    double* deltaP = new double[pID->Size()];
-    for(int i=0; i<pID->Size(); i++) deltaP[i]=0.0;
-    cs_gaxpy(Gt, deltaUs, deltaP);           // Gt*delta U*
-    for(int i=0; i<pID->Size(); i++) {       // local row id
-        int row = (*pID)(i);                 // global row id
-        deltaP[i] = B[row] - deltaP[i];      // rp - Gt*delta U*
+        Mnum = cs_lu(M, Msym, 1e-6);
+        if(Mnum == 0) {
+            opserr<<"WARNING: failed to do LU factorization of M";
+            opserr<<" -- PFEMSolver::solve\n";
+            return -1;
+        }
     }
 
-    // solve pressure : delta P
-    cs_qrsol(3, S, deltaP);
-    cs_spfree(S);
+    // structure and interface predictor : deltaV1 = M^{-1} * rsi
+    Vector deltaV1(Msize);
+    if(Msize > 0) {
+
+        // rsi
+        for(int i=0; i<size; i++) {        // row
+            int rowtype = dofType(i);      // row type
+            int rowid = dofID(i);          // row id
+            if(rowtype == 2) {
+                deltaV1(rowid+Ssize) = B(i);   // rsi
+            } else if(rowtype == 0) {
+                deltaV1(rowid) = B(i);         // rsi
+            }
+        }
+
+        // M^{-1}*rsi
+        Vector x(Msize);
+        double* deltaV1_ptr = &deltaV1(0);
+        double* x_ptr = &x(0);
+        cs_ipvec(Mnum->pinv, deltaV1_ptr, x_ptr, Msize);
+        cs_lsolve(Mnum->L, x_ptr);
+        cs_usolve(Mnum->U, x_ptr);
+        cs_ipvec(Msym->q, x_ptr, deltaV1_ptr, Msize);
+    }
     
-
-    // corrector
-    double* deltaU = new double[mID->Size()];
-    for(int i=0; i<mID->Size(); i++) deltaU[i] = 0.0;
-    cs_gaxpy(G, deltaP, deltaU);        // G*deltaP
-    for(int i=0; i<mID->Size(); i++) {  // local row id
-        int ind = (*Mid)(i);            // global index
-        deltaU[i] /= A[ind];            // Md^{-1}*G*deltaP
-        deltaU[i] += deltaUs[i];        // deltaU* + Md^{-1}*G*deltaP
+    // fluid predictor: deltaVf1 = Mf^{-1} * rf
+    Vector deltaVf1(Fsize);
+    if(Fsize > 0) {
+        // rf
+        for(int i=0; i<size; i++) {        // row
+            int rowtype = dofType(i);      // row type
+            int rowid = dofID(i);          // row id
+            if(rowtype == 1) {
+                if(Mf(rowid) == 0) {
+                    opserr<<"WANING: Zero Mf at location "<<rowid<<" ";
+                    opserr<<" - PFEMLinSOE::solve()\n";
+                    return -1;
+                }
+                deltaVf1(rowid) = B(i)/Mf(rowid);         // rf
+            }
+        }
     }
 
-    // pressure gradient
-    double* deltaPi = new double[piID->Size()];
-    for(int i=0; i<piID->Size(); i++) deltaPi[i] = 0.0;
-    cs_gaxpy(Qt, deltaP, deltaPi);       // Qt*deltaP
-    for(int i=0; i<piID->Size(); i++) {  // local row id
-        int row = (*piID)(i);            // global row id
-        int ind = (*Mhatid)(i);          // global index
-        deltaPi[i] = (B[row] - deltaPi[i])/A[ind];  // Mhatd^{-1}*(rpi - Qt*deltaP)
+    // Mi^{-1}, Msi^{-1}
+    cs* invMi1 = cs_spalloc(Isize, Isize, 1, 1, 1);
+    cs* invMsi1 = cs_spalloc(Ssize, Isize, 1, 1, 1);
+    if(Msize > 0) {
+        Vector eyes(Msize);
+        Vector x(Msize);
+        double* eyes_ptr = &eyes(0);
+        double* x_ptr = &x(0);
+        for(int j=0; j<Isize; j++) {
+
+            // rhs
+            eyes.Zero();
+            eyes(j+Ssize) = 1.0;
+            x.Zero();
+
+            // M^{-1}*eyes
+            cs_ipvec(Mnum->pinv, eyes_ptr, x_ptr, Msize);
+            cs_lsolve(Mnum->L, x_ptr);
+            cs_usolve(Mnum->U, x_ptr);
+            cs_ipvec(Msym->q, x_ptr, eyes_ptr, Msize);
+
+            // copy
+            for(int i=0; i<Msize; i++) {
+                if(eyes(i) != 0.0) {
+                    if(i >= Ssize) {
+                        cs_entry(invMi1, i-Ssize, j, eyes(i));
+                    } else {
+                        cs_entry(invMsi1, i, j, eyes(i));
+                    }
+                }
+            }
+        }
+    }
+    cs* invMi = cs_compress(invMi1);
+    cs* invMsi = cs_compress(invMsi1);
+    cs_spfree(invMi1);
+    cs_spfree(invMsi1);
+    if(Mnum != 0) {
+        cs_nfree(Mnum);
+        Mnum = 0;
+    }
+    
+    // Gi, Mf^{-1}*Gf
+    cs* Gi = cs_transpose(Git, 1);
+    cs* Gf = cs_transpose(Gft, 1);
+    if(Fsize > 0) {
+        for(int j=0; j<Psize; j++) {
+            for(int k=Gf->p[j]; k<Gf->p[j+1]; k++) {
+                int i = Gf->i[k];
+                double& x = Gf->x[k];
+                x /= Mf(i);
+            }
+        }
+    }
+
+    // solve for pressure
+    Vector deltaP(Psize);
+    if(Psize>0) {
+        double* deltaP_ptr = &deltaP(0);
+
+        // Gft*deltaVf1
+        if(Fsize > 0) {
+            double* deltaVf1_ptr = &deltaVf1(0);
+            cs_gaxpy(Gft, deltaVf1_ptr, deltaP_ptr);
+        }
+
+        // Git*deltaVi1
+        if(Isize > 0) {
+            double* deltaVi1_ptr = &deltaV1(0) + Ssize;
+            cs_gaxpy(Git, deltaVi1_ptr, deltaP_ptr);
+        }
+
+        // rp-Git*deltaVi1-Gft*deltaVf1
+        for(int i=0; i<size; i++) {        // row
+            int rowtype = dofType(i);      // row type
+            int rowid = dofID(i);          // row id
+            if(rowtype == 3) {             // pressure
+                deltaP(rowid) = B(i)-deltaP(rowid);   // rp-Git*deltaVi1-Gft*deltaVf1
+            }
+        }
+
+        // S = L + Git*Mi{-1}*Gi + Gft*Mf{-1}*Gf
+        cs* S = 0;
+        if(Isize > 0) {
+            cs* S1 = cs_multiply(Git, invMi);
+            S = cs_multiply(S1, Gi);
+            cs_spfree(S1);
+        }
+        if(Fsize > 0) {
+            cs* S1 = cs_multiply(Gft, Gf);
+            if(S == 0) {
+                S = S1;
+            } else {
+                cs* S2 = cs_add(S, S1, 1.0, 1.0);
+                cs_spfree(S);
+                cs_spfree(S1);
+                S = S2;
+            }
+        }
+        if(S == 0) {
+            S = L;
+
+            // solve
+            cs_lusol(3, S, deltaP_ptr, 1e-6);  
+
+        } else {
+            cs* S1 = cs_add(S, L, 1.0, 1.0);
+            cs_spfree(S);
+            S = S1;
+
+            // solve
+            cs_lusol(3, S, deltaP_ptr, 1e-6);  
+            cs_spfree(S);
+        }
+    }
+
+    // structure and interface corrector : deltaV = deltaV1 + M^{-1}*G*deltaP
+    Vector deltaV(Msize);
+    if(Isize > 0) {
+
+        // Gi*deltaP
+        Vector Gip(Isize);
+        double* Gip_ptr = &Gip(0);
+        if(Psize > 0) {
+            double* deltaP_ptr = &deltaP(0);
+            cs_gaxpy(Gi, deltaP_ptr, Gip_ptr);
+
+            // Msi^{-1}*Gi*deltaP
+            if(Ssize > 0) {
+                Vector vs(Ssize);
+                double* vs_ptr = &vs(0);
+                cs_gaxpy(invMsi, Gip_ptr, vs_ptr);
+                for(int i=0; i<Ssize; i++) {
+                    deltaV(i) += vs(i);
+                }
+            }
+
+            // Mi^{-1}*Gi*deltaP
+            Vector vi(Isize);
+            double* vi_ptr = &vi(0);
+            cs_gaxpy(invMi, Gip_ptr, vi_ptr);
+            for(int i=0; i<Isize; i++) {
+                deltaV(i+Ssize) = vi(i);
+            }
+
+        }
+
+        deltaV += deltaV1;
+    }
+    cs_spfree(Gi);
+    cs_spfree(invMi);
+    cs_spfree(invMsi);
+
+    // fluid corrector: deltaVf = deltaVf1 + Mf^{-1}*Gf*deltaP
+    Vector deltaVf(Fsize);
+    if(Fsize > 0) {
+        if(Psize > 0) {
+            double* deltaVf_ptr = &deltaVf(0);
+            double* deltaP_ptr = &deltaP(0);
+            cs_gaxpy(Gf, deltaP_ptr, deltaVf_ptr);
+        }
+
+        deltaVf += deltaVf1;
+    }
+    cs_spfree(Gf);
+
+    // deltaPi = Mhatd^{-1}*(Qt*deltaP - rpi)
+    Vector deltaPi(Pisize);
+    if(Pisize > 0) {
+
+        // Qt*deltaP
+        if(Psize > 0) {
+            double* deltaPi_ptr = &deltaPi(0);
+            double* deltaP_ptr = &deltaP(0);
+            cs_gaxpy(Qt, deltaP_ptr, deltaPi_ptr);   // Qt*deltaP
+        }
+
+        // rpi
+        for(int i=0; i<size; i++) {        // row
+            int rowtype = dofType(i);      // row type
+            int rowid = dofID(i);          // row id
+            if(rowtype != 4) continue;     // rpi
+            if(Mhat(rowid) == 0.0) {
+                opserr<<"Zero Mhat at location "<<rowid<<" ";
+                opserr<<" - PFEMLinSOE::solve()\n";
+                return -1;
+            }
+            deltaPi(rowid) = (B(i)-deltaPi(rowid))/Mhat(rowid); // rpi
+        }
     }
 
     // copy to X
-    for(int i=0; i<mID->Size(); i++) {
-        X[(*mID)(i)] = deltaU[i];
-    }
-    for(int i=0; i<pID->Size(); i++) {
-        X[(*pID)(i)] = deltaP[i];
-    }
-    for(int i=0; i<piID->Size(); i++) {
-        X[(*piID)(i)] = deltaPi[i];
-    }
+    X.Zero();
+    for(int i=0; i<size; i++) {            // row
+        int rowtype = dofType(i);          // row type
+        int rowid = dofID(i); 
+        if(rowtype == 0) {
+            X(i) = deltaV(rowid);            
+        } else if(rowtype == 2) {
+            X(i) = deltaV(rowid+Ssize);
+        } else if(rowtype == 1) {
+            X(i) = deltaVf(rowid);
+        } else if(rowtype == 3) {
+            X(i) = deltaP(rowid);
+        } else if(rowtype == 4) {
+            X(i) = deltaPi(rowid);
+        }
 
-    delete [] deltaUs;
-    delete [] deltaU;
-    delete [] deltaP;
-    delete [] deltaPi;
+    }
 
     return 0;
 }
 
 int PFEMSolver::setSize()
 {
-    // set Dof IDs
-    this->setDofIDs();
-
-    // set matrix IDs
-    cs* S = this->setMatIDs();
-    if(S == 0) {
-        opserr<<"can't create S - PFEMSolver::setSize()\n";
-        return -1;
+    cs* M = theSOE->M;
+    if(M->n > 0) {
+        if(Msym != 0) {
+            cs_sfree(Msym);
+            Msym = 0;
+        }
+        Msym = cs_sqr(3, M, 0);
+        if(Msym == 0) {
+            opserr<<"WARNING: failed to do symbolic analysis of M";
+            opserr<<" -- PFEMSolver::setSize\n";
+            return -1;
+        }
     }
-
-    // free memory
-    cs_spfree(S);
-
     return 0;
 }
 
@@ -203,213 +381,10 @@ PFEMSolver::recvSelf(int ctag,
     return 0;
 }
 
+
 int 
-PFEMSolver::setDofIDs()
+PFEMSolver::setLinearSOE(PFEMLinSOE& theSOE)
 {
-    AnalysisModel* theModel = theSOE->theModel;
-    if(theModel == 0) {
-        opserr << "Analysis model has not been linked - PFEMSolver::setDofIDs()\n";
-        return -1;
-    }
-
-    if(mID != 0) delete mID;
-    if(pID != 0) delete pID;
-    if(piID != 0) delete piID;
-    if(mIDall != 0) delete mIDall;
-    mID = new ID(0,128);
-    pID = new ID(0,128);
-    piID = new ID(0,128);
-    mIDall = new ID(0,128);
-
-    Domain* domain = theModel->getDomainPtr();
-    Pressure_ConstraintIter& thePCs = domain->getPCs();
-    Pressure_Constraint* thePC = 0;
-    while((thePC = thePCs()) != 0) {
-        int nodeTag = thePC->getNodeConstrained();
-        Node* theNode = domain->getNode(nodeTag);
-        DOF_Group* theDof = theNode->getDOF_GroupPtr();
-        const ID& id = theDof->getID();
-        for(int i=0; i<id.Size(); i++) {
-            if(id(i) >= 0) {
-                if(i<2) {
-                    mID->insert(id(i));
-                } else if(i<3) {
-                    pID->insert(id(i));
-                } else if(i<5) {
-                    piID->insert(id(i));
-                } 
-            } 
-        }
-    }
-
-    int size = theSOE->size;
-    for(int col=0; col<size; col++) {   // loop all columns
-        if(pID->getLocationOrdered(col) >= 0) {  // pressure columns
-            continue;
-        }
-        if(piID->getLocationOrdered(col) >= 0) {  // pressure gradient columns
-            continue;
-        }
-        
-        // general momentum columns
-        mIDall->insert(col);
-    }
-    
+    this->theSOE = &theSOE;
     return 0;
-}
-
-cs* 
-PFEMSolver::setMatIDs()
-{
-    // allocate Mid
-    if(Mid != 0 && Mid->Size() != mID->Size()) {
-        delete Mid;
-        Mid = 0;
-    }
-    if(Mid == 0) Mid = new ID(mID->Size());
-
-    // allocate Gt1
-    cs* Gt1 = cs_spalloc(pID->Size(), mID->Size(), 1, 1, 1);
-
-    // allocate G1
-    cs* G1 = cs_spalloc(mID->Size(), pID->Size(), 1, 1, 1);
-
-    // allocate L1
-    cs* L1 = cs_spalloc(pID->Size(), pID->Size(), 1, 1, 1);
-
-    // allocate Qt1
-    cs* Qt1 = cs_spalloc(piID->Size(), pID->Size(), 1, 1, 1);
-
-    // allocate Mhatid
-    if(Mhatid != 0 && Mhatid->Size() != piID->Size()) {
-        delete Mhatid;
-        Mhatid = 0;
-    }
-    if(Mhatid == 0) Mhatid = new ID(piID->Size());
-
-    int* colStartA = theSOE->colStartA;
-    int* rowA = theSOE->rowA;
-
-    // loop momentum columns
-    for(int j=0; j<mID->Size(); j++) {                              // local column id
-        int col = (*mID)(j);                                        // global column id
-        (*Mid)(j) = -1;
-        
-        int i = -1;                                                 // local row id
-        for(int ind=colStartA[col]; ind<colStartA[col+1]; ind++) {  // global index
-            int row = rowA[ind];                                    // global row id
-            if(row == col) {                                        // Mid
-                (*Mid)(j) = ind;
-            } else if((i=pID->getLocationOrdered(row)) >= 0) {      // Gt
-                cs_entry(Gt1, i, j, ind);
-            }
-        }
-        if((*Mid)(j) == -1) {
-            opserr<<"WARNING: can't find Mass for PFEM node - PFEMSolver::setMatIDs()\n";
-            return 0;
-        }
-    }
-
-    // loop pressure columns;
-    for(int j=0; j<pID->Size(); j++) {      // local column id
-        int col = (*pID)(j);                // global column id
-        
-        int i = -1;                         // local row id
-        for(int ind=colStartA[col]; ind<colStartA[col+1]; ind++) {  // global index
-            int row = rowA[ind];            // global row id
-            if((i=mID->getLocationOrdered(row)) >= 0) {           // G
-                cs_entry(G1, i, j, ind);
-            } else if((i=pID->getLocationOrdered(row)) >= 0) {    // L
-                cs_entry(L1, i, j, ind);
-            } else if((i=piID->getLocationOrdered(row)) >= 0) {   // Qt
-                cs_entry(Qt1, i, j, ind);
-            }
-        }
-    }
-
-    // loop pressure gradient columns;
-    for(int j=0; j<piID->Size(); j++) {    // local column id
-        int col = (*piID)(j);              // global column id
-        (*Mhatid)(j) = -1;
-
-        for(int ind=colStartA[col]; ind<colStartA[col+1]; ind++) {  // global index
-            int row = rowA[ind];           // global row id
-            if(row == col) {    // Mhat
-                (*Mhatid)(j) = ind;
-            }
-        }
-        if((*Mhatid)(j) == -1) {
-            opserr<<"WARNING: can't find Mhat for PFEM node - PFEMSolver::setMatIDs()\n";
-            return 0;
-        }
-    }
-
-    // convert to compressed format
-    if(G != 0) cs_spfree(G);
-    G = cs_compress(G1);
-    cs_spfree(G1);
-
-    if(Gt != 0) cs_spfree(Gt);
-    Gt = cs_compress(Gt1);
-    cs_spfree(Gt1);
-
-    if(L != 0) cs_spfree(L);
-    L = cs_compress(L1);
-    cs_spfree(L1);
-
-    if(Qt != 0) cs_spfree(Qt);
-    Qt = cs_compress(Qt1);
-    cs_spfree(Qt1);
-
-    // copy the global index
-    if(Gid != 0 && Gid->Size() != G->nzmax) {
-        delete Gid;
-        Gid = 0;
-    }
-    if(Gid == 0) Gid = new ID(G->nzmax);
-    for(int i=0; i<G->nzmax; i++) {           // local index
-        int ind = static_cast<int>(G->x[i]);  // global index
-        (*Gid)(i) = ind;                      // copy global index
-        G->x[i] = 0.0;                        // zero entry
-    }
-
-    if(Gtid != 0 && Gtid->Size() != Gt->nzmax) {
-        delete Gtid;
-        Gtid = 0;
-    }
-    if(Gtid == 0) Gtid = new ID(Gt->nzmax);
-    for(int i=0; i<Gt->nzmax; i++) {           // local index
-        int ind = static_cast<int>(Gt->x[i]);  // global index
-        (*Gtid)(i) = ind;                      // copy global index
-        Gt->x[i] = 0.0;                        // zero entry
-    }
-
-    if(Lid != 0 && Lid->Size() != L->nzmax) {
-        delete Lid;
-        Lid = 0;
-    }
-    if(Lid == 0) Lid = new ID(L->nzmax);
-    for(int i=0; i<L->nzmax; i++) {           // local index
-        int ind = static_cast<int>(L->x[i]);  // global index
-        (*Lid)(i) = ind;                      // copy global index
-        L->x[i] = 0.0;                        // zero entry
-    }
-
-    if(Qtid != 0 && Qtid->Size() != Qt->nzmax) {
-        delete Qtid;
-        Qtid = 0;
-    }
-    if(Qtid == 0) Qtid = new ID(Qt->nzmax);
-    for(int i=0; i<Qt->nzmax; i++) {           // local index
-        int ind = static_cast<int>(Qt->x[i]);  // global index
-        (*Qtid)(i) = ind;                      // copy global index
-        Qt->x[i] = 0.0;                        // zero entry
-    }
-
-    // calculate S = L+Gt*M*G
-    cs* S1 = cs_multiply(Gt, G);
-    cs* S = cs_add(L, S1, 1.0, 1.0);
-    cs_spfree(S1);
-
-    return S;
 }

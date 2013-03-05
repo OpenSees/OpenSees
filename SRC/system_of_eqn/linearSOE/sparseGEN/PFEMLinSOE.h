@@ -36,43 +36,60 @@
 #define PFEMLinSOE_h
 
 
-#include <SparseGenColLinSOE.h>
+#include <LinearSOE.h>
+#include <Vector.h>
 #include <ID.h>
 extern "C" {
 #include <cs.h>
 }
+class PFEMSolver;
 
-class PFEMLinSOE : public SparseGenColLinSOE
+class PFEMLinSOE : public LinearSOE
 {
   public:
-    PFEMLinSOE(SparseGenColLinSolver &theSolver);        
+    PFEMLinSOE(PFEMSolver &theSolver);        
     PFEMLinSOE(int classTag);        
     PFEMLinSOE();        
-    PFEMLinSOE(SparseGenColLinSolver &theSolver, int classTag);        
-
+    PFEMLinSOE(PFEMSolver& theSolver, int classTag);        
 
     virtual ~PFEMLinSOE();
 
-    virtual int solve();
-    virtual int setLinks(AnalysisModel& model);
+    virtual int getNumEqn(void) const;
     virtual int setSize(Graph& theGraph);
+    virtual int addA(const Matrix &, const ID &, double fact = 1.0);
+    virtual int addB(const Vector &, const ID &, double fact = 1.0);    
+    virtual int setB(const Vector &, double fact = 1.0);        
+    
+    virtual void zeroA(void);
+    virtual void zeroB(void);
+    
+    virtual const Vector &getX(void);
+    virtual const Vector &getB(void);    
+    virtual double normRHS(void);
+
+    virtual void setX(int loc, double value);        
+    virtual void setX(const Vector &x);        
+    virtual int setPFEMSolver(PFEMSolver& newSolver);   
 
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);    
 
-    virtual int setDofIDs();
-    virtual cs* setMatIDs();
 
-  protected:
-    AnalysisModel* getAnalysisModel();
+
+    friend class PFEMSolver;
     
-  private:
-    AnalysisModel* theModel;
-    ID* mID, *pID, *piID, *mIDall;
-    ID* Mid, *Mhatid, *Gid, *Gtid, *Lid, *Qtid;
-    cs* G, *Gt, *L, *Qt;
-};
 
+private:    
+
+    virtual int setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int& Pisize);
+    virtual int setMatIDs(Graph& theGraph, int Ssize, int Fsize, int Isize, int Psize, int Pisize);
+
+private:
+
+    cs* M, *Gft, *Git, *L, *Qt;
+    Vector X, B, Mhat, Mf;
+    ID dofType, dofID;
+};
 
 #endif
 

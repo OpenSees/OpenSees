@@ -32,343 +32,624 @@
 //
 // What: "@(#) PFEMLinSOE.h, revA"
 
-#include "PFEMLinSOE.h"
-#include <SparseGenColLinSolver.h>
-#include <AnalysisModel.h>
-#include <Pressure_ConstraintIter.h>
+
+
+#include <stdlib.h>
+#include <PFEMLinSOE.h>
+#include <PFEMSolver.h>
+#include <Matrix.h>
+#include <Graph.h>
+#include <Vertex.h>
+#include <VertexIter.h>
+#include <math.h>
+#include <Element.h>
+#include <ElementIter.h>
+#include <Channel.h>
+#include <FEM_ObjectBroker.h>
+#include <iostream>
+using std::nothrow;
 #include <Pressure_Constraint.h>
-#include <Node.h>
-#include <DOF_Group.h>
+#include <Pressure_ConstraintIter.h>
 #include <Domain.h>
+#include <Node.h>
+#include <NodeIter.h>
+#include <DOF_Group.h>
+#include <AnalysisModel.h>
 
-
-PFEMLinSOE::PFEMLinSOE(SparseGenColLinSolver& solver)
-    :SparseGenColLinSOE(solver, LinSOE_TAGS_PFEMLinSOE), theModel(0), mID(0), pID(0), piID(0), 
-     mIDall(0), Mid(0), Mhatid(0), Gid(0), Gtid(0), Lid(0), Qtid(0), G(0), Gt(0), L(0), Qt(0)
+PFEMLinSOE::PFEMLinSOE(PFEMSolver &the_Solver)
+    :LinearSOE(the_Solver, LinSOE_TAGS_PFEMLinSOE),
+     M(0), Gft(0), Git(0), L(0), Qt(0),
+     X(), B(), Mhat(), Mf(),
+     dofType(), dofID()
 {
-    solver.setLinearSOE(*this);
+    the_Solver.setLinearSOE(*this);
 }
 
-
-PFEMLinSOE::PFEMLinSOE(int classTag)
-    :SparseGenColLinSOE(classTag), theModel(0), mID(0), pID(0), piID(0), mIDall(0), 
-     Mid(0), Mhatid(0), Gid(0), Gtid(0), Lid(0), Qtid(0), G(0), Gt(0), L(0), Qt(0)
-{
-}
-
-PFEMLinSOE::PFEMLinSOE(SparseGenColLinSolver &theSolver, int classTag)
-    :SparseGenColLinSOE(theSolver, classTag), theModel(0), mID(0), pID(0), piID(0), mIDall(0), 
-     Mid(0), Mhatid(0), Gid(0), Gtid(0), Lid(0), Qtid(0), G(0), Gt(0), L(0), Qt(0)
-{
-}
 
 PFEMLinSOE::PFEMLinSOE()
-    :SparseGenColLinSOE(LinSOE_TAGS_PFEMLinSOE), theModel(0), mID(0), pID(0), piID(0), mIDall(0), 
-     Mid(0), Mhatid(0), Gid(0), Gtid(0), Lid(0), Qtid(0), G(0), Gt(0), L(0), Qt(0)
+    :LinearSOE(LinSOE_TAGS_PFEMLinSOE),
+     M(0), Gft(0), Git(0), L(0), Qt(0),
+     X(), B(), Mhat(), Mf(),
+     dofType(), dofID()
 {
+
 }
 
+PFEMLinSOE::PFEMLinSOE(int classTag)
+    :LinearSOE(classTag),
+     M(0), Gft(0), Git(0), L(0), Qt(0),
+     X(), B(), Mhat(), Mf(),
+     dofType(), dofID()
+{
+
+}
+
+
+PFEMLinSOE::PFEMLinSOE(PFEMSolver &the_Solver, int classTag)
+    :LinearSOE(the_Solver, classTag),
+     M(0), Gft(0), Git(0), L(0), Qt(0),
+     X(), B(), Mhat(), Mf(),
+     dofType(), dofID()
+{
+
+}
+
+
+
+    
 PFEMLinSOE::~PFEMLinSOE()
 {
-    if(mID != 0) delete mID;
-    if(pID != 0) delete pID;
-    if(piID != 0) delete piID;
-    if(mIDall != 0) delete mIDall;
-    if(Mid != 0) delete Mid;
-    if(Mhatid != 0) delete Mhatid;
-    if(Gid != 0) delete Gid;
-    if(Gtid != 0) delete Gtid;
-    if(Lid != 0) delete Lid;
-    if(Qtid != 0) delete Qtid;
-    if(G != 0) cs_spfree(G);
-    if(Gt != 0) cs_spfree(Gt);
+    if(M != 0) cs_spfree(M);
+    if(Gft != 0) cs_spfree(Gft);
+    if(Git != 0) cs_spfree(Git);
     if(L != 0) cs_spfree(L);
     if(Qt != 0) cs_spfree(Qt);
 }
 
-int PFEMLinSOE::solve()
+
+int
+PFEMLinSOE::getNumEqn(void) const
 {
-    // fill matrices
-    for(int ind=0; ind<Gid->Size(); ind++) {   // local index
-        G->x[ind] = -A[(*Gid)(ind)];            // global index
-    }
-    for(int ind=0; ind<Gtid->Size(); ind++) {   // local index
-        Gt->x[ind] = A[(*Gtid)(ind)];           // global index
-    }
-    for(int ind=0; ind<Lid->Size(); ind++) {   // local index
-        L->x[ind] = A[(*Lid)(ind)];            // global index
-    }
-    for(int ind=0; ind<Qtid->Size(); ind++) {   // local index
-        Qt->x[ind] = A[(*Qtid)(ind)];           // global index
-    }
-
-    // predictor : delta U* = Md^{-1} * rm
-    double* deltaUs = new double[mID->Size()];
-    for(int j=0; j<mID->Size(); j++) {   // local column id
-        int col = (*mID)(j);             // global column id
-        int ind = (*Mid)(j);             // global index
-        if(A[ind] == 0.0) {
-            opserr<<"Zero mass at location "<<j<<" ";
-            opserr<<" - PFEMLinSOE::solve()\n";
-            return -1;
-        }
-        deltaUs[j] = B[col]/A[ind];          // Md^{-1}*rm
-    }
-
-    // pressure : (L+Gt*Md^{-1}*G) * delta P = rp - Gt*delta U*
-    cs* GtMd = cs_spalloc(Gt->m, Gt->n, Gt->nzmax, 1, 0);
-    GtMd->p[0] = 0;
-    for(int j=0; j<mID->Size(); j++) {        // local column id
-        int ind = (*Mid)(j);                  // global index
-        GtMd->p[j+1] = Gt->p[j+1];            // copy column start
-        for(int Gtind=Gt->p[j]; Gtind<Gt->p[j+1]; Gtind++) { // local index
-            GtMd->x[Gtind] = Gt->x[Gtind] / A[ind];     // Gt*Md^{-1}
-            GtMd->i[Gtind] = Gt->i[Gtind];              // copy row
-        }
-    } 
-
-    cs* S1 = cs_multiply(GtMd, G);            // Gt*Md^{-1}*G
-    cs* S = cs_add(L, S1, 1.0, 1.0);          // L + Gt*Md^{-1}*G
-    cs_spfree(S1);
-    cs_spfree(GtMd);
-
-    // right hand side : rp - Gt*delta U*
-    double* deltaP = new double[pID->Size()];
-    for(int i=0; i<pID->Size(); i++) deltaP[i]=0.0;
-    cs_gaxpy(Gt, deltaUs, deltaP);           // Gt*delta U*
-    for(int i=0; i<pID->Size(); i++) {       // local row id
-        int row = (*pID)(i);                 // global row id
-        deltaP[i] = B[row] - deltaP[i];      // rp - Gt*delta U*
-    }
-
-    // solve pressure : delta P
-    cs_qrsol(3, S, deltaP);
-    cs_spfree(S);
-    
-
-    // corrector
-    double* deltaU = new double[mID->Size()];
-    for(int i=0; i<mID->Size(); i++) deltaU[i] = 0.0;
-    cs_gaxpy(G, deltaP, deltaU);        // G*deltaP
-    for(int i=0; i<mID->Size(); i++) {  // local row id
-        int ind = (*Mid)(i);            // global index
-        deltaU[i] /= A[ind];            // Md^{-1}*G*deltaP
-        deltaU[i] += deltaUs[i];        // deltaU* + Md^{-1}*G*deltaP
-    }
-
-    // pressure gradient
-    double* deltaPi = new double[piID->Size()];
-    for(int i=0; i<piID->Size(); i++) deltaPi[i] = 0.0;
-    cs_gaxpy(Qt, deltaP, deltaPi);       // Qt*deltaP
-    for(int i=0; i<piID->Size(); i++) {  // local row id
-        int row = (*piID)(i);            // global row id
-        int ind = (*Mhatid)(i);          // global index
-        deltaPi[i] = (B[row] - deltaPi[i])/A[ind];  // Mhatd^{-1}*(rpi - Qt*deltaP)
-    }
-
-    // copy to X
-    for(int i=0; i<mID->Size(); i++) {
-        X[(*mID)(i)] = deltaU[i];
-    }
-    for(int i=0; i<pID->Size(); i++) {
-        X[(*pID)(i)] = deltaP[i];
-    }
-    for(int i=0; i<piID->Size(); i++) {
-        X[(*piID)(i)] = deltaPi[i];
-    }
-
-    delete [] deltaUs;
-    delete [] deltaU;
-    delete [] deltaP;
-    delete [] deltaPi;
-
-    return 0;
+    return X.Size();
 }
 
-int PFEMLinSOE::setLinks(AnalysisModel& model)
+int 
+PFEMLinSOE::setSize(Graph &theGraph)
 {
-    theModel = &model;
-    return 0;
-}
+    int result = 0;
+    int size = theGraph.getNumVertex();
 
-int PFEMLinSOE::setSize(Graph& theGraph)
-{
-    // this object set size
-    this->SparseGenColLinSOE::setSize(theGraph);
+    // resize vectors
+    B.resize(size);
+    X.resize(size);
+
+    // zero the vectors
+    B.Zero();
+    X.Zero();
 
     // set Dof IDs
-    this->setDofIDs();
+    int Ssize, Fsize, Isize, Psize, Pisize;
+    result = this->setDofIDs(size, Ssize, Fsize, Isize, Psize, Pisize);
 
     // set matrix IDs
-    cs* S = this->setMatIDs();
-    if(S == 0) {
-        opserr<<"can't create S - PFEMLinSOE::setSize()\n";
-        return -1;
+    result = this->setMatIDs(theGraph, Ssize, Fsize, Isize, Psize, Pisize);
+    
+    // invoke setSize() on the Solver    
+    LinearSOESolver *the_Solver = this->getSolver();
+    int solverOK = the_Solver->setSize();
+    if (solverOK < 0) {
+	opserr << "WARNING:PFEMLinSOE::setSize :";
+	opserr << " solver failed setSize()\n";
+	return solverOK;
+    }
+    return result;
+}
+
+int 
+PFEMLinSOE::addA(const Matrix &m, const ID &id, double fact)
+{
+    // check for a quick return 
+    if (fact == 0.0)  
+	return 0;
+
+    int idSize = id.Size();
+    int size = X.Size();
+    
+    // check that m and id are of similar size
+    if (idSize != m.noRows() && idSize != m.noCols()) {
+	opserr << "PFEMLinSOE::addA() ";
+	opserr << " - Matrix and ID not of similar sizes\n";
+	return -1;
     }
 
-    // free memory
-    cs_spfree(S);
+    int Ssize = M->n - Git->n;
+
+    if (fact == 1.0) { // do not need to multiply 
+        for (int i=0; i<idSize; i++) {
+            int col = id(i);
+            if(col>=size || col<0) continue;
+            int coltype = dofType(col);         // column type
+            int colid = dofID(col);             // column id
+
+            if(coltype == 4) {                  // diganol of Mhat
+                Mhat(colid) += m(i,i);
+            } else if(coltype == 1) {           // diganol of Mf
+                Mf(colid) += m(i,i);
+            }
+
+            if(coltype==4 || coltype<0) continue;
+
+            for (int j=0; j<idSize; j++) {
+                int row = id(j);
+                if(row>=size || row<0) continue;
+                cs* mat = 0;
+
+                int rowtype = dofType(row);     // row type
+                int rowid = dofID(row);         // row id
+                int cid = colid;
+
+                // get right matrix
+                if(rowtype==0 && coltype==0) {                 // Ms
+                    mat = M;
+                } else if(rowtype==2 && coltype==2) {          // Ms
+                    mat = M;
+                    rowid += Ssize;
+                    cid += Ssize;
+                } else if(rowtype==0 && coltype==2) {          // Msi
+                    mat = M;
+                    cid += Ssize;
+                } else if(rowtype==2 && coltype==0) {          // Mis
+                    mat = M;
+                    rowid += Ssize;
+                } else if(rowtype==3 && coltype==1) {          // Gft
+                    mat = Gft;
+                } else if(rowtype==3 && coltype==2) {          // Git
+                    mat = Git;
+                } else if(rowtype==3 && coltype==3) {          // L
+                    mat = L;
+                } else if(rowtype==4 && coltype==3) {          // Qt
+                    mat = Qt;
+                }
+
+                if(mat == 0) continue;
+
+                // find place in mat
+                for(int k=mat->p[cid]; k<mat->p[cid+1]; k++) {
+                    if(mat->i[k] == rowid) {
+                        mat->x[k] += m(j,i);
+                        break;
+                    }
+                }
+            }  // for j		
+        }  // for i
+    } else {
+        for (int i=0; i<idSize; i++) {
+            int col = id(i);
+            if(col>=size || col<0) continue;
+            int coltype = dofType(col);         // column type
+            int colid = dofID(col);             // column id
+
+            if(coltype == 4) {                  // diganol of Mhat
+                Mhat(colid) += fact*m(i,i);
+            } else if(coltype == 1) {           // diganol of Mf
+                Mf(colid) += fact*m(i,i);
+            }
+
+            if(coltype==4 || coltype<0) continue;
+
+            for (int j=0; j<idSize; j++) {
+                int row = id(j);
+                if(row>=size || row<0) continue;
+                cs* mat = 0;
+
+                int rowtype = dofType(row);     // row type
+                int rowid = dofID(row);         // row id
+                int cid = colid;
+
+                // get right matrix
+                if(rowtype==0 && coltype==0) {                 // Ms
+                    mat = M;
+                } else if(rowtype==2 && coltype==2) {          // Ms
+                    mat = M;
+                    rowid += Ssize;
+                    cid += Ssize;
+                } else if(rowtype==0 && coltype==2) {          // Msi
+                    mat = M;
+                    cid += Ssize;
+                } else if(rowtype==2 && coltype==0) {          // Mis
+                    mat = M;
+                    rowid += Ssize;
+                } else if(rowtype==3 && coltype==1) {          // Gft
+                    mat = Gft;
+                } else if(rowtype==3 && coltype==2) {          // Git
+                    mat = Git;
+                } else if(rowtype==3 && coltype==3) {          // L
+                    mat = L;
+                } else if(rowtype==4 && coltype==3) {          // Qt
+                    mat = Qt;
+                }
+
+                if(mat == 0) continue;
+
+                // find place in mat
+                for(int k=mat->p[cid]; k<mat->p[cid+1]; k++) {
+                    if(mat->i[k] == rowid) {
+                        mat->x[k] += fact*m(j,i);
+                        break;
+                    }
+                }
+            }  // for j		
+        }  // for i
+    }
+    return 0;
+}
+
+    
+int 
+PFEMLinSOE::addB(const Vector &v, const ID &id, double fact)
+{
+    // check for a quick return 
+    if (fact == 0.0)  return 0;
+
+    int idSize = id.Size();    
+    int size = X.Size();
+
+    // check that m and id are of similar size
+    if (idSize != v.Size() ) {
+	opserr << "PFEMLinSOE::addB() ";
+	opserr << " - Vector and ID not of similar sizes\n";
+	return -1;
+    }    
+
+    if (fact == 1.0) { // do not need to multiply if fact == 1.0
+	for (int i=0; i<idSize; i++) {
+	    int pos = id(i);
+	    if (pos <size && pos >= 0)
+		B(pos) += v(i);
+	}
+    } else if (fact == -1.0) { // do not need to multiply if fact == -1.0
+	for (int i=0; i<idSize; i++) {
+	    int pos = id(i);
+	    if (pos <size && pos >= 0)
+		B(pos) -= v(i);
+	}
+    } else {
+	for (int i=0; i<idSize; i++) {
+	    int pos = id(i);
+	    if (pos <size && pos >= 0)
+		B(pos) += v(i) * fact;
+	}
+    }	
 
     return 0;
 }
 
-AnalysisModel* PFEMLinSOE::getAnalysisModel()
+
+int
+PFEMLinSOE::setB(const Vector &v, double fact)
 {
-    return theModel;
+    // check for a quick return 
+    if (fact == 0.0)  return 0;
+
+    if (v.Size() != B.Size()) {
+	opserr << "WARNING BandGenLinSOE::setB() -";
+	opserr << " incomptable sizes " << B.Size() << " and " << v.Size() << endln;
+	return -1;
+    }
+    
+    if (fact == 1.0) { // do not need to multiply if fact == 1.0
+        B.Zero();
+        B += v;
+    } else if (fact == -1.0) {
+        B.Zero();
+        B -= v;
+    } else {
+        B.Zero();
+        B += v;
+        B *= fact;
+    }	
+    return 0;
 }
 
-int PFEMLinSOE::sendSelf(int commitTag, Channel &theChannel)
+void 
+PFEMLinSOE::zeroA(void)
+{
+    for(int i=0; i<M->nzmax; i++)
+	M->x[i] = 0.0;
+    for(int i=0; i<Gft->nzmax; i++)
+	Gft->x[i] = 0.0;
+    for(int i=0; i<Git->nzmax; i++)
+	Git->x[i] = 0.0;
+    for(int i=0; i<L->nzmax; i++)
+	L->x[i] = 0.0;
+    for(int i=0; i<Qt->nzmax; i++)
+	Qt->x[i] = 0.0;
+
+    Mhat.Zero();
+    Mf.Zero();
+}
+	
+void 
+PFEMLinSOE::zeroB(void)
+{
+    B.Zero();
+}
+
+void 
+PFEMLinSOE::setX(int loc, double value)
+{
+    if (loc < X.Size() && loc >=0)
+	X(loc) = value;
+}
+
+void 
+PFEMLinSOE::setX(const Vector &x)
+{
+    X.Zero();
+    X += x;
+}
+
+const Vector &
+PFEMLinSOE::getX(void)
+{
+    return X;
+}
+
+const Vector &
+PFEMLinSOE::getB(void)
+{
+    return B;
+}
+
+double 
+PFEMLinSOE::normRHS(void)
+{
+    return B.Norm();
+}    
+
+
+int
+PFEMLinSOE::setPFEMSolver(PFEMSolver &newSolver)
+{
+    newSolver.setLinearSOE(*this);
+    
+    if (X.Size() != 0) {
+	int solverOK = newSolver.setSize();
+	if (solverOK < 0) {
+	    opserr << "WARNING:PFEMLinSOE::setSolver :";
+	    opserr << "the new solver could not setSeize() - staying with old\n";
+	    return -1;
+	}
+    }
+    
+    return this->LinearSOE::setSolver(newSolver);
+}
+
+
+int 
+PFEMLinSOE::sendSelf(int cTag, Channel &theChannel)
 {
     return 0;
 }
 
-int PFEMLinSOE::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+int 
+PFEMLinSOE::recvSelf(int cTag, Channel &theChannel, 
+                     FEM_ObjectBroker &theBroker)  
 {
     return 0;
 }
 
-int PFEMLinSOE::setDofIDs()
+int 
+PFEMLinSOE::setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int& Pisize)
 {
     if(theModel == 0) {
         opserr << "Analysis model has not been linked - PFEMLinSOE::setDofIDs()\n";
         return -1;
     }
 
-    if(mID != 0) delete mID;
-    if(pID != 0) delete pID;
-    if(piID != 0) delete piID;
-    if(mIDall != 0) delete mIDall;
-    mID = new ID(0,128);
-    pID = new ID(0,128);
-    piID = new ID(0,128);
-    mIDall = new ID(0,128);
-
+    dofType.resize(size);
+    dofID.resize(size);
+    dofType.Zero();
+    dofID.Zero();
     Domain* domain = theModel->getDomainPtr();
+    if(domain == 0) {
+        opserr<<"WARNING: no domain is set for the model";
+        opserr<<" -- PFEMLinSOE::setDofIDs\n";
+        return -1;
+    }
+
+    // disconnect pcs from structural elements
+    Pressure_ConstraintIter& thePCs1 = domain->getPCs();
+    Pressure_Constraint* thePC1 = 0;
+    while((thePC1 = thePCs1()) != 0) {
+        thePC1->disconnect();
+    }
+
+    // to connect pc to all elements
+    Element *elePtr;
+    ElementIter &theElemIter = domain->getElements();    
+    while((elePtr = theElemIter()) != 0) {
+
+        const ID& nodeids = elePtr->getExternalNodes();
+        for(int i=0; i<nodeids.Size(); i++) {
+            Pressure_Constraint* thePC = domain->getPressure_Constraint(nodeids(i));
+            if(thePC != 0) {
+                thePC->connect(elePtr->getTag(), false);
+            }
+        }
+    }
+
+    // loop through pcs
     Pressure_ConstraintIter& thePCs = domain->getPCs();
     Pressure_Constraint* thePC = 0;
+    Ssize = Fsize = Isize = Psize = Pisize = 0;
     while((thePC = thePCs()) != 0) {
-        int nodeTag = thePC->getNodeConstrained();
-        Node* theNode = domain->getNode(nodeTag);
-        DOF_Group* theDof = theNode->getDOF_GroupPtr();
-        const ID& id = theDof->getID();
-        for(int i=0; i<id.Size(); i++) {
-            if(id(i) >= 0) {
-                if(i<2) {
-                    mID->insert(id(i));
-                } else if(i<3) {
-                    pID->insert(id(i));
-                } else if(i<5) {
-                    piID->insert(id(i));
-                } 
-            } 
+        int ptag = thePC->getPressureNode();
+        int ntag = thePC->getTag();
+        Node* pnode = domain->getNode(ptag);
+        if(pnode == 0) {
+            opserr<<"WARNING: pressure node "<<ptag<<" does not exists ";
+            opserr<<" -- PFEMLinSOE::setDofIDs\n";
+            return -1;
         }
-    }
+        Node* nnode = domain->getNode(ntag);
+        if(nnode == 0) {
+            opserr<<"WARNING: pressure node "<<ntag<<" does not exists ";
+            opserr<<" -- PFEMLinSOE::setDofIDs\n";
+            return -1;
+        }
+        DOF_Group* pDOF = pnode->getDOF_GroupPtr();
+        if(pDOF == 0) {
+            opserr<<"WARNING: no DOF_Group is found with node "<<ptag;
+            opserr<<" -- PFEMLinSOE::setDofIDs\n";
+            return -1;
+        }
+        DOF_Group* nDOF = nnode->getDOF_GroupPtr();
+        if(nDOF == 0) {
+            opserr<<"WARNING: no DOF_Group is found with node "<<ntag;
+            opserr<<" -- PFEMLinSOE::setDofIDs\n";
+            return -1;
+        }
+        const ID& pid = pDOF->getID();
+        const ID& nid = nDOF->getID();
 
-    for(int col=0; col<size; col++) {   // loop all columns
-        if(pID->getLocationOrdered(col) >= 0) {  // pressure columns
-            continue;
+        // pressure nodes
+        if(thePC->isFluid() || thePC->isInterface()) {
+            if(pid(0) >= 0) {
+                dofType(pid(0)) = 3;          // pressure
+                dofID(pid(0)) = Psize++;
+            }
+            for(int i=1; i<pid.Size(); i++) {
+                if(pid(i) >= 0) {
+                    dofType(pid(i)) = 4;      // pressure gradient
+                    dofID(pid(i)) = Pisize++;     
+                }
+            }
+        } else {
+            for(int i=0; i<pid.Size(); i++) {
+                if(pid(i) >= 0) {
+                    dofType(pid(i)) = -1;     // which are not connected to any PFEM elements
+                    dofID(pid(i)) = -1;
+                }
+            }
         }
-        if(piID->getLocationOrdered(col) >= 0) {  // pressure gradient columns
-            continue;
+
+        // momentum nodes
+        int ndm = nnode->getCrds().Size();
+        if(thePC->isInterface()) {
+            for(int i=0; i<ndm; i++) {
+                if(nid(i) >= 0) {
+                    dofType(nid(i)) = 2;      // interface momentum 
+                    dofID(nid(i)) = Isize++;
+                }
+            }
+        } else if(thePC->isFluid()) {
+            for(int i=0; i<ndm; i++) {
+                if(nid(i) >= 0) {
+                    dofType(nid(i)) = 1;      // fluid momentum 
+                    dofID(nid(i)) = Fsize++;
+                }
+            }
+        } else if(thePC->isIsolated()) {
+            for(int i=0; i<nid.Size(); i++) {
+                if(nid(i) >= 0) {
+                    dofType(nid(i)) = -1;     // which are not connected to any elements 
+                    dofID(nid(i)) = -1;
+                }
+            }
         }
-        
-        // general momentum columns
-        mIDall->insert(col);
     }
     
+    for(int col=0; col<size; col++) {         
+        if(dofType(col) == 0) {               // structure momentum 
+            dofID(col) = Ssize++;
+        }
+    }
+    
+    opserr<<"Ssize = "<<Ssize<<", ";
+    opserr<<"Fsize = "<<Fsize<<", ";
+    opserr<<"Isize = "<<Isize<<", ";
+    opserr<<"Psize = "<<Psize<<", ";
+    opserr<<"Pisize = "<<Pisize<<"\n";
     return 0;
 }
 
-cs* PFEMLinSOE::setMatIDs()
+int
+PFEMLinSOE::setMatIDs(Graph& theGraph, int Ssize, int Fsize, int Isize, int Psize, int Pisize)
 {
-    // allocate Mid
-    if(Mid != 0 && Mid->Size() != mID->Size()) {
-        delete Mid;
-        Mid = 0;
-    }
-    if(Mid == 0) Mid = new ID(mID->Size());
+    cs* M1 = cs_spalloc(Ssize+Isize, Ssize+Isize, 1, 1, 1);
+    cs* Gft1 = cs_spalloc(Psize, Fsize, 1, 1, 1);
+    cs* Git1 = cs_spalloc(Psize, Isize, 1, 1, 1);
+    cs* L1 = cs_spalloc(Psize, Psize, 1, 1, 1);
+    cs* Qt1 = cs_spalloc(Pisize, Psize, 1, 1, 1);
+    Mhat.resize(Pisize); Mhat.Zero();
+    Mf.resize(Fsize); Mf.Zero();
 
-    // allocate Gt1
-    cs* Gt1 = cs_spalloc(pID->Size(), mID->Size(), 1, 1, 1);
+    Vertex* theVertex = 0;
+    int size = X.Size();
+    for (int a=0; a<size; a++) {    // columns
+        theVertex = theGraph.getVertexPtr(a);
+        if (theVertex == 0) {
+            opserr << "WARNING:PFEMLinSOE::setSize :";
+            opserr << " vertex " << a << " not in graph!\n";
+            break;
+        }
 
-    // allocate G1
-    cs* G1 = cs_spalloc(mID->Size(), pID->Size(), 1, 1, 1);
+        int col = theVertex->getTag();  // column 
+        int coltype = dofType(col);     // column type
+        int colid = dofID(col);         // column id
+        if(coltype==4 || coltype<0) continue;      // don't need this column
 
-    // allocate L1
-    cs* L1 = cs_spalloc(pID->Size(), pID->Size(), 1, 1, 1);
+        // diagnol terms
+        if(coltype == 0) {                      // structure momentum
+            cs_entry(M1, colid, colid, 0.0);   
+        } else if(coltype == 2) {               // interface momentum
+            cs_entry(M1, colid+Ssize, colid+Ssize, 0.0);   
+        } else if(coltype == 3) {               // pressure
+            cs_entry(L1, colid, colid, 0.0);    
+        }
 
-    // allocate Qt1
-    cs* Qt1 = cs_spalloc(piID->Size(), pID->Size(), 1, 1, 1);
+        // off diagnol terms
+        const ID &theAdjacency = theVertex->getAdjacency();
+        int idSize = theAdjacency.Size();
+        for (int i=0; i<idSize; i++) {       // rows
+            int row = theAdjacency(i);       // row 
+            int rowtype = dofType(row);      // row type
+            int rowid = dofID(row);          // row id
 
-    // allocate Mhatid
-    if(Mhatid != 0 && Mhatid->Size() != piID->Size()) {
-        delete Mhatid;
-        Mhatid = 0;
-    }
-    if(Mhatid == 0) Mhatid = new ID(piID->Size());
-
-    // loop momentum columns
-    for(int j=0; j<mID->Size(); j++) {                              // local column id
-        int col = (*mID)(j);                                        // global column id
-        (*Mid)(j) = -1;
-
-        int i = -1;                                                 // local row id
-        for(int ind=colStartA[col]; ind<colStartA[col+1]; ind++) {  // global index
-            int row = rowA[ind];                                    // global row id
-            if(row == col) {                                        // Mid
-                (*Mid)(j) = ind;
-            } else if((i=pID->getLocationOrdered(row)) >= 0) {      // Gt
-                cs_entry(Gt1, i, j, ind);
+            
+            if(rowtype==0 && coltype==0) {                // Ms
+                cs_entry(M1, rowid, colid, 0.0);
+            } else if(rowtype==2 && coltype==2) {         // Mi
+                cs_entry(M1, rowid+Ssize, colid+Ssize, 0.0);
+            } else if(rowtype==0 && coltype==2) {         // Msi
+                cs_entry(M1, rowid, colid+Ssize, 0.0);
+            } else if(rowtype==2 && coltype==0) {         // Mis
+                cs_entry(M1, rowid+Ssize, colid, 0.0);
+            } else if(rowtype==3 && coltype==1) {        // Gft
+                cs_entry(Gft1, rowid, colid, 0.0);
+            } else if(rowtype==3 && coltype==2) {        // Git
+                cs_entry(Git1, rowid, colid, 0.0);
+            } else if(rowtype==3 && coltype==3) {        // L
+                cs_entry(L1, rowid, colid, 0.0);
+            } else if(rowtype==4 && coltype==3) {        // Qt
+                cs_entry(Qt1, rowid, colid, 0.0);
             }
-        }
-        if((*Mid)(j) == -1) {
-            opserr<<"WARNING: can't find Mass for PFEM node - PFEMLinSOE::setMatIDs()\n";
-            return 0;
-        }
-    }
-
-    // loop pressure columns;
-    for(int j=0; j<pID->Size(); j++) {      // local column id
-        int col = (*pID)(j);                // global column id
-
-        int i = -1;                         // local row id
-        for(int ind=colStartA[col]; ind<colStartA[col+1]; ind++) {  // global index
-            int row = rowA[ind];            // global row id
-            if((i=mID->getLocationOrdered(row)) >= 0) {           // G
-                cs_entry(G1, i, j, ind);
-            } else if((i=pID->getLocationOrdered(row)) >= 0) {    // L
-                cs_entry(L1, i, j, ind);
-            } else if((i=piID->getLocationOrdered(row)) >= 0) {   // Qt
-                cs_entry(Qt1, i, j, ind);
-            }
-        }
-    }
-
-    // loop pressure gradient columns;
-    for(int j=0; j<piID->Size(); j++) {    // local column id
-        int col = (*piID)(j);              // global column id
-        (*Mhatid)(j) = -1;
-
-        for(int ind=colStartA[col]; ind<colStartA[col+1]; ind++) {  // global index
-            int row = rowA[ind];           // global row id
-            if(row == col) {    // Mhat
-                (*Mhatid)(j) = ind;
-            }
-        }
-        if((*Mhatid)(j) == -1) {
-            opserr<<"WARNING: can't find Mhat for PFEM node - PFEMLinSOE::setMatIDs()\n";
-            return 0;
         }
     }
 
     // convert to compressed format
-    if(G != 0) cs_spfree(G);
-    G = cs_compress(G1);
-    cs_spfree(G1);
+    if(M != 0) cs_spfree(M);
+    M = cs_compress(M1);
+    cs_spfree(M1);
 
-    if(Gt != 0) cs_spfree(Gt);
-    Gt = cs_compress(Gt1);
-    cs_spfree(Gt1);
+    if(Gft != 0) cs_spfree(Gft);
+    Gft = cs_compress(Gft1);
+    cs_spfree(Gft1);
+
+    if(Git != 0) cs_spfree(Git);
+    Git = cs_compress(Git1);
+    cs_spfree(Git1);
 
     if(L != 0) cs_spfree(L);
     L = cs_compress(L1);
@@ -378,55 +659,5 @@ cs* PFEMLinSOE::setMatIDs()
     Qt = cs_compress(Qt1);
     cs_spfree(Qt1);
 
-    // copy the global index
-    if(Gid != 0 && Gid->Size() != G->nzmax) {
-        delete Gid;
-        Gid = 0;
-    }
-    if(Gid == 0) Gid = new ID(G->nzmax);
-    for(int i=0; i<G->nzmax; i++) {           // local index
-        int ind = static_cast<int>(G->x[i]);  // global index
-        (*Gid)(i) = ind;                      // copy global index
-        G->x[i] = 0.0;                        // zero entry
-    }
-
-    if(Gtid != 0 && Gtid->Size() != Gt->nzmax) {
-        delete Gtid;
-        Gtid = 0;
-    }
-    if(Gtid == 0) Gtid = new ID(Gt->nzmax);
-    for(int i=0; i<Gt->nzmax; i++) {           // local index
-        int ind = static_cast<int>(Gt->x[i]);  // global index
-        (*Gtid)(i) = ind;                      // copy global index
-        Gt->x[i] = 0.0;                        // zero entry
-    }
-
-    if(Lid != 0 && Lid->Size() != L->nzmax) {
-        delete Lid;
-        Lid = 0;
-    }
-    if(Lid == 0) Lid = new ID(L->nzmax);
-    for(int i=0; i<L->nzmax; i++) {           // local index
-        int ind = static_cast<int>(L->x[i]);  // global index
-        (*Lid)(i) = ind;                      // copy global index
-        L->x[i] = 0.0;                        // zero entry
-    }
-
-    if(Qtid != 0 && Qtid->Size() != Qt->nzmax) {
-        delete Qtid;
-        Qtid = 0;
-    }
-    if(Qtid == 0) Qtid = new ID(Qt->nzmax);
-    for(int i=0; i<Qt->nzmax; i++) {           // local index
-        int ind = static_cast<int>(Qt->x[i]);  // global index
-        (*Qtid)(i) = ind;                      // copy global index
-        Qt->x[i] = 0.0;                        // zero entry
-    }
-
-    // calculate S = L+Gt*M*G
-    cs* S1 = cs_multiply(Gt, G);
-    cs* S = cs_add(L, S1, 1.0, 1.0);
-    cs_spfree(S1);
-
-    return S;
+    return 0;
 }

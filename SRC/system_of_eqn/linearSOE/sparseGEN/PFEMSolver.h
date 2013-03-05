@@ -34,21 +34,18 @@
 // Description: This file contains the class definition for PFEMSolver.
 // A PFEMSolver object can be constructed to solve a PFEMLinSOE
 // object. It obtains the solution by making calls on the
-// the PFEMSolver library developed at UC Berkeley by Prof. James Demmel, 
-// Xiaoye S. Li and John R. Gilbert.
 // The PFEMSolver uses Fractional Step Method to solve PFEM equations. 
 //
 // What: "@(#) PFEMSolver.h, revA"
 
-#include <SparseGenColLinSolver.h>
+#include <LinearSOESolver.h>
 extern "C" {
 #include <cs.h>
 }
 
-class ID;
+class PFEMLinSOE;
 
-
-class PFEMSolver : public SparseGenColLinSolver
+class PFEMSolver : public LinearSOESolver
 {
 public:
     PFEMSolver();
@@ -56,20 +53,16 @@ public:
 
     int solve();
     int setSize();
+    int setLinearSOE(PFEMLinSOE& theSOE);
 
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);  
 
-    virtual int setDofIDs();
-    virtual cs* setMatIDs();
-
-protected:
-
-
 private:
-    ID* mID, *pID, *piID, *mIDall;
-    ID* Mid, *Mhatid, *Gid, *Gtid, *Lid, *Qtid;
-    cs* G, *Gt, *L, *Qt;
+    
+    PFEMLinSOE* theSOE;
+    css* Msym;
+    csn* Mnum;
 };
 
 #endif
