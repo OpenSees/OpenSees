@@ -1361,6 +1361,13 @@ OTHER/SuperLU_MT/supermatrix.h -text
 OTHER/SuperLU_MT/util.c -text
 OTHER/SuperLU_MT/util.h -text
 OTHER/SuperLU_MT/xerbla.c -text
+OTHER/Triangle/A.poly -text
+OTHER/Triangle/Makefile -text
+OTHER/Triangle/README -text
+OTHER/Triangle/showme.c -text
+OTHER/Triangle/triangle.c -text
+OTHER/Triangle/triangle.h -text
+OTHER/Triangle/tricall.c -text
 OTHER/UMFPACK/Makefile -text
 OTHER/UMFPACK/mc13e.f -text
 OTHER/UMFPACK/mc21b.f -text
@@ -1389,6 +1396,13 @@ OTHER/UMFPACK/umd2sl.f -text
 OTHER/UMFPACK/umd2so.f -text
 OTHER/UMFPACK/umd2su.f -text
 OTHER/UMFPACK/umd2ut.f -text
+OTHER/tetgen1.4.3/LICENSE -text
+OTHER/tetgen1.4.3/Makefile -text
+OTHER/tetgen1.4.3/README -text
+OTHER/tetgen1.4.3/example.poly -text
+OTHER/tetgen1.4.3/predicates.cxx -text
+OTHER/tetgen1.4.3/tetgen.cxx -text
+OTHER/tetgen1.4.3/tetgen.h -text
 /README -text
 SCRIPTS/strain.tcl -text
 SCRIPTS/uniaxialMaterials.tcl -text
