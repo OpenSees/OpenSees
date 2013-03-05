@@ -45,7 +45,7 @@ class CTestNormUnbalance: public ConvergenceTest
 public:
     // constructors
     CTestNormUnbalance();	    	
-    CTestNormUnbalance(double tol, int maxNumIter, int printFlag, int normType=2);
+    CTestNormUnbalance(double tol, int maxNumIter, int printFlag, int normType=2, int maxincr=-1);
 
     // destructor
     ~CTestNormUnbalance();
@@ -78,6 +78,9 @@ private:
     int nType;          // type of norm to use (1-norm, 2-norm, p-norm, max-norm)
     
     Vector norms;       // vector to hold the norms
+
+    int maxIncr;        // max number of norm increasing
+    int numIncr;        // number of norm increasing
 };
 
 #endif
