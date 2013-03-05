@@ -164,6 +164,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <DisplacementControl.h>
 
 #include <Newmark.h>
+#include <PFEMIntegrator.h>
 //#include <HHT.h>
 
 extern TransientIntegrator *OPS_NewNewmark(void);
@@ -203,6 +204,7 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 #include <StaticAnalysis.h>
 #include <DirectIntegrationAnalysis.h>
 #include <VariableTimeStepDirectIntegrationAnalysis.h>
+#include <PFEMAnalysis.h>
 
 // system of eqn and solvers
 #include <BandSPDLinSOE.h>
@@ -236,6 +238,7 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 
 #include <SparseGenColLinSOE.h>
 #include <PFEMSolver.h>
+#include <PFEMLinSOE.h>
 #ifdef _THREADS
 #include <ThreadedSuperLU.h>
 #else
@@ -474,7 +477,7 @@ static EigenSOE *theEigenSOE =0;
 static StaticAnalysis *theStaticAnalysis = 0;
 static DirectIntegrationAnalysis *theTransientAnalysis = 0;
 static VariableTimeStepDirectIntegrationAnalysis *theVariableTimeStepTransientAnalysis = 0;
-
+static PFEMAnalysis* thePFEMAnalysis = 0;
 
 // AddingSensitivity:BEGIN /////////////////////////////////////////////
 #ifdef _RELIABILITY
@@ -1558,6 +1561,9 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
     result = theStaticAnalysis->analyze(numIncr);
 
+  } else if(thePFEMAnalysis != 0) {
+      result = thePFEMAnalysis->analyze();
+
   } else if (theTransientAnalysis != 0) {
     if (argc < 3) {
       opserr << "WARNING transient analysis: analysis numIncr? deltaT?\n";
@@ -1976,6 +1982,62 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	}
 #endif
 // AddingSensitivity:END /////////////////////////////////
+
+    } else if(strcmp(argv[1], "PFEM") == 0) {
+
+        if(argc < 4) {
+            opserr<<"WARNING: wrong no of args -- analysis PFEM dtmax dtmin <ratio>\n";
+            return TCL_ERROR;
+        }
+        double dtmax, dtmin, ratio=0.5;
+        if(Tcl_GetDouble(interp, argv[2], &dtmax) != TCL_OK) {  
+            opserr<<"WARNING: invalid dtmax "<<argv[2]<<"\n";
+            return TCL_ERROR;
+        }
+        if(Tcl_GetDouble(interp, argv[3], &dtmin) != TCL_OK) {  
+            opserr<<"WARNING: invalid dtmin "<<argv[3]<<"\n";
+            return TCL_ERROR;
+        }
+        if(argc > 4) {
+            if(Tcl_GetDouble(interp, argv[4], &ratio) != TCL_OK) {  
+                opserr<<"WARNING: invalid ratio "<<argv[4]<<"\n";
+                return TCL_ERROR;
+            }
+        }
+
+        if(theAnalysisModel == 0) {
+            theAnalysisModel = new AnalysisModel();
+        }
+        if(theTest == 0) {
+            theTest = new CTestNormUnbalance(1e-2,10000,1,2,3);
+        }
+        if(theAlgorithm == 0) {
+            theAlgorithm = new NewtonRaphson(*theTest);
+        }
+        if(theHandler == 0) {
+            theHandler = new TransformationConstraintHandler();
+        }
+        if(theNumberer == 0) {
+            RCM* theRCM = new RCM(false);
+            theNumberer = new DOF_Numberer(*theRCM);
+        }
+        if(theTransientIntegrator == 0) {
+            theTransientIntegrator = new PFEMIntegrator();
+        }
+        if(theSOE == 0) {
+            PFEMSolver* theSolver = new PFEMSolver();
+            theSOE = new PFEMLinSOE(*theSolver);
+        }
+        thePFEMAnalysis = new PFEMAnalysis(theDomain,
+                                           *theHandler,
+                                           *theNumberer,
+                                           *theAnalysisModel,
+                                           *theAlgorithm,
+                                           *theSOE,
+                                           *theTransientIntegrator,
+                                           theTest,dtmax,dtmin,ratio);
+
+        theTransientAnalysis = thePFEMAnalysis;
 
     } else if (strcmp(argv[1],"Transient") == 0) {
 	// make sure all the components have been built,
@@ -2451,7 +2513,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   else if(strcmp(argv[1], "PFEM") == 0) {
       PFEMSolver* theSolver = new PFEMSolver();
-      theSOE = new SparseGenColLinSOE(*theSolver);
+      theSOE = new PFEMLinSOE(*theSolver);
   }
 
   // SPARSE GENERAL SOE * SOLVER
@@ -3366,7 +3428,7 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
   int numIter = 0;
   int printIt = 0;
   int normType = 2;
-  int maxIncr = 3;
+  int maxIncr = -1;
 
   if ((strcmp(argv[1],"NormDispAndUnbalance") == 0) || 
       (strcmp(argv[1],"NormDispOrUnbalance") == 0)) {
@@ -3432,7 +3494,18 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
       if (Tcl_GetInt(interp, argv[4], &printIt) != TCL_OK)	
 	return TCL_ERROR;			  
       if (Tcl_GetInt(interp, argv[5], &normType) != TCL_OK)	
+	return TCL_ERROR;	
+    } else if (argc == 7) {
+      if (Tcl_GetDouble(interp, argv[2], &tol) != TCL_OK)	
 	return TCL_ERROR;			  
+      if (Tcl_GetInt(interp, argv[3], &numIter) != TCL_OK)	
+	return TCL_ERROR;			  
+      if (Tcl_GetInt(interp, argv[4], &printIt) != TCL_OK)	
+	return TCL_ERROR;			  
+      if (Tcl_GetInt(interp, argv[5], &normType) != TCL_OK)	
+	return TCL_ERROR;
+      if (Tcl_GetInt(interp, argv[6], &maxIncr) != TCL_OK)	
+	return TCL_ERROR;		  
     }
   } else {
     if (argc == 3) {
@@ -3449,7 +3522,7 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
       if (Tcl_GetInt(interp, argv[3], &printIt) != TCL_OK)	
 	return TCL_ERROR;			  
       if (Tcl_GetInt(interp, argv[4], &normType) != TCL_OK)	
-	return TCL_ERROR;			  
+	return TCL_ERROR;			  		  
     }
   }
   
@@ -3468,7 +3541,7 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
     }
     if (strcmp(argv[1],"NormUnbalance") == 0) 
-      theNewTest = new CTestNormUnbalance(tol,numIter,printIt,normType);       
+        theNewTest = new CTestNormUnbalance(tol,numIter,printIt,normType,maxIncr);       
 
     else if (strcmp(argv[1],"NormDispIncr") == 0) 
       theNewTest = new CTestNormDispIncr(tol,numIter,printIt,normType);             
@@ -3817,6 +3890,14 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
     
   else if (strcmp(argv[1],"Newmark") == 0) {
     theTransientIntegrator = OPS_NewNewmark();
+
+    // if the analysis exists - we want to change the Integrator
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  } 
+
+  else if (strcmp(argv[1],"PFEM") == 0) {
+    theTransientIntegrator = new PFEMIntegrator();
 
     // if the analysis exists - we want to change the Integrator
     if (theTransientAnalysis != 0)
@@ -6087,6 +6168,10 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
     if (theNode != 0) {
       delete theNode;
     }
+    Pressure_Constraint* thePC = theDomain.removePressure_Constraint(tag);
+    if(thePC != 0) {
+        delete thePC;
+    }
   }
   
   
@@ -6164,22 +6249,6 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
     }
   }
 
-  else if((strcmp(argv[1],"PressureConstraint")==0) || (strcmp(argv[1],"pc")==0)) {
-      if (argc < 3) {
-          opserr << "WARNING want - remove PressureConstraint pcTag?\n";
-          return TCL_ERROR;
-      }
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-          opserr << "WARNING remove PressureConstraint tag? failed to read tag: " << argv[2] << endln;
-          return TCL_ERROR;
-      }      
-
-      Pressure_Constraint *thePC = theDomain.removePressure_Constraint(tag);
-      if (thePC != 0) {
-          delete thePC;
-      }
-  }
-  
   else if ((strcmp(argv[1],"MPconstraint") == 0) || (strcmp(argv[1],"mp") == 0)) {
     if (argc < 3) {
       opserr << "WARNING want - remove SPconstraint nNodeTag?\n";
