@@ -35,9 +35,12 @@
 #include <Vector.h>
 #include <Element.h>
 
+class Pressure_Constraint;
+
 class PFEMElement2D : public Element
 {
 public:
+    PFEMElement2D();
     PFEMElement2D(int tag, int nd1, int nd2, int nd3,
                   double r, double m, double b1, double b2);
     
@@ -85,17 +88,18 @@ protected:
 private:
 
     ID ntags; // Tags of nodes
-    Node* nodes[3]; // pointers of nodes
+    Node* nodes[6]; // pointers of nodes
+    Pressure_Constraint* thePCs[3];
     double rho;  // density
     double mu;   // viscocity
     double bx;    // body force
     double by;    // body force
     double dNdx[3], dNdy[3];
     double J;
+    ID numDOFs;
 
     static Matrix K;
     static Vector P;
-
 };
 
 #endif

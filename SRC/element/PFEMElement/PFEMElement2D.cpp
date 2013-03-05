@@ -32,19 +32,42 @@
 #include <elementAPI.h>
 #include <Domain.h>
 #include <Node.h>
+#include <Pressure_Constraint.h>
+#include <Channel.h>
+#include <FEM_ObjectBroker.h>
 
-Matrix PFEMElement2D::K(15,15);
-Vector PFEMElement2D::P(15);
+Matrix PFEMElement2D::K;
+Vector PFEMElement2D::P;
 
-PFEMElement2D::PFEMElement2D(int tag, int nd1, int nd2, int nd3,
-                             double r, double m, double b1, double b2)
-    :Element(tag, ELE_TAG_PFEMElement2D), ntags(3),
-     rho(r), mu(m), bx(b1), by(b2), J(0.0)
+
+// for FEM_ObjectBroker, recvSelf must invoke
+PFEMElement2D::PFEMElement2D()
+    :Element(0, ELE_TAG_PFEMElement2D), ntags(6), 
+     rho(0), mu(0), bx(0), by(0), J(0.0), numDOFs()
 {
-    ntags[0]=nd1; ntags[1]=nd2; ntags[2]=nd3;
     for(int i=0;i<3;i++)
     {
-        nodes[i] = 0;
+        nodes[2*i] = 0;
+        nodes[2*i+1] = 0;
+        thePCs[i] = 0;
+        dNdx[i] = 0.0;
+        dNdy[i] = 0.0;
+    }
+}
+
+// for object
+PFEMElement2D::PFEMElement2D(int tag, int nd1, int nd2, int nd3,
+                             double r, double m, double b1, double b2)
+    :Element(tag, ELE_TAG_PFEMElement2D), ntags(6), 
+     rho(r), mu(m), bx(b1), by(b2), J(0.0), numDOFs()
+{
+    ntags(0)=nd1; ntags(2)=nd2; ntags(4)=nd3;
+    for(int i=0;i<3;i++)
+    {
+        nodes[2*i] = 0;
+        nodes[2*i+1] = 0;
+        ntags(2*i+1) = ntags(2*i);
+        thePCs[i] = 0;
         dNdx[i] = 0.0;
         dNdy[i] = 0.0;
     }
@@ -53,7 +76,11 @@ PFEMElement2D::PFEMElement2D(int tag, int nd1, int nd2, int nd3,
 
 PFEMElement2D::~PFEMElement2D()
 {
-
+    for(int i=0; i<3; i++) {
+        if(thePCs[i] != 0) {
+            thePCs[i]->disconnect(this->getTag());
+        }
+    }
 }
 
 
@@ -67,6 +94,7 @@ PFEMElement2D::getNumExternalNodes() const
 const ID&
 PFEMElement2D::getExternalNodes()
 {
+    if(numDOFs.Size() == 0) return numDOFs;
     return ntags;
 }
 
@@ -79,7 +107,7 @@ PFEMElement2D::getNodePtrs(void)
 int
 PFEMElement2D::getNumDOF()
 {
-    return P.Size();
+    return numDOFs(numDOFs.Size()-1);
 }
 
 int
@@ -90,7 +118,7 @@ PFEMElement2D::revertToLastCommit()
 
 int PFEMElement2D::commitState()
 {
-    return this->Element::commitState();
+    return Element::commitState();
 }
 
 int
@@ -99,8 +127,8 @@ PFEMElement2D::update()
     // get nodal coordinates 
     double x[3], y[3];
     for(int i=0; i<3; i++) {
-        const Vector& coord = nodes[i]->getCrds();
-        const Vector& disp = nodes[i]->getTrialDisp();
+        const Vector& coord = nodes[2*i]->getCrds();
+        const Vector& disp = nodes[2*i]->getTrialDisp();
         x[i] = coord[0] + disp[0];
         y[i] = coord[1] + disp[1];
     }
@@ -122,18 +150,25 @@ PFEMElement2D::update()
 const Matrix&
 PFEMElement2D::getMass()
 {
+
+    // resize K
+    int ndf = this->getNumDOF();
+    K.resize(ndf, ndf);
     K.Zero();
 
     double J2 = J/2.;
-    double pts[3][3] = {{0.5,0.5,0}, {0.5,0,0.5}, {0,0.5,0.5}};
     
-    // lumped mass 
+    // mass 
     for(int a=0; a<3; a++) {
-        for(int b=0; b<3; b++) {
-            double m = rho*(pts[0][a]*pts[0][b]+pts[1][a]*pts[1][b]+pts[2][a]*pts[2][b])/3.*J2;
-            K(5*a,5*a) += m;          // Mxd
-            K(5*a+1,5*a+1) += m;      // Myd
-        }
+        double m = rho*J2/3.0;
+        K(numDOFs(2*a), numDOFs(2*a)) = m;          // Mxd
+        K(numDOFs(2*a)+1, numDOFs(2*a)+1) = m;      // Myd
+        // for(int b=0; b<3; b++) {
+        //     double m = rho*J2/12.0;
+        //     if(a == b) m *= 2.0;
+        //     K(numDOFs(2*a), numDOFs(2*b)) = m;          // Mx
+        //     K(numDOFs(2*a)+1, numDOFs(2*b)+1) = m;      // My
+        // }
     }
 
     return K;
@@ -142,18 +177,79 @@ PFEMElement2D::getMass()
 const Matrix&
 PFEMElement2D::getDamp()
 {
+
+    // resize K
+    int ndf = this->getNumDOF();
+    K.resize(ndf, ndf);
     K.Zero();
 
     double J2 = J/2.;
+    double tau = 1./(rho/ops_Dt+mu/J2);
 
     for(int a=0; a<3; a++) {
         for(int b=0; b<3; b++) {
-            K(5*a+1, 5*b+1) = K(5*a, 5*b) = mu*J2*(dNdx[a]*dNdx[b] + dNdy[a]*dNdy[b]); // K
-            K(5*a+2, 5*b) = dNdx[b]/3.*J2; // GxT
-            K(5*a+2, 5*b+1) = dNdy[b]/3.*J2; // GyT
+
+            K(numDOFs(2*a+1), numDOFs(2*b)) = dNdx[b]/3.*J2;   // GxT
+            K(numDOFs(2*a+1), numDOFs(2*b)+1) = dNdy[b]/3.*J2; // GyT
+
+            K(numDOFs(2*a), numDOFs(2*b+1)) = -dNdx[a]/3.*J2;   // -Gx
+            K(numDOFs(2*a)+1, numDOFs(2*b+1)) = -dNdy[a]/3.*J2; // -Gy
+
+            K(numDOFs(2*a+1), numDOFs(2*b+1)) = tau*J2*(dNdx[a]*dNdx[b] + dNdy[a]*dNdy[b]); // L
+
+            K(numDOFs(2*a+1), numDOFs(2*b+1)+1) = tau*dNdx[a]/3.*J2;   // Qx
+            K(numDOFs(2*a+1), numDOFs(2*b+1)+2) = tau*dNdy[a]/3.*J2;   // Qy
+
+            K(numDOFs(2*a+1)+1, numDOFs(2*b+1)) = tau*dNdx[b]/3.*J2;   // QxT
+            K(numDOFs(2*a+1)+2, numDOFs(2*b+1)) = tau*dNdy[b]/3.*J2;   // QyT
+
         }
+        double m = tau*J2/3.0;
+        K(numDOFs(2*a+1)+1, numDOFs(2*a+1)+1) = m; // Mhatxd
+        K(numDOFs(2*a+1)+2, numDOFs(2*a+1)+2) = m; // Mhatyd
     }
 
+    return K;
+}
+
+const Matrix&
+PFEMElement2D::getDampWithK()
+{
+
+    // resize K
+    int ndf = this->getNumDOF();
+    K.resize(ndf, ndf);
+    K.Zero();
+
+    double J2 = J/2.;
+    double tau = 1./(rho/ops_Dt+mu/J2);
+
+    for(int a=0; a<3; a++) {
+        for(int b=0; b<3; b++) {
+            K(numDOFs(2*a), numDOFs(2*b)) = mu*J2*(2*dNdx[a]*dNdx[b] + dNdy[a]*dNdy[b]); // K
+            K(numDOFs(2*a), numDOFs(2*b)+1) = mu*J2*dNdy[a]*dNdx[b]; // K
+            K(numDOFs(2*a)+1, numDOFs(2*b)) = mu*J2*dNdx[a]*dNdy[b]; // K
+            K(numDOFs(2*a)+1, numDOFs(2*b)+1) = mu*J2*(2*dNdy[a]*dNdy[b] + dNdx[a]*dNdx[b]); // K;
+
+            K(numDOFs(2*a+1), numDOFs(2*b)) = dNdx[b]/3.*J2;   // GxT
+            K(numDOFs(2*a+1), numDOFs(2*b)+1) = dNdy[b]/3.*J2; // GyT
+
+            K(numDOFs(2*a), numDOFs(2*b+1)) = -dNdx[a]/3.*J2;   // -Gx
+            K(numDOFs(2*a)+1, numDOFs(2*b+1)) = -dNdy[a]/3.*J2; // -Gy
+
+            K(numDOFs(2*a+1), numDOFs(2*b+1)) = tau*J2*(dNdx[a]*dNdx[b] + dNdy[a]*dNdy[b]); // L
+
+            K(numDOFs(2*a+1), numDOFs(2*b+1)+1) = tau*dNdx[a]/3.*J2;   // Qx
+            K(numDOFs(2*a+1), numDOFs(2*b+1)+2) = tau*dNdy[a]/3.*J2;   // Qy
+
+            K(numDOFs(2*a+1)+1, numDOFs(2*b+1)) = tau*dNdx[b]/3.*J2;   // QxT
+            K(numDOFs(2*a+1)+2, numDOFs(2*b+1)) = tau*dNdy[b]/3.*J2;   // QyT
+
+        }
+        double m = tau*J2/3.0;
+        K(numDOFs(2*a+1)+1, numDOFs(2*a+1)+1) = m; // Mhatxd
+        K(numDOFs(2*a+1)+2, numDOFs(2*a+1)+2) = m; // Mhatyd
+    }
 
     return K;
 }
@@ -161,24 +257,10 @@ PFEMElement2D::getDamp()
 const Matrix&
 PFEMElement2D::getTangentStiff()
 {
+    // resize K
+    int ndf = this->getNumDOF();
+    K.resize(ndf, ndf);
     K.Zero();
-
-    double J2 = J/2.;
-    double tau = 1./(rho/ops_Dt+8*mu/(3*4*J2));
-    double pts[3][3] = {{0.5,0.5,0}, {0.5,0,0.5}, {0,0.5,0.5}};
-
-    for(int a=0; a<3; a++) {
-        for(int b=0; b<3; b++) {
-            K(5*a, 5*b+2) = -dNdx[a]/3.*J2; // -Gx
-            K(5*a+1, 5*b+2) = -dNdy[a]/3.*J2; // -Gy
-            K(5*a+2, 5*b+2) = tau*J2*(dNdx[a]*dNdx[b] + dNdy[a]*dNdy[b]); // L
-            K(5*b+3, 5*a+2) = K(5*a+2, 5*b+3) = tau*dNdx[a]/3.*J2;   // QxT, Qx
-            K(5*b+4, 5*a+2) = K(5*a+2, 5*b+4) = tau*dNdy[a]/3.*J2;   // QyT ,Qy
-            double m = tau*(pts[0][a]*pts[0][b]+pts[1][a]*pts[1][b]+pts[2][a]*pts[2][b])/3.*J2;
-            K(5*a+3, 5*a+3) += m;  // Mhatxd
-            K(5*a+4, 5*a+4) += m;  // Mhatyd
-        }
-    }
 
     return K;
 }
@@ -187,7 +269,12 @@ PFEMElement2D::getTangentStiff()
 const Matrix& 
 PFEMElement2D::getInitialStiff()
 {
-    return getTangentStiff();
+    // resize K
+    int ndf = this->getNumDOF();
+    K.resize(ndf, ndf);
+    K.Zero();
+
+    return K;
 }
 
 int 
@@ -199,38 +286,49 @@ PFEMElement2D::addInertiaLoadToUnbalance(const Vector &accel)
 const Vector&
 PFEMElement2D::getResistingForce()
 {
+
+    // resize P
+    int ndf = this->getNumDOF();
+    P.resize(ndf);
     P.Zero();
+
     return P;
 }
 
 const Vector&
 PFEMElement2D::getResistingForceIncInertia()
 {
+
+    // resize P
+    int ndf = this->getNumDOF();
+    P.resize(ndf);
     P.Zero();
 
-    Vector a(15), v(15), u(15);
+    // get velocity, accleration
+    Vector v(ndf), vdot(ndf);
     for(int i=0; i<3; i++) {
-        const Vector& accel = nodes[i]->getTrialAccel();
-        const Vector& vel = nodes[i]->getTrialVel();
-        const Vector& disp = nodes[i]->getTrialDisp();
-        for(int j=0; j<5; j++) {
-            a[5*i+j] = accel[j];
-            v[5*i+j] = vel[j];
-            u[5*i+j] = disp[j];
-        }
+        const Vector& accel = nodes[2*i]->getTrialAccel();
+        vdot(numDOFs(2*i)) = accel(0);
+        vdot(numDOFs(2*i)+1) = accel(1);
+
+        const Vector& vel = nodes[2*i]->getTrialVel();
+        v(numDOFs(2*i)) = vel(0);
+        v(numDOFs(2*i)+1) = vel(1);
+
+        const Vector& vel2 = nodes[2*i+1]->getTrialVel();
+        v(numDOFs(2*i+1)) = vel2(0);
+        v(numDOFs(2*i+1)+1) = vel2(1);
+        v(numDOFs(2*i+1)+2) = vel2(2);
     }
 
-    P.addMatrixVector(1.0, this->getMass(), a, 1.0);
-    P.addMatrixVector(1.0, this->getDamp(), v, 1.0);
-    P.addMatrixVector(1.0, this->getTangentStiff(), u, 1.0);
- 
+    P.addMatrixVector(1.0, getMass(), vdot, 1.0);
+    P.addMatrixVector(1.0, getDampWithK(), v, 1.0);
+
     // get Jacobi
     double J2 = J/2.;
-
-    // -F
     for(int i=0; i<3; i++) {
-        P(5*i) -= rho*bx/3.*J2;
-        P(5*i+1) -= rho*by/3.*J2;
+        P(numDOFs(2*i)) -= rho*bx/3.*J2;
+        P(numDOFs(2*i)+1) -= rho*by/3.*J2;
     }
 
 
@@ -247,57 +345,135 @@ PFEMElement2D::getClassType()const
 int
 PFEMElement2D::sendSelf(int commitTag, Channel &theChannel)
 {
+    int res = 0;
+    int dataTag = this->getDbTag();
+
+    // send vector
+    static Vector data(25);
+    data(0) = this->getTag();
+    data(1) = rho;
+    data(2) = mu;
+    data(3) = bx;
+    data(4) = by;
+    for(int i=0; i<3; i++) {
+        data(5+i) = dNdx[i];
+        data(8+i) = dNdy[i];
+    }
+    data(11) = J;
+    for(int i=0; i<6; i++) {
+        data(12+i) = ntags(i);
+        data(18+i) = numDOFs(i);
+    }
+    data(24) = numDOFs(6);
+
+    res = theChannel.sendVector(dataTag, commitTag, data);
+    if(res < 0) {
+        opserr<<"WARNING: PFEMElement2D::sendSelf - "<<this->getTag()<<" failed to send vector\n";
+        return -1;
+    }
+
+
     return 0;
 }
 
 int
 PFEMElement2D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
+    int res;
+    int dataTag = this->getDbTag();
+
+    // receive vector
+    static Vector data(12);
+    res = theChannel.recvVector(dataTag, commitTag, data);
+    if(res < 0) {
+        opserr<<"WARNING: PFEMElement2D::recvSelf - failed to receive vector\n";
+        return -1;
+    }
+    this->setTag((int)data(0));
+    rho = data(1);
+    mu = data(2);
+    bx = data(3);
+    by = data(4);
+    for(int i=0; i<3; i++) {
+        dNdx[i] = data(5+i);
+        dNdy[i] = data(8+i);
+    }
+    J = data(11);
+    for(int i=0; i<6; i++) {
+        ntags(i) = (int)data(12+i);
+        numDOFs(i) = (int)data(18+i);
+    }
+    numDOFs(6) = (int)data(24);
+
     return 0;
 }
 
 void
-PFEMElement2D::setDomain(Domain *domain)
+PFEMElement2D::setDomain(Domain *theDomain)
 {
-    this->DomainComponent::setDomain(domain);
+    numDOFs.resize(7);
+    this->DomainComponent::setDomain(theDomain);
 
-    if(domain == 0)
-    {
-        opserr<<"WARINING: domain is not available -- PFEMElement2D::setDomain\n";
+    if(theDomain == 0) {
         return;
     }
 
+    numDOFs.Zero();
+    int ndf = 0;
     int eletag = this->getTag();
     for(int i=0; i<3; i++) {
-        nodes[i] = domain->getNode(ntags[i]);
-        if(nodes[i] == 0) {
-            opserr<<"WARNING: node "<<ntags[i]<<" does not exist ";
-            opserr<<"in PFEMElement2D - setDomain() "<<eletag<<"\n";
-            continue;
-        }
-        if(nodes[i]->getNumberDOF() < 5) {
-            opserr<<"WARNING: wrong number of dof for node "<<ntags[i]<<" ";
-            opserr<<"in PFEMElement2D - setDomain() "<<eletag<<"\n";
-        }
-        
-    }
 
+        // set ndf
+        numDOFs(2*i) = ndf;
+
+        // get node
+        nodes[2*i] = theDomain->getNode(ntags(2*i));
+        if(nodes[2*i] == 0) {
+            opserr<<"WARNING: node "<<ntags(2*i)<<" does not exist ";
+            opserr<<"in PFEMElement2D - setDomain() "<<eletag<<"\n ";
+            return;
+        }
+        ndf += nodes[2*i]->getNumberDOF();
+ 
+        // set ndf
+        numDOFs(2*i+1) = ndf;
+
+        // get pc 
+        thePCs[i] = theDomain->getPressure_Constraint(ntags(2*i));
+        if(thePCs[i] == 0) {
+            thePCs[i] = new Pressure_Constraint(ntags(2*i), by);
+            if(thePCs[i] == 0) {
+                opserr<<"WARNING: no enough memory for Pressure_Constraint -- ";
+                opserr<<"PFEMElement2D::setDomain "<<eletag<<"\n";
+                return;
+            }
+            if(theDomain->addPressure_Constraint(thePCs[i]) == false) {
+                opserr<<"WARNING: failed to add Pressure_Constraint to domain -- ";
+                opserr<<"PFEMElement2D::setDomain "<<eletag<<"\n";
+                delete thePCs[i];
+                thePCs[i] = 0;
+                return;
+            }
+        }
+
+        // connect
+        thePCs[i]->connect(eletag);
+
+        // get pressure node
+        ntags(2*i+1) = thePCs[i]->getPressureNode();
+        nodes[2*i+1] = theDomain->getNode(ntags(2*i+1));
+        if(nodes[2*i+1] == 0) {
+            opserr<<"WARNING: node "<<ntags(2*i+1)<<" does not exist ";
+            opserr<<"in PFEMElement2D - setDomain() "<<eletag<<"\n ";
+            return;
+        }
+        ndf += nodes[2*i+1]->getNumberDOF();
+    }
+    numDOFs(numDOFs.Size()-1) = ndf;
 }
 
 void
 PFEMElement2D::Print(OPS_Stream &s, int flag)
 {
     s << "PFEMElement2D: "<<this->getTag()<<endln;
-    s << "     Node tags  :  ";
-    for(int i=0;i<3;i++)
-    {
-        s<<ntags(i)<<" ";
-    }
-    s << endln;
-    s << "     Nodal ndf  :  ";
-    for(int i=0;i<3;i++)
-    {
-        s<<nodes[i]->getNumberDOF()<<" ";
-    }
-    s << endln;
 }
