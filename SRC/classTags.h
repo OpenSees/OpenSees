@@ -734,6 +734,7 @@
 #define INTEGRATOR_TAGS_ParkLMS3                        40
 #define INTEGRATOR_TAGS_BackwardEuler                   41
 #define INTEGRATOR_TAGS_EnergyConserved                 42
+#define INTEGRATOR_TAGS_PFEMIntegrator                  43
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2
