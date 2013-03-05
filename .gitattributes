@@ -2155,8 +2155,13 @@ SRC/element/NewElement.h -text
 SRC/element/PFEMElement/Makefile -text
 SRC/element/PFEMElement/PFEMElement2D.cpp -text
 SRC/element/PFEMElement/PFEMElement2D.h -text
+SRC/element/PFEMElement/PFEMMesher2D.cpp -text
+SRC/element/PFEMElement/PFEMMesher2D.h -text
+SRC/element/PFEMElement/PFEMMesher3D.cpp -text
+SRC/element/PFEMElement/PFEMMesher3D.h -text
 SRC/element/PFEMElement/TclModelBuilder_addPFEMElement.cpp -text
 SRC/element/PFEMElement/TclModelBuilder_addPFEMElement.h -text
+SRC/element/PFEMElement/TclPFEMCommands.cpp -text
 SRC/element/TclElementCommands.cpp -text
 SRC/element/UP-ucsd/BBarBrickUP.cpp -text
 SRC/element/UP-ucsd/BBarBrickUP.h -text
