@@ -423,6 +423,7 @@ EXAMPLES/PlaneFrame/Makefile -text
 EXAMPLES/PlaneFrame/main.cpp -text
 EXAMPLES/PlaneFrame/quick.in -text
 EXAMPLES/README -text
+EXAMPLES/Reliability/Report.pdf -text svneol=unset#application/pdf
 EXAMPLES/Reliability/bar.tcl -text
 EXAMPLES/Reliability/industrialFrame.tcl -text
 EXAMPLES/Reliability/portalframe.tcl -text
