@@ -424,6 +424,7 @@ EXAMPLES/PlaneFrame/main.cpp -text
 EXAMPLES/PlaneFrame/quick.in -text
 EXAMPLES/README -text
 EXAMPLES/Reliability/bar.tcl -text
+EXAMPLES/Reliability/industrialFrame.tcl -text
 EXAMPLES/Reliability/portalframe.tcl -text
 EXAMPLES/Reliability/trussParameter.tcl -text
 EXAMPLES/ShadowTruss/ActorTruss.cpp -text
