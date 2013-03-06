@@ -211,7 +211,9 @@
 #include <BbarBrick.h>
 #include <Joint2D.h>		// Arash
 
+#ifdef _PFEM
 #include <PFEMElement2D.h>
+#endif
 
 #include <LinearCrdTransf2d.h>
 #include <LinearCrdTransf3d.h>
@@ -320,7 +322,10 @@
 #include <ArcLength.h>
 #include <TransientIntegrator.h>
 #include <Newmark.h>
+#ifdef _PFEM
 #include <PFEMIntegrator.h>
+#endif
+
 #include <HHT.h>
 #include <TRBDF2.h>
 #include <TRBDF3.h>
@@ -631,10 +636,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_Twenty_Eight_Node_BrickUP:
 	    return new TwentyEightNodeBrickUP();
-
+#ifdef _PFEM
     case ELE_TAG_PFEMElement2D:
         return new PFEMElement2D();
-
+#endif
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";
 	     opserr << " - no Element type exists for class tag " ;
@@ -1626,10 +1631,11 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
 
 	case INTEGRATOR_TAGS_CentralDifferenceAlternative:  
 	     return new CentralDifferenceAlternative();      // must recvSelf
-	     	     
+
+#ifdef _PFEM	     	     
     case INTEGRATOR_TAGS_PFEMIntegrator:
         return new PFEMIntegrator();
-
+#endif
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewTransientIntegrator - ";
 	     opserr << " - no TransientIntegrator type exists for class tag ";

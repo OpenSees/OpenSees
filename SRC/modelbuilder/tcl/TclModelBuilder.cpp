@@ -1373,8 +1373,12 @@ int
 TclCommand_PFEM2D(ClientData clientData, Tcl_Interp *interp,  int argc, 
                   TCL_Char **argv) 
 {
+#ifdef _PFEM
     return TclModelBuilderPFEM2DCommand(clientData, interp, argc,   
                                         argv, theTclDomain);
+#else
+    return 0;
+#endif
 }
 
 extern int
@@ -1385,8 +1389,12 @@ int
 TclCommand_PFEM3D(ClientData clientData, Tcl_Interp *interp,  int argc, 
                   TCL_Char **argv) 
 {
+#ifdef _PFEM
     return TclModelBuilderPFEM3DCommand(clientData, interp, argc,   
                                         argv, theTclDomain);
+#else
+    return 0;
+#endif
 }
 
 extern int
