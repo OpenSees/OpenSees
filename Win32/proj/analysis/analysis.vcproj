@@ -130,6 +130,12 @@
 				RelativePath="..\..\..\SRC\analysis\analysis\DomainDecompositionAnalysis.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\analysis\analysis\PFEMAnalysis.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\analysis\analysis\PFEMAnalysis.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\analysis\analysis\StaticAnalysis.cpp">
 			</File>
 			<File
@@ -572,6 +578,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\analysis\integrator\NewmarkHSIncrReduct.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\analysis\integrator\PFEMIntegrator.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\analysis\integrator\PFEMIntegrator.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\analysis\integrator\ParkLMS3.cpp">
