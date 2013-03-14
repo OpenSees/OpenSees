@@ -502,6 +502,43 @@ CorotTruss::getTangentStiff(void)
 }
 
 const Matrix &
+CorotTruss::getDamp(void)
+{
+    static Matrix kl(3,3);
+
+    Matrix a(3,1);
+    a(0,0) = (Lo+d21[0])/Ln;
+    a(1,0) = d21[1]/Ln;
+    a(2,0) = 0.0;
+
+    Matrix cb(1,1);
+    cb(0,0) = A*theMaterial->getDampTangent()/Lo;
+
+    kl.addMatrixTripleProduct(0.0, a, cb, 1.0);
+
+
+    // Compute R'*kl*R
+    static Matrix kg(3,3);
+    kg.addMatrixTripleProduct(0.0, R, kl, 1.0);
+
+    Matrix &K = *theMatrix;
+    K.Zero();
+
+    // Copy stiffness into appropriate blocks in element stiffness
+    int numDOF2 = numDOF/2;
+    for (int i = 0; i < numDIM; i++) {
+        for (int j = 0; j < numDIM; j++) {
+            K(i,j)                 =  kg(i,j);
+            K(i,j+numDOF2)         = -kg(i,j);
+            K(i+numDOF2,j)         = -kg(i,j);
+            K(i+numDOF2,j+numDOF2) =  kg(i,j);
+        }
+    }
+
+    return *theMatrix;
+}
+
+const Matrix &
 CorotTruss::getInitialStiff(void)
 {
     static Matrix kl(3,3);

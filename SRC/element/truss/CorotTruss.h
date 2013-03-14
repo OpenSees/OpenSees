@@ -70,6 +70,7 @@ class CorotTruss : public Element
     
     // public methods to obtain stiffness, mass, damping and residual information    
     const Matrix &getTangentStiff(void);
+    const Matrix &getDamp(void);
     const Matrix &getInitialStiff(void);
     const Matrix &getMass(void);    
 
