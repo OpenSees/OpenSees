@@ -84,6 +84,9 @@ ZeroLength::ZeroLength(int tag,
   }
 
   // initialize uniaxial materials and directions and check for valid values
+  if (direction == 2 && dim == 2) // For Keri Ryan
+    direction = 5;
+
   (*dir1d)(0) = direction;
   this->checkDirection( *dir1d );
   
@@ -129,6 +132,10 @@ ZeroLength::ZeroLength(int tag,
     
     // initialize uniaxial materials and directions and check for valid values
     *dir1d = direction;
+    for (int i = 0; i < n1dMat; i++) {
+      if ((*dir1d)(i) == 2 && dim == 2) // For Keri Ryan
+	(*dir1d)(i) = 5;
+    }
     this->checkDirection( *dir1d );
     
     // get a copy of the material objects and check we obtained a valid copy
