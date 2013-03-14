@@ -1034,23 +1034,6 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
   int ndm = theTclBuilder->getNDM();
   int ndf = theTclBuilder->getNDF();
 
-  // check for assigned ndf
-  int currentArg = 1;  
-  while (currentArg < argc) {
-      if (strcmp(argv[currentArg],"-ndf") == 0) {      
-          if(argc < currentArg + 1) {
-              opserr << "WARNING missing ndf value\n";
-              return TCL_ERROR; 
-          }
-          if(Tcl_GetInt(interp, argv[currentArg+1], &ndf) != TCL_OK) {
-              opserr << "WARNING invalid ndf value for \n";
-              return TCL_ERROR;
-          }
-          break;
-      } else
-          currentArg++;
-  }
-
   // make sure corect number of arguments on command line
   if (argc < 2+ndm) {
     opserr << "WARNING insufficient arguments\n";
@@ -1078,7 +1061,7 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
       opserr << "node: " << nodeId << endln;
       return TCL_ERROR;
     }
-    theNode = new Node(nodeId,ndf,xLoc);
+    //    theNode = new Node(nodeId,ndf,xLoc);
   } 
 
   else if (ndm == 2) { 
@@ -1093,7 +1076,7 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
       opserr << "node: " << nodeId << endln;
       return TCL_ERROR;
     }
-    theNode = new Node(nodeId,ndf,xLoc,yLoc);
+    //    theNode = new Node(nodeId,ndf,xLoc,yLoc);
   } 
 
   else if (ndm == 3) { 
@@ -1113,28 +1096,45 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
       opserr << "node: " << nodeId << endln;
       return TCL_ERROR;
     }
-    theNode = new Node(nodeId,ndf,xLoc,yLoc,zLoc);
+    //    theNode = new Node(nodeId,ndf,xLoc,yLoc,zLoc);
   } else {
       opserr << "WARNING invalid ndm\n";
       opserr << "node: " << nodeId << endln;;
       return TCL_ERROR;
   }
 
-  if (theNode == 0) {
-    opserr << "WARNING ran out of memory creating node\n";
-    opserr << "node: " << nodeId << endln;
-    return TCL_ERROR;
+  // check for -ndf override option
+  int currentArg = 2+ndm;  
+  if (currentArg < argc && strcmp(argv[currentArg],"-ndf") == 0) {
+    if (Tcl_GetInt(interp, argv[currentArg+1], &ndf) != TCL_OK) {
+      opserr << "WARNING invalid nodal ndf given for node " << nodeId << endln;
+      return TCL_ERROR;
+    }
+    currentArg += 2;
   }
+
+  //
+  // create the node
+  //
+
+  if (ndm == 1) 
+    theNode = new Node(nodeId,ndf,xLoc);        
+  else if (ndm == 2)
+    theNode = new Node(nodeId,ndf,xLoc,yLoc);    
+  else
+    theNode = new Node(nodeId,ndf,xLoc,yLoc,zLoc);    
+
+  //
+  // add the node to the domain
+  //
 
   if (theTclDomain->addNode(theNode) == false) {
     opserr << "WARNING failed to add node to the domain\n";
     opserr << "node: " << nodeId << endln;
-    delete theNode; // otherwise memory leak
+    delete theNode; // otherwise memory leak                                    
     return TCL_ERROR;
   }
 
-  // check for mass terms
-  currentArg = 2+ndm;  
   while (currentArg < argc) {
     if (strcmp(argv[currentArg],"-mass") == 0) {
       currentArg++;
@@ -1153,11 +1153,10 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
 	}
 	mass(i,i) = theMass;
       }
-      theNode->setMass(mass);    
-  
+      theNode->setMass(mass);      
     } else if (strcmp(argv[currentArg],"-disp") == 0) {
       if (argc < currentArg+ndf) {
-	opserr << "WARNING incorrect number of nodal disp terms \n";
+	opserr << "WARNING incorrect number of nodal disp terms\n";
 	opserr << "node: " << nodeId << endln;
 	return TCL_ERROR;      
       }	
@@ -1166,15 +1165,13 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
       double theDisp;
       for (int i=0; i<ndf; i++) {
 	if (Tcl_GetDouble(interp, argv[currentArg++], &theDisp) != TCL_OK) {
-	  opserr << "WARNING invalid nodal disp term \n";
+	  opserr << "WARNING invalid nodal disp term\n";
 	  opserr << "node: " << nodeId << ", dof: " << i+1 << endln;
 	  return TCL_ERROR;
 	}
 	disp(i) = theDisp;
       }
-      theNode->setTrialDisp(disp);    
-      theNode->commitState();
-  
+      theNode->setTrialDisp(disp);      
     } else if (strcmp(argv[currentArg],"-vel") == 0) {
       if (argc < currentArg+ndf) {
 	opserr << "WARNING incorrect number of nodal vel terms\n";
@@ -1182,75 +1179,17 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;      
       }	
       currentArg++;
-      Vector vel(ndf);
-      double theVel;
+      Vector disp(ndf);
+      double theDisp;
       for (int i=0; i<ndf; i++) {
-	if (Tcl_GetDouble(interp, argv[currentArg++], &theVel) != TCL_OK) {
-	  opserr << "WARNING invalid nodal vel term \n";
+	if (Tcl_GetDouble(interp, argv[currentArg++], &theDisp) != TCL_OK) {
+	  opserr << "WARNING invalid nodal vel term\n";
 	  opserr << "node: " << nodeId << ", dof: " << i+1 << endln;
 	  return TCL_ERROR;
 	}
-	vel(i) = theVel;
+	disp(i) = theDisp;
       }
-      theNode->setTrialVel(vel); 
-      theNode->commitState();
-
-    } else if (strcmp(argv[currentArg],"-accel") == 0) {
-      if (argc < currentArg+ndf) {
-	opserr << "WARNING incorrect number of nodal accel terms\n";
-	opserr << "node: " << nodeId << endln;
-	return TCL_ERROR;      
-      }	
-      currentArg++;
-      Vector accel(ndf);
-      double theAccel;
-      for (int i=0; i<ndf; i++) {
-	if (Tcl_GetDouble(interp, argv[currentArg++], &theAccel) != TCL_OK) {
-	  opserr << "WARNING invalid nodal accel term \n";
-	  opserr << "node: " << nodeId << ", dof: " << i+1 << endln;
-	  return TCL_ERROR;
-	}
-	accel(i) = theAccel;
-      }
-      theNode->setTrialAccel(accel); 
-      theNode->commitState();
-
-    } else if(strcmp(argv[currentArg], "-fix") == 0) {
-        if (argc < currentArg+ndf) {
-            opserr << "WARNING incorrect number of fix terms\n";
-            opserr << "node: " << nodeId << endln;
-            return TCL_ERROR;      
-        }	
-        currentArg++;
-
-        // get the fixity condition and add the constraint if fixed
-        for (int i=0; i<ndf; i++) {
-            int theFixity;
-            if (Tcl_GetInt(interp, argv[currentArg++], &theFixity) != TCL_OK) {
-                opserr << "WARNING invalid fixity " << i+1 << " - node " << nodeId;
-                opserr << " " << ndf << " fixities\n";
-                return TCL_ERROR;
-            }
-            if (theFixity != 0) {
-
-                // create a homogeneous constraint
-                SP_Constraint *theSP = new SP_Constraint(nodeId, i, 0.0, true);
-                if (theSP == 0) {
-                    opserr << "WARNING ran out of memory for SP_Constraint ";
-                    opserr << nodeId << " " << ndf << " [0,1] conditions\n";
-                    return TCL_ERROR;
-                }
-
-                // add it to the domain
-                if (theTclDomain->addSP_Constraint(theSP) == false) {
-                    opserr << "WARNING could not add SP_Constraint to domain - fix";
-                    opserr << nodeId << " " << ndf << " [0,1] conditions\n";
-                    delete theSP;
-                    return TCL_ERROR;
-                }
-            }
-        }
-
+      theNode->setTrialVel(disp); 
     } else
       currentArg++;
   }
@@ -1557,7 +1496,8 @@ TclCommand_addNodalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
 
-  int ndf = theTclBuilder->getNDF();
+  //  int ndf = theTclBuilder->getNDF();
+  int ndf = argc - 2;
 
   NodalLoad *theLoad = 0;
   
@@ -2369,7 +2309,8 @@ TclCommand_addNodalMass(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
 
-  int ndf = theTclBuilder->getNDF();
+  //  int ndf = theTclBuilder->getNDF();
+  int ndf = argc - 2;
 
   // make sure at least one other argument to contain type of system
   if (argc < (2 + ndf)) {
@@ -2421,7 +2362,8 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
 
-  int ndf = theTclBuilder->getNDF();
+  //  int ndf = theTclBuilder->getNDF();
+  int ndf = argc - 2;
 
   // check number of arguments
   if (argc < (2 + ndf)) {
@@ -2481,7 +2423,8 @@ TclCommand_addHomogeneousBC_X(ClientData clientData, Tcl_Interp *interp,
     return TCL_ERROR;
   }
 
-  int ndf = theTclBuilder->getNDF();
+  //  int ndf = theTclBuilder->getNDF();
+  int ndf = argc - 2;
 
   // check number of arguments
   if (argc < (2 + ndf)) {
@@ -2578,7 +2521,8 @@ TclCommand_addHomogeneousBC_Y(ClientData clientData, Tcl_Interp *interp,
     return TCL_ERROR;
   }
 
-  int ndf = theTclBuilder->getNDF();
+  //  int ndf = theTclBuilder->getNDF();
+  int ndf = argc - 2;
 
   // check number of arguments
   if (argc < (2 + ndf)) {
@@ -2679,7 +2623,8 @@ TclCommand_addHomogeneousBC_Z(ClientData clientData, Tcl_Interp *interp,
     return TCL_ERROR;
   }
 
-  int ndf = theTclBuilder->getNDF();
+  //int ndf = theTclBuilder->getNDF();
+  int ndf = argc - 2;
 
   // check number of arguments
   if (argc < (2 + ndf)) {
@@ -2780,7 +2725,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
 
-  int ndf = theTclBuilder->getNDF();
+  //int ndf = theTclBuilder->getNDF();
 
   // check number of arguments
   if (argc < 4) {
@@ -2826,8 +2771,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
       if (endMarker == argc || 
 	  Tcl_GetInt(interp, argv[endMarker], &loadPatternTag) != TCL_OK) {
 
-	opserr << "WARNING invalid patternTag - load " << nodeId << " ";
-	opserr << ndf << " forces pattern patterntag\n";
+	opserr << "WARNING invalid patternTag - load " << nodeId << "\n";
 	return TCL_ERROR;
       }
     }  
@@ -2876,7 +2820,7 @@ TclCommand_addImposedMotionSP(ClientData clientData,
     return TCL_ERROR;
   }
 
-  int ndf = theTclBuilder->getNDF();
+  //  int ndf = theTclBuilder->getNDF();
 
   // check number of arguments
   if (argc < 4) {
