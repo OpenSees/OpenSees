@@ -53,6 +53,7 @@ using std::setiosflags;
 #include <RandomVariableIter.h>
 #include <CorrelationCoefficient.h>
 #include <Cutset.h>
+#include <CutsetIter.h>
 #include <PerformanceFunction.h>
 #include <LimitStateFunction.h>
 #include <LimitStateFunctionIter.h>
@@ -299,6 +300,8 @@ int TclReliabilityModelBuilder_getCDF(ClientData clientData, Tcl_Interp *interp,
 int TclReliabilityModelBuilder_getInverseCDF(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_getRVTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int TclReliabilityModelBuilder_getLSFTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+int TclReliabilityModelBuilder_getCutsetTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+int TclReliabilityModelBuilder_getCutsetComponents(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 /////////////////////////////////////////////////////////
 ///S added by K Fujimura for Random Vibration Analysis ///
 /////////////////////////////////////////////////////////
@@ -381,6 +384,8 @@ TclReliabilityBuilder::TclReliabilityBuilder(Domain &passedDomain, Tcl_Interp *i
   Tcl_CreateCommand(interp, "getInverseCDF",TclReliabilityModelBuilder_getInverseCDF,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "getRVTags",TclReliabilityModelBuilder_getRVTags,(ClientData)NULL, NULL);
   Tcl_CreateCommand(interp, "getLSFTags",TclReliabilityModelBuilder_getLSFTags,(ClientData)NULL, NULL);
+  Tcl_CreateCommand(interp, "getCutsetTags",TclReliabilityModelBuilder_getCutsetTags,(ClientData)NULL, NULL);
+  Tcl_CreateCommand(interp, "getCutsetComponents",TclReliabilityModelBuilder_getCutsetComponents,(ClientData)NULL, NULL);
 /////////////////////////////////////////////////////////
 ///S added by K Fujimura for Random Vibration Analysis ///
 /////////////////////////////////////////////////////////
@@ -588,6 +593,8 @@ TclReliabilityBuilder::~TclReliabilityBuilder()
   Tcl_DeleteCommand(theInterp, "getInverseCDF");
   Tcl_DeleteCommand(theInterp, "getRVTags");
   Tcl_DeleteCommand(theInterp, "getLSFTags");
+  Tcl_DeleteCommand(theInterp, "getCutsetTags");
+  Tcl_DeleteCommand(theInterp, "getCutsetComponents");
 
   /////S added by K Fujimura /////
   Tcl_DeleteCommand(theInterp, "analyzer");
@@ -6539,6 +6546,55 @@ TclReliabilityModelBuilder_getLSFTags(ClientData clientData, Tcl_Interp *interp,
   
   while ((theEle = eleIter()) != 0) {
     sprintf(buffer, "%d ", theEle->getTag());
+    Tcl_AppendResult(interp, buffer, NULL);
+  }
+  
+  return TCL_OK;
+}
+
+int
+TclReliabilityModelBuilder_getCutsetTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  Cutset *theEle;
+  CutsetIter &eleIter = theReliabilityDomain->getCutsets();
+  
+  char buffer[20];
+  
+  while ((theEle = eleIter()) != 0) {
+    sprintf(buffer, "%d ", theEle->getTag());
+    Tcl_AppendResult(interp, buffer, NULL);
+  }
+  
+  return TCL_OK;
+}
+
+int
+TclReliabilityModelBuilder_getCutsetComponents(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  if (argc < 2) {
+    opserr << "WARNING getCutsetComponents tag? -- insufficient number of arguments\n";
+    return TCL_ERROR;
+  }
+
+  int tag;
+  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+    opserr << "WARNING getCutsetComponents tag? -- could not read tag\n";
+    return TCL_ERROR;
+  }
+
+  Cutset *theCutset = theReliabilityDomain->getCutsetPtr(tag);
+  if (theCutset == 0) {
+    opserr << "WARNING getCutsetComponents tag? -- cutset with tag "
+	   << tag << " does not exist in model\n";
+    return TCL_ERROR;
+  }
+  
+  int numComponents = theCutset->getNumberOfComponents();
+  const Vector &theComponents = theCutset->getComponents();
+
+  char buffer[20];
+  for (int i = 0; i < numComponents; i++) {
+    sprintf(buffer, "%d ", int(theComponents(i)));
     Tcl_AppendResult(interp, buffer, NULL);
   }
   
