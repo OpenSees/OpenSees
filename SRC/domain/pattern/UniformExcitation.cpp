@@ -43,16 +43,16 @@
 
 UniformExcitation::UniformExcitation()
 :EarthquakePattern(0, PATTERN_TAG_UniformExcitation), 
-  theMotion(0), theDof(0), vel0(0.0)
+ theMotion(0), theDof(0), vel0(0.0), fact(0.0)
 {
 
 }
 
 
 UniformExcitation::UniformExcitation(GroundMotion &_theMotion, 
-				   int dof, int tag, double velZero)
+				     int dof, int tag, double velZero, double theFactor)
 :EarthquakePattern(tag, PATTERN_TAG_UniformExcitation), 
-  theMotion(&_theMotion), theDof(dof), vel0(velZero)
+ theMotion(&_theMotion), theDof(dof), vel0(velZero), fact(theFactor)
 {
   // add the motion to the list of ground motions
   this->addMotion(*theMotion);
@@ -127,7 +127,7 @@ UniformExcitation::applyLoad(double time)
     Node *theNode;
     while ((theNode = theNodes()) != 0) {
       theNode->setNumColR(1);
-      theNode->setR(theDof, 0, 1.0);
+      theNode->setR(theDof, 0, fact);
     }
 //  }
 
@@ -165,10 +165,11 @@ UniformExcitation::sendSelf(int commitTag, Channel &theChannel)
 {
   int dbTag = this->getDbTag();
 
-  static Vector data(5);
+  static Vector data(6);
   data(0) = this->getTag();
   data(1) = theDof;
   data(2) = vel0;
+  data(5) = fact;
   data(3) = theMotion->getClassTag();
   
   int motionDbTag = theMotion->getDbTag();
@@ -200,7 +201,7 @@ UniformExcitation::recvSelf(int commitTag, Channel &theChannel,
 {
   int dbTag = this->getDbTag();
 
-  static Vector data(5);
+  static Vector data(6);
   int res = theChannel.recvVector(dbTag, commitTag, data);
   if (res < 0) {
     opserr << "UniformExcitation::recvSelf() - channel failed to recv data\n";
@@ -210,6 +211,7 @@ UniformExcitation::recvSelf(int commitTag, Channel &theChannel,
   this->setTag(data(0));
   theDof = data(1);
   vel0 = data(2);
+  fact = data(5);
   int motionClassTag = data(3);
   int motionDbTag = data(4);
 

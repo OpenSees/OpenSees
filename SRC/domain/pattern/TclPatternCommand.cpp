@@ -228,7 +228,8 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
   TimeSeries *dispSeries = 0;
   TimeSeriesIntegrator *seriesIntegrator = 0;
   double vel0 = 0.0;
-  
+  double fact = 1.0;
+
   int currentArg = 4;
   bool doneSeries = false;
   while (currentArg < argc-1 && doneSeries == false) {
@@ -239,6 +240,18 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
     currentArg++;
     if ((currentArg < argc) &&
         (Tcl_GetDouble(interp, argv[currentArg], &vel0) != TCL_OK)) {
+      opserr << "WARNING invalid vel0: pattern type UniformExciation\n";
+      return TCL_ERROR;
+    }
+
+    currentArg++;
+  }
+
+  else if ((strcmp(argv[currentArg],"-fact") == 0) || (strcmp(argv[currentArg],"-factor") == 0)) {
+
+    currentArg++;
+    if ((currentArg < argc) &&
+        (Tcl_GetDouble(interp, argv[currentArg], &fact) != TCL_OK)) {
       opserr << "WARNING invalid vel0: pattern type UniformExciation\n";
       return TCL_ERROR;
     }
@@ -322,7 +335,7 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
       }
 
   // create the UniformExcitation Pattern
-  thePattern = new UniformExcitation(*theMotion, dir, patternID, vel0);
+      thePattern = new UniformExcitation(*theMotion, dir, patternID, vel0, fact);
 
   if (thePattern == 0) {
       opserr << "WARNING ran out of memory creating load pattern - pattern UniformExcitation ";

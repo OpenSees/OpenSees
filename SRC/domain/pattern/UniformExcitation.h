@@ -42,7 +42,7 @@ class UniformExcitation : public EarthquakePattern
   public:
     UniformExcitation();  
     UniformExcitation(GroundMotion &theMotion, 
-		      int dof, int tag, double vel0 = 0.0);  
+		      int dof, int tag, double vel0 = 0.0, double fact = 1.0);  
     ~UniformExcitation();
 
     void setDomain(Domain *theDomain);    
@@ -69,6 +69,7 @@ class UniformExcitation : public EarthquakePattern
     GroundMotion *theMotion; // the ground motion
     int theDof;      // the dof corrseponding to the ground motion
     double vel0;     // the initial velocity, should be neg of ug dot(0)
+    double fact;
 };
 
 #endif
