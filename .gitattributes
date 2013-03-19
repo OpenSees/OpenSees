@@ -3379,17 +3379,6 @@ SRC/recorder/response/MaterialResponse.cpp -text
 SRC/recorder/response/MaterialResponse.h -text
 SRC/recorder/response/Response.cpp -text
 SRC/recorder/response/Response.h -text
-SRC/reliability/EXAMPLES/CalRel_manual_1.tcl -text
-SRC/reliability/EXAMPLES/CalRel_manual_2.tcl -text
-SRC/reliability/EXAMPLES/CalRel_manual_4.tcl -text
-SRC/reliability/EXAMPLES/CalRel_manual_7.tcl -text
-SRC/reliability/EXAMPLES/CalRel_manual_8.tcl -text
-SRC/reliability/EXAMPLES/Class_example_1.tcl -text
-SRC/reliability/EXAMPLES/Class_example_2.tcl -text
-SRC/reliability/EXAMPLES/Madsen_eg_5_9.tcl -text
-SRC/reliability/EXAMPLES/RV_tester.tcl -text
-SRC/reliability/EXAMPLES/truss.tcl -text
-SRC/reliability/EXAMPLES/truss2.tcl -text
 SRC/reliability/FEsensitivity/Makefile -text
 SRC/reliability/FEsensitivity/NewmarkSensitivityIntegrator.cpp -text
 SRC/reliability/FEsensitivity/NewmarkSensitivityIntegrator.h -text
