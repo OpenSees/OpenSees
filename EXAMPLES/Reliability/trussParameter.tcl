@@ -1,4 +1,5 @@
 model basic -ndm 2 -ndf 2
+#reliability
 
 set L 20.0
 set E 30000.0
@@ -19,8 +20,8 @@ pattern Plain 1 Linear {
 }
 
 # Material property of an element
-parameter 1 element 1 E
-addToParameter 1 element 2 E
+parameter 1 element 1 E Area One
+addToParameter 1 element 2 E 
 
 # Element property
 parameter 2 element 2 A
@@ -31,7 +32,6 @@ parameter 3 loadPattern 1 loadAtNode 3 1
 
 # Nodal coordinate
 parameter 4 node 3 coord 1
-
 
 analysis Static
 

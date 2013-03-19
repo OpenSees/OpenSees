@@ -423,10 +423,21 @@ EXAMPLES/PlaneFrame/Makefile -text
 EXAMPLES/PlaneFrame/main.cpp -text
 EXAMPLES/PlaneFrame/quick.in -text
 EXAMPLES/README -text
+EXAMPLES/Reliability/CalRel_manual_1.tcl -text
+EXAMPLES/Reliability/CalRel_manual_2.tcl -text
+EXAMPLES/Reliability/CalRel_manual_4.tcl -text
+EXAMPLES/Reliability/CalRel_manual_7.tcl -text
+EXAMPLES/Reliability/CalRel_manual_8.tcl -text
+EXAMPLES/Reliability/Class_example_1.tcl -text
+EXAMPLES/Reliability/Class_example_2.tcl -text
+EXAMPLES/Reliability/Madsen_eg_5_9.tcl -text
+EXAMPLES/Reliability/RV_tester.tcl -text
 EXAMPLES/Reliability/Report.pdf -text svneol=unset#application/pdf
 EXAMPLES/Reliability/bar.tcl -text
 EXAMPLES/Reliability/industrialFrame.tcl -text
 EXAMPLES/Reliability/portalframe.tcl -text
+EXAMPLES/Reliability/truss.tcl -text
+EXAMPLES/Reliability/truss2.tcl -text
 EXAMPLES/Reliability/trussParameter.tcl -text
 EXAMPLES/ShadowTruss/ActorTruss.cpp -text
 EXAMPLES/ShadowTruss/ActorTruss.h -text
