@@ -20,8 +20,9 @@ foreach gMotion [glob -nocomplain -directory GM *.AT2] {
 	    set g 384.4
 	    ReadRecord ./$gMotionName.AT2 ./$gMotionName.dat dT nPts
 	    
-	    timeSeries Path 1 -filePath $gMotionName.dat -dt $dT -factor $g	    
-	    
+	    timeSeries Path 1 -filePath ./$gMotionName.dat -dt $dT -factor $g	    
+	    pattern UniformExcitation 2 1 -accel 1
+
 	    if {$nPts != 0} {
 		
 		recorder Node -file $gMotionName.out -node 3 4 -dof 1 2 3 disp
