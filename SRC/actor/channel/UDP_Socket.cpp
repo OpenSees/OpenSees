@@ -227,10 +227,11 @@ UDP_Socket::setUpConnection()
     } else {
         
         // wait for remote process to send message
-        char data = 'b';
+        char data;
         recvfrom(sockfd, &data, 1, 0, &other_Addr.addr, &addrLength);    
         
         // then send a message back
+        data = 'b';
         sendto(sockfd, &data, 1, 0, &other_Addr.addr, addrLength);        
         
         // check for endianness problem if requested
