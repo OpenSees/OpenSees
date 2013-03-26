@@ -7,6 +7,9 @@ set tStart [clock clicks -milliseconds]
 
 foreach gMotion [glob -nocomplain -directory GM *.AT2] {
     if {[expr $count % $numP] == $pid}  {
+
+	puts "$pid $count $gMotion"
+
 	source model.tcl
 	source analysis.tcl
 	
@@ -30,7 +33,7 @@ foreach gMotion [glob -nocomplain -directory GM *.AT2] {
 		doDynamic $dT $nPts
 #		doDynamic $dT 2
 
-		file delete $gMotionName.dat
+#		file delete $gMotionName.dat
 
 
 		if {$ok == 0} {
