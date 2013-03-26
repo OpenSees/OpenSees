@@ -39,11 +39,11 @@ GroundMotion::GroundMotion(TimeSeries *dispSeries,
 			   TimeSeries *velSeries, 
 			   TimeSeries *accelSeries,
 			   TimeSeriesIntegrator *theIntegratr,
-			   double dTintegration)
+			   double dTintegration, double factor)
 :MovableObject(GROUND_MOTION_TAG_GroundMotion), 
  theAccelSeries(accelSeries), theVelSeries(velSeries), 
  theDispSeries(dispSeries), theIntegrator(theIntegratr),
- data(3), delta(dTintegration)
+ data(3), delta(dTintegration), fact(factor)
 {
 
 }
@@ -53,7 +53,7 @@ GroundMotion::GroundMotion(TimeSeries *dispSeries,
 GroundMotion::GroundMotion(int theClassTag)
 :MovableObject(theClassTag), 
  theAccelSeries(0), theVelSeries(0), theDispSeries(0), theIntegrator(0),
- data(3), delta(0.0)
+ data(3), delta(0.0), fact(1.0)
 {
 
 }
@@ -122,7 +122,7 @@ double
 GroundMotion::getPeakAccel(void)
 {
   if (theAccelSeries != 0)
-    return theAccelSeries->getPeakFactor();
+    return fact*(theAccelSeries->getPeakFactor());
   else
     return 0.0;
 
@@ -132,13 +132,13 @@ double
 GroundMotion::getPeakVel(void)
 {
   if (theVelSeries != 0)
-    return theVelSeries->getPeakFactor();
+    return fact*(theVelSeries->getPeakFactor());
 
   // if theAccel is not 0, integrate accel series to get a vel series
   else if (theAccelSeries != 0) {
     theVelSeries = this->integrate(theAccelSeries, delta);
     if (theVelSeries != 0)
-      return theVelSeries->getPeakFactor();      
+      return fact*(theVelSeries->getPeakFactor());      
     else
       return 0.0;
   }
@@ -149,13 +149,13 @@ double
 GroundMotion::getPeakDisp(void)
 {
   if (theDispSeries != 0)
-    return theDispSeries->getPeakFactor();
+    return fact*(theDispSeries->getPeakFactor());
 
   // if theVel is not 0, integrate vel series to get disp series
   else if (theVelSeries != 0) {
     theDispSeries = this->integrate(theVelSeries, delta);
     if (theDispSeries != 0)
-      return theDispSeries->getPeakFactor();      
+      return fact*(theDispSeries->getPeakFactor());      
     else
       return 0.0;
   }
@@ -166,7 +166,7 @@ GroundMotion::getPeakDisp(void)
     if (theVelSeries != 0) {
       theDispSeries = this->integrate(theVelSeries, delta);
       if (theDispSeries != 0)
-	return theDispSeries->getPeakFactor();      
+	return fact*(theDispSeries->getPeakFactor());      
       else
 	return 0.0;
     } else
@@ -183,7 +183,7 @@ GroundMotion::getAccel(double time)
     return 0.0;
   
   if (theAccelSeries != 0)
-    return theAccelSeries->getFactor(time);
+    return fact*(theAccelSeries->getFactor(time));
   else
     return 0.0;
 }     
@@ -195,7 +195,7 @@ GroundMotion::getAccelSensitivity(double time)
     return 0.0;
   
   if (theAccelSeries != 0)
-    return theAccelSeries->getFactorSensitivity(time);
+    return fact*(theAccelSeries->getFactorSensitivity(time));
   else
     return 0.0;
 }     
@@ -207,7 +207,7 @@ GroundMotion::getVel(double time)
     return 0.0;
 
   if (theVelSeries != 0)
-    return theVelSeries->getFactor(time);      
+    return fact*(theVelSeries->getFactor(time));      
 
   // if theAccel is not 0, integrate accel series to get a vel series
   else if (theAccelSeries != 0) {
@@ -215,7 +215,7 @@ GroundMotion::getVel(double time)
     theVelSeries = this->integrate(theAccelSeries, delta);
 
     if (theVelSeries != 0) {
-      return theVelSeries->getFactor(time);      
+      return fact*(theVelSeries->getFactor(time));      
 
     } else {
       opserr << " WARNING: GroundMotion::getVel(double time) - failed to integrate\n";
@@ -233,14 +233,14 @@ GroundMotion::getDisp(double time)
     return 0.0;
 
   if (theDispSeries != 0)
-    return theDispSeries->getFactor(time);
+    return fact*(theDispSeries->getFactor(time));
 
   // if theVel is not 0, integrate vel series to get disp series
   else if (theVelSeries != 0) {
     opserr << " WARNING: GroundMotion::getDisp(double time) - integration is required to get the ground displacements from the ground velocities\n";
     theDispSeries = this->integrate(theVelSeries, delta);
     if (theDispSeries != 0)
-      return theDispSeries->getFactor(time);      
+      return fact*(theDispSeries->getFactor(time));      
     else
       return 0.0;
   }
@@ -252,7 +252,7 @@ GroundMotion::getDisp(double time)
     if (theVelSeries != 0) {
       theDispSeries = this->integrate(theVelSeries, delta);
       if (theDispSeries != 0)
-	return theDispSeries->getFactor(time);      
+	return fact*(theDispSeries->getFactor(time));      
       else
 	return 0.0;
     } else
@@ -273,9 +273,9 @@ GroundMotion::getDispVelAccel(double time)
   }
 
   if (theAccelSeries != 0 && theVelSeries != 0 && theDispSeries != 0) {
-    data(0) = theDispSeries->getFactor(time);
-    data(1) = theVelSeries->getFactor(time);
-    data(2) = theAccelSeries->getFactor(time);
+    data(0) = fact*(theDispSeries->getFactor(time));
+    data(1) = fact*(theVelSeries->getFactor(time));
+    data(2) = fact*(theAccelSeries->getFactor(time));
   } else {
     data(2) = this->getAccel(time);
     data(1) = this->getVel(time);
@@ -292,6 +292,7 @@ GroundMotion::sendSelf(int commitTag, Channel &theChannel)
   int dbTag = this->getDbTag();
 
   static ID idData(8);
+  static Vector data(1);
   
   if (theAccelSeries != 0) {
     idData(0) = theAccelSeries->getClassTag();
@@ -337,7 +338,10 @@ GroundMotion::sendSelf(int commitTag, Channel &theChannel)
   } else
     idData(6) = -1;
 
+  data(0) = fact;
+
   int res = theChannel.sendID(dbTag, commitTag, idData);
+  res += theChannel.sendVector(dbTag, commitTag, data);
   if (res < 0) {
     opserr << "GroundMotionRecord::sendSelf() - channel failed to send data\n";
     return res;
@@ -387,7 +391,9 @@ GroundMotion::recvSelf(int commitTag, Channel &theChannel,
 	  int dbTag = this->getDbTag();
 
   static ID idData(8);
+  static Vector data(1);
   int res = theChannel.recvID(dbTag, commitTag, idData);
+  res += theChannel.recvVector(dbTag, commitTag, data);
   if (res < 0) {
     opserr << "UniformExcitation::sendSelf() - channel failed to send data\n";
     return res;
@@ -473,6 +479,8 @@ GroundMotion::recvSelf(int commitTag, Channel &theChannel,
     }
   }
 
+  fact = data(0);
+
   return 0;
 }
 
@@ -497,7 +505,3 @@ GroundMotion::activateParameter(int pparameterID)
 }
 */
 // AddingSensitivity:END ////////////////////////////////////
-
-
-
-

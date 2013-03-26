@@ -79,7 +79,9 @@ TclGroundMotionCommand(ClientData clientData, Tcl_Interp *interp,
     TimeSeries *dispSeries = 0;
     TimeSeriesIntegrator *seriesIntegrator = 0;
     
-    int currentArg = startArg+1;	
+    int currentArg = startArg+1;
+    double dtInt = 0.01;
+    double fact = 1.0;
 
     while (currentArg < argc-1) {
       if ((strcmp(argv[currentArg],"-accel") == 0) ||
@@ -121,6 +123,7 @@ TclGroundMotionCommand(ClientData clientData, Tcl_Interp *interp,
 	}
 	  
 	currentArg++;
+
       } else if ((strcmp(argv[currentArg],"-int") == 0) ||
 		 (strcmp(argv[currentArg],"-integrator") == 0)) {
 	  
@@ -131,14 +134,41 @@ TclGroundMotionCommand(ClientData clientData, Tcl_Interp *interp,
 	  opserr << "WARNING invalid series integrator: " << argv[currentArg];
 	  opserr << " - groundMotion tag Series -int {Series Integrator}\n";
 	  return TCL_ERROR;		
-	}	  
+    }
+	
+    currentArg++;
+      
+      } else if ((strcmp(argv[currentArg],"-dtInt") == 0) ||
+         (strcmp(argv[currentArg],"-dtIntegrator") == 0) ||
+		 (strcmp(argv[currentArg],"-deltaT") == 0)) {
+	  
 	currentArg++;
+    if (Tcl_GetDouble(interp, argv[currentArg], &dtInt) != TCL_OK) {
+	  opserr << "WARNING invalid dtInt: " << argv[currentArg];
+	  opserr << " - groundMotion tag Series -dtInt dt\n";
+	  return TCL_ERROR;		
+    }
+	
+    currentArg++;
+      
+      } else if ((strcmp(argv[currentArg],"-fact") == 0) ||
+		 (strcmp(argv[currentArg],"-factor") == 0)) {
+	  
+	currentArg++;
+    if (Tcl_GetDouble(interp, argv[currentArg], &fact) != TCL_OK) {
+	  opserr << "WARNING invalid factor: " << argv[currentArg];
+	  opserr << " - groundMotion tag Series -fact factor\n";
+	  return TCL_ERROR;		
+    }
+	
+    currentArg++;
+      
       }
 
     }
 
     theMotion = new GroundMotion(dispSeries, velSeries, 
-				 accelSeries, seriesIntegrator);
+				 accelSeries, seriesIntegrator, dtInt, fact);
 
     if (theMotion == 0) {
       opserr << "WARNING ran out of memory creating ground motion - pattern UniformExcitation ";
@@ -213,7 +243,3 @@ TclGroundMotionCommand(ClientData clientData, Tcl_Interp *interp,
 
   return TCL_OK;
 }
-
-
-
-

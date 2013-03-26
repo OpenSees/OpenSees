@@ -50,9 +50,9 @@
 
 #include <OPS_Globals.h>
 
-LoadPattern::LoadPattern(int tag, int clasTag)
+LoadPattern::LoadPattern(int tag, int clasTag, double fact)
 :DomainComponent(tag,clasTag),
- isConstant(1), loadFactor(0),
+ isConstant(1), loadFactor(0), scaleFactor(fact),
  theSeries(0), 
  currentGeoTag(0), lastGeoSendTag(-1),
  theNodalLoads(0), theElementalLoads(0), theSPs(0),
@@ -84,7 +84,7 @@ LoadPattern::LoadPattern(int tag, int clasTag)
 
 LoadPattern::LoadPattern()
 :DomainComponent(0,PATTERN_TAG_LoadPattern),
- isConstant(1), loadFactor(0),
+ isConstant(1), loadFactor(0), scaleFactor(1.0),
  theSeries(0), 
  currentGeoTag(0), lastGeoSendTag(-1),
  dbSPs(0), dbNod(0), dbEle(0), 
@@ -114,9 +114,9 @@ LoadPattern::LoadPattern()
 }
 
 
-LoadPattern::LoadPattern(int tag)
+LoadPattern::LoadPattern(int tag, double fact)
 :DomainComponent(tag,PATTERN_TAG_LoadPattern),
- isConstant(1), loadFactor(0.),
+ isConstant(1), loadFactor(0.), scaleFactor(fact),
  theSeries(0), 
  currentGeoTag(0), lastGeoSendTag(-1),
  dbSPs(0), dbNod(0), dbEle(0), 
@@ -342,8 +342,10 @@ void
 LoadPattern::applyLoad(double pseudoTime)
 {
   // first determine the load factor
-  if (theSeries != 0 && isConstant != 0)
+  if (theSeries != 0 && isConstant != 0) {
     loadFactor = theSeries->getFactor(pseudoTime);
+    loadFactor *= scaleFactor;
+  }
 
   NodalLoad *nodLoad;
   NodalLoadIter &theNodalIter = this->getNodalLoads();
@@ -439,8 +441,9 @@ LoadPattern::sendSelf(int cTag, Channel &theChannel)
   }    
   
   if (isConstant == 0) {
-    Vector data(1);
+    Vector data(2);
     data(0) = loadFactor;
+    data(1) = scaleFactor;
     if (theChannel.sendVector(myDbTag, cTag, data) < 0) {
       opserr << "LoadPattern::sendSelf - channel failed to send the Vector\n";
       return -2;
@@ -632,12 +635,13 @@ LoadPattern::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker
   this->setTag(lpData(10));
 
   if (isConstant == 0) { // we must recv the load factor in a Vector
-    Vector data(1);
+    Vector data(2);
     if (theChannel.recvVector(myDbTag, cTag, data) < 0) {
       opserr << "LoadPattern::recvSelf - channel failed to recv the Vector\n";
       return -2;
     }
     loadFactor = data(0);
+    scaleFactor = data(1);
   }
   
   // read data about the time series
@@ -857,6 +861,7 @@ void
 LoadPattern::Print(OPS_Stream &s, int flag)
 {
     s << "Load Pattern: " << this->getTag() << "\n";
+    s << "  Scale Factor: " << scaleFactor << endln;
     if (theSeries != 0)
       theSeries->Print(s,flag);
     s << "  Nodal Loads: \n";
@@ -877,6 +882,7 @@ LoadPattern::getCopy(void)
     return theCopy; // in case fatal() does not exit
   }
   theCopy->loadFactor = loadFactor;
+  theCopy->scaleFactor = scaleFactor;
   theCopy->isConstant = isConstant;
   theCopy->theSeries = theSeries;
   return theCopy;
@@ -902,6 +908,7 @@ LoadPattern::applyLoadSensitivity(double pseudoTime)
 {
   if (theSeries != 0 && isConstant != 0) {
     loadFactor = theSeries->getFactorSensitivity(pseudoTime);
+    loadFactor *= scaleFactor;
   }
   
   NodalLoad *nodLoad;

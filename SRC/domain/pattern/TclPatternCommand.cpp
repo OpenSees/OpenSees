@@ -111,11 +111,18 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
 
   if (strcmp(argv[1],"Plain") == 0) {
 
-      thePattern = new LoadPattern(patternID);
-      theSeries = TclSeriesCommand(clientData, interp, argv[3]);
-
-
-      if (thePattern == 0 || theSeries == 0) {
+    double fact = 1.0;
+    if (argc==7 && ((strcmp(argv[4],"-fact") == 0) ||
+        (strcmp(argv[4],"-factor") == 0))) {
+            if (Tcl_GetDouble(interp, argv[5], &fact) != TCL_OK) {
+                opserr << "WARNING invalid fact: pattern type Plain\n";
+                return TCL_ERROR;
+            }
+    }
+    thePattern = new LoadPattern(patternID,fact);
+    theSeries = TclSeriesCommand(clientData, interp, argv[3]);
+    
+    if (thePattern == 0 || theSeries == 0) {
 
     if (thePattern == 0) {
         opserr << "WARNING - out of memory creating LoadPattern ";
@@ -252,7 +259,7 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
     currentArg++;
     if ((currentArg < argc) &&
         (Tcl_GetDouble(interp, argv[currentArg], &fact) != TCL_OK)) {
-      opserr << "WARNING invalid vel0: pattern type UniformExciation\n";
+      opserr << "WARNING invalid fact: pattern type UniformExciation\n";
       return TCL_ERROR;
     }
 
