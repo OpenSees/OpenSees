@@ -131,7 +131,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
       }
 	
 	int tag;
-	double E, A, Iz, Iy, G, J, alpha;
+	double E, A, Iz, Iy, G, J, alphaY, alphaZ;
 	
 	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
 	    opserr << "WARNING invalid section Elastic tag" << endln;
@@ -164,13 +164,13 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	      return TCL_ERROR;
 	    }
 
-	    if (Tcl_GetDouble (interp, argv[7], &alpha) != TCL_OK) {
-	      opserr << "WARNING invalid G" << endln;
+	    if (Tcl_GetDouble (interp, argv[7], &alphaY) != TCL_OK) {
+	      opserr << "WARNING invalid alpha" << endln;
 	      opserr << "Elastic section: " << tag << endln;	    	    
 	      return TCL_ERROR;
 	    }
 
-	    theSection = new ElasticShearSection2d(tag, E, A, Iz, G, alpha);
+	    theSection = new ElasticShearSection2d(tag, E, A, Iz, G, alphaY);
 	  }
 	  else 
 	    theSection = new ElasticSection2d(tag, E, A, Iz);
@@ -201,14 +201,20 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	  }
 
 	  if (argc > 9) {
-	    if (Tcl_GetDouble (interp, argv[9], &alpha) != TCL_OK) {
-	      opserr << "WARNING invalid J" << endln;
+	    if (Tcl_GetDouble (interp, argv[9], &alphaY) != TCL_OK) {
+	      opserr << "WARNING invalid alphaY" << endln;
 	      opserr << "Elastic section: " << tag << endln;	    
 	      return TCL_ERROR;
 	    }
 
-	    theSection =
-	      new ElasticShearSection3d(tag, E, A, Iz, Iy, G, J, alpha);
+	    if (Tcl_GetDouble (interp, argv[10], &alphaZ) != TCL_OK) {
+	      opserr << "WARNING invalid alphaZ" << endln;
+	      opserr << "Elastic section: " << tag << endln;	    
+	      return TCL_ERROR;
+	    }
+
+	    theSection = new ElasticShearSection3d(tag, E, A, Iz, Iy,
+                                               G, J, alphaY, alphaZ);
 	  }
 	  else 
 	    theSection = new ElasticSection3d(tag, E, A, Iz, Iy, G, J);
