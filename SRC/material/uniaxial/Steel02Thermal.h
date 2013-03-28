@@ -113,6 +113,9 @@ class Steel02Thermal : public UniaxialMaterial
     double epsP;  //  = strain at previous converged step
     double sigP;  //  = stress at previous converged step
     double eP;    //   stiffness modulus at last converged step;
+    double E0P;  // Initial stiffness in last committed step;
+	double FyP;   //Yield stress in last committed step;
+	double FiberTP; //FiberTemperature in last committed step;
 
     double epsmin; 
     double epsmax; 

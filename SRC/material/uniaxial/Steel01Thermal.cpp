@@ -233,6 +233,11 @@ void Steel01Thermal::determineTrialState (double dStrain)
       double c3 = TshiftP*fyOneMinusB;
 
       double c = Cstress + E0*dStrain;
+	  //---------------
+	  if (E0!=E0T) 
+		   c = E0*(Cstrain+dStrain);
+	  //---------------
+	  //Modified by Liming for considering stiffness degradation(E0).
 
       /**********************************************************
          removal of the following lines due to problems with
@@ -273,366 +278,7 @@ void Steel01Thermal::determineTrialState (double dStrain)
 	  double CT = (fy-fp)*(fy-fp)/((EpsiYT-EpsiPT)*E0-2*(fy - fp));
 	  double BT = pow(CT*(EpsiYT-EpsiPT)*E0+CT*CT, 0.5);
 	  double AT = pow((EpsiYT-EpsiPT)*(EpsiYT-EpsiPT+CT/E0),0.5);
-	  /*
-	  double increment = (EpsiYT-EpsiPT)/10;
-	  double EpsiIncr1 = EpsiPT + increment;
-	  double EpsiIncr2 = EpsiPT + increment*2;
-	  double EpsiIncr3 = EpsiPT + increment*3;
-	  double EpsiIncr4 = EpsiPT + increment*4;
-	  double EpsiIncr5 = EpsiPT + increment*5;
-	  double EpsiIncr6 = EpsiPT + increment*6;
-	  double EpsiIncr7 = EpsiPT + increment*7;
-	  double EpsiIncr8 = EpsiPT + increment*8;
-	  double EpsiIncr9 = EpsiPT + increment*9;
-
-	  double stress01 = fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT - EpsiIncr1)*(EpsiYT - EpsiIncr1)),0.5);
-	  double stress02 = fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT - EpsiIncr2)*(EpsiYT - EpsiIncr2)),0.5);
-	  double stress03 = fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT - EpsiIncr3)*(EpsiYT - EpsiIncr3)),0.5);
-	  double stress04 = fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT - EpsiIncr4)*(EpsiYT - EpsiIncr4)),0.5);
-	  double stress05 = fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT - EpsiIncr5)*(EpsiYT - EpsiIncr5)),0.5);
-	  double stress06 = fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT - EpsiIncr6)*(EpsiYT - EpsiIncr6)),0.5);
-	  double stress07 = fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT - EpsiIncr7)*(EpsiYT - EpsiIncr7)),0.5);
-	  double stress08 = fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT - EpsiIncr8)*(EpsiYT - EpsiIncr8)),0.5);
-	  double stress09 = fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT - EpsiIncr9)*(EpsiYT - EpsiIncr9)),0.5);
-
-	  double tangent00 = (stress01 - fp)/increment;
-	  double tangent01 = (stress02 - stress01)/increment;
-	  double tangent02 = (stress03 - stress02)/increment;
-	  double tangent03 = (stress04 - stress03)/increment;
-	  double tangent04 = (stress05 - stress04)/increment;
-	  double tangent05 = (stress06 - stress05)/increment;
-	  double tangent06 = (stress07 - stress06)/increment;
-	  double tangent07 = (stress08 - stress07)/increment;
-	  double tangent08 = (stress09 - stress08)/increment;
-	  double tangent09 = (fy - stress09)/increment;
-		
-
-	  if (TemperautreC >= 80){
-
-
-         if (Tstrain <= -EpsiYT) {
-            Tstress = -fy-b*E0*(-Tstrain-EpsiYT);
-		     Ttangent = b*E0;
-	      }
-	      else if (Tstrain <= -EpsiPT) {
-            //use ten lines to displace curve
-    		  if (Tstrain > -EpsiIncr1) {
-    		      Ttangent = tangent00;
-				  Tstress = -fp + tangent00*(Tstrain + EpsiPT);
-    		  }
-    		  else if (Tstrain > -EpsiIncr2) {
-			  Ttangent = tangent01;
-			  Tstress = -stress01 + tangent01*(Tstrain + EpsiIncr1);
-    		  }
-    		  else if (Tstrain > -EpsiIncr3) {
-			  Ttangent = tangent02;
-			  Tstress = -stress02 + tangent02*(Tstrain + EpsiIncr2);
-    		  }
-    		  else if (Tstrain > -EpsiIncr4) {
-			  Ttangent = tangent03;
-			  Tstress = -stress03 + tangent03*(Tstrain + EpsiIncr3);
-    		  }
-    		  else if (Tstrain > -EpsiIncr5) {
-			  Ttangent = tangent04;
-			  Tstress = -stress04 + tangent04*(Tstrain + EpsiIncr4);
-    		  }
-    		  else if (Tstrain > -EpsiIncr6) {
-			  Ttangent = tangent05;
-			  Tstress = -stress05 + tangent05*(Tstrain + EpsiIncr5);
-    		  }
-    		  else if (Tstrain > -EpsiIncr7) {
-			  Ttangent = tangent06;
-			  Tstress = -stress06 + tangent06*(Tstrain + EpsiIncr6);
-    		  }
-	    	  else if (Tstrain > -EpsiIncr8) {
-			  Ttangent = tangent07;
-			  Tstress = -stress07 + tangent07*(Tstrain + EpsiIncr7);
-	    	  }
-    		  else if (Tstrain > -EpsiIncr9) {
-			  Ttangent = tangent08;
-			  Tstress = -stress08 + tangent08*(Tstrain + EpsiIncr8);
-    		  }
-    		  else  {
-			  Ttangent = tangent09;
-			  Tstress = -stress09 + tangent09*(Tstrain + EpsiIncr9);
-    		  }
-             double a =0;
-
-	      }
-		  else if (Tstrain <= EpsiPT) {
-		  Tstress = Tstrain*E0;
-		  Ttangent = E0;
-	      }
-	      else if (Tstrain<=EpsiYT) {
-
-            //use ten lines to displace curve
-    		  if (Tstrain < EpsiIncr1) {
-    		      Ttangent = tangent00;
-				  Tstress = fp + tangent00*(Tstrain - EpsiPT);
-    		  }
-    		  else if (Tstrain < EpsiIncr2) {
-			  Ttangent = tangent01;
-			  Tstress = stress01 + tangent01*(Tstrain - EpsiIncr1);
-    		  }
-    		  else if (Tstrain < EpsiIncr3) {
-			  Ttangent = tangent02;
-			  Tstress = stress02 + tangent02*(Tstrain - EpsiIncr2);
-    		  }
-    		  else if (Tstrain < EpsiIncr4) {
-			  Ttangent = tangent03;
-			  Tstress = stress03 + tangent03*(Tstrain - EpsiIncr3);
-    		  }
-    		  else if (Tstrain < EpsiIncr5) {
-			  Ttangent = tangent04;
-			  Tstress = stress04 + tangent04*(Tstrain - EpsiIncr4);
-    		  }
-    		  else if (Tstrain < EpsiIncr6) {
-			  Ttangent = tangent05;
-			  Tstress = stress05 + tangent05*(Tstrain - EpsiIncr5);
-    		  }
-    		  else if (Tstrain < EpsiIncr7) {
-			  Ttangent = tangent06;
-			  Tstress = stress06 + tangent06*(Tstrain - EpsiIncr6);
-    		  }
-	    	  else if (Tstrain < EpsiIncr8) {
-			  Ttangent = tangent07;
-			  Tstress = stress07 + tangent07*(Tstrain - EpsiIncr7);
-	    	  }
-    		  else if (Tstrain < EpsiIncr9) {
-			  Ttangent = tangent08;
-			  Tstress = stress08 + tangent08*(Tstrain - EpsiIncr8);
-    		  }
-    		  else  {
-			  Ttangent = tangent09;
-			  Tstress = stress09 + tangent09*(Tstrain - EpsiIncr9);
-    		  }
-
-			  double randomT = 0;
-
-
-
-
-
-	      }
-	      else  {
-          Tstress = fy+b*E0*(Tstrain-EpsiYT);
-		  Ttangent = b*E0;
-	      }
-
-
-      }	*/
-//*********E
-
-/*
-		  if (Tstrain < EpsiIncr1) {
-		  Ttangent = BT*(EpsiYT - EpsiPT)/(AT*pow((AT*AT-(EpsiYT - EpsiPT)*(EpsiYT - EpsiPT)),0.5));
-		  }
-		  else if (Tstrain < EpsiIncr2) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr1)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr1)*(EpsiYT - EpsiIncr1)),0.5));
-		  }
-		  else if (Tstrain < EpsiIncr3) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr2)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr2)*(EpsiYT - EpsiIncr2)),0.5));
-		  }
-		  else if (Tstrain < EpsiIncr4) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr3)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr3)*(EpsiYT - EpsiIncr3)),0.5));
-		  }
-		  else if (Tstrain < EpsiIncr5) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr4)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr4)*(EpsiYT - EpsiIncr4)),0.5));
-		  }
-		  else if (Tstrain < EpsiIncr6) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr5)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr5)*(EpsiYT - EpsiIncr5)),0.5));
-		  }
-		  else if (Tstrain < EpsiIncr7) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr6)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr6)*(EpsiYT - EpsiIncr6)),0.5));
-		  }
-		  else if (Tstrain < EpsiIncr8) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr7)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr7)*(EpsiYT - EpsiIncr7)),0.5));
-		  }
-		  else if (Tstrain < EpsiIncr9) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr8)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr8)*(EpsiYT - EpsiIncr8)),0.5));
-		  }
-		  else  {
-			  Ttangent = BT*(EpsiYT - EpsiIncr9)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr9)*(EpsiYT - EpsiIncr9)),0.5));
-		  }
-
-
-
-
-
-
-		  if (Tstrain > -EpsiIncr1) {
-		  Ttangent = BT*(EpsiYT - EpsiPT)/(AT*pow((AT*AT-(EpsiYT - EpsiPT)*(EpsiYT - EpsiPT)),0.5));
-		  }
-		  else if (Tstrain > -EpsiIncr2) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr1)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr1)*(EpsiYT - EpsiIncr1)),0.5));
-		  }
-		  else if (Tstrain > -EpsiIncr3) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr2)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr2)*(EpsiYT - EpsiIncr2)),0.5));
-		  }
-		  else if (Tstrain > -EpsiIncr4) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr3)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr3)*(EpsiYT - EpsiIncr3)),0.5));
-		  }
-		  else if (Tstrain > -EpsiIncr5) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr4)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr4)*(EpsiYT - EpsiIncr4)),0.5));
-		  }
-		  else if (Tstrain > -EpsiIncr6) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr5)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr5)*(EpsiYT - EpsiIncr5)),0.5));
-		  }
-		  else if (Tstrain > -EpsiIncr7) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr6)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr6)*(EpsiYT - EpsiIncr6)),0.5));
-		  }
-		  else if (Tstrain > -EpsiIncr8) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr7)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr7)*(EpsiYT - EpsiIncr7)),0.5));
-		  }
-		  else if (Tstrain > -EpsiIncr9) {
-			  Ttangent = BT*(EpsiYT - EpsiIncr8)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr8)*(EpsiYT - EpsiIncr8)),0.5));
-		  }
-		  else {
-			  Ttangent = BT*(EpsiYT - EpsiIncr9)/(AT*pow((AT*AT-(EpsiYT - EpsiIncr9)*(EpsiYT - EpsiIncr9)),0.5));
-		  }
-*/
-
-
-
-/*
-         //EN 1993-1-2 steel
-	      if (Tstrain>=EpsiYT) {
-          Tstress = fy+b*E0*(Tstrain-EpsiYT);
-		  Ttangent = b*E0;
-	      }
-	      else if (Tstrain>=EpsiPT) {
-          Tstress = fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT - Tstrain)*(EpsiYT - Tstrain)),0.5);
-		  Ttangent = BT*(EpsiYT - Tstrain)/(AT*pow((AT*AT-(EpsiYT - Tstrain)*(EpsiYT - Tstrain)),0.5));
-	      }
-		  else if (Tstrain>=-EpsiPT) {
-		  Tstress = Tstrain*E0;
-		  Ttangent = E0;
-	      }
-	      else if (Tstrain>=-EpsiYT) {
-          Tstress = -(fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT + Tstrain)*(EpsiYT + Tstrain)),0.5));
-		  Ttangent = BT*(EpsiYT - Tstrain)/(AT*pow((AT*AT-(EpsiYT - Tstrain)*(EpsiYT - Tstrain)),0.5));
-	      }
-	      else {
-          Tstress = -fy-b*E0*(-Tstrain-EpsiYT);
-		  Ttangent = b*E0;
-	      }
-
-
-		  //add revised hardening part of steel under the temperature lower than 400C
-		  double fh = 4.615e8; //yield stress while lower than 300C
-		  double EpsiHT = 0.04; //yield strain while lower than 300C
-		  
-		  if ( TemperautreC <= 280) {
-			  if (Tstrain > EpsiYT && Tstrain <= EpsiHT) {
-				  Ttangent = (fh - fy)/(EpsiHT - EpsiYT);
-				  Tstress = fy + Ttangent * (Tstrain - EpsiYT);
-			  }
-			  if (Tstrain > EpsiHT) {
-				  Tstress = fh + Ttangent * (Tstrain - EpsiHT);
-			  }
-			  if (Tstrain < -EpsiYT && Tstrain >= -EpsiHT) {
-				  Ttangent = (fh - fy)/(EpsiHT - EpsiYT);
-				  Tstress = -fy + Ttangent * (Tstrain + EpsiYT);
-			  }
-			  if (Tstrain < -EpsiHT) {
-				  Tstress = -fh + Ttangent * (Tstrain + EpsiHT);
-			  }
-		  }
-
-		  if ( TemperautreC > 280 && TemperautreC < 380) {
-			  if (Tstrain > EpsiYT && Tstrain <= EpsiHT) {
-				  Ttangent = (fh - fy)/(EpsiHT - EpsiYT) - ((fh - fy)/(EpsiHT - EpsiYT) - 0.7*E0T*b)/100*(TemperautreC-280);
-				  Tstress = fy + Ttangent * (Tstrain - EpsiYT);
-			  }
-			  if (Tstrain > EpsiHT) {
-				  Tstress = fh - (fh - (fy + (EpsiHT-EpsiYT))*0.7*E0T*b)/100 * (TemperautreC-280) + Esh*(Tstrain-EpsiHT);
-			  }
-			  if (Tstrain < -EpsiYT && Tstrain >= EpsiHT) {
-				  Ttangent = (fh - fy)/(EpsiHT - EpsiYT) - ((fh - fy)/(EpsiHT - EpsiYT) - 0.7*E0T*b)/100*(TemperautreC-280);
-				  Tstress = -fy + Ttangent * (Tstrain + EpsiYT);
-			  }
-			  if (Tstrain < -EpsiHT) {
-				  Tstress = -(fh - (fh - (fy + (EpsiHT-EpsiYT))*0.7*E0T*b)/100 * (TemperautreC-280)) + Esh*(Tstrain+EpsiHT);
-			  }
-		  }
-*/
-
-
-
-
-
-
-
-
-
-
-		  
-
-/*
-		  if (Tstrain<=EpsiPT && Tstrain>=-EpsiPT) {
-		  Tstress = Tstrain*E0;
-		  Ttangent = E0;
-	      }
-	      else if (Tstrain>=EpsiPT && Tstrain<=EpsiYT) {
-          Tstress = fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT - Tstrain)*(EpsiYT - Tstrain)),0.5);
-		  Ttangent = BT*(EpsiYT - Tstrain)/(AT*pow((AT*AT-(EpsiYT - Tstrain)*(EpsiYT - Tstrain)),0.5));
-	      }
-	      else if (Tstrain<=-EpsiPT && Tstrain>=-EpsiYT) {
-          Tstress = -(fp - CT + (BT/AT)*pow((AT*AT - (EpsiYT + Tstrain)*(EpsiYT + Tstrain)),0.5));
-		  Ttangent = BT*(EpsiYT - Tstrain)/(AT*pow((AT*AT-(EpsiYT - Tstrain)*(EpsiYT - Tstrain)),0.5));
-	      }
-	      else if (Tstrain>=EpsiYT) {
-          Tstress = fy+b*E0*(Tstrain-EpsiYT);
-		  Ttangent = b*E0;
-	      }
-	      else if (Tstrain<=-EpsiYT) {
-          Tstress = -fy-b*E0*(-Tstrain-EpsiYT);
-		  Ttangent = b*E0;
-	      }
-*/
-
-
-
-/*	  double EpsiPT = fp/E0;
-	  double EpsiYT = 0.02;
-	  double Esec = (fy - fp)/(EpsiYT - EpsiPT);
-
-	  if (TemperautreC >= 80){
 	  
-		  if (Tstrain >= EpsiYT) {
-		  Tstress = fy + (Tstrain - EpsiYT)*Esh;
-		  Ttangent = Esh;
-		  } 
-		  else if (Tstrain >= EpsiPT) {
-		  Tstress = fp + (Tstrain - EpsiPT)*Esec;
-		  Ttangent = Esec;
-		  }
-		  else if (Tstrain >= -EpsiPT) {
-		  Tstress = Tstrain*E0;
-		  Ttangent = E0;
-		  }	  
-		  else if (Tstrain >= -EpsiYT) {
-		  Tstress = -fp + (Tstrain + EpsiPT)*Esec;
-		  Ttangent = Esec;
-		  }
-		  else  {
-		  Tstress = -fy + (Tstrain + EpsiYT)*Esh;
-		  Ttangent = Esh;
-		  }
-
-
-	  }
-*/
-
-
-
-
-
-      //
-      // Determine if a load reversal has occurred due to the trial strain
-      //
-
-      // Determine initial loading condition
       if (Tloading == 0 && dStrain != 0.0) {
 	  if (dStrain > 0.0)
 	    Tloading = 1;
@@ -665,7 +311,7 @@ void Steel01Thermal::detectLoadReversal (double dStrain)
    // Determine initial loading condition
    if (Tloading == 0 && dStrain != 0.0)
    {
-      if (dStrain > 0.0)
+      if (dStrain > 0.0) 
          Tloading = 1;
       else
          Tloading = -1;
@@ -789,7 +435,7 @@ Steel01Thermal::getElongTangent(double TempT, double &ET, double &Elong, double 
   }
   else if (TempT <= 880) {
     fy = fyT*(0.11 - (TempT - 780)*0.05/100);
-    E0 = E0T*(0.09 - (TempT - 780)*0.02/100);
+    E0 = E0T*(0.09 - (TempT - 780)*0.0225/100);
     
     //  b=0.0268-(TempT - 780)*0.0067/100;
     
@@ -797,7 +443,7 @@ Steel01Thermal::getElongTangent(double TempT, double &ET, double &Elong, double 
   }
   else if (TempT <= 980) {
     fy = fyT*(0.06 - (TempT - 880)*0.02/100);
-    E0 = E0T*(0.0675 - (TempT - 880)*(0.00675 - 0.0045)/100);
+    E0 = E0T*(0.0675 - (TempT - 880)*(0.0675 - 0.045)/100);
     
     //  b=0.0201-(TempT - 880)*0.0067/100;
     
@@ -805,7 +451,7 @@ Steel01Thermal::getElongTangent(double TempT, double &ET, double &Elong, double 
   }
   else if (TempT <= 1080) {
     fy = fyT*(0.04 - (TempT - 980)*0.02/100);
-    E0 = E0T*(0.045 - (TempT - 980)*(0.0045 - 0.00225)/100);
+    E0 = E0T*(0.045 - (TempT - 980)*(0.045 - 0.0225)/100);
     
     // b=0.0134-(TempT - 980)*0.0067/100;
     
@@ -887,7 +533,7 @@ else if (TempT <= 980){
   }
 else {fp = 0;}
 */
-
+  //ThermalElongation = 0 ;   //debug  Liming
   ET = E0;   
   Elong = ThermalElongation;
   TemperautreC = TempT;
@@ -1204,7 +850,7 @@ Steel01Thermal::getStressSensitivity(int gradIndex, bool conditional)
 	double bSensitivity = 0.0;
 	if (parameterID == 1) {
 		fySensitivity = 1.0;
-	}
+	} 
 	else if (parameterID == 2) {
 		E0Sensitivity = 1.0;
 	}

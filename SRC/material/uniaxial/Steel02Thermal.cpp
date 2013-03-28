@@ -124,7 +124,10 @@ Steel02Thermal::Steel02Thermal(int tag,
   ThermalElongation = 0; //initialize //JZ, 11/10//
   E0 = E0T;//JZ, 11/10//
   Fy = FyT;//JZ, 11/10//
-  
+  E0P= E0;  //Liming 2013
+  FyP= Fy;  //Liming 2013
+  FiberTP = 0; //Liming 2013
+
   konP = 0;
   kon = 0;
   eP = E0;
@@ -162,7 +165,9 @@ Steel02Thermal::Steel02Thermal(int tag,
 	  ThermalElongation = 0; //initialize //JZ, 11/10//
 	  E0 = E0T;//JZ, 11/10//
 	  Fy = FyT;//JZ, 11/10//
-
+	  E0P= E0;  //Liming 2013
+      FyP= Fy;  //liming 2013
+      FiberTP = 0; //Liming 2013
 
   konP = 0;
 
@@ -197,8 +202,9 @@ Steel02Thermal::Steel02Thermal(int tag, double _Fy, double _E0, double _b):
 	  ThermalElongation = 0; //initialize //JZ, 11/10//
 	  E0 = E0T;//JZ, 11/10//
 	  Fy = FyT;//JZ, 11/10//
-
-
+      E0P= E0;  //Liming 2013
+      FyP= Fy;  //liming 2013
+      FiberTP = 0; //Liming 2013
   konP = 0;
 
   // Default values for elastic to hardening transitions
@@ -258,81 +264,9 @@ Steel02Thermal::getInitialTangent(void)
 int
 Steel02Thermal::setTrialStrain(double trialStrain, double FiberTemperature, double strainRate)
 {
-  //JZ
-  // EN 1992 pt 1-2-1. Class N hot rolled  reinforcing steel at elevated temperatures
-  /*  if (TempT <= 80) {
-      fy = fyT;
-      E0 = E0T;
-      }
-      else if (TempT <= 180) {
-      fy = fyT;
-      E0 = E0T*(1 - (TempT - 80)*0.1/100);
-      
-      }
-      else if (TempT <= 280) {
-      fy = fyT;
-      E0 = E0T*(0.9 - (TempT - 180)*0.1/100);
-      }
-      else if (TempT <= 380) {
-      fy = fyT;
-      E0 = E0T*(0.8 - (TempT - 280)*0.1/100);
-      }
-      else if (TempT <= 480) {
-      fy = fyT*(1 - (TempT - 380)*0.22/100);
-      E0 = E0T*(0.7 - (TempT - 380)*0.1/100);
-      }
-      else if (TempT <= 580) {
-      fy = fyT*(0.78 - (TempT - 480)*0.31/100);
-	  E0 = E0T*(0.6 - (TempT - 480)*0.29/100);
-  }
-  else if (TempT <= 680) {
-      fy = fyT*(0.47 - (TempT - 580)*0.24/100);
-	  E0 = E0T*(0.31 - (TempT - 580)*0.18/100);
-  }
-  else if (TempT <= 780) {
-      fy = fyT*(0.23 - (TempT - 680)*0.12/100);
-	  E0 = E0T*(0.13 - (TempT - 680)*0.04/100);
-  }
-  else if (TempT <= 880) {
-      fy = fyT*(0.11 - (TempT - 780)*0.05/100);
-	  E0 = E0T*(0.09 - (TempT - 780)*0.02/100);
-  }
-  else if (TempT <= 980) {
-      fy = fyT*(0.06 - (TempT - 880)*0.02/100);
-	  E0 = E0T*(0.07 - (TempT - 880)*0.03/100);
-  }
-  else if (TempT <= 1080) {
-      fy = fyT*(0.04 - (TempT - 980)*0.02/100);
-	  E0 = E0T*(0.04 - (TempT - 980)*0.02/100);
-  }
-  else if (TempT <= 1180) {
-      fy = fyT*(0.02 - (TempT - 1080)*0.02/100);
-	  E0 = E0T*(0.02 - (TempT - 1080)*0.02/100);
-  }
-  else  {
-      opserr << "the temperature is invalid\n"; 
-  } 
-
-  // caculation of thermal elongation of reinforcing steel. JZ
-	  if (TempT <= 1) {
-		  ThermalElongation = TempT * 1.2164e-5;
-	  }
-  else if (TempT <= 730) {
-      ThermalElongation = -2.416e-4 + 1.2e-5 *(TempT+20) + 0.4e-8 *(TempT+20)*(TempT+20);
-  }
-  else if (TempT <= 840) {
-      ThermalElongation = 11e-3;
-  }
-  else if (TempT <= 1180) {
-      ThermalElongation = -6.2e-3 + 2e-5*TempT;
-  }
-  else {
-	  opserr << "the temperature is invalid\n";
-  }*/
-
-
   double Esh = b * E0;
   double epsy = Fy / E0;
+
 
   // modified C-P. Lamarche 2006
   if (sigini != 0.0) {
@@ -343,7 +277,33 @@ Steel02Thermal::setTrialStrain(double trialStrain, double FiberTemperature, doub
    // modified C-P. Lamarche 2006
 
   double deps = eps - epsP;
+  
+// ---------------Initiating for New Thermal-load step, added by Liming
+  double epsyP = FyP/E0P;
+  if(fabs(epsmaxP-epsyP)<1e-6)
+	  epsmaxP = epsy;
+  
+  if(fabs(epsminP+epsyP)<1e-6)
+	  epsminP = -epsy;
 
+   if(fabs(epsplP-epsyP)<1e-6)
+	  epsplP = epsy;
+  
+  if(fabs(epsplP+epsyP)<1e-6)
+	  epsplP = -epsy;
+
+   if(fabs(epss0P-epsyP)<1e-6)
+	  epss0P = epsy;
+  
+  if(fabs(epss0P+epsyP)<1e-6)
+	  epss0P = -epsy;
+
+   if(fabs(sigs0P-FyP)<1e-6)
+	  sigs0P = Fy;
+  
+   if(fabs(sigs0P+FyP)<1e-6)
+	  sigs0P = -Fy;
+   //---------
 
   epsmax = epsmaxP;
   epsmin = epsminP;
@@ -390,7 +350,7 @@ Steel02Thermal::setTrialStrain(double trialStrain, double FiberTemperature, doub
   // asymptote by sigsft before calculating the intersection point 
   // Constants a3 and a4 control this stress shift on the tension side 
   
-  if (kon == 2 && deps > 0.0) {
+  if (kon == 2 && FiberTemperature<FiberTP && deps > 0.0) {
 
 
     kon = 1;
@@ -405,7 +365,7 @@ Steel02Thermal::setTrialStrain(double trialStrain, double FiberTemperature, doub
     sigs0 = Fy * shft + Esh * (epss0 - epsy * shft);
     epspl = epsmax;
 
-  } else if (kon == 1 && deps < 0.0) {
+  } else if (kon == 1 && FiberTemperature<FiberTP && deps < 0.0) {
     
     // update the maximum previous strain, store the last load reversal 
     // point and calculate the stress and strain (sigs0 and epss0) at the 
@@ -443,6 +403,8 @@ Steel02Thermal::setTrialStrain(double trialStrain, double FiberTemperature, doub
   e = b + (1.0-b)/(dum1*dum2);
   e = e*(sigs0-sigr)/(epss0-epsr);
 
+  FiberTP=FiberTemperature;
+	  
   return 0;
 }
 
@@ -467,22 +429,12 @@ Steel02Thermal::getTangent(void)
 }
 
 
-//??????? useful? or not?
-double 
-Steel02Thermal::getThermalElongation(void) //***JZ
-{
-  return ThermalElongation;
-}
-
-
 
 //JZ 07/10 /////////////////////////////////////////////////////////////start
 double 
 Steel02Thermal::getElongTangent(double TempT, double&ET, double&Elong, double TempTmax) //PK add to include max temp
 {
- //JZ
-   
-	// EN 1992 pt 1-2-1. Class N hot rolled  reinforcing steel at elevated temperatures
+	// EN 1992 pt 1-2-1. Carbon steel at elevated temperatures
   if (TempT <= 80) {
 		Fy = FyT;
 		E0 = E0T;
@@ -518,25 +470,26 @@ Steel02Thermal::getElongTangent(double TempT, double&ET, double&Elong, double Te
   }
   else if (TempT <= 880) {
       Fy = FyT*(0.11 - (TempT - 780)*0.05/100);
-	  E0 = E0T*(0.09 - (TempT - 780)*0.02/100);
+	  E0 = E0T*(0.09 - (TempT - 780)*0.0225/100);
   }
   else if (TempT <= 980) {
       Fy = FyT*(0.06 - (TempT - 880)*0.02/100);
-	  E0 = E0T*(0.07 - (TempT - 880)*0.03/100);
+	  E0 = E0T*(0.0675 - (TempT - 880)*0.0225/100);
   }
   else if (TempT <= 1080) {
       Fy = FyT*(0.04 - (TempT - 980)*0.02/100);
-	  E0 = E0T*(0.04 - (TempT - 980)*0.02/100);
+	  E0 = E0T*(0.045 - (TempT - 980)*0.0225/100);
   }
   else if (TempT <= 1180) {
       Fy = FyT*(0.02 - (TempT - 1080)*0.02/100);
-	  E0 = E0T*(0.02 - (TempT - 1080)*0.02/100);
+	  E0 = E0T*(0.0225 - (TempT - 1080)*0.0225/100);
   }
   else  {
       opserr << "the temperature is invalid\n"; 
   } 
 
   // caculation of thermal elongation of reinforcing steel. JZ
+ //opserr<<TempT<<endln;
 	  if (TempT <= 1) {
 		  ThermalElongation = TempT * 1.2164e-5;
 	  }
@@ -547,7 +500,7 @@ Steel02Thermal::getElongTangent(double TempT, double&ET, double&Elong, double Te
       ThermalElongation = 11e-3;
   }
   else if (TempT <= 1180) {
-      ThermalElongation = -6.2e-3 + 2e-5*TempT;
+      ThermalElongation = -6.2e-3 + 2e-5*(TempT+20);
   }
   else {
 	  opserr << "the temperature is invalid\n";
@@ -570,11 +523,9 @@ else if (TempT <= 980){
 	Fy = FyT*(0.2-0.2/300*(TempT-680));
   }
 */
-
+  
   ET = E0;   
   Elong = ThermalElongation;
-
-
   return 0;
 }
 //JZ 07/10 /////////////////////////////////////////////////////////////end 
@@ -590,11 +541,13 @@ Steel02Thermal::commitState(void)
   epssrP = epsr;
   sigsrP = sigr;
   konP = kon;
-  
+
   eP = e;
   sigP = sig;
   epsP = eps;
 
+  E0P = E0;  //Added by liming for tracking the initial stiffnes change
+  FyP = Fy;  //Added by liming for tracking the yield stress change
   return 0;
 }
 
@@ -613,6 +566,8 @@ Steel02Thermal::revertToLastCommit(void)
   e = eP;
   sig = sigP;
   eps = epsP;
+   E0 = E0P;  //Added by liming for tracking the initial stiffnes change
+   Fy = FyP;  //Added by liming for tracking the yield stress change
   return 0;
 }
 
