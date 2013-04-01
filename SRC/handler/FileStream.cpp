@@ -38,7 +38,7 @@ using std::setiosflags;
 
 FileStream::FileStream(int indent)
   :OPS_Stream(OPS_STREAM_TAGS_FileStream), 
-   fileOpen(0), fileName(0), indentSize(indent), sendSelfCount(0)
+   fileOpen(0), fileName(0), filePrecision(6), indentSize(indent), sendSelfCount(0)
 {
   if (indentSize < 1) indentSize = 1;
   indentString = new char[indentSize+1];
@@ -49,7 +49,7 @@ FileStream::FileStream(int indent)
 
 FileStream::FileStream(const char *name, openMode mode, int indent)
   :OPS_Stream(OPS_STREAM_TAGS_FileStream), 
-   fileOpen(0), fileName(0), indentSize(indent), sendSelfCount(0)
+   fileOpen(0), fileName(0), filePrecision(6), indentSize(indent), sendSelfCount(0)
 {
   if (indentSize < 1) indentSize = 1;
   indentString = new char[indentSize+1];
@@ -162,6 +162,9 @@ FileStream::open(void)
   } else
     fileOpen = 1;
 
+
+  theFile << std::setprecision(filePrecision);
+
   return 0;
 }
 
@@ -179,8 +182,10 @@ FileStream::close(void)
 int 
 FileStream::setPrecision(int prec)
 {
-  if (fileOpen == 0)
-    this->open();
+  //  if (fileOpen == 0)
+  //    this->open();
+
+  filePrecision = prec;
 
   if (fileOpen != 0)
     theFile << std::setprecision(prec);

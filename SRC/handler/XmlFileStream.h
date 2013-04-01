@@ -96,6 +96,7 @@ class XmlFileStream : public OPS_Stream
   int fileOpen;
   openMode theOpenMode;
   char *fileName;
+  int filePrecision;
 
   void indent(void);
   int indentSize;
