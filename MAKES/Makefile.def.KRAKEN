@@ -16,9 +16,9 @@
 
 # steps to install OpenSees on kraken
 #  1) mkdir lib and bin if they do not exist in your home directory
-#  2) module subversion
-#  3) svn co svn://opensees.berkeley.edu/usr/local/svn/OpenSees
-#  4) module load petsc
+#  2) svn co svn://opensees.berkeley.edu/usr/local/svn/OpenSees
+#  3) module swap PrgEnv-pgi PrgEnv-intel
+#  3) module load mumps
 #  5) download tcl src code 
 #  6) cd ~/tcl.../unix
 #  7) CC=cc
@@ -30,6 +30,9 @@
 # 13) cp ./MAKES/Makefile.def.Kraken ./Makefile.def
 # 14) edit Makefile.def and change programming mode if want other .exe
 # 15) make wipe; make for each
+
+# 16) when running - ~/tcl/lib/tcl8.5 must be copied to lustre file system
+#                   + OpenSees exe and the input files must also be in lustre
 
 BASE  = /usr
 FE    = $(HOME)/OpenSees/SRC
@@ -71,8 +74,9 @@ ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
 UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
 METISdir     = $(HOME)/OpenSees/OTHER/METIS
 SRCdir       = $(HOME)/OpenSees/SRC
-SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_3.0/SRC
+SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_4.1/SRC
 SUPERLU_DISTdir   = $(HOME)/OpenSees/OTHER/SuperLU_DIST_2.5/SRC
+CSPARSEdir = $(HOME)/OpenSees/OTHER/CSPARSE
 
 DIRS        = $(SUPERLUdir) \
 	$(SUPERLU_DISTdir) \
@@ -81,6 +85,7 @@ DIRS        = $(SUPERLUdir) \
 	$(UMFPACKdir) \
 	$(AMDdir) \
 	$(METISdir) \
+	$(CSPARSEdir) \
 	$(SRCdir) 
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
@@ -92,6 +97,7 @@ DIRS        = \
 	$(UMFPACKdir) \
 	$(METISdir) \
 	$(AMDdir) \
+	$(CSPARSEdir) \
 	$(SRCdir) 
 endif
 
@@ -122,7 +128,7 @@ CBLAS_LIBRARY       = $(HOME)/lib/libCBlas.a
 ARPACK_LIBRARY      = $(HOME)/lib/libArpack.a
 UMFPACK_LIBRARY     = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY       = $(HOME)/lib/libMetis.a
-
+CSPARSE_LIBRARY = $(HOME)/lib/libCSparse.a
 DISTRIBUTED_SUPERLU_LIBRARY     = $(HOME)/lib/libDistributedSuperLU.a
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
@@ -314,7 +320,7 @@ PETSC_LIB =  -L$(PETSC_DIR)/lib/libO_c++/$(PETSC_ARCH) \
 endif
 
 
-HAVEMUMPS = YES
+HAVEMUMPS = NO
 MUMPS_INCLUDE =
 MUMPS_LIB = 
 
@@ -330,22 +336,27 @@ MUMPS_FLAG = -D_MUMPS
 
 #SCALAP  = $(BLACSlib) $(SCALAPlib) $(BLACSlib)
 
-MUMPS_LIB = -L$(MUMPS_DIR)/lib \
+
+MUMPS_LIB = -L$(MUMPS_PATH) \
 	$(FE)/system_of_eqn/linearSOE/mumps/MumpsSOE.o \
 	$(FE)/system_of_eqn/linearSOE/mumps/MumpsSolver.o \
 	$(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSOE.o \
 	$(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.o \
-	  -ldmumps -lpord
+	 -lcmumps  -ldmumps -lmumps_common -lpord
 
-MUMPS_INCLUDE = -I$(MUMPS_DIR)/include
+MUMPS_INCLUDE = $(MUMPS_PATH)
+#MUMPS_INCLUDE = -I$(MUMPS_DIR)/include
 
 endif
 
-PARALLEL_LIB = 	
 
+PARALLEL_LIB = $(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
+$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o 
 
 ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
-PARALLEL_LIB = 	
+PARALLEL_LIB = $(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
+$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o 
+
 endif
 
 
@@ -366,7 +377,8 @@ MACHINE_NUMERICAL_LIBS  = \
   $(GRAPHIC_LIBRARY)\
   $(RELIABILITY_LIBRARY) \
   $(DISTRIBUTED_SUPERLU_LIBRARY) \
-  $(METIS_LIBRARY) $(PETSC_LIB) $(MUMPS_LIB) $(PARALLEL_LIB) $(CBLAS_LIBRARY)
+  $(CSPARSE_LIBRARY) \
+  $(METIS_LIBRARY) $(PETSC_LIB) $(MUMPS_LIB) $(CBLAS_LIBRARY)
   
 #MACHINE_SPECIFIC_LIBS =   -static-intel -L$(IFC_LIB) -lifcore
 MACHINE_SPECIFIC_LIBS =  $(FE)/tcl/tclMain.o 
