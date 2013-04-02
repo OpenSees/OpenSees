@@ -16,15 +16,15 @@
 
 # module load devel
 
-HOME  = /home/neeshub1/fmk
+HOME  = /home/neeshub1/fmkCarter
 
 BASE  = 
 
 FE    = $(HOME)/OpenSees/SRC
 
 #PROGRAMMING_MODE = SEQUENTIAL
-#PROGRAMMING_MODE = PARALLEL
-PROGRAMMING_MODE = PARALLEL_INTERPRETERS
+PROGRAMMING_MODE = PARALLEL
+#PROGRAMMING_MODE = PARALLEL_INTERPRETERS
 
 
 OpenSees_PROGRAM = $(HOME)/bin/OpenSees
@@ -385,6 +385,7 @@ else
 
 PARALLEL_LIB = $(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
         -Wl,-rpath,$(MKL_LIB) \
 	-L$(MKL_LIB) \
 	$(MKL_LIB)/libmkl_scalapack_lp64.a \
@@ -394,10 +395,11 @@ PARALLEL_LIB = $(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLi
 	$(MKL_LIB)/libmkl_core.a \
 	$(MKL_LIB)/libmkl_sequential.a \
 	$(MKL_LIB)/libmkl_core.a \
-	-L$(MPI_LIB) -lmpi_f77
+	-L$(MPI_LIB) -lmpi
 
 #	$(LINK_LAPACK95) \
 #	     	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
+
 
 endif
 
@@ -415,7 +417,7 @@ MACHINE_NUMERICAL_LIBS  = -lm \
   $(GRAPHIC_LIBRARY)\
   $(RELIABILITY_LIBRARY) \
   $(DISTRIBUTED_SUPERLU_LIBRARY) $(CSPARSE_LIBRARY) -L$(INTEL_LIB) -lifcore \
-  $(METIS_LIBRARY) $(PETSC_LIB) $(MUMPS_LIB)  $(CBLAS_LIBRARY) 
+  $(METIS_LIBRARY) $(PETSC_LIB) $(MUMPS_LIB)  $(CBLAS_LIBRARY) -lsvml
   
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
@@ -424,7 +426,7 @@ MACHINE_SPECIFIC_LIBS =   -mkl=sequential -static-intel -L$(INTEL_LIB) -lifcore
 
 else
 
-MACHINE_SPECIFIC_LIBS = -static-intel $(PARELLEL_LIB) -L$(INTEL_LIB) -lifcore 
+MACHINE_SPECIFIC_LIBS = $(PARELLEL_LIB) -L$(INTEL_LIB) -lifcore -lmpi 
 
 endif
 
