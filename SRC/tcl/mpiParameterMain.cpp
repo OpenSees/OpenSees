@@ -255,7 +255,7 @@ main(int argc, char **argv)
       if (argv[i] == NULL) {
 	i = argc+1;
       } else {
-	numArg ++;
+	numArg++;
 	sizeArg += strlen(argv[i])+1;
       }
 
@@ -267,8 +267,10 @@ main(int argc, char **argv)
     int loc = 0;
     for (int i=0; i<numArg; i++) {
       int lengthArg = strlen(argv[i]);
-      strncpy(&dataArgs[loc], argv[i],lengthArg+1);
-      loc+=lengthArg+1;
+      strncpy(&dataArgs[loc], argv[i],lengthArg);
+      loc += lengthArg;
+      dataArgs[loc] = '\0';
+      loc++; 
     }
 
     Message msgChar(dataArgs, sizeArg);
@@ -286,6 +288,7 @@ main(int argc, char **argv)
 
     Channel *myChannel = theMachine.getMyChannel();
     OPS_theChannels[0] = myChannel;
+
     myChannel->recvID(0,0,data);
     numArg = data(0);
     sizeArg = data(1);
@@ -293,16 +296,19 @@ main(int argc, char **argv)
     Message msgChar(dataArgs, sizeArg);
     
     myChannel->recvMsg(0,0,msgChar);
+
   }
+
 
   args = new char *[numArg];
   args[0] = dataArgs;
   int argCount = 1;
   for (int j=1; j<sizeArg-1; j++)
-    if (dataArgs[j] == '\0') {
+    if (argCount < numArg && dataArgs[j] == '\0') {
       args[argCount] = &dataArgs[j+1];
       argCount++;
     }
+
 
   OpenSeesParseArgv(argc, argv);  
 
@@ -321,6 +327,9 @@ main(int argc, char **argv)
 #ifdef TCL_LOCAL_MAIN_HOOK
   TCL_LOCAL_MAIN_HOOK(&argc, &argv);
 #endif
+
+
+//g3TclMain(argc, argv, TCL_LOCAL_APPINIT,OPS_rank, OPS_np);
 
   g3TclMain(numArg, args, TCL_LOCAL_APPINIT, OPS_rank, OPS_np);
 

@@ -235,7 +235,9 @@ g3TclMain(int argc, char **argv, Tcl_AppInitProc * appInitProc, int rank, int np
     }
 #endif
 
+
     Tcl_FindExecutable(argv[0]);
+
     interp = Tcl_CreateInterp();
 
     numParam = OpenSeesParseArgv(argc, argv);
