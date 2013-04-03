@@ -52,7 +52,7 @@ ElementParameter::ElementParameter(int passedTag,
     argvSize = strlen(theArgv[0]) + 1;
 
     for (int i=1; i< argc; i++) {
-      int lengthArgvI = strlen(theArgv[i]);
+      int lengthArgvI = strlen(theArgv[i-1]);
       argv[i] = argv[i-1]+lengthArgvI+1;
       strcpy(argv[i], theArgv[i]);
       argvSize += lengthArgvI + 1;
