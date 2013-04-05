@@ -220,13 +220,10 @@ EnvelopeNodeRecorder::~EnvelopeNodeRecorder()
   if (theNodes != 0)
     delete [] theNodes;
 
-  if (theTimeSeries != 0)
-    delete theTimeSeries;
-
   if (theTimeSeries != 0) {
     for (int i=0; i<numDOF; i++)
       delete theTimeSeries[i];
-    delete theTimeSeries;
+    delete [] theTimeSeries;
   }
 }
 

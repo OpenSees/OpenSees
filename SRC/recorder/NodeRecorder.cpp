@@ -206,7 +206,7 @@ NodeRecorder::~NodeRecorder()
   if (theTimeSeries != 0) {
     for (int i=0; i<numDOF; i++)
       delete theTimeSeries[i];
-    delete theTimeSeries;
+    delete [] theTimeSeries;
   }
 
 }
