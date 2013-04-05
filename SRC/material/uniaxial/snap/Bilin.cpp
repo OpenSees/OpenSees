@@ -28,10 +28,18 @@
 
 #include <OPS_Globals.h>
 
+#ifdef _USRDLL
+#define OPS_Export extern "C" _declspec(dllexport)
+#elif _MACOSX
+#define OPS_Export extern "C" __attribute__((visibility("default")))
+#else
+#define OPS_Export extern "C"
+#endif
+
 static int numBilinMaterials = 0;
 
-void *
-OPS_Bilin(void)
+OPS_Export void *
+OPS_Bilin()
 {
   if (numBilinMaterials == 0) {
     numBilinMaterials++;
@@ -78,7 +86,7 @@ Bilin::Bilin(int tag, double p_Ke,double p_AsPos,double p_AsNeg,double p_My_pos,
 	     double p_LamdaD,double p_LamdaA,double p_LamdaK,double p_Cs,double p_Cd,double p_Ca,double p_Ck,
 	     double p_Thetap_pos,double p_Thetap_neg,double p_Thetapc_pos,double p_Thetapc_neg,double p_KPos,double p_KNeg,
 	     double p_Thetau_pos,double p_Thetau_neg,double p_PDPlus,double p_PDNeg) 
-:UniaxialMaterial(tag, MAT_TAG_Bilin),Ke(p_Ke), AsPos(p_AsPos), AsNeg(p_AsNeg), My_pos(p_My_pos), My_neg(p_My_neg), 
+:UniaxialMaterial(tag, 0),Ke(p_Ke), AsPos(p_AsPos), AsNeg(p_AsNeg), My_pos(p_My_pos), My_neg(p_My_neg), 
  LamdaS(p_LamdaS), LamdaK(p_LamdaK),LamdaA(p_LamdaA),LamdaD(p_LamdaD), Cs(p_Cs), Ck(p_Ck), Ca(p_Ca),Cd(p_Cd),
  Thetap_pos(p_Thetap_pos), Thetap_neg(p_Thetap_neg), Thetapc_pos(p_Thetapc_pos),Thetapc_neg(p_Thetapc_neg),
  KPos(p_KPos), KNeg(p_KNeg),Thetau_pos(p_Thetau_pos), Thetau_neg(p_Thetau_neg), PDPlus(p_PDPlus), PDNeg(p_PDNeg)
@@ -89,7 +97,7 @@ Bilin::Bilin(int tag, double p_Ke,double p_AsPos,double p_AsNeg,double p_My_pos,
 }
 
 Bilin::Bilin()
-:UniaxialMaterial(0, MAT_TAG_Bilin),
+:UniaxialMaterial(0, 0),
  Ke(0), AsPos(0), AsNeg(0), My_pos(0), My_neg(0), 
  LamdaS(0), LamdaD(0),LamdaA(0),LamdaK(0), Cs(0), Cd(0), Ca(0),Ck(0),
  Thetap_pos(0), Thetap_neg(0), Thetapc_pos(0),Thetapc_neg(0),
@@ -839,7 +847,7 @@ double deltaD,d,temp_1,temp,betas,betak,betad,
 
 ////	energy CALCULATIONS ---------------------------------------------
 
-	  if((flagstopdeg==0)&&(flagdeg==1)) {
+	  if((flagstopdeg==0)&&(flagdeg==0)) {
         
 		if((Enrgtot>=Enrgts)&&(Enrgts!=0.0)) {
 			betas = 1.0;
