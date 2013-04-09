@@ -848,3 +848,12 @@ const char *OPS_GetInterpPWD()
 {
   return getInterpPWD(theInterp);
 }
+LimitCurve *
+OPS_GetLimitCurve(int LimCrvTag)
+{
+
+}
+Domain *OPS_GetDomain(void)
+{
+  return theDomain;
+}
