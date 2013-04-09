@@ -33,7 +33,6 @@ include ../../../Makefile.def
 	ENTMaterial.o \
 	FedeasMaterial.o \
 	DrainMaterial.o \
-	BraceMaterial.o \
 	BoucWenMaterial.o \
 	SecantConcrete.o \
 	HardeningMaterial2.o \
