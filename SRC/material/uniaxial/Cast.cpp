@@ -55,7 +55,7 @@ OPS_Cast(void)
 {
 	if (numCastMaterials == 0) {
 		numCastMaterials++;
-		OPS_Error("Cast Fuse uniaxial material - Written by Dimitrios G. Lignos, Ph.D.\n", 1);
+		opserr << "Cast Fuse uniaxial material - Written by Dimitrios G. Lignos, Ph.D.\n";
 	}
 	
 	// Pointer to a uniaxial material that will be returned
@@ -292,7 +292,7 @@ double  epsmaxr = epsmaxrP;
     epsr = epsP;
 
 	// MG: This ensures that in the case where post-yeilding is applied it isn't double counted
-  if (eps > 0 && sig > 0 || eps < 0 && sig < 0) {
+    if ((eps > 0 && sig > 0) || (eps < 0 && sig < 0)) {
 	  sigr = sigP * cos(2.0*epsP/l);
   } else {
       sigr = sigP;
@@ -340,7 +340,7 @@ double  epsmaxr = epsmaxrP;
     epsr = epsP;
 
 	// MG: This ensures that in the case where post-yeilding is applied it isn't double counted
-  if (eps > 0 && sig > 0 || eps < 0 && sig < 0) {
+    if ((eps > 0 && sig > 0) || (eps < 0 && sig < 0)) {
 	  sigr = sigP * cos(2.0*epsP/l);
   } else {
       sigr = sigP;
@@ -400,7 +400,7 @@ double  epsmaxr = epsmaxrP;
   // this is not technically correct but it fixes the problem that occurs when there is a load
   // reversal in the elastic rebound
 
-  if (eps > 0 && sig > 0 || eps < 0 && sig < 0) {
+  if ((eps > 0 && sig > 0) || (eps < 0 && sig < 0)) {
 	  sig = sig/cos(2.0*eps/l);
 	  e = ((sigr - sigs0)*(b/(epsr - epss0) - (b - 1)/((epsr - epss0)*pow(pow((fabs(eps - epsr)/fabs(epsr - epss0)),R) + 1,(1/R))) + (sign*(eps - epsr)*pow(fabs(eps - epsr)/fabs(epsr - epss0),(R - 1))*(b - 1))/(fabs(epsr - epss0)*(epsr - epss0)*pow(pow(fabs(eps - epsr)/fabs(epsr - epss0),R) + 1,(1/R + 1)))))/cos((2*eps)/l) + (2*sin((2*eps)/l)*(sigr + ((b*(eps - epsr))/(epsr - epss0) - ((eps - epsr)*(b - 1))/((epsr - epss0)*pow(pow(fabs(eps - epsr)/fabs(epsr - epss0),R) + 1,(1/R))))*(sigr - sigs0)))/(l*pow(cos((2*eps)/l),2));
   } else {

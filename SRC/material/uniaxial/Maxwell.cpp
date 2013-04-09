@@ -44,7 +44,7 @@ OPS_Maxwell()
 {
   if (numMaxwellMaterials == 0) {
     numMaxwellMaterials++;
-    OPS_Error("Maxwell Model - D.Lignos, McGill University\n", 1);
+    opserr << "Maxwell Model - D.Lignos, McGill University\n";
   }
   
   // Pointer to a uniaxial material that will be returned
@@ -154,7 +154,7 @@ Maxwell::setTrialStrain(double strain, double strainRate)
   Tstress = Dstress + Tstress;
   Tstrain = strain;
 
-  double DTangent = Tstress/Tstrain;
+  //  double DTangent = Tstress/Tstrain;
   
   return 0;
 }

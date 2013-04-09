@@ -10,6 +10,7 @@ include ../../../Makefile.def
 	Neoprene.o \
 	Maxwell.o \
 	Cast.o \
+	PinchingLimitStateMaterial.o \
         HardeningMaterial.o \
 	Concrete01.o \
 	Concrete02Thermal.o \
@@ -32,6 +33,7 @@ include ../../../Makefile.def
 	ENTMaterial.o \
 	FedeasMaterial.o \
 	DrainMaterial.o \
+	BraceMaterial.o \
 	BoucWenMaterial.o \
 	SecantConcrete.o \
 	HardeningMaterial2.o \

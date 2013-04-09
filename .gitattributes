@@ -2943,6 +2943,7 @@ SRC/material/uniaxial/Bond_SP01.cpp -text
 SRC/material/uniaxial/Bond_SP01.h -text
 SRC/material/uniaxial/BoucWenMaterial.cpp -text
 SRC/material/uniaxial/BoucWenMaterial.h -text
+SRC/material/uniaxial/BraceMaterial.cpp -text
 SRC/material/uniaxial/CableMaterial.cpp -text
 SRC/material/uniaxial/CableMaterial.h -text
 SRC/material/uniaxial/Cast.cpp -text
