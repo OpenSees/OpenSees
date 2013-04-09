@@ -34,6 +34,7 @@
 #include <ThreePointCurve.h> // KJE
 #include <ShearCurve.h> // KJE
 
+extern void *OPS_RotationShearCurve(void);
 
 #include <string.h>
 
@@ -140,7 +141,16 @@ Tcl_AddLimitCurve(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char 
   ///////////////////////
   // Axial Limit Curve
   ///////////////////////
-  if (strcmp(argv[1],"Axial") == 0) {
+  if (strcmp(argv[1],"RotationShearCurve") == 0) {
+      void *theC = OPS_RotationShearCurve();
+      if (theC != 0) 
+	theCurve = (LimitCurve *)theC;
+      else 
+	return TCL_ERROR;    
+
+  }
+
+  else if (strcmp(argv[1],"Axial") == 0) {
     if (argc != 9 && argc != 12 && argc != 14 && argc != 15) { //SDK
       opserr << "WARNING invalid number of arguments\n";
       //	    printCommand(argc,argv); // Commented out by Terje
