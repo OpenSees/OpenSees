@@ -180,7 +180,7 @@
 #define MAT_TAG_ModIMKPeakOriented              67
 #define MAT_TAG_RambergOsgoodSteel              68
 #define MAT_TAG_PinchingLimitStateMaterial      69	
-
+#define MAT_TAG_BraceMaterial                   70	
 
 #define MAT_TAG_WrapperUniaxialMaterial      101
 #define MAT_TAG_UniaxialJ2Plasticity         102
@@ -229,12 +229,6 @@
 
 #define MAT_TAG_ECC01 3010
 #define MAT_TAG_Concrete01WithSITC 3011
-
-
-
-
-
-
 
 
 #define SEC_TAG_Elastic2d                        3
