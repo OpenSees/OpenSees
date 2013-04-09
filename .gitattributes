@@ -3180,6 +3180,8 @@ SRC/material/uniaxial/limitState/limitCurve/AxialCurve.h -text
 SRC/material/uniaxial/limitState/limitCurve/LimitCurve.cpp -text
 SRC/material/uniaxial/limitState/limitCurve/LimitCurve.h -text
 SRC/material/uniaxial/limitState/limitCurve/Makefile -text
+SRC/material/uniaxial/limitState/limitCurve/RotationShearCurve.cpp -text
+SRC/material/uniaxial/limitState/limitCurve/RotationShearCurve.h -text
 SRC/material/uniaxial/limitState/limitCurve/ShearCurve.cpp -text
 SRC/material/uniaxial/limitState/limitCurve/ShearCurve.h -text
 SRC/material/uniaxial/limitState/limitCurve/ThreePointCurve.cpp -text

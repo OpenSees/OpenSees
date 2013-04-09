@@ -3,6 +3,7 @@ include ../../../../../Makefile.def
 OBJS       = LimitCurve.o \
 	AxialCurve.o \
 	ShearCurve.o \
+	RotationShearCurve.o \
 	ThreePointCurve.o
 
 
