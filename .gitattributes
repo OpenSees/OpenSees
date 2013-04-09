@@ -3067,6 +3067,8 @@ SRC/material/uniaxial/PathIndependentMaterial.cpp -text
 SRC/material/uniaxial/PathIndependentMaterial.h -text
 SRC/material/uniaxial/Pinching4Material.cpp -text
 SRC/material/uniaxial/Pinching4Material.h -text
+SRC/material/uniaxial/PinchingLimitStateMaterial.cpp -text
+SRC/material/uniaxial/PinchingLimitStateMaterial.h -text
 SRC/material/uniaxial/PrestressedSteelMaterial.cpp -text
 SRC/material/uniaxial/PrestressedSteelMaterial.h -text
 SRC/material/uniaxial/RambergOsgoodSteel.cpp -text
