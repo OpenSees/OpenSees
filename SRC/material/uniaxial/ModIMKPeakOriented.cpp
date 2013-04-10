@@ -1332,6 +1332,9 @@ ModIMKPeakOriented::setResponse (const char **argv, int argc,
     theOutputStream.tag("ResponseType", "dres");
     theResponse =  new MaterialResponse(this, 101, dres);
   }
+
+  return theResponse;
+
 }
 
 int 
