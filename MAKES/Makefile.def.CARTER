@@ -13,7 +13,6 @@
 #
 ############################################################################
 
-
 # module load devel
 
 HOME  = /home/neeshub1/fmkCarter
@@ -23,8 +22,8 @@ BASE  =
 FE    = $(HOME)/OpenSees/SRC
 
 #PROGRAMMING_MODE = SEQUENTIAL
-PROGRAMMING_MODE = PARALLEL
-#PROGRAMMING_MODE = PARALLEL_INTERPRETERS
+#PROGRAMMING_MODE = PARALLEL
+PROGRAMMING_MODE = PARALLEL_INTERPRETERS
 
 
 OpenSees_PROGRAM = $(HOME)/bin/OpenSees
@@ -123,8 +122,8 @@ ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 DISTRIBUTED_SUPERLU_LIBRARY     = 
 endif
 
-#TCL_LIBRARY         = $(HOME)/tcl/lib/libtcl8.5.a
-TCL_LIBRARY = -ltcl8.5
+TCL_LIBRARY         = $(HOME)/tcl/lib/libtcl8.5.a
+#TCL_LIBRARY = -ltcl8.5
 TCL_INCLUDES = 
 
 GRAPHIC_LIBRARY     = 
@@ -366,7 +365,8 @@ MUMPS_LIB = -L$(MUMPS_DIR)/lib \
 	$(MKL_LIB)/libmkl_core.a \
 	$(MKL_LIB)/libmkl_sequential.a \
 	$(MKL_LIB)/libmkl_core.a \
-	  $(SCALAP) 
+	-lmpi_f77 \
+	$(SCALAP) 
 
 MUMPS_INCLUDE = -I$(MUMPS_DIR)/include
 
@@ -385,7 +385,6 @@ else
 
 PARALLEL_LIB = $(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
-	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
         -Wl,-rpath,$(MKL_LIB) \
 	-L$(MKL_LIB) \
 	$(MKL_LIB)/libmkl_scalapack_lp64.a \
@@ -395,10 +394,10 @@ PARALLEL_LIB = $(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLi
 	$(MKL_LIB)/libmkl_core.a \
 	$(MKL_LIB)/libmkl_sequential.a \
 	$(MKL_LIB)/libmkl_core.a \
-	-L$(MPI_LIB) -lmpi
+	-L$(MPI_LIB) -lmpi -lmpi_f77
 
 #	$(LINK_LAPACK95) \
-#	     	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
+# 	     	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
 
 
 endif
@@ -417,16 +416,20 @@ MACHINE_NUMERICAL_LIBS  = -lm \
   $(GRAPHIC_LIBRARY)\
   $(RELIABILITY_LIBRARY) \
   $(DISTRIBUTED_SUPERLU_LIBRARY) $(CSPARSE_LIBRARY) -L$(INTEL_LIB) -lifcore \
-  $(METIS_LIBRARY) $(PETSC_LIB) $(MUMPS_LIB)  $(CBLAS_LIBRARY) -lsvml
+  $(METIS_LIBRARY) $(PETSC_LIB) $(MUMPS_LIB)  $(CBLAS_LIBRARY)
+
+#  $(METIS_LIBRARY) $(PETSC_LIB) $(MUMPS_LIB)  $(CBLAS_LIBRARY) -lsvml
   
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 
-MACHINE_SPECIFIC_LIBS =   -mkl=sequential -static-intel -L$(INTEL_LIB) -lifcore 
+#MACHINE_SPECIFIC_LIBS =   -mkl=sequential -static-intel -L$(INTEL_LIB) -lifcore 
+
+MACHINE_SPECIFIC_LIBS =   -mkl=sequential -static-intel $(LINK_LAPACK95)
 
 else
 
-MACHINE_SPECIFIC_LIBS = $(PARELLEL_LIB) -L$(INTEL_LIB) -lifcore -lmpi 
+MACHINE_SPECIFIC_LIBS = $(PARELLEL_LIB) -L$(INTEL_LIB) -lifcore -lmpi -lmpi_f90
 
 endif
 
