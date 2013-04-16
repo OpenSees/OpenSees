@@ -41,6 +41,15 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
+TransientIntegrator *
+OPS_Houbolt(void)
+{
+
+  // Pointer to a uniaxial material that will be returned
+  TransientIntegrator *theIntegrator = new Houbolt();
+
+  return theIntegrator;
+}
 
 Houbolt::Houbolt()
   : TransientIntegrator(INTEGRATOR_TAGS_Houbolt),
