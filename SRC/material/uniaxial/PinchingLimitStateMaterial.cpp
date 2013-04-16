@@ -48,6 +48,13 @@
 
 static int numPinchingLimitStateMaterial = 0;
 
+#ifndef fmax
+#define fmax(a,b) (((a)>(b)) ? (a) : (b))
+#endif
+
+#ifndef fmin
+#define fmin(a,b) (((a)<(b)) ? (a) : (b))
+#endif
 void *
 OPS_PinchingLimitStateMaterial(void)
 {
