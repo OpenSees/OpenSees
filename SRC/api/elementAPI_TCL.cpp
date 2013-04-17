@@ -851,7 +851,7 @@ const char *OPS_GetInterpPWD()
 LimitCurve *
 OPS_GetLimitCurve(int LimCrvTag)
 {
-
+  return 0;
 }
 Domain *OPS_GetDomain(void)
 {
