@@ -254,14 +254,18 @@ ElasticSection2d::setParameter(const char **argv, int argc, Parameter &param)
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0],"E") == 0)
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E);
     return param.addObject(1, this);
-
-  if (strcmp(argv[0],"A") == 0)
+  }
+  if (strcmp(argv[0],"A") == 0) {
+    param.setValue(A);
     return param.addObject(2, this);
-
-  if (strcmp(argv[0],"I") == 0)
+  }
+  if (strcmp(argv[0],"I") == 0) {
+    param.setValue(I);
     return param.addObject(3, this);
+  }
 
   return -1;
 }
