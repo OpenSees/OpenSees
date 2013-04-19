@@ -264,18 +264,22 @@ int
 ElasticMaterial::setParameter(const char **argv, int argc, Parameter &param)
 {
 
-  if (strcmp(argv[0],"E") == 0)
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(Epos);
     return param.addObject(1, this);
-  
-  if (strcmp(argv[0],"Epos") == 0)
+  }
+  if (strcmp(argv[0],"Epos") == 0) {
+    param.setValue(Epos);
     return param.addObject(2, this);
-  
-  if (strcmp(argv[0],"Eneg") == 0)
+  }
+  if (strcmp(argv[0],"Eneg") == 0) {
+    param.setValue(Eneg);
     return param.addObject(3, this);
-  
-  else if (strcmp(argv[0],"eta") == 0)
+  }
+  else if (strcmp(argv[0],"eta") == 0) {
+    param.setValue(eta);
     return param.addObject(4, this);
-
+  }
   return -1;
 }
 
