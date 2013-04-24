@@ -91,14 +91,14 @@ OPS_NewElasticIsotropicMaterial(void)
 
 ElasticIsotropicMaterial::ElasticIsotropicMaterial
 (int tag, int classTag, double e, double nu, double r)
-  :NDMaterial(tag, classTag), E(e), v(nu), rho(r)
+  :NDMaterial(tag, classTag), E(e), v(nu), rho(r), parameterID(0)
 {
 
 }
 
 ElasticIsotropicMaterial::ElasticIsotropicMaterial
 (int tag, double e, double nu, double r)
-  :NDMaterial(tag, ND_TAG_ElasticIsotropic), E(e), v(nu), rho(r)
+  :NDMaterial(tag, ND_TAG_ElasticIsotropic), E(e), v(nu), rho(r), parameterID(0)
 {
 
 }
@@ -146,7 +146,7 @@ ElasticIsotropicMaterial::getCopy (const char *type)
     theModel = new ElasticIsotropicPlateFiber(this->getTag(), E, v, rho);
     return theModel;
   }
-  
+
   else if (strcmp(type,"BeamFiber") == 0) {
     ElasticIsotropicBeamFiber *theModel;
     theModel = new ElasticIsotropicBeamFiber(this->getTag(), E, v, rho);
@@ -343,14 +343,18 @@ int
 ElasticIsotropicMaterial::setParameter(const char **argv, int argc,
 				      Parameter &param)
 {
-  if (strcmp(argv[0],"E") == 0)
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E);
     return param.addObject(1, this);
-  
-  else if (strcmp(argv[0],"nu") == 0 || strcmp(argv[0],"v") == 0)
+  }
+  else if (strcmp(argv[0],"nu") == 0 || strcmp(argv[0],"v") == 0) {
+    param.setValue(v);
     return param.addObject(2, this);
-  
-  else if (strcmp(argv[0],"rho") == 0)
+  }
+  else if (strcmp(argv[0],"rho") == 0) {
+    param.setValue(rho);
     return param.addObject(3, this);
+  }
 
   return -1;
 }
@@ -371,4 +375,12 @@ ElasticIsotropicMaterial::updateParameter(int parameterID, Information &info)
   default:
     return -1;
   }
+}
+
+int
+ElasticIsotropicMaterial::activateParameter(int paramID)
+{
+  parameterID = paramID;
+
+  return 0;
 }

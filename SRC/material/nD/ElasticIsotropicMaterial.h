@@ -95,15 +95,16 @@ class ElasticIsotropicMaterial : public NDMaterial
 
     virtual int setParameter(const char **argv, int argc, Parameter &param);
     virtual int updateParameter(int parameterID, Information &info);
+    virtual int activateParameter(int paramID);
 
   protected:
     double E;	// Elastic modulus
     double v;	// Poisson ratio
     double rho ; //mass per unit 3D volume
 
+    int parameterID;
   private:
-    // Uncomment when this material model is "sensitized"
-    //int parameterID;
+
 };
 
 
