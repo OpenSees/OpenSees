@@ -182,6 +182,8 @@
 #define MAT_TAG_PinchingLimitStateMaterial      69	
 #define MAT_TAG_BraceMaterial                   70	
 
+#define MAT_TAG_ViscousDamper                   71
+
 #define MAT_TAG_WrapperUniaxialMaterial      101
 #define MAT_TAG_UniaxialJ2Plasticity         102
 
