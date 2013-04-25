@@ -28,10 +28,11 @@
 
 #include <OPS_Globals.h>
 
+
 static int numBilinMaterials = 0;
 
 void *
-OPS_Bilin(void)
+OPS_Bilin()
 {
   if (numBilinMaterials == 0) {
     numBilinMaterials++;
@@ -830,16 +831,16 @@ double deltaD,d,temp_1,temp,betas,betak,betad,
 ////	Flag to deteriorate parameters on the opposite side of the loop --	
 
 	  if((f*fP<0.0)&&(interup==0)) {
-		  if(((fP>0.0)&&(dmax>(My_pos/Ke)))||((fP<0.0)&&(dmin<(My_neg/Ke)))) {
+	      if(((fP>0.0)&&(dmax>(dyPos)))||((fP<0.0)&&(dmin<(dyNeg)))) {
 			flagdeg = 1;		
-			interup=1;
-        }
-    }	
+			interup = 1;
+		  }
+	  }	
 
 
 ////	energy CALCULATIONS ---------------------------------------------
 
-	  if((flagstopdeg==0)&&(flagdeg==0)) {
+	  if((flagstopdeg==0)&&(flagdeg==1)) {
         
 		if((Enrgtot>=Enrgts)&&(Enrgts!=0.0)) {
 			betas = 1.0;
