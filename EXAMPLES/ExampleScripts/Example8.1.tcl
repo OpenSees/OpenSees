@@ -15,8 +15,8 @@ nDMaterial ElasticIsotropic   1   100   0.25  1.27
 # define some  parameters
 set eleArgs "1" 
 
-#set element stdBrick
-set element bbarBrick
+set element stdBrick
+#set element bbarBrick
 
 set nz 6
 set nx 2 
@@ -125,6 +125,10 @@ analysis Transient
 
 # Perform the transient analysis (20 sec)
 #       numSteps  dt
+
+#recorder Element -file ele.out -eleRange 1 10 strains
+recorder Element -file 3d/ele.out -eleRange 1 10 material 1 strains
+
 analyze 1000 1.0
 
 

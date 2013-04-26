@@ -532,6 +532,7 @@ EXAMPLES/TeraGridExamples/submit1 -text
 EXAMPLES/kepler/ARL360.at2 -text
 EXAMPLES/kepler/Example1.tcl -text
 EXAMPLES/kepler/Example1.xml -text
+EXAMPLES/verification/Eigen1.tcl -text
 MAKES/Makefile.UCDAVIS -text
 MAKES/Makefile.def.ABE -text
 MAKES/Makefile.def.ALPHA -text
