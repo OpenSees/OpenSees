@@ -8,6 +8,9 @@
 # www.seismosoft.com/Public/.../SeismoStruct_Verification_Report.pdf
 
 
+puts "Verification: 2d Bate & Wilson original Elastic Frame"
+puts "  - eigenvalue "
+
 wipe
 
 model Basic -ndm 2
@@ -72,23 +75,19 @@ for {set j 1} {$j<=$numFloor} {incr j 1} {
     }
 }
 
-# calculate eigenvalues & print results     
+# calculate eigenvalues
 set numEigen 3
 set eigenValues [eigen $numEigen]
 set PI [expr 2*asin(1.0)]
-puts "OpenSees (Eigenvalue - Period) pairs:"
-for {set i 0} {$i<$numEigen} {incr i 1} {
-    set lambda [lindex $eigenValues $i]
-    set period [expr 2*$PI/pow($lambda,0.5)];
-    puts "eigenvalue[expr $i+1]: [lindex $eigenValues $i] period T[expr $i+1]: $period"
-}
+
 
 # print table of camparsion
 #                         Bathe & Wilson               Peterson                    SAP2000                  SeismoStruct
 set comparisonResults {{0.589541 5.52695 16.5878} {0.589541 5.52696 16.5879} {0.589541 5.52696 16.5879} {0.58955 5.527 16.588}}
-puts "\n\nOpenSees Comparison"
+puts "\n\nEigenvalue Comparisons:"
 set formatString {%15s%15s%15s%15s%15s}
 puts [format $formatString OpenSees Bathe&Wilson Peterson SAP2000 SeismoStruct]
+set formatString {%15.5f%15.4f%15.4f%15.4f%15.3f}
 for {set i 0} {$i<$numEigen} {incr i 1} {
     set lambda [lindex $eigenValues $i]
     puts [format $formatString $lambda  [lindex [lindex $comparisonResults 0] $i] [lindex [lindex $comparisonResults 1] $i] [lindex [lindex $comparisonResults 2] $i] [lindex [lindex $comparisonResults 3] $i]]
