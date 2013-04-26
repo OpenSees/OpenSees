@@ -111,7 +111,8 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
     double mass = 0.0;
     int argi = 0;
 
-    if ((argc-eleArgStart) == 10) {    
+    if ( ((argc-eleArgStart) == 10) && (strcmp(argv[eleArgStart+8],"-mass") != 0)){    
+
       if (Tcl_GetDouble(interp, argv[7+eleArgStart], &alpha) != TCL_OK) {
 	opserr << "WARNING invalid alpha - elasticBeamColumn " << beamId << " iNode jNode A E I alpha d \n";
 	return TCL_ERROR;
