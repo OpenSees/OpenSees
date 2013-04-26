@@ -88,7 +88,8 @@ Domain::Domain()
  eleGraphBuiltFlag(false),  nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
  theRegions(0), numRegions(0), commitTag(0),
- theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0)
+ theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0),
+ paramIndex(0), paramSize(0), numParameters(0)
 {
   
     // init the arrays for storing the domain components
@@ -140,7 +141,8 @@ Domain::Domain(int numNodes, int numElements, int numSPs, int numMPs,
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0),
  theRegions(0), numRegions(0), commitTag(0),
- theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0)
+ theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0),
+ paramIndex(0), paramSize(0), numParameters(0)
 {
     // init the arrays for storing the domain components
     theElements = new MapOfTaggedObjects();
@@ -198,7 +200,8 @@ Domain::Domain(TaggedObjectStorage &theNodesStorage,
  theMPs(&theMPsStorage), 
  theLoadPatterns(&theLoadPatternsStorage),
  theRegions(0), numRegions(0), commitTag(0),
- theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0)
+ theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0),
+ paramIndex(0), paramSize(0), numParameters(0)
 {
     // init the arrays for storing the domain components
     thePCs      = new MapOfTaggedObjects();
@@ -254,7 +257,8 @@ Domain::Domain(TaggedObjectStorage &theStorage)
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
  theRegions(0), numRegions(0), commitTag(0),
- theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0)
+ theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0),
+ paramIndex(0), paramSize(0), numParameters(0)
 {
     // init the arrays for storing the domain components
     theStorage.clearAll(); // clear the storage just in case populated
@@ -698,17 +702,17 @@ Domain::addParameter(Parameter *theParam)
     theParam->setDomain(this);
     return true;
   }
- 
+
   // check if a Parameter with a similar tag already exists in the Domain
   TaggedObject *other = theParameters->getComponentPtr(paramTag);
   if (other != 0) {
     opserr << "Domain::addParameter - parameter with tag " << paramTag << "already exists in model\n"; 
     return false;
   }
-  
+
   // add the param to the container object for the parameters
   bool result = theParameters->addComponent(theParam);
- 
+
   if (result == false) {
     opserr << "Domain::addParameter - parameter " << paramTag << "could not be added to container\n";
     theParam->setDomain(this);
@@ -718,7 +722,7 @@ Domain::addParameter(Parameter *theParam)
   // mark the Domain as having been changed
   //    this->domainChange();
   
-  // Array is full
+  // Array is full or empty
   if (numParameters == paramSize) {
     
     // Increase size and allocate new array
@@ -735,12 +739,12 @@ Domain::addParameter(Parameter *theParam)
     // Set pointer to new array
     paramIndex = tmp_paramIndex;
   }
-  
+
   // Add to index
   paramIndex[numParameters] = paramTag;
   theParam->setGradIndex(numParameters);
   numParameters++;    
-  
+
   if (strcmp(theParam->getType(),"FEModel") != 0) {
     //theParam->setGradIndex(-1);
   }
@@ -835,7 +839,7 @@ Domain::addElementalLoad(ElementalLoad *load, int pattern)
     // now add it to the pattern
     TaggedObject *thePattern = theLoadPatterns->getComponentPtr(pattern);
     if (thePattern == 0) {
-      opserr << "Domain::addNodalLoad() - no pattern with tag " << pattern << 
+      opserr << "Domain::addElementalLoad() - no pattern with tag " << pattern << 
 	"exits in  the model, not adding the ele load " << *load << endln;
 
 	return false;
@@ -843,7 +847,7 @@ Domain::addElementalLoad(ElementalLoad *load, int pattern)
     LoadPattern *theLoadPattern = (LoadPattern *)thePattern;
     bool result = theLoadPattern->addElementalLoad(load);
     if (result == false) {
-      opserr << "Domain::addNodalLoad() - no pattern with tag" << 
+      opserr << "Domain::addElementalLoad() - no pattern with tag" << 
 	pattern << "in  the model, not adding the ele load" << *load << endln;
       return false;
     }
@@ -864,7 +868,6 @@ Domain::addElementalLoad(ElementalLoad *load, int pattern)
 
 void
 Domain::clearAll(void) {
-  
   // clear the loads and constraints from any load pattern
   LoadPatternIter &thePatterns = this->getLoadPatterns();
   LoadPattern *thePattern;
@@ -886,14 +889,13 @@ Domain::clearAll(void) {
   for (i=0; i<numRecorders; i++)
 	  if (theRecorders[i] != 0)
     delete theRecorders[i];
-
   numRecorders = 0; 
-  
+
   if (theRecorders != 0) {
     delete [] theRecorders;
     theRecorders = 0;
   }
-  
+
   for (i=0; i<numRegions; i++)
     delete theRegions[i];
   numRegions = 0;
@@ -902,7 +904,7 @@ Domain::clearAll(void) {
     delete [] theRegions;
     theRegions = 0;
   }
-  
+
   // set the time back to 0.0
   currentTime = 0.0;
   committedTime = 0.0;
@@ -1024,6 +1026,9 @@ Domain::removeSP_Constraint(int theNode, int theDOF, int loadPatternTag)
 
   if (found == true)
     theSP = this->removeSP_Constraint(spTag);
+
+  // mark the domain has having changed regardless if SP constrain was there or not
+  this->domainChange();
 
   if (theSP != 0) {
     delete theSP;
@@ -3257,7 +3262,6 @@ Domain::calculateNodalReactions(int flag)
 {
   Node *theNode;
   Element *theElement;
-
   NodeIter &theNodes = this->getNodes();
   while ((theNode = theNodes()) != 0) {
     theNode->resetReactionForce(flag);

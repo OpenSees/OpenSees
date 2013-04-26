@@ -37,6 +37,11 @@
 Vector  PlateFiberMaterial::stress(5);
 Matrix  PlateFiberMaterial::tangent(5,5);
 
+//      0  1  2  3  4  5
+// ND: 11 22 33 12 23 31
+// PF: 11 22 12 23 31 33
+int PlateFiberMaterial::iMap[] = {0, 1, 5, 2, 3, 4};
+
 //null constructor
 PlateFiberMaterial::PlateFiberMaterial() : 
 NDMaterial(0, ND_TAG_PlateFiberMaterial), 
@@ -206,13 +211,15 @@ PlateFiberMaterial::setTrialStrain(const Vector &strainFromElement)
     //swap matrix indices to sort out-of-plane components 
     for (i=0; i<6; i++) {
 
-      ii = this->indexMap(i);
+      //ii = this->indexMap(i);
+      ii = iMap[i];
 
       threeDstressCopy(ii) = threeDstress(i);
 
       for (j=0; j<6; j++) {
 
-	jj = this->indexMap(j);
+	//jj = this->indexMap(j);
+	jj = iMap[j];
 
 	threeDtangentCopy(ii,jj) = threeDtangent(i,j);
 
@@ -264,7 +271,8 @@ PlateFiberMaterial::getStress()
   int i, ii;
   for (i=0; i<6; i++) {
     
-    ii = this->indexMap(i);
+    //ii = this->indexMap(i);
+    ii = iMap[i];
     
     threeDstressCopy(ii) = threeDstress(i);
     
@@ -293,11 +301,13 @@ PlateFiberMaterial::getTangent()
   int i,j, ii, jj;
   for (i=0; i<6; i++) {
 
-    ii = this->indexMap(i);
+    //ii = this->indexMap(i);
+    ii = iMap[i];
 
     for (j=0; j<6; j++) {
 
-      jj = this->indexMap(j);
+      //jj = this->indexMap(j);
+      jj = iMap[j];
 
       threeDtangentCopy(ii,jj) = threeDtangent(i,j);
 
@@ -321,8 +331,10 @@ PlateFiberMaterial::getTangent()
   //int Solve(const Matrix &M, Matrix &res) const;
   //condensation 
   dd22.Solve(dd21, dd22invdd21);
-  this->tangent   = dd11; 
-  this->tangent  -= (dd12*dd22invdd21);
+  //this->tangent   = dd11; 
+  //this->tangent  -= (dd12*dd22invdd21);
+  dd11.addMatrixProduct(1.0, dd12, dd22invdd21, -1.0);
+  this->tangent = dd11;
 
   return this->tangent;
 }
@@ -331,8 +343,55 @@ PlateFiberMaterial::getTangent()
 const Matrix&  
 PlateFiberMaterial::getInitialTangent()
 {
-  opserr << "PlateFiberMaterial::getInitialTangent() - not yet implemented\n";
-  return this->getTangent();
+  static Matrix dd11(5,5);
+  static Matrix dd12(5,1);
+  static Matrix dd21(1,5);
+  static Matrix dd22(1,1);
+  static Matrix dd22invdd21(1,5);
+
+  static Matrix threeDtangentCopy(6,6);
+  const Matrix &threeDtangent = theMaterial->getInitialTangent();
+
+  //swap matrix indices to sort out-of-plane components 
+  int i,j, ii, jj;
+  for (i=0; i<6; i++) {
+
+    //ii = this->indexMap(i);
+    ii = iMap[i];
+
+    for (j=0; j<6; j++) {
+
+      //jj = this->indexMap(j);
+      jj = iMap[j];
+
+      threeDtangentCopy(ii,jj) = threeDtangent(i,j);
+
+    }//end for j
+
+  }//end for i
+  
+  dd22(0,0) = threeDtangentCopy(5,5);
+
+  for (i=0; i<5; i++) {
+
+    dd12(i,0) = threeDtangentCopy(i,5);
+    dd21(0,i) = threeDtangentCopy(5,i);
+    
+    for (int j=0; j<5; j++) 
+      dd11(i,j) = threeDtangentCopy(i,j);
+    
+  }//end for i
+    
+  //int Solve(const Vector &V, Vector &res) const;
+  //int Solve(const Matrix &M, Matrix &res) const;
+  //condensation 
+  dd22.Solve(dd21, dd22invdd21);
+  //this->tangent   = dd11; 
+  //this->tangent  -= (dd12*dd22invdd21);
+  dd11.addMatrixProduct(1.0, dd12, dd22invdd21, -1.0);
+  this->tangent = dd11;
+
+  return this->tangent;
 }
 
 

@@ -38,8 +38,10 @@ class Domain;
 class Parameter : public TaggedObject, public MovableObject
 {
  public:
-  Parameter(int tag, DomainComponent *theObject,
-	    const char **argv, int argc);
+  Parameter(int tag, 
+	    DomainComponent *theObject,
+	    const char **argv, 
+	    int argc);
   Parameter(const Parameter &param);
   Parameter(int tag, int classTag = PARAMETER_TAG_Parameter);
   Parameter();
@@ -54,6 +56,7 @@ class Parameter : public TaggedObject, public MovableObject
   virtual void setValue(double newValue) {theInfo.theDouble = newValue;}
 
   virtual int addComponent(DomainComponent *theObject, const char **argv, int argc);  
+  virtual int addComponent(int, const char **argv, int argc);  
   virtual int addObject(int parameterID, MovableObject *object);
 
   virtual int clean(void);
@@ -68,10 +71,16 @@ class Parameter : public TaggedObject, public MovableObject
   virtual int getPointerTag(void) {return -1;}
 
   virtual void setDomain(Domain *theDomain);
+
   virtual int sendSelf(int commitTag, Channel &theChannel);  
   virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
  protected:
+  int *parameterID;
+
+  MovableObject **theObjects;
+  int numObjects;
+  int maxNumObjects;
   
  private:
   Information theInfo;
@@ -83,12 +92,6 @@ class Parameter : public TaggedObject, public MovableObject
   DomainComponent **theComponents;
   int numComponents;
   int maxNumComponents;
-
-  MovableObject **theObjects;
-  int numObjects;
-  int maxNumObjects;
-
-  int *parameterID;
 
   int gradIndex; // 0,...,nparam-1
 };

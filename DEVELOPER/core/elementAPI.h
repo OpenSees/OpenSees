@@ -149,15 +149,22 @@ class SectionForceDeformation;
 class CrdTransf;
 class FE_Datastore;
 
+class LimitCurve; //MRL
+class Domain; //**MRL
+
 extern UniaxialMaterial *OPS_GetUniaxialMaterial(int matTag);
 extern NDMaterial *OPS_GetNDMaterial(int matTag);
 extern SectionForceDeformation *OPS_GetSectionForceDeformation(int matTag);
 extern CrdTransf *OPS_GetCrdTransfPtr(int tag);
+extern LimitCurve *OPS_GetLimitCurve(int LimCrvTag);//MRL
+extern Domain *OPS_GetDomain(void);//**MRL
+
 
 extern FE_Datastore *OPS_GetFEDatastore();
 extern "C" const char *OPS_GetInterpPWD();
 
 #else
+
 int     OPS_GetNDF();
 int     OPS_GetNDM();
 

@@ -30,9 +30,9 @@ Parameter::Parameter(int passedTag,
 		     DomainComponent *parentObject,
 		     const char **argv, int argc)
   :TaggedObject(passedTag), MovableObject(PARAMETER_TAG_Parameter),
-   theObjects(0), 
-   numComponents(0), maxNumComponents(0),
-   numObjects(0), maxNumObjects(0), parameterID(0), gradIndex(-1)
+   parameterID(0), theObjects(0), numObjects(0), maxNumObjects(0),
+   theComponents(0), numComponents(0), maxNumComponents(0),
+   gradIndex(-1)
 {
   int ok = -1;
 
@@ -42,6 +42,7 @@ Parameter::Parameter(int passedTag,
   theComponents = new DomainComponent *[maxNumComponents];
 
   theObjects = new MovableObject *[maxNumObjects];
+
   parameterID = new int[maxNumObjects];
 
   for (int i =0; i < maxNumObjects; i++) {
@@ -67,7 +68,8 @@ Parameter::Parameter(int passedTag,
 }
 
 Parameter::Parameter(const Parameter &param):
-  TaggedObject(param.getTag()), MovableObject(PARAMETER_TAG_Parameter)
+  TaggedObject(param.getTag()), MovableObject(PARAMETER_TAG_Parameter),
+   theComponents(0), numComponents(0), maxNumComponents(0)
 {
   theInfo = param.theInfo;
   numComponents = param.numComponents;
@@ -96,34 +98,22 @@ Parameter::Parameter(const Parameter &param):
 
 Parameter::Parameter(int tag, int classTag)
   :TaggedObject(tag), MovableObject(classTag),
-   theObjects(0), 
-   numComponents(0), maxNumComponents(0),
-   numObjects(0), maxNumObjects(0), parameterID(0), gradIndex(-1)
+   parameterID(0), theObjects(0), numObjects(0), maxNumObjects(0),
+   theComponents(0), numComponents(0), maxNumComponents(0),
+   gradIndex(-1)
 {
-  maxNumObjects = 1;
-  maxNumComponents = 1;
 
-  theComponents = new DomainComponent *[maxNumComponents];
-  theObjects = new MovableObject *[maxNumObjects];
-  parameterID = new int[maxNumObjects];
 }
 
 
 Parameter::Parameter()
   :TaggedObject(0), MovableObject(PARAMETER_TAG_Parameter), 
    theObjects(0), 
-   numComponents(0), maxNumComponents(0),
+   theComponents(0), numComponents(0), maxNumComponents(0),
    numObjects(0), maxNumObjects(0), parameterID(0), gradIndex(-1)
 {
-  maxNumObjects = 0;
-  maxNumComponents = 0;
 
-  theComponents = 0;
-
-  theObjects = 0;
-  parameterID = 0;
 }
-
 
 
 Parameter::~Parameter()
@@ -136,6 +126,13 @@ Parameter::~Parameter()
 
   if (parameterID != 0)
     delete [] parameterID;
+}
+
+int
+Parameter::addComponent(int tag, const char **argv, int argc)
+{
+  opserr << "Parameter::addComponent() - failed\n";
+  return -1;
 }
 
 int
@@ -229,6 +226,7 @@ Parameter::Print(OPS_Stream &s, int flag)
   //s << "\tparameterID = " << parameterID << endln;
 }
 
+
 int
 Parameter::addObject(int paramID, MovableObject *object)
 {
@@ -255,6 +253,7 @@ Parameter::addObject(int paramID, MovableObject *object)
 
   return 0;
 }
+
 
 void
 Parameter::setDomain(Domain *theDomain)
@@ -283,6 +282,7 @@ Parameter::clean(void)
   for (int i = 0; i < numComponents; i++) {
     theComponents[i] = 0;
   }
+
   numObjects = 0;
   numComponents = 0;
   currentValue = 0.0;

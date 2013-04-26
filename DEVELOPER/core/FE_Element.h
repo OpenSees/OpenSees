@@ -26,8 +26,6 @@
 #ifndef FE_Element_h
 #define FE_Element_h
 
-// File: ~/analysis/fe_ele/FE_Element.h
-// 
 // Written: fmk 
 // Created: 11/96
 // Revision: A
@@ -69,6 +67,8 @@ class FE_Element: public TaggedObject
     virtual void  addKiToTang(double fact = 1.0);
     virtual void  addCtoTang(double fact = 1.0);    
     virtual void  addMtoTang(double fact = 1.0);    
+    virtual void  addKpToTang(double fact = 1.0, int numP = 0);
+    virtual int   storePreviousK(int numP);
     
     // methods to allow integrator to build residual    
     virtual void  zeroResidual(void);    

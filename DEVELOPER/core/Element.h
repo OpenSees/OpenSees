@@ -107,11 +107,16 @@ class Element : public DomainComponent
 
     virtual int addResistingForceToNodalReaction(int flag);
 
+    virtual int storePreviousK(int numK);
+    virtual const Matrix *getPreviousK(int num);
+
   protected:
     const Vector &getRayleighDampingForces(void);
-
     double alphaM, betaK, betaK0, betaKc;
     Matrix *Kc; // pointer to hold last committed matrix if needed for rayleigh damping
+
+    Matrix **previousK;
+    int numPreviousK;
 
   private:
     int index, nodeIndex;

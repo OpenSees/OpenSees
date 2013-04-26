@@ -37,7 +37,10 @@
 Vector  PlaneStressMaterial::stress(3) ;
 Matrix  PlaneStressMaterial::tangent(3,3) ;
 
-
+//      0  1  2  3  4  5
+// ND: 11 22 33 12 23 31
+// PS: 11 22 12 33 23 31
+int PlaneStressMaterial::iMap[] = {0, 1, 3, 2, 4, 5};
 
 //null constructor
 PlaneStressMaterial::PlaneStressMaterial( ) : 
@@ -222,13 +225,15 @@ PlaneStressMaterial::setTrialStrain( const Vector &strainFromElement )
     //swap matrix indices to sort out-of-plane components 
     for ( i=0; i<6; i++ ) {
 
-      ii = this->indexMap(i) ;
+      //ii = this->indexMap(i) ;
+      ii = iMap[i];
 
       threeDstressCopy(ii) = threeDstress(i) ;
 
       for ( j=0; j<6; j++ ) {
 
-	jj = this->indexMap(j) ;
+	//jj = this->indexMap(j) ;
+	jj = iMap[j];
 	
 	threeDtangentCopy(ii,jj) = threeDtangent(i,j) ;
 
@@ -288,7 +293,8 @@ PlaneStressMaterial::getStress( )
   int i, ii;
   for ( i=0; i<6; i++ ) {
 
-    ii = this->indexMap(i) ;
+    //ii = this->indexMap(i) ;
+    ii = iMap[i];
 
     threeDstressCopy(ii) = threeDstress(i) ;
   }
@@ -323,10 +329,12 @@ PlaneStressMaterial::getTangent( )
 
   for ( i=0; i<6; i++ ) {
 
-    ii = this->indexMap(i) ;
+    //ii = this->indexMap(i) ;
+    ii = iMap[i];
 
     for ( j=0; j<6; j++ ) {
-      jj = this->indexMap(j) ;
+      //jj = this->indexMap(j) ;
+      jj = iMap[j];
       threeDtangentCopy(ii,jj) = threeDtangent(i,j) ;
     }//end for j
 
@@ -349,12 +357,73 @@ PlaneStressMaterial::getTangent( )
   //int Solve(const Matrix &M, Matrix &res) const;
   //condensation 
   dd22.Solve( dd21, dd22invdd21 ) ;
-  this->tangent   = dd11 ; 
-  this->tangent  -= ( dd12*dd22invdd21 ) ;
+  //this->tangent   = dd11 ; 
+  //this->tangent  -= ( dd12*dd22invdd21 ) ;
+  dd11.addMatrixProduct(1.0, dd12, dd22invdd21, -1.0);
+  this->tangent = dd11;
 
   return this->tangent ;
 }
 
+
+
+const Matrix&  
+PlaneStressMaterial::getInitialTangent( )
+{
+  static Matrix dd11(3,3) ;
+  static Matrix dd12(3,3) ;
+  static Matrix dd21(3,3) ;
+  static Matrix dd22(3,3) ;
+
+  static Matrix dd22invdd21(3,3) ;
+  static Matrix threeDtangentCopy(6,6);
+
+  //three dimensional tangent 
+  const Matrix &threeDtangent = theMaterial->getInitialTangent( ) ;
+
+  //NDmaterial strain order          = 11, 22, 33, 12, 23, 31 
+  //PlaneStressMaterial strain order = 11, 22, 12, 33, 23, 31 
+
+  //swap matrix indices to sort out-of-plane components 
+  int i,j, ii, jj;
+
+  for ( i=0; i<6; i++ ) {
+
+    //ii = this->indexMap(i) ;
+    ii = iMap[i];
+
+    for ( j=0; j<6; j++ ) {
+      //jj = this->indexMap(j) ;
+      jj = iMap[j];
+      threeDtangentCopy(ii,jj) = threeDtangent(i,j) ;
+    }//end for j
+
+  }//end for i
+
+
+  //out of plane stress and tangents
+  for ( i=0; i<3; i++ ) {
+    for ( j=0; j<3; j++ ) {
+	
+      dd11(i,j) = threeDtangentCopy(i,  j  ) ;
+      dd12(i,j) = threeDtangentCopy(i,  j+3) ;
+      dd21(i,j) = threeDtangentCopy(i+3,j  ) ;
+      dd22(i,j) = threeDtangentCopy(i+3,j+3) ;
+
+    }//end for j
+  }//end for i
+
+  //int Solve(const Vector &V, Vector &res) const;
+  //int Solve(const Matrix &M, Matrix &res) const;
+  //condensation 
+  dd22.Solve( dd21, dd22invdd21 ) ;
+  //this->tangent   = dd11 ; 
+  //this->tangent  -= ( dd12*dd22invdd21 ) ;
+  dd11.addMatrixProduct(1.0, dd12, dd22invdd21, -1.0);
+  this->tangent = dd11;
+
+  return this->tangent ;
+}
 
 
 int 

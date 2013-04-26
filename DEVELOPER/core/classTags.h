@@ -110,6 +110,9 @@
 #define PARAMETER_TAG_MatParameter                 3
 #define PARAMETER_TAG_InitialStateParameter        4
 #define PARAMETER_TAG_ElementStateParameter        5
+#define PARAMETER_TAG_ElementParameter             6
+
+
 
 #define MAT_TAG_ElasticMaterial			 1
 #define MAT_TAG_ElasticPPMaterial		 2
@@ -170,12 +173,14 @@
 #define MAT_TAG_Pinching                        60
 #define MAT_TAG_HookGap 			61
 #define MAT_TAG_FRPConfinedConcrete             62
-
 #define MAT_TAG_Steel01Thermal		        63
 #define MAT_TAG_Steel02Thermal			64
 #define MAT_TAG_Concrete02Thermal		65
 #define MAT_TAG_ModIMKPinching                  66
 #define MAT_TAG_ModIMKPeakOriented              67
+#define MAT_TAG_RambergOsgoodSteel              68
+#define MAT_TAG_PinchingLimitStateMaterial      69	
+#define MAT_TAG_BraceMaterial                   70	
 
 #define MAT_TAG_WrapperUniaxialMaterial      101
 #define MAT_TAG_UniaxialJ2Plasticity         102
@@ -224,12 +229,6 @@
 
 #define MAT_TAG_ECC01 3010
 #define MAT_TAG_Concrete01WithSITC 3011
-
-
-
-
-
-
 
 
 #define SEC_TAG_Elastic2d                        3
@@ -448,6 +447,7 @@
 #define ELE_TAG_ZeroLengthContactNTS2D	 5005
 #define ELE_TAG_ZeroLengthInterface2D	 5006
 #define ELE_TAG_CoupledZeroLength	 5007
+#define ELE_TAG_ZeroLengthRocking   5008
 #define ELE_TAG_NLBeamColumn2d	 6000
 #define ELE_TAG_NLBeamColumn3d	 6001
 #define ELE_TAG_LargeDispBeamColumn3d	 6002
@@ -506,12 +506,14 @@
 #define ELE_TAG_SimpleJoint2D    9901
 #define ELE_TAG_Joint2D    9902
 #define ELE_TAG_Joint3D    9903
-#define ELE_TAG_ElastomericBearing3d 9904
-#define ELE_TAG_ElastomericBearing2d 9905
+#define ELE_TAG_ElastomericBearingPlasticity3d 9904
+#define ELE_TAG_ElastomericBearingPlasticity2d 9905
 #define ELE_TAG_TwoNodeLink 9906
 #define ELE_TAG_ActuatorCorot 9907
 #define ELE_TAG_Actuator 9908
 #define ELE_TAG_Adapter 9909
+#define ELE_TAG_ElastomericBearingBoucWen2d 9910
+#define ELE_TAG_ElastomericBearingBoucWen3d 9911
 
 #define ELE_TAG_FlatSliderSimple2d  5100
 #define ELE_TAG_FlatSliderSimple3d  5101
@@ -721,6 +723,12 @@
 #define INTEGRATOR_TAGS_GeneralizedAlpha                35
 #define INTEGRATOR_TAGS_DisplacementPath                36
 #define INTEGRATOR_TAGS_FSI                             37
+#define INTEGRATOR_TAGS_TRBDF3                          38
+#define INTEGRATOR_TAGS_Houbolt                         39
+#define INTEGRATOR_TAGS_ParkLMS3                        40
+#define INTEGRATOR_TAGS_BackwardEuler                   41
+#define INTEGRATOR_TAGS_EnergyConserved                 42
+#define INTEGRATOR_TAGS_PFEMIntegrator                  43
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2
@@ -795,7 +803,9 @@
 #define RECORDER_TAGS_DamageRecorder		12
 #define RECORDER_TAGS_PatternRecorder		13
 #define RECORDER_TAGS_TclFeViewer		14
-
+#define RECORDER_TAGS_NormElementRecorder	16
+#define RECORDER_TAGS_NormNodeRecorder	        17
+#define RECORDER_TAGS_NormEnvelopeElementRecorder	18
 
 #define OPS_STREAM_TAGS_FileStream		1
 #define OPS_STREAM_TAGS_StandardStream		2
