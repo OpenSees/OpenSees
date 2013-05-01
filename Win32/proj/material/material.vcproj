@@ -353,6 +353,12 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\Pinching4Material.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\PinchingLimitStateMaterial.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\PinchingLimitStateMaterial.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\fedeas\PlasticDamageMaterial.cpp">
 			</File>
 			<File
@@ -721,6 +727,12 @@
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\material\uniaxial\limitState\LimitStateMaterial.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\material\uniaxial\limitState\limitCurve\RotationShearCurve.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\material\uniaxial\limitState\limitCurve\RotationShearCurve.h">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\material\uniaxial\limitState\limitCurve\ShearCurve.cpp">
