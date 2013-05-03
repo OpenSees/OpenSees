@@ -287,6 +287,14 @@
 #define ND_TAG_Damage2p3D 			24
 #define ND_TAG_Damage2ppstress 			25
 
+#define ND_TAG_ElasticOrthotropic		  200
+#define ND_TAG_ElasticOrthotropicPlaneStrain2d	211
+#define ND_TAG_ElasticOrthotropicPlaneStress2d	212
+#define ND_TAG_ElasticOrthotropicAxiSymm          213
+#define ND_TAG_ElasticOrthotropicPlateFiber	214
+#define ND_TAG_ElasticOrthotropicBeamFiber	215
+#define ND_TAG_ElasticOrthotropicThreeDimensional 216
+#define ND_TAG_ElasticOrthotropicBeamFiber2d	218
 
 
 #define ND_TAG_J2PlaneStrain                  3005
@@ -485,6 +493,7 @@
 #define ELE_TAG_ConstantPressureVolumeQuad 3456
 #define ELE_TAG_NineNodeMixedQuad          3359
 #define ELE_TAG_DispBeamColumn2d 9870
+#define ELE_TAG_TimoshenkoBeamColumn2d 98701
 #define ELE_TAG_DispBeamColumn3d 9871
 #define ELE_TAG_HingedBeam2d     9872
 #define ELE_TAG_HingedBeam3d     9873
@@ -608,9 +617,11 @@
 
 #define CRDTR_TAG_LinearCrdTransf2d 1
 #define CRDTR_TAG_PDeltaCrdTransf2d 2
+#define CRDTR_TAG_ModerateDispCrdTransf2d 8
 #define CRDTR_TAG_CorotCrdTransf2d  3
 #define CRDTR_TAG_LinearCrdTransf3d 4
 #define CRDTR_TAG_PDeltaCrdTransf3d 5
+#define CRDTR_TAG_ModerateDispCrdTransf3d 9
 #define CRDTR_TAG_CorotCrdTransf3d  6
 #define CRDTR_TAG_LinearCrdTransf2dInt 7
 
