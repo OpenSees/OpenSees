@@ -2697,6 +2697,10 @@ SRC/material/nD/ElasticIsotropicPlateFiber.cpp -text
 SRC/material/nD/ElasticIsotropicPlateFiber.h -text
 SRC/material/nD/ElasticIsotropicThreeDimensional.cpp -text
 SRC/material/nD/ElasticIsotropicThreeDimensional.h -text
+SRC/material/nD/ElasticOrthotropicMaterial.cpp -text
+SRC/material/nD/ElasticOrthotropicMaterial.h -text
+SRC/material/nD/ElasticOrthotropicThreeDimensional.cpp -text
+SRC/material/nD/ElasticOrthotropicThreeDimensional.h -text
 SRC/material/nD/FeapMaterial.cpp -text
 SRC/material/nD/FeapMaterial.h -text
 SRC/material/nD/J2AxiSymm.cpp -text
