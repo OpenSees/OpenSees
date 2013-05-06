@@ -634,6 +634,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/ElasticIsotropicPlateFiber.o \
 	$(FE)/material/nD/ElasticIsotropicBeamFiber.o \
 	$(FE)/material/nD/ElasticIsotropicBeamFiber2d.o \
+	$(FE)/material/nD/ElasticOrthotropicMaterial.o \
+	$(FE)/material/nD/ElasticOrthotropicThreeDimensional.o \
 	$(FE)/material/nD/PlaneStressMaterial.o \
 	$(FE)/material/nD/PlaneStrainMaterial.o \
 	$(FE)/material/nD/PlateFiberMaterial.o \
