@@ -69,6 +69,7 @@ extern  void *OPS_NewFAFourSteelPCPlaneStressMaterial(void);
 extern  void *OPS_NewRAFourSteelPCPlaneStressMaterial(void);
 
 extern  void *OPS_NewElasticIsotropicMaterial(void);
+extern  void *OPS_NewElasticOrthotropicMaterial(void);
 extern  void *OPS_NewDruckerPragerMaterial(void);
 extern  void *OPS_NewBoundingCamClayMaterial(void);
 extern  void *OPS_NewContactMaterial2DMaterial(void);
@@ -264,6 +265,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     else if ((strcmp(argv[1],"ElasticIsotropic3D") == 0) || (strcmp(argv[1],"ElasticIsotropic") == 0)) {
 
       void *theMat = OPS_NewElasticIsotropicMaterial();
+      if (theMat != 0)
+	theMaterial = (NDMaterial *)theMat;
+      else
+	return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"ElasticOrthotropic3D") == 0) || (strcmp(argv[1],"ElasticOrthotropic") == 0)) {
+
+      void *theMat = OPS_NewElasticOrthotropicMaterial();
       if (theMat != 0)
 	theMaterial = (NDMaterial *)theMat;
       else
