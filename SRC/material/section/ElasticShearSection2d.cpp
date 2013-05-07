@@ -44,12 +44,11 @@ ElasticShearSection2d::ElasticShearSection2d(void)
  E(0.0), A(0.0), I(0.0), G(0.0), alpha(0.0),
  e(3), eCommit(3), parameterID(0)
 {
-    if (code(0) != SECTION_RESPONSE_P)
-    {
-	code(0) = SECTION_RESPONSE_P;	// P is the first quantity
-	code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
-	code(2) = SECTION_RESPONSE_VY;	// Vy is the third
-    }    
+  if (code(0) != SECTION_RESPONSE_P) {
+    code(0) = SECTION_RESPONSE_P;	// P is the first quantity
+    code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
+    code(2) = SECTION_RESPONSE_VY;	// Vy is the third
+  }    
 }
 
 ElasticShearSection2d::ElasticShearSection2d
@@ -58,32 +57,31 @@ ElasticShearSection2d::ElasticShearSection2d
  E(E_in), A(A_in), I(I_in), G(G_in), alpha(alpha_in),
  e(3), eCommit(3), parameterID(0)
 {
-    if (E <= 0.0)  {
-		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input E <= 0.0";
+  if (E <= 0.0)  {
+    opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input E <= 0.0";
   }
-	
-    if (A <= 0.0)  {
-		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input A <= 0.0";
-    }
-    
-    if (I <= 0.0)  {
-		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input I <= 0.0";
-    }    
-	
-    if (G <= 0.0)  {
-		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input G <= 0.0";
-    }    
-
-	if (alpha <= 0.0)  {
-		opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input alpha <= 0.0";
-    }    
-
-		if (code(0) != SECTION_RESPONSE_P)
-    {
-	code(0) = SECTION_RESPONSE_P;	// P is the first quantity
-	code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
-	code(2) = SECTION_RESPONSE_VY;	// Vy is the third
-    }
+  
+  if (A <= 0.0)  {
+    opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input A <= 0.0";
+  }
+  
+  if (I <= 0.0)  {
+    opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input I <= 0.0";
+  }    
+  
+  if (G <= 0.0)  {
+    opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input G <= 0.0";
+  }    
+  
+  if (alpha <= 0.0)  {
+    opserr << "ElasticShearSection2d::ElasticShearSection2d -- Input alpha <= 0.0";
+  }    
+  
+  if (code(0) != SECTION_RESPONSE_P) {
+    code(0) = SECTION_RESPONSE_P;	// P is the first quantity
+    code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
+    code(2) = SECTION_RESPONSE_VY;	// Vy is the third
+  }
 }
 
 ElasticShearSection2d::~ElasticShearSection2d(void)
@@ -133,7 +131,7 @@ const Vector &
 ElasticShearSection2d::getStressResultant (void)
 {
   s(0) = E*A*e(0);
-  s(1) = E*I*e(1);    
+  s(1) = E*I*e(1);
   s(2) = G*A*alpha*e(2);
 
   return s;
@@ -279,23 +277,23 @@ ElasticShearSection2d::setParameter(const char **argv, int argc,
     return -1;
 
   if (strcmp(argv[0],"E") == 0) {
-	  param.setValue(E);
+    param.setValue(E);
     return param.addObject(1, this);
   }
   if (strcmp(argv[0],"A") == 0) {
-	  param.setValue(A);
+    param.setValue(A);
     return param.addObject(2, this);
   }
   if (strcmp(argv[0],"I") == 0) {
-	  param.setValue(I);
+    param.setValue(I);
     return param.addObject(3, this);
   }
   if (strcmp(argv[0],"G") == 0) {
-	  param.setValue(G);
+    param.setValue(G);
     return param.addObject(4, this);
   }
   if (strcmp(argv[0],"alpha") == 0) {
-	  param.setValue(alpha);
+    param.setValue(alpha);
     return param.addObject(5, this);
   }
   return -1;
@@ -351,9 +349,61 @@ ElasticShearSection2d::getStressResultantSensitivity(int gradIndex,
 }
 
 const Matrix&
-ElasticShearSection2d::getInitialTangentSensitivity(int gradIndex)
+ElasticShearSection2d::getSectionTangentSensitivity(int gradIndex)
 {
   ks.Zero();
 
-  return ks;
+  if (parameterID == 1) { // E
+    ks(0,0) = A;
+    ks(1,1) = I;
+  }
+  if (parameterID == 2) { // A
+    ks(0,0) = E;
+    ks(2,2) = G*alpha;
+  }
+  if (parameterID == 3) { // I
+    ks(1,1) = E;
+  }
+  if (parameterID == 4) { // G
+    ks(2,2) = A*alpha;
+  }
+  if (parameterID == 5) { // alpha
+    ks(2,2) = G*A;
+  }
+}
+
+const Matrix&
+ElasticShearSection2d::getInitialTangentSensitivity(int gradIndex)
+{
+  return this->getSectionTangentSensitivity(gradIndex);
+}
+
+const Matrix&
+ElasticShearSection2d::getSectionFlexibilitySensitivity(int gradIndex)
+{
+  ks.Zero();
+
+  if (parameterID == 1) { // E
+    ks(0,0) = -1.0/(E*E*A);
+    ks(1,1) = -1.0/(E*E*I);
+  }
+  if (parameterID == 2) { // A
+    ks(0,0) = -1.0/(E*A*A);
+    ks(2,2) = -1.0/(G*alpha*A*A);
+  }
+  if (parameterID == 3) { // I
+    ks(1,1) = -1.0/(E*I*I);
+  }
+  if (parameterID == 4) { // G
+    ks(2,2) = -1.0/(A*alpha*G*G);
+  }
+  if (parameterID == 5) { // alpha
+    ks(2,2) = -1.0/(G*A*alpha*alpha);
+  }
+}
+
+const Matrix& 
+ElasticShearSection2d::getInitialFlexibilitySensitivity(int gradIndex)
+{
+  return this->getSectionFlexibilitySensitivity(gradIndex);
 }
