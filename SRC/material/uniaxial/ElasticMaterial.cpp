@@ -333,8 +333,29 @@ ElasticMaterial::getStressSensitivity(int gradIndex, bool conditional)
 
 
 double
+ElasticMaterial::getTangentSensitivity(int gradIndex)
+{
+  if (parameterID == 1)
+    return 1.0;
+  if (parameterID == 2 && trialStrain >= 0.0)
+    return 1.0;
+  if (parameterID == 3 && trialStrain <= 0.0)
+    return 1.0;
+
+  return 0.0;
+}
+
+
+double
 ElasticMaterial::getInitialTangentSensitivity(int gradIndex)
 {
+  if (parameterID == 1)
+    return 1.0;
+  if (parameterID == 2)
+    return 1.0;
+  if (parameterID == 3)
+    return 1.0;
+
   return 0.0;
 }
 
