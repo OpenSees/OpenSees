@@ -69,6 +69,7 @@ class HardeningMaterial : public UniaxialMaterial
     int    updateParameter          (int parameterID, Information &info);
     int    activateParameter        (int parameterID);
     double getStressSensitivity     (int gradIndex, bool conditional);
+    double getTangentSensitivity    (int gradIndex);
     double getInitialTangentSensitivity    (int gradIndex);
     int    commitSensitivity        (double strainGradient, int gradIndex, int numGrads);
     // AddingSensitivity:END ///////////////////////////////////////////
@@ -85,12 +86,10 @@ class HardeningMaterial : public UniaxialMaterial
 	
     // Committed history variables
     double CplasticStrain;	// Committed plastic strain
-    double CbackStress;		// Committed back stress;
     double Chardening;		// Committed internal hardening variable
 
 	// Trial history variables
     double TplasticStrain;	// Trial plastic strain
-    double TbackStress;		// Trial back stress
     double Thardening;		// Trial internal hardening variable
 
     // Trial state variables

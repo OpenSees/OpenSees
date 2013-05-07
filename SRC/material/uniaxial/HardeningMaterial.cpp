@@ -89,7 +89,7 @@ HardeningMaterial::setTrialStrain (double strain, double strainRate)
     Tstress = E * (Tstrain-CplasticStrain);
 
     // Compute trial stress relative to committed back stress
-    double xsi = Tstress - CbackStress;
+    double xsi = Tstress - Hkin*CplasticStrain;
 
     // Compute yield criterion
     double f = fabs(xsi) - (sigmaY + Hiso*Chardening);
@@ -119,9 +119,6 @@ HardeningMaterial::setTrialStrain (double strain, double strainRate)
 	
       // Update plastic strain
       TplasticStrain = CplasticStrain + dGamma*sign;
-	
-      // Update back stress
-      TbackStress = CbackStress + dGamma*Hkin*sign;
 	
       // Update internal hardening variable
       Thardening = Chardening + dGamma;
@@ -156,7 +153,6 @@ HardeningMaterial::commitState(void)
 {
     // Commit trial history variables
     CplasticStrain = TplasticStrain;
-    CbackStress = TbackStress;
     Chardening = Thardening;
     
     return 0;
@@ -173,12 +169,10 @@ HardeningMaterial::revertToStart(void)
 {
     // Reset committed history variables
     CplasticStrain = 0.0;
-    CbackStress = 0.0;
     Chardening = 0.0;
 
     // Reset trial history variables
     TplasticStrain = 0.0;
-    TbackStress = 0.0;
     Thardening = 0.0;
 
 	// Initialize state variables
@@ -202,12 +196,10 @@ HardeningMaterial::getCopy(void)
 
     // Copy committed history variables
     theCopy->CplasticStrain = CplasticStrain;
-    theCopy->CbackStress = CbackStress;
     theCopy->Chardening = Chardening;
 
     // Copy trial history variables
     theCopy->TplasticStrain = TplasticStrain;
-    theCopy->TbackStress = TbackStress;
     theCopy->Thardening = Thardening;
 
     // Copy trial state variables
@@ -223,7 +215,7 @@ HardeningMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
   
-  static Vector data(12);
+  static Vector data(11);
   
   data(0) = this->getTag();
   data(1) = E;
@@ -232,11 +224,10 @@ HardeningMaterial::sendSelf(int cTag, Channel &theChannel)
   data(4) = Hkin;
   data(5) = eta;
   data(6) = CplasticStrain;
-  data(7) = CbackStress;
-  data(8) = Chardening;
-  data(9) = Tstrain;
-  data(10) = Tstress;
-  data(11) = Ttangent;
+  data(7) = Chardening;
+  data(8) = Tstrain;
+  data(9) = Tstress;
+  data(10) = Ttangent;
   
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
@@ -251,7 +242,7 @@ HardeningMaterial::recvSelf(int cTag, Channel &theChannel,
 {
   int res = 0;
   
-  static Vector data(12);
+  static Vector data(11);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
@@ -267,11 +258,10 @@ HardeningMaterial::recvSelf(int cTag, Channel &theChannel,
     Hkin = data(4);
     eta = data(5);
     CplasticStrain = data(6);
-    CbackStress = data(7);
-    Chardening = data(8);
-    Tstrain = data(9);
-    Tstress = data(10);
-    Ttangent = data(11);
+    Chardening = data(7);
+    Tstrain = data(8);
+    Tstress = data(9);
+    Ttangent = data(10);
   }
     
   return res;
@@ -293,18 +283,22 @@ HardeningMaterial::Print(OPS_Stream &s, int flag)
 int
 HardeningMaterial::setParameter(const char **argv, int argc, Parameter &param)
 {
-  if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0)
+  if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0) {
+    param.setValue(sigmaY);
     return param.addObject(1, this);
-
-  if (strcmp(argv[0],"E") == 0)
+  }
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E);
     return param.addObject(2, this);
-
-  if (strcmp(argv[0],"H_kin") == 0)
+  }
+  if (strcmp(argv[0],"H_kin") == 0 || strcmp(argv[0],"Hkin") == 0) {
+    param.setValue(Hkin);
     return param.addObject(3, this);
-
-  if (strcmp(argv[0],"H_iso") == 0)
+  }
+  if (strcmp(argv[0],"H_iso") == 0 || strcmp(argv[0],"Hiso") == 0) {
+    param.setValue(Hiso);
     return param.addObject(4, this);
-
+  }
   return -1;
 }
 
@@ -373,19 +367,17 @@ HardeningMaterial::getStressSensitivity(int gradIndex, bool conditional)
 
 	// Then pick up history variables for this gradient number
 	double CplasticStrainSensitivity = 0.0;
-	double CbackStressSensitivity	 = 0.0;
 	double ChardeningSensitivity	 = 0.0;
 	if (SHVs != 0) {
 		CplasticStrainSensitivity = (*SHVs)(0,gradIndex);
-		CbackStressSensitivity	 = (*SHVs)(1,gradIndex);
-		ChardeningSensitivity	 = (*SHVs)(2,gradIndex);
+		ChardeningSensitivity	 = (*SHVs)(1,gradIndex);
 	}
 
 	// Elastic trial stress
 	double Tstress = E * (Tstrain-CplasticStrain);
 
 	// Compute trial stress relative to committed back stress
-	double xsi = Tstress - CbackStress;
+	double xsi = Tstress - Hkin*CplasticStrain;
 
 	// Compute yield criterion
 	double f = fabs(xsi) - (sigmaY + Hiso*Chardening);
@@ -404,36 +396,78 @@ HardeningMaterial::getStressSensitivity(int gradIndex, bool conditional)
 	else { 
 
 		double TstressSensitivity = ESensitivity*(Tstrain-CplasticStrain)-E*CplasticStrainSensitivity;
-		
+
 		int sign = (xsi < 0) ? -1 : 1;
+
+		//double dGamma = f / (E+Hiso+Hkin);
 		
-		double dGamma = f / (E+Hiso+Hkin);
-		
+		double CbackStressSensitivity = (HkinSensitivity*CplasticStrain + Hkin*CplasticStrainSensitivity);
+
 		double fSensitivity = (TstressSensitivity-CbackStressSensitivity)*sign
 			- SigmaYSensitivity - HisoSensitivity*Chardening - Hiso*ChardeningSensitivity;
 		
-		double dGammaSensitivity = 
-			(fSensitivity*(E+Hkin+Hiso)-f*(ESensitivity+HkinSensitivity+HisoSensitivity))
-			/((E+Hkin+Hiso)*(E+Hkin+Hiso));
+		//double dGammaSensitivity = 
+		//	(fSensitivity*(E+Hkin+Hiso)-f*(ESensitivity+HkinSensitivity+HisoSensitivity))
+		//	/((E+Hkin+Hiso)*(E+Hkin+Hiso));
+		double dGammaSensitivity = fSensitivity/(E+Hkin+Hiso);
 		
-		sensitivity = (TstressSensitivity-dGammaSensitivity*E*sign-dGamma*ESensitivity*sign);
+		//sensitivity = (TstressSensitivity-dGammaSensitivity*E*sign-dGamma*ESensitivity*sign);
+		sensitivity = TstressSensitivity-dGammaSensitivity*E*sign;
 	}
 
 	return sensitivity;
 }
 
 
+double
+HardeningMaterial::getTangentSensitivity(int gradIndex)
+{
+  if (parameterID < 2 || parameterID > 4)
+    return 0.0;
+
+
+  // Elastic trial stress
+  double Tstress = E * (Tstrain-CplasticStrain);
+  
+  // Compute trial stress relative to committed back stress
+  double xsi = Tstress - Hkin*CplasticStrain;
+  
+  // Compute yield criterion
+  double f = fabs(xsi) - (sigmaY + Hiso*Chardening);
+  
+  // Elastic step ... no updates required
+  if (f <= -DBL_EPSILON * E) {
+
+    if (parameterID == 2)
+      return 1.0; 
+  }
+  
+  // Plastic step
+  else { 
+
+    double den = E + Hiso + Hkin;
+    double den2 = den*den;
+
+    if (parameterID == 2)  // E
+      return (den*(Hkin+Hiso)-E*(Hkin+Hiso)) / den2;
+    else if (parameterID == 3)  // Hkin
+      return (den*E          -E*(Hkin+Hiso)) / den2;
+    else if (parameterID == 4)  // Hiso
+      return (den*E          -E*(Hkin+Hiso)) / den2;
+  }
+
+  return 0.0;
+}
+
 
 double
 HardeningMaterial::getInitialTangentSensitivity(int gradIndex)
 {
-	// For now, assume that this is only called for initial stiffness 
-	if (parameterID == 2) {
-		return 1.0; 
-	}
-	else {
-		return 0.0;
-	}
+  // For now, assume that this is only called for initial stiffness 
+  if (parameterID == 2)
+    return 1.0; 
+  else
+    return 0.0;
 }
 
 
@@ -441,8 +475,14 @@ int
 HardeningMaterial::commitSensitivity(double TstrainSensitivity, int gradIndex, int numGrads)
 {
 	if (SHVs == 0) {
-		SHVs = new Matrix(3,numGrads);
+		SHVs = new Matrix(2,numGrads);
 	}
+
+	if (gradIndex >= SHVs->noCols()) {
+	  //opserr << gradIndex << ' ' << SHVs->noCols() << endln;
+	  return 0;
+	}
+
 
 	// First set values depending on what is random
 	double SigmaYSensitivity = 0.0;
@@ -468,14 +508,13 @@ HardeningMaterial::commitSensitivity(double TstrainSensitivity, int gradIndex, i
 
 	// Then pick up history variables for this gradient number
 	double CplasticStrainSensitivity= (*SHVs)(0,gradIndex);
-	double CbackStressSensitivity	= (*SHVs)(1,gradIndex);
-	double ChardeningSensitivity	= (*SHVs)(2,gradIndex);
+	double ChardeningSensitivity	= (*SHVs)(1,gradIndex);
 
 	// Elastic trial stress
 	double Tstress = E * (Tstrain-CplasticStrain);
 
 	// Compute trial stress relative to committed back stress
-	double xsi = Tstress - CbackStress;
+	double xsi = Tstress - Hkin*CplasticStrain;
 
 	// Compute yield criterion
 	double f = fabs(xsi) - (sigmaY + Hiso*Chardening);
@@ -493,20 +532,21 @@ HardeningMaterial::commitSensitivity(double TstrainSensitivity, int gradIndex, i
 			+ E*(TstrainSensitivity-CplasticStrainSensitivity);
 
 		int sign = (xsi < 0) ? -1 : 1;
+		//f = 0.0;
+		//double dGamma = f / (E+Hiso+Hkin);
 
-		double dGamma = f / (E+Hiso+Hkin);
+		double CbackStressSensitivity = (HkinSensitivity*CplasticStrain + Hkin*CplasticStrainSensitivity);
 
 		double fSensitivity = (TstressSensitivity-CbackStressSensitivity)*sign
 			- SigmaYSensitivity - HisoSensitivity*Chardening - Hiso*ChardeningSensitivity;
 
-		double dGammaSensitivity = 
-			(fSensitivity*(E+Hkin+Hiso)-f*(ESensitivity+HkinSensitivity+HisoSensitivity))
-			/((E+Hkin+Hiso)*(E+Hkin+Hiso));
+		//double dGammaSensitivity = 
+		//	(fSensitivity*(E+Hkin+Hiso)-f*(ESensitivity+HkinSensitivity+HisoSensitivity))
+		//	/((E+Hkin+Hiso)*(E+Hkin+Hiso));
+		double dGammaSensitivity = fSensitivity/(E+Hkin+Hiso);
 
 		(*SHVs)(0,gradIndex) += dGammaSensitivity*sign;
-		(*SHVs)(1,gradIndex) += dGammaSensitivity*Hkin*sign + dGamma*HkinSensitivity*sign;
-		(*SHVs)(2,gradIndex) += dGammaSensitivity;
-
+		(*SHVs)(1,gradIndex) += dGammaSensitivity;
 	}
 
 	return 0;
