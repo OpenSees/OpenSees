@@ -370,6 +370,8 @@ ElasticShearSection2d::getSectionTangentSensitivity(int gradIndex)
   if (parameterID == 5) { // alpha
     ks(2,2) = G*A;
   }
+
+  return ks;
 }
 
 const Matrix&
@@ -400,6 +402,8 @@ ElasticShearSection2d::getSectionFlexibilitySensitivity(int gradIndex)
   if (parameterID == 5) { // alpha
     ks(2,2) = -1.0/(G*A*alpha*alpha);
   }
+
+  return ks;
 }
 
 const Matrix& 
