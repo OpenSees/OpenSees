@@ -81,7 +81,6 @@ class ElasticTubeSection3d: public SectionForceDeformation
   double E, d, tw, G;
   
   Vector e;			// section trial deformations
-  Vector eCommit;
   
   static Vector s;
   static Matrix ks;
