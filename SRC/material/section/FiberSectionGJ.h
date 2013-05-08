@@ -90,7 +90,6 @@ class FiberSectionGJ : public SectionForceDeformation
   double zBar;
   
   Vector e;          // trial section deformations 
-  Vector eCommit;    // committed section deformations 
   
   static ID code;
   static Vector s;         // section resisting forces
