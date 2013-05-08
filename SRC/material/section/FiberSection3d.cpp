@@ -52,7 +52,7 @@ ID FiberSection3d::code(3);
 FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers): 
   SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
   numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), eCommit(3), s(0), ks(0)
+  yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -118,7 +118,7 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
 			       SectionIntegration &si):
   SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
   numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), eCommit(3), s(0), ks(0)
+  yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -187,7 +187,7 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
 FiberSection3d::FiberSection3d():
   SectionForceDeformation(0, SEC_TAG_FiberSection3d),
   numFibers(0), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), eCommit(3), s(0), ks(0)
+  yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
 {
   s = new Vector(sData, 3);
   ks = new Matrix(kData, 3, 3);
@@ -484,7 +484,6 @@ FiberSection3d::getCopy(void)
     }    
   }
 
-  theCopy->eCommit = eCommit;
   theCopy->e = e;
   theCopy->yBar = yBar;
   theCopy->zBar = zBar;
@@ -524,8 +523,6 @@ FiberSection3d::commitState(void)
   for (int i = 0; i < numFibers; i++)
     err += theMaterials[i]->commitState();
 
-  eCommit = e;
-
   return err;
 }
 
@@ -533,10 +530,6 @@ int
 FiberSection3d::revertToLastCommit(void)
 {
   int err = 0;
-
-  // Last committed section deformations
-  e = eCommit;
-
 
   kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0; kData[3] = 0.0;
   kData[4] = 0.0; kData[5] = 0.0; kData[6] = 0.0; kData[7] = 0.0;
