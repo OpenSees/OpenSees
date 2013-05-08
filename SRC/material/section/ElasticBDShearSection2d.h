@@ -82,7 +82,6 @@ class ElasticBDShearSection2d: public SectionForceDeformation
   double E, b, d, G, alpha;
   
   Vector e;			// section trial deformations
-  Vector eCommit;
   
   static Vector s;
   static Matrix ks;

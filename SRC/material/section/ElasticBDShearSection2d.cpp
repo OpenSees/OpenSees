@@ -41,7 +41,7 @@ ID ElasticBDShearSection2d::code(3);
 ElasticBDShearSection2d::ElasticBDShearSection2d(void)
 :SectionForceDeformation(0, SEC_TAG_ElasticBDShear2d),
  E(0.0), b(0.0), d(0.0), G(0.0), alpha(0.0),
- e(3), eCommit(3), parameterID(0)
+ e(3), parameterID(0)
 {
     if (code(0) != SECTION_RESPONSE_P)
     {
@@ -55,7 +55,7 @@ ElasticBDShearSection2d::ElasticBDShearSection2d
 (int tag, double E_in, double b_in, double d_in, double G_in, double alpha_in)
 :SectionForceDeformation(tag, SEC_TAG_ElasticBDShear2d),
  E(E_in), b(b_in), d(d_in), G(G_in), alpha(alpha_in),
- e(3), eCommit(3), parameterID(0)
+ e(3), parameterID(0)
 {
     if (E <= 0.0)  {
 		opserr << "ElasticBDShearSection2d::ElasticBDShearSection2d -- Input E <= 0.0 ... setting E to 1.0\n";
@@ -88,24 +88,18 @@ ElasticBDShearSection2d::~ElasticBDShearSection2d(void)
 int 
 ElasticBDShearSection2d::commitState(void)
 {
-  eCommit = e;
-
   return 0;
 }
 
 int 
 ElasticBDShearSection2d::revertToLastCommit(void)
 {
-  e = eCommit;
-
   return 0;
 }
 
 int 
 ElasticBDShearSection2d::revertToStart(void)
 {
-  eCommit.Zero();
-
   return 0;
 }
 
@@ -194,7 +188,7 @@ ElasticBDShearSection2d::getCopy(void)
   ElasticBDShearSection2d *theCopy =
     new ElasticBDShearSection2d (this->getTag(), E, b, d, G, alpha);
   
-  theCopy->eCommit = eCommit;
+  theCopy->parameterID = parameterID;
   
   return theCopy;
 }
@@ -216,7 +210,7 @@ ElasticBDShearSection2d::sendSelf(int commitTag, Channel &theChannel)
 {
   int res = 0;
   
-  static Vector data(9);
+  static Vector data(6);
   
   int dataTag = this->getDbTag();
   
@@ -226,9 +220,6 @@ ElasticBDShearSection2d::sendSelf(int commitTag, Channel &theChannel)
   data(3) = d;    
   data(4) = G;    
   data(5) = alpha;    
-  data(6) = eCommit(0);
-  data(7) = eCommit(1);
-  data(8) = eCommit(2);
   
   res += theChannel.sendVector(dataTag, commitTag, data);
   if (res<0) {
@@ -245,7 +236,7 @@ ElasticBDShearSection2d::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static Vector data(9);
+  static Vector data(6);
   
   int dataTag = this->getDbTag();
   
@@ -261,9 +252,6 @@ ElasticBDShearSection2d::recvSelf(int commitTag, Channel &theChannel,
   d = data(3);
   G = data(4);
   alpha = data(5);
-  eCommit(0) = data(6);
-  eCommit(1) = data(7);
-  eCommit(2) = data(8);
   
   return res;
 }
