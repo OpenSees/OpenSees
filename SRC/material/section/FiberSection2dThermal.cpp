@@ -50,7 +50,7 @@ ID FiberSection2dThermal::code(2);
 FiberSection2dThermal::FiberSection2dThermal(int tag, int num, Fiber **fibers): 
   SectionForceDeformation(tag, SEC_TAG_FiberSection2dThermal),
   numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), sectionIntegr(0), e(2), eCommit(2), s(0), ks(0), dedh(2), sT(0)//,theTemperatures(temperatures),theTemperatureFactor(0)
+  yBar(0.0), sectionIntegr(0), e(2), s(0), ks(0), dedh(2), sT(0)//,theTemperatures(temperatures),theTemperatureFactor(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -129,7 +129,7 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, UniaxialMaterial 
 			       SectionIntegration &si):
   SectionForceDeformation(tag, SEC_TAG_FiberSection2dThermal),
   numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), sectionIntegr(0), e(2), eCommit(2), s(0), ks(0), dedh(2)//,theTemperature(0)
+  yBar(0.0), sectionIntegr(0), e(2), s(0), ks(0), dedh(2)//,theTemperature(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -213,7 +213,7 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, UniaxialMaterial 
 FiberSection2dThermal::FiberSection2dThermal():
   SectionForceDeformation(0, SEC_TAG_FiberSection2dThermal),
   numFibers(0), theMaterials(0), matData(0),
-  yBar(0.0), sectionIntegr(0), e(2), eCommit(2), s(0), ks(0), dedh(2)//, theTemperatures(0),theTemperatureFactor(0)
+  yBar(0.0), sectionIntegr(0), e(2), s(0), ks(0), dedh(2)//, theTemperatures(0),theTemperatureFactor(0)
 {
   s = new Vector(sData, 2);
   ks = new Matrix(kData, 2, 2);
@@ -994,7 +994,6 @@ FiberSection2dThermal::getCopy(void)
 
   theCopy->theTemperatureFactor = 0;
 
-  theCopy->eCommit = eCommit;
   theCopy->e = e;
   theCopy->yBar = yBar;
 
@@ -1034,8 +1033,6 @@ FiberSection2dThermal::commitState(void)
   for (int i = 0; i < numFibers; i++)
     err += theMaterials[i]->commitState();
 
-  eCommit = e;
-
   return err;
 }
 
@@ -1043,10 +1040,6 @@ int
 FiberSection2dThermal::revertToLastCommit(void)
 {
   int err = 0;
-
-  // Last committed section deformations
-  e = eCommit;
-
 
   kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0; kData[3] = 0.0;
   sData[0] = 0.0; sData[1] = 0.0;
