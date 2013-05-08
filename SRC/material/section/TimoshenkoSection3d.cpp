@@ -53,7 +53,7 @@ TimoshenkoSection3d::TimoshenkoSection3d(int tag, int num, NDMaterial **fibers,
 					 double *y, double *z, double *A): 
   SectionForceDeformation(tag, SEC_TAG_TimoshenkoSection3d),
   numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), e(6), eCommit(6), s(0), ks(0)
+  yBar(0.0), zBar(0.0), e(6), s(0), ks(0)
 {
   if (numFibers != 0) {
     theMaterials = new NDMaterial *[numFibers];
@@ -126,7 +126,7 @@ TimoshenkoSection3d::TimoshenkoSection3d(int tag, int num, NDMaterial **fibers,
 TimoshenkoSection3d::TimoshenkoSection3d():
   SectionForceDeformation(0, SEC_TAG_TimoshenkoSection3d),
   numFibers(0), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), e(6), eCommit(6), s(0), ks(0)
+  yBar(0.0), zBar(0.0), e(6), s(0), ks(0)
 {
   s = new Vector(sData, 6);
   ks = new Matrix(kData, 6, 6);
@@ -325,7 +325,6 @@ TimoshenkoSection3d::getCopy(void)
     }    
   }
 
-  theCopy->eCommit = eCommit;
   theCopy->e = e;
   theCopy->yBar = yBar;
   theCopy->zBar = zBar;
@@ -363,8 +362,6 @@ TimoshenkoSection3d::commitState(void)
   for (int i = 0; i < numFibers; i++)
     err += theMaterials[i]->commitState();
 
-  eCommit = e;
-
   return err;
 }
 
@@ -372,10 +369,6 @@ int
 TimoshenkoSection3d::revertToLastCommit(void)
 {
   int err = 0;
-
-  // Last committed section deformations
-  e = eCommit;
-
 
   kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0; kData[3] = 0.0;
   kData[4] = 0.0; kData[5] = 0.0; kData[6] = 0.0; kData[7] = 0.0;
