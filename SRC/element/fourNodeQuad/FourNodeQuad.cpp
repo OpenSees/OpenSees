@@ -1014,6 +1014,27 @@ FourNodeQuad::setResponse(const char **argv, int argc,
     theResponse =  new ElementResponse(this, 3, Vector(12));
   }
 
+  else if ((strcmp(argv[0],"strain") ==0) || (strcmp(argv[0],"strains") ==0)) {
+    for (int i=0; i<4; i++) {
+      output.tag("GaussPoint");
+      output.attr("number",i+1);
+      output.attr("eta",pts[i][0]);
+      output.attr("neta",pts[i][1]);
+
+      output.tag("NdMaterialOutput");
+      output.attr("classType", theMaterial[i]->getClassTag());
+      output.attr("tag", theMaterial[i]->getTag());
+      
+      output.tag("ResponseType","eta11");
+      output.tag("ResponseType","eta22");
+      output.tag("ResponseType","eta12");
+      
+      output.endTag(); // GaussPoint
+      output.endTag(); // NdMaterialOutput
+      }
+    theResponse =  new ElementResponse(this, 4, Vector(12));
+  }
+
   output.endTag(); // ElementOutput
 
   return theResponse;
@@ -1040,6 +1061,21 @@ FourNodeQuad::getResponse(int responseID, Information &eleInfo)
       stresses(cnt+2) = sigma(2);
       cnt += 3;
     }
+  } else if (responseID == 4) {
+
+    // Loop over the integration points
+    static Vector stresses(12);
+    int cnt = 0;
+    for (int i = 0; i < 4; i++) {
+
+      // Get material stress response
+      const Vector &sigma = theMaterial[i]->getStrain();
+      stresses(cnt) = sigma(0);
+      stresses(cnt+1) = sigma(1);
+      stresses(cnt+2) = sigma(2);
+      cnt += 3;
+    }
+
     return eleInfo.setVector(stresses);
 	
   } else

@@ -1360,7 +1360,7 @@ ConstantPressureVolumeQuad::setResponse(const char **argv, int argc,
     }
     
     theResponse =  new ElementResponse(this, 1, resid);
-  }   else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"integrPoint") == 0) {
+  }  else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"integrPoint") == 0) {
     int pointNum = atoi(argv[1]);
     if (pointNum > 0 && pointNum <= 4) {
 
@@ -1372,7 +1372,8 @@ ConstantPressureVolumeQuad::setResponse(const char **argv, int argc,
       theResponse =  materialPointers[pointNum-1]->setResponse(&argv[2], argc-2, output);
       
       output.endTag();
-
+    }
+    
   } else if (strcmp(argv[0],"stresses") ==0) {
 
       for (int i=0; i<4; i++) {
@@ -1393,13 +1394,37 @@ ConstantPressureVolumeQuad::setResponse(const char **argv, int argc,
 	output.endTag(); // GaussPoint
 	output.endTag(); // NdMaterialOutput
       }
-
+      
       theResponse =  new ElementResponse(this, 3, Vector(16));
-    }
   }
+  
+  else if (strcmp(argv[0],"strains") ==0) {
+    
+      for (int i=0; i<4; i++) {
+	output.tag("GaussPoint");
+	output.attr("number",i+1);
+	output.attr("eta",sg[i]);
+	output.attr("neta",tg[i]);
+
+	output.tag("NdMaterialOutput");
+	output.attr("classType", materialPointers[i]->getClassTag());
+	output.attr("tag", materialPointers[i]->getTag());
+	
+	output.tag("ResponseType","UnknownStress");
+	output.tag("ResponseType","UnknownStress");
+	output.tag("ResponseType","UnknownStress");
+	output.tag("ResponseType","UnknownStress");
+	
+	output.endTag(); // GaussPoint
+	output.endTag(); // NdMaterialOutput
+      }
+
+      theResponse =  new ElementResponse(this, 4, Vector(16));
+  }
+
 	
   output.endTag(); // ElementOutput
-
+  
   return theResponse;
 }
 
@@ -1419,6 +1444,22 @@ ConstantPressureVolumeQuad::getResponse(int responseID, Information &eleInfo)
 
       // Get material stress response
       const Vector &sigma = materialPointers[i]->getStress();
+      stresses(cnt) = sigma(0);
+      stresses(cnt+1) = sigma(1);
+      stresses(cnt+2) = sigma(2);
+      stresses(cnt+3) = sigma(2);
+      cnt += 4;
+    }
+    return eleInfo.setVector(stresses);
+  } else if (responseID == 4) {
+
+    // Loop over the integration points
+    static Vector stresses(16);
+    int cnt = 0;
+    for (int i = 0; i < 4; i++) {
+
+      // Get material stress response
+      const Vector &sigma = materialPointers[i]->getStrain();
       stresses(cnt) = sigma(0);
       stresses(cnt+1) = sigma(1);
       stresses(cnt+2) = sigma(2);
