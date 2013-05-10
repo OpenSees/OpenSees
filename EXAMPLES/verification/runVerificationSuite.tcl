@@ -5,6 +5,7 @@
 set results [open results.out w]
 close $results
 
+source PlanarTruss.tcl
 source PortalFrame2d.tcl
 source EigenFrame.tcl
 source EigenFrame.Extra.tcl
