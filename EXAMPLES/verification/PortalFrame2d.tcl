@@ -1,14 +1,20 @@
+
 # Two dimenional Frame: Eigenvalue & Static Loads
 
-# used in verification by both SAP2000:
-#   http://pbadupws.nrc.gov/docs/ML0630/ML063050178.pdf
-# and seismo-struct (Example 11)
-#   www.seismosoft.com/Public/.../SeismoStruct_Verification_Report.pdf
+
+# REFERENCES:
+# used in verification by SAP2000:
+# SAP2000 Integrated Finite Element Analysis and Design of Structures, Verification Manual, 
+# Computers and Structures, 1997. Example 1.
+# and seismo-struct (Example 10)
+# SeismoStruct, Verification Report For Version 6, 2012. Example 11.
+
+
 
 # set some properties
 
-puts "Verification: 2d Elastic Frame"
-puts "  - eigenvalue and static pushover"
+puts "PortalFrame2d.tcl: Verification 2d Elastic Frame"
+puts "  - eigenvalue and static pushover analysis"
 
 wipe
 
@@ -157,7 +163,8 @@ algorithm Linear
 analysis Static
 analyze 1
 
-
+# determine PASS/FAILURE of test
+set ok 0
 
 #
 # print pretty output of comparsions
@@ -173,13 +180,17 @@ for {set i 0} {$i<$numEigen} {incr i 1} {
     set lambda [lindex $eigenValues $i]
     set period [expr 2*$PI/sqrt($lambda)];
     puts [format $formatString [expr $i+1] $period [lindex [lindex $comparisonResults 0] $i] [lindex [lindex $comparisonResults 1] $i]]
+    set resultOther [lindex [lindex $comparisonResults 0] $i]
+    if {[expr abs($period-$resultOther)] > 9.99e-5} {
+	set ok -1;
+    }
 }
 
 
 # print table of camparsion
 #       Parameter          SAP2000   SeismoStruct
 set comparisonResults {{"Disp Top" "Axial Force Bottom Left" "Moment Bottom Left"} {1.45076 69.99 2324.68} {1.451 70.01 2324.71}}
-
+set tolerances {9.99e-6 9.99e-3 9.99e-3}
 
 puts "\n\nSatic Analysis Result Comparisons:"
 set formatString {%30s%15s%15s%15s}
@@ -187,12 +198,28 @@ puts [format $formatString Parameter OpenSees SAP2000 SeismoStruct]
 set formatString {%30s%15.3f%15.2f%15.2f}
 for {set i 0} {$i<3} {incr i 1} {
     if {$i == 0} {
-	set value [nodeDisp 22 1]
+	set result [nodeDisp 22 1]
     } elseif {$i == 1} {
-	set value [expr abs([lindex [eleResponse 1 forces] 1])]
+	set result [expr abs([lindex [eleResponse 1 forces] 1])]
     } else {
-	set value [lindex [eleResponse 1 forces] 2]	
+	set result [lindex [eleResponse 1 forces] 2]	
     }
-    puts [format $formatString [lindex [lindex $comparisonResults 0] $i] $value [lindex [lindex $comparisonResults 1] $i] [lindex [lindex $comparisonResults 2] $i]]
+    puts [format $formatString [lindex [lindex $comparisonResults 0] $i] $result [lindex [lindex $comparisonResults 1] $i] [lindex [lindex $comparisonResults 2] $i]]
+    set resultOther [lindex [lindex $comparisonResults 1] $i]
+    set tol [lindex $tolerances $i]
+    if {[expr abs($result-$resultOther)] > $tol} {
+	set ok -1;
+	puts "failed-> $i [expr abs($result-$resultOther)] $tol"
+    }
 }
+
+set results [open results.out a+]
+if {$ok == 0} {
+    puts "PASSED Verification Test PortalFrame2d.tcl \n\n"
+    puts $results "PASSED : PortalFrame2d.tcl"
+} else {
+    puts "FAILED Verification Test PortalFrame2d.tcl \n\n"
+    puts $results "FAILED : PortalFrame2d.tcl"
+}
+close $results
 
