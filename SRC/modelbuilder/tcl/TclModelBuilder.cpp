@@ -2425,6 +2425,8 @@ TclCommand_addHomogeneousBC_X(ClientData clientData, Tcl_Interp *interp,
 
   //  int ndf = theTclBuilder->getNDF();
   int ndf = argc - 2;
+  if (strcmp(argv[argc-2],"-tol") == 0)
+    ndf -= 2;
 
   // check number of arguments
   if (argc < (2 + ndf)) {
@@ -2523,6 +2525,8 @@ TclCommand_addHomogeneousBC_Y(ClientData clientData, Tcl_Interp *interp,
 
   //  int ndf = theTclBuilder->getNDF();
   int ndf = argc - 2;
+  if (strcmp(argv[argc-2],"-tol") == 0)
+    ndf -= 2;
 
   // check number of arguments
   if (argc < (2 + ndf)) {
@@ -2625,6 +2629,8 @@ TclCommand_addHomogeneousBC_Z(ClientData clientData, Tcl_Interp *interp,
 
   //int ndf = theTclBuilder->getNDF();
   int ndf = argc - 2;
+  if (strcmp(argv[argc-2],"-tol") == 0)
+    ndf -= 2;
 
   // check number of arguments
   if (argc < (2 + ndf)) {
