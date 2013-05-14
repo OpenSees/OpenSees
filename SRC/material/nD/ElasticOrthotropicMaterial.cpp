@@ -35,7 +35,7 @@
 //#include <ElasticOrthotropicPlaneStress2D.h>
 //#include <ElasticOrthotropicPlaneStrain2D.h>
 //#include <ElasticOrthotropicAxiSymm.h>
-//#include <ElasticOrthotropicThreeDimensional.h>
+#include <ElasticOrthotropicThreeDimensional.h>
 //#include <ElasticOrthotropicPlateFiber.h>
 //#include <ElasticOrthotropicBeamFiber.h>
 //#include <ElasticOrthotropicBeamFiber2d.h>
@@ -132,52 +132,16 @@ ElasticOrthotropicMaterial::getRho()
 NDMaterial*
 ElasticOrthotropicMaterial::getCopy (const char *type)
 {
-/*
-  if (strcmp(type,"PlaneStress2D") == 0 || strcmp(type,"PlaneStress") == 0) {
-    ElasticOrthotropicPlaneStress2D *theModel;
-    theModel = new ElasticOrthotropicPlaneStress2D (this->getTag(), E, v, rho);
-    return theModel;
-  } 
-
-  else if (strcmp(type,"PlaneStrain2D") == 0 || strcmp(type,"PlaneStrain") == 0) {
-    ElasticOrthotropicPlaneStrain2D *theModel;
-    theModel = new ElasticOrthotropicPlaneStrain2D (this->getTag(), E, v, rho);
-    return theModel;
-  }
-
-  else if (strcmp(type,"AxiSymmetric2D") == 0 || strcmp(type,"AxiSymmetric") == 0) {
-    ElasticOrthotropicAxiSymm *theModel;
-    theModel = new ElasticOrthotropicAxiSymm(this->getTag(), E, v, rho);
-    return theModel;
-  }
-  
-  else if (strcmp(type,"ThreeDimensional") == 0 || strcmp(type,"3D") == 0) {
+  if (strcmp(type,"ThreeDimensional") == 0 || strcmp(type,"3D") == 0) {
     ElasticOrthotropicThreeDimensional *theModel;
-    theModel = new ElasticOrthotropicThreeDimensional (this->getTag(), E, v, rho);
-    return theModel;
-  }
+      theModel = new ElasticOrthotropicThreeDimensional (this->getTag(), Ex, Ey, Ez,
+                                                         vxy, vyz, vzx, Gxy, Gyz, Gzx, rho);
 
-  else if (strcmp(type,"PlateFiber") == 0) {
-    ElasticOrthotropicPlateFiber *theModel;
-    theModel = new ElasticOrthotropicPlateFiber(this->getTag(), E, v, rho);
-    return theModel;
-  }
-
-  else if (strcmp(type,"BeamFiber") == 0) {
-    ElasticOrthotropicBeamFiber *theModel;
-    theModel = new ElasticOrthotropicBeamFiber(this->getTag(), E, v, rho);
-    return theModel;
-  }
-
-  else if (strcmp(type,"BeamFiber2d") == 0) {
-    ElasticOrthotropicBeamFiber2d *theModel;
-    theModel = new ElasticOrthotropicBeamFiber2d(this->getTag(), E, v, rho);
     return theModel;
   }
 
   // Handle other cases
   else
-*/
     return NDMaterial::getCopy(type);
 }
 

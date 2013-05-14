@@ -181,7 +181,7 @@ ElasticIsotropicThreeDimensional::getCopy (void)
 const char*
 ElasticIsotropicThreeDimensional::getType (void) const
 {
-  return "ThreeDimensionalimensional";
+  return "ThreeDimensional";
 }
 
 int
