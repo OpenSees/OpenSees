@@ -1061,6 +1061,9 @@ FourNodeQuad::getResponse(int responseID, Information &eleInfo)
       stresses(cnt+2) = sigma(2);
       cnt += 3;
     }
+    
+    return eleInfo.setVector(stresses);
+      
   } else if (responseID == 4) {
 
     // Loop over the integration points
