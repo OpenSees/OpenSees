@@ -537,6 +537,7 @@ EXAMPLES/verification/EigenFrame.tcl -text
 EXAMPLES/verification/PlanarTruss.tcl -text
 EXAMPLES/verification/PortalFrame2d.tcl -text
 EXAMPLES/verification/runVerificationSuite.tcl -text
+EXAMPLES/verification/sdofTransient.tcl -text
 MAKES/Makefile.UCDAVIS -text
 MAKES/Makefile.def.ABE -text
 MAKES/Makefile.def.ALPHA -text

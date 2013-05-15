@@ -5,7 +5,9 @@
 set results [open results.out w]
 close $results
 
+source sdofTransient.tcl
 source PlanarTruss.tcl
+source PlanarTruss.Extra.tcl
 source PortalFrame2d.tcl
 source EigenFrame.tcl
 source EigenFrame.Extra.tcl
