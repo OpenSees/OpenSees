@@ -66,7 +66,8 @@ foreach sectType {Fiber Uniaxial} {
     } else {
 	uniaxialMaterial Elastic 1 $E
 	section Fiber 1 {	
-	    patch rect 1 $numFiberY $numFiberZ [expr -$z/2.0] [expr -$y/2.0] [expr $z/2.0] [expr $y/2.0]	    
+#	    patch rect 1 $numFiberY $numFiberZ [expr -$z/2.0] [expr -$y/2.0] [expr $z/2.0] [expr $y/2.0]	    
+	    patch rect 1 $numFiberY $numFiberZ [expr -$z] [expr -$y] [expr 0.] [expr 0.]	    
 	}
     }
 

@@ -1,13 +1,60 @@
-# SINGLE  DOF
+
+# SINGLE DOF Model
 
 #REFERENCES: 
 # 1) Chopra, A.K. "Dynamics of Structures: Theory and Applications"
 # Prentice Hall, 1995.
 #   - Sections 3.1, Section 3.2 and Section 
 
+
 puts "sdofTransient.tcl: Verification of Elastic SDOF systems (Chopra)"
 
-set testOK 0;
+# global variables
+set PI [expr 2.0*asin(1.0)]
+set g 386.4
+set testOK 0;    # variable used to keep track of SUCCESS or FAILURE
+set tol 1.0e-3
+
+# procedure to build a linear model
+#   input args: K - desired stiffness
+#               periodStruct - desired structre period (used to compute mass)
+#               dampRatio (zeta) - desired damping ratio
+proc buildModel {K periodStruct dampRatio} {
+
+    global PI
+
+    set wn [expr 2.0 * $PI / $periodStruct]
+    set m [expr $K/($wn * $wn)]
+    
+    wipe
+    model basic -ndm 1 -ndf 1
+    
+    node  1  0.
+    node  2  0. -mass $m
+    
+    uniaxialMaterial Elastic 1 $K
+    element zeroLength 1 1 2 -mat 1 -dir 1
+    
+    fix 1 1
+
+    # add damping using rayleigh damping on the mass term
+    set a0 [expr 2.0*$wn*$dampRatio]
+    rayleigh $a0 0. 0. 0.
+
+}
+
+#
+# procedure to build a linear transient analysis
+#    input args: integrator command
+proc buildLinearAnalysis {integratorCommand} {
+    # do analysis
+    constraints Plain
+    numberer Plain
+    algorithm Linear
+    eval $integratorCommand; # integrator Newmark 0.5 [expr 1.0/6.0]
+    system ProfileSPD
+    analysis Transient
+}
 
 # Section 3.1 - Harmonic Vibrartion of Undamped Elastic SDOF System
 puts "   - Undamped System Harmonic Exciatation (Section 3.1)"
@@ -15,64 +62,51 @@ puts "   - Undamped System Harmonic Exciatation (Section 3.1)"
 # harmonic force propertires
 set P 2.0
 set periodForce 5.0
-
-# sdof system
-set periodStruct 0.8
-set m 2.0;
-
 set tFinal [expr 2.251*$periodForce]
 
+# model properties
+set periodStruct 0.8
+set K 4.0
+
 # derived quantaties
-set PI [expr 2.0*asin(1.0)]
 set w [expr 2.0 * $PI / $periodForce]
 set wn [expr 2.0 * $PI / $periodStruct]
 
-set K [expr $wn * $wn * $m]
+# build the model
+buildModel $K $periodStruct 0.0
 
-wipe
-model basic -ndm 1 -ndf 1
-
-node  1  0.
-node  2  0. -mass $m
-
-uniaxialMaterial Elastic 1 $K
-element zeroLength 1 1 2 -mat 1 -dir 1
-
-fix 1 1
-
+# add load pattern
 timeSeries Trig 1 0.0 [expr 100.0*$periodForce] $periodForce -factor $P
 pattern Plain 1 1 {
     load 2 1.0 
 }
 
-constraints Plain
-numberer Plain
-algorithm Linear
-integrator Newmark 0.5 [expr 1.0/6.0]
-system ProfileSPD
-analysis Transient
+# build analysis
+buildLinearAnalysis "integrator Newmark 0.5 [expr 1.0/6.0]"
 
+# perform analysis, checking at every step
 set dt [expr $periodStruct/1.0e4]; # something small for accuracy
-
 set tCurrent 0.
+puts "\n  for 1000 time steps computing solution and checking against exact solution"
+set count 0
+
 while {$tCurrent < $tFinal} {
     analyze 1 $dt
     set tCurrent [getTime]
+    set uOpenSees [nodeDisp 2 0]
+    set uExact [expr $P/$K * 1.0/(1 - ($w*$w)/($wn*$wn)) * (sin($w*$tCurrent) - ($w/$wn)*sin($wn*$tCurrent))]
+
+    if {[expr abs($uExact-$uOpenSees)] > $tol} {
+	set testOK -1;
+	puts "failed  undamped harmonic> [expr abs($uExact-$uOpenSees)]> $tol at time $tCurrent"
+	set tCurrent $tFinal
+    }
 }
 
-set uOpenSees [nodeDisp 2 0]
-
-# exact
-set tFinal [getTime]
-
-set uExact [expr $P/$K * 1.0/(1 - ($w*$w)/($wn*$wn)) * (sin($w*$tFinal) - ($w/$wn)*sin($wn*$tFinal))]
-
 set formatString {%20s%15.5f%10s%15.5f}
-
-puts "\nDisplacement Comparison at $tFinal (sec):"
+puts "\n  example results for last step at $tCurrent (sec):"
 puts [format $formatString OpenSees: $uOpenSees Exact: $uExact]
 
-set tol 1.0e-4;
 if {[expr abs($uExact-$uOpenSees)] > $tol} {
     set testOK -1;
     puts "failed  undamped harmonic> [expr abs($uExact-$uOpenSees)] $tol"
@@ -83,38 +117,49 @@ puts "\n\n   - Damped System Harmonic Excitation (Section 3.2)"
 
 set dampRatio 0.01
 
-# derived quantaties
-set c [expr 2.0*$m*$wn*$dampRatio]
-set a0 [expr 2.0*$wn*$dampRatio]
+# build the model
+buildModel $K $periodStruct $dampRatio
 
-reset
+# add load pattern
+timeSeries Trig 1 0.0 [expr 100.0*$periodForce] $periodForce -factor $P
+pattern Plain 1 1 {
+    load 2 1.0 
+}
 
-rayleigh $a0 0. 0. 0.
+# build analysis
+buildLinearAnalysis "integrator Newmark 0.5 [expr 1.0/6.0]"
+
+
+# some variables needed in exact computation
+set wd [expr $wn*sqrt(1-$dampRatio*$dampRatio)]
+set wwn2 [expr ($w*$w)/($wn*$wn)]
+set det [expr (1.0-$wwn2)*(1-$wwn2) + 4.0 * $dampRatio*$dampRatio*$wwn2]
+set ust [expr $P/$K]
+
+
+set C [expr $ust/$det * (1.-$wwn2)]
+set D [expr $ust/$det * (-2.*$dampRatio*$w/$wn)]
+#set B [expr (-$P/$K) * (($w/$wn) / (1.-$wwn2))]
+set A -$D;
+set B [expr $ust/$det * (1.0/$wd) * ((-2. * $dampRatio * $w/$wn) - $w * (1.0 - $wwn2))]
+
 
 set tCurrent 0.
 while {$tCurrent < $tFinal} {
     analyze 1 $dt
     set tCurrent [getTime]
+    set uOpenSees [nodeDisp 2 0]
+    set uExact [expr exp(-$dampRatio*$wn*$tCurrent)*($A * cos($wd * $tCurrent) + $B*sin($wd*$tCurrent)) + $C*sin($w*$tCurrent) + $D*cos($w*$tCurrent)]
+    if {[expr abs($uExact-$uOpenSees)] > $tol} {
+	set testOK -1;
+	puts "failed  damped harmonic> [expr abs($uExact-$uOpenSees)]> $tol at time $tCurrent"
+	set tCurrent $tFinal
+    }
 }
-
-set tFinal [getTime]
-
-set uOpenSees [nodeDisp 2 0]
-
-# exact
-set wwn2 [expr ($w*$w)/($wn*$wn)]
-set C [expr $P/$K * (1.-$wwn2)/((1.-$wwn2)*(1.-$wwn2) + 4.*$dampRatio*$dampRatio*$wwn2)]
-
-set D [expr $P/$K * (-2.*$dampRatio*$w/$wn)/((1.-$wwn2)*(1.-$wwn2) + 4.*$dampRatio*$dampRatio*$wwn2)]
-set B [expr (-$P/$K) * (($w/$wn) / (1.-$wwn2))]
-
-set wd [expr $wn*sqrt(1-$dampRatio*$dampRatio)]
-
-set uExact [expr exp(-$dampRatio*$wn*$tFinal)*$B*sin($wd*$tFinal) + $C*sin($w*$tFinal) + $D*cos($w*$tFinal)]
 
 set formatString {%20s%15.5f%10s%15.5f}
 
-puts "\nDisplacement Comparison at $tFinal (sec):"
+puts "\nDisplacement Comparison at $tCurrent (sec):"
 puts [format $formatString OpenSees: $uOpenSees Exact: $uExact]
 
 set tol 1.0e-4;
