@@ -1,8 +1,7 @@
 # Linear Elastic Planar Shear Walls
 
 #REFERENCES: 
-# 1) ETABS   Verification Manual - Example 15A
-# 2) SAP2000 Verification Manual
+# 1) ETABS Software Verification Examples, Computers and Structures, Inc, 2003 (Example 15A)
 
 puts "PlanarShearWall.tcl: Verification of Linear Elastic Planar Shear Wall"
 
