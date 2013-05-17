@@ -535,6 +535,7 @@ EXAMPLES/kepler/Example1.xml -text
 EXAMPLES/verification/EigenFrame.Extra.tcl -text
 EXAMPLES/verification/EigenFrame.tcl -text
 EXAMPLES/verification/NewmarkIntegrator.tcl -text
+EXAMPLES/verification/PlanarShearWall.tcl -text
 EXAMPLES/verification/PlanarTruss.Extra.tcl -text
 EXAMPLES/verification/PlanarTruss.tcl -text
 EXAMPLES/verification/PortalFrame2d.tcl -text

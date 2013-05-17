@@ -1,15 +1,16 @@
-
-# SINGLE DOF Model
+# Linear Elastic SINGLE DOF Model Transient Analysis
 
 #REFERENCES: 
 # 1) Chopra, A.K. "Dynamics of Structures: Theory and Applications"
 # Prentice Hall, 1995.
-#   - Sections 3.1, Section 3.2 and Section 
-
+#   - Sections 3.1, Section 3.2 and Section 6.4
 
 puts "sdofTransient.tcl: Verification of Elastic SDOF systems (Chopra)"
 
+#
 # global variables
+#
+
 set PI [expr 2.0*asin(1.0)]
 set g 386.4
 set testOK 0;    # variable used to keep track of SUCCESS or FAILURE
@@ -19,6 +20,7 @@ set tol 1.0e-3
 #   input args: K - desired stiffness
 #               periodStruct - desired structre period (used to compute mass)
 #               dampRatio (zeta) - desired damping ratio
+
 proc buildModel {K periodStruct dampRatio} {
 
     global PI
@@ -40,12 +42,12 @@ proc buildModel {K periodStruct dampRatio} {
     # add damping using rayleigh damping on the mass term
     set a0 [expr 2.0*$wn*$dampRatio]
     rayleigh $a0 0. 0. 0.
-
 }
 
 #
 # procedure to build a linear transient analysis
 #    input args: integrator command
+
 proc buildLinearAnalysis {integratorCommand} {
     # do analysis
     constraints Plain
@@ -66,7 +68,7 @@ set tFinal [expr 2.251*$periodForce]
 
 # model properties
 set periodStruct 0.8
-set K 4.0
+set K 2.0
 
 # derived quantaties
 set w [expr 2.0 * $PI / $periodForce]
@@ -129,31 +131,28 @@ pattern Plain 1 1 {
 # build analysis
 buildLinearAnalysis "integrator Newmark 0.5 [expr 1.0/6.0]"
 
-
 # some variables needed in exact computation
 set wd [expr $wn*sqrt(1-$dampRatio*$dampRatio)]
 set wwn2 [expr ($w*$w)/($wn*$wn)]
 set det [expr (1.0-$wwn2)*(1-$wwn2) + 4.0 * $dampRatio*$dampRatio*$wwn2]
 set ust [expr $P/$K]
 
-
 set C [expr $ust/$det * (1.-$wwn2)]
 set D [expr $ust/$det * (-2.*$dampRatio*$w/$wn)]
-#set B [expr (-$P/$K) * (($w/$wn) / (1.-$wwn2))]
 set A -$D;
 set B [expr $ust/$det * (1.0/$wd) * ((-2. * $dampRatio * $w/$wn) - $w * (1.0 - $wwn2))]
 
 
-set tCurrent 0.
-while {$tCurrent < $tFinal} {
+set t 0.
+while {$t < $tFinal} {
     analyze 1 $dt
-    set tCurrent [getTime]
+    set t [getTime]
     set uOpenSees [nodeDisp 2 0]
-    set uExact [expr exp(-$dampRatio*$wn*$tCurrent)*($A * cos($wd * $tCurrent) + $B*sin($wd*$tCurrent)) + $C*sin($w*$tCurrent) + $D*cos($w*$tCurrent)]
+    set uExact [expr exp(-$dampRatio*$wn*$t)*($A * cos($wd * $t) + $B*sin($wd*$t)) + $C*sin($w*$t) + $D*cos($w*$t)]
     if {[expr abs($uExact-$uOpenSees)] > $tol} {
 	set testOK -1;
-	puts "failed  damped harmonic> [expr abs($uExact-$uOpenSees)]> $tol at time $tCurrent"
-	set tCurrent $tFinal
+	puts "failed  damped harmonic> [expr abs($uExact-$uOpenSees)]> $tol at time $t"
+	set t $tFinal
     }
 }
 
@@ -162,7 +161,6 @@ set formatString {%20s%15.5f%10s%15.5f}
 puts "\nDisplacement Comparison at $tCurrent (sec):"
 puts [format $formatString OpenSees: $uOpenSees Exact: $uExact]
 
-set tol 1.0e-4;
 if {[expr abs($uExact-$uOpenSees)] > $tol} {
     set testOK -1;
     puts "failed  undamped harmonic> [expr abs($uExact-$uOpenSees)] $tol"
@@ -172,19 +170,13 @@ if {[expr abs($uExact-$uOpenSees)] > $tol} {
 
 puts "\n\n   - Earthquake Response (Section 6.4)\n"
 
-    # sdof system
-set L 2.0
-set A 10.0;
-set m 3.0;
-set g 386.4;
 
-# derived quantaties
-set PI [expr 2.0*asin(1.0)]
+set tol 3.0e-2; 
+set results {2.67 5.97 7.47 9.91 7.47 5.37}
 
+# read earthquake record, setting dt and nPts variables with data in te file elCentro.at2
 source ReadRecord.tcl
 ReadRecord elCentro.at2 elCentro.dat dt nPts
-
-set results {2.67 5.97 7.47 9.91 7.47 5.37}
 
 # print table header
 set formatString {%15s%15s%15s%15s}
@@ -194,36 +186,15 @@ puts [format $formatString Period dampRatio OpenSees Exact]
 set counter 0
 foreach {period dampRatio} {0.5 0.02 1.0 0.02 2.0 0.02 2.0 0.0 2.0 0.02 2.0 0.05} {
 
-    # model derived properties
-    set wn [expr 2.0 * $PI / $period]
-    set K [expr $wn * $wn * $m]
-    set E [expr $L * $K / $A]
-    set a0 [expr 2.0*$wn*$dampRatio]
-    set a1 [expr 2.0*$dampRatio/$wn]
+    # build the model
+    buildModel $K $period $dampRatio
 
-    wipe
-    model basic -ndm 1 -ndf 1
-    
-    node  1       0.0
-    node  2       $L -mass $m
-
-    uniaxialMaterial Elastic 1 $E 
-    element truss 1 1 2 $A 1 
-
-    rayleigh $a0 0.0 0.0 0.0 
-    
-    fix 1 1
-
+    # add load pattern
     timeSeries Path 1 -filePath elCentro.dat -dt $dt -factor $g
     pattern UniformExcitation 1 1 -accel 1
-    
-    constraints Plain
-    numberer Plain
-    algorithm Linear
 
-    integrator Newmark 0.5 [expr 1.0/6.0]
-    system ProfileSPD
-    analysis Transient
+    # build analysis
+    buildLinearAnalysis "integrator Newmark 0.5 [expr 1.0/6.0]"
 
     set maxU 0.0; 
     for {set i 0} {$i < $nPts} {incr i 1} {
@@ -234,7 +205,12 @@ foreach {period dampRatio} {0.5 0.02 1.0 0.02 2.0 0.02 2.0 0.0 2.0 0.02 2.0 0.05
 	}
     }
     set formatString {%15.2f%15.2f%15.2f%15.2f}
-    puts [format $formatString $period $dampRatio $maxU [lindex $results $counter]]
+    set uExact [lindex $results $counter]
+    puts [format $formatString $period $dampRatio $maxU $uExact]
+    if {[expr abs($maxU-$uExact)] > $tol} {
+	set testOK -1;
+	puts "failed  earthquake record period: $period dampRatio: $dampRatio: $maxU $uExact [expr abs($uExact-$maxU)] $tol"
+    }
     incr counter
 }
 
