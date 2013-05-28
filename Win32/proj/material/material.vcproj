@@ -894,6 +894,18 @@
 				RelativePath="..\..\..\SRC\material\nD\ElasticIsotropicBeamFiber2d.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\nD\ElasticOrthotropicMaterial.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\ElasticOrthotropicMaterial.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\ElasticOrthotropicThreeDimensional.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\ElasticOrthotropicThreeDimensional.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.cpp">
 			</File>
 			<File
