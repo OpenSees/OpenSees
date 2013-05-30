@@ -63,6 +63,8 @@ include ../../../Makefile.def
 	WrappedMaterial.o \
 	SecantMaterial.o \
 	Concrete01WithSITC.o \
+	ConcretewBeta.o \
+	KikuchiAikenHDR.o \
 	Concrete05.o \
 	ECC01.o \
 	PrestressedSteelMaterial.o \

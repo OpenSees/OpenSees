@@ -112,7 +112,9 @@ extern void *OPS_NewShellNL(void);
 extern void *OPS_Quad4FiberOverlay(void);
 extern void *OPS_Brick8FiberOverlay(void);
 extern void *OPS_TripleFrictionPendulum(void);
-
+extern void *OPS_Truss2(void);
+extern void *OPS_CorotTruss2(void);
+extern void *OPS_ZeroLengthImpact3D(void);
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -397,6 +399,15 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
+  } else if (strcmp(argv[1],"zeroLengthImpact3D") == 0) {
+    void *theEle = OPS_ZeroLengthImpact3D();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+
   } else if ((strcmp(argv[1],"ModElasticBeam2d") == 0) || (strcmp(argv[1],"modElasticBeam2d")) == 0) {
     Element *theEle = (Element *)OPS_ModElasticBeam2d();
     if (theEle != 0) 
@@ -668,6 +679,24 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }																									
+  } else if ((strcmp(argv[1],"Truss2") == 0)) { 	//////////////////////// mmc
+    
+    void *theEle = OPS_Truss2();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }																								
+  } else if ((strcmp(argv[1],"CorotTruss2") == 0)) { 	//////////////////////// mmc
+    
+    void *theEle = OPS_CorotTruss2();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }																								
   }
 
   // if one of the above worked

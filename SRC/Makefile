@@ -146,6 +146,7 @@ GLF_LIBS = $(FE)/element/zeroLength/ZeroLength.o \
 	$(FE)/element/zeroLength/ZeroLengthSection.o \
 	$(FE)/element/zeroLength/CoupledZeroLength.o \
 	$(FE)/element/zeroLength/ZeroLengthND.o \
+	$(FE)/element/zeroLength/ZeroLengthImpact3D.o \
 	$(FE)/element/zeroLength/TclZeroLength.o
 
 REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
@@ -406,6 +407,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/truss/TrussSection.o \
 	$(FE)/element/truss/CorotTruss.o \
 	$(FE)/element/truss/CorotTrussSection.o \
+	$(FE)/element/truss/Truss2.o \
+	$(FE)/element/truss/CorotTruss2.o \
 	$(FE)/element/zeroLength/ZeroLengthContact2D.o \
 	$(FE)/element/zeroLength/ZeroLengthContact3D.o \
 	$(FE)/element/zeroLength/ZeroLengthContactNTS2D.o \
@@ -553,6 +556,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ModIMKPeakOriented.o \
 	$(FE)/material/uniaxial/SmoothPSConcrete.o \
 	$(FE)/material/uniaxial/Concrete01WithSITC.o \
+	$(FE)/material/uniaxial/ConcretewBeta.o \
+	$(FE)/material/uniaxial/KikuchiAikenHDR.o \
 	$(FE)/material/uniaxial/ECC01.o \
 	$(FE)/material/uniaxial/HystereticMaterial.o \
 	$(FE)/material/uniaxial/EPPGapMaterial.o \

@@ -110,6 +110,7 @@ extern void *OPS_NewConcrete02Thermal(void);
 
 extern void *OPS_ModIMKPeakOriented(void);
 extern void *OPS_ModIMKPinching(void);
+extern void *OPS_ConcretewBeta(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -358,6 +359,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if (strcmp(argv[1],"Steel02Thermal") == 0) {
       void *theMat = OPS_NewSteel02Thermal();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"ConcretewBeta") == 0) {
+      void *theMat = OPS_ConcretewBeta();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 

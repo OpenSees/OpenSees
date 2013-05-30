@@ -48,7 +48,7 @@
 static int numMyZeroLengthImpact3D = 0;
 
 void *
-OPS_ZeroLengthImpact3D()
+OPS_ZeroLengthImpact3D(void)
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numMyZeroLengthImpact3D == 0) {
