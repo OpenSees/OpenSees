@@ -2983,6 +2983,8 @@ SRC/material/uniaxial/Concrete06.cpp -text
 SRC/material/uniaxial/Concrete06.h -text
 SRC/material/uniaxial/Concrete07.cpp -text
 SRC/material/uniaxial/Concrete07.h -text
+SRC/material/uniaxial/ConcretewBeta.cpp -text
+SRC/material/uniaxial/ConcretewBeta.h -text
 SRC/material/uniaxial/ConfinedConcrete01.cpp -text
 SRC/material/uniaxial/ConfinedConcrete01.h -text
 SRC/material/uniaxial/ContinuumUniaxial.cpp -text
