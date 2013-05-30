@@ -151,6 +151,12 @@
 				RelativePath="..\..\..\SRC\element\truss\CorotTruss.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\element\truss\CorotTruss2.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\truss\CorotTruss2.h">
+			</File>
+			<File
 				RelativePath="..\..\..\Src\element\truss\CorotTrussSection.cpp">
 			</File>
 			<File
@@ -161,6 +167,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\truss\Truss.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\truss\Truss2.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\truss\Truss2.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\truss\TrussSection.cpp">
@@ -223,6 +235,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\zeroLength\ZeroLengthContactNTS2D.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\zeroLength\ZeroLengthImpact3D.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\zeroLength\ZeroLengthImpact3D.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\zeroLength\ZeroLengthInterface2D.cpp">
