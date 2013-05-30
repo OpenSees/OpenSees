@@ -231,6 +231,13 @@ EXAMPLES/ComputationalGeomechanicsCourseExamples/Example04.ops -text
 EXAMPLES/DatastarExamples/Example1.tcl -text
 EXAMPLES/DatastarExamples/README -text
 EXAMPLES/DatastarExamples/submit1 -text
+EXAMPLES/DeveloperTestScripts/BiaxialConcrete_matTest.tcl -text
+EXAMPLES/DeveloperTestScripts/ZeroLengthImpact3D_test.tcl -text
+EXAMPLES/DeveloperTestScripts/cyclicDisp.dat -text
+EXAMPLES/DeveloperTestScripts/cyclicForce.dat -text
+EXAMPLES/DeveloperTestScripts/example_cyclic_disp.txt -text
+EXAMPLES/DeveloperTestScripts/example_cyclic_time.txt -text
+EXAMPLES/DeveloperTestScripts/runAll.tcl -text
 EXAMPLES/Example1/Makefile -text
 EXAMPLES/Example1/main.cpp -text
 EXAMPLES/ExampleScripts/27NodeCorrected.ops -text
