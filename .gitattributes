@@ -2503,12 +2503,16 @@ SRC/element/triangle/Tri31.cpp -text
 SRC/element/triangle/Tri31.h -text
 SRC/element/truss/CorotTruss.cpp -text
 SRC/element/truss/CorotTruss.h -text
+SRC/element/truss/CorotTruss2.cpp -text
+SRC/element/truss/CorotTruss2.h -text
 SRC/element/truss/CorotTrussSection.cpp -text
 SRC/element/truss/CorotTrussSection.h -text
 SRC/element/truss/Makefile -text
 SRC/element/truss/Truss.cpp -text
 SRC/element/truss/Truss.h -text
 SRC/element/truss/Truss.tex -text
+SRC/element/truss/Truss2.cpp -text
+SRC/element/truss/Truss2.h -text
 SRC/element/truss/TrussSection.cpp -text
 SRC/element/truss/TrussSection.h -text
 SRC/element/twoNodeLink/Makefile -text
