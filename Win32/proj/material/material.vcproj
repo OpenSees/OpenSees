@@ -296,6 +296,12 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\InitStressMaterial.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\KikuchiAikenHDR.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\KikuchiAikenHDR.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\Maxwell.cpp">
 			</File>
 			<File
