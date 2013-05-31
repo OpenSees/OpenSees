@@ -107,7 +107,8 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/element/adapter \
                -I$(FE)/element/twoNodeLink \
                -I$(FE)/element/updatedLagrangianBeamColumn \
-			   -I$(FE)/element/UWelements \
+	       -I$(FE)/element/UWelements \
+	       -I$(FE)/element/HUelements \
                -I$(FE)/analysis    \
                -I$(FE)/analysis/analysis \
                -I$(FE)/analysis/handler \

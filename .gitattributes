@@ -2197,6 +2197,7 @@ SRC/element/Element.tex -text
 SRC/element/ElementalLoad.cpp -text
 SRC/element/ElementalLoad.h -text
 SRC/element/ElementalLoad.tex -text
+SRC/element/HUelements/Makefile -text
 SRC/element/HUelements/MultipleShearSpring.cpp -text
 SRC/element/HUelements/MultipleShearSpring.h -text
 SRC/element/Information.cpp -text
