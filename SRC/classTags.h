@@ -573,6 +573,8 @@
 #define ELE_TAG_CorotTruss2            139
 #define ELE_Tag_ZeroLengthImpact3D     140
 
+#define ELE_TAG_MultipleShearSpring 6201
+
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
 #define FRN_TAG_VelPressureDep     3

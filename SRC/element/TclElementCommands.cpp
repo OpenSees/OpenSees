@@ -305,6 +305,10 @@ extern int
 TclModelBuilder_addTwoNodeLink(ClientData clientData, Tcl_Interp *interp,  int argc,
 			       TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
 
+extern int
+TclModelBuilder_addMultipleShearSpring(ClientData clientData, Tcl_Interp *interp,  int argc,
+			               TCL_Char **argv, Domain*, TclModelBuilder *);
+
 
 int
 TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
@@ -972,6 +976,13 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
   else if (strcmp(argv[1],"PFEMElement2D") == 0) {
       int result = TclModelBuilder_addPFEMElement2D(clientData, interp, argc, argv,
                                                     theTclDomain, theTclBuilder);
+    return result;
+  }
+
+  else if ((strcmp(argv[1],"multipleShearSpring") == 0) ||
+	   (strcmp(argv[1],"MSS") == 0)) {
+    int result = TclModelBuilder_addMultipleShearSpring(clientData, interp, argc, argv,
+							theTclDomain, theTclBuilder);
     return result;
   }
 
