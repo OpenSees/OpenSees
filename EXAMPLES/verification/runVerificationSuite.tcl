@@ -11,4 +11,5 @@ source PlanarTruss.Extra.tcl
 source PortalFrame2d.tcl
 source EigenFrame.tcl
 source EigenFrame.Extra.tcl
+source PlanarShearWall.tcl
 

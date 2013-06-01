@@ -4,6 +4,7 @@
 # 1) ETABS Software Verification Examples, Computers and Structures, Inc, 2003 (Example 15A)
 
 puts "PlanarShearWall.tcl: Verification of Linear Elastic Planar Shear Wall"
+puts "   NOTE: using SAP2000 results for verification"
 
 # Multiple Shear Wall building models with lengths of 120",240" and 360" lengths. Buildings of 1 story, 3 Story and 
 # 6 story are modelled. Each buildings story height is 120" All walls 12". All materials elastic with modulus of elasticity 
@@ -122,8 +123,8 @@ foreach numFloor {6 3 1} {
 # Shell
 puts "\n - using Shell elements"
 
-set formatString {%12s%12s%12s%12s%12s%12s}
-puts [format $formatString "#Stories" "Wall Height" "Wall Length" "ETABS" "SAP2000" "OpenSees" "Difference"]
+set formatString {%12s%12s%12s%12s%12s%12s%12s}
+puts [format $formatString "# Stories" "Wall Height" "Wall Length" "ETABS" "SAP2000" "OpenSees" Difference]
 set formatString {%12.0f%12.0f%12.0f%12.4f%12.4f%12.4f%12.4f}
 
 set counter 0
@@ -207,7 +208,7 @@ foreach numFloor {6 3 1} {
 # Brick
 puts "\n - using Brick elements"
 
-set formatString {%12s%12s%12s%12s%12s%12s}
+set formatString {%12s%12s%12s%12s%12s%12s%12s}
 puts [format $formatString "#Stories" "Wall Height" "Wall Length" "ETABS" "SAP2000" "OpenSees" "Difference"]
 set formatString {%12.0f%12.0f%12.0f%12.4f%12.4f%12.4f%12.4f}
 
