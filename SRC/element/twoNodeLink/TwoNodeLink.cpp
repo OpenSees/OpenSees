@@ -894,7 +894,7 @@ Response* TwoNodeLink::setResponse(const char **argv, int argc,
             sprintf(outputData,"dl%d",i+1);
             output.tag("ResponseType",outputData);
         }
-        theResponse = new ElementResponse(this, 4, Vector(numDir));
+        theResponse = new ElementResponse(this, 4, Vector(numDOF));
     }
     // basic displacements
     else if (strcmp(argv[0],"deformation") == 0 || strcmp(argv[0],"deformations") == 0 || 
