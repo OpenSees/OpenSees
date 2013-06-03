@@ -233,6 +233,7 @@
 #define MAT_TAG_Concrete01WithSITC 3011
 
 #define MAT_TAG_KikuchiAikenHDR 6102
+#define MAT_TAG_AxialSpHD 6112
 
 
 #define SEC_TAG_Elastic2d                        3
