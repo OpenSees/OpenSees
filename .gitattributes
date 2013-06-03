@@ -2966,6 +2966,8 @@ SRC/material/section/yieldSurface/YS_Section2D02.h -text
 SRC/material/section/yieldSurface/YieldSurfaceSection2d.cpp -text
 SRC/material/section/yieldSurface/YieldSurfaceSection2d.h -text
 SRC/material/texMaterial.tex -text
+SRC/material/uniaxial/AxialSpHD.cpp -text
+SRC/material/uniaxial/AxialSpHD.h -text
 SRC/material/uniaxial/BackboneMaterial.cpp -text
 SRC/material/uniaxial/BackboneMaterial.h -text
 SRC/material/uniaxial/BarSlipMaterial.cpp -text
