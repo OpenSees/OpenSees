@@ -309,6 +309,9 @@ extern int
 TclModelBuilder_addMultipleShearSpring(ClientData clientData, Tcl_Interp *interp,  int argc,
 			               TCL_Char **argv, Domain*, TclModelBuilder *);
 
+extern int
+TclModelBuilder_addMultipleNormalSpring(ClientData clientData, Tcl_Interp *interp,  int argc,
+				        TCL_Char **argv, Domain*, TclModelBuilder *);
 
 int
 TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
@@ -983,6 +986,13 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
 	   (strcmp(argv[1],"MSS") == 0)) {
     int result = TclModelBuilder_addMultipleShearSpring(clientData, interp, argc, argv,
 							theTclDomain, theTclBuilder);
+    return result;
+  }
+
+  else if ((strcmp(argv[1],"multipleNormalSpring") == 0) ||
+	   (strcmp(argv[1],"MNS") == 0)) {
+    int result = TclModelBuilder_addMultipleNormalSpring(clientData, interp, argc, argv,
+							 theTclDomain, theTclBuilder);
     return result;
   }
 
