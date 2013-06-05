@@ -2,8 +2,14 @@ include ../../../Makefile.def
 
 #	ElasticCrossAnisotropic.o \
 
+ifdef DAMAGE2P_FLAG
+	DAMAGE_2P = Damage2p.o Damage2p3D.o Damage2ppstress.o
+else
+	DAMAGE_2P =
+endif
+
 OBJS       = NDMaterial.o \
-	BeamFiberMaterial.o \
+	$(DAMAGE_2P) BeamFiberMaterial.o \
 	BeamFiberMaterial2d.o \
 	ElasticIsotropicAxiSymm.o\
 	ElasticIsotropicBeamFiber2d.o \

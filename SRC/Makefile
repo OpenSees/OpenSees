@@ -5,6 +5,8 @@ include ../Makefile.def
 
 endif
 
+
+
 ifeq ($(RELIABILITY), YES_RELIABILITY)
 
 all:
@@ -424,6 +426,10 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/BeamEndContact3D.o \
 	$(FE)/element/UWelements/BeamEndContact3Dp.o \
 	$(FE)/element/HUelements/MultipleShearSpring.o \
+	$(FE)/element/HUelements/MultipleNormalSpring.o \
+	$(FE)/element/HUelements/MSSWithMNS.o \
+	$(FE)/element/HUelements/DBESI0.o \
+	$(FE)/element/HUelements/DBESI1.o \
 	$(FE)/element/feap/elmt01.o \
 	$(FE)/element/feap/elmt02.o \
 	$(FE)/element/feap/elmt03.o \
@@ -522,6 +528,13 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 #	$(FE)/material/nD/Damage2ppstress.o \
 
 
+ifdef DAMAGE2P_FLAG
+	DAMAGE_2P = $(FE)/material/nD/Damage2p.o $(FE)/material/nD/Damage2p3D.o $(FE)/material/nD/Damage2ppstress.o
+else
+	DAMAGE_2P =
+endif
+
+
 MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/UniaxialMaterial.o \
 	$(FE)/material/uniaxial/UniaxialJ2Plasticity.o \
@@ -599,7 +612,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/backbone/RaynorBackbone.o \
 	$(FE)/material/uniaxial/backbone/TclModelBuilderBackboneCommand.o \
 	$(FE)/material/nD/NDMaterial.o \
-	$(FE)/material/nD/WrapperNDMaterial.o \
+	$(DAMAGE_2P) $(FE)/material/nD/WrapperNDMaterial.o \
 	$(FE)/material/nD/J2Plasticity.o \
 	$(FE)/material/nD/J2PlaneStress.o \
 	$(FE)/material/nD/J2PlaneStrain.o \
