@@ -55,11 +55,12 @@ DriftRecorder::DriftRecorder(int ni,
 			     int dirn,
 			     Domain &theDom, 
 			     OPS_Stream &theDataOutputHandler,
-			     bool timeFlag)
+			     bool timeFlag,
+			     double dT)
   :Recorder(RECORDER_TAGS_DriftRecorder),
    ndI(0), ndJ(0), theNodes(0), dof(df), perpDirn(dirn), oneOverL(0), data(0),
    theDomain(&theDom), theOutputHandler(&theDataOutputHandler),
-   initializationDone(false), numNodes(0), echoTimeFlag(timeFlag)
+   initializationDone(false), numNodes(0), echoTimeFlag(timeFlag), deltaT(dT), nextTimeStampToRecord(0.0)
 {
   ndI = new ID(1);
   ndJ = new ID (1);
@@ -77,11 +78,12 @@ DriftRecorder::DriftRecorder(const ID &nI,
 			     int dirn,
 			     Domain &theDom, 
 			     OPS_Stream &theDataOutputHandler,
-			     bool timeFlag)
+			     bool timeFlag,
+			     double dT)
   :Recorder(RECORDER_TAGS_DriftRecorder),
    ndI(0), ndJ(0), theNodes(0), dof(df), perpDirn(dirn), oneOverL(0), data(0),
    theDomain(&theDom), theOutputHandler(&theDataOutputHandler),
-   initializationDone(false), numNodes(0), echoTimeFlag(timeFlag)
+   initializationDone(false), numNodes(0), echoTimeFlag(timeFlag), deltaT(dT)
 {
   ndI = new ID(nI);
   ndJ = new ID (nJ);
@@ -133,30 +135,37 @@ DriftRecorder::record(int commitTag, double timeStamp)
   if (numNodes == 0 || data == 0)
     return 0;
 
-  int timeOffset = 0;
-  if (echoTimeFlag == true) {
-    (*data)(0) = theDomain->getCurrentTime();
-    timeOffset = 1;
-  }
+  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
 
-  for (int i=0; i<numNodes; i++) {
-    Node *nodeI = theNodes[2*i];
-    Node *nodeJ = theNodes[2*i+1];
+    if (deltaT != 0.0) 
+      nextTimeStampToRecord = timeStamp + deltaT;
 
-    if ((*oneOverL)(i) != 0.0) {
-       const Vector &dispI = nodeI->getTrialDisp();
-       const Vector &dispJ = nodeJ->getTrialDisp();
-      
-       double dx = dispJ(dof)-dispI(dof);
-       
-       (*data)(i+timeOffset) =  dx* (*oneOverL)(i);
-       
+    int timeOffset = 0;
+    if (echoTimeFlag == true) {
+      (*data)(0) = theDomain->getCurrentTime();
+      timeOffset = 1;
     }
-    else
-      (*data)(i+timeOffset) = 0.0;
+    
+    for (int i=0; i<numNodes; i++) {
+      Node *nodeI = theNodes[2*i];
+      Node *nodeJ = theNodes[2*i+1];
+      
+      if ((*oneOverL)(i) != 0.0) {
+	const Vector &dispI = nodeI->getTrialDisp();
+	const Vector &dispJ = nodeJ->getTrialDisp();
+	
+	double dx = dispJ(dof)-dispI(dof);
+	
+	(*data)(i+timeOffset) =  dx* (*oneOverL)(i);
+	
+      }
+      else
+	(*data)(i+timeOffset) = 0.0;
+    }
+    
+    theOutputHandler->write(*data);
   }
 
-  theOutputHandler->write(*data);
   return 0;
 }
 
@@ -213,6 +222,15 @@ DriftRecorder::sendSelf(int commitTag, Channel &theChannel)
     }
 
 
+
+  static Vector dData(2);
+  dData(0) = deltaT;
+  dData(1) = nextTimeStampToRecord;
+  if (theChannel.sendVector(0, commitTag, dData) < 0) {
+    opserr << "ElementRecorder::sendSelf() - failed to send dData\n";
+    return -1;
+  }
+
   if (theOutputHandler->sendSelf(commitTag, theChannel) < 0) {
     opserr << "DriftRecorder::sendSelf() - failed to send the DataOutputHandler\n";
     return -1;
@@ -265,6 +283,14 @@ DriftRecorder::recvSelf(int commitTag, Channel &theChannel,
     echoTimeFlag = false;
 
   this->setTag(idData(6));
+
+  static Vector dData(2);
+  if (theChannel.recvVector(0, commitTag, dData) < 0) {
+    opserr << "ElementRecorder::sendSelf() - failed to send dData\n";
+    return -1;
+  }
+  deltaT = dData(0);
+  nextTimeStampToRecord = dData(1);
 
   if (theOutputHandler != 0)
     delete theOutputHandler;

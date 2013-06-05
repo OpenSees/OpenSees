@@ -1364,6 +1364,8 @@
        int dof = 1;
        int perpDirn = 2;
        int pos = 2;
+       double dT = 0.0;
+
        while (pos < argc) {
 
 	 if (strcmp(argv[pos],"-file") == 0) {
@@ -1471,6 +1473,15 @@
 	   echoTimeFlag = true;
 	   pos+=1;
 
+	 } 
+
+	 else if (strcmp(argv[pos],"-dT") == 0) {
+	   // allow user to specify time step size for recording
+	   pos++;
+	   if (Tcl_GetDouble(interp, argv[pos], &dT) != TCL_OK)	
+	     return TCL_ERROR;	
+	   pos++;
+
 	 } else 
 	   pos++;
        }
@@ -1497,7 +1508,7 @@
        // Subtract one from dof and perpDirn for C indexing
        if (strcmp(argv[1],"Drift") == 0) 
 	 (*theRecorder) = new DriftRecorder(iNodes, jNodes, dof-1, perpDirn-1,
-					    theDomain, *theOutputStream, echoTimeFlag);
+					    theDomain, *theOutputStream, echoTimeFlag, dT);
        else
 	 (*theRecorder) = new EnvelopeDriftRecorder(iNodes, jNodes, dof-1, perpDirn-1,
 						    theDomain, *theOutputStream, echoTimeFlag);
