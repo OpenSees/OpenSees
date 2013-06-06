@@ -28,6 +28,9 @@
 // Department of Engineering Science, University of Oxford, Oxford, U.K.
 // Re-Written by: D. G. Lignos, August 29th 2012
 //**********************************************************************
+// Adapted by: Filipe Ribeiro and Andre Barbosa, May 17th 2013
+// Oregon State University, OR, USA
+//**********************************************************************
 
 #ifndef Bilin_h
 #define Bilin_h
@@ -38,13 +41,23 @@ class Bilin : public UniaxialMaterial
 {
   public:
   Bilin(int tag, 
-	double Ke,         double As,         double AsNeg,   double My_pos,    double My_neg,
+	double Ke0,     double As,         double AsNeg,   double My_pos,    double My_neg,		
 	double LamdaS,     double LamdaD, double LamdaA,  double LamdaK,    double Cs,         
         double Cd,         double Ca,         double Ck,      double Thetap_pos,double Thetap_neg,
         double Thetapc_pos,double Thetapc_neg,double K,       double KNeg,      double Thetau_pos,
-        double Thetau_neg, double PDPlus,     double PDNeg);
+        double Thetau_neg, double PDPlus,     double PDNeg, double nFactor);  // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.02    
+
+  // Constructor for no isotropic hardening   // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.02  
+  Bilin(int tag,											
+	double Ke0,     double As,         double AsNeg,   double My_pos,    double My_neg,		
+	double LamdaS,     double LamdaD, double LamdaA,  double LamdaK,    double Cs,			
+        double Cd,         double Ca,         double Ck,      double Thetap_pos,double Thetap_neg,	
+        double Thetapc_pos,double Thetapc_neg,double K,       double KNeg,      double Thetau_pos,	
+        double Thetau_neg, double PDPlus,     double PDNeg);						
+  
   Bilin(); 
   ~Bilin();
+
   const char *getClassType(void) const {return "Bilin";};
   int setTrialStrain(double strain, double strainRate = 0.0); 
   double getStrain(void); 
@@ -78,7 +91,8 @@ class Bilin : public UniaxialMaterial
 
 
   //Fixed input material parameters 
-  double Ke;
+  double Ke0;				// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.02
+  double nFactor;			// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.02
   double AsPos;
   double AsNeg;
   double My_pos;
@@ -171,6 +185,9 @@ class Bilin : public UniaxialMaterial
   double capSlopeOrig,CcapSlopeOrig;  
   double capSlopeNeg, CcapSlopeNeg;
   double capSlopeOrigNeg, CcapSlopeOrigNeg;
+  double Ke, CKe;							// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.02
+  double capSlopeMember, CcapSlopeMember;				// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.02
+  double capSlopeNegMember, CcapSlopeNegMember;			        // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.02
 };
 
 
