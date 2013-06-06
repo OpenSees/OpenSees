@@ -3231,6 +3231,8 @@ SRC/material/uniaxial/limitState/limitCurve/ShearCurve.cpp -text
 SRC/material/uniaxial/limitState/limitCurve/ShearCurve.h -text
 SRC/material/uniaxial/limitState/limitCurve/ThreePointCurve.cpp -text
 SRC/material/uniaxial/limitState/limitCurve/ThreePointCurve.h -text
+SRC/material/uniaxial/limitState/limitCurve/WrapperLimitCurve.cpp -text
+SRC/material/uniaxial/limitState/limitCurve/WrapperLimitCurve.h -text
 SRC/material/uniaxial/pyUCLA.cpp -text
 SRC/material/uniaxial/pyUCLA.h -text
 SRC/material/uniaxial/snap/Bilin.cpp -text
