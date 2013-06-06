@@ -1,5 +1,5 @@
 /* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**    Opensees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
@@ -43,7 +43,6 @@
 
 class SectionForceDeformation;
 class SectionRepres;
-class UniaxialMaterial;
 class NDMaterial;
 class TaggedObjectStorage;
 class YieldSurface_BC;
@@ -98,6 +97,7 @@ class TclModelBuilder : public ModelBuilder
     int addDamageModel(DamageModel &theModel); //!!
     DamageModel *getDamageModel(int tag); //!!
 
+
     // methods needed for the friction models
     // int addFrictionModel(FrictionModel &theFrnMdl);
     // FrictionModel *getFrictionModel(int tag);
@@ -128,6 +128,7 @@ class TclModelBuilder : public ModelBuilder
     TaggedObjectStorage *theCycModels; //!!
     //    TaggedObjectStorage *theDamageModels; //!!
     //    TaggedObjectStorage *theFrictionModels;
+    TaggedObjectStorage *theLimitCurves;	//MRL
 
 #ifdef OO_HYSTERETIC
     TaggedObjectStorage *theStiffnessDegradations;

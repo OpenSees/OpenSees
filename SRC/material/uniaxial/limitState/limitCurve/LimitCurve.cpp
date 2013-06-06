@@ -37,6 +37,36 @@
 #include <Information.h>
 
 
+#include <TaggedObject.h>
+#include <MapOfTaggedObjects.h>
+
+static MapOfTaggedObjects theLimitCurveObjects;
+
+
+bool OPS_addLimitCurve(LimitCurve *newComponent) {
+  return theLimitCurveObjects.addComponent(newComponent);
+}
+
+LimitCurve *OPS_getLimitCurve(int tag) {
+
+  TaggedObject *theResult = theLimitCurveObjects.getComponentPtr(tag);
+  if (theResult == 0) {
+    opserr << "LimitCurve *getLimitCurve(int tag) - none found with tag: " << tag << endln;
+    return 0;
+  }
+  LimitCurve *theMat = (LimitCurve *)theResult;
+
+  return theMat;
+}
+
+void OPS_clearAllLimitCurve(void) {
+  theLimitCurveObjects.clearAll();
+}
+
+
+
+
+
 LimitCurve::LimitCurve(int tag, int clasTag)
 :TaggedObject(tag), MovableObject(clasTag)
 {

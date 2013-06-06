@@ -72,6 +72,9 @@ class LimitCurve : public TaggedObject, public MovableObject
 
 };
 
+extern bool OPS_addLimitCurve(LimitCurve *newComponent);
+extern LimitCurve *OPS_getLimitCurve(int tag);
+extern void OPS_clearAllLimitCurve(void);
 
 #endif
 

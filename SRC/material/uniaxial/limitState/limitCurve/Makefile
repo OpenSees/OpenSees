@@ -4,7 +4,8 @@ OBJS       = LimitCurve.o \
 	AxialCurve.o \
 	ShearCurve.o \
 	RotationShearCurve.o \
-	ThreePointCurve.o
+	ThreePointCurve.o \
+	WrapperLimitCurve.o
 
 
 all:         $(OBJS)

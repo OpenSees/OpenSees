@@ -56,7 +56,7 @@ static int numPinchingLimitStateMaterial = 0;
 #define fmin(a,b) (((a)<(b)) ? (a) : (b))
 #endif
 void *
-OPS_PinchingLimitStateMaterial(void)
+OPS_PinchingLimitState(void)
 {
   if (numPinchingLimitStateMaterial == 0) {
     numPinchingLimitStateMaterial++;
@@ -66,6 +66,7 @@ OPS_PinchingLimitStateMaterial(void)
   UniaxialMaterial *theMaterial = 0;
   LimitCurve *theCurve = 0;	
   int argc = OPS_GetNumRemainingInputArgs();
+
   if (!(argc == 32 || argc == 21)) {
     opserr << "WARNING PinchingLimitStateMaterial -- insufficient arguments\n";
     opserr << "For direct input of limit state material want:\n\n";
@@ -180,7 +181,7 @@ OPS_PinchingLimitStateMaterial(void)
     opserr << "WARNING PinchingLimitStateMaterial -- Axial curve has not been implemented\n" << endln;
     return 0;
   }
-  if (argc == 34) {
+  if (argc == 32) {
     numData = 3;
     if (OPS_GetDoubleInput(&numData, dpinchPN) != 0) {
       opserr << "WARNING PinchingLimitStateMaterial -- invalid YpinchUPN? YpinchRPN? XpinchRPN?\n" << endln;
@@ -232,7 +233,7 @@ OPS_PinchingLimitStateMaterial(void)
     }
     return theMaterial;
     
-  } else if (argc == 23) {
+  } else {
     numData = 1;
     if (OPS_GetIntInput(&numData, iEleTag) != 0) {
       opserr << "WARNING PinchingLimitStateMaterial -- invalid eleTag?\n" << endln;
@@ -268,11 +269,7 @@ OPS_PinchingLimitStateMaterial(void)
       return 0;
     }
     return theMaterial;
-    
-  } else {
-    opserr << "WARNING could not create uniaxialMaterial PinchingLimitState with " << argc << " input variables" << endln;
-    return 0;
-  }
+  }  
 }
 
 PinchingLimitStateMaterial::PinchingLimitStateMaterial(int matTag,

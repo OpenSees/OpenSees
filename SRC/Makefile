@@ -139,6 +139,7 @@ KJE_LIBS = $(FE)/material/uniaxial/limitState/LimitStateMaterial.o \
 	$(FE)/material/uniaxial/limitState/TclLimitState.o \
 	$(FE)/material/uniaxial/limitState/limitCurve/LimitCurve.o \
 	$(FE)/material/uniaxial/limitState/limitCurve/AxialCurve.o \
+	$(FE)/material/uniaxial/limitState/limitCurve/WrapperLimitCurve.o \
 	$(FE)/material/uniaxial/limitState/limitCurve/RotationShearCurve.o \
 	$(FE)/material/uniaxial/limitState/limitCurve/ShearCurve.o \
 	$(FE)/material/uniaxial/limitState/limitCurve/ThreePointCurve.o 
@@ -565,7 +566,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Steel01Thermal.o \
 	$(FE)/material/uniaxial/Steel02Thermal.o \
 	$(FE)/material/uniaxial/Concrete02Thermal.o \
-	$(FE)/material/uniaxial/PinchingLimitStateMaterial.o \
+	$(FE)/material/uniaxial/limitState/PinchingLimitStateMaterial.o \
 	$(FE)/material/uniaxial/ModIMKPinching.o \
 	$(FE)/material/uniaxial/ModIMKPeakOriented.o \
 	$(FE)/material/uniaxial/SmoothPSConcrete.o \

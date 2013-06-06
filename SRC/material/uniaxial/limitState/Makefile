@@ -1,6 +1,7 @@
 include ../../../../Makefile.def
 
 OBJS       = LimitStateMaterial.o \
+	PinchingLimitStateMaterial.o \
 	TclLimitState.o
 
 

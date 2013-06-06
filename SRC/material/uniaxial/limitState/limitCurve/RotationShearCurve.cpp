@@ -57,13 +57,13 @@ void *
 OPS_RotationShearCurve(void)
 {
   if (shearCurveCount == 0) {
-    opserr << "RotationShearCurve limit curve - Written by MRL UT Austin Copyright 2012\n";
-    opserr << "------------------------ Use at your Own Peril -------------------------\n";
+    opserr << "RotationShearCurve limit curve - Written by MRL UT Austin Copyright 2012 -  Use at your Own Peril \n";
     shearCurveCount++;
   }
+
   int argc = OPS_GetNumRemainingInputArgs();
 
-  if (!(argc == 11 || argc == 25)) { 
+  if (!(argc == 9 || argc == 23)) { 
     opserr << "WARNING RotationShearCurve -- insufficient arguments\n";
     opserr << "For direct input of shear curve parameters and degrading slope want:\n\n";
     opserr << "limitCurve RotationShearCurve crvTag? eleTag? \n";
@@ -129,7 +129,7 @@ OPS_RotationShearCurve(void)
     opserr << "rotAxis = 6 -- Rotation about z-axis - 3D\n" << endln;
     return 0;
   }
-  if (argc == 11) {
+  if (argc == 9) {
     numData = 3;
     if (OPS_GetDoubleInput(&numData, dKdegData) != 0) {
       opserr << "WARNING RotationShearCurve -- invalid Vn? Vr? Kdeg?\n" << endln;

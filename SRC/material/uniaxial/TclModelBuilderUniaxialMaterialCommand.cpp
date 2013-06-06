@@ -111,12 +111,13 @@ extern void *OPS_NewConcrete02Thermal(void);
 extern void *OPS_ModIMKPeakOriented(void);
 extern void *OPS_ModIMKPinching(void);
 extern void *OPS_ConcretewBeta(void);
+extern void *OPS_PinchingLimitState(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
 
 extern UniaxialMaterial *
-Tcl_AddLimitStateMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+Tcl_AddLimitStateMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg);
 
 extern int
 TclCommand_HyperbolicGapMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -304,7 +305,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
 
     } else if ((strcmp(argv[1],"PinchingLimitState") == 0) || (strcmp(argv[1],"PinchingLimitStateMaterial") == 0)) {
-      void *theMat = OPS_PinchingLimitStateMaterial();
+      void *theMat = OPS_PinchingLimitState();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 

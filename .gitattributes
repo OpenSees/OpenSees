@@ -3110,8 +3110,6 @@ SRC/material/uniaxial/PathIndependentMaterial.cpp -text
 SRC/material/uniaxial/PathIndependentMaterial.h -text
 SRC/material/uniaxial/Pinching4Material.cpp -text
 SRC/material/uniaxial/Pinching4Material.h -text
-SRC/material/uniaxial/PinchingLimitStateMaterial.cpp -text
-SRC/material/uniaxial/PinchingLimitStateMaterial.h -text
 SRC/material/uniaxial/PrestressedSteelMaterial.cpp -text
 SRC/material/uniaxial/PrestressedSteelMaterial.h -text
 SRC/material/uniaxial/RambergOsgoodSteel.cpp -text
@@ -3219,6 +3217,8 @@ SRC/material/uniaxial/fedeas/TclFedeasMaterialCommand.cpp -text
 SRC/material/uniaxial/limitState/LimitStateMaterial.cpp -text
 SRC/material/uniaxial/limitState/LimitStateMaterial.h -text
 SRC/material/uniaxial/limitState/Makefile -text
+SRC/material/uniaxial/limitState/PinchingLimitStateMaterial.cpp -text
+SRC/material/uniaxial/limitState/PinchingLimitStateMaterial.h -text
 SRC/material/uniaxial/limitState/TclLimitState.cpp -text
 SRC/material/uniaxial/limitState/limitCurve/AxialCurve.cpp -text
 SRC/material/uniaxial/limitState/limitCurve/AxialCurve.h -text
