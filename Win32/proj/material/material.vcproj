@@ -107,6 +107,12 @@
 			Name="uniaxial"
 			Filter="">
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\AxialSpHD.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\AxialSpHD.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\BarSlipMaterial.cpp">
 			</File>
 			<File
@@ -365,10 +371,10 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\Pinching4Material.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\uniaxial\PinchingLimitStateMaterial.cpp">
+				RelativePath="..\..\..\SRC\material\uniaxial\limitState\PinchingLimitStateMaterial.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\material\uniaxial\PinchingLimitStateMaterial.h">
+				RelativePath="..\..\..\SRC\material\uniaxial\limitState\PinchingLimitStateMaterial.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\fedeas\PlasticDamageMaterial.cpp">
@@ -760,6 +766,12 @@
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\material\uniaxial\limitState\limitCurve\ThreePointCurve.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\material\uniaxial\limitState\limitCurve\WrapperLimitCurve.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\material\uniaxial\limitState\limitCurve\WrapperLimitCurve.h">
 				</File>
 			</Filter>
 			<Filter
