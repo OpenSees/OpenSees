@@ -181,8 +181,9 @@ foreach numFloor {6 3 1} {
 	integrator LoadControl  1.0  
 	algorithm Linear
 	numberer RCM
-	constraints Plain 
-	system SparseGeneral -piv
+	constraints Plain
+     system ProfileSPD	
+	#system UmfPack
 	analysis Static 
 	
 	analyze 1
@@ -269,7 +270,8 @@ foreach numFloor {6 3 1} {
 	algorithm Linear
 	numberer RCM
 	constraints Plain 
-	system SparseGeneral -piv
+	system ProfileSPD
+	#system SparseGeneral -piv
 	analysis Static 
 	
 	analyze 1
