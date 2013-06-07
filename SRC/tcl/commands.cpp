@@ -477,8 +477,9 @@ static EigenSOE *theEigenSOE =0;
 static StaticAnalysis *theStaticAnalysis = 0;
 static DirectIntegrationAnalysis *theTransientAnalysis = 0;
 static VariableTimeStepDirectIntegrationAnalysis *theVariableTimeStepTransientAnalysis = 0;
+#ifdef _PFEM
 static PFEMAnalysis* thePFEMAnalysis = 0;
-
+#endif
 // AddingSensitivity:BEGIN /////////////////////////////////////////////
 #ifdef _RELIABILITY
 static TclReliabilityBuilder *theReliabilityBuilder = 0;
@@ -1560,10 +1561,10 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
       return TCL_ERROR;	      
 
     result = theStaticAnalysis->analyze(numIncr);
-
+#ifdef _PFEM
   } else if(thePFEMAnalysis != 0) {
       result = thePFEMAnalysis->analyze();
-
+#endif
   } else if (theTransientAnalysis != 0) {
     if (argc < 3) {
       opserr << "WARNING transient analysis: analysis numIncr? deltaT?\n";
@@ -1982,7 +1983,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	}
 #endif
 // AddingSensitivity:END /////////////////////////////////
-
+#ifdef _PFEM
     } else if(strcmp(argv[1], "PFEM") == 0) {
 
         if(argc < 4) {
@@ -2038,6 +2039,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
                                            theTest,dtmax,dtmin,ratio);
 
         theTransientAnalysis = thePFEMAnalysis;
+#endif
 
     } else if (strcmp(argv[1],"Transient") == 0) {
 	// make sure all the components have been built,
@@ -3873,10 +3875,11 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       theTransientIntegrator = new Houbolt();     
   }
 
+  /*
   else if (strcmp(argv[1],"ParkLMS3") == 0) {
       theTransientIntegrator = new ParkLMS3();     
   }
-    
+  */  
   else if (strcmp(argv[1],"BackwardEuler") == 0) {
       int optn = 0;
       if (argc == 3) {
@@ -3895,7 +3898,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   } 
-
+#ifdef _PFEM
   else if (strcmp(argv[1],"PFEM") == 0) {
     theTransientIntegrator = new PFEMIntegrator();
 
@@ -3903,7 +3906,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   } 
-  
+#endif  
   else if (strcmp(argv[1],"NewmarkExplicit") == 0) {
     double gamma;
     bool updDomFlag = false;
