@@ -69,7 +69,7 @@ extern const char * getInterpPWD(Tcl_Interp *interp);  // commands.cpp
 //   note Tcl_Split list stores the array of pointers and the strings in 
 //   one array, which is why Tcl_Free needs only be called on the array.
 static void cleanup(TCL_Char **argv) {
-	  Tcl_Free((char *) argv);
+  Tcl_Free((char *) argv);
 }
 
 extern void *OPS_NewConstantSeries(void);
@@ -156,11 +156,10 @@ TclTimeSeriesCommand(ClientData clientData,
 
     // LoadPattern and PathSeries - read args and create RectangularSeries object
     double cFactor = 1.0;
-    if (argc < 3) {
 
+    if (argc < 3) {
       opserr << "WARNING not enough args - ";
       opserr << " Series -dt timeIncr -values {list of points }\n"; 
-      cleanup(argv);
       return 0;	
     }
 
@@ -188,7 +187,6 @@ TclTimeSeriesCommand(ClientData clientData,
 	  
 	  opserr << "WARNING invalid dt " << argv[endMarker] << " - ";
 	  opserr << " Series -dt dt ... \n";
-	  cleanup(argv);
 	  return 0;
 	}
       } 
@@ -200,7 +198,6 @@ TclTimeSeriesCommand(ClientData clientData,
 	    Tcl_GetInt(interp, argv[endMarker], &tag) != TCL_OK) {
 	  
 	  opserr << "WARNING invalid tag " << argv[endMarker] << " - ";
-	  cleanup(argv);
 	  return 0;
 	}
       } 
@@ -213,7 +210,6 @@ TclTimeSeriesCommand(ClientData clientData,
 	  
 	  opserr << "WARNING invalid cFactor " << argv[endMarker] << " - ";
 	  opserr << " Series -factor ... \n";
-	  cleanup(argv);
 	  return 0;
 	}
       } 
@@ -254,7 +250,6 @@ TclTimeSeriesCommand(ClientData clientData,
 		      
 	    opserr << "WARNING problem splitting path list " << argv[endMarker] << " - ";
 	    opserr << " Series -values {path} ... \n";
-	    cleanup(argv);
 	    return 0;
 	  }
 	  
@@ -264,7 +259,6 @@ TclTimeSeriesCommand(ClientData clientData,
 	    if ( Tcl_GetDouble(interp, pathStrings[i], &value) != TCL_OK) {
 	      opserr << "WARNING problem reading path data value " << pathStrings[i] << " - ";
 	      opserr << " Series -values {path} ... \n";
-	      cleanup(argv);
 	      cleanup(pathStrings);
 	      return 0;
 	    }
@@ -287,7 +281,6 @@ TclTimeSeriesCommand(ClientData clientData,
 			
 	    opserr << "WARNING problem spltting time path " << argv[endMarker] << " - ";
 	    opserr << " Series -time {times} ... \n";
-	    cleanup(argv);
 	    return 0;
 	  }
 	  
@@ -298,7 +291,6 @@ TclTimeSeriesCommand(ClientData clientData,
 	      opserr << "WARNING problem reading time path value " << pathStrings[i] << " - ";
 	      opserr << " Series -values {path} ... \n";
 
-	      cleanup(argv);
 	      cleanup(pathStrings);
 	      return 0;
 	    }
@@ -346,7 +338,6 @@ TclTimeSeriesCommand(ClientData clientData,
       opserr << " \t -dt constTimeIncr -file filePathName\n";
       opserr << " \t -dt constTimeIncr -values {list of points on path}\n";
       opserr << " \t -time {list of time points} -values {list of points on path}\n";
-      cleanup(argv);
       return 0;
     }      
 	
@@ -429,13 +420,11 @@ TclTimeSeriesCommand(ClientData clientData,
     
     if (Tcl_GetDouble(interp, argv[1], &mean) != TCL_OK) {
       opserr << "WARNING invalid input: random process mean \n";
-      cleanup(argv);
       return 0;
     }
     
     if (Tcl_GetDouble(interp, argv[2], &maxStdv) != TCL_OK) {
       opserr << "WARNING invalid input: random process max stdv \n";
-      cleanup(argv);
       return 0;
     }
     
@@ -451,7 +440,6 @@ TclTimeSeriesCommand(ClientData clientData,
     for (int i=0; i<numModFuncs; i++) {
       if (Tcl_GetInt(interp, argv[i+argsBeforeModList], &tagI) != TCL_OK) {
 	opserr << "WARNING invalid modulating function tag. " << endln;
-	cleanup(argv);
 	return 0;
       }
       
@@ -461,7 +449,6 @@ TclTimeSeriesCommand(ClientData clientData,
       if (theModFunc == 0) {
 	opserr << "WARNING modulating function number "<< argv[i+argsBeforeModList] << "does not exist...\n";
 	delete [] theModFUNCS;
-	cleanup(argv);
 	return 0;
       }
       else {
@@ -481,13 +468,11 @@ TclTimeSeriesCommand(ClientData clientData,
     
     if (Tcl_GetDouble(interp, argv[1], &mean) != TCL_OK) {
       opserr << "WARNING invalid input: random process mean \n";
-      cleanup(argv);
       return 0;
     }
     
     if (Tcl_GetDouble(interp, argv[2], &maxStdv) != TCL_OK) {
       opserr << "WARNING invalid input: random process max stdv \n";
-      cleanup(argv);
       return 0;
     }
     
@@ -503,7 +488,6 @@ TclTimeSeriesCommand(ClientData clientData,
     for (int i=0; i<numModFuncs; i++) {
       if (Tcl_GetInt(interp, argv[i+argsBeforeModList], &tagI) != TCL_OK) {
 	opserr << "WARNING invalid modulating function tag. " << endln;
-	cleanup(argv);
 	return 0;
       }
       
@@ -513,7 +497,6 @@ TclTimeSeriesCommand(ClientData clientData,
       if (theModFunc == 0) {
 	opserr << "WARNING modulating function number "<< argv[i+argsBeforeModList] << "does not exist...\n";
 	delete [] theModFUNCS;
-	cleanup(argv);
 	return 0;
       }
       else {
@@ -532,26 +515,22 @@ TclTimeSeriesCommand(ClientData clientData,
     
     if (Tcl_GetInt(interp, argv[1], &spectrumTag) != TCL_OK) {
       opserr << "WARNING invalid input to SimulatedRandomProcess: spectrumTag" << endln;
-      cleanup(argv);
       return 0;
     }
     
     if (Tcl_GetDouble(interp, argv[2], &mean) != TCL_OK) {
       opserr << "WARNING invalid input to SimulatedRandomProcess: mean" << endln;
-      cleanup(argv);
       return 0;
     }
     
     if (Tcl_GetInt(interp, argv[3], &numFreqIntervals) != TCL_OK) {
       opserr << "WARNING invalid input to SimulatedRandomProcess: numFreqIntervals" << endln;
-      cleanup(argv);
       return 0;
     }
     
     // Check that the random number generator exists
     if (theRandomNumberGenerator == 0) {
       opserr << "WARNING: A random number generator must be instantiated before SimulatedRandomProcess." << endln;
-      cleanup(argv);
       return 0;
     }
     
@@ -560,10 +539,8 @@ TclTimeSeriesCommand(ClientData clientData,
     theSpectrum = theReliabilityDomain->getSpectrum(spectrumTag);
     if (theSpectrum == 0) {
       opserr << "WARNING: Could not find the spectrum for the SimulatedRandomProcess." << endln;
-      cleanup(argv);
       return 0;
     }
-    
     
     // Parsing was successful, create the random process series object
     theSeries = new SimulatedRandomProcessSeries(0,theRandomNumberGenerator,theSpectrum,numFreqIntervals,mean);
@@ -577,7 +554,6 @@ TclTimeSeriesCommand(ClientData clientData,
     // type of load pattern type unknown
     opserr << "WARNING unknown Series type " << argv[0] << " - ";
     opserr << " valid types: Linear, Rectangular, Path, Constant, Trig, Sine\n";
-    cleanup(argv);
     return 0;
   }
 
