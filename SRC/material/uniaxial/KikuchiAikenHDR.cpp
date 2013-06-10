@@ -229,12 +229,12 @@ KikuchiAikenHDR::KikuchiAikenHDR(int tag, int tp, double ar, double hr,
   }
   
 
-  // 制御データの初期化
+  // intitialize
   initialStiff = (this->calcGeq)(trgStrain)*Cg*Ar/Hr;
 
 
-  //履歴曲線記憶用変数
-  numIdx = 500; //初期500個
+  //
+  numIdx = 500;
   revXBgn   = new double [numIdx];
   revQ2Bgn  = new double [numIdx];
   revXEnd   = new double [numIdx];
