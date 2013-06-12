@@ -1192,10 +1192,10 @@
 				RelativePath="..\..\..\SRC\element\HUelements\DBESI1.C">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\element\HUelements\MSSWithMNS.cpp">
+				RelativePath="..\..\..\SRC\element\HUelements\KikuchiBearing.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\element\HUelements\MSSWithMNS.h">
+				RelativePath="..\..\..\SRC\element\HUelements\KikuchiBearing.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\HUelements\MultipleNormalSpring.cpp">
