@@ -137,9 +137,9 @@ private:
     // initial stiffness matrix in basic system
     Matrix kbInit;
     
-    static Matrix theMatrix;
-    static Vector theVector;
-    static Vector theLoad;
+    static Matrix theMatrix;  // a class wide Matrix
+    static Vector theVector;  // a class wide Vector
+    Vector theLoad;
 };
 
 #endif

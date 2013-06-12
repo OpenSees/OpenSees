@@ -32,8 +32,8 @@
 // Description: This file contains the class definition for ElastomericBearingBoucWen3d.
 // ElastomericBearingBoucWen3d is an elastomeric bearing such as a lead-rubber bearing
 // or a high-damping rubber bearing defined by two nodes. This simplified version
-// uses a bidirectional Bouc-Wen model to simulate the shear behavior and four
-// uniaxial material models to simulate the axial, moment and torsional behaviors.
+// uses a bidirectional Bouc-Wen model [Casciati, 1989] to simulate the shear behavior and
+// four uniaxial material models to simulate the axial, moment and torsional behaviors.
 // Because the axial and shear springs are uncoupled the influence of the axial
 // load on the shear behavior is not accounted for. However, the total P-Delta
 // moments are equally distributed to the two end nodes of the element.
@@ -50,11 +50,12 @@ class ElastomericBearingBoucWen3d : public Element
 public:
     // constructor
     ElastomericBearingBoucWen3d(int tag, int Nd1, int Nd2,
-        double kInit, double fy, double alpha, double eta,
+        double kInit, double fy, double alpha1,
         UniaxialMaterial **theMaterials,
         const Vector y, const Vector x = 0,
-        double beta = 0.5, double gamma = 0.5,
-        double shearDistI = 0.5,
+        double alpha2 = 0.0, double mu = 2.0,
+        double eta = 1.0, double beta = 0.5,
+        double gamma = 0.5, double shearDistI = 0.5,
         int addRayleigh = 0, double mass = 0.0,
         int maxIter = 25, double tol = 1E-12);
     ElastomericBearingBoucWen3d();
@@ -116,8 +117,10 @@ private:
     // parameters
     double k0;          // initial stiffness of hysteretic component
     double qYield;      // yield force of hysteretic component
-    double k2;          // stiffness of elastic component
-    double eta;         // yielding exponent
+    double k2;          // stiffness of linear elastic component
+    double k3;          // stiffness of nonlinear elastic component
+    double mu;          // exponent of nonlinear elastic component
+    double eta;         // yielding exponent (sharpness of hysteresis loop corners)
     double beta;        // hysteretic shape parameter
     double gamma;       // hysteretic shape parameter
     double A;           // restoring force amplitude parameter
@@ -147,9 +150,9 @@ private:
     // initial stiffness matrix in basic system
     Matrix kbInit;
     
-    static Matrix theMatrix;
-    static Vector theVector;
-    static Vector theLoad;
+    static Matrix theMatrix;  // a class wide Matrix
+    static Vector theVector;  // a class wide Vector
+    Vector theLoad;
 };
 
 #endif

@@ -71,14 +71,14 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
         if ((argc-eleArgStart) < 11)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: elastomericBearing eleTag iNode jNode ke fy alpha -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m>\n";
+            opserr << "Want: elastomericBearing eleTag iNode jNode kInit fy alpha -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m>\n";
             return TCL_ERROR;
         }    
         
         // get the id and end nodes
         int iNode, jNode, matTag, argi, i, j;
         int recvMat = 0;
-        double ke, fy, alpha;
+        double kInit, fy, alpha;
         double shearDistI = 0.5;
         int doRayleigh = 0;
         double mass = 0.0;
@@ -97,8 +97,8 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
             opserr << "elastomericBearing element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[4+eleArgStart], &ke) != TCL_OK)  {
-            opserr << "WARNING invalid ke\n";
+        if (Tcl_GetDouble(interp, argv[4+eleArgStart], &kInit) != TCL_OK)  {
+            opserr << "WARNING invalid kInit\n";
             opserr << "elastomericBearing element: " << tag << endln;
             return TCL_ERROR;
         }
@@ -229,7 +229,7 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
         
         // now create the elastomericBearing
         theElement = new ElastomericBearingPlasticity2d(tag, iNode, jNode,
-            ke, fy, alpha, theMaterials, y, x, shearDistI, doRayleigh, mass);
+            kInit, fy, alpha, theMaterials, y, x, shearDistI, doRayleigh, mass);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";
@@ -258,14 +258,14 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
         if ((argc-eleArgStart) < 15)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: elastomericBearing eleTag iNode jNode ke fy alpha -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-mass m>\n";
+            opserr << "Want: elastomericBearing eleTag iNode jNode kInit fy alpha -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-mass m>\n";
             return TCL_ERROR;
         }
         
         // get the id and end nodes
         int iNode, jNode, matTag, argi, i, j;
         int recvMat = 0;
-        double ke, fy, alpha;
+        double kInit, fy, alpha;
         double shearDistI = 0.5;
         int doRayleigh = 0;
         double mass = 0.0;
@@ -284,8 +284,8 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
             opserr << "elastomericBearing element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[4+eleArgStart], &ke) != TCL_OK)  {
-            opserr << "WARNING invalid ke\n";
+        if (Tcl_GetDouble(interp, argv[4+eleArgStart], &kInit) != TCL_OK)  {
+            opserr << "WARNING invalid kInit\n";
             opserr << "elastomericBearing element: " << tag << endln;
             return TCL_ERROR;
         }
@@ -463,7 +463,7 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
         
         // now create the elastomericBearing
         theElement = new ElastomericBearingPlasticity3d(tag, iNode, jNode,
-            ke, fy, alpha, theMaterials, y, x, shearDistI, doRayleigh, mass);
+            kInit, fy, alpha, theMaterials, y, x, shearDistI, doRayleigh, mass);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";

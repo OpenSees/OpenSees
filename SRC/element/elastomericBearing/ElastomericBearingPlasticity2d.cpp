@@ -49,7 +49,6 @@
 // initialize the class wide variables
 Matrix ElastomericBearingPlasticity2d::theMatrix(6,6);
 Vector ElastomericBearingPlasticity2d::theVector(6);
-Vector ElastomericBearingPlasticity2d::theLoad(6);
 
 
 ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d(int tag,
@@ -61,7 +60,7 @@ ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d(int tag,
     k0(0.0), qYield(0.0), k2(0.0), x(_x), y(_y),
     shearDistI(sdI), addRayleigh(addRay), mass(m),
     L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
-    Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3)
+    Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3), theLoad(6)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
@@ -120,7 +119,7 @@ ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d()
     connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0),
     x(0), y(0), shearDistI(0.5), addRayleigh(0), mass(0.0),
     L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
-    Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3)
+    Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3), theLoad(6)
 {
     // ensure the connectedExternalNode ID is of correct size
     if (connectedExternalNodes.Size() != 2)  {
@@ -297,12 +296,12 @@ int ElastomericBearingPlasticity2d::update()
     }
     
     // transform response from the global to the local system
-    ul = Tgl*ug;
-    uldot = Tgl*ugdot;
+    ul.addMatrixVector(0.0, Tgl, ug, 1.0);
+    uldot.addMatrixVector(0.0, Tgl, ugdot, 1.0);
     
     // transform response from the local to the basic system
-    ub = Tlb*ul;
-    ubdot = Tlb*uldot;
+    ub.addMatrixVector(0.0, Tlb, ul, 1.0);
+    ubdot.addMatrixVector(0.0, Tlb, uldot, 1.0);
     
     // 1) get axial force and stiffness in basic x-direction
     theMaterials[0]->setTrialStrain(ub(0),ubdot(0));
@@ -491,7 +490,7 @@ const Vector& ElastomericBearingPlasticity2d::getResistingForce()
     
     // determine resisting forces in local system
     static Vector ql(6);
-    ql = Tlb^qb;
+    ql.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
     
     // add P-Delta moments to local forces
     double kGeo1 = 0.5*qb(0);
@@ -506,7 +505,7 @@ const Vector& ElastomericBearingPlasticity2d::getResistingForce()
     ql(5) += MpDelta3;
     
     // determine resisting forces in global system
-    theVector = Tgl^ql;
+    theVector.addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
     
     // subtract external load
     theVector.addVector(1.0, theLoad, -1.0);
@@ -523,7 +522,7 @@ const Vector& ElastomericBearingPlasticity2d::getResistingForceIncInertia()
     // add the damping forces from rayleigh damping
     if (addRayleigh == 1)  {
         if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-            theVector += this->getRayleighDampingForces();
+            theVector.addVector(1.0, this->getRayleighDampingForces(), 1.0);
     }
     
     // add inertia forces from element mass
@@ -685,12 +684,12 @@ void ElastomericBearingPlasticity2d::Print(OPS_Stream &s, int flag)
 {
     if (flag == 0)  {
         // print everything
-        s << "Element: " << this->getTag(); 
-        s << "  type: ElastomericBearingPlasticity2d";
+        s << "Element: " << this->getTag() << endln; 
+        s << "  type: ElastomericBearingPlasticity2d\n";
         s << "  iNode: " << connectedExternalNodes(0);
         s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "  k0: " << k0 << "  qYield: " << qYield << "  k2: " << k2 << endln;
-        s << "  Material ux: " << theMaterials[0]->getTag() << endln;
+        s << "  Material ux: " << theMaterials[0]->getTag();
         s << "  Material rz: " << theMaterials[1]->getTag() << endln;
         s << "  shearDistI: " << shearDistI << "  addRayleigh: "
             << addRayleigh << "  mass: " << mass << endln;
@@ -797,7 +796,7 @@ int ElastomericBearingPlasticity2d::getResponse(int responseID, Information &ele
     case 2:  // local forces
         theVector.Zero();
         // determine resisting forces in local system
-        theVector = Tlb^qb;
+        theVector.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
         // add P-Delta moments
         kGeo1 = 0.5*qb(0);
         MpDelta1 = kGeo1*(ul(4)-ul(1));

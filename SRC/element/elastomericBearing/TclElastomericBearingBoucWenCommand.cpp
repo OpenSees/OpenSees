@@ -68,17 +68,20 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
         } 
         
         // check the number of arguments is correct
-        if ((argc-eleArgStart) < 14)  {
+        if ((argc-eleArgStart) < 16)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: elastomericBearingBoucWen eleTag iNode jNode kInit fy alpha eta beta gamma -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
+            opserr << "Want: elastomericBearingBoucWen eleTag iNode jNode kInit fy alpha1 alpha2 mu eta beta gamma -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
         }    
         
         // get the id and end nodes
         int iNode, jNode, matTag, argi, i, j;
         int recvMat = 0;
-        double kInit, fy, alpha, eta;
+        double kInit, fy, alpha1;
+        double alpha2 = 0.0;
+        double mu = 2.0;
+        double eta = 1.0;
         double beta = 0.5;
         double gamma = 0.5;
         double shearDistI = 0.5;
@@ -111,28 +114,38 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[6+eleArgStart], &alpha) != TCL_OK)  {
-            opserr << "WARNING invalid alpha\n";
+        if (Tcl_GetDouble(interp, argv[6+eleArgStart], &alpha1) != TCL_OK)  {
+            opserr << "WARNING invalid alpha1\n";
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[7+eleArgStart], &eta) != TCL_OK)  {
+        if (Tcl_GetDouble(interp, argv[7+eleArgStart], &alpha2) != TCL_OK)  {
+            opserr << "WARNING invalid alpha2\n";
+            opserr << "elastomericBearingBoucWen element: " << tag << endln;
+            return TCL_ERROR;
+        }
+        if (Tcl_GetDouble(interp, argv[8+eleArgStart], &mu) != TCL_OK)  {
+            opserr << "WARNING invalid mu\n";
+            opserr << "elastomericBearingBoucWen element: " << tag << endln;
+            return TCL_ERROR;
+        }
+        if (Tcl_GetDouble(interp, argv[9+eleArgStart], &eta) != TCL_OK)  {
             opserr << "WARNING invalid eta\n";
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[8+eleArgStart], &beta) != TCL_OK)  {
+        if (Tcl_GetDouble(interp, argv[10+eleArgStart], &beta) != TCL_OK)  {
             opserr << "WARNING invalid beta\n";
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[9+eleArgStart], &gamma) != TCL_OK)  {
+        if (Tcl_GetDouble(interp, argv[11+eleArgStart], &gamma) != TCL_OK)  {
             opserr << "WARNING invalid gamma\n";
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
         UniaxialMaterial *theMaterials[2];
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-P") == 0)  {
                 theMaterials[0] = 0;
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
@@ -150,7 +163,7 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
                 recvMat++;
             }
         }
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-Mz") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
                     opserr << "WARNING invalid matTag\n";
@@ -177,7 +190,7 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
         // check for optional arguments
         Vector x = 0;
         Vector y = 0;
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (strcmp(argv[i],"-orient") == 0)  {
                 j = i+1;
                 int numOrient = 0;
@@ -224,7 +237,7 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
                 }
             }
         }
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-shearDist") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &shearDistI) != TCL_OK)  {
                     opserr << "WARNING invalid -shearDist value\n";
@@ -233,11 +246,11 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
                 }
             }
         }
-        for (int i = 10+eleArgStart; i < argc; i++)  {
+        for (int i = 12+eleArgStart; i < argc; i++)  {
             if (strcmp(argv[i], "-doRayleigh") == 0)
                 doRayleigh = 1;
         }
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-mass") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK)  {
                     opserr << "WARNING invalid -mass value\n";
@@ -246,7 +259,7 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
                 }
             }
         }
-        for (int i = 10+eleArgStart; i < argc; i++)  {
+        for (int i = 12+eleArgStart; i < argc; i++)  {
             if (i+2 < argc && strcmp(argv[i], "-iter") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &maxIter) != TCL_OK)  {
                     opserr << "WARNING invalid maxIter\n";
@@ -262,8 +275,9 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
         }
         
         // now create the elastomericBearingBoucWen
-        theElement = new ElastomericBearingBoucWen2d(tag, iNode, jNode, kInit, fy, alpha,
-            eta, theMaterials, y, x, beta, gamma, shearDistI, doRayleigh, mass, maxIter, tol);
+        theElement = new ElastomericBearingBoucWen2d(tag, iNode, jNode, kInit, fy,
+            alpha1, theMaterials, y, x, alpha2, mu, eta, beta, gamma, shearDistI,
+            doRayleigh, mass, maxIter, tol);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";
@@ -299,7 +313,10 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
         // get the id and end nodes
         int iNode, jNode, matTag, argi, i, j;
         int recvMat = 0;
-        double kInit, fy, alpha, eta;
+        double kInit, fy, alpha1;
+        double alpha2 = 0.0;
+        double mu = 2.0;
+        double eta = 1.0;
         double beta = 0.5;
         double gamma = 0.5;
         double shearDistI = 0.5;
@@ -332,28 +349,38 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[6+eleArgStart], &alpha) != TCL_OK)  {
-            opserr << "WARNING invalid alpha\n";
+        if (Tcl_GetDouble(interp, argv[6+eleArgStart], &alpha1) != TCL_OK)  {
+            opserr << "WARNING invalid alpha1\n";
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[7+eleArgStart], &eta) != TCL_OK)  {
+        if (Tcl_GetDouble(interp, argv[7+eleArgStart], &alpha2) != TCL_OK)  {
+            opserr << "WARNING invalid alpha2\n";
+            opserr << "elastomericBearingBoucWen element: " << tag << endln;
+            return TCL_ERROR;
+        }
+        if (Tcl_GetDouble(interp, argv[8+eleArgStart], &mu) != TCL_OK)  {
+            opserr << "WARNING invalid mu\n";
+            opserr << "elastomericBearingBoucWen element: " << tag << endln;
+            return TCL_ERROR;
+        }
+        if (Tcl_GetDouble(interp, argv[9+eleArgStart], &eta) != TCL_OK)  {
             opserr << "WARNING invalid eta\n";
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[8+eleArgStart], &beta) != TCL_OK)  {
+        if (Tcl_GetDouble(interp, argv[10+eleArgStart], &beta) != TCL_OK)  {
             opserr << "WARNING invalid beta\n";
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[9+eleArgStart], &gamma) != TCL_OK)  {
+        if (Tcl_GetDouble(interp, argv[11+eleArgStart], &gamma) != TCL_OK)  {
             opserr << "WARNING invalid gamma\n";
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
         UniaxialMaterial *theMaterials[4];
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-P") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
                     opserr << "WARNING invalid axial matTag\n";
@@ -370,7 +397,7 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
                 recvMat++;
             }
         }
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-T") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
                     opserr << "WARNING invalid torsional matTag\n";
@@ -387,7 +414,7 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
                 recvMat++;
             }
         }
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-My") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
                     opserr << "WARNING invalid moment y matTag\n";
@@ -404,7 +431,7 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
                 recvMat++;
             }
         }
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-Mz") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
                     opserr << "WARNING invalid moment z matTag\n";
@@ -431,7 +458,7 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
         // check for optional arguments
         Vector x(0);
         Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (strcmp(argv[i],"-orient") == 0)  {
                 j = i+1;
                 int numOrient = 0;
@@ -492,7 +519,7 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
                 }
             }
         }
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-shearDist") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &shearDistI) != TCL_OK)  {
                     opserr << "WARNING invalid -shearDist value\n";
@@ -501,11 +528,11 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
                 }
             }
         }
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-doRayleigh") == 0)
                 doRayleigh = 1;
         }
-        for (i = 10+eleArgStart; i < argc; i++)  {
+        for (i = 12+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-mass") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK)  {
                     opserr << "WARNING invalid -mass value\n";
@@ -514,7 +541,7 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
                 }
             }
         }
-        for (int i = 10+eleArgStart; i < argc; i++)  {
+        for (int i = 12+eleArgStart; i < argc; i++)  {
             if (i+2 < argc && strcmp(argv[i], "-iter") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &maxIter) != TCL_OK)  {
                     opserr << "WARNING invalid maxIter\n";
@@ -530,8 +557,9 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
         }
         
         // now create the elastomericBearingBoucWen
-        theElement = new ElastomericBearingBoucWen3d(tag, iNode, jNode, kInit, fy, alpha,
-            eta, theMaterials, y, x, beta, gamma, shearDistI, doRayleigh, mass, maxIter, tol);
+        theElement = new ElastomericBearingBoucWen3d(tag, iNode, jNode, kInit, fy,
+            alpha1, theMaterials, y, x, alpha2, mu, eta, beta, gamma, shearDistI,
+            doRayleigh, mass, maxIter, tol);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";

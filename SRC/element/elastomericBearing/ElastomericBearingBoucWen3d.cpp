@@ -49,20 +49,20 @@
 // initialize the class wide variables
 Matrix ElastomericBearingBoucWen3d::theMatrix(12,12);
 Vector ElastomericBearingBoucWen3d::theVector(12);
-Vector ElastomericBearingBoucWen3d::theLoad(12);
 
 
 ElastomericBearingBoucWen3d::ElastomericBearingBoucWen3d(int tag,
-    int Nd1, int Nd2, double kInit, double fy, double alpha, double _eta,
+    int Nd1, int Nd2, double kInit, double fy, double alpha1,
     UniaxialMaterial **materials, const Vector _y, const Vector _x,
-    double _beta, double _gamma, double sdI, int addRay, double m,
+    double alpha2, double _mu, double _eta, double _beta,
+    double _gamma, double sdI, int addRay, double m,
     int maxiter, double _tol)
     : Element(tag, ELE_TAG_ElastomericBearingBoucWen3d),
-    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0),
-    eta(_eta), beta(_beta), gamma(_gamma), A(1.0), x(_x), y(_y),
+    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0), k3(0.0),
+    mu(_mu), eta(_eta), beta(_beta), gamma(_gamma), A(1.0), x(_x), y(_y),
     shearDistI(sdI), addRayleigh(addRay), mass(m), maxIter(maxiter),
-    tol(_tol), L(0.0), ub(6), z(2), dzdu(2,2), qb(6), kb(6,6),
-    ul(12), Tgl(12,12), Tlb(6,12), ubC(6), zC(2), kbInit(6,6)
+    tol(_tol), L(0.0), ub(6), z(2), dzdu(2,2), qb(6), kb(6,6), ul(12),
+    Tgl(12,12), Tlb(6,12), ubC(6), zC(2), kbInit(6,6), theLoad(12)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
@@ -79,9 +79,10 @@ ElastomericBearingBoucWen3d::ElastomericBearingBoucWen3d(int tag,
         theNodes[i] = 0;
     
     // initialize parameters
-    k0 = (1.0-alpha)*kInit;
-    qYield = (1.0-alpha)*fy;
-    k2 = alpha*kInit;
+    k0 = (1.0-alpha1)*kInit;
+    qYield = (1.0-alpha1)*fy;
+    k2 = alpha1*kInit;
+    k3 = alpha2*kInit;
     
     // check material input
     if (materials == 0)  {
@@ -120,11 +121,11 @@ ElastomericBearingBoucWen3d::ElastomericBearingBoucWen3d(int tag,
 
 ElastomericBearingBoucWen3d::ElastomericBearingBoucWen3d()
     : Element(0, ELE_TAG_ElastomericBearingBoucWen3d),
-    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0),
-    eta(1.0), beta(0.5), gamma(0.5), A(1.0), x(0), y(0),
-    shearDistI(0.5), addRayleigh(0), mass(0.0), maxIter(25),
-    tol(1E-12), L(0.0), ub(6), z(2), dzdu(2,2), qb(6), kb(6,6),
-    ul(12), Tgl(12,12), Tlb(6,12), ubC(6), zC(2), kbInit(6,6)
+    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0), k3(0.0),
+    mu(2.0), eta(1.0), beta(0.5), gamma(0.5), A(1.0), x(0), y(0),
+    shearDistI(0.5), addRayleigh(0), mass(0.0), maxIter(25), tol(1E-12),
+    L(0.0), ub(6), z(2), dzdu(2,2), qb(6), kb(6,6), ul(12), Tgl(12,12),
+    Tlb(6,12), ubC(6), zC(2), kbInit(6,6), theLoad(12)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
@@ -307,12 +308,12 @@ int ElastomericBearingBoucWen3d::update()
     }
     
     // transform response from the global to the local system
-    ul = Tgl*ug;
-    uldot = Tgl*ugdot;
+    ul.addMatrixVector(0.0, Tgl, ug, 1.0);
+    uldot.addMatrixVector(0.0, Tgl, ugdot, 1.0);
     
     // transform response from the local to the basic system
-    ub = Tlb*ul;
-    ubdot = Tlb*uldot;
+    ub.addMatrixVector(0.0, Tlb, ul, 1.0);
+    ubdot.addMatrixVector(0.0, Tlb, uldot, 1.0);
     
     // 1) get axial force and stiffness in basic x-direction
     theMaterials[0]->setTrialStrain(ub(0),ubdot(0));
@@ -331,7 +332,7 @@ int ElastomericBearingBoucWen3d::update()
         int iter = 0;
         double zNrm, tmp1, tmp2, tmp3, tmp4;
         Vector f(2), delta_z(2);
-        Matrix Df(2,2), dzdu(2,2);
+        Matrix Df(2,2);
         do  {
             zNrm = z.Norm();
             if (zNrm == 0.0)  // check because of negative exponents
@@ -378,23 +379,23 @@ int ElastomericBearingBoucWen3d::update()
         
         // get derivative of hysteretic evolution parameter
         delta_z = z-zC;
-        if (fabs(delta_ub(1)) > DBL_EPSILON)  {
+        if (fabs(delta_ub(1)) > 0.0)  {
             dzdu(0,0) = delta_z(0)/delta_ub(1);
             dzdu(1,0) = delta_z(1)/delta_ub(1);
         }
-        if (fabs(delta_ub(2)) > DBL_EPSILON)  {
+        if (fabs(delta_ub(2)) > 0.0)  {
             dzdu(0,1) = delta_z(0)/delta_ub(2);
             dzdu(1,1) = delta_z(1)/delta_ub(2);
         }
         
         // set shear force
-        qb(1) = qYield*z(0) + k2*ub(1);
-        qb(2) = qYield*z(1) + k2*ub(2);
+        qb(1) = qYield*z(0) + k2*ub(1) + k3*sgn(ub(1))*pow(fabs(ub(1)),mu);
+        qb(2) = qYield*z(1) + k2*ub(2) + k3*sgn(ub(2))*pow(fabs(ub(2)),mu);
         // set tangent stiffness
-        kb(1,1) = qYield*dzdu(0,0) + k2;
+        kb(1,1) = qYield*dzdu(0,0) + k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
         kb(1,2) = qYield*dzdu(0,1);
         kb(2,1) = qYield*dzdu(1,0);
-        kb(2,2) = qYield*dzdu(1,1) + k2;
+        kb(2,2) = qYield*dzdu(1,1) + k2 + k3*mu*pow(fabs(ub(2)),mu-1.0);
     }
     
     // 3) get moment and stiffness in basic x-direction
@@ -572,7 +573,7 @@ const Vector& ElastomericBearingBoucWen3d::getResistingForce()
     
     // determine resisting forces in local system
     static Vector ql(12);
-    ql = Tlb^qb;
+    ql.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
     
     // add P-Delta moments to local forces
     double kGeo1 = 0.5*qb(0);
@@ -596,7 +597,7 @@ const Vector& ElastomericBearingBoucWen3d::getResistingForce()
     ql(10) += MpDelta6;
     
     // determine resisting forces in global system
-    theVector = Tgl^ql;
+    theVector.addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
     
     // subtract external load
     theVector.addVector(1.0, theLoad, -1.0);
@@ -613,7 +614,7 @@ const Vector& ElastomericBearingBoucWen3d::getResistingForceIncInertia()
     // add the damping forces from rayleigh damping
     if (addRayleigh == 1)  {
         if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-            theVector += this->getRayleighDampingForces();
+            theVector.addVector(1.0, this->getRayleighDampingForces(), 1.0);
     }
     
     // add inertia forces from element mass
@@ -635,22 +636,24 @@ const Vector& ElastomericBearingBoucWen3d::getResistingForceIncInertia()
 int ElastomericBearingBoucWen3d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(15);
+    static Vector data(17);
     data(0) = this->getTag();
     data(1) = k0;
     data(2) = qYield;
     data(3) = k2;
-    data(4) = eta;
-    data(5) = beta;
-    data(6) = gamma;
-    data(7) = A;
-    data(8) = shearDistI;
-    data(9) = addRayleigh;
-    data(10) = mass;
-    data(11) = maxIter;
-    data(12) = tol;
-    data(13) = x.Size();
-    data(14) = y.Size();
+    data(4) = k3;
+    data(5) = mu;
+    data(6) = eta;
+    data(7) = beta;
+    data(8) = gamma;
+    data(9) = A;
+    data(10) = shearDistI;
+    data(11) = addRayleigh;
+    data(12) = mass;
+    data(13) = maxIter;
+    data(14) = tol;
+    data(15) = x.Size();
+    data(16) = y.Size();
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -685,21 +688,23 @@ int ElastomericBearingBoucWen3d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(15);
+    static Vector data(17);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
     qYield = data(2);
     k2 = data(3);
-    eta = data(4);
-    beta = data(5);
-    gamma = data(6);
-    A = data(7);
-    shearDistI = data(8);
-    addRayleigh = (int)data(9);
-    mass = data(10);
-    maxIter = (int)data(11);
-    tol = data(12);
+    k3 = data(4);
+    mu = data(5);
+    eta = data(6);
+    beta = data(7);
+    gamma = data(8);
+    A = data(9);
+    shearDistI = data(10);
+    addRayleigh = (int)data(11);
+    mass = data(12);
+    maxIter = (int)data(13);
+    tol = data(14);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -720,11 +725,11 @@ int ElastomericBearingBoucWen3d::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive remaining data
-    if ((int)data(13) == 3)  {
+    if ((int)data(15) == 3)  {
         x.resize(3);
         rChannel.recvVector(0, commitTag, x);
     }
-    if ((int)data(14) == 3)  {
+    if ((int)data(16) == 3)  {
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
@@ -789,14 +794,16 @@ void ElastomericBearingBoucWen3d::Print(OPS_Stream &s, int flag)
 {
     if (flag == 0)  {
         // print everything
-        s << "Element: " << this->getTag(); 
-        s << "  type: ElastomericBearingBoucWen3d  iNode: " << connectedExternalNodes(0);
+        s << "Element: " << this->getTag() << endln; 
+        s << "  type: ElastomericBearingBoucWen3d\n";
+        s << "  iNode: " << connectedExternalNodes(0);
         s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "  k0: " << k0 << "  qYield: " << qYield << "  k2: " << k2 << endln;
+        s << "  k3: " << k3 << "  mu: " << mu << endln;
         s << "  eta: " << eta << "  beta: " << beta << "  gamma: " << gamma << endln;
-        s << "  Material ux: " << theMaterials[0]->getTag() << endln;
-        s << "  Material rx: " << theMaterials[1]->getTag() << endln;
-        s << "  Material ry: " << theMaterials[2]->getTag() << endln;
+        s << "  Material ux: " << theMaterials[0]->getTag();
+        s << "  Material rx: " << theMaterials[1]->getTag();
+        s << "  Material ry: " << theMaterials[2]->getTag();
         s << "  Material rz: " << theMaterials[3]->getTag() << endln;
         s << "  shearDistI: " << shearDistI << "  addRayleigh: "
             << addRayleigh << "  mass: " << mass << endln;
@@ -938,7 +945,7 @@ int ElastomericBearingBoucWen3d::getResponse(int responseID, Information &eleInf
     case 2:  // local forces
         theVector.Zero();
         // determine resisting forces in local system
-        theVector = Tlb^qb;
+        theVector.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
         // add P-Delta moments
         kGeo1 = 0.5*qb(0);
         MpDelta1 = kGeo1*(ul(7)-ul(1));
