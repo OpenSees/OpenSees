@@ -428,7 +428,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/BeamEndContact3Dp.o \
 	$(FE)/element/HUelements/MultipleShearSpring.o \
 	$(FE)/element/HUelements/MultipleNormalSpring.o \
-	$(FE)/element/HUelements/MSSWithMNS.o \
+	$(FE)/element/HUelements/KikuchiBearing.o \
 	$(FE)/element/HUelements/DBESI0.o \
 	$(FE)/element/HUelements/DBESI1.o \
 	$(FE)/element/feap/elmt01.o \

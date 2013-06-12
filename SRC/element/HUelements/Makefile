@@ -4,7 +4,7 @@ OBJS       = MultipleShearSpring.o \
 	MultipleNormalSpring.o \
 	DBESI0.o \
 	DBESI1.o \
-	MSSWithMNS.o
+	KikuchiBearing.o
 
 all:         $(OBJS)
 
