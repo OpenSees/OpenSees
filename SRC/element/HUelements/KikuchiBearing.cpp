@@ -73,8 +73,8 @@ static bool errDetected(bool ifNoError,char *msg){
   return false;
 };
 
-double dbesi0(double x);
-double dbesi1(double x);
+extern "C" double dbesi0(double x);
+extern "C" double dbesi1(double x);
 
 int TclModelBuilder_addKikuchiBearing(ClientData clientData,
     Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theTclDomain,
