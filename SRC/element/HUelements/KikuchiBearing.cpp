@@ -20,16 +20,16 @@
 
 // $Revision: 1.0 $
 // $Date: 2013-06-05 00:00:00 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/MSSWithMNS/MSSWithMNS.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/element/KikuchiBearing/KikuchiBearing.h,v $
 
 // Written: Ken Ishii
 // Created: Jan 2013
 //
-// MSSWithMNS model
+// KikuchiBearing model
 //
-// Description: This file contains the implementation of the MSSWithMNS class.
+// Description: This file contains the implementation of the KikuchiBearing class.
 //              This file contains the function to parse the TCL input
-// element MSSWithMNS eleTag? iNode? jNode? -shape shape? -size size? totalRubber?
+// element KikuchiBearing eleTag? iNode? jNode? -shape shape? -size size? totalRubber?
 //                    -nMSS nMSS? -matMSS matMSSTag? <-limDisp limDisp?>
 //                    -nMNS nMNS? -matMNS matMNSTag? <-lambda lambda?>
 //                    <-orient <x1? x2? x3?> yp1? yp2? yp3?> <-mass m?>
@@ -43,7 +43,7 @@
 #include <ID.h>
 #include <Vector.h>
 
-#include <MSSWithMNS.h>
+#include <KikuchiBearing.h>
 
 #include <Domain.h>
 #include <Node.h>
@@ -71,7 +71,7 @@ bool errDetected(bool ifNoError,char *msg){
   if (ifNoError){
     opserr << "" << endln;
     opserr << "========================================" << endln;
-    opserr << "MSSWithMNS element : input error detected" << endln;
+    opserr << "KikuchiBearing element : input error detected" << endln;
     opserr << "------------------------------" << endln;
   }
   opserr << "  " << msg << endln;
@@ -79,14 +79,14 @@ bool errDetected(bool ifNoError,char *msg){
 };
 
 
-int TclModelBuilder_addMSSWithMNS(ClientData clientData,
+int TclModelBuilder_addKikuchiBearing(ClientData clientData,
     Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theTclDomain,
     TclModelBuilder *theTclBuilder)
 {
 
   // ensure the destructor has not been called
   if (theTclBuilder == 0)  {
-    opserr << "WARNING builder has been destroyed - MSSWithMNS\n";    
+    opserr << "WARNING builder has been destroyed - KikuchiBearing\n";    
     return TCL_ERROR;
   }
 
@@ -96,7 +96,7 @@ int TclModelBuilder_addMSSWithMNS(ClientData clientData,
 
   if (ndm != 3 || ndf != 6) {
     opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
-    opserr << "WARNING MSSWithMNS command only works when ndm is 3 and ndf is 6" << endln;
+    opserr << "WARNING KikuchiBearing command only works when ndm is 3 and ndf is 6" << endln;
     return TCL_ERROR;
   }
 
@@ -145,7 +145,7 @@ int TclModelBuilder_addMSSWithMNS(ClientData clientData,
 
 
 
-  if (argc < 5)  { //element MSSWithMNS eleTag? iNode? jNode?
+  if (argc < 5)  { //element KikuchiBearing eleTag? iNode? jNode?
 
     ifNoError = errDetected(ifNoError,"insufficient arguments");
 
@@ -397,7 +397,7 @@ int TclModelBuilder_addMSSWithMNS(ClientData clientData,
     //input:
     printCommand(argc, argv);
     //want:
-    opserr << "Want: element MSSWithMNS eleTag? iNode? jNode? -shape shape? -size size? totalRubber?\n";
+    opserr << "Want: element KikuchiBearing eleTag? iNode? jNode? -shape shape? -size size? totalRubber?\n";
     opserr << "                         -nMSS nMSS? -matMSS matMSSTag? <-lim limDisp?> -nMNS nMNS? -matMNS matMNSTag? <-lambda lambda?>\n";
     opserr << "                         <-orient <x1? x2? x3?> yp1? yp2? yp3?> <-mass m?>\n";
     opserr << "========================================" << endln;
@@ -405,41 +405,41 @@ int TclModelBuilder_addMSSWithMNS(ClientData clientData,
     return TCL_ERROR;
   }
 
-  // now create the MSSWithMNS
-  //  theElement = new MSSWithMNS(eleTag, iNode, jNode, nDivide, material, shape, size, lambda, oriYp, oriX, mass);
-  theElement = new MSSWithMNS(eleTag, iNode, jNode, shape, size, totalRubber, nMSS, matMSS, limDisp, nMNS, matMNS, lambda, oriYp, oriX, mass);
+  // now create the KikuchiBearing
+  //  theElement = new KikuchiBearing(eleTag, iNode, jNode, nDivide, material, shape, size, lambda, oriYp, oriX, mass);
+  theElement = new KikuchiBearing(eleTag, iNode, jNode, shape, size, totalRubber, nMSS, matMSS, limDisp, nMNS, matMNS, lambda, oriYp, oriX, mass);
 
   if (theElement == 0)  {
     opserr << "WARNING ran out of memory creating element\n";
-    opserr << "MSSWithMNS element: " << eleTag << endln;
+    opserr << "KikuchiBearing element: " << eleTag << endln;
     return TCL_ERROR;
   }
   
-  // then add the MSSWithMNS to the domain
+  // then add the KikuchiBearing to the domain
   if (theTclDomain->addElement(theElement) == false)  {
     opserr << "WARNING could not add element to the domain\n";
-    opserr << "MSSWithMNS element: " << eleTag << endln;
+    opserr << "KikuchiBearing element: " << eleTag << endln;
     delete theElement;
     return TCL_ERROR;
   }       
   
-  // if get here we have successfully created the MSSWithMNS and added it to the domain
+  // if get here we have successfully created the KikuchiBearing and added it to the domain
   return TCL_OK;
 }
 
 
 // initialize the class wide variables
-Matrix MSSWithMNS::theMatrix(12,12);
-Vector MSSWithMNS::theVector(12);
-Vector MSSWithMNS::theLoad(12);
+Matrix KikuchiBearing::theMatrix(12,12);
+Vector KikuchiBearing::theVector(12);
+Vector KikuchiBearing::theLoad(12);
 
-MSSWithMNS::MSSWithMNS(int Tag, int Nd1, int Nd2,
+KikuchiBearing::KikuchiBearing(int Tag, int Nd1, int Nd2,
 		       int Shape, double Size, double TotalRubber,
 		       int NMSS, UniaxialMaterial *MatMSS, double LimDisp,
 		       int NMNS, UniaxialMaterial *MatMNS, double Lambda,
 		       const Vector OriYp, const Vector OriX,
 		       double Mass)
-  : Element(Tag, ELE_TAG_MSSWithMNS),
+  : Element(Tag, ELE_TAG_KikuchiBearing),
     connectedExternalNodes(2),
     shape(Shape),size(Size),totalRubber(TotalRubber),
     nMSS(NMSS),limDisp(LimDisp),
@@ -451,7 +451,7 @@ MSSWithMNS::MSSWithMNS(int Tag, int Nd1, int Nd2,
   
   // ensure the connectedExternalNode ID is of correct size & set values
   if (connectedExternalNodes.Size() != 2)  {
-    opserr << "MSSWithMNS::setUp() - element: "
+    opserr << "KikuchiBearing::setUp() - element: "
 	   << this->getTag() << " failed to create an ID of size 2\n";
   }
   
@@ -464,7 +464,7 @@ MSSWithMNS::MSSWithMNS(int Tag, int Nd1, int Nd2,
   
   // check material input
   if (MatMNS == 0)  {
-    opserr << "MSSWithMNS::MSSWithMNS() - "
+    opserr << "KikuchiBearing::KikuchiBearing() - "
 	   << "null uniaxial material pointer passed.\n";
     exit(-1);
   }
@@ -476,7 +476,7 @@ MSSWithMNS::MSSWithMNS(int Tag, int Nd1, int Nd2,
     theINodeMNSMaterials[i] = MatMNS->getCopy();
 
     if (theINodeMNSMaterials[i] == 0) {
-      opserr << "MSSWithMNS::MSSWithMNS() - "
+      opserr << "KikuchiBearing::KikuchiBearing() - "
  	     << "failed to copy uniaxial material.\n";
       exit(-1);
     }
@@ -537,7 +537,7 @@ MSSWithMNS::MSSWithMNS(int Tag, int Nd1, int Nd2,
     }
 
   } else {//square shape
-    opserr << "MSSWithMNS::MSSWithMNS() - "
+    opserr << "KikuchiBearing::KikuchiBearing() - "
 	   << "square shape \n";
     exit(-1);
   }
@@ -565,8 +565,8 @@ MSSWithMNS::MSSWithMNS(int Tag, int Nd1, int Nd2,
 }
 
 
-MSSWithMNS::MSSWithMNS()
-  : Element(0, ELE_TAG_MSSWithMNS),
+KikuchiBearing::KikuchiBearing()
+  : Element(0, ELE_TAG_KikuchiBearing),
     connectedExternalNodes(2),
     shape(0),size(0.0),totalRubber(0.0),
     nMSS(0),limDisp(0.0),
@@ -579,7 +579,7 @@ MSSWithMNS::MSSWithMNS()
 
   // ensure the connectedExternalNode ID is of correct size & set values
   if (connectedExternalNodes.Size() != 2)  {
-    opserr << "MSSWithMNS::MSSWithMNS() - "
+    opserr << "KikuchiBearing::KikuchiBearing() - "
 	   <<  "failed to create an ID of size 2\n";
     exit(-1);
   }
@@ -594,7 +594,7 @@ MSSWithMNS::MSSWithMNS()
 }
 
 
-MSSWithMNS::~MSSWithMNS()
+KikuchiBearing::~KikuchiBearing()
 {
   // invoke the destructor on any objects created by the object
   // that the object still holds a pointer to
@@ -617,31 +617,31 @@ MSSWithMNS::~MSSWithMNS()
 }
 
 
-int MSSWithMNS::getNumExternalNodes() const
+int KikuchiBearing::getNumExternalNodes() const
 {
   return 2;
 }
 
 
-const ID& MSSWithMNS::getExternalNodes() 
+const ID& KikuchiBearing::getExternalNodes() 
 {
   return connectedExternalNodes;
 }
 
 
-Node** MSSWithMNS::getNodePtrs() 
+Node** KikuchiBearing::getNodePtrs() 
 {
   return theNodes;
 }
 
 
-int MSSWithMNS::getNumDOF() 
+int KikuchiBearing::getNumDOF() 
 {
   return 12;
 }
 
 
-void MSSWithMNS::setDomain(Domain *theDomain)
+void KikuchiBearing::setDomain(Domain *theDomain)
 {
   // check Domain is not null - invoked when object removed from a domain
   if (!theDomain)  {
@@ -658,13 +658,13 @@ void MSSWithMNS::setDomain(Domain *theDomain)
   // if can't find both - send a warning message
   if (!theNodes[0] || !theNodes[1])  {
     if (!theNodes[0])  {
-      opserr << "WARNING MSSWithMNS::setDomain() - Nd1: " 
+      opserr << "WARNING KikuchiBearing::setDomain() - Nd1: " 
 	     << connectedExternalNodes(0) << " does not exist in the model for ";
     } else  {
-      opserr << "WARNING MSSWithMNS::setDomain() - Nd2: " 
+      opserr << "WARNING KikuchiBearing::setDomain() - Nd2: " 
 	     << connectedExternalNodes(1) << " does not exist in the model for ";
     }
-    opserr << "MSSWithMNS ele: " << this->getTag() << endln;
+    opserr << "KikuchiBearing ele: " << this->getTag() << endln;
     
     return;
   }
@@ -675,12 +675,12 @@ void MSSWithMNS::setDomain(Domain *theDomain)
   
   // if differing dof at the ends - print a warning message
   if (dofNd1 != 6)  {
-    opserr << "MSSWithMNS::setDomain() - node 1: "
+    opserr << "KikuchiBearing::setDomain() - node 1: "
 	   << connectedExternalNodes(0) << " has incorrect number of DOF (not 6)\n";
     return;
   }
   if (dofNd2 != 6)  {
-    opserr << "MSSWithMNS::setDomain() - node 2: "
+    opserr << "KikuchiBearing::setDomain() - node 2: "
 	   << connectedExternalNodes(1) << " has incorrect number of DOF (not 6)\n";
     return;
   }
@@ -693,7 +693,7 @@ void MSSWithMNS::setDomain(Domain *theDomain)
 }   	 
 
 
-int MSSWithMNS::commitState()
+int KikuchiBearing::commitState()
 {
   int errCode = 0;
   
@@ -705,7 +705,7 @@ int MSSWithMNS::commitState()
 }
 
 
-int MSSWithMNS::revertToLastCommit()
+int KikuchiBearing::revertToLastCommit()
 {
   int errCode = 0;
   
@@ -717,7 +717,7 @@ int MSSWithMNS::revertToLastCommit()
 }
 
 
-int MSSWithMNS::revertToStart()
+int KikuchiBearing::revertToStart()
 {   
   int errCode=0;
 
@@ -736,7 +736,7 @@ int MSSWithMNS::revertToStart()
 }
 
 
-int MSSWithMNS::update()
+int KikuchiBearing::update()
 {
   // get global trial displacements and velocities
   const Vector &dsp1 = theNodes[0]->getTrialDisp();
@@ -800,7 +800,7 @@ int MSSWithMNS::update()
 }
 
 
-const Matrix& MSSWithMNS::getTangentStiff()
+const Matrix& KikuchiBearing::getTangentStiff()
 {
   // zero the matrix
   theMatrix.Zero();
@@ -816,7 +816,7 @@ const Matrix& MSSWithMNS::getTangentStiff()
 }
 
 
-const Matrix& MSSWithMNS::getInitialStiff()
+const Matrix& KikuchiBearing::getInitialStiff()
 {
   // zero the matrix
   theMatrix.Zero();
@@ -832,7 +832,7 @@ const Matrix& MSSWithMNS::getInitialStiff()
 }
 
 
-const Matrix& MSSWithMNS::getMass()
+const Matrix& KikuchiBearing::getMass()
 {
   // zero the matrix
   theMatrix.Zero();
@@ -852,15 +852,15 @@ const Matrix& MSSWithMNS::getMass()
 }
 
 
-void MSSWithMNS::zeroLoad()
+void KikuchiBearing::zeroLoad()
 {
   theLoad.Zero();
 }
 
 
-int MSSWithMNS::addLoad(ElementalLoad *theLoad, double loadFactor)
+int KikuchiBearing::addLoad(ElementalLoad *theLoad, double loadFactor)
 {  
-  opserr <<"MSSWithMNS::addLoad() - "
+  opserr <<"KikuchiBearing::addLoad() - "
 	 << "load type unknown for element: "
 	 << this->getTag() << endln;
   
@@ -868,7 +868,7 @@ int MSSWithMNS::addLoad(ElementalLoad *theLoad, double loadFactor)
 }
 
 
-int MSSWithMNS::addInertiaLoadToUnbalance(const Vector &accel)
+int KikuchiBearing::addInertiaLoadToUnbalance(const Vector &accel)
 {
   // check for quick return
   if (mass == 0.0)  {
@@ -880,7 +880,7 @@ int MSSWithMNS::addInertiaLoadToUnbalance(const Vector &accel)
   const Vector &Raccel2 = theNodes[1]->getRV(accel);
   
   if (6 != Raccel1.Size() || 6 != Raccel2.Size())  {
-    opserr << "MSSWithMNS::addInertiaLoadToUnbalance() - "
+    opserr << "KikuchiBearing::addInertiaLoadToUnbalance() - "
 	   << "matrix and vector sizes are incompatible\n";
     return -1;
   }
@@ -897,7 +897,7 @@ int MSSWithMNS::addInertiaLoadToUnbalance(const Vector &accel)
 }
 
 
-const Vector& MSSWithMNS::getResistingForce()
+const Vector& KikuchiBearing::getResistingForce()
 {
   // zero the residual
   theVector.Zero();
@@ -916,7 +916,7 @@ const Vector& MSSWithMNS::getResistingForce()
 }
 
 
-const Vector& MSSWithMNS::getResistingForceIncInertia()
+const Vector& KikuchiBearing::getResistingForceIncInertia()
 {	
   theVector = this->getResistingForce();
   
@@ -940,20 +940,20 @@ const Vector& MSSWithMNS::getResistingForceIncInertia()
 }
 
 
-int MSSWithMNS::sendSelf(int commitTag, Channel &sChannel)
+int KikuchiBearing::sendSelf(int commitTag, Channel &sChannel)
 {
   return -1;
 }
 
 
-int MSSWithMNS::recvSelf(int commitTag, Channel &rChannel,
+int KikuchiBearing::recvSelf(int commitTag, Channel &rChannel,
 				  FEM_ObjectBroker &theBroker)
 {
   return -1;
 }
 
 
-int MSSWithMNS::displaySelf(Renderer &theViewer,
+int KikuchiBearing::displaySelf(Renderer &theViewer,
 				     int displayMode, float fact)
 {
   // first determine the end points of the element based on
@@ -976,13 +976,13 @@ int MSSWithMNS::displaySelf(Renderer &theViewer,
 }
 
 
-void MSSWithMNS::Print(OPS_Stream &s, int flag)
+void KikuchiBearing::Print(OPS_Stream &s, int flag)
 {
   
   if (flag == 0)  {
     // print everything
     s << "Element: " << this->getTag(); 
-    s << "  type: MSSWithMNS  iNode: " << connectedExternalNodes(0);
+    s << "  type: KikuchiBearing  iNode: " << connectedExternalNodes(0);
     s << "  jNode: " << connectedExternalNodes(1) << endln;
     s << "  Material : " << theINodeMNSMaterials[0]->getTag() << endln;
     s << "  mass: " << mass << endln;
@@ -994,13 +994,13 @@ void MSSWithMNS::Print(OPS_Stream &s, int flag)
 }
 
 
-Response* MSSWithMNS::setResponse(const char **argv, int argc,
+Response* KikuchiBearing::setResponse(const char **argv, int argc,
 					   OPS_Stream &output)
 {
   Response *theResponse = 0;
   
   output.tag("ElementOutput");
-  output.attr("eleType","MSSWithMNS");
+  output.attr("eleType","KikuchiBearing");
   output.attr("eleTag",this->getTag());
   output.attr("node1",connectedExternalNodes[0]);
   output.attr("node2",connectedExternalNodes[1]);
@@ -1094,7 +1094,7 @@ Response* MSSWithMNS::setResponse(const char **argv, int argc,
 }
 
 
-int MSSWithMNS::getResponse(int responseID, Information &eleInfo)
+int KikuchiBearing::getResponse(int responseID, Information &eleInfo)
 {
   switch (responseID)  {
   case 1:  // global forces
@@ -1123,7 +1123,7 @@ int MSSWithMNS::getResponse(int responseID, Information &eleInfo)
 
 
 // set up the transformation matrix for orientation
-void MSSWithMNS::setUp()
+void KikuchiBearing::setUp()
 { 
   const Vector &end1Crd = theNodes[0]->getCrds();
   const Vector &end2Crd = theNodes[1]->getCrds();	
@@ -1137,7 +1137,7 @@ void MSSWithMNS::setUp()
       oriX.resize(3);
       oriX = oriXp;
     } else  {
-      opserr << "WARNING MSSWithMNS::setUp() - " 
+      opserr << "WARNING KikuchiBearing::setUp() - " 
 	     << "element: " << this->getTag() << endln
 	     << "ignoring nodes and using specified "
 	     << "local x vector to determine orientation\n";
@@ -1145,7 +1145,7 @@ void MSSWithMNS::setUp()
   }
   // check that vectors for orientation are of correct size
   if (oriX.Size() != 3 || oriYp.Size() != 3)  {
-    opserr << "MSSWithMNS::setUp() - "
+    opserr << "KikuchiBearing::setUp() - "
 	   << "element: " << this->getTag() << endln
 	   << "incorrect dimension of orientation vectors\n";
     exit(-1);
@@ -1171,7 +1171,7 @@ void MSSWithMNS::setUp()
   
   // check valid x and y vectors, i.e. not parallel and of zero length
   if (xn == 0 || yn == 0 || zn == 0)  {
-    opserr << "MSSWithMNS::setUp() - "
+    opserr << "KikuchiBearing::setUp() - "
 	   << "element: " << this->getTag() << endln
 	   << "invalid orientation vectors\n";
     exit(-1);

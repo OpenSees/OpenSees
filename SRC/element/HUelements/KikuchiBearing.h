@@ -20,18 +20,18 @@
 
 // $Revision: 1.0 $
 // $Date: 2013-06-05 00:00:00 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/MSSWithMNS/MSSWithMNS.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/element/KikuchiBearing/KikuchiBearing.h,v $
 
 // Written: Ken Ishii
 // Created: Jan 2013
 //
-// MSSWithMNS model
+// KikuchiBearing model
 //
-// Description: This file contains the class definition for MSSWithMNS.
+// Description: This file contains the class definition for KikuchiBearing.
 //
 
-#ifndef MSSWithMNS_h
-#define MSSWithMNS_h
+#ifndef KikuchiBearing_h
+#define KikuchiBearing_h
 
 #include <Element.h>
 #include <Matrix.h>
@@ -40,23 +40,23 @@ class Channel;
 class UniaxialMaterial;
 class Response;
 
-class MSSWithMNS : public Element
+class KikuchiBearing : public Element
 {
  public:
   // constructor
-  MSSWithMNS(int Tag, int Nd1, int Nd2,
+  KikuchiBearing(int Tag, int Nd1, int Nd2,
 	     int Shape, double Size, double TotalRubber,
 	     int NMSS, UniaxialMaterial *MatMSS, double LimDisp,
 	     int NMNS, UniaxialMaterial *MatMNS, double Lambda,
 	     const Vector OriYp, const Vector OriX = 0,
 	     double Mass = 0.0);
-  MSSWithMNS();
+  KikuchiBearing();
   
   // destructor
-  ~MSSWithMNS();
+  ~KikuchiBearing();
   
   // method to get class type
-  const char *getClassType() const {return "MSSWithMNS";};
+  const char *getClassType() const {return "KikuchiBearing";};
   
   // public methods to obtain information about dof & connectivity    
   int getNumExternalNodes() const;

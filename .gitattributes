@@ -2199,8 +2199,8 @@ SRC/element/ElementalLoad.h -text
 SRC/element/ElementalLoad.tex -text
 SRC/element/HUelements/DBESI0.C -text
 SRC/element/HUelements/DBESI1.C -text
-SRC/element/HUelements/MSSWithMNS.cpp -text
-SRC/element/HUelements/MSSWithMNS.h -text
+SRC/element/HUelements/KikuchiBearing.cpp -text
+SRC/element/HUelements/KikuchiBearing.h -text
 SRC/element/HUelements/Makefile -text
 SRC/element/HUelements/MultipleNormalSpring.cpp -text
 SRC/element/HUelements/MultipleNormalSpring.h -text
