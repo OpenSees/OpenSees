@@ -60,12 +60,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <DBESI0.C> // Bessel function I0, Copyright(C) 1996 Takuya OOURA
-#include <DBESI1.C> // Bessel function I1
-
-
 extern void printCommand(int argc, TCL_Char **argv);
-
 
 bool errDetected(bool ifNoError,char *msg){
   if (ifNoError){
@@ -78,6 +73,8 @@ bool errDetected(bool ifNoError,char *msg){
   return false;
 };
 
+double dbesi0(double x);
+double dbesi1(double x);
 
 int TclModelBuilder_addKikuchiBearing(ClientData clientData,
     Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theTclDomain,

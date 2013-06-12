@@ -59,13 +59,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <DBESI0.C> // Bessel function I0, Copyright(C) 1996 Takuya OOURA
-#include <DBESI1.C> // Bessel function I1
-
-
 extern void printCommand(int argc, TCL_Char **argv);
 
-bool errDetected(bool ifNoError,char *msg){
+static bool errDetected(bool ifNoError,char *msg){
   if (ifNoError){
     opserr << "" << endln;
     opserr << "========================================" << endln;
@@ -76,6 +72,8 @@ bool errDetected(bool ifNoError,char *msg){
   return false;
 };
 
+double dbesi0(double x);
+double dbesi1(double x);
 
 int TclModelBuilder_addMultipleNormalSpring(ClientData clientData,
     Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theTclDomain,
@@ -325,7 +323,7 @@ int TclModelBuilder_addMultipleNormalSpring(ClientData clientData,
   
 
   // now create the multipleNormalSpring
-  theElement = new MultipleNormalSpring(eleTag, iNode, jNode, nDivide, material, shape, size, lambda, oriYp, oriX, mass);
+  //theElement = new MultipleNormalSpring(eleTag, iNode, jNode, nDivide, material, shape, size, lambda, oriYp, oriX, mass);
 
   if (theElement == 0)  {
     opserr << "WARNING ran out of memory creating element\n";
