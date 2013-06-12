@@ -131,7 +131,7 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
                 recvMat++;
             }
         }
-        for (i = 7+eleArgStart; i < argc; i++)  {
+        for (int i = 7+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-Mz") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
                     opserr << "WARNING invalid matTag\n";
@@ -204,7 +204,7 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
                 }
             }
         }
-        for (i = 7+eleArgStart; i < argc; i++)  {
+        for (int i = 7+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-shearDist") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &shearDistI) != TCL_OK)  {
                     opserr << "WARNING invalid -shearDist value\n";
