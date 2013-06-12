@@ -314,8 +314,8 @@ TclModelBuilder_addMultipleShearSpring(ClientData clientData, Tcl_Interp *interp
 //				        TCL_Char **argv, Domain*, TclModelBuilder *);
 
 extern int
-TclModelBuilder_addMSSWithMNS(ClientData clientData, Tcl_Interp *interp,  int argc,
-			      TCL_Char **argv, Domain*, TclModelBuilder *);
+TclModelBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,  int argc,
+				  TCL_Char **argv, Domain*, TclModelBuilder *);
 
 int
 TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
@@ -1004,11 +1004,11 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
     //return result;
   }
 
- else if (strcmp(argv[1],"MSSWithMNS") == 0) {
-   int result = TclModelBuilder_addMSSWithMNS(clientData, interp, argc, argv,
-					      theTclDomain, theTclBuilder);
-   return result;
- }
+  else if (strcmp(argv[1],"KikuchiBearing") == 0) {
+    int result = TclModelBuilder_addKikuchiBearing(clientData, interp, argc, argv,
+						   theTclDomain, theTclBuilder);
+    return result;
+  }
 
   else {
 
