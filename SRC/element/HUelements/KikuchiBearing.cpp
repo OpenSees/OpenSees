@@ -62,7 +62,7 @@
 
 extern void printCommand(int argc, TCL_Char **argv);
 
-bool errDetected(bool ifNoError,char *msg){
+static bool errDetected(bool ifNoError,char *msg){
   if (ifNoError){
     opserr << "" << endln;
     opserr << "========================================" << endln;
