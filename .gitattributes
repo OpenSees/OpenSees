@@ -3985,6 +3985,7 @@ SRC/system_of_eqn/linearSOE/itpack/ItpackLinSolver.cpp -text
 SRC/system_of_eqn/linearSOE/itpack/ItpackLinSolver.h -text
 SRC/system_of_eqn/linearSOE/itpack/Makefile -text
 SRC/system_of_eqn/linearSOE/mumps/Makefile -text
+SRC/system_of_eqn/linearSOE/mumps/Makefile.inc.CARTER -text
 SRC/system_of_eqn/linearSOE/mumps/Makefile.inc.DATASTAR -text
 SRC/system_of_eqn/linearSOE/mumps/Makefile.inc.LONESTAR -text
 SRC/system_of_eqn/linearSOE/mumps/Makefile.inc.MacOSX -text
