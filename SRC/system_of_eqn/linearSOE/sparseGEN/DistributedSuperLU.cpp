@@ -284,7 +284,6 @@ DistributedSuperLU::setChannels(int nChannels, Channel **theC)
 int
 DistributedSuperLU::sendSelf(int cTag, Channel &theChannel)
 {
-  opserr << "DistributedSuperLU::sendSelf(int cTag, Channel &theChannel) - START\n";
   int sendID =0;
 
   // if P0 check if already sent. If already sent use old processID; if not allocate a new process 
@@ -294,8 +293,6 @@ DistributedSuperLU::sendSelf(int cTag, Channel &theChannel)
 
   if (processID == 0) {
 
-    opserr << "DistributedSuperLU::sendSelf(int cTag, Channel &theChannel) - 1\n";
-
     // check if already using this object
     bool found = false;
     for (int i=0; i<numChannels; i++)
@@ -303,7 +300,7 @@ DistributedSuperLU::sendSelf(int cTag, Channel &theChannel)
 	sendID = i+1;
 	found = true;
       }
-    opserr << "DistributedSuperLU::sendSelf(int cTag, Channel &theChannel) - 2\n";
+
     // if new object, enlarge Channel pointers to hold new channel * & allocate new ID
     if (found == false) {
       int nextNumChannels = numChannels + 1;
@@ -316,12 +313,12 @@ DistributedSuperLU::sendSelf(int cTag, Channel &theChannel)
       for (int i=0; i<numChannels; i++)
 	nextChannels[i] = theChannels[i];
       nextChannels[numChannels] = &theChannel;
-    opserr << "DistributedSuperLU::sendSelf(int cTag, Channel &theChannel) - 3\n";      
+
       numChannels = nextNumChannels;
       
       if (theChannels != 0)
 	delete [] theChannels;
-    opserr << "DistributedSuperLU::sendSelf(int cTag, Channel &theChannel) - 4\n";      
+
       theChannels = nextChannels;
       
       // allocate new processID for remote object
@@ -340,7 +337,6 @@ DistributedSuperLU::sendSelf(int cTag, Channel &theChannel)
     opserr <<"WARNING DistributedSuperLU::sendSelf() - failed to send data\n";
     return -1;
   }	      
-  opserr << "DistributedSuperLU::sendSelf(int cTag, Channel &theChannel) - END\n";
 
   return 0;
 }
