@@ -61,6 +61,8 @@
 #include <string.h>
 
 extern void printCommand(int argc, TCL_Char **argv);
+extern double dbesi0(double x);
+extern double dbesi1(double x);
 
 static bool errDetected(bool ifNoError,char *msg){
   if (ifNoError){
@@ -73,8 +75,6 @@ static bool errDetected(bool ifNoError,char *msg){
   return false;
 };
 
-extern "C" double dbesi0(double x);
-extern "C" double dbesi1(double x);
 
 int TclModelBuilder_addKikuchiBearing(ClientData clientData,
     Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theTclDomain,
