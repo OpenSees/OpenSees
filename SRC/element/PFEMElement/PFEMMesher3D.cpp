@@ -46,16 +46,18 @@
 #include <NodeIter.h>
 #include <ElementIter.h>
 #include <Pressure_ConstraintIter.h>
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-//#include <PFEMElement3D.h>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <PFEMElement3D.h>
 #include <map>
 #include <set>
 #include <fstream>
+#include <sstream>
+#include <iostream>
 
 PFEMMesher3D::PFEMMesher3D()
-    :PI(3.1415926535897932384626433), bound(6)
+    :bound(6), avesize(0.0)
 {
 }
 
@@ -63,308 +65,296 @@ PFEMMesher3D::~PFEMMesher3D()
 {
 }
 
-// int 
-// PFEMMesher3D::discretize (const Vector& points, const ID& segments, 
-//                           double maxarea, int ndf, const ID& fix, const Vector& mass, 
-//                           Domain* theDomain, ID& nodes)
-// {
-//     if(theDomain == 0) {
-//         opserr<<"WARNING: null domain";
-//         opserr<<" -- PFEMMesher3D::discretize\n";
-//         return -1;
-//     }
 
-//     // structs
-//     triangulateio in, out, vout;
-//     initializeTri(in);
-//     initializeTri(out);
-//     initializeTri(vout);
 
-//     // number of segments
-//     in.numberofsegments = segments.Size()/2;
+// PLC
+int 
+PFEMMesher3D::discretize(int startnode, const PointVec& points, const FacetVec facets,
+                         const PointVec& holes, double maxvol, int ndf, 
+                         const std::vector<int>& fix, const std::vector<double>& mass,
+                         Domain* theDomain, int& endnode)
+{
+    if(theDomain == 0) {
+        opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher3D::discretize\n";
+        return -1;
+    }
 
-//     // no segments
-//     if(in.numberofsegments < 1) {
-//         return 0;
-//     }
+    // structs
+    tetgenio in, out;
 
-//     // numbering points
-//     in.numberofpoints = points.Size()/2;
+    // input points
+    in.numberofpoints = points.size();
+    if(in.numberofpoints > 0) {
+        in.pointlist = new double[in.numberofpoints*3];
+    } else {
+        in.pointlist = NULL;
+    }
+    for(int i=0; i<in.numberofpoints; i++) {
+        const Point& point = points[i];
+        in.pointlist[3*i] = point.x();
+        in.pointlist[3*i+1] = point.y();
+        in.pointlist[3*i+2] = point.z();
+        //opserr<<"point "<<i<<": "<<point.x()<<" "<<point.y()<<" "<<point.z()<<"\n";
+    }
 
-//     // no points
-//     if(in.numberofpoints < 2) {
-//         return 0;
-//     }
-    
-//     // get space for segmentlist 
-//     in.segmentlist = (int*) calloc(segments.Size(), sizeof(int));
-//     if(in.segmentlist == NULL) {
-//         opserr<<"WARNING: no enough memory -- PFEMMesher3D::discretize\n";
-//         return -1;
-//     }
+    // input facets
+    in.numberoffacets = facets.size();
+    if(in.numberoffacets > 0) {
+        in.facetlist = new tetgenio::facet[in.numberoffacets];
+    } else {
+        in.facetlist = NULL;
+    }
+    for(int i=0; i<in.numberoffacets; i++) {
+        const Facet& facet = facets[i];
+        const PolygonVec& polygons = facet.polygons();
+        const PointVec& holes = facet.holes();
 
-//     // copy segments
-//     int maxpt=0;
-//     for(int i=0; i<segments.Size(); i++) {
-//         if(segments(i) > maxpt) maxpt = segments(i);
-//         in.segmentlist[i] = segments(i);
-//     }
-//     if(maxpt >= in.numberofpoints) {
-//         opserr<<"WARNING: no point "<<maxpt<<" in the point list -- ";
-//         opserr<<"PFEMMesher3D::discretize\n";
-//         freeTri(in);
-//         return -1;
-//     }
+        // new facet
+        tetgenio::facet& tfacet = in.facetlist[i];
 
-//     // get space for pointlist
-//     in.pointlist = (double*) calloc(points.Size(), sizeof(double));
-//     if(in.pointlist == NULL) {
-//         opserr<<"WARNING: no enough memory -- PFEMMesher3D::discretize\n";
-//         return -1;
-//     }
+        // polygons
+        tfacet.numberofpolygons = polygons.size();
+        if(tfacet.numberofpolygons > 0) {
+            tfacet.polygonlist = new tetgenio::polygon[tfacet.numberofpolygons];
+        } else {
+            tfacet.polygonlist = NULL;
+        }
+        for(int j=0; j<tfacet.numberofpolygons; j++) {
+            tetgenio::polygon& tpolygon = tfacet.polygonlist[j];
+            const Polygon& polygon = polygons[j];
+            tpolygon.numberofvertices = polygon.size();
+            if(tpolygon.numberofvertices > 0) {
+                tpolygon.vertexlist = new int[tpolygon.numberofvertices];
+            } else {
+                tpolygon.vertexlist = NULL;
+            }
+            for(int k=0; k<tpolygon.numberofvertices; k++) {
+                tpolygon.vertexlist[k] = polygon[k];
+            }
+        }
 
-//     // copy points
-//     for(int i=0; i<points.Size(); i++) {
-//         in.pointlist[i] = points(i);
-//     }
+        // holes
+        tfacet.numberofholes = holes.size();
+        if(tfacet.numberofholes > 0) {
+            tfacet.holelist = new double[tfacet.numberofholes*3];
+        } else {
+            tfacet.holelist = NULL;
+        }
+        for(int j=0; j<tfacet.numberofholes; j++) {
+            const Point& hole = holes[j];
+            tfacet.holelist[3*j] = hole.x();
+            tfacet.holelist[3*j+1] = hole.y();
+            tfacet.holelist[3*j+2] = hole.z();
+        }
+    }
 
-//     // conforming Delaunay triangulation
-//     char s[100];
-//     sprintf(s,"Qzqpa%.60f",maxarea);
-//     triangulate(s, &in, &out, &vout);
-//     freeTri(in);
+    // input holes
+    in.numberofholes = holes.size();
+    if(in.numberofholes > 0) {
+        in.holelist = new double[in.numberofholes*3];
+    } else {
+        in.holelist = NULL;
+    }
+    for(int i=0; i<in.numberofholes; i++) {
+        const Point& hole = holes[i];
+        in.holelist[3*i] = hole.x();
+        in.holelist[3*i+1] = hole.y();
+        in.holelist[3*i+2] = hole.z();
+    }
 
-//     // read outputs
-//     nodes = ID();
-//     if(out.numberofpoints > 0) {
-//         nodes.resize(out.numberofpoints);
-//     }
-//     for(int i=0; i<out.numberofpoints; i++) {
-//         const double& x = out.pointlist[2*i];
-//         const double& y = out.pointlist[2*i+1];
+    // conforming Delaunay triangulation
+    std::stringstream ss;
+    ss << "Qzqpa"<< maxvol;
+    char* s = (char*)ss.str().c_str();
+    opserr<<"Start Delaunay Triangulation -- If got segmentation fault, please check inputs \n";
+    tetrahedralize(s, &in, &out);
+    opserr<<"Finish Delaunay Triangulation\n";
 
-//         // create nodes
-//         int newtag = findNodeTag(theDomain);
-//         Node* theNode = new Node(newtag, ndf, x, y);
-//         if (theNode == 0) {
-//             opserr << "WARNING ran out of memory creating node\n";
-//             opserr << "node: " << newtag << "\n";
-//             opserr << "PFEMMesher3D::discretize\n";
-//             return -1;
-//         }
-//         if(theDomain->addNode(theNode) == false) {
-//             opserr << "WARNING failed to add node to the domain\n";
-//             opserr << "node: " << newtag << "\n";
-//             opserr << "PFEMMesher3D::discretize\n";
-//             delete theNode; // otherwise memory leak
-//             return -1;
-//         }
-//         nodes(i) = newtag;
+    // read outputs
+    endnode = startnode-1;
+    for(int i=0; i<out.numberofpoints; i++) {
+        const double& x = out.pointlist[3*i];
+        const double& y = out.pointlist[3*i+1];
+        const double& z = out.pointlist[3*i+2];
+
+        // create nodes
+        Node* theNode = new Node(++endnode, ndf, x, y, z);
+        if (theNode == 0) {
+            opserr << "WARNING ran out of memory creating node\n";
+            opserr << "node: " << endnode << "\n";
+            opserr << "PFEMMesher3D::discretize\n";
+            return -1;
+        }
+        if(theDomain->addNode(theNode) == false) {
+            opserr << "WARNING failed to add node to the domain\n";
+            opserr << "node: " << endnode << "\n";
+            opserr << "PFEMMesher3D::discretize\n";
+            delete theNode; // otherwise memory leak
+            return -1;
+        }
         
-//         // fix
-//         int numfix = fix.Size();
-//         if(numfix > ndf) numfix = ndf;
-//         for(int i=0; i<numfix; i++) {
-//             if(fix(i) != 0) {
-//                 SP_Constraint* theSP = new SP_Constraint(newtag, i, 0.0, true);
-//                 if(theSP == 0) {
-//                     opserr << "WARNING ran out of memory creating SP_Constraint\n";
-//                     opserr << "node: " << newtag << "\n";
-//                     opserr << "PFEMMesher3D::discretize\n";
-//                     return -1;
-//                 }
-//                 if(theDomain->addSP_Constraint(theSP) == false) {
-//                     opserr << "WARNING failed to add SP_Constraint to the domain\n";
-//                     opserr << "node: " << newtag << "\n";
-//                     opserr << "PFEMMesher3D::discretize\n";
-//                     delete theSP; // otherwise memory leak
-//                     return -1;
-//                 }
-//             }
-//         }
+        // fix
+        int numfix = fix.size();
+        if(numfix > ndf) numfix = ndf;
+        for(int j=0; j<numfix; j++) {
+            if(fix[j] != 0) {
+                SP_Constraint* theSP = new SP_Constraint(endnode, j, 0.0, true);
+                if(theSP == 0) {
+                    opserr << "WARNING ran out of memory creating SP_Constraint\n";
+                    opserr << "node: " << endnode << "\n";
+                    opserr << "PFEMMesher3D::discretize\n";
+                    return -1;
+                }
+                if(theDomain->addSP_Constraint(theSP) == false) {
+                    opserr << "WARNING failed to add SP_Constraint to the domain\n";
+                    opserr << "node: " << endnode << "\n";
+                    opserr << "PFEMMesher3D::discretize\n";
+                    delete theSP; // otherwise memory leak
+                    return -1;
+                }
+            }
+        }
 
-//         // mass
-//         int nummass = mass.Size();
-//         if(nummass > 0) {
-//             if(nummass > ndf) nummass = ndf;
-//             Matrix theMass(ndf, ndf);
-//             for(int i=0; i<nummass; i++) {
-//                 theMass(i,i) = mass(i);
-//             }
-//             if(theNode->setMass(theMass) < 0) {
-//                 opserr<<"WARNING: failed to set mass of node "<<newtag;
-//                 opserr<<" -- PFEMMesher3D::discretize\n";
-//                 return -1;
-//             }
-//         }
-//     }
+        // mass
+        int nummass = mass.size();
+        if(nummass > 0) {
+            if(nummass > ndf) nummass = ndf;
+            Matrix theMass(ndf, ndf);
+            for(int j=0; j<nummass; j++) {
+                theMass(j,j) = mass[j];
+            }
+            if(theNode->setMass(theMass) < 0) {
+                opserr<<"WARNING: failed to set mass of node "<<endnode;
+                opserr<<" -- PFEMMesher3D::discretize\n";
+                return -1;
+            }
+        }
+    }
 
-//     // free out and vout
-//     freeTri(out);
-//     freeTri(vout);
+    return 0;
+}
 
-//     return 0;
-// }
+// cube
+int 
+PFEMMesher3D::discretize(int startnode, const Point& pt, const dvector& hs, 
+                         const ivector& ns, int ndf, const ivector& fix,
+                         const dvector& mass, const dvector& vel,
+                         Domain* theDomain, int& endnode)
+{
+    if(hs.size() < 3) return 0;
+    if(ns.size() < 3) return 0;
 
-// int 
-// PFEMMesher3D::discretize(double x1, double y1, double hx, double hy, double angle,
-//                    int nx, int ny, int ndf, const ID& fix, const Vector& mass, 
-//                    Domain* theDomain, ID& nodes)
-// {
-//     if(theDomain == 0) {
-//         opserr<<"WARNING: null domain";
-//         opserr<<" -- PFEMMesher3D::discretize\n";
-//         return -1;
-//     }
+    if(theDomain == 0) {
+        opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher3D::discretize\n";
+        return -1;
+    }
 
-//     if(nx<0 || ny<0) return 0;
-//     double sy = sin((angle+90)*PI/180.0);
-//     double cy = cos((angle+90)*PI/180.0);
-    
-//     // foreach line
-//     double lhx = cy*hy;
-//     double lhy = sy*hy;
+    for(int i=0; i<(int)ns.size(); i++) {
+        if(ns[i] < 0) {
+            opserr<<"WARNING: negative number of divisions";
+            opserr<<"-- PFEMMesher3D::discretize\n";
+            return -1;
+        }
+    }
 
-//     for(int i=0; i<=ny; i++) {
-//         double lx = i*lhx+x1;
-//         double ly = i*lhy+y1;
-//         discretize(lx, ly, hx, angle, nx, ndf, fix, mass, theDomain, nodes);
-//     }
+    double x0 = pt.x();
+    double y0 = pt.y();
+    double z0 = pt.z();
+
+    // velocity
+    int numvel = vel.size();
+    if(numvel > ndf) numvel = ndf;
+    Vector tvel(ndf);
+    for(int i=0; i<numvel; i++) {
+        tvel(i) = vel[i];
+    }
+
+    // fix
+    int numfix = fix.size();
+    if(numfix > ndf) numfix = ndf;
+
+    // mass
+    int nummass = mass.size();
+    if(nummass > ndf) nummass = ndf;
+    Matrix theMass(ndf, ndf);
+    for(int i=0; i<nummass; i++) {
+        theMass(i,i) = mass[i];
+    }
+
+    int newtag = startnode-1;
+    for(int i=0; i<ns[0]; i++) {
+        double x = x0+hs[0]*i;
+        for(int j=0; j<ns[1]; j++) {
+            double y = y0+hs[1]*j;
+            for(int k=0; k<ns[2]; k++) {
+                double z = z0+hs[2]*k;
+
+                // define nodes
+                Node* theNode = new Node(++newtag, ndf, x, y, z);
+                if (theNode == 0) {
+                    opserr << "WARNING ran out of memory creating node\n";
+                    opserr << "node: " << newtag << "\n";
+                    opserr << "PFEMMesher3D::discretize\n";
+                    return -1;
+                }
+                if(theDomain->addNode(theNode) == false) {
+                    opserr << "WARNING failed to add node to the domain\n";
+                    opserr << "node: " << newtag << "\n";
+                    opserr << "PFEMMesher3D::discretize\n";
+                    delete theNode; // otherwise memory leak
+                    return -1;
+                }
+
+                // initial velocity
+                if(numvel > 0) {
+                    theNode->setTrialVel(tvel);
+                    theNode->commitState();
+                }
+
+                // fix
+                for(int ifix=0; ifix<numfix; ifix++) {
+                    if(fix[ifix] != 0) {
+                        SP_Constraint* theSP = new SP_Constraint(newtag, ifix, 0.0, true);
+                        if(theSP == 0) {
+                            opserr << "WARNING ran out of memory creating SP_Constraint\n";
+                            opserr << "node: " << newtag << "\n";
+                            opserr << "PFEMMesher3D::discretize\n";
+                            return -1;
+                        }
+                        if(theDomain->addSP_Constraint(theSP) == false) {
+                            opserr << "WARNING failed to add SP_Constraint to the domain\n";
+                            opserr << "node: " << newtag << "\n";
+                            opserr << "PFEMMesher3D::discretize\n";
+                            delete theSP; // otherwise memory leak
+                            return -1;
+                        }
+                    }
+                }
+
+                // mass
+                if(nummass > 0) {
+                    if(theNode->setMass(theMass)  < 0) {
+                        opserr<<"WARNING: failed to set mass of node "<<newtag;
+                        opserr<<" -- PFEMMesher3D::discretize\n";
+                        return -1;
+                    }
+                    
+                }
+            }
+        }
+    }
+
+    endnode = newtag;
+    return 0;
+}
 
 
-//     return 0;
-// }
-
-// int 
-// PFEMMesher3D::discretize(int startnode, Vector point, double h, Vector dir, 
-//                          int num, int ndf, const ID& fix, const Vector& mass, 
-//                          Domain* theDomain)
-// {
-//     if(theDomain == 0) {
-//         opserr<<"WARNING: null domain";
-//         opserr<<" -- PFEMMesher3D::discretize\n";
-//         return -1;
-//     }
-
-//     if(num < 0) return 0;
-
-//     double s = sin(angle*PI/180.0);
-//     double c = cos(angle*PI/180.0);
-
-//     double hx = c*h;
-//     double hy = s*h;
-
-//     for(int i=0; i<=num; i++) {
-//         double x = i*hx+x1;
-//         double y = i*hy+y1;
-
-//         // define node
-//         int newtag = findNodeTag(theDomain);
-//         Node* theNode = new Node(newtag, ndf, x, y);
-//         if (theNode == 0) {
-//             opserr << "WARNING ran out of memory creating node\n";
-//             opserr << "node: " << newtag << "\n";
-//             opserr << "PFEMMesher3D::discretize\n";
-//             return -1;
-//         }
-//         if(theDomain->addNode(theNode) == false) {
-//             opserr << "WARNING failed to add node to the domain\n";
-//             opserr << "node: " << newtag << "\n";
-//             opserr << "PFEMMesher3D::discretize\n";
-//             delete theNode; // otherwise memory leak
-//             return -1;
-//         }
-//         nodes.insert(newtag);
-
-//         // fix
-//         int numfix = fix.Size();
-//         if(numfix > ndf) numfix = ndf;
-//         for(int i=0; i<numfix; i++) {
-//             if(fix(i) != 0) {
-//                 SP_Constraint* theSP = new SP_Constraint(newtag, i, 0.0, true);
-//                 if(theSP == 0) {
-//                     opserr << "WARNING ran out of memory creating SP_Constraint\n";
-//                     opserr << "node: " << newtag << "\n";
-//                     opserr << "PFEMMesher3D::discretize\n";
-//                     return -1;
-//                 }
-//                 if(theDomain->addSP_Constraint(theSP) == false) {
-//                     opserr << "WARNING failed to add SP_Constraint to the domain\n";
-//                     opserr << "node: " << newtag << "\n";
-//                     opserr << "PFEMMesher3D::discretize\n";
-//                     delete theSP; // otherwise memory leak
-//                     return -1;
-//                 }
-//             }
-//         }
-
-//         // mass
-//         int nummass = mass.Size();
-//         if(nummass > 0) {
-//             if(nummass > ndf) nummass = ndf;
-//             Matrix theMass(ndf, ndf);
-//             for(int i=0; i<nummass; i++) {
-//                 theMass(i,i) = mass(i);
-//             }
-//             if(theNode->setMass(theMass) < 0) {
-//                 opserr<<"WARNING: failed to set mass of node "<<newtag;
-//                 opserr<<" -- PFEMMesher3D::discretize\n";
-//                 return -1;
-//             }
-//         }
-//     }
-
-//     return 0;
-// }
-
-// int
-// PFEMMesher3D::doTriangulation(const ID& nodes, double alpha, 
-//                         const ID& addNodes, Domain* theDomain, 
-//                         ID& eles, double rho, double mu,
-//                         double b1, double b2)
-// {
-//     if(theDomain == 0) {
-//         opserr<<"WARNING: null domain";
-//         opserr<<" -- PFEMMesher3D::doTriangulation\n";
-//         return -1;
-//     }
-
-//     // do triangulation
-//     int res = doTriangulation(nodes, alpha, addNodes, theDomain, eles);
-//     if(res < 0) {
-//         return res;
-//     }
-
-//     // add PFEM elements
-//     int numeles = eles.Size()/3;
-//     ID eletags(numeles);
-//     for(int i=0; i<numeles; i++) {
-//         int tag = PFEMMesher3D::findEleTag(theDomain);
-//         PFEMElement2D* theEle = new PFEMElement2D(tag, eles(3*i), eles(3*i+1), eles(3*i+2),
-//                                                   rho, mu, b1, b2);
-
-//         if(theEle == 0) {
-//             opserr<<"WARNING: no enough memory -- ";
-//             opserr<<" -- delaunay2D::doTriangulation\n";
-//             return -1;
-//         }
-//         if(theDomain->addElement(theEle) == false) {
-//             opserr<<"WARNING: failed to add element to domain -- ";
-//             opserr<<" -- delaunay2D::doTriangulation\n";
-//             return -1;
-//         }
-//         eletags(i) = tag;
-//     }
-//     eles = eletags;
-
-//     return 0;
-    
-// }
-
-int
-PFEMMesher3D::doTriangulation(int startnode, int endnode, double alpha, 
-                              int startanode, int endanode, Domain* theDomain, 
-                              ID& eles)
+int 
+PFEMMesher3D::doTriangulation(const std::vector<int>& nodes, double alpha, double volthresh,
+                              const std::vector<int>& addnodes, Domain* theDomain, 
+                              std::vector<int>& eles)
 {
     if(theDomain == 0) {
         opserr<<"WARNING: null domain";
@@ -379,11 +369,14 @@ PFEMMesher3D::doTriangulation(int startnode, int endnode, double alpha,
     tetgenio in, out;
 
     // number of nodes
-    int numnodes = endnode-startnode+1;
-    int numadd = endanode-startanode+1;
-    if(numnodes < 0) numnodes = 0;
-    if(numadd < 0) numadd = 0;
-    in.numberofpoints = numnodes + numadd;
+    int numnodes=0, numadd=0;
+    for(int i=0; i<(int)nodes.size()/2; i++) {
+        numnodes += nodes[2*i+1] - nodes[2*i] + 1;
+    }
+    for(int i=0; i<(int)addnodes.size()/2; i++) {
+        numadd += addnodes[2*i+1] - addnodes[2*i] + 1;
+    }
+    in.numberofpoints = numnodes+numadd;
     if(in.numberofpoints < nptet) {
         return 0;
     }
@@ -395,19 +388,33 @@ PFEMMesher3D::doTriangulation(int startnode, int endnode, double alpha,
         return -1;
     }
 
-    // copy nodes to pointlist, use current coordinates
-    int loc = 0;
-    int numpoints = 0;
-    ID point2node(0, in.numberofpoints);
+    // copy all nodes
+    int loc = 0, numpoints = 0;
+    int nodesloc = 0, addnodesloc = 0;
+    ID p2nd(0, in.numberofpoints);
     for(int i=0; i<in.numberofpoints; i++) {
 
-        // pointer to node
+        // get node
         int ndtag = 0;
         if(i<numnodes) {
-            ndtag = startnode + i;
+            ndtag = nodes[2*nodesloc]+loc;
+            //opserr<<"ndtag = "<<ndtag<<"\n";
+            if(nodes[2*nodesloc+1]-nodes[2*nodesloc]==loc) {
+                nodesloc++;
+                loc = 0;
+            } else {
+                loc++;
+            }
         } else {
-            ndtag = startanode + i - numnodes;
+            ndtag = addnodes[2*addnodesloc]+loc;
+            if(addnodes[2*addnodesloc+1]-addnodes[2*addnodesloc]==loc) {
+                addnodesloc++;
+                loc = 0;
+            } else {
+                loc++;
+            }
         }
+ 
         Node* node = theDomain->getNode(ndtag);
         if(node == 0) continue;
 
@@ -424,24 +431,19 @@ PFEMMesher3D::doTriangulation(int startnode, int endnode, double alpha,
         }
 
         // set pointlist
-        double x = coord(0);        // initial
-        double y = coord(1);
-        double z = coord(2);
-        x += disp(0);               // current
-        y += disp(1);
-        z += disp(2);
+        for(int j=0; j<ndm; j++) {
+            in.pointlist[ndm*numpoints+j] = coord(j) + disp(j);
+        }
+        p2nd[numpoints++] = ndtag;
 
-        in.pointlist[loc++] = x;
-        in.pointlist[loc++] = y;
-        in.pointlist[loc++] = z;
-
-        point2node[numpoints++] = ndtag;
     }
     in.numberofpoints = numpoints;
 
     // Delaunay Triangulation
-    char s[] = "Qvz";
+    char s[] = "Qz";
+    opserr<<"Start Delaunay Triangulation -- If got segmentation fault, please check inputs \n";
     tetrahedralize(s, &in, &out);
+    opserr<<"Finish Delaunay Triangulation\n";
 
     // no outputs
     if(out.numberoftetrahedra < 1) {
@@ -449,17 +451,17 @@ PFEMMesher3D::doTriangulation(int startnode, int endnode, double alpha,
     }
 
     // do alpha shape test
+    eles.clear();
     if(alpha > 0) {
 
-        // radius and average size of tetrahedra
-        double avesize = 0.0;
-        Vector radius(out.numberoftetrahedra);
-        for(int i=0; i<out.numberoftetrahedra; i++) {
+        // need mesh functions
+        tetgenmesh mesh;
 
-            // circumcenter of tetrahedra
-            double& xc = out.vpointlist[ndm*i];
-            double& yc = out.vpointlist[ndm*i+1];
-            double& zc = out.vpointlist[ndm*i+2];
+        // radius and average size of tetrahedra
+        avesize = 0.0;
+        Vector radius(out.numberoftetrahedra);
+        Vector volume(out.numberoftetrahedra);
+        for(int i=0; i<out.numberoftetrahedra; i++) {
 
             // tetrahedra points
             ID pt(nptet);
@@ -468,251 +470,511 @@ PFEMMesher3D::doTriangulation(int startnode, int endnode, double alpha,
             }
 
             // nodal coordinates
-            Vector x(nptet), y(nptet), z(nptet);
+            double* ppointer[4];
+            Matrix pcoord(nptet,ndm);
             for(int j=0; j<nptet; j++) {
-                x(j) = out.pointlist[ndm*pt(j)];
-                y(j) = out.pointlist[ndm*pt(j)+1];
-                z(j) = out.pointlist[ndm*pt(j)+2];
+                for(int k=0; k<ndm; k++) {
+                    pcoord(j,k) = out.pointlist[ndm*pt(j)+k];
+                }
+                ppointer[j] = &(out.pointlist[ndm*pt(j)]);
             }
 
             // size of tetrahedra
             double he = -1.0;
             for(int j=0; j<nptet; j++) {
                 for(int k=j+1; k<nptet; k++) {
-                    double h = (x[j]-x[k])*(x[j]-x[k])+(y[j]-y[k])*(y[j]-y[k])+(z[j]-z[k])*(z[j]-z[k]);
+                    double h = 0.0;
+                    for(int l=0; l<ndm; l++) {
+                        h += (pcoord(j,l)-pcoord(k,l))*(pcoord(j,l)-pcoord(k,l));
+                    }
                     if(h<he || he==-1.0) {
                         he = h;
                     }
                 }
             }
             avesize += sqrt(he);
-            // double a1 =  det(x[1], y[1], z[1], x[2], y[2], z[2], x[3], y[3], z[3]);
-            // double b1 = -det( 1.0, y[1], z[1],  1.0, y[2], z[2],  1.0, y[3], z[3]);
-            // double c1 = -det(x[1],  1.0, z[1], x[2],  1.0, z[2], x[3],  1.0, z[3]);
-            // double d1 = -det(x[1], y[1],  1.0, x[2], y[2],  1.0, x[3], y[3],  1.0);
-            // double volume = (a1+b1*x[0]+c1*y[0]+d1*z[0])/6.0;
-            // avesize += pow(volume, 1.0/3.0);
+
+            // volume
+            double A[4][4], D;
+            int indx[4];
+            for(int j=0; j<nptet-1; j++) {
+                for(int k=0; k<ndm; k++) {
+                    A[j][k] = pcoord(j,k) - pcoord(3,k);
+                }
+            }
+            mesh.lu_decmp(A,3,indx,&D,0);
+            volume(i) = fabs(A[indx[0]][0]*A[indx[1]][1]*A[indx[2]][2]) / 6.0;
 
             // radius
-            radius(i) = sqrt((xc-x[0])*(xc-x[0])+(yc-y[0])*(yc-y[0])+(zc-z[0])*(zc-z[0]));
+            double* pradius = &radius(i);
+            mesh.circumsphere(ppointer[0],ppointer[1],ppointer[2],ppointer[3],NULL,pradius);
         }
         avesize /= out.numberoftetrahedra;
 
         // alpha test
-        int num = 0;
-        eles.resize(out.numberoftetrahedra*nptet);
+        double totalvolume = 0.0;
         for(int i=0; i<out.numberoftetrahedra; i++) {
-            if(radius(i) / avesize <= alpha) {
+            // coplanar factor
+            // double coplane = volume(i) / pow(avesize,3);
+            // if(q < 1e-6) {
+            //     // opserr<<"coplanar: volume = "<<volume(i)<<", q = "<<q<<"\n";
+            //     continue;
+            // }
+            double vsphere = 4./3.*3.14*radius(i)*radius(i)*radius(i);
+            if(radius(i) / avesize <= alpha && volume(i)/vsphere > volthresh) {
                 // pass the test
+                totalvolume += volume(i);
 
                 // check if all nodes are additional nodes
-                bool add = true;
-                for(int j=0; j<nptet; j++) {
-                    int tag = point2node(out.tetrahedronlist[out.numberofcorners*i+j]);
-                    if(tag>=startnode && tag<=endnode) {
-                        add = false;
-                        break;
+                int add[4] = {-1,-1,-1,-1};
+                for(int j=0; j<4; j++) {
+                    int tag = p2nd(out.tetrahedronlist[out.numberofcorners*i+j]);
+                    for(int k=0; k<(int)addnodes.size()/2; k++) {
+                        if(tag>=addnodes[2*k] && tag<=addnodes[2*k+1]) {
+                            add[j] = k;
+                            break;
+                        }
                     }
                 }
-                    
+
                 // add ele
-                if(!add) {
-                    for(int j=0; j<nptet; j++) {
-                        int tag = point2node(out.tetrahedronlist[out.numberofcorners*i+j]);
-                        eles(num++) = tag;
-                    }
+                // if(add[0]==add[1] && add[1]==add[2] && add[2]==add[3] && add[3]!=-1) continue;
+                if(add[0]!=-1 && add[1]!=-1 && add[2]!=-1 && add[3]!=-1) continue;
+                for(int j=0; j<4; j++) {
+                    int tag = p2nd(out.tetrahedronlist[out.numberofcorners*i+j]);
+                    //opserr<<tag<<" ";
+                    eles.push_back(tag);
                 }
             }
         }
-        if(num == 0) {
-            eles = ID();
-        } else {
-            eles.resize(num);
-        }
-        
-    } else if(alpha < 0) {
 
-        // eles
-        eles.resize(out.numberoftetrahedra*nptet);
+    } else if(alpha < 0) {
 
         // copy triangles
         for(int i=0; i<out.numberoftetrahedra; i++) {
-            for(int j=0; j<nptet; j++) {
-                int tag = point2node(out.tetrahedronlist[out.numberofcorners*i+j]);
-                eles(nptet*i+j) = tag;
+            for(int j=0; j<4; j++) {
+                int tag = p2nd(out.tetrahedronlist[out.numberofcorners*i+j]);
+                eles.push_back(tag);
             }
         }
-
     }
-    
+
     return 0;
 }
 
-// int 
-// PFEMMesher3D::save(const char* filename, const ID& nodes, Domain* theDomain)
-// {
-//     if(theDomain == 0) {
-//         opserr<<"WARNING: null domain";
-//         opserr<<" -- PFEMMesher3D::save\n";
-//         return -1;
-//     }
+int 
+PFEMMesher3D::doTriangulation(int startele, const std::vector<int>& nodes, double alpha, 
+                              double volthresh, const std::vector<int>& addnodes, Domain* theDomain,
+                              double rho, double mu, double b1, double b2, double b3)
+{
+    if(theDomain == 0) {
+        opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher2D::doTriangulation\n";
+        return -1;
+    }
+    //Timer timer;
+    // do triangulation
+    std::vector<int> eles;
+    int res = doTriangulation(nodes, alpha,
+                              volthresh, addnodes, 
+                              theDomain, eles);
+    if(res < 0) {
+        opserr<<"WARNING: failed to do triangulation --";
+        opserr<<"PFEMMesher3D::soTriangulation\n";
+        return res;
+    }
 
-//     // write nodes
-//     std::ofstream file2(std::string(filename).append(".node").c_str());
-//     file2<<theDomain->getCurrentTime()<<" "<<0<<" "<<0<<" ";
-//     file2<<0<<" "<<0<<" "<<0<<" "<<0<<" "<<0<<"\n";
+    // add PFEM elements
+    //timer.start();
+    int numeles = eles.size()/4;
+    if(numeles == 0) return 0;
+    int etag = startele-1;
+    for(int i=0; i<numeles; i++) {
+        //opserr<<eles(4*i)<<" "<<eles(4*i+1)<<" "<<eles(4*i+2)<<" "<<eles(4*i+3)<<"\n";
+        PFEMElement3D* theEle = new PFEMElement3D(++etag, eles[4*i], eles[4*i+1], eles[4*i+2],
+                                                  eles[4*i+3], rho, mu, b1, b2, b3);
 
-//     std::map<int,int> nodeIndex;
-//     int index = 0;
+        if(theEle == 0) {
+            opserr<<"WARNING: no enough memory -- ";
+            opserr<<" -- PFEMMesher3D::doTriangulation\n";
+            return -1;
+        }
+        if(theDomain->addElement(theEle) == false) {
+            opserr<<"WARNING: failed to add element to domain -- ";
+            opserr<<" -- PFEMMesher3D::doTriangulation\n";
+            delete theEle;
+            return -1;
+        }
+    }
+    //timer.pause();
+    //opserr<<"create PFEM elements :"<<timer;
+    return etag;
+}
 
-//     // pressure constraints
-//     Pressure_ConstraintIter& thePCs = theDomain->getPCs();
-//     Pressure_Constraint* thePC = 0;
-//     while((thePC = thePCs()) != 0) {
-//         int ntag = thePC->getTag();
-//         Node* node = theDomain->getNode(ntag);
-//         int ptag = thePC->getPressureNode();
-//         Node* pnode = theDomain->getNode(ptag);
-//         if(node!=0 || pnode!=0) {
-//             nodeIndex[ntag] = index++;
-//             const Vector& coord = node->getCrds();
-//             const Vector& disp = node->getDisp();
-//             const Vector& vel = node->getVel();
-//             const Vector& accel = node->getAccel();
-//             const Vector& pvel = pnode->getVel();
-//             file2<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" "<<1<<" ";
-//             file2<<vel(0)<<" "<<vel(1)<<" "<<accel(0)<<" "<<accel(1);
-//             file2<<" "<<pvel(2)<<"\n";
-//         }
-//     }
+int 
+PFEMMesher3D::save(const char* filename, const ID& snodes, int step, Domain* theDomain)
+{
+    if(theDomain == 0) {
+        opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher3D::save\n";
+        return -1;
+    }
 
-//     // nodes
-//     for(int i=0; i<nodes.Size(); i++) {
-//         int tag = nodes(i);
-//         Node* theNode = theDomain->getNode(tag);
-//         if(theNode != 0) {
-//             nodeIndex[tag] = index++;
-//             const Vector& coord = theNode->getCrds();
-//             const Vector& disp = theNode->getDisp();
-//             const Vector& vel = theNode->getVel();
-//             const Vector& accel = theNode->getAccel();
-//             file2<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" "<<2<<" ";
-//             file2<<vel(0)<<" "<<vel(1)<<" "<<accel(0)<<" "<<accel(1);
-//             file2<<" "<<0<<"\n";
+    // Pressure_Constraints
+    std::map<int, std::pair<int,Node*> > nodes;
+    std::map<int, Node*> pnodes;
+    Pressure_ConstraintIter& thePCs = theDomain->getPCs();
+    Pressure_Constraint* thePC = 0;
+    int numisolated = 0;
+    while((thePC = thePCs()) != 0) {
+        int ntag = thePC->getTag();
+        int ptag = thePC->getPressureNode();
+        Node* nnd = theDomain->getNode(ntag);
+        Node* pnd = theDomain->getNode(ptag);
+        if(nnd!=0 && pnd!=0) {
+            std::pair<int,Node*>& nnode = nodes[ntag];
+            nnode.second = nnd;
+            pnodes[ptag] = pnd;
+            if(thePC->isFluid()) {
+                nnode.first = 0;
+            } else if(thePC->isStructure()) {
+                nnode.first = 3;
+            } else if(thePC->isInterface()) {
+                nnode.first = 2;
+            } else if(thePC->isIsolated()) {
+                nnode.first = 1;
+                numisolated++;
+            }
+        }
+    }
 
-//         }
-//     }
-//     file2.close();
+    // structure nodes
+    NodeIter& theNodes = theDomain->getNodes();
+    Node* theNode = 0;
+    while((theNode = theNodes()) != 0) {
+        int tag = theNode->getTag();
+        bool haveit = false;
+        int stype = 0;
+        for(int i=0; i<snodes.Size()/2; i++) {
+            if(tag>=snodes(2*i) && tag<=snodes(2*i+1)) {
+                haveit = true;
+                stype = i;
+                break;
+            }
+        }
+        if(haveit) {
+            std::pair<int,Node*>& node = nodes[tag];
+            node.second = theNode;
+            node.first = stype+4;
+        }
+    }
 
-//     // write edges
-//     std::ofstream file1(std::string(filename).append(".edge").c_str());
-//     typedef std::set< std::pair<int,int> > EdgeSet;
-//     typedef EdgeSet::iterator EdgeSetIter;
-//     typedef std::pair<EdgeSetIter, bool> EdgeSetRet;
-//     EdgeSet edges;
-//     EdgeSetRet ret;
-//     ElementIter& theEles = theDomain->getElements();
-//     Element* theEle = 0;
-//     while((theEle = theEles()) != 0) {
-//         const ID& allntags = theEle->getExternalNodes();
-//         ID ntags(0,allntags.Size());
-//         for(int i=0; i<allntags.Size(); i++) {
-//             if(nodeIndex.find(allntags(i)) != nodeIndex.end()) {
-//                 ntags[ntags.Size()] = allntags(i);
-//             }
-//         }
-//         if(ntags.Size()==1) continue;
-//         if(ntags.Size()>2) {
-//             ntags[ntags.Size()] = ntags(0);
-//         }
-//         for(int i=0; i<ntags.Size()-1; i++) {
-//             ID nd(0,2);
-//             for(int j=0; j<2; j++) {
-//                 nd.insert(ntags(i+j));
-//             }
-//             ret = edges.insert(std::make_pair(nd(0),nd(1)));
-//             if(ret.second == true) {
-//                 file1<<nodeIndex[nd(0)]<<" "<<nodeIndex[nd(1)]<<"\n";
-//             }
-//         }
-//     }
-//     file1.close();
+    // elements
+    std::map<int,Element*> elements;
+    ElementIter& theEles = theDomain->getElements();
+    Element* theEle = 0;
+    while((theEle = theEles()) != 0) {
+        const ID& ntags = theEle->getExternalNodes();
+        bool haveit = true;
+        for(int i=0; i<ntags.Size(); i++) {
+            if(nodes.find(ntags(i))==nodes.end() && pnodes.find(ntags(i))==pnodes.end()) {
+                haveit = false;
+                break;
+            }
+        }
+        if(haveit) {
+            elements[theEle->getTag()] = theEle;
+        }
+    }
 
-//     return 0;
-// }
+    // open file
+    std::stringstream ss;
+    ss << filename << "-" << step << ".msh";
+    std::ofstream file(ss.str().c_str());
 
-// void
-// PFEMMesher3D::setBoundary(double x1, double y1, double x2, double y2)
-// {
-//     bound(0) = x1;
-//     bound(1) = y1;
-//     bound(2) = x2;
-//     bound(3) = y2;
-// }
+    // write msh file header
+    file << "$MeshFormat\n";
+    file << "2.2 0 8\n";
+    file << "$EndMeshFormat\n";
 
-// void 
-// PFEMMesher3D::removeOutBoundNodes(const ID& nodes, ID& nodes2, Domain* theDomain)
-// {
-//     // check nodes
-//     ID removelist(0, nodes.Size());
-//     for(int i=0; i<nodes.Size(); i++) {
-//         int tag = nodes(i);
-//         Node* theNode = theDomain->getNode(tag);
-//         const Vector& coord = theNode->getCrds();
-//         if(coord.Size() < 2) {
-//             continue;
-//         }
-//         const Vector& disp = theNode->getTrialDisp();
-//         if(disp.Size() < 2) {
-//             continue;
-//         }
-//         double x = coord(0);        // initial
-//         double y = coord(1);
-//         x += disp(0);               // current
-//         y += disp(1);
+    // write nodes
+    int startnode = 0;
+    file << "$Nodes\n";
+    file << nodes.size() << "\n";
+    for(std::map<int,std::pair<int,Node*> >::iterator it=nodes.begin(); it!=nodes.end(); it++) {
+        int ntag = it->first;
+        if(ntag<0 && startnode==0) startnode = -ntag;
+        Node* theNode = it->second.second;
+        const Vector& coord = theNode->getCrds();
+        const Vector& disp = theNode->getTrialDisp();
+        if(disp.Size()>2 && coord.Size()>2) {
+            file << ntag+startnode << " ";
+            file << coord(0)+disp(0) << " ";
+            file << coord(1)+disp(1) << " ";
+            file << coord(2)+disp(2) << "\n";
+        } else if(disp.Size()>1 && coord.Size()>1) {
+            file << ntag+startnode << " ";
+            file << coord(0)+disp(0) << " ";
+            file << coord(1)+disp(1) << " ";
+            file << 0.0 << "\n";
+        } else if(disp.Size()>0 && coord.Size()>0) {
+            file << ntag+startnode << " ";
+            file << coord(0)+disp(0) << " ";
+            file << 0.0 << " ";
+            file << 0.0 << "\n";
+        } else {
+            opserr<<"WARNING: size of disp or coord equal to zero ";
+            opserr<<"-- PFEMMesher3D::save\n";
+        }
+    }
+    file << "$EndNodes\n";
+
+    // write elements
+    file << "$Elements\n";
+    file << elements.size()+numisolated << "\n";
+    int startele = 0;
+    int endele = 0;
+    for(std::map<int,Element*>::iterator it=elements.begin(); it!=elements.end(); it++) {
+        int etag = it->first;
+        if(etag<0 && startele==0) startele = -etag;
+        Element* theEle = it->second;
+        const ID& ntags = theEle->getExternalNodes();
+        const char* type = theEle->getClassType();
+        int numnodes = ntags.Size();
+
+        file << etag+startele << " ";
+        if(strcmp(type, "PFEMElement3D") == 0) {
+            file << " 4 0 ";
+            for(int i=0; i<numnodes/2; i++) {
+                file << ntags(2*i) << " ";
+            }
+            file << "\n";
+        } else if(numnodes == 1) {
+            file << " 15 0 ";
+            file << ntags(0) << "\n";
+        } else if(numnodes == 2) {
+            file << " 1 0 ";
+            for(int i=0; i<numnodes; i++) {
+                file << ntags(i) << " ";
+            }
+            file << "\n";
+        } else if(numnodes == 3) {
+            file << " 2 0 ";
+            for(int i=0; i<numnodes; i++) {
+                file << ntags(i) << " ";
+            }
+            file << "\n";
+        } else if(numnodes == 4) {
+            file << " 3 0 ";
+            for(int i=0; i<numnodes; i++) {
+                file << ntags(i) << " ";
+            }
+            file << "\n";
+        }
+        endele = etag+startele;
+    }
+
+    for(std::map<int,std::pair<int,Node*> >::iterator it=nodes.begin(); it!=nodes.end(); it++) {
+        int ntag = it->first;
+        int type = it->second.first;
+        if(type == 1) {
+            file << ++endele << " 15 0 "<<ntag+startnode<<"\n";
+        }
+    }
+    file << "$EndElements\n";
+
+    // write model view
+    file << "$NodeData\n";
+    file << 1 << "\n";
+    file << "\"model-" << step <<"\"\n";
+    file << 1 << "\n";
+    file << theDomain->getCurrentTime() << "\n";
+    file << 3 << "\n";
+    file << step << "\n";
+    file << 1 << "\n";
+    file << nodes.size() << "\n";
+    for(std::map<int,std::pair<int,Node*> >::iterator it=nodes.begin(); it!=nodes.end(); it++) {
+        int ntag = it->first;
+        int type = it->second.first;
+        file << ntag+startnode << " " << type << "\n";
+    }
+    file << "$EndNodeData\n";
+
+    // write pressure view
+    file << "$NodeData\n";
+    file << 1 << "\n";
+    file << "\"pressure-" << step << "\"\n";
+    file << 1 << "\n";
+    file << theDomain->getCurrentTime() << "\n";
+    file << 3 << "\n";
+    file << step << "\n";
+    file << 1 << "\n";
+    file << nodes.size() << "\n";
+    for(std::map<int,std::pair<int,Node*> >::iterator it=nodes.begin(); it!=nodes.end(); it++) {
+        int ntag = it->first;
+        Pressure_Constraint* thePC = theDomain->getPressure_Constraint(ntag);
+        if(thePC == 0) {
+            file << ntag << " " << 0 << "\n";
+        } else {
+            int ptag = thePC->getPressureNode();
+            Node* pnode = pnodes[ptag];
+            if(pnode == 0) {
+                file << ntag << " " << 0 << "\n";
+            } else {
+                const Vector& vel = pnode->getTrialVel();
+                file << ntag << " " << vel(0) << "\n";
+            }
+            
+        }
+    }
+    file << "$EndNodeData\n";
+
+    // write displacement view
+    file << "$NodeData\n";
+    file << 1 << "\n";
+    file << "\"displacement-" << step <<"\"\n";
+    file << 1 << "\n";
+    file << theDomain->getCurrentTime() << "\n";
+    file << 3 << "\n";
+    file << step << "\n";
+    file << 3 << "\n";
+    file << nodes.size() << "\n";
+    for(std::map<int,std::pair<int,Node*> >::iterator it=nodes.begin(); it!=nodes.end(); it++) {
+        int ntag = it->first;
+        Node* theNode = it->second.second;
+        const Vector& disp = theNode->getTrialDisp();
+        if(disp.Size() > 2) {
+            file << ntag << " " << disp(0) << " ";
+            file << disp(1) << " " << disp(2) << "\n";
+        } else if(disp.Size() > 1) {
+            file << ntag << " " << disp(0) << " ";
+            file << disp(1) << " " << 0.0 << "\n";
+        } else if(disp.Size() > 0) {
+            file << ntag << " " << disp(0) << " ";
+            file << 0.0 << " " << 0.0 << "\n";
+        } else {
+            opserr<<"WARNING: size of disp equal to zero ";
+            opserr<<"-- PFEMMesher3D::save\n";
+        }
+    }
+    file << "$EndNodeData\n";
+
+    // write velocity view
+    file << "$NodeData\n";
+    file << 1 << "\n";
+    file << "\"velocity-" << step <<"\"\n";
+    file << 1 << "\n";
+    file << theDomain->getCurrentTime() << "\n";
+    file << 3 << "\n";
+    file << step << "\n";
+    file << 3 << "\n";
+    file << nodes.size() << "\n";
+    for(std::map<int,std::pair<int,Node*> >::iterator it=nodes.begin(); it!=nodes.end(); it++) {
+        int ntag = it->first;
+        Node* theNode = it->second.second;
+        const Vector& vel = theNode->getTrialVel();
+        if(vel.Size() > 2) {
+            file << ntag << " " << vel(0) << " ";
+            file << vel(1) << " " << vel(2) << "\n";
+        } else if(vel.Size() > 1) {
+            file << ntag << " " << vel(0) << " ";
+            file << vel(1) << " " << 0.0 << "\n";
+        } else if(vel.Size() > 0) {
+            file << ntag << " " << vel(0) << " ";
+            file << 0.0 << " " << 0.0 << "\n";
+        } else {
+            opserr<<"WARNING: size of vel equal to zero ";
+            opserr<<"-- PFEMMesher3D::save\n";
+        }
+    }
+    file << "$EndNodeData\n";
+
+    // write acceleration view
+    file << "$NodeData\n";
+    file << 1 << "\n";
+    file << "\"acceleration-" << step << "\"\n";
+    file << 1 << "\n";
+    file << theDomain->getCurrentTime() << "\n";
+    file << 3 << "\n";
+    file << step << "\n";
+    file << 3 << "\n";
+    file << nodes.size() << "\n";
+    for(std::map<int,std::pair<int,Node*> >::iterator it=nodes.begin(); it!=nodes.end(); it++) {
+        int ntag = it->first;
+        Node* theNode = it->second.second;
+        const Vector& accel = theNode->getTrialAccel();
+        if(accel.Size() > 2) {
+            file << ntag << " " << accel(0) << " ";
+            file << accel(1) << " " << accel(2) << "\n";
+        } else if(accel.Size() > 1) {
+            file << ntag << " " << accel(0) << " ";
+            file << accel(1) << " " << 0.0 << "\n";
+        } else if(accel.Size() > 0) {
+            file << ntag << " " << accel(0) << " ";
+            file << 0.0 << " " << 0.0 << "\n";
+        } else {
+            opserr<<"WARNING: size of accel equal to zero ";
+            opserr<<"-- PFEMMesher3D::save\n";
+        }
+    }
+    file << "$EndNodeData\n";
+    file.close();
+
+    return 0;
+}
+
+void
+PFEMMesher3D::setBoundary(double x1, double y1, double z1, double x2, double y2, double z2)
+{
+    bound(0) = x1;
+    bound(1) = y1;
+    bound(2) = z2;
+    bound(3) = x2;
+    bound(4) = y2;
+    bound(5) = z2;
+}
+
+void 
+PFEMMesher3D::removeOutBoundNodes(const ID& nodes, Domain* theDomain)
+{
+    // check nodes
+    std::vector<int> removelist;
+    for(int i=0; i<nodes.Size()/2; i++) {
+        for(int tag=nodes(2*i); tag<=nodes(2*i+1); tag++) {
+            Node* theNode = theDomain->getNode(tag);
+            if(theNode == 0) continue;
+            const Vector& coord = theNode->getCrds();
+            if(coord.Size() < 3) {
+                continue;
+            }
+            const Vector& disp = theNode->getTrialDisp();
+            if(disp.Size() < 3) {
+                continue;
+            }
+            double x = coord(0);        // initial
+            double y = coord(1);
+            double z = coord(2);
+            x += disp(0);               // current
+            y += disp(1);
+            z += disp(2);
         
-//         // if out of boundary
-//         if(x<bound(0) || x>bound(2) || y<bound(1) || y>bound(3)) {
-//             removelist.insert(tag);
-//         } else {
-//             nodes2.insert(tag);
-//         }
-//     }
+            // if out of boundary
+            if(x<bound(0) || x>bound(3) || y<bound(1) || y>bound(4) || z<bound(2) || z>bound(5)) {
+                removelist.push_back(tag);
+            }
+        }
+    }
 
-//     // remove nodes
-//     for(int i=0; i<removelist.Size(); i++) {
-//         Node* theNode = theDomain->removeNode(removelist(i));
-//         if(theNode != 0) {
-//             delete theNode;
-//         }
-//         Pressure_Constraint* thePC = theDomain->removePressure_Constraint(removelist(i));
-//         if(thePC != 0) {
-//             delete thePC;
-//         }
-//     }
-// }
-
-// int 
-// PFEMMesher3D::findNodeTag(Domain* theDomain)
-// {
-//     NodeIter& theNodes = theDomain->getNodes();
-//     Node* firstNode = theNodes();
-//     if(firstNode == 0) {
-//         return -1;
-//     }
-//     int tag = firstNode->getTag();
-//     return tag-1;
-// }
-
-// int 
-// PFEMMesher3D::findEleTag(Domain* theDomain)
-// {
-//     ElementIter& theEles = theDomain->getElements();
-//     Element* firstEle = theEles();
-//     if(firstEle == 0) {
-//         return -1;
-//     }
-//     int tag = firstEle->getTag();
-//     return tag-1;
-// }
+    // remove nodes
+    for(int i=0; i<(int)removelist.size(); i++) {
+        Node* theNode = theDomain->removeNode(removelist[i]);
+        if(theNode != 0) {
+            delete theNode;
+        }
+        Pressure_Constraint* thePC = theDomain->removePressure_Constraint(removelist[i]);
+        if(thePC != 0) {
+            delete thePC;
+        }
+    }
+}
 
