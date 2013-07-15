@@ -11,5 +11,10 @@ TclModelBuilder_addPFEMElement2D(ClientData clientData, Tcl_Interp *interp,
                                  int argc, TCL_Char **argv,
                                  Domain *theDomain,
                                  TclModelBuilder *theBuilder) ;
+int
+TclModelBuilder_addPFEMElement3D(ClientData clientData, Tcl_Interp *interp,
+                                 int argc, TCL_Char **argv,
+                                 Domain *theDomain,
+                                 TclModelBuilder *theBuilder) ;
 
 #endif 
