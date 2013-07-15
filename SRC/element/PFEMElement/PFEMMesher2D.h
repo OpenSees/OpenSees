@@ -45,6 +45,7 @@ extern "C" {
 }
 #include <string>
 #include <Vector.h>
+#include <vector>
 
 class ID;
 class Domain;
@@ -54,6 +55,7 @@ class PFEMMesher2D
 {
 
 public:
+    
 
     // constructor
     PFEMMesher2D();
@@ -63,30 +65,53 @@ public:
 
     // discretize domain
     int discretize(int startnodetag, const Vector& points, const ID& segments, const Vector& holes,
-                   double maxarea, int ndf, const ID& fix, 
-                   const Vector& mass, Domain* theDomain);
+                   double maxarea, int ndf, const ID& fix, const Vector& vel,
+                   const Vector& mass, Domain* theDomain, int& endnodetag); // PSPG
 
-    int discretize(int startnodetag, double x1, double y1, double hx, double hy, double slope,
-                   int nx, int ny, int ndf, const ID& fix, 
-                   const Vector& mass, Domain* theDomain);
+    int discretize(int startnodetag, double x1, double y1, double hx, double hy, double angle,
+                   int nx, int ny, int ndf, const ID& fix, const Vector& vel,
+                   const Vector& mass, Domain* theDomain, int& endnodetag); // rectangle
 
-    int discretize(int startnodetag, double x1, double y1, double h, double slope, 
-                   int num, int ndf, const ID& fix,
-                   const Vector& mass, Domain* theDomain);
+    int discretize(int startnodetag, double x1, double y1, double h, double angle, 
+                   int num, int ndf, const ID& fix, const Vector& vel,
+                   const Vector& mass, Domain* theDomain, int& endnodetag); // line
+
+    int discretize(int startnode, double x1, double y1, double x2, double y2, double x3, double y3,
+                   int ni, int nj, int ndf, const ID& fix, const Vector& vel,
+                   const Vector& mass, Domain* theDomain, int& endnode);    // triangle
+
+    int discretize(int startnode, double xc, double yc, double r1, double r2,
+                   int nc, int nr, int ndf, const ID& fix, const Vector& vel,
+                   const Vector& mass, Domain* theDomain, int& endnode);    // circle
+    int discretize(int startnode, char type, int n,
+                   int nth, int nthfloor,  int ndf,
+                   const ID& fix, const Vector& vel, 
+                   const Vector& mass, Domain* theDomain, int& endnode);   // frame
+
+                   
 
     // triangulation
-    int doTriangulation(int startnodetag, int endnodetag, double alpha, 
-                        int startanodetag, int endanodetag, Domain* theDomain, ID& eles);
-    int doTriangulation(int starteletag, int startnodetag, int endnodetag, double alpha, 
-                        int startanodetag, int endanodetag, Domain* theDomain,
-                        double rho, double mu, double b1, double b2);
+    int doTriangulation(const std::vector<int>& nodes, double alpha, 
+                        const std::vector<int>& addnodes, Domain* theDomain, ID& eles);
+    int doTriangulation(int startele, const std::vector<int>& nodes, double alpha, 
+                        const std::vector<int>& addnodes, Domain* theDomain,
+                        double rho, double mu, double b1, double b2, double thk=1.0);
 
     // save
-    int save(const char* name, int startsnode, int endsnode, Domain* theDomain);
+    int save(const char* name, const ID& snode, Domain* theDomain);
 
     // set boundary of fluids
     void setBoundary(double x1, double y1, double x2, double y2);
-    void removeOutBoundNodes(int startnode, int endnode, Domain* theDomain);
+    void removeOutBoundNodes(const ID& nodes, Domain* theDomain);
+
+    // set frame
+    void setFrame(double x1, double y1, const std::vector<double> span, 
+                  const std::vector<double> height);
+
+    // calculate lift, drag, overturning moment from pressure
+    Vector calculateForces(const std::vector<int>& boundary, int basenode, 
+                           Vector& dragdir, Vector& liftdir, 
+                           Domain* theDomain);
 
 private:
 
@@ -99,6 +124,10 @@ private:
     
     double PI;
     Vector bound;
+    Vector frameBase;
+    std::vector<double> Lspan;
+    std::vector<double> Height;
+    double avesize;
 };
 
 
