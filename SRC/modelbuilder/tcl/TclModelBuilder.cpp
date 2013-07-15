@@ -1150,12 +1150,12 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
       }
       theNode->setMass(mass);      
     } else if (strcmp(argv[currentArg],"-disp") == 0) {
+      currentArg++;
       if (argc < currentArg+ndf) {
 	opserr << "WARNING incorrect number of nodal disp terms\n";
 	opserr << "node: " << nodeId << endln;
 	return TCL_ERROR;      
       }	
-      currentArg++;
       Vector disp(ndf);
       double theDisp;
       for (int i=0; i<ndf; i++) {
@@ -1167,13 +1167,14 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
 	disp(i) = theDisp;
       }
       theNode->setTrialDisp(disp);      
+      theNode->commitState();
     } else if (strcmp(argv[currentArg],"-vel") == 0) {
+      currentArg++;
       if (argc < currentArg+ndf) {
 	opserr << "WARNING incorrect number of nodal vel terms\n";
 	opserr << "node: " << nodeId << endln;
 	return TCL_ERROR;      
       }	
-      currentArg++;
       Vector disp(ndf);
       double theDisp;
       for (int i=0; i<ndf; i++) {
@@ -1185,6 +1186,7 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
 	disp(i) = theDisp;
       }
       theNode->setTrialVel(disp); 
+      theNode->commitState();
     } else
       currentArg++;
   }
