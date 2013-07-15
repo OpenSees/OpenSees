@@ -513,6 +513,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/twoNodeLink/TclTwoNodeLinkCommand.o \
 	$(FE)/element/triangle/Tri31.o \
 	$(FE)/element/PFEMElement/PFEMElement2D.o \
+	$(FE)/element/PFEMElement/PFEMElement3D.o \
 	$(FE)/element/PFEMElement/TclModelBuilder_addPFEMElement.o \
 	$(FE)/element/PFEMElement/TclPFEMCommands.o \
 	$(FE)/element/PFEMElement/PFEMMesher2D.o \
@@ -963,6 +964,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/convergenceTest/CTestRelativeEnergyIncr.o \
 	$(FE)/convergenceTest/CTestRelativeTotalNormDispIncr.o \
 	$(FE)/convergenceTest/CTestFixedNumIter.o \
+	$(FE)/convergenceTest/CTestPFEM.o \
 	$(FE)/analysis/algorithm/domainDecompAlgo/DomainDecompAlgo.o \
 	$(FE)/analysis/integrator/Integrator.o \
 	$(FE)/analysis/integrator/IncrementalIntegrator.o \
