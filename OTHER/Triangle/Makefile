@@ -4,6 +4,9 @@ all: $(TRIANGLE_LIBRARY)
 
 tri = triangle.o
 
+triangle.o: triangle.c
+	$(CC) -O -c triangle.c -o triangle.o
+
 $(TRIANGLE_LIBRARY): $(tri)
 	   @$(ECHO) "creating $(TRIANGLE_LIBRARY)" 
 	@$(RM) $(RMFLAGS) $(TRIANGLE_LIBRARY)
