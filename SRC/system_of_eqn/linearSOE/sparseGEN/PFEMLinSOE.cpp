@@ -532,6 +532,14 @@ PFEMLinSOE::setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int&
                     dofID(pid(i)) = -1;
                 }
             }
+
+            // set pressure to zero
+            // const Vector& vel = pnode->getTrialVel();
+            // Vector zerovec(vel.Size());
+            // pnode->setTrialDisp(zerovec);
+            // pnode->setTrialVel(zerovec);
+            // pnode->setTrialAccel(zerovec);
+            // pnode->commitState();
         }
 
         // momentum nodes
@@ -541,6 +549,7 @@ PFEMLinSOE::setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int&
                 if(nid(i) >= 0) {
                     dofType(nid(i)) = 2;      // interface momentum 
                     dofID(nid(i)) = Isize++;
+                } else {
                 }
             }
         } else if(thePC->isFluid()) {
@@ -548,6 +557,7 @@ PFEMLinSOE::setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int&
                 if(nid(i) >= 0) {
                     dofType(nid(i)) = 1;      // fluid momentum 
                     dofID(nid(i)) = Fsize++;
+                } else {
                 }
             }
         } else if(thePC->isIsolated()) {
