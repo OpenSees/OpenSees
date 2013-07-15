@@ -1,5 +1,5 @@
 /* ****************************************************************** **
-**    OpenSees System for Earthquake Engineering Simulation    **
+**    OpenSees System for Earthquake Engineering Simulation           **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
@@ -101,6 +101,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <ParameterIter.h>
 #include <InitialStateParameter.h>
 #include <ElementStateParameter.h>
+#include <Pressure_Constraint.h>
 
 // analysis model
 #include <AnalysisModel.h>
@@ -116,6 +117,8 @@ OPS_Stream *opserrPtr = &sserr;
 #include <CTestFixedNumIter.h>
 #include <NormDispAndUnbalance.h>
 #include <NormDispOrUnbalance.h>
+#include <CTestPFEM.h>
+
 // soln algorithms
 #include <Linear.h>
 #include <NewtonRaphson.h>
@@ -575,7 +578,6 @@ opsSend(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int 
 opsRecv(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
-
 int
 neesUpload(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
@@ -759,6 +761,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);            
     Tcl_CreateCommand(interp, "nodeMass", &nodeMass, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);            
+    Tcl_CreateCommand(interp, "nodePressure", &nodePressure, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);   
 
 
     Tcl_CreateCommand(interp, "nodeBounds", &nodeBounds, 
@@ -792,7 +796,6 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "recv", &opsRecv, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
-
     Tcl_CreateCommand(interp, "searchPeerNGA", &peerNGA, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 
@@ -2010,7 +2013,8 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
             theAnalysisModel = new AnalysisModel();
         }
         if(theTest == 0) {
-            theTest = new CTestNormUnbalance(1e-2,10000,1,2,3);
+            //theTest = new CTestNormUnbalance(1e-2,10000,1,2,3);
+            theTest = new CTestPFEM(1e-2,1e-2,1e-2,1e-2,1e-4,1e-3,10000,100,1,2);
         }
         if(theAlgorithm == 0) {
             theAlgorithm = new NewtonRaphson(*theTest);
@@ -2703,8 +2707,8 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	  method = KSPBICG;
 	else if (strcmp(argv[count+1],"KSPRICHARDSON") == 0)
 	  method = KSPRICHARDSON;
-	else if (strcmp(argv[count+1],"KSPCHEBYCHEV") == 0)
-	  method = KSPCHEBYCHEV;
+	else if (strcmp(argv[count+1],"KSPCHEBYSHEV") == 0)
+	  method = KSPCHEBYSHEV;
 	else if (strcmp(argv[count+1],"KSPGMRES") == 0)
 	  method = KSPGMRES;
       } else if (strcmp(argv[count],"-PC") == 0 || strcmp(argv[count],"-PCType")){	
@@ -3427,6 +3431,10 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
   // get the tolerence first
   double tol = 0.0;
   double tol2 = 0.0;
+  double tolp = 0.0;
+  double tolp2 = 0.0;
+  double tolrel = 0.0;
+  double tolprel = 0.0;
   int numIter = 0;
   int printIt = 0;
   int normType = 2;
@@ -3475,6 +3483,37 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
       if (Tcl_GetInt(interp, argv[7], &maxIncr) != TCL_OK)	
 	return TCL_ERROR;
     }
+
+  } else if (strcmp(argv[1],"PFEM") == 0) {
+      if(argc > 8) {
+          if(Tcl_GetDouble(interp, argv[2], &tol) != TCL_OK)	
+              return TCL_ERROR;
+          if(Tcl_GetDouble(interp, argv[3], &tolp) != TCL_OK)	
+              return TCL_ERROR;
+          if(Tcl_GetDouble(interp, argv[4], &tol2) != TCL_OK)	
+              return TCL_ERROR;
+          if(Tcl_GetDouble(interp, argv[5], &tolp2) != TCL_OK)	
+              return TCL_ERROR;
+          if(Tcl_GetDouble(interp, argv[6], &tolrel) != TCL_OK)	
+              return TCL_ERROR;
+          if(Tcl_GetDouble(interp, argv[7], &tolprel) != TCL_OK)	
+              return TCL_ERROR;
+          if(Tcl_GetInt(interp, argv[8], &numIter) != TCL_OK)	
+              return TCL_ERROR;
+      }
+      if(argc > 9) {
+          if(Tcl_GetInt(interp, argv[9], &maxIncr) != TCL_OK)	
+              return TCL_ERROR;
+      }
+      if(argc > 10) {
+          if(Tcl_GetInt(interp, argv[10], &printIt) != TCL_OK)	
+              return TCL_ERROR;
+      }
+      if(argc > 11) {
+          if(Tcl_GetInt(interp, argv[11], &normType) != TCL_OK)	
+              return TCL_ERROR;
+      }
+
   } else if (strcmp(argv[1],"FixedNumIter") != 0) {
     if (argc == 4) {
       if (Tcl_GetDouble(interp, argv[2], &tol) != TCL_OK)	
@@ -3509,6 +3548,7 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
       if (Tcl_GetInt(interp, argv[6], &maxIncr) != TCL_OK)	
 	return TCL_ERROR;		  
     }
+
   } else {
     if (argc == 3) {
       if (Tcl_GetInt(interp, argv[2], &numIter) != TCL_OK)	
@@ -3561,6 +3601,8 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
       theNewTest = new CTestRelativeEnergyIncr(tol,numIter,printIt,normType);             
     else if (strcmp(argv[1],"RelativeTotalNormDispIncr") == 0) 
       theNewTest = new CTestRelativeTotalNormDispIncr(tol,numIter,printIt,normType);             
+    else if (strcmp(argv[1],"PFEM") == 0) 
+        theNewTest = new CTestPFEM(tol,tolp,tol2,tolp2,tolrel,tolprel,numIter,maxIncr,printIt,normType);
     else {
       opserr << "WARNING No ConvergenceTest type (NormUnbalance, NormDispIncr, EnergyIncr, \n";
       opserr << "RelativeNormUnbalance, RelativeNormDispIncr, RelativeEnergyIncr, \n";
@@ -6813,6 +6855,38 @@ nodeMass(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 }
 
 int 
+nodePressure(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+    if(argc < 2) {
+        opserr << "WARNING: want - nodePressure nodeTag?\n";
+        return TCL_ERROR;
+    }
+    int tag;
+    if(Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+        opserr << "WARNING: nodePressure "<<argv[1]<<"\n";
+        return TCL_ERROR;
+    }
+    double pressure = 0.0;
+    Pressure_Constraint* thePC = theDomain.getPressure_Constraint(tag);
+    if(thePC != 0) {
+        int ptag = thePC->getPressureNode();
+        Node* pNode = theDomain.getNode(ptag);
+        if(pNode != 0) {
+            const Vector& vel = pNode->getVel();
+            if(vel.Size() > 0)  {
+                pressure = vel(0);
+                opserr<<"pressure = "<<pressure<<"\n";
+            }
+        }
+    }
+    char buffer[80];
+    sprintf(buffer, "%f", pressure);
+    Tcl_SetResult(interp, buffer, NULL);
+
+    return TCL_OK;
+}
+
+int 
 nodeBounds(ClientData clientData, Tcl_Interp *interp, int argc, 
 	   TCL_Char **argv)
 {
@@ -8286,8 +8360,6 @@ opsRecv(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   return TCL_OK;  
 }
-
-
 
 
 int
