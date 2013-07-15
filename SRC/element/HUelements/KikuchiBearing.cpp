@@ -65,8 +65,13 @@
 extern void printCommand(int argc, TCL_Char **argv);
 
 // Bessel function, Copyright(C) 1996 Takuya OOURA
+#ifdef _WIN32
 extern "C" double dbesi0(double);
 extern "C" double dbesi1(double);
+#else
+extern double dbesi0(double);
+extern double dbesi1(double);
+#endif
 
 static bool errDetected(bool ifNoError,char *msg){
   if (ifNoError){

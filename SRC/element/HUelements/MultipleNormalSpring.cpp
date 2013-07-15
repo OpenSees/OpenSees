@@ -60,8 +60,13 @@
 #include <string.h>
 
 extern void printCommand(int argc, TCL_Char **argv);
-extern "C" double dbesi0(double x);
-extern "C" double dbesi1(double x);
+#ifdef _WIN32
+extern "C" double dbesi0(double);
+extern "C" double dbesi1(double);
+#else
+extern double dbesi0(double);
+extern double dbesi1(double);
+#endif
 
 
 
