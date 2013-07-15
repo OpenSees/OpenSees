@@ -386,3 +386,9 @@ Pressure_Constraint::findNodeTag(Domain* theDomain)
     int tag = firstNode->getTag();
     return tag-1;
 }
+
+void
+Pressure_Constraint::setGravity(double g)
+{
+    gravity = g;
+}

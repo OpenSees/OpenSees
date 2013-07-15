@@ -79,6 +79,7 @@ public:
     virtual bool isStructure() const;
     virtual bool isIsolated() const;
     virtual void newStep(double dt, Vector& U, Vector& Udot, Vector& Udotdot);
+    virtual void setGravity(double g);
 
     // methods for output
     virtual int sendSelf(int commitTag, Channel &theChannel);
