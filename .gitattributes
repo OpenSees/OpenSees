@@ -1806,6 +1806,8 @@ SRC/convergenceTest/CTestNormDispIncr.tex -text
 SRC/convergenceTest/CTestNormUnbalance.cpp -text
 SRC/convergenceTest/CTestNormUnbalance.h -text
 SRC/convergenceTest/CTestNormUnbalance.tex -text
+SRC/convergenceTest/CTestPFEM.cpp -text
+SRC/convergenceTest/CTestPFEM.h -text
 SRC/convergenceTest/CTestRelativeEnergyIncr.cpp -text
 SRC/convergenceTest/CTestRelativeEnergyIncr.h -text
 SRC/convergenceTest/CTestRelativeNormDispIncr.cpp -text

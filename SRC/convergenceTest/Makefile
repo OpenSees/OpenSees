@@ -10,7 +10,8 @@ OBJS       = ConvergenceTest.o \
 	CTestFixedNumIter.o \
 	CTestRelativeTotalNormDispIncr.o \
 	NormDispAndUnbalance.o \
-	NormDispOrUnbalance.o
+	NormDispOrUnbalance.o \
+	CTestPFEM.o
 
 all:            $(OBJS) 
 
