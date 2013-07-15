@@ -79,6 +79,7 @@
 #define CONVERGENCE_TEST_CTestFixedNumIter                  8
 #define CONVERGENCE_TEST_NormDispAndUnbalance               9
 #define CONVERGENCE_TEST_NormDispOrUnbalance               10
+#define CONVERGENCE_TEST_CTestPFEM                         11
 
 
 #define GRND_TAG_ElCentroGroundMotion                 1
@@ -573,6 +574,7 @@
 #define ELE_TAG_Truss2                 138
 #define ELE_TAG_CorotTruss2            139
 #define ELE_Tag_ZeroLengthImpact3D     140
+#define ELE_TAG_PFEMElement3D          141
 
 #define ELE_TAG_MultipleShearSpring 6201
 #define ELE_TAG_MultipleNormalSpring 6202
