@@ -43,7 +43,7 @@ Vector PFEMElement2D::P;
 // for FEM_ObjectBroker, recvSelf must invoke
 PFEMElement2D::PFEMElement2D()
     :Element(0, ELE_TAG_PFEMElement2D), ntags(6), 
-     rho(0), mu(0), bx(0), by(0), J(0.0), numDOFs()
+     rho(0), mu(0), bx(0), by(0), J(0.0), numDOFs(),thickness(1.0)
 {
     for(int i=0;i<3;i++)
     {
@@ -57,9 +57,9 @@ PFEMElement2D::PFEMElement2D()
 
 // for object
 PFEMElement2D::PFEMElement2D(int tag, int nd1, int nd2, int nd3,
-                             double r, double m, double b1, double b2)
+                             double r, double m, double b1, double b2, double thk)
     :Element(tag, ELE_TAG_PFEMElement2D), ntags(6), 
-     rho(r), mu(m), bx(b1), by(b2), J(0.0), numDOFs()
+     rho(r), mu(m), bx(b1), by(b2), J(0.0), numDOFs(), thickness(thk)
 {
     ntags(0)=nd1; ntags(2)=nd2; ntags(4)=nd3;
     for(int i=0;i<3;i++)
@@ -107,6 +107,7 @@ PFEMElement2D::getNodePtrs(void)
 int
 PFEMElement2D::getNumDOF()
 {
+    if(numDOFs.Size() == 0) return 0;
     return numDOFs(numDOFs.Size()-1);
 }
 
@@ -135,6 +136,7 @@ PFEMElement2D::update()
 
     // get Jacobi
     J = (x[1]-x[0])*(y[2]-y[0])-(x[2]-x[0])*(y[1]-y[0]);
+    J *= thickness;
 
     // get derivatives
     double dndx[3] = {(y[1]-y[2])/J, (y[2]-y[0])/J, (y[0]-y[1])/J};
@@ -455,6 +457,9 @@ PFEMElement2D::setDomain(Domain *theDomain)
                 return;
             }
         }
+
+        // set gravity
+        thePCs[i]->setGravity(by);
 
         // connect
         thePCs[i]->connect(eletag);

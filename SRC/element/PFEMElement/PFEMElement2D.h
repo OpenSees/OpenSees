@@ -42,7 +42,7 @@ class PFEMElement2D : public Element
 public:
     PFEMElement2D();
     PFEMElement2D(int tag, int nd1, int nd2, int nd3,
-                  double r, double m, double b1, double b2);
+                  double r, double m, double b1, double b2, double thk=1.0);
     
     ~PFEMElement2D();
 
@@ -97,6 +97,7 @@ private:
     double dNdx[3], dNdy[3];
     double J;
     ID numDOFs;
+    double thickness;
 
     static Matrix K;
     static Vector P;
