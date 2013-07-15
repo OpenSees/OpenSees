@@ -82,6 +82,7 @@ public:
 
     // TaggedObject
     void Print(OPS_Stream &s, int flag =0);
+    int displaySelf(Renderer &theViewer, int displayMode, float fact);
 
 protected:
     

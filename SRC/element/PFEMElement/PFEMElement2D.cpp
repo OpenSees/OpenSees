@@ -31,6 +31,7 @@
 #include "PFEMElement2D.h"
 #include <elementAPI.h>
 #include <Domain.h>
+#include <Renderer.h>
 #include <Node.h>
 #include <Pressure_Constraint.h>
 #include <Channel.h>
@@ -481,4 +482,75 @@ void
 PFEMElement2D::Print(OPS_Stream &s, int flag)
 {
     s << "PFEMElement2D: "<<this->getTag()<<endln;
+}
+
+int
+PFEMElement2D::displaySelf(Renderer &theViewer, int displayMode, float fact)                                          
+{
+
+    // first set the quantity to be displayed at the nodes;
+    // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
+
+    /*
+  static Vector values(numgp);
+
+    for (int j=0; j<numgp; j++) values(j) = 0.0;
+
+    if (displayMode < numgp && displayMode > 0) {
+		for (int i=0; i<numgp; i++) {
+			const Vector &stress = theMaterial[i]->getStress();
+	        values(i) = stress(displayMode-1);
+	    }
+    }
+    */
+
+  static Vector values(3);
+
+    // now  determine the end points of the Tri31 based on
+    // the display factor (a measure of the distorted image)
+    // store this information in 3 3d vectors v1 through v3
+    const Vector &end1Crd = nodes[0]->getCrds();
+    const Vector &end2Crd = nodes[2]->getCrds();	
+    const Vector &end3Crd = nodes[4]->getCrds();	
+
+    const int numnodes = 3;
+    static Matrix coords(numnodes,3);
+
+    if (displayMode >= 0) {  
+
+		const Vector &end1Disp = nodes[0]->getDisp();
+        const Vector &end2Disp = nodes[2]->getDisp();
+        const Vector &end3Disp = nodes[4]->getDisp();
+
+        for (int i = 0; i < 2; i++) {
+			coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
+	        coords(1,i) = end2Crd(i) + end2Disp(i)*fact;    
+	        coords(2,i) = end3Crd(i) + end3Disp(i)*fact;    
+        }
+    } else {
+		int mode = displayMode * -1;
+        const Matrix &eigen1 = nodes[0]->getEigenvectors();
+        const Matrix &eigen2 = nodes[2]->getEigenvectors();
+        const Matrix &eigen3 = nodes[4]->getEigenvectors();
+        if (eigen1.noCols() >= mode) {
+			for (int i = 0; i < 2; i++) {
+				coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
+	            coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
+	            coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
+	        }    
+       } else {
+		   for (int i = 0; i < 2; i++) {
+			   coords(0,i) = end1Crd(i);
+	           coords(1,i) = end2Crd(i);
+	           coords(2,i) = end3Crd(i);
+	       }    
+       }
+    }
+    
+    int error = 0;
+
+    // finally we draw the element using drawPolygon
+    error += theViewer.drawPolygon (coords, values);
+
+    return error;
 }
