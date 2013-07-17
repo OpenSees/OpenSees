@@ -1,4 +1,4 @@
-/* ****************************************************************** **
+﻿/* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
@@ -17,21 +17,21 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision: 1.0 $
-// $Date: 
+                                                                       
+// $Revision: 1.1
+// $Date
 // $Source:
-                                                                      
+                                                                     
 // Written: R.Rahimi & R.Sepasdar & Dr. M. R. Banan
 // Created: 09/2012
 //
-// Description: This file contains the class implementation of RambergOsgoodSteel. 
+// Description: This file contains the class implementation of RambergOsgoodSteel.
 //-----------------------------------------------------------------------
 //              RAMBERG-OSGOOD STEEL MODEL
 //      written by REZA RAHIMI & REZA SEPASDAR (2012)
-//             Sopervisor: Dr. M. R. Banan
+//             Supervisor: Dr. Mo. R. Banan
 //-----------------------------------------------------------------------
-
+ 
 #include <elementAPI.h>
 #include "RambergOsgoodSteel.h"
 
@@ -66,14 +66,14 @@ OPS_RambergOsgoodSteel(void)
     return 0;
   }
 
-  
+ 
   numData = 4;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
     opserr << "WARNING invalid E & ep\n";
-    return 0;	
+    return 0;  
   }
-  
-  theMaterial = new RambergOsgoodSteel(iData[0], dData[0], dData[1], dData[2], dData[3]); 
+ 
+  theMaterial = new RambergOsgoodSteel(iData[0], dData[0], dData[1], dData[2], dData[3]);
 
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type RambergOsgoodSteel\n";
@@ -84,8 +84,8 @@ OPS_RambergOsgoodSteel(void)
 
 
 RambergOsgoodSteel::RambergOsgoodSteel(int tag,
-		 double _Fy, double _E0, double _rezaA,
-		 double _rezaN):
+                 double _Fy, double _E0, double _rezaA,
+                 double _rezaN):
   UniaxialMaterial(tag, MAT_TAG_RambergOsgoodSteel),
   Fy(_Fy), E0(_E0), rezaAA(_rezaA), rezaNN(_rezaN)
 {
@@ -150,7 +150,7 @@ UniaxialMaterial*
 RambergOsgoodSteel::getCopy(void)
 {
   RambergOsgoodSteel *theCopy = new RambergOsgoodSteel(this->getTag(), Fy, E0, rezaAA, rezaNN);
-  
+ 
   return theCopy;
 }
 
@@ -164,23 +164,23 @@ int
 RambergOsgoodSteel::setTrialStrain(double trialStrain, double strainRate)
 {
   double epsy = Fy / E0;
-  
-  
+ 
+ 
   eps = trialStrain;
 
   double deps = eps - epsP;
-  
+ 
   epsmax = epsmaxP;
   epsmin = epsminP;
   epspl  = epsplP;
   epss0  = epss0P;  
-  sigs0  = sigs0P; 
+  sigs0  = sigs0P;
   epsr   = epssrP;  
   sigr   = sigsrP;  
   kon = konP;
 
 
-  if (kon == 0 || kon == 3) { 
+  if (kon == 0 || kon == 3) {
 
 
     if (fabs(deps) < 10.0*DBL_EPSILON) {
@@ -194,15 +194,15 @@ RambergOsgoodSteel::setTrialStrain(double trialStrain, double strainRate)
       epsmax = epsy;
       epsmin = -epsy;
       if (deps < 0.0) {
-	kon = 2;
-	epss0 = epsmin;
-	sigs0 = Fy;
-	epspl = epsmin;
+        kon = 2;
+        epss0 = epsmin;
+        sigs0 = Fy;
+        epspl = epsmin;
       } else {
-	kon = 1;
-	epss0 = epsmax;
-	sigs0 = Fy;
-	epspl = epsmax;
+        kon = 1;
+        epss0 = epsmax;
+        sigs0 = Fy;
+        epspl = epsmax;
       }
     }
  
@@ -224,13 +224,13 @@ RambergOsgoodSteel::setTrialStrain(double trialStrain, double strainRate)
     sigr = sigP;
 
   }
-  
+ 
   if (sigr !=0)
   {
-	  sigs0=2*Fy;
+          sigs0=2*Fy;
   }
  
-  // calculate current stress sig and tangent modulus E 
+  // calculate current stress sig and tangent modulus E
  
   double trialSig[1000], F[1000], dF[1000], o;
   int kk=1;
@@ -238,47 +238,50 @@ RambergOsgoodSteel::setTrialStrain(double trialStrain, double strainRate)
   double M=10;
   while ( M >= 0.0001)
     {
-      
-      F[kk]= (trialSig[kk]/E0) + rezaAA*(pow((trialSig[kk]/sigs0),rezaNN)) - (eps-epsr);
+     
+      F[kk]= (trialSig[kk]/E0) + rezaAA*(pow((trialSig[kk]/sigs0),rezaNN)) - abs(eps-epsr);
       dF[kk]= (1/E0) + rezaAA*(1/sigs0)*rezaNN*(pow((trialSig[kk]/sigs0),(rezaNN-1)));
       trialSig[kk+1]=trialSig[kk]-(F[kk]/dF[kk]);
-      
+     
       kk=kk+1;
       sig=trialSig[kk];
       M=abs(sig-trialSig[kk-1]);
       if (kk == 1000)
-	{
-	  opserr << "Newton�Raphson method does NOT converge at eps=" <<  eps << "\n";
-	  M=0;
-	}
+        {
+          opserr << "NewtonRaphson method does NOT converge at eps=" <<  eps << "\n";
+          M=0;
+        }
     }
-  
+ 
   e = 1/((1/E0) + rezaAA*(1/sigs0)*rezaNN*(pow((sig/sigs0),(rezaNN-1))));
+    if (eps<epsr){
+		sig=-1*sig;
+	}
   sig=sig+sigr;
   return 0;
 }
 
 
 
-double 
+double
 RambergOsgoodSteel::getStrain(void)
 {
   return eps;
 }
 
-double 
+double
 RambergOsgoodSteel::getStress(void)
 {
   return sig;
 }
 
-double 
+double
 RambergOsgoodSteel::getTangent(void)
 {
   return e;
 }
 
-int 
+int
 RambergOsgoodSteel::commitState(void)
 {
   epsminP = epsmin;
@@ -289,7 +292,7 @@ RambergOsgoodSteel::commitState(void)
   epssrP = epsr;
   sigsrP = sigr;
   konP = kon;
-  
+ 
   eP = e;
   sigP = sig;
   epsP = eps;
@@ -297,7 +300,7 @@ RambergOsgoodSteel::commitState(void)
   return 0;
 }
 
-int 
+int
 RambergOsgoodSteel::revertToLastCommit(void)
 {
   epsmin = epsminP;
@@ -308,14 +311,14 @@ RambergOsgoodSteel::revertToLastCommit(void)
   epsr = epssrP;
   sigr = sigsrP;
   kon = konP;
-  
+ 
   e = eP;
   sig = sigP;
   eps = epsP;
   return 0;
 }
 
-int 
+int
 RambergOsgoodSteel::revertToStart(void)
 {
   eP = E0;
@@ -339,7 +342,7 @@ RambergOsgoodSteel::revertToStart(void)
   return 0;
 }
 
-int 
+int
 RambergOsgoodSteel::sendSelf(int commitTag, Channel &theChannel)
 {
   static Vector data(15);
@@ -367,9 +370,9 @@ RambergOsgoodSteel::sendSelf(int commitTag, Channel &theChannel)
   return 0;
 }
 
-int 
-RambergOsgoodSteel::recvSelf(int commitTag, Channel &theChannel, 
-	     FEM_ObjectBroker &theBroker)
+int
+RambergOsgoodSteel::recvSelf(int commitTag, Channel &theChannel,
+             FEM_ObjectBroker &theBroker)
 {
   static Vector data(15);
 
@@ -382,26 +385,26 @@ RambergOsgoodSteel::recvSelf(int commitTag, Channel &theChannel,
   E0 = data(1);
   epsminP = data(2);
   epsmaxP = data(3);
-  epsplP = data(4); 
-  epss0P = data(5); 
-  sigs0P = data(6); 
-  epssrP = data(7); 
-  sigsrP = data(8); 
-  konP = data(9);   
-  epsP = data(10);   
-  sigP = data(11);   
-  eP   = data(12);   
+  epsplP = data(4);
+  epss0P = data(5);
+  sigs0P = data(6);
+  epssrP = data(7);
+  sigsrP = data(8);
+  konP = data(9);  
+  epsP = data(10);  
+  sigP = data(11);  
+  eP   = data(12);  
   this->setTag(data(13));
   sigini = data(14);
 
   e = eP;
   sig = sigP;
   eps = epsP;
-  
+ 
   return 0;
 }
 
-void 
+void
 RambergOsgoodSteel::Print(OPS_Stream &s, int flag)
 {
   s << "RambergOsgoodSteel:(strain, stress, tangent) " << eps << " " << sig << " " << e << endln;
