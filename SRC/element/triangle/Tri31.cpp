@@ -28,7 +28,7 @@
 //
 // Description: This file contains the class definition for Tri31.
 
-#include "Tri31.h"
+#include <Tri31.h>
 #include <Node.h>
 #include <NDMaterial.h>
 #include <Matrix.h>
