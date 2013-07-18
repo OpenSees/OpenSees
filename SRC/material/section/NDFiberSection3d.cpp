@@ -52,7 +52,7 @@ ID NDFiberSection3d::code(6);
 NDFiberSection3d::NDFiberSection3d(int tag, int num, Fiber **fibers, double a): 
   SectionForceDeformation(tag, SEC_TAG_NDFiberSection3d),
   numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), alpha(a), sectionIntegr(0), e(6), eCommit(6), s(0), ks(0), 
+  yBar(0.0), zBar(0.0), alpha(a), sectionIntegr(0), e(6), s(0), ks(0), 
   parameterID(0), dedh(6)
 {
   if (numFibers != 0) {
@@ -120,7 +120,7 @@ NDFiberSection3d::NDFiberSection3d(int tag, int num, NDMaterial **mats,
 				   SectionIntegration &si, double a):
   SectionForceDeformation(tag, SEC_TAG_NDFiberSection3d),
   numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), alpha(a), sectionIntegr(0), e(6), eCommit(6), s(0), ks(0), 
+  yBar(0.0), zBar(0.0), alpha(a), sectionIntegr(0), e(6), s(0), ks(0), 
   parameterID(0), dedh(6)
 {
   if (numFibers != 0) {
@@ -194,7 +194,7 @@ NDFiberSection3d::NDFiberSection3d():
   SectionForceDeformation(0, SEC_TAG_NDFiberSection3d),
   numFibers(0), theMaterials(0), matData(0),
   yBar(0.0), zBar(0.0), alpha(5.0/6), sectionIntegr(0), 
-  e(6), eCommit(6), s(0), ks(0), parameterID(0), dedh(6)
+  e(6), s(0), ks(0), parameterID(0), dedh(6)
 {
   s = new Vector(sData, 6);
   ks = new Matrix(kData, 6, 6);
@@ -631,7 +631,6 @@ NDFiberSection3d::getCopy(void)
     }  
   }
 
-  theCopy->eCommit = eCommit;
   theCopy->e = e;
   theCopy->yBar = yBar;
   theCopy->zBar = zBar;
@@ -672,8 +671,6 @@ NDFiberSection3d::commitState(void)
   for (int i = 0; i < numFibers; i++)
     err += theMaterials[i]->commitState();
 
-  eCommit = e;
-
   return err;
 }
 
@@ -681,9 +678,6 @@ int
 NDFiberSection3d::revertToLastCommit(void)
 {
   int err = 0;
-
-  // Last committed section deformations
-  e = eCommit;
 
   ks->Zero();
   s->Zero();
