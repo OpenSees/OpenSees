@@ -443,7 +443,9 @@ PFEMElement2D::setDomain(Domain *theDomain)
 
         // get pc 
         thePCs[i] = theDomain->getPressure_Constraint(ntags(2*i));
-        if(thePCs[i] == 0) {
+        if(thePCs[i] != 0) {
+            thePCs[i]->setDomain(theDomain);
+        } else {
             thePCs[i] = new Pressure_Constraint(ntags(2*i), by);
             if(thePCs[i] == 0) {
                 opserr<<"WARNING: no enough memory for Pressure_Constraint -- ";
@@ -518,33 +520,33 @@ PFEMElement2D::displaySelf(Renderer &theViewer, int displayMode, float fact)
 
     if (displayMode >= 0) {  
 
-		const Vector &end1Disp = nodes[0]->getDisp();
+        const Vector &end1Disp = nodes[0]->getDisp();
         const Vector &end2Disp = nodes[2]->getDisp();
         const Vector &end3Disp = nodes[4]->getDisp();
 
         for (int i = 0; i < 2; i++) {
-			coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-	        coords(1,i) = end2Crd(i) + end2Disp(i)*fact;    
-	        coords(2,i) = end3Crd(i) + end3Disp(i)*fact;    
+            coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
+            coords(1,i) = end2Crd(i) + end2Disp(i)*fact;    
+            coords(2,i) = end3Crd(i) + end3Disp(i)*fact;    
         }
     } else {
-		int mode = displayMode * -1;
+        int mode = displayMode * -1;
         const Matrix &eigen1 = nodes[0]->getEigenvectors();
         const Matrix &eigen2 = nodes[2]->getEigenvectors();
         const Matrix &eigen3 = nodes[4]->getEigenvectors();
         if (eigen1.noCols() >= mode) {
-			for (int i = 0; i < 2; i++) {
-				coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	            coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-	            coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
-	        }    
-       } else {
-		   for (int i = 0; i < 2; i++) {
-			   coords(0,i) = end1Crd(i);
-	           coords(1,i) = end2Crd(i);
-	           coords(2,i) = end3Crd(i);
-	       }    
-       }
+            for (int i = 0; i < 2; i++) {
+                coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
+                coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
+                coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
+            }    
+        } else {
+            for (int i = 0; i < 2; i++) {
+                coords(0,i) = end1Crd(i);
+                coords(1,i) = end2Crd(i);
+                coords(2,i) = end3Crd(i);
+            }    
+        }
     }
     
     int error = 0;
