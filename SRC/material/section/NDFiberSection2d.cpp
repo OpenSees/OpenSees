@@ -47,12 +47,13 @@
 #include <Parameter.h>
 
 ID NDFiberSection2d::code(3);
+Matrix NDFiberSection2d::fs(3,3);
 
 // constructors:
 NDFiberSection2d::NDFiberSection2d(int tag, int num, Fiber **fibers, double a): 
   SectionForceDeformation(tag, SEC_TAG_NDFiberSection2d),
   numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), alpha(a), sectionIntegr(0), e(3), eCommit(3), s(0), ks(0), 
+  yBar(0.0), alpha(a), sectionIntegr(0), e(3), s(0), ks(0), 
   parameterID(0), dedh(3)
 {
   if (numFibers != 0) {
@@ -121,7 +122,7 @@ NDFiberSection2d::NDFiberSection2d(int tag, int num, NDMaterial **mats,
 				   SectionIntegration &si, double a):
   SectionForceDeformation(tag, SEC_TAG_NDFiberSection2d),
   numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), alpha(a), sectionIntegr(0), e(3), eCommit(3), s(0), ks(0), 
+  yBar(0.0), alpha(a), sectionIntegr(0), e(3), s(0), ks(0), 
   parameterID(0), dedh(3)
 {
   if (numFibers != 0) {
@@ -196,7 +197,7 @@ NDFiberSection2d::NDFiberSection2d():
   SectionForceDeformation(0, SEC_TAG_NDFiberSection2d),
   numFibers(0), theMaterials(0), matData(0),
   yBar(0.0), alpha(5.0/6), sectionIntegr(0), 
-  e(3), eCommit(3), s(0), ks(0), parameterID(0), dedh(3)
+  e(3), s(0), ks(0), parameterID(0), dedh(3)
 {
   s = new Vector(sData, 3);
   ks = new Matrix(kData, 3, 3);
@@ -344,7 +345,7 @@ NDFiberSection2d::setTrialSectionDeformation (const Vector &deforms)
       fiberArea[i] = matData[2*i+1];
     }
   }
-  
+
   static Vector eps(2);
 
   double rootAlpha = 1.0;
@@ -363,6 +364,7 @@ NDFiberSection2d::setTrialSectionDeformation (const Vector &deforms)
     eps(0) = d0 - y*d1;
 
     res += theMat->setTrialStrain(eps);
+
     const Vector &stress = theMat->getStress();
     const Matrix &tangent = theMat->getTangent();
 
@@ -489,6 +491,7 @@ NDFiberSection2d::getInitialTangent(void)
 const Matrix&
 NDFiberSection2d::getSectionTangent(void)
 {
+  //opserr << *ks << endln;
   return *ks;
 }
 
@@ -533,7 +536,6 @@ NDFiberSection2d::getCopy(void)
     }  
   }
 
-  theCopy->eCommit = eCommit;
   theCopy->e = e;
   theCopy->yBar = yBar;
   theCopy->alpha = alpha;
@@ -581,8 +583,6 @@ NDFiberSection2d::commitState(void)
   for (int i = 0; i < numFibers; i++)
     err += theMaterials[i]->commitState();
 
-  eCommit = e;
-
   return err;
 }
 
@@ -590,9 +590,6 @@ int
 NDFiberSection2d::revertToLastCommit(void)
 {
   int err = 0;
-
-  // Last committed section deformations
-  e = eCommit;
 
   kData[0] = 0.0; 
   kData[1] = 0.0; 
@@ -683,6 +680,8 @@ NDFiberSection2d::revertToStart(void)
 {
   // revert the fibers to start    
   int err = 0;
+
+  e.Zero();
 
   kData[0] = 0.0; 
   kData[1] = 0.0; 
@@ -1187,8 +1186,7 @@ NDFiberSection2d::getStressResultantSensitivity(int gradIndex, bool conditional)
     y = fiberLocs[i] - yBar;
     A = fiberArea[i];
     
-    dsigdh = theMaterials[i]->getStressSensitivity(gradIndex,true);
-
+    dsigdh = theMaterials[i]->getStressSensitivity(gradIndex,conditional);
     ds(0) += dsigdh(0)*A;
     ds(1) += -y*dsigdh(0)*A;
     ds(2) += rootAlpha*dsigdh(1)*A;
