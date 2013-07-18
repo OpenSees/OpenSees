@@ -206,7 +206,7 @@ ParallelSection::setTrialSectionDeformation (const Vector &def)
     Vector defi(orderi);
     for (int j = 0; j < orderi; j++) 
       for (int k = 0; k < order; k++) 
-	if (code(k) == (*theCode)(j))
+	if (code(j) == (*theCode)(k))
 	  defi(j) = def(k);
 
     ret += theSections[i]->setTrialSectionDeformation(defi);
@@ -232,11 +232,10 @@ ParallelSection::getSectionTangent(void)
     const ID &code = theSections[i]->getType();
     for (int j = 0; j < orderi; j++) 
       for (int k = 0; k < order; k++) 
-	if (code(k) == (*theCode)(j))
+	if (code(j) == (*theCode)(k))
 	  P(j,k) = 1.0;
-
     const Matrix &ksi = theSections[i]->getSectionTangent();
-
+    //opserr << P << ksi;
     ks->addMatrixTripleProduct(1.0, P, ksi, 1.0);
   }
 
@@ -254,7 +253,7 @@ ParallelSection::getInitialTangent(void)
     const ID &code = theSections[i]->getType();
     for (int j = 0; j < orderi; j++) 
       for (int k = 0; k < order; k++) 
-	if (code(k) == (*theCode)(j))
+	if (code(j) == (*theCode)(k))
 	  P(j,k) = 1.0;
 
     const Matrix &ksi = theSections[i]->getInitialTangent();
@@ -276,7 +275,7 @@ ParallelSection::getStressResultant(void)
     const Vector &si = theSections[i]->getStressResultant();
     for (int j = 0; j < orderi; j++) 
       for (int k = 0; k < order; k++) 
-	if (code(k) == (*theCode)(j))
+	if (code(j) == (*theCode)(k))
 	  (*s)(k) += si(j);
   }
 
@@ -337,6 +336,8 @@ ParallelSection::revertToStart(void)
 {
   int err = 0;
   
+  e->Zero();
+
   for (int i = 0; i < numSections; i++)
     err += theSections[i]->revertToStart();
   
@@ -446,7 +447,7 @@ ParallelSection::getStressResultantSensitivity(int gradIndex,
     const Vector &si = theSections[i]->getStressResultantSensitivity(gradIndex, conditional);
     for (int j = 0; j < orderi; j++) 
       for (int k = 0; k < order; k++) 
-	if (code(k) == (*theCode)(j))
+	if (code(j) == (*theCode)(k))
 	  (*s)(k) += si(j);
   }
   
@@ -475,7 +476,7 @@ ParallelSection::commitSensitivity(const Vector& defSens,
     Vector defi(orderi);
     for (int j = 0; j < orderi; j++) 
       for (int k = 0; k < order; k++) 
-	if (code(k) == (*theCode)(j))
+	if (code(j) == (*theCode)(k))
 	  defi(j) = defSens(k);
 
     ret += theSections[i]->commitSensitivity(defi, gradIndex, numGrads);
