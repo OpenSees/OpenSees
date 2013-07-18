@@ -37,6 +37,7 @@
 #include <Vector.h>
 #include <ID.h>
 #include <tcl.h>
+#include <string>
 
 static PFEMMesher2D theMesher2D;
 static PFEMMesher3D theMesher3D;
@@ -62,8 +63,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             if(argc < 6) {
                 opserr << "WARNING: wrong num of args -- ";
                 opserr << "PFEM2D discretize PSLG startnodetag maxarea ndf ";
-                opserr << "<-points (x1 y1 ...) -segments (p1 p2 ...) ";
-                opserr << "-fix (constrValues) -mass (massValues) -holes (x1 y1 ...) >\n";
+                opserr << "<-points {x1 y1 ...} -segments {p1 p2 ...} -vel {vx vy} ";
+                opserr << "-fix {constrValues} -mass {massValues} -holes {x1 y1 ...} >\n";
                 return TCL_ERROR;
             }
             int startnodetag;
@@ -91,82 +92,61 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                 opserr<<" -- PFEM2D discretize\n";
                 return TCL_ERROR;
             }
-            
+
             int loc = 6;
-            Vector points(argc-loc), mass(argc-loc), holes(argc-loc), vel(argc-loc);
-            ID segments, fix;
-            int state=-1, numpoints=0, numsegments=0, nummass=0, numfix=0, numvel=0,numholes=0;
+            Vector points, mass, holes, vel, segments, fix;
             while(loc < argc) {
+
+                Vector* vecPtr = 0;
                 if(strcmp(argv[loc], "-points") == 0) {
-                    state = 1;
+                    vecPtr = &points;
+                    loc++;
+
                 } else if(strcmp(argv[loc], "-segments") == 0) {
-                    state = 2;
+                    vecPtr = &segments;
+                    loc++;
+
                 } else if(strcmp(argv[loc], "-mass") == 0) {
-                    state = 3;
+                    vecPtr = &mass;
+                    loc++;
+
                 } else if(strcmp(argv[loc], "-fix") == 0) {
-                    state = 4;
+                    vecPtr = &fix;
+                    loc++;
+  
                 } else if(strcmp(argv[loc], "-holes") == 0) {
-                    state = 5;
+                    vecPtr = &holes;
+                    loc++;
+
                 } else if(strcmp(argv[loc], "-vel") == 0) {
-                    state = 6;
-                } else {
-                    if(state == 1) {
-                        double x;
-                        if(Tcl_GetDouble(interp, argv[loc], &x) != TCL_OK) {
-                            opserr<<"WARNING: invalid coordinate "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize\n";
-                            return TCL_ERROR; 
-                        }
-                        points(numpoints++) = x;
-                    } else if(state==2) {
-                        int tag;
-                        if(Tcl_GetInt(interp, argv[loc], &tag) != TCL_OK) {
-                            opserr<<"WARNING: invalid tag "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize\n";
-                            return TCL_ERROR; 
-                        }
-                        segments[numsegments++] = tag;
-                    } else if(state==3) {
-                        double m;
-                        if(Tcl_GetDouble(interp, argv[loc], &m) != TCL_OK) {
-                            opserr<<"WARNING: invalid mass "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize\n";
-                            return TCL_ERROR; 
-                        }
-                        mass(nummass++) = m;
-                    } else if(state==4) {
-                        int fixity;
-                        if(Tcl_GetInt(interp, argv[loc], &fixity) != TCL_OK) {
-                            opserr<<"WARNNG: invalid fixity "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize\n";
-                            return TCL_ERROR;
-                        }
-                        fix[numfix++] = fixity;
-                    } else if(state==5) {
-                        double x;
-                        if(Tcl_GetDouble(interp, argv[loc], &x) != TCL_OK) {
-                            opserr<<"WARNING: invalid coordinate "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize\n";
-                            return TCL_ERROR; 
-                        }
-                        holes(numholes++) = x;
-                    }  else if(state==6) {
-                        double v;
-                        if(Tcl_GetDouble(interp, argv[loc], &v) != TCL_OK) {
-                            opserr<<"WARNING: invalid vel "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize\n";
-                            return TCL_ERROR; 
-                        }
-                        vel(numvel++) = v;
-                    }
+                    vecPtr = &vel;
+                    loc++;
                 }
-            
-                loc++;
+
+                if(vecPtr != 0) {
+                    int num = 0;
+                    const char** argvPtr = 0;
+                    if(Tcl_SplitList(interp, argv[loc], &num, &argvPtr)!=TCL_OK) {
+                        opserr<<"WARNING: failed to read the list "<<argv[loc];
+                        opserr<<" -- PFEM2D discretize\n";
+                        return TCL_ERROR;
+                    }
+                    loc++;
+                    if(num > 0) vecPtr->resize(num);
+                    for(int i=0; i<num; i++) {
+                        double x;
+                        if(Tcl_GetDouble(interp, argvPtr[i], &x) != TCL_OK) {
+                            opserr<<"WARNING: invalid input "<<argvPtr[i];
+                            opserr<<" -- PFEM2D discretize\n";
+                            return TCL_ERROR; 
+                        }
+                        (*vecPtr)(i) = x;
+                    }
+
+                    if(argvPtr != 0) Tcl_Free((char *) argvPtr);
+                }
             }
-            points.resize(numpoints);
-            mass.resize(nummass);
-            holes.resize(numholes);
-            vel.resize(numvel);
+
             int endnodetag = startnodetag;
             int res = theMesher2D.discretize(startnodetag,points,segments,holes,maxarea,ndf,
                                              fix,vel,mass,theDomain, endnodetag);
@@ -182,7 +162,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             if(argc < 12) {
                 opserr<<"WARNING: wrong num of args -- ";
                 opserr<<"PFEM2D discretize Rectangle startnodetag x1 y1 hx hy angle nx ny ndf ";
-                opserr<<"<-fix (constrValues) -mass (massValues)>\n";
+                opserr<<"<-fix {constrValues} -mass {massValues} -vel {vx vy}";
+                opserr<<" -boundary {boundaryValues}>\n";
                 return TCL_ERROR;
             }
             double x1,y1,hx,hy,angle;
@@ -225,51 +206,55 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             }
 
             int loc = 12;
-            Vector mass(argc-loc), vel(argc-loc);
-            ID fix;
-            int state=-1, numfix=0, nummass=0, numvel=0;
+            Vector mass, vel, fix, boundary(4);
+            boundary += 1;
             while(loc < argc) {
-                if(strcmp(argv[loc], "-fix") == 0) {
-                    state = 1;
-                } else if(strcmp(argv[loc], "-mass") == 0) {
-                    state = 2;
+
+                Vector* vecPtr = 0;
+
+                if(strcmp(argv[loc], "-mass") == 0) {
+                    vecPtr = &mass;
+                    loc++;
+
+                } else if(strcmp(argv[loc], "-fix") == 0) {
+                    vecPtr = &fix;
+                    loc++;
+  
                 } else if(strcmp(argv[loc], "-vel") == 0) {
-                    state = 3;
-                } else {
-                    if(state == 1) {
-                        int fixity;
-                        if(Tcl_GetInt(interp, argv[loc], &fixity) != TCL_OK) {
-                            opserr<<"WARNING: invalid constraint value "<<argv[loc];
-                            opserr<<" -- PFEM2D discretizeRectangle\n";
-                            return TCL_ERROR; 
-                        }
-                        fix[numfix++] = fixity;
-                    } else if(state==2) {
-                        double m;
-                        if(Tcl_GetDouble(interp, argv[loc], &m) != TCL_OK) {
-                            opserr<<"WARNING: invalid mass "<<argv[loc];
-                            opserr<<" -- PFEM2D discretizeRectangle\n";
-                            return TCL_ERROR; 
-                        }
-                        mass(nummass++) = m;
-                    } else if(state==3) {
-                        double v;
-                        if(Tcl_GetDouble(interp, argv[loc], &v) != TCL_OK) {
-                            opserr<<"WARNING: invalid vel "<<argv[loc];
-                            opserr<<" -- PFEM2D discretizeRectangle\n";
-                            return TCL_ERROR; 
-                        }
-                        vel(numvel++) = v;
-                    }
+                    vecPtr = &vel;
+                    loc++;
+                } else if(strcmp(argv[loc], "-boundary") == 0) {
+                    vecPtr = &boundary;
+                    loc++;
                 }
-            
-                loc++;
+
+                if(vecPtr != 0) {
+                    int num = 0;
+                    const char** argvPtr = 0;
+                    if(Tcl_SplitList(interp, argv[loc], &num, &argvPtr)!=TCL_OK) {
+                        opserr<<"WARNING: failed to read the list "<<argv[loc];
+                        opserr<<" -- PFEM2D discretize\n";
+                        return TCL_ERROR;
+                    }
+                    loc++;
+                    if(num > 0) vecPtr->resize(num);
+                    for(int i=0; i<num; i++) {
+                        double x;
+                        if(Tcl_GetDouble(interp, argvPtr[i], &x) != TCL_OK) {
+                            opserr<<"WARNING: invalid input "<<argvPtr[i];
+                            opserr<<" -- PFEM2D discretize\n";
+                            return TCL_ERROR; 
+                        }
+                        (*vecPtr)(i) = x;
+                    }
+
+                    if(argvPtr != 0) Tcl_Free((char *) argvPtr);
+                }
             }
-            mass.resize(nummass);
-            vel.resize(numvel);
+            
             int endnodetag = startnodetag;
             int res = theMesher2D.discretize(startnodetag,x1,y1,hx,hy,angle,nx,ny,ndf,fix,vel,mass,
-                                             theDomain,endnodetag);
+                                             boundary,theDomain,endnodetag);
 
             if(res < 0) {
                 opserr << "WARNING: failed to discretize\n";
@@ -282,7 +267,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             if(argc < 10) {
                 opserr<<"WARNING: wrong num of args -- ";
                 opserr<<"PFEM2D discretize line startnodetag x1 y1 h angle num ndf ";
-                opserr<<"<-fix (constrValues) -mass (massValues)>\n";
+                opserr<<"-fix {constrValues} -mass {massValues} -vel {vx vy}";
+                opserr<<"-boundary {boundaryValues}\n";
                 return TCL_ERROR;
             }
             double x1,y1,h,angle;
@@ -317,51 +303,55 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             }
 
             int loc = 10;
-            Vector mass(argc-loc), vel(argc-loc);
-            ID fix;
-            int state=-1, numfix=0, nummass=0, numvel=0;
+            Vector mass, vel, fix, boundary(2);
+            boundary += 1;
             while(loc < argc) {
-                if(strcmp(argv[loc], "-fix") == 0) {
-                    state = 1;
-                } else if(strcmp(argv[loc], "-mass") == 0) {
-                    state = 2;
+
+                Vector* vecPtr = 0;
+
+                if(strcmp(argv[loc], "-mass") == 0) {
+                    vecPtr = &mass;
+                    loc++;
+
+                } else if(strcmp(argv[loc], "-fix") == 0) {
+                    vecPtr = &fix;
+                    loc++;
+  
                 } else if(strcmp(argv[loc], "-vel") == 0) {
-                    state = 3;
-                } else {
-                    if(state == 1) {
-                        int fixity;
-                        if(Tcl_GetInt(interp, argv[loc], &fixity) != TCL_OK) {
-                            opserr<<"WARNING: invalid constraint value "<<argv[loc];
-                            opserr<<" -- PFEM2D discretizeRectangle\n";
-                            return TCL_ERROR; 
-                        }
-                        fix[numfix++] = fixity;
-                    } else if(state==2) {
-                        double m;
-                        if(Tcl_GetDouble(interp, argv[loc], &m) != TCL_OK) {
-                            opserr<<"WARNING: invalid mass "<<argv[loc];
-                            opserr<<" -- PFEM2D discretizeRectangle\n";
-                            return TCL_ERROR; 
-                        }
-                        mass(nummass++) = m;
-                    } else if(state==3) {
-                        double v;
-                        if(Tcl_GetDouble(interp, argv[loc], &v) != TCL_OK) {
-                            opserr<<"WARNING: invalid vel "<<argv[loc];
-                            opserr<<" -- PFEM2D discretizeRectangle\n";
-                            return TCL_ERROR; 
-                        }
-                        vel(numvel++) = v;
-                    }
+                    vecPtr = &vel;
+                    loc++;
+                } else if(strcmp(argv[loc], "-boundary") == 0) {
+                    vecPtr = &boundary;
+                    loc++;
                 }
-            
-                loc++;
+
+                if(vecPtr != 0) {
+                    int num = 0;
+                    const char** argvPtr = 0;
+                    if(Tcl_SplitList(interp, argv[loc], &num, &argvPtr)!=TCL_OK) {
+                        opserr<<"WARNING: failed to read the list "<<argv[loc];
+                        opserr<<" -- PFEM2D discretize\n";
+                        return TCL_ERROR;
+                    }
+                    loc++;
+                    if(num > 0) vecPtr->resize(num);
+                    for(int i=0; i<num; i++) {
+                        double x;
+                        if(Tcl_GetDouble(interp, argvPtr[i], &x) != TCL_OK) {
+                            opserr<<"WARNING: invalid input "<<argvPtr[i];
+                            opserr<<" -- PFEM2D discretize\n";
+                            return TCL_ERROR; 
+                        }
+                        (*vecPtr)(i) = x;
+                    }
+
+                    if(argvPtr != 0) Tcl_Free((char *) argvPtr);
+                }
             }
-            mass.resize(nummass);
-            vel.resize(numvel);
+
             int endnodetag = startnodetag;
             int res = theMesher2D.discretize(startnodetag, x1,y1,h,angle,num,ndf,fix,vel,mass,
-                                             theDomain,endnodetag);
+                                             boundary,theDomain,endnodetag);
 
             if(res < 0) {
                 opserr << "WARNING: failed to discretize\n";
@@ -375,7 +365,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             if(argc < 13) {
                 opserr<<"WARNING: wrong num of args -- ";
                 opserr<<"PFEM2D discretize triangle startnodetag x1 y1 x2 y2 x3 y3 n1 n2 ndf ";
-                opserr<<"<-fix (constrValues) -mass (massValues)>\n";
+                opserr<<"<-fix {constrValues} -mass {massValues} -vel {vx vy} ";
+                opserr<<"-boundary {boundaryValues}>\n";
                 return TCL_ERROR;
             }
             double x1,y1,x2,y2,x3,y3;
@@ -422,52 +413,56 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             }
 
             int loc = 13;
-            Vector mass(argc-loc), vel(argc-loc);
-            ID fix;
-            int state=-1, numfix=0, nummass=0, numvel=0;
+            Vector mass, vel, fix, boundary(3);
+            boundary += 1;
             while(loc < argc) {
-                if(strcmp(argv[loc], "-fix") == 0) {
-                    state = 1;
-                } else if(strcmp(argv[loc], "-mass") == 0) {
-                    state = 2;
-                }  else if(strcmp(argv[loc], "-vel") == 0) {
-                    state = 3;
-                } else {
-                    if(state == 1) {
-                        int fixity;
-                        if(Tcl_GetInt(interp, argv[loc], &fixity) != TCL_OK) {
-                            opserr<<"WARNING: invalid constraint value "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize triangle\n";
-                            return TCL_ERROR; 
-                        }
-                        fix[numfix++] = fixity;
-                    } else if(state==2) {
-                        double m;
-                        if(Tcl_GetDouble(interp, argv[loc], &m) != TCL_OK) {
-                            opserr<<"WARNING: invalid mass "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize triangle\n";
-                            return TCL_ERROR; 
-                        }
-                        mass(nummass++) = m;
-                    } else if(state==3) {
-                        double v;
-                        if(Tcl_GetDouble(interp, argv[loc], &v) != TCL_OK) {
-                            opserr<<"WARNING: invalid vel "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize triangle\n";
-                            return TCL_ERROR; 
-                        }
-                        vel(numvel++) = v;
-                    }
+
+                Vector* vecPtr = 0;
+
+                if(strcmp(argv[loc], "-mass") == 0) {
+                    vecPtr = &mass;
+                    loc++;
+
+                } else if(strcmp(argv[loc], "-fix") == 0) {
+                    vecPtr = &fix;
+                    loc++;
+  
+                } else if(strcmp(argv[loc], "-vel") == 0) {
+                    vecPtr = &vel;
+                    loc++;
+                } else if(strcmp(argv[loc], "-boundary") == 0) {
+                    vecPtr = &boundary;
+                    loc++;
                 }
-            
-                loc++;
+
+                if(vecPtr != 0) {
+                    int num = 0;
+                    const char** argvPtr = 0;
+                    if(Tcl_SplitList(interp, argv[loc], &num, &argvPtr)!=TCL_OK) {
+                        opserr<<"WARNING: failed to read the list "<<argv[loc];
+                        opserr<<" -- PFEM2D discretize\n";
+                        return TCL_ERROR;
+                    }
+                    loc++;
+                    if(num > 0) vecPtr->resize(num);
+                    for(int i=0; i<num; i++) {
+                        double x;
+                        if(Tcl_GetDouble(interp, argvPtr[i], &x) != TCL_OK) {
+                            opserr<<"WARNING: invalid input "<<argvPtr[i];
+                            opserr<<" -- PFEM2D discretize\n";
+                            return TCL_ERROR; 
+                        }
+                        (*vecPtr)(i) = x;
+                    }
+
+                    if(argvPtr != 0) Tcl_Free((char *) argvPtr);
+                }
             }
-            mass.resize(nummass);
-            vel.resize(numvel);
+
             int endnode = startnode;
 
             int res = theMesher2D.discretize(startnode,x1,y1,x2,y2,x3,y3,n1,n2,ndf,fix,vel,mass,
-                                             theDomain,endnode);
+                                             boundary,theDomain,endnode);
             if(res < 0) {
                 opserr << "WARNING: failed to discretize\n";
                 return TCL_ERROR;
@@ -480,7 +475,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             if(argc < 11) {
                 opserr<<"WARNING: wrong num of args -- ";
                 opserr<<"PFEM2D discretize circle startnode xc yc r1 r2 nc nr ndf ";
-                opserr<<"<-fix (constrValues) -mass (massValues)>\n";
+                opserr<<"<-fix {constrValues} -mass {massValues} -vel {vx vy} ";
+                opserr<<"-boundary {boundaryValues}\n";
                 return TCL_ERROR;
             }
 
@@ -519,52 +515,56 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                 return TCL_ERROR; 
             }
             int loc = 11;
-            Vector mass(argc-loc), vel(argc-loc);
-            ID fix;
-            int state=-1, numfix=0, nummass=0, numvel=0;
+            Vector mass, vel, fix, boundary(2);
+            boundary += 1;
             while(loc < argc) {
-                if(strcmp(argv[loc], "-fix") == 0) {
-                    state = 1;
-                } else if(strcmp(argv[loc], "-mass") == 0) {
-                    state = 2;
+
+                Vector* vecPtr = 0;
+
+                if(strcmp(argv[loc], "-mass") == 0) {
+                    vecPtr = &mass;
+                    loc++;
+
+                } else if(strcmp(argv[loc], "-fix") == 0) {
+                    vecPtr = &fix;
+                    loc++;
+  
                 } else if(strcmp(argv[loc], "-vel") == 0) {
-                    state = 3;
-                } else {
-                    if(state == 1) {
-                        int fixity;
-                        if(Tcl_GetInt(interp, argv[loc], &fixity) != TCL_OK) {
-                            opserr<<"WARNING: invalid constraint value "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize triangle\n";
-                            return TCL_ERROR; 
-                        }
-                        fix[numfix++] = fixity;
-                    } else if(state==2) {
-                        double m;
-                        if(Tcl_GetDouble(interp, argv[loc], &m) != TCL_OK) {
-                            opserr<<"WARNING: invalid mass "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize triangle\n";
-                            return TCL_ERROR; 
-                        }
-                        mass(nummass++) = m;
-                    } else if(state==3) {
-                        double v;
-                        if(Tcl_GetDouble(interp, argv[loc], &v) != TCL_OK) {
-                            opserr<<"WARNING: invalid vel "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize triangle\n";
-                            return TCL_ERROR; 
-                        }
-                        vel(numvel++) = v;
-                    }
+                    vecPtr = &vel;
+                    loc++;
+                } else if(strcmp(argv[loc], "-boundary") == 0) {
+                    vecPtr = &boundary;
+                    loc++;
                 }
-            
-                loc++;
+
+                if(vecPtr != 0) {
+                    int num = 0;
+                    const char** argvPtr = 0;
+                    if(Tcl_SplitList(interp, argv[loc], &num, &argvPtr)!=TCL_OK) {
+                        opserr<<"WARNING: failed to read the list "<<argv[loc];
+                        opserr<<" -- PFEM2D discretize\n";
+                        return TCL_ERROR;
+                    }
+                    loc++;
+                    if(num > 0) vecPtr->resize(num);
+                    for(int i=0; i<num; i++) {
+                        double x;
+                        if(Tcl_GetDouble(interp, argvPtr[i], &x) != TCL_OK) {
+                            opserr<<"WARNING: invalid input "<<argvPtr[i];
+                            opserr<<" -- PFEM2D discretize\n";
+                            return TCL_ERROR; 
+                        }
+                        (*vecPtr)(i) = x;
+                    }
+
+                    if(argvPtr != 0) Tcl_Free((char *) argvPtr);
+                }
             }
-            mass.resize(nummass);
-            vel.resize(numvel);
+
             int endnode = startnode;
 
             int res = theMesher2D.discretize(startnode,xc,yc,r1,r2,nc,nr,ndf,fix,vel,mass,
-                                             theDomain,endnode);
+                                             boundary,theDomain,endnode);
             if(res < 0) {
                 opserr << "WARNING: failed to discretize\n";
                 return TCL_ERROR;
@@ -578,7 +578,7 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             if(argc < 9) {
                 opserr<<"WARNING: wrong num of args -- ";
                 opserr<<"PFEM2D discretize frame startnode type num nth nthfloor ndf ";
-                opserr<<"<-fix (constrValues) -mass (massValues)>\n";
+                opserr<<"<-fix {constrValues} -mass {massValues} -vel {vx vy}>\n";
                 return TCL_ERROR;
             }
             char type;
@@ -606,48 +606,48 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             }
 
             int loc = 9;
-            Vector mass(argc-loc), vel(argc-loc);
-            ID fix;
-            int state=-1, numfix=0, nummass=0, numvel=0;
+            Vector mass, vel, fix;
             while(loc < argc) {
-                if(strcmp(argv[loc], "-fix") == 0) {
-                    state = 1;
-                } else if(strcmp(argv[loc], "-mass") == 0) {
-                    state = 2;
+
+                Vector* vecPtr = 0;
+
+                if(strcmp(argv[loc], "-mass") == 0) {
+                    vecPtr = &mass;
+                    loc++;
+
+                } else if(strcmp(argv[loc], "-fix") == 0) {
+                    vecPtr = &fix;
+                    loc++;
+  
                 } else if(strcmp(argv[loc], "-vel") == 0) {
-                    state = 3;
-                } else {
-                    if(state == 1) {
-                        int fixity;
-                        if(Tcl_GetInt(interp, argv[loc], &fixity) != TCL_OK) {
-                            opserr<<"WARNING: invalid constraint value "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize frame\n";
-                            return TCL_ERROR; 
-                        }
-                        fix[numfix++] = fixity;
-                    } else if(state==2) {
-                        double m;
-                        if(Tcl_GetDouble(interp, argv[loc], &m) != TCL_OK) {
-                            opserr<<"WARNING: invalid mass "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize frame\n";
-                            return TCL_ERROR; 
-                        }
-                        mass(nummass++) = m;
-                    } else if(state==3) {
-                        double v;
-                        if(Tcl_GetDouble(interp, argv[loc], &v) != TCL_OK) {
-                            opserr<<"WARNING: invalid vel "<<argv[loc];
-                            opserr<<" -- PFEM2D discretize frame\n";
-                            return TCL_ERROR; 
-                        }
-                        vel(numvel++) = v;
-                    }
+                    vecPtr = &vel;
+                    loc++;
                 }
-            
-                loc++;
+
+                if(vecPtr != 0) {
+                    int num = 0;
+                    const char** argvPtr = 0;
+                    if(Tcl_SplitList(interp, argv[loc], &num, &argvPtr)!=TCL_OK) {
+                        opserr<<"WARNING: failed to read the list "<<argv[loc];
+                        opserr<<" -- PFEM2D discretize\n";
+                        return TCL_ERROR;
+                    }
+                    loc++;
+                    if(num > 0) vecPtr->resize(num);
+                    for(int i=0; i<num; i++) {
+                        double x;
+                        if(Tcl_GetDouble(interp, argvPtr[i], &x) != TCL_OK) {
+                            opserr<<"WARNING: invalid input "<<argvPtr[i];
+                            opserr<<" -- PFEM2D discretize\n";
+                            return TCL_ERROR; 
+                        }
+                        (*vecPtr)(i) = x;
+                    }
+
+                    if(argvPtr != 0) Tcl_Free((char *) argvPtr);
+                }
             }
-            mass.resize(nummass);
-            vel.resize(numvel);
+
             int endnode = startnode;
             int res = theMesher2D.discretize(startnode,type,num,nth,nthfloor,ndf,fix,vel,mass,
                                              theDomain,endnode);
@@ -658,6 +658,10 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
             Tcl_SetObjResult(interp, Tcl_NewIntObj(endnode));
 
+        } else {
+            opserr<<"WARNING: discretization type "<<argv[1]<<" is unknown ";
+            opserr<<"-- PFEM2D discretize\n";
+            return TCL_ERROR;
         }
 
     
@@ -665,8 +669,10 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
     } else if(strcmp(argv[1], "doTriangulation") == 0) {
         if(argc < 4) {
             opserr << "WARNING: wrong num of args -- ";
-            opserr << "PFEM2D doTriangulation alpha -nodes (start1 end1 ...)  ";
-            opserr << "<-addnodes (start1 end1 ...) -PFEMElement2D starteletag rho mu b1 b2 (thk)>\n";
+            opserr << "PFEM2D doTriangulation alpha -nodes {start1 end1 ...}  ";
+            opserr << "-addnodes {start1 end1 ...} ";
+            opserr << "-PFEMElement2D {starteletag rho mu b1 b2 <thk>}";
+            opserr << "-Tri31 {starteletag thk type matTag <pressure rho b1 b2>}\n";
             return TCL_ERROR;
         }
         double alpha;
@@ -675,99 +681,129 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             return TCL_ERROR; 
         }
 
-        // scan for switches
-        std::vector<int> states;
-        std::vector<int> locs;
-        for(int loc=3; loc<argc; loc++) {
-            if(strcmp(argv[loc], "-nodes") == 0) {
-                states.push_back(1);
-                locs.push_back(loc);
-            } else if(strcmp(argv[loc], "-addnodes") == 0) {
-                states.push_back(2);
-                locs.push_back(loc);
-            } else if(strcmp(argv[loc], "-PFEMElement2D") == 0) {
-                states.push_back(3);
-                locs.push_back(loc);
-            }
-        }
-        locs.push_back(argc);
+        int loc = 3;
+        Vector params;
+        int eletype = 0;
+        std::string type;
+        ID nodes, addnodes;
+        while(loc < argc) {
 
-        std::vector<int> nodes, addnodes;
-        std::vector<double> pfemparams(4);
-        double thk = 1.0;
-        int starteletag;
-        bool pfem = false;
-        for(int i=0; i<(int)states.size(); i++) {
-            int state = states[i];
-            int l0 = locs[i]+1;
-            int l1 = locs[i+1];
-            if(state == 1) {          // nodes
-                if(l1-l0<2) {
-                    opserr<<"WARNING: wrong no of arguments -- PFEM2D doTriangulation\n";
+            Vector* vecPtr = 0;
+            ID* idPtr = 0;
+
+            if(strcmp(argv[loc], "-nodes") == 0) {
+                idPtr = &nodes;
+                loc++;
+
+            } else if(strcmp(argv[loc], "-addnodes") == 0) {
+                idPtr = &addnodes;
+                loc++;
+  
+            } else if(strcmp(argv[loc], "-PFEMElement2D") == 0) {
+                vecPtr = &params;
+                eletype = 1;
+                loc++;
+
+            } else if(strcmp(argv[loc], "-Tri31") == 0) {
+                vecPtr = &params;
+                eletype = 2;
+                loc++;
+            }
+
+            if(vecPtr!=0 || idPtr!=0) {
+                int num = 0;
+                const char** argvPtr = 0;
+                if(Tcl_SplitList(interp, argv[loc], &num, &argvPtr)!=TCL_OK) {
+                    opserr<<"WARNING: failed to read the list "<<argv[loc];
+                    opserr<<" -- PFEM2D discretize\n";
                     return TCL_ERROR;
                 }
-                for(int loc=l0; loc<l1; loc++) {
-                    int tag;
-                    if(Tcl_GetInt(interp, argv[loc], &tag) != TCL_OK) {
-                        opserr<<"WARNING: invalid node tag "<<argv[loc];
-                        opserr<<" -- PFEM2D doTriangulation\n";
-                        return TCL_ERROR; 
+                loc++;
+                if(num > 0) {
+                    if(vecPtr!=0) vecPtr->resize(num);
+                    if(idPtr!=0) idPtr->resize(num);
+                }
+                if(vecPtr != 0) {
+                    for(int i=0; i<num; i++) {
+                        if(eletype==2 && i==2) {
+                            type = argvPtr[i];
+                            continue;
+                        }
+                        double x;
+                        if(Tcl_GetDouble(interp, argvPtr[i], &x) != TCL_OK) {
+                            opserr<<"WARNING: invalid input "<<argvPtr[i];
+                            opserr<<" -- PFEM2D discretize\n";
+                            return TCL_ERROR; 
+                        }
+                        (*vecPtr)(i) = x;
                     }
-                    nodes.push_back(tag);
-                }
-            } else if(state == 2) {   // addnodes
-                if(l1-l0<2) {
-                    opserr<<"WARNING: wrong no of arguments -- PFEM2D doTriangulation\n";
-                    return TCL_ERROR;
-                }
-                for(int loc=l0; loc<l1; loc++) {
-                    int tag;
-                    if(Tcl_GetInt(interp, argv[loc], &tag) != TCL_OK) {
-                        opserr<<"WARNING: invalid node tag "<<argv[loc];
-                        opserr<<" -- PFEM2D doTriangulation\n";
-                        return TCL_ERROR; 
-                    }
-                    addnodes.push_back(tag);
-                }
-            } else if(state == 3) {   // PFEMElement2D
-                if(l1-l0<5) {
-                    opserr<<"WARNING: wrong no of arguments -- PFEM2D doTriangulation\n";
-                    return TCL_ERROR;
-                }
-                pfem = true;
-                if(Tcl_GetInt(interp, argv[l0], &starteletag) != TCL_OK) {
-                    opserr<<"WARNING: invalid element tag "<<argv[l0];
-                    opserr<<" -- PFEM2D doTriangulation\n";
-                    return TCL_ERROR; 
-                }
-                for(int loc=l0+1; loc<l0+5; loc++) {
-                    if(Tcl_GetDouble(interp, argv[loc], &pfemparams[loc-l0-1]) != TCL_OK) {
-                        opserr<<"WARNING: invalid parameter "<<argv[loc];
-                        opserr<<" -- PFEM2D doTriangulation\n";
-                        return TCL_ERROR; 
+                } else if(idPtr != 0) {
+                    for(int i=0; i<num; i++) {
+                        int x;
+                        if(Tcl_GetInt(interp, argvPtr[i], &x) != TCL_OK) {
+                            opserr<<"WARNING: invalid input "<<argvPtr[i];
+                            opserr<<" -- PFEM2D discretize\n";
+                            return TCL_ERROR; 
+                        }
+                        (*idPtr)(i) = x;
                     }
                 }
-                if(l1-l0>5) {
-                    if(Tcl_GetDouble(interp, argv[l0+5], &thk) != TCL_OK) {
-                        opserr<<"WARNING: invalid thickness "<<argv[l0+5];
-                        opserr<<" -- PFEM2D doTriangulation\n";
-                        return TCL_ERROR; 
-                    }
-                }
+
+                if(argvPtr != 0) Tcl_Free((char *) argvPtr);
             }
         }
 
         // triangulation
-        int res;
+        int res = -1;
         ID eles;
-        if(pfem) {
-            res = theMesher2D.doTriangulation(starteletag,nodes,
-                                              alpha,addnodes,theDomain,
-                                              pfemparams[0],pfemparams[1],
-                                              pfemparams[2],pfemparams[3],thk);
+        //opserr<<"params = "<<params;
+        if(eletype == 1) {
+            double rho,mu,b1,b2,thk=1.0;
+            int startele;
+            if(params.Size() >= 5) {
+                startele = (int)params(0);
+                rho = params(1);
+                mu = params(2);
+                b1 = params(3);
+                b2 = params(4);
+            }
+            if(params.Size() > 5) {
+                thk = params(5);
+            }
+            
+            if(params.Size() >= 5) {
+                res = theMesher2D.doTriangulation(startele,nodes,alpha,addnodes,theDomain,
+                                                  rho,mu,b1,b2,thk);
+            }
+
+        } else if(eletype == 2) {
+            double thk=0, p=0,rho=0,b1=0,b2=0;
+            int startele=0, matTag=0;
+            if(params.Size() >= 4) {
+                startele = (int)params(0);
+                thk = params(1);
+                matTag = (int)params(3);
+            }
+            if(params.Size() > 4) {
+                p = params(4);
+            }
+            if(params.Size() > 5) {
+                rho = params(5);
+            }
+            if(params.Size() > 6) {
+                b1 = params(6);
+            }
+            if(params.Size() > 7) {
+                b2 = params(7);
+            }
+            
+            if(params.Size() >= 4) {
+                res = theMesher2D.doTriangulation(startele,nodes,alpha,addnodes,theDomain,
+                                                  thk,type.c_str(),matTag,p,rho,b1,b2);
+            }
+
         } else {
-            res = theMesher2D.doTriangulation(nodes,alpha,
-                                              addnodes,theDomain,eles);
+            res = theMesher2D.doTriangulation(nodes,alpha,addnodes,theDomain,eles);
             if(res < 0) {
                 opserr<<"WARNING: failed to do triangulation -- ";
                 opserr<<" -- PFEM2D doTriangulation\n";
@@ -777,7 +813,7 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
         
 
-        if(pfem) {
+        if(eletype==1 || eletype==2) {
             Tcl_SetObjResult(interp, Tcl_NewIntObj(res));
         } else {
             for(int i=0; i<eles.Size(); i++) {
@@ -791,26 +827,45 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
         if(argc < 3) {
             opserr << "WARNING: wrong num of args -- ";
-            opserr << "PFEM2D save filename <-structure (start1 end1 ...)> ";
+            opserr << "PFEM2D save filename -structure {start1 end1 ...} ";
             return TCL_ERROR;            
         }
 
-        if(argc>5 && strcmp(argv[3], "-structure")==0) {
-            int numnodes = argc-4;
-            ID snodes(numnodes);
-            for(int i=0; i<numnodes; i++) {
-                if(Tcl_GetInt(interp, argv[4+i], &snodes(i)) != TCL_OK) {
-                    opserr<<"WARNING: invalid strcutural node "<<argv[4+i]<<" -- PFEM2D save\n";
-                    return TCL_ERROR; 
-                }
-            }
-            theMesher2D.save(argv[2], snodes, theDomain);
-        
-        } else {
-            ID snodes;
-            theMesher2D.save(argv[2], snodes, theDomain);
-        }
+        int loc = 3;
+        ID snodes;
+        while(loc < argc) {
 
+            ID* idPtr = 0;
+ 
+            if(strcmp(argv[loc], "-structure") == 0) {
+                idPtr = &snodes;
+                loc++;
+            }
+
+            if(idPtr != 0) {
+                int num = 0;
+                const char** argvPtr = 0;
+                if(Tcl_SplitList(interp, argv[loc], &num, &argvPtr)!=TCL_OK) {
+                    opserr<<"WARNING: failed to read the list "<<argv[loc];
+                    opserr<<" -- PFEM2D discretize\n";
+                    return TCL_ERROR;
+                }
+                loc++;
+                if(num > 0) idPtr->resize(num);
+                for(int i=0; i<num; i++) {
+                    int tag;
+                    if(Tcl_GetInt(interp, argvPtr[i], &tag) != TCL_OK) {
+                        opserr<<"WARNING: invalid input "<<argvPtr[i];
+                        opserr<<" -- PFEM2D discretize\n";
+                        return TCL_ERROR; 
+                    }
+                    (*idPtr)(i) = tag;
+                }
+
+                if(argvPtr != 0) Tcl_Free((char *) argvPtr);
+            }
+        }
+        theMesher2D.save(argv[2], snodes, theDomain);
 
     } else if(strcmp(argv[1], "setBoundary") == 0) {
         
@@ -845,7 +900,7 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
     } else if(strcmp(argv[1], "setFrame") == 0) {
         if(argc < 5) {
             opserr << "WARNING: wrong num of args -- ";
-            opserr << "PFEM2D setFrame xbase ybase -span () -height ()\n";
+            opserr << "PFEM2D setFrame xbase ybase -span {L1 ...} -height {H1 ...}\n";
             return TCL_ERROR;
         }
         double x1, y1;
@@ -859,35 +914,43 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             opserr<<" -- PFEM2D setFrame\n";
             return TCL_ERROR; 
         }
+
         int loc = 4;
-        std::vector<double> Lspan, Height;
-        int state=-1;
+        Vector Lspan, Height;;
         while(loc < argc) {
+
+            Vector* vecPtr = 0;
+ 
             if(strcmp(argv[loc], "-span") == 0) {
-                state = 1;
+                vecPtr = &Lspan;
+                loc++;
             } else if(strcmp(argv[loc], "-height") == 0) {
-                state = 2;
-            } else {
-                if(state == 1) {
-                    double L;
-                    if(Tcl_GetDouble(interp, argv[loc], &L) != TCL_OK) {
-                        opserr<<"WARNING: invalid L "<<argv[loc];
-                        opserr<<" -- PFEM2D discretize setFrame\n";
-                        return TCL_ERROR; 
-                    }
-                    Lspan.push_back(L);
-                } else if(state==2) {
-                    double H;
-                    if(Tcl_GetDouble(interp, argv[loc], &H) != TCL_OK) {
-                        opserr<<"WARNING: invalid H "<<argv[loc];
-                        opserr<<" -- PFEM2D discretize setFrame\n";
-                        return TCL_ERROR; 
-                    }
-                    Height.push_back(H);
-                }
+                vecPtr = &Height;
+                loc++;
             }
-            
-            loc++;
+
+            if(vecPtr != 0) {
+                int num = 0;
+                const char** argvPtr = 0;
+                if(Tcl_SplitList(interp, argv[loc], &num, &argvPtr)!=TCL_OK) {
+                    opserr<<"WARNING: failed to read the list "<<argv[loc];
+                    opserr<<" -- PFEM2D discretize\n";
+                    return TCL_ERROR;
+                }
+                loc++;
+                if(num > 0) vecPtr->resize(num);
+                for(int i=0; i<num; i++) {
+                    double x;
+                    if(Tcl_GetDouble(interp, argvPtr[i], &x) != TCL_OK) {
+                        opserr<<"WARNING: invalid input "<<argvPtr[i];
+                        opserr<<" -- PFEM2D discretize\n";
+                        return TCL_ERROR; 
+                    }
+                    (*vecPtr)(i) = x;
+                }
+
+                if(argvPtr != 0) Tcl_Free((char *) argvPtr);
+            }
         }
 
         theMesher2D.setFrame(x1,y1,Lspan,Height);
@@ -896,86 +959,176 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
         if(argc < 2) {
             opserr << "WARNING: wrong num of args -- ";
-            opserr << "PFEM2D removeOutBoundNodes <-nodes startnode end ...>\n";
+            opserr << "PFEM2D removeOutBoundNodes -nodes {startnode end ...}\n";
             return TCL_ERROR;            
         }
 
-        if(argc>4 && strcmp(argv[3], "-nodes")==0) {
-            int numnodes = argc-3;
-            ID nodes(numnodes);
-            for(int i=0; i<numnodes; i++) {
-                if(Tcl_GetInt(interp, argv[3+i], &nodes(i)) != TCL_OK) {
-                    opserr<<"WARNING: invalid node "<<argv[3+i]<<" -- PFEM2D removeOutBoundNodes\n";
-                    return TCL_ERROR; 
-                }
+        int loc = 2;
+        ID snodes;
+        while(loc < argc) {
+
+            ID* idPtr = 0;
+ 
+            if(strcmp(argv[loc], "-nodes") == 0) {
+                idPtr = &snodes;
+                loc++;
             }
-            theMesher2D.removeOutBoundNodes(nodes, theDomain);
-        
+
+            if(idPtr != 0) {
+                int num = 0;
+                const char** argvPtr = 0;
+                if(Tcl_SplitList(interp, argv[loc], &num, &argvPtr)!=TCL_OK) {
+                    opserr<<"WARNING: failed to read the list "<<argv[loc];
+                    opserr<<" -- PFEM2D discretize\n";
+                    return TCL_ERROR;
+                }
+                loc++;
+                if(num > 0) idPtr->resize(num);
+                for(int i=0; i<num; i++) {
+                    int tag;
+                    if(Tcl_GetInt(interp, argvPtr[i], &tag) != TCL_OK) {
+                        opserr<<"WARNING: invalid input "<<argvPtr[i];
+                        opserr<<" -- PFEM2D discretize\n";
+                        return TCL_ERROR; 
+                    }
+                    (*idPtr)(i) = tag;
+                }
+
+                if(argvPtr != 0) Tcl_Free((char *) argvPtr);
+            }
         }
+        theMesher2D.removeOutBoundNodes(snodes, theDomain);
 
     } else if(strcmp(argv[1], "calculateForces") == 0) {
 
         if(argc < 2) {
             opserr<<"WARNING: wrong num of args -- ";
-            opserr<<"PFEM2D calculateForces -boundary $nd1 ... ";
-            opserr<<"-basenode $nd -dragdir $dx $dy -liftdir $dx $dy"; 
+            opserr<<"PFEM2D calculateForces -boundary {$nd1 ...} ";
+            opserr<<"-basenode $nd -dragdir {$dx $dy} -liftdir {$dx $dy}"; 
             return TCL_ERROR;            
         }
-        int loc = 2, state = -1;
+        int loc = 2;
+        Vector drag, lift;
         std::vector<int> boundary;
-        int basenode = 0;
-        Vector dragdir(2), liftdir(2);
+        int basenode;
         while(loc < argc) {
-            if(strcmp(argv[loc],"-boundary") == 0) {
-                state = 0;
+
+            Vector* vecPtr = 0;
+            std::vector<int>* idPtr = 0;
+
+            if(strcmp(argv[loc], "-boundary") == 0) {
+                idPtr = &boundary;
                 loc++;
-            } else if(strcmp(argv[loc],"-basenode") == 0) {
+
+            } else if(strcmp(argv[loc], "-dragdir") == 0) {
+                vecPtr = &drag;
+                loc++;
+  
+            } else if(strcmp(argv[loc], "-liftdir") == 0) {
+                vecPtr = &lift;
+                loc++;
+            } else if(strcmp(argv[loc], "-basenode") == 0) {
                 loc++;
                 if(Tcl_GetInt(interp, argv[loc], &basenode) != TCL_OK) {
-                    opserr<<"WARNING: invalid node "<<argv[loc]<<" -- PFEM2D calculateForces\n";
+                    opserr<<"WARNING: invalid input "<<argv[loc];
+                    opserr<<" -- PFEM2D discretize\n";
                     return TCL_ERROR; 
                 }
+            }
+
+            if(vecPtr!=0 || idPtr!=0) {
+                int num = 0;
+                const char** argvPtr = 0;
+                if(Tcl_SplitList(interp, argv[loc], &num, &argvPtr)!=TCL_OK) {
+                    opserr<<"WARNING: failed to read the list "<<argv[loc];
+                    opserr<<" -- PFEM2D discretize\n";
+                    return TCL_ERROR;
+                }
                 loc++;
-            } else if(strcmp(argv[loc],"-dragdir") == 0) {
-                loc++;
-                for(int i=0; i<2; i++) {
-                    double dir = 0;
-                    if(Tcl_GetDouble(interp, argv[loc], &dir) != TCL_OK) {
-                        opserr<<"WARNING: invalid dir "<<argv[loc]<<" -- PFEM2D calculateForces\n";
-                        return TCL_ERROR; 
+                if(num > 0) {
+                    if(vecPtr!=0) vecPtr->resize(num);
+                    if(idPtr!=0) idPtr->resize(num);
+                }
+                if(vecPtr != 0) {
+                    for(int i=0; i<num; i++) {
+                        double x;
+                        if(Tcl_GetDouble(interp, argvPtr[i], &x) != TCL_OK) {
+                            opserr<<"WARNING: invalid input "<<argvPtr[i];
+                            opserr<<" -- PFEM2D discretize\n";
+                            return TCL_ERROR; 
+                        }
+                        (*vecPtr)(i) = x;
                     }
-                    loc++;
-                    dragdir(i) = dir;
-                }
-            } else if(strcmp(argv[loc],"-liftdir") == 0) {
-                loc++;
-                for(int i=0; i<2; i++) {
-                    double dir = 0;
-                    if(Tcl_GetDouble(interp, argv[loc], &dir) != TCL_OK) {
-                        opserr<<"WARNING: invalid dir "<<argv[loc]<<" -- PFEM2D calculateForces\n";
-                        return TCL_ERROR; 
+                } else if(idPtr != 0) {
+                    for(int i=0; i<num; i++) {
+                        int x;
+                        if(Tcl_GetInt(interp, argvPtr[i], &x) != TCL_OK) {
+                            opserr<<"WARNING: invalid input "<<argvPtr[i];
+                            opserr<<" -- PFEM2D discretize\n";
+                            return TCL_ERROR; 
+                        }
+                        (*idPtr)[i] = x;
                     }
-                    loc++;
-                    liftdir(i) = dir;
                 }
-            } else if(state == 0) {
-                int tag = 0;
-                if(Tcl_GetInt(interp, argv[loc], &tag) != TCL_OK) {
-                    opserr<<"WARNING: invalid tag "<<argv[loc]<<" -- PFEM2D calculateForces\n";
-                    return TCL_ERROR; 
-                }
-                loc++;
-                boundary.push_back(tag);
+
+                if(argvPtr != 0) Tcl_Free((char *) argvPtr);
             }
         }
 
-        Vector forces = theMesher2D.calculateForces(boundary,basenode,dragdir,liftdir,theDomain);
+
+        Vector forces = theMesher2D.calculateForces(boundary,basenode,drag,lift,theDomain);
 
         for(int i=0; i<forces.Size(); i++) {
             char buffer[60];
             sprintf(buffer, "%35.20f ", forces(i));
             Tcl_AppendResult(interp, buffer, NULL);
         }
+    } else if(strcmp(argv[1], "pc") == 0 || strcmp(argv[1], "PC") == 0) {
+        if(argc < 4) {
+            opserr<<"WARNING: wrong num of args -- ";
+            opserr<<"PFEM2D pc endNodeList startpressurenode\n";
+            return TCL_ERROR;
+        }
+
+        ID nodes;
+        int num = 0;
+        const char** argvPtr = 0;
+        if(Tcl_SplitList(interp, argv[2], &num, &argvPtr)!=TCL_OK) {
+            opserr<<"WARNING: failed to read the list "<<argv[2];
+            opserr<<" -- PFEM2D pc\n";
+            return TCL_ERROR;
+        }
+        if(num > 0) nodes.resize(num);
+        for(int i=0; i<num; i++) {
+            int tag;
+            if(Tcl_GetInt(interp, argvPtr[i], &tag) != TCL_OK) {
+                opserr<<"WARNING: invalid input "<<argvPtr[i];
+                opserr<<" -- PFEM2D pc\n";
+                return TCL_ERROR; 
+            }
+            nodes(i) = tag;
+        }
+
+        if(argvPtr != 0) Tcl_Free((char *) argvPtr);
+
+        int startpnode;
+        if(Tcl_GetInt(interp, argv[3], &startpnode) != TCL_OK) {
+            opserr<<"WARNING: invalid input "<<argv[3];
+            opserr<<" -- PFEM2D pc\n";
+            return TCL_ERROR; 
+        }
+
+        int endpnode;
+        int res = theMesher2D.addPC(nodes,startpnode,theDomain,endpnode);
+
+        if(res < 0) {
+            opserr << "WARNING: failed to add PC\n";
+            return TCL_ERROR;
+        }
+        
+        Tcl_SetObjResult(interp, Tcl_NewIntObj(endpnode));
+        
+
     }
 
     return TCL_OK;

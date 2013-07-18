@@ -50,12 +50,15 @@
 #include <math.h>
 #include <string.h>
 #include <PFEMElement2D.h>
+#include <NDMaterial.h>
+#include <Tri31.h>
 #include <map>
 #include <set>
 #include <fstream>
 #include <iostream>
 #include <Timer.h>
 #include <algorithm>
+#include <elementAPI.h>
 
 PFEMMesher2D::PFEMMesher2D()
 :PI(3.1415926535897932384626433), bound(4), frameBase(2), Lspan(), Height(), avesize(0.0)
@@ -68,8 +71,8 @@ PFEMMesher2D::~PFEMMesher2D()
 
 // PSPG
 int 
-PFEMMesher2D::discretize(int startnodetag, const Vector& points, const ID& segments, 
-                         const Vector& holes, double maxarea, int ndf, const ID& fix, 
+PFEMMesher2D::discretize(int startnodetag, const Vector& points, const Vector& segments, 
+                         const Vector& holes, double maxarea, int ndf, const Vector& fix, 
                          const Vector& vel, const Vector& mass, Domain* theDomain, int& endnodetag)
 {
     if(theDomain == 0) {
@@ -113,8 +116,8 @@ PFEMMesher2D::discretize(int startnodetag, const Vector& points, const ID& segme
     // copy segments
     int maxpt=0;
     for(int i=0; i<segments.Size(); i++) {
-        if(segments(i) > maxpt) maxpt = segments(i);
-        in.segmentlist[i] = segments(i);
+        if(segments(i) > maxpt) maxpt = (int)segments(i);
+        in.segmentlist[i] = (int)segments(i);
     }
     if(maxpt >= in.numberofpoints) {
         opserr<<"WARNING: no point "<<maxpt<<" in the point list -- ";
@@ -154,7 +157,7 @@ PFEMMesher2D::discretize(int startnodetag, const Vector& points, const ID& segme
     //timer.start();
     char s[100];
     sprintf(s,"Qzqpa%.60f",maxarea);
-    //opserr<<"discretize : ";
+    // opserr<<"discretize : ";
     // opserr<<"Start Delaunay Triangulation -- If got segmentation fault, please check inputs \n";
     triangulate(s, &in, &out, &vout);
     // opserr<<"Finish Delaunay Triangulation\n";
@@ -248,11 +251,17 @@ PFEMMesher2D::discretize(int startnodetag, const Vector& points, const ID& segme
 // rectangle
 int 
 PFEMMesher2D::discretize(int startnodetag, double x1, double y1, double hx, double hy, double angle,
-                         int nx, int ny, int ndf, const ID& fix, const Vector& vel, 
-                         const Vector& mass, Domain* theDomain, int& endnodetag)
+                         int nx, int ny, int ndf, const Vector& fix, const Vector& vel, 
+                         const Vector& mass, const Vector& boundary,
+                         Domain* theDomain, int& endnodetag)
 {
     if(theDomain == 0) {
         opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher2D::discretize\n";
+        return -1;
+    }
+    if(boundary.Size() < 4) {
+        opserr<<"WARNING: boundary vector must have 4 entries";
         opserr<<" -- PFEMMesher2D::discretize\n";
         return -1;
     }
@@ -266,11 +275,17 @@ PFEMMesher2D::discretize(int startnodetag, double x1, double y1, double hx, doub
     double lhy = sy*hy;
 
     int newtag = startnodetag-1;
-    for(int i=0; i<=ny; i++) {
+    int start=0, end=ny;
+    if(!boundary(0)) start++;
+    if(!boundary(1)) end--;
+    Vector linebound(2);
+    linebound(0) = boundary(2);
+    linebound(1) = boundary(3);
+    for(int i=start; i<=end; i++) {
         double lx = i*lhx+x1;
         double ly = i*lhy+y1;
         int res = discretize(++newtag, lx, ly, hx, angle, nx, ndf, fix, vel, 
-                             mass, theDomain, newtag);
+                             mass, linebound, theDomain, newtag);
         if(res < 0) return -1;
     }
 
@@ -282,11 +297,16 @@ PFEMMesher2D::discretize(int startnodetag, double x1, double y1, double hx, doub
 // line
 int 
 PFEMMesher2D::discretize(int startnodetag, double x1, double y1, double h, double angle, 
-                         int num, int ndf, const ID& fix, const Vector& vel, const Vector& mass, 
-                         Domain* theDomain, int& endnodetag)
+                         int num, int ndf, const Vector& fix, const Vector& vel, const Vector& mass, 
+                         const Vector& boundary, Domain* theDomain, int& endnodetag)
 {
     if(theDomain == 0) {
         opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher2D::discretize\n";
+        return -1;
+    }
+    if(boundary.Size() < 2) {
+        opserr<<"WARNING: boundary vector must have 2 entries";
         opserr<<" -- PFEMMesher2D::discretize\n";
         return -1;
     }
@@ -308,7 +328,11 @@ PFEMMesher2D::discretize(int startnodetag, double x1, double y1, double h, doubl
     if(numfix > ndf) numfix = ndf;
 
     int newtag = startnodetag-1;
-    for(int i=0; i<=num; i++) {
+    int start = 0, end = num;
+    if(!boundary(0)) start = 1;
+    if(!boundary(1)) end = num-1;
+    
+    for(int i=start; i<=end; i++) {
         double x = i*hx+x1;
         double y = i*hy+y1;
 
@@ -375,11 +399,17 @@ PFEMMesher2D::discretize(int startnodetag, double x1, double y1, double h, doubl
 // triangle
 int
 PFEMMesher2D:: discretize(int startnode, double x1, double y1, double x2, double y2, 
-                          double x3, double y3, int n1, int n2, int ndf, const ID& fix,
-                          const Vector& vel, const Vector& mass, Domain* theDomain, int& endnode)
+                          double x3, double y3, int n1, int n2, int ndf, const Vector& fix,
+                          const Vector& vel, const Vector& mass, const Vector& boundary,
+                          Domain* theDomain, int& endnode)
 {
     if(theDomain == 0) {
         opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher2D::discretize\n";
+        return -1;
+    }
+    if(boundary.Size() < 3) {
+        opserr<<"WARNING: boundary vector must have 3 entries";
         opserr<<" -- PFEMMesher2D::discretize\n";
         return -1;
     }
@@ -398,11 +428,14 @@ PFEMMesher2D:: discretize(int startnode, double x1, double y1, double x2, double
 
     endnode = startnode-1;
     for(int i=0; i<=n1; i++) {
+        if(!boundary(0) && i==0) continue;
         double L1 = i*h1;
         for(int j=0; j<=n2; j++) {
+            if(!boundary(1) && j==0) continue;
             double L2 = j*h2;
             double L3 = 1.0-L1-L2;
-            if(L3<0) continue;
+            if(L3<-1e-6) continue;
+            if(!boundary(2) && fabs(L3)<1e-6) continue;
             double x = L1*x1+L2*x2+L3*x3;
             double y = L1*y1+L2*y2+L3*y3;
 
@@ -472,11 +505,17 @@ PFEMMesher2D:: discretize(int startnode, double x1, double y1, double x2, double
 // circle
 int 
 PFEMMesher2D::discretize(int startnode, double xc, double yc, double r1, double r2,
-                         int nc, int nr, int ndf, const ID& fix, const Vector& vel,
-                         const Vector& mass, Domain* theDomain, int& endnode)
+                         int nc, int nr, int ndf, const Vector& fix, const Vector& vel,
+                         const Vector& mass, const Vector& boundary,
+                         Domain* theDomain, int& endnode)
 {
     if(theDomain == 0) {
         opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher2D::discretize\n";
+        return -1;
+    }
+    if(boundary.Size() < 2) {
+        opserr<<"WARNING: boundary vector must have 2 entries";
         opserr<<" -- PFEMMesher2D::discretize\n";
         return -1;
     }
@@ -496,7 +535,10 @@ PFEMMesher2D::discretize(int startnode, double xc, double yc, double r1, double 
     }
 
     endnode = startnode-1;
-    for(int i=0; i<=nr; i++) {
+    int start = 0, end = nr;
+    if(!boundary(0)) start++;
+    if(!boundary(1)) end--;
+    for(int i=start; i<=end; i++) {
         double ri = hr*i+r1;
         for(int j=0; j<=nc; j++) {
             double angle = j*hc;
@@ -570,7 +612,7 @@ PFEMMesher2D::discretize(int startnode, double xc, double yc, double r1, double 
 int 
 PFEMMesher2D::discretize(int startnode, char type, int n,
                          int nth, int nthfloor, int ndf,
-                         const ID& fix, const Vector& vel, 
+                         const Vector& fix, const Vector& vel, 
                          const Vector& mass, Domain* theDomain, int& endnode)
 {
     if(theDomain == 0) {
@@ -581,31 +623,31 @@ PFEMMesher2D::discretize(int startnode, char type, int n,
 
     if(n<0) return 0;
     if(nth<0 || nthfloor<0) return 0;
-    if(nth>(int)Lspan.size()) return 0;
-    if(nthfloor>(int)Height.size()) return 0;    
+    if(nth>Lspan.Size()) return 0;
+    if(nthfloor>Height.Size()) return 0;    
 
     double h = 0.0;
     double x = frameBase(0), y = frameBase(1), angle = 0.0;
     int num = 0.0;
     if(type=='b' || type=='B') {
         num = n-2;
-        h = Lspan[nth-1]/n;
+        h = Lspan(nth-1)/n;
         for(int i=1; i<nth; i++) {
-            x += Lspan[i-1];
+            x += Lspan(i-1);
         }
         x += h;
         for(int j=0; j<nthfloor; j++) {
-            y += Height[j];
+            y += Height(j);
         }
 
     } else {
         num = n;
         h = Height[nthfloor-1]/n;
         for(int i=0; i<nth; i++) {
-            x += Lspan[i];
+            x += Lspan(i);
         }
         for(int j=1; j<nthfloor; j++) {
-            y += Height[j-1];
+            y += Height(j-1);
         }
         if(nthfloor>1) {
             y+=h;
@@ -613,23 +655,24 @@ PFEMMesher2D::discretize(int startnode, char type, int n,
         }
         angle = 90.0;
     }
-
-    return this->discretize(startnode, x, y, h, angle, num, ndf, fix, vel, mass, theDomain, endnode);
+    Vector linebound(2);
+    return this->discretize(startnode, x, y, h, angle, num, ndf, fix, vel, mass, 
+                            linebound, theDomain, endnode);
 
     
 }
 
 int
-PFEMMesher2D::doTriangulation(int starteletag, const std::vector<int>& nodes, double alpha, 
-                              const std::vector<int>& addnodes, Domain* theDomain,
+PFEMMesher2D::doTriangulation(int starteletag, const ID& nodes, double alpha, 
+                              const ID& addnodes, Domain* theDomain, 
                               double rho, double mu, double b1, double b2, double thk)
-
 {
     if(theDomain == 0) {
         opserr<<"WARNING: null domain";
         opserr<<" -- PFEMMesher2D::doTriangulation\n";
         return -1;
     }
+
     //Timer timer;
     // do triangulation
     ID eles;
@@ -670,8 +713,66 @@ PFEMMesher2D::doTriangulation(int starteletag, const std::vector<int>& nodes, do
 }
 
 int
-PFEMMesher2D::doTriangulation(const std::vector<int>& nodes, double alpha, 
-                              const std::vector<int>& addnodes , Domain* theDomain, ID& eles)
+PFEMMesher2D::doTriangulation(int starteletag, const ID& nodes, double alpha, 
+                              const ID& addnodes, Domain* theDomain, 
+                              double t, const char* type, int matTag,
+                              double p, double rho, double b1, double b2)
+{
+    if(theDomain == 0) {
+        opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher2D::doTriangulation\n";
+        return -1;
+    }
+
+    //Timer timer;
+    // do triangulation
+    ID eles;
+    int res = doTriangulation(nodes, alpha,
+                              addnodes, 
+                              theDomain, eles);
+    if(res < 0) {
+        opserr<<"WARNING: failed to do triangulation --";
+        opserr<<"PFEMMesher2D::doTriangulation\n";
+        return res;
+    }
+
+    NDMaterial *theMaterial = OPS_GetNDMaterial(matTag);
+    if(theMaterial == 0) {
+        opserr << "WARNING:  Material " << matTag << "not found\n";
+        opserr<<"PFEMMesher2D::doTriangulation\n";
+        return -1;
+    }
+
+    // add Tri31 elements
+    //timer.start();
+    int numeles = eles.Size()/3;
+    if(numeles == 0) return 0;
+    int etag = starteletag-1;
+    for(int i=0; i<numeles; i++) {
+        Tri31* theEle = new Tri31(++etag, eles(3*i), eles(3*i+1), eles(3*i+2),
+                                  *theMaterial, type, t, p, rho, b1, b2);
+
+        if(theEle == 0) {
+            opserr<<"WARNING: no enough memory -- ";
+            opserr<<" -- PFEMMesher2D::doTriangulation\n";
+            return -1;
+        }
+        if(theDomain->addElement(theEle) == false) {
+            opserr<<"WARNING: failed to add element to domain -- ";
+            opserr<<" -- PFEMMesher2D::doTriangulation\n";
+            delete theEle;
+            return -1;
+        }
+    }
+    //timer.pause();
+    //opserr<<"create PFEM elements :"<<timer;
+    return etag;
+    
+}
+
+int
+PFEMMesher2D::doTriangulation(const ID& nodes, double alpha, 
+                              const ID& addnodes , Domain* theDomain, ID& eles)
 {
     //Timer theTimer;
     if(theDomain == 0) {
@@ -688,11 +789,11 @@ PFEMMesher2D::doTriangulation(const std::vector<int>& nodes, double alpha,
 
     // number of nodes
     int numnodes=0, numadd=0;
-    for(int i=0; i<(int)nodes.size()/2; i++) {
-        numnodes += nodes[2*i+1] - nodes[2*i] + 1;
+    for(int i=0; i<nodes.Size()/2; i++) {
+        numnodes += nodes(2*i+1) - nodes(2*i) + 1;
     }
-    for(int i=0; i<(int)addnodes.size()/2; i++) {
-        numadd += addnodes[2*i+1] - addnodes[2*i] + 1;
+    for(int i=0; i<addnodes.Size()/2; i++) {
+        numadd += addnodes(2*i+1) - addnodes(2*i) + 1;
     }
     in.numberofpoints = numnodes+numadd;
     if(in.numberofpoints < 3) {
@@ -716,17 +817,17 @@ PFEMMesher2D::doTriangulation(const std::vector<int>& nodes, double alpha,
         Node* node = 0;
         int ndtag = 0;
         if(i<numnodes) {
-            ndtag = nodes[2*nodesloc]+loc;
+            ndtag = nodes(2*nodesloc)+loc;
             //opserr<<"ndtag = "<<ndtag<<"\n";
-            if(nodes[2*nodesloc+1]-nodes[2*nodesloc]==loc) {
+            if(nodes(2*nodesloc+1)-nodes(2*nodesloc)==loc) {
                 nodesloc++;
                 loc = 0;
             } else {
                 loc++;
             }
         } else {
-            ndtag = addnodes[2*addnodesloc]+loc;
-            if(addnodes[2*addnodesloc+1]-addnodes[2*addnodesloc]==loc) {
+            ndtag = addnodes(2*addnodesloc)+loc;
+            if(addnodes(2*addnodesloc+1)-addnodes(2*addnodesloc)==loc) {
                 addnodesloc++;
                 loc = 0;
             } else {
@@ -835,8 +936,8 @@ PFEMMesher2D::doTriangulation(const std::vector<int>& nodes, double alpha,
                 int add[3] = {-1,-1,-1};
                 for(int j=0; j<3; j++) {
                     int tag = p2nd(out.trianglelist[out.numberofcorners*i+j]);
-                    for(int k=0; k<(int)addnodes.size()/2; k++) {
-                        if(tag>=addnodes[2*k] && tag<=addnodes[2*k+1]) {
+                    for(int k=0; k<(int)addnodes.Size()/2; k++) {
+                        if(tag>=addnodes(2*k) && tag<=addnodes(2*k+1)) {
                             add[j] = k;
                             break;
                         }
@@ -1037,8 +1138,8 @@ PFEMMesher2D::setBoundary(double x1, double y1, double x2, double y2)
 }
 
 void 
-PFEMMesher2D::setFrame(double x1, double y1, const std::vector<double> span, 
-                       const std::vector<double> height)
+PFEMMesher2D::setFrame(double x1, double y1, const Vector& span, 
+                       const Vector& height)
 {
     frameBase(0) = x1;
     frameBase(1) = y1;
@@ -1191,6 +1292,38 @@ PFEMMesher2D::removeOutBoundNodes(const ID& nodes, Domain* theDomain)
             delete thePC;
         }
     }
+}
+
+int
+PFEMMesher2D::addPC(const ID& nodes, int startpnode, Domain* theDomain, int& endpnode)
+{
+    if(theDomain==0) return -1;
+
+    endpnode = startpnode-1;
+    for(int i=0; i<nodes.Size()/2; i++) {
+        for(int j=nodes(2*i); j<=nodes(2*i+1); j++) {
+            Node* theNode = theDomain->getNode(j);
+            if(theNode==0) continue;
+            Pressure_Constraint* thePC = theDomain->getPressure_Constraint(j);
+            if(thePC == 0) {
+                thePC = new Pressure_Constraint(j, ++endpnode);
+                if(thePC == 0) {
+                    opserr<<"WARNING: no enough memory for Pressure_Constraint -- ";
+                    opserr<<"PFEMMesher2D::addPC \n";
+                    return -1;
+                }
+                if(theDomain->addPressure_Constraint(thePC) == false) {
+                    opserr<<"WARNING: failed to add Pressure_Constraint to domain -- ";
+                    opserr<<"PFEMMesher2D::addPC\n ";
+                    delete thePC;
+                    thePC = 0;
+                    return -1;
+                }
+            }
+        }
+    }
+
+    return 0;
 }
 
 void
