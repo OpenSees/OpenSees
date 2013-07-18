@@ -60,6 +60,8 @@ class Pressure_Constraint : public DomainComponent
 public:
     // constructors
     explicit Pressure_Constraint(int classTag);
+    Pressure_Constraint(int classTag, int nodeId, int ptag);
+    Pressure_Constraint(int nodeId, int ptag);
     Pressure_Constraint(int classTag, int nodeId, double g);
     Pressure_Constraint(int nodeId, double g);
 
