@@ -559,15 +559,19 @@ Concrete01::setParameter(const char **argv, int argc, Parameter &param)
 {
 
   if (strcmp(argv[0],"fc") == 0) {// Compressive strength
+    param.setValue(fpc);
     return param.addObject(1, this);
   }
   else if (strcmp(argv[0],"epsco") == 0) {// Strain at compressive strength
+    param.setValue(epsc0);
     return param.addObject(2, this);
   }
   else if (strcmp(argv[0],"fcu") == 0) {// Crushing strength
+    param.setValue(fpcu);
     return param.addObject(3, this);
   }
   else if (strcmp(argv[0],"epscu") == 0) {// Strain at crushing strength
+    param.setValue(epscu);
     return param.addObject(4, this);
   }
   
@@ -882,9 +886,9 @@ Concrete01::commitSensitivity(double TstrainSensitivity, int gradIndex, int numG
 	double ratio, ratioSensitivity;
 	double temp1, temp1Sensitivity;
 	double temp2, temp2Sensitivity;
-	double TminStrainSensitivity;
-	double TunloadSlopeSensitivity;
-	double TendStrainSensitivity;
+	double TminStrainSensitivity = CminStrainSensitivity;
+	double TunloadSlopeSensitivity = CunloadSlopeSensitivity;
+	double TendStrainSensitivity = CendStrainSensitivity;
 
 	if (dStrain<0.0 && Tstrain<CminStrain) {
 
