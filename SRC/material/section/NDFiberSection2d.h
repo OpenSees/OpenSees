@@ -108,9 +108,10 @@ class NDFiberSection2d : public SectionForceDeformation
     static ID code;
 
     Vector e;          // trial section deformations 
-    Vector eCommit;    // committed section deformations 
     Vector *s;         // section resisting forces  (axial force, bending moment)
     Matrix *ks;        // section stiffness
+
+    static Matrix fs;
 
 // AddingSensitivity:BEGIN //////////////////////////////////////////
     int parameterID;
