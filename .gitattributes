@@ -563,9 +563,6 @@ MAKES/Makefile.def.EC2-SUSE -text
 MAKES/Makefile.def.EC2-UBUNTU -text
 MAKES/Makefile.def.EC2-WINDOWS-CYGWIN -text
 MAKES/Makefile.def.KRAKEN -text
-MAKES/Makefile.def.LINUX -text
-MAKES/Makefile.def.LINUX.KAI -text
-MAKES/Makefile.def.LINUX_Redhat_EL5 -text
 MAKES/Makefile.def.LONESTAR -text
 MAKES/Makefile.def.MacOS10.4 -text
 MAKES/Makefile.def.MacOS10.5 -text
