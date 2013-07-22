@@ -19,9 +19,9 @@
 # ssh -i XXX.pem ubuntu@YYY.amazonaws.com
 #
 
-# Instructuction for building OpenSees on Ubuntu (11.x & 12.x)
-# using amazon EC-2 instance ami-f197c9b4 us-west-1
-#                            ami-137bcf7a              
+# Instructuction for building OpenSees on Ubuntu
+# using amazon EC-2 instance ami-d0f89fb9 (running Ubunto 12.04)
+
 
 # sudo in and type the following:
 # mkdir lib
