@@ -13,28 +13,24 @@
 #
 ############################################################################
 
-#
-# chmod 'go+rwx' XXX.pem
-# ssh -i XXX.pem root@YYY.amazonaws.com
-#
+# Following are commands to build OpenSees
+# on EC2 FEDORA 64 bit machine (ami-7d0c6314) 
 
-# Instructuction for building OpenSees on Redhat Enterprise Linux
-# using amazon EC-2 instance ami-cc5af9a5 64bit
-
-# sudo in and type the following:
-# mkdir lib
-# mkdir bin
-# sudo yum install subversion
-# svn co svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk OpenSees
+# sudo yum install gcc.x86_64
+# sudo yum install gcc-c++.x86_64
+# sudo yum install gcc-gfortran.x86_64
+# sudo yum install tcl.x86_64
+# sudo yum install tcl-devel.x86_64
+# sudo yum install svn
 # sudo yum install emacs
-# sudo yum install make
-# sudo yum install tcl
-# sudo yum install tcl-devel
-# sudo yum install gcc
-# sudo yum install gcc-gfortran
+# mkdir bin
+# mkdir lib
+# svn co svn://opensees.berkeley.edu:/usr/local/svn/OpenSees/trunk OpenSees
 # cd OpenSees
-# cp ./MAKES/Makefile.def.EC2-REDHAT-ENTERPRISE ./Makefile.def
+# cp ./MAKES/Makefile.def.EC2-FEDORA4 ./Makefile.def
 # make
+
+# END of commands to build OpenSees.
 
 
 # %---------------------------------%
@@ -63,7 +59,6 @@ RELIABILITY = NO_RELIABILITY
 # remove the directory from DIRS.
 
 BASE		= /usr/local
-HOME		= /root
 FE		= $(HOME)/OpenSees/SRC
 
 AMDdir       = $(HOME)/OpenSees/OTHER/AMD
@@ -73,8 +68,8 @@ LAPACKdir    = $(HOME)/OpenSees/OTHER/LAPACK
 SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_4.1/SRC
 ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
 UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
-METISdir       = $(HOME)/OpenSees/OTHER/METIS
-CSPARSEdir       = $(HOME)/OpenSees/OTHER/CSPARSE
+METISdir     = $(HOME)/OpenSees/OTHER/METIS
+CSPARSEdir   = $(HOME)/OpenSees/OTHER/CSPARSE
 SRCdir       = $(HOME)/OpenSees/SRC
 
 
@@ -104,11 +99,11 @@ LAPACK_LIBRARY  = $(HOME)/lib/libLapack.a
 BLAS_LIBRARY    = $(HOME)/lib/libBlas.a
 SUPERLU_LIBRARY = $(HOME)/lib/libSuperLU.a
 CBLAS_LIBRARY   = $(HOME)/lib/libCBlas.a
+CSPARSE_LIBRARY   = $(HOME)/lib/libCBlas.a
 ARPACK_LIBRARY  = $(HOME)/lib/libArpack.a
 AMD_LIBRARY  = $(HOME)/lib/libAMD.a
 UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY   = $(HOME)/lib/libMetis.a
-CSPARSE_LIBRARY   = $(HOME)/lib/libCSparse.a
 TCL_LIBRARY = /usr/lib64/libtcl8.5.so
 BLITZ_LIBRARY = $(HOME)/blitz/lib/libblitz.a
 GRAPHIC_LIBRARY     = 
@@ -121,7 +116,6 @@ WIPE_LIBS	= $(FE_LIBRARY) \
 		$(SUPERLU_LIBRARY) \
 		$(ARPACK_LIBRARY) \
 		$(UMFPACK_LIBRARY) \
-		$(CSPARSE_LIBRARY) \
 	        $(METIS_LIBRARY)
 
 # %---------------------------------------------------------%
@@ -238,8 +232,8 @@ MACHINE_LINKLIBS  = -L$(BASE)/lib \
 MACHINE_NUMERICAL_LIBS  = -lm \
 		$(ARPACK_LIBRARY) \
 		$(SUPERLU_LIBRARY) \
-		$(UMFPACK_LIBRARY) $(CSPARSE_LIBRARY) \
-	        $(LAPACK_LIBRARY) $(BLAS_LIBRARY) $(CBLAS_LIBRARY) \
+		$(UMFPACK_LIBRARY) \
+	        $(LAPACK_LIBRARY) $(BLAS_LIBRARY) $(CBLAS_LIBRARY) $(CSPARSE_LIBRARY) \
 		$(AMD_LIBRARY) $(GRAPHIC_LIBRARY)\
 		-ldl -lgfortran 
 
@@ -261,8 +255,7 @@ MACHINE_INCLUDES        = -I/usr/include \
 # this file contains all the OpenSees/SRC includes
 include $(FE)/Makefile.incl
 
-#TCL_INCLUDES = -I/usr/includes/tcl-private/generic
-TCL_INCLUDES = -I/usr/include/tcl8.5
+TCL_INCLUDES = -I/usr/includes/tcl-private/generic
 
 INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES)
 
