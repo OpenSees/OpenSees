@@ -16,21 +16,36 @@
 #
 # https://help.ubuntu.com/community/EC2StartersGuide
 # chmod 'go+rwx' XXX.pem
-# ssh -i XXX.pem ubuntu@YYY.amazonaws.com
+# ssh -i XXX.pem ec2_user@YYY.amazonaws.com
 #
 
-# Instructuction for building OpenSees on Ubuntu (11.x & 12.x)
-# using amazon EC-2 instance ami-f197c9b4 us-west-1
-#                            ami-137bcf7a              
+# Instructuction for building OpenSees on Amazon 64 bit AMI
+# (instance ami-05355a6c) at time of writing this
 
+# sudo yum list	available | grep gcc tcl
+# sudo yum install gcc46.x86_64
+# sudo yum install gcc-c++.x86_64
+# sudo yum install gcc-gfortran.x86_64
+
+# sudo yum install svn
+# sudo yum install emacs
+# install tcl, download tcl.XX.src.tar.gz 
+# cd tcl.xx
+# cd unix
+# ./configre
+# ./make
+# ./make install
+# svn co svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk OpenSees
 # sudo in and type the following:
 # mkdir lib
 # mkdir bin
-# sudo apt-get install tcl8.5
-# sudo apt-get install tcl8.5-dev
 # cd OpenSees
-# cp ./MAKES/Makefile.def.EC2-UBUNTU ./Makefile.def
+# cp ./MAKES/Makefile.def.EC2-AMI ./Makefile.def
 # make
+
+
+# NOTE CHANGES:
+# if compilation fails because tcl lib not present
 
 
 # %---------------------------------%
@@ -41,9 +56,9 @@
 # that will be created (if this all works!)
 
 
-#PROGRAMMING_MODE = SEQUENTIAL
+PROGRAMMING_MODE = SEQUENTIAL
 #PROGRAMMING_MODE = PARALLEL
-PROGRAMMING_MODE = PARALLEL_INTERPRETERS
+#PROGRAMMING_MODE = PARALLEL_INTERPRETERS
 
 OpenSees_PROGRAM = $(HOME)/bin/OpenSees
 PROGRAMMING_FLAG = 
@@ -73,7 +88,6 @@ RELIABILITY = NO_RELIABILITY
 # remove the directory from DIRS.
 
 BASE		= /usr/local
-HOME		= /root
 FE		= $(HOME)/OpenSees/SRC
 
 AMDdir       = $(HOME)/OpenSees/OTHER/AMD
@@ -120,7 +134,7 @@ AMD_LIBRARY  = $(HOME)/lib/libAMD.a
 UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY   = $(HOME)/lib/libMetis.a
 CSPARSE_LIBRARY   = $(HOME)/lib/libCSparse.a
-TCL_LIBRARY = /usr/lib/libtcl8.5.so
+TCL_LIBRARY = /usr/local/lib/libtcl8.5.so
 BLITZ_LIBRARY = $(HOME)/blitz/lib/libblitz.a
 GRAPHIC_LIBRARY     = 
 DISTRIBUTED_SUPERLU_LIBRARY     = $(HOME)/lib/libDistributedSuperLU.a
@@ -166,7 +180,8 @@ endif
 
 C++FLAGS         = -Wall -D_LINUX -D_UNIX  -D_TCL85  \
 	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) \
-	$(PROGRAMMING_FLAG) -O3 -ffloat-store -D_OPENMPI -D_MUMPS
+	$(PROGRAMMING_FLAG) -O3 -ffloat-store 
+
 CFLAGS          = -Wall -O2
 FFLAGS          = -Wall -O
 
@@ -243,7 +258,7 @@ MACHINE_NUMERICAL_LIBS  = -lm \
 		$(AMD_LIBRARY) $(GRAPHIC_LIBRARY)\
 		-ldl -lgfortran 
 
-HAVEMUMPS = YES
+HAVEMUMPS = NO
 
 
 
@@ -252,6 +267,7 @@ HAVEMUMPS = NO
 MUMPS_INCLUDE = .
 MUMPS_LIB = 
 MUMPS_DIR = 
+MUMPS_FLAG = 
 endif
 
 ifeq ($(HAVEMUMPS), YES)
@@ -335,7 +351,7 @@ MACHINE_SPECIFIC_LIBS =
 MACHINE_INCLUDES        = -I/usr/include \
 			  -I$(BASE)/include \
 			  -I/usr/include/cxx \
-			  -I$(HOME)/include -I$(HOME)/blitz -I$(SUPERLU_DISTdir) -I$(MUMPS_INCLUDE)
+			  -I$(HOME)/include -I$(HOME)/blitz -I$(SUPERLU_DISTdir)
 
 # this file contains all the OpenSees/SRC includes
 include $(FE)/Makefile.incl
