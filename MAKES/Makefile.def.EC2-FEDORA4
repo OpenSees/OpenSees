@@ -14,11 +14,26 @@
 ############################################################################
 
 
-# yum install gcc.i686
-# yum install gcc-c++.i686
-# yum install make.i686
-# yum install
-# yum install tcl-dev
+
+
+# Following are commands to build OpenSees
+# on EC2 FEDORA 64 bit machine (ami-7d0c6314) 
+
+# sudo yum install gcc.x86_64
+# sudo yum install gcc-c++.x86_64
+# sudo yum install gcc-gfortran.x86_64
+# sudo yum install tcl.x86_64
+# sudo yum install tcl-devel.x86_64
+# sudo yum install svn
+# sudo yum install emacs
+# mkdir bin
+# mkdir lib
+# svn co svn://opensees.berkeley.edu:/usr/local/svn/OpenSees/trunk OpenSees
+# cd OpenSees
+# make
+
+# END of commands to build OpenSees.
+
 
 # %---------------------------------%
 # |  SECTION 1: PROGRAM             |
@@ -46,7 +61,6 @@ RELIABILITY = NO_RELIABILITY
 # remove the directory from DIRS.
 
 BASE		= /usr/local
-HOME		= /home/ec2-user
 FE		= $(HOME)/OpenSees/SRC
 
 AMDdir       = $(HOME)/OpenSees/OTHER/AMD
@@ -56,11 +70,12 @@ LAPACKdir    = $(HOME)/OpenSees/OTHER/LAPACK
 SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_4.1/SRC
 ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
 UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
-METISdir       = $(HOME)/OpenSees/OTHER/METIS
+METISdir     = $(HOME)/OpenSees/OTHER/METIS
+CSPARSEdir   = $(HOME)/OpenSees/OTHER/CSPARSE
 SRCdir       = $(HOME)/OpenSees/SRC
 
 
-DIRS        = $(BLASdir) $(CBLASdir) $(LAPACKdir) $(AMDdir) \
+DIRS        = $(BLASdir) $(CBLASdir) $(LAPACKdir) $(AMDdir) $(CSPARSEdir) \
 	$(SUPERLUdir) $(ARPACKdir) $(UMFPACKdir) $(SRCdir) $(METISdir)
 
 # %-------------------------------------------------------%
@@ -86,11 +101,12 @@ LAPACK_LIBRARY  = $(HOME)/lib/libLapack.a
 BLAS_LIBRARY    = $(HOME)/lib/libBlas.a
 SUPERLU_LIBRARY = $(HOME)/lib/libSuperLU.a
 CBLAS_LIBRARY   = $(HOME)/lib/libCBlas.a
+CSPARSE_LIBRARY   = $(HOME)/lib/libCBlas.a
 ARPACK_LIBRARY  = $(HOME)/lib/libArpack.a
 AMD_LIBRARY  = $(HOME)/lib/libAMD.a
 UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY   = $(HOME)/lib/libMetis.a
-TCL_LIBRARY = /usr/lib/libtcl8.5.so
+TCL_LIBRARY = /usr/lib64/libtcl8.5.so
 BLITZ_LIBRARY = $(HOME)/blitz/lib/libblitz.a
 GRAPHIC_LIBRARY     = 
 
@@ -219,7 +235,7 @@ MACHINE_NUMERICAL_LIBS  = -lm \
 		$(ARPACK_LIBRARY) \
 		$(SUPERLU_LIBRARY) \
 		$(UMFPACK_LIBRARY) \
-	        $(LAPACK_LIBRARY) $(BLAS_LIBRARY) $(CBLAS_LIBRARY) \
+	        $(LAPACK_LIBRARY) $(BLAS_LIBRARY) $(CBLAS_LIBRARY) $(CSPARSE_LIBRARY) \
 		$(AMD_LIBRARY) $(GRAPHIC_LIBRARY)\
 		-ldl -lgfortran 
 
