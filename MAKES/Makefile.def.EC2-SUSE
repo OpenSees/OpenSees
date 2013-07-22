@@ -25,7 +25,6 @@
 # mkdir lib
 # mkdir bin
 # sudu yast2 -i subversion
-# svn co svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk OpenSees
 # sudu yast2 -i emacs
 # sudu yast2 -i make
 # sudu yast2 -i tcl
@@ -33,9 +32,12 @@
 # sudu yast2 -i gcc
 # sudu yast2 -i gcc-c++
 # sudu yast2 -i gcc-fortran
+# svn co svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk OpenSees
 # cd OpenSees
-# cp ./MAKES/Makefile.def.EC2-REDHAT-ENTERPRISE ./Makefile.def
+# cp ./MAKES/Makefile.def.EC2-SUSE ./Makefile.def
 # make
+
+# end of instructions
 
 
 # %---------------------------------%
@@ -64,7 +66,6 @@ RELIABILITY = NO_RELIABILITY
 # remove the directory from DIRS.
 
 BASE		= /usr/local
-HOME		= /root
 FE		= $(HOME)/OpenSees/SRC
 
 AMDdir       = $(HOME)/OpenSees/OTHER/AMD
@@ -247,22 +248,22 @@ MACHINE_NUMERICAL_LIBS  = -lm \
 MACHINE_SPECIFIC_LIBS = 
 
 
-
 # %---------------------------------------------------------%
 # | SECTION 7: INCLUDE FILES                                |
 # |                                                         |
 # | The following macros specify include files needed for   |
 # | compilation.                                            |
 # %---------------------------------------------------------%
+
+# this file contains all the OpenSees/SRC includes
+include $(FE)/Makefile.incl
+
 MACHINE_INCLUDES        = -I/usr/include \
 			  -I$(BASE)/include \
 			  -I/usr/include/cxx \
 			  -I$(HOME)/include -I$(HOME)/blitz
 
-# this file contains all the OpenSees/SRC includes
-include $(FE)/Makefile.incl
 
-#TCL_INCLUDES = -I/usr/includes/tcl-private/generic
 TCL_INCLUDES = -I/usr/include/tcl8.5
 
 INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES)
