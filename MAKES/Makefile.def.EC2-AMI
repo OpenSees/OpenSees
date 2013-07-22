@@ -26,15 +26,10 @@
 # sudo yum install gcc46.x86_64
 # sudo yum install gcc-c++.x86_64
 # sudo yum install gcc-gfortran.x86_64
-
+# sudo yum install tcl.x86_64
+# sudo yum install tcl-devel.x86_64
 # sudo yum install svn
 # sudo yum install emacs
-# install tcl, download tcl.XX.src.tar.gz 
-# cd tcl.xx
-# cd unix
-# ./configre
-# ./make
-# ./make install
 # svn co svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk OpenSees
 # sudo in and type the following:
 # mkdir lib
@@ -134,7 +129,7 @@ AMD_LIBRARY  = $(HOME)/lib/libAMD.a
 UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY   = $(HOME)/lib/libMetis.a
 CSPARSE_LIBRARY   = $(HOME)/lib/libCSparse.a
-TCL_LIBRARY = /usr/local/lib/libtcl8.5.so
+TCL_LIBRARY = /usr/local/lib64/libtcl8.5.so
 BLITZ_LIBRARY = $(HOME)/blitz/lib/libblitz.a
 GRAPHIC_LIBRARY     = 
 DISTRIBUTED_SUPERLU_LIBRARY     = $(HOME)/lib/libDistributedSuperLU.a
