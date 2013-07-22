@@ -15,9 +15,8 @@
 
 
 
-
 # Following are commands to build OpenSees
-# on EC2 FEDORA 64 bit machine (ami-7d0c6314) 
+# on EC2 FEDORA 64 bit machine (ami-b22e5cdb running Fedora 19) 
 
 # sudo yum install gcc.x86_64
 # sudo yum install gcc-c++.x86_64
@@ -171,7 +170,7 @@ FFLAGS          = -Wall -O
 
 # Linker
 LINKER          = $(CC++)
-LINKFLAGS       = -rdynamic -Wl
+LINKFLAGS       = -rdynamic 
 
 endif
 
