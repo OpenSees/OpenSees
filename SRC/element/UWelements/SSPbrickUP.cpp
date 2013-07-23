@@ -1093,41 +1093,19 @@ SSPbrickUP::setParameter(const char **argv, int argc, Parameter &param)
 
 	int res = -1;
 
-	// material state (elastic/plastic) for UW soil materials
-	if (strcmp(argv[0],"materialState") == 0) {
-		return param.addObject(5,this);
-	}
-	// frictional strength parameter for UW soil materials
-	if (strcmp(argv[0],"frictionalStrength") == 0) {
-		return param.addObject(7,this);
-	}
-	// non-associative parameter for UW soil materials
-	if (strcmp(argv[0],"nonassociativeTerm") == 0) {
-		return param.addObject(8,this);
-	}
-	// cohesion parameter for UW soil materials
-	if (strcmp(argv[0],"cohesiveIntercept") == 0) {
-		return param.addObject(9,this);
-	}
-
-	// quad pressure loading
-  	if (strcmp(argv[0],"pressure") == 0) {
-    	return param.addObject(2, this);
-	}
-	// permeability in x direction
+    // check for element parameters first
   	if (strcmp(argv[0],"xPerm") == 0) {
+        // permeability in direction 1
     	return param.addObject(3, this);
-	}
-  	// permeability in y direction
-  	if (strcmp(argv[0],"yPerm") == 0) {
+	} else if (strcmp(argv[0],"yPerm") == 0) {
+        // permeability in direction 2
     	return param.addObject(4, this);
-	}
-	// permeability in z direction
-  	if (strcmp(argv[0],"zPerm") == 0) {
+	} else if (strcmp(argv[0],"zPerm") == 0) {
+        // permeability in direction 3
     	return param.addObject(6, this);
-	}
-  	// a material parameter
-  	if (strstr(argv[0],"material") != 0) {
+
+    // now check for material parameters
+	} else if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
 
     	if (argc < 3) {
       		return -1;
@@ -1138,10 +1116,8 @@ SSPbrickUP::setParameter(const char **argv, int argc, Parameter &param)
     	} else {
       		return -1;
 		}
-  	}
-
-  	// otherwise it could be just a forall material parameter
-  	else {
+  	} else {
+        // default is to call setParameter in the material
     	int matRes = res;
       	matRes =  theMaterial->setParameter(argv, argc, param);
       	if (matRes != -1) {
@@ -1157,58 +1133,32 @@ SSPbrickUP::updateParameter(int parameterID, Information &info)
 {
 	int res = -1;
 	int matRes = res;
-  	switch (parameterID) {
-    	case -1:
-      		return -1;
-		case 1:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 2:
-			//pressure = info.theDouble;
-			//this->setPressureLoadAtNodes();	// update consistent nodal loads
-			return 0;
-		case 3:
-			perm[0] = info.theDouble;
-			GetPermeabilityMatrix();
-			return 0;
-		case 4:
-			perm[1] = info.theDouble;
-			GetPermeabilityMatrix();
-			return 0;
-		case 5:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 6:
-			perm[2] = info.theDouble;
-			GetPermeabilityMatrix();
-			return 0;
-		case 7:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 8:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 9:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		default: 
-	  	    return -1;
-  	}
+    
+    if (parameterID == res) {
+        return -1;
+    } else if (parameterID == 3) {
+        // update element permeability in direction 1
+        perm[0] = info.theDouble;
+		GetPermeabilityMatrix();
+        return 0;
+    } else if (parameterID == 4) {
+        // update element permeability in direction 2
+        perm[1] = info.theDouble;
+		GetPermeabilityMatrix();
+        return 0;
+    } else if (parameterID == 6) {
+        // update element permeability in direction 3
+        perm[2] = info.theDouble;
+		GetPermeabilityMatrix();
+        return 0;
+    } else {
+        // update the material parameter
+        matRes = theMaterial->updateParameter(parameterID, info);
+        if (matRes != -1) {
+            res = matRes;
+        }
+        return res;
+    }
 }
 
 void

@@ -1094,29 +1094,12 @@ FourNodeQuad::setParameter(const char **argv, int argc, Parameter &param)
 
   int res = -1;
 
-  // material state (elastic/plastic) for UW soil materials
-  if (strcmp(argv[0],"materialState") == 0) {
-      return param.addObject(5,this);
-  }
-  // frictional strength parameter for UW soil materials
-  if (strcmp(argv[0],"frictionalStrength") == 0) {
-      return param.addObject(7,this);
-  }
-  // non-associative parameter for UW soil materials
-  if (strcmp(argv[0],"nonassociativeTerm") == 0) {
-      return param.addObject(8,this);
-  }
-  // cohesion parameter for UW soil materials
-  if (strcmp(argv[0],"cohesiveIntercept") == 0) {
-      return param.addObject(9,this);
-  }
-
   // quad pressure loading
-  if (strcmp(argv[0],"pressure") == 0)
+  if (strcmp(argv[0],"pressure") == 0) {
     return param.addObject(2, this);
-
+  }
   // a material parameter
-  else if (strstr(argv[0],"material") != 0) {
+  else if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
 
     if (argc < 3)
       return -1;
@@ -1167,41 +1150,6 @@ FourNodeQuad::updateParameter(int parameterID, Information &info)
 		pressure = info.theDouble;
 		this->setPressureLoadAtNodes();	// update consistent nodal loads
 		return 0;
-
-	case 5:
-		// added: C.McGann, U.Washington
-		for (int i = 0; i < 4; i++) {
-			matRes = theMaterial[i]->updateParameter(parameterID, info);
-		}
-		if (matRes != -1) {
-			res = matRes;
-		}
-		return res;
-	case 7:
-	    for (int i = 0; i < 4; i++) {
-			matRes = theMaterial[i]->updateParameter(parameterID, info);
-		}
-		if (matRes != -1) {
-			res = matRes;
-		}
-		return res;
-	case 8:
-	    for (int i = 0; i < 4; i++) {
-			matRes = theMaterial[i]->updateParameter(parameterID, info);
-		}
-		if (matRes != -1) {
-			res = matRes;
-		}
-		return res;
-	case 9:
-	    for (int i = 0; i < 4; i++) {
-			matRes = theMaterial[i]->updateParameter(parameterID, info);
-		}
-		if (matRes != -1) {
-			res = matRes;
-		}
-		return res;
-		
 
 	default: 
 	  /*	  

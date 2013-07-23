@@ -21,6 +21,10 @@
 // Created: Chris McGann, UW, 04.2011
 //
 // Description: This file contains the implementation of the SSPquad class
+//
+// Reference:   McGann, C.R., Arduino, P., and Mackenzie-Helnwein, P. (2012) "Stabilized single-point
+//                4-node quadrilateral element for dynamic analysis of fluid saturated porous media."
+//                Acta Geotechnica, 7(4):297-311
 
 #include "SSPquad.h"
 
@@ -694,29 +698,7 @@ SSPquad::setParameter(const char **argv, int argc, Parameter &param)
 	}
 	int res = -1;
 
-	// material state (elastic/plastic) for UW soil materials
-	if (strcmp(argv[0],"materialState") == 0) {
-		return param.addObject(5,this);
-	}
-	// frictional strength parameter for UW soil materials
-	if (strcmp(argv[0],"frictionalStrength") == 0) {
-		return param.addObject(7,this);
-	}
-	// non-associative parameter for UW soil materials
-	if (strcmp(argv[0],"nonassociativeTerm") == 0) {
-		return param.addObject(8,this);
-	}
-	// cohesion parameter for UW soil materials
-	if (strcmp(argv[0],"cohesiveIntercept") == 0) {
-		return param.addObject(9,this);
-	}
-	
-	// quad pressure loading
-  	if (strcmp(argv[0],"pressure") == 0) {
-    	return param.addObject(2, this);
-	}
-  	// a material parameter
-  	if (strstr(argv[0],"material") != 0) {
+  	if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
 
     	if (argc < 3) {
       		return -1;
@@ -728,9 +710,7 @@ SSPquad::setParameter(const char **argv, int argc, Parameter &param)
     	} else {
       		return -1;
 		}
-  	}
-  	// otherwise it could be just a forall material parameter
-  	else {
+  	} else {
     	int matRes = res;
       	matRes =  theMaterial->setParameter(argv, argc, param);
 
@@ -745,49 +725,18 @@ SSPquad::setParameter(const char **argv, int argc, Parameter &param)
 int
 SSPquad::updateParameter(int parameterID, Information &info)
 {
-	int res = -1;
+    int res = -1;
 	int matRes = res;
-  	switch (parameterID) {
-    	case -1:
-      		return -1;
-		case 1:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 2:
-			//pressure = info.theDouble;
-			//this->setPressureLoadAtNodes();	// update consistent nodal loads
-			return 0;
-		case 5:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 7:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 8:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 9:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
 
-		default: 
-	  	    return -1;
-  	}
+	if (parameterID == res) {
+        return -1;
+    } else {
+        matRes = theMaterial->updateParameter(parameterID, info);
+		if (matRes != -1) {
+			res = matRes;
+		}
+		return res;
+    }
 }
 
 Matrix 

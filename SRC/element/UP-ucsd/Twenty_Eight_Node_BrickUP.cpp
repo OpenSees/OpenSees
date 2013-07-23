@@ -2326,41 +2326,27 @@ TwentyEightNodeBrickUP::setParameter(const char **argv, int argc, Parameter &par
   if (argc < 1)
     return -1;
 
+  int res = -1;
+
   // permeability in horizontal direction
-  if (strcmp(argv[0],"hPerm") == 0)
+  if (strcmp(argv[0],"hPerm") == 0) {
     return param.addObject(3, this);
 
   // permeability in vertical direction
-  if (strcmp(argv[0],"vPerm") == 0)
+  } else if (strcmp(argv[0],"vPerm") == 0) {
     return param.addObject(4, this);
 
-  // material state (elastic/plastic) for UW soil materials
-  if (strcmp(argv[0],"materialState") == 0) {
-      return param.addObject(5,this);
-  }
-  // frictional strength parameter for UW soil materials
-  if (strcmp(argv[0],"frictionalStrength") == 0) {
-      return param.addObject(7,this);
-  }
-  // non-associative parameter for UW soil materials
-  if (strcmp(argv[0],"nonassociativeTerm") == 0) {
-      return param.addObject(8,this);
-  }
-  // cohesion parameter for UW soil materials
-  if (strcmp(argv[0],"cohesiveIntercept") == 0) {
-      return param.addObject(9,this);
+  } else {
+
+    int matRes = res;
+    for (int i=0; i<8; i++) {
+        matRes =  materialPointers[i]->setParameter(argv, argc, param);
+        if (matRes != -1)
+            res = matRes;
+    }
   }
 
-  int res = -1;
-
-  int matRes = res;
-  for (int i=0; i<27; i++) {
-    matRes = materialPointers[i]->setParameter(argv, argc, param);
-    if (matRes != -1)
-      res = matRes;
-  }
-
-  return res;
+    return res;
 }
     
 int
@@ -2378,39 +2364,6 @@ TwentyEightNodeBrickUP::updateParameter(int parameterID, Information &info)
 		perm[2] = info.theDouble;
 		this->getDamp();	// update mass matrix
 		return 0;
-	case 5:
-		// added: C.McGann, U.Washington
-		for (int i = 0; i<4; i++) {
-			matRes = materialPointers[i]->updateParameter(parameterID, info);
-		}
-		if (matRes != -1) {
-			res = matRes;
-		}
-		return res;
-	case 7:
-	    for (int i = 0; i < 4; i++) {
-			matRes = materialPointers[i]->updateParameter(parameterID, info);
-		}
-		if (matRes != -1) {
-			res = matRes;
-		}
-		return res;
-	case 8:
-	    for (int i = 0; i < 4; i++) {
-			matRes = materialPointers[i]->updateParameter(parameterID, info);
-		}
-		if (matRes != -1) {
-			res = matRes;
-		}
-		return res;
-	case 9:
-	    for (int i = 0; i < 4; i++) {
-			matRes = materialPointers[i]->updateParameter(parameterID, info);
-		}
-		if (matRes != -1) {
-			res = matRes;
-		}
-		return res;
 	default:
 		return -1;
   }

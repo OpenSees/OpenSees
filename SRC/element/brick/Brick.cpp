@@ -1815,32 +1815,7 @@ Brick::setParameter(const char **argv, int argc, Parameter &param)
 
   int res = -1;
 
-  // material state (elastic/plastic) for UW soil materials
-  if (strcmp(argv[0],"materialState") == 0) {
-      return param.addObject(5,this);
-  }
-  // frictional strength parameter for UW soil materials
-  if (strcmp(argv[0],"frictionalStrength") == 0) {
-      return param.addObject(7,this);
-  }
-  // non-associative parameter for UW soil materials
-  if (strcmp(argv[0],"nonassociativeTerm") == 0) {
-      return param.addObject(8,this);
-  }
-  // cohesion parameter for UW soil materials
-  if (strcmp(argv[0],"cohesiveIntercept") == 0) {
-      return param.addObject(9,this);
-  }
-  // shear moduluse parameter for UW soil materials
-  if (strcmp(argv[0],"shearModulus") == 0) {
-      return param.addObject(10,this);
-  }
-  // bulk modulus parameter for UW soil materials
-  if (strcmp(argv[0],"bulkModulus") == 0) {
-      return param.addObject(11,this);
-  }
-
-  if (strstr(argv[0],"material") != 0) {
+  if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
 
     if (argc < 3)
       return -1;
@@ -1868,7 +1843,6 @@ Brick::setParameter(const char **argv, int argc, Parameter &param)
 int
 Brick::updateParameter(int parameterID, Information &info)
 {
-	// added: C.McGann, U.Washington
     int res = -1;
 	int matRes = res;
 

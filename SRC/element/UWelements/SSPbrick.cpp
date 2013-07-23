@@ -922,34 +922,9 @@ SSPbrick::setParameter(const char **argv, int argc, Parameter &param)
 		return -1;
 	}
 
-	int res = -1;
+    int res = -1;
 
-	// material state (elastic/plastic) for UW soil materials
-	if (strcmp(argv[0],"materialState") == 0) {
-		return param.addObject(5,this);
-	}
-	// frictional strength parameter for UW soil materials
-	else if (strcmp(argv[0],"frictionalStrength") == 0) {
-		return param.addObject(7,this);
-	}
-	// non-associative parameter for UW soil materials
-	else if (strcmp(argv[0],"nonassociativeTerm") == 0) {
-		return param.addObject(8,this);
-	}
-	// cohesion parameter for UW soil materials
-	else if (strcmp(argv[0],"cohesiveIntercept") == 0) {
-		return param.addObject(9,this);
-	}
-    // shear modulus parameter for UW soil materials
-	else if (strcmp(argv[0],"shearModulus") == 0) {
-		return param.addObject(10,this);
-	}
-    // bulk modulus parameter for UW soil materials
-	else if (strcmp(argv[0],"bulkModulus") == 0) {
-		return param.addObject(11,this);
-	}
-  	// a material parameter
-  	if (strstr(argv[0],"material") != 0) {
+  	if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
 
     	if (argc < 3) {
       		return -1;
@@ -961,13 +936,9 @@ SSPbrick::setParameter(const char **argv, int argc, Parameter &param)
     	} else {
       		return -1;
 		}
-  	}
-
-  	// otherwise it could be just a forall material parameter
-  	else {
-
-    	int matRes = res;
-      	matRes =  theMaterial->setParameter(argv, argc, param);
+  	} else {
+    	int matRes;
+      	matRes = theMaterial->setParameter(argv, argc, param);
 
       	if (matRes != -1) {
 			res = matRes;

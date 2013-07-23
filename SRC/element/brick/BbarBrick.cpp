@@ -1635,68 +1635,51 @@ BbarBrick::getResponse(int responseID, Information &eleInfo)
 int
 BbarBrick::setParameter(const char **argv, int argc, Parameter &param)
 {
-  	if (argc < 1) {
-   		return -1;
-	}
+  if (argc < 1)
+  return -1;
 
-  	int res = -1;
+  int res = -1;
 
-	// material state (elastic/plastic) for UW soil materials
-	if (strcmp(argv[0],"materialState") == 0) {
-		return param.addObject(5,this);
-	// frictional strength parameter for UW soil materials
-	} else if (strcmp(argv[0],"frictionalStrength") == 0) {
-		return param.addObject(7,this);
-	// non-associative parameter for UW soil materials
-	} else if (strcmp(argv[0],"nonassociativeTerm") == 0) {
-		return param.addObject(8,this);
-	// cohesion parameter for UW soil materials
-	} else if (strcmp(argv[0],"cohesiveIntercept") == 0) {
-		return param.addObject(9,this);
+  if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
 
-  	} else if (strstr(argv[0],"material") != 0) {
-		
-    	if (argc < 3) {
-      		return -1;
-		}
+    if (argc < 3)
+      return -1;
 
-    	int pointNum = atoi(argv[1]);
-    	if (pointNum > 0 && pointNum <= 8) {
-    		return materialPointers[pointNum-1]->setParameter(&argv[2], argc-2, param);
-    	} else {
-      		return -1;
-		}
+    int pointNum = atoi(argv[1]);
+    if (pointNum > 0 && pointNum <= 8)
+      return materialPointers[pointNum-1]->setParameter(&argv[2], argc-2, param);
+    else 
+      return -1;
+  }
   
-  	// otherwise it could be just a forall material parameter
-  	} else {
-		
-    	int matRes = res;
-    	for (int i=0; i<8; i++) {
-      		matRes =  materialPointers[i]->setParameter(argv, argc, param);
-      		if (matRes != -1) {
-				res = matRes;
-			}
-    	}
-  	}
-
- 	 return res;
+  // otherwise it could be just a forall material parameter
+  else {
+    int matRes = res;
+    for (int i=0; i<8; i++) {
+      matRes =  materialPointers[i]->setParameter(argv, argc, param);
+      if (matRes != -1)
+	res = matRes;
+    }
+  }
+  
+  return res;
 }
     
 int
 BbarBrick::updateParameter(int parameterID, Information &info)
 {
-	int res = -1;
+    int res = -1;
 	int matRes = res;
-	if (parameterID == 1 || parameterID == 5 || parameterID == 7 || parameterID == 8 || parameterID == 9) {
-		for (int i = 0; i<8; i++) {
-			matRes = materialPointers[i]->updateParameter(parameterID, info);
-		}
+
+    if (parameterID == res) {
+        return -1;
+    } else {
+        for (int i = 0; i<8; i++) {
+            matRes = materialPointers[i]->updateParameter(parameterID, info);
+        }
 		if (matRes != -1) {
 			res = matRes;
 		}
 		return res;
-	} else {
-    	return -1;
-	}
+    }
 }
-

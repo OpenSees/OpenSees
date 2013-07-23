@@ -344,6 +344,12 @@ ManzariDafalias::setParameter(const char **argv, int argc, Parameter &param)
 		if (strcmp(argv[0],"updateMaterialStage") == 0) {
 			return param.addObject(1, this);
 		}
+		else if (strcmp(argv[0],"IntegrationScheme") == 0) {
+			return param.addObject(2, this);
+		}
+		else if (strcmp(argv[0],"Jacobian") == 0) {
+			return param.addObject(3, this);
+		}
 	}
     return -1;
 }
@@ -358,6 +364,12 @@ ManzariDafalias::updateParameter(int responseID, Information &info)
 	// called materialState in tcl file
 	if (responseID == 5) {
 		mElastFlag = info.theDouble;
+	}
+	if (responseID == 2) {
+		mScheme = info.theInt;
+	}
+	if (responseID == 3) {
+		mJacoType = info.theInt;
 	}
 	return 0;
 }

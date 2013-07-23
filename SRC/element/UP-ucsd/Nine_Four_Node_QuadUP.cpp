@@ -1792,56 +1792,44 @@ NineFourNodeQuadUP::setParameter(const char **argv, int argc, Parameter &param)
   int res = -1;
 
   // quad mass density per unit volume
-  if (strcmp(argv[0],"rho") == 0)
+  if (strcmp(argv[0],"rho") == 0) {
     return param.addObject(1, this);
 
+  // quad pressure loading
+  } else if (strcmp(argv[0],"pressure") == 0) {
+    return param.addObject(2, this);
+
   // permeability in horizontal direction
-  if (strcmp(argv[0],"hPerm") == 0)
+  } else if (strcmp(argv[0],"hPerm") == 0) {
     return param.addObject(3, this);
 
   // permeability in vertical direction
-  if (strcmp(argv[0],"vPerm") == 0)
+  } else if (strcmp(argv[0],"vPerm") == 0) {
     return param.addObject(4, this);
-
-  // material state (elastic/plastic) for UW soil materials
-  if (strcmp(argv[0],"materialState") == 0) {
-      return param.addObject(5,this);
   }
-  // frictional strength parameter for UW soil materials
-  if (strcmp(argv[0],"frictionalStrength") == 0) {
-      return param.addObject(7,this);
-  }
-  // non-associative parameter for UW soil materials
-  if (strcmp(argv[0],"nonassociativeTerm") == 0) {
-      return param.addObject(8,this);
-  }
-  // cohesion parameter for UW soil materials
-  if (strcmp(argv[0],"cohesiveIntercept") == 0) {
-      return param.addObject(9,this);
-  }
-
-  // a material parameter
-  if (strstr(argv[0],"material") != 0) {
+  // check for material parameters
+  if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
 
     if (argc < 3)
       return -1;
 
     int pointNum = atoi(argv[1]);
-    if (pointNum > 0 && pointNum <= nenu)
+    if (pointNum > 0 && pointNum <= 4)
       return theMaterial[pointNum-1]->setParameter(&argv[2], argc-2, param);
     else
       return -1;
   }
 
-  // otherwise it could be just a forall material parameter
+  // otherwise it could be a for all material pointer
   else {
     int matRes = res;
-    for (int i=0; i<nenu; i++) {
+    for (int i=0; i<4; i++) {
       matRes =  theMaterial[i]->setParameter(argv, argc, param);
       if (matRes != -1)
 	res = matRes;
     }
   }
+
   return res;
 }
 
@@ -1863,41 +1851,8 @@ NineFourNodeQuadUP::updateParameter(int parameterID, Information &info)
 	  perm[1] = info.theDouble;
 	  this->getDamp();	// update mass matrix
 	  return 0;
-	case 5:
-	  // added: C.McGann, U.Washington
-	  for (int i = 0; i<4; i++) {
-	      matRes = theMaterial[i]->updateParameter(parameterID, info);
-	  }
-	  if (matRes != -1) {
-		  res = matRes;
-	  }
-	  return res;
-	case 7:
-	    for (int i = 0; i < 4; i++) {
-			matRes = theMaterial[i]->updateParameter(parameterID, info);
-		}
-		if (matRes != -1) {
-			res = matRes;
-		}
-		return res;
-	case 8:
-	    for (int i = 0; i < 4; i++) {
-			matRes = theMaterial[i]->updateParameter(parameterID, info);
-		}
-		if (matRes != -1) {
-			res = matRes;
-		}
-		return res;
-	case 9:
-	    for (int i = 0; i < 4; i++) {
-			matRes = theMaterial[i]->updateParameter(parameterID, info);
-		}
-		if (matRes != -1) {
-			res = matRes;
-		}
-		return res;
-  default:
-    return -1;
+    default:
+      return -1;
   }
 }
 

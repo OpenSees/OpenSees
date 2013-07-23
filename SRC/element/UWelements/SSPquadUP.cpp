@@ -24,10 +24,13 @@
 //                Stabilized Single-Point Quad element with a u-p formulation 
 //                for plane strain analysis of saturated porous media
 //
-// Reference:   Zienkiewicz, O.C. and Shiomi, T. (1984). "Dynamic behavior of 
+// References:  Zienkiewicz, O.C. and Shiomi, T. (1984). "Dynamic behavior of 
 //                saturated porous media; the generalized Biot formulation and 
 //                its numerical solution." International Journal for Numerical 
 //                Methods in Geomechanics, 8, 71-96.
+//              McGann, C.R., Arduino, P., and Mackenzie-Helnwein, P. (2012) "Stabilized single-point
+//                4-node quadrilateral element for dynamic analysis of fluid saturated porous media."
+//                Acta Geotechnica, 7(4):297-311
 
 #include "SSPquadUP.h"
 
@@ -891,37 +894,14 @@ SSPquadUP::setParameter(const char **argv, int argc, Parameter &param)
 	}
 	int res = -1;
 
-	// material state (elastic/plastic) for UW soil materials
-	if (strcmp(argv[0],"materialState") == 0) {
-		return param.addObject(5,this);
-	}
-	// frictional strength parameter for UW soil materials
-	if (strcmp(argv[0],"frictionalStrength") == 0) {
-		return param.addObject(7,this);
-	}
-	// non-associative parameter for UW soil materials
-	if (strcmp(argv[0],"nonassociativeTerm") == 0) {
-		return param.addObject(8,this);
-	}
-	// cohesion parameter for UW soil materials
-	if (strcmp(argv[0],"cohesiveIntercept") == 0) {
-		return param.addObject(9,this);
-	}
-
-	// quad pressure loading
-  	if (strcmp(argv[0],"pressure") == 0) {
-    	return param.addObject(2, this);
-	}
-	// permeability in horizontal direction
+	// check for element parameters first
   	if (strcmp(argv[0],"hPerm") == 0) {
     	return param.addObject(3, this);
-	}
-  	// permeability in vertical direction
-  	if (strcmp(argv[0],"vPerm") == 0) {
+	} else if (strcmp(argv[0],"vPerm") == 0) {
     	return param.addObject(4, this);
 	}
-  	// a material parameter
-  	if (strstr(argv[0],"material") != 0) {
+    // now check for material parameters
+    else if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
 
     	if (argc < 3) {
       		return -1;
@@ -932,10 +912,8 @@ SSPquadUP::setParameter(const char **argv, int argc, Parameter &param)
     	} else {
       		return -1;
 		}
-  	}
-
-  	// otherwise it could be just a forall material parameter
-  	else {
+  	} else {
+        // default is to call setParameter in the material
     	int matRes = res;
       	matRes =  theMaterial->setParameter(argv, argc, param);
       	if (matRes != -1) {
@@ -951,54 +929,27 @@ SSPquadUP::updateParameter(int parameterID, Information &info)
 {
 	int res = -1;
 	int matRes = res;
-  	switch (parameterID) {
-    	case -1:
-      		return -1;
-		case 1:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 2:
-			//pressure = info.theDouble;
-			//this->setPressureLoadAtNodes();	// update consistent nodal loads
-			return 0;
-		case 3:
-			perm[0] = info.theDouble;
-			GetPermeabilityMatrix();
-			return 0;
-		case 4:
-			perm[1] = info.theDouble;
-			GetPermeabilityMatrix();
-			return 0;
-		case 5:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 7:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 8:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		case 9:
-			matRes = theMaterial->updateParameter(parameterID, info);
-			if (matRes != -1) {
-				res = matRes;
-			}
-			return res;
-		default: 
-	  	    return -1;
-  	}
+    
+    if (parameterID == res) {
+        return -1;
+    } else if (parameterID == 3) {
+        // update element permeability in direction 1
+        perm[0] = info.theDouble;
+		GetPermeabilityMatrix();
+        return 0;
+    } else if (parameterID == 4) {
+        // update element permeability in direction 2
+        perm[1] = info.theDouble;
+		GetPermeabilityMatrix();
+        return 0;
+    } else {
+        // update the material parameter
+        matRes = theMaterial->updateParameter(parameterID, info);
+        if (matRes != -1) {
+            res = matRes;
+        }
+        return res;
+    }
 }
 
 Matrix 
@@ -1121,7 +1072,7 @@ SSPquadUP::GetSolidStiffness(void)
 
 void
 SSPquadUP::GetSolidMass(void)
-// this function computes the stiffness matrix for the solid phase
+// this function computes the mass matrix for the solid phase
 {
 	// get mass density from the material
 	double density = theMaterial->getRho();
