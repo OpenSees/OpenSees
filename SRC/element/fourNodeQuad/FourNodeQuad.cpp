@@ -487,8 +487,8 @@ FourNodeQuad::addLoad(ElementalLoad *theLoad, double loadFactor)
 
 	if (type == LOAD_TAG_SelfWeight) {
 		applyLoad = 1;
-		appliedB[0] += loadFactor*b[0];
-		appliedB[1] += loadFactor*b[1];
+		appliedB[0] += loadFactor*data(0)*b[0];
+		appliedB[1] += loadFactor*data(1)*b[1];
 		return 0;
 	} else {
 		opserr << "FourNodeQuad::addLoad - load type unknown for ele with tag: " << this->getTag() << endln;

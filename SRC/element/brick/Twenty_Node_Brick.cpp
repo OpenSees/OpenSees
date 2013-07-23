@@ -825,12 +825,19 @@ Twenty_Node_Brick::addLoad(ElementalLoad *theLoad, double loadFactor)
 	int type;
   	const Vector &data = theLoad->getData(type, loadFactor);
 
-  	if ((type == LOAD_TAG_BrickSelfWeight) || (type == LOAD_TAG_SelfWeight)) {
-    	applyLoad = 1;
-    	appliedB[0] += loadFactor * b[0];
-    	appliedB[1] += loadFactor * b[1];
-    	appliedB[2] += loadFactor * b[2];
-    	return 0;
+    if (type == LOAD_TAG_BrickSelfWeight) {
+      applyLoad = 1;
+      appliedB[0] += loadFactor * b[0];
+      appliedB[1] += loadFactor * b[1];
+      appliedB[2] += loadFactor * b[2];
+    return 0;
+    } else if (type == LOAD_TAG_SelfWeight) {
+      // added compatability with selfWeight class implemented for all continuum elements, C.McGann, U.W.
+      applyLoad = 1;
+	  appliedB[0] += loadFactor*data(0)*b[0];
+	  appliedB[1] += loadFactor*data(1)*b[1];
+	  appliedB[2] += loadFactor*data(2)*b[2];
+	  return 0;
   	} else {
     	opserr << "Twenty_Node_Brick::addLoad - load type unknown for truss with tag: " << this->getTag() << endln;
     	return -1;

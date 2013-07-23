@@ -18,9 +18,10 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                        
-// Created: Pedro Arduino, UW, 11.2011
-//
-// Description: This file contains the class definition for ManzariDafalias.
+// Written: Alborz Ghofrani, Pedro Arduino
+//			May 2013, University of Washington
+                                                                      
+// Description: This file contains the implementation for the ManzariDafalias class.
 
 #ifndef ManzariDafalias_h
 #define ManzariDafalias_h
@@ -33,19 +34,27 @@
 #include <Matrix.h>
 #include <Vector.h>
 
+#include <Information.h>
+#include <MaterialResponse.h>
+#include <Parameter.h>
+
+#include <Channel.h>
+#include <FEM_ObjectBroker.h>
+#include <string.h>
+
+
+#include <elementAPI.h>
+
 class ManzariDafalias : public NDMaterial
 {
   public:
 
     // full constructor
-    ManzariDafalias(int tag, int classTag, double Ko, double Go, double v, double b, double Patm,
-	                                       double Ao, double ho, double Cm, double Me, double Mc,
-										   double kBE, double kBC, double kDE, double kDC, double ecRef,
-										   double lambda, double Pref, double m, double Fmax, double Cf,
-										   double eo, double mDen);
+    ManzariDafalias(int tag, int classTag, double G0, double nu, double e_init, double Mc, double c, double lambda_c,
+	double e0, double ksi, double P_atm, double m, double h0, double ch, double nb, double A0, double nd,double z_max, double cz, double mDen,
+	double TolF = 1e-7, double TolR = 1e-7, int JacoType = 1, int integrationScheme = 1);
     // null constructor
     ManzariDafalias();
-    
     // destructor
     ~ManzariDafalias();
  
@@ -59,7 +68,7 @@ class ManzariDafalias : public NDMaterial
     const char *getType(void) const;
     int getOrder(void) const;
 
-	Vector GetState();
+	const Vector getState();
     Response *setResponse (const char **argv, int argc, OPS_Stream &output);
     int getResponse (int responseID, Information &matInformation);
 
@@ -69,27 +78,49 @@ class ManzariDafalias : public NDMaterial
     void Print(OPS_Stream &s, int flag =0);
 
 	int setParameter(const char **argv, int argc, Parameter &param);
-  	int updateParameter(int responseID, Information &eleInformation);
+	int updateParameter(int responseID, Information &info);
 
 	// send mass density to element in dynamic analysis
 	double getRho(void) {return massDen;};
+	double getVoidRatio(void) {return mVoidRatio;};
+	int    getNumIterations(void) {return mIter;};
 
   protected:
 
-	// memeber variables and functions
-    Vector mParam;
+	// Material constants
+	double m_G0;
+	double m_nu;
+	double m_e_init;
+	double m_Mc;
+	double m_c;
+	double m_lambda_c;
+	double m_e0;
+	double m_ksi;
+	double m_P_atm;
+	double m_m;
+	double m_h0;
+	double m_ch;
+	double m_nb;
+	double m_A0;
+	double m_nd;
+	double m_z_max;
+	double m_cz;
+	
 	// internal variables
     Vector mEpsilonE;
+	Vector mEpsilonE_n;
 	Vector mAlpha;
+	Vector mAlpha_n;
+	Vector mAlpha_in;
 	double mDGamma;
 	Vector mFabric;
+	Vector mFabric_n;
 	Matrix mCe;
 	Matrix mCep;
-	double mM;
 	double mK;  // state dependent Bulk modulus
 	double mG;  // state dependent Shear modulus
 	double massDen;         // mass density for dynamic analysis
-	Vector mState;          // vector of state param for recorders
+	double mVoidRatio;
 
 	Vector mEpsilon;        // strain tensor, step n+1
 	Vector mEpsilon_n;      // strain tensor, step n
@@ -98,9 +129,11 @@ class ManzariDafalias : public NDMaterial
 
 	double	mTolF;
 	double	mTolR;
-	double	mIter;
 	double  mEPS;
-	double  mElastFlag;
+	int  	mIter;
+	int     mJacoType;
+	int		mScheme;
+	static double  mElastFlag;
 	bool initializeState;
 
 	Vector mI1;				// 2nd Order Identity Tensor
@@ -110,67 +143,60 @@ class ManzariDafalias : public NDMaterial
 	Matrix mIIvol;			// 4th-order volumetric tensor, IIvol = I1 tensor I1 
 	Matrix mIIdevCon;       // 4th order deviatoric tensor, contravariant
 	Matrix mIIdevMix;       // 4th order deviatoric tensor, mixed variant
+	Matrix mIIdevCo;		// 4th order deviatoric tensor, covariant
 
 	// constant computation parameters
 	static const double one3;
 	static const double two3;
 	static const double root23;
-	static const double PI;
+	static const double small;
 
 	//Member Functions specific for ManzariDafalias model
 	void initialize();
 	void plastic_integrator();
-	
-	Vector SetManzariComponent(const Vector& eStrain, const Vector& alpha, const double& m,
-							   const Vector& fabric, const double& dGamma);
-	Vector SetManzariStateInVar(const Vector& nStrain, const Vector& cStrain, const Vector& cStress, 
-							    const Vector& cEStrain, const Vector& cAlpha, const double& cM,
-							    const Vector& cFabric);
-	Vector HypoElastic(const Vector& cStress, const Vector& nEStrain, 
-					   const Vector& cEStrain, Matrix& C);
-	double F(Vector& nextStress, Vector& nAlpha, double m);
 	Vector NewtonSolve(const Vector& xo, const Vector& inVar, Matrix& aCepPart);
-	Vector GetResidual(const Vector&  x, const Vector& inVar);
-
-	void StateDepend( const Vector &stress, const Vector &alpha, const double &m,
-					  const Vector &strain, Vector &n, Vector &d, Vector &b,
-					  double &bref, double &psi, double &Theta, double &alphaBtheta);
-
-	double PSI(const Vector& strain, const double& p);
+	Vector GetResidual(const Vector& x, const Vector& inVar);
 	Matrix GetJacobian(const Vector &x, const Vector &inVar);
-	Vector getdCosThetaOverdEE(const Vector& r, const double &p, const Vector& s, double K, double G, double theta);
-	Vector getdCosThetaOverdAlpha(const Vector& rBar, double theta);
-	Vector getdAlphaDOverdEE(double c, double theta, const Vector& dCosThetaOverdEE,
-							 double psi, double cd, double K, double p);
-	Vector getdAlphaDOverdAlpha(double c, double theta, const Vector& dCosThetaOverdAlpha,
-							    double psi, double cd);
-	Vector getdAlphaBOverdEE(double c, double theta, const Vector& dCosThetaOverdEE,
-							 double psi, double cb, double K, double p);
-	Vector getdAlphaBOverdAlpha(double c, double theta, const Vector dCosThetaOverdAlpha,
-							    double psi, double cb, double K, double p);
-	double getdgOverdCosTheta(const double theta, const double c);
-	int sign(double x);
-
-	// tensor operations
-	double GetContraNorm(const Vector& v);
-	double GetCovariantNorm(const Vector& v); 
-	double GetTrace(const Vector& v);
-	Vector GetDevPart(const Vector& v);
-	double GetJ2(const Vector& v);
-	double GetJ3(const Vector& v);
-	double GetLodeAngle(const Vector& v);
-	double Det(const Vector& v);
-	double g(const double Theta, const double c);
-	double Macauley(double x);
-	int    MacauleyIndex(double x);
+	Matrix GetFDMJacobian(const Vector delta, const Vector inVar);
+	Vector SetManzariComponent(const Vector& stress, const Vector& alpha,
+							 const Vector& fabric, const double& dGamma);
+	Vector SetManzariStateInVar(const Vector& nStrain, const Vector& cStrain, const Vector& cStress, 
+									  const Vector& cEStrain, const Vector& cAlpha, const Vector& cFabric,
+									  const double& cVoidRatio, const double& nVoidRatio, const Vector& Alpha_in);
 	double machineEPS();
+	// Material Specific Methods
+	double Macauley(double x);
+	double MacauleyIndex(double x);
+	double g(const double cos3theta, const double c);
+	double GetF(const Vector& nStress, const Vector& nAlpha);
+	double GetPSI(const double& e, const double& p);
+	double GetLodeAngle(const Vector& n);
+	void   GetElasticModuli(const Vector& sigma, const double& en, const double& en1,
+								const Vector& nEStrain, const Vector& cEStrain, double &K, double &G);
+	Matrix GetStiffness(const double& K, const double& G);
+	Matrix GetCompliance(const double& K, const double& G);
+	void   GetStateDependent( const Vector &stress, const Vector &alpha, const double &e
+							, const Vector &alpha_in, Vector &n, Vector &d, Vector &b
+							, double &cos3Theta, double &h, double &psi, double &alphaBtheta
+							, double &alphaDtheta, double &b0);
 
-	Vector Dot(const Vector& v1);
-	double DoubleDot2_2(const Vector& v1, const Vector& v2);       // doubledot product vector-vector
-	Vector DoubleDot2_4(const Vector& v1, const Matrix& m1);       // doubledot product vector-matrix
-	Vector DoubleDot4_2(const Matrix& m1, const Vector& v2);       // doubledot product matrix-vector
-	Matrix DoubleDot4_4(const Matrix& m1, const Matrix& m2);       // doubledot product matrix-matrix
-	Matrix Dyadic2_2(const Vector& v1, const Vector& v2);          // dyadic product vector-vector
+	// Symmetric Tensor Operations
+	double GetTrace(const Vector& v);
+	Vector GetDevPart(const Vector& aV);
+	Vector SingleDot(const Vector& v1, const Vector& v2);
+	double DoubleDot2_2_Contr(const Vector& v1, const Vector& v2);
+	double DoubleDot2_2_Cov(const Vector& v1, const Vector& v2);
+	double DoubleDot2_2_Mixed(const Vector& v1, const Vector& v2);
+	double GetNorm_Contr(const Vector& v);
+	double GetNorm_Cov(const Vector& v);
+	Matrix Dyadic2_2(const Vector& v1, const Vector& v2);
+	Vector DoubleDot4_2(const Matrix& m1, const Vector& v1);
+	Vector DoubleDot2_4(const Vector& v1, const Matrix& m1);
+	Matrix DoubleDot4_4(const Matrix& m1, const Matrix& m2);
+	Matrix SingleDot4_2(const Matrix& m1, const Vector& v1);
+	Matrix SingleDot2_4(const Vector& v1, const Matrix& m1);
+	Matrix Trans_SingleDot4T_2(const Matrix& m1, const Vector& v1);
+	double Det(const Vector& aV);
 
 };
 #endif

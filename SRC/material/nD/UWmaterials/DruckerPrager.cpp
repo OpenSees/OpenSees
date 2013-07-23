@@ -250,15 +250,15 @@ void DruckerPrager::initialize( )
     //        useable for s^a = 2G * IIdev^ab * epsilon_b
     // (Need a different form for s^a = IIdev ^a_b * sigma^a)
     mIIdev.Zero();
-    mIIdev(0,0) =   two3;
-    mIIdev(0,1) = - one3;
-    mIIdev(0,2) = - one3;
-    mIIdev(1,0) = - one3;
-    mIIdev(1,1) =   two3;
-    mIIdev(1,2) = - one3;
-    mIIdev(2,0) = - one3;
-    mIIdev(2,1) = - one3;
-    mIIdev(2,2) =   two3;
+    mIIdev(0,0) = two3;
+    mIIdev(0,1) = -one3;
+    mIIdev(0,2) = -one3;
+    mIIdev(1,0) = -one3;
+    mIIdev(1,1) = two3;
+    mIIdev(1,2) = -one3;
+    mIIdev(2,0) = -one3;
+    mIIdev(2,1) = -one3;
+    mIIdev(2,2) = two3;
     mIIdev(3,3) = 0.5;
     mIIdev(4,4) = 0.5;
     mIIdev(5,5) = 0.5;

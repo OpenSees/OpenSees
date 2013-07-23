@@ -25,16 +25,22 @@
 
 #include <SelfWeight.h>
 #include <Vector.h>
+#include <Channel.h>
+#include <FEM_ObjectBroker.h>
+#include <Information.h>
+#include <Parameter.h>
 
-Vector SelfWeight::data(1);
+Vector SelfWeight::data(3);
 
-SelfWeight::SelfWeight(int tag, int theElementTag)
-  : ElementalLoad(tag, LOAD_TAG_SelfWeight, theElementTag)
+SelfWeight::SelfWeight(int tag, double xf, double yf, double zf, int theElementTag)
+  : ElementalLoad(tag, LOAD_TAG_SelfWeight, theElementTag),
+  xFact(xf), yFact(yf), zFact(zf)
 {
 }
 
 SelfWeight::SelfWeight()
-  : ElementalLoad(LOAD_TAG_SelfWeight)
+  : ElementalLoad(LOAD_TAG_SelfWeight),
+  xFact(0.0), yFact(0.0), zFact(0.0)
 {
 }
 
@@ -46,6 +52,9 @@ const Vector &
 SelfWeight::getData(int &type, double loadFactor)
 {
   	type = LOAD_TAG_SelfWeight;
+    data(0) = xFact;
+    data(1) = yFact;
+    data(2) = zFact;
 
 	return data;
 }
@@ -53,13 +62,42 @@ SelfWeight::getData(int &type, double loadFactor)
 int 
 SelfWeight::sendSelf(int commitTag, Channel &theChannel)
 {
-	return -1;
+	int dbTag = this->getDbTag();
+
+    static Vector vData(4);
+    vData(0) = xFact;
+    vData(1) = yFact;
+    vData(2) = zFact;
+    vData(3) = this->getTag();
+
+    int result = theChannel.sendVector(dbTag, commitTag, vData);
+    if (result < 0) {
+        opserr << "SelfWeight::sendSelf - failed to send data\n";
+        return result;
+    }
+
+    return 0;
 }
 
 int 
 SelfWeight::recvSelf(int commitTag, Channel &theChannel,  FEM_ObjectBroker &theBroker)
 {
-	return -1;
+	int dbTag = this->getDbTag();
+
+    static Vector vData(4);
+
+    int result = theChannel.recvVector(dbTag, commitTag, vData);
+    if (result < 0) {
+        opserr << "SelfWeight::recvSelf - failed to recv data\n";
+        return result;
+    }
+
+    this->setTag(vData(3));
+    xFact = vData(0);
+    yFact = vData(1);
+    zFact = vData(2);
+
+    return 0;
 }
 
 void 

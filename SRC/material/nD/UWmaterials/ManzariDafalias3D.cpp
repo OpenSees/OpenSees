@@ -22,19 +22,14 @@
 //
 // Description: This file contains the implementation of the ManzariDafalias3D class.
 
-#include <ManzariDafalias3D.h>
-#include <Channel.h>
-#include <FEM_ObjectBroker.h>
+#include "ManzariDafalias3D.h"
 
 // full constructor
-ManzariDafalias3D::ManzariDafalias3D( int tag, double Ko, double Go, double v, double b, double Patm,
-	                                           double Ao, double ho, double Cm, double Me, double Mc,
-											   double kBE, double kBC, double kDE, double kDC, double ecRef,
-											   double lambda, double Pref, double m, double Fmax, double Cf,
-											   double eo, double mDen)
-:ManzariDafalias(tag, ND_TAG_ManzariDafalias3D, Ko, Go, v, b, Patm, Ao, ho, Cm, Me, Mc,
-											    kBE, kBC, kDE, kDC, ecRef, lambda, Pref, m, Fmax, Cf,
-											    eo, mDen)
+ManzariDafalias3D::ManzariDafalias3D(int tag, double G0, double nu, double e_init, double Mc, double c, double lambda_c,
+	double e0, double ksi, double P_atm, double m, double h0, double ch, double nb, double A0, double nd,double z_max, 
+	double cz, double massDen, double TolF, double TolR, int jacoType, int integrationScheme)
+:ManzariDafalias(tag, ND_TAG_ManzariDafalias3D, G0, nu, e_init, Mc, c, lambda_c,
+e0, ksi, P_atm, m, h0, ch, nb, A0, nd, z_max, cz, massDen, TolF, TolR, jacoType, integrationScheme)
 {
 }
 
@@ -78,8 +73,10 @@ ManzariDafalias3D::getOrder() const
 int 
 ManzariDafalias3D::setTrialStrain(const Vector &strain_from_element) 
 {
-	mEpsilon = strain_from_element;
+	mEpsilon = -1.0 * strain_from_element; // -1.0 is for geotechnical sign convention
+
     this->plastic_integrator();
+
 	return 0 ;
 }
 
@@ -87,6 +84,7 @@ ManzariDafalias3D::setTrialStrain(const Vector &strain_from_element)
 int 
 ManzariDafalias3D::setTrialStrain(const Vector &v, const Vector &r)
 {
+    opserr << "YOU SHOULD NOT SEE THIS: ManzariDafalias::setTrialStrain (const Vector &v, const Vector &r)" << endln;
     return this->setTrialStrain(v);
 }
 
@@ -94,14 +92,16 @@ ManzariDafalias3D::setTrialStrain(const Vector &v, const Vector &r)
 const Vector& 
 ManzariDafalias3D::getStrain() 
 {
-    return mEpsilon;
+	mEpsilon_M = -1.0 * mEpsilon;
+    return mEpsilon_M; // -1.0 is for geotechnical sign convention
 } 
 
 // send back the stress 
 const Vector& 
 ManzariDafalias3D::getStress() 
 {
- 	return mSigma;
+	mSigma_M = -1.0 * mSigma;
+ 	return mSigma_M; // -1.0 is for geotechnical sign convention
 }
 
 // send back the tangent 
@@ -115,5 +115,20 @@ ManzariDafalias3D::getTangent()
 const Matrix& 
 ManzariDafalias3D::getInitialTangent() 
 {
-    return mCep;
+    return mCe;
 }
+
+//send back the state parameters
+const Vector 
+ManzariDafalias3D::getState()
+ {
+	 Vector result(26);
+	 result.Assemble(mEpsilonE,0,1.0);
+	 result.Assemble(mAlpha,6,1.0);
+	 result.Assemble(mFabric,12,1.0);
+	 result.Assemble(mAlpha_in,18,1.0);
+	 result(24) = mVoidRatio;
+	 result(25) = mDGamma;
+
+	 return result;
+ }

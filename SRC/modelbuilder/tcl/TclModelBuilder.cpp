@@ -1907,8 +1907,23 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
   // Added: C.McGann, U.Washington
   else if ((strcmp(argv[count],"-selfWeight") == 0) || (strcmp(argv[count],"-SelfWeight") == 0)) {
     count++;
+
+    double xf, yf, zf;
+    if (Tcl_GetDouble(interp, argv[count], &xf) != TCL_OK) {
+	  opserr << "WARNING eleLoad - invalid xFactor " << argv[count] << " for -selfWeight\n";
+	  return TCL_ERROR;
+	}
+    if (Tcl_GetDouble(interp, argv[count+1], &yf) != TCL_OK) {
+	  opserr << "WARNING eleLoad - invalid yFactor " << argv[count+1] << " for -selfWeight\n";
+	  return TCL_ERROR;
+	}
+    if (Tcl_GetDouble(interp, argv[count+2], &zf) != TCL_OK) {
+	  opserr << "WARNING eleLoad - invalid zFactor " << argv[count+2] << " for -selfWeight\n";
+	  return TCL_ERROR;
+	}
+
     for (int i=0; i<theEleTags.Size(); i++) {
-      theLoad = new SelfWeight(eleLoadTag, theEleTags(i));
+      theLoad = new SelfWeight(eleLoadTag, xf, yf, zf, theEleTags(i));
       
       if (theLoad == 0) {
 	opserr << "WARNING eleLoad - out of memory creating load of type " << argv[count] ;

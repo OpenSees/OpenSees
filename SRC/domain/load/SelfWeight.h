@@ -32,7 +32,7 @@
 class SelfWeight : public ElementalLoad
 {
   public:
-    SelfWeight(int tag, int eleTag);
+    SelfWeight(int tag, double xFact, double yFact, double zFact, int eleTag);
     SelfWeight();    
     ~SelfWeight();
 
@@ -46,6 +46,9 @@ class SelfWeight : public ElementalLoad
 	
   private:
     static Vector data;
+    double xFact;
+    double yFact;
+    double zFact;
 };
 
 #endif

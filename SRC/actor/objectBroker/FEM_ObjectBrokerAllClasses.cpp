@@ -268,11 +268,12 @@
 
 // elemental load header files
 #include <ElementalLoad.h>
-#include<Beam2dUniformLoad.h>
-#include<Beam2dPointLoad.h>
-#include<Beam3dUniformLoad.h>
-#include<Beam3dPointLoad.h>
-#include<BrickSelfWeight.h>
+#include <Beam2dUniformLoad.h>
+#include <Beam2dPointLoad.h>
+#include <Beam3dUniformLoad.h>
+#include <Beam3dPointLoad.h>
+#include <BrickSelfWeight.h>
+#include <SelfWeight.h>
 
 // matrix, vector & id header files
 #include <Matrix.h>
@@ -763,6 +764,9 @@ FEM_ObjectBrokerAllClasses::getNewElementalLoad(int classTag)
     
     case LOAD_TAG_BrickSelfWeight:
       return new BrickSelfWeight();	     
+
+    case LOAD_TAG_SelfWeight:
+      return new SelfWeight();
 	     
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNodalLoad - ";

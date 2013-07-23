@@ -580,12 +580,14 @@ int PressureIndependMultiYield::updateParameter(int responseID, Information &inf
     refBulkModulus = info.theDouble;
   } else if (responseID==12) {
     frictionAnglex[matN] = info.theDouble;
-    setUpSurfaces(mGredu);
+    double *g = 0;
+    setUpSurfaces(g);
     paramScaling();
     initSurfaceUpdate();
   } else if (responseID==13) {
     cohesionx[matN] = info.theDouble;
-    setUpSurfaces(mGredu);
+    double *g = 0;
+    setUpSurfaces(g);
     paramScaling();
     initSurfaceUpdate();
   }
