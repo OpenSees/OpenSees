@@ -52,14 +52,25 @@ Pressure_Constraint::Pressure_Constraint(int classTag)
 {
 }
 
+Pressure_Constraint::Pressure_Constraint(int classTag, int nodeId, int ptag)
+    :DomainComponent(nodeId,classTag), pTag(ptag), fluidEleTags(), otherEleTags(), gravity(0)
+{
+}
+
+Pressure_Constraint::Pressure_Constraint(int nodeId, int ptag)
+    :DomainComponent(nodeId,CNSTRNT_TAG_Pressure_Constraint), 
+     pTag(ptag), fluidEleTags(), otherEleTags(), gravity(0)
+{
+}
+
 Pressure_Constraint::Pressure_Constraint(int classTag, int nodeId, double g)
-    :DomainComponent(nodeId,classTag), pTag(0), fluidEleTags(), otherEleTags(), gravity(g)
+    :DomainComponent(nodeId,classTag), pTag(nodeId), fluidEleTags(), otherEleTags(), gravity(g)
 {
 }
 
 Pressure_Constraint::Pressure_Constraint(int nodeId, double g)
     :DomainComponent(nodeId,CNSTRNT_TAG_Pressure_Constraint), 
-     pTag(0), fluidEleTags(), otherEleTags(), gravity(g)
+     pTag(nodeId), fluidEleTags(), otherEleTags(), gravity(g)
 {
 }
 
@@ -78,19 +89,29 @@ void
 Pressure_Constraint::setDomain(Domain* theDomain)
 {
     // get old domain
-    Domain* oldDomain = this->getDomain();
-    if(oldDomain != 0) {
-        Node* pNode = oldDomain->removeNode(pTag);
-        if(pNode != 0) {
-            delete pNode;
-        }
-    }
+    // Domain* oldDomain = this->getDomain();
+    // if(oldDomain != 0) {
+    //     Node* pNode = oldDomain->removeNode(pTag);
+    //     if(pNode != 0) {
+    //         delete pNode;
+    //     }
+    // }
+
+    // set new domain
+    DomainComponent::setDomain(theDomain);
 
     // check domain
     if(theDomain == 0) return;
+    int nodeId = this->getTag();
+    Node* pNode = 0;
+    if(pTag != nodeId) {
+        pNode = theDomain->getNode(pTag);
+        if(pNode != 0) return;
+    } else {
+        pTag = findNodeTag(theDomain);
+    }
 
     // check the node
-    int nodeId = this->getTag();
     Node* theNode = theDomain->getNode(nodeId);
     if(theNode == 0) {
         opserr<<"WARNING: node "<<nodeId<<" does not exist ";
@@ -117,8 +138,6 @@ Pressure_Constraint::setDomain(Domain* theDomain)
     }
 
     // create pressure node
-    pTag = findNodeTag(theDomain);
-    Node* pNode = 0;
     if(ndm == 2) {
         pNode = new Node(pTag, ndm+1, coord(0), coord(1));
     } else {
@@ -136,8 +155,7 @@ Pressure_Constraint::setDomain(Domain* theDomain)
         return;
     }
 
-    // set new domain
-    DomainComponent::setDomain(theDomain);
+
 
 }
 
@@ -385,4 +403,10 @@ Pressure_Constraint::findNodeTag(Domain* theDomain)
     }
     int tag = firstNode->getTag();
     return tag-1;
+}
+
+void
+Pressure_Constraint::setGravity(double g)
+{
+    gravity = g;
 }

@@ -60,6 +60,8 @@ class Pressure_Constraint : public DomainComponent
 public:
     // constructors
     explicit Pressure_Constraint(int classTag);
+    Pressure_Constraint(int classTag, int nodeId, int ptag);
+    Pressure_Constraint(int nodeId, int ptag);
     Pressure_Constraint(int classTag, int nodeId, double g);
     Pressure_Constraint(int nodeId, double g);
 
@@ -79,6 +81,7 @@ public:
     virtual bool isStructure() const;
     virtual bool isIsolated() const;
     virtual void newStep(double dt, Vector& U, Vector& Udot, Vector& Udotdot);
+    virtual void setGravity(double g);
 
     // methods for output
     virtual int sendSelf(int commitTag, Channel &theChannel);

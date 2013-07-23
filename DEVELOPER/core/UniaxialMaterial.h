@@ -82,6 +82,7 @@ class UniaxialMaterial : public Material
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     virtual double getStressSensitivity     (int gradIndex, bool conditional);
     virtual double getStrainSensitivity     (int gradIndex);
+    virtual double getTangentSensitivity(int gradIndex);
     virtual double getInitialTangentSensitivity(int gradIndex);
     virtual double getDampTangentSensitivity(int gradIndex);
     virtual double getRhoSensitivity        (int gradIndex);

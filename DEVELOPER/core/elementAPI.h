@@ -71,6 +71,24 @@ struct matObject {
 
 typedef struct matObject matObj;
 
+//start **MRL
+typedef void (*limCrvFunct)(struct limCrvObject *, modelState *,double *strain, double *tang, double *stress, int *isw, int *error); 
+
+struct limCrvObject {
+  int tag;
+  int nParam;
+  int nState;
+  double *theParam;
+  double *cState;
+  double *tState;
+  limCrvFunct limCrvFunctPtr;
+  void *limCrvObjectPtr;
+};
+
+typedef struct limCrvObject limCrvObj;
+//end **MRL
+
+
 typedef void (*eleFunct)(struct eleObject *, modelState *, double *tang, double *resid, int *isw, int *error);
 
 struct eleObject {
@@ -114,6 +132,8 @@ typedef struct eleObject eleObj;
 #define OPS_GetCrdTransfPtr ops_getcrdtransfptr_
 #define OPS_GetFEDatastore ops_getfedatastore_
 #define OPS_GetInterpPWD ops_getinterppwd_
+#define OPS_AllocateLimitCurve ops_allocatelimitcurve_//**MRL
+#define OPS_GetLimitCurveType ops_getlimitcurvetype_//**MRL
 
 #ifdef __cplusplus
 extern "C" int        OPS_GetNDM();
@@ -131,6 +151,8 @@ extern "C" matObj    *OPS_GetMaterialType(char *type, int sizeType);
 extern "C" eleObj    *OPS_GetElementType(char *, int);
 extern "C" int        OPS_AllocateElement(eleObj *, int *matTags, int *maType);
 extern "C" int        OPS_AllocateMaterial(matObj *);
+extern "C" limCrvObj *OPS_GetLimitCurveType(char *type, int sizeType);//**MRL
+extern "C" int        OPS_AllocateLimitCurve(limCrvObj *);//**MRL
 
 extern "C" int    OPS_InvokeMaterial(eleObject *, int *,modelState *, double *, double *, double *, int *);
 extern "C" int    OPS_InvokeMaterialDirectly(matObject **, modelState *, double *, double *, double *, int *);
@@ -156,6 +178,7 @@ extern UniaxialMaterial *OPS_GetUniaxialMaterial(int matTag);
 extern NDMaterial *OPS_GetNDMaterial(int matTag);
 extern SectionForceDeformation *OPS_GetSectionForceDeformation(int matTag);
 extern CrdTransf *OPS_GetCrdTransfPtr(int tag);
+
 extern LimitCurve *OPS_GetLimitCurve(int LimCrvTag);//MRL
 extern Domain *OPS_GetDomain(void);//**MRL
 
@@ -179,6 +202,9 @@ matObj  *OPS_GetMaterialType(char *type, int sizeType);
 eleObj  *OPS_GetElementType(char *, int);
 int     OPS_AllocateElement(eleObj *, int *matTags, int *maType);
 int     OPS_AllocateMaterial(matObj *);
+
+limCrv	*OPS_GetLimitCurveType(char *type, int sizeType);//**MRL
+int     OPS_AllocateLimitCurve(limCrvObj *);//**MRL
 
 int    OPS_InvokeMaterial(struct eleObj *, int *,modelState *, double *, double *, double *, int *);
 int    OPS_InvokeMaterialDirectly(matObj **, modelState *, double *, double *, double *, int *);

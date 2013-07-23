@@ -31,7 +31,7 @@
 // Description: This file contains global variables used in OpenSees files.
 // if you change some of the variables, you must recompile ALL the code.
 
-#define OPS_VERSION "2.4.0.8"
+#define OPS_VERSION "2.4.1.2"
 
 #define _USING_OpenSees_STREAMS
 #include <OPS_Stream.h>

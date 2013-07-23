@@ -721,16 +721,13 @@ textToBinary(const char *inputFilename, const char *outputFilename)
 int
 BinaryFileStream::setOrder(const ID &orderData)
 {
-  opserr << "BinaryFileStream::setOrder(const ID &orderData) - START\n";
   if (sendSelfCount < 0) {
     static ID numColumnID(1);
     int numColumn = orderData.Size();
     numColumnID(0) = numColumn;
     theChannels[0]->sendID(0, 0, numColumnID);
-    opserr << "BinaryFileStream::setOrder(const ID &orderData) - SENT numColumnData : " << numColumnID;
     if (numColumn != 0)
       theChannels[0]->sendID(0, 0, orderData);
-    opserr << "BinaryFileStream::setOrder(const ID &orderData) - SENT\n";
   }
 
   if (sendSelfCount > 0) {      
@@ -757,7 +754,6 @@ BinaryFileStream::setOrder(const ID &orderData)
 
     // now receive orderData from the other channels
     for (int i=0; i<sendSelfCount; i++) { 
-      opserr << "BinaryFileStream::setOrder(const ID &orderData) - RECEIVING\n";
       static ID numColumnID(1);	  
       if (theChannels[i]->recvID(0, 0, numColumnID) < 0) {
 	opserr << "BinaryFileStream::setOrder - failed to recv column size for process: " << i+1 << endln;
@@ -765,7 +761,6 @@ BinaryFileStream::setOrder(const ID &orderData)
       }
 
       int numColumns = numColumnID(0);
-      opserr << "BinaryFileStream::setOrder(const ID &orderData) - NumColumns: " << numColumns << endln;
 
       (*sizeColumns)(i+1) = numColumns;
       if (numColumns != 0) {
@@ -786,8 +781,6 @@ BinaryFileStream::setOrder(const ID &orderData)
 	theRemoteData[i+1] = 0;
       }
     }
-
-    opserr << "BinaryFileStream::setOrder(const ID &orderData) - STARTING MAPPING;\n";
 
     ID currentLoc(sendSelfCount+1);
     ID currentCount(sendSelfCount+1);
