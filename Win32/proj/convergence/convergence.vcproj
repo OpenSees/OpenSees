@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;c:\Program Files\tcl\include&quot;;..\..\..\src\analysis\integrator;..\..\..\src\handler;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\actor\channel;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\convergenceTest;..\..\..\src\nDarray;&quot;c:\Program Files\tcl&quot;"
+				AdditionalIncludeDirectories="..\..\..\OTHER\CSPARSE;..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN;&quot;c:\Program Files\tcl\include&quot;;..\..\..\src\analysis\integrator;..\..\..\src\handler;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\actor\channel;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\convergenceTest;..\..\..\src\nDarray;&quot;c:\Program Files\tcl&quot;"
 				PreprocessorDefinitions="WIN32,_DEBUG,_LIB"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="5"
@@ -73,7 +73,7 @@
 				OmitFramePointers="TRUE"
 				EnableFiberSafeOptimizations="TRUE"
 				OptimizeForWindowsApplication="TRUE"
-				AdditionalIncludeDirectories="&quot;c:\Program Files\tcl\include&quot;;..\..\..\src\analysis\integrator;..\..\..\src\handler;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\actor\channel;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\convergenceTest;..\..\..\src\nDarray;&quot;c:\Program Files\tcl&quot;"
+				AdditionalIncludeDirectories="..\..\..\OTHER\CSPARSE;..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN;&quot;c:\Program Files\tcl\include&quot;;..\..\..\src\analysis\integrator;..\..\..\src\handler;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\actor\channel;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\convergenceTest;..\..\..\src\nDarray;&quot;c:\Program Files\tcl&quot;"
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
@@ -131,6 +131,12 @@
 		</File>
 		<File
 			RelativePath="..\..\..\SRC\convergenceTest\CTestNormUnbalance.h">
+		</File>
+		<File
+			RelativePath="..\..\..\SRC\convergenceTest\CTestPFEM.cpp">
+		</File>
+		<File
+			RelativePath="..\..\..\SRC\convergenceTest\CTestPFEM.h">
 		</File>
 		<File
 			RelativePath="..\..\..\SRC\convergenceTest\CTestRelativeEnergyIncr.cpp">

@@ -1176,6 +1176,12 @@
 				RelativePath="..\..\..\SRC\element\PFEMElement\PFEMElement2D.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\element\PFEMElement\PFEMElement3D.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\PFEMElement\PFEMElement3D.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\PFEMElement\TclModelBuilder_addPFEMElement.cpp">
 			</File>
 			<File
