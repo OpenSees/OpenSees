@@ -32,8 +32,8 @@
 
 #include <PFEMMesher2D.h>
 #include <PFEMMesher3D.h>
+#include <ParallelPFEM.h>
 #include <Domain.h>
-#include <Node.h>
 #include <Vector.h>
 #include <ID.h>
 #include <tcl.h>
@@ -704,7 +704,7 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                 eletype = 1;
                 loc++;
 
-            } else if(strcmp(argv[loc], "-Tri31") == 0) {
+            } else if(strcmp(argv[loc], "-Tri31") == 0 || strcmp(argv[loc], "-tri31") == 0) {
                 vecPtr = &params;
                 eletype = 2;
                 loc++;
@@ -1009,12 +1009,11 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
         }
         int loc = 2;
         Vector drag, lift;
-        std::vector<int> boundary;
+        ID boundary;
         int basenode;
         while(loc < argc) {
-
             Vector* vecPtr = 0;
-            std::vector<int>* idPtr = 0;
+            ID* idPtr = 0;
 
             if(strcmp(argv[loc], "-boundary") == 0) {
                 idPtr = &boundary;
@@ -1034,6 +1033,7 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                     opserr<<" -- PFEM2D discretize\n";
                     return TCL_ERROR; 
                 }
+                loc++;
             }
 
             if(vecPtr!=0 || idPtr!=0) {
@@ -1074,7 +1074,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                 if(argvPtr != 0) Tcl_Free((char *) argvPtr);
             }
         }
-
 
         Vector forces = theMesher2D.calculateForces(boundary,basenode,drag,lift,theDomain);
 
@@ -1127,7 +1126,45 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
         }
         
         Tcl_SetObjResult(interp, Tcl_NewIntObj(endpnode));
-        
+
+    } else if(strcmp(argv[1], "fluid") == 0 || strcmp(argv[1], "structure") == 0) {        
+        if(argc < 3) {
+            opserr<<"WARNING: wrong num of args -- ";
+            opserr<<"PFEM2D "<<argv[1]<<" endnodelist <-append>\n";
+            return TCL_ERROR;
+        }
+        ID nodes;
+        int num = 0;
+        const char** argvPtr = 0;
+        if(Tcl_SplitList(interp, argv[2], &num, &argvPtr)!=TCL_OK) {
+            opserr<<"WARNING: failed to read the list "<<argv[2];
+            opserr<<" -- PFEM2D "<<argv[1]<<"\n";
+            return TCL_ERROR;
+        }
+        if(num > 0) nodes.resize(num);
+        for(int i=0; i<num; i++) {
+            int tag;
+            if(Tcl_GetInt(interp, argvPtr[i], &tag) != TCL_OK) {
+                opserr<<"WARNING: invalid input "<<argvPtr[i];
+                opserr<<" -- PFEM2D "<<argv[1]<<"\n";
+                return TCL_ERROR; 
+            }
+            nodes(i) = tag;
+        }
+
+        if(argvPtr != 0) Tcl_Free((char *) argvPtr);
+
+        bool fluid = false;
+        if(strcmp(argv[1], "fluid") == 0) {
+            fluid = true;
+        }
+
+        bool append = false;
+        if(argc>3 && (strcmp(argv[3], "-append") || strcmp(argv[3], "-Append"))) {
+            append = true;
+        }
+
+        theMesher2D.setNodes(nodes,fluid,append);
 
     }
 
@@ -1558,3 +1595,121 @@ TclModelBuilderPFEM3DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
     return TCL_OK;
 }
+
+
+// int
+// TclModelBuilderParallelPFEMCommand(ClientData clientData, Tcl_Interp *interp, int argc,   
+//                                    TCL_Char **argv, Domain* theDomain)
+// {
+//     static ParallelPFEM theParallel;
+
+//     if(argc < 2) {
+//         opserr << "WARNING: at least 2 arguments -- ParallelPFEM subcommands: partition, ";
+//         opserr << "\n";
+//         return TCL_ERROR;
+//     }
+
+//     if(strcmp(argv[1], "init") == 0 || strcmp(argv[1], "Init") == 0) {
+//         if(argc < 4) {
+//             opserr << "WARNING: wrong num of args -- ";
+//             opserr << "ParallelPFEM init dir partitionList <ratio>\n";
+//             return TCL_ERROR;
+//         }
+
+//         int dir = 0;
+//         if(strcmp(argv[2], "x")==0 || strcmp(argv[2], "X")==0) {
+//             dir = 0;
+//         } else if(strcmp(argv[2], "y")==0 || strcmp(argv[2], "Y")==0) {
+//             dir = 1;
+//         } else if(strcmp(argv[2], "z")==0 || strcmp(argv[2], "Z")==0) {
+//             dir = 2;
+//         }
+
+//         Vector part;
+//         int num = 0;
+//         const char** argvPtr = 0;
+//         if(Tcl_SplitList(interp, argv[3], &num, &argvPtr)!=TCL_OK) {
+//             opserr<<"WARNING: failed to read the list "<<argv[3];
+//             opserr<<" -- PFEM2D init\n";
+//             return TCL_ERROR;
+//         }
+//         if(num > 0) part.resize(num);
+//         for(int i=0; i<num; i++) {
+//             double val;
+//             if(Tcl_GetDouble(interp, argvPtr[i], &val) != TCL_OK) {
+//                 opserr<<"WARNING: invalid input "<<argvPtr[i];
+//                 opserr<<" -- PFEM2D init\n";
+//                 return TCL_ERROR; 
+//             }
+//             part(i) = val;
+//         }
+
+//         if(argvPtr != 0) Tcl_Free((char *) argvPtr);
+
+//         double ratio = 0.2;
+//         if(argc > 4) {
+//             if(Tcl_GetDouble(interp, argv[4], &ratio) != TCL_OK) {
+//                 opserr<<"WARNING: invalid ratio "<<argv[4];
+//                 opserr<<" -- PFEM2D init\n";
+//                 return TCL_ERROR; 
+//             }
+//         }
+//         theParallel.init(dir,part,ratio);
+
+//     } else if(strcmp(argv[1], "doTriangulation2D") == 0 
+//               || strcmp(argv[1], "doTriangulation3D") == 0) {
+        
+        
+
+//         // get dimension
+//         int ndm = 2;
+//         if(strcmp(argv[1], "doTriangulation3D") == 0) ndm = 3;
+
+//         // check arguments
+//         if(argc < 3) {
+//             opserr << "WARNING: wrong num of args -- ";
+//             if(ndm == 2) {
+//                 opserr<<" -- ParallelPFEM doTriangulation2D alpha\n";
+//             } else {
+//                 opserr<<" -- ParallelPFEM doTriangulation3D alpha\n";
+//             }
+//             return TCL_ERROR;
+//         }
+        
+//         // alpha
+//         double alpha = 0.0;
+//         if(Tcl_GetDouble(interp, argv[2], &alpha) != TCL_OK) {
+//             opserr<<"WARNING: invalid alpha "<<argv[2];
+//             if(ndm == 2) {
+//                 opserr<<" -- ParallelPFEM doTriangulation2D \n";
+//             } else {
+//                 opserr<<" -- ParallelPFEM doTriangulation3D \n";
+//             }
+//             return TCL_ERROR; 
+//         }
+
+//         // get typical length
+//         double h = 0;
+//         if(ndm == 2) {
+//             h = theMesher2D.geth();
+//         } else {
+//             h = theMesher3D.geth();
+//         }
+//         if(h == 0.0) {
+//             opserr<<"WARNING: need call serial doTriangulation for each process first";
+//             if(ndm == 2) {
+//                 opserr<<" -- ParallelPFEM doTriangulation2D\n";
+//             } else {
+//                 opserr<<" -- ParallelPFEM doTriangulation3D\n";
+//             }
+//             return TCL_ERROR;
+//         }
+
+//         // parallel triangulation
+//         if(theParallel.doTriangulation(alpha,h,ndm,theDomain) < 0) {
+//             return TCL_ERROR;
+//         }
+//     }
+
+//     return TCL_OK;
+// }

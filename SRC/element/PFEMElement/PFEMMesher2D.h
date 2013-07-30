@@ -45,9 +45,8 @@ extern "C" {
 }
 #include <string>
 #include <Vector.h>
-#include <vector>
+#include <ID.h>
 
-class ID;
 class Domain;
 
 
@@ -118,9 +117,12 @@ public:
                   const Vector& height);
 
     // calculate lift, drag, overturning moment from pressure
-    Vector calculateForces(const std::vector<int>& boundary, int basenode, 
+    Vector calculateForces(const ID& boundary, int basenode, 
                            Vector& dragdir, Vector& liftdir, 
                            Domain* theDomain);
+
+    double geth() {return avesize;}
+    void setNodes(const ID& nodes, bool fluid, bool append = false);
 
 private:
 
@@ -137,6 +139,8 @@ private:
     Vector Lspan;
     Vector Height;
     double avesize;
+    ID fluidNodes;
+    ID structureNodes;
 };
 
 

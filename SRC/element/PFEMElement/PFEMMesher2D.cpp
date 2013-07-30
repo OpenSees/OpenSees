@@ -61,7 +61,8 @@
 #include <elementAPI.h>
 
 PFEMMesher2D::PFEMMesher2D()
-:PI(3.1415926535897932384626433), bound(4), frameBase(2), Lspan(), Height(), avesize(0.0)
+    :PI(3.1415926535897932384626433), bound(4), frameBase(2), Lspan(), Height(), avesize(0.0),
+     fluidNodes(), structureNodes()
 {
 }
 
@@ -676,9 +677,16 @@ PFEMMesher2D::doTriangulation(int starteletag, const ID& nodes, double alpha,
     //Timer timer;
     // do triangulation
     ID eles;
-    int res = doTriangulation(nodes, alpha,
+    int res = 0;
+    if(nodes.Size()==0 && addnodes.Size()==0) {
+        res = doTriangulation(fluidNodes, alpha,
+                              structureNodes, 
+                              theDomain, eles);
+    } else {
+        res = doTriangulation(nodes, alpha,
                               addnodes, 
                               theDomain, eles);
+    }
     if(res < 0) {
         opserr<<"WARNING: failed to do triangulation --";
         opserr<<"PFEMMesher2D::soTriangulation\n";
@@ -723,7 +731,6 @@ PFEMMesher2D::doTriangulation(int starteletag, const ID& nodes, double alpha,
         opserr<<" -- PFEMMesher2D::doTriangulation\n";
         return -1;
     }
-
     //Timer timer;
     // do triangulation
     ID eles;
@@ -1024,21 +1031,21 @@ PFEMMesher2D::save(const char* filename, const ID& snodes, Domain* theDomain)
             const Vector& accel = node->getAccel();
             const Vector& pvel = pnode->getVel();
             file2<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" ";
-            bool isstructure = false;
+            int type = 1;
             for(int i=0; i<snodes.Size()/2; i++) {
                 if(ntag>=snodes(2*i) && ntag<=snodes(2*i+1)) {
-                    isstructure = true;
+                    type = i+2;
                     break;
                 }
             }
-            if(isstructure) file2<<2<<" ";
-            else file2<<1<<" ";
+            file2<<type<<" ";
             file2<<vel(0)<<" "<<vel(1)<<" "<<accel(0)<<" "<<accel(1);
             file2<<" "<<pvel(2)<<"\n";
         }
     }
 
     // nodes
+    int type = snodes.Size()/2+2;
     for(int i=0; i<snodes.Size()/2; i++) {
         for(int tag=snodes(2*i); tag<=snodes(2*i+1); tag++) {
             Node* theNode = theDomain->getNode(tag);
@@ -1050,7 +1057,7 @@ PFEMMesher2D::save(const char* filename, const ID& snodes, Domain* theDomain)
                 const Vector& disp = theNode->getDisp();
                 const Vector& vel = theNode->getVel();
                 const Vector& accel = theNode->getAccel();
-                file2<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" "<<2<<" ";
+                file2<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" "<<type<<" ";
                 file2<<vel(0)<<" "<<vel(1)<<" "<<accel(0)<<" "<<accel(1);
                 file2<<" "<<0<<"\n";
             }
@@ -1148,7 +1155,7 @@ PFEMMesher2D::setFrame(double x1, double y1, const Vector& span,
 }
 
 Vector
-PFEMMesher2D::calculateForces(const std::vector<int>& boundary, int basenode, 
+PFEMMesher2D::calculateForces(const ID& boundary, int basenode, 
                               Vector& dragdir, Vector& liftdir, 
                               Domain* theDomain)
 {
@@ -1156,7 +1163,7 @@ PFEMMesher2D::calculateForces(const std::vector<int>& boundary, int basenode,
     Vector forces(3);
 
     // check inputs
-    if(dragdir.Size()<2 || liftdir.Size()<2 || boundary.empty()) {
+    if(dragdir.Size()<2 || liftdir.Size()<2 || boundary.Size()<2) {
         return forces;
     }
 
@@ -1172,8 +1179,10 @@ PFEMMesher2D::calculateForces(const std::vector<int>& boundary, int basenode,
             Vector xx(3), yy(3), pressures(3);
             bool haveit[3] = {false,false,false};
             for(int i=0; i<3; i++) {
-                if(std::find(boundary.begin(),boundary.end(),elenodes(2*i))!=boundary.end()) {
-                    haveit[i] = true;
+                for(int j=0; j<boundary.Size()/2; j++) {
+                    if(elenodes(2*i)>=boundary(2*j) && elenodes(2*i)<=boundary(2*j+1)) {
+                        haveit[i] = true;
+                    }
                 }
                 Node* node = theDomain->getNode(elenodes(2*i));
                 if(node == 0) {
@@ -1256,7 +1265,7 @@ void
 PFEMMesher2D::removeOutBoundNodes(const ID& nodes, Domain* theDomain)
 {
     // check nodes
-    std::vector<int> removelist;
+    ID removelist;
     for(int i=0; i<nodes.Size()/2; i++) {
         for(int tag=nodes(2*i); tag<=nodes(2*i+1); tag++) {
             Node* theNode = theDomain->getNode(tag);
@@ -1276,13 +1285,13 @@ PFEMMesher2D::removeOutBoundNodes(const ID& nodes, Domain* theDomain)
         
             // if out of boundary
             if(x<bound(0) || x>bound(2) || y<bound(1) || y>bound(3)) {
-                removelist.push_back(tag);
+                removelist[removelist.Size()] = tag;
             }
         }
     }
 
     // remove nodes
-    for(int i=0; i<(int)removelist.size(); i++) {
+    for(int i=0; i<removelist.Size(); i++) {
         Node* theNode = theDomain->removeNode(removelist[i]);
         if(theNode != 0) {
             delete theNode;
@@ -1324,6 +1333,23 @@ PFEMMesher2D::addPC(const ID& nodes, int startpnode, Domain* theDomain, int& end
     }
 
     return 0;
+}
+
+void
+PFEMMesher2D::setNodes(const ID& nodes, bool fluid, bool append)
+{
+    ID* pnodes = &structureNodes;
+    if(fluid) pnodes = &fluidNodes;
+    int oldsize = pnodes->Size();
+    int newsize = nodes.Size();
+    if(!append) {
+        (*pnodes) = nodes;
+        return;
+    }
+    pnodes->resize(oldsize+newsize);
+    for(int i=0; i<newsize; i++) {
+        (*pnodes)(oldsize+i) = nodes(i);
+    }
 }
 
 void
