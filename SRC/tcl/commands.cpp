@@ -863,7 +863,7 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "setParameter", &setParameter, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
 
-    Tcl_CreateCommand(interp, "maxOpenFiles", &maxOpenFiles, 
+    Tcl_CreateCommand(interp, "setMaxOpenFiles", &maxOpenFiles, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
 
 #ifdef _RELIABILITY
@@ -9292,16 +9292,20 @@ maxOpenFiles(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   } 
 
   #ifdef _WIN32
-  newMax = _setmax_stdio(maxOpenFiles);
-  if (newMax != maxOpenFiles) {
-    opserr << "maxOpenFiles FAILED: max allowed files: " << newMax;
-    return TCL_ERROR;
+  newMax = _setmaxstdio(maxOpenFiles);
+  if (maxOpenFiles > 2048) {
+		opserr << "setMaxOpenFiles: too many files specified (2048 max)\n";
+  } else {
+	 if (newMax != maxOpenFiles) {
+		opserr << "setMaxOpenFiles FAILED: max allowed files: " << newMax;
+		return TCL_ERROR;
+	}
   }
   return TCL_OK;
   #endif
 
-  opserr << "maxOpenFiles FAILED: - command not available on this machine\n";
-  return TCL_ERROR;
+  opserr << "setMaxOpenFiles FAILED: - command not available on this machine\n";
+  return TCL_OK;
 }
 
 // Talledo Start
