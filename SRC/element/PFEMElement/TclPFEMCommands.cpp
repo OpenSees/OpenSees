@@ -32,7 +32,7 @@
 
 #include <PFEMMesher2D.h>
 #include <PFEMMesher3D.h>
-#include <ParallelPFEM.h>
+//#include <ParallelPFEM.h>
 #include <Domain.h>
 #include <Vector.h>
 #include <ID.h>
