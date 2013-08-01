@@ -1,0 +1,5 @@
+set recordName FOR090.AT2
+set nPts 2200
+set dT .02000
+timeSeries Path 2 -filePath motion.dat.1 -dt $dT -factor 386.4
+pattern UniformExcitation 2 1 -accel 2

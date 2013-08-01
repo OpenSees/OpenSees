@@ -1,0 +1,19 @@
+#!/bin/sh
+
+trap cleanup HUP INT QUIT ABRT TERM
+
+cleanup()
+{
+#  echo "Abnormal termination by signal"
+   kill -TERM `jobs -p`
+}
+
+. /etc/environ.sh
+use -e -r pegasus-4.2.0
+
+./opensees-dax-generator.py > dax.xml
+
+unuse -e pegasus-4.2.0
+
+submit -v WF-OSGFactory_FERMI pegasus-plan --dax dax.xml &
+
