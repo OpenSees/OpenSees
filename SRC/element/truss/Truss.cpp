@@ -1204,13 +1204,15 @@ Truss::setParameter(const char **argv, int argc, Parameter &param)
     return -1;
   
   // Cross sectional area of the truss
-  if (strcmp(argv[0],"A") == 0)
+  if (strcmp(argv[0],"A") == 0) {
+    param.setValue(A);
     return param.addObject(1, this);
-  
+  }
   // Mass densitity of the truss
-  if (strcmp(argv[0],"rho") == 0)
+  if (strcmp(argv[0],"rho") == 0) {
+    param.setValue(rho);
     return param.addObject(2, this);
-  
+  }
   // Explicit specification of a material parameter
   if (strstr(argv[0],"material") != 0) {
     
@@ -1553,9 +1555,7 @@ Truss::commitSensitivity(int gradNumber, int numGrads)
 	}
 	
 	// Pass it down to the material
-	theMaterial->commitSensitivity(strainSensitivity, gradNumber, numGrads);
-
-	return 0;
+	return theMaterial->commitSensitivity(strainSensitivity, gradNumber, numGrads);
 }
 
 // AddingSensitivity:END /////////////////////////////////////////////
