@@ -99,6 +99,9 @@ class PlaneStressMaterial: public NDMaterial{
 
     int setParameter(const char **argv, int argc, Parameter &param);
 
+    const Vector& getStressSensitivity(int gradIndex,
+				       bool conditional);
+
   private :
 
     //out of plane strains .. trial and committed
@@ -116,9 +119,6 @@ class PlaneStressMaterial: public NDMaterial{
     static Vector stress ;
 
     static Matrix tangent ;
-
-    int indexMap( int i ) ;
-    static int iMap[6];
 } ; //end of PlaneStressMaterial declarations
 
 
