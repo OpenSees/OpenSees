@@ -4253,6 +4253,9 @@ Win32/proj/utility/utility.dsp -text
 Win32/proj/utility/utility.mak -text
 Win32/proj/utility/utility.vcproj -text
 Workshops/SimWorkshop/Pegasus1/dax.xml -text
+Workshops/SimWorkshop/Pegasus1/inputs/Example3.1.tcl -text
+Workshops/SimWorkshop/Pegasus1/inputs/Example3.2.tcl -text
+Workshops/SimWorkshop/Pegasus1/inputs/genPlot.m -text
 Workshops/SimWorkshop/Pegasus2/inputs/Example3.1.tcl -text
 Workshops/SimWorkshop/Pegasus2/inputs/Example3.2.tcl -text
 Workshops/SimWorkshop/Pegasus2/inputs/genPlot.m -text
