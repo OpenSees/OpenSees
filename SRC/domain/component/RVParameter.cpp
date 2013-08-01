@@ -126,6 +126,24 @@ RVParameter::Print(OPS_Stream &s, int flag)
   }
 }
 
+int
+RVParameter::addComponent(DomainComponent *theObject, const char **argv, int argc)
+{
+  return myParam->addComponent(theObject, argv, argc);
+}
+
+int
+RVParameter::addComponent(int tag, const char **argv, int argc)
+{
+  return myParam->addComponent(tag, argv, argc);
+}
+
+int
+RVParameter::addObject(int parameterID, MovableObject *object)
+{
+  return myParam->addObject(parameterID, object);
+}
+
 void
 RVParameter::setDomain(Domain *theDomain)
 {

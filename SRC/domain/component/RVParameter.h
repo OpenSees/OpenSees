@@ -54,6 +54,10 @@ class RVParameter : public Parameter
   virtual const char *getType(void) {return "RandomVariable";}
   virtual int getPointerTag(void);
 
+  virtual int addComponent(DomainComponent *theObject, const char **argv, int argc);  
+  virtual int addComponent(int, const char **argv, int argc);  
+  virtual int addObject(int parameterID, MovableObject *object);
+
   virtual void setDomain(Domain *theDomain);
   virtual int sendSelf(int commitTag, Channel &theChannel);  
   virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
