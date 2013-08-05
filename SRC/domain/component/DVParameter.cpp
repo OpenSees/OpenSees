@@ -132,6 +132,8 @@ DVParameter::Print(OPS_Stream &s, int flag)
 void
 DVParameter::setDomain(Domain *theDomain)
 {
+	if (myParam != 0)
+		myParam->SetDomain(theDomain);
   return;
 }
 
