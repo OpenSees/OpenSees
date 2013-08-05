@@ -2742,10 +2742,14 @@ SRC/material/nD/PlaneStrainMaterial.cpp -text
 SRC/material/nD/PlaneStrainMaterial.h -text
 SRC/material/nD/PlaneStressMaterial.cpp -text
 SRC/material/nD/PlaneStressMaterial.h -text
+SRC/material/nD/PlaneStressSimplifiedJ2.cpp -text
+SRC/material/nD/PlaneStressSimplifiedJ2.h -text
 SRC/material/nD/PlateFiberMaterial.cpp -text
 SRC/material/nD/PlateFiberMaterial.h -text
 SRC/material/nD/PressureDependentElastic3D.cpp -text
 SRC/material/nD/PressureDependentElastic3D.h -text
+SRC/material/nD/SimplifiedJ2.cpp -text
+SRC/material/nD/SimplifiedJ2.h -text
 SRC/material/nD/TclModelBuilderNDMaterialCommand.cpp -text
 SRC/material/nD/UWmaterials/BoundingCamClay.cpp -text
 SRC/material/nD/UWmaterials/BoundingCamClay.h -text
