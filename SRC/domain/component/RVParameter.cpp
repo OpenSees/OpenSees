@@ -147,7 +147,8 @@ RVParameter::addObject(int parameterID, MovableObject *object)
 void
 RVParameter::setDomain(Domain *theDomain)
 {
-  return;
+ if (myParam != 0)
+	myParam->setDomain(theDomain);
 }
 
 int 
