@@ -163,6 +163,9 @@ int
 TclCommand_KikuchiAikenHDR(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int
+TclCommand_KikuchiAikenLRB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int
 TclCommand_AxialSp(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int
@@ -3016,6 +3019,9 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }
     else if (strcmp(argv[1],"KikuchiAikenHDR") == 0) { 
       return TclCommand_KikuchiAikenHDR(clientData, interp, argc, argv);
+    }
+    else if (strcmp(argv[1],"KikuchiAikenLRB") == 0) { 
+      return TclCommand_KikuchiAikenLRB(clientData, interp, argc, argv);
     }
     else if (strcmp(argv[1],"AxialSp") == 0) { 
       return TclCommand_AxialSp(clientData, interp, argc, argv);
