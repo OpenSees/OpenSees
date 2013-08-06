@@ -3052,6 +3052,8 @@ SRC/material/uniaxial/InitStressMaterial.cpp -text
 SRC/material/uniaxial/InitStressMaterial.h -text
 SRC/material/uniaxial/KikuchiAikenHDR.cpp -text
 SRC/material/uniaxial/KikuchiAikenHDR.h -text
+SRC/material/uniaxial/KikuchiAikenLRB.cpp -text
+SRC/material/uniaxial/KikuchiAikenLRB.h -text
 SRC/material/uniaxial/Makefile -text
 SRC/material/uniaxial/Maxwell.cpp -text
 SRC/material/uniaxial/Maxwell.h -text
