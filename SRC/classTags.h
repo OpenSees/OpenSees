@@ -234,6 +234,7 @@
 #define MAT_TAG_Concrete01WithSITC 3011
 
 #define MAT_TAG_KikuchiAikenHDR 6102
+#define MAT_TAG_AxialSp   6111
 #define MAT_TAG_AxialSpHD 6112
 
 
