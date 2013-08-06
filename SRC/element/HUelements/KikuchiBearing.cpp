@@ -18,8 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2013-07-08 00:00:00 $
+// $Revision: 1.2 $
+// $Date: 2013-07-31 00:00:00 $
 // $Source: /usr/local/cvs/OpenSees/SRC/element/KikuchiBearing/KikuchiBearing.h,v $
 
 // Written: Ken Ishii
@@ -72,6 +72,7 @@ extern "C" double dbesi1(double);
 extern double dbesi0(double);
 extern double dbesi1(double);
 #endif
+
 
 static bool errDetected(bool ifNoError,char *msg){
   if (ifNoError){
@@ -580,8 +581,8 @@ KikuchiBearing::KikuchiBearing(int Tag, int Nd1, int Nd2,
     ifPDInput(IfPDInput), ifTilt(IfTilt),
     adjCi(AdjCi), adjCj(AdjCj),
     ifBalance(IfBalance), limFo(LimFo), limFi(LimFi), nIter(NIter),
-    Tgl(12,12), Tlb(6,12), trnTgl(12,12), trnTlb(12,6),
-    basicDisp(6), localDisp(12), basicForce(6), basicStiff(6,6), basicStiffInit(6,6),
+    Tgl(12,12), Tlb(6,12),
+    basicDisp(6), localDisp(12), basicForce(6),
     localIncrDisp(12),incrDispij(12),incrDispmn(6),localForceij(12)
 {
   // ensure the connectedExternalNode ID is of correct size & set values
@@ -674,7 +675,7 @@ KikuchiBearing::KikuchiBearing(int Tag, int Nd1, int Nd2,
     for(int i=1; i<=((nMNS+p)/2); i++) {
       //circle
       if(i==1 && p==1) {
-	k++; //k=1
+	k++; //k=0
 	double r = 0.0;
 	posLy[k] = 0.0;
 	posLz[k] = 0.0;
@@ -685,7 +686,7 @@ KikuchiBearing::KikuchiBearing(int Tag, int Nd1, int Nd2,
 	} else if(lambda == 0) { //parabolic
 	  distFct[k] = 2.0;
 	} else {
-	  distFct[k] = (1.0-1.0/dbesi0(lambda))/(1.0-2.0/lambda*dbesi1(lambda)/dbesi0(lambda));
+	  distFct[k] = (1.0-1.0/dbesi0(lambda));
 	}
 
 	continue;
@@ -708,16 +709,53 @@ KikuchiBearing::KikuchiBearing(int Tag, int Nd1, int Nd2,
 	} else if(lambda == 0) {
 	  distFct[k] = 2.0*(1.0-r/(size/2)*r/(size/2)); //parabolic
 	} else {
-	  distFct[k] = (1.0-dbesi0(lambda*r/(size/2))/dbesi0(lambda))/(1.0-2.0/lambda*dbesi1(lambda)/dbesi0(lambda));
+	  distFct[k] = (1.0-dbesi0(lambda*r/(size/2))/dbesi0(lambda));
 	}
       }
     }
 
-  } else {//square shape
-    opserr << "KikuchiBearing::KikuchiBearing() - "
-	   << "square shape \n";
-    exit(-1);
+  } else { //square shape
+
+    incA = (size*size)/(nMNS*nMNS); //area of each normal spring
+
+    int k = -1; //index
+ 
+    for(int i=0; i<nMNS; i++) {
+      for(int j=0; j<nMNS; j++) {
+
+	k++;
+
+	posLy[k] = (2.0*i-nMNS+1)/nMNS * (size/2);
+	posLz[k] = (2.0*j-nMNS+1)/nMNS * (size/2);
+
+	double ry = posLy[k]/(size/2);
+	double rz = posLz[k]/(size/2);
+	
+	//distribution factor
+	if(lambda < 0) { //uniform
+	  distFct[k] = 1.0;
+	} else {
+	  distFct[k] = 0.0;
+	  for (int m=1; m<=19; m+=2) {
+	    double alpha = sqrt(lambda*lambda + (m*M_PI/2.0)*(m*M_PI/2.0));
+	    distFct[k] += sin(m*M_PI/2.0) * 4/(m*M_PI) * (lambda*lambda)/(alpha*alpha) * (1.0 - cosh(alpha*rz)/cosh(alpha)) * cos(m*M_PI/2.0*ry);
+	  }
+	}
+      }
+    }
+    
   }
+
+  //ave(distFct) = 1.0
+  double aveDistFct = 0.0;
+  for(int k=0; k<nMNS*nMNS; k++) {
+    aveDistFct += distFct[k];//sumDistFct
+  }
+  aveDistFct = aveDistFct / (nMNS*nMNS);
+  for(int k=0; k<nMNS*nMNS; k++) {
+    distFct[k] = distFct[k] / aveDistFct;  
+  }
+
   
   //commitStrain for MNS
   commitStrnIMns = new double [nMNS*nMNS];
@@ -760,10 +798,10 @@ KikuchiBearing::KikuchiBearing(int Tag, int Nd1, int Nd2,
     sect_pp = (sect_ii)*(2.0);
   }
 
-  stfMidX  = ((theINodeMNSMaterials[0]->getInitialTangent()) * sect_aa/(totalRubber)) * 1e3;
-  stfMidRY = ((theINodeMNSMaterials[0]->getInitialTangent()) * sect_ii/(totalRubber)) * 1e3;
-  stfMidRZ = ((theINodeMNSMaterials[0]->getInitialTangent()) * sect_ii/(totalRubber)) * 1e3;
-  stfMidRX = ((theMidMSSMaterials[0]->getInitialTangent()) * sect_pp/(totalRubber)) * 1e3;
+  stfMidX  = ((theINodeMNSMaterials[0]->getInitialTangent()) * sect_aa/(totalRubber)) * 1e4;
+  stfMidRY = ((theINodeMNSMaterials[0]->getInitialTangent()) * sect_ii/(totalRubber)) * 1e4;
+  stfMidRZ = ((theINodeMNSMaterials[0]->getInitialTangent()) * sect_ii/(totalRubber)) * 1e4;
+  stfMidRX = ((theMidMSSMaterials[0]->getInitialTangent()) * sect_pp/(totalRubber)) * 1e4;
 
   // initialize variables
   this->revertToStart();
@@ -781,8 +819,8 @@ KikuchiBearing::KikuchiBearing()
     ifPDInput(false), ifTilt(false),
     adjCi(0.0), adjCj(0.0),
     ifBalance(false), limFo(0.0), limFi(0.0), nIter(0),
-    Tgl(12,12), Tlb(6,12), trnTgl(12,12), trnTlb(12,6),
-    basicDisp(6), localDisp(12), basicForce(6), basicStiff(6,6), basicStiffInit(6,6),
+    Tgl(12,12), Tlb(6,12),
+    basicDisp(6), localDisp(12), basicForce(6),
     localIncrDisp(12),incrDispij(12),incrDispmn(6),localForceij(12)
 {	
 
@@ -1109,7 +1147,6 @@ int KikuchiBearing::revertToStart()
   basicDisp.Zero();
   basicForce.Zero();
 
-
   // Dij, Fij
   commitDij18.Zero();
   trialDij18.Zero();
@@ -1155,10 +1192,6 @@ int KikuchiBearing::revertToStart()
   subMakeKij18();
   subReductKij();
 
-  //next 2 lines will be in setup(), afer calculate Tlb
-  //basicStiffInit = (Tlb*Kij)^Tlb;
-  //basicStiff = basicStiffInit;
-  
   return errCode;
 }
 
@@ -1166,18 +1199,15 @@ int KikuchiBearing::revertToStart()
 int KikuchiBearing::update()
 {
 
-
   // get global trial displacements and velocities
   const Vector &dsp1 = theNodes[0]->getTrialDisp();
   const Vector &dsp2 = theNodes[1]->getTrialDisp();
   
-  static Vector globalDisp(12);//, globalDispDot(12);
+  static Vector globalDisp(12);
   for (int i=0; i<6; i++)  {
-    globalDisp(i)   = dsp1(i);//  globalDispDot(i)   = vel1(i);
-    globalDisp(i+6) = dsp2(i);//  globalDispDot(i+6) = vel2(i);
+    globalDisp(i)   = dsp1(i);
+    globalDisp(i+6) = dsp2(i);
   }
-
-  //static Vector localDispDot(12), basicDispDot(6);
 
   
   // transform response from the global to the local system
@@ -1186,7 +1216,7 @@ int KikuchiBearing::update()
   // transform response from the local to the basic system
   basicDisp    = Tlb*localDisp;
 
-  //-------------------------------------
+
   //-------------------------------------
 
   //---0 incremental displacement of external nodes
@@ -1195,11 +1225,11 @@ int KikuchiBearing::update()
   const Vector &globalIncrDispJNode = theNodes[1]->getIncrDisp();
 
   static Vector globalIncrDisp(12);
-  for (int i=0; i<5; i++)  {
+  for (int i=0; i<6; i++)  {
     globalIncrDisp(i)   = globalIncrDispINode(i);
     globalIncrDisp(i+6) = globalIncrDispJNode(i);
   }
-
+  
   // transform (global-X,Y,Z,RX,RY,RZ) -> (local-x,y,z,rx,ry,rz)
   localIncrDisp = Tgl*globalIncrDisp;
 
@@ -1253,40 +1283,42 @@ int KikuchiBearing::update()
   Kij18_22.Invert(invKij18_22); // inv_Kij18_22 = inv(Kij18_22)
   localForceij = (-1.0) * (Kij18_12 * invKij18_22 * Fmn) + Fij;
 
-  //P-Delta moment adjustment for reaction force
-  double hdsb = ( commitDij18(7)+incrDispij(7) ) - ( commitDij18(1)+incrDispij(1) );// local-y relative deformation between i&j
-  double hdsc = ( commitDij18(8)+incrDispij(8) ) - ( commitDij18(2)+incrDispij(2) );// local-z relative deformation between i&j
 
-  double fnrm  = -localForceij(6);// axial force (j-node)
-
-  double pdfbi =  fnrm*hdsb*adjCi;
-  double pdfbj =  fnrm*hdsb*adjCj;
-  double pdfci =  fnrm*hdsc*adjCi;
-  double pdfcj =  fnrm*hdsc*adjCj;
-
-  localForceij(4)  +=  -pdfbi  ;// local-ry (i-node)
-  localForceij(5)  +=   pdfci  ;// local-rz (i)
-  localForceij(10) +=  -pdfbj  ;// local-ry (j)
-  localForceij(11) +=   pdfcj  ;// local-rz (j)
-
+  if (ifPDInput) {
+    //P-Delta moment adjustment for reaction force
+    double hdsb = ( commitDij18(7)+incrDispij(7) ) - ( commitDij18(1)+incrDispij(1) );// local-y relative deformation between i&j
+    double hdsc = ( commitDij18(8)+incrDispij(8) ) - ( commitDij18(2)+incrDispij(2) );// local-z relative deformation between i&j
+    
+    double fnrm  = -localForceij(6);// axial force (j-node)
+    
+    double pdfbi =  fnrm*hdsb*adjCi;
+    double pdfbj =  fnrm*hdsb*adjCj;
+    double pdfci =  fnrm*hdsc*adjCi;
+    double pdfcj =  fnrm*hdsc*adjCj;
+    
+    localForceij(4)  +=  -pdfbi  ;// local-ry (i-node)
+    localForceij(5)  +=   pdfci  ;// local-rz (i)
+    localForceij(10) +=  -pdfbj  ;// local-ry (j)
+    localForceij(11) +=   pdfcj  ;// local-rz (j)
+  }
+  
 
   //reduct K18 matrix
   subReductKij();
 
 
   //---3
-  for (int j=0; j<=11; j++)  {
-    trialDij18(j) += incrDispij(j);
+  for (int j=0; j<12; j++)  {
+    trialDij18(j) = commitDij18(j) + incrDispij(j);
   }
-  for (int j=0; j<=5; j++)  {
-    trialDij18(j+12) += incrDispmn(j);
+  for (int j=0; j<6; j++)  {
+    trialDij18(j+12) = commitDij18(j+12) + incrDispmn(j);
   }
 
   trialFij = localForceij;
 
   //---4
   basicForce = Tlb*localForceij;
-  basicStiff = Tlb*Kij*trnTlb;
 
   return 0;
 }
@@ -1299,7 +1331,7 @@ const Matrix& KikuchiBearing::getTangentStiff()
 
   // transform from basic to local system
   static Matrix localStiff(12,12);
-  localStiff.addMatrixTripleProduct(0.0, Tlb, basicStiff, 1.0);
+  localStiff = Kij;
 
   // transform from local to global system
   theMatrix.addMatrixTripleProduct(0.0, Tgl, localStiff, 1.0);
@@ -1311,12 +1343,13 @@ const Matrix& KikuchiBearing::getTangentStiff()
 
 const Matrix& KikuchiBearing::getInitialStiff()
 {
+
   // zero the matrix
   theMatrix.Zero();
   
   // transform from basic to local system
   static Matrix localStiff(12,12);
-  localStiff.addMatrixTripleProduct(0.0, Tlb, basicStiffInit, 1.0);
+  localStiff = Kij;
   
   // transform from local to global system
   theMatrix.addMatrixTripleProduct(0.0, Tgl, localStiff, 1.0);
@@ -1401,7 +1434,7 @@ const Vector& KikuchiBearing::getResistingForce()
   
   // determine resisting forces in global system
   theVector = Tgl^localForce;
-  
+
   // subtract external load
   theVector.addVector(1.0, theLoad, -1.0);
 
@@ -1684,25 +1717,6 @@ void KikuchiBearing::setUp()
   Tlb(0,0) = Tlb(1,1) = Tlb(2,2) = Tlb(3,3) = Tlb(4,4) = Tlb(5,5) = -1.0;
   Tlb(0,6) = Tlb(1,7) = Tlb(2,8) = Tlb(3,9) = Tlb(4,10) = Tlb(5,11) = 1.0;
 
-  //transpose
-  for (int i=0; i<=11; i++)  {
-    for (int j=0; j<=11; j++)  {
-      trnTgl(i,j) = Tgl(j,i);
-    }
-  }
-
-  for (int i=0; i<=11; i++)  {
-    for (int j=0; j<=5; j++)  {
-      trnTlb(i,j) = Tlb(j,i);
-    }
-  }
-
-
-  //initial stiffness
-  
-  basicStiffInit = Tlb*Kij*trnTlb;// continued from revertToStart()
-  basicStiff = basicStiffInit;
-
 }
 
 // subroutine
@@ -1864,10 +1878,10 @@ void KikuchiBearing::subSetMaterialStrains()
   }
   
   //stiff springs in mid-height
-  trialDspMidX  += dsxx;
-  trialDspMidRY += dryy;
-  trialDspMidRZ += drzz;
-  trialDspMidRX += drxx;
+  trialDspMidX  = commitDspMidX + dsxx;
+  trialDspMidRY = commitDspMidRY + dryy;
+  trialDspMidRZ = commitDspMidRZ + drzz;
+  trialDspMidRX = commitDspMidRX + drxx;
 
   return;
 }

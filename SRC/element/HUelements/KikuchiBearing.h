@@ -18,8 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2013-07-08 00:00:00 $
+// $Revision: 1.2 $
+// $Date: 2013-07-31 00:00:00 $
 // $Source: /usr/local/cvs/OpenSees/SRC/element/KikuchiBearing/KikuchiBearing.h,v $
 
 // Written: Ken Ishii
@@ -176,22 +176,17 @@ class KikuchiBearing : public Element
   // transformation
   Matrix Tgl; // transformation matrix from global to local system
   Matrix Tlb; // transformation matrix from local to basic system
-  Matrix trnTgl;
-  Matrix trnTlb;
   
   // displacement, force, stiffness
   Vector basicDisp;  //ub
   Vector localDisp;  //ul
   Vector basicForce; //qb
-  Matrix basicStiff; //kb  
-  Matrix basicStiffInit; //kbInit
 
   Vector localIncrDisp;
   Vector incrDispij;
   Vector incrDispmn;
   
   Vector localForceij;
-
 
   //localDisp
   static Vector commitDij18; //i-m-n-j (18 conponents)
