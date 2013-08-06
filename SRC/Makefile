@@ -574,7 +574,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Concrete01WithSITC.o \
 	$(FE)/material/uniaxial/ConcretewBeta.o \
 	$(FE)/material/uniaxial/KikuchiAikenHDR.o \
+	$(FE)/material/uniaxial/KikuchiAikenLRB.o \
 	$(FE)/material/uniaxial/AxialSpHD.o \
+	$(FE)/material/uniaxial/AxialSp.o \
 	$(FE)/material/uniaxial/ECC01.o \
 	$(FE)/material/uniaxial/HystereticMaterial.o \
 	$(FE)/material/uniaxial/EPPGapMaterial.o \
