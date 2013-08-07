@@ -265,8 +265,12 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
       else {
 	if (eleTag == -1) 
 	  theParameter->addComponent(theObject, (const char **)&argv[argStart], argc-argStart);
-	else
-	  theParameter->addComponent(eleTag, (const char **)&argv[argStart], argc-argStart);	  
+	else {
+	  theObject = (DomainComponent *) theTclDomain->getElement(eleTag);
+	  theParameter->addComponent(theObject, (const char **)&argv[argStart], argc-argStart);	  
+	  // Sorry, Frank, had to change this -- MHS
+	  //theParameter->addComponent(eleTag, (const char **)&argv[argStart], argc-argStart);	  
+	}
       }
     }
 
