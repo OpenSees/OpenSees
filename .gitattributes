@@ -2724,6 +2724,8 @@ SRC/material/nD/ElasticOrthotropicThreeDimensional.cpp -text
 SRC/material/nD/ElasticOrthotropicThreeDimensional.h -text
 SRC/material/nD/FeapMaterial.cpp -text
 SRC/material/nD/FeapMaterial.h -text
+SRC/material/nD/InitStressNDMaterial.cpp -text
+SRC/material/nD/InitStressNDMaterial.h -text
 SRC/material/nD/J2AxiSymm.cpp -text
 SRC/material/nD/J2AxiSymm.h -text
 SRC/material/nD/J2PlaneStrain.cpp -text
