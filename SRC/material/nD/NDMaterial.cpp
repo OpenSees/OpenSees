@@ -270,7 +270,7 @@ NDMaterial::getInitialTangentSensitivity(int gradIndex)
 	return dummy;
 }
 int
-NDMaterial::commitSensitivity(Vector & strainSensitivity, int gradIndex, int numGrads)
+NDMaterial::commitSensitivity(const Vector & strainSensitivity, int gradIndex, int numGrads)
 {
 	return 0;
 }
