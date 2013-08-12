@@ -37,6 +37,7 @@ OBJS       = NDMaterial.o \
 	CycLiqCPPlaneStrain.o \
 	TclModelBuilderNDMaterialCommand.o \
 	WrapperNDMaterial.o \
+	InitStressNDMaterial.o \
 	ConcreteMcftNonLinear5.o \
 	ConcreteMcftNonLinear7.o
 
