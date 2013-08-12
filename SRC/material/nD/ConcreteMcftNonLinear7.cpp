@@ -1544,7 +1544,7 @@ ConcreteMcftNonLinear7 ::getInitialTangentSensitivity(int gradNumber)
 }
 
 int
-ConcreteMcftNonLinear7 ::commitSensitivity(Vector &strainGradient, int gradNumber, int numGrads)
+ConcreteMcftNonLinear7 ::commitSensitivity(const Vector &strainGradient, int gradNumber, int numGrads)
 {
 
 	//  sensitivity parameter sensitivity initiate
