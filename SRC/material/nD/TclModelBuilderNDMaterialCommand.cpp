@@ -78,6 +78,8 @@ extern  void *OPS_NewInitialStateAnalysisWrapperMaterial(void);
 extern  void *OPS_NewManzariDafaliasMaterial(void);
 extern  void *OPS_CycLiqCPMaterial(void);
 
+extern void *OPS_NewInitStressNDMaterial(void);
+
 #ifdef _DAMAGE2P
 extern  void *OPS_Damage2p(void);
 #endif
@@ -133,6 +135,14 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     if ((strcmp(argv[1],"ReinforcedConcretePlaneStress") == 0) || (strcmp(argv[1],"ReinforceConcretePlaneStress") == 0)) {
 
       void *theMat = OPS_NewReinforcedConcretePlaneStressMaterial();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"InitStressMaterial") == 0) || (strcmp(argv[1],"InitStress") == 0)) {
+      void *theMat = OPS_NewInitStressNDMaterial();
       if (theMat != 0) 
 	theMaterial = (NDMaterial *)theMat;
       else 
