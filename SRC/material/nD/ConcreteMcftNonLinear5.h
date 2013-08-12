@@ -93,7 +93,7 @@ public:
   int    updateParameter          (int parameterID, Information &info);
   int    activateParameter        (int parameterID);
   const Vector  &getStressSensitivity   (int gradNumber, bool conditional);
-    int commitSensitivity        (Vector & strainGradient, int gradNumber, int numGrads);
+    int commitSensitivity        (const Vector & strainGradient, int gradNumber, int numGrads);
   // AddingSensitivity:END ///////////////////////////////////////////
 
 

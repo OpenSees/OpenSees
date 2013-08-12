@@ -676,7 +676,7 @@ ConcreteMcftNonLinear5::getType (void) const
 {
 	
 	//opserr << " check16 " << endln;
-    return 0;
+    return "BeamFiber2d";
 	
 
 }
@@ -686,7 +686,7 @@ ConcreteMcftNonLinear5::getOrder(void) const
 {
 	
   //opserr << " check17 " << endln;
-  return 0;
+  return 2;
   
 
 }
@@ -825,7 +825,7 @@ ConcreteMcftNonLinear5::getStressSensitivity(int gradNumber, bool conditional)
 
 
 int
-ConcreteMcftNonLinear5::commitSensitivity(Vector &strainGradient, int gradNumber, int numGrads)
+ConcreteMcftNonLinear5::commitSensitivity(const Vector &strainGradient, int gradNumber, int numGrads)
 {
 //opserr << " check27 " << endln;
 	return 0;
