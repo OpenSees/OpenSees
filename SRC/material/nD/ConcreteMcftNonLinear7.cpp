@@ -867,14 +867,14 @@ const char*
 ConcreteMcftNonLinear7 ::getType (void) const
 {
   //////////opserr << " check16 " << endln;
-  return 0;
+  return "BeamFiber2d";
 }
 
 int 
 ConcreteMcftNonLinear7 ::getOrder(void) const
 {
   //////////opserr << " check17 " << endln;
-  return 0;
+  return 2;
 }
 
 void

@@ -94,7 +94,7 @@ public:
   int    activateParameter        (int parameterID);
   const Vector  &getStressSensitivity   (int gradNumber, bool conditional);
   const Matrix  &getInitialTangentSensitivity (int gradNumber);
-    int commitSensitivity        (Vector & strainGradient, int gradNumber, int numGrads);
+    int commitSensitivity        (const Vector & strainGradient, int gradNumber, int numGrads);
 
 
   // AddingSensitivity:END ///////////////////////////////////////////
