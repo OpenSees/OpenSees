@@ -37,7 +37,7 @@ LowOrderBeamIntegration::LowOrderBeamIntegration(int nIP,
 						 int nc,
 						 const Vector &wc):
   BeamIntegration(BEAM_INTEGRATION_TAG_LowOrder),
-  pts(nIP), wts(nIP), Nc(nc), parameterID(0)
+  pts(nIP), wts(nIP), Nc(nc), parameterID(0), computed(false)
 {
   for (int i = 0; i < nIP; i++) {
     if (pt(i) < 0.0 || pt(i) > 1.0)
@@ -74,6 +74,8 @@ LowOrderBeamIntegration::LowOrderBeamIntegration(int nIP,
   }
   else
     wts = wc;
+
+  computed = true;
 }
 
 LowOrderBeamIntegration::LowOrderBeamIntegration():
@@ -108,7 +110,7 @@ LowOrderBeamIntegration::getSectionWeights(int numSections,
 
   int Nf = nIP-Nc;
 
-  if (Nf > 0) {
+  if (!computed && Nf > 0) {
     Vector R(Nf);
     for (int i = 0; i < Nf; i++) {
       double sum = 0.0;
@@ -189,16 +191,19 @@ int
 LowOrderBeamIntegration::updateParameter(int parameterID,
 					 Information &info)
 {
-  if (parameterID < 10) { // xf
+  if (parameterID <= 10) { // xf
     pts(Nc+(parameterID-1)) = info.theDouble;
+    computed = false;
     return 0;
   }
-  else if (parameterID < 20) { // xc
+  else if (parameterID <= 20) { // xc
     pts(parameterID-10-1) = info.theDouble;
+    computed = false;
     return 0;
   }
-  else if (parameterID < 30) { // wc
-    pts(parameterID-20-1) = info.theDouble;
+  else if (parameterID <= 30) { // wc
+    wts(parameterID-20-1) = info.theDouble;
+    computed = false;
     return 0;
   }
   else
@@ -239,9 +244,13 @@ LowOrderBeamIntegration::getLocationsDeriv(int numSections, double L,
   double oneOverL = 1.0/L;
 
   if (parameterID < 10) // xf
-    dptsdh[Nc+(parameterID-1)] = oneOverL;
+    dptsdh[Nc+(parameterID-1)] = 1.0;
   else if (parameterID < 20) // xc
-    dptsdh[parameterID-10-1] = oneOverL;
+    dptsdh[parameterID-10-1] = 1.0;
+
+  //for (int i = 0; i < numSections; i++)
+  //  opserr << dptsdh[i] << ' ';
+  //opserr << endln;
 
   return;
 }
@@ -266,11 +275,11 @@ LowOrderBeamIntegration::getWeightsDeriv(int numSections, double L,
   double oneOverL = 1.0/L;
 
   if (parameterID < 10) // xf
-    dxfdh[parameterID-1] = oneOverL;
+    dxfdh[parameterID-1] = 1.0;
   else if (parameterID < 20) // xc
-    dxcdh[parameterID-10-1] = oneOverL;
+    dxcdh[parameterID-10-1] = 1.0;
   else if (parameterID < 30) // wc
-    dwtsdh[parameterID-20-1] = oneOverL;
+    dwtsdh[parameterID-20-1] = 1.0;
 
   int N = pts.Size();
   int Nf = N-Nc;
@@ -305,8 +314,12 @@ LowOrderBeamIntegration::getWeightsDeriv(int numSections, double L,
     J.Solve(R,dwfdh);
 
     for (int i = 0; i < Nf; i++)
-      dwtsdh[Nc+i] += dwfdh(i);    
+      dwtsdh[Nc+i] = dwfdh(i);    
   }
+
+  //for (int i = 0; i < numSections; i++)
+  //  opserr << dwtsdh[i] << ' ';
+  //opserr << endln;
 
   return;
 }

@@ -226,7 +226,7 @@ DistHingeIntegration::getLocationsDeriv(int numSections, double L,
 
   beamInt->getSectionLocations(numPerHinge, L, dptsdh);
 
-  opserr << "DistHingeIntegration::getLocationsDeriv -- implementation for interior not yet finished" << endln;
+  //opserr << "DistHingeIntegration::getLocationsDeriv -- implementation for interior not yet finished" << endln;
 
   if (parameterID == 1) { // lpI
     for (int i = 0; i < numPerHinge; i++) {
@@ -266,7 +266,7 @@ DistHingeIntegration::getWeightsDeriv(int numSections, double L,
 
   beamInt->getSectionWeights(numPerHinge, L, dwtsdh);
 
-  opserr << "DistHingeIntegration::getWeightsDeriv -- implementation for interior not yet finished" << endln;
+  //opserr << "DistHingeIntegration::getWeightsDeriv -- implementation for interior not yet finished" << endln;
 
   if (parameterID == 1) { // lpI
     for (int i = 0; i < numPerHinge; i++) {

@@ -210,6 +210,8 @@ HingeRadauBeamIntegration::getLocationsDeriv(int numSections,
   for (int i = 0; i < numSections; i++)
     dptsdh[i] = 0.0;
 
+  //return;
+
   static const double oneRoot3 = 1.0/sqrt(3.0);
 
   if (parameterID == 1) { // lpI
@@ -225,15 +227,17 @@ HingeRadauBeamIntegration::getLocationsDeriv(int numSections,
   }
 
   if (parameterID == 3) { // lpI and lpJ
-    dptsdh[1] = 8.0/3*oneOverL;
+    dptsdh[1] =  8.0/3*oneOverL;
     dptsdh[2] =  4.0*oneOverL*oneRoot3;
     dptsdh[3] = -4.0*oneOverL*oneRoot3;
     dptsdh[4] = -8.0/3*oneOverL;
   }
 
+  return;
+
   if (dLdh != 0.0) {
     // STILL TO DO
-    opserr << "getPointsDeriv -- to do" << endln;
+    //opserr << "getPointsDeriv -- to do" << endln;
   }
 
   return;
@@ -272,11 +276,15 @@ HingeRadauBeamIntegration::getWeightsDeriv(int numSections,
     dwtsdh[5] = oneOverL;
   }
 
+  return;
+
   if (dLdh != 0.0) {
     dwtsdh[0] = -lpI*dLdh/(L*L);
+    dwtsdh[1] = -3*lpI*dLdh/(L*L);
+    dwtsdh[2] = 2*(lpI+lpJ)*dLdh/(L*L);
+    dwtsdh[3] = 2*(lpI+lpJ)*dLdh/(L*L);
+    dwtsdh[4] = -3*lpJ*dLdh/(L*L);
     dwtsdh[5] = -lpJ*dLdh/(L*L);
-    // STILL TO DO
-    opserr << "getWeightsDeriv -- to do" << endln;
   }
 
   return;

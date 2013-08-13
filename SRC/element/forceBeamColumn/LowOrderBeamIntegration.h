@@ -63,6 +63,8 @@ class LowOrderBeamIntegration : public BeamIntegration
   int Nc;
 
   int parameterID;
+
+  bool computed;
 };
 
 #endif

@@ -74,8 +74,8 @@ HingeRadauTwoBeamIntegration::getSectionLocations(int numSections, double L,
 
   static const double oneRoot3 = 1.0/sqrt(3.0);
 
-  double alpha = 0.5-0.5*(lpI+lpJ)*oneOverL;
-  double beta  = 0.5+0.5*(lpI-lpJ)*oneOverL;
+  double alpha = 0.5 - 0.5*(lpI+lpJ)*oneOverL;
+  double beta  = 0.5 + 0.5*(lpI-lpJ)*oneOverL;
   xi[2] = alpha*(-oneRoot3) + beta;
   xi[3] = alpha*(oneRoot3) + beta;
 
@@ -210,6 +210,8 @@ HingeRadauTwoBeamIntegration::getLocationsDeriv(int numSections,
   for (int i = 0; i < numSections; i++)
     dptsdh[i] = 0.0;
 
+  //return;
+
   static const double oneRoot3 = 1.0/sqrt(3.0);
 
   if (parameterID == 1) { // lpI
@@ -231,9 +233,22 @@ HingeRadauTwoBeamIntegration::getLocationsDeriv(int numSections,
     dptsdh[4] = -2.0/3*oneOverL;
   }
 
+  return;
+
   if (dLdh != 0.0) {
+    dptsdh[1] = -2.0/3*lpI*dLdh/(L*L);
+    double dalphadh =  0.5*(lpI+lpJ)*dLdh/(L*L);
+    double dbetadh  = -0.5*(lpI-lpJ)*dLdh/(L*L);
+    dptsdh[2] = -oneRoot3*dalphadh + dbetadh;
+    dptsdh[3] =  oneRoot3*dalphadh + dbetadh;
+    double alpha = 0.5*L - 0.5*(lpI+lpJ);
+    double beta  = 0.5*L + 0.5*(lpI-lpJ);
+    dptsdh[2] = -(-oneRoot3*alpha+beta)*dLdh/(L*L) + 0.5*dLdh;///(L*L);
+    dptsdh[3] = -( oneRoot3*alpha+beta)*dLdh/(L*L) + 0.5*dLdh;///(L*L);
+    dptsdh[4] = -(L-2.0/3*lpJ)*dLdh/(L*L);
+    dptsdh[5] =  -L*dLdh/(L*L);
     // STILL TO DO
-    opserr << "getPointsDeriv -- to do" << endln;
+    //opserr << "getPointsDeriv -- to do" << endln;
   }
 
   return;
@@ -272,11 +287,17 @@ HingeRadauTwoBeamIntegration::getWeightsDeriv(int numSections,
     dwtsdh[5] = 0.25*oneOverL;
   }
 
+  return;
+
   if (dLdh != 0.0) {
-    dwtsdh[0] = -lpI*dLdh/(L*L);
-    dwtsdh[5] = -lpJ*dLdh/(L*L);
+    dwtsdh[0] = -0.25*lpI*dLdh/(L*L);
+    dwtsdh[1] = -0.75*lpI*dLdh/(L*L);
+    dwtsdh[2] = 0.5*(lpI+lpJ)*dLdh/(L*L);
+    dwtsdh[3] = 0.5*(lpI+lpJ)*dLdh/(L*L);
+    dwtsdh[4] = -0.75*lpJ*dLdh/(L*L);
+    dwtsdh[5] = -0.25*lpJ*dLdh/(L*L);
     // STILL TO DO
-    opserr << "getWeightsDeriv -- to do" << endln;
+    //opserr << "getWeightsDeriv -- to do" << endln;
   }
 
   return;

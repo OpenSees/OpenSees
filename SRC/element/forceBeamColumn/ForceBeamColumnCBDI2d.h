@@ -20,7 +20,7 @@
 
 // $Revision: 1.13 $
 // $Date: 2009-02-05 16:28:20 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/forceBeamColumn/ForceBeamColumn2d.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/element/forceBeamColumn/ForceBeamColumnCBDI2d.h,v $
 
 /*
  * References
@@ -58,8 +58,8 @@ Journal of Structural Engineering, Approved for publication, February 2007.
  *
  */
 
-#ifndef ForceBeamColumn2d_h
-#define ForceBeamColumn2d_h
+#ifndef ForceBeamColumnCBDI2d_h
+#define ForceBeamColumnCBDI2d_h
 
 #include <Element.h>
 #include <Node.h>
@@ -73,19 +73,20 @@ Journal of Structural Engineering, Approved for publication, February 2007.
 class Response;
 class ElementalLoad;
 
-class ForceBeamColumn2d: public Element
+class ForceBeamColumnCBDI2d: public Element
 {
  public:
-  ForceBeamColumn2d();
-  ForceBeamColumn2d(int tag, int nodeI, int nodeJ, 
-		    int numSections, SectionForceDeformation **sec,
-		    BeamIntegration &beamIntegr,
-		    CrdTransf &coordTransf, double rho = 0.0, 
-		    int maxNumIters = 10, double tolerance = 1.0e-12);
+  ForceBeamColumnCBDI2d();
+  ForceBeamColumnCBDI2d(int tag, int nodeI, int nodeJ, 
+			int numSections, SectionForceDeformation **sec,
+			BeamIntegration &beamIntegr,
+			CrdTransf &coordTransf, 
+			double rho = 0.0, bool includeShear = false,
+			int maxNumIters = 10, double tolerance = 1.0e-12);
   
-  ~ForceBeamColumn2d();
+  ~ForceBeamColumnCBDI2d();
   
-  const char *getClassType(void) const {return "ForceBeamColumn2d";};
+  const char *getClassType(void) const {return "ForceBeamColumnCBDI2d";};
 
   int getNumExternalNodes(void) const;
   const ID &getExternalNodes(void);
@@ -114,7 +115,7 @@ class ForceBeamColumn2d: public Element
   int recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
   int displaySelf(Renderer &theViewer, int displayMode, float fact);        
   
-  friend OPS_Stream &operator<<(OPS_Stream &s, ForceBeamColumn2d &E);        
+  friend OPS_Stream &operator<<(OPS_Stream &s, ForceBeamColumnCBDI2d &E);        
   void Print(OPS_Stream &s, int flag =0);    
   
   Response *setResponse(const char **argv, int argc, OPS_Stream &s);
@@ -140,8 +141,21 @@ class ForceBeamColumn2d: public Element
  private:
   void getForceInterpolatMatrix(double xi, Matrix &b, const ID &code);
   void getDistrLoadInterpolatMatrix(double xi, Matrix &bp, const ID &code);
+  void computew(Vector &w, Vector &wp, double xi[],
+		const Vector &kappa, const Vector &gamma);
+  void computedwdq(Matrix &dwidq,  const Vector &q,
+		   const Vector &w, const Vector &wp,
+		   const Matrix &lsk, const Matrix &lsg,
+		   const Matrix &lskp, const Matrix &lsgp);
   void compSectionDisplacements(Vector sectionCoords[], Vector sectionDispls[]) const;
   void initializeSectionHistoryVariables (void);
+
+  void getG(int numSections, double xi[], Matrix &G);
+  void getGinv(int numSections, double xi[], Matrix &Ginv);
+  void getHk(int numSections, double xi[], Matrix &H);
+  void getHg(int numSections, double xi[], Matrix &H);
+  void getHkp(int numSections, double xi[], Matrix &H);
+  void getHgp(int numSections, double xi[], Matrix &H);
   
   // Reactions of basic system due to element loads
   void computeReactions(double *p0);
@@ -157,6 +171,7 @@ class ForceBeamColumn2d: public Element
   SectionForceDeformation **sections;          // array of pointers to sections
   CrdTransf *crdTransf;        // pointer to coordinate tranformation object 
   // (performs the transformation between the global and basic system)
+  bool CSBDI;
   double rho;                    // mass density per unit length
   int    maxIters;               // maximum number of local iterations
   double tol;	                   // tolerance for relative energy norm for local iterations
@@ -194,7 +209,7 @@ class ForceBeamColumn2d: public Element
   static Vector theVector;
   static double workArea[];
   
-  enum {maxNumSections = 30};
+  enum {maxNumSections = 20};
   enum {maxSectionOrder = 5};
 
   // following are added for subdivision of displacement increment
@@ -209,6 +224,7 @@ class ForceBeamColumn2d: public Element
   int parameterID;
   const Vector &computedqdh(int gradNumber);
   const Matrix &computedfedh(int gradNumber);
+  void computedwdh(double dwidh[], int gradNumber, const Vector &q);
   void computeReactionSensitivity(double *dp0dh, int gradNumber);
   void computeSectionForceSensitivity(Vector &dspdh, int isec, int gradNumber);
   // AddingSensitivity:END ///////////////////////////////////////////

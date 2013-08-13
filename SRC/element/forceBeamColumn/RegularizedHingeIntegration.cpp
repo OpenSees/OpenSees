@@ -224,6 +224,8 @@ RegularizedHingeIntegration::getLocationsDeriv(int numSections,
     dptsdh[2] = -oneOverL;
   }
 
+  return;
+
   if (dLdh != 0.0) {
     // STILL TO DO
     opserr << "getPointsDeriv -- to do" << endln;
@@ -318,6 +320,8 @@ RegularizedHingeIntegration::getWeightsDeriv(int numSections,
     for (int i = 0; i < Nf; i++)
       dwtsdh[i+Nc] = dwfdh(i);    
   }
+
+  return;
 
   if (dLdh != 0.0) {
     // STILL TO DO

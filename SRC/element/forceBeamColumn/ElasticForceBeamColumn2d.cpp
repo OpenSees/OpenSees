@@ -239,13 +239,7 @@ ElasticForceBeamColumn2d::setDomain(Domain *theDomain)
 int
 ElasticForceBeamColumn2d::commitState()
 {
-	int ok = 0;
-	for (int i = 0; i < numSections; i++)
-		sections[i]->commitState();
-	
-	ok += crdTransf->commitState();
-
-	return ok;
+  return crdTransf->commitState();
 }
 
 int ElasticForceBeamColumn2d::revertToLastCommit()
@@ -331,7 +325,7 @@ ElasticForceBeamColumn2d::computeReactions(double *p0)
     if (type == LOAD_TAG_Beam2dUniformLoad) {
       double wa = data(1)*1.0;  // Axial
       double wy = data(0)*1.0;  // Transverse
-      
+
       p0[0] -= wa*L;
       double V = 0.5*wy*L;
       p0[1] -= V;
@@ -399,60 +393,60 @@ ElasticForceBeamColumn2d::computeBasicForces(Vector &q)
 int
 ElasticForceBeamColumn2d::update()
 {
-	int ok = crdTransf->update();
+  int ok = crdTransf->update();
 	
-	static Vector q(NEBD);
-	q.Zero();
-	this->computeBasicForces(q);
-
-	double L = crdTransf->getInitialLength();
-	double oneOverL = 1.0/L;
-
-	double xi[maxNumSections];
-	beamIntegr->getSectionLocations(numSections, L, xi);
-
-	for (int i = 0; i < numSections; i++) {
-
-		int order      = sections[i]->getOrder();
-	    const ID &code = sections[i]->getType();
-
-		double xL  = xi[i];
-	    double xL1 = xL-1.0;
-	    
-	    static Vector s;
-	    s.setData(workArea, order);
-		static Vector e;
-		e.setData(&workArea[order], order);
-
-	    int ii;
-	    for (ii = 0; ii < order; ii++) {
-	      switch(code(ii)) {
-	      case SECTION_RESPONSE_P:
-		s(ii) = q(0);
-		break;
-	      case SECTION_RESPONSE_MZ:
-		s(ii) =  xL1*q(1) + xL*q(2);
-		break;
-	      case SECTION_RESPONSE_VY:
-		s(ii) = oneOverL*(q(1)+q(2));
-		break;
-	      default:
-		s(ii) = 0.0;
-		break;
-	      }
-	    }
-	    
-	    // Add the effects of element loads, if present
-	    // s = b*q + sp
-	    if (numEleLoads > 0)
-	      this->computeSectionForces(s, i);
-
-		const Matrix &fs = sections[i]->getInitialFlexibility();
-		e.addMatrixVector(0.0, fs, s, 1.0);
-
-		ok += sections[i]->setTrialSectionDeformation(e);
-	}
-
+  static Vector q(NEBD);
+  q.Zero();
+  this->computeBasicForces(q);
+  
+  double L = crdTransf->getInitialLength();
+  double oneOverL = 1.0/L;
+  
+  double xi[maxNumSections];
+  beamIntegr->getSectionLocations(numSections, L, xi);
+  
+  for (int i = 0; i < numSections; i++) {
+    
+    int order      = sections[i]->getOrder();
+    const ID &code = sections[i]->getType();
+    
+    double xL  = xi[i];
+    double xL1 = xL-1.0;
+    
+    static Vector s;
+    s.setData(workArea, order);
+    static Vector e;
+    e.setData(&workArea[order], order);
+    
+    int ii;
+    for (ii = 0; ii < order; ii++) {
+      switch(code(ii)) {
+      case SECTION_RESPONSE_P:
+	s(ii) = q(0);
+	break;
+      case SECTION_RESPONSE_MZ:
+	s(ii) =  xL1*q(1) + xL*q(2);
+	break;
+      case SECTION_RESPONSE_VY:
+	s(ii) = oneOverL*(q(1)+q(2));
+	break;
+      default:
+	s(ii) = 0.0;
+	break;
+      }
+    }
+    
+    // Add the effects of element loads, if present
+    // s = b*q + sp
+    if (numEleLoads > 0)
+      this->computeSectionForces(s, i);
+    
+    const Matrix &fs = sections[i]->getInitialFlexibility();
+    e.addMatrixVector(0.0, fs, s, 1.0);
+    
+    ok += sections[i]->setTrialSectionDeformation(e);
+  }
+  
   return ok;
 }
 
@@ -509,7 +503,7 @@ ElasticForceBeamColumn2d::computeSectionForces(Vector &sp, int isec)
     if (type == LOAD_TAG_Beam2dUniformLoad) {
       double wa = data(1)*1.0;  // Axial
       double wy = data(0)*1.0;  // Transverse
-      
+
       for (int ii = 0; ii < order; ii++) {
 	
 	switch(code(ii)) {
@@ -1060,6 +1054,9 @@ ElasticForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &o
   else if (strcmp(argv[0],"integrationWeights") == 0)
     theResponse = new ElementResponse(this, 11, Vector(numSections));
 
+  else if (strcmp(argv[0],"basicStiffness") == 0)
+    theResponse = new ElementResponse(this, 12, Matrix(3,3));
+
   // section response -
   else if (strstr(argv[0],"sectionX") != 0) {
     if (argc > 2) {
@@ -1194,6 +1191,14 @@ ElasticForceBeamColumn2d::getResponse(int responseID, Information &eleInfo)
     for (int i = 0; i < numSections; i++)
       weights(i) = wts[i]*L;
     return eleInfo.setVector(weights);
+  }
+
+  else if (responseID == 12) {
+    static Matrix fb(NEBD,NEBD);
+    this->getInitialFlexibility(fb);
+    static Matrix kb(NEBD,NEBD);
+    fb.Invert(kb);
+    return eleInfo.setMatrix(kb);
   }
 
   else

@@ -2368,6 +2368,8 @@ SRC/element/forceBeamColumn/ForceBeamColumn2d.cpp -text
 SRC/element/forceBeamColumn/ForceBeamColumn2d.h -text
 SRC/element/forceBeamColumn/ForceBeamColumn3d.cpp -text
 SRC/element/forceBeamColumn/ForceBeamColumn3d.h -text
+SRC/element/forceBeamColumn/ForceBeamColumnCBDI2d.cpp -text
+SRC/element/forceBeamColumn/ForceBeamColumnCBDI2d.h -text
 SRC/element/forceBeamColumn/HingeEndpointBeamIntegration.cpp -text
 SRC/element/forceBeamColumn/HingeEndpointBeamIntegration.h -text
 SRC/element/forceBeamColumn/HingeMidpointBeamIntegration.cpp -text

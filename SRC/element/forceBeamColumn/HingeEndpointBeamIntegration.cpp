@@ -226,11 +226,11 @@ HingeEndpointBeamIntegration::getLocationsDeriv(int numSections, double L,
     dptsdh[3] = 0.0;
   }
 
+  return;
+
   if (dLdh != 0.0) {
     // STILL TO DO
-    opserr << "getPointsDeriv -- to do" << endln;
-    dptsdh[0] = -0.5*(lpI*dLdh)/(L*L);
-    dptsdh[1] = dLdh + 0.5*(lpJ*dLdh)/(L*L);
+    //opserr << "getPointsDeriv -- to do" << endln;
   }
 
   return;
@@ -262,11 +262,13 @@ HingeEndpointBeamIntegration::getWeightsDeriv(int numSections, double L,
     dwtsdh[3] = oneOverL;
   }
 
+  return;
+
   if (dLdh != 0.0) {
     dwtsdh[0] = -lpI*dLdh/(L*L);
+    dwtsdh[1] = 0.5*(lpI+lpJ)*dLdh/(L*L);
+    dwtsdh[2] = 0.5*(lpI+lpJ)*dLdh/(L*L);
     dwtsdh[3] = -lpJ*dLdh/(L*L);
-    // STILL TO DO
-    opserr << "getWeightsDeriv -- to do" << endln;
   }
 
   return;
