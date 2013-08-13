@@ -539,6 +539,7 @@ EXAMPLES/TeraGridExamples/submit1 -text
 EXAMPLES/kepler/ARL360.at2 -text
 EXAMPLES/kepler/Example1.tcl -text
 EXAMPLES/kepler/Example1.xml -text
+EXAMPLES/verification/AISC25.tcl -text
 EXAMPLES/verification/EigenFrame.Extra.tcl -text
 EXAMPLES/verification/EigenFrame.tcl -text
 EXAMPLES/verification/NewmarkIntegrator.tcl -text
