@@ -2356,6 +2356,8 @@ SRC/element/feap/fillCommon.f -text
 SRC/element/feap/getCommon.f -text
 SRC/element/forceBeamColumn/BeamIntegration.cpp -text
 SRC/element/forceBeamColumn/BeamIntegration.h -text
+SRC/element/forceBeamColumn/CompositeSimpsonBeamIntegration.cpp -text
+SRC/element/forceBeamColumn/CompositeSimpsonBeamIntegration.h -text
 SRC/element/forceBeamColumn/DistHingeIntegration.cpp -text
 SRC/element/forceBeamColumn/DistHingeIntegration.h -text
 SRC/element/forceBeamColumn/ElasticForceBeamColumn2d.cpp -text
