@@ -197,6 +197,9 @@
 #define MAT_TAG_PySimple2                    210
 #define MAT_TAG_TzSimple2                    211
 #define MAT_TAG_QzSimple2                    212
+#define MAT_TAG_SteelBRB                     213
+
+
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -292,6 +295,9 @@
 #define ND_TAG_Damage2p 			23
 #define ND_TAG_Damage2p3D 			24
 #define ND_TAG_Damage2ppstress 			25
+#define ND_TAG_SimplifiedJ2                     26
+#define ND_TAG_CapPlasticity                    27
+
 
 #define ND_TAG_ElasticOrthotropic		  200
 #define ND_TAG_ElasticOrthotropicPlaneStrain2d	211
@@ -369,6 +375,12 @@
 
 #define ND_TAG_ConcreteMcftNonLinear5 7601
 #define ND_TAG_ConcreteMcftNonLinear7 7602
+
+
+
+
+
+
 
 #define FIBER_TAG_Uniaxial2d	1
 #define FIBER_TAG_Uniaxial3d	2
