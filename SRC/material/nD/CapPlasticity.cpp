@@ -27,7 +27,7 @@
 #include <Channel.h>  
 #include <FEM_ObjectBroker.h>
 
-#include <t2vector.h>
+#include <T2Vector.h>
 #include <MaterialResponse.h>
 
 #include <elementAPI.h>
