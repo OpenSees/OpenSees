@@ -585,6 +585,12 @@
 			Name="forceBeamColumn"
 			Filter="">
 			<File
+				RelativePath="..\..\..\SRC\element\forceBeamColumn\CompositeSimpsonBeamIntegration.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\forceBeamColumn\CompositeSimpsonBeamIntegration.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumn2d.cpp">
 			</File>
 			<File
@@ -607,6 +613,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn3d.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI2d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnCBDI2d.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\forceBeamColumn\TclForceBeamColumnCommand.cpp">

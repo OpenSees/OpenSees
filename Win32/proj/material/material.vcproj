@@ -107,6 +107,12 @@
 			Name="uniaxial"
 			Filter="">
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\AxialSp.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\AxialSp.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\AxialSpHD.cpp">
 			</File>
 			<File
@@ -312,6 +318,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\KikuchiAikenHDR.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\KikuchiAikenLRB.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\KikuchiAikenLRB.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\Maxwell.cpp">
@@ -864,6 +876,12 @@
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\BoundingCamClayPlaneStrain.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\nD\CapPlasticity.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CapPlasticity.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial2D.cpp">
 			</File>
 			<File
@@ -930,6 +948,12 @@
 				RelativePath="..\..\..\SRC\material\nD\ElasticOrthotropicThreeDimensional.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\nD\InitStressNDMaterial.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\InitStressNDMaterial.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.cpp">
 			</File>
 			<File
@@ -958,6 +982,18 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\nD\NDMaterial.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\PlaneStressSimplifiedJ2.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\PlaneStressSimplifiedJ2.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\SimplifiedJ2.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\SimplifiedJ2.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\nD\TclModelBuilderNDMaterialCommand.cpp">
