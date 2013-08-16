@@ -154,12 +154,14 @@ GLF_LIBS = $(FE)/element/zeroLength/ZeroLength.o \
 
 REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn2d.o \
+	$(FE)/element/forceBeamColumn/ForceBeamColumnCBDI2d.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn3d.o \
 	$(FE)/element/forceBeamColumn/ElasticForceBeamColumn2d.o \
 	$(FE)/element/forceBeamColumn/ElasticForceBeamColumn3d.o \
 	$(FE)/element/forceBeamColumn/TclForceBeamColumnCommand.o \
 	$(FE)/element/forceBeamColumn/BeamIntegration.o \
 	$(FE)/element/forceBeamColumn/LobattoBeamIntegration.o \
+	$(FE)/element/forceBeamColumn/CompositeSimpsonBeamIntegration.o \
 	$(FE)/element/forceBeamColumn/LegendreBeamIntegration.o \
 	$(FE)/element/forceBeamColumn/RadauBeamIntegration.o \
 	$(FE)/element/forceBeamColumn/NewtonCotesBeamIntegration.o \
@@ -683,7 +685,10 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/reinforcedConcretePlaneStress/ConcreteZ01.o \
 	$(FE)/material/nD/reinforcedConcretePlaneStress/ConcreteL01.o \
 	$(FE)/material/nD/reinforcedConcretePlaneStress/SteelZ01.o \
-	$(FE)/material/nD/reinforcedConcretePlaneStress/TendonL01.o
+	$(FE)/material/nD/reinforcedConcretePlaneStress/TendonL01.o \
+	$(FE)/material/nD/CapPlasticity.o \
+	$(FE)/material/nD/SimplifiedJ2.o \
+	$(FE)/material/nD/PlaneStressSimplifiedJ2.o
 
 FEDEAS_LIBS = $(FE)/material/uniaxial/FedeasMaterial.o \
 	$(FE)/material/uniaxial/fedeas/FedeasHardeningMaterial.o \
