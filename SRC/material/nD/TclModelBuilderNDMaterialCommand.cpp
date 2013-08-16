@@ -54,8 +54,8 @@
 #include <FluidSolidPorousMaterial.h>
 
 #include <MultiYieldSurfaceClay.h>
-#include <string.h>
-
+#include <string.h> 
+ 
 extern NDMaterial *
 Tcl_addWrapperNDMaterial(matObj *, ClientData, Tcl_Interp *,  int, TCL_Char **, TclModelBuilder *);
 
@@ -78,7 +78,10 @@ extern  void *OPS_NewInitialStateAnalysisWrapperMaterial(void);
 extern  void *OPS_NewManzariDafaliasMaterial(void);
 extern  void *OPS_CycLiqCPMaterial(void);
 
-extern void *OPS_NewInitStressNDMaterial(void);
+extern  void *OPS_PlaneStressSimplifiedJ2(void);
+extern  void *OPS_SimplifiedJ2(void);
+extern  void *OPS_CapPlasticity(void);
+extern  void * OPS_NewInitStressNDMaterial(void);
 
 #ifdef _DAMAGE2P
 extern  void *OPS_Damage2p(void);
@@ -304,6 +307,17 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
+
+    // ----- Cap plasticity model ------    // Quan Gu & ZhiJian Qiu  2013
+    else if (strcmp(argv[1],"CapPlasticity") == 0) {
+      void *theMat = OPS_CapPlasticity();
+      if (theMat != 0)
+	theMaterial = (NDMaterial *)theMat;
+      else
+	return TCL_ERROR;
+    }
+
+
     //Jul. 07, 2001 Boris Jeremic & ZHaohui Yang jeremic|zhyang@ucdavis.edu
     // Pressure dependent elastic material
     else if (strcmp(argv[1],"PressureDependentElastic3D") == 0) {
@@ -471,6 +485,26 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 					delta, H, eta);
     }
 
+
+    // Check argv[1] for J2PlaneStrain material type
+    else if ((strcmp(argv[1],"Simplified3DJ2") == 0)  || (strcmp(argv[1],"SimplifiedJ2") == 0)) {
+      void *theMat = OPS_SimplifiedJ2();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
+    // Check argv[1] for J2PlaneStrain material type
+    else if ((strcmp(argv[1],"PlaneStressJ2") == 0)  || (strcmp(argv[1],"PlaneStressSimplifiedJ2") == 0)) {
+      void *theMat = OPS_PlaneStressSimplifiedJ2();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
+    /////////////////////////////////////////////////////////////////
 
     //
     //  MultiAxialCyclicPlasticity Model   by Gang Wang
