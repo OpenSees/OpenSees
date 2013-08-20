@@ -98,7 +98,6 @@ def add_opensees_jobs(dax, num_materials, num_motions):
             bag_files[out_name] = f4
 
             dax.addJob(job)
-
             # add the job to the bag so we can look it up later
             bag_jobs["opensees_%s" % (w)] = job
 
