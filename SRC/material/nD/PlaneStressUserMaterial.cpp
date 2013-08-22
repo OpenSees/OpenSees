@@ -34,12 +34,21 @@
 #include <FEM_ObjectBroker.h>
 #include <MaterialResponse.h>
 
+#ifdef _HAVE_PSUMAT
 extern "C" 
 {
   void PSUMAT(int *nstatev, int *nprops, double *props,
               double *stress, double *strain0, double *strain1, double *dstrain,
               double *statev, double *tangent);
 }
+#else
+void PSUMAT(int *nstatev, int *nprops, double *props,
+	    double *stress, double *strain0, double *strain1, double *dstrain,
+	    double *statev, double *tangent)
+{
+  opserr << "PSUMAT - NOT DEFINED IN THIS VERSION, SOURCE CODE RESTRICTED\n";
+}
+#endif
 
 //null constructor
 PlaneStressUserMaterial::PlaneStressUserMaterial( ) : 
