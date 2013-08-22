@@ -148,6 +148,9 @@ class ShellMITC4 : public Element {
 
     //compute local coordinates and basis
     void computeBasis( ) ;
+//start Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
+    void updateBasis( ) ;
+//end Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
         
     //inertia terms
     void formInertiaTerms( int tangFlag ) ;

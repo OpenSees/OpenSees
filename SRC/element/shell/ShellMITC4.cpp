@@ -2,7 +2,7 @@
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
-**                                                     1               **
+**                                                                    **
 ** (C) Copyright 1999, The Regents of the University of California    **
 ** All Rights Reserved.                                               **
 **                                                                    **
@@ -58,7 +58,7 @@ void *
 OPS_NewShellMITC4(void)
 {
   if (numShellMITC4 == 0) {
-    opserr << "Using ShellMITC4 - Developed by: Leopoldo Tesser, Diego A. Talledo, Veronique Le Corvec\n";
+//    opserr << "Using ShellMITC4 - Developed by: Leopoldo Tesser, Diego A. Talledo, Véronique Le Corvec\n";
     numShellMITC4++;
   }
 
@@ -242,7 +242,6 @@ void  ShellMITC4::setDomain( Domain *theDomain )
   computeBasis( ) ;
 
   this->DomainComponent::setDomain(theDomain);
-
 }
 
 
@@ -1123,6 +1122,10 @@ ShellMITC4::formResidAndTangent( int tang_flag )
   //zero stiffness and residual 
   stiff.Zero( ) ;
   resid.Zero( ) ;
+  
+//start Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
+  updateBasis( );
+//end Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
 
   double dx34 = xl[0][2]-xl[0][3];
   double dy34 = xl[1][2]-xl[1][3];
@@ -1284,7 +1287,6 @@ ShellMITC4::formResidAndTangent( int tang_flag )
 
     if ( tang_flag == 1 ) {
       dd = materialPointers[i]->getSectionTangent( ) ;
-
       dd *= dvol[i] ;
     } //end if tang_flag
 
@@ -1460,6 +1462,96 @@ ShellMITC4::computeBasis( )
   }  //end for i 
 
 }
+
+//start Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
+//************************************************************************
+//compute local coordinates and basis
+
+void   
+ShellMITC4::updateBasis( ) 
+{
+  //could compute derivatives \frac{ \partial {\bf x} }{ \partial L_1 } 
+  //                     and  \frac{ \partial {\bf x} }{ \partial L_2 }
+  //and use those as basis vectors but this is easier 
+  //and the shell is flat anyway.
+
+  static Vector temp(3) ;
+
+  static Vector v1(3) ;
+  static Vector v2(3) ;
+  static Vector v3(3) ;
+
+  //get two vectors (v1, v2) in plane of shell by 
+  // nodal coordinate differences
+
+  const Vector &coor0 = nodePointers[0]->getCrds( ) + nodePointers[0]->getTrialDisp();
+
+  const Vector &coor1 = nodePointers[1]->getCrds( ) + nodePointers[1]->getTrialDisp();
+
+  const Vector &coor2 = nodePointers[2]->getCrds( ) + nodePointers[2]->getTrialDisp();
+  
+  const Vector &coor3 = nodePointers[3]->getCrds( ) + nodePointers[3]->getTrialDisp();
+
+  v1.Zero( ) ;
+  //v1 = 0.5 * ( coor2 + coor1 - coor3 - coor0 ) ;
+  v1  = coor2 ;
+  v1 += coor1 ;
+  v1 -= coor3 ;
+  v1 -= coor0 ;
+  v1 *= 0.50 ;
+  
+  v2.Zero( ) ;
+  //v2 = 0.5 * ( coor3 + coor2 - coor1 - coor0 ) ;
+  v2  = coor3 ;
+  v2 += coor2 ;
+  v2 -= coor1 ;
+  v2 -= coor0 ;
+  v2 *= 0.50 ;
+ 
+  //normalize v1 
+  //double length = LovelyNorm( v1 ) ;
+  double length = v1.Norm( ) ;
+  v1 /= length ;
+
+  //Gram-Schmidt process for v2 
+
+  //double alpha = LovelyInnerProduct( v2, v1 ) ;
+  double alpha = v2^v1 ;
+
+  //v2 -= alpha*v1 ;
+  temp = v1 ;
+  temp *= alpha ;
+  v2 -= temp ;
+
+  //normalize v2 
+  //length = LovelyNorm( v2 ) ;
+  length = v2.Norm( ) ;
+  v2 /= length ;
+
+  //cross product for v3  
+  v3 = LovelyCrossProduct( v1, v2 ) ;
+  
+  //local nodal coordinates in plane of shell
+
+  int i ;
+  for ( i = 0; i < 4; i++ ) {
+
+       const Vector &coorI = nodePointers[i]->getCrds( ) ;
+       xl[0][i] = coorI^v1 ;  
+       xl[1][i] = coorI^v2 ;
+
+  }  //end for i 
+
+  //basis vectors stored as array of doubles
+  for ( i = 0; i < 3; i++ ) {
+      g1[i] = v1(i) ;
+      g2[i] = v2(i) ;
+      g3[i] = v3(i) ;
+  }  //end for i 
+
+}
+//end Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
+
 
 //*************************************************************************
 //compute Bdrill
