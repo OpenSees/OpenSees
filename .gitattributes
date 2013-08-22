@@ -2753,8 +2753,14 @@ SRC/material/nD/PlaneStressMaterial.cpp -text
 SRC/material/nD/PlaneStressMaterial.h -text
 SRC/material/nD/PlaneStressSimplifiedJ2.cpp -text
 SRC/material/nD/PlaneStressSimplifiedJ2.h -text
+SRC/material/nD/PlaneStressUserMaterial.cpp -text
+SRC/material/nD/PlaneStressUserMaterial.h -text
 SRC/material/nD/PlateFiberMaterial.cpp -text
 SRC/material/nD/PlateFiberMaterial.h -text
+SRC/material/nD/PlateFromPlaneStressMaterial.cpp -text
+SRC/material/nD/PlateFromPlaneStressMaterial.h -text
+SRC/material/nD/PlateRebarMaterial.cpp -text
+SRC/material/nD/PlateRebarMaterial.h -text
 SRC/material/nD/PressureDependentElastic3D.cpp -text
 SRC/material/nD/PressureDependentElastic3D.h -text
 SRC/material/nD/SimplifiedJ2.cpp -text

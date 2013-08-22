@@ -31,7 +31,10 @@ OBJS       = NDMaterial.o \
 	J2ThreeDimensional.o \
 	PlaneStrainMaterial.o \
 	PlaneStressMaterial.o \
+	PlaneStressUserMaterial.o \
 	PlateFiberMaterial.o \
+	PlateFromPlaneStressMaterial.o \
+	PlateRebarMaterial.o \
 	CycLiqCP.o \
 	CycLiqCP3D.o \
 	CycLiqCPPlaneStrain.o \
