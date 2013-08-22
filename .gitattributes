@@ -2893,6 +2893,8 @@ SRC/material/section/GenericSectionNd.cpp -text
 SRC/material/section/GenericSectionNd.h -text
 SRC/material/section/Isolator2spring.cpp -text
 SRC/material/section/Isolator2spring.h -text
+SRC/material/section/LayeredShellFiberSection.cpp -text
+SRC/material/section/LayeredShellFiberSection.h -text
 SRC/material/section/Makefile -text
 SRC/material/section/MembranePlateFiberSection.cpp -text
 SRC/material/section/MembranePlateFiberSection.h -text

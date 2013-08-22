@@ -22,7 +22,8 @@ OBJS       = SectionForceDeformation.o \
 	Elliptical.o \
 	TimoshenkoSection3d.o \
 	Isolator2spring.o \
-	McftSection2dfiber.o
+	McftSection2dfiber.o \
+	 LayeredShellFiberSection.o
 
 all:         $(OBJS)
 	@$(CD) $(FE)/material/section/repres; $(MAKE);
