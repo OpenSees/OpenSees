@@ -779,7 +779,6 @@ int DruckerPrager::setParameter(const char **argv, int argc, Parameter &param)
 {
 	if (strcmp(argv[0],"materialState") == 0) {
         // switch elastic/plastic state
-        opserr << "set materialState" << endln;
 		return param.addObject(5,this);
 	} else if (strcmp(argv[0],"frictionalStrength") == 0) {
         // update rho parameter
@@ -796,9 +795,11 @@ int DruckerPrager::setParameter(const char **argv, int argc, Parameter &param)
 	} else if (strcmp(argv[0],"bulkModulus") == 0) {
         // update bulk modulus
 		return param.addObject(11,this);
+    } else if (strcmp(argv[0],"updateMaterialStage") == 0) {
+        return -1;
 	} else {
         // invalid parameter type
-        opserr << "WARNING: invalid parameter command for DruckerPrager nDMaterial with tag " << this->getTag() << endln;
+        opserr << "WARNING: invalid parameter command for DruckerPrager nDMaterial with tag: " << this->getTag() << endln;
         return -1;
     }
     
@@ -810,7 +811,6 @@ DruckerPrager::updateParameter(int responseID, Information &info)
 {
 	if (responseID == 5) {
         // materialState called - update mElasticFlag
-        opserr << "update materialState" << endln;
 		mElastFlag = (int)info.theDouble;
 	} else if (responseID == 7) {
         // frictionalStrength called - update rho and tension cutoff

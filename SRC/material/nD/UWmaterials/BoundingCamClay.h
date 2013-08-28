@@ -42,8 +42,8 @@ class BoundingCamClay : public NDMaterial
   public:
 
     // full constructor
-    BoundingCamClay(int tag, int classTag, double C, double bulk, double OCR, double mu_o, 
-							 double Alpha, double lambda, double h, double m, double massDen);
+    BoundingCamClay(int tag, int classTag, double massDen, double C, double bulk, double OCR,  
+							 double mu_o, double Alpha, double lambda, double h, double m);
     // null constructor
     BoundingCamClay();
     

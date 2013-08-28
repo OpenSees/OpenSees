@@ -7,6 +7,7 @@ include ../../../Makefile.def
         ElasticPPMaterial.o \
         ElasticBilin.o \
 	ParallelMaterial.o \
+	AxialSp.o \
 	AxialSpHD.o \
 	AxialSp.o \
 	Neoprene.o \

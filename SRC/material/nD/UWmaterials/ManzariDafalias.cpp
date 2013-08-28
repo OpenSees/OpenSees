@@ -206,7 +206,7 @@ ManzariDafalias::getCopy(const char *type)
 	} else if (strcmp(type,"ThreeDimensional")==0 || strcmp(type,"3D") ==0) {
 		ManzariDafalias3D *clone;
      	clone = new ManzariDafalias3D(this->getTag(), m_G0,  m_nu,  m_e_init,  m_Mc,  m_c, m_lambda_c,  m_e0,  m_ksi,  m_P_atm,  
-															   m_m, m_h0, m_ch, m_nb, m_A0, m_nd, m_z_max, m_cz, massDen);
+															   m_m, m_h0, m_ch, m_nb, m_A0, m_nd, m_z_max, m_cz, massDen, mTolF, mTolR, mJacoType, mScheme);
 	 	return clone;
   	} else {
 	  	opserr << "ManzariDafalias::getCopy failed to get copy: " << type << endln;
@@ -333,24 +333,27 @@ void ManzariDafalias::Print(OPS_Stream &s, int flag )
 int
 ManzariDafalias::setParameter(const char **argv, int argc, Parameter &param)
 {
-  	if (argc < 2)
+  	/*if (argc < 2)
     	return -1;
 
 	int theMaterialTag;
-	theMaterialTag = atoi(argv[1]);
+	theMaterialTag = atoi(argv[1]);*/
 
-	if (theMaterialTag == this->getTag()) {
+	//if (theMaterialTag == this->getTag()) {
 
 		if (strcmp(argv[0],"updateMaterialStage") == 0) {
 			return param.addObject(1, this);
 		}
+        else if (strcmp(argv[0],"materialState") == 0) {
+            return param.addObject(5, this);
+        }
 		else if (strcmp(argv[0],"IntegrationScheme") == 0) {
 			return param.addObject(2, this);
 		}
 		else if (strcmp(argv[0],"Jacobian") == 0) {
 			return param.addObject(3, this);
 		}
-	}
+	//}
     return -1;
 }
 
@@ -362,15 +365,18 @@ ManzariDafalias::updateParameter(int responseID, Information &info)
 		mElastFlag = info.theInt;
 	}
 	// called materialState in tcl file
-	if (responseID == 5) {
-		mElastFlag = info.theDouble;
+    else if (responseID == 5) {
+		mElastFlag = (int)info.theDouble;
 	}
-	if (responseID == 2) {
-		mScheme = info.theInt;
+    else if (responseID == 2) {
+		mScheme = (int)info.theDouble;
 	}
-	if (responseID == 3) {
-		mJacoType = info.theInt;
+    else if (responseID == 3) {
+		mJacoType = (int)info.theDouble;
 	}
+    else {
+        return -1;
+    }
 	return 0;
 }
 

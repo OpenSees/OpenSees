@@ -969,7 +969,7 @@ void
 SSPbrick::GetStab(void)
 // this function computes the stabilization stiffness matrix for the element
 {
-	Matrix Mben(12,24);
+    Matrix Mben(12,24);
 	Matrix FCF(12,12);
 	Matrix dNloc(8,3);
 	Matrix dNmod(8,3);

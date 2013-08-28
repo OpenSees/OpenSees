@@ -38,8 +38,7 @@ class ManzariDafalias3D : public ManzariDafalias
   //full constructor
   ManzariDafalias3D(int tag, double G0, double nu, double e_init, double Mc, double c, double lambda_c,
 	double e0, double ksi, double P_atm, double m, double h0, double ch, double nb, double A0, double nd,
-	double z_max, double cz, double massDen, double TolF = 1e-7, double TolR = 1e-7, int jacoType = 1,
-	int integrationScheme = 1);
+	double z_max, double cz, double massDen, double TolF, double TolR, int jacoType, int integrationScheme);
 
   //null constructor
   ManzariDafalias3D();

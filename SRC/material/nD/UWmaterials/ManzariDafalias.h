@@ -52,7 +52,7 @@ class ManzariDafalias : public NDMaterial
     // full constructor
     ManzariDafalias(int tag, int classTag, double G0, double nu, double e_init, double Mc, double c, double lambda_c,
 	double e0, double ksi, double P_atm, double m, double h0, double ch, double nb, double A0, double nd,double z_max, double cz, double mDen,
-	double TolF = 1e-7, double TolR = 1e-7, int JacoType = 1, int integrationScheme = 1);
+	double TolF = 1.0e-7, double TolR = 1e-7, int JacoType = 1, int integrationScheme = 1);
     // null constructor
     ManzariDafalias();
     // destructor

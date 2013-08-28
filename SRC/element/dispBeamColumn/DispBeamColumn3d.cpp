@@ -1426,6 +1426,11 @@ DispBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
 {
   if (argc < 1)
     return -1;
+
+  // don't do anything if MaterialStageParameter calls this element
+  if (strcmp(argv[0],"updateMaterialStage") == 0) {
+      return -1;
+  }
   
   // If the parameter belongs to the element itself
   if (strcmp(argv[0],"rho") == 0)

@@ -50,47 +50,47 @@ static int numBoundingCamClayMaterials = 0;
 void *
 OPS_NewBoundingCamClayMaterial(void)
 {
-  if (numBoundingCamClayMaterials == 0) {
-    numBoundingCamClayMaterials++;
-    opserr << "BoundingCamClay nDmaterial - Written: C.McGann, K.Petek, P.Arduino, U.Washington\n";
-  }
-
-  NDMaterial *theMaterial = 0;
-
-  int numArgs = OPS_GetNumRemainingInputArgs();
-
-  if (numArgs < 10) {
-    opserr << "Want: nDMaterial BoundingCamClay tag? massDensity? C? bulk? OCR? mu_o? alpha? lambda? h? m?" << endln;
-    return 0;	
-  }
+    if (numBoundingCamClayMaterials == 0) {
+      numBoundingCamClayMaterials++;
+      opserr << "BoundingCamClay nDmaterial - Written: C.McGann, K.Petek, P.Arduino, U.Washington\n";
+    }
   
-  int tag;
-  double dData[9];
-
-  int numData = 1;
-  if (OPS_GetInt(&numData, &tag) != 0) {
-    opserr << "WARNING invalid nDMaterial BoundingCamClay material  tag" << endln;
-    return 0;
-  }
-  numData = 9;
-  if (OPS_GetDouble(&numData, dData) != 0) {
-    opserr << "WARNING invalid material data for nDMaterial BoundingCamClay material  with tag: " << tag << endln;
-    return 0;
-  }
-
-  theMaterial = new BoundingCamClay(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], 
-                                            dData[6], dData[7], dData[8]);
+    NDMaterial *theMaterial = 0;
   
-  if (theMaterial == 0) {
-    opserr << "WARNING ran out of memory for nDMaterial BoundingCamClay material  with tag: " << tag << endln;
-  }
-
-  return theMaterial;
+    int numArgs = OPS_GetNumRemainingInputArgs();
+  
+    if (numArgs < 10) {
+      opserr << "Want: nDMaterial BoundingCamClay tag? massDensity? C? bulk? OCR? mu_o? alpha? lambda? h? m?" << endln;
+      return 0;	
+    }
+    
+    int tag;
+    double dData[9];
+  
+    int numData = 1;
+    if (OPS_GetInt(&numData, &tag) != 0) {
+      opserr << "WARNING invalid nDMaterial BoundingCamClay material tag" << endln;
+      return 0;
+    }
+    numData = 9;
+    if (OPS_GetDouble(&numData, dData) != 0) {
+      opserr << "WARNING invalid material data for nDMaterial BoundingCamClay material with tag: " << tag << endln;
+      return 0;
+    }
+  
+    theMaterial = new BoundingCamClay(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], 
+                                              dData[6], dData[7], dData[8]);
+    
+    if (theMaterial == 0) {
+      opserr << "WARNING ran out of memory for nDMaterial BoundingCamClay material with tag: " << tag << endln;
+    }
+  
+    return theMaterial;
 }
 
 // full constructor
-BoundingCamClay::BoundingCamClay(int tag, int classTag, double C, double bulk, double OCR, double mu_o,
-				                 double Alpha, double lambda, double h, double m, double mDen)
+BoundingCamClay::BoundingCamClay(int tag, int classTag, double mDen, double C, double bulk, double OCR, double mu_o,
+				                                        double Alpha, double lambda, double h, double m)
   : NDMaterial(tag,ND_TAG_BoundingCamClay),
     mEpsilon(6), 
     mEpsilon_P(6),
@@ -250,11 +250,11 @@ BoundingCamClay::getCopy(const char *type)
 {
 	if (strcmp(type,"PlanStrain2D") == 0 || strcmp(type,"PlaneStrain") == 0) {
 		BoundingCamClayPlaneStrain *clone;
-		clone = new BoundingCamClayPlaneStrain(this->getTag(), iC, mBulk, iOCR, imu_o, ialpha, ilambda, ih, im, massDen);
+		clone = new BoundingCamClayPlaneStrain(this->getTag(), massDen, iC, mBulk, iOCR, imu_o, ialpha, ilambda, ih, im);
 		return clone;
 	} else if (strcmp(type,"ThreeDimensional")==0 || strcmp(type,"3D") ==0) {
 		BoundingCamClay3D *clone;
-     	clone = new BoundingCamClay3D(this->getTag(), iC, mBulk, iOCR, imu_o, ialpha, ilambda, ih, im, massDen);
+     	clone = new BoundingCamClay3D(this->getTag(), massDen, iC, mBulk, iOCR, imu_o, ialpha, ilambda, ih, im);
 	 	return clone;
   	} else {
 	  	opserr << "BoundingCamClay::getCopy failed to get copy: " << type << endln;
@@ -284,7 +284,7 @@ int BoundingCamClay::revertToLastCommit (void)
 
 int BoundingCamClay::revertToStart(void)
 {
-	// added: C.McGann, U.Washington for InitialStateAnalysis
+	// added for InitialStateAnalysis
 	if (ops_InitialStateAnalysis) {
 		// do nothing, keep state variables from last step
 	} else {
@@ -325,7 +325,7 @@ void BoundingCamClay::plastic_integrator()
 {
 	double f, ev, es, p, q;
 	double kappa, r, R;
-	double norm_e;
+	double norm_e = 0;
 	Vector SIGMAo(6);
 	Vector epsilonET(6);
 	Vector epsilonE(6);
@@ -340,6 +340,8 @@ void BoundingCamClay::plastic_integrator()
 	kappa = mKappa_n;
 	R = mR_n;
 	r = mr_n;
+    p = 0.0;
+    q = 0.0;
 
 	mEpsilon_P = mEpsilon_n_P;
     SIGMAo = mSIGMAo_n;
@@ -435,8 +437,6 @@ void BoundingCamClay::plastic_integrator()
     	alpha = (kappa*SIGMAo - (1.0/iC)*mI1)/(1.0 + kappa)*R;
     	// computational variable, stress difference
     	xi = sigma - alpha;
-    	
-    	
     
     	// trial yield function value
     	f = DoubleDot2_2(DoubleDot2_4(xi, mM), xi) - r*r;
@@ -451,6 +451,7 @@ void BoundingCamClay::plastic_integrator()
     
         	// recenter ellipse if stress reversal
         	if (!flagReversal) {
+                //opserr << "re-centering -------------- " << endln;
            	   	mSIGMAo = mSigma_n/mR_n;
         		flagReversal = true;
         	}
@@ -492,7 +493,7 @@ void BoundingCamClay::plastic_integrator()
     		mCe = GetElasticOperator(p, ev, es, n);
     		// consistent elastoplastic tangent = elastic tangent
     		mCep = mCe;
-    
+
     	} else if (f > tolerance) {
 			//opserr << "update of loading function required " << f << endln;
     		// update of loading function required
@@ -882,7 +883,7 @@ double
 BoundingCamClay::GetContraNorm(Vector v)
 // computes contravariant (stress-type) norm of input 6x1 tensor
 {
-	double result;
+	double result = 0.0;
 	
 	for (int i = 0; i < 3; i++) {
 		result += v(i)*v(i);
@@ -891,7 +892,7 @@ BoundingCamClay::GetContraNorm(Vector v)
 		result += 2.0*v(i)*v(i);
 	}
 
-	return sqrt(result);
+    return sqrt(result);
 }
 		
 double
@@ -899,9 +900,9 @@ BoundingCamClay::GetCovariantNorm(Vector v)
 // computes the norm of the input argument (for strain-type storage)
 {
 	if (v.Size() != 6) {
-		opserr << "\n ERROR! BoundingCamClay::NormEngStrain requires vector of size(6)!" << endln;
+		opserr << "ERROR! BoundingCamClay::NormEngStrain requires vector of size(6)!" << endln;
 	}
-    double result;
+    double result = 0.0;
 
 	for (int i = 0; i < 3; i++) {
 		result += v(i)*v(i);
@@ -918,7 +919,7 @@ BoundingCamClay::GetTrace(Vector v)
 // computes the trace of the input argument
 {
 	if (v.Size() != 6)
-		opserr << "\n ERROR! BoundingCamClay::GetTrace requires vector of size(6)!" << endln;
+		opserr << "ERROR! BoundingCamClay::GetTrace requires vector of size(6)!" << endln;
 
 	return (v(0) + v(1) + v(2));
 }
@@ -930,7 +931,7 @@ BoundingCamClay::DoubleDot2_2(Vector v1, Vector v2)
 	double result = 0.0;
 	
 	if (v1.Size() != v2.Size()) {
-		opserr << "\n ERROR! BoundingCamClay::DoubleDot2_2 function requires vectors of equal size!" << endln;
+		opserr << "ERROR! BoundingCamClay::DoubleDot2_2 function requires vectors of equal size!" << endln;
 	}
 
 	for (int i = 0; i < v1.Size(); i++) {
@@ -948,7 +949,7 @@ BoundingCamClay::DoubleDot2_4(Vector v1, Matrix m1)
 	result.Zero();
 
 	if (v1.Size() != m1.noRows()) {
-		opserr << "\n ERROR! BoundingCamClay::DoubleDot2_4 function requires Size(v1) = noRows(m1) " << endln;
+		opserr << "ERROR! BoundingCamClay::DoubleDot2_4 function requires Size(v1) = noRows(m1) " << endln;
 	}
 
 	for (int i = 0; i < m1.noRows(); i++) {
@@ -967,7 +968,7 @@ BoundingCamClay::DoubleDot4_2(Matrix m1, Vector v1)
 	result.Zero();
 
 	if (m1.noCols() != v1.Size()) {
-		opserr << "\n ERROR! BoundingCamClay::DoubleDot4_2 function requires noCols(m1) = Size(v1) " << endln;
+		opserr << "ERROR! BoundingCamClay::DoubleDot4_2 function requires noCols(m1) = Size(v1) " << endln;
 	}
 
 	for (int i = 0; i < m1.noRows(); i++) {
@@ -1130,18 +1131,14 @@ void BoundingCamClay::Print(OPS_Stream &s, int flag )
 int
 BoundingCamClay::setParameter(const char **argv, int argc, Parameter &param)
 {
-  	if (argc < 2)
-    	return -1;
-
-	int theMaterialTag;
-	theMaterialTag = atoi(argv[1]);
-
-	if (theMaterialTag == this->getTag()) {
-
-		if (strcmp(argv[0],"updateMaterialStage") == 0) {
-			return param.addObject(1, this);
-		}
-	}
+    if (strcmp(argv[0],"materialState") == 0) {
+        // switch elastic/plastic state
+        return param.addObject(5,this);
+    } else {
+        // invalid parameter type
+        opserr << "WARNING: invalid parameter command for BoundingCamClay nDMaterial with tag: " << this->getTag() << endln;
+        return -1;
+    }
 
     return -1;
 }
@@ -1149,13 +1146,9 @@ BoundingCamClay::setParameter(const char **argv, int argc, Parameter &param)
 int
 BoundingCamClay::updateParameter(int responseID, Information &info)
 {
-	// called updateMaterialStage in tcl file
-	if (responseID == 1) {
-		mElastFlag = info.theInt;
-	}
-	// called materialState in tcl file
 	if (responseID == 5) {
-		mElastFlag = info.theDouble;
+        // materialState called - update mElasticFlag
+		mElastFlag = (int)info.theDouble;
 	}
 	
 	return 0;

@@ -37,9 +37,9 @@ BoundingCamClay( )
 }
 
 //full constructor
-BoundingCamClayPlaneStrain::BoundingCamClayPlaneStrain(int tag, double C, double bulk, double OCR,
-                         double mu_o, double alpha, double lambda, double h, double m, double mDen) : 
-BoundingCamClay(tag, ND_TAG_BoundingCamClayPlaneStrain, C, bulk, OCR, mu_o, alpha, lambda, h, m, mDen)
+BoundingCamClayPlaneStrain::BoundingCamClayPlaneStrain(int tag, double mDen, double C, double bulk, double OCR,
+                                                       double mu_o, double alpha, double lambda, double h, double m): 
+BoundingCamClay(tag, ND_TAG_BoundingCamClayPlaneStrain, mDen, C, bulk, OCR, mu_o, alpha, lambda, h, m)
 {
 }
 
