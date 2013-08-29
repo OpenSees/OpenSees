@@ -588,12 +588,13 @@ SSPbrickUP::getMass(void)
 void
 SSPbrickUP::zeroLoad(void)
 {
-	applyLoad = 0;
-	appliedB[0] = 0.0;
-	appliedB[1] = 0.0;
-	appliedB[2] = 0.0;
+  applyLoad = 0;
+  appliedB[0] = 0.0;
+  appliedB[1] = 0.0;
+  appliedB[2] = 0.0;
+  Q.Zero();
 
-	return;
+  return;
 }
 
 int

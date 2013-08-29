@@ -506,11 +506,13 @@ SSPquadUP::getMass(void)
 void
 SSPquadUP::zeroLoad(void)
 {
-	applyLoad = 0;
-	appliedB[0] = 0.0;
-	appliedB[1] = 0.0;
+  applyLoad = 0;
+  appliedB[0] = 0.0;
+  appliedB[1] = 0.0;
+  
+  Q.Zero();
 
-	return;
+  return;
 }
 
 int
