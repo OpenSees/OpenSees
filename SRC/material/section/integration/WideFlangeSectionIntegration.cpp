@@ -149,17 +149,22 @@ WideFlangeSectionIntegration::setParameter(const char **argv, int argc,
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0],"d") == 0 || strcmp(argv[0],"db") == 0)
-    return param.addObject(1, this);
-
-  if (strcmp(argv[0],"tw") == 0)
+  if (strcmp(argv[0],"d") == 0 || strcmp(argv[0],"db") == 0) {
+    param.setValue(d);
+    return param.addObject(1, this);    
+  }
+  if (strcmp(argv[0],"tw") == 0) {
+    param.setValue(tw);
     return param.addObject(2, this);
-
-  if (strcmp(argv[0],"bf") == 0)
+  }
+  if (strcmp(argv[0],"bf") == 0) {
+    param.setValue(bf);
     return param.addObject(3, this);
-
-  if (strcmp(argv[0],"tf") == 0)
+  }
+  if (strcmp(argv[0],"tf") == 0) {
+    param.setValue(tf);
     return param.addObject(4, this);
+  }
 
   return -1;
 }
