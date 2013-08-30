@@ -184,26 +184,34 @@ RCSectionIntegration::setParameter(const char **argv, int argc,
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0],"d") == 0)
+  if (strcmp(argv[0],"d") == 0) {
+    param.setValue(d);
     return param.addObject(1, this);
-
-  if (strcmp(argv[0],"b") == 0)
+  }
+  if (strcmp(argv[0],"b") == 0) {
     return param.addObject(2, this);
-
-  if (strcmp(argv[0],"Atop") == 0)
+    param.setValue(b);
+  }
+  if (strcmp(argv[0],"Atop") == 0) {
+    param.setValue(Atop);
     return param.addObject(3, this);
-
-  if (strcmp(argv[0],"Abottom") == 0)
+  }
+  if (strcmp(argv[0],"Abottom") == 0) {
+    param.setValue(Abottom);
     return param.addObject(7, this);
-
-  if (strcmp(argv[0],"Aside") == 0)
+  }
+  if (strcmp(argv[0],"Aside") == 0) {
+    param.setValue(Aside);
     return param.addObject(4, this);
-
-  if (strcmp(argv[0],"As") == 0)
+  }
+  if (strcmp(argv[0],"As") == 0) {
+    param.setValue(Atop);
     return param.addObject(5, this);
-
-  if (strcmp(argv[0],"cover") == 0)
+  }
+  if (strcmp(argv[0],"cover") == 0) {
+    param.setValue(cover);
     return param.addObject(6, this);
+  }
 
   return -1;
 }

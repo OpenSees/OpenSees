@@ -257,30 +257,38 @@ RCTBeamSectionIntegration::setParameter(const char **argv, int argc,
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0],"d") == 0)
+  if (strcmp(argv[0],"d") == 0) {
+    param.setValue(d);
     return param.addObject(1, this);
-
-  if (strcmp(argv[0],"bw") == 0)
+  }
+  if (strcmp(argv[0],"bw") == 0) {
+    param.setValue(bw);
     return param.addObject(2, this);
-
-  if (strcmp(argv[0],"beff") == 0)
+  }
+  if (strcmp(argv[0],"beff") == 0) {
+    param.setValue(beff);
     return param.addObject(3, this);
-
-  if (strcmp(argv[0],"hf") == 0)
+  }
+  if (strcmp(argv[0],"hf") == 0) {
+    param.setValue(hf);
     return param.addObject(4, this);
-
-  if (strcmp(argv[0],"Atop") == 0)
+  }
+  if (strcmp(argv[0],"Atop") == 0) {
+    param.setValue(Atop);
     return param.addObject(5, this);
-
-  if (strcmp(argv[0],"Abottom") == 0)
+  }
+  if (strcmp(argv[0],"Abottom") == 0) {
+    param.setValue(Abottom);
     return param.addObject(6, this);
-
-  if (strcmp(argv[0],"flcov") == 0)
+  }
+  if (strcmp(argv[0],"flcov") == 0) {
+    param.setValue(flcov);
     return param.addObject(7, this);
-
-  if (strcmp(argv[0],"wcov") == 0)
+  }
+  if (strcmp(argv[0],"wcov") == 0) {
+    param.setValue(wcov);
     return param.addObject(8, this);
-
+  }
   return -1;
 }
 
