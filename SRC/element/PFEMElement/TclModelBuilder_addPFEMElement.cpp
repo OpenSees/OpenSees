@@ -1,5 +1,7 @@
 #include "TclModelBuilder_addPFEMElement.h"
 #include "PFEMElement2D.h"
+#include "PFEMElement2DCompressible.h"
+#include "PFEMElement2DBubble.h"
 #include "PFEMElement3D.h"
 #include <cstring>
 
@@ -10,61 +12,101 @@ TclModelBuilder_addPFEMElement2D(ClientData clientData, Tcl_Interp *interp,
                                  TclModelBuilder *theBuilder) 
 {
     // define PFEM elements
-    if(argc < 10) {
-        opserr << "Invalid #args: want element PFEMElement2D ";
-        opserr << "tag nd1 nd2 nd3 rho mu b1 b2 \n";
+    if(argc < 11) {
+        opserr << "Invalid #args: want element PFEMElement2D type";
+        opserr << "tag nd1 nd2 nd3 rho mu b1 b2 <thickness kappa>\n";
         return TCL_ERROR;
     }
+    int loc = 2;
+    int type = -1;
+    if(strcmp(argv[loc], "pressureGradient")==0 || strcmp(argv[loc], "pressuregradient")==0
+       || strcmp(argv[loc], "PressureGradient")==0) {
+        type = 0;
+    } else if(strcmp(argv[loc], "compressible")==0 
+              || strcmp(argv[loc], "Compressible")==0) {
+        type = 1;
+    } else if(strcmp(argv[loc], "bubble")==0 
+              || strcmp(argv[loc], "Bubble")==0) {
+        type = 2;
+    } else {
+        opserr<<"WARNNG: unknown type for PFEMElement2D \n";
+        return TCL_ERROR;
+    }
+    loc++;
     int tag;
-    if(Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-        opserr<< "WARNING invalid tag "<< argv[2] << ": element PFEMElement2D\n";
+    if(Tcl_GetInt(interp, argv[loc], &tag) != TCL_OK) {
+        opserr<< "WARNING invalid tag "<< argv[loc] << ": element PFEMElement2D\n";
         return TCL_ERROR;
     }
+    loc++;
     int nd1;
-    if(Tcl_GetInt(interp, argv[3], &nd1) != TCL_OK) {
-        opserr<< "WARNING invalid nd1 "<< argv[3] << ": element PFEMElement2D\n";
+    if(Tcl_GetInt(interp, argv[loc], &nd1) != TCL_OK) {
+        opserr<< "WARNING invalid nd1 "<< argv[loc] << ": element PFEMElement2D\n";
         return TCL_ERROR;
     }
+    loc++;
     int nd2;
-    if(Tcl_GetInt(interp, argv[4], &nd2) != TCL_OK) {
-        opserr<< "WARNING invalid nd2 "<< argv[4] << ": element PFEMElement2D\n";
+    if(Tcl_GetInt(interp, argv[loc], &nd2) != TCL_OK) {
+        opserr<< "WARNING invalid nd2 "<< argv[loc] << ": element PFEMElement2D\n";
         return TCL_ERROR;
     }
+    loc++;
     int nd3;
-    if(Tcl_GetInt(interp, argv[5], &nd3) != TCL_OK) {
-        opserr<< "WARNING invalid nd3 "<< argv[5] << ": element PFEMElement2D\n";
+    if(Tcl_GetInt(interp, argv[loc], &nd3) != TCL_OK) {
+        opserr<< "WARNING invalid nd3 "<< argv[loc] << ": element PFEMElement2D\n";
         return TCL_ERROR;
     }
+    loc++;
     double rho;
-    if(Tcl_GetDouble(interp, argv[6], &rho) != TCL_OK) {
-        opserr<< "WARNING invalid rho "<< argv[6] << ": element PFEMElement2D\n";
+    if(Tcl_GetDouble(interp, argv[loc], &rho) != TCL_OK) {
+        opserr<< "WARNING invalid rho "<< argv[loc] << ": element PFEMElement2D\n";
         return TCL_ERROR;
     }
+    loc++;
     double mu;
-    if(Tcl_GetDouble(interp, argv[7], &mu) != TCL_OK) {
-        opserr<< "WARNING invalid mu "<< argv[7] << ": element PFEMElement2D\n";
+    if(Tcl_GetDouble(interp, argv[loc], &mu) != TCL_OK) {
+        opserr<< "WARNING invalid mu "<< argv[loc] << ": element PFEMElement2D\n";
         return TCL_ERROR;
     }
+    loc++;
     double b1;
-    if(Tcl_GetDouble(interp, argv[8], &b1) != TCL_OK) {
-        opserr<< "WARNING invalid b1 "<< argv[8] << ": element PFEMElement2D\n";
+    if(Tcl_GetDouble(interp, argv[loc], &b1) != TCL_OK) {
+        opserr<< "WARNING invalid b1 "<< argv[loc] << ": element PFEMElement2D\n";
         return TCL_ERROR;
     }
+    loc++;
     double b2;
-    if(Tcl_GetDouble(interp, argv[9], &b2) != TCL_OK) {
-        opserr<< "WARNING invalid b2 "<< argv[9] << ": element PFEMElement2D\n";
+    if(Tcl_GetDouble(interp, argv[loc], &b2) != TCL_OK) {
+        opserr<< "WARNING invalid b2 "<< argv[loc] << ": element PFEMElement2D\n";
         return TCL_ERROR;
     }
+    loc++;
     double thickness = 1.0;
-    if(argc > 10) {
-        if(Tcl_GetDouble(interp, argv[10], &thickness) != TCL_OK) {
-            opserr<< "WARNING invalid thickness "<< argv[10] << ": element PFEMElement2D\n";
+    if(argc > loc) {
+        if(Tcl_GetDouble(interp, argv[loc], &thickness) != TCL_OK) {
+            opserr<< "WARNING invalid thickness "<< argv[loc] << ": element PFEMElement2D\n";
+            return TCL_ERROR;
+        }
+    }
+    loc++;
+    double kappa = -1.0;
+    if(argc > loc) {
+        if(Tcl_GetDouble(interp, argv[loc], &kappa) != TCL_OK) {
+            opserr<< "WARNING invalid kappa "<< argv[loc] << ": element PFEMElement2D\n";
             return TCL_ERROR;
         }
     }
 
+
     // regular element
-    PFEMElement2D* ele = new PFEMElement2D(tag,nd1,nd2,nd3,rho,mu,b1,b2,thickness);
+    Element* ele = 0;
+    if(type == 0) {
+        ele = new PFEMElement2D(tag,nd1,nd2,nd3,rho,mu,b1,b2,thickness);
+    } else if(type == 1) {
+        ele = new PFEMElement2DCompressible(tag,nd1,nd2,nd3,rho,mu,b1,b2,thickness,kappa);
+    } else if(type == 2) {
+        ele = new PFEMElement2DBubble(tag,nd1,nd2,nd3,rho,mu,b1,b2,thickness,kappa);
+    }
     if (ele == 0) {
         opserr << "WARNING ran out of memory creating element\n";
         opserr << "element: " << tag << endln;
