@@ -1548,8 +1548,14 @@ SRC/analysis/algorithm/equiSolnAlgo/SecantLineSearch.cpp -text
 SRC/analysis/algorithm/equiSolnAlgo/SecantLineSearch.h -text
 SRC/analysis/algorithm/equiSolnAlgo/accelerator/Accelerator.cpp -text
 SRC/analysis/algorithm/equiSolnAlgo/accelerator/Accelerator.h -text
+SRC/analysis/algorithm/equiSolnAlgo/accelerator/DifferenceAccelerator.cpp -text
+SRC/analysis/algorithm/equiSolnAlgo/accelerator/DifferenceAccelerator.h -text
+SRC/analysis/algorithm/equiSolnAlgo/accelerator/DifferenceAccelerator2.cpp -text
+SRC/analysis/algorithm/equiSolnAlgo/accelerator/DifferenceAccelerator2.h -text
 SRC/analysis/algorithm/equiSolnAlgo/accelerator/KrylovAccelerator.cpp -text
 SRC/analysis/algorithm/equiSolnAlgo/accelerator/KrylovAccelerator.h -text
+SRC/analysis/algorithm/equiSolnAlgo/accelerator/KrylovAccelerator2.cpp -text
+SRC/analysis/algorithm/equiSolnAlgo/accelerator/KrylovAccelerator2.h -text
 SRC/analysis/algorithm/equiSolnAlgo/accelerator/Makefile -text
 SRC/analysis/algorithm/equiSolnAlgo/accelerator/MillerAccelerator.cpp -text
 SRC/analysis/algorithm/equiSolnAlgo/accelerator/MillerAccelerator.h -text
