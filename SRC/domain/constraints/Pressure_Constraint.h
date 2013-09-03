@@ -60,10 +60,10 @@ class Pressure_Constraint : public DomainComponent
 public:
     // constructors
     explicit Pressure_Constraint(int classTag);
-    Pressure_Constraint(int classTag, int nodeId, int ptag);
-    Pressure_Constraint(int nodeId, int ptag);
-    Pressure_Constraint(int classTag, int nodeId, double g);
-    Pressure_Constraint(int nodeId, double g);
+    Pressure_Constraint(int classTag, int nodeId, int ptag, int ndf);
+    Pressure_Constraint(int nodeId, int ptag, int ndf);
+    Pressure_Constraint(int classTag, int nodeId, double g, int ndf);
+    Pressure_Constraint(int nodeId, double g, int ndf);
 
     // destructor
     virtual ~Pressure_Constraint();
@@ -98,6 +98,7 @@ private:
     ID fluidEleTags;
     ID otherEleTags;
     double gravity;
+    int pndf;
 };
 
 #endif

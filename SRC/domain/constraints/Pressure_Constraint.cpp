@@ -52,25 +52,25 @@ Pressure_Constraint::Pressure_Constraint(int classTag)
 {
 }
 
-Pressure_Constraint::Pressure_Constraint(int classTag, int nodeId, int ptag)
-    :DomainComponent(nodeId,classTag), pTag(ptag), fluidEleTags(), otherEleTags(), gravity(0)
+Pressure_Constraint::Pressure_Constraint(int classTag, int nodeId, int ptag, int ndf)
+    :DomainComponent(nodeId,classTag), pTag(ptag), fluidEleTags(), otherEleTags(), gravity(0), pndf(ndf)
 {
 }
 
-Pressure_Constraint::Pressure_Constraint(int nodeId, int ptag)
+Pressure_Constraint::Pressure_Constraint(int nodeId, int ptag, int ndf)
     :DomainComponent(nodeId,CNSTRNT_TAG_Pressure_Constraint), 
-     pTag(ptag), fluidEleTags(), otherEleTags(), gravity(0)
+     pTag(ptag), fluidEleTags(), otherEleTags(), gravity(0), pndf(ndf)
 {
 }
 
-Pressure_Constraint::Pressure_Constraint(int classTag, int nodeId, double g)
-    :DomainComponent(nodeId,classTag), pTag(nodeId), fluidEleTags(), otherEleTags(), gravity(g)
+Pressure_Constraint::Pressure_Constraint(int classTag, int nodeId, double g, int ndf)
+    :DomainComponent(nodeId,classTag), pTag(nodeId), fluidEleTags(), otherEleTags(), gravity(g), pndf(ndf)
 {
 }
 
-Pressure_Constraint::Pressure_Constraint(int nodeId, double g)
+Pressure_Constraint::Pressure_Constraint(int nodeId, double g, int ndf)
     :DomainComponent(nodeId,CNSTRNT_TAG_Pressure_Constraint), 
-     pTag(nodeId), fluidEleTags(), otherEleTags(), gravity(g)
+     pTag(nodeId), fluidEleTags(), otherEleTags(), gravity(g), pndf(ndf)
 {
 }
 
@@ -139,9 +139,9 @@ Pressure_Constraint::setDomain(Domain* theDomain)
 
     // create pressure node
     if(ndm == 2) {
-        pNode = new Node(pTag, ndm+1, coord(0), coord(1));
+        pNode = new Node(pTag, pndf, coord(0), coord(1));
     } else {
-        pNode = new Node(pTag, ndm+1, coord(0), coord(1), coord(2));
+        pNode = new Node(pTag, pndf, coord(0), coord(1), coord(2));
     }
     if(pNode == 0) {
         opserr<<"WARNING: run out of memory to create Node";
@@ -318,31 +318,59 @@ Pressure_Constraint::sendSelf(int commitTag, Channel& theChannel)
     int sf = fluidEleTags.Size();
     int so = otherEleTags.Size();
 
+    // check node
+    int havenode = 0;
+    Domain* theDomain = this->getDomain();
+    Node* theNode = 0;
+    if(pTag != this->getTag()) {
+        theNode = theDomain->getNode(pTag);
+    }
+    if(theNode != 0) {
+        havenode = 1;
+    }
+
     // send size of IDs
-    static ID idsize(2);
+    static ID idsize(7);
     idsize(0) = sf;
     idsize(1) = so;
+    idsize(2) = pTag;
+    idsize(3) = pndf;
+    idsize(4) = this->getTag();
+    idsize(5) = havenode;
+    if(havenode == 1) {
+        idsize(6) = theNode->getClassTag();
+    }
     res = theChannel.sendID(dataTag, commitTag, idsize);
     if(res < 0) {
-        opserr<<"WARNING: Pressure_Constraint::sendSelf - "<<this->getTag()<<" failed to send idsize\n";
+        opserr<<"WARNING: Pressure_Constraint::sendSelf - ";
+        opserr<<this->getTag()<<" failed to send idsize\n";
         return -1;
     }
 
     // send vector
-    static Vector data(3+sf+so);
-    data(0) = this->getTag();
-    data(1) = pTag;
-    data(2) = gravity;
+    static Vector data(1+sf+so);
+    data(0) = gravity;
     for(int i=0; i<sf; i++) {
-        data(3+i) = fluidEleTags(i);
+        data(1+i) = fluidEleTags(i);
     }
     for(int i=0; i<so; i++) {
-        data(3+sf+i) = otherEleTags(i);
+        data(1+sf+i) = otherEleTags(i);
     }
     res = theChannel.sendVector(dataTag, commitTag, data);
     if(res < 0) {
-        opserr<<"WARNING: Pressure_Constraint::sendSelf - "<<this->getTag()<<" failed to send vector\n";
+        opserr<<"WARNING: Pressure_Constraint::sendSelf - ";
+        opserr<<this->getTag()<<" failed to send vector\n";
         return -2;
+    }
+
+    // send node
+    if(havenode == 1) {
+        res = theNode->sendSelf(commitTag, theChannel);
+        if(res < 0) {
+            opserr<<"WARNING: Pressure_Constraint::sendSelf - ";
+            opserr<<this->getTag()<<" failed to send Node\n";
+            return -3;
+        }
     }
 
     return 0;
@@ -356,7 +384,7 @@ Pressure_Constraint::recvSelf(int commitTag, Channel &theChannel,
     int dataTag = this->getDbTag();
 
     // receive idsize
-    static ID idsize(2);
+    static ID idsize(7);
     res = theChannel.recvID(dataTag, commitTag, idsize);
     if(res < 0) {
         opserr<<"WARNING: PFEMElement2D::recvSelf - failed to receive idsize\n";
@@ -364,25 +392,53 @@ Pressure_Constraint::recvSelf(int commitTag, Channel &theChannel,
     }
     int sf = idsize(0);
     int so = idsize(1);
-    fluidEleTags.resize(sf);
-    otherEleTags.resize(so);
+    pTag = idsize(2);
+    pndf = idsize(3);
+    this->setTag(idsize(4));
+    int havenode = idsize(5);
+    int classtag = idsize(6);
 
     // receive vector
-    static Vector data(3+sf+so);
+    fluidEleTags.resize(sf);
+    otherEleTags.resize(so);
+    static Vector data(1+sf+so);
     res = theChannel.recvVector(dataTag, commitTag, data);
     if(res < 0) {
-        opserr<<"WARNING: Pressure_Constraint::recvSelf - "<<this->getTag()<<" failed to receive vector\n";
+        opserr<<"WARNING: Pressure_Constraint::recvSelf - ";
+        opserr<<this->getTag()<<" failed to receive vector\n";
         return -2;
     }
-    this->setTag((int)data(0));
-    pTag = (int)data(1);
-    gravity = data(2);
+    gravity = data(0);
     for(int i=0; i<sf; i++) {
-        fluidEleTags(i) = (int)data(3+i);
+        fluidEleTags(i) = (int)data(1+i);
     }
     for(int i=0; i<so; i++) {
-        otherEleTags(i) = (int)data(3+sf+i);
+        otherEleTags(i) = (int)data(1+sf+i);
     }
+
+    // receive node
+    if(havenode == 1) {
+        Node* theNode = theBroker.getNewNode(classtag);
+        if(theNode == 0) {
+            opserr<<"WARNING: failed to create node ";
+            return -3;
+        }
+        res = theNode->recvSelf(commitTag, theChannel, theBroker);
+        if(res < 0) {
+            opserr<<"WARNING: Pressure_Constraint::recvSelf - ";
+            opserr<<this->getTag()<<" failed to receive Node\n";
+            delete theNode;
+            return -4;
+        }
+        Domain* theDomain = this->getDomain();
+        if(theDomain->addNode(theNode) == false) {
+            opserr<<"WARNING: failed to add node into domain ";
+            delete theNode;
+            return -5;
+        }
+    }
+    
+
     return 0;
 }
 
