@@ -81,7 +81,6 @@ class ElasticSection3d : public SectionForceDeformation
   double E, A, Iz, Iy, G, J;
   
   Vector e;			// section trial deformations
-  Vector eCommit;
   
   static Vector s;
   static Matrix ks;

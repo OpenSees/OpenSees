@@ -40,8 +40,7 @@ ID ElasticSection3d::code(4);
 
 ElasticSection3d::ElasticSection3d(void)
 :SectionForceDeformation(0, SEC_TAG_Elastic3d),
- E(0.0), A(0.0), Iz(0.0), Iy(0.0), G(0.0), J(0.0),
- e(4), eCommit(4)
+ E(0.0), A(0.0), Iz(0.0), Iy(0.0), G(0.0), J(0.0), e(4)
 {
     if (code(0) != SECTION_RESPONSE_P)
     {
@@ -55,8 +54,7 @@ ElasticSection3d::ElasticSection3d(void)
 ElasticSection3d::ElasticSection3d
 (int tag, double E_in, double A_in, double Iz_in, double Iy_in, double G_in, double J_in)
 :SectionForceDeformation(tag, SEC_TAG_Elastic3d),
- E(E_in), A(A_in), Iz(Iz_in), Iy(Iy_in), G(G_in), J(J_in),
- e(4), eCommit(4)
+ E(E_in), A(A_in), Iz(Iz_in), Iy(Iy_in), G(G_in), J(J_in), e(4)
 {
     if (E <= 0.0)  {
       opserr << "ElasticSection3d::ElasticSection3d -- Input E <= 0.0\n";
@@ -99,25 +97,19 @@ ElasticSection3d::~ElasticSection3d(void)
 int 
 ElasticSection3d::commitState(void)
 {
-	eCommit = e;
-
-    return 0;
+  return 0;
 }
 
 int 
 ElasticSection3d::revertToLastCommit(void)
 {
-	e = eCommit;
-
-    return 0;
+  return 0;
 }
 
 int 
 ElasticSection3d::revertToStart(void)
 {
-	eCommit.Zero();
-
-    return 0;
+  return 0;
 }
 
 int
@@ -196,7 +188,7 @@ ElasticSection3d::getCopy ()
     ElasticSection3d *theCopy =
 	new ElasticSection3d (this->getTag(), E, A, Iz, Iy, G, J);
 
-    theCopy->eCommit = eCommit;
+    theCopy->parameterID = parameterID;
 
     return theCopy;
 }
@@ -218,7 +210,7 @@ ElasticSection3d::sendSelf(int commitTag, Channel &theChannel)
 {
     int res = 0;
 
-    static Vector data(11);
+    static Vector data(7);
 
     int dataTag = this->getDbTag();
     
@@ -229,10 +221,6 @@ ElasticSection3d::sendSelf(int commitTag, Channel &theChannel)
     data(4) = Iy;
     data(5) = G;
     data(6) = J;
-    data(7) = eCommit(0);
-	data(8) = eCommit(1);
-	data(9) = eCommit(2);
-	data(10) = eCommit(3);
     
     res += theChannel.sendVector(dataTag, commitTag, data);
     if(res < 0) {
@@ -249,7 +237,7 @@ ElasticSection3d::recvSelf(int commitTag, Channel &theChannel,
 {
     int res = 0;
     
-	static Vector data(11);
+	static Vector data(7);
 
     int dataTag = this->getDbTag();
 
@@ -266,10 +254,6 @@ ElasticSection3d::recvSelf(int commitTag, Channel &theChannel,
     Iy = data(4);
     G = data(5);
     J = data(6);    
-    eCommit(0) = data(7);
-	eCommit(1) = data(8);
-	eCommit(2) = data(9);
-	eCommit(3) = data(10);
 
     return res;
 }
@@ -296,24 +280,30 @@ ElasticSection3d::setParameter(const char **argv, int argc, Parameter &param)
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0],"E") == 0)
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E);
     return param.addObject(1, this);
-
-  if (strcmp(argv[0],"A") == 0)
+  }
+  if (strcmp(argv[0],"A") == 0) {
+    param.setValue(A);
     return param.addObject(2, this);
-
-  if (strcmp(argv[0],"Iz") == 0)
+  }
+  if (strcmp(argv[0],"Iz") == 0) {
+    param.setValue(Iz);
     return param.addObject(3, this);
-
-  if (strcmp(argv[0],"Iy") == 0)
+  }
+  if (strcmp(argv[0],"Iy") == 0) {
+    param.setValue(Iy);
     return param.addObject(4, this);
-
-  if (strcmp(argv[0],"G") == 0)
+  }
+  if (strcmp(argv[0],"G") == 0) {
+    param.setValue(G);
     return param.addObject(5, this);
-
-  if (strcmp(argv[0],"J") == 0)
+  }
+  if (strcmp(argv[0],"J") == 0) {
+    param.setValue(J);
     return param.addObject(6, this);
-
+  }
   return -1;
 }
 

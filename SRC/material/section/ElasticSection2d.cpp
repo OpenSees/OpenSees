@@ -41,8 +41,7 @@ ID ElasticSection2d::code(2);
 
 ElasticSection2d::ElasticSection2d(void)
 :SectionForceDeformation(0, SEC_TAG_Elastic2d),
- E(0.0), A(0.0), I(0.0),
- e(2), eCommit(2)
+ E(0.0), A(0.0), I(0.0), e(2)
 {
     if (code(0) != SECTION_RESPONSE_P)
     {
@@ -54,8 +53,7 @@ ElasticSection2d::ElasticSection2d(void)
 ElasticSection2d::ElasticSection2d
 (int tag, double E_in, double A_in, double I_in)
 :SectionForceDeformation(tag, SEC_TAG_Elastic2d),
- E(E_in), A(A_in), I(I_in),
- e(2), eCommit(2)
+ E(E_in), A(A_in), I(I_in), e(2)
 {
     if (E <= 0.0)  {
 		opserr << "ElasticSection2d::ElasticSection2d -- Input E <= 0.0\n";
@@ -84,25 +82,19 @@ ElasticSection2d::~ElasticSection2d(void)
 int 
 ElasticSection2d::commitState(void)
 {
-	eCommit = e;
-
-    return 0;
+  return 0;
 }
 
 int 
 ElasticSection2d::revertToLastCommit(void)
 {
-	e = eCommit;
-
-    return 0;
+  return 0;
 }
 
 int 
 ElasticSection2d::revertToStart(void)
 {
-	eCommit.Zero();
-
-    return 0;
+  return 0;
 }
 
 int
@@ -171,7 +163,7 @@ ElasticSection2d::getCopy(void)
     ElasticSection2d *theCopy =
 	new ElasticSection2d (this->getTag(), E, A, I);
 
-    theCopy->eCommit = eCommit;
+    theCopy->parameterID = parameterID;
 
     return theCopy;
 }
@@ -193,7 +185,7 @@ ElasticSection2d::sendSelf(int commitTag, Channel &theChannel)
 {
     int res = 0;
 
-    static Vector data(6);
+    static Vector data(4);
     
     int dataTag = this->getDbTag();
     
@@ -201,8 +193,6 @@ ElasticSection2d::sendSelf(int commitTag, Channel &theChannel)
     data(1) = E;
     data(2) = A;
     data(3) = I;    
-    data(4) = eCommit(0);
-    data(5) = eCommit(1);
 
     res += theChannel.sendVector(dataTag, commitTag, data);
     if (res<0) {
@@ -219,7 +209,7 @@ ElasticSection2d::recvSelf(int commitTag, Channel &theChannel,
 {
 	int res = 0;
 
-    static Vector data(6);
+    static Vector data(4);
 
     int dataTag = this->getDbTag();
 
@@ -233,8 +223,6 @@ ElasticSection2d::recvSelf(int commitTag, Channel &theChannel,
     E = data(1);
     A = data(2);
     I = data(3);
-    eCommit(0) = data(4);
-    eCommit(1) = data(5);
 
     return res;
 }
@@ -297,6 +285,8 @@ ElasticSection2d::getStressResultantSensitivity(int gradIndex,
 {
   s.Zero();
 
+  //opserr << "ElasticSection parameterID: " << parameterID << endln;
+
   if (parameterID == 1) { // E
     s(0) = A*e(0);
     s(1) = I*e(1);
@@ -306,13 +296,53 @@ ElasticSection2d::getStressResultantSensitivity(int gradIndex,
   if (parameterID == 3) // I
     s(1) = E*e(1);
 
+  //opserr << "ElasticSection2d::dsdh: " << s << endln;
+
   return s;
+}
+
+const Matrix&
+ElasticSection2d::getSectionTangentSensitivity(int gradIndex)
+{
+  ks.Zero();
+
+  if (parameterID == 1) { // E
+    ks(0,0) = A;
+    ks(1,1) = I;
+  }
+  if (parameterID == 2) // A
+    ks(0,0) = E;
+  if (parameterID == 3) // I
+    ks(1,1) = E;
+
+  return ks;
 }
 
 const Matrix&
 ElasticSection2d::getInitialTangentSensitivity(int gradIndex)
 {
+  return this->getSectionTangentSensitivity(gradIndex);
+}
+
+const Matrix&
+ElasticSection2d::getSectionFlexibilitySensitivity(int gradIndex)
+{
   ks.Zero();
 
+  if (parameterID == 1) { // E
+    ks(0,0) = -1.0/(E*E*A);
+    ks(1,1) = -1.0/(E*E*I);
+  }
+  if (parameterID == 2) // A
+    ks(0,0) = -1.0/(E*A*A);
+  if (parameterID == 3) // I
+    ks(1,1) = -1.0/(E*I*I);
+
   return ks;
+}
+
+const Matrix& 
+ElasticSection2d::getInitialFlexibilitySensitivity(int gradIndex)
+{
+  return this->getSectionFlexibilitySensitivity(gradIndex);
 }
