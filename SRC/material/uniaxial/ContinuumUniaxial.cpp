@@ -357,3 +357,142 @@ ContinuumUniaxial::setParameter(const char **argv, int argc,
 {
   return theMaterial->setParameter(argv, argc, param);
 }
+
+double 
+ContinuumUniaxial::getStressSensitivity(int gradIndex, bool conditional)
+{
+  const Vector &threeDstress = theMaterial->getStressSensitivity(gradIndex, conditional);
+
+  double stress = threeDstress(0);
+
+  const Matrix &threeDtangent = theMaterial->getTangent();
+
+  static Vector dd12(5);
+  dd12(0) = threeDtangent(0,1);
+  dd12(1) = threeDtangent(0,2);
+  dd12(2) = threeDtangent(0,3);
+  dd12(3) = threeDtangent(0,4);
+  dd12(4) = threeDtangent(0,5);
+
+  static Matrix dd22(5,5);
+  dd22(0,0) = threeDtangent(1,1);
+  dd22(1,0) = threeDtangent(2,1);
+  dd22(2,0) = threeDtangent(3,1);
+  dd22(3,0) = threeDtangent(4,1);
+  dd22(4,0) = threeDtangent(5,1);
+  
+  dd22(0,1) = threeDtangent(1,2);
+  dd22(1,1) = threeDtangent(2,2);
+  dd22(2,1) = threeDtangent(3,2);
+  dd22(3,1) = threeDtangent(4,2);
+  dd22(4,1) = threeDtangent(5,2);
+  
+  dd22(0,2) = threeDtangent(1,3);
+  dd22(1,2) = threeDtangent(2,3);
+  dd22(2,2) = threeDtangent(3,3);
+  dd22(3,2) = threeDtangent(4,3);
+  dd22(4,2) = threeDtangent(5,3);
+
+  dd22(0,3) = threeDtangent(1,4);
+  dd22(1,3) = threeDtangent(2,4);
+  dd22(2,3) = threeDtangent(3,4);
+  dd22(3,3) = threeDtangent(4,4);
+  dd22(4,3) = threeDtangent(5,4);
+  
+  dd22(0,4) = threeDtangent(1,5);
+  dd22(1,4) = threeDtangent(2,5);
+  dd22(2,4) = threeDtangent(3,5);
+  dd22(3,4) = threeDtangent(4,5);
+  dd22(4,4) = threeDtangent(5,5);
+
+  static Vector sigma2(5);
+  sigma2(0) = threeDstress(1);
+  sigma2(1) = threeDstress(2);
+  sigma2(2) = threeDstress(3);
+  sigma2(3) = threeDstress(4);
+  sigma2(4) = threeDstress(5);
+
+  static Vector dd22sigma2(5);
+  dd22.Solve(sigma2,dd22sigma2);
+
+  stress -= dd12^ dd22sigma2;
+
+  return stress;
+}
+
+int 
+ContinuumUniaxial::commitSensitivity(double depsdh, int gradIndex, int numGrads)
+{
+  static Vector dstraindh(6);
+
+  const Matrix &threeDtangent = theMaterial->getTangent();
+
+  static Matrix dd22(5,5);
+  dd22(0,0) = threeDtangent(1,1);
+  dd22(1,0) = threeDtangent(2,1);
+  dd22(2,0) = threeDtangent(3,1);
+  dd22(3,0) = threeDtangent(4,1);
+  dd22(4,0) = threeDtangent(5,1);
+  
+  dd22(0,1) = threeDtangent(1,2);
+  dd22(1,1) = threeDtangent(2,2);
+  dd22(2,1) = threeDtangent(3,2);
+  dd22(3,1) = threeDtangent(4,2);
+  dd22(4,1) = threeDtangent(5,2);
+  
+  dd22(0,2) = threeDtangent(1,3);
+  dd22(1,2) = threeDtangent(2,3);
+  dd22(2,2) = threeDtangent(3,3);
+  dd22(3,2) = threeDtangent(4,3);
+  dd22(4,2) = threeDtangent(5,3);
+
+  dd22(0,3) = threeDtangent(1,4);
+  dd22(1,3) = threeDtangent(2,4);
+  dd22(2,3) = threeDtangent(3,4);
+  dd22(3,3) = threeDtangent(4,4);
+  dd22(4,3) = threeDtangent(5,4);
+  
+  dd22(0,4) = threeDtangent(1,5);
+  dd22(1,4) = threeDtangent(2,5);
+  dd22(2,4) = threeDtangent(3,5);
+  dd22(3,4) = threeDtangent(4,5);
+  dd22(4,4) = threeDtangent(5,5);
+
+  static Vector dd21(5);
+  dd21(0) = threeDtangent(1,0);
+  dd21(1) = threeDtangent(2,0);
+  dd21(2) = threeDtangent(3,0);
+  dd21(3) = threeDtangent(4,0);
+  dd21(4) = threeDtangent(5,0);
+  
+  static Vector sigma2(5);
+  sigma2.addVector(0.0, dd21, -depsdh);
+
+  const Vector &threeDstress = theMaterial->getStressSensitivity(gradIndex, true);
+  //opserr << threeDstress;
+  sigma2(0) -= threeDstress(1);
+  sigma2(1) -= threeDstress(2);
+  sigma2(2) -= threeDstress(3);
+  sigma2(3) -= threeDstress(4);
+  sigma2(4) -= threeDstress(5);
+
+  //const Vector &threeDstress2 = theMaterial->getStressSensitivity(gradIndex, false);
+  //sigma2(0) += threeDstress2(1);
+  //sigma2(1) += threeDstress2(2);
+  //sigma2(2) += threeDstress2(4);
+  //sigma2(3) += threeDstress2(5);
+
+
+  static Vector strain2(5);
+  dd22.Solve(sigma2,strain2);
+
+
+  dstraindh(0) = depsdh;
+  dstraindh(1) = strain2(0);
+  dstraindh(2) = strain2(1);
+  dstraindh(3) = strain2(2);
+  dstraindh(4) = strain2(3);
+  dstraindh(5) = strain2(4);
+
+  return theMaterial->commitSensitivity(dstraindh, gradIndex, numGrads);
+}
