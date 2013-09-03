@@ -520,6 +520,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/PFEMElement/TclPFEMCommands.o \
 	$(FE)/element/PFEMElement/PFEMMesher2D.o \
 	$(FE)/element/PFEMElement/PFEMMesher3D.o \
+	$(FE)/element/PFEMElement/PFEMElement2DCompressible.o \
+	$(FE)/element/PFEMElement/PFEMElement2DBubble.o \
 	$(FE)/element/UWelements/SSPquad.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \
@@ -828,6 +830,8 @@ SysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleLinSOE.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenRowLinSOE.o \
     $(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenRowLinSolver.o \
