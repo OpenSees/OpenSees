@@ -32,7 +32,7 @@
 
 #include <PFEMMesher2D.h>
 #include <PFEMMesher3D.h>
-#include <ParallelPFEM.h>
+//#include <ParallelPFEM.h>
 #include <Domain.h>
 #include <Node.h>
 #include <NodeIter.h>
@@ -1643,7 +1643,7 @@ TclModelBuilderPFEM3DCommand(ClientData clientData, Tcl_Interp *interp, int argc
     return TCL_OK;
 }
 
-
+/*
 int
 TclModelBuilderParallelPFEMCommand(ClientData clientData, Tcl_Interp *interp, int argc,   
                                    TCL_Char **argv, Domain* theDomain)
@@ -1783,3 +1783,4 @@ TclModelBuilderParallelPFEMCommand(ClientData clientData, Tcl_Interp *interp, in
 
     return TCL_OK;
 }
+*/
