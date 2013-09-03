@@ -575,7 +575,6 @@ MAKES/Makefile.def.SOLARIS -text
 MAKES/Makefile.def.STAMPEDE -text
 MAKES/Makefile.def.TERAGRID.IA_64 -text
 MAKES/Makefile.def.UNR_GRID -text
-MAKES/Makefile.def.fatcat -text
 /Makefile -text
 OTHER/AMD/License -text
 OTHER/AMD/Makefile -text

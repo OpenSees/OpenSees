@@ -41,6 +41,13 @@
 # make
 
 
+# NOTE: if 64 bit the TCL dir is placed elsewhere; make will fail
+# you need to uncomment out the correct line below TL_LIBS = 
+# TCL_LIBS should point to the following: /usr/lib/x86_64-linux/gnu/libtcl8.5.so
+
+# you can always find it using the find command:
+# find / -name libtcl8.5.so 2>/dev/null
+
 # %---------------------------------%
 # |  SECTION 1: PROGRAM             |
 # %---------------------------------%
@@ -113,7 +120,10 @@ AMD_LIBRARY  = $(HOME)/lib/libAMD.a
 UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY   = $(HOME)/lib/libMetis.a
 CSPARSE_LIBRARY   = $(HOME)/lib/libCSparse.a
+
 TCL_LIBRARY = /usr/lib/libtcl8.5.so
+#TCL_LIBRARY = /usr/lib/x86_64-linux/gnu/libtcl8.5.so
+
 BLITZ_LIBRARY = $(HOME)/blitz/lib/libblitz.a
 GRAPHIC_LIBRARY     = 
 
@@ -179,7 +189,7 @@ FFLAGS          = -Wall -O
 
 # Linker
 LINKER          = $(CC++)
-LINKFLAGS       = -rdynamic -Wl
+LINKFLAGS       = -rdynamic 
 
 endif
 
