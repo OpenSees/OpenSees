@@ -354,8 +354,12 @@ NDMaterial * CapPlasticity::getCopy(void)  {
 };
 
 NDMaterial * CapPlasticity::getCopy(const char *code)  {
-  CapPlasticity * copy = new CapPlasticity(*this);
-  return copy;
+  if (strcmp(code,this->getType()) == 0) {
+    CapPlasticity * copy = new CapPlasticity(*this);
+    return copy;
+  }
+  else
+    return 0;
 };
 
 const char * CapPlasticity::getType(void) const  {
