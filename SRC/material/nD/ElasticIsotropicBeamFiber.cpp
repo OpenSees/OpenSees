@@ -38,14 +38,14 @@ Matrix ElasticIsotropicBeamFiber::D(3,3);
 ElasticIsotropicBeamFiber::ElasticIsotropicBeamFiber
 (int tag, double E, double nu, double rho):
   ElasticIsotropicMaterial (tag, ND_TAG_ElasticIsotropicBeamFiber, E, nu, rho),
-  Tepsilon(3), parameterID(0)
+  Tepsilon(3)
 {
 
 }
 
 ElasticIsotropicBeamFiber::ElasticIsotropicBeamFiber():
   ElasticIsotropicMaterial (0, ND_TAG_ElasticIsotropicBeamFiber, 0.0, 0.0),
-  Tepsilon(3), parameterID(0)
+  Tepsilon(3)
 {
 
 }
@@ -164,40 +164,13 @@ ElasticIsotropicBeamFiber::getOrder (void) const
   return 3;
 }
 
-int
-ElasticIsotropicBeamFiber::setParameter(const char **argv, int argc, Parameter &param)
-{
-  if (argc < 1)
-    return -1;
-
-  if (strcmp(argv[0],"E") == 0)
-    return param.addObject(1, this);
-
-  return -1;
-}
-
-int
-ElasticIsotropicBeamFiber::updateParameter(int paramID, Information &info)
-{
-  if (paramID == 1)
-    E = info.theDouble;
-
-  return 0;
-}
-
-int
-ElasticIsotropicBeamFiber::activateParameter(int paramID)
-{
-  parameterID = paramID;
-
-  return 0;
-}
-
 const Vector&
 ElasticIsotropicBeamFiber::getStressSensitivity(int gradIndex,
 						bool conditional)
 {
-  sigma.Zero();
+  sigma(0) = 0.0;
+  sigma(1) = 0.0;
+  sigma(2) = 0.0;
 
   if (parameterID == 1) { // E
     //double mu = 0.5*E/(1.0+v);
@@ -206,6 +179,14 @@ ElasticIsotropicBeamFiber::getStressSensitivity(int gradIndex,
     sigma(0) = Tepsilon(0);
     sigma(1) = dmudE*Tepsilon(1);
     sigma(2) = dmudE*Tepsilon(2);
+  }
+  if (parameterID == 2) { // nu
+    //double mu = 0.5*E/(1.0+v);
+    double dmudnu = -0.5*E/(1.0 + 2*v + v*v);
+
+    sigma(0) = 0.0;
+    sigma(1) = dmudnu*Tepsilon(1);
+    sigma(2) = dmudnu*Tepsilon(2);
   }
 
   return sigma;

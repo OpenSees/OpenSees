@@ -64,9 +64,6 @@ class ElasticIsotropicBeamFiber2d : public ElasticIsotropicMaterial
     const char *getType (void) const;
     int getOrder (void) const;
     
-    int setParameter(const char **argv, int argc, Parameter &param);
-    int updateParameter(int paramID, Information &info);
-    int activateParameter(int paramID);
     const Vector& getStressSensitivity(int gradIndex,
 				       bool conditional);
 
@@ -76,8 +73,6 @@ class ElasticIsotropicBeamFiber2d : public ElasticIsotropicMaterial
     static Vector sigma;	// Stress vector ... class-wide for returns
     static Matrix D;		// Elastic constants
     Vector Tepsilon;		// Trial strains
-
-    int parameterID;
 };
 
 
