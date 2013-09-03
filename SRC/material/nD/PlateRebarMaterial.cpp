@@ -87,7 +87,10 @@ PlateRebarMaterial::getCopy( )
 NDMaterial* 
 PlateRebarMaterial::getCopy( const char *type ) 
 {
-  return this->getCopy( ) ;
+  if (strcmp(type,this->getType()) == 0)
+    return this->getCopy( ) ;
+  else
+    return 0;
 }
 
 
@@ -102,7 +105,7 @@ PlateRebarMaterial::getOrder( ) const
 const char*
 PlateRebarMaterial::getType( ) const 
 {
-  return "PlateRebarMaterial" ; 
+  return "PlateFiber" ; 
 }
 
 

@@ -82,7 +82,10 @@ PlateFromPlaneStressMaterial::getCopy( )
 NDMaterial* 
 PlateFromPlaneStressMaterial::getCopy( const char *type ) 
 {
-  return this->getCopy( ) ;
+  if (strcmp(type, this->getType()) == 0)
+    return this->getCopy( ) ;
+  else
+    return 0;
 }
 
 
@@ -97,7 +100,7 @@ PlateFromPlaneStressMaterial::getOrder( ) const
 const char*
 PlateFromPlaneStressMaterial::getType( ) const 
 {
-  return "PlateFromPlaneStress" ; 
+  return "PlateFiber" ; 
 }
 
 

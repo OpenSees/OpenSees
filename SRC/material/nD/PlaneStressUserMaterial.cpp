@@ -140,7 +140,10 @@ PlaneStressUserMaterial::getCopy( )
 NDMaterial* 
 PlaneStressUserMaterial::getCopy( const char *type ) 
 {
-  return this->getCopy( ) ;
+  if (strcmp(type, this->getType()) == 0)
+    return this->getCopy( ) ;
+  else
+    return 0;
 }
 
 
@@ -155,7 +158,7 @@ PlaneStressUserMaterial::getOrder( ) const
 const char*
 PlaneStressUserMaterial::getType( ) const 
 {
-  return "PlaneStressUserMaterial" ; 
+  return "PlaneStress" ; 
 }
 
 
