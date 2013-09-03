@@ -244,3 +244,49 @@ ElasticIsotropicThreeDimensional::recvSelf(int commitTag, Channel &theChannel,
 }
 
 
+const Vector&
+ElasticIsotropicThreeDimensional::getStressSensitivity(int gradIndex,
+						       bool conditional)
+{
+  if (parameterID < 1 || parameterID > 2) {
+    sigma.Zero();
+    return sigma;
+  }
+
+  double dmu2dh = 0.0;
+  double dlamdh = 0.0;
+
+  //double lam = v*mu2/(1.0-2.0*v);
+
+  if (parameterID == 1) { // E
+    //double mu2 = E/(1.0+v);
+    dmu2dh = 1.0/(1.0+v);
+    dlamdh = dmu2dh*v/(1-2*v);
+  }
+
+  if (parameterID == 2) { // nu
+    double mu2 = E/(1.0+v);
+    dmu2dh = -E/(1.0 + 2*v + v*v);
+    dlamdh = mu2/(1.0 - 4*v + 4*v*v) + dmu2dh*v/(1-2*v);
+  }
+
+  //double mu = 0.50*mu2;
+  double dmudh  = 0.5*dmu2dh;
+
+  //mu2 += lam;
+  dmu2dh += dlamdh;
+
+  double eps0 = epsilon(0);
+  double eps1 = epsilon(1);
+  double eps2 = epsilon(2);
+
+  //sigma = D*epsilon;
+  sigma(0) = dmu2dh*eps0 + dlamdh*(eps1+eps2);
+  sigma(1) = dmu2dh*eps1 + dlamdh*(eps0+eps2);
+  sigma(2) = dmu2dh*eps2 + dlamdh*(eps0+eps1);
+  sigma(3) = dmudh*epsilon(3);
+  sigma(4) = dmudh*epsilon(4);
+  sigma(5) = dmudh*epsilon(5);
+
+  return sigma;
+}

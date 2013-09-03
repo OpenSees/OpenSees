@@ -69,6 +69,9 @@ class ElasticIsotropicThreeDimensional : public ElasticIsotropicMaterial
     int recvSelf(int commitTag, Channel &theChannel, 
 		 FEM_ObjectBroker &theBroker);    
     
+    const Vector& getStressSensitivity(int gradIndex,
+				       bool conditional);
+
  protected:
 
   private:
