@@ -15,8 +15,9 @@ OBJS       = SparseGenColLinSOE.o \
 	DistributedSparseGenColLinSOE.o \
 	DistributedSparseGenRowLinSOE.o \
 	PFEMSolver.o \
-	PFEMLinSOE.o
-
+	PFEMLinSOE.o \
+	PFEMCompressibleSolver.o \
+	PFEMCompressibleLinSOE.o 
 else
 
 ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
@@ -30,7 +31,9 @@ OBJS       = SparseGenColLinSOE.o \
 	DistributedSparseGenColLinSOE.o \
 	DistributedSparseGenRowLinSOE.o \
 	PFEMSolver.o \
-	PFEMLinSOE.o
+	PFEMLinSOE.o \
+	PFEMCompressibleSolver.o \
+	PFEMCompressibleLinSOE.o 
 else
 
 OBJS       = SparseGenColLinSOE.o \
@@ -39,7 +42,9 @@ OBJS       = SparseGenColLinSOE.o \
 	SparseGenRowLinSolver.o \
 	SuperLU.o \
 	PFEMSolver.o \
-	PFEMLinSOE.o
+	PFEMLinSOE.o \
+	PFEMCompressibleSolver.o \
+	PFEMCompressibleLinSOE.o 
 endif
 endif
 
