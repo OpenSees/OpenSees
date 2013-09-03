@@ -41,7 +41,7 @@ ID ElasticShearSection3d::code(6);
 ElasticShearSection3d::ElasticShearSection3d(void)
 :SectionForceDeformation(0, SEC_TAG_Elastic3d),
  E(0.0), A(0.0), Iz(0.0), Iy(0.0), G(0.0), J(0.0),
- alphaY(0.0), alphaZ(0.0), e(6), eCommit(6)
+ alphaY(0.0), alphaZ(0.0), e(6)
 {
     if (code(0) != SECTION_RESPONSE_P) {
 	code(0) = SECTION_RESPONSE_P;	// P is the first quantity
@@ -58,7 +58,7 @@ ElasticShearSection3d::ElasticShearSection3d
  double G_in, double J_in, double alphaY_in, double alphaZ_in)
 :SectionForceDeformation(tag, SEC_TAG_Elastic3d),
  E(E_in), A(A_in), Iz(Iz_in), Iy(Iy_in), G(G_in), J(J_in),
- alphaY(alphaY_in), alphaZ(alphaZ_in), e(6), eCommit(6)
+ alphaY(alphaY_in), alphaZ(alphaZ_in), e(6)
 {
     if (E <= 0.0)  {
       opserr << "ElasticShearSection3d::ElasticShearSection3d -- Input E <= 0.0\n";
@@ -110,24 +110,18 @@ ElasticShearSection3d::~ElasticShearSection3d(void)
 int 
 ElasticShearSection3d::commitState(void)
 {
-  eCommit = e;
-
   return 0;
 }
 
 int 
 ElasticShearSection3d::revertToLastCommit(void)
 {
-  e = eCommit;
-
   return 0;
 }
 
 int 
 ElasticShearSection3d::revertToStart(void)
 {
-  eCommit.Zero();
-
   return 0;
 }
 
@@ -228,7 +222,7 @@ ElasticShearSection3d::getCopy ()
 	new ElasticShearSection3d (this->getTag(), E, A, Iz, Iy,
                                G, J, alphaY, alphaZ);
 
-    theCopy->eCommit = eCommit;
+    theCopy->parameterID = parameterID;
 
     return theCopy;
 }
@@ -250,7 +244,7 @@ ElasticShearSection3d::sendSelf(int commitTag, Channel &theChannel)
 {
     int res = 0;
 
-    static Vector data(15);
+    static Vector data(9);
 
     int dataTag = this->getDbTag();
     
@@ -263,12 +257,6 @@ ElasticShearSection3d::sendSelf(int commitTag, Channel &theChannel)
     data(6) = J;
     data(7) = alphaY;
     data(8) = alphaZ;
-    data(9) = eCommit(0);
-    data(10) = eCommit(1);
-    data(11) = eCommit(2);
-    data(12) = eCommit(3);
-    data(13) = eCommit(4);
-    data(14) = eCommit(5);
     
     res += theChannel.sendVector(dataTag, commitTag, data);
     if(res < 0) {
@@ -285,7 +273,7 @@ ElasticShearSection3d::recvSelf(int commitTag, Channel &theChannel,
 {
     int res = 0;
     
-    static Vector data(15);
+    static Vector data(9);
 
     int dataTag = this->getDbTag();
 
@@ -304,12 +292,6 @@ ElasticShearSection3d::recvSelf(int commitTag, Channel &theChannel,
     J = data(6);
     alphaY = data(7);
     alphaZ = data(8);
-    eCommit(0) = data(9);
-    eCommit(1) = data(10);
-    eCommit(2) = data(11);
-    eCommit(3) = data(12);
-    eCommit(4) = data(13);
-    eCommit(5) = data(14);
 
     return res;
 }

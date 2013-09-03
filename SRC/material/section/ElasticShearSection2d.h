@@ -83,7 +83,6 @@ class ElasticShearSection2d: public SectionForceDeformation
   double E, A, I, G, alpha;
   
   Vector e;			// section trial deformations
-  Vector eCommit;
   
   static Vector s;
   static Matrix ks;
