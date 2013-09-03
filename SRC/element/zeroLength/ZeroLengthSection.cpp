@@ -188,7 +188,7 @@ ZeroLengthSection::setDomain(Domain *theDomain)
     // Check that length is zero within tolerance
     const Vector &end1Crd = theNodes[0]->getCrds();
     const Vector &end2Crd = theNodes[1]->getCrds();	
-    const Vector     diff = end1Crd - end2Crd;
+    Vector diff = end1Crd - end2Crd;
     double L  = diff.Norm();
     double v1 = end1Crd.Norm();
     double v2 = end2Crd.Norm();
@@ -520,6 +520,7 @@ ZeroLengthSection::Print(OPS_Stream &s, int flag)
 	s << "ZeroLengthSection, tag: " << this->getTag() << endln;
 	s << "\tConnected Nodes: " << connectedExternalNodes << endln;
 	s << "\tSection, tag: " << theSection->getTag() << endln;
+	theSection->Print(s, flag);
 }
 
 Response*
@@ -673,7 +674,7 @@ ZeroLengthSection::setTransformation(void)
 
 	// Get the section code
 	const ID &code = theSection->getType();
-		
+
 	// Set a reference to make the syntax nicer
 	Matrix &tran = *A;
 	
@@ -763,7 +764,7 @@ ZeroLengthSection::computeSectionDefs(void)
 	const Vector &u2 = theNodes[1]->getTrialDisp();
 
 	// Compute differential displacements
-	const Vector diff = u2 - u1;
+	Vector diff = u2 - u1;
 
 	// Set some references to make the syntax nicer
 	Vector &def = *v;
