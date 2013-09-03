@@ -874,7 +874,7 @@ SectionAggregator::setParameter(const char **argv, int argc, Parameter &param)
   int result = -1;
 
   // Check if the parameter belongs to only an aggregated material
-  if (strstr(argv[0],"addition") != 0) {
+  if (strstr(argv[0],"addition") != 0 || strstr(argv[0],"material") != 0) {
     
     if (argc < 3)
       return -1;
@@ -959,7 +959,53 @@ SectionAggregator::getStressResultantSensitivity(int gradIndex,
 const Matrix &
 SectionAggregator::getSectionTangentSensitivity(int gradIndex)
 {
+  int i = 0;
+
+  int theSectionOrder = 0;
+
+  // Zero before assembly
   ks->Zero();
+
+  if (theSection) {
+    const Matrix &kSec = theSection->getSectionTangentSensitivity(gradIndex);
+    theSectionOrder = theSection->getOrder();
+
+    for (i = 0; i < theSectionOrder; i++)
+      for (int j = 0; j < theSectionOrder; j++)
+	(*ks)(i,j) = kSec(i,j);
+  }
+  
+  int order = theSectionOrder + numMats;
+
+  for ( ; i < order; i++)
+    (*ks)(i,i) = theAdditions[i-theSectionOrder]->getTangentSensitivity(gradIndex);
+  
+  return *ks;
+}
+
+const Matrix&
+SectionAggregator::getInitialTangentSensitivity(int gradIndex)
+{
+  int i = 0;
+
+  int theSectionOrder = 0;
+
+  // Zero before assembly
+  ks->Zero();
+
+  if (theSection) {
+    const Matrix &kSec = theSection->getInitialTangentSensitivity(gradIndex);
+    theSectionOrder = theSection->getOrder();
+
+    for (i = 0; i < theSectionOrder; i++)
+      for (int j = 0; j < theSectionOrder; j++)
+	(*ks)(i,j) = kSec(i,j);
+  }
+  
+  int order = theSectionOrder + numMats;
+
+  for ( ; i < order; i++)
+    (*ks)(i,i) = theAdditions[i-theSectionOrder]->getInitialTangentSensitivity(gradIndex);
   
   return *ks;
 }
