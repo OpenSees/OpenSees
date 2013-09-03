@@ -444,9 +444,10 @@ PFEMElement3D::setDomain(Domain *theDomain)
         numDOFs(2*i+1) = ndf;
 
         // get pc 
+        int pndf = 3;
         thePCs[i] = theDomain->getPressure_Constraint(ntags(2*i));
         if(thePCs[i] == 0) {
-            thePCs[i] = new Pressure_Constraint(ntags(2*i), bz);
+            thePCs[i] = new Pressure_Constraint(ntags(2*i), bz, pndf);
             if(thePCs[i] == 0) {
                 opserr<<"WARNING: no enough memory for Pressure_Constraint -- ";
                 opserr<<"PFEMElement3D::setDomain "<<eletag<<"\n";
