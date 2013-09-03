@@ -592,6 +592,9 @@
 #define ELE_TAG_CorotTruss2            139
 #define ELE_Tag_ZeroLengthImpact3D     140
 #define ELE_TAG_PFEMElement3D          141
+#define ELE_TAG_PFEMElement2DCompressible 142
+#define ELE_TAG_PFEMElement2DBubble    143
+#define ELE_TAG_PFEMElement2D73    144
 
 #define ELE_TAG_MultipleShearSpring 6201
 #define ELE_TAG_MultipleNormalSpring 6202
@@ -792,6 +795,7 @@
 #define LinSOE_TAGS_MPIDiagonalSOE 25
 #define LinSOE_TAGS_PFEMLinSOE 26
 #define LinSOE_TAGS_SProfileSPDLinSOE		27
+#define LinSOE_TAGS_PFEMCompressibleLinSOE 28
 
 
 #define SOLVER_TAGS_FullGenLinLapackSolver  	1
@@ -821,6 +825,7 @@
 #define SOLVER_TAGS_MPIDiagonalSolver 25
 #define SOLVER_TAGS_PFEMSolver 26
 #define SOLVER_TAGS_SProfileSPDLinSolver  	27
+#define SOLVER_TAGS_PFEMCompressibleSolver 28
 
 
 #define RECORDER_TAGS_ElementRecorder		1
