@@ -59,6 +59,7 @@ class PlaneStressSimplifiedJ2 : public NDMaterial
   int revertToStart(void);
   
   NDMaterial *getCopy (void);
+  NDMaterial *getCopy (const char *type);
   
   int plastIntegrator();
   

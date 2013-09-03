@@ -356,6 +356,15 @@ NDMaterial * PlaneStressSimplifiedJ2::getCopy (void){
     PlaneStressSimplifiedJ2 * theJ2 = new PlaneStressSimplifiedJ2(this->getTag(),this->ndm, *the3DMaterial);
     return theJ2;
 };
+
+NDMaterial * PlaneStressSimplifiedJ2::getCopy (const char *type){
+  if (strcmp(type,"PlaneStress") == 0) {
+    PlaneStressSimplifiedJ2 * theJ2 = new PlaneStressSimplifiedJ2(this->getTag(),this->ndm, *the3DMaterial);
+    return theJ2;
+  } else {
+    return 0;
+  }
+};
  
 
 

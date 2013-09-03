@@ -33,7 +33,7 @@ class SimplifiedJ2 : public NDMaterial
   virtual ~SimplifiedJ2 ();
   
   const char *getClassType(void) const {return "SimplifiedJ2";};
-  const char *getType(void) const{ return "SimplifiedJ2";};
+  const char *getType(void) const{ return "ThreeDimensional";};
   int setTrialStrain (const Vector &strain);
   int setTrialStrain(const Vector &v, const Vector &r);
   int setTrialStrainIncr(const Vector &v);
