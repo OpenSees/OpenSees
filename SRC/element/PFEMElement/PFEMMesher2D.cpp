@@ -50,9 +50,10 @@
 #include <math.h>
 #include <string.h>
 #include <PFEMElement2D.h>
+#include <PFEMElement2DCompressible.h>
+#include <PFEMElement2DBubble.h>
 #include <NDMaterial.h>
 #include <Tri31.h>
-#include <map>
 #include <set>
 #include <fstream>
 #include <iostream>
@@ -62,7 +63,7 @@
 
 PFEMMesher2D::PFEMMesher2D()
     :PI(3.1415926535897932384626433), bound(4), frameBase(2), Lspan(), Height(), avesize(0.0),
-     fluidNodes(), structureNodes()
+     fluidNodes()
 {
 }
 
@@ -507,7 +508,7 @@ PFEMMesher2D:: discretize(int startnode, double x1, double y1, double x2, double
 int 
 PFEMMesher2D::discretize(int startnode, double xc, double yc, double r1, double r2,
                          int nc, int nr, int ndf, const Vector& fix, const Vector& vel,
-                         const Vector& mass, const Vector& boundary,
+                         const Vector& mass, const Vector& boundary, const Vector& angle,
                          Domain* theDomain, int& endnode)
 {
     if(theDomain == 0) {
@@ -520,10 +521,21 @@ PFEMMesher2D::discretize(int startnode, double xc, double yc, double r1, double 
         opserr<<" -- PFEMMesher2D::discretize\n";
         return -1;
     }
+    if(angle.Size() < 2) {
+        opserr<<"WARNING: angle vector must have 2 entries";
+        opserr<<" -- PFEMMesher2D::discretize\n";
+        return -1;
+    }
 
     if(nc<=0 || nr<0) return 0;
+    double angle1 = angle(0);
+    double angle2 = angle(1);
+    if(angle1 < 0) angle1 = 0;
+    if(angle2 > 360) angle2 = 360;
+    angle1 = angle1*PI/180.0;
+    angle2 = angle2*PI/180.0;
 
-    double hc = 2*PI/nc;
+    double hc = (angle2-angle1)/nc;
     double hr = 0.0;
     if(nr>0) hr = (r2-r1)/nr;
 
@@ -542,7 +554,7 @@ PFEMMesher2D::discretize(int startnode, double xc, double yc, double r1, double 
     for(int i=start; i<=end; i++) {
         double ri = hr*i+r1;
         for(int j=0; j<=nc; j++) {
-            double angle = j*hc;
+            double angle = angle1+j*hc;
             double x = ri*cos(angle)+xc;
             double y = ri*sin(angle)+yc;
 
@@ -664,9 +676,9 @@ PFEMMesher2D::discretize(int startnode, char type, int n,
 }
 
 int
-PFEMMesher2D::doTriangulation(int starteletag, const ID& nodes, double alpha, 
-                              const ID& addnodes, Domain* theDomain, 
-                              double rho, double mu, double b1, double b2, double thk)
+PFEMMesher2D::doTriangulation(int starteletag, double alpha, Domain* theDomain, 
+                              double rho, double mu, double b1, double b2, 
+                              double thk, double kappa, int type)
 {
     if(theDomain == 0) {
         opserr<<"WARNING: null domain";
@@ -678,15 +690,7 @@ PFEMMesher2D::doTriangulation(int starteletag, const ID& nodes, double alpha,
     // do triangulation
     ID eles;
     int res = 0;
-    if(nodes.Size()==0 && addnodes.Size()==0) {
-        res = doTriangulation(fluidNodes, alpha,
-                              structureNodes, 
-                              theDomain, eles);
-    } else {
-        res = doTriangulation(nodes, alpha,
-                              addnodes, 
-                              theDomain, eles);
-    }
+    res = doTriangulation(alpha,theDomain, eles);
     if(res < 0) {
         opserr<<"WARNING: failed to do triangulation --";
         opserr<<"PFEMMesher2D::soTriangulation\n";
@@ -699,8 +703,17 @@ PFEMMesher2D::doTriangulation(int starteletag, const ID& nodes, double alpha,
     if(numeles == 0) return 0;
     int etag = starteletag-1;
     for(int i=0; i<numeles; i++) {
-        PFEMElement2D* theEle = new PFEMElement2D(++etag, eles(3*i), eles(3*i+1), eles(3*i+2),
-                                                  rho, mu, b1, b2, thk);
+        Element* theEle = 0;
+        if(type == 1) {
+            theEle = new PFEMElement2D(++etag, eles(3*i), eles(3*i+1), eles(3*i+2),
+                                                      rho, mu, b1, b2, thk);
+        } else if(type == 3) {
+            theEle = new PFEMElement2DCompressible(++etag, eles(3*i), eles(3*i+1), eles(3*i+2),
+                                                   rho, mu, b1, b2, thk, kappa);
+        } else if(type == 4) {
+            theEle = new PFEMElement2DBubble(++etag, eles(3*i), eles(3*i+1), eles(3*i+2),
+                                             rho, mu, b1, b2, thk, kappa);
+        }
 
         if(theEle == 0) {
             opserr<<"WARNING: no enough memory -- ";
@@ -721,11 +734,11 @@ PFEMMesher2D::doTriangulation(int starteletag, const ID& nodes, double alpha,
 }
 
 int
-PFEMMesher2D::doTriangulation(int starteletag, const ID& nodes, double alpha, 
-                              const ID& addnodes, Domain* theDomain, 
+PFEMMesher2D::doTriangulation(int starteletag, double alpha, Domain* theDomain, 
                               double t, const char* type, int matTag,
                               double p, double rho, double b1, double b2)
 {
+    avesize = 0.0;
     if(theDomain == 0) {
         opserr<<"WARNING: null domain";
         opserr<<" -- PFEMMesher2D::doTriangulation\n";
@@ -734,9 +747,7 @@ PFEMMesher2D::doTriangulation(int starteletag, const ID& nodes, double alpha,
     //Timer timer;
     // do triangulation
     ID eles;
-    int res = doTriangulation(nodes, alpha,
-                              addnodes, 
-                              theDomain, eles);
+    int res = doTriangulation(alpha,theDomain, eles);
     if(res < 0) {
         opserr<<"WARNING: failed to do triangulation --";
         opserr<<"PFEMMesher2D::doTriangulation\n";
@@ -778,8 +789,7 @@ PFEMMesher2D::doTriangulation(int starteletag, const ID& nodes, double alpha,
 }
 
 int
-PFEMMesher2D::doTriangulation(const ID& nodes, double alpha, 
-                              const ID& addnodes , Domain* theDomain, ID& eles)
+PFEMMesher2D::doTriangulation(double alpha, Domain* theDomain, ID& eles, bool o2)
 {
     //Timer theTimer;
     if(theDomain == 0) {
@@ -795,14 +805,8 @@ PFEMMesher2D::doTriangulation(const ID& nodes, double alpha,
     initializeTri(vout);
 
     // number of nodes
-    int numnodes=0, numadd=0;
-    for(int i=0; i<nodes.Size()/2; i++) {
-        numnodes += nodes(2*i+1) - nodes(2*i) + 1;
-    }
-    for(int i=0; i<addnodes.Size()/2; i++) {
-        numadd += addnodes(2*i+1) - addnodes(2*i) + 1;
-    }
-    in.numberofpoints = numnodes+numadd;
+    int numnodes = fluidNodes.size();
+    in.numberofpoints = numnodes;
     if(in.numberofpoints < 3) {
         return 0;
     }
@@ -815,34 +819,13 @@ PFEMMesher2D::doTriangulation(const ID& nodes, double alpha,
     }
     //opserr<<"in.numberofpoints = "<<in.numberofpoints<<"\n";
     // copy nodes to pointlist, use current coordinates
-    int loc = 0, numpoints = 0;
+    int numpoints = 0;
     ID p2nd(0, in.numberofpoints);
-    int nodesloc=0, addnodesloc=0;
-    for(int i=0; i<in.numberofpoints; i++) {
+    for(std::map<int,int>::iterator it=fluidNodes.begin(); it!=fluidNodes.end(); it++) {
 
         // pointer to node
-        Node* node = 0;
-        int ndtag = 0;
-        if(i<numnodes) {
-            ndtag = nodes(2*nodesloc)+loc;
-            //opserr<<"ndtag = "<<ndtag<<"\n";
-            if(nodes(2*nodesloc+1)-nodes(2*nodesloc)==loc) {
-                nodesloc++;
-                loc = 0;
-            } else {
-                loc++;
-            }
-        } else {
-            ndtag = addnodes(2*addnodesloc)+loc;
-            if(addnodes(2*addnodesloc+1)-addnodes(2*addnodesloc)==loc) {
-                addnodesloc++;
-                loc = 0;
-            } else {
-                loc++;
-            }
-        }
-
-        node = theDomain->getNode(ndtag);
+        int ndtag = it->first;
+        Node* node = theDomain->getNode(ndtag);
         if(node == 0) continue;
 
         // get coordinates
@@ -867,7 +850,14 @@ PFEMMesher2D::doTriangulation(const ID& nodes, double alpha,
     in.numberofpoints = numpoints;
 
     // Delaunay Triangulation
-    char s[] = "Qzv";
+    char s1[] = "Qzv";
+    char s2[] = "Qzvo2";
+    char* s = 0;
+    if(o2) {
+        s = s2;
+    } else {
+        s = s1;
+    }
     //theTimer.start();
     // opserr<<"Start Delaunay Triangulation -- If got segmentation fault, please check inputs \n";
     triangulate(s, &in, &out, &vout);
@@ -887,7 +877,6 @@ PFEMMesher2D::doTriangulation(const ID& nodes, double alpha,
     if(alpha > 0) {
 
         // radius and average size of triangles
-        avesize = 0.0;
         Vector radius(out.numberoftriangles);
         for(int i=0; i<out.numberoftriangles; i++) {
 
@@ -934,7 +923,7 @@ PFEMMesher2D::doTriangulation(const ID& nodes, double alpha,
 
         // alpha test
         int num = 0;
-        eles.resize(out.numberoftriangles*3);
+        eles.resize(out.numberoftriangles*out.numberofcorners);
         for(int i=0; i<out.numberoftriangles; i++) {
             if(radius(i) / avesize <= alpha) {
                 // pass the test
@@ -943,26 +932,22 @@ PFEMMesher2D::doTriangulation(const ID& nodes, double alpha,
                 int add[3] = {-1,-1,-1};
                 for(int j=0; j<3; j++) {
                     int tag = p2nd(out.trianglelist[out.numberofcorners*i+j]);
-                    for(int k=0; k<(int)addnodes.Size()/2; k++) {
-                        if(tag>=addnodes(2*k) && tag<=addnodes(2*k+1)) {
-                            add[j] = k;
-                            break;
-                        }
-                    }
-                    // if(tag>=startnodetag && tag<=endnodetag) {
-                    //     add = false;
-                    //     break;
-                    // }
+                    add[j] = fluidNodes[tag];
                 }
                     
                 // add ele
-                // if(add[0]==add[1] && add[1]==add[2] && add[2]!=-1) continue;
-                if(add[0]!=-1 && add[1]!=-1 && add[2]!=-1) continue;
+                // if(add[0]==add[1] && add[1]==add[2] && add[2]!=0) continue;
+                if(add[0]!=0 && add[1]!=0 && add[2]!=0) continue;
                 for(int j=0; j<3; j++) {
                     int tag = p2nd(out.trianglelist[out.numberofcorners*i+j]);
                     eles(num++) = tag;
                 }
-
+                if(o2) {
+                    for(int j=3; j<out.numberofcorners; j++) {
+                        int tag = out.trianglelist[out.numberofcorners*i+j];
+                        eles(num++) = tag;
+                    }
+                }
             }
         }
         if(num == 0) {
@@ -974,16 +959,21 @@ PFEMMesher2D::doTriangulation(const ID& nodes, double alpha,
     } else if(alpha < 0) {
 
         // eles
-        eles.resize(out.numberoftriangles*3);
+        eles.resize(out.numberoftriangles*out.numberofcorners);
 
         // copy triangles
         for(int i=0; i<out.numberoftriangles; i++) {
             for(int j=0; j<3; j++) {
                 int tag = p2nd(out.trianglelist[out.numberofcorners*i+j]);
-                eles(3*i+j) = tag;
+                eles(out.numberofcorners*i+j) = tag;
+            }
+            if(o2) {
+                for(int j=3; j<out.numberofcorners; j++) {
+                    int tag = out.trianglelist[out.numberofcorners*i+j];
+                    eles(out.numberofcorners*i+j) = tag;
+                }
             }
         }
-
     }
     
     // free vout 
@@ -1007,7 +997,7 @@ PFEMMesher2D::save(const char* filename, const ID& snodes, Domain* theDomain)
     // write nodes
     std::ofstream file2(std::string(filename).append(".node").c_str());
     file2<<theDomain->getCurrentTime();
-    for(int i=0; i<7; i++) {
+    for(int i=0; i<8; i++) {
         file2 << " " << 0;
     }
     file2<<"\n";
@@ -1030,7 +1020,7 @@ PFEMMesher2D::save(const char* filename, const ID& snodes, Domain* theDomain)
             const Vector& vel = node->getVel();
             const Vector& accel = node->getAccel();
             const Vector& pvel = pnode->getVel();
-            file2<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" ";
+            file2<<ntag<<" "<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" ";
             int type = 1;
             for(int i=0; i<snodes.Size()/2; i++) {
                 if(ntag>=snodes(2*i) && ntag<=snodes(2*i+1)) {
@@ -1057,7 +1047,7 @@ PFEMMesher2D::save(const char* filename, const ID& snodes, Domain* theDomain)
                 const Vector& disp = theNode->getDisp();
                 const Vector& vel = theNode->getVel();
                 const Vector& accel = theNode->getAccel();
-                file2<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" "<<type<<" ";
+                file2<<tag<<" "<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" "<<type<<" ";
                 file2<<vel(0)<<" "<<vel(1)<<" "<<accel(0)<<" "<<accel(1);
                 file2<<" "<<0<<"\n";
             }
@@ -1090,6 +1080,14 @@ PFEMMesher2D::save(const char* filename, const ID& snodes, Domain* theDomain)
             std::map<int,int>::iterator it = nodeIndex.find(ntags(i));
             if(it == nodeIndex.end()) continue;
             num++;
+            file1<<ntags(i)<<" ";
+        }
+        for(int i=num; i<maxnum; i++) {
+            file1<<"nan ";
+        }
+        for(int i=0; i<ntags.Size(); i++) {
+            std::map<int,int>::iterator it = nodeIndex.find(ntags(i));
+            if(it == nodeIndex.end()) continue;
             file1<<it->second<<" ";
         }
         for(int i=num; i<maxnum; i++) {
@@ -1304,7 +1302,7 @@ PFEMMesher2D::removeOutBoundNodes(const ID& nodes, Domain* theDomain)
 }
 
 int
-PFEMMesher2D::addPC(const ID& nodes, int startpnode, Domain* theDomain, int& endpnode)
+PFEMMesher2D::addPC(const ID& nodes, int pndf, int startpnode, Domain* theDomain, int& endpnode)
 {
     if(theDomain==0) return -1;
 
@@ -1315,7 +1313,7 @@ PFEMMesher2D::addPC(const ID& nodes, int startpnode, Domain* theDomain, int& end
             if(theNode==0) continue;
             Pressure_Constraint* thePC = theDomain->getPressure_Constraint(j);
             if(thePC == 0) {
-                thePC = new Pressure_Constraint(j, ++endpnode);
+                thePC = new Pressure_Constraint(j, ++endpnode, pndf);
                 if(thePC == 0) {
                     opserr<<"WARNING: no enough memory for Pressure_Constraint -- ";
                     opserr<<"PFEMMesher2D::addPC \n";
@@ -1336,20 +1334,34 @@ PFEMMesher2D::addPC(const ID& nodes, int startpnode, Domain* theDomain, int& end
 }
 
 void
-PFEMMesher2D::setNodes(const ID& nodes, bool fluid, bool append)
+PFEMMesher2D::setNodes(const ID& newnodes, int type, bool series, int action)
 {
-    ID* pnodes = &structureNodes;
-    if(fluid) pnodes = &fluidNodes;
-    int oldsize = pnodes->Size();
-    int newsize = nodes.Size();
-    if(!append) {
-        (*pnodes) = nodes;
-        return;
+    if(action == 0) fluidNodes.clear();
+
+    if(series) {
+        for(int i=0; i<newnodes.Size(); i++) {
+            int nd = newnodes(i);
+            if(action == 2) {
+                fluidNodes.erase(nd);
+            } else {
+                fluidNodes[nd] = type;
+            }
+        }
+        
+    } else {
+
+        for(int i=0; i<newnodes.Size()/2; i++) {
+            for(int nd=newnodes(2*i); nd<=newnodes(2*i+1); nd++) {
+                if(action == 2) {
+                    fluidNodes.erase(nd);
+                } else {
+                    fluidNodes[nd] = type;
+                }
+            }
+        }
+
     }
-    pnodes->resize(oldsize+newsize);
-    for(int i=0; i<newsize; i++) {
-        (*pnodes)(oldsize+i) = nodes(i);
-    }
+
 }
 
 void

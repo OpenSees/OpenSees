@@ -45,7 +45,7 @@ extern "C" {
 }
 #include <string>
 #include <Vector.h>
-#include <ID.h>
+#include <map>
 
 class Domain;
 
@@ -85,23 +85,21 @@ public:
 
     int discretize(int startnode, double xc, double yc, double r1, double r2,
                    int nc, int nr, int ndf, const Vector& fix, const Vector& vel,
-                   const Vector& mass, const Vector& boundary,
+                   const Vector& mass, const Vector& boundary, const Vector& angle,
                    Domain* theDomain, int& endnode);    // circle
     int discretize(int startnode, char type, int n,
                    int nth, int nthfloor,  int ndf,
                    const Vector& fix, const Vector& vel, 
                    const Vector& mass, Domain* theDomain, int& endnode);   // frame
 
-    int addPC(const ID& nodes, int startpnode, Domain* theDomain, int& endpnode); // add PC for nodes
+    int addPC(const ID& nodes, int pndf, int startpnode, Domain* theDomain, int& endpnode); // add PC for nodes
 
     // triangulation
-    int doTriangulation(const ID& nodes, double alpha, 
-                        const ID& addnodes, Domain* theDomain, ID& eles);
-    int doTriangulation(int startele, const ID& nodes, double alpha, 
-                        const ID& addnodes, Domain* theDomain,
-                        double rho, double mu, double b1, double b2, double thk);
-    int doTriangulation(int startele, const ID& nodes, double alpha, 
-                        const ID& addnodes, Domain* theDomain,
+    int doTriangulation(double alpha, Domain* theDomain, ID& eles, bool o2=false);
+    int doTriangulation(int startele, double alpha, Domain* theDomain,
+                        double rho, double mu, double b1, double b2, 
+                        double thk, double kappa, int type);
+    int doTriangulation(int startele, double alpha, Domain* theDomain,
                         double t, const char* type, int matTag,
                         double p, double rho, double b1, double b2);
 
@@ -121,8 +119,9 @@ public:
                            Vector& dragdir, Vector& liftdir, 
                            Domain* theDomain);
 
-    double geth() {return avesize;}
-    void setNodes(const ID& nodes, bool fluid, bool append = false);
+    double geth()const {return avesize;}
+    void setNodes(const ID& nodes, int type, bool series, int action);
+    const std::map<int,int>& getNodes()const  {return fluidNodes;}
 
 private:
 
@@ -139,8 +138,7 @@ private:
     Vector Lspan;
     Vector Height;
     double avesize;
-    ID fluidNodes;
-    ID structureNodes;
+    std::map<int,int> fluidNodes;
 };
 
 
