@@ -197,6 +197,9 @@
 #define MAT_TAG_PySimple2                    210
 #define MAT_TAG_TzSimple2                    211
 #define MAT_TAG_QzSimple2                    212
+#define MAT_TAG_SteelBRB                     213
+
+
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -234,6 +237,8 @@
 #define MAT_TAG_Concrete01WithSITC 3011
 
 #define MAT_TAG_KikuchiAikenHDR 6102
+#define MAT_TAG_KikuchiAikenLRB 6105
+#define MAT_TAG_AxialSp   6111
 #define MAT_TAG_AxialSpHD 6112
 
 
@@ -264,6 +269,7 @@
 #define SEC_TAG_ElasticShear3d                  24
 #define SEC_TAG_FiberSection2dInt		25
 #define SEC_TAG_FiberSection2dThermal		26
+#define SEC_TAG_LayeredShellFiberSection        27
 
 
 
@@ -290,15 +296,20 @@
 #define ND_TAG_Damage2p 			23
 #define ND_TAG_Damage2p3D 			24
 #define ND_TAG_Damage2ppstress 			25
+#define ND_TAG_SimplifiedJ2                     26
+#define ND_TAG_CapPlasticity                    27
+#define ND_TAG_PlaneStressUserMaterial          28
+#define ND_TAG_PlateFromPlaneStressMaterial     29
+#define ND_TAG_PlateRebarMaterial               30
 
-#define ND_TAG_ElasticOrthotropic		  200
-#define ND_TAG_ElasticOrthotropicPlaneStrain2d	211
-#define ND_TAG_ElasticOrthotropicPlaneStress2d	212
-#define ND_TAG_ElasticOrthotropicAxiSymm          213
-#define ND_TAG_ElasticOrthotropicPlateFiber	214
-#define ND_TAG_ElasticOrthotropicBeamFiber	215
-#define ND_TAG_ElasticOrthotropicThreeDimensional 216
-#define ND_TAG_ElasticOrthotropicBeamFiber2d	218
+#define ND_TAG_ElasticOrthotropic		  31
+#define ND_TAG_ElasticOrthotropicPlaneStrain2d	  32
+#define ND_TAG_ElasticOrthotropicPlaneStress2d	  33
+#define ND_TAG_ElasticOrthotropicAxiSymm          34
+#define ND_TAG_ElasticOrthotropicPlateFiber	  35
+#define ND_TAG_ElasticOrthotropicBeamFiber	  36
+#define ND_TAG_ElasticOrthotropicThreeDimensional 37
+#define ND_TAG_ElasticOrthotropicBeamFiber2d	  38
 
 
 #define ND_TAG_J2PlaneStrain                  3005
@@ -367,6 +378,12 @@
 
 #define ND_TAG_ConcreteMcftNonLinear5 7601
 #define ND_TAG_ConcreteMcftNonLinear7 7602
+
+
+
+
+
+
 
 #define FIBER_TAG_Uniaxial2d	1
 #define FIBER_TAG_Uniaxial3d	2
@@ -575,6 +592,9 @@
 #define ELE_TAG_CorotTruss2            139
 #define ELE_Tag_ZeroLengthImpact3D     140
 #define ELE_TAG_PFEMElement3D          141
+#define ELE_TAG_PFEMElement2DCompressible 142
+#define ELE_TAG_PFEMElement2DBubble    143
+#define ELE_TAG_PFEMElement2D73    144
 
 #define ELE_TAG_MultipleShearSpring 6201
 #define ELE_TAG_MultipleNormalSpring 6202
@@ -590,6 +610,7 @@
 #define BEAM_INTEGRATION_TAG_Radau           3
 #define BEAM_INTEGRATION_TAG_NewtonCotes           4
 #define BEAM_INTEGRATION_TAG_Trapezoidal           5
+#define BEAM_INTEGRATION_TAG_CompositeSimpson           55
 #define BEAM_INTEGRATION_TAG_Midpoint           6
 #define BEAM_INTEGRATION_TAG_UserDefined     7
 #define BEAM_INTEGRATION_TAG_FixedLocation     8
@@ -774,6 +795,7 @@
 #define LinSOE_TAGS_MPIDiagonalSOE 25
 #define LinSOE_TAGS_PFEMLinSOE 26
 #define LinSOE_TAGS_SProfileSPDLinSOE		27
+#define LinSOE_TAGS_PFEMCompressibleLinSOE 28
 
 
 #define SOLVER_TAGS_FullGenLinLapackSolver  	1
@@ -803,6 +825,7 @@
 #define SOLVER_TAGS_MPIDiagonalSolver 25
 #define SOLVER_TAGS_PFEMSolver 26
 #define SOLVER_TAGS_SProfileSPDLinSolver  	27
+#define SOLVER_TAGS_PFEMCompressibleSolver 28
 
 
 #define RECORDER_TAGS_ElementRecorder		1
