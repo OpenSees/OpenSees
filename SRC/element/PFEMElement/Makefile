@@ -1,14 +1,6 @@
 include ../../../Makefile.def
 
-OBJS = PFEMElement2D.o PFEMElement3D.o TclModelBuilder_addPFEMElement.o PFEMMesher2D.o PFEMMesher3D.o TclPFEMCommands.o 
-
-ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS) 
-
-OBJS = PFEMElement2D.o PFEMElement3D.o TclModelBuilder_addPFEMElement.o PFEMMesher2D.o PFEMMesher3D.o TclPFEMCommands.o 
-
-endif
-
-
+OBJS = PFEMElement2D.o PFEMElement3D.o TclModelBuilder_addPFEMElement.o PFEMMesher2D.o PFEMMesher3D.o TclPFEMCommands.o ParallelPFEM.o PFEMElement2DCompressible.o PFEMElement2DBubble.o
 
 #OBJS = 
 all: $(OBJS)
