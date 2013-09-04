@@ -133,7 +133,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                         opserr<<" -- PFEM2D discretize\n";
                         return TCL_ERROR;
                     }
-                    loc++;
                     if(num > 0) vecPtr->resize(num);
                     for(int i=0; i<num; i++) {
                         double x;
@@ -240,7 +239,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                         opserr<<" -- PFEM2D discretize\n";
                         return TCL_ERROR;
                     }
-                    loc++;
                     if(num > 0) vecPtr->resize(num);
                     for(int i=0; i<num; i++) {
                         double x;
@@ -257,7 +255,7 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
                 loc++;
             }
-            
+
             int endnodetag = startnodetag;
             int res = theMesher2D.discretize(startnodetag,x1,y1,hx,hy,angle,nx,ny,ndf,fix,vel,mass,
                                              boundary,theDomain,endnodetag);
@@ -339,7 +337,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                         opserr<<" -- PFEM2D discretize\n";
                         return TCL_ERROR;
                     }
-                    loc++;
                     if(num > 0) vecPtr->resize(num);
                     for(int i=0; i<num; i++) {
                         double x;
@@ -451,7 +448,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                         opserr<<" -- PFEM2D discretize\n";
                         return TCL_ERROR;
                     }
-                    loc++;
                     if(num > 0) vecPtr->resize(num);
                     for(int i=0; i<num; i++) {
                         double x;
@@ -559,7 +555,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                         opserr<<" -- PFEM2D discretize\n";
                         return TCL_ERROR;
                     }
-                    loc++;
                     if(num > 0) vecPtr->resize(num);
                     for(int i=0; i<num; i++) {
                         double x;
@@ -648,7 +643,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                         opserr<<" -- PFEM2D discretize\n";
                         return TCL_ERROR;
                     }
-                    loc++;
                     if(num > 0) vecPtr->resize(num);
                     for(int i=0; i<num; i++) {
                         double x;
@@ -736,8 +730,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                 vecPtr = &params;
                 eletype = 4;
                 loc++;
-            } else {
-                loc++;
             }
 
             if(vecPtr!=0 || idPtr!=0) {
@@ -748,7 +740,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                     opserr<<" -- PFEM2D discretize\n";
                     return TCL_ERROR;
                 }
-                loc++;
                 if(num > 0) {
                     if(vecPtr!=0) vecPtr->resize(num);
                     if(idPtr!=0) idPtr->resize(num);
@@ -892,7 +883,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                     opserr<<" -- PFEM2D discretize\n";
                     return TCL_ERROR;
                 }
-                loc++;
                 if(num > 0) idPtr->resize(num);
                 for(int i=0; i<num; i++) {
                     int tag;
@@ -981,7 +971,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                     opserr<<" -- PFEM2D discretize\n";
                     return TCL_ERROR;
                 }
-                loc++;
                 if(num > 0) vecPtr->resize(num);
                 for(int i=0; i<num; i++) {
                     double x;
@@ -1217,7 +1206,7 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
         if(argvPtr != 0) Tcl_Free((char *) argvPtr);
 
-        int action = 0;        
+        int action = 1;        
         bool series = false;
         for(int i=4; i<argc; i++) {
             if(strcmp(argv[i], "-append")==0 || strcmp(argv[i], "-Append")==0) {
