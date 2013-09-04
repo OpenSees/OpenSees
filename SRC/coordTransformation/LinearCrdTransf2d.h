@@ -52,6 +52,8 @@ public:
     LinearCrdTransf2d();
     ~LinearCrdTransf2d();
     
+    const char *getClassType() const {return "LinearCrdTransf2d";};
+    
     int initialize(Node *node1Pointer, Node *node2Pointer);
     int update(void);
     double getInitialLength(void);

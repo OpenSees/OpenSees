@@ -51,6 +51,8 @@ public:
     PDeltaCrdTransf3d();
     ~PDeltaCrdTransf3d();
     
+    const char *getClassType() const {return "PDeltaCrdTransf3d";};
+    
     int initialize(Node *node1Pointer, Node *node2Pointer);
     int update(void);
     double getInitialLength(void);

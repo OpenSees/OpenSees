@@ -47,6 +47,8 @@ public:
     CorotCrdTransf2d();
     ~CorotCrdTransf2d();
     
+    const char *getClassType() const {return "CorotCrdTransf2d";};
+    
     int initialize(Node *nodeIPointer, Node *nodeJPointer);
     int update(void);
     double getInitialLength(void);

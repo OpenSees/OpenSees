@@ -54,6 +54,8 @@ public:
     PDeltaCrdTransf2d();
     ~PDeltaCrdTransf2d();
     
+    const char *getClassType() const {return "PDeltaCrdTransf2d";};
+    
     int initialize(Node *node1Pointer, Node *node2Pointer);
     int update(void);
     double getInitialLength(void);
