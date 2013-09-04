@@ -83,12 +83,15 @@ extern  void *OPS_NewFAFourSteelPCPlaneStressMaterial(void);
 extern  void *OPS_NewRAFourSteelPCPlaneStressMaterial(void);
 
 extern  void *OPS_NewElasticIsotropicMaterial(void);
+extern  void *OPS_NewElasticOrthotropicMaterial(void);
 extern  void *OPS_NewDruckerPragerMaterial(void);
 extern  void *OPS_NewBoundingCamClayMaterial(void);
 extern  void *OPS_NewContactMaterial2DMaterial(void);
 extern  void *OPS_NewContactMaterial3DMaterial(void);
 extern  void *OPS_NewInitialStateAnalysisWrapperMaterial(void);
 extern  void *OPS_NewManzariDafaliasMaterial(void);
+extern  void *OPS_CycLiqCPMaterial(void);
+extern  void *OPS_NewInitStressNDMaterial(void);
 
 NDMaterial *
 TclModelBuilder_addFeapMaterial(ClientData clientData, Tcl_Interp *interp,
@@ -145,6 +148,14 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	theMaterial = (NDMaterial *)theMat;
       else 
 	return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"InitStressMaterial") == 0) || (strcmp(argv[1],"InitStress") == 0)) {
+      void *theMat = OPS_NewInitStressNDMaterial();
+      if (theMat != 0) 
+        theMaterial = (NDMaterial *)theMat;
+      else 
+        return TCL_ERROR;
     }
 
     else if ((strcmp(argv[1],"FAReinforceConcretePlaneStress") == 0) || (strcmp(argv[1],"FAReinforcedConcretePlaneStress") == 0)) {
@@ -220,6 +231,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
+    else if ((strcmp(argv[1],"CycLiqCP") == 0)){
+
+      void *theMat = OPS_CycLiqCPMaterial();
+      if (theMat != 0) 
+        theMaterial = (NDMaterial *)theMat;
+      else 
+        return TCL_ERROR;
+    }
+
     else if ((strcmp(argv[1],"BoundingCamClay") == 0)){
 
       void *theMat = OPS_NewBoundingCamClayMaterial();
@@ -268,6 +288,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     else if ((strcmp(argv[1],"ElasticIsotropic3D") == 0) || (strcmp(argv[1],"ElasticIsotropic") == 0)) {
 
       void *theMat = OPS_NewElasticIsotropicMaterial();
+      if (theMat != 0)
+	theMaterial = (NDMaterial *)theMat;
+      else
+	return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"ElasticOrthotropic3D") == 0) || (strcmp(argv[1],"ElasticOrthotropic") == 0)) {
+
+      void *theMat = OPS_NewElasticOrthotropicMaterial();
       if (theMat != 0)
 	theMaterial = (NDMaterial *)theMat;
       else
