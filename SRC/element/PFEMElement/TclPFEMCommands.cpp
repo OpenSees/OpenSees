@@ -147,6 +147,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
                     if(argvPtr != 0) Tcl_Free((char *) argvPtr);
                 }
+
+                loc++;
             }
 
             int endnodetag = startnodetag;
@@ -252,6 +254,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
                     if(argvPtr != 0) Tcl_Free((char *) argvPtr);
                 }
+
+                loc++;
             }
             
             int endnodetag = startnodetag;
@@ -349,6 +353,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
                     if(argvPtr != 0) Tcl_Free((char *) argvPtr);
                 }
+
+                loc++;
             }
 
             int endnodetag = startnodetag;
@@ -459,6 +465,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
                     if(argvPtr != 0) Tcl_Free((char *) argvPtr);
                 }
+
+                loc++;
             }
 
             int endnode = startnode;
@@ -565,6 +573,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
                     if(argvPtr != 0) Tcl_Free((char *) argvPtr);
                 }
+
+                loc++;
             }
 
             int endnode = startnode;
@@ -652,6 +662,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
                     if(argvPtr != 0) Tcl_Free((char *) argvPtr);
                 }
+
+                loc++;
             }
 
             int endnode = startnode;
@@ -675,8 +687,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
     } else if(strcmp(argv[1], "doTriangulation") == 0) {
         if(argc < 4) {
             opserr << "WARNING: wrong num of args -- ";
-            opserr << "PFEM2D doTriangulation alpha -nodes {start1 end1 ...}  ";
-            opserr << "-addnodes {start1 end1 ...} ";
+            opserr << "PFEM2D doTriangulation alpha -groups {groupTag1 ...}  ";
+            opserr << "-addgroups {groupTag2 ...} ";
             opserr << "-PFEMElement2D {starteletag rho mu b1 b2 <thk kappa>} ";
             opserr << "-PFEMElement2DCompressible {starteletag rho mu b1 b2 <thk kappa>} ";
             opserr << "-PFEMElement2DBubble {starteletag rho mu b1 b2 <thk kappa>} ";
@@ -699,11 +711,11 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             Vector* vecPtr = 0;
             ID* idPtr = 0;
 
-            if(strcmp(argv[loc], "-nodes") == 0) {
+            if(strcmp(argv[loc], "-groups") == 0) {
                 idPtr = &nodes;
                 loc++;
 
-            } else if(strcmp(argv[loc], "-addnodes") == 0) {
+            } else if(strcmp(argv[loc], "-addgroups") == 0) {
                 idPtr = &addnodes;
                 loc++;
   
@@ -723,6 +735,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             } else if(strcmp(argv[loc], "-PFEMElement2DBubble") == 0) {
                 vecPtr = &params;
                 eletype = 4;
+                loc++;
+            } else {
                 loc++;
             }
 
@@ -767,12 +781,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
                 if(argvPtr != 0) Tcl_Free((char *) argvPtr);
             }
-        }
 
-        // set nodes
-        if(nodes.Size()!=0 || addnodes.Size()!=0) {
-            theMesher2D.setNodes(nodes, true, false, 0);
-            theMesher2D.setNodes(addnodes, false, false, 0);
+            loc++;
         }
 
         // triangulation
@@ -780,7 +790,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
         ID eles;
         //opserr<<"params = "<<params;
         if(eletype == 1 || eletype == 3 || eletype == 4) {
-            double rho,mu,b1,b2,thk=1.0,kappa=1e6;
+            double rho,mu,b1,b2,thk=1.0,kappa=1e9;
+            if(eletype == 4) kappa = -1;
             int startele;
             if(params.Size() >= 5) {
                 startele = (int)params(0);
@@ -788,6 +799,10 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                 mu = params(2);
                 b1 = params(3);
                 b2 = params(4);
+            } else {
+                opserr<<"WARNING: not sufficient args ";
+                opserr<<" -- PFEM2D doTriangulation\n";
+                return TCL_ERROR;
             }
             if(params.Size() > 5) {
                 thk = params(5);
@@ -796,10 +811,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                 kappa = params(6);
             }
             
-            if(params.Size() >= 5) {
-                res = theMesher2D.doTriangulation(startele,alpha,theDomain,
-                                                  rho,mu,b1,b2,thk,kappa,eletype);
-            }
+            res = theMesher2D.doTriangulation(startele,alpha,nodes,addnodes,theDomain,
+                                              rho,mu,b1,b2,thk,kappa,eletype);
 
         } else if(eletype == 2) {
             double thk=0, p=0,rho=0,b1=0,b2=0;
@@ -808,6 +821,10 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                 startele = (int)params(0);
                 thk = params(1);
                 matTag = (int)params(3);
+            } else {
+                opserr<<"WARNING: not sufficient args ";
+                opserr<<" -- PFEM2D doTriangulation\n";
+                return TCL_ERROR;
             }
             if(params.Size() > 4) {
                 p = params(4);
@@ -823,12 +840,12 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
             }
             
             if(params.Size() >= 4) {
-                res = theMesher2D.doTriangulation(startele,alpha,theDomain,
+                res = theMesher2D.doTriangulation(startele,alpha,nodes,addnodes,theDomain,
                                                   thk,type.c_str(),matTag,p,rho,b1,b2);
             }
 
         } else {
-            res = theMesher2D.doTriangulation(alpha,theDomain,eles);
+            res = theMesher2D.doTriangulation(alpha,nodes,addnodes,theDomain,eles);
             if(res < 0) {
                 opserr<<"WARNING: failed to do triangulation -- ";
                 opserr<<" -- PFEM2D doTriangulation\n";
@@ -889,6 +906,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
                 if(argvPtr != 0) Tcl_Free((char *) argvPtr);
             }
+
+            loc++;
         }
         theMesher2D.save(argv[2], snodes, theDomain);
 
@@ -976,6 +995,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
                 if(argvPtr != 0) Tcl_Free((char *) argvPtr);
             }
+
+            loc++;
         }
 
         theMesher2D.setFrame(x1,y1,Lspan,Height);
@@ -1007,7 +1028,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                     opserr<<" -- PFEM2D discretize\n";
                     return TCL_ERROR;
                 }
-                loc++;
                 if(num > 0) idPtr->resize(num);
                 for(int i=0; i<num; i++) {
                     int tag;
@@ -1021,6 +1041,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
                 if(argvPtr != 0) Tcl_Free((char *) argvPtr);
             }
+
+            loc++;
         }
         theMesher2D.removeOutBoundNodes(snodes, theDomain);
 
@@ -1069,7 +1091,6 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                     opserr<<" -- PFEM2D discretize\n";
                     return TCL_ERROR;
                 }
-                loc++;
                 if(num > 0) {
                     if(vecPtr!=0) vecPtr->resize(num);
                     if(idPtr!=0) idPtr->resize(num);
@@ -1098,6 +1119,8 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
                 if(argvPtr != 0) Tcl_Free((char *) argvPtr);
             }
+
+            loc++;
         }
 
         Vector forces = theMesher2D.calculateForces(boundary,basenode,drag,lift,theDomain);
@@ -1159,17 +1182,25 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
         
         Tcl_SetObjResult(interp, Tcl_NewIntObj(endpnode));
 
-    } else if(strcmp(argv[1], "fluid") == 0 || strcmp(argv[1], "structure") == 0) {        
+    } else if(strcmp(argv[1], "group") == 0 || strcmp(argv[1], "Group") == 0) {        
         if(argc < 3) {
             opserr<<"WARNING: wrong num of args -- ";
-            opserr<<"PFEM2D "<<argv[1]<<" nodelist <-append -remove -series -type type>\n";
+            opserr<<"PFEM2D group groupTag nodelist <-append -remove -series>\n";
             return TCL_ERROR;
         }
+
+        int type = -1;
+        if(Tcl_GetInt(interp, argv[2], &type) != TCL_OK) {
+            opserr<<"WARING: invalid type "<<argv[2];
+            opserr<<" -- PFEM2D group \n";
+            return TCL_ERROR;
+        }
+
         ID nodes;
         int num = 0;
         const char** argvPtr = 0;
-        if(Tcl_SplitList(interp, argv[2], &num, &argvPtr)!=TCL_OK) {
-            opserr<<"WARNING: failed to read the list "<<argv[2];
+        if(Tcl_SplitList(interp, argv[3], &num, &argvPtr)!=TCL_OK) {
+            opserr<<"WARNING: failed to read the list "<<argv[3];
             opserr<<" -- PFEM2D "<<argv[1]<<"\n";
             return TCL_ERROR;
         }
@@ -1186,28 +1217,15 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
         if(argvPtr != 0) Tcl_Free((char *) argvPtr);
 
-        int type = 0;
-        if(strcmp(argv[1], "structure") == 0) {
-            type = 1;
-        }
-
         int action = 0;        
         bool series = false;
-        for(int i=3; i<argc; i++) {
+        for(int i=4; i<argc; i++) {
             if(strcmp(argv[i], "-append")==0 || strcmp(argv[i], "-Append")==0) {
                 action = 1;
             } else if(strcmp(argv[i], "-remove")==0 || strcmp(argv[i], "-Remove")==0) {
                 action = 2;
             } else if(strcmp(argv[i], "-series")==0 || strcmp(argv[i], "-Series")==0) {
                 series = true;
-            } else if(strcmp(argv[i], "-type")==0 || strcmp(argv[i], "-Type")==0) {
-                if(argc > i) {
-                    if(Tcl_GetInt(interp, argv[i+1], &type) != TCL_OK) {
-                        opserr<<"WARNING: invalid type "<<argv[i+1];
-                        opserr<<" -- PFEM2D "<<argv[1]<<"\n";
-                        return TCL_ERROR; 
-                    }
-                }
             }
         }
 
