@@ -141,6 +141,9 @@
 #include <PlaneStressUserMaterial.h>
 //end Yuli Huang & Xinzheng Lu
 #include <FeapMaterial03.h>
+#include <CycLiqCP3D.h>
+#include <CycLiqCPPlaneStrain.h>
+
 
 #include <FluidSolidPorousMaterial.h>
 #include <PressureDependMultiYield.h>
@@ -1147,6 +1150,12 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
+
+  case ND_TAG_CycLiqCP3D:
+      return new CycLiqCP3D(); 
+
+  case ND_TAG_CycLiqCPPlaneStrain:
+      return new CycLiqCPPlaneStrain(); 
     
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNDMaterial - ";
