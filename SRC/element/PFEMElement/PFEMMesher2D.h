@@ -95,11 +95,14 @@ public:
     int addPC(const ID& nodes, int pndf, int startpnode, Domain* theDomain, int& endpnode); // add PC for nodes
 
     // triangulation
-    int doTriangulation(double alpha, Domain* theDomain, ID& eles, bool o2=false);
-    int doTriangulation(int startele, double alpha, Domain* theDomain,
+    int doTriangulation(double alpha, const ID& groups, const ID& addgroups,
+                        Domain* theDomain, ID& eles, bool o2=false);
+    int doTriangulation(int startele, double alpha, const ID& groups, 
+                        const ID& addgroups,Domain* theDomain,
                         double rho, double mu, double b1, double b2, 
                         double thk, double kappa, int type);
-    int doTriangulation(int startele, double alpha, Domain* theDomain,
+    int doTriangulation(int startele, double alpha, const ID& groups, 
+                        const ID& addgroups, Domain* theDomain,
                         double t, const char* type, int matTag,
                         double p, double rho, double b1, double b2);
 

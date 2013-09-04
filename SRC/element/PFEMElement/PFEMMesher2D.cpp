@@ -676,7 +676,8 @@ PFEMMesher2D::discretize(int startnode, char type, int n,
 }
 
 int
-PFEMMesher2D::doTriangulation(int starteletag, double alpha, Domain* theDomain, 
+PFEMMesher2D::doTriangulation(int starteletag, double alpha, const ID& groups, 
+                              const ID& addgroups,Domain* theDomain, 
                               double rho, double mu, double b1, double b2, 
                               double thk, double kappa, int type)
 {
@@ -690,7 +691,7 @@ PFEMMesher2D::doTriangulation(int starteletag, double alpha, Domain* theDomain,
     // do triangulation
     ID eles;
     int res = 0;
-    res = doTriangulation(alpha,theDomain, eles);
+    res = doTriangulation(alpha,groups,addgroups,theDomain, eles);
     if(res < 0) {
         opserr<<"WARNING: failed to do triangulation --";
         opserr<<"PFEMMesher2D::soTriangulation\n";
@@ -734,7 +735,8 @@ PFEMMesher2D::doTriangulation(int starteletag, double alpha, Domain* theDomain,
 }
 
 int
-PFEMMesher2D::doTriangulation(int starteletag, double alpha, Domain* theDomain, 
+PFEMMesher2D::doTriangulation(int starteletag, double alpha, const ID& groups, 
+                              const ID& addgroups,Domain* theDomain, 
                               double t, const char* type, int matTag,
                               double p, double rho, double b1, double b2)
 {
@@ -747,7 +749,7 @@ PFEMMesher2D::doTriangulation(int starteletag, double alpha, Domain* theDomain,
     //Timer timer;
     // do triangulation
     ID eles;
-    int res = doTriangulation(alpha,theDomain, eles);
+    int res = doTriangulation(alpha,groups,addgroups,theDomain, eles);
     if(res < 0) {
         opserr<<"WARNING: failed to do triangulation --";
         opserr<<"PFEMMesher2D::doTriangulation\n";
@@ -789,7 +791,8 @@ PFEMMesher2D::doTriangulation(int starteletag, double alpha, Domain* theDomain,
 }
 
 int
-PFEMMesher2D::doTriangulation(double alpha, Domain* theDomain, ID& eles, bool o2)
+PFEMMesher2D::doTriangulation(double alpha, const ID& groups, const ID& addgroups,
+                              Domain* theDomain, ID& eles, bool o2)
 {
     //Timer theTimer;
     if(theDomain == 0) {
@@ -825,6 +828,17 @@ PFEMMesher2D::doTriangulation(double alpha, Domain* theDomain, ID& eles, bool o2
 
         // pointer to node
         int ndtag = it->first;
+        int type = it->second;
+        bool haveit = false;
+        for(int i=0; i<groups.Size()+addgroups.Size(); i++) {
+            if((i<groups.Size() && type==groups(i)) ||
+               (i>=groups.Size() && type==addgroups(i-groups.Size()))) {
+                haveit = true;
+                break;
+            }
+        }
+        if(!haveit) continue;
+
         Node* node = theDomain->getNode(ndtag);
         if(node == 0) continue;
 
@@ -932,7 +946,13 @@ PFEMMesher2D::doTriangulation(double alpha, Domain* theDomain, ID& eles, bool o2
                 int add[3] = {-1,-1,-1};
                 for(int j=0; j<3; j++) {
                     int tag = p2nd(out.trianglelist[out.numberofcorners*i+j]);
-                    add[j] = fluidNodes[tag];
+                    int type = fluidNodes[tag];
+                    for(int k=0; k<groups.Size(); k++) {
+                        if(type == groups(k)) {
+                            add[j] = 0;
+                            break;
+                        }
+                    }
                 }
                     
                 // add ele
