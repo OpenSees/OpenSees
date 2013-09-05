@@ -323,10 +323,28 @@
 					RelativePath="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\Accelerator.h">
 				</File>
 				<File
+					RelativePath="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\DifferenceAccelerator2.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\DifferenceAccelerator2.h">
+				</File>
+				<File
 					RelativePath="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\KrylovAccelerator.cpp">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\KrylovAccelerator.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\KrylovAccelerator2.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\KrylovAccelerator2.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\MillerAccelerator.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\MillerAccelerator.h">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\PeriodicAccelerator.cpp">

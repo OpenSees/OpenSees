@@ -990,6 +990,24 @@
 				RelativePath="..\..\..\SRC\material\nD\PlaneStressSimplifiedJ2.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\nD\PlaneStressUserMaterial.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\PlaneStressUserMaterial.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\PlateFromPlaneStressMaterial.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\PlateFromPlaneStressMaterial.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\PlateRebarMaterial.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\PlateRebarMaterial.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\nD\SimplifiedJ2.cpp">
 			</File>
 			<File
@@ -1395,6 +1413,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\section\Isolator2spring.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\LayeredShellFiberSection.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\section\LayeredShellFiberSection.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\section\MembranePlateFiberSection.cpp">
