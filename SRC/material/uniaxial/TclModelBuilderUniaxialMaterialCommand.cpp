@@ -97,6 +97,7 @@ extern void *OPS_NewInitStrainMaterial(void);
 extern void *OPS_NewInitStressMaterial(void);
 extern void *OPS_New_pyUCLA(void);
 extern void *OPS_Maxwell(void);
+extern void *OPS_ViscousDamper(void);
 extern void *OPS_Cast(void);
 extern void *OPS_Dodd_Restrepo(void);
 extern void *OPS_NewElasticMultiLinear(void);
@@ -266,6 +267,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if ((strcmp(argv[1],"Maxwell") == 0) || (strcmp(argv[1],"MaxwellMaterial") == 0)) {
       void *theMat = OPS_Maxwell();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if ((strcmp(argv[1],"ViscousDamper") == 0)) {
+      void *theMat = OPS_ViscousDamper();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 

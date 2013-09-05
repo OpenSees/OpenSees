@@ -586,6 +586,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/EPPGapMaterial.o \
 	$(FE)/material/uniaxial/ViscousMaterial.o \
 	$(FE)/material/uniaxial/Maxwell.o \
+	$(FE)/material/uniaxial/ViscousDamper.o \
 	$(FE)/material/uniaxial/Cast.o \
 	$(FE)/material/uniaxial/DoddRestrepo.o \
 	$(FE)/material/uniaxial/Dodd_Restrepo.o \

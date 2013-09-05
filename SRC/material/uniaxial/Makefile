@@ -12,6 +12,7 @@ include ../../../Makefile.def
 	AxialSp.o \
 	Neoprene.o \
 	Maxwell.o \
+	ViscousDamper.o \
 	Cast.o \
         HardeningMaterial.o \
 	Concrete01.o \
