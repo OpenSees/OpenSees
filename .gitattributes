@@ -3174,6 +3174,8 @@ SRC/material/uniaxial/UniaxialJ2Plasticity.h -text
 SRC/material/uniaxial/UniaxialMaterial.cpp -text
 SRC/material/uniaxial/UniaxialMaterial.h -text
 SRC/material/uniaxial/UniaxialMaterial.tex -text
+SRC/material/uniaxial/ViscousDamper.cpp -text
+SRC/material/uniaxial/ViscousDamper.h -text
 SRC/material/uniaxial/ViscousMaterial.cpp -text
 SRC/material/uniaxial/ViscousMaterial.h -text
 SRC/material/uniaxial/WrapperUniaxialMaterial.cpp -text
