@@ -494,6 +494,12 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\UniaxialMaterial.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ViscousDamper.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ViscousDamper.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\ViscousMaterial.cpp">
 			</File>
 			<File
