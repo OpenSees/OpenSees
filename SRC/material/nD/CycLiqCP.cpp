@@ -61,8 +61,8 @@ double CycLiqCP::mElastFlag = 0;
 
 static int numCycLiqCPMaterials = 0;
 
-void *
-OPS_CycLiqCPMaterial(void)
+OPS_Export void *
+OPS_NewCycLiqCPMaterial(void)
 {
   if (numCycLiqCPMaterials == 0) {
     numCycLiqCPMaterials=1;
@@ -111,6 +111,10 @@ OPS_CycLiqCPMaterial(void)
 
   return theMaterial;
 }
+
+//this is mike's problem
+Tensor CycLiqCP :: rank2(2, def_dim_2, 0.0 ) ;
+Tensor CycLiqCP :: rank4(2, def_dim_2, 0.0 ) ;
 
 //static vectors and matrices
 Vector CycLiqCP :: strain_vec(6) ;
@@ -1056,10 +1060,10 @@ CycLiqCP::sendSelf(int commitTag, Channel &theChannel)
   data(cnt++) =	   dir;
   data(cnt++) =	   ein;   
   data(cnt++) =	   rho;
-  data(cnt++) =	   epsvir_n;
-  data(cnt++) =	   epsvre_n;
-  data(cnt++) =	   gammarem;   
-  data(cnt++) =	   epsvc_n;
+  data(cnt++) =	   epsvir_nplus1;
+  data(cnt++) =	   epsvre_nplus1;
+  data(cnt++) =	   gammamonos;   
+  data(cnt++) =	   epsvc_nplus1;
   data(cnt++) =	   etam;
   data(cnt++) =	   epsvc0;
   data(cnt++) =	   p0;
@@ -1068,9 +1072,9 @@ CycLiqCP::sendSelf(int commitTag, Channel &theChannel)
   for (int i=0; i<3; i++) 
     for (int j=0; j<3; j++) 
 	{
-	  data(cnt+9)   = strain_n(i,j);
-	  data(cnt+9*2) = alpha_n(i,j);
-	  data(cnt+9*3) = stress_n(i,j);
+	  data(cnt+9)   = strain_nplus1(i,j);
+	  data(cnt+9*2) = alpha_nplus1(i,j);
+	  data(cnt+9*3) = stress_nplus1(i,j);
 	}
 
 
@@ -1112,7 +1116,7 @@ CycLiqCP::recvSelf (int commitTag, Channel &theChannel,
   rho =	data(cnt++);    
   epsvir_n =	data(cnt++);    
   epsvre_n =	data(cnt++);    
-  gammarem  =	data(cnt++);      
+  gammamono  =	data(cnt++);      
   epsvc_n =	data(cnt++);    
   etam =	data(cnt++);    
   epsvc0 =	data(cnt++);    

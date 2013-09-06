@@ -2711,6 +2711,12 @@ SRC/material/nD/CycLiqCP3D.cpp -text
 SRC/material/nD/CycLiqCP3D.h -text
 SRC/material/nD/CycLiqCPPlaneStrain.cpp -text
 SRC/material/nD/CycLiqCPPlaneStrain.h -text
+SRC/material/nD/CycLiqCPSP.cpp -text
+SRC/material/nD/CycLiqCPSP.h -text
+SRC/material/nD/CycLiqCPSP3D.cpp -text
+SRC/material/nD/CycLiqCPSP3D.h -text
+SRC/material/nD/CycLiqCPSPPlaneStrain.cpp -text
+SRC/material/nD/CycLiqCPSPPlaneStrain.h -text
 SRC/material/nD/ElasticCrossAnisotropic.cpp -text
 SRC/material/nD/ElasticCrossAnisotropic.h -text
 SRC/material/nD/ElasticIsotropicAxiSymm.cpp -text
