@@ -143,6 +143,8 @@
 #include <FeapMaterial03.h>
 #include <CycLiqCP3D.h>
 #include <CycLiqCPPlaneStrain.h>
+#include <CycLiqCPSP3D.h>
+#include <CycLiqCPSPPlaneStrain.h>
 
 
 #include <FluidSolidPorousMaterial.h>
@@ -1156,6 +1158,12 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_CycLiqCPPlaneStrain:
       return new CycLiqCPPlaneStrain(); 
+
+  case ND_TAG_CycLiqCPSP3D:
+      return new CycLiqCPSP3D(); 
+
+  case ND_TAG_CycLiqCPSPPlaneStrain:
+      return new CycLiqCPSPPlaneStrain(); 
     
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNDMaterial - ";
