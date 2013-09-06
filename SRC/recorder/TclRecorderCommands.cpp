@@ -159,6 +159,7 @@
        int precision = 6;
        const char *inetAddr = 0;
        int inetPort;
+       bool closeOnWrite = false;
 
        ID *specificIndices = 0;
 
@@ -324,6 +325,9 @@
 	   } else if (strcmp(argv[loc],"-headings") == 0) {
 	     eMode = DATA_STREAM;
 	     loc +=1;
+	   } else if (strcmp(argv[loc],"-closeOnWrite") == 0) {
+	     closeOnWrite = true;
+	     loc +=1;
 	   }
 	 }
 
@@ -334,7 +338,6 @@
 	   simulationInfo.addOutputFile(fileName,pwd);
 	   loc += 2;
 	 }
-
 
 	 else if (strcmp(argv[loc],"-database") == 0) {
 	   theRecorderDatabase = theDatabase;
@@ -367,8 +370,6 @@
 	   loc += 3;
 	 }	    
 
-
-
 	 else if ((strcmp(argv[loc],"-binary") == 0)) {
 	   // allow user to specify load pattern other than current
 	   fileName = argv[loc+1];
@@ -400,9 +401,9 @@
 
        // construct the DataHandler
        if (eMode == DATA_STREAM && fileName != 0) {
-	 theOutputStream = new DataFileStream(fileName);
+	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 0, closeOnWrite);
        } else if (eMode == DATA_STREAM_CSV && fileName != 0) {
-	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1);
+	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1, closeOnWrite);
        } else if (eMode == XML_STREAM && fileName != 0) {
 	 theOutputStream = new XmlFileStream(fileName);
        } else if (eMode == DATABASE_STREAM && tableName != 0) {
@@ -1042,6 +1043,9 @@
        const char *inetAddr = 0;
        int inetPort;
 
+       bool closeOnWrite = false;
+
+
        while (flags == 0 && pos < argc) {
 
 	 //	 opserr << "argv[pos]: " << argv[pos] << " " << pos << endln;
@@ -1062,6 +1066,10 @@
 	   simulationInfo.addOutputFile(fileName, pwd);
 	   eMode = DATA_STREAM;
 	   pos += 2;
+	   if (strcmp(argv[pos],"-closeOnWrite") == 0)  {
+	     closeOnWrite = true;
+	     pos += 1;
+	   }
 	 }
 
 	 else if (strcmp(argv[pos],"-fileCSV") == 0) {
@@ -1275,9 +1283,9 @@
 
        // construct the DataHandler
        if (eMode == DATA_STREAM && fileName != 0) {
-	 theOutputStream = new DataFileStream(fileName);
+	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 0, closeOnWrite);
        } else if (eMode == DATA_STREAM_CSV && fileName != 0) {
-	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1);
+	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1, closeOnWrite);
        } else if (eMode == XML_STREAM && fileName != 0) {
 	 theOutputStream = new XmlFileStream(fileName);
        } else if (eMode == DATABASE_STREAM && tableName != 0) {
