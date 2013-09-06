@@ -84,6 +84,7 @@ include ../../../Makefile.def
 	ModIMKPinching.o \
 	pyUCLA.o \
 	Dodd_Restrepo.o DoddRestrepo.o \
+	SteelBRB.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)

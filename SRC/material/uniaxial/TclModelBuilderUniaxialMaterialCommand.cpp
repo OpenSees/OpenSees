@@ -66,6 +66,7 @@
 #include <Bond_SP01.h>	// JZ
 
 #include <SteelMP.h>             //Quan & Michele
+#include <SteelBRB.h>             //Quan & Michele
 #include <SmoothPSConcrete.h>      //Quan & Michele
 
 #include <SelfCenteringMaterial.h> //JAE
@@ -102,6 +103,7 @@ extern void *OPS_Cast(void);
 extern void *OPS_Dodd_Restrepo(void);
 extern void *OPS_NewElasticMultiLinear(void);
 extern void *OPS_ImpactMaterial(void);
+extern void *OPS_SteelBRB(void);
 extern void *OPS_New_MultiLinear(void);
 extern void *OPS_NewHookGap(void);
 //extern void *OPS_FRPConfinedConcrete(void);
@@ -253,6 +255,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if ((strcmp(argv[1],"ImpactMaterial") == 0) || (strcmp(argv[1],"Impact") == 0)) {
       void *theMat = OPS_ImpactMaterial();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if ((strcmp(argv[1],"SteelBRB") == 0)) {
+      void *theMat = OPS_SteelBRB();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 

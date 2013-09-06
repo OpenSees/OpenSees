@@ -40,7 +40,8 @@
 #include <elementAPI.h>
 
 
-void *OPS_SteelBRB(void) { 
+void *OPS_SteelBRB(void) 
+{ 
   
   int tag;
   double E, sigmaY0, sigmaY_T, alpha_T, beta_T, delta_T, sigmaY_C, alpha_C, beta_C, delta_C, Tol;
@@ -54,7 +55,7 @@ void *OPS_SteelBRB(void) {
   }
 
   int iData[1];
-  dData[11];
+  double dData[11];
 
   int numData = 1;
   if (OPS_GetInt(&numData, iData) != 0) {
@@ -67,7 +68,8 @@ void *OPS_SteelBRB(void) {
   if (OPS_GetDouble(&numData, dData) != 0) {
       opserr << "WARNING invalid double values: nDMaterial SimplifiedJ2 " << tag << endln;
     return 0;
-  }  
+  }
+  
   E        = dData[0];
   sigmaY0  = dData[1];
   sigmaY_T = dData[2];
@@ -79,7 +81,7 @@ void *OPS_SteelBRB(void) {
   beta_C   = dData[8];
   delta_C  = dData[9];
   if (numArgs == 12) {
-    Tol =   dData[10]
+    Tol =   dData[10];
   }
 
   // Parsing was successful, allocate the material
