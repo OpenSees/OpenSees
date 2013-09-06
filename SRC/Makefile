@@ -610,6 +610,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/HyperbolicGapMaterial.o \
 	$(FE)/material/uniaxial/TclHyperbolicGapMaterial.o \
 	$(FE)/material/uniaxial/ImpactMaterial.o \
+	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \
 	$(FE)/material/uniaxial/backbone/ArctangentBackbone.o \
@@ -634,6 +635,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/CycLiqCP.o \
 	$(FE)/material/nD/CycLiqCP3D.o \
 	$(FE)/material/nD/CycLiqCPPlaneStrain.o \
+	$(FE)/material/nD/CycLiqCPSP.o \
+	$(FE)/material/nD/CycLiqCPSP3D.o \
+	$(FE)/material/nD/CycLiqCPSPPlaneStrain.o \
 	$(FE)/material/nD/UWmaterials/DruckerPrager.o \
 	$(FE)/material/nD/UWmaterials/DruckerPrager3D.o \
 	$(FE)/material/nD/UWmaterials/DruckerPragerPlaneStrain.o \

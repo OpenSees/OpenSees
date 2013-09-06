@@ -310,7 +310,8 @@
 #define ND_TAG_ElasticOrthotropicBeamFiber	  36
 #define ND_TAG_ElasticOrthotropicThreeDimensional 37
 #define ND_TAG_ElasticOrthotropicBeamFiber2d	  38
-
+#define ND_TAG_CycLiqCPSP3D                       39
+#define ND_TAG_CycLiqCPSPPlaneStrain              40
 
 #define ND_TAG_J2PlaneStrain                  3005
 #define ND_TAG_J2PlaneStress                  3006
