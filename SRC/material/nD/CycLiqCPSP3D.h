@@ -103,16 +103,6 @@ class CycLiqCPSP3D : public CycLiqCPSP {
   const Matrix& getTangent( ) ;
   const Matrix& getInitialTangent( ) ;
 
-
-    //this is mike's problem
-  int setTrialStrain(const Tensor &v) ;
-  int setTrialStrain(const Tensor &v, const Tensor &r) ;    
-  int setTrialStrainIncr(const Tensor &v) ;
-  int setTrialStrainIncr(const Tensor &v, const Tensor &r) ;
-  const Tensor& getTangentTensor( ) ; 
-
-
-
   private:
 
   //static vectors and matrices sent back in get functions

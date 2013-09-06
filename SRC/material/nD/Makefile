@@ -38,6 +38,9 @@ OBJS       = NDMaterial.o \
 	CycLiqCP.o \
 	CycLiqCP3D.o \
 	CycLiqCPPlaneStrain.o \
+	CycLiqCPSP.o \
+	CycLiqCPSP3D.o \
+	CycLiqCPSPPlaneStrain.o \
 	TclModelBuilderNDMaterialCommand.o \
 	WrapperNDMaterial.o \
 	InitStressNDMaterial.o \

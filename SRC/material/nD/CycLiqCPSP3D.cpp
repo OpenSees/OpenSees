@@ -252,39 +252,3 @@ const Matrix& CycLiqCPSP3D :: getInitialTangent( )
   return tangent_matrix ;
 } 
 
-//this is mike's problem
-int CycLiqCPSP3D :: setTrialStrain(const Tensor &v) 
-{
-  return -1 ;
-}
-
-int CycLiqCPSP3D :: setTrialStrain(const Tensor &v, const Tensor &r)     
-{
-  return -1 ;
-}
-
-int CycLiqCPSP3D :: setTrialStrainIncr(const Tensor &v) 
-{
-  return -1 ;
-}
-
-int CycLiqCPSP3D :: setTrialStrainIncr(const Tensor &v, const Tensor &r) 
-{
-  return -1 ;
-}
-
-const Tensor& CycLiqCPSP3D :: getTangentTensor( ) 
-{
-  return rank4 ;
-}
-
-//jeremic@ucdavis.edu 22jan2001const Tensor& CycLiqCPSP3D :: getStressTensor( ) 
-//jeremic@ucdavis.edu 22jan2001{
-//jeremic@ucdavis.edu 22jan2001  return rank2 ;
-//jeremic@ucdavis.edu 22jan2001}
-//jeremic@ucdavis.edu 22jan2001
-//jeremic@ucdavis.edu 22jan2001const Tensor& CycLiqCPSP3D :: getStrainTensor( ) 
-//jeremic@ucdavis.edu 22jan2001{
-//jeremic@ucdavis.edu 22jan2001  return rank2 ;
-//jeremic@ucdavis.edu 22jan2001}
-

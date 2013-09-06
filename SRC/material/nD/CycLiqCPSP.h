@@ -110,18 +110,7 @@ class CycLiqCPSP : public NDMaterial {
 
   double getRho(void) {return rho;}
 
-//jeremic@ucdavis.edu 22jan2001  const Tensor& getStressTensor( ) ;
-//jeremic@ucdavis.edu 22jan2001  const Tensor& getStrainTensor( ) ;  
-
-
   protected :
-
-  //this is mike's problem
-  static Tensor rank2;
-  static Tensor rank4;
-
-  //cutoff pressure
-  //double p_cut=
 
   //material parameters
 	double G0;

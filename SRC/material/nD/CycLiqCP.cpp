@@ -61,8 +61,8 @@ double CycLiqCP::mElastFlag = 0;
 
 static int numCycLiqCPMaterials = 0;
 
-OPS_Export void *
-OPS_NewCycLiqCPMaterial(void)
+void *
+OPS_CycLiqCPMaterial(void)
 {
   if (numCycLiqCPMaterials == 0) {
     numCycLiqCPMaterials=1;
@@ -111,10 +111,6 @@ OPS_NewCycLiqCPMaterial(void)
 
   return theMaterial;
 }
-
-//this is mike's problem
-Tensor CycLiqCP :: rank2(2, def_dim_2, 0.0 ) ;
-Tensor CycLiqCP :: rank4(2, def_dim_2, 0.0 ) ;
 
 //static vectors and matrices
 Vector CycLiqCP :: strain_vec(6) ;

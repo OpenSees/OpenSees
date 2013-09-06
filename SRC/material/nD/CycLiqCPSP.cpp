@@ -59,12 +59,12 @@ double CycLiqCPSP::mElastFlag = 0;
 
 static int numCycLiqCPSPMaterials = 0;
 
-OPS_Export void *
-OPS_NewCycLiqCPSPMaterial(void)
+void *
+OPS_CycLiqCPSPMaterial(void)
 {
   if (numCycLiqCPSPMaterials == 0) {
     numCycLiqCPSPMaterials=1;
-    OPS_Error("\nCycLiqCPSP - Written: Rui Wang, Jian-Min Zhang, Gang Wang\n", 1);
+    opserr << "\nCycLiqCPSP - Written: Rui Wang, Jian-Min Zhang, Gang Wang\n";
   }
 
   NDMaterial *theMaterial = 0;
@@ -109,10 +109,6 @@ OPS_NewCycLiqCPSPMaterial(void)
 
   return theMaterial;
 }
-
-//this is mike's problem
-Tensor CycLiqCPSP :: rank2(2, def_dim_2, 0.0 ) ;
-Tensor CycLiqCPSP :: rank4(2, def_dim_2, 0.0 ) ;
 
 //static vectors and matrices
 Vector CycLiqCPSP :: strain_vec(6) ;
