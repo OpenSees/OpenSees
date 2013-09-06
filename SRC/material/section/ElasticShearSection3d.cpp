@@ -39,7 +39,7 @@ Matrix ElasticShearSection3d::ks(6,6);
 ID ElasticShearSection3d::code(6);
 
 ElasticShearSection3d::ElasticShearSection3d(void)
-:SectionForceDeformation(0, SEC_TAG_Elastic3d),
+:SectionForceDeformation(0, SEC_TAG_ElasticShear3d),
  E(0.0), A(0.0), Iz(0.0), Iy(0.0), G(0.0), J(0.0),
  alphaY(0.0), alphaZ(0.0), e(6)
 {
@@ -56,7 +56,7 @@ ElasticShearSection3d::ElasticShearSection3d(void)
 ElasticShearSection3d::ElasticShearSection3d
 (int tag, double E_in, double A_in, double Iz_in, double Iy_in,
  double G_in, double J_in, double alphaY_in, double alphaZ_in)
-:SectionForceDeformation(tag, SEC_TAG_Elastic3d),
+:SectionForceDeformation(tag, SEC_TAG_ElasticShear3d),
  E(E_in), A(A_in), Iz(Iz_in), Iy(Iy_in), G(G_in), J(J_in),
  alphaY(alphaY_in), alphaZ(alphaZ_in), e(6)
 {
