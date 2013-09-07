@@ -467,6 +467,12 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\Steel03.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\SteelBRB.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\SteelBRB.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\SteelMP.cpp">
 			</File>
 			<File
@@ -916,6 +922,24 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\nD\CycLiqCPPlaneStrain.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CycLiqCPSP.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CycLiqCPSP.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CycLiqCPSP3D.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CycLiqCPSP3D.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CycLiqCPSPPlaneStrain.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\CycLiqCPSPPlaneStrain.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\DruckerPrager.cpp">
