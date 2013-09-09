@@ -894,6 +894,12 @@
 				RelativePath="..\..\..\SRC\material\nD\CapPlasticity.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\nD\ConcreteS.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\ConcreteS.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ContactMaterial2D.cpp">
 			</File>
 			<File
