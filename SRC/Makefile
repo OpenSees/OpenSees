@@ -694,6 +694,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/reinforcedConcretePlaneStress/SteelZ01.o \
 	$(FE)/material/nD/reinforcedConcretePlaneStress/TendonL01.o \
 	$(FE)/material/nD/CapPlasticity.o \
+	$(FE)/material/nD/ConcreteS.o \
 	$(FE)/material/nD/SimplifiedJ2.o \
 	$(FE)/material/nD/PlaneStressSimplifiedJ2.o \
 	$(FE)/material/nD/PlaneStressUserMaterial.o \
