@@ -47,6 +47,7 @@ OBJS       = NDMaterial.o \
 	ConcreteMcftNonLinear5.o \
 	ConcreteMcftNonLinear7.o \
 	CapPlasticity.o \
+	ConcreteS.o \
 	SimplifiedJ2.o \
 	PlaneStressSimplifiedJ2.o
 

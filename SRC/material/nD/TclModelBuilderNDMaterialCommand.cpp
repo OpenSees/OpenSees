@@ -46,13 +46,13 @@
 #include <PlaneStressMaterial.h>
 #include <PlaneStrainMaterial.h>  // Antonios Vytiniotis:
 #include <PlateFiberMaterial.h>
+#include <UniaxialFiber2d.h>
+#include <UniaxialFiber3d.h>
 
 //start Yuli Huang & Xinzheng Lu 
 #include <PlateRebarMaterial.h>
-#include <UniaxialFiber2d.h>
-#include <UniaxialFiber3d.h>
 #include <PlateFromPlaneStressMaterial.h>
-//#include <ConcreteS.h>
+#include <ConcreteS.h>
 #include <PlaneStressUserMaterial.h>
 //end Yuli Huang & Xinzheng Lu 
 
@@ -1331,7 +1331,6 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 
 
     //start Yuli Huang & Xinzheng Lu ConcreteS
-    /* 
      else if (strcmp(argv[1],"ConcreteS") == 0) {
  	if (argc < 8) {
  	    opserr << "WARNING insufficient arguments\n";
@@ -1380,7 +1379,6 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 
  	theMaterial = new ConcreteS( tag, E, nu, fc, ft, Es);
      }
-    */
     //end Yuli Huang & Xinzheng Lu ConcreteS
 
     //start Yuli Huang & Xinzheng Lu PlaneStressUserMaterial

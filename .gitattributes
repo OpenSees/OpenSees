@@ -2705,6 +2705,8 @@ SRC/material/nD/ConcreteMcftNonLinear5.cpp -text
 SRC/material/nD/ConcreteMcftNonLinear5.h -text
 SRC/material/nD/ConcreteMcftNonLinear7.cpp -text
 SRC/material/nD/ConcreteMcftNonLinear7.h -text
+SRC/material/nD/ConcreteS.cpp -text
+SRC/material/nD/ConcreteS.h -text
 SRC/material/nD/CycLiqCP.cpp -text
 SRC/material/nD/CycLiqCP.h -text
 SRC/material/nD/CycLiqCP3D.cpp -text
