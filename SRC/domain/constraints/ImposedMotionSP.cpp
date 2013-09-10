@@ -79,7 +79,7 @@ int
 ImposedMotionSP::applyConstraint(double time)
 {
   // on first 
-  if (theGroundMotion == 0 || theNode == 0 || theNodeResponse) {
+  if (theGroundMotion == 0 || theNode == 0 || theNodeResponse == 0) {
     Domain *theDomain = this->getDomain();
 
     theNode = theDomain->getNode(nodeTag);
