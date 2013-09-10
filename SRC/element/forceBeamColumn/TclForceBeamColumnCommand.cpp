@@ -345,8 +345,12 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       }
     }
 
-    if (beamIntegr == 0)
-      beamIntegr = new LobattoBeamIntegration();
+    if (beamIntegr == 0) {
+      if (strstr("orceBeam",argv[1]) != 0)
+        beamIntegr = new LobattoBeamIntegration();
+      else
+        beamIntegr = new LegendreBeamIntegration();
+    }
 
     if (ndm == 2) {
       if (strcmp(argv[1],"elasticForceBeamColumn") == 0)
