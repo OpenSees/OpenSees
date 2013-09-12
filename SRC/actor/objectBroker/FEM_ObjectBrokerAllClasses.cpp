@@ -109,6 +109,8 @@
 // Sections
 #include <ElasticSection2d.h>
 #include <ElasticSection3d.h>
+#include <ElasticShearSection2d.h>
+#include <ElasticShearSection3d.h>
 #include <GenericSection1d.h>
 //#include <GenericSectionNd.h>
 #include <SectionAggregator.h>
@@ -223,6 +225,11 @@
 #include <Brick.h>
 #include <BbarBrick.h>
 #include <Joint2D.h>		// Arash
+
+#include <ElastomericBearingPlasticity2d.h>
+#include <ElastomericBearingPlasticity3d.h>
+#include <ElastomericBearingBoucWen2d.h>
+#include <ElastomericBearingBoucWen3d.h>
 
 #ifdef _PFEM
 #include <PFEMElement2D.h>
@@ -606,6 +613,7 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
     case ELE_TAG_SSPbrick:  
       return new SSPbrick();
+
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
 
@@ -632,7 +640,20 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_BbarBrick:
 		return new BbarBrick();
-			
+		
+	
+	case ELE_TAG_ElastomericBearingBoucWen2d:
+		return new ElastomericBearingBoucWen2d();
+
+	case ELE_TAG_ElastomericBearingBoucWen3d:
+		return new ElastomericBearingBoucWen3d();
+
+    case ELE_TAG_ElastomericBearingPlasticity2d:
+		return new ElastomericBearingPlasticity2d();
+
+	case ELE_TAG_ElastomericBearingPlasticity3d:
+		return new ElastomericBearingPlasticity3d();
+
 	case ELE_TAG_Joint2D:				// Arash
 		return new Joint2D();			// Arash
 
@@ -1019,6 +1040,13 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 	case SEC_TAG_Elastic3d:
 	     return new ElasticSection3d();	     
 	     
+    case SEC_TAG_ElasticShear2d:
+	     return new ElasticShearSection2d();
+	     
+	case SEC_TAG_ElasticShear3d:
+	     return new ElasticShearSection3d();	     
+	     
+
 	case SEC_TAG_Generic1d:
 	     return new GenericSection1d();
 	     
