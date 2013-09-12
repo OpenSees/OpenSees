@@ -593,7 +593,7 @@ TclModelBuilderHystereticBackboneCommand(ClientData clienData,
   }
   
   // Now add the material to the modelBuilder
-  if (OPS_addHystereticBackbone(theBackbone) < 0) {
+  if (OPS_addHystereticBackbone(theBackbone) == false) {
     opserr << "WARNING could not add hystereticBackbone to the domain\n";
     opserr << *theBackbone << endln;
     delete theBackbone; // invoke the material objects destructor, otherwise mem leak
