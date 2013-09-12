@@ -1312,7 +1312,7 @@ ForceBeamColumn3d::getInitialStiff(void)
       opserr << "ForceBeamColumn3d::sendSelf() - failed to send ID data\n";
       return -1;
     }    
-
+ 
     //
     // send the sections
     //
@@ -1368,7 +1368,6 @@ ForceBeamColumn3d::getInitialStiff(void)
 
        return -1;
     }    
-
     return 0;
   }    
 
@@ -1388,7 +1387,7 @@ ForceBeamColumn3d::getInitialStiff(void)
 
       return -1;
     }    
-
+ 
     this->setTag(idData(0));
     connectedExternalNodes(0) = idData(1);
     connectedExternalNodes(1) = idData(2);
@@ -1417,14 +1416,12 @@ ForceBeamColumn3d::getInitialStiff(void)
     }
 
     crdTransf->setDbTag(crdTransfDbTag);
-
     // invoke recvSelf on the crdTransf obkject
     if (crdTransf->recvSelf(commitTag, theChannel, theBroker) < 0)  
     {
        opserr << "ForceBeamColumn3d::sendSelf() - failed to recv crdTranf\n";
        return -3;
     }      
-
 
     // create a new beamIntegr object if one needed
     if (beamIntegr == 0 || beamIntegr->getClassTag() != beamIntegrClassTag) {
@@ -1546,12 +1543,13 @@ ForceBeamColumn3d::getInitialStiff(void)
 	    sectClassTag << endln;
 	  exit(-1);
 	}
+	
 	sections[i]->setDbTag(sectDbTag);
 	if (sections[i]->recvSelf(commitTag, theChannel, theBroker) < 0) {
 	  opserr << "ForceBeamColumn3d::recvSelf() - section " << 
 	    i << " failed to recv itself\n";
 	  return -1;
-	}     
+	} 
       }
 
       this->initializeSectionHistoryVariables();
@@ -1601,7 +1599,7 @@ ForceBeamColumn3d::getInitialStiff(void)
     Vector dData(1+1+NEBD+NEBD*NEBD+secDefSize+4);   
 
     if (theChannel.recvVector(dbTag, commitTag, dData) < 0)  {
-      opserr << "ForceBeamColumn3d::sendSelf() - failed to send Vector data\n";
+      opserr << "ForceBeamColumn3d::recvSelf() - failed to send Vector data\n";
       return -1;
     }    
 
@@ -1643,7 +1641,6 @@ ForceBeamColumn3d::getInitialStiff(void)
     betaKc = dData(loc++);
     
     initialFlag = 2;  
-
     return 0;
   }
 
