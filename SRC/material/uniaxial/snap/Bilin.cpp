@@ -20,7 +20,7 @@
 
 //Modified Ibarra-Medina-Krawinkler with Bilinear hysteretic response
 
-//**********************************************************************                                                                     
+//**********************************************************************                                                                    
 // Code Developed by: Dimitrios G. Lignos
 // Assistant Professor, McGill University, Montreal Canada
 // Originally Written by: Theodore Karavasilis
@@ -57,96 +57,96 @@ OPS_Bilin()
   UniaxialMaterial *theMaterial = 0;
 
   int    iData[1];
-  double dData[24];				// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+  double dData[24];                             // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
   int numData = 1;
 
   if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING invalid uniaxialMaterial  Bilin tag" << endln;
     return 0;
   }
-  
-  //Changed in order to account for the nFactor as an optional input	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-  //numData = 24; 		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-  numData = OPS_GetNumRemainingInputArgs(); 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-  
-  if (numData != 23 && numData != 24 ) { 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-    opserr << "Invalid Args want: uniaxialMaterial Bilin tag? Ke? AsPos? AsNeg? My_pos? My_neg? LamdaS? ";		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-    opserr << "LamdaD?  LamdaA? LamdaK? Cs? Cd? Ca? Ck? Thetap_pos? Thetap_neg? Thetapc_pos? Thetapc_neg?KPos? ";		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-    opserr << "KNeg? Thetau_pos? Thetau_neg? PDPlus?  PDNeg?  <nFactor?> \n";   	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-    return 0;       	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+ 
+  //Changed in order to account for the nFactor as an optional input    // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+  //numData = 24;               // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+  numData = OPS_GetNumRemainingInputArgs();     // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+ 
+  if (numData != 23 && numData != 24 ) {        // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+    opserr << "Invalid Args want: uniaxialMaterial Bilin tag? Ke? AsPos? AsNeg? My_pos? My_neg? LamdaS? ";              // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+    opserr << "LamdaD?  LamdaA? LamdaK? Cs? Cd? Ca? Ck? Thetap_pos? Thetap_neg? Thetapc_pos? Thetapc_neg?KPos? ";               // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+    opserr << "KNeg? Thetau_pos? Thetau_neg? PDPlus?  PDNeg?  <nFactor?> \n";           // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+    return 0;           // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
   }
-  
-  //  if (OPS_GetDoubleInput(&numData, dData) != 0) {    		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-  //    opserr << "Invalid Args want: uniaxialMaterial Bilin tag? Ke? nFactor? AsPos? AsNeg? My_pos? My_neg? LamdaS? ";		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+ 
+  //  if (OPS_GetDoubleInput(&numData, dData) != 0) {                   // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+  //    opserr << "Invalid Args want: uniaxialMaterial Bilin tag? Ke? nFactor? AsPos? AsNeg? My_pos? My_neg? LamdaS? ";         // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
   //    opserr << "LamdaD?  LamdaA? LamdaK? Cs? Cd? Ca? Ck? Thetap_pos? Thetap_neg? Thetapc_pos? Thetapc_neg?KPos? "; // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-  //    opserr << "KNeg? Thetau_pos? Thetau_neg? PDPlus?  PDNeg\n";   	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+  //    opserr << "KNeg? Thetau_pos? Thetau_neg? PDPlus?  PDNeg\n";     // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
   //    return 0;  
   //  }
-  
+ 
   if (numData == 23) {
-    if (OPS_GetDoubleInput(&numData, dData) != 0) {    		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-      opserr << "Invalid Args want: uniaxialMaterial Bilin tag? Ke? AsPos? AsNeg? My_pos? My_neg? LamdaS? ";		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+    if (OPS_GetDoubleInput(&numData, dData) != 0) {             // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+      opserr << "Invalid Args want: uniaxialMaterial Bilin tag? Ke? AsPos? AsNeg? My_pos? My_neg? LamdaS? ";            // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
       opserr << "LamdaD?  LamdaA? LamdaK? Cs? Cd? Ca? Ck? Thetap_pos? Thetap_neg? Thetapc_pos? Thetapc_neg?KPos? "; // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-      opserr << "KNeg? Thetau_pos? Thetau_neg? PDPlus?  PDNeg? <nFactor?> \n";   	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+      opserr << "KNeg? Thetau_pos? Thetau_neg? PDPlus?  PDNeg? <nFactor?> \n";          // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
       return 0;  
     }
     // Parsing was successful, allocate the material
     theMaterial = new Bilin(iData[0],
-			    dData[0], dData[1], dData[2], dData[3], dData[4],
-			    dData[5], dData[6], dData[7], dData[8], dData[9],
-			    dData[10], dData[11], dData[12], dData[13], dData[14],
-			    dData[15], dData[16], dData[17], dData[18], dData[19],
-			    dData[20], dData[21], dData[22]);		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-    
+                            dData[0], dData[1], dData[2], dData[3], dData[4],
+                            dData[5], dData[6], dData[7], dData[8], dData[9],
+                            dData[10], dData[11], dData[12], dData[13], dData[14],
+                            dData[15], dData[16], dData[17], dData[18], dData[19],
+                            dData[20], dData[21], dData[22]);           // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   
   } else if (numData == 24) { // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-    if (OPS_GetDoubleInput(&numData, dData) != 0) {    		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-      opserr << "Invalid Args want: uniaxialMaterial Bilin tag? Ke? AsPos? AsNeg? My_pos? My_neg? LamdaS? ";		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+    if (OPS_GetDoubleInput(&numData, dData) != 0) {             // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+      opserr << "Invalid Args want: uniaxialMaterial Bilin tag? Ke? AsPos? AsNeg? My_pos? My_neg? LamdaS? ";            // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
       opserr << "LamdaD?  LamdaA? LamdaK? Cs? Cd? Ca? Ck? Thetap_pos? Thetap_neg? Thetapc_pos? Thetapc_neg?KPos? "; // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-      opserr << "KNeg? Thetau_pos? Thetau_neg? PDPlus?  PDNeg? <nFactor?>\n";   	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+      opserr << "KNeg? Thetau_pos? Thetau_neg? PDPlus?  PDNeg? <nFactor?>\n";           // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
       return 0;  
     }
     // Parsing was successful, allocate the material
     theMaterial = new Bilin(iData[0],
-			    dData[0], dData[1], dData[2], dData[3], dData[4],
-			    dData[5], dData[6], dData[7], dData[8], dData[9],
-			    dData[10], dData[11], dData[12], dData[13], dData[14],
-			    dData[15], dData[16], dData[17], dData[18], dData[19],
-			    dData[20], dData[21], dData[22], dData[23]); // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-    
+                            dData[0], dData[1], dData[2], dData[3], dData[4],
+                            dData[5], dData[6], dData[7], dData[8], dData[9],
+                            dData[10], dData[11], dData[12], dData[13], dData[14],
+                            dData[15], dData[16], dData[17], dData[18], dData[19],
+                            dData[20], dData[21], dData[22], dData[23]); // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   
   }
-  
+ 
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type Bilin Material\n";
     return 0;
   }
-  
+ 
   return theMaterial;
 }
 
-// if nFactor is assigned  						   	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-Bilin::Bilin(int tag, double p_Ke0,double p_AsPos,double p_AsNeg,double p_My_pos,double p_My_neg,double p_LamdaS,		
+// if nFactor is assigned                                                       // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+Bilin::Bilin(int tag, double p_Ke0,double p_AsPos,double p_AsNeg,double p_My_pos,double p_My_neg,double p_LamdaS,              
              double p_LamdaD,double p_LamdaA,double p_LamdaK,double p_Cs,double p_Cd,double p_Ca,double p_Ck,
              double p_Thetap_pos,double p_Thetap_neg,double p_Thetapc_pos,double p_Thetapc_neg,double p_KPos,double p_KNeg,
-             double p_Thetau_pos,double p_Thetau_neg,double p_PDPlus,double p_PDNeg,double p_nFactor)	
-:UniaxialMaterial(tag, MAT_TAG_Bilin),Ke0(p_Ke0), AsPos(p_AsPos), AsNeg(p_AsNeg), My_pos(p_My_pos), My_neg(p_My_neg),		
+             double p_Thetau_pos,double p_Thetau_neg,double p_PDPlus,double p_PDNeg,double p_nFactor)  
+:UniaxialMaterial(tag, MAT_TAG_Bilin),Ke0(p_Ke0), AsPos(p_AsPos), AsNeg(p_AsNeg), My_pos(p_My_pos), My_neg(p_My_neg),          
  LamdaS(p_LamdaS), LamdaK(p_LamdaK),LamdaA(p_LamdaA),LamdaD(p_LamdaD), Cs(p_Cs), Ck(p_Ck), Ca(p_Ca),Cd(p_Cd),
  Thetap_pos(p_Thetap_pos), Thetap_neg(p_Thetap_neg), Thetapc_pos(p_Thetapc_pos),Thetapc_neg(p_Thetapc_neg),
- KPos(p_KPos), KNeg(p_KNeg),Thetau_pos(p_Thetau_pos), Thetau_neg(p_Thetau_neg), PDPlus(p_PDPlus), PDNeg(p_PDNeg), nFactor(p_nFactor)	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+ KPos(p_KPos), KNeg(p_KNeg),Thetau_pos(p_Thetau_pos), Thetau_neg(p_Thetau_neg), PDPlus(p_PDPlus), PDNeg(p_PDNeg), nFactor(p_nFactor)    // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
 {
   //initialize variables
   this->revertToStart();
   //this->revertToLastCommit();
 }
 
-// if nFactor is NOT assigned     		
-Bilin::Bilin(int tag, double p_Ke0,double p_AsPos,double p_AsNeg,double p_My_pos,double p_My_neg,double p_LamdaS,		
+// if nFactor is NOT assigned                  
+Bilin::Bilin(int tag, double p_Ke0,double p_AsPos,double p_AsNeg,double p_My_pos,double p_My_neg,double p_LamdaS,              
              double p_LamdaD,double p_LamdaA,double p_LamdaK,double p_Cs,double p_Cd,double p_Ca,double p_Ck,
              double p_Thetap_pos,double p_Thetap_neg,double p_Thetapc_pos,double p_Thetapc_neg,double p_KPos,double p_KNeg,
-             double p_Thetau_pos,double p_Thetau_neg,double p_PDPlus,double p_PDNeg)	
-:UniaxialMaterial(tag, MAT_TAG_Bilin),Ke0(p_Ke0), AsPos(p_AsPos), AsNeg(p_AsNeg), My_pos(p_My_pos), My_neg(p_My_neg),		
+             double p_Thetau_pos,double p_Thetau_neg,double p_PDPlus,double p_PDNeg)   
+:UniaxialMaterial(tag, MAT_TAG_Bilin),Ke0(p_Ke0), AsPos(p_AsPos), AsNeg(p_AsNeg), My_pos(p_My_pos), My_neg(p_My_neg),          
  LamdaS(p_LamdaS), LamdaK(p_LamdaK),LamdaA(p_LamdaA),LamdaD(p_LamdaD), Cs(p_Cs), Ck(p_Ck), Ca(p_Ca),Cd(p_Cd),
  Thetap_pos(p_Thetap_pos), Thetap_neg(p_Thetap_neg), Thetapc_pos(p_Thetapc_pos),Thetapc_neg(p_Thetapc_neg),
- KPos(p_KPos), KNeg(p_KNeg),Thetau_pos(p_Thetau_pos), Thetau_neg(p_Thetau_neg), PDPlus(p_PDPlus), PDNeg(p_PDNeg)	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+ KPos(p_KPos), KNeg(p_KNeg),Thetau_pos(p_Thetau_pos), Thetau_neg(p_Thetau_neg), PDPlus(p_PDPlus), PDNeg(p_PDNeg)        // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
 {
   //initialize variables
   this->revertToStart();
@@ -176,164 +176,164 @@ Bilin::setTrialStrain(double strain, double strainRate)
 {  
   //all variables to the last commit
   this->revertToLastCommit();
-  
+ 
   //Here I declare function variables
   double deltaD,d,temp_1,temp,betas,betak,betad,
     dBoundPos,dBoundNeg,f1,f2,fNewLoadPos,fNewLoadNeg,
     f,xDevPos1,yDevPos1,xDevPos2,yDevPos2,xDevPos,yDevPos,xDevNeg1,
-    yDevNeg1,xDevNeg2,yDevNeg2,xDevNeg,yDevNeg; 	
-  
+    yDevNeg1,xDevNeg2,yDevNeg2,xDevNeg,yDevNeg;        
+ 
   //Initialize f (needed in case residual region is attained)
   f=0.0;     //Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-  
+ 
   //state determination algorithm: defines the current force and tangent stiffness
   U=strain; //set trial displacement
-  
+ 
   //********************************matlab code*************************************************************
   // Incremental Displacement
   deltaD = strain - CU;
   d=strain;
-  dP = CU;           
-  
+  dP = CU;          
+ 
   if (d>0.0) {
-    
+   
     interPoint(temp_1,temp,0.0,fCapRefPos,capSlope*Ke,0.0,KPos*My_pos,0.0);
     if (d<temp_1){
       iNoFpos = 0;
       LP=0;
     }
-    
+   
   } else {
-    
+   
     interPoint(temp_1,temp,0.0,fCapRefNeg,capSlopeNeg*Ke,0.0,KNeg*My_neg,0.0);
-    
+   
     if (d>temp_1) {
-      
+     
       iNoFneg = 0;
       LN=0;
     }
   }
-  
+ 
   // Other variables
-  
+ 
   flagdeg = 0;
   betas = 0.0;
   betak = 0.0;  
   betad = 0.0;
-  
+ 
   // Initialize parameters in the first cycle
-  
+ 
   if (kon==0) {
-    
-    //Compute elastic stiffness, strain hardening and post-capping ratios (Ibarra & Krawinkler, 2005)	
-    
+   
+    //Compute elastic stiffness, strain hardening and post-capping ratios (Ibarra & Krawinkler, 2005)  
+   
     // Amplify the elastic stiffness in case n>0
     Ke = Ke0*(1 + nFactor);  // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-    
+   
     //Compute strain hardening ratios (Ibarra & Krawinkler, 2005)
     alphaNeg=AsNeg/(1+nFactor*(1-AsNeg)); // updated per inelastic cycle // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
     alphaPos=AsPos/(1+nFactor*(1-AsPos)); // updated per inelastic cycle // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-    
-    ekhardPos = Ke*AsPos/(1+nFactor*(1-AsPos)); 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-    ekhardNeg = Ke*AsNeg/(1+nFactor*(1-AsNeg)); 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-    
-    capSlopeMember = -(My_pos + ekhardPos * Thetap_pos)/(Thetapc_pos*Ke0); 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17   
-    capSlope = capSlopeMember/(1+nFactor*(1- capSlopeMember));		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   
+    ekhardPos = Ke*AsPos/(1+nFactor*(1-AsPos));         // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+    ekhardNeg = Ke*AsNeg/(1+nFactor*(1-AsNeg));         // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   
+    capSlopeMember = -(My_pos + ekhardPos * Thetap_pos)/(Thetapc_pos*Ke0);      // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17  
+    capSlope = capSlopeMember/(1+nFactor*(1- capSlopeMember));          // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
     capSlopeNegMember = -(-My_neg + ekhardNeg * Thetap_neg)/(Thetapc_neg*Ke0); // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
     capSlopeNeg = capSlopeNegMember/(1+nFactor*(1- capSlopeNegMember));// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-    
+   
     //
-    
+   
     ekP  = Ke;
-    
+   
     flagControlResponse = 0;    
     Tangent=Ke;    
-    
+   
     Enrgts = My_pos*LamdaS;
     Enrgtk = 2.0*My_pos*LamdaK;
     Enrgtd = My_pos*LamdaD;
    
     dmax = My_pos/Ke;
     dmin = (My_neg/Ke);
-    
+   
     ekP = Ke;
-    
+   
     ekunload = Ke;
     ekexcurs = Ke;
-    
+   
     Enrgtot = 0.0;
     Enrgc = 0.0;
-    
+   
     fyPos = My_pos; // updated per inelastic cycle
     fyNeg = My_neg; // updated per inelastic cycle
-    
+   
     dyPos=My_pos/Ke;
     dyNeg=(My_neg/Ke);
-    
+   
     resSn = My_pos;
     resSp = My_neg;
-    
+   
     cpPos = Thetap_pos+My_pos/Ke;
     cpNeg = (-Thetap_neg+My_neg/Ke);
-    
+   
     fPeakPos=My_pos+ekhardPos*((Thetap_pos+My_pos/Ke)-My_pos/Ke);
     fPeakNeg=My_neg+ekhardNeg*((-Thetap_neg+My_neg/Ke)-(My_neg/Ke));
-    
+   
     if (cpPos<My_pos/Ke) {
-      
+     
       fPeakPos =My_pos*cpPos/(My_pos/Ke);
     }
     if (cpNeg>(My_neg/Ke)) {
       fPeakNeg =My_neg*cpNeg/(My_neg/Ke);
     }
-    
+   
     fCapPos = fPeakPos;
     fCapNeg = fPeakNeg;
-    
+   
     LP = 0;
     LN = 0;
-    
+   
     fLimPos = 0;
     fLimNeg = 0;
-    
+   
     dLimPos = 0;
     dLimNeg = 0;
-    
+   
     dBoundPos = 0;
     dBoundNeg = 0;
-    
+   
     iNoFpos = 0;
     iNoFneg = 0;
-    
+   
     interup=0;
-    
+   
     fCapRefPos=-capSlope*Ke*(Thetap_pos+My_pos/Ke)+fPeakPos;
     fCapRefNeg=-capSlopeNeg*Ke*(-Thetap_neg+My_neg/Ke)+fPeakNeg;
          
     capSlopeOrig = capSlope;
     capSlopeOrigNeg = capSlopeNeg;
-    
+   
     flagstopdeg     = 0;
-    
+   
     f1 = 0.0;  
     f2 = 0.0;
-    
+   
     fmin = 0.0;
     fmax = 0.0;
-    
+   
     RSE = 0.0;
-    
+   
     if(deltaD>=0.0){
-      
+     
       kon = 1;
-      
+     
     } else {
-      
+     
       kon = 2;
-      
+     
     }
   }
-  
+ 
   //      ******************* S T A R T S   B I G   L O O P  ****************
   //     IF   D E L T A > 0 - - - - - - - - - - - - - - - - - - - - - - - -  
   if (deltaD>=0.0) {
@@ -343,67 +343,68 @@ Bilin::setTrialStrain(double strain, double strainRate)
     //If there is a corner changing delta from negative to positive      
     if (kon==2) {
       kon = 1;
-      
+     
       if (dP<=dmin){
-	fLimNeg = fP;
-	dLimNeg = dP;
+        fLimNeg = fP;
+        dLimNeg = dP;
       }
-      
+     
       if (resSn>0.0){
-	RSE = 0.5*fP*fP/ekunload;
+        RSE = 0.5*fP*fP/ekunload;
       } else {
-	RSE=0.5*(fP+resSn)*(sn-dP)+0.5*resSn*resSn/(Ke*alphaPos);
+        RSE=0.5*(fP+resSn)*(sn-dP)+0.5*resSn*resSn/(Ke*alphaPos);
       }
-      
+     
       double a2 = Enrgtk-(Enrgtot-RSE);
       if((a2<=0.0) && (Enrgtk!=0.0)) {
-	flagControlResponse=1;
+        flagControlResponse=1;
       }
-      
-      if((LamdaK!=0.0) && (d<sp) && fabs(capSlope*(1+nFactor))>=1.0e-3 && (fabs(capSlopeNeg*(1+nFactor))>=1.0e-3)){		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	
-	betak = pow(((Enrgtot-RSE)/(Enrgtk-(Enrgtot-RSE))),Ck);		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	
-	if(((Enrgtot-RSE)>=Enrgtk)||(betak>=1.0)) {
-	  betak = 1.0;
-	}
-	
-	if( flagstopdeg !=1 && flagdeg !=1) {         
-	  ekunload = Ke*((1.0-betak)/(1+nFactor*(1-(1.0-betak))));	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	  
-	} else {
-	  ekunload = ekexcurs; // no update happens
-	}
-	
-	if(ekunload<=(0.1/(1+nFactor*(1-0.1)))*Ke) { // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	  ekunload = (0.1/(1+nFactor*(1-0.1)))*Ke;		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	}
-	
+     
+      if((LamdaK!=0.0) && (d<sp) && fabs(capSlope*(1+nFactor))>=1.0e-3 && (fabs(capSlopeNeg*(1+nFactor))>=1.0e-3)){             // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+       
+        betak = pow(((Enrgc-RSE)/(Enrgtk-(Enrgtot-RSE))),Ck);         // Updated: Filipe Ribeiro and Andre Barbosa - 2013.09.03
+       
+        if(((Enrgtot-RSE)>=Enrgtk)||(betak>=1.0)) {
+          betak = 1.0;
+        }
+       
+        if( flagstopdeg !=1 && flagdeg !=1) {        
+			
+				ekunload = ekexcurs*(1.0-betak);
+         
+        } else {
+          ekunload = ekexcurs; // no update happens
+        }
+       
+        if(ekunload<=(0.1/(1+nFactor*(1-0.1)))*Ke) { // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+          ekunload = (0.1/(1+nFactor*(1-0.1)))*Ke;              // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        }
+       
       }
-      
-      
+     
+     
       //// sn CALCULATION-------------------------------------------------
-      
+     
       if((dmin<(My_neg/Ke))||(dmax>(My_pos/Ke))) {
-	if((dP<sp)||(((dP>sp)&&(ekP==ekunload)))) {
-	  
-	  snCalc();
-	  
-	  if((fabs(dmax-(My_pos/Ke))>=1.0e-10)&&(fabs(sn-(My_pos/Ke))<=1.0e-10)) {
-	    sn=(My_pos/Ke)-1.0e-9;
-	  }
-	}
+        if((dP<sp)||(((dP>sp)&&(ekP==ekunload)))) {
+         
+          snCalc();
+         
+          if((fabs(dmax-(My_pos/Ke))>=1.0e-10)&&(fabs(sn-(My_pos/Ke))<=1.0e-10)) {
+            sn=(My_pos/Ke)-1.0e-9;
+          }
+        }
       }
-      
+     
       if (sn>dmax) {
-	dmax = sn;
+        dmax = sn;
       }
-      
+     
       if ((iNoFneg==1)&&(dP<=dNewLoadNeg)) {
-	sn = dNewLoadNeg - 1.0e-6;
-	resSn = 0;
+        sn = dNewLoadNeg - 1.0e-6;
+        resSn = 0;
       }
-      
+     
     }
     //   LOADING ----------------------------------------------------------
     //      Push envelope
@@ -438,20 +439,20 @@ Bilin::setTrialStrain(double strain, double strainRate)
       envelPosCap2(fyPos,alphaPos,capSlope,cpPos,d,f,ek,Ke,My_pos,KPos);
       dmax = d;
       fmax = f;
-      
+     
       // c COMPUTE MAXIMUM POSSIBLE DISPLACEMENT
       dBoundPos=boundPos();
       if((d>dBoundPos)||(ek==1.0e-7)) {
-	iNoFpos = 1;
+        iNoFpos = 1;
       }
-      
+     
     } else if (fabs(sn)>1.0e-10) {
-      
-      
-      
+     
+     
+     
       if (LP==0) {
-	
-	
+       
+       
        if (cpPos<=dyPos) {
          //                             call interPoint(xDevPos1,yDevPos1,sn,resSn,ekhardPos,cpPos,fCapPos,capSlope*Ke)
          interPoint(xDevPos1,yDevPos1,sn,resSn,ekhardPos,cpPos,fCapPos,capSlope*Ke);
@@ -463,7 +464,7 @@ Bilin::setTrialStrain(double strain, double strainRate)
          } else {
            xDevPos = xDevPos2;
            yDevPos = yDevPos2;
-         }             
+         }            
          
          if ((d<=sn)&&(d<=xDevPos)) {
            ek = ekunload;
@@ -499,7 +500,7 @@ Bilin::setTrialStrain(double strain, double strainRate)
              //                         call envHitsZero(f,fP,ek)
              envHitsZero(f);
            }
-	   
+           
          }
          
        } else if (cpPos > dyPos) {
@@ -507,7 +508,7 @@ Bilin::setTrialStrain(double strain, double strainRate)
          if(d<=sn && d<=xDevPos1) { // Unloading in positive loading direction
            ek = ekunload;
            f  = fP+ek*deltaD;
-	   
+           
          } else if ((d>sn)&&(d<=cpPos)&& (d<=xDevPos1)) {
            ek = Ke*alphaPos;
            f2 = resSn+ek*(d-sn);
@@ -564,82 +565,82 @@ Bilin::setTrialStrain(double strain, double strainRate)
        
        // c             IF LP IS EQUAL TO 1
       } else if (LP==1) {
-	if(d<=sn) {
-	  ek = ekunload;
-	  f  = fP+ek*deltaD;
-	} else if (((d>sn)&&(sn==snEnv)&&(d<=snHor))||((iNoFneg==1)&&(d>sn)&&(d<snHor))) {
-	  ek = Ke*alphaPos;
-	  f2 = resSn+ek*(d-sn);
-	  f1 = fP+ekunload*deltaD;  
-	  //f = min(f1,f2);
-	  if (f1<f2)
-	    {
-	      f=f1;
-	    }
-	  else
-	    {
-	      f=f2;
-	    }
-	  if (fabs(f-f1)<1.0e-10) {
-	    ek=ekunload;
-	  }
-	  
-	} else {
-	  ek = 0;
-	  f1 = fP+ekunload*deltaD;  
-	  f2 = fLimPos;
-	  //f = min(f1,f2);
-	  if (f1<f2)
-	    {
-	      f=f1;
-	    }
-	  else
-	    {
-	      f=f2;
-	    }
-	  if (fabs(f-f1)<1.0e-10) {
-	    ek=ekunload;
-	  }
-	}
+        if(d<=sn) {
+          ek = ekunload;
+          f  = fP+ek*deltaD;
+        } else if (((d>sn)&&(sn==snEnv)&&(d<=snHor))||((iNoFneg==1)&&(d>sn)&&(d<snHor))) {
+          ek = Ke*alphaPos;
+          f2 = resSn+ek*(d-sn);
+          f1 = fP+ekunload*deltaD;  
+          //f = min(f1,f2);
+          if (f1<f2)
+            {
+              f=f1;
+            }
+          else
+            {
+              f=f2;
+            }
+          if (fabs(f-f1)<1.0e-10) {
+            ek=ekunload;
+          }
+         
+        } else {
+          ek = 0;
+          f1 = fP+ekunload*deltaD;  
+          f2 = fLimPos;
+          //f = min(f1,f2);
+          if (f1<f2)
+            {
+              f=f1;
+            }
+          else
+            {
+              f=f2;
+            }
+          if (fabs(f-f1)<1.0e-10) {
+            ek=ekunload;
+          }
+        }
       }
       // c       Elastic
     } else {
       if (d>0.0) {
-	
-	f=0.0;
-	envelPosCap2(fyPos,alphaPos,capSlope,cpPos,d,f,ek,Ke,My_pos,KPos);
+       
+        f=0.0;
+        envelPosCap2(fyPos,alphaPos,capSlope,cpPos,d,f,ek,Ke,My_pos,KPos);
       } else {
-	
-	f=0.0;
-	envelNegCap2(fyNeg,alphaNeg,capSlopeNeg,cpNeg,d,f,ek,Ke,My_neg,KNeg);
+       
+        f=0.0;
+        envelNegCap2(fyNeg,alphaNeg,capSlopeNeg,cpNeg,d,f,ek,Ke,My_neg,KNeg);
       }
     }
-    
+   
     //// c       IF   D E L T A < 0 - - - - - - - - - - - - - - - - - - - - - - - -  
-    
+   
   } else {
-    
+   
     if (iNoFneg==1) {
       interPoint(dNewLoadNeg,fNewLoadNeg,dyPos,fyPos,ekhardPos,0.0,0.0,0.0);
     }
-    
-    
+   
+   
     // c If there is a corner changing delta from positive to negative ---      
-    
+   
     if (kon==1) {
       kon = 2;
-      
+     
       if (dP>=dmax) {
-	fLimPos = fP;
-	dLimPos = dP;
+        fLimPos = fP;
+        dLimPos = dP;
       }
-      
+     
       if (resSp<0.0) {
-	RSE = 0.5*fP*fP/ekunload;
+        RSE = 0.5*fP*fP/ekunload;
       } else {
-	RSE=0.5*(fP+resSn)*(dP-sp)+0.5*resSp*resSp/(Ke*alphaNeg);
+        RSE=0.5*(fP+resSn)*(dP-sp)+0.5*resSp*resSp/(Ke*alphaNeg);
       }
-      
+     
      double a2 = Enrgtk-(Enrgtot-RSE);
      
      
@@ -648,18 +649,23 @@ Bilin::setTrialStrain(double strain, double strainRate)
      }
      //// Update the Unloading Stiffness deterioration
      if((LamdaK!=0.0)&&(d>sn)&&(flagstopdeg!=1)&&(flagdeg!=1)) {
-       betak = pow(((Enrgtot-RSE)/(Enrgtk-(Enrgtot-RSE))),Ck); 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-       if(((Enrgtot-RSE)>=Enrgtk)||(betak>=1.0)) {  	
+       
+		 betak = pow(((Enrgc-RSE)/(Enrgtk-(Enrgtot-RSE))),Ck);  // Updated: Filipe Ribeiro and Andre Barbosa - 2013.09.03
+       
+	   if(((Enrgtot-RSE)>=Enrgtk)||(betak>=1.0)) {     
                 betak = 1.0;
        }
-       // If Post caping slopes have not been flat due to residual update stiffness deterioration
-       if(flagdeg !=1 || flagstopdeg!=1) {             
-         ekunload = Ke*((1.0-betak)/(1+nFactor*(1-(1.0-betak)))); // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-       } else { // Keep the same unloading stiffness
+       // If Post caping slopes have not been flat due to residual update stiffness deterioration       
+         
+		   if( flagstopdeg !=1 && flagdeg !=1) {  
+
+				ekunload = ekexcurs*(1.0-betak);
+
+	   } else { // Keep the same unloading stiffness
          ekunload = ekexcurs;
        }            
-       if(ekunload<=(0.1/(1+nFactor*(1-0.1)))*Ke) {		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-               ekunload = (0.1/(1+nFactor*(1-0.1)))*Ke;	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+       if(ekunload<=(0.1/(1+nFactor*(1-0.1)))*Ke) {             // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+               ekunload = (0.1/(1+nFactor*(1-0.1)))*Ke; // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
        }
      }
      
@@ -744,7 +750,7 @@ Bilin::setTrialStrain(double strain, double strainRate)
          } else {
            xDevNeg = xDevNeg2;
            yDevNeg = yDevNeg2;
-         }     
+         }    
          //                    
          if ((d>=sp)&&(d>=xDevNeg)) {
            ek = ekunload;
@@ -765,124 +771,124 @@ Bilin::setTrialStrain(double strain, double strainRate)
            if (fabs(f-f1)<1.0e-10) {
              ek=ekunload;
            }
-	 } else if (d<xDevNeg) {
-	   ek = capSlopeNeg*Ke;
-	   f2 = yDevNeg+ek*(d-xDevNeg);
-	   f1 = fP+ekunload*deltaD;
-	   //f = max(f1,f2);
-	   if (f1>f2)
-	     {
-	       f=f1;
-	     }
-	   else
-	     {
-	       f=f2;
-	     }
-	   if (fabs(f-f1)<1.0e-10) {
-	     ek=ekunload;
-	   }
-	   if (ek!=ekunload) {
-	     //                         call envHitsZero(f,fP,ek)
-	     envHitsZero(f);
-	   }
-	   
-	 }
-	 
-	 
+         } else if (d<xDevNeg) {
+           ek = capSlopeNeg*Ke;
+           f2 = yDevNeg+ek*(d-xDevNeg);
+           f1 = fP+ekunload*deltaD;
+           //f = max(f1,f2);
+           if (f1>f2)
+             {
+               f=f1;
+             }
+           else
+             {
+               f=f2;
+             }
+           if (fabs(f-f1)<1.0e-10) {
+             ek=ekunload;
+           }
+           if (ek!=ekunload) {
+             //                         call envHitsZero(f,fP,ek)
+             envHitsZero(f);
+           }
+           
+         }
+         
+         
        } else if (cpNeg<dyNeg) {
-	 interPoint(xDevNeg1,yDevNeg1,sp,resSp,Ke*alphaNeg,cpNeg,fCapNeg,capSlopeNeg*Ke);
-	 if ( d>=sp && d>=xDevNeg1) {
-	   ek = ekunload;
-	   f = fP+ek*deltaD;
-	 } else if((d<sp)&&(d>=cpNeg)&& (d>=xDevNeg1)) {
-	   ek = Ke*alphaNeg;
-	   f2 = resSp+ek*(d-sp);
-	   f1 = fP+ekunload*deltaD;  
-	   //f=max(f1,f2);
-	   if (f1>f2)
-	     {
-	       f=f1;
-	     }
-	   else
-	     {
-	       f=f2;
-	     }
-	   if (fabs(f-f1)<1.0e-10) {
-	     ek=ekunload;
-	   }
-	 } else if((d<cpNeg)&&(d>(-Thetau_neg))) {
-	   ek = capSlopeNeg*Ke;
-	   f2 = fCapNeg+ek*(d-cpNeg);
-	   f1 = fP+ekunload*deltaD;  
-	   //f = max(f1,f2);
-	   if (f1>f2)
-	     {
-	       f=f1;
-	     }
-	   else
-	     {
-	       f=f2;
-	     }
-	   if (fabs(f-f1)<1.0e-10) {
-	     ek=ekunload;
-	   }
-	   if (ek!=ekunload) {
-	     //                         call envHitsZero(f,fP,ek)
-	     envHitsZero(f);
-	   }
-	   // Added by Dimitris to model ductile tearing. Once theta_u((-Thetau_neg)) is exceeded Strength drops to zero and stays
-	 } else if(d<=(-Thetau_neg) ||  flagControlResponse == 1){
-	   ek = -1.0e-7;
-	   f = 1.0e-10;
-	   flagstopdeg = 1;
-	   flagControlResponse = 1;               // To dictate the response after passing fracture            
-	 }
-	 // Added by Dimitrios to stay on the residual path when  dresidual <d- < dfracture              
-	 if(d > (-Thetau_neg) && d < cpNeg+(KNeg*My_neg-fCapNeg)/(capSlopeNeg*Ke)) {
-	   f = KNeg*My_neg;
-	   ek = -1.0e-7;
-	 }
-	 if( flagControlResponse == 1) { // Response has to be zero since post capping regions hit zero
-	   f = 1.0e-10;
-	 }
+         interPoint(xDevNeg1,yDevNeg1,sp,resSp,Ke*alphaNeg,cpNeg,fCapNeg,capSlopeNeg*Ke);
+         if ( d>=sp && d>=xDevNeg1) {
+           ek = ekunload;
+           f = fP+ek*deltaD;
+         } else if((d<sp)&&(d>=cpNeg)&& (d>=xDevNeg1)) {
+           ek = Ke*alphaNeg;
+           f2 = resSp+ek*(d-sp);
+           f1 = fP+ekunload*deltaD;  
+           //f=max(f1,f2);
+           if (f1>f2)
+             {
+               f=f1;
+             }
+           else
+             {
+               f=f2;
+             }
+           if (fabs(f-f1)<1.0e-10) {
+             ek=ekunload;
+           }
+         } else if((d<cpNeg)&&(d>(-Thetau_neg))) {
+           ek = capSlopeNeg*Ke;
+           f2 = fCapNeg+ek*(d-cpNeg);
+           f1 = fP+ekunload*deltaD;  
+           //f = max(f1,f2);
+           if (f1>f2)
+             {
+               f=f1;
+             }
+           else
+             {
+               f=f2;
+             }
+           if (fabs(f-f1)<1.0e-10) {
+             ek=ekunload;
+           }
+           if (ek!=ekunload) {
+             //                         call envHitsZero(f,fP,ek)
+             envHitsZero(f);
+           }
+           // Added by Dimitris to model ductile tearing. Once theta_u((-Thetau_neg)) is exceeded Strength drops to zero and stays
+         } else if(d<=(-Thetau_neg) ||  flagControlResponse == 1){
+           ek = -1.0e-7;
+           f = 1.0e-10;
+           flagstopdeg = 1;
+           flagControlResponse = 1;               // To dictate the response after passing fracture            
+         }
+         // Added by Dimitrios to stay on the residual path when  dresidual <d- < dfracture              
+         if(d > (-Thetau_neg) && d < cpNeg+(KNeg*My_neg-fCapNeg)/(capSlopeNeg*Ke)) {
+           f = KNeg*My_neg;
+           ek = -1.0e-7;
+         }
+         if( flagControlResponse == 1) { // Response has to be zero since post capping regions hit zero
+           f = 1.0e-10;
+         }
        }
        
      } else if (LN==1){
        if(d>=sp){
-	 ek = ekunload;
-	 f  = fP+ek*deltaD;
+         ek = ekunload;
+         f  = fP+ek*deltaD;
        } else if (((d<sp)&&(sp==spEnv)&&(d>spHor))||((iNoFpos==1)&&(d<sp)&&(d>spHor))) {
-	 ek = Ke*alphaNeg;
-	 f2 = resSp+ek*(d-sp);
-	 f1 = fP+ekunload*deltaD;
+         ek = Ke*alphaNeg;
+         f2 = resSp+ek*(d-sp);
+         f1 = fP+ekunload*deltaD;
                                 //f = max(f1,f2);
-	 if (f1>f2)
-	   {
-	     f=f1;
-	   }
-	 else
-	   {
-	     f=f2;
-	   }
-	 if (fabs(f-f1)<1.0e-10) {
-	   ek=ekunload;
-	 }
+         if (f1>f2)
+           {
+             f=f1;
+           }
+         else
+           {
+             f=f2;
+           }
+         if (fabs(f-f1)<1.0e-10) {
+           ek=ekunload;
+         }
        } else {
-	 ek = 1.0e-7;
-	 f1 = fP+ekunload*deltaD ;
-	 f2 = fLimNeg;
-	 //f = max(f1,f2);
-	 if (f1>f2)
-	   {
-	     f=f1;
-	   }
-	 else
-	   {
-	     f=f2;
-	   }
-	 if (fabs(f-f1)<1.0e-10) {
-	   ek=ekunload;
-	 }
+         ek = 1.0e-7;
+         f1 = fP+ekunload*deltaD ;
+         f2 = fLimNeg;
+         //f = max(f1,f2);
+         if (f1>f2)
+           {
+             f=f1;
+           }
+         else
+           {
+             f=f2;
+           }
+         if (fabs(f-f1)<1.0e-10) {
+           ek=ekunload;
+         }
        }
      }
    } else {
@@ -898,182 +904,182 @@ Bilin::setTrialStrain(double strain, double strainRate)
    
   }
   // BIG LOOP Ends ****************************************************
-  
+ 
   double Enrgi = 0.0;
-  
+ 
   Enrgi = 0.5 * (f+fP) * deltaD;
   Enrgc = Enrgc + Enrgi;
   Enrgtot = Enrgtot + Enrgi;
-  
+ 
   RSE = 0.5*f*f/ekunload;
-  
-  ////    Flag to deteriorate parameters on the opposite side of the loop --     
-  
+ 
+  ////    Flag to deteriorate parameters on the opposite side of the loop --    
+ 
   if((f*fP<0.0)&&(interup==0)) {
     if(((fP>0.0)&&(dmax>(dyPos)))||((fP<0.0)&&(dmin<(dyNeg)))) {
-      flagdeg = 1;           
+      flagdeg = 1;          
       interup = 1;
     }
   }    
-  
-  
+ 
+ 
   ////    energy CALCULATIONS ---------------------------------------------
-  
+ 
   if((flagstopdeg==0)&&(flagdeg==1)) {
-    
+   
     if((Enrgtot>=Enrgts)&&(Enrgts!=0.0)) {
       betas = 1.0;
     } else if((Enrgtot>=Enrgtd)&&(Enrgtd!=0.0)) {
       betad = 1.0;
     } else {
       if(LamdaS!=0.0) {
-	betas = pow((Enrgc/(Enrgts-Enrgtot)),Cs);
+        betas = pow((Enrgc/(Enrgts-Enrgtot)),Cs);
       }
       if(LamdaD!=0.0) {
-	betad = pow((Enrgc/(Enrgtd-Enrgtot)),Cd);
+        betad = pow((Enrgc/(Enrgtd-Enrgtot)),Cd);
       }
-      
+     
       if(fabs(betas)>=1.0) {
-	betas = 1.0;
+        betas = 1.0;
       }
       if(fabs(betad)>=1.0) {
-	betad = 1.0;
+        betad = 1.0;
       }
     }
     ////            Initialize energy of the cycle and Kstif for next loop -------
-    
+   
     Enrgc = 0.0;
     ekexcurs = ekunload;
-    
-    
+   
+   
     ////            Deteriorate parameters for the next half cycle
     if(deltaD<0.0){
-      
+     
       if(flagstopdeg == 0){
-	fyNeg = fyNeg*(1-betas*PDNeg);	
- 	//change the strain hardening ratio // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	//1st - recover the strain hardening ratio of the member	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	alphaNeg=alphaNeg*(1+nFactor)/(1+nFactor*alphaNeg);		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	//2nd - apply the redution to the ratio of the member		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	alphaNeg=alphaNeg*(1-betas*PDNeg);	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	//3rd - recompute the strain hardening ratio (updated) // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	alphaNeg=(alphaNeg)/(1+nFactor*(1-alphaNeg)); // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	fCapRefNeg=fCapRefNeg*(1-betad*PDNeg);
+        fyNeg = fyNeg*(1-betas*PDNeg); 
+        //change the strain hardening ratio // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        //1st - recover the strain hardening ratio of the member        // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        alphaNeg=alphaNeg*(1+nFactor)/(1+nFactor*alphaNeg);             // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        //2nd - apply the redution to the ratio of the member           // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        alphaNeg=alphaNeg*(1-betas*PDNeg);      // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        //3rd - recompute the strain hardening ratio (updated) // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        alphaNeg=(alphaNeg)/(1+nFactor*(1-alphaNeg)); // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        fCapRefNeg=fCapRefNeg*(1-betad*PDNeg);
       }else{
-	fyNeg = fyNeg;
-	alphaNeg=alphaNeg;
-	fCapRefNeg=fCapRefNeg;
+        fyNeg = fyNeg;
+        alphaNeg=alphaNeg;
+        fCapRefNeg=fCapRefNeg;
       }
       // When we reach post capping slope goes to zero due to residual
       if(fyNeg>=KNeg*My_neg) { // If strength drops below residual
-	fyNeg = KNeg*My_neg;
-	alphaNeg = 10^(-4);
-	fCapRefNeg = fyNeg;
-	capSlopeNeg = -pow(10.0,-6);
-	flagstopdeg = 1;
+        fyNeg = KNeg*My_neg;
+        alphaNeg = 10^(-4);
+        fCapRefNeg = fyNeg;
+        capSlopeNeg = -pow(10.0,-6);
+        flagstopdeg = 1;
       } else { //% Keep updating the post capping slope
-	//change the post-capping ratio 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-  	//1st - recover post-capping ratio of the member // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	capSlopeNeg=capSlopeOrigNeg*(1+nFactor)/(1+capSlopeOrigNeg*nFactor);	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-  	//2nd - apply the redution to the ratio of the member	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	capSlopeNeg=capSlopeNeg*(fabs((KNeg*My_neg-fyNeg)/(KNeg*My_neg-My_neg)));	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-  	//3rd - recompute the post-capping ratio (updated) // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	capSlopeNeg = capSlopeNeg/(1+nFactor*(1-capSlopeNeg));	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	if(capSlopeNeg >=0){
-	  capSlopeNeg = -pow(10.0,-6);
-	}
+        //change the post-capping ratio         // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        //1st - recover post-capping ratio of the member // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        capSlopeNeg=capSlopeOrigNeg*(1+nFactor)/(1+capSlopeOrigNeg*nFactor);    // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        //2nd - apply the redution to the ratio of the member   // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        capSlopeNeg=capSlopeNeg*(fabs((KNeg*My_neg-fyNeg)/(KNeg*My_neg-My_neg)));       // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        //3rd - recompute the post-capping ratio (updated) // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        capSlopeNeg = capSlopeNeg/(1+nFactor*(1-capSlopeNeg));  // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        if(capSlopeNeg >=0){
+          capSlopeNeg = -pow(10.0,-6);
+        }
       }
-      
+     
       dyNeg = fyNeg/Ke;
       ekhardNeg=alphaNeg*Ke;
-      
+     
       double dCap1Neg=fCapRefNeg/(Ke-capSlopeOrigNeg*Ke);
       double dCap2Neg=(fCapRefNeg+ekhardNeg*dyNeg-fyNeg)/(ekhardNeg-capSlopeOrigNeg*Ke);
       //cpNeg=min(dCap1Neg,dCap2Neg);
       if (dCap1Neg<dCap2Neg)
-	{
-	  cpNeg=dCap1Neg;
-	}
+        {
+          cpNeg=dCap1Neg;
+        }
       else
-	{
-	  cpNeg=dCap2Neg;
-	}
-      
+        {
+          cpNeg=dCap2Neg;
+        }
+     
       fCapNeg = fCapRefNeg + capSlopeOrigNeg*Ke*cpNeg;
-      
+     
       envelNegCap2(fyNeg,alphaNeg,capSlopeNeg,cpNeg,dLimNeg,fLimNeg,ek,Ke,My_neg,KNeg);
       spCalc();
       // c                    In case the degradation point moves from the negative to pos. side
       if(resSp>f) {        
-	d = sp;
-	f = resSp;
-	ek = ekhardNeg;  
+        d = sp;
+        f = resSp;
+        ek = ekhardNeg;  
       }
     } else {
       if(flagstopdeg == 0){
-	fyPos = fyPos*(1-betas*PDPlus);
- 	//change the strain hardening ratio // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	//1st - recover the strain hardening ratio of the member	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	alphaPos=alphaPos*(1+nFactor)/(1+nFactor*alphaPos);		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	//2nd - apply the redution to the ratio of the member		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	alphaPos=alphaPos*(1-betas*PDPlus);	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	//3rd - recompute the strain hardening ratio (updated)		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	alphaPos=(alphaPos)/(1+nFactor*(1-alphaPos)); // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	fCapRefPos=fCapRefPos*(1-betad*PDPlus);
+        fyPos = fyPos*(1-betas*PDPlus);
+        //change the strain hardening ratio // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        //1st - recover the strain hardening ratio of the member        // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        alphaPos=alphaPos*(1+nFactor)/(1+nFactor*alphaPos);             // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        //2nd - apply the redution to the ratio of the member           // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        alphaPos=alphaPos*(1-betas*PDPlus);     // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        //3rd - recompute the strain hardening ratio (updated)          // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        alphaPos=(alphaPos)/(1+nFactor*(1-alphaPos)); // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        fCapRefPos=fCapRefPos*(1-betad*PDPlus);
       } else {
-	fyPos = fyPos; 
-	alphaPos=alphaPos;     
-	fCapRefPos=fCapRefPos;
+        fyPos = fyPos;
+        alphaPos=alphaPos;    
+        fCapRefPos=fCapRefPos;
       }
                
       //   %If post capping slope goes to zero due to residual:
       if(fyPos <= KPos*My_pos) {  //% If yield Strength Pos drops below residual
-	fyPos = KPos*My_pos;
-	alphaPos = pow(10.0,-4);
-	fCapRefPos = fyPos;
-	capSlope = -pow(10.0,-6);
-	flagstopdeg = 1;              
+        fyPos = KPos*My_pos;
+        alphaPos = pow(10.0,-4);
+        fCapRefPos = fyPos;
+        capSlope = -pow(10.0,-6);
+        flagstopdeg = 1;              
       }  else { //% keep updating
-  	//change the post-capping ratio 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-  	//1st - recover post-capping ratio of the member 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	capSlope=capSlopeOrig*(1+nFactor)/(1+capSlopeOrig*nFactor);	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-  	//2nd - apply the redution to the ratio of the member// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	capSlope=capSlope*(fabs((KPos*My_pos-fyPos)/(KPos*My_pos-My_pos)));	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-  	//3rd - recompute the post-capping ratio (updated)	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	capSlope = capSlope/(1+nFactor*(1-capSlope));	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-	if(capSlope >=0) {
-	  capSlope = -pow(10.0,-6);
-	}
+        //change the post-capping ratio         // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        //1st - recover post-capping ratio of the member        // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        capSlope=capSlopeOrig*(1+nFactor)/(1+capSlopeOrig*nFactor);     // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        //2nd - apply the redution to the ratio of the member// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        capSlope=capSlope*(fabs((KPos*My_pos-fyPos)/(KPos*My_pos-My_pos)));     // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        //3rd - recompute the post-capping ratio (updated)      // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        capSlope = capSlope/(1+nFactor*(1-capSlope));   // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+        if(capSlope >=0) {
+          capSlope = -pow(10.0,-6);
+        }
       }
       dyPos = fyPos/Ke;
       ekhardPos=alphaPos*Ke;
-      
+     
       double dCap1Pos=fCapRefPos/(Ke-capSlopeOrig*Ke);
       double dCap2Pos=(fCapRefPos+ekhardPos*dyPos-fyPos)/(ekhardPos-capSlopeOrig*Ke);
       //cpPos=max(dCap1Pos,dCap2Pos);
       if(dCap1Pos>dCap2Pos)
-	{
-	  cpPos=dCap1Pos;
-	}
+        {
+          cpPos=dCap1Pos;
+        }
       else
-	{
-	  cpPos=dCap2Pos;
-	}
+        {
+          cpPos=dCap2Pos;
+        }
       fCapPos = fCapRefPos + capSlopeOrig*Ke*cpPos;
-      
+     
       envelPosCap2(fyPos,alphaPos,capSlope,cpPos,dLimPos,fLimPos,ek,Ke,My_pos,KPos);
-      
+     
       snCalc();
       // c                    In case the degradation point moves from the pos. to neg. side
       if(resSn<f) {
-	d = sn;
-	f = resSn;
-	ek = ekhardPos;
-	
+        d = sn;
+        f = resSn;
+        ek = ekhardPos;
+       
       }  
     }
   }
-  
+ 
   // c            Check the horizontal limit in case that dBound is reached after first neg slope
   if ((d<0)&&(fabs(ek)<=1.0e-7)) {
     LN = 1;
@@ -1081,24 +1087,24 @@ Bilin::setTrialStrain(double strain, double strainRate)
   if ((d>0)&&(fabs(ek)<=1.0e-7)) {
     LP = 1;
   }
-  
-  
+ 
+ 
   // c    Update envelope values --------------------------------------------    
-  
+ 
   f1 = f;  
-  
-  
+ 
+ 
   // c    Updating parameters for next cycle ---------------------------------
   ekP = ek;
   fP = f;
   dP = d;
   Tangent=ek;
-  
+ 
   //priority of logical operators
   if (interup==1&&(ek==Ke*alphaPos) ||(ek==Ke*alphaNeg)||(ek==capSlope*Ke) ||(ek==capSlopeNeg*Ke)) {
     interup = 0;
   }
-  
+ 
   return 0;
 }
 double
@@ -1117,7 +1123,7 @@ Bilin::getTangent(void)
 double
 Bilin::getInitialTangent(void)
 {
-  return (Ke);		
+  return (Ke);         
 }
 
 
@@ -1277,9 +1283,9 @@ Bilin::revertToLastCommit(void)
    capSlopeNeg=CcapSlopeNeg;
    flagControlResponse=CflagControlResponse;
    capSlopeOrigNeg=CcapSlopeOrigNeg;
-   capSlopeMember=CcapSlopeMember;	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-   capSlopeNegMember=CcapSlopeNegMember; 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-   Ke=CKe;  	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   capSlopeMember=CcapSlopeMember;      // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   capSlopeNegMember=CcapSlopeNegMember;        // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   Ke=CKe;      // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
     return 0;
 }
 
@@ -1353,25 +1359,25 @@ Bilin::revertToStart(void)
    capSlopeNeg=CcapSlopeNeg=0.0;
    flagControlResponse=CflagControlResponse=0;
    capSlopeOrigNeg=CcapSlopeOrigNeg=0.0;
-   capSlopeMember=CcapSlopeMember=0.0;	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-   capSlopeNegMember=CcapSlopeNegMember=0.0; 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-   Ke=CKe=0.0;  	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   capSlopeMember=CcapSlopeMember=0.0;  // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   capSlopeNegMember=CcapSlopeNegMember=0.0;    // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   Ke=CKe=0.0;          // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
 
-//capSlopeMember = -(My_pos + ekhardPos * Thetap_pos)/(Thetapc_pos*Ke0); 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17 
-//capSlope = capSlopeMember/(1+nFactor*(1- capSlopeMember)); 		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+//capSlopeMember = -(My_pos + ekhardPos * Thetap_pos)/(Thetapc_pos*Ke0);        // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+//capSlope = capSlopeMember/(1+nFactor*(1- capSlopeMember));            // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
 //capSlopeNegMember = -(-My_neg + ekhardNeg * Thetap_neg)/(Thetapc_neg*Ke0); // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
 //capSlopeNeg = capSlopeNegMember/(1+nFactor*(1- capSlopeNegMember)); // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
 
 //        ekP  = Ke;  // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
 //flagControlResponse = 0;    
-//Tangent=Ke;  	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17                      
+//Tangent=Ke;   // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17                      
     return 0;
 }
 
 UniaxialMaterial *
 Bilin::getCopy(void)
 {
-    Bilin *theCopy = new Bilin(this->getTag(),Ke0,AsPos,AsNeg,My_pos,My_neg,LamdaS,LamdaD,		
+    Bilin *theCopy = new Bilin(this->getTag(),Ke0,AsPos,AsNeg,My_pos,My_neg,LamdaS,LamdaD,             
                 LamdaA,LamdaK,Cs,Cd,Ca,Ck,Thetap_pos,Thetap_neg,Thetapc_pos,Thetapc_neg,KPos,KNeg,
                 Thetau_pos,Thetau_neg,PDPlus,PDNeg,nFactor);  // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
 
@@ -1504,12 +1510,12 @@ Bilin::getCopy(void)
    theCopy->CcapSlopeNeg=CcapSlopeNeg;
    theCopy->flagControlResponse=flagControlResponse;
    theCopy->CflagControlResponse=CflagControlResponse;  
-   theCopy->capSlopeMember=capSlopeMember;	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   theCopy->capSlopeMember=capSlopeMember;      // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
    theCopy->CcapSlopeMember=CcapSlopeMember;// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-   theCopy->capSlopeNegMember=capSlopeNegMember; 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-   theCopy->CcapSlopeNegMember=CcapSlopeNegMember; 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   theCopy->capSlopeNegMember=capSlopeNegMember;        // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   theCopy->CcapSlopeNegMember=CcapSlopeNegMember;      // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
    theCopy->CKe=CKe;  // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-   theCopy->capSlopeOrigNeg=capSlopeOrigNeg; 
+   theCopy->capSlopeOrigNeg=capSlopeOrigNeg;
    theCopy->CcapSlopeOrigNeg=CcapSlopeOrigNeg;
 
     return theCopy;
@@ -1520,9 +1526,9 @@ Bilin::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
 
-  static Vector data(160); 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+  static Vector data(160);      // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
    data(0) = this->getTag();
-   data(1)=Ke0;		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   data(1)=Ke0;         // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
    data(2)=AsPos;
    data(3)=AsNeg;
    data(4)=My_pos;
@@ -1679,8 +1685,8 @@ Bilin::sendSelf(int cTag, Channel &theChannel)
    data(155)=capSlopeMember; // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
    data(156)=CcapSlopeMember; // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
    data(157)=capSlopeNegMember; // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-   data(158)=CcapSlopeNegMember;		// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-   data(159)=CKe;	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   data(158)=CcapSlopeNegMember;                // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   data(159)=CKe;       // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
 
 
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
@@ -1704,8 +1710,8 @@ Bilin::recvSelf(int cTag, Channel &theChannel,
   }
   else {
     this->setTag((int)data(0));
-   Ke0=data(1);	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-   nFactor=data(154); 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   Ke0=data(1); // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   nFactor=data(154);   // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
    AsPos=data(2);
    AsNeg=data(3);
    My_pos=data(4);
@@ -1861,7 +1867,7 @@ Bilin::recvSelf(int cTag, Channel &theChannel,
    capSlopeMember=data(155);// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
    CcapSlopeMember=data(156);// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
    capSlopeNegMember=data(157);// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
-   CcapSlopeNegMember=data(158); 	// Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
+   CcapSlopeNegMember=data(158);        // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
    Ke=data(159); // Updated: Filipe Ribeiro and Andre Barbosa - 2013.05.17
   }
    
@@ -1893,26 +1899,26 @@ void Bilin::snCalc(void)
 // c    not be reached, because the unloading stiffness could intersect the
 // c    positive cap curve. However, this change is reflected in the main
 // c    program.
-// c   
+// c  
 // c    Output Variables: sn,resSn,snHard,resSnHard
 // c    Input Variables:  dP,fP,ekunload,alphaPos,dyPos,fyPos,cpPos,fCapPos
 // c                              capStiff,fCapRefPos
 
         double Resid = KPos*fyPos;
-        double dresid = cpPos+(Resid-fCapPos)/(capSlope*Ke);  	
+        double dresid = cpPos+(Resid-fCapPos)/(capSlope*Ke);   
         double ekresid = 1.0e-10;
-        dyPos = fyPos/Ke;     
+        dyPos = fyPos/Ke;    
     double snHard,resSnHard,snLim,resSnLim,snResid,resSnResid;
         if (dyPos<cpPos) {
                
-    interPoint(snHard,resSnHard,dyPos,fyPos,Ke*alphaPos,dP,fP,ekunload); 	
+    interPoint(snHard,resSnHard,dyPos,fyPos,Ke*alphaPos,dP,fP,ekunload);        
         } else {
    
-    interPoint(snHard,resSnHard,cpPos,fCapPos,Ke*alphaPos,dP,fP,ekunload); 	
+    interPoint(snHard,resSnHard,cpPos,fCapPos,Ke*alphaPos,dP,fP,ekunload);      
         }
 
         double snCap,resSnCap;
-    interPoint(snCap,resSnCap,0.0,fCapRefPos,capSlope*Ke,dP,fP,ekunload); 	
+    interPoint(snCap,resSnCap,0.0,fCapRefPos,capSlope*Ke,dP,fP,ekunload);      
 
         //sn = min(snHard,snCap);
    if (snHard<snCap)
@@ -1942,7 +1948,7 @@ void Bilin::snCalc(void)
                         resSn=resSnLim;
                 }
 
-     interPoint(snHor,resSnHor,dLimPos,fLimPos,0.0,dyPos,fyPos,Ke*alphaPos); 		
+     interPoint(snHor,resSnHor,dLimPos,fLimPos,0.0,dyPos,fyPos,Ke*alphaPos);           
         }
 
         if (sn>dresid) {
@@ -2026,16 +2032,16 @@ Bilin::boundPos(void)
 
     double Resid=0.0;    
      double dBoundPos;
-     dyNeg = fyNeg/Ke;     		
-        double dresid = cpPos+(Resid-fCapPos)/(capSlope*Ke);  	
+     dyNeg = fyNeg/Ke;                 
+        double dresid = cpPos+(Resid-fCapPos)/(capSlope*Ke);   
         double ekresid = 1.0e-10;
 
 //      call interPoint(d1,f1,E
         double d1,f1;
-    interPoint(d1,f1,dyNeg,fyNeg,Ke*alphaNeg,0.0,fCapRefPos,capSlope*Ke); 
+    interPoint(d1,f1,dyNeg,fyNeg,Ke*alphaNeg,0.0,fCapRefPos,capSlope*Ke);
 
         double d2,f2;
-    interPoint(d2,f2,dyNeg,fyNeg,Ke*alphaNeg,dresid,Resid,ekresid); 		
+    interPoint(d2,f2,dyNeg,fyNeg,Ke*alphaNeg,dresid,Resid,ekresid);            
         //dBoundPos = max(d1,d2);
         if (d1>d2)
         {
@@ -2096,7 +2102,7 @@ Bilin::envelNegCap2(double fy,double alphaNeg,double alphaCap,double cpDsp,doubl
                         ek = 1.0e-7;
                         f = Res+ek*d;
                 }
-//% c added by Dimitrios to account for fracture       
+//% c added by Dimitrios to account for fracture      
                 if(d<=(-Thetau_neg)) {
                 ek = 1.0e-7;
                         f = 1.0e-10;
@@ -2138,20 +2144,20 @@ void
 Bilin::spCalc(void)
 {
         double Resid = KNeg*fyNeg;
-        dyNeg = fyNeg/Ke;     
-        double dresid = cpNeg+(Resid-fCapNeg)/(capSlopeNeg*Ke); 		
+        dyNeg = fyNeg/Ke;    
+        double dresid = cpNeg+(Resid-fCapNeg)/(capSlopeNeg*Ke);                
         double ekresid = 1.0e-10;
      double spHard,resSpHard,spCap,resSpCap,spLim,resSpLim,spResid,resSpResid;
         if (dyNeg>cpNeg) {
 //      call interPoint(spHard,resSpHard,dyNeg,fyNeg,Ke*alphaNeg,dP,fP,ekunload)
-    interPoint(spHard,resSpHard,dyNeg,fyNeg,Ke*alphaNeg,dP,fP,ekunload); 
+    interPoint(spHard,resSpHard,dyNeg,fyNeg,Ke*alphaNeg,dP,fP,ekunload);
         } else {
 //      call interPoint(spHard,resSpHard,cpNeg,fCapNeg,Ke*alphaNeg,dP,fP,ekunload)
-    interPoint(spHard,resSpHard,cpNeg,fCapNeg,Ke*alphaNeg,dP,fP,ekunload); 
+    interPoint(spHard,resSpHard,cpNeg,fCapNeg,Ke*alphaNeg,dP,fP,ekunload);
         }
 
 //      call interpoint(spCap,resSpCap,0.d0,fCapRefNeg,capSlope*Ke,dP,fP,ekunload)
-    interPoint(spCap,resSpCap,0.0,fCapRefNeg,capSlopeNeg*Ke,dP,fP,ekunload);		
+    interPoint(spCap,resSpCap,0.0,fCapRefNeg,capSlopeNeg*Ke,dP,fP,ekunload);           
         //sp = max(spHard,spCap);
         if(spHard>spCap)
         {
@@ -2182,7 +2188,7 @@ Bilin::spCalc(void)
                 }
 
 //              call interPoint(spHor,resSpHor,dLimNeg,fLimNeg,0.d0,dyNeg,fyNeg,Ke*alphaNeg)
-         interPoint(spHor,resSpHor,dLimNeg,fLimNeg,0.0,dyNeg,fyNeg,Ke*alphaNeg); 
+         interPoint(spHor,resSpHor,dLimNeg,fLimNeg,0.0,dyNeg,fyNeg,Ke*alphaNeg);
         }
 
         if (sp<dresid) {
@@ -2203,7 +2209,7 @@ Bilin::boundNeg(void)
   double ekresid = 1.0e-10;
   double d1,f1,d2,f2;
   //      call interPoint(d1,f1,dyPos,fyPos,Ke*alphaPos,0.d0,fCapRefNeg,capSlope*Ke)
-  interPoint(d1,f1,dyPos,fyPos,Ke*alphaPos,0.0,fCapRefNeg,capSlopeNeg*Ke);	
+  interPoint(d1,f1,dyPos,fyPos,Ke*alphaPos,0.0,fCapRefNeg,capSlopeNeg*Ke);     
   //%
   //      call interPoint(d2,f2,dyPos,fyPos,Ke*alphaPos,dresid,resid,ekresid)
   interPoint(d2,f2,dyPos,fyPos,Ke*alphaPos,dresid,Resid,ekresid);  
