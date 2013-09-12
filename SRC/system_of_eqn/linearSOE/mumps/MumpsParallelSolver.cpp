@@ -60,7 +60,8 @@ MumpsParallelSolver::MumpsParallelSolver(int mpi_comm, int ICNTL7, int ICNTL14)
 MumpsParallelSolver::~MumpsParallelSolver()
 {
   id.job=-2; 
-  dmumps_c(&id); /* Terminate instance */
+  if (init == true)
+	dmumps_c(&id); /* Terminate instance */
 }
 
 int
@@ -121,6 +122,28 @@ MumpsParallelSolver::solve(void)
   if (info != 0) {	
     opserr << "WARNING MumpsParallelSolver::solve(void)- ";
     opserr << " Error " << info << " returned in substitution dmumps()\n";
+	switch(info) {
+	  case -5:
+		opserr << " out of memory allocation error\n";
+		break;
+      case -6:  
+		opserr << " cause: Matrix is Singular in Structure: check your model\n";
+		break;
+	  case -7:
+		opserr << " out of memory allocation error\n";
+		break;
+	  case -8:
+		opserr << "Work array too small; use -ICNTL14 option, the default is -ICNTL 20 make 20 larger\n";
+		break;
+	  case -9:
+		opserr << "Work array too small; use -ICNTL14 option, the default is -ICNTL 20 make 20 larger\n";
+		break;
+	  case -10:  
+		opserr << " cause: Matrix is Singular Numerically\n";
+		break;
+	  default:
+		  ;
+	}
     return info;
   }
 

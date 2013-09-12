@@ -123,6 +123,22 @@ MumpsSolver::solve(void)
   if (info != 0) {	
     opserr << "WARNING MumpsSolver::solve(void)- ";
     opserr << " Error " << info << " returned in substitution dmumps()\n";
+	switch(info) {
+	  case -5:
+		opserr << " out of memory allocation error\n";
+      case -6:  
+		opserr << " cause: Matrix is Singular in Structure: check your model\n";
+	  case -7:
+		opserr << " out of memory allocation error\n";
+	  case -8:
+		opserr << "Work array too small; use -ICNTL14 option, the default is -ICNTL 20 make 20 larger\n";
+	  case -9:
+		opserr << "Work array too small; use -ICNTL14 option, the default is -ICNTL 20 make 20 larger\n";
+	  case -10:  
+		opserr << " cause: Matrix is Singular Numerically\n";
+	  default:
+		  ;
+	}
     return info;
   }
 
