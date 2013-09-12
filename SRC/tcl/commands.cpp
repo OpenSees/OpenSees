@@ -1553,7 +1553,6 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   int result = 0;
 
 #ifdef _PARALLEL_PROCESSING
-
   if (OPS_PARTITIONED == false && OPS_NUM_SUBDOMAINS > 1) 
     if (partitionModel() < 0) {
       opserr << "WARNING before analysis; partition failed - too few elements\n";
@@ -8678,6 +8677,7 @@ OpenSeesExit(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     //    delete theMachineBroker;
     //    theMachineBroker = 0;
   }
+  MPI_Finalize();
 #endif
 
 #ifdef _PARALLEL_INTERPRETERS
@@ -8691,6 +8691,7 @@ OpenSeesExit(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     //    delete theMachineBroker;
     //    theMachineBroker = 0;
   }
+  MPI_Finalize();
 #endif
 
   if (simulationInfoOutputFilename != 0) {
