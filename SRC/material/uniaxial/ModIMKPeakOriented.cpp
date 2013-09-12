@@ -1344,4 +1344,5 @@ ModIMKPeakOriented::getResponse (int responseID, Information &matInformation)
     matInformation.setDouble(dres);
   } else 
     return UniaxialMaterial::getResponse(responseID, matInformation);
+  return 0;
 }
