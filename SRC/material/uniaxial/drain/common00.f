@@ -1,5 +1,6 @@
-	subroutine fill00 (param, hstv, stateP)
-	
+	subroutine fill00(param, hstv, stateP)
+
+
 c .....................................................................
 c     fill00 - a fortran subroutine to fill the named common block
 c              used by Drain subroutine RESP00 for the OpenSees
