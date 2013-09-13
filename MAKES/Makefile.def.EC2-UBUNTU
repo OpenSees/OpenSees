@@ -15,17 +15,17 @@
 
 #
 # https://help.ubuntu.com/community/EC2StartersGuide
+
+## ssh to machine from your own:
+#
 # chmod 'go+rwx' XXX.pem
 # ssh -i XXX.pem ubuntu@YYY.amazonaws.com
 #
 
 # Instructuction for building OpenSees on Ubuntu
-# using amazon EC-2 instance ami-d0f89fb9 (running Ubunto 12.04)
-
+# using amazon EC-2 instance ami-d0f89fb9 (running Ubunto 12.04) once logged in
 
 # sudo in and type the following:
-# mkdir lib
-# mkdir bin
 # sudo apt-get update 
 # sudo apt-get install subversion
 # svn co svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk OpenSees
@@ -36,6 +36,8 @@
 # sudo apt-get install gcc
 # sudo apt-get install g++
 # sudo apt-get install gfortran
+# mkdir lib
+# mkdir bin
 # cd OpenSees
 # cp ./MAKES/Makefile.def.EC2-UBUNTU ./Makefile.def
 # make

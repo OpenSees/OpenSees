@@ -13,25 +13,23 @@
 #
 ############################################################################
 
-#
+## ssh to machine using 
 # chmod 'go+rwx' XXX.pem
+# (right click running instance, click connect, click connect with standalone ssh client to get command:
 # ssh -i XXX.pem root@YYY.amazonaws.com
 #
-
 # Instructuction for building OpenSees on SUSE Linux
-# using amazon EC-2 instance ami-ca32efa3 64bit
-
-# sudo in and type the following:
+# using amazon EC-2 instance ami-ca32efa3 64bit once logged in
 # mkdir lib
 # mkdir bin
-# sudu yast2 -i subversion
-# sudu yast2 -i emacs
-# sudu yast2 -i make
-# sudu yast2 -i tcl
-# sudu yast2 -i tcl-devel
-# sudu yast2 -i gcc
-# sudu yast2 -i gcc-c++
-# sudu yast2 -i gcc-fortran
+# sudo yast2 -i subversion
+# sudo yast2 -i emacs
+# sudo yast2 -i make
+# sudo yast2 -i tcl
+# sudo yast2 -i tcl-devel
+# sudo yast2 -i gcc
+# sudo yast2 -i gcc-c++
+# sudo yast2 -i gcc-fortran
 # svn co svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk OpenSees
 # cd OpenSees
 # cp ./MAKES/Makefile.def.EC2-SUSE ./Makefile.def

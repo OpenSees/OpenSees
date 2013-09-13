@@ -29,6 +29,7 @@
 # mkdir lib
 # svn co svn://opensees.berkeley.edu:/usr/local/svn/OpenSees/trunk OpenSees
 # cd OpenSees
+# cp ./MAKES/Makefile.def.EC2-FEDORA4 ./Makefile.def
 # make
 
 # END of commands to build OpenSees.

@@ -13,8 +13,13 @@
 #
 ############################################################################
 
+## ssh to machine from your own:
+# chmod 'go+rwx' XXX.pem
+# (right click running instance, click connect, click connect with standalone ssh client to get command:
+# ssh -i XXX.pem root@YYY.amazonaws.com
+
 # Following are commands to build OpenSees
-# on EC2 FEDORA 64 bit machine (ami-7d0c6314) 
+# on EC2 FEDORA 64 bit machine (ami-7d0c6314) once logged in
 
 # sudo yum install gcc.x86_64
 # sudo yum install gcc-c++.x86_64
@@ -27,7 +32,7 @@
 # mkdir lib
 # svn co svn://opensees.berkeley.edu:/usr/local/svn/OpenSees/trunk OpenSees
 # cd OpenSees
-# cp ./MAKES/Makefile.def.EC2-FEDORA4 ./Makefile.def
+# cp ./MAKES/Makefile.def.EC2-REDHAT-ENTERPRISE ./Makefile.def
 # make
 
 # END of commands to build OpenSees.
