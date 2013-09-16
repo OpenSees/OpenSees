@@ -226,7 +226,7 @@ g3TclMain(int argc, char **argv, Tcl_AppInitProc * appInitProc, int rank, int np
 	fprintf(stderr,"\n\n\t OpenSees -- Open System For Earthquake Engineering Simulation");
 	fprintf(stderr,"\n\tPacific Earthquake Engineering Research Center -- %s\n\n", OPS_VERSION);
 	
-	fprintf(stderr,"\t    (c) Copyright 1999,2000 The Regents of the University of California");
+	fprintf(stderr,"\t    (c) Copyright 1999-2013 The Regents of the University of California");
 	fprintf(stderr,"\n\t\t\t\t All Rights Reserved\n");    
 	fprintf(stderr,"    (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)\n\n\n");
 	
