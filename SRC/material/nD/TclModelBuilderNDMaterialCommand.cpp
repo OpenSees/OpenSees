@@ -94,6 +94,11 @@ extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
 extern  void *OPS_NewInitStressNDMaterial(void);
 
+#ifdef _HAVE_Damage2P
+extern void *OPS_Damage2p(void);
+#endif
+
+
 NDMaterial *
 TclModelBuilder_addFeapMaterial(ClientData clientData, Tcl_Interp *interp,
 				int argc, TCL_Char **argv,
@@ -185,6 +190,22 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else 
 	return TCL_ERROR;
     }
+
+#ifdef _HAVE_Damage2P
+    else if ((strcmp(argv[1],"Damage2p") == 0)){
+
+      void *theMat = OPS_Damage2p();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+#else
+    else if ((strcmp(argv[1],"Damage2p") == 0)){
+      opserr << "SORRY - Damage2p source code not available in this version\n";
+      return TCL_ERROR;
+    }
+#endif
 
     else if ((strcmp(argv[1],"PrestressedConcretePlaneStress") == 0)){
 

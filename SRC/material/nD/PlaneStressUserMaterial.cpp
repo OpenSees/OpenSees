@@ -28,13 +28,19 @@
 // Plane Stress User Defined Material
 //
 
-
 #include <PlaneStressUserMaterial.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <MaterialResponse.h>
 
 #ifdef _HAVE_PSUMAT
+
+#ifdef _Win32
+
+#else
+#define PSUMAT psumat_
+#endif
+
 extern "C" 
 {
   void PSUMAT(int *nstatev, int *nprops, double *props,
@@ -49,6 +55,7 @@ void PSUMAT(int *nstatev, int *nprops, double *props,
   opserr << "PSUMAT - NOT DEFINED IN THIS VERSION, SOURCE CODE RESTRICTED\n";
 }
 #endif
+
 
 //null constructor
 PlaneStressUserMaterial::PlaneStressUserMaterial( ) : 

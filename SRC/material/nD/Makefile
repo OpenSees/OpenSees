@@ -8,8 +8,14 @@ else
 	DAMAGE_2P =
 endif
 
+ifdef PLAINCONCRETE_FLAG
+	PLAINCONCRETE = PlainConcrete.o forumat.o
+else
+	PLAINCONCRETE =
+endif
+
 OBJS       = NDMaterial.o \
-	$(DAMAGE_2P) BeamFiberMaterial.o \
+	$(DAMAGE_2P) $(PLAINCONCRETE) BeamFiberMaterial.o \
 	BeamFiberMaterial2d.o \
 	ElasticIsotropicAxiSymm.o\
 	ElasticIsotropicBeamFiber2d.o \

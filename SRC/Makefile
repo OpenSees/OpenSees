@@ -540,6 +540,18 @@ else
 	DAMAGE_2P =
 endif
 
+ifdef DAMAGE2P_FLAG
+	DAMAGE_2P = $(FE)/material/nD/Damage2p.o $(FE)/material/nD/Damage2p3D.o $(FE)/material/nD/Damage2ppstress.o
+else
+	DAMAGE_2P =
+endif
+
+ifdef PLAINCONCRETE_FLAG
+	PLAINCONCRETE = $(FE)/material/nD/PlainConcrete.o $(FE)/material/nD/forumat.o
+else
+	PLAINCONCRETE = 
+endif
+
 
 MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/UniaxialMaterial.o \
@@ -697,7 +709,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/ConcreteS.o \
 	$(FE)/material/nD/SimplifiedJ2.o \
 	$(FE)/material/nD/PlaneStressSimplifiedJ2.o \
-	$(FE)/material/nD/PlaneStressUserMaterial.o \
+	$(FE)/material/nD/PlaneStressUserMaterial.o $(PLAINCONCRETE) \
 	$(FE)/material/nD/PlateFromPlaneStressMaterial.o \
 	$(FE)/material/nD/PlateRebarMaterial.o
 
