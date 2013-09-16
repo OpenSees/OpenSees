@@ -60,8 +60,8 @@ using std::ofstream;
 #include <StandardStream.h>
 #include <FileStream.h>
 #include <DummyStream.h>
+
 StandardStream sserr;
-//OPS_Stream &opserr = sserr;
 OPS_Stream *opserrPtr = &sserr;
 
 #endif
@@ -452,7 +452,6 @@ int OPS_rank =0;
 int OPS_np =0;
 
 
-
 typedef struct parameterValues {
   char *value;
   struct parameterValues *next;
@@ -510,7 +509,6 @@ static StaticIntegrator *theStaticIntegrator =0;
 static TransientIntegrator *theTransientIntegrator =0;
 static ConvergenceTest *theTest =0;
 static bool builtModel = false;
-
 
 static char *resDataPtr = 0;
 static int resDataSize = 0;
@@ -618,6 +616,81 @@ int
 maxOpenFiles(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 
+// pointer for old putsCommand
+
+static Tcl_ObjCmdProc *Tcl_putsCommand = 0;
+
+//
+// revised puts command to send to cerr!
+//
+
+int OpenSees_putsCommand(ClientData dummy,  Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
+{
+    Tcl_Channel chan;           /* The channel to puts on. */
+    Tcl_Obj *string;            /* String to write. */
+    Tcl_Obj *chanObjPtr = NULL; /* channel object. */
+    int newline;                /* Add a newline at end? */
+    int result;                 /* Result of puts operation. */
+    int mode;                   /* Mode in which channel is opened. */
+
+    switch (objc) {
+    case 2: /* [puts $x] */
+        string = objv[1];
+        newline = 1;
+        break;
+
+    case 3: /* [puts -nonewline $x] or [puts $chan $x] */
+        if (strcmp(Tcl_GetString(objv[1]), "-nonewline") == 0) {
+            newline = 0;
+        } else {
+            newline = 1;
+            chanObjPtr = objv[1];
+        }
+        string = objv[2];
+        break;
+
+    case 4: /* [puts -nonewline $chan $x] or [puts $chan $x nonewline] */
+        newline = 0;
+        if (strcmp(Tcl_GetString(objv[1]), "-nonewline") == 0) {
+            chanObjPtr = objv[2];
+            string = objv[3];
+            break;
+        } else if (strcmp(Tcl_GetString(objv[3]), "nonewline") == 0) {
+	  /*
+             * The code below provides backwards compatibility with an old
+             * form of the command that is no longer recommended or
+             * documented. See also [Bug #3151675]. Will be removed in Tcl 9,
+             * maybe even earlier.
+             */
+
+            chanObjPtr = objv[1];
+            string = objv[2];
+            break;
+        }
+        /* Fall through */
+    default:
+        /* [puts] or [puts some bad number of arguments...] */
+        Tcl_WrongNumArgs(interp, 1, objv, "?-nonewline? ?channelId? string");
+        return TCL_ERROR;
+    }
+
+    if (chanObjPtr == NULL) {
+        if (newline == 0)
+            opserr << Tcl_GetString(string);
+        else
+            opserr << Tcl_GetString(string) << endln;
+        return TCL_OK;
+    } else {
+       if (Tcl_putsCommand != 0) {
+           return Tcl_putsCommand(dummy, interp, objc, objv);
+       } else {
+           std::cerr < "MEARD!  commands.cpp .. old puts command not found or set!\n";
+           return TCL_ERROR;
+    }
+    return TCL_OK;
+  }
+}
+
 
 int Tcl_InterpOpenSeesObjCmd(ClientData clientData,  Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
 {
@@ -665,6 +738,22 @@ int Tcl_InterpOpenSeesObjCmd(ClientData clientData,  Tcl_Interp *interp, int obj
 
 int OpenSeesAppInit(Tcl_Interp *interp) {
 
+
+  //
+  // redo puts command so we can capture puts into std:cerr
+  //
+
+  // get a handle on puts procedure
+  Tcl_CmdInfo putsCommandInfo;
+  int res = Tcl_GetCommandInfo(interp, "puts", &putsCommandInfo);
+  Tcl_putsCommand = putsCommandInfo.objProc;
+  
+  // if handle, use ouur procedure as opposed to theirs
+  if (Tcl_putsCommand != 0) {
+    Tcl_CreateObjCommand(interp, "oldputs", Tcl_putsCommand, NULL, NULL);
+    Tcl_CreateObjCommand(interp, "puts", OpenSees_putsCommand, NULL, NULL);
+  }
+  
   theSimulationInfoPtr = &simulationInfo;
     
 #ifndef _LINUX  
@@ -1002,30 +1091,8 @@ OPS_SourceCmd(
     return Tcl_FSEvalFileEx(interp, fileName, encodingName);
 #endif
 }
-/*
-int 
-OPS_SourceCmd(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
-{
-
-  CONST char *encodingName = NULL;
-
-  int ok = TCL_OK;
-  if (argc > 1) {
-    const char *pwd = getInterpPWD(interp);
-    simulationInfo.addInputFile(argv[1], pwd);
-#ifndef _TCL85
-    ok = Tcl_EvalFile(interp, argv[1]);
-#else
-   ok = Tcl_FSEvalFileEx(interp, argv[1], encodingName);
-#endif
-  }
-  return ok;
-}
-*/
-
 
 #ifdef _RELIABILITY   
-
 
 // -- optimization Quan March 2010  (5)
 int 
@@ -1207,8 +1274,6 @@ sensitivityIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
 // AddingSensitivity:END /////////////////////////////////////////////////
 
 #endif
-
-
 
 
 int 
