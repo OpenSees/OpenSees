@@ -33,9 +33,10 @@
 #include <FEM_ObjectBroker.h>
 #include <MaterialResponse.h>
 
+
 #ifdef _HAVE_PSUMAT
 
-#ifdef _Win32
+#ifdef _WIN32
 
 #else
 #define PSUMAT psumat_
