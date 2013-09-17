@@ -91,8 +91,8 @@ class Bilin : public UniaxialMaterial
 
 
   //Fixed input material parameters
-  double Ke0;                           // Updated: Filipe Ribeiro and Andre Barbosa
-  double nFactor;                       // Updated: Filipe Ribeiro and Andre Barbosa
+  double Ke0;               // Updated: Filipe Ribeiro and Andre Barbosa
+  double nFactor;           // Updated: Filipe Ribeiro and Andre Barbosa
   double AsPos;
   double AsNeg;
   double My_pos;
@@ -182,13 +182,15 @@ class Bilin : public UniaxialMaterial
   double resSnEnv, CresSnEnv;
   double spEnv, CspEnv;
   double resSpEnv, CresSpEnv;
+
   double capSlopeOrig,CcapSlopeOrig;  
   double capSlopeNeg, CcapSlopeNeg;
   double capSlopeOrigNeg, CcapSlopeOrigNeg;
-  double Ke, CKe;                                                       // Updated: Filipe Ribeiro and Andre Barbosa
-  double capSlopeMember, CcapSlopeMember;                               // Updated: Filipe Ribeiro and Andre Barbosa
-  double capSlopeNegMember, CcapSlopeNegMember;                         // Updated: Filipe Ribeiro and Andre Barbosa
-  double prodBeta, CprodBeta;											// Updated: Filipe Ribeiro and Andre Barbosa
+
+  double Ke, CKe;                                      // Updated: Filipe Ribeiro and Andre Barbosa
+  double capSlopeMember, CcapSlopeMember;              // Updated: Filipe Ribeiro and Andre Barbosa
+  double capSlopeNegMember, CcapSlopeNegMember;        // Updated: Filipe Ribeiro and Andre Barbosa
+  double prodBeta, CprodBeta;			       // Updated: Filipe Ribeiro and Andre Barbosa
 };
 
 

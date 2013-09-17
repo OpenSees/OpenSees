@@ -39,6 +39,7 @@
 #include <elementAPI.h>
 #include <Vector.h>
 #include <Channel.h>
+#include <cfloat>
 
 #include <OPS_Globals.h>
 
@@ -50,7 +51,7 @@ OPS_Bilin()
 {
   if (numBilinMaterials == 0) {
     numBilinMaterials++;
-    OPS_Error("Modified Ibarra-Medina-Krawinkler Model with Bilinear Hysteretic Response\n", 1);
+    opserr << "Modified Ibarra-Medina-Krawinkler Model with Bilinear Hysteretic Response\n";
   }
 
   // Pointer to a uniaxial material that will be returned
@@ -174,6 +175,7 @@ Bilin::~Bilin()
 int
 Bilin::setTrialStrain(double strain, double strainRate)
 {  
+
   //all variables to the last commit
   this->revertToLastCommit();
  
@@ -194,7 +196,11 @@ Bilin::setTrialStrain(double strain, double strainRate)
   deltaD = strain - CU;
   d=strain;
   dP = CU;          
- 
+
+  if (fabs(deltaD) < 1.0e-18 && strain != 0.0) {
+    return 0;
+  }
+
   if (d>0.0) {
    
     interPoint(temp_1,temp,0.0,fCapRefPos,capSlope*Ke,0.0,KPos*My_pos,0.0);
@@ -414,7 +420,7 @@ Bilin::setTrialStrain(double strain, double strainRate)
     if ((iNoFneg==1)&&(iNoFpos==1)&&(d<Thetau_pos)) {
       f = KPos*My_pos;
       ek = 1.0e-7;
-    } else if((iNoFneg==1)&&(iNoFpos==1)&&(d>=Thetau_pos)||flagControlResponse==1) {
+    } else if(((iNoFneg==1)&&(iNoFpos==1)&&(d>=Thetau_pos))||flagControlResponse==1) {  //fmk
       f = 1.0e-10;
       ek = 1.0e-7;
       flagstopdeg = 1;
@@ -700,7 +706,7 @@ Bilin::setTrialStrain(double strain, double strainRate)
    if ((iNoFneg==1)&&(iNoFpos==1)&&(d>(-Thetau_neg))) {
      f = KNeg*My_neg;
      ek = 1.0e-7;
-   } else if ((iNoFneg==1)&&(iNoFpos==1)&&(d<=(-Thetau_neg))||flagControlResponse==1){
+   } else if (((iNoFneg==1)&&(iNoFpos==1)&&(d<=(-Thetau_neg)))||flagControlResponse==1){
      f = -1.0e-10;
      ek =1.0e-7;
      flagstopdeg = 1;
@@ -1112,7 +1118,7 @@ Bilin::setTrialStrain(double strain, double strainRate)
   Tangent=ek;
  
   //priority of logical operators
-  if (interup==1&&(ek==Ke*alphaPos) ||(ek==Ke*alphaNeg)||(ek==capSlope*Ke) ||(ek==capSlopeNeg*Ke)) {
+  if ((interup==1&&(ek==Ke*alphaPos)) ||(ek==Ke*alphaNeg)||(ek==capSlope*Ke) ||(ek==capSlopeNeg*Ke)) { //fmk
     interup = 0;
   }
  
@@ -1127,6 +1133,7 @@ Bilin::getStress(void)
 double
 Bilin::getTangent(void)
 {
+  opserr << "Bilin::getTangent " << Tangent << endln;
 
   return (Tangent);
 }
@@ -1163,7 +1170,7 @@ Bilin::commitState(void)
    Ckon=kon;
    CiNoFneg=iNoFneg;
    CiNoFpos=iNoFpos;
-   CLP=CLP;
+   CLP=LP;  //fmk
    CLN=LN;
    CcapSlope=capSlope;
    Cdmax=dmax;
@@ -1533,7 +1540,7 @@ Bilin::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
 
-  static Vector data(161);      // Updated: Filipe Ribeiro and Andre Barbosa
+  static Vector data(166);      // Updated: Filipe Ribeiro and Andre Barbosa
    data(0) = this->getTag();
    data(1)=Ke0;         // Updated: Filipe Ribeiro and Andre Barbosa
    data(2)=AsPos;
@@ -1541,13 +1548,13 @@ Bilin::sendSelf(int cTag, Channel &theChannel)
    data(4)=My_pos;
    data(5)=My_neg;
    data(6)=LamdaS;
-   data(7)=LamdaD;
+   data(7)=LamdaK;
    data(8)=LamdaA;
-   data(9)=LamdaK;
+   data(9)=LamdaD;
    data(10)=Cs;
-   data(11)=Cd;
+   data(11)=Ck;
    data(12)=Ca;
-   data(13)=Ck;
+   data(13)=Cd;
    data(14)=Thetap_pos;
    data(15)=Thetap_neg;
    data(16)=Thetapc_pos;
@@ -1602,6 +1609,7 @@ Bilin::sendSelf(int cTag, Channel &theChannel)
    data(65)=CekP;
    data(66)=ekunload;
    data(67)=Cekunload;
+   data(162) = sp; //fmk
    data(68)=Csp;
    data(69)=sn;
    data(70)=Csn;
@@ -1679,25 +1687,33 @@ Bilin::sendSelf(int cTag, Channel &theChannel)
    data(142)=CspEnv;
    data(143)=resSpEnv;
    data(144)=CresSpEnv;
+
    data(145)=capSlopeOrig;
    data(146)=CcapSlopeOrig;  
    data(147)=capSlopeNeg;
    data(148)=CcapSlopeNeg;
+
+   data(163) = capSlopeOrigNeg; //fmk
+   data(164) = CcapSlopeOrigNeg; //fmk
+   data(165) = Ke;    //fmk
+
    data(149)=flagControlResponse;
    data(150)=CflagControlResponse;
    data(151)=sp;
    data(152)=CcapSlopeOrigNeg;
    data(153)=capSlopeOrigNeg;
    data(154)=nFactor;				// Updated: Filipe Ribeiro and Andre Barbosa
+
    data(155)=capSlopeMember;		// Updated: Filipe Ribeiro and Andre Barbosa
    data(156)=CcapSlopeMember;		// Updated: Filipe Ribeiro and Andre Barbosa
    data(157)=capSlopeNegMember;		// Updated: Filipe Ribeiro and Andre Barbosa
    data(158)=CcapSlopeNegMember;    // Updated: Filipe Ribeiro and Andre Barbosa
    data(159)=CKe;					// Updated: Filipe Ribeiro and Andre Barbosa
+   data(160) = prodBeta;
    data(161)=CprodBeta;				// Updated: Filipe Ribeiro and Andre Barbosa
-
-
+  
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
+
   if (res < 0)
     opserr << "Bilin::sendSelf() - failed to send data\n";
 
@@ -1709,7 +1725,7 @@ Bilin::recvSelf(int cTag, Channel &theChannel,
                                FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(160);  // Updated: Filipe Ribeiro and Andre Barbosa
+  static Vector data(166);  // Updated: Filipe Ribeiro and Andre Barbosa
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
  
   if (res < 0) {
@@ -1719,19 +1735,18 @@ Bilin::recvSelf(int cTag, Channel &theChannel,
   else {
     this->setTag((int)data(0));
    Ke0=data(1);				// Updated: Filipe Ribeiro and Andre Barbosa
-   nFactor=data(154);		// Updated: Filipe Ribeiro and Andre Barbosa
    AsPos=data(2);
    AsNeg=data(3);
    My_pos=data(4);
    My_neg=data(5);
    LamdaS=data(6);
-   LamdaD=data(7);
+   LamdaK=data(7);
    LamdaA=data(8);
-   LamdaK=data(9);
+   LamdaD=data(9);
    Cs=data(10);
-   Cd=data(11);
+   Ck=data(11);
    Ca=data(12);
-   Ck=data(13);
+   Cd=data(13);
    Thetap_pos=data(14);
    Thetap_neg=data(15);
    Thetapc_pos=data(16);
@@ -1786,6 +1801,7 @@ Bilin::recvSelf(int cTag, Channel &theChannel,
    CekP=data(65);
    ekunload=data(66);
    Cekunload=data(67);
+   sp = data(162);
    Csp=data(68);
    sn=data(69);
    Csn=data(70);
@@ -1863,23 +1879,32 @@ Bilin::recvSelf(int cTag, Channel &theChannel,
    CspEnv=data(142);
    resSpEnv=data(143);
    CresSpEnv=data(144);
+
    capSlopeOrig=data(145);
    CcapSlopeOrig=data(146);  
    capSlopeNeg=data(147);
    CcapSlopeNeg=data(148);
+
+   capSlopeOrigNeg = data(163); //fmk
+   CcapSlopeOrigNeg = data(164); //fmk
+   Ke = data(165);    //fmk
+
    flagControlResponse=data(149);
    CflagControlResponse=data(150);
    sp=data(151);
    CcapSlopeOrigNeg=data(152);
    capSlopeOrigNeg=data(153);
+   nFactor=data(154);		        // Updated: Filipe Ribeiro and Andre Barbosa
    capSlopeMember=data(155);		// Updated: Filipe Ribeiro and Andre Barbosa
    CcapSlopeMember=data(156);		// Updated: Filipe Ribeiro and Andre Barbosa
    capSlopeNegMember=data(157);		// Updated: Filipe Ribeiro and Andre Barbosa
-   CcapSlopeNegMember=data(158);    // Updated: Filipe Ribeiro and Andre Barbosa
+   CcapSlopeNegMember=data(158);        // Updated: Filipe Ribeiro and Andre Barbosa
    Ke=data(159);			// Updated: Filipe Ribeiro and Andre Barbosa
-   prodBeta=data(161);		// Updated: Filipe Ribeiro and Andre Barbosa
+   prodBeta=data(160);		        // Updated: Filipe Ribeiro and Andre Barbosa
+   CprodBeta = data(161);
+
   }
-   
+
   return res;
 }
 
