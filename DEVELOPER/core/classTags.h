@@ -301,7 +301,6 @@
 #define ND_TAG_PlaneStressUserMaterial          28
 #define ND_TAG_PlateFromPlaneStressMaterial     29
 #define ND_TAG_PlateRebarMaterial               30
-
 #define ND_TAG_ElasticOrthotropic		  31
 #define ND_TAG_ElasticOrthotropicPlaneStrain2d	  32
 #define ND_TAG_ElasticOrthotropicPlaneStress2d	  33
@@ -310,6 +309,24 @@
 #define ND_TAG_ElasticOrthotropicBeamFiber	  36
 #define ND_TAG_ElasticOrthotropicThreeDimensional 37
 #define ND_TAG_ElasticOrthotropicBeamFiber2d	  38
+#define ND_TAG_CycLiqCPSP3D                       39
+#define ND_TAG_CycLiqCPSPPlaneStrain              40
+#define ND_TAG_ConcreteS                          41
+
+
+
+#define ND_TAG_FluidSolidPorousMaterial        100
+#define ND_TAG_PressureDependMultiYield		101
+#define ND_TAG_PressureIndependMultiYield		102
+#define ND_TAG_PressureDependMultiYield02		103
+#define ND_TAG_ReinforcedConcretePlaneStress  104
+#define ND_TAG_FAReinforcedConcretePlaneStress  105
+#define ND_TAG_FAFourSteelRCPlaneStress  106
+#define ND_TAG_RAFourSteelRCPlaneStress  107
+#define ND_TAG_PrestressedConcretePlaneStress  108
+#define ND_TAG_FAPrestressedConcretePlaneStress  109
+#define ND_TAG_FAFourSteelPCPlaneStress  110
+#define ND_TAG_RAFourSteelPCPlaneStress  111
 
 
 #define ND_TAG_J2PlaneStrain                  3005
@@ -319,10 +336,7 @@
 #define ND_TAG_J2PlateFiber		      3010
 #define ND_TAG_J2BeamFiber		      3011
 
-#define ND_TAG_FluidSolidPorousMaterial        100
-#define ND_TAG_PressureDependMultiYield		101
-#define ND_TAG_PressureIndependMultiYield		102
-#define ND_TAG_PressureDependMultiYield02		103
+
 #define ND_TAG_FeapMaterial                 1000
 #define ND_TAG_FeapMaterial01                 1001
 #define ND_TAG_FeapMaterial02                 1002
@@ -360,14 +374,7 @@
 #define ND_TAG_ManzariDafaliasPlaneStrain       14014
 
 
-#define ND_TAG_ReinforcedConcretePlaneStress  104
-#define ND_TAG_FAReinforcedConcretePlaneStress  105
-#define ND_TAG_FAFourSteelRCPlaneStress  106
-#define ND_TAG_RAFourSteelRCPlaneStress  107
-#define ND_TAG_PrestressedConcretePlaneStress  108
-#define ND_TAG_FAPrestressedConcretePlaneStress  109
-#define ND_TAG_FAFourSteelPCPlaneStress  110
-#define ND_TAG_RAFourSteelPCPlaneStress  111
+
 
 
 // MultiaxialCyclicPlasticity, add by Gang Wang

@@ -52,11 +52,13 @@ DataFileStream::DataFileStream(int indent)
 }
 
 
-DataFileStream::DataFileStream(const char *file, openMode mode, int indent, int csv)
+DataFileStream::DataFileStream(const char *file, openMode mode, int indent, int csv, bool closeWrite)
   :OPS_Stream(OPS_STREAM_TAGS_DataFileStream), 
    fileOpen(0), fileName(0), indentSize(indent), sendSelfCount(0), 
    theChannels(0), numDataRows(0),
-   mapping(0), maxCount(0), sizeColumns(0), theColumns(0), theData(0), theRemoteData(0), doCSV(csv)
+   mapping(0), maxCount(0), sizeColumns(0), 
+   theColumns(0), theData(0), theRemoteData(0), 
+   doCSV(csv), closeOnWrite(closeWrite)
 {
 
   if (indentSize < 1) indentSize = 1;
@@ -268,12 +270,15 @@ DataFileStream::write(Vector &data)
 
   if (sendSelfCount == 0) {
     (*this) << data;  
+    if (closeOnWrite == true)
+      this->close();
     return 0;
   }
 
   //
   // otherwise parallel, send the data if not p0
   //
+
   if (sendSelfCount < 0) {
     if (data.Size() != 0) {
       if ( theChannels[0]->sendVector(0, 0, data) < 0) {
@@ -334,6 +339,9 @@ DataFileStream::write(Vector &data)
 	  theFile << data[startLoc++] << ",";
     }
   }
+
+  if (closeOnWrite == true)
+    this->close();
   
   return 0;
 }

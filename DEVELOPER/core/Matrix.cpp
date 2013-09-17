@@ -725,7 +725,7 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
       return 0;
 
 #ifdef _G3DEBUG
-    if ((other.numRows != numRows) || (other.numCols != numCols)) {
+    if ((other.numRows != numCols) || (other.numCols != numRows)) {
       opserr << "Matrix::addMatrixTranspose(): incompatable matrices\n";
       return -1;
     }
@@ -738,13 +738,13 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
     double *dataPtr = data;
     for (int j=0; j<numCols; j++) {
       for (int i=0; i<numRows; i++)
-	    *dataPtr++ += (other.data)[j+i*numRows];
+	    *dataPtr++ += (other.data)[j+i*numCols];
     }
       } else {
 	double *dataPtr = data;
     for (int j=0; j<numCols; j++) {
       for (int i=0; i<numRows; i++)
-	    *dataPtr++ += (other.data)[j+i*numRows] * factOther;
+	    *dataPtr++ += (other.data)[j+i*numCols] * factOther;
     }
       }
     } 
@@ -756,13 +756,13 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
 	double *dataPtr = data;
     for (int j=0; j<numCols; j++) {
       for (int i=0; i<numRows; i++)
-	    *dataPtr++ = (other.data)[j+i*numRows];
+	    *dataPtr++ = (other.data)[j+i*numCols];
     }
       } else {
 	double *dataPtr = data;
     for (int j=0; j<numCols; j++) {
       for (int i=0; i<numRows; i++)
-	    *dataPtr++ = (other.data)[j+i*numRows] * factOther;
+	    *dataPtr++ = (other.data)[j+i*numCols] * factOther;
     }
       }
     } 
@@ -774,7 +774,7 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
 	double *dataPtr = data;
     for (int j=0; j<numCols; j++) {
       for (int i=0; i<numRows; i++) {
-        double value = *dataPtr * factThis + (other.data)[j+i*numRows];
+        double value = *dataPtr * factThis + (other.data)[j+i*numCols];
 	    *dataPtr++ = value;
       }
     }
@@ -782,7 +782,7 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
 	double *dataPtr = data;
     for (int j=0; j<numCols; j++) {
       for (int i=0; i<numRows; i++) {
-	    double value = *dataPtr * factThis + (other.data)[j+i*numRows] * factOther;
+	    double value = *dataPtr * factThis + (other.data)[j+i*numCols] * factOther;
 	    *dataPtr++ = value;
       }
     }

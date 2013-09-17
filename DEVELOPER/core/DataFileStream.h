@@ -36,7 +36,7 @@ class DataFileStream : public OPS_Stream
 {
  public:
   DataFileStream(int indent=2);
-  DataFileStream(const char *fileName, openMode mode = OVERWRITE, int indent=2, int doCSV =0);
+  DataFileStream(const char *fileName, openMode mode = OVERWRITE, int indent=2, int doCSV =0, bool closeOnWrite = false);
   ~DataFileStream();
 
   int setFile(const char *fileName, openMode mode = OVERWRITE);
@@ -111,6 +111,7 @@ class DataFileStream : public OPS_Stream
   Vector **theRemoteData;
 
   int doCSV;
+  bool closeOnWrite;
 };
 
 #endif
