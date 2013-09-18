@@ -1133,8 +1133,6 @@ Bilin::getStress(void)
 double
 Bilin::getTangent(void)
 {
-  opserr << "Bilin::getTangent " << Tangent << endln;
-
   return (Tangent);
 }
 
@@ -1899,7 +1897,7 @@ Bilin::recvSelf(int cTag, Channel &theChannel,
    CcapSlopeMember=data(156);		// Updated: Filipe Ribeiro and Andre Barbosa
    capSlopeNegMember=data(157);		// Updated: Filipe Ribeiro and Andre Barbosa
    CcapSlopeNegMember=data(158);        // Updated: Filipe Ribeiro and Andre Barbosa
-   Ke=data(159);			// Updated: Filipe Ribeiro and Andre Barbosa
+   CKe=data(159);			// Updated: Filipe Ribeiro and Andre Barbosa
    prodBeta=data(160);		        // Updated: Filipe Ribeiro and Andre Barbosa
    CprodBeta = data(161);
 
