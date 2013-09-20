@@ -5839,6 +5839,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
   int typeSolver = 2; // 0 - SymmBandLapack, 1 - SymmSparseArpack, 2 - GenBandArpack (default)
   int loc = 1;
   double shift = 0.0;
+  int factLVALUE = 10; // parameter for UmfPack SOE
   
   // Check type of eigenvalue analysis
   while (loc < (argc-1)) {
@@ -5869,7 +5870,13 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	     (strcmp(argv[loc],"-UmfPack") == 0) || (strcmp(argv[loc],"-Umfpack") == 0) ||
 	     (strcmp(argv[loc],"UmfPack") == 0) || (strcmp(argv[loc],"Umfpack") == 0))
       typeSolver = 5;
-    
+
+    else if ((strcmp(argv[loc],"-lValueFact") == 0) || (strcmp(argv[loc],"-lvalueFact") == 0)) {
+		 if (Tcl_GetInt(interp, argv[loc+1], &factLVALUE) != TCL_OK)
+			return TCL_ERROR;
+	     loc++;
+	} 
+
 #ifdef _MUMPS
     else if ((strcmp(argv[loc],"mumps") == 0) || (strcmp(argv[loc],"-Mumps") == 0) 
 	     || (strcmp(argv[loc],"-mumps") == 0) || (strcmp(argv[loc],"Mumps") == 0))
@@ -6009,7 +6016,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
       }  else if (typeSolver == 5) {  
 	
 	UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
-	LinearSOE *theArpackSOE = new UmfpackGenLinSOE(*theSolver);      
+	LinearSOE *theArpackSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE);      
 	theEigenSOE = new ArpackSOE(*theArpackSOE, shift);    
 	
 #ifdef _MUMPS
