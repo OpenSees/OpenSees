@@ -50,7 +50,6 @@
 // initialize the class wide variables
 Matrix SingleFPSimple2d::theMatrix(6,6);
 Vector SingleFPSimple2d::theVector(6);
-Vector SingleFPSimple2d::theLoad(6);
 
 
 SingleFPSimple2d::SingleFPSimple2d(int tag, int Nd1, int Nd2,
@@ -61,8 +60,8 @@ SingleFPSimple2d::SingleFPSimple2d(int tag, int Nd1, int Nd2,
     connectedExternalNodes(2), theFrnMdl(0), Reff(reff), kInit(kinit),
     x(_x), y(_y), shearDistI(sdI), addRayleigh(addRay), inclVertDisp(vert),
     mass(m), maxIter(maxiter), tol(_tol),
-    L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6), Tgl(6,6), Tlb(3,6),
-    ubPlasticC(0.0), kbInit(3,3)
+    L(0.0), onP0(true), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
+    Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3), theLoad(6)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
@@ -125,8 +124,8 @@ SingleFPSimple2d::SingleFPSimple2d()
     connectedExternalNodes(2), theFrnMdl(0), Reff(0.0), kInit(0.0),
     x(0), y(0), shearDistI(0.0), addRayleigh(0), inclVertDisp(0),
     mass(0.0), maxIter(25), tol(1E-12),
-    L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6), Tgl(6,6),
-    Tlb(3,6), ubPlasticC(0.0), kbInit(3,3)
+    L(0.0), onP0(false), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
+    Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3), theLoad(6)
 {
     // ensure the connectedExternalNode ID is of correct size
     if (connectedExternalNodes.Size() != 2)  {
@@ -705,6 +704,7 @@ int SingleFPSimple2d::recvSelf(int commitTag, Channel &rChannel,
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
+    onP0 = false;
     
     // initialize initial stiffness matrix
     kbInit.Zero();
@@ -940,7 +940,7 @@ void SingleFPSimple2d::setUp()
             x(0) = xp(0);  x(1) = xp(1);  x(2) = 0.0;
             y.resize(3);
             y(0) = -x(1);  y(1) = x(0);  y(2) = 0.0;
-        } else  {
+        } else if (onP0)  {
             opserr << "WARNING SingleFPSimple2d::setUp() - " 
                 << "element: " << this->getTag()
                 << " - ignoring nodes and using specified "

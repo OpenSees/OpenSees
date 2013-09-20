@@ -54,14 +54,13 @@ Vector ElastomericBearingBoucWen2d::theVector(6);
 ElastomericBearingBoucWen2d::ElastomericBearingBoucWen2d(int tag,
     int Nd1, int Nd2, double kInit, double fy, double alpha1,
     UniaxialMaterial **materials, const Vector _y, const Vector _x,
-    double alpha2, double _mu, double _eta, double _beta,
-    double _gamma, double sdI, int addRay, double m,
-    int maxiter, double _tol)
+    double alpha2, double _mu, double _eta, double _beta, double _gamma,
+    double sdI, int addRay, double m, int maxiter, double _tol)
     : Element(tag, ELE_TAG_ElastomericBearingBoucWen2d),
     connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0), k3(0.0),
     mu(_mu), eta(_eta), beta(_beta), gamma(_gamma), A(1.0), x(_x), y(_y),
-    shearDistI(sdI), addRayleigh(addRay), mass(m), maxIter(maxiter),
-    tol(_tol), L(0.0), ub(3), z(0.0), dzdu(0.0), qb(3), kb(3,3), ul(6),
+    shearDistI(sdI), addRayleigh(addRay), mass(m), maxIter(maxiter), tol(_tol),
+    L(0.0), onP0(true), ub(3), z(0.0), dzdu(0.0), qb(3), kb(3,3), ul(6),
     Tgl(6,6), Tlb(3,6), ubC(3), zC(0.0), kbInit(3,3), theLoad(6)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
@@ -122,8 +121,8 @@ ElastomericBearingBoucWen2d::ElastomericBearingBoucWen2d()
     connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0), k3(0.0),
     mu(2.0), eta(1.0), beta(0.5), gamma(0.5), A(1.0), x(0), y(0),
     shearDistI(0.5), addRayleigh(0), mass(0.0), maxIter(25), tol(1E-12),
-    L(0.0), ub(3), z(0.0), dzdu(0.0), qb(3), kb(3,3), ul(6), Tgl(6,6),
-    Tlb(3,6), ubC(3), zC(0.0), kbInit(3,3), theLoad(6)
+    L(0.0), onP0(false), ub(3), z(0.0), dzdu(0.0), qb(3), kb(3,3), ul(6),
+    Tgl(6,6), Tlb(3,6), ubC(3), zC(0.0), kbInit(3,3), theLoad(6)
 {
     // ensure the connectedExternalNode ID is of correct size
     if (connectedExternalNodes.Size() != 2)  {
@@ -673,6 +672,7 @@ int ElastomericBearingBoucWen2d::recvSelf(int commitTag, Channel &rChannel,
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
+    onP0 = false;
     
     // initialize initial stiffness matrix
     kbInit.Zero();
@@ -903,7 +903,7 @@ void ElastomericBearingBoucWen2d::setUp()
             x(0) = xp(0);  x(1) = xp(1);  x(2) = 0.0;
             y.resize(3);
             y(0) = -x(1);  y(1) = x(0);  y(2) = 0.0;
-        } else  {
+        } else if (onP0)  {
             opserr << "WARNING ElastomericBearingBoucWen2d::setUp() - " 
                 << "element: " << this->getTag()
                 << " - ignoring nodes and using specified "

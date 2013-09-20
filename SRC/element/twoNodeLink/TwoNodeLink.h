@@ -130,6 +130,7 @@ private:
     int addRayleigh;    // flag to add Rayleigh damping
     double mass;        // total mass
     double L;           // element length
+    bool onP0;          // flag to indicate if the element is on P0
     
     Vector ub;          // trial displacements in basic system
     Vector ubdot;       // trial velocities in basic system

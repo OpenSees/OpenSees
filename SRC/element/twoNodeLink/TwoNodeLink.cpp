@@ -66,8 +66,8 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
     numDIM(dim), numDOF(0), connectedExternalNodes(2),
     theMaterials(0), numDir(direction.Size()), dir(0), trans(3,3),
     x(_x), y(_y), Mratio(Mr), shearDistI(sdI), addRayleigh(addRay),
-    mass(m), L(0.0), ub(0), ubdot(0), qb(0), ul(0), Tgl(0,0), Tlb(0,0),
-    theMatrix(0), theVector(0), theLoad(0)
+    mass(m), L(0.0), onP0(true), ub(0), ubdot(0), qb(0), ul(0),
+    Tgl(0,0), Tlb(0,0), theMatrix(0), theVector(0), theLoad(0)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
@@ -184,7 +184,7 @@ TwoNodeLink::TwoNodeLink()
     numDIM(0), numDOF(0), connectedExternalNodes(2),
     theMaterials(0), numDir(0), dir(0), trans(3,3), x(0), y(0),
     Mratio(0), shearDistI(0), addRayleigh(0), mass(0.0), L(0.0),
-    ub(0), ubdot(0), qb(0), ul(0), Tgl(0,0), Tlb(0,0),
+    onP0(false), ub(0), ubdot(0), qb(0), ul(0), Tgl(0,0), Tlb(0,0),
     theMatrix(0), theVector(0), theLoad(0)
 {
     // ensure the connectedExternalNode ID is of correct size
@@ -772,6 +772,7 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
             return -4;
         }
     }
+    onP0 = false;
     
     // initialize response vectors in basic system
     ub.resize(numDir);
@@ -995,7 +996,7 @@ void TwoNodeLink::setUp()
                 x(1) = xp(1);
             if (xp.Size() > 2)
                 x(2) = xp(2);
-        } else  {
+        } else if (onP0)  {
             opserr << "WARNING TwoNodeLink::setUp() - " 
                 << "element: " << this->getTag() << endln
                 << "ignoring nodes and using specified "

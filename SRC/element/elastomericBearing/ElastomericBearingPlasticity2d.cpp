@@ -56,10 +56,9 @@ ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d(int tag,
     UniaxialMaterial **materials, const Vector _y, const Vector _x,
     double sdI, int addRay, double m)
     : Element(tag, ELE_TAG_ElastomericBearingPlasticity2d),
-    connectedExternalNodes(2),
-    k0(0.0), qYield(0.0), k2(0.0), x(_x), y(_y),
-    shearDistI(sdI), addRayleigh(addRay), mass(m),
-    L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
+    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0),
+    x(_x), y(_y), shearDistI(sdI), addRayleigh(addRay), mass(m),
+    L(0.0), onP0(true), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
     Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3), theLoad(6)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
@@ -118,7 +117,7 @@ ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d()
     : Element(0, ELE_TAG_ElastomericBearingPlasticity2d),
     connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0),
     x(0), y(0), shearDistI(0.5), addRayleigh(0), mass(0.0),
-    L(0.0), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
+    L(0.0), onP0(false), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
     Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3), theLoad(6)
 {
     // ensure the connectedExternalNode ID is of correct size
@@ -625,6 +624,7 @@ int ElastomericBearingPlasticity2d::recvSelf(int commitTag, Channel &rChannel,
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
+    onP0 = false;
     
     // initialize initial stiffness matrix
     kbInit.Zero();
@@ -840,7 +840,7 @@ void ElastomericBearingPlasticity2d::setUp()
             x(0) = xp(0);  x(1) = xp(1);  x(2) = 0.0;
             y.resize(3);
             y(0) = -x(1);  y(1) = x(0);  y(2) = 0.0;
-        } else  {
+        } else if (onP0)  {
             opserr << "WARNING ElastomericBearingPlasticity2d::setUp() - " 
                 << "element: " << this->getTag()
                 << " - ignoring nodes and using specified "

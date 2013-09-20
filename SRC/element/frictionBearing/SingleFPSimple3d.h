@@ -121,6 +121,7 @@ private:
     int maxIter;        // maximum number of iterations
     double tol;         // tolerance for convergence criterion
     double L;           // element length
+    bool onP0;          // flag to indicate if the element is on P0
     
     // state variables
     Vector ub;          // displacements in basic system
@@ -137,9 +138,9 @@ private:
     // initial stiffness matrix in basic system
     Matrix kbInit;
     
-    static Matrix theMatrix;
-    static Vector theVector;
-    static Vector theLoad;
+    static Matrix theMatrix;  // a class wide Matrix
+    static Vector theVector;  // a class wide Vector
+    Vector theLoad;
 };
 
 #endif

@@ -50,20 +50,17 @@
 // initialize the class wide variables
 Matrix FlatSliderSimple3d::theMatrix(12,12);
 Vector FlatSliderSimple3d::theVector(12);
-Vector FlatSliderSimple3d::theLoad(12);
 
 
 FlatSliderSimple3d::FlatSliderSimple3d(int tag, int Nd1, int Nd2,
     FrictionModel &thefrnmdl, double kInit, UniaxialMaterial **materials,
-    const Vector _y, const Vector _x, double sdI, int addRay,
-    double m, int maxiter, double _tol)
+    const Vector _y, const Vector _x, double sdI, int addRay, double m,
+    int maxiter, double _tol)
     : Element(tag, ELE_TAG_FlatSliderSimple3d),
-    connectedExternalNodes(2), theFrnMdl(0),
-    k0(kInit), x(_x), y(_y),
-    shearDistI(sdI), addRayleigh(addRay),
-    mass(m), maxIter(maxiter), tol(_tol),
-    L(0.0), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
-    Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6)
+    connectedExternalNodes(2), theFrnMdl(0), k0(kInit), x(_x), y(_y),
+    shearDistI(sdI), addRayleigh(addRay), mass(m), maxIter(maxiter), tol(_tol),
+    L(0.0), onP0(true), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
+    Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6), theLoad(12)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
@@ -126,12 +123,10 @@ FlatSliderSimple3d::FlatSliderSimple3d(int tag, int Nd1, int Nd2,
 
 FlatSliderSimple3d::FlatSliderSimple3d()
     : Element(0, ELE_TAG_FlatSliderSimple3d),
-    connectedExternalNodes(2), theFrnMdl(0),
-    k0(0.0), x(0), y(0),
-    shearDistI(0.0), addRayleigh(0),
-    mass(0.0), maxIter(25), tol(1E-12),
-    L(0.0), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
-    Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6)
+    connectedExternalNodes(2), theFrnMdl(0), k0(0.0), x(0), y(0),
+    shearDistI(0.0), addRayleigh(0), mass(0.0), maxIter(25), tol(1E-12),
+    L(0.0), onP0(false), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
+    Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6), theLoad(12)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
@@ -748,6 +743,7 @@ int FlatSliderSimple3d::recvSelf(int commitTag, Channel &rChannel,
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
+    onP0 = false;
     
     // initialize initial stiffness matrix
     kbInit.Zero();
@@ -1018,7 +1014,7 @@ void FlatSliderSimple3d::setUp()
         if (x.Size() == 0)  {
             x.resize(3);
             x = xp;
-        } else  {
+        } else if (onP0)  {
             opserr << "WARNING FlatSliderSimple3d::setUp() - " 
                 << "element: " << this->getTag()
                 << " - ignoring nodes and using specified "
