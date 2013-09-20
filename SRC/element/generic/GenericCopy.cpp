@@ -48,7 +48,7 @@ Matrix GenericCopy::theMatrix(1,1);
 Matrix GenericCopy::theInitStiff(1,1);
 Matrix GenericCopy::theMass(1,1);
 Vector GenericCopy::theVector(1);
-Vector GenericCopy::theLoad(1);
+
 
 // responsible for allocating the necessary space needed
 // by each object and storing the tags of the end nodes.
@@ -56,7 +56,7 @@ GenericCopy::GenericCopy(int tag, ID nodes, int srctag)
     : Element(tag, ELE_TAG_GenericCopy),
     connectedExternalNodes(nodes),
     numExternalNodes(0), numDOF(0),
-    srcTag(srctag), theSource(0),
+    srcTag(srctag), theSource(0), theLoad(1),
     initStiffFlag(false), massFlag(false)
 {
     // initialize nodes
@@ -81,7 +81,7 @@ GenericCopy::GenericCopy()
     : Element(0, ELE_TAG_GenericCopy),
     connectedExternalNodes(1),
     numExternalNodes(0), numDOF(0),
-    srcTag(0), theSource(0),
+    srcTag(0), theSource(0), theLoad(1),
     initStiffFlag(false), massFlag(false)
 {
     // initialize variables

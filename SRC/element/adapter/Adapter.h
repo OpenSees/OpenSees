@@ -129,7 +129,7 @@ private:
     
     static Matrix theMatrix;    // objects matrix (a class wide Matrix)
     static Vector theVector;    // objects vector (a class wide Vector)
-    static Vector theLoad;      // load vector
+    Vector theLoad;             // load vector
     
     Vector db;  // deformation in basic system
     Vector q;   // forces in basic system

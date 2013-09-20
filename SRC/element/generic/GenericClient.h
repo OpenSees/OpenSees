@@ -136,11 +136,11 @@ private:
     int dataSize;               // data size of send/recv vectors
     int addRayleigh;            // flag to add Rayleigh damping
     
-    static Matrix theMatrix;        // objects matrix
+    static Matrix theMatrix;        // objects matrix (a class wide Matrix)
     static Matrix theInitStiff;     // initial stiffness matrix
     static Matrix theMass;          // mass matrix
-    static Vector theVector;        // objects vector
-    static Vector theLoad;          // load vector
+    static Vector theVector;        // objects vector (a class wide Vector)
+    Vector theLoad;                 // load vector
     
     Channel *theChannel;        // channel
     double *sData;              // send data array

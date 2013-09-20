@@ -54,7 +54,6 @@ Matrix GenericClient::theMatrix(1,1);
 Matrix GenericClient::theInitStiff(1,1);
 Matrix GenericClient::theMass(1,1);
 Vector GenericClient::theVector(1);
-Vector GenericClient::theLoad(1);
 
 
 // responsible for allocating the necessary space needed
@@ -62,10 +61,9 @@ Vector GenericClient::theLoad(1);
 GenericClient::GenericClient(int tag, ID nodes, ID *dof, int _port,
     char *machineinetaddr, int _ssl, int _udp, int datasize, int addRay)
     : Element(tag, ELE_TAG_GenericClient),
-    connectedExternalNodes(nodes), basicDOF(1),
-    numExternalNodes(0), numDOF(0), numBasicDOF(0), port(_port),
-    machineInetAddr(0), ssl(_ssl), udp(_udp),
-    dataSize(datasize), addRayleigh(addRay),
+    connectedExternalNodes(nodes), basicDOF(1), numExternalNodes(0),
+    numDOF(0), numBasicDOF(0), port(_port), machineInetAddr(0), ssl(_ssl),
+    udp(_udp), dataSize(datasize), addRayleigh(addRay), theLoad(1),
     theChannel(0), sData(0), sendData(0), rData(0), recvData(0),
     db(0), vb(0), ab(0), t(0), qDaq(0), rMatrix(0),
     dbCtrl(1), vbCtrl(1), abCtrl(1),
@@ -117,10 +115,9 @@ GenericClient::GenericClient(int tag, ID nodes, ID *dof, int _port,
 // needs to be invoked upon
 GenericClient::GenericClient()
     : Element(0, ELE_TAG_GenericClient),
-    connectedExternalNodes(1), basicDOF(1),
-    numExternalNodes(0), numDOF(0), numBasicDOF(0),
-    port(0), machineInetAddr(0), ssl(0), udp(0),
-    dataSize(0), addRayleigh(0),
+    connectedExternalNodes(1), basicDOF(1), numExternalNodes(0),
+    numDOF(0), numBasicDOF(0), port(0), machineInetAddr(0), ssl(0),
+    udp(0), dataSize(0), addRayleigh(0), theLoad(1),
     theChannel(0), sData(0), sendData(0), rData(0), recvData(0),
     db(0), vb(0), ab(0), t(0), qDaq(0), rMatrix(0),
     dbCtrl(1), vbCtrl(1), abCtrl(1),

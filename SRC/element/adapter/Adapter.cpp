@@ -47,7 +47,6 @@
 // initialize the class wide variables
 Matrix Adapter::theMatrix(1,1);
 Vector Adapter::theVector(1);
-Vector Adapter::theLoad(1);
 
 
 // responsible for allocating the necessary space needed
@@ -55,9 +54,9 @@ Vector Adapter::theLoad(1);
 Adapter::Adapter(int tag, ID nodes, ID *dof,
     const Matrix &_kb, int ipport, int addRay, const Matrix *_mb)
     : Element(tag, ELE_TAG_Adapter),
-    connectedExternalNodes(nodes), basicDOF(1),
-    numExternalNodes(0), numDOF(0), numBasicDOF(0), kb(_kb),
-    ipPort(ipport), addRayleigh(addRay), mb(0), tPast(0.0), db(1), q(1),
+    connectedExternalNodes(nodes), basicDOF(1), numExternalNodes(0),
+    numDOF(0), numBasicDOF(0), kb(_kb), ipPort(ipport), addRayleigh(addRay),
+    mb(0), tPast(0.0), db(1), q(1), theLoad(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
 {
@@ -106,9 +105,9 @@ Adapter::Adapter(int tag, ID nodes, ID *dof,
 // needs to be invoked upon
 Adapter::Adapter()
     : Element(0, ELE_TAG_Adapter),
-    connectedExternalNodes(1), basicDOF(1),
-    numExternalNodes(0), numDOF(0), numBasicDOF(0), kb(1,1),
-    ipPort(0), addRayleigh(0), mb(0), tPast(0.0), db(1), q(1),
+    connectedExternalNodes(1), basicDOF(1), numExternalNodes(0),
+    numDOF(0), numBasicDOF(0), kb(1,1), ipPort(0), addRayleigh(0),
+    mb(0), tPast(0.0), db(1), q(1), theLoad(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
 {
