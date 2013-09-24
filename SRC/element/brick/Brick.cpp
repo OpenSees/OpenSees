@@ -1722,8 +1722,8 @@ Brick::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.tag("ResponseType","sigma22");
       output.tag("ResponseType","sigma33");
       output.tag("ResponseType","sigma12");
-      output.tag("ResponseType","sigma13");
-      output.tag("ResponseType","sigma23");      
+      output.tag("ResponseType","sigma23");
+      output.tag("ResponseType","sigma13");      
 
       output.endTag(); // NdMaterialOutput
       output.endTag(); // GaussPoint
@@ -1743,8 +1743,8 @@ Brick::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.tag("ResponseType","eps22");
       output.tag("ResponseType","eps33");
       output.tag("ResponseType","eps12");
-      output.tag("ResponseType","eps13");
-      output.tag("ResponseType","eps23");      
+      output.tag("ResponseType","eps23");
+      output.tag("ResponseType","eps13");      
 
       output.endTag(); // NdMaterialOutput
       output.endTag(); // GaussPoint
