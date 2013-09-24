@@ -139,7 +139,7 @@ ShearCurve::checkElementState(double springForce)
 
 		Response *theRotations =0; // integer element returns in setResponse
 
-		const char *r[1] = {"basicDeformations"}; // must be implemented in element
+		const char *r[1] = {"basicDeformation"}; // must be implemented in element
 
 		Vector *rotVec; //vector of chord rotations at beam-column ends
 

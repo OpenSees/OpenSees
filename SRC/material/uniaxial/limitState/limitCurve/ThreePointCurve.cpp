@@ -126,12 +126,17 @@ ThreePointCurve::checkElementState(double springForce)
 		Response *theRotations =0; // integer element returns in setResponse
 		//char *r[1] = {"rotation"};
 		//char *r[1] = {"plasticRotation"};
-		const char *r[1] = {"basicDeformations"};
+		const char *r[1] = {"basicDeformation"};
 
 		Vector *rotVec; //vector of chord rotations at beam-column ends
 
 		// set type of beam-column element response desired
 		theRotations = theElement->setResponse(r, 1, dummy);
+
+		if (theRotations == 0) {
+		  opserr << "ThreePointCurve::checkElementState, defType = 1, basicDeformations not implemented in element setResponse" << endln;
+		  return -1;
+		}
 
 		// put element response in the vector of "myInfo"
 		result = theRotations->getResponse();
