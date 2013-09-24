@@ -1394,7 +1394,7 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     M2 = q(4);
     P(4)  = M1;
     P(10) = M2;
-    V = -(M1+M2)*oneOverL;
+    V = (M1+M2)*oneOverL;
     P(2) = -V+p0[3];
     P(8) =  V+p0[4];
 
