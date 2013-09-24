@@ -146,6 +146,11 @@ ShearCurve::checkElementState(double springForce)
 		// set type of beam-column element response desired
 		theRotations = theElement->setResponse(r, 1, dummy);
 
+		if (theRotations == 0) {
+		  opserr << "ShearCurve::checkElementState, defType = 1, basicDeformations not implemented in element setResponse" << endln;
+		  return -1;
+		}
+
 		// put element response in the vector of "myInfo"
 		result = theRotations->getResponse();
 
