@@ -100,13 +100,14 @@ PlaneStressUserMaterial::~PlaneStressUserMaterial( )
   if (props != 0)
     delete [] props;
   if (vprops != 0)
-    delete [] vprops;
+    delete vprops;
+
   if (statevdata != 0)
     delete [] statevdata;
   if (statev0 != 0)
-    delete [] statev0;
+    delete statev0;
   if (statev != 0)
-    delete [] statev;
+    delete statev;
 } 
 
 void PlaneStressUserMaterial::setInitials()
