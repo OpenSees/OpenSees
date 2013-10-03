@@ -548,6 +548,7 @@ EXAMPLES/verification/PlanarTruss.Extra.tcl -text
 EXAMPLES/verification/PlanarTruss.tcl -text
 EXAMPLES/verification/PortalFrame2d.tcl -text
 EXAMPLES/verification/ReadRecord.tcl -text
+EXAMPLES/verification/SmallEigen.tcl -text
 EXAMPLES/verification/elCentro.at2 -text
 EXAMPLES/verification/runVerificationSuite.tcl -text
 EXAMPLES/verification/sdofTransient.tcl -text
