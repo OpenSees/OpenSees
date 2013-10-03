@@ -15,16 +15,13 @@ set results []
 set counter 0
 
 puts "Prismatic Beam Benchmark Problems\n"
-puts "    - Case 1 (Single Curcature)"
+puts "    - Case 1 (Single Curcature)     - elasticBeamClumn"
 puts "------+--------+-------------------------+-------------------------"
 puts "      |        |     Tip Displacement    |      Base Moment        "
 puts "------+--------+--------+---------+------+---------+--------+------"
 set formatString {%5s|%8s|%8s|%9s|%6s|%9s|%8s|%6s}
 puts [format $formatString numEle alpha Exact OpenSees %Error Exact OpenSees %Error]
 puts "------+--------+--------+---------+------+---------+--------+------"
-
-foreach {gTransf} {"Linear" "PDelta" "Corotational"} {
-    puts "$gTransf"
 
 foreach numEle {1 2 4 10} {
     foreach alpha {0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.67} {
@@ -44,14 +41,11 @@ foreach numEle {1 2 4 10} {
 	    node [expr $i +1] 0. [expr $i * $dY]
 	}
 	
-#	geomTransf PDelta 1
-#	geomTransf Corotational 1
-	geomTransf $gTransf 1
+	geomTransf PDelta 1
 	section Elastic 1 $E $A $I
 	set eleTag 1; set iNode 1; set jNode 2;
 	for {set i 0} {$i < $numEle} {incr i 1} {
 	    element elasticBeamColumn $eleTag $iNode $jNode $A $E $I 1
-#	    element forceBeamColumnCBDI $eleTag $iNode $jNode 1 "Legendre 1 4"
 	    incr eleTag; incr iNode; incr jNode;
 	}
 	
@@ -88,7 +82,7 @@ foreach numEle {1 2 4 10} {
     }
     puts "------+--------+--------+---------+------+---------+--------+------"
 }
-}
+
 # test on last one
 if {[expr abs(100*($resU-$delta)/$delta)] > 0.5 || [expr abs(100*($resM-$moment)/$moment)] > 0.5} {
     set ok 1
@@ -163,9 +157,15 @@ foreach numEle {1 } {
     puts "------+--------+--------+---------+------+---------+--------+------"
 }
 
-quit
 
-puts "\n\n    - Case 2 (Double Curvature)"
+# test on last one
+if {[expr abs(100*($resU-$delta)/$delta)] > 0.5 || [expr abs(100*($resM-$moment)/$moment)] > 0.5} {
+    set ok 1
+    puts "[expr abs(100*($resU-$delta)/$delta)] > 0.5 || [expr abs(100*($resM-$moment)/$moment)] > 0.5"
+}
+
+
+puts "\n\n    - Case 2 (Double Curvature)  - elasticBeamColumn"
 puts "------+--------+-------------------------+-------------------------"
 puts "      |        |     Tip Displacement    |      Base Moment        "
 puts "------+--------+--------+---------+------+---------+--------+------"
@@ -232,7 +232,6 @@ foreach numEle {1 2 10} {
     puts "------+--------+--------+---------+------+---------+--------+------"
 }
 
-
 # test on last one
 if {[expr abs(100*($resU-$delta)/$delta)] > 0.5 || [expr abs(100*($resM-$moment)/$moment)] > 0.5} {
     set ok 1
@@ -248,73 +247,5 @@ if {$ok == 0} {
     puts "FAILED Verification Test AISC25.tcl \n\n"
     puts $results "FAILED : AISC25.tcl"
 }
+
 close $results
-
-#https://wiki.csiamerica.com/display/tp/P-Delta+effect+for+a+cantilevered+column
-
-# P-Delta effect for cantilevered column
-# Calculation and Verification for P-Delta effects of a cantilevered column
-# SAP20000 Model ID: 109
-
-
-set E  30.0e9
-set L  10.0
-set A [expr 0.1*0.1]
-set I [expr 0.1*0.1*0.1*0.1/12.0]
-set H 45
-set P 4000
-
-set PI [expr 2.0*asin(1.0)]
-
-set ok 0
-set results []
-set counter 0
-
-puts "SAP2000 P-Delta Column Verification, Model ID 109\n"
-foreach numEle {1} {
-    wipe
-    model Basic -ndm 2
-	
-    set dY [expr $L/$numEle]
-    for {set i 0} {$i <= $numEle} {incr i 1} {
-	node [expr $i +1] 0. [expr $i * $dY]
-    }
-	
-    geomTransf PDelta 1
-    set eleTag 1; set iNode 1; set jNode 2;
-    for {set i 0} {$i < $numEle} {incr i 1} {
-	element elasticBeamColumn $eleTag $iNode $jNode $A $E $I 1
-	incr eleTag; incr iNode; incr jNode;
-    }
-	
-    fix 1 1 1 1
-    
-    if {$u != 0} {
-	set resU [expr ($H*$L*$L*$L/(3.0*$E*$I)) * (3.0*(tan(2.0*$u)-2.0*$u)/(8.0*$u*$u*$u))]
-	set resM [expr $H*$L*(tan(2.*$u)/(2.*$u))]
-    } else {
-	set resU [expr ($H*$L*$L*$L/(3.0*$E*$I))]
-	set resM [expr $H*$L]
-    }
-    
-    timeSeries Linear 1
-    pattern Plain 1 1 {
-	load  [expr $numEle+1] $H -$P 0.
-    }
-    
-    constraints Plain
-    system BandGEN
-    numberer Plain
-    integrator LoadControl 1
-    test NormDispIncr 1.0e-12 6 0
-    algorithm Newton
-    analysis Static
-    analyze 1
-    
-    set delta [nodeDisp [expr $numEle + 1] 1]
-    set moment [lindex [eleResponse 1 forces] 2]
-    set formatString {%6.0f|%8.2f|%8.4f|%9.4f|%6.1f|%9.2f|%8.2f|%6.1f}
-    puts [format $formatString $numEle $alpha $resU $delta [expr 100*($resU-$delta)/$delta] $resM $moment [expr 100*($resM-$moment)/$moment] ]
-}
-puts "------+--------+--------+---------+------+---------+--------+------"
-}
