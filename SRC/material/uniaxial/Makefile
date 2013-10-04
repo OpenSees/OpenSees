@@ -8,6 +8,7 @@ include ../../../Makefile.def
         ElasticBilin.o \
 	ParallelMaterial.o \
 	AxialSp.o \
+	BWBN.o \
 	AxialSpHD.o \
 	AxialSp.o \
 	Neoprene.o \

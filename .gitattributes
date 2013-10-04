@@ -3008,6 +3008,8 @@ SRC/material/uniaxial/AxialSp.cpp -text
 SRC/material/uniaxial/AxialSp.h -text
 SRC/material/uniaxial/AxialSpHD.cpp -text
 SRC/material/uniaxial/AxialSpHD.h -text
+SRC/material/uniaxial/BWBN.cpp -text
+SRC/material/uniaxial/BWBN.h -text
 SRC/material/uniaxial/BackboneMaterial.cpp -text
 SRC/material/uniaxial/BackboneMaterial.h -text
 SRC/material/uniaxial/BarSlipMaterial.cpp -text
