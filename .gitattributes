@@ -231,6 +231,7 @@ EXAMPLES/ComputationalGeomechanicsCourseExamples/Example04.ops -text
 EXAMPLES/DatastarExamples/Example1.tcl -text
 EXAMPLES/DatastarExamples/README -text
 EXAMPLES/DatastarExamples/submit1 -text
+EXAMPLES/DeveloperTestScripts/BWBN.tcl -text
 EXAMPLES/DeveloperTestScripts/BiaxialConcrete_matTest.tcl -text
 EXAMPLES/DeveloperTestScripts/Cap.tcl -text
 EXAMPLES/DeveloperTestScripts/PlaneStressSimplifiedJ2.tcl -text

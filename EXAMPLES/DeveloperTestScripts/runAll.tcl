@@ -15,3 +15,6 @@ wipe; source SimplifiedJ2.tcl
 
 puts "\n source PlaneStressSimplifiedJ2.tcl"
 wipe; source PlaneStressSimplifiedJ2.tcl
+
+puts "\n source BWBN.tcl"
+wipe; source BWBN.tcl
