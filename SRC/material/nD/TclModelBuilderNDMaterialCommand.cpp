@@ -513,7 +513,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 */
 
 
-    else if ((strcmp(argv[1],"PlaneStreesSimplifiedJ2") == 0)) {
+    else if ((strcmp(argv[1],"PlaneStressSimplifiedJ2") == 0)) {
 	if (argc < 8) {
 	    opserr << "WARNING insufficient arguments\n";
 	    printCommand(argc,argv);
