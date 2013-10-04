@@ -79,7 +79,7 @@ class SteelBRB : public UniaxialMaterial
 	double getStrainSensitivity		(int gradNumber);
 	double getInitialTangentSensitivity(int gradNumber);
 	int    commitSensitivity        (double strainGradient, int gradNumber, int numGrads);
-	Response* setResponse(const char **argv, int argc, Information &matInfo);
+	Response* setResponse(const char **argv, int argc, OPS_Stream & theOutput);
 	int getResponse(int responseID, Information &matInfo);
 // AddingSensitivity:END ///////////////////////////////////////////
 	
