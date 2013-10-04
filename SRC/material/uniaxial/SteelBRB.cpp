@@ -49,7 +49,7 @@ void *OPS_SteelBRB(void)
   Tol = 1.0e-14; 
   
   int numArgs = OPS_GetNumRemainingInputArgs();
-  if (numArgs != 11 || numArgs != 12) {
+  if (numArgs != 11 && numArgs != 12) {
     opserr << "Warning Insufficient args: unixialMaterial SteelBRB tag E sigmaY0 sigmaY_T alpha_T beta_T delta_T sigmaY_C alpha_C beta_C delta_C <Tol> \n";
     return 0;
   }
@@ -1293,81 +1293,84 @@ SteelBRB::getInitialTangentSensitivity(int gradNumber)
 Response* 
 SteelBRB::setResponse(const char **argv, int argc, Information &matInfo)
 {
+  //by default, See if the response is one of the defaults
+  Response *res =  UniaxialMaterial::setResponse(argv, argc, theOutput);
+  if (res != 0)
+    return res;
 
-
-  	if (strcmp(argv[0],"plasticStrain") == 0) {
-		 
-		return new MaterialResponse(this, 11, this->getStrain());  // use only size of matrix
-
-	  }
-	else if (strcmp(argv[0],"cumPlasticStrain") == 0) {
-	 
-		return new MaterialResponse(this, 12, this->getStrain());  // use only size of matrix
-
-	  } 
-	else if (strcmp(argv[0],"dissipatedEnergy") == 0) {
-	 
-		return new MaterialResponse(this, 13, this->getStrain());  // use only size of matrix
-
-	  } 
-/*	else if (strcmp(argv[0],"plasticStrainSensitivity") == 0) {
-		int gradientNum = atoi(argv[1]);
-		return new MaterialResponse(this, gradientNum+100, this->getStrain());  // use only size of matrix
-
-	  }
+  if (strcmp(argv[0],"plasticStrain") == 0) {
+    
+    return new MaterialResponse(this, 11, this->getStrain());  // use only size of matrix
+    
+  }
+  else if (strcmp(argv[0],"cumPlasticStrain") == 0) {
+    
+    return new MaterialResponse(this, 12, this->getStrain());  // use only size of matrix
+    
+  } 
+  else if (strcmp(argv[0],"dissipatedEnergy") == 0) {
+    
+    return new MaterialResponse(this, 13, this->getStrain());  // use only size of matrix
+    
+  } 
+  /*	else if (strcmp(argv[0],"plasticStrainSensitivity") == 0) {
+	int gradientNum = atoi(argv[1]);
+	return new MaterialResponse(this, gradientNum+100, this->getStrain());  // use only size of matrix
+	
+	}
 	else if (strcmp(argv[0],"cumPlasticStrainSensitivity") == 0) {
-		int gradientNum = atoi(argv[1]);
-		return new MaterialResponse(this, gradientNum+500, this->getStrain());  // limitation: 400 RVs
-
-	  }
+	int gradientNum = atoi(argv[1]);
+	return new MaterialResponse(this, gradientNum+500, this->getStrain());  // limitation: 400 RVs
+	
+	}
 	else if (strcmp(argv[0],"stressSensitivity") == 0) {
-		int gradientNum = atoi(argv[1]);
-		return new MaterialResponse(this, gradientNum+900, this->getStress());  // use only size of matrix
-
-	  }
-	  else if (strcmp(argv[0],"strainSensitivity") == 0) {
-			int gradientNum = atoi(argv[1]);
-			return new MaterialResponse(this, gradientNum+1300, this->getStrain());
-	  }
-*/
-
-	 else if (strstr(argv[0],"plasticStrainSensitivity") != 0) {
-		char *token = strtok((char *) argv[0], " ");
-		if (token != NULL) token = strtok(NULL, " ");
-		int gradientNum = atoi(token);
-  		return new MaterialResponse(this, gradientNum+100, this->getStrain());  // use only size of matrix
-
-	  }
-	 else if (strstr(argv[0],"cumPlasticStrainSensitivity") != 0) {
-		char *token = strtok((char *) argv[0], " ");
-		if (token != NULL) token = strtok(NULL, " ");
-		int gradientNum = atoi(token);
-  		return new MaterialResponse(this, gradientNum+500, this->getStrain());  // use only size of matrix
-
-	  } 
-	 else if (strstr(argv[0],"stressSensitivity") != 0) {
-		char *token = strtok((char *) argv[0], " ");
-		if (token != NULL) token = strtok(NULL, " ");
-		int gradientNum = atoi(token);
-  		return new MaterialResponse(this, gradientNum+900, this->getStrain());  // use only size of matrix
-
-	  } 
-	 else if (strstr(argv[0],"strainSensitivity") != 0) {
-		char *token = strtok((char *) argv[0], " ");
-		if (token != NULL) token = strtok(NULL, " ");
-		int gradientNum = atoi(token);
-  		return new MaterialResponse(this, gradientNum+1300, this->getStrain());  // use only size of matrix
-
-	  } 
-	 else if (strstr(argv[0],"dissipatedEnergySensitivity") != 0) {
-		char *token = strtok((char *) argv[0], " ");
-		if (token != NULL) token = strtok(NULL, " ");
-		int gradientNum = atoi(token);
-  		return new MaterialResponse(this, gradientNum+1700, this->getStrain());  // use only size of matrix
-
-	  } 
-
-	return 0;
+	int gradientNum = atoi(argv[1]);
+	return new MaterialResponse(this, gradientNum+900, this->getStress());  // use only size of matrix
+	
+	}
+	else if (strcmp(argv[0],"strainSensitivity") == 0) {
+	int gradientNum = atoi(argv[1]);
+	return new MaterialResponse(this, gradientNum+1300, this->getStrain());
+	}
+  */
+  
+  else if (strstr(argv[0],"plasticStrainSensitivity") != 0) {
+    char *token = strtok((char *) argv[0], " ");
+    if (token != NULL) token = strtok(NULL, " ");
+    int gradientNum = atoi(token);
+    return new MaterialResponse(this, gradientNum+100, this->getStrain());  // use only size of matrix
+    
+  }
+  else if (strstr(argv[0],"cumPlasticStrainSensitivity") != 0) {
+    char *token = strtok((char *) argv[0], " ");
+    if (token != NULL) token = strtok(NULL, " ");
+    int gradientNum = atoi(token);
+    return new MaterialResponse(this, gradientNum+500, this->getStrain());  // use only size of matrix
+    
+  } 
+  else if (strstr(argv[0],"stressSensitivity") != 0) {
+    char *token = strtok((char *) argv[0], " ");
+    if (token != NULL) token = strtok(NULL, " ");
+    int gradientNum = atoi(token);
+    return new MaterialResponse(this, gradientNum+900, this->getStrain());  // use only size of matrix
+    
+  } 
+  else if (strstr(argv[0],"strainSensitivity") != 0) {
+    char *token = strtok((char *) argv[0], " ");
+    if (token != NULL) token = strtok(NULL, " ");
+    int gradientNum = atoi(token);
+    return new MaterialResponse(this, gradientNum+1300, this->getStrain());  // use only size of matrix
+    
+  } 
+  else if (strstr(argv[0],"dissipatedEnergySensitivity") != 0) {
+    char *token = strtok((char *) argv[0], " ");
+    if (token != NULL) token = strtok(NULL, " ");
+    int gradientNum = atoi(token);
+    return new MaterialResponse(this, gradientNum+1700, this->getStrain());  // use only size of matrix
+    
+  } 
+  
+  return 0;
 }
 
 int 
