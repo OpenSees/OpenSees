@@ -26,6 +26,9 @@ Vector SimplifiedJ2::tmpVector(6);
 
 void *OPS_SimplifiedJ2 (void) {
 
+  //opserr<<"OPS_SimplifiedJ2 is called!"<<endln;
+
+
   int tag;
   double K, G, sig0, H_kin, H_iso;
 
@@ -63,6 +66,7 @@ void *OPS_SimplifiedJ2 (void) {
 					      sig0,
 					      H_kin,
 					      H_iso);
+  //opserr<<"J2 memory is allocated!"<<endln;
   return theMaterial;
 }
 

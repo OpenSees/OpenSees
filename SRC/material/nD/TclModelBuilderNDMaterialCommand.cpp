@@ -501,6 +501,84 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 					delta, H, eta);
     }
 
+	/////////////////////////////////////////////////////////////////
+/*
+   nDmaterial PlaneStressJ2  $matTag  $G  $K  $sig0  $H_kin  $H_iso 
+
+
+     PlaneStress (int tag, 
+				 int nd,
+				 NDMaterial &the3DMaterial);
+
+*/
+
+
+    else if ((strcmp(argv[1],"PlaneStreesSimplifiedJ2") == 0)) {
+	if (argc < 8) {
+	    opserr << "WARNING insufficient arguments\n";
+	    printCommand(argc,argv);
+	    opserr << "Want: nDmaterial Simplified3DJ2  $matTag  $G  $K  $sig0  $H_kin  $H_iso" << endln;
+	    return TCL_ERROR;
+	}
+
+	int tag;
+	double K, G, sig0, H_kin, H_iso;
+
+	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+	    opserr << "WARNING invalid SimplifiedJ2 tag" << endln;
+	    return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[3], &G) != TCL_OK) {
+	    opserr << "WARNING invalid G\n";
+	    opserr << "nDMaterial SimplifiedJ2: " << tag << endln;
+	    return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[4], &K) != TCL_OK) {
+	    opserr << "WARNING invalid K\n";
+	    opserr << "nDMaterial SimplifiedJ2: " << tag << endln;
+	    return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[5], &sig0) != TCL_OK) {
+	    opserr << "WARNING invalid sig0\n";
+	    opserr << "nDMaterial SimplifiedJ2: " << tag << endln;
+	    return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[6], &H_kin) != TCL_OK) {
+	    opserr << "WARNING invalid H_kin\n";
+	    opserr << "nDMaterial SimplifiedJ2: " << tag << endln;
+	    return TCL_ERROR;
+	}
+
+	if (Tcl_GetDouble(interp, argv[7], &H_iso) != TCL_OK) {
+	    opserr << "WARNING invalid H_iso\n";
+	    opserr << "nDMaterial SimplifiedJ2: " << tag << endln;
+	    return TCL_ERROR;
+	}
+	
+
+
+	   NDMaterial *theMaterial2 =  new SimplifiedJ2 (tag, 
+				 3,
+				 G,   
+				 K,
+				 sig0,
+				 H_kin,
+				 H_iso);
+
+
+	theMaterial = new PlaneStressSimplifiedJ2 (tag, 
+				 2,
+				 *theMaterial2);
+
+//	delete theMaterial2;
+
+
+    }
+/////////////////////////////////////////////////////////////////
 
     //
     //  MultiAxialCyclicPlasticity Model   by Gang Wang

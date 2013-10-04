@@ -35,7 +35,7 @@
 #include <fstream>            // Quan Gu   2013 March   HK
 using std::ofstream;          // Quan Gu   2013 March   HK
 using std::ios;               // Quan Gu   2013 March   HK
-
+  
 
 Vector CapPlasticity::tempVector(6);
 Matrix CapPlasticity::tempMatrix(6,6);
@@ -375,8 +375,11 @@ int CapPlasticity::sendSelf(int commitTag, Channel &theChannel)  {return 0;};
 int CapPlasticity::recvSelf(int commitTag, Channel &theChannel,
 			    FEM_ObjectBroker &theBroker )  {return 0;};
 
-Response * CapPlasticity::setResponse (const char **argv, int argc, Information &matInformation)  {
+//Response * CapPlasticity::setResponse (const char **argv, int argc, Information &matInformation)  {
   
+Response*
+CapPlasticity::setResponse (const char **argv, int argc, OPS_Stream &output) {
+
   if (strcmp(argv[0],"stress") == 0 || strcmp(argv[0],"stresses") == 0)
     return new MaterialResponse(this, 1, stress);
   
