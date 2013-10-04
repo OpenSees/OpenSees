@@ -580,6 +580,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Steel02.o \
 	$(FE)/material/uniaxial/Steel03.o \
 	$(FE)/material/uniaxial/SteelMP.o \
+	$(FE)/material/uniaxial/BWBN.o \
 	$(FE)/material/uniaxial/Steel01Thermal.o \
 	$(FE)/material/uniaxial/Steel02Thermal.o \
 	$(FE)/material/uniaxial/Concrete02Thermal.o \
