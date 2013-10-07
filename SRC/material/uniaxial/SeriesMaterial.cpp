@@ -62,7 +62,6 @@ SeriesMaterial::SeriesMaterial(int tag, int num,
       exit(-1);
     }
 
-
     int i;
     for (i = 0; i < numMaterials; i++) {
       theModels[i] = theMaterialModels[i]->getCopy();
@@ -95,6 +94,9 @@ SeriesMaterial::SeriesMaterial(int tag, int num,
       stress[i] = 0.0;
       flex[i] = 0.0;
     }
+
+    Ttangent = this->getInitialTangent();
+    Ctangent = Ttangent;
 }
 
 SeriesMaterial::SeriesMaterial()
@@ -132,7 +134,8 @@ SeriesMaterial::setTrialStrain(double newStrain, double strainRate)
 {
 	// Using the incremental iterative strain
 	double dv = newStrain-Tstrain;
-	
+
+
 	if (fabs(dv) < DBL_EPSILON)
 	  return 0;
 
@@ -325,8 +328,8 @@ UniaxialMaterial *
 SeriesMaterial::getCopy(void)
 {
     SeriesMaterial *theCopy = new 
-		SeriesMaterial(this->getTag(), numMaterials, theModels,
-			maxIterations, tolerance);
+      SeriesMaterial(this->getTag(), numMaterials, theModels,
+		     maxIterations, tolerance);
 
     theCopy->Cstrain = Cstrain;
     theCopy->Cstress = Cstress;
