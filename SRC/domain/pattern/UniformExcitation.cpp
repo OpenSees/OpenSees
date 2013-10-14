@@ -40,6 +40,8 @@
 #include <Element.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <SP_ConstraintIter.h>
+#include <SP_Constraint.h>
 
 UniformExcitation::UniformExcitation()
 :EarthquakePattern(0, PATTERN_TAG_UniformExcitation), 
@@ -96,21 +98,38 @@ UniformExcitation::setDomain(Domain *theDomain)
 {
   this->LoadPattern::setDomain(theDomain);
 
-  // now we go through and set all the node velocities to be vel0
+  // now we go through and set all the node velocities to be vel0 
+  // for those nodes not fixed in the dirn!
   if (vel0 != 0.0) {
+
+    SP_ConstraintIter &theSPs = theDomain->getSPs();
+    SP_Constraint *theSP;
+    ID constrainedNodes(0);
+    int count = 0;
+    while ((theSP=theSPs()) != 0) {
+      if (theSP->getDOF_Number() == theDof) {
+	constrainedNodes[count] = theSP->getNodeTag();
+	count++;
+      }
+    }
+
+
     NodeIter &theNodes = theDomain->getNodes();
     Node *theNode;
     Vector newVel(1);
     int currentSize = 1;
     while ((theNode = theNodes()) != 0) {
-      int numDOF = theNode->getNumberDOF();
-      if (numDOF != currentSize) 
-	newVel.resize(numDOF);
-      
-      newVel = theNode->getVel();
-      newVel(theDof) = vel0;
-      theNode->setTrialVel(newVel);
-      theNode->commitState();
+      int tag = theNode->getTag();
+      if (constrainedNodes.getLocation(tag) < 0) {
+	int numDOF = theNode->getNumberDOF();
+	if (numDOF != currentSize) 
+	  newVel.resize(numDOF);
+	
+	newVel = theNode->getVel();
+	newVel(theDof) = vel0;
+	theNode->setTrialVel(newVel);
+	theNode->commitState();
+      }
     }
   }
 }
