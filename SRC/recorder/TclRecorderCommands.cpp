@@ -1527,9 +1527,13 @@
      else if (strcmp(argv[1],"display") == 0) {
 
 	 int xLoc, yLoc, width, height;
+     int pos = 7;
+     int wipeFlag = 0;
+     double dT = 0.0;
+     int saveToFile = 0;
 
 	 if (argc < 7) {
-	     opserr << "WARNING recorder display title xLoc yLoc pixelsX pixelsY <-file fileName?>";
+	     opserr << "WARNING recorder display title xLoc yLoc pixelsX pixelsY <-wipe> <-dT deltaT?> <-file fileName?>";
 	     return TCL_ERROR;
 	 }    
 	 if (Tcl_GetInt(interp, argv[3], &xLoc) != TCL_OK)	
@@ -1541,17 +1545,31 @@
 	 if (Tcl_GetInt(interp, argv[6], &height) != TCL_OK)	
 	     return TCL_ERROR;
 
-	 // check if we are to wipe image on each redraw
-	 int wipeFlag = 0;
-	 if (argc == 8) 
-	   if (strcmp(argv[7],"-wipe") == 0) 
+     while (pos < argc) {
+
+	   // check if we are to wipe image on each redraw
+	   if (strcmp(argv[pos],"-wipe") == 0) {
 	     wipeFlag = 1;
+         pos++;
+       }
+       // allow user to specify time step size for recording
+       else if (strcmp(argv[pos],"-dT") == 0) {
+	     if (Tcl_GetDouble(interp, argv[pos+1], &dT) != TCL_OK)
+	       return TCL_ERROR;
+         pos+=2;
+       }
+       // save images to file
+       else if (strcmp(argv[pos],"-file") == 0) {
+         fileName = argv[pos+1];
+         saveToFile = 1;
+         pos+=2;
+       }
+     }
+     if (!saveToFile)
+	   (*theRecorder) = new TclFeViewer(argv[2], xLoc, yLoc, width, height, theDomain, wipeFlag, interp, dT);
+     else
+	   (*theRecorder) = new TclFeViewer(argv[2], xLoc, yLoc, width, height, fileName, theDomain, interp, dT);
 
-
-	 if (argc == 7 || argc == 8)
-	   (*theRecorder) = new TclFeViewer(argv[2], xLoc, yLoc, width, height, theDomain, wipeFlag, interp);
-	 else if (argc == 9)
-	   (*theRecorder) = new TclFeViewer(argv[2], xLoc, yLoc, width, height, argv[8], theDomain, interp);
      }
 
      else if (strcmp(argv[1],"plot") == 0) {

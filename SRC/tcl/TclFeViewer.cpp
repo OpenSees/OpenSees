@@ -116,7 +116,8 @@ TclFeViewer_clearImage(ClientData clientData, Tcl_Interp *interp, int argc,
 TclFeViewer::TclFeViewer()
   :Recorder(RECORDER_TAGS_TclFeViewer),
   theMap(0),theRenderer(0), theDomain(0), 
-  theEleMode(-1), theNodeMode(-1), theDisplayFact(1), wipeFlag(0),
+  theEleMode(-1), theNodeMode(-1), theDisplayFact(1),
+  deltaT(0.0), nextTimeStampToRecord(0.0), wipeFlag(0),
   vrpSet(0),vpwindowSet(0),clippingPlaneDistancesSet(0)
 {
   theTclFeViewer = 0;
@@ -124,11 +125,11 @@ TclFeViewer::TclFeViewer()
 }
 
 TclFeViewer::TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height,
-			 Domain &_theDomain, int WipeFlag,
-			 Tcl_Interp *interp)
+			 Domain &_theDomain, int WipeFlag, Tcl_Interp *interp, double dT)
   :Recorder(RECORDER_TAGS_TclFeViewer),
   theMap(0),theRenderer(0), theDomain(&_theDomain), 
-  theEleMode(-1), theNodeMode(-1), theDisplayFact(1), wipeFlag(WipeFlag),
+  theEleMode(-1), theNodeMode(-1), theDisplayFact(1),
+  deltaT(dT), nextTimeStampToRecord(0.0), wipeFlag(WipeFlag),
   vrpSet(0),vpwindowSet(0),clippingPlaneDistancesSet(0)
 {
 
@@ -191,12 +192,12 @@ TclFeViewer::TclFeViewer(const char *title, int xLoc, int yLoc, int width, int h
 
 
 TclFeViewer::TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height, 
-			 const char *fileName,
-			 Domain &_theDomain,
-			 Tcl_Interp *interp)
-  :Recorder(RECORDER_TAGS_TclFeViewer),
+			 const char *fileName, Domain &_theDomain, Tcl_Interp *interp,
+             double dT)
+   :Recorder(RECORDER_TAGS_TclFeViewer),
    theMap(0),theRenderer(0), theDomain(&_theDomain),
-   theEleMode(-1), theNodeMode(-1), theDisplayFact(1), wipeFlag(1), 
+   theEleMode(-1), theNodeMode(-1), theDisplayFact(1),
+   deltaT(dT), nextTimeStampToRecord(0.0), wipeFlag(1), 
    vrpSet(0),vpwindowSet(0),clippingPlaneDistancesSet(0)
 {
 
@@ -288,70 +289,75 @@ TclFeViewer::record(int cTag, double timeStamp)
   // loop over the elements getting each to display itself
   // using theRenderer and displayTag as arguments.
   // first clear the image
-		
-  if (wipeFlag == 1)
-    theRenderer->clearImage();
-
-  // set some quantities if not set
-  if (vrpSet == 0 || vpwindowSet == 0 || clippingPlaneDistancesSet == 0) {
-    const Vector &theBounds = theDomain->getPhysicalBounds();
-    double xAvg = (theBounds(0) + theBounds(3))/2.0;
-    double yAvg = (theBounds(1) + theBounds(4))/2.0;
-    double zAvg = (theBounds(2) + theBounds(5))/2.0;
-    
-    if (vrpSet == 0)
-      this->setVRP(xAvg, yAvg, zAvg);
-
-    double diff, xDiff, yDiff, zDiff;
-    xDiff = (theBounds(3) - theBounds(0));
-    yDiff = (theBounds(4) - theBounds(1));
-    zDiff = (theBounds(5) - theBounds(2));
-    diff = xDiff;
-    if (yDiff > diff)
-      diff = yDiff;
-    if (zDiff > diff)
-      diff = zDiff;
-
-    diff *= 1.25 * 0.5;
-    
-    if (vpwindowSet == 0)
-      this->setViewWindow(-diff,diff,-diff,diff);
-
-    if (clippingPlaneDistancesSet == 0) {
-      diff = sqrt(xDiff*xDiff + yDiff*yDiff + zDiff * zDiff);
-      this->setPlaneDist(diff,-diff);
-    }
-  }
-
-  theRenderer->startImage();
   int res = 0;
+  if (deltaT == 0.0 || timeStamp >= nextTimeStampToRecord) {
 
-  if (theEleMode != 0) {
-      ElementIter &theElements = theDomain->getElements();
-      Element *theEle;
-      while ((theEle = theElements()) != 0) {
-	  res = theEle->displaySelf(*theRenderer, theEleMode, theDisplayFact);
-	  if (res < 0) {
-	      opserr << "Renderer::displayModel() - Element: \n";
-	      opserr << theEle->getTag() << " failed to display itself\n";
-	  }
+      if (deltaT != 0.0) 
+          nextTimeStampToRecord = timeStamp + deltaT;
+
+      if (wipeFlag == 1)
+          theRenderer->clearImage();
+
+      // set some quantities if not set
+      if (vrpSet == 0 || vpwindowSet == 0 || clippingPlaneDistancesSet == 0) {
+          const Vector &theBounds = theDomain->getPhysicalBounds();
+          double xAvg = (theBounds(0) + theBounds(3))/2.0;
+          double yAvg = (theBounds(1) + theBounds(4))/2.0;
+          double zAvg = (theBounds(2) + theBounds(5))/2.0;
+
+          if (vrpSet == 0)
+              this->setVRP(xAvg, yAvg, zAvg);
+
+          double diff, xDiff, yDiff, zDiff;
+          xDiff = (theBounds(3) - theBounds(0));
+          yDiff = (theBounds(4) - theBounds(1));
+          zDiff = (theBounds(5) - theBounds(2));
+          diff = xDiff;
+          if (yDiff > diff)
+              diff = yDiff;
+          if (zDiff > diff)
+              diff = zDiff;
+
+          diff *= 1.25 * 0.5;
+
+          if (vpwindowSet == 0)
+              this->setViewWindow(-diff,diff,-diff,diff);
+
+          if (clippingPlaneDistancesSet == 0) {
+              diff = sqrt(xDiff*xDiff + yDiff*yDiff + zDiff * zDiff);
+              this->setPlaneDist(diff,-diff);
+          }
       }
+
+      theRenderer->startImage();
+
+      if (theEleMode != 0) {
+          ElementIter &theElements = theDomain->getElements();
+          Element *theEle;
+          while ((theEle = theElements()) != 0) {
+              res = theEle->displaySelf(*theRenderer, theEleMode, theDisplayFact);
+              if (res < 0) {
+                  opserr << "Renderer::displayModel() - Element: \n";
+                  opserr << theEle->getTag() << " failed to display itself\n";
+              }
+          }
+      }
+
+      if (theNodeMode != 0) {
+          NodeIter &theNodes = theDomain->getNodes();
+          Node *theNode;
+          while ((theNode = theNodes()) != 0) {
+              res = theNode->displaySelf(*theRenderer, theNodeMode, theDisplayFact);
+              if (res < 0) {
+                  opserr << "Renderer::displayModel() - Node: ";
+                  opserr << theNode->getTag() << " failed to display itself\n";
+              }
+          }
+      }
+
+      // now mark the image has having been completed
+      theRenderer->doneImage();
   }
-  
-  if (theNodeMode != 0) {
-      NodeIter &theNodes = theDomain->getNodes();
-      Node *theNode;
-      while ((theNode = theNodes()) != 0) {
-	  res = theNode->displaySelf(*theRenderer, theNodeMode, theDisplayFact);
-	  if (res < 0) {
-	      opserr << "Renderer::displayModel() - Node: ";
-	      opserr << theNode->getTag() << " failed to display itself\n";
-	  }
-      }
-  }  
-
-  // now mark the image has having been completed
-  theRenderer->doneImage();
 
   return res;
 #endif

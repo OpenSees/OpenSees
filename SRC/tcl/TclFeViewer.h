@@ -49,15 +49,15 @@ class TclFeViewer : public Recorder
 {
   public:
     TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height,
-		Domain &theDomain, int wipeFlag, 
-		Tcl_Interp *interp);
+		Domain &theDomain, int wipeFlag, Tcl_Interp *interp,
+        double deltaT = 0.0);
 
-    TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height, const char *fileName,
-		Domain &theDomain, 
-		Tcl_Interp *interp);
+    TclFeViewer(const char *title, int xLoc, int yLoc, int width, int height,
+        const char *fileName, Domain &theDomain, Tcl_Interp *interp,
+        double deltaT = 0.0);
 
     TclFeViewer();
-    ~TclFeViewer();    
+    ~TclFeViewer();
 
     int buildFE_Model(void);
     
@@ -103,6 +103,8 @@ class TclFeViewer : public Recorder
     int theEleMode;
     int theNodeMode;    
     double theDisplayFact;
+    double deltaT;
+    double nextTimeStampToRecord;
     int wipeFlag;
     int vrpSet;
     int vpwindowSet;
@@ -110,10 +112,3 @@ class TclFeViewer : public Recorder
 };
 
 #endif
-
-
-
-
-
-
-
