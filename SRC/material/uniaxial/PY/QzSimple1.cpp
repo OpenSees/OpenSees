@@ -779,7 +779,7 @@ QzSimple1::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
   
-  static Vector data(37);
+  static Vector data(38);
   
   data(0) = this->getTag();
   data(1) = QzType;
