@@ -230,6 +230,8 @@
 #include <ElastomericBearingPlasticity3d.h>
 #include <ElastomericBearingBoucWen2d.h>
 #include <ElastomericBearingBoucWen3d.h>
+#include <SingleFPSimple2d.h>
+#include <SingleFPSimple3d.h>
 
 #ifdef _PFEM
 #include <PFEMElement2D.h>
@@ -668,6 +670,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_BrickUP:
 	    return new BrickUP();
+
+	case ELE_TAG_SingleFPSimple2d:
+		return new SingleFPSimple2d();
+
+	case ELE_TAG_SingleFPSimple3d:
+		return new SingleFPSimple3d();
 
 	case ELE_TAG_Twenty_Eight_Node_BrickUP:
 	    return new TwentyEightNodeBrickUP();
