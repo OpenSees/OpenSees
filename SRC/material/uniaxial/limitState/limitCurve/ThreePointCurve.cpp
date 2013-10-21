@@ -90,9 +90,9 @@ ThreePointCurve::checkElementState(double springForce)
 	{
 		theElement = theDomain->getElement(eleTag);
 
-		if (theElement == 0) 
+		if (theElement == 0) {
 //			g3ErrorHandler->fatal("WARNING ThreePointCurve - no element with tag %i exists in Domain",eleTag);
-
+		}
 		// find length between nodes if drift is desired
 		if (defType == 2)
 		{
