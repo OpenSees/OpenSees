@@ -34,6 +34,7 @@
 #include <ModIMKPeakOriented.h>
 #include <Vector.h>
 #include <Channel.h>
+#include <MaterialResponse.h>
 
 #include <OPS_Globals.h>
 
@@ -44,7 +45,7 @@ OPS_ModIMKPeakOriented()
 {
   if (numModIMKPeakOrientedMaterials == 0) {
     numModIMKPeakOrientedMaterials++;
-    OPS_Error("Modified Ibarra-Medina-Krawinkler Model with Peak-Oriented Hysteretic Response\n", 1);
+    opserr << "Modified Ibarra-Medina-Krawinkler Model with Peak-Oriented Hysteretic Response\n";
   }
   
   // Pointer to a uniaxial material that will be returned
