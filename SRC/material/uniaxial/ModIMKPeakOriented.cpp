@@ -36,54 +36,52 @@
 #include <Channel.h>
 
 #include <OPS_Globals.h>
-#include <MaterialResponse.h>
-
 
 static int numModIMKPeakOrientedMaterials = 0;
 
 void *
-OPS_ModIMKPeakOriented(void)
+OPS_ModIMKPeakOriented()
 {
-	if (numModIMKPeakOrientedMaterials == 0) {
-		numModIMKPeakOrientedMaterials++;
-		opserr << "Modified Ibarra-Medina-Krawinkler Model with Peak-Oriented Hysteretic Response\n";
-	}
-	
-	// Pointer to a uniaxial material that will be returned
-	UniaxialMaterial *theMaterial = 0;
-	
-	int    iData[1];
-	double dData[23];
-	int numData = 1;
-	// Check tag
-	if (OPS_GetIntInput(&numData, iData) != 0) {
-		opserr << "WARNING invalid uniaxialMaterial  ModIMKPeakOriented tag" << endln;
-		return 0;
-	}
-	
-	numData = 23;
-	if (OPS_GetDoubleInput(&numData, dData) != 0) {
-		opserr << "Invalid Args want: uniaxialMaterial ModIMKPeakOriented tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?"; 
-		opserr << "Ls?, Ld?, La?, Lk?, Cs?, Cd?, Ca?, Ck?, thetaPpos?, thetaPneg?, thetaPCpos?, thetaPCneg? "; 
-		opserr << "ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?";
-		
-		return 0;	
-	}
-	
-	// Parsing was successful, allocate the material with zero index
-	theMaterial = new ModIMKPeakOriented(iData[0], 
-					     dData[0], dData[1], dData[2], dData[3],
-					     dData[4], dData[5], dData[6], dData[7],
-					     dData[8], dData[9], dData[10], dData[11],
-					     dData[12], dData[13], dData[14], dData[15],
-					     dData[16], dData[17], dData[18], dData[19],
-					     dData[20], dData[21], dData[22]);
-	
-	if (theMaterial == 0) {
-	  opserr << "WARNING could not create uniaxialMaterial of type ModIMKPeakOriented Material\n";
-	  return 0;
-	}
-
+  if (numModIMKPeakOrientedMaterials == 0) {
+    numModIMKPeakOrientedMaterials++;
+    OPS_Error("Modified Ibarra-Medina-Krawinkler Model with Peak-Oriented Hysteretic Response\n", 1);
+  }
+  
+  // Pointer to a uniaxial material that will be returned
+  UniaxialMaterial *theMaterial = 0;
+  
+  int    iData[1];
+  double dData[23];
+  int numData = 1;
+  // Check tag
+  if (OPS_GetIntInput(&numData, iData) != 0) {
+    opserr << "WARNING invalid uniaxialMaterial  ModIMKPeakOriented tag" << endln;
+    return 0;
+  }
+  
+  numData = 23;
+  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    opserr << "Invalid Args want: uniaxialMaterial ModIMKPeakOriented tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?"; 
+    opserr << "Ls?, Ld?, La?, Lk?, Cs?, Cd?, Ca?, Ck?, thetaPpos?, thetaPneg?, thetaPCpos?, thetaPCneg? "; 
+    opserr << "ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?";
+    
+    return 0;	
+  }
+  
+  // Parsing was successful, allocate the material with zero index
+  theMaterial = new ModIMKPeakOriented(iData[0], 
+				       dData[0], dData[1], dData[2], dData[3],
+				       dData[4], dData[5], dData[6], dData[7],
+				       dData[8], dData[9], dData[10], dData[11],
+				       dData[12], dData[13], dData[14], dData[15],
+				       dData[16], dData[17], dData[18], dData[19],
+				       dData[20], dData[21], dData[22]);
+  
+  if (theMaterial == 0) {
+    opserr << "WARNING could not create uniaxialMaterial of type ModIMKPeakOriented Material\n";
+    return 0;
+  }
+  
   return theMaterial;
 }
 
@@ -100,18 +98,18 @@ ModIMKPeakOriented::ModIMKPeakOriented(int tag, double ke, double alfaPos, doubl
 {
   // Initialize Variables by Calling revertToStart function
   this->revertToStart();
-	
+  
 }
 
 ModIMKPeakOriented::ModIMKPeakOriented()
 :UniaxialMaterial(0,MAT_TAG_ModIMKPeakOriented),
-Ke(0.0), AlfaPos(0.0), AlfaNeg(0.0), My_pos(0.0), My_neg(0.0), Ls(0.0), Ld(0.0), La(0.0), Lk(0.0), 
-Cs(0.0), Cd(0.0), Ca(0.0), Ck(0.0), ThetaPpos(0.0), ThetaPneg(0.0), 
-ThetaPCpos(0.0), ThetaPCneg(0.0), ResfacPos(0.0), ResfacNeg(0.0), 
-FracDispPos(0.0), FracDispNeg(0.0), DPos(0.0), DNeg(0.0)
+ Ke(0.0), AlfaPos(0.0), AlfaNeg(0.0), My_pos(0.0), My_neg(0.0), Ls(0.0), Ld(0.0), La(0.0), Lk(0.0), 
+ Cs(0.0), Cd(0.0), Ca(0.0), Ck(0.0), ThetaPpos(0.0), ThetaPneg(0.0), 
+ ThetaPCpos(0.0), ThetaPCneg(0.0), ResfacPos(0.0), ResfacNeg(0.0), 
+ FracDispPos(0.0), FracDispNeg(0.0), DPos(0.0), DNeg(0.0)
 {
-// Initialize Variables by Calling revertToStart function
-//	revertToStart();
+  // Initialize Variables by Calling revertToStart function
+  this->revertToStart();
 }
 
 ModIMKPeakOriented::~ModIMKPeakOriented()
@@ -126,11 +124,21 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
   
   this->revertToLastCommit();
   
-  double f = 0.0;
-  double d  = strain;
+  double f,d,deltaD;
+  
+  d  = strain;
   
   // Determine change in deformation from last converged state
-  double deltaD = d - dP;
+  deltaD = d - dP;
+  
+  // added by DL 04/22/2013
+  
+  flagdeg = 0;
+  
+  if (fabs(deltaD) < 1.0e-18 && strain != 0.0) {
+    return 0;
+  }
+  
   
   // Initialize parameters in the first cycle
   if (kon==0) {
@@ -185,6 +193,7 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
     
     flstNeg = My_neg;
     flstPos = My_pos;
+    Tangent = Ke;
     
     ek = 0.0;
     sp = 0.0;
@@ -202,6 +211,7 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
       kon = 2;
     }
   }
+  
   
   // After the first step		
   if(flagStop == 0){
@@ -308,7 +318,7 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 	  if (fabs(f-f1)<1.e-10) {
 	    ek=ekunload;
 	  }
-	  
+					
 	} 
 	
       } else {							
@@ -317,7 +327,7 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 	} else {	
 	  envelNegCap2(fyNeg,AlfaNeg,capSlopeNeg,cpNeg, d, f, ek, Ke, My_neg, ResfacNeg,-FracDispNeg, flagStop);	
 	}
-	
+				
       }
       
       // if deltaD < 0
@@ -431,12 +441,19 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
     
     double Enrgi = 0.0;
     
-    //if (Ls!=0.0 && Lk!=0.0 && La!=0.0 && Ld != 0.0) {
     Enrgi = 0.5 * (f+fP) * deltaD;
     Enrgc = Enrgc + Enrgi;
     Enrgtot = Enrgtot + Enrgi;
     RSE = 0.5*f*f/ekunload;
-    //} 
+    
+    // Added by DL, 04/22/2013
+    
+    if((f*fP<0.0)) {
+      if(((fP>0.0)&&(dmax>(fyPos/Ke)))||((fP<0.0)&&(dmin<(fyNeg/Ke)))) {
+	flagdeg = 1;		
+	//interup = 1;
+      }
+    }	
     
     //	UPDATING OF DETERIORATION PARAMETERS ----------------------------
     
@@ -445,6 +462,7 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
     double betaa = 0.0;
     double betac = 0.0;
     
+    // no cyclic deterioration
     if(flagdeg == 1){
       
       if(Enrgtot >= Enrgts && Enrgts != 0.0){	    
@@ -455,6 +473,7 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 	betac = 1.0;
       }
       
+      // cyclic deterioration
     } else {
       
       if(Ls != 0.0){
@@ -489,8 +508,8 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
     Enrgc = 0.0;
     //	Deteriorate parameters for the next half cycle
     
-    if(deltaD > 0.0 && f > 0.0 || deltaD < 0.0 && f >=0.0 && d <=sp) {
-      
+    // if(deltaD > 0.0 && f > 0.0 || deltaD < 0.0 && f >=0.0 && d <=sp) {
+    if(deltaD < 0.0 ) {			
       fyNeg = fyNeg*(1.0-betas*DNeg);			
       AlfaNeg=AlfaNeg*(1.0-betas*DNeg);			
       fCapRefNeg=fCapRefNeg*(1.0-betac*DNeg);
@@ -510,7 +529,7 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
 	cpNeg = dCap2Neg;
       }
       
-    } else if (deltaD < 0.0 && f < 0.0 || deltaD > 0.0 && f <=0.0 && d >= sn) {
+    } else { //else if (deltaD < 0.0 && f < 0.0 || deltaD > 0.0 && f <=0.0 && d >= sn) {
       
       fyPos = fyPos*(1.0-betas*DPos);
       AlfaPos=AlfaPos*(1.0-betas*DPos);
@@ -546,409 +565,403 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
   return 0;
 }
 
-double ModIMKPeakOriented::getStress(void)
+double 
+ModIMKPeakOriented::getStress(void)
 {
 
-	return  (fP);
+  return  (fP);
 }
 
-double ModIMKPeakOriented::getTangent(void)
+double 
+ModIMKPeakOriented::getTangent(void)
 {
-    return (Tangent);
+  return (Tangent);
 }
 
-double ModIMKPeakOriented::getInitialTangent(void)
+double 
+ModIMKPeakOriented::getInitialTangent(void)
 {
-    return (Ke);
+  return (Ke);
 }
 
-double ModIMKPeakOriented::getDampTangent(void)
+double 
+ModIMKPeakOriented::getDampTangent(void)
 {
-	double DTangent = ekP;
-    return DTangent;	
+  double DTangent = ekP;
+  return DTangent;	
 }
 
 
-double ModIMKPeakOriented::getStrain(void)
+double 
+ModIMKPeakOriented::getStrain(void)
 {
-    return dP;
+  return dP;
 }
 
-double ModIMKPeakOriented::getStrainRate(void)
+double 
+ModIMKPeakOriented::getStrainRate(void)
 {
-    return 0;
+  return 0;
 }
 
-int ModIMKPeakOriented::commitState(void)
+int 
+ModIMKPeakOriented::commitState(void)
 {
-    Cstrain = dP;
-	Cstress = fP;
-	Ctangent = Tangent;
-	
-	CdP = dP;
-	CfP = fP;
-	Cek = ek;
-	
-	CUnl = Unl;
-	Ckon = kon;
-	CflagStop = flagStop;
-	
-	Cdmax = dmax;
-	Cdmin = dmin;
-	Cfmax = fmax;
-	Cfmin = fmin;
-	
-	CfyPos = fyPos;
-	CfyNeg = fyNeg;
-	
-	CdlstPos = dlstPos;
-	CdlstNeg = dlstNeg;
-
-	CflstPos = flstPos;
-	CflstNeg = flstNeg;
-	
-	Csn = sn;
-	Csp = sp;
-	
-	CEnrgc = Enrgc;
-	CEnrgtot = Enrgtot;
-	
-	CEnrgts = Enrgts;
-	CEnrgtd = Enrgtd;
-	CEnrgtk = Enrgtk;
-	CEnrgta = Enrgta;
-	
-	CfPeakPos = fPeakPos;
-	CfPeakNeg = fPeakNeg;
-	
-	CcapSlopePos = capSlopePos;
-	CcapSlopeNeg = capSlopeNeg;
-		
-	CfCapRefPos = fCapRefPos;
-	CfCapRefNeg = fCapRefNeg;
-	
-	Cekunload = ekunload;
-	
-	CcpNeg = cpNeg;
-	CcpPos = cpPos;
-	
-	CekhardPos = ekhardPos;
-	CekhardNeg = ekhardNeg;
-	Cekexcurs = ekexcurs;
-	CekP = ekP;
-	Cflagdeg = flagdeg;
-	CRSE=RSE; 
-
-	return 0;
+  Cstrain = dP;
+  Cstress = fP;
+  Ctangent = Tangent;
+  
+  CdP = dP;
+  CfP = fP;
+  Cek = ek;
+  
+  CUnl = Unl;
+  Ckon = kon;
+  CflagStop = flagStop;
+  
+  Cdmax = dmax;
+  Cdmin = dmin;
+  Cfmax = fmax;
+  Cfmin = fmin;
+  
+  CfyPos = fyPos;
+  CfyNeg = fyNeg;
+  
+  CdlstPos = dlstPos;
+  CdlstNeg = dlstNeg;
+  
+  CflstPos = flstPos;
+  CflstNeg = flstNeg;
+  
+  Csn = sn;
+  Csp = sp;
+  
+  CEnrgc = Enrgc;
+  CEnrgtot = Enrgtot;
+  
+  CEnrgts = Enrgts;
+  CEnrgtd = Enrgtd;
+  CEnrgtk = Enrgtk;
+  CEnrgta = Enrgta;
+  
+  CfPeakPos = fPeakPos;
+  CfPeakNeg = fPeakNeg;
+  
+  CcapSlopePos = capSlopePos;
+  CcapSlopeNeg = capSlopeNeg;
+  
+  CfCapRefPos = fCapRefPos;
+  CfCapRefNeg = fCapRefNeg;
+  
+  Cekunload = ekunload;
+  
+  CcpNeg = cpNeg;
+  CcpPos = cpPos;
+  
+  CekhardPos = ekhardPos;
+  CekhardNeg = ekhardNeg;
+  Cekexcurs = ekexcurs;
+  CekP = ekP;
+  Cflagdeg = flagdeg;
+  CRSE=RSE; 
+  
+  return 0;
 }
 
-int ModIMKPeakOriented::revertToLastCommit(void)
+int 
+ModIMKPeakOriented::revertToLastCommit(void)
 {
-    dP = Cstrain;
-	fP = Cstress;
-	Tangent = Ctangent;
-	
-	dP = CdP;
-	fP = CfP;
-	ek = Cek;
-	
-	Unl = CUnl;
-	kon = Ckon;
-	flagStop = CflagStop;
-	
-	dmax = Cdmax;
-	dmin = Cdmin;
-	fmax = Cfmax;
-	fmin = Cfmin;
-	
-	fyPos = CfyPos;
-	fyNeg = CfyNeg;
-	
-	dlstPos = CdlstPos;
-	dlstNeg = CdlstNeg;
-	
-	flstPos = CflstPos;
-	flstNeg = CflstNeg;
-
-	sn = Csn;
-	sp = Csp;
-	
-	// Energy Variables
-	Enrgc = CEnrgc;
-	Enrgtot = CEnrgtot;
-
-	Enrgts = CEnrgts;
-	Enrgtd = CEnrgtd;
-	Enrgtk = CEnrgtk;
-	Enrgta = CEnrgta;
-	
-	fPeakPos = CfPeakPos;
-	fPeakNeg = CfPeakNeg;
-
-	capSlopePos = CcapSlopePos;
-	capSlopeNeg = CcapSlopeNeg;
-		
-	fCapRefPos = CfCapRefPos;
-	fCapRefNeg = CfCapRefNeg;
-
-	ekunload = Cekunload;
-
-	cpNeg = CcpNeg;
-	cpPos = CcpPos;
-
-	ekhardPos = CekhardPos;
-	ekhardNeg = CekhardNeg;
-	ekexcurs = Cekexcurs;
-	ekP = CekP;
-	flagdeg = Cflagdeg;
-	RSE=CRSE; 
-
-    return 0;
+  dP = Cstrain;
+  fP = Cstress;
+  Tangent = Ctangent;
+  
+  dP = CdP;
+  fP = CfP;
+  ek = Cek;
+  
+  Unl = CUnl;
+  kon = Ckon;
+  flagStop = CflagStop;
+  
+  dmax = Cdmax;
+  dmin = Cdmin;
+  fmax = Cfmax;
+  fmin = Cfmin;
+  
+  fyPos = CfyPos;
+  fyNeg = CfyNeg;
+  
+  dlstPos = CdlstPos;
+  dlstNeg = CdlstNeg;
+  
+  flstPos = CflstPos;
+  flstNeg = CflstNeg;
+  
+  sn = Csn;
+  sp = Csp;
+  
+  // Energy Variables
+  Enrgc = CEnrgc;
+  Enrgtot = CEnrgtot;
+  
+  Enrgts = CEnrgts;
+  Enrgtd = CEnrgtd;
+  Enrgtk = CEnrgtk;
+  Enrgta = CEnrgta;
+  
+  fPeakPos = CfPeakPos;
+  fPeakNeg = CfPeakNeg;
+  
+  capSlopePos = CcapSlopePos;
+  capSlopeNeg = CcapSlopeNeg;
+  
+  fCapRefPos = CfCapRefPos;
+  fCapRefNeg = CfCapRefNeg;
+  
+  ekunload = Cekunload;
+  
+  cpNeg = CcpNeg;
+  cpPos = CcpPos;
+  
+  ekhardPos = CekhardPos;
+  ekhardNeg = CekhardNeg;
+  ekexcurs = Cekexcurs;
+  ekP = CekP;
+  flagdeg = Cflagdeg;
+  RSE=CRSE; 
+  
+  return 0;
 }
 
-int ModIMKPeakOriented::revertToStart(void)
+int 
+ModIMKPeakOriented::revertToStart(void)
 {
 	
-	// Initialize state variables	
-	dP = 0.0;
-	fP = 0.0;
-	ek = Ke;
-	RSE=CRSE=0.0; 
-
-	Unl = 1;
-	kon = 0;
-	flagStop = 0;
-
-	dmax = My_pos/Ke;
-	dmin = My_neg/Ke;
-	fmax = My_pos;
-	fmin = My_neg;
-	
-	fyPos = My_pos;
-	fyNeg = My_neg;
-	
-	dlstPos = My_pos/Ke;
-	dlstNeg = My_neg/Ke;
-
-	flstPos = My_pos;
-	flstNeg = My_neg;
-	
-	sn = 0.0;
-	sp = 0.0;
-	
-	// Energy Variables
-	Enrgc = 0.0;
-	Enrgtot = 0.0;
-		
-	Enrgts = Ls * My_pos;
-	Enrgtd = Ld * My_pos;
-	Enrgtk = 2.0 * Lk * My_pos;
-	Enrgta = La * My_pos;
-
-	fPeakPos = My_pos + ekhardPos * ThetaPpos;
-	fPeakNeg = My_neg + ekhardNeg * (-ThetaPneg);
-	
-	capSlopePos = -fPeakPos/(ThetaPCpos*Ke);
-	capSlopeNeg = fPeakNeg/(ThetaPCneg*Ke);
-	
-	fCapRefPos = -capSlopePos * Ke * (ThetaPpos + My_pos/Ke) + fPeakPos;
-	fCapRefNeg = -capSlopeNeg * Ke * (-ThetaPneg + My_neg/Ke) + fPeakNeg;
-	
-	ekunload = Ke;
-	
-	cpPos = My_pos/Ke + ThetaPpos;
-	cpNeg = My_neg/Ke + (-ThetaPneg);
-	
-	ekhardPos = Ke * AlfaPos;
-	ekhardNeg = Ke * AlfaNeg;
-	ekexcurs = Ke;
-	ekP = 0.0;
-	
-	flagdeg = 0;
-	
-	Cstrain=0.0;
-	Cstress = 0.0;
-	Ctangent = ek;
-	
-	CdP = 0.0;
-	CfP = 0.0;
-	Cek = ek;
-	
-	CUnl = 1;
-	Ckon = 0;
-	CflagStop = 0;
-	
-	Cdmax = My_pos/Ke;
-	Cdmin = My_neg/Ke;
-	Cfmax = My_pos;
-	Cfmin = My_neg;
-	
-	CfyPos = My_pos;
-	CfyNeg = My_neg;
-	
-	CdlstPos = My_pos/Ke;
-	CdlstNeg = My_neg/Ke;
-
-	CflstPos = My_pos;
-	CflstNeg = My_neg;
-
-	Csn = 0.0;
-	Csp = 0.0;
-	
-	// Energy Variables
-	CEnrgc = 0.0;
-	CEnrgtot = 0.0;
-	
-	CEnrgts = Ls * My_pos;
-	CEnrgtd = Ld * My_pos;
-	CEnrgtk = 2.0 * Lk * My_pos;
-	CEnrgta = La * My_pos;
-	
-	CfPeakPos = My_pos + ekhardPos * ThetaPpos;
-	CfPeakNeg = My_neg + ekhardNeg * (-ThetaPneg);
-	
-	CcapSlopePos = -fPeakPos/(ThetaPCpos*Ke);
-	CcapSlopeNeg = fPeakNeg/(ThetaPCneg*Ke);
-	
-	CfCapRefPos = -capSlopePos * Ke * (ThetaPpos + My_pos/Ke) + fPeakPos;
-	CfCapRefNeg = -capSlopeNeg * Ke * (-ThetaPneg + My_neg/Ke) + fPeakNeg;
-
-	Cekunload = Ke;
-
-	CcpPos = My_pos/Ke + ThetaPpos;
-	CcpNeg = My_neg/Ke + (-ThetaPneg);
-
-	CekhardPos = Ke * AlfaPos;
-	CekhardNeg = Ke * AlfaNeg;
-	Cekexcurs = Ke;
-	CekP = 0.0;
-	
-	Cflagdeg = 0;
-	
-    return 0;
+  // Initialize state variables	
+  dP=CdP=0.0;
+  fP=CfP=0.0;
+  ek=Cek=0.0;
+  RSE=CRSE=0.0; 
+  
+  Unl=CUnl=1;
+  kon=Ckon=0;
+  flagStop=CflagStop=0;
+  
+  dmax = My_pos/Ke;
+  dmin = My_neg/Ke;
+  fmax = My_pos;
+  fmin = My_neg;
+  
+  fyPos = My_pos;
+  fyNeg = My_neg;
+  
+  dlstPos = My_pos/Ke;
+  dlstNeg = My_neg/Ke;
+  
+  flstPos = My_pos;
+  flstNeg = My_neg;
+  
+  sn=Csn=0.0;
+  sp=Csp=0.0;
+  
+  // Energy Variables
+  Enrgc=CEnrgc=0.0;
+  Enrgtot=CEnrgtot=0.0;
+  
+  Enrgts = Ls * My_pos;
+  Enrgtd = Ld * My_pos;
+  Enrgtk = 2.0 * Lk * My_pos;
+  Enrgta = La * My_pos;
+  
+  fPeakPos = My_pos + ekhardPos * ThetaPpos;
+  fPeakNeg = My_neg + ekhardNeg * (-ThetaPneg);
+  
+  capSlopePos = -fPeakPos/(ThetaPCpos*Ke);
+  capSlopeNeg = fPeakNeg/(ThetaPCneg*Ke);
+  
+  fCapRefPos = -capSlopePos * Ke * (ThetaPpos + My_pos/Ke) + fPeakPos;
+  fCapRefNeg = -capSlopeNeg * Ke * (-ThetaPneg + My_neg/Ke) + fPeakNeg;
+  
+  ekunload = Ke;
+  
+  cpPos = My_pos/Ke + ThetaPpos;
+  cpNeg = My_neg/Ke + (-ThetaPneg);
+  
+  ekhardPos = Ke * AlfaPos;
+  ekhardNeg = Ke * AlfaNeg;
+  ekexcurs = Ke;
+  ekP = 0.0;
+  
+  flagdeg = 0;
+  
+  Cstrain=0.0;
+  Cstress = 0.0;
+  Tangent=Ctangent=ek;
+  
+  Cdmax = My_pos/Ke;
+  Cdmin = My_neg/Ke;
+  Cfmax = My_pos;
+  Cfmin = My_neg;
+  
+  CfyPos = My_pos;
+  CfyNeg = My_neg;
+  
+  CdlstPos = My_pos/Ke;
+  CdlstNeg = My_neg/Ke;
+  
+  CflstPos = My_pos;
+  CflstNeg = My_neg;
+  
+  CEnrgts = Ls * My_pos;
+  CEnrgtd = Ld * My_pos;
+  CEnrgtk = 2.0 * Lk * My_pos;
+  CEnrgta = La * My_pos;
+  
+  CfPeakPos = My_pos + ekhardPos * ThetaPpos;
+  CfPeakNeg = My_neg + ekhardNeg * (-ThetaPneg);
+  
+  CcapSlopePos = -fPeakPos/(ThetaPCpos*Ke);
+  CcapSlopeNeg = fPeakNeg/(ThetaPCneg*Ke);
+  
+  CfCapRefPos = -capSlopePos * Ke * (ThetaPpos + My_pos/Ke) + fPeakPos;
+  CfCapRefNeg = -capSlopeNeg * Ke * (-ThetaPneg + My_neg/Ke) + fPeakNeg;
+  
+  Cekunload = Ke;
+  
+  CcpPos = My_pos/Ke + ThetaPpos;
+  CcpNeg = My_neg/Ke + (-ThetaPneg);
+  
+  CekhardPos = Ke * AlfaPos;
+  CekhardNeg = Ke * AlfaNeg;
+  Cekexcurs = Ke;
+  CekP = 0.0;
+  
+  Cflagdeg = 0;
+  
+  return 0;
 }
 
 UniaxialMaterial *
 ModIMKPeakOriented::getCopy(void)
 {
-    ModIMKPeakOriented *theCopy = new ModIMKPeakOriented(this->getTag(), Ke, AlfaPos, AlfaNeg, My_pos, My_neg, Ls, Ld, La, Lk, 
-														 Cs, Cd, Ca, Ck, ThetaPpos, ThetaPneg,ThetaPCpos, ThetaPCneg, ResfacPos, ResfacNeg,FracDispPos, FracDispNeg,DPos, DNeg);
+  ModIMKPeakOriented *theCopy = new ModIMKPeakOriented(this->getTag(), Ke, AlfaPos, AlfaNeg, My_pos, My_neg, Ls, Ld, La, Lk, 
+						       Cs, Cd, Ca, Ck, ThetaPpos, ThetaPneg,ThetaPCpos, ThetaPCneg, ResfacPos, ResfacNeg,FracDispPos, FracDispNeg,DPos, DNeg);
     // Converged state variables
-	theCopy->Cstrain = Cstrain;
-	theCopy->Cstress = Cstress;
-	theCopy->Ctangent = Ctangent;
-	
-	theCopy->CdP = CdP;
-	theCopy->CfP = CfP;
-	theCopy->Cek = ek;
-	
-	theCopy->CUnl = CUnl;
-	theCopy->Ckon = Ckon;
-	theCopy->CflagStop = CflagStop;
-	theCopy->Cflagdeg = Cflagdeg;
-	
-	theCopy->Cdmax = Cdmax;
-	theCopy->Cdmin = Cdmin;
-	theCopy->Cfmax = Cfmax;
-	theCopy->Cfmin = Cfmin;
-	
-	theCopy->CfyPos = CfyPos;
-	theCopy->CfyNeg = CfyNeg;
-	
-	theCopy->CdlstPos = CdlstPos;
-	theCopy->CdlstNeg = CdlstNeg;
-	theCopy->CflstPos = CflstPos;
-	theCopy->CflstNeg = CflstNeg;
-	
-	theCopy->Csn= Csn;
-	theCopy->Csp= Csp;
-	
-	// Energy Variables
-	theCopy->CEnrgc = CEnrgc;
-	theCopy->CEnrgtot = CEnrgtot;
-	
-	theCopy->CEnrgts = CEnrgts;
-	theCopy->CEnrgtd = CEnrgtd;
-	theCopy->CEnrgtk = CEnrgtk;
-	theCopy->CEnrgta = CEnrgta;
-
-	theCopy->CfPeakPos = CfPeakPos;
-	theCopy->CfPeakNeg = CfPeakNeg;
-	
-	theCopy->CcapSlopePos = CcapSlopePos;
-	theCopy->CcapSlopeNeg = CcapSlopeNeg;
-		
-	theCopy->CfCapRefPos = CfCapRefPos;
-	theCopy->CfCapRefNeg = CfCapRefNeg;
-	
-	theCopy->Cekunload = Cekunload;
-	
-	theCopy->CcpNeg = CcpNeg;
-	theCopy->CcpPos = CcpPos;
-	
-	theCopy->CekhardPos = CekhardPos;
-	theCopy->CekhardNeg = CekhardNeg;
-	theCopy->Cekexcurs = Cekexcurs;
-	theCopy->CekP = CekP;
-	
-	// Trial state variables
-    theCopy->dP = dP;
-	theCopy->fP = fP;
-	theCopy->ek = ek;
-		
-	theCopy->Unl = Unl;
-	theCopy->kon = kon;
-	theCopy->flagStop = flagStop;
-	theCopy->Cflagdeg = Cflagdeg;
-	
-	theCopy->dmax = dmax;
-	theCopy->dmin = dmin;
-	theCopy->fmax = fmax;
-	theCopy->fmin = fmin;
-	
-	theCopy->fyPos = fyPos;
-	theCopy->fyNeg = fyNeg;
-	
-	theCopy->dlstPos = dlstPos;
-	theCopy->dlstNeg = dlstNeg;
-	theCopy->flstPos = flstPos;
-	theCopy->flstNeg = flstNeg;
-	
-	theCopy->sn= sn;
-	theCopy->sp= sp;
-	
-	// Energy Variables
-	theCopy->Enrgc = Enrgc;
-	theCopy->Enrgtot = Enrgtot;
-
-	theCopy->Enrgts = Enrgts;
-	theCopy->Enrgtd = Enrgtd;
-	theCopy->Enrgtk = Enrgtk;
-	theCopy->Enrgta = Enrgta;
-
-	theCopy->fPeakPos = fPeakPos;
-	theCopy->fPeakNeg = fPeakNeg;	
-	
-	theCopy->capSlopePos = capSlopePos;
-	theCopy->capSlopeNeg = capSlopeNeg;
-		
-	theCopy->fCapRefPos = fCapRefPos;
-	theCopy->fCapRefNeg = fCapRefNeg;
-	
-	theCopy->ekunload = ekunload;
-	
-	theCopy->cpNeg = cpNeg;
-	theCopy->cpPos = cpPos;
-	
-	theCopy->ekhardPos = ekhardPos;
-	theCopy->ekhardNeg = ekhardNeg;
-	theCopy->ekexcurs = ekexcurs;
-	theCopy->ekP = ekP;
-
-	theCopy->RSE=RSE;
-	theCopy->CRSE=CRSE; 
-	
-    return theCopy;
+  theCopy->Cstrain = Cstrain;
+  theCopy->Cstress = Cstress;
+  theCopy->Ctangent = Ctangent;
+  
+  theCopy->CdP = CdP;
+  theCopy->CfP = CfP;
+  theCopy->Cek = ek;
+  
+  theCopy->CUnl = CUnl;
+  theCopy->Ckon = Ckon;
+  theCopy->CflagStop = CflagStop;
+  theCopy->Cflagdeg = Cflagdeg;
+  
+  theCopy->Cdmax = Cdmax;
+  theCopy->Cdmin = Cdmin;
+  theCopy->Cfmax = Cfmax;
+  theCopy->Cfmin = Cfmin;
+  
+  theCopy->CfyPos = CfyPos;
+  theCopy->CfyNeg = CfyNeg;
+  
+  theCopy->CdlstPos = CdlstPos;
+  theCopy->CdlstNeg = CdlstNeg;
+  theCopy->CflstPos = CflstPos;
+  theCopy->CflstNeg = CflstNeg;
+  
+  theCopy->Csn= Csn;
+  theCopy->Csp= Csp;
+  
+  // Energy Variables
+  theCopy->CEnrgc = CEnrgc;
+  theCopy->CEnrgtot = CEnrgtot;
+  
+  theCopy->CEnrgts = CEnrgts;
+  theCopy->CEnrgtd = CEnrgtd;
+  theCopy->CEnrgtk = CEnrgtk;
+  theCopy->CEnrgta = CEnrgta;
+  
+  theCopy->CfPeakPos = CfPeakPos;
+  theCopy->CfPeakNeg = CfPeakNeg;
+  
+  theCopy->CcapSlopePos = CcapSlopePos;
+  theCopy->CcapSlopeNeg = CcapSlopeNeg;
+  
+  theCopy->CfCapRefPos = CfCapRefPos;
+  theCopy->CfCapRefNeg = CfCapRefNeg;
+  
+  theCopy->Cekunload = Cekunload;
+  
+  theCopy->CcpNeg = CcpNeg;
+  theCopy->CcpPos = CcpPos;
+  
+  theCopy->CekhardPos = CekhardPos;
+  theCopy->CekhardNeg = CekhardNeg;
+  theCopy->Cekexcurs = Cekexcurs;
+  theCopy->CekP = CekP;
+  
+  // Trial state variables
+  theCopy->dP = dP;
+  theCopy->fP = fP;
+  theCopy->ek = ek;
+  
+  theCopy->Unl = Unl;
+  theCopy->kon = kon;
+  theCopy->flagStop = flagStop;
+  theCopy->Cflagdeg = Cflagdeg;
+  
+  theCopy->dmax = dmax;
+  theCopy->dmin = dmin;
+  theCopy->fmax = fmax;
+  theCopy->fmin = fmin;
+  
+  theCopy->fyPos = fyPos;
+  theCopy->fyNeg = fyNeg;
+  
+  theCopy->dlstPos = dlstPos;
+  theCopy->dlstNeg = dlstNeg;
+  theCopy->flstPos = flstPos;
+  theCopy->flstNeg = flstNeg;
+  
+  theCopy->sn= sn;
+  theCopy->sp= sp;
+  
+  // Energy Variables
+  theCopy->Enrgc = Enrgc;
+  theCopy->Enrgtot = Enrgtot;
+  
+  theCopy->Enrgts = Enrgts;
+  theCopy->Enrgtd = Enrgtd;
+  theCopy->Enrgtk = Enrgtk;
+  theCopy->Enrgta = Enrgta;
+  
+  theCopy->fPeakPos = fPeakPos;
+  theCopy->fPeakNeg = fPeakNeg;	
+  
+  theCopy->capSlopePos = capSlopePos;
+  theCopy->capSlopeNeg = capSlopeNeg;
+  
+  theCopy->fCapRefPos = fCapRefPos;
+  theCopy->fCapRefNeg = fCapRefNeg;
+  
+  theCopy->ekunload = ekunload;
+  
+  theCopy->cpNeg = cpNeg;
+  theCopy->cpPos = cpPos;
+  
+  theCopy->ekhardPos = ekhardPos;
+  theCopy->ekhardNeg = ekhardNeg;
+  theCopy->ekexcurs = ekexcurs;
+  theCopy->ekP = ekP;
+  
+  theCopy->RSE=RSE;
+  theCopy->CRSE=CRSE; 
+  
+  return theCopy;
 }
 
 int 
@@ -956,95 +969,95 @@ ModIMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
   static Vector data(67);
-    data(0) = this->getTag();
-
+  data(0) = this->getTag();
+  
   // Material properties
-    data(1) = Ke;
-    data(2) = AlfaPos;
-    data(3) = AlfaNeg;
-    data(4) = My_pos;
-    data(5) = My_neg;
-	data(6) = Ls;
-	data(7) = Ld;
-	data(8) = La;
-	data(9) = Lk;
-	data(10) = Cs;
-	data(11) = Cd;
-	data(12) = Ca;
-	data(13) = Ck;
-	data(14) = ThetaPpos;
-	data(15) = ThetaPneg;
-	data(16) = ThetaPCpos;
-	data(17) = ThetaPCneg;
-	data(18) = ResfacPos;
-	data(19) = ResfacNeg;
-	data(20) = FracDispPos;
-	data(21) = FracDispNeg;
-	data(22) = DPos;
-	data(23) = DNeg;
+  data(1) = Ke;
+  data(2) = AlfaPos;
+  data(3) = AlfaNeg;
+  data(4) = My_pos;
+  data(5) = My_neg;
+  data(6) = Ls;
+  data(7) = Ld;
+  data(8) = La;
+  data(9) = Lk;
+  data(10) = Cs;
+  data(11) = Cd;
+  data(12) = Ca;
+  data(13) = Ck;
+  data(14) = ThetaPpos;
+  data(15) = ThetaPneg;
+  data(16) = ThetaPCpos;
+  data(17) = ThetaPCneg;
+  data(18) = ResfacPos;
+  data(19) = ResfacNeg;
+  data(20) = FracDispPos;
+  data(21) = FracDispNeg;
+  data(22) = DPos;
+  data(23) = DNeg;
   
   // State variables from last converged state
-	data(24) = Cstrain;
-	data(25) = Cstress;
-	data(26) = Ctangent;
- 
-	data(27) = CdP;
-	data(28) = CfP;
-	data(29) = Cek;
-	
-//  Variables 
-	data(30) = CUnl;
-	data(31) = Ckon;
-	data(32) = CflagStop;
-	data(33) = Cdmax;
-	data(34) = Cdmin;
-	data(35) = Cfmax;
-	data(36) = Cfmin;
-
-	data(37) = CfyPos;
-	data(38) = CfyNeg;
-
-	data(39) = CdlstPos;
-	data(40) = CdlstNeg;
-
-	data(41) = Csn;
-	data(42) = Csp;
-	
-	// Energy Variables
-	data(43) = CEnrgc;
-	data(44) = CEnrgtot;
-	
-	data(45) = CEnrgts;
-	data(46) = CEnrgtd;
-	data(47) = CEnrgtk;
-	data(48) = CEnrgta;
-
-	data(49) = CfPeakPos;
-	data(50) = CfPeakNeg;
-
-	data(51) = CcapSlopePos;
-	data(52) = CcapSlopeNeg;
-	
-	data(53) = CfCapRefPos;
-	data(54) = CfCapRefNeg;
-	
-	data(55) = Cekunload;
-	
-	data(56) = CcpNeg;
-	data(57) = CcpPos;
-	
-	data(58) = CekhardPos;
-	data(59) = CekhardNeg;
-	data(60) = Cekexcurs;
-	data(61) = CekP;
-
-	data(62) = CflstPos;
-	data(63) = CflstNeg;
-	data(64) = Cflagdeg;
-	
-	data(65) = RSE;
-	data(66) = CRSE;
-	
+  data(24) = Cstrain;
+  data(25) = Cstress;
+  data(26) = Ctangent;
+  
+  data(27) = CdP;
+  data(28) = CfP;
+  data(29) = Cek;
+  
+  //  Variables 
+  data(30) = CUnl;
+  data(31) = Ckon;
+  data(32) = CflagStop;
+  data(33) = Cdmax;
+  data(34) = Cdmin;
+  data(35) = Cfmax;
+  data(36) = Cfmin;
+  
+  data(37) = CfyPos;
+  data(38) = CfyNeg;
+  
+  data(39) = CdlstPos;
+  data(40) = CdlstNeg;
+  
+  data(41) = Csn;
+  data(42) = Csp;
+  
+  // Energy Variables
+  data(43) = CEnrgc;
+  data(44) = CEnrgtot;
+  
+  data(45) = CEnrgts;
+  data(46) = CEnrgtd;
+  data(47) = CEnrgtk;
+  data(48) = CEnrgta;
+  
+  data(49) = CfPeakPos;
+  data(50) = CfPeakNeg;
+  
+  data(51) = CcapSlopePos;
+  data(52) = CcapSlopeNeg;
+  
+  data(53) = CfCapRefPos;
+  data(54) = CfCapRefNeg;
+  
+  data(55) = Cekunload;
+  
+  data(56) = CcpNeg;
+  data(57) = CcpPos;
+  
+  data(58) = CekhardPos;
+  data(59) = CekhardNeg;
+  data(60) = Cekexcurs;
+  data(61) = CekP;
+  
+  data(62) = CflstPos;
+  data(63) = CflstNeg;
+  data(64) = Cflagdeg;
+  
+  data(65) = RSE;
+  data(66) = CRSE;
+  
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
     opserr << "ModIMKPeakOriented::sendSelf() - failed to send data\n";
@@ -1066,92 +1079,92 @@ ModIMKPeakOriented::recvSelf(int cTag, Channel &theChannel,
   }
   else {
     this->setTag((int)data(0));
-	// Material properties
-	  Ke = data(1);
-	  AlfaPos = data(2);
-      AlfaNeg = data(3);
-      My_pos = data(4);
-	  My_neg = data(5);
-	  Ls = data(6);
-	  Ld = data(7);
-	  La = data(8);
-	  Lk = data(9);
-	  Cs = data(10);
-	  Cd = data(11);
-	  Ca = data(12);
-	  Ck = data(13);
-	  ThetaPpos = data(14);
-	  ThetaPneg = data(15);
-	  ThetaPCpos = data(16);
-	  ThetaPCneg = data(17);
-	  ResfacPos = data(18);
-	  ResfacNeg = data(19);
-	  FracDispPos = data(20);
-	  FracDispNeg = data(21);
-	  DPos = data(22);
-	  DNeg = data(23);
-	// State variables from last converged state 	
-	  Cstrain = data(24);
-	  Cstress = data(25);
-	  Ctangent = data(26);
-	  
-	  CdP = data(27);
-	  CfP = data(28);
-	  Cek = data(29);
-	  
-	  CUnl = data(30);
-	  Ckon = data(31);
-	  CflagStop = data(32);
-	  
-	  Cdmax = data(33);
-	  Cdmin = data(34);
-	  Cfmax = data(35);
-	  Cfmin = data(36);
-	  
-	  CfyPos = data(37);
-	  CfyNeg = data(38);
-	  
-	  CdlstPos = data(39);
-	  CdlstNeg = data(40);
-	  
-	  Csn = data(41);
-	  Csp = data(42);
-	  
-	  // Energy Variables
-	  CEnrgc = data(43);
-	  CEnrgtot = data(44);
-	  
-	  CEnrgts = data(45);
-	  CEnrgtd = data(46);
-	  CEnrgtk = data(47);
-	  CEnrgta = data(48);
-	  
-	  CfPeakPos = data(49);
-	  CfPeakNeg = data(50);
-
-	  CcapSlopePos = data(51);
-	  CcapSlopeNeg = data(52);
-	  	  
-	  CfCapRefPos = data(53);
-	  CfCapRefNeg = data(54);
-	  
-	  Cekunload = data(55);
-	  
-	  CcpNeg = data(56);
-	  CcpPos = data(57);
-	  
-	  CekhardPos = data(58);
-	  CekhardNeg = data(59);
-	  Cekexcurs = data(60);
-      CekP = data(61);
-	  
-	  CflstPos = data(62);
-	  CflstNeg = data(63);
-	  Cflagdeg = data(64);
-	  RSE = data(65);
-	  CRSE = data(66);
-  }
+    // Material properties
+    Ke = data(1);
+    AlfaPos = data(2);
+    AlfaNeg = data(3);
+    My_pos = data(4);
+    My_neg = data(5);
+    Ls = data(6);
+    Ld = data(7);
+    La = data(8);
+    Lk = data(9);
+    Cs = data(10);
+    Cd = data(11);
+    Ca = data(12);
+    Ck = data(13);
+    ThetaPpos = data(14);
+    ThetaPneg = data(15);
+    ThetaPCpos = data(16);
+    ThetaPCneg = data(17);
+    ResfacPos = data(18);
+    ResfacNeg = data(19);
+    FracDispPos = data(20);
+    FracDispNeg = data(21);
+    DPos = data(22);
+    DNeg = data(23);
+    // State variables from last converged state 	
+    Cstrain = data(24);
+    Cstress = data(25);
+    Ctangent = data(26);
     
+    CdP = data(27);
+    CfP = data(28);
+    Cek = data(29);
+    
+    CUnl = data(30);
+    Ckon = data(31);
+    CflagStop = data(32);
+    
+    Cdmax = data(33);
+    Cdmin = data(34);
+    Cfmax = data(35);
+    Cfmin = data(36);
+    
+    CfyPos = data(37);
+    CfyNeg = data(38);
+    
+    CdlstPos = data(39);
+    CdlstNeg = data(40);
+    
+    Csn = data(41);
+    Csp = data(42);
+    
+    // Energy Variables
+    CEnrgc = data(43);
+    CEnrgtot = data(44);
+    
+    CEnrgts = data(45);
+    CEnrgtd = data(46);
+    CEnrgtk = data(47);
+    CEnrgta = data(48);
+    
+    CfPeakPos = data(49);
+    CfPeakNeg = data(50);
+    
+    CcapSlopePos = data(51);
+    CcapSlopeNeg = data(52);
+    
+    CfCapRefPos = data(53);
+    CfCapRefNeg = data(54);
+    
+    Cekunload = data(55);
+    
+    CcpNeg = data(56);
+    CcpPos = data(57);
+    
+    CekhardPos = data(58);
+    CekhardNeg = data(59);
+    Cekexcurs = data(60);
+    CekP = data(61);
+    
+    CflstPos = data(62);
+    CflstNeg = data(63);
+    Cflagdeg = data(64);
+    RSE = data(65);
+    CRSE = data(66);
+  }
+  
   return res;
 }
 
@@ -1163,38 +1176,37 @@ ModIMKPeakOriented::Print(OPS_Stream &s, int flag)
     s << "  AlfaPos: " << AlfaPos << endln;
     s << "  AlfaNeg: " << AlfaNeg << endln;
     s << "  My_pos: " << My_pos << endln;
-	s << "  My_neg: " << My_neg << endln;
-	s << "  Ls: " << Ls << endln;
-	s << "  Ld: " << Ld << endln;
-	s << "  La: " << La << endln;
-	s << "  Lk: " << Lk << endln;
-	s << "  Cs: " << Cs << endln;
-	s << "  Cd: " << Cd << endln;
-	s << "  Ca: " << Ca << endln;
-	s << "  Ck: " << Ck << endln;
-	s << "  ThetaPpos: " << ThetaPpos << endln;
-	s << "  ThetaPneg: " << ThetaPneg << endln;
-	s << "  ThetaPCpos: " << ThetaPCpos << endln;
-	s << "  ThetaPCneg: " << ThetaPCneg << endln;
-	s << "  ResfacPos: " << ResfacPos << endln;
-	s << "  ResfacNeg: " << ResfacNeg << endln;
-	s << "  FracDispPos: " << FracDispPos << endln;
-	s << "  FracDispNeg: " << FracDispNeg << endln;
-	s << "  DPos: " << DPos << endln;
-	s << "  DNeg: " << DNeg << endln;
+    s << "  My_neg: " << My_neg << endln;
+    s << "  Ls: " << Ls << endln;
+    s << "  Ld: " << Ld << endln;
+    s << "  La: " << La << endln;
+    s << "  Lk: " << Lk << endln;
+    s << "  Cs: " << Cs << endln;
+    s << "  Cd: " << Cd << endln;
+    s << "  Ca: " << Ca << endln;
+    s << "  Ck: " << Ck << endln;
+    s << "  ThetaPpos: " << ThetaPpos << endln;
+    s << "  ThetaPneg: " << ThetaPneg << endln;
+    s << "  ThetaPCpos: " << ThetaPCpos << endln;
+    s << "  ThetaPCneg: " << ThetaPCneg << endln;
+    s << "  ResfacPos: " << ResfacPos << endln;
+    s << "  ResfacNeg: " << ResfacNeg << endln;
+    s << "  FracDispPos: " << FracDispPos << endln;
+    s << "  FracDispNeg: " << FracDispNeg << endln;
+    s << "  DPos: " << DPos << endln;
+    s << "  DNeg: " << DNeg << endln;
 }
 
 // Positive and Negative Envelope SubRoutines
 
 void 
-ModIMKPeakOriented::envelPosCap2(double fy,double alphaPos,double alphaCap,double cpDsp,double &d,
-				 double &f, double &ek, double elstk,double fyieldPos,double Resfac, 
-				 double fracDisp, int &flagStop)
+ModIMKPeakOriented::envelPosCap2(double fy,double alphaPos,double alphaCap,double cpDsp,double& d,
+					double& f, double& ek, double elstk,double fyieldPos,double Resfac, double fracDisp, int& flagStop)
 {
+		
   double dy = fy/elstk;
-	
-  //  double Res,rcap,dres;
-  double Res,rcap;
+  
+  double Res,rcap; // dres;
   if(dy<=cpDsp) {
     Res = Resfac*fyieldPos;
     rcap = fy+alphaPos*elstk*(cpDsp-dy);
@@ -1251,14 +1263,12 @@ ModIMKPeakOriented::envelPosCap2(double fy,double alphaPos,double alphaCap,doubl
 }
 
 void
-ModIMKPeakOriented::envelNegCap2(double fy,double alphaNeg,double alphaCap,double cpDsp,double &d,
-				 double &f, double &ek, double elstk, double fyieldNeg,double Resfac, 
-				 double fracDisp, int &flagStop)
+ModIMKPeakOriented::envelNegCap2(double fy,double alphaNeg,double alphaCap,double cpDsp,double& d,
+				double& f, double& ek, double elstk, double fyieldNeg,double Resfac, double fracDisp, int& flagStop)
 {
-  
+
   double dy = fy/elstk;
-  //  double Res,rcap,dres;
-  double Res,rcap;
+  double Res,rcap; // dres;
   
   if(dy>=cpDsp){ 
     
@@ -1319,30 +1329,30 @@ ModIMKPeakOriented::envelNegCap2(double fy,double alphaNeg,double alphaCap,doubl
 
 
 Response *
-ModIMKPeakOriented::setResponse (const char **argv, int argc, 
-				 OPS_Stream &theOutputStream) 
+ModIMKPeakOriented::setResponse (const char **argv, int argc,
+                                 OPS_Stream &theOutputStream)
 {
   //by default, See if the response is one of the defaults
   Response *theResponse = UniaxialMaterial::setResponse(argv, argc, theOutputStream);
-
+  
   if (theResponse != 0)      
     return theResponse;
-
+  
   if ((strcmp(argv[0],"dres") == 0)) {
     theOutputStream.tag("ResponseType", "dres");
     theResponse =  new MaterialResponse(this, 101, dres);
   }
-
+  
   return theResponse;
 
 }
 
-int 
+int
 ModIMKPeakOriented::getResponse (int responseID, Information &matInformation)
 {
   if (responseID == 101) {
     matInformation.setDouble(dres);
-  } else 
+  } else
     return UniaxialMaterial::getResponse(responseID, matInformation);
   return 0;
 }

@@ -38,20 +38,20 @@ class ModIMKPeakOriented : public UniaxialMaterial
 {
   public:
     ModIMKPeakOriented(int tag, double Ke, double AlfaPos, double AlfaNeg, double My_pos, double My_neg, 
-					   double Ls, double Ld, double La, double Lk, double Cs, double Cd, double Ca, double Ck,
-					   double ThetaPpos, double ThetaPneg, double ThetaPCpos, double ThetaPCneg,
-					   double ResfacPos, double ResfacNeg, double FracDispPos, double FracDispNeg,
-					   double DPos, double DNeg);    
+		       double Ls, double Ld, double La, double Lk, double Cs, double Cd, double Ca, double Ck,
+		       double ThetaPpos, double ThetaPneg, double ThetaPCpos, double ThetaPCneg,
+		       double ResfacPos, double ResfacNeg, double FracDispPos, double FracDispNeg,
+		       double DPos, double DNeg);    
     ModIMKPeakOriented(); 
     ~ModIMKPeakOriented();
-
+    
     const char *getClassType(void) const {return "ModIMKPeakOriented";};
-
+    
     int setTrialStrain(double strain, double strainRate = 0.0); 
     double getStrain(void); 
     double getStrainRate(void);
     double getStress(void);
-
+    
     double getTangent(void);
     double getInitialTangent(void);
     double getDampTangent(void);
@@ -68,16 +68,14 @@ class ModIMKPeakOriented : public UniaxialMaterial
 		 FEM_ObjectBroker &theBroker);    
     
     void Print(OPS_Stream &s, int flag =0);
-
-    Response *setResponse (const char **argv, int argc, 
-			   OPS_Stream &theOutputStream);
-
+    Response *setResponse (const char **argv, int argc, OPS_Stream &theOutputStream);
     int getResponse (int responseID, Information &matInformation);    
+
     
   protected:
     
   private:
-    
+	
     // Subroutines to be used inside the material
     void envelPosCap2(double fy, double alphaPos, double alphaCap, double cpDsp, double& d,
 		      double& f, double& ek, double elstk, double fyieldPos, double Resfac,
