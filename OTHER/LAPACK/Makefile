@@ -1,4 +1,3 @@
- 
 include ../../Makefile.def
 
 DOBJ  = dgeqr2.o dlabad.o dlacon.o dlacpy.o dladiv.o dlae2.o dlaev2.o\
@@ -16,7 +15,13 @@ DOBJ  = dgeqr2.o dlabad.o dlacon.o dlacpy.o dladiv.o dlae2.o dlaev2.o\
 	dgetri.o dtrtri.o dtrti2.o dgebak.o dgebal.o dgeev.o\
 	dgehd2.o dgehrd.o dhseqr.o dlahrd.o \
 	dorg2r.o dorghr.o dorgqr.o dpotrf.o dpotrs.o dtrtrs.o \
-	dggbak.o dggbal.o dggev.o dgghrd.o dhgeqz.o dlag2.o dlasv2.o dtgevc.o
+	dggbak.o dggbal.o dggev.o dgghrd.o dhgeqz.o dlag2.o dlasv2.o dtgevc.o \
+	dgesvxx.o dla_gerfsx_extended.o dlascl2.o dlaqge.o dgeequb.o dgerfsx.o \
+	chla_transtype.o dla_gercond.o dla_wwaddw.o ilaprec.o ilatrans.o dgecon.o \
+	dla_geamv.o dlacn2.o dla_lin_berr.o drscl.o dlatrs.o dla_rpvgrw.o dla_gerpvgrw.o \
+	BLAS_dgemv2_x.o BLAS_dgemv2_x-f2c.o \
+	BLAS_dgemv_x.o BLAS_dgemv_x-f2c.o BLAS_error.o BLAS_error.o
+
 
 
 
