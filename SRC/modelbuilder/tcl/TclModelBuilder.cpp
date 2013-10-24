@@ -2992,8 +2992,6 @@ TclCommand_addEqualDOF_MP (ClientData clientData, Tcl_Interp *interp,
 	  Ccr (j,j) = 1.0;
         }
 
-
-
         // Create the multi-point constraint
         MP_Constraint *theMP = new MP_Constraint (RnodeID, CnodeID, Ccr, rcDOF, rcDOF);
         if (theMP == 0) {
@@ -3009,6 +3007,10 @@ TclCommand_addEqualDOF_MP (ClientData clientData, Tcl_Interp *interp,
 	  delete theMP;
 	  return TCL_ERROR;
         }
+
+	char buffer[80];
+	sprintf(buffer, "%d", theMP->getTag());
+	Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
         return TCL_OK;
 }
