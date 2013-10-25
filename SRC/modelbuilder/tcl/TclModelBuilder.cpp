@@ -2401,6 +2401,7 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }
 
+  char buffer[80];
   // get the fixity condition and add the constraint if fixed
   for (int i=0; i<ndf; i++) {
     int theFixity;
@@ -2426,6 +2427,10 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
 	  delete theSP;
 	  return TCL_ERROR;
 	}
+
+
+	sprintf(buffer, "%d ", theSP->getTag());
+        Tcl_AppendResult(interp, buffer, NULL);
       }
     }
   }
