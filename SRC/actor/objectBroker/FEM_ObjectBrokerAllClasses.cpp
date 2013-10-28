@@ -58,6 +58,7 @@
 
 // uniaxial material model header files
 #include <ElasticMaterial.h>
+#include <ElasticMultiLinear.h>
 #include <Elastic2Material.h>
 #include <ElasticPPMaterial.h>
 #include <ParallelMaterial.h>
@@ -895,6 +896,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	     
 	case MAT_TAG_ElasticPPMaterial:  
 	     return new ElasticPPMaterial(); // values set in recvSelf
+
+	case MAT_TAG_ElasticMultiLinear:  
+	     return new ElasticMultiLinear(); // values set in recvSelf
 	     	     
 	case MAT_TAG_ParallelMaterial:  
 	     return new ParallelMaterial();
