@@ -737,7 +737,8 @@ int Tcl_InterpOpenSeesObjCmd(ClientData clientData,  Tcl_Interp *interp, int obj
 
 
 int OpenSeesAppInit(Tcl_Interp *interp) {
-
+  
+  ops_TheActiveDomain = &theDomain;
 
   //
   // redo puts command so we can capture puts into std:cerr
