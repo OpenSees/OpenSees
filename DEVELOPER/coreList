@@ -11,6 +11,7 @@ SRC/handler/BinaryFileStream.h
 SRC/actor/channel/Channel.cpp
 SRC/actor/channel/Channel.h
 SRC/renderer/ColorMap.h
+SRC/renderer/PlainMap.h
 SRC/analysis/handler/ConstraintHandler.cpp
 SRC/analysis/handler/ConstraintHandler.h
 SRC/analysis/dof_grp/DOF_Group.cpp
