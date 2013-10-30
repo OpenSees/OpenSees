@@ -2374,6 +2374,10 @@ SRC/element/elasticBeamColumn/ElasticBeam2d.cpp -text
 SRC/element/elasticBeamColumn/ElasticBeam2d.h -text
 SRC/element/elasticBeamColumn/ElasticBeam3d.cpp -text
 SRC/element/elasticBeamColumn/ElasticBeam3d.h -text
+SRC/element/elasticBeamColumn/ElasticTimoshenkoBeam2d.cpp -text
+SRC/element/elasticBeamColumn/ElasticTimoshenkoBeam2d.h -text
+SRC/element/elasticBeamColumn/ElasticTimoshenkoBeam3d.cpp -text
+SRC/element/elasticBeamColumn/ElasticTimoshenkoBeam3d.h -text
 SRC/element/elasticBeamColumn/Makefile -text
 SRC/element/elasticBeamColumn/ModElasticBeam2d.cpp -text
 SRC/element/elasticBeamColumn/ModElasticBeam2d.h -text
@@ -2386,9 +2390,12 @@ SRC/element/elastomericBearing/ElastomericBearingPlasticity2d.cpp -text
 SRC/element/elastomericBearing/ElastomericBearingPlasticity2d.h -text
 SRC/element/elastomericBearing/ElastomericBearingPlasticity3d.cpp -text
 SRC/element/elastomericBearing/ElastomericBearingPlasticity3d.h -text
+SRC/element/elastomericBearing/ElastomericBearingUFRP2d.cpp -text
+SRC/element/elastomericBearing/ElastomericBearingUFRP2d.h -text
 SRC/element/elastomericBearing/Makefile -text
 SRC/element/elastomericBearing/TclElastomericBearingBoucWenCommand.cpp -text
 SRC/element/elastomericBearing/TclElastomericBearingPlasticityCommand.cpp -text
+SRC/element/elastomericBearing/TclElastomericBearingUFRPCommand.cpp -text
 SRC/element/feap/Makefile -text
 SRC/element/feap/TclFeapElementCommand.cpp -text
 SRC/element/feap/dummyFeap.f -text

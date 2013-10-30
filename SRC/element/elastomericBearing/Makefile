@@ -4,8 +4,10 @@ OBJS = ElastomericBearingPlasticity2d.o \
 	   ElastomericBearingPlasticity3d.o \
        ElastomericBearingBoucWen2d.o \
        ElastomericBearingBoucWen3d.o \
+       ElastomericBearingUFRP2d.o \
 	   TclElastomericBearingPlasticityCommand.o \
-       TclElastomericBearingBoucWenCommand.o
+       TclElastomericBearingBoucWenCommand.o \
+       TclElastomericBearingUFRPCommand.o
 
 # Compilation control
 
