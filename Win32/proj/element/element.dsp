@@ -385,6 +385,22 @@ SOURCE=..\..\..\SRC\element\elasticBeamColumn\ElasticBeam3d.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam2d.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam2d.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam3d.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam3d.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\SRC\element\elasticBeamColumn\TclElasticBeamCommand.cpp
 # End Source File
 # End Group

@@ -391,6 +391,18 @@
 				RelativePath="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam2d.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam2d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam2d.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam3d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam3d.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\elasticBeamColumn\TclElasticBeamCommand.cpp">
 			</File>
 		</Filter>
@@ -919,10 +931,19 @@
 				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearingPlasticity3d.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearingUFRP2d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearingUFRP2d.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingBoucWenCommand.cpp">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingPlasticityCommand.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingUFRPCommand.cpp">
 			</File>
 		</Filter>
 		<Filter
