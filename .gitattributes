@@ -115,6 +115,7 @@ DEVELOPER/core/ObjectBroker.h -text
 DEVELOPER/core/Parameter.cpp -text
 DEVELOPER/core/Parameter.h -text
 DEVELOPER/core/ParameterIter.h -text
+DEVELOPER/core/PlainMap.h -text
 DEVELOPER/core/PlaneStrainMaterial.cpp -text
 DEVELOPER/core/PlaneStrainMaterial.h -text
 DEVELOPER/core/PlaneStressMaterial.cpp -text
