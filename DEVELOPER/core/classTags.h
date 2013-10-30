@@ -184,10 +184,9 @@
 #define MAT_TAG_BraceMaterial                   70	
 #define MAT_TAG_ViscousDamper                   71
 #define MAT_TAG_ConcwBeta                       72
-
-
-#define MAT_TAG_WrapperUniaxialMaterial      73
-#define MAT_TAG_UniaxialJ2Plasticity         74
+#define MAT_TAG_WrapperUniaxialMaterial         73
+#define MAT_TAG_UniaxialJ2Plasticity            74
+#define MAT_TAG_BWBN                            75
 
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
@@ -594,14 +593,18 @@
 #define ELE_TAG_FourNodeQuad02         134
 #define ELE_TAG_cont2d01    	       135	// provisional
 #define ELE_TAG_cont2d02    	       136 	// provisional
-#define ELE_TAG_CST	    	       137
+#define ELE_TAG_CST	    	           137
 #define ELE_TAG_Truss2                 138
 #define ELE_TAG_CorotTruss2            139
 #define ELE_Tag_ZeroLengthImpact3D     140
 #define ELE_TAG_PFEMElement3D          141
 #define ELE_TAG_PFEMElement2DCompressible 142
-#define ELE_TAG_PFEMElement2DBubble    143
-#define ELE_TAG_PFEMElement2D73    144
+#define ELE_TAG_PFEMElement2DBubble       143
+#define ELE_TAG_PFEMElement2D73           144
+#define ELE_TAG_ElasticTimoshenkoBeam2d   145
+#define ELE_TAG_ElasticTimoshenkoBeam3d   146
+#define ELE_TAG_ElastomericBearingUFRP2d  147
+#define ELE_TAG_ElastomericBearingUFRP3d  148
 
 #define ELE_TAG_MultipleShearSpring 6201
 #define ELE_TAG_MultipleNormalSpring 6202

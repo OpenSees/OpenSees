@@ -178,8 +178,8 @@ NDMaterial::setResponse (const char **argv, int argc,
 	output.tag("ResponseType","sigma22");
 	output.tag("ResponseType","sigma33");
 	output.tag("ResponseType","sigma12");
-	output.tag("ResponseType","sigma13");
 	output.tag("ResponseType","sigma23");
+	output.tag("ResponseType","sigma13");
     } else {
       for (int i=0; i<size; i++) 
 	output.tag("ResponseType","UnknownStress");
@@ -199,8 +199,8 @@ NDMaterial::setResponse (const char **argv, int argc,
 	output.tag("ResponseType","eps22");
 	output.tag("ResponseType","eps33");
 	output.tag("ResponseType","eps12");
-	output.tag("ResponseType","eps13");
 	output.tag("ResponseType","eps23");
+	output.tag("ResponseType","eps13");
     } else {
       for (int i=0; i<size; i++) 
 	output.tag("ResponseType","UnknownStrain");

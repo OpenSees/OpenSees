@@ -20,6 +20,8 @@ BOOL APIENTRY DllMain(HANDLE hModule,
 
 OPS_Stream *opserrPtr = 0;
 SimulationInformation *theSimulationInfo = 0;
+Domain *ops_TheActiveDomain = 0;
+
 //double ops_Dt = 0;
 
 typedef int (*OPS_ErrorPtrType)(char *, int);
@@ -67,6 +69,7 @@ OPS_GetInterpPWD_PtrType OPS_GetInterpPWD_Ptr = 0;
 
 extern "C" DllExport
 void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
+		       Domain *theDomain,
                        SimulationInformation *theSimulationInfoPtr,
                        OPS_ErrorPtrType errorFunct,
                        OPS_GetIntInputPtrType getIntInputFunct,
@@ -92,6 +95,7 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
                        OPS_GetInterpPWD_PtrType OPS_GetInterpPWD_Funct)
 {
     opserrPtr = theErrorStreamPtr;
+    ops_TheActiveDomain = theDomain;
     theSimulationInfo = theSimulationInfoPtr;
     OPS_ErrorPtr = errorFunct;
     OPS_GetIntInputPtr = getIntInputFunct;
