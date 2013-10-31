@@ -459,6 +459,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/elasticBeamColumn/ModElasticBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam3d.o \
 	$(FE)/element/elasticBeamColumn/TclElasticBeamCommand.o \
+	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam2d.o \
+	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam3d.o \
 	$(FE)/element/fourNodeQuad/TclFourNodeQuadCommand.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad3d.o \
@@ -489,6 +491,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingBoucWen2d.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingBoucWen3d.o \
 	$(FE)/element/elastomericBearing/TclElastomericBearingBoucWenCommand.o \
+	$(FE)/element/elastomericBearing/ElastomericBearingUFRP2d.o \
+	$(FE)/element/elastomericBearing/TclElastomericBearingUFRPCommand.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingPlasticity2d.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingPlasticity3d.o \
 	$(FE)/element/elastomericBearing/TclElastomericBearingPlasticityCommand.o \
