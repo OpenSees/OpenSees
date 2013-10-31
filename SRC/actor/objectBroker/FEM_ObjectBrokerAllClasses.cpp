@@ -1488,14 +1488,13 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
 	case RECORDER_TAGS_EnvelopeElementRecorder:  
 	     return new EnvelopeElementRecorder();
 
-
         case RECORDER_TAGS_TclFeViewer:  
 	  return 0;
   //           return new TclFeViewer();
 	     
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewRecordr - ";
-	     opserr << " - no ConstraintHandler type exists for class tag ";
+	     opserr << " - no Recorder type exists for class tag ";
 	     opserr << classTag << endln;
 	     return 0;
 	     
