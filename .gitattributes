@@ -526,6 +526,9 @@ EXAMPLES/SmallMP/analysis.tcl -text
 EXAMPLES/SmallMP/model.tcl -text
 EXAMPLES/SmallMP/qTestMP -text
 EXAMPLES/SmallSP/Example.tcl -text
+EXAMPLES/SmallSP/RCsection.tcl -text
+EXAMPLES/SmallSP/RigidFrame3D.tcl -text
+EXAMPLES/SmallSP/tabasFN.txt -text
 EXAMPLES/TclPlaneTruss/Makefile -text
 EXAMPLES/TclPlaneTruss/MyTruss.cpp -text
 EXAMPLES/TclPlaneTruss/MyTruss.h -text
