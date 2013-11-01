@@ -60,6 +60,8 @@ class MachineBroker
     virtual Channel *getMyChannel(void)        =0;
     virtual Channel *getRemoteProcess(void)    =0;
     virtual int freeProcess(Channel *)         =0;
+    
+    void setObjectBroker(FEM_ObjectBroker *theBroker);
 
     /* ************ THE OLD INTERFACE ***************
     virtual int startActor(char *actorProgram, 

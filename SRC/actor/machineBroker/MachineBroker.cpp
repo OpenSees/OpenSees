@@ -238,3 +238,9 @@ MachineBroker::finishedWithActor(Channel *theChannel)
   // if get here .. startActor() not called or subclass override
   return -1;
 }
+
+void
+MachineBroker::setObjectBroker(FEM_ObjectBroker *theBroker)
+{
+  theObjectBroker = theBroker;
+}
