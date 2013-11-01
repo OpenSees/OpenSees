@@ -144,10 +144,9 @@ PeerMotion::PeerMotion(int tag,
    thePath(0), dT(0.0), 
    cFactor(theFactor), dbTag1(0), dbTag2(0), lastSendCommitTag(-1), lastChannel(0)
 {
-  char peerURL[80], peerPage[124];
+  char peerPage[124];
   char *nextData, *eqData;
   int nPts,i;
-  double value;
   char tmp1[100];
 
   if (earthquake != 0 && station != 0 && type != 0) {

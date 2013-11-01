@@ -129,8 +129,8 @@ Mesh3DSubdomain::allocateBoundaryLayerElements(double xMin, double xMax,
 					       std::map<int,int>& storage2)
 {
   Vertex* theVertex;
-  int count =0;
-  bool ele_found = false;
+//  int count =0;
+//  bool ele_found = false;
   GeometricBrickDecorator* myHelper = new GeometricBrickDecorator();
   myHelper->setDomain(this->myDomain);
   Graph& eleGraph = this->myDomain->getElementGraph();

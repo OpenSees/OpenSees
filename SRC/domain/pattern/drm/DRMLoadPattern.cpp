@@ -65,7 +65,7 @@ DRMLoadPattern::applyLoad(double time)
   load.Zero();
   myDecorator->setMap(this->eNodes);
   for(std::map<int,Element*>::iterator pos=this->elem.begin(); pos!=this->elem.end(); pos++) {
-    int eleTag = pos->first;
+//    int eleTag = pos->first;
     Element* ele = (Element*) pos->second;
     if (ele != 0) {
       U.Zero();

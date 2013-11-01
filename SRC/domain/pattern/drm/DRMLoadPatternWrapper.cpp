@@ -137,7 +137,7 @@ int DRMLoadPatternWrapper::sendSelf(int commitTag, Channel& theChannel)
   } 
   
   static ID c_Data_sz(this->files+1);
-  int pos =0;
+//  int pos =0;
   std::string final_str;
   for (int i=0; i<this->files; i++) {
     char* tmp = this->infiles[i];

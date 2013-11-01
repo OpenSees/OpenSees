@@ -190,8 +190,8 @@ PlaneDRMInputHandler::~PlaneDRMInputHandler()
 
 void PlaneDRMInputHandler::populateBuffers()
 {
-  int pid;
-  bool debug = false;
+//  int pid;
+//  bool debug = false;
   
   if (this->initial) {
     
@@ -344,7 +344,7 @@ void PlaneDRMInputHandler::getMotions(Element* eletag, double time, Vector& U, V
   
 
 
-  int tg = eletag->getTag();
+//  int tg = eletag->getTag();
 
   if (time > numSteps*deltaT)
     return;
@@ -617,11 +617,11 @@ void PlaneDRMInputHandler::getf5pointer(Node* node_tag, int local_tag, int index
   const Vector& crd = node_tag->getCrds();
   double x = crd(0);
   double y = crd(1);
-  double z = crd(2);
+//  double z = crd(2);
   double dx = this->eleD[0];
   double dy = this->eleD[1];
-  double dz = this->eleD[2];
-  int xloc,yloc,tloc;
+//  double dz = this->eleD[2];
+  int xloc,yloc;
   int numx,numy;
   numx = this->fileData[13];
   numy = this->fileData[14];
@@ -638,7 +638,7 @@ void PlaneDRMInputHandler::getf5pointer(Node* node_tag, int local_tag, int index
   index += 3*xloc;
   bool no_interpolation = false;
 
-  int tttag = node_tag->getTag();
+//  int tttag = node_tag->getTag();
 
   if ( (xloc*dx == x) && ( yloc*dy == y) )
     no_interpolation = true;
@@ -666,15 +666,15 @@ void PlaneDRMInputHandler::getf5pointer(Node* node_tag, int local_tag, int index
 			
 void PlaneDRMInputHandler::getf1pointer(Node* node_tag, int local_tag, int index)
 {
-  int tag = node_tag->getTag();
+//  int tag = node_tag->getTag();
   const Vector& crd = node_tag->getCrds();
-  double x = crd(0);
+//  double x = crd(0);
   double y = crd(1);
   double z = crd(2);
-  double dx = this->eleD[0];
+ // double dx = this->eleD[0];
   double dy = this->eleD[1];
   double dz = this->eleD[2];
-  int yloc,zloc,tloc;
+  int yloc,zloc;
   int numy,numz;
   numy = this->fileData[1];
   numz = this->fileData[2];
@@ -717,13 +717,13 @@ void PlaneDRMInputHandler::getf1pointer(Node* node_tag, int local_tag, int index
 void PlaneDRMInputHandler::getf2pointer(Node* node_tag, int local_tag, int index)
 {
   const Vector& crd = node_tag->getCrds();
-  double x = crd(0);
+//  double x = crd(0);
   double y = crd(1);
   double z = crd(2);
-  double dx = this->eleD[0];
+  //double dx = this->eleD[0];
   double dy = this->eleD[1];
   double dz = this->eleD[2];
-  int yloc,zloc,tloc;
+  int yloc,zloc;
   int numy,numz;
   numy = this->fileData[4];
   numz = this->fileData[5];
@@ -766,12 +766,12 @@ void PlaneDRMInputHandler::getf3pointer(Node* node_tag, int local_tag, int index
 {
   const Vector& crd = node_tag->getCrds();
   double x = crd(0);
-  double y = crd(1);
+//  double y = crd(1);
   double z = crd(2);
   double dx = this->eleD[0];
-  double dy = this->eleD[1];
+//  double dy = this->eleD[1];
   double dz = this->eleD[2];
-  int xloc,zloc,tloc;
+  int xloc,zloc;
   int numx,numz;
   numx = this->fileData[7];
   numz = this->fileData[8];
@@ -813,15 +813,15 @@ void PlaneDRMInputHandler::getf3pointer(Node* node_tag, int local_tag, int index
 
 void PlaneDRMInputHandler::getf4pointer(Node* node_tag, int local_tag, int index)
 {
-  bool debug = false;
+//  bool debug = false;
   const Vector& crd = node_tag->getCrds();
   double x = crd(0);
-  double y = crd(1);
+  //double y = crd(1);
   double z = crd(2);
   double dx = this->eleD[0];
-  double dy = this->eleD[1];
+//  double dy = this->eleD[1];
   double dz = this->eleD[2];
-  int xloc,zloc,tloc;
+  int xloc,zloc;
   int numx,numz;
   numx = this->fileData[10];
   numz = this->fileData[11];
