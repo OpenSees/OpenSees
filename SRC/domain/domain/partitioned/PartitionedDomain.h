@@ -138,6 +138,8 @@ class PartitionedDomain: public Domain
 
     // nodal methods required in domain interface for parallel interprter
     virtual const Vector *getNodeResponse(int nodeTag, NodeResponseType); 
+    virtual const Vector *getElementResponse(int eleTag, const char **argv, int argc); 
+
     virtual double getNodeDisp(int nodeTag, int dof, int &errorFlag);
     virtual int setMass(const Matrix &mass, int nodeTag);
 

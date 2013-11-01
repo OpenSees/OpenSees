@@ -66,6 +66,7 @@
 #include <SP_ConstraintIter.h>
 
 #include <ShadowActorSubdomain.h>
+#include <Message.h>
 
 int ShadowSubdomain::count = 0; // MHS
 int ShadowSubdomain::numShadowSubdomains = 0;
@@ -1576,6 +1577,67 @@ ShadowSubdomain::getNodeResponse(int tag, NodeResponseType responseType)
   return NULL;
 
 }
+
+
+const Vector *
+ShadowSubdomain::getElementResponse(int tag, const char **argv, int argc)
+{
+  if (theElements.getLocation(tag) < 0)
+    return NULL;
+
+  static Vector data(0);
+    
+  msgData(0) = ShadowActorSubdomain_getElementResponse;
+  msgData(1) = tag;
+  msgData(2) = argc;
+
+  int msgLength = 0;
+  for (int i=0; i<argc; i++) 
+    msgLength += strlen(argv[i])+1; // add 1 for teminating character
+
+  msgData(3) = msgLength;
+
+  this->sendID(msgData);  
+
+  char *allResponseArgs = new char[msgLength];
+  if (allResponseArgs == 0) {
+    opserr << "ShadowSubdomain::getElementResponse() - out of memory\n";
+    return 0;
+  }
+
+  char *currentLoc = allResponseArgs;
+  for (int j=0; j<argc; j++) {
+    strcpy(currentLoc, argv[j]);
+    currentLoc += strlen(argv[j]);
+    currentLoc++;
+  }
+
+  //
+  // send this single char array
+  //
+
+  Message theMessage(allResponseArgs, msgLength);
+  if (this->sendMessage(theMessage) < 0) {
+    opserr << "ShadowSubdomain::getElementResponse() - failed to send message\n";
+    return 0;
+  }
+
+  // receive the response
+  this->recvID(msgData);
+  
+  if (msgData(0) != 0) {
+    int sizeVector = msgData(1);
+    if (data.Size() != sizeVector)
+      data.resize(sizeVector);
+    this->recvVector(data);
+    
+    return &data;
+  }
+  
+  return NULL;
+
+}
+
 
 int
 ShadowSubdomain::calculateNodalReactions(bool incInertia)

@@ -101,3 +101,4 @@ static const int ShadowActorSubdomain_updateParameterDOUBLE = 102;
 static const int ShadowActorSubdomain_addSP_ConstraintAXIS = 103;
 static const int ShadowActorSubdomain_getDomainChangeFlag = 104;
 static const int ShadowActorSubdomain_record = 105;
+static const int ShadowActorSubdomain_getElementResponse = 106;

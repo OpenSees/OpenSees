@@ -162,7 +162,7 @@ class Domain
     virtual int getNumParameters(void) const;            
     virtual const Vector &getPhysicalBounds(void); 
     virtual const Vector *getNodeResponse(int nodeTag, NodeResponseType responseType); 
-
+    virtual const Vector *getElementResponse(int eleTag, const char **argv, int argc); 
 
     // methods to get element and node graphs
     virtual  Graph  &getElementGraph(void);
