@@ -6681,28 +6681,40 @@ eleForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     }     
     
     dof--;
+
+    /*
     Element *theEle = theDomain.getElement(tag);
     if (theEle == 0)
       return TCL_ERROR;
     
     const Vector &force = theEle->getResistingForce();
-    int size = force.Size();
+    */
 
-    if (dof >= 0) {
+    const char *myArgv[1];
+    char myArgv0[8]; 
+    strcpy(myArgv0,"forces");
+    myArgv[0] = myArgv0;
 
-      if (size < dof)
-	return TCL_ERROR;
-
-      double value = force(dof);
+    const Vector *force = theDomain.getElementResponse(tag, &myArgv[0], 1);
+    if (force != 0) {
+      int size = force->Size();
       
-      // now we copy the value to the tcl string that is returned
-      sprintf(interp->result,"%35.20f",value);
-
-    } else {
-      char buffer[40];
-      for (int i=0; i<size; i++) {
-	sprintf(buffer,"%35.20f",force(i));
-	Tcl_AppendResult(interp, buffer, NULL);
+      if (dof >= 0) {
+	
+	if (size < dof)
+	  return TCL_ERROR;
+	
+	double value = (*force)(dof);
+	
+	// now we copy the value to the tcl string that is returned
+	sprintf(interp->result,"%35.20f",value);
+	
+      } else {
+	char buffer[40];
+	for (int i=0; i<size; i++) {
+	  sprintf(buffer,"%35.20f",(*force)(i));
+	  Tcl_AppendResult(interp, buffer, NULL);
+	}
       }
     }
 
@@ -6782,6 +6794,7 @@ eleResponse(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
 	return TCL_ERROR;	        
     }    
 
+    /*
     Element *theEle = theDomain.getElement(tag);
     if (theEle == 0)
       return TCL_ERROR;
@@ -6799,14 +6812,17 @@ eleResponse(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
 
     Information &eleInfo = theResponse->getInformation();
     const Vector &data = eleInfo.getData();
+    */
 
-    int size = data.Size();
-    char buffer[40];
-    for (int i=0; i<size; i++) {
-      sprintf(buffer,"%35.20f",data(i));
-      Tcl_AppendResult(interp, buffer, NULL);
+    const Vector *data = theDomain.getElementResponse(tag, argv+2, argc-2);
+    if (data != 0) {
+      int size = data->Size();
+      char buffer[40];
+      for (int i=0; i<size; i++) {
+	sprintf(buffer,"%35.20f",(*data)(i));
+	Tcl_AppendResult(interp, buffer, NULL);
+      }
     }
-    delete theResponse;
 
     return TCL_OK;
 }
@@ -6889,12 +6905,17 @@ eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   
   char buffer[20];
 
-  Element *theElement = theDomain.getElement(tag);
-  if (theElement != 0) {
-    const ID &tags = theElement->getExternalNodes();
-    int numTags = tags.Size();
+  const char *myArgv[1];
+  char myArgv0[8]; 
+  strcpy(myArgv0,"nodeTags");
+  myArgv[0] = myArgv0;
+
+  const Vector *tags = theDomain.getElementResponse(tag, &myArgv[0], 1);
+  //  Element *theElement = theDomain.getElement(tag);
+  if (tags != 0) {
+    int numTags = tags->Size();
     for (int i = 0; i < numTags; i++) {
-      sprintf(buffer, "%d ", tags(i));
+      sprintf(buffer, "%.0f ", (*tags)(i));
       Tcl_AppendResult(interp, buffer, NULL);
     }
   }
