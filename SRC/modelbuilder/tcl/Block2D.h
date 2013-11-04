@@ -1,3 +1,6 @@
+#ifndef Block2D_h
+#define Blcok2D_h 
+
 /* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
@@ -82,3 +85,5 @@ class Block2D {
   int numNodesElement; // 4 or 9
   int errorFlag;       // flag indicating if odd nx and ny ok for 9-noded elements
 };
+
+#endif
