@@ -44,7 +44,7 @@ extern "C" {
 }
 
 #include <OPS_Globals.h>
-#include <TclModelBuilder.cpp>
+#include <TclModelBuilder.h>
 #include <Matrix.h>
 
 // the following is a little kludgy but it works!
@@ -549,6 +549,9 @@ int
 printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
 setPrecision(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
@@ -794,6 +797,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "analyze", &analyzeModel, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "print", &printModel, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "printA", &printA, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     // Talledo Start 
     Tcl_CreateCommand(interp, "printGID", &printModelGID,
@@ -1975,6 +1980,47 @@ printIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   return TCL_OK;  
 }
 
+
+int 
+printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  int res = 0;
+
+  FileStream outputFile;
+  OPS_Stream *output = &opserr;
+  bool done = false;
+
+  int currentArg = 1;
+
+  if (argc > 2) {
+    if ((strcmp(argv[currentArg],"file") == 0) || 
+	(strcmp(argv[currentArg],"-file") == 0)) {
+      currentArg++;
+      
+      if (outputFile.setFile(argv[currentArg]) != 0) {
+	opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
+	return TCL_ERROR;
+      }
+      output = &outputFile;
+    }
+  }
+  if (theSOE != 0) {
+    if (theStaticIntegrator != 0)
+      theStaticIntegrator->formTangent();
+    else if (theTransientIntegrator != 0)
+      theTransientIntegrator->formTangent(0);
+      
+    const Matrix *A = theSOE->getA();
+    if (A != 0) {
+      *output << *A;
+    }
+  }
+  
+  // close the output file
+  outputFile.close();
+  
+  return res;
+}
 
 //
 // command invoked to allow the Analysis object to be built
@@ -3718,12 +3764,6 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
 
 
 
-
-	      
-
-
-
-
 //
 // command invoked to allow the Integrator object to be built
 //
@@ -3732,7 +3772,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 		  TCL_Char **argv)
 {
 
-  OPS_ResetInput(clientData, interp, 2, argc, argv, &theDomain, theTclBuilder);	  
+  OPS_ResetInput(clientData, interp, 2, argc, argv, &theDomain, NULL);	  
 
   // make sure at least one other argument to contain integrator
   if (argc < 2) {
