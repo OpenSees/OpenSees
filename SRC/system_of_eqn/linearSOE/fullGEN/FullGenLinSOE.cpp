@@ -48,8 +48,9 @@ using std::nothrow;
 
 FullGenLinSOE::FullGenLinSOE(FullGenLinSolver &theSolvr)
 :LinearSOE(theSolvr, LinSOE_TAGS_FullGenLinSOE),
- size(0), A(0), B(0), X(0), vectX(0), vectB(0),
- Asize(0), Bsize(0),
+ size(0), A(0), B(0), X(0), 
+ vectX(0), vectB(0), matA(0),
+ Asize(0), Bsize(0), 
  factored(false)
 {
     theSolvr.setLinearSOE(*this);
@@ -58,8 +59,9 @@ FullGenLinSOE::FullGenLinSOE(FullGenLinSolver &theSolvr)
 
 FullGenLinSOE::FullGenLinSOE(int N, FullGenLinSolver &theSolvr)
 :LinearSOE(theSolvr, LinSOE_TAGS_FullGenLinSOE),
- size(0), A(0), B(0), X(0), vectX(0), vectB(0),
- Asize(0), Bsize(0),
+ size(0), A(0), B(0), X(0), 
+ vectX(0), vectB(0), matA(0),
+ Asize(0), Bsize(0), 
  factored(false)
 {
     size = N;
@@ -97,7 +99,8 @@ FullGenLinSOE::FullGenLinSOE(int N, FullGenLinSolver &theSolvr)
 
     vectX = new Vector(X,size);
     vectB = new Vector(B,size);    
-    
+    matA  = new Matrix(A, size, size);
+
     theSolvr.setLinearSOE(*this);
     
     // invoke setSize() on the Solver        
@@ -116,6 +119,7 @@ FullGenLinSOE::~FullGenLinSOE()
     if (X != 0) delete [] X;
     if (vectX != 0) delete vectX;    
     if (vectB != 0) delete vectB;        
+    if (matA != 0) delete matA;        
 }
 
 
@@ -189,10 +193,13 @@ FullGenLinSOE::setSize(Graph &theGraph)
 
 	if (vectB != 0)
 	    delete vectB;
+
+	if (matA != 0)
+	    delete matA;
 	
 	vectX = new Vector(X,Bsize);
 	vectB = new Vector(B,Bsize);	
-
+	matA = new Matrix(A,Bsize, Bsize);	
     }
 
     // invoke setSize() on the Solver    
@@ -373,6 +380,16 @@ FullGenLinSOE::getB(void)
 	exit(-1);
     }        
     return *vectB;
+}
+
+const Matrix *
+FullGenLinSOE::getA(void)
+{
+    if (matA == 0) {
+	opserr << "FATAL FullGenLinSOE::getB - vectB == 0";
+	exit(-1);
+    }        
+    return matA;
 }
 
 double 

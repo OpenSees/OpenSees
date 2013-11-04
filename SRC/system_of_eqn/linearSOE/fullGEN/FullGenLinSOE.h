@@ -63,6 +63,8 @@ class FullGenLinSOE : public LinearSOE
     
     const Vector &getX(void);
     const Vector &getB(void);    
+    const Matrix *getA(void);
+
     double normRHS(void);
 
     void setX(int loc, double value);        
@@ -82,6 +84,7 @@ class FullGenLinSOE : public LinearSOE
     double *A, *B, *X;
     Vector *vectX;
     Vector *vectB;    
+    Matrix *matA;
     int Asize, Bsize;
     bool factored;
 };
