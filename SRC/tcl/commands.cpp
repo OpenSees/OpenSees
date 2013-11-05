@@ -740,7 +740,7 @@ int Tcl_InterpOpenSeesObjCmd(ClientData clientData,  Tcl_Interp *interp, int obj
 
 
 int OpenSeesAppInit(Tcl_Interp *interp) {
-  
+
   ops_TheActiveDomain = &theDomain;
 
   //
@@ -5880,6 +5880,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
   int typeSolver = 2; // 0 - SymmBandLapack, 1 - SymmSparseArpack, 2 - GenBandArpack (default)
   int loc = 1;
   double shift = 0.0;
+  bool findSmallest = true;
   int factLVALUE = 10; // parameter for UmfPack SOE
   
   // Check type of eigenvalue analysis
@@ -5893,6 +5894,9 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     else if ((strcmp(argv[loc],"standard") == 0) || 
 	     (strcmp(argv[loc],"-standard") == 0))
       generalizedAlgo = false;
+
+    else if ((strcmp(argv[loc],"-findLargest") == 0))
+      findSmallest = false;
     
     else if ((strcmp(argv[loc],"symmBandLapackEigen") == 0) || 
 	     (strcmp(argv[loc],"-symmBandLapackEigen") == 0))
@@ -6003,8 +6007,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
     if (theEigenSOE == 0) {
 
-      if (typeSolver == 0) {
-	
+      if (typeSolver == 0) {	
 	SymBandEigenSolver *theEigenSolver = new SymBandEigenSolver(); 
 	theEigenSOE = new SymBandEigenSOE(*theEigenSolver, *theAnalysisModel); 
 	
@@ -6165,9 +6168,9 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     int result = 0;
 
     if (theStaticAnalysis != 0) {
-      result = theStaticAnalysis->eigen(numEigen, generalizedAlgo);      
+      result = theStaticAnalysis->eigen(numEigen, generalizedAlgo, findSmallest);      
     } else if (theTransientAnalysis != 0) {
-      result = theTransientAnalysis->eigen(numEigen, generalizedAlgo);      
+      result = theTransientAnalysis->eigen(numEigen, generalizedAlgo, findSmallest);      
     }
 
     if (result == 0) {
