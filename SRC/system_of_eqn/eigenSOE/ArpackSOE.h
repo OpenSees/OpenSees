@@ -44,6 +44,7 @@ class ArpackSOE : public EigenSOE
     ArpackSOE(LinearSOE &theLinearSOE,
 	      double shift = 0.0);
 
+
     ArpackSOE();
 
     ~ArpackSOE();

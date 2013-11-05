@@ -25,7 +25,7 @@ class SymArpackSolver : public EigenSolver
     SymArpackSolver(int numE = 0);     
     virtual ~SymArpackSolver();
 
-    virtual int solve(int numModes, bool generalized);    
+    virtual int solve(int numModes, bool generalized, bool findSmallest = true);    
     virtual int setSize(void);
 
     virtual int setEigenSOE(SymArpackSOE &theSOE); 

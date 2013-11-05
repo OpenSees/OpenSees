@@ -39,12 +39,12 @@ EigenSOE::~EigenSOE()
 }
 
 int 
-EigenSOE::solve(int numModes, bool generalized)
+EigenSOE::solve(int numModes, bool generalized, bool findSmallest)
 {
   if (theSolver == 0)
     return -1;
   else
-    return (theSolver->solve(numModes, generalized));
+    return (theSolver->solve(numModes, generalized, findSmallest));
 }
 
 int

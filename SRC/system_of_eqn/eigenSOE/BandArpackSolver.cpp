@@ -119,7 +119,7 @@ extern "C" int dseupd_(bool *rvec, char *howmny, logical *select, double *d, dou
 
 
 int
-BandArpackSolver::solve(int numModes, bool generalized)
+BandArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
 {
   if (generalized == false) {
     opserr << "BandArpackSolver::solve(int numMode, bool generalized) - only solves generalized problem\n";
@@ -168,7 +168,13 @@ BandArpackSolver::solve(int numModes, bool generalized)
     int *ipntr = new int[11];
     logical *select = new logical[ncv];
 
-    static char which[3]; strcpy(which, "LM");
+    static char which[3]; 
+    if (findSmallest == true) {
+      strcpy(which, "LM");
+    }  else {
+      strcpy(which, "SM");
+    }
+
     char bmat = 'G';
     char howmy = 'A';
 

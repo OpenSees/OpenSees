@@ -94,7 +94,7 @@ extern "C" void pfsslv(int neqns, double *diag, double **penv, int nblks,
 
 
 int
-SymArpackSolver::solve(int numModes, bool generalized)
+SymArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
 { 
   if (generalized == false) {
     opserr << "BandArpackSolver::solve(int numMode, bool generalized) - only solves generalized problem\n";
@@ -152,7 +152,13 @@ SymArpackSolver::solve(int numModes, bool generalized)
 	
 //    char *which = new char[2];
     char bmat = 'G';
-//    which = "LM";
+
+    static char which[3];
+    if (findSmallest == true) {
+      strcpy(which, "LM");
+    }  else {
+    strcpy(which, "SM");
+    }    
 
     int *iparam = new int[11];
     int *iwork = new int[n];
@@ -179,13 +185,16 @@ SymArpackSolver::solve(int numModes, bool generalized)
     unsigned int sizeWhich =2;
     unsigned int sizeBmat =1;
     unsigned int sizeHowmany =1;
+
+
+
     while (1) { 
  
 #ifdef _WIN32
-	DSAUPD(&ido, &bmat, &n, "LM", &nev, &tol, resid, &ncv, v, &ldv,
+	DSAUPD(&ido, &bmat, &n, which, &nev, &tol, resid, &ncv, v, &ldv,
 	       iparam, ipntr, workd, workl, &lworkl, &info);
 #else
-	dsaupd_(&ido, &bmat, &n, "LM", &nev, &tol, resid, &ncv, v, &ldv,
+	dsaupd_(&ido, &bmat, &n, which, &nev, &tol, resid, &ncv, v, &ldv,
 		iparam, ipntr, workd, workl, &lworkl, &info);
 #endif
       if (ido == -1) {
@@ -223,13 +232,13 @@ SymArpackSolver::solve(int numModes, bool generalized)
 	double sigma = theSOE->shift;
 	if (iparam[4] > 0) {
 #ifdef _WIN32
-	    DSEUPD(&rvec, &howmy, select, d, v, &ldv, &sigma, &bmat, &n, "LM",
+	    DSEUPD(&rvec, &howmy, select, d, v, &ldv, &sigma, &bmat, &n, which,
 		   &nev, &tol, resid, &ncv, v, &ldv, iparam, ipntr, workd,
 		   workl, &lworkl, &info);
 #else
 
 
-	    dseupd_(&rvec, &howmy, select, d, v, &ldv, &sigma, &bmat, &n, "LM",
+	    dseupd_(&rvec, &howmy, select, d, v, &ldv, &sigma, &bmat, &n, which,
 		    &nev, &tol, resid, &ncv, v, &ldv, iparam, ipntr, workd,
 		    workl, &lworkl, &info);
 #endif

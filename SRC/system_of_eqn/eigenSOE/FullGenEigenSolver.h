@@ -44,7 +44,7 @@ public:
     FullGenEigenSolver();    
     virtual ~FullGenEigenSolver();
 
-    virtual int solve(int numEigen, bool generalized);    
+    virtual int solve(int numEigen, bool generalized, bool findSmallest = true);    
     virtual int setSize(void);
     virtual int setEigenSOE(FullGenEigenSOE &theSOE);
 

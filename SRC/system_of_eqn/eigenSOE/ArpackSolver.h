@@ -56,7 +56,7 @@ class ArpackSolver : public EigenSolver
     ArpackSolver();    
     ~ArpackSolver();
 
-    int solve(int numMode, bool generalized);
+    int solve(int numMode, bool generalized, bool findSmallest = true);
     int setSize(void);
     int setEigenSOE(ArpackSOE &theSOE);
     

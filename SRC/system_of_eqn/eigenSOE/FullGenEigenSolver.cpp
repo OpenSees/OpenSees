@@ -80,7 +80,7 @@ FullGenEigenSolver::~FullGenEigenSolver()
 }
 
 
-int FullGenEigenSolver::solve(int nEigen, bool generalized)
+int FullGenEigenSolver::solve(int nEigen, bool generalized, bool findSmallest)
 {
   if (generalized == false) {
     opserr << "FullGenEigenSolver::solve() - only solves generalized problem\n";

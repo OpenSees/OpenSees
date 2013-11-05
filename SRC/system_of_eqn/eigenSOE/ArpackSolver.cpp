@@ -127,7 +127,7 @@ extern "C" int dseupd_(bool *rvec, char *howmny, logical *select, double *d, dou
 
 
 int
-ArpackSolver::solve(int numModes, bool generalized)
+ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
 {
   if (generalized == false) {
     opserr << "ArpackSolver::solve() - at moment only solves generalized problem\n";
@@ -151,7 +151,6 @@ ArpackSolver::solve(int numModes, bool generalized)
   int lworkl = ncv*ncv + 8*ncv;
 
   int processID = theArpackSOE->processID;
-  
   
   // set up the space for ARPACK functions.
   // this is done each time method is called!! .. this needs to be cleaned up
@@ -184,7 +183,14 @@ ArpackSolver::solve(int numModes, bool generalized)
     numModesMax = numModes;
   }
 
-  static char which[3]; strcpy(which, "LM");
+  static char which[3];
+  if (findSmallest == true) {
+    strcpy(which, "LM");
+  }  else {
+    strcpy(which, "SM");
+  }
+
+
   char bmat = 'G';
   char howmy = 'A';
   

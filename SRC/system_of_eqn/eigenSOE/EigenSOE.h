@@ -40,7 +40,7 @@ class EigenSOE : public MovableObject
      EigenSOE(int classTag);
      virtual ~EigenSOE();
      
-     virtual int solve(int numModes, bool generalized);
+     virtual int solve(int numModes, bool generalized, bool findSmallest = true);
      virtual int setLinks(AnalysisModel &theModel);    
      
      // pure virtual functions
