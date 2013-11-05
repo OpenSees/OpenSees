@@ -234,7 +234,7 @@ StaticDomainDecompositionAnalysis::analyze(double dT)
 
 
 int 
-StaticDomainDecompositionAnalysis::eigen(int numMode, bool generalized)
+StaticDomainDecompositionAnalysis::eigen(int numMode, bool generalized, bool findSmallest)
 {
   int result = 0;
   Domain *the_Domain = this->getDomainPtr();
@@ -316,7 +316,7 @@ StaticDomainDecompositionAnalysis::eigen(int numMode, bool generalized)
     // solve for the eigen values & vectors
     //
 
-    if (theEigenSOE->solve(numMode, generalized) < 0) {
+    if (theEigenSOE->solve(numMode, generalized, findSmallest) < 0) {
 	opserr << "WARNING StaticAnalysis::eigen() - EigenSOE failed in solve()\n";
 	return -4;
     }
@@ -467,9 +467,9 @@ StaticDomainDecompositionAnalysis::analysisStep(double dT)
 }
 
 int  
-StaticDomainDecompositionAnalysis::eigenAnalysis(int numMode, bool generalized) 
+StaticDomainDecompositionAnalysis::eigenAnalysis(int numMode, bool generalized, bool findSmallest) 
 {
-  this->eigen(numMode, generalized);
+  this->eigen(numMode, generalized, findSmallest);
   return 0;
 }
 

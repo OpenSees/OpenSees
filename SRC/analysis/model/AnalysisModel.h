@@ -105,7 +105,7 @@ class AnalysisModel: public MovableObject
     virtual int    updateDomain(void);
     virtual int    updateDomain(double newTime, double dT);
     virtual int    analysisStep(double dT =0.0);
-    virtual int    eigenAnalysis(int numMode, bool generalized);
+    virtual int    eigenAnalysis(int numMode, bool generalized, bool findSmallest);
     virtual int    commitDomain(void);
     virtual int    revertDomainToLastCommit(void);
     virtual double getCurrentDomainTime(void);

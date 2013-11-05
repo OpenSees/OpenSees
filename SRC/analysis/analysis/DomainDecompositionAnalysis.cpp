@@ -291,7 +291,7 @@ DomainDecompositionAnalysis::analysisStep(double dT)
 }
 
 int  
-DomainDecompositionAnalysis::eigenAnalysis(int numMode, bool generalized)
+DomainDecompositionAnalysis::eigenAnalysis(int numMode, bool generalized, bool findSmallest)
 {
   opserr << "DomainDecompositionAnalysis::eigenAnalysis() - should not be called\n";
   return -1;;

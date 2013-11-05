@@ -245,7 +245,7 @@ DirectIntegrationAnalysis::analyze(int numSteps, double dT)
 }
 
 int 
-DirectIntegrationAnalysis::eigen(int numMode, bool generalized)
+DirectIntegrationAnalysis::eigen(int numMode, bool generalized, bool findSmallest)
 {
     if (theAnalysisModel == 0 || theEigenSOE == 0) {
       opserr << "WARNING DirectIntegrationAnalysis::eigen() - no EigenSOE has been set\n";
@@ -255,7 +255,7 @@ DirectIntegrationAnalysis::eigen(int numMode, bool generalized)
     int result = 0;
     Domain *the_Domain = this->getDomainPtr();
 
-    result = theAnalysisModel->eigenAnalysis(numMode, generalized);
+    result = theAnalysisModel->eigenAnalysis(numMode, generalized, findSmallest);
 
     int stamp = the_Domain->hasDomainChanged();
 
@@ -327,7 +327,7 @@ DirectIntegrationAnalysis::eigen(int numMode, bool generalized)
     // solve for the eigen values & vectors
     //
 
-    if (theEigenSOE->solve(numMode, generalized) < 0) {
+    if (theEigenSOE->solve(numMode, generalized, findSmallest) < 0) {
 	opserr << "WARNING DirectIntegrationAnalysis::eigen() - EigenSOE failed in solve()\n";
 	return -4;
     }

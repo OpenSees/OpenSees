@@ -226,7 +226,7 @@ TransientDomainDecompositionAnalysis::analyze(double dT)
 
 
 int 
-TransientDomainDecompositionAnalysis::eigen(int numMode, bool generalized)
+TransientDomainDecompositionAnalysis::eigen(int numMode, bool generalized, bool findSmallest)
 {
   int result = 0;
   Domain *the_Domain = this->getDomainPtr();
@@ -310,7 +310,7 @@ TransientDomainDecompositionAnalysis::eigen(int numMode, bool generalized)
     // 
     // solve for the eigen values & vectors
     //
-    if (theEigenSOE->solve(numMode, generalized) < 0) {
+    if (theEigenSOE->solve(numMode, generalized, findSmallest) < 0) {
 	opserr << "WARNING TransientDomainDecomposition::eigen() - EigenSOE failed in solve()\n";
 	return -4;
     }
@@ -447,9 +447,9 @@ TransientDomainDecompositionAnalysis::analysisStep(double dT)
 }
 
 int  
-TransientDomainDecompositionAnalysis::eigenAnalysis(int numMode, bool generalized) 
+TransientDomainDecompositionAnalysis::eigenAnalysis(int numMode, bool generalized, bool findSmallest) 
 {
-  this->eigen(numMode, generalized);
+  this->eigen(numMode, generalized, findSmallest);
   return 0;
 }
 
