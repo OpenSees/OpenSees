@@ -44,6 +44,7 @@ class MinMaxMaterial : public UniaxialMaterial
     const char *getClassType(void) const {return "MinMaxMaterial";};
 
     int setTrialStrain(double strain, double strainRate = 0.0); 
+    int setTrialStrain(double strain, double FiberTemperature, double strainRate); 
     double getStrain(void);          
     double getStrainRate(void);
     double getStress(void);

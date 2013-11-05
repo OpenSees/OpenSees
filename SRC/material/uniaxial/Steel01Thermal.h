@@ -44,7 +44,6 @@ class Steel01Thermal : public UniaxialMaterial
 
     const char *getClassType(void) const {return "Steel01Thermal";};
 
-
     double getThermalElongation(void); //***JZ
     double getElongTangent(double, double&, double&, double);//***JZ //PK add to include max temp
 

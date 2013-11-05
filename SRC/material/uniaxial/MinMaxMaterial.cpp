@@ -151,6 +151,24 @@ MinMaxMaterial::setTrialStrain(double strain, double strainRate)
   }
 }
 
+
+int 
+MinMaxMaterial::setTrialStrain(double strain, double temp, double strainRate)
+{
+  if (Cfailed)
+    return 0;
+  
+  if (strain >= maxStrain || strain <= minStrain) {
+    Tfailed = true;
+    return 0;
+  }
+  else {
+    Tfailed = false;
+    return theMaterial->setTrialStrain(strain, temp, strainRate);
+  }
+}
+
+
 double 
 MinMaxMaterial::getStress(void)
 {
