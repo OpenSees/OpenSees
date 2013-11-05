@@ -1403,7 +1403,7 @@ ShadowSubdomain::analysisStep(double dT)
 }
 
 int 
-ShadowSubdomain::eigenAnalysis(int numMode, bool generalized)    
+ShadowSubdomain::eigenAnalysis(int numMode, bool generalized, bool findSmallest)    
 {
     msgData(0) =  ShadowActorSubdomain_eigenAnalysis;
     msgData(1) = numMode;
@@ -1411,6 +1411,10 @@ ShadowSubdomain::eigenAnalysis(int numMode, bool generalized)
       msgData(2) = 0;
     else
       msgData(2) = 1;
+    if (findSmallest == true)
+      msgData(3) = 0;
+    else
+      msgData(3) = 1;
 
     this->sendID(msgData);
 

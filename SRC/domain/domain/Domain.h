@@ -189,7 +189,7 @@ class Domain
     virtual  int  updateParameter(int tag, double value);    
     
     virtual  int  analysisStep(double dT);
-    virtual  int  eigenAnalysis(int numMode, bool generalized);
+    virtual  int  eigenAnalysis(int numMode, bool generalized, bool findSmallest);
     
     // methods for eigenvalue analysis
     virtual int setEigenvalues(const Vector &theEigenvalues);

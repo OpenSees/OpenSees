@@ -103,7 +103,7 @@ ActorSubdomain::run(void)
       EigenSOE *theEigenSOE;
       ConvergenceTest *theTest;
       Recorder *theRecorder;
-      bool res, generalized;
+      bool res, generalized, findSmallest;
       double doubleRes;
       int intRes;
       NodeResponseType nodeResponseType;
@@ -137,7 +137,11 @@ ActorSubdomain::run(void)
 	      generalized = true;
 	    else
 	      generalized = false;
-	    this->eigenAnalysis(numMode, generalized);
+	    if (msgData(3) == 0)
+	      findSmallest = true;
+	    else
+	      findSmallest = false;
+	    this->eigenAnalysis(numMode, generalized, findSmallest);
 	    break;
 	    /*
 	  case ShadowActorSubdomain_buildSubdomain:

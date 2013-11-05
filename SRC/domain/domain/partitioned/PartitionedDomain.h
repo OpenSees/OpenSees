@@ -109,7 +109,7 @@ class PartitionedDomain: public Domain
     virtual  int update(void);        
     virtual  int update(double newTime, double dT);
     virtual  int analysisStep(double dT);
-    virtual  int eigenAnalysis(int, bool);
+    virtual  int eigenAnalysis(int, bool, bool);
 
     virtual int  record(void);    
     virtual int  addRecorder(Recorder &theRecorder);    	

@@ -159,7 +159,7 @@ class ShadowSubdomain: public Shadow, public Subdomain
     const Vector &getLastExternalSysResponse(void);
     virtual int computeNodalResponse(void);    
     virtual int analysisStep(double deltaT);
-    virtual int eigenAnalysis(int numMode, bool generalized);
+    virtual int eigenAnalysis(int numMode, bool generalized, bool findSmallest);
 
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, 

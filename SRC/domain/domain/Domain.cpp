@@ -1972,7 +1972,7 @@ Domain::analysisStep(double dT)
 }
 
 int
-Domain::eigenAnalysis(int nuMode, bool generalized)
+Domain::eigenAnalysis(int nuMode, bool generalized, bool findSmallest)
 {
   return 0;
 }

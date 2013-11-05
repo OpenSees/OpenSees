@@ -1095,7 +1095,7 @@ PartitionedDomain::analysisStep(double dT)
 
 
 int
-PartitionedDomain::eigenAnalysis(int numModes, bool generalized)
+PartitionedDomain::eigenAnalysis(int numModes, bool generalized, bool findSmallest)
 {
   // first we need to see if any subdomain has changed & mark the change in domain
   bool domainChangedAnySubdomain = this->getDomainChangeFlag();
@@ -1123,7 +1123,7 @@ PartitionedDomain::eigenAnalysis(int numModes, bool generalized)
     }
   }
 
-  this->Domain::eigenAnalysis(numModes, generalized);
+  this->Domain::eigenAnalysis(numModes, generalized, findSmallest);
   
   int res = 0;
   // do the same for all the subdomains
@@ -1132,7 +1132,7 @@ PartitionedDomain::eigenAnalysis(int numModes, bool generalized)
     TaggedObject *theObject;
     while ((theObject = theSubsIter()) != 0) {
       Subdomain *theSub = (Subdomain *)theObject;	    
-      res += theSub->eigenAnalysis(numModes, generalized);
+      res += theSub->eigenAnalysis(numModes, generalized, findSmallest);
       if (res != 0) 
 	opserr << "PartitionedDomain::step - subdomain " << theSub->getTag() << " failed in step\n";
     }
