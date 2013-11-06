@@ -14,7 +14,7 @@ puts "sdofTransient.tcl: Verification of Elastic SDOF systems (Chopra)"
 set PI [expr 2.0*asin(1.0)]
 set g 386.4
 set testOK 0;    # variable used to keep track of SUCCESS or FAILURE
-set tol 1.0e-3
+set tol 1.0e-2
 
 # procedure to build a linear model
 #   input args: K - desired stiffness
@@ -117,7 +117,7 @@ if {[expr abs($uExact-$uOpenSees)] > $tol} {
 # Section 3.2 - Harmonic Vibrartion of Damped Elastic SDOF System
 puts "\n\n   - Damped System Harmonic Excitation (Section 3.2)"
 
-set dampRatio 0.01
+set dampRatio 0.05
 
 # build the model
 buildModel $K $periodStruct $dampRatio
