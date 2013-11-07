@@ -32,6 +32,8 @@
 //
 // What: "@(#) commands.C, revA"
 
+#include <classTags.h>
+
 
 #ifdef _PARALLEL_PROCESSING
 #include <mpi.h>
@@ -5877,7 +5879,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
   }    
   
   bool generalizedAlgo = true; // 0 - frequency/generalized (default),1 - standard, 2 - buckling
-  int typeSolver = 2; // 0 - SymmBandLapack, 1 - SymmSparseArpack, 2 - GenBandArpack (default)
+  int typeSolver = EigenSOE_TAGS_ArpackSOE;
   int loc = 1;
   double shift = 0.0;
   bool findSmallest = true;
@@ -5900,52 +5902,18 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     
     else if ((strcmp(argv[loc],"symmBandLapackEigen") == 0) || 
 	     (strcmp(argv[loc],"-symmBandLapackEigen") == 0))
-      typeSolver = 0;
-    
-    else if ((strcmp(argv[loc],"symmSparseArpack") == 0) || 
-	     (strcmp(argv[loc],"-symmSparseArpack") == 0) || (strcmp(argv[loc],"-symmSparse") == 0))
-      typeSolver = 1;
-    
-    else if ((strcmp(argv[loc],"genBandArpack") == 0) || 
-	     (strcmp(argv[loc],"-genBandArpack") == 0) || (strcmp(argv[loc],"-BandGeneral") == 0)
-	     || (strcmp(argv[loc],"BandGeneral") == 0))
-      typeSolver = 2;
-    
-    else if ((strcmp(argv[loc],"umfpack") == 0) || 
-	     (strcmp(argv[loc],"-UmfPack") == 0) || (strcmp(argv[loc],"-Umfpack") == 0) ||
-	     (strcmp(argv[loc],"UmfPack") == 0) || (strcmp(argv[loc],"Umfpack") == 0))
-      typeSolver = 5;
-
-    else if ((strcmp(argv[loc],"-lValueFact") == 0) || (strcmp(argv[loc],"-lvalueFact") == 0)) {
-		 if (Tcl_GetInt(interp, argv[loc+1], &factLVALUE) != TCL_OK)
-			return TCL_ERROR;
-	     loc++;
-	} 
-
-#ifdef _MUMPS
-    else if ((strcmp(argv[loc],"mumps") == 0) || (strcmp(argv[loc],"-Mumps") == 0) 
-	     || (strcmp(argv[loc],"-mumps") == 0) || (strcmp(argv[loc],"Mumps") == 0))
-      typeSolver = 6;
-#endif
-    
-    else if ((strcmp(argv[loc],"SparseGeneral") == 0) || (strcmp(argv[loc],"-SparseGeneral") == 0) 
-	     || (strcmp(argv[loc],"-SuperLU") == 0) || (strcmp(argv[loc],"SuperLU") == 0))
-      typeSolver = 7;
-
-    else if ((strcmp(argv[loc],"ProfileSPD") == 0) || (strcmp(argv[loc],"-ProfileSPD") == 0))
-      typeSolver = 8;
+      typeSolver = EigenSOE_TAGS_SymBandEigenSOE;
     
     else if ((strcmp(argv[loc],"fullGenLapack") == 0) || 
 	     (strcmp(argv[loc],"-fullGenLapack") == 0))
-      typeSolver = 3;
+      typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
     
     else if ((strcmp(argv[loc],"symmBandLapack") == 0) || 
 	     (strcmp(argv[loc],"-symmBandLapack") == 0))
-      typeSolver = 4;
+      typeSolver = EigenSOE_TAGS_SymBandEigenSOE;
     
     else {
       opserr << "eigen - unknown option specified " << argv[loc] << endln;
-      return TCL_ERROR;
     }
     
     loc++;
@@ -6005,153 +5973,55 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     // create a new eigen system and solver
     //
 
-    if (theEigenSOE == 0) {
+    bool setEigen = false;
+    if (theEigenSOE != 0) {
+      if (theEigenSOE->getClassTag() != typeSolver) {
+	delete theEigenSOE;
+	theEigenSOE = 0;
+	setEigen = true;
+      }
+    }
 
-      if (typeSolver == 0) {	
+	
+    if (theEigenSOE == 0) {
+                       
+      if (typeSolver == EigenSOE_TAGS_SymBandEigenSOE) {
 	SymBandEigenSolver *theEigenSolver = new SymBandEigenSolver(); 
 	theEigenSOE = new SymBandEigenSOE(*theEigenSolver, *theAnalysisModel); 
 	
-      } else if (typeSolver == 1) {
-	
-	int lSparse = 1;     // MMD
-	SymSparseLinSolver *theSolver = new SymSparseLinSolver();
-	LinearSOE *theArpackSOE = new SymSparseLinSOE(*theSolver, lSparse);      
-	theEigenSOE = new ArpackSOE(*theArpackSOE, shift);
-	
-	// SymArpackSolver *theEigenSolver = new SymArpackSolver(numEigen); 
-	// theEigenSOE = new SymArpackSOE(*theEigenSolver, *theAnalysisModel);    
-	
-      } else if (typeSolver == 2) {  
-	
-	BandGenLinSolver    *theSolver = new BandGenLinLapackSolver();
-#ifdef _PARALLEL_PROCESSING
-	LinearSOE *theArpackSOE = new DistributedBandGenLinSOE(*theSolver);      
-#else
-	LinearSOE *theArpackSOE = new BandGenLinSOE(*theSolver);      
-#endif
-	
-	theEigenSOE = new ArpackSOE(*theArpackSOE, shift);    
-	
-	//BandArpackSolver *theEigenSolver = new BandArpackSolver(numEigen); 
-	//theEigenSOE = new BandArpackSOE(*theEigenSolver, *theAnalysisModel);    
-	
-      } else if (typeSolver == 3) {
+      } else if (typeSolver == EigenSOE_TAGS_FullGenEigenSOE) {
 	
 	FullGenEigenSolver *theEigenSolver = new FullGenEigenSolver();
 	theEigenSOE = new FullGenEigenSOE(*theEigenSolver, *theAnalysisModel);
-	
-      }  else if (typeSolver == 4) {
-	
-	SymBandEigenSolver *theEigenSolver = new SymBandEigenSolver(); 
-	theEigenSOE = new SymBandEigenSOE(*theEigenSolver, *theAnalysisModel); 
 
-      } else if (typeSolver == 8) {
-	
-	ProfileSPDLinDirectSolver *theLinSolver = new ProfileSPDLinDirectSolver(); 	
-	LinearSOE *theLinSOE = 0;
-#ifdef _PARALLEL_PROCESSING
-	theLinSOE  = new DistributedProfileSPDLinSOE(*theLinSolver);
-#else
-	theLinSOE = new ProfileSPDLinSOE(*theLinSolver);      
-#endif
+      } else {
 
-	theEigenSOE = new ArpackSOE(*theLinSOE, shift);    
-	
-      }  else if (typeSolver == 5) {  
-	
-	UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
-	LinearSOE *theArpackSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE);      
-	theEigenSOE = new ArpackSOE(*theArpackSOE, shift);    
-	
-#ifdef _MUMPS
-	
-      }  else if (typeSolver == 6) {  
+	theEigenSOE = new ArpackSOE(shift);    
 
-	int icntl7 = 7;
-	int icntl14 = 20;
-#ifdef _PARALLEL_PROCESSING
-
-	MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl7, icntl14);
-	LinearSOE *theArpackSOE = new MumpsParallelSOE(*theSolver);
-	theEigenSOE = new ArpackSOE(*theArpackSOE, shift);    
-
-#elif _PARALLEL_INTERPRETERS
-
-	MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl7, icntl14);
-	MumpsParallelSOE *theParallelSOE = new MumpsParallelSOE(*theSolver);
-	theParallelSOE->setProcessID(OPS_rank);
-	theParallelSOE->setChannels(numChannels, theChannels);
-	theSOE = theParallelSOE;
-	LinearSOE *theArpackSOE = new MumpsParallelSOE(*theSolver);
-	theEigenSOE = new ArpackSOE(*theArpackSOE, shift);    
-
-#else
-	MumpsSolver *theSolver = new MumpsSolver(icntl7, icntl14);
-	LinearSOE *theArpackSOE = new MumpsSOE(*theSolver);
-	theEigenSOE = new ArpackSOE(*theArpackSOE, shift);    
-	theSOE = new MumpsSOE(*theSolver);
-#endif
-
-#endif
-      }  else if (typeSolver == 7) {  
-	SparseGenColLinSolver *theSolver =0;    
-	
-	int npRow = 1;
-	int npCol = 1;
-	
-#ifdef _PARALLEL_PROCESSING
-	theSolver = new DistributedSuperLU(npRow, npCol);
-#else
-	
-	char symmetric = 'N';
-	double drop_tol = 0.0;
-	/*
-	  while (count < argc) {
-	  if (strcmp(argv[count],"s") == 0 || strcmp(argv[count],"symmetric") ||
-	  strcmp(argv[count],"-symm")) {
-	  symmetric = 'Y';
-	  }
-	  count++;
-	  }
-	*/
-	int permSpec = 0;
-	int panelSize = 6;
-	int relax = 6;
-	theSolver = new SuperLU(permSpec, drop_tol, panelSize, relax, symmetric); 	
-#endif
-	
-#ifdef _PARALLEL_PROCESSING
-	LinearSOE *theArpackSOE = new DistributedSparseGenColLinSOE(*theSolver);      
-#else
-	LinearSOE *theArpackSOE = new SparseGenColLinSOE(*theSolver);      
-#endif
-	
-	theEigenSOE = new ArpackSOE(*theArpackSOE, shift);    
       }
-      
       
       //
       // set the eigen soe in the system
       //
-      
+
       if (theStaticAnalysis != 0) {
 	theStaticAnalysis->setEigenSOE(*theEigenSOE);
       } else if (theTransientAnalysis != 0) {
 	theTransientAnalysis->setEigenSOE(*theEigenSOE);
       }
-
+      
 #ifdef _PARALLEL_PROCESSING
-    if (theStaticAnalysis != 0 || theTransientAnalysis != 0) {
-      SubdomainIter &theSubdomains = theDomain.getSubdomains();
-      Subdomain *theSub;
-      while ((theSub = theSubdomains()) != 0) {
-	theSub->setAnalysisEigenSOE(*theEigenSOE);
+      if (theStaticAnalysis != 0 || theTransientAnalysis != 0) {
+	SubdomainIter &theSubdomains = theDomain.getSubdomains();
+	Subdomain *theSub;
+	while ((theSub = theSubdomains()) != 0) {
+	  theSub->setAnalysisEigenSOE(*theEigenSOE);
+	}
       }
-    }
 #endif
 
+    } // theEigenSOE != 0    
 
-    } // theEIgenSOE != 0
 
     int requiredDataSize = 20*numEigen;
     if (requiredDataSize > resDataSize) {
