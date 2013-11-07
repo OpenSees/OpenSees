@@ -103,7 +103,6 @@ class StaticAnalysis: public Analysis
     EigenSOE 		*theEigenSOE;
     StaticIntegrator    *theIntegrator;
     ConvergenceTest     *theTest;
-
     int domainStamp;
 
     // AddingSensitivity:BEGIN ///////////////////////////////

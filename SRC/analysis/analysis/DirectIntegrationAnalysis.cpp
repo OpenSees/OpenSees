@@ -488,7 +488,10 @@ DirectIntegrationAnalysis::setLinearSOE(LinearSOE &theNewSOE)
   theIntegrator->setLinks(*theAnalysisModel,*theSOE, theTest);
   theAlgorithm->setLinks(*theAnalysisModel, *theIntegrator, *theSOE, theTest);
   theSOE->setLinks(*theAnalysisModel);
-
+  
+  if (theEigenSOE != 0) 
+    theEigenSOE->setLinearSOE(*theSOE);
+  
   // cause domainChanged to be invoked on next analyze
   domainStamp = 0;
   
@@ -498,17 +501,27 @@ DirectIntegrationAnalysis::setLinearSOE(LinearSOE &theNewSOE)
 int 
 DirectIntegrationAnalysis::setEigenSOE(EigenSOE &theNewSOE)
 {
-  // invoke the destructor on the old one
-  if (theEigenSOE != 0)
-    delete theEigenSOE;
+  opserr << "DirectIntegrationAnalysis::setEigenSOE(EigenSOE &theNewSOE)\n";
 
-  // set the links needed by the other objects in the aggregation
-  theEigenSOE = &theNewSOE;
-  theEigenSOE->setLinks(*theAnalysisModel);
+  // invoke the destructor on the old one if not the same!
+  if (theEigenSOE != 0) {
+    if (theEigenSOE->getClassTag() != theNewSOE.getClassTag()) {
+      delete theEigenSOE;
+      theEigenSOE = 0;
+    }
+  }
 
-  // cause domainChanged to be invoked on next analyze
-  domainStamp = 0;
+  if (theEigenSOE == 0) {
+    theEigenSOE = &theNewSOE;
+    theEigenSOE->setLinks(*theAnalysisModel);
+    theEigenSOE->setLinearSOE(*theSOE);
 
+    if (domainStamp != 0) {
+      Graph &theGraph = theAnalysisModel->getDOFGraph();
+      theEigenSOE->setSize(theGraph);
+    }
+  }
+  
   return 0;
 }
 
