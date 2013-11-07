@@ -793,6 +793,9 @@ StaticDomainDecompositionAnalysis::setLinearSOE(LinearSOE &theNewSOE)
       theAlgorithm->setLinks(*theAnalysisModel, *theIntegrator, *theSOE, theTest);
       theSOE->setLinks(*theAnalysisModel);
     }
+
+    if (theEigenSOE != 0) 
+      theEigenSOE->setLinearSOE(*theSOE);
     
     // cause domainChanged to be invoked on next analyze
     domainStamp = 0;
@@ -804,18 +807,28 @@ StaticDomainDecompositionAnalysis::setLinearSOE(LinearSOE &theNewSOE)
 int 
 StaticDomainDecompositionAnalysis::setEigenSOE(EigenSOE &theNewSOE)
 {
-    // invoke the destructor on the old one
-    if (theEigenSOE != 0)
+  // invoke the destructor on the old one if not the same!
+  if (theEigenSOE != 0) {
+    if (theEigenSOE->getClassTag() != theNewSOE.getClassTag()) {
       delete theEigenSOE;
+      theEigenSOE = 0;
+    }
+  }
 
-    // set the links needed by the other objects in the aggregation
+  if (theEigenSOE == 0) {
     theEigenSOE = &theNewSOE;
     theEigenSOE->setLinks(*theAnalysisModel);
-    
-    // cause domainChanged to be invoked on next analyze
+    theEigenSOE->setLinearSOE(*theSOE);
+    /*    
+    if (domainStamp != 0) {
+      Graph &theGraph = theAnalysisModel->getDOFGraph();
+      theEigenSOE->setSize(theGraph);
+    }
+    */
     domainStamp = 0;
+  }
 
-    return 0;
+  return 0;
 }
 
 

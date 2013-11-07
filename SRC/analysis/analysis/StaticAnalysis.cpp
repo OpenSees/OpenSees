@@ -587,10 +587,13 @@ StaticAnalysis::setEigenSOE(EigenSOE &theNewSOE)
     theEigenSOE = &theNewSOE;
     theEigenSOE->setLinks(*theAnalysisModel);
     theEigenSOE->setLinearSOE(*theSOE);
+    /*
     if (domainStamp != 0) {
       Graph &theGraph = theAnalysisModel->getDOFGraph();
       theEigenSOE->setSize(theGraph);
     }
+    */
+    domainStamp = 0;
   }
   
   return 0;
