@@ -40,21 +40,11 @@
 #include <AnalysisModel.h>
 #include <LinearSOE.h>
 
-ArpackSOE::ArpackSOE(LinearSOE &theLinSOE,
-		     double theShift)
-:EigenSOE(EigenSOE_TAGS_ArpackSOE),
- M(0), Msize(0), mDiagonal(false), shift(theShift), theModel(0), theSOE(&theLinSOE),
- processID(-1), numChannels(0), theChannels(0), localCol(0), sizeLocal(0)
-{
-  ArpackSolver *theSolvr = new ArpackSolver();
-  this->setSolver(*theSolvr);
-  theSolvr->setEigenSOE(*this);
-}
 
 
-ArpackSOE::ArpackSOE()
+ArpackSOE::ArpackSOE(double s)
 :EigenSOE(EigenSOE_TAGS_ArpackSOE),
- M(0), Msize(0), mDiagonal(false), shift(0), theModel(0), theSOE(0),
+ M(0), Msize(0), mDiagonal(false), shift(s), theModel(0), theSOE(0),
  processID(-1), numChannels(0), theChannels(0), localCol(0), sizeLocal(0)
 {
   ArpackSolver *theSolvr = new ArpackSolver();
@@ -66,20 +56,23 @@ ArpackSOE::ArpackSOE()
 int
 ArpackSOE::getNumEqn(void) const
 {
-  return theSOE->getNumEqn();
+  if (theSOE != 0)
+    return theSOE->getNumEqn();
+  else 
+    return 0;
 }
     
 ArpackSOE::~ArpackSOE()
 {
   if (M != 0) delete [] M;
-
-  if (theSOE != 0)
-    delete theSOE;
 }
 
 int 
 ArpackSOE::setSize(Graph &theGraph)
 {
+  if (theSOE == 0)
+    return -1;
+
   int result = 0;
   int size = 0;
 
@@ -188,6 +181,10 @@ ArpackSOE::setSize(Graph &theGraph)
 int 
 ArpackSOE::addA(const Matrix &m, const ID &id, double fact)
 {
+  if (theSOE == 0) {
+    opserr << "ArpackSOE::addA() - no SOE set\n";
+    return -1;
+  }
 
   // check for a quick return 
   if (fact == 0.0)  return 0;
@@ -199,12 +196,21 @@ ArpackSOE::addA(const Matrix &m, const ID &id, double fact)
 void 
 ArpackSOE::zeroA(void)
 {
+  if (theSOE == 0) {
+    opserr << "ArpackSOE::zeroA() - no SOE set\n";
+    return;
+  }
   return theSOE->zeroA();
 }
 
 int 
 ArpackSOE::addM(const Matrix &m, const ID &id, double fact)
 {
+  if (theSOE == 0) {
+    opserr << "ArpackSOE::addM() - no SOE set\n";
+    return -1;
+  }
+
   int res = this->addA(m, id, -shift);
 
   if (res < 0)
@@ -239,6 +245,11 @@ ArpackSOE::addM(const Matrix &m, const ID &id, double fact)
 void 
 ArpackSOE::zeroM(void)
 {
+  if (theSOE == 0) {
+    opserr << "ArpackSOE::zeroM() - no SOE set\n";
+    return;
+  }
+
   mDiagonal = true;
 
   for (int i=0; i<Msize; i++)
@@ -318,20 +329,12 @@ ArpackSOE::sendSelf(int commitTag, Channel &theChannel)
     sendID = processID;
   
   // send remotes processID
-  ID idData(2);
+  ID idData(1);
   idData(0) = sendID;
-  idData(1) = theSOE->getClassTag();
-  
+
   int res = theChannel.sendID(0, commitTag, idData);
   if (res < 0) {
     opserr <<"WARNING ArpackSOE::sendSelf() - failed to send data\n";
-    return -1;
-  }
-
-  res = theSOE->sendSelf(commitTag, theChannel);
-
-  if (res < 0) {
-    opserr <<"WARNING ArpackSOE::sendSelf() - failed to send LinearSOE\n";
     return -1;
   }
 
@@ -343,7 +346,7 @@ int
 ArpackSOE::recvSelf(int commitTag, Channel &theChannel, 
 		 FEM_ObjectBroker &theBroker)
 {
-  ID idData(2);
+  ID idData(1);
   int res = theChannel.recvID(0, commitTag, idData);
   if (res < 0) {
     opserr <<"WARNING ArpackSOE::recvSelf() - failed to send data\n";
@@ -364,17 +367,6 @@ ArpackSOE::recvSelf(int commitTag, Channel &theChannel,
 
   sizeLocal = new ID(numChannels);
 
-  theSOE = theBroker.getNewLinearSOE(idData(1)); 
-  if (theSOE == 0) {
-    opserr <<"WARNING ArpackSOE::recvSelf() - failed to get LinearSOE of type: " << idData(1) << endln;
-    return -1;
-  }	      
-
-  if (theSOE->recvSelf(commitTag, theChannel, theBroker) < 0) {
-    opserr <<"WARNING ArpackSOE::recvSelf() - LinearSOE of type: " << idData(1) << " failed in recvSelf\n";
-    return -1;
-  }
-
   return 0;
 }
 
@@ -389,5 +381,5 @@ int
 ArpackSOE::setLinearSOE(LinearSOE &theLinearSOE)
 {
   theSOE = &theLinearSOE;
-	return 0;
+  return 0;
 }

@@ -477,7 +477,6 @@ ArpackSolver::myMv(int n, double *v, double *result)
     while((elePtr = theEles()) != 0) {
       const Vector &b = elePtr->getM_Force(x, 1.0);
       y.Assemble(b, elePtr->getID(), 1.0);
-
     }
 
     // loop over the DOF_Groups
