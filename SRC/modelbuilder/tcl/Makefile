@@ -9,7 +9,6 @@ OBJS       = TclModelBuilder.o myCommands.o TclUniaxialMaterialTester.o \
 
 all: $(OBJS) 
 
-
 tcl: $(OBJS) 
 	@$(CD) $(FE)/tcl; $(MAKE) tcl;
 	@$(LINKER) $(LINKFLAGS) $(INTERPRETER_LIBS_TCL) \

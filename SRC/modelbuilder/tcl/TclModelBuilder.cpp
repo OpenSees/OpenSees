@@ -624,6 +624,7 @@ TclModelBuilder::~TclModelBuilder()
   OPS_clearAllTimeSeries();
   OPS_ClearAllCrdTransf();
   OPS_clearAllUniaxialMaterial();
+  OPS_clearAllSectionForceDeformation();
   OPS_clearAllLimitCurve();
   OPS_clearAllDamageModel();
   OPS_clearAllFrictionModel();
@@ -853,7 +854,8 @@ TclModelBuilder::getNDMaterial(int tag)
 int 
 TclModelBuilder::addSection(SectionForceDeformation &theSection)
 {
-  bool result = theSections->addComponent(&theSection);
+  //  bool result = theSections->addComponent(&theSection);
+  bool result = OPS_addSectionForceDeformation(&theSection);
   if (result == true)
     return 0;
   else {
@@ -867,6 +869,8 @@ TclModelBuilder::addSection(SectionForceDeformation &theSection)
 SectionForceDeformation *
 TclModelBuilder::getSection(int tag)
 {
+  return OPS_getSectionForceDeformation(tag);
+  /*
   TaggedObject *mc = theSections->getComponentPtr(tag);
   if (mc == 0) 
     return 0;
@@ -874,6 +878,7 @@ TclModelBuilder::getSection(int tag)
   // do a cast and return
   SectionForceDeformation *result = (SectionForceDeformation *)mc;
   return result;
+  */
 }
 
 int
