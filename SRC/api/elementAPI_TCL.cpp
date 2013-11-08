@@ -39,6 +39,7 @@
 #include <map>
 #include <UniaxialMaterial.h>
 #include <NDMaterial.h>
+#include <SectionForceDeformation.h>
 #include <WrapperUniaxialMaterial.h>
 #include <WrapperNDMaterial.h>
 #include <LimitCurve.h> //MRL
@@ -909,7 +910,7 @@ OPS_GetCrdTransfPtr(int tag)
 SectionForceDeformation *
 OPS_GetSectionForceDeformation(int matTag)
 {
-  return theModelBuilder->getSection(matTag);
+  return OPS_getSectionForceDeformation(matTag);
 }
 
 

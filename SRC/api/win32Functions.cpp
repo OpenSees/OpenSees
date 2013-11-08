@@ -20,7 +20,7 @@ BOOL APIENTRY DllMain(HANDLE hModule,
 
 OPS_Stream *opserrPtr = 0;
 SimulationInformation *theSimulationInfo = 0;
-Domain *ops_TheActiveDomain = 0;
+//Domain *ops_TheActiveDomain = 0;
 
 //double ops_Dt = 0;
 
@@ -34,12 +34,14 @@ typedef int (*OPS_AllocateElementPtrType)(eleObj *, int *matTags, int *maType);
 typedef int (*OPS_AllocateMaterialPtrType)(matObj *);
 typedef UniaxialMaterial *(*OPS_GetUniaxialMaterialPtrType)(int matTag);
 typedef NDMaterial *(*OPS_GetNDMaterialPtrType)(int matTag);
+typedef SectionForceDeformation *(*OPS_GetSectionForceDeformationPtrType)(int matTag);
 typedef CrdTransf *(*OPS_GetCrdTransfPtrType)(int tag);
 typedef int (*OPS_GetNodeInfoPtrType)(int *, int *, double *);
 typedef int (*OPS_InvokeMaterialDirectlyPtrType)(matObject **, modelState *, double *, double *, double *, int *);
 typedef int (*OPS_GetIntPtrType)();
 typedef FE_Datastore *(*OPS_GetFEDatastorePtrType)();
 typedef const char *(_cdecl *OPS_GetInterpPWD_PtrType)();
+
 
 //int    OPS_InvokeMaterial(struct eleObj *, int *,modelState *, double *, double *, double *, int *);
 
@@ -50,6 +52,7 @@ OPS_AllocateElementPtrType OPS_AllocateElementPtr = 0;
 OPS_AllocateMaterialPtrType OPS_AllocateMaterialPtr = 0;
 OPS_GetUniaxialMaterialPtrType OPS_GetUniaxialMaterialPtr = 0;
 OPS_GetNDMaterialPtrType OPS_GetNDMaterialPtr = 0;
+OPS_GetSectionForceDeformationPtrType OPS_GetSectionForceDeformationPtr = 0;
 OPS_GetCrdTransfPtrType OPS_GetCrdTransfPtrFunc = 0;
 OPS_GetNodeInfoPtrType OPS_GetNodeCrdPtr = 0;
 OPS_GetNodeInfoPtrType OPS_GetNodeDispPtr = 0;
@@ -78,6 +81,7 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
                        OPS_AllocateMaterialPtrType allocateMaterialFunct,
                        OPS_GetUniaxialMaterialPtrType OPS_GetUniaxialMaterialFunct,
                        OPS_GetNDMaterialPtrType OPS_GetNDMaterialFunct,
+					   OPS_GetSectionForceDeformationPtrType OPS_GetSectionForceDeformationFunct,
                        OPS_InvokeMaterialDirectlyPtrType OPS_InvokeMaterialDirectlyFunct,
                        OPS_GetNodeInfoPtrType OPS_GetNodeCrdFunct,
                        OPS_GetNodeInfoPtrType OPS_GetNodeDispFunct,
@@ -104,6 +108,7 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
     OPS_AllocateMaterialPtr = allocateMaterialFunct;
     OPS_GetUniaxialMaterialPtr = OPS_GetUniaxialMaterialFunct;
     OPS_GetNDMaterialPtr = OPS_GetNDMaterialFunct;
+	OPS_GetSectionForceDeformationPtr = OPS_GetSectionForceDeformationFunct;
     OPS_GetNodeCrdPtr = OPS_GetNodeCrdFunct;
     OPS_GetNodeDispPtr = OPS_GetNodeDispFunct;
     OPS_GetNodeVelPtr = OPS_GetNodeVelFunct;
@@ -132,6 +137,12 @@ NDMaterial *
 OPS_GetNDMaterial(int matTag)
 {
     return (*OPS_GetNDMaterialPtr)(matTag);
+}
+
+SectionForceDeformation *
+OPS_GetSectionForceDeformation(int matTag)
+{
+return (*OPS_GetSectionForceDeformationPtr)(matTag);
 }
 
 CrdTransf *
