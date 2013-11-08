@@ -1362,7 +1362,8 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
     }
     
     // Now add the material to the modelBuilder
-    if (theTclBuilder->addSection(*theSection) < 0) {
+    //    if (theTclBuilder->addSection(*theSection) < 0) {
+    if (OPS_addSectionForceDeformation(theSection) != true) {
 	opserr << "WARNING could not add section to the domain\n";
 	opserr << *theSection << endln;
 	delete theSection; // invoke the material objects destructor, otherwise mem leak
@@ -2599,8 +2600,8 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
             return TCL_ERROR;
          }
        
-         if (theTclModelBuilder->addSection (*section) < 0)
-         {
+         //if (theTclModelBuilder->addSection (*section) < 0) {
+	 if (OPS_addSectionForceDeformation(section) != true) {
             opserr <<  "WARNING - cannot add section\n";
             return TCL_ERROR;
          }
@@ -2662,8 +2663,8 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
             return TCL_ERROR;
          }
        
-         if (theTclModelBuilder->addSection (*section) < 0)
-         {
+         //if (theTclModelBuilder->addSection (*section) < 0) {
+	 if (OPS_addSectionForceDeformation(section) != true) {
             opserr <<  "WARNING - cannot add section\n";
             return TCL_ERROR;
          }
@@ -2866,8 +2867,8 @@ buildSectionInt(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
             return TCL_ERROR;
          }
        
-         if (theTclModelBuilder->addSection (*section) < 0)
-         {
+         //if (theTclModelBuilder->addSection (*section) < 0) {
+	 if (OPS_addSectionForceDeformation(section) != true) {
             opserr <<  "WARNING - cannot add section\n";
             return TCL_ERROR;
          }
@@ -2919,8 +2920,8 @@ buildSectionInt(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
             return TCL_ERROR;
          }
        
-         if (theTclModelBuilder->addSection (*section) < 0)
-         {
+	 // if (theTclModelBuilder->addSection (*section) < 0) {
+	 if (OPS_addSectionForceDeformation(section) != true) {
             opserr <<  "WARNING - cannot add section\n";
             return TCL_ERROR;
          }
@@ -3045,7 +3046,8 @@ TclCommand_addUCFiberSection (ClientData clientData, Tcl_Interp *interp, int arg
     }
 
     // finally add the section to our modelbuilder
-    if (theTclModelBuilder->addSection (*section) < 0) {
+    //if (theTclModelBuilder->addSection (*section) < 0) {
+    if (OPS_addSectionForceDeformation(section) != true) {
       opserr <<  "WARNING - cannot add section\n";
       return TCL_ERROR;
     }
@@ -3248,8 +3250,8 @@ int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	      return TCL_ERROR;
 	    }
        
-	  if (theTclModelBuilder->addSection (*section) < 0)
-	    {
+	  //if (theTclModelBuilder->addSection (*section) < 0) {
+	  if (OPS_addSectionForceDeformation(section) != true) {
 	      opserr <<  "WARNING - cannot add section\n";
 	      return TCL_ERROR;
 	    }
@@ -3298,8 +3300,8 @@ int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	      return TCL_ERROR;
 	    }
        
-	  if (theTclModelBuilder->addSection (*section) < 0)
-	    {
+	  //if (theTclModelBuilder->addSection (*section) < 0) {
+	  if (OPS_addSectionForceDeformation(section) != true) {
 	      opserr <<  "WARNING - cannot add section\n";
 	      return TCL_ERROR;
 	    }

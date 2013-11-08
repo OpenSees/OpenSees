@@ -43,6 +43,33 @@ double invert2by2Matrix(const Matrix &a, Matrix &b);
 double invert3by3Matrix(const Matrix &a, Matrix &b);
 void invertMatrix(int n, const Matrix &a, Matrix &b);
 
+
+#include <TaggedObject.h>
+#include <MapOfTaggedObjects.h>
+
+static MapOfTaggedObjects theSectionForceDeformationObjects;
+
+bool OPS_addSectionForceDeformation(SectionForceDeformation *newComponent) {
+  return theSectionForceDeformationObjects.addComponent(newComponent);
+}
+
+SectionForceDeformation *OPS_getSectionForceDeformation(int tag) {
+
+  TaggedObject *theResult = theSectionForceDeformationObjects.getComponentPtr(tag);
+  if (theResult == 0) {
+    opserr << "SectionForceDeformation *getSectionForceDeformation(int tag) - none found with tag: " << tag << endln;
+    return 0;
+  }
+  SectionForceDeformation *theMat = (SectionForceDeformation *)theResult;
+
+  return theMat;
+}
+
+void OPS_clearAllSectionForceDeformation(void) {
+  theSectionForceDeformationObjects.clearAll();
+}
+
+
 SectionForceDeformation::SectionForceDeformation(int tag, int classTag)
   :Material(tag,classTag), fDefault(0), sDefault(0)
 {
