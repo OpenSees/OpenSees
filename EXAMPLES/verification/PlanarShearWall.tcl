@@ -43,80 +43,85 @@ set nyFloor 16
 # ----------------------------
 
 # QUAD
-puts "\n - using Quad elements"
+
 #foreach numFloor {6 3 1} {
 
 
-set formatString {%12s%12s%12s%12s%12s%12s%12s}
-puts [format $formatString "# Stories" "Wall Height" "Wall Length" "ETABS" "SAP2000" "OpenSees" Difference]
-set formatString {%12.0f%12.0f%12.0f%12.4f%12.4f%12.4f%12.4f}
+foreach eleType {quad SSPquad} {
 
-set counter 0
-foreach numFloor {6 3 1} {
-    foreach numBay {1 3 6} {
-	wipe
+    set counter 0
+    puts "\n - using $eleType elements"
 
-	model basic -ndm 2 -ndf 2
+    set formatString {%12s%12s%12s%12s%12s%12s%12s}
+    puts [format $formatString "# Stories" "Wall Height" "Wall Length" "ETABS" "SAP2000" "OpenSees" Difference]
+    set formatString {%12.0f%12.0f%12.0f%12.4f%12.4f%12.4f%12.4f}
 
-	nDMaterial ElasticIsotropic 1  $E $v
-	
-	# set some parameters for node and element generation
-	set eleType quad
-	
-	set eleArgs "{$t PlaneStress 1}"
-
-	set nx [expr $numBay * $nxBay];     # number of elements along building length
-	set ny [expr $numFloor * $nyFloor]; # number of elements along building height
-	
-	set nodeTop [expr ($nx+1)*$ny + 1]
-	
-	# generate the nodes and elements
-	set blockCmd "block2D $nx $ny 1 1 quad $eleArgs {
+    foreach numFloor {6 3 1} {
+	foreach numBay {1 3 6} {
+	    wipe
+	    
+	    model basic -ndm 2 -ndf 2
+	    
+	    nDMaterial ElasticIsotropic 1  $E $v
+	    
+	    # set some parameters for node and element generation
+	    set eleType quad
+	    
+	    set eleArgs "{$t PlaneStress 1}"
+	    
+	    set nx [expr $numBay * $nxBay];     # number of elements along building length
+	    set ny [expr $numFloor * $nyFloor]; # number of elements along building height
+	    
+	    set nodeTop [expr ($nx+1)*$ny + 1]
+	    
+	    # generate the nodes and elements
+	    set blockCmd "block2D $nx $ny 1 1 $eleType $eleArgs {
                           1 0. 0.
                           2 [expr $bayWidth * $numBay] 0.
                           3 [expr $bayWidth * $numBay] [expr $floorHeight * $numFloor]
                           4 0. [expr $floorHeight * $numFloor]
-         }"
-	eval $blockCmd
-
-	# add some loads
-	pattern Plain 1 Linear {
-	    load $nodeTop  100.0  0.0  
-	}
-	
-	fixY 0.0   1 1 
-	
-	#floor constraints
-	for {set i 1} {$i <= $numFloor} {incr i 1} {
-	    set mNode [expr ($nx+1)*$nyFloor*$i + 1]
-	    for {set j 1} {$j <= $nx} {incr j 1} {
-		equalDOF $mNode [expr $mNode+$j] 1
+            }"
+	    eval $blockCmd
+	    
+	    # add some loads
+	    pattern Plain 1 Linear {
+		load $nodeTop  100.0  0.0  
 	    }
+	    
+	    fixY 0.0   1 1 
+	    
+	    #floor constraints
+	    for {set i 1} {$i <= $numFloor} {incr i 1} {
+		set mNode [expr ($nx+1)*$nyFloor*$i + 1]
+		for {set j 1} {$j <= $nx} {incr j 1} {
+		    equalDOF $mNode [expr $mNode+$j] 1
+		}
+	    }
+	    
+	    integrator LoadControl  1.0  
+	    algorithm Linear
+	    numberer RCM
+	    constraints Plain 
+	    system SparseGeneral -piv
+	    analysis Static 
+	    
+	    analyze 1
+	    
+	    set disp [nodeDisp $nodeTop 1]
+	    set dispETABS [lindex $resultsETABS $counter]
+	    set dispSAP   [lindex $resultsSAP $counter]
+	    set diffR  [expr abs($dispSAP-$disp)]
+	    puts [format $formatString $numFloor [expr $floorHeight * $numFloor] [expr $bayWidth * $numBay] $dispETABS $dispSAP $disp $diffR]
+	    
+	    
+	    # verify result
+	    if {[expr abs($disp-$dispSAP)] > $tol} {
+		set testOK -1;
+		puts "failed  quad: $disp - $dispSAP [expr abs($disp-$dispSAP)] > $tol"
+	    }
+	    
+	    incr counter
 	}
-	
-	integrator LoadControl  1.0  
-	algorithm Linear
-	numberer RCM
-	constraints Plain 
-	system SparseGeneral -piv
-	analysis Static 
-	
-	analyze 1
-	
-	set disp [nodeDisp $nodeTop 1]
-	set dispETABS [lindex $resultsETABS $counter]
-	set dispSAP   [lindex $resultsSAP $counter]
-	set diffR  [expr abs($dispSAP-$disp)]
-	puts [format $formatString $numFloor [expr $floorHeight * $numFloor] [expr $bayWidth * $numBay] $dispETABS $dispSAP $disp $diffR]
-
-
-	# verify result
-	if {[expr abs($disp-$dispSAP)] > $tol} {
-	    set testOK -1;
-	    puts "failed  quad: $disp - $dispSAP [expr abs($disp-$dispSAP)] > $tol"
-	}
-
-	incr counter
     }
 }
 
@@ -207,34 +212,39 @@ foreach numFloor {6 3 1} {
 
 
 # Brick
-puts "\n - using Brick elements"
 
-set formatString {%12s%12s%12s%12s%12s%12s%12s}
-puts [format $formatString "#Stories" "Wall Height" "Wall Length" "ETABS" "SAP2000" "OpenSees" "Difference"]
-set formatString {%12.0f%12.0f%12.0f%12.4f%12.4f%12.4f%12.4f}
 
-set counter 0
-foreach numFloor {6 3 1} {
-    foreach numBay { 1 3 6} {
-	wipe
+foreach eleType {stdBrick SSPbrick} {
+    set counter 0
 
-	model basic -ndm 3 -ndf 3
+    puts "\n - using $eleType elements"
 
-	# create the material
+    set formatString {%12s%12s%12s%12s%12s%12s%12s}
+    puts [format $formatString "#Stories" "Wall Height" "Wall Length" "ETABS" "SAP2000" "OpenSees" "Difference"]
+    set formatString {%12.0f%12.0f%12.0f%12.4f%12.4f%12.4f%12.4f}
 
-	nDMaterial ElasticIsotropic 1 $E $v
-	
-	# set some parameters for node and element generation
-	set eleArgs "1"
 
-	set nx [expr $numBay * $nxBay];     # number of elements along building length
-	set ny [expr $numFloor * $nyFloor]; # number of elements along building height	
-	set nz 1
-
-	set nodeTop [expr ($nx+1)*$ny + 1]
-	
-	# generate the nodes and elements
-	set blockCmd "block3D $nx $ny $nz 1 1 stdBrick $eleArgs {
+    foreach numFloor {6 3 1} {
+	foreach numBay { 1 3 6} {
+	    wipe
+	    
+	    model basic -ndm 3 -ndf 3
+	    
+	    # create the material
+	    
+	    nDMaterial ElasticIsotropic 1 $E $v
+	    
+	    # set some parameters for node and element generation
+	    set eleArgs "1"
+	    
+	    set nx [expr $numBay * $nxBay];     # number of elements along building length
+	    set ny [expr $numFloor * $nyFloor]; # number of elements along building height	
+	    set nz 1
+	    
+	    set nodeTop [expr ($nx+1)*$ny + 1]
+	    
+	    # generate the nodes and elements
+	    set blockCmd "block3D $nx $ny $nz 1 1 SSPbrick $eleArgs {
                           1             0.                                0.              0.
                           2 [expr $bayWidth * $numBay]                    0.              0.
                           3 [expr $bayWidth * $numBay]   [expr $floorHeight * $numFloor]  0.
@@ -243,54 +253,55 @@ foreach numFloor {6 3 1} {
                           6 [expr $bayWidth * $numBay]                    0.              $t
                           7 [expr $bayWidth * $numBay]   [expr $floorHeight * $numFloor]  $t
                           8             0.               [expr $floorHeight * $numFloor]  $t   
-         }"
-
-	eval $blockCmd
-	
-	# add some loads
-	pattern Plain 1 Linear {
-	    load $nodeTop  50.0  0.0  0.0 
-	    load [expr $nodeTop + ($nx+1)*($ny+1)]  50.0  0.0  0.0 
-	}
-	
-	fixY 0.0   1 1 1 
-
-
-	#floor constraints
-	for {set i 1} {$i <= $numFloor} {incr i 1} {
-	    set mNode1 [expr ($nx+1)*$nyFloor*$i + 1]
-	    set mNode2 [expr $mNode1 + ($nx+1)*($ny+1)]
-	    for {set j 1} {$j <= $nx} {incr j 1} {
-		equalDOF $mNode1 [expr $mNode1+$j] 1
-		equalDOF $mNode2 [expr $mNode2+$j] 1
+             }"
+	    
+	    eval $blockCmd
+	    
+	    # add some loads
+	    pattern Plain 1 Linear {
+		load $nodeTop  50.0  0.0  0.0 
+		load [expr $nodeTop + ($nx+1)*($ny+1)]  50.0  0.0  0.0 
 	    }
+	    
+	    fixY 0.0   1 1 1 
+	    
+	    
+	    #floor constraints
+	    for {set i 1} {$i <= $numFloor} {incr i 1} {
+		set mNode1 [expr ($nx+1)*$nyFloor*$i + 1]
+		set mNode2 [expr $mNode1 + ($nx+1)*($ny+1)]
+		for {set j 1} {$j <= $nx} {incr j 1} {
+		    equalDOF $mNode1 [expr $mNode1+$j] 1
+		    equalDOF $mNode2 [expr $mNode2+$j] 1
+		}
+	    }
+	    
+	    integrator LoadControl  1.0  
+	    algorithm Linear
+	    numberer RCM
+	    constraints Plain 
+	    system ProfileSPD
+	    #system SparseGeneral -piv
+	    analysis Static 
+	    
+	    analyze 1
+	    
+	    set disp [nodeDisp $nodeTop 1]
+	    
+	    set dispETABS [lindex $resultsETABS $counter]
+	    set dispSAP   [lindex $resultsSAP $counter]
+	    set diffR  [expr abs($dispSAP-$disp)]
+	    puts [format $formatString $numFloor [expr $floorHeight * $numFloor] [expr $bayWidth * $numBay] $dispETABS $dispSAP $disp $diffR]
+	    
+	    
+	    # verify result
+	    if {[expr abs($disp-$dispSAP)] > $tol} {
+		set testOK -1;
+		puts "failed  brick: $disp - $dispSAP [expr abs($disp-$dispSAP)] > $tol"
+	    }
+	    
+	    incr counter	
 	}
-
-	integrator LoadControl  1.0  
-	algorithm Linear
-	numberer RCM
-	constraints Plain 
-	system ProfileSPD
-	#system SparseGeneral -piv
-	analysis Static 
-	
-	analyze 1
-	
-	set disp [nodeDisp $nodeTop 1]
-
-	set dispETABS [lindex $resultsETABS $counter]
-	set dispSAP   [lindex $resultsSAP $counter]
-	set diffR  [expr abs($dispSAP-$disp)]
-	puts [format $formatString $numFloor [expr $floorHeight * $numFloor] [expr $bayWidth * $numBay] $dispETABS $dispSAP $disp $diffR]
-
-
-	# verify result
-	if {[expr abs($disp-$dispSAP)] > $tol} {
-	    set testOK -1;
-	    puts "failed  brick: $disp - $dispSAP [expr abs($disp-$dispSAP)] > $tol"
-	}
-
-	incr counter	
     }
 }
 
