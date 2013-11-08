@@ -261,14 +261,15 @@ DirectIntegrationAnalysis::eigen(int numMode, bool generalized, bool findSmalles
 
     if (stamp != domainStamp) {
       domainStamp = stamp;
-      
+  
       result = this->domainChanged();
       
       if (result < 0) {
-	opserr << "DirectIntegrationAnalysis::eigen() - domainChanged failed";
+	     opserr << "DirectIntegrationAnalysis::eigen() - domainChanged failed";
 	return -1;
       }	
     }
+
 
     //
     // zero A and M
@@ -279,6 +280,7 @@ DirectIntegrationAnalysis::eigen(int numMode, bool generalized, bool findSmalles
     //
     // form K
     //
+
 
     FE_EleIter &theEles = theAnalysisModel->getFEs();    
     FE_Element *elePtr;
@@ -331,7 +333,7 @@ DirectIntegrationAnalysis::eigen(int numMode, bool generalized, bool findSmalles
 	opserr << "WARNING DirectIntegrationAnalysis::eigen() - EigenSOE failed in solve()\n";
 	return -4;
     }
-
+	
     //
     // now set the eigenvalues and eigenvectors in the model
     //
@@ -343,7 +345,7 @@ DirectIntegrationAnalysis::eigen(int numMode, bool generalized, bool findSmalles
       theAnalysisModel->setEigenvector(i, theEigenSOE->getEigenvector(i));
     }    
     theAnalysisModel->setEigenvalues(theEigenvalues);
-    
+  
     return 0;
 }
 
@@ -501,8 +503,6 @@ DirectIntegrationAnalysis::setLinearSOE(LinearSOE &theNewSOE)
 int 
 DirectIntegrationAnalysis::setEigenSOE(EigenSOE &theNewSOE)
 {
-  opserr << "DirectIntegrationAnalysis::setEigenSOE(EigenSOE &theNewSOE)\n";
-
   // invoke the destructor on the old one if not the same!
   if (theEigenSOE != 0) {
     if (theEigenSOE->getClassTag() != theNewSOE.getClassTag()) {
@@ -524,7 +524,7 @@ DirectIntegrationAnalysis::setEigenSOE(EigenSOE &theNewSOE)
     */
     domainStamp = 0;
   }
-  
+ 
   return 0;
 }
 

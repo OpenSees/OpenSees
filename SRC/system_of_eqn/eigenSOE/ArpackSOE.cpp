@@ -174,7 +174,7 @@ ArpackSOE::setSize(Graph &theGraph)
     opserr << "WARNING:ArpackSOE::setSize() -  solver failed setSize()\n";
     return solverOK;
   } 
-
+  
   return result;    
 }
 
@@ -382,4 +382,44 @@ ArpackSOE::setLinearSOE(LinearSOE &theLinearSOE)
 {
   theSOE = &theLinearSOE;
   return 0;
+}
+
+int
+ArpackSOE::checkSameInt(int value)
+{
+	if (processID == -1)
+		return 1;
+
+	static ID idData(1);
+    if (processID != 0) {
+    
+		Channel *theChannel = theChannels[0];
+	    idData(0) = value;
+		theChannel->sendID(0, 0, idData);
+		theChannel->recvID(0, 0, idData);
+		if (idData(0) == 1)
+			return 1;
+		else
+			return 0;
+	} 
+
+	else {
+        int ok = 1;
+		// receive B 
+		for (int j=0; j<numChannels; j++) {
+		// get X & add
+			Channel *theChannel = theChannels[j];
+			theChannel->recvID(0, 0, idData);
+			if (idData(0) != value)
+				ok = 0;
+		}
+
+		// send results back
+		idData(0) = ok;
+		for (int j=0; j<numChannels; j++) {
+			Channel *theChannel = theChannels[j];
+			theChannel->sendID(0, 0, idData);
+		}
+		return ok;
+    }
 }

@@ -1764,7 +1764,7 @@ Domain::initialize(void)
   ElementIter &theElemIter = this->getElements();    
   while ((elePtr = theElemIter()) != 0) 
     // lvalue needed here for M$ VC++ compiler -- MHS
-    const Matrix &ret = elePtr->getInitialStiff();
+    elePtr->getInitialStiff();
 
   return 0;
 }
@@ -1790,7 +1790,7 @@ Domain::setRayleighDampingFactors(double alphaM, double betaK, double betaK0, do
 
 
 int
-Domain::record(void)
+Domain::record(bool fromAnalysis)
 {
   int res = 0;
 

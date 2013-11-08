@@ -1142,7 +1142,7 @@ PartitionedDomain::eigenAnalysis(int numModes, bool generalized, bool findSmalle
 
 
 int
-PartitionedDomain::record(void)
+PartitionedDomain::record(bool fromAnalysis)
 {
   int result = 0;
 
@@ -1152,7 +1152,7 @@ PartitionedDomain::record(void)
     TaggedObject *theObject;
     while ((theObject = theSubsIter()) != 0) {
       Subdomain *theSub = (Subdomain *)theObject;	    
-      result += theSub->record();
+      result += theSub->record(fromAnalysis);
       if (result < 0) {
 	opserr << "PartitionedDomain::record(void)";
 	opserr << " - failed in Subdomain::record()\n";

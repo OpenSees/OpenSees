@@ -210,8 +210,10 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
   int ido = 0;
   int ierr = 0;
   
-  while (1) { 
+  int counter = 0;
 
+  while (1) { 
+      
 
 #ifdef _WIN32
     unsigned int sizeWhich =2;
@@ -219,20 +221,34 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
     unsigned int sizeHowmany =1;
     unsigned int sizeOne = 1;
 
+   // opserr << "ArpackSOE::solver) -  before DSAPPD\n";
     DSAUPD(&ido, &bmat, &n, which, &nev, &tol, resid, 
 	   &ncv, v, &ldv,
 	   iparam, ipntr, workd, workl, &lworkl, &info);
+	// opserr << "ArpackSOE::solver) - 1 after DSAPPD\n";
 #else
     dsaupd_(&ido, &bmat, &n, which, &nev, &tol, resid, &ncv, v, &ldv,
 	    iparam, ipntr, workd, workl, &lworkl, &info);
 #endif
+	
+
+	if (theArpackSOE->checkSameInt(ido) != 1) {
+		opserr << "ArpackSolver::solve - ido values not the same .. ido, processID: "
+			<< ido << " " << processID << endln;
+		return -1;
+	}
 
     if (ido == -1) {
-
+    
       myMv(n, &workd[ipntr[0]-1], &workd[ipntr[1]-1]); 
-      
+    
       theVector.setData(&workd[ipntr[1] - 1], size);
-      theSOE->setB(theVector);
+     
+	   if (processID > 0)
+	     theSOE->zeroB();
+      else
+	      theSOE->setB(theVector);
+
       ierr = theSOE->solve();
       const Vector &X = theSOE->getX();
       theVector = X;
@@ -243,14 +259,16 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
       
       //  double ratio = 1.0;
       myCopy(n, &workd[ipntr[2]-1], &workd[ipntr[1]-1]);
-      
+      //opserr << "ArpackSOE::solver) - 1 before SOE-setVector\n"; 
       theVector.setData(&workd[ipntr[1] - 1], size);
+	   //opserr << "ArpackSOE::solver) - 1 after SOE-setEVctor\n";
       if (processID > 0)
-	theSOE->zeroB();
+	     theSOE->zeroB();
       else
-	theSOE->setB(theVector);
+	      theSOE->setB(theVector);
 
       theSOE->solve();
+   
       const Vector &X = theSOE->getX();
       theVector = X;
       //      theVector.setData(&workd[ipntr[1] - 1], size);
@@ -263,7 +281,6 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
 
       continue;
     }
-    
     break;
   }
   

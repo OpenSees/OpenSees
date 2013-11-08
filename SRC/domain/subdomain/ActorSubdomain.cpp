@@ -141,6 +141,7 @@ ActorSubdomain::run(void)
 	      findSmallest = true;
 	    else
 	      findSmallest = false;
+		
 	    this->eigenAnalysis(numMode, generalized, findSmallest);
 	    break;
 	    /*

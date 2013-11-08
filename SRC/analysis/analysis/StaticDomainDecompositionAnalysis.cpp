@@ -236,6 +236,7 @@ StaticDomainDecompositionAnalysis::analyze(double dT)
 int 
 StaticDomainDecompositionAnalysis::eigen(int numMode, bool generalized, bool findSmallest)
 {
+	opserr << "StaticDomainDecompositionAnalysis::eigen() - start\n";
   int result = 0;
   Domain *the_Domain = this->getDomainPtr();
 
@@ -333,7 +334,7 @@ StaticDomainDecompositionAnalysis::eigen(int numMode, bool generalized, bool fin
     }    
     theAnalysisModel->setEigenvalues(theEigenvalues);
 
-
+   opserr << "StaticDomainDecompositionAnalysis::eigen() - end\n";
   return 0;
 }
 

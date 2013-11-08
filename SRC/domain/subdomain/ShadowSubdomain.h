@@ -125,7 +125,7 @@ class ShadowSubdomain: public Shadow, public Subdomain
     virtual  int update(void);    
     virtual  int update(double newTime, double dT);    
     virtual  int commit(void);
-    virtual  int record(void);
+    virtual  int record(bool fromAnalysis = true);
     virtual  int revertToLastCommit(void);    
     virtual  int revertToStart(void);    
     virtual  int barrierCheckIN(void);    

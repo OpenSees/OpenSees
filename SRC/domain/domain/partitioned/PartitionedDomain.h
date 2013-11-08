@@ -111,7 +111,7 @@ class PartitionedDomain: public Domain
     virtual  int analysisStep(double dT);
     virtual  int eigenAnalysis(int, bool, bool);
 
-    virtual int  record(void);    
+    virtual int  record(bool fromAnalysis = true);    
     virtual int  addRecorder(Recorder &theRecorder);    	
     virtual int  removeRecorders(void);
     virtual int  removeRecorder(int tag);

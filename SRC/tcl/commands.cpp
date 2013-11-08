@@ -6009,8 +6009,17 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
       } else if (theTransientAnalysis != 0) {
 	theTransientAnalysis->setEigenSOE(*theEigenSOE);
       }
-      
+ 
+
+
 #ifdef _PARALLEL_PROCESSING
+	if (OPS_PARTITIONED == false && OPS_NUM_SUBDOMAINS > 1) 
+    if (partitionModel() < 0) {
+      opserr << "WARNING before analysis; partition failed - too few elements\n";
+      OpenSeesExit(clientData, interp, argc, argv);
+      return TCL_ERROR;
+    }
+
       if (theStaticAnalysis != 0 || theTransientAnalysis != 0) {
 	SubdomainIter &theSubdomains = theDomain.getSubdomains();
 	Subdomain *theSub;

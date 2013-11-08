@@ -207,7 +207,7 @@ class Domain
     virtual int  addRecorder(Recorder &theRecorder);    	
     virtual int  removeRecorders(void);
     virtual int  removeRecorder(int tag);
-    virtual int  record(void);
+    virtual int  record(bool fromAnalysis=true);
 
     virtual int  addRegion(MeshRegion &theRegion);    	
     virtual MeshRegion *getRegion(int region);    	

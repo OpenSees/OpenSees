@@ -64,6 +64,8 @@ class ArpackSOE : public EigenSOE
 
     friend class ArpackSolver;
 
+	int checkSameInt(int);
+
   protected:
     
   private:

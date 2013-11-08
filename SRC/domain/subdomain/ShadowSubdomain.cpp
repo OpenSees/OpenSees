@@ -1055,10 +1055,10 @@ ShadowSubdomain::commit(void)
 }
 
 int
-ShadowSubdomain::record(void)
+ShadowSubdomain::record(bool fromAnalysis)
 {
   DomainDecompositionAnalysis *theDDA = this->getDDAnalysis();
-  if (theDDA != 0 && theDDA->doesIndependentAnalysis() != true) {
+  if (theDDA != 0 && (fromAnalysis == false || theDDA->doesIndependentAnalysis() != true)) {
     msgData(0) = ShadowActorSubdomain_record;
     this->sendID(msgData);
     return 0;
@@ -1417,7 +1417,6 @@ ShadowSubdomain::eigenAnalysis(int numMode, bool generalized, bool findSmallest)
       msgData(3) = 1;
 
     this->sendID(msgData);
-
     return 0;
 }
 
