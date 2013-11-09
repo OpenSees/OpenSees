@@ -1764,7 +1764,7 @@ Domain::initialize(void)
   ElementIter &theElemIter = this->getElements();    
   while ((elePtr = theElemIter()) != 0) 
     // lvalue needed here for M$ VC++ compiler -- MHS
-    elePtr->getInitialStiff();
+    const Matrix &initM = elePtr->getInitialStiff();
 
   return 0;
 }
