@@ -348,7 +348,7 @@ PFEMElement2DBubble::getResistingForceIncInertia()
     // bubble force
     Vector fbub(2), temp(2), fp(3);
     fbub(0) = rho*bx*J2/60.0;
-    fbub(0) = rho*by*J2/60.0;
+    fbub(1) = rho*by*J2/60.0;
     fbub.addMatrixVector(1.0, Mbub, vbn, 1.0);     // fbub+Mbub/dt*vbn
     temp.addMatrixVector(1.0, invKbub, fbub, 1.0); // (Mbub/dt+Kbub)^{-1}(fbub+Mbub/dt*vbn)
     fp.addMatrixTransposeVector(1.0, Gbub, temp, -1.0); // -Gt*(Mbub/dt+Kbub)^{-1}(fbub+Mbub/dt*vbn)
