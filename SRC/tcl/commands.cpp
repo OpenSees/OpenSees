@@ -6911,8 +6911,8 @@ nodePressure(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
         }
     }
     char buffer[80];
-    sprintf(buffer, "%f", pressure);
-    Tcl_SetResult(interp, buffer, NULL);
+    sprintf(buffer, "%35.20f", pressure);
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
     return TCL_OK;
 }
