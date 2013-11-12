@@ -103,6 +103,14 @@ private:
 
     static Matrix K;
     static Vector P;
+
+    Matrix getK();
+    Matrix getKbub();
+    Matrix getGbub();
+    Matrix getMbub();
+    Vector getF();
+    Vector getFbub();
+    void getVb();
 };
 
 #endif

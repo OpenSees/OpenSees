@@ -166,7 +166,7 @@ PFEMElement2DBubble::getMass()
     // mass 
     for(int a=0; a<3; a++) {
         double m = rho*J2/3.0;
-        m += rho*J2/180.0;                      // bubble
+        //m += rho*J2/180.0;                      // bubble
         K(numDOFs(2*a), numDOFs(2*a)) = m;          // Mxd
         K(numDOFs(2*a)+1, numDOFs(2*a)+1) = m;      // Myd
 
@@ -180,7 +180,7 @@ PFEMElement2DBubble::getMass()
              K(numDOFs(2*a+1), numDOFs(2*b+1)) = m;   // Mp
         }
     }
-
+    //opserr<<"M = "<<K;
     return K;
 }
 
@@ -194,44 +194,19 @@ PFEMElement2DBubble::getDamp()
     K.Zero();
 
     double J2 = J/2.;
-    double lambda = -2*mu/3.0;
 
     // bubble matrices
-    Matrix Kbub(2,2), Gbub(2,3), invKbub(2,2);
-    for(int b=0; b<3; b++) {
-        Gbub(0,b) = -J2/60.0*dNdx[b];    // Gbubx
-        Gbub(1,b) = -J2/60.0*dNdy[b];    // Gbuby
-    }
-    for(int a=0; a<3; a++) {
-        Kbub(0,0) += mu*J2/540.0*(4*dNdx[a]*dNdx[a]+3*dNdy[a]*dNdy[a]);  // k11
-        Kbub(0,1) += mu*J2/540.0*(dNdx[a]*dNdy[a]);                      // k12
-        Kbub(1,0) += mu*J2/540.0*(dNdx[a]*dNdy[a]);                      // k21
-        Kbub(1,1) += mu*J2/540.0*(3*dNdx[a]*dNdx[a]+4*dNdy[a]*dNdy[a]);  // k22
-    }
-    for(int a=0; a<2; a++) {
-        Kbub(a,a) += rho*J2*43.0/2520.0/ops_Dt;                          // Mbub
-    }
-    invKbub(0,0) = Kbub(1,1);
-    invKbub(1,1) = Kbub(0,0);
-    invKbub(0,1) = -Kbub(0,1);
-    invKbub(1,0) = -Kbub(1,0);
-    invKbub /= Kbub(0,0)*Kbub(1,1) - Kbub(0,1)*Kbub(1,0);                // inverse of Mbub/dt+Kbub
+    Matrix Gbub = getGbub();
+    Matrix Mbub = getMbub();
+    Mbub(0,0) = ops_Dt/Mbub(0,0);
+    Mbub(1,1) = ops_Dt/Mbub(1,1);
+
     Matrix L(3,3);
-    L.addMatrixTripleProduct(1.0, Gbub, invKbub, 1.0);                  // L = Gbub'*Kbub^{-1}*Gbub
+    L.addMatrixTripleProduct(1.0, Gbub, Mbub, 1.0);                  // L = Gbub'*Kbub^{-1}*Gbub
 
     // other matrices
     for(int a=0; a<3; a++) {
         for(int b=0; b<3; b++) {
-            K(numDOFs(2*a), numDOFs(2*b)) += mu*J2*(2*dNdx[a]*dNdx[b] + dNdy[a]*dNdy[b]); // K1
-            K(numDOFs(2*a), numDOFs(2*b)+1) += mu*J2*dNdy[a]*dNdx[b]; // K1
-            K(numDOFs(2*a)+1, numDOFs(2*b)) += mu*J2*dNdx[a]*dNdy[b]; // K1
-            K(numDOFs(2*a)+1, numDOFs(2*b)+1) += mu*J2*(2*dNdy[a]*dNdy[b] + dNdx[a]*dNdx[b]); // K1
-
-            K(numDOFs(2*a), numDOFs(2*b)) += lambda*J2*dNdx[a]*dNdx[b]; // K2
-            K(numDOFs(2*a), numDOFs(2*b)+1) += lambda*J2*dNdx[a]*dNdy[b]; // K2
-            K(numDOFs(2*a)+1, numDOFs(2*b)) += lambda*J2*dNdy[a]*dNdx[b]; // K2
-            K(numDOFs(2*a)+1, numDOFs(2*b)+1) += lambda*J2*dNdy[a]*dNdy[b]; // K2
-
             K(numDOFs(2*a+1), numDOFs(2*b)) = dNdx[b]/3.*J2;   // GxT
             K(numDOFs(2*a+1), numDOFs(2*b)+1) = dNdy[b]/3.*J2; // GyT
 
@@ -241,7 +216,7 @@ PFEMElement2DBubble::getDamp()
             K(numDOFs(2*a+1), numDOFs(2*b+1)) = L(a,b);   // bubble
         }
     }
-
+    //opserr<<"K = "<<K;
     return K;
 }
 
@@ -296,7 +271,7 @@ PFEMElement2DBubble::getResistingForceIncInertia()
     P.Zero();
 
     // get velocity, accleration
-    Vector v(ndf), vdot(ndf), vbn(2);
+    Vector v(ndf), vdot(ndf);
     for(int i=0; i<3; i++) {
         const Vector& accel = nodes[2*i]->getTrialAccel();
         vdot(numDOFs(2*i)) = accel(0);
@@ -312,46 +287,22 @@ PFEMElement2DBubble::getResistingForceIncInertia()
         const Vector& vel2 = nodes[2*i+1]->getTrialVel();   // pressure
         v(numDOFs(2*i+1)) = vel2(0);
 
-        const Vector& veln = nodes[2*i]->getVel();
-        vbn(0) += veln(0);
-        vbn(1) += veln(1);
-
-        
     }
-    vbn /= 3.0;
 
     // get Jacobi
     double J2 = J/2.;
 
     // bubble matrices
-    Matrix Mbub(2,2), Kbub(2,2), Gbub(2,3), invKbub(2,2);
-    for(int b=0; b<3; b++) {
-        Gbub(0,b) = -J2/60.0*dNdx[b];    // Gbubx
-        Gbub(1,b) = -J2/60.0*dNdy[b];    // Gbuby
-    }
-    for(int a=0; a<3; a++) {
-        Kbub(0,0) += mu*J2/540.0*(4*dNdx[a]*dNdx[a]+3*dNdy[a]*dNdy[a]);  // k11
-        Kbub(0,1) += mu*J2/540.0*(dNdx[a]*dNdy[a]);                      // k12
-        Kbub(1,0) += mu*J2/540.0*(dNdx[a]*dNdy[a]);                      // k21
-        Kbub(1,1) += mu*J2/540.0*(3*dNdx[a]*dNdx[a]+4*dNdy[a]*dNdy[a]);  // k22
-    }
-    for(int a=0; a<2; a++) {
-        Mbub(a,a) = rho*J2*43.0/2520.0/ops_Dt;                          // Mbub/dt
-    }
-    Kbub += Mbub;
-    invKbub(0,0) = Kbub(1,1);
-    invKbub(1,1) = Kbub(0,0);
-    invKbub(0,1) = -Kbub(0,1);
-    invKbub(1,0) = -Kbub(1,0);
-    invKbub /= Kbub(0,0)*Kbub(1,1) - Kbub(0,1)*Kbub(1,0);    // inverse of Mbub/dt+Kbub
+    Matrix Gbub = getGbub();
+    Matrix Mbub = getMbub();
+    Vector F = getF();
+    Vector Fbub = getFbub();
+    Mbub(0,0) = ops_Dt/Mbub(0,0);
+    Mbub(1,1) = ops_Dt/Mbub(1,1);
 
     // bubble force
-    Vector fbub(2), temp(2), fp(3);
-    fbub(0) = rho*bx*J2/60.0;
-    fbub(1) = rho*by*J2/60.0;
-    fbub.addMatrixVector(1.0, Mbub, vbn, 1.0);     // fbub+Mbub/dt*vbn
-    temp.addMatrixVector(1.0, invKbub, fbub, 1.0); // (Mbub/dt+Kbub)^{-1}(fbub+Mbub/dt*vbn)
-    fp.addMatrixTransposeVector(1.0, Gbub, temp, -1.0); // -Gt*(Mbub/dt+Kbub)^{-1}(fbub+Mbub/dt*vbn)
+    Vector fp(3);
+    fp.addMatrixTransposeVector(0.0, Gbub, Mbub*Fbub, -1.0);
 
     // internal force
     P.addMatrixVector(1.0, getMass(), vdot, 1.0);
@@ -364,7 +315,7 @@ PFEMElement2DBubble::getResistingForceIncInertia()
         P(numDOFs(2*i+1)) -= fp(i);
     }
 
-
+    //opserr<<"F = "<<F;
     return P;
 }
 
@@ -586,4 +537,120 @@ PFEMElement2DBubble::displaySelf(Renderer &theViewer, int displayMode, float fac
     error += theViewer.drawPolygon (coords, values);
 
     return error;
+}
+
+Matrix
+PFEMElement2DBubble::getK()
+{
+    double J2 = J/2.;
+    double lambda = -2*mu/3.0;
+
+    Matrix K(6,6);
+    
+    // other matrices
+    for(int a=0; a<3; a++) {
+        for(int b=0; b<3; b++) {
+            K(2*a, 2*b) += mu*J2*(2*dNdx[a]*dNdx[b] + dNdy[a]*dNdy[b]); // K1
+            K(2*a, 2*b+1) += mu*J2*dNdy[a]*dNdx[b]; // K1
+            K(2*a+1, 2*b) += mu*J2*dNdx[a]*dNdy[b]; // K1
+            K(2*a+1, 2*b+1) += mu*J2*(2*dNdy[a]*dNdy[b] + dNdx[a]*dNdx[b]); // K1
+
+            K(2*a, 2*b) += lambda*J2*dNdx[a]*dNdx[b]; // K2
+            K(2*a, 2*b+1) += lambda*J2*dNdx[a]*dNdy[b]; // K2
+            K(2*a+1, 2*b) += lambda*J2*dNdy[a]*dNdx[b]; // K2
+            K(2*a+1, 2*b+1) += lambda*J2*dNdy[a]*dNdy[b]; // K2
+        }
+    }
+
+    return K;
+}
+
+Matrix
+PFEMElement2DBubble::getKbub()
+{
+    Matrix Kbub(2,2);
+    double J2 = J/2.0;
+    for(int a=0; a<3; a++) {
+        Kbub(0,0) += mu*J2/540.0*(4*dNdx[a]*dNdx[a]+3*dNdy[a]*dNdy[a]);  // k11
+        Kbub(0,1) += mu*J2/540.0*(dNdx[a]*dNdy[a]);                      // k12
+        Kbub(1,0) += mu*J2/540.0*(dNdx[a]*dNdy[a]);                      // k21
+        Kbub(1,1) += mu*J2/540.0*(3*dNdx[a]*dNdx[a]+4*dNdy[a]*dNdy[a]);  // k22
+    }
+    return Kbub;
+}
+
+Matrix 
+PFEMElement2DBubble::getGbub()
+{
+    double J2 = J/2.0;
+    Matrix Gbub(2,3);
+    for(int b=0; b<3; b++) {
+        Gbub(0,b) = -J2*27/60.0*dNdx[b];    // Gbubx
+        Gbub(1,b) = -J2*27/60.0*dNdy[b];    // Gbuby
+    }
+    return Gbub;
+}
+
+Matrix
+PFEMElement2DBubble::getMbub()
+{
+    double J2 = J/2.0;
+    Matrix Mbub(2,2);
+    for(int a=0; a<2; a++) {
+        Mbub(a,a) = rho*J2*1863.0/2520.0;
+    }
+    return Mbub;
+}
+
+Vector
+PFEMElement2DBubble::getF() 
+{
+    Vector F(6);
+    double J2 = J/2.0;
+
+    // external force
+    for(int a=0; a<3; a++) {
+        F(2*a) = rho*bx*27/3.*J2;
+        F(2*a+1) = rho*by*27/3.*J2;
+    }
+
+    // velocity
+    if(mu > 0) {
+        Vector v(6);
+        for(int a=0; a<3; a++) {
+            const Vector& vel = nodes[2*a]->getTrialVel();
+            v(2*a) = vel(0);
+            v(2*a+1) = vel(1);
+        }
+        
+        F.addMatrixVector(1.0, getK(), v, -1.0);
+    }
+
+    return F;
+}
+
+Vector
+PFEMElement2DBubble::getFbub()
+{
+    double J2 = J/2.0;
+    Vector Fbub(2);
+
+    // external force
+    Fbub(0) = rho*J2*bx*27/60.0;
+    Fbub(1) = rho*J2*by*27/60.0;
+
+    // velocity
+    if(mu > 0) {
+        // Vector vbn(2);
+        // for(int a=0; a<3; a++) {
+        //     const Vector& veln = nodes[2*a]->getTrialVel();
+        //     vbn(2*a) += veln(0);
+        //     vbn(2*a+1) += veln(1);
+        // }
+        // vbn /= 3.0;
+        
+        // Fbub.addMatrixVector(1.0, getKbub(), vb, -1.0);
+    }
+
+    return Fbub;
 }
