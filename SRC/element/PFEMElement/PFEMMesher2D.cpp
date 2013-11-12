@@ -158,7 +158,7 @@ PFEMMesher2D::discretize(int startnodetag, const Vector& points, const Vector& s
     //Timer timer;
     //timer.start();
     char s[100];
-    sprintf(s,"Qzqpa%.60f",maxarea);
+    sprintf(s,"DQzqpa%.60f",maxarea);
     // opserr<<"discretize : ";
     // opserr<<"Start Delaunay Triangulation -- If got segmentation fault, please check inputs \n";
     triangulate(s, &in, &out, &vout);
