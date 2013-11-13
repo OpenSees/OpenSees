@@ -814,11 +814,10 @@ Subdomain::analysisStep(double dT)
 
 
 int
-Subdomain::eigenAnalysis(int numMode, bool generalized)
+Subdomain::eigenAnalysis(int numMode, bool generalized, bool findSmallest)
 {
   if (theAnalysis != 0)
-    return theAnalysis->eigenAnalysis(numMode, generalized);
-
+    return theAnalysis->eigenAnalysis(numMode, generalized, findSmallest);
   return 0;
 }
 

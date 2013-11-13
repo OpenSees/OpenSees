@@ -94,6 +94,8 @@ SRC/domain/domain/NodeIter.h
 SRC/OPS_Globals.h
 SRC/handler/OPS_Stream.cpp
 SRC/handler/OPS_Stream.h
+SRC/handler/DummyStream.h
+SRC/handler/DummyStream.cpp
 SRC/actor/objectBroker/ObjectBroker.cpp
 SRC/actor/objectBroker/ObjectBroker.h
 SRC/domain/component/Parameter.cpp

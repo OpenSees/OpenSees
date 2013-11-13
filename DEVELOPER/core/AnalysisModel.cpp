@@ -608,7 +608,7 @@ AnalysisModel::analysisStep(double dT)
 }
 
 int
-AnalysisModel::eigenAnalysis(int numMode, bool generalized)
+AnalysisModel::eigenAnalysis(int numMode, bool generalized, bool findSmallest)
 {
     // check to see there is a Domain linked to the Model
 
@@ -618,7 +618,7 @@ AnalysisModel::eigenAnalysis(int numMode, bool generalized)
     }
 
     // invoke the method
-    return myDomain->eigenAnalysis(numMode, generalized);
+    return myDomain->eigenAnalysis(numMode, generalized, findSmallest);
 }
 
 

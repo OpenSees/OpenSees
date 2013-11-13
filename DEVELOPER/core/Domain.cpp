@@ -37,6 +37,7 @@
 
 #include <OPS_Globals.h>
 #include <Domain.h>
+#include <DummyStream.h>
 
 #include <ElementIter.h>
 #include <NodeIter.h>
@@ -51,6 +52,7 @@
 #include <ElementalLoad.h>
 #include <LoadPattern.h>
 #include <Parameter.h>
+#include <Response.h>
 
 #include <MapOfTaggedObjects.h>
 #include <MapOfTaggedObjectsIter.h>
@@ -1533,6 +1535,49 @@ Domain::getNodeResponse(int nodeTag, NodeResponseType responseType)
     return theNode->getResponse(responseType);
 }
 
+
+static Vector responseData(0);
+
+const Vector *
+Domain::getElementResponse(int eleTag, const char **argv, int argc)
+{
+  Element *theEle = this->getElement(eleTag);
+  if (theEle == 0)
+    return NULL;
+  else  {
+
+    if (argc == 1) {
+      if (strcmp(argv[0],"forces") == 0) {
+	return &(theEle->getResistingForce());
+      } else if (strcmp(argv[0],"nodeTags") == 0) {
+	const ID&theNodes = theEle->getExternalNodes();
+	int size = theNodes.Size();
+	if (responseData.Size() != size) 
+	  responseData.resize(size);
+	for (int i=0; i<size; i++)
+	  responseData(i) = theNodes(i);
+	return &responseData;
+      }
+    }
+	
+    DummyStream dummy;
+    Response *theResponse = theEle->setResponse(argv, argc, dummy);
+    if (theResponse == 0) {
+      return 0;	  
+    }
+
+    if (theResponse->getResponse() < 0) {
+      delete theResponse;
+      return 0;
+    }
+
+    Information &eleInfo = theResponse->getInformation();
+    const Vector *data = &(eleInfo.getData());
+    return data;
+  }
+}
+
+
 Graph  &
 Domain::getElementGraph(void)
 {
@@ -1719,7 +1764,13 @@ Domain::initialize(void)
   ElementIter &theElemIter = this->getElements();    
   while ((elePtr = theElemIter()) != 0) 
     // lvalue needed here for M$ VC++ compiler -- MHS
-    const Matrix &ret = elePtr->getInitialStiff();
+	// and either the  VS2011 or intel compiler does not like it!
+#ifndef _VS2011
+    const Matrix &initM = elePtr->getInitialStiff();
+#else
+	 elePtr->getInitialStiff();
+#endif
+
 
   return 0;
 }
@@ -1745,7 +1796,7 @@ Domain::setRayleighDampingFactors(double alphaM, double betaK, double betaK0, do
 
 
 int
-Domain::record(void)
+Domain::record(bool fromAnalysis)
 {
   int res = 0;
 
@@ -1927,7 +1978,7 @@ Domain::analysisStep(double dT)
 }
 
 int
-Domain::eigenAnalysis(int nuMode, bool generalized)
+Domain::eigenAnalysis(int nuMode, bool generalized, bool findSmallest)
 {
   return 0;
 }
@@ -3249,7 +3300,6 @@ Domain::getNodeDisp(int nodeTag, int dof, int &errorFlag)
 int 
 Domain::setMass(const Matrix &mass, int nodeTag)
 {
-  int result = 0;
   Node *theNode = this->getNode(nodeTag);
   if (theNode == 0) {
     return -1;

@@ -162,7 +162,7 @@ class Domain
     virtual int getNumParameters(void) const;            
     virtual const Vector &getPhysicalBounds(void); 
     virtual const Vector *getNodeResponse(int nodeTag, NodeResponseType responseType); 
-
+    virtual const Vector *getElementResponse(int eleTag, const char **argv, int argc); 
 
     // methods to get element and node graphs
     virtual  Graph  &getElementGraph(void);
@@ -189,7 +189,7 @@ class Domain
     virtual  int  updateParameter(int tag, double value);    
     
     virtual  int  analysisStep(double dT);
-    virtual  int  eigenAnalysis(int numMode, bool generalized);
+    virtual  int  eigenAnalysis(int numMode, bool generalized, bool findSmallest);
     
     // methods for eigenvalue analysis
     virtual int setEigenvalues(const Vector &theEigenvalues);
@@ -207,7 +207,7 @@ class Domain
     virtual int  addRecorder(Recorder &theRecorder);    	
     virtual int  removeRecorders(void);
     virtual int  removeRecorder(int tag);
-    virtual int  record(void);
+    virtual int  record(bool fromAnalysis=true);
 
     virtual int  addRegion(MeshRegion &theRegion);    	
     virtual MeshRegion *getRegion(int region);    	

@@ -150,7 +150,7 @@ class Subdomain: public Element, public Domain
     virtual const Vector &getLastExternalSysResponse(void);
     virtual int computeNodalResponse(void);    
     virtual int analysisStep(double deltaT);
-    virtual int eigenAnalysis(int numMode, bool generalized);
+    virtual int eigenAnalysis(int numMode, bool generalized, bool findSmallest);
     virtual bool doesIndependentAnalysis(void);
 
     virtual int sendSelf(int commitTag, Channel &theChannel);

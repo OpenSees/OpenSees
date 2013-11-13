@@ -92,7 +92,7 @@ class DomainDecompositionAnalysis: public Analysis, public MovableObject
 
     virtual int  newStep(double dT);
     virtual int  analysisStep(double dT);
-    virtual int  eigenAnalysis(int numMode, bool generalized);
+    virtual int  eigenAnalysis(int numMode, bool generalized, bool findSmallest);
     virtual int  computeInternalResponse(void);
     virtual int  formTangent(void);
     virtual int  formResidual(void);
