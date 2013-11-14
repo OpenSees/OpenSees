@@ -42,6 +42,7 @@ class Message
     Message(char *, int);
     virtual ~Message();
 
+	virtual void setData(char *theData, int length);
     virtual int putData(char *theData, int startLoc, int endLoc);    
     virtual const char *getData(void);
     virtual int getSize(void);
