@@ -882,7 +882,7 @@ ActorSubdomain::run(void)
 	      return -1;
 	    }
 
-	    theMessage.putData(allResponseArgs, 0, msgLength);
+	    theMessage.setData(allResponseArgs, msgLength);
 	    if (this->recvMessage(theMessage) < 0) {
 	      opserr << "ElementRecorder::recvSelf() - failed to recv message\n";
 	      return -1;
@@ -910,7 +910,7 @@ ActorSubdomain::run(void)
 	    delete [] argv;
 	    delete [] allResponseArgs;
 
-	    if (theVector == 0)
+	    if (theVector == 0) 
 	      msgData(0) = 0;
 	    else {
 	      msgData(0) = 1;

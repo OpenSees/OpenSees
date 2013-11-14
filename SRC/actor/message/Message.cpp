@@ -83,6 +83,13 @@ Message::putData(char *theData, int startLoc, int endLoc)
     }
 }
 
+void
+Message::setData(char *theData, int theLength)
+{
+	data = theData;
+	length = theLength;
+}
+
 const char *
 Message::getData(void)
 {

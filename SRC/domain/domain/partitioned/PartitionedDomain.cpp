@@ -1911,19 +1911,22 @@ PartitionedDomain::getNodeResponse(int nodeTag, NodeResponseType response)
 
 const Vector *
 PartitionedDomain::getElementResponse(int eleTag, const char **argv, int argc) {
+  
   const Vector *res = this->Domain::getElementResponse(eleTag, argv, argc); 
-  if (res != 0)
+  if (res != 0) {
     return res;
-
+  }
+  
   // do the same for all the subdomains
   if (theSubdomains != 0) {
     ArrayOfTaggedObjectsIter theSubsIter(*theSubdomains);	
     TaggedObject *theObject;
     while ((theObject = theSubsIter()) != 0) {
       Subdomain *theSub = (Subdomain *)theObject;	    
-      const Vector *result = this->Domain::getElementResponse(eleTag, argv, argc); 
-      if (result != 0)
-	return result;
+      const Vector *result = theSub->getElementResponse(eleTag, argv, argc); 
+      if (result != 0) {
+	     return result;
+	  }
     }	    
   }
 
