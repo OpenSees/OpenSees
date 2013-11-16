@@ -554,6 +554,9 @@ int
 printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+printB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
 setPrecision(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
@@ -801,6 +804,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "print", &printModel, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "printA", &printA, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "printB", &printB, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     // Talledo Start 
     Tcl_CreateCommand(interp, "printGID", &printModelGID,
@@ -2016,6 +2021,45 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     if (A != 0) {
       *output << *A;
     }
+  }
+  
+  // close the output file
+  outputFile.close();
+  
+  return res;
+}
+
+int 
+printB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  int res = 0;
+
+  FileStream outputFile;
+  OPS_Stream *output = &opserr;
+  bool done = false;
+
+  int currentArg = 1;
+
+  if (argc > 2) {
+    if ((strcmp(argv[currentArg],"file") == 0) || 
+	(strcmp(argv[currentArg],"-file") == 0)) {
+      currentArg++;
+      
+      if (outputFile.setFile(argv[currentArg]) != 0) {
+	opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
+	return TCL_ERROR;
+      }
+      output = &outputFile;
+    }
+  }
+  if (theSOE != 0) {
+    if (theStaticIntegrator != 0)
+      theStaticIntegrator->formTangent();
+    else if (theTransientIntegrator != 0)
+      theTransientIntegrator->formTangent(0);
+      
+    const Vector &b = theSOE->getB();
+    *output << b;
   }
   
   // close the output file
@@ -6316,7 +6360,7 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;
       }      
       
-      theDomain.removeMP_Constraints(tag);
+      theDomain.removeMP_Constraint(tag);
       return TCL_OK;
     }
   }
