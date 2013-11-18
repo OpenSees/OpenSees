@@ -6360,7 +6360,7 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;
       }      
       
-      theDomain.removeMP_Constraint(tag);
+      theDomain.removeMP_Constraints(tag);
       return TCL_OK;
     }
   }
