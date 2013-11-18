@@ -68,6 +68,7 @@
 #include <Concrete06.h>
 #include <Steel01.h>
 #include <Steel02.h>
+#include <FatigueMaterial.h>
 #include <ReinforcingSteel.h>
 #include <HardeningMaterial.h>
 #include <HystereticMaterial.h>
@@ -942,7 +943,10 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_TzSimple2:
 		return new TzSimple2();
 
-    case MAT_TAG_TzLiq1:
+	case MAT_TAG_Fatigue:
+		return new FatigueMaterial();
+
+       case MAT_TAG_TzLiq1:
 		return new TzLiq1();
 
 	case MAT_TAG_QzSimple1:
