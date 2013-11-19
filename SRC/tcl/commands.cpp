@@ -6908,7 +6908,7 @@ nodeMass(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     return TCL_ERROR;	        
   }    
   
-  char buffer[20];
+  char buffer[40];
 
   Node *theNode = theDomain.getNode(tag);
   if (theNode == 0) {
@@ -6922,8 +6922,8 @@ nodeMass(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   }
   else {
     const Matrix &mass = theNode->getMass();
-    sprintf(buffer, "%f", mass(dof-1,dof-1));
-    Tcl_SetResult(interp, buffer, NULL);
+    sprintf(buffer, "%35.20f", mass(dof-1,dof-1));
+    Tcl_AppendResult(interp, buffer, NULL);
   }
   
   return TCL_OK;
