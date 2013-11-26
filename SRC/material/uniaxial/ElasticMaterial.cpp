@@ -100,6 +100,7 @@ OPS_NewElasticMaterial(void)
 ElasticMaterial::ElasticMaterial(int tag, double e, double et)
 :UniaxialMaterial(tag,MAT_TAG_ElasticMaterial),
  trialStrain(0.0),  trialStrainRate(0.0),
+ committedStrain(0.0),  committedStrainRate(0.0),
  Epos(e), Eneg(e), eta(et), parameterID(0)
 {
 
@@ -109,6 +110,7 @@ ElasticMaterial::ElasticMaterial(int tag, double e, double et)
 ElasticMaterial::ElasticMaterial(int tag, double ep, double et, double en)
 :UniaxialMaterial(tag,MAT_TAG_ElasticMaterial),
  trialStrain(0.0),  trialStrainRate(0.0),
+ committedStrain(0.0),  committedStrainRate(0.0),
  Epos(ep), Eneg(en), eta(et), parameterID(0)
 {
 
@@ -118,6 +120,7 @@ ElasticMaterial::ElasticMaterial(int tag, double ep, double et, double en)
 ElasticMaterial::ElasticMaterial()
 :UniaxialMaterial(0,MAT_TAG_ElasticMaterial),
  trialStrain(0.0),  trialStrainRate(0.0),
+ committedStrain(0.0),  committedStrainRate(0.0),
  Epos(0.0), Eneg(0.0), eta(0.0), parameterID(0)
 {
 
@@ -180,14 +183,18 @@ ElasticMaterial::getTangent(void)
 int 
 ElasticMaterial::commitState(void)
 {
-    return 0;
+  committedStrain = trialStrain;
+  cimittedStrainRate = trialStrainRate;
+  return 0;
 }
 
 
 int 
 ElasticMaterial::revertToLastCommit(void)
 {
-    return 0;
+  trialStrain = committedStrain;
+  trialStrainRate = committedStrainRate;
+  return 0;
 }
 
 
@@ -206,6 +213,8 @@ ElasticMaterial::getCopy(void)
     ElasticMaterial *theCopy = new ElasticMaterial(this->getTag(),Epos,eta,Eneg);
     theCopy->trialStrain     = trialStrain;
     theCopy->trialStrainRate = trialStrainRate;
+    theCopy->committedStrain     = committedStrain;
+    theCopy->committedStrainRate = committedStrainRate;
     return theCopy;
 }
 
@@ -214,12 +223,13 @@ int
 ElasticMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(4);
+  static Vector data(6);
   data(0) = this->getTag();
   data(1) = Epos;
   data(2) = Eneg;
   data(3) = eta;
-
+  data(4) = committedStrain;
+  data(5) = committedStrainRate;
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
     opserr << "ElasticMaterial::sendSelf() - failed to send data\n";
@@ -233,7 +243,7 @@ ElasticMaterial::recvSelf(int cTag, Channel &theChannel,
 			  FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(4);
+  static Vector data(6);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
@@ -246,6 +256,9 @@ ElasticMaterial::recvSelf(int cTag, Channel &theChannel,
     Epos = data(1);
     Eneg = data(2);
     eta  = data(3);
+    committedStrain = data(4);
+    committedStrainRate = data(5);
+    this->revertToLastCommit();
   }
     
   return res;
