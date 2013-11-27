@@ -200,8 +200,8 @@ iPrint=0;
 
 
 	// Quan, for snopt interface only
-		
-		lenA=1;
+	// YONG, DEBUG HERE.
+		lenA=this->n*this->neF;
 		iAfun = new integer[lenA];
 		jAvar = new integer[lenA];
 		A  = new doublereal[lenA];
@@ -340,9 +340,9 @@ iPrint=0;
 
 //--------------------- step 3.5 set others  -----------------------------------------
 
-   // this->setSpecFile    ( "sntoya.spc" );
-   // this->setIntParameter( "Derivative option", 1 );
-   // this->setIntParameter( "Major Iteration limit", maxNumberOfIterations );
+   //this->setSpecFile    ( "sntoya.spc" ); // uncommented by YONG
+   //this->setIntParameter( "Derivative option", 1 );// uncommented by YONG
+   //this->setIntParameter( "Major Iteration limit", maxNumberOfIterations );// uncommented by YONG
     this->setProbName   ( probType );
 	this->ii=0;
 	if (pTclFileToRun !=0){
