@@ -659,7 +659,7 @@ Truss::addInertiaLoadToUnbalance(const Vector &accel)
 #endif
     
   double M = 0.5*rho*L;
-    // want to add ( - fact * M R * accel ) to unbalance
+  // want to add ( - fact * M R * accel ) to unbalance
     for (int i=0; i<dimension; i++) {
 	double val1 = Raccel1(i);
 	double val2 = Raccel2(i);	

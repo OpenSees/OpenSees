@@ -615,7 +615,7 @@ binaryToText(const char *inputFilename, const char *outputFilename)
   double data;
   char *c = (char *)&data;
   int numNumbers = 0;
-
+  /* ORIGINAL
   while ( !input.eof()) {
     input.read(c, 1);
     if (*c != '\n') {
@@ -628,7 +628,52 @@ binaryToText(const char *inputFilename, const char *outputFilename)
       numNumbers = 0;
     }
   }
-  
+  REPLACED WITH: */
+
+  int nLF = 0;
+  int intervalLF = 0;
+  double aveIntervalLF = 0;
+  int numCol;
+
+  int dataLen = 0;
+  int numRow;
+
+  while (!input.eof()) {
+    input.read(c, 1);
+    dataLen++;
+
+    if ((*c == '\n') && (intervalLF%8 == 0)) {    
+      aveIntervalLF = (aveIntervalLF * nLF + intervalLF)/(nLF + 1);
+      nLF++;
+      intervalLF = 0;
+    } else {
+      intervalLF++;      
+    }
+
+  }
+  numCol = (int)(aveIntervalLF/8.0 + 0.5);
+  numRow = (int)(dataLen/(8.0*numCol+1.0) + 0.5);
+
+  // rewind
+  input.clear();
+  input.seekg(0,std::ios::beg); 
+
+  // read, output
+  for (int ii=0; ii<numRow; ii++) {
+    for (int jj=0; jj<numCol; jj++) {
+
+      input.read(&c[0],8);
+      output << data ;
+      if (jj<(numCol-1)) output << " ";
+
+    }
+
+    input.read(c, 1);//LF
+    output << "\n";
+
+  }
+  /* END REPLACEMENT BLOCK */
+
   // 
   // close the files
   //
