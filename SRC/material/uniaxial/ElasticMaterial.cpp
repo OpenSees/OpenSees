@@ -184,7 +184,7 @@ int
 ElasticMaterial::commitState(void)
 {
   committedStrain = trialStrain;
-  cimittedStrainRate = trialStrainRate;
+  committedStrainRate = trialStrainRate;
   return 0;
 }
 
