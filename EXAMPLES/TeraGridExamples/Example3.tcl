@@ -27,7 +27,7 @@ foreach gMotion [split [read $recordsFileID] \n] {
 		
 		recorder EnvelopeNode -file $gMotionDir$gMotionName.out -node 3 4 -dof 1 2 3 disp
 		
-		doDynamic [expr $dT*$nPts] $dT
+		doDynamic $dT $nPts
 		
 		if {$ok == 0} {
 		    puts "$gMotionDir $gMotionName OK"
