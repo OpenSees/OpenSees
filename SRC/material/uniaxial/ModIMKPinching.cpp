@@ -98,7 +98,7 @@ ModIMKPinching::ModIMKPinching(int tag, double ke, double alfaPos, double alfaNe
 {
   // Initialize Variables by Calling revertToStart function
   this->revertToStart();
-  
+  Tangent = Ke;
 }
 
 ModIMKPinching::ModIMKPinching()
@@ -848,7 +848,8 @@ int ModIMKPinching::revertToStart(void)
   
   Cstrain=0.0;
   Cstress = 0.0;
-  Ctangent = ek;
+  Ctangent = Ke;
+  Tangent = Ke;
   
   CdP = 0.0;
   CfP = 0.0;
