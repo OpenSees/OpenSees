@@ -1154,8 +1154,8 @@ PartitionedDomain::record(bool fromAnalysis)
       Subdomain *theSub = (Subdomain *)theObject;	    
       result += theSub->record(fromAnalysis);
       if (result < 0) {
-	opserr << "PartitionedDomain::record(void)";
-	opserr << " - failed in Subdomain::record()\n";
+	     opserr << "PartitionedDomain::record(void)";
+	     opserr << " - failed in Subdomain::record()\n";
       }	    
     }
   }
