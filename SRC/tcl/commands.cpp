@@ -8903,7 +8903,7 @@ int domainChange(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
 
 int record(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-  theDomain.record();
+  theDomain.record(false);
   return TCL_OK;
 }
 
