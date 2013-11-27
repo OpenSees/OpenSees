@@ -99,6 +99,7 @@ ModIMKPeakOriented::ModIMKPeakOriented(int tag, double ke, double alfaPos, doubl
 {
   // Initialize Variables by Calling revertToStart function
   this->revertToStart();
+  Tangent = Ke;
   
 }
 
@@ -111,6 +112,7 @@ ModIMKPeakOriented::ModIMKPeakOriented()
 {
   // Initialize Variables by Calling revertToStart function
   this->revertToStart();
+  Tangent = Ke;
 }
 
 ModIMKPeakOriented::~ModIMKPeakOriented()
@@ -135,11 +137,9 @@ ModIMKPeakOriented::setTrialStrain(double strain, double strainRate)
   // added by DL 04/22/2013
   
   flagdeg = 0;
-  
   if (fabs(deltaD) < 1.0e-18 && strain != 0.0) {
     return 0;
   }
-  
   
   // Initialize parameters in the first cycle
   if (kon==0) {
@@ -797,7 +797,7 @@ ModIMKPeakOriented::revertToStart(void)
   
   Cstrain=0.0;
   Cstress = 0.0;
-  Tangent=Ctangent=ek;
+  Tangent=Ctangent=Ke;
   
   Cdmax = My_pos/Ke;
   Cdmin = My_neg/Ke;
