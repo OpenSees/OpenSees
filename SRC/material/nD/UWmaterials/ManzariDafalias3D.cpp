@@ -25,11 +25,13 @@
 #include "ManzariDafalias3D.h"
 
 // full constructor
-ManzariDafalias3D::ManzariDafalias3D(int tag, double G0, double nu, double e_init, double Mc, double c, double lambda_c,
-	double e0, double ksi, double P_atm, double m, double h0, double ch, double nb, double A0, double nd,double z_max, 
-	double cz, double massDen, double TolF, double TolR, int jacoType, int integrationScheme)
-:ManzariDafalias(tag, ND_TAG_ManzariDafalias3D, G0, nu, e_init, Mc, c, lambda_c,
-e0, ksi, P_atm, m, h0, ch, nb, A0, nd, z_max, cz, massDen, TolF, TolR, jacoType, integrationScheme)
+ManzariDafalias3D::ManzariDafalias3D(int tag, double G0, double nu, double e_init, double Mc, double c, double lambda_c, double e0, double ksi,
+	double P_atm, double m, double h0, double ch, double nb, double A0, double nd, double z_max, double cz, double mDen, int integrationScheme, 
+	int tangentType, int JacoType, double TolF, double TolR)
+:ManzariDafalias(tag, ND_TAG_ManzariDafalias3D, G0, nu, e_init, Mc, c, lambda_c, e0, ksi, P_atm, m, h0, ch, nb, A0, nd, z_max, cz, mDen,
+				integrationScheme, tangentType, JacoType, TolF, TolR),
+				mEpsilon_M(6),
+				mSigma_M(6)
 {
 }
 
@@ -108,7 +110,12 @@ ManzariDafalias3D::getStress()
 const Matrix& 
 ManzariDafalias3D::getTangent() 
 {
-    return mCep;
+    if (mTangType == 0)
+		return mCe;
+	else if (mTangType == 1)
+		return mCep;
+	else if (mTangType == 2)
+		return mCep_Consistent;
 } 
 
 // send back the tangent 
