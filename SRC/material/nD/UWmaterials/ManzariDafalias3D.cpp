@@ -86,7 +86,6 @@ ManzariDafalias3D::setTrialStrain(const Vector &strain_from_element)
 int 
 ManzariDafalias3D::setTrialStrain(const Vector &v, const Vector &r)
 {
-    opserr << "YOU SHOULD NOT SEE THIS: ManzariDafalias::setTrialStrain (const Vector &v, const Vector &r)" << endln;
     return this->setTrialStrain(v);
 }
 
@@ -104,6 +103,12 @@ ManzariDafalias3D::getStress()
 {
 	mSigma_M = -1.0 * mSigma;
  	return mSigma_M; // -1.0 is for geotechnical sign convention
+}
+
+const Vector&
+ManzariDafalias3D::getStressToRecord()
+{
+	return getStress();
 }
 
 // send back the tangent 

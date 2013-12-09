@@ -52,7 +52,7 @@ class ManzariDafalias : public NDMaterial
     // full constructor
     ManzariDafalias(int tag, int classTag, double G0, double nu, double e_init, double Mc, double c, double lambda_c, double e0, double ksi,
 	double P_atm, double m, double h0, double ch, double nb, double A0, double nd, double z_max, double cz, double mDen, int integrationScheme = 2,
-	int tangentType = 1, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
+	int tangentType = 2, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
     // null constructor
     ManzariDafalias();
     // destructor
@@ -68,6 +68,7 @@ class ManzariDafalias : public NDMaterial
     const char *getType(void) const;
     int        getOrder(void) const;
 
+	virtual const Vector& getStressToRecord() {return mSigma;};
 	const Vector getState();
 	const Vector getAlpha();
 	const Vector getFabric();
@@ -116,6 +117,7 @@ class ManzariDafalias : public NDMaterial
 	Vector mAlpha_n;
 	Vector mAlpha_in;
 	Vector mAlpha_in_n;
+	double mDGamma_n;
 	double mDGamma;
 	Vector mFabric;
 	Vector mFabric_n;
@@ -139,6 +141,7 @@ class ManzariDafalias : public NDMaterial
 	int     mJacoType;          // 0: FDM Jacobian, 1: Analytical Jacobian
 	int		mScheme;            // 0: Forward Euler Explicit, 1: Backward Euler Implicit, 2: Backward Euler Implicit with considerations for stability
 	int     mTangType;          // 0: Elastic Tangent, 1: Contiuum ElastoPlastic Tangent, 2: Consistent ElastoPlastic Tangent
+	int     mOrgTangType;
 	int     mLoadUnloadFlag;
 	static int  mElastFlag;     // 1: enforce elastic response
 	bool initializeState;
@@ -157,6 +160,7 @@ class ManzariDafalias : public NDMaterial
 	static const double two3;
 	static const double root23;
 	static const double small;
+	static const bool   debugFlag;
 	static const int    mMaxSubStep; // Max number of implicit substepping
 
 	//Member Functions specific for ManzariDafalias model

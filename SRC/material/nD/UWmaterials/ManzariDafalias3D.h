@@ -60,6 +60,7 @@ class ManzariDafalias3D : public ManzariDafalias
   
   //send back the stress 
   const Vector& getStress();
+  const Vector& getStressToRecord();
 
   //send back the tangent 
   const Matrix& getTangent();

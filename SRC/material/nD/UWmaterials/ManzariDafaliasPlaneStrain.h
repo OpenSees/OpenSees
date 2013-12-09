@@ -63,6 +63,7 @@ class ManzariDafaliasPlaneStrain : public ManzariDafalias
 
   //send back the stress 
   const Vector& getStress();
+  const Vector& getStressToRecord();
 
   //send back the tangent 
   const Matrix& getTangent();
@@ -76,6 +77,7 @@ class ManzariDafaliasPlaneStrain : public ManzariDafalias
   // static vectors and matrices
   Vector mSigma_M  ; // mSigma with continuum mechanic sign convention
   Vector mEpsilon_M; // mEpsilon with continuum mechanic sign convention
+  Vector rSigma;     // Stress for the recorders
   Matrix mTangent;
   Matrix mTangent_init;
 

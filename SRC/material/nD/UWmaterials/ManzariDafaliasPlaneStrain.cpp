@@ -33,6 +33,7 @@ ManzariDafaliasPlaneStrain::ManzariDafaliasPlaneStrain(int tag, double G0, doubl
 				integrationScheme, tangentType, JacoType, TolF, TolR),
 				mEpsilon_M(3),
 				mSigma_M(3),
+				rSigma(4),
 				mTangent(3,3),
 				mTangent_init(3,3)
 {
@@ -114,6 +115,18 @@ ManzariDafaliasPlaneStrain::getStress()
 	mSigma_M(2) = -1.0 * mSigma(3);
 	
  	return mSigma_M;
+}
+
+
+const Vector&
+ManzariDafaliasPlaneStrain::getStressToRecord()
+{
+	rSigma(0) = -1.0 * mSigma(0); // -1.0 is for geotechnical sign convention
+	rSigma(1) = -1.0 * mSigma(1);
+	rSigma(2) = -1.0 * mSigma(2);
+	rSigma(3) = -1.0 * mSigma(3);
+
+	return rSigma;
 }
 
 // send back the tangent 
