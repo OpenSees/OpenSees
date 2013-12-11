@@ -312,7 +312,7 @@ Response*
 ManzariDafalias::setResponse (const char **argv, int argc, OPS_Stream &output)
 {
 	if (strcmp(argv[0],"stress") == 0 || strcmp(argv[0],"stresses") == 0)
-		return new MaterialResponse(this, 1, this->getStressToRecord());
+		return new MaterialResponse(this, 1, this->getStress());
 	else if (strcmp(argv[0],"strain") == 0 || strcmp(argv[0],"strains") == 0)
 		return new MaterialResponse(this, 2, this->getStrain());
 	else if (strcmp(argv[0], "state") == 0)

@@ -75,11 +75,11 @@ class ManzariDafaliasPlaneStrain : public ManzariDafalias
   private :
 
   // static vectors and matrices
-  Vector mSigma_M  ; // mSigma with continuum mechanic sign convention
-  Vector mEpsilon_M; // mEpsilon with continuum mechanic sign convention
-  Vector rSigma;     // Stress for the recorders
-  Matrix mTangent;
-  Matrix mTangent_init;
+  static Vector mSigma_M  ; // mSigma with continuum mechanic sign convention
+  static Vector mEpsilon_M; // mEpsilon with continuum mechanic sign convention
+  static Vector rSigma;     // Stress for the recorders
+  static Matrix mTangent;
+  static Matrix mTangent_init;
 
 };
 
