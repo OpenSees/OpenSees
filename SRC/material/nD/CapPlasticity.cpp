@@ -5,12 +5,12 @@
 **                                                                    **
 ** (C) Copyright for this material model is by Quan Gu  Xiamen Unv.   **  
 **                                                                    **
-** Commercial use of this program without express permission of the   **
+** Commercial use of this program without express permission of the   **  
 ** Authors is strictly prohibited.                                    **
 **                                                                    **
 ** Developed by:                                                      **
-**   Quan Gu (quangu@xmu.edu.cn)                                      **
-**                                                                    **  
+**   Quan Gu (quangu@xmu.edu.cn)                                      **  
+**                                                                    **     
 ** reference: Hofstetter, G., J.C. Simo and R.L. Taylor, \A modifed   **
 ** cap-model: Closest point solution algorithms\, Computers &         **
 ** Structures, 46 (1993),203-214.                                     **
@@ -38,7 +38,7 @@ using std::ios;               // Quan Gu   2013 March   HK
   
 
 Vector CapPlasticity::tempVector(6);
-Matrix CapPlasticity::tempMatrix(6,6);
+Matrix CapPlasticity::tempMatrix(6,6);  
 
 void *
 OPS_CapPlasticity(void) {
@@ -232,7 +232,8 @@ int CapPlasticity::setTrialStrain(const Vector &pStrain) {  // strain from eleme
   else {
     opserr << "Fatal:CapPlasticity:: Material dimension is: " << ndm << endln;
     opserr << "But strain vector size is: " << pStrain.Size() << endln;
-    exit(-1);
+    //exit(-1);
+	opserr<< "Warning: errors in CapPlasticity::setTrialStrain"<<endln;
   }
   
   // ----- change to real strain instead of eng. strain
@@ -276,7 +277,8 @@ int CapPlasticity::setTrialStrainIncr(const Vector &pStrainRate) {
   else {
     opserr << "Fatal:CapPlasticity:: Material dimension is: " << ndm << endln;
     opserr << "But strain vector size is: " << pStrainRate.Size() << endln;
-    exit(-1);
+	opserr<< "Warning: errors in CapPlasticity::setTrialStrainIncr"<<endln;	
+   // exit(-1);
   }
   
   
@@ -372,7 +374,7 @@ int CapPlasticity::getOrder(void) const  {
 
 int CapPlasticity::sendSelf(int commitTag, Channel &theChannel)  {return 0;};
 
-int CapPlasticity::recvSelf(int commitTag, Channel &theChannel,
+int CapPlasticity::recvSelf(int commitTag, Channel &theChannel,  
 			    FEM_ObjectBroker &theBroker )  {return 0;};
 
 //Response * CapPlasticity::setResponse (const char **argv, int argc, Information &matInformation)  {
@@ -536,8 +538,9 @@ double CapPlasticity::Newton_k(double tol, int mode /*, double normS, double I1,
     }//while
     
     if (fabs(f) > tol) {
-      opserr<< " Newton algorithm does not converge, in CapPlasticity, mode =0! ";
-      exit(-1);
+      opserr<< "Fatal : Newton algorithm does not converge, in CapPlasticity, mode =0! ";
+	 // opserr<< "Warning: errors in CapPlasticity::Newton_k"<<<" "<"mode="<<mode<<endln;	
+     // exit(-1);
     }
     solution = k;
     
@@ -556,17 +559,21 @@ double CapPlasticity::Newton_k(double tol, int mode /*, double normS, double I1,
     }//while
     
     if (fabs(f) > tol) {
-      opserr<< " Newton algorithm does not converge, in CapPlasticity, mode =1! ";
-      exit(-1);
+      opserr<< " Newton algorithm does not converge, in CapPlasticity, mode = "<<" "<<"mode"<<endln;
+      //opserr<< "Warning: errors in CapPlasticity::setTrialStrainIncr"<<endln;	
     }
     solution = k;
     
   }  // mode = 1,2,5-2
   
-  
-  
-  return solution;
-  
+ if (solution <0 ) {
+   opserr<<"Warning: CapPlasticity:: Newton_k, solution <0! mode is " <<mode<< "! k should be adjusted to CHardening_k! "endln;    // --- April 2013. 
+ 	solution = CHardening_k;         // change to stress I1 according to the definition of I1_p, 2013-6-14 
+ 
+ }
+	
+ return solution;
+
 }; 
 
 double CapPlasticity::Newton_I1(double tol, int mode, double normS, double I1_trial){
@@ -600,7 +607,7 @@ double CapPlasticity::Newton_I1(double tol, int mode, double normS, double I1_tr
     
     if (fabs(f) > relative_tol) {
       opserr<< "mode =5. Newton algorithm does not converge, in CapPlasticity, Newton_I1 mode =5! ";
-      exit(-1);
+      //exit(-1);
     }
     solution = I1;
     
@@ -675,9 +682,12 @@ double CapPlasticity::Newton_I1(double tol, int mode, double normS, double I1_tr
       } // else flag =1
       
       
-    } // end while 
-    
-    
+    } // end while 	 
+   	 if (k<0) {
+		 opserr<<"Warning:  Newton_I1: mode =3. get k<0; adjusted to CHardening_k!!"<<endln; 
+         solution = CHardening_k;
+	 } 
+	 
     solution = k;
   }  // if mode ==3
   
@@ -713,7 +723,7 @@ double CapPlasticity::Bisection(double tol, double normS, double I1_trial ){
   if (fabs(f) > relative_tol) {
     
     opserr<< "Warning: Newton can not converge in CapPlasticity::Bisection"<<endln;
-    exit(-1);
+    //exit(-1);
   }
   double x_up = k;
   
@@ -750,9 +760,10 @@ double CapPlasticity::Bisection(double tol, double normS, double I1_trial ){
   tmp2 = (I1_trial - x_low)/(R+9.0*bulkModulus*deltGammar/(R*failureEnvelop(x_low)));
   double f_up = pow(tmp1*tmp1+tmp2*tmp2,0.5)-failureEnvelop(x_up);
   
-  while ( (f_low*f_up>0) && (x_low < x_up)) {
-    
-    x_up = x_up -(x_up-x_low)*0.05;
+	double incr = (x_up-x_low)*0.05;
+	while ( (f_low*f_up>0) && (x_low < x_up)) {
+		
+		x_up = x_up -incr;
     
     // --- x_low 
     
@@ -770,7 +781,7 @@ double CapPlasticity::Bisection(double tol, double normS, double I1_trial ){
   
   if (f_low*f_up>0 ) {
     opserr <<"Warning2: Bisection can not converge in  CapPlasticity::Bisection! "<<endln;
-    exit(-1);
+    //exit(-1);
     
   }
   
@@ -820,10 +831,15 @@ double CapPlasticity::Bisection(double tol, double normS, double I1_trial ){
   
   if (fabs(f) > relative_tol) {
     opserr<< "Warning3:No convergence in CapPlasticity::Bisection"<<endln;
-    exit(-1); 
+    //exit(-1); 
   }
   
   flag =1; 
+ if (k <0 ) {
+	opserr<<"Fatal: CapPlasticity:: Bisection, k <0! mode is 3 ! k is adjusted to CHardening_k !!!!! "endln;    // --- April 2013. 
+	k = CHardening_k;
+
+ }
   return k; 
   
 }; // 
@@ -961,7 +977,7 @@ const Vector & CapPlasticity::getStress(void) {
   } // mode ==3
   
   else if (mode ==4){
-    deltGammar1 = (hardening_k - TStressI1)/(9.0*bulkModulus*failureEnvelopDeriv(CHardening_k));
+    deltGammar1 = (CHardening_k - TStressI1)/(9.0*bulkModulus*failureEnvelopDeriv(CHardening_k));
     deltGammar2 = (normTS-failureEnvelop(CHardening_k))/(2.0*shearModulus)-deltGammar1;
     this->stressI1 = CHardening_k;
     normS = failureEnvelop(CHardening_k);
@@ -1334,7 +1350,8 @@ CapPlasticity::computeConsistentTangent(double deltaGammar1, double deltaGammar2
 	   a(0,1) = tripleTensorProduct (thedFdSigma,Zig,thedF2dSigmadk)-1.0/deltaGammar2*dFdk(1);
 
 // ---
-	 static Vector stressDev = stress;
+	 static Vector stressDev(6);
+		stressDev = stress;
 	 double I1 = stress(0)+stress(1)+stress(2);
 	    
 	 for (int i=0; i<3; i++)
@@ -1422,7 +1439,7 @@ CapPlasticity::computeConsistentTangent(double deltaGammar1, double deltaGammar2
 
 	   theTangent.addMatrix(0.0, Zig, 1.0);    
 	 
-	   for ( int m=0; m<6; m++){	 
+	   for ( int m=0; m<6; m++){	    
 		 for ( int n=0; n<3; n++)				 
 			 theTangent(m,n) -=1.0/g33*N3(m)*N3(n);
 		 for (int n=3; n<6; n++)				 
