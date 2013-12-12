@@ -970,8 +970,8 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 			if (jacoFlag)
 			{
 				if (debugFlag) opserr << "Try last commited Jacobian" << endln;
-				if ((GetTrace(mSigma)/3.0) < (m_P_atm / 20))
-					mTangType = 0;
+				//if ((GetTrace(mSigma)/3.0) < (m_P_atm / 20))
+				//	mTangType = 0;
 				jacoFlag = false;
 				break;
 			} else {
