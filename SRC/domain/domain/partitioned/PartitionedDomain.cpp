@@ -1992,18 +1992,20 @@ PartitionedDomain::removeParameter(int tag)
 int 
 PartitionedDomain::updateParameter(int tag, int value)
 {
+  int res = 0;
+
   // do the same for all the subdomains
   if (theSubdomains != 0) {
     ArrayOfTaggedObjectsIter theSubsIter(*theSubdomains);	
     TaggedObject *theObject;
     while ((theObject = theSubsIter()) != 0) {
 
-      Subdomain *theSub = (Subdomain *)theObject;	    
-      theSub->updateParameter(tag, value);
+      Subdomain *theSub = (Subdomain *)theObject;
+      res += theSub->updateParameter(tag, value);
     }
   }
 
-  int res = this->Domain::updateParameter(tag, value);
+  res += this->Domain::updateParameter(tag, value);
 
   return res;
 }
@@ -2012,17 +2014,19 @@ PartitionedDomain::updateParameter(int tag, int value)
 int 
 PartitionedDomain::updateParameter(int tag, double value)
 {
+  int res = 0;
+
   // do the same for all the subdomains
   if (theSubdomains != 0) {
     ArrayOfTaggedObjectsIter theSubsIter(*theSubdomains);	
     TaggedObject *theObject;
     while ((theObject = theSubsIter()) != 0) {
       Subdomain *theSub = (Subdomain *)theObject;	    
-      theSub->updateParameter(tag, value);
+      res += theSub->updateParameter(tag, value);
     }
   }
 
-  int res = this->Domain::updateParameter(tag, value);
+  res += this->Domain::updateParameter(tag, value);
 
   return res;
 }

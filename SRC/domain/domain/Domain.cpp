@@ -1945,15 +1945,18 @@ Domain::update(double newTime, double dT)
 int
 Domain::updateParameter(int tag, int value)
 {
-  // remove the object from the container    
+  // get the object from the container 
   TaggedObject *mc = theParameters->getComponentPtr(tag);
   
   // if not there return 0
   if (mc == 0) 
       return 0;
 
+  // convert to a parameter & update
   Parameter *result = (Parameter *)mc;
-  return result->update(value);
+  int res = result->update(value);
+
+  return res;
 }
 
 int

@@ -1686,8 +1686,9 @@ ShadowSubdomain::updateParameter(int tag, int value)
     msgData(1) = tag;
     msgData(2) = value;
     this->sendID(msgData);
-
-    return 0;
+	msgData(0) = 0;
+	this->recvID(msgData);
+    return msgData(0);
 }
 
 
@@ -1701,6 +1702,7 @@ ShadowSubdomain::updateParameter(int tag, double value)
     static Vector data(1); 
     data(0) = value;
     this->sendVector(data);
-
-    return 0;
+	msgData(0) = 0;
+	this->recvID(msgData);
+    return msgData(0);
 }

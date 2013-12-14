@@ -52,11 +52,12 @@ TclCommand_UpdateMaterialsCommand(ClientData clientData,
 
   MatParameter *theParameter = new MatParameter(parTag, materialTag, argv[3]);
 
+ 
   if (theDomain->addParameter(theParameter) == false) {
     opserr << "WARNING could not add updateMaterialStage - MaterialStageParameter to domain" << endln;
     return TCL_ERROR;		
   }
-
+ 
   if (Tcl_GetInt(interp, argv[4], &value) != TCL_OK) {
     if (Tcl_GetDouble(interp, argv[4], &valueD) != TCL_OK) {
       opserr << "WARNING UpdateMaterialStage: could not read value" << endln;
@@ -67,6 +68,7 @@ TclCommand_UpdateMaterialsCommand(ClientData clientData,
   }
 
   return theDomain->updateParameter(parTag, value);
+  
 }
 
 

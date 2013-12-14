@@ -966,15 +966,18 @@ ActorSubdomain::run(void)
          case ShadowActorSubdomain_updateParameterINT:
 	   theType = msgData(1);  // tag
 	   dbTag = msgData(2);    // value
-	   this->Domain::updateParameter(theType, dbTag);
+
+	   msgData(0) = this->Domain::updateParameter(theType, dbTag);
+	   this->sendID(msgData);
 	   break;
 
          case ShadowActorSubdomain_updateParameterDOUBLE:
 	   theType = msgData(1);  // tag
 	   theV = new Vector(1);
 	   this->recvVector(*theV);
-	   this->Domain::updateParameter(theType, (*theV)(0));
+	   msgData(0) = this->Domain::updateParameter(theType, (*theV)(0));
 	   delete theV;
+	   this->sendID(msgData);
 	   break;
 
 

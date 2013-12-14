@@ -78,7 +78,7 @@ MaterialStageParameter::setDomain(Domain *theDomain)
   }
 
   if (theResult == -1)
-    opserr << "WARNING: updateMaterialStage - MaterialStageParameter::setDomain() - no effect with material tag " << theMaterialTag << endln;
+    opserr << "WARNING: MaterialStageParameter::setDomain() - no effect with material tag " << theMaterialTag << endln;
 
   theResult = 0;
 
