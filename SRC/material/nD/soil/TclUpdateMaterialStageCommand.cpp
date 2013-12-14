@@ -51,8 +51,8 @@ TclModelBuilderUpdateMaterialStageCommand(ClientData clientData,
   if (argc > 6) {
     if (strcmp(argv[5],"-parameter") == 0) {
       if (Tcl_GetInt(interp, argv[6], &parTag) != TCL_OK) {
-	opserr << "WARNING UpdateMaterialStage: invalid parameter tag" << endln;
-	return TCL_ERROR;		
+	     opserr << "WARNING UpdateMaterialStage: invalid parameter tag used" << endln;
+	     return TCL_ERROR;		
       }
     }
   }	
@@ -75,6 +75,8 @@ TclModelBuilderUpdateMaterialStageCommand(ClientData clientData,
   }	
 
   theDomain->updateParameter(parTag, value);
+
+  theDomain->removeParameter(parTag);
 
   return TCL_OK;
 }
