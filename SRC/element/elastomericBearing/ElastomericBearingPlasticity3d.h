@@ -50,9 +50,10 @@ class ElastomericBearingPlasticity3d : public Element
 public:
     // constructor
     ElastomericBearingPlasticity3d(int tag, int Nd1, int Nd2,
-        double kInit, double fy, double alpha,
+        double kInit, double fy, double alpha1,
         UniaxialMaterial **theMaterials,
         const Vector y, const Vector x = 0,
+        double alpha2 = 0.0, double mu = 2.0,
         double shearDistI = 0.5,
         int addRayleigh = 0, double mass = 0.0);
     ElastomericBearingPlasticity3d();
@@ -115,6 +116,8 @@ private:
     double k0;          // initial stiffness of hysteretic component
     double qYield;      // yield force of hysteretic component
     double k2;          // stiffness of elastic component
+    double k3;          // stiffness of nonlinear elastic component
+    double mu;          // exponent of nonlinear elastic component
     Vector x;           // local x direction
     Vector y;           // local y direction
     double shearDistI;  // shear distance from node I as fraction of length

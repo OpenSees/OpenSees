@@ -79,9 +79,9 @@ ElastomericBearingBoucWen2d::ElastomericBearingBoucWen2d(int tag,
     
     // initialize parameters
     k0 = (1.0-alpha1)*kInit;
-    qYield = (1.0-alpha1)*fy;
     k2 = alpha1*kInit;
     k3 = alpha2*kInit;
+    qYield = (1.0-alpha1-alpha2*pow(fy/kInit,mu-1.0))*fy;
     
     // check material input
     if (materials == 0)  {
@@ -367,7 +367,7 @@ int ElastomericBearingBoucWen2d::update()
         kb(1,1) = qYield*dzdu + k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
     }
     
-    // 3) get moment and stiffness in basic z-direction
+    // 3) get moment and stiffness about basic z-direction
     theMaterials[1]->setTrialStrain(ub(2),ubdot(2));
     qb(2) = theMaterials[1]->getStress();
     kb(2,2) = theMaterials[1]->getTangent();
@@ -411,11 +411,11 @@ const Matrix& ElastomericBearingBoucWen2d::getInitialStiff()
     theMatrix.Zero();
     
     // transform from basic to local system
-    static Matrix kl(6,6);
-    kl.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
+    static Matrix klInit(6,6);
+    klInit.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
     
     // transform from local to global system
-    theMatrix.addMatrixTripleProduct(0.0, Tgl, kl, 1.0);
+    theMatrix.addMatrixTripleProduct(0.0, Tgl, klInit, 1.0);
     
     return theMatrix;
 }
@@ -920,7 +920,7 @@ void ElastomericBearingBoucWen2d::setUp()
     
     // establish orientation of element for the tranformation matrix
     // z = x cross y
-    Vector z(3);
+    static Vector z(3);
     z(0) = x(1)*y(2) - x(2)*y(1);
     z(1) = x(2)*y(0) - x(0)*y(2);
     z(2) = x(0)*y(1) - x(1)*y(0);

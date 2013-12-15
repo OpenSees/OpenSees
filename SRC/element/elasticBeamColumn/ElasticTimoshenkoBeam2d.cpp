@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: $
-// $Date: $
-// $URL: $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 03/13
@@ -340,7 +340,7 @@ const Matrix& ElasticTimoshenkoBeam2d::getTangentStiff()
     } else  {
         // initialize local stiffness matrix
         static Matrix klTot(6,6);
-        klTot = kl;
+        klTot.addMatrix(0.0, kl, 1.0);
         
         // get global trial displacements
         const Vector &dsp1 = theNodes[0]->getTrialDisp();
@@ -352,11 +352,9 @@ const Matrix& ElasticTimoshenkoBeam2d::getTangentStiff()
         }
         
         // transform response from the global to the local system
-        // ul = Tgl*ug;
         ul.addMatrixVector(0.0, Tgl, ug, 1.0);
         
         // get the resisting forces in local system
-        // ql = kl*ul;
         ql.addMatrixVector(0.0, kl, ul, 1.0);
         
         // add geometric stiffness to local stiffness
@@ -462,24 +460,19 @@ const Vector& ElasticTimoshenkoBeam2d::getResistingForce()
     }
     
     // transform response from the global to the local system
-    // ul = Tgl*ug;
     ul.addMatrixVector(0.0, Tgl, ug, 1.0);
     
     // get the resisting forces in local system
-    // ql = kl*ul;
     ql.addMatrixVector(0.0, kl, ul, 1.0);
     
     // add P-Delta moments to local forces
     if ((ql(0) != 0.0) && (nlGeo == 1))
         ql.addMatrixVector(1.0, klgeo, ul, ql(0));
-        //ql += ql(0)*klgeo*ul;
     
     // add effects of element loads, ql = ql(ul) + ql0
-    // ql += ql0;
     ql.addVector(1.0, ql0, 1.0);
     
     // determine resisting forces in global system
-    // theVector = Tgl^ql;
     theVector.addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
     
     // subtract external load
@@ -497,7 +490,6 @@ const Vector& ElasticTimoshenkoBeam2d::getResistingForceIncInertia()
     // add the damping forces from rayleigh damping
     if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
         theVector.addVector(1.0, this->getRayleighDampingForces(), 1.0);
-        //theVector += this->getRayleighDampingForces();
     
     // check for quick return
     if (rho == 0.0)

@@ -467,11 +467,11 @@ const Matrix& FlatSliderSimple3d::getInitialStiff()
     theMatrix.Zero();
     
     // transform from basic to local system
-    static Matrix kl(12,12);
-    kl.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
+    static Matrix klInit(12,12);
+    klInit.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
     
     // transform from local to global system
-    theMatrix.addMatrixTripleProduct(0.0, Tgl, kl, 1.0);
+    theMatrix.addMatrixTripleProduct(0.0, Tgl, klInit, 1.0);
     
     return theMatrix;
 }
@@ -1031,7 +1031,7 @@ void FlatSliderSimple3d::setUp()
     
     // establish orientation of element for the tranformation matrix
     // z = x cross y
-    Vector z(3);
+    static Vector z(3);
     z(0) = x(1)*y(2) - x(2)*y(1);
     z(1) = x(2)*y(0) - x(0)*y(2);
     z(2) = x(0)*y(1) - x(1)*y(0);

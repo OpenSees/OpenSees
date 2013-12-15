@@ -113,37 +113,37 @@ protected:
 
 private:
     // private attributes - a copy for each object of the class
-    ID connectedExternalNodes;      // contains the tags of the end nodes
-    ID *theDOF;                     // array with the dof of the end nodes
-    ID basicDOF;                    // contains the basic dof
+    ID connectedExternalNodes;  // contains the tags of the end nodes
+    ID *theDOF;                 // array with the dof of the end nodes
+    ID basicDOF;                // contains the basic dof
     
-    int numExternalNodes;   // number of nodes
-    int numDOF;             // number of degrees of freedom
-    int numBasicDOF;        // number of DOF in basic system
+    int numExternalNodes;       // number of nodes
+    int numDOF;                 // number of degrees of freedom
+    int numBasicDOF;            // number of DOF in basic system
     
-    Matrix kb;          // stiffness matrix in basic system
-    int ipPort;         // ipPort
-    int addRayleigh;    // flag to add Rayleigh damping
-    Matrix *mb;         // mass matrix in basic system
-    double tPast;       // past time
+    Matrix kb;                  // stiffness matrix in basic system
+    int ipPort;                 // ipPort
+    int addRayleigh;            // flag to add Rayleigh damping
+    Matrix *mb;                 // mass matrix in basic system
+    double tPast;               // past time
     
-    static Matrix theMatrix;    // objects matrix (a class wide Matrix)
-    static Vector theVector;    // objects vector (a class wide Vector)
+    Matrix theMatrix;           // objects matrix
+    Vector theVector;           // objects vector
     Vector theLoad;             // load vector
     
-    Vector db;  // deformation in basic system
-    Vector q;   // forces in basic system
+    Vector db;                  // deformation in basic system
+    Vector q;                   // forces in basic system
     
-    Channel *theChannel;    // channel
-    double *rData;          // receive data array
-    Vector *recvData;       // receive vector
-    double *sData;          // send data array
-    Vector *sendData;       // send vector
+    Channel *theChannel;        // channel
+    double *rData;              // receive data array
+    Vector *recvData;           // receive vector
+    double *sData;              // send data array
+    Vector *sendData;           // send vector
     
-    Vector *ctrlDisp;   // ctrl displacements in basic system
-    Vector *ctrlForce;  // ctrl forces in basic system
-    Vector *daqDisp;    // daq displacements in basic system
-    Vector *daqForce;   // daq forces in basic system
+    Vector *ctrlDisp;           // ctrl displacements in basic system
+    Vector *ctrlForce;          // ctrl forces in basic system
+    Vector *daqDisp;            // daq displacements in basic system
+    Vector *daqForce;           // daq forces in basic system
     
     Node **theNodes;
     

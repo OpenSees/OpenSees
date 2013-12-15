@@ -92,7 +92,7 @@ protected:
     
 private:
     // private attributes - a copy for each object of the class
-    ID connectedExternalNodes;      // contains the tags of the end nodes
+    ID connectedExternalNodes;  // contains the tags of the end nodes
     
     int numExternalNodes;       // number of external nodes
     int numDOF;                 // number of total DOF
@@ -100,11 +100,11 @@ private:
     int srcTag;                 // tag of the source element
     Element *theSource;         // pointer to the source element
     
-    static Matrix theMatrix;        // objects matrix (a class wide Matrix)
-    static Matrix theInitStiff;     // initial stiffness matrix
-    static Matrix theMass;          // mass matrix
-    static Vector theVector;        // objects vector (a class wide Vector)
-    Vector theLoad;                 // load vector
+    Matrix theMatrix;           // objects matrix
+    Vector theVector;           // objects vector
+    Vector theLoad;             // load vector
+    Matrix theInitStiff;        // initial stiffness matrix
+    Matrix theMass;             // mass matrix
 
     bool initStiffFlag;
     bool massFlag;

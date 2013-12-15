@@ -121,9 +121,9 @@ protected:
     
 private:
     // private attributes - a copy for each object of the class
-    ID connectedExternalNodes;      // contains the tags of the end nodes
-    ID *theDOF;                     // array with the dof of the end nodes
-    ID basicDOF;                    // contains the basic dof
+    ID connectedExternalNodes;  // contains the tags of the end nodes
+    ID *theDOF;                 // array with the dof of the end nodes
+    ID basicDOF;                // contains the basic dof
     
     int numExternalNodes;       // number of external nodes
     int numDOF;                 // number of total DOF
@@ -136,11 +136,11 @@ private:
     int dataSize;               // data size of send/recv vectors
     int addRayleigh;            // flag to add Rayleigh damping
     
-    static Matrix theMatrix;        // objects matrix (a class wide Matrix)
-    static Matrix theInitStiff;     // initial stiffness matrix
-    static Matrix theMass;          // mass matrix
-    static Vector theVector;        // objects vector (a class wide Vector)
-    Vector theLoad;                 // load vector
+    Matrix theMatrix;           // objects matrix
+    Vector theVector;           // objects vector
+    Vector theLoad;             // load vector
+    Matrix theInitStiff;        // initial stiffness matrix
+    Matrix theMass;             // mass matrix
     
     Channel *theChannel;        // channel
     double *sData;              // send data array
@@ -148,17 +148,17 @@ private:
     double *rData;              // receive data array
     Vector *recvData;           // receive vector
     
-    Vector *db;         // trial displacements in basic system
-    Vector *vb;         // trial velocities in basic system
-    Vector *ab;         // trial accelerations in basic system
-    Vector *t;          // trial time
+    Vector *db;                 // trial displacements in basic system
+    Vector *vb;                 // trial velocities in basic system
+    Vector *ab;                 // trial accelerations in basic system
+    Vector *t;                  // trial time
     
-    Vector *qDaq;       // daq forces in basic system
-    Matrix *rMatrix;    // receive matrix
+    Vector *qDaq;               // daq forces in basic system
+    Matrix *rMatrix;            // receive matrix
     
-    Vector dbCtrl;      // ctrl displacements in basic system
-    Vector vbCtrl;      // ctrl velocities in basic system
-    Vector abCtrl;      // ctrl accelerations in basic system
+    Vector dbCtrl;              // ctrl displacements in basic system
+    Vector vbCtrl;              // ctrl velocities in basic system
+    Vector abCtrl;              // ctrl accelerations in basic system
     
     bool initStiffFlag;
     bool massFlag;

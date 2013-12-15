@@ -79,9 +79,9 @@ ElastomericBearingBoucWen3d::ElastomericBearingBoucWen3d(int tag,
     
     // initialize parameters
     k0 = (1.0-alpha1)*kInit;
-    qYield = (1.0-alpha1)*fy;
     k2 = alpha1*kInit;
     k3 = alpha2*kInit;
+    qYield = (1.0-alpha1-alpha2*pow(fy/kInit,mu-1.0))*fy;
     
     // check material input
     if (materials == 0)  {
@@ -322,7 +322,7 @@ int ElastomericBearingBoucWen3d::update()
     // 2) calculate shear forces and stiffnesses in basic y- and z-direction
     // get displacement increments (trial - commited)
     Vector delta_ub = ub - ubC;
-    if (sqrt(pow(delta_ub(1),2)+pow(delta_ub(2),2)) > 0.0)  {
+    if (sqrt(pow(delta_ub(1),2)+pow(delta_ub(2),2)) > DBL_EPSILON)  {
     
         // get yield displacement
         double uy = qYield/k0;
@@ -378,11 +378,11 @@ int ElastomericBearingBoucWen3d::update()
         
         // get derivative of hysteretic evolution parameter
         delta_z = z-zC;
-        if (fabs(delta_ub(1)) > 0.0)  {
+        if (fabs(delta_ub(1)) > DBL_EPSILON)  {
             dzdu(0,0) = delta_z(0)/delta_ub(1);
             dzdu(1,0) = delta_z(1)/delta_ub(1);
         }
-        if (fabs(delta_ub(2)) > 0.0)  {
+        if (fabs(delta_ub(2)) > DBL_EPSILON)  {
             dzdu(0,1) = delta_z(0)/delta_ub(2);
             dzdu(1,1) = delta_z(1)/delta_ub(2);
         }
@@ -397,17 +397,17 @@ int ElastomericBearingBoucWen3d::update()
         kb(2,2) = qYield*dzdu(1,1) + k2 + k3*mu*pow(fabs(ub(2)),mu-1.0);
     }
     
-    // 3) get moment and stiffness in basic x-direction
+    // 3) get moment and stiffness about basic x-direction
     theMaterials[1]->setTrialStrain(ub(3),ubdot(3));
     qb(3) = theMaterials[1]->getStress();
     kb(3,3) = theMaterials[1]->getTangent();
     
-    // 4) get moment and stiffness in basic y-direction
+    // 4) get moment and stiffness about basic y-direction
     theMaterials[2]->setTrialStrain(ub(4),ubdot(4));
     qb(4) = theMaterials[2]->getStress();
     kb(4,4) = theMaterials[2]->getTangent();
     
-    // 5) get moment and stiffness in basic z-direction
+    // 5) get moment and stiffness about basic z-direction
     theMaterials[3]->setTrialStrain(ub(5),ubdot(5));
     qb(5) = theMaterials[3]->getStress();
     kb(5,5) = theMaterials[3]->getTangent();
@@ -459,11 +459,11 @@ const Matrix& ElastomericBearingBoucWen3d::getInitialStiff()
     theMatrix.Zero();
     
     // transform from basic to local system
-    static Matrix kl(12,12);
-    kl.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
+    static Matrix klInit(12,12);
+    klInit.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
     
     // transform from local to global system
-    theMatrix.addMatrixTripleProduct(0.0, Tgl, kl, 1.0);
+    theMatrix.addMatrixTripleProduct(0.0, Tgl, klInit, 1.0);
     
     return theMatrix;
 }
@@ -1015,7 +1015,7 @@ void ElastomericBearingBoucWen3d::setUp()
     
     // establish orientation of element for the tranformation matrix
     // z = x cross y
-    Vector z(3);
+    static Vector z(3);
     z(0) = x(1)*y(2) - x(2)*y(1);
     z(1) = x(2)*y(0) - x(0)*y(2);
     z(2) = x(0)*y(1) - x(1)*y(0);

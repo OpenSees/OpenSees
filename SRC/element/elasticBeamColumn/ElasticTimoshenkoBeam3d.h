@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: $
-// $Date:  $
-// $URL:  $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef ElasticTimoshenkoBeam3d_h
 #define ElasticTimoshenkoBeam3d_h

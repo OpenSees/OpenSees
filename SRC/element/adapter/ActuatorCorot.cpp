@@ -401,6 +401,7 @@ const Matrix& ActuatorCorot::getTangentStiff()
     
     // material stiffness portion
     int i,j;
+    kl.Zero();
     double EAoverL3 = EA/(Ln*Ln*L);
     for (i=0; i<3; i++)
         for (j=0; j<3; j++)
@@ -626,7 +627,7 @@ const Vector& ActuatorCorot::getResistingForceIncInertia()
     // add the damping forces from rayleigh damping
     if (addRayleigh == 1)  {
         if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-            (*theVector) += this->getRayleighDampingForces();
+            theVector->addVector(1.0, this->getRayleighDampingForces(), 1.0);
     }
     
     // add inertia forces from element mass

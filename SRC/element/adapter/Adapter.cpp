@@ -44,11 +44,6 @@
 #include <string.h>
 
 
-// initialize the class wide variables
-Matrix Adapter::theMatrix(1,1);
-Vector Adapter::theVector(1);
-
-
 // responsible for allocating the necessary space needed
 // by each object and storing the tags of the end nodes.
 Adapter::Adapter(int tag, ID nodes, ID *dof,
@@ -56,7 +51,7 @@ Adapter::Adapter(int tag, ID nodes, ID *dof,
     : Element(tag, ELE_TAG_Adapter),
     connectedExternalNodes(nodes), basicDOF(1), numExternalNodes(0),
     numDOF(0), numBasicDOF(0), kb(_kb), ipPort(ipport), addRayleigh(addRay),
-    mb(0), tPast(0.0), db(1), q(1), theLoad(1),
+    mb(0), tPast(0.0), theMatrix(1,1), theVector(1), theLoad(1), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
 {
@@ -106,8 +101,8 @@ Adapter::Adapter(int tag, ID nodes, ID *dof,
 Adapter::Adapter()
     : Element(0, ELE_TAG_Adapter),
     connectedExternalNodes(1), basicDOF(1), numExternalNodes(0),
-    numDOF(0), numBasicDOF(0), kb(1,1), ipPort(0), addRayleigh(0),
-    mb(0), tPast(0.0), db(1), q(1), theLoad(1),
+    numDOF(0), numBasicDOF(0), kb(1,1), ipPort(0), addRayleigh(0), mb(0),
+    tPast(0.0), theMatrix(1,1), theVector(1), theLoad(1), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
     ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
 {
@@ -293,7 +288,7 @@ const Matrix& Adapter::getTangentStiff()
     theMatrix.Zero();
     
     // assemble stiffness matrix
-    theMatrix.Assemble(kb,basicDOF,basicDOF);
+    theMatrix.Assemble(kb, basicDOF, basicDOF);
     
     return theMatrix;
 }
@@ -305,7 +300,7 @@ const Matrix& Adapter::getInitialStiff()
     theMatrix.Zero();
     
     // assemble stiffness matrix
-    theMatrix.Assemble(kb,basicDOF,basicDOF);
+    theMatrix.Assemble(kb, basicDOF, basicDOF);
     
     return theMatrix;
 }
@@ -331,7 +326,7 @@ const Matrix& Adapter::getMass()
     
     // assemble mass matrix
     if (mb != 0)
-        theMatrix.Assemble(*mb,basicDOF,basicDOF);
+        theMatrix.Assemble(*mb, basicDOF, basicDOF);
     
     return theMatrix;
 }
@@ -360,8 +355,7 @@ int Adapter::addInertiaLoadToUnbalance(const Vector &accel)
         return 0;
     
     int ndim = 0, i;
-    static Vector Raccel(numDOF);
-    Raccel.Zero();
+    Vector Raccel(numDOF);
     
     // get mass matrix
     Matrix M = this->getMass();
@@ -372,7 +366,7 @@ int Adapter::addInertiaLoadToUnbalance(const Vector &accel)
     }
     
     // want to add ( - fact * M R * accel ) to unbalance
-    theLoad -= M * Raccel;
+    theLoad.addMatrixVector(1.0, M, Raccel, -1.0);
     
     return 0;
 }
@@ -414,7 +408,8 @@ const Vector& Adapter::getResistingForce()
     }
     
     // get resisting force in basic system q = k*db + q0 = k*(db - db0)
-    q = kb*(db - *ctrlDisp);
+    q.addMatrixVector(0.0, kb, (db - *ctrlDisp), 1.0);
+    //q = kb*(db - *ctrlDisp);
     
     // assign daq values for feedback
     *daqDisp  = db;
@@ -440,23 +435,24 @@ const Vector& Adapter::getResistingForceIncInertia()
     // add the damping forces from rayleigh damping
     if (addRayleigh == 1)  {
         if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-            theVector += this->getRayleighDampingForces();
+            theVector.addVector(1.0, this->getRayleighDampingForces(), 1.0);
     }
     
     // add inertia forces from element mass
-    int ndim = 0, i;
-    static Vector accel(numDOF);
-    accel.Zero();
-    
-    // get mass matrix
-    Matrix M = this->getMass();
-    // assemble accel vector
-    for (i=0; i<numExternalNodes; i++ )  {
-        accel.Assemble(theNodes[i]->getTrialAccel(), ndim);
-        ndim += theNodes[i]->getNumberDOF();
+    if (mb != 0)  {
+        int ndim = 0, i;
+        Vector accel(numDOF);
+        
+        // get mass matrix
+        Matrix M = this->getMass();
+        // assemble accel vector
+        for (i=0; i<numExternalNodes; i++ )  {
+            accel.Assemble(theNodes[i]->getTrialAccel(), ndim);
+            ndim += theNodes[i]->getNumberDOF();
+        }
+        
+        theVector.addMatrixVector(1.0, M, accel, 1.0);
     }
-    
-    theVector += M * accel;
     
     return theVector;
 }
@@ -573,14 +569,14 @@ int Adapter::displaySelf(Renderer &theViewer,
                 int end1NumCrds = end1Crd.Size();
                 int end2NumCrds = end2Crd.Size();
                 
-                Vector v1(3), v2(3);
+                static Vector v1(3), v2(3);
                 
                 for (j=0; j<end1NumCrds; j++)
                     v1(j) = end1Crd(j) + end1Disp(j)*fact;
                 for (j=0; j<end2NumCrds; j++)
                     v2(j) = end2Crd(j) + end2Disp(j)*fact;
                 
-                rValue += theViewer.drawLine (v1, v2, 1.0, 1.0);
+                rValue += theViewer.drawLine(v1, v2, 1.0, 1.0);
             }
         } else  {
             int mode = displayMode * -1;
@@ -594,7 +590,7 @@ int Adapter::displaySelf(Renderer &theViewer,
                 int end1NumCrds = end1Crd.Size();
                 int end2NumCrds = end2Crd.Size();
                 
-                Vector v1(3), v2(3);
+                static Vector v1(3), v2(3);
                 
                 if (eigen1.noCols() >= mode)  {
                     for (j=0; j<end1NumCrds; j++)
@@ -608,7 +604,7 @@ int Adapter::displaySelf(Renderer &theViewer,
                         v2(j) = end2Crd(j);
                 }
                 
-                rValue += theViewer.drawLine (v1, v2, 1.0, 1.0);
+                rValue += theViewer.drawLine(v1, v2, 1.0, 1.0);
             }
         }
     }

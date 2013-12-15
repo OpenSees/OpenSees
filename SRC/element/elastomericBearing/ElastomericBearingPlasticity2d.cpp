@@ -52,12 +52,12 @@ Vector ElastomericBearingPlasticity2d::theVector(6);
 
 
 ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d(int tag,
-    int Nd1, int Nd2, double kInit, double fy, double alpha,
+    int Nd1, int Nd2, double kInit, double fy, double alpha1,
     UniaxialMaterial **materials, const Vector _y, const Vector _x,
-    double sdI, int addRay, double m)
+    double alpha2, double _mu, double sdI, int addRay, double m)
     : Element(tag, ELE_TAG_ElastomericBearingPlasticity2d),
-    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0),
-    x(_x), y(_y), shearDistI(sdI), addRayleigh(addRay), mass(m),
+    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0), k3(0.0),
+    mu(_mu), x(_x), y(_y), shearDistI(sdI), addRayleigh(addRay), mass(m),
     L(0.0), onP0(true), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
     Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3), theLoad(6)
 {
@@ -76,9 +76,10 @@ ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d(int tag,
         theNodes[i] = 0;
     
     // initialize parameters
-    k0 = (1.0-alpha)*kInit;
-    qYield = (1.0-alpha)*fy;
-    k2 = alpha*kInit;
+    k0 = (1.0-alpha1)*kInit;
+    k2 = alpha1*kInit;
+    k3 = alpha2*kInit;
+    qYield = (1.0-alpha1-alpha2*pow(fy/kInit,mu-1.0))*fy;
     
     // check material input
     if (materials == 0)  {
@@ -115,8 +116,8 @@ ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d(int tag,
 
 ElastomericBearingPlasticity2d::ElastomericBearingPlasticity2d()
     : Element(0, ELE_TAG_ElastomericBearingPlasticity2d),
-    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0),
-    x(0), y(0), shearDistI(0.5), addRayleigh(0), mass(0.0),
+    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0), k3(0.0),
+    mu(2.0), x(0), y(0), shearDistI(0.5), addRayleigh(0), mass(0.0),
     L(0.0), onP0(false), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
     Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3), theLoad(6)
 {
@@ -318,9 +319,9 @@ int ElastomericBearingPlasticity2d::update()
     // elastic step -> no updates required
     if (Y <= 0.0)  {
         // set shear force
-        qb(1) = qTrial + k2*ub(1);
+        qb(1) = qTrial + k2*ub(1) + k3*sgn(ub(1))*pow(fabs(ub(1)),mu);
         // set tangent stiffness
-        kb(1,1) = k0 + k2;
+        kb(1,1) = k0 + k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
     }
     // plastic step -> return mapping
     else  {
@@ -329,12 +330,13 @@ int ElastomericBearingPlasticity2d::update()
         // update plastic displacement
         ubPlastic = ubPlasticC + dGamma*qTrial/qTrialNorm;
         // set shear force
-        qb(1) = qYield*qTrial/qTrialNorm + k2*ub(1);
+        qb(1) = qYield*qTrial/qTrialNorm + k2*ub(1)
+              + k3*sgn(ub(1))*pow(fabs(ub(1)),mu);
         // set tangent stiffness
-        kb(1,1) = k2;
+        kb(1,1) = k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
     }
     
-    // 3) get moment and stiffness in basic z-direction
+    // 3) get moment and stiffness about basic z-direction
     theMaterials[1]->setTrialStrain(ub(2),ubdot(2));
     qb(2) = theMaterials[1]->getStress();
     kb(2,2) = theMaterials[1]->getTangent();
@@ -378,11 +380,11 @@ const Matrix& ElastomericBearingPlasticity2d::getInitialStiff()
     theMatrix.Zero();
     
     // transform from basic to local system
-    static Matrix kl(6,6);
-    kl.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
+    static Matrix klInit(6,6);
+    klInit.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
     
     // transform from local to global system
-    theMatrix.addMatrixTripleProduct(0.0, Tgl, kl, 1.0);
+    theMatrix.addMatrixTripleProduct(0.0, Tgl, klInit, 1.0);
     
     return theMatrix;
 }
@@ -543,16 +545,18 @@ const Vector& ElastomericBearingPlasticity2d::getResistingForceIncInertia()
 int ElastomericBearingPlasticity2d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(9);
+    static Vector data(11);
     data(0) = this->getTag();
     data(1) = k0;
     data(2) = qYield;
     data(3) = k2;
-    data(4) = shearDistI;
-    data(5) = addRayleigh;
-    data(6) = mass;
-    data(7) = x.Size();
-    data(8) = y.Size();
+    data(4) = k3;
+    data(5) = mu;
+    data(6) = shearDistI;
+    data(7) = addRayleigh;
+    data(8) = mass;
+    data(9) = x.Size();
+    data(10) = y.Size();
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -587,15 +591,17 @@ int ElastomericBearingPlasticity2d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(9);
+    static Vector data(11);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
     qYield = data(2);
     k2 = data(3);
-    shearDistI = data(4);
-    addRayleigh = (int)data(5);
-    mass = data(6);
+    k3 = data(4);
+    mu = data(5);
+    shearDistI = data(6);
+    addRayleigh = (int)data(7);
+    mass = data(8);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -616,11 +622,11 @@ int ElastomericBearingPlasticity2d::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive remaining data
-    if ((int)data(7) == 3)  {
+    if ((int)data(9) == 3)  {
         x.resize(3);
         rChannel.recvVector(0, commitTag, x);
     }
-    if ((int)data(8) == 3)  {
+    if ((int)data(10) == 3)  {
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
@@ -689,6 +695,7 @@ void ElastomericBearingPlasticity2d::Print(OPS_Stream &s, int flag)
         s << "  iNode: " << connectedExternalNodes(0);
         s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "  k0: " << k0 << "  qYield: " << qYield << "  k2: " << k2 << endln;
+        s << "  k3: " << k3 << "  mu: " << mu << endln;
         s << "  Material ux: " << theMaterials[0]->getTag();
         s << "  Material rz: " << theMaterials[1]->getTag() << endln;
         s << "  shearDistI: " << shearDistI << "  addRayleigh: "
@@ -857,7 +864,7 @@ void ElastomericBearingPlasticity2d::setUp()
     
     // establish orientation of element for the tranformation matrix
     // z = x cross y
-    Vector z(3);
+    static Vector z(3);
     z(0) = x(1)*y(2) - x(2)*y(1);
     z(1) = x(2)*y(0) - x(0)*y(2);
     z(2) = x(0)*y(1) - x(1)*y(0);

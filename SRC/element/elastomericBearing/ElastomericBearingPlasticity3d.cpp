@@ -52,12 +52,12 @@ Vector ElastomericBearingPlasticity3d::theVector(12);
 
 
 ElastomericBearingPlasticity3d::ElastomericBearingPlasticity3d(int tag,
-    int Nd1, int Nd2, double kInit, double fy, double alpha,
+    int Nd1, int Nd2, double kInit, double fy, double alpha1,
     UniaxialMaterial **materials, const Vector _y, const Vector _x,
-    double sdI, int addRay, double m)
+    double alpha2, double _mu, double sdI, int addRay, double m)
     : Element(tag, ELE_TAG_ElastomericBearingPlasticity3d),
-    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0),
-    x(_x), y(_y), shearDistI(sdI), addRayleigh(addRay), mass(m),
+    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0), k3(0.0),
+    mu(_mu), x(_x), y(_y), shearDistI(sdI), addRayleigh(addRay), mass(m),
     L(0.0), onP0(true), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6), theLoad(12)
 {
@@ -76,9 +76,10 @@ ElastomericBearingPlasticity3d::ElastomericBearingPlasticity3d(int tag,
         theNodes[i] = 0;
     
     // initialize parameters
-    k0 = (1.0-alpha)*kInit;
-    qYield = (1.0-alpha)*fy;
-    k2 = alpha*kInit;
+    k0 = (1.0-alpha1)*kInit;
+    k2 = alpha1*kInit;
+    k3 = alpha2*kInit;
+    qYield = (1.0-alpha1-alpha2*pow(fy/kInit,mu-1.0))*fy;
     
     // check material input
     if (materials == 0)  {
@@ -117,8 +118,8 @@ ElastomericBearingPlasticity3d::ElastomericBearingPlasticity3d(int tag,
 
 ElastomericBearingPlasticity3d::ElastomericBearingPlasticity3d()
     : Element(0, ELE_TAG_ElastomericBearingPlasticity3d),
-    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0), x(0), y(0),
-    shearDistI(0.5), addRayleigh(0), mass(0.0),
+    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0), k3(0.0),
+    mu(2.0), x(0), y(0), shearDistI(0.5), addRayleigh(0), mass(0.0),
     L(0.0), onP0(false), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6), theLoad(12)
 {
@@ -322,11 +323,12 @@ int ElastomericBearingPlasticity3d::update()
     // elastic step -> no updates required
     if (Y <= 0.0)  {
         // set shear forces
-        qb(1) = qTrial(0) + k2*ub(1);
-        qb(2) = qTrial(1) + k2*ub(2);
+        qb(1) = qTrial(0) + k2*ub(1) + k3*sgn(ub(1))*pow(fabs(ub(1)),mu);
+        qb(2) = qTrial(1) + k2*ub(2) + k3*sgn(ub(2))*pow(fabs(ub(2)),mu);
         // set tangent stiffnesses
-        kb(1,1) = kb(2,2) = k0 + k2;
+        kb(1,1) = k0 + k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
         kb(1,2) = kb(2,1) = 0.0;
+        kb(2,2) = k0 + k2 + k3*mu*pow(fabs(ub(2)),mu-1.0);
     }
     // plastic step -> return mapping
     else  {
@@ -336,27 +338,31 @@ int ElastomericBearingPlasticity3d::update()
         ubPlastic(0) = ubPlasticC(0) + dGamma*qTrial(0)/qTrialNorm;
         ubPlastic(1) = ubPlasticC(1) + dGamma*qTrial(1)/qTrialNorm;
         // set shear forces
-        qb(1) = qYield*qTrial(0)/qTrialNorm + k2*ub(1);
-        qb(2) = qYield*qTrial(1)/qTrialNorm + k2*ub(2);
+        qb(1) = qYield*qTrial(0)/qTrialNorm
+              + k2*ub(1) + k3*sgn(ub(1))*pow(fabs(ub(1)),mu);
+        qb(2) = qYield*qTrial(1)/qTrialNorm
+              + k2*ub(2) + k3*sgn(ub(2))*pow(fabs(ub(2)),mu);
         // set tangent stiffnesses
         double D = pow(qTrialNorm,3);
-        kb(1,1) =  qYield*k0*qTrial(1)*qTrial(1)/D + k2;
+        kb(1,1) =  qYield*k0*qTrial(1)*qTrial(1)/D
+                + k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
         kb(1,2) = -qYield*k0*qTrial(0)*qTrial(1)/D;
         kb(2,1) =  kb(1,2);
-        kb(2,2) =  qYield*k0*qTrial(0)*qTrial(0)/D + k2;
+        kb(2,2) =  qYield*k0*qTrial(0)*qTrial(0)/D
+                + k2 + k3*mu*pow(fabs(ub(2)),mu-1.0);
     }
     
-    // 3) get moment and stiffness in basic x-direction
+    // 3) get moment and stiffness about basic x-direction
     theMaterials[1]->setTrialStrain(ub(3),ubdot(3));
     qb(3) = theMaterials[1]->getStress();
     kb(3,3) = theMaterials[1]->getTangent();
     
-    // 4) get moment and stiffness in basic y-direction
+    // 4) get moment and stiffness about basic y-direction
     theMaterials[2]->setTrialStrain(ub(4),ubdot(4));
     qb(4) = theMaterials[2]->getStress();
     kb(4,4) = theMaterials[2]->getTangent();
     
-    // 5) get moment and stiffness in basic z-direction
+    // 5) get moment and stiffness about basic z-direction
     theMaterials[3]->setTrialStrain(ub(5),ubdot(5));
     qb(5) = theMaterials[3]->getStress();
     kb(5,5) = theMaterials[3]->getTangent();
@@ -408,11 +414,11 @@ const Matrix& ElastomericBearingPlasticity3d::getInitialStiff()
     theMatrix.Zero();
     
     // transform from basic to local system
-    static Matrix kl(12,12);
-    kl.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
+    static Matrix klInit(12,12);
+    klInit.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
     
     // transform from local to global system
-    theMatrix.addMatrixTripleProduct(0.0, Tgl, kl, 1.0);
+    theMatrix.addMatrixTripleProduct(0.0, Tgl, klInit, 1.0);
     
     return theMatrix;
 }
@@ -584,16 +590,18 @@ const Vector& ElastomericBearingPlasticity3d::getResistingForceIncInertia()
 int ElastomericBearingPlasticity3d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(9);
+    static Vector data(11);
     data(0) = this->getTag();
     data(1) = k0;
     data(2) = qYield;
     data(3) = k2;
-    data(4) = shearDistI;
-    data(5) = addRayleigh;
-    data(6) = mass;
-    data(7) = x.Size();
-    data(8) = y.Size();
+    data(4) = k3;
+    data(5) = mu;
+    data(6) = shearDistI;
+    data(7) = addRayleigh;
+    data(8) = mass;
+    data(9) = x.Size();
+    data(10) = y.Size();
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -628,15 +636,17 @@ int ElastomericBearingPlasticity3d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(9);
+    static Vector data(11);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
     qYield = data(2);
     k2 = data(3);
-    shearDistI = data(4);
-    addRayleigh = (int)data(5);
-    mass = data(6);
+    k3 = data(4);
+    mu = data(5);
+    shearDistI = data(6);
+    addRayleigh = (int)data(7);
+    mass = data(8);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -657,11 +667,11 @@ int ElastomericBearingPlasticity3d::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive remaining data
-    if ((int)data(7) == 3)  {
+    if ((int)data(9) == 3)  {
         x.resize(3);
         rChannel.recvVector(0, commitTag, x);
     }
-    if ((int)data(8) == 3)  {
+    if ((int)data(10) == 3)  {
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
@@ -732,6 +742,7 @@ void ElastomericBearingPlasticity3d::Print(OPS_Stream &s, int flag)
         s << "  iNode: " << connectedExternalNodes(0);
         s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "  k0: " << k0 << "  qYield: " << qYield << "  k2: " << k2 << endln;
+        s << "  k3: " << k3 << "  mu: " << mu << endln;
         s << "  Material ux: " << theMaterials[0]->getTag();
         s << "  Material rx: " << theMaterials[1]->getTag();
         s << "  Material ry: " << theMaterials[2]->getTag();
@@ -932,7 +943,7 @@ void ElastomericBearingPlasticity3d::setUp()
     
     // establish orientation of element for the tranformation matrix
     // z = x cross y
-    Vector z(3);
+    static Vector z(3);
     z(0) = x(1)*y(2) - x(2)*y(1);
     z(1) = x(2)*y(0) - x(0)*y(2);
     z(2) = x(0)*y(1) - x(1)*y(0);
