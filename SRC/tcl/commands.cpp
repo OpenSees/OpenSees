@@ -5927,7 +5927,6 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
   int loc = 1;
   double shift = 0.0;
   bool findSmallest = true;
-  int factLVALUE = 10; // parameter for UmfPack SOE
   
   // Check type of eigenvalue analysis
   while (loc < (argc-1)) {
@@ -5944,17 +5943,23 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     else if ((strcmp(argv[loc],"-findLargest") == 0))
       findSmallest = false;
     
-    else if ((strcmp(argv[loc],"symmBandLapackEigen") == 0) || 
-	     (strcmp(argv[loc],"-symmBandLapackEigen") == 0))
+    else if ((strcmp(argv[loc],"genBandArpack") == 0) || 
+         (strcmp(argv[loc],"-genBandArpack") == 0) ||
+         (strcmp(argv[loc],"genBandArpackEigen") == 0) || 
+         (strcmp(argv[loc],"-genBandArpackEigen") == 0))
+      typeSolver = EigenSOE_TAGS_ArpackSOE;
+    
+    else if ((strcmp(argv[loc],"symmBandLapack") == 0) || 
+         (strcmp(argv[loc],"-symmBandLapack") == 0) ||
+         (strcmp(argv[loc],"symmBandLapackEigen") == 0) || 
+         (strcmp(argv[loc],"-symmBandLapackEigen") == 0))
       typeSolver = EigenSOE_TAGS_SymBandEigenSOE;
     
     else if ((strcmp(argv[loc],"fullGenLapack") == 0) || 
-	     (strcmp(argv[loc],"-fullGenLapack") == 0))
+         (strcmp(argv[loc],"-fullGenLapack") == 0) ||
+         (strcmp(argv[loc],"fullGenLapackEigen") == 0) || 
+         (strcmp(argv[loc],"-fullGenLapackEigen") == 0))
       typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
-    
-    else if ((strcmp(argv[loc],"symmBandLapack") == 0) || 
-	     (strcmp(argv[loc],"-symmBandLapack") == 0))
-      typeSolver = EigenSOE_TAGS_SymBandEigenSOE;
     
     else {
       opserr << "eigen - unknown option specified " << argv[loc] << endln;

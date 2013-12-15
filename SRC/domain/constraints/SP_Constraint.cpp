@@ -182,7 +182,7 @@ SP_Constraint::recvSelf(int cTag, Channel &theChannel,
     valueC = valueR;
     this->setLoadPatternTag((int)data(6));
 
-    nextTag = data(7);
+    nextTag = (int)data(7);
 
     return 0;
 }
