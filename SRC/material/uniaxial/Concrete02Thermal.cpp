@@ -212,7 +212,7 @@ Concrete02Thermal::setTrialStrain(double trialStrain, double FiberTemperature, d
       }
     }
   }
-
+  
   return 0;
 }
 
@@ -361,7 +361,7 @@ Concrete02Thermal::getElongTangent(double TempT, double& ET, double& Elong, doub
       ThermalElongation = -1.8e-4 + 9e-6 *(Temp+20) + 2.3e-11 *(Temp+20)*(Temp+20)*(Temp+20);
   }
   else if (Temp <= 1180) {
-      ThermalElongation = 14e-3;
+      ThermalElongation = 14.009e-3;  //Modified by Liming,2013
   }
   else {
 	  opserr << "the temperature is invalid\n";
