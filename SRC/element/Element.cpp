@@ -432,7 +432,8 @@ Element::setResponse(const char **argv, int argc, OPS_Stream &output)
       sprintf(nodeData,"P%d",i+1);
       output.tag("ResponseType",nodeData);
     }
-    theResponse = new ElementResponse(this, 1, this->getResistingForce());
+    // Using "strange" numbers to avoid conflicts with Element subclasses
+    theResponse = new ElementResponse(this, 111111, this->getResistingForce());
   }
 
   else if (strcmp(argv[0],"dampingForce") == 0 || strcmp(argv[0],"dampingForces") == 0) {
@@ -442,7 +443,17 @@ Element::setResponse(const char **argv, int argc, OPS_Stream &output)
       sprintf(nodeData,"P%d",i+1);
       output.tag("ResponseType",nodeData);
     }
-    theResponse = new ElementResponse(this, 2, this->getResistingForce());
+    theResponse = new ElementResponse(this, 222222, this->getResistingForce());
+  }
+
+  else if (strcmp(argv[0],"dynamicForce") == 0 || strcmp(argv[0],"dynamicForces") == 0) {
+    const Vector &force = this->getResistingForce();
+    int size = force.Size();
+    for (int i=0; i<size; i++) {
+      sprintf(nodeData,"P%d",i+1);
+      output.tag("ResponseType",nodeData);
+    }
+    theResponse = new ElementResponse(this, 333333, this->getResistingForce());
   }
   output.endTag();
   return theResponse;
@@ -452,10 +463,12 @@ int
 Element::getResponse(int responseID, Information &eleInfo)
 {
   switch (responseID) {
-  case 1: // global forces
+  case 111111: // global forces
     return eleInfo.setVector(this->getResistingForce());
-  case 2:
+  case 222222:
     return eleInfo.setVector(this->getRayleighDampingForces());
+  case 333333:
+    return eleInfo.setVector(this->getResistingForceIncInertia());
   default:
     return -1;
   }
