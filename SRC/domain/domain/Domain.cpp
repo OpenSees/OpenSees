@@ -546,7 +546,7 @@ Domain::addPressure_Constraint(Pressure_Constraint *pConstraint)
 {
 #ifdef _G3DEBUG    
     // check the Node exists in the Domain
-    int nodeTag = pConstraint->getNodeConstrained();
+    int nodeTag = pConstraint->getTag();
     Node *nodePtr = this->getNode(nodeTag);
     if (nodePtr == 0) {
         opserr << "Domain::addPressure_Constraint - cannot add as node with tag";
