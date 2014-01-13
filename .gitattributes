@@ -451,6 +451,7 @@ EXAMPLES/Reliability/Report.pdf -text svneol=unset#application/pdf
 EXAMPLES/Reliability/bar.tcl -text
 EXAMPLES/Reliability/industrialFrame.tcl -text
 EXAMPLES/Reliability/portalframe.tcl -text
+EXAMPLES/Reliability/steelFrame.tcl -text
 EXAMPLES/Reliability/truss.tcl -text
 EXAMPLES/Reliability/truss2.tcl -text
 EXAMPLES/Reliability/trussParameter.tcl -text
