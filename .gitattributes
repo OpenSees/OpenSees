@@ -445,6 +445,7 @@ EXAMPLES/Reliability/CalRel_manual_7.tcl -text
 EXAMPLES/Reliability/CalRel_manual_8.tcl -text
 EXAMPLES/Reliability/Class_example_1.tcl -text
 EXAMPLES/Reliability/Class_example_2.tcl -text
+EXAMPLES/Reliability/DiscretizeMember.tcl -text
 EXAMPLES/Reliability/Madsen_eg_5_9.tcl -text
 EXAMPLES/Reliability/RV_tester.tcl -text
 EXAMPLES/Reliability/Report.pdf -text svneol=unset#application/pdf
