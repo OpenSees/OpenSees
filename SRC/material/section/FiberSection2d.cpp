@@ -739,6 +739,7 @@ FiberSection2d::Print(OPS_Stream &s, int flag)
   s << "\tSection code: " << code;
   s << "\tNumber of Fibers: " << numFibers << endln;
   s << "\tCentroid: " << yBar << endln;
+  theMaterials[0]->Print(s, flag);
 
   if (flag == 1) {
     for (int i = 0; i < numFibers; i++) {
@@ -860,7 +861,7 @@ FiberSection2d::setParameter(const char **argv, int argc, Parameter &param)
 
   int result = -1;
 
-  // Check if the parameter belongs to the material (only option for now)
+  // Check if the parameter belongs to the material
   if (strstr(argv[0],"material") != 0) {
     
     if (argc < 3)
@@ -877,6 +878,53 @@ FiberSection2d::setParameter(const char **argv, int argc, Parameter &param)
 	  result = ok;
       }
     return result;
+  }
+
+  // Check if the parameter belongs to a fiber
+  // unlike setResponse, only allowing 'fiber y z matTag ...' because
+  // the setResponse logic breaks down with the trailing arguments
+  if (strstr(argv[0],"fiber") != 0) {
+    
+    int key = numFibers;
+    int passarg = 2;
+    
+    if (argc < 5)
+      return 0;
+
+    int matTag = atoi(argv[3]);
+    double yCoord = atof(argv[1]);
+      
+    double closestDist = 0;
+    double ySearch, dy;
+    double distance;
+    int j;
+    // Find first fiber with specified material tag
+    for (j = 0; j < numFibers; j++) {
+      if (matTag == theMaterials[j]->getTag()) {
+	ySearch = matData[2*j];
+	dy = ySearch-yCoord;
+	closestDist = fabs(dy);
+	key = j;
+	break;
+      }
+    }
+    // Search the remaining fibers
+    for ( ; j < numFibers; j++) {
+      if (matTag == theMaterials[j]->getTag()) {
+	ySearch = matData[2*j];
+	dy = ySearch-yCoord;
+	distance = fabs(dy);
+	if (distance < closestDist) {
+	  closestDist = distance;
+	  key = j;
+	}
+      }
+      passarg = 4;
+    }
+    
+    // Finally, call setParameter
+    if (key >= 0 && key < numFibers)
+      return theMaterials[key]->setParameter(&argv[passarg], argc-passarg, param);
   }
 
   // Check if it belongs to the section integration
