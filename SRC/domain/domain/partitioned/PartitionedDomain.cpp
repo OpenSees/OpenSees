@@ -954,12 +954,10 @@ PartitionedDomain::update(void)
   }
 
 #ifdef _PARALLEL_PROCESSING
-  //  return this->barrierCheck(res);
+  return this->barrierCheck(res);
 #endif
   return res;
 }
-
-
 
 
 #ifdef _PARALLEL_PROCESSING

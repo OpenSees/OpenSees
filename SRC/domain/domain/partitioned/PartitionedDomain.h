@@ -106,8 +106,10 @@ class PartitionedDomain: public Domain
     virtual  int commit(void);    
     virtual  int revertToLastCommit(void);        
     virtual  int revertToStart(void);    
+
     virtual  int update(void);        
     virtual  int update(double newTime, double dT);
+
     virtual  int analysisStep(double dT);
     virtual  int eigenAnalysis(int, bool, bool);
 
