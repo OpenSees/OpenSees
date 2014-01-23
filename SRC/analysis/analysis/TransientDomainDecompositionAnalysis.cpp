@@ -189,6 +189,10 @@ TransientDomainDecompositionAnalysis::analyze(double dT)
   }
 
   result = theIntegrator->newStep(dT);
+
+  // barrierCheck in PartitionedDomain
+  result = this->checkAllResult(result);
+
   if (result < 0) {
     opserr << "TransientDomainDecompositionAnalysis::analyze() - the Integrator failed";
     opserr << " with domain at load factor ";
@@ -584,6 +588,8 @@ int
 TransientDomainDecompositionAnalysis::recvSelf(int commitTag, Channel &theChannel, 
 					    FEM_ObjectBroker &theBroker)
 {
+
+  myChannel = &theChannel;
 
   Domain *the_Domain = this->getSubdomainPtr();
 

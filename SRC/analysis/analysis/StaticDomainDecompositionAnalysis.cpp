@@ -96,7 +96,6 @@ StaticDomainDecompositionAnalysis::StaticDomainDecompositionAnalysis(Subdomain &
    theTest(theConvergenceTest),
    domainStamp(0)
 {
-  
   if (setLinks == true) {
     // set up the links needed by the elements in the aggregation
     theAnalysisModel->setLinks(the_Domain, theHandler);
@@ -190,16 +189,19 @@ StaticDomainDecompositionAnalysis::analyze(double dT)
   }
 
   //  opserr << " StaticDomainDecompositionAnalysis::analyze() - 2\n";
-
   result = theIntegrator->newStep();
+
+  // barrierCheck in PartitionedDomain
+  result = this->checkAllResult(result);
+
   if (result < 0) {
     opserr << "StaticDomainDecompositionAnalysis::analyze() - the Integrator failed";
     opserr << " with domain at load factor ";
     opserr << the_Domain->getCurrentTime() << endln;
     the_Domain->revertToLastCommit();
-    
     return -2;
   }
+
 
   result = theAlgorithm->solveCurrentStep();
   if (result < 0) {
@@ -601,6 +603,8 @@ int
 StaticDomainDecompositionAnalysis::recvSelf(int commitTag, Channel &theChannel, 
 					    FEM_ObjectBroker &theBroker)
 {
+  myChannel = &theChannel;
+
   Domain *the_Domain = this->getSubdomainPtr();
 
   // receive the data identifyng the objects in the aggregation

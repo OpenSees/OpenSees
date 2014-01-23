@@ -175,7 +175,6 @@ StaticAnalysis::analyze(int numSteps)
 	    }	
 	}
 
-
 	result = theIntegrator->newStep();
 	if (result < 0) {
 	    opserr << "StaticAnalysis::analyze() - the Integrator failed";

@@ -71,7 +71,8 @@ DomainDecompositionAnalysis::DomainDecompositionAnalysis(Subdomain &the_Domain)
  theSOE(0),
  theSolver(0),
  theResidual(0),numEqn(0),numExtEqn(0),tangFormed(false),tangFormedCount(0),
- domainStamp(0)
+ domainStamp(0),
+ myChannel(0)
 {
     theSubdomain->setDomainDecompAnalysis(*this);
 }
@@ -90,7 +91,8 @@ DomainDecompositionAnalysis::DomainDecompositionAnalysis(int clsTag,
  theSOE(0),
  theSolver(0),
  theResidual(0),numEqn(0),numExtEqn(0),tangFormed(false),tangFormedCount(0),
- domainStamp(0)
+ domainStamp(0),
+ myChannel(0)
 {
 
 }
@@ -712,3 +714,15 @@ DomainDecompositionAnalysis::setConvergenceTest(ConvergenceTest &theTest)
 }
 
 
+
+int 
+DomainDecompositionAnalysis::checkAllResult(int mine)
+{
+  static ID data(1);
+  data(0) = mine;
+  if (myChannel != 0) {
+    myChannel->sendID(0,0,data);
+    myChannel->recvID(0,0,data);
+  }
+  return data(0);
+}
