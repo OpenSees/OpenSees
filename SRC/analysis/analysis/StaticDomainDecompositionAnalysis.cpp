@@ -161,7 +161,7 @@ StaticDomainDecompositionAnalysis::analyze(double dT)
   int result = 0;
   Domain *the_Domain = this->getDomainPtr();
 
-  //   opserr << " StaticDomainDecompositionAnalysis::analyze() - 1\n";
+   //opserr << " StaticDomainDecompositionAnalysis::analyze() - 1\n";
 
   // check for change in Domain since last step. As a change can
   // occur in a commit() in a domaindecomp with load balancing
@@ -192,7 +192,8 @@ StaticDomainDecompositionAnalysis::analyze(double dT)
   result = theIntegrator->newStep();
 
   // barrierCheck in PartitionedDomain
-  result = this->checkAllResult(result);
+ // opserr << "StaticDomainDecompAnalysis - checkAllResult\n";
+//  result = this->checkAllResult(result);
 
   if (result < 0) {
     opserr << "StaticDomainDecompositionAnalysis::analyze() - the Integrator failed";

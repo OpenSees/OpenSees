@@ -1030,7 +1030,7 @@ ActorSubdomain::update(void)
 {
   int res = this->Domain::update();
 
-  // res = this->barrierCheck(res);
+  res = this->barrierCheck(res);
 
   return res;
 }

@@ -954,6 +954,7 @@ PartitionedDomain::update(void)
   }
 
 #ifdef _PARALLEL_PROCESSING
+ // opserr << "PartitionedDomain:: barrierCheck\n";
   return this->barrierCheck(res);
 #endif
   return res;

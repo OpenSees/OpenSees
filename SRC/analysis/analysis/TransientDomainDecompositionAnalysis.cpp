@@ -167,6 +167,8 @@ TransientDomainDecompositionAnalysis::analyze(double dT)
   // check for change in Domain since last step. As a change can
   // occur in a commit() in a domaindecomp with load balancing
   // this must now be inside the loop
+
+  //opserr << "TransientDomainDecomp - hasDomainChanged\n";
   int stamp = the_Domain->hasDomainChanged();
 
   if (stamp != domainStamp) {
@@ -177,7 +179,7 @@ TransientDomainDecompositionAnalysis::analyze(double dT)
       return -1;
     }	
   }
-
+  // opserr << "TransientDomainDecomp - newStep\n";
   // result = theAnalysisModel->newStepDomain();
   if (result < 0) {
     opserr << "TransientDomainDecompositionAnalysis::analyze() - the AnalysisModel failed";
@@ -188,10 +190,11 @@ TransientDomainDecompositionAnalysis::analyze(double dT)
     return -2;
   }
 
+  // opserr << "TransientDomainDecomp - integrator newStep\n";
   result = theIntegrator->newStep(dT);
 
   // barrierCheck in PartitionedDomain
-  result = this->checkAllResult(result);
+ // result = this->checkAllResult(result);
 
   if (result < 0) {
     opserr << "TransientDomainDecompositionAnalysis::analyze() - the Integrator failed";
@@ -201,7 +204,7 @@ TransientDomainDecompositionAnalysis::analyze(double dT)
     
     return -2;
   }
-
+ //  opserr << "TransientDomainDecomp - solveCurrentStep\n";
   result = theAlgorithm->solveCurrentStep();
   if (result < 0) {
     opserr << "TransientDomainDecompositionAnalysis::analyze() - the Algorithm failed";
