@@ -139,7 +139,8 @@ class ManzariDafalias : public NDMaterial
 	double  mEPS;
 	int  	mIter;
 	int     mJacoType;          // 0: FDM Jacobian, 1: Analytical Jacobian
-	int		mScheme;            // 0: Forward Euler Explicit, 1: Backward Euler Implicit, 2: Backward Euler Implicit with considerations for stability
+	int		mScheme;            // 0: Forward Euler Explicit, 1: Backward Euler Implicit, 2: Backward Euler Implicit with considerations for stability, 
+								// 3: FE Explicit with constrained strain increment
 	int     mTangType;          // 0: Elastic Tangent, 1: Contiuum ElastoPlastic Tangent, 2: Consistent ElastoPlastic Tangent
 	int     mOrgTangType;
 	int     mLoadUnloadFlag;
@@ -169,6 +170,10 @@ class ManzariDafalias : public NDMaterial
 	void elastic_integrator(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
 		const Vector& NextStrain, Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha,
 		double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
+	void explicit_aux(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
+		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric, Vector& NextAlpha_in, 
+		double& NextDGamma, double& NextVoidRatio,  double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) ;
 	void explicit_integrator(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
 		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
 		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric, Vector& NextAlpha_in, 
@@ -204,9 +209,9 @@ class ManzariDafalias : public NDMaterial
 							, const Vector &alpha_in, Vector &n, Vector &d, Vector &b
 							, double &cos3Theta, double &h, double &psi, double &alphaBtheta
 							, double &alphaDtheta, double &b0);
-	Matrix GetElastoPlasticTangent(const Vector& NextStress, const double& NextDGamma, const double& G
-		                    , const double& K, const double& B, const double& C, const double& D
-							, const double& h, const Vector& n, const Vector& d, const Vector& b, const Vector& InVar);
+	Matrix GetElastoPlasticTangent(const Vector& NextStress, const double& NextDGamma, const Vector& CurStrain, const Vector& NextStrain,
+							const double& G, const double& K, const double& B, const double& C,const double& D, const double& h, 
+							const Vector& n, const Vector& d, const Vector& b) ;
 	Vector GetNormalToYield(const Vector &stress, const Vector &alpha);
 	int    Check(const Vector& TrialStress, const Vector& stress, const Vector& CurAlpha, const Vector& NextAlpha);
 

@@ -554,18 +554,22 @@ void ManzariDafalias::plastic_integrator()
 	mAlpha_in = mAlpha_in_n;
 
 	// Force elastic response
-	if (mElastFlag == 0) {    
+	if (mElastFlag == 0) {
 		elastic_integrator(mSigma_n, mEpsilon_n, mEpsilonE_n, mEpsilon, mEpsilonE, mSigma, mAlpha, mVoidRatio, mG, mK, mCe, mCep, mCep_Consistent);
 	} 
 	// ElastoPlastic response
 	else {                  
 		//Explicit Integration
-		if (mScheme == 0){       
+		if (mScheme == 0){
 			explicit_integrator(mSigma_n, mEpsilon_n, mEpsilonE_n, mAlpha_n, mFabric_n, mAlpha_in_n,
 				mEpsilon, mEpsilonE, mSigma, mAlpha, mFabric, mAlpha_in, mDGamma, mVoidRatio, mG, mK, mCe, mCep, mCep_Consistent);
 		} 
+		else if (mScheme == 3) { // Constrain strain increment to 1.0e-7
+			explicit_aux(mSigma_n, mEpsilon_n, mEpsilonE_n, mAlpha_n, mFabric_n, mAlpha_in_n,
+				mEpsilon, mEpsilonE, mSigma, mAlpha, mFabric, mAlpha_in, mDGamma, mVoidRatio, mG, mK, mCe, mCep, mCep_Consistent);
+		}
 		//Implicit Integration
-		else {                   
+		else {
 			errFlag = implicit_integrator(mSigma_n, mEpsilon_n, mEpsilonE_n, mAlpha_n, mFabric_n, mAlpha_in_n,
 				mEpsilon, mEpsilonE, mSigma, mAlpha, mFabric, mAlpha_in, mDGamma, mVoidRatio, mG, mK, mCe, mCep, mCep_Consistent);
 		
@@ -610,6 +614,78 @@ void ManzariDafalias::elastic_integrator(const Vector& CurStress, const Vector& 
 	if (GetTrace(NextStress) > small)
 		NextAlpha	   = 3.0 * GetDevPart(NextStress)/GetTrace(NextStress);
 	return;
+}
+// -------------------------------------------------------------------------------------------------------
+/*************************************************************/
+// Explicit Integrator (Constrained strain increment)
+/*************************************************************/
+void ManzariDafalias::explicit_aux(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
+		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric, Vector& NextAlpha_in, 
+		double& NextDGamma, double& NextVoidRatio,  double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) 
+{	
+	double CurVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(CurStrain);
+	NextDGamma = 0;
+
+	Vector StrainInc(6); StrainInc = NextStrain - CurStrain;
+	double maxInc = StrainInc(0);
+	for(int ii=1; ii<6; ii++)
+		if(abs(StrainInc(ii)) > abs(maxInc)) 
+			maxInc = StrainInc(ii);
+	if (abs(maxInc) > 1.0e-5){
+		int numSteps = floor(abs(maxInc) / 1.0e-5) + 1;
+		StrainInc = (NextStrain - CurStrain) / numSteps;	
+	
+		Vector cStress(6), cStrain(6), cAlpha(6), cFabric(6), cAlpha_in(6), cEStrain(6);
+		Vector nStrain(6) ,nEStrain(6), nStress(6), nAlpha(6), nFabric(6), nAlpha_in(6);
+		Matrix nCe(6,6), nCep(6,6), nCepC(6,6);
+		double nDGamma, nVoidRatio, nG, nK;
+				
+		// create temporary variables
+		cStress = CurStress; cStrain = CurStrain; cAlpha = CurAlpha; cFabric = CurFabric;
+		cAlpha_in = alpha_in; cEStrain = CurElasticStrain;
+
+		
+		for(int ii=1; ii <= numSteps; ii++)
+		{
+			nStrain = cStrain + StrainInc;
+
+			explicit_integrator(cStress, cStrain, cEStrain, cAlpha, cFabric, cAlpha_in, nStrain, 
+			nEStrain, nStress, nAlpha, nFabric, nAlpha_in, nDGamma, nVoidRatio, nG, nK, nCe, nCep, nCepC);
+
+			cStress = nStress; cStrain = nStrain; cAlpha = nAlpha; cFabric = nFabric; cAlpha_in = nAlpha_in;
+		}
+
+		NextElasticStrain	= nEStrain;
+		NextStress			= nStress;
+		NextAlpha			= nAlpha;
+		NextFabric			= nFabric;
+		NextDGamma			= nDGamma;
+		NextAlpha_in		= nAlpha_in;
+		NextVoidRatio		= nVoidRatio;
+		G = nG; K = nK;
+
+		Vector n(6), d(6), b(6), dPStrain(6); 
+		double Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0;
+		GetStateDependent(NextStress, NextAlpha, NextVoidRatio, NextAlpha_in, n, d, b, Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0);
+		double A = m_A0 * (1 + Macauley(DoubleDot2_2_Contr(NextFabric, n)));
+		double D = A * DoubleDot2_2_Contr(d, n);
+		double B = 1.0 + 1.5 * (1 - m_c)/ m_c * g(Cos3Theta, m_c) * Cos3Theta;
+		double C = 3.0 * sqrt(1.5) * (1 - m_c)/ m_c * g(Cos3Theta, m_c);
+		Vector R(6); R = B * n - C * (SingleDot(n,n) - one3 * mI1) + one3 * D * mI1;
+	
+		dPStrain     = CurElasticStrain + (NextStrain - CurStrain) - NextElasticStrain;
+		NextDGamma   = dPStrain.Norm() / R.Norm();
+
+		aC    = nCe;
+		aCep  = GetElastoPlasticTangent(NextStress, NextDGamma, CurStrain, NextStrain, G, K, B, C, D, h, n, d, b);
+		aCep_Consistent = aCep;
+
+	} else {
+		explicit_integrator(CurStress, CurStrain, CurElasticStrain,	CurAlpha, CurFabric, alpha_in, NextStrain,
+			NextElasticStrain, NextStress, NextAlpha, NextFabric, NextAlpha_in, NextDGamma, NextVoidRatio,  G, K, 
+			aC, aCep, aCep_Consistent);
+	}
 }
 // -------------------------------------------------------------------------------------------------------
 /*************************************************************/
@@ -920,7 +996,7 @@ int ManzariDafalias::implicit_integrator(const Vector& CurStress, const Vector& 
 		NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain) - dPStrain;
 		GetElasticModuli(NextStress, CurVoidRatio, NextVoidRatio, NextElasticStrain, CurElasticStrain, K, G);
 		aC                = GetStiffness(K, G);
-		aCep              = GetElastoPlasticTangent(NextStress, NextDGamma, G, K, B, C, D, h, n, d, b, InVariants);
+		aCep              = GetElastoPlasticTangent(NextStress, NextDGamma, CurStrain, NextStrain, G, K, B, C, D, h, n, d, b);
 		//if ((DoubleDot2_2_Contr(NextAlpha-alpha_in,n)<0)&&(implicitLevel>1))
 			//NextAlpha_in = CurAlpha;
 	}
@@ -1579,14 +1655,11 @@ ManzariDafalias::GetCompliance(const double& K, const double& G)
 // GetElastoPlasticTangent()---------------------------------------
 Matrix
 ManzariDafalias::GetElastoPlasticTangent(const Vector& NextStress, const double& NextDGamma, 
+										const Vector& CurStrain, const Vector& NextStrain,
 										const double& G, const double& K, const double& B, 
 										const double& C,const double& D, const double& h, 
-										const Vector& n, const Vector& d, const Vector& b, 
-										const Vector& inVar) 
+										const Vector& n, const Vector& d, const Vector& b) 
 {	
-	Vector NextStrain(6), CurStrain(6);
-	NextStrain.Extract(inVar, 0, 1.0);
-	CurStrain.Extract(inVar, 6, 1.0);
 	double dVolStrain = GetTrace(NextStrain - CurStrain);
 	Vector dDevStrain = GetDevPart(NextStrain - CurStrain);
 	double p = one3 * GetTrace(NextStress);
