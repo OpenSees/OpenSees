@@ -24,14 +24,15 @@
 
 #include "ManzariDafalias3D.h"
 
+Vector ManzariDafalias3D::mEpsilon_M(6);
+Vector ManzariDafalias3D::mSigma_M(6);
+
 // full constructor
 ManzariDafalias3D::ManzariDafalias3D(int tag, double G0, double nu, double e_init, double Mc, double c, double lambda_c, double e0, double ksi,
 	double P_atm, double m, double h0, double ch, double nb, double A0, double nd, double z_max, double cz, double mDen, int integrationScheme, 
 	int tangentType, int JacoType, double TolF, double TolR)
 :ManzariDafalias(tag, ND_TAG_ManzariDafalias3D, G0, nu, e_init, Mc, c, lambda_c, e0, ksi, P_atm, m, h0, ch, nb, A0, nd, z_max, cz, mDen,
-				integrationScheme, tangentType, JacoType, TolF, TolR),
-				mEpsilon_M(6),
-				mSigma_M(6)
+				integrationScheme, tangentType, JacoType, TolF, TolR)
 {
 }
 

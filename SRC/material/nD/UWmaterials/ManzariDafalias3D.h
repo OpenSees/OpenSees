@@ -71,8 +71,8 @@ class ManzariDafalias3D : public ManzariDafalias
 
   private :
 
-  Vector mSigma_M  ; // mSigma with continuum mechanic sign convention
-  Vector mEpsilon_M; // mEpsilon with continuum mechanic sign convention
+  static Vector mSigma_M  ; // mSigma with continuum mechanic sign convention
+  static Vector mEpsilon_M; // mEpsilon with continuum mechanic sign convention
 
 };
 

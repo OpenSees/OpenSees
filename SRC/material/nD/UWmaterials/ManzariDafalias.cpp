@@ -630,10 +630,10 @@ void ManzariDafalias::explicit_aux(const Vector& CurStress, const Vector& CurStr
 	Vector StrainInc(6); StrainInc = NextStrain - CurStrain;
 	double maxInc = StrainInc(0);
 	for(int ii=1; ii<6; ii++)
-		if(abs(StrainInc(ii)) > abs(maxInc)) 
+		if(fabs(StrainInc(ii)) > fabs(maxInc)) 
 			maxInc = StrainInc(ii);
-	if (abs(maxInc) > 1.0e-5){
-		int numSteps = floor(abs(maxInc) / 1.0e-5) + 1;
+	if (fabs(maxInc) > 1.0e-5){
+		int numSteps = floor(fabs(maxInc) / 1.0e-5) + 1;
 		StrainInc = (NextStrain - CurStrain) / numSteps;	
 	
 		Vector cStress(6), cStrain(6), cAlpha(6), cFabric(6), cAlpha_in(6), cEStrain(6);
@@ -724,7 +724,7 @@ void ManzariDafalias::explicit_integrator(const Vector& CurStress, const Vector&
 	
 	double temp4 = (Kp + 2.0*G*(B-C*GetTrace(SingleDot(n,SingleDot(n,n)))) 
 		- K*D*DoubleDot2_2_Contr(n,r));
-	if (abs(temp4) < small) temp4 = small;
+	if (fabs(temp4) < small) temp4 = small;
 
 	NextDGamma      = (2.0*G*DoubleDot2_2_Mixed(n,dDevStrain) - K*dVolStrain*DoubleDot2_2_Contr(n,r))/temp4;
 	Vector dSigma   = 2.0*G*mIIcon*dDevStrain + K*dVolStrain*mI1 - Macauley(NextDGamma)*(2.0*G*(B*n-C*(SingleDot(n,n)-1.0/3.0*mI1)) + K*D*mI1);
@@ -1223,7 +1223,7 @@ ManzariDafalias::GetJacobian(const Vector &x, const Vector &inVar)
 	Matrix aD(6,6);	aD = GetCompliance(K, G);
 
 	double AlphaAlphaInDotN;
-	if (abs(DoubleDot2_2_Contr(alpha - alpha_in,n)) <= small)
+	if (fabs(DoubleDot2_2_Contr(alpha - alpha_in,n)) <= small)
 		AlphaAlphaInDotN = small;
 	else
 		AlphaAlphaInDotN = DoubleDot2_2_Contr(alpha - alpha_in,n);
@@ -1434,10 +1434,10 @@ double
 MatrixMax_Rows(const Matrix& mat, int rowNo)
 {
 	int n = mat.noCols();
-	double max = abs(mat(rowNo, 0));
+	double max = fabs(mat(rowNo, 0));
 	for (int i = 1; i < n; i++){
-		if (max < abs(mat(rowNo, i)))
-			max = abs(mat(rowNo, i));
+		if (max < fabs(mat(rowNo, i)))
+			max = fabs(mat(rowNo, i));
 	}
 	return max;
 }
@@ -1446,10 +1446,10 @@ double
 MatrixMax_Cols(const Matrix& mat, int colNo)
 {
 	int n = mat.noRows();
-	double max = abs(mat(0, colNo));
+	double max = fabs(mat(0, colNo));
 	for (int i = 1; i < n; i++){
-		if (max < abs(mat(i, colNo)))
-			max = abs(mat(i, colNo));
+		if (max < fabs(mat(i, colNo)))
+			max = fabs(mat(i, colNo));
 	}
 	return max;
 }
@@ -1458,10 +1458,10 @@ double
 MatrixMin_Rows(const Matrix& mat, int rowNo)
 {
 	int n = mat.noCols();
-	double min = abs(mat(rowNo, 0));
+	double min = fabs(mat(rowNo, 0));
 	for (int i = 1; i < n; i++){
-		if (min > abs(mat(rowNo, i)))
-			min = abs(mat(rowNo, i));
+		if (min > fabs(mat(rowNo, i)))
+			min = fabs(mat(rowNo, i));
 	}
 	return min;
 }
@@ -1470,10 +1470,10 @@ double
 MatrixMin_Cols(const Matrix& mat, int colNo)
 {
 	int n = mat.noRows();
-	double min = abs(mat(0, colNo));
+	double min = fabs(mat(0, colNo));
 	for (int i = 1; i < n; i++){
-		if (min > abs(mat(i, colNo)))
-			min = abs(mat(i, colNo));
+		if (min > fabs(mat(i, colNo)))
+			min = fabs(mat(i, colNo));
 	}
 	return min;
 }
@@ -1732,7 +1732,7 @@ ManzariDafalias::GetStateDependent( const Vector &stress, const Vector &alpha, c
 	d    = root23 * alphaDtheta * n - alpha;
 	b    = root23 * alphaBtheta * n - alpha;
 	double alphaAlphaInDotN;
-	if (abs(DoubleDot2_2_Contr(alpha-alpha_in,n)) <= small)
+	if (fabs(DoubleDot2_2_Contr(alpha-alpha_in,n)) <= small)
 		alphaAlphaInDotN = small;
 	else
 		alphaAlphaInDotN = DoubleDot2_2_Contr(alpha-alpha_in,n);
