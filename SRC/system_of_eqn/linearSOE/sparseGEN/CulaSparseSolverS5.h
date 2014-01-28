@@ -9,15 +9,15 @@
 
 
 
-class CulaSparseSolver :
+class SulaSparseSolverS5 :
 //	public SparseGenColLinSolver
 
 public SparseGenRowLinSolver
  {
  public:
-   CulaSparseSolver(void);
-   CulaSparseSolver(double relTol,int maxInteration,int preCond,int solver,int single,int host);
-   ~CulaSparseSolver(void);
+   SulaSparseSolverS5(void);
+   SulaSparseSolverS5(double relTol,int maxInteration,int preCond,int solver,int single,int host);
+   ~SulaSparseSolverS5(void);
    
    int solve(void);
    int setSize(void);

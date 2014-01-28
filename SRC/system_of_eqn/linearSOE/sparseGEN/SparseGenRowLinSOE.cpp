@@ -254,7 +254,7 @@ SparseGenRowLinSOE::setSize(Graph &theGraph)
 	startLoc = lastLoc;
       }
     }
-    
+
     // invoke setSize() on the Solver   
      LinearSOESolver *the_Solver = this->getSolver();
     int solverOK = the_Solver->setSize();

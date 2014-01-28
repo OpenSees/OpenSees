@@ -1,14 +1,11 @@
-#include <CulaSparseSolver.h>
+#include <CulaSparseSolverS5.h>
+
+#ifndef _CULASPARSESOLVER5
+#define _CULASPARSESOLVER5
 
 #define culaSparse cula;
 
-/*
-  CulaSparseSolver::CulaSparseSolver(void):SparseGenColLinSolver(SOLVER_TAGS_CulaSparse)
-  {
-  
-  }*/
-
-CulaSparseSolver::CulaSparseSolver(void):SparseGenRowLinSolver(SOLVER_TAGS_CulaSparse)
+CulaSparseSolverS5::CulaSparseSolverS5(void):SparseGenRowLinSolver(SOLVER_TAGS_CulaSparse)
 {
   
   //config.debug = 1;
@@ -91,7 +88,7 @@ CulaSparseSolver::CulaSparseSolver(void):SparseGenRowLinSolver(SOLVER_TAGS_CulaS
 }
 
 
-CulaSparseSolver::CulaSparseSolver(double relTol,int maxInteration,int preCond,int solver,int single,int host):SparseGenRowLinSolver(SOLVER_TAGS_CulaSparse)
+CulaSparseSolverS5::CulaSparseSolverS5(double relTol,int maxInteration,int preCond,int solver,int single,int host):SparseGenRowLinSolver(SOLVER_TAGS_CulaSparse)
 {
   
   //config.debug = 1;
@@ -263,7 +260,7 @@ CulaSparseSolver::CulaSparseSolver(double relTol,int maxInteration,int preCond,i
 
 
 
-CulaSparseSolver::~CulaSparseSolver(void)
+CulaSparseSolverS5::~CulaSparseSolverS5(void)
 {
   culaSparseDestroyPlan(plan);
   culaSparseDestroy(handle);
@@ -278,7 +275,7 @@ CulaSparseSolver::~CulaSparseSolver(void)
 
 
 int
-CulaSparseSolver::setSize()
+CulaSparseSolverS5::setSize()
 {
   int n=theSOE->size;
   int nnz=theSOE->nnz;
@@ -298,9 +295,9 @@ CulaSparseSolver::setSize()
 
 
 //int
-//CulaSparseSolver::setLinearSOE(SparseGenColLinSOE &theLinearSOE)
+//CulaSparseSolverS5::setLinearSOE(SparseGenColLinSOE &theLinearSOE)
 int
-CulaSparseSolver::setLinearSOE(SparseGenRowLinSOE &theLinearSOE)
+CulaSparseSolverS5::setLinearSOE(SparseGenRowLinSOE &theLinearSOE)
 {
   theSOE = &theLinearSOE;
   return 0;
@@ -308,7 +305,7 @@ CulaSparseSolver::setLinearSOE(SparseGenRowLinSOE &theLinearSOE)
 
 
 int
-CulaSparseSolver::sendSelf(int cTAg, Channel &theChannel)
+CulaSparseSolverS5::sendSelf(int cTAg, Channel &theChannel)
 {
   // doing nothing
   return 0;
@@ -316,14 +313,14 @@ CulaSparseSolver::sendSelf(int cTAg, Channel &theChannel)
 
 
 int
-CulaSparseSolver::recvSelf(int cTag,
+CulaSparseSolverS5::recvSelf(int cTag,
 			   Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
   // nothing to do
   return 0;
 }
 
-int CulaSparseSolver::solve(void)
+int CulaSparseSolverS5::solve(void)
 {
   
   if (theSOE == 0) {
@@ -406,3 +403,4 @@ int CulaSparseSolver::solve(void)
 }
 
 
+#endif

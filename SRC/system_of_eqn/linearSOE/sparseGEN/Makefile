@@ -4,6 +4,10 @@ include ../../../../Makefile.def
 
 PROGRAM         = test
 
+ifndef CULA
+CULA_SOLVER = 
+endif
+
 ifeq ($(PROGRAMMING_MODE), PARALLEL)
 
 OBJS       = SparseGenColLinSOE.o \
@@ -36,7 +40,7 @@ OBJS       = SparseGenColLinSOE.o \
 	PFEMCompressibleLinSOE.o 
 else
 
-OBJS       = SparseGenColLinSOE.o \
+OBJS       = $(CULA_SOLVER) SparseGenColLinSOE.o \
 	SparseGenColLinSolver.o \
 	SparseGenRowLinSOE.o \
 	SparseGenRowLinSolver.o \
@@ -45,6 +49,7 @@ OBJS       = SparseGenColLinSOE.o \
 	PFEMLinSOE.o \
 	PFEMCompressibleSolver.o \
 	PFEMCompressibleLinSOE.o 
+
 endif
 endif
 

@@ -68,6 +68,8 @@ class SparseGenRowLinSOE : public LinearSOE
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);    
     friend class PetscSparseSeqSolver;    
+    friend class CulaSparseSolverS4;    
+    friend class CulaSparseSolverS5;    
 
   protected:
     
