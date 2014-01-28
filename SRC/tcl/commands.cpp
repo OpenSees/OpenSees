@@ -252,6 +252,13 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 #include <SuperLU.h>
 #endif
 
+#ifdef _CULAS4
+#include <CulaSparseSolverS4.h>
+#endif
+
+#ifdef _CULAS5
+#include <CulaSparseSolverS5.h>
+#endif
 
 #ifdef _MUMPS
 #ifdef _PARALLEL_PROCESSING
@@ -273,6 +280,7 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 #include <PetscSparseSeqSolver.h>
 #endif
 
+#include <SparseGenRowLinSOE.h>
 #include <SymSparseLinSOE.h>
 #include <SymSparseLinSolver.h>
 #include <UmfpackGenLinSOE.h>
@@ -1294,7 +1302,6 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
   wipeAnalysis(clientData, interp, argc, argv);
 
-
   /*
   // to build the model make sure the ModelBuilder has been constructed
   // and that the model has not already been constructed
@@ -1321,6 +1328,9 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     delete theDatabase;
 
   theDomain.clearAll();
+
+  ops_Dt = 0.0;
+
 
 #ifdef _PARALLEL_PROCESSING
   OPS_PARTITIONED = false;
@@ -2695,6 +2705,97 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
   }
 
+#if defined(_CULAS4) || defined(_CULAS5)
+  // CULA SPARSE
+  else if ((strcmp(argv[1],"CulaSparse")==0))
+  {
+    double absTol = 1.0e-6;
+    double relTol=1e-6;
+
+    int maxInteration=100000;
+    int preCond=5;		//fainv
+    int solver=1;		//Bicg
+    int count = 2;
+    int single=0; 
+    int host=0;
+    
+    while (count < argc) {
+      
+      if (strcmp(argv[count],"-rTol") == 0) {
+	count++;
+	if (count < argc)
+	  if (Tcl_GetDouble(interp, argv[count], &relTol) != TCL_OK)
+	    return TCL_ERROR;		     
+      }
+      else if ((strcmp(argv[count],"-mInt") == 0) ) {
+	count++;
+	if (count < argc)
+	  if (Tcl_GetInt(interp, argv[count], &maxInteration) != TCL_OK)
+	    return TCL_ERROR;		     
+      }
+      else if ((strcmp(argv[count],"-pre") == 0) ) {
+	count++;
+	if (count < argc)
+	  if ((strcmp(argv[count],"none") == 0))
+	    preCond=0;
+	  else if ((strcmp(argv[count],"jacobi") == 0))
+	    preCond=1;
+	  else if ((strcmp(argv[count],"blockjacobi") == 0))
+	    preCond=2;
+	  else if ((strcmp(argv[count],"ilu0") == 0))
+	    preCond=3;
+	  else if ((strcmp(argv[count],"ainv") == 0))
+	    preCond=4;
+	  else if ((strcmp(argv[count],"fainv") == 0))
+	    preCond=5;
+	  else
+	    return TCL_ERROR;
+      } else if ((strcmp(argv[count],"-solver") == 0)) {
+	count++;
+	if (count < argc)
+	  if ((strcmp(argv[count],"cg") == 0))
+	    solver=0;
+	  else if ((strcmp(argv[count],"bicg") == 0))
+	    solver=1;
+	  else if ((strcmp(argv[count],"blockstab") == 0))
+	    solver=2;
+	  else if ((strcmp(argv[count],"blockstabl") == 0))
+	    solver=3;
+	  else if ((strcmp(argv[count],"gmres") == 0))
+	    solver=4;
+	  else if ((strcmp(argv[count],"minres") == 0))
+	    solver=5;	
+	  else
+	    return TCL_ERROR;
+      }
+      else if ((strcmp(argv[count],"-single") == 0)) {
+	single=1;
+      }
+      else if ((strcmp(argv[count],"-host") == 0)) {
+	host=1;
+      }
+      count++;
+    }
+    
+#ifdef _CULAS5
+    CulaSparseSolverS5* theSolver = new CulaSparseSolverS5(relTol,
+							   maxInteration,
+							   preCond,
+							   solver,
+							   single,
+							   host);
+#else
+    CulaSparseSolverS4* theSolver = new CulaSparseSolverS4(relTol,
+							   maxInteration,
+							   preCond,
+							   solver);
+#endif
+
+    theSOE = new SparseGenRowLinSOE(*theSolver);
+
+  }
+#endif
+
   // SPARSE GENERAL SOE * SOLVER
   else if ((strcmp(argv[1],"SparseGeneral") == 0) || (strcmp(argv[1],"SuperLU") == 0) ||
 	   (strcmp(argv[1],"SparseGEN") == 0)) {
@@ -2805,7 +2906,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	int printTime = 0;
 	int count = 2;
 	while (count < argc) {
-      if ((strcmp(argv[count],"-lValueFact") == 0) || (strcmp(argv[count],"-lvalueFact") == 0)) {
+      if ((strcmp(argv[count],"-lValueFact") == 0) || (strcmp(argv[count],"-lvalueFact") == 0) || (strcmp(argv[count],"-LVALUE") == 0)) {
 		 if (Tcl_GetInt(interp, argv[count+1], &factLVALUE) != TCL_OK)
 			return TCL_ERROR;
 	     count++;
