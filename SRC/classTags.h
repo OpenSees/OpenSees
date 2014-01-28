@@ -836,6 +836,8 @@
 #define SOLVER_TAGS_PFEMSolver 26
 #define SOLVER_TAGS_SProfileSPDLinSolver  	27
 #define SOLVER_TAGS_PFEMCompressibleSolver 28
+#define SOLVER_TAGS_CulaSparseS4 29
+#define SOLVER_TAGS_CulaSparseS5 30
 
 
 #define RECORDER_TAGS_ElementRecorder		1
