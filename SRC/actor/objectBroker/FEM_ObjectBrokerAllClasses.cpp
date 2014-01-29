@@ -229,6 +229,7 @@
 #include <Brick.h>
 #include <BbarBrick.h>
 #include <Joint2D.h>		// Arash
+#include <TwoNodeLink.h>
 
 #include <ElastomericBearingPlasticity2d.h>
 #include <ElastomericBearingPlasticity3d.h>
@@ -662,6 +663,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_Joint2D:				// Arash
 		return new Joint2D();			// Arash
+
+	case ELE_TAG_TwoNodeLink:				
+		return new TwoNodeLink();			
 
         case ELE_TAG_BBarFourNodeQuadUP:
 	  return new BBarFourNodeQuadUP();			
