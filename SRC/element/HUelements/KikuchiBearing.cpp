@@ -1048,7 +1048,7 @@ int KikuchiBearing::commitState()
  
     //external unbalanced force
     for (int i=0; i<=11; i++)  {
-      if(abs(localForceij(i)-theVector(i))>limFo){
+      if(fabs(localForceij(i)-theVector(i))>limFo){
 	opserr << "KikuchiBearing::KikuchiBearing() - "
 	       << "inner iteration failed (lmtO) \n";
       }
@@ -1057,7 +1057,7 @@ int KikuchiBearing::commitState()
     //internal unbalanced force
     bool ifContinue = false;
     for (int i=0; i<=5; i++)  {
-      if(abs(Fmn(i))>limFi){
+      if(fabs(Fmn(i))>limFi){
 	ifContinue = true;
       }
     }
