@@ -251,8 +251,7 @@ KikuchiAikenLRB::KikuchiAikenLRB(int tag, int type, double ar, double hr, double
   qd = (this->calcCQd)(trgStrain)*qd100*Rq;
   kd = (this->calcCKd)(trgStrain)*kd100*Rk;
   ku = (this->calcCKd)(trgStrain)*ku100*Rk;
-  initialStiff = compKeq(abs(trgStrain*Hr),qd,kd);
-
+  initialStiff = compKeq(fabs(trgStrain*Hr),qd,kd);
 
   //
   numIdx = 500;
@@ -363,35 +362,35 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
 
 
   //if incremental deformation is zero
-  if ( abs(trialDDeform) < DBL_EPSILON ) { // if ( trialDDeform == 0.0 )
+  if ( fabs(trialDDeform) < DBL_EPSILON ) { // if ( trialDDeform == 0.0 )
     trialForce   = commitForce;
     trialStiff   = commitStiff;
     return 0;
   }
 
   //applicatopm limit strain
-  if ( abs(trialStrain) > lmtStrain ) {
+  if ( fabs(trialStrain) > lmtStrain ) {
     opserr << "uniaxialMaterial KikuchiAikenLRB: \n";
     opserr << "   Response value exceeded limited strain.\n";
     return -1;
   }
 
   //elastic limit strain
-  if ( abs(trialStrain) > trgStrain ) {
+  if ( fabs(trialStrain) > trgStrain ) {
       trialIfElastic = false;
   }
 
   //maximum strain
-  if ( abs(trialStrain) > commitMaxStrain ) {
-    trialMaxStrain = abs(trialStrain);
+  if ( fabs(trialStrain) > commitMaxStrain ) {
+    trialMaxStrain = fabs(trialStrain);
   }
 
   //parameters for Kikuchi&Aiken model
 
-  if ( trialIfElastic || abs(trialStrain) == trialMaxStrain ) {
+  if ( trialIfElastic || fabs(trialStrain) == trialMaxStrain ) {
 
     //if elactic, tmpstrain is max(abs(trialStrain),trgStrain)
-    tmpStrain = (abs(trialStrain)>trgStrain) ? abs(trialStrain) : trgStrain ; //max(abs(trialStrain),trgStrain)
+    tmpStrain = (fabs(trialStrain)>trgStrain) ? fabs(trialStrain) : trgStrain ; //max(abs(trialStrain),trgStrain)
     tmpDeform = tmpStrain * Hr;
 
     qd = (this->calcCQd)(tmpStrain)*qd100*Rq;
@@ -402,13 +401,13 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
     heq = (this->calcCHeq)(tmpStrain) * compHeq(tmpDeform,qd,kd,ku);
     u = qd / (keq*tmpDeform);
 
-    xm  = abs(trialDeform);
+    xm  = fabs(trialDeform);
     fm  = keq*xm;
 
-    n = (this->calcN)(abs(trialStrain));
-    p = (this->calcP)(abs(trialStrain));
-    c = (this->calcC)(abs(trialStrain));
-    a = (this->calcA)(abs(trialStrain),heq,u);
+    n = (this->calcN)(fabs(trialStrain));
+    p = (this->calcP)(fabs(trialStrain));
+    c = (this->calcC)(fabs(trialStrain));
+    a = (this->calcA)(fabs(trialStrain),heq,u);
 
   }  // if ( trialIfElastic || abs(trialStrain) == trialMaxStrain )  ... end
 
@@ -431,13 +430,13 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
 	revQ2Bgn[1] = commitQ2;
 	
 	//b
-	double tqd = (this->calcCQd)(abs(commitStrain))*qd100*Rq;
-	double tkd = (this->calcCKd)(abs(commitStrain))*kd100*Rk;
-	double tku = (this->calcCKd)(abs(commitStrain))*ku100*Rk;
-	double tkeq = compKeq(abs(commitDeform),tqd,tkd);
-	double theq = (this->calcCHeq)(abs(commitStrain)) * compHeq(abs(commitDeform),tqd,tkd,tku);
-	double tu = tqd/(tkeq*abs(commitDeform));
-	b = (this->calcB)(abs(commitStrain),a,c,theq,tu);
+	double tqd = (this->calcCQd)(fabs(commitStrain))*qd100*Rq;
+	double tkd = (this->calcCKd)(fabs(commitStrain))*kd100*Rk;
+	double tku = (this->calcCKd)(fabs(commitStrain))*ku100*Rk;
+	double tkeq = compKeq(fabs(commitDeform),tqd,tkd);
+	double theq = (this->calcCHeq)(fabs(commitStrain)) * compHeq(fabs(commitDeform),tqd,tkd,tku);
+	double tu = tqd/(tkeq*fabs(commitDeform));
+	b = (this->calcB)(fabs(commitStrain),a,c,theq,tu);
 
 	revB[1] = b;
 	revAlpha[1] = 1.0;
@@ -503,13 +502,13 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
 	} else if (revXEnd[trialIdxRev]*revXBgn[trialIdxRev] > 0) { //consecutive reverse at same sign of "x"
 	  b = 0;
 	} else { //reverse at different sign of "x"
-	  double tqd = (this->calcCQd)(abs(commitStrain))*qd100*Rq;
-	  double tkd = (this->calcCKd)(abs(commitStrain))*kd100*Rk;
-	  double tku = (this->calcCKd)(abs(commitStrain))*ku100*Rk;
-	  double tkeq = compKeq(abs(commitDeform),tqd,tkd);
-	  double theq = (this->calcCHeq)(abs(commitStrain)) * compHeq(abs(commitDeform),tqd,tkd,tku);
-	  double tu = tqd/(tkeq*abs(commitDeform)); 
-	  b = (this->calcB)(abs(commitStrain),a,c,theq,tu);
+	  double tqd = (this->calcCQd)(fabs(commitStrain))*qd100*Rq;
+	  double tkd = (this->calcCKd)(fabs(commitStrain))*kd100*Rk;
+	  double tku = (this->calcCKd)(fabs(commitStrain))*ku100*Rk;
+	  double tkeq = compKeq(fabs(commitDeform),tqd,tkd);
+	  double theq = (this->calcCHeq)(fabs(commitStrain)) * compHeq(fabs(commitDeform),tqd,tkd,tku);
+	  double tu = tqd/(tkeq*fabs(commitDeform)); 
+	  b = (this->calcB)(fabs(commitStrain),a,c,theq,tu);
 	}
 
 	
@@ -529,7 +528,7 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
 
 
     //forget reversal points
-    if  (abs(trialStrain) == trialMaxStrain) { //if reach skeleton curve
+    if  (fabs(trialStrain) == trialMaxStrain) { //if reach skeleton curve
       trialIdxRev = 0;
     } else if (trialIdxRev >= 2 ) { //if pass through reversal point
       while (trialIdxRev >= 2 && (x-revXBgn[trialIdxRev])*(x-revXEnd[trialIdxRev]) > 0) {
@@ -853,7 +852,7 @@ KikuchiAikenLRB::compABisection(double heq, double u, double min, double max, do
   while (true) {
     aTmp = (aMin+aMax)/2;
     LHS = (1-exp(-2*aTmp))/(aTmp);
-    if (abs((LHS-RHS)/RHS) < tol) {
+    if (fabs((LHS-RHS)/RHS) < tol) {
       break;
     } else if (LHS < RHS) {
       aMax = aTmp;

@@ -95,9 +95,8 @@ ViscousDamper::ViscousDamper(int tag, double k, double c, double a)
       Alpha = 1.0;
     }
 	
-	//initialize variables
-	this->revertToStart();
-	
+    //initialize variables
+    this->revertToStart();
 }
 
 ViscousDamper::ViscousDamper()
@@ -115,47 +114,54 @@ ViscousDamper::~ViscousDamper()
 int 
 ViscousDamper::setTrialStrain(double strain, double strainRate)
 {
-	//all variables to the last commit
-	this->revertToLastCommit();
-	
-	// Determine Incremental strain
-	double dStrain = (strain - Cstrain);
+  //all variables to the last commit
+  this->revertToLastCommit();
+  
+  // Determine Incremental strain
+  double dStrain = (strain - Cstrain);
+  
+  // Determine the incremental strain rate from incremental strain
 
-	// Determine the incremental strain rate from incremental strain
-	
-	double dVel = dStrain/ops_Dt;
-    
-	// Determine the average velocity from past and current step
-	
-	double dVelAv = 0.5*(dVel + CdVel);
-	
-	double a0 = Tfd/C;
-	// 4th Order Runge-Kutta with Classical Coefficients
-	
-	double k0 = (TdVel - sgn(a0) * pow(fabs(a0),1.0/Alpha)) * K * ops_Dt;
-	
-	double a1 = (Tfd + k0 * 0.5)/C;
-	
-	double k1 = (dVelAv - sgn(a1) * pow(fabs(a1),1.0/Alpha)) * K * ops_Dt;
-	
-	double a2 = (Tfd + k1 * 0.5)/C;
-	
-	double k2 = (dVelAv - sgn(a2) * pow(fabs(a2),1.0/Alpha)) * K * ops_Dt;
-	
-	double a3 = (Tfd + k2)/C;
-	
-	double k3 = (dVel - sgn(a3) * pow(fabs(a3),1.0/Alpha)) * K * ops_Dt;
-
-	
-	// Total Stress computation based on 4-th Order R-K
-	
-	Tfd = Tfd + (1.0/6.0) * (k0 + 2.0 * k1 + 2.0 * k2 + k3);
-	
-	// Total strain in the elastic part of the damper 
-	double Tstrains = Tfd/K;
-	
-	// Total strain in the viscous part of the damper
-	//double Tstraind = Tstrain - Tstrains;
+  
+  double dVel;
+  if (ops_Dt != 0.0)
+    dVel = dStrain/ops_Dt;
+  else {
+    dVel = 0.0;
+    opserr << "FMK - ViscousDamper::setTrialStrain\n";
+  }
+  
+  // Determine the average velocity from past and current step
+  
+  double dVelAv = 0.5*(dVel + CdVel);
+  
+  double a0 = Tfd/C;
+  // 4th Order Runge-Kutta with Classical Coefficients
+  
+  double k0 = (TdVel - sgn(a0) * pow(fabs(a0),1.0/Alpha)) * K * ops_Dt;
+  
+  double a1 = (Tfd + k0 * 0.5)/C;
+  
+  double k1 = (dVelAv - sgn(a1) * pow(fabs(a1),1.0/Alpha)) * K * ops_Dt;
+  
+  double a2 = (Tfd + k1 * 0.5)/C;
+  
+  double k2 = (dVelAv - sgn(a2) * pow(fabs(a2),1.0/Alpha)) * K * ops_Dt;
+  
+  double a3 = (Tfd + k2)/C;
+  
+  double k3 = (dVel - sgn(a3) * pow(fabs(a3),1.0/Alpha)) * K * ops_Dt;
+  
+  
+  // Total Stress computation based on 4-th Order R-K
+  
+  Tfd = Tfd + (1.0/6.0) * (k0 + 2.0 * k1 + 2.0 * k2 + k3);
+  
+  // Total strain in the elastic part of the damper 
+  double Tstrains = Tfd/K;
+  
+  // Total strain in the viscous part of the damper
+  //double Tstraind = Tstrain - Tstrains;
 	double Tstraind =  strain - Tstrains;
 	// Total Stress of the damper
 	
@@ -230,20 +236,20 @@ ViscousDamper::revertToLastCommit(void)
 int 
 ViscousDamper::revertToStart(void)
 {
-    // Initialize state variables
-	Tstrain=0.0;
-	Tstress=0.0;
-	Ttangent = K;
-	TdVel = 0.0;
-	Tfd = 0.0;
-	
-	Cstrain=0.0;
-	Cstress = 0.0;
-	Ctangent = K;
-	CdVel = 0.0;
-	Cfd = 0.0;
-	
-    return 0;
+  // Initialize state variables
+  Tstrain=0.0;
+  Tstress=0.0;
+  Ttangent = K;
+  TdVel = 0.0;
+  Tfd = 0.0;
+  
+  Cstrain=0.0;
+  Cstress = 0.0;
+  Ctangent = K;
+  CdVel = 0.0;
+  Cfd = 0.0;
+  
+  return 0;
 }
 
 int

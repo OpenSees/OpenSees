@@ -355,7 +355,7 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
 
 
   // if incremental strain is zero
-  if ( abs(trialDStrain) < DBL_EPSILON ) { // if ( trialDStrain == 0.0 )
+  if ( fabs(trialDStrain) < DBL_EPSILON ) { // if ( trialDStrain == 0.0 )
 
     //(strain->stress, strain->modulus)
     trialStress  = commitStress;
@@ -370,39 +370,39 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
 
 
   //application limit strain
-  if ( abs(trialStrain) > lmtStrain ) {
+  if ( fabs(trialStrain) > lmtStrain ) {
     opserr << "uniaxialMaterial KikuchiAikenHDR: \n";
     opserr << "   Response value exceeded limited strain.\n";
     return -1;
   }
 
   //elastic limit strain
-  if ( abs(trialStrain) > trgStrain ) {
+  if ( fabs(trialStrain) > trgStrain ) {
       trialIfElastic = false;
   }
 
   //maximum strain
-  if ( abs(trialStrain) > commitMaxStrain ) {
-    trialMaxStrain = abs(trialStrain);
+  if ( fabs(trialStrain) > commitMaxStrain ) {
+    trialMaxStrain = fabs(trialStrain);
   }
 
 
   //parameters for Kikuchi&Aiken model
 
-  if ( trialIfElastic || abs(trialStrain) == trialMaxStrain ) {
+  if ( trialIfElastic || fabs(trialStrain) == trialMaxStrain ) {
 
-    //if elastic, tmpstrain is max(abs(trialStrain),trgStrain)
-    tmpStrain = (abs(trialStrain)>trgStrain) ? abs(trialStrain) : trgStrain ; //max(abs(trialStrain),trgStrain)
+    //if elastic, tmpstrain is max(fabs(trialStrain),trgStrain)
+    tmpStrain = (fabs(trialStrain)>trgStrain) ? fabs(trialStrain) : trgStrain ; //max(fabs(trialStrain),trgStrain)
     
     geq = (this->calcGeq)(tmpStrain)*Cg;
     heq = (this->calcHeq)(tmpStrain)*Ch;
     u = (this->calcU)(tmpStrain)*Cu;
 
-    n = (this->calcN)(abs(trialStrain));
-    c = (this->calcC)(abs(trialStrain));
-    a = (this->calcA)(abs(trialStrain),heq,u);
+    n = (this->calcN)(fabs(trialStrain));
+    c = (this->calcC)(fabs(trialStrain));
+    a = (this->calcA)(fabs(trialStrain),heq,u);
 
-    xm = abs(trialStrain);
+    xm = fabs(trialStrain);
     fm = geq*xm;
 
   }
@@ -426,7 +426,7 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
 	revQ2Bgn[1] = commitQ2;
 	
 	//b
-	b = (this->calcB)(abs(commitStrain),a,c,(this->calcHeq)(abs(commitStrain))*Ch,(this->calcU)(abs(commitStrain))*Cu);
+	b = (this->calcB)(fabs(commitStrain),a,c,(this->calcHeq)(fabs(commitStrain))*Ch,(this->calcU)(fabs(commitStrain))*Cu);
 
 	revB[1] = b;
 	revAlpha[1] = 1.0;
@@ -492,7 +492,7 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
 	} else if (revXEnd[trialIdxRev]*revXBgn[trialIdxRev] > 0) { //consecutive reverse at same sign of "x"
 	  b = 0;
 	} else { // reverse at different sign of "x"
-	  b = (this->calcB)(abs(commitStrain),a,c,(this->calcHeq)(abs(commitStrain))*Ch,(this->calcU)(abs(commitStrain))*Cu);
+	  b = (this->calcB)(fabs(commitStrain),a,c,(this->calcHeq)(fabs(commitStrain))*Ch,(this->calcU)(fabs(commitStrain))*Cu);
 	}
 
 	
@@ -512,7 +512,7 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
 
     
     //forget reversal points
-    if  (abs(trialStrain) == trialMaxStrain) { //if reach skeleton curve
+    if  (fabs(trialStrain) == trialMaxStrain) { //if reach skeleton curve
       trialIdxRev = 0;
     } else if (trialIdxRev >= 2 ) { //if pass through reversal point
       while (trialIdxRev >= 2 && (x-revXBgn[trialIdxRev])*(x-revXEnd[trialIdxRev]) > 0) {
@@ -861,7 +861,7 @@ KikuchiAikenHDR::compABisection(double heq, double u, double min, double max, do
   while (true) {
     aTmp = (aMin+aMax)/2;
     LHS = (1-exp(-2*aTmp))/(aTmp);
-    if (abs((LHS-RHS)/RHS) < tol) {
+    if (fabs((LHS-RHS)/RHS) < tol) {
       break;
     } else if (LHS < RHS) {
       aMax = aTmp;
