@@ -282,7 +282,7 @@ KikuchiAikenHDR::KikuchiAikenHDR()
   :UniaxialMaterial(0,MAT_TAG_KikuchiAikenHDR)
 {
 
-  //—š—ð‹Èü‹L‰¯—p•Ï”?
+  //
 
   trialDeform  = 0.0;
   trialForce   = 0.0;
@@ -373,7 +373,8 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
   if ( fabs(trialStrain) > lmtStrain ) {
     opserr << "uniaxialMaterial KikuchiAikenHDR: \n";
     opserr << "   Response value exceeded limited strain.\n";
-    return -1;
+    // return -1;
+    // warning, extrapolation
   }
 
   //elastic limit strain
