@@ -51,8 +51,8 @@ class ManzariDafalias : public NDMaterial
 
     // full constructor
     ManzariDafalias(int tag, int classTag, double G0, double nu, double e_init, double Mc, double c, double lambda_c, double e0, double ksi,
-	double P_atm, double m, double h0, double ch, double nb, double A0, double nd, double z_max, double cz, double mDen, int integrationScheme = 2,
-	int tangentType = 2, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
+					double P_atm, double m, double h0, double ch, double nb, double A0, double nd, double z_max, double cz, double mDen, 
+					int integrationScheme = 2, int tangentType = 2, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
     // null constructor
     ManzariDafalias();
     // destructor
@@ -68,11 +68,13 @@ class ManzariDafalias : public NDMaterial
     const char *getType(void) const;
     int        getOrder(void) const;
 
+	// Recorder functions
 	virtual const Vector& getStressToRecord() {return mSigma;};
 	const Vector getState();
 	const Vector getAlpha();
 	const Vector getFabric();
 	const Vector getAlpha_in();
+
     Response *setResponse (const char **argv, int argc, OPS_Stream &output);
     int getResponse (int responseID, Information &matInformation);
 
@@ -111,109 +113,148 @@ class ManzariDafalias : public NDMaterial
 	double m_cz;
 	
 	// internal variables
-    Vector mEpsilonE;
-	Vector mEpsilonE_n;
-	Vector mAlpha;
-	Vector mAlpha_n;
-	Vector mAlpha_in;
-	Vector mAlpha_in_n;
-	double mDGamma_n;
-	double mDGamma;
-	Vector mFabric;
-	Vector mFabric_n;
-	Matrix mCe;
-	Matrix mCep;
-	Matrix mCep_Consistent;
-	double mK;  // state dependent Bulk modulus
-	double mG;  // state dependent Shear modulus
+	Vector mEpsilon;        // strain tensor
+	Vector mEpsilon_n;      // strain tensor (last committed)
+	Vector mSigma;          // stress tensor
+	Vector mSigma_n;        // stress tensor (last committed)
+	Vector mEpsilonE;	// elastic strain tensor
+	Vector mEpsilonE_n;	// elastic strain tensor (last committed)
+	Vector mAlpha;		// back-stress ratio
+	Vector mAlpha_n;	// back-stress ratio (last committed)
+	Vector mAlpha_in;	// back-stress ratio at loading reversal
+	Vector mAlpha_in_n;	// back-stress ratio at loading reversal (last committed)
+	double mDGamma;		// plastic multiplier
+	double mDGamma_n;	// plastic multiplier (last committed)
+	Vector mFabric;		// fabric tensor
+	Vector mFabric_n;	// fabric tensor (last committed)
+	Matrix mCe;		// elastic tangent
+	Matrix mCep;		// continuum elastoplastic tangent
+	Matrix mCep_Consistent; // consistent elastoplastic tangent
+	double mK;		// state dependent Bulk modulus
+	double mG;		// state dependent Shear modulus
 	double massDen;         // mass density for dynamic analysis
-	double mVoidRatio;
+	double mVoidRatio;	// material void ratio
+	
+	double  mEPS;		// machine epsilon (for FD jacobian)
+	double	mTolF;		// max drift from yield surface
+	double	mTolR;		// tolerance for Newton iterations
+	char unsigned mIter;	// number of iterations
+	char unsigned mJacoType;// 0: Finite Difference Jacobian, 1: Analytical Jacobian
+	char unsigned mScheme;	// 0: Forward Euler Explicit, 1: Backward Euler Implicit, 2: Backward Euler Implicit with considerations for stability, 
+				// 3: FE Explicit with constrained strain increment
+	char unsigned mTangType;// 0: Elastic Tangent, 1: Contiuum ElastoPlastic Tangent, 2: Consistent ElastoPlastic Tangent
+	char unsigned mOrgTangType;
+	static char unsigned mElastFlag;	// 1: enforce elastic response
 
-	Vector mEpsilon;        // strain tensor, step n+1
-	Vector mEpsilon_n;      // strain tensor, step n
-	Vector mSigma;          // stress tensor, step n+1
-	Vector mSigma_n;        // stress tensor, step n
-
-	double	mTolF;
-	double	mTolR;
-	double  mEPS;
-	int  	mIter;
-	int     mJacoType;          // 0: FDM Jacobian, 1: Analytical Jacobian
-	int		mScheme;            // 0: Forward Euler Explicit, 1: Backward Euler Implicit, 2: Backward Euler Implicit with considerations for stability, 
-								// 3: FE Explicit with constrained strain increment
-	int     mTangType;          // 0: Elastic Tangent, 1: Contiuum ElastoPlastic Tangent, 2: Consistent ElastoPlastic Tangent
-	int     mOrgTangType;
-	int     mLoadUnloadFlag;
-	static int  mElastFlag;     // 1: enforce elastic response
-	bool initializeState;
-
-	Vector mI1;				// 2nd Order Identity Tensor
-	Matrix mIIco;			// 4th-order identity tensor, covariant
-	Matrix mIIcon;			// 4th-order identity tensor, contravariant
-	Matrix mIImix;          // 4th-order identity tensor, mixed variant
-	Matrix mIIvol;			// 4th-order volumetric tensor, IIvol = I1 tensor I1 
-	Matrix mIIdevCon;       // 4th order deviatoric tensor, contravariant
-	Matrix mIIdevMix;       // 4th order deviatoric tensor, mixed variant
-	Matrix mIIdevCo;		// 4th order deviatoric tensor, covariant
+	static Vector mI1;		// 2nd Order Identity Tensor
+	static Matrix mIIco;		// 4th-order identity tensor, covariant
+	static Matrix mIIcon;		// 4th-order identity tensor, contravariant
+	static Matrix mIImix;		// 4th-order identity tensor, mixed variant
+	static Matrix mIIvol;		// 4th-order volumetric tensor, IIvol = I1 tensor I1 
+	static Matrix mIIdevCon;	// 4th order deviatoric tensor, contravariant
+	static Matrix mIIdevMix;	// 4th order deviatoric tensor, mixed variant
+	static Matrix mIIdevCo;		// 4th order deviatoric tensor, covariant
+	// initialize these Vector and Matrices:
+	static class initTensors {
+	public :
+		initTensors() {
+			// 2nd order identity tensor
+			mI1.Zero();
+			mI1(0) = 1.0;
+			mI1(1) = 1.0;
+			mI1(2) = 1.0;
+			// 4th order mixed variant identity tensor
+			mIImix.Zero();
+			for (int i = 0; i<6; i++) {
+				mIImix(i,i) = 1.0;
+			}
+			// 4th order covariant identity tensor
+			mIIco = mIImix;
+			mIIco(3,3) = 2.0;
+			mIIco(4,4) = 2.0;
+			mIIco(5,5) = 2.0;
+			// 4th order contravariant identity tensor
+			mIIcon = mIImix;
+			mIIcon(3,3) = 0.5;
+			mIIcon(4,4) = 0.5;
+			mIIcon(5,5) = 0.5;
+			// 4th order volumetric tensor, IIvol = I1 tensor I1
+			mIIvol.Zero();
+			for (int i = 0; i<3; i++) {
+				mIIvol(i,0) = 1.0;
+				mIIvol(i,1) = 1.0;
+				mIIvol(i,2) = 1.0;
+			}
+			// 4th order contravariant deviatoric tensor
+			mIIdevCon = mIIcon - one3*mIIvol;
+			// 4th order covariant deviatoric tensor
+			mIIdevCo  = mIIco  - one3*mIIvol;
+			// 4th order mixed variant deviatoric tensor
+			mIIdevMix = mIImix - one3*mIIvol;
+		}
+	} initTensorOps;
 
 	// constant computation parameters
-	static const double one3;
-	static const double two3;
-	static const double root23;
-	static const double small;
-	static const bool   debugFlag;
-	static const int    mMaxSubStep; // Max number of implicit substepping
+	static const double		one3;
+	static const double		two3;
+	static const double		root23;
+	static const double		small;
+	static const bool		debugFlag;
+	static const double		maxStrainInc;
+	static const char unsigned	mMaxSubStep; // Max number of implicit substepping
 
 	//Member Functions specific for ManzariDafalias model
-	void initialize();
-	void plastic_integrator();
-	void elastic_integrator(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-		const Vector& NextStrain, Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha,
-		double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
-	void explicit_aux(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
-		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric, Vector& NextAlpha_in, 
-		double& NextDGamma, double& NextVoidRatio,  double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) ;
-	void explicit_integrator(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
-		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric, Vector& NextAlpha_in, 
-		double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) ;
-	int  implicit_integrator(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
-		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric, Vector& NextAlpha_in,
-		double& NextDGamma,	double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent, int implicitLevel = 1) ;
-	int    NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, Matrix& aCepPart);
-	Vector GetResidual(const Vector& x, const Vector& inVar);
-	Matrix GetJacobian(const Vector &x, const Vector &inVar);
-	Matrix GetFDMJacobian(const Vector delta, const Vector inVar);
-	Vector SetManzariComponent(const Vector& stress, const Vector& alpha,
-							 const Vector& fabric, const double& dGamma);
-	Vector SetManzariStateInVar(const Vector& nStrain, const Vector& cStrain, const Vector& cStress, 
-									  const Vector& cEStrain, const Vector& cAlpha, const Vector& cFabric,
-									  const double& cVoidRatio, const double& nVoidRatio, const Vector& Alpha_in);
-	Vector NormalizeJacobian(Matrix& Jaco);
-	void   DenormalizeJacobian(Matrix& JInv, const Vector& norms);
-	double machineEPS();
+	void	initialize();
+	void	integrate();
+	void	elastic_integrator(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
+				const Vector& NextStrain, Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha,
+				double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
+	void	explicit_aux(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
+				const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+				Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric, Vector& NextAlpha_in, 
+				double& NextDGamma, double& NextVoidRatio,  double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) ;
+	void	explicit_integrator(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
+				const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+				Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric, Vector& NextAlpha_in, 
+				double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) ;
+	int	implicit_integrator(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
+				const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+				Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric, Vector& NextAlpha_in,
+				double& NextDGamma,	double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent, 
+				int implicitLevel = 1) ;
+	int	NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, Matrix& aCepPart);
+	Vector	GetResidual(const Vector& x, const Vector& inVar);
+	Matrix	GetJacobian(const Vector &x, const Vector &inVar);
+	Matrix	GetFDMJacobian(const Vector delta, const Vector inVar);
+	Vector	SetManzariComponent(const Vector& stress, const Vector& alpha,
+				const Vector& fabric, const double& dGamma);
+	Vector	SetManzariStateInVar(const Vector& nStrain, const Vector& cStrain, const Vector& cStress, 
+				const Vector& cEStrain, const Vector& cAlpha, const Vector& cFabric,
+				const double& cVoidRatio, const double& nVoidRatio, const Vector& Alpha_in);
+	Vector	NormalizeJacobian(Matrix& Jaco);
+	void	DenormalizeJacobian(Matrix& JInv, const Vector& norms);
+	double	machineEPS();
 	// Material Specific Methods
-	double Macauley(double x);
-	double MacauleyIndex(double x);
-	double g(const double cos3theta, const double c);
-	double GetF(const Vector& nStress, const Vector& nAlpha);
-	double GetPSI(const double& e, const double& p);
-	double GetLodeAngle(const Vector& n);
-	void   GetElasticModuli(const Vector& sigma, const double& en, const double& en1,
-								const Vector& nEStrain, const Vector& cEStrain, double &K, double &G);
-	Matrix GetStiffness(const double& K, const double& G);
-	Matrix GetCompliance(const double& K, const double& G);
-	void   GetStateDependent( const Vector &stress, const Vector &alpha, const double &e
-							, const Vector &alpha_in, Vector &n, Vector &d, Vector &b
-							, double &cos3Theta, double &h, double &psi, double &alphaBtheta
-							, double &alphaDtheta, double &b0);
-	Matrix GetElastoPlasticTangent(const Vector& NextStress, const double& NextDGamma, const Vector& CurStrain, const Vector& NextStrain,
-							const double& G, const double& K, const double& B, const double& C,const double& D, const double& h, 
-							const Vector& n, const Vector& d, const Vector& b) ;
-	Vector GetNormalToYield(const Vector &stress, const Vector &alpha);
-	int    Check(const Vector& TrialStress, const Vector& stress, const Vector& CurAlpha, const Vector& NextAlpha);
+	double	Macauley(double x);
+	double	MacauleyIndex(double x);
+	double	g(const double cos3theta, const double c);
+	double	GetF(const Vector& nStress, const Vector& nAlpha);
+	double	GetPSI(const double& e, const double& p);
+	double	GetLodeAngle(const Vector& n);
+	void	GetElasticModuli(const Vector& sigma, const double& en, const double& en1,
+				const Vector& nEStrain, const Vector& cEStrain, double &K, 
+				double &G);
+	Matrix	GetStiffness(const double& K, const double& G);
+	Matrix	GetCompliance(const double& K, const double& G);
+	void	GetStateDependent( const Vector &stress, const Vector &alpha, const double &e,
+				const Vector &alpha_in, Vector &n, Vector &d, Vector &b,
+				double &cos3Theta, double &h, double &psi, double &alphaBtheta,
+				double &alphaDtheta, double &b0);
+	Matrix	GetElastoPlasticTangent(const Vector& NextStress, const double& NextDGamma, const Vector& CurStrain, const Vector& NextStrain,
+				const double& G, const double& K, const double& B, const double& C,const double& D, const double& h, 
+				const Vector& n, const Vector& d, const Vector& b) ;
+	Vector	GetNormalToYield(const Vector &stress, const Vector &alpha);
+	int	Check(const Vector& TrialStress, const Vector& stress, const Vector& CurAlpha, const Vector& NextAlpha);
 
 	// Symmetric Tensor Operations
 	double GetTrace(const Vector& v);
@@ -234,4 +275,12 @@ class ManzariDafalias : public NDMaterial
 	double Det(const Vector& aV);
 
 };
+
+// Other auxillary functions
+double MatrixMax_Rows(const Matrix& mat, int rowNo);
+double MatrixMax_Cols(const Matrix& mat, int colNo);
+double MatrixMin_Rows(const Matrix& mat, int rowNo);
+double MatrixMin_Cols(const Matrix& mat, int colNo);
+double Sgn(const double& x);
+
 #endif

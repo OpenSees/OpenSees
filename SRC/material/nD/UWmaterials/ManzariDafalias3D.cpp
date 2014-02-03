@@ -78,7 +78,7 @@ ManzariDafalias3D::setTrialStrain(const Vector &strain_from_element)
 {
 	mEpsilon = -1.0 * strain_from_element; // -1.0 is for geotechnical sign convention
 
-    this->plastic_integrator();
+	this->integrate();
 
 	return 0 ;
 }
@@ -95,7 +95,7 @@ const Vector&
 ManzariDafalias3D::getStrain() 
 {
 	mEpsilon_M = -1.0 * mEpsilon;
-    return mEpsilon_M; // -1.0 is for geotechnical sign convention
+	return mEpsilon_M; // -1.0 is for geotechnical sign convention
 } 
 
 // send back the stress 
@@ -120,7 +120,7 @@ ManzariDafalias3D::getTangent()
 		return mCe;
 	else if (mTangType == 1)
 		return mCep;
-	else if (mTangType == 2)
+	else
 		return mCep_Consistent;
 } 
 

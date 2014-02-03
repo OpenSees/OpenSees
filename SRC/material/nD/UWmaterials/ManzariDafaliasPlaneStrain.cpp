@@ -83,7 +83,7 @@ ManzariDafaliasPlaneStrain::setTrialStrain(const Vector &strain_from_element)
 	mEpsilon(1) = -1.0 * strain_from_element(1);
 	mEpsilon(3) = -1.0 * strain_from_element(2);
 
-    this->plastic_integrator();
+    this->integrate();
 	
 	return 0;
 }
@@ -138,7 +138,7 @@ ManzariDafaliasPlaneStrain::getTangent()
 		C = mCe;
 	else if (mTangType == 1)
 		C = mCep;
-	else if (mTangType == 2)
+	else
 		C = mCep_Consistent;
 
 	mTangent(0,0) = C(0,0);
