@@ -1,22 +1,17 @@
 #include <CulaSparseSolverS5.h>
 
-#ifndef _CULASPARSESOLVER5
-#define _CULASPARSESOLVER5
-
 #define culaSparse cula;
 
-CulaSparseSolverS5::CulaSparseSolverS5(void):SparseGenRowLinSolver(SOLVER_TAGS_CulaSparse)
-{
-  
+CulaSparseSolverS5::CulaSparseSolverS5(void)
+:SparseGenRowLinSolver(SOLVER_TAGS_CulaSparseS5)
+{  
   //config.debug = 1;
   
   single=0;
-  
   status = culaSparseCreate(&handle);
   
   if ( status != culaSparseNoError )
     {
-      
       culaSparseGetLastStatusString(handle, buf, sizeof(buf) );
       opserr<<buf<<"\n";
       return;
@@ -64,8 +59,6 @@ CulaSparseSolverS5::CulaSparseSolverS5(void):SparseGenRowLinSolver(SOLVER_TAGS_C
       return;
     }
   
-  
-  
   status = culaSparseCsrOptionsInit(handle,&CsrOpt);
   if ( status != culaSparseNoError )
     {
@@ -88,9 +81,14 @@ CulaSparseSolverS5::CulaSparseSolverS5(void):SparseGenRowLinSolver(SOLVER_TAGS_C
 }
 
 
-CulaSparseSolverS5::CulaSparseSolverS5(double relTol,int maxInteration,int preCond,int solver,int single,int host):SparseGenRowLinSolver(SOLVER_TAGS_CulaSparse)
-{
-  
+CulaSparseSolverS5::CulaSparseSolverS5(double relTol,
+				       int maxInteration,
+				       int preCond,
+				       int solver,
+				       int single,
+				       int host)
+ :SparseGenRowLinSolver(SOLVER_TAGS_CulaSparseS5)
+{  
   //config.debug = 1;
   
   
@@ -377,7 +375,6 @@ int CulaSparseSolverS5::solve(void)
   status = culaSparseExecutePlan(handle, plan, &config, &result);
   
   
-  
   // see if solver failed for a non-data related reason
   if ( status != culaSparseNoError && status != culaSparseDataFormatError )
     {
@@ -386,9 +383,10 @@ int CulaSparseSolverS5::solve(void)
       return -1;
     }
   // print result string
+  /*
   culaSparseGetResultString(handle,&result, buf, sizeof(buf) );
   opserr<<buf<<"\n";
-  
+  */  
   
   if (single==1)
     {
@@ -403,4 +401,3 @@ int CulaSparseSolverS5::solve(void)
 }
 
 
-#endif

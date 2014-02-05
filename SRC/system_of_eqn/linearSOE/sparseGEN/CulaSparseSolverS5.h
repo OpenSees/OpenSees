@@ -1,5 +1,5 @@
-#ifndef _CULASPARSESOLVER
-#define _CULASPARSESOLVER
+#ifndef _CULASPARSESOLVERS5
+#define _CULASPARSESOLVERS5
 
 #include <cula_sparse.h>
 #include <SparseGenRowLinSolver.h>
@@ -9,15 +9,12 @@
 
 
 
-class SulaSparseSolverS5 :
-//	public SparseGenColLinSolver
-
-public SparseGenRowLinSolver
- {
+class CulaSparseSolverS5 : public SparseGenRowLinSolver
+{
  public:
-   SulaSparseSolverS5(void);
-   SulaSparseSolverS5(double relTol,int maxInteration,int preCond,int solver,int single,int host);
-   ~SulaSparseSolverS5(void);
+   CulaSparseSolverS5(void);
+   CulaSparseSolverS5(double relTol,int maxInteration,int preCond,int solver,int single,int host);
+   ~CulaSparseSolverS5(void);
    
    int solve(void);
    int setSize(void);
@@ -35,9 +32,6 @@ public SparseGenRowLinSolver
    
    //double* A,X,B;//Matrix A, X, and B
    //int* rowA,colStartA;
-   
-   
-   
    
    double relTol;
    int maxInteration;
@@ -70,7 +64,6 @@ public SparseGenRowLinSolver
    
    // result structure
    culaSparseResult result;
-   
 };
 
 #endif
