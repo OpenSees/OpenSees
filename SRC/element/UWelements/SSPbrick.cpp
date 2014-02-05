@@ -658,72 +658,73 @@ SSPbrick::getResistingForce(void)
 const Vector &
 SSPbrick::getResistingForceIncInertia()
 {
-	// get mass density from the material
-	double density = theMaterial->getRho();
+  // get mass density from the material
+  double density = theMaterial->getRho();
+  
 
-	// if density is zero only add damping terms
-	if (density == 0.0) {
-		this->getResistingForce();
-
-		// add the damping forces if rayleigh damping
-		if (betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0) {
-			mInternalForces += this->getRayleighDampingForces();
-		}
-
-		return mInternalForces;
-	}
-
-	const Vector &accel1 = theNodes[0]->getTrialAccel();
-	const Vector &accel2 = theNodes[1]->getTrialAccel();
-	const Vector &accel3 = theNodes[2]->getTrialAccel();
-	const Vector &accel4 = theNodes[3]->getTrialAccel();
-	const Vector &accel5 = theNodes[4]->getTrialAccel();
-	const Vector &accel6 = theNodes[5]->getTrialAccel();
-	const Vector &accel7 = theNodes[6]->getTrialAccel();
-	const Vector &accel8 = theNodes[7]->getTrialAccel();
-
-	static double a[24];
-	a[0] =  accel1(0);
-	a[1] =  accel1(1);
-	a[2] =  accel1(2);
-	a[3] =  accel2(0);
-	a[4] =  accel2(1);
-	a[5] =  accel2(2);
-	a[6] =  accel3(0);
-	a[7] =  accel3(1);
-	a[8] =  accel3(2);
-	a[9] =  accel4(0);
-	a[10] = accel4(1);
-	a[11] = accel4(2);
-	a[12] = accel5(0);
-	a[13] = accel5(1);
-	a[14] = accel5(2);
-	a[15] = accel6(0);
-	a[16] = accel6(1);
-	a[17] = accel6(2);
-	a[18] = accel7(0);
-	a[19] = accel7(1);
-	a[20] = accel7(2);
-	a[21] = accel8(0);
-	a[22] = accel8(1);
-	a[23] = accel8(2);
-	
-	// compute current resisting force
-	this->getResistingForce();
-
-	// compute mass matrix
-	this->getMass();
-
-	for (int i = 0; i < 24; i++) {
-		mInternalForces(i) += mMass(i,i)*a[i];
-	}
-
-	// add the damping forces if rayleigh damping
-	if (betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0) {
-		mInternalForces += this->getRayleighDampingForces();
-	}
-
-	return mInternalForces;
+  // if density is zero only add damping terms
+  if (density == 0.0) {
+    this->getResistingForce();
+    
+    // add the damping forces if rayleigh damping
+    if (betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0) {
+      mInternalForces += this->getRayleighDampingForces();
+    }
+    
+    return mInternalForces;
+  }
+  
+  const Vector &accel1 = theNodes[0]->getTrialAccel();
+  const Vector &accel2 = theNodes[1]->getTrialAccel();
+  const Vector &accel3 = theNodes[2]->getTrialAccel();
+  const Vector &accel4 = theNodes[3]->getTrialAccel();
+  const Vector &accel5 = theNodes[4]->getTrialAccel();
+  const Vector &accel6 = theNodes[5]->getTrialAccel();
+  const Vector &accel7 = theNodes[6]->getTrialAccel();
+  const Vector &accel8 = theNodes[7]->getTrialAccel();
+  
+  static double a[24];
+  a[0] =  accel1(0);
+  a[1] =  accel1(1);
+  a[2] =  accel1(2);
+  a[3] =  accel2(0);
+  a[4] =  accel2(1);
+  a[5] =  accel2(2);
+  a[6] =  accel3(0);
+  a[7] =  accel3(1);
+  a[8] =  accel3(2);
+  a[9] =  accel4(0);
+  a[10] = accel4(1);
+  a[11] = accel4(2);
+  a[12] = accel5(0);
+  a[13] = accel5(1);
+  a[14] = accel5(2);
+  a[15] = accel6(0);
+  a[16] = accel6(1);
+  a[17] = accel6(2);
+  a[18] = accel7(0);
+  a[19] = accel7(1);
+  a[20] = accel7(2);
+  a[21] = accel8(0);
+  a[22] = accel8(1);
+  a[23] = accel8(2);
+  
+  // compute current resisting force
+  this->getResistingForce();
+  
+  // compute mass matrix
+  this->getMass();
+  
+  for (int i = 0; i < 24; i++) {
+    mInternalForces(i) += mMass(i,i)*a[i];
+  }
+  
+  // add the damping forces if rayleigh damping
+  if (alphaM != 0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0) {
+    mInternalForces += this->getRayleighDampingForces(); //FMK - this would add mass contribution again!
+  }
+  
+  return mInternalForces;
 }
 
 int

@@ -536,7 +536,7 @@ SSPquad::getResistingForceIncInertia()
 	}
 
 	// add the damping forces if rayleigh damping
-	if (betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0) {
+	if (alphaM != 0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0) {
 		mInternalForces += this->getRayleighDampingForces();
 	}
 
