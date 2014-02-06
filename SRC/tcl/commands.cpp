@@ -2713,8 +2713,12 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     double relTol=1e-6;
 
     int maxInteration=100000;
+    
     int preCond=5;		//fainv
-    int solver=1;		//Bicg
+#ifdef _CULAS4
+    preCond = 1;
+#endif
+    int solver=0;		//cg
     int count = 2;
     int single=0; 
     int host=0;
