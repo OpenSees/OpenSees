@@ -51,11 +51,11 @@ static int num_SSPbrick = 0;
 OPS_Export void *
 OPS_SSPbrick(void)
 {
-	if (num_SSPbrick == 0) {
-    	num_SSPbrick++;
-    	OPS_Error("SSPbrick element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n", 1);
-  	}
-
+  if (num_SSPbrick == 0) {
+    num_SSPbrick++;
+    opserr << "SSPbrick element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n";
+  }
+  
   	// Pointer to an element that will be returned
   	Element *theElement = 0;
 
@@ -739,7 +739,7 @@ SSPbrick::sendSelf(int commitTag, Channel &theChannel)
   
   // SSPbrick packs its data into a Vector and sends this to theChannel
   // along with its dbTag and the commitTag passed in the arguments
-  static Vector data(747);
+  static Vector data(751);
   data(0) = this->getTag();
   data(1) = b[0];
   data(2) = b[1];
@@ -756,25 +756,30 @@ SSPbrick::sendSelf(int commitTag, Channel &theChannel)
   }
   data(6) = matDbTag;
 
-  int cnt = 7;
+  data(7) = alphaM;
+  data(8) = betaK;
+  data(9) = betaK0;
+  data(10) = betaKc;
+ 
+  int cnt = 11;
   for (int i = 0; i < 20; i++) {
-      data(cnt+i) = J[i];
+    data(cnt+i) = J[i];
   }
   
-  cnt = 27;
+  cnt = 31;
   for (int i = 0; i < 6; i++) {
-	  for (int j = 0; j < 24; j++) {
-		  data(cnt+j) = Bnot(i,j);
-	  }
-	  cnt = cnt+24;
+    for (int j = 0; j < 24; j++) {
+      data(cnt+j) = Bnot(i,j);
+    }
+    cnt = cnt+24;
   }
-
-  cnt = 171;
+  
+  cnt = 175;
   for (int i = 0; i < 24; i++) {
-	  for (int j = 0; j < 24; j++) {
-		  data(cnt+j) = Kstab(i,j);
-	  }
-	  cnt = cnt+24;
+    for (int j = 0; j < 24; j++) {
+      data(cnt+j) = Kstab(i,j);
+    }
+    cnt = cnt+24;
   }
   
   res = theChannel.sendVector(dataTag, commitTag, data);
@@ -803,84 +808,89 @@ SSPbrick::sendSelf(int commitTag, Channel &theChannel)
 int
 SSPbrick::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  	int res = 0;
-  	int dataTag = this->getDbTag();
-
-  	// SSPbrick creates a Vector, receives the Vector and then sets the 
-  	// internal data with the data in the Vector
-  	static Vector data(747);
-  	res = theChannel.recvVector(dataTag, commitTag, data);
-  	if (res < 0) {
-    	opserr << "WARNING SSPbrick::recvSelf() - failed to receive Vector\n";
-    	return res;
-  	}
+  int res = 0;
+  int dataTag = this->getDbTag();
   
-  	this->setTag((int)data(0));
-  	b[0] = data(1);
-  	b[1] = data(2);
-	b[2] = data(3);
-	mVol = data(4);
-
-	int cnt = 7;
-    for (int i = 0; i < 20; i++) {
-        J[i] = data(cnt+i);
-    }
+  // SSPbrick creates a Vector, receives the Vector and then sets the 
+  // internal data with the data in the Vector
+  static Vector data(751);
+  res = theChannel.recvVector(dataTag, commitTag, data);
+  if (res < 0) {
+    opserr << "WARNING SSPbrick::recvSelf() - failed to receive Vector\n";
+    return res;
+  }
   
-    cnt = 27;
-    for (int i = 0; i < 6; i++) {
-	    for (int j = 0; j < 24; j++) {
-	  	    Bnot(i,j) = data(cnt+j);
-	    }
-	    cnt = cnt+24;
+  this->setTag((int)data(0));
+  b[0] = data(1);
+  b[1] = data(2);
+  b[2] = data(3);
+  mVol = data(4);
+ 
+  alphaM = data(7);
+  betaK = data(8);
+  betaK0 = data(9);
+  betaKc = data(10);
+ 
+  int cnt = 11;
+  for (int i = 0; i < 20; i++) {
+    J[i] = data(cnt+i);
+  }
+  
+  cnt = 31;
+  for (int i = 0; i < 6; i++) {
+    for (int j = 0; j < 24; j++) {
+      Bnot(i,j) = data(cnt+j);
     }
-
-    cnt = 171;
-    for (int i = 0; i < 24; i++) {
-	    for (int j = 0; j < 24; j++) {
-		    Kstab(i,j) = data(cnt+j);
-	    }
-	    cnt = cnt+24;
+    cnt = cnt+24;
+  }
+  
+  cnt = 175;
+  for (int i = 0; i < 24; i++) {
+    for (int j = 0; j < 24; j++) {
+      Kstab(i,j) = data(cnt+j);
     }
-
-  	// SSPbrick now receives the tags of its four external nodes
-  	res = theChannel.recvID(dataTag, commitTag, mExternalNodes);
-  	if (res < 0) {
-    	opserr << "WARNING SSPbrick::recvSelf() - " << this->getTag() << " failed to receive ID\n";
-    	return res;
-  	}
-
-	// finally, SSPbrick creates a material object of the correct type, sets its
-	// database tag, and asks this new object to receive itself
-	int matClass = (int)data(5);
-	int matDb    = (int)data(6);
-
-	// check if material object exists and that it is the right type
-	if ((theMaterial == 0) || (theMaterial->getClassTag() != matClass)) {
-
-		// if old one, delete it
-		if (theMaterial != 0)
-			delete theMaterial;
-
-		// create new material object
-		NDMaterial *theMatCopy = theBroker.getNewNDMaterial(matClass);
-		theMaterial = (NDMaterial *)theMatCopy;
-
-		if (theMaterial == 0) {
-			opserr << "WARNING SSPbrick::recvSelf() - " << this->getTag() 
-			  << " failed to get a blank Material of type " << matClass << endln;
-			return -3;
-		}
-	}
-
-	// NOTE: we set the dbTag before we receive the material
-	theMaterial->setDbTag(matDb);
-	res = theMaterial->recvSelf(commitTag, theChannel, theBroker);
-	if (res < 0) {
-		opserr << "WARNING SSPbrick::recvSelf() - " << this->getTag() << " failed to receive its Material\n";
-		return -3;
-	}
-
-	return 0; 
+    cnt = cnt+24;
+  }
+  
+  // SSPbrick now receives the tags of its four external nodes
+  res = theChannel.recvID(dataTag, commitTag, mExternalNodes);
+  if (res < 0) {
+    opserr << "WARNING SSPbrick::recvSelf() - " << this->getTag() << " failed to receive ID\n";
+    return res;
+  }
+  
+  // finally, SSPbrick creates a material object of the correct type, sets its
+  // database tag, and asks this new object to receive itself
+  int matClass = (int)data(5);
+  int matDb    = (int)data(6);
+  
+  // check if material object exists and that it is the right type
+  if ((theMaterial == 0) || (theMaterial->getClassTag() != matClass)) {
+    
+    // if old one, delete it
+    if (theMaterial != 0)
+      delete theMaterial;
+    
+    // create new material object
+    NDMaterial *theMatCopy = theBroker.getNewNDMaterial(matClass);
+    theMaterial = (NDMaterial *)theMatCopy;
+    
+    if (theMaterial == 0) {
+      opserr << "WARNING SSPbrick::recvSelf() - " << this->getTag() 
+	     << " failed to get a blank Material of type " << matClass << endln;
+      return -3;
+    }
+  }
+  
+  // NOTE: we set the dbTag before we receive the material
+  theMaterial->setDbTag(matDb);
+  res = theMaterial->recvSelf(commitTag, theChannel, theBroker);
+  if (res < 0) {
+    opserr << "WARNING SSPbrick::recvSelf() - " << this->getTag() << " failed to receive its Material\n";
+    return -3;
+  }
+  
+  return 0; 
 }
 
 int

@@ -57,7 +57,7 @@ OPS_SSPquad(void)
 {
 	if (num_SSPquad == 0) {
     	num_SSPquad++;
-    	OPS_Error("SSPquad element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n", 1);
+    	opserr << "SSPquad element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n";
   	}
 
   	// Pointer to an element that will be returned
@@ -546,119 +546,125 @@ SSPquad::getResistingForceIncInertia()
 int
 SSPquad::sendSelf(int commitTag, Channel &theChannel)
 {
-	int res = 0;
+  int res = 0;
   
-	// note: we don't check for dataTag == 0 for Element
-	// objects as that is taken care of in a commit by the Domain
-	// object - don't want to have to do the check if sending data
-	int dataTag = this->getDbTag();
+  // note: we don't check for dataTag == 0 for Element
+  // objects as that is taken care of in a commit by the Domain
+  // object - don't want to have to do the check if sending data
+  int dataTag = this->getDbTag();
   
-	// SSPquad packs its data into a Vector and sends this to theChannel
-	// along with its dbTag and the commitTag passed in the arguments
-  	static Vector data(6);
-  	data(0) = this->getTag();
-  	data(1) = mThickness;
-  	data(2) = b[0];
-  	data(3) = b[1];
-	data(4) = theMaterial->getClassTag();	      
+  // SSPquad packs its data into a Vector and sends this to theChannel
+  // along with its dbTag and the commitTag passed in the arguments
+  static Vector data(10);
+  data(0) = this->getTag();
+  data(1) = mThickness;
+  data(2) = b[0];
+  data(3) = b[1];
+  data(4) = theMaterial->getClassTag();	      
   
-  	// Now quad sends the ids of its materials
-  	int matDbTag = theMaterial->getDbTag();
+  data(6) = alphaM;
+  data(7) = betaK;
+  data(8) = betaK0;
+  data(9) = betaKc;
+  // Now quad sends the ids of its materials
+  int matDbTag = theMaterial->getDbTag();
   
-  	static ID idData(12);
+  // NOTE: we do have to ensure that the material has a database
+  // tag if we are sending to a database channel.
+  if (matDbTag == 0) {
+    matDbTag = theChannel.getDbTag();
+    if (matDbTag != 0)
+      theMaterial->setDbTag(matDbTag);
+  }
+  data(5) = matDbTag;
   
-    // NOTE: we do have to ensure that the material has a database
-    // tag if we are sending to a database channel.
-    if (matDbTag == 0) {
-      matDbTag = theChannel.getDbTag();
-			if (matDbTag != 0)
-			  theMaterial->setDbTag(matDbTag);
-    }
-    data(5) = matDbTag;
-
-	res += theChannel.sendVector(dataTag, commitTag, data);
-  	if (res < 0) {
-    	opserr << "WARNING SSPquad::sendSelf() - " << this->getTag() << " failed to send Vector\n";
-    	return res;
-  	}
-
-	// SSPquad then sends the tags of its four nodes
-  	res += theChannel.sendID(dataTag, commitTag, mExternalNodes);
-  	if (res < 0) {
-    	opserr << "WARNING SSPquad::sendSelf() - " << this->getTag() << " failed to send ID\n";
-    	return res;
-  	}
-
-  	// finally, SSPquad asks its material object to send itself
-  	res = theMaterial->sendSelf(commitTag, theChannel);
-	if (res < 0) {
-		opserr << "WARNING SSPquad::sendSelf() - " << this->getTag() << " failed to send its Material\n";
-		return -3;
-	}
-
-	return 0;
+  res += theChannel.sendVector(dataTag, commitTag, data);
+  if (res < 0) {
+    opserr << "WARNING SSPquad::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+    return res;
+  }
+  
+  // SSPquad then sends the tags of its four nodes
+  res += theChannel.sendID(dataTag, commitTag, mExternalNodes);
+  if (res < 0) {
+    opserr << "WARNING SSPquad::sendSelf() - " << this->getTag() << " failed to send ID\n";
+    return res;
+  }
+  
+  // finally, SSPquad asks its material object to send itself
+  res = theMaterial->sendSelf(commitTag, theChannel);
+  if (res < 0) {
+    opserr << "WARNING SSPquad::sendSelf() - " << this->getTag() << " failed to send its Material\n";
+    return -3;
+  }
+  
+  return 0;
 }
 
 int
 SSPquad::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  	int res = 0;
-  	int dataTag = this->getDbTag();
-
-  	// SSPquad creates a Vector, receives the Vector and then sets the 
-  	// internal data with the data in the Vector
-  	static Vector data(6);
-  	res += theChannel.recvVector(dataTag, commitTag, data);
-  	if (res < 0) {
-    	opserr << "WARNING SSPquad::recvSelf() - failed to receive Vector\n";
-    	return res;
-  	}
+  int res = 0;
+  int dataTag = this->getDbTag();
   
-  	this->setTag((int)data(0));
-  	mThickness = data(1);
-  	b[0] = data(2);
-  	b[1] = data(3);
-	
-
-  	// SSPquad now receives the tags of its four external nodes
-  	res += theChannel.recvID(dataTag, commitTag, mExternalNodes);
-  	if (res < 0) {
-    	opserr << "WARNING SSPquad::recvSelf() - " << this->getTag() << " failed to receive ID\n";
-    	return res;
-  	}
-
-	// finally, SSPquad creates a material object of the correct type, sets its
-	// database tag, and asks this new object to receive itself
-	int matClass = (int)data(4);
-	int matDb    = (int)data(5);
-
-	// check if material object exists and that it is the right type
-	if ((theMaterial == 0) || (theMaterial->getClassTag() != matClass)) {
-
-		// if old one, delete it
-		if (theMaterial != 0)
-			delete theMaterial;
-
-		// create new material object
-		NDMaterial *theMatCopy = theBroker.getNewNDMaterial(matClass);
-		theMaterial = (NDMaterial *)theMatCopy;
-
-		if (theMaterial == 0) {
-			opserr << "WARNING SSPquad::recvSelf() - " << this->getTag() 
-			  << " failed to get a blank Material of type " << matClass << endln;
-			return -3;
-		}
-	}
-
-	// NOTE: we set the dbTag before we receive the material
-	theMaterial->setDbTag(matDb);
-	res = theMaterial->recvSelf(commitTag, theChannel, theBroker);
-	if (res < 0) {
-		opserr << "WARNING SSPquad::recvSelf() - " << this->getTag() << " failed to receive its Material\n";
-		return -3;
-	}
-
-	return 0; 
+  // SSPquad creates a Vector, receives the Vector and then sets the 
+  // internal data with the data in the Vector
+  static Vector data(10);
+  res += theChannel.recvVector(dataTag, commitTag, data);
+  if (res < 0) {
+    opserr << "WARNING SSPquad::recvSelf() - failed to receive Vector\n";
+    return res;
+  }
+  
+  this->setTag((int)data(0));
+  mThickness = data(1);
+  b[0] = data(2);
+  b[1] = data(3);
+  
+  // SSPquad now receives the tags of its four external nodes
+  res += theChannel.recvID(dataTag, commitTag, mExternalNodes);
+  if (res < 0) {
+    opserr << "WARNING SSPquad::recvSelf() - " << this->getTag() << " failed to receive ID\n";
+    return res;
+  }
+  
+  // finally, SSPquad creates a material object of the correct type, sets its
+  // database tag, and asks this new object to receive itself
+  int matClass = (int)data(4);
+  int matDb    = (int)data(5);
+  
+  alphaM = data(6);
+  betaK = data(7);
+  betaK0 = data(8);
+  betaKc = data(9);
+  
+  // check if material object exists and that it is the right type
+  if ((theMaterial == 0) || (theMaterial->getClassTag() != matClass)) {
+    
+    // if old one, delete it
+    if (theMaterial != 0)
+      delete theMaterial;
+    
+    // create new material object
+    NDMaterial *theMatCopy = theBroker.getNewNDMaterial(matClass);
+    theMaterial = (NDMaterial *)theMatCopy;
+    
+    if (theMaterial == 0) {
+      opserr << "WARNING SSPquad::recvSelf() - " << this->getTag() 
+	     << " failed to get a blank Material of type " << matClass << endln;
+      return -3;
+    }
+  }
+  
+  // NOTE: we set the dbTag before we receive the material
+  theMaterial->setDbTag(matDb);
+  res = theMaterial->recvSelf(commitTag, theChannel, theBroker);
+  if (res < 0) {
+    opserr << "WARNING SSPquad::recvSelf() - " << this->getTag() << " failed to receive its Material\n";
+    return -3;
+  }
+  
+  return 0; 
 }
 
 int
