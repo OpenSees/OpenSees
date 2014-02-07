@@ -239,13 +239,13 @@ RambergOsgoodSteel::setTrialStrain(double trialStrain, double strainRate)
   while ( M >= 0.0001)
     {
      
-      F[kk]= (trialSig[kk]/E0) + rezaAA*(pow((trialSig[kk]/sigs0),rezaNN)) - abs(eps-epsr);
+      F[kk]= (trialSig[kk]/E0) + rezaAA*(pow((trialSig[kk]/sigs0),rezaNN)) - fabs(eps-epsr);
       dF[kk]= (1/E0) + rezaAA*(1/sigs0)*rezaNN*(pow((trialSig[kk]/sigs0),(rezaNN-1)));
       trialSig[kk+1]=trialSig[kk]-(F[kk]/dF[kk]);
      
       kk=kk+1;
       sig=trialSig[kk];
-      M=abs(sig-trialSig[kk-1]);
+      M=fabs(sig-trialSig[kk-1]);
       if (kk == 1000)
         {
           opserr << "NewtonRaphson method does NOT converge at eps=" <<  eps << "\n";
