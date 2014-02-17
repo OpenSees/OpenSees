@@ -164,8 +164,10 @@
 #include <BoundingCamClay.h>        
 #include <BoundingCamClay3D.h>
 #include <BoundingCamClayPlaneStrain.h>
+#include <ManzariDafalias.h>
+#include <ManzariDafalias3D.h>
+#include <ManzariDafaliasPlaneStrain.h>
 #include <InitialStateAnalysisWrapper.h>
-
 
 // Fibers
 #include <UniaxialFiber2d.h>
@@ -1205,6 +1207,15 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_BoundingCamClayPlaneStrain:
     return new BoundingCamClayPlaneStrain();
+
+  case ND_TAG_ManzariDafalias:
+    return new ManzariDafalias();
+
+  case ND_TAG_ManzariDafalias3D:
+    return new ManzariDafalias3D();
+
+  case ND_TAG_ManzariDafaliasPlaneStrain:
+    return new ManzariDafaliasPlaneStrain();
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 

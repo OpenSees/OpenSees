@@ -1111,7 +1111,7 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 				jaco = GetFDMJacobian(aux, inVar);
 		}
 
-		
+		/*	
 		norms = NormalizeJacobian(jaco);
 		if (jaco.Invert(jInv) != 0) 
 		{
@@ -1131,8 +1131,8 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 		DenormalizeJacobian(jInv, norms);
 		dX   = -1.0*jInv * R;
 		sol += dX;
+		*/
 		
-		/*
 		errFlag = jaco.Solve(R, dX);
 		if (errFlag != 0) 
 		{
@@ -1140,7 +1140,7 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 			break;
 		}
 		sol -= dX;
-		*/
+		
 		R    = GetResidual(sol, inVar);
 
 		if (R.Norm() < mTolR) 
@@ -1151,7 +1151,7 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 	}
 	if (errFlag == 0)
 	{	
-		/*
+		
 		norms = NormalizeJacobian(jaco);
 		if (jaco.Invert(jInv) != 0) 
 		{
@@ -1159,7 +1159,7 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 			if (debugFlag) opserr << "Singular Matrix!!! - Jacobian" << endln;
 		}
 		DenormalizeJacobian(jInv, norms);
-		*/
+		
 		aCepPart.Extract(jInv, 0, 0, 1.0);
 		x = sol;
 	}
