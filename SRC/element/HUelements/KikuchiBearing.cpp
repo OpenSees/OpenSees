@@ -1371,7 +1371,7 @@ const Matrix& KikuchiBearing::getMass()
   double m = 0.5*mass;
   for (int i = 0; i < 3; i++)  {
     theMatrix(i,i)     = m;
-    theMatrix(i+3,i+3) = m;
+    theMatrix(i+6,i+6) = m;
   }
   
   return theMatrix; 
@@ -1416,7 +1416,7 @@ int KikuchiBearing::addInertiaLoadToUnbalance(const Vector &accel)
   double m = 0.5*mass;
   for (int i = 0; i < 3; i++)  {
     theLoad(i)   -= m * Raccel1(i);
-    theLoad(i+3) -= m * Raccel2(i);
+    theLoad(i+6) -= m * Raccel2(i);
   }
   
   return 0;
@@ -1459,7 +1459,7 @@ const Vector& KikuchiBearing::getResistingForceIncInertia()
     double m = 0.5*mass;
     for (int i = 0; i < 3; i++)  {
       theVector(i)   += m * accel1(i);
-      theVector(i+3) += m * accel2(i);
+      theVector(i+6) += m * accel2(i);
     }
   }
   
