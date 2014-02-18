@@ -35,7 +35,7 @@
 #include <Vector.h>
 
 #include <Information.h>
-#include <MaterialResponse.h>
+//#include <MaterialResponse.h>
 #include <Parameter.h>
 
 #include <Channel.h>

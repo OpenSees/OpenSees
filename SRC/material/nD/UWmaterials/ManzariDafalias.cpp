@@ -26,6 +26,7 @@
 #include <ManzariDafalias.h>
 #include <ManzariDafalias3D.h>
 #include <ManzariDafaliasPlaneStrain.h>
+#include <MaterialResponse.h>
 
 #include <string.h>
 
