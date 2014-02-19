@@ -67,6 +67,7 @@
 #include <SingleDomParamIter.h>
 
 #include <Vertex.h>
+#include <Matrix.h>
 #include <Graph.h>
 #include <Recorder.h>
 #include <MeshRegion.h>
@@ -1766,7 +1767,8 @@ Domain::initialize(void)
     // lvalue needed here for M$ VC++ compiler -- MHS
 	// and either the  VS2011 or intel compiler does not like it!
 #ifndef _VS2011
-    const Matrix &initM = elePtr->getInitialStiff();
+    Matrix initM(elePtr->getInitialStiff());
+
 #else
 	 elePtr->getInitialStiff();
 #endif

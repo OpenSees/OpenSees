@@ -6,7 +6,7 @@
 #include <UniaxialMaterial.h>
 #include <Matrix.h>
 
-#define MAT_TAG_BWBN 5002
+//#define MAT_TAG_BWBN 5002
 
 class BWBN : public UniaxialMaterial
 {
