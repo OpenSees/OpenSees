@@ -1091,8 +1091,13 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 	int errFlag = -1;
 	bool jacoFlag = true;
 	// Declare variables to be used
-	Vector sol(19), R(19), dX(19), norms(20);
-	Matrix  jaco(19,19), jInv(19,19);
+	static Vector sol(19);
+	static Vector R(19);
+	static Vector dX(19);
+	static Vector norms(20);
+	static Matrix jaco(19,19);
+	static Matrix jInv(19,19);
+
 	sol = xo;
 	R = GetResidual(sol, inVar);
 	for(mIter = 1; mIter <= MaxIter; mIter++)
@@ -1104,7 +1109,7 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 				jaco = GetFDMJacobian(sol, inVar);
 		else
 		{	
-			Vector aux(19);
+			static Vector aux(19);
 			aux = SetManzariComponent(mSigma_n, mAlpha_n, mFabric_n, mDGamma_n);
 			if (mJacoType == 1)
 				jaco = GetJacobian(aux, inVar);
