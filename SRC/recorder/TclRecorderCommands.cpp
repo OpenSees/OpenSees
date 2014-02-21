@@ -160,6 +160,7 @@
        const char *inetAddr = 0;
        int inetPort;
        bool closeOnWrite = false;
+       bool doScientific = false;
 
        ID *specificIndices = 0;
 
@@ -313,10 +314,16 @@
 	   loc++;
 	 }
 
+	 else if (strcmp(argv[loc],"-scientific") == 0) {
+	   doScientific = true;
+	   loc ++;
+	 }
+
 	 else if (strcmp(argv[loc],"-file") == 0) {
 	   fileName = argv[loc+1];
 	   eMode = DATA_STREAM;
 	   const char *pwd = getInterpPWD(interp);
+
 	   simulationInfo.addOutputFile(fileName,pwd);
 	   loc += 2;
 	   if (strcmp(argv[loc],"-xml") == 0) {
@@ -401,9 +408,9 @@
 
        // construct the DataHandler
        if (eMode == DATA_STREAM && fileName != 0) {
-	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 0, closeOnWrite);
+	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
        } else if (eMode == DATA_STREAM_CSV && fileName != 0) {
-	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1, closeOnWrite);
+	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1, closeOnWrite, precision, doScientific);
        } else if (eMode == XML_STREAM && fileName != 0) {
 	 theOutputStream = new XmlFileStream(fileName);
        } else if (eMode == DATABASE_STREAM && tableName != 0) {
@@ -414,7 +421,6 @@
 	 theOutputStream = new TCP_Stream(inetPort, inetAddr);
        } else 
 	 theOutputStream = new StandardStream();
-
 
        theOutputStream->setPrecision(precision);
 
@@ -849,8 +855,7 @@
 
 	 else if ((strcmp(argv[loc],"-g") == 0)) {
 	   loc++;
-	   double eleM = 0;
-
+	   
 	   if (Tcl_GetDouble(interp, argv[loc], &gAcc) != TCL_OK) {
 	     opserr << "WARNING recorder Remove -g gValue? gDir? gPat?... invalid gValue ";
 	     opserr << argv[loc] << endln;
@@ -1031,6 +1036,7 @@
        int flags = 0;
        double dT = 0.0;
        int numNodes = 0;
+       bool doScientific = false;
 
        // create ID's to contain the node tags & the dofs
        ID *theNodes = 0;
@@ -1058,6 +1064,11 @@
 	 else if (strcmp(argv[pos],"-load") == 0) {
 	   echoTimeFlag = true;      
 	   pos++;
+	 }
+
+	 else if (strcmp(argv[pos],"-scientific") == 0) {
+	   doScientific = true;
+	   pos ++;
 	 }
 
 	 else if (strcmp(argv[pos],"-file") == 0) {
@@ -1283,9 +1294,9 @@
 
        // construct the DataHandler
        if (eMode == DATA_STREAM && fileName != 0) {
-	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 0, closeOnWrite);
+	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
        } else if (eMode == DATA_STREAM_CSV && fileName != 0) {
-	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1, closeOnWrite);
+	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1, closeOnWrite, precision, doScientific);
        } else if (eMode == XML_STREAM && fileName != 0) {
 	 theOutputStream = new XmlFileStream(fileName);
        } else if (eMode == DATABASE_STREAM && tableName != 0) {
@@ -1373,6 +1384,9 @@
        int perpDirn = 2;
        int pos = 2;
        double dT = 0.0;
+       int precision = 6;
+       bool doScientific = false;
+       bool closeOnWrite = false;
 
        while (pos < argc) {
 
@@ -1429,6 +1443,23 @@
 	   eMode = XML_STREAM;
 	   pos += 2;
 	 }	    
+
+	 else if (strcmp(argv[pos],"-closeOnWrite") == 0) {
+	   closeOnWrite = true;
+	   pos ++;
+	 }
+
+	 else if (strcmp(argv[pos],"-scientific") == 0) {
+	   doScientific = true;
+	   pos ++;
+	 }
+
+	 else if (strcmp(argv[pos],"-precision") == 0) {
+	   pos ++;
+	   if (Tcl_GetInt(interp, argv[pos], &precision) != TCL_OK)	
+	     return TCL_ERROR;		  
+	   pos++;
+	 }
 
 	 else if ((strcmp(argv[pos],"-iNode") == 0) || 
 		  (strcmp(argv[pos],"-iNodes") == 0)) {
@@ -1499,11 +1530,12 @@
 	 return TCL_ERROR;
        }
 
+
        // construct the DataHandler
        if (eMode == DATA_STREAM && fileName != 0) {
-	 theOutputStream = new DataFileStream(fileName);
+	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
        } else if (eMode == DATA_STREAM_CSV && fileName != 0) {
-	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1);
+	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1, closeOnWrite, precision, doScientific);
        } else if (eMode == XML_STREAM && fileName != 0) {
 	 theOutputStream = new XmlFileStream(fileName);
        } else if (eMode == DATABASE_STREAM && tableName != 0) {
