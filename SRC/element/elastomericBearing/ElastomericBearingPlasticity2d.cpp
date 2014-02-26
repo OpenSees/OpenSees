@@ -304,7 +304,7 @@ int ElastomericBearingPlasticity2d::update()
     ubdot.addMatrixVector(0.0, Tlb, uldot, 1.0);
     
     // 1) get axial force and stiffness in basic x-direction
-    theMaterials[0]->setTrialStrain(ub(0),ubdot(0));
+    theMaterials[0]->setTrialStrain(ub(0), ubdot(0));
     qb(0) = theMaterials[0]->getStress();
     kb(0,0) = theMaterials[0]->getTangent();
     
@@ -337,7 +337,7 @@ int ElastomericBearingPlasticity2d::update()
     }
     
     // 3) get moment and stiffness about basic z-direction
-    theMaterials[1]->setTrialStrain(ub(2),ubdot(2));
+    theMaterials[1]->setTrialStrain(ub(2), ubdot(2));
     qb(2) = theMaterials[1]->getStress();
     kb(2,2) = theMaterials[1]->getTangent();
     
@@ -545,7 +545,7 @@ const Vector& ElastomericBearingPlasticity2d::getResistingForceIncInertia()
 int ElastomericBearingPlasticity2d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(11);
+    static Vector data(15);
     data(0) = this->getTag();
     data(1) = k0;
     data(2) = qYield;
@@ -557,6 +557,10 @@ int ElastomericBearingPlasticity2d::sendSelf(int commitTag, Channel &sChannel)
     data(8) = mass;
     data(9) = x.Size();
     data(10) = y.Size();
+    data(11) = alphaM;
+    data(12) = betaK;
+    data(13) = betaK0;
+    data(14) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -591,7 +595,7 @@ int ElastomericBearingPlasticity2d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(11);
+    static Vector data(15);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
@@ -602,6 +606,10 @@ int ElastomericBearingPlasticity2d::recvSelf(int commitTag, Channel &rChannel,
     shearDistI = data(6);
     addRayleigh = (int)data(7);
     mass = data(8);
+    alphaM = data(11);
+    betaK = data(12);
+    betaK0 = data(13);
+    betaKc = data(14);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -777,6 +785,14 @@ Response* ElastomericBearingPlasticity2d::setResponse(const char **argv, int arg
         
         theResponse = new ElementResponse(this, 5, Vector(3));
     }
+    // basic stiffness
+    else if (strcmp(argv[0],"kb") == 0 || strcmp(argv[0],"basicStiff") == 0 ||
+        strcmp(argv[0],"basicStiffness") == 0)
+    {
+        output.tag("ResponseType","kb22");
+        
+        theResponse = new ElementResponse(this, 6, k0);
+    }
     // material output
     else if (strcmp(argv[0],"material") == 0)  {
         if (argc > 2)  {
@@ -826,6 +842,9 @@ int ElastomericBearingPlasticity2d::getResponse(int responseID, Information &ele
         
     case 5:  // basic displacements
         return eleInfo.setVector(ub);
+        
+    case 6:  // basic stiffness
+        return eleInfo.setDouble(kb(1,1));
         
     default:
         return -1;

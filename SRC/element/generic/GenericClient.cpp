@@ -543,16 +543,20 @@ const Vector& GenericClient::getBasicAccel()
 int GenericClient::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static ID idData(8);
-    idData(0) = this->getTag();
-    idData(1) = numExternalNodes;
-    idData(2) = port;
-    idData(3) = strlen(machineInetAddr);
-    idData(4) = ssl;
-    idData(5) = udp;
-    idData(6) = dataSize;
-    idData(7) = addRayleigh;
-    sChannel.sendID(0, commitTag, idData);
+    static Vector data(12);
+    data(0) = this->getTag();
+    data(1) = numExternalNodes;
+    data(2) = port;
+    data(3) = strlen(machineInetAddr);
+    data(4) = ssl;
+    data(5) = udp;
+    data(6) = dataSize;
+    data(7) = addRayleigh;
+    data(8) = alphaM;
+    data(9) = betaK;
+    data(10) = betaK0;
+    data(11) = betaKc;
+    sChannel.sendVector(0, commitTag, data);
     
     // send the end nodes and dofs
     sChannel.sendID(0, commitTag, connectedExternalNodes);
@@ -579,16 +583,20 @@ int GenericClient::recvSelf(int commitTag, Channel &rChannel,
         delete [] machineInetAddr;
     
     // receive element parameters
-    static ID idData(8);
-    rChannel.recvID(0, commitTag, idData);
-    this->setTag(idData(0));
-    numExternalNodes = idData(1);
-    port = idData(2);
-    machineInetAddr = new char [idData(3) + 1];
-    ssl = idData(4);
-    udp = idData(5);
-    dataSize = idData(6);
-    addRayleigh = idData(7);
+    static Vector data(12);
+    rChannel.recvVector(0, commitTag, data);
+    this->setTag((int)data(0));
+    numExternalNodes = (int)data(1);
+    port = (int)data(2);
+    machineInetAddr = new char [(int)data(3) + 1];
+    ssl = (int)data(4);
+    udp = (int)data(5);
+    dataSize = (int)data(6);
+    addRayleigh = (int)data(7);
+    alphaM = data(8);
+    betaK = data(9);
+    betaK0 = data(10);
+    betaKc = data(11);
     
     // initialize nodes and receive them
     connectedExternalNodes.resize(numExternalNodes);

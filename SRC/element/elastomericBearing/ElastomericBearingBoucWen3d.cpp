@@ -277,8 +277,8 @@ int ElastomericBearingBoucWen3d::revertToStart()
     ubC.Zero();
     zC.Zero();
     
-    // reset tangent of hysteretic evolution parameters
-    dzdu(0,0) = dzdu(1,1) = A*k0/qYield;
+    // reset derivatives of hysteretic evolution parameters * uy
+    dzdu(0,0) = dzdu(1,1) = A;
     dzdu(1,0) = dzdu(0,1) = 0.0;
     
     // reset stiffness matrix in basic system
@@ -315,7 +315,7 @@ int ElastomericBearingBoucWen3d::update()
     ubdot.addMatrixVector(0.0, Tlb, uldot, 1.0);
     
     // 1) get axial force and stiffness in basic x-direction
-    theMaterials[0]->setTrialStrain(ub(0),ubdot(0));
+    theMaterials[0]->setTrialStrain(ub(0), ubdot(0));
     qb(0) = theMaterials[0]->getStress();
     kb(0,0) = theMaterials[0]->getTangent();
     
@@ -329,7 +329,7 @@ int ElastomericBearingBoucWen3d::update()
         
         // calculate hysteretic evolution parameter z using Newton-Raphson
         int iter = 0;
-        double zNrm, tmp1, tmp2, tmp3, tmp4;
+        double zNrm, tmp1, tmp2, tmp3, tmp4, tmp5, du1du2, du2du1;
         Vector f(2), delta_z(2);
         Matrix Df(2,2);
         do  {
@@ -376,39 +376,49 @@ int ElastomericBearingBoucWen3d::update()
             return -2;
         }
         
-        // get derivative of hysteretic evolution parameter
-        delta_z = z-zC;
-        if (fabs(delta_ub(1)) > DBL_EPSILON)  {
-            dzdu(0,0) = delta_z(0)/delta_ub(1);
-            dzdu(1,0) = delta_z(1)/delta_ub(1);
+        // get derivatives of hysteretic evolution parameters * uy
+        tmp5 = pow(zNrm,eta-2.0)*tmp2;
+        du1du2 = delta_ub(1)/delta_ub(2);
+        du2du1 = delta_ub(2)/delta_ub(1);
+        if (delta_ub(1)*delta_ub(2) == 0)  {
+            du1du2 = 0.0;
+            du2du1 = 0.0;
         }
-        if (fabs(delta_ub(2)) > DBL_EPSILON)  {
-            dzdu(0,1) = delta_z(0)/delta_ub(2);
-            dzdu(1,1) = delta_z(1)/delta_ub(2);
-        }
+        dzdu(0,0) = A - z(0)*tmp5*(z(0) + z(1)*du2du1);
+        dzdu(0,1) = (A - z(0)*z(0)*tmp5)*du1du2 - z(0)*z(1)*tmp5;
+        dzdu(1,0) = (A - z(1)*z(1)*tmp5)*du2du1 - z(0)*z(1)*tmp5;
+        dzdu(1,1) = A - z(1)*tmp5*(z(1) + z(0)*du1du2);
+        if (fabs(dzdu(0,0)) > 1.0)
+            dzdu(0,0) = 1.0;
+        if (fabs(dzdu(0,1)) > 1.0)
+            dzdu(0,1) = sgn(dzdu(0,1));
+        if (fabs(dzdu(1,0)) > 1.0)
+            dzdu(1,0) = sgn(dzdu(1,0));
+        if (fabs(dzdu(1,1)) > 1.0)
+            dzdu(1,1) = 1.0;
         
         // set shear force
         qb(1) = qYield*z(0) + k2*ub(1) + k3*sgn(ub(1))*pow(fabs(ub(1)),mu);
         qb(2) = qYield*z(1) + k2*ub(2) + k3*sgn(ub(2))*pow(fabs(ub(2)),mu);
         // set tangent stiffness
-        kb(1,1) = qYield*dzdu(0,0) + k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
-        kb(1,2) = qYield*dzdu(0,1);
-        kb(2,1) = qYield*dzdu(1,0);
-        kb(2,2) = qYield*dzdu(1,1) + k2 + k3*mu*pow(fabs(ub(2)),mu-1.0);
+        kb(1,1) = k0*dzdu(0,0) + k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
+        kb(1,2) = k0*dzdu(0,1);
+        kb(2,1) = k0*dzdu(1,0);
+        kb(2,2) = k0*dzdu(1,1) + k2 + k3*mu*pow(fabs(ub(2)),mu-1.0);
     }
     
     // 3) get moment and stiffness about basic x-direction
-    theMaterials[1]->setTrialStrain(ub(3),ubdot(3));
+    theMaterials[1]->setTrialStrain(ub(3), ubdot(3));
     qb(3) = theMaterials[1]->getStress();
     kb(3,3) = theMaterials[1]->getTangent();
     
     // 4) get moment and stiffness about basic y-direction
-    theMaterials[2]->setTrialStrain(ub(4),ubdot(4));
+    theMaterials[2]->setTrialStrain(ub(4), ubdot(4));
     qb(4) = theMaterials[2]->getStress();
     kb(4,4) = theMaterials[2]->getTangent();
     
     // 5) get moment and stiffness about basic z-direction
-    theMaterials[3]->setTrialStrain(ub(5),ubdot(5));
+    theMaterials[3]->setTrialStrain(ub(5), ubdot(5));
     qb(5) = theMaterials[3]->getStress();
     kb(5,5) = theMaterials[3]->getTangent();
     
@@ -635,7 +645,7 @@ const Vector& ElastomericBearingBoucWen3d::getResistingForceIncInertia()
 int ElastomericBearingBoucWen3d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(17);
+    static Vector data(21);
     data(0) = this->getTag();
     data(1) = k0;
     data(2) = qYield;
@@ -653,6 +663,10 @@ int ElastomericBearingBoucWen3d::sendSelf(int commitTag, Channel &sChannel)
     data(14) = tol;
     data(15) = x.Size();
     data(16) = y.Size();
+    data(17) = alphaM;
+    data(18) = betaK;
+    data(19) = betaK0;
+    data(20) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -687,7 +701,7 @@ int ElastomericBearingBoucWen3d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(17);
+    static Vector data(21);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
@@ -704,6 +718,10 @@ int ElastomericBearingBoucWen3d::recvSelf(int commitTag, Channel &rChannel,
     mass = data(12);
     maxIter = (int)data(13);
     tol = data(14);
+    alphaM = data(17);
+    betaK = data(18);
+    betaK0 = data(19);
+    betaKc = data(20);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -919,6 +937,27 @@ Response* ElastomericBearingBoucWen3d::setResponse(const char **argv, int argc,
         
         theResponse = new ElementResponse(this, 6, Vector(2));
     }
+    // dzdu
+    else if (strcmp(argv[0],"dzdu") == 0)
+    {
+        output.tag("ResponseType","dz1du1");
+        output.tag("ResponseType","dz1du2");
+        output.tag("ResponseType","dz2du1");
+        output.tag("ResponseType","dz2du2");
+        
+        theResponse = new ElementResponse(this, 7, Vector(4));
+    }
+    // basic stiffness
+    else if (strcmp(argv[0],"kb") == 0 || strcmp(argv[0],"basicStiff") == 0 ||
+        strcmp(argv[0],"basicStiffness") == 0)
+    {
+        output.tag("ResponseType","kb22");
+        output.tag("ResponseType","kb23");
+        output.tag("ResponseType","kb32");
+        output.tag("ResponseType","kb33");
+        
+        theResponse = new ElementResponse(this, 8, Vector(4));
+    }
     // material output
     else if (strcmp(argv[0],"material") == 0)  {
         if (argc > 2)  {
@@ -937,6 +976,7 @@ Response* ElastomericBearingBoucWen3d::setResponse(const char **argv, int argc,
 int ElastomericBearingBoucWen3d::getResponse(int responseID, Information &eleInfo)
 {
     double kGeo1, MpDelta1, MpDelta2, MpDelta3, MpDelta4, MpDelta5, MpDelta6;
+    Vector dzduVec(4), kbVec(4);
     
     switch (responseID)  {
     case 1:  // global forces
@@ -979,6 +1019,16 @@ int ElastomericBearingBoucWen3d::getResponse(int responseID, Information &eleInf
         
     case 6:  // hysteretic evolution parameter
         return eleInfo.setVector(z);
+        
+    case 7:  // dzdu
+        dzduVec(0) = dzdu(0,0); dzduVec(1) = dzdu(0,1);
+        dzduVec(2) = dzdu(1,0); dzduVec(3) = dzdu(1,1);
+        return eleInfo.setVector(dzduVec);
+        
+    case 8:  // basic stiffness
+        kbVec(0) = kb(1,1); kbVec(1) = kb(1,2);
+        kbVec(2) = kb(2,1); kbVec(3) = kb(2,2);
+        return eleInfo.setVector(kbVec);
         
     default:
         return -1;

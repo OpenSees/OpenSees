@@ -312,19 +312,19 @@ int FlatSliderSimple2d::update()
     }
     
     // transform response from the global to the local system
-    ul = Tgl*ug;
-    uldot = Tgl*ugdot;
+    ul.addMatrixVector(0.0, Tgl, ug, 1.0);
+    uldot.addMatrixVector(0.0, Tgl, ugdot, 1.0);
     
     // transform response from the local to the basic system
-    ub = Tlb*ul;
-    ubdot = Tlb*uldot;
+    ub.addMatrixVector(0.0, Tlb, ul, 1.0);
+    ubdot.addMatrixVector(0.0, Tlb, uldot, 1.0);
     
     // get absolute velocity
     double ubdotAbs = fabs(ubdot(1));
     
     // 1) get axial force and stiffness in basic x-direction
     double ub0Old = theMaterials[0]->getStrain();
-    theMaterials[0]->setTrialStrain(ub(0),ubdot(0));
+    theMaterials[0]->setTrialStrain(ub(0), ubdot(0));
     qb(0) = theMaterials[0]->getStress();
     kb(0,0) = theMaterials[0]->getTangent();
     
@@ -332,7 +332,7 @@ int FlatSliderSimple2d::update()
     if (qb(0) >= 0.0)  {
         kb = kbInit;
         if (qb(0) > 0.0)  {
-            theMaterials[0]->setTrialStrain(ub0Old,0.0);
+            theMaterials[0]->setTrialStrain(ub0Old, 0.0);
             kb = DBL_EPSILON*kbInit;
             // update plastic displacement
             ubPlastic = ub(1);
@@ -390,7 +390,7 @@ int FlatSliderSimple2d::update()
     }
     
     // 3) get moment and stiffness in basic z-direction
-    theMaterials[1]->setTrialStrain(ub(2),ubdot(2));
+    theMaterials[1]->setTrialStrain(ub(2), ubdot(2));
     qb(2) = theMaterials[1]->getStress();
     kb(2,2) = theMaterials[1]->getTangent();
     
@@ -408,9 +408,9 @@ const Matrix& FlatSliderSimple2d::getTangentStiff()
     kl.addMatrixTripleProduct(0.0, Tlb, kb, 1.0);
     
     // add geometric stiffness to local stiffness
-    double kGeo = qb(0)*(1.0 - shearDistI)*L;
     kl(2,1) -= qb(0);
     kl(2,4) += qb(0);
+    double kGeo = qb(0)*(1.0 - shearDistI)*L;
     kl(2,5) -= kGeo;
     kl(5,5) += kGeo;
     
@@ -538,7 +538,7 @@ const Vector& FlatSliderSimple2d::getResistingForce()
     
     // determine resisting forces in local system
     static Vector ql(6);
-    ql = Tlb^qb;
+    ql.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
     
     // add P-Delta moments to local forces
     double MpDelta1 = qb(0)*(ul(4)-ul(1));
@@ -548,7 +548,7 @@ const Vector& FlatSliderSimple2d::getResistingForce()
     ql(5) += MpDelta2;
     
     // determine resisting forces in global system
-    theVector = Tgl^ql;
+    theVector.addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
     
     // subtract external load
     theVector.addVector(1.0, theLoad, -1.0);
@@ -565,7 +565,7 @@ const Vector& FlatSliderSimple2d::getResistingForceIncInertia()
     // add the damping forces from rayleigh damping
     if (addRayleigh == 1)  {
         if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-            theVector += this->getRayleighDampingForces();
+            theVector.addVector(1.0, this->getRayleighDampingForces(), 1.0);
     }
     
     // add inertia forces from element mass
@@ -587,7 +587,7 @@ const Vector& FlatSliderSimple2d::getResistingForceIncInertia()
 int FlatSliderSimple2d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(9);
+    static Vector data(13);
     data(0) = this->getTag();
     data(1) = k0;
     data(2) = shearDistI;
@@ -597,6 +597,10 @@ int FlatSliderSimple2d::sendSelf(int commitTag, Channel &sChannel)
     data(6) = tol;
     data(7) = x.Size();
     data(8) = y.Size();
+    data(9) = alphaM;
+    data(10) = betaK;
+    data(11) = betaK0;
+    data(12) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -639,7 +643,7 @@ int FlatSliderSimple2d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(9);
+    static Vector data(13);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
@@ -648,6 +652,10 @@ int FlatSliderSimple2d::recvSelf(int commitTag, Channel &rChannel,
     mass = data(4);
     maxIter = (int)data(5);
     tol = data(6);
+    alphaM = data(9);
+    betaK = data(10);
+    betaK0 = data(11);
+    betaKc = data(12);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -694,7 +702,7 @@ int FlatSliderSimple2d::recvSelf(int commitTag, Channel &rChannel,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = kbInit(0,0)*DBL_EPSILON;
+    kbInit(1,1) = k0;
     kbInit(2,2) = theMaterials[1]->getInitialTangent();
     
     // initialize other variables
@@ -884,7 +892,7 @@ int FlatSliderSimple2d::getResponse(int responseID, Information &eleInfo)
     case 2:  // local forces
         theVector.Zero();
         // determine resisting forces in local system
-        theVector = Tlb^qb;
+        theVector.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
         // add P-Delta moments
         MpDelta1 = qb(0)*(ul(4)-ul(1));
         theVector(2) += MpDelta1;

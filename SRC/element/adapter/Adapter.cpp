@@ -461,13 +461,17 @@ const Vector& Adapter::getResistingForceIncInertia()
 int Adapter::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static ID idData(5);
-    idData(0) = this->getTag();
-    idData(1) = numExternalNodes;
-    idData(2) = ipPort;
-    idData(3) = addRayleigh;
-    idData(4) = (mb==0) ? 0 : 1;
-    sChannel.sendID(0, commitTag, idData);
+    static Vector data(9);
+    data(0) = this->getTag();
+    data(1) = numExternalNodes;
+    data(2) = ipPort;
+    data(3) = addRayleigh;
+    data(4) = (mb==0) ? 0 : 1;
+    data(5) = alphaM;
+    data(6) = betaK;
+    data(7) = betaK0;
+    data(8) = betaKc;
+    sChannel.sendVector(0, commitTag, data);
     
     // send the end nodes and dofs
     sChannel.sendID(0, commitTag, connectedExternalNodes);
@@ -476,7 +480,7 @@ int Adapter::sendSelf(int commitTag, Channel &sChannel)
     
     // send the stiffness and mass matrices
     sChannel.sendMatrix(0, commitTag, kb);
-    if (idData(3))
+    if ((int)data(4))
         sChannel.sendMatrix(0, commitTag, *mb);
     
     return 0;
@@ -495,12 +499,16 @@ int Adapter::recvSelf(int commitTag, Channel &rChannel,
         delete mb;
     
     // receive element parameters
-    static ID idData(5);
-    rChannel.recvID(0, commitTag, idData);
-    this->setTag(idData(0));
-    numExternalNodes = idData(1);
-    ipPort = idData(2);
-    addRayleigh = idData(3);
+    static Vector data(9);
+    rChannel.recvVector(0, commitTag, data);
+    this->setTag((int)data(0));
+    numExternalNodes = (int)data(1);
+    ipPort = (int)data(2);
+    addRayleigh = (int)data(3);
+    alphaM = data(5);
+    betaK = data(6);
+    betaK0 = data(7);
+    betaKc = data(8);
     
     // initialize nodes and receive them
     connectedExternalNodes.resize(numExternalNodes);
@@ -535,7 +543,7 @@ int Adapter::recvSelf(int commitTag, Channel &rChannel,
     // receive the stiffness and mass matrices
     kb.resize(numBasicDOF,numBasicDOF);
     rChannel.recvMatrix(0, commitTag, kb);
-    if (idData(4))  {
+    if ((int)data(4))  {
         mb = new Matrix(numBasicDOF,numBasicDOF);
         rChannel.recvMatrix(0, commitTag, *mb);
     }

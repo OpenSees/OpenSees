@@ -306,7 +306,7 @@ int ElastomericBearingPlasticity3d::update()
     ubdot.addMatrixVector(0.0, Tlb, uldot, 1.0);
     
     // 1) get axial force and stiffness in basic x-direction
-    theMaterials[0]->setTrialStrain(ub(0),ubdot(0));
+    theMaterials[0]->setTrialStrain(ub(0), ubdot(0));
     qb(0) = theMaterials[0]->getStress();
     kb(0,0) = theMaterials[0]->getTangent();
     
@@ -353,17 +353,17 @@ int ElastomericBearingPlasticity3d::update()
     }
     
     // 3) get moment and stiffness about basic x-direction
-    theMaterials[1]->setTrialStrain(ub(3),ubdot(3));
+    theMaterials[1]->setTrialStrain(ub(3), ubdot(3));
     qb(3) = theMaterials[1]->getStress();
     kb(3,3) = theMaterials[1]->getTangent();
     
     // 4) get moment and stiffness about basic y-direction
-    theMaterials[2]->setTrialStrain(ub(4),ubdot(4));
+    theMaterials[2]->setTrialStrain(ub(4), ubdot(4));
     qb(4) = theMaterials[2]->getStress();
     kb(4,4) = theMaterials[2]->getTangent();
     
     // 5) get moment and stiffness about basic z-direction
-    theMaterials[3]->setTrialStrain(ub(5),ubdot(5));
+    theMaterials[3]->setTrialStrain(ub(5), ubdot(5));
     qb(5) = theMaterials[3]->getStress();
     kb(5,5) = theMaterials[3]->getTangent();
     
@@ -590,7 +590,7 @@ const Vector& ElastomericBearingPlasticity3d::getResistingForceIncInertia()
 int ElastomericBearingPlasticity3d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(11);
+    static Vector data(15);
     data(0) = this->getTag();
     data(1) = k0;
     data(2) = qYield;
@@ -602,6 +602,10 @@ int ElastomericBearingPlasticity3d::sendSelf(int commitTag, Channel &sChannel)
     data(8) = mass;
     data(9) = x.Size();
     data(10) = y.Size();
+    data(11) = alphaM;
+    data(12) = betaK;
+    data(13) = betaK0;
+    data(14) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -636,7 +640,7 @@ int ElastomericBearingPlasticity3d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(11);
+    static Vector data(15);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
@@ -647,6 +651,10 @@ int ElastomericBearingPlasticity3d::recvSelf(int commitTag, Channel &rChannel,
     shearDistI = data(6);
     addRayleigh = (int)data(7);
     mass = data(8);
+    alphaM = data(11);
+    betaK = data(12);
+    betaK0 = data(13);
+    betaKc = data(14);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -850,6 +858,17 @@ Response* ElastomericBearingPlasticity3d::setResponse(const char **argv, int arg
         
         theResponse = new ElementResponse(this, 5, Vector(6));
     }
+    // basic stiffness
+    else if (strcmp(argv[0],"kb") == 0 || strcmp(argv[0],"basicStiff") == 0 ||
+        strcmp(argv[0],"basicStiffness") == 0)
+    {
+        output.tag("ResponseType","kb22");
+        output.tag("ResponseType","kb23");
+        output.tag("ResponseType","kb32");
+        output.tag("ResponseType","kb33");
+        
+        theResponse = new ElementResponse(this, 6, Vector(4));
+    }
     // material output
     else if (strcmp(argv[0],"material") == 0)  {
         if (argc > 2)  {
@@ -868,6 +887,7 @@ Response* ElastomericBearingPlasticity3d::setResponse(const char **argv, int arg
 int ElastomericBearingPlasticity3d::getResponse(int responseID, Information &eleInfo)
 {
     double kGeo1, MpDelta1, MpDelta2, MpDelta3, MpDelta4, MpDelta5, MpDelta6;
+    Vector kbVec(4);
     
     switch (responseID)  {
     case 1:  // global forces
@@ -907,6 +927,11 @@ int ElastomericBearingPlasticity3d::getResponse(int responseID, Information &ele
         
     case 5:  // basic displacements
         return eleInfo.setVector(ub);
+        
+    case 6:  // kb
+        kbVec(0) = kb(1,1); kbVec(1) = kb(1,2);
+        kbVec(2) = kb(2,1); kbVec(3) = kb(2,2);
+        return eleInfo.setVector(kbVec);
         
     default:
         return -1;

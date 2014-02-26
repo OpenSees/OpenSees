@@ -293,6 +293,10 @@ TclModelBuilder_addFlatSliderBearing(ClientData clientData, Tcl_Interp *interp, 
 extern int
   TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp,  int argc,
   TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
+
+extern int
+TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData, Tcl_Interp *interp,  int argc,
+				     TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
 /*  
   extern int
   TclModelBuilder_addDoubleFPBearing(ClientData clientData, Tcl_Interp *interp,  int argc,
@@ -976,7 +980,13 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
     return result;
   }
 
-  /*
+   else if (strcmp(argv[1],"RJWatsonEqsBearing") == 0) {
+    int eleArgStart = 1;
+    int result = TclModelBuilder_addRJWatsonEqsBearing(clientData, interp, argc, argv,
+						      theTclDomain, theTclBuilder, eleArgStart);
+    return result;
+  }
+ /*
   else if (strcmp(argv[1],"doubleFPBearing") == 0) {
     int eleArgStart = 1;
     int result = TclModelBuilder_addDoubleFPBearing(clientData, interp, argc, argv,

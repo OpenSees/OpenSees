@@ -275,8 +275,8 @@ int ElastomericBearingBoucWen2d::revertToStart()
     ubC.Zero();
     zC = 0.0;
     
-    // reset tangent of hysteretic evolution parameters
-    dzdu = A*k0/qYield;
+    // reset derivative of hysteretic evolution parameter * uy
+    dzdu = A;
     
     // reset stiffness matrix in basic system
     kb = kbInit;
@@ -312,7 +312,7 @@ int ElastomericBearingBoucWen2d::update()
     ubdot.addMatrixVector(0.0, Tlb, uldot, 1.0);
     
     // 1) get axial force and stiffness in basic x-direction
-    theMaterials[0]->setTrialStrain(ub(0),ubdot(0));
+    theMaterials[0]->setTrialStrain(ub(0), ubdot(0));
     qb(0) = theMaterials[0]->getStress();
     kb(0,0) = theMaterials[0]->getTangent();
     
@@ -359,16 +359,16 @@ int ElastomericBearingBoucWen2d::update()
             return -2;
         }
         
-        // get derivative of hysteretic evolution parameter
-        dzdu = 1.0/uy*(A - pow(fabs(z),eta)*(gamma + beta*sgn(z*delta_ub)));
+        // get derivative of hysteretic evolution parameter * uy
+        dzdu = A - pow(fabs(z),eta)*(gamma + beta*sgn(z*delta_ub));
         // set shear force
         qb(1) = qYield*z + k2*ub(1) + k3*sgn(ub(1))*pow(fabs(ub(1)),mu);
         // set tangent stiffness
-        kb(1,1) = qYield*dzdu + k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
+        kb(1,1) = k0*dzdu + k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
     }
     
     // 3) get moment and stiffness about basic z-direction
-    theMaterials[1]->setTrialStrain(ub(2),ubdot(2));
+    theMaterials[1]->setTrialStrain(ub(2), ubdot(2));
     qb(2) = theMaterials[1]->getStress();
     kb(2,2) = theMaterials[1]->getTangent();
     
@@ -575,7 +575,7 @@ const Vector& ElastomericBearingBoucWen2d::getResistingForceIncInertia()
 int ElastomericBearingBoucWen2d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(17);
+    static Vector data(21);
     data(0) = this->getTag();
     data(1) = k0;
     data(2) = qYield;
@@ -593,6 +593,10 @@ int ElastomericBearingBoucWen2d::sendSelf(int commitTag, Channel &sChannel)
     data(14) = tol;
     data(15) = x.Size();
     data(16) = y.Size();
+    data(17) = alphaM;
+    data(18) = betaK;
+    data(19) = betaK0;
+    data(20) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -627,7 +631,7 @@ int ElastomericBearingBoucWen2d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(17);
+    static Vector data(21);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
@@ -644,6 +648,10 @@ int ElastomericBearingBoucWen2d::recvSelf(int commitTag, Channel &rChannel,
     mass = data(12);
     maxIter = (int)data(13);
     tol = data(14);
+    alphaM = data(17);
+    betaK = data(18);
+    betaK0 = data(19);
+    betaKc = data(20);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -830,6 +838,21 @@ Response* ElastomericBearingBoucWen2d::setResponse(const char **argv, int argc,
         
         theResponse = new ElementResponse(this, 6, z);
     }
+    // dzdu
+    else if (strcmp(argv[0],"dzdu") == 0)
+    {
+        output.tag("ResponseType","dzdu");
+        
+        theResponse = new ElementResponse(this, 7, dzdu);
+    }
+    // basic stiffness
+    else if (strcmp(argv[0],"kb") == 0 || strcmp(argv[0],"basicStiff") == 0 ||
+        strcmp(argv[0],"basicStiffness") == 0)
+    {
+        output.tag("ResponseType","kb22");
+        
+        theResponse = new ElementResponse(this, 8, k0);
+    }
     // material output
     else if (strcmp(argv[0],"material") == 0)  {
         if (argc > 2)  {
@@ -882,6 +905,12 @@ int ElastomericBearingBoucWen2d::getResponse(int responseID, Information &eleInf
         
     case 6:  // hysteretic evolution parameter
         return eleInfo.setDouble(z);
+        
+    case 7:  // dzdu
+        return eleInfo.setDouble(dzdu);
+        
+    case 8:  // basic stiffness
+        return eleInfo.setDouble(kb(1,1));
         
     default:
         return -1;

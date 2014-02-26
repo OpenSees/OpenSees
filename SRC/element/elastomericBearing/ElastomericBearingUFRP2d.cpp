@@ -307,7 +307,7 @@ int ElastomericBearingUFRP2d::update()
     ubdot.addMatrixVector(0.0, Tlb, uldot, 1.0);
     
     // 1) get axial force and stiffness in basic x-direction
-    theMaterials[0]->setTrialStrain(ub(0),ubdot(0));
+    theMaterials[0]->setTrialStrain(ub(0), ubdot(0));
     qb(0) = theMaterials[0]->getStress();
     kb(0,0) = theMaterials[0]->getTangent();
     
@@ -364,7 +364,7 @@ int ElastomericBearingUFRP2d::update()
     }
     
     // 3) get moment and stiffness in basic z-direction
-    theMaterials[1]->setTrialStrain(ub(2),ubdot(2));
+    theMaterials[1]->setTrialStrain(ub(2), ubdot(2));
     qb(2) = theMaterials[1]->getStress();
     kb(2,2) = theMaterials[1]->getTangent();
     
@@ -571,7 +571,7 @@ const Vector& ElastomericBearingUFRP2d::getResistingForceIncInertia()
 int ElastomericBearingUFRP2d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(20);
+    static Vector data(24);
     data(0) = this->getTag();
     data(1) = uy;
     data(2) = a1;
@@ -592,6 +592,10 @@ int ElastomericBearingUFRP2d::sendSelf(int commitTag, Channel &sChannel)
     data(17) = tol;
     data(18) = x.Size();
     data(19) = y.Size();
+    data(20) = alphaM;
+    data(21) = betaK;
+    data(22) = betaK0;
+    data(23) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -626,7 +630,7 @@ int ElastomericBearingUFRP2d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(20);
+    static Vector data(24);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     uy = data(1);
@@ -646,6 +650,10 @@ int ElastomericBearingUFRP2d::recvSelf(int commitTag, Channel &rChannel,
     mass = data(15);
     maxIter = (int)data(16);
     tol = data(17);
+    alphaM = data(20);
+    betaK = data(21);
+    betaK0 = data(22);
+    betaKc = data(23);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);

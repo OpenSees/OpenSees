@@ -111,8 +111,7 @@ SingleFPSimple3d::SingleFPSimple3d(int tag, int Nd1, int Nd2,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = kInit;
-    kbInit(2,2) = kInit;
+    kbInit(1,1) = kbInit(2,2) = kInit;
     kbInit(3,3) = theMaterials[1]->getInitialTangent();
     kbInit(4,4) = theMaterials[2]->getInitialTangent();
     kbInit(5,5) = theMaterials[3]->getInitialTangent();
@@ -317,12 +316,12 @@ int SingleFPSimple3d::update()
     }
     
     // transform response from the global to the local system
-    ul = Tgl*ug;
-    uldot = Tgl*ugdot;
+    ul.addMatrixVector(0.0, Tgl, ug, 1.0);
+    uldot.addMatrixVector(0.0, Tgl, ugdot, 1.0);
     
     // transform response from the local to the basic system
-    ub = Tlb*ul;
-    ubdot = Tlb*uldot;
+    ub.addMatrixVector(0.0, Tlb, ul, 1.0);
+    ubdot.addMatrixVector(0.0, Tlb, uldot, 1.0);
     
     // get radii in basic y- and z-direction
     double Ry = sqrt(pow(Reff,2) - pow(ub(2),2));
@@ -335,10 +334,10 @@ int SingleFPSimple3d::update()
     // 1) get axial force and stiffness in basic x-direction
     double ub0Old = theMaterials[0]->getStrain();
     if (inclVertDisp == 0)  {
-        theMaterials[0]->setTrialStrain(ub(0),ubdot(0));
+        theMaterials[0]->setTrialStrain(ub(0), ubdot(0));
     } else  {
         double ubVert = Reff - sqrt(pow(Reff,2) - pow(ub(1),2) - pow(ub(2),2));
-        theMaterials[0]->setTrialStrain(ub(0)-ubVert,ubdot(0));
+        theMaterials[0]->setTrialStrain(ub(0)-ubVert, ubdot(0));
     }
     qb(0) = theMaterials[0]->getStress();
     kb(0,0) = theMaterials[0]->getTangent();
@@ -347,7 +346,7 @@ int SingleFPSimple3d::update()
     if (qb(0) >= 0.0)  {
         kb = kbInit;
         if (qb(0) > 0.0)  {
-            theMaterials[0]->setTrialStrain(ub0Old,0.0);
+            theMaterials[0]->setTrialStrain(ub0Old, 0.0);
             kb = DBL_EPSILON*kbInit;
             // update plastic displacements
             ubPlastic(0) = ub(1);
@@ -429,17 +428,17 @@ int SingleFPSimple3d::update()
     }
     
     // 3) get moment and stiffness in basic x-direction
-    theMaterials[1]->setTrialStrain(ub(3),ubdot(3));
+    theMaterials[1]->setTrialStrain(ub(3), ubdot(3));
     qb(3) = theMaterials[1]->getStress();
     kb(3,3) = theMaterials[1]->getTangent();
     
     // 4) get moment and stiffness in basic y-direction
-    theMaterials[2]->setTrialStrain(ub(4),ubdot(4));
+    theMaterials[2]->setTrialStrain(ub(4), ubdot(4));
     qb(4) = theMaterials[2]->getStress();
     kb(4,4) = theMaterials[2]->getTangent();
     
     // 5) get moment and stiffness in basic z-direction
-    theMaterials[3]->setTrialStrain(ub(5),ubdot(5));
+    theMaterials[3]->setTrialStrain(ub(5), ubdot(5));
     qb(5) = theMaterials[3]->getStress();
     kb(5,5) = theMaterials[3]->getTangent();
     
@@ -603,7 +602,7 @@ const Vector& SingleFPSimple3d::getResistingForce()
     
     // determine resisting forces in local system
     static Vector ql(12);
-    ql = Tlb^qb;
+    ql.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
     
     // add P-Delta moments to local forces
     double MpDelta1 = qb(0)*(ul(7)-ul(1));
@@ -625,7 +624,7 @@ const Vector& SingleFPSimple3d::getResistingForce()
     ql(9) -= Vdelta2;
     
     // determine resisting forces in global system
-    theVector = Tgl^ql;
+    theVector.addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
     
     // subtract external load
     theVector.addVector(1.0, theLoad, -1.0);
@@ -642,7 +641,7 @@ const Vector& SingleFPSimple3d::getResistingForceIncInertia()
     // add the damping forces from rayleigh damping
     if (addRayleigh == 1)  {
         if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-            theVector += this->getRayleighDampingForces();
+            theVector.addVector(1.0, this->getRayleighDampingForces(), 1.0);
     }
     
     // add inertia forces from element mass
@@ -664,7 +663,7 @@ const Vector& SingleFPSimple3d::getResistingForceIncInertia()
 int SingleFPSimple3d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(10);
+    static Vector data(14);
     data(0) = this->getTag();
     data(1) = Reff;
     data(2) = kInit;
@@ -675,6 +674,10 @@ int SingleFPSimple3d::sendSelf(int commitTag, Channel &sChannel)
     data(7) = tol;
     data(8) = x.Size();
     data(9) = y.Size();
+    data(10) = alphaM;
+    data(11) = betaK;
+    data(12) = betaK0;
+    data(13) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -717,7 +720,7 @@ int SingleFPSimple3d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(10);
+    static Vector data(14);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     Reff = data(1);
@@ -727,6 +730,10 @@ int SingleFPSimple3d::recvSelf(int commitTag, Channel &rChannel,
     mass = data(5);
     maxIter = (int)data(6);
     tol = data(7);
+    alphaM = data(10);
+    betaK = data(11);
+    betaK0 = data(12);
+    betaKc = data(13);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -773,8 +780,7 @@ int SingleFPSimple3d::recvSelf(int commitTag, Channel &rChannel,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = kInit;
-    kbInit(2,2) = kInit;
+    kbInit(1,1) = kbInit(2,2) = kInit;
     kbInit(3,3) = theMaterials[1]->getInitialTangent();
     kbInit(4,4) = theMaterials[2]->getInitialTangent();
     kbInit(5,5) = theMaterials[3]->getInitialTangent();
@@ -997,7 +1003,7 @@ int SingleFPSimple3d::getResponse(int responseID, Information &eleInfo)
     case 2:  // local forces
         theVector.Zero();
         // determine resisting forces in local system
-        theVector = Tlb^qb;
+        theVector.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
         // add P-Delta moments
         MpDelta1 = qb(0)*(ul(7)-ul(1));
         theVector(5)  += MpDelta1;

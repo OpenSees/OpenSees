@@ -655,7 +655,7 @@ const Vector& TwoNodeLink::getResistingForceIncInertia()
 int TwoNodeLink::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(10);
+    static Vector data(14);
     data(0) = this->getTag();
     data(1) = numDIM;
     data(2) = numDOF;
@@ -666,6 +666,10 @@ int TwoNodeLink::sendSelf(int commitTag, Channel &sChannel)
     data(7) = shearDistI.Size();
     data(8) = addRayleigh;
     data(9) = mass;
+    data(10) = alphaM;
+    data(11) = betaK;
+    data(12) = betaK0;
+    data(13) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -712,7 +716,7 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive element parameters
-    static Vector data(10);
+    static Vector data(14);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     numDIM = (int)data(1);
@@ -720,7 +724,11 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
     numDir = (int)data(3);
     addRayleigh = (int)data(8);
     mass = data(9);
-    
+    alphaM = data(10);
+    betaK = data(11);
+    betaK0 = data(12);
+    betaKc = data(13);
+   
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
     
