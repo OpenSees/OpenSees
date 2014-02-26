@@ -968,6 +968,18 @@
 				RelativePath="..\..\..\SRC\element\frictionBearing\MultiFP2d.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\RJWatsonEQS2d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\RJWatsonEQS2d.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\RJWatsonEQS3d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\RJWatsonEQS3d.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\frictionBearing\SingleFPSimple2d.cpp">
 			</File>
 			<File
@@ -999,6 +1011,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\frictionBearing\TclFlatSliderCommand.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\TclRJWatsonEQSCommand.cpp">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\frictionBearing\TclSingleFPCommand.cpp">

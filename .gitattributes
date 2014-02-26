@@ -2492,6 +2492,10 @@ SRC/element/frictionBearing/FlatSliderSimple3d.h -text
 SRC/element/frictionBearing/Makefile -text
 SRC/element/frictionBearing/MultiFP2d.cpp -text
 SRC/element/frictionBearing/MultiFP2d.h -text
+SRC/element/frictionBearing/RJWatsonEQS2d.cpp -text
+SRC/element/frictionBearing/RJWatsonEQS2d.h -text
+SRC/element/frictionBearing/RJWatsonEQS3d.cpp -text
+SRC/element/frictionBearing/RJWatsonEQS3d.h -text
 SRC/element/frictionBearing/SingleFPSimple2d.cpp -text
 SRC/element/frictionBearing/SingleFPSimple2d.h -text
 SRC/element/frictionBearing/SingleFPSimple3d.cpp -text
@@ -2503,6 +2507,7 @@ SRC/element/frictionBearing/TFP_Bearing2d.h -text
 SRC/element/frictionBearing/TPB1D.cpp -text
 SRC/element/frictionBearing/TPB1D.h -text
 SRC/element/frictionBearing/TclFlatSliderCommand.cpp -text
+SRC/element/frictionBearing/TclRJWatsonEQSCommand.cpp -text
 SRC/element/frictionBearing/TclSingleFPCommand.cpp -text
 SRC/element/frictionBearing/TripleFrictionPendulum.cpp -text
 SRC/element/frictionBearing/TripleFrictionPendulum.h -text

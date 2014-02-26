@@ -605,6 +605,8 @@
 #define ELE_TAG_ElasticTimoshenkoBeam3d   146
 #define ELE_TAG_ElastomericBearingUFRP2d  147
 #define ELE_TAG_ElastomericBearingUFRP3d  148
+#define ELE_TAG_RJWatsonEQS2d             149
+#define ELE_TAG_RJWatsonEQS3d             150
 
 #define ELE_TAG_MultipleShearSpring 6201
 #define ELE_TAG_MultipleNormalSpring 6202
