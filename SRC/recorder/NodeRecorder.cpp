@@ -222,14 +222,13 @@ NodeRecorder::record(int commitTag, double timeStamp)
     opserr << "NodeRecorder::record() - no DataOutputHandler has been set\n";
     return -1;
   }
-
+  
   if (initializationDone == false) {
     if (this->initialize() != 0) {
       opserr << "NodeRecorder::record() - failed in initialize()\n";
       return -1;
     }
   }
-
 
   int numDOF = theDofs->Size();
   
@@ -264,11 +263,12 @@ NodeRecorder::record(int commitTag, double timeStamp)
 
     if (theTimeSeries != 0) {
       for (int i=0; i<numDOF; i++) {
+		  
 	if (theTimeSeries[i] != 0) 
 	  timeSeriesValues[i] = theTimeSeries[i]->getFactor(timeStamp);
       }
+	  
     }
-
 
     //
     // now we go get the responses from the nodes & place them in disp vector
@@ -281,7 +281,7 @@ NodeRecorder::record(int commitTag, double timeStamp)
 	int cnt = i*numDOF + timeOffset; 
 	if (dataFlag == 10000)
 	  cnt = i + timeOffset;
-	
+
 	Node *theNode = theNodes[i];
 	if (dataFlag == 0) {
 	  // AddingSensitivity:BEGIN ///////////////////////////////////
@@ -352,6 +352,7 @@ NodeRecorder::record(int commitTag, double timeStamp)
 	  cnt++;
 
 	} else if (dataFlag == 2) {
+
 	  const Vector &theResponse = theNode->getTrialAccel();
 	  for (int j=0; j<numDOF; j++) {
 
@@ -364,7 +365,7 @@ NodeRecorder::record(int commitTag, double timeStamp)
 	      response(cnt) = theResponse(dof) + timeSeriesTerm;    
 	    } else 
 	      response(cnt) = 0.0 + timeSeriesTerm;    
-	    
+
 	    cnt++;
 	  }
 	} else if (dataFlag == 3) {
@@ -523,7 +524,7 @@ NodeRecorder::record(int commitTag, double timeStamp)
       }
     }
   }
-
+  
   return 0;
 }
 
@@ -735,6 +736,11 @@ NodeRecorder::recvSelf(int commitTag, Channel &theChannel,
   }
 
   if (idData[7] == 1) {
+
+    timeSeriesValues = new double [numDOFs];
+    for (int i=0; i<numDOFs; i++)
+      timeSeriesValues[i] = 0.0;
+
     theTimeSeries = new TimeSeries *[numDOFs];
     ID timeSeriesTags(numDOFs);
     if (theChannel.recvID(0, commitTag, timeSeriesTags) < 0) {
@@ -749,11 +755,11 @@ NodeRecorder::recvSelf(int commitTag, Channel &theChannel,
 	if (theTimeSeries[i]->recvSelf(commitTag, theChannel, theBroker) < 0) {
 	  opserr << "EnvelopeNodeRecorder::recvSelf() - time series failed in recv\n";
 	  return -1;
+	} 
+	  }
 	}
-      }
-    }
   }
-
+  
   return 0;
 }
 
