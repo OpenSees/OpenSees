@@ -131,12 +131,12 @@ MachineBroker::runActors(void)
       if (theChannel->sendID(0, 0, idData) < 0) {
 	opserr << "MachineBroker::run(void) - failed to send ID\n";
       }
-
+	 
       // run the actor object
       if (theActor->run() != 0) {
 	opserr << "MachineBroker::run(void) - actor failed while running\n";
       }  
-
+	 
       // destroying theActor
       delete theActor;
     }
@@ -157,19 +157,18 @@ MachineBroker::startActor(int actorType, int compDemand)
 
   // check if have an available machine broker running runActors() and waiting to start an actor running
   if (numActiveChannels < numActorChannels) {
-
     for (int i=0; i<numActorChannels; i++) {
       if ((*activeChannels)(i) == 0) {
 	theChannel = actorChannels[i];
-	i=numActorChannels;
 	numActiveChannels++;
 	(*activeChannels)(i) = 1;
+	i=numActorChannels;
       }
     }
   }
 
   // if no available connection established .. establish a new one
-  if (theChannel == 0) {
+  if (theChannel == 0) {  
 
     theChannel = this->getRemoteProcess();
 
@@ -209,23 +208,26 @@ MachineBroker::startActor(int actorType, int compDemand)
     this->freeProcess(theChannel);
     return 0;    
   }
-
+  
   if (theChannel->recvID(0, 0, idData) != 0) {
     opserr << "MachineBroker::startActor() - remote process failure\n";
     return 0;    
   }
+  
+
   if (idData(0) != 0) {
     opserr << "MachineBroker::startActor() - could not start actorType: " << actorType << endln;
     this->freeProcess(theChannel);
     return 0;    
   }
-
+ 
   return theChannel;
 }
 
 int
 MachineBroker::finishedWithActor(Channel *theChannel)
 {
+	
   // send the termination notice to all machineBrokers running actorProcesses
   for (int i=0; i<numActorChannels; i++) {
     if (theChannel == actorChannels[i]) {
