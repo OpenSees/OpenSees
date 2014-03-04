@@ -334,6 +334,10 @@ void CorotCrdTransf2d::transfLocalDisplsToBasic(const Vector &ul)
     ub(0) = Ln - L;
     ub(1) = ul(2) - alpha;
     ub(2) = ul(5) - alpha;
+
+    //ub(1) = atan2(cosAlpha*sin(ul(2))-sinAlpha*cos(ul(2)),cosAlpha*cos(ul(2))+sinAlpha*sin(ul(2)));
+    //ub(2) = atan2(cosAlpha*sin(ul(5))-sinAlpha*cos(ul(5)),cosAlpha*cos(ul(5))+sinAlpha*sin(ul(5)));
+
 }
 
 
@@ -1044,7 +1048,7 @@ CorotCrdTransf2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theB
     ubcommit(0) = data(0);
     ubcommit(1) = data(1);
     ubcommit(2) = data(2);
-    nodeIOffset(0) =data(4);
+    nodeIOffset(0) =data(3);
     nodeIOffset(1) =data(4);
     nodeJOffset(0) =data(5);
     nodeJOffset(1) =data(6);
