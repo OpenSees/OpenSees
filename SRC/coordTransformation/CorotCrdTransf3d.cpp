@@ -1042,6 +1042,14 @@ CorotCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
     pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
     //opserr << "pl: " << pl;
 
+    // Add effects of member loads
+    // Assuming member loads in local system
+    //pl(0) += p0(0);
+    //pl(1) += p0(1);
+    //pl(7) += p0(2);
+    //pl(2) += p0(3);
+    //pl(8) += p0(4);
+    
     // transform resisting forces  from local to global coordinates
     static Vector pg(12);
     pg.addMatrixTransposeVector(0.0, T, pl, 1.0);   // pg = T ^ pl; residual
@@ -1894,7 +1902,7 @@ CorotCrdTransf3d::getCopy3d(void)
 int 
 CorotCrdTransf3d::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(46);
+    static Vector data(46);
     for (int i=0; i<7; i++) 
         data(i) = ulcommit(i);
     for (int j=0; j<4; j++) {
@@ -1944,8 +1952,8 @@ CorotCrdTransf3d::sendSelf(int cTag, Channel &theChannel)
     }
     
     
-    if (theChannel.sendVector(this->getTag(), cTag, data) < 0) {
-        opserr << " CorotCrdTransf2d::sendSelf() - data could not be sent\n" ;
+    if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
+        opserr << " CorotCrdTransf3d::sendSelf() - data could not be sent\n" ;
         return -1;
     }
     return 0;
@@ -1955,9 +1963,9 @@ CorotCrdTransf3d::sendSelf(int cTag, Channel &theChannel)
 int 
 CorotCrdTransf3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(46);
-    if (theChannel.recvVector(this->getTag(), cTag, data) < 0) {
-        opserr << " CorotCrdTransf2d::recvSelf() - data could not be received\n" ;
+    static Vector data(46);
+    if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
+        opserr << " CorotCrdTransf3d::recvSelf() - data could not be received\n" ;
         return -1;
     }
     int i,j;
@@ -1995,7 +2003,7 @@ CorotCrdTransf3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theB
                 flag = 1;
             if (flag == 1) {
                 if (nodeJInitialDisp == 0)
-                    nodeJInitialDisp = new double [6];
+                    nodeJInitialDisp = new double[6];
                 for (i=40, j=0; i<=45; i++, j++)
                     nodeJInitialDisp[j] = data(i);
             }
