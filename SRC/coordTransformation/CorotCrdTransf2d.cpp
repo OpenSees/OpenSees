@@ -999,7 +999,8 @@ CorotCrdTransf2d::getCopy2d(void)
 int 
 CorotCrdTransf2d::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(13);
+    static Vector data(14);
+    data(13) = this->getTag();
     data(0) = ubcommit(0);
     data(1) = ubcommit(1);
     data(2) = ubcommit(2);
@@ -1039,12 +1040,13 @@ CorotCrdTransf2d::sendSelf(int cTag, Channel &theChannel)
 int 
 CorotCrdTransf2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(13);
+    static Vector data(14);
     if (theChannel.recvVector(this->getTag(), cTag, data) < 0) {
         opserr << " CorotCrdTransf2d::recvSelf() - data could not be received\n" ;
         return -1;
     }
     
+    this->setTag((int)data(13));
     ubcommit(0) = data(0);
     ubcommit(1) = data(1);
     ubcommit(2) = data(2);
@@ -1056,29 +1058,29 @@ CorotCrdTransf2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theB
     int flag, i, j;
     flag = 0;
     for (i=7; i<=9; i++)
-        if (data(i) != 0.0)
-            flag = 1;
-        if (flag == 1) {
-            if (nodeIInitialDisp == 0)
-                nodeIInitialDisp = new double[3];
-            for (i=7, j=0; i<=9; i++, j++)
-                nodeIInitialDisp[j] = data(i);
-        }
-        
-        flag = 0;
-        for (i=10; i<=13; i++)
-            if (data(i) != 0.0)
-                flag = 1;
-            if (flag == 1) {
-                if (nodeJInitialDisp == 0)
-                    nodeJInitialDisp = new double [3];
-                for (i=10, j=0; i<=13; i++, j++)
-                    nodeJInitialDisp[j] = data(i);
-            }
-            
-            ub = ubcommit;
-            initialDispChecked = true;
-            return 0;
+      if (data(i) != 0.0)
+	flag = 1;
+    if (flag == 1) {
+      if (nodeIInitialDisp == 0)
+	nodeIInitialDisp = new double[3];
+      for (i=7, j=0; i<=9; i++, j++)
+	nodeIInitialDisp[j] = data(i);
+    }
+    
+    flag = 0;
+    for (i=10; i<=12; i++)
+      if (data(i) != 0.0)
+	flag = 1;
+    if (flag == 1) {
+      if (nodeJInitialDisp == 0)
+	nodeJInitialDisp = new double[3];
+      for (i=10, j=0; i<=12; i++, j++)
+	nodeJInitialDisp[j] = data(i);
+    }
+    
+    ub = ubcommit;
+    initialDispChecked = true;
+    return 0;
 }
 
 
