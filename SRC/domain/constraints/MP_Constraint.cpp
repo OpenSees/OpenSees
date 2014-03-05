@@ -305,13 +305,19 @@ MP_Constraint::Print(OPS_Stream &s, int flag)
 {     
     s << "MP_Constraint: " << this->getTag() << "\n";
     s << "\tNode Constrained: " << nodeConstrained;
-    s << " node Retained: " << nodeRetained ;
-    if (constrDOF != 0)
-	s << " constrained dof: " << *constrDOF;    
-    if (retainDOF != 0)
-	s << " retained dof: " << *retainDOF;        
-    if (constraint != 0)
+    s << " node Retained: " << nodeRetained << "\n";
+    if (constrDOF != 0 && retainDOF != 0) {
+      s << " constrained dof: ";
+      for (int i=0; i<(*constrDOF).Size(); i++)
+	s << (*constrDOF)(i)+1 << " ";
+      s << endln;
+	s << " retained dof: ";        
+      for (int i=0; i<(*retainDOF).Size(); i++)
+	s << (*retainDOF)(i)+1 << " ";
+      s << endln;
+      if (constraint != 0)
 	s << " constraint matrix: " << *constraint << "\n";
+    }
 }
 
 
