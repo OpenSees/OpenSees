@@ -1029,7 +1029,7 @@ CorotCrdTransf2d::sendSelf(int cTag, Channel &theChannel)
         data(12) = 0.0;
     }
     
-    if (theChannel.sendVector(this->getTag(), cTag, data) < 0) {
+    if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
         opserr << " CorotCrdTransf2d::sendSelf() - data could not be sent\n" ;
         return -1;
     }
@@ -1041,7 +1041,7 @@ int
 CorotCrdTransf2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
     static Vector data(14);
-    if (theChannel.recvVector(this->getTag(), cTag, data) < 0) {
+    if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
         opserr << " CorotCrdTransf2d::recvSelf() - data could not be received\n" ;
         return -1;
     }
