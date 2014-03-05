@@ -18,16 +18,12 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.23 $
-// $Date: 2009-04-30 23:25:33 $
-// $Source: /usr/local/cvs/OpenSees/SRC/recorder/EnvelopeElementRecorder.cpp,v $
-                                                                        
 // Written: fmk 
 //
 // Description: This file contains the class implementatation of 
-// EnvelopeElementRecorder.
+// EnvelopeEnvelopeElementRecorder.
 //
-// What: "@(#) EnvelopeElementRecorder.C, revA"
+// What: "@(#) EnvelopeEnvelopeElementRecorder.C, revA"
 
 #include <EnvelopeElementRecorder.h>
 #include <Domain.h>
@@ -58,18 +54,18 @@ EnvelopeElementRecorder::EnvelopeElementRecorder()
 
 
 EnvelopeElementRecorder::EnvelopeElementRecorder(const ID *ele, 
-						 const char **argv, 
-						 int argc,
-						 Domain &theDom, 
-						 OPS_Stream &theOutputHandler,
-						 double dT, 
-						 bool echoTime,
-						 const ID *indexValues)
-:Recorder(RECORDER_TAGS_EnvelopeElementRecorder),
- numEle(0), eleID(0), numDOF(0), dof(0), theResponses(0), theDomain(&theDom),
- theHandler(&theOutputHandler), deltaT(dT), nextTimeStampToRecord(0.0), 
- data(0), currentData(0), first(true),
- initializationDone(false), responseArgs(0), numArgs(0), echoTimeFlag(echoTime), addColumnInfo(0)
+							 const char **argv, 
+							 int argc,
+							 Domain &theDom, 
+							 OPS_Stream &theOutputHandler,
+							 double dT, 
+							 bool echoTime,
+							 const ID *indexValues)
+ :Recorder(RECORDER_TAGS_EnvelopeElementRecorder),
+  numEle(0), eleID(0), numDOF(0), dof(0), theResponses(0), theDomain(&theDom),
+  theHandler(&theOutputHandler), deltaT(dT), nextTimeStampToRecord(0.0), 
+  data(0), currentData(0), first(true),
+  initializationDone(false), responseArgs(0), numArgs(0), echoTimeFlag(echoTime), addColumnInfo(0)
 {
 
   if (ele != 0) {
@@ -78,12 +74,12 @@ EnvelopeElementRecorder::EnvelopeElementRecorder(const ID *ele,
     if (eleID == 0 || eleID->Size() != numEle)
       opserr << "ElementRecorder::ElementRecorder() - out of memory\n";
   }
-
+  
   if (indexValues != 0) {
     dof = new ID(*indexValues);
     numDOF = dof->Size();
   }
-
+  
   //
   // create a copy of the response request
   //
@@ -115,9 +111,6 @@ EnvelopeElementRecorder::~EnvelopeElementRecorder()
 
   if (eleID != 0)
     delete eleID;
-
-  if (dof != 0)
-    delete dof;
 
   if (theHandler != 0 && currentData != 0) {
 
@@ -200,25 +193,22 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
 	  const Vector &eleData = eleInfo.getData();
 	  //	  for (int j=0; j<eleData.Size(); j++) 
 	  //	    (*currentData)(loc++) = eleData(j);
-	  double normV = 0;
 	  if (numDOF == 0) {
 	    for (int j=0; j<eleData.Size(); j++)
-	      normV += eleData(j) * eleData(j);
+	      (*currentData)(loc++) = eleData(j);
 	  } else {
 	    int dataSize = eleData.Size();
 	    for (int j=0; j<numDOF; j++) {
 	      int index = (*dof)(j);
 	      if (index >= 0 && index < dataSize)
-		normV += eleData(index) * eleData(index);		
+		(*currentData)(loc++) = eleData(index);		
 	      else
 		(*currentData)(loc++) = 0.0;		
 	    }
 	  }
-	  (*currentData)(loc++) = sqrt(normV);		
 	}
       }
     }
-
 
     int sizeData = currentData->Size();
     if (echoTimeFlag == false) {
@@ -227,6 +217,8 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
       if (first == true) {
 	for (int i=0; i<sizeData; i++) {
 	  (*data)(0,i) = (*currentData)(i);
+	  (*data)(1,i) = (*currentData)(i);
+	  (*data)(2,i) = fabs((*currentData)(i));
 	  first = false;
 	  writeIt = true;
 	} 
@@ -235,6 +227,15 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
 	  double value = (*currentData)(i);
 	  if ((*data)(0,i) > value) {
 	    (*data)(0,i) = value;
+	    double absValue = fabs(value);
+	    if ((*data)(2,i) < absValue) 
+	      (*data)(2,i) = absValue;
+	    writeIt = true;
+	  } else if ((*data)(1,i) < value) {
+	    (*data)(1,i) = value;
+	    double absValue = fabs(value);
+	    if ((*data)(2,i) < absValue) 
+	      (*data)(2,i) = absValue;
 	    writeIt = true;
 	  }
 	}
@@ -244,8 +245,13 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
       bool writeIt = false;
       if (first == true) {
 	for (int i=0; i<sizeData; i++) {
+	  
 	  (*data)(0,i*2) = timeStamp;
+	  (*data)(1,i*2) = timeStamp;
+	  (*data)(2,i*2) = timeStamp;
 	  (*data)(0,i*2+1) = (*currentData)(i);
+	  (*data)(1,i*2+1) = (*currentData)(i);
+	  (*data)(2,i*2+1) = fabs((*currentData)(i));
 	  first = false;
 	  writeIt = true;
 	} 
@@ -255,6 +261,20 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
 	  if ((*data)(0,2*i+1) > value) {
 	    (*data)(0,i*2) = timeStamp;
 	    (*data)(0,i*2+1) = value;
+	    double absValue = fabs(value);
+	    if ((*data)(2,i*2+1) < absValue) {
+	      (*data)(2,i*2+1) = absValue;
+	      (*data)(2,i*2) = timeStamp;
+	    }
+	    writeIt = true;
+	  } else if ((*data)(1,i*2+1) < value) {
+	    (*data)(1,i*2) = timeStamp;
+	    (*data)(1,i*2+1) = value;
+	    double absValue = fabs(value);
+	    if ((*data)(2,i*2+1) < absValue) { 
+	      (*data)(2,i*2) = timeStamp;
+	      (*data)(2,i*2+1) = absValue;
+	    }
 	    writeIt = true;
 	  }
 	}
@@ -626,15 +646,26 @@ EnvelopeElementRecorder::initialize(void)
 	  const Vector &eleData = eleInfo.getData();
 	  int dataSize = eleData.Size();
 	  //	  numDbColumns += dataSize;
-	  numDbColumns += 1;
+	  if (numDOF == 0)
+	    numDbColumns += dataSize;
+	  else
+	    numDbColumns += numDOF;
 	
 	  if (addColumnInfo == 1) {
 	    if (echoTimeFlag == true) {
-	      for (int j=0; j<2; j++)
-		responseOrder[responseCount++] = i+1;
+	      if (numDOF == 0) 
+		for (int j=0; j<2*dataSize; j++)
+		  responseOrder[responseCount++] = i+1;
+	      else
+		for (int j=0; j<2*numDOF; j++)
 		  responseOrder[responseCount++] = i+1;
 	    } else {
-	      responseOrder[responseCount++] = i+1;
+	      if (numDOF == 0) 
+		for (int j=0; j<dataSize; j++)
+		  responseOrder[responseCount++] = i+1;
+	      else
+		for (int j=0; j<numDOF; j++)
+		  responseOrder[responseCount++] = i+1;	      
 	    }
 	  }
 	  
@@ -695,7 +726,11 @@ EnvelopeElementRecorder::initialize(void)
 	// from the response type determine no of cols for each
 	Information &eleInfo = theResponses[numResponse]->getInformation();
 	const Vector &eleData = eleInfo.getData();
-	numDbColumns += 1;
+	if (numDOF == 0) {
+	  numDbColumns += eleData.Size();
+	} else {
+	  numDbColumns += numDOF;
+	}
 	numResponse++;
 
 	if (echoTimeFlag == true) {
@@ -718,7 +753,7 @@ EnvelopeElementRecorder::initialize(void)
     numDbColumns *= 2;
   }
 
-  data = new Matrix(1, numDbColumns);
+  data = new Matrix(3, numDbColumns);
   currentData = new Vector(numDbColumns);
   if (data == 0 || currentData == 0) {
     opserr << "EnvelopeElementRecorder::EnvelopeElementRecorder() - out of memory\n";

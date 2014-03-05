@@ -457,7 +457,6 @@
 						  dT, 
 						  specificIndices);
 
-
        } else {
 
 	 (*theRecorder) = new NormEnvelopeElementRecorder(eleIDs, 
@@ -468,7 +467,6 @@
 							  dT, 
 							  echoTime,
 							  specificIndices);
-	 
        }       
 
        if (eleIDs != 0)
