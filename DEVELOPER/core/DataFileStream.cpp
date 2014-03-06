@@ -52,7 +52,7 @@ DataFileStream::DataFileStream(int indent)
 }
 
 
-DataFileStream::DataFileStream(const char *file, openMode mode, int indent, int csv, bool closeWrite)
+DataFileStream::DataFileStream(const char *file, openMode mode, int indent, int csv, bool closeWrite, int prec, bool scientific)
   :OPS_Stream(OPS_STREAM_TAGS_DataFileStream), 
    fileOpen(0), fileName(0), indentSize(indent), sendSelfCount(0), 
    theChannels(0), numDataRows(0),
@@ -60,6 +60,8 @@ DataFileStream::DataFileStream(const char *file, openMode mode, int indent, int 
    theColumns(0), theData(0), theRemoteData(0), 
    doCSV(csv), closeOnWrite(closeWrite)
 {
+  thePrecision = prec;
+  doScientific = scientific;
 
   if (indentSize < 1) indentSize = 1;
   indentString = new char[indentSize+1];
@@ -175,6 +177,11 @@ DataFileStream::open(void)
     return -1;
   } else
     fileOpen = 1;
+
+  if (doScientific == true)
+    theFile << std::scientific;
+
+  theFile << std::setprecision(thePrecision);
 
   return 0;
 }

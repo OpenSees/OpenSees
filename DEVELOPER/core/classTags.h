@@ -605,6 +605,8 @@
 #define ELE_TAG_ElasticTimoshenkoBeam3d   146
 #define ELE_TAG_ElastomericBearingUFRP2d  147
 #define ELE_TAG_ElastomericBearingUFRP3d  148
+#define ELE_TAG_RJWatsonEQS2d             149
+#define ELE_TAG_RJWatsonEQS3d             150
 
 #define ELE_TAG_MultipleShearSpring 6201
 #define ELE_TAG_MultipleNormalSpring 6202
@@ -836,6 +838,8 @@
 #define SOLVER_TAGS_PFEMSolver 26
 #define SOLVER_TAGS_SProfileSPDLinSolver  	27
 #define SOLVER_TAGS_PFEMCompressibleSolver 28
+#define SOLVER_TAGS_CulaSparseS4 29
+#define SOLVER_TAGS_CulaSparseS5 30
 
 
 #define RECORDER_TAGS_ElementRecorder		1

@@ -182,7 +182,7 @@ SP_Constraint::recvSelf(int cTag, Channel &theChannel,
     valueC = valueR;
     this->setLoadPatternTag((int)data(6));
 
-    nextTag = data(7);
+    nextTag = (int)data(7);
 
     return 0;
 }
@@ -192,7 +192,7 @@ void
 SP_Constraint::Print(OPS_Stream &s, int flag) 
 {
     s << "SP_Constraint: " << this->getTag();
-    s << "\t Node: " << nodeTag << " DOF: " << dofNumber;
+    s << "\t Node: " << nodeTag << " DOF: " << dofNumber+1;
     s << " ref value: " << valueR << " current value: " << valueC << endln;
 }
 

@@ -121,6 +121,9 @@ class DomainDecompositionAnalysis: public Analysis, public MovableObject
     IncrementalIntegrator  *getIncrementalIntegratorPtr(void) const;    
     LinearSOE 		*getLinSOEPtr(void) const;
     DomainSolver        *getDomainSolverPtr(void) const;
+
+    Channel *myChannel;
+    int checkAllResult(int);
     
   private:
     Subdomain 		     *theSubdomain;

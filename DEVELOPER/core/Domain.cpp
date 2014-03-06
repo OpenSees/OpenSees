@@ -67,6 +67,7 @@
 #include <SingleDomParamIter.h>
 
 #include <Vertex.h>
+#include <Matrix.h>
 #include <Graph.h>
 #include <Recorder.h>
 #include <MeshRegion.h>
@@ -546,7 +547,7 @@ Domain::addPressure_Constraint(Pressure_Constraint *pConstraint)
 {
 #ifdef _G3DEBUG    
     // check the Node exists in the Domain
-    int nodeTag = pConstraint->getNodeConstrained();
+    int nodeTag = pConstraint->getTag();
     Node *nodePtr = this->getNode(nodeTag);
     if (nodePtr == 0) {
         opserr << "Domain::addPressure_Constraint - cannot add as node with tag";
@@ -1766,7 +1767,8 @@ Domain::initialize(void)
     // lvalue needed here for M$ VC++ compiler -- MHS
 	// and either the  VS2011 or intel compiler does not like it!
 #ifndef _VS2011
-    const Matrix &initM = elePtr->getInitialStiff();
+    Matrix initM(elePtr->getInitialStiff());
+
 #else
 	 elePtr->getInitialStiff();
 #endif
@@ -1945,15 +1947,18 @@ Domain::update(double newTime, double dT)
 int
 Domain::updateParameter(int tag, int value)
 {
-  // remove the object from the container    
+  // get the object from the container 
   TaggedObject *mc = theParameters->getComponentPtr(tag);
   
   // if not there return 0
   if (mc == 0) 
       return 0;
 
+  // convert to a parameter & update
   Parameter *result = (Parameter *)mc;
-  return result->update(value);
+  int res = result->update(value);
+
+  return res;
 }
 
 int
