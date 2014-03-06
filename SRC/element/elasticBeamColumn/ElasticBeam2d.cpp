@@ -595,6 +595,9 @@ ElasticBeam2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBrok
 void
 ElasticBeam2d::Print(OPS_Stream &s, int flag)
 {
+  // to update forces!
+  this->getResistingForce();
+
   if (flag == -1) {
     int eleTag = this->getTag();
     s << "EL_BEAM\t" << eleTag << "\t";
@@ -714,6 +717,7 @@ ElasticBeam2d::getResponse (int responseID, Information &eleInfo)
 {
   double N, M1, M2, V;
   double L = theCoordTransf->getInitialLength();
+  this->getResistingForce();
 
   switch (responseID) {
   case 1: // stiffness

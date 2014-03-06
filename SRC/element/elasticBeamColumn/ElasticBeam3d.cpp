@@ -698,6 +698,9 @@ ElasticBeam3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBrok
 void
 ElasticBeam3d::Print(OPS_Stream &s, int flag)
 {
+
+  this->getResistingForce(); 
+
    if (flag == -1) { 
     int eleTag = this->getTag();
     s << "EL_BEAM\t" << eleTag << "\t";
