@@ -1501,9 +1501,17 @@ int
 getTime(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
   double time = theDomain.getCurrentTime();
+  
+  // get the display format
+  char format[10];
+  if (argc == 1) {
+      strcpy(format,"%f");
+  } else if (argc == 2) {
+      strcpy(format,argv[1]);
+  }
+  
   // now we copy the value to the tcl string that is returned
-
-  sprintf(interp->result,"%f",time);
+  sprintf(interp->result,format,time);
   return TCL_OK;
 }
 
