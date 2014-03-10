@@ -56,7 +56,8 @@ public:
         double k3 = 0.0, double mu = 2.0,
         double shearDistI = 1.0,
         int addRayleigh = 0, double mass = 0.0,
-        int maxIter = 25, double tol = 1E-12);
+        int maxIter = 25, double tol = 1E-12,
+        double kFactUplift = 1E-6);
     RJWatsonEQS3d();
     
     // destructor
@@ -125,6 +126,7 @@ private:
     double mass;        // mass of element
     int maxIter;        // maximum number of iterations
     double tol;         // tolerance for convergence criterion
+    double kFactUplift; // stiffness factor when uplift is encountered
     double L;           // element length
     bool onP0;          // flag to indicate if the element is on P0
     

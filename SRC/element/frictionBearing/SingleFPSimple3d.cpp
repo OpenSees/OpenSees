@@ -55,11 +55,12 @@ Vector SingleFPSimple3d::theVector(12);
 SingleFPSimple3d::SingleFPSimple3d(int tag, int Nd1, int Nd2,
     FrictionModel &thefrnmdl, double reff, double kinit,
     UniaxialMaterial **materials, const Vector _y, const Vector _x,
-    double sdI, int addRay, int vert, double m, int maxiter, double _tol)
+    double sdI, int addRay, int vert, double m, int maxiter, double _tol,
+    double kfactuplift)
     : Element(tag, ELE_TAG_SingleFPSimple3d),
     connectedExternalNodes(2), theFrnMdl(0), Reff(reff), kInit(kinit),
     x(_x), y(_y), shearDistI(sdI), addRayleigh(addRay), inclVertDisp(vert),
-    mass(m), maxIter(maxiter), tol(_tol),
+    mass(m), maxIter(maxiter), tol(_tol), kFactUplift(kfactuplift),
     L(0.0), onP0(true), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6), theLoad(12)
 {
@@ -125,7 +126,7 @@ SingleFPSimple3d::SingleFPSimple3d()
     : Element(0, ELE_TAG_SingleFPSimple3d),
     connectedExternalNodes(2), theFrnMdl(0), Reff(0.0), kInit(0.0),
     x(0), y(0), shearDistI(0.0), addRayleigh(0), inclVertDisp(0), 
-    mass(0.0), maxIter(25), tol(1E-12),
+    mass(0.0), maxIter(25), tol(1E-12), kFactUplift(1E-6),
     L(0.0), onP0(false), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6), theLoad(12)
 {
@@ -347,10 +348,14 @@ int SingleFPSimple3d::update()
         kb = kbInit;
         if (qb(0) > 0.0)  {
             theMaterials[0]->setTrialStrain(ub0Old, 0.0);
-            kb = DBL_EPSILON*kbInit;
+            //kb = DBL_EPSILON*kbInit;
+            kb = kFactUplift*kbInit;
             // update plastic displacements
             ubPlastic(0) = ub(1);
             ubPlastic(1) = ub(2);
+            //opserr << "WARNING: SingleFPSimple3d::update() - element: "
+            //    << this->getTag() << " - uplift encountered, scaling "
+            //    << "stiffness matrix by: " << kFactUplift << endln;
         }
         qb.Zero();
         return 0;
@@ -663,7 +668,7 @@ const Vector& SingleFPSimple3d::getResistingForceIncInertia()
 int SingleFPSimple3d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(14);
+    static Vector data(15);
     data(0) = this->getTag();
     data(1) = Reff;
     data(2) = kInit;
@@ -672,12 +677,13 @@ int SingleFPSimple3d::sendSelf(int commitTag, Channel &sChannel)
     data(5) = mass;
     data(6) = maxIter;
     data(7) = tol;
-    data(8) = x.Size();
-    data(9) = y.Size();
-    data(10) = alphaM;
-    data(11) = betaK;
-    data(12) = betaK0;
-    data(13) = betaKc;
+    data(8) = kFactUplift;
+    data(9) = x.Size();
+    data(10) = y.Size();
+    data(11) = alphaM;
+    data(12) = betaK;
+    data(13) = betaK0;
+    data(14) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -720,7 +726,7 @@ int SingleFPSimple3d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(14);
+    static Vector data(15);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     Reff = data(1);
@@ -730,10 +736,11 @@ int SingleFPSimple3d::recvSelf(int commitTag, Channel &rChannel,
     mass = data(5);
     maxIter = (int)data(6);
     tol = data(7);
-    alphaM = data(10);
-    betaK = data(11);
-    betaK0 = data(12);
-    betaKc = data(13);
+    kFactUplift = data(8);
+    alphaM = data(11);
+    betaK = data(12);
+    betaK0 = data(13);
+    betaKc = data(14);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -767,11 +774,11 @@ int SingleFPSimple3d::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive remaining data
-    if ((int)data(8) == 3)  {
+    if ((int)data(9) == 3)  {
         x.resize(3);
         rChannel.recvVector(0, commitTag, x);
     }
-    if ((int)data(9) == 3)  {
+    if ((int)data(10) == 3)  {
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }

@@ -88,6 +88,7 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
         double mass = 0.0;
         int maxIter = 25;
         double tol = 1E-12;
+        double kFactUplift = 1E-6;
         
         if (Tcl_GetInt(interp, argv[1+eleArgStart], &tag) != TCL_OK)  {
             opserr << "WARNING invalid RJWatsonEqsBearing eleTag\n";
@@ -189,7 +190,8 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
                     strcmp(argv[j],"-shearDist") != 0 &&
                     strcmp(argv[j],"-doRayleigh") != 0 &&
                     strcmp(argv[j],"-mass") != 0 &&
-                    strcmp(argv[j],"-iter") != 0)  {
+                    strcmp(argv[j],"-iter") != 0 &&
+                    strcmp(argv[j],"-kFactUplift") != 0)  {
                     numOrient++;
                     j++;
                 }
@@ -264,10 +266,20 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
                 }
             }
         }
+        for (int i = 9+eleArgStart; i < argc; i++)  {
+            if (i+1 < argc && strcmp(argv[i], "-kFactUplift") == 0)  {
+                if (Tcl_GetDouble(interp, argv[i+1], &kFactUplift) != TCL_OK)  {
+                    opserr << "WARNING invalid kFactUplift\n";
+                    opserr << "RJWatsonEqsBearing element: " << tag << endln;
+                    return TCL_ERROR;
+                }
+            }
+        }
         
         // now create the RJWatsonEqsBearing
         theElement = new RJWatsonEQS2d(tag, iNode, jNode, *theFrnMdl, kInit, k2,
-            theMaterials, y, x, k3, mu, shearDistI, doRayleigh, mass, maxIter, tol);
+            theMaterials, y, x, k3, mu, shearDistI, doRayleigh, mass,
+            maxIter, tol, kFactUplift);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";
@@ -311,6 +323,7 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
         double mass = 0.0;
         int maxIter = 25;
         double tol = 1E-12;
+        double kFactUplift = 1E-6;
         
         if (Tcl_GetInt(interp, argv[1+eleArgStart], &tag) != TCL_OK)  {
             opserr << "WARNING invalid RJWatsonEqsBearing eleTag\n";
@@ -445,7 +458,8 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
                     strcmp(argv[j],"-shearDist") != 0 &&
                     strcmp(argv[j],"-doRayleigh") != 0 &&
                     strcmp(argv[j],"-mass") != 0 &&
-                    strcmp(argv[j],"-iter") != 0)  {
+                    strcmp(argv[j],"-iter") != 0 &&
+                    strcmp(argv[j],"-kFactUplift") != 0)  {
                     numOrient++;
                     j++;
                 }
@@ -534,10 +548,20 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
                 }
             }
         }
+        for (int i = 9+eleArgStart; i < argc; i++)  {
+            if (i+1 < argc && strcmp(argv[i], "-kFactUplift") == 0)  {
+                if (Tcl_GetDouble(interp, argv[i+1], &kFactUplift) != TCL_OK)  {
+                    opserr << "WARNING invalid kFactUplift\n";
+                    opserr << "singleFPBearing element: " << tag << endln;
+                    return TCL_ERROR;
+                }
+            }
+        }
         
         // now create the RJWatsonEqsBearing
         theElement = new RJWatsonEQS3d(tag, iNode, jNode, *theFrnMdl, kInit, k2,
-            theMaterials, y, x, k3, mu, shearDistI, doRayleigh, mass, maxIter, tol);
+            theMaterials, y, x, k3, mu, shearDistI, doRayleigh, mass,
+            maxIter, tol, kFactUplift);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";

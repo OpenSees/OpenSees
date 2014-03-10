@@ -56,11 +56,11 @@ RJWatsonEQS3d::RJWatsonEQS3d(int tag, int Nd1, int Nd2,
     FrictionModel &thefrnmdl, double kInit, double _k2,
     UniaxialMaterial **materials, const Vector _y, const Vector _x,
     double _k3, double _mu, double sdI, int addRay, double m,
-    int maxiter, double _tol)
+    int maxiter, double _tol, double kfactuplift)
     : Element(tag, ELE_TAG_RJWatsonEQS3d),
-    connectedExternalNodes(2), theFrnMdl(0), k0(0.0), k2(_k2),
-    k3(_k3), mu(_mu), x(_x), y(_y), shearDistI(sdI),
-    addRayleigh(addRay), mass(m), maxIter(maxiter), tol(_tol),
+    connectedExternalNodes(2), theFrnMdl(0), k0(0.0), k2(_k2), k3(_k3),
+    mu(_mu), x(_x), y(_y), shearDistI(sdI), addRayleigh(addRay), mass(m),
+    maxIter(maxiter), tol(_tol), kFactUplift(kfactuplift),
     L(0.0), onP0(true), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6), theLoad(12)
 {
@@ -129,9 +129,9 @@ RJWatsonEQS3d::RJWatsonEQS3d()
     : Element(0, ELE_TAG_RJWatsonEQS3d),
     connectedExternalNodes(2), theFrnMdl(0), k0(0.0), k2(0.0), k3(0.0),
     mu(2.0), x(0), y(0), shearDistI(0.0), addRayleigh(0), mass(0.0),
-    maxIter(25), tol(1E-12), L(0.0), onP0(false), ub(6), ubPlastic(2),
-    qb(6), kb(6,6), ul(12), Tgl(12,12), Tlb(6,12), ubPlasticC(2),
-    kbInit(6,6), theLoad(12)
+    maxIter(25), tol(1E-12), kFactUplift(1E-6), L(0.0), onP0(false),
+    ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12), Tgl(12,12), Tlb(6,12),
+    ubPlasticC(2), kbInit(6,6), theLoad(12)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)  {
@@ -341,10 +341,14 @@ int RJWatsonEQS3d::update()
         kb = kbInit;
         if (qb(0) > 0.0)  {
             theMaterials[0]->setTrialStrain(ub0Old, 0.0);
-            kb = DBL_EPSILON*kbInit;
+            //kb = DBL_EPSILON*kbInit;
+            kb = kFactUplift*kbInit;
             // update plastic displacements
             ubPlastic(0) = ub(1);
             ubPlastic(1) = ub(2);
+            //opserr << "WARNING: RJWatsonEQS3d::update() - element: "
+            //    << this->getTag() << " - uplift encountered, scaling "
+            //    << "stiffness matrix by: " << kFactUplift << endln;
         }
         qb.Zero();
         return 0;
@@ -653,7 +657,7 @@ const Vector& RJWatsonEQS3d::getResistingForceIncInertia()
 int RJWatsonEQS3d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(16);
+    static Vector data(17);
     data(0) = this->getTag();
     data(1) = k0;
     data(2) = k2;
@@ -664,12 +668,13 @@ int RJWatsonEQS3d::sendSelf(int commitTag, Channel &sChannel)
     data(7) = mass;
     data(8) = maxIter;
     data(9) = tol;
-    data(10) = x.Size();
-    data(11) = y.Size();
-    data(12) = alphaM;
-    data(13) = betaK;
-    data(14) = betaK0;
-    data(15) = betaKc;
+    data(10) = kFactUplift;
+    data(11) = x.Size();
+    data(12) = y.Size();
+    data(13) = alphaM;
+    data(14) = betaK;
+    data(15) = betaK0;
+    data(16) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -712,7 +717,7 @@ int RJWatsonEQS3d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(16);
+    static Vector data(17);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
@@ -724,10 +729,11 @@ int RJWatsonEQS3d::recvSelf(int commitTag, Channel &rChannel,
     mass = data(7);
     maxIter = (int)data(8);
     tol = data(9);
-    alphaM = data(12);
-    betaK = data(13);
-    betaK0 = data(14);
-    betaKc = data(15);
+    kFactUplift = data(10);
+    alphaM = data(13);
+    betaK = data(14);
+    betaK0 = data(15);
+    betaKc = data(16);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -761,11 +767,11 @@ int RJWatsonEQS3d::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive remaining data
-    if ((int)data(10) == 3)  {
+    if ((int)data(11) == 3)  {
         x.resize(3);
         rChannel.recvVector(0, commitTag, x);
     }
-    if ((int)data(11) == 3)  {
+    if ((int)data(12) == 3)  {
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }

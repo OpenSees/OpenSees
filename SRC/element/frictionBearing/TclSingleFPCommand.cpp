@@ -89,6 +89,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         double mass = 0.0;
         int maxIter = 25;
         double tol = 1E-12;
+        double kFactUplift = 1E-6;
         
         if (Tcl_GetInt(interp, argv[1+eleArgStart], &tag) != TCL_OK)  {
             opserr << "WARNING invalid singleFPBearing eleTag\n";
@@ -181,7 +182,8 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                     strcmp(argv[j],"-doRayleigh") != 0 &&
                     strcmp(argv[j],"-inclVertDisp") != 0 &&
                     strcmp(argv[j],"-mass") != 0 &&
-                    strcmp(argv[j],"-iter") != 0)  {
+                    strcmp(argv[j],"-iter") != 0 &&
+                    strcmp(argv[j],"-kFactUplift") != 0)  {
                     numOrient++;
                     j++;
                 }
@@ -260,10 +262,20 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 }
             }
         }
+        for (int i = 7+eleArgStart; i < argc; i++)  {
+            if (i+1 < argc && strcmp(argv[i], "-kFactUplift") == 0)  {
+                if (Tcl_GetDouble(interp, argv[i+1], &kFactUplift) != TCL_OK)  {
+                    opserr << "WARNING invalid kFactUplift\n";
+                    opserr << "singleFPBearing element: " << tag << endln;
+                    return TCL_ERROR;
+                }
+            }
+        }
         
         // now create the singleFPBearing
         theElement = new SingleFPSimple2d(tag, iNode, jNode, *theFrnMdl, Reff, kInit,
-            theMaterials, y, x, shearDistI, doRayleigh, inclVertDisp, mass, maxIter, tol);
+            theMaterials, y, x, shearDistI, doRayleigh, inclVertDisp, mass,
+            maxIter, tol, kFactUplift);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";
@@ -306,6 +318,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         double mass = 0.0;
         int maxIter = 25;
         double tol = 1E-12;
+        double kFactUplift = 1E-6;
         
         if (Tcl_GetInt(interp, argv[1+eleArgStart], &tag) != TCL_OK)  {
             opserr << "WARNING invalid singleFPBearing eleTag\n";
@@ -431,7 +444,8 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                     strcmp(argv[j],"-doRayleigh") != 0 &&
                     strcmp(argv[j],"-inclVertDisp") != 0 &&
                     strcmp(argv[j],"-mass") != 0 &&
-                    strcmp(argv[j],"-iter") != 0)  {
+                    strcmp(argv[j],"-iter") != 0 &&
+                    strcmp(argv[j],"-kFactUplift") != 0)  {
                     numOrient++;
                     j++;
                 }
@@ -524,10 +538,20 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                 }
             }
         }
+        for (int i = 7+eleArgStart; i < argc; i++)  {
+            if (i+1 < argc && strcmp(argv[i], "-kFactUplift") == 0)  {
+                if (Tcl_GetDouble(interp, argv[i+1], &kFactUplift) != TCL_OK)  {
+                    opserr << "WARNING invalid kFactUplift\n";
+                    opserr << "singleFPBearing element: " << tag << endln;
+                    return TCL_ERROR;
+                }
+            }
+        }
         
         // now create the singleFPBearing
         theElement = new SingleFPSimple3d(tag, iNode, jNode, *theFrnMdl, Reff, kInit,
-            theMaterials, y, x, shearDistI, doRayleigh, inclVertDisp, mass, maxIter, tol);
+            theMaterials, y, x, shearDistI, doRayleigh, inclVertDisp, mass,
+            maxIter, tol, kFactUplift);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";
