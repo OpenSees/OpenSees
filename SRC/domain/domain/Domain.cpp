@@ -1156,7 +1156,7 @@ Domain::removeParameter(int tag)
     for (int i = index; i < numParameters-1; i++) {
       paramIndex[i] = paramIndex[i+1];
       Parameter *otherParam = this->getParameterFromIndex(i);
-      otherParam->setGradIndex(i+1);
+      otherParam->setGradIndex(i);
     }
 
     // Now remove the component
