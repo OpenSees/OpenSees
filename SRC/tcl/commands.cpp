@@ -8499,29 +8499,27 @@ opsRecv(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	opserr << "recv -pid pid? data? - pid: " << argv[2] << " invalid\n";
 	return TCL_ERROR;
       }
-    }
+	}
 
     if (otherPID > -1 && otherPID < np) {
       MPI_Status status;
       
       if (fromAny == false)
-	if (myPID != otherPID)
-	  MPI_Recv((void *)(&msgLength), 1, MPI_INT, otherPID, 0, MPI_COMM_WORLD, &status);
+		if (myPID != otherPID)
+		MPI_Recv((void *)(&msgLength), 1, MPI_INT, otherPID, 0, MPI_COMM_WORLD, &status);
         else {
 	  opserr << "recv -pid pid? data? - " << otherPID << " cant receive from self!\n";
 	  return TCL_ERROR;
 	}
-      else
+      else {
 	MPI_Recv((void *)(&msgLength), 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-
+	otherPID = status.MPI_SOURCE;
+	  }
 
       if (msgLength > 0) {
 	gMsg = new char [msgLength];
-
-	if (fromAny == false && msgLength != 0)
+	
 	  MPI_Recv((void *)gMsg, msgLength, MPI_CHAR, otherPID, 1, MPI_COMM_WORLD, &status);
-	else
-	  MPI_Recv((void *)gMsg, msgLength, MPI_CHAR, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
 
 	Tcl_SetVar(interp, varToSet, gMsg, TCL_LEAVE_ERR_MSG);
       }
