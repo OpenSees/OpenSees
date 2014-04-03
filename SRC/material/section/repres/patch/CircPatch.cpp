@@ -32,6 +32,7 @@
 #include <Patch.h>
 #include <CircPatch.h>
 #include <QuadCell.h>
+#include <CircSectionCell.h>
 
 
 CircPatch::CircPatch(): matID(0), nDivCirc(1), nDivRad(1), centerPosit(2),
@@ -165,10 +166,9 @@ CircPatch::getCells (void) const
             // compute coordinates
                        
             theta_i  = initAngRadians + deltaTheta*i;
+
+	    /*
             theta_i1 = theta_i + deltaTheta;
-
-            //opserr << "\n theta_i: "<< theta_i;
-
             cellVertCoord(0,0) = centerPosit(0) + rad_j  * cos(theta_i1);
             cellVertCoord(0,1) = centerPosit(1) + rad_j  * sin(theta_i1);
             cellVertCoord(1,0) = centerPosit(0) + rad_j  * cos(theta_i);
@@ -179,7 +179,11 @@ CircPatch::getCells (void) const
             cellVertCoord(3,1) = centerPosit(1) + rad_j1 * sin(theta_i1);
 
             cells[k] = new QuadCell(cellVertCoord); 
-            //opserr << "\ncreating cells Cell " << k << " :" << cells[k];
+	    */
+
+            theta_i1 = theta_i + deltaTheta/2.0;
+	    cells[k] = new CircSectionCell(rad_j, rad_j1, deltaTheta, theta_i1);
+
             k++; 
          }
       }

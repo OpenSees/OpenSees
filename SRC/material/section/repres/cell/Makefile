@@ -1,6 +1,6 @@
 include ../../../../../Makefile.def
 
-OBJS       = Cell.o QuadCell.o
+OBJS       = Cell.o QuadCell.o CircSectionCell.o
 
 # Compilation control
 
