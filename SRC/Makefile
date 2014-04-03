@@ -791,6 +791,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/repres/patch/CircPatch.o \
 	$(FE)/material/section/repres/cell/Cell.o \
 	$(FE)/material/section/repres/cell/QuadCell.o \
+	$(FE)/material/section/repres/cell/CircSectionCell.o \
 	$(FE)/material/section/repres/reinfBar/ReinfBar.o \
 	$(FE)/material/section/repres/reinfLayer/ReinfLayer.o \
 	$(FE)/material/section/repres/reinfLayer/StraightReinfLayer.o \
