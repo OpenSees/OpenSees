@@ -3026,6 +3026,8 @@ SRC/material/section/integration/WideFlangeSectionIntegration.h -text
 SRC/material/section/repres/Makefile -text
 SRC/material/section/repres/cell/Cell.cpp -text
 SRC/material/section/repres/cell/Cell.h -text
+SRC/material/section/repres/cell/CircSectionCell.cpp -text
+SRC/material/section/repres/cell/CircSectionCell.h -text
 SRC/material/section/repres/cell/Makefile -text
 SRC/material/section/repres/cell/QuadCell.cpp -text
 SRC/material/section/repres/cell/QuadCell.h -text
