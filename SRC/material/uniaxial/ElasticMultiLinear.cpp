@@ -44,7 +44,7 @@ void *OPS_NewElasticMultiLinear()
 {
     // Pointer to a uniaxial material that will be returned
     UniaxialMaterial *theMaterial = 0;
-
+    
     int argc = OPS_GetNumRemainingInputArgs();
     if (argc < 7) {
         opserr << "WARNING incorrect num args want: uniaxialMaterial ";
@@ -53,19 +53,19 @@ void *OPS_NewElasticMultiLinear()
         opserr << "(with at least two stress-strain points)\n";
         return 0;
     }
-
+    
     int tag[1];
     double strainData[64];
     double stressData[64];
     double eta = 0.0;
     char paraStr[8];
-
+    
     int numData = 1;
     if (OPS_GetIntInput(&numData,tag) != 0)  {
         opserr << "WARNING invalid uniaxialMaterial ElasticMultiLinear tag\n";
         return 0;
     }
-
+    
     // check if eta is provided (odd number of inputs)
     if ((argc-3)%2 == 1)  {
         numData = 1;
@@ -74,8 +74,9 @@ void *OPS_NewElasticMultiLinear()
             opserr << "uniaxialMaterial ElasticMultiLinear: " << tag[0] << endln;
             return 0;
         }
+        argc--;
     }
-
+    
     // get strain data points
     numData = (argc - 3)/2;
     OPS_GetString(paraStr,7);
@@ -91,7 +92,7 @@ void *OPS_NewElasticMultiLinear()
         return 0;
     }
     Vector strainPts(strainData,numData);
-
+    
     // get stress data points
     OPS_GetString(paraStr,7);
     if (strcmp(paraStr,"-stress") == 0)  {
@@ -106,10 +107,10 @@ void *OPS_NewElasticMultiLinear()
         return 0;
     }
     Vector stressPts(stressData,numData);
-
+    
     // Parsing was successful, allocate the material
     theMaterial = new ElasticMultiLinear(tag[0], strainPts, stressPts, eta);
-
+    
     if (theMaterial == 0) {
         opserr << "WARNING could not create uniaxialMaterial of type ";
         opserr << "ElasticMultiLinear\n";
@@ -135,9 +136,9 @@ ElasticMultiLinear::ElasticMultiLinear(int tag,
         exit(-1);        
     }
     trialIDmax = numDataPoints - 2;
-
+    
     this->revertToStart();
-
+    
     initTangent = trialTangent;
 }
 
@@ -163,7 +164,7 @@ int ElasticMultiLinear::setTrialStrain(double strain, double strainRate)
 {
     trialStrain = strain;
     trialStrainRate = strainRate;
-
+    
     // find the current interval
     double eps1 = strainPoints(trialID);
     double eps2 = strainPoints(trialID+1);
@@ -182,13 +183,13 @@ int ElasticMultiLinear::setTrialStrain(double strain, double strainRate)
     }
     double sig1 = stressPoints(trialID);
     double sig2 = stressPoints(trialID+1);
-
+    
     // get the tangent for the selected interval
     trialTangent = (sig2-sig1)/(eps2-eps1);
-
+    
     // get the stress for the selected interval
     trialStress = sig1 + trialTangent*(trialStrain-eps1) + eta*trialStrainRate;
-
+    
     return 0;
 }
 
@@ -196,7 +197,7 @@ int ElasticMultiLinear::setTrialStrain(double strain, double strainRate)
 int ElasticMultiLinear::commitState()
 {
     return 0;
-}	
+}
 
 
 int ElasticMultiLinear::revertToLastCommit()
@@ -211,7 +212,7 @@ int ElasticMultiLinear::revertToStart()
     trialStrain = 0.0;
     trialStrainRate = 0.0;
     trialStress = 0.0;
-
+    
     // find the current interval
     double eps1 = strainPoints(trialID);
     double eps2 = strainPoints(trialID+1);
@@ -230,10 +231,10 @@ int ElasticMultiLinear::revertToStart()
     }
     double sig1 = stressPoints(trialID);
     double sig2 = stressPoints(trialID+1);
-
+    
     // get the tangent for the selected interval
     trialTangent = (sig2-sig1)/(eps2-eps1);
-
+    
     return 0;
 }
 
@@ -242,7 +243,7 @@ UniaxialMaterial *ElasticMultiLinear::getCopy()
 {
     ElasticMultiLinear *theCopy =
         new ElasticMultiLinear(this->getTag(), strainPoints, stressPoints, eta);
-
+    
     return theCopy;
 }
 
@@ -257,13 +258,13 @@ int ElasticMultiLinear::sendSelf(int cTag, Channel &theChannel)
     data(3) = numDataPoints;
     data(4) = initTangent;
     data(5) = eta;
-
+    
     res = theChannel.sendVector(this->getDbTag(), cTag, data);
     res += theChannel.sendVector(this->getDbTag(), cTag, strainPoints);
     res += theChannel.sendVector(this->getDbTag(), cTag, stressPoints);
     if (res < 0) 
         opserr << "ElasticMultiLinear::sendSelf() - failed to send data.\n";
-
+    
     return res;
 }
 
@@ -283,7 +284,7 @@ int ElasticMultiLinear::recvSelf(int cTag, Channel &theChannel,
         numDataPoints = (int)data(3);
         initTangent   = data(4);
         eta           = data(5);
-
+        
         // receive the strain and stress arrays
         strainPoints.resize(numDataPoints);
         stressPoints.resize(numDataPoints);

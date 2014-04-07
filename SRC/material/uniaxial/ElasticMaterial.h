@@ -55,7 +55,7 @@ class ElasticMaterial : public UniaxialMaterial
     double getStress(void);
     double getTangent(void);
     double getDampTangent(void) {return eta;};
-    double getInitialTangent(void) {return Epos;};
+    double getInitialTangent(void);
 
     int commitState(void);
     int revertToLastCommit(void);    
@@ -65,7 +65,7 @@ class ElasticMaterial : public UniaxialMaterial
     
     int sendSelf(int commitTag, Channel &theChannel);  
     int recvSelf(int commitTag, Channel &theChannel, 
-		 FEM_ObjectBroker &theBroker);    
+        FEM_ObjectBroker &theBroker);
     
     void Print(OPS_Stream &s, int flag =0);
     

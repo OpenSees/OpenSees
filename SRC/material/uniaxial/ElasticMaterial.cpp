@@ -173,10 +173,19 @@ ElasticMaterial::getStress(void)
 double 
 ElasticMaterial::getTangent(void)
 {
-    if (trialStrain >= 0.0)
+    if (trialStrain > 0.0)
         return Epos;
-    else
+    else if (trialStrain < 0.0)
         return Eneg;
+    else
+        return (Epos > Eneg) ? Epos : Eneg;
+}
+
+
+double 
+ElasticMaterial::getInitialTangent(void)
+{
+    return (Epos > Eneg) ? Epos : Eneg;
 }
 
 
