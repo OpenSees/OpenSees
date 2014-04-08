@@ -23,7 +23,7 @@
 
 #include <Matrix.h>
 #include <Vector.h>
-#include <Math.h>
+#include <math.h>
 
 #include <CircSectionCell.h>
 
