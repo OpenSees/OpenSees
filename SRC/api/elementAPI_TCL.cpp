@@ -75,7 +75,9 @@ static LimitCurveFunction *theLimitCurveFunctions = NULL;//MRL
 
 static Tcl_Interp *theInterp = 0;
 static Domain *theDomain = 0;
+
 static TclModelBuilder *theModelBuilder = 0;
+
 static TCL_Char **currentArgv = 0;
 static int currentArg = 0;
 static int maxArg = 0;
@@ -674,7 +676,7 @@ int OPS_GetNodeIncrDeltaDisp(int *nodeTag, int *sizeData, double *data)
   Node *theNode = theDomain->getNode(*nodeTag);
 
   if (theNode == 0) {
-    opserr << "OPS_GetNodeIncrDisp - no node with tag " << *nodeTag << endln;
+    opserr << "OPS_GetNodeIncrDeltaDisp - no node with tag " << *nodeTag << endln;
     return -1;
   }
   int size = *sizeData;
@@ -978,6 +980,10 @@ const char *OPS_GetInterpPWD()
 Domain *OPS_GetDomain(void)
 {
   return theDomain;
+}
+
+void TCL_OPS_setModelBuilder(TclModelBuilder *theNewBuilder) {
+  theModelBuilder = theNewBuilder;
 }
 
 //////////start MRL

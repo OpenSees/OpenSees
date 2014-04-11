@@ -114,6 +114,7 @@
 #include <Element.h>
 ////////////////////////////////////////////
 
+extern void TCL_OPS_setModelBuilder(TclModelBuilder *theNewBuilder);
 
 #include <packages.h>
 
@@ -615,6 +616,8 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
   theTclLoadPattern = 0;
   theTclMultiSupportPattern = 0;  
 
+  TCL_OPS_setModelBuilder(this);
+
   nodeLoadTag = 0;
   eleArgStart = 0;
 }
@@ -672,6 +675,7 @@ TclModelBuilder::~TclModelBuilder()
   theTclBuilder =0;
   theTclLoadPattern =0;
   theTclMultiSupportPattern = 0;  
+  TCL_OPS_setModelBuilder(0);
   
   // may possibly invoke Tcl_DeleteCommand() later
   Tcl_DeleteCommand(theInterp, "parameter");
