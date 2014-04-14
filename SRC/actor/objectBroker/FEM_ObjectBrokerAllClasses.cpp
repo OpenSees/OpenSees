@@ -239,6 +239,8 @@
 #include <ElastomericBearingBoucWen3d.h>
 #include <SingleFPSimple2d.h>
 #include <SingleFPSimple3d.h>
+#include <RJWatsonEQS2d.h>
+#include <RJWatsonEQS3d.h>
 
 #ifdef _PFEM
 #include <PFEMElement2D.h>
@@ -686,6 +688,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_SingleFPSimple3d:
 		return new SingleFPSimple3d();
+
+	case ELE_TAG_RJWatsonEQS2d:
+		return new RJWatsonEQS2d();
+
+	case ELE_TAG_RJWatsonEQS3d:
+		return new RJWatsonEQS3d();
 
 	case ELE_TAG_Twenty_Eight_Node_BrickUP:
 	    return new TwentyEightNodeBrickUP();
