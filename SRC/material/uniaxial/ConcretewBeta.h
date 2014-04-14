@@ -27,7 +27,7 @@
 #include <UniaxialMaterial.h>
 
 class ConcretewBeta : public UniaxialMaterial {
-public:
+ public:
 	ConcretewBeta(int tag, double fpc, double ec0, double fcint, double ecint, double fcres, double ecres, double fct, double ftint, double etint, double ftres, double etres, double lambda, double alpha, double bint, double etbint, double bres, double etbres, double M, double E0, double fcc, double ecc);
 	ConcretewBeta();
 	~ConcretewBeta();
