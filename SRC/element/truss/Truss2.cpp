@@ -168,7 +168,7 @@ Truss2::Truss2(int tag,
 	  opserr << "FATAL Truss2::Truss2 - " << tag <<
 	    "failed to get a copy of material with tag " << theMat.getTag() << endln;
 	  exit(-1);
-	} else if (theMaterial->getClassTag() == MAT_TAG_ConcwBeta) {
+	} else if (theMaterial->getClassTag() == MAT_TAG_ConcretewBeta) {
 	  theBetaMaterial = (ConcretewBeta *) theMaterial;
 	}
 
@@ -984,7 +984,7 @@ int
 			opserr <<"WARNING Truss2::recvSelf() - " << this->getTag() 
 				<< " failed to get a blank Material of type " << matClass << endln;
 			return -3;
-		} else if (theMaterial->getClassTag() == MAT_TAG_ConcwBeta) {
+		} else if (theMaterial->getClassTag() == MAT_TAG_ConcretewBeta) {
 			theBetaMaterial = (ConcretewBeta *) theMaterial;
 		}
 	}
