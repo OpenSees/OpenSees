@@ -1568,21 +1568,7 @@ buildModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 }
 
 
-int 
-opsPartition(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
-{
-#ifdef _PARALLEL_PROCESSING
-  int eleTag;
-  if (argc == 2) {
-    if (Tcl_GetInt(interp, argv[1], &eleTag) != TCL_OK) {
-      ;
-    }
-  }
-  this->partitionModel(eleTag);
 
-#endif
-  return TCL_OK;
-}
 
 #ifdef _PARALLEL_PROCESSING
 
@@ -1659,6 +1645,21 @@ partitionModel(int eleTag)
 #endif
 
 
+int 
+opsPartition(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+#ifdef _PARALLEL_PROCESSING
+  int eleTag;
+  if (argc == 2) {
+    if (Tcl_GetInt(interp, argv[1], &eleTag) != TCL_OK) {
+      ;
+    }
+  }
+  partitionModel(eleTag);
+
+#endif
+  return TCL_OK;
+}
 
 //
 // command invoked to build the model, i.e. to invoke analyze() 
