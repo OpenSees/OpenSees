@@ -81,8 +81,6 @@ int TclModelBuilder_addMultipleShearSpring(ClientData clientData,
     return TCL_ERROR;
   }
 
-
-
   //arguments (necessary)
   int eleTag;
   int iNode;
@@ -91,7 +89,8 @@ int TclModelBuilder_addMultipleShearSpring(ClientData clientData,
   int matTag;
 
   //material
-  UniaxialMaterial *material;
+  UniaxialMaterial *material = 0;
+  UniaxialMaterial **theMaterials = 0;
   int recvMat = 0;
 
   //arguments (optional)
@@ -99,8 +98,6 @@ int TclModelBuilder_addMultipleShearSpring(ClientData clientData,
   Vector oriX(0);
   Vector oriYp(3); oriYp(0) = 0.0; oriYp(1) = 1.0; oriYp(2) = 0.0;
   double mass = 0.0;
-
-
 
   //
   Element *theElement = 0;
@@ -150,7 +147,6 @@ int TclModelBuilder_addMultipleShearSpring(ClientData clientData,
 	  ifNoError = false;
 	}
 
-
 	material = OPS_getUniaxialMaterial(matTag);
 	if (material == 0)  {
 	  opserr << "WARNING material model not found\n";
@@ -162,7 +158,28 @@ int TclModelBuilder_addMultipleShearSpring(ClientData clientData,
 	//opserr << "org material " << material->getClassType() << "\n";
 	recvMat++ ;
 	i += 1;
-	
+
+      } else if (strcmp(argv[i],"-nMat")==0 && (i+nSpring)<=(argc-1)) { // -mat matTag?
+
+	theMaterials = new UniaxialMaterial *[nSpring];
+	for (int j=0; j<nSpring; j++) {
+	  if (Tcl_GetInt(interp,argv[j+i+1], &matTag) != TCL_OK) {
+	    opserr << "WARNING invalid matTag\n";
+	    ifNoError = false;
+	  }
+	  
+	  theMaterials[j] = OPS_getUniaxialMaterial(matTag);
+	  if (theMaterials[j] == 0)  {
+	    opserr << "WARNING material model not found\n";
+	    opserr << "uniaxialMaterial: " << matTag << endln;
+	    opserr << "multipleShearSpring element: " << eleTag << endln;
+	    return TCL_ERROR;
+	  }
+	}
+	//opserr << "org material " << material->getClassType() << "\n";
+	recvMat++ ;
+	i += nSpring;	
+
       } else if (strcmp(argv[i],"-orient")==0 && (i+6)<=(argc-1) && Tcl_GetDouble(interp,argv[i+4], &value) == TCL_OK) { // <-orient x1? x2? x3? yp1? yp2? yp3?>
 
 	oriX.resize(3);
@@ -254,7 +271,12 @@ int TclModelBuilder_addMultipleShearSpring(ClientData clientData,
   
 
   // now create the multipleShearSpring
-  theElement = new MultipleShearSpring(eleTag, iNode, jNode, nSpring, material, limDisp, oriYp, oriX, mass);
+  if (theMaterials == 0) {
+    theElement = new MultipleShearSpring(eleTag, iNode, jNode, nSpring, material, limDisp, oriYp, oriX, mass);
+  } else {
+    theElement = new MultipleShearSpring(eleTag, iNode, jNode, theMaterials, nSpring, limDisp, oriYp, oriX, mass);
+    delete [] theMaterials;
+  }
 
   if (theElement == 0)  {
     opserr << "WARNING ran out of memory creating element\n";
@@ -273,8 +295,6 @@ int TclModelBuilder_addMultipleShearSpring(ClientData clientData,
   // if get here we have successfully created the multipleShearSpring and added it to the domain
   return TCL_OK;
 }
-
-
 
 
 
@@ -341,7 +361,6 @@ MultipleShearSpring::MultipleShearSpring(int Tag, int Nd1, int Nd2,
 
 
   //calculate Feq and Seq
-
   //imaginary material to caluculate Feq and Seq
   dmyMssMaterial = Material->getCopy();
   if (dmyMssMaterial == 0) {
@@ -397,6 +416,128 @@ MultipleShearSpring::MultipleShearSpring(int Tag, int Nd1, int Nd2,
   // Seq: equivalent coefficient for stiffness
   basicStiffInit *= mssSeq;
 
+
+  // initialize variables
+  this->revertToStart();
+}
+
+
+
+
+MultipleShearSpring::MultipleShearSpring(int Tag, int Nd1, int Nd2,
+					 UniaxialMaterial **theMats,
+					 int NSpring,
+					 double LimDisp,
+					 const Vector OriYp, const Vector OriX, double Mass)
+  : Element(Tag, ELE_TAG_MultipleShearSpring),
+    connectedExternalNodes(2),
+    nSpring(NSpring), limDisp(LimDisp), oriX(OriX), oriYp(OriYp), mass(Mass),
+    Tgl(12,12), Tlb(6,12),
+    basicDisp(6), localDisp(12), basicForce(6), basicStiff(6,6), basicStiffInit(6,6)
+{
+  
+  // ensure the connectedExternalNode ID is of correct size & set values
+  if (connectedExternalNodes.Size() != 2)  {
+    opserr << "MultipleShearSpring::setUp() - element: "
+	   << this->getTag() << " failed to create an ID of size 2\n";
+  }
+  
+  connectedExternalNodes(0) = Nd1;
+  connectedExternalNodes(1) = Nd2;
+  
+  // set node pointers to NULL
+  for (int i=0; i<2; i++)
+    theNodes[i] = 0;
+  
+  // check material input
+  if (theMats == 0)  {
+    opserr << "MultipleShearSpring::MultipleShearSpring() - "
+	   << "null uniaxial material pointer passed.\n";
+    exit(-1);
+  }
+
+  theMaterials = new UniaxialMaterial* [nSpring];
+
+  // get copies of the uniaxial materials
+  for (int i=0; i<nSpring; i++)  {
+    if (theMats[i] != 0) {
+      theMaterials[i] = theMats[i]->getCopy();
+    } else {
+      theMaterials[i] = 0;
+    }
+	
+    if (theMaterials[i] == 0) {
+      opserr << "MultipleShearSpring::MultipleShearSpring() - "
+ 	     << "failed to copy uniaxial material.\n";
+      exit(-1);
+    }
+  }
+  
+  //arrangement of each spring
+  cosTht = new double [nSpring];
+  sinTht = new double [nSpring];
+  
+  for (int i=0; i<nSpring; i++)  {
+    cosTht[i] = cos(M_PI*i/nSpring);
+    sinTht[i] = sin(M_PI*i/nSpring);
+  }
+
+
+  //calculate Feq and Seq
+  //imaginary material to caluculate Feq and Seq
+  dmyMssMaterial = theMaterials[0]->getCopy();
+  if (dmyMssMaterial == 0) {
+    opserr << "MultipleShearSpring::MultipleShearSpring() - "
+	   << "failed to copy uniaxial material.\n";
+    exit(-1);
+  }
+  dmyMssMaterial->revertToStart();
+
+  //initial Feq and Seq
+  if (limDisp > 0) {
+    double uRef, fRef, sRef;//u:deformation, f:force, s:stiffness
+    double uCmp, fSum, sSum;
+
+    //imaginary material (1-directional deformation)
+    uRef = limDisp;
+    dmyMssMaterial->setTrialStrain(uRef,0);
+    fRef = dmyMssMaterial->getStress();
+    sRef = dmyMssMaterial->getTangent();
+
+    //MSS
+    fSum = 0.0;
+    sSum = 0.0;
+    for (int i=0; i<nSpring; i++)  {
+      uCmp = uRef * cosTht[i];
+      dmyMssMaterial->setTrialStrain(uCmp,0);
+      fSum += dmyMssMaterial->getStress()  * cosTht[i];
+      sSum += dmyMssMaterial->getTangent() * cosTht[i] * cosTht[i];
+    }
+    mssFeq = fRef/fSum;
+    mssSeq = sRef/sSum;
+
+  } else {
+
+    mssFeq = 1.0;
+    mssSeq = 1.0;
+
+  }
+
+
+  // initial basic stiffness matrix
+  basicStiffInit.Zero();
+  for (int i=0; i<nSpring; i++)  {
+    double tmpTangent = theMaterials[i]->getInitialTangent();
+
+    basicStiffInit(1,1) += tmpTangent * cosTht[i] * cosTht[i];
+    basicStiffInit(1,2) += tmpTangent * cosTht[i] * sinTht[i];
+    basicStiffInit(2,1) += tmpTangent * sinTht[i] * cosTht[i];
+    basicStiffInit(2,2) += tmpTangent * sinTht[i] * sinTht[i];
+  }
+
+
+  // Seq: equivalent coefficient for stiffness
+  basicStiffInit *= mssSeq;
 
 
   // initialize variables
@@ -653,8 +794,10 @@ int MultipleShearSpring::update()
 
   }
 
+  opserr << "forceFactor: " << mssFeq << " stiffFactor: " << mssSeq << endln;
   basicForce *= mssFeq;
   basicStiff *= mssSeq;
+
   
   return 0;
 }

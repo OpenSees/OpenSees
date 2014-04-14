@@ -49,6 +49,14 @@ class MultipleShearSpring : public Element
 		      double LimDisp,
 		      const Vector OriYp, const Vector OriX = 0,
 		      double Mass = 0.0);
+
+  MultipleShearSpring(int Tag, int Nd1, int Nd2,
+		      UniaxialMaterial **theMaterials,
+		      int NSpring,
+		      double LimDisp,
+		      const Vector OriYp, const Vector OriX = 0,
+		      double Mass = 0.0);
+
   MultipleShearSpring();
   
   // destructor
