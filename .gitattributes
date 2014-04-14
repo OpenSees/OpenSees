@@ -3169,6 +3169,8 @@ SRC/material/uniaxial/Neoprene.cpp -text
 SRC/material/uniaxial/Neoprene.h -text
 SRC/material/uniaxial/NewUniaxialMaterial.cpp -text
 SRC/material/uniaxial/NewUniaxialMaterial.h -text
+SRC/material/uniaxial/OriginCentered.cpp -text
+SRC/material/uniaxial/OriginCentered.h -text
 SRC/material/uniaxial/PY/Makefile -text
 SRC/material/uniaxial/PY/PyLiq1.cpp -text
 SRC/material/uniaxial/PY/PyLiq1.h -text
@@ -3237,6 +3239,8 @@ SRC/material/uniaxial/Steel02Thermal.cpp -text
 SRC/material/uniaxial/Steel02Thermal.h -text
 SRC/material/uniaxial/Steel03.cpp -text
 SRC/material/uniaxial/Steel03.h -text
+SRC/material/uniaxial/Steel2.cpp -text
+SRC/material/uniaxial/Steel2.h -text
 SRC/material/uniaxial/SteelBRB.cpp -text
 SRC/material/uniaxial/SteelBRB.h -text
 SRC/material/uniaxial/SteelMP.cpp -text
