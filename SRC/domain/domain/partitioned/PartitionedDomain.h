@@ -129,7 +129,7 @@ class PartitionedDomain: public Domain
 
     // public member functions in addition to the standard domain
     virtual int setPartitioner(DomainPartitioner *thePartitioner);
-    virtual int partition(int numPartitions, bool usingMain = false, int mainPartitionID = 0);
+    virtual int partition(int numPartitions, bool usingMain = false, int mainPartitionID = 0, int specialElementTag = 0);
 			
     virtual bool addSubdomain(Subdomain *theSubdomain);
     virtual int getNumSubdomains(void);

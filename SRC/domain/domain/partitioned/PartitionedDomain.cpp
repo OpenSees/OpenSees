@@ -1386,7 +1386,7 @@ PartitionedDomain::setPartitioner(DomainPartitioner *thePartitioner)
 
 
 int 
-PartitionedDomain::partition(int numPartitions, bool usingMain, int mainPartitionID)
+PartitionedDomain::partition(int numPartitions, bool usingMain, int mainPartitionID, int specialElementTag)
 {
   int result = 0;
   // need to create element graph before create new subdomains
@@ -1397,7 +1397,7 @@ PartitionedDomain::partition(int numPartitions, bool usingMain, int mainPartitio
   DomainPartitioner *thePartitioner = this->getPartitioner();
   if (thePartitioner != 0) {
     thePartitioner->setPartitionedDomain(*this);
-    result =  thePartitioner->partition(numPartitions, usingMain, mainPartitionID);
+    result =  thePartitioner->partition(numPartitions, usingMain, mainPartitionID, specialElementTag);
   } else {
     opserr << "PartitionedDomain::partition(int numPartitions) - no associated partitioner\n";
     return -1;

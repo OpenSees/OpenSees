@@ -594,6 +594,9 @@ opsSend(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 int 
 opsRecv(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
+int 
+opsPartition(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
 int
 neesUpload(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
@@ -911,6 +914,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "send", &opsSend, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "recv", &opsRecv, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "partition", &opsPartition, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "searchPeerNGA", &peerNGA, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
@@ -1563,10 +1568,26 @@ buildModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 }
 
 
+int 
+opsPartition(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+#ifdef _PARALLEL_PROCESSING
+  int eleTag;
+  if (argc == 2) {
+    if (Tcl_GetInt(interp, argv[1], &eleTag) != TCL_OK) {
+      ;
+    }
+  }
+  this->partitionModel(eleTag);
+
+#endif
+  return TCL_OK;
+}
+
 #ifdef _PARALLEL_PROCESSING
 
 int 
-partitionModel(void)
+partitionModel(int eleTag)
 {
   int result = 0;
   
@@ -1593,7 +1614,7 @@ partitionModel(void)
     theDomain.setPartitioner(OPS_DOMAIN_PARTITIONER);
   }
 
-  result = theDomain.partition(OPS_NUM_SUBDOMAINS, OPS_USING_MAIN_DOMAIN, OPS_MAIN_DOMAIN_PARTITION_ID);
+  result = theDomain.partition(OPS_NUM_SUBDOMAINS, OPS_USING_MAIN_DOMAIN, OPS_MAIN_DOMAIN_PARTITION_ID, eleTag);
   
   if (result < 0) 
     return result;
@@ -1650,7 +1671,7 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
 #ifdef _PARALLEL_PROCESSING
   if (OPS_PARTITIONED == false && OPS_NUM_SUBDOMAINS > 1) 
-    if (partitionModel() < 0) {
+    if (partitionModel(0) < 0) {
       opserr << "WARNING before analysis; partition failed - too few elements\n";
       OpenSeesExit(clientData, interp, argc, argv);
       return TCL_ERROR;
@@ -6175,12 +6196,12 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 
 #ifdef _PARALLEL_PROCESSING
-	if (OPS_PARTITIONED == false && OPS_NUM_SUBDOMAINS > 1) 
-    if (partitionModel() < 0) {
-      opserr << "WARNING before analysis; partition failed - too few elements\n";
-      OpenSeesExit(clientData, interp, argc, argv);
-      return TCL_ERROR;
-    }
+      if (OPS_PARTITIONED == false && OPS_NUM_SUBDOMAINS > 1) 
+	if (partitionModel(0) < 0) {
+	  opserr << "WARNING before analysis; partition failed - too few elements\n";
+	  OpenSeesExit(clientData, interp, argc, argv);
+	  return TCL_ERROR;
+	}
 
       if (theStaticAnalysis != 0 || theTransientAnalysis != 0) {
 	SubdomainIter &theSubdomains = theDomain.getSubdomains();

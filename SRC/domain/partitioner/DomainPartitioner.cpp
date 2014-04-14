@@ -132,7 +132,7 @@ DomainPartitioner::setPartitionedDomain(PartitionedDomain &theDomain)
 }
 
 int
-DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag)
+DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag, int specialElementTag)
 {
 
   usingMainDomain = usingMain;
@@ -189,6 +189,23 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag)
     opserr <<"DomainPartitioner::partition - too few elements for model to be partitioned\n";
     return -1;
   }
+
+  int specialElementColor = vertexOnePartition;
+  if (specialElementTag != 0) {
+    bool found = false;
+    VertexIter &theVerticesSpecial = theElementGraph->getVertices();
+    while ((found == false) && ((vertexPtr = theVerticesSpecial()) != 0)) {
+      int eleTag = vertexPtr->getRef();
+      if (eleTag == specialElementTag) {
+	found = true;
+	int vertexColor = vertexPtr->getColor();
+	if (vertexColor != vertexOnePartition)
+	  //	  specialElementColor = vertexColor;
+	  vertexPtr->setColor(vertexOnePartition);
+      }
+    }
+  }
+  
       
   // we create empty graphs for the numParts subdomains,
   // in the graphs we place the vertices for the elements on the boundaries

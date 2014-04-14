@@ -58,7 +58,7 @@ class DomainPartitioner
     virtual  ~DomainPartitioner();    
 
     virtual void setPartitionedDomain(PartitionedDomain &theDomain);
-    virtual int partition(int numParts, bool useMainDomain = false, int mainPartition = 0);
+    virtual int partition(int numParts, bool useMainDomain = false, int mainPartition = 0, int specialElementTag = 0);
 
     virtual int balance(Graph &theWeightedSubdomainGraph);
 
