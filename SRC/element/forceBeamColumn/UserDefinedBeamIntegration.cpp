@@ -24,6 +24,7 @@
 
 #include <UserDefinedBeamIntegration.h>
 
+#include <ID.h>
 #include <Vector.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -131,14 +132,40 @@ UserDefinedBeamIntegration::getCopy(void)
 int
 UserDefinedBeamIntegration::sendSelf(int cTag, Channel &theChannel)
 {
-  return -1;
+  int dbTag = this->getDbTag();
+  int nIP = pts.Size();
+  static ID iData(1);
+  theChannel.sendID(dbTag, cTag, iData);
+
+  Vector dData(nIP*2);
+  for (int i=0; i<nIP; i++) {
+    dData(i) = pts(i);
+    dData(i+nIP) = wts(i);
+  }
+  return theChannel.sendVector(dbTag, cTag, dData);  
 }
 
 int
 UserDefinedBeamIntegration::recvSelf(int cTag, Channel &theChannel,
 				     FEM_ObjectBroker &theBroker)
 {
-  return -1;
+  int dbTag = this->getDbTag();
+  int nIP;
+  static ID iData(1);
+  theChannel.recvID(dbTag, cTag, iData);
+  nIP = iData(0);
+  pts.resize(nIP);
+  wts.resize(nIP);
+
+  Vector dData(nIP*2);
+  int res = theChannel.recvVector(dbTag, cTag, dData);  
+  if (res == 0) {
+    for (int i=0; i<nIP; i++) {
+      pts(i) = dData(i);
+      wts(i) = dData(i+nIP);
+    }
+  }
+  return res;
 }
 
 void
