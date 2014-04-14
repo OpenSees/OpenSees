@@ -189,8 +189,10 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
     opserr <<"DomainPartitioner::partition - too few elements for model to be partitioned\n";
     return -1;
   }
+  opserr << "special ele: " << specialElementTag << endln;
+  opserr << "VERTEX ONE: " << vertexOnePartition << endln;
 
-  int specialElementColor = vertexOnePartition;
+  int specialElementColor = 1;
   if (specialElementTag != 0) {
     bool found = false;
     VertexIter &theVerticesSpecial = theElementGraph->getVertices();
@@ -199,9 +201,9 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
       if (eleTag == specialElementTag) {
 	found = true;
 	int vertexColor = vertexPtr->getColor();
-	if (vertexColor != vertexOnePartition)
+	if (vertexColor != 1)
 	  //	  specialElementColor = vertexColor;
-	  vertexPtr->setColor(vertexOnePartition);
+	  vertexPtr->setColor(1);
       }
     }
   }
