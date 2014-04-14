@@ -66,8 +66,11 @@
 #include <Concrete02.h>
 #include <Concrete04.h>
 #include <Concrete06.h>
+#include <ConcretewBeta.h>
+#include <OriginCentered.h>
 #include <Steel01.h>
 #include <Steel02.h>
+#include <Steel2.h>
 #include <FatigueMaterial.h>
 #include <ReinforcingSteel.h>
 #include <HardeningMaterial.h>
@@ -187,6 +190,7 @@
 #include <beam3d01.h>
 #include <beam3d02.h>
 #include <Truss.h>
+#include <Truss2.h>
 #include <TrussSection.h>
 #include <CorotTruss.h>
 #include <CorotTrussSection.h>
@@ -261,6 +265,7 @@
 #include <LegendreBeamIntegration.h>
 #include <RadauBeamIntegration.h>
 #include <NewtonCotesBeamIntegration.h>
+#include <UserDefinedBeamIntegration.h>
 
 // node header files
 #include <Node.h>
@@ -545,6 +550,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 	     
 	case ELE_TAG_Truss:  
 	     return new Truss(); 
+
+	case ELE_TAG_Truss2:  
+	     return new Truss2(); 
 	     
 	case ELE_TAG_TrussSection:  
 	     return new TrussSection(); 	     
@@ -879,6 +887,9 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
   case BEAM_INTEGRATION_TAG_NewtonCotes:        
     return new NewtonCotesBeamIntegration();
 
+  case BEAM_INTEGRATION_TAG_UserDefined:        
+    return new UserDefinedBeamIntegration();
+
   case BEAM_INTEGRATION_TAG_HingeMidpoint:
     return new HingeMidpointBeamIntegration();
     
@@ -931,11 +942,20 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Concrete06:  
 	     return new Concrete06();
 
+	case MAT_TAG_ConcretewBeta:  
+	     return new ConcretewBeta();
+
 	case MAT_TAG_Steel01:  
 	     return new Steel01();
 
 	case MAT_TAG_Steel02:  
 	     return new Steel02();
+
+	case MAT_TAG_Steel2:  
+	     return new Steel2();
+
+	case MAT_TAG_OriginCentered:  
+	     return new OriginCentered();
 
 	case MAT_TAG_ReinforcingSteel:  
 	     return new ReinforcingSteel(0);
