@@ -3,6 +3,9 @@ include ../../../Makefile.def
  OBJS       = UniaxialMaterial.o \
 	ElasticMaterial.o \
 	Elastic2Material.o \
+	Steel2.o \
+	OriginCentered.o \
+	ConcretewBeta.o \
 	ElasticMultiLinear.o \
         ElasticPPMaterial.o \
         ElasticBilin.o \
