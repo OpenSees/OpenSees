@@ -183,10 +183,12 @@
 #define MAT_TAG_PinchingLimitStateMaterial      69	
 #define MAT_TAG_BraceMaterial                   70	
 #define MAT_TAG_ViscousDamper                   71
-#define MAT_TAG_ConcwBeta                       72
+#define MAT_TAG_ConcretewBeta                   72
 #define MAT_TAG_WrapperUniaxialMaterial         73
 #define MAT_TAG_UniaxialJ2Plasticity            74
 #define MAT_TAG_BWBN                            75
+#define MAT_TAG_OriginCentered                  76
+#define MAT_TAG_Steel2                          77
 
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
