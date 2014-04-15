@@ -786,7 +786,6 @@ Truss::getResistingForce()
 
     // subtract external load:  Ku - P
     (*theVector) -= *theLoad;
-    opserr << this->getTag() << " " << theMaterial->getStrain() << " " << theMaterial->getStress() << " " << theMaterial->getTangent() << " " << *theVector;
 
     return *theVector;
 }
