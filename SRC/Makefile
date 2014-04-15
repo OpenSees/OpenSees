@@ -585,6 +585,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Steel01.o \
 	$(FE)/material/uniaxial/RambergOsgoodSteel.o \
 	$(FE)/material/uniaxial/Steel02.o \
+	$(FE)/material/uniaxial/Steel2.o \
+	$(FE)/material/uniaxial/OriginCentered.o \
 	$(FE)/material/uniaxial/Steel03.o \
 	$(FE)/material/uniaxial/SteelMP.o \
 	$(FE)/material/uniaxial/BWBN.o \
