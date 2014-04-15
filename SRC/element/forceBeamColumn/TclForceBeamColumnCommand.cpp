@@ -260,7 +260,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       } else
 	argi++;
     }
-    
+      
     int numIter = 10;
     double tol = 1.0e-12;
     double mass = 0.0;
@@ -1241,6 +1241,45 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
     return TCL_ERROR;
   }
 
+  int argi = 6;
+  double mass = 0.0;
+  int numIter = 10;
+  double tol = 1.0e-12;
+
+  while (argi < argc) {
+    if (strcmp(argv[argi],"-iter") == 0) {
+      if (argc < argi+3) {
+	opserr << "WARNING not enough -iter args need -iter numIter? tol?\n";
+	opserr << argv[1] << " element: " << eleTag << endln;
+	return TCL_ERROR;
+      }
+      if (Tcl_GetInt(interp, argv[argi+1], &numIter) != TCL_OK) {
+	opserr << "WARNING invalid numIter\n";
+	opserr << argv[1] << " element: " << eleTag << endln;
+	return TCL_ERROR;
+      }
+      if (Tcl_GetDouble(interp, argv[argi+2], &tol) != TCL_OK) {
+	opserr << "WARNING invalid tol\n";
+	opserr << argv[1] << " element: " << eleTag << endln;
+	return TCL_ERROR;
+      }
+      argi += 3;
+    } else if (strcmp(argv[argi],"-mass") == 0) {
+      if (argc < argi+2) {
+	opserr << "WARNING not enough -iter args need -mass mass??\n";
+	opserr << argv[1] << " element: " << eleTag << endln;
+	return TCL_ERROR;
+      }
+      if (Tcl_GetDouble(interp, argv[argi+1], &mass) != TCL_OK) {
+	opserr << "WARNING invalid numIter\n";
+	opserr << argv[1] << " element: " << eleTag << endln;
+	return TCL_ERROR;
+      }
+      argi += 2;
+    }
+    argi += 1;
+  }
+
   if (ndm == 2) {
     if (strcmp(argv[1],"elasticForceBeamColumn") == 0)
       theElement = new ElasticForceBeamColumn2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d);
@@ -1259,7 +1298,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
     else if (strcmp(argv[1],"forceBeamColumnCSBDI") == 0)
       theElement = new ForceBeamColumnCBDI2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, 0.0, true);
     else 
-      theElement = new ForceBeamColumn2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d);
+      theElement = new ForceBeamColumn2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, mass, numIter, tol);
   }
   else {
     if (strcmp(argv[1],"elasticForceBeamColumn") == 0)
@@ -1267,7 +1306,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
     else if (strcmp(argv[1],"dispBeamColumn") == 0)
       theElement = new DispBeamColumn3d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf3d);
     else
-      theElement = new ForceBeamColumn3d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf3d);
+      theElement = new ForceBeamColumn3d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf3d, mass, numIter, tol);
   }
 
   if (beamIntegr != 0)
