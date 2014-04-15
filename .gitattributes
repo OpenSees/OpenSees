@@ -4151,6 +4151,8 @@ SRC/system_of_eqn/linearSOE/profileSPD/SProfileSPDLinSOE.cpp -text
 SRC/system_of_eqn/linearSOE/profileSPD/SProfileSPDLinSOE.h -text
 SRC/system_of_eqn/linearSOE/profileSPD/SProfileSPDLinSolver.cpp -text
 SRC/system_of_eqn/linearSOE/profileSPD/SProfileSPDLinSolver.h -text
+SRC/system_of_eqn/linearSOE/sparseGEN/CuSPSolver.cpp -text
+SRC/system_of_eqn/linearSOE/sparseGEN/CuSPSolver.h -text
 SRC/system_of_eqn/linearSOE/sparseGEN/CulaSparseSolverS4.cpp -text
 SRC/system_of_eqn/linearSOE/sparseGEN/CulaSparseSolverS4.h -text
 SRC/system_of_eqn/linearSOE/sparseGEN/CulaSparseSolverS5.cpp -text
