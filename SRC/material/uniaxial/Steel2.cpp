@@ -49,7 +49,7 @@
 
 
 void *
-OPS_NewSteel2()
+OPS_NewSteel2(void)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
