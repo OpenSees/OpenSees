@@ -6223,7 +6223,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     bool setEigen = false;
     if (theEigenSOE != 0) {
       if (theEigenSOE->getClassTag() != typeSolver) {
-	delete theEigenSOE;
+	//	delete theEigenSOE;
 	theEigenSOE = 0;
 	setEigen = true;
       }
