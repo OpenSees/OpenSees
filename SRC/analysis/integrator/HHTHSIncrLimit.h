@@ -25,7 +25,7 @@
 #ifndef HHTHSIncrLimit_h
 #define HHTHSIncrLimit_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 11/09
 // Revision: A
 //
@@ -50,13 +50,8 @@ public:
     // constructors
     HHTHSIncrLimit();
     HHTHSIncrLimit(double rhoInf, double limit, int normType);
-    HHTHSIncrLimit(double rhoInf, double limit, int normType,
-        double alphaM, double betaK, double betaKi, double betaKc);
     HHTHSIncrLimit(double alphaI, double alphaF,
         double beta, double gamma, double limit, int normType);
-    HHTHSIncrLimit(double alphaI, double alphaF,
-        double beta, double gamma, double limit, int normType,
-        double alphaM, double betaK, double betaKi, double betaKc);
     
     // destructor
     ~HHTHSIncrLimit();
@@ -87,12 +82,6 @@ private:
     double limit;   // disp increment limit
     int normType;   // type of norm that is used to limit increments
     double deltaT;
-    
-    // rayleigh damping factors
-    double alphaM;
-    double betaK;
-    double betaKi;
-    double betaKc;
     
     double c1, c2, c3;                          // some constants we need to keep
     Vector *Ut, *Utdot, *Utdotdot;              // response quantities at time t

@@ -22,7 +22,7 @@
 // $Date: 2009-05-19 22:17:31 $
 // $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/HHTHSFixedNumIter.cpp,v $
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 10/05
 // Revision: A
 //
@@ -47,8 +47,7 @@
 HHTHSFixedNumIter::HHTHSFixedNumIter()
     : TransientIntegrator(INTEGRATOR_TAGS_HHTHSFixedNumIter),
     alphaI(0.5), alphaF(0.5), beta(0.0), gamma(0.0), polyOrder(2),
-    deltaT(0.0), alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0), x(1.0),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
     Utm1(0), Utm2(0), scaledDeltaU(0)
@@ -61,25 +60,7 @@ HHTHSFixedNumIter::HHTHSFixedNumIter(double _rhoInf, int polyorder)
     : TransientIntegrator(INTEGRATOR_TAGS_HHTHSFixedNumIter),
     alphaI((2.0-_rhoInf)/(1.0+_rhoInf)), alphaF(1.0/(1.0+_rhoInf)),
     beta(1.0/(1.0+_rhoInf)/(1.0+_rhoInf)), gamma(0.5*(3.0-_rhoInf)/(1.0+_rhoInf)),
-    polyOrder(polyorder), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0), x(1.0),
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    Ualpha(0), Ualphadot(0), Ualphadotdot(0),
-    Utm1(0), Utm2(0), scaledDeltaU(0)
-{
-    
-}
-
-
-HHTHSFixedNumIter::HHTHSFixedNumIter(double _rhoInf, int polyorder,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc)
-    : TransientIntegrator(INTEGRATOR_TAGS_HHTHSFixedNumIter),
-    alphaI((2.0-_rhoInf)/(1.0+_rhoInf)), alphaF(1.0/(1.0+_rhoInf)),
-    beta(1.0/(1.0+_rhoInf)/(1.0+_rhoInf)), gamma(0.5*(3.0-_rhoInf)/(1.0+_rhoInf)),
-    polyOrder(polyorder), deltaT(0.0),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
-    c1(0.0), c2(0.0), c3(0.0), x(1.0),
+    polyOrder(polyorder), deltaT(0.0), c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
     Utm1(0), Utm2(0), scaledDeltaU(0)
@@ -92,25 +73,7 @@ HHTHSFixedNumIter::HHTHSFixedNumIter(double _alphaI, double _alphaF,
     double _beta, double _gamma, int polyorder)
     : TransientIntegrator(INTEGRATOR_TAGS_HHTHSFixedNumIter),
     alphaI(_alphaI), alphaF(_alphaF), beta(_beta), gamma(_gamma),
-    polyOrder(polyorder), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0), x(1.0),
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    Ualpha(0), Ualphadot(0), Ualphadotdot(0),
-    Utm1(0), Utm2(0), scaledDeltaU(0)
-{
-    
-}
-
-
-HHTHSFixedNumIter::HHTHSFixedNumIter(double _alphaI, double _alphaF,
-    double _beta, double _gamma, int polyorder,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc)
-    : TransientIntegrator(INTEGRATOR_TAGS_HHTHSFixedNumIter),
-    alphaI(_alphaI), alphaF(_alphaF), beta(_beta), gamma(_gamma),
-    polyOrder(polyorder), deltaT(0.0),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
-    c1(0.0), c2(0.0), c3(0.0), x(1.0),
+    polyOrder(polyorder), deltaT(0.0), c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
     Utm1(0), Utm2(0), scaledDeltaU(0)
@@ -263,10 +226,6 @@ int HHTHSFixedNumIter::domainChanged()
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
-    
-    // if damping factors exist set them in the ele & node of the domain
-    if (alphaM != 0.0 || betaK != 0.0 || betaKi != 0.0 || betaKc != 0.0)
-        myModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
     
     // create the new Vector objects
     if (Ut == 0 || Ut->Size() != size)  {
@@ -526,16 +485,12 @@ int HHTHSFixedNumIter::commit(void)
 
 int HHTHSFixedNumIter::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(9);
+    Vector data(5);
     data(0) = alphaI;
     data(1) = alphaF;
     data(2) = beta;
     data(3) = gamma;
     data(4) = polyOrder;
-    data(5) = alphaM;
-    data(6) = betaK;
-    data(7) = betaKi;
-    data(8) = betaKc;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING HHTHSFixedNumIter::sendSelf() - could not send data\n";
@@ -548,7 +503,7 @@ int HHTHSFixedNumIter::sendSelf(int cTag, Channel &theChannel)
 
 int HHTHSFixedNumIter::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(9);
+    Vector data(5);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING HHTHSFixedNumIter::recvSelf() - could not receive data\n";
         alphaI = 0.5; alphaF = 0.5; polyOrder = 2;
@@ -560,10 +515,6 @@ int HHTHSFixedNumIter::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker 
     beta      = data(2);
     gamma     = data(3);
     polyOrder = int(data(4));
-    alphaM    = data(5);
-    betaK     = data(6);
-    betaKi    = data(7);
-    betaKc    = data(8);
     
     return 0;
 }
@@ -578,8 +529,6 @@ void HHTHSFixedNumIter::Print(OPS_Stream &s, int flag)
         s << "  alphaI: " << alphaI << "  alphaF: " << alphaF  << "  beta: " << beta  << "  gamma: " << gamma << endln;
         s << "  polyOrder: " << polyOrder << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-        s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
-        s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;	    
     } else 
         s << "HHTHSFixedNumIter - no associated AnalysisModel\n";
 }

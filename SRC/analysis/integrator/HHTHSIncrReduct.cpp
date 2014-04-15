@@ -22,7 +22,7 @@
 // $Date: 2009-05-19 22:17:31 $
 // $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/HHTHSIncrReduct.cpp,v $
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 10/05
 // Revision: A
 //
@@ -45,8 +45,7 @@
 HHTHSIncrReduct::HHTHSIncrReduct()
     : TransientIntegrator(INTEGRATOR_TAGS_HHTHSIncrReduct),
     alphaI(0.5), alphaF(0.5), beta(0.0), gamma(0.0), reduct(1.0),
-    deltaT(0.0), alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
     scaledDeltaU(0)
@@ -59,25 +58,7 @@ HHTHSIncrReduct::HHTHSIncrReduct(double _rhoInf, double _reduct)
     : TransientIntegrator(INTEGRATOR_TAGS_HHTHSIncrReduct),
     alphaI((2.0-_rhoInf)/(1.0+_rhoInf)), alphaF(1.0/(1.0+_rhoInf)),
     beta(1.0/(1.0+_rhoInf)/(1.0+_rhoInf)), gamma(0.5*(3.0-_rhoInf)/(1.0+_rhoInf)),
-    reduct(_reduct), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    Ualpha(0), Ualphadot(0), Ualphadotdot(0),
-    scaledDeltaU(0)
-{
-    
-}
-
-
-HHTHSIncrReduct::HHTHSIncrReduct(double _rhoInf, double _reduct,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc)
-    : TransientIntegrator(INTEGRATOR_TAGS_HHTHSIncrReduct),
-    alphaI((2.0-_rhoInf)/(1.0+_rhoInf)), alphaF(1.0/(1.0+_rhoInf)),
-    beta(1.0/(1.0+_rhoInf)/(1.0+_rhoInf)), gamma(0.5*(3.0-_rhoInf)/(1.0+_rhoInf)),
-    reduct(_reduct), deltaT(0.0),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
-    c1(0.0), c2(0.0), c3(0.0),
+    reduct(_reduct), deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
     scaledDeltaU(0)
@@ -90,25 +71,7 @@ HHTHSIncrReduct::HHTHSIncrReduct(double _alphaI, double _alphaF,
     double _beta, double _gamma, double _reduct)
     : TransientIntegrator(INTEGRATOR_TAGS_HHTHSIncrReduct),
     alphaI(_alphaI), alphaF(_alphaF), beta(_beta), gamma(_gamma),
-    reduct(_reduct), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    Ualpha(0), Ualphadot(0), Ualphadotdot(0),
-    scaledDeltaU(0)
-{
-    
-}
-
-
-HHTHSIncrReduct::HHTHSIncrReduct(double _alphaI, double _alphaF,
-    double _beta, double _gamma, double _reduct,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc)
-    : TransientIntegrator(INTEGRATOR_TAGS_HHTHSIncrReduct),
-    alphaI(_alphaI), alphaF(_alphaF), beta(_beta), gamma(_gamma),
-    reduct(_reduct), deltaT(0.0),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
-    c1(0.0), c2(0.0), c3(0.0),
+    reduct(_reduct), deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
     scaledDeltaU(0)
@@ -256,10 +219,6 @@ int HHTHSIncrReduct::domainChanged()
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
-    
-    // if damping factors exist set them in the ele & node of the domain
-    if (alphaM != 0.0 || betaK != 0.0 || betaKi != 0.0 || betaKc != 0.0)
-        myModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
     
     // create the new Vector objects
     if (Ut == 0 || Ut->Size() != size)  {
@@ -459,16 +418,12 @@ int HHTHSIncrReduct::commit(void)
 
 int HHTHSIncrReduct::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(9);
+    Vector data(5);
     data(0) = alphaI;
     data(1) = alphaF;
     data(2) = beta;
     data(3) = gamma;
     data(4) = reduct;
-    data(5) = alphaM;
-    data(6) = betaK;
-    data(7) = betaKi;
-    data(8) = betaKc;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING HHTHSIncrReduct::sendSelf() - could not send data\n";
@@ -481,7 +436,7 @@ int HHTHSIncrReduct::sendSelf(int cTag, Channel &theChannel)
 
 int HHTHSIncrReduct::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(9);
+    Vector data(5);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING HHTHSIncrReduct::recvSelf() - could not receive data\n";
         alphaI = 1.0; alphaF = 1.0; reduct = 1.0;
@@ -493,10 +448,6 @@ int HHTHSIncrReduct::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &t
     beta   = data(2);
     gamma  = data(3);
     reduct = data(4);
-    alphaM = data(5);
-    betaK  = data(6);
-    betaKi = data(7);
-    betaKc = data(8);
     
     return 0;
 }
@@ -511,8 +462,6 @@ void HHTHSIncrReduct::Print(OPS_Stream &s, int flag)
         s << "  alphaI: " << alphaI << "  alphaF: " << alphaF  << "  beta: " << beta  << "  gamma: " << gamma << endln;
         s << "  reduct: " << reduct << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-        s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
-        s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;	    
     } else 
         s << "HHTHSIncrReduct - no associated AnalysisModel\n";
 }

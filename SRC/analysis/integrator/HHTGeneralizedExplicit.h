@@ -26,7 +26,7 @@
 #ifndef HHTGeneralizedExplicit_h
 #define HHTGeneralizedExplicit_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 10/05
 // Revision: A
 //
@@ -49,13 +49,7 @@ public:
     HHTGeneralizedExplicit();
     HHTGeneralizedExplicit(double rhoB, double alphaF,
         bool updDomFlag = false);
-    HHTGeneralizedExplicit(double rhoB, double alphaF,
-        double alphaM, double betaK, double betaKi, double betaKc,
-        bool updDomFlag = false);
     HHTGeneralizedExplicit(double alphaI, double alphaF, double beta, double gamma,
-        bool updDomFlag = false);
-    HHTGeneralizedExplicit(double alphaI, double alphaF, double beta, double gamma,
-        double alphaM, double betaK, double betaKi, double betaKc,
         bool updDomFlag = false);
     
     // destructor
@@ -86,12 +80,6 @@ private:
     double gamma;
     bool updDomFlag;    // a flag indicating if updateDomain() is called
     double deltaT;
-    
-    // rayleigh damping factors
-    double alphaM;
-    double betaK;
-    double betaKi;
-    double betaKc;
     
     int updateCount;                            // method should only have one update per step
     double c1, c2, c3;                          // some constants we need to keep

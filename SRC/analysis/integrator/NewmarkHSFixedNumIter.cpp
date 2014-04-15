@@ -22,7 +22,7 @@
 // $Date: 2009-05-19 22:17:14 $
 // $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/NewmarkHSFixedNumIter.cpp,v $
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 09/05
 // Revision: A
 //
@@ -47,7 +47,6 @@
 NewmarkHSFixedNumIter::NewmarkHSFixedNumIter()
     : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSFixedNumIter),
     gamma(0.5), beta(0.25), polyOrder(2),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
     c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0),  U(0), Udot(0), Udotdot(0),
     Utm1(0), Utm2(0), scaledDeltaU(0)
@@ -60,21 +59,6 @@ NewmarkHSFixedNumIter::NewmarkHSFixedNumIter(double _gamma,
     double _beta, int polyorder)
     : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSFixedNumIter),
     gamma(_gamma), beta(_beta), polyOrder(polyorder),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0), x(1.0),
-    Ut(0), Utdot(0), Utdotdot(0),  U(0), Udot(0), Udotdot(0),
-    Utm1(0), Utm2(0), scaledDeltaU(0)
-{
-    
-}
-
-
-NewmarkHSFixedNumIter::NewmarkHSFixedNumIter(double _gamma,
-    double _beta, int polyorder,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc)
-    : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSFixedNumIter),
-    gamma(_gamma), beta(_beta), polyOrder(polyorder),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
     c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0),  U(0), Udot(0), Udotdot(0),
     Utm1(0), Utm2(0), scaledDeltaU(0)
@@ -215,10 +199,6 @@ int NewmarkHSFixedNumIter::domainChanged()
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
-    
-    // if damping factors exist set them in the ele & node of the domain
-    if (alphaM != 0.0 || betaK != 0.0 || betaKi != 0.0 || betaKc != 0.0)
-        myModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
     
     // create the new Vector objects
     if (Ut == 0 || Ut->Size() != size)  {
@@ -444,14 +424,10 @@ int NewmarkHSFixedNumIter::commit(void)
 
 int NewmarkHSFixedNumIter::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(7);
+    Vector data(3);
     data(0) = gamma;
     data(1) = beta;
     data(2) = polyOrder;
-    data(3) = alphaM;
-    data(4) = betaK;
-    data(5) = betaKi;
-    data(6) = betaKc;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING NewmarkHSFixedNumIter::sendSelf() - could not send data\n";
@@ -464,7 +440,7 @@ int NewmarkHSFixedNumIter::sendSelf(int cTag, Channel &theChannel)
 
 int NewmarkHSFixedNumIter::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(7);
+    Vector data(3);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING NewmarkHSFixedNumIter::recvSelf() - could not receive data\n";
         gamma = 0.5; beta = 0.25; polyOrder = 2;
@@ -474,10 +450,6 @@ int NewmarkHSFixedNumIter::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBro
     gamma     = data(0);
     beta      = data(1);
     polyOrder = int(data(2));
-    alphaM    = data(3);
-    betaK     = data(4);
-    betaKi    = data(5);
-    betaKc    = data(6);
     
     return 0;
 }
@@ -492,8 +464,6 @@ void NewmarkHSFixedNumIter::Print(OPS_Stream &s, int flag)
         s << "  gamma: " << gamma << "  beta: " << beta << endln;
         s << "  polyOrder: " << polyOrder << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-        s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
-        s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;	    
     } else 
         s << "NewmarkHSFixedNumIter - no associated AnalysisModel\n";
 }

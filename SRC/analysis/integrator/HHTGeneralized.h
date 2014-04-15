@@ -25,7 +25,7 @@
 #ifndef HHTGeneralized_h
 #define HHTGeneralized_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 10/05
 // Revision: A
 //
@@ -47,11 +47,7 @@ public:
     // constructors
     HHTGeneralized();
     HHTGeneralized(double rhoInf);
-    HHTGeneralized(double rhoInf,
-        double alphaM, double betaK, double betaKi, double betaKc);
     HHTGeneralized(double alphaI, double alphaF, double beta, double gamma);
-    HHTGeneralized(double alphaI, double alphaF, double beta, double gamma,
-        double alphaM, double betaK, double betaKi, double betaKc);
     
     // destructor
     ~HHTGeneralized();
@@ -80,12 +76,6 @@ private:
     double beta;
     double gamma;
     double deltaT;
-    
-    // rayleigh damping factors
-    double alphaM;
-    double betaK;
-    double betaKi;
-    double betaKc;
     
     double c1, c2, c3;                          // some constants we need to keep
     Vector *Ut, *Utdot, *Utdotdot;              // response quantities at time t

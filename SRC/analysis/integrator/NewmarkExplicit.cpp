@@ -22,7 +22,7 @@
 // $Date: 2009-05-19 22:10:05 $
 // $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/NewmarkExplicit.cpp,v $
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/05
 // Revision: A
 //
@@ -45,7 +45,6 @@
 NewmarkExplicit::NewmarkExplicit()
     : TransientIntegrator(INTEGRATOR_TAGS_NewmarkExplicit),
     gamma(0), updDomFlag(0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
     updateCount(0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0)
 {
@@ -57,20 +56,6 @@ NewmarkExplicit::NewmarkExplicit(double _gamma,
     bool upddomflag)
     : TransientIntegrator(INTEGRATOR_TAGS_NewmarkExplicit),
     gamma(_gamma), updDomFlag(upddomflag),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    updateCount(0), c2(0.0), c3(0.0),
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0)
-{
-    
-}
-
-
-NewmarkExplicit::NewmarkExplicit(double _gamma, 
-    double _alphaM, double _betaK, double _betaKi , double _betaKc,
-    bool upddomflag)
-    : TransientIntegrator(INTEGRATOR_TAGS_NewmarkExplicit),
-    gamma(_gamma), updDomFlag(upddomflag),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
     updateCount(0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0)
 {
@@ -195,10 +180,6 @@ int NewmarkExplicit::domainChanged()
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
-    
-    // if damping factors exist set them in the element & node of the domain
-    if (alphaM != 0.0 || betaK != 0.0 || betaKi != 0.0 || betaKc != 0.0)
-        myModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
     
     // create the new Vector objects
     if (U == 0 || U->Size() != size)  {
@@ -343,16 +324,12 @@ int NewmarkExplicit::update(const Vector &aiPlusOne)
 
 int NewmarkExplicit::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(6);
+    Vector data(2);
     data(0) = gamma;
-    data(1) = alphaM;
-    data(2) = betaK;
-    data(3) = betaKi;
-    data(4) = betaKc;
     if (updDomFlag == false) 
-        data(5) = 0.0;
+        data(1) = 0.0;
     else
-        data(5) = 1.0;
+        data(1) = 1.0;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING NewmarkExplicit::sendSelf() - could not send data\n";
@@ -365,19 +342,15 @@ int NewmarkExplicit::sendSelf(int cTag, Channel &theChannel)
 
 int NewmarkExplicit::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(6);
+    Vector data(2);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING NewmarkExplicit::recvSelf() - could not receive data\n";
         gamma = 0.5; 
         return -1;
     }
     
-    gamma  = data(0);
-    alphaM = data(1);
-    betaK  = data(2);
-    betaKi = data(3);
-    betaKc = data(4);
-    if (data(5) == 0.0)
+    gamma = data(0);
+    if (data(1) == 0.0)
         updDomFlag = false;
     else
         updDomFlag = true;
@@ -394,8 +367,6 @@ void NewmarkExplicit::Print(OPS_Stream &s, int flag)
         s << "NewmarkExplicit - currentTime: " << currentTime << endln;
         s << "  gamma: " << gamma << endln;
         s << "  c2: " << c2 << "  c3: " << c3 << endln;
-        s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
-        s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;	    
     } else 
         s << "NewmarkExplicit - no associated AnalysisModel\n";
 }

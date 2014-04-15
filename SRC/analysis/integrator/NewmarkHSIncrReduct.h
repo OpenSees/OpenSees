@@ -25,7 +25,7 @@
 #ifndef NewmarkHSIncrReduct_h
 #define NewmarkHSIncrReduct_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 09/05
 // Revision: A
 //
@@ -50,8 +50,6 @@ public:
     // constructors
     NewmarkHSIncrReduct();
     NewmarkHSIncrReduct(double gamma, double beta, double reduct);
-    NewmarkHSIncrReduct(double gamma, double beta, double reduct,
-        double alphaM, double betaK, double betaKi, double betaKc);
     
     // destructor
     ~NewmarkHSIncrReduct();
@@ -75,12 +73,6 @@ private:
     double gamma;
     double beta;
     double reduct;   // disp increment reduction factor 0<reduct<=1
-    
-    // rayleigh damping factors
-    double alphaM;
-    double betaK;
-    double betaKi;
-    double betaKc;
     
     double c1, c2, c3;              // some constants we need to keep
     Vector *Ut, *Utdot, *Utdotdot;  // response quantities at time t

@@ -25,7 +25,7 @@
 #ifndef HHTHSFixedNumIter_h
 #define HHTHSFixedNumIter_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 10/05
 // Revision: A
 //
@@ -52,13 +52,8 @@ public:
     // constructors
     HHTHSFixedNumIter();
     HHTHSFixedNumIter(double rhoInf, int polyOrder);
-    HHTHSFixedNumIter(double rhoInf, int polyOrder,
-        double alphaM, double betaK, double betaKi, double betaKc);
     HHTHSFixedNumIter(double alphaI, double alphaF,
         double beta, double gamma, int polyOrder);
-    HHTHSFixedNumIter(double alphaI, double alphaF,
-        double beta, double gamma, int polyOrder,
-        double alphaM, double betaK, double betaKi, double betaKc);
     
     // destructor
     ~HHTHSFixedNumIter();
@@ -88,12 +83,6 @@ private:
     double gamma;
     int polyOrder;  // order of Lagrange interpolation polynomial
     double deltaT;
-    
-    // rayleigh damping factors
-    double alphaM;
-    double betaK;
-    double betaKi;
-    double betaKc;
     
     double c1, c2, c3;                          // some constants we need to keep
     double x;                                   // interpolation location 0<=x<=1

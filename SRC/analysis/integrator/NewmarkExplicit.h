@@ -26,7 +26,7 @@
 #ifndef NewmarkExplicit_h
 #define NewmarkExplicit_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net) 
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com) 
 // Created: 02/05
 // Revision: A
 //
@@ -49,9 +49,6 @@ public:
     NewmarkExplicit();
     NewmarkExplicit(double gamma,
         bool updDomFlag = false);
-    NewmarkExplicit(double gamma,
-        double alphaM, double betaK, double betaKi, double betaKc,
-        bool updDomFlag = false); 
     
     // destructor
     ~NewmarkExplicit();
@@ -76,12 +73,6 @@ protected:
 private:
     double gamma;
     bool updDomFlag;    // a flag indicating if updateDomain() is called
-
-    // rayleigh damping factors
-    double alphaM;
-    double betaK;
-    double betaKi;
-    double betaKc;
 
     int updateCount;                // method should only have one update per step
     double c2, c3;                  // some constants we need to keep

@@ -25,7 +25,7 @@
 #ifndef NewmarkHSFixedNumIter_h
 #define NewmarkHSFixedNumIter_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 09/05
 // Revision: A
 //
@@ -52,8 +52,6 @@ public:
     // constructors
     NewmarkHSFixedNumIter();
     NewmarkHSFixedNumIter(double gamma, double beta, int polyOrder);
-    NewmarkHSFixedNumIter(double gamma, double beta, int polyOrder,
-        double alphaM, double betaK, double betaKi, double betaKc); 
     
     // destructor
     ~NewmarkHSFixedNumIter();
@@ -81,12 +79,6 @@ private:
     double gamma;
     double beta;
     int polyOrder;  // order of Lagrange interpolation polynomial
-    
-    // rayleigh damping factors
-    double alphaM;
-    double betaK;
-    double betaKi;
-    double betaKc;
     
     double c1, c2, c3;              // some constants we need to keep
     double x;                       // interpolation location 0<=x<=1

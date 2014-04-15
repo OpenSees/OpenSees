@@ -25,7 +25,7 @@
 #ifndef NewmarkHSIncrLimit_h
 #define NewmarkHSIncrLimit_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 11/09
 // Revision: A
 //
@@ -51,9 +51,6 @@ public:
     NewmarkHSIncrLimit();
     NewmarkHSIncrLimit(double gamma, double beta, double limit,
         int normType);
-    NewmarkHSIncrLimit(double gamma, double beta, double limit,
-        int normType,
-        double alphaM, double betaK, double betaKi, double betaKc);
     
     // destructor
     ~NewmarkHSIncrLimit();
@@ -78,12 +75,6 @@ private:
     double beta;
     double limit;   // disp increment limit
     int normType;   // type of norm that is used to limit increments
-    
-    // rayleigh damping factors
-    double alphaM;
-    double betaK;
-    double betaKi;
-    double betaKc;
     
     double c1, c2, c3;              // some constants we need to keep
     Vector *Ut, *Utdot, *Utdotdot;  // response quantities at time t

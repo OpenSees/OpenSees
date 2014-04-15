@@ -45,7 +45,6 @@
 WilsonTheta::WilsonTheta()
     : TransientIntegrator(INTEGRATOR_TAGS_WilsonTheta),
     theta(0), deltaT(0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
     c1(0.0), c2(0.0), c3(0.0), 
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0)
 {
@@ -56,19 +55,6 @@ WilsonTheta::WilsonTheta()
 WilsonTheta::WilsonTheta(double _theta)
     : TransientIntegrator(INTEGRATOR_TAGS_WilsonTheta),
     theta(_theta), deltaT(0.0), 
-    alphaM(0), betaK(0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0), 
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0)
-{
-    
-}
-
-
-WilsonTheta::WilsonTheta(double _theta,
-    double alpham, double betak, double betaki, double betakc)
-    : TransientIntegrator(INTEGRATOR_TAGS_WilsonTheta),
-    theta(_theta), deltaT(0.0), 
-    alphaM(alpham), betaK(betak), betaKi(betaki), betaKc(betakc),
     c1(0.0), c2(0.0), c3(0.0), 
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0)
 {
@@ -197,10 +183,6 @@ int WilsonTheta::domainChanged()
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
-    
-    // if damping factors exist set them in the ele & node of the domain
-    if (alphaM != 0.0 || betaK != 0.0 || betaKi != 0.0 || betaKc != 0.0)
-        myModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
     
     // create the new Vector objects
     if (Ut == 0 || Ut->Size() != size)  {
@@ -375,12 +357,8 @@ int WilsonTheta::commit(void)
 
 int WilsonTheta::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(5);
+    Vector data(1);
     data(0) = theta;
-    data(1) = alphaM;
-    data(2) = betaK;
-    data(3) = betaKi;
-    data(4) = betaKc;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WilsonTheta::sendSelf() - failed to send the data\n";
@@ -393,17 +371,13 @@ int WilsonTheta::sendSelf(int cTag, Channel &theChannel)
 
 int WilsonTheta::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(5);
+    Vector data(1);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING WilsonTheta::recvSelf() - could not receive data\n";
         return -1;
     }
     
     theta  = data(0);
-    alphaM = data(1);
-    betaK  = data(2);
-    betaKi = data(3);
-    betaKc = data(4);
     
     return 0;
 }
@@ -417,8 +391,6 @@ void WilsonTheta::Print(OPS_Stream &s, int flag)
         s << "\t WilsonTheta - currentTime: " << currentTime << endln;
         s << "  theta: " << theta << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-        s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
-        s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;	    
     } else 
         s << "\t WilsonTheta - no associated AnalysisModel\n";
 }

@@ -22,7 +22,7 @@
 // $Date: 2009-05-19 22:10:05 $
 // $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/HHTGeneralizedExplicit.cpp,v $
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 10/05
 // Revision: A
 //
@@ -47,7 +47,6 @@ HHTGeneralizedExplicit::HHTGeneralizedExplicit()
     : TransientIntegrator(INTEGRATOR_TAGS_HHTGeneralizedExplicit),
     alphaI(1.0), alphaF(1.0), beta(0.0), gamma(0.0),
     updDomFlag(0), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
     updateCount(0), c1(0.0), c2(0.0), c3(0.0), 
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0)
@@ -65,27 +64,7 @@ HHTGeneralizedExplicit::HHTGeneralizedExplicit(double _rhoB, double _alphaF,
     /((-1.0+_alphaF)*(-2.0+_rhoB)*pow(1.0+_rhoB,2))),
     gamma(0.5+alphaI-_alphaF),
     updDomFlag(upddomflag), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
     updateCount(0), c1(0.0), c2(0.0), c3(0.0), 
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    Ualpha(0), Ualphadot(0), Ualphadotdot(0)
-{
-    
-}
-
-
-HHTGeneralizedExplicit::HHTGeneralizedExplicit(double _rhoB, double _alphaF,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc,
-    bool upddomflag)
-    : TransientIntegrator(INTEGRATOR_TAGS_HHTGeneralizedExplicit),
-    alphaI((2.0-_rhoB)/(1.0+_rhoB)), alphaF(_alphaF),
-    beta((5.0-3*_rhoB+3*_alphaF*(-2.0-_rhoB+pow(_rhoB,2))
-    +pow(_alphaF,2)*(2.0+3*_rhoB-pow(_rhoB,3)))
-    /((-1.0+_alphaF)*(-2.0+_rhoB)*pow(1.0+_rhoB,2))),
-    gamma(0.5+alphaI-_alphaF),
-    updDomFlag(upddomflag), deltaT(0.0),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
-    updateCount(0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0)
 {
@@ -99,23 +78,6 @@ HHTGeneralizedExplicit::HHTGeneralizedExplicit(double _alphaI, double _alphaF,
     : TransientIntegrator(INTEGRATOR_TAGS_HHTGeneralizedExplicit),
     alphaI(_alphaI), alphaF(_alphaF), beta(_beta), gamma(_gamma),
     updDomFlag(upddomflag), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    updateCount(0), c1(0.0), c2(0.0), c3(0.0), 
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    Ualpha(0), Ualphadot(0), Ualphadotdot(0)
-{
-    
-}
-
-
-HHTGeneralizedExplicit::HHTGeneralizedExplicit(double _alphaI, double _alphaF,
-    double _beta, double _gamma,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc,
-    bool upddomflag)
-    : TransientIntegrator(INTEGRATOR_TAGS_HHTGeneralizedExplicit),
-    alphaI(_alphaI), alphaF(_alphaF), beta(_beta), gamma(_gamma),
-    updDomFlag(upddomflag), deltaT(0.0),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
     updateCount(0), c1(0.0), c2(0.0), c3(0.0), 
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0)
@@ -256,10 +218,6 @@ int HHTGeneralizedExplicit::domainChanged()
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
-    
-    // if damping factors exist set them in the ele & node of the domain
-    if (alphaM != 0.0 || betaK != 0.0 || betaKi != 0.0 || betaKc != 0.0)
-        myModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
     
     // create the new Vector objects
     if (Ut == 0 || Ut->Size() != size)  {
@@ -441,19 +399,15 @@ int HHTGeneralizedExplicit::commit(void)
 
 int HHTGeneralizedExplicit::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(9);
+    Vector data(5);
     data(0) = alphaI;
     data(1) = alphaF;
     data(2) = beta;
     data(3) = gamma;
-    data(4) = alphaM;
-    data(5) = betaK;
-    data(6) = betaKi;
-    data(7) = betaKc;
     if (updDomFlag == false) 
-        data(8) = 0.0;
+        data(4) = 0.0;
     else
-        data(8) = 1.0;
+        data(4) = 1.0;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING HHTGeneralizedExplicit::sendSelf() - could not send data\n";
@@ -466,7 +420,7 @@ int HHTGeneralizedExplicit::sendSelf(int cTag, Channel &theChannel)
 
 int HHTGeneralizedExplicit::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(9);
+    Vector data(5);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING HHTGeneralizedExplicit::recvSelf() - could not receive data\n";
         return -1;
@@ -476,11 +430,7 @@ int HHTGeneralizedExplicit::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBr
     alphaF = data(1);
     beta   = data(2);
     gamma  = data(3);
-    alphaM = data(4);
-    betaK  = data(5);
-    betaKi = data(6);
-    betaKc = data(7);
-    if (data(8) == 0.0)
+    if (data(4) == 0.0)
         updDomFlag = false;
     else
         updDomFlag = true;
@@ -497,8 +447,6 @@ void HHTGeneralizedExplicit::Print(OPS_Stream &s, int flag)
         s << "HHTGeneralizedExplicit - currentTime: " << currentTime << endln ;
         s << "  alphaI: " << alphaI << "  alphaF: " << alphaF  << "  beta: " << beta  << "  gamma: " << gamma << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-        s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
-        s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;	    
     } else 
         s << "HHTGeneralizedExplicit - no associated AnalysisModel\n";
 }

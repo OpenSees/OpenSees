@@ -22,7 +22,7 @@
 // $Date: $
 // $Source: $
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 11/09
 // Revision: A
 //
@@ -46,8 +46,7 @@
 CollocationHSIncrLimit::CollocationHSIncrLimit()
     : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSIncrLimit),
     theta(1.0), beta(0.25), gamma(0.5), limit(0.1), normType(2),
-    deltaT(0.0), alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
 {
@@ -60,31 +59,6 @@ CollocationHSIncrLimit::CollocationHSIncrLimit(double _theta,
     : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSIncrLimit),
     theta(_theta), beta(0.0), gamma(0.5),
     limit(_limit), normType(normtype), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    scaledDeltaU(0)
-{
-    beta = -6.018722044382699e+002 * pow(theta,9) +
-            6.618777151634235e+003 * pow(theta,8) +
-           -3.231561059595987e+004 * pow(theta,7) +
-            9.195359004558867e+004 * pow(theta,6) +
-           -1.680788908312227e+005 * pow(theta,5) +
-            2.047005794710718e+005 * pow(theta,4) +
-           -1.661421563528177e+005 * pow(theta,3) +
-            8.667950092619179e+004 * pow(theta,2) +
-           -2.638652989051994e+004 * theta +
-            3.572862280471971e+003;
-}
-
-
-CollocationHSIncrLimit::CollocationHSIncrLimit(double _theta,
-    double _limit, int normtype,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc)
-    : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSIncrLimit),
-    theta(_theta), beta(0.0), gamma(0.5),
-    limit(_limit), normType(normtype), deltaT(0.0),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
     c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
@@ -107,22 +81,6 @@ CollocationHSIncrLimit::CollocationHSIncrLimit(double _theta,
     : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSIncrLimit),
     theta(_theta), beta(_beta), gamma(_gamma),
     limit(_limit), normType(normtype), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    scaledDeltaU(0)
-{
-    
-}
-
-
-CollocationHSIncrLimit::CollocationHSIncrLimit(double _theta,
-    double _beta, double _gamma, double _limit, int normtype,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc)
-    : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSIncrLimit),
-    theta(_theta), beta(_beta), gamma(_gamma),
-    limit(_limit), normType(normtype), deltaT(0.0),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
     c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
@@ -253,10 +211,6 @@ int CollocationHSIncrLimit::domainChanged()
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
-    
-    // if damping factors exist set them in the ele & node of the domain
-    if (alphaM != 0.0 || betaK != 0.0 || betaKi != 0.0 || betaKc != 0.0)
-        myModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
     
     // create the new Vector objects
     if (Ut == 0 || Ut->Size() != size)  {
@@ -443,16 +397,12 @@ int CollocationHSIncrLimit::commit(void)
 
 int CollocationHSIncrLimit::sendSelf(int cTag, Channel &theChannel)
 {
-    static Vector data(9);
+    static Vector data(5);
     data(0) = theta;
     data(1) = beta;
     data(2) = gamma;
     data(3) = limit;
     data(4) = normType;
-    data(5) = alphaM;
-    data(6) = betaK;
-    data(7) = betaKi;
-    data(8) = betaKc;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING CollocationHSIncrLimit::sendSelf() - failed to send the data\n";
@@ -465,7 +415,7 @@ int CollocationHSIncrLimit::sendSelf(int cTag, Channel &theChannel)
 
 int CollocationHSIncrLimit::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(9);
+    Vector data(5);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING CollocationHSIncrLimit::recvSelf() - could not receive data\n";
         return -1;
@@ -476,10 +426,6 @@ int CollocationHSIncrLimit::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBr
     gamma    = data(2);
     limit    = data(3);
     normType = int(data(4));
-    alphaM   = data(5);
-    betaK    = data(6);
-    betaKi   = data(7);
-    betaKc   = data(8);
     
     return 0;
 }
@@ -494,8 +440,6 @@ void CollocationHSIncrLimit::Print(OPS_Stream &s, int flag)
         s << "  theta: " << theta << endln;
         s << "  limit: " << limit << "  normType: " << normType << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-        s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
-        s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;	    
     } else 
         s << "CollocationHSIncrLimit - no associated AnalysisModel\n";
 }

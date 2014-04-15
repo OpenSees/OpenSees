@@ -22,7 +22,7 @@
 // $Date: $
 // $Source: $
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 11/09
 // Revision: A
 //
@@ -45,7 +45,6 @@
 NewmarkHSIncrLimit::NewmarkHSIncrLimit()
     : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSIncrLimit),
     gamma(0.5), beta(0.25), limit(0.1), normType(2),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
     c1(0.0), c2(0.0), c3(0.0), 
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
@@ -58,21 +57,6 @@ NewmarkHSIncrLimit::NewmarkHSIncrLimit(double _gamma,
     double _beta, double _limit, int normtype)
     : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSIncrLimit),
     gamma(_gamma), beta(_beta), limit(_limit), normType(normtype),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0), 
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    scaledDeltaU(0)
-{
-    
-}
-
-
-NewmarkHSIncrLimit::NewmarkHSIncrLimit(double _gamma,
-    double _beta, double _limit, int normtype,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc)
-    : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSIncrLimit),
-    gamma(_gamma), beta(_beta), limit(_limit), normType(normtype),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
     c1(0.0), c2(0.0), c3(0.0), 
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
@@ -207,10 +191,6 @@ int NewmarkHSIncrLimit::domainChanged()
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
-    
-    // if damping factors exist set them in the ele & node of the domain
-    if (alphaM != 0.0 || betaK != 0.0 || betaKi != 0.0 || betaKc != 0.0)
-        myModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
     
     // create the new Vector objects
     if (Ut == 0 || Ut->Size() != size)  {
@@ -361,15 +341,11 @@ int NewmarkHSIncrLimit::update(const Vector &deltaU)
 
 int NewmarkHSIncrLimit::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(8);
+    Vector data(4);
     data(0) = gamma;
     data(1) = beta;
     data(2) = limit;
     data(3) = normType;
-    data(4) = alphaM;
-    data(5) = betaK;
-    data(6) = betaKi;
-    data(7) = betaKc;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING NewmarkHSIncrLimit::sendSelf() - could not send data\n";
@@ -382,7 +358,7 @@ int NewmarkHSIncrLimit::sendSelf(int cTag, Channel &theChannel)
 
 int NewmarkHSIncrLimit::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(8);
+    Vector data(4);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING NewmarkHSIncrLimit::recvSelf() - could not receive data\n";
         gamma = 0.5; beta = 0.25; limit = 0.1; normType = 2;
@@ -393,10 +369,6 @@ int NewmarkHSIncrLimit::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker
     beta     = data(1);
     limit    = data(2);
     normType = int(data(3));
-    alphaM   = data(4);
-    betaK    = data(5);
-    betaKi   = data(6);
-    betaKc   = data(7);
     
     return 0;
 }
@@ -411,8 +383,6 @@ void NewmarkHSIncrLimit::Print(OPS_Stream &s, int flag)
         s << "  gamma: " << gamma << "  beta: " << beta;
         s << "  limit: " << limit << "  normType: " << normType << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-        s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
-        s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;	    
     } else 
         s << "NewmarkHSIncrLimit - no associated AnalysisModel\n";
 }

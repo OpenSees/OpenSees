@@ -22,7 +22,7 @@
 // $Date: 2009-05-19 22:10:05 $
 // $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/AlphaOS.cpp,v $
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/05
 // Revision: A
 //
@@ -47,7 +47,6 @@ AlphaOS::AlphaOS()
     : TransientIntegrator(INTEGRATOR_TAGS_AlphaOS),
     alpha(1.0), beta(0.0), gamma(0.0),
     updDomFlag(0), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
     updateCount(0), c1(0.0), c2(0.0), c3(0.0), 
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Upt(0), Uptdot(0)
@@ -61,22 +60,6 @@ AlphaOS::AlphaOS(double _alpha,
     : TransientIntegrator(INTEGRATOR_TAGS_AlphaOS),
     alpha(_alpha), beta((2-_alpha)*(2-_alpha)*0.25), gamma(1.5-_alpha),
     updDomFlag(upddomflag), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    updateCount(0), c1(0.0), c2(0.0), c3(0.0),
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    Ualpha(0), Ualphadot(0), Upt(0), Uptdot(0)
-{
-    
-}
-
-
-AlphaOS::AlphaOS(double _alpha, 
-    double _alphaM, double _betaK, double _betaKi, double _betaKc,
-    bool upddomflag)
-    : TransientIntegrator(INTEGRATOR_TAGS_AlphaOS),
-    alpha(_alpha), beta((2-_alpha)*(2-_alpha)*0.25), gamma(1.5-_alpha),  
-    updDomFlag(upddomflag), deltaT(0.0),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
     updateCount(0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Upt(0), Uptdot(0)
@@ -90,22 +73,6 @@ AlphaOS::AlphaOS(double _alpha, double _beta, double _gamma,
     : TransientIntegrator(INTEGRATOR_TAGS_AlphaOS),
     alpha(_alpha), beta(_beta), gamma(_gamma),
     updDomFlag(upddomflag), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    updateCount(0), c1(0.0), c2(0.0), c3(0.0),
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    Ualpha(0), Ualphadot(0), Upt(0), Uptdot(0)
-{
-    
-}
-
-
-AlphaOS::AlphaOS(double _alpha, double _beta, double _gamma,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc,
-    bool upddomflag)
-    : TransientIntegrator(INTEGRATOR_TAGS_AlphaOS),
-    alpha(_alpha), beta(_beta), gamma(_gamma),
-    updDomFlag(upddomflag), deltaT(0.0),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
     updateCount(0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Upt(0), Uptdot(0)
@@ -255,10 +222,6 @@ int AlphaOS::domainChanged()
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
-    
-    // if damping factors exist set them in the element & node of the domain
-    if (alphaM != 0.0 || betaK != 0.0 || betaKi != 0.0 || betaKc != 0.0)
-        myModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
     
     // create the new Vector objects
     if (Ut == 0 || Ut->Size() != size)  {
@@ -451,18 +414,14 @@ int AlphaOS::commit(void)
 
 int AlphaOS::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(8);
+    Vector data(4);
     data(0) = alpha;
     data(1) = beta;
     data(2) = gamma;
-    data(3) = alphaM;
-    data(4) = betaK;
-    data(5) = betaKi;
-    data(6) = betaKc;
     if (updDomFlag == false) 
-        data(7) = 0.0;
+        data(3) = 0.0;
     else
-        data(7) = 1.0;
+        data(3) = 1.0;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING AlphaOS::sendSelf() - could not send data\n";
@@ -475,7 +434,7 @@ int AlphaOS::sendSelf(int cTag, Channel &theChannel)
 
 int AlphaOS::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(8);
+    Vector data(4);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING AlphaOS::recvSelf() - could not receive data\n";
         return -1;
@@ -484,11 +443,7 @@ int AlphaOS::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker
     alpha  = data(0);
     beta   = data(1);
     gamma  = data(2);
-    alphaM = data(3);
-    betaK  = data(4);
-    betaKi = data(5);
-    betaKc = data(6);
-    if (data(7) == 0.0)
+    if (data(3) == 0.0)
         updDomFlag = false;
     else
         updDomFlag = true;
@@ -505,8 +460,6 @@ void AlphaOS::Print(OPS_Stream &s, int flag)
         s << "AlphaOS - currentTime: " << currentTime << endln;
         s << "  alpha: " << alpha << "  beta: " << beta  << "  gamma: " << gamma << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-        s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
-        s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;	    
     } else 
         s << "AlphaOS - no associated AnalysisModel\n";
 }
@@ -520,7 +473,7 @@ int AlphaOS::formElementResidual(void)
     
     // loop through the FE_Elements and add the residual
     FE_Element *elePtr;
-    int res = 0;    
+    int res = 0;
     FE_EleIter &theEles = theModel->getFEs();
     while((elePtr = theEles()) != 0)  {
         if (theSOE->addB(elePtr->getResidual(this),elePtr->getID()) < 0)  {

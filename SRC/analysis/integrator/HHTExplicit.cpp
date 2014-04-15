@@ -22,7 +22,7 @@
 // $Date: 2009-05-19 22:10:05 $
 // $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/HHTExplicit.cpp,v $
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 10/05
 // Revision: A
 //
@@ -46,7 +46,6 @@ HHTExplicit::HHTExplicit()
     : TransientIntegrator(INTEGRATOR_TAGS_HHTExplicit),
     alpha(1.0), gamma(0.0),
     updDomFlag(0), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
     updateCount(0), c2(0.0), c3(0.0), 
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0)
@@ -60,23 +59,7 @@ HHTExplicit::HHTExplicit(double _alpha,
     : TransientIntegrator(INTEGRATOR_TAGS_HHTExplicit),
     alpha(_alpha), gamma(0.5),
     updDomFlag(upddomflag), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
     updateCount(0), c2(0.0), c3(0.0), 
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    Ualpha(0), Ualphadot(0)
-{
-    
-}
-
-
-HHTExplicit::HHTExplicit(double _alpha,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc,
-    bool upddomflag)
-    : TransientIntegrator(INTEGRATOR_TAGS_HHTExplicit),
-    alpha(_alpha), gamma(0.5),
-    updDomFlag(upddomflag), deltaT(0.0),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
-    updateCount(0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0)
 {
@@ -89,22 +72,6 @@ HHTExplicit::HHTExplicit(double _alpha, double _gamma,
     : TransientIntegrator(INTEGRATOR_TAGS_HHTExplicit),
     alpha(_alpha), gamma(_gamma),
     updDomFlag(upddomflag), deltaT(0.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    updateCount(0), c2(0.0), c3(0.0), 
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    Ualpha(0), Ualphadot(0)
-{
-    
-}
-
-
-HHTExplicit::HHTExplicit(double _alpha, double _gamma,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc,
-    bool upddomflag)
-    : TransientIntegrator(INTEGRATOR_TAGS_HHTExplicit),
-    alpha(_alpha), gamma(_gamma),
-    updDomFlag(upddomflag), deltaT(0.0),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
     updateCount(0), c2(0.0), c3(0.0), 
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0)
@@ -242,10 +209,6 @@ int HHTExplicit::domainChanged()
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
-    
-    // if damping factors exist set them in the ele & node of the domain
-    if (alphaM != 0.0 || betaK != 0.0 || betaKi != 0.0 || betaKc != 0.0)
-        myModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
     
     // create the new Vector objects
     if (Ut == 0 || Ut->Size() != size)  {
@@ -420,17 +383,13 @@ int HHTExplicit::commit(void)
 
 int HHTExplicit::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(7);
+    Vector data(3);
     data(0) = alpha;
     data(1) = gamma;
-    data(2) = alphaM;
-    data(3) = betaK;
-    data(4) = betaKi;
-    data(5) = betaKc;
     if (updDomFlag == false) 
-        data(6) = 0.0;
+        data(2) = 0.0;
     else
-        data(6) = 1.0;
+        data(2) = 1.0;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING HHTExplicit::sendSelf() - could not send data\n";
@@ -443,7 +402,7 @@ int HHTExplicit::sendSelf(int cTag, Channel &theChannel)
 
 int HHTExplicit::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(7);
+    Vector data(3);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING HHTExplicit::recvSelf() - could not receive data\n";
         return -1;
@@ -451,11 +410,7 @@ int HHTExplicit::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
     
     alpha  = data(0);
     gamma  = data(1);
-    alphaM = data(2);
-    betaK  = data(3);
-    betaKi = data(4);
-    betaKc = data(5);
-    if (data(6) == 0.0)
+    if (data(2) == 0.0)
         updDomFlag = false;
     else
         updDomFlag = true;
@@ -472,8 +427,6 @@ void HHTExplicit::Print(OPS_Stream &s, int flag)
         s << "HHTExplicit - currentTime: " << currentTime << endln ;
         s << "  alpha: " << alpha << " gamma: " << gamma << endln;
         s << "  c2: " << c2 << " c3: " << c3 << endln;
-        s << "  Rayleigh Damping - alphaM: " << alphaM;
-        s << "  betaK: " << betaK << "   betaKi: " << betaKi << endln;	    
     } else 
         s << "HHTExplicit - no associated AnalysisModel\n";
 }

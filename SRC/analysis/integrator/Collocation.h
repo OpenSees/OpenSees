@@ -25,7 +25,7 @@
 #ifndef Collocation_h
 #define Collocation_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/05
 // Revision: A
 //
@@ -47,11 +47,7 @@ public:
     // constructors
     Collocation();
     Collocation(double theta);
-    Collocation(double theta,
-        double alphaM, double betaK, double betaKi, double betaKc);
     Collocation(double theta, double beta, double gamma);
-    Collocation(double theta, double beta, double gamma,
-        double alphaM, double betaK, double betaKi, double betaKc);
     
     // destructor
     ~Collocation();
@@ -80,12 +76,6 @@ private:
     double gamma;
     double deltaT;
     
-    // rayleigh damping factors
-    double alphaM;
-    double betaK;
-    double betaKi;
-    double betaKc;
-
     double c1, c2, c3;              // some constants we need to keep
     Vector *Ut, *Utdot, *Utdotdot;  // response quantities at time t
     Vector *U, *Udot, *Udotdot;     // response quantities at time t+deltaT

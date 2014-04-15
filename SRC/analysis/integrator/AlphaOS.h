@@ -26,7 +26,7 @@
 #ifndef AlphaOS_h
 #define AlphaOS_h
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 02/05
 // Revision: A
 //
@@ -50,13 +50,7 @@ public:
     AlphaOS();
     AlphaOS(double alpha,
         bool updDomFlag = false);
-    AlphaOS(double alpha, 
-        double alphaM, double betaK, double betaKi, double betaKc,
-        bool updDomFlag = false);
     AlphaOS(double alpha, double beta, double gamma,
-        bool updDomFlag = false);
-    AlphaOS(double alpha, double beta, double gamma,
-        double alphaM, double betaK, double betaKi, double betaKc,
         bool updDomFlag = false);
 
     // destructor
@@ -87,12 +81,6 @@ private:
     double gamma;
     bool updDomFlag;    // a flag indicating if updateDomain() is called
     double deltaT;
-    
-    // rayleigh damping factors
-    double alphaM;
-    double betaK;
-    double betaKi;
-    double betaKc;
     
     int updateCount;                // method should only have one update per step
     double c1, c2, c3;              // some constants we need to keep

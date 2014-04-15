@@ -22,7 +22,7 @@
 // $Date: 2009-05-19 22:17:14 $
 // $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/NewmarkHSIncrReduct.cpp,v $
 
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 09/05
 // Revision: A
 //
@@ -45,7 +45,6 @@
 NewmarkHSIncrReduct::NewmarkHSIncrReduct()
     : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSIncrReduct),
     gamma(0.5), beta(0.25), reduct(1.0),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
     c1(0.0), c2(0.0), c3(0.0), 
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
@@ -58,21 +57,6 @@ NewmarkHSIncrReduct::NewmarkHSIncrReduct(double _gamma,
     double _beta, double _reduct)
     : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSIncrReduct),
     gamma(_gamma), beta(_beta), reduct(_reduct),
-    alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
-    c1(0.0), c2(0.0), c3(0.0), 
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    scaledDeltaU(0)
-{
-    
-}
-
-
-NewmarkHSIncrReduct::NewmarkHSIncrReduct(double _gamma,
-    double _beta, double _reduct,
-    double _alphaM, double _betaK, double _betaKi, double _betaKc)
-    : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSIncrReduct),
-    gamma(_gamma), beta(_beta), reduct(_reduct),
-    alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
     c1(0.0), c2(0.0), c3(0.0), 
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
@@ -207,10 +191,6 @@ int NewmarkHSIncrReduct::domainChanged()
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
-    
-    // if damping factors exist set them in the ele & node of the domain
-    if (alphaM != 0.0 || betaK != 0.0 || betaKi != 0.0 || betaKc != 0.0)
-        myModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
     
     // create the new Vector objects
     if (Ut == 0 || Ut->Size() != size)  {
@@ -357,14 +337,10 @@ int NewmarkHSIncrReduct::update(const Vector &deltaU)
 
 int NewmarkHSIncrReduct::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(7);
+    Vector data(3);
     data(0) = gamma;
     data(1) = beta;
     data(2) = reduct;
-    data(3) = alphaM;
-    data(4) = betaK;
-    data(5) = betaKi;
-    data(6) = betaKc;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING NewmarkHSIncrReduct::sendSelf() - could not send data\n";
@@ -377,7 +353,7 @@ int NewmarkHSIncrReduct::sendSelf(int cTag, Channel &theChannel)
 
 int NewmarkHSIncrReduct::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(7);
+    Vector data(3);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING NewmarkHSIncrReduct::recvSelf() - could not receive data\n";
         gamma = 0.5; beta = 0.25; reduct = 1.0;
@@ -387,10 +363,6 @@ int NewmarkHSIncrReduct::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroke
     gamma  = data(0);
     beta   = data(1);
     reduct = data(2);
-    alphaM = data(3);
-    betaK  = data(4);
-    betaKi = data(5);
-    betaKc = data(6);
     
     return 0;
 }
@@ -404,8 +376,6 @@ void NewmarkHSIncrReduct::Print(OPS_Stream &s, int flag)
         s << "NewmarkHSIncrReduct - currentTime: " << currentTime;
         s << "  gamma: " << gamma << "  beta: " << beta << "  reduct: " << reduct << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-        s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
-        s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;	    
     } else 
         s << "NewmarkHSIncrReduct - no associated AnalysisModel\n";
 }
