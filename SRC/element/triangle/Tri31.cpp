@@ -265,11 +265,19 @@ Tri31::setDomain(Domain *theDomain)
     int dofNd2 = theNodes[1]->getNumberDOF();
     int dofNd3 = theNodes[2]->getNumberDOF();
     
-    if (dofNd1 != 2 || dofNd2 != 2 || dofNd3 != 2) {
-		//opserr << "FATAL ERROR Tri31 (tag: %d), has differing number of DOFs at its nodes",
-	    //this->getTag());
-	    return;
+    if (dofNd1 != 2 && dofNd1 != 3) {
+      opserr << "WARNING Tri31::setDomain() element " << this->getTag() << " does not have 2 or 3 DOF at node " << theNodes[0]->getTag() << endln;
+      return;
     }
+    if (dofNd2 != 2 && dofNd2 != 3) {
+      opserr << "WARNING Tri31::setDomain() element " << this->getTag() << " does not have 2 or 3 DOF at node " << theNodes[1]->getTag() << endln;
+      return;
+    }
+    if (dofNd3 != 2 && dofNd3 != 3) {
+      opserr << "WARNING Tri31::setDomain() element " << this->getTag() << " does not have 2 or 3 DOF at node " << theNodes[2]->getTag() << endln;
+      return;
+    }
+
     this->DomainComponent::setDomain(theDomain);
 
     // Compute consistent nodal loads due to pressure
