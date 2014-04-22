@@ -101,6 +101,7 @@ extern void *OPS_Maxwell(void);
 extern void *OPS_ViscousDamper(void);
 extern void *OPS_Cast(void);
 extern void *OPS_Dodd_Restrepo(void);
+extern void *OPS_DoddRestr(void);
 extern void *OPS_NewElasticMultiLinear(void);
 extern void *OPS_ImpactMaterial(void);
 extern void *OPS_SteelBRB(void);
@@ -302,6 +303,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	       (strcmp(argv[1],"Restrepo") == 0)) {
 
       void *theMat = OPS_Dodd_Restrepo();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if ((strcmp(argv[1],"DoddRestr") == 0)) {
+
+      void *theMat = OPS_DoddRestr();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
