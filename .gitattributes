@@ -3107,6 +3107,8 @@ SRC/material/uniaxial/ConfinedConcrete01.cpp -text
 SRC/material/uniaxial/ConfinedConcrete01.h -text
 SRC/material/uniaxial/ContinuumUniaxial.cpp -text
 SRC/material/uniaxial/ContinuumUniaxial.h -text
+SRC/material/uniaxial/DoddRestr.cpp -text
+SRC/material/uniaxial/DoddRestr.h -text
 SRC/material/uniaxial/DoddRestrepo.f -text
 SRC/material/uniaxial/Dodd_Restrepo.cpp -text
 SRC/material/uniaxial/Dodd_Restrepo.h -text
@@ -3218,6 +3220,7 @@ SRC/material/uniaxial/ReinforcingSteel.cpp -text
 SRC/material/uniaxial/ReinforcingSteel.h -text
 SRC/material/uniaxial/SAWSMaterial.cpp -text
 SRC/material/uniaxial/SAWSMaterial.h -text
+SRC/material/uniaxial/STEELDR.f -text
 SRC/material/uniaxial/SecantConcrete.cpp -text
 SRC/material/uniaxial/SecantConcrete.h -text
 SRC/material/uniaxial/SelfCenteringMaterial.cpp -text
