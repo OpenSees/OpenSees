@@ -206,14 +206,15 @@ Truss2::Truss2(int tag,
 //   to be invoked upon
 Truss2::Truss2()
 	:Element(0,ELE_TAG_Truss2),     
-	theMaterial(0),connectedExternalNodes(2),
+	theMaterial(0),connectedExternalNodes(2), connectedExternalOtherNodes(2),
 	dimension(0), numDOF(0), theLoad(0),
 	theMatrix(0), theVector(0),
 	L(0.0), A(0.0), rho(0.0)
 {
+
 	// ensure the connectedExternalNode ID is of correct size 
 	if (connectedExternalNodes.Size() != 2 || connectedExternalOtherNodes.Size() != 2) {
-		opserr << "FATAL Truss::Truss - failed to create an ID of size 2\n";
+		opserr << "FATAL Truss2::Trus2s - failed to create an ID of size 2\n";
 		exit(-1);
 	}
 
@@ -861,9 +862,10 @@ const Vector &
 	return *theVector;
 }
 
-int
-	Truss2::sendSelf(int commitTag, Channel &theChannel)
+int Truss2::sendSelf(int commitTag, Channel &theChannel)
 {
+	// opserr << "Truss2::sendSelf - start\n";
+
 	int res;
 
 	// note: we don't check for dataTag == 0 for Element
@@ -922,13 +924,17 @@ int
 		opserr <<"WARNING Truss2::sendSelf() - " << this->getTag() << " failed to send its Material\n";
 		return -3;
 	}
-
+	
+	//static ID endData(1);
+	//theChannel.recvID(dataTag, commitTag, endData);
+	//opserr << "Truss2::sendSelf - done\n";
 	return 0;
 }
 
 int
 	Truss2::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
+	//opserr << "Truss2::recvSelf - start\n";
 	int res;
 	int dataTag = this->getDbTag();
 
@@ -964,6 +970,7 @@ int
 		opserr <<"WARNING Truss2::recvSelf() - " << this->getTag() << " failed to receive ID\n";
 		return -2;
 	}
+//	opserr << connectedExternalNodes << connectedExternalOtherNodes;
 
 	// finally truss creates a material object of the correct type,
 	// sets its database tag and asks this new object to recveive itself.
@@ -995,6 +1002,9 @@ int
 		opserr <<"WARNING Truss2::recvSelf() - "<< this->getTag() << "failed to receive its Material\n";
 		return -3;    
 	}
+//	opserr << "Truss2::recvSelf - done\n";
+//	static ID endData(1);
+//	theChannel.sendID(dataTag, commitTag, endData);
 
 	return 0;
 }
