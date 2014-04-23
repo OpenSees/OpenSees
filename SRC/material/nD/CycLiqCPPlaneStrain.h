@@ -100,7 +100,9 @@ class CycLiqCPPlaneStrain : public CycLiqCP {
   //send back the tangent 
   const Matrix& getTangent( ) ;
   const Matrix& getInitialTangent( ) ;
-
+    int sendSelf(int commitTag, Channel &theChannel);  
+    int recvSelf(int commitTag, Channel &theChannel, 
+		 FEM_ObjectBroker &theBroker);  
 
   private:
 

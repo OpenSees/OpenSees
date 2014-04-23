@@ -59,48 +59,48 @@ double CycLiqCPSP::mElastFlag = 0;
 
 static int numCycLiqCPSPMaterials = 0;
 
-void *
+OPS_Export void *
 OPS_CycLiqCPSPMaterial(void)
 {
   if (numCycLiqCPSPMaterials == 0) {
     numCycLiqCPSPMaterials=1;
-    opserr << "\nCycLiqCPSP - Written: Rui Wang, Jian-Min Zhang, Gang Wang\n";
+    OPS_Error("\nCycLiqCPSP - Written: Rui Wang, Jian-Min Zhang, Gang Wang\nPlease refer to: Wang R., Zhang J.M., Wang G., 2014. A unified plasticity model for large post-liquefaction shear deformation of sand. Computers and Geotechnics. 59, 54-66.\n", 1);
   }
 
   NDMaterial *theMaterial = 0;
 
   int numArgs = OPS_GetNumRemainingInputArgs();
 
-  if (numArgs < 17) {
-    opserr << "Want: nDmaterial CycLiqCPSP tag? G0? kappa? h? Mfc? dre1? Mdc? dre2? rdr? eta? dir? lamdac? ksi? e0? nb? nd? ein? <rho?>" << endln;
+  if (numArgs < 16) {
+    opserr << "Want: nDmaterial CycLiqCPSP tag? G0? kappa? h? M? dre1? dre2? rdr? eta? dir? lamdac? ksi? e0? nb? nd? ein? <rho?>" << endln;
     return 0;	
   }
   
   int tag;
-  double dData[17];
+  double dData[16];
 
   int numData = 1;
   if (OPS_GetInt(&numData, &tag) != 0) {
     opserr << "WARNING invalid nDMaterial CycLiqCPSP material  tag" << endln;
     return 0;
   }
-  if (numArgs == 17) {
+  if (numArgs == 16) {
+  numData = 15;
+  if (OPS_GetDouble(&numData, dData) != 0) {
+    opserr << "WARNING invalid material data for nDMaterial CycLiqCPSP  with tag: " << tag << endln;
+    return 0;
+  }
+    theMaterial = new CycLiqCPSP(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], 
+                                            dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],0.0);
+  }
+  else if (numArgs > 16) {
   numData = 16;
   if (OPS_GetDouble(&numData, dData) != 0) {
     opserr << "WARNING invalid material data for nDMaterial CycLiqCPSP  with tag: " << tag << endln;
     return 0;
   }
     theMaterial = new CycLiqCPSP(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], 
-                                            dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],  dData[15],0.0);
-  }
-  else if (numArgs > 17) {
-  numData = 17;
-  if (OPS_GetDouble(&numData, dData) != 0) {
-    opserr << "WARNING invalid material data for nDMaterial CycLiqCPSP  with tag: " << tag << endln;
-    return 0;
-  }
-    theMaterial = new CycLiqCPSP(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], 
-                                            dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14], dData[15], dData[16]);
+                                            dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14], dData[15]);
   }
   
   if (theMaterial == 0) {
@@ -109,6 +109,7 @@ OPS_CycLiqCPSPMaterial(void)
 
   return theMaterial;
 }
+
 
 //static vectors and matrices
 Vector CycLiqCPSP :: strain_vec(6) ;
@@ -127,6 +128,7 @@ void CycLiqCPSP :: zero ( )
 
   epsvir_n=0.;
   epsvir_nplus1=0.;
+  epsvirpr=0.0;
   epsvre_n=0.;
   epsvre_nplus1=0.;
   epsvc_n=0.;
@@ -251,7 +253,6 @@ CycLiqCPSP :: CycLiqCPSP(
                        double h1,
                        double Mfc1,  
                        double dre11,
-                       double Mdc1,
                        double dre21,
                        double rdr1,
                        double eta1,
@@ -279,7 +280,7 @@ stress_nplus1(3,3)
     h=h1;
     Mfc=Mfc1;    
     dre1=dre11;
-    Mdc=Mdc1;
+    Mdc=Mfc1;
     dre2=dre21;
     rdr=rdr1;
     eta=eta1;
@@ -434,7 +435,6 @@ void CycLiqCPSP :: plastic_integrator( )
   static Matrix normal(3,3) ;     //(dev_stress-alpha_n)/p_n/sqrt(2/3)/m
 
   Matrix pass(3,3); //matrix to pass on values
-//  double G0ep;
 
   double phi = 0.0 ; //trial value of yield function
   double phi_n=0.0;
@@ -446,10 +446,7 @@ void CycLiqCPSP :: plastic_integrator( )
   double iconv=0.0;
   double lambdamax=0.0;
   double lambdamin=0.0;
-  double sdila=1.0;
-  double fy_pmax=0.0;
-//  double pmin2;
-//  double epsvc02;
+  double chi=0.0;
   double epsvre_ns,epsvir_ns,epsvc_ns;
   Matrix DR(3,3),LD(3,3),alpha_ns;
   DR.Zero();
@@ -480,7 +477,6 @@ void CycLiqCPSP :: plastic_integrator( )
   if ((p_n)<pmin)
   {   
 	  p_n=pmin;
-      //dev_stress_n.Zero();
   }
       
 
@@ -505,6 +501,7 @@ void CycLiqCPSP :: plastic_integrator( )
 		
 		K=(1+ein)/kappa*pat*sqrt(1000/pat);
         G=G0*pat*(pow((2.97-ein),2)/(1+ein))*sqrt(1000/pat);
+		G=3./8.*K;
 		p_nplus1=p_n+K*(trace-trace_n);
 		dev_stress=dev_stress_n+2.0 * G*(dev_strain-dev_strain_n);
   		for ( ii = 0; ii < 6; ii++ ) {
@@ -532,9 +529,11 @@ void CycLiqCPSP :: plastic_integrator( )
 		p_nplus1=pat*pow(sqrt(p_n/pat)+(1+ein)/2.0/kappa*(trace-trace_n),2);
 	    K=(1+ein)/kappa*pat*sqrt((p_n+p_nplus1)/2.0/pat);
 		G=G0*pat*(pow((2.97-ein),2)/(1+ein))*sqrt((p_n+p_nplus1)/2.0/pat);
+		G=3./8.*K;
 		dev_stress=dev_stress_n+2.0 * G*(dev_strain-dev_strain_n);
 		K=(1+ein)/kappa*pat*sqrt(p_nplus1/pat);
         G=G0*pat*(pow((2.97-ein),2)/(1+ein))*sqrt(p_nplus1/pat);
+		G=3./8.*K;
   		for ( ii = 0; ii < 6; ii++ ) {
         for ( jj = 0; jj < 6; jj++ )  {
       
@@ -561,8 +560,6 @@ void CycLiqCPSP :: plastic_integrator( )
     		p0=p_n;
 			epsvc0=-2*kappa/(1+ein)*(sqrt(p0/pat)-sqrt(pmin/pat));
 			r=dev_stress_n/(p_n);
-			//epsvc_ns0=0.0;
-			//epsvc_ns01=0.0;
 
 			r1=r/doublecontraction(r,r);
 	        pass=r1*r1*r1;
@@ -571,9 +568,9 @@ void CycLiqCPSP :: plastic_integrator( )
 	           sin3theta=1.0;
 	        else if (sin3theta<-1.0)
 	        	sin3theta=-1.0;
-	        gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+
+	        gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
          	etam=root32*sqrt(doublecontraction(r,r))/gtheta;
-	        //etam=root32*sqrt(doublecontraction(r,r));
     		initializeState = true;
     	}
   // --------------(I)Initialize-------------------------------------
@@ -581,7 +578,6 @@ void CycLiqCPSP :: plastic_integrator( )
 		epsvir_nplus1=epsvir_n;
 		epsvre_nplus1=epsvre_n;
 		epsvc_nplus1=epsvc_n+trace-trace_n;
-		//epsvc_ns01=epsvc_ns0+trace-trace_n;
 		r=dev_stress_n/(p_n);
 		ddev_strain_p.Zero();
         dtracep=0.0;
@@ -613,7 +609,6 @@ void CycLiqCPSP :: plastic_integrator( )
         epsvir_ns=epsvir_n;
         epsvre_ns=epsvre_n;
         epsvc_ns=epsvc_n;
-		//epsvc_ns00=epsvc_ns0;
 		gammamonos=gammamono;
  // --------------Trial Substep End-------------------------------------
 
@@ -625,7 +620,6 @@ void CycLiqCPSP :: plastic_integrator( )
 		epsvir_nplus1=epsvir_ns;
 		epsvre_nplus1=epsvre_ns;
 		epsvc_nplus1=epsvc_ns+(trace-trace_n)/sub;
-		//epsvc_ns01=epsvc_ns0+(trace-trace_n)/sub;
 		r=dev_stress_n/(p_n);
 		ddev_strain_p.Zero();
         dtracep=0.0;
@@ -646,57 +640,24 @@ void CycLiqCPSP :: plastic_integrator( )
 		dev_stress=dev_stress_n+2.0 * G*(dev_strain-dev_strain_n)/sub;
 		r_nplus1=dev_stress/p_nplus1;
 		eta_n=root32*sqrt(doublecontraction(r,r));
-		//if (etam>Mfc-tolerance)
-		//{
-		//	etam=Mfc-tolerance;
-		//}
-		//if (eta_n>Mfc-tolerance)
-		//{
-		//	eta_n=Mfc-tolerance;
-		//}
-		//if (eta_n>etam)
-		//{
-		//	etam=eta_n;
-		//}
-			  r1=r/doublecontraction(r,r);
+
+		r1=r/doublecontraction(r,r);
 	      pass=r1*r1*r1;
 	      sin3theta=-sqrt(6.0)*(pass(0,0)+pass(1,1)+pass(2,2));
 		  if (sin3theta>1.0)
 	         sin3theta=1.0;
 	      else if (sin3theta<-1.0)
 	      	sin3theta=-1.0;
-	      gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+	      gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 
       if (eta_n/gtheta>etam)
       {
       	etam=eta_n/gtheta;
       }
-	  if (etam>Mfc-tolerance)
+	  if (eta_n/gtheta>Mfc*exp(-nb*psi)-tolerance)
 		{
-			etam=Mfc-tolerance;
+			etam=eta_n/gtheta;
 		}
-		//if (etam-eta_n<=tolerance)
-		//{
-		//	beta=1.0;
-		//}
-		//else
-		//{
-	 //   	ax=doublecontraction(r-alpha_ns,r-alpha_ns);
-	 //       bx=2*doublecontraction(alpha_ns,r-alpha_ns);
-	 //       cx=doublecontraction(alpha_ns,alpha_ns)-two3*etam*etam;
-	 //       beta=(-bx+sqrt(bx*bx-4*ax*cx))/2.0/ax;
-	 //       if (beta<1.0-tolerance)
-	 //     	  {
-	 //   		  opserr << "beta="<<beta<<"\n";
-	 //   		  beta=(-bx-sqrt(bx*bx-4*ax*cx))/2.0/ax;
-	 //   	}
-	 //       if (beta<1.0-tolerance)
-	 //       {opserr << "beta="<<beta<<"\n";
-	 //       exit(-1);
-	 //       }
-		//}
-		//rbar=alpha_ns+beta*(r-alpha_ns);
-		//normal=3.0/2.0*rbar/root32/sqrt(doublecontraction(rbar,rbar));
 
 		beta0=0.0;
 		beta1=1.0;
@@ -708,7 +669,7 @@ void CycLiqCPSP :: plastic_integrator( )
 			normal(0,0)=2.0/sqrt(5.0);
 			normal(1,1)=-1.0/sqrt(5.0);
 			normal(2,2)=-1.0/sqrt(5.0);
-			rbar= root23*Mfc*normal;
+			rbar= root23*Mfc*exp(-nb*psi)*normal;
 			beta=1.0e20;
 		}
 		else if (sqrt(doublecontraction(r-alpha_ns,r-alpha_ns))<tolerance)
@@ -731,7 +692,7 @@ void CycLiqCPSP :: plastic_integrator( )
 			sin3theta=1.0;
 		else if (sin3theta<-1.0)
 			sin3theta=-1.0;
-		gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+		gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 		Fb0=doublecontraction(root23*etam*gtheta*normal-rbar0,normal);
 		normal=rbar1/sqrt(doublecontraction(rbar1,rbar1));
 		pass=normal*normal*normal;
@@ -740,7 +701,7 @@ void CycLiqCPSP :: plastic_integrator( )
 			sin3theta=1.0;
 		else if (sin3theta<-1.0)
 			sin3theta=-1.0;
-		gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+		gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 		Fb1=doublecontraction(root23*etam*gtheta*normal-rbar1,normal);
 		if (abs(Fb0)<=1.0e-5)
 		{
@@ -767,7 +728,7 @@ void CycLiqCPSP :: plastic_integrator( )
 			        sin3theta=1.0;
 		        else if (sin3theta<-1.0)
 			         sin3theta=-1.0;
-		        gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+		        gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 		        Fb0=doublecontraction(root23*etam*gtheta*normal-rbar0,normal);
 		        normal=rbar1/sqrt(doublecontraction(rbar1,rbar1));
 		        pass=normal*normal*normal;
@@ -776,7 +737,7 @@ void CycLiqCPSP :: plastic_integrator( )
 	         		sin3theta=1.0;
 	         	else if (sin3theta<-1.0)
 	         		sin3theta=-1.0;
-		        gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+		        gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 		        Fb1=doublecontraction(root23*etam*gtheta*normal-rbar1,normal);
 			}
 			if (abs(Fb0)<=1.0e-5)
@@ -800,7 +761,7 @@ void CycLiqCPSP :: plastic_integrator( )
 	         		sin3theta=1.0;
 	         	else if (sin3theta<-1.0)
 	         		sin3theta=-1.0;
-		        gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+		        gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 		        Fb=doublecontraction(root23*etam*gtheta*normal-rbar,normal);
 				intm=1;
 			    while (abs(Fb)>1.0e-6)
@@ -827,7 +788,7 @@ void CycLiqCPSP :: plastic_integrator( )
 	            		sin3theta=1.0;
 	            	else if (sin3theta<-1.0)
 	            		sin3theta=-1.0;
-		            gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+		            gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 		            Fb=doublecontraction(root23*etam*gtheta*normal-rbar,normal);
 					intm=intm+1;
 			    }
@@ -846,6 +807,7 @@ void CycLiqCPSP :: plastic_integrator( )
 	  {
 		  gammamonos=0.0;
 		  alpha_nplus1=r;
+		  epsvirpr=epsvir_n;
 	  }
   // --------------(V)Loading-------------------------------------
 	  else if (phi>tolerance&&phi_n>tolerance)
@@ -868,34 +830,51 @@ void CycLiqCPSP :: plastic_integrator( )
 		  //}
 		  if (roubar>tolerance)
 		  {
-		  H=two3*h*G*gtheta*(Mfc*exp(-nb*psi)/etam*roubar/rou-1.0);
-		  if (H<tolerance)
+		  H=two3*h*G*gtheta*exp(-nb*psi)*(Mfc*exp(-nb*psi)/etam*roubar/rou-1.0);
+		  if (H<tolerance && H>=0)
 		  {
 			  H=tolerance;
 		  }
-		  eta_nplus1=root32*sqrt(doublecontraction(r_nplus1,r_nplus1));
-		  sdila=1.0;
-		  rd=Mdc*exp(nd*psi)/etam*rbar;
-		  Dre_n=dre1/exp(nd*psi)*root23*doublecontraction(rd-r,normal);
-		  /*Dre_n=dre1*(Mdc-sdila*eta_n);
-		  if (doublecontraction(r,r_nplus1-r)<0.0)
+		  if (H>-tolerance && H<0)
 		  {
-			  sdila=-1.0;
-		      Dre_n=dre1*(Mdc-sdila*eta_n);
-		  }*/
+			  H=-tolerance;
+		  }
+		  eta_nplus1=root32*sqrt(doublecontraction(r_nplus1,r_nplus1));
+		  rd=Mdc*exp(nd*psi)/etam*rbar;
+		  Dre_n=dre1*root23*doublecontraction(rd-r,normal);
+		  if (epsvir_ns>tolerance)
+		      chi=-dir*epsvre_ns/epsvir_ns;
+		  else
+			  chi=0.0;
+		  if (chi>1.)
+			  chi=1.;
 		  if (Dre_n>0.0)
 		  {
-			  Dre_n=pow(-dre2*epsvre_ns,2);
-			  if (-epsvre_n<tolerance)
+			  Dre_n=pow(-dre2*chi,2)/p_n;
+			  if (-epsvre_ns<tolerance)
 				  Dre_n=0.0;
 		  }
-		  if (psi>=0)
+		  if (Dre_n>0)
 		  {
-		      Dir_n=dir*psi*exp(-eta*epsvir_ns/exp(nd*psi))/pow((1.0+gammamonos/rdr),2);
+		     if (psi>=0)
+		     {
+		         Dir_n=dir*exp(nd*psi-eta*epsvir_ns)*(root23*doublecontraction(rd-r,normal))*exp(chi);
+		     }
+		     else
+		     {
+			     Dir_n=dir*exp(nd*psi-eta*epsvir_ns)*(root23*doublecontraction(rd-r,normal)*exp(chi)+pow(rdr*(1-exp(nd*psi))/(rdr*(1-exp(nd*psi))+gammamonos),2));
+		     }
 		  }
 		  else
 		  {
-			  Dir_n=dir*(1/(1+psi)-1)*exp(-eta*epsvir_ns/exp(nd*psi))/pow((1.0+gammamonos/rdr),2);
+		     if (psi>=0)
+		     {
+		         Dir_n=0.0;
+		     }
+		     else
+		     {
+		  	     Dir_n=dir*exp(nd*psi-eta*epsvir_ns)*(pow(rdr*(1-exp(nd*psi))/(rdr*(1-exp(nd*psi))+gammamonos),2));
+		     }
 		  }
 
 		  D=Dir_n+Dre_n;
@@ -906,7 +885,7 @@ void CycLiqCPSP :: plastic_integrator( )
 		  {
 			  if (iconv==0.0)
 			  {
-				  dlambda=phi/(H+3*G-K*D*N);
+				  dlambda=phi/(H+2*G-K*D*N);
 				  lambda+=dlambda;
 			  }
 			  else
@@ -918,7 +897,6 @@ void CycLiqCPSP :: plastic_integrator( )
 			  dtracep=lambda*D;
 	          ddev_strain_p=lambda*normal;
 			  epsvc_nplus1=epsvc_ns+(trace-trace_n)/sub-dtracep;
-			  //epsvc_ns01=epsvc_ns00+(trace-trace_n)/sub-dtracep;
 			  if (epsvc_nplus1<epsvc0)
 			  {
 				  p_nplus1=pmin;
@@ -940,14 +918,6 @@ void CycLiqCPSP :: plastic_integrator( )
 			  }
 			  if (phi>tolerance && iconv==1.0)
 				  lambdamin=lambda;
-			  if (wr>2000)
-			  {
-				  //opserr<<"lambdamax="<<lambdamax<<"\t";
-				  //opserr<<"p_nplus1="<<p_nplus1<<"\t";
-				  //opserr<<"iconv="<<iconv<<"\t";
-				  //opserr<<"phimax="<<phi<<"\n";
-				  break;
-			  }
 			  wr=wr+1;
 				epsvir_nplus1=lambda*Dir_n+epsvir_ns;
 		        epsvre_nplus1=lambda*Dre_n+epsvre_ns;
@@ -960,7 +930,7 @@ void CycLiqCPSP :: plastic_integrator( )
 
 	  r_nplus1=dev_stress/p_nplus1;
 	  eta_nplus1=root32*sqrt(doublecontraction(r_nplus1,r_nplus1));
-	  if (eta_nplus1>=Mfc/(1.0+Mfc/6.0)-tolerance)
+	  if (eta_nplus1>=Mfc*exp(-nb*psi)/(1.0+Mfc/3.0)-tolerance)
 	  {
 	      r1=r_nplus1/sqrt(doublecontraction(r_nplus1,r_nplus1));
 	      pass=r1*r1*r1;
@@ -969,8 +939,8 @@ void CycLiqCPSP :: plastic_integrator( )
 	         sin3theta=1.0;
 	      else if (sin3theta<-1.0)
 	      	sin3theta=-1.0;
-	      gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
-	      r1=root23*Mfc*gtheta*r1;
+	      gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+	      r1=root23*Mfc*exp(-nb*psi)*gtheta*r1;
 	      if (doublecontraction(r1,r1)-doublecontraction(r_nplus1,r_nplus1)<tolerance)
 	      {
 		      intm=sqrt(doublecontraction(r_nplus1,r_nplus1))/sqrt(doublecontraction(r1,r1))+tolerance;
@@ -978,37 +948,13 @@ void CycLiqCPSP :: plastic_integrator( )
 	      }
 		  r_nplus1=dev_stress/p_nplus1;
 		  eta_nplus1=root32*sqrt(doublecontraction(r_nplus1,r_nplus1));
-		  //if (eta_nplus1>1.0&&sin3theta>0.99)
-		  //{
-			 // //eta_nplus1=root32*sqrt(doublecontraction(dev_stress,dev_stress))/p_nplus1;
-			 // intm=root32*sqrt(doublecontraction(r1,r1));
-
-			 // opserr<<"sin3theta="<<sin3theta<<"\t";
-			 // opserr<<"Mfc="<<Mfc<<"\t";
-			 // opserr<<"gtheta="<<gtheta<<"\t";
-			 // opserr<<"eta_nplus1="<<eta_nplus1<<"\t";
-			 // opserr<<"intm="<<intm<<"\n";
-		  //}
 	  }
-	  //if ( eta_nplus1>Mfc)
-	  //{
-		 // intm=eta_nplus1/Mfc+tolerance;
-		 // dev_stress=dev_stress/intm;
-	  //}
-	  //eta_nplus1=root32*sqrt(doublecontraction(dev_stress,dev_stress))/p_nplus1;
-	  //r_nplus1=dev_stress/p_nplus1;
-	  //if ( eta_nplus1>Mfc)
-	  //{
-		 // intm=eta_nplus1/Mfc+tolerance;
-		 // dev_stress=dev_stress/intm;
-		 // opserr<<"you shouldn't see this="<<intm<<"\n";
-	  //}
+
 	    alpha_ns=alpha_nplus1;
         epsvir_ns=epsvir_nplus1;
         epsvre_ns=epsvre_nplus1;
 		
         epsvc_ns=epsvc_ns-epsvc_nplus1+(trace-trace_n)/sub-dtracep;
-		//epsvc_ns00=epsvc_ns01;
 		epsvc_nplus1=epsvc_ns;
         p_n=p_nplus1;
         dev_stress_n=dev_stress;
@@ -1040,10 +986,6 @@ void CycLiqCPSP :: plastic_integrator( )
 	  
 	  r=dev_stress/(p_nplus1);
       eta_n=root32*sqrt(doublecontraction(r,r));
-	  //if (eta_n>etam)
-   //   {
-   //   	etam=eta_n;
-   //   }
 	  r1=r/doublecontraction(r,r);
 	      pass=r1*r1*r1;
 	      sin3theta=-sqrt(6.0)*(pass(0,0)+pass(1,1)+pass(2,2));
@@ -1051,40 +993,17 @@ void CycLiqCPSP :: plastic_integrator( )
 	         sin3theta=1.0;
 	      else if (sin3theta<-1.0)
 	      	sin3theta=-1.0;
-	      gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+	      gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 
       if (eta_n/gtheta>etam)
       {
       	etam=eta_n/gtheta;
       }
-	  if (etam>Mfc-tolerance)
+	  if (eta_n/gtheta>Mfc*exp(-nb*psi)-tolerance)
 		{
-			etam=Mfc-tolerance;
+			etam=eta_n/gtheta;
 		}
 	  rou=root32*sqrt(doublecontraction(r-alpha_nplus1,r-alpha_nplus1));
-		/*  if (etam-eta_n<=tolerance)
-		{
-			beta=1.0;
-		}
-		else
-		{
-	        ax=doublecontraction(r-alpha_nplus1,r-alpha_nplus1);
-	        bx=2*doublecontraction(alpha_nplus1,r-alpha_nplus1);
-	        cx=doublecontraction(alpha_nplus1,alpha_nplus1)-two3*etam*etam;
-	        beta=(-bx+sqrt(bx*bx-4*ax*cx))/2.0/ax;
-	        if (beta<1.0-tolerance)
-	      	{
-	  	  	    opserr << "beta="<<beta<<"\n";
-	  	  	    beta=(-bx-sqrt(bx*bx-4*ax*cx))/2.0/ax;
-	  	    }
-	        if (beta<1.0-tolerance)
-	        {
-				opserr << "beta="<<beta<<"\n";
-	            exit(-1);
-	        }
-		 }
-	  rbar=alpha_nplus1+beta*(r-alpha_nplus1);
-	  normal=3.0/2.0*rbar/root32/sqrt(doublecontraction(rbar,rbar));*/
 
 	  	beta0=0.0;
 		beta1=1.0;
@@ -1096,7 +1015,7 @@ void CycLiqCPSP :: plastic_integrator( )
 			normal(0,0)=2.0/sqrt(5.0);
 			normal(1,1)=-1.0/sqrt(5.0);
 			normal(2,2)=-1.0/sqrt(5.0);
-			rbar= root23*Mfc*normal;
+			rbar= root23*Mfc*exp(-nb*psi)*normal;
 			beta=1.0e20;
 		}
 		else if (sqrt(doublecontraction(r-alpha_nplus1,r-alpha_nplus1))<tolerance)
@@ -1119,7 +1038,7 @@ void CycLiqCPSP :: plastic_integrator( )
 			sin3theta=1.0;
 		else if (sin3theta<-1.0)
 			sin3theta=-1.0;
-		gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+		gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 		Fb0=doublecontraction(root23*etam*gtheta*normal-rbar0,normal);
 		normal=rbar1/sqrt(doublecontraction(rbar1,rbar1));
 		pass=normal*normal*normal;
@@ -1128,7 +1047,7 @@ void CycLiqCPSP :: plastic_integrator( )
 			sin3theta=1.0;
 		else if (sin3theta<-1.0)
 			sin3theta=-1.0;
-		gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+		gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 		Fb1=doublecontraction(root23*etam*gtheta*normal-rbar1,normal);
 		if (abs(Fb0)<=1.0e-5)
 		{
@@ -1155,7 +1074,7 @@ void CycLiqCPSP :: plastic_integrator( )
 	        		sin3theta=1.0;
 	        	else if (sin3theta<-1.0)
 	        		sin3theta=-1.0;
-		        gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+		        gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 		        Fb0=doublecontraction(root23*etam*gtheta*normal-rbar0,normal);
 		        normal=rbar1/sqrt(doublecontraction(rbar1,rbar1));
 		        pass=normal*normal*normal;
@@ -1164,7 +1083,7 @@ void CycLiqCPSP :: plastic_integrator( )
 	         		sin3theta=1.0;
 	         	else if (sin3theta<-1.0)
 	         		sin3theta=-1.0;
-		        gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+		        gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 		        Fb1=doublecontraction(root23*etam*gtheta*normal-rbar1,normal);
 			}
 			if (abs(Fb0)<=1.0e-5)
@@ -1188,7 +1107,7 @@ void CycLiqCPSP :: plastic_integrator( )
 	        		sin3theta=1.0;
 	        	else if (sin3theta<-1.0)
 	        		sin3theta=-1.0;
-		        gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+		        gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 		        Fb=doublecontraction(root23*etam*gtheta*normal-rbar,normal);
 				intm=1;
 			    while (abs(Fb)>1.0e-6)
@@ -1215,7 +1134,7 @@ void CycLiqCPSP :: plastic_integrator( )
 	             		sin3theta=1.0;
 	             	else if (sin3theta<-1.0)
 	             		sin3theta=-1.0;
-		            gtheta=1/(1+Mfc/12.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
+		            gtheta=1/(1+Mfc/6.0*(sin3theta+sin3theta*sin3theta)+(Mfc-Mfo)/Mfo*(1-sin3theta*sin3theta));
 		            Fb=doublecontraction(root23*etam*gtheta*normal-rbar,normal);
 			    }
 			}
@@ -1227,29 +1146,48 @@ void CycLiqCPSP :: plastic_integrator( )
 	  L=normal-one3*N*I;
 
       roubar=root32*sqrt(doublecontraction(rbar-alpha_nplus1,rbar-alpha_nplus1));
-      H=two3*h*G*gtheta*(Mfc*exp(-nb*psi)/etam*roubar/rou-1.0);
+      H=two3*h*G*gtheta*exp(-nb*psi)*(Mfc*exp(-nb*psi)/etam*roubar/rou-1.0);
 
 	  if (H<0.01*G)
 	  {
 		  H=0.01*G;
 	  }
 	  rd=Mdc*exp(nd*psi)/etam*rbar;
-	  Dre_n=dre1/exp(nd*psi)*root23*doublecontraction(rd-r,normal);
-	  //Dre_n=dre1*(Mdc-sdila*eta_n);
-	  if (Dre_n>0.0)
-	  {
-		  Dre_n=pow(-dre2*epsvre_n,2);
-		  if (-epsvre_n<tolerance)
-			  Dre_n=0.0;
-	  }
-	  if (psi>=0)
-	  {
-	  	  Dir_n=dir*psi*exp(-eta*epsvir_ns/exp(nd*psi))/pow((1.0+gammamonos/rdr),2);
-	  }
-	  else
-	  {
-	  	  Dir_n=dir*(1/(1+psi)-1)*exp(-eta*epsvir_ns/exp(nd*psi))/pow((1.0+gammamonos/rdr),2);
-	  }
+	  Dre_n=dre1*root23*doublecontraction(rd-r,normal);
+	      if (epsvir_nplus1>tolerance)
+		      chi=-dir*epsvre_nplus1/epsvir_nplus1;
+		  else
+			  chi=0.0;
+		  if (chi>1.)
+			  chi=1.;
+		  if (Dre_n>0.0)
+		  {
+			  Dre_n=pow(-dre2*chi,2)/p_nplus1;
+			  if (-epsvre_nplus1<tolerance)
+				  Dre_n=0.0;
+		  }
+		  if (Dre_n>0)
+		  {
+		     if (psi>=0)
+		     {
+		         Dir_n=dir*exp(nd*psi-eta*epsvir_nplus1)*(root23*doublecontraction(rd-r,normal))*exp(chi);
+		     }
+		     else
+		     {
+			     Dir_n=dir*exp(nd*psi-eta*epsvir_nplus1)*(root23*doublecontraction(rd-r,normal)*exp(chi)+pow(rdr*(1-exp(nd*psi))/(rdr*(1-exp(nd*psi))+gammamonos),2));
+		     }
+		  }
+		  else
+		  {
+		     if (psi>=0)
+		     {
+		         Dir_n=0.0;
+		     }
+		     else
+		     {
+		  	     Dir_n=dir*exp(nd*psi-eta*epsvir_nplus1)*(pow(rdr*(1-exp(nd*psi))/(rdr*(1-exp(nd*psi))+gammamonos),2));
+		     }
+		  }
       D=Dir_n+Dre_n;
 	  if (p_nplus1<(pmin+tolerance))
 	  {
@@ -1437,6 +1375,7 @@ CycLiqCPSP::commitState( )
   epsvc_n=epsvc_nplus1;
   etam=etam;
   stress_n=stress_nplus1;
+  epsvirpr=epsvirpr;
   //epsvc_ns0=epsvc_ns01;
   //epsvc0=epsvc0;
 
@@ -1499,12 +1438,14 @@ CycLiqCPSP::sendSelf(int commitTag, Channel &theChannel)
 
 
   for (int i=0; i<3; i++) 
+  {
     for (int j=0; j<3; j++) 
 	{
 	  data(cnt+9)   = strain_nplus1(i,j);
 	  data(cnt+9*2) = alpha_nplus1(i,j);
 	  data(cnt+9*3) = stress_nplus1(i,j);
 	}
+  }
 
 	res += theChannel.sendVector(this->getDbTag(), commitTag, data);
   // send the vector object to the channel
@@ -1557,18 +1498,14 @@ CycLiqCPSP::recvSelf (int commitTag, Channel &theChannel,
 
 
   for (int i=0; i<3; i++)
+  {
     for (int j=0; j<3; j++) 
 	{
       strain_n(i,j) = data(cnt+9);
 	  alpha_n(i,j) = data(cnt+9*2);
 	  stress_n(i,j) = data(cnt+9*3);
 	}
-
-	//strain_nplus1=strain_n;
-	//alpha_nplus1=alpha_n;
-	//stress_nplus1=stress_n;
-	//epsvir_nplus1=epsvir_n;
-	//epsvre_nplus1=epsvre_n;
+  }
 
   return res;
 }

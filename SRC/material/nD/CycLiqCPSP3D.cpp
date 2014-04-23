@@ -65,7 +65,7 @@ CycLiqCPSP3D :: CycLiqCPSP3D(    int    tag,
 			   double nd1,
 	           double ein1,      //initial void ratio
 		       double rho1):
-CycLiqCPSP(tag, ND_TAG_CycLiqCPSP3D, G01, kappa1, h1, Mfc1, dre11, Mdc1, dre21, rdr1, eta1, dir1, lamdac1, ksi1, e01, nb1, nd1, ein1, rho1 )
+CycLiqCPSP(tag, ND_TAG_CycLiqCPSP3D, G01, kappa1, h1, Mfc1, dre11, dre21, rdr1, eta1, dir1, lamdac1, ksi1, e01, nb1, nd1, ein1, rho1 )
 {
 
 }
@@ -252,3 +252,109 @@ const Matrix& CycLiqCPSP3D :: getInitialTangent( )
   return tangent_matrix ;
 } 
 
+int
+CycLiqCPSP3D::sendSelf(int commitTag, Channel &theChannel)
+{
+  // we place all the data needed to define material and it's state
+  // int a vector object
+	int res = 0;
+  static Vector data(22+9*3);
+  int cnt = 0;
+  data(cnt++) = this->getTag();
+
+  data(cnt++) =	   G0;
+  data(cnt++) =	   kappa;
+  data(cnt++) =	   h;
+  data(cnt++) =	   Mfc;   
+  data(cnt++) =	   dre1;
+  data(cnt++) =	   Mdc;
+  data(cnt++) =	   dre2;
+  data(cnt++) =	   rdr;
+  data(cnt++) =	   eta;
+  data(cnt++) =	   dir;
+  data(cnt++) =	   lamdac;
+  data(cnt++) =	   ksi;
+  data(cnt++) =	   e0;
+  data(cnt++) =	   nb;
+  data(cnt++) =	   nd;
+  data(cnt++) =	   ein;   
+  data(cnt++) =	   rho;
+  data(cnt++) =	   epsvir_nplus1;
+  data(cnt++) =	   epsvre_nplus1;
+  data(cnt++) =	   gammamonos;   
+  data(cnt++) =	   epsvc_nplus1;
+  data(cnt++) =	   etam;
+
+
+  for (int i=0; i<3; i++) 
+  {
+    for (int j=0; j<3; j++) 
+	{
+	  data(cnt+9)   = strain_nplus1(i,j);
+	  data(cnt+9*2) = alpha_nplus1(i,j);
+	  data(cnt+9*3) = stress_nplus1(i,j);
+	}
+  }
+
+	res += theChannel.sendVector(this->getDbTag(), commitTag, data);
+  // send the vector object to the channel
+  if (res < 0) {
+    opserr << "CycLiqCPSP::sendSelf - failed to send vector to channel\n";
+    return res;
+  }
+
+  return res;
+}
+
+int
+CycLiqCPSP3D::recvSelf (int commitTag, Channel &theChannel, 
+			 FEM_ObjectBroker &theBroker)
+{
+	int res = 0;
+  // recv the vector object from the channel which defines material param and state
+  static Vector data(22+9*3);
+  res += theChannel.recvVector(this->getDbTag(), commitTag, data);
+  if (res < 0) {
+    opserr << "CycLiqCPSP::recvSelf - failed to recv vector from channel\n";
+    return res;
+  }
+
+  // set the material parameters and state variables
+  int cnt = 0;
+  this->setTag(data(cnt++));
+  G0 =	data(cnt++);    
+  kappa =	data(cnt++);    
+  h =	data(cnt++);    
+  Mfc    =	data(cnt++);    
+  dre1 =	data(cnt++);    
+  Mdc =	data(cnt++);    
+  dre2 =	data(cnt++);    
+  rdr =	data(cnt++);    
+  eta =	data(cnt++);    
+  dir =	data(cnt++); 
+  lamdac =	data(cnt++);    
+  ksi =	data(cnt++);    
+  e0 =	data(cnt++);    
+  nb =	data(cnt++);    
+  nd =	data(cnt++);
+  ein    =	data(cnt++);    
+  rho =	data(cnt++);    
+  epsvir_n =	data(cnt++);    
+  epsvre_n =	data(cnt++);    
+  gammamono  =	data(cnt++);      
+  epsvc_n =	data(cnt++);    
+  etam =	data(cnt++);    
+
+
+  for (int i=0; i<3; i++)
+  {
+    for (int j=0; j<3; j++) 
+	{
+      strain_n(i,j) = data(cnt+9);
+	  alpha_n(i,j) = data(cnt+9*2);
+	  stress_n(i,j) = data(cnt+9*3);
+	}
+  }
+
+  return res;
+}

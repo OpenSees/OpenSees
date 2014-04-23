@@ -59,7 +59,6 @@ class CycLiqCPSP : public NDMaterial {
 	           double h1,
 	           double Mfc1,       //critical state
 	           double dre11,
-	           double Mdc1,
 	           double dre21,
 	           double rdr1,
 	           double eta1,
@@ -110,7 +109,10 @@ class CycLiqCPSP : public NDMaterial {
 
   double getRho(void) {return rho;}
 
+
+
   protected :
+
 
   //material parameters
 	double G0;
@@ -152,6 +154,7 @@ class CycLiqCPSP : public NDMaterial {
 	  double epsvir_nplus1;
 	  double epsvre_n;
 	  double epsvre_nplus1;
+	  double epsvirpr;
 	  double epsvc_n;
 	  double epsvc_nplus1;
 	  double gammarem;

@@ -214,3 +214,100 @@ const Matrix& CycLiqCPPlaneStrain :: getInitialTangent( )
   return tangent_matrix ;
 } 
 
+int
+CycLiqCPPlaneStrain::sendSelf(int commitTag, Channel &theChannel)
+{
+  // we place all the data needed to define material and it's state
+  // int a vector object
+  static Vector data(20+9*3);
+  int cnt = 0;
+  data(cnt++) = this->getTag();
+
+  data(cnt++) =	   G0;
+  data(cnt++) =	   kappa;
+  data(cnt++) =	   h;
+  data(cnt++) =	   Mfc;   
+  data(cnt++) =	   dre1;
+  data(cnt++) =	   Mdc;
+  data(cnt++) =	   dre2;
+  data(cnt++) =	   rdr;
+  data(cnt++) =	   eta;
+  data(cnt++) =	   dir;
+  data(cnt++) =	   ein;   
+  data(cnt++) =	   rho;
+  data(cnt++) =	   epsvir_nplus1;
+  data(cnt++) =	   epsvre_nplus1;
+  data(cnt++) =	   gammamonos;   
+  data(cnt++) =	   epsvc_nplus1;
+  data(cnt++) =	   etam;
+  data(cnt++) =	   epsvc0;
+  data(cnt++) =	   p0;
+
+
+  for (int i=0; i<3; i++)
+  {
+    for (int j=0; j<3; j++) 
+	{
+	  data(cnt+9)   = strain_nplus1(i,j);
+	  data(cnt+9*2) = alpha_nplus1(i,j);
+	  data(cnt+9*3) = stress_nplus1(i,j);
+	}
+  }
+
+  // send the vector object to the channel
+  if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
+    opserr << "CycLiqCP::sendSelf - failed to send vector to channel\n";
+    return -1;
+  }
+
+  return 0;
+}
+
+int
+CycLiqCPPlaneStrain::recvSelf (int commitTag, Channel &theChannel, 
+			 FEM_ObjectBroker &theBroker)
+{
+
+  // recv the vector object from the channel which defines material param and state
+  static Vector data(20+9*3);
+  if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
+    opserr << "CycLiqCP::recvSelf - failed to recv vector from channel\n";
+    return -1;
+  }
+
+  // set the material parameters and state variables
+  int cnt = 0;
+  this->setTag(data(cnt++));
+  G0 =	data(cnt++);    
+  kappa =	data(cnt++);    
+  h =	data(cnt++);    
+  Mfc    =	data(cnt++);    
+  dre1 =	data(cnt++);    
+  Mdc =	data(cnt++);    
+  dre2 =	data(cnt++);    
+  rdr =	data(cnt++);    
+  eta =	data(cnt++);    
+  dir =	data(cnt++);    
+  ein    =	data(cnt++);    
+  rho =	data(cnt++);    
+  epsvir_n =	data(cnt++);    
+  epsvre_n =	data(cnt++);    
+  gammamono  =	data(cnt++);      
+  epsvc_n =	data(cnt++);    
+  etam =	data(cnt++);    
+  epsvc0 =	data(cnt++);    
+  p0 =	data(cnt++);  
+
+  for (int i=0; i<3; i++)
+  {
+    for (int j=0; j<3; j++) 
+	{
+      strain_n(i,j) = data(cnt+9);
+	  alpha_n(i,j) = data(cnt+9*2);
+	  stress_n(i,j) = data(cnt+9*3);
+	}
+  }
+
+
+  return 0;
+}

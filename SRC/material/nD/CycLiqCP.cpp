@@ -474,7 +474,7 @@ void CycLiqCP :: plastic_integrator( )
     dev_strain(i,i) -= ( one3*trace ) ;
 
 
-  en=(1+ein)*exp(trace_n)-1.;//void ratio
+  en=(1+ein)*exp(-trace_n)-1.;//void ratio
 
   // force elastic response if initialization analysis is designated===================================
 	if (mElastFlag == 0) {
@@ -1065,14 +1065,15 @@ CycLiqCP::sendSelf(int commitTag, Channel &theChannel)
   data(cnt++) =	   p0;
 
 
-  for (int i=0; i<3; i++) 
+  for (int i=0; i<3; i++)
+  {
     for (int j=0; j<3; j++) 
 	{
 	  data(cnt+9)   = strain_nplus1(i,j);
 	  data(cnt+9*2) = alpha_nplus1(i,j);
 	  data(cnt+9*3) = stress_nplus1(i,j);
 	}
-
+  }
 
   // send the vector object to the channel
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
@@ -1119,18 +1120,15 @@ CycLiqCP::recvSelf (int commitTag, Channel &theChannel,
   p0 =	data(cnt++);  
 
   for (int i=0; i<3; i++)
+  {
     for (int j=0; j<3; j++) 
 	{
       strain_n(i,j) = data(cnt+9);
 	  alpha_n(i,j) = data(cnt+9*2);
 	  stress_n(i,j) = data(cnt+9*3);
 	}
+  }
 
-	strain_nplus1=strain_n;
-	alpha_nplus1=alpha_n;
-	stress_nplus1=stress_n;
-	epsvir_nplus1=epsvir_n;
-	epsvre_nplus1=epsvre_n;
 
   return 0;
 }
