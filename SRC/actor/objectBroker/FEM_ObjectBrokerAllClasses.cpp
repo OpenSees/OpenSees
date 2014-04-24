@@ -47,8 +47,13 @@
 
 // Convergence tests
 #include <CTestNormUnbalance.h>
+#include <CTestRelativeNormUnbalance.h>
 #include <CTestNormDispIncr.h>
+#include <CTestRelativeNormDispIncr.h>
+#include <CTestRelativeTotalNormDispIncr.h>
 #include <CTestEnergyIncr.h>
+#include <CTestRelativeEnergyIncr.h>
+#include <CTestFixedNumIter.h>
 
 // graph numbering schemes
 #include <RCM.h>
@@ -1349,12 +1354,26 @@ FEM_ObjectBrokerAllClasses::getNewConvergenceTest(int classTag)
 	case CONVERGENCE_TEST_CTestNormUnbalance:  
 	     return new CTestNormUnbalance();
 	     
+	case CONVERGENCE_TEST_CTestRelativeNormUnbalance:  
+	     return new CTestRelativeNormUnbalance();
+	     
 	case CONVERGENCE_TEST_CTestNormDispIncr:  
 	     return new CTestNormDispIncr();
-	     	     
+	     
+	case CONVERGENCE_TEST_CTestRelativeNormDispIncr:  
+	     return new CTestRelativeNormDispIncr();
+	     
+	case CONVERGENCE_TEST_CTestRelativeTotalNormDispIncr:  
+	     return new CTestRelativeTotalNormDispIncr();
+	     
 	case CONVERGENCE_TEST_CTestEnergyIncr:  
 	     return new CTestEnergyIncr();
-	     	     	     
+	     
+	case CONVERGENCE_TEST_CTestRelativeEnergyIncr:  
+	     return new CTestRelativeEnergyIncr();
+	     
+	case CONVERGENCE_TEST_CTestFixedNumIter:  
+	     return new CTestFixedNumIter();
 	     
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewConvergenceTest - ";
@@ -1362,7 +1381,7 @@ FEM_ObjectBrokerAllClasses::getNewConvergenceTest(int classTag)
 	     opserr << classTag << endln;
 	     return 0;
 	     
-	 }        
+	 }
 }
 
 
