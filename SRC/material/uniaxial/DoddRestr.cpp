@@ -54,7 +54,7 @@
 //using namespace std;
 
 void *
-OPS_NewDoddRestr()
+OPS_DoddRestr(void)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
