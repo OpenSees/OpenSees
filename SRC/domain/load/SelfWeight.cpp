@@ -64,11 +64,12 @@ SelfWeight::sendSelf(int commitTag, Channel &theChannel)
 {
 	int dbTag = this->getDbTag();
 
-    static Vector vData(4);
+    static Vector vData(5);
     vData(0) = xFact;
     vData(1) = yFact;
     vData(2) = zFact;
-    vData(3) = this->getTag();
+    vData(3) = eleTag;
+    vData(4) = this->getTag();
 
     int result = theChannel.sendVector(dbTag, commitTag, vData);
     if (result < 0) {
@@ -84,7 +85,7 @@ SelfWeight::recvSelf(int commitTag, Channel &theChannel,  FEM_ObjectBroker &theB
 {
 	int dbTag = this->getDbTag();
 
-    static Vector vData(4);
+    static Vector vData(5);
 
     int result = theChannel.recvVector(dbTag, commitTag, vData);
     if (result < 0) {
@@ -92,10 +93,11 @@ SelfWeight::recvSelf(int commitTag, Channel &theChannel,  FEM_ObjectBroker &theB
         return result;
     }
 
-    this->setTag(vData(3));
+    this->setTag(vData(4));
     xFact = vData(0);
     yFact = vData(1);
     zFact = vData(2);
+    eleTag = (int)vData(3);
 
     return 0;
 }
