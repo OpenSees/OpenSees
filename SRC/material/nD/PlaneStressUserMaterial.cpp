@@ -67,6 +67,7 @@ vprops(0), statev0(0), statev(0),
 props(0), statevdata(0),
 nstatevs(0), nprops(0)
 { 
+
 }
 
 
@@ -104,6 +105,7 @@ PlaneStressUserMaterial::~PlaneStressUserMaterial( )
 
   if (statevdata != 0)
     delete [] statevdata;
+
   if (statev0 != 0)
     delete statev0;
   if (statev != 0)
@@ -178,7 +180,7 @@ PlaneStressUserMaterial::commitState( )
 {
   stress0 = stress;
   strain0 = strain;
-  statev0 = statev;
+  (*statev0) = (*statev);
   return 0;
 }
 
