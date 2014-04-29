@@ -794,7 +794,7 @@ int MultipleShearSpring::update()
 
   }
 
-  opserr << "forceFactor: " << mssFeq << " stiffFactor: " << mssSeq << endln;
+  //  opserr << "forceFactor: " << mssFeq << " stiffFactor: " << mssSeq << endln;
   basicForce *= mssFeq;
   basicStiff *= mssSeq;
 
