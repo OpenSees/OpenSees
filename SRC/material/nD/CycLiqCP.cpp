@@ -1072,6 +1072,7 @@ CycLiqCP::sendSelf(int commitTag, Channel &theChannel)
 	  data(cnt+9)   = strain_nplus1(i,j);
 	  data(cnt+9*2) = alpha_nplus1(i,j);
 	  data(cnt+9*3) = stress_nplus1(i,j);
+	  cnt=cnt+1;
 	}
   }
 
@@ -1126,6 +1127,7 @@ CycLiqCP::recvSelf (int commitTag, Channel &theChannel,
       strain_n(i,j) = data(cnt+9);
 	  alpha_n(i,j) = data(cnt+9*2);
 	  stress_n(i,j) = data(cnt+9*3);
+	  cnt=cnt+1;
 	}
   }
 

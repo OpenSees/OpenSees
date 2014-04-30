@@ -1409,7 +1409,7 @@ CycLiqCPSP::sendSelf(int commitTag, Channel &theChannel)
   // we place all the data needed to define material and it's state
   // int a vector object
 	int res = 0;
-  static Vector data(22+9*3);
+  static Vector data(23+9*3);
   int cnt = 0;
   data(cnt++) = this->getTag();
 
@@ -1444,6 +1444,7 @@ CycLiqCPSP::sendSelf(int commitTag, Channel &theChannel)
 	  data(cnt+9)   = strain_nplus1(i,j);
 	  data(cnt+9*2) = alpha_nplus1(i,j);
 	  data(cnt+9*3) = stress_nplus1(i,j);
+	  cnt=cnt+1;
 	}
   }
 
@@ -1463,7 +1464,7 @@ CycLiqCPSP::recvSelf (int commitTag, Channel &theChannel,
 {
 	int res = 0;
   // recv the vector object from the channel which defines material param and state
-  static Vector data(22+9*3);
+  static Vector data(23+9*3);
   res += theChannel.recvVector(this->getDbTag(), commitTag, data);
   if (res < 0) {
     opserr << "CycLiqCPSP::recvSelf - failed to recv vector from channel\n";
@@ -1504,6 +1505,7 @@ CycLiqCPSP::recvSelf (int commitTag, Channel &theChannel,
       strain_n(i,j) = data(cnt+9);
 	  alpha_n(i,j) = data(cnt+9*2);
 	  stress_n(i,j) = data(cnt+9*3);
+	  cnt=cnt+1;
 	}
   }
 
