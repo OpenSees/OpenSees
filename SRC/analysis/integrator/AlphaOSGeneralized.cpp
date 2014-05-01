@@ -328,7 +328,8 @@ int AlphaOSGeneralized::domainChanged()
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
-                (*U)(loc) = disp(i);		
+                (*Upt)(loc) = disp(i);
+                (*U)(loc) = disp(i);
             }
         }
         
@@ -336,6 +337,7 @@ int AlphaOSGeneralized::domainChanged()
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
+                (*Uptdot)(loc) = vel(i);
                 (*Udot)(loc) = vel(i);
             }
         }
