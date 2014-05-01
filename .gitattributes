@@ -2348,6 +2348,16 @@ SRC/element/beam3d/beam3d02.h -text
 SRC/element/beamWithHinges/BeamWithHinges2D.tex -text
 SRC/element/beamWithHinges/Makefile -text
 SRC/element/beamWithHinges/TclBeamWithHingesBuilder.cpp -text
+SRC/element/bearing/ElastomericX.cpp -text
+SRC/element/bearing/ElastomericX.h -text
+SRC/element/bearing/ElastomericX.tcl -text
+SRC/element/bearing/HDR.cpp -text
+SRC/element/bearing/HDR.h -text
+SRC/element/bearing/HDR.tcl -text
+SRC/element/bearing/LeadRubberX.cpp -text
+SRC/element/bearing/LeadRubberX.h -text
+SRC/element/bearing/LeadRubberX.tcl -text
+SRC/element/bearing/Makefile -text
 SRC/element/brick/BbarBrick.cpp -text
 SRC/element/brick/BbarBrick.h -text
 SRC/element/brick/BbarBrickWithSensitivity.cpp -text

@@ -39,6 +39,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/surfaceLoad; $(MAKE);
 	@$(CD) $(FE)/element/UWelements; $(MAKE);
 	@$(CD) $(FE)/element/HUelements; $(MAKE);
+	@$(CD) $(FE)/element/bearing; $(MAKE);
 
 # Miscellaneous
 tidy:	
@@ -76,6 +77,7 @@ spotless: clean
 	@$(CD) $(FE)/element/surfaceLoad; $(MAKE) wipe;
 	@$(CD) $(FE)/element/UWelements; $(MAKE) wipe;
 	@$(CD) $(FE)/element/HUelements; $(MAKE) wipe;
+	@$(CD) $(FE)/element/bearing; $(MAKE) wipe;
 
 wipe: spotless
 

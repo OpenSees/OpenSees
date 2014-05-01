@@ -929,8 +929,7 @@ void  Brick::formResidAndTangent( int tang_flag )
 
   int i, j, k, p, q ;
 
-  int success ;
-  
+
   static double volume ;
 
   static double xsj ;  // determinant jacaobian matrix 
@@ -1382,7 +1381,6 @@ int  Brick::recvSelf (int commitTag,
 int
 Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
 {
-
     const Vector &end1Crd = nodePointers[0]->getCrds();
     const Vector &end2Crd = nodePointers[1]->getCrds();	
     const Vector &end3Crd = nodePointers[2]->getCrds();	
@@ -1393,18 +1391,15 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
     const Vector &end7Crd = nodePointers[6]->getCrds();	
     const Vector &end8Crd = nodePointers[7]->getCrds();	
 
-    static Matrix coords(4,3);
-    static Vector values(4);
+    static Matrix coords(8,3);
+    static Vector values(8);
     static Vector P(24) ;
-
-    values(0) = 1 ;
-    values(1) = 1 ;
-    values(2) = 1 ;
-    values(3) = 1 ;
+    
+    for (int i=0; i<8; i++)
+      values(i) = 1.0;
 
     int error = 0;
     int i;
-
 
     if (displayMode >= 0) {
 
@@ -1437,6 +1432,10 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
 	coords(1,i) = end2Crd(i) + end2Disp(i)*fact;    
 	coords(2,i) = end3Crd(i) + end3Disp(i)*fact;    
 	coords(3,i) = end4Crd(i) + end4Disp(i)*fact;
+	coords(4,i) = end5Crd(i) + end5Disp(i)*fact;
+	coords(5,i) = end6Crd(i) + end6Disp(i)*fact;    
+	coords(6,i) = end7Crd(i) + end7Disp(i)*fact;    
+	coords(7,i) = end8Crd(i) + end8Disp(i)*fact;
       }
       
       if (displayMode < 3 && displayMode > 0) {
@@ -1445,94 +1444,13 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
 	values(1) = stress2(index);
 	values(2) = stress3(index);
 	values(3) = stress4(index);
-      }
-      
-      error += theViewer.drawPolygon (coords, values);
-      
-      for (i = 0; i < 3; i++) {
-	coords(0,i) = end5Crd(i) + end5Disp(i)*fact;
-	coords(1,i) = end6Crd(i) + end6Disp(i)*fact;
-	coords(2,i) = end7Crd(i) + end7Disp(i)*fact;
-	coords(3,i) = end8Crd(i) + end8Disp(i)*fact;
-      }
-      
-      if (displayMode < 3 && displayMode > 0) {
-	int index = displayMode - 1;
-	values(0) = stress5(index);
-	values(1) = stress6(index);
-	values(2) = stress7(index);
-	values(3) = stress8(index);
-      }
-      
-      error += theViewer.drawPolygon (coords, values);
-      
-      for (i = 0; i < 3; i++) {
-	coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-	coords(1,i) = end4Crd(i) + end4Disp(i)*fact;
-	coords(2,i) = end8Crd(i) + end8Disp(i)*fact;
-	coords(3,i) = end5Crd(i) + end5Disp(i)*fact;
-      }
-      
-      if (displayMode < 3 && displayMode > 0) {
-	int index = displayMode - 1;
-	values(0) = stress1(index);
-	values(1) = stress4(index);
-	values(2) = stress8(index);
-	values(3) = stress5(index);
-      }
-      
-      error += theViewer.drawPolygon (coords, values);
-      
-      for (i = 0; i < 3; i++) {
-	coords(0,i) = end2Crd(i) + end2Disp(i)*fact;
-	coords(1,i) = end3Crd(i) + end3Disp(i)*fact;
-	coords(2,i) = end7Crd(i) + end7Disp(i)*fact;
-	coords(3,i) = end6Crd(i) + end6Disp(i)*fact;
-      }
-      if (displayMode < 3 && displayMode > 0) {
-	int index = displayMode - 1;
-	values(0) = stress2(index);
-	values(1) = stress3(index);
-	values(2) = stress7(index);
-	values(3) = stress6(index);
-      }
-      
-      error += theViewer.drawPolygon (coords, values);
-      
-      
-      for (i = 0; i < 3; i++) {
-	coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-	coords(1,i) = end2Crd(i) + end2Disp(i)*fact;
-	coords(2,i) = end6Crd(i) + end6Disp(i)*fact;
-	coords(3,i) = end5Crd(i) + end5Disp(i)*fact;
-      }
-      
-      if (displayMode < 3 && displayMode > 0) {
-	int index = displayMode - 1;
-	values(0) = stress1(index);
-	values(1) = stress2(index);
-	values(2) = stress6(index);
-	values(3) = stress5(index);
-      }
-      
-      error += theViewer.drawPolygon (coords, values);
-      
-      for (i = 0; i < 3; i++) {
-	coords(0,i) = end4Crd(i) + end4Disp(i)*fact;
-	coords(1,i) = end3Crd(i) + end3Disp(i)*fact;
-	coords(2,i) = end7Crd(i) + end7Disp(i)*fact;
-	coords(3,i) = end8Crd(i) + end8Disp(i)*fact;
-      }
-      
-      if (displayMode < 3 && displayMode > 0) {
-	int index = displayMode - 1;
-	values(0) = stress3(index);
-	values(1) = stress4(index);
-	values(2) = stress7(index);
-	values(3) = stress8(index);
+	values(4) = stress5(index);
+	values(5) = stress6(index);
+	values(6) = stress7(index);
+	values(7) = stress8(index);
       }
 
-      error += theViewer.drawPolygon (coords, values);
+      error = theViewer.drawCube1(coords, values);
 
     } else {
 
@@ -1554,55 +1472,14 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
 	  coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
 	  coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;    
 	  coords(3,i) = end4Crd(i) + eigen4(i,mode-1)*fact;
+	  coords(4,i) = end1Crd(i) + eigen5(i,mode-1)*fact;
+	  coords(5,i) = end2Crd(i) + eigen6(i,mode-1)*fact;    
+	  coords(6,i) = end3Crd(i) + eigen7(i,mode-1)*fact;    
+	  coords(7,i) = end4Crd(i) + eigen8(i,mode-1)*fact;
 	}
-	
-	error += theViewer.drawPolygon (coords, values);
-	
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end5Crd(i) + eigen5(i,mode-1)*fact;
-	  coords(1,i) = end6Crd(i) + eigen6(i,mode-1)*fact;
-	  coords(2,i) = end7Crd(i) + eigen7(i,mode-1)*fact;
-	  coords(3,i) = end8Crd(i) + eigen8(i,mode-1)*fact;
-	}
-	
-	error += theViewer.drawPolygon (coords, values);
-	
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	  coords(1,i) = end4Crd(i) + eigen4(i,mode-1)*fact;
-	  coords(2,i) = end8Crd(i) + eigen8(i,mode-1)*fact;
-	  coords(3,i) = end5Crd(i) + eigen5(i,mode-1)*fact;
-	}
-	
-	error += theViewer.drawPolygon (coords, values);
-	
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-	  coords(1,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
-	  coords(2,i) = end7Crd(i) + eigen7(i,mode-1)*fact;
-	  coords(3,i) = end6Crd(i) + eigen6(i,mode-1)*fact;
-	}
-	
-	error += theViewer.drawPolygon (coords, values);
-	
-	
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	  coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-	  coords(2,i) = end6Crd(i) + eigen6(i,mode-1)*fact;
-	  coords(3,i) = end5Crd(i) + eigen5(i,mode-1)*fact;
-	}
-	
-	error += theViewer.drawPolygon (coords, values);
-	
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end4Crd(i) + eigen4(i,mode-1)*fact;
-	  coords(1,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
-	  coords(2,i) = end7Crd(i) + eigen7(i,mode-1)*fact;
-	  coords(3,i) = end8Crd(i) + eigen8(i,mode-1)*fact;
-	}
-	
-	error += theViewer.drawPolygon (coords, values);
+
+	error = theViewer.drawCube1(coords, values);
+
       } else {
 	values.Zero();
 	for (i = 0; i < 3; i++) {
@@ -1610,56 +1487,14 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
 	  coords(1,i) = end2Crd(i); 
 	  coords(2,i) = end3Crd(i); 
 	  coords(3,i) = end4Crd(i); 
+	  coords(4,i) = end5Crd(i); 
+	  coords(5,i) = end6Crd(i); 
+	  coords(6,i) = end7Crd(i); 
+	  coords(7,i) = end8Crd(i); 
 	}
 	
-	error += theViewer.drawPolygon (coords, values);
-	
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end5Crd(i); 
-	  coords(1,i) = end6Crd(i); 
-	  coords(2,i) = end7Crd(i); 
-	  coords(3,i) = end8Crd(i); 
-	}
-	
-	error += theViewer.drawPolygon (coords, values);
-	
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end1Crd(i); 
-	  coords(1,i) = end4Crd(i); 
-	  coords(2,i) = end8Crd(i); 
-	  coords(3,i) = end5Crd(i); 
-	}
-	
-	error += theViewer.drawPolygon (coords, values);
-	
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end2Crd(i); 
-	  coords(1,i) = end3Crd(i); 
-	  coords(2,i) = end7Crd(i); 
-	  coords(3,i) = end6Crd(i); 
-	}
-	
-	error += theViewer.drawPolygon (coords, values);
-	
-	
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end1Crd(i); 
-	  coords(1,i) = end2Crd(i); 
-	  coords(2,i) = end6Crd(i); 
-	  coords(3,i) = end5Crd(i); 
-	}
-	
-	error += theViewer.drawPolygon (coords, values);
-	
-	for (i = 0; i < 3; i++) {
-	  coords(0,i) = end4Crd(i); 
-	  coords(1,i) = end3Crd(i); 
-	  coords(2,i) = end7Crd(i); 
-	  coords(3,i) = end8Crd(i); 
-	}
-	
-	error += theViewer.drawPolygon (coords, values);
-      }      
+	error = theViewer.drawCube1(coords, values);
+      }
     }
 
 

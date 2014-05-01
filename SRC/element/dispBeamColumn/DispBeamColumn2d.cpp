@@ -678,8 +678,7 @@ DispBeamColumn2d::getResistingForce()
       default:
 	break;
       }
-    }
-    
+    }    
   }
   
   // Add effects of element loads, q = q(v) + q0

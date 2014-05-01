@@ -857,7 +857,7 @@ ShellMITC4::addInertiaLoadToUnbalance(const Vector &accel)
   for (i=0; i<4; i++) {
     const Vector &Raccel = nodePointers[i]->getRV(accel);
     for (int j=0; j<6; j++)
-      resid(count++) = Raccel(i);
+      resid(count++) = Raccel(j);
   }
 
   formInertiaTerms( tangFlag ) ;
@@ -978,9 +978,10 @@ ShellMITC4::formInertiaTerms( int tangFlag )
 
       temp = shp[massIndex][j] * dvol ;
 
+      /* already added 17 lines above
       for ( p = 0; p < 3; p++ )
         resid( jj+p ) += ( temp * momentum(p) ) ;
-
+      */
       
       if ( tangFlag == 1 && rhoH != 0.0) {
 
