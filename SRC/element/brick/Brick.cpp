@@ -1450,7 +1450,7 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
 	values(7) = stress8(index);
       }
 
-      error = theViewer.drawCube1(coords, values);
+      error = theViewer.drawCube(coords, values);
 
     } else {
 
@@ -1478,7 +1478,7 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
 	  coords(7,i) = end4Crd(i) + eigen8(i,mode-1)*fact;
 	}
 
-	error = theViewer.drawCube1(coords, values);
+	error = theViewer.drawCube(coords, values);
 
       } else {
 	values.Zero();
@@ -1493,7 +1493,7 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
 	  coords(7,i) = end8Crd(i); 
 	}
 	
-	error = theViewer.drawCube1(coords, values);
+	error = theViewer.drawCube(coords, values);
       }
     }
 
