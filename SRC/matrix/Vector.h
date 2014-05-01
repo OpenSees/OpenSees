@@ -96,6 +96,9 @@ class Vector
     int operator!=(const Vector &V) const;
     int operator!=(double) const;
 
+    //operator added by Manish @ UB
+    Matrix operator%(const Vector &V) const;
+
     // methods added by Remo
     int  Assemble(const Vector &V, int init_row, double fact = 1.0);
     int  Extract (const Vector &V, int init_row, double fact = 1.0); 
