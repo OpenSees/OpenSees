@@ -496,6 +496,9 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingPlasticity2d.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingPlasticity3d.o \
 	$(FE)/element/elastomericBearing/TclElastomericBearingPlasticityCommand.o \
+	$(FE)/element/bearing/HDR.o \
+	$(FE)/element/bearing/LeadRubberX.o \
+	$(FE)/element/bearing/ElastomericX.o \
 	$(FE)/element/frictionBearing/MultiFP2d.o \
 	$(FE)/element/frictionBearing/TripleFrictionPendulum.o \
 	$(FE)/element/frictionBearing/TFP_Bearing.o \

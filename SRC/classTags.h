@@ -610,6 +610,10 @@
 #define ELE_TAG_ElastomericBearingUFRP3d  148
 #define ELE_TAG_RJWatsonEQS2d             149
 #define ELE_TAG_RJWatsonEQS3d             150
+#define ELE_TAG_HDR                       151
+#define ELE_TAG_ElastomericX              152
+#define ELE_TAG_LeadRubberX               153
+
 
 #define ELE_TAG_MultipleShearSpring 6201
 #define ELE_TAG_MultipleNormalSpring 6202
