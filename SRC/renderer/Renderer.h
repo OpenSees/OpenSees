@@ -74,6 +74,8 @@ class Renderer
 			 const Vector &rgb1, const Vector &rgb2,
 			 int width = 1, int style = 1) =0;
     
+    virtual int drawCube(const Matrix &points, const Vector &values);
+
     virtual int drawPolygon(const Matrix &points, const Vector &values) =0;
     virtual int drawPolygon(const Matrix &points, const Matrix &rgbValues) =0;
 
