@@ -1,18 +1,13 @@
 wipe
 
 set numP [getNP]
+puts $numP
 
-set d 10.
-set b 10.
-set L 100.0
-
-set nx 2
-set ny 2
-set nz 4; # nz per processor
+source common.tcl
 
 set dx [expr $d/($nx*1.0)]
 set dy [expr $b/($ny*1.0)]
-set dz [expr $L/($numP * $ny)]
+set dz [expr $L/($numP * $nz)]
 
 # create the modelbuilder
 model Basic -ndm 3 -ndf 3

@@ -434,6 +434,7 @@ EXAMPLES/MaterialModels/SoftClayEPmodelVM.tcl -text
 EXAMPLES/MaterialModels/SteelEPmodelVM.tcl -text
 EXAMPLES/MaterialModels/StiffClayEPmodelCC.tcl -text
 EXAMPLES/MaterialModels/StiffClayEPmodelVM.tcl -text
+EXAMPLES/ParallelModelMP/common.tcl -text
 EXAMPLES/ParallelModelMP/exampleMP.tcl -text
 EXAMPLES/ParallelModelMP/exampleSP.tcl -text
 EXAMPLES/PlaneFrame/Makefile -text

@@ -5,17 +5,11 @@ set numP [getNP]
 set pid  [getPID]
 puts "HELLO: $pid $numP"
 
-set d 10.
-set b 10.
-set L 100.0
-
-set nx 2
-set ny 2
-set nz 4; # nz per processor
+source common.tcl
 
 set dx [expr $d/($nx*1.0)]
 set dy [expr $b/($ny*1.0)]
-set dz [expr $L/($numP * $ny)]
+set dz [expr $L/($numP * $nz)]
 
 # create the modelbuilder
 model Basic -ndm 3 -ndf 3
@@ -86,7 +80,9 @@ numberer ParallelPlain
 constraints Plain
 system Mumps
 analysis Static
+puts "HI"
 analyze 1
+puts "HI"
 
 if {$pid == [expr $numP-1]} {	
     set disp [nodeDisp $numNode 1]
