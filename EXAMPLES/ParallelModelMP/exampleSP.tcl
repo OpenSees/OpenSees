@@ -28,23 +28,25 @@ for {set i 0} {$i<=[expr $numP*$nz]} {incr i 1} {
     }
 }
 
+print -node 150 199 200 251 250 2800 2801 2852 2851 
+
 set numNode [expr ($nx+1)*($ny+1)*($numP*$nz+1)]
 
 # add the elements
 set counter 1
 for {set i 0} {$i<$numP*$nz} {incr i 1} {
-      for {set j 0} {$j<$nx} {incr j 1} {
-          set iNode [expr $i*($nx+1)*($ny+1) + 1 + $j*($ny+1)]
+      for {set j 0} {$j<$ny} {incr j 1} {
+          set iNode [expr $i*($nx+1)*($ny+1) + 1 + $j*($nx+1)]
           set jNode [expr $iNode+1]
           set lNode [expr $iNode+($nx+1)]
           set kNode [expr $lNode+1]
            
-          set mNode [expr ($i+1)*($nx+1)*($nx+1) + 1 + $j*($ny+1)]
+          set mNode [expr ($i+1)*($nx+1)*($ny+1) + 1 + $j*($nx+1)]
           set nNode [expr $mNode+1]
           set pNode [expr $mNode+($nx+1)]
           set oNode [expr $pNode+1]
   
-	for {set k 0} {$k<$ny} {incr k 1} {
+	for {set k 0} {$k<$nx} {incr k 1} {
 	    element stdBrick $counter $iNode $jNode $kNode $lNode $mNode $nNode $oNode $pNode 1
 	    incr counter
 	    incr iNode 1
@@ -69,11 +71,12 @@ integrator LoadControl 1.0
 algorithm Linear
 numberer RCM
 constraints Plain
-system Mumps
+system  Mumps
 analysis Static
 analyze 1
 	
 set disp [nodeDisp $numNode 1]
 puts "$disp"
 wipe
+
  
