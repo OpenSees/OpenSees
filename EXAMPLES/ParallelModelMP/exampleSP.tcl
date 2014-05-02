@@ -33,17 +33,17 @@ set numNode [expr ($nx+1)*($ny+1)*($numP*$nz+1)]
 # add the elements
 set counter 1
 for {set i 0} {$i<$numP*$nz} {incr i 1} {
-    set iNode [expr $i*($nx+1)*($nx+1) + 1]
-    set jNode [expr $iNode+1]
-    set lNode [expr $iNode+($nx+1)]
-    set kNode [expr $lNode+1]
-
-    set mNode [expr ($i+1)*($nx+1)*($nx+1) + 1]
-    set nNode [expr $mNode+1]
-    set pNode [expr $nNode+($nx+1)]
-    set oNode [expr $pNode+1]
-
-    for {set j 0} {$j<$nx} {incr j 1} {
+      for {set j 0} {$j<$nx} {incr j 1} {
+          set iNode [expr $i*($nx+1)*($ny+1) + 1 + $j*($ny+1)]
+          set jNode [expr $iNode+1]
+          set lNode [expr $iNode+($nx+1)]
+          set kNode [expr $lNode+1]
+           
+          set mNode [expr ($i+1)*($nx+1)*($nx+1) + 1 + $j*($ny+1)]
+          set nNode [expr $mNode+1]
+          set pNode [expr $mNode+($nx+1)]
+          set oNode [expr $pNode+1]
+  
 	for {set k 0} {$k<$ny} {incr k 1} {
 	    element stdBrick $counter $iNode $jNode $kNode $lNode $mNode $nNode $oNode $pNode 1
 	    incr counter
