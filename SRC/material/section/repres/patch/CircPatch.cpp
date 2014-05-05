@@ -140,8 +140,6 @@ CircPatch::getCells (void) const
    {
       numCells  = this->getNumCells();
 
-      //opserr << "\nnumCells: " << numCells;
-
       cells = new Cell* [numCells];
       
       if (!cells)
@@ -152,8 +150,6 @@ CircPatch::getCells (void) const
 
       deltaRad   = (extRad - intRad) / nDivRad;
       deltaTheta = (finalAngRadians - initAngRadians) / nDivCirc;
-
-      //opserr << "\ndeltaRad: " << deltaRad;
 
       k = 0;
       for (j = 0; j < nDivRad; j++)

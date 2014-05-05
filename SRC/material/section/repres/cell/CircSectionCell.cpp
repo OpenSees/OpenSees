@@ -30,19 +30,20 @@
 CircSectionCell::CircSectionCell(double R1, double R2, double Alpha, double Theta)
   :r1(R1), r2(R2), alpha(Alpha), theta(Theta), A(0.0), Centroid(2)
 {
+
   double a = alpha/2.0;
 
   double At = a*r2*r2;
-  double ct = 2.0*r2/(3.0*a);
+  double ct = 2.0*r2*sin(a)/(3.0*a);
   double A1 = a*r1*r1;
-  double c1 = 2.0*r1/(3.0*a);
+  double c1 = 2.0*r1*sin(a)/(3.0*a);
   
   A = At - A1;
   double c = (At*ct - A1*c1)/A;
 
-  Centroid(0) = cos(Theta)/c;
-  Centroid(1) = sin(Theta)/c;
-  
+  Centroid(0) = cos(Theta)*c;
+  Centroid(1) = sin(Theta)*c;
+
 }
 
 
