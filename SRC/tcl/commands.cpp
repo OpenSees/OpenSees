@@ -1603,6 +1603,7 @@ partitionModel(int eleTag)
     OPS_DOMAIN_PARTITIONER = new DomainPartitioner(*OPS_GRAPH_PARTITIONER);
     theDomain.setPartitioner(OPS_DOMAIN_PARTITIONER);
   }
+ // opserr << "commands.cpp - partition numPartitions: " << OPS_NUM_SUBDOMAINS << endln;
 
   result = theDomain.partition(OPS_NUM_SUBDOMAINS, OPS_USING_MAIN_DOMAIN, OPS_MAIN_DOMAIN_PARTITION_ID, eleTag);
   
@@ -2189,6 +2190,12 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 					       *theStaticIntegrator,
 					       theTest);
 
+	#ifdef _PARALLEL_INTERPRETERS
+	if (setMPIDSOEFlag) {
+	  ((MPIDiagonalSOE*) theSOE)->setAnalysisModel(*theAnalysisModel);
+	}
+#endif
+
 // AddingSensitivity:BEGIN ///////////////////////////////
 #ifdef _RELIABILITY
 	if (theSensitivityAlgorithm != 0 && theSensitivityAlgorithm->shouldComputeAtEachStep()) {
@@ -2306,7 +2313,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 							     *theSOE,
 							     *theTransientIntegrator,
 							     theTest);
-#ifdef _PARALLEL_PROCESSING
+#ifdef _PARALLEL_INTERPRETERS
 	if (setMPIDSOEFlag) {
 	  ((MPIDiagonalSOE*) theSOE)->setAnalysisModel(*theAnalysisModel);
 	}
@@ -2641,7 +2648,6 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       MPIDiagonalSolver    *theSolver = new MPIDiagonalSolver();   
       theSOE = new MPIDiagonalSOE(*theSolver);
       setMPIDSOEFlag = true;
-
 #else
       DiagonalSolver    *theSolver = new DiagonalDirectSolver();   
       theSOE = new DiagonalSOE(*theSolver);
