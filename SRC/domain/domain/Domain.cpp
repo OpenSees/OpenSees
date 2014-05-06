@@ -1574,7 +1574,9 @@ Domain::getElementResponse(int eleTag, const char **argv, int argc)
 
     Information &eleInfo = theResponse->getInformation();
     const Vector *data = &(eleInfo.getData());
-    return data;
+    responseData = eleInfo.getData();
+    delete theResponse;
+    return &responseData;
   }
 }
 
