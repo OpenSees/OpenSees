@@ -368,6 +368,12 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\NewUniaxialMaterial.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\OriginCentered.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\OriginCentered.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\fedeas\PD1.c">
 			</File>
 			<File
@@ -471,6 +477,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\Steel03.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\Steel2.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\Steel2.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\SteelBRB.cpp">
@@ -1524,6 +1536,12 @@
 					</File>
 					<File
 						RelativePath="..\..\..\SRC\material\section\repres\cell\Cell.h">
+					</File>
+					<File
+						RelativePath="..\..\..\SRC\material\section\repres\cell\CircSectionCell.cpp">
+					</File>
+					<File
+						RelativePath="..\..\..\SRC\material\section\repres\cell\CircSectionCell.h">
 					</File>
 					<File
 						RelativePath="..\..\..\SRC\material\section\repres\cell\QuadCell.cpp">

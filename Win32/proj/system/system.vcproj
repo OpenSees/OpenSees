@@ -359,6 +359,12 @@
 			Name="superLU"
 			Filter=".cpp; .h">
 			<File
+				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\CuSPSolver.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\CuSPSolver.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMCompressibleLinSOE.cpp">
 			</File>
 			<File
@@ -393,6 +399,18 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenColLinSolver.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenRowLinSOE.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenRowLinSOE.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenRowLinSolver.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenRowLinSolver.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SuperLU.cpp">

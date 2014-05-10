@@ -385,12 +385,6 @@
 				RelativePath="..\..\..\SRC\element\elasticBeamColumn\ElasticBeam3d.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam2d.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam2d.h">
-			</File>
-			<File
 				RelativePath="..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam2d.cpp">
 			</File>
 			<File
@@ -401,6 +395,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\elasticBeamColumn\ElasticTimoshenkoBeam3d.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam2d.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam2d.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\elasticBeamColumn\TclElasticBeamCommand.cpp">
@@ -1286,6 +1286,28 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\HUelements\MultipleShearSpring.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="bearing"
+			Filter="">
+			<File
+				RelativePath="..\..\..\SRC\element\bearing\ElastomericX.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\bearing\ElastomericX.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\bearing\HDR.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\bearing\HDR.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\bearing\LeadRubberX.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\bearing\LeadRubberX.h">
 			</File>
 		</Filter>
 		<File
