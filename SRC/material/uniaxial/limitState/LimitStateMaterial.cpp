@@ -48,6 +48,7 @@
 #include <float.h>
 #include <Channel.h>
 #include <Vector.h>
+#include <MaterialResponse.h>
 
 LimitStateMaterial::LimitStateMaterial(int tag,
 			double m1p, double r1p, double m2p, double r2p, double m3p, double r3p,
@@ -1264,4 +1265,39 @@ int
 LimitStateMaterial::setParameter(const char **argv, int argc, Parameter &param)
 {
   return theCurve->setParameter(argv, argc, param);
+}
+
+
+Response* 
+LimitStateMaterial::setResponse(const char **argv, int argc,
+				OPS_Stream &theOutput)
+{
+  Response *theResponse = this->UniaxialMaterial::setResponse(argv, argc, theOutput);
+
+  if (theResponse != 0)
+    return theResponse;
+
+  // stress
+  if (strcmp(argv[0],"stateFlag") == 0) {
+    theOutput.tag("UniaxialMaterialOutput");
+    theOutput.attr("matType", this->getClassType());
+    theOutput.attr("matTag", this->getTag());
+    
+    theOutput.tag("ResponseType", "stateFlag");
+    theResponse =  new MaterialResponse(this, 101, CstateFlag*1.0);
+    theOutput.endTag();
+  }  
+
+  return theResponse;
+}
+
+
+int 
+LimitStateMaterial::getResponse(int responseID, Information &matInfo)
+{
+  if (responseID == 101) {
+      matInfo.setDouble(CstateFlag);
+      return 0;
+  } else
+    return this->UniaxialMaterial::getResponse(responseID, matInfo);
 }

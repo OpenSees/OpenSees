@@ -97,6 +97,11 @@ class LimitStateMaterial : public UniaxialMaterial
 	    int setParameter (const char **argv, int argc, Parameter &param);
 
 
+
+	    Response *setResponse (const char **argv, int argc, 
+					   OPS_Stream &theOutputStream);
+	    int getResponse (int responseID, Information &matInformation);    
+
 	protected:
 
 	private:
