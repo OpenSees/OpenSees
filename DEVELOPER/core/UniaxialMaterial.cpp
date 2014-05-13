@@ -176,64 +176,79 @@ UniaxialMaterial::setResponse(const char **argv, int argc,
 {
   Response *theResponse = 0;
 
-  theOutput.tag("UniaxialMaterialOutput");
-  theOutput.attr("matType", this->getClassType());
-  theOutput.attr("matTag", this->getTag());
-
-  // stress
-  if (strcmp(argv[0],"stress") == 0) {
-    theOutput.tag("ResponseType", "sigma11");
-    theResponse =  new MaterialResponse(this, 1, this->getStress());
-  }  
-  // tangent
-  else if (strcmp(argv[0],"tangent") == 0) {
-    theOutput.tag("ResponseType", "C11");
-    theResponse =  new MaterialResponse(this, 2, this->getTangent());
+  if ( (strcmp(argv[0],"stress") == 0) ||
+       (strcmp(argv[0],"tangent") == 0)||
+       (strcmp(argv[0],"strain") == 0) ||
+       (strcmp(argv[0],"stressStrain") == 0) ||
+       (strcmp(argv[0],"stressANDstrain") == 0) || 
+       (strcmp(argv[0],"stressAndStrain") == 0) ||
+       (strcmp(argv[0],"stressStrain") == 0) || 
+       (strcmp(argv[0],"stressANDstrain") == 0) ||
+       (strcmp(argv[0],"stressAndStrain") == 0) ||
+       (strcmp(argv[0],"stressStrainTangent") == 0) || 
+       (strcmp(argv[0],"stressANDstrainANDtangent") == 0) ||
+       (strstr(argv[0],"stressSensitivity") != 0) ||
+       (strstr(argv[0],"strainSensitivity") != 0) ) {
+    
+    theOutput.tag("UniaxialMaterialOutput");
+    theOutput.attr("matType", this->getClassType());
+    theOutput.attr("matTag", this->getTag());
+    
+    // stress
+    if (strcmp(argv[0],"stress") == 0) {
+      theOutput.tag("ResponseType", "sigma11");
+      theResponse =  new MaterialResponse(this, 1, this->getStress());
+    }  
+    // tangent
+    else if (strcmp(argv[0],"tangent") == 0) {
+      theOutput.tag("ResponseType", "C11");
+      theResponse =  new MaterialResponse(this, 2, this->getTangent());
+    }
+    
+    // strain
+    else if (strcmp(argv[0],"strain") == 0) {
+      theOutput.tag("ResponseType", "eps11");
+      theResponse =  new MaterialResponse(this, 3, this->getStrain());
+    }
+    
+    // strain
+    else if ((strcmp(argv[0],"stressStrain") == 0) || 
+	     (strcmp(argv[0],"stressANDstrain") == 0) ||
+	     (strcmp(argv[0],"stressAndStrain") == 0)) {
+      theOutput.tag("ResponseType", "sig11");
+      theOutput.tag("ResponseType", "eps11");
+      theResponse =  new MaterialResponse(this, 4, Vector(2));
+    }
+    
+    else if ((strcmp(argv[0],"stressStrainTangent") == 0) || 
+	     (strcmp(argv[0],"stressANDstrainANDtangent") == 0)) {
+      theOutput.tag("ResponseType", "sig11");
+      theOutput.tag("ResponseType", "eps11");
+      theOutput.tag("ResponseType", "C11");
+      theResponse =  new MaterialResponse(this, 5, Vector(3));
+    }
+    
+    // stress sensitivity for local sensitivity recorder purpose.  Quan 2009
+    // limit:  no more than 10000 random variables/sensitivity parameters
+    else if (strstr(argv[0],"stressSensitivity") != 0) {
+      char *token = strtok((char *) argv[0], " ");
+      if (token != NULL) token = strtok(NULL, " ");
+      int gradient = atoi(token);
+      theOutput.tag("ResponseType", "sigsens11");
+      theResponse =  new MaterialResponse(this, gradient+10000, this->getStress());
+    }
+    // strain sensivitiy
+    else if (strstr(argv[0],"strainSensitivity") != 0) {
+      char *token = strtok((char *) argv[0], " ");
+      if (token != NULL) token = strtok(NULL, " ");
+      int gradient = atoi(token);
+      theOutput.tag("ResponseType", "epssens11");
+      theResponse =  new MaterialResponse(this, gradient+20000, this->getStrain());
+    }
+    
+    theOutput.endTag();
   }
-
-  // strain
-  else if (strcmp(argv[0],"strain") == 0) {
-    theOutput.tag("ResponseType", "eps11");
-    theResponse =  new MaterialResponse(this, 3, this->getStrain());
-  }
-
-  // strain
-  else if ((strcmp(argv[0],"stressStrain") == 0) || 
-	   (strcmp(argv[0],"stressANDstrain") == 0) ||
-	   (strcmp(argv[0],"stressAndStrain") == 0)) {
-    theOutput.tag("ResponseType", "sig11");
-    theOutput.tag("ResponseType", "eps11");
-    theResponse =  new MaterialResponse(this, 4, Vector(2));
-  }
-	    
-  else if ((strcmp(argv[0],"stressStrainTangent") == 0) || 
-	   (strcmp(argv[0],"stressANDstrainANDtangent") == 0)) {
-    theOutput.tag("ResponseType", "sig11");
-    theOutput.tag("ResponseType", "eps11");
-    theOutput.tag("ResponseType", "C11");
-    theResponse =  new MaterialResponse(this, 5, Vector(3));
-  }
-
-  // stress sensitivity for local sensitivity recorder purpose.  Quan 2009
-  // limit:  no more than 10000 random variables/sensitivity parameters
-  else if (strstr(argv[0],"stressSensitivity") != 0) {
-    char *token = strtok((char *) argv[0], " ");
-    if (token != NULL) token = strtok(NULL, " ");
-    int gradient = atoi(token);
-    theOutput.tag("ResponseType", "sigsens11");
-    theResponse =  new MaterialResponse(this, gradient+10000, this->getStress());
-  }
-  // strain sensivitiy
-  else if (strstr(argv[0],"strainSensitivity") != 0) {
-    char *token = strtok((char *) argv[0], " ");
-    if (token != NULL) token = strtok(NULL, " ");
-    int gradient = atoi(token);
-    theOutput.tag("ResponseType", "epssens11");
-    theResponse =  new MaterialResponse(this, gradient+20000, this->getStrain());
-  }
-
-
-  theOutput.endTag();
+  
   return theResponse;
 
 }

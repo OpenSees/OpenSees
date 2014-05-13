@@ -38,6 +38,11 @@
 #include <Domain.h>
 #include <string.h>
 
+#include <Matrix.h>
+#include <Vector.h>
+
+#include <iostream>
+
 int        Renderer::numRenderers(0);
 char     **Renderer::theTitles =0;
 Renderer **Renderer::theRenderers =0;
@@ -131,6 +136,95 @@ void
 Renderer::setColorMap(ColorMap &map)
 {
     theMap = &map;
+}
+
+int 
+Renderer::drawCube(const Matrix &points, const Vector &values)
+{
+
+  static Matrix polyData(4,3);
+  static Vector polyValues(4);
+  // draw the 6 faces
+
+  int a,b,c,d;
+
+  a=2; b=3; c=7; d=6;
+  for (int i=0; i<3; i++) {
+    polyData(0,i) = points(a,i);
+    polyData(1,i) = points(b,i);
+    polyData(2,i) = points(c,i);
+    polyData(3,i) = points(d,i);
+    polyValues(0) = values(a);
+    polyValues(1) = values(b);
+    polyValues(2) = values(c);
+    polyValues(3) = values(d);
+  }
+  this->drawPolygon(polyData, polyValues);
+
+  a=5; b=4; c=0; d=1;
+  for (int i=0; i<3; i++) {
+    polyData(0,i) = points(a,i);
+    polyData(1,i) = points(b,i);
+    polyData(2,i) = points(c,i);
+    polyData(3,i) = points(d,i);
+    polyValues(0) = values(a);
+    polyValues(1) = values(b);
+    polyValues(2) = values(c);
+    polyValues(3) = values(d);
+  }
+  this->drawPolygon(polyData, polyValues);
+
+  a=6; b=7; c=4; d=5;
+  for (int i=0; i<3; i++) {
+    polyData(0,i) = points(a,i);
+    polyData(1,i) = points(b,i);
+    polyData(2,i) = points(c,i);
+    polyData(3,i) = points(d,i);
+    polyValues(0) = values(a);
+    polyValues(1) = values(b);
+    polyValues(2) = values(c);
+    polyValues(3) = values(d);
+  }
+  this->drawPolygon(polyData, polyValues);
+
+  a=1; b=0; c=3; d=2;
+  for (int i=0; i<3; i++) {
+    polyData(0,i) = points(a,i);
+    polyData(1,i) = points(b,i);
+    polyData(2,i) = points(c,i);
+    polyData(3,i) = points(d,i);
+    polyValues(0) = values(a);
+    polyValues(1) = values(b);
+    polyValues(2) = values(c);
+    polyValues(3) = values(d);
+  }
+  this->drawPolygon(polyData, polyValues);
+
+  a=7; b=3; c=0; d=4;
+  for (int i=0; i<3; i++) {
+    polyData(0,i) = points(a,i);
+    polyData(1,i) = points(b,i);
+    polyData(2,i) = points(c,i);
+    polyData(3,i) = points(d,i);
+    polyValues(0) = values(a);
+    polyValues(1) = values(b);
+    polyValues(2) = values(c);
+    polyValues(3) = values(d);
+  }
+  this->drawPolygon(polyData, polyValues);
+
+  a=2; b=6; c=5; d=1;
+  for (int i=0; i<3; i++) {
+    polyData(0,i) = points(a,i);
+    polyData(1,i) = points(b,i);
+    polyData(2,i) = points(c,i);
+    polyData(3,i) = points(d,i);
+    polyValues(0) = values(a);
+    polyValues(1) = values(b);
+    polyValues(2) = values(c);
+    polyValues(3) = values(d);
+  }
+  return this->drawPolygon(polyData, polyValues);
 }
 
 

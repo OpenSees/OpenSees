@@ -183,10 +183,13 @@
 #define MAT_TAG_PinchingLimitStateMaterial      69	
 #define MAT_TAG_BraceMaterial                   70	
 #define MAT_TAG_ViscousDamper                   71
-#define MAT_TAG_ConcwBeta                       72
+#define MAT_TAG_ConcretewBeta                   72
 #define MAT_TAG_WrapperUniaxialMaterial         73
 #define MAT_TAG_UniaxialJ2Plasticity            74
 #define MAT_TAG_BWBN                            75
+#define MAT_TAG_OriginCentered                  76
+#define MAT_TAG_Steel2                          77
+#define MAT_TAG_DoddRestr                       78
 
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
@@ -607,6 +610,10 @@
 #define ELE_TAG_ElastomericBearingUFRP3d  148
 #define ELE_TAG_RJWatsonEQS2d             149
 #define ELE_TAG_RJWatsonEQS3d             150
+#define ELE_TAG_HDR                       151
+#define ELE_TAG_ElastomericX              152
+#define ELE_TAG_LeadRubberX               153
+
 
 #define ELE_TAG_MultipleShearSpring 6201
 #define ELE_TAG_MultipleNormalSpring 6202
@@ -834,13 +841,13 @@
 #define SOLVER_TAGS_DistributedDiagonalSolver 22
 #define SOLVER_TAGS_MumpsSolver			      	23
 #define SOLVER_TAGS_MumpsParallelSolver			24
-#define SOLVER_TAGS_MPIDiagonalSolver 25
-#define SOLVER_TAGS_PFEMSolver 26
-#define SOLVER_TAGS_SProfileSPDLinSolver  	27
-#define SOLVER_TAGS_PFEMCompressibleSolver 28
-#define SOLVER_TAGS_CulaSparseS4 29
-#define SOLVER_TAGS_CulaSparseS5 30
-
+#define SOLVER_TAGS_MPIDiagonalSolver                   25
+#define SOLVER_TAGS_PFEMSolver                          26
+#define SOLVER_TAGS_SProfileSPDLinSolver  	        27
+#define SOLVER_TAGS_PFEMCompressibleSolver              28
+#define SOLVER_TAGS_CulaSparseS4                        29
+#define SOLVER_TAGS_CulaSparseS5                        30
+#define SOLVER_TAGS_CuSP                                31
 
 #define RECORDER_TAGS_ElementRecorder		1
 #define RECORDER_TAGS_NodeRecorder		2

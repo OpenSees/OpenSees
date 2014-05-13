@@ -44,6 +44,13 @@ class Vector;
 class Matrix;
 class ColorMap;
 
+#define opsMATERIAL_TAG 2
+#define opsAXIAL 3
+#define opsDISP  5
+#define opsELEMENT_CLASS 7
+
+
+
 class Renderer
 {
   public:
@@ -74,6 +81,8 @@ class Renderer
 			 const Vector &rgb1, const Vector &rgb2,
 			 int width = 1, int style = 1) =0;
     
+    virtual int drawCube(const Matrix &points, const Vector &values);
+
     virtual int drawPolygon(const Matrix &points, const Vector &values) =0;
     virtual int drawPolygon(const Matrix &points, const Matrix &rgbValues) =0;
 

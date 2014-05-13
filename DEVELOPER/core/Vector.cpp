@@ -1152,3 +1152,25 @@ Vector::Extract(const Vector &V, int init_pos, double fact)
 
   return res;
 }
+
+Matrix Vector::operator%(const Vector &V) const
+{
+  // if sizes are compatable add
+#ifdef _G3DEBUG
+  if (sz != V.sz) {
+    // else sizes are incompatable, do nothing but warning
+    opserr <<  "WARNING Vector::tensor multiplication operator % - incompatable Vector sizes\n";
+    return -1;
+  }
+#endif
+  
+  //we want result=a*b'
+  
+  Matrix result(sz,sz);
+  for (int i=0; i<sz; i++)
+    for (int j=0; j<sz; j++)
+      result(i,j)=theData[i]*V.theData[j];
+  
+  return result;
+  
+}
