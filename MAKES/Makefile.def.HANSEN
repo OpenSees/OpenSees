@@ -14,7 +14,7 @@
 ############################################################################
 
 #module load intel/13.1.1.163                
-#module load openmpi/1.6.3_intel-13.1.1.16
+#module load openmpi/1.6.3_intel-13.1.1.163
 
 HOME  = /home/neeshub1/fmkHansen
 
