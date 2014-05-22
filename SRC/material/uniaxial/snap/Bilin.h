@@ -191,6 +191,8 @@ class Bilin : public UniaxialMaterial
   double capSlopeMember, CcapSlopeMember;              // Updated: Filipe Ribeiro and Andre Barbosa
   double capSlopeNegMember, CcapSlopeNegMember;        // Updated: Filipe Ribeiro and Andre Barbosa
   double prodBeta, CprodBeta;			       // Updated: Filipe Ribeiro and Andre Barbosa
+
+  int commitCalledOnce;
 };
 
 

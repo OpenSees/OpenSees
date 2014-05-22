@@ -175,7 +175,6 @@ Bilin::~Bilin()
 int
 Bilin::setTrialStrain(double strain, double strainRate)
 {  
-
   //all variables to the last commit
   this->revertToLastCommit();
  
@@ -197,9 +196,10 @@ Bilin::setTrialStrain(double strain, double strainRate)
   d=strain;
   dP = CU;          
 
-  if (fabs(deltaD) < 1.0e-18 && strain != 0.0) {
+  if (fabs(deltaD) < DBL_EPSILON && commitCalledOnce == 1) {
     return 0;
   }
+
 
   if (d>0.0) {
    
@@ -1156,7 +1156,9 @@ Bilin::getStrain(void)
 int
 Bilin::commitState(void)
 {
-        //commit trial  variables
+  commitCalledOnce = 1;
+  
+  //commit trial  variables
    CU=U;
    CTangent=Tangent;
 
@@ -1313,6 +1315,7 @@ Bilin::revertToStart(void)
 //initially I zero everything
    U=CU=0.0;
    Tangent=CTangent=0.0;
+   commitCalledOnce = 0;
 
    dNewLoadPos=CdNewLoadPos=0.0;
    dNewLoadNeg=CdNewLoadNeg=0.0;
