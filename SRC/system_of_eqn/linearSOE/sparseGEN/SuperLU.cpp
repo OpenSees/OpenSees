@@ -70,6 +70,7 @@ SuperLU::SuperLU(int perm,
   U.ncol = 0;
   A.ncol = 0;
   B.ncol = 0;
+  AC.ncol = 0;
 }
 
 
