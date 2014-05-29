@@ -71,6 +71,7 @@ include ../../../Makefile.def
 	SecantMaterial.o \
 	Concrete01WithSITC.o \
 	ConcretewBeta.o \
+	FRPConfinedConcrete.o \
 	KikuchiAikenHDR.o \
 	KikuchiAikenLRB.o \
 	Concrete05.o \

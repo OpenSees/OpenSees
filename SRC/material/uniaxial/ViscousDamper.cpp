@@ -128,7 +128,6 @@ ViscousDamper::setTrialStrain(double strain, double strainRate)
     dVel = dStrain/ops_Dt;
   else {
     dVel = 0.0;
-    opserr << "FMK - ViscousDamper::setTrialStrain\n";
   }
   
   // Determine the average velocity from past and current step
