@@ -308,14 +308,15 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
-    } else if ((strcmp(argv[1],"DoddRestr") == 0)) {
+#ifndef _NO_NEW_RESTREPO
+	} else if ((strcmp(argv[1],"DoddRestr") == 0)) {
 
       void *theMat = OPS_DoddRestr();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;
-
+#endif
     } else if (strcmp(argv[1],"ElasticMultiLinear") == 0) {
       void *theMat = OPS_NewElasticMultiLinear();
       if (theMat != 0) 
