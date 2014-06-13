@@ -112,7 +112,7 @@ test NormDispIncr 1.0e-6 10
 algorithm Newton
 integrator Newmark 0.5 0.25
 analysis Transient
-
+set tFinal 0.
 set ok 0
 set currentTime 0.0
 while {$ok == 0 && $currentTime < $tFinal} {
@@ -126,8 +126,7 @@ while {$ok == 0 && $currentTime < $tFinal} {
     } 
     set currentTime [getTime]
 }
-
-wipe
+remove recorders
 
 set a [open floorDispEnv.out r]
 set line [gets $a]; set line [gets $a]; set line [gets $a]

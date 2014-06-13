@@ -10,7 +10,6 @@ set motion Oak_2_50_5_FN
 set in 1.0;
 set g 386.4;				# acceleration due to gravity
 
-
 # set up my structure
 set floorOffsets {180. 180. 180.}
 set colOffsets   {180. 180.} 
@@ -87,12 +86,6 @@ for {set floor 2} {$floor <= $numFloor} {incr floor 1} {
     DispBeamWSection2d $colLine2$floor$colLine3$floor $colLine2$floor $colLine3$floor $theSection 1 2 -release2
 }
 
-# define material for braces
-set Fy_b 46.0; 	 
-set E0 0.095
-set m -0.3
-uniaxialMaterial Steel02 2 $Fy_b $Es $b 20 0.925 0.15 0.0005 0.01 0.0005 0.01
-# define material for braces                                                                                                                          
 set Fy_b 46.0;
 set E0 0.095
 set m -0.3
@@ -101,7 +94,8 @@ uniaxialMaterial Fatigue 3 2 -E0 $E0 -m $m -min -1.0 -max 0.04
 
 set imperfection 0.001
 
-# add the V braces                                                                                                                                   geomTransf Corotational 3
+# add the V braces
+geomTransf Corotational 3
 for {set story 1} {$story <= $numStory} {incr story 1} {
     set colLine1 1; set colLine2 2; set colLine3 3;
     set floor1 $story; set floor2 [expr $story +1];

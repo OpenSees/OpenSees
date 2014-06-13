@@ -1,3 +1,9 @@
+# EXAMPLE DIAGONAL BRACING
+
+# load procedures in other files
+source Steel2d.tcl
+set in 1.0;
+
 # set up my structure                                                                                                                                 
 set floorOffsets {180. 180. 180.}
 set colOffsets   {360.}
@@ -83,7 +89,7 @@ set m -0.3
 uniaxialMaterial Steel02 2 $Fy_b $Es $b 20 0.925 0.15 0.0005 0.01 0.0005 0.01
 uniaxialMaterial Fatigue 3 2 -E0 $E0 -m $m -min -1.0 -max 0.04
 
-set imperfection 0.001
+set imperfection .001
 
 # add the diagonal braces
 geomTransf Corotational 3

@@ -5,19 +5,20 @@
 # Major Contributions: 
 #   WSection: Remo DeSouza, UC Berkeley.
 #   SteelWSectionMR: Dimitrios Lignos, McGill Univeristy.
-
+#   HSSbrace: Dimitrios Lignos, McGill Univeristy.
 
 #
-# 1. PROCEDURES PROTOTYPES FOR CREATING ELEMENTS:
+# 1. PROCEDURAL PROTOTYPES FOR CREATING ELEMENTS:
 #
 
-# ElasticBeamWSection2d {eleTag iNode jNode sectType E transfTag {Orient XX}
+# ElasticBeamWSection2d {eleTag iNode jNode sectType E transfTag args
+#   args: <YY> <-release1> <-release2>
 #
 # ForceBeamWSection2d $eleTag $iNode $jNode $sectType $matTag $transfTag $args 
-#    args: <YY> <-nFlange $x> <-nWeb $x> <-nip $x> <-elasticSection $E>
+#    args: <YY> <-nFlange $x> <-nWeb $x> <-nip $x> <-elasticSection $E> <-release1> <-release2>
 #
 # DispBeamWSection2d $eleTag $iNode $jNode $sectType $matTag $transfTag $args 
-#    args: <YY> <-nFlange $x> <-nWeb $x> <-nip $x>
+#    args: <YY> <-nFlange $x> <-nWeb $x> <-nip $x> <-elasticSection $E> <-release1> <-release2>
 #
 # BeamWithHingesWSection2d $eleTag $iNode $jNode $sectType $matTag $transfTag $args 
 #    args: <YY> <-nFlange $x> <-nWeb $x> <-nip $x> <-hingeLength $x>
@@ -26,14 +27,17 @@
 #    args: <YY> <-nip $x> <-hingeLength $x>
 #
 # ConcentratedHingesWSection2d $eleTag $iNode $jNode $sectType $matTag $transfTag $args 
-
+#
+# proc HSSbrace {$eleTag $iNode $jNode $secType $matTag $numSeg $Im $transfTag $args
+#
 
 #
-# 2. PROCEDURES PROTOTYPES FOR CREATING SECTIONS:
+# 2. PROCEDURAL PROTOTYPES FOR CREATING SECTIONS:
 #
 
 # ElasticBeamWSection2d {eleTag iNode jNode sectType E transfTag args} 
 #    args: <YY>
+#
 # Wsection $secID $matID $d $bf $tf $tw $nfdw $nftw $nfbf $nftf 
 #    args: <YY>
 #
@@ -43,14 +47,18 @@
 # FiberSteelWSection2d $sectTag $sectType $matTag $nFlange $nWeb $args
 #    args: <YY>
 #
+# ElasticHSSection2d {sectTag sectType E args} {
+#    args: <YY>
+#
+# FiberHSSection2d {sectTag sectType matTag nFlange nWeb args} {
+#
 # Wsection $secID $matID $d $bf $tf $tw $nfdw $nftw $nfbf $nftf {Orient XX} 
 #
 # SteelWSectionMR $matTag $E $Fy $Ix $Zx $H $L $d $tw $bf $tf $Lb $ry $Com_Type $Comp_Action args
 #    args: <-hingeLength $x>
 
-
 #
-# 3. PROCEDURES PROTOTYPES FOR CREATING ELEMENTS:
+# 3. PROCEDURES FOR CREATING ELEMENTS:
 #
 
 proc ElasticBeamWSection2d {eleTag iNode jNode sectType E transfTag args} {
@@ -192,7 +200,14 @@ proc DispBeamWSection2d {eleTag iNode jNode sectType matTag transfTag args} {
 
     set eleType dispBeamColumn
 
-    FiberSteelWSection2d $eleTag $sectType $matTag $nFlange $nWeb
+    if {[lsearch $args "-elasticSection"] != -1} {
+	set loc [lsearch $args "-elasticSection"] 
+        set E [lindex $args [expr $loc+1]]
+	ElasticSteelWSection2d $eleTag $sectType $E  $Orient
+    } else {
+	FiberSteelWSection2d $eleTag $sectType $matTag $nFlange $nWeb $Orient
+    }
+
     element $eleType $eleTag $iNode $jNode $nip $eleTag $transfTag
 }
 
@@ -685,7 +700,11 @@ proc FiberHSSection2d {sectTag sectType matTag nFlange nWeb args} {
 	set  b [expr [lindex $propList 3]*$in]
 	set  t [expr [lindex $propList 4]*$in]
 
-	HSSectionD $sectTag $matTag $d $b $t $nFlange $nWeb 
+	if {$Orient == "XX"} {
+	    HSSectionD $sectTag $matTag $d $b $t $nFlange $nWeb 
+	} else {
+	    HSSectionD $sectTag $matTag $b $d $t $nFlange $nWeb 
+	}
 	set found 1
     }
     if {$found == 0} {
