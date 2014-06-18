@@ -43,11 +43,11 @@
 class ViscousDamper : public UniaxialMaterial
 {
   public:
-    ViscousDamper(int tag, double K, double C, double Alpha);    
+	 ViscousDamper(int tag, double K, double C, double Alpha, double NM, double Tol, double MaxHalf);   
     ViscousDamper(); 
     ~ViscousDamper();
 
-    const char *getClassType(void) const {return "ViscousDamper";};
+   const char *getClassType(void) const {return "ViscousDamper";};
 
     int setTrialStrain(double velocity, double strainRate = 0.0); 
     double getStrain(void); 
@@ -62,39 +62,46 @@ class ViscousDamper : public UniaxialMaterial
     int commitState(void);
     int revertToLastCommit(void);    
     int revertToStart(void);        
-    int sgn(double dVariable);
-	
+    double sgn(double dVariable);
+	int DormandPrince(double vel0, double vel1, double y0, double h, double& yt, double& eps);
+	int ABM6(double vel0, double vel1, double y0, double h, double& yt, double& eps);
+	int ROS(double vel0, double vel1, double y0, double h, double& y2, double& eps);
+	double f(double v, double fd);
+
+        
     UniaxialMaterial *getCopy(void);
     
     int sendSelf(int commitTag, Channel &theChannel);  
     int recvSelf(int commitTag, Channel &theChannel, 
-		 FEM_ObjectBroker &theBroker);    
+                 FEM_ObjectBroker &theBroker);    
     
     void Print(OPS_Stream &s, int flag =0);
     
   protected:
     
   private:
-	// Fixed Input Material Variables
-	double K;
+        // Fixed Input Material Variables
+    double K;
     double C;
-    double Alpha;
-		
-	// Trial State Variables
-	double Tstrain; // Trial Strain
-	double Tstress; // Trial Stress
-	double Ttangent; // Trial Tangent
-	double TdVel;   // Trial Incremental Velocity
-	double Tfd;     // Trial Damper Force
-	
-	// Committeed State Variables
-	double Cstrain;  // Committed Strain
-	double Cstress;  // Committed Stress
-	double Ctangent; // Committed Tangent
-	double CdVel;    // Committed incremental velocity
-	double Cfd;      // Committed Damper Force
+    double Alpha;   
+	double NM;
+    double Tol;
+	double MaxHalf;
+
+        // Trial State Variables
+        double Tstrain; // Trial Strain
+        double Tstress; // Trial Stress
+        double Ttangent; // Trial Tangent
+        double TdVel;   // Trial Incremental Velocity
+
+        
+        // Committeed State Variables
+        double Cstrain;  // Committed Strain
+        double Cstress;  // Committed Stress
+        double Ctangent; // Committed Tangent
+        double CdVel;    // Committed incremental velocity
+
 };
 
 
 #endif
-
