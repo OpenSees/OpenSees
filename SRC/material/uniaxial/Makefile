@@ -6,6 +6,8 @@ include ../../../Makefile.def
 	Steel2.o \
 	OriginCentered.o \
 	ConcretewBeta.o \
+	ConcreteSakaiKawashima.o \
+	c14-SK-M.o \
 	ElasticMultiLinear.o \
         ElasticPPMaterial.o \
         ElasticBilin.o \
