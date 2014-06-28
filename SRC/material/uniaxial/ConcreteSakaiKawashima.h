@@ -27,7 +27,7 @@
 #ifndef ConcreteSakaiKawashima_h
 #define ConcreteSakaiKawashima_h
 
-#include <UniaxialMAterial.h>
+#include <UniaxialMaterial.h>
 
 class ConcreteSakaiKawashima : public UniaxialMaterial
 {
