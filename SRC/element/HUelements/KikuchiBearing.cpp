@@ -1318,7 +1318,7 @@ int KikuchiBearing::update()
   trialFij = localForceij;
 
   //---4
-  basicForce = Tlb*localForceij;
+  basicForce = 0.5*Tlb*localForceij;
 
   return 0;
 }
