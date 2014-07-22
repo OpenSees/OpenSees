@@ -64,13 +64,14 @@ integrator Newmark 0.5 0.25
 system $systemType
 analysis Transient
 puts "EIGEN: [eigen 2]"
+
 analyze 10 1.0
+
+
 puts "EIGEN: [eigen 2]"
 
 puts [nodeDisp $nn]
 puts "ele1: [lindex [eleResponse 1 forces] 1]"
-#puts "ele2: [lindex [eleResponse  [expr $nx*$ny*$nz] forces] 1]"
-
 
 exit
 
