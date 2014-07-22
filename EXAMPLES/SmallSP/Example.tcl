@@ -1,12 +1,16 @@
+set np [getNP]
+puts "Num Processors: $np"
+
 model basic -ndm 3 -ndf 3
-nDMaterial ElasticIsotropic   1   100   0.25  1.27
+nDMaterial ElasticIsotropic   1   100   0.25   10.
 
 set eleArgs "1" 
 set element stdBrick
+set systemType  Mumps
 
 set nz 10
-set nx 4
-set ny 4
+set nx 2
+set ny 2
 
 set nn [expr ($nz+1)*($nx+1)*($ny+1) ]
 
@@ -22,8 +26,8 @@ block3D $nx $ny $nz   1 1  $element  $eleArgs {
     8   -1      1     10
 }
 
-
 set load 0.10
+
 pattern Plain 1 Linear {
    load $nn  $load  $load  0.0
 }
@@ -35,7 +39,7 @@ test NormUnbalance     1.0e-10    20     0
 algorithm Newton
 numberer RCM
 constraints Plain 
-system Mumps
+system $systemType
 analysis Static 
 
 analyze 5
@@ -48,8 +52,8 @@ setTime 0.0
 
 remove loadPattern 1
 
-
 rayleigh 0.01 0.0 0.0 0.0
+
 
 # Create the transient analysis
 test EnergyIncr     1.0e-10    20   0
@@ -57,13 +61,17 @@ algorithm Newton
 numberer RCM
 constraints Plain 
 integrator Newmark 0.5 0.25
-system Mumps
+system $systemType
 analysis Transient
-
-
-analyze 1000 1.0
+puts "EIGEN: [eigen 2]"
+analyze 10 1.0
+puts "EIGEN: [eigen 2]"
 
 puts [nodeDisp $nn]
+puts "ele1: [lindex [eleResponse 1 forces] 1]"
+#puts "ele2: [lindex [eleResponse  [expr $nx*$ny*$nz] forces] 1]"
 
+
+exit
 
 
