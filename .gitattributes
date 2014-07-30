@@ -3237,6 +3237,8 @@ SRC/material/uniaxial/RambergOsgoodSteel.cpp -text
 SRC/material/uniaxial/RambergOsgoodSteel.h -text
 SRC/material/uniaxial/ReinforcingSteel.cpp -text
 SRC/material/uniaxial/ReinforcingSteel.h -text
+SRC/material/uniaxial/ResilienceMaterialHR.cpp -text
+SRC/material/uniaxial/ResilienceMaterialHR.h -text
 SRC/material/uniaxial/SAWSMaterial.cpp -text
 SRC/material/uniaxial/SAWSMaterial.h -text
 SRC/material/uniaxial/STEELDR.f -text
