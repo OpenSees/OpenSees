@@ -119,6 +119,7 @@ extern void *OPS_PinchingLimitState(void);
 extern void *OPS_NewOriginCentered(void);
 extern void *OPS_NewSteel2(void);
 extern void *OPS_ConcreteSakaiKawashima(void);
+extern void *OPS_ResilienceMaterialHR(void);
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -434,6 +435,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if (strcmp(argv[1],"ConcreteSakaiKawashima") == 0) {
       void *theMat = OPS_ConcreteSakaiKawashima();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"ResilienceMaterialHR") == 0) {
+      void *theMat = OPS_ResilienceMaterialHR();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
