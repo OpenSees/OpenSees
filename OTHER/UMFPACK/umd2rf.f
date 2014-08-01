@@ -411,7 +411,7 @@ C=======================================================================
      $          OFFPP, LUBLPP, BLKPP, ON, NZOFF, IP2, IO, PRL
         LOGICAL PRESRV, BADLU
         DOUBLE PRECISION
-     $          IGNORE
+     $          IGNORE(1)
 
 C  Printing control:
 C  -----------------
@@ -460,7 +460,7 @@ C=======================================================================
 C  EXECUTABLE STATEMENTS:
 C=======================================================================
 
-        IGNORE = 0
+        IGNORE (1) = 0
         IO = ICNTL (2)
         PRL = ICNTL (3)
 
