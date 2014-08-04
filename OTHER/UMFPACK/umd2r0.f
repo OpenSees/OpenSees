@@ -145,6 +145,7 @@ C=======================================================================
      $          WRKSIZ, NLU, PRP, MC, MR, DUMMY1, DUMMY2, NZ2, K, BLK,
      $          K1, K2, KN, NZBLK, COL, ROW, PRL, IO, LUIP, MNZ, ARNZ,
      $          XHEAD, OFFIP, OFFXP, NOUTSD, NBELOW, NZORIG, XRMAX
+        INTEGER DUMMY3(1)
         DOUBLE PRECISION
      $          A
 
@@ -214,6 +215,7 @@ C=======================================================================
         IO = ICNTL (2)
         PRL = ICNTL (3)
         NZORIG = NZ
+        DUMMY3 (1) = 0
 
         IF (PRESRV) THEN 
 C          original matrix is not in Cp/II/XX, but in Ap/Ai/Ax:
@@ -521,7 +523,7 @@ C                   ----------------------------------------------------
 
                     CALL UMD2RA (PRESRV, N, NZ, CPERM, RPERM, OFFP,
      $                 II (WP), NBLKS, XX, II, DUMMY1, DUMMY2,
-     $                 ICNTL, AP, BLKP, AI, AX, INFO, 0, 0, NZBLK,
+     $                 ICNTL, AP, BLKP, AI, AX, INFO, DUMMY3, 0, NZBLK,
      $                 BLK, KN, NZ2, I)
 
 C                   ----------------------------------------------------
