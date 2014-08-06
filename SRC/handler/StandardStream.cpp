@@ -293,10 +293,10 @@ StandardStream::operator<<(const void *p)
 OPS_Stream& 
 StandardStream::operator<<(int n)
 {
-  cerr <<  1.0*n;
+  cerr <<  n;
 
   if (fileOpen != 0)
-    theFile << 1.0*n;
+    theFile << n;
 
   return *this;
 }
