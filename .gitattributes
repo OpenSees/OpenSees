@@ -3095,6 +3095,10 @@ SRC/material/uniaxial/BoucWenMaterial.cpp -text
 SRC/material/uniaxial/BoucWenMaterial.h -text
 SRC/material/uniaxial/BraceMaterial.cpp -text
 SRC/material/uniaxial/BraceMaterial.h -text
+SRC/material/uniaxial/CFSSSWP.cpp -text
+SRC/material/uniaxial/CFSSSWP.h -text
+SRC/material/uniaxial/CFSWSWP.cpp -text
+SRC/material/uniaxial/CFSWSWP.h -text
 SRC/material/uniaxial/CableMaterial.cpp -text
 SRC/material/uniaxial/CableMaterial.h -text
 SRC/material/uniaxial/Cast.cpp -text
@@ -3124,6 +3128,8 @@ SRC/material/uniaxial/ConfinedConcrete01.cpp -text
 SRC/material/uniaxial/ConfinedConcrete01.h -text
 SRC/material/uniaxial/ContinuumUniaxial.cpp -text
 SRC/material/uniaxial/ContinuumUniaxial.h -text
+SRC/material/uniaxial/CubicSpline.cpp -text
+SRC/material/uniaxial/CubicSpline.h -text
 SRC/material/uniaxial/DoddRestr.cpp -text
 SRC/material/uniaxial/DoddRestr.h -text
 SRC/material/uniaxial/DoddRestrepo.f -text
@@ -3273,6 +3279,8 @@ SRC/material/uniaxial/TclHyperbolicGapMaterial.cpp -text
 SRC/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.cpp -text
 SRC/material/uniaxial/TclNewUniaxialMaterial.cpp -text
 SRC/material/uniaxial/TclReinforcingSteel.cpp -text
+SRC/material/uniaxial/TriMatrix.cpp -text
+SRC/material/uniaxial/TriMatrix.h -text
 SRC/material/uniaxial/UniaxialJ2Plasticity.cpp -text
 SRC/material/uniaxial/UniaxialJ2Plasticity.h -text
 SRC/material/uniaxial/UniaxialMaterial.cpp -text
