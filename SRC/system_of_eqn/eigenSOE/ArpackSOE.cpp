@@ -137,12 +137,13 @@ ArpackSOE::setSize(Graph &theGraph)
   }
   
   // invoke setSize on the linearSOE
-
+  /* SETSIZE ALREADY CALLED IF USING ARPACK AS THIS SOE DOING DOUBLE DUTY
   result = theSOE->setSize(theGraph);
   if (result < 0) {
     opserr << "WARNING ArpackSOE::ArpackSOE : - LinearSOE - failed in setSize\n";
     return -1;
   }
+  */
 
   if (size != Msize && size > 0) {
 
