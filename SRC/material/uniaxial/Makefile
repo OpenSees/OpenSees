@@ -1,6 +1,6 @@
 include ../../../Makefile.def
 
- OBJS       = UniaxialMaterial.o \
+OBJS       = UniaxialMaterial.o \
 	ElasticMaterial.o \
 	Elastic2Material.o \
 	Steel2.o \
@@ -28,6 +28,7 @@ include ../../../Makefile.def
 	Concrete04.o \
 	Concrete06.o \
 	Concrete07.o \
+	ResilienceMaterialHR.o \
 	RambergOsgoodSteel.o \
 	Steel01.o \
         HystereticMaterial.o \
@@ -93,6 +94,10 @@ include ../../../Makefile.def
 	Dodd_Restrepo.o DoddRestrepo.o \
 	STEELDR.o DoddRestr.o \
 	SteelBRB.o \
+	CubicSpline.o \
+	TriMatrix.o \
+	CFSSSWP.o \
+	CFSWSWP.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
