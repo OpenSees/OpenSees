@@ -10,6 +10,9 @@
 #include "CubicSpline.h"
 #include "TriMatrix.h"
  
+#ifndef isnan
+#define isnan _isnan
+#endif
 
 static int numCFSSSWP = 0;
 

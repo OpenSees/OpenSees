@@ -12,6 +12,10 @@
  
 static int numCFSWSWP = 0;
 
+#ifndef isnan
+#define isnan _isnan
+#endif
+
 void *
 OPS_CFSWSWP(void)
 {
