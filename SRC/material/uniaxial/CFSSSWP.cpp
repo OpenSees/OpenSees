@@ -10,12 +10,11 @@
 #include "CubicSpline.h"
 #include "TriMatrix.h"
  
-#define OPS_Export extern "C"
 
 static int numCFSSSWP = 0;
 
-OPS_Export void *
-OPS_CFSSSWP()
+void *
+OPS_CFSSSWP(void)
 {
   // print out some KUDO's
   if (numCFSSSWP == 0) {
