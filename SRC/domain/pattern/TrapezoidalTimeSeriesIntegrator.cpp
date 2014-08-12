@@ -57,7 +57,7 @@ TrapezoidalTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double delta)
   // Check for zero time step, before dividing to get number of steps
   if (delta <= 0.0) {
     opserr << "TrapezoidalTimeSeriesIntegrator::integrate() Attempting to integrate time step" <<
-      delta, "<= 0\n";
+      delta << "<= 0\n";
     return 0;
    }
 
@@ -116,7 +116,7 @@ TrapezoidalTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double delta)
   */
 
   // Set the method return value
-  PathSeries *returnSeries = new PathSeries (0, *theIntegratedValues, delta);
+  PathSeries *returnSeries = new PathSeries (0, *theIntegratedValues, delta, true);
 
   if (returnSeries == 0) {
     opserr << "TrapezoidalTimeSeriesIntegrator::integrate() Ran out of memory creating PathSeries\n";

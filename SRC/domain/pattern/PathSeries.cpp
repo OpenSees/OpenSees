@@ -55,9 +55,10 @@ PathSeries::PathSeries()
 PathSeries::PathSeries(int tag,
 		       const Vector &theLoadPath, 
 		       double theTimeIncr, 
-		       double theFactor)
+		       double theFactor,
+		       bool last)
   :TimeSeries(tag, TSERIES_TAG_PathSeries),
-   thePath(0), pathTimeIncr(theTimeIncr), cFactor(theFactor), otherDbTag(0), lastSendCommitTag(-1)
+   thePath(0), pathTimeIncr(theTimeIncr), cFactor(theFactor), otherDbTag(0), lastSendCommitTag(-1), useLast(last)
 {
   // create a copy of the vector containg path points
   thePath = new Vector(theLoadPath);
@@ -76,9 +77,10 @@ PathSeries::PathSeries(int tag,
 PathSeries::PathSeries(int tag,
 		       const char *fileName, 
 		       double theTimeIncr, 
-		       double theFactor)
+		       double theFactor,
+		       bool last)
   :TimeSeries(tag, TSERIES_TAG_PathSeries),
-   thePath(0), pathTimeIncr(theTimeIncr), cFactor(theFactor), otherDbTag(0), lastSendCommitTag(-1)
+   thePath(0), pathTimeIncr(theTimeIncr), cFactor(theFactor), otherDbTag(0), lastSendCommitTag(-1), useLast(last)
 {
   // determine the number of data points .. open file and count num entries
   int numDataPoints =0;
@@ -159,9 +161,12 @@ PathSeries::getFactor(double pseudoTime)
   int incr1 = floor(incr);
   int incr2 = incr1+1;
 
-  if (incr2 >= thePath->Size())
-    return 0.0;
-  else {
+  if (incr2 >= thePath->Size()) {
+    if (useLast == false)
+      return 0.0;
+    else
+      return (*thePath)[thePath->Size()];
+  } else {
     double value1 = (*thePath)[incr1];
     double value2 = (*thePath)[incr2];
     return cFactor*(value1 + (value2-value1)*(pseudoTime/pathTimeIncr - incr1));
@@ -208,7 +213,7 @@ PathSeries::sendSelf(int commitTag, Channel &theChannel)
 {
   int dbTag = this->getDbTag();
 
-  Vector data(5);
+  Vector data(6);
   data(0) = cFactor;
   data(1) = pathTimeIncr;
   data(2) = -1;
@@ -226,6 +231,11 @@ PathSeries::sendSelf(int commitTag, Channel &theChannel)
   }
 
   data(4) = lastSendCommitTag;
+
+  if (useLast == true)
+    data(5) = 1;
+  else
+    data(5) = 0;
 
   int result = theChannel.sendVector(dbTag,commitTag, data);
   if (result < 0) {
@@ -257,7 +267,7 @@ PathSeries::recvSelf(int commitTag, Channel &theChannel,
 {
   int dbTag = this->getDbTag();
 
-  Vector data(5);
+  Vector data(6);
   int result = theChannel.recvVector(dbTag,commitTag, data);
   if (result < 0) {
     opserr << "PathSeries::sendSelf() - channel failed to receive data\n";
@@ -270,6 +280,11 @@ PathSeries::recvSelf(int commitTag, Channel &theChannel,
   int size = data(2);
   otherDbTag = data(3);
   lastSendCommitTag = data(4);
+
+  if (data(5) == 1)
+    useLast = true;
+  else
+    useLast = false;
   
   // get the path vector, only receive it once as it can't change
   if (thePath == 0 && size > 0) {
