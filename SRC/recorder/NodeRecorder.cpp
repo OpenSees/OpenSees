@@ -807,11 +807,12 @@ NodeRecorder::initialize(void)
 
     int numNodes = theDomain->getNumNodes();
     theNodes = new Node *[numNodes];
-    opserr << "NodeRecorder::initialize - numNodes: " << numNodes << endln;
+
     if (theNodes == 0) {
       opserr << "NodeRecorder::domainChanged - out of memory\n";
       return -1;
     }
+
     NodeIter &theDomainNodes = theDomain->getNodes();
     Node *theNode;
     numValidNodes = 0;
