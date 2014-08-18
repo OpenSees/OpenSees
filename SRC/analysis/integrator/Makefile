@@ -45,7 +45,8 @@ OBJS       = IncrementalIntegrator.o \
 	AlphaOS.o \
     Houbolt.o \
     ParkLMS3.o \
-    BackwardEuler.o
+    BackwardEuler.o \
+    KRAlphaExplicit.o
 
 all:         $(OBJS)
 

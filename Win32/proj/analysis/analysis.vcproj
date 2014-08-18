@@ -544,6 +544,12 @@
 				RelativePath="..\..\..\SRC\analysis\integrator\Integrator.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\analysis\integrator\KRAlphaExplicit.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\analysis\integrator\KRAlphaExplicit.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\analysis\integrator\LoadControl.cpp">
 			</File>
 			<File
