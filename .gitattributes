@@ -1771,6 +1771,8 @@ SRC/analysis/integrator/IncrementalIntegrator.tex -text
 SRC/analysis/integrator/Integrator.cpp -text
 SRC/analysis/integrator/Integrator.h -text
 SRC/analysis/integrator/Integrator.tex -text
+SRC/analysis/integrator/KRAlphaExplicit.cpp -text
+SRC/analysis/integrator/KRAlphaExplicit.h -text
 SRC/analysis/integrator/LoadControl.cpp -text
 SRC/analysis/integrator/LoadControl.h -text
 SRC/analysis/integrator/LoadControl.tex -text

@@ -203,6 +203,7 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 #include <Houbolt.h>
 #include <ParkLMS3.h>
 #include <BackwardEuler.h>
+#include <KRAlphaExplicit.h>
 
 
 // analysis
@@ -4343,6 +4344,31 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	  if (theTransientAnalysis != 0)
 		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }  
+
+  else if (strcmp(argv[1],"KRAlphaExplicit") == 0) {
+    double rhoInf;
+    bool updDomFlag = false;
+    if (argc < 3 || argc > 4) {
+	opserr << "WARNING integrator KRAlphaExplicit rhoInf <-updateDomain>\n";
+	return TCL_ERROR;
+      }    
+      if (Tcl_GetDouble(interp, argv[2], &rhoInf) != TCL_OK) {
+	  opserr << "WARNING integrator KRAlphaExplicit rhoInf - undefined rhoInf\n";	  
+	  return TCL_ERROR;	
+      }
+      for (int i=3; i<argc; i++) {
+          if (strcmp(argv[i],"-updateDomain") == 0) {
+              updDomFlag = true;
+              argc--;
+          }
+      }
+	  theTransientIntegrator = new KRAlphaExplicit(rhoInf,updDomFlag);       
+
+      // if the analysis exists - we want to change the Integrator
+	  if (theTransientAnalysis != 0)
+		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }  
+
 
   else if (strcmp(argv[1],"NewmarkHSIncrReduct") == 0) {
       double beta, gamma, reduct;
