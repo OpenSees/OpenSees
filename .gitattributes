@@ -570,6 +570,7 @@ EXAMPLES/verification/runVerificationSuite.tcl -text
 EXAMPLES/verification/sdofTransient.tcl -text
 MAKES/Makefile.def.ABE -text
 MAKES/Makefile.def.ALPHA -text
+MAKES/Makefile.def.BRUTUS -text
 MAKES/Makefile.def.CARTER -text
 MAKES/Makefile.def.DATASTAR -text
 MAKES/Makefile.def.EC2-AMI -text

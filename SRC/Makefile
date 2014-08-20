@@ -1058,6 +1058,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
     $(FE)/analysis/integrator/HHTHSIncrLimit.o \
 	$(FE)/analysis/integrator/HHTHSFixedNumIter.o \
 	$(FE)/analysis/integrator/AlphaOS.o \
+	$(FE)/analysis/integrator/KRAlphaExplicit.o \
 	$(FE)/analysis/integrator/AlphaOSGeneralized.o \
 	$(FE)/analysis/integrator/Collocation.o \
 	$(FE)/analysis/integrator/CollocationHSIncrReduct.o \
