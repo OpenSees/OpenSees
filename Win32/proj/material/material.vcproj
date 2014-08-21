@@ -143,6 +143,18 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\BoucWenMaterial.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\CFSSSWP.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\CFSSSWP.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\CFSWSWP.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\CFSWSWP.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\CableMaterial.cpp">
 			</File>
 			<File
@@ -197,6 +209,12 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\Concrete07.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ConcreteSakaiKawashima.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ConcreteSakaiKawashima.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\ConcretewBeta.cpp">
 			</File>
 			<File
@@ -207,6 +225,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\ConfinedConcrete01.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\CubicSpline.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\CubicSpline.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\Dodd_Restrepo.cpp">
@@ -419,6 +443,12 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\ReinforcingSteel.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ResilienceMaterialHR.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ResilienceMaterialHR.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\SAWSMaterial.cpp">
 			</File>
 			<File
@@ -504,6 +534,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\TclReinforcingSteel.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\TriMatrix.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\TriMatrix.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\UniaxialJ2Plasticity.cpp">
