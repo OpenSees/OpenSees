@@ -86,11 +86,11 @@ integrator DisplacementControl  3   1   $dU  1 $dU $dU
 # remove recorders
 
 # Create a recorder to monitor nodal displacements
-#recorder Node -file node32.out -time -node 3 4 -dof 1 2 3 disp
+recorder Node -file node32.out -time -node 3 4 -dof 1 2 3 disp
 #recorder plot node32.out hi 10 10 300 300 -columns 2 1
 
 # Create a recorder to monitor element forces in columns
-#recorder EnvelopeElement -file ele32.out -time -ele 1 2 localForce
+recorder EnvelopeElement -file ele32.out -time -ele 1 2 localForce
 
 # --------------------------------
 # End of recorder generation
