@@ -65,16 +65,16 @@ void *OPS_ElasticTimoshenkoBeam3d()
     }
     
     if (numRemainingArgs < 11)  {
-        opserr << "ERROR not enough args provided, want: element ElasticTimoshenkoBeam3d $tag $iNode $jNode $E $G $A $Jx $Iy $Iz $Avy $Avz <-rho $rho> <-nlGeo> <-cMass> \n";
+        opserr << "ERROR not enough args provided, want: element ElasticTimoshenkoBeam3d $tag $iNode $jNode $E $G $A $Jx $Iy $Iz $Avy $Avz $transTag <-mass $m> <-cMass> \n";
         return 0;
     }
     
     int numData;
     int iData[5];     // tag, iNode, jNode, transTag, cMass
-    double dData[9];  // E, G, A, Jx, Iy, Iz, Avy, Avz, rho
+    double dData[9];  // E, G, A, Jx, Iy, Iz, Avy, Avz, mass
     
     iData[4] = 0;     // cMass
-    dData[8] = 0.0;   // rho
+    dData[8] = 0.0;   // mass per unit length
     
     numData = 3;
     if (OPS_GetIntInput(&numData, iData) != 0)  {
@@ -109,9 +109,9 @@ void *OPS_ElasticTimoshenkoBeam3d()
             opserr << "WARNING invalid string element ElasticTimoshenkoBeam3d " << iData[0] << endln;
             return 0;
         }
-        if ((strcmp(argvLoc, "-rho") == 0) || (strcmp(argvLoc, "rho") == 0))  {
+        if ((strcmp(argvLoc, "-mass") == 0) || (strcmp(argvLoc, "mass") == 0))  {
             if (OPS_GetDoubleInput(&numData, &dData[8]) != 0)  {
-                opserr << "WARNING error reading element data (rho) element ElasticTimoshenkoBeam3d " << iData[0] << endln;
+                opserr << "WARNING error reading element data (mass) element ElasticTimoshenkoBeam3d " << iData[0] << endln;
                 return 0;
             }
         }
@@ -137,7 +137,7 @@ ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d(int tag, int Nd1, int Nd2,
     double avz, CrdTransf &coordTransf, double r, int cm)
     : Element(tag, ELE_TAG_ElasticTimoshenkoBeam3d),
     connectedExternalNodes(2), theCoordTransf(0), E(e), G(g), A(a), Jx(jx),
-    Iy(iy), Iz(iz), Avy(avy), Avz(avz), rho(r), nlGeo(0), cMass(cm), phiY(0.0),
+    Iy(iy), Iz(iz), Avy(avy), Avz(avz), rho(r), cMass(cm), nlGeo(0), phiY(0.0),
     phiZ(0.0), L(0.0), ul(12), ql(12), ql0(12), kl(12,12), klgeo(12,12),
     Tgl(12,12), Ki(12,12), M(12,12), theLoad(12)
 {
@@ -184,8 +184,8 @@ ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d(int tag, int Nd1, int Nd2,
 ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d()
     : Element(0, ELE_TAG_ElasticTimoshenkoBeam3d),
     connectedExternalNodes(2), theCoordTransf(0), E(0.0), G(0.0), A(0.0),
-    Jx(0.0), Iy(0.0), Iz(0.0), Avy(0.0), Avz(0.0), rho(0.0), nlGeo(0),
-    cMass(0), phiY(0.0), phiZ(0.0), L(0.0), ul(12), ql(12), ql0(12),
+    Jx(0.0), Iy(0.0), Iz(0.0), Avy(0.0), Avz(0.0), rho(0.0), cMass(0),
+    nlGeo(0), phiY(0.0), phiZ(0.0), L(0.0), ul(12), ql(12), ql0(12),
     kl(12,12), klgeo(12,12), Tgl(12,12), Ki(12,12), M(12,12), theLoad(12)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
@@ -604,7 +604,7 @@ int ElasticTimoshenkoBeam3d::recvSelf(int commitTag, Channel &rChannel,
     if (theCoordTransf == 0)  {
         theCoordTransf = theBroker.getNewCrdTransf(crdTag);
         if (theCoordTransf == 0)  {
-            opserr << "ElasticTimoshenkoBeam3d::recvSelf() - could not get a CrdTransf2d.\n";
+            opserr << "ElasticTimoshenkoBeam3d::recvSelf() - could not get a CrdTransf3d.\n";
             return -1;
         }
     }
@@ -615,7 +615,7 @@ int ElasticTimoshenkoBeam3d::recvSelf(int commitTag, Channel &rChannel,
         delete theCoordTransf;
         theCoordTransf = theBroker.getNewCrdTransf(crdTag);
         if (theCoordTransf == 0)  {
-            opserr << "ElasticTimoshenkoBeam3d::recvSelf() - could not get a CrdTransf2d.\n";
+            opserr << "ElasticTimoshenkoBeam3d::recvSelf() - could not get a CrdTransf3d.\n";
             return -1;
         }
     }
@@ -693,14 +693,14 @@ void ElasticTimoshenkoBeam3d::Print(OPS_Stream &s, int flag)
     if (flag == 0)  {
         // print everything
         s << "Element: " << this->getTag(); 
-        s << "  type: ElasticTimoshenkoBeam2d";
+        s << "  type: ElasticTimoshenkoBeam3d";
         s << "  iNode: " << connectedExternalNodes(0);
         s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "  E: " << E << "  G: " << G << endln;
         s << "  A: " << A << "  Jx: " << Jx << "  Iy: " << Iy;
         s << "  Iz: " << Iz << "  Avy: " << Avy << "  Avz: " << Avz << endln;
-        s << "  rho: " << rho << "  nlGeo: " << nlGeo;
-        s << "  cMass: " << cMass << endln;
+        s << "  coordTransf: " << theCoordTransf->getClassType() << endln;
+        s << "  rho: " << rho << "  cMass: " << cMass << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
     } else if (flag == 1)  {
@@ -973,7 +973,7 @@ void ElasticTimoshenkoBeam3d::setUp()
     if (rho > 0.0)  {
         if (cMass == 0)  {
             // lumped mass matrix
-            double m = 0.5*rho*A*L;
+            double m = 0.5*rho*L;
             for (int i=0; i<3; i++)  {
                 M(i,i)     = m;
                 M(i+6,i+6) = m;
@@ -982,10 +982,10 @@ void ElasticTimoshenkoBeam3d::setUp()
             // consistent mass matrix
             Matrix mlTrn(12,12), mlRot(12,12), ml(12,12);
             mlTrn.Zero(); mlRot.Zero(); ml.Zero();
-            double c1x = rho*A*L/210.0;
+            double c1x = rho*L/210.0;
             mlTrn(0,0) = mlTrn(6,6) = c1x*70.0;
             mlTrn(0,6) = mlTrn(6,0) = c1x*35.0;
-            double c2x = rho*Jx*L/210.0;
+            double c2x = rho/A*Jx*L/210.0;
             mlTrn(3,3) = mlTrn(9,9) = c2x*70.0;
             mlTrn(3,9) = mlTrn(9,3) = c2x*35.0;
             
@@ -998,7 +998,7 @@ void ElasticTimoshenkoBeam3d::setUp()
             mlTrn(8,10) = mlTrn(10,8) = -mlTrn(2,4);
             mlTrn(2,10) = mlTrn(10,2) = c1y*L/4.0*(35.0*phiY*phiY + 63.0*phiY + 26.0);
             mlTrn(4,8) = mlTrn(8,4) = -mlTrn(2,10);
-            double c2y = rho*Iy/(30.0*L*pow(1.0 + phiY,2));
+            double c2y = rho/A*Iy/(30.0*L*pow(1.0 + phiY,2));
             mlRot(2,2) = mlRot(8,8) = c2y*36.0;
             mlRot(2,8) = mlRot(8,2) = -mlRot(2,2);
             mlRot(4,4) = mlRot(10,10) = c2y*L*L*(10.0*phiY*phiY + 5.0*phiY + 4.0);
@@ -1015,7 +1015,7 @@ void ElasticTimoshenkoBeam3d::setUp()
             mlTrn(7,11) = mlTrn(11,7) = -mlTrn(1,5);
             mlTrn(1,11) = mlTrn(11,1) = -c1z*L/4.0*(35.0*phiZ*phiZ + 63.0*phiZ + 26.0);
             mlTrn(5,7) = mlTrn(7,5) = -mlTrn(1,11);
-            double c2z = rho*Iz/(30.0*L*pow(1.0 + phiZ,2));
+            double c2z = rho/A*Iz/(30.0*L*pow(1.0 + phiZ,2));
             mlRot(1,1) = mlRot(7,7) = c2z*36.0;
             mlRot(1,7) = mlRot(7,1) = -mlRot(1,1);
             mlRot(5,5) = mlRot(11,11) = c2z*L*L*(10.0*phiZ*phiZ + 5.0*phiZ + 4.0);

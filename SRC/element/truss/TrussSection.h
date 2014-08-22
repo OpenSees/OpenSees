@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.13 $
-// $Date: 2010-02-04 01:11:29 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/truss/TrussSection.h,v $
+// $Revision$
+// $Date$
+// $URL$
                                                                         
                                                                         
 #ifndef TrussSection_h
@@ -47,12 +47,12 @@ class SectionForceDeformation;
 class TrussSection : public Element
 {
   public:
-    TrussSection(int tag, 
-		 int dimension,
+    TrussSection(int tag, int dimension,
 		 int Nd1, int Nd2, 
 		 SectionForceDeformation &theSection,
-		 double rho=0.0,
-		 int doRayleigh = 0);
+		 double rho = 0.0,
+		 int doRayleighDamping = 0,
+         int cMass = 0);
     
     TrussSection();    
     ~TrussSection();
@@ -76,8 +76,8 @@ class TrussSection : public Element
     // public methods to obtain stiffness, mass, damping and residual information    
     const Matrix &getTangentStiff(void);
     const Matrix &getInitialStiff(void);
-    const Matrix &getMass(void);    
-    const Matrix &getDamp(void);    
+    const Matrix &getDamp(void);
+    const Matrix &getMass(void);
 
     void zeroLoad(void);	
     int addLoad(ElementalLoad *theLoad, double loadFactor);
@@ -107,15 +107,16 @@ class TrussSection : public Element
     int dimension;                       // truss in 2 or 3d domain
     int numDOF;	                         // number of dof for truss
 
-    Vector *theLoad;          // pointer to the load vector P    
-    Matrix *theMatrix; 	// pointer to objects matrix (one of class Matrices)
-    Vector *theVector;      // pointer to objects vector (one of class Vectors)
+    Vector *theLoad;    // pointer to the load vector P
+    Matrix *theMatrix;  // pointer to objects matrix (a class wide Matrix)
+    Vector *theVector;  // pointer to objects vector (a class wide Vector)
 
     double cosX[3];     // direction cosines
 
-    double L;		// length of truss based on undeformed configuration
-    double rho; 		// mass density per unit length
-    int doRayleighDamping;
+    double L;               // length of truss based on undeformed configuration
+    double rho;             // mass density per unit length
+    int doRayleighDamping;  // flag to include Rayleigh damping
+    int cMass;              // consistent mass flag
 
     Node *theNodes[2];
     double *initialDisp;

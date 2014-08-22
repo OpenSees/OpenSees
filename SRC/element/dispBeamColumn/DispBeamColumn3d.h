@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.14 $
-// $Date: 2007-10-13 00:03:31 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/dispBeamColumn/DispBeamColumn3d.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: MHS
 // Created: Feb 2001
@@ -52,8 +52,8 @@ class DispBeamColumn3d : public Element
   public:
     DispBeamColumn3d(int tag, int nd1, int nd2,
 		     int numSections, SectionForceDeformation **s,
-		     BeamIntegration &bi,
-		     CrdTransf &coordTransf, double rho = 0.0);
+		     BeamIntegration &bi, CrdTransf &coordTransf,
+             double rho = 0.0, int cMass = 0);
     DispBeamColumn3d();
     ~DispBeamColumn3d();
 
@@ -122,12 +122,13 @@ class DispBeamColumn3d : public Element
     static Matrix K;		// Element stiffness, damping, and mass Matrix
     static Vector P;		// Element resisting force vector
 
-    Vector Q;		// Applied nodal loads
-    Vector q;		// Basic force
+    Vector Q;      // Applied nodal loads
+    Vector q;      // Basic force
     double q0[5];  // Fixed end forces in basic system (no torsion)
     double p0[5];  // Reactions in basic system (no torsion)
 
-    double rho;			// Mass density per unit length
+    double rho;    // Mass density per unit length
+    int cMass;     // consistent mass flag
 
 	int parameterID;
 

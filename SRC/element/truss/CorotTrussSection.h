@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.9 $
-// $Date: 2009-05-18 22:01:06 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/truss/CorotTrussSection.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef CorotTrussSection_h
 #define CorotTrussSection_h
@@ -47,7 +47,9 @@ class CorotTrussSection : public Element
     CorotTrussSection(int tag, int dim,
 	  int Nd1, int Nd2, 
 	  SectionForceDeformation &theMaterial,
-	  double rho=0.0);
+	  double rho = 0.0,
+	  int doRayleighDamping = 0,
+      int cMass = 0);
     
     CorotTrussSection();    
     ~CorotTrussSection();
@@ -71,6 +73,7 @@ class CorotTrussSection : public Element
     // public methods to obtain stiffness, mass, damping and residual information    
     const Matrix &getTangentStiff(void);
     const Matrix &getInitialStiff(void);
+    const Matrix &getDamp(void);
     const Matrix &getMass(void);
 
     void zeroLoad(void);	
@@ -101,24 +104,26 @@ class CorotTrussSection : public Element
     int numDOF;	                    // number of dof for CorotTrussSection
     int numDIM;                     // number of dimensions
 
-    double Lo;	    // initial length of truss
-    double Ln;	    // current length of truss
-    double d21[3];  // current displacement offsets in basic system
-    double rho;     // mass density per unit length
+    double Lo;              // initial length of truss
+    double Ln;              // current length of truss
+    double d21[3];          // current displacement offsets in basic system
+    double rho;             // mass density per unit length
+    int doRayleighDamping;  // flag to include Rayleigh damping
+    int cMass;              // consistent mass flag
 
     Node *theNodes[2];
 
     Matrix R;	// Rotation matrix
 
-    Matrix *theMatrix;
-
+    Vector *theLoad;    // pointer to the load vector P
+    Matrix *theMatrix;  // pointer to objects matrix (a class wide Matrix)
+    Vector *theVector;  // pointer to objects vector (a class wide Vector)
+    
     static Matrix M2;
     static Matrix M4;
     static Matrix M6;
     static Matrix M12;
     
-    Vector *theVector;
-
     static Vector V2;
     static Vector V4;
     static Vector V6;
@@ -126,7 +131,3 @@ class CorotTrussSection : public Element
 };
 
 #endif
-
-
-
-

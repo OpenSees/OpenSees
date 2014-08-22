@@ -109,8 +109,8 @@ private:
     double Iz;   // moment of inertia about local z axis
     double Avy;  // shear area along local y axis
     double rho;  // mass per unit length
-    int nlGeo;   // nonlinear geometry flag
     int cMass;   // consistent mass flag
+    int nlGeo;   // nonlinear geometry flag
     double phi;  // ratio of bending to shear stiffness
     double L;    // element length
     

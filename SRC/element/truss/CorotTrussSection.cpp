@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.14 $
-// $Date: 2010-06-01 23:41:07 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/truss/CorotTrussSection.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
                                                                         
 // Written: MHS 
 // Created: May 2001
@@ -65,12 +65,14 @@ OPS_NewCorotTrussSectionElement()
   int numRemainingArgs = OPS_GetNumRemainingInputArgs();
 
   if (numRemainingArgs < 4) {
-    opserr << "Invalid Args want: element CorotTrussSection $tag $iNode $jNode $sectTag <-rho $rho> \n";
+    opserr << "Invalid Args want: element CorotTrussSection $tag $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
     return 0;	
   }
 
   int    iData[4];
   double rho = 0.0;
+  int doRayleigh = 0; // by default rayleigh not done
+  int cMass = 0; // by default use lumped mass matrix
   int ndm = OPS_GetNDM();
 
   int numData = 4;
@@ -83,7 +85,7 @@ OPS_NewCorotTrussSectionElement()
     
   if (theSection == 0) {
     opserr << "WARNING: Invalid section not found element CorotTrussSection " << iData[0] << " $iNode $jNode " << 
-      iData[3] << " <-rho $rho> \n";
+      iData[3] << " <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
     return 0;
   }
   
@@ -92,7 +94,7 @@ OPS_NewCorotTrussSectionElement()
     char argvS[15];
     if (OPS_GetString(argvS, 15) != 0) {
       opserr << "WARNING: Invalid optional string element CorotTrussSection " << iData[0] << 
-	" $iNode $jNode $sectTag <-rho $rho>\n";
+	" $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
       return 0;
     } 
   
@@ -100,23 +102,37 @@ OPS_NewCorotTrussSectionElement()
       numData = 1;
       if (OPS_GetDouble(&numData, &rho) != 0) {
 	opserr << "WARNING Invalid rho in element CorotTrussSection " << iData[0] << 
-	  " $iNode $jNode $secTag <-rho $rho>\n";
+	  " $iNode $jNode $secTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
+	return 0;
+      }
+    } else if (strcmp(argvS,"-cMass") == 0) {
+      numData = 1;
+      if (OPS_GetInt(&numData, &cMass) != 0) {
+	opserr << "WARNING: Invalid cMass in element CorotTrussSection " << iData[0] << 
+	  " $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
+	return 0;
+      }
+    } else if (strcmp(argvS,"-doRayleigh") == 0) {
+      numData = 1;
+      if (OPS_GetInt(&numData, &doRayleigh) != 0) {
+	opserr << "WARNING: Invalid doRayleigh in element CorotTrussSection " << iData[0] << 
+	  " $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
 	return 0;
       }
     } else {
       opserr << "WARNING: Invalid option " << argvS << "  in: element CorotTrussSection " << iData[0] << 
-	" $iNode $jNode $secTag <-rho $rho>\n";
+	" $iNode $jNode $secTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
       return 0;
-    }      
+    }
     numRemainingArgs -= 2;
   }
 
-  //now create the ReinforcedConcretePlaneStress
-  theElement = new CorotTrussSection(iData[0], ndm, iData[1], iData[2], *theSection, rho);
+  // now create the CorotTrussSection
+  theElement = new CorotTrussSection(iData[0], ndm, iData[1], iData[2], *theSection, rho, doRayleigh, cMass);
 
   if (theElement == 0) {
     opserr << "WARNING: out of memory: element CorotTrussSection " << iData[0] << 
-      " $iNode $jNode $secTag <-rho $rho>\n";
+      " $iNode $jNode $secTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
   }
 
   return theElement;
@@ -129,12 +145,12 @@ OPS_NewCorotTrussSectionElement()
 CorotTrussSection::CorotTrussSection(int tag, int dim,
 			   int Nd1, int Nd2, 
 			   SectionForceDeformation &theSec,
-			   double r)
+			   double r, int damp, int cm)
   :Element(tag,ELE_TAG_CorotTrussSection),     
   theSection(0), connectedExternalNodes(2),
-  numDOF(0), numDIM(dim),
-  Lo(0.0), Ln(0.0), rho(r), R(3,3),
-  theMatrix(0), theVector(0)
+  numDOF(0), numDIM(dim), Lo(0.0), Ln(0.0),
+  rho(r), doRayleighDamping(damp), cMass(cm),
+  R(3,3), theLoad(0), theMatrix(0), theVector(0)
 {
   // get a copy of the material and check we obtained a valid copy
   theSection = theSec.getCopy();
@@ -165,9 +181,9 @@ CorotTrussSection::CorotTrussSection(int tag, int dim,
 CorotTrussSection::CorotTrussSection()
   :Element(0,ELE_TAG_CorotTrussSection),     
   theSection(0),connectedExternalNodes(2),
-  numDOF(0), numDIM(0),
-  Lo(0.0), Ln(0.0), rho(0.0), R(3,3),
-  theMatrix(0), theVector(0)
+  numDOF(0), numDIM(0), Lo(0.0), Ln(0.0),
+  rho(0.0), doRayleighDamping(0), cMass(0),
+  R(3,3), theLoad(0), theMatrix(0), theVector(0)
 {
   // set node pointers to NULL
   for (int i=0; i<2; i++)
@@ -300,6 +316,20 @@ CorotTrussSection::setDomain(Domain *theDomain)
     return;
   }
 
+    // create the load vector
+    if (theLoad == 0)
+        theLoad = new Vector(numDOF);
+    else if (theLoad->Size() != numDOF) {
+        delete theLoad;
+        theLoad = new Vector(numDOF);
+    }
+    if (theLoad == 0) {
+        opserr << "CorotTrussSection::setDomain - truss " << this->getTag()
+            << "out of memory creating vector of size" << numDOF << endln;
+        exit(-1);
+        return;
+    }          
+    
 	// call the base class method
 	this->DomainComponent::setDomain(theDomain);
 
@@ -525,30 +555,56 @@ CorotTrussSection::getInitialStiff(void)
     return *theMatrix;
 }
 
+
+const Matrix &
+CorotTrussSection::getDamp(void)
+{   
+    if (doRayleighDamping == 1)
+      return this->Element::getDamp();
+    
+    theMatrix->Zero();
+    return *theMatrix;
+}
+
+
 const Matrix &
 CorotTrussSection::getMass(void)
 {
-    Matrix &Mass = *theMatrix;
-    Mass.Zero();
-
+    // zero the matrix
+    Matrix &mass = *theMatrix;
+    mass.Zero();    
+    
     // check for quick return
     if (Lo == 0.0 || rho == 0.0)
-	return Mass;
-
-    double M = 0.5*rho*Lo;
-    int numDOF2 = numDOF/2;
-    for (int i = 0; i < numDIM; i++) {
-        Mass(i,i)                 = M;
-        Mass(i+numDOF2,i+numDOF2) = M;
+        return mass;
+    
+    if (cMass == 0)  {
+        // lumped mass matrix
+        double m = 0.5*rho*Lo;
+        int numDOF2 = numDOF/2;
+        for (int i = 0; i < numDIM; i++) {
+            mass(i,i) = m;
+            mass(i+numDOF2,i+numDOF2) = m;
+        }
+    } else  {
+        // consistent mass matrix
+        double m = rho*Lo/6.0;
+        int numDOF2 = numDOF/2;
+        for (int i = 0; i < numDIM; i++) {
+            mass(i,i) = 2.0*m;
+            mass(i,i+numDOF2) = m;
+            mass(i+numDOF2,i) = m;
+            mass(i+numDOF2,i+numDOF2) = 2.0*m;
+        }
     }
-
+    
     return *theMatrix;
 }
 
 void 
 CorotTrussSection::zeroLoad(void)
 {
-	return;
+	theLoad->Zero();
 }
 
 int 
@@ -561,7 +617,32 @@ CorotTrussSection::addLoad(ElementalLoad *theLoad, double loadFactor)
 int 
 CorotTrussSection::addInertiaLoadToUnbalance(const Vector &accel)
 {
-	return 0;
+    // check for quick return
+    if (Lo == 0.0 || rho == 0.0)
+        return 0;
+    
+    // get R * accel from the nodes
+    const Vector &Raccel1 = theNodes[0]->getRV(accel);
+    const Vector &Raccel2 = theNodes[1]->getRV(accel);    
+    
+    int nodalDOF = numDOF/2;
+    
+    // want to add ( - fact * M R * accel ) to unbalance
+    if (cMass == 0)  {
+        double m = 0.5*rho*Lo;
+        for (int i=0; i<numDIM; i++) {
+            (*theLoad)(i) -= m*Raccel1(i);
+            (*theLoad)(i+nodalDOF) -= m*Raccel2(i);
+        }
+    } else  {
+        double m = rho*Lo/6.0;
+        for (int i=0; i<numDIM; i++) {
+            (*theLoad)(i) -= 2.0*m*Raccel1(i) + m*Raccel2(i);
+            (*theLoad)(i+nodalDOF) -= m*Raccel1(i) + 2.0*m*Raccel2(i);
+        }
+    }
+    
+    return 0;
 }
 
 const Vector &
@@ -600,7 +681,10 @@ CorotTrussSection::getResistingForce()
         P(i)         = -qg(i);
         P(i+numDOF2) =  qg(i);
     }
-
+    
+    // subtract external load
+    (*theVector) -= *theLoad;
+    
     return *theVector;
 }
 
@@ -610,36 +694,161 @@ CorotTrussSection::getResistingForceIncInertia()
     Vector &P = *theVector;
     P = this->getResistingForce();
     
-    if (rho != 0.0) {
-	
-      const Vector &accel1 = theNodes[0]->getTrialAccel();
-      const Vector &accel2 = theNodes[1]->getTrialAccel();	
-      
-      double M = 0.5*rho*Lo;
-      int numDOF2 = numDOF/2;
-      for (int i = 0; i < numDIM; i++) {
-	P(i)         += M*accel1(i);
-	P(i+numDOF2) += M*accel2(i);
-      }
+    // now include the mass portion
+    if (Lo != 0.0 && rho != 0.0) {
+        
+        // add inertia forces from element mass
+        const Vector &accel1 = theNodes[0]->getTrialAccel();
+        const Vector &accel2 = theNodes[1]->getTrialAccel();	
+        
+        int numDOF2 = numDOF/2;
+        
+        if (cMass == 0)  {
+            // lumped mass matrix
+            double m = 0.5*rho*Lo;
+            for (int i=0; i<numDIM; i++) {
+                P(i) += m*accel1(i);
+                P(i+numDOF2) += m*accel2(i);
+            }
+        } else  {
+            // consistent mass matrix
+            double m = rho*Lo/6.0;
+            for (int i=0; i<numDIM; i++) {
+                (*theVector)(i) += 2.0*m*accel1(i) + m*accel2(i);
+                (*theVector)(i+numDOF2) += m*accel1(i) + 2.0*m*accel2(i);
+            }
+        }
+        
+        // add the damping forces if rayleigh damping
+        if (doRayleighDamping == 1 && (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0))
+            theVector->addVector(1.0, this->getRayleighDampingForces(), 1.0);
+    } else  {
+        
+        // add the damping forces if rayleigh damping
+        if (doRayleighDamping == 1 && (betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0))
+            theVector->addVector(1.0, this->getRayleighDampingForces(), 1.0);
     }
-
-    // add the damping forces if rayleigh damping
-    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-      *theVector += this->getRayleighDampingForces();
-
+    
     return *theVector;
 }
 
 int
 CorotTrussSection::sendSelf(int commitTag, Channel &theChannel)
 {
-	return -1;
+  int res;
+
+  // note: we don't check for dataTag == 0 for Element
+  // objects as that is taken care of in a commit by the Domain
+  // object - don't want to have to do the check if sending data
+  int dataTag = this->getDbTag();
+
+  // truss packs it's data into a Vector and sends this to theChannel
+  // along with it's dbTag and the commitTag passed in the arguments
+
+  static Vector data(8);
+  data(0) = this->getTag();
+  data(1) = numDIM;
+  data(2) = numDOF;
+  data(5) = rho;
+  data(6) = doRayleighDamping;
+  data(7) = cMass;
+
+  data(3) = theSection->getClassTag();
+  int matDbTag = theSection->getDbTag();
+
+  // NOTE: we do have to ensure that the Section has a database
+  // tag if we are sending to a database channel.
+  if (matDbTag == 0) {
+    matDbTag = theChannel.getDbTag();
+    if (matDbTag != 0)
+      theSection->setDbTag(matDbTag);
+  }
+  data(4) = matDbTag;
+
+  res = theChannel.sendVector(dataTag, commitTag, data);
+  if (res < 0) {
+    opserr << "WARNING CorotTrussSection::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+    return -1;
+  }	      
+
+  // truss then sends the tags of it's two end nodes
+  res = theChannel.sendID(dataTag, commitTag, connectedExternalNodes);
+  if (res < 0) {
+    opserr << "WARNING CorotTrussSection::sendSelf() - " << this->getTag() << " failed to send ID\n";
+    return -2;
+  }
+
+  // finally truss asks it's Section object to send itself
+  res = theSection->sendSelf(commitTag, theChannel);
+  if (res < 0) {
+    opserr << "WARNING CorotTrussSection::sendSelf() - " << this->getTag() << " failed to send its Section\n";
+    return -3;
+  }
+
+  return 0;
 }
 
 int
 CorotTrussSection::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-	return -1;
+  int res;
+  int dataTag = this->getDbTag();
+
+  // truss creates a Vector, receives the Vector and then sets the 
+  // internal data with the data in the Vector
+
+  static Vector data(8);
+  res = theChannel.recvVector(dataTag, commitTag, data);
+  if (res < 0) {
+    opserr << "WARNING CorotTrussSection::recvSelf() - failed to receive Vector\n";
+    return -1;
+  }	      
+
+  this->setTag((int)data(0));
+  numDIM = (int)data(1);
+  numDOF = (int)data(2);
+  rho = data(5);
+  doRayleighDamping = (int)data(6);
+  cMass = (int)data(7);
+
+  // truss now receives the tags of it's two external nodes
+  res = theChannel.recvID(dataTag, commitTag, connectedExternalNodes);
+  if (res < 0) {
+    opserr << "WARNING CorotTrussSection::recvSelf() - " << this->getTag() << " failed to receive ID\n";
+    return -2;
+  }
+
+  // finally truss creates a new section object of the correct type,
+  // sets its database tag and asks this new object to recveive itself.
+
+  int sectClass = (int)data(3);
+  int sectDb = (int)data(4);
+
+  // Get new section if null
+  if (theSection == 0)
+	  theSection = theBroker.getNewSection(sectClass);
+
+  // Check that section is of right type
+  else if (theSection->getClassTag() != sectClass) {
+	  delete theSection;
+	  theSection = theBroker.getNewSection(sectClass);
+  }
+  
+  // Check if either allocation failed
+  if (theSection == 0) {
+    opserr << "WARNING CorotTrussSection::recvSelf() - " << this->getTag() << 
+      " failed to get a blank Section of type " << sectClass << endln;
+    return -3;
+  }
+
+  theSection->setDbTag(sectDb); // note: we set the dbTag before we receive the Section
+  res = theSection->recvSelf(commitTag, theChannel, theBroker);
+  if (res < 0) {
+    opserr << "WARNING CorotTrussSection::recvSelf() - " << this->getTag() << " failed to receive its Section\n";
+    return -3;
+  }
+
+  return 0;
 }
 
 int
@@ -675,6 +884,7 @@ CorotTrussSection::Print(OPS_Stream &s, int flag)
 	s << "\tUndeformed Length: " << Lo << endln;
 	s << "\tCurrent Length: " << Ln << endln;
 	s << "\tMass Density/Length: " << rho << endln;
+    s << "\tConsistent Mass: " << cMass << endln;
 	s << "\tRotation matrix: " << endln;
 
 	if (theSection) {

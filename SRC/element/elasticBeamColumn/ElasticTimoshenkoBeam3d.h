@@ -112,8 +112,8 @@ private:
     double Avy;   // shear area along local y axis
     double Avz;   // shear area along local z axis
     double rho;   // mass per unit length
-    int nlGeo;    // nonlinear geometry flag
     int cMass;    // consistent mass flag
+    int nlGeo;    // nonlinear geometry flag
     double phiY;  // ratio of bending to shear stiffness about local y axis
     double phiZ;  // ratio of bending to shear stiffness about local z axis
     double L;     // element length

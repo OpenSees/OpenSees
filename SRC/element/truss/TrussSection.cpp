@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.30 $
-// $Date: 2010-09-13 21:27:52 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/truss/TrussSection.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
                                                                         
                                                                         
 // Written: fmk 
@@ -73,7 +73,7 @@ OPS_NewTrussSectionElement()
   int numRemainingArgs = OPS_GetNumRemainingInputArgs();
 
   if (numRemainingArgs < 4) {
-    opserr << "Invalid Args want: element TrussSection $tag $iNode $jNode $sectTag <-rho $rho> \n";
+    opserr << "Invalid Args want: element TrussSection $tag $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
     return 0;	
   }
 
@@ -81,6 +81,7 @@ OPS_NewTrussSectionElement()
   double rho = 0.0;
   int ndm = OPS_GetNDM();
   int doRayleigh = 0; // by default rayleigh not done
+  int cMass = 0; // by default use lumped mass matrix
 
   int numData = 4;
   if (OPS_GetInt(&numData, iData) != 0) {
@@ -92,7 +93,7 @@ OPS_NewTrussSectionElement()
     
   if (theSection == 0) {
     opserr << "WARNING: Invalid section not found element TrussSection " << iData[0] << " $iNode $jNode " << 
-      iData[3] << " <-rho $rho> \n";
+      iData[3] << " <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
     return 0;
   }
   
@@ -101,7 +102,7 @@ OPS_NewTrussSectionElement()
     char argvS[15];
     if (OPS_GetString(argvS, 15) != 0) {
       opserr << "WARNING: Invalid optional string element TrussSection " << iData[0] << 
-	" $iNode $jNode $sectTag <-rho $rho>\n";
+	" $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
       return 0;
     } 
   
@@ -109,48 +110,53 @@ OPS_NewTrussSectionElement()
       numData = 1;
       if (OPS_GetDouble(&numData, &rho) != 0) {
 	opserr << "WARNING Invalid rho in element TrussSection " << iData[0] << 
-	  " $iNode $jNode $secTag <-rho $rho>\n";
+	  " $iNode $jNode $secTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
+	return 0;
+      }
+    } else if (strcmp(argvS,"-cMass") == 0) {
+      numData = 1;
+      if (OPS_GetInt(&numData, &cMass) != 0) {
+	opserr << "WARNING: Invalid cMass in element TrussSection " << iData[0] << 
+	  " $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
 	return 0;
       }
     } else if (strcmp(argvS,"-doRayleigh") == 0) {
       numData = 1;
       if (OPS_GetInt(&numData, &doRayleigh) != 0) {
-	opserr << "WARNING: Invalid doRayleigh in element Truss " << iData[0] << 
-	  " $iNode $jNode $sectTag <-rho $rho> <-doRayleigh $flagh>\n";
+	opserr << "WARNING: Invalid doRayleigh in element TrussSection " << iData[0] << 
+	  " $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
 	return 0;
       }
     } else {
       opserr << "WARNING: Invalid option " << argvS << "  in: element TrussSection " << iData[0] << 
-	" $iNode $jNode $secTag <-rho $rho>\n";
+	" $iNode $jNode $secTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
       return 0;
-    }      
+    }
     numRemainingArgs -= 2;
   }
 
-  //now create the ReinforcedConcretePlaneStress
-  theElement = new TrussSection(iData[0], ndm, iData[1], iData[2], *theSection, rho, doRayleigh);
+  // now create the TrussSection
+  theElement = new TrussSection(iData[0], ndm, iData[1], iData[2], *theSection, rho, doRayleigh, cMass);
 
   if (theElement == 0) {
     opserr << "WARNING: out of memory: element TrussSection " << iData[0] << 
-      " $iNode $jNode $secTag <-rho $rho>\n";
+      " $iNode $jNode $secTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
   }
 
   return theElement;
 }
 
 
-TrussSection::TrussSection(int tag, 
-			   int dim,
-			   int Nd1, int Nd2, 
+TrussSection::TrussSection(int tag, int dim,
+			   int Nd1, int Nd2,
 			   SectionForceDeformation &theSect,
-			   double r,
-			   int damp)
+			   double r, int damp, int cm)
 :Element(tag,ELE_TAG_TrussSection),     
   connectedExternalNodes(2),
-  dimension(dim), numDOF(0), theLoad(0), 
- theMatrix(0), theVector(0),
- L(0.0), rho(r), doRayleighDamping(damp),
- theSection(0), initialDisp(0)
+  dimension(dim), numDOF(0),
+  theLoad(0), theMatrix(0), theVector(0),
+  L(0.0), rho(r), doRayleighDamping(damp),
+  cMass(cm), theSection(0), initialDisp(0)
 {
     // get a copy of the material and check we obtained a valid copy
     theSection = theSect.getCopy();
@@ -194,9 +200,10 @@ TrussSection::TrussSection(int tag,
 TrussSection::TrussSection()
 :Element(0,ELE_TAG_TrussSection),     
  connectedExternalNodes(2),
-  dimension(0), numDOF(0), theLoad(0),
- theMatrix(0), theVector(0),
- L(0.0), rho(0.0), theSection(0), initialDisp(0)
+  dimension(0), numDOF(0),
+  theLoad(0), theMatrix(0), theVector(0),
+  L(0.0), rho(0.0), doRayleighDamping(0),
+  cMass(0), theSection(0), initialDisp(0)
 {
     // ensure the connectedExternalNode ID is of correct size 
   if (connectedExternalNodes.Size() != 2) {
@@ -220,7 +227,8 @@ TrussSection::~TrussSection()
 {
   if (theSection != 0)
     delete theSection;
-  
+  if (theLoad != 0)
+    delete theLoad;  
   if (initialDisp != 0)
     delete [] initialDisp;
 }
@@ -432,7 +440,6 @@ TrussSection::setDomain(Domain *theDomain)
 	cosX[2] = dz/L;	
     }
 
-
     // create the load vector
     if (theLoad == 0)
       theLoad = new Vector(numDOF);
@@ -593,25 +600,37 @@ TrussSection::getDamp(void)
 
 const Matrix &
 TrussSection::getMass(void)
-{   
+{
   // zero the matrix
   Matrix &mass = *theMatrix;
   mass.Zero();    
   
-    // check for quick return
-    if (L == 0.0 || rho == 0.0) { // - problem in setDomain() no further warnings
-	return mass;
-    }    
-
-    double M = 0.5*rho*L;
-
+  // check for quick return
+  if (L == 0.0 || rho == 0.0) { // - problem in setDomain() no further warnings
+    return mass;
+  }
+  
+  if (cMass == 0)  {
+    // lumped mass matrix
+    double m = 0.5*rho*L;
     int numDOF2 = numDOF/2;
     for (int i = 0; i < dimension; i++) {
-      mass(i,i) = M;
-      mass(i+numDOF2,i+numDOF2) = M;
+      mass(i,i) = m;
+      mass(i+numDOF2,i+numDOF2) = m;
     }
-    
-    return mass;
+  } else  {
+    // consistent mass matrix
+    double m = rho*L/6.0;
+    int numDOF2 = numDOF/2;
+    for (int i = 0; i < dimension; i++) {
+      mass(i,i) = 2.0*m;
+      mass(i,i+numDOF2) = m;
+      mass(i+numDOF2,i) = m;
+      mass(i+numDOF2,i+numDOF2) = 2.0*m;
+    }
+  }
+  
+  return mass;
 }
 
 
@@ -634,39 +653,40 @@ TrussSection::addLoad(ElementalLoad *theLoad, double loadFactor)
 int 
 TrussSection::addInertiaLoadToUnbalance(const Vector &accel)
 {
-    // check for a quick return
-    if (L == 0.0 || rho == 0.0) 
-	return 0;
-
-    // get R * accel from the nodes
-    const Vector &Raccel1 = theNodes[0]->getRV(accel);
-    const Vector &Raccel2 = theNodes[1]->getRV(accel);    
-
-    int nodalDOF = numDOF/2;
-    
-#ifdef _G3DEBUG    
-    if (nodalDOF != Raccel1.Size() || nodalDOF != Raccel2.Size()) {
-      opserr << "TrussSection::addInertiaLoadToUnbalance " <<
-	"matrix and vector sizes are incompatable\n";
-      return -1;
-    }
-#endif
-    
-    double M = 0.5*rho*L;
-    // want to add ( - fact * M R * accel ) to unbalance
-    for (int i=0; i<dimension; i++) {
-	double val1 = Raccel1(i);
-	double val2 = Raccel2(i);	
-	
-	// perform - fact * M*(R * accel) // remember M a diagonal matrix
-	val1 *= -M;
-	val2 *= -M;
-	
-	(*theLoad)(i) += val1;
-	(*theLoad)(i+nodalDOF) += val2;
-    }	
-
+  // check for a quick return
+  if (L == 0.0 || rho == 0.0) 
     return 0;
+  
+  // get R * accel from the nodes
+  const Vector &Raccel1 = theNodes[0]->getRV(accel);
+  const Vector &Raccel2 = theNodes[1]->getRV(accel);    
+  
+  int nodalDOF = numDOF/2;
+  
+#ifdef _G3DEBUG    
+  if (nodalDOF != Raccel1.Size() || nodalDOF != Raccel2.Size()) {
+    opserr <<"TrussSection::addInertiaLoadToUnbalance " <<
+      "matrix and vector sizes are incompatable\n";
+    return -1;
+  }
+#endif
+  
+  // want to add ( - fact * M R * accel ) to unbalance
+  if (cMass == 0)  {
+    double m = 0.5*rho*L;
+    for (int i=0; i<dimension; i++) {
+      (*theLoad)(i) -= m*Raccel1(i);
+      (*theLoad)(i+nodalDOF) -= m*Raccel2(i);
+    }
+  } else  {
+    double m = rho*L/6.0;
+    for (int i=0; i<dimension; i++) {
+      (*theLoad)(i) -= 2.0*m*Raccel1(i) + m*Raccel2(i);
+      (*theLoad)(i+nodalDOF) -= m*Raccel1(i) + 2.0*m*Raccel2(i);
+    }
+  }
+  
+  return 0;
 }
 
 
@@ -713,23 +733,38 @@ TrussSection::getResistingForceIncInertia()
   // now include the mass portion
   if (L != 0.0 && rho != 0.0) {
     
+    // add inertia forces from element mass
     const Vector &accel1 = theNodes[0]->getTrialAccel();
     const Vector &accel2 = theNodes[1]->getTrialAccel();	
     
-    double M = 0.5*rho*L;
-    int dof = dimension;
-    int start = numDOF/2;
-    for (int i=0; i<dof; i++) {
-      (*theVector)(i) += M*accel1(i);
-      (*theVector)(i+start) += M*accel2(i);
+    int numDOF2 = numDOF/2;
+    
+    if (cMass == 0)  {
+      // lumped mass matrix
+      double m = 0.5*rho*L;
+      for (int i = 0; i < dimension; i++) {
+        (*theVector)(i) += m*accel1(i);
+        (*theVector)(i+numDOF2) += m*accel2(i);
+      }
+    } else  {
+      // consistent mass matrix
+      double m = rho*L/6.0;
+      for (int i=0; i<dimension; i++) {
+        (*theVector)(i) += 2.0*m*accel1(i) + m*accel2(i);
+        (*theVector)(i+numDOF2) += m*accel1(i) + 2.0*m*accel2(i);
+      }
     }
-  }    
+    
+    // add the damping forces if rayleigh damping
+    if (doRayleighDamping == 1 && (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0))
+      theVector->addVector(1.0, this->getRayleighDampingForces(), 1.0);
+  } else {
+    
+    // add the damping forces if rayleigh damping
+    if (doRayleighDamping == 1 && (betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0))
+      theVector->addVector(1.0, this->getRayleighDampingForces(), 1.0);
+  }
   
-  // add the damping forces if rayleigh damping
-  if (doRayleighDamping == 1)
-    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-      *theVector += this->getRayleighDampingForces();
-
   return *theVector;
 }
 
@@ -747,14 +782,16 @@ TrussSection::sendSelf(int commitTag, Channel &theChannel)
   // truss packs it's data into a Vector and sends this to theChannel
   // along with it's dbTag and the commitTag passed in the arguments
 
-  static Vector data(9);
+  static Vector data(11);
   data(0) = this->getTag();
   data(1) = dimension;
   data(2) = numDOF;
-  data(3) = rho;
-  data(4) = theSection->getClassTag();
-  int matDbTag = theSection->getDbTag();
+  data(5) = rho;
+  data(6) = doRayleighDamping;
+  data(7) = cMass;
 
+  data(3) = theSection->getClassTag();
+  int matDbTag = theSection->getDbTag();
 
   // NOTE: we do have to ensure that the Section has a database
   // tag if we are sending to a database channel.
@@ -763,11 +800,11 @@ TrussSection::sendSelf(int commitTag, Channel &theChannel)
     if (matDbTag != 0)
       theSection->setDbTag(matDbTag);
   }
-  data(5) = matDbTag;
+  data(4) = matDbTag;
 
   if (initialDisp != 0) {
     for (int i=0; i<dimension; i++) {
-      data[6+i] = initialDisp[i];
+      data[8+i] = initialDisp[i];
     }
   }
 
@@ -778,7 +815,6 @@ TrussSection::sendSelf(int commitTag, Channel &theChannel)
   }	      
 
   // truss then sends the tags of it's two end nodes
-
   res = theChannel.sendID(dataTag, commitTag, connectedExternalNodes);
   if (res < 0) {
     opserr << "WARNING TrussSection::sendSelf() - " << this->getTag() << " failed to send ID\n";
@@ -786,7 +822,6 @@ TrussSection::sendSelf(int commitTag, Channel &theChannel)
   }
 
   // finally truss asks it's Section object to send itself
-
   res = theSection->sendSelf(commitTag, theChannel);
   if (res < 0) {
     opserr << "WARNING TrussSection::sendSelf() - " << this->getTag() << " failed to send its Section\n";
@@ -799,14 +834,13 @@ TrussSection::sendSelf(int commitTag, Channel &theChannel)
 int
 TrussSection::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-
   int res;
   int dataTag = this->getDbTag();
 
   // truss creates a Vector, receives the Vector and then sets the 
   // internal data with the data in the Vector
 
-  static Vector data(9);
+  static Vector data(11);
   res = theChannel.recvVector(dataTag, commitTag, data);
   if (res < 0) {
     opserr << "WARNING TrussSection::recvSelf() - failed to receive Vector\n";
@@ -816,7 +850,9 @@ TrussSection::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
   this->setTag((int)data(0));
   dimension = (int)data(1);
   numDOF = (int)data(2);
-  rho = data(3);
+  rho = data(5);
+  doRayleighDamping = (int)data(6);
+  cMass = (int)data(7);
 
   initialDisp = new double[dimension];
   for (int i=0; i<dimension; i++)
@@ -824,17 +860,16 @@ TrussSection::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
   
   int initial = 0;
   for (int i=0; i<dimension; i++) {
-    if (data(6+i) != 0.0) {
+    if (data(8+i) != 0.0) {
       initial = 1;
     }
   }
   
   if (initial != 0) {
     for (int i=0; i<dimension; i++) {
-      initialDisp[i] = data(6+i);
+      initialDisp[i] = data(8+i);
     }    
   }
-
 
   // truss now receives the tags of it's two external nodes
   res = theChannel.recvID(dataTag, commitTag, connectedExternalNodes);
@@ -845,8 +880,9 @@ TrussSection::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
 
   // finally truss creates a new section object of the correct type,
   // sets its database tag and asks this new object to recveive itself.
-  int sectClass = (int)data(4);
-  int sectDb = (int)data(5);
+
+  int sectClass = (int)data(3);
+  int sectDb = (int)data(4);
 
   // Get new section if null
   if (theSection == 0)
@@ -1002,7 +1038,8 @@ TrussSection::Print(OPS_Stream &s, int flag)
 	s << " type: TrussSection  iNode: " << connectedExternalNodes(0);
 	s << " jNode: " << connectedExternalNodes(1);
 	s << " Mass density/length: " << rho;
-	
+	s << " cMass: " << cMass;
+
 	s << " \n\t strain: " << strain;
 	s << " axial load: " << force;
 	if (theVector != 0) 

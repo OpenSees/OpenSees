@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.19 $
-// $Date: 2007-10-13 00:53:04 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/dispBeamColumn/DispBeamColumn2d.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: MHS
 // Created: Feb 2001
@@ -53,7 +53,7 @@ class DispBeamColumn2d : public Element
     DispBeamColumn2d(int tag, int nd1, int nd2,
 		     int numSections, SectionForceDeformation **s,
 		     BeamIntegration &bi, CrdTransf &coordTransf,
-		     double rho = 0.0);
+		     double rho = 0.0, int cMass = 0);
     DispBeamColumn2d();
     ~DispBeamColumn2d();
 
@@ -122,12 +122,13 @@ class DispBeamColumn2d : public Element
     static Matrix K;		// Element stiffness, damping, and mass Matrix
     static Vector P;		// Element resisting force vector
 
-    Vector Q;		// Applied nodal loads
-    Vector q;		// Basic force
+    Vector Q;      // Applied nodal loads
+    Vector q;      // Basic force
     double q0[3];  // Fixed end forces in basic system
     double p0[3];  // Reactions in basic system
 
-    double rho;			// Mass density per unit length
+    double rho;	   // Mass density per unit length
+    int cMass;     // consistent mass flag
 
     enum {maxNumSections = 20};
 

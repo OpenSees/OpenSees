@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.13 $
-// $Date: 2007-02-02 01:30:47 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/elasticBeamColumn/ElasticBeam2d.h,v $
+// $Revision$
+// $Date$
+// $URL$
                                                                         
                                                                         
 // Written: fmk 11/95
@@ -49,7 +49,8 @@ class ElasticBeam2d : public Element
     ElasticBeam2d();        
     ElasticBeam2d(int tag, double A, double E, double I, 
 		  int Nd1, int Nd2, CrdTransf &theTransf, 
-		  double alpha = 0.0, double d = 0.0, double rho = 0.0);
+		  double alpha = 0.0, double d = 0.0,
+          double rho = 0.0, int cMass = 0);
     ~ElasticBeam2d();
 
     const char *getClassType(void) const {return "ElasticBeam2d";};
@@ -90,11 +91,11 @@ class ElasticBeam2d : public Element
     int updateParameter (int parameterID, Information &info);
 
   private:
-    double A,E,I;
-    double alpha, d;
-    
-    double rho;
-    
+    double A,E,I;     // area, elastic modulus, moment of inertia
+    double alpha, d;  // coeff. of thermal expansion, depth
+    double rho;       // mass per unit length
+    int cMass;        // consistent mass flag
+
     static Matrix K;
     static Vector P;
     Vector Q;
@@ -112,5 +113,3 @@ class ElasticBeam2d : public Element
 };
 
 #endif
-
-

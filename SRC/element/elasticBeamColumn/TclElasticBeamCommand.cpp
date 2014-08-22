@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.5 $
-// $Date: 2009-08-03 20:18:18 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/elasticBeamColumn/TclElasticBeamCommand.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
                                                                         
 // Written: fmk 
 // Created: 07/99
@@ -70,7 +70,7 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
 
     // check the number of arguments
     if ((argc-eleArgStart) < 8) {
-      opserr << "WARNING bad command - want: elasticBeamColumn beamId iNode jNode A E I <alpha> <d> transTag\n";
+      opserr << "WARNING bad command - want: elasticBeamColumn beamId iNode jNode A E I <alpha> <d> transTag <-mass m> <-cMass>\n";
       printCommand(argc, argv);
       return TCL_ERROR;
     }    
@@ -109,6 +109,7 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
     double alpha = 0.0;
     double d = 0.0;
     double mass = 0.0;
+    int cMass = 0;
     int argi = 0;
 
     if ( ((argc-eleArgStart) == 10) && (strcmp(argv[eleArgStart+8],"-mass") != 0)){    
@@ -156,13 +157,19 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
 	  return TCL_ERROR;
 	}
 	argi += 2;
+      } else if ((strcmp(argv[argi],"-lMass") == 0) || (strcmp(argv[argi],"lMass") == 0)) {
+	cMass = 0;  // lumped mass matrix (default)
+    argi++;
+      } else if ((strcmp(argv[argi],"-cMass") == 0) || (strcmp(argv[argi],"cMass") == 0)) {
+	cMass = 1;  // consistent mass matrix
+    argi++;
       } else
 	argi++;
     }
 
     
     // now create the beam and add it to the Domain
-    theBeam = new ElasticBeam2d (beamId,A,E,I,iNode,jNode, *theTrans, alpha, d, mass);
+    theBeam = new ElasticBeam2d (beamId,A,E,I,iNode,jNode, *theTrans, alpha, d, mass, cMass);
     
     if (theBeam == 0) {
       opserr << "WARNING ran out of memory creating beam - elasticBeamColumn ";	
@@ -182,7 +189,7 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
     // check the number of arguments
     if (((argc-eleArgStart) < 11) && ((argc-eleArgStart) != 6)) {
       opserr << "WARNING bad command - want: elasticBeamColumn beamId iNode jNode";
-      opserr << " A E G Jx Iy Iz transTag" << endln;
+      opserr << " A E G Jx Iy Iz transTag <-mass m> <-cMass>" << endln;
       printCommand(argc, argv);
       return TCL_ERROR;
     }    
@@ -229,6 +236,7 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
       }
 
       double mass = 0.0;
+      int cMass = 0;
       int argi = 6+eleArgStart;
 
       while (argi < argc) {
@@ -244,12 +252,18 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
 	    return TCL_ERROR;
 	  }
 	  argi += 2;
+    } else if ((strcmp(argv[argi],"-lMass") == 0) || (strcmp(argv[argi],"lMass") == 0)) {
+	  cMass = 0;  // lumped mass matrix (default)
+      argi++;
+    } else if ((strcmp(argv[argi],"-cMass") == 0) || (strcmp(argv[argi],"cMass") == 0)) {
+	  cMass = 1;  // consistent mass matrix
+      argi++;
 	} else
 	  argi++;
       }
       
       // now create the beam and add it to the Domain
-      theBeam = new ElasticBeam3d (beamId, iNode, jNode, theSection, *theTrans, mass);      
+      theBeam = new ElasticBeam3d (beamId, iNode, jNode, theSection, *theTrans, mass, cMass);      
 
     } else {
 
@@ -299,6 +313,7 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
 
 
       double mass = 0.0;
+      int cMass = 0;
       int argi = 11+eleArgStart;
       
       while (argi < argc) {
@@ -314,13 +329,19 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
 	    return TCL_ERROR;
 	  }
 	  argi += 2;
+    } else if ((strcmp(argv[argi],"-lMass") == 0) || (strcmp(argv[argi],"lMass") == 0)) {
+	  cMass = 0;  // lumped mass matrix (default)
+      argi++;
+    } else if ((strcmp(argv[argi],"-cMass") == 0) || (strcmp(argv[argi],"cMass") == 0)) {
+	  cMass = 1;  // consistent mass matrix
+      argi++;
 	} else
 	  argi++;
       }
 
       
       // now create the beam and add it to the Domain
-      theBeam = new ElasticBeam3d (beamId,A,E,G,Jx,Iy,Iz,iNode,jNode, *theTrans, mass);
+      theBeam = new ElasticBeam3d (beamId,A,E,G,Jx,Iy,Iz,iNode,jNode, *theTrans, mass, cMass);
     }
 
     if (theBeam == 0) {

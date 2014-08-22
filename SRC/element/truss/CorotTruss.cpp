@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.17 $
-// $Date: 2010-09-16 17:35:19 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/truss/CorotTruss.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
                                                                         
 // Written: MHS 
 // Created: May 2001
@@ -66,20 +66,21 @@ OPS_NewCorotTrussElement()
   int numRemainingArgs = OPS_GetNumRemainingInputArgs();
 
   if (numRemainingArgs < 4) {
-    opserr << "Invalid Args want: element CorotTruss $tag $iNode $jNode $sectTag <-rho $rho>";
-    opserr << " or: element CorotTruss $tag $iNode $jNode $A $matTag <-rho $rho>\n";
+    opserr << "Invalid Args want: element CorotTruss $tag $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>";
+    opserr << " or: element CorotTruss $tag $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
     return 0;	
   }
 
-  if (numRemainingArgs == 4 || numRemainingArgs == 6)
+  if (numRemainingArgs == 4 || numRemainingArgs == 6 || numRemainingArgs == 8 || numRemainingArgs == 10)
     return 0; // it's a CorotTrussSection
 
-  int    iData[3];
+  int iData[3];
   double A = 0.0;
   double rho = 0.0;
   int matTag = 0;
+  int doRayleigh = 0; // by default rayleigh not done
+  int cMass = 0; // by default use lumped mass matrix
   int ndm = OPS_GetNDM();
-
 
   int numData = 3;
   if (OPS_GetInt(&numData, iData) != 0) {
@@ -90,14 +91,14 @@ OPS_NewCorotTrussElement()
   numData = 1;
   if (OPS_GetDouble(&numData, &A) != 0) {
     opserr << "WARNING: Invalid A: element CorotTruss " << iData[0] << 
-      " $iNode $jNode $A $matTag <-rho $rho> <-rayleig $flagh>\n";
+      " $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
     return 0;	
   }
 
   numData = 1;
   if (OPS_GetInt(&numData, &matTag) != 0) {
     opserr << "WARNING: Invalid matTag: element CorotTruss " << iData[0] << 
-      " $iNode $jNode $A $matTag <-rho $rho> <-rayleig $flagh>\n";
+      " $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
     return 0;
   }
 
@@ -105,16 +106,16 @@ OPS_NewCorotTrussElement()
     
   if (theUniaxialMaterial == 0) {
     opserr << "WARNING: Invalid material not found element CorotTruss " << iData[0] << " $iNode $jNode $A " << 
-      matTag << " <-rho $rho> <-rayleigh $flagh>\n";
+      matTag << " <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
     return 0;
   }
   
   numRemainingArgs -= 5;
   while (numRemainingArgs > 1) {
-    char argvS[10];
-    if (OPS_GetString(argvS, 10) != 0) {
+    char argvS[15];
+    if (OPS_GetString(argvS, 15) != 0) {
       opserr << "WARNING: Invalid optional string element CorotTruss " << iData[0] << 
-	" $iNode $jNode $A $matTag <-rho $rho> <-rayleigh $flagh>\n";
+	" $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
       return 0;
     } 
   
@@ -122,23 +123,37 @@ OPS_NewCorotTrussElement()
       numData = 1;
       if (OPS_GetDouble(&numData, &rho) != 0) {
 	opserr << "WARNING Invalid rho in element CorotTruss " << iData[0] << 
-	  " $iNode $jNode $A $matTag <-rho $rho> <-rayleigh $flagh>\n";
+	  " $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
+	return 0;
+      }
+    } else if (strcmp(argvS,"-cMass") == 0) {
+      numData = 1;
+      if (OPS_GetInt(&numData, &cMass) != 0) {
+	opserr << "WARNING: Invalid cMass in element CorotTruss " << iData[0] << 
+	  " $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
+	return 0;
+      }
+    } else if (strcmp(argvS,"-doRayleigh") == 0) {
+      numData = 1;
+      if (OPS_GetInt(&numData, &doRayleigh) != 0) {
+	opserr << "WARNING: Invalid doRayleigh in element CorotTruss " << iData[0] << 
+	  " $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
 	return 0;
       }
     } else {
       opserr << "WARNING: Invalid option " << argvS << "  in: element CorotTruss " << iData[0] << 
-	" $iNode $jNode $A $matTag <-rho $rho> <-rayleigh $flagh>\n";
+	" $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
       return 0;
     }      
     numRemainingArgs -= 2;
   }
 
-  //now create the ReinforcedConcretePlaneStress
-  theElement = new CorotTruss(iData[0], ndm, iData[1], iData[2], *theUniaxialMaterial, A, rho);
+  // now create the CorotTruss
+  theElement = new CorotTruss(iData[0], ndm, iData[1], iData[2], *theUniaxialMaterial, A, rho, doRayleigh, cMass);
 
   if (theElement == 0) {
     opserr << "WARNING: out of memory: element CorotTruss " << iData[0] << 
-      " $iNode $jNode $A $matTag <-rho $rho> \n";
+      " $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
   }
 
   return theElement;
@@ -151,13 +166,13 @@ OPS_NewCorotTrussElement()
 CorotTruss::CorotTruss(int tag, int dim,
 			   int Nd1, int Nd2, 
 			   UniaxialMaterial &theMat,
-			   double a, double r)
+			   double a, double r,
+               int damp, int cm)
   :Element(tag,ELE_TAG_CorotTruss),     
   theMaterial(0), connectedExternalNodes(2),
-  numDOF(0), numDIM(dim),
-  Lo(0.0), Ln(0.0), 
-  A(a), rho(r), R(3,3),
-  theMatrix(0), theVector(0)
+  numDOF(0), numDIM(dim), Lo(0.0), Ln(0.0), 
+  A(a), rho(r), doRayleighDamping(damp), cMass(cm),
+  R(3,3), theLoad(0), theMatrix(0), theVector(0)
 {
   // get a copy of the material and check we obtained a valid copy
   theMaterial = theMat.getCopy();
@@ -188,10 +203,9 @@ CorotTruss::CorotTruss(int tag, int dim,
 CorotTruss::CorotTruss()
   :Element(0,ELE_TAG_CorotTruss),     
   theMaterial(0),connectedExternalNodes(2),
-  numDOF(0), numDIM(0),
-  Lo(0.0), Ln(0.0), 
-  A(0.0), rho(0.0), R(3,3),
-  theMatrix(0), theVector(0)
+  numDOF(0), numDIM(0), Lo(0.0), Ln(0.0),
+  A(0.0), rho(0.0), doRayleighDamping(0), cMass(0),
+  R(3,3), theLoad(0), theMatrix(0), theVector(0)
 {
   // ensure the connectedExternalNode ID is of correct size 
   if (connectedExternalNodes.Size() != 2) {
@@ -209,10 +223,12 @@ CorotTruss::CorotTruss()
 //     and on the matertial object.
 CorotTruss::~CorotTruss()
 {
-  // invoke the destructor on any objects created by the object
-  // that the object still holds a pointer to
-  if (theMaterial != 0)
-    delete theMaterial;
+    // invoke the destructor on any objects created by the object
+    // that the object still holds a pointer to
+    if (theMaterial != 0)
+        delete theMaterial;
+    if (theLoad != 0)
+        delete theLoad;
 }
 
 int
@@ -323,6 +339,20 @@ CorotTruss::setDomain(Domain *theDomain)
     return;
   }
 
+    // create the load vector
+    if (theLoad == 0)
+        theLoad = new Vector(numDOF);
+    else if (theLoad->Size() != numDOF) {
+        delete theLoad;
+        theLoad = new Vector(numDOF);
+    }
+    if (theLoad == 0) {
+        opserr << "Truss::setDomain - truss " << this->getTag()
+            << "out of memory creating vector of size" << numDOF << endln;
+        exit(-1);
+        return;
+    }          
+    
 	// call the base class method
 	this->DomainComponent::setDomain(theDomain);
 
@@ -501,42 +531,6 @@ CorotTruss::getTangentStiff(void)
     return *theMatrix;
 }
 
-const Matrix &
-CorotTruss::getDamp(void)
-{
-    static Matrix kl(3,3);
-
-    Matrix a(3,1);
-    a(0,0) = (Lo+d21[0])/Ln;
-    a(1,0) = d21[1]/Ln;
-    a(2,0) = 0.0;
-
-    Matrix cb(1,1);
-    cb(0,0) = A*theMaterial->getDampTangent()/Lo;
-
-    kl.addMatrixTripleProduct(0.0, a, cb, 1.0);
-
-
-    // Compute R'*kl*R
-    static Matrix kg(3,3);
-    kg.addMatrixTripleProduct(0.0, R, kl, 1.0);
-
-    Matrix &K = *theMatrix;
-    K.Zero();
-
-    // Copy stiffness into appropriate blocks in element stiffness
-    int numDOF2 = numDOF/2;
-    for (int i = 0; i < numDIM; i++) {
-        for (int j = 0; j < numDIM; j++) {
-            K(i,j)                 =  kg(i,j);
-            K(i,j+numDOF2)         = -kg(i,j);
-            K(i+numDOF2,j)         = -kg(i,j);
-            K(i+numDOF2,j+numDOF2) =  kg(i,j);
-        }
-    }
-
-    return *theMatrix;
-}
 
 const Matrix &
 CorotTruss::getInitialStiff(void)
@@ -570,29 +564,84 @@ CorotTruss::getInitialStiff(void)
 
 
 const Matrix &
-CorotTruss::getMass(void)
+CorotTruss::getDamp(void)
 {
-    Matrix &Mass = *theMatrix;
-    Mass.Zero();
+    static Matrix kl(3,3);
 
-    // check for quick return
-    if (Lo == 0.0 || rho == 0.0)
-	return Mass;
+    Matrix a(3,1);
+    a(0,0) = (Lo+d21[0])/Ln;
+    a(1,0) = d21[1]/Ln;
+    a(2,0) = 0.0;
 
-    double M = 0.5*rho*Lo;
+    Matrix cb(1,1);
+    cb(0,0) = A*theMaterial->getDampTangent()/Lo;
+
+    kl.addMatrixTripleProduct(0.0, a, cb, 1.0);
+
+    // Compute R'*kl*R
+    static Matrix kg(3,3);
+    kg.addMatrixTripleProduct(0.0, R, kl, 1.0);
+
+    Matrix &K = *theMatrix;
+    K.Zero();
+
+    if (doRayleighDamping == 1)
+        *theMatrix = this->Element::getDamp();
+
+    // Copy stiffness into appropriate blocks in element stiffness
     int numDOF2 = numDOF/2;
     for (int i = 0; i < numDIM; i++) {
-        Mass(i,i)                 = M;
-        Mass(i+numDOF2,i+numDOF2) = M;
+        for (int j = 0; j < numDIM; j++) {
+            K(i,j)                 +=  kg(i,j);
+            K(i,j+numDOF2)         += -kg(i,j);
+            K(i+numDOF2,j)         += -kg(i,j);
+            K(i+numDOF2,j+numDOF2) +=  kg(i,j);
+        }
     }
 
     return *theMatrix;
 }
 
+
+const Matrix &
+CorotTruss::getMass(void)
+{
+    // zero the matrix
+    Matrix &mass = *theMatrix;
+    mass.Zero();
+    
+    // check for quick return
+    if (Lo == 0.0 || rho == 0.0)
+        return mass;
+    
+    if (cMass == 0)  {
+        // lumped mass matrix
+        double m = 0.5*rho*Lo;
+        int numDOF2 = numDOF/2;
+        for (int i = 0; i < numDIM; i++) {
+            mass(i,i) = m;
+            mass(i+numDOF2,i+numDOF2) = m;
+        }
+    } else  {
+        // consistent mass matrix
+        double m = rho*Lo/6.0;
+        int numDOF2 = numDOF/2;
+        for (int i = 0; i < numDIM; i++) {
+            mass(i,i) = 2.0*m;
+            mass(i,i+numDOF2) = m;
+            mass(i+numDOF2,i) = m;
+            mass(i+numDOF2,i+numDOF2) = 2.0*m;
+        }
+    }
+    
+    return *theMatrix;
+}
+
+
 void 
 CorotTruss::zeroLoad(void)
 {
-	return;
+    theLoad->Zero();
 }
 
 int 
@@ -608,7 +657,32 @@ CorotTruss::addLoad(ElementalLoad *theLoad, double loadFactor)
 int 
 CorotTruss::addInertiaLoadToUnbalance(const Vector &accel)
 {
-	return 0;
+    // check for quick return
+    if (Lo == 0.0 || rho == 0.0)
+        return 0;
+    
+    // get R * accel from the nodes
+    const Vector &Raccel1 = theNodes[0]->getRV(accel);
+    const Vector &Raccel2 = theNodes[1]->getRV(accel);    
+    
+    int nodalDOF = numDOF/2;
+    
+    // want to add ( - fact * M R * accel ) to unbalance
+    if (cMass == 0)  {
+        double m = 0.5*rho*Lo;
+        for (int i=0; i<numDIM; i++) {
+            (*theLoad)(i) -= m*Raccel1(i);
+            (*theLoad)(i+nodalDOF) -= m*Raccel2(i);
+        }
+    } else  {
+        double m = rho*Lo/6.0;
+        for (int i=0; i<numDIM; i++) {
+            (*theLoad)(i) -= 2.0*m*Raccel1(i) + m*Raccel2(i);
+            (*theLoad)(i+nodalDOF) -= m*Raccel1(i) + 2.0*m*Raccel2(i);
+        }
+    }
+    
+    return 0;
 }
 
 const Vector &
@@ -636,7 +710,10 @@ CorotTruss::getResistingForce()
         P(i)         = -qg(i);
         P(i+numDOF2) =  qg(i);
     }
-
+    
+    // subtract external load
+    (*theVector) -= *theLoad;
+    
     return *theVector;
 }
 
@@ -648,23 +725,41 @@ CorotTruss::getResistingForceIncInertia()
     Vector &P = *theVector;
     P = this->getResistingForce();
     
-    if (rho != 0.0) {
-	
-      const Vector &accel1 = theNodes[0]->getTrialAccel();
-      const Vector &accel2 = theNodes[1]->getTrialAccel();	
-      
-      double M = 0.5*rho*Lo;
-      int numDOF2 = numDOF/2;
-      for (int i = 0; i < numDIM; i++) {
-	P(i)        += M*accel1(i);
-	P(i+numDOF2) += M*accel2(i);
-      }
+    // now include the mass portion
+    if (Lo != 0.0 && rho != 0.0) {
+        
+        // add inertia forces from element mass
+        const Vector &accel1 = theNodes[0]->getTrialAccel();
+        const Vector &accel2 = theNodes[1]->getTrialAccel();	
+        
+        int numDOF2 = numDOF/2;
+        
+        if (cMass == 0)  {
+            // lumped mass matrix
+            double m = 0.5*rho*Lo;
+            for (int i=0; i<numDIM; i++) {
+                P(i) += m*accel1(i);
+                P(i+numDOF2) += m*accel2(i);
+            }
+        } else  {
+            // consistent mass matrix
+            double m = rho*Lo/6.0;
+            for (int i=0; i<numDIM; i++) {
+                (*theVector)(i) += 2.0*m*accel1(i) + m*accel2(i);
+                (*theVector)(i+numDOF2) += m*accel1(i) + 2.0*m*accel2(i);
+            }
+        }
+        
+        // add the damping forces if rayleigh damping
+        if (doRayleighDamping == 1 && (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0))
+            theVector->addVector(1.0, this->getRayleighDampingForces(), 1.0);
+    } else  {
+        
+        // add the damping forces if rayleigh damping
+        if (doRayleighDamping == 1 && (betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0))
+            theVector->addVector(1.0, this->getRayleighDampingForces(), 1.0);
     }
-
-    // add the damping forces if rayleigh damping
-    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-      *theVector += this->getRayleighDampingForces();
-
+    
     return *theVector;
 }
 
@@ -681,12 +776,14 @@ CorotTruss::sendSelf(int commitTag, Channel &theChannel)
   // truss packs it's data into a Vector and sends this to theChannel
   // along with it's dbTag and the commitTag passed in the arguments
 
-  static Vector data(7);
+  static Vector data(9);
   data(0) = this->getTag();
   data(1) = numDIM;
   data(2) = numDOF;
   data(3) = A;
   data(6) = rho;
+  data(7) = doRayleighDamping;
+  data(8) = cMass;
   
   data(4) = theMaterial->getClassTag();
   int matDbTag = theMaterial->getDbTag();
@@ -707,7 +804,6 @@ CorotTruss::sendSelf(int commitTag, Channel &theChannel)
   }	      
 
   // truss then sends the tags of it's two end nodes
-
   res = theChannel.sendID(dataTag, commitTag, connectedExternalNodes);
   if (res < 0) {
     opserr << "WARNING Truss::sendSelf() - " << this->getTag() << " failed to send Vector\n";
@@ -733,7 +829,7 @@ CorotTruss::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
   // truss creates a Vector, receives the Vector and then sets the 
   // internal data with the data in the Vector
 
-  static Vector data(7);
+  static Vector data(9);
   res = theChannel.recvVector(dataTag, commitTag, data);
   if (res < 0) {
     opserr << "WARNING Truss::recvSelf() - failed to receive Vector\n";
@@ -745,7 +841,9 @@ CorotTruss::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
   numDOF = (int)data(2);
   A = data(3);
   rho = data(6);
-  
+  doRayleighDamping = (int)data(7);
+  cMass = (int)data(8);
+
   // truss now receives the tags of it's two external nodes
   res = theChannel.recvID(dataTag, commitTag, connectedExternalNodes);
   if (res < 0) {
@@ -819,6 +917,7 @@ CorotTruss::Print(OPS_Stream &s, int flag)
 	s << "\tUndeformed Length: " << Lo << endln;
 	s << "\tCurrent Length: " << Ln << endln;
 	s << "\tMass Density/Length: " << rho << endln;
+	s << "\tConsistent Mass: " << cMass << endln;
 	s << "\tRotation matrix: " << endln;
 
 	if (theMaterial) {

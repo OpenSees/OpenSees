@@ -20,7 +20,7 @@
                                                                         
 // $Revision$
 // $Date$
-// $Source$
+// $URL$
 
 // Written: fmk 11/95
 // Revised: Dimitrios G. Lignos, 01/31/2011
@@ -47,9 +47,10 @@ class ModElasticBeam2d : public Element
   public:
     ModElasticBeam2d();        
     ModElasticBeam2d(int tag, double A, double E, double I, 
-				  int Nd1, int Nd2, double K11, 
-				  double K33, double K44,CrdTransf &theTransf,
-		  double alpha = 0.0, double d = 0.0, double rho = 0.0);
+				  int Nd1, int Nd2, double K11, double K33,
+                  double K44, CrdTransf &theTransf,
+		          double alpha = 0.0, double d = 0.0,
+                  double rho = 0.0, int cMass = 0);
 
     ~ModElasticBeam2d();
 
@@ -91,10 +92,11 @@ class ModElasticBeam2d : public Element
     int updateParameter (int parameterID, Information &info);
 
   private:
-    double A,E,I;
+    double A,E,I;        // area, elastic modulus, moment of inertia
     double K11,K33,K44;  // added by Dimitrios Lignos for modified Stiffness Coefficients 
-    double alpha, d;
-    double rho;
+    double alpha, d;     // coeff. of thermal expansion, depth
+    double rho;          // mass per unit length
+    int cMass;           // consistent mass flag
     
     static Matrix K;
     static Vector P;
@@ -113,5 +115,3 @@ class ModElasticBeam2d : public Element
 };
 
 #endif
-
-

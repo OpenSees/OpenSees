@@ -20,7 +20,7 @@
                                                                         
 // $Revision$
 // $Date$
-// $Source$
+// $URL$
                                                                         
 // Written: fmk 11/95
 // Revised: Dimitrios G. Lignos 01/31/2011
@@ -75,15 +75,17 @@ OPS_ModElasticBeam2d()
   }
 
   if (numRemainingArgs < 10) {
-    opserr << "ERROR not enough args provided, want: element ModElasticBeam2d tag? iNode? jNode? A? E? I? K11? K33? K44? transfType? <-alpha $alpha> <-d $d> <-rho $rho> \n";
+    opserr << "ERROR not enough args provided, want: element ModElasticBeam2d tag? iNode? jNode? A? E? I? K11? K33? K44? transfType? <-alpha $alpha> <-d $d> <-rho $rho> <-cMass>\n";
     return 0;
   }
 
   int numData;
-  int iData[4];     //tag, iNode, jNode, transfTag
+  int iData[5];     //tag, iNode, jNode, transfTag, cMass
   double dData[9];  // A, E, I, K11, K33, K44, alpha, d, rho
 
-  dData[6] = 0.0; dData[7] = 0.0; dData[8] = 0.0;
+  iData[4] = 0;  // cMass
+  dData[6] = 0.0; dData[7] = 0.0;  // alpha and d
+  dData[8] = 0.0;  // rho
 
   numData = 3;
   if (OPS_GetIntInput(&numData, iData) != 0) {
@@ -135,7 +137,11 @@ OPS_ModElasticBeam2d()
 	opserr << "WARNING error reading element data (rho) element ElasticBeamColumn2d " << eleTag << endln;
 	return 0;
       }
-    } 
+    } else if ((strcmp(argvLoc, "-lMass") == 0) || (strcmp(argvLoc, "lMass") == 0)) {
+      iData[4] = 0;  // lumped mass matrix (default)
+    } else if ((strcmp(argvLoc, "-cMass") == 0) || (strcmp(argvLoc, "cMass") == 0)) {
+      iData[4] = 1;  // consistent mass matrix
+    }
     numRemainingArgs = OPS_GetNumRemainingInputArgs();      
   }
 
@@ -149,7 +155,7 @@ OPS_ModElasticBeam2d()
 				iData[1], iData[2],
 				dData[3], dData[4], dData[5],
 				*theTransf,
-				dData[6], dData[7], dData[8]);
+				dData[6], dData[7], dData[8], iData[4]);
 
   //  delete theTransf;
 
@@ -161,7 +167,7 @@ ModElasticBeam2d::ModElasticBeam2d()
   :Element(0,ELE_TAG_ModElasticBeam2d), 
    A(0.0), E(0.0), I(0.0), 
    K11(0.0), K33(0.0), K44(0.0), 
-   alpha(0.0), d(0.0), rho(0.0),
+   alpha(0.0), d(0.0), rho(0.0), cMass(0),
    Q(6), q(3), 
    connectedExternalNodes(2), theCoordTransf(0)
 {
@@ -184,11 +190,11 @@ ModElasticBeam2d::ModElasticBeam2d()
 ModElasticBeam2d::ModElasticBeam2d(int tag, double a, double e, double i, 
 				   int Nd1, int Nd2, 
 				   double k11, double k33, double k44, CrdTransf &coordTransf,
-				   double Alpha, double depth, double r)
+				   double Alpha, double depth, double r, int cm)
   :Element(tag,ELE_TAG_ModElasticBeam2d), 
    A(a), E(e), I(i), 
    K11(k11), K33(k33), K44(k44), 
-   alpha(Alpha), d(depth), rho(r),
+   alpha(Alpha), d(depth), rho(r), cMass(cm),
    Q(6), q(3),
   connectedExternalNodes(2), theCoordTransf(0)
 {
@@ -384,20 +390,33 @@ ModElasticBeam2d::getInitialStiff(void)
 const Matrix &
 ModElasticBeam2d::getMass(void)
 { 
-  K.Zero();
+    K.Zero();
+    
+    if (rho > 0.0)  {
+        // get initial element length
+        double L = theCoordTransf->getInitialLength();
+        if (cMass == 0)  {
+            // lumped mass matrix
+            double m = 0.5*rho*L;
+            K(0,0) = K(1,1) = K(3,3) = K(4,4) = m;
+        } else  {
+            // consistent mass matrix
+            double m = rho*L/420.0;
+            K(0,0) = K(3,3) = m*140.0;
+            K(0,3) = K(3,0) = m*70.0;
 
-  if (rho > 0.0) {
-    double L = theCoordTransf->getInitialLength();
-    double m = 0.5*rho*L;
+            K(1,1) = K(4,4) = m*156.0;
+            K(1,4) = K(4,1) = m*54.0;
+            K(2,2) = K(5,5) = m*4.0*L*L;
+            K(2,5) = K(5,2) = -m*3.0*L*L;
+            K(1,2) = K(2,1) = m*22.0*L;
+            K(4,5) = K(5,4) = -K(1,2);
+            K(1,5) = K(5,1) = -m*13.0*L;
+            K(2,4) = K(4,2) = -K(1,5);
+        }
+    }
     
-    K(0,0) = m;
-    K(1,1) = m;
-    
-    K(3,3) = m;
-    K(4,4) = m;
-  }
-  
-  return K;
+    return K;
 }
 
 void 
@@ -522,16 +541,26 @@ ModElasticBeam2d::addInertiaLoadToUnbalance(const Vector &accel)
     return -1;
   }
     
-  // Want to add ( - fact * M R * accel ) to unbalance
-  // Take advantage of lumped mass matrix
-  double L = theCoordTransf->getInitialLength();
-  double m = 0.5*rho*L;
+  // want to add ( - fact * M R * accel ) to unbalance
+  if (cMass == 0)  {
+    // take advantage of lumped mass matrix
+    double L = theCoordTransf->getInitialLength();
+    double m = 0.5*rho*L;
 
-  Q(0) -= m * Raccel1(0);
-  Q(1) -= m * Raccel1(1);
-    
-  Q(3) -= m * Raccel2(0);    
-  Q(4) -= m * Raccel2(1);    
+    Q(0) -= m * Raccel1(0);
+    Q(1) -= m * Raccel1(1);
+
+    Q(3) -= m * Raccel2(0);
+    Q(4) -= m * Raccel2(1);
+  } else  {
+    // use matrix vector multip. for consistent mass matrix
+    static Vector Raccel(6);
+    for (int i=0; i<3; i++)  {
+      Raccel(i)   = Raccel1(i);
+      Raccel(i+3) = Raccel2(i);
+    }
+    Q.addMatrixVector(1.0, this->getMass(), Raccel, -1.0);
+  }
 
   return 0;
 }
@@ -543,26 +572,36 @@ ModElasticBeam2d::getResistingForceIncInertia()
 
   // add the damping forces if rayleigh damping
   if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-    P += this->getRayleighDampingForces();
+    P.addVector(1.0, this->getRayleighDampingForces(), 1.0);
     
   if (rho == 0.0)
     return P;
 
-  else {
-    const Vector &accel1 = theNodes[0]->getTrialAccel();
-    const Vector &accel2 = theNodes[1]->getTrialAccel();    
-    
+  // add inertia forces from element mass
+  const Vector &accel1 = theNodes[0]->getTrialAccel();
+  const Vector &accel2 = theNodes[1]->getTrialAccel();    
+  
+  if (cMass == 0)  {
+    // take advantage of lumped mass matrix
     double L = theCoordTransf->getInitialLength();
     double m = 0.5*rho*L;
-    
+
     P(0) += m * accel1(0);
     P(1) += m * accel1(1);
-    
-    P(3) += m * accel2(0);    
+
+    P(3) += m * accel2(0);
     P(4) += m * accel2(1);
-    
-    return P;
+  } else  {
+    // use matrix vector multip. for consistent mass matrix
+    static Vector accel(6);
+    for (int i=0; i<3; i++)  {
+      accel(i)   = accel1(i);
+      accel(i+3) = accel2(i);
+    }
+    P.addMatrixVector(1.0, this->getMass(), accel, 1.0);
   }
+  
+  return P;
 }
 
 
@@ -606,17 +645,18 @@ int
 ModElasticBeam2d::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-//    static Vector data(15);
-    static Vector data(18);
+
+    static Vector data(19);
     
     data(0) = A;
     data(1) = E; 
     data(2) = I; 
     data(3) = rho;
-    data(4) = this->getTag();
-    data(5) = connectedExternalNodes(0);
-    data(6) = connectedExternalNodes(1);
-    data(7) = theCoordTransf->getClassTag();
+    data(4) = cMass;
+    data(5) = this->getTag();
+    data(6) = connectedExternalNodes(0);
+    data(7) = connectedExternalNodes(1);
+    data(8) = theCoordTransf->getClassTag();
     	
     int dbTag = theCoordTransf->getDbTag();
     
@@ -626,18 +666,18 @@ ModElasticBeam2d::sendSelf(int cTag, Channel &theChannel)
 	theCoordTransf->setDbTag(dbTag);
     }
 
-    data(8) = dbTag;
-    data(9) = alpha;
-    data(10) = d;
+    data(9) = dbTag;
+    data(10) = alpha;
+    data(11) = d;
 
-    data(11) = alphaM;
-    data(12) = betaK;
-    data(13) = betaK0;
-    data(14) = betaKc;
+    data(12) = alphaM;
+    data(13) = betaK;
+    data(14) = betaK0;
+    data(15) = betaKc;
  //added by Dimitrios Lignos   
-	data(15) = K11;
-	data(16) = K33;
-	data(17) = K44;
+	data(16) = K11;
+	data(17) = K33;
+	data(18) = K44;
     // Send the data vector
     res += theChannel.sendVector(this->getDbTag(), cTag, data);
     if (res < 0) {
@@ -660,8 +700,7 @@ ModElasticBeam2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theB
 {
     int res = 0;
 	
-//    static Vector data(15);
-    static Vector data(18);
+    static Vector data(19);
 
     res += theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0) {
@@ -672,25 +711,26 @@ ModElasticBeam2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theB
     A = data(0);
     E = data(1); 
     I = data(2); 
-    alpha = data(9);
-    d = data(10);
+    alpha = data(10);
+    d = data(11);
 
-    alphaM = data(11);
-    betaK = data(12);
-    betaK0 = data(13);
-    betaKc = data(14);
+    alphaM = data(12);
+    betaK = data(13);
+    betaK0 = data(14);
+    betaKc = data(15);
 //added by Dimitrios Lignos
-	K11 = data(15);
-	K33 = data(16);
-	K44 = data(17);
+	K11 = data(16);
+	K33 = data(17);
+	K44 = data(18);
 
     rho = data(3);
-    this->setTag((int)data(4));
-    connectedExternalNodes(0) = (int)data(5);
-    connectedExternalNodes(1) = (int)data(6);
+    cMass = (int)data(4);
+    this->setTag((int)data(5));
+    connectedExternalNodes(0) = (int)data(6);
+    connectedExternalNodes(1) = (int)data(7);
 
     // Check if the CoordTransf is null; if so, get a new one
-    int crdTag = (int)data(7);
+    int crdTag = (int)data(8);
     if (theCoordTransf == 0) {
       theCoordTransf = theBroker.getNewCrdTransf(crdTag);
       if (theCoordTransf == 0) {
@@ -711,7 +751,7 @@ ModElasticBeam2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theB
     }
 	
     // Now, receive the CoordTransf
-    theCoordTransf->setDbTag((int)data(8));
+    theCoordTransf->setDbTag((int)data(9));
     res += theCoordTransf->recvSelf(cTag, theChannel, theBroker);
     if (res < 0) {
       opserr << "ModElasticBeam2d::recvSelf -- could not receive CoordTransf\n";
@@ -737,7 +777,7 @@ ModElasticBeam2d::Print(OPS_Stream &s, int flag)
     s << "\nModElasticBeam2d: " << this->getTag() << endln;
     s << "\tConnected Nodes: " << connectedExternalNodes ;
     s << "\tCoordTransf: " << theCoordTransf->getTag() << endln;
-    s << "\tmass density:  " << rho << endln;
+    s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
     double P  = q(0);
     double M1 = q(1);
     double M2 = q(2);
