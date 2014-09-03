@@ -296,9 +296,6 @@
 				RelativePath="..\..\..\SRC\coordTransformation\CrdTransf.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\element\forceBeamColumn\DistHingeIntegration.cpp">
-			</File>
-			<File
 				RelativePath="..\..\..\SRC\coordTransformation\LinearCrdTransf2d.cpp">
 			</File>
 			<File
@@ -320,10 +317,10 @@
 				RelativePath="..\..\..\SRC\coordTransformation\PDeltaCrdTransf3d.cpp">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\coordTransformation\TclGeomTransfCommand.cpp">
+				RelativePath="..\..\..\SRC\coordTransformation\PDeltaCrdTransf3d.h">
 			</File>
 			<File
-				RelativePath="..\..\..\SRC\element\forceBeamColumn\UserDefinedHingeIntegration.cpp">
+				RelativePath="..\..\..\SRC\coordTransformation\TclGeomTransfCommand.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -597,12 +594,6 @@
 			Name="forceBeamColumn"
 			Filter="">
 			<File
-				RelativePath="..\..\..\SRC\element\forceBeamColumn\CompositeSimpsonBeamIntegration.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\SRC\element\forceBeamColumn\CompositeSimpsonBeamIntegration.h">
-			</File>
-			<File
 				RelativePath="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumn2d.cpp">
 			</File>
 			<File
@@ -643,6 +634,18 @@
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\element\forceBeamColumn\BeamIntegration.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\forceBeamColumn\CompositeSimpsonBeamIntegration.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\forceBeamColumn\CompositeSimpsonBeamIntegration.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\forceBeamColumn\DistHingeIntegration.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\forceBeamColumn\DistHingeIntegration.cpp">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\element\forceBeamColumn\FixedLocationBeamIntegration.cpp">
@@ -727,6 +730,12 @@
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\element\forceBeamColumn\UserDefinedBeamIntegration.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\forceBeamColumn\UserDefinedHingeIntegration.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\forceBeamColumn\UserDefinedHingeIntegration.h">
 				</File>
 			</Filter>
 		</Filter>
@@ -937,6 +946,24 @@
 				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericBearingUFRP2d.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericX.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\ElastomericX.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\HDR.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\HDR.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\LeadRubberX.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\elastomericBearing\LeadRubberX.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\elastomericBearing\TclElastomericBearingBoucWenCommand.cpp">
 			</File>
 			<File
@@ -1049,16 +1076,22 @@
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\TclModelBuilderFrictionModelCommand.cpp">
 				</File>
 				<File
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.h">
+				</File>
+				<File
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDepMultiLinear.cpp">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDepMultiLinear.h">
 				</File>
 				<File
-					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.cpp">
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelNormalFrcDep.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.h">
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelNormalFrcDep.h">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelPressureDep.cpp">
@@ -1286,28 +1319,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\HUelements\MultipleShearSpring.h">
-			</File>
-		</Filter>
-		<Filter
-			Name="bearing"
-			Filter="">
-			<File
-				RelativePath="..\..\..\SRC\element\bearing\ElastomericX.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\SRC\element\bearing\ElastomericX.h">
-			</File>
-			<File
-				RelativePath="..\..\..\SRC\element\bearing\HDR.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\SRC\element\bearing\HDR.h">
-			</File>
-			<File
-				RelativePath="..\..\..\SRC\element\bearing\LeadRubberX.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\SRC\element\bearing\LeadRubberX.h">
 			</File>
 		</Filter>
 		<File
