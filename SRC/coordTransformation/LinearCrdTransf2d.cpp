@@ -44,6 +44,10 @@
 
 #include <LinearCrdTransf2d.h>
 
+// initialize static variables
+Matrix LinearCrdTransf2d::Tlg(6,6);
+Matrix LinearCrdTransf2d::kg(6,6);
+
 
 // constructor:
 LinearCrdTransf2d::LinearCrdTransf2d(int tag):
@@ -233,12 +237,26 @@ LinearCrdTransf2d::computeElemtLengthAndOrient()
         return -2;  
     }
     
-    // calculate the element local x axis components (direction cossines)
+    // calculate the element local x axis components (direction cosines)
     // wrt to the global coordinates 
     cosTheta = dx(0)/L;
     sinTheta = dx(1)/L;
     
     return 0;
+}
+
+
+void
+LinearCrdTransf2d::compTransfMatrixLocalGlobal(Matrix &Tlg) 
+{
+    // setup transformation matrix from global to local coordinates
+    Tlg.Zero();
+    
+    Tlg(0,0) = Tlg(3,3) =  cosTheta;
+    Tlg(0,1) = Tlg(3,4) =  sinTheta;
+    Tlg(1,0) = Tlg(4,3) = -sinTheta;
+    Tlg(1,1) = Tlg(4,4) =  cosTheta;
+    Tlg(2,2) = Tlg(5,5) =  1.0;
 }
 
 
@@ -257,7 +275,7 @@ LinearCrdTransf2d::getDeformedLength(void)
 
 
 const Vector &
-LinearCrdTransf2d::getBasicTrialDisp (void)
+LinearCrdTransf2d::getBasicTrialDisp(void)
 {
     // determine global displacements
     const Vector &disp1 = nodeIPtr->getTrialDisp();
@@ -312,7 +330,7 @@ LinearCrdTransf2d::getBasicTrialDisp (void)
 
 
 const Vector &
-LinearCrdTransf2d::getBasicIncrDisp (void)
+LinearCrdTransf2d::getBasicIncrDisp(void)
 {
     // determine global displacements
     const Vector &disp1 = nodeIPtr->getIncrDisp();
@@ -628,13 +646,10 @@ LinearCrdTransf2d::getGlobalResistingForceShapeSensitivity(const Vector &pb, con
 
 
 const Matrix &
-LinearCrdTransf2d::getGlobalStiffMatrix (const Matrix &kb, const Vector &pb)
+LinearCrdTransf2d::getGlobalStiffMatrix(const Matrix &kb, const Vector &pb)
 {
-    static Matrix kg(6,6);
     static double tmp [6][6];
-    
     double oneOverL = 1.0/L;
-    
     double kb00, kb01, kb02, kb10, kb11, kb12, kb20, kb21, kb22;
     
     kb00 = kb(0,0);		kb01 = kb(0,1);		kb02 = kb(0,2);
@@ -752,13 +767,10 @@ LinearCrdTransf2d::getGlobalStiffMatrix (const Matrix &kb, const Vector &pb)
 
 
 const Matrix &
-LinearCrdTransf2d::getInitialGlobalStiffMatrix (const Matrix &kb)
+LinearCrdTransf2d::getInitialGlobalStiffMatrix(const Matrix &kb)
 {
-    static Matrix kg(6,6);
     static double tmp [6][6];
-    
     double oneOverL = 1.0/L;
-    
     double kb00, kb01, kb02, kb10, kb11, kb12, kb20, kb21, kb22;
     
     kb00 = kb(0,0);		kb01 = kb(0,1);		kb02 = kb(0,2);
@@ -1032,6 +1044,16 @@ LinearCrdTransf2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &the
 }
 
 
+const Matrix &
+LinearCrdTransf2d::getGlobalMatrixFromLocal(const Matrix &ml)
+{
+    this->compTransfMatrixLocalGlobal(Tlg);  // OPTIMIZE LATER
+    kg.addMatrixTripleProduct(0.0, Tlg, ml, 1.0);  // OPTIMIZE LATER
+
+    return kg;
+}
+
+
 const Vector &
 LinearCrdTransf2d::getPointGlobalCoordFromLocal(const Vector &xl)
 {
@@ -1055,7 +1077,7 @@ LinearCrdTransf2d::getPointGlobalCoordFromLocal(const Vector &xl)
 
 
 const Vector &
-LinearCrdTransf2d::getPointGlobalDisplFromBasic (double xi, const Vector &uxb)
+LinearCrdTransf2d::getPointGlobalDisplFromBasic(double xi, const Vector &uxb)
 {
     // determine global displacements
     const Vector &disp1 = nodeIPtr->getTrialDisp();
@@ -1215,6 +1237,7 @@ LinearCrdTransf2d::getGlobalResistingForceShapeSensitivity(const Vector &pb,
 	return pg;
 }
 
+
 const Vector &
 LinearCrdTransf2d::getBasicDisplSensitivity(int gradNumber)
 {
@@ -1293,6 +1316,7 @@ LinearCrdTransf2d::getBasicDisplSensitivity(int gradNumber)
   return dvdh;
 }
 
+
 bool
 LinearCrdTransf2d::isShapeSensitivity(void)
 {
@@ -1302,6 +1326,7 @@ LinearCrdTransf2d::isShapeSensitivity(void)
 
   return (nodeParameterI != 0 || nodeParameterJ != 0);
 }
+
 
 double
 LinearCrdTransf2d::getdLdh(void)
@@ -1330,6 +1355,7 @@ LinearCrdTransf2d::getdLdh(void)
   
   return 0.0;
 }
+
 
 double
 LinearCrdTransf2d::getd1overLdh(void)
@@ -1360,8 +1386,9 @@ LinearCrdTransf2d::getd1overLdh(void)
   return 0.0;
 }
 
+
 const Vector &
-LinearCrdTransf2d::getBasicTrialDispShapeSensitivity (void)
+LinearCrdTransf2d::getBasicTrialDispShapeSensitivity(void)
 {
     // Want to return dAdh * u
 

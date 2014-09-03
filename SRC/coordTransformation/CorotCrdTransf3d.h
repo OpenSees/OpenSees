@@ -77,7 +77,10 @@ public:
     
     void Print(OPS_Stream &s, int flag = 0);
     
-    // functions used in post-processing only    
+    // method used to rotate consistent mass matrix
+    const Matrix &getGlobalMatrixFromLocal(const Matrix &local);
+    
+    // methods used in post-processing only
     const Vector &getPointGlobalCoordFromLocal(const Vector &localCoords);
     const Vector &getPointGlobalDisplFromBasic(double xi, const Vector &basicDisps);
     
@@ -86,6 +89,7 @@ public:
 private:
     void compTransfMatrixBasicGlobal(void);
     void compTransfMatrixBasicGlobalNew(void);
+    void compTransfMatrixLocalGlobal(Matrix &Tlg);
     const Vector &getQuaternionFromRotMatrix(const Matrix &RotMatrix) const;
     const Vector &getQuaternionFromPseudoRotVector(const Vector &theta) const;
     const Vector &getTangScaledPseudoVectorFromQuaternion(const Vector &theta) const;
@@ -126,7 +130,9 @@ private:
     static Matrix e;            // base vectors
     static Matrix Tp;           // transformation matrix to renumber dofs
     static Matrix T;            // transformation matrix from basic to global system
-    static Matrix Lr2, Lr3, A;  // auxiliary matrices	
+    static Matrix Tlg;          // transformation matrix from global to local system
+    static Matrix kg;           // global stiffness matrix
+    static Matrix Lr2, Lr3, A;  // auxiliary matrices
     
     double *nodeIInitialDisp, *nodeJInitialDisp;
     bool initialDispChecked;

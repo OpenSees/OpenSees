@@ -63,7 +63,7 @@ public:
     virtual double getDeformedLength(void) = 0;
     
     virtual int commitState(void) = 0;
-    virtual int revertToLastCommit(void) = 0;        
+    virtual int revertToLastCommit(void) = 0;
     virtual int revertToStart(void) = 0;
     
     virtual const Vector &getBasicTrialDisp(void) = 0;
@@ -86,10 +86,12 @@ public:
     
     virtual const Vector &getGlobalResistingForce(const Vector &basicForce, const Vector &uniformLoad) = 0;
     virtual const Matrix &getGlobalStiffMatrix(const Matrix &basicStiff, const Vector &basicForce) = 0;
-
     virtual const Matrix &getInitialGlobalStiffMatrix(const Matrix &basicStiff) = 0;
     
-    // functions used in post-processing only    
+    // method used to rotate consistent mass matrix
+    virtual const Matrix &getGlobalMatrixFromLocal(const Matrix &local) = 0;
+    
+    // methods used in post-processing only
     virtual const Vector &getPointGlobalCoordFromLocal(const Vector &localCoords) = 0;
     virtual const Vector &getPointGlobalDisplFromBasic(double xi, const Vector &basicDisps) = 0;
     
@@ -98,7 +100,7 @@ protected:
 private:
 };
 
-// some additional functions related to prototypes created for copy constructors
+// some additional methods related to prototypes created for copy constructors
 extern bool       OPS_AddCrdTransf(CrdTransf *newComponent);
 extern CrdTransf *OPS_GetCrdTransf(int tag);
 extern void       OPS_ClearAllCrdTransf(void);

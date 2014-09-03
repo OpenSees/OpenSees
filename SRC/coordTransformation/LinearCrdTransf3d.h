@@ -79,7 +79,10 @@ public:
     
     void Print(OPS_Stream &s, int flag = 0);
     
-    // functions used in post-processing only    
+    // method used to rotate consistent mass matrix
+    const Matrix &getGlobalMatrixFromLocal(const Matrix &local);
+    
+    // methods used in post-processing only
     const Vector &getPointGlobalCoordFromLocal(const Vector &localCoords);
     const Vector &getPointGlobalDisplFromBasic(double xi, const Vector &basicDisps);
     
@@ -90,16 +93,18 @@ public:
    /////////////////////////////////////////////////////////////    
 private:
     int computeElemtLengthAndOrient(void);
-    
+    void compTransfMatrixLocalGlobal(Matrix &Tlg);
     
     // internal data
     Node *nodeIPtr, *nodeJPtr;  // pointers to the element two endnodes
     
     double *nodeIOffset, *nodeJOffset;	// rigid joint offsets
     
-    double R[3][3];	// Transformation matrix
-    
-    double L;   // undeformed element length
+    double R[3][3];	 // rotation matrix
+    double L;        // undeformed element length
+
+    static Matrix Tlg;  // matrix that transforms from global to local coordinates
+    static Matrix kg;   // global stiffness matrix
 
     double *nodeIInitialDisp, *nodeJInitialDisp;
     bool initialDispChecked;

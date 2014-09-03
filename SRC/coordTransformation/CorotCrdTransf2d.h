@@ -86,16 +86,19 @@ public:
     
     void Print(OPS_Stream &s, int flag = 0);
     
-    // functions used in post-processing only    
+    // method used to rotate consistent mass matrix
+    const Matrix &getGlobalMatrixFromLocal(const Matrix &local);
+
+    // methods used in post-processing only
     const Vector &getPointGlobalCoordFromLocal(const Vector &localCoords);
     const Vector &getPointGlobalDisplFromBasic(double xi, const Vector &basicDisps);
     
 private:
     int compElemtLengthAndOrient(void);
     int compElemtLengthAndOrientWRTLocalSystem(const Vector &ul);
+    void compTransfMatrixLocalGlobal(Matrix &Tlg);
+    void compTransfMatrixBasicLocal(Matrix &Tbl);
     void transfLocalDisplsToBasic(const Vector &ul);
-    void getTransfMatrixLocalGlobal(Matrix &Tlg);
-    void getTransfMatrixBasicLocal(Matrix &Tbl);
     const Matrix &getGeomStiffMatrix(const Vector &pb) const;
     
     // internal data
@@ -103,8 +106,8 @@ private:
     
     Vector nodeIOffset, nodeJOffset;  // rigid joint offsets
     
-    double cosTheta, sinTheta; // direction cossines of undeformed element wrt to global system 
-    double cosAlpha, sinAlpha; // direction cossines of deformed element wrt to local system
+    double cosTheta, sinTheta; // direction cosines of undeformed element wrt to global system 
+    double cosAlpha, sinAlpha; // direction cosines of deformed element wrt to local system
     double L;                  // undeformed element length
     double Ln;                 // deformed element length
     double Lx, Ly;             // components of the deformed member
@@ -117,7 +120,7 @@ private:
     
     static Matrix Tlg;         // matrix that transforms from global to local coordinates
     static Matrix Tbl;         // matrix that transforms from local  to basic coordinates
-    static Matrix kg;     
+    static Matrix kg;          // global stiffness matrix
     static Vector uxg;     
     static Vector pg;     
     static Vector dub;     

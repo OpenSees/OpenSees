@@ -42,6 +42,10 @@
 
 #include <LinearCrdTransf3d.h>
 
+// initialize static variables
+Matrix LinearCrdTransf3d::Tlg(12,12);
+Matrix LinearCrdTransf3d::kg(12,12);
+
 
 // constructor:
 LinearCrdTransf3d::LinearCrdTransf3d(int tag, const Vector &vecInLocXZPlane):
@@ -103,8 +107,6 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
             nodeJOffset[2] = rigJntOffset2(2);
         }
 }
-
-
 
 
 // constructor:
@@ -262,13 +264,31 @@ LinearCrdTransf3d::computeElemtLengthAndOrient()
         return -2;  
     }
     
-    // calculate the element local x axis components (direction cossines)
+    // calculate the element local x axis components (direction cosines)
     // wrt to the global coordinates
     R[0][0] = dx(0)/L;
     R[0][1] = dx(1)/L;
     R[0][2] = dx(2)/L;
     
     return 0;
+}
+
+
+void
+LinearCrdTransf3d::compTransfMatrixLocalGlobal(Matrix &Tlg) 
+{
+    // setup transformation matrix from local to global
+    Tlg.Zero();
+    
+    Tlg(0,0) = Tlg(3,3) = Tlg(6,6) = Tlg(9,9)   = R[0][0];
+    Tlg(0,1) = Tlg(3,4) = Tlg(6,7) = Tlg(9,10)  = R[0][1];
+    Tlg(0,2) = Tlg(3,5) = Tlg(6,8) = Tlg(9,11)  = R[0][2];
+    Tlg(1,0) = Tlg(4,3) = Tlg(7,6) = Tlg(10,9)  = R[1][0];
+    Tlg(1,1) = Tlg(4,4) = Tlg(7,7) = Tlg(10,10) = R[1][1];
+    Tlg(1,2) = Tlg(4,5) = Tlg(7,8) = Tlg(10,11) = R[1][2];
+    Tlg(2,0) = Tlg(5,3) = Tlg(8,6) = Tlg(11,9)  = R[2][0];
+    Tlg(2,1) = Tlg(5,4) = Tlg(8,7) = Tlg(11,10) = R[2][1];
+    Tlg(2,2) = Tlg(5,5) = Tlg(8,8) = Tlg(11,11) = R[2][2];
 }
 
 
@@ -337,7 +357,7 @@ LinearCrdTransf3d::getDeformedLength(void)
 
 
 const Vector &
-LinearCrdTransf3d::getBasicTrialDisp (void)
+LinearCrdTransf3d::getBasicTrialDisp(void)
 {
     // determine global displacements
     const Vector &disp1 = nodeIPtr->getTrialDisp();
@@ -417,7 +437,7 @@ LinearCrdTransf3d::getBasicTrialDisp (void)
 
 
 const Vector &
-LinearCrdTransf3d::getBasicIncrDisp (void)
+LinearCrdTransf3d::getBasicIncrDisp(void)
 {
     // determine global displacements
     const Vector &disp1 = nodeIPtr->getIncrDisp();
@@ -766,13 +786,11 @@ LinearCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
 
 
 const Matrix &
-LinearCrdTransf3d::getGlobalStiffMatrix (const Matrix &KB, const Vector &pb)
+LinearCrdTransf3d::getGlobalStiffMatrix(const Matrix &KB, const Vector &pb)
 {
-    static Matrix kg(12,12);	// Global stiffness for return
     static double kb[6][6];		// Basic stiffness
     static double kl[12][12];	// Local stiffness
     static double tmp[12][12];	// Temporary storage
-    
     double oneOverL = 1.0/L;
     
     int i,j;
@@ -917,13 +935,11 @@ LinearCrdTransf3d::getGlobalStiffMatrix (const Matrix &KB, const Vector &pb)
 
 
 const Matrix &
-LinearCrdTransf3d::getInitialGlobalStiffMatrix (const Matrix &KB)
+LinearCrdTransf3d::getInitialGlobalStiffMatrix(const Matrix &KB)
 {
-    static Matrix kg(12,12);	// Global stiffness for return
     static double kb[6][6];		// Basic stiffness
     static double kl[12][12];	// Local stiffness
     static double tmp[12][12];	// Temporary storage
-    
     double oneOverL = 1.0/L;
     
     int i,j;
@@ -1260,6 +1276,16 @@ LinearCrdTransf3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &the
 }
 
 
+const Matrix &
+LinearCrdTransf3d::getGlobalMatrixFromLocal(const Matrix &ml)
+{
+    this->compTransfMatrixLocalGlobal(Tlg);  // OPTIMIZE LATER
+    kg.addMatrixTripleProduct(0.0, Tlg, ml, 1.0);  // OPTIMIZE LATER
+
+    return kg;
+}
+
+
 const Vector &
 LinearCrdTransf3d::getPointGlobalCoordFromLocal(const Vector &xl)
 {
@@ -1292,7 +1318,7 @@ LinearCrdTransf3d::getPointGlobalCoordFromLocal(const Vector &xl)
 
 
 const Vector &
-LinearCrdTransf3d::getPointGlobalDisplFromBasic (double xi, const Vector &uxb)
+LinearCrdTransf3d::getPointGlobalDisplFromBasic(double xi, const Vector &uxb)
 {
     // determine global displacements
     const Vector &disp1 = nodeIPtr->getTrialDisp();
@@ -1380,7 +1406,7 @@ LinearCrdTransf3d::Print(OPS_Stream &s, int flag)
 
 ////////////////////////////////// sensitivity //////////////////////////////////
 const Vector &
-LinearCrdTransf3d::getBasicDisplSensitivity (int gradNumber)
+LinearCrdTransf3d::getBasicDisplSensitivity(int gradNumber)
 {
   
   static double ug[12];
