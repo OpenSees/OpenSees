@@ -88,6 +88,16 @@
 
 
 
+// initialize static variables
+
+Matrix LinearCrdTransf2dInt::Tlg(6,6);
+
+Matrix LinearCrdTransf2dInt::kg(6,6);
+
+
+
+
+
 // constructor:
 
 LinearCrdTransf2dInt::LinearCrdTransf2dInt(int tag):
@@ -406,7 +416,28 @@ LinearCrdTransf2dInt::computeElemtLengthAndOrient()
 
 
 
+void
 
+LinearCrdTransf2dInt::compTransfMatrixLocalGlobal(Matrix &Tlg) 
+{
+
+    // setup transformation matrix from global to local coordinates
+    
+    Tlg.Zero();
+    
+
+
+    Tlg(0,0) = Tlg(3,3) =  cosTheta;
+    
+    Tlg(0,1) = Tlg(3,4) =  sinTheta;
+    
+    Tlg(1,0) = Tlg(4,3) = -sinTheta;
+    
+    Tlg(1,1) = Tlg(4,4) =  cosTheta;
+    
+    Tlg(2,2) = Tlg(5,5) =  1.0;
+
+}
 
 
 
@@ -442,7 +473,7 @@ LinearCrdTransf2dInt::getDeformedLength(void)
 
 const Vector &
 
-LinearCrdTransf2dInt::getBasicTrialDisp (void)
+LinearCrdTransf2dInt::getBasicTrialDisp(void)
 
 {
 
@@ -534,7 +565,7 @@ LinearCrdTransf2dInt::getBasicTrialDisp (void)
 
 const Vector &
 
-LinearCrdTransf2dInt::getBasicTrialDispInt (void)	//LMS
+LinearCrdTransf2dInt::getBasicTrialDispInt(void)	//LMS
 
 {
 
@@ -600,7 +631,7 @@ LinearCrdTransf2dInt::getBasicTrialDispInt (void)	//LMS
 
 const Vector &
 
-LinearCrdTransf2dInt::getBasicTrialDispShapeSensitivity (void)
+LinearCrdTransf2dInt::getBasicTrialDispShapeSensitivity(void)
 
 {
 
@@ -742,7 +773,7 @@ LinearCrdTransf2dInt::getBasicTrialDispShapeSensitivity (void)
 
 const Vector &
 
-LinearCrdTransf2dInt::getBasicIncrDisp (void)
+LinearCrdTransf2dInt::getBasicIncrDisp(void)
 
 {
 
@@ -1262,20 +1293,14 @@ LinearCrdTransf2dInt::getGlobalResistingForceShapeSensitivity(const Vector &pb, 
 
 const Matrix &
 
-LinearCrdTransf2dInt::getGlobalStiffMatrix (const Matrix &kb, const Vector &pb)
+LinearCrdTransf2dInt::getGlobalStiffMatrix(const Matrix &kb, const Vector &pb)
 
 {
 
-	static Matrix kg(6,6);
-
 	static double tmp [6][6];
-
-
-
+    
 	double oneOverL = 1.0/L;
-
-
-
+    
 	double kb00, kb01, kb02, kb10, kb11, kb12, kb20, kb21, kb22;
 
 
@@ -1514,15 +1539,9 @@ LinearCrdTransf2dInt::getGlobalStiffMatrix (const Matrix &kb, const Vector &pb)
 
 const Matrix &
 
-LinearCrdTransf2dInt::getGlobalStiffMatrixInt (const Matrix &kb, const Vector &pb)	//LMS
+LinearCrdTransf2dInt::getGlobalStiffMatrixInt(const Matrix &kb, const Vector &pb)	//LMS
 
 {
-
-	static Matrix kg(6,6);
-
-
-
-
 
 	double k00, k01, k02,k03, k04, k05, k10, k11, k12,k13, k14, k15, k20, k21, k22,k23, k24, k25;
 
@@ -1650,20 +1669,14 @@ LinearCrdTransf2dInt::getGlobalStiffMatrixInt (const Matrix &kb, const Vector &p
 
 const Matrix &
 
-LinearCrdTransf2dInt::getInitialGlobalStiffMatrix (const Matrix &kb)
+LinearCrdTransf2dInt::getInitialGlobalStiffMatrix(const Matrix &kb)
 
 {
 
-  static Matrix kg(6,6);
-
   static double tmp [6][6];
-
   
-
   double oneOverL = 1.0/L;
-
   
-
   double kb00, kb01, kb02, kb10, kb11, kb12, kb20, kb21, kb22;
 
   
@@ -1904,16 +1917,10 @@ LinearCrdTransf2dInt::getInitialGlobalStiffMatrix (const Matrix &kb)
 
 const Matrix &
 
-LinearCrdTransf2dInt::getInitialGlobalStiffMatrixInt (const Matrix &kb)	//LMS
+LinearCrdTransf2dInt::getInitialGlobalStiffMatrixInt(const Matrix &kb)	//LMS
 
 {
-
-  static Matrix kg(6,6);
-
-
-
     
-
 	double k00, k01, k02,k03, k04, k05, k10, k11, k12,k13, k14, k15, k20, k21, k22,k23, k24, k25;
 
 	double k30, k31, k32,k33, k34, k35, k40, k41, k42,k43, k44, k45, k50, k51, k52,k53, k54, k55;
@@ -2242,6 +2249,26 @@ LinearCrdTransf2dInt::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &
 
 
 
+const Matrix &
+
+LinearCrdTransf2dInt::getGlobalMatrixFromLocal(const Matrix &ml)
+
+{
+
+    this->compTransfMatrixLocalGlobal(Tlg);  // OPTIMIZE LATER
+
+    kg.addMatrixTripleProduct(0.0, Tlg, ml, 1.0);  // OPTIMIZE LATER
+
+
+
+    return kg;
+
+}
+
+
+
+
+
 const Vector &
 
 LinearCrdTransf2dInt::getPointGlobalCoordFromLocal(const Vector &xl)	
@@ -2288,7 +2315,7 @@ LinearCrdTransf2dInt::getPointGlobalCoordFromLocal(const Vector &xl)
 
 const Vector &
 
-LinearCrdTransf2dInt::getPointGlobalDisplFromBasic (double xi, const Vector &uxb)	
+LinearCrdTransf2dInt::getPointGlobalDisplFromBasic(double xi, const Vector &uxb)	
 
 {
 
@@ -2689,8 +2716,3 @@ LinearCrdTransf2dInt::getBasicTrialAccel(void)
 	return ab;
 
 }
-
-
-
-
-

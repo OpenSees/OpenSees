@@ -401,18 +401,22 @@ ModElasticBeam2d::getMass(void)
             K(0,0) = K(1,1) = K(3,3) = K(4,4) = m;
         } else  {
             // consistent mass matrix
+            static Matrix ml(6,6);
             double m = rho*L/420.0;
-            K(0,0) = K(3,3) = m*140.0;
-            K(0,3) = K(3,0) = m*70.0;
+            ml(0,0) = ml(3,3) = m*140.0;
+            ml(0,3) = ml(3,0) = m*70.0;
 
-            K(1,1) = K(4,4) = m*156.0;
-            K(1,4) = K(4,1) = m*54.0;
-            K(2,2) = K(5,5) = m*4.0*L*L;
-            K(2,5) = K(5,2) = -m*3.0*L*L;
-            K(1,2) = K(2,1) = m*22.0*L;
-            K(4,5) = K(5,4) = -K(1,2);
-            K(1,5) = K(5,1) = -m*13.0*L;
-            K(2,4) = K(4,2) = -K(1,5);
+            ml(1,1) = ml(4,4) = m*156.0;
+            ml(1,4) = ml(4,1) = m*54.0;
+            ml(2,2) = ml(5,5) = m*4.0*L*L;
+            ml(2,5) = ml(5,2) = -m*3.0*L*L;
+            ml(1,2) = ml(2,1) = m*22.0*L;
+            ml(4,5) = ml(5,4) = -ml(1,2);
+            ml(1,5) = ml(5,1) = -m*13.0*L;
+            ml(2,4) = ml(4,2) = -ml(1,5);
+            
+            // transform local mass matrix to global system
+            K = theCoordTransf->getGlobalMatrixFromLocal(ml);
         }
     }
     
