@@ -7,8 +7,8 @@ OBJS = ElastomericBearingPlasticity2d.o \
        ElastomericBearingUFRP2d.o \
        ElastomericX.o \
        HDR.o \
-       LeadRubberX.o
-	   TclElastomericBearingPlasticityCommand.o \
+       LeadRubberX.o \
+	TclElastomericBearingPlasticityCommand.o \
        TclElastomericBearingBoucWenCommand.o \
        TclElastomericBearingUFRPCommand.o
 
