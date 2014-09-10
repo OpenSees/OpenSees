@@ -2313,6 +2313,8 @@ SRC/element/UWelements/BeamEndContact3Dp.h -text
 SRC/element/UWelements/Brick8FiberOverlay.cpp -text
 SRC/element/UWelements/Brick8FiberOverlay.h -text
 SRC/element/UWelements/Makefile -text
+SRC/element/UWelements/PileToe3D.cpp -text
+SRC/element/UWelements/PileToe3D.h -text
 SRC/element/UWelements/Quad4FiberOverlay.cpp -text
 SRC/element/UWelements/Quad4FiberOverlay.h -text
 SRC/element/UWelements/SSPbrick.cpp -text

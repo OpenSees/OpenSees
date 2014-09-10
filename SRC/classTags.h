@@ -617,7 +617,7 @@
 #define ELE_TAG_HDR                       151
 #define ELE_TAG_ElastomericX              152
 #define ELE_TAG_LeadRubberX               153
-
+#define ELE_TAG_PileToe3D                 154
 
 #define ELE_TAG_MultipleShearSpring 6201
 #define ELE_TAG_MultipleNormalSpring 6202
