@@ -15,6 +15,9 @@
 
 #ifndef MPIDiagonalSOE_h
 #define MPIDiagonalSOE_h
+
+#include <mpi.h>
+
 #include <map>
 #include <LinearSOE.h>
 #include <Vector.h>

@@ -13,8 +13,6 @@
  *
  */
 
-#include <mpi.h>
-
 #include <MPIDiagonalSOE.h>
 #include <MPIDiagonalSolver.h>
 #include <Matrix.h>

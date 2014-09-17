@@ -20,6 +20,7 @@
 #ifndef MPIDiagonalSolver_h
 #define MPIDiagonalSolver_h
 
+#include <mpi.h>
 #include <LinearSOESolver.h>
 #include <ID.h>
 

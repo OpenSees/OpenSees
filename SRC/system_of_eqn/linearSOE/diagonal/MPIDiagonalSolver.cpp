@@ -12,8 +12,6 @@
  */
 
 
-#include <mpi.h>
-
 #include <MPIDiagonalSolver.h>
 #include <MPIDiagonalSOE.h>
 #include <Channel.h>
