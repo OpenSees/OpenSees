@@ -96,16 +96,16 @@ int VelPressureDep::setTrial(double normalForce, double velocity)
         muFast = muFast0;
     
     // get COF for given trial velocity
-    double temp = (muFast-muSlow)*exp(-transRate*fabs(trialVel));
-    mu = muFast - temp;
+    double temp1 = exp(-transRate*fabs(trialVel));
+    double temp2 = (muFast-muSlow)*temp1;
+    mu = muFast - temp2;
     
     // get derivative of COF wrt normal force
-    DmuDn = deltaMu*alpha/A/pow(cosh(alpha*trialN/A),2)*
-            (exp(-transRate*fabs(trialVel))-1.0);
+    DmuDn = deltaMu*alpha/A/pow(cosh(alpha*trialN/A),2)*(temp1-1.0);
     
     // get derivative of COF wrt velocity
     if (trialVel != 0.0)
-        DmuDvel = transRate*trialVel/fabs(trialVel)*temp;
+        DmuDvel = transRate*trialVel/fabs(trialVel)*temp2;
     else
         DmuDvel = 0.0;
     

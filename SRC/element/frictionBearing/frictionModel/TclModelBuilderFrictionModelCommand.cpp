@@ -36,6 +36,7 @@
 #include <VelDependent.h>
 #include <VelPressureDep.h>
 #include <VelDepMultiLinear.h>
+#include <VelNormalFrcDep.h>
 
 #include <ID.h>
 #include <Vector.h>
@@ -65,7 +66,7 @@ int TclModelBuilderFrictionModelCommand(ClientData clientData, Tcl_Interp *inter
     FrictionModel *theFrnMdl = 0;
     
     // ----------------------------------------------------------------------------	
-    if (strcmp(argv[1],"Coulomb") == 0)  {
+    if (strcmp(argv[1],"Coulomb") == 0 || strcmp(argv[1],"Constant") == 0)  {
         if (argc != 4)  {
             opserr << "WARNING invalid number of arguments\n";
             printCommand(argc,argv);
@@ -178,7 +179,7 @@ int TclModelBuilderFrictionModelCommand(ClientData clientData, Tcl_Interp *inter
     }
     
     // ----------------------------------------------------------------------------	
-    if (strcmp(argv[1],"VelDepMultiLinear") == 0)  {
+    if (strcmp(argv[1],"VelDepMultiLinear") == 0 || strcmp(argv[1],"VDependentMultiLinear") == 0)  {
         if (argc < 9)  {
             opserr << "WARNING invalid number of arguments\n";
             printCommand(argc,argv);
@@ -245,6 +246,69 @@ int TclModelBuilderFrictionModelCommand(ClientData clientData, Tcl_Interp *inter
         
         // parsing was successful, allocate the friction model
         theFrnMdl = new VelDepMultiLinear(tag, velocityPts, frictionPts);
+    }
+    
+    // ----------------------------------------------------------------------------	
+    if (strcmp(argv[1],"VelNormalFrcDep") == 0 || strcmp(argv[1],"VNDependent") == 0)  {
+        if (argc != 11)  {
+            opserr << "WARNING invalid number of arguments\n";
+            printCommand(argc,argv);
+            opserr << "Want: frictionModel VelNormalFrcDep tag aSlow nSlow aFast nFast alpha0 alpha1 alpha2 maxMuFact\n";
+            return TCL_ERROR;
+        }    
+        
+        int tag;
+        double aSlow, nSlow, aFast, nFast;
+        double alpha0, alpha1, alpha2, maxMuFact;
+        
+        if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK)  {
+            opserr << "WARNING invalid VelNormalFrcDep friction model tag\n";
+            return TCL_ERROR;
+        }
+        if (Tcl_GetDouble(interp, argv[3], &aSlow) != TCL_OK)  {
+            opserr << "WARNING invalid aSlow\n";
+            opserr << "VelNormalFrcDep friction model: " << tag << endln;
+            return TCL_ERROR;
+        }
+        if (Tcl_GetDouble(interp, argv[4], &nSlow) != TCL_OK)  {
+            opserr << "WARNING invalid nSlow\n";
+            opserr << "VelNormalFrcDep friction model: " << tag << endln;
+            return TCL_ERROR;
+        }
+        if (Tcl_GetDouble(interp, argv[5], &aFast) != TCL_OK)  {
+            opserr << "WARNING invalid aFast\n";
+            opserr << "VelNormalFrcDep friction model: " << tag << endln;
+            return TCL_ERROR;
+        }
+        if (Tcl_GetDouble(interp, argv[6], &nFast) != TCL_OK)  {
+            opserr << "WARNING invalid nFast\n";
+            opserr << "VelNormalFrcDep friction model: " << tag << endln;
+            return TCL_ERROR;
+        }
+        if (Tcl_GetDouble(interp, argv[7], &alpha0) != TCL_OK)  {
+            opserr << "WARNING invalid alpha0\n";
+            opserr << "VelNormalFrcDep friction model: " << tag << endln;
+            return TCL_ERROR;
+        }
+        if (Tcl_GetDouble(interp, argv[8], &alpha1) != TCL_OK)  {
+            opserr << "WARNING invalid alpha1\n";
+            opserr << "VelNormalFrcDep friction model: " << tag << endln;
+            return TCL_ERROR;
+        }
+        if (Tcl_GetDouble(interp, argv[9], &alpha2) != TCL_OK)  {
+            opserr << "WARNING invalid alpha2\n";
+            opserr << "VelNormalFrcDep friction model: " << tag << endln;
+            return TCL_ERROR;
+        }
+        if (Tcl_GetDouble(interp, argv[10], &maxMuFact) != TCL_OK)  {
+            opserr << "WARNING invalid maxMuFact\n";
+            opserr << "VelNormalFrcDep friction model: " << tag << endln;
+            return TCL_ERROR;
+        }
+        
+        // parsing was successful, allocate the friction model
+        theFrnMdl = new VelNormalFrcDep(tag, aSlow, nSlow, aFast, nFast,
+            alpha0, alpha1, alpha2, maxMuFact);
     }
     
     // ----------------------------------------------------------------------------	

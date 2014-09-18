@@ -6,6 +6,7 @@ OBJS       = Coulomb.o \
 	TclModelBuilderFrictionModelCommand.o \
 	VelDependent.o \
 	VelDepMultiLinear.o \
+    VelNormalFrcDep.o \
 	VelPressureDep.o
 
 # Compilation control

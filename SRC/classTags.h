@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.128 $
-// $Date: 2010-09-16 00:07:59 $
-// $Source: /usr/local/cvs/OpenSees/SRC/classTags.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: fmk
 // Revision: A
@@ -627,6 +627,7 @@
 #define FRN_TAG_VelDependent       2
 #define FRN_TAG_VelPressureDep     3
 #define FRN_TAG_VelDepMultiLinear  4
+#define FRN_TAG_VelNormalFrcDep    5
 
 #define BEAM_INTEGRATION_TAG_Lobatto         1
 #define BEAM_INTEGRATION_TAG_Legendre        2

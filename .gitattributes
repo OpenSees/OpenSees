@@ -2542,6 +2542,8 @@ SRC/element/frictionBearing/frictionModel/VelDepMultiLinear.cpp -text
 SRC/element/frictionBearing/frictionModel/VelDepMultiLinear.h -text
 SRC/element/frictionBearing/frictionModel/VelDependent.cpp -text
 SRC/element/frictionBearing/frictionModel/VelDependent.h -text
+SRC/element/frictionBearing/frictionModel/VelNormalFrcDep.cpp -text
+SRC/element/frictionBearing/frictionModel/VelNormalFrcDep.h -text
 SRC/element/frictionBearing/frictionModel/VelPressureDep.cpp -text
 SRC/element/frictionBearing/frictionModel/VelPressureDep.h -text
 SRC/element/generic/GenericClient.cpp -text
