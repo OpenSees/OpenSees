@@ -23,8 +23,8 @@ foreach nFlange {1 2 3 10 10 20 35} nWeb {4 4 4 5 10 20 30} {
     set massesY        {0. 0.105 0.105 0.096}
     
     # add nodes at each floor at each column line location & fix nodes if floor 1
-    foreach floor {1 2 3 4} floorLoc {0 204. 384. 564.} massX {0. 0.419 0.419 0.400} massY {0. 0.105 0.105 0.096} {
-	foreach colLine {1 2 3 4 5 6} colLoc {0. 360. 720. 1080. 1440. 1800.} {
+    foreach floor {1 2 3 4} floorLoc $floorLocations massX $massesX massY $massesY {
+	foreach colLine {1 2 3 4 5 6} colLoc $colLocations {
 	    node $colLine$floor $colLoc $floorLoc -mass $massX $massY 0.
 	    if {$floor == 1} {
 		fix $colLine$floor 1 1 1
