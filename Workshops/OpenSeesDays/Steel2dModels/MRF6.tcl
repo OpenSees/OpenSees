@@ -6,19 +6,18 @@ source ReadRecord.tcl;
 #set motion el_centro
 set motion Oak_2_50_5_FN
 set in 1.0;
-set g 386.4;				# acceleration due to gravity
+set g 38.4;				# acceleration due to gravity
 
 # set up my lists
 set floorOffsets {268. 160. 160. 160. 160. 160. 160.}
 set colOffsets   {300. 300. 300. 300. 300.} 
 
-set roofWeight 1537.0; set roofMass [expr $roofWeight/($g*2.)]; # kips 2 frames per dirn
-set floorWeight 1920.0; set floorMass [expr $floorWeight/($g*2.)]
+set roofWeight 1537.0; set roofMass [expr $roofWeight/($g*2.*6)]; # kips 2 frames per dirn 6 col line
+set floorWeight 1920.0; set floorMass [expr $floorWeight/($g*2.*6)]
 
 set massesCMD  "set masses {0. $floorMass $floorMass $floorMass $floorMass $floorMass $floorMass $roofMass}"
 eval $massesCMD
 set colSizes       {W24X146 W24X146 W24X76 W24X76 W14X61 W14X61 W24X55};
-set colESizes      {W14X132 W14X132 W14X82 W14X82 W14X74 W14X74 W14X53};
 set beamSizes      {W24X207 W21X62 W21X50 W21X44 W21X44 W21X44 W21X44};
 
 set numFloor [expr [llength $floorOffsets]+1]
@@ -72,12 +71,8 @@ geomTransf PDelta 1
 for {set colLine 1} {$colLine <= $numCline} {incr colLine 1} {
     for {set floor1 1} {$floor1 < $numFloor} {incr floor1 1} {
 	set floor2 [expr $floor1+1]
-	if {$colLine == 1 || $colLine == $numCline} {
-	    set theSection [lindex $colESizes [expr $floor1 -1]]
-	} else {
-	    set theSection [lindex $colSizes [expr $floor1 -1]]
-	}
-	ForceBeamWSection2d $colLine$floor1$colLine$floor2 $colLine$floor1 $colLine$floor2 $theSection 1 1 -nip 5
+	set theSection [lindex $colSizes [expr $floor1 -1]]
+	DispBeamWSection2d $colLine$floor1$colLine$floor2 $colLine$floor1 $colLine$floor2 $theSection 1 1 -nip 5
     }
 }
 
@@ -87,7 +82,7 @@ for {set colLine1  1} {$colLine1 < $numCline} {incr colLine1 1} {
     set colLine2 [expr $colLine1 + 1]
     for {set floor 2} {$floor <= $numFloor} {incr floor 1} {
 	set theSection [lindex $beamSizes [expr $floor -2]]
-	ForceBeamWSection2d $colLine1$floor$colLine2$floor $colLine1$floor $colLine2$floor $theSection 1 2
+	DispBeamWSection2d $colLine1$floor$colLine2$floor $colLine1$floor $colLine2$floor $theSection 1 2
     }
 }
 
@@ -158,6 +153,7 @@ analysis Transient
 set ok 0
 set currentTime 0.0
 while {$ok == 0 && $currentTime < $tFinal} {
+    draw
     set ok [analyze 1 $dt]
     if {$ok != 0} {
 	test NormDispIncr 1.0e-6 2000 1
@@ -169,7 +165,7 @@ while {$ok == 0 && $currentTime < $tFinal} {
     set currentTime [getTime]
 }
 
-wipe
+remove recorders
 
 set a [open floorDispEnv.out r]
 set line [gets $a]; set line [gets $a]; set line [gets $a]

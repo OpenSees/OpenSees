@@ -9,21 +9,26 @@ set in 1.0;
 set g 386.4;				# acceleration due to gravity
 
 
-# set up my structure
+set roofWeight 1537.0; set roofMass [expr $roofWeight/($g*2.*6)]; # kips 2 frames per dirn 6 col line
+set floorWeight 1920.0; set floorMass [expr $floorWeight/($g*2.*6)]
+set massesCMD  "set masses {0. $floorMass $floorMass $floorMass $floorMass $floorMass $floorMass $roofMass}"
+eval $massesCMD
+
+# set up my lists
 set floorOffsets {204. 180. 180.}
 set colOffsets   {360. 360. 360. 360. 360.} 
 set massesX      {0. 0.419 0.419 0.400}
 set massesY      {0. 0.105 0.105 0.096}
+
 set colSizes     {W14X370 W14X370 W14X211};
+set colExtSizes  {W14X370 W14X370 W14X211};
 set beamSizes    {W33X141 W33X130 W27X102};
 
-set floorLoad -0.11238
-set roofLoad -0.1026
-
-# build colLocations and floorLocations & set some variables
 set numFloor [expr [llength $floorOffsets]+1]
 set numCline [expr [llength $colOffsets]+1]
+set roofFloor [llength $numFloor]
 
+# build colLocations and floorLocations
 set floorLocations 0; set floorLoc 0; 
 set colLocations 0; set colLoc 0; 
 
@@ -36,64 +41,41 @@ for {set i 1} {$i < $numCline} {incr i 1} {
     lappend colLocations $colLoc;
 }
 
-# following in case num floors or cols exceed 10
-if {$numFloor < 10} {
-    set floorStart 1;
-} elseif {$numFloor < 100} {
-    set floorStart 10;
-} else {
-    set floorStart 100;
-}
-
-if {$numCline < 10} {
-    set clineStart 1;
-} elseif {$numCline < 100} {
-    set clineStart 10;
-} else {
-    set clineStart 100;
-}
-
 # check of list dimensions for errors
 if {[llength $massesX] != $numFloor} {puts "ERROR: massX"; quit}
-if {[llength $massesY] != $numFloor} {puts "ERROR: massY"; quit}
 if {[llength $colSizes] != [expr $numFloor-1]} {puts "ERROR: colSizes"; quit}
 if {[llength $beamSizes] != [expr $numFloor-1]} {puts "ERROR: beamSizes"; quit}
+if {$numCline >= 10} {puts "ERROR: too many column lines, reprogram"; quit}
+if {$numFloor >= 10} {puts "ERROR: too many floors, reprogram"; quit}
+
 
 wipe;
 model BasicBuilder -ndm 2 -ndf 3;  # Define the model builder, ndm = #dimension, ndf = #dofs
 
 # Build the Nodes
 for {set floor 1} {$floor <= $numFloor} {incr floor 1} {
-    set floorN [expr $floorStart + $floor-1]
     set floorLoc [lindex $floorLocations [expr $floor-1]]
     set massX [lindex $massesX [expr $floor-1]]
     set massY [lindex $massesY [expr $floor-1]]
     for {set colLine 1} {$colLine <= $numCline} {incr colLine 1} {
-	set colLineN [expr $clineStart + $colLine -1]
 	set colLoc [lindex $colLocations [expr $colLine-1]]
-	node $colLineN$floorN $colLoc $floorLoc -mass $massX $massY 0.
+	node $colLine$floor $colLoc $floorLoc -mass $massX $massY 0.
 	if {$floor == 1} {
-	    fix $colLineN$floorN 1 1 1
+	    fix $colLine$floor 1 1 1
 	}
     }
 }
 	    
 # define material 
-set Es 29000.0;  # modulus of elasticity for steel
-set Fy 50.0; 	 # yield stress of steel
-set b 0.003;	 # strain hardening ratio
-uniaxialMaterial Steel02 1 $Fy $Es $b 20 0.925 0.15
+uniaxialMaterial Steel02 1 50.0 29000 0.003 20 0.925 0.15
 
 # build the columns
 geomTransf PDelta 1
 for {set colLine 1} {$colLine <= $numCline} {incr colLine 1} {
-    set colLineN [expr $clineStart + $colLine -1]
     for {set floor1 1} {$floor1 < $numFloor} {incr floor1 1} {
 	set floor2 [expr $floor1+1]
-	set floor1N [expr $floorStart + $floor1-1]
-	set floor2N [expr $floorStart + $floor1]
 	set theSection [lindex $colSizes [expr $floor1 -1]]
-	ForceBeamWSection2d $colLineN$floor1N$colLineN$floor2N $colLineN$floor1N $colLineN$floor2N $theSection 1 1 -nip 5
+	ForceBeamWSection2d $colLine$floor1$colLine$floor2 $colLine$floor1 $colLine$floor2 $theSection 1 1 -nip 5
     }
 }
 
@@ -101,27 +83,23 @@ for {set colLine 1} {$colLine <= $numCline} {incr colLine 1} {
 geomTransf Linear 2
 for {set colLine1  1} {$colLine1 < $numCline} {incr colLine1 1} {
     set colLine2 [expr $colLine1 + 1]
-    set colLine1N [expr $clineStart + $colLine1 -1]
-    set colLine2N [expr $clineStart + $colLine1]
     for {set floor 2} {$floor <= $numFloor} {incr floor 1} {
-	set floorN [expr $floorStart + $floor-1]
 	set theSection [lindex $beamSizes [expr $floor -2]]
-	ForceBeamWSection2d $colLine1N$floorN$colLine2N$floorN $colLine1N$floorN $colLine2N$floorN $theSection 1 2
+	ForceBeamWSection2d $colLine1$floor$colLine2$floor $colLine1$floor $colLine2$floor $theSection 1 2
     }
 }
 
 # add uniform loads to beams
+set floorLoad -0.11238
+set roofLoad -0.1026
 pattern Plain 101 Linear {
     for {set colLine1  1} {$colLine1 < $numCline} {incr colLine1 1} {
 	set colLine2 [expr $colLine1 + 1]
-	set colLine1N [expr $clineStart + $colLine1 -1]
-	set colLine2N [expr $clineStart + $colLine1]
 	for {set floor 2} {$floor <= $numFloor} {incr floor 1} {
-	    set floorN [expr $floorStart + $floor-1]
-	    if {$floor == $numFloor} {
-		eleLoad -ele $colLine1N$floorN$colLine2N$floorN -type beamUniform $roofLoad
+	    if {$floor == 4} {
+		eleLoad -ele $colLine1$floor$colLine2$floor -type beamUniform $roofLoad
 	    } else {
-		eleLoad -ele $colLine1N$floorN$colLine2N$floorN -type beamUniform $floorLoad
+		eleLoad -ele $colLine1$floor$colLine2$floor -type beamUniform $floorLoad
 	    }
 	}
     }
@@ -154,7 +132,6 @@ rayleigh $alphaM 0. 0. $betaKcomm
 ReadRecord $motion.AT2 $motion.g3 dt nPt;
 timeSeries Path 10 -filePath $motion.g3 -dt $dt -factor $g
 pattern UniformExcitation 1 1 -accel 10;
-
 
 set nodeList []
 for {set floor 1} {$floor <= $numFloor} {incr floor 1} {
@@ -189,7 +166,7 @@ while {$ok == 0 && $currentTime < $tFinal} {
     set currentTime [getTime]
 }
 
-wipe
+remove recorders
 
 set a [open floorDispEnv.out r]
 set line [gets $a]; set line [gets $a]; set line [gets $a]
