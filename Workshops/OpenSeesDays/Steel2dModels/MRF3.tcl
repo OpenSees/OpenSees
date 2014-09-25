@@ -8,12 +8,6 @@ set motion Oak_2_50_5_FN
 set in 1.0;
 set g 386.4;				# acceleration due to gravity
 
-
-set roofWeight 1537.0; set roofMass [expr $roofWeight/($g*2.*6)]; # kips 2 frames per dirn 6 col line
-set floorWeight 1920.0; set floorMass [expr $floorWeight/($g*2.*6)]
-set massesCMD  "set masses {0. $floorMass $floorMass $floorMass $floorMass $floorMass $floorMass $roofMass}"
-eval $massesCMD
-
 # set up my lists
 set floorOffsets {204. 180. 180.}
 set colOffsets   {360. 360. 360. 360. 360.} 
