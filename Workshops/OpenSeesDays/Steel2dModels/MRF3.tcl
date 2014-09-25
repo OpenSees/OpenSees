@@ -15,7 +15,6 @@ set massesX      {0. 0.419 0.419 0.400}
 set massesY      {0. 0.105 0.105 0.096}
 
 set colSizes     {W14X370 W14X370 W14X211};
-set colExtSizes  {W14X370 W14X370 W14X211};
 set beamSizes    {W33X141 W33X130 W27X102};
 
 set numFloor [expr [llength $floorOffsets]+1]

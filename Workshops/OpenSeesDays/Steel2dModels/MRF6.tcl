@@ -17,6 +17,8 @@ set floorWeight 1920.0; set floorMass [expr $floorWeight/($g*2.*6)]
 
 set massesCMD  "set masses {0. $floorMass $floorMass $floorMass $floorMass $floorMass $floorMass $roofMass}"
 eval $massesCMD
+puts $massesCMD
+
 set colSizes       {W24X146 W24X146 W24X76 W24X76 W14X61 W14X61 W24X55};
 set beamSizes      {W24X207 W21X62 W21X50 W21X44 W21X44 W21X44 W21X44};
 
