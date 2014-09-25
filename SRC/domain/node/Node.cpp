@@ -20,7 +20,7 @@
                                                                         
 // $Revision: 1.31 $
 // $Date: 2010-02-04 00:39:05 $
-// $Source: /usr/local/cvs/OpenSees/SRC/domain/node/Node.cpp,v $
+// $URL: /usr/local/cvs/OpenSees/SRC/domain/node/Node.cpp,v $
                                                                         
                                                                         
 // Written: fmk 
@@ -49,6 +49,8 @@
 #include <Domain.h>
 #include <Element.h>
 #include <ElementIter.h>
+#include <SP_Constraint.h>
+#include <SP_ConstraintIter.h>
 // AddingSensitivity:END ////////////////////////////
 
 #include <OPS_Globals.h>
@@ -1192,9 +1194,27 @@ Node::setR(int row, int col, double Value)
     opserr << "Node:setR() - row, col index out of range\n";
     return -1;
   }
-
+  
   // do the assignment
   (*R)(row,col) = Value;
+  
+  /*
+  // to test uniform excitation pattern with consistent mass matrices:
+  // found that the static application of a unit ground displacement
+  // needs to also be applied to the constrained DOFs
+  Domain *theDomain = this->getDomain();
+  SP_ConstraintIter &theSPs = theDomain->getSPs();
+  SP_Constraint *theSP;
+  // assign zero if there is a homogeneous SP
+  while ((theSP = theSPs()) != 0) {
+      if (theSP->getNodeTag() == this->getTag() &&
+          theSP->getDOF_Number() == row &&
+          theSP->isHomogeneous()) {
+              (*R)(row,col) = 0.0;
+      }
+  }
+  */
+  
   return 0;
 }
 
