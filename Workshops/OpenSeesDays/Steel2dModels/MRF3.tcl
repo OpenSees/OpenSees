@@ -21,19 +21,6 @@ set numFloor [expr [llength $floorOffsets]+1]
 set numCline [expr [llength $colOffsets]+1]
 set roofFloor [llength $numFloor]
 
-# build colLocations and floorLocations
-set floorLocations 0; set floorLoc 0; 
-set colLocations 0; set colLoc 0; 
-
-for {set i 1} {$i < $numFloor} {incr i 1} {
-    set floorLoc [expr $floorLoc + [lindex $floorOffsets [expr $i-1]]]
-    lappend floorLocations $floorLoc;
-}
-for {set i 1} {$i < $numCline} {incr i 1} {
-    set colLoc [expr $colLoc + [lindex $colOffsets [expr $i-1]]]
-    lappend colLocations $colLoc;
-}
-
 # check of list dimensions for errors
 if {[llength $massesX] != $numFloor} {puts "ERROR: massX"; quit}
 if {[llength $colSizes] != [expr $numFloor-1]} {puts "ERROR: colSizes"; quit}
@@ -46,16 +33,20 @@ wipe;
 model BasicBuilder -ndm 2 -ndf 3;  # Define the model builder, ndm = #dimension, ndf = #dofs
 
 # Build the Nodes
-for {set floor 1} {$floor <= $numFloor} {incr floor 1} {
-    set floorLoc [lindex $floorLocations [expr $floor-1]]
+for {set floor 1; set floorLoc 0} {$floor <= $numFloor} {incr floor 1} {
     set massX [lindex $massesX [expr $floor-1]]
     set massY [lindex $massesY [expr $floor-1]]
-    for {set colLine 1} {$colLine <= $numCline} {incr colLine 1} {
-	set colLoc [lindex $colLocations [expr $colLine-1]]
+    for {set colLine 1; set colLoc 0;} {$colLine <= $numCline} {incr colLine 1} {
 	node $colLine$floor $colLoc $floorLoc -mass $massX $massY 0.
 	if {$floor == 1} {
 	    fix $colLine$floor 1 1 1
 	}
+	if {$colLine < $numCline} {
+	    set colLoc [expr $colLoc + [lindex $colOffsets [expr $colLine-1]]]
+	}
+    }
+    if {$floor < $numFloor} {
+	set floorLoc [expr $floorLoc + [lindex $floorOffsets [expr $floor-1]]]
     }
 }
 	    
@@ -65,8 +56,7 @@ uniaxialMaterial Steel02 1 50.0 29000 0.003 20 0.925 0.15
 # build the columns
 geomTransf PDelta 1
 for {set colLine 1} {$colLine <= $numCline} {incr colLine 1} {
-    for {set floor1 1} {$floor1 < $numFloor} {incr floor1 1} {
-	set floor2 [expr $floor1+1]
+    for {set floor1 1; set floor2 2} {$floor1 < $numFloor} {incr floor1 1; incr floor2 1} {
 	set theSection [lindex $colSizes [expr $floor1 -1]]
 	ForceBeamWSection2d $colLine$floor1$colLine$floor2 $colLine$floor1 $colLine$floor2 $theSection 1 1 -nip 5
     }
@@ -74,8 +64,7 @@ for {set colLine 1} {$colLine <= $numCline} {incr colLine 1} {
 
 # build the beams
 geomTransf Linear 2
-for {set colLine1  1} {$colLine1 < $numCline} {incr colLine1 1} {
-    set colLine2 [expr $colLine1 + 1]
+for {set colLine1  1; set colLine2 2} {$colLine1 < $numCline} {incr colLine1 1; incr colLine2 1} {
     for {set floor 2} {$floor <= $numFloor} {incr floor 1} {
 	set theSection [lindex $beamSizes [expr $floor -2]]
 	ForceBeamWSection2d $colLine1$floor$colLine2$floor $colLine1$floor $colLine2$floor $theSection 1 2
@@ -86,8 +75,7 @@ for {set colLine1  1} {$colLine1 < $numCline} {incr colLine1 1} {
 set floorLoad -0.11238
 set roofLoad -0.1026
 pattern Plain 101 Linear {
-    for {set colLine1  1} {$colLine1 < $numCline} {incr colLine1 1} {
-	set colLine2 [expr $colLine1 + 1]
+    for {set colLine1  1; set colLine2 2} {$colLine1 < $numCline} {incr colLine1 1; incr colLine2 1} {
 	for {set floor 2} {$floor <= $numFloor} {incr floor 1} {
 	    if {$floor == 4} {
 		eleLoad -ele $colLine1$floor$colLine2$floor -type beamUniform $roofLoad
