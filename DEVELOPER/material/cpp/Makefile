@@ -2,25 +2,25 @@ include ../../Makefile.def
 
 ifeq ($(OS_FLAG), -D_LINUX)
 
-LIBRARY 	= Concrete09.so
+LIBRARY 	= ElasticPPcpp.so
 
-OBJS	= Concrete09.o 
+OBJS	= ElasticPPcpp.o 
 
 all:   $(OBJS)
 	$(CC++) -shared -Wl,-soname,$(LIBRARY) -o $(LIBRARY) $(OBJS) -lc
 
-Concrete09.o: Concrete09.cpp
-	$(CC++) -fPIC $(INCLUDES) -g -c -Wall Concrete09.cpp
+ElasticPPcpp.o: ElasticPPcpp.cpp
+	$(CC++) -fPIC $(INCLUDES) -g -c -Wall ElasticPPcpp.cpp
 
 
 
 else
 
-LIBRARY 	= Concrete09.dylib
+LIBRARY 	= ElasticPPcpp.dylib
 
 
 all: $(OBJS)
-	$(CC++) $(OS_FLAG) -dynamiclib $(INCLUDES) -Wl,-undefined,suppress,-flat_namespace Concrete09.cpp $(OUTSIDE_OBJS)  -current_version 1.0 -compatibility_version 1.0 -fvisibility=hidden -o $(LIBRARY)
+	$(CC++) $(OS_FLAG) -dynamiclib $(INCLUDES) -Wl,-undefined,suppress,-flat_namespace ElasticPPcpp.cpp $(OUTSIDE_OBJS)  -current_version 1.0 -compatibility_version 1.0 -fvisibility=hidden -o $(LIBRARY)
 
 
 endif

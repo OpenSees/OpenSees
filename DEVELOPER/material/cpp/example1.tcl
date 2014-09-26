@@ -18,8 +18,8 @@ node 3 168.0  0.0
 node 4  72.0 96.0
 
 # add material - command: material <matType> matID <matArgs>
-uniaxialMaterial Concrete09 1 -4.500 -0.002 -0.03 3823.67 0.7 0.002 0.1 0 0.1
-#uniaxialMaterial ElasticPPcpp 1 3000 0.001
+#uniaxialMaterial Concrete09 1 -4.500 -0.002 -0.03 3823.67 0.7 0.002 0.1 0 0.1
+uniaxialMaterial ElasticPPcpp 1 3000 0.001
 
 # add truss elements - command: truss trussID node1 node2 A matID
 element truss 1 1 4 10.0 1
