@@ -4452,6 +4452,7 @@ Workshops/OpenSeesDays/Steel2dModels/MRF6.tcl -text
 Workshops/OpenSeesDays/Steel2dModels/MRF7.tcl -text
 Workshops/OpenSeesDays/Steel2dModels/Oak_2_50_5_FN.AT2 -text
 Workshops/OpenSeesDays/Steel2dModels/ReadRecord.tcl -text
+Workshops/OpenSeesDays/Steel2dModels/Solution2014.tcl -text
 Workshops/OpenSeesDays/Steel2dModels/Steel2d.tcl -text
 Workshops/OpenSeesDays/Steel2dModels/el_centro.AT2 -text
 Workshops/OpenSeesDays/SteelWSections.tcl -text
