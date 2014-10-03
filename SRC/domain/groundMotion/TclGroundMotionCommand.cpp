@@ -214,7 +214,7 @@ TclGroundMotionCommand(ClientData clientData, Tcl_Interp *interp,
     Vector facts(numMotions);
     for (int i=0; i<numMotions; i++) {
       double fact;
-      if (Tcl_GetDouble(interp, argv[i+startArg+1+numMotions+2], &fact) != TCL_OK)	
+      if (Tcl_GetDouble(interp, argv[i+endMotionIDs+1], &fact) != TCL_OK)	
 	return TCL_ERROR;		    
       facts[i] = fact;
     }
