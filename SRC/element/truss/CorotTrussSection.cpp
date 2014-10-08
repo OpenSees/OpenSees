@@ -682,9 +682,6 @@ CorotTrussSection::getResistingForce()
         P(i+numDOF2) =  qg(i);
     }
     
-    // subtract external load
-    (*theVector) -= *theLoad;
-    
     return *theVector;
 }
 
@@ -693,6 +690,9 @@ CorotTrussSection::getResistingForceIncInertia()
 {	
     Vector &P = *theVector;
     P = this->getResistingForce();
+    
+    // subtract external load
+    P -= *theLoad;
     
     // now include the mass portion
     if (Lo != 0.0 && rho != 0.0) {

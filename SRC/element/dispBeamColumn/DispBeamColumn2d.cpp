@@ -721,15 +721,6 @@ DispBeamColumn2d::getResistingForce()
 
   P = crdTransf->getGlobalResistingForce(q, p0Vec);
   
-  // Subtract other external nodal loads ... P_res = P_int - P_ext
-  //P.addVector(1.0, Q, -1.0);
-  P(0) -= Q(0);
-  P(1) -= Q(1);
-  P(2) -= Q(2);
-  P(3) -= Q(3);
-  P(4) -= Q(4);
-  P(5) -= Q(5);
-  
   return P;
 }
 
@@ -737,6 +728,9 @@ const Vector&
 DispBeamColumn2d::getResistingForceIncInertia()
 {
   P = this->getResistingForce();
+  
+  // Subtract other external nodal loads ... P_res = P_int - P_ext
+  P.addVector(1.0, Q, -1.0);
   
   if (rho != 0.0) {
     const Vector &accel1 = theNodes[0]->getTrialAccel();

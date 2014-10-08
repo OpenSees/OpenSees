@@ -314,9 +314,6 @@ const Vector& GenericCopy::getResistingForce()
     // determine resisting forces in global system
     theVector = theSource->getResistingForce();
     
-    // subtract external load
-    theVector.addVector(1.0, theLoad, -1.0);
-    
     return theVector;
 }
 
@@ -324,6 +321,9 @@ const Vector& GenericCopy::getResistingForce()
 const Vector& GenericCopy::getResistingForceIncInertia()
 {
     theVector = this->getResistingForce();
+    
+    // subtract external load
+    theVector.addVector(1.0, theLoad, -1.0);
     
     if (massFlag == false)
         this->getMass();

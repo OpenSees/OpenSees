@@ -421,9 +421,6 @@ const Vector& Adapter::getResistingForce()
     // determine resisting forces in global system
     theVector.Assemble(q, basicDOF);
     
-    // subtract external load
-    theVector.addVector(1.0, theLoad, -1.0);
-    
     return theVector;
 }
 
@@ -431,6 +428,9 @@ const Vector& Adapter::getResistingForce()
 const Vector& Adapter::getResistingForceIncInertia()
 {
     theVector = this->getResistingForce();
+    
+    // subtract external load
+    theVector.addVector(1.0, theLoad, -1.0);
     
     // add the damping forces from rayleigh damping
     if (addRayleigh == 1)  {

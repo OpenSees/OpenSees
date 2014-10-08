@@ -603,9 +603,6 @@ const Vector& FlatSliderSimple3d::getResistingForce()
     // determine resisting forces in global system
     theVector.addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
     
-    // subtract external load
-    theVector.addVector(1.0, theLoad, -1.0);
-    
     return theVector;
 }
 
@@ -614,6 +611,9 @@ const Vector& FlatSliderSimple3d::getResistingForceIncInertia()
 {
     // this already includes damping forces from materials
     theVector = this->getResistingForce();
+    
+    // subtract external load
+    theVector.addVector(1.0, theLoad, -1.0);
     
     // add the damping forces from rayleigh damping
     if (addRayleigh == 1)  {

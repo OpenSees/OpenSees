@@ -706,40 +706,40 @@ void HDR::zeroLoad()
 
 int HDR::addLoad(ElementalLoad *theLoad, double loadFactor)
 {  
-        opserr <<"HDR::addLoad() - "
-                << "load type unknown for element: "
-                << this->getTag() << endln;
-   
-        return -1;
+    opserr <<"HDR::addLoad() - "
+        << "load type unknown for element: "
+        << this->getTag() << endln;
+    
+    return -1;
 }
 
 
 int HDR::addInertiaLoadToUnbalance(const Vector &accel)
 {
-	// check for quick return
-        if (mass == 0.0)  {
-                return 0;
-        }
-   
-        // get R * accel from the nodes
-        const Vector &Raccel1 = theNodes[0]->getRV(accel);
-        const Vector &Raccel2 = theNodes[1]->getRV(accel);
-       
-        if (6 != Raccel1.Size() || 6 != Raccel2.Size())  {
-                opserr << "HDR::addInertiaLoadToUnbalance() - "
-                        << "matrix and vector sizes are incompatible\n";
-                return -1;
-        }
-   
-        // want to add ( - fact * M R * accel ) to unbalance
-        // take advantage of lumped mass matrix
-        double m = 0.5*mass;
+    // check for quick return
+    if (mass == 0.0)  {
+        return 0;
+    }
+    
+    // get R * accel from the nodes
+    const Vector &Raccel1 = theNodes[0]->getRV(accel);
+    const Vector &Raccel2 = theNodes[1]->getRV(accel);
+    
+    if (6 != Raccel1.Size() || 6 != Raccel2.Size())  {
+        opserr << "HDR::addInertiaLoadToUnbalance() - "
+            << "matrix and vector sizes are incompatible\n";
+        return -1;
+    }
+    
+    // want to add ( - fact * M R * accel ) to unbalance
+    // take advantage of lumped mass matrix
+    double m = 0.5*mass;
     for (int i = 0; i < 3; i++)  {
         theLoad(i)   -= m * Raccel1(i);
         theLoad(i+3) -= m * Raccel2(i);
     }
-   
-        return 0;
+    
+    return 0;
 }
 
 
@@ -754,34 +754,35 @@ const Vector& HDR::getResistingForce()
 
     // determine resisting forces in global system
     theVector = Tgl^ql;
-   
-    // subtract external load
-    theVector.addVector(1.0, theLoad, -1.0);
+    
     return theVector;
 }
 
 
 const Vector& HDR::getResistingForceIncInertia()
 {      
-	theVector = this->getResistingForce();
-       
-        // add the damping forces if rayleigh damping
-        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-                theVector += this->getRayleighDampingForces();
-   
-        // now include the mass portion
-        if (mass != 0.0)  {
-                const Vector &accel1 = theNodes[0]->getTrialAccel();
-                const Vector &accel2 = theNodes[1]->getTrialAccel();    
-               
-                double m = 0.5*mass;
-                for (int i = 0; i < 3; i++)  {
-                        theVector(i)   += m * accel1(i);
-                        theVector(i+3) += m * accel2(i);
-                }
+    theVector = this->getResistingForce();
+    
+    // subtract external load
+    theVector.addVector(1.0, theLoad, -1.0);
+    
+    // add the damping forces if rayleigh damping
+    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+        theVector += this->getRayleighDampingForces();
+    
+    // now include the mass portion
+    if (mass != 0.0)  {
+        const Vector &accel1 = theNodes[0]->getTrialAccel();
+        const Vector &accel2 = theNodes[1]->getTrialAccel();    
+        
+        double m = 0.5*mass;
+        for (int i = 0; i < 3; i++)  {
+            theVector(i)   += m * accel1(i);
+            theVector(i+3) += m * accel2(i);
         }
-       
-        return theVector;
+    }
+    
+    return theVector;
 }
 
 

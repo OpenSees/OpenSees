@@ -799,16 +799,16 @@ DispBeamColumn3dWithSensitivity::getResistingForce()
   Vector p0Vec(p0, 5);
   P = crdTransf->getGlobalResistingForce(q, p0Vec);
   
-  // Subtract other external nodal loads ... P_res = P_int - P_ext
-  P.addVector(1.0, Q, -1.0);
-  
   return P;
 }
 
 const Vector&
 DispBeamColumn3dWithSensitivity::getResistingForceIncInertia()
 {
-  this->getResistingForce();
+  P = this->getResistingForce();
+  
+  // Subtract other external nodal loads ... P_res = P_int - P_ext
+  P.addVector(1.0, Q, -1.0);
   
   if (rho != 0.0) {
     const Vector &accel1 = theNodes[0]->getTrialAccel();
@@ -829,13 +829,13 @@ DispBeamColumn3dWithSensitivity::getResistingForceIncInertia()
 
     // add the damping forces if rayleigh damping
     if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-      P += this->getRayleighDampingForces();
+      P.addVector(1.0, this->getRayleighDampingForces(), 1.0);
 
   } else {
 
     // add the damping forces if rayleigh damping
     if (betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-      P += this->getRayleighDampingForces();
+      P.addVector(1.0, this->getRayleighDampingForces(), 1.0);
   }
   
   return P;

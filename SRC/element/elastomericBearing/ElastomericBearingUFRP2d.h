@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 4945 $
-// $Date: 2012-07-27 16:05:47 -0700 (Fri, 27 Jul 2012) $
-// $URL: svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk/SRC/element/elastomericBearing/ElastomericBearingUFRP2d.h $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef ElastomericBearingUFRP2d_h
 #define ElastomericBearingUFRP2d_h

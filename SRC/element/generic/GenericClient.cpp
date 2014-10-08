@@ -460,9 +460,6 @@ const Vector& GenericClient::getResistingForce()
     // determine resisting forces in global system
     theVector.Assemble(*qDaq, basicDOF);
     
-    // subtract external load
-    theVector.addVector(1.0, theLoad, -1.0);
-    
     return theVector;
 }
 
@@ -470,6 +467,9 @@ const Vector& GenericClient::getResistingForce()
 const Vector& GenericClient::getResistingForceIncInertia()
 {
     theVector = this->getResistingForce();
+    
+    // subtract external load
+    theVector.addVector(1.0, theLoad, -1.0);
     
     if (massFlag == false)
         this->getMass();

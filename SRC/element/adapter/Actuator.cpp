@@ -527,9 +527,6 @@ const Vector& Actuator::getResistingForce()
         (*theVector)(i+numDOF2) = cosX[i]*q(0);
     }
     
-    // subtract external load
-    (*theVector) -= *theLoad;
-    
     return *theVector;
 }
 
@@ -537,6 +534,9 @@ const Vector& Actuator::getResistingForce()
 const Vector& Actuator::getResistingForceIncInertia()
 {
     this->getResistingForce();
+    
+    // subtract external load
+    (*theVector) -= *theLoad;
     
     // add the damping forces from rayleigh damping
     if (addRayleigh == 1)  {

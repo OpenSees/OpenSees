@@ -475,9 +475,6 @@ const Vector& ElasticTimoshenkoBeam2d::getResistingForce()
     // determine resisting forces in global system
     theVector.addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
     
-    // subtract external load
-    theVector.addVector(1.0, theLoad, -1.0);
-    
     return theVector;
 }
 
@@ -486,6 +483,9 @@ const Vector& ElasticTimoshenkoBeam2d::getResistingForceIncInertia()
 {	
     // first get the resisting forces
     theVector = this->getResistingForce();
+    
+    // subtract external load
+    theVector.addVector(1.0, theLoad, -1.0);
     
     // add the damping forces from rayleigh damping
     if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)

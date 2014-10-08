@@ -823,10 +823,7 @@ const Vector &
 		(*theVector)(i) = -temp;
 		(*theVector)(i+numDOF2) = temp;
 	}
-
-	// subtract external load:  Ku - P
-	(*theVector) -= *theLoad;
-
+    
 	return *theVector;
 }
 
@@ -835,7 +832,10 @@ const Vector &
 	Truss2::getResistingForceIncInertia()
 {	
 	this->getResistingForce();
-
+    
+	// subtract external load
+	(*theVector) -= *theLoad;
+    
 	// now include the mass portion
 	if (L != 0.0 && rho != 0.0) {
 

@@ -710,24 +710,17 @@ DispBeamColumn2dWithSensitivity::getResistingForce()
 
   P = crdTransf->getGlobalResistingForce(q, p0Vec);
 
-  // Subtract other external nodal loads ... P_res = P_int - P_ext
-  //P.addVector(1.0, Q, -1.0);
-  P(0) -= Q(0);
-  P(1) -= Q(1);
-  P(2) -= Q(2);
-  P(3) -= Q(3);
-  P(4) -= Q(4);
-  P(5) -= Q(5);
-
   return P;
 }
 
 const Vector&
 DispBeamColumn2dWithSensitivity::getResistingForceIncInertia()
 {
-
-  this->getResistingForce();
-
+  P = this->getResistingForce();
+  
+  // Subtract other external nodal loads ... P_res = P_int - P_ext
+  P.addVector(1.0, Q, -1.0);
+  
   if (rho != 0.0) {
     const Vector &accel1 = theNodes[0]->getTrialAccel();
     const Vector &accel2 = theNodes[1]->getTrialAccel();
@@ -745,13 +738,13 @@ DispBeamColumn2dWithSensitivity::getResistingForceIncInertia()
 
     // add the damping forces if rayleigh damping
     if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-      P += this->getRayleighDampingForces();
+      P.addVector(1.0, this->getRayleighDampingForces(), 1.0);
 
   } else {
 
     // add the damping forces if rayleigh damping
     if (betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-      P += this->getRayleighDampingForces();
+      P.addVector(1.0, this->getRayleighDampingForces(), 1.0);
   }
 
   return P;
