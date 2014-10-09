@@ -2379,6 +2379,8 @@ SRC/element/dispBeamColumn/DispBeamColumn3d.cpp -text
 SRC/element/dispBeamColumn/DispBeamColumn3d.h -text
 SRC/element/dispBeamColumn/DispBeamColumn3dWithSensitivity.cpp -text
 SRC/element/dispBeamColumn/DispBeamColumn3dWithSensitivity.h -text
+SRC/element/dispBeamColumn/DispBeamColumnNL2d.cpp -text
+SRC/element/dispBeamColumn/DispBeamColumnNL2d.h -text
 SRC/element/dispBeamColumn/Makefile -text
 SRC/element/dispBeamColumnInt/DispBeamColumn2dInt.cpp -text
 SRC/element/dispBeamColumnInt/DispBeamColumn2dInt.h -text
