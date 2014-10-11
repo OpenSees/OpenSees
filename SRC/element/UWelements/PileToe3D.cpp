@@ -65,15 +65,15 @@ OPS_PileToe3D(void)
 
   int numRemainingInputArgs = OPS_GetNumRemainingInputArgs();
 
-  if (numRemainingInputArgs < 5) {
-    opserr << "Invalid #args,  want: element PileToe3D eleTag?  iNode? radius? k? crdTransf?\n";
+  if (numRemainingInputArgs < 7) {
+    opserr << "Invalid #args,  want: element PileToe3D eleTag?  iNode? BiNode? BjNode? radius? k? crdTransf?\n";
     return 0;
   }
    
-  int    iData[3];
+  int    iData[5];
   double dData[2];
 
-  int numData = 2;
+  int numData = 4;
   if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING invalid integer data: element PileToe3D" << endln;
     return 0;
@@ -92,12 +92,12 @@ OPS_PileToe3D(void)
   }
 
   numData = 1;
-  if (OPS_GetIntInput(&numData, &iData[2]) != 0) {
+  if (OPS_GetIntInput(&numData, &iData[4]) != 0) {
     opserr << "WARNING invalid integer crdTransf data: element PileToe3D" << iData[0] << endln;
     return 0;
   }
 
-  int transfTag = iData[2];
+  int transfTag = iData[4];
   CrdTransf *theTransf = OPS_GetCrdTransf(transfTag);
   if (theTransf == 0) {
     opserr << "WARNING element PileToe3D " << iData[0] << endln;
@@ -106,7 +106,7 @@ OPS_PileToe3D(void)
   }
 
   // Parsing was successful, allocate the element
-  theElement = new PileToe3D(iData[0], iData[1], dData[0], dData[1], *theTransf);
+  theElement = new PileToe3D(iData[0], iData[1], iData[2], iData[3], dData[0], dData[1], *theTransf);
 
   if (theElement == 0) {
     opserr << "WARNING could not create element of type PileToe3D\n";
@@ -118,25 +118,28 @@ OPS_PileToe3D(void)
 
 
 // constructors:
-PileToe3D::PileToe3D(int tag, int Nd1, double rad, double k, CrdTransf &coordTransf)
+PileToe3D::PileToe3D(int tag, int Nd1, int BNd1, int BNd2, double rad, double k, CrdTransf &coordTransf)
   :Element(tag,ELE_TAG_PileToe3D),    
    crdTransf(0),
    externalNodes(PT3D_NUM_NODE),
+   externalBNodes(2),
    mTangentStiffness(PT3D_NUM_DOF, PT3D_NUM_DOF),
    mInternalForces(PT3D_NUM_DOF)
 {
         externalNodes(0) = Nd1;
+		externalBNodes(0) = BNd1;
+		externalBNodes(1) = BNd2;
 
         mRadius = rad;
         mSubgradeCoeff = k;
-	mCC = mRadius;  // Initial value of mCC --> Total area 
+		mCC = mRadius;  // Initial value of mCC --> Total area 
        
         // get copy of the transformation & material object  
         crdTransf = coordTransf.getCopy3d();
        
         // check it:         
         if (!crdTransf) {
-	opserr << "Error: PileToe3D:PileToe3D: could not create copy of coordinate transformation object" << endln;
+		opserr << "Error: PileToe3D:PileToe3D: could not create copy of coordinate transformation object" << endln;
             exit(-1);
         }
               
@@ -144,13 +147,14 @@ PileToe3D::PileToe3D(int tag, int Nd1, double rad, double k, CrdTransf &coordTra
         MyTag = tag;
 
         // set initialization to true for setDomain function
-	mInitialize = true;
+	    mInitialize = true;
 }
 
 PileToe3D::PileToe3D()
  :Element(0,ELE_TAG_PileToe3D),    
    crdTransf(0),
    externalNodes(PT3D_NUM_NODE),
+   externalBNodes(2),
    mTangentStiffness(PT3D_NUM_DOF, PT3D_NUM_DOF),
    mInternalForces(PT3D_NUM_DOF)
 {
@@ -173,17 +177,34 @@ PileToe3D::getNumExternalNodes(void) const
     return PT3D_NUM_NODE;
 }
 
+int
+PileToe3D::getNumExternalBNodes(void) const
+{
+    return 2;
+}
+
 const ID &
 PileToe3D::getExternalNodes(void)
 {
     return externalNodes;
 }
 
+const ID &
+PileToe3D::getExternalBNodes(void)
+{
+    return externalBNodes;
+}
 
 Node **
 PileToe3D::getNodePtrs(void)
 {
         return theNodes;                        
+}
+
+Node **
+PileToe3D::getBNodePtrs(void)
+{
+        return theBNodes;                        
 }
 
 int
@@ -195,13 +216,23 @@ PileToe3D::getNumDOF(void)
 void
 PileToe3D::setDomain(Domain *theDomain)
 {
-  theNodes[0] = theDomain->getNode(externalNodes(0));
+  theNodes[0]  = theDomain->getNode(externalNodes(0));
+
+  theBNodes[0] = theDomain->getNode(externalBNodes(0));
+  theBNodes[1] = theDomain->getNode(externalBNodes(1));
                
   for (int i = 0; i < 1; i++) {
     if (theNodes[i] == 0) {
       opserr << "PileToe3D::setDomain() - no node with tag: " << theNodes[i] << endln;
       return;  // don't go any further - otherwise segmentation fault
-    }  
+    } 
+  }
+
+  for (int i = 0; i < 2; i++) {
+    if (theBNodes[i] == 0) {
+      opserr << "PileToe3D::setDomain() - no beam node with tag: " << theNodes[i] << endln;
+      return;  // don't go any further - otherwise segmentation fault
+    } 
   }
 
   // only perform these steps during initial creation of element
@@ -255,19 +286,28 @@ PileToe3D::getTangentStiff(void)
 {
 	//double mPi   = 4.0*atan(1);
 	const double mPi = 3.1415926535897;
-        double mArea     = mPi* mRadius*mRadius;
+    double mArea     = mPi* mRadius*mRadius;
 	double mII       = mPi*mRadius*mRadius*mRadius*mRadius/4.0;
-        // initialize Kt
-        mTangentStiffness.Zero();
+    // initialize Kt
+    mTangentStiffness.Zero();
 
+	/*
 	mTangentStiffness(0,0) = mSubgradeCoeff*mArea;
 	mTangentStiffness(1,1) = mSubgradeCoeff*mArea;
 	mTangentStiffness(2,2) = mSubgradeCoeff*mArea;
 	mTangentStiffness(3,3) = mSubgradeCoeff*mII;	
 	mTangentStiffness(4,4) = mSubgradeCoeff*mII;
 	mTangentStiffness(5,5) = mSubgradeCoeff*mII;	
+	
+	mTangentStiffness(0,0) = mSubgradeCoeff*mArea;
+	mTangentStiffness(4,4) = mSubgradeCoeff*mII;
+	mTangentStiffness(5,5) = mSubgradeCoeff*mII;	
+	*/
+    mTangentStiffness(2,2) = mSubgradeCoeff*mArea;
+	mTangentStiffness(3,3) = mSubgradeCoeff*mII;
+	mTangentStiffness(4,4) = mSubgradeCoeff*mII;	
 
-        return mTangentStiffness;
+    return mTangentStiffness;
 }
 
 const Matrix &
@@ -350,12 +390,20 @@ PileToe3D::sendSelf(int commitTag, Channel &theChannel)
     return -1;
   }          
 
-  //PileToe3D then sends the tags of its four nodes
+  //PileToe3D then sends the tags of its one node
   res = theChannel.sendID(dataTag, commitTag, externalNodes);
   if (res < 0) {
     opserr <<"WARNING PileToe3D::sendSelf() - " << this->getTag() << " failed to send Vector\n";
     return -2;
   }
+
+  //PileToe3D then sends the tags of its two beam nodes
+  res = theChannel.sendID(dataTag, commitTag, externalBNodes);
+  if (res < 0) {
+    opserr <<"WARNING PileToe3D::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+    return -2;
+  }
+
 
   //PileToe3D asks its crdTransf object to send itself
   res = crdTransf->sendSelf(commitTag, theChannel);
@@ -389,8 +437,15 @@ PileToe3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBro
 
   MyTag              = (int)data(0);
  
-  // PileToe3D now receives the tags of it's four external nodes
+  // PileToe3D now receives the tags of it's one external node
   res = theChannel.recvID(dataTag, commitTag, externalNodes);
+  if (res < 0) {
+    opserr <<"WARNING PileToe3D::recvSelf() - " << this->getTag() << " failed to receive ID\n";
+    return -2;
+  }
+
+  // PileToe3D now receives the tags of it's two beam external nodes
+  res = theChannel.recvID(dataTag, commitTag, externalBNodes);
   if (res < 0) {
     opserr <<"WARNING PileToe3D::recvSelf() - " << this->getTag() << " failed to receive ID\n";
     return -2;

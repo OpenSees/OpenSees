@@ -53,14 +53,17 @@ class FEM_ObjectBroker;
 class PileToe3D : public Element
 {
   public:
-    PileToe3D(int tag, int Nd1, double rad, double k, CrdTransf &coordTransf);
+    PileToe3D(int tag, int Nd1, int BNd1, int BNd2, double rad, double k, CrdTransf &coordTransf);
     PileToe3D();
     ~PileToe3D();
 
     // public methods to obtain inforrmation about dof & connectivity    
     int getNumExternalNodes(void) const;
+	int getNumExternalBNodes(void) const;
     const ID &getExternalNodes(void);
+	const ID &getExternalBNodes(void);
     Node **getNodePtrs(void);
+	Node **getBNodePtrs(void);
     int getNumDOF(void);       
     void setDomain(Domain *theDomain);
 
@@ -101,10 +104,12 @@ class PileToe3D : public Element
     // objects
     CrdTransf  *crdTransf;              // pointer to coordinate tranformation object   
     ID  externalNodes;                  // contains the tags of the end nodes
+	ID  externalBNodes;                 // contains the tags of the bean element used to determine normal to pile toe
     Vector theVector;                   // vector to return the residual
     Matrix mTangentStiffness;           // Tangent Stiffness matrix
     Vector mInternalForces;             // vector of Internal Forces
     Node *theNodes[PT3D_NUM_NODE];
+	Node *theBNodes[2];
        
     // input quantities
     double mRadius;                     // radius of Pile Surface   
