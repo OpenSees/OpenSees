@@ -17,7 +17,7 @@ OBJS       = IncrementalIntegrator.o \
 	Newmark1.o \
 	CentralDifferenceAlternative.o \
 	TRBDF2.o \
-    TRBDF3.o \
+        TRBDF3.o \
 	ArcLength.o \
 	ArcLength1.o \
 	LoadPath.o \
@@ -30,23 +30,23 @@ OBJS       = IncrementalIntegrator.o \
 	NewmarkExplicit.o \
 	NewmarkHSFixedNumIter.o \
 	NewmarkHSIncrReduct.o \
-    NewmarkHSIncrLimit.o \
+	NewmarkHSIncrLimit.o \
 	HHTExplicit.o \
 	HHTGeneralized.o \
 	HHTGeneralizedExplicit.o \
 	HHTHSFixedNumIter.o \
 	HHTHSIncrReduct.o \
-    HHTHSIncrLimit.o \
+	HHTHSIncrLimit.o \
 	Collocation.o \
 	CollocationHSFixedNumIter.o \
 	CollocationHSIncrReduct.o \
-    CollocationHSIncrLimit.o \
+	CollocationHSIncrLimit.o \
 	AlphaOSGeneralized.o \
 	AlphaOS.o \
-    Houbolt.o \
-    ParkLMS3.o \
-    BackwardEuler.o \
-    KRAlphaExplicit.o
+	Houbolt.o \
+	ParkLMS3.o \
+	BackwardEuler.o \
+	KRAlphaExplicit.o 
 
 all:         $(OBJS)
 

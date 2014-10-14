@@ -1,4 +1,4 @@
-﻿/* ****************************************************************** **
+/* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
@@ -18,18 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $Source: $
-
-// Developed: Chinmoy Kolay (chk311@lehigh.edu)
-// Implemented: Andreas Schellenberg (andreas.schellenberg@gmail.com) 
-// Created: 08/14
-// Revision: A
-//
-// Description: This file contains the implementation of the KRAlphaExplicit class.
-
 #include <KRAlphaExplicit.h>
+#include <CentralDifference.h>
 #include <FE_Element.h>
 #include <LinearSOE.h>
 #include <AnalysisModel.h>
@@ -39,7 +29,6 @@
 #include <AnalysisModel.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
-
 
 KRAlphaExplicit::KRAlphaExplicit()
     : TransientIntegrator(INTEGRATOR_TAGS_KRAlphaExplicit),
@@ -105,7 +94,6 @@ KRAlphaExplicit::~KRAlphaExplicit()
     if (Utdothat != 0)
         delete Utdothat;
 }
-
 
 int KRAlphaExplicit::newStep(double _deltaT)
 {
@@ -229,7 +217,6 @@ int KRAlphaExplicit::newStep(double _deltaT)
     
     return 0;
 }
-
 
 int KRAlphaExplicit::revertToLastStep()
 {
