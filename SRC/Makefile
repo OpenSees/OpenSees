@@ -514,6 +514,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/frictionBearing/frictionModel/Coulomb.o \
 	$(FE)/element/frictionBearing/frictionModel/FrictionModel.o \
 	$(FE)/element/frictionBearing/frictionModel/FrictionResponse.o \
+	$(FE)/element/frictionBearing/frictionModel/VelNormalFrcDep.o \
 	$(FE)/element/frictionBearing/frictionModel/TclModelBuilderFrictionModelCommand.o \
 	$(FE)/element/frictionBearing/RJWatsonEQS2d.o \
 	$(FE)/element/frictionBearing/RJWatsonEQS3d.o \
