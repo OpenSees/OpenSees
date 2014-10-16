@@ -622,6 +622,7 @@
 #define ELE_TAG_MultipleShearSpring 6201
 #define ELE_TAG_MultipleNormalSpring 6202
 #define ELE_TAG_KikuchiBearing 6203
+#define ELE_TAG_YamamotoBiaxialHDR 6204
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2

@@ -2258,6 +2258,8 @@ SRC/element/HUelements/MultipleNormalSpring.cpp -text
 SRC/element/HUelements/MultipleNormalSpring.h -text
 SRC/element/HUelements/MultipleShearSpring.cpp -text
 SRC/element/HUelements/MultipleShearSpring.h -text
+SRC/element/HUelements/YamamotoBiaxialHDR.cpp -text
+SRC/element/HUelements/YamamotoBiaxialHDR.h -text
 SRC/element/Information.cpp -text
 SRC/element/Information.h -text
 SRC/element/Makefile -text

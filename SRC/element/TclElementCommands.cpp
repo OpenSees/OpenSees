@@ -334,6 +334,10 @@ extern int
 TclModelBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,  int argc,
 				  TCL_Char **argv, Domain*, TclModelBuilder *);
 
+extern int
+TclModelBuilder_addYamamotoBiaxialHDR(ClientData clientData, Tcl_Interp *interp,  int argc,
+				  TCL_Char **argv, Domain*, TclModelBuilder *);
+
 int
 TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 			      int argc, TCL_Char **argv,
@@ -1094,6 +1098,12 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
   else if (strcmp(argv[1],"KikuchiBearing") == 0) {
     int result = TclModelBuilder_addKikuchiBearing(clientData, interp, argc, argv,
 						   theTclDomain, theTclBuilder);
+    return result;
+  }
+
+  else if (strcmp(argv[1],"YamamotoBiaxialHDR") == 0) {
+    int result = TclModelBuilder_addYamamotoBiaxialHDR(clientData, interp, argc, argv,
+						 theTclDomain, theTclBuilder);
     return result;
   }
 
