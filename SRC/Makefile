@@ -434,6 +434,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/HUelements/KikuchiBearing.o \
 	$(FE)/element/HUelements/DBESI0.o \
 	$(FE)/element/HUelements/DBESI1.o \
+	$(FE)/element/HUelements/YamamotoBiaxialHDR.o \
 	$(FE)/element/feap/elmt01.o \
 	$(FE)/element/feap/elmt02.o \
 	$(FE)/element/feap/elmt03.o \
