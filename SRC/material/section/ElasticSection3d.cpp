@@ -42,13 +42,12 @@ ElasticSection3d::ElasticSection3d(void)
 :SectionForceDeformation(0, SEC_TAG_Elastic3d),
  E(0.0), A(0.0), Iz(0.0), Iy(0.0), G(0.0), J(0.0), e(4)
 {
-    if (code(0) != SECTION_RESPONSE_P)
-    {
-	code(0) = SECTION_RESPONSE_P;	// P is the first quantity
-	code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
-	code(2) = SECTION_RESPONSE_MY;	// My is the third 
-	code(3) = SECTION_RESPONSE_T;	// T is the fourth
-    }
+  if (code(0) != SECTION_RESPONSE_P) {
+    code(0) = SECTION_RESPONSE_P;	// P is the first quantity
+    code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
+    code(2) = SECTION_RESPONSE_MY;	// My is the third 
+    code(3) = SECTION_RESPONSE_T;	// T is the fourth
+  }
 }
 
 ElasticSection3d::ElasticSection3d
@@ -56,37 +55,36 @@ ElasticSection3d::ElasticSection3d
 :SectionForceDeformation(tag, SEC_TAG_Elastic3d),
  E(E_in), A(A_in), Iz(Iz_in), Iy(Iy_in), G(G_in), J(J_in), e(4)
 {
-    if (E <= 0.0)  {
-      opserr << "ElasticSection3d::ElasticSection3d -- Input E <= 0.0\n";
-    }
-    
-    if (A <= 0.0)  {
-      opserr << "ElasticSection3d::ElasticSection3d -- Input A <= 0.0\n";
-    }
-
-    if (Iz <= 0.0)  {
-      opserr << "ElasticSection3d::ElasticSection3d -- Input Iz <= 0.0\n";
-    }
-    
-    if (Iy <= 0.0)  {
-      opserr << "ElasticSection3d::ElasticSection3d -- Input Iy <= 0.0\n";
-    }
-
-    if (G <= 0.0)  {
-      opserr << "ElasticSection3d::ElasticSection3d -- Input G <= 0.0\n";
-    }
-    
-    if (J <= 0.0)  {
-      opserr << "ElasticSection3d::ElasticSection3d -- Input J <= 0.0\n";
-    }
-    
-    if (code(0) != SECTION_RESPONSE_P)
-    {
-	code(0) = SECTION_RESPONSE_P;	// P is the first quantity
-	code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
-	code(2) = SECTION_RESPONSE_MY;	// My is the third 
-	code(3) = SECTION_RESPONSE_T;	// T is the fourth
-    }
+  if (E <= 0.0)  {
+    //opserr << "ElasticSection3d::ElasticSection3d -- Input E <= 0.0\n";
+  }
+  
+  if (A <= 0.0)  {
+    //opserr << "ElasticSection3d::ElasticSection3d -- Input A <= 0.0\n";
+  }
+  
+  if (Iz <= 0.0)  {
+    //opserr << "ElasticSection3d::ElasticSection3d -- Input Iz <= 0.0\n";
+  }
+  
+  if (Iy <= 0.0)  {
+    //opserr << "ElasticSection3d::ElasticSection3d -- Input Iy <= 0.0\n";
+  }
+  
+  if (G <= 0.0)  {
+    //opserr << "ElasticSection3d::ElasticSection3d -- Input G <= 0.0\n";
+  }
+  
+  if (J <= 0.0)  {
+    //opserr << "ElasticSection3d::ElasticSection3d -- Input J <= 0.0\n";
+  }
+  
+  if (code(0) != SECTION_RESPONSE_P) {
+    code(0) = SECTION_RESPONSE_P;	// P is the first quantity
+    code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
+    code(2) = SECTION_RESPONSE_MY;	// My is the third 
+    code(3) = SECTION_RESPONSE_T;	// T is the fourth
+  }
 }
 
 ElasticSection3d::~ElasticSection3d(void)

@@ -43,11 +43,10 @@ ElasticSection2d::ElasticSection2d(void)
 :SectionForceDeformation(0, SEC_TAG_Elastic2d),
  E(0.0), A(0.0), I(0.0), e(2)
 {
-    if (code(0) != SECTION_RESPONSE_P)
-    {
-	code(0) = SECTION_RESPONSE_P;	// P is the first quantity
-	code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
-    }    
+  if (code(0) != SECTION_RESPONSE_P) {
+    code(0) = SECTION_RESPONSE_P;	// P is the first quantity
+    code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
+  }
 }
 
 ElasticSection2d::ElasticSection2d
@@ -55,23 +54,22 @@ ElasticSection2d::ElasticSection2d
 :SectionForceDeformation(tag, SEC_TAG_Elastic2d),
  E(E_in), A(A_in), I(I_in), e(2)
 {
-    if (E <= 0.0)  {
-		opserr << "ElasticSection2d::ElasticSection2d -- Input E <= 0.0\n";
+  if (E <= 0.0)  {
+    //opserr << "ElasticSection2d::ElasticSection2d -- Input E <= 0.0\n";
   }
-	
-    if (A <= 0.0)  {
-		opserr << "ElasticSection2d::ElasticSection2d -- Input A <= 0.0\n";
-    }
-    
-    if (I <= 0.0)  {
-		opserr << "ElasticSection2d::ElasticSection2d -- Input I <= 0.0\n";
-    }    
-	
-    if (code(0) != SECTION_RESPONSE_P)
-    {
-	code(0) = SECTION_RESPONSE_P;	// P is the first quantity
-	code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
-    }
+  
+  if (A <= 0.0)  {
+    //opserr << "ElasticSection2d::ElasticSection2d -- Input A <= 0.0\n";
+  }
+  
+  if (I <= 0.0)  {
+    //opserr << "ElasticSection2d::ElasticSection2d -- Input I <= 0.0\n";
+  }    
+  
+  if (code(0) != SECTION_RESPONSE_P) {
+    code(0) = SECTION_RESPONSE_P;	// P is the first quantity
+    code(1) = SECTION_RESPONSE_MZ;	// Mz is the second
+  }
 }
 
 ElasticSection2d::~ElasticSection2d(void)
