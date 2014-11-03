@@ -4441,6 +4441,7 @@ Workshops/OpenSeesDays/RCFrameUniform.tcl -text
 Workshops/OpenSeesDays/RCsection.tcl -text
 Workshops/OpenSeesDays/RCsection2D.tcl -text
 Workshops/OpenSeesDays/ReadRecord.tcl -text
+Workshops/OpenSeesDays/Steel2dModels/Building1.tcl -text
 Workshops/OpenSeesDays/Steel2dModels/CBF1.tcl -text
 Workshops/OpenSeesDays/Steel2dModels/CBF2.tcl -text
 Workshops/OpenSeesDays/Steel2dModels/CBF3.tcl -text
@@ -4459,6 +4460,8 @@ Workshops/OpenSeesDays/Steel2dModels/Oak_2_50_5_FN.AT2 -text
 Workshops/OpenSeesDays/Steel2dModels/ReadRecord.tcl -text
 Workshops/OpenSeesDays/Steel2dModels/Solution2014.tcl -text
 Workshops/OpenSeesDays/Steel2dModels/Steel2d.tcl -text
+Workshops/OpenSeesDays/Steel2dModels/SteelFrameTemplate2d.tcl -text
+Workshops/OpenSeesDays/Steel2dModels/SteelMomentFrame2d_UniformExcitation.tcl -text
 Workshops/OpenSeesDays/Steel2dModels/el_centro.AT2 -text
 Workshops/OpenSeesDays/SteelWSections.tcl -text
 Workshops/OpenSeesDays/a.tcl -text

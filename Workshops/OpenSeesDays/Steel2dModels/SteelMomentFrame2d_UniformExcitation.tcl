@@ -1,47 +1,56 @@
 # written: fmk
 # units: kip & in
 
-# load procedures in other files
-source Steel2d.tcl
-source ReadRecord.tcl;
 
-# set some variables
-set motion el_centro
-#set motion Oak_2_50_5_FN
+# following are required variables that need to be set prior to running script:
+# floorOffsets : list of floor offsets
+# colOffsets   : list of col offstes
+# colSizes     : list of col W Sections for interior columns
+# colExtSizes  : list of col W sections for exterior columns
+# beamSizes    : list of beam W sections for each floor. 
+# floorWeight  : total weight of typ floor for mass & beam load calculation
+# roofWeight   : total weight of typ floor for mass & beam load calculation
+# percentLoadFrame: percentage of total weight taken by frame for loading calc
+# Fy : steel yield strength
+# E  : steel elastic modulus
+# b  : steel hardening ratio
+# gMotion  : name of earthquake acceleration record, PEER AT2 format required
+# scale   : scale factor to be applied to earthquake gMotion
+
+wipe;
+
+# set some constants
 set PI 3.14159
 set in 1.0;
 set g 386.4;	
 
-set roofWeight  [expr 80*120.*72./1000.]; #kips; 
-set floorWeight [expr 95*120.*72./1000.];
- 
-set numFrameResisting 2.0; # lateral load resisting frames
-set percentLoadFrame [expr 15./120.]
+# load procedures in other files
+source Steel2d.tcl
+source ReadRecord.tcl;
 
-# set up my lists
-set floorOffsets {216. 150. 150. 150. 150. 150.}
-set colOffsets   {288. 288. 288.} 
-set colSizes     {W30X173 W30X173 W27X146 W27X146 W24X104 W24X104};
-set colExtSizes  {W14X193 W14X193 W14X159 W14X159 W14X109 W14X109};
-set beamSizes    {W30X99 W30X99 W27X94 W27X94 W24X76 W24X76};
-
-#calculated properties
+# determine some properties based on inputs
 set numFloor [expr [llength $floorOffsets]+1]
 set numCline [expr [llength $colOffsets]+1]
-
-for {set i 0; set width 0;} {$i < [expr $numCline-1]} {incr i 1} {set width [expr $width + [lindex $colOffsets $i]]}
-set massAtFloorNode [expr $floorWeight/($g*$numFrameResisting*$numCline*1.0)]
-set massAtRoofNode  [expr $roofWeight/($g*$numFrameResisting*$numCline*1.0)]
+set width 0.
+for {set i 0; set width 0;} {$i < [expr $numCline-1]} {incr i 1} {
+    set width [expr $width + [lindex $colOffsets $i]]
+}
+set massAtFloorNode [expr $floorWeight*$percentMassFrame/($g*$numCline*1.0)]
+set massAtRoofNode  [expr $roofWeight*$percentMassFrame/($g*$numCline*1.0)]
 set uniformRoofLoad  [expr $roofWeight*$percentLoadFrame/$width]
 set uniformFloorLoad [expr $floorWeight*$percentLoadFrame/$width]
 
-# check of list dimensions for errors
+# check list dimensions for errors
 if {[llength $colSizes] != [expr $numFloor-1]} {puts "ERROR: colSizes"; quit}
 if {$numCline >= 10} {puts "ERROR: too many column lines, reprogram"; quit}
 if {$numFloor >= 10} {puts "ERROR: too many floors, reprogram"; quit}
 
-wipe;
-model BasicBuilder -ndm 2 -ndf 3;  # Define the model builder, ndm = #dimension, ndf = #dofs
+#
+# Model Generation
+#
+
+# Define the model builder, ndm = #dimension, ndf = #dofs at a node
+model BasicBuilder -ndm 2 -ndf 3;  
 
 # Build the Nodes
 for {set floor 1; set floorLoc 0} {$floor <= $numFloor} {incr floor 1} {
@@ -67,7 +76,7 @@ for {set floor 1; set floorLoc 0} {$floor <= $numFloor} {incr floor 1} {
 }
 	    
 # define material 
-uniaxialMaterial Steel02 1 50.0 29000 0.003 20 0.925 0.15
+uniaxialMaterial Steel02 1 $Fy $E $b 20 0.925 0.15
 
 # build the columns
 geomTransf PDelta 1
@@ -79,7 +88,7 @@ for {set colLine 1} {$colLine <= $numCline} {incr colLine 1} {
 	    set theSection [lindex $colSizes [expr $floor1 -1]]
 	}
 	ForceBeamWSection2d $colLine$floor1$colLine$floor2 $colLine$floor1 $colLine$floor2 $theSection 1 1 -nip 5
-#	ElasticBeamWSection2d $colLine$floor1$colLine$floor2 $colLine$floor1 $colLine$floor2 $theSection 29000 1 
+	#	ElasticBeamWSection2d $colLine$floor1$colLine$floor2 $colLine$floor1 $colLine$floor2 $theSection 29000 1 
     }
 }
 
@@ -89,9 +98,13 @@ for {set colLine1  1; set colLine2 2} {$colLine1 < $numCline} {incr colLine1 1; 
     for {set floor 2} {$floor <= $numFloor} {incr floor 1} {
 	set theSection [lindex $beamSizes [expr $floor -2]]
 	ForceBeamWSection2d $colLine1$floor$colLine2$floor $colLine1$floor $colLine2$floor $theSection 1 2
-#	ElasticBeamWSection2d $colLine1$floor$colLine2$floor $colLine1$floor $colLine2$floor $theSection 29000 2
+	#	ElasticBeamWSection2d $colLine1$floor$colLine2$floor $colLine1$floor $colLine2$floor $theSection 29000 2
     }
 }
+
+#
+# add the gravity loads
+#
 
 pattern Plain 101 Linear {
     for {set colLine1  1} {$colLine1 < $numCline} {incr colLine1 1} {
@@ -106,7 +119,9 @@ pattern Plain 101 Linear {
     }
 }
 
-# Gravity-analysis: load-controlled static analysis
+#
+#  Perform Gravity-analysis: load-controlled static analysis
+#
 set Tol 1.0e-6;    
 constraints Plain;	
 numberer RCM;		
@@ -117,36 +132,46 @@ integrator LoadControl 0.1;
 analysis Static;		
 analyze 10
 
-# maintain constant gravity loads and reset time to zero
+#
+# set gravity loads constant and reset time to zero
+#
+
 loadConst -time 0.0
 
-# add some damping
-set pDamp 0.03
-set lambda [eigen 3]
-set omegaI [expr pow([lindex $lambda 0],0.5)];
-set omegaJ [expr pow([lindex $lambda 2],0.5)];
-set alphaM [expr $pDamp*(2*$omegaI*$omegaJ)/($omegaI+$omegaJ)];	
-set betaKcomm [expr 2.*$pDamp/($omegaI+$omegaJ)]; 
-rayleigh $alphaM 0. 0. $betaKcomm
+# add some damping 
+#  NOTE damping mass and initial stiffness as opposed to currnet stiffness
 
-puts " Period T1: [expr 2*$PI/sqrt([lindex $lambda 0])] sec"
+set lambda [eigen $mode2]
+set omegaI [expr pow([lindex $lambda [expr $mode1-1]],0.5)];
+set omegaJ [expr pow([lindex $lambda [expr $mode2-1]],0.5)];
+set alphaM [expr $dampRatio*(2*$omegaI*$omegaJ)/($omegaI+$omegaJ)];	
+set betaKcomm [expr 2.*$dampRatio/($omegaI+$omegaJ)]; 
+rayleigh $alphaM 0. 0. $betaKcomm 
+
+# puts " Period T1: [expr 2*$PI/sqrt([lindex $lambda 0])] sec"
 
 # create a load patrern for uniform excitation
-ReadRecord $motion.AT2 $motion.g3 dt nPt;
-timeSeries Path 10 -filePath $motion.g3 -dt $dt -factor $g
+ReadRecord $gMotion.AT2 $gMotion.g3 dt nPt;
+timeSeries Path 10 -filePath $gMotion.g3 -dt $dt -factor [expr $g*$scale]
 pattern UniformExcitation 1 1 -accel 10;
+
+#
+# create some recorders to monitor nodal disp and accelerations
+# for nodes column line 1
+#
 
 set nodeList []
 for {set floor 1} {$floor <= $numFloor} {incr floor 1} {
     lappend nodeList 1$floor
 }
+
 set cmd "recorder EnvelopeNode -file floorAccEnv.out  -timeSeries 10 -node $nodeList -dof 1 accel"; eval $cmd;
 set cmd "recorder EnvelopeNode -file floorAccEnv.out  -timeSeries 10 -node $nodeList -dof 1 accel"; eval $cmd;
 
 set cmd "recorder EnvelopeNode -file floorDispEnv.out  -node $nodeList -dof 1 disp"; eval $cmd;
 set cmd "recorder Node -file floorDisp.out  -node $nodeList -dof 1 disp"; eval $cmd;
 
-set tFinal	[expr $dt*$nPt];	# maximum duration of ground-motion analysis
+set tFinal [expr $dt*$nPt];  # maximum duration of ground-motion analysis
 constraints Plain
 numberer RCM
 system BandGeneral
@@ -171,10 +196,10 @@ while {$ok == 0 && $currentTime < $tFinal} {
 
 remove recorders
 
-puts "\n Results"
+# print out some results from recorded data
 set a [open floorDispEnv.out r]
 set line [gets $a]; set line [gets $a]; set line [gets $a]
-puts "MAX DISP:  $line"
+puts "gMotion: $gMotion scale: $scale colLine 1 Max Node Disp: $line"
 close $a
 
 set a [open floorAccEnv.out r]
