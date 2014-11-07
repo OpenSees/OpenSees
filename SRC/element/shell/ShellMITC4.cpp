@@ -978,10 +978,8 @@ ShellMITC4::formInertiaTerms( int tangFlag )
 
       temp = shp[massIndex][j] * dvol ;
 
-      /* already added 17 lines above
       for ( p = 0; p < 3; p++ )
         resid( jj+p ) += ( temp * momentum(p) ) ;
-      */
       
       if ( tangFlag == 1 && rhoH != 0.0) {
 
