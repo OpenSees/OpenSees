@@ -420,8 +420,7 @@ ZeroLength::update(void)
     const Vector& vel1  = theNodes[0]->getTrialVel();
     const Vector& vel2  = theNodes[1]->getTrialVel();
     Vector  diffv = vel2-vel1;
-
-
+    
     if (d0 != 0)
       diff -= *d0;
 
