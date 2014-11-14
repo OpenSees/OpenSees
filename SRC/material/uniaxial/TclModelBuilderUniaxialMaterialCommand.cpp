@@ -107,7 +107,7 @@ extern void *OPS_ImpactMaterial(void);
 extern void *OPS_SteelBRB(void);
 extern void *OPS_New_MultiLinear(void);
 extern void *OPS_NewHookGap(void);
-//extern void *OPS_FRPConfinedConcrete(void);
+extern void *OPS_FRPConfinedConcrete(void);
 extern void *OPS_NewSteel01Thermal(void);
 extern void *OPS_NewSteel02Thermal(void);
 extern void *OPS_NewConcrete02Thermal(void);
@@ -196,6 +196,9 @@ TclModelBuilder_addSnapMaterial(ClientData clientData, Tcl_Interp *interp, int a
 
 UniaxialMaterial *
 TclModelBuilder_addPyTzQzMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theDomain);
+
+UniaxialMaterial *
+TclModelBuilder_FRPCnfinedConcrete(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theDomain);
 				  
 
 int
@@ -465,6 +468,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if (strcmp(argv[1],"CFSSSWP") == 0) {
       void *theMat = OPS_CFSSSWP();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"FRPConfinedConcrete") == 0) {
+      void *theMat = OPS_FRPConfinedConcrete();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
