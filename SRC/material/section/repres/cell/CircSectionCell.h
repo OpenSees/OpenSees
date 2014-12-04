@@ -33,7 +33,7 @@ class CircSectionCell: public Cell
   public:
 
     CircSectionCell();
-    CircSectionCell(double r2, double r1, double alpha, double theta);
+    CircSectionCell(double r2, double r1, double alpha, double theta, double centerX, double centerY);
         
     ~CircSectionCell();
     
@@ -59,6 +59,7 @@ class CircSectionCell: public Cell
 
     double A;
     Vector Centroid;
+    double offsetX, offsetY;
 //    double area;
 };
 

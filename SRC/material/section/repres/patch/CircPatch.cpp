@@ -178,7 +178,7 @@ CircPatch::getCells (void) const
 	    */
 
             theta_i1 = theta_i + deltaTheta/2.0;
-	    cells[k] = new CircSectionCell(rad_j, rad_j1, deltaTheta, theta_i1);
+	    cells[k] = new CircSectionCell(rad_j, rad_j1, deltaTheta, theta_i1, centerPosit(0), centerPosit(1));
 
             k++; 
          }

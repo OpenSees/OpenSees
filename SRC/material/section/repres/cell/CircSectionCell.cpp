@@ -27,8 +27,8 @@
 
 #include <CircSectionCell.h>
 
-CircSectionCell::CircSectionCell(double R1, double R2, double Alpha, double Theta)
-  :r1(R1), r2(R2), alpha(Alpha), theta(Theta), A(0.0), Centroid(2)
+CircSectionCell::CircSectionCell(double R1, double R2, double Alpha, double Theta, double offX, double offY)
+  :r1(R1), r2(R2), alpha(Alpha), theta(Theta), A(0.0), Centroid(2), offsetX(offX), offsetY(offY)
 {
 
   double a = alpha/2.0;
@@ -41,9 +41,8 @@ CircSectionCell::CircSectionCell(double R1, double R2, double Alpha, double Thet
   A = At - A1;
   double c = (At*ct - A1*c1)/A;
 
-  Centroid(0) = cos(Theta)*c;
-  Centroid(1) = sin(Theta)*c;
-
+  Centroid(0) = cos(Theta)*c + offX;
+  Centroid(1) = sin(Theta)*c + offY;
 }
 
 
