@@ -39,7 +39,7 @@
 
 ViscousMaterial::ViscousMaterial(int tag, double c, double a, double minV)
 :UniaxialMaterial(tag,MAT_TAG_Viscous),
- trialRate(0.0), C(c), Alpha(a), minVel(minV)
+ trialRate(0.0), trialStrain(0.0), C(c), Alpha(a), minVel(minV), commitStrain(0.0), commitRate(0.0)
 {
     if (Alpha < 0.0) {
       opserr << "ViscousMaterial::ViscousMaterial -- Alpha < 0.0, setting to 1.0\n";
@@ -55,7 +55,7 @@ ViscousMaterial::ViscousMaterial(int tag, double c, double a, double minV)
 
 ViscousMaterial::ViscousMaterial()
 :UniaxialMaterial(0,MAT_TAG_Viscous),
- trialRate(0.0), C(0.0), Alpha(0.0), minVel(1e-11)
+ trialRate(0.0), trialStrain(0.0), C(0.0), Alpha(0.0), minVel(1e-11), commitStrain(0.0), commitRate(0.0)
 {
 
 }
@@ -68,7 +68,8 @@ ViscousMaterial::~ViscousMaterial()
 int 
 ViscousMaterial::setTrialStrain(double strain, double strainRate)
 {
-    trialRate = strainRate;
+  trialStrain = strain;
+  trialRate = strainRate;
 
     return 0;
 }
@@ -119,7 +120,7 @@ ViscousMaterial::getDampTangent(void)
 double 
 ViscousMaterial::getStrain(void)
 {
-    return 0.0;
+    return trialStrain;
 }
 
 double 
@@ -131,20 +132,26 @@ ViscousMaterial::getStrainRate(void)
 int 
 ViscousMaterial::commitState(void)
 {
-    return 0;
+  commitStrain = trialStrain;
+  commitRate = trialRate;
+  return 0;
 }
 
 int 
 ViscousMaterial::revertToLastCommit(void)
 {
-    return 0;
+  trialStrain = commitStrain;
+  trialRate = commitRate;
+  return 0;
 }
 
 int 
 ViscousMaterial::revertToStart(void)
 {
     trialRate = 0.0;
-
+    trialStrain = 0.0;
+    commitStrain = 0.0;
+    commitRate = 0.0;
     return 0;
 }
 
@@ -162,12 +169,13 @@ int
 ViscousMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(5);
+  static Vector data(6);
   data(0) = this->getTag();
   data(1) = C;
   data(2) = Alpha;
   data(3) = trialRate;
   data(4) = minVel;
+  data(5) = trialStrain;
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
     opserr << "ViscousMaterial::sendSelf() - failed to send data\n";
@@ -180,7 +188,7 @@ ViscousMaterial::recvSelf(int cTag, Channel &theChannel,
 			       FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(5);
+  static Vector data(6);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
@@ -194,6 +202,9 @@ ViscousMaterial::recvSelf(int cTag, Channel &theChannel,
     Alpha = data(2);
     trialRate = data(3);
     minVel = data(4);
+    trialStrain = data(5);
+    commitStrain = trialStrain;
+    commitRate = trialRate;
   }
     
   return res;

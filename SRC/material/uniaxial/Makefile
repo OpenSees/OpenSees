@@ -12,6 +12,7 @@ OBJS       = UniaxialMaterial.o \
         ElasticPPMaterial.o \
         ElasticBilin.o \
 	ParallelMaterial.o \
+	ResilienceLow.o \
 	AxialSp.o \
 	BWBN.o \
 	AxialSpHD.o \

@@ -70,10 +70,13 @@ class ViscousMaterial : public UniaxialMaterial
   protected:
     
   private:
+    double trialStrain;
     double trialRate;
     double C;
     double Alpha;
     double minVel;
+    double commitStrain;
+    double commitRate;
 };
 
 
