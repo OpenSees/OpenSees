@@ -155,8 +155,8 @@ Es = Steel's Elastic modulus, vo = Poisson's coefficient for concrete, k = reduc
    eyh = fyh/Es;
   
    // Initial tangent
-   Ec1 = 5700*fabs(fpc1);
-   Ec2 = 5700*fabs(fpc2);
+   Ec1 = 5700*sqrt(fpc1);
+   Ec2 = 5700*sqrt(fpc2);
    Ec  = (Acore/A)*Ec1 + (Acover/A)*Ec2;
    Ec0 = Ec;
    Ctangent = Ec0;
