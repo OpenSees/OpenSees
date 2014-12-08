@@ -122,6 +122,8 @@ extern void *OPS_ConcreteSakaiKawashima(void);
 extern void *OPS_ResilienceMaterialHR(void);
 extern void *OPS_CFSSSWP(void);
 extern void *OPS_CFSWSWP(void);
+extern void *OPS_ResilienceLow(void);
+
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -200,6 +202,7 @@ TclModelBuilder_addPyTzQzMaterial(ClientData clientData, Tcl_Interp *interp, int
 UniaxialMaterial *
 TclModelBuilder_FRPCnfinedConcrete(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theDomain);
 				  
+
 
 int
 TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theDomain)
@@ -447,6 +450,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if (strcmp(argv[1],"Concrete02Thermal") == 0) {
       void *theMat = OPS_NewConcrete02Thermal();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"ResilienceLow") == 0) {
+      void *theMat = OPS_ResilienceLow();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 

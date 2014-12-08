@@ -14,7 +14,7 @@
 #include <elementAPI.h>
 #include <OPS_Globals.h>
 void *
-OPS_NewResilienceLow()
+OPS_ResilienceLow(void)
 {      
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
