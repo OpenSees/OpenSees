@@ -194,6 +194,10 @@
 #define MAT_TAG_ResilienceMaterialHR            80
 #define MAT_TAG_CFSSSWP                         81
 #define MAT_TAG_CFSWSWP                         82
+#define MAT_TAG_ResilienceLow                   83
+
+
+
 
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
