@@ -13,9 +13,8 @@
 #include <string.h>
 #include <elementAPI.h>
 #include <OPS_Globals.h>
-void *
-OPS_ResilienceLow(void)
-{      
+void * OPS_ResilienceLow(void) {
+
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
   int    iData[1];
