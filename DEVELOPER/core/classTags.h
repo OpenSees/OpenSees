@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.128 $
-// $Date: 2010-09-16 00:07:59 $
-// $Source: /usr/local/cvs/OpenSees/SRC/classTags.h,v $
+// $Revision: 5848 $
+// $Date: 2014-12-08 11:07:07 -0800 (Mon, 08 Dec 2014) $
+// $URL: svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk/SRC/classTags.h $
 
 // Written: fmk
 // Revision: A
@@ -190,6 +190,14 @@
 #define MAT_TAG_OriginCentered                  76
 #define MAT_TAG_Steel2                          77
 #define MAT_TAG_DoddRestr                       78
+#define MAT_TAG_ConcreteSakaiKawashima          79
+#define MAT_TAG_ResilienceMaterialHR            80
+#define MAT_TAG_CFSSSWP                         81
+#define MAT_TAG_CFSWSWP                         82
+#define MAT_TAG_ResilienceLow                   83
+
+
+
 
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
@@ -613,16 +621,18 @@
 #define ELE_TAG_HDR                       151
 #define ELE_TAG_ElastomericX              152
 #define ELE_TAG_LeadRubberX               153
-
+#define ELE_TAG_PileToe3D                 154
 
 #define ELE_TAG_MultipleShearSpring 6201
 #define ELE_TAG_MultipleNormalSpring 6202
 #define ELE_TAG_KikuchiBearing 6203
+#define ELE_TAG_YamamotoBiaxialHDR 6204
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
 #define FRN_TAG_VelPressureDep     3
 #define FRN_TAG_VelDepMultiLinear  4
+#define FRN_TAG_VelNormalFrcDep    5
 
 #define BEAM_INTEGRATION_TAG_Lobatto         1
 #define BEAM_INTEGRATION_TAG_Legendre        2
@@ -786,6 +796,7 @@
 #define INTEGRATOR_TAGS_BackwardEuler                   41
 #define INTEGRATOR_TAGS_EnergyConserved                 42
 #define INTEGRATOR_TAGS_PFEMIntegrator                  43
+#define INTEGRATOR_TAGS_KRAlphaExplicit                 44
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2

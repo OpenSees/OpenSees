@@ -44,13 +44,6 @@ class Vector;
 class Matrix;
 class ColorMap;
 
-#define opsMATERIAL_TAG 2
-#define opsAXIAL 3
-#define opsDISP  5
-#define opsELEMENT_CLASS 7
-
-
-
 class Renderer
 {
   public:

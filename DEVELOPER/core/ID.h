@@ -59,8 +59,7 @@ class ID
     // overloaded operators
     inline int &operator()(int x);
     inline int operator()(int x) const;
-    int &operator[](int);    	    
-    
+    int &operator[](int);    	        
     ID &operator=(const ID  &V);
 
     int operator==(const ID &V) const;
