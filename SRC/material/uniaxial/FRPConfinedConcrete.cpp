@@ -40,11 +40,9 @@
 #include <algorithm>
 #include <cctype>
 
-double fpc,Ec, Ec1, Ec2, R, A, Rcore, Acore, Acover, beta1, beta2, Ash, rs, eyh;
-const double pi = 3.1415926;
-double min(double a, double b);
-
-
+static double fpc,Ec, Ec1, Ec2, R, A, Rcore, Acore, Acover, beta1, beta2, Ash, rs, eyh;
+static const double pi = 3.1415926;
+static double min(double a, double b);
 static int numFRPConfinedConcrete = 0;
 
 void *

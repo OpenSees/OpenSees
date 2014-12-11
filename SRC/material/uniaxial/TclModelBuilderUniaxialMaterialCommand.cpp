@@ -491,7 +491,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
 
 
-
     } else if (strcmp(argv[1],"Elastic2") == 0) {
 	if (argc < 4 || argc > 5) {
 	    opserr << "WARNING invalid number of arguments\n";
