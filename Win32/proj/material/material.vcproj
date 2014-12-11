@@ -290,6 +290,12 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\ElasticPPMaterial.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\FatigueMaterial.cpp">
 			</File>
 			<File
@@ -441,6 +447,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\ReinforcingSteel.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ResilienceLow.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ResilienceLow.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\ResilienceMaterialHR.cpp">

@@ -642,10 +642,10 @@
 					RelativePath="..\..\..\SRC\element\forceBeamColumn\CompositeSimpsonBeamIntegration.h">
 				</File>
 				<File
-					RelativePath="..\..\..\SRC\element\forceBeamColumn\DistHingeIntegration.h">
+					RelativePath="..\..\..\SRC\element\forceBeamColumn\DistHingeIntegration.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\SRC\element\forceBeamColumn\DistHingeIntegration.cpp">
+					RelativePath="..\..\..\SRC\element\forceBeamColumn\DistHingeIntegration.h">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\element\forceBeamColumn\FixedLocationBeamIntegration.cpp">
@@ -1076,16 +1076,16 @@
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\TclModelBuilderFrictionModelCommand.cpp">
 				</File>
 				<File
-					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.cpp">
-				</File>
-				<File
-					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.h">
-				</File>
-				<File
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDepMultiLinear.cpp">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDepMultiLinear.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelDependent.h">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\element\frictionBearing\frictionModel\VelNormalFrcDep.cpp">
@@ -1165,6 +1165,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\UWelements\Brick8FiberOverlay.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\UWelements\PileToe3D.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\UWelements\PileToe3D.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\UWelements\Quad4FiberOverlay.cpp">
@@ -1319,6 +1325,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\HUelements\MultipleShearSpring.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\HUelements\YamamotoBiaxialHDR.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\HUelements\YamamotoBiaxialHDR.h">
 			</File>
 		</Filter>
 		<File
