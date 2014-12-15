@@ -779,6 +779,7 @@ ShellNL::addLoad(ElementalLoad *theLoad, double loadFactor)
 int 
 ShellNL::addInertiaLoadToUnbalance(const Vector &accel)
 {
+  static Vector r(54);
   int tangFlag = 1 ;
 
   int i;
@@ -792,17 +793,18 @@ ShellNL::addInertiaLoadToUnbalance(const Vector &accel)
   if (allRhoZero == 0) 
     return 0;
 
+  formInertiaTerms( tangFlag ) ;
+
   int count = 0;
   for (i=0; i<9; i++) {
     const Vector &Raccel = nodePointers[i]->getRV(accel);
     for (int j=0; j<6; j++)
-      resid(count++) = Raccel(i);
+      r(count++) = Raccel(j);
   }
 
-  formInertiaTerms( tangFlag ) ;
   if (load == 0) 
     load = new Vector(54);
-  load->addMatrixVector(1.0, mass, resid, -1.0);
+  load->addMatrixVector(1.0, mass, r, -1.0);
 
   return 0;
 }

@@ -27,7 +27,7 @@
 // Description: This file contains global variables used in OpenSees files.
 // if you change some of the variables, you must recompile ALL the code.
 
-#define OPS_VERSION "2.4.5 (rev 5854)"
+#define OPS_VERSION "2.4.5 (rev 5855)"
 
 #define _USING_OpenSees_STREAMS
 #include <OPS_Stream.h>
@@ -58,7 +58,6 @@ enum NodeResponseType { Disp = 1, Vel = 2, Accel =3, IncrDisp =4, IncrDeltaDisp 
 #define TCL_Char char
 #endif
 
-
 class Domain;
 class Element;
 
@@ -72,5 +71,13 @@ extern Element *ops_TheActiveElement;  // current element undergoing an update
 // global variable for initial state analysis
 // added: Chris McGann, University of Washington
 extern bool  ops_InitialStateAnalysis;
+
+#define OPS_DISPLAYMODE_MATERIAL_TAG 2
+#define OPS_DISPLAYMODE_ELEMENT_CLASS 3
+#define OPS_DISPLAYMODE_STRESS 5
+#define OPS_DISPLAYMODE_STRAIN 7
+#define OPS_DISPLAYMODE_AXIAL 11
+
+// 13 18 19 23 29 31 37 41 43 47 53
 
 #endif
