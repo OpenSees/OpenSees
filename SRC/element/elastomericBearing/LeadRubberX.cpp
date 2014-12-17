@@ -52,6 +52,7 @@
 #include <Message.h>
 using namespace std;
 #include <iostream>
+#include <cmath>
 
 #define PI 3.14159l
 
@@ -438,7 +439,7 @@ int LeadRubberX::commitState()
 		Fcrn=0.2*Fcr;
 	}
 	ucr = Fcrn/Kv;
-	Fcrmin=max(Fcrmin,Fcrn);
+	Fcrmin=fmax(Fcrmin,Fcrn);
 
 	// Horizontal motion
 	//ke=(G*A/Tr)*(1-pow(qb(0)/Fcrn,2));

@@ -29,6 +29,7 @@
 #include <MaterialResponse.h>
 
 #include <string.h>
+#include <cmath>
 
 #define INT_ForwardEuler  5
 #define INT_ModifiedEuler 1
@@ -1129,7 +1130,7 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
 		if (curStepError > TolE){
 			//if (debugFlag) opserr << "---Unsuccessful increment: Error =  " << curStepError << endln;
 			//if (debugFlag) opserr << "                           T = " << T << ", dT = " << dT << endln;
-			q = std::max(0.9 * sqrt(TolE / curStepError), 0.1);
+			q = fmax(0.9 * sqrt(TolE / curStepError), 0.1);
 			if (dT == dT_min) {
 				
 				NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
@@ -1143,7 +1144,7 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
 				
 				T += dT;
 			}
-			dT = std::max(q * dT, dT_min);
+			dT = fmax(q * dT, dT_min);
 		} else {
 			
 			//if (debugFlag) opserr << "+++Successful increment: T = " << T << ", dT = " << dT << endln;
@@ -1156,10 +1157,10 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
 			Stress_Correction(CurStress, CurStrain, CurElasticStrain, CurAlpha, CurFabric, alpha_in, NextStrain, NextElasticStrain, NextStress,
 				NextAlpha, NextFabric, NextDGamma, NextVoidRatio, G, K, aC, aCep, aCep_Consistent);
 		
-			q = std::max(0.9 * sqrt(TolE / curStepError), 1.1);
+			q = fmax(0.9 * sqrt(TolE / curStepError), 1.1);
 			T += dT;
-			dT = std::max(q * dT, dT_min);
-			dT = std::min(dT, 1 - T);
+			dT = fmax(q * dT, dT_min);
+			dT = fmin(dT, 1 - T);
 		}
 		
 	}
@@ -1315,7 +1316,7 @@ void ManzariDafalias::RungeKutta4(const Vector& CurStress, const Vector& CurStra
 
 				T += dT;
 			}
-			dT = std::max(q * dT, 1e-4);
+			dT = fmax(q * dT, 1e-4);
 		} else {
 			
 			//if (debugFlag) opserr << "+++Successful increment: T = " << T << ", dT = " << dT << endln;
@@ -1330,8 +1331,8 @@ void ManzariDafalias::RungeKutta4(const Vector& CurStress, const Vector& CurStra
 		
 			q = 1.1;
 			T += dT;
-			dT = std::max(q * dT, 1e-4);
-			dT = std::min(dT, 1 - T);
+			dT = fmax(q * dT, 1e-4);
+			dT = fmin(dT, 1 - T);
 		}
 		
 	}
