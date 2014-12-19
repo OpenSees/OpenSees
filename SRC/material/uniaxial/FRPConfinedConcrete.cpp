@@ -45,12 +45,14 @@ static const double pi = 3.1415926;
 static double min(double a, double b);
 static int numFRPConfinedConcrete = 0;
 
+// NOTE: units should b in Newton(N) and MegaPascal(MPa)
+
 void *
 OPS_FRPConfinedConcrete(void)
 {
   if (numFRPConfinedConcrete == 0) {
     numFRPConfinedConcrete++;
-    opserr << "FRPConfinedConcrete unaxial material - Developed by Konstantinos G. Megalooikonomou University of Roma Tre Copyright 2009";
+    opserr << "FRPConfinedConcrete uniaxial material - Developed by Konstantinos G. Megalooikonomou University of Roma Tre Copyright 2009";
   }
 
   // Pointer to a uniaxial material that will be returned
@@ -61,7 +63,7 @@ OPS_FRPConfinedConcrete(void)
   int numData;
 
   if (OPS_GetNumRemainingInputArgs() != 17) {
-	  opserr << "WARNING invalid #args: unixialMaterial FRPConfinedConcrete $tag $fpc1 $fpc2 $epsc0";
+	  opserr << "WARNING invalid #args: uniaxialMaterial FRPConfinedConcrete $tag $fpc1 $fpc2 $epsc0";
 	  opserr << " $D $c $Ej $Sj $tj $eju $S $fyh $dlong $dtrans Es v0 $k\n";
 	  return 0;
   }
@@ -144,8 +146,8 @@ Es = Steel's Elastic modulus, vo = Poisson's coefficient for concrete, k = reduc
 
    //Concrete
    fpc  = (Acore/A)*fpc1 + (Acover/A)*fpc2;
-   beta1= 5700/(sqrt(fpc1))-500;
-   beta2= 5700/ (sqrt(fpc2))-500;
+   beta1= 5700.0/(sqrt(fpc1))-500;
+   beta2= 5700.0/ (sqrt(fpc2))-500;
 
    //Steel
    Ash = pi*pow(dtrans,2)/4;
@@ -644,7 +646,7 @@ int FRPConfinedConcrete::revertToLastCommit ()
 
 int FRPConfinedConcrete::revertToStart ()
 { 
-  double Ec = 5700*fabs(fpc);
+  double Ec = 5700*sqrt(fpc);
   double Ec0 = Ec;
 
    // History variables
@@ -939,7 +941,7 @@ FRPConfinedConcrete::updateParameter(int parameterID, Information &info)
         default:
                 break;
         }
-	double Ec = 5700*fabs(fpc);
+	double Ec = 5700*sqrt(fpc);
         double Ec0 = Ec;
         Ctangent = Ec0;
         CunloadSlope = Ec0;
