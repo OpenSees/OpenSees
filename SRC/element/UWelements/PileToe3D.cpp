@@ -244,6 +244,17 @@ PileToe3D::setDomain(Domain *theDomain)
 	//mNodeCrd(0,0) = mIcrd_1(0);  
   }
 
+  //Initialize Coordinate Tranformation
+  if (crdTransf->initialize(theBNodes[0], theBNodes[1])) {
+	  // Add some error check
+  }
+
+  double L = crdTransf->getInitialLength();
+
+  if (L == 0.0) {
+	// Add some error check
+  }
+
   // call the base class method
   this->DomainComponent::setDomain(theDomain);
 }        
@@ -258,26 +269,34 @@ PileToe3D::commitState()
         opserr << "PileToe3D::commitState () - failed in base class";
       }    
       //retVal = theMaterial->commitState();
-      return retVal;
+      retVal += crdTransf->commitState();
+      
+	  return retVal;
 }
 
 
 int
 PileToe3D::revertToLastCommit()
 {
-     return 0;
+	 int retVal = 0;
+	 retVal += crdTransf->revertToLastCommit();
+	 return retVal;
 }
 
 int
 PileToe3D::revertToStart()
 {
-    return 0;
+    int retVal = 0;
+    retVal += crdTransf->revertToStart();
+    return retVal;
 }
 
 int
 PileToe3D::update(void)
 {
   mInitialize = true;
+  // Update the transformation
+  crdTransf->update();
   return 0;
 }
 

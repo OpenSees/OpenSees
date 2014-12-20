@@ -175,6 +175,9 @@
 #include <ManzariDafalias.h>
 #include <ManzariDafalias3D.h>
 #include <ManzariDafaliasPlaneStrain.h>
+#include <ManzariDafaliasRO.h>
+#include <ManzariDafalias3DRO.h>
+#include <ManzariDafaliasPlaneStrainRO.h>
 #include <InitialStateAnalysisWrapper.h>
 
 // Fibers
@@ -1282,6 +1285,15 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_ManzariDafaliasPlaneStrain:
     return new ManzariDafaliasPlaneStrain();
+
+  case ND_TAG_ManzariDafaliasRO:
+    return new ManzariDafaliasRO();
+
+  case ND_TAG_ManzariDafalias3DRO:
+    return new ManzariDafalias3DRO();
+
+  case ND_TAG_ManzariDafaliasPlaneStrainRO:
+    return new ManzariDafaliasPlaneStrainRO();   
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 

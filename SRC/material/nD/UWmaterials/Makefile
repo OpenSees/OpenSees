@@ -11,7 +11,10 @@ OBJS       = BoundingCamClay.o \
 	     InitialStateAnalysisWrapper.o\
 	     ManzariDafalias.o\
 	     ManzariDafalias3D.o\
-	     ManzariDafaliasPlaneStrain.o
+	     ManzariDafaliasPlaneStrain.o\
+	     ManzariDafaliasRO.o\
+	     ManzariDafalias3DRO.o\
+	     ManzariDafaliasPlaneStrainRO.o
 
 all:	$(OBJS)
 

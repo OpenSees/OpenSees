@@ -382,10 +382,10 @@
 #define ND_TAG_ManzariDafalias                  14012
 #define ND_TAG_ManzariDafalias3D                14013
 #define ND_TAG_ManzariDafaliasPlaneStrain       14014
-
-
-
-
+// Manzari Dafalias material - A. Ghofrani
+#define ND_TAG_ManzariDafaliasRO                14015
+#define ND_TAG_ManzariDafalias3DRO              14016
+#define ND_TAG_ManzariDafaliasPlaneStrainRO     14017
 
 // MultiaxialCyclicPlasticity, add by Gang Wang
 #define ND_TAG_MultiaxialCyclicPlasticity             10031
