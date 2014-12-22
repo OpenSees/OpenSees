@@ -90,7 +90,9 @@ extern  void *OPS_NewContactMaterial2DMaterial(void);
 extern  void *OPS_NewContactMaterial3DMaterial(void);
 extern  void *OPS_NewInitialStateAnalysisWrapperMaterial(void);
 extern  void *OPS_NewManzariDafaliasMaterial(void);
+#ifdef _PEDRO
 extern  void *OPS_NewManzariDafaliasMaterialRO(void);
+#endif
 extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
 extern  void *OPS_NewInitStressNDMaterial(void);
@@ -289,7 +291,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else 
 	return TCL_ERROR;
     }
-
+#ifdef _PEDRO
     else if ((strcmp(argv[1],"ManzariDafaliasRO") == 0)){
 
       void *theMat = OPS_NewManzariDafaliasMaterialRO();
@@ -298,7 +300,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else 
 	return TCL_ERROR;
     }	
-
+#endif
     else if ((strcmp(argv[1],"ContactMaterial2D") == 0)){
 
       void *theMat = OPS_NewContactMaterial2DMaterial();
