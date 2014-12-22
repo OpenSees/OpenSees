@@ -55,10 +55,10 @@ static int num_Quad4FiberOverlay = 0;
 void *
 OPS_Quad4FiberOverlay(void)  
 {
-	if (num_Quad4FiberOverlay == 0) {
-        num_Quad4FiberOverlay++;
-		OPS_Error("Quad4FiberOverlay element - Written: M.Chiaramonte, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n", 1);
-	}
+  if (num_Quad4FiberOverlay == 0) {
+    num_Quad4FiberOverlay++;
+    opserr << "Quad4FiberOverlay element - Written: M.Chiaramonte, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n";
+  }
 	
 	Element *theElement = 0;
 
@@ -111,7 +111,7 @@ OPS_Quad4FiberOverlay(void)
 
 
 Quad4FiberOverlay::Quad4FiberOverlay(int tag, int nd1, int nd2, int nd3, int nd4, UniaxialMaterial &m, 
-									double AreaFiber,double B1, double B2)
+				     double AreaFiber,double B1, double B2)
 					:Element(tag, ELE_TAG_Quad4FiberOverlay),
 					theMaterial(0),
 					externalNodes(SL_NUM_NODE),
@@ -189,19 +189,19 @@ Quad4FiberOverlay::Quad4FiberOverlay(int tag, int nd1, int nd2, int nd3, int nd4
 
 
 Quad4FiberOverlay::Quad4FiberOverlay()
-					:Element(0, ELE_TAG_Quad4FiberOverlay),
-					theMaterial(0),
-					externalNodes(SL_NUM_NODE),
-					g1(SL_NUM_NDF), dualg1(SL_NUM_NDF),
-					g2(SL_NUM_NDF), dualg2(SL_NUM_NDF),
-					dNidxAlphai(SL_NUM_NODE,SL_NUM_NDF),
-					Q1(SL_NUM_NDF), Q2(SL_NUM_NDF), Q3(SL_NUM_NDF), Q4(SL_NUM_NDF),
-					Qfi(SL_NUM_NDF), Qfj(SL_NUM_NDF), Vf(SL_NUM_NDF),
-					A(3), AA(3), Bb(SL_NUM_DOF), 
-					u(SL_NUM_DOF)
+  :Element(0, ELE_TAG_Quad4FiberOverlay),
+   theMaterial(0),
+   externalNodes(SL_NUM_NODE),
+   g1(SL_NUM_NDF), dualg1(SL_NUM_NDF),
+   g2(SL_NUM_NDF), dualg2(SL_NUM_NDF),
+   dNidxAlphai(SL_NUM_NODE,SL_NUM_NDF),
+   Q1(SL_NUM_NDF), Q2(SL_NUM_NDF), Q3(SL_NUM_NDF), Q4(SL_NUM_NDF),
+   Qfi(SL_NUM_NDF), Qfj(SL_NUM_NDF), Vf(SL_NUM_NDF),
+   A(3), AA(3), Bb(SL_NUM_DOF), 
+   u(SL_NUM_DOF)
 {       
-	for(int i = 0; i < SL_NUM_NODE; i++)
-		theNodes[i] = 0;        
+  for(int i = 0; i < SL_NUM_NODE; i++)
+    theNodes[i] = 0;        
 }       
 
 

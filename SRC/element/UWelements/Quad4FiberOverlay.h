@@ -52,8 +52,8 @@ class Response;
 class Quad4FiberOverlay : public Element
 {
 	public:
-		Quad4FiberOverlay::Quad4FiberOverlay(int tag, int nd1, int nd2, int nd3, int nd4,
-											UniaxialMaterial &m, double Af,double beta1, double beta2);
+		Quad4FiberOverlay(int tag, int nd1, int nd2, int nd3, int nd4,
+				  UniaxialMaterial &m, double Af,double beta1, double beta2);
 		Quad4FiberOverlay();
 		~Quad4FiberOverlay();
 		
@@ -145,3 +145,5 @@ class Quad4FiberOverlay : public Element
 };
 
 #endif
+
+
