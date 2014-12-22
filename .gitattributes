@@ -2889,7 +2889,6 @@ SRC/material/nD/UWmaterials/DruckerPrager3D.cpp -text
 SRC/material/nD/UWmaterials/DruckerPrager3D.h -text
 SRC/material/nD/UWmaterials/DruckerPragerPlaneStrain.cpp -text
 SRC/material/nD/UWmaterials/DruckerPragerPlaneStrain.h -text
-SRC/material/nD/UWmaterials/FEM_ObjectBrokerAllClasses.cpp -text
 SRC/material/nD/UWmaterials/InitialStateAnalysisWrapper.cpp -text
 SRC/material/nD/UWmaterials/InitialStateAnalysisWrapper.h -text
 SRC/material/nD/UWmaterials/Makefile -text
