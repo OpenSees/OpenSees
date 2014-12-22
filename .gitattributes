@@ -2889,6 +2889,7 @@ SRC/material/nD/UWmaterials/DruckerPrager3D.cpp -text
 SRC/material/nD/UWmaterials/DruckerPrager3D.h -text
 SRC/material/nD/UWmaterials/DruckerPragerPlaneStrain.cpp -text
 SRC/material/nD/UWmaterials/DruckerPragerPlaneStrain.h -text
+SRC/material/nD/UWmaterials/FEM_ObjectBrokerAllClasses.cpp -text
 SRC/material/nD/UWmaterials/InitialStateAnalysisWrapper.cpp -text
 SRC/material/nD/UWmaterials/InitialStateAnalysisWrapper.h -text
 SRC/material/nD/UWmaterials/Makefile -text
@@ -2896,8 +2897,14 @@ SRC/material/nD/UWmaterials/ManzariDafalias.cpp -text
 SRC/material/nD/UWmaterials/ManzariDafalias.h -text
 SRC/material/nD/UWmaterials/ManzariDafalias3D.cpp -text
 SRC/material/nD/UWmaterials/ManzariDafalias3D.h -text
+SRC/material/nD/UWmaterials/ManzariDafalias3DRO.cpp -text
+SRC/material/nD/UWmaterials/ManzariDafalias3DRO.h -text
 SRC/material/nD/UWmaterials/ManzariDafaliasPlaneStrain.cpp -text
 SRC/material/nD/UWmaterials/ManzariDafaliasPlaneStrain.h -text
+SRC/material/nD/UWmaterials/ManzariDafaliasPlaneStrainRO.cpp -text
+SRC/material/nD/UWmaterials/ManzariDafaliasPlaneStrainRO.h -text
+SRC/material/nD/UWmaterials/ManzariDafaliasRO.cpp -text
+SRC/material/nD/UWmaterials/ManzariDafaliasRO.h -text
 SRC/material/nD/WrapperNDMaterial.cpp -text
 SRC/material/nD/WrapperNDMaterial.h -text
 SRC/material/nD/cyclicSoil/Makefile -text
