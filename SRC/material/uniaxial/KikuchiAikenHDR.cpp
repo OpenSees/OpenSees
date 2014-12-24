@@ -409,7 +409,7 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
   }
   
   // normalized strain
-  x = trialStrain/xm;
+  x = (xm>0.0) ? trialStrain/xm : 0.0;
 
 
   // reversal points

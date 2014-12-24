@@ -414,7 +414,7 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
 
 
   // normalized deformation
-  x = trialDeform/xm;
+  x = (xm>0.0) ? trialDeform/xm : 0.0;
 
   // reversal points
   if (!trialIfElastic) {
