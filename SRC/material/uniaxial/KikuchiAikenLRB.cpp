@@ -248,9 +248,9 @@ KikuchiAikenLRB::KikuchiAikenLRB(int tag, int type, double ar, double hr, double
   kd100 = (Gr*Ar/Hr + Alph*Ap/Hr) * exp(-0.00271*(Temp-15.0)) * Rk;
   ku100 = Beta * kd100;
 
-  qd = (this->calcCQd)(trgStrain)*qd100*Rq;
-  kd = (this->calcCKd)(trgStrain)*kd100*Rk;
-  ku = (this->calcCKd)(trgStrain)*ku100*Rk;
+  qd = (this->calcCQd)(trgStrain)*qd100;
+  kd = (this->calcCKd)(trgStrain)*kd100;
+  ku = (this->calcCKd)(trgStrain)*ku100;
   initialStiff = compKeq(fabs(trgStrain*Hr),qd,kd);
 
   //
@@ -394,9 +394,9 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
     tmpStrain = (fabs(trialStrain)>trgStrain) ? fabs(trialStrain) : trgStrain ; //max(abs(trialStrain),trgStrain)
     tmpDeform = tmpStrain * Hr;
 
-    qd = (this->calcCQd)(tmpStrain)*qd100*Rq;
-    kd = (this->calcCKd)(tmpStrain)*kd100*Rk;
-    ku = (this->calcCKd)(tmpStrain)*ku100*Rk;
+    qd = (this->calcCQd)(tmpStrain)*qd100;
+    kd = (this->calcCKd)(tmpStrain)*kd100;
+    ku = (this->calcCKd)(tmpStrain)*ku100;
 
     keq = compKeq(tmpDeform,qd,kd);
     heq = (this->calcCHeq)(tmpStrain) * compHeq(tmpDeform,qd,kd,ku);
@@ -431,9 +431,9 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
 	revQ2Bgn[1] = commitQ2;
 	
 	//b
-	double tqd = (this->calcCQd)(fabs(commitStrain))*qd100*Rq;
-	double tkd = (this->calcCKd)(fabs(commitStrain))*kd100*Rk;
-	double tku = (this->calcCKd)(fabs(commitStrain))*ku100*Rk;
+	double tqd = (this->calcCQd)(fabs(commitStrain))*qd100;
+	double tkd = (this->calcCKd)(fabs(commitStrain))*kd100;
+	double tku = (this->calcCKd)(fabs(commitStrain))*ku100;
 	double tkeq = compKeq(fabs(commitDeform),tqd,tkd);
 	double theq = (this->calcCHeq)(fabs(commitStrain)) * compHeq(fabs(commitDeform),tqd,tkd,tku);
 	double tu = tqd/(tkeq*fabs(commitDeform));
@@ -503,9 +503,9 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
 	} else if (revXEnd[trialIdxRev]*revXBgn[trialIdxRev] > 0) { //consecutive reverse at same sign of "x"
 	  b = 0;
 	} else { //reverse at different sign of "x"
-	  double tqd = (this->calcCQd)(fabs(commitStrain))*qd100*Rq;
-	  double tkd = (this->calcCKd)(fabs(commitStrain))*kd100*Rk;
-	  double tku = (this->calcCKd)(fabs(commitStrain))*ku100*Rk;
+	  double tqd = (this->calcCQd)(fabs(commitStrain))*qd100;
+	  double tkd = (this->calcCKd)(fabs(commitStrain))*kd100;
+	  double tku = (this->calcCKd)(fabs(commitStrain))*ku100;
 	  double tkeq = compKeq(fabs(commitDeform),tqd,tkd);
 	  double theq = (this->calcCHeq)(fabs(commitStrain)) * compHeq(fabs(commitDeform),tqd,tkd,tku);
 	  double tu = tqd/(tkeq*fabs(commitDeform)); 
