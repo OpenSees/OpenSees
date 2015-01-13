@@ -281,8 +281,8 @@ PFEMSolver::solve()
 
         }
 
-        deltaV += deltaV1;
     }
+    deltaV += deltaV1;
     cs_spfree(Gi);
     cs_spfree(invMi);
     cs_spfree(invMsi);
