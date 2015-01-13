@@ -541,7 +541,11 @@ Tri31::addInertiaLoadToUnbalance(const Vector &accel)
 	static double rhoi[1]; //numgp
 	double sum = 0.0;
 	for (i = 0; i < numgp; i++) {
-		rhoi[i] = theMaterial[i]->getRho();
+            if(rho == 0) {
+                rhoi[i] = theMaterial[i]->getRho();
+            } else {
+                rhoi[i] = rho;
+            }
 	    sum += rhoi[i];
 	}
 
@@ -631,7 +635,11 @@ Tri31::getResistingForceIncInertia()
 	static double rhoi[1]; //numgp
 	double sum = 0.0;
 	for (i = 0; i < numgp; i++) {
+            if(rho == 0) {
 		rhoi[i] = theMaterial[i]->getRho();
+            } else {
+                rhoi[i] = rho;
+            }
 	    sum += rhoi[i];
 	}
 
