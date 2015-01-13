@@ -18,7 +18,7 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.0 $
+// $Revision: 1.1 $
 // $Date: 2012-10-31 9:56:05 $
 // $Source: SRC/element/PFEMElement/PFEMMesher2D.cpp,v $
                                                                         
@@ -60,10 +60,11 @@
 //#include <Timer.h>
 #include <algorithm>
 #include <elementAPI.h>
+#include <MeshRegion.h>
+
+double PFEMMesher2D::PI = 3.1415926535897932384626433;
 
 PFEMMesher2D::PFEMMesher2D()
-    :PI(3.1415926535897932384626433), bound(4), frameBase(2), Lspan(), Height(), avesize(0.0),
-     fluidNodes()
 {
 }
 
@@ -248,6 +249,105 @@ PFEMMesher2D::discretize(int startnodetag, const Vector& points, const Vector& s
 
     return 0;
 }
+
+// particles
+int 
+PFEMMesher2D::discretize(int startnodetag, const Vector& points, 
+                         int ndf, const Vector& fix, 
+                         const Vector& vel, const Vector& mass, 
+                         Domain* theDomain, int& endnodetag)
+{
+    if(theDomain == 0) {
+        opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher2D::discretize\n";
+        return -1;
+    }
+
+    // number of points
+    int num = points.Size()/2;
+
+    // no points
+    if(num < 1) {
+        return 0;
+    }
+
+    // fix, vel and mass
+    int numvel = vel.Size();
+    if(numvel > ndf) numvel = ndf;
+    Vector tvel(ndf);
+    for(int j=0; j<numvel; j++) {
+        tvel(j) = vel(j);
+    }
+    int numfix = fix.Size();
+    if(numfix > ndf) numfix = ndf;
+
+    // read outputs
+    int newtag = startnodetag-1;
+    for(int i=0; i<num; i++) {
+        double x = points(2*i);
+        double y = points(2*i+1);
+
+        // create nodes
+        Node* theNode = new Node(++newtag, ndf, x, y);
+        if (theNode == 0) {
+            opserr << "WARNING ran out of memory creating node\n";
+            opserr << "node: " << newtag << "\n";
+            opserr << "PFEMMesher2D::discretize\n";
+            return -1;
+        }
+        if(theDomain->addNode(theNode) == false) {
+            opserr << "WARNING failed to add node to the domain\n";
+            opserr << "node: " << newtag << "\n";
+            opserr << "PFEMMesher2D::discretize\n";
+            delete theNode; // otherwise memory leak
+            return -1;
+        }
+
+        // initial velocity
+        theNode->setTrialVel(tvel);
+        theNode->commitState();
+        
+        // fix
+        for(int j=0; j<numfix; j++) {
+            if(fix(j) != 0) {
+                SP_Constraint* theSP = new SP_Constraint(newtag, j, 0.0, true);
+                if(theSP == 0) {
+                    opserr << "WARNING ran out of memory creating SP_Constraint\n";
+                    opserr << "node: " << newtag << "\n";
+                    opserr << "PFEMMesher2D::discretize\n";
+                    return -1;
+                }
+                if(theDomain->addSP_Constraint(theSP) == false) {
+                    opserr << "WARNING failed to add SP_Constraint to the domain\n";
+                    opserr << "node: " << newtag << "\n";
+                    opserr << "PFEMMesher2D::discretize\n";
+                    delete theSP; // otherwise memory leak
+                    return -1;
+                }
+            }
+        }
+
+        // mass
+        int nummass = mass.Size();
+        if(nummass > 0) {
+            if(nummass > ndf) nummass = ndf;
+            Matrix theMass(ndf, ndf);
+            for(int j=0; j<nummass; j++) {
+                theMass(j,j) = mass(j);
+            }
+            if(theNode->setMass(theMass) < 0) {
+                opserr<<"WARNING: failed to set mass of node "<<newtag;
+                opserr<<" -- PFEMMesher2D::discretize\n";
+                return -1;
+            }
+        }
+    }
+    
+    endnodetag = newtag;
+
+    return 0;
+}
+
 
 
 // rectangle
@@ -623,10 +723,14 @@ PFEMMesher2D::discretize(int startnode, double xc, double yc, double r1, double 
 
 // frame
 int 
-PFEMMesher2D::discretize(int startnode, char type, int n,
-                         int nth, int nthfloor, int ndf,
-                         const Vector& fix, const Vector& vel, 
-                         const Vector& mass, Domain* theDomain, int& endnode)
+PFEMMesher2D::discretize(int startnode, double x, double y,
+                         double hcol, double hbeam, int ndf,
+                         const Vector& spans, const Vector& heights,
+                         const Vector& fix, const Vector& colvel, 
+                         const Vector& beamvel, const Vector& colmass, 
+                         const Vector& beammass, const Vector& roofmass,
+                         Domain* theDomain, ID& nodelist)
+
 {
     if(theDomain == 0) {
         opserr<<"WARNING: null domain";
@@ -634,52 +738,117 @@ PFEMMesher2D::discretize(int startnode, char type, int n,
         return -1;
     }
 
-    if(n<0) return 0;
-    if(nth<0 || nthfloor<0) return 0;
-    if(nth>Lspan.Size()) return 0;
-    if(nthfloor>Height.Size()) return 0;    
-
-    double h = 0.0;
-    double x = frameBase(0), y = frameBase(1), angle = 0.0;
-    int num = 0.0;
-    if(type=='b' || type=='B') {
-        num = n-2;
-        h = Lspan(nth-1)/n;
-        for(int i=1; i<nth; i++) {
-            x += Lspan(i-1);
-        }
-        x += h;
-        for(int j=0; j<nthfloor; j++) {
-            y += Height(j);
-        }
-
-    } else {
-        num = n;
-        h = Height[nthfloor-1]/n;
-        for(int i=0; i<nth; i++) {
-            x += Lspan(i);
-        }
-        for(int j=1; j<nthfloor; j++) {
-            y += Height(j-1);
-        }
-        if(nthfloor>1) {
-            y+=h;
-            num--;
-        }
-        angle = 90.0;
+    // quick return
+    int ncol = spans.Size()+1;
+    int nbeam = heights.Size();
+    if(ncol<2 || nbeam<1 || hcol<=0 || hbeam<=0 || ndf <1) {
+        return 0;
     }
-    Vector linebound(2);
-    return this->discretize(startnode, x, y, h, angle, num, ndf, fix, vel, mass, 
-                            linebound, theDomain, endnode);
+    for(int i=0; i<ncol-1;i++) {
+        if(spans(i) <= 0) {
+            opserr<<"WARNING: "<<i<<"th span <= 0 ";
+            opserr<<"-- PFEMMesher2D::discretize";
+            return -1;
+        }
+    }
+    for(int i=0; i<nbeam;i++) {
+        if(heights(i) <= 0) {
+            opserr<<"WARNING: "<<i<<"th height <= 0 ";
+            opserr<<"-- PFEMMesher2D::discretize";
+            return -1;
+        }
+    }
 
-    
+    // nodelist size
+    nodelist.resize(ncol*(nbeam+1)+(ncol-1)*nbeam*2);
+    nodelist(0) = startnode;
+
+    // boundary and fix list
+    Vector nobound(2), nofix(ndf);
+
+    // columns
+    int ndindex = 0;
+    int endnode = startnode;
+    Vector pos(2);
+    pos(0) = x;
+    pos(1) = y;
+    for(int i=0; i<ncol; i++) {
+        pos(1) = y;
+        for(int j=0; j<nbeam; j++) {
+
+            // start node
+            int res = 0;
+            if(j==0) {
+                res = discretize(nodelist(ndindex),pos,ndf,fix,
+                                 colvel,colmass,theDomain,endnode);
+            } else {
+                res = discretize(nodelist(ndindex),pos,ndf,nofix,
+                                 colvel,colmass,theDomain,endnode);
+            }
+            if(res < 0) return res;
+
+            // mid nodes
+            int num = floor(heights(j)/hcol+0.5);
+            res = discretize(nodelist(ndindex)+1,pos(0),pos(1),hcol,90.0,
+                             num,ndf,nofix,colvel,colmass,
+                             nobound,theDomain,endnode);
+            if(res < 0) return res;
+            ndindex++;
+            nodelist(ndindex) = endnode+1;
+            pos(1) += heights(j);
+
+            // end node
+            if(j == nbeam-1) {
+                res = discretize(nodelist(ndindex),pos,ndf,nofix,
+                                 colvel,colmass,theDomain,endnode);
+                if(res < 0) return res;
+                ndindex++;
+                nodelist(ndindex) = endnode+1;
+            }
+        }
+        if(i<ncol-1) pos(0) += spans(i);
+    }
+
+    // beams
+    pos(0) = x;
+    pos(1) = y;
+    for(int j=0; j<nbeam; j++) {
+        pos(0) = x;
+        pos(1) += heights(j);        
+        for(int i=0; i<ncol-1; i++) {
+            int num = floor(spans(i)/hbeam+0.5);
+            
+            // mid nodes
+            int res;
+            if(j<nbeam-1) {
+                res = discretize(nodelist(ndindex),pos(0),pos(1),hbeam,0.0,
+                                 num,ndf,nofix,beamvel,beammass,
+                                 nobound,theDomain,endnode);
+            } else {
+                res = discretize(nodelist(ndindex),pos(0),pos(1),hbeam,0.0,
+                                 num,ndf,nofix,beamvel,roofmass,
+                                 nobound,theDomain,endnode);
+            }
+            if(res < 0) return res;
+            ndindex++;
+            nodelist(ndindex) = endnode;
+            if(ndindex<nodelist.Size()-1) {
+                ndindex++;
+                nodelist(ndindex) = endnode+1;
+            }
+            pos(0) += spans(i);
+        }
+    }
+
+    return 0;
 }
 
+// linear elements
 int
 PFEMMesher2D::doTriangulation(int starteletag, double alpha, const ID& groups, 
                               const ID& addgroups,Domain* theDomain, 
                               double rho, double mu, double b1, double b2, 
-                              double thk, double kappa, int type)
+                              double thk, double kappa, int type, int& endele)
 {
     if(theDomain == 0) {
         opserr<<"WARNING: null domain";
@@ -688,10 +857,12 @@ PFEMMesher2D::doTriangulation(int starteletag, double alpha, const ID& groups,
     }
 
     //Timer timer;
+    //timer.start();
+
     // do triangulation
     ID eles;
     int res = 0;
-    res = doTriangulation(alpha,groups,addgroups,theDomain, eles);
+    res = doTriangulation(alpha,groups,addgroups,theDomain,eles);
     if(res < 0) {
         opserr<<"WARNING: failed to do triangulation --";
         opserr<<"PFEMMesher2D::soTriangulation\n";
@@ -699,23 +870,19 @@ PFEMMesher2D::doTriangulation(int starteletag, double alpha, const ID& groups,
     }
 
     // add PFEM elements
-    //timer.start();
     int numeles = eles.Size()/3;
     if(numeles == 0) return 0;
     int etag = starteletag-1;
     for(int i=0; i<numeles; i++) {
         Element* theEle = 0;
         if(type == 1) {
-            theEle = new PFEMElement2D(++etag, eles(3*i), eles(3*i+1), eles(3*i+2),
-                                                      rho, mu, b1, b2, thk);
+            theEle = new PFEMElement2D(++etag, eles(3*i), eles(3*i+1), eles(3*i+2),rho, mu, b1, b2, thk);
         } else if(type == 3) {
-            theEle = new PFEMElement2DCompressible(++etag, eles(3*i), eles(3*i+1), eles(3*i+2),
-                                                   rho, mu, b1, b2, thk, kappa);
+            theEle = new PFEMElement2DCompressible(++etag, eles(3*i), eles(3*i+1), eles(3*i+2),rho, mu, b1, b2, thk, kappa);
         } else if(type == 4) {
-            theEle = new PFEMElement2DBubble(++etag, eles(3*i), eles(3*i+1), eles(3*i+2),
-                                             rho, mu, b1, b2, thk, kappa);
+            theEle = new PFEMElement2DBubble(++etag, eles(3*i), eles(3*i+1), eles(3*i+2),rho, mu, b1, b2, thk, kappa);
         }
-
+        
         if(theEle == 0) {
             opserr<<"WARNING: no enough memory -- ";
             opserr<<" -- PFEMMesher2D::doTriangulation\n";
@@ -728,19 +895,25 @@ PFEMMesher2D::doTriangulation(int starteletag, double alpha, const ID& groups,
             return -1;
         }
     }
+
+    // identify
+    identify(b2,theDomain);
     //timer.pause();
-    //opserr<<"create PFEM elements :"<<timer;
-    return etag;
+    //opserr<<"meshing :"<<timer.getCPU()<<"\n";
+
+    endele = etag;
+    return res;
     
 }
 
+// solid elements
 int
 PFEMMesher2D::doTriangulation(int starteletag, double alpha, const ID& groups, 
                               const ID& addgroups,Domain* theDomain, 
                               double t, const char* type, int matTag,
-                              double p, double rho, double b1, double b2)
+                              double p, double rho, double b1, double b2,
+                              int& endele)
 {
-    avesize = 0.0;
     if(theDomain == 0) {
         opserr<<"WARNING: null domain";
         opserr<<" -- PFEMMesher2D::doTriangulation\n";
@@ -749,7 +922,7 @@ PFEMMesher2D::doTriangulation(int starteletag, double alpha, const ID& groups,
     //Timer timer;
     // do triangulation
     ID eles;
-    int res = doTriangulation(alpha,groups,addgroups,theDomain, eles);
+    int res = doTriangulation(alpha,groups,addgroups,theDomain,eles);
     if(res < 0) {
         opserr<<"WARNING: failed to do triangulation --";
         opserr<<"PFEMMesher2D::doTriangulation\n";
@@ -786,13 +959,17 @@ PFEMMesher2D::doTriangulation(int starteletag, double alpha, const ID& groups,
     }
     //timer.pause();
     //opserr<<"create PFEM elements :"<<timer;
-    return etag;
+
+    endele = etag;
+
+    return res;
     
 }
 
+// core function
 int
 PFEMMesher2D::doTriangulation(double alpha, const ID& groups, const ID& addgroups,
-                              Domain* theDomain, ID& eles, bool o2)
+                              Domain* theDomain, ID& eles)
 {
     //Timer theTimer;
     if(theDomain == 0) {
@@ -800,6 +977,11 @@ PFEMMesher2D::doTriangulation(double alpha, const ID& groups, const ID& addgroup
         opserr<<" -- PFEMMesher2D::doTriangulation\n";
         return -1;
     }
+
+    // fluidnodes
+    std::map<int,int> fluidNodes;
+    getNodes(groups,fluidNodes,theDomain);
+    getNodes(addgroups,fluidNodes,theDomain);
 
     // structs
     triangulateio in, out, vout;
@@ -828,16 +1010,16 @@ PFEMMesher2D::doTriangulation(double alpha, const ID& groups, const ID& addgroup
 
         // pointer to node
         int ndtag = it->first;
-        int type = it->second;
-        bool haveit = false;
-        for(int i=0; i<groups.Size()+addgroups.Size(); i++) {
-            if((i<groups.Size() && type==groups(i)) ||
-               (i>=groups.Size() && type==addgroups(i-groups.Size()))) {
-                haveit = true;
-                break;
-            }
-        }
-        if(!haveit) continue;
+        // int type = it->second;
+        // bool haveit = false;
+        // for(int i=0; i<groups.Size()+addgroups.Size(); i++) {
+        //     if((i<groups.Size() && type==groups(i)) ||
+        //        (i>=groups.Size() && type==addgroups(i-groups.Size()))) {
+        //         haveit = true;
+        //         break;
+        //     }
+        // }
+        // if(!haveit) continue;
 
         Node* node = theDomain->getNode(ndtag);
         if(node == 0) continue;
@@ -864,14 +1046,7 @@ PFEMMesher2D::doTriangulation(double alpha, const ID& groups, const ID& addgroup
     in.numberofpoints = numpoints;
 
     // Delaunay Triangulation
-    char s1[] = "Qzv";
-    char s2[] = "Qzvo2";
-    char* s = 0;
-    if(o2) {
-        s = s2;
-    } else {
-        s = s1;
-    }
+    char s[] = "Qzv";
     //theTimer.start();
     // opserr<<"Start Delaunay Triangulation -- If got segmentation fault, please check inputs \n";
     triangulate(s, &in, &out, &vout);
@@ -892,6 +1067,7 @@ PFEMMesher2D::doTriangulation(double alpha, const ID& groups, const ID& addgroup
 
         // radius and average size of triangles
         Vector radius(out.numberoftriangles);
+        double avesize = 0.0;
         for(int i=0; i<out.numberoftriangles; i++) {
 
             // circumcenter of traingle
@@ -958,15 +1134,11 @@ PFEMMesher2D::doTriangulation(double alpha, const ID& groups, const ID& addgroup
                 // add ele
                 // if(add[0]==add[1] && add[1]==add[2] && add[2]!=0) continue;
                 if(add[0]!=0 && add[1]!=0 && add[2]!=0) continue;
+
+
                 for(int j=0; j<3; j++) {
                     int tag = p2nd(out.trianglelist[out.numberofcorners*i+j]);
                     eles(num++) = tag;
-                }
-                if(o2) {
-                    for(int j=3; j<out.numberofcorners; j++) {
-                        int tag = out.trianglelist[out.numberofcorners*i+j];
-                        eles(num++) = tag;
-                    }
                 }
             }
         }
@@ -987,12 +1159,6 @@ PFEMMesher2D::doTriangulation(double alpha, const ID& groups, const ID& addgroup
                 int tag = p2nd(out.trianglelist[out.numberofcorners*i+j]);
                 eles(out.numberofcorners*i+j) = tag;
             }
-            if(o2) {
-                for(int j=3; j<out.numberofcorners; j++) {
-                    int tag = out.trianglelist[out.numberofcorners*i+j];
-                    eles(out.numberofcorners*i+j) = tag;
-                }
-            }
         }
     }
     
@@ -1006,7 +1172,7 @@ PFEMMesher2D::doTriangulation(double alpha, const ID& groups, const ID& addgroup
 }
 
 int 
-PFEMMesher2D::save(const char* filename, const ID& snodes, Domain* theDomain)
+PFEMMesher2D::save(const char* filename, Domain* theDomain, int maxelenodes)
 {
     if(theDomain == 0) {
         opserr<<"WARNING: null domain";
@@ -1014,162 +1180,139 @@ PFEMMesher2D::save(const char* filename, const ID& snodes, Domain* theDomain)
         return -1;
     }
 
+    // get nodes
+    std::map<int,int> fluidNodes;
+    ID regions;
+    theDomain->getRegionTags(regions);
+    getNodes(regions,fluidNodes,theDomain);
+
+    std::ofstream outfile(std::string(filename).append(".node").c_str());
+    outfile<<theDomain->getCurrentTime()<<" ";
+    for(int i=0; i<8; i++) outfile<<0<<" ";
+    outfile<<"\n";
+
     // write nodes
-    std::ofstream file2(std::string(filename).append(".node").c_str());
-    file2<<theDomain->getCurrentTime();
-    for(int i=0; i<8; i++) {
-        file2 << " " << 0;
-    }
-    file2<<"\n";
-
-    std::map<int,int> nodeIndex;
-    int index = 1;
-
-    // pressure constraints
-    Pressure_ConstraintIter& thePCs = theDomain->getPCs();
-    Pressure_Constraint* thePC = 0;
-    while((thePC = thePCs()) != 0) {
-        int ntag = thePC->getTag();
-        Node* node = theDomain->getNode(ntag);
-        int ptag = thePC->getPressureNode();
-        Node* pnode = theDomain->getNode(ptag);
-        if(node!=0 || pnode!=0) {
-            nodeIndex[ntag] = index++;
-            const Vector& coord = node->getCrds();
-            const Vector& disp = node->getDisp();
-            const Vector& vel = node->getVel();
-            const Vector& accel = node->getAccel();
-            const Vector& pvel = pnode->getVel();
-            file2<<ntag<<" "<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" ";
-            int type = 1;
-            for(int i=0; i<snodes.Size()/2; i++) {
-                if(ntag>=snodes(2*i) && ntag<=snodes(2*i+1)) {
-                    type = i+2;
-                    break;
-                }
-            }
-            file2<<type<<" ";
-            file2<<vel(0)<<" "<<vel(1)<<" "<<accel(0)<<" "<<accel(1);
-            file2<<" "<<pvel(2)<<"\n";
+    for(std::map<int,int>::iterator it=fluidNodes.begin(); it!=fluidNodes.end(); it++) {
+        int tag = it->first;
+        int type = it->second;
+        Node* node = theDomain->getNode(tag);
+        if(node == 0) {
+            opserr<<"WARNING: node "<<tag<<" dose not exist -- ";
+            opserr<<" -- PFEMMesher2D::save\n";
+            return -1;
+        }
+        const Vector& coord = node->getCrds();
+        const Vector& disp = node->getDisp();
+        const Vector& vel = node->getVel();
+        const Vector& accel = node->getAccel();
+        outfile<<tag<<" "<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" ";
+        outfile<<type<<" ";
+        outfile<<vel(0)<<" "<<vel(1)<<" "<<accel(0)<<" "<<accel(1);
+        Pressure_Constraint* thePC = theDomain->getPressure_Constraint(tag);
+        if(thePC != 0) {
+            outfile<<" "<<thePC->getPressure()<<"\n";
+        } else {
+            outfile<<" "<<0<<"\n";
         }
     }
+    outfile.close();
 
-    // nodes
-    int type = snodes.Size()/2+2;
-    for(int i=0; i<snodes.Size()/2; i++) {
-        for(int tag=snodes(2*i); tag<=snodes(2*i+1); tag++) {
-            Node* theNode = theDomain->getNode(tag);
-            if(theNode != 0) {
-                std::map<int,int>::iterator it = nodeIndex.find(tag);
-                if(it != nodeIndex.end()) continue;
-                nodeIndex[tag] = index++;
-                const Vector& coord = theNode->getCrds();
-                const Vector& disp = theNode->getDisp();
-                const Vector& vel = theNode->getVel();
-                const Vector& accel = theNode->getAccel();
-                file2<<tag<<" "<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" "<<type<<" ";
-                file2<<vel(0)<<" "<<vel(1)<<" "<<accel(0)<<" "<<accel(1);
-                file2<<" "<<0<<"\n";
-            }
-        }
-    }
-    file2.close();
-
-    // max number of nodes in elements
-    int maxnum = 0;
+    // write elements
+    outfile.open(std::string(filename).append(".ele").c_str());
     ElementIter& theEles = theDomain->getElements();
     Element* theEle = 0;
     while((theEle = theEles()) != 0) {
-        int num = 0;
         const ID& ntags = theEle->getExternalNodes();
-        for(int i=0; i<ntags.Size(); i++) {
-            std::map<int,int>::iterator it = nodeIndex.find(ntags(i));
-            if(it == nodeIndex.end()) continue;
-            num++;
-        }
-        if(num > maxnum) maxnum = num;
-    }
-
-    // write elements
-    std::ofstream file1(std::string(filename).append(".ele").c_str());
-    ElementIter& theEles1 = theDomain->getElements();
-    while((theEle = theEles1()) != 0) {
         int num = 0;
-        const ID& ntags = theEle->getExternalNodes();
         for(int i=0; i<ntags.Size(); i++) {
-            std::map<int,int>::iterator it = nodeIndex.find(ntags(i));
-            if(it == nodeIndex.end()) continue;
-            num++;
-            file1<<ntags(i)<<" ";
+            if(fluidNodes.find(ntags(i)) != fluidNodes.end()) {
+                outfile<<ntags(i)<<" ";
+                num++;
+            }
         }
-        for(int i=num; i<maxnum; i++) {
-            file1<<"nan ";
+        for(int i=num; i<maxelenodes; i++) {
+            outfile<<ntags(num-1)<<" ";
         }
-        for(int i=0; i<ntags.Size(); i++) {
-            std::map<int,int>::iterator it = nodeIndex.find(ntags(i));
-            if(it == nodeIndex.end()) continue;
-            file1<<it->second<<" ";
-        }
-        for(int i=num; i<maxnum; i++) {
-            file1<<"nan ";
-        }
-        file1<<"\n";
+        outfile<<"\n";
     }
-    file1.close();
-
-    // std::ofstream file1(std::string(filename).append(".edge").c_str());
-    // typedef std::set< std::pair<int,int> > EdgeSet;
-    // typedef EdgeSet::iterator EdgeSetIter;
-    // typedef std::pair<EdgeSetIter, bool> EdgeSetRet;
-    // EdgeSet edges;
-    // EdgeSetRet ret;
-    // ElementIter& theEles = theDomain->getElements();
-    // Element* theEle = 0;
-    // while((theEle = theEles()) != 0) {
-    //     const ID& allntags = theEle->getExternalNodes();
-    //     ID ntags(0,allntags.Size());
-    //     for(int i=0; i<allntags.Size(); i++) {
-    //         if(nodeIndex.find(allntags(i)) != nodeIndex.end()) {
-    //             ntags[ntags.Size()] = allntags(i);
-    //         }
-    //     }
-    //     if(ntags.Size()==1) continue;
-    //     if(ntags.Size()>2) {
-    //         ntags[ntags.Size()] = ntags(0);
-    //     }
-    //     for(int i=0; i<ntags.Size()-1; i++) {
-    //         ID nd(0,2);
-    //         for(int j=0; j<2; j++) {
-    //             nd.insert(ntags(i+j));
-    //         }
-    //         ret = edges.insert(std::make_pair(nd(0),nd(1)));
-    //         if(ret.second == true) {
-    //             file1<<nodeIndex[nd(0)]<<" "<<nodeIndex[nd(1)]<<"\n";
-    //         }
-    //     }
-    // }
-    // file1.close();
+    outfile.close();
 
     return 0;
 }
 
-void
-PFEMMesher2D::setBoundary(double x1, double y1, double x2, double y2)
+int 
+PFEMMesher2D::save(const char* filename, const ID& nodeRegs,
+                   const ID& eleRegs, Domain* theDomain, int maxelenodes)
 {
-    bound(0) = x1;
-    bound(1) = y1;
-    bound(2) = x2;
-    bound(3) = y2;
-}
+    if(theDomain == 0) {
+        opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher2D::save\n";
+        return -1;
+    }
 
-void 
-PFEMMesher2D::setFrame(double x1, double y1, const Vector& span, 
-                       const Vector& height)
-{
-    frameBase(0) = x1;
-    frameBase(1) = y1;
-    Lspan = span;
-    Height = height;
+    // get nodes
+    std::map<int,int> fluidNodes, fluidEles;
+    getNodes(nodeRegs,fluidNodes,theDomain);
+    getElements(eleRegs,fluidEles,theDomain);
+
+    std::ofstream outfile(std::string(filename).append(".node").c_str());
+    outfile<<theDomain->getCurrentTime()<<" ";
+    for(int i=0; i<8; i++) outfile<<0<<" ";
+    outfile<<"\n";
+
+    // write nodes
+    for(std::map<int,int>::iterator it=fluidNodes.begin(); it!=fluidNodes.end(); it++) {
+        int tag = it->first;
+        int type = it->second;
+        Node* node = theDomain->getNode(tag);
+        if(node == 0) {
+            opserr<<"WARNING: node "<<tag<<" dose not exist -- ";
+            opserr<<" -- PFEMMesher2D::save\n";
+            return -1;
+        }
+        const Vector& coord = node->getCrds();
+        const Vector& disp = node->getDisp();
+        const Vector& vel = node->getVel();
+        const Vector& accel = node->getAccel();
+        outfile<<tag<<" "<<coord(0)+disp(0)<<" "<<coord(1)+disp(1)<<" ";
+        outfile<<type<<" ";
+        outfile<<vel(0)<<" "<<vel(1)<<" "<<accel(0)<<" "<<accel(1);
+        Pressure_Constraint* thePC = theDomain->getPressure_Constraint(tag);
+        if(thePC != 0) {
+            outfile<<" "<<thePC->getPressure()<<"\n";
+        } else {
+            outfile<<" "<<0<<"\n";
+        }
+    }
+    outfile.close();
+
+    // write elements
+    outfile.open(std::string(filename).append(".ele").c_str());
+    for(std::map<int,int>::iterator it=fluidEles.begin(); it!=fluidEles.end(); it++) {
+        int tag = it->first;
+        Element* ele = theDomain->getElement(tag);
+        if(ele == 0) {
+            opserr<<"WARNING: element "<<tag<<" dose not exist -- ";
+            opserr<<" -- PFEMMesher2D::save\n";
+            return -1;
+        }
+
+        const ID& ntags = ele->getExternalNodes();
+        int num = 0;
+        for(int i=0; i<ntags.Size(); i++) {
+            if(fluidNodes.find(ntags(i)) != fluidNodes.end()) {
+                outfile<<ntags(i)<<" ";
+                num++;
+            }
+        }
+        for(int i=num; i<maxelenodes; i++) {
+            outfile<<ntags(num-1)<<" ";
+        }
+        outfile<<"\n";
+    }
+    outfile.close();
+    
+    return 0;
 }
 
 Vector
@@ -1228,7 +1371,7 @@ PFEMMesher2D::calculateForces(const ID& boundary, int basenode,
 
                 Pressure_Constraint* thePC = theDomain->getPressure_Constraint(elenodes(2*i));
                 if(thePC != 0) {
-                    Node* pnode = theDomain->getNode(thePC->getPressureNode());
+                    Node* pnode = thePC->getPressureNode();
                     if(pnode != 0) {
                         const Vector& vel = pnode->getVel();
                         if(vel.Size() > 0) {
@@ -1280,37 +1423,52 @@ PFEMMesher2D::calculateForces(const ID& boundary, int basenode,
 }
 
 void 
-PFEMMesher2D::removeOutBoundNodes(const ID& nodes, Domain* theDomain)
+PFEMMesher2D::removeOutBoundNodes(const ID& groups, double x1, double y1, 
+                                  double x2, double y2, Domain* theDomain)
 {
+    // get nodes
+    std::map<int,int> fluidNodes;
+    getNodes(groups, fluidNodes, theDomain);
+
     // check nodes
     ID removelist;
-    for(int i=0; i<nodes.Size()/2; i++) {
-        for(int tag=nodes(2*i); tag<=nodes(2*i+1); tag++) {
-            Node* theNode = theDomain->getNode(tag);
-            if(theNode == 0) continue;
-            const Vector& coord = theNode->getCrds();
-            if(coord.Size() < 2) {
-                continue;
-            }
-            const Vector& disp = theNode->getTrialDisp();
-            if(disp.Size() < 2) {
-                continue;
-            }
-            double x = coord(0);        // initial
-            double y = coord(1);
-            x += disp(0);               // current
-            y += disp(1);
+    for(std::map<int,int>::iterator it=fluidNodes.begin(); it!=fluidNodes.end(); it++) {
+        int tag = it->first;
+        // int type = it->second;
+        // bool haveit = false;
+        // for(int i=0; i<groups.Size(); i++) {
+        //     if(type==groups(i)) {
+        //         haveit = true;
+        //         break;
+        //     }
+        // }
+        // if(!haveit) continue;
+
+        Node* theNode = theDomain->getNode(tag);
+        if(theNode == 0) continue;
+        const Vector& coord = theNode->getCrds();
+        if(coord.Size() < 2) {
+            continue;
+        }
+        const Vector& disp = theNode->getTrialDisp();
+        if(disp.Size() < 2) {
+            continue;
+        }
+        double x = coord(0);        // initial
+        double y = coord(1);
+        x += disp(0);               // current
+        y += disp(1);
         
-            // if out of boundary
-            if(x<bound(0) || x>bound(2) || y<bound(1) || y>bound(3)) {
-                removelist[removelist.Size()] = tag;
-            }
+        // if out of boundary
+        if(x<x1 || x>x2 || y<y1 || y>y2) {
+            removelist[removelist.Size()] = tag;
         }
     }
 
     // remove nodes
     for(int i=0; i<removelist.Size(); i++) {
-        Node* theNode = theDomain->removeNode(removelist[i]);
+        int tag = removelist[i];
+        Node* theNode = theDomain->removeNode(tag);
         if(theNode != 0) {
             delete theNode;
         }
@@ -1318,34 +1476,47 @@ PFEMMesher2D::removeOutBoundNodes(const ID& nodes, Domain* theDomain)
         if(thePC != 0) {
             delete thePC;
         }
+        fluidNodes.erase(tag);
     }
 }
 
 int
-PFEMMesher2D::addPC(const ID& nodes, int pndf, int startpnode, Domain* theDomain, int& endpnode)
+PFEMMesher2D::addPC(const ID& groups, int pndf, int startpnode, Domain* theDomain, int& endpnode)
 {
     if(theDomain==0) return -1;
 
+    // get nodes
+    std::map<int,int> fluidNodes;
+    getNodes(groups, fluidNodes, theDomain);
+
     endpnode = startpnode-1;
-    for(int i=0; i<nodes.Size()/2; i++) {
-        for(int j=nodes(2*i); j<=nodes(2*i+1); j++) {
-            Node* theNode = theDomain->getNode(j);
-            if(theNode==0) continue;
-            Pressure_Constraint* thePC = theDomain->getPressure_Constraint(j);
+    for(std::map<int,int>::iterator it=fluidNodes.begin(); it!=fluidNodes.end(); it++) {
+        int tag = it->first;
+        // int type = it->second;
+        // bool haveit = false;
+        // for(int i=0; i<groups.Size(); i++) {
+        //     if(type==groups(i)) {
+        //         haveit = true;
+        //         break;
+        //     }
+        // }
+        // if(!haveit) continue;
+        Node* theNode = theDomain->getNode(tag);
+        if(theNode==0) continue;
+        Pressure_Constraint* thePC = theDomain->getPressure_Constraint(tag);
+        if(thePC == 0) {
+            thePC = new Pressure_Constraint(tag, ++endpnode, pndf);
             if(thePC == 0) {
-                thePC = new Pressure_Constraint(j, ++endpnode, pndf);
-                if(thePC == 0) {
-                    opserr<<"WARNING: no enough memory for Pressure_Constraint -- ";
-                    opserr<<"PFEMMesher2D::addPC \n";
-                    return -1;
-                }
-                if(theDomain->addPressure_Constraint(thePC) == false) {
-                    opserr<<"WARNING: failed to add Pressure_Constraint to domain -- ";
-                    opserr<<"PFEMMesher2D::addPC\n ";
-                    delete thePC;
-                    thePC = 0;
-                    return -1;
-                }
+                opserr<<"WARNING: no enough memory for Pressure_Constraint -- ";
+                opserr<<"PFEMMesher2D::addPC \n";
+                return -1;
+            }
+            if(theDomain->addPressure_Constraint(thePC) == false) {
+                opserr<<"WARNING: failed to add Pressure_Constraint to domain -- ";
+                opserr<<"PFEMMesher2D::addPC\n ";
+                delete thePC;
+                thePC = 0;
+                return -1;
             }
         }
     }
@@ -1354,17 +1525,30 @@ PFEMMesher2D::addPC(const ID& nodes, int pndf, int startpnode, Domain* theDomain
 }
 
 void
-PFEMMesher2D::setNodes(const ID& newnodes, int type, bool series, int action)
+PFEMMesher2D::setNodes(const ID& newnodes, int type, bool series, 
+                       int action, Domain* theDomain)
 {
-    if(action == 0) fluidNodes.clear();
+    std::set<int> ndset;
+    
+    // nodes in existing region
+    MeshRegion* region = theDomain->getRegion(type);
+    if(region != 0) {
+        const ID& nodes = region->getNodes();
+        for(int i=0; i<nodes.Size(); i++) {
+            ndset.insert(nodes(i));
+        }
+    }
+    
+    // apply action:0-set,1-add,2-remove
+    if(action == 0) ndset.clear();
 
     if(series) {
         for(int i=0; i<newnodes.Size(); i++) {
             int nd = newnodes(i);
             if(action == 2) {
-                fluidNodes.erase(nd);
+                ndset.erase(nd);
             } else {
-                fluidNodes[nd] = type;
+                ndset.insert(nd);
             }
         }
         
@@ -1373,15 +1557,133 @@ PFEMMesher2D::setNodes(const ID& newnodes, int type, bool series, int action)
         for(int i=0; i<newnodes.Size()/2; i++) {
             for(int nd=newnodes(2*i); nd<=newnodes(2*i+1); nd++) {
                 if(action == 2) {
-                    fluidNodes.erase(nd);
+                    ndset.erase(nd);
                 } else {
-                    fluidNodes[nd] = type;
+                    ndset.insert(nd);
                 }
             }
         }
 
     }
 
+    // copy to an ID
+    int size = ndset.size();
+    ID currentnodes(size);
+    if(size > 0) {
+        std::copy(ndset.begin(),ndset.end(),&currentnodes(0));
+    }
+    
+    // set region
+    if(region == 0) {
+        region = new MeshRegion(type);
+        if(region == 0) {
+            opserr<<"WARNING: run out of memory in creating MeshRegion ";
+            opserr<<"-- PFEMMesher2D::setNodes\n";
+            return;
+        }
+        if(theDomain->addRegion(*region)==-1) {
+            opserr<<"WARNING: failed to add MeshRegion to domain ";
+            opserr<<"-- PFEMMesher2D::setNodes\n";
+            return;            
+        }
+    }
+    region->setNodes(currentnodes);
+}
+
+void
+PFEMMesher2D::getNodes(const ID& regions, std::map<int,int>& nodes, 
+                       Domain* theDomain)
+{
+    for(int i=0; i<regions.Size(); i++) {
+        int type = regions(i);
+        MeshRegion* region = theDomain->getRegion(type);
+        if(region == 0) continue;
+        const ID& nds = region->getNodes();
+        for(int j=0; j<nds.Size(); j++) {
+            nodes[nds(j)] = type;
+        }
+    }
+}
+
+void
+PFEMMesher2D::setElements(const ID& neweles, int regTag, bool series, 
+                          int action, Domain* theDomain)
+{
+    std::set<int> eleset;
+    
+    // elements in existing region
+    MeshRegion* region = theDomain->getRegion(regTag);
+    if(region != 0) {
+        const ID& eles = region->getElements();
+        for(int i=0; i<eles.Size(); i++) {
+            eleset.insert(eles(i));
+        }
+    }
+    
+    // apply action
+    if(action == 0) eleset.clear();
+
+    if(series) {
+        for(int i=0; i<neweles.Size(); i++) {
+            int nd = neweles(i);
+            if(action == 2) {
+                eleset.erase(nd);
+            } else {
+                eleset.insert(nd);
+            }
+        }
+        
+    } else {
+
+        for(int i=0; i<neweles.Size()/2; i++) {
+            for(int nd=neweles(2*i); nd<=neweles(2*i+1); nd++) {
+                if(action == 2) {
+                    eleset.erase(nd);
+                } else {
+                    eleset.insert(nd);
+                }
+            }
+        }
+
+    }
+
+    // copy to an ID
+    int size = eleset.size();
+    ID currenteles(size);
+    if(size > 0) {
+        std::copy(eleset.begin(),eleset.end(),&currenteles(0));
+    }
+    
+    // set region
+    if(region == 0) {
+        region = new MeshRegion(regTag);
+        if(region == 0) {
+            opserr<<"WARNING: run out of memory in creating MeshRegion ";
+            opserr<<"-- PFEMMesher2D::setNodes\n";
+            return;
+        }
+        if(theDomain->addRegion(*region)==-1) {
+            opserr<<"WARNING: failed to add MeshRegion to domain ";
+            opserr<<"-- PFEMMesher2D::setNodes\n";
+            return;            
+        }
+    }
+    region->setElements(currenteles);
+}
+
+void
+PFEMMesher2D::getElements(const ID& regions, std::map<int,int>& elements, 
+                          Domain* theDomain)
+{
+    for(int i=0; i<regions.Size(); i++) {
+        int type = regions(i);
+        MeshRegion* region = theDomain->getRegion(type);
+        if(region == 0) continue;
+        const ID& eles = region->getElements();
+        for(int j=0; j<eles.Size(); j++) {
+            elements[eles(j)] = type;
+        }
+    }
 }
 
 void
@@ -1517,4 +1819,192 @@ PFEMMesher2D::freeTriOut(triangulateio& in)
     }
 
     initializeTri(in);
+}
+
+int
+PFEMMesher2D::updateNode(int tag, int dof, double value, 
+                         int type, Domain* theDomain)
+{
+    if(theDomain == 0) {
+        opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher2D::updateNode\n";
+        return -1;
+    }
+    Node* theNode = theDomain->getNode(tag);
+    if(theNode == 0) {
+        opserr<<"WARNNG: node "<<tag<<" does not exist ";
+        opserr<<" -- PFEMMesher2D::updateNode\n";
+        return -1;
+    }
+    dof--;
+    if(dof >= theNode->getNumberDOF()) {
+        opserr<<"WARNNG: dof "<<dof<<" exceed the ndf ";
+        opserr<<" -- PFEMMesher2D::updateNode\n";
+        return -1;
+    }
+    if(type==1) {   // disp
+        theNode->setTrialDisp(value, dof);
+    } else if(type==2) {  // vel
+        Vector vel = theNode->getVel();
+        vel(dof) = value;
+        theNode->setTrialVel(vel);
+    } else if(type==3) {  // accel
+        Vector accel = theNode->getAccel();
+        accel(dof) = value;
+        theNode->setTrialAccel(accel);        
+    }
+
+    theNode->commitState();
+
+    return 0;
+}
+
+void
+PFEMMesher2D::identify(double g, Domain* theDomain)
+{
+    if(theDomain == 0) {
+        opserr<<"WARNING: null domain";
+        opserr<<" -- PFEMMesher2D::identify\n";
+    }
+
+    // disconnect pcs from structural elements
+    Pressure_ConstraintIter& thePCs = theDomain->getPCs();
+    Pressure_Constraint* thePC = 0;
+    while((thePC = thePCs()) != 0) {
+        thePC->disconnect();
+    }
+
+    // to connect pc to all elements
+    Element *elePtr;
+    ElementIter &theElemIter = theDomain->getElements();    
+    while((elePtr = theElemIter()) != 0) {
+
+        const ID& nodeids = elePtr->getExternalNodes();
+        for(int i=0; i<nodeids.Size(); i++) {
+            Pressure_Constraint* thePC = theDomain->getPressure_Constraint(nodeids(i));
+            if(thePC != 0) {
+                thePC->connect(elePtr->getTag(), false);
+            }
+        }
+    }
+
+    // get all SPs and MPs
+    SP_ConstraintIter& theSPs = theDomain->getDomainAndLoadPatternSPs();
+    SP_Constraint* theSP = 0;
+    std::map<int,ID> sps;
+    while((theSP = theSPs()) != 0) {
+        sps[theSP->getNodeTag()].insert(theSP->getDOF_Number());
+    }
+
+    // get number of parameters
+    int numParams = theDomain->getNumParameters();
+
+    // move the isolated nodes
+    Pressure_ConstraintIter& thePCs1 = theDomain->getPCs();
+    while((thePC = thePCs1()) != 0) {
+
+        if(thePC->isIsolated()) {
+            int tag = thePC->getTag();
+            Node* node = theDomain->getNode(tag);
+            if(node == 0) {
+                opserr<<"WARNING: node "<<tag;
+                opserr<<" does not exist -- PFEMMesher2D::identify\n";
+            }
+            std::map<int,ID>::iterator it = sps.find(tag);
+
+            // responses
+            const Vector& disp = node->getDisp();
+            const Vector& vel = node->getVel();
+            const Vector& accel = node->getAccel();
+            Vector ndisp = disp;
+            Vector nvel = vel;
+            Vector naccel = accel;
+            naccel.Zero();
+            naccel(1) = g;
+            ndisp.addVector(1.0, vel, ops_Dt);
+            ndisp.addVector(1.0, accel, 0.5*ops_Dt*ops_Dt);
+            nvel.addVector(1.0, accel, ops_Dt);
+
+            if(it != sps.end()) {
+                const ID& dofs = it->second;
+                for(int i=0; i<dofs.Size(); i++) {
+                    ndisp(dofs(i)) = disp(dofs(i));
+                    nvel(dofs(i)) = vel(dofs(i));
+                    naccel(dofs(i)) = accel(dofs(i));
+                }
+            }
+
+
+            node->setTrialDisp(ndisp);
+            node->setTrialVel(nvel);
+            node->setTrialAccel(naccel);
+            node->commitState();
+
+            // sensitivity
+            for(int grad=0; grad<numParams; grad++) {
+                Vector sensdisp(disp.Size());
+                Vector sensvel(vel.Size());
+                Vector sensaccel(accel.Size());
+
+                for(int dof=0; dof<disp.Size(); dof++) {
+                    bool fixed = false;
+                    if(it != sps.end()) {
+                        const ID& dofs = it->second;
+                        for(int i=0; i<dofs.Size(); i++) {
+                            if(dof == dofs(i)) {
+                                fixed = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(!fixed) {
+                        sensvel(dof) = node->getVelSensitivity(dof,grad);
+                        sensdisp(dof) = node->getDispSensitivity(dof,grad)+ops_Dt*sensvel(dof);
+                    }
+                }
+
+                node->saveDispSensitivity(sensdisp,grad,numParams);
+                node->saveVelSensitivity(sensvel,grad,numParams);
+                node->saveAccelSensitivity(sensaccel,grad,numParams);
+            }
+        }
+    }
+}
+
+int
+PFEMMesher2D::findNodeTag(Domain* theDomain) 
+{
+    int nodetag = 0;
+    NodeIter& nodes = theDomain->getNodes();
+    Node* theNode = 0;
+    while((theNode = nodes()) != 0) {
+        nodetag = theNode->getTag();
+    }
+    return nodetag+1;
+}
+
+int
+PFEMMesher2D::findEleTag(Domain* theDomain) 
+{
+    int eletag = 0;
+    ElementIter& elements = theDomain->getElements();
+    Element* theEle = 0;
+    while((theEle = elements()) != 0) {
+        eletag = theEle->getTag();
+    }
+    return eletag+1;
+}
+
+void
+PFEMMesher2D::removeElements(int regTag, Domain* theDomain)
+{
+    MeshRegion* eleReg = theDomain->getRegion(regTag);
+    if(eleReg != 0) {
+        const ID& regEles = eleReg->getElements();
+        for(int i=0; i<regEles.Size(); i++) {
+            Element* ele = theDomain->removeElement(regEles(i));
+            if(ele != 0) delete ele;
+        }
+        eleReg->setElements(ID());
+    }
 }

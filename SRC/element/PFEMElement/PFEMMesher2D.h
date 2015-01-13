@@ -46,6 +46,7 @@ extern "C" {
 #include <string>
 #include <Vector.h>
 #include <map>
+#include <vector>
 
 class Domain;
 
@@ -68,6 +69,10 @@ public:
                    double maxarea, int ndf, const Vector& fix, const Vector& vel,
                    const Vector& mass, Domain* theDomain, int& endnodetag); // PSPG
 
+    int discretize(int startnodetag, const Vector& points, 
+                   int ndf, const Vector& fix, const Vector& vel,
+                   const Vector& mass, Domain* theDomain, int& endnodetag); // particles
+
     int discretize(int startnodetag, double x1, double y1, double hx, double hy, double angle,
                    int nx, int ny, int ndf, const Vector& fix, const Vector& vel,
                    const Vector& mass, const Vector& boundary, 
@@ -87,44 +92,72 @@ public:
                    int nc, int nr, int ndf, const Vector& fix, const Vector& vel,
                    const Vector& mass, const Vector& boundary, const Vector& angle,
                    Domain* theDomain, int& endnode);    // circle
-    int discretize(int startnode, char type, int n,
-                   int nth, int nthfloor,  int ndf,
-                   const Vector& fix, const Vector& vel, 
-                   const Vector& mass, Domain* theDomain, int& endnode);   // frame
+    int discretize(int startnode, double x, double y,
+                   double hcol, double hbeam, int ndf,
+                   const Vector& spans, const Vector& heights,
+                   const Vector& fix, const Vector& colvel, 
+                   const Vector& beamvel, const Vector& colmass, 
+                   const Vector& beammass, const Vector& roofmass,
+                   Domain* theDomain, ID& nodelist);   // frame
 
     int addPC(const ID& nodes, int pndf, int startpnode, Domain* theDomain, int& endpnode); // add PC for nodes
 
     // triangulation
+    // core function
     int doTriangulation(double alpha, const ID& groups, const ID& addgroups,
-                        Domain* theDomain, ID& eles, bool o2=false);
+                        Domain* theDomain, ID& eles);  
+    // linear elements
     int doTriangulation(int startele, double alpha, const ID& groups, 
                         const ID& addgroups,Domain* theDomain,
                         double rho, double mu, double b1, double b2, 
-                        double thk, double kappa, int type);
+                        double thk, double kappa, int type, int& endele);
+    // solid element
     int doTriangulation(int startele, double alpha, const ID& groups, 
                         const ID& addgroups, Domain* theDomain,
                         double t, const char* type, int matTag,
-                        double p, double rho, double b1, double b2);
+                        double p, double rho, double b1, double b2, 
+                        int& endele);
+
+    // Crouzeix-Raviart element
+    int doTriangulation(int newNodeRegTag, int eleRegTag,
+                        double alpha, const ID& groups, const ID& addgroups,
+                        Domain* theDomain, double rho, double mu,
+                        double b1, double b2, double thk, double kappa);
 
     // save
-    int save(const char* name, const ID& snode, Domain* theDomain);
+    int save(const char* name, Domain* theDomain, int maxelenodes=3);
+    int save(const char* name, const ID& nodeRegs,
+             const ID& eleRegs, Domain* theDomain, int maxelenodes=3);
 
     // set boundary of fluids
-    void setBoundary(double x1, double y1, double x2, double y2);
-    void removeOutBoundNodes(const ID& nodes, Domain* theDomain);
-
-    // set frame
-    void setFrame(double x1, double y1, const Vector& span, 
-                  const Vector& height);
+    void removeOutBoundNodes(const ID& groups, double x1, double y1,
+                             double x2, double y2, Domain* theDomain);
 
     // calculate lift, drag, overturning moment from pressure
     Vector calculateForces(const ID& boundary, int basenode, 
                            Vector& dragdir, Vector& liftdir, 
                            Domain* theDomain);
 
-    double geth()const {return avesize;}
-    void setNodes(const ID& nodes, int type, bool series, int action);
-    const std::map<int,int>& getNodes()const  {return fluidNodes;}
+    // set region states
+    int updateNode(int tag, int dof, double vale, 
+                   int type, Domain* theDomain);
+
+    void setNodes(const ID& nodes, int region, bool series, 
+                  int action, Domain* theDomain);
+    void getNodes(const ID& regions, std::map<int,int>& nodes, 
+                  Domain* theDomain);
+    void setElements(const ID& elements, int region, bool series, 
+                     int action, Domain* theDomain);
+    void getElements(const ID& regions, std::map<int,int>& elements, 
+                     Domain* theDomain);
+    void removeElements(int regTag, Domain* theDomain);
+
+    // identify interface
+    void identify(double g, Domain* theDomain);
+
+    // find a node tag
+    int findNodeTag(Domain* theDomain);
+    int findEleTag(Domain* theDomain);
 
 private:
 
@@ -135,13 +168,8 @@ private:
     void freeTri(triangulateio& tri);
     void freeTriOut(triangulateio& tri);
     
-    double PI;
-    Vector bound;
-    Vector frameBase;
-    Vector Lspan;
-    Vector Height;
-    double avesize;
-    std::map<int,int> fluidNodes;
+    // PI
+    static double PI;
 };
 
 
