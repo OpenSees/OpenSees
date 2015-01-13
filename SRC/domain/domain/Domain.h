@@ -211,6 +211,7 @@ class Domain
 
     virtual int  addRegion(MeshRegion &theRegion);    	
     virtual MeshRegion *getRegion(int region);    	
+    virtual void getRegionTags(ID& rtags) const;
 
     virtual void Print(OPS_Stream &s, int flag =0);
     virtual void Print(OPS_Stream &s, ID *nodeTags, ID *eleTags, int flag =0);

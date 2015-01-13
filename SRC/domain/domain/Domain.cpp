@@ -2241,6 +2241,16 @@ Domain::getRegion(int tag)
     return 0;
 }
 
+void
+Domain::getRegionTags(ID& rtags) const
+{
+    rtags.resize(numRegions);
+    for(int i=0; i<numRegions; i++) {
+        rtags(i) = theRegions[i]->getTag();
+    }
+
+}
+
 typedef map<int, int> MAP_INT;
 typedef MAP_INT::value_type   MAP_INT_TYPE;
 typedef MAP_INT::iterator     MAP_INT_ITERATOR;
