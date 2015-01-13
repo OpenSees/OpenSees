@@ -196,6 +196,9 @@ int
 sensNodeAccel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+sensNodePressure(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
 sensSectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 

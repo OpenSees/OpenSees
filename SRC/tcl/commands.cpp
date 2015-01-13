@@ -334,6 +334,7 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 #include <NewmarkSensitivityIntegrator.h>
 #include <NewNewmarkSensitivityIntegrator.h>
 #include <NewStaticSensitivityIntegrator.h>
+#include <PFEMSensitivityIntegrator.h>
 //#include <OrigSensitivityAlgorithm.h>
 #include <NewSensitivityAlgorithm.h>
 #include <ReliabilityStaticAnalysis.h>
@@ -510,6 +511,9 @@ ReliabilityDirectIntegrationAnalysis *theReliabilityTransientAnalysis = 0;
 
 static NewmarkSensitivityIntegrator *theNSI = 0;
 static NewNewmarkSensitivityIntegrator *theNNSI = 0;
+#ifdef _PFEM
+static PFEMSensitivityIntegrator* thePFEMSI = 0;
+#endif
 //static SensitivityIntegrator *theSensitivityIntegrator = 0;
 //static NewmarkSensitivityIntegrator *theNSI = 0;
 
@@ -1009,6 +1013,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "sensSectionForce", &sensSectionForce, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "sensNodePressure", &sensNodePressure, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
 
     theSensitivityAlgorithm =0;
     theSensitivityIntegrator =0;
@@ -1273,6 +1279,9 @@ sensitivityIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
 //			theSensitivityIntegrator = theNSI;
 //			return TCL_OK;
 //		}
+#ifdef _PFEM
+            if(thePFEMSI == 0) {
+#endif
 		if (theNSI == 0 && theNNSI == 0) {
 			opserr << "ERROR: No sensitivity integrator has been specified. " << endln;
 			return TCL_ERROR;
@@ -1286,6 +1295,12 @@ sensitivityIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
 			opserr << "ERROR: Both newmark and newnewmakr sensitivity integratorNo sensitivity integrator has been specified. " << endln;
 			return TCL_ERROR;
 		}
+#ifdef _PFEM
+            } else {
+                theSensitivityIntegrator = thePFEMSI;
+                return TCL_OK;
+            }
+#endif
 	}
 //	else if (strcmp(argv[1],"Dynamic") == 0) {  
 //
@@ -1420,6 +1435,9 @@ wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   theStaticAnalysis =0;
   theTransientAnalysis =0;    
   theVariableTimeStepTransientAnalysis =0;    
+#ifdef _PFEM
+  thePFEMAnalysis = 0;
+#endif
   theTest = 0;
 
 // AddingSensitivity:BEGIN /////////////////////////////////////////////////
@@ -2739,10 +2757,10 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       if(argc <= 2) {
           PFEMSolver* theSolver = new PFEMSolver();
           theSOE = new PFEMLinSOE(*theSolver);
-      } else if(strcmp(argv[2], "-compressible") == 0) {
+      } else if(strcmp(argv[2], "-quasi-incompressible") == 0) {
           PFEMCompressibleSolver* theSolver = new PFEMCompressibleSolver();
-          theSOE = new PFEMCompressibleLinSOE(*theSolver);          
-      }
+          theSOE = new PFEMCompressibleLinSOE(*theSolver);
+}
 #endif
   }
 
@@ -4644,7 +4662,28 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	  if (theReliabilityTransientAnalysis != 0)
 		theReliabilityTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }  
+  
+#ifdef _PFEM
+  else if(strcmp(argv[1], "PFEMWithSensitivity") == 0) {
+      int flag = 0;
+      if(argc > 4) {
+          if(strcmp(argv[2],"-assemble") != TCL_OK) {
+              opserr<<"WARNING: Error in input to PFEMSensitivityIntegrator\n";
+              return TCL_ERROR;
+          }
+          if(Tcl_GetInt(interp, argv[3], &flag) != TCL_OK) {
+              opserr<<"WARNING: Error in input to PFEMSensitivityIntegrator\n";
+              return TCL_ERROR;	
+          }
+      }
 
+      thePFEMSI = new PFEMSensitivityIntegrator(flag);
+      theTransientIntegrator = thePFEMSI;
+      if (theTransientAnalysis != 0) {
+          theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+      }
+  }
+#endif 
 
 #endif
   
@@ -6628,15 +6667,16 @@ nodePressure(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     double pressure = 0.0;
     Pressure_Constraint* thePC = theDomain.getPressure_Constraint(tag);
     if(thePC != 0) {
-        int ptag = thePC->getPressureNode();
-        Node* pNode = theDomain.getNode(ptag);
-        if(pNode != 0) {
-            const Vector& vel = pNode->getVel();
-            if(vel.Size() > 0)  {
-                pressure = vel(0);
-                // opserr<<"pressure = "<<pressure<<"\n";
-            }
-        }
+        pressure = thePC->getPressure();
+        // int ptag = thePC->getPressureNode();
+        // Node* pNode = theDomain.getNode(ptag);
+        // if(pNode != 0) {
+        //     const Vector& vel = pNode->getVel();
+        //     if(vel.Size() > 0)  {
+        //         pressure = vel(0);
+        //         // opserr<<"pressure = "<<pressure<<"\n";
+        //     }
+        // }
     }
     char buffer[80];
     sprintf(buffer, "%35.20f", pressure);
@@ -6988,6 +7028,55 @@ sensNodeAccel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 
     return TCL_OK;
 }
+
+int
+sensNodePressure(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+
+    // make sure at least one other argument to contain type of system
+    if (argc < 3) {
+	interp->result = "WARNING want - sensNodePressure nodeTag? paramTag?\n";
+	return TCL_ERROR;
+    }    
+
+    int tag, paramTag;
+
+    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+	opserr << "WARNING sensNodePressure nodeTag? paramTag?- could not read nodeTag? ";
+	return TCL_ERROR;	        
+    }    
+    if (Tcl_GetInt(interp, argv[2], &paramTag) != TCL_OK) {
+	opserr << "WARNING sensNodePressure paramTag? paramTag?- could not read paramTag? ";
+	return TCL_ERROR;	        
+    }        
+    
+    double dp = 0.0;
+    Pressure_Constraint* thePC = theDomain.getPressure_Constraint(tag);
+    if(thePC != 0) {
+        // int ptag = thePC->getPressureNode();
+        // Node* pNode = theDomain.getNode(ptag);
+        Node* pNode = thePC->getPressureNode();
+        if(pNode != 0) {
+
+            Parameter *theParam = theDomain.getParameter(paramTag);
+            if (theParam == 0) {
+                opserr << "sensNodePressure: parameter " << paramTag << " not found" << endln;
+                return TCL_ERROR;
+            }
+
+            int gradIndex = theParam->getGradIndex();
+            dp = pNode->getVelSensitivity(1,gradIndex);
+        }
+    }
+    
+    char buffer[40];
+    sprintf(buffer,"%35.20f",dp);
+
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
+    return TCL_OK;
+}
+
 
 int 
 sensSectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -7970,9 +8059,9 @@ getParamValue(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 
   Parameter *theEle = theDomain.getParameter(paramTag);
 
-  char buffer[20];
+  char buffer[40];
 
-  sprintf(buffer, "%f", theEle->getValue());
+  sprintf(buffer, "%35.20f", theEle->getValue());
   Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
   return TCL_OK;
