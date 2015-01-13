@@ -628,9 +628,11 @@ PFEMMesher3D::save(const char* filename, const ID& snodes, int step, Domain* the
     int numisolated = 0;
     while((thePC = thePCs()) != 0) {
         int ntag = thePC->getTag();
-        int ptag = thePC->getPressureNode();
+        // int ptag = thePC->getPressureNode();
         Node* nnd = theDomain->getNode(ntag);
-        Node* pnd = theDomain->getNode(ptag);
+        // Node* pnd = theDomain->getNode(ptag);
+        Node* pnd = thePC->getPressureNode();
+        int ptag = pnd->getTag();
         if(nnd!=0 && pnd!=0) {
             std::pair<int,Node*>& nnode = nodes[ntag];
             nnode.second = nnd;
@@ -816,8 +818,9 @@ PFEMMesher3D::save(const char* filename, const ID& snodes, int step, Domain* the
         if(thePC == 0) {
             file << ntag << " " << 0 << "\n";
         } else {
-            int ptag = thePC->getPressureNode();
-            Node* pnode = pnodes[ptag];
+            // int ptag = thePC->getPressureNode();
+            // Node* pnode = pnodes[ptag];
+            Node* pnode = thePC->getPressureNode();
             if(pnode == 0) {
                 file << ntag << " " << 0 << "\n";
             } else {
