@@ -57,7 +57,7 @@ PFEMAnalysis::PFEMAnalysis(Domain& theDomain,
     :DirectIntegrationAnalysis(theDomain,theHandler,theNumberer,theModel,theSolnAlgo,
                                theSOE,theIntegrator,theTest),
      dtmax(max), dtmin(min), ratio(r),
-     dt(max), currenttime(0.0), nexttime(max), curr(0), instep(false)
+     dt(max), next(max), newstep(true)
 {
     
 }
@@ -69,11 +69,17 @@ PFEMAnalysis::~PFEMAnalysis()
 int 
 PFEMAnalysis::analyze()
 {
-    
+    Domain* theDomain = this->getDomainPtr();
+    double current = theDomain->getCurrentTime();
+    if(newstep) {
+        next = current + dtmax;
+    }
+    bool instep = false;
+
     while(true) {
 
         // analyze
-        opserr<<"\n\nstep = "<<curr<<", Time = "<<currenttime<<", dt = "<<dt<<"\n\n";
+        opserr<<"\n\nTime = "<<current<<", dt = "<<dt<<"\n\n";
         int converged  = DirectIntegrationAnalysis::analyze(1, dt);
 
         // if failed
@@ -82,23 +88,21 @@ PFEMAnalysis::analyze()
             if(dt < dtmin) {
                 return -1;
             }
-            nexttime = currenttime + dt;
             instep = true;
+            newstep = false;
             continue;
         }
 
-        // next step
-        if(!instep) {
-            curr++;
+        // if converged
+        if(instep) {
+            current = theDomain->getCurrentTime();
+            dt = next - current;
+        } else {
+            newstep = true;
+            dt = dtmax;
         }
-        currenttime = nexttime;
-        nexttime = (curr+1)*dtmax;
-        dt = nexttime - currenttime;
-        instep = false;
 
-        // break out
-        return curr;
-        
+        return 0;
     }
 
 }

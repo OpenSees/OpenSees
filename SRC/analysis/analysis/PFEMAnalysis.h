@@ -62,10 +62,9 @@ private:
     double dtmin;
     double ratio;
     double dt;
-    double currenttime;
-    double nexttime;
+    double next;
     int curr;
-    bool instep;
+    bool newstep;
 };
 
 #endif
