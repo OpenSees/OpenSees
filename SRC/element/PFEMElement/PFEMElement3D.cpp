@@ -447,7 +447,7 @@ PFEMElement3D::setDomain(Domain *theDomain)
         int pndf = 3;
         thePCs[i] = theDomain->getPressure_Constraint(ntags(2*i));
         if(thePCs[i] == 0) {
-            thePCs[i] = new Pressure_Constraint(ntags(2*i), bz, pndf);
+            thePCs[i] = new Pressure_Constraint(ntags(2*i), pndf);
             if(thePCs[i] == 0) {
                 opserr<<"WARNING: no enough memory for Pressure_Constraint -- ";
                 opserr<<"PFEMElement3D::setDomain "<<eletag<<"\n";
@@ -466,13 +466,15 @@ PFEMElement3D::setDomain(Domain *theDomain)
         thePCs[i]->connect(eletag);
 
         // get pressure node
-        ntags(2*i+1) = thePCs[i]->getPressureNode();
-        nodes[2*i+1] = theDomain->getNode(ntags(2*i+1));
+        // ntags(2*i+1) = thePCs[i]->getPressureNode();
+        // nodes[2*i+1] = theDomain->getNode(ntags(2*i+1));
+        nodes[2*i+1] = thePCs[i]->getPressureNode();
         if(nodes[2*i+1] == 0) {
-            opserr<<"WARNING: node "<<ntags(2*i+1)<<" does not exist ";
+            opserr<<"WARNING: pressure node does not exist ";
             opserr<<"in PFEMElement3D - setDomain() "<<eletag<<"\n ";
             return;
         }
+        ntags(2*i+1) = nodes[2*i+1]->getTag();
         ndf += nodes[2*i+1]->getNumberDOF();
     }
     numDOFs(numDOFs.Size()-1) = ndf;
