@@ -84,6 +84,15 @@ public:
     void Print(OPS_Stream &s, int flag =0);
     int displaySelf(Renderer &theViewer, int displayMode, float fact);
 
+    // sensitivity
+    int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter (int parameterID, Information &info);
+    int activateParameter(int passedParameterID);
+    const Matrix& getDampSensitivity(int gradNumber);
+    const Matrix& getMassSensitivity(int gradNumber);
+    const Vector& getResistingForceSensitivity(int gradNumber);
+    int commitSensitivity(int gradNumber, int numGrads);
+
 protected:
     
 private:
@@ -95,22 +104,55 @@ private:
     double mu;   // viscocity
     double bx;    // body force
     double by;    // body force
-    double dNdx[3], dNdy[3];
     double J;
+    Vector dJ;
     ID numDOFs;
     double thickness;
     double kappa;
+    int parameterID;
 
     static Matrix K;
     static Vector P;
+    static Matrix C;
 
-    Matrix getK();
-    Matrix getKbub();
-    Matrix getGbub();
-    Matrix getMbub();
-    Vector getF();
-    Vector getFbub();
-    void getVb();
+    void setJ();
+    void setdJ();
+    static void setC();
+
+    // responses
+    double getM() const;
+    double getMp() const;
+    void getG(Vector& g) const;
+    void getK(Matrix& k) const;
+    void getKbub(Matrix& kbub) const;
+    void getGbub(Matrix& gbub)const;
+    double getinvMbub() const;
+    void getL(Matrix& l) const;
+    void getF(Vector& f) const;
+    void getFbub(Vector& fbub) const;
+    void getFp(Vector& fp) const;
+
+    // conditional sensitivity
+    double getdM() const;
+    double getdinvMbub() const;
+    void getdL(Matrix& dl) const;
+    void getdF(Vector& df) const;
+    void getdK(Matrix& dk) const;
+    void getdFbub(Vector& dfb) const;
+    void getdFp(Vector& dfp) const;
+    
+    // geometric sensitivity
+    void getdM(const Vector& vdot, Matrix& dm) const;
+    void getdinvMbub(const Vector& vb, Matrix& dmb) const;
+    void getdK(const Vector& v, Matrix& dk) const;
+    void getdF(Matrix& df) const;
+    void getdFbub(Matrix& dfb) const;
+    void getdG(const Vector& p, Matrix& dg) const;
+    void getdGt(const Vector& v, Matrix& dgt) const;
+    void getdGb(const Vector& p, Matrix& dgb) const;
+    void getdGbt(const Vector& vb, Matrix& dgbt) const;
+    void getdFp(Matrix& dfp) const;
+    void getdL(const Vector& p, Matrix& dl) const;
 };
 
 #endif
