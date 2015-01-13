@@ -22,8 +22,8 @@ TclModelBuilder_addPFEMElement2D(ClientData clientData, Tcl_Interp *interp,
     if(strcmp(argv[loc], "pressureGradient")==0 || strcmp(argv[loc], "pressuregradient")==0
        || strcmp(argv[loc], "PressureGradient")==0) {
         type = 0;
-    } else if(strcmp(argv[loc], "compressible")==0 
-              || strcmp(argv[loc], "Compressible")==0) {
+    } else if(strcmp(argv[loc], "quasi-incompressible")==0 
+              || strcmp(argv[loc], "Quasi-Incompressible")==0) {
         type = 1;
     } else if(strcmp(argv[loc], "bubble")==0 
               || strcmp(argv[loc], "Bubble")==0) {
@@ -89,14 +89,13 @@ TclModelBuilder_addPFEMElement2D(ClientData clientData, Tcl_Interp *interp,
         }
     }
     loc++;
-    double kappa = -1.0;
+    double kappa = 2.2e9;
     if(argc > loc) {
         if(Tcl_GetDouble(interp, argv[loc], &kappa) != TCL_OK) {
             opserr<< "WARNING invalid kappa "<< argv[loc] << ": element PFEMElement2D\n";
             return TCL_ERROR;
         }
     }
-
 
     // regular element
     Element* ele = 0;
