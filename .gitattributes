@@ -3592,6 +3592,8 @@ SRC/recorder/response/Response.h -text
 SRC/reliability/FEsensitivity/Makefile -text
 SRC/reliability/FEsensitivity/NewmarkSensitivityIntegrator.cpp -text
 SRC/reliability/FEsensitivity/NewmarkSensitivityIntegrator.h -text
+SRC/reliability/FEsensitivity/PFEMSensitivityIntegrator.cpp -text
+SRC/reliability/FEsensitivity/PFEMSensitivityIntegrator.h -text
 SRC/reliability/FEsensitivity/SensitivityAlgorithm.cpp -text
 SRC/reliability/FEsensitivity/SensitivityAlgorithm.h -text
 SRC/reliability/FEsensitivity/SensitivityIntegrator.cpp -text
