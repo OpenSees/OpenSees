@@ -169,6 +169,7 @@ RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
 		$(FE)/reliability/FEsensitivity/SensitivityIntegrator.o \
 		$(FE)/reliability/FEsensitivity/StaticSensitivityIntegrator.o \
 		$(FE)/reliability/FEsensitivity/NewmarkSensitivityIntegrator.o \
+		$(FE)/reliability/FEsensitivity/PFEMSensitivityIntegrator.o \
 		$(FE)/reliability/tcl/TclReliabilityBuilder.o 
 
 # Compilation control
