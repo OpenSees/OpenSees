@@ -3,7 +3,8 @@ include ../../../Makefile.def
 OBJS       = SensitivityAlgorithm.o \
 	SensitivityIntegrator.o \
 	StaticSensitivityIntegrator.o \
-	NewmarkSensitivityIntegrator.o
+	NewmarkSensitivityIntegrator.o \
+	PFEMSensitivityIntegrator.o
 
 # Compilation control
 all:         $(OBJS)
