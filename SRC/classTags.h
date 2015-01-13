@@ -611,7 +611,7 @@
 #define ELE_TAG_PFEMElement3D          141
 #define ELE_TAG_PFEMElement2DCompressible 142
 #define ELE_TAG_PFEMElement2DBubble       143
-#define ELE_TAG_PFEMElement2D73           144
+#define ELE_TAG_PFEMElement2Dmini         144
 #define ELE_TAG_ElasticTimoshenkoBeam2d   145
 #define ELE_TAG_ElasticTimoshenkoBeam3d   146
 #define ELE_TAG_ElastomericBearingUFRP2d  147
@@ -695,7 +695,7 @@
 #define CNSTRNT_TAG_MP_Joint2D          5
 #define CNSTRNT_TAG_MP_SimpleJoint2D    6
 #define CNSTRNT_TAG_MP_Joint3D          7
-#define CNSTRNT_TAG_Pressure_Constraint    8
+#define CNSTRNT_TAG_Pressure_Constraint 8
 
 
 #define MATRIX_TAG_Matrix 	1
