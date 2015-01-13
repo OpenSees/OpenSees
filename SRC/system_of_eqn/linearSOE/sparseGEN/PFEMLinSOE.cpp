@@ -458,88 +458,75 @@ PFEMLinSOE::setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int&
         return -1;
     }
 
-    // disconnect pcs from structural elements
-    Pressure_ConstraintIter& thePCs1 = domain->getPCs();
-    Pressure_Constraint* thePC1 = 0;
-    while((thePC1 = thePCs1()) != 0) {
-        thePC1->disconnect();
-    }
-
-    // to connect pc to all elements
-    Element *elePtr;
-    ElementIter &theElemIter = domain->getElements();    
-    while((elePtr = theElemIter()) != 0) {
-
-        const ID& nodeids = elePtr->getExternalNodes();
-        for(int i=0; i<nodeids.Size(); i++) {
-            Pressure_Constraint* thePC = domain->getPressure_Constraint(nodeids(i));
-            if(thePC != 0) {
-                thePC->connect(elePtr->getTag(), false);
-            }
-        }
-    }
-
     // loop through pcs
     Pressure_ConstraintIter& thePCs = domain->getPCs();
     Pressure_Constraint* thePC = 0;
     Ssize = Fsize = Isize = Psize = Pisize = 0;
     while((thePC = thePCs()) != 0) {
-        int ptag = thePC->getPressureNode();
+        // int ptag = thePC->getPressureNode();
         int ntag = thePC->getTag();
-        Node* pnode = domain->getNode(ptag);
-        if(pnode == 0) {
-            opserr<<"WARNING: pressure node "<<ptag<<" does not exists ";
-            opserr<<" -- PFEMLinSOE::setDofIDs\n";
-            return -1;
-        }
+        // Node* pnode = domain->getNode(ptag);
+        Node* pnode = thePC->getPressureNode();
+        // if(pnode == 0) {
+        //     opserr<<"WARNING: pressure node "<<ptag<<" does not exists ";
+        //     opserr<<" -- PFEMLinSOE::setDofIDs\n";
+        //     return -1;
+        // }
         Node* nnode = domain->getNode(ntag);
         if(nnode == 0) {
             opserr<<"WARNING: pressure node "<<ntag<<" does not exists ";
             opserr<<" -- PFEMLinSOE::setDofIDs\n";
             return -1;
         }
-        DOF_Group* pDOF = pnode->getDOF_GroupPtr();
-        if(pDOF == 0) {
-            opserr<<"WARNING: no DOF_Group is found with node "<<ptag;
-            opserr<<" -- PFEMLinSOE::setDofIDs\n";
-            return -1;
+        // DOF_Group* pDOF = pnode->getDOF_GroupPtr();
+        DOF_Group* pDOF = 0;
+        if(pnode != 0) {
+            int ptag = pnode->getTag();
+            pDOF = pnode->getDOF_GroupPtr();
+            if(pDOF == 0) {
+                opserr<<"WARNING: no DOF_Group is found with node "<<ptag;
+                opserr<<" -- PFEMLinSOE::setDofIDs\n";
+                return -1;
+            }
         }
+        // if(pDOF == 0) {
+        //     opserr<<"WARNING: no DOF_Group is found with node "<<ptag;
+        //     opserr<<" -- PFEMLinSOE::setDofIDs\n";
+        //     return -1;
+        // }
         DOF_Group* nDOF = nnode->getDOF_GroupPtr();
         if(nDOF == 0) {
             opserr<<"WARNING: no DOF_Group is found with node "<<ntag;
             opserr<<" -- PFEMLinSOE::setDofIDs\n";
             return -1;
         }
-        const ID& pid = pDOF->getID();
+        // const ID& pid = pDOF->getID();
         const ID& nid = nDOF->getID();
 
         // pressure nodes
-        if(thePC->isFluid() || thePC->isInterface()) {
-            if(pid(0) >= 0) {
-                dofType(pid(0)) = 3;          // pressure
-                dofID(pid(0)) = Psize++;
-            }
-            for(int i=1; i<pid.Size(); i++) {
-                if(pid(i) >= 0) {
-                    dofType(pid(i)) = 4;      // pressure gradient
-                    dofID(pid(i)) = Pisize++;     
-                }
-            }
-        } else {
-            for(int i=0; i<pid.Size(); i++) {
-                if(pid(i) >= 0) {
-                    dofType(pid(i)) = -1;     // which are not connected to any PFEM elements
-                    dofID(pid(i)) = -1;
-                }
-            }
+        if(pnode != 0) {
+            const ID& pid = pDOF->getID();
 
-            // set pressure to zero
-            // const Vector& vel = pnode->getTrialVel();
-            // Vector zerovec(vel.Size());
-            // pnode->setTrialDisp(zerovec);
-            // pnode->setTrialVel(zerovec);
-            // pnode->setTrialAccel(zerovec);
-            // pnode->commitState();
+            if(thePC->isFluid() || thePC->isInterface()) {
+                if(pid(0) >= 0) {
+                    dofType(pid(0)) = 3;          // pressure
+                    dofID(pid(0)) = Psize++;
+                }
+                for(int i=1; i<pid.Size(); i++) {
+                    if(pid(i) >= 0) {
+                        dofType(pid(i)) = 4;      // pressure gradient
+                        dofID(pid(i)) = Pisize++;     
+                    }
+                }
+            } else {
+                for(int i=0; i<pid.Size(); i++) {
+                    if(pid(i) >= 0) {
+                        dofType(pid(i)) = -1;     // which are not connected to any PFEM elements
+                        dofID(pid(i)) = -1;
+                    }
+                }
+
+            }
         }
 
         // momentum nodes
