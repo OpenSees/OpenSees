@@ -123,13 +123,6 @@ int PFEMIntegrator::newStep(double deltaT)
     U->addVector(1.0, *Utdot, deltaT);
     Udotdot->Zero();
 
-    // loop through pcs to invoke newStep()
-    Pressure_ConstraintIter& thePCs = theDomain->getPCs();
-    Pressure_Constraint* thePC = 0;
-    while((thePC = thePCs()) != 0) {
-        thePC->newStep(deltaT, *U, *Udot, *Udotdot);
-    }
-
     // set states
     theModel->setDisp(*U);
     theModel->setAccel(*Udotdot);
