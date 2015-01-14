@@ -38,9 +38,10 @@ class ElastomericX : public Element
 {
 public:
     // Constructor
-    ElastomericX(int tag, int Nd1, int Nd2, double qRubber, double uh, double Gr, double Kbulk,
+    ElastomericX(int eleTag, int Nd1, int Nd2, double fy, double alpha, double Gr, double Kbulk,
 		double D1, double D2, double ts, double tr, int n, const Vector y, const Vector x=0, 
-		double kc=10, double PhiM=0.75, double ac=1.0, double sDratio=0.5, double m=0.0, double cd=0.0, double tc=0.0);
+		double kc=10, double PhiM=0.75, double ac=1.0, double sDratio=0.5, double m=0.0, 
+		double cd=0.0, double tc=0.0, int tag1=0, int tag2=0, int tag3=0, int tag4=0);
         
     ElastomericX();
        
@@ -66,6 +67,7 @@ public:
     // Public methods to obtain stiffness, mass, damping and residual information    
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
+	const Matrix &getDamp();
     const Matrix &getMass();
        
     void zeroLoad();
@@ -100,7 +102,7 @@ private:
     // PARAMETERS
 	// Horizontal direction
     double k0;									// Initial stiffness of hysteretic component(due to lead)
-	double qYield;								// Current yield stress
+	double qYield;								// Yield force of hysteretic component/chacteristic strength of bearing
     double ke;									// Stiffness of elastic component(due to rubber)
 	double cd;									// Viscous damping parameter
 
@@ -125,6 +127,7 @@ private:
 	double G;									// Shear modulus of rubber
 	Vector x;									// local x direction
     Vector y;									// local y direction
+	int tag1, tag2, tag3, tag4, tag5;			// Vector of tags to include or exclude a particular behavior
     double shearDistI;							// shear distance from node I as fraction of length
     double mass;								// mass of element
 	double Tr;									// height of rubber in the bearing
@@ -138,9 +141,11 @@ private:
 
     // State variables
 	double Fcrn;								// Current critical buckling force at particular shear deformation
-	double Fcrmin;								// Min value of critical buckling load during loading	
-	double Fcn;									// Current cavitation strength and deformation
-	double umax;								// Maximum force and deformation ever experienced by the elastomer
+	double ucrn;								// Current critical buckling displacement at particular shear deformation
+	double Fcrmin;								// Min value of critical buckling load during whole loading	
+	double Fcn, ucn;									// Current cavitation strength and deformation
+	double Fmax, umax;								// Maximum force and deformation ever experienced by the elastomer
+	//int tag;									// Tag to identify if bearing has failed in buckling
 
     Vector ub;									// Displacements in basic system
 	Vector ubdot;								// Velocities in basic system

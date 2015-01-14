@@ -40,10 +40,10 @@ class LeadRubberX : public Element
 {
 public:
     // Constructor
-    LeadRubberX(int tag, int Nd1, int Nd2, double qLead, double uh, double Gr, double Kbulk, 
+    LeadRubberX(int eleTag, int Nd1, int Nd2, double fy, double alpha, double Gr, double Kbulk, 
 		double D1, double D2, double ts, double tr, int n, const Vector y, const Vector x=0, 
 		double kc=10, double PhiM=0.75, double ac=1.0, double sDratio=0.5, double m=0.0, double cd=0.0, double tc=0.0, double qL=11200, 
-		double cL=130, double kS=50, double aS=1.41e-05);    
+		double cL=130, double kS=50, double aS=1.41e-05, int tag1=0, int tag2=0, int tag3=0, int tag4=0, int tag5=0);    
     
 	LeadRubberX();
        
@@ -72,6 +72,7 @@ public:
     // Public methods to obtain stiffness, mass, damping and residual information    
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
+	const Matrix &getDamp();
     const Matrix &getMass();
        
     void zeroLoad();
@@ -103,15 +104,14 @@ private:
     Node *theNodes[2];							// Array of nodes
    
     // PARAMETERS
-		int uTag;								// Unit tag eight SI(0) or Imperial/US(1) units 
 	// Horizontal direction
     double k0;									// Initial stiffness of hysteretic component(due to lead)
-    double qYield0;								// Yield force of hysteretic component(due to lead)
-	double qYield;								// Yurrent yield stress
+    double qYield0;								// Initial yield force of hysteretic component(due to lead)/chacteristic strength of bearing
+	double qYield;								// Current yield force of hysteretic component(due to lead)
     double ke;									// Stiffness of elastic component(due to rubber)
 	double cd;									// Viscous damping parameter
 	double TL_trial, TL_commit;					// Change in temperature of lead core from the reference temperature
-	double qL, cL, kS, aS;						//	Heating parameters for lead core
+	double qL, cL, kS, aS;						// Heating parameters for lead core
 	// Vertical direction
 	double S;									// Shape facor
 	double Ec;									// Compression modulus
@@ -132,6 +132,7 @@ private:
 	double G;									// shear modulus of rubber
 	Vector x;									// local x direction
     Vector y;									// local y direction
+	int tag1, tag2, tag3, tag4, tag5;			// Vector of tags to include or exclude a particular behavior
     double shearDistI;							// shear distance from node I as fraction of length
     double mass;								// mass of element
 	double Tr;									// height of rubber in the bearing
@@ -142,11 +143,13 @@ private:
 	double A;									// Bonded rubber area of bearing
 	double Ar;									// reduced bonded area due to shear displacement
 	double n, ts;								// number of layers and shim thickness
+
     // State variables
 	double Fcrn;								// Current critical buckling force at particular shear deformation
+	double ucrn;								// Current critical buckling displacement at particular shear deformation
 	double Fcrmin;								// Min value of critical buckling load during loading
-	double Fcn;									// Current cavitation strength and deformation
-	double umax;								// Maximum force and deformation ever experienced by the elastomer
+	double Fcn, ucn;									// Current cavitation strength and deformation
+	double Fmax, umax;								// Maximum force and deformation ever experienced by the elastomer
 
     Vector ub;									// displacements in basic system
 	Vector ubdot;								// velocities in basic system

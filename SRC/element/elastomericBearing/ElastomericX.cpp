@@ -28,7 +28,6 @@
 // What: "@(#) ElastomericX.cpp, revA"
 
 #include "ElastomericX.h"
-
 #include <elementAPI.h>
 #include <Domain.h>
 #include <Node.h>
@@ -49,7 +48,6 @@
 using namespace std;
 #include <iostream>
 
-#include <cmath>
 
 #define PI 3.14159l
 
@@ -58,8 +56,10 @@ Matrix ElastomericX::theMatrix(12,12);
 Vector ElastomericX::theVector(12);
 Vector ElastomericX::theLoad(12);
 
+
 static int numMyBearing = 0;
-void *OPS_ElastomericX(void)
+//static int tag = 0; // Tag to identify if bearing has failed in buckling
+void *OPS_ElastomericX()
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numMyBearing == 0) {
@@ -74,19 +74,20 @@ void *OPS_ElastomericX(void)
     theEle = new ElastomericX();
     return theEle;
   }
-  
+
   if (numArgs !=12 && numArgs !=18 && numArgs !=19 && numArgs !=20
-	  && numArgs !=21 && numArgs !=22 && numArgs !=23 && numArgs !=24 && numArgs !=25) {
+	  && numArgs !=21 && numArgs !=22 && numArgs !=23 && numArgs !=24 && numArgs !=25
+	  && numArgs !=26 && numArgs !=27 && numArgs !=28 && numArgs !=29) {
     opserr << "ERROR - ElastomericX incorrect # args provided";
     return theEle;
   }
-  
+
   // get the id and end nodes
   int iData[3];
   double dData[22];
   int numData;					// specify the number of arguments to be read from command line
-  // every time an argument is read through OPS_Get.... OPS_GetNumRemainingInputArgs() is increased by one
-  
+								// every time an argument is read through OPS_Get.... OPS_GetNumRemainingInputArgs() is increased by one
+
   numData = 3;
   if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING invalid element data\n";
@@ -100,10 +101,16 @@ void *OPS_ElastomericX(void)
     opserr << "WARNING error reading element properties for element" << eleTag << endln;
     return 0;
   }
-  
+    
   // Get the orientation vector
   Vector x(0);
   Vector y(3); y(0)=-1.0; y(1)=0.0; y(2)=0.0;
+
+  //get the tags of the properties
+  int tag1=0;					// Cavitation and post-cavitation
+  int tag2=0;					// Buckling load variation
+  int tag3=0;					// Horizontal stiffness variation
+  int tag4=0;					// Vertical stiffness variation
 
   // The default values of the parameters
   double kl=10.0;				// Cavitation parameter
@@ -115,102 +122,132 @@ void *OPS_ElastomericX(void)
   double tc=0;					// Cover thickness
 
   if(numArgs>=18) {
-    double value;
-    x.resize(3);
-    numData=1;
-    for(int i=0; i<3; i++) {
-      if(OPS_GetDoubleInput(&numData, &value) != 0) {
-	opserr << "WARNING invalid orientation value for element" << eleTag << endln;
-	return 0;
-      } else {
-	x(i)=value;
-      }
-    }
-    for(int i=0; i<3; i++){
-      if (OPS_GetDoubleInput(&numData, &value) != 0) {
-	opserr << "WARNING invalid orientation value for element" << eleTag << endln;
-	return 0;
-      } else {
-	y(i)=value;
-      }
-    }
-    if(numArgs>=19){
-      numData=1;
-      if (OPS_GetDoubleInput(&numData, &kl) != 0) {
-	opserr << "WARNING error reading element property cavitation parameter for element" << eleTag << endln;
-	return 0;
-      }
-      if(numArgs>=20){
-	numData=1;
-	if (OPS_GetDoubleInput(&numData, &phi) != 0) {
-	  opserr << "WARNING error reading element property damage index for element" << eleTag << endln;
-	  return 0;
-	}
-	if(numArgs>=21){
+	  double value;
+	  x.resize(3);
 	  numData=1;
-	  if (OPS_GetDoubleInput(&numData, &al) != 0) {
-	    opserr << "WARNING error reading element property strength degradation parameter for element" << eleTag << endln;
-	    return 0;
-	  }
-	  if(numArgs>=22){
-	    numData=1;
-	    if (OPS_GetDoubleInput(&numData, &sDratio) != 0) {
-	      opserr << "WARNING error reading element property shear distance ratio for element" << eleTag << endln;
-	      return 0;
-	    }
-	    if(numArgs>=23){
-	      numData=1;
-	      if (OPS_GetDoubleInput(&numData, &m) != 0) {
-		opserr << "WARNING error reading element property mass for element" << eleTag << endln;
-		return 0;
-	      }
-	      if(numArgs>=24){
-		numData=1;
-		if (OPS_GetDoubleInput(&numData, &cd1) != 0) {
-		  opserr << "WARNING error reading element property viscous damping parameter for element" << eleTag << endln;
-		  return 0;
-		}
-		if(numArgs==25){
-		  numData=1;
-		  if (OPS_GetDoubleInput(&numData, &tc) != 0) {
-		    opserr << "WARNING error reading element property cover thickness for element" << eleTag << endln;
-		    return 0;
+	  for(int i=0; i<3; i++) {
+		  if(OPS_GetDoubleInput(&numData, &value) != 0) {
+			  opserr << "WARNING invalid orientation value for element" << eleTag << endln;
+			  return 0;
+			  } else {
+				  x(i)=value;
+				  }
 		  }
-		}
-	      }
-	    }
+	  for(int i=0; i<3; i++) {
+		  if (OPS_GetDoubleInput(&numData, &value) != 0) {
+			  opserr << "WARNING invalid orientation value for element" << eleTag << endln;
+			  return 0;
+			  } else {
+				  y(i)=value;
+				  }
+		  }
+	  if(numArgs>=19) {
+		  numData=1;
+		  if (OPS_GetDoubleInput(&numData, &kl) != 0) {
+			  opserr << "WARNING error reading element property cavitation parameter for element" << eleTag << endln;
+			  return 0;
+			  }
+		  if(numArgs>=20) {
+			  numData=1;
+			  if (OPS_GetDoubleInput(&numData, &phi) != 0) {
+				  opserr << "WARNING error reading element property damage index for element" << eleTag << endln;
+				  return 0;
+			  }
+			  if(numArgs>=21) {
+				  numData=1;
+				  if (OPS_GetDoubleInput(&numData, &al) != 0) {
+				  opserr << "WARNING error reading element property strength degradation parameter for element" << eleTag << endln;
+				  return 0;
+				  }
+				  if(numArgs>=22) {
+					  numData=1;
+					  if (OPS_GetDoubleInput(&numData, &sDratio) != 0) {
+						  opserr << "WARNING error reading element property shear distance ratio for element" << eleTag << endln;
+						  return 0;
+					  }
+					  if(numArgs>=23) {
+						  numData=1;
+						  if (OPS_GetDoubleInput(&numData, &m) != 0) {
+							  opserr << "WARNING error reading element property mass for element" << eleTag << endln;
+							  return 0;
+						  }
+						  if(numArgs>=24) {
+							  numData=1;
+							  if (OPS_GetDoubleInput(&numData, &cd1) != 0) {
+								  opserr << "WARNING error reading element property viscous damping parameter for element" << eleTag << endln;
+								  return 0;
+							  }
+							  if(numArgs>=25) {
+								  numData=1;
+								  if (OPS_GetDoubleInput(&numData, &tc) != 0) {
+									  opserr << "WARNING error reading element property cover thickness for element" << eleTag << endln;
+									  return 0;
+								  }
+								  if(numArgs>=26) {
+									  numData=1;
+									if (OPS_GetIntInput(&numData, &tag1) != 0) {
+										opserr << "WARNING error reading element properties for element" << eleTag << endln;
+										return 0;
+									}
+									if(numArgs>=27) {
+										numData=1;
+										if (OPS_GetIntInput(&numData, &tag2) != 0) {
+											opserr << "WARNING error reading element properties for element" << eleTag << endln;
+											return 0;
+										}
+										if(numArgs>=28) {
+											numData=1;
+											if (OPS_GetIntInput(&numData, &tag3) != 0) {
+												opserr << "WARNING error reading element properties for element" << eleTag << endln;
+												return 0;
+											}
+											if(numArgs==29) {
+												numData=1;
+												if (OPS_GetIntInput(&numData, &tag4) != 0) {
+													opserr << "WARNING error reading element properties for element" << eleTag << endln;
+													return 0;
+												}
+											}
+										}
+									}
+								}
+							  }
+						  }
+					  }
+				  }
+			  }
+		  }
 	  }
-	}
-      }
-    }
   }
-  
+
+
   int ndm = OPS_GetNDM();
   int ndf = OPS_GetNDF();
-  if (ndm == 3) {
-    
-    // check space frame problem has 6 dof per node
-    if (ndf != 6)  {
-      opserr << "WARNING invalid ndf: " << ndf;
-      opserr << ", for space problem need 6 - ElastomericX \n"; 
-    }
-    
-    theEle = new ElastomericX(iData[0], iData[1], iData[2], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], y, x, kl, phi, al, sDratio, m, cd1, tc);
-    
-  } 
   
+  if (ndm == 3) {
+
+	  // check space frame problem has 6 dof per node
+        if (ndf != 6)  {
+            opserr << "WARNING invalid ndf: " << ndf;
+            opserr << ", for space problem need 6 - ElastomericX \n"; 
+		}
+
+    theEle = new ElastomericX(iData[0], iData[1], iData[2], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], y, x, kl, phi, al, sDratio, m, cd1, tc,tag1, tag2, tag3, tag4);
+	                            
+  } 
+     
   if (theEle == 0) {
     opserr << "WARNING ran out of memory creating element with tag " << eleTag << endln;
     return 0;
   }
-  
+
   return theEle;
 }
 
   
-  ElastomericX::ElastomericX(int tag, int Nd1, int Nd2, double qRubber, double uy, double Gr, double Kbulk, double Di, double Do, 
-			     double ts, double tr, int n, const Vector _y, const Vector _x, double kl, double PhiMax, double al, double sDratio, double m, double cd1, double tc)
-    :Element(tag, ELE_TAG_ElastomericX), connectedExternalNodes(2), G(Gr), x(_x), y(_y), PhiM(PhiMax), ac(al), shearDistI(sDratio), mass(m), cd(cd1), 
+  ElastomericX::ElastomericX(int tag, int Nd1, int Nd2, double fy, double alpha, double Gr, double Kbulk, double Di, double Do, 
+	  double ts, double tr, int n, const Vector _y, const Vector _x, double kl, double PhiMax, double al, double sDratio, double m, double cd1, double tc, int tg1, int tg2, int tg3, int tg4)
+	  :Element(tag, ELE_TAG_ElastomericX), connectedExternalNodes(2), G(Gr), x(_x), y(_y), PhiM(PhiMax), ac(al), shearDistI(sDratio), mass(m), cd(cd1), tag1(tg1), tag2(tg2), tag3(tg3), tag4(tg4),
 	  L(0.0), D1(Di), D2(Do), ub(6), z(2), dzdu(2,2), qb(6), kb(6,6), ul(12), Tgl(12,12), Tlb(6,12), ubC(6), zC(2), kbInit(6,6) 
 {
 	// Ensure the connectedExternalNode ID is of correct size & set values
@@ -234,10 +271,10 @@ void *OPS_ElastomericX(void)
 	if(D1<DBL_EPSILON) {
 		 F=1.0;
 	} else {
-		double r=D2/D1;											// Outer to inner diameter ratio
-		F=(r*r+1)/((r-1)*(r-1)) + (1+r)/((1-r)*log(r));	// Dimension modification factor
+		double r=D2/D1;										// Outer to inner diameter ratio
+		F=(r*r+1)/((r-1)*(r-1)) + (1+r)/((1-r)*log(r));		// Dimension modification factor
 	}
-	Ec=1.0/((1/(6*G*S*S*F))+(4.0/3.0)*(1/Kbulk));      // Compressive modulus of elastomeric bearing
+	Ec=1.0/((1/(6*G*S*S*F))+(4.0/3.0)*(1/Kbulk));			// Compressive modulus of elastomeric bearing
 	double E=3*G;											// Elastic modulus
 	double I=(PI/64)*(pow((D2+tc),4)-pow(D1,4));            // Moment of inertia of bearing
 	rg=sqrt(I/A);                                           // Radius of gyration 
@@ -249,11 +286,14 @@ void *OPS_ElastomericX(void)
 	double Is=I*h/Tr;										// Adjusted moment of intertia of bearing
 	double Pe=PI*PI*Er*Is/(h*h);							// Euler buckling load of bearing
 	Fcr=-sqrt(Pe*G*As);										// Critical buckling load in compression
-	Fcrn=Fcr;												// Initial value of critical buckling load
-	Fcrmin=Fcr;											// Initial value of critical buckling load during loading
-	ucr=Fcrn/Kv0;											// Initial value of critical buckling deformation
+	Fcrn=Fcr;												// Current value of critical buckling load
+	Fcrmin=Fcr;												// Initial value of critical buckling load during loading
+	ucr=Fcr/Kv0;											// Initial value of critical buckling deformation
+	ucrn=ucr;												// Current value of critical buckling deformation
 	uc=Fc/Kv0;												// Initial cavitation deformation
 	Fcn=Fc;													// Initial value of cavitation deformation
+	ucn=uc;
+	Fmax=Fc;
 	umax=uc;												// Initial value of maximum tensile deformation
 
 	if (kl<DBL_EPSILON) {
@@ -262,20 +302,20 @@ void *OPS_ElastomericX(void)
 		kc=kl;
 	}
 	// Horizontal motion
-	qYield=qRubber;
+	qYield=fy*(1-alpha);
 	ke=G*A/Tr;
-	k0=qRubber/uy;
+	k0=(1.0/alpha-1.0)*ke;
 
 	// Rotation
-	Kr= Er*Is/Tr;
+	Kr= Er*Is/h;
 
 	// Torsion
-	Kt=G*(2*Is)/Tr;
+	Kt=G*(2*Is)/h;
 	 
     // Initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = Kv0;
-    kbInit(1,1) = k0+ke;
+	kbInit(1,1) = k0+ke;
     kbInit(2,2) = k0+ke;
     kbInit(3,3) = Kt;
     kbInit(4,4) = Kr;
@@ -283,16 +323,13 @@ void *OPS_ElastomericX(void)
 
     // Initialize variables
     this->revertToStart();
-
-	//cout<<"Fcr: "<< Fcr << "ucr: "<<ucr<<endln;
-
 }
 
 ElastomericX::ElastomericX()
-    : Element(0, 0),
+    : Element(0, ELE_TAG_ElastomericX),
     connectedExternalNodes(2),
-    k0(0.0), qYield(0.0), ke(0.0), x(0), y(0), shearDistI(0.5),	Kv0(0.0), Kv(0.0), Fc(0.0), Fcr(0.0), Tr(0.0), kc(0.0), 
-	PhiM(0.0), ac(0.0), Fcn(0.0), umax(0.0), D1(0.0), D2(0.0), rg(0.0), Ar(0.0), mass(0.0), cd(0.0), L(0.0), 
+    k0(0.0), qYield(0.0), ke(0.0), x(0), y(0), shearDistI(0.5),	Kv0(0.0), Kv(0.0), Fc(0.0), Fcr(0.0), Fcrn(0.0), uc(0.0), ucr(0.0), ucrn(0.0), 
+	Tr(0.0), kc(0.0), PhiM(0.0), ac(0.0), Fcn(0.0), umax(0.0), D1(0.0), D2(0.0), rg(0.0), Ar(0.0), mass(0.0), cd(0.0), L(0.0), tag1(0), tag2(0), tag3(0), tag4(0),
 	tCurrent(0.0), tCommit(0.0), ub(6), z(2), dzdu(2,2), qb(6), kb(6,6), ul(6), Tgl(12,12), Tlb(6,12), ubC(6), zC(2), kbInit(6,6)
 {      
     // ensure the connectedExternalNode ID is of correct size & set values
@@ -393,34 +430,49 @@ int ElastomericX::commitState()
 	int errCode = 0;
 
 	double uh=sqrt(ub(1)*ub(1)+ub(2)*ub(2));
-	//cout<<"uh: "<<uh<<"rg: "<<rg<<"PI: "<<PI<<endln;
+	
 	// Vertical motion
+	if (tag4==1) {
 	Kv=Kv0*(1.0/(1.0+(3.0/(PI*PI))*(uh/rg)*(uh/rg)));
 	if (uh>DBL_EPSILON) uc=Fc/Kv;
+	}
 	
 	// Tension
-	if(ub(0)>umax) {
-		umax =ub(0);
-		Fcn=Fc*(1-PhiM*(1-exp(-ac*(ub(0)-uc)/uc)));
+	if (tag1==1) {
+		if(ub(0)>umax) {
+			umax =ub(0);
+			Fcn=Fc*(1-PhiM*(1-exp(-ac*(ub(0)-uc)/uc)));
+		}
 	}
-	// Compression
-	double Delta = 2*acos(uh/D2);
-	Ar=(D2*D2/4)*(Delta-sin(Delta));
-	if(Ar/A>0.2) {
-		Fcrn=Fcr*Ar/A;
-	} else {
-		Fcrn=0.2*Fcr;
-	}
-	ucr = Fcrn/Kv;
-	Fcrmin=fmax(Fcrmin,Fcrn);
 
+	// Compression
+	if (tag2==1) {
+		double Delta = 2*acos(uh/D2);   //this becomes undefined for uh/D2>1.0
+		Ar=(D2*D2/4)*(Delta-sin(Delta));
+		if(Ar/A<0.2 || uh/D2>=1.0) {
+			Fcrn=0.2*Fcr;
+		} else {
+			Fcrn=Fcr*Ar/A;
+		}
+	
+		Fcrmin=max(Fcrmin,Fcrn);
+		ucrn = Fcrn/Kv;
+	}
+	
 	// Horizontal motion
-	//ke=(G*A/Tr)*(1-pow(qb(0)/Fcrn,2));
-	//if(ke<0) opserr<<"Negative horizontal stiffness\n";
+	if (tag3==1) {
+		ke=(G*A/Tr)*(1-pow(qb(0)/Fcrn,2));
+		//if(ke<0) ke=0.01*(G*A/Tr);  // a fraction of ke to avoid convergance issues
+		//if(ke<0) opserr<<"Negative horizontal stiffness\n";
+	}
+
 	// commit trial history variables for horizontal direction
+	tCommit=(this->getDomain())->getCurrentTime();
 	ubC = ub;
     zC = z;
-       
+
+    // commit the base class
+    errCode += this->Element::commitState();   
     return errCode;
 }
 
@@ -459,23 +511,23 @@ int ElastomericX::revertToStart()
 
 int ElastomericX::update()
 {
-	// get global trial displacements and velocities
+    // get global trial displacements and velocities
     const Vector &dsp1 = theNodes[0]->getTrialDisp();
     const Vector &dsp2 = theNodes[1]->getTrialDisp();
     const Vector &vel1 = theNodes[0]->getTrialVel();
     const Vector &vel2 = theNodes[1]->getTrialVel();
-   
+    
     static Vector ug(12), ugdot(12), uldot(12), ubdot(6);
     for (int i=0; i<6; i++)  {
         ug(i)   = dsp1(i);  ugdot(i)   = vel1(i);
         ug(i+6) = dsp2(i);  ugdot(i+6) = vel2(i);
     }
-   
-    // Transform response from the global to the local system
+    
+    // transform response from the global to the local system
     ul = Tgl*ug;
     uldot = Tgl*ugdot;
    
-    // Transform response from the local to the basic system
+    // transform response from the local to the basic system
     ub = Tlb*ul;
     ubdot = Tlb*uldot;
 
@@ -484,45 +536,54 @@ int ElastomericX::update()
 
 	// 1) Get axial force and stiffness in basic x-direction
 
-	ucr = Fcrn/Kv;
-	double ucn=Fcn/Kv;
-	double Fmax=Fc*(1+(1.0/(Tr*kc))*(1-exp(-kc*(umax-uc))));
-		
-   if (ub(0)<=ucr) {
-		kb(0,0)=Kv/1000;
-		qb(0)=Fcrn+kb(0,0)*(ub(0)-ucr);
-		//qb(0)=qb(0)+kb(0,0)*delta_ub(0);
-		//qb(0)=Fcrn;
-			//opserr<<"Elastomer failed in buckling\n";
-			//opserr<<"ucr: "<<ucr<<"trialStrain: "<<ub(0)<<"Kv: "<<Kv<<"Fcrn: "<<Fcrn<<endln;
-			//exit(-1);
-   }
-   else if (ub(0)<=ucn) {
-		qb(0)=Kv*ub(0);
-		kb(0,0)=Kv;
+	double qTrial=Kv*ub(0);
+	ucn=Fcn/Kv;
+	Fmax=Fc*(1+(1.0/(Tr*kc))*(1-exp(-kc*(umax-uc))));
+
+	if (ub(0)<=ucrn) {
+		if (tag2==1) {
+			kb(0,0)=Kv0/10000;
+			qb(0)=Fcrmin+kb(0,0)*(ub(0)-ucrn);
+		//tag=1;
+		} else {
+			kb(0,0)=Kv;
+			qb(0)=kb(0,0)*ub(0);
+		}
 	}
-   else if(ub(0)<=umax) {
-		qb(0)=Fcn+((Fmax-Fcn)/(umax-ucn))*(ub(0)-ucn);
-		kb(0,0)=((Fmax-Fcn)/(umax-ucn));
+
+	if (ub(0)>ucrn) {
+		if (tag1==1) {
+			if (ub(0)<=ucn) {
+				kb(0,0)=Kv;
+				qb(0)=kb(0,0)*ub(0);
+			
+			}
+		   else if(ub(0)<umax) {
+				qb(0)=Fcn+((Fmax-Fcn)/(umax-ucn))*(ub(0)-ucn);
+				kb(0,0)=((Fmax-Fcn)/(umax-ucn));
+			}
+		   else {
+				qb(0)=Fc*(1.0+(1.0/(Tr*kc))*(1.0-exp(-kc*(ub(0)-uc))));
+				kb(0,0)=((Fc/Tr)*exp(-kc*(ub(0)-uc)));
+			}
+		} else {
+			kb(0,0)=Kv;
+			qb(0)=kb(0,0)*ub(0);
+		}
 	}
-   else {
-		qb(0)=Fc*(1+(1.0/(Tr*kc))*(1-exp(-kc*(ub(0)-uc))));
-		kb(0,0)=((Fc/Tr)*exp(-kc*(ub(0)-uc)));
-	}
-   
 
 	//2) calculate shear forces and stiffnesses in basic y- and z-direction
 	
-    if (sqrt(pow(delta_ub(1),2)+pow(delta_ub(2),2)) > 0.0)  {
+        if (sqrt(pow(delta_ub(1),2)+pow(delta_ub(2),2)) > 0.0)  {
+    
         // get yield displacement
         double uy = qYield/k0;
-
         // calculate hysteretic evolution parameter z using Newton-Raphson
         int iter = 0;
-		int maxIter = 25;
+		int maxIter = 100;
 		double tol = 1E-12;
 		double A=1;
-		double beta=0.1;
+		double beta=0.1; // note here beta and gamma are as per Nagarajaih(1991), which is opposite to Park et al.(1986)
 		double gamma=0.9;
         double zNrm, tmp1, tmp2, tmp3;
         Vector f(2), delta_z(2);
@@ -531,18 +592,18 @@ int ElastomericX::update()
             zNrm = z.Norm();
             if (zNrm == 0.0)  // check because of negative exponents
                 zNrm = DBL_EPSILON;
-            tmp1 = z(0)*delta_ub(1) + z(1)*delta_ub(2);
-            tmp2 = beta + gamma*sgn(tmp1);
-            tmp3 = tmp1*tmp2;
+			tmp1=beta+gamma*sgn(z(0)*delta_ub(1));
+			tmp2 = beta + gamma*sgn(z(1)*delta_ub(2));
+            tmp3 = z(0)*delta_ub(1)*tmp1+z(1)*delta_ub(2)*tmp2;
             //cout<<"iter: "<<iter<<" z(0): "<<z(0)<<" z(1): "<<z(1)<<" zC(0): "<<zC(0)<<" zC(1): "<<zC(1)<<endln;
             // function and derivative
-            f(0) = z(0) - zC(0) - 1.0/uy*(A*delta_ub(1) - z(0)*tmp3);
-            f(1) = z(1) - zC(1) - 1.0/uy*(A*delta_ub(2) - z(1)*tmp3);
+			f(0) = z(0) - zC(0) - 1.0/uy*(A*delta_ub(1) - z(0)*tmp3);
+			f(1) = z(1) - zC(1) - 1.0/uy*(A*delta_ub(2) - z(1)*tmp3);
             
-            Df(0,0) = 1.0 + (tmp2/uy)*(2*z(0)*delta_ub(1)+z(1)*delta_ub(2));
-            Df(1,0) = (tmp2/uy)*z(1)*delta_ub(1);
+			Df(0,0)=1.0+(1.0/uy)*(2*z(0)*delta_ub(1)*tmp1+z(1)*delta_ub(2)*tmp2);
+			Df(1,0) = (tmp1/uy)*z(1)*delta_ub(1);
             Df(0,1) = (tmp2/uy)*z(0)*delta_ub(2);
-            Df(1,1) = 1.0 + (tmp2/uy)*(2*z(1)*delta_ub(2)+z(0)*delta_ub(1));
+			Df(1,1)=1.0+(1.0/uy)*(z(0)*delta_ub(1)*tmp1+2*z(1)*delta_ub(2)*tmp2);
             
             // issue warning if diagonal of derivative Df is zero
             if ((fabs(Df(0,0)) <= DBL_EPSILON) || (fabs(Df(1,1)) <= DBL_EPSILON))  {
@@ -569,23 +630,23 @@ int ElastomericX::update()
         }
         
         // get derivative of hysteretic evolution parameter
-        delta_z = z-zC;
-        if (fabs(delta_ub(1)) > DBL_EPSILON)  {
-            dzdu(0,0) = delta_z(0)/delta_ub(1);
-            dzdu(1,0) = delta_z(1)/delta_ub(1);
+		double du1du2 = delta_ub(1)/delta_ub(2);
+        double du2du1 = delta_ub(2)/delta_ub(1);
+        if (delta_ub(1)*delta_ub(2) == 0)  {
+            du1du2 = 0.0;
+            du2du1 = 0.0;
         }
-        if (fabs(delta_ub(2)) > DBL_EPSILON)  {
-            dzdu(0,1) = delta_z(0)/delta_ub(2);
-            dzdu(1,1) = delta_z(1)/delta_ub(2);
-        }
+
+        dzdu(0,0) =(1.0/uy)*(A-z(0)*(z(0)*tmp1+z(1)*tmp2*du2du1));
+        dzdu(0,1) = (1.0/uy)*(A*du1du2-z(0)*(z(0)*tmp1*du1du2+z(1)*tmp2));
+        dzdu(1,0) = (1.0/uy)*(A*du2du1-z(1)*(z(0)*tmp1+z(1)*tmp2*du2du1));
+        dzdu(1,1) = (1.0/uy)*(A-z(1)*(z(0)*tmp1*du1du2+z(1)*tmp2));
+
 
         tCurrent=(this->getDomain())->getCurrentTime();
-		if(tCurrent<tCommit) {
-			tCommit=0.0;
-		}
 		double dT=tCurrent-tCommit;
-
-		// set shear force
+		
+        // set shear force
         qb(1) = cd*ubdot(1) + qYield*z(0) + ke*ub(1);
         qb(2) = cd*ubdot(2) + qYield*z(1) + ke*ub(2);
         // set tangent stiffness
@@ -593,7 +654,6 @@ int ElastomericX::update()
         kb(1,2) = qYield*dzdu(0,1);
         kb(2,1) = qYield*dzdu(1,0);
         kb(2,2) = cd/dT+qYield*dzdu(1,1) + ke;
-		//cout<<" L "<< L<<" kc: "<< kc<<" phiM "<<PhiM<<" cd:"<<cd<<endl;
     }
    
     // 3) get moment and stiffness in basic x-direction
@@ -605,9 +665,18 @@ int ElastomericX::update()
     kb(4,4) = Kr;
    
     // 5) get moment and stiffness in basic z-direction
-    qb(5) = Kt*ub(5);
+    qb(5) = Kr*ub(5);
     kb(5,5) = Kr;
-    return 0;
+
+	//If buckling 
+	//if (tag==1) {
+	//	tag=0;
+	//	return -1; //return any negative integer
+	//}
+	//else {
+	//	return 0;
+	//}
+	return 0;
 }
 
 
@@ -631,17 +700,39 @@ const Matrix& ElastomericX::getTangentStiff()
 
 const Matrix& ElastomericX::getInitialStiff()
 {
-
-	// zero the matrix
+    // zero the matrix
     theMatrix.Zero();
-   
+    
     // transform from basic to local system
-    static Matrix kl(12,12);
-    kl.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
-   
+    static Matrix klInit(12,12);
+    klInit.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
+    
     // transform from local to global system
-    theMatrix.addMatrixTripleProduct(0.0, Tgl, kl, 1.0);
-   
+    theMatrix.addMatrixTripleProduct(0.0, Tgl, klInit, 1.0);
+    
+    return theMatrix;
+}
+
+const Matrix& ElastomericX::getDamp()
+{
+    // zero the matrix
+    theMatrix.Zero();
+    
+    // call base class to setup Rayleigh damping
+    theMatrix = this->Element::getDamp();
+    double factThis = 0.0;
+    
+    // now add damping tangent from materials
+    static Matrix cb(6,6);
+    cb.Zero();
+
+    // transform from basic to local system
+    static Matrix cl(12,12);
+    cl.addMatrixTripleProduct(0.0, Tlb, cb, 1.0);
+    
+    // transform from local to global system and add to cg
+    theMatrix.addMatrixTripleProduct(factThis, Tgl, cl, 1.0);
+    
     return theMatrix;
 }
 
@@ -654,12 +745,13 @@ const Matrix& ElastomericX::getMass()
         // check for quick return
         if (mass == 0.0)  {
                 return theMatrix;
+				
         }    
    
         double m = 0.5*mass;
         for (int i = 0; i < 3; i++)  {
                 theMatrix(i,i)     = m;
-                theMatrix(i+3,i+3) = m;
+                theMatrix(i+6,i+6) = m;
         }
        
     return theMatrix;
@@ -674,11 +766,11 @@ void ElastomericX::zeroLoad()
 
 int ElastomericX::addLoad(ElementalLoad *theLoad, double loadFactor)
 {  
-    opserr <<"ElastomericX::addLoad() - "
-        << "load type unknown for element: "
-        << this->getTag() << endln;
-    
-    return -1;
+        opserr <<"ElastomericX::addLoad() - "
+                << "load type unknown for element: "
+                << this->getTag() << endln;
+   
+        return -1;
 }
 
 
@@ -694,17 +786,17 @@ int ElastomericX::addInertiaLoadToUnbalance(const Vector &accel)
     const Vector &Raccel2 = theNodes[1]->getRV(accel);
     
     if (6 != Raccel1.Size() || 6 != Raccel2.Size())  {
-        opserr << "ElastomericX::addInertiaLoadToUnbalance() - "
-            << "matrix and vector sizes are incompatible\n";
+        opserr << "ElastomericBearingPlasticity3d::addInertiaLoadToUnbalance() - "
+            << "matrix and vector sizes are incompatible.\n";
         return -1;
     }
     
     // want to add ( - fact * M R * accel ) to unbalance
     // take advantage of lumped mass matrix
     double m = 0.5*mass;
-    for (int i = 0; i < 3; i++)  {
+    for (int i=0; i<3; i++)  {
         theLoad(i)   -= m * Raccel1(i);
-        theLoad(i+3) -= m * Raccel2(i);
+        theLoad(i+6) -= m * Raccel2(i);
     }
     
     return 0;
@@ -718,39 +810,59 @@ const Vector& ElastomericX::getResistingForce()
    
     // determine resisting forces in local system
     static Vector ql(12);
-    ql = Tlb^qb;
+    ql.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
 
-    // determine resisting forces in global system
-    theVector = Tgl^ql;
-    
+    // add P-Delta moments to local forces
+    double kGeo1 = 0.5*qb(0);
+    double MpDelta1 = kGeo1*(ul(7)-ul(1));
+    ql(5)  += MpDelta1;
+    ql(11) += MpDelta1;
+    double MpDelta2 = kGeo1*shearDistI*L*ul(5);
+    ql(5)  += MpDelta2;
+    ql(11) -= MpDelta2;
+    double MpDelta3 = kGeo1*(1.0 - shearDistI)*L*ul(11);
+    ql(5)  -= MpDelta3;
+    ql(11) += MpDelta3;
+    double MpDelta4 = kGeo1*(ul(8)-ul(2));
+    ql(4)  -= MpDelta4;
+    ql(10) -= MpDelta4;
+    double MpDelta5 = kGeo1*shearDistI*L*ul(4);
+    ql(4)  += MpDelta5;
+    ql(10) -= MpDelta5;
+    double MpDelta6 = kGeo1*(1.0 - shearDistI)*L*ul(10);
+    ql(4)  -= MpDelta6;
+    ql(10) += MpDelta6;
+
+	// determine resisting forces in global system
+    theVector.addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
+   
+    // subtract external load
+    theVector.addVector(1.0, theLoad, -1.0);
     return theVector;
 }
 
 
 const Vector& ElastomericX::getResistingForceIncInertia()
 {      
-    theVector = this->getResistingForce();
-    
-    // subtract external load
-    theVector.addVector(1.0, theLoad, -1.0);
-    
-    // add the damping forces if rayleigh damping
-    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-        theVector += this->getRayleighDampingForces();
-    
-    // now include the mass portion
-    if (mass != 0.0)  {
-        const Vector &accel1 = theNodes[0]->getTrialAccel();
-        const Vector &accel2 = theNodes[1]->getTrialAccel();    
-        
-        double m = 0.5*mass;
-        for (int i = 0; i < 3; i++)  {
-            theVector(i)   += m * accel1(i);
-            theVector(i+3) += m * accel2(i);
+	theVector = this->getResistingForce();
+       
+        // add the damping forces if rayleigh damping
+        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+                theVector.addVector(1.0, this->getRayleighDampingForces(), 1.0);
+   
+        // now include the mass portion
+        if (mass != 0.0)  {
+                const Vector &accel1 = theNodes[0]->getTrialAccel();
+                const Vector &accel2 = theNodes[1]->getTrialAccel();    
+               
+                double m = 0.5*mass;
+                for (int i = 0; i < 3; i++)  {
+                        theVector(i)   += m * accel1(i);
+                        theVector(i+6) += m * accel2(i);
+                }
         }
-    }
-    
-    return theVector;
+       
+        return theVector;
 }
 
 
@@ -896,7 +1008,7 @@ void ElastomericX::Print(OPS_Stream &s, int flag)
 {
 	if (flag == 0)  {
         // print everything
-        s << "************************************************************" << endln;
+        /*s << "************************************************************" << endln;
         s << "Element: " << this->getTag();
         s << "  type: ElastomericX  iNode: " << connectedExternalNodes(0);
         s << "  jNode: " << connectedExternalNodes(1) << endln;
@@ -904,22 +1016,23 @@ void ElastomericX::Print(OPS_Stream &s, int flag)
 		s << "GEOMETRIC PROPERTIES" << endln;
 		s << "D1: "<< D1 << " D2: "<< D2 <<" L: "<< L<<" Tr: "<< Tr <<" S: "<< S <<" A: "<< A <<endln;
 		s << "MATERIAL PROPERTIES" << endln;
-		s << "kc: "<< kc <<" ac: "<<ac<<" PhiM: "<< PhiM <<"  shearDistI: " << shearDistI << "  mass: " << mass<<endln;
+		s << "G: "<< G << "kc: "<< kc <<" ac: "<<ac<<" PhiM: "<< PhiM <<"  shearDistI: " << shearDistI << "  mass: " << mass<<endln;
 		s << "MECHANICAL PROPERTIES: HORIZONTAL MOTION\n"<<endln;
 		s << "k0: " << k0 << "  ke: " << ke << " qYield: " << qYield  << " Fcrmin: "<< Fcrmin <<endln;
 		s << "MECHANICAL PROPERTIES: VERTICAL MOTION"<<endln;
 		s << "Ec: "<<Ec<<" Kv0: "<< Kv0<<" Kv: "<< Kv <<" uc: "<< uc <<" Fcr: "<< Fcr <<" Fcrn: "<< Fcrn <<" ucr: "<< ucr <<" umax: "<< umax <<endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
-		s << "************************************************************" << endln;
+		s << "************************************************************" << endln;*/
+		//s <<"  time: " << tCommit <<"  ke0: " << G*A/Tr  <<"  ke: " << ke <<" Fcr: "<< Fcr << " Fcrmin: "<< Fcrmin <<" Kv0: "<< Kv0<<" Kv: "<< Kv <<endln;
     } else if (flag == 1)  {
                 // does nothing
     }
 }
 
 
-Response* ElastomericX::setResponse(const char **argv, int argc,
-    OPS_Stream &output)
+Response* ElastomericX::setResponse(const char **argv, int argc, 
+	OPS_Stream &output)
 {
     Response *theResponse = 0;
    
@@ -1010,6 +1123,49 @@ Response* ElastomericX::setResponse(const char **argv, int argc,
        
         theResponse = new ElementResponse(this, 5, Vector(6));
     }
+	// hysteretic evolution parameter
+    else if (strcmp(argv[0],"hystereticParameter") == 0 || strcmp(argv[0],"hystParameter") == 0 || 
+        strcmp(argv[0],"hystereticParam") == 0 || strcmp(argv[0],"hystParam") == 0 ||
+        strcmp(argv[0],"z") == 0)
+    {
+        output.tag("ResponseType","z1");
+        output.tag("ResponseType","z2");
+        
+        theResponse = new ElementResponse(this, 6, Vector(2));
+    }
+    // dzdu
+    else if (strcmp(argv[0],"dzdu") == 0)
+    {
+        output.tag("ResponseType","dz1du1");
+        output.tag("ResponseType","dz1du2");
+        output.tag("ResponseType","dz2du1");
+        output.tag("ResponseType","dz2du2");
+        
+        theResponse = new ElementResponse(this, 7, Vector(4));
+    }
+    // basic stiffness
+    else if (strcmp(argv[0],"kb") == 0 || strcmp(argv[0],"basicStiff") == 0 ||
+        strcmp(argv[0],"basicStiffness") == 0)
+    {
+        output.tag("ResponseType","kb22");
+        output.tag("ResponseType","kb23");
+        output.tag("ResponseType","kb32");
+        output.tag("ResponseType","kb33");
+        
+        theResponse = new ElementResponse(this, 8, Vector(4));
+    }
+	// basic stiffness
+    else if (strcmp(argv[0],"param") == 0 || strcmp(argv[0],"Param") == 0 ||
+        strcmp(argv[0],"parameters") == 0 || strcmp(argv[0],"Parameters") == 0)
+    {
+        output.tag("ResponseType","Fcn");
+		output.tag("ResponseType","Fcrn");
+        output.tag("ResponseType","Kv");
+        output.tag("ResponseType","ke");
+        
+        theResponse = new ElementResponse(this, 9, Vector(4));
+    }
+
     output.endTag(); // ElementOutput
     return theResponse;
 }
@@ -1018,7 +1174,8 @@ Response* ElastomericX::setResponse(const char **argv, int argc,
 int ElastomericX::getResponse(int responseID, Information &eleInfo)
 {
 	double kGeo1, MpDelta1, MpDelta2, MpDelta3, MpDelta4, MpDelta5, MpDelta6;
-   
+   Vector dzduVec(4), kbVec(4), Param(4);
+
     switch (responseID)  {
         case 1:  // global forces
         return eleInfo.setVector(this->getResistingForce());
@@ -1026,7 +1183,27 @@ int ElastomericX::getResponse(int responseID, Information &eleInfo)
         case 2:  // local forces
         theVector.Zero();
         // determine resisting forces in local system
-        theVector = Tlb^qb;
+        theVector.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
+        // add P-Delta moments
+        kGeo1 = 0.5*qb(0);
+        MpDelta1 = kGeo1*(ul(7)-ul(1));
+        theVector(5)  += MpDelta1;
+        theVector(11) += MpDelta1;
+        MpDelta2 = kGeo1*shearDistI*L*ul(5);
+        theVector(5)  += MpDelta2;
+        theVector(11) -= MpDelta2;
+        MpDelta3 = kGeo1*(1.0 - shearDistI)*L*ul(11);
+        theVector(5)  -= MpDelta3;
+        theVector(11) += MpDelta3;
+        MpDelta4 = kGeo1*(ul(8)-ul(2));
+        theVector(4)  -= MpDelta4;
+        theVector(10) -= MpDelta4;
+        MpDelta5 = kGeo1*shearDistI*L*ul(4);
+        theVector(4)  += MpDelta5;
+        theVector(10) -= MpDelta5;
+        MpDelta6 = kGeo1*(1.0 - shearDistI)*L*ul(10);
+        theVector(4)  -= MpDelta6;
+        theVector(10) += MpDelta6;
         return eleInfo.setVector(theVector);
        
         case 3:  // basic forces
@@ -1037,6 +1214,26 @@ int ElastomericX::getResponse(int responseID, Information &eleInfo)
        
         case 5:  // basic displacements
         return eleInfo.setVector(ub);
+
+		case 6:  // hysteretic evolution parameter
+        return eleInfo.setVector(z);
+        
+		case 7:  // dzdu
+        dzduVec(0) = dzdu(0,0); dzduVec(1) = dzdu(0,1);
+        dzduVec(2) = dzdu(1,0); dzduVec(3) = dzdu(1,1);
+        return eleInfo.setVector(dzduVec);
+        
+		case 8:  // basic stiffness
+        kbVec(0) = kb(1,1); kbVec(1) = kb(1,2);
+        kbVec(2) = kb(2,1); kbVec(3) = kb(2,2);
+        return eleInfo.setVector(kbVec);
+
+		case 9:  // parameters that varies with time
+        Param(0) = Fcn;
+		Param(1) = Fcrn; 
+		Param(2) = Kv;
+        Param(3) = ke; 
+        return eleInfo.setVector(Param);
        
     default:
                 return -1;
@@ -1056,12 +1253,12 @@ void ElastomericX::setUp()
                 if (x.Size() == 0)  {
                     x.resize(3);
                     x = xp;
-        } else  {
+        } /*else  {
             opserr << "WARNING ElastomericX::setUp() - "
                 << "element: " << this->getTag() << endln
                 << "ignoring nodes and using specified "
                 << "local x vector to determine orientation\n";
-        }
+        }*/
     }
     // check that vectors for orientation are of correct size
     if (x.Size() != 3 || y.Size() != 3)  {
