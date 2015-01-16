@@ -117,6 +117,9 @@ SecantLineSearch::search(double s0,
     if (eta < minEta)  eta = minEta;
     
     //update the incremental difference in response and determine new unbalance
+    if (eta == etaJ) {
+      break; // no change in response
+
     *x = dU;
     *x *= eta-etaJ;
 	    

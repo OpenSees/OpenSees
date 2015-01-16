@@ -107,6 +107,10 @@ BisectionLineSearch::search(double s0,
     etaU *= 2.0;
 
     //update the incremental difference in response and determine new unbalance
+
+    if (etaU == etaJ)
+      break; // no change in response
+
     *x = dU;
     *x *= etaU-etaJ;
 	    

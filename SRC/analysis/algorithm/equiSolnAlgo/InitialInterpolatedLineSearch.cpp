@@ -106,6 +106,8 @@ InitialInterpolatedLineSearch::search(double s0,
   //                                s0 - s(i-1)  to compute eta(i)
 
 
+  //  opserr << "dU: " << dU;
+
   while ( r > tolerance  &&  count < maxIter ) {
 
     count++;
@@ -116,8 +118,10 @@ InitialInterpolatedLineSearch::search(double s0,
     if (eta > maxEta)  eta = maxEta;
     if (r   > r0    )  eta =  1.0;
     if (eta < minEta)  eta = minEta;
-   
-    
+
+    if (eta == etaPrev)
+      break; // no change in response break
+
     //dx = ( eta * dx0 ); 
     *x = dU;
     *x *= eta-etaPrev;
@@ -160,6 +164,7 @@ InitialInterpolatedLineSearch::search(double s0,
   // set X in the SOE for the revised dU, needed for convergence tests
   *x = dU;
   *x *= eta;
+
   theSOE.setX(*x);
 
   return 0;
