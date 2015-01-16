@@ -497,6 +497,8 @@ static EigenSOE *theEigenSOE =0;
 static StaticAnalysis *theStaticAnalysis = 0;
 static DirectIntegrationAnalysis *theTransientAnalysis = 0;
 static VariableTimeStepDirectIntegrationAnalysis *theVariableTimeStepTransientAnalysis = 0;
+static int numEigen = 0;
+
 #ifdef _PFEM
 static PFEMAnalysis* thePFEMAnalysis = 0;
 #endif
@@ -891,8 +893,6 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);            
     Tcl_CreateCommand(interp, "nodePressure", &nodePressure, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);   
-
-
     Tcl_CreateCommand(interp, "nodeBounds", &nodeBounds, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "start", &startTimer, 
@@ -900,6 +900,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "stop", &stopTimer, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "rayleigh", &rayleighDamping, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "modalDamping", &modalDamping, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "setElementRayleighDampingFactors", 
 		      &setElementRayleighDampingFactors, 
@@ -3831,6 +3833,8 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
   double tolp2 = 0.0;
   double tolrel = 0.0;
   double tolprel = 0.0;
+  double maxTol = OPS_MAXTOL;
+
   int numIter = 0;
   int printIt = 0;
   int normType = 2;
@@ -3961,7 +3965,16 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;			  
       if (Tcl_GetInt(interp, argv[4], &normType) != TCL_OK)	
 	return TCL_ERROR;			  		  
-    }
+    } else if (argc == 6) {
+      if (Tcl_GetInt(interp, argv[2], &numIter) != TCL_OK)	
+	return TCL_ERROR;			  
+      if (Tcl_GetInt(interp, argv[3], &printIt) != TCL_OK)	
+	return TCL_ERROR;			  
+      if (Tcl_GetInt(interp, argv[4], &normType) != TCL_OK)	
+	return TCL_ERROR;			  		  
+      if (Tcl_GetDouble(interp, argv[5], &maxTol) != TCL_OK)	
+	return TCL_ERROR;			  		  
+    }    
   }
   
   ConvergenceTest *theNewTest = 0;
@@ -3979,16 +3992,15 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
     }
     if (strcmp(argv[1],"NormUnbalance") == 0) 
-        theNewTest = new CTestNormUnbalance(tol,numIter,printIt,normType,maxIncr);       
-
+      theNewTest = new CTestNormUnbalance(tol,numIter,printIt,normType,maxIncr, maxTol);       
     else if (strcmp(argv[1],"NormDispIncr") == 0) 
-      theNewTest = new CTestNormDispIncr(tol,numIter,printIt,normType);             
+      theNewTest = new CTestNormDispIncr(tol,numIter,printIt,normType, maxTol);             
     else if (strcmp(argv[1],"NormDispAndUnbalance") == 0) 
         theNewTest = new NormDispAndUnbalance(tol,tol2, numIter,printIt,normType,maxIncr);       
     else if (strcmp(argv[1],"NormDispOrUnbalance") == 0) 
         theNewTest = new NormDispOrUnbalance(tol,tol2, numIter,printIt,normType,maxIncr);       
     else if (strcmp(argv[1],"EnergyIncr") == 0) 
-      theNewTest = new CTestEnergyIncr(tol,numIter,printIt,normType);             
+      theNewTest = new CTestEnergyIncr(tol,numIter,printIt,normType, maxTol);             
     else if (strcmp(argv[1],"RelativeNormUnbalance") == 0) 
       theNewTest = new CTestRelativeNormUnbalance(tol,numIter,printIt,normType);       
     else if (strcmp(argv[1],"RelativeNormDispIncr") == 0) 
@@ -5687,7 +5699,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
   }
   
     // check argv[loc] for number of modes
-    int numEigen;
+  //    int numEigen;
     if ((Tcl_GetInt(interp, argv[loc], &numEigen) != TCL_OK) || numEigen < 0) {
       opserr << "WARNING eigen numModes?  - illegal numModes\n";    
       return TCL_ERROR;	
@@ -7852,6 +7864,40 @@ rayleighDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **
 }
 
 
+
+int 
+modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  /*
+  if (argc < 2) { 
+    opserr << "WARNING modalDamping ?factor - not enough arguments to command\n";
+    return TCL_ERROR;
+  }
+  if (numEigen == 0 || theEigenSOE == 0) {
+    opserr << "WARINING - modalDmping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+  }
+  double factor;
+  //  double numModes;
+  if (Tcl_GetDouble(interp, argv[1], &factor) != TCL_OK) {
+    opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+    return TCL_ERROR;	        
+  }        
+  if (theTransientIntegrator != 0) {
+    Vector modalDampingValues(numEigen);
+    modalDampingValues = factor;
+    for (int i=0; i<numEigen; i++)
+      modalDampingValues[i] = factor;
+    opserr << "factor: " << factor << endln;
+
+    theTransientIntegrator->setEigenSOE(theEigenSOE);
+    theTransientIntegrator->setModalDampingFactors(modalDampingValues);
+    opserr << "modalDamping: numEigen: " << numEigen << " factors: " << modalDampingValues;
+  }
+  */
+  return TCL_OK;
+}
+
+
 int 
 setElementRayleighDampingFactors(ClientData clientData, 
 				 Tcl_Interp *interp, 
@@ -8616,13 +8662,13 @@ int stripOpenSeesXML(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
       if (strstr(inputLine,"</Data>") != 0) 
 	spitData = false;
       else 
-	theOutputDataFile << line << endln;
+	; //	theOutputDataFile << line << endln;
     } else {
       const char *inputLine = line.c_str();
       if (strstr(inputLine,"<Data>") != 0) 
 	spitData = true;
       else if (outputDescriptiveFile != 0)
-	theOutputDescriptiveFile << line << endln;
+	; // theOutputDescriptiveFile << line << endln;
     }
   }      
   

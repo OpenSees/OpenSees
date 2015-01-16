@@ -219,6 +219,10 @@ int
 rayleighDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+
+int 
 setElementRayleighDampingFactors(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
