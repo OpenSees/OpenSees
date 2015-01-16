@@ -45,7 +45,7 @@ class CTestNormUnbalance: public ConvergenceTest
 public:
     // constructors
     CTestNormUnbalance();	    	
-    CTestNormUnbalance(double tol, int maxNumIter, int printFlag, int normType=2, int maxincr=-1);
+    CTestNormUnbalance(double tol, int maxNumIter, int printFlag, int normType=2, int maxincr=-1, double maxTol = OPS_MAXTOL);
 
     // destructor
     ~CTestNormUnbalance();
@@ -71,7 +71,8 @@ protected:
 private:
     LinearSOE *theSOE;
     double tol;         // the tol on the norm used to test for convergence
-    
+    double maxTol;
+
     int maxNumIter;     // max number of iterations
     int currentIter;    // number of times test() has been invokes since last start()
     int printFlag;      // a flag indicating if to print on test

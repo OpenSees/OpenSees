@@ -43,16 +43,16 @@
 
 CTestEnergyIncr::CTestEnergyIncr()	    	
     : ConvergenceTest(CONVERGENCE_TEST_CTestEnergyIncr),
-    theSOE(0), tol(0), maxNumIter(0), currentIter(0), printFlag(0),
+      theSOE(0), tol(0), maxTol(OPS_MAXTOL), maxNumIter(0), currentIter(0), printFlag(0),
     norms(1), nType(2)
 {
     
 }
 
 
-CTestEnergyIncr::CTestEnergyIncr(double theTol, int maxIter, int printIt, int normType)
+CTestEnergyIncr::CTestEnergyIncr(double theTol, int maxIter, int printIt, int normType, int max)
     : ConvergenceTest(CONVERGENCE_TEST_CTestEnergyIncr),
-    theSOE(0), tol(theTol), maxNumIter(maxIter), currentIter(0),printFlag(printIt),
+      theSOE(0), tol(theTol), maxTol(max), maxNumIter(maxIter), currentIter(0),printFlag(printIt),
     norms(maxNumIter), nType(normType)
 {
     
@@ -68,7 +68,7 @@ CTestEnergyIncr::~CTestEnergyIncr()
 ConvergenceTest* CTestEnergyIncr::getCopy(int iterations)
 {
     CTestEnergyIncr *theCopy ;
-    theCopy = new CTestEnergyIncr(this->tol, iterations, this->printFlag, this->nType);
+    theCopy = new CTestEnergyIncr(this->tol, iterations, this->printFlag, this->nType, this->maxTol);
     
     theCopy->theSOE = this->theSOE ;
     
@@ -162,7 +162,7 @@ int CTestEnergyIncr::test(void)
     }
     
     // algo failed to converged after specified number of iterations - return FAILURE -2
-    else if (currentIter >= maxNumIter) { // >= in case algorithm does not check
+    else if (currentIter >= maxNumIter || product > maxTol) { // >= in case algorithm does not check
         opserr << "WARNING: CTestEnergyIncr::test() - failed to converge \n";
         opserr << "after: " << currentIter << " iterations\n";	
         currentIter++;    
@@ -219,11 +219,12 @@ const Vector& CTestEnergyIncr::getNorms(void)
 int CTestEnergyIncr::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
-    static Vector x(4);
+    static Vector x(5);
     x(0) = tol;
     x(1) = maxNumIter;
     x(2) = printFlag;
     x(3) = nType;
+    x(4) = maxTol;
     res = theChannel.sendVector(this->getDbTag(), cTag, x);
     if (res < 0) 
         opserr << "CTestEnergyIncr::sendSelf() - failed to send data\n";
@@ -236,7 +237,7 @@ int CTestEnergyIncr::recvSelf(int cTag, Channel &theChannel,
     FEM_ObjectBroker &theBroker)
 {
     int res = 0;
-    static Vector x(4);
+    static Vector x(5);
     res = theChannel.recvVector(this->getDbTag(), cTag, x);    
     
     if (res < 0) {
@@ -252,6 +253,7 @@ int CTestEnergyIncr::recvSelf(int cTag, Channel &theChannel,
         printFlag = (int) x(2);
         nType = (int) x(3);
         norms.resize(maxNumIter);
+	maxTol = x(4);
     }
     
     return res;

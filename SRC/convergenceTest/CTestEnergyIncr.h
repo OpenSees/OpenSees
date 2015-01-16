@@ -45,7 +45,7 @@ class CTestEnergyIncr: public ConvergenceTest
 public:
     // constructors
     CTestEnergyIncr();	    	
-    CTestEnergyIncr(double tol, int maxNumIter, int printFlag, int normType =2);
+    CTestEnergyIncr(double tol, int maxNumIter, int printFlag, int normType =2, int maxTol = OPS_MAXTOL);
     
     // destructor
     ~CTestEnergyIncr();
@@ -71,7 +71,8 @@ protected:
 private:
     LinearSOE *theSOE;
     double tol;         // the tol on the energy used to test for convergence
-    
+    double maxTol;
+
     int maxNumIter;     // max number of iterations
     int currentIter;    // number of times test() has been invokes since last start()
     int printFlag;      // a flag indicating if to print on test

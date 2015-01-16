@@ -45,7 +45,7 @@ class CTestNormDispIncr: public ConvergenceTest
 public:
     // constructors
     CTestNormDispIncr();	    	
-    CTestNormDispIncr(double tol, int maxNumIter, int printFlag, int normType=2);
+    CTestNormDispIncr(double tol, int maxNumIter, int printFlag, int normType=2, double maxTol = OPS_MAXTOL);
 
     // destructor
     ~CTestNormDispIncr();
@@ -71,6 +71,7 @@ protected:
 private:
     LinearSOE *theSOE;
     double tol;         // the tol on the norm used to test for convergence
+    double maxTol;      // the max tol on the norm used to test for convergence, if reached returns failure
     
     int maxNumIter;     // max number of iterations
     int currentIter;    // number of times test() has been invokes since last start()

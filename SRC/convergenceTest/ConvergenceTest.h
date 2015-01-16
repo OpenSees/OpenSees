@@ -26,6 +26,8 @@
 #ifndef ConvergenceTest_h
 #define ConvergenceTest_h
 
+#define OPS_MAXTOL 1.7e307
+
 // Written: fmk 
 // Date: 09/98
 // Revised:

@@ -32,16 +32,16 @@
 
 CTestNormUnbalance::CTestNormUnbalance()	    	
     : ConvergenceTest(CONVERGENCE_TEST_CTestNormUnbalance),
-    theSOE(0), tol(0.0), maxNumIter(0), currentIter(0), printFlag(0),
+      theSOE(0), tol(0.0), maxTol(OPS_MAXTOL), maxNumIter(0), currentIter(0), printFlag(0),
       norms(1), nType(2), maxIncr(0), numIncr(0)
 {
     
 }
 
 
-CTestNormUnbalance::CTestNormUnbalance(double theTol, int maxIter, int printIt, int normType, int maxincr)
+CTestNormUnbalance::CTestNormUnbalance(double theTol, int maxIter, int printIt, int normType, int maxincr, double max)
     : ConvergenceTest(CONVERGENCE_TEST_CTestNormUnbalance),
-    theSOE(0), tol(theTol), maxNumIter(maxIter), currentIter(0), printFlag(printIt),
+      theSOE(0), tol(theTol), maxTol(max), maxNumIter(maxIter), currentIter(0), printFlag(printIt),
       norms(maxNumIter), nType(normType), maxIncr(maxincr), numIncr(0)
 {
     if(maxIncr < 0) {
@@ -59,7 +59,7 @@ CTestNormUnbalance::~CTestNormUnbalance()
 ConvergenceTest* CTestNormUnbalance::getCopy(int iterations)
 {
     CTestNormUnbalance *theCopy ;
-    theCopy = new CTestNormUnbalance(this->tol, iterations, this->printFlag, this->nType, this->maxIncr) ;
+    theCopy = new CTestNormUnbalance(this->tol, iterations, this->printFlag, this->nType, this->maxIncr, this->maxTol) ;
     
     theCopy->theSOE = this->theSOE ;
     
@@ -155,7 +155,7 @@ int CTestNormUnbalance::test(void)
     }
     
     // algo failed to converged after specified number of iterations - return FAILURE -2
-    else if (currentIter >= maxNumIter || numIncr >= maxIncr) { // the algorithm failed to converge
+    else if (currentIter >= maxNumIter || numIncr >= maxIncr || norm > maxTol) { // the algorithm failed to converge
         opserr << "WARNING: CTestNormUnbalance::test() - failed to converge \n";
         opserr << "after: " << currentIter << " iterations\n";	
         currentIter++;  // we increment in case analysis does not check for convergence
@@ -213,11 +213,12 @@ const Vector& CTestNormUnbalance::getNorms()
 int CTestNormUnbalance::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
-    static Vector x(4);
+    static Vector x(5);
     x(0) = tol;
     x(1) = maxNumIter;
     x(2) = printFlag;
     x(3) = nType;
+    x(4) = maxTol;
     res = theChannel.sendVector(this->getDbTag(), cTag, x);
     if (res < 0) 
         opserr << "CTestNormUnbalance::sendSelf() - failed to send data\n";
@@ -230,7 +231,7 @@ int CTestNormUnbalance::recvSelf(int cTag, Channel &theChannel,
     FEM_ObjectBroker &theBroker)
 {
     int res = 0;
-    static Vector x(4);
+    static Vector x(5);
     res = theChannel.recvVector(this->getDbTag(), cTag, x);    
     
     if (res < 0) {
@@ -246,6 +247,7 @@ int CTestNormUnbalance::recvSelf(int cTag, Channel &theChannel,
         printFlag = (int) x(2);
         nType = (int) x(3);
         norms.resize(maxNumIter);
+	maxTol = x(4);
     }
     return res;
 }
