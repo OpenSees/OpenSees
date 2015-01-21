@@ -3,6 +3,7 @@ include ../../../Makefile.def
 OBJS       = FlatSliderSimple2d.o \
 	FlatSliderSimple3d.o \
 	SingleFPSimple2d.o \
+	FPBearingPTV.o \
 	SingleFPSimple3d.o \
 	TFP_Bearing.o \
 	TFP_Bearing2d.o \
