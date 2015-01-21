@@ -2509,6 +2509,8 @@ SRC/element/fourNodeQuad/Makefile -text
 SRC/element/fourNodeQuad/NineNodeMixedQuad.cpp -text
 SRC/element/fourNodeQuad/NineNodeMixedQuad.h -text
 SRC/element/fourNodeQuad/TclFourNodeQuadCommand.cpp -text
+SRC/element/frictionBearing/FPBearingPTV.cpp -text
+SRC/element/frictionBearing/FPBearingPTV.h -text
 SRC/element/frictionBearing/FlatSliderSimple2d.cpp -text
 SRC/element/frictionBearing/FlatSliderSimple2d.h -text
 SRC/element/frictionBearing/FlatSliderSimple3d.cpp -text
