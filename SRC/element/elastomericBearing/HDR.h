@@ -38,9 +38,9 @@ class HDR : public Element
 {
 public:
     // Constructor
-    HDR(int tag, int Nd1, int Nd2, double qRubber, double uh, double Gr, double Kbulk, double D1, double D2, double ts, double tr, int n, 
+    HDR(int tag, int Nd1, int Nd2, double Gr, double Kbulk, double D1, double D2, double ts, double tr, int n, 
 		double a1, double a2, double a3, double b1, double b2, double b3, double c1, double c2, double c3, double c4, 
-		const Vector y, const Vector x=0, double kc=10, double PhiM=0.75, double ac=1.0, double sDratio=0.5, double m=0.0, double cd=128000, double tc=0.0);
+		const Vector y, const Vector x=0, double kc=10, double PhiM=0.75, double ac=1.0, double sDratio=0.5, double m=0.0, double tc=0.0);
         
     HDR();
        
@@ -66,6 +66,7 @@ public:
     // Public methods to obtain stiffness, mass, damping and residual information    
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
+	const Matrix &getDamp();
     const Matrix &getMass();
        
     void zeroLoad();
@@ -100,13 +101,10 @@ private:
     // PARAMETERS
 	// Horizontal direction
 	double a1, a2, a3, b1, b2, b3, c1, c2, c3, c4;
-    double k0;									// Initial stiffness of hysteretic component(due to lead)
-	double qYield;								// Current yield stress
-    double ke;									// Stiffness of elastic component(due to rubber)
-	double cd;									// Viscous damping parameter
 
 	// Vertical direction
-	double Ec;
+	double S;									// Shape facor
+	double Ec;									// Compression modulus
 	double Kv0;									// Stiffness at zero horizontal displacement
 	double Kv;									// Elastic stiffness in compression and tension
 	double kc;									// Quality index of elastomer
@@ -137,8 +135,10 @@ private:
 
     // State variables
 	double Fcrn;								// Current critical buckling force at particular shear deformation
-	double Fcn;									// Current cavitation strength and deformation
-	double umax;								// Maximum force and deformation ever experienced by the elastomer
+	double ucrn;								// Current critical buckling displacement at particular shear deformation
+	double Fcrmin;								// Min value of critical buckling load during whole loading	
+	double Fcn, ucn;							// Current cavitation strength and deformation
+	double Fmax, umax;							// Maximum force and deformation ever experienced by the elastomer
 	double DSplus, DSminus, DS;
 	double DM, Delta;
 	Vector F2;
@@ -161,7 +161,6 @@ private:
     Matrix kbInit;
    
 	
-
     static Matrix theMatrix;
     static Vector theVector;
     static Vector theLoad;

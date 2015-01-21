@@ -53,8 +53,6 @@
 using namespace std;
 #include <iostream>
 
-#define OPS_Export extern "C"
-
 #define PI 3.14159l
 
 // initialize the class wide variables
@@ -63,7 +61,7 @@ Vector HDR::theVector(12);
 Vector HDR::theLoad(12);
 
 static int numMyBearing = 0;
-void *OPS_HDR(void)
+void *OPS_HDR()
 {
   // print out a message about who wrote this element & any copyright info wanted
   if (numMyBearing == 0) {
@@ -79,15 +77,15 @@ void *OPS_HDR(void)
     return theEle;
   }
 
-  if (numArgs !=22 && numArgs !=28 && numArgs !=29 && numArgs !=30
-	  && numArgs !=31 && numArgs !=32 && numArgs !=33 && numArgs !=34 && numArgs !=35) {
+  if (numArgs !=20 && numArgs !=26 && numArgs !=27 && numArgs !=28
+	  && numArgs !=29 && numArgs !=30 && numArgs !=31 && numArgs !=32) {
     opserr << "ERROR - HDR incorrect # args provided";
     return theEle;
   }
 
   // get the id and end nodes
   int iData[3];
-  double dData[32];
+  double dData[29];
   int numData;					// specify the number of arguments to be read from command line
 								// every time an argument is read through OPS_Get.... OPS_GetNumRemainingInputArgs() is increased by one
 
@@ -99,7 +97,7 @@ void *OPS_HDR(void)
   
   int eleTag = iData[0];
 
-  numData=19;
+  numData=17;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
     opserr << "WARNING error reading element properties for element" << eleTag << endln;
     return 0;
@@ -110,15 +108,14 @@ void *OPS_HDR(void)
   Vector y(3); y(0)=-1.0; y(1)=0.0; y(2)=0.0;
 
   // The default values of the parameters
-  double kl=10.0;				// Cavitation parameter
+  double kl=20.0;				// Cavitation parameter
   double phi=0.75;				// Damage index
   double al=1.0;				// Strength reduction parameter
   double sDratio=0.5;			// Shear distance ratio
   double m=0.0;					// Mass of the bearing
-  double cd1=0;					// Viscous damping parameter
   double tc=0;					// Cover thickness
 
-  if(numArgs>=28) {
+  if(numArgs>=26) {
     double value;
     x.resize(3);
     numData=1;
@@ -138,43 +135,37 @@ void *OPS_HDR(void)
 	y(i)=value;
       }
     }
-    if(numArgs>=29){
+    if(numArgs>=27){
       numData=1;
       if (OPS_GetDoubleInput(&numData, &kl) != 0) {
 	opserr << "WARNING error reading element property cavitation parameter for element" << eleTag << endln;
 	return 0;
       }
-      if(numArgs>=30){
+      if(numArgs>=28){
 	numData=1;
 	if (OPS_GetDoubleInput(&numData, &phi) != 0) {
 	  opserr << "WARNING error reading element property damage index for element" << eleTag << endln;
 	  return 0;
 	}
-	if(numArgs>=31){
+	if(numArgs>=29){
 	  numData=1;
 	  if (OPS_GetDoubleInput(&numData, &al) != 0) {
 	    opserr << "WARNING error reading element property strength degradation parameter for element" << eleTag << endln;
 	    return 0;
 	  }
-	  if(numArgs>=32){
+	  if(numArgs>=30){
 	    numData=1;
 	    if (OPS_GetDoubleInput(&numData, &sDratio) != 0) {
 	      opserr << "WARNING error reading element property shear distance ratio for element" << eleTag << endln;
 	      return 0;
 	    }
-	    if(numArgs>=33){
+	    if(numArgs>=31){
 	      numData=1;
 	      if (OPS_GetDoubleInput(&numData, &m) != 0) {
 		opserr << "WARNING error reading element property mass for element" << eleTag << endln;
 		return 0;
 	      }
-	      if(numArgs>=34){
-		numData=1;
-		if (OPS_GetDoubleInput(&numData, &cd1) != 0) {
-		  opserr << "WARNING error reading element property viscous damping parameter for element" << eleTag << endln;
-		  return 0;
-		}
-		if(numArgs==35) {
+		if(numArgs==32) {
 		  numData=1;
 		  if (OPS_GetDoubleInput(&numData, &tc) != 0) {
 		    opserr << "WARNING error reading element property cover thickness for element" << eleTag << endln;
@@ -185,7 +176,6 @@ void *OPS_HDR(void)
 	    }
 	  }
 	}
-      }
     }
   }
   
@@ -200,7 +190,7 @@ void *OPS_HDR(void)
     }
     
     theEle = new HDR(iData[0], iData[1], iData[2], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], 
-		     dData[9], dData[10], dData[11], dData[12], dData[13], dData[14], dData[15], dData[16], dData[17], dData[18], y, x, kl, phi, al, sDratio, m, cd1, tc);
+		     dData[9], dData[10], dData[11], dData[12], dData[13], dData[14], dData[15], dData[16], y, x, kl, phi, al, sDratio, m, tc);
     
   } 
   
@@ -213,10 +203,10 @@ void *OPS_HDR(void)
 }
 
 
-HDR::HDR(int tag, int Nd1, int Nd2, double qRubber, double uy, double Gr, double Kbulk, double Di, double Do, double ts, double tr, int n, 
+HDR::HDR(int tag, int Nd1, int Nd2, double Gr, double Kbulk, double Di, double Do, double ts, double tr, int n, 
 	 double _a1, double _a2, double _a3, double _b1, double _b2, double _b3, double _c1, double _c2, double _c3, double _c4, 
-	 const Vector _y, const Vector _x, double kl, double PhiMax, double al, double sDratio, double m, double cd1, double tc)
-  :Element(tag, ELE_TAG_HDR), connectedExternalNodes(2), G(Gr), x(_x), y(_y), kc(kl), PhiM(PhiMax), ac(al), shearDistI(sDratio), mass(m), cd(cd1),
+	 const Vector _y, const Vector _x, double kl, double PhiMax, double al, double sDratio, double m, double tc)
+  :Element(tag, ELE_TAG_HDR), connectedExternalNodes(2), G(Gr), x(_x), y(_y), kc(kl), PhiM(PhiMax), ac(al), shearDistI(sDratio), mass(m),
    a1(_a1), a2(_a2), a3(_a3), b1(_b1), b2(_b2), b3(_b3), c1(_c1), c2(_c2), c3(_c3), c4(_c4),
    L(0.0), D1(Di), D2(Do), ub(6), qb(6), kb(6,6), ul(12), Tgl(12,12), Tlb(6,12), ubC(6), kbInit(6,6), F2(2), F2C(2), Delta(0.0) 
 {
@@ -257,10 +247,14 @@ HDR::HDR(int tag, int Nd1, int Nd2, double qRubber, double uy, double Gr, double
 	double Is=I*h/Tr;										// Adjusted moment of intertia of bearing
 	double Pe=PI*PI*Er*Is/(h*h);							// Euler buckling load of bearing
 	Fcr=-sqrt(Pe*G*As);										// Critical buckling load in compression
-	Fcrn=Fcr;												// Initial value of critical buckling load	
-	ucr=Fcrn/Kv0;											// Initial value of critical buckling deformation
+	Fcrn=Fcr;												// Current value of critical buckling load
+	Fcrmin=Fcr;												// Initial value of critical buckling load during loading
+	ucr=Fcr/Kv0;											// Initial value of critical buckling deformation
+	ucrn=ucr;												// Current value of critical buckling deformation
 	uc=Fc/Kv0;												// Initial cavitation deformation
 	Fcn=Fc;													// Initial value of cavitation deformation
+	ucn=uc;
+	Fmax=Fc;
 	umax=uc;												// Initial value of maximum tensile deformation
 
 	if (kl<DBL_EPSILON) {
@@ -269,21 +263,18 @@ HDR::HDR(int tag, int Nd1, int Nd2, double qRubber, double uy, double Gr, double
 		kc=kl;
 	}
 	// Horizontal motion
-	qYield=qRubber;
-	ke=G*A/Tr;
-	k0=qRubber/uy;
-
+	
 	// Rotation
-	Kr= Er*Is/Tr;
+	Kr= Er*Is/h;
 
 	// Torsion
-	Kt=G*(2*Is)/Tr;
+	Kt=G*(2*Is)/h;
 	 
     // Initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = Kv0;
-    kbInit(1,1) = 0;
-    kbInit(2,2) = 0;
+    kbInit(1,1) = a1;
+    kbInit(2,2) = a1;
     kbInit(3,3) = Kt;
     kbInit(4,4) = Kr;
     kbInit(5,5) = Kr;
@@ -291,22 +282,13 @@ HDR::HDR(int tag, int Nd1, int Nd2, double qRubber, double uy, double Gr, double
     // Initialize variables
     this->revertToStart();
 
-	//trial for matrix operations, delete after use
-	/*Vector V1(2), V2(2);
-	V1(0)=6, V1(1)=2, V2(0)=9, V2(1)=4;
-	Matrix M1(2,2), M2(2,2), M1M2(2,2);
-	M1(0,0)=5, M1(0,1)=1, M1(1,0)=17, M1(1,1)=2;
-	M2(0,0)=1, M2(0,1)=5, M2(1,0)=9, M2(1,1)=7;
-	M1M2=M1^M2;
-	cout<<M1M2(0,0)<<" "<<M1M2(0,1)<<endln;
-	cout<<M1M2(1,0)<<" "<<M1M2(1,1)<<endln;*/
 }
 
 HDR::HDR()
-    : Element(0, 0),
+    : Element(0, ELE_TAG_HDR),
     connectedExternalNodes(2),
-    k0(0.0), qYield(0.0), ke(0.0), x(0), y(0), shearDistI(0.5),	Kv0(0.0), Kv(0.0), Fc(0.0), Fcr(0.0), Tr(0.0), kc(0.0), 
-	PhiM(0.0), ac(0.0), Fcn(0.0), umax(0.0), D1(0.0), D2(0.0), rg(0.0), Ar(0.0), mass(0.0), cd(0.0), L(0.0), 
+    x(0), y(0), shearDistI(0.5),	Kv0(0.0), Kv(0.0), Fc(0.0), Fcr(0.0), Tr(0.0), kc(0.0), 
+	PhiM(0.0), ac(0.0), Fcn(0.0), umax(0.0), D1(0.0), D2(0.0), rg(0.0), Ar(0.0), mass(0.0), L(0.0), 
 	ub(6), qb(6), kb(6,6), ul(6), Tgl(12,12), Tlb(6,12), ubC(6), kbInit(6,6), F2(2), F2C(2), Delta(0.0)
 {      
     // ensure the connectedExternalNode ID is of correct size & set values
@@ -418,18 +400,18 @@ int HDR::commitState()
 		Fcn=Fc*(1-PhiM*(1-exp(-ac*(ub(0)-uc)/uc)));
 	}
 	// Compression
-	double theta = 2*acos(uh/D2);
-	Ar=(D2*D2/4)*(theta-sin(theta));
-	if(Ar/A>0.2) {
-		Fcrn=Fcr*Ar/A;
-	} else {
+	double Delta = 2*acos(uh/D2);   //this becomes undefined for uh/D2>1.0
+	Ar=(D2*D2/4)*(Delta-sin(Delta));
+	if(Ar/A<0.2 || uh/D2>=1.0) {
 		Fcrn=0.2*Fcr;
+	} else {
+		Fcrn=Fcr*Ar/A;
 	}
-	ucr = Fcrn/Kv;
+
+	Fcrmin=max(Fcrmin,Fcrn);
+	ucrn = Fcrn/Kv;
 
 	// Horizontal motion
-	//ke=(G*A/Tr)*(1-pow(qb(0)/Fcrn,2));
-	//if(ke<0) opserr<<"Negative horizontal stiffness\n";
 	// commit trial history variables for horizontal direction
 	
 	DSplusC=DSplus;
@@ -504,28 +486,23 @@ int HDR::update()
 
 	// 1) Get axial force and stiffness in basic x-direction
 
-	double ucn=Fcn/Kv;
-	double Fmax=Fc*(1+(1.0/(Tr*kc))*(1-exp(-kc*(umax-uc))));
+	ucn=Fcn/Kv;
+	Fmax=Fc*(1+(1.0/(Tr*kc))*(1-exp(-kc*(umax-uc))));
 		
-   if (ub(0)<=ucr) {
-		kb(0,0)=Kv/1000;
-		qb(0)=Fcrn+kb(0,0)*(ub(0)-ucr);
-		//qb(0)=qb(0)+kb(0,0)*delta_ub(0);
-		//qb(0)=Fcrn;
-			//opserr<<"Elastomer failed in buckling\n";
-			//opserr<<"ucr: "<<ucr<<"trialStrain: "<<ub(0)<<"Kv: "<<Kv<<"Fcrn: "<<Fcrn<<endln;
-			//exit(-1);
+   if (ub(0)<=ucrn) {
+		kb(0,0)=Kv0/10000;
+		qb(0)=Fcrmin+kb(0,0)*(ub(0)-ucrn);
    }
    else if (ub(0)<ucn) {
-		qb(0)=Kv*ub(0);
-		kb(0,0)=Kv;
+	   kb(0,0)=Kv;
+	   qb(0)=kb(0,0)*ub(0);
 	}
    else if(ub(0)<umax) {
 		qb(0)=Fcn+((Fmax-Fcn)/(umax-ucn))*(ub(0)-ucn);
 		kb(0,0)=((Fmax-Fcn)/(umax-ucn));
 	}
    else {
-		qb(0)=Fc*(1+(1.0/(Tr*kc))*(1-exp(-kc*(ub(0)-uc))));
+		qb(0)=Fc*(1.0+(1.0/(Tr*kc))*(1.0-exp(-kc*(ub(0)-uc))));
 		kb(0,0)=((Fc/Tr)*exp(-kc*(ub(0)-uc)));
 	}
    
@@ -569,7 +546,7 @@ int HDR::update()
 	F1=KS1*KM*(a1+a2*pow(uh,2)+a3*pow(uh,4))*U;
 
 	Fhat=R*n;
-	double DeltaC=(RC*n-F2).Norm();
+	double DeltaC=(RC*n-F2C).Norm();
 	Delta=DeltaC/(1.0+b3*dU);
 	
 	double Fnorm=(Fhat-F2C).Norm();
@@ -637,7 +614,7 @@ int HDR::update()
     kb(4,4) = Kr;
    
     // 5) get moment and stiffness in basic z-direction
-    qb(5) = Kt*ub(5);
+    qb(5) = Kr*ub(5);
     kb(5,5) = Kr;
     return 0;
 }
@@ -677,6 +654,28 @@ const Matrix& HDR::getInitialStiff()
     return theMatrix;
 }
 
+const Matrix& HDR::getDamp()
+{
+    // zero the matrix
+    theMatrix.Zero();
+    
+    // call base class to setup Rayleigh damping
+    theMatrix = this->Element::getDamp();
+    double factThis = 0.0;
+    
+    // now add damping tangent from materials
+    static Matrix cb(6,6);
+    cb.Zero();
+
+    // transform from basic to local system
+    static Matrix cl(12,12);
+    cl.addMatrixTripleProduct(0.0, Tlb, cb, 1.0);
+    
+    // transform from local to global system and add to cg
+    theMatrix.addMatrixTripleProduct(factThis, Tgl, cl, 1.0);
+    
+    return theMatrix;
+}
 
 const Matrix& HDR::getMass()
 {
@@ -686,12 +685,13 @@ const Matrix& HDR::getMass()
         // check for quick return
         if (mass == 0.0)  {
                 return theMatrix;
+				
         }    
    
         double m = 0.5*mass;
         for (int i = 0; i < 3; i++)  {
                 theMatrix(i,i)     = m;
-                theMatrix(i+3,i+3) = m;
+                theMatrix(i+6,i+6) = m;
         }
        
     return theMatrix;
@@ -726,17 +726,17 @@ int HDR::addInertiaLoadToUnbalance(const Vector &accel)
     const Vector &Raccel2 = theNodes[1]->getRV(accel);
     
     if (6 != Raccel1.Size() || 6 != Raccel2.Size())  {
-        opserr << "HDR::addInertiaLoadToUnbalance() - "
-            << "matrix and vector sizes are incompatible\n";
+        opserr << "ElastomericBearingPlasticity3d::addInertiaLoadToUnbalance() - "
+            << "matrix and vector sizes are incompatible.\n";
         return -1;
     }
     
     // want to add ( - fact * M R * accel ) to unbalance
     // take advantage of lumped mass matrix
     double m = 0.5*mass;
-    for (int i = 0; i < 3; i++)  {
+    for (int i=0; i<3; i++)  {
         theLoad(i)   -= m * Raccel1(i);
-        theLoad(i+3) -= m * Raccel2(i);
+        theLoad(i+6) -= m * Raccel2(i);
     }
     
     return 0;
@@ -750,66 +750,83 @@ const Vector& HDR::getResistingForce()
    
     // determine resisting forces in local system
     static Vector ql(12);
-    ql = Tlb^qb;
+    ql.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
 
-    // determine resisting forces in global system
-    theVector = Tgl^ql;
-    
+    // add P-Delta moments to local forces
+    double kGeo1 = 0.5*qb(0);
+    double MpDelta1 = kGeo1*(ul(7)-ul(1));
+    ql(5)  += MpDelta1;
+    ql(11) += MpDelta1;
+    double MpDelta2 = kGeo1*shearDistI*L*ul(5);
+    ql(5)  += MpDelta2;
+    ql(11) -= MpDelta2;
+    double MpDelta3 = kGeo1*(1.0 - shearDistI)*L*ul(11);
+    ql(5)  -= MpDelta3;
+    ql(11) += MpDelta3;
+    double MpDelta4 = kGeo1*(ul(8)-ul(2));
+    ql(4)  -= MpDelta4;
+    ql(10) -= MpDelta4;
+    double MpDelta5 = kGeo1*shearDistI*L*ul(4);
+    ql(4)  += MpDelta5;
+    ql(10) -= MpDelta5;
+    double MpDelta6 = kGeo1*(1.0 - shearDistI)*L*ul(10);
+    ql(4)  -= MpDelta6;
+    ql(10) += MpDelta6;
+
+	// determine resisting forces in global system
+    theVector.addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
+   
     return theVector;
 }
 
 
 const Vector& HDR::getResistingForceIncInertia()
 {      
-    theVector = this->getResistingForce();
-    
-    // subtract external load
-    theVector.addVector(1.0, theLoad, -1.0);
-    
-    // add the damping forces if rayleigh damping
-    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-        theVector += this->getRayleighDampingForces();
-    
-    // now include the mass portion
-    if (mass != 0.0)  {
-        const Vector &accel1 = theNodes[0]->getTrialAccel();
-        const Vector &accel2 = theNodes[1]->getTrialAccel();    
-        
-        double m = 0.5*mass;
-        for (int i = 0; i < 3; i++)  {
-            theVector(i)   += m * accel1(i);
-            theVector(i+3) += m * accel2(i);
-        }
-    }
-    
-    return theVector;
-}
+	theVector = this->getResistingForce();
 
+	// subtract external load
+    theVector.addVector(1.0, theLoad, -1.0);
+       
+        // add the damping forces if rayleigh damping
+        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+                theVector.addVector(1.0, this->getRayleighDampingForces(), 1.0);
+   
+        // now include the mass portion
+        if (mass != 0.0)  {
+                const Vector &accel1 = theNodes[0]->getTrialAccel();
+                const Vector &accel2 = theNodes[1]->getTrialAccel();    
+               
+                double m = 0.5*mass;
+                for (int i = 0; i < 3; i++)  {
+                        theVector(i)   += m * accel1(i);
+                        theVector(i+6) += m * accel2(i);
+                }
+        }
+       
+        return theVector;
+}
 
 int HDR::sendSelf(int commitTag, Channel &sChannel)
 {
 	// send element parameters
-    static Vector data(20);
+    static Vector data(17);
     data(0) = this->getTag();
-    data(1) = k0;
-    data(2) = qYield;
-    data(3) = ke;
-	data(4) = Kv0;
-	data(5) = kc;
-	data(6) = PhiM;
-	data(7) = Fcr;
-	data(8) = Fc;
-	data(9) = Kt;
-	data(10) = Kr;
-	data(11) = shearDistI;
-    data(12) = mass;
-    data(13) = x.Size();
-    data(14) = y.Size();
-	data(15) = Tr;
-	data(16) = D1;
-	data(17) = D2;
-	data(18) = L;
-	data(19) = rg;
+	data(1) = Kv0;
+	data(2) = kc;
+	data(3) = PhiM;
+	data(4) = Fcr;
+	data(5) = Fc;
+	data(6) = Kt;
+	data(7) = Kr;
+	data(8) = shearDistI;
+    data(9) = mass;
+    data(10) = x.Size();
+    data(11) = y.Size();
+	data(12) = Tr;
+	data(13) = D1;
+	data(14) = D2;
+	data(15) = L;
+	data(16) = rg;
 
 	sChannel.sendVector(0, commitTag, data);
    
@@ -825,32 +842,28 @@ int HDR::sendSelf(int commitTag, Channel &sChannel)
     return 0;
 }
 
-
 int HDR::recvSelf(int commitTag, Channel &rChannel,
     FEM_ObjectBroker &theBroker)
 {
    
     // receive element parameters
-    static Vector data(23);
+    static Vector data(20);
     rChannel.recvVector(0, commitTag, data);    
     this->setTag((int)data(0));
-    k0 = data(1);
-    qYield = data(2);
-    ke = data(3);
-	Kv0 = data(4);
-	kc = data(5);
-	PhiM = data(6);
-	Fcr = data(7);
-	Fc = data(8);
-	Kt = data(9);
-	Kr = data(10);
-	shearDistI = data(11);
-    mass = data(12);
-	Tr = data(15);
-	D1 = data(16);
-	D2 = data(17);
-	L = data(18);
-	rg = data(19);
+	Kv0 = data(1);
+	kc = data(2);
+	PhiM = data(3);
+	Fcr = data(4);
+	Fc = data(5);
+	Kt = data(6);
+	Kr = data(7);
+	shearDistI = data(8);
+    mass = data(9);
+	Tr = data(12);
+	D1 = data(13);
+	D2 = data(14);
+	L = data(15);
+	rg = data(16);
    
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -870,8 +883,8 @@ int HDR::recvSelf(int commitTag, Channel &rChannel,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = Kv0;
-    kbInit(1,1) = ke + k0;
-    kbInit(2,2) = ke + k0;
+    kbInit(1,1) = a1;
+    kbInit(2,2) = a1;
     kbInit(3,3) = Kt;
     kbInit(4,4) = Kr;
     kbInit(5,5) = Kr;
@@ -938,7 +951,9 @@ void HDR::Print(OPS_Stream &s, int flag)
 		s << "MATERIAL PROPERTIES" << endln;
 		s << "kc: "<< kc <<" ac: "<<ac<<" PhiM: "<< PhiM <<"  shearDistI: " << shearDistI << "  mass: " << mass<<endln;
 		s << "MECHANICAL PROPERTIES: HORIZONTAL MOTION\n"<<endln;
-		s << "k0: " << k0 << "  ke: " << ke << "  Current  qYield: " << qYield <<endln;
+		s << "a1: "<< a1 <<" a2: "<<a2<<" a3: "<<a3<<endln;
+		s << "b1: "<<b1<<" b2: "<<b2<<" b3: "<<b3<<endln;
+		s << "c1: "<<c1<<" c2: "<<c2<<" c3: "<<c3<<" c4: "<<c4<<endln;
 		s << "MECHANICAL PROPERTIES: VERTICAL MOTION"<<endln;
 		s << "Ec: "<<Ec<<" Kv0: "<< Kv0 <<" uc: "<< uc <<" Fcr: "<< Fcr <<" ucr: "<< ucr <<" Fcn: "<< Fcn <<" umax: "<< umax <<endln;
         // determine resisting forces in global system
@@ -1042,6 +1057,42 @@ Response* HDR::setResponse(const char **argv, int argc,
        
         theResponse = new ElementResponse(this, 5, Vector(6));
     }
+
+	// hysteretic and damage evolution parameters
+    else if (strcmp(argv[0],"Evolution") == 0 || strcmp(argv[0],"evolution") == 0 || 
+        strcmp(argv[0],"EvolutionParameter") == 0 || strcmp(argv[0],"evolutionparameter") == 0 ||
+        strcmp(argv[0],"z") == 0)
+    {
+        output.tag("ResponseType","DSplus");
+        output.tag("ResponseType","DSminus");
+		output.tag("ResponseType","DS");
+		output.tag("ResponseType","DM");
+		output.tag("ResponseType","Delta");
+        
+        theResponse = new ElementResponse(this, 6, Vector(5));
+    }
+	// basic stiffness
+    else if (strcmp(argv[0],"kb") == 0 || strcmp(argv[0],"basicStiff") == 0 ||
+        strcmp(argv[0],"basicStiffness") == 0)
+    {
+        output.tag("ResponseType","kb22");
+        output.tag("ResponseType","kb23");
+        output.tag("ResponseType","kb32");
+        output.tag("ResponseType","kb33");
+        
+        theResponse = new ElementResponse(this, 7, Vector(4));
+    }
+	// State dependent parameters
+    else if (strcmp(argv[0],"param") == 0 || strcmp(argv[0],"Param") == 0 ||
+        strcmp(argv[0],"parameters") == 0 || strcmp(argv[0],"Parameters") == 0)
+    {
+        output.tag("ResponseType","Fcn");
+		output.tag("ResponseType","Fcrn");
+        output.tag("ResponseType","Kv");
+        
+        theResponse = new ElementResponse(this, 8, Vector(3));
+    }
+
     output.endTag(); // ElementOutput
     return theResponse;
 }
@@ -1049,7 +1100,9 @@ Response* HDR::setResponse(const char **argv, int argc,
 
 int HDR::getResponse(int responseID, Information &eleInfo)
 {
-   
+   double kGeo1, MpDelta1, MpDelta2, MpDelta3, MpDelta4, MpDelta5, MpDelta6;
+   Vector evol(5), kbVec(4), Param(3);
+
     switch (responseID)  {
         case 1:  // global forces
         return eleInfo.setVector(this->getResistingForce());
@@ -1057,7 +1110,27 @@ int HDR::getResponse(int responseID, Information &eleInfo)
         case 2:  // local forces
         theVector.Zero();
         // determine resisting forces in local system
-        theVector = Tlb^qb;
+        theVector.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
+        // add P-Delta moments
+        kGeo1 = 0.5*qb(0);
+        MpDelta1 = kGeo1*(ul(7)-ul(1));
+        theVector(5)  += MpDelta1;
+        theVector(11) += MpDelta1;
+        MpDelta2 = kGeo1*shearDistI*L*ul(5);
+        theVector(5)  += MpDelta2;
+        theVector(11) -= MpDelta2;
+        MpDelta3 = kGeo1*(1.0 - shearDistI)*L*ul(11);
+        theVector(5)  -= MpDelta3;
+        theVector(11) += MpDelta3;
+        MpDelta4 = kGeo1*(ul(8)-ul(2));
+        theVector(4)  -= MpDelta4;
+        theVector(10) -= MpDelta4;
+        MpDelta5 = kGeo1*shearDistI*L*ul(4);
+        theVector(4)  += MpDelta5;
+        theVector(10) -= MpDelta5;
+        MpDelta6 = kGeo1*(1.0 - shearDistI)*L*ul(10);
+        theVector(4)  -= MpDelta6;
+        theVector(10) += MpDelta6;
         return eleInfo.setVector(theVector);
        
         case 3:  // basic forces
@@ -1068,6 +1141,22 @@ int HDR::getResponse(int responseID, Information &eleInfo)
        
         case 5:  // basic displacements
         return eleInfo.setVector(ub);
+
+		case 6:  // Hysteretic, scragging, and Mullins damage parameters
+		evol(0)=DSplus; evol(1)=DSminus; evol(2)=DS;
+		evol(3)=DM; evol(4)=Delta; 
+        return eleInfo.setVector(evol);
+
+		case 7:  // basic stiffness
+        kbVec(0) = kb(1,1); kbVec(1) = kb(1,2);
+        kbVec(2) = kb(2,1); kbVec(3) = kb(2,2);
+        return eleInfo.setVector(kbVec);
+
+		case 8:  // parameters that varies with time
+        Param(0) = Fcn;
+		Param(1) = Fcrn; 
+		Param(2) = Kv; 
+        return eleInfo.setVector(Param);
        
     default:
                 return -1;
@@ -1087,16 +1176,16 @@ void HDR::setUp()
                 if (x.Size() == 0)  {
                     x.resize(3);
                     x = xp;
-        } else  {
-            opserr << "WARNING HDR::setUp() - "
+        } /*else  {
+            opserr << "WARNING ElastomericX::setUp() - "
                 << "element: " << this->getTag() << endln
                 << "ignoring nodes and using specified "
                 << "local x vector to determine orientation\n";
-        }
+        }*/
     }
     // check that vectors for orientation are of correct size
     if (x.Size() != 3 || y.Size() != 3)  {
-        opserr << "HDR::setUp() - "
+        opserr << "ElastomericX::setUp() - "
             << "element: " << this->getTag() << endln
             << "incorrect dimension of orientation vectors\n";
         exit(-1);
@@ -1121,7 +1210,7 @@ void HDR::setUp()
    
     // check valid x and y vectors, i.e. not parallel and of zero length
     if (xn == 0 || yn == 0 || zn == 0)  {
-        opserr << "HDR::setUp() - "
+        opserr << "ElastomericX::setUp() - "
             << "element: " << this->getTag() << endln
             << "invalid orientation vectors\n";
         exit(-1);
@@ -1159,3 +1248,4 @@ double HDR::sgn(double x)
     else
         return 0.0;
 }
+
