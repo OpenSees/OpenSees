@@ -506,6 +506,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/frictionBearing/TFP_Bearing.o \
 	$(FE)/element/frictionBearing/TFP_Bearing2d.o \
 	$(FE)/element/frictionBearing/TPB1D.o \
+	$(FE)/element/frictionBearing/FPBearingPTV.o \
 	$(FE)/element/frictionBearing/FlatSliderSimple2d.o \
 	$(FE)/element/frictionBearing/FlatSliderSimple3d.o \
 	$(FE)/element/frictionBearing/TclFlatSliderCommand.o \
