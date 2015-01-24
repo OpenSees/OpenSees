@@ -583,6 +583,7 @@ MAKES/Makefile.def.EC2-UBUNTU -text
 MAKES/Makefile.def.EC2-WINDOWS-CYGWIN -text
 MAKES/Makefile.def.HANSEN -text
 MAKES/Makefile.def.INTEL -text
+MAKES/Makefile.def.INTEL2 -text
 MAKES/Makefile.def.KEENELAND -text
 MAKES/Makefile.def.KRAKEN -text
 MAKES/Makefile.def.LONESTAR -text
