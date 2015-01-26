@@ -343,17 +343,6 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
   //incremental strain
   trialDStrain = trialStrain - commitStrain;
 
-  //sign of incremental strain (used in next caluculation step)
-  if (trialDStrain > 0) {
-    trialDStrainLastSign = +1;
-  } else if (trialDStrain < 0) {
-    trialDStrainLastSign = -1;
-  } else {
-    trialDStrainLastSign = commitDStrainLastSign;
-  }
-
-
-
   // if incremental strain is zero
   if ( fabs(trialDStrain) < DBL_EPSILON ) { // if ( trialDStrain == 0.0 )
 
@@ -367,6 +356,18 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
 
     return 0;
   }
+
+  //sign of incremental strain (used in next caluculation step)
+  if (trialDStrain > 0) {
+    trialDStrainLastSign = +1;
+  } else if (trialDStrain < 0) {
+    trialDStrainLastSign = -1;
+  } else {
+    trialDStrainLastSign = commitDStrainLastSign;
+  }
+
+  //copy reversal point index
+  trialIdxRev = commitIdxRev;
 
 
   //application limit strain

@@ -349,7 +349,12 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
   //incremental deformation
   trialDDeform = trialDeform - commitDeform;
 
-
+  //if incremental deformation is zero
+  if ( fabs(trialDDeform) < DBL_EPSILON ) { // if ( trialDDeform == 0.0 )
+    trialForce   = commitForce;
+    trialStiff   = commitStiff;
+    return 0;
+  }
 
   //sign of incremental deformation (used in next caluculation step)
   if (trialDDeform > 0) {
@@ -360,13 +365,9 @@ KikuchiAikenLRB::setTrialStrain(double strain, double strainRate)
     trialDDeformLastSign = commitDDeformLastSign;
   }
 
+  //copy reversal point index
+  trialIdxRev = commitIdxRev;
 
-  //if incremental deformation is zero
-  if ( fabs(trialDDeform) < DBL_EPSILON ) { // if ( trialDDeform == 0.0 )
-    trialForce   = commitForce;
-    trialStiff   = commitStiff;
-    return 0;
-  }
 
   //application limit strain
   if ( fabs(trialStrain) > lmtStrain ) {
