@@ -82,6 +82,7 @@
 #include <HystereticMaterial.h>
 #include <EPPGapMaterial.h>
 #include <ViscousMaterial.h>
+#include <ViscousDamper.h>
 #include <PathIndependentMaterial.h>
 #include <SeriesMaterial.h>
 #include <CableMaterial.h>
@@ -1042,6 +1043,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Viscous:
 		return new ViscousMaterial();
+
+	case MAT_TAG_ViscousDamper:
+		return new ViscousDamper();
 
 	case MAT_TAG_PathIndependent:
 		return new PathIndependentMaterial();
