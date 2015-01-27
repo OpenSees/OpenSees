@@ -50,7 +50,7 @@ CTestEnergyIncr::CTestEnergyIncr()
 }
 
 
-CTestEnergyIncr::CTestEnergyIncr(double theTol, int maxIter, int printIt, int normType, int max)
+CTestEnergyIncr::CTestEnergyIncr(double theTol, int maxIter, int printIt, int normType, double max)
     : ConvergenceTest(CONVERGENCE_TEST_CTestEnergyIncr),
       theSOE(0), tol(theTol), maxTol(max), maxNumIter(maxIter), currentIter(0),printFlag(printIt),
     norms(maxNumIter), nType(normType)

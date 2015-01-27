@@ -45,7 +45,7 @@ class CTestEnergyIncr: public ConvergenceTest
 public:
     // constructors
     CTestEnergyIncr();	    	
-    CTestEnergyIncr(double tol, int maxNumIter, int printFlag, int normType =2, int maxTol = OPS_MAXTOL);
+    CTestEnergyIncr(double tol, int maxNumIter, int printFlag, int normType =2, double maxTol = OPS_MAXTOL);
     
     // destructor
     ~CTestEnergyIncr();
