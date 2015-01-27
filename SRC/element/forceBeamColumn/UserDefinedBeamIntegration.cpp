@@ -135,6 +135,7 @@ UserDefinedBeamIntegration::sendSelf(int cTag, Channel &theChannel)
   int dbTag = this->getDbTag();
   int nIP = pts.Size();
   static ID iData(1);
+  iData(0) = nIP;
   theChannel.sendID(dbTag, cTag, iData);
 
   Vector dData(nIP*2);
