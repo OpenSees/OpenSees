@@ -296,6 +296,7 @@
 #include <ElementRecorder.h>
 #include <EnvelopeNodeRecorder.h>
 #include <EnvelopeElementRecorder.h>
+#include <DriftRecorder.h>
 
 
 // mp_constraint header files
@@ -1606,6 +1607,9 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
 
 	case RECORDER_TAGS_EnvelopeElementRecorder:  
 	     return new EnvelopeElementRecorder();
+
+		 case RECORDER_TAGS_DriftRecorder:  
+	     return new DriftRecorder();
 
         case RECORDER_TAGS_TclFeViewer:  
 	  return 0;
