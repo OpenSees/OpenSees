@@ -186,6 +186,10 @@ DriftRecorder::setDomain(Domain &theDom)
 int
 DriftRecorder::sendSelf(int commitTag, Channel &theChannel)
 {
+  opserr << "DriftRecorder::sendSelf - should not be used in OpenSeesSP\n";
+  return 0;
+
+
   static ID idData(7); 
   idData.Zero();
   if (ndI != 0 && ndI->Size() != 0)
@@ -243,6 +247,9 @@ int
 DriftRecorder::recvSelf(int commitTag, Channel &theChannel, 
 			FEM_ObjectBroker &theBroker)
 {
+  opserr << "DriftRecorder::recvSelf - should not be used in OpenSeesSP\n";
+  return 0;
+
   static ID idData(7); 
   if (theChannel.recvID(0, commitTag, idData) < 0) {
     opserr << "DriftRecorder::sendSelf() - failed to send idData\n";
@@ -313,8 +320,6 @@ DriftRecorder::recvSelf(int commitTag, Channel &theChannel,
 int
 DriftRecorder::initialize(void)
 {
-
-
   theOutputHandler->tag("OpenSeesOutput");
 
   if (echoTimeFlag == true) {
