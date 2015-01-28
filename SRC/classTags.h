@@ -535,16 +535,13 @@
 #define ELE_TAG_OnePointHingedBeam3d    70
 #define ELE_TAG_BeamColumnJoint2d       71
 #define ELE_TAG_BeamColumnJoint3d       72
-
 #define ELE_TAG_ForceBeamColumn2d       73
 #define ELE_TAG_ForceBeamColumn3d       74
 #define ELE_TAG_ElasticForceBeamColumn2d 75
 #define ELE_TAG_ElasticForceBeamColumn3d 76
 #define ELE_TAG_ForceBeamColumnCBDI2d   77
 #define ELE_TAG_ForceBeamColumnCBDI3d   78
-
 #define ELE_TAG_DispBeamColumn2dInt     79
-
 #define ELE_TAG_InternalSpring          80
 #define ELE_TAG_SimpleJoint2D           81
 #define ELE_TAG_Joint2D                 82
@@ -622,6 +619,7 @@
 #define ELE_TAG_ElastomericX              152
 #define ELE_TAG_LeadRubberX               153
 #define ELE_TAG_PileToe3D                 154
+#define ELE_TAG_N4BiaxialTruss            155
 
 #define ELE_TAG_MultipleShearSpring 6201
 #define ELE_TAG_MultipleNormalSpring 6202

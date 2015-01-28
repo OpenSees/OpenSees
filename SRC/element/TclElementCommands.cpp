@@ -123,6 +123,7 @@ extern void *OPS_ZeroLengthImpact3D(void);
 extern void *OPS_HDR(void);
 extern void *OPS_LeadRubberX(void);
 extern void *OPS_ElastomericX(void);
+extern void *OPS_N4BiaxialTruss(void);
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -484,6 +485,15 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
+  } else if ((strcmp(argv[1],"N4BiaxialTruss") == 0)) {
+    
+    void *theEle = OPS_N4BiaxialTruss();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }																								
   } else if ((strcmp(argv[1],"SimpleContact3d") == 0) || (strcmp(argv[1],"SimpleContact3D") == 0)) {
     
     void *theEle = OPS_SimpleContact3D();
