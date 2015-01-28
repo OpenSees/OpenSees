@@ -2612,6 +2612,8 @@ SRC/element/truss/CorotTruss2.h -text
 SRC/element/truss/CorotTrussSection.cpp -text
 SRC/element/truss/CorotTrussSection.h -text
 SRC/element/truss/Makefile -text
+SRC/element/truss/N4BiaxialTruss.cpp -text
+SRC/element/truss/N4BiaxialTruss.h -text
 SRC/element/truss/Truss.cpp -text
 SRC/element/truss/Truss.h -text
 SRC/element/truss/Truss.tex -text
