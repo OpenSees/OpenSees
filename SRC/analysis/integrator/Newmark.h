@@ -38,17 +38,17 @@
 // What: "@(#) Newmark.h, revA"
 
 #include <TransientIntegrator.h>
+#include <Vector.h>
 
 class DOF_Group;
 class FE_Element;
-class Vector;
 
 class Newmark : public TransientIntegrator
 {
 public:
     // constructors
     Newmark();
-    Newmark(double gamma, double beta, bool disp = true);
+    Newmark(double gamma, double beta, bool disp = true, bool aflag=false);
 
     // destructor
     ~Newmark();
@@ -56,7 +56,9 @@ public:
     // methods which define what the FE_Element and DOF_Groups add
     // to the system of equation object.
     int formEleTangent(FE_Element *theEle);
-    int formNodTangent(DOF_Group *theDof);        
+    int formNodTangent(DOF_Group *theDof);
+    int formEleResidual(FE_Element* theEle);
+    int formNodUnbalance(DOF_Group* theDof);
     
     int domainChanged(void);    
     int newStep(double deltaT);    
@@ -70,6 +72,10 @@ public:
     
     // AddingSensitivity:BEGIN //////////////////////////////////
     int revertToStart();
+    int formSensitivityRHS(int gradNum);
+    int formIndependentSensitivityRHS();
+    int saveSensitivity   (const Vector &v, int gradNum, int numGrads);
+    int commitSensitivity (int gradNum, int numGrads);  
     // AddingSensitivity:END ////////////////////////////////////
     
 protected:
@@ -81,6 +87,15 @@ protected:
     Vector *Ut, *Utdot, *Utdotdot;  // response quantities at time t
     Vector *U, *Udot, *Udotdot;     // response quantities at time t+deltaT
     bool determiningMass;           // flag to check if just want the mass contribution
+
+    // Adding Sensitivity
+    int sensitivityFlag;
+    int gradNumber;
+    Vector *massMatrixMultiplicator;
+    Vector *dampingMatrixMultiplicator;
+    int assemblyFlag;
+    Vector independentRHS;
+    //////////////////////
     
 private:
 };

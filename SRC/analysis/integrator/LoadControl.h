@@ -62,15 +62,29 @@ class LoadControl : public StaticIntegrator
     int recvSelf(int commitTag, Channel &theChannel, 
 			 FEM_ObjectBroker &theBroker);
 
-    void Print(OPS_Stream &s, int flag =0);    
+    void Print(OPS_Stream &s, int flag =0);
+
+    int formEleResidual(FE_Element *theEle);
     
-  protected:
+    // Adding sensitivity
+    int formSensitivityRHS(int gradNum);
+    int formIndependentSensitivityRHS();
+    int saveSensitivity(const Vector &v, int gradNum, int numGrads);
+    int commitSensitivity(int gradNum, int numGrads);
+    ///////////////////////
+    
+protected:
     
   private:
     double deltaLambda;  // dlambda at step (i-1)
     
     double specNumIncrStep, numIncrLastStep; // Jd & J(i-1) 
-    double dLambdaMin, dLambdaMax; // min & max values for dlambda at step (i) 
+    double dLambdaMin, dLambdaMax; // min & max values for dlambda at step (i)
+    
+    // Adding sensitivity
+    int gradNumber;
+    int sensitivityFlag;
+    ////////////////////
 };
 
 #endif

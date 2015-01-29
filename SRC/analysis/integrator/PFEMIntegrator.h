@@ -36,6 +36,7 @@
 // What: "@(#) PFEMIntegrator.h, revA"
 
 #include <TransientIntegrator.h>
+#include <Vector.h>
 
 class DOF_Group;
 class FE_Element;
@@ -69,6 +70,10 @@ public:
     
     // AddingSensitivity:BEGIN //////////////////////////////////
     int revertToStart();
+    int formSensitivityRHS(int gradNum);
+    int formIndependentSensitivityRHS();
+    int saveSensitivity   (const Vector &v, int gradNum, int numGrads);
+    int commitSensitivity (int gradNum, int numGrads);  
     // AddingSensitivity:END ////////////////////////////////////
     
 protected:
@@ -78,6 +83,12 @@ protected:
     Vector *Ut, *Utdot, *Utdotdot;  // response quantities at time t
     Vector *U, *Udot, *Udotdot;     // response quantities at time t+deltaT
     bool determiningMass;           // flag to check if just want the mass contribution
+
+    // Adding sensitivity
+    int sensitivityFlag;
+    int gradNumber;
+    Vector dVn;
+    /////////////////////
     
 private:
 };

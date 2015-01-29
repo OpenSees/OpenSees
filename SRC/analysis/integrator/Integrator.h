@@ -49,12 +49,12 @@ class FEM_ObjectBroker;
 
 class Integrator: public MovableObject
 {
-  public:
+public:
     Integrator(int classTag);
     virtual ~Integrator();
-
+    
     virtual int domainChanged(void);
-
+    
     virtual int formEleTangent(FE_Element *theEle) =0;
     virtual int formNodTangent(DOF_Group *theDof) =0;    
     virtual int formEleResidual(FE_Element *theEle) =0;
@@ -65,11 +65,17 @@ class Integrator: public MovableObject
 
     // Method provided for Output
     virtual void Print(OPS_Stream &s, int flag =0) =0;
+
+    // Sensitivity Integrator interface
+    virtual int formSensitivityRHS(int gradNum);
+    virtual int formIndependentSensitivityRHS();
+    virtual int saveSensitivity   (const Vector &v, int gradNum, int numGrads);
+    virtual int commitSensitivity (int gradNum, int numGrads);
     
-  protected:
-
-  private:
-
+protected:
+    
+private:
+    
 };
 
 #endif

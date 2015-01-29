@@ -46,14 +46,20 @@
 #include <Domain.h>
 #include <Pressure_Constraint.h>
 #include <Pressure_ConstraintIter.h>
+#include <NodeIter.h>
+#include <Node.h>
+#include <LoadPatternIter.h>
+#include <LoadPattern.h>
+#include <FE_EleIter.h>
 
 #include <elementAPI.h>
 
 PFEMIntegrator::PFEMIntegrator()
     : TransientIntegrator(INTEGRATOR_TAGS_PFEMIntegrator),
-    c1(0.0), c2(0.0), c3(0.0), 
-    Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
-    determiningMass(false)
+      c1(0.0), c2(0.0), c3(0.0), 
+      Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
+      determiningMass(false), sensitivityFlag(0),gradNumber(0),
+      dVn()
 {
     
 }
@@ -189,17 +195,102 @@ int PFEMIntegrator::formNodTangent(DOF_Group *theDof)
 int
 PFEMIntegrator::formEleResidual(FE_Element *theEle)
 {
-  theEle->zeroResidual();
-  theEle->addRIncInertiaToResidual();
-  return 0;
+    if (sensitivityFlag == 0) {  // NO SENSITIVITY ANALYSIS
+
+        this->TransientIntegrator::formEleResidual(theEle);
+
+    }
+    else {  // (ASSEMBLE ALL TERMS)
+
+        theEle->zeroResidual();
+
+        // Compute the time-stepping parameters on the form
+        // udotdot = 1/dt*vn+1 - 1/dt*vn
+        // u       = un + dt*vn+1
+
+
+        // Obtain sensitivity vectors from previous step
+        dVn.resize(U->Size()); dVn.Zero();
+        Vector dUn(U->Size());
+
+        AnalysisModel *myModel = this->getAnalysisModel();
+        DOF_GrpIter &theDOFs = myModel->getDOFs();
+        DOF_Group *dofPtr = 0;
+        while ((dofPtr = theDOFs()) != 0) {
+
+            const ID &id = dofPtr->getID();
+            int idSize = id.Size();
+
+            const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);
+            for (int i=0; i < idSize; i++) {
+                int loc = id(i);
+                if (loc >= 0) {
+                    dUn(loc) = dispSens(i);
+                }
+            }
+
+            const Vector &velSens = dofPtr->getVelSensitivity(gradNumber);
+            for (int i=0; i < idSize; i++) {
+                int loc = id(i);
+                if (loc >= 0) {
+                    dVn(loc) = velSens(i);
+                }
+            }
+        }
+
+        // Now we're ready to make calls to the FE Element:
+
+        // The term -dPint/dh|u fixed
+        theEle->addResistingForceSensitivity(gradNumber); 
+
+        // The term -dM/dh*acc
+        theEle->addM_ForceSensitivity(gradNumber, *Udotdot, -1.0);
+
+        // The term -M*(-1/dt*dvn)
+        theEle->addM_Force(dVn, c3);
+
+        // The term -K*(dun)
+        theEle->addK_Force(dUn, -1.0);
+
+        // The term -dC/dh*vel
+        theEle->addD_ForceSensitivity(gradNumber, *Udot,-1.0);
+		
+    }
+
+    return 0;
 }    
 
 int
 PFEMIntegrator::formNodUnbalance(DOF_Group *theDof)
 {
-  theDof->zeroUnbalance();
-  theDof->addPIncInertiaToUnbalance();
-  return 0;
+    if (sensitivityFlag == 0) {  // NO SENSITIVITY ANALYSIS
+
+        this->TransientIntegrator::formNodUnbalance(theDof);
+
+    } else {  // ASSEMBLE ALL TERMS
+
+        theDof->zeroUnbalance();
+
+        // The term -M*(-1/dt*dvn)
+        theDof->addM_Force(dVn, c3);
+
+        // The term -dM/dh*acc
+        theDof->addM_ForceSensitivity(*Udotdot, -1.0);
+
+        // The term -C*(dvn)
+        //theDof->addD_Force(dVn ,-1.0);
+
+	
+        // The term -dC/dh*vel
+        theDof->addD_ForceSensitivity(*Udot,-1.0);
+
+
+        // In case of random loads (have already been formed by 'applyLoadSensitivity')
+        theDof->addPtoUnbalance();
+
+    }
+
+    return 0;
 }    
 
 
@@ -386,5 +477,145 @@ int PFEMIntegrator::revertToStart()
     
     return 0;
 }
+
+int 
+PFEMIntegrator::formSensitivityRHS(int passedGradNumber)
+{
+    sensitivityFlag = 1;
+
+
+    // Set a couple of data members
+    gradNumber = passedGradNumber;
+
+    // Get pointer to the SOE
+    LinearSOE *theSOE = this->getLinearSOE();
+
+
+    // Get the analysis model
+    AnalysisModel *theModel = this->getAnalysisModel();
+
+
+
+    // Randomness in external load (including randomness in time series)
+    // Get domain
+    Domain *theDomain = theModel->getDomainPtr();
+
+    // Loop through nodes to zero the unbalaced load
+    Node *nodePtr;
+    NodeIter &theNodeIter = theDomain->getNodes();
+    while ((nodePtr = theNodeIter()) != 0)
+	nodePtr->zeroUnbalancedLoad();
+
+
+    // Loop through load patterns to add external load sensitivity
+    LoadPattern *loadPatternPtr;
+    LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
+    double time;
+    while((loadPatternPtr = thePatterns()) != 0) {
+        time = theDomain->getCurrentTime();
+        loadPatternPtr->applyLoadSensitivity(time);
+    }
+
+
+    // Randomness in element/material contributions
+    // Loop through FE elements
+    FE_Element *elePtr;
+    FE_EleIter &theEles = theModel->getFEs();    
+    while((elePtr = theEles()) != 0) {
+        theSOE->addB(  elePtr->getResidual(this),  elePtr->getID()  );
+    }
+
+
+    // Loop through DOF groups (IT IS IMPORTANT THAT THIS IS DONE LAST!)
+    DOF_Group *dofPtr;
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
+    while((dofPtr = theDOFs()) != 0) {
+        theSOE->addB(  dofPtr->getUnbalance(this),  dofPtr->getID()  );
+    }
+
+
+    // Reset the sensitivity flag
+    sensitivityFlag = 0;
+
+    return 0;
+}
+
+int 
+PFEMIntegrator::formIndependentSensitivityRHS()
+{
+    return 0;
+}
+
+int 
+PFEMIntegrator::saveSensitivity(const Vector & dVNew,int gradNum,int numGrads)
+{
+    // Recover sensitivity results from previous step
+    int vectorSize = U->Size();
+    Vector dUn(vectorSize);
+    dVn.resize(vectorSize); dVn.Zero();
+
+    AnalysisModel *myModel = this->getAnalysisModel();
+    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_Group *dofPtr;
+    while ((dofPtr = theDOFs()) != 0) {
+	  
+        const ID &id = dofPtr->getID();
+        int idSize = id.Size();
+        const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);	
+        for (int i=0; i < idSize; i++) {
+	    int loc = id(i);
+	    if (loc >= 0) {
+                dUn(loc) = dispSens(i);		
+	    }
+        }
+	  
+        const Vector &velSens = dofPtr->getVelSensitivity(gradNumber);
+        for (int i=0; i < idSize; i++) {
+	    int loc = id(i);
+	    if (loc >= 0) {
+                dVn(loc) = velSens(i);
+	    }
+        }
+
+    }
+
+
+    // Compute new acceleration and velocity vectors:
+    Vector dUNew(vectorSize);
+    Vector dANew(vectorSize);
+
+    // dudotdot = 1/dt*dv{n+1} - 1/dt*dvn
+    dANew.addVector(0.0, dVNew, c3);
+    dANew.addVector(1.0, dVn, -c3);
+
+    // du       = dun + dt*dv{n+1}
+    dUNew.addVector(0.0, dVNew, c1);
+    dUNew.addVector(1.0, dUn, 1.0);
+
+    // Now we can save vNew, vdotNew and vdotdotNew
+    DOF_GrpIter &theDOFGrps = myModel->getDOFs();
+    DOF_Group 	*dofPtr1;
+    while ( (dofPtr1 = theDOFGrps() ) != 0)  {
+        dofPtr1->saveSensitivity(dUNew,dVNew,dANew,gradNum,numGrads);
+    }
+	
+    return 0;
+}
+
+int 
+PFEMIntegrator::commitSensitivity(int gradNum, int numGrads)
+{
+
+    // Loop through the FE_Elements and set unconditional sensitivities
+    AnalysisModel *theAnalysisModel = this->getAnalysisModel();
+    FE_Element *elePtr;
+    FE_EleIter &theEles = theAnalysisModel->getFEs();    
+    while((elePtr = theEles()) != 0) {
+        elePtr->commitSensitivity(gradNum, numGrads);
+    }
+
+    return 0;
+}
+
 // AddingSensitivity:END ////////////////////////////////
 
