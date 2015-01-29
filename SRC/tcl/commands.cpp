@@ -328,15 +328,15 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 // AddingSensitivity:BEGIN /////////////////////////////////////////////////
 #include <ReliabilityDomain.h>
 #include <SensitivityAlgorithm.h>
-#include <SensitivityIntegrator.h>
-#include <StaticSensitivityIntegrator.h>
+// #include <SensitivityIntegrator.h>
+// #include <StaticSensitivityIntegrator.h>
 //#include <DynamicSensitivityIntegrator.h>
-#include <NewmarkSensitivityIntegrator.h>
-#include <NewNewmarkSensitivityIntegrator.h>
-#include <NewStaticSensitivityIntegrator.h>
-#include <PFEMSensitivityIntegrator.h>
+// #include <NewmarkSensitivityIntegrator.h>
+// #include <NewNewmarkSensitivityIntegrator.h>
+// #include <NewStaticSensitivityIntegrator.h>
+// #include <PFEMSensitivityIntegrator.h>
 //#include <OrigSensitivityAlgorithm.h>
-#include <NewSensitivityAlgorithm.h>
+//#include <NewSensitivityAlgorithm.h>
 #include <ReliabilityStaticAnalysis.h>
 #include <ReliabilityDirectIntegrationAnalysis.h>
 // AddingSensitivity:END /////////////////////////////////////////////////
@@ -507,15 +507,15 @@ static PFEMAnalysis* thePFEMAnalysis = 0;
 static TclReliabilityBuilder *theReliabilityBuilder = 0;
 
 SensitivityAlgorithm *theSensitivityAlgorithm = 0;
-SensitivityIntegrator *theSensitivityIntegrator = 0;
+Integrator *theSensitivityIntegrator = 0;
 ReliabilityStaticAnalysis *theReliabilityStaticAnalysis = 0;
 ReliabilityDirectIntegrationAnalysis *theReliabilityTransientAnalysis = 0;
 
-static NewmarkSensitivityIntegrator *theNSI = 0;
-static NewNewmarkSensitivityIntegrator *theNNSI = 0;
-#ifdef _PFEM
-static PFEMSensitivityIntegrator* thePFEMSI = 0;
-#endif
+// static NewmarkSensitivityIntegrator *theNSI = 0;
+// static NewNewmarkSensitivityIntegrator *theNNSI = 0;
+// #ifdef _PFEM
+// static PFEMSensitivityIntegrator* thePFEMSI = 0;
+// #endif
 //static SensitivityIntegrator *theSensitivityIntegrator = 0;
 //static NewmarkSensitivityIntegrator *theNSI = 0;
 
@@ -1005,8 +1005,6 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "sensitivityAlgorithm", &sensitivityAlgorithm, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
-    Tcl_CreateCommand(interp, "sensitivityIntegrator", &sensitivityIntegrator, 
-		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "sensNodeDisp", &sensNodeDisp, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "sensNodeVel", &sensNodeVel, 
@@ -1181,7 +1179,12 @@ sensitivityAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
 {
 	bool withRespectToRVs = true;
 	bool newalgorithm = false;
-	int analysisTypeTag = 1;  
+	int analysisTypeTag = 1;
+	if(theStaticIntegrator != 0) {
+	    theSensitivityIntegrator = theStaticIntegrator;
+	} else if(theTransientIntegrator != 0) {
+	    theSensitivityIntegrator = theTransientIntegrator;
+	}
 	// 1: compute at each step (default); 2: compute by command
 
 	if (argc < 2) {
@@ -1211,12 +1214,12 @@ sensitivityAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
 	ReliabilityDomain *theReliabilityDomain;
 	theReliabilityDomain = theReliabilityBuilder->getReliabilityDomain();
 	if(newalgorithm){
-	  theSensitivityAlgorithm = new 
-	    NewSensitivityAlgorithm(theReliabilityDomain, 
-				    &theDomain,
-				    theAlgorithm,
-				    theSensitivityIntegrator,
-				    analysisTypeTag);
+	  // theSensitivityAlgorithm = new 
+	  //   NewSensitivityAlgorithm(theReliabilityDomain, 
+	  // 			    &theDomain,
+	  // 			    theAlgorithm,
+	  // 			    theSensitivityIntegrator,
+	  // 			    analysisTypeTag);
 	} else {
 	  theSensitivityAlgorithm = new 
 	    SensitivityAlgorithm(&theDomain,
@@ -1247,76 +1250,6 @@ sensitivityAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
 	}
 
 	return TCL_OK;
-}
-
-int 
-sensitivityIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
-{
-	if (strcmp(argv[1],"-static") == 0) {
-
-		if (theAnalysisModel == 0) {
-			theAnalysisModel = new AnalysisModel();
-		}
-		theSensitivityIntegrator = new StaticSensitivityIntegrator(theAnalysisModel, theSOE);
-		return TCL_OK;
-	}
-	//////////////////////////////////////////
-	////////// added by K Fujimura ///////////
-	//////////////////////////////////////////
-	else if (strcmp(argv[1],"-newstatic") == 0) {
-
-		if (theAnalysisModel == 0) {
-			theAnalysisModel = new AnalysisModel();
-		}
-		theSensitivityIntegrator = new NewStaticSensitivityIntegrator(theAnalysisModel, theSOE);
-		return TCL_OK;
-	}
-	else if (strcmp(argv[1],"-definedAbove") == 0) {  
-
-//		if (theNSI == 0) {
-//			opserr << "ERROR: No sensitivity integrator has been specified. " << endln;
-//			return TCL_ERROR;
-//		}
-//		else {
-//			theSensitivityIntegrator = theNSI;
-//			return TCL_OK;
-//		}
-#ifdef _PFEM
-            if(thePFEMSI == 0) {
-#endif
-		if (theNSI == 0 && theNNSI == 0) {
-			opserr << "ERROR: No sensitivity integrator has been specified. " << endln;
-			return TCL_ERROR;
-		}else if (theNSI != 0 && theNNSI == 0){
-			theSensitivityIntegrator = theNSI;
-			return TCL_OK;
-		}else if (theNSI == 0 && theNNSI != 0){
-			theSensitivityIntegrator = theNNSI;
-			return TCL_OK;
-		}else {
-			opserr << "ERROR: Both newmark and newnewmakr sensitivity integratorNo sensitivity integrator has been specified. " << endln;
-			return TCL_ERROR;
-		}
-#ifdef _PFEM
-            } else {
-                theSensitivityIntegrator = thePFEMSI;
-                return TCL_OK;
-            }
-#endif
-	}
-//	else if (strcmp(argv[1],"Dynamic") == 0) {  
-//
-//		if (theAnalysisModel == 0) {
-//			theAnalysisModel = new AnalysisModel();
-//		}
-//
-//		theSensitivityIntegrator = new DynamicSensitivityIntegrator(theAnalysisModel, theSOE, theTransientIntegrator);
-//		return TCL_OK;
-//	}
-	else {
-		opserr << "WARNING: Invalid type of sensitivity integrator." << endln;
-		return TCL_ERROR;
-	}
 }
 
 // AddingSensitivity:END /////////////////////////////////////////////////
@@ -4489,215 +4422,215 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
 
-#ifdef _RELIABILITY
-  else if (strcmp(argv[1],"NewmarkWithSensitivity") == 0) {
-	  int assemblyFlag = 0;
-      double gamma;
-      double beta;
-      double alphaM, betaK, betaKi, betaKc;
-      if (argc != 4 && argc != 6 && argc != 8 && argc != 10) {
-	     interp->result = "WARNING integrator Newmark gamma beta <alphaM?  betaKcurrent?  betaKi? betaKlastCommitted?> <-assemble tag?> ";
-	     return TCL_ERROR;
-      }
+// #ifdef _RELIABILITY
+//   else if (strcmp(argv[1],"NewmarkWithSensitivity") == 0) {
+// 	  int assemblyFlag = 0;
+//       double gamma;
+//       double beta;
+//       double alphaM, betaK, betaKi, betaKc;
+//       if (argc != 4 && argc != 6 && argc != 8 && argc != 10) {
+// 	     interp->result = "WARNING integrator Newmark gamma beta <alphaM?  betaKcurrent?  betaKi? betaKlastCommitted?> <-assemble tag?> ";
+// 	     return TCL_ERROR;
+//       }
 	  
-	  // Take care of argc == 4, the basic case
-      if (Tcl_GetDouble(interp, argv[2], &gamma) != TCL_OK) {
-		  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;	  
-		  return TCL_ERROR;	
-      }
-      if (Tcl_GetDouble(interp, argv[3], &beta) != TCL_OK) {
-		  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-		  return TCL_ERROR;	
-      }
+// 	  // Take care of argc == 4, the basic case
+//       if (Tcl_GetDouble(interp, argv[2], &gamma) != TCL_OK) {
+// 		  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;	  
+// 		  return TCL_ERROR;	
+//       }
+//       if (Tcl_GetDouble(interp, argv[3], &beta) != TCL_OK) {
+// 		  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 		  return TCL_ERROR;	
+//       }
 
-	  // If only assembly flag is given extra
-	  if (argc == 6) {
-		  if (strcmp(argv[4],"-assemble") != 0) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-		  }
-		  if (Tcl_GetInt(interp, argv[5], &assemblyFlag) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-	  }
-	  // If only extra integrator (damping) parameters are given extra
-      if (argc == 8) {
-		  if (Tcl_GetDouble(interp, argv[4], &alphaM) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (Tcl_GetDouble(interp, argv[5], &betaK) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (Tcl_GetDouble(interp, argv[6], &betaKi) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (Tcl_GetDouble(interp, argv[7], &betaKc) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-      }
-	  // If everything is given extra
-	  if (argc == 10) {
-		  if (Tcl_GetDouble(interp, argv[4], &alphaM) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (Tcl_GetDouble(interp, argv[5], &betaK) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (Tcl_GetDouble(interp, argv[6], &betaKi) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (Tcl_GetDouble(interp, argv[7], &betaKc) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (strcmp(argv[8],"-assemble") != 0) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-		  }
-		  if (Tcl_GetInt(interp, argv[9], &assemblyFlag) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-	  }
+// 	  // If only assembly flag is given extra
+// 	  if (argc == 6) {
+// 		  if (strcmp(argv[4],"-assemble") != 0) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 		  }
+// 		  if (Tcl_GetInt(interp, argv[5], &assemblyFlag) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 	  }
+// 	  // If only extra integrator (damping) parameters are given extra
+//       if (argc == 8) {
+// 		  if (Tcl_GetDouble(interp, argv[4], &alphaM) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (Tcl_GetDouble(interp, argv[5], &betaK) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (Tcl_GetDouble(interp, argv[6], &betaKi) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (Tcl_GetDouble(interp, argv[7], &betaKc) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+//       }
+// 	  // If everything is given extra
+// 	  if (argc == 10) {
+// 		  if (Tcl_GetDouble(interp, argv[4], &alphaM) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (Tcl_GetDouble(interp, argv[5], &betaK) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (Tcl_GetDouble(interp, argv[6], &betaKi) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (Tcl_GetDouble(interp, argv[7], &betaKc) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (strcmp(argv[8],"-assemble") != 0) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 		  }
+// 		  if (Tcl_GetInt(interp, argv[9], &assemblyFlag) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 	  }
 
-      if (argc == 4 || argc == 6) {
-	theNSI = new NewmarkSensitivityIntegrator(assemblyFlag,gamma,beta);       
-      }
-      else {
-	theNSI = new NewmarkSensitivityIntegrator(assemblyFlag,gamma,beta,alphaM,betaK,betaKi,betaKc);
-      }
-      theTransientIntegrator = theNSI;
+//       if (argc == 4 || argc == 6) {
+// 	theNSI = new NewmarkSensitivityIntegrator(assemblyFlag,gamma,beta);       
+//       }
+//       else {
+// 	theNSI = new NewmarkSensitivityIntegrator(assemblyFlag,gamma,beta,alphaM,betaK,betaKi,betaKc);
+//       }
+//       theTransientIntegrator = theNSI;
 
 
-      // if the analysis exists - we want to change the Integrator
-	  if (theTransientAnalysis != 0)
-		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
-  }  
+//       // if the analysis exists - we want to change the Integrator
+// 	  if (theTransientAnalysis != 0)
+// 		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+//   }  
 
-  else if (strcmp(argv[1],"NewNewmarkWithSensitivity") == 0) {
-	  int assemblyFlag = 0;
-      double gamma;
-      double beta;
-      double alphaM, betaK, betaKi, betaKc;
-      if (argc != 4 && argc != 6 && argc != 8 && argc != 10) {
-	     interp->result = "WARNING integrator Newmark gamma beta <alphaM?  betaKcurrent?  betaKi? betaKlastCommitted?> <-assemble tag?> ";
-	     return TCL_ERROR;
-      }
+//   else if (strcmp(argv[1],"NewNewmarkWithSensitivity") == 0) {
+// 	  int assemblyFlag = 0;
+//       double gamma;
+//       double beta;
+//       double alphaM, betaK, betaKi, betaKc;
+//       if (argc != 4 && argc != 6 && argc != 8 && argc != 10) {
+// 	     interp->result = "WARNING integrator Newmark gamma beta <alphaM?  betaKcurrent?  betaKi? betaKlastCommitted?> <-assemble tag?> ";
+// 	     return TCL_ERROR;
+//       }
 	  
-	  // Take care of argc == 4, the basic case
-      if (Tcl_GetDouble(interp, argv[2], &gamma) != TCL_OK) {
-		  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;	  
-		  return TCL_ERROR;	
-      }
-      if (Tcl_GetDouble(interp, argv[3], &beta) != TCL_OK) {
-		  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-		  return TCL_ERROR;	
-      }
+// 	  // Take care of argc == 4, the basic case
+//       if (Tcl_GetDouble(interp, argv[2], &gamma) != TCL_OK) {
+// 		  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;	  
+// 		  return TCL_ERROR;	
+//       }
+//       if (Tcl_GetDouble(interp, argv[3], &beta) != TCL_OK) {
+// 		  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 		  return TCL_ERROR;	
+//       }
 
-	  // If only assembly flag is given extra
-	  if (argc == 6) {
-		  if (strcmp(argv[4],"-assemble") != 0) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-		  }
-		  if (Tcl_GetInt(interp, argv[5], &assemblyFlag) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-	  }
-	  // If only extra integrator (damping) parameters are given extra
-      if (argc == 8) {
-		  if (Tcl_GetDouble(interp, argv[4], &alphaM) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (Tcl_GetDouble(interp, argv[5], &betaK) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (Tcl_GetDouble(interp, argv[6], &betaKi) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (Tcl_GetDouble(interp, argv[7], &betaKc) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-      }
-	  // If everything is given extra
-	  if (argc == 10) {
-		  if (Tcl_GetDouble(interp, argv[4], &alphaM) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (Tcl_GetDouble(interp, argv[5], &betaK) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (Tcl_GetDouble(interp, argv[6], &betaKi) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (Tcl_GetDouble(interp, argv[7], &betaKc) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-		  if (strcmp(argv[8],"-assemble") != 0) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-		  }
-		  if (Tcl_GetInt(interp, argv[9], &assemblyFlag) != TCL_OK) {
-			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
-			  return TCL_ERROR;	
-		  }
-	  }
+// 	  // If only assembly flag is given extra
+// 	  if (argc == 6) {
+// 		  if (strcmp(argv[4],"-assemble") != 0) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 		  }
+// 		  if (Tcl_GetInt(interp, argv[5], &assemblyFlag) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 	  }
+// 	  // If only extra integrator (damping) parameters are given extra
+//       if (argc == 8) {
+// 		  if (Tcl_GetDouble(interp, argv[4], &alphaM) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (Tcl_GetDouble(interp, argv[5], &betaK) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (Tcl_GetDouble(interp, argv[6], &betaKi) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (Tcl_GetDouble(interp, argv[7], &betaKc) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+//       }
+// 	  // If everything is given extra
+// 	  if (argc == 10) {
+// 		  if (Tcl_GetDouble(interp, argv[4], &alphaM) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (Tcl_GetDouble(interp, argv[5], &betaK) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (Tcl_GetDouble(interp, argv[6], &betaKi) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (Tcl_GetDouble(interp, argv[7], &betaKc) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 		  if (strcmp(argv[8],"-assemble") != 0) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 		  }
+// 		  if (Tcl_GetInt(interp, argv[9], &assemblyFlag) != TCL_OK) {
+// 			  opserr << "WARNING: Error in input to Newmark sensitivity integrator" << endln;
+// 			  return TCL_ERROR;	
+// 		  }
+// 	  }
 
-      if (argc == 4 || argc == 6) {
-	theNNSI = new NewNewmarkSensitivityIntegrator(assemblyFlag,gamma,beta);       
-      }
-      else {
-	theNNSI = new NewNewmarkSensitivityIntegrator(assemblyFlag,gamma,beta,alphaM,betaK,betaKi,betaKc);
-      }
-      theTransientIntegrator = theNNSI;
+//       if (argc == 4 || argc == 6) {
+// 	theNNSI = new NewNewmarkSensitivityIntegrator(assemblyFlag,gamma,beta);       
+//       }
+//       else {
+// 	theNNSI = new NewNewmarkSensitivityIntegrator(assemblyFlag,gamma,beta,alphaM,betaK,betaKi,betaKc);
+//       }
+//       theTransientIntegrator = theNNSI;
 
-	  //// added by K Fujimura
-	  if (theTransientAnalysis != 0){
-	    opserr << "For the TransientAnalysis, the integrator must be \n";
-	    opserr << "NewmarkSensitivityIntegrator \n";
-	    return TCL_ERROR;	
-	  }
-      // if the analysis exists - we want to change the Integrator
-	  if (theReliabilityTransientAnalysis != 0)
-		theReliabilityTransientAnalysis->setIntegrator(*theTransientIntegrator);
-  }  
+// 	  //// added by K Fujimura
+// 	  if (theTransientAnalysis != 0){
+// 	    opserr << "For the TransientAnalysis, the integrator must be \n";
+// 	    opserr << "NewmarkSensitivityIntegrator \n";
+// 	    return TCL_ERROR;	
+// 	  }
+//       // if the analysis exists - we want to change the Integrator
+// 	  if (theReliabilityTransientAnalysis != 0)
+// 		theReliabilityTransientAnalysis->setIntegrator(*theTransientIntegrator);
+//   }  
   
-#ifdef _PFEM
-  else if(strcmp(argv[1], "PFEMWithSensitivity") == 0) {
-      int flag = 0;
-      if(argc > 4) {
-          if(strcmp(argv[2],"-assemble") != TCL_OK) {
-              opserr<<"WARNING: Error in input to PFEMSensitivityIntegrator\n";
-              return TCL_ERROR;
-          }
-          if(Tcl_GetInt(interp, argv[3], &flag) != TCL_OK) {
-              opserr<<"WARNING: Error in input to PFEMSensitivityIntegrator\n";
-              return TCL_ERROR;	
-          }
-      }
+// #ifdef _PFEM
+//   else if(strcmp(argv[1], "PFEMWithSensitivity") == 0) {
+//       int flag = 0;
+//       if(argc > 4) {
+//           if(strcmp(argv[2],"-assemble") != TCL_OK) {
+//               opserr<<"WARNING: Error in input to PFEMSensitivityIntegrator\n";
+//               return TCL_ERROR;
+//           }
+//           if(Tcl_GetInt(interp, argv[3], &flag) != TCL_OK) {
+//               opserr<<"WARNING: Error in input to PFEMSensitivityIntegrator\n";
+//               return TCL_ERROR;	
+//           }
+//       }
 
-      thePFEMSI = new PFEMSensitivityIntegrator(flag);
-      theTransientIntegrator = thePFEMSI;
-      if (theTransientAnalysis != 0) {
-          theTransientAnalysis->setIntegrator(*theTransientIntegrator);
-      }
-  }
-#endif 
+//       thePFEMSI = new PFEMSensitivityIntegrator(flag);
+//       theTransientIntegrator = thePFEMSI;
+//       if (theTransientAnalysis != 0) {
+//           theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+//       }
+//   }
+// #endif 
 
-#endif
+// #endif
   
   else if (strcmp(argv[1],"HHT") == 0) {
     theTransientIntegrator = OPS_NewHHT();
@@ -6133,6 +6066,7 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
 		if (theSensitivityAlgorithm != 0) {
 			theStaticAnalysis->setSensitivityAlgorithm(0);
 			theSensitivityAlgorithm = 0;
+			theSensitivityIntegrator = 0;
 		}
 	}
 // AddingSensitivity:END ///////////////////////////////////////
