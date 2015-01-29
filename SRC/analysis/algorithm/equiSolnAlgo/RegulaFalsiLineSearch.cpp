@@ -91,7 +91,7 @@ RegulaFalsiLineSearch::search(double s0,
   double sL     = s0;
   double r      = r0;
   double etaJ   = 1.0;
-
+  double compoundFactor = 0.0;
 
   const Vector &dU = theSOE.getX();
 
@@ -100,13 +100,73 @@ RegulaFalsiLineSearch::search(double s0,
 	 << "      eta(0) : " << eta << " , Ratio |s/s0| = " << r0 << endln;
   }
 
+  // we first search for a bracket to a solution, i.e. we want sU * sL < 0.0
+  int count = 0;
+  while ((sU * sL > 0.0) && (etaU < maxEta)) {
+
+    count++;
+
+    /*
+    if (count == 1)
+      etaU = 0.5;
+    else
+    */
+    etaU = etaJ * 4.0;
+
+    //update the incremental difference in response and determine new unbalance
+    *x = dU;
+    double factor = etaU - etaJ;
+    compoundFactor += factor;
+    *x *= factor;
+
+    etaJ = etaU;
+
+    if (theIntegrator.update(*x) < 0) {
+      opserr << "WARNING BisectionLineSearch::search() -";
+      opserr << "the Integrator failed in update()\n";	
+      return -1;
+    }
+    
+    if (theIntegrator.formUnbalance() < 0) {
+      opserr << "WARNING BisectionLineSearch::search() -";
+      opserr << "the Integrator failed in formUnbalance()\n";	
+      return -2;
+    }	
+  
+    //new residual
+    const Vector &ResidJ = theSOE.getB();
+    
+    //new value of sU
+    sU = dU ^ ResidJ;
+
+    // check if we have a solution we are happy with
+    r = fabs( sU / s0 ); 
+    if (r < tolerance)
+      return 0;
+
+    if (printFlag == 0) {
+      opserr << "Bisection Line Search - bracketing: " << count 
+	   << " , eta(j) : " << etaU << " , Ratio |sj/s0| = " << r << endln;
+    }
+  }
+
+  // return if no bracket for a solution found, resetting to initial values
+  if (sU * sL > 0.0) {
+    *x = dU;
+    theSOE.setX(*x);
+    *x *= -compoundFactor;
+    theIntegrator.update(*x);
+    theIntegrator.formUnbalance();
+    return 0; 
+  }
+
   // perform the secant iterations:
   //
   //                eta(j+1) = eta(u) -  s(u) * (eta(l) -eta(u))
   //                                     ------------------------
   //                                           s(l) - s(u)
 
-  int count = 0; //intial value of iteration counter 
+  count = 0; //intial value of iteration counter 
   while ( r > tolerance  &&  count < maxIter ) {
     
     count++;
@@ -119,12 +179,10 @@ RegulaFalsiLineSearch::search(double s0,
     if (  r >  r0   )  eta =  1.0;
     if (eta < minEta)  eta = minEta;
 
+    if (eta == etaJ) // break if going to have a zero *x
+      break;
     
     //update the incremental difference in response and determine new unbalance
-
-    if (eta == etaJ)
-      break; // no change in response
-
     *x = dU;
     *x *= eta-etaJ;
 	    
@@ -179,7 +237,8 @@ RegulaFalsiLineSearch::search(double s0,
 
   // set X in the SOE for the revised dU, needed for convergence tests
   *x = dU;
-  *x *= eta;
+  if (eta != 0.0)
+    *x *= eta;
   theSOE.setX(*x);
   
   return 0;

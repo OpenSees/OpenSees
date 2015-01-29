@@ -61,8 +61,8 @@ class NewtonLineSearch: public EquiSolnAlgo
   protected:
     
   private:
-
     ConvergenceTest *theTest;
+    ConvergenceTest *theOtherTest;
     LineSearch *theLineSearch;
 };
 

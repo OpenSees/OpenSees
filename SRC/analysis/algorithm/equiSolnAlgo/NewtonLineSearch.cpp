@@ -44,7 +44,7 @@
 //Null Constructor
 NewtonLineSearch::NewtonLineSearch( )
 :EquiSolnAlgo(EquiALGORITHM_TAGS_NewtonLineSearch),
- theTest(0), theLineSearch(0)
+ theTest(0), theOtherTest(0), theLineSearch(0)
 {   
 }
 
@@ -55,20 +55,26 @@ NewtonLineSearch::NewtonLineSearch( ConvergenceTest &theT,
 :EquiSolnAlgo(EquiALGORITHM_TAGS_NewtonLineSearch),
  theTest(&theT), theLineSearch(theSearch)
 {
-
+  theOtherTest = theTest->getCopy(10);
+  theOtherTest->setEquiSolnAlgo(*this);
 }
 
 
 // Destructor
 NewtonLineSearch::~NewtonLineSearch()
 {
-
+  if (theOtherTest != 0)
+    delete theOtherTest;
 }
 
 int
 NewtonLineSearch::setConvergenceTest(ConvergenceTest *newTest)
 {
     theTest = newTest;
+    if (theOtherTest != 0)
+      delete theOtherTest;
+    theOtherTest = theTest->getCopy(10);
+    theOtherTest->setEquiSolnAlgo(*this);
     return 0;
 }
 
@@ -110,7 +116,6 @@ NewtonLineSearch::solveCurrentStep(void)
 
 	//residual at this iteration before next solve 
 	const Vector &Resid0 = theSOE->getB() ;
-
 	
 	//form the tangent
         if (theIntegrator->formTangent() < 0){
@@ -145,17 +150,23 @@ NewtonLineSearch::solveCurrentStep(void)
 	    return -2;
 	}	
 
-	//new residual 
-        const Vector &Resid = theSOE->getB() ;
+	// do a line search only if convergence criteria not met
+	theOtherTest->start();
+	result = theOtherTest->test();
 
-	//new value of s 
-	double s = - ( dx0 ^ Resid ) ;
+	if (result < 1) {
+	  //new residual 
+	  const Vector &Resid = theSOE->getB() ;
+	  
+	  //new value of s 
+	  double s = - ( dx0 ^ Resid ) ;
+	  
+	  if (theLineSearch != 0)
+	    theLineSearch->search(s0, s, *theSOE, *theIntegrator);
+	}
 
-	if (theLineSearch != 0)
-	  theLineSearch->search(s0, s, *theSOE, *theIntegrator);
-	
 	this->record(0);
-
+	  
 	result = theTest->test();
 
     } while (result == -1);

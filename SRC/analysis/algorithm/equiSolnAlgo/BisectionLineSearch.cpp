@@ -67,9 +67,9 @@ BisectionLineSearch::newStep(LinearSOE &theSOE)
 
 int 
 BisectionLineSearch::search(double s0, 
-			      double s1, 
-			      LinearSOE &theSOE, 
-			      IncrementalIntegrator &theIntegrator)
+			    double s1, 
+			    LinearSOE &theSOE, 
+			    IncrementalIntegrator &theIntegrator)
 {
   double r0 = 0.0;
 
@@ -91,6 +91,7 @@ BisectionLineSearch::search(double s0,
   double sL     = s0;
   double r      = r0;
   double etaJ   = 1.0;
+  double compoundFactor = 0.0;
 
   const Vector &dU = theSOE.getX();
 
@@ -102,18 +103,24 @@ BisectionLineSearch::search(double s0,
   // we first search for a bracket to a solution, i.e. we want sU * sL < 0.0
   int count = 0;
   while ((sU * sL > 0.0) && (etaU < maxEta)) {
-    
+
     count++;
-    etaU *= 2.0;
+
+    /*
+    if (count == 1)
+      etaU = 0.5;
+    else
+    */
+    etaU = etaJ * 4.0;
 
     //update the incremental difference in response and determine new unbalance
-
-    if (etaU == etaJ)
-      break; // no change in response
-
     *x = dU;
-    *x *= etaU-etaJ;
-	    
+    double factor = etaU - etaJ;
+    compoundFactor += factor;
+    *x *= factor;
+
+    etaJ = etaU;
+
     if (theIntegrator.update(*x) < 0) {
       opserr << "WARNING BisectionLineSearch::search() -";
       opserr << "the Integrator failed in update()\n";	
@@ -125,7 +132,7 @@ BisectionLineSearch::search(double s0,
       opserr << "the Integrator failed in formUnbalance()\n";	
       return -2;
     }	
-
+  
     //new residual
     const Vector &ResidJ = theSOE.getB();
     
@@ -141,14 +148,13 @@ BisectionLineSearch::search(double s0,
       opserr << "Bisection Line Search - bracketing: " << count 
 	   << " , eta(j) : " << etaU << " , Ratio |sj/s0| = " << r << endln;
     }
-
-    etaJ = etaU;
   }
 
   // return if no bracket for a solution found, resetting to initial values
   if (sU * sL > 0.0) {
     *x = dU;
     theSOE.setX(*x);
+    *x *= -compoundFactor;
     theIntegrator.update(*x);
     theIntegrator.formUnbalance();
     return 0; 
@@ -168,11 +174,16 @@ BisectionLineSearch::search(double s0,
     eta = (etaU + etaL) * 0.5;
 
     //-- want to put limits on eta(i)
-    if (r   > r0    )  eta =  1.0;
+    //    if (r   > r0    )  eta =  1.0;
     
     //update the incremental difference in response and determine new unbalance
     *x = dU;
-    *x *= eta-etaJ;
+    double fact = eta-etaJ;
+
+    if (fact == 0)
+      break;
+
+    *x *= fact;
 	    
     if (theIntegrator.update(*x) < 0) {
       opserr << "WARNING BisectionLineSearch::search() -";
@@ -220,7 +231,9 @@ BisectionLineSearch::search(double s0,
 
   // set X in the SOE for the revised dU, needed for convergence tests
   *x = dU;
-  *x *= eta;
+  if (eta != 0.0) 
+    *x *= eta;
+
   theSOE.setX(*x);
   
   return 0;
