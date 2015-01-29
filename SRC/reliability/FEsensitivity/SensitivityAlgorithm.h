@@ -37,14 +37,14 @@
 class Domain;
 class ReliabilityDomain;
 class EquiSolnAlgo;
-class SensitivityIntegrator;
+class Integrator;
 
 class SensitivityAlgorithm
 {
  public:
   SensitivityAlgorithm(Domain *passedDomain,
 		       EquiSolnAlgo *passedAlgorithm,
-		       SensitivityIntegrator *passedSensitivityIntegrator,
+		       Integrator *passedSensitivityIntegrator,
 		       int analysisTypeTag);
 
   ~SensitivityAlgorithm();
@@ -60,7 +60,7 @@ class SensitivityAlgorithm
     Domain *theDomain;
     ReliabilityDomain *theReliabilityDomain;
     EquiSolnAlgo *theAlgorithm;
-    SensitivityIntegrator *theSensitivityIntegrator;
+    Integrator *theSensitivityIntegrator;
     int analysisTypeTag; 
 };
 

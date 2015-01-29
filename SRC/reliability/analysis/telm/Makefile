@@ -1,18 +1,15 @@
 include ../../../../Makefile.def
 
-OBJS       = NewNewmarkSensitivityIntegrator.o \
-	RandomVibrationSimulatorResult.o \
+OBJS       = RandomVibrationSimulatorResult.o \
 	Analyzer.o \
 	NewSearchWithStepSizeAndStepDirection.o \
 	ranrotb.o \
 	AnalyzerGFunEvaluator.o \
-	NewSensitivityAlgorithm.o \
 	ranrotw.o \
 	AnalyzerGradGEvaluator.o \
 	NewStandardLinearOscillatorAccelerationFilter.o \
 	ReliabilityDirectIntegrationAnalysis.o \
 	CrossingRateAnalyzer.o \
-	NewStaticSensitivityIntegrator.o \
 	ReliabilityStaticAnalysis.o \
 	DynamciAnalyzer.o \
 	NewWhitenoiseFilter.o \

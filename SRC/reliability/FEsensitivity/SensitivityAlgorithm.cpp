@@ -33,7 +33,7 @@
 
 #include <SensitivityAlgorithm.h>
 #include <ReliabilityDomain.h>
-#include <SensitivityIntegrator.h>
+#include <Integrator.h>
 
 #include <LinearSOE.h>
 #include <EquiSolnAlgo.h>
@@ -45,7 +45,7 @@
 
 SensitivityAlgorithm::SensitivityAlgorithm(Domain *passedDomain,
 					   EquiSolnAlgo *passedAlgorithm,
-					   SensitivityIntegrator *passedSensitivityIntegrator,
+					   Integrator *passedSensitivityIntegrator,
 					   int passedAnalysisTypeTag):
   theDomain(passedDomain), theAlgorithm(passedAlgorithm), 
   theSensitivityIntegrator(passedSensitivityIntegrator),

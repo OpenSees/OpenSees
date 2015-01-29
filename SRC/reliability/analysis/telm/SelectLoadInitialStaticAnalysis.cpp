@@ -53,7 +53,6 @@ passedprint)
 	theStaticIntegrator=NULL;
 	theTest=NULL;
 	theSensitivityAlgorithm=NULL;
-	theSensitivityIntegrator=NULL;
 
 	Nstep = passednstep;
 	NumLoadPatterns = passednumLoadPatterns;
@@ -99,8 +98,6 @@ SelectLoadInitialStaticAnalysis::~SelectLoadInitialStaticAnalysis()
 	{delete theStaticIntegrator;theStaticIntegrator=0;}
 	if(theSOE!=NULL)
 	{delete theSOE;theSOE=0;}
-	if(theSensitivityIntegrator!=NULL)
-	{delete theSensitivityIntegrator;theSensitivityIntegrator=0;}
 	if(theSensitivityAlgorithm!=NULL) 
 	{delete theSensitivityAlgorithm;theSensitivityAlgorithm=0;}
 	if( theOrgPatterns != NULL ){
@@ -193,21 +190,13 @@ void SelectLoadInitialStaticAnalysis::createStaticAnalysis(void)
 	opserr << "in SelectLoadStaticAnalysis::createStaticAnalysis \n";
 	exit(-1);
 	}
-	if(theSensitivityIntegrator!=NULL){delete theSensitivityIntegrator; theSensitivityIntegrator=NULL;}
-	theSensitivityIntegrator = new NewStaticSensitivityIntegrator(theAnalysisModel, theSOE);
-	if(theSensitivityIntegrator == NULL) {
-	opserr << "Fail to generate theSensitivityIntegrator\n";
-	opserr << "in SelectLoadStaticAnalysis::createStaticAnalysis \n";
-	exit(-1);
-	}
 	int analysisTypeTag=1;	
 	if(theSensitivityAlgorithm!=NULL){delete theSensitivityAlgorithm; theSensitivityAlgorithm=NULL;}
 	theSensitivityAlgorithm = new 
-	  NewSensitivityAlgorithm(theReliabilityDomain,
-				  theDomain,
-				  theAlgorithm,
-				  theSensitivityIntegrator,
-				  analysisTypeTag);
+	    SensitivityAlgorithm(theDomain,
+				 theAlgorithm,
+				 theStaticIntegrator,
+				 analysisTypeTag);
 	if(theSensitivityAlgorithm == NULL) {
 	opserr << "Fail to generate theSensitivityAlgorithm\n";
 	opserr << "in SelectLoadStaticAnalysis::createStaticAnalysis \n";

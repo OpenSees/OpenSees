@@ -37,7 +37,7 @@
 #include <LoadPattern.h>
 #include <InitialStaticAnalysis.h>
 #include <SensitivityAlgorithm.h>
-#include <SensitivityIntegrator.h>
+#include <Integrator.h>
 #include <GFunEachStepEvaluator.h>
 #include <Node.h>
 #include <NodeIter.h>
@@ -57,7 +57,7 @@ public:
 		     Domain* passedStructuralDomain,
 		     InitialStaticAnalysis* passedInitialStaticAnalysis,
 		     SensitivityAlgorithm* passedSensitivityAlgorithm,
-		     SensitivityIntegrator* passedSensitivityIntegrator,
+		     Integrator* passedSensitivityIntegrator,
 		     int passedNumstep,
 		     double passeddelta,
 		     int passedNumLoadPatterns,
@@ -85,7 +85,7 @@ protected:
 	Domain* theDomain;
 	InitialStaticAnalysis* theInitialStaticAnalysis;
 	SensitivityAlgorithm* theSensitivityAlgorithm;
-	SensitivityIntegrator* theSensitivityIntegrator;
+	Integrator* theSensitivityIntegrator;
 	bool activeSensitivity;
 	bool print;
 	ofstream output;

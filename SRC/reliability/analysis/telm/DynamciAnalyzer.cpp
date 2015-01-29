@@ -36,7 +36,7 @@ DynamicAnalyzer::DynamicAnalyzer
 				 InitialStaticAnalysis* passedInitialStaticAnalysis,
 				 ReliabilityDirectIntegrationAnalysis* passedTransientAnalysis,
 				 SensitivityAlgorithm* passedSensitivityAlgorithm,
-				 SensitivityIntegrator* passedSensitivityIntegrator,
+				 Integrator* passedSensitivityIntegrator,
 				 int passednstep,
 				 double passeddelta,
 				 int passednumLoadPatterns,

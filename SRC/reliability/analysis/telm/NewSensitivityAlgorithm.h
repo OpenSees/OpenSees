@@ -33,7 +33,7 @@
 #include <SensitivityAlgorithm.h>
 #include <ReliabilityDomain.h>
 #include <EquiSolnAlgo.h>
-#include <SensitivityIntegrator.h>
+#include <Integrator.h>
 #include <fstream>
 using std::ofstream;
 
@@ -44,7 +44,7 @@ class NewSensitivityAlgorithm: public SensitivityAlgorithm
   NewSensitivityAlgorithm(ReliabilityDomain *passedReliabilityDomain,
 			  Domain *passedFEDomain,
 			  EquiSolnAlgo *passedAlgorithm,
-			  SensitivityIntegrator *passedSensitivityIntegrator,
+			  Integrator *passedSensitivityIntegrator,
 			  int analysisTypeTag);
   ~NewSensitivityAlgorithm();
   //	int computeSensitivities(void);
@@ -61,7 +61,7 @@ class NewSensitivityAlgorithm: public SensitivityAlgorithm
  private:
   ReliabilityDomain *theReliabilityDomain;
   EquiSolnAlgo *theAlgorithm;
-  SensitivityIntegrator *theSensitivityIntegrator;
+  Integrator *theSensitivityIntegrator;
   int analysisTypeTag; 
   Vector* zeroVector;
   LinearSOE *theSOE;

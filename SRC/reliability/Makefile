@@ -68,19 +68,16 @@ RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
 		$(FE)/reliability/analysis/transformation/NatafProbabilityTransformation.o \
 		$(FE)/reliability/analysis/transformation/ProbabilityTransformation.o \
 		$(FE)/reliability/analysis/transformation/AllIndependentTransformation.o \
-		$(FE)/reliability/analysis/telm/NewNewmarkSensitivityIntegrator.o \
 		$(FE)/reliability/analysis/telm/RandomVibrationSimulatorResult.o \
 		$(FE)/reliability/analysis/telm/Analyzer.o \
 		$(FE)/reliability/analysis/telm/NewSearchWithStepSizeAndStepDirection.o \
 		$(FE)/reliability/analysis/telm/ranrotb.o \
 		$(FE)/reliability/analysis/telm/AnalyzerGFunEvaluator.o \
-		$(FE)/reliability/analysis/telm/NewSensitivityAlgorithm.o \
 		$(FE)/reliability/analysis/telm/ranrotw.o \
 		$(FE)/reliability/analysis/telm/AnalyzerGradGEvaluator.o \
 		$(FE)/reliability/analysis/telm/NewStandardLinearOscillatorAccelerationFilter.o \
 		$(FE)/reliability/analysis/telm/ReliabilityDirectIntegrationAnalysis.o \
 		$(FE)/reliability/analysis/telm/CrossingRateAnalyzer.o \
-		$(FE)/reliability/analysis/telm/NewStaticSensitivityIntegrator.o \
 		$(FE)/reliability/analysis/telm/ReliabilityStaticAnalysis.o \
 		$(FE)/reliability/analysis/telm/DynamciAnalyzer.o \
 		$(FE)/reliability/analysis/telm/NewWhitenoiseFilter.o \
@@ -166,10 +163,6 @@ RELIABILITY_OBJS = $(FE)/domain/pattern/DiscretizedRandomProcessSeries.o \
         $(FE)/reliability/domain/storage/ReliabilityStorage.o \
         $(FE)/reliability/domain/storage/FORMStorage.o \
 		$(FE)/reliability/FEsensitivity/SensitivityAlgorithm.o \
-		$(FE)/reliability/FEsensitivity/SensitivityIntegrator.o \
-		$(FE)/reliability/FEsensitivity/StaticSensitivityIntegrator.o \
-		$(FE)/reliability/FEsensitivity/NewmarkSensitivityIntegrator.o \
-		$(FE)/reliability/FEsensitivity/PFEMSensitivityIntegrator.o \
 		$(FE)/reliability/tcl/TclReliabilityBuilder.o 
 
 # Compilation control

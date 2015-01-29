@@ -35,7 +35,7 @@ StaticAnalyzer::StaticAnalyzer
 				 InitialStaticAnalysis* passedInitialStaticAnalysis,
 				 ReliabilityStaticAnalysis* passedStaticAnalysis,
 				 SensitivityAlgorithm* passedSensitivityAlgorithm,
-				 SensitivityIntegrator* passedSensitivityIntegrator,
+				 Integrator* passedSensitivityIntegrator,
 				 int passednstep,
 				 double passeddelta,
 				 int passednumLoadPatterns,

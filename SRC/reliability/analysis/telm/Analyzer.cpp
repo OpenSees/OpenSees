@@ -35,7 +35,7 @@ Analyzer::Analyzer
 		  Domain* passedStructuralDomain,
 		  InitialStaticAnalysis* passedInitialStaticAnalysis,
 		  SensitivityAlgorithm* passedSensitivityAlgorithm,
-		  SensitivityIntegrator* passedSensitivityIntegrator,
+		  Integrator* passedSensitivityIntegrator,
 		  int passedNumstep,
 		  double passeddelta,
 		  int passedNumLoadPatterns,

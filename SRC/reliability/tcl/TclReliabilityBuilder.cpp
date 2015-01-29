@@ -193,7 +193,7 @@ extern SensitivityAlgorithm *theSensitivityAlgorithm;
 /////////////////////////////////////////////////////////
 extern ReliabilityStaticAnalysis* theReliabilityStaticAnalysis;
 extern ReliabilityDirectIntegrationAnalysis* theReliabilityTransientAnalysis;
-extern SensitivityIntegrator* theSensitivityIntegrator;
+extern Integrator* theSensitivityIntegrator;
 /////////////////////////////////////////////////////////
 /////E Modified by K Fujimura /////////////////////////////
 /////////////////////////////////////////////////////////
