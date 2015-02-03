@@ -355,7 +355,10 @@ NewSensitivityAlgorithm::sensitivityDomainChanged(void)
 		  //gradParaPositioner[i]=theParameterPositioner;
 		}
 	}
-	theSensitivityIntegrator->sensitivityDomainChanged(numGrads);
+
+	opserr << "FATAL NewSensitivityAlgorithm::TALK TO MHS\n";
+	exit(0);
+	//theSensitivityIntegrator->sensitivityDomainChanged(numGrads);
 
 	if (analysisTypeTag==1 || analysisTypeTag==3) {
 		// inactivate all positioner //
