@@ -33,6 +33,9 @@ set storyHeights {162.0 162.0 156.0 156.0 156.0 156.0 156.0}
 set E 29500.0
 set massX 0.49
 set M 0.
+set coordTransf "Linear";  # Linear, PDelta, Corotational
+set massType "-lMass";  # -lMass, -cMass
+
 
 set beams   {W24X160 W24X160 W24X130 W24X130 W24X110 W24X110 W24X110}
 set eColumn {{W14X246 W14X246 W14X246 W14X211 W14X211 W14X176 W14X176}}
@@ -51,7 +54,7 @@ array set WSection {
 
 # procedure to read 
 
-proc ElasticBeamColumn {eleTag iNode jNode sectType E transfTag M} {
+proc ElasticBeamColumn {eleTag iNode jNode sectType E transfTag M massType} {
     global WSection
     global in
     set found 0
@@ -63,7 +66,7 @@ proc ElasticBeamColumn {eleTag iNode jNode sectType E transfTag M} {
 	set propList [split $prop]
 	set A [lindex $propList 0]
 	set I [lindex $propList 1]
-	element elasticBeamColumn $eleTag $iNode $jNode $A $E $I $transfTag -mass $M
+	element elasticBeamColumn $eleTag $iNode $jNode $A $E $I $transfTag -mass $M $massType
 	set found 1
     }
     
@@ -94,7 +97,7 @@ fix 1 1 1 1
 fix 2 1 1 1
 fix 3 1 1 1
 
-#rigid floor constraint & massses
+#rigid floor constraint & masses
 set nodeTagR 5
 set nodeTag  4
 for {set j 1} {$j <= $numFloor} {incr j 1} {
@@ -111,7 +114,7 @@ for {set j 1} {$j <= $numFloor} {incr j 1} {
 
 # add the columns
 # add column element    
-geomTransf Linear 1
+geomTransf $coordTransf 1
 set eleTag 1
 for {set j 0} {$j <= $numBay} {incr j 1} {
     set end1 [expr $j+1]
@@ -119,7 +122,7 @@ for {set j 0} {$j <= $numBay} {incr j 1} {
     set thisColumn [lindex $columns $j]
     for {set i 0} {$i<$numFloor} {incr i 1} {
 	set secType [lindex $thisColumn $i]
-	ElasticBeamColumn $eleTag $end1 $end2 $secType $E 1 $M
+	ElasticBeamColumn $eleTag $end1 $end2 $secType $E 1 $M &massType
 	set end1 $end2
 	set end2 [expr $end1 + $numBay +1]
 	incr eleTag 1
@@ -132,7 +135,7 @@ for {set j 1} {$j<=$numFloor} {incr j 1} {
     set end2 [expr $end1 + 1]
     set secType [lindex $beams [expr $j-1]]
     for {set i 0} {$i <$numBay} {incr i 1} {
-	ElasticBeamColumn $eleTag $end1 $end2 $secType $E 1 $M
+	ElasticBeamColumn $eleTag $end1 $end2 $secType $E 1 $M &massType
         set end1 $end2
 	set end2 [expr $end1 + 1]
         incr eleTag 1

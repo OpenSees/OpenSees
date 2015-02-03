@@ -15,7 +15,7 @@ set results []
 set counter 0
 
 puts "Prismatic Beam Benchmark Problems\n"
-puts "    - Case 1 (Single Curcature)     - elasticBeamClumn"
+puts "    - Case 1 (Single Curvature)     - elasticBeamColumn"
 puts "------+--------+-------------------------+-------------------------"
 puts "      |        |     Tip Displacement    |      Base Moment        "
 puts "------+--------+--------+---------+------+---------+--------+------"
@@ -90,7 +90,7 @@ if {[expr abs(100*($resU-$delta)/$delta)] > 0.5 || [expr abs(100*($resM-$moment)
 }
 
 puts "Prismatic Beam Benchmark Problems\n"
-puts "    - Case 1 (Single Curcature) - forceBeamColumnCBDI element"
+puts "    - Case 1 (Single Curvature) - forceBeamColumnCBDI element"
 puts "------+--------+-------------------------+-------------------------"
 puts "      |        |     Tip Displacement    |      Base Moment        "
 puts "------+--------+--------+---------+------+---------+--------+------"

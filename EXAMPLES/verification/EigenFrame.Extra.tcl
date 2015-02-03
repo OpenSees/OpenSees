@@ -29,6 +29,8 @@ foreach eleType $eleTypes {
     set E 432000.0;    #youngs mod = 432000 k/ft^2  
     set I 1.0;         #second moment of area I=1ft^4       
     set M 3.0;         #mas/length = 4 kip sec^2/ft^2           
+    set coordTransf "Linear";  # Linear, PDelta, Corotational
+    set massType "-lMass";  # -lMass, -cMass
 
 
     set nPts 3;      # numGauss Points
@@ -70,7 +72,7 @@ foreach eleType $eleTypes {
     }
     
     # add column element    
-    geomTransf Linear 1
+    geomTransf $coordTransf 1
     set eleTag 1
     for {set i 0} {$i <=$numBay} {incr i 1} {
 	set end1 [expr $i+1]
@@ -78,15 +80,15 @@ foreach eleType $eleTypes {
 	for {set j 0} {$j<$numFloor} {incr j 1} {
 
 	    if {$eleType == "elasticBeam"} {
-		element elasticBeamColumn $eleTag $end1 $end2 $A $E $I 1 -mass $M
+		element elasticBeamColumn $eleTag $end1 $end2 $A $E $I 1 -mass $M $massType
 	    } elseif {$eleType == "forceBeamElasticSection"} {
 		element forceBeamColumn $eleTag $end1 $end2 $nPts 1 1 -mass $M
 	    } elseif {$eleType == "dispBeamElasticSection"} {
-		element dispBeamColumn $eleTag $end1 $end2 $nPts 1 1 -mass $M
+		element dispBeamColumn $eleTag $end1 $end2 $nPts 1 1 -mass $M $massType
 	    } elseif {$eleType == "forceBeamFiberSectionElasticMaterial"} {
 		element forceBeamColumn $eleTag $end1 $end2 $nPts 2 1 -mass $M
 	    } elseif {$eleType == "dispBeamFiberSectionElasticMaterial"} {
-		element dispBeamColumn $eleTag $end1 $end2 $nPts 2 1 -mass $M
+		element dispBeamColumn $eleTag $end1 $end2 $nPts 2 1 -mass $M $massType
 	    } else {
 		puts "BARF"
 	    }
@@ -103,15 +105,15 @@ foreach eleType $eleTypes {
 	set end2 [expr $end1 + 1]
 	for {set i 0} {$i <$numBay} {incr i 1} {
 	    if {$eleType == "elasticBeam"} {
-		element elasticBeamColumn $eleTag $end1 $end2 $A $E $I 1 -mass $M
+		element elasticBeamColumn $eleTag $end1 $end2 $A $E $I 1 -mass $M $massType
 	    } elseif {$eleType == "forceBeamElasticSection"} {
 		element forceBeamColumn $eleTag $end1 $end2 $nPts 1 1 -mass $M
 	    } elseif {$eleType == "dispBeamElasticSection"} {
-		element dispBeamColumn $eleTag $end1 $end2 $nPts 1 1 -mass $M
+		element dispBeamColumn $eleTag $end1 $end2 $nPts 1 1 -mass $M $massType
 	    } elseif {$eleType == "forceBeamFiberSectionElasticMaterial"} {
 		element forceBeamColumn $eleTag $end1 $end2 $nPts 2 1 -mass $M
 	    } elseif {$eleType == "dispBeamFiberSectionElasticMaterial"} {
-		element dispBeamColumn $eleTag $end1 $end2 $nPts 2 1 -mass $M
+		element dispBeamColumn $eleTag $end1 $end2 $nPts 2 1 -mass $M $massType
 	    } else {
 		puts "BARF"
 	    }
@@ -186,6 +188,8 @@ foreach solverType $solverTypes {
     set E 432000.0;    #youngs mod = 432000 k/ft^2  
     set I 1.0;         #second moment of area I=1ft^4       
     set M 3.0;         #mas/length = 4 kip sec^2/ft^2           
+    set coordTransf "Linear";  # Linear, PDelta, Corotational
+    set massType "-lMass";  # -lMass, -cMass
 
 
     set nPts 3;      # numGauss Points
@@ -227,7 +231,7 @@ foreach solverType $solverTypes {
     }
     
     # add column element    
-    geomTransf Linear 1
+    geomTransf $coordTransf 1
     set eleTag 1
     for {set i 0} {$i <=$numBay} {incr i 1} {
 	set end1 [expr $i+1]
@@ -235,15 +239,15 @@ foreach solverType $solverTypes {
 	for {set j 0} {$j<$numFloor} {incr j 1} {
 
 	    if {$eleType == "elasticBeam"} {
-		element elasticBeamColumn $eleTag $end1 $end2 $A $E $I 1 -mass $M
+		element elasticBeamColumn $eleTag $end1 $end2 $A $E $I 1 -mass $M $massType
 	    } elseif {$eleType == "forceBeamElasticSection"} {
 		element forceBeamColumn $eleTag $end1 $end2 $nPts 1 1 -mass $M
 	    } elseif {$eleType == "dispBeamElasticSection"} {
-		element dispBeamColumn $eleTag $end1 $end2 $nPts 1 1 -mass $M
+		element dispBeamColumn $eleTag $end1 $end2 $nPts 1 1 -mass $M $massType
 	    } elseif {$eleType == "forceBeamFiberSectionElasticMaterial"} {
 		element forceBeamColumn $eleTag $end1 $end2 $nPts 2 1 -mass $M
 	    } elseif {$eleType == "dispBeamFiberSectionElasticMaterial"} {
-		element dispBeamColumn $eleTag $end1 $end2 $nPts 2 1 -mass $M
+		element dispBeamColumn $eleTag $end1 $end2 $nPts 2 1 -mass $M $massType
 	    } else {
 		puts "BARF"
 	    }
@@ -260,15 +264,15 @@ foreach solverType $solverTypes {
 	set end2 [expr $end1 + 1]
 	for {set i 0} {$i <$numBay} {incr i 1} {
 	    if {$eleType == "elasticBeam"} {
-		element elasticBeamColumn $eleTag $end1 $end2 $A $E $I 1 -mass $M
+		element elasticBeamColumn $eleTag $end1 $end2 $A $E $I 1 -mass $M $massType
 	    } elseif {$eleType == "forceBeamElasticSection"} {
 		element forceBeamColumn $eleTag $end1 $end2 $nPts 1 1 -mass $M
 	    } elseif {$eleType == "dispBeamElasticSection"} {
-		element dispBeamColumn $eleTag $end1 $end2 $nPts 1 1 -mass $M
+		element dispBeamColumn $eleTag $end1 $end2 $nPts 1 1 -mass $M $massType
 	    } elseif {$eleType == "forceBeamFiberSectionElasticMaterial"} {
 		element forceBeamColumn $eleTag $end1 $end2 $nPts 2 1 -mass $M
 	    } elseif {$eleType == "dispBeamFiberSectionElasticMaterial"} {
-		element dispBeamColumn $eleTag $end1 $end2 $nPts 2 1 -mass $M
+		element dispBeamColumn $eleTag $end1 $end2 $nPts 2 1 -mass $M $massType
 	    } else {
 		puts "BARF"
 	    }

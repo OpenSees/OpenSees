@@ -34,7 +34,8 @@ set A 3.0;         #area = 3ft^2
 set E 432000.0;   #youngs mod = 432000 k/ft^2  
 set I 1.0;         #second moment of area I=1ft^4       
 set M 3.0;      #mas/length = 4 kip sec^2/ft^2       
-
+set coordTransf "Linear";  # Linear, PDelta, Corotational
+set massType "-lMass";  # -lMass, -cMass
 
 
 # add the nodes         
@@ -57,13 +58,13 @@ for {set i 1} {$i <= [expr $numBay+1]} {incr i 1} {
 }
 
 # add column element    
-geomTransf Linear 1
+geomTransf $coordTransf 1
 set eleTag 1
 for {set i 0} {$i <=$numBay} {incr i 1} {
     set end1 [expr $i+1]
     set end2 [expr $end1 + $numBay +1]
     for {set j 0} {$j<$numFloor} {incr j 1} {
-	element elasticBeamColumn $eleTag $end1 $end2 $A $E $I 1 -mass $M
+	element elasticBeamColumn $eleTag $end1 $end2 $A $E $I 1 -mass $M $massType
 	set end1 $end2
 	set end2 [expr $end1 + $numBay +1]
 	incr eleTag 1
@@ -75,7 +76,7 @@ for {set j 1} {$j<=$numFloor} {incr j 1} {
     set end1 [expr ($numBay+1)*$j+1]
     set end2 [expr $end1 + 1]
     for {set i 0} {$i <$numBay} {incr i 1} {
-        element elasticBeamColumn $eleTag $end1 $end2 $A $E $I 1 -mass $M
+        element elasticBeamColumn $eleTag $end1 $end2 $A $E $I 1 -mass $M $massType
         set end1 $end2
 	set end2 [expr $end1 + 1]
         incr eleTag 1
