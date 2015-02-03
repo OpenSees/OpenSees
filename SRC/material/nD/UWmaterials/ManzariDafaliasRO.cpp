@@ -159,14 +159,21 @@ ManzariDafaliasRO::commitState(void)
 	devEps_n	= GetDevPart(mEpsilon_n);
 	chi_e		= sqrt(0.5 * DoubleDot2_2_Cov(devEps   - mDevEpsSR, devEps   - mDevEpsSR));
 	chi_en		= sqrt(0.5 * DoubleDot2_2_Cov(devEps_n - mDevEpsSR, devEps_n - mDevEpsSR));
-	if ((chi_e - chi_en) * mDChi_e < -mTolR) {
+	if (mIsFirstShear && std::fabs(chi_e - chi_en) < 1.0e-10) { // This is required in case of consolidation (mEta1 should be updated)
+		// how small should 1.0e-10 be?
+		double p = one3 * GetTrace(mSigma);
+		double Gmax  = m_B * m_P_atm / (0.3 + 0.7 * mVoidRatio*mVoidRatio) * sqrt(p / m_P_atm);
+		mEta1 = m_a1 * Gmax * m_gamma1 / p;
+	}
+	if ((chi_e - chi_en) * mDChi_e < -1.0e-14) { // how small should be -1.0e-14?
 		mSigmaSR  = mSigma;
 		//mSigmaSR(3) = mSigmaSR(4) = mSigmaSR(5) -= 0.1;
 		mDevEpsSR = GetDevPart(mEpsilon);
-		double pSR = one3 * GetTrace(mSigma);
+		double pSR = one3 * GetTrace(mSigmaSR);
 		double GmaxSR  = m_B * m_P_atm / (0.3 + 0.7 * mVoidRatio*mVoidRatio) * sqrt(pSR / m_P_atm);
 		mEta1 = m_a1 * GmaxSR * m_gamma1 / pSR;
 		mIsFirstShear = false;
+		//chi_e = chi_en = 0.0;
 	}
 	mDChi_e = chi_e - chi_en;
 
@@ -277,15 +284,19 @@ ManzariDafaliasRO::GetElasticModuli(const Vector& sigma, const double& en, const
 	rSR = GetDevPart(mSigmaSR) / pSR;
 
 	Gmax = m_B * m_P_atm / (0.3 + 0.7 * en * en) * sqrt(p / m_P_atm);
-	mChi_r = sqrt(0.5 * DoubleDot2_2_Contr(r-rSR, r-rSR));
-	//mChi_r = (mChi_r == 0) ? small : mChi_r;
-	temp = 1 + m_kappa * (1.0 / m_a1 - 1);
-	if (mIsFirstShear)
-		T = temp * pow(mChi_r / mEta1, m_kappa - 1);
-	else
-		T = temp * pow(mChi_r / mEta1 / 2.0, m_kappa - 1);
-	T = (T < temp) ? T : temp;
-	T = (T < 1.0) ? 1.0 : T;
+	if (mElastFlag == 0) {
+		mIsFirstShear = true;
+		T = 1.0;
+	} else {
+		mChi_r = sqrt(0.5 * DoubleDot2_2_Contr(r-rSR, r-rSR));
+		temp = m_kappa * (1.0 / m_a1 - 1);
+		if (mIsFirstShear)
+			T = 1 + temp * pow(mChi_r / mEta1, m_kappa - 1);
+		else
+			T = 1 + temp * pow(mChi_r / mEta1 / 2.0, m_kappa - 1);
+		T = (T < (1.0+temp)) ? T : (1.0+temp);
+		T = (T < 1.0) ? 1.0 : T;
+	}
 
 	G = Gmax / T;
 	K = two3 * (1 + m_nu) / (1 - 2 * m_nu) * G;	
@@ -308,15 +319,19 @@ ManzariDafaliasRO::GetElasticModuli(const Vector& sigma, const double& en, doubl
 	rSR = GetDevPart(mSigmaSR) / pSR;
 
 	Gmax = m_B * m_P_atm / (0.3 + 0.7 * en * en) * sqrt(p / m_P_atm);
-	mChi_r = sqrt(0.5 * DoubleDot2_2_Contr(r-rSR, r-rSR));
-	//mChi_r = (mChi_r == 0) ? small : mChi_r;
-	temp = 1 + m_kappa * (1.0 / m_a1 - 1);
-	if (mIsFirstShear)
-		T = temp * pow(mChi_r / mEta1, m_kappa - 1);
-	else
-		T = temp * pow(mChi_r / mEta1 / 2.0, m_kappa - 1);
-	T = (T < temp) ? T : temp;
-	T = (fabs(T) < 1.0) ? 1.0 : T;
+	if (mElastFlag == 0) {
+		mIsFirstShear = true;
+		T = 1.0;
+	} else {
+		mChi_r = sqrt(0.5 * DoubleDot2_2_Contr(r-rSR, r-rSR));
+		temp = m_kappa * (1.0 / m_a1 - 1);
+		if (mIsFirstShear)
+			T = 1 + temp * pow(mChi_r / mEta1, m_kappa - 1);
+		else
+			T = 1 + temp * pow(mChi_r / mEta1 / 2.0, m_kappa - 1);
+		T = (T < (1.0+temp)) ? T : (1.0+temp);
+		T = (T < 1.0) ? 1.0 : T;
+	}
 
 	G = Gmax / T;
 	K = two3 * (1 + m_nu) / (1 - 2 * m_nu) * G;	
