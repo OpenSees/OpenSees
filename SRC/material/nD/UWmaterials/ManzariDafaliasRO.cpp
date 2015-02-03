@@ -159,7 +159,7 @@ ManzariDafaliasRO::commitState(void)
 	devEps_n	= GetDevPart(mEpsilon_n);
 	chi_e		= sqrt(0.5 * DoubleDot2_2_Cov(devEps   - mDevEpsSR, devEps   - mDevEpsSR));
 	chi_en		= sqrt(0.5 * DoubleDot2_2_Cov(devEps_n - mDevEpsSR, devEps_n - mDevEpsSR));
-	if (mIsFirstShear && std::fabs(chi_e - chi_en) < 1.0e-10) { // This is required in case of consolidation (mEta1 should be updated)
+	if (mIsFirstShear && fabs(chi_e - chi_en) < 1.0e-10) { // This is required in case of consolidation (mEta1 should be updated)
 		// how small should 1.0e-10 be?
 		double p = one3 * GetTrace(mSigma);
 		double Gmax  = m_B * m_P_atm / (0.3 + 0.7 * mVoidRatio*mVoidRatio) * sqrt(p / m_P_atm);
