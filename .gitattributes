@@ -3210,8 +3210,12 @@ SRC/material/uniaxial/MinMaxMaterial.cpp -text
 SRC/material/uniaxial/MinMaxMaterial.h -text
 SRC/material/uniaxial/ModIMKPeakOriented.cpp -text
 SRC/material/uniaxial/ModIMKPeakOriented.h -text
+SRC/material/uniaxial/ModIMKPeakOriented02.cpp -text
+SRC/material/uniaxial/ModIMKPeakOriented02.h -text
 SRC/material/uniaxial/ModIMKPinching.cpp -text
 SRC/material/uniaxial/ModIMKPinching.h -text
+SRC/material/uniaxial/ModIMKPinching02.cpp -text
+SRC/material/uniaxial/ModIMKPinching02.h -text
 SRC/material/uniaxial/MultiLinear.cpp -text
 SRC/material/uniaxial/MultiLinear.h -text
 SRC/material/uniaxial/Neoprene.cpp -text
@@ -3400,6 +3404,8 @@ SRC/material/uniaxial/pyUCLA.cpp -text
 SRC/material/uniaxial/pyUCLA.h -text
 SRC/material/uniaxial/snap/Bilin.cpp -text
 SRC/material/uniaxial/snap/Bilin.h -text
+SRC/material/uniaxial/snap/Bilin02.cpp -text
+SRC/material/uniaxial/snap/Bilin02.h -text
 SRC/material/uniaxial/snap/Bilinear.cpp -text
 SRC/material/uniaxial/snap/Bilinear.h -text
 SRC/material/uniaxial/snap/Clough.cpp -text
