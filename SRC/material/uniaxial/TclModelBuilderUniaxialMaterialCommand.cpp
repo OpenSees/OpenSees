@@ -80,6 +80,7 @@
 
 extern void *OPS_NewElasticMaterial(void);
 extern void *OPS_Bilin(void);
+extern void *OPS_Bilin02(void);
 extern void *OPS_NewSteel01(void);
 extern void *OPS_NewSteel02(void);
 extern void *OPS_RambergOsgoodSteel(void);
@@ -113,7 +114,9 @@ extern void *OPS_NewSteel02Thermal(void);
 extern void *OPS_NewConcrete02Thermal(void);
 extern void *OPS_BWBN(void);
 extern void *OPS_ModIMKPeakOriented(void);
+extern void *OPS_ModIMKPeakOriented02(void);
 extern void *OPS_ModIMKPinching(void);
+extern void *OPS_ModIMKPinching02(void);
 extern void *OPS_ConcretewBeta(void);
 extern void *OPS_PinchingLimitState(void);
 extern void *OPS_NewOriginCentered(void);
@@ -405,6 +408,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+    } else if (strcmp(argv[1],"ModIMKPinching02") == 0) {
+      void *theMat = OPS_ModIMKPinching02();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
     } else if (strcmp(argv[1],"BWBN") == 0) {
       void *theMat = OPS_BWBN();
       if (theMat != 0) 
@@ -419,6 +429,19 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+    } else if (strcmp(argv[1],"ModIMKPeakOriented02") == 0) {
+      void *theMat = OPS_ModIMKPeakOriented02();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"Bilin02") == 0) {
+      void *theMat = OPS_Bilin02();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
 
     } else if (strcmp(argv[1],"Steel01Thermal") == 0) {
       void *theMat = OPS_NewSteel01Thermal();

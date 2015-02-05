@@ -90,7 +90,9 @@ OBJS       = UniaxialMaterial.o \
 	ConfinedConcrete01.o \
 	ConfinedConcrete02.o \
 	ModIMKPeakOriented.o \
+	ModIMKPeakOriented02.o \
 	ModIMKPinching.o \
+	ModIMKPinching02.o \
 	pyUCLA.o \
 	Dodd_Restrepo.o DoddRestrepo.o \
 	STEELDR.o DoddRestr.o \

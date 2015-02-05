@@ -195,9 +195,9 @@
 #define MAT_TAG_CFSSSWP                         81
 #define MAT_TAG_CFSWSWP                         82
 #define MAT_TAG_ResilienceLow                   83
-
-
-
+#define MAT_TAG_Bilin02                         84
+#define MAT_TAG_ModIMKPeakOriented02            85
+#define MAT_TAG_ModIMKPinching02                86
 
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206

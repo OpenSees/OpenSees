@@ -612,7 +612,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Concrete02Thermal.o \
 	$(FE)/material/uniaxial/limitState/PinchingLimitStateMaterial.o \
 	$(FE)/material/uniaxial/ModIMKPinching.o \
+	$(FE)/material/uniaxial/ModIMKPinching02.o \
 	$(FE)/material/uniaxial/ModIMKPeakOriented.o \
+	$(FE)/material/uniaxial/ModIMKPeakOriented02.o \
 	$(FE)/material/uniaxial/SmoothPSConcrete.o \
 	$(FE)/material/uniaxial/Concrete01WithSITC.o \
 	$(FE)/material/uniaxial/ConcretewBeta.o \
@@ -640,6 +642,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/FatigueMaterial.o \
 	$(FE)/material/uniaxial/SAWSMaterial.o \
 	$(FE)/material/uniaxial/snap/Bilin.o \
+	$(FE)/material/uniaxial/snap/Bilin02.o \
 	$(FE)/material/uniaxial/ConfinedConcrete01.o \
 	$(FE)/material/uniaxial/CableMaterial.o \
 	$(FE)/material/uniaxial/ENTMaterial.o \
