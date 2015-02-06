@@ -22,6 +22,8 @@
 #include <CentralDifference.h>
 #include <FE_Element.h>
 #include <LinearSOE.h>
+#include <FullGenLinSOE.h>
+#include <FullGenLinLapackSolver.h>
 #include <AnalysisModel.h>
 #include <Vector.h>
 #include <DOF_Group.h>
@@ -37,10 +39,10 @@ KRAlphaExplicit::KRAlphaExplicit()
     alpha1(0), alpha3(0), Mhat(0),
     updateCount(0), initAlphaMatrices(1),
     c1(0.0), c2(0.0), c3(0.0),
-	Ut(0), Utdot(0), Utdotdot(0),
-	U(0), Udot(0), Udotdot(0),
+    Ut(0), Utdot(0), Utdotdot(0),
+    U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
-	Utdothat(0)
+    Utdothat(0)
 {
     
 }
@@ -105,6 +107,13 @@ int KRAlphaExplicit::newStep(double _deltaT)
         return -1;
     }
     
+    // get a pointer to the AnalysisModel
+    AnalysisModel *theModel = this->getAnalysisModel();
+    if (theModel == 0)  {
+        opserr << "WARNING KRAlphaExplicit::newStep() - no AnalysisModel set\n";
+        return -2;
+    }
+    
     if (initAlphaMatrices || _deltaT != deltaT)  {
         
         // update time step increment
@@ -112,21 +121,33 @@ int KRAlphaExplicit::newStep(double _deltaT)
         if (deltaT <= 0.0)  {
             opserr << "WARNING KRAlphaExplicit::newStep() - error in variable\n";
             opserr << "dT = " << deltaT << endln;
-            return -2;
-        }
-        
-        // get a pointer to the LinearSOE and the A matrix of the LinearSOE
-        LinearSOE *theLinSOE = this->getLinearSOE();
-        if (theLinSOE == 0)  {
-            opserr << "WARNING KRAlphaExplicit::newStep() - no LinearSOE set\n";
             return -3;
         }
-        const Matrix *tmp = theLinSOE->getA();
+        
+        // get the LinearSOE and the ConvergenceTest so we can switch back later
+        LinearSOE *theLinSOE = this->getLinearSOE();
+        ConvergenceTest *theTest = this->getConvergenceTest();
+        
+        // set up the FullLinearSOE (needed to compute the alpha matrices)
+        int size = theLinSOE->getNumEqn();
+        FullGenLinSolver *theFullLinSolver = new FullGenLinLapackSolver();
+        LinearSOE *theFullLinSOE = new FullGenLinSOE(size, *theFullLinSolver);
+        if (theFullLinSOE == 0)  {
+            opserr << "WARNING KRAlphaExplicit::newStep() - failed to create FullLinearSOE\n";
+            return -4;
+        }
+        theFullLinSOE->setLinks(*theModel);
+        
+        // now switch the SOE to the FullLinearSOE
+        this->IncrementalIntegrator::setLinks(*theModel, *theFullLinSOE, theTest);
+        
+        // get a pointer to the A matrix of the FullLinearSOE
+        const Matrix *tmp = theFullLinSOE->getA();
         if (tmp == 0)  {
             opserr << "WARNING KRAlphaExplicit::domainChanged() - ";
-            opserr << "could not get A matrix, most likely the wrong LinearSOE ";
-            opserr << "was specified: FullGeneral LinearSOE is required\n";
-            return -4;
+            opserr << "failed to get A matrix of FullGeneral LinearSOE\n";
+            return -5;
+        
         }
         
         // calculate the integration parameter matrices
@@ -159,14 +180,10 @@ int KRAlphaExplicit::newStep(double _deltaT)
         Mhat->addMatrix(0.0, B1, 1.0);
         Mhat->addMatrixProduct(1.0, B1, *alpha3, -1.0);
         
+        // switch the SOE back to the user specified one
+        this->IncrementalIntegrator::setLinks(*theModel, *theLinSOE, theTest);
+        
         initAlphaMatrices = 0;
-    }
-    
-    // get a pointer to the AnalysisModel
-    AnalysisModel *theModel = this->getAnalysisModel();
-    if (theModel == 0)  {
-        opserr << "WARNING KRAlphaExplicit::newStep() - no AnalysisModel set\n";
-        return -5;
     }
     
     if (U == 0)  {
@@ -279,7 +296,7 @@ int KRAlphaExplicit::formEleTangent(FE_Element *theEle)
 int KRAlphaExplicit::formNodTangent(DOF_Group *theDof)
 {
     theDof->zeroTangent();
-
+    
     theDof->addCtoTang(c2);
     theDof->addMtoTang(c3);
     
