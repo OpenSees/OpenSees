@@ -280,6 +280,7 @@ EXAMPLES/ExampleScripts/Cube_tcl/pile_posi_elements.dat -text
 EXAMPLES/ExampleScripts/Cube_tcl/run -text
 EXAMPLES/ExampleScripts/Cube_tcl/shearnodes.dat -text
 EXAMPLES/ExampleScripts/Cube_tcl/surfnodes.dat -text
+EXAMPLES/ExampleScripts/DynamicShell.tcl -text
 EXAMPLES/ExampleScripts/Example1.1.tcl -text
 EXAMPLES/ExampleScripts/Example2.1.tcl -text
 EXAMPLES/ExampleScripts/Example3.1.tcl -text
