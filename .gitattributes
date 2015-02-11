@@ -281,6 +281,7 @@ EXAMPLES/ExampleScripts/Cube_tcl/run -text
 EXAMPLES/ExampleScripts/Cube_tcl/shearnodes.dat -text
 EXAMPLES/ExampleScripts/Cube_tcl/surfnodes.dat -text
 EXAMPLES/ExampleScripts/DynamicShell.tcl -text
+EXAMPLES/ExampleScripts/DynamicShell2.tcl -text
 EXAMPLES/ExampleScripts/Example1.1.tcl -text
 EXAMPLES/ExampleScripts/Example2.1.tcl -text
 EXAMPLES/ExampleScripts/Example3.1.tcl -text
@@ -331,6 +332,7 @@ EXAMPLES/ExampleScripts/Solid_PressureSensitiveE3D.tcl -text
 EXAMPLES/ExampleScripts/TestDamage2p.tcl -text
 EXAMPLES/ExampleScripts/TimeSeriesTest.tcl -text
 EXAMPLES/ExampleScripts/coupledZeroLength.tcl -text
+EXAMPLES/ExampleScripts/elCentro.AT2 -text
 EXAMPLES/ExampleScripts/example1.tcl -text
 EXAMPLES/ExampleScripts/example2.tcl -text
 EXAMPLES/ExampleScripts/example3.tcl -text
