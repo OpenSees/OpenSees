@@ -201,7 +201,7 @@ TransientDomainDecompositionAnalysis::analyze(double dT)
     opserr << " with domain at load factor ";
     opserr << the_Domain->getCurrentTime() << endln;
     the_Domain->revertToLastCommit();
-    
+    theIntegrator->revertToLastStep();    
     return -2;
   }
  //  opserr << "TransientDomainDecomp - solveCurrentStep\n";

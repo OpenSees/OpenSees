@@ -179,6 +179,8 @@ DirectIntegrationAnalysis::analyze(int numSteps, double dT)
 {
   int result = 0;
   Domain *the_Domain = this->getDomainPtr();
+  if (theEigenSOE != 0)
+    theIntegrator->setEigenSOE(theEigenSOE);
 
   for (int i=0; i<numSteps; i++) {
 
@@ -203,6 +205,7 @@ DirectIntegrationAnalysis::analyze(int numSteps, double dT)
       opserr << "DirectIntegrationAnalysis::analyze() - the Integrator failed";
       opserr << " at time " << the_Domain->getCurrentTime() << endln;
       the_Domain->revertToLastCommit();
+      theIntegrator->revertToLastStep();
       return -2;
     }
     

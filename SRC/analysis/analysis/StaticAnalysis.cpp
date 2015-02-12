@@ -153,7 +153,6 @@ StaticAnalysis::analyze(int numSteps)
 	    opserr << " at iteration: " << i << " with domain at load factor ";
 	    opserr << the_Domain->getCurrentTime() << endln;
 	    the_Domain->revertToLastCommit();
-
 	    return -2;
 	}
 
@@ -181,7 +180,7 @@ StaticAnalysis::analyze(int numSteps)
 	    opserr << " at iteration: " << i << " with domain at load factor ";
 	    opserr << the_Domain->getCurrentTime() << endln;
 	    the_Domain->revertToLastCommit();
-
+	    theIntegrator->revertToLastStep();
 	    return -2;
 	}
 
