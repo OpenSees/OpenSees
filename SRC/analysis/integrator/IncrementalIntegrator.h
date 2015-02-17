@@ -22,7 +22,6 @@
 // $Date: 2009-08-25 22:08:24 $
 // $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/IncrementalIntegrator.h,v $
                                                                         
-                                                                        
 #ifndef IncrementalIntegrator_h
 #define IncrementalIntegrator_h
 
@@ -40,6 +39,7 @@
 #include <Integrator.h>
 
 class LinearSOE;
+class EigenSOE;
 class AnalysisModel;
 class ConvergenceTest;
 class FE_Element;
@@ -63,6 +63,9 @@ class IncrementalIntegrator : public Integrator
 			  LinearSOE &theSOE,
 			  ConvergenceTest *theTest);
 
+    virtual void setEigenSOE(EigenSOE *theSOE);
+
+
     // methods to set up the system of equations
     virtual int  formTangent(int statusFlag = CURRENT_TANGENT);    
     virtual int  formUnbalance(void);
@@ -80,6 +83,9 @@ class IncrementalIntegrator : public Integrator
     virtual int revertToLastStep(void);
     virtual int initialize(void);
 
+    int setModalDampingFactors(const Vector &);
+    int addModalDampingForce(void);
+
 // AddingSensitivity:BEGIN //////////////////////////////////
     virtual int revertToStart();
 // AddingSensitivity:END ////////////////////////////////////
@@ -95,6 +101,9 @@ class IncrementalIntegrator : public Integrator
     virtual int  formNodalUnbalance(void);        
     virtual int  formElementResidual(void);            
     int statusFlag;
+
+    Vector *modalDampingValues;
+    EigenSOE *theEigenSOE;
     
   private:
     LinearSOE *theSOE;

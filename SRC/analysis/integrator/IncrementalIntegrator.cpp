@@ -38,10 +38,12 @@
 #include <DOF_Group.h>
 #include <FE_EleIter.h>
 #include <DOF_GrpIter.h>
+#include <EigenSOE.h>
+#include <cmath>
 
 IncrementalIntegrator::IncrementalIntegrator(int clasTag)
 :Integrator(clasTag),
- statusFlag(CURRENT_TANGENT),
+ statusFlag(CURRENT_TANGENT), modalDampingValues(0), theEigenSOE(0),
  theSOE(0), theAnalysisModel(0), theTest(0)
 {
 
@@ -49,7 +51,8 @@ IncrementalIntegrator::IncrementalIntegrator(int clasTag)
 
 IncrementalIntegrator::~IncrementalIntegrator()
 {
-
+  if (modalDampingValues != 0)
+    delete modalDampingValues;
 }
 
 void
@@ -60,6 +63,11 @@ IncrementalIntegrator::setLinks(AnalysisModel &theModel, LinearSOE &theLinSOE, C
     theTest = theConvergenceTest;
 }
 
+
+void
+IncrementalIntegrator::setEigenSOE(EigenSOE *theEigSOE) {
+  theEigenSOE = theEigSOE;
+}
 
 int 
 IncrementalIntegrator::formTangent(int statFlag)
@@ -103,6 +111,11 @@ IncrementalIntegrator::formUnbalance(void)
     }
     
     theSOE->zeroB();
+
+    // do modal damping
+    if (modalDampingValues != 0) {
+      this->addModalDampingForce();
+    }
     
     if (this->formElementResidual() < 0) {
 	opserr << "WARNING IncrementalIntegrator::formUnbalance ";
@@ -240,7 +253,6 @@ IncrementalIntegrator::formElementResidual(void)
 
     FE_EleIter &theEles2 = theAnalysisModel->getFEs();    
     while((elePtr = theEles2()) != 0) {
-      //      opserr << "ELEPTR " << elePtr->getResidual(this);
 
 	if (theSOE->addB(elePtr->getResidual(this),elePtr->getID()) <0) {
 	    opserr << "WARNING IncrementalIntegrator::formElementResidual -";
@@ -252,3 +264,24 @@ IncrementalIntegrator::formElementResidual(void)
     return res;	    
 }
 
+int
+IncrementalIntegrator::setModalDampingFactors(const Vector &factors)
+{
+  if (modalDampingValues != 0)
+    delete modalDampingValues;
+
+  modalDampingValues = new Vector(factors);
+  if (modalDampingValues == 0 || modalDampingValues->Size() == 0) {
+    opserr << "IncrementalIntegrator::setModalDampingFactors(const Vector &factors) - Vector of size 0, out of memory!";
+    return -1;
+  }
+  return 0;
+}
+
+int 
+IncrementalIntegrator::addModalDampingForce(void)
+{
+  int res = -1;
+
+  return res;
+}
