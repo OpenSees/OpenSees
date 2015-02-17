@@ -24,6 +24,7 @@
 
 // Written: Ken Ishii
 // Created: Jan 2013
+// Modified: Feb 17, 2015
 //
 // KikuchiBearing model
 //
@@ -1026,7 +1027,7 @@ int KikuchiBearing::commitState()
     
     //setTrialStrain for materials
     incrDispij.Zero();
-    subSetMaterialStrains();
+    subSetMaterialStrains(false);
 
     //calculate stiffness components and force components again
     subCalcStfCpnt();
@@ -1812,7 +1813,7 @@ void KikuchiBearing::subRefFntDisp(bool ifCommit)
 }
 
 //setTrialStrain for materials
-void KikuchiBearing::subSetMaterialStrains()
+void KikuchiBearing::subSetMaterialStrains(bool ifCommit)
 {
   //dspCpnt
   double tym  = dspCpnt(0);
@@ -1852,7 +1853,7 @@ void KikuchiBearing::subSetMaterialStrains()
 
   //MSS (force-deformation)
   for (int i=0; i<nMSS; i++)  {
-    double tmpCommitDisp  = commitDspMss[i];
+    double tmpCommitDisp  = (ifCommit) ? commitDspMss[i] : theMidMSSMaterials[i]->getStrain() ;
     double tmpIncrDisp = dsyy * cosTht[i] + dszz * sinTht[i];
     double tmpDisp = tmpCommitDisp + tmpIncrDisp;
 
@@ -1862,7 +1863,7 @@ void KikuchiBearing::subSetMaterialStrains()
 
   //i-MNS (stress-strain, length=totalRubber/2)
   for (int i=0; i<(nMNS*nMNS); i++)  {
-    double tmpCommitStrain = commitStrnIMns[i];
+    double tmpCommitStrain = (ifCommit) ? commitStrnIMns[i] : theINodeMNSMaterials[i]->getStrain();
     double tmpIncrDisp = incrDispmn(0) + posLz[i]*incrDispmn(1) - posLy[i]*incrDispmn(2) - incrDispij(0) - posLz[i]*incrDispij(4) + posLy[i]*incrDispij(5) ;
     double tmpStrain = tmpCommitStrain +  tmpIncrDisp/(totalRubber/2.0);
     theINodeMNSMaterials[i]->setTrialStrain(tmpStrain);
@@ -1871,17 +1872,17 @@ void KikuchiBearing::subSetMaterialStrains()
 
   //j-MNS (stress-strain, length=totalRubber/2)
   for (int i=0; i<(nMNS*nMNS); i++)  {
-    double tmpCommitStrain = commitStrnJMns[i];
+    double tmpCommitStrain = (ifCommit) ? commitStrnJMns[i] : theJNodeMNSMaterials[i]->getStrain();
     double tmpIncrDisp = incrDispij(6) + posLz[i]*incrDispij(10) - posLy[i]*incrDispij(11) - incrDispmn(3) - posLz[i]*incrDispmn(4) + posLy[i]*incrDispmn(5);
     double tmpStrain = tmpCommitStrain +  tmpIncrDisp/(totalRubber/2.0);
     theJNodeMNSMaterials[i]->setTrialStrain(tmpStrain);
   }
   
   //stiff springs in mid-height
-  trialDspMidX  = commitDspMidX + dsxx;
-  trialDspMidRY = commitDspMidRY + dryy;
-  trialDspMidRZ = commitDspMidRZ + drzz;
-  trialDspMidRX = commitDspMidRX + drxx;
+  trialDspMidX  = (ifCommit) ? (commitDspMidX + dsxx) : (trialDspMidX + dsxx);
+  trialDspMidRY = (ifCommit) ? (commitDspMidRY + dryy) : (trialDspMidRY + dryy);
+  trialDspMidRZ = (ifCommit) ? (commitDspMidRZ + drzz) : (trialDspMidRZ + drzz);
+  trialDspMidRX = (ifCommit) ? (commitDspMidRX + drxx) : (trialDspMidRX + drxx);
 
   return;
 }

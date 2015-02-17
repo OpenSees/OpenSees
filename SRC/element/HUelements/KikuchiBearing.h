@@ -24,6 +24,7 @@
 
 // Written: Ken Ishii
 // Created: Jan 2013
+// Modified: Feb 17, 2015
 //
 // KikuchiBearing model
 //
@@ -234,7 +235,7 @@ class KikuchiBearing : public Element
   void subRefFntDisp(bool ifCommit = true);
 
   //setTrialStrain for materials
-  void subSetMaterialStrains();
+  void subSetMaterialStrains(bool ifCommit = true);
 
   //calculate force components
   void subCalcFrcCpnt();
