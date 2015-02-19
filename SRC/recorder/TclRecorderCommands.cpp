@@ -1075,10 +1075,11 @@
 	   simulationInfo.addOutputFile(fileName, pwd);
 	   eMode = DATA_STREAM;
 	   pos += 2;
-	   if (strcmp(argv[pos],"-closeOnWrite") == 0)  {
-	     closeOnWrite = true;
-	     pos += 1;
-	   }
+	 }
+
+	 else if (strcmp(argv[pos],"-closeOnWrite") == 0)  {
+	   closeOnWrite = true;
+	   pos += 1;
 	 }
 
 	 else if (strcmp(argv[pos],"-fileCSV") == 0) {
