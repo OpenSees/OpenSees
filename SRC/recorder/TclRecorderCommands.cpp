@@ -332,10 +332,11 @@
 	   } else if (strcmp(argv[loc],"-headings") == 0) {
 	     eMode = DATA_STREAM;
 	     loc +=1;
-	   } else if (strcmp(argv[loc],"-closeOnWrite") == 0) {
-	     closeOnWrite = true;
-	     loc +=1;
-	   }
+	 }
+
+	 } else if (strcmp(argv[loc],"-closeOnWrite") == 0) {
+	   closeOnWrite = true;
+	   loc +=1;
 	 }
 
 	 else if ((strcmp(argv[loc],"-fileCSV") == 0) || (strcmp(argv[loc],"-csv") == 0)) {
