@@ -1,0 +1,519 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="node">
+      <UniqueIdentifier>{35839af1-a88d-4361-aaa5-18658d88b48b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="domain">
+      <UniqueIdentifier>{5875a0b4-540a-41be-a34e-189ad000fd34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="component">
+      <UniqueIdentifier>{6c56106e-81de-4fb6-866c-c006c784b46c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="load">
+      <UniqueIdentifier>{f5c15609-4c86-4494-9299-0eb24430746b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="load\beam">
+      <UniqueIdentifier>{7a56b04f-2664-4ed1-af78-dee26926ca02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="load\brick">
+      <UniqueIdentifier>{6c0f0ae9-7802-4edc-91e9-1001cdf008da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="constraints">
+      <UniqueIdentifier>{1d34f1e9-3674-4390-a918-d1e2f76c1b7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pattern">
+      <UniqueIdentifier>{0fa41bba-154e-4331-b3e1-5aeebf31646f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pattern\drm">
+      <UniqueIdentifier>{e12a039c-8b2f-4558-8063-00be340d030e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="groundMotion">
+      <UniqueIdentifier>{ac9cab52-85cd-4263-a08f-e46f657d3683}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="timeSeries">
+      <UniqueIdentifier>{8a954b04-a625-4b6d-8c6e-8f8827912b7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="region">
+      <UniqueIdentifier>{2a3ebe70-1c27-4ec0-b136-1eced6a30558}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\SRC\domain\node\NodalLoad.cpp">
+      <Filter>node</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\node\Node.cpp">
+      <Filter>node</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\domain\Domain.cpp">
+      <Filter>domain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomAllSP_Iter.cpp">
+      <Filter>domain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomEleIter.cpp">
+      <Filter>domain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomMP_Iter.cpp">
+      <Filter>domain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomNodIter.cpp">
+      <Filter>domain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomPC_Iter.cpp">
+      <Filter>domain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomParamIter.cpp">
+      <Filter>domain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomSP_Iter.cpp">
+      <Filter>domain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\subdomain\Subdomain.cpp">
+      <Filter>domain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\subdomain\SubdomainNodIter.cpp">
+      <Filter>domain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\component\DomainComponent.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\component\ElementParameter.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\component\ElementStateParameter.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\component\InitialStateParameter.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\component\MatParameter.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\component\MaterialStageParameter.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\component\NodeResponseParameter.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\component\Parameter.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\component\RVParameter.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\component\TclParameterCommands.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\component\TclUpdateMaterialCommand.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\Beam2dThermalAction.cpp">
+      <Filter>load</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\ElementalLoadIter.cpp">
+      <Filter>load</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\Load.cpp">
+      <Filter>load</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\NodalLoadIter.cpp">
+      <Filter>load</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\SelfWeight.cpp">
+      <Filter>load</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\SurfaceLoader.cpp">
+      <Filter>load</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Src\domain\load\Beam2dPointLoad.cpp">
+      <Filter>load\beam</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Src\domain\load\Beam2dTempLoad.cpp">
+      <Filter>load\beam</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Src\domain\load\Beam2dUniformLoad.cpp">
+      <Filter>load\beam</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\Beam3dPointLoad.cpp">
+      <Filter>load\beam</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\Beam3dUniformLoad.cpp">
+      <Filter>load\beam</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Src\domain\load\BrickSelfWeight.cpp">
+      <Filter>load\brick</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\constraints\ImposedMotionSP.cpp">
+      <Filter>constraints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\constraints\ImposedMotionSP1.cpp">
+      <Filter>constraints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\constraints\MP_Constraint.cpp">
+      <Filter>constraints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\constraints\Pressure_Constraint.cpp">
+      <Filter>constraints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\constraints\RigidBeam.cpp">
+      <Filter>constraints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\constraints\RigidDiaphragm.cpp">
+      <Filter>constraints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\constraints\RigidRod.cpp">
+      <Filter>constraints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\constraints\SP_Constraint.cpp">
+      <Filter>constraints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\EarthquakePattern.cpp">
+      <Filter>pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\FireLoadPattern.cpp">
+      <Filter>pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\LoadPattern.cpp">
+      <Filter>pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\LoadPatternIter.cpp">
+      <Filter>pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\MultiSupportPattern.cpp">
+      <Filter>pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\PeerNGAMotion.cpp">
+      <Filter>pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\TclPatternCommand.cpp">
+      <Filter>pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\UniformExcitation.cpp">
+      <Filter>pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\drm\DRMBoundaryLayerDecorator.cpp">
+      <Filter>pattern\drm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\drm\DRMInputHandler.cpp">
+      <Filter>pattern\drm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\drm\DRMLoadPattern.cpp">
+      <Filter>pattern\drm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\drm\DRMLoadPatternWrapper.cpp">
+      <Filter>pattern\drm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\drm\GeometricBrickDecorator.cpp">
+      <Filter>pattern\drm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\drm\Mesh3DSubdomain.cpp">
+      <Filter>pattern\drm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\drm\PlaneDRMInputHandler.cpp">
+      <Filter>pattern\drm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\groundMotion\GroundMotion.cpp">
+      <Filter>groundMotion</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\groundMotion\GroundMotionRecord.cpp">
+      <Filter>groundMotion</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\groundMotion\InterpolatedGroundMotion.cpp">
+      <Filter>groundMotion</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\groundMotion\TclGroundMotionCommand.cpp">
+      <Filter>groundMotion</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\ConstantSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\DiscretizedRandomProcessSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\LinearSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\PathSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\PathTimeSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\PeerMotion.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\PulseSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\RectangularSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\SimulatedRandomProcessSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\TclSeriesCommand.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\TclSeriesIntegratorCommand.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\TimeSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\TimeSeriesIntegrator.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\TrapezoidalTimeSeriesIntegrator.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\TriangleSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\TrigSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\region\MeshRegion.cpp">
+      <Filter>region</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\region\TclRegionCommands.cpp">
+      <Filter>region</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h">
+      <Filter>node</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\node\Node.h">
+      <Filter>node</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\Domain.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\ElementIter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\MP_ConstraintIter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\NodeIter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\SP_ConstraintIter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\single\SingleDomAllSP_Iter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\single\SingleDomEleIter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\single\SingleDomMP_Iter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\single\SingleDomNodIter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\single\SingleDomPC_Iter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\single\SingleDomParamIter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\single\SingleDomSP_Iter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\subdomain\Subdomain.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\domain\SubdomainIter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\subdomain\SubdomainNodIter.h">
+      <Filter>domain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\component\DomainComponent.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\component\ElementParameter.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\component\ElementStateParameter.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\component\InitialStateParameter.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\component\MatParameter.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\component\MaterialStageParameter.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\component\NodeResponseParameter.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\component\Parameter.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\component\RVParameter.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\Beam2dThermalAction.h">
+      <Filter>load</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\ElementalLoadIter.h">
+      <Filter>load</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\Load.h">
+      <Filter>load</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\NodalLoadIter.h">
+      <Filter>load</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\SelfWeight.h">
+      <Filter>load</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\SurfaceLoader.h">
+      <Filter>load</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Src\domain\load\Beam2dPointLoad.h">
+      <Filter>load\beam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Src\domain\load\Beam2dTempLoad.h">
+      <Filter>load\beam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Src\domain\load\Beam2dUniformLoad.h">
+      <Filter>load\beam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\Beam3dPointLoad.h">
+      <Filter>load\beam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\Beam3dUniformLoad.h">
+      <Filter>load\beam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Src\domain\load\BrickSelfWeight.h">
+      <Filter>load\brick</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\constraints\ImposedMotionSP.h">
+      <Filter>constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\constraints\ImposedMotionSP1.h">
+      <Filter>constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\constraints\MP_Constraint.h">
+      <Filter>constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\constraints\Pressure_Constraint.h">
+      <Filter>constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\constraints\RigidBeam.h">
+      <Filter>constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\constraints\RigidDiaphragm.h">
+      <Filter>constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\constraints\RigidRod.h">
+      <Filter>constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\constraints\SP_Constraint.h">
+      <Filter>constraints</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\EarthquakePattern.h">
+      <Filter>pattern</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\FireLoadPattern.h">
+      <Filter>pattern</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\LoadPattern.h">
+      <Filter>pattern</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\LoadPatternIter.h">
+      <Filter>pattern</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\MultiSupportPattern.h">
+      <Filter>pattern</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\PeerNGAMotion.h">
+      <Filter>pattern</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\UniformExcitation.h">
+      <Filter>pattern</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\drm\DRMBoundaryLayerDecorator.h">
+      <Filter>pattern\drm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\drm\DRMInputHandler.h">
+      <Filter>pattern\drm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\drm\DRMLoadPattern.h">
+      <Filter>pattern\drm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\drm\DRMLoadPatternWrapper.h">
+      <Filter>pattern\drm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\drm\GeometricBrickDecorator.h">
+      <Filter>pattern\drm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\drm\Mesh3DSubdomain.h">
+      <Filter>pattern\drm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\drm\PlaneDRMInputHandler.h">
+      <Filter>pattern\drm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\groundMotion\GroundMotion.h">
+      <Filter>groundMotion</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\groundMotion\GroundMotionRecord.h">
+      <Filter>groundMotion</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\groundMotion\InterpolatedGroundMotion.h">
+      <Filter>groundMotion</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\ConstantSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\DiscretizedRandomProcessSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\LinearSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\PathSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\PathTimeSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\PeerMotion.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\PulseSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\RectangularSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\SimulatedRandomProcessSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\TimeSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\TimeSeriesIntegrator.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\TrapezoidalTimeSeriesIntegrator.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\TriangleSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\TrigSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\region\MeshRegion.h">
+      <Filter>region</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

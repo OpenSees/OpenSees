@@ -1,0 +1,531 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <SccLocalPath />
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\lib\debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\lib\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\obj\reliability\debug\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\obj\reliability\debug\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\lib\release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\lib\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\obj\reliability\release\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\obj\reliability\release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\src\reliability\analysis\hessian;..\..\..\src\reliability\domain\storage;..\..\..\SRC\reliability\analysis\gradient;..\..\..\SRC\reliability\domain\functionEvaluator;..\..\..\SRC\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\optimization\domain\component;..\..\..\src\optimization\domain;..\..\..\src\reliability\optimization;..\..\..\src\domain\groundmotion;..\..\..\src\reliability\analysis\telm;..\..\..\src\reliability\analysis\analysis\system;..\..\..\SRC\recorder\response;c:\Program Files\tcl\include;\..\..\src\analysis\fe_ele;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\reliability\fesensitivity;..\..\..\src\reliability\tcl;..\..\..\src\reliability\domain;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\distributions;..\..\..\src\reliability\analysis;..\..\..\src\reliability\analysis\analysis;..\..\..\src\reliability\analysis\curvature;..\..\..\src\reliability\analysis\designPoint;..\..\..\src\reliability\analysis\direction;..\..\..\src\reliability\analysis\gFunction;..\..\..\src\reliability\analysis\misc;..\..\..\src\reliability\analysis\randomNumber;..\..\..\src\reliability\analysis\sensitivity;..\..\..\src\reliability\analysis\stepSize;..\..\..\src\reliability\analysis\transformation;..\..\..\src;..\..\..\src\matrix;..\..\..\src\handler;..\..\..\src\coordTransformation;..\..\..\src\material\section\repres\section;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\material\nD;..\..\..\src\material\uniaxial;..\..\..\src\tcl;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\section;..\..\..\src\recorder;..\..\..\src\graph\numberer;..\..\..\src\material\section;..\..\..\src\graph\graph;..\..\..\src\element\beam2d;..\..\..\src\element\beam3d;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\domain\pattern;..\..\..\src\analysis\analysis;..\..\..\src\analysis\integrator;..\..\..\src\analysis\numberer;..\..\..\src\analysis\handler;..\..\..\src\renderer;..\..\..\src\material;..\..\..\src\analysis\algorithm;..\..\..\src\convergenceTest;..\..\..\src\analysis\model\simple;..\..\..\src\domain\load;..\..\..\src\analysis\model;..\..\..\src\element\truss;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\actor\actor;..\..\..\src\modelbuilder;..\..\..\src\modelbuilder\tcl;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\nDarray;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\analysis\hessianApproximation;..\..\..\src\reliability\analysis\convergenceCheck;..\..\..\src\reliability\analysis\meritFunction;..\..\..\src\reliability\analysis\rootFinding;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_TCL85;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\reliability\debug/reliability.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\reliability\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\reliability\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\reliability\debug/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\debug\reliability.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\src\reliability\analysis\hessian;..\..\..\src\reliability\domain\storage;..\..\..\SRC\reliability\analysis\gradient;..\..\..\SRC\reliability\domain\functionEvaluator;..\..\..\SRC\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\optimization\domain\component;..\..\..\src\optimization\domain;..\..\..\src\reliability\optimization;..\..\..\src\domain\groundmotion;..\..\..\src\reliability\analysis\telm;..\..\..\src\reliability\analysis\analysis\system;..\..\..\SRC\recorder\response;\..\..\src\analysis\fe_ele;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\reliability\fesensitivity;..\..\..\src\reliability\tcl;..\..\..\src\reliability\domain;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\distributions;..\..\..\src\reliability\analysis;..\..\..\src\reliability\analysis\analysis;..\..\..\src\reliability\analysis\curvature;..\..\..\src\reliability\analysis\designPoint;..\..\..\src\reliability\analysis\direction;..\..\..\src\reliability\analysis\gFunction;..\..\..\src\reliability\analysis\misc;..\..\..\src\reliability\analysis\randomNumber;..\..\..\src\reliability\analysis\sensitivity;..\..\..\src\reliability\analysis\stepSize;..\..\..\src\reliability\analysis\transformation;..\..\..\src;..\..\..\src\matrix;..\..\..\src\handler;..\..\..\src\coordTransformation;..\..\..\src\material\section\repres\section;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\material\nD;..\..\..\src\material\uniaxial;..\..\..\src\tcl;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\section;..\..\..\src\recorder;..\..\..\src\graph\numberer;..\..\..\src\material\section;..\..\..\src\graph\graph;..\..\..\src\element\beam2d;..\..\..\src\element\beam3d;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\domain\pattern;..\..\..\src\analysis\analysis;..\..\..\src\analysis\integrator;..\..\..\src\analysis\numberer;..\..\..\src\analysis\handler;..\..\..\src\renderer;..\..\..\src\material;..\..\..\src\analysis\algorithm;..\..\..\src\convergenceTest;..\..\..\src\analysis\model\simple;..\..\..\src\domain\load;..\..\..\src\analysis\model;..\..\..\src\element\truss;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\actor\actor;..\..\..\src\modelbuilder;..\..\..\src\modelbuilder\tcl;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\nDarray;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\analysis\hessianApproximation;..\..\..\src\reliability\analysis\convergenceCheck;..\..\..\src\reliability\analysis\meritFunction;..\..\..\src\reliability\analysis\rootFinding;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_TCL85;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\reliability\debug/reliability.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\reliability\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\reliability\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\reliability\debug/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\debug\reliability.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\..\src\reliability\analysis\hessian;..\..\..\src\reliability\domain\storage;..\..\..\SRC\reliability\analysis\gradient;..\..\..\SRC\reliability\domain\functionEvaluator;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\optimization\domain\component;..\..\..\src\optimization\domain;..\..\..\src\reliability\optimization;..\..\..\src\domain\groundMotion;..\..\..\src\reliability\analysis\telm;..\..\..\src\reliability\analysis\analysis\system;..\..\..\SRC\recorder\response;c:\Program Files\tcl\include;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\reliability\fesensitivity;..\..\..\src\reliability\tcl;..\..\..\src\reliability\domain;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\distributions;..\..\..\src\reliability\analysis;..\..\..\src\reliability\analysis\analysis;..\..\..\src\reliability\analysis\curvature;..\..\..\src\reliability\analysis\designPoint;..\..\..\src\reliability\analysis\direction;..\..\..\src\reliability\analysis\gFunction;..\..\..\src\reliability\analysis\misc;..\..\..\src\reliability\analysis\randomNumber;..\..\..\src\reliability\analysis\sensitivity;..\..\..\src\reliability\analysis\stepSize;..\..\..\src\reliability\analysis\transformation;..\..\..\src;..\..\..\src\matrix;..\..\..\src\handler;..\..\..\src\coordTransformation;..\..\..\src\material\section\repres\section;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\material\nD;..\..\..\src\material\uniaxial;..\..\..\src\tcl;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\section;..\..\..\src\recorder;..\..\..\src\graph\numberer;..\..\..\src\material\section;..\..\..\src\graph\graph;..\..\..\src\element\beam2d;..\..\..\src\element\beam3d;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\domain\pattern;..\..\..\src\analysis\analysis;..\..\..\src\analysis\integrator;..\..\..\src\analysis\numberer;..\..\..\src\analysis\handler;..\..\..\src\renderer;..\..\..\src\material;..\..\..\src\analysis\algorithm;..\..\..\src\convergenceTest;..\..\..\src\analysis\model\simple;..\..\..\src\domain\load;..\..\..\src\analysis\model;..\..\..\src\element\truss;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\actor\actor;..\..\..\src\modelbuilder;..\..\..\src\modelbuilder\tcl;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\nDarray;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\analysis\hessianApproximation;..\..\..\src\reliability\analysis\convergenceCheck;..\..\..\src\reliability\analysis\meritFunction;..\..\..\src\reliability\analysis\rootFinding;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_TCL85;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\reliability\release/reliability.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\reliability\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\reliability\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\reliability\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\release\reliability.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\..\src\reliability\analysis\hessian;..\..\..\src\reliability\domain\storage;..\..\..\SRC\reliability\analysis\gradient;..\..\..\SRC\reliability\domain\functionEvaluator;..\..\..\src\reliability\domain\performanceFunction;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\optimization\domain\component;..\..\..\src\optimization\domain;..\..\..\src\reliability\optimization;..\..\..\src\domain\groundMotion;..\..\..\src\reliability\analysis\telm;..\..\..\src\reliability\analysis\analysis\system;..\..\..\SRC\recorder\response;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\reliability\fesensitivity;..\..\..\src\reliability\tcl;..\..\..\src\reliability\domain;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\domain\distributions;..\..\..\src\reliability\analysis;..\..\..\src\reliability\analysis\analysis;..\..\..\src\reliability\analysis\curvature;..\..\..\src\reliability\analysis\designPoint;..\..\..\src\reliability\analysis\direction;..\..\..\src\reliability\analysis\gFunction;..\..\..\src\reliability\analysis\misc;..\..\..\src\reliability\analysis\randomNumber;..\..\..\src\reliability\analysis\sensitivity;..\..\..\src\reliability\analysis\stepSize;..\..\..\src\reliability\analysis\transformation;..\..\..\src;..\..\..\src\matrix;..\..\..\src\handler;..\..\..\src\coordTransformation;..\..\..\src\material\section\repres\section;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\material\nD;..\..\..\src\material\uniaxial;..\..\..\src\tcl;..\..\..\src\actor\objectBroker;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\element\nonlinearBeamColumn\tcl\repres\section;..\..\..\src\recorder;..\..\..\src\graph\numberer;..\..\..\src\material\section;..\..\..\src\graph\graph;..\..\..\src\element\beam2d;..\..\..\src\element\beam3d;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\domain\pattern;..\..\..\src\analysis\analysis;..\..\..\src\analysis\integrator;..\..\..\src\analysis\numberer;..\..\..\src\analysis\handler;..\..\..\src\renderer;..\..\..\src\material;..\..\..\src\analysis\algorithm;..\..\..\src\convergenceTest;..\..\..\src\analysis\model\simple;..\..\..\src\domain\load;..\..\..\src\analysis\model;..\..\..\src\element\truss;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\actor\actor;..\..\..\src\modelbuilder;..\..\..\src\modelbuilder\tcl;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\domain;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\nDarray;..\..\..\src\reliability\domain\spectrum;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\analysis\hessianApproximation;..\..\..\src\reliability\analysis\convergenceCheck;..\..\..\src\reliability\analysis\meritFunction;..\..\..\src\reliability\analysis\rootFinding;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_TCL85;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\reliability\release/reliability.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\reliability\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\reliability\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\reliability\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\release\reliability.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\curvature\CurvatureFitting.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\curvature\CurvaturesBySearchAlgorithm.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\curvature\FindCurvatures.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\curvature\FirstPrincipalCurvature.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\designPoint\FindDesignPointAlgorithm.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\designPoint\SearchWithStepSizeAndStepDirection.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\direction\GradientProjectionSearchDirection.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\direction\HLRFSearchDirection.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\direction\PolakHeSearchDirectionAndMeritFunction.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\direction\SQPsearchDirectionMeritFunctionAndHessian.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\direction\SearchDirection.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\misc\CorrelatedStandardNormal.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\misc\MatrixOperations.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\randomNumber\CStdLibRandGenerator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\randomNumber\RandomNumberGenerator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\stepSize\ArmijoStepSizeRule.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\stepSize\FixedStepSizeRule.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\stepSize\StepSizeRule.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\transformation\AllIndependentTransformation.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\transformation\NatafProbabilityTransformation.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\transformation\ProbabilityTransformation.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\BivariateDecomposition.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\DP_RSM_Sim.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\DP_RSM_Sim_TimeVariant.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\ExperimentalPointRule1D.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\FORMAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\FOSMAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\GFunVisualizationAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\GridPlane.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\ImportanceSamplingAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\MonteCarloResponseAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\MultiDimVisPrincPlane.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\OrthogonalPlaneSamplingAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\OutCrossingAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\PrincipalAxis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\ReliabilityAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\RespSurfaceSimulation.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\SORMAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\SamplingAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\SurfaceDesign.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\SystemAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\UniformExperimentalPointRule1D.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\UnivariateDecomposition.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\system\IPCM.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\system\MVNcdf.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\system\PCM.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\analysis\system\SCIS.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\meritFunction\AdkZhangMeritFunctionCheck.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\meritFunction\CriteriaReductionMeritFunctionCheck.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\meritFunction\MeritFunctionCheck.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\hessianApproximation\Hessian.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\hessianApproximation\HessianApproximation.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\convergenceCheck\OptimalityConditionReliabilityConvergenceCheck.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\convergenceCheck\ReliabilityConvergenceCheck.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\convergenceCheck\StandardReliabilityConvergenceCheck.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\rootFinding\RootFinding.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\rootFinding\SafeGuardedZeroFindingAlgorithm.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\rootFinding\SecantRootFinding.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\rootFinding\ZeroFindingAlgorithm.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\Analyzer.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\AnalyzerGFunEvaluator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\AnalyzerGradGEvaluator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\CrossingRateAnalyzer.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\DynamciAnalyzer.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\FOSeriesSimulation.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\FirstPassageAnalyzer.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\GFunEachstepEvaluator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\GeneralRandGenerator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\InitialPointBuilder.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\InitialStaticAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewDiscretizedRandomProcessSeries.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewNewmarkSensitivityIntegrator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewSearchWithStepSizeAndStepDirection.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewSensitivityAlgorithm.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewStandardLinearOscillatorAccelerationFilter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewStaticSensitivityIntegrator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NewWhitenoiseFilter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NonStatFirstPassageAnalyzer.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\NonStatRandomVibrationSimulation.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\OutCrossingResults.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\PerformanceFunctionCoeff.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\PerformanceFunctionCoefficientIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\RandomProcess.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\RandomVibrationAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\RandomVibrationSimulation.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\RandomVibrationSimulatorResult.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\ReliabilityDirectIntegrationAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\ReliabilityStaticAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\SelectLoadInitialStaticAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\SmoothConcrete02.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\StatFirstPassageAnalyzer.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\StatRandomVibrationSimulation.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\StaticAnalyzer.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\ThresholdIncInitialPointBuilder.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\TimePoints.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\UniformGenerator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\localMath.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\mersenne.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\mother.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\rancombi.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\ranrotb.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\telm\ranrotw.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\gradient\FiniteDifferenceGradient.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\gradient\GradientEvaluator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\gradient\ImplicitGradient.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\hessian\FiniteDifferenceHessian.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\analysis\hessian\HessianEvaluator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\UserDefinedRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\CorrelationCoefficient.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\CorrelationCoefficientIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\Cutset.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\CutsetIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\ParameterPositioner.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\ParameterPositionerIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\PrincipalPlane.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\RandomVariable.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\RandomVariableIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\RandomVariablePositioner.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\RandomVariablePositionerIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\ReliabilityDomain.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\components\ReliabilityDomainComponent.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\BetaRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\ChiSquareRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\ExponentialRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\GammaRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\GumbelRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\LaplaceRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\LognormalRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\NormalRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\ParetoRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\RayleighRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\ShiftedExponentialRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\ShiftedRayleighRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\Type1LargestValueRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\Type1SmallestValueRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\Type2LargestValueRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\Type3SmallestValueRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\UniformRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\distributions\WeibullRV.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\filter\Filter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\filter\FilterIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\filter\KooFilter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\filter\StandardLinearOscillatorAccelerationFilter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\filter\StandardLinearOscillatorDisplacementFilter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\filter\StandardLinearOscillatorVelocityFilter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\spectrum\JonswapSpectrum.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\spectrum\NarrowBandSpectrum.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\spectrum\PointsSpectrum.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\spectrum\Spectrum.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\spectrum\SpectrumIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\modulatingFunction\ConstantModulatingFunction.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\modulatingFunction\GammaModulatingFunction.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\modulatingFunction\KooModulatingFunction.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\modulatingFunction\ModulatingFunction.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\modulatingFunction\ModulatingFunctionIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\modulatingFunction\TrapezoidalModulatingFunction.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\functionEvaluator\FunctionEvaluator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\functionEvaluator\TclEvaluator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\performanceFunction\LimitStateFunction.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\reliability\domain\performanceFunction\LimitStateFunctionIter.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\reliability\domain\performanceFunction\PerformanceFunction.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\performanceFunction\PerformanceFunctionIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\storage\FORMStorage.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\domain\storage\ReliabilityStorage.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\tcl\TclReliabilityBuilder.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\FEsensitivity\NewmarkSensitivityIntegrator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\FEsensitivity\SensitivityAlgorithm.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\FEsensitivity\SensitivityIntegrator.cpp" />
+    <ClCompile Include="..\..\..\SRC\reliability\FEsensitivity\StaticSensitivityIntegrator.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\curvature\CurvatureFitting.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\curvature\CurvaturesBySearchAlgorithm.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\curvature\FindCurvatures.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\curvature\FirstPrincipalCurvature.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\designPoint\FindDesignPointAlgorithm.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\designPoint\SearchWithStepSizeAndStepDirection.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\direction\GradientProjectionSearchDirection.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\direction\HLRFSearchDirection.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\direction\PolakHeSearchDirectionAndMeritFunction.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\direction\SQPsearchDirectionMeritFunctionAndHessian.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\direction\SearchDirection.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\misc\CorrelatedStandardNormal.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\misc\MatrixOperations.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\randomNumber\CStdLibRandGenerator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\randomNumber\RandomNumberGenerator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\stepSize\ArmijoStepSizeRule.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\stepSize\FixedStepSizeRule.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\stepSize\StepSizeRule.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\transformation\AllIndependentTransformation.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\transformation\NatafProbabilityTransformation.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\transformation\ProbabilityTransformation.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\BivariateDecomposition.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\DP_RSM_Sim.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\DP_RSM_Sim_TimeVariant.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\ExperimentalPointRule1D.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\FORMAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\FOSMAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\GFunVisualizationAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\GridPlane.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\ImportanceSamplingAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\MonteCarloResponseAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\MultiDimVisPrincPlane.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\OrthogonalPlaneSamplingAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\OutCrossingAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\PrincipalAxis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\ReliabilityAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\RespSurfaceSimulation.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\SORMAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\SamplingAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\SurfaceDesign.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\SystemAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\UniformExperimentalPointRule1D.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\UnivariateDecomposition.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\system\IPCM.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\system\MVNcdf.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\system\PCM.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\analysis\system\SCIS.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\meritFunction\AdkZhangMeritFunctionCheck.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\meritFunction\CriteriaReductionMeritFunctionCheck.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\meritFunction\MeritFunctionCheck.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\hessianApproximation\Hessian.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\hessianApproximation\HessianApproximation.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\convergenceCheck\OptimalityConditionReliabilityConvergenceCheck.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\convergenceCheck\ReliabilityConvergenceCheck.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\convergenceCheck\StandardReliabilityConvergenceCheck.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\rootFinding\RootFinding.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\rootFinding\SafeGuardedZeroFindingAlgorithm.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\rootFinding\SecantRootFinding.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\rootFinding\ZeroFindingAlgorithm.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\Analyzer.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\AnalyzerGFunEvaluator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\AnalyzerGradGEvaluator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\CrossingRateAnalyzer.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\DynamicAnalyzer.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\FOSeriesSimulation.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\FirstPassageAnalyzer.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\GFunEachStepEvaluator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\GeneralRandGenerator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\InitialPointBuilder.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\InitialStaticAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewDiscretizedRandomProcessSeries.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewNewmarkSensitivityIntegrator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewSearchWithStepSizeAndStepDirection.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewSensitivityAlgorithm.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewStandardLinearOscillatorAccelerationFilter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewStaticSensitivityIntegrator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NewWhitenoiseFilter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NonStatFirstPassageAnalyzer.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\NonStatRandomVibrationSimulation.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\OutCrossingResults.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\PerformanceFunctionCoeff.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\PerformanceFunctionCoefficientIter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\RandomProcess.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\RandomVibrationAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\RandomVibrationSimulation.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\RandomVibrationSimulatorResult.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\ReliabilityDirectIntegrationAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\ReliabilityStaticAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\SelectLoadInitialStaticAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\SmoothConcrete02.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\StatFirstPassageAnalyzer.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\StatRandomVibrationSimulation.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\StaticAnalyzer.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\ThresholdIncInitialPointBuilder.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\TimePoints.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\localMath.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\telm\randomc.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\gradient\FiniteDifferenceGradient.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\gradient\GradientEvaluator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\gradient\ImplicitGradient.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\hessian\FiniteDifferenceHessian.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\analysis\hessian\HessianEvaluator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\UserDefinedRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\CorrelationCoefficient.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\CorrelationCoefficientIter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\Cutset.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\CutsetIter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\ParameterPositioner.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\ParameterPositionerIter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\PrincipalPlane.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\RandomVariable.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\RandomVariableIter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\RandomVariablePositioner.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\RandomVariablePositionerIter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\ReliabilityDomain.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\components\ReliabilityDomainComponent.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\BetaRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\ChiSquareRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\ExponentialRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\GammaRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\GumbelRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\LaplaceRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\LognormalRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\NormalRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\ParetoRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\RayleighRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\ShiftedExponentialRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\ShiftedRayleighRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\Type1LargestValueRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\Type1SmallestValueRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\Type2LargestValueRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\Type3SmallestValueRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\UniformRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\distributions\WeibullRV.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\filter\Filter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\filter\FilterIter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\filter\KooFilter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\filter\StandardLinearOscillatorAccelerationFilter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\filter\StandardLinearOscillatorDisplacementFilter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\filter\StandardLinearOscillatorVelocityFilter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\spectrum\JonswapSpectrum.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\spectrum\NarrowBandSpectrum.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\spectrum\PointsSpectrum.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\spectrum\Spectrum.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\spectrum\SpectrumIter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\modulatingFunction\ConstantModulatingFunction.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\modulatingFunction\GammaModulatingFunction.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\modulatingFunction\KooModulatingFunction.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\modulatingFunction\ModulatingFunction.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\modulatingFunction\ModulatingFunctionIter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\modulatingFunction\TrapezoidalModulatingFunction.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\functionEvaluator\FunctionEvaluator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\functionEvaluator\TclEvaluator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\performanceFunction\LimitStateFunction.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\performanceFunction\LimitStateFunctionIter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\performanceFunction\PerformanceFunction.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\performanceFunction\PerformanceFunctionIter.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\storage\FORMStorage.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\domain\storage\ReliabilityStorage.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\tcl\TclReliabilityBuilder.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\FEsensitivity\NewmarkSensitivityIntegrator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\FEsensitivity\SensitivityAlgorithm.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\FEsensitivity\SensitivityIntegrator.h" />
+    <ClInclude Include="..\..\..\SRC\reliability\FEsensitivity\StaticSensitivityIntegrator.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

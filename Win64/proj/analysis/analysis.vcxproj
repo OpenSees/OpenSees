@@ -1,0 +1,384 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <SccLocalPath />
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\lib\debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\lib\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\obj\analysis\debug\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\obj\analysis\debug\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\lib\release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\lib\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\obj\analysis\release\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\obj\analysis\release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\src\api;..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\fesensitivity;..\..\..\src\analysis\integrator;..\..\..\src\analysis\algorithm\domainDecompAlgo;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\src\domain\domain\single;..\..\..\src\convergenceTest;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\algorithm;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\graph\graph;..\..\..\src\graph\numberer;..\..\..\src\analysis\numberer;..\..\..\src\analysis\fe_ele\transformation;..\..\..\src\analysis\fe_ele\lagrange;..\..\..\src\analysis\fe_ele\penalty;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\domain\subdomain;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\domain\node;..\..\..\src\element;..\..\..\src\analysis\dof_grp;..\..\..\src\matrix;..\..\..\src\analysis\model\simple;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\analysis\handler;..\..\..\src\analysis\fe_ele;..\..\..\src\nDarray;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\domain\spectrum;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_LIB;_RELIABILITY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\analysis\debug/analysis.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\analysis\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\analysis\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\analysis\debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\debug\analysis.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\src\api;..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\fesensitivity;..\..\..\src\analysis\integrator;..\..\..\src\analysis\algorithm\domainDecompAlgo;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\src\domain\domain\single;..\..\..\src\convergenceTest;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\algorithm;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\graph\graph;..\..\..\src\graph\numberer;..\..\..\src\analysis\numberer;..\..\..\src\analysis\fe_ele\transformation;..\..\..\src\analysis\fe_ele\lagrange;..\..\..\src\analysis\fe_ele\penalty;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\domain\subdomain;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\domain\node;..\..\..\src\element;..\..\..\src\analysis\dof_grp;..\..\..\src\matrix;..\..\..\src\analysis\model\simple;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\analysis\handler;..\..\..\src\analysis\fe_ele;..\..\..\src\nDarray;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\domain\spectrum;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_LIB;_RELIABILITY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\analysis\debug/analysis.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\analysis\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\analysis\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\analysis\debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\debug\analysis.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <AdditionalIncludeDirectories>..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\src\api;..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\fesensitivity;..\..\..\src\analysis\integrator;..\..\..\src\analysis\algorithm\domainDecompAlgo;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\src\domain\domain\single;..\..\..\src\convergenceTest;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\algorithm;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\graph\graph;..\..\..\src\graph\numberer;..\..\..\src\analysis\numberer;..\..\..\src\analysis\fe_ele\transformation;..\..\..\src\analysis\fe_ele\lagrange;..\..\..\src\analysis\fe_ele\penalty;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\domain\subdomain;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\domain\node;..\..\..\src\element;..\..\..\src\analysis\dof_grp;..\..\..\src\matrix;..\..\..\src\analysis\model\simple;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\analysis\handler;..\..\..\src\analysis\fe_ele;..\..\..\src\nDarray;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\domain\spectrum;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;_RELIABILITY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\analysis\release/analysis.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\analysis\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\analysis\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\analysis\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\release\analysis.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <AdditionalIncludeDirectories>..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\src\api;..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator;..\..\..\src\tagged\storage;..\..\..\src\tagged;..\..\..\src\reliability\domain\components;..\..\..\src\reliability\fesensitivity;..\..\..\src\analysis\integrator;..\..\..\src\analysis\algorithm\domainDecompAlgo;..\..\..\src\analysis\algorithm\eigenAlgo;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\src\domain\domain\single;..\..\..\src\convergenceTest;..\..\..\src\analysis\analysis;..\..\..\src\recorder;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\analysis\algorithm;..\..\..\src\system_of_eqn;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\graph\graph;..\..\..\src\graph\numberer;..\..\..\src\analysis\numberer;..\..\..\src\analysis\fe_ele\transformation;..\..\..\src\analysis\fe_ele\lagrange;..\..\..\src\analysis\fe_ele\penalty;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\utility;..\..\..\src\domain\subdomain;..\..\..\src\domain\constraints;..\..\..\src\domain\component;..\..\..\src\domain\node;..\..\..\src\element;..\..\..\src\analysis\dof_grp;..\..\..\src\matrix;..\..\..\src\analysis\model\simple;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\analysis\handler;..\..\..\src\analysis\fe_ele;..\..\..\src\nDarray;..\..\..\src\reliability\domain\modulatingFunction;..\..\..\src\reliability\domain\filter;..\..\..\src\reliability\domain\spectrum;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;_RELIABILITY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\analysis\release/analysis.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\analysis\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\analysis\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\analysis\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\release\analysis.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\Analysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\DirectIntegrationAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\DomainDecompositionAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\PFEMAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\StaticAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\TransientAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\model\AnalysisModel.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\model\DOF_GrpIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\model\FE_EleIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\FE_Element.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\lagrange\LagrangeMP_FE.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\lagrange\LagrangeSP_FE.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\penalty\PenaltyMP_FE.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\penalty\PenaltySP_FE.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\transformation\TransformationFE.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\dof_grp\DOF_Group.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\dof_grp\LagrangeDOF_Group.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\dof_grp\TransformationDOF_Group.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\AcceleratedNewton.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BFGS.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Broyden.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\domainDecompAlgo\DomainDecompAlgo.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\EquiSolnAlgo.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\KrylovNewton.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Linear.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ModifiedNewton.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonLineSearch.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonRaphson.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\PeriodicNewton.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\SolutionAlgorithm.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\Accelerator.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\DifferenceAccelerator2.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\KrylovAccelerator.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\KrylovAccelerator2.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\MillerAccelerator.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\PeriodicAccelerator.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\RaphsonAccelerator.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\SecantAccelerator1.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\SecantAccelerator2.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\SecantAccelerator3.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOS.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ArcLength.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ArcLength1.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\BackwardEuler.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\CentralDifference.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\CentralDifferenceAlternative.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\CentralDifferenceNoDamping.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\Collocation.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\CollocationHSFixedNumIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\CollocationHSIncrLimit.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\CollocationHSIncrReduct.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\DisplacementControl.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\EigenIntegrator.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\GeneralizedAlpha.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHT.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHT1.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTExplicit.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralized.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralizedExplicit.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTHSFixedNumIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTHSIncrLimit.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTHSIncrReduct.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HSConstraint.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\Houbolt.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\IncrementalIntegrator.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\Integrator.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\KRAlphaExplicit.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\LoadControl.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\LoadPath.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\MinUnbalDispNorm.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\Newmark.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\Newmark1.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\NewmarkExplicit.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\NewmarkHSFixedNumIter.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\NewmarkHSIncrLimit.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\NewmarkHSIncrReduct.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\PFEMIntegrator.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ParkLMS3.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\StaticIntegrator.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\TRBDF2.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\TRBDF3.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\TransientIntegrator.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\WilsonTheta.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\numberer\DOF_Numberer.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\numberer\PlainNumberer.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\handler\ConstraintHandler.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\handler\LagrangeConstraintHandler.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\handler\PenaltyConstraintHandler.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\handler\PlainHandler.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\handler\TransformationConstraintHandler.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BisectionLineSearch.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\InitialInterpolatedLineSearch.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\LineSearch.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\RegulaFalsiLineSearch.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\SecantLineSearch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\Analysis.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\DirectIntegrationAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\DomainDecompositionAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\PFEMAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\StaticAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\TransientAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\model\AnalysisModel.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\model\DOF_GrpIter.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\model\FE_EleIter.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\fe_ele\FE_Element.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\fe_ele\lagrange\LagrangeMP_FE.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\fe_ele\lagrange\LagrangeSP_FE.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\fe_ele\penalty\PenaltyMP_FE.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\fe_ele\penalty\PenaltySP_FE.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\fe_ele\transformation\TransformationFE.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\dof_grp\DOF_Group.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\dof_grp\LagrangeDOF_Group.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\dof_grp\TransformationDOF_Group.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\AcceleratedNewton.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BFGS.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Broyden.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\domainDecompAlgo\DomainDecompAlgo.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\EquiSolnAlgo.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\KrylovNewton.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Linear.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ModifiedNewton.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonLineSearch.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonRaphson.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\PeriodicNewton.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\SolutionAlgorithm.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\Accelerator.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\DifferenceAccelerator2.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\KrylovAccelerator.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\KrylovAccelerator2.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\MillerAccelerator.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\PeriodicAccelerator.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\RaphsonAccelerator.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\SecantAccelerator1.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\SecantAccelerator2.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\SecantAccelerator3.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOS.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\ArcLength.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\ArcLength1.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\BackwardEuler.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\CentralDifference.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\CentralDifferenceAlternative.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\CentralDifferenceNoDamping.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\Collocation.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\CollocationHSFixedNumIter.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\CollocationHSIncrLimit.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\CollocationHSIncrReduct.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\DisplacementControl.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\EigenIntegrator.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\GeneralizedAlpha.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHT.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHT1.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTExplicit.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTGeneralized.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTGeneralizedExplicit.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTHSFixedNumIter.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTHSIncrLimit.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTHSIncrReduct.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HSConstraint.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\Houbolt.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\IncrementalIntegrator.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\Integrator.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\KRAlphaExplicit.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\LoadControl.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\LoadPath.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\MinUnbalDispNorm.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\Newmark.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\Newmark1.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\NewmarkExplicit.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\NewmarkHSFixedNumIter.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\NewmarkHSIncrLimit.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\NewmarkHSIncrReduct.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\PFEMIntegrator.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\ParkLMS3.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\StaticIntegrator.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\TRBDF2.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\TRBDF3.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\TransientIntegrator.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\WilsonTheta.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\numberer\DOF_Numberer.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\numberer\PlainNumberer.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\handler\ConstraintHandler.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\handler\LagrangeConstraintHandler.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\handler\PenaltyConstraintHandler.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\handler\PlainHandler.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\handler\TransformationConstraintHandler.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BisectionLineSearch.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\InitialInterpolatedLineSearch.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\LineSearch.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\RegulaFalsiLineSearch.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\SecantLineSearch.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

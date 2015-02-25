@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{542B4EC8-400F-4BE5-A0A1-A53E8830606C}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\lib\debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\lib\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Debug\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\lib\release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\lib\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)cssparse.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)cssparse.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <OmitFramePointers>true</OmitFramePointers>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)cssparse.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <OmitFramePointers>true</OmitFramePointers>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)cssparse.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\OTHER\CSPARSE\cs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_add.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_amd.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_chol.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_cholsol.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_compress.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_counts.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_cumsum.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_dfs.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_dmperm.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_droptol.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_dropzeros.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_dupl.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_entry.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_ereach.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_etree.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_fkeep.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_gaxpy.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_happly.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_house.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_ipvec.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_leaf.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_load.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_lsolve.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_ltsolve.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_lu.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_lusol.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_malloc.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_maxtrans.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_multiply.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_norm.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_permute.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_pinv.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_post.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_print.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_pvec.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_qr.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_qrsol.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_randperm.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_reach.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_scatter.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_scc.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_schol.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_spsolve.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_sqr.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_symperm.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_tdfs.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_transpose.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_updown.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_usolve.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_util.c" />
+    <ClCompile Include="..\..\..\OTHER\CSPARSE\cs_utsolve.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

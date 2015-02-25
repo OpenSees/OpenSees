@@ -1,0 +1,629 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="analysis">
+      <UniqueIdentifier>{2721775f-7b4d-4790-875c-2b60001a06b6}</UniqueIdentifier>
+      <Extensions>.cpp; .h</Extensions>
+    </Filter>
+    <Filter Include="model">
+      <UniqueIdentifier>{c7fcf9c2-5bfb-4c6e-9dba-76e34d00ae99}</UniqueIdentifier>
+      <Extensions>.cpp; .h</Extensions>
+    </Filter>
+    <Filter Include="fe_ele">
+      <UniqueIdentifier>{3c99b300-4c51-459a-938e-f80c287f2f6c}</UniqueIdentifier>
+      <Extensions>.cpp; .h</Extensions>
+    </Filter>
+    <Filter Include="dof_grp">
+      <UniqueIdentifier>{c020a8d4-b3ba-4d66-968e-e6a485adeef8}</UniqueIdentifier>
+      <Extensions>.cpp; .h</Extensions>
+    </Filter>
+    <Filter Include="algorithm">
+      <UniqueIdentifier>{b8e3331d-3095-459c-b600-8f51845af91b}</UniqueIdentifier>
+      <Extensions>.cpp; .h</Extensions>
+    </Filter>
+    <Filter Include="algorithm\accelerator">
+      <UniqueIdentifier>{dcbea78b-56f0-49d9-8724-d977bcf646d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="integrator">
+      <UniqueIdentifier>{a0d053bc-384c-470c-8474-2b869b008eaf}</UniqueIdentifier>
+      <Extensions>.cpp; .h</Extensions>
+    </Filter>
+    <Filter Include="numberer">
+      <UniqueIdentifier>{816f2983-cace-4f55-9c2c-789edd5c4d4b}</UniqueIdentifier>
+      <Extensions>.cpp; .h</Extensions>
+    </Filter>
+    <Filter Include="handler">
+      <UniqueIdentifier>{44e2932f-afe0-4d49-8850-9a510c5cec38}</UniqueIdentifier>
+      <Extensions>.cpp; .h</Extensions>
+    </Filter>
+    <Filter Include="lineSearch">
+      <UniqueIdentifier>{d6dc8e5b-4e54-421f-b6df-064e9ed1a360}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\Analysis.cpp">
+      <Filter>analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\DirectIntegrationAnalysis.cpp">
+      <Filter>analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\DomainDecompositionAnalysis.cpp">
+      <Filter>analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\PFEMAnalysis.cpp">
+      <Filter>analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\StaticAnalysis.cpp">
+      <Filter>analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\TransientAnalysis.cpp">
+      <Filter>analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.cpp">
+      <Filter>analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\model\AnalysisModel.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\model\DOF_GrpIter.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\model\FE_EleIter.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\FE_Element.cpp">
+      <Filter>fe_ele</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\lagrange\LagrangeMP_FE.cpp">
+      <Filter>fe_ele</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\lagrange\LagrangeSP_FE.cpp">
+      <Filter>fe_ele</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\penalty\PenaltyMP_FE.cpp">
+      <Filter>fe_ele</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\penalty\PenaltySP_FE.cpp">
+      <Filter>fe_ele</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\transformation\TransformationFE.cpp">
+      <Filter>fe_ele</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\dof_grp\DOF_Group.cpp">
+      <Filter>dof_grp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\dof_grp\LagrangeDOF_Group.cpp">
+      <Filter>dof_grp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\dof_grp\TransformationDOF_Group.cpp">
+      <Filter>dof_grp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\AcceleratedNewton.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BFGS.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Broyden.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\domainDecompAlgo\DomainDecompAlgo.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\EquiSolnAlgo.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\KrylovNewton.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Linear.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ModifiedNewton.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonLineSearch.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonRaphson.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\PeriodicNewton.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\SolutionAlgorithm.cpp">
+      <Filter>algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\Accelerator.cpp">
+      <Filter>algorithm\accelerator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\DifferenceAccelerator2.cpp">
+      <Filter>algorithm\accelerator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\KrylovAccelerator.cpp">
+      <Filter>algorithm\accelerator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\KrylovAccelerator2.cpp">
+      <Filter>algorithm\accelerator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\MillerAccelerator.cpp">
+      <Filter>algorithm\accelerator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\PeriodicAccelerator.cpp">
+      <Filter>algorithm\accelerator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\RaphsonAccelerator.cpp">
+      <Filter>algorithm\accelerator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\SecantAccelerator1.cpp">
+      <Filter>algorithm\accelerator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\SecantAccelerator2.cpp">
+      <Filter>algorithm\accelerator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\SecantAccelerator3.cpp">
+      <Filter>algorithm\accelerator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOS.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ArcLength.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ArcLength1.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\BackwardEuler.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\CentralDifference.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\CentralDifferenceAlternative.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\CentralDifferenceNoDamping.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\Collocation.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\CollocationHSFixedNumIter.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\CollocationHSIncrLimit.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\CollocationHSIncrReduct.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\DisplacementControl.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\EigenIntegrator.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\GeneralizedAlpha.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHT.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHT1.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTExplicit.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralized.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralizedExplicit.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTHSFixedNumIter.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTHSIncrLimit.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTHSIncrReduct.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HSConstraint.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\Houbolt.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\IncrementalIntegrator.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\Integrator.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\KRAlphaExplicit.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\LoadControl.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\LoadPath.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\MinUnbalDispNorm.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\Newmark.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\Newmark1.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\NewmarkExplicit.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\NewmarkHSFixedNumIter.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\NewmarkHSIncrLimit.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\NewmarkHSIncrReduct.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\PFEMIntegrator.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ParkLMS3.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\StaticIntegrator.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\TRBDF2.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\TRBDF3.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\TransientIntegrator.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\WilsonTheta.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\numberer\DOF_Numberer.cpp">
+      <Filter>numberer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\numberer\PlainNumberer.cpp">
+      <Filter>numberer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\handler\ConstraintHandler.cpp">
+      <Filter>handler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\handler\LagrangeConstraintHandler.cpp">
+      <Filter>handler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\handler\PenaltyConstraintHandler.cpp">
+      <Filter>handler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\handler\PlainHandler.cpp">
+      <Filter>handler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\handler\TransformationConstraintHandler.cpp">
+      <Filter>handler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BisectionLineSearch.cpp">
+      <Filter>lineSearch</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\InitialInterpolatedLineSearch.cpp">
+      <Filter>lineSearch</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\LineSearch.cpp">
+      <Filter>lineSearch</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\RegulaFalsiLineSearch.cpp">
+      <Filter>lineSearch</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\SecantLineSearch.cpp">
+      <Filter>lineSearch</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\Analysis.h">
+      <Filter>analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\DirectIntegrationAnalysis.h">
+      <Filter>analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\DomainDecompositionAnalysis.h">
+      <Filter>analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\PFEMAnalysis.h">
+      <Filter>analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\StaticAnalysis.h">
+      <Filter>analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\TransientAnalysis.h">
+      <Filter>analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.h">
+      <Filter>analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\model\AnalysisModel.h">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\model\DOF_GrpIter.h">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\model\FE_EleIter.h">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\fe_ele\FE_Element.h">
+      <Filter>fe_ele</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\fe_ele\lagrange\LagrangeMP_FE.h">
+      <Filter>fe_ele</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\fe_ele\lagrange\LagrangeSP_FE.h">
+      <Filter>fe_ele</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\fe_ele\penalty\PenaltyMP_FE.h">
+      <Filter>fe_ele</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\fe_ele\penalty\PenaltySP_FE.h">
+      <Filter>fe_ele</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\fe_ele\transformation\TransformationFE.h">
+      <Filter>fe_ele</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\dof_grp\DOF_Group.h">
+      <Filter>dof_grp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\dof_grp\LagrangeDOF_Group.h">
+      <Filter>dof_grp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\dof_grp\TransformationDOF_Group.h">
+      <Filter>dof_grp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\AcceleratedNewton.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BFGS.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Broyden.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\domainDecompAlgo\DomainDecompAlgo.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\EquiSolnAlgo.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\KrylovNewton.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\Linear.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\ModifiedNewton.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonLineSearch.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\NewtonRaphson.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\PeriodicNewton.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\SolutionAlgorithm.h">
+      <Filter>algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\Accelerator.h">
+      <Filter>algorithm\accelerator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\DifferenceAccelerator2.h">
+      <Filter>algorithm\accelerator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\KrylovAccelerator.h">
+      <Filter>algorithm\accelerator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\KrylovAccelerator2.h">
+      <Filter>algorithm\accelerator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\MillerAccelerator.h">
+      <Filter>algorithm\accelerator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\PeriodicAccelerator.h">
+      <Filter>algorithm\accelerator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\RaphsonAccelerator.h">
+      <Filter>algorithm\accelerator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\SecantAccelerator1.h">
+      <Filter>algorithm\accelerator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\SecantAccelerator2.h">
+      <Filter>algorithm\accelerator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\accelerator\SecantAccelerator3.h">
+      <Filter>algorithm\accelerator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOS.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\ArcLength.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\ArcLength1.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\BackwardEuler.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\CentralDifference.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\CentralDifferenceAlternative.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\CentralDifferenceNoDamping.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\Collocation.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\CollocationHSFixedNumIter.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\CollocationHSIncrLimit.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\CollocationHSIncrReduct.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\DisplacementControl.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\EigenIntegrator.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\GeneralizedAlpha.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHT.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHT1.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTExplicit.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTGeneralized.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTGeneralizedExplicit.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTHSFixedNumIter.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTHSIncrLimit.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTHSIncrReduct.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HSConstraint.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\Houbolt.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\IncrementalIntegrator.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\Integrator.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\KRAlphaExplicit.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\LoadControl.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\LoadPath.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\MinUnbalDispNorm.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\Newmark.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\Newmark1.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\NewmarkExplicit.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\NewmarkHSFixedNumIter.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\NewmarkHSIncrLimit.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\NewmarkHSIncrReduct.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\PFEMIntegrator.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\ParkLMS3.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\StaticIntegrator.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\TRBDF2.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\TRBDF3.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\TransientIntegrator.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\WilsonTheta.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\numberer\DOF_Numberer.h">
+      <Filter>numberer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\numberer\PlainNumberer.h">
+      <Filter>numberer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\handler\ConstraintHandler.h">
+      <Filter>handler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\handler\LagrangeConstraintHandler.h">
+      <Filter>handler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\handler\PenaltyConstraintHandler.h">
+      <Filter>handler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\handler\PlainHandler.h">
+      <Filter>handler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\handler\TransformationConstraintHandler.h">
+      <Filter>handler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BisectionLineSearch.h">
+      <Filter>lineSearch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\InitialInterpolatedLineSearch.h">
+      <Filter>lineSearch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\LineSearch.h">
+      <Filter>lineSearch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\RegulaFalsiLineSearch.h">
+      <Filter>lineSearch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\SecantLineSearch.h">
+      <Filter>lineSearch</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
