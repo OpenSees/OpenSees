@@ -67,7 +67,8 @@ for {set floor 1; set floorLoc 0} {$floor <= $numFloor} {incr floor 1} {
 }
 	    
 # define material 
-uniaxialMaterial Steel02 1 50.0 29000 0.003 20 0.925 0.15
+#uniaxialMaterial Steel02 1 50.0 29000 0.003 20 0.925 0.15
+uniaxialMaterial Steel02 1 36.0 29000 0.003 20 0.925 0.15
 
 # build the columns
 geomTransf PDelta 1
@@ -120,6 +121,16 @@ analyze 10
 # maintain constant gravity loads and reset time to zero
 loadConst -time 0.0
 
+constraints Plain
+numberer RCM
+system BandGeneral
+test NormDispIncr 1.0e-8 10 
+algorithm Newton
+integrator Newmark 0.5 0.25
+#integrator HHT 0.9
+analysis Transient
+
+
 # add some damping
 set pDamp 0.03
 set lambda [eigen 3]
@@ -127,13 +138,21 @@ set omegaI [expr pow([lindex $lambda 0],0.5)];
 set omegaJ [expr pow([lindex $lambda 2],0.5)];
 set alphaM [expr $pDamp*(2*$omegaI*$omegaJ)/($omegaI+$omegaJ)];	
 set betaKcomm [expr 2.*$pDamp/($omegaI+$omegaJ)]; 
-rayleigh $alphaM 0. 0. $betaKcomm
+
+#rayleigh $alphaM 0. 0. $betaKcomm
+#rayleigh $alphaM $betaKcomm 0. 0.
+
+set lambda [eigen 10]
+set omegaI [expr pow([lindex $lambda 0],0.5)];
+set alpha0 [expr 2.0 * $omegaI * $pDamp]
+#rayleigh $alpha0 0. 0. 0.
+#modalDamping  $pDamp
 
 puts " Period T1: [expr 2*$PI/sqrt([lindex $lambda 0])] sec"
 
 # create a load patrern for uniform excitation
 ReadRecord $motion.AT2 $motion.g3 dt nPt;
-timeSeries Path 10 -filePath $motion.g3 -dt $dt -factor $g
+timeSeries Path 10 -filePath $motion.g3 -dt $dt -factor [expr 1. * $g]
 pattern UniformExcitation 1 1 -accel 10;
 
 set nodeList []
@@ -141,29 +160,30 @@ for {set floor 1} {$floor <= $numFloor} {incr floor 1} {
     lappend nodeList 1$floor
 }
 set cmd "recorder EnvelopeNode -file floorAccEnv.out  -timeSeries 10 -node $nodeList -dof 1 accel"; eval $cmd;
-set cmd "recorder EnvelopeNode -file floorAccEnv.out  -timeSeries 10 -node $nodeList -dof 1 accel"; eval $cmd;
 
 set cmd "recorder EnvelopeNode -file floorDispEnv.out  -node $nodeList -dof 1 disp"; eval $cmd;
-set cmd "recorder Node -file floorDisp.out  -node $nodeList -dof 1 disp"; eval $cmd;
+set cmd "recorder Node -file floorDisp.out  -time -node $nodeList -dof 1 disp"; eval $cmd;
+set cmd "recorder Node -file floorReaction.out  -time -node $nodeList -dof 3 reaction"; eval $cmd;
+
+
+puts $nodeList
 
 set tFinal	[expr $dt*$nPt];	# maximum duration of ground-motion analysis
-constraints Plain
-numberer RCM
-system BandGeneral
-test NormDispIncr 1.0e-6 10 
-algorithm Newton
-integrator Newmark 0.5 0.25
-analysis Transient
 
 set ok 0
 set currentTime 0.0
 while {$ok == 0 && $currentTime < $tFinal} {
     set ok [analyze 1 $dt]
     if {$ok != 0} {
-	test NormDispIncr 1.0e-6 2000 1
+	test NormDispIncr 1.0e-5 2000 1
 	algorithm ModifiedNewton -initial
 	set ok [analyze 1 $dt]
 	test NormDispIncr 1.0e-6 10 
+	algorithm Newton
+    } 
+    if {$ok != 0} {
+	algorithm NewtonLineSearch 0.8
+	set ok [analyze 1 $dt]
 	algorithm Newton
     } 
     set currentTime [getTime]

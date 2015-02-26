@@ -5,57 +5,73 @@
 # Major Contributions: 
 #   WSection: Remo DeSouza, UC Berkeley.
 #   SteelWSectionMR: Dimitrios Lignos, McGill Univeristy.
+#   SteelWSectionMR02: Filipe Ribeiro and Andre Barbosa, Oregon State University.
+#   SteelWSectionMChi02: Filipe Ribeiro and Andre Barbosa, Oregon State University.
 #   HSSbrace: Dimitrios Lignos, McGill Univeristy.
+#   
 
 #
 # 1. PROCEDURAL PROTOTYPES FOR CREATING ELEMENTS:
 #
 
-# ElasticBeamWSection2d {eleTag iNode jNode sectType E transfTag args
+# ElasticBeamWSection2d $eleTag $iNode $jNode $sectType $E $transfTag $args
 #   args: <YY> <-release1> <-release2>
 #
 # ForceBeamWSection2d $eleTag $iNode $jNode $sectType $matTag $transfTag $args 
-#    args: <YY> <-nFlange $x> <-nWeb $x> <-nip $x> <-elasticSection $E> <-release1> <-release2>
+#    args: <YY> <-nFlange $x> <-nWeb $x> <-nip $x> <-elasticSection $x> <-release1> <-release2>
 #
 # DispBeamWSection2d $eleTag $iNode $jNode $sectType $matTag $transfTag $args 
 #    args: <YY> <-nFlange $x> <-nWeb $x> <-nip $x> <-elasticSection $E> <-release1> <-release2>
 #
 # BeamWithHingesWSection2d $eleTag $iNode $jNode $sectType $matTag $transfTag $args 
-#    args: <YY> <-nFlange $x> <-nWeb $x> <-nip $x> <-hingeLength $x>
+#    args: <YY> <-release1> <-release2> <-nFlange $x> <-nWeb $x> <-hingeLength $x>
+#									
+# BeamWithPlasticHingesWSection2d $eleTag $iNode $jNode $sectType $E $Fy $H $Lb $Com_Type $Comp_Action $Lp $transfTag $args
+#    args: <YY> <-metric> <-release1> <-release2>
 #
-# BeamWithConcentratedHingesWSection2d $eleTag $iNode $jNode $sectType $matTag $transfTag $args 
-#    args: <YY> <-nip $x> <-hingeLength $x>
+# ElasticBeamHSSection2d $eleTag $iNode $jNode $sectType $E $transfTag $args
+#    args: <YY> <-release1> <-release2>
 #
-# ConcentratedHingesWSection2d $eleTag $iNode $jNode $sectType $matTag $transfTag $args 
+# HSSbrace $eleTag $iNode $jNode $sectType $matTag $numSeg $Im $transfTag $args
+#    args: <YY> <-nip $x> <-elasticSection $x> 
 #
-# proc HSSbrace {$eleTag $iNode $jNode $secType $matTag $numSeg $Im $transfTag $args
-#
+# BeamWithConcentratedHingesWSection2d $eleTag $iNode $jNode $sectType $E $Fy $H $Lb $Com_Type $Comp_Action $nFactor $transfTag $args
+#    args: <YY> <-metric> <-release1> <-release2> 
 
 #
 # 2. PROCEDURAL PROTOTYPES FOR CREATING SECTIONS:
 #
 
-# ElasticBeamWSection2d {eleTag iNode jNode sectType E transfTag args} 
-#    args: <YY>
-#
-# Wsection $secID $matID $d $bf $tf $tw $nfdw $nftw $nfbf $nftf 
-#    args: <YY>
-#
 # ElasticSteelWSection2d $sectTag $sectType $E $args
 #    args: <YY>
 #
 # FiberSteelWSection2d $sectTag $sectType $matTag $nFlange $nWeb $args
 #    args: <YY>
 #
+# Wsection $secID $matID $d $bf $tf $tw $nfdw $nftw $nfbf $nftf {$Orient XX} 
+#
+# ElasticBeamWSection2d $eleTag $iNode $jNode $sectType $E $transfTag $args 
+#    args: <YY>
+#
+# Wsection $secID $matID $d $bf $tf $tw $nfdw $nftw $nfbf $nftf 
+#    args: <YY>
+#
 # ElasticHSSection2d {sectTag sectType E args} {
 #    args: <YY>
 #
-# FiberHSSection2d {sectTag sectType matTag nFlange nWeb args} {
+# FiberHSSection2d $sectTag $sectType $matTag $nFlange $nWeb $args
+#    args: <YY>
 #
-# Wsection $secID $matID $d $bf $tf $tw $nfdw $nftw $nfbf $nftf {Orient XX} 
+# HSSectionD $secID $matID $d $b $t $nfdw $nftw
 #
-# SteelWSectionMR $matTag $E $Fy $Ix $Zx $H $L $d $tw $bf $tf $Lb $ry $Com_Type $Comp_Action args
-#    args: <-hingeLength $x>
+# SteelWSectionMR $matTag $E $Fy $Ix $Sx $H $L $d $tw $bf $tf $Lb $ry $Com_Type $Comp_Action $args
+#    args: <-hLength $x> <-metric>
+#
+# SteelWSectionMR02 $matTag $E $Fy $H $L $Lb $sectType $Com_Type $Comp_Action $args
+#    args: <-nFactor $x> <-metric>
+#
+# SteelWSectionMChi02 $matTag $E $Fy $H $L $Lb $sectType $Com_Type $Comp_Action $Lp $args
+#    args: <-metric>
 
 #
 # 3. PROCEDURES FOR CREATING ELEMENTS:
@@ -87,7 +103,7 @@ proc ElasticBeamWSection2d {eleTag iNode jNode sectType E transfTag args} {
 
     foreach {section prop} [array get WSection $sectType] {
 	set propList [split $prop]
-
+	#AISC_Manual_Label A d bf tw tf Ix Iy Zx Sx rx Zy Sy ry J
 	set A [expr [lindex $propList 0]*$in*$in]
 	set Ixx [expr [lindex $propList 5]*$in*$in*$in*$in]
 	set Iyy [expr [lindex $propList 6]*$in*$in*$in*$in]
@@ -184,6 +200,12 @@ proc DispBeamWSection2d {eleTag iNode jNode sectType matTag transfTag args} {
         set nip [lindex $args [expr $loc+1]]
     }
 
+    set intType "Lobatto"
+    if {[lsearch $args "-int"] != -1} {
+	set loc [lsearch $args "-int"]
+        set intType [lindex $args [expr $loc+1]]
+    }    
+
     if {[lsearch $args "-release1"] != -1} {
 	set hingeEnd1 1
 	node $eleTag$hingeEnd1 [nodeCoord $iNode 1] [nodeCoord $iNode 2]
@@ -208,7 +230,7 @@ proc DispBeamWSection2d {eleTag iNode jNode sectType matTag transfTag args} {
 	FiberSteelWSection2d $eleTag $sectType $matTag $nFlange $nWeb $Orient
     }
 
-    element $eleType $eleTag $iNode $jNode $nip $eleTag $transfTag
+    element $eleType $eleTag $iNode $jNode $nip $eleTag $transfTag -integration $intType
 }
 
 proc BeamWithHingesWSection2d {eleTag iNode jNode sectType matTag transfTag args} {
@@ -266,41 +288,51 @@ proc BeamWithHingesWSection2d {eleTag iNode jNode sectType matTag transfTag args
     element forceBeamColumn $eleTag $iNode $jNode $transfTag "HingeRadau $eleTag $Lp $eleTag $Lp $eleTag"
 }
 
-proc BeamWithPlasticHingesWSection2d {eleTag iNode jNode sectType E transfTag args} {
 
-    # based on paper "DETERIORATION MODELING OF STEEL MOMENT RESISTING FRAMES USING FINITE-LENGTH 
-    # PLASTIC HINGE FORCE-BASED BEAM-COLUMN ELEMENTS", F.L.A Ribeiro, A.R Barbosa, M.H. Scott, L.C.Neves
 
-    #uses procedure SteelWSectioMR (see below) provided by D.Lignos
-
-    global WSection
+proc BeamWithPlasticHingesWSection2d {eleTag iNode jNode sectType E Fy H Lb Com_Type Comp_Action Lp transfTag args} {   
+ #########################################################################################################
+ #                                                                                                    
+ # Creates a Finite-Length Plastic-Hinge (FLPH) element with two discrete hinges at both ends and a   
+ #   linear elastic segment in between                                                                 
+ #                                                                                                    
+ # Flexural behavior of plastic hinge sections is defined using the Bilin02 model using procedure     
+ #   SteelWSectionMChi02 (see below)                                                                  
+ #                                                                                                    
+ # Based on paper "DETERIORATION MODELING OF STEEL MOMENT RESISTING FRAMES USING FINITE-LENGTH             			 
+ #                 PLASTIC HINGE FORCE-BASED BEAM-COLUMN ELEMENTS" 			              
+ #  by:  F.L.A. Ribeiro, A.R. Barbosa, M.H. Scott, L.C. Neves    			             
+ #  URL: http://web.engr.oregonstate.edu/~barbosa/products/ribeiro_barbosa_scott_neves.pdf 
+ #
+ # Procedure written by: F.L.A. Ribeiro and Andre Barbosa, FEB-12-2015                                
+ # Contact: f.ribeiro@fct.unl.pt; andre.barbosa@oregonstate.edu           
+ #
+ # eleTag      - Element ID
+ # iNode       - First node
+ # jNode       - Second node
+ # sectType    - Wsection used (see list below)
+ # E           - Young's modulus (in MPa or ksi)               
+ # Fy          - Yield stress (in MPa or ksi)                  
+ # H           - Member Length without considering the panel zones (in mm or in)               
+ # Lb          - Unbraced length from point of plastic hinge location to point of zero moment (in mm or in)   
+ # Com_Type    - Type of component (Use: "other-than-RBS" for this procedure)                               
+ # Comp_Action - Composite Action flag (Use: 1 (yes), 0 (No) )                                              
+ # Lp          - Plastic Hinge length (assumed to be the same for both ends)   				
+ # transfTag   - geometric transformation                                                                
+ # args        - <YY> <-metric> <-release1> <-release2>                                                  
+ #             -metric - activate this option if  in and ksi are used                                    
+ #	           -release1 and/or release2 - activate this option if beam ends are hinged (no bending moment) 
+ #                                                                                                          
+ #########################################################################################################
+    global SteelWSectionMChi02
     global in
-    global FiberSteelWSection2d
-    global ElasticSteelWSection2d
+	global WSection
 
     set Orient "XX"
     if {[lsearch $args "YY"] != -1} {
-	puts "YY oreinetation not handled - uses XX!"
+	puts "YY orientation not handled - uses XX!"
     }
    
-    set nFlange 10
-    if {[lsearch $args "-nFlange"] != -1} {
-	set loc [lsearch $args "-nFlange"]
-        set nFlange [lindex $args [expr $loc+1]]
-    }
-
-    set nWeb    10
-    if {[lsearch $args "-nWeb"] != -1} {
-	set loc [lsearch $args "-nWeb"]
-        set nWeb [lindex $args [expr $loc+1]]
-    }
-
-    set nip 4
-    if {[lsearch $args "-nip"] != -1} {
-	set loc [lsearch $args "-nip"]
-        set nip [lindex $args [expr $loc+1]]
-    }
-
     if {[lsearch $args "-release1"] != -1} {
 	set hingeEnd1 1
 	node $eleTag$hingeEnd1 [nodeCoord $iNode 1] [nodeCoord $iNode 2]
@@ -315,48 +347,45 @@ proc BeamWithPlasticHingesWSection2d {eleTag iNode jNode sectType E transfTag ar
 	set jNode $eleTag$hingeEnd2
     }
 
-    if {[lsearch $args "-elasticSection"] != -1} {
-	set loc [lsearch $args "-elasticSection"] 
-        set E [lindex $args [expr $loc+1]]
-	ElasticSteelWSection2d $eleTag $sectType $E  $Orient
-    } else {
-	FiberSteelWSection2d $eleTag $sectType $matTag $nFlange $nWeb $Orient
-    }
-
-    set node1Crds [nodeCoord $node1]; set x1 [lindex $node1Crds 0]; set y1 [lindex $node1Crds 1]
-    set node2Crds [nodeCoord $node2]; set x2 [lindex $node2Crds 0]; set y2 [lindex $node2Crds 1]
+    set node1Crds [nodeCoord $iNode]; set x1 [lindex $node1Crds 0]; set y1 [lindex $node1Crds 1]
+    set node2Crds [nodeCoord $jNode]; set x2 [lindex $node2Crds 0]; set y2 [lindex $node2Crds 1]
 
     set L [expr sqrt(($x2-$x1)*($x2-$x1)+($y2-$y1)*($y2-$y1))]
-
-    set found 0
-    foreach {section prop} [array get WSection $sectType] {
-	set propList [split $prop]
-	
-	set  d [expr [lindex $propList 1]*$in]
-	set A [expr [lindex $propList 0]*$in*$in]
-	set Ixx [expr [lindex $propList 5]*$in*$in*$in*$in]
-	set Iyy [expr [lindex $propList 6]*$in*$in*$in*$in]
-
-	set found 1
-    }
-    set Lp $d
-
-
     set beta1 [expr -6.0*(3*$L*$L*$Lp - 24*$L*$Lp*$Lp +32*$Lp*$Lp*$Lp)/($L*($L-8.0*$Lp)*($L-8.0*$Lp))]
     set beta2 [expr 3.0*(3*$L*$L*$L - 48*$L*$L*$Lp + 224*$L*$Lp*$Lp - 256*$Lp*$Lp*$Lp)/($L*(3*$L-16.0*$Lp)*(3*$L-16.0*$Lp))]
-
+	
+	set secTag  $eleTag
     set countExtra 2
-    set secTag2 $secTag$countExtra;
+    set secTag2 $eleTag$countExtra;
     incr countExtra 3
-    set secTag3 $secTag$countExtra;
+    set secTag3 $eleTag$countExtra;
 
-    section Elastic $secTag2 $E $A [expr $beta1*$Ixx]
-    section Elastic $secTag3 $E $A [expr $beta2*$Ixx]
-    section Elastic $secTag $E $A [expr $Ixx]
-    
-    set Locations "0 [expr (8.0/3.0*$Lp)/$L] [expr (4.0*$Lp+($L-8*$Lp)/2*(1-1/sqrt(3)))/$L] [expr (4.0*$Lp+	($bmL-8*$Lp)/2*(1+1/sqrt(3)))/$L] [expr ($L-8.0/3.0*$Lp)/$L] 1.0";
-    set weights "[expr $Lp/$L] [expr 3.0*$Lp/$L] [expr (($L-8.0*$Lp)/2)/$L] [expr (($L-8.0*$Lp)/2)/$L] [expr 3.0*$L/$L] [expr $Lp/$L]"; set secTags "$secTag $secTag2 $secTag3 $secTag3 $secTag2 $secTag";
-    set integration "UserDefined 6 $secTags $Locations $weights";
+	set found 0
+    foreach {section prop} [array get WSection $sectType] {
+	#AISC_Manual_Label A d bf tw tf Ix Iy Zx Sx rx Zy Sy ry J
+	set propList [split $prop]
+	set A [expr [lindex $propList 0]*$in*$in]
+	set Ix [expr [lindex $propList 5]*$in*$in*$in*$in]
+	set Iy [expr [lindex $propList 6]*$in*$in*$in*$in]
+	set found 1
+    }
+
+    section Elastic $secTag2 $E $A [expr $beta1*$Ix]
+    section Elastic $secTag3 $E $A [expr $beta2*$Ix]
+	
+	if {[lsearch $args "-metric"] != -1} {
+			SteelWSectionMChi02 $secTag $E $Fy $H $L $Lb $sectType $Com_Type $Comp_Action $Lp  -metric
+	} else {
+			SteelWSectionMChi02 $secTag $E $Fy $H $L $Lb $sectType $Com_Type $Comp_Action $Lp
+	}
+	
+	uniaxialMaterial Elastic [expr $secTag*100] [expr $E*$A];
+	section Aggregator $secTag [expr $secTag*100] P $secTag Mz;
+	
+    set Locations "0 [expr (8.0/3.0*$Lp)/$L] [expr (4.0*$Lp+($L-8*$Lp)/2*(1-1/sqrt(3)))/$L] [expr (4.0*$Lp+($L-8*$Lp)/2*(1+1/sqrt(3)))/$L] [expr ($L-8.0/3.0*$Lp)/$L] 1.0";
+    set weights "[expr $Lp/$L] [expr 3.0*$Lp/$L] [expr (($L-8.0*$Lp)/2)/$L] [expr (($L-8.0*$Lp)/2)/$L] [expr 3.0*$Lp/$L] [expr $Lp/$L]"; 
+	set secTags "$secTag $secTag2 $secTag3 $secTag3 $secTag2 $secTag";
+    set integration "LowOrder 6 $secTags $Locations $weights";
     element forceBeamColumn $eleTag $iNode $jNode $transfTag $integration 
 }
 
@@ -387,7 +416,7 @@ proc ElasticBeamHSSection2d {eleTag iNode jNode sectType E transfTag args} {
     
     foreach {section prop} [array get HSSection $sectType] {
 	set propList [split $prop]
-	## AISC_Manual_Label "W A h b tdes Ix Zx Sx rx Iy Zy Sy ry J C
+
 	set A [expr [lindex $propList 1]*$in*$in]
 	set Ixx [expr [lindex $propList 5]*$in*$in*$in*$in]
 	set Iyy [expr [lindex $propList 9]*$in*$in*$in*$in]
@@ -405,7 +434,7 @@ proc ElasticBeamHSSection2d {eleTag iNode jNode sectType E transfTag args} {
     }
 }
 
-proc HSSbrace {eleTag iNode jNode secType matTag numSeg Im transfTag args} {
+proc HSSbrace {eleTag iNode jNode sectType matTag numSeg Im transfTag args} {
     
     # This procedure develops a 2D brace element in a 2D/3D system (Z coordinates were set to 0).
     # Corotational Transformation is used by defualt
@@ -420,7 +449,7 @@ proc HSSbrace {eleTag iNode jNode secType matTag numSeg Im transfTag args} {
     #  eleTag - element number (neeeded to provide node and ele tags for each beam segment and nodes
     #  iNode
     #  jNode
-    #  secType - HSS section desig
+    #  sectType - HSS section desig
     #  numSeg - num ele divisions
     #  Im - offset
     #  numInt - numIntegration points in beams
@@ -445,9 +474,9 @@ proc HSSbrace {eleTag iNode jNode secType matTag numSeg Im transfTag args} {
     if {[lsearch $args "-elasticSection"] != -1} {
 	set loc [lsearch $args "-elasticSection"] 
         set E [lindex $args [expr $loc+1]]
-	ElasticHSSSection2d $eleTag $secType $E  $Orient
+	ElasticHSSSection2d $eleTag $sectType $E  $Orient
     } else {
-	FiberHSSection2d $eleTag $secType $matTag $nFlange $nWeb $Orient
+	FiberHSSection2d $eleTag $sectType $matTag $nFlange $nWeb $Orient
     }
 
     set PI [expr 2*asin(1.0)];	# define constant pi
@@ -519,6 +548,88 @@ proc HSSbrace {eleTag iNode jNode secType matTag numSeg Im transfTag args} {
     element dispBeamColumn $eleTag$numSeg $jIntNode $jNode $nip $eleTag $transfTag
 }
 
+proc BeamWithConcentratedHingesWSection2d {eleTag iNode jNode sectType E Fy H Lb Com_Type Comp_Action nFactor transfTag args} { 
+ #########################################################################################################
+ #                                                                                                    
+ # Creates a Concentrated Plastic Hinge (CPH) element with two zero-length springs at both ends and a
+ #                                    linear elastic element in between                                    
+ #                                                                                                    
+ # Zero-length springs moment-rotation behavior is defined using the Bilin02 modelusing procedure     
+ #   SteelWSectionMR02 (see below)                                                                  
+ #                                                                                                    
+ # Based on paper under revision "Implementation and calibration of              			 
+ #                 finite-length plastic hinge elements for use in seismic structural collapse analysis."  			              
+ #  by:  F.L.A. Ribeiro, L.C. Neves, A.R. Barbosa
+ #  URL: TBD
+ #
+ # Procedure written by: F.L.A. Ribeiro and Andre Barbosa, FEB-12-2015                                
+ # Contact: f.ribeiro@fct.unl.pt; andre.barbosa@oregonstate.edu    
+ #
+ #  eleTag      - Element ID
+ #  iNode       - First node
+ #  jNode       - Second node
+ #  sectType    - Wsection used (see list below)    
+ #  E           - Young's modulus (in MPa or ksi)   
+ #  Fy          - Yield stress (in MPa or ksi)      
+ #  H           - Member Length without considering the panel zones (in mm or in)  
+ #  Lb          - Unbraced length from point of plastic hinge location to point of zero moment (in mm or in) 
+ #  Com_Type    - Type of component (Use: "other-than-RBS" for this procedure)
+ #  Comp_Action - Composite Action flag (Use: 1 (yes), 0 (No) )               
+ #  nFactor     - Elastic stiffness amplification factor (to make the springs rigid - plastic) - suggested value: 1000 
+ #  transfTag   - geometric transformation     
+ #  args        - <YY> <-metric> <-release1> <-release2>  
+ #              -metric - activate this option if  in and ksi are used	  
+ #              -release1 and/or release2 - activate this option if beam ends are hinged (no bending moment)   
+ #                                                                                                          
+ #########################################################################################################	
+ 
+    global SteelWSectionMR02
+    global in
+	global WSection
+
+    set Orient "XX"
+    if {[lsearch $args "YY"] != -1} {
+	puts "YY orientation not handled - uses XX!"
+    }
+	
+    set hingeEnd1 10
+    node $eleTag$hingeEnd1 [nodeCoord $iNode 1] [nodeCoord $iNode 2]
+    equalDOF $iNode $eleTag$hingeEnd1 1 2
+    set hingeEnd2 100
+    node $eleTag$hingeEnd2 [nodeCoord $jNode 1] [nodeCoord $jNode 2]
+    equalDOF $jNode $eleTag$hingeEnd2 1 2
+    
+    set node1Crds [nodeCoord $iNode]; set x1 [lindex $node1Crds 0]; set y1 [lindex $node1Crds 1]
+    set node2Crds [nodeCoord $jNode]; set x2 [lindex $node2Crds 0]; set y2 [lindex $node2Crds 1]
+    
+    set L [expr sqrt(($x2-$x1)*($x2-$x1)+($y2-$y1)*($y2-$y1))]
+    
+    if {[lsearch $args "-metric"] != -1} {
+	SteelWSectionMR02 $eleTag $E $Fy $H $L $Lb $sectType $Com_Type $Comp_Action -metric -nFactor $nFactor
+    } else {
+	SteelWSectionMR02 $eleTag $E $Fy $H $L $Lb $sectType $Com_Type $Comp_Action -nFactor $nFactor
+    }
+    
+    if {[lsearch $args "-release1"] == -1} {
+	element zeroLength $eleTag$hingeEnd1 $iNode  $eleTag$hingeEnd1 -mat $eleTag -dir 6
+    }
+    
+    if {[lsearch $args "-release2"] == -1} {
+	element zeroLength $eleTag$hingeEnd2 $jNode  $eleTag$hingeEnd2 -mat $eleTag -dir 6
+    }
+    
+    set found 0
+    foreach {section prop} [array get WSection $sectType] {
+	set propList [split $prop]
+	#AISC_Manual_Label A d bf tw tf Ix Iy Zx Sx rx Zy Sy ry J
+	set A [expr [lindex $propList 0]*$in*$in]
+	set Ix [expr [lindex $propList 5]*$in*$in*$in*$in]
+	set found 1
+    }
+
+    element elasticBeamColumn $eleTag $eleTag$hingeEnd1 $eleTag$hingeEnd2 $A $E $Ix $transfTag
+}
+
 
 #
 # 4. PROCEDURES TO CREATE SECTIONS
@@ -537,7 +648,7 @@ proc ElasticSteelWSection2d {sectTag sectType E args} {
     set found 0
     foreach {section prop} [array get WSection $sectType] {
 	set propList [split $prop]
-
+	#AISC_Manual_Label A d bf tw tf Ix Iy Zx Sx rx Zy Sy ry J
 	set A [expr [lindex $propList 0]*$in*$in]
 	set Ixx [expr [lindex $propList 5]*$in*$in*$in*$in]
 	set Iyy [expr [lindex $propList 6]*$in*$in*$in*$in]
@@ -735,47 +846,47 @@ proc HSSectionD {secID matID d b t nfdw nftw} {
 }
 
 
-proc SteelWSectionMR {matTag E Fy Ix Zx H L d tw bf tf Lb ry Com_Type Comp_Action args} {
+proc SteelWSectionMR {matTag E Fy Ix Sx H L d tw bf tf Lb ry Com_Type Comp_Action args} {
 
-    ########################################################################################################
-    # Procedure to Construct the Modified IMK Material with Moment-Rotation curve for steel                #
-    #                                                                                                      #
-    # The input parameters for bare steel components (beams, columns) are based on the following papers:   #
-    #                                                                                                      #
-    # 1. Lignos, D.G., Krawinkler, H. (2011). “Deterioration Modeling of Steel Components in Support of    # 
-    #    Collapse Prediction of Steel Moment Frames under Earthquake Loading",                             # 
-    #    ASCE, Journal of Structural Engineering, Vol. 137 (11), 1291-1302.                                #
-    #                                                                                                      #
-    # 2. Lignos, D.G., Krawinkler, H. (2013). “Development and Utilization of Structural                   #
-    #    Component Databases for Performance-Based Earthquake Engineering”,                                #
-    #    ASCE, Journal of Structural Engineering, Vol. 139 (NEES 2), 1382-1394.                            #
-    #                                                                                                      #
-    # The input parameters for composite steel beams are based on the following paper:                     #
-    #                                                                                                      #
-    # 1. Elkady, A., Lignos, D.G. (2014). “Modeling of the Composite Action in Fully Restrained            #
-    #    Beam-to-Column Connections: Implications in the Seismic Design and Collapse Capacity of Steel     #
-    #    Special Moment Frames", Earthquake Engineering and Structural Dynamics, doi: 10.1002/eqe.2430.    #
-    #                                                                                                      #
-    # Input Variables for Procedure                                                                        #
-    #                                                                                                      #
-    # SpringID    - Spring zerolength ID                                                                   #
-    # Node_i      - First node                                                                             #
-    # Node_j      - Second node                                                                            #
-    # E           - Young's modulus                                                                        #
-    # Fy          - Yield stress                                                                           #
-    # Ix          - Moment of inertia of section                                                           #
-    # Zx          - Plastic modulus of section                                                             #
-    # H           - Member Length without considering the panel zones                                      #
-    # L           - Shear Span                                                                             #
-    # d           - Section depth                                                                          #
-    # tw          - Web thickness                                                                          #
-    # bf          - Flange width                                                                           #
-    # tf          - Flange thickness                                                                       #
-    # Lb          - Unbraced length from point of plastic hinge location to point of zero moment           #
-    # ry          - radius of gyration with respect to the weak axis of the cross section                  #
-    # Com_Type    - Type of component (Use: 'RBS' or 'other-than-RBS')                                     #
-    # Comp_Action - Composite Action flag (Use: 1 (yes), 0 (No) )                                          #
-    ########################################################################################################
+    ############################################################################################
+    # Procedure to Construct the Modified IMK Material with Moment-Rotation curve for steel                              # 
+    #                                                                                                                                                            # 
+    # The input parameters for bare steel components (beams, columns) are based on the following papers:         # 
+    #                                                                                                                                                            # 
+    # 1. Lignos, D.G., Krawinkler, H. (2011). “Deterioration Modeling of Steel Components in Support of               # 
+    #    Collapse Prediction of Steel Moment Frames under Earthquake Loading",                                              # 
+    #    ASCE, Journal of Structural Engineering, Vol. 137 (11), 1291-1302.                                                        # 
+    #                                                                                                                                                            # 
+    # 2. Lignos, D.G., Krawinkler, H. (2013). “Development and Utilization of Structural                                       # 
+    #    Component Databases for Performance-Based Earthquake Engineering”,                                                # 
+    #    ASCE, Journal of Structural Engineering, Vol. 139 (NEES 2), 1382-1394.                                                # 
+    #                                                                                                                                                            # 
+    # The input parameters for composite steel beams are based on the following paper:                                     # 
+    #                                                                                                                                                            # 
+    # 1. Elkady, A., Lignos, D.G. (2014). “Modeling of the Composite Action in Fully Restrained                          # 
+    #    Beam-to-Column Connections: Implications in the Seismic Design and Collapse Capacity of Steel           # 
+    #    Special Moment Frames", Earthquake Engineering and Structural Dynamics, doi: 10.1002/eqe.2430.       # 
+    #                                                                                                                                                            # 
+    # Input Variables for Procedure                                                                                                                 # 
+    #                                                                                                                                                            # 
+    # SpringID    - Spring zerolength ID                                                                                                           # 
+    # Node_i      - First node                                                                                                                           # 
+    # Node_j      - Second node                                                                                                                      # 
+    # E           - Young's modulus                                                                                                                   # 
+    # Fy          - Yield stress                                                                                                                          # 
+    # Ix          - Moment of inertia of section                                                                                                     # 
+    # Sx          - Plastic modulus of section                                                                                                     # 
+    # H           - Member Length without considering the panel zones                                                                 # 
+    # L           - Shear Span                                                                                                                           # 
+    # d           - Section depth                                                                                                                        # 
+    # tw          - Web thickness                                                                                                                      # 
+    # bf          - Flange width                                                                                                                          # 
+    # tf          - Flange thickness                                                                                                                     # 
+    # Lb          - Unbraced length from point of plastic hinge location to point of zero moment                               # 
+    # ry          - radius of gyration with respect to the weak axis of the cross section                                           # 
+    # Com_Type    - Type of component (Use: 'RBS' or 'other-than-RBS')                                                           # 
+    # Comp_Action - Composite Action flag (Use: 1 (yes), 0 (No) )                                                                    # 
+    ###########################################################################################
 
     # parameters c1, c2 for unit conversion if Imperial Units are used else these variables should be set equal to 1.0
     set c1 1.0
@@ -824,8 +935,8 @@ proc SteelWSectionMR {matTag E Fy Ix Zx H L d tw bf tf Lb ry Com_Type Comp_Actio
     set Res 0.4;
     
     # Effective Yield Moment for Positive and Negative Loading Direction
-    set My_P [expr  1.1 * $Zx * $Fy]; 
-    set My_N [expr -1.1 * $Zx * $Fy];
+    set My_P [expr  1.1 * $Sx * $Fy]; 
+    set My_N [expr -1.1 * $Sx * $Fy];
     
     set c_S 1.0; set c_C 1.0; set c_A 1.0; set c_K 1.0;
     
@@ -866,289 +977,600 @@ proc SteelWSectionMR {matTag E Fy Ix Zx H L d tw bf tf Lb ry Com_Type Comp_Actio
 }
 
 
+proc SteelWSectionMR02 {matTag E Fy H L Lb sectType Com_Type Comp_Action args} {
+ ##############################################################################################                                         
+ # Procedure to Construct a Moment-Rotation Curve Using the Bilin02 Model (for steel)
+ #	
+ # Written by: D. Lignos, Ph.D.                                                     
+ # Adapted by: F.L.A. Ribeiro and Andre Barbosa, FEB-12-2015                        
+ #	
+ # The implementation of this model follows papers:   								
+ #  
+ # 1. Ribeiro, F., Neves, L., and Barbosa, A.(2015). "Implementation and calibration of finite-length 
+ #    plastic hinge elements for use in seismic structural collapse analysis." Submitted to Journal of Earthquake	              
+ #    Engineering         
+ #	
+ # The input parameters for bare steel components (beams, columns) are based on the following papers:            
+ #	
+ # 1. Lignos, D.G., Krawinkler, H. (2011). “Deterioration Modeling of Steel Components in Support of 
+ #    Collapse Prediction of Steel Moment Frames under Earthquake Loading",                          
+ #    ASCE, Journal of Structural Engineering, Vol. 137 (11), 1291-1302.                             
+ # 
+ # 2. Lignos, D.G., Krawinkler, H. (2013). “Development and Utilization of Structural
+ #    Component Databases for Performance-Based Earthquake Engineering”,             
+ #    ASCE, Journal of Structural Engineering, Vol. 139 (NEES 2), 1382-1394.         
+ # 
+ # The input parameters for composite steel beams are based on the following paper: 
+ # 
+ # 1. Elkady, A., Lignos, D.G. (2014). “Modeling of the Composite Action in Fully Restrained
+ #    Beam-to-Column Connections: Implications in the Seismic Design and Collapse Capacity of Steel
+ #    Special Moment Frames", Earthquake Engineering and Structural Dynamics, doi: 10.1002/eqe.2430.
+ #
+ # Input Variables for Procedure 
+ # 
+ # matTag      - Deterioration model ID     
+ # E           - Young's modulus (in MPa or ksi)  
+ # Fy          - Yield stress (in MPa or ksi)    
+ # H           - Member Length without considering the panel zones (in mm or in) 
+ # L           - Shear Span (in mm or in)                            
+ # Lb          - Unbraced length from point of plastic hinge location to point of zero moment (in mm or in)   
+ # Com_Type    - Type of component (Use: 'RBS' or 'other-than-RBS')   
+ # Comp_Action - Composite Action flag (Use: 1 (yes), 0 (No) )      
+ # args        - <-nFactor $x> <-metric>							
+ #				-nFactor - elastic stiffness amplification factor   
+ #				-metric - activate this option if  in and ksi are used
+ ###############################################################################################
+	
+    global in
+    global WSection
+    
+    # parameters c1, c2 for unit conversion if Imperial Units are used else these variables should be set equal to 1.0
+    set c1 1.0
+    set c2 1.0
+    
+    if {[lsearch $args "-metric"] != -1} {
+	set c1 25.4; 
+	set c2 6.895;
+    }
+    
+    set found 0.
+    foreach {section prop} [array get WSection $sectType] {
+	set propList [split $prop]                              
+	#AISC_Manual_Label A d bf tw tf Ix Iy Zx Sx rx Zy Sy ry J
+	set A [expr [lindex $propList 0]*$in*$in]
+	set d [expr [lindex $propList 1]*$in]
+	set bf [expr [lindex $propList 2]*$in]
+	set tw [expr [lindex $propList 3]*$in]
+	set tf [expr [lindex $propList 4]*$in]
+	set Ix [expr [lindex $propList 5]*$in*$in*$in*$in]
+	set Iy [expr [lindex $propList 6]*$in*$in*$in*$in]
+	set Sx [expr [lindex $propList 8]*$in*$in*$in]
+	set rx [expr [lindex $propList 9]*$in]
+	set Sy [expr [lindex $propList 11]*$in*$in*$in]
+	set ry [expr [lindex $propList 12]*$in]             
+	
+	set found 1.	
+    }
+    
+    if {[lsearch $args "-nFactor"] != -1} {
+	set loc [lsearch $args "-nFactor"]
+	set nFactor [lindex $args [expr $loc+1]]
+	set Ixx [expr ($nFactor + 1.)/$nFactor * $Ix]
+    } else {
+	set nFactor 0.
+	set Ixx $Ix
+    }		
+    
+    # Element flexural stiffness assuming that the element is in double curvature 
+    set K [expr 6.*$E* $Ixx / $H]; 
+    
+    if {$Com_Type == "other-than-RBS"} {
+	# Pre-capping plastic rotation
+	set theta_p   [expr 0.0865 * pow(($d/$tw),-0.365)  * pow(($bf/2./$tf),-0.140) *  pow(($L/$d),0.340) * pow(($c1 * $d/533.),-0.721) * pow(($c2 * $Fy/355.),-0.230)];
+	
+	# Post-capping plastic rotation
+	set theta_pc  [expr 5.63 * pow(($d/$tw),-0.565)  * pow(($bf/2./$tf),-0.800) *  pow(($c1 * $d/533.),-0.280)  * pow(($c2 * $Fy/355.),-0.430)];
+	
+	# Reference Cumulative Energy
+	set Lmda      [expr 495.0 * pow(($d/$tw),-1.340)  * pow(($bf/2./$tf),-0.595) *  pow(($c2 * $Fy/355.),-0.360)];
+    }
+    
+    if {$Com_Type == "RBS"} {
+	# Pre-capping plastic rotation 
+	set theta_p   [expr 0.19 * pow(($d/$tw),-0.314) * pow(($bf/2./$tf),-0.100) *  pow(($Lb/$ry),-0.185) * pow(($L/$d),0.113) * pow(($c1 * $d/533.),-0.760) * pow(($c2 * $Fy/355.),-0.070)];
+	
+	# Post-capping plastic rotation
+	set theta_pc  [expr 9.52 * pow(($d/$tw),-0.513) * pow(($bf/2./$tf),-0.863) *  pow(($Lb/$ry),-0.108) * pow(($c2 * $Fy/355.),-0.360)];
+	
+	# Reference Cumulative Energy
+	set Lmda      [expr 585. * pow(($d/$tw),-1.140) * pow(($bf/2./$tf),-0.632) *  pow(($Lb/$ry),-0.205) * pow(($c2 * $Fy/355),-0.391)];
+    }
+    
+    # Ultimate Chord Rotation
+    set theta_u 0.4;
+    
+    # Residual Strength Factor
+    set Res 0.4;
+    
+    # Effective Yield Moment for Positive and Negative Loading Direction
+    set My_P [expr  1.1 * $Sx * $Fy]; 
+    set My_N [expr  -1.1 * $Sx * $Fy];
+    
+    set c_S 1.0; set c_C 1.0; set c_A 1.0; set c_K 1.0;
+    
+    # Check for Composite Action for Beam Springs: If yes adjust the spring parameters based on the ones proposed by Elkady and Lignos (2014)
+    if {$Com_Type == 1} { 
+	set theta_p_P   [expr 1.80*$theta_p];
+	set theta_p_N   [expr 0.95*$theta_p];
+	set theta_pc_P  [expr 1.35*$theta_pc];
+	set theta_pc_N  [expr 0.95*$theta_pc];
+	set D_P 1.15; set D_N 1.00;
+	
+	# Capping-to-Yield Flexural Strength for Positive and Negative Loading Directions
+	set McMyP 1.30; set McMyN 1.05;
+	
+	# Effective Yield Moment for Positive and Negative Loading Direction after Slab Adjustment
+	set My_P      [expr  1.35 * $My_P]; 
+	set My_N      [expr  1.25 * $My_N];
+	
+	# If No composite Action is considered (Columns and Bare Beam cases)
+    } else {
+	set theta_p_P   $theta_p;
+	set theta_p_N   $theta_p;
+	set theta_pc_P  $theta_pc;
+	set theta_pc_N  $theta_pc;
+	set D_P 1.0; set D_N 1.0;
+	
+	# Capping-to-Yield Flexural Strength for Positive and Negative Loading Directions
+	set McMyP 1.05; set McMyN 1.05;
+    }
+    
+    # Strain hardening ratios for Positive and Negative Loading Directions
+    set as_mem_p [expr   ($McMyP-1.)*$My_P/($theta_p_P * $K)];
+    set as_mem_n [expr  -($McMyN-1.)*$My_N/($theta_p_N * $K)];
+    
+    # Define Uniaxial Material Modified Ibarra-Medina-Krawinkler (IMK) Model with Bilinear Hysteretic response
+    uniaxialMaterial Bilin02 $matTag $K $as_mem_p $as_mem_n $My_P $My_N $Lmda $Lmda $Lmda $Lmda $c_S $c_C $c_A $c_K $theta_p_P $theta_p_N $theta_pc_P $theta_pc_N $Res $Res $theta_u $theta_u $D_P $D_N $nFactor
+}
+
+
+proc SteelWSectionMChi02 {matTag E Fy H L Lb sectType Com_Type Comp_Action Lp args} {
+    ################################################################################################
+    # Procedure to Construct a Moment-Curvature Curve Using the Bilin02 Model (for steel)  
+    #	
+    # Written by: F.L.A. Ribeiro and Andre Barbosa, FEB-12-2015                                
+    # 	
+    # The implementation of this model follows papers:   
+    # 
+    # 1. Ribeiro, F., Neves, L., and Barbosa, A.(2015). “Implementation and calibration of finite-length  
+    #    plastic hinge elements for use in seismic structural collapse analysis.” Submitted to Journal of Earthquake
+    #    Engineering
+    #	
+    # The input parameters for bare steel components (beams, columns) are based on the following papers: 
+    #	
+    # 1. Lignos, D.G., Krawinkler, H. (2011). “Deterioration Modeling of Steel Components in Support of  
+    #    Collapse Prediction of Steel Moment Frames under Earthquake Loading",                           
+    #    ASCE, Journal of Structural Engineering, Vol. 137 (11), 1291-1302.                              
+    # 
+    # 2. Lignos, D.G., Krawinkler, H. (2013). “Development and Utilization of Structural    
+    #    Component Databases for Performance-Based Earthquake Engineering”,     
+    #    ASCE, Journal of Structural Engineering, Vol. 139 (NEES 2), 1382-1394. 
+    # 
+    # The input parameters for composite steel beams are based on the following paper: 
+    # 
+    # 1. Elkady, A., Lignos, D.G. (2014). “Modeling of the Composite Action in Fully Restrained 
+    #    Beam-to-Column Connections: Implications in the Seismic Design and Collapse Capacity of Steel  
+    #    Special Moment Frames", Earthquake Engineering and Structural Dynamics, doi: 10.1002/eqe.2430. 
+    # 
+    # Input Variables for Procedure        
+    # 
+    # matTag      - Deterioration model ID               
+    # E           - Young's modulus (in MPa or ksi)      
+    # Fy          - Yield stress (in MPa or ksi)         
+    # H           - Member Length without considering the panel zones (in mm or in) 
+    # L           - Shear Span (in mm or in)                                        
+    # Lb          - Unbraced length from point of plastic hinge location to point of zero moment (in mm or in) 
+    # Com_Type    - Type of component (Use: 'RBS' or 'other-than-RBS')    
+    # Comp_Action - Composite Action flag (Use: 1 (yes), 0 (No) )         
+    # Lp          - Plastic hinge length									
+    # args        - <-metric>										
+    #				metric - activate this option if  in and ksi are used 
+    ###############################################################################################
+    
+    global in
+    global WSection
+    
+    # parameters c1, c2 for unit conversion if Imperial Units are used else these variables should be set equal to 1.0
+    set c1 1.0
+    set c2 1.0
+    
+    if {[lsearch $args "-metric"] != -1} {
+	set c1 25.4; 
+	set c2 6.895;
+    }
+    
+    set found 0.                                                                      
+    foreach {section prop} [array get WSection $sectType] {       
+
+	set propList [split $prop]                                                    
+	
+	#AISC_Manual_Label A d bf tw tf Ix Iy Zx Sx rx Zy Sy ry J
+	set A [expr [lindex $propList 0]*$in*$in]
+	set d [expr [lindex $propList 1]*$in]
+	set bf [expr [lindex $propList 2]*$in]
+	set tw [expr [lindex $propList 3]*$in]
+	set tf [expr [lindex $propList 4]*$in]
+	set Ix [expr [lindex $propList 5]*$in*$in*$in*$in]
+	set Iy [expr [lindex $propList 6]*$in*$in*$in*$in]
+	set Sx [expr [lindex $propList 8]*$in*$in*$in]
+	set rx [expr [lindex $propList 9]*$in]
+	set Sy [expr [lindex $propList 11]*$in*$in*$in]
+	set ry [expr [lindex $propList 12]*$in]             
+
+	set found 1.                                                                      
+    }
+	
+    # Element flexural stiffness assuming that the element is in double curvature 
+    set K [expr 6.*$E* $Ix / $H * $Lp]; 
+    
+    if {$Com_Type == "other-than-RBS"} {
+	# Pre-capping plastic rotation
+	set theta_p   [expr 1./$Lp * 0.0865 * pow(($d/$tw),-0.365)  * pow(($bf/2./$tf),-0.140) *  pow(($L/$d),0.340) * pow(($c1 * $d/533.),-0.721) * pow(($c2 * $Fy/355.),-0.230)];
+	
+	# Post-capping plastic rotation
+	set theta_pc  [expr 1./$Lp * 5.63 * pow(($d/$tw),-0.565)  * pow(($bf/2./$tf),-0.800) *  pow(($c1 * $d/533.),-0.280)  * pow(($c2 * $Fy/355.),-0.430)];
+	
+	# Reference Cumulative Energy
+	set Lmda      [expr 1./$Lp * 495.0 * pow(($d/$tw),-1.340)  * pow(($bf/2./$tf),-0.595) *  pow(($c2 * $Fy/355.),-0.360)];
+    }
+    
+    if {$Com_Type == "RBS"} {
+	# Pre-capping plastic rotation 
+	set theta_p   [expr 1./$Lp * 0.19 * pow(($d/$tw),-0.314) * pow(($bf/2./$tf),-0.100) *  pow(($Lb/$ry),-0.185) * pow(($L/$d),0.113) * pow(($c1 * $d/533.),-0.760) * pow(($c2 * $Fy/355.),-0.070)];
+	
+	# Post-capping plastic rotation
+	set theta_pc  [expr 1./$Lp * 9.52 * pow(($d/$tw),-0.513) * pow(($bf/2./$tf),-0.863) *  pow(($Lb/$ry),-0.108) * pow(($c2 * $Fy/355.),-0.360)];
+	
+	# Reference Cumulative Energy
+	set Lmda      [expr 1./$Lp * 585. * pow(($d/$tw),-1.140) * pow(($bf/2./$tf),-0.632) *  pow(($Lb/$ry),-0.205) * pow(($c2 * $Fy/355),-0.391)]
+    }
+    
+    # Ultimate Chord Rotation
+    set theta_u [expr 1./$Lp * 0.4];
+    
+    # Residual Strength Factor
+    set Res 0.4;
+    
+    # Effective Yield Moment for Positive and Negative Loading Direction
+    set My_P [expr  1.1 * $Sx * $Fy]; 
+    set My_N [expr  -1.1 * $Sx * $Fy];
+    
+    set c_S 1.0; set c_C 1.0; set c_A 1.0; set c_K 1.0;
+    
+    # Check for Composite Action for Beam Springs: If yes adjust the spring parameters based on the ones proposed by Elkady and Lignos (2014)
+    if {$Com_Type == 1} { 
+	set theta_p_P   [expr 1.80*$theta_p];
+	set theta_p_N   [expr 0.95*$theta_p];
+	set theta_pc_P  [expr 1.35*$theta_pc];
+	set theta_pc_N  [expr 0.95*$theta_pc];
+	set D_P 1.15; set D_N 1.00;
+	
+	# Capping-to-Yield Flexural Strength for Positive and Negative Loading Directions
+	set McMyP 1.30; set McMyN 1.05;
+	
+	# Effective Yield Moment for Positive and Negative Loading Direction after Slab Adjustment
+	set My_P      [expr  1.35 * $My_P]; 
+	set My_N      [expr  1.25 * $My_N];
+	
+	# If No composite Action is considered (Columns and Bare Beam cases)
+    } else {
+	set theta_p_P   $theta_p;
+	set theta_p_N   $theta_p;
+	set theta_pc_P  $theta_pc;
+	set theta_pc_N  $theta_pc;
+	set D_P 1.0; set D_N 1.0;
+	
+	# Capping-to-Yield Flexural Strength for Positive and Negative Loading Directions
+	set McMyP 1.05; set McMyN 1.05;
+    }
+    
+    # Strain hardening ratios for Positive and Negative Loading Directions
+    set as_mem_p [expr  ($McMyP-1.)*$My_P/($theta_p_P * 6.*$E * $Ix/$H * $Lp)];
+    set as_mem_n [expr -($McMyN-1.)*$My_N/($theta_p_N * 6.*$E * $Ix/$H * $Lp)];
+    
+    # Define Uniaxial Material Modified Ibarra-Medina-Krawinkler (IMK) Model with Bilinear Hysteretic response
+    uniaxialMaterial Bilin02 $matTag $K $as_mem_p $as_mem_n $My_P $My_N $Lmda $Lmda $Lmda $Lmda $c_S $c_C $c_A $c_K $theta_p_P $theta_p_N $theta_pc_P $theta_pc_N $Res $Res $theta_u $theta_u $D_P $D_N
+}
+
 
 #
 # 5. AISC W Section Table
 #
 
 
-#Winxlb/f "Area(in2) d(in) bf(in) tw(in) tf(in) Ixx(in4) Iyy(in4)"
+#AISC_Manual_Label A d bf tw tf Ix Iy Zx Sx rx Zy Sy ry J
 array set WSection {
-    W44X335  	"98.5 44.0 15.9 1.03 1.77 31100 1200 74.7"
-    W44X290  	"85.4 43.6 15.8 0.865 1.58 27000 1040 50.9"
-    W44X262  	"76.9 43.3 15.8 0.785 1.42 24100 923 37.3"
-    W44X230  	"67.7 42.9 15.8 0.710 1.22 20800 796 24.9"
-    W40X593  	"174 43.0 16.7 1.79 3.23 50400 2520 445"
-    W40X503  	"148 42.1 16.4 1.54 2.76 41600 2040 277"
-    W40X431  	"127 41.3 16.2 1.34 2.36 34800 1690 177"
-    W40X397  	"117 41.0 16.1 1.22 2.20 32000 1540 142"
-    W40X372  	"109 40.6 16.1 1.16 2.05 29600 1420 116"
-    W40X362  	"107 40.6 16.0 1.12 2.01 28900 1380 109"
-    W40X324  	"95.3 40.2 15.9 1.00 1.81 25600 1220 79.4"
-    W40X297  	"87.4 39.8 15.8 0.930 1.65 23200 1090 61.2"
-    W40X277  	"81.4 39.7 15.8 0.830 1.58 21900 1040 51.5"
-    W40X249  	"73.3 39.4 15.8 0.750 1.42 19600 926 38.1"
-    W40X215  	"63.4 39.0 15.8 0.650 1.22 16700 796 24.8"
-    W40X199  	"58.5 38.7 15.8 0.650 1.07 14900 695 18.3"
-    W40X392  	"115 41.6 12.4 1.42 2.52 29900 803 172"
-    W40X331  	"97.5 40.8 12.2 1.22 2.13 24700 644 105"
-    W40X327  	"96.0 40.8 12.1 1.18 2.13 24500 640 103"
-    W40X294  	"86.3 40.4 12.0 1.06 1.93 21900 562 76.6"
-    W40X278  	"82.0 40.2 12.0 1.03 1.81 20500 521 65.0"
-    W40X264  	"77.6 40.0 11.9 0.960 1.73 19400 493 56.1"
-    W40X235  	"69.0 39.7 11.9 0.830 1.58 17400 444 41.3"
-    W40X211  	"62.0 39.4 11.8 0.750 1.42 15500 390 30.4"
-    W40X183  	"53.3 39.0 11.8 0.650 1.20 13200 331 19.3"
-    W40X167  	"49.2 38.6 11.8 0.650 1.03 11600 283 14.0"
-    W40X149  	"43.8 38.2 11.8 0.630 0.830 9800 229 9.36"
-    W36X800  	"236 42.6 18.0 2.38 4.29 64700 4200 1060"
-    W36X652  	"192 41.1 17.6 1.97 3.54 50600 3230 593"
-    W36X529  	"156 39.8 17.2 1.61 2.91 39600 2490 327"
-    W36X487  	"143 39.3 17.1 1.50 2.68 36000 2250 258"
-    W36X441  	"130 38.9 17.0 1.36 2.44 32100 1990 194"
-    W36X395  	"116 38.4 16.8 1.22 2.20 28500 1750 142"
-    W36X361  	"106 38.0 16.7 1.12 2.01 25700 1570 109"
-    W36X330  	"97.0 37.7 16.6 1.02 1.85 23300 1420 84.3"
-    W36X302  	"88.8 37.3 16.7 0.945 1.68 21100 1300 64.3"
-    W36X282  	"82.9 37.1 16.6 0.885 1.57 19600 1200 52.7"
-    W36X262  	"77.0 36.9 16.6 0.840 1.44 17900 1090 41.6"
-    W36X247  	"72.5 36.7 16.5 0.800 1.35 16700 1010 34.7"
-    W36X231  	"68.1 36.5 16.5 0.760 1.26 15600 940 28.7"
-    W36X256  	"75.4 37.4 12.2 0.960 1.73 16800 528 52.9"
-    W36X232  	"68.1 37.1 12.1 0.870 1.57 15000 468 39.6"
-    W36X210  	"61.8 36.7 12.2 0.830 1.36 13200 411 28.0"
-    W36X194  	"57.0 36.5 12.1 0.765 1.26 12100 375 22.2"
-    W36X182  	"53.6 36.3 12.1 0.725 1.18 11300 347 18.5"
-    W36X170  	"50.1 36.2 12.0 0.680 1.10 10500 320 15.1"
-    W36X160  	"47.0 36.0 12.0 0.650 1.02 9760 295 12.4"
-    W36X150  	"44.2 35.9 12.0 0.625 0.940 9040 270 10.1"
-    W36X135  	"39.7 35.6 12.0 0.600 0.790 7800 225 7.00"
-    W33X387  	"114 36.0 16.2 1.26 2.28 24300 1620 148"
-    W33X354  	"104 35.6 16.1 1.16 2.09 22000 1460 115"
-    W33X318  	"93.6 35.2 16.0 1.04 1.89 19500 1290 84.4"
-    W33X291  	"85.7 34.8 15.9 0.960 1.73 17700 1160 65.1"
-    W33X263  	"77.5 34.5 15.8 0.870 1.57 15900 1040 48.7"
-    W33X241  	"71.0 34.2 15.9 0.830 1.40 14200 933 36.2"
-    W33X221  	"65.2 33.9 15.8 0.775 1.28 12900 840 27.8"
-    W33X201  	"59.2 33.7 15.7 0.715 1.15 11600 749 20.8"
-    W33X169  	"49.5 33.8 11.5 0.670 1.22 9290 310 17.7"
-    W33X152  	"44.8 33.5 11.6 0.635 1.06 8160 273 12.4"
-    W33X141  	"41.6 33.3 11.5 0.605 0.960 7450 246 9.70"
-    W33X130  	"38.3 33.1 11.5 0.580 0.855 6710 218 7.37"
-    W33X118  	"34.7 32.9 11.5 0.550 0.740 5900 187 5.30"
-    W30X391  	"115 33.2 15.6 1.36 2.44 20700 1550 173"
-    W30X357  	"105 32.8 15.5 1.24 2.24 18700 1390 134"
-    W30X326  	"95.8 32.4 15.4 1.14 2.05 16800 1240 103"
-    W30X292  	"85.9 32.0 15.3 1.02 1.85 14900 1100 75.2"
-    W30X261  	"76.9 31.6 15.2 0.930 1.65 13100 959 54.1"
-    W30X235  	"69.2 31.3 15.1 0.830 1.50 11700 855 40.3"
-    W30X211  	"62.2 30.9 15.1 0.775 1.32 10300 757 28.4"
-    W30X191  	"56.3 30.7 15.0 0.710 1.19 9200 673 21.0"
-    W30X173  	"51.0 30.4 15.0 0.655 1.07 8230 598 15.6"
-    W30X148  	"43.5 30.7 10.5 0.650 1.18 6680 227 14.5"
-    W30X132  	"38.9 30.3 10.5 0.615 1.00 5770 196 9.72"
-    W30X124  	"36.5 30.2 10.5 0.585 0.930 5360 181 7.99"
-    W30X116  	"34.2 30.0 10.5 0.565 0.850 4930 164 6.43"
-    W30X108  	"31.7 29.8 10.5 0.545 0.760 4470 146 4.99"
-    W30X99  	"29.1 29.7 10.5 0.520 0.670 3990 128 3.77"
-    W30X90  	"26.4 29.5 10.4 0.470 0.610 3610 115 2.84"
-    W27X539  	"159 32.5 15.3 1.97 3.54 25600 2110 496"
-    W27X368  	"108 30.4 14.7 1.38 2.48 16200 1310 170"
-    W27X336  	"98.9 30.0 14.6 1.26 2.28 14600 1180 131"
-    W27X307  	"90.4 29.6 14.4 1.16 2.09 13100 1050 101"
-    W27X281  	"82.9 29.3 14.4 1.06 1.93 11900 953 79.5"
-    W27X258  	"76.0 29.0 14.3 0.980 1.77 10800 859 61.6"
-    W27X235  	"69.4 28.7 14.2 0.910 1.61 9700 769 47.0"
-    W27X217  	"64.0 28.4 14.1 0.830 1.50 8910 704 37.6"
-    W27X194  	"57.2 28.1 14.0 0.750 1.34 7860 619 27.1"
-    W27X178  	"52.5 27.8 14.1 0.725 1.19 7020 555 20.1"
-    W27X161  	"47.6 27.6 14.0 0.660 1.08 6310 497 15.1"
-    W27X146  	"43.1 27.4 14.0 0.605 0.975 5660 443 11.3"
-    W27X129  	"37.8 27.6 10.0 0.610 1.10 4760 184 11.1"
-    W27X114  	"33.5 27.3 10.1 0.570 0.930 4080 159 7.33"
-    W27X102  	"30.0 27.1 10.0 0.515 0.830 3620 139 5.28"
-    W27X94  	"27.7 26.9 10.0 0.490 0.745 3270 124 4.03"
-    W27X84  	"24.8 26.7 10.0 0.460 0.640 2850 106 2.81"
-    W24X370  	"109 28.0 13.7 1.52 2.72 13400 1160 201"
-    W24X335  	"98.4 27.5 13.5 1.38 2.48 11900 1030 152"
-    W24X306  	"89.8 27.1 13.4 1.26 2.28 10700 919 117"
-    W24X279  	"82.0 26.7 13.3 1.16 2.09 9600 823 90.5"
-    W24X250  	"73.5 26.3 13.2 1.04 1.89 8490 724 66.6"
-    W24X229  	"67.2 26.0 13.1 0.960 1.73 7650 651 51.3"
-    W24X207  	"60.7 25.7 13.0 0.870 1.57 6820 578 38.3"
-    W24X192  	"56.3 25.5 13.0 0.810 1.46 6260 530 30.8"
-    W24X176  	"51.7 25.2 12.9 0.750 1.34 5680 479 23.9"
-    W24X162  	"47.7 25.0 13.0 0.705 1.22 5170 443 18.5"
-    W24X146  	"43.0 24.7 12.9 0.650 1.09 4580 391 13.4"
-    W24X131  	"38.5 24.5 12.9 0.605 0.960 4020 340 9.50"
-    W24X117  	"34.4 24.3 12.8 0.550 0.850 3540 297 6.72"
-    W24X104  	"30.6 24.1 12.8 0.500 0.750 3100 259 4.72"
-    W24X103  	"30.3 24.5 9.00 0.550 0.980 3000 119 7.07"
-    W24X94  	"27.7 24.3 9.07 0.515 0.875 2700 109 5.26"
-    W24X84  	"24.7 24.1 9.02 0.470 0.770 2370 94.4 3.70"
-    W24X76  	"22.4 23.9 8.99 0.440 0.680 2100 82.5 2.68"
-    W24X68  	"20.1 23.7 8.97 0.415 0.585 1830 70.4 1.87"
-    W24X62  	"18.2 23.7 7.04 0.430 0.590 1550 34.5 1.71"
-    W24X55  	"16.2 23.6 7.01 0.395 0.505 1350 29.1 1.18"
-    W21X201  	"59.2 23.0 12.6 0.910 1.63 5310 542 40.9"
-    W21X182  	"53.6 22.7 12.5 0.830 1.48 4730 483 30.7"
-    W21X166  	"48.8 22.5 12.4 0.750 1.36 4280 435 23.6"
-    W21X147  	"43.2 22.1 12.5 0.720 1.15 3630 376 15.4"
-    W21X132  	"38.8 21.8 12.4 0.650 1.04 3220 333 11.3"
-    W21X122  	"35.9 21.7 12.4 0.600 0.960 2960 305 8.98"
-    W21X111  	"32.7 21.5 12.3 0.550 0.875 2670 274 6.83"
-    W21X101  	"29.8 21.4 12.3 0.500 0.800 2420 248 5.21"
-    W21X93  	"27.3 21.6 8.42 0.580 0.930 2070 92.9 6.03"
-    W21X83  	"24.3 21.4 8.36 0.515 0.835 1830 81.4 4.34"
-    W21X73  	"21.5 21.2 8.30 0.455 0.740 1600 70.6 3.02"
-    W21X68  	"20.0 21.1 8.27 0.430 0.685 1480 64.7 2.45"
-    W21X62  	"18.3 21.0 8.24 0.400 0.615 1330 57.5 1.83"
-    W21X55  	"16.2 20.8 8.22 0.375 0.522 1140 48.4 1.24"
-    W21X48  	"14.1 20.6 8.14 0.350 0.430 959 38.7 0.803"
-    W21X57  	"16.7 21.1 6.56 0.405 0.650 1170 30.6 1.77"
-    W21X50  	"14.7 20.8 6.53 0.380 0.535 984 24.9 1.14"
-    W21X44  	"13.0 20.7 6.50 0.350 0.450 843 20.7 0.770"
-    W18X311  	"91.6 22.3 12.0 1.52 2.74 6970 795 176"
-    W18X283  	"83.3 21.9 11.9 1.40 2.50 6170 704 134"
-    W18X258  	"75.9 21.5 11.8 1.28 2.30 5510 628 103"
-    W18X234  	"68.8 21.1 11.7 1.16 2.11 4900 558 78.7"
-    W18X211  	"62.1 20.7 11.6 1.06 1.91 4330 493 58.6"
-    W18X192  	"56.4 20.4 11.5 0.960 1.75 3870 440 44.7"
-    W18X175  	"51.3 20.0 11.4 0.890 1.59 3450 391 33.8"
-    W18X158  	"46.3 19.7 11.3 0.810 1.44 3060 347 25.2"
-    W18X143  	"42.1 19.5 11.2 0.730 1.32 2750 311 19.2"
-    W18X130  	"38.2 19.3 11.2 0.670 1.20 2460 278 14.5"
-    W18X119  	"35.1 19.0 11.3 0.655 1.06 2190 253 10.6"
-    W18X106  	"31.1 18.7 11.2 0.590 0.940 1910 220 7.48"
-    W18X97  	"28.5 18.6 11.1 0.535 0.870 1750 201 5.86"
-    W18X86  	"25.3 18.4 11.1 0.480 0.770 1530 175 4.10"
-    W18X76  	"22.3 18.2 11.0 0.425 0.680 1330 152 2.83"
-    W18X71  	"20.8 18.5 7.64 0.495 0.810 1170 60.3 3.49"
-    W18X65  	"19.1 18.4 7.59 0.450 0.750 1070 54.8 2.73"
-    W18X60  	"17.6 18.2 7.56 0.415 0.695 984 50.1 2.17"
-    W18X55  	"16.2 18.1 7.53 0.390 0.630 890 44.9 1.66"
-    W18X50  	"14.7 18.0 7.50 0.355 0.570 800 40.1 1.24"
-    W18X46  	"13.5 18.1 6.06 0.360 0.605 712 22.5 1.22"
-    W18X40  	"11.8 17.9 6.02 0.315 0.525 612 19.1 0.810"
-    W18X35  	"10.3 17.7 6.00 0.300 0.425 510 15.3 0.506"
-    W16X100  	"29.5 17.0 10.4 0.585 0.985 1490 186 7.73"
-    W16X89  	"26.2 16.8 10.4 0.525 0.875 1300 163 5.45"
-    W16X77  	"22.6 16.5 10.3 0.455 0.760 1110 138 3.57"
-    W16X67  	"19.7 16.3 10.2 0.395 0.665 954 119 2.39"
-    W16X57  	"16.8 16.4 7.12 0.430 0.715 758 43.1 2.22"
-    W16X50  	"14.7 16.3 7.07 0.380 0.630 659 37.2 1.52"
-    W16X45  	"13.3 16.1 7.04 0.345 0.565 586 32.8 1.11"
-    W16X40  	"11.8 16.0 7.00 0.305 0.505 518 28.9 0.794"
-    W16X36  	"10.6 15.9 6.99 0.295 0.430 448 24.5 0.545"
-    W16X31  	"9.13 15.9 5.53 0.275 0.440 375 12.4 0.461"
-    W16X26  	"7.68 15.7 5.50 0.250 0.345 301 9.59 0.262"
-    W14X730  	"215 22.4 17.9 3.07 4.91 14300 4720 1450"
-    W14X665  	"196 21.6 17.7 2.83 4.52 12400 4170 1120"
-    W14X605  	"178 20.9 17.4 2.60 4.16 10800 3680 869"
-    W14X550  	"162 20.2 17.2 2.38 3.82 9430 3250 669"
-    W14X500  	"147 19.6 17.0 2.19 3.50 8210 2880 514"
-    W14X455  	"134 19.0 16.8 2.02 3.21 7190 2560 395"
-    W14X426  	"125 18.7 16.7 1.88 3.04 6600 2360 331"
-    W14X398  	"117 18.3 16.6 1.77 2.85 6000 2170 273"
-    W14X370  	"109 17.9 16.5 1.66 2.66 5440 1990 222"
-    W14X342  	"101 17.5 16.4 1.54 2.47 4900 1810 178"
-    W14X311  	"91.4 17.1 16.2 1.41 2.26 4330 1610 136"
-    W14X283  	"83.3 16.7 16.1 1.29 2.07 3840 1440 104"
-    W14X257  	"75.6 16.4 16.0 1.18 1.89 3400 1290 79.1"
-    W14X233  	"68.5 16.0 15.9 1.07 1.72 3010 1150 59.5"
-    W14X211  	"62.0 15.7 15.8 0.980 1.56 2660 1030 44.6"
-    W14X193  	"56.8 15.5 15.7 0.890 1.44 2400 931 34.8"
-    W14X176  	"51.8 15.2 15.7 0.830 1.31 2140 838 26.5"
-    W14X159  	"46.7 15.0 15.6 0.745 1.19 1900 748 19.7"
-    W14X145  	"42.7 14.8 15.5 0.680 1.09 1710 677 15.2"
-    W14X132  	"38.8 14.7 14.7 0.645 1.03 1530 548 12.3"
-    W14X120  	"35.3 14.5 14.7 0.590 0.940 1380 495 9.37"
-    W14X109  	"32.0 14.3 14.6 0.525 0.860 1240 447 7.12"
-    W14X99  	"29.1 14.2 14.6 0.485 0.780 1110 402 5.37"
-    W14X90  	"26.5 14.0 14.5 0.440 0.710 999 362 4.06"
-    W14X82  	"24.0 14.3 10.1 0.510 0.855 881 148 5.07"
-    W14X74  	"21.8 14.2 10.1 0.450 0.785 795 134 3.87"
-    W14X68  	"20.0 14.0 10.0 0.415 0.720 722 121 3.01"
-    W14X61  	"17.9 13.9 10.0 0.375 0.645 640 107 2.19"
-    W14X53  	"15.6 13.9 8.06 0.370 0.660 541 57.7 1.94"
-    W14X48  	"14.1 13.8 8.03 0.340 0.595 484 51.4 1.45"
-    W14X43  	"12.6 13.7 8.00 0.305 0.530 428 45.2 1.05"
-    W14X38  	"11.2 14.1 6.77 0.310 0.515 385 26.7 0.798"
-    W14X34  	"10.0 14.0 6.75 0.285 0.455 340 23.3 0.569"
-    W14X30  	"8.85 13.8 6.73 0.270 0.385 291 19.6 0.380"
-    W14X26  	"7.69 13.9 5.03 0.255 0.420 245 8.91 0.358"
-    W14X22  	"6.49 13.7 5.00 0.230 0.335 199 7.00 0.208"
-    W12X336  	"98.8 16.8 13.4 1.78 2.96 4060 1190 243"
-    W12X305  	"89.6 16.3 13.2 1.63 2.71 3550 1050 185"
-    W12X279  	"81.9 15.9 13.1 1.53 2.47 3110 937 143"
-    W12X252  	"74.0 15.4 13.0 1.40 2.25 2720 828 108"
-    W12X230  	"67.7 15.1 12.9 1.29 2.07 2420 742 83.8"
-    W12X210  	"61.8 14.7 12.8 1.18 1.90 2140 664 64.7"
-    W12X190  	"55.8 14.4 12.7 1.06 1.74 1890 589 48.8"
-    W12X170  	"50.0 14.0 12.6 0.960 1.56 1650 517 35.6"
-    W12X152  	"44.7 13.7 12.5 0.870 1.40 1430 454 25.8"
-    W12X136  	"39.9 13.4 12.4 0.790 1.25 1240 398 18.5"
-    W12X120  	"35.3 13.1 12.3 0.710 1.11 1070 345 12.9"
-    W12X106  	"31.2 12.9 12.2 0.610 0.990 933 301 9.13"
-    W12X96  	"28.2 12.7 12.2 0.550 0.900 833 270 6.85"
-    W12X87  	"25.6 12.5 12.1 0.515 0.810 740 241 5.10"
-    W12X79  	"23.2 12.4 12.1 0.470 0.735 662 216 3.84"
-    W12X72  	"21.1 12.3 12.0 0.430 0.670 597 195 2.93"
-    W12X65  	"19.1 12.1 12.0 0.390 0.605 533 174 2.18"
-    W12X58  	"17.0 12.2 10.0 0.360 0.640 475 107 2.10"
-    W12X53  	"15.6 12.1 10.0 0.345 0.575 425 95.8 1.58"
-    W12X50  	"14.6 12.2 8.08 0.370 0.640 391 56.3 1.71"
-    W12X45  	"13.1 12.1 8.05 0.335 0.575 348 50.0 1.26"
-    W12X40  	"11.7 11.9 8.01 0.295 0.515 307 44.1 0.906"
-    W12X35  	"10.3 12.5 6.56 0.300 0.520 285 24.5 0.741"
-    W12X30  	"8.79 12.3 6.52 0.260 0.440 238 20.3 0.457"
-    W12X26  	"7.65 12.2 6.49 0.230 0.380 204 17.3 0.300"
-    W12X22  	"6.48 12.3 4.03 0.260 0.425 156 4.66 0.293"
-    W12X19  	"5.57 12.2 4.01 0.235 0.350 130 3.76 0.180"
-    W12X16  	"4.71 12.0 3.99 0.220 0.265 103 2.82 0.103"
-    W12X14  	"4.16 11.9 3.97 0.200 0.225 88.6 2.36 0.0704"
-    W10X112  	"32.9 11.4 10.4 0.755 1.25 716 236 15.1"
-    W10X100  	"29.4 11.1 10.3 0.680 1.12 623 207 10.9"
-    W10X88  	"25.9 10.8 10.3 0.605 0.990 534 179 7.53"
-    W10X77  	"22.6 10.6 10.2 0.530 0.870 455 154 5.11"
-    W10X68  	"20.0 10.4 10.1 0.470 0.770 394 134 3.56"
-    W10X60  	"17.6 10.2 10.1 0.420 0.680 341 116 2.48"
-    W10X54  	"15.8 10.1 10.0 0.370 0.615 303 103 1.82"
-    W10X49  	"14.4 10.0 10.0 0.340 0.560 272 93.4 1.39"
-    W10X45  	"13.3 10.1 8.02 0.350 0.620 248 53.4 1.51"
-    W10X39  	"11.5 9.92 7.99 0.315 0.530 209 45.0 0.976"
-    W10X33  	"9.71 9.73 7.96 0.290 0.435 171 36.6 0.583"
-    W10X30  	"8.84 10.5 5.81 0.300 0.510 170 16.7 0.622"
-    W10X26  	"7.61 10.3 5.77 0.260 0.440 144 14.1 0.402"
-    W10X22  	"6.49 10.2 5.75 0.240 0.360 118 11.4 0.239"
-    W10X19  	"5.62 10.2 4.02 0.250 0.395 96.3 4.29 0.233"
-    W10X17  	"4.99 10.1 4.01 0.240 0.330 81.9 3.56 0.156"
-    W10X15  	"4.41 10.0 4.00 0.230 0.270 68.9 2.89 0.104"
-    W10X12  	"3.54 9.87 3.96 0.190 0.210 53.8 2.18 0.0547"
-    W8X67  	"19.7 9.00 8.28 0.570 0.935 272 88.6 5.05"
-    W8X58  	"17.1 8.75 8.22 0.510 0.810 228 75.1 3.33"
-    W8X48  	"14.1 8.50 8.11 0.400 0.685 184 60.9 1.96"
-    W8X40  	"11.7 8.25 8.07 0.360 0.560 146 49.1 1.12"
-    W8X35  	"10.3 8.12 8.02 0.310 0.495 127 42.6 0.769"
-    W8X31  	"9.12 8.00 8.00 0.285 0.435 110 37.1 0.536"
-    W8X28  	"8.24 8.06 6.54 0.285 0.465 98.0 21.7 0.537"
-    W8X24  	"7.08 7.93 6.50 0.245 0.400 82.7 18.3 0.346"
-    W8X21  	"6.16 8.28 5.27 0.250 0.400 75.3 9.77 0.282"
-    W8X18  	"5.26 8.14 5.25 0.230 0.330 61.9 7.97 0.172"
-    W8X15  	"4.44 8.11 4.02 0.245 0.315 48.0 3.41 0.137"
-    W8X13  	"3.84 7.99 4.00 0.230 0.255 39.6 2.73 0.0871"
-    W8X10  	"2.96 7.89 3.94 0.170 0.205 30.8 2.09 0.0426"
-    W6X25  	"7.34 6.38 6.08 0.320 0.455 53.4 17.1 0.461"
-    W6X20  	"5.87 6.20 6.02 0.260 0.365 41.4 13.3 0.240"
-    W6X15  	"4.43 5.99 5.99 0.230 0.260 29.1 9.32 0.101"
-    W6X16  	"4.74 6.28 4.03 0.260 0.405 32.1 4.43 0.223"
-    W6X12  	"3.55 6.03 4.00 0.230 0.280 22.1 2.99 0.0903"
-    W6X9  	"2.68 5.90 3.94 0.170 0.215 16.4 2.20 0.0405"
-    W6X8.5  	"2.52 5.83 3.94 0.170 0.195 14.9 1.99 0.0333"
-    W5X19  	"5.56 5.15 5.03 0.270 0.430 26.3 9.13 0.316"
-    W5X16  	"4.71 5.01 5.00 0.240 0.360 21.4 7.51 0.192"
-    W4X13  	"3.83 4.16 4.06 0.280 0.345 11.3 3.86 0.151"
+W44X335 "98.5 44.0 15.9 1.03 1.77 31100 1200 1620 1410 17.8 236 150 3.49 74.7"
+W44X290 "85.4 43.6 15.8 0.865 1.58 27000 1040 1410 1240 17.8 205 132 3.49 50.9"
+W44X262 "77.2 43.3 15.8 0.785 1.42 24100 923 1270 1110 17.7 182 117 3.47 37.3"
+W44X230 "67.8 42.9 15.8 0.710 1.22 20800 796 1100 971 17.5 157 101 3.43 24.9"
+W40X593 "174 43.0 16.7 1.79 3.23 50400 2520 2760 2340 17.0 481 302 3.80 445"
+W40X503 "148 42.1 16.4 1.54 2.76 41600 2040 2320 1980 16.8 394 249 3.72 277"
+W40X431 "127 41.3 16.2 1.34 2.36 34800 1690 1960 1690 16.6 328 208 3.65 177"
+W40X397 "117 41.0 16.1 1.22 2.20 32000 1540 1800 1560 16.6 300 191 3.64 142"
+W40X372 "110 40.6 16.1 1.16 2.05 29600 1420 1680 1460 16.5 277 177 3.60 116"
+W40X362 "106 40.6 16.0 1.12 2.01 28900 1380 1640 1420 16.5 270 173 3.60 109"
+W40X324 "95.3 40.2 15.9 1.00 1.81 25600 1220 1460 1280 16.4 239 153 3.58 79.4"
+W40X297 "87.3 39.8 15.8 0.930 1.65 23200 1090 1330 1170 16.3 215 138 3.54 61.2"
+W40X277 "81.5 39.7 15.8 0.830 1.58 21900 1040 1250 1100 16.4 204 132 3.58 51.5"
+W40X249 "73.5 39.4 15.8 0.750 1.42 19600 926 1120 993 16.3 182 118 3.55 38.1"
+W40X215 "63.5 39.0 15.8 0.650 1.22 16700 803 964 859 16.2 156 101 3.54 24.8"
+W40X199 "58.8 38.7 15.8 0.650 1.07 14900 695 869 770 16.0 137 88.2 3.45 18.3"
+W40X392 "116 41.6 12.4 1.42 2.52 29900 803 1710 1440 16.1 212 130 2.64 172"
+W40X331 "97.7 40.8 12.2 1.22 2.13 24700 644 1430 1210 15.9 172 106 2.57 105"
+W40X327 "95.9 40.8 12.1 1.18 2.13 24500 640 1410 1200 16.0 170 105 2.58 103"
+W40X294 "86.2 40.4 12.0 1.06 1.93 21900 562 1270 1080 15.9 150 93.5 2.55 76.6"
+W40X278 "82.3 40.2 12.0 1.03 1.81 20500 521 1190 1020 15.8 140 87.1 2.52 65.0"
+W40X264 "77.4 40.0 11.9 0.960 1.73 19400 493 1130 971 15.8 132 82.6 2.52 56.1"
+W40X235 "69.1 39.7 11.9 0.830 1.58 17400 444 1010 875 15.9 118 74.6 2.54 41.3"
+W40X211 "62.1 39.4 11.8 0.750 1.42 15500 390 906 786 15.8 105 66.1 2.51 30.4"
+W40X183 "53.3 39.0 11.8 0.650 1.20 13200 331 774 675 15.7 88.3 56.0 2.49 19.3"
+W40X167 "49.3 38.6 11.8 0.650 1.03 11600 283 693 600 15.3 76.0 47.9 2.40 14.0"
+W40X149 "43.8 38.2 11.8 0.630 0.830 9800 229 598 513 15.0 62.2 38.8 2.29 9.36"
+W36X652 "192 41.1 17.6 1.97 3.54 50600 3230 2910 2460 16.2 581 367 4.10 593"
+W36X529 "156 39.8 17.2 1.61 2.91 39600 2490 2330 1990 16.0 454 289 4.00 327"
+W36X487 "143 39.3 17.1 1.50 2.68 36000 2250 2130 1830 15.8 412 263 3.96 258"
+W36X441 "130 38.9 17.0 1.36 2.44 32100 1990 1910 1650 15.7 368 235 3.92 194"
+W36X395 "116 38.4 16.8 1.22 2.20 28500 1750 1710 1490 15.7 325 208 3.88 142"
+W36X361 "106 38.0 16.7 1.12 2.01 25700 1570 1550 1350 15.6 293 188 3.85 109"
+W36X330 "96.9 37.7 16.6 1.02 1.85 23300 1420 1410 1240 15.5 265 171 3.83 84.3"
+W36X302 "89.0 37.3 16.7 0.945 1.68 21100 1300 1280 1130 15.4 241 156 3.82 64.3"
+W36X282 "82.9 37.1 16.6 0.885 1.57 19600 1200 1190 1050 15.4 223 144 3.80 52.7"
+W36X262 "77.2 36.9 16.6 0.840 1.44 17900 1090 1100 972 15.3 204 132 3.76 41.6"
+W36X247 "72.5 36.7 16.5 0.800 1.35 16700 1010 1030 913 15.2 190 123 3.74 34.7"
+W36X231 "68.2 36.5 16.5 0.760 1.26 15600 940 963 854 15.1 176 114 3.71 28.7"
+W36X256 "75.3 37.4 12.2 0.960 1.73 16800 528 1040 895 14.9 137 86.5 2.65 52.9"
+W36X232 "68.0 37.1 12.1 0.870 1.57 15000 468 936 809 14.8 122 77.2 2.62 39.6"
+W36X210 "61.9 36.7 12.2 0.830 1.36 13200 411 833 719 14.6 107 67.5 2.58 28.0"
+W36X194 "57.0 36.5 12.1 0.765 1.26 12100 375 767 664 14.6 97.7 61.9 2.56 22.2"
+W36X182 "53.6 36.3 12.1 0.725 1.18 11300 347 718 623 14.5 90.7 57.6 2.55 18.5"
+W36X170 "50.0 36.2 12.0 0.680 1.10 10500 320 668 581 14.5 83.8 53.2 2.53 15.1"
+W36X160 "47.0 36.0 12.0 0.650 1.02 9760 295 624 542 14.4 77.3 49.1 2.50 12.4"
+W36X150 "44.3 35.9 12.0 0.625 0.940 9040 270 581 504 14.3 70.9 45.1 2.47 10.1"
+W36X135 "39.9 35.6 12.0 0.600 0.790 7800 225 509 439 14.0 59.7 37.7 2.38 7.00"
+W33X387 "114 36.0 16.2 1.26 2.28 24300 1620 1560 1350 14.6 312 200 3.77 148"
+W33X354 "104 35.6 16.1 1.16 2.09 22000 1460 1420 1240 14.5 282 181 3.74 115"
+W33X318 "93.7 35.2 16.0 1.04 1.89 19500 1290 1270 1110 14.5 250 161 3.71 84.4"
+W33X291 "85.6 34.8 15.9 0.960 1.73 17700 1160 1160 1020 14.4 226 146 3.68 65.1"
+W33X263 "77.4 34.5 15.8 0.870 1.57 15900 1040 1040 919 14.3 202 131 3.66 48.7"
+W33X241 "71.1 34.2 15.9 0.830 1.40 14200 933 940 831 14.1 182 118 3.62 36.2"
+W33X221 "65.3 33.9 15.8 0.775 1.28 12900 840 857 759 14.1 164 106 3.59 27.8"
+W33X201 "59.1 33.7 15.7 0.715 1.15 11600 749 773 686 14.0 147 95.2 3.56 20.8"
+W33X169 "49.5 33.8 11.5 0.670 1.22 9290 310 629 549 13.7 84.4 53.9 2.50 17.7"
+W33X152 "44.9 33.5 11.6 0.635 1.06 8160 273 559 487 13.5 73.9 47.2 2.47 12.4"
+W33X141 "41.5 33.3 11.5 0.605 0.960 7450 246 514 448 13.4 66.9 42.7 2.43 9.70"
+W33X130 "38.3 33.1 11.5 0.580 0.855 6710 218 467 406 13.2 59.5 37.9 2.39 7.37"
+W33X118 "34.7 32.9 11.5 0.550 0.740 5900 187 415 359 13.0 51.3 32.6 2.32 5.30"
+W30X391 "115 33.2 15.6 1.36 2.44 20700 1550 1450 1250 13.4 310 198 3.67 173"
+W30X357 "105 32.8 15.5 1.24 2.24 18700 1390 1320 1140 13.3 279 179 3.64 134"
+W30X326 "95.9 32.4 15.4 1.14 2.05 16800 1240 1190 1040 13.2 252 162 3.60 103"
+W30X292 "86.0 32.0 15.3 1.02 1.85 14900 1100 1060 930 13.2 223 144 3.58 75.2"
+W30X261 "77.0 31.6 15.2 0.930 1.65 13100 959 943 829 13.1 196 127 3.53 54.1"
+W30X235 "69.3 31.3 15.1 0.830 1.50 11700 855 847 748 13.0 175 114 3.51 40.3"
+W30X211 "62.3 30.9 15.1 0.775 1.32 10300 757 751 665 12.9 155 100 3.49 28.4"
+W30X191 "56.1 30.7 15.0 0.710 1.19 9200 673 675 600 12.8 138 89.5 3.46 21.0"
+W30X173 "50.9 30.4 15.0 0.655 1.07 8230 598 607 541 12.7 123 79.8 3.42 15.6"
+W30X148 "43.6 30.7 10.5 0.650 1.18 6680 227 500 436 12.4 68.0 43.3 2.28 14.5"
+W30X132 "38.8 30.3 10.5 0.615 1.00 5770 196 437 380 12.2 58.4 37.2 2.25 9.72"
+W30X124 "36.5 30.2 10.5 0.585 0.930 5360 181 408 355 12.1 54.0 34.4 2.23 7.99"
+W30X116 "34.2 30.0 10.5 0.565 0.850 4930 164 378 329 12.0 49.2 31.3 2.19 6.43"
+W30X108 "31.7 29.8 10.5 0.545 0.760 4470 146 346 299 11.9 43.9 27.9 2.15 4.99"
+W30X99  "29.0 29.7 10.5 0.520 0.670 3990 128 312 269 11.7 38.6 24.5 2.10 3.77"
+W30X90  "26.3 29.5 10.4 0.470 0.610 3610 115 283 245 11.7 34.7 22.1 2.09 2.84"
+W27X539 "159 32.5 15.3 1.97 3.54 25600 2110 1890 1570 12.7 437 277 3.65 496"
+W27X368 "109 30.4 14.7 1.38 2.48 16200 1310 1240 1060 12.2 279 179 3.48 170"
+W27X336 "99.2 30.0 14.6 1.26 2.28 14600 1180 1130 972 12.1 252 162 3.45 131"
+W27X307 "90.2 29.6 14.4 1.16 2.09 13100 1050 1030 887 12.0 227 146 3.41 101"
+W27X281 "83.1 29.3 14.4 1.06 1.93 11900 953 936 814 12.0 206 133 3.39 79.5"
+W27X258 "76.1 29.0 14.3 0.980 1.77 10800 859 852 745 11.9 187 120 3.36 61.6"
+W27X235 "69.4 28.7 14.2 0.910 1.61 9700 769 772 677 11.8 168 108 3.33 47.0"
+W27X217 "63.9 28.4 14.1 0.830 1.50 8910 704 711 627 11.8 154 100 3.32 37.6"
+W27X194 "57.1 28.1 14.0 0.750 1.34 7860 619 631 559 11.7 136 88.1 3.29 27.1"
+W27X178 "52.5 27.8 14.1 0.725 1.19 7020 555 570 505 11.6 122 78.8 3.25 20.1"
+W27X161 "47.6 27.6 14.0 0.660 1.08 6310 497 515 458 11.5 109 70.9 3.23 15.1"
+W27X146 "43.2 27.4 14.0 0.605 0.975 5660 443 464 414 11.5 97.7 63.5 3.20 11.3"
+W27X129 "37.8 27.6 10.0 0.610 1.10 4760 184 395 345 11.2 57.6 36.8 2.21 11.1"
+W27X114 "33.6 27.3 10.1 0.570 0.930 4080 159 343 299 11.0 49.3 31.5 2.18 7.33"
+W27X102 "30.0 27.1 10.0 0.515 0.830 3620 139 305 267 11.0 43.4 27.8 2.15 5.28"
+W27X94  "27.6 26.9 10.0 0.490 0.745 3270 124 278 243 10.9 38.8 24.8 2.12 4.03"
+W27X84  "24.7 26.7 10.0 0.460 0.640 2850 106 244 213 10.7 33.2 21.2 2.07 2.81"
+W24X370 "109 28.0 13.7 1.52 2.72 13400 1160 1130 957 11.1 267 170 3.27 201"
+W24X335 "98.3 27.5 13.5 1.38 2.48 11900 1030 1020 864 11.0 238 152 3.23 152"
+W24X306 "89.7 27.1 13.4 1.26 2.28 10700 919 922 789 10.9 214 137 3.20 117"
+W24X279 "81.9 26.7 13.3 1.16 2.09 9600 823 835 718 10.8 193 124 3.17 90.5"
+W24X250 "73.5 26.3 13.2 1.04 1.89 8490 724 744 644 10.7 171 110 3.14 66.6"
+W24X229 "67.2 26.0 13.1 0.960 1.73 7650 651 675 588 10.7 154 99.4 3.11 51.3"
+W24X207 "60.7 25.7 13.0 0.870 1.57 6820 578 606 531 10.6 137 88.8 3.08 38.3"
+W24X192 "56.5 25.5 13.0 0.810 1.46 6260 530 559 491 10.5 126 81.8 3.07 30.8"
+W24X176 "51.7 25.2 12.9 0.750 1.34 5680 479 511 450 10.5 115 74.3 3.04 23.9"
+W24X162 "47.8 25.0 13.0 0.705 1.22 5170 443 468 414 10.4 105 68.4 3.05 18.5"
+W24X146 "43.0 24.7 12.9 0.650 1.09 4580 391 418 371 10.3 93.2 60.5 3.01 13.4"
+W24X131 "38.6 24.5 12.9 0.605 0.960 4020 340 370 329 10.2 81.5 53.0 2.97 9.50"
+W24X117 "34.4 24.3 12.8 0.550 0.850 3540 297 327 291 10.1 71.4 46.5 2.94 6.72"
+W24X104 "30.7 24.1 12.8 0.500 0.750 3100 259 289 258 10.1 62.4 40.7 2.91 4.72"
+W24X103 "30.3 24.5 9.00 0.550 0.980 3000 119 280 245 10.0 41.5 26.5 1.99 7.07"
+W24X94 "27.7 24.3 9.07 0.515 0.875 2700 109 254 222 9.87 37.5 24.0 1.98 5.26"
+W24X84 "24.7 24.1 9.02 0.470 0.770 2370 94.4 224 196 9.79 32.6 20.9 1.95 3.70"
+W24X76 "22.4 23.9 8.99 0.440 0.680 2100 82.5 200 176 9.69 28.6 18.4 1.92 2.68"
+W24X68 "20.1 23.7 8.97 0.415 0.585 1830 70.4 177 154 9.55 24.5 15.7 1.87 1.87"
+W24X62 "18.2 23.7 7.04 0.430 0.590 1550 34.5 153 131 9.23 15.7 9.80 1.38 1.71"
+W24X55 "16.2 23.6 7.01 0.395 0.505 1350 29.1 134 114 9.11 13.3 8.30 1.34 1.18"
+W21X201 "59.3 23.0 12.6 0.910 1.63 5310 542 530 461 9.47 133 86.1 3.02 40.9"
+W21X182 "53.6 22.7 12.5 0.830 1.48 4730 483 476 417 9.40 119 77.2 3.00 30.7"
+W21X166 "48.8 22.5 12.4 0.750 1.36 4280 435 432 380 9.36 108 70.0 2.99 23.6"
+W21X147 "43.2 22.1 12.5 0.720 1.15 3630 376 373 329 9.17 92.6 60.1 2.95 15.4"
+W21X132 "38.8 21.8 12.4 0.650 1.04 3220 333 333 295 9.12 82.3 53.5 2.93 11.3"
+W21X122 "35.9 21.7 12.4 0.600 0.960 2960 305 307 273 9.09 75.6 49.2 2.92 8.98"
+W21X111 "32.6 21.5 12.3 0.550 0.875 2670 274 279 249 9.05 68.2 44.5 2.90 6.83"
+W21X101 "29.8 21.4 12.3 0.500 0.800 2420 248 253 227 9.02 61.7 40.3 2.89 5.21"
+W21X93 "27.3 21.6 8.42 0.580 0.930 2070 92.9 221 192 8.70 34.7 22.1 1.84 6.03"
+W21X83 "24.4 21.4 8.36 0.515 0.835 1830 81.4 196 171 8.67 30.5 19.5 1.83 4.34"
+W21X73 "21.5 21.2 8.30 0.455 0.740 1600 70.6 172 151 8.64 26.6 17.0 1.81 3.02"
+W21X68 "20.0 21.1 8.27 0.430 0.685 1480 64.7 160 140 8.60 24.4 15.7 1.80 2.45"
+W21X62 "18.3 21.0 8.24 0.400 0.615 1330 57.5 144 127 8.54 21.7 14.0 1.77 1.83"
+W21X55 "16.2 20.8 8.22 0.375 0.522 1140 48.4 126 110 8.40 18.4 11.8 1.73 1.24"
+W21X48 "14.1 20.6 8.14 0.350 0.430 959 38.7 107 93.0 8.24 14.9 9.52 1.66 0.803"
+W21X57 "16.7 21.1 6.56 0.405 0.650 1170 30.6 129 111 8.36 14.8 9.35 1.35 1.77"
+W21X50 "14.7 20.8 6.53 0.380 0.535 984 24.9 110 94.5 8.18 12.2 7.64 1.30 1.14"
+W21X44 "13.0 20.7 6.50 0.350 0.450 843 20.7 95.4 81.6 8.06 10.2 6.37 1.26 0.770"
+W18X311 "91.6 22.3 12.0 1.52 2.74 6970 795 754 624 8.72 207 132 2.95 176"
+W18X283 "83.3 21.9 11.9 1.40 2.50 6170 704 676 565 8.61 185 118 2.91 134"
+W18X258 "76.0 21.5 11.8 1.28 2.30 5510 628 611 514 8.53 166 107 2.88 103"
+W18X234 "68.6 21.1 11.7 1.16 2.11 4900 558 549 466 8.44 149 95.8 2.85 78.7"
+W18X211 "62.3 20.7 11.6 1.06 1.91 4330 493 490 419 8.35 132 85.3 2.82 58.6"
+W18X192 "56.2 20.4 11.5 0.960 1.75 3870 440 442 380 8.28 119 76.8 2.79 44.7"
+W18X175 "51.4 20.0 11.4 0.890 1.59 3450 391 398 344 8.20 106 68.8 2.76 33.8"
+W18X158 "46.3 19.7 11.3 0.810 1.44 3060 347 356 310 8.12 94.8 61.4 2.74 25.2"
+W18X143 "42.0 19.5 11.2 0.730 1.32 2750 311 322 282 8.09 85.4 55.5 2.72 19.2"
+W18X130 "38.3 19.3 11.2 0.670 1.20 2460 278 290 256 8.03 76.7 49.9 2.70 14.5"
+W18X119 "35.1 19.0 11.3 0.655 1.06 2190 253 262 231 7.90 69.1 44.9 2.69 10.6"
+W18X106 "31.1 18.7 11.2 0.590 0.940 1910 220 230 204 7.84 60.5 39.4 2.66 7.48"
+W18X97 "28.5 18.6 11.1 0.535 0.870 1750 201 211 188 7.82 55.3 36.1 2.65 5.86"
+W18X86 "25.3 18.4 11.1 0.480 0.770 1530 175 186 166 7.77 48.4 31.6 2.63 4.10"
+W18X76 "22.3 18.2 11.0 0.425 0.680 1330 152 163 146 7.73 42.2 27.6 2.61 2.83"
+W18X71 "20.9 18.5 7.64 0.495 0.810 1170 60.3 146 127 7.50 24.7 15.8 1.70 3.49"
+W18X65 "19.1 18.4 7.59 0.450 0.750 1070 54.8 133 117 7.49 22.5 14.4 1.69 2.73"
+W18X60 "17.6 18.2 7.56 0.415 0.695 984 50.1 123 108 7.47 20.6 13.3 1.68 2.17"
+W18X55 "16.2 18.1 7.53 0.390 0.630 890 44.9 112 98.3 7.41 18.5 11.9 1.67 1.66"
+W18X50 "14.7 18.0 7.50 0.355 0.570 800 40.1 101 88.9 7.38 16.6 10.7 1.65 1.24"
+W18X46 "13.5 18.1 6.06 0.360 0.605 712 22.5 90.7 78.8 7.25 11.7 7.43 1.29 1.22"
+W18X40 "11.8 17.9 6.02 0.315 0.525 612 19.1 78.4 68.4 7.21 10.0 6.35 1.27 0.810"
+W18X35 "10.3 17.7 6.00 0.300 0.425 510 15.3 66.5 57.6 7.04 8.06 5.12 1.22 0.506"
+W16X100 "29.4 17.0 10.4 0.585 0.985 1490 186 198 175 7.10 54.9 35.7 2.51 7.73"
+W16X89 "26.2 16.8 10.4 0.525 0.875 1300 163 175 155 7.05 48.1 31.4 2.49 5.45"
+W16X77 "22.6 16.5 10.3 0.455 0.760 1110 138 150 134 7.00 41.1 26.9 2.47 3.57"
+W16X67 "19.6 16.3 10.2 0.395 0.665 954 119 130 117 6.96 35.5 23.2 2.46 2.39"
+W16X57 "16.8 16.4 7.12 0.430 0.715 758 43.1 105 92.2 6.72 18.9 12.1 1.60 2.22"
+W16X50 "14.7 16.3 7.07 0.380 0.630 659 37.2 92.0 81.0 6.68 16.3 10.5 1.59 1.52"
+W16X45 "13.3 16.1 7.04 0.345 0.565 586 32.8 82.3 72.7 6.65 14.5 9.34 1.57 1.11"
+W16X40 "11.8 16.0 7.00 0.305 0.505 518 28.9 73.0 64.7 6.63 12.7 8.25 1.57 0.794"
+W16X36 "10.6 15.9 6.99 0.295 0.430 448 24.5 64.0 56.5 6.51 10.8 7.00 1.52 0.545"
+W16X31 "9.13 15.9 5.53 0.275 0.440 375 12.4 54.0 47.2 6.41 7.03 4.49 1.17 0.461"
+W16X26 "7.68 15.7 5.50 0.250 0.345 301 9.59 44.2 38.4 6.26 5.48 3.49 1.12 0.262"
+W14X730 "215 22.4 17.9 3.07 4.91 14300 4720 1660 1280 8.17 816 527 4.69 1450"
+W14X665 "196 21.6 17.7 2.83 4.52 12400 4170 1480 1150 7.98 730 472 4.62 1120"
+W14X605 "178 20.9 17.4 2.60 4.16 10800 3680 1320 1040 7.80 652 423 4.55 869"
+W14X550 "162 20.2 17.2 2.38 3.82 9430 3250 1180 931 7.63 583 378 4.49 669"
+W14X500 "147 19.6 17.0 2.19 3.50 8210 2880 1050 838 7.48 522 339 4.43 514"
+W14X455 "134 19.0 16.8 2.02 3.21 7190 2560 936 756 7.33 468 304 4.38 395"
+W14X426 "125 18.7 16.7 1.88 3.04 6600 2360 869 706 7.26 434 283 4.34 331"
+W14X398 "117 18.3 16.6 1.77 2.85 6000 2170 801 656 7.16 402 262 4.31 273"
+W14X370 "109 17.9 16.5 1.66 2.66 5440 1990 736 607 7.07 370 241 4.27 222"
+W14X342 "101 17.5 16.4 1.54 2.47 4900 1810 672 558 6.98 338 221 4.24 178"
+W14X311 "91.4 17.1 16.2 1.41 2.26 4330 1610 603 506 6.88 304 199 4.20 136"
+W14X283 "83.3 16.7 16.1 1.29 2.07 3840 1440 542 459 6.79 274 179 4.17 104"
+W14X257 "75.6 16.4 16.0 1.18 1.89 3400 1290 487 415 6.71 246 161 4.13 79.1"
+W14X233 "68.5 16.0 15.9 1.07 1.72 3010 1150 436 375 6.63 221 145 4.10 59.5"
+W14X211 "62.0 15.7 15.8 0.980 1.56 2660 1030 390 338 6.55 198 130 4.07 44.6"
+W14X193 "56.8 15.5 15.7 0.890 1.44 2400 931 355 310 6.50 180 119 4.05 34.8"
+W14X176 "51.8 15.2 15.7 0.830 1.31 2140 838 320 281 6.43 163 107 4.02 26.5"
+W14X159 "46.7 15.0 15.6 0.745 1.19 1900 748 287 254 6.38 146 96.2 4.00 19.7"
+W14X145 "42.7 14.8 15.5 0.680 1.09 1710 677 260 232 6.33 133 87.3 3.98 15.2"
+W14X132 "38.8 14.7 14.7 0.645 1.03 1530 548 234 209 6.28 113 74.5 3.76 12.3"
+W14X120 "35.3 14.5 14.7 0.590 0.940 1380 495 212 190 6.24 102 67.5 3.74 9.37"
+W14X109 "32.0 14.3 14.6 0.525 0.860 1240 447 192 173 6.22 92.7 61.2 3.73 7.12"
+W14X99 "29.1 14.2 14.6 0.485 0.780 1110 402 173 157 6.17 83.6 55.2 3.71 5.37"
+W14X90 "26.5 14.0 14.5 0.440 0.710 999 362 157 143 6.14 75.6 49.9 3.70 4.06"
+W14X82 "24.0 14.3 10.1 0.510 0.855 881 148 139 123 6.05 44.8 29.3 2.48 5.07"
+W14X74 "21.8 14.2 10.1 0.450 0.785 795 134 126 112 6.04 40.5 26.6 2.48 3.87"
+W14X68 "20.0 14.0 10.0 0.415 0.720 722 121 115 103 6.01 36.9 24.2 2.46 3.01"
+W14X61 "17.9 13.9 10.0 0.375 0.645 640 107 102 92.1 5.98 32.8 21.5 2.45 2.19"
+W14X53 "15.6 13.9 8.06 0.370 0.660 541 57.7 87.1 77.8 5.89 22.0 14.3 1.92 1.94"
+W14X48 "14.1 13.8 8.03 0.340 0.595 484 51.4 78.4 70.2 5.85 19.6 12.8 1.91 1.45"
+W14X43 "12.6 13.7 8.00 0.305 0.530 428 45.2 69.6 62.6 5.82 17.3 11.3 1.89 1.05"
+W14X38 "11.2 14.1 6.77 0.310 0.515 385 26.7 61.5 54.6 5.87 12.1 7.88 1.55 0.798"
+W14X34 "10.0 14.0 6.75 0.285 0.455 340 23.3 54.6 48.6 5.83 10.6 6.91 1.53 0.569"
+W14X30 "8.85 13.8 6.73 0.270 0.385 291 19.6 47.3 42.0 5.73 8.99 5.82 1.49 0.380"
+W14X26 "7.69 13.9 5.03 0.255 0.420 245 8.91 40.2 35.3 5.65 5.54 3.55 1.08 0.358"
+W14X22 "6.49 13.7 5.00 0.230 0.335 199 7.00 33.2 29.0 5.54 4.39 2.80 1.04 0.208"
+W12X336 "98.9 16.8 13.4 1.78 2.96 4060 1190 603 483 6.41 274 177 3.47 243"
+W12X305 "89.5 16.3 13.2 1.63 2.71 3550 1050 537 435 6.29 244 159 3.42 185"
+W12X279 "81.9 15.9 13.1 1.53 2.47 3110 937 481 393 6.16 220 143 3.38 143"
+W12X252 "74.1 15.4 13.0 1.40 2.25 2720 828 428 353 6.06 196 127 3.34 108"
+W12X230 "67.7 15.1 12.9 1.29 2.07 2420 742 386 321 5.97 177 115 3.31 83.8"
+W12X210 "61.8 14.7 12.8 1.18 1.90 2140 664 348 292 5.89 159 104 3.28 64.7"
+W12X190 "56.0 14.4 12.7 1.06 1.74 1890 589 311 263 5.82 143 93.0 3.25 48.8"
+W12X170 "50.0 14.0 12.6 0.960 1.56 1650 517 275 235 5.74 126 82.3 3.22 35.6"
+W12X152 "44.7 13.7 12.5 0.870 1.40 1430 454 243 209 5.66 111 72.8 3.19 25.8"
+W12X136 "39.9 13.4 12.4 0.790 1.25 1240 398 214 186 5.58 98.0 64.2 3.16 18.5"
+W12X120 "35.2 13.1 12.3 0.710 1.11 1070 345 186 163 5.51 85.4 56.0 3.13 12.9"
+W12X106 "31.2 12.9 12.2 0.610 0.990 933 301 164 145 5.47 75.1 49.3 3.11 9.13"
+W12X96 "28.2 12.7 12.2 0.550 0.900 833 270 147 131 5.44 67.5 44.4 3.09 6.85"
+W12X87 "25.6 12.5 12.1 0.515 0.810 740 241 132 118 5.38 60.4 39.7 3.07 5.10"
+W12X79 "23.2 12.4 12.1 0.470 0.735 662 216 119 107 5.34 54.3 35.8 3.05 3.84"
+W12X72 "21.1 12.3 12.0 0.430 0.670 597 195 108 97.4 5.31 49.2 32.4 3.04 2.93"
+W12X65 "19.1 12.1 12.0 0.390 0.605 533 174 96.8 87.9 5.28 44.1 29.1 3.02 2.18"
+W12X58 "17.0 12.2 10.0 0.360 0.640 475 107 86.4 78.0 5.28 32.5 21.4 2.51 2.10"
+W12X53 "15.6 12.1 10.0 0.345 0.575 425 95.8 77.9 70.6 5.23 29.1 19.2 2.48 1.58"
+W12X50 "14.6 12.2 8.08 0.370 0.640 391 56.3 71.9 64.2 5.18 21.3 13.9 1.96 1.71"
+W12X45 "13.1 12.1 8.05 0.335 0.575 348 50.0 64.2 57.7 5.15 19.0 12.4 1.95 1.26"
+W12X40 "11.7 11.9 8.01 0.295 0.515 307 44.1 57.0 51.5 5.13 16.8 11.0 1.94 0.906"
+W12X35 "10.3 12.5 6.56 0.300 0.520 285 24.5 51.2 45.6 5.25 11.5 7.47 1.54 0.741"
+W12X30 "8.79 12.3 6.52 0.260 0.440 238 20.3 43.1 38.6 5.21 9.56 6.24 1.52 0.457"
+W12X26 "7.65 12.2 6.49 0.230 0.380 204 17.3 37.2 33.4 5.17 8.17 5.34 1.51 0.300"
+W12X22 "6.48 12.3 4.03 0.260 0.425 156 4.66 29.3 25.4 4.91 3.66 2.31 0.848 0.293"
+W12X19 "5.57 12.2 4.01 0.235 0.350 130 3.76 24.7 21.3 4.82 2.98 1.88 0.822 0.180"
+W12X16 "4.71 12.0 3.99 0.220 0.265 103 2.82 20.1 17.1 4.67 2.26 1.41 0.773 0.103"
+W12X14 "4.16 11.9 3.97 0.200 0.225 88.6 2.36 17.4 14.9 4.62 1.90 1.19 0.753 0.0704"
+W10X112 "32.9 11.4 10.4 0.755 1.25 716 236 147 126 4.66 69.2 45.3 2.68 15.1"
+W10X100 "29.3 11.1 10.3 0.680 1.12 623 207 130 112 4.60 61.0 40.0 2.65 10.9"
+W10X88 "26.0 10.8 10.3 0.605 0.990 534 179 113 98.5 4.54 53.1 34.8 2.63 7.53"
+W10X77 "22.7 10.6 10.2 0.530 0.870 455 154 97.6 85.9 4.49 45.9 30.1 2.60 5.11"
+W10X68 "19.9 10.4 10.1 0.470 0.770 394 134 85.3 75.7 4.44 40.1 26.4 2.59 3.56"
+W10X60 "17.7 10.2 10.1 0.420 0.680 341 116 74.6 66.7 4.39 35.0 23.0 2.57 2.48"
+W10X54 "15.8 10.1 10.0 0.370 0.615 303 103 66.6 60.0 4.37 31.3 20.6 2.56 1.82"
+W10X49 "14.4 10.0 10.0 0.340 0.560 272 93.4 60.4 54.6 4.35 28.3 18.7 2.54 1.39"
+W10X45 "13.3 10.1 8.02 0.350 0.620 248 53.4 54.9 49.1 4.32 20.3 13.3 2.01 1.51"
+W10X39 "11.5 9.92 7.99 0.315 0.530 209 45.0 46.8 42.1 4.27 17.2 11.3 1.98 0.976"
+W10X33 "9.71 9.73 7.96 0.290 0.435 171 36.6 38.8 35.0 4.19 14.0 9.20 1.94 0.583"
+W10X30 "8.84 10.5 5.81 0.300 0.510 170 16.7 36.6 32.4 4.38 8.84 5.75 1.37 0.622"
+W10X26 "7.61 10.3 5.77 0.260 0.440 144 14.1 31.3 27.9 4.35 7.50 4.89 1.36 0.402"
+W10X22 "6.49 10.2 5.75 0.240 0.360 118 11.4 26.0 23.2 4.27 6.10 3.97 1.33 0.239"
+W10X19 "5.62 10.2 4.02 0.250 0.395 96.3 4.29 21.6 18.8 4.14 3.35 2.14 0.874 0.233"
+W10X17 "4.99 10.1 4.01 0.240 0.330 81.9 3.56 18.7 16.2 4.05 2.80 1.78 0.845 0.156"
+W10X15 "4.41 9.99 4.00 0.230 0.270 68.9 2.89 16.0 13.8 3.95 2.30 1.45 0.810 0.104"
+W10X12 "3.54 9.87 3.96 0.190 0.210 53.8 2.18 12.6 10.9 3.90 1.74 1.10 0.785 0.0547"
+W8X67 "19.7 9.00 8.28 0.570 0.935 272 88.6 70.1 60.4 3.72 32.7 21.4 2.12 5.05"
+W8X58 "17.1 8.75 8.22 0.510 0.810 228 75.1 59.8 52.0 3.65 27.9 18.3 2.10 3.33"
+W8X48 "14.1 8.50 8.11 0.400 0.685 184 60.9 49.0 43.2 3.61 22.9 15.0 2.08 1.96"
+W8X40 "11.7 8.25 8.07 0.360 0.560 146 49.1 39.8 35.5 3.53 18.5 12.2 2.04 1.12"
+W8X35 "10.3 8.12 8.02 0.310 0.495 127 42.6 34.7 31.2 3.51 16.1 10.6 2.03 0.769"
+W8X31 "9.13 8.00 8.00 0.285 0.435 110 37.1 30.4 27.5 3.47 14.1 9.27 2.02 0.536"
+W8X28 "8.25 8.06 6.54 0.285 0.465 98.0 21.7 27.2 24.3 3.45 10.1 6.63 1.62 0.537"
+W8X24 "7.08 7.93 6.50 0.245 0.400 82.7 18.3 23.1 20.9 3.42 8.57 5.63 1.61 0.346"
+W8X21 "6.16 8.28 5.27 0.250 0.400 75.3 9.77 20.4 18.2 3.49 5.69 3.71 1.26 0.282"
+W8X18 "5.26 8.14 5.25 0.230 0.330 61.9 7.97 17.0 15.2 3.43 4.66 3.04 1.23 0.172"
+W8X15 "4.44 8.11 4.02 0.245 0.315 48.0 3.41 13.6 11.8 3.29 2.67 1.70 0.876 0.137"
+W8X13 "3.84 7.99 4.00 0.230 0.255 39.6 2.73 11.4 9.91 3.21 2.15 1.37 0.843 0.0871"
+W8X10 "2.96 7.89 3.94 0.170 0.205 30.8 2.09 8.87 7.81 3.22 1.66 1.06 0.841 0.0426"
+W6X25 "7.34 6.38 6.08 0.320 0.455 53.4 17.1 18.9 16.7 2.70 8.56 5.61 1.52 0.461"
+W6X20 "5.87 6.20 6.02 0.260 0.365 41.4 13.3 15.0 13.4 2.66 6.72 4.41 1.50 0.240"
+W6X15 "4.43 5.99 5.99 0.230 0.260 29.1 9.32 10.8 9.72 2.56 4.75 3.11 1.45 0.101"
+W6X16 "4.74 6.28 4.03 0.260 0.405 32.1 4.43 11.7 10.2 2.60 3.39 2.20 0.967 0.223"
+W6X12 "3.55 6.03 4.00 0.230 0.280 22.1 2.99 8.30 7.31 2.49 2.32 1.50 0.918 0.0903"
+W6X9  "2.68 5.90 3.94 0.170 0.215 16.4 2.20 6.23 5.56 2.47 1.72 1.11 0.905 0.0405"
+W6X8.5 "2.52 5.83 3.94 0.170 0.195 14.9 1.99 5.73 5.10 2.43 1.56 1.01 0.890 0.0333"
+W5X19 "5.56 5.15 5.03 0.270 0.430 26.3 9.13 11.6 10.2 2.17 5.53 3.63 1.28 0.316"
+W5X16 "4.71 5.01 5.00 0.240 0.360 21.4 7.51 9.63 8.55 2.13 4.58 3.00 1.26 0.192"
+W4X13 "3.83 4.16 4.06 0.280 0.345 11.3 3.86 6.28 5.46 1.72 2.92 1.90 1.00 0.151"
+FMK1  "50. 20.23 24.43 0.1 0.1 562 562 562 55.6"
+FMK2  "50. 144.51 83.56 0.002 0.002 2248 2248 31.1 31.1"
+FMK3  "50. 254.09 96.93 0.0005 0.0005 2248 2248 17.7 17.7"
+FMK4  "50. 299.73 2137.71 0.0002 0.0002 1686 1686 11.3 11.3"
+FMK5  "50. 674.40 134.73 0.00003 0.00003 1686 1686 5.0 5.0"
 }
+
+
 
 
 # AISC_Manual_Label "W A h b tdes Ix Zx Sx rx Iy Zy Sy ry J C
@@ -1520,4 +1942,282 @@ HSS2X1-1/2X3/16		"3.68	1.02	1.48	0.978	0.174	0.495	0.639	0.495	0.697	0.313	0.521
 HSS2X1-1/2X1/8		"2.63	0.724	1.65	1.15	0.116	0.383	0.475	0.383	0.728	0.244	0.389	0.325	0.581	  0.496	0.599"
 HSS2X1X3/16		"3.04	0.845	1.48	0.478	0.174	0.350	0.480	0.350	0.643	0.112	0.288	0.225	0.365	  0.301	0.505"
 HSS2X1X1/8		"2.20	0.608	1.65	0.652	0.116	0.280	0.366	0.280	0.679	0.0922	0.223	0.184	0.390	  0.238	0.380"
+}
+
+
+#AISC_Manual_Label A d bf tw tf Ix Iy Zx Sx rx Zy Sy ry J
+array set WSection {
+W44X335 "98.5 44.0 15.9 1.03 1.77 31100 1200 1620 1410 17.8 236 150 3.49 74.7"
+W44X290 "85.4 43.6 15.8 0.865 1.58 27000 1040 1410 1240 17.8 205 132 3.49 50.9"
+W44X262 "77.2 43.3 15.8 0.785 1.42 24100 923 1270 1110 17.7 182 117 3.47 37.3"
+W44X230 "67.8 42.9 15.8 0.710 1.22 20800 796 1100 971 17.5 157 101 3.43 24.9"
+W40X593 "174 43.0 16.7 1.79 3.23 50400 2520 2760 2340 17.0 481 302 3.80 445"
+W40X503 "148 42.1 16.4 1.54 2.76 41600 2040 2320 1980 16.8 394 249 3.72 277"
+W40X431 "127 41.3 16.2 1.34 2.36 34800 1690 1960 1690 16.6 328 208 3.65 177"
+W40X397 "117 41.0 16.1 1.22 2.20 32000 1540 1800 1560 16.6 300 191 3.64 142"
+W40X372 "110 40.6 16.1 1.16 2.05 29600 1420 1680 1460 16.5 277 177 3.60 116"
+W40X362 "106 40.6 16.0 1.12 2.01 28900 1380 1640 1420 16.5 270 173 3.60 109"
+W40X324 "95.3 40.2 15.9 1.00 1.81 25600 1220 1460 1280 16.4 239 153 3.58 79.4"
+W40X297 "87.3 39.8 15.8 0.930 1.65 23200 1090 1330 1170 16.3 215 138 3.54 61.2"
+W40X277 "81.5 39.7 15.8 0.830 1.58 21900 1040 1250 1100 16.4 204 132 3.58 51.5"
+W40X249 "73.5 39.4 15.8 0.750 1.42 19600 926 1120 993 16.3 182 118 3.55 38.1"
+W40X215 "63.5 39.0 15.8 0.650 1.22 16700 803 964 859 16.2 156 101 3.54 24.8"
+W40X199 "58.8 38.7 15.8 0.650 1.07 14900 695 869 770 16.0 137 88.2 3.45 18.3"
+W40X392 "116 41.6 12.4 1.42 2.52 29900 803 1710 1440 16.1 212 130 2.64 172"
+W40X331 "97.7 40.8 12.2 1.22 2.13 24700 644 1430 1210 15.9 172 106 2.57 105"
+W40X327 "95.9 40.8 12.1 1.18 2.13 24500 640 1410 1200 16.0 170 105 2.58 103"
+W40X294 "86.2 40.4 12.0 1.06 1.93 21900 562 1270 1080 15.9 150 93.5 2.55 76.6"
+W40X278 "82.3 40.2 12.0 1.03 1.81 20500 521 1190 1020 15.8 140 87.1 2.52 65.0"
+W40X264 "77.4 40.0 11.9 0.960 1.73 19400 493 1130 971 15.8 132 82.6 2.52 56.1"
+W40X235 "69.1 39.7 11.9 0.830 1.58 17400 444 1010 875 15.9 118 74.6 2.54 41.3"
+W40X211 "62.1 39.4 11.8 0.750 1.42 15500 390 906 786 15.8 105 66.1 2.51 30.4"
+W40X183 "53.3 39.0 11.8 0.650 1.20 13200 331 774 675 15.7 88.3 56.0 2.49 19.3"
+W40X167 "49.3 38.6 11.8 0.650 1.03 11600 283 693 600 15.3 76.0 47.9 2.40 14.0"
+W40X149 "43.8 38.2 11.8 0.630 0.830 9800 229 598 513 15.0 62.2 38.8 2.29 9.36"
+W36X652 "192 41.1 17.6 1.97 3.54 50600 3230 2910 2460 16.2 581 367 4.10 593"
+W36X529 "156 39.8 17.2 1.61 2.91 39600 2490 2330 1990 16.0 454 289 4.00 327"
+W36X487 "143 39.3 17.1 1.50 2.68 36000 2250 2130 1830 15.8 412 263 3.96 258"
+W36X441 "130 38.9 17.0 1.36 2.44 32100 1990 1910 1650 15.7 368 235 3.92 194"
+W36X395 "116 38.4 16.8 1.22 2.20 28500 1750 1710 1490 15.7 325 208 3.88 142"
+W36X361 "106 38.0 16.7 1.12 2.01 25700 1570 1550 1350 15.6 293 188 3.85 109"
+W36X330 "96.9 37.7 16.6 1.02 1.85 23300 1420 1410 1240 15.5 265 171 3.83 84.3"
+W36X302 "89.0 37.3 16.7 0.945 1.68 21100 1300 1280 1130 15.4 241 156 3.82 64.3"
+W36X282 "82.9 37.1 16.6 0.885 1.57 19600 1200 1190 1050 15.4 223 144 3.80 52.7"
+W36X262 "77.2 36.9 16.6 0.840 1.44 17900 1090 1100 972 15.3 204 132 3.76 41.6"
+W36X247 "72.5 36.7 16.5 0.800 1.35 16700 1010 1030 913 15.2 190 123 3.74 34.7"
+W36X231 "68.2 36.5 16.5 0.760 1.26 15600 940 963 854 15.1 176 114 3.71 28.7"
+W36X256 "75.3 37.4 12.2 0.960 1.73 16800 528 1040 895 14.9 137 86.5 2.65 52.9"
+W36X232 "68.0 37.1 12.1 0.870 1.57 15000 468 936 809 14.8 122 77.2 2.62 39.6"
+W36X210 "61.9 36.7 12.2 0.830 1.36 13200 411 833 719 14.6 107 67.5 2.58 28.0"
+W36X194 "57.0 36.5 12.1 0.765 1.26 12100 375 767 664 14.6 97.7 61.9 2.56 22.2"
+W36X182 "53.6 36.3 12.1 0.725 1.18 11300 347 718 623 14.5 90.7 57.6 2.55 18.5"
+W36X170 "50.0 36.2 12.0 0.680 1.10 10500 320 668 581 14.5 83.8 53.2 2.53 15.1"
+W36X160 "47.0 36.0 12.0 0.650 1.02 9760 295 624 542 14.4 77.3 49.1 2.50 12.4"
+W36X150 "44.3 35.9 12.0 0.625 0.940 9040 270 581 504 14.3 70.9 45.1 2.47 10.1"
+W36X135 "39.9 35.6 12.0 0.600 0.790 7800 225 509 439 14.0 59.7 37.7 2.38 7.00"
+W33X387 "114 36.0 16.2 1.26 2.28 24300 1620 1560 1350 14.6 312 200 3.77 148"
+W33X354 "104 35.6 16.1 1.16 2.09 22000 1460 1420 1240 14.5 282 181 3.74 115"
+W33X318 "93.7 35.2 16.0 1.04 1.89 19500 1290 1270 1110 14.5 250 161 3.71 84.4"
+W33X291 "85.6 34.8 15.9 0.960 1.73 17700 1160 1160 1020 14.4 226 146 3.68 65.1"
+W33X263 "77.4 34.5 15.8 0.870 1.57 15900 1040 1040 919 14.3 202 131 3.66 48.7"
+W33X241 "71.1 34.2 15.9 0.830 1.40 14200 933 940 831 14.1 182 118 3.62 36.2"
+W33X221 "65.3 33.9 15.8 0.775 1.28 12900 840 857 759 14.1 164 106 3.59 27.8"
+W33X201 "59.1 33.7 15.7 0.715 1.15 11600 749 773 686 14.0 147 95.2 3.56 20.8"
+W33X169 "49.5 33.8 11.5 0.670 1.22 9290 310 629 549 13.7 84.4 53.9 2.50 17.7"
+W33X152 "44.9 33.5 11.6 0.635 1.06 8160 273 559 487 13.5 73.9 47.2 2.47 12.4"
+W33X141 "41.5 33.3 11.5 0.605 0.960 7450 246 514 448 13.4 66.9 42.7 2.43 9.70"
+W33X130 "38.3 33.1 11.5 0.580 0.855 6710 218 467 406 13.2 59.5 37.9 2.39 7.37"
+W33X118 "34.7 32.9 11.5 0.550 0.740 5900 187 415 359 13.0 51.3 32.6 2.32 5.30"
+W30X391 "115 33.2 15.6 1.36 2.44 20700 1550 1450 1250 13.4 310 198 3.67 173"
+W30X357 "105 32.8 15.5 1.24 2.24 18700 1390 1320 1140 13.3 279 179 3.64 134"
+W30X326 "95.9 32.4 15.4 1.14 2.05 16800 1240 1190 1040 13.2 252 162 3.60 103"
+W30X292 "86.0 32.0 15.3 1.02 1.85 14900 1100 1060 930 13.2 223 144 3.58 75.2"
+W30X261 "77.0 31.6 15.2 0.930 1.65 13100 959 943 829 13.1 196 127 3.53 54.1"
+W30X235 "69.3 31.3 15.1 0.830 1.50 11700 855 847 748 13.0 175 114 3.51 40.3"
+W30X211 "62.3 30.9 15.1 0.775 1.32 10300 757 751 665 12.9 155 100 3.49 28.4"
+W30X191 "56.1 30.7 15.0 0.710 1.19 9200 673 675 600 12.8 138 89.5 3.46 21.0"
+W30X173 "50.9 30.4 15.0 0.655 1.07 8230 598 607 541 12.7 123 79.8 3.42 15.6"
+W30X148 "43.6 30.7 10.5 0.650 1.18 6680 227 500 436 12.4 68.0 43.3 2.28 14.5"
+W30X132 "38.8 30.3 10.5 0.615 1.00 5770 196 437 380 12.2 58.4 37.2 2.25 9.72"
+W30X124 "36.5 30.2 10.5 0.585 0.930 5360 181 408 355 12.1 54.0 34.4 2.23 7.99"
+W30X116 "34.2 30.0 10.5 0.565 0.850 4930 164 378 329 12.0 49.2 31.3 2.19 6.43"
+W30X108 "31.7 29.8 10.5 0.545 0.760 4470 146 346 299 11.9 43.9 27.9 2.15 4.99"
+W30X99  "29.0 29.7 10.5 0.520 0.670 3990 128 312 269 11.7 38.6 24.5 2.10 3.77"
+W30X90  "26.3 29.5 10.4 0.470 0.610 3610 115 283 245 11.7 34.7 22.1 2.09 2.84"
+W27X539 "159 32.5 15.3 1.97 3.54 25600 2110 1890 1570 12.7 437 277 3.65 496"
+W27X368 "109 30.4 14.7 1.38 2.48 16200 1310 1240 1060 12.2 279 179 3.48 170"
+W27X336 "99.2 30.0 14.6 1.26 2.28 14600 1180 1130 972 12.1 252 162 3.45 131"
+W27X307 "90.2 29.6 14.4 1.16 2.09 13100 1050 1030 887 12.0 227 146 3.41 101"
+W27X281 "83.1 29.3 14.4 1.06 1.93 11900 953 936 814 12.0 206 133 3.39 79.5"
+W27X258 "76.1 29.0 14.3 0.980 1.77 10800 859 852 745 11.9 187 120 3.36 61.6"
+W27X235 "69.4 28.7 14.2 0.910 1.61 9700 769 772 677 11.8 168 108 3.33 47.0"
+W27X217 "63.9 28.4 14.1 0.830 1.50 8910 704 711 627 11.8 154 100 3.32 37.6"
+W27X194 "57.1 28.1 14.0 0.750 1.34 7860 619 631 559 11.7 136 88.1 3.29 27.1"
+W27X178 "52.5 27.8 14.1 0.725 1.19 7020 555 570 505 11.6 122 78.8 3.25 20.1"
+W27X161 "47.6 27.6 14.0 0.660 1.08 6310 497 515 458 11.5 109 70.9 3.23 15.1"
+W27X146 "43.2 27.4 14.0 0.605 0.975 5660 443 464 414 11.5 97.7 63.5 3.20 11.3"
+W27X129 "37.8 27.6 10.0 0.610 1.10 4760 184 395 345 11.2 57.6 36.8 2.21 11.1"
+W27X114 "33.6 27.3 10.1 0.570 0.930 4080 159 343 299 11.0 49.3 31.5 2.18 7.33"
+W27X102 "30.0 27.1 10.0 0.515 0.830 3620 139 305 267 11.0 43.4 27.8 2.15 5.28"
+W27X94  "27.6 26.9 10.0 0.490 0.745 3270 124 278 243 10.9 38.8 24.8 2.12 4.03"
+W27X84  "24.7 26.7 10.0 0.460 0.640 2850 106 244 213 10.7 33.2 21.2 2.07 2.81"
+W24X370 "109 28.0 13.7 1.52 2.72 13400 1160 1130 957 11.1 267 170 3.27 201"
+W24X335 "98.3 27.5 13.5 1.38 2.48 11900 1030 1020 864 11.0 238 152 3.23 152"
+W24X306 "89.7 27.1 13.4 1.26 2.28 10700 919 922 789 10.9 214 137 3.20 117"
+W24X279 "81.9 26.7 13.3 1.16 2.09 9600 823 835 718 10.8 193 124 3.17 90.5"
+W24X250 "73.5 26.3 13.2 1.04 1.89 8490 724 744 644 10.7 171 110 3.14 66.6"
+W24X229 "67.2 26.0 13.1 0.960 1.73 7650 651 675 588 10.7 154 99.4 3.11 51.3"
+W24X207 "60.7 25.7 13.0 0.870 1.57 6820 578 606 531 10.6 137 88.8 3.08 38.3"
+W24X192 "56.5 25.5 13.0 0.810 1.46 6260 530 559 491 10.5 126 81.8 3.07 30.8"
+W24X176 "51.7 25.2 12.9 0.750 1.34 5680 479 511 450 10.5 115 74.3 3.04 23.9"
+W24X162 "47.8 25.0 13.0 0.705 1.22 5170 443 468 414 10.4 105 68.4 3.05 18.5"
+W24X146 "43.0 24.7 12.9 0.650 1.09 4580 391 418 371 10.3 93.2 60.5 3.01 13.4"
+W24X131 "38.6 24.5 12.9 0.605 0.960 4020 340 370 329 10.2 81.5 53.0 2.97 9.50"
+W24X117 "34.4 24.3 12.8 0.550 0.850 3540 297 327 291 10.1 71.4 46.5 2.94 6.72"
+W24X104 "30.7 24.1 12.8 0.500 0.750 3100 259 289 258 10.1 62.4 40.7 2.91 4.72"
+W24X103 "30.3 24.5 9.00 0.550 0.980 3000 119 280 245 10.0 41.5 26.5 1.99 7.07"
+W24X94 "27.7 24.3 9.07 0.515 0.875 2700 109 254 222 9.87 37.5 24.0 1.98 5.26"
+W24X84 "24.7 24.1 9.02 0.470 0.770 2370 94.4 224 196 9.79 32.6 20.9 1.95 3.70"
+W24X76 "22.4 23.9 8.99 0.440 0.680 2100 82.5 200 176 9.69 28.6 18.4 1.92 2.68"
+W24X68 "20.1 23.7 8.97 0.415 0.585 1830 70.4 177 154 9.55 24.5 15.7 1.87 1.87"
+W24X62 "18.2 23.7 7.04 0.430 0.590 1550 34.5 153 131 9.23 15.7 9.80 1.38 1.71"
+W24X55 "16.2 23.6 7.01 0.395 0.505 1350 29.1 134 114 9.11 13.3 8.30 1.34 1.18"
+W21X201 "59.3 23.0 12.6 0.910 1.63 5310 542 530 461 9.47 133 86.1 3.02 40.9"
+W21X182 "53.6 22.7 12.5 0.830 1.48 4730 483 476 417 9.40 119 77.2 3.00 30.7"
+W21X166 "48.8 22.5 12.4 0.750 1.36 4280 435 432 380 9.36 108 70.0 2.99 23.6"
+W21X147 "43.2 22.1 12.5 0.720 1.15 3630 376 373 329 9.17 92.6 60.1 2.95 15.4"
+W21X132 "38.8 21.8 12.4 0.650 1.04 3220 333 333 295 9.12 82.3 53.5 2.93 11.3"
+W21X122 "35.9 21.7 12.4 0.600 0.960 2960 305 307 273 9.09 75.6 49.2 2.92 8.98"
+W21X111 "32.6 21.5 12.3 0.550 0.875 2670 274 279 249 9.05 68.2 44.5 2.90 6.83"
+W21X101 "29.8 21.4 12.3 0.500 0.800 2420 248 253 227 9.02 61.7 40.3 2.89 5.21"
+W21X93 "27.3 21.6 8.42 0.580 0.930 2070 92.9 221 192 8.70 34.7 22.1 1.84 6.03"
+W21X83 "24.4 21.4 8.36 0.515 0.835 1830 81.4 196 171 8.67 30.5 19.5 1.83 4.34"
+W21X73 "21.5 21.2 8.30 0.455 0.740 1600 70.6 172 151 8.64 26.6 17.0 1.81 3.02"
+W21X68 "20.0 21.1 8.27 0.430 0.685 1480 64.7 160 140 8.60 24.4 15.7 1.80 2.45"
+W21X62 "18.3 21.0 8.24 0.400 0.615 1330 57.5 144 127 8.54 21.7 14.0 1.77 1.83"
+W21X55 "16.2 20.8 8.22 0.375 0.522 1140 48.4 126 110 8.40 18.4 11.8 1.73 1.24"
+W21X48 "14.1 20.6 8.14 0.350 0.430 959 38.7 107 93.0 8.24 14.9 9.52 1.66 0.803"
+W21X57 "16.7 21.1 6.56 0.405 0.650 1170 30.6 129 111 8.36 14.8 9.35 1.35 1.77"
+W21X50 "14.7 20.8 6.53 0.380 0.535 984 24.9 110 94.5 8.18 12.2 7.64 1.30 1.14"
+W21X44 "13.0 20.7 6.50 0.350 0.450 843 20.7 95.4 81.6 8.06 10.2 6.37 1.26 0.770"
+W18X311 "91.6 22.3 12.0 1.52 2.74 6970 795 754 624 8.72 207 132 2.95 176"
+W18X283 "83.3 21.9 11.9 1.40 2.50 6170 704 676 565 8.61 185 118 2.91 134"
+W18X258 "76.0 21.5 11.8 1.28 2.30 5510 628 611 514 8.53 166 107 2.88 103"
+W18X234 "68.6 21.1 11.7 1.16 2.11 4900 558 549 466 8.44 149 95.8 2.85 78.7"
+W18X211 "62.3 20.7 11.6 1.06 1.91 4330 493 490 419 8.35 132 85.3 2.82 58.6"
+W18X192 "56.2 20.4 11.5 0.960 1.75 3870 440 442 380 8.28 119 76.8 2.79 44.7"
+W18X175 "51.4 20.0 11.4 0.890 1.59 3450 391 398 344 8.20 106 68.8 2.76 33.8"
+W18X158 "46.3 19.7 11.3 0.810 1.44 3060 347 356 310 8.12 94.8 61.4 2.74 25.2"
+W18X143 "42.0 19.5 11.2 0.730 1.32 2750 311 322 282 8.09 85.4 55.5 2.72 19.2"
+W18X130 "38.3 19.3 11.2 0.670 1.20 2460 278 290 256 8.03 76.7 49.9 2.70 14.5"
+W18X119 "35.1 19.0 11.3 0.655 1.06 2190 253 262 231 7.90 69.1 44.9 2.69 10.6"
+W18X106 "31.1 18.7 11.2 0.590 0.940 1910 220 230 204 7.84 60.5 39.4 2.66 7.48"
+W18X97 "28.5 18.6 11.1 0.535 0.870 1750 201 211 188 7.82 55.3 36.1 2.65 5.86"
+W18X86 "25.3 18.4 11.1 0.480 0.770 1530 175 186 166 7.77 48.4 31.6 2.63 4.10"
+W18X76 "22.3 18.2 11.0 0.425 0.680 1330 152 163 146 7.73 42.2 27.6 2.61 2.83"
+W18X71 "20.9 18.5 7.64 0.495 0.810 1170 60.3 146 127 7.50 24.7 15.8 1.70 3.49"
+W18X65 "19.1 18.4 7.59 0.450 0.750 1070 54.8 133 117 7.49 22.5 14.4 1.69 2.73"
+W18X60 "17.6 18.2 7.56 0.415 0.695 984 50.1 123 108 7.47 20.6 13.3 1.68 2.17"
+W18X55 "16.2 18.1 7.53 0.390 0.630 890 44.9 112 98.3 7.41 18.5 11.9 1.67 1.66"
+W18X50 "14.7 18.0 7.50 0.355 0.570 800 40.1 101 88.9 7.38 16.6 10.7 1.65 1.24"
+W18X46 "13.5 18.1 6.06 0.360 0.605 712 22.5 90.7 78.8 7.25 11.7 7.43 1.29 1.22"
+W18X40 "11.8 17.9 6.02 0.315 0.525 612 19.1 78.4 68.4 7.21 10.0 6.35 1.27 0.810"
+W18X35 "10.3 17.7 6.00 0.300 0.425 510 15.3 66.5 57.6 7.04 8.06 5.12 1.22 0.506"
+W16X100 "29.4 17.0 10.4 0.585 0.985 1490 186 198 175 7.10 54.9 35.7 2.51 7.73"
+W16X89 "26.2 16.8 10.4 0.525 0.875 1300 163 175 155 7.05 48.1 31.4 2.49 5.45"
+W16X77 "22.6 16.5 10.3 0.455 0.760 1110 138 150 134 7.00 41.1 26.9 2.47 3.57"
+W16X67 "19.6 16.3 10.2 0.395 0.665 954 119 130 117 6.96 35.5 23.2 2.46 2.39"
+W16X57 "16.8 16.4 7.12 0.430 0.715 758 43.1 105 92.2 6.72 18.9 12.1 1.60 2.22"
+W16X50 "14.7 16.3 7.07 0.380 0.630 659 37.2 92.0 81.0 6.68 16.3 10.5 1.59 1.52"
+W16X45 "13.3 16.1 7.04 0.345 0.565 586 32.8 82.3 72.7 6.65 14.5 9.34 1.57 1.11"
+W16X40 "11.8 16.0 7.00 0.305 0.505 518 28.9 73.0 64.7 6.63 12.7 8.25 1.57 0.794"
+W16X36 "10.6 15.9 6.99 0.295 0.430 448 24.5 64.0 56.5 6.51 10.8 7.00 1.52 0.545"
+W16X31 "9.13 15.9 5.53 0.275 0.440 375 12.4 54.0 47.2 6.41 7.03 4.49 1.17 0.461"
+W16X26 "7.68 15.7 5.50 0.250 0.345 301 9.59 44.2 38.4 6.26 5.48 3.49 1.12 0.262"
+W14X730 "215 22.4 17.9 3.07 4.91 14300 4720 1660 1280 8.17 816 527 4.69 1450"
+W14X665 "196 21.6 17.7 2.83 4.52 12400 4170 1480 1150 7.98 730 472 4.62 1120"
+W14X605 "178 20.9 17.4 2.60 4.16 10800 3680 1320 1040 7.80 652 423 4.55 869"
+W14X550 "162 20.2 17.2 2.38 3.82 9430 3250 1180 931 7.63 583 378 4.49 669"
+W14X500 "147 19.6 17.0 2.19 3.50 8210 2880 1050 838 7.48 522 339 4.43 514"
+W14X455 "134 19.0 16.8 2.02 3.21 7190 2560 936 756 7.33 468 304 4.38 395"
+W14X426 "125 18.7 16.7 1.88 3.04 6600 2360 869 706 7.26 434 283 4.34 331"
+W14X398 "117 18.3 16.6 1.77 2.85 6000 2170 801 656 7.16 402 262 4.31 273"
+W14X370 "109 17.9 16.5 1.66 2.66 5440 1990 736 607 7.07 370 241 4.27 222"
+W14X342 "101 17.5 16.4 1.54 2.47 4900 1810 672 558 6.98 338 221 4.24 178"
+W14X311 "91.4 17.1 16.2 1.41 2.26 4330 1610 603 506 6.88 304 199 4.20 136"
+W14X283 "83.3 16.7 16.1 1.29 2.07 3840 1440 542 459 6.79 274 179 4.17 104"
+W14X257 "75.6 16.4 16.0 1.18 1.89 3400 1290 487 415 6.71 246 161 4.13 79.1"
+W14X233 "68.5 16.0 15.9 1.07 1.72 3010 1150 436 375 6.63 221 145 4.10 59.5"
+W14X211 "62.0 15.7 15.8 0.980 1.56 2660 1030 390 338 6.55 198 130 4.07 44.6"
+W14X193 "56.8 15.5 15.7 0.890 1.44 2400 931 355 310 6.50 180 119 4.05 34.8"
+W14X176 "51.8 15.2 15.7 0.830 1.31 2140 838 320 281 6.43 163 107 4.02 26.5"
+W14X159 "46.7 15.0 15.6 0.745 1.19 1900 748 287 254 6.38 146 96.2 4.00 19.7"
+W14X145 "42.7 14.8 15.5 0.680 1.09 1710 677 260 232 6.33 133 87.3 3.98 15.2"
+W14X132 "38.8 14.7 14.7 0.645 1.03 1530 548 234 209 6.28 113 74.5 3.76 12.3"
+W14X120 "35.3 14.5 14.7 0.590 0.940 1380 495 212 190 6.24 102 67.5 3.74 9.37"
+W14X109 "32.0 14.3 14.6 0.525 0.860 1240 447 192 173 6.22 92.7 61.2 3.73 7.12"
+W14X99 "29.1 14.2 14.6 0.485 0.780 1110 402 173 157 6.17 83.6 55.2 3.71 5.37"
+W14X90 "26.5 14.0 14.5 0.440 0.710 999 362 157 143 6.14 75.6 49.9 3.70 4.06"
+W14X82 "24.0 14.3 10.1 0.510 0.855 881 148 139 123 6.05 44.8 29.3 2.48 5.07"
+W14X74 "21.8 14.2 10.1 0.450 0.785 795 134 126 112 6.04 40.5 26.6 2.48 3.87"
+W14X68 "20.0 14.0 10.0 0.415 0.720 722 121 115 103 6.01 36.9 24.2 2.46 3.01"
+W14X61 "17.9 13.9 10.0 0.375 0.645 640 107 102 92.1 5.98 32.8 21.5 2.45 2.19"
+W14X53 "15.6 13.9 8.06 0.370 0.660 541 57.7 87.1 77.8 5.89 22.0 14.3 1.92 1.94"
+W14X48 "14.1 13.8 8.03 0.340 0.595 484 51.4 78.4 70.2 5.85 19.6 12.8 1.91 1.45"
+W14X43 "12.6 13.7 8.00 0.305 0.530 428 45.2 69.6 62.6 5.82 17.3 11.3 1.89 1.05"
+W14X38 "11.2 14.1 6.77 0.310 0.515 385 26.7 61.5 54.6 5.87 12.1 7.88 1.55 0.798"
+W14X34 "10.0 14.0 6.75 0.285 0.455 340 23.3 54.6 48.6 5.83 10.6 6.91 1.53 0.569"
+W14X30 "8.85 13.8 6.73 0.270 0.385 291 19.6 47.3 42.0 5.73 8.99 5.82 1.49 0.380"
+W14X26 "7.69 13.9 5.03 0.255 0.420 245 8.91 40.2 35.3 5.65 5.54 3.55 1.08 0.358"
+W14X22 "6.49 13.7 5.00 0.230 0.335 199 7.00 33.2 29.0 5.54 4.39 2.80 1.04 0.208"
+W12X336 "98.9 16.8 13.4 1.78 2.96 4060 1190 603 483 6.41 274 177 3.47 243"
+W12X305 "89.5 16.3 13.2 1.63 2.71 3550 1050 537 435 6.29 244 159 3.42 185"
+W12X279 "81.9 15.9 13.1 1.53 2.47 3110 937 481 393 6.16 220 143 3.38 143"
+W12X252 "74.1 15.4 13.0 1.40 2.25 2720 828 428 353 6.06 196 127 3.34 108"
+W12X230 "67.7 15.1 12.9 1.29 2.07 2420 742 386 321 5.97 177 115 3.31 83.8"
+W12X210 "61.8 14.7 12.8 1.18 1.90 2140 664 348 292 5.89 159 104 3.28 64.7"
+W12X190 "56.0 14.4 12.7 1.06 1.74 1890 589 311 263 5.82 143 93.0 3.25 48.8"
+W12X170 "50.0 14.0 12.6 0.960 1.56 1650 517 275 235 5.74 126 82.3 3.22 35.6"
+W12X152 "44.7 13.7 12.5 0.870 1.40 1430 454 243 209 5.66 111 72.8 3.19 25.8"
+W12X136 "39.9 13.4 12.4 0.790 1.25 1240 398 214 186 5.58 98.0 64.2 3.16 18.5"
+W12X120 "35.2 13.1 12.3 0.710 1.11 1070 345 186 163 5.51 85.4 56.0 3.13 12.9"
+W12X106 "31.2 12.9 12.2 0.610 0.990 933 301 164 145 5.47 75.1 49.3 3.11 9.13"
+W12X96 "28.2 12.7 12.2 0.550 0.900 833 270 147 131 5.44 67.5 44.4 3.09 6.85"
+W12X87 "25.6 12.5 12.1 0.515 0.810 740 241 132 118 5.38 60.4 39.7 3.07 5.10"
+W12X79 "23.2 12.4 12.1 0.470 0.735 662 216 119 107 5.34 54.3 35.8 3.05 3.84"
+W12X72 "21.1 12.3 12.0 0.430 0.670 597 195 108 97.4 5.31 49.2 32.4 3.04 2.93"
+W12X65 "19.1 12.1 12.0 0.390 0.605 533 174 96.8 87.9 5.28 44.1 29.1 3.02 2.18"
+W12X58 "17.0 12.2 10.0 0.360 0.640 475 107 86.4 78.0 5.28 32.5 21.4 2.51 2.10"
+W12X53 "15.6 12.1 10.0 0.345 0.575 425 95.8 77.9 70.6 5.23 29.1 19.2 2.48 1.58"
+W12X50 "14.6 12.2 8.08 0.370 0.640 391 56.3 71.9 64.2 5.18 21.3 13.9 1.96 1.71"
+W12X45 "13.1 12.1 8.05 0.335 0.575 348 50.0 64.2 57.7 5.15 19.0 12.4 1.95 1.26"
+W12X40 "11.7 11.9 8.01 0.295 0.515 307 44.1 57.0 51.5 5.13 16.8 11.0 1.94 0.906"
+W12X35 "10.3 12.5 6.56 0.300 0.520 285 24.5 51.2 45.6 5.25 11.5 7.47 1.54 0.741"
+W12X30 "8.79 12.3 6.52 0.260 0.440 238 20.3 43.1 38.6 5.21 9.56 6.24 1.52 0.457"
+W12X26 "7.65 12.2 6.49 0.230 0.380 204 17.3 37.2 33.4 5.17 8.17 5.34 1.51 0.300"
+W12X22 "6.48 12.3 4.03 0.260 0.425 156 4.66 29.3 25.4 4.91 3.66 2.31 0.848 0.293"
+W12X19 "5.57 12.2 4.01 0.235 0.350 130 3.76 24.7 21.3 4.82 2.98 1.88 0.822 0.180"
+W12X16 "4.71 12.0 3.99 0.220 0.265 103 2.82 20.1 17.1 4.67 2.26 1.41 0.773 0.103"
+W12X14 "4.16 11.9 3.97 0.200 0.225 88.6 2.36 17.4 14.9 4.62 1.90 1.19 0.753 0.0704"
+W10X112 "32.9 11.4 10.4 0.755 1.25 716 236 147 126 4.66 69.2 45.3 2.68 15.1"
+W10X100 "29.3 11.1 10.3 0.680 1.12 623 207 130 112 4.60 61.0 40.0 2.65 10.9"
+W10X88 "26.0 10.8 10.3 0.605 0.990 534 179 113 98.5 4.54 53.1 34.8 2.63 7.53"
+W10X77 "22.7 10.6 10.2 0.530 0.870 455 154 97.6 85.9 4.49 45.9 30.1 2.60 5.11"
+W10X68 "19.9 10.4 10.1 0.470 0.770 394 134 85.3 75.7 4.44 40.1 26.4 2.59 3.56"
+W10X60 "17.7 10.2 10.1 0.420 0.680 341 116 74.6 66.7 4.39 35.0 23.0 2.57 2.48"
+W10X54 "15.8 10.1 10.0 0.370 0.615 303 103 66.6 60.0 4.37 31.3 20.6 2.56 1.82"
+W10X49 "14.4 10.0 10.0 0.340 0.560 272 93.4 60.4 54.6 4.35 28.3 18.7 2.54 1.39"
+W10X45 "13.3 10.1 8.02 0.350 0.620 248 53.4 54.9 49.1 4.32 20.3 13.3 2.01 1.51"
+W10X39 "11.5 9.92 7.99 0.315 0.530 209 45.0 46.8 42.1 4.27 17.2 11.3 1.98 0.976"
+W10X33 "9.71 9.73 7.96 0.290 0.435 171 36.6 38.8 35.0 4.19 14.0 9.20 1.94 0.583"
+W10X30 "8.84 10.5 5.81 0.300 0.510 170 16.7 36.6 32.4 4.38 8.84 5.75 1.37 0.622"
+W10X26 "7.61 10.3 5.77 0.260 0.440 144 14.1 31.3 27.9 4.35 7.50 4.89 1.36 0.402"
+W10X22 "6.49 10.2 5.75 0.240 0.360 118 11.4 26.0 23.2 4.27 6.10 3.97 1.33 0.239"
+W10X19 "5.62 10.2 4.02 0.250 0.395 96.3 4.29 21.6 18.8 4.14 3.35 2.14 0.874 0.233"
+W10X17 "4.99 10.1 4.01 0.240 0.330 81.9 3.56 18.7 16.2 4.05 2.80 1.78 0.845 0.156"
+W10X15 "4.41 9.99 4.00 0.230 0.270 68.9 2.89 16.0 13.8 3.95 2.30 1.45 0.810 0.104"
+W10X12 "3.54 9.87 3.96 0.190 0.210 53.8 2.18 12.6 10.9 3.90 1.74 1.10 0.785 0.0547"
+W8X67 "19.7 9.00 8.28 0.570 0.935 272 88.6 70.1 60.4 3.72 32.7 21.4 2.12 5.05"
+W8X58 "17.1 8.75 8.22 0.510 0.810 228 75.1 59.8 52.0 3.65 27.9 18.3 2.10 3.33"
+W8X48 "14.1 8.50 8.11 0.400 0.685 184 60.9 49.0 43.2 3.61 22.9 15.0 2.08 1.96"
+W8X40 "11.7 8.25 8.07 0.360 0.560 146 49.1 39.8 35.5 3.53 18.5 12.2 2.04 1.12"
+W8X35 "10.3 8.12 8.02 0.310 0.495 127 42.6 34.7 31.2 3.51 16.1 10.6 2.03 0.769"
+W8X31 "9.13 8.00 8.00 0.285 0.435 110 37.1 30.4 27.5 3.47 14.1 9.27 2.02 0.536"
+W8X28 "8.25 8.06 6.54 0.285 0.465 98.0 21.7 27.2 24.3 3.45 10.1 6.63 1.62 0.537"
+W8X24 "7.08 7.93 6.50 0.245 0.400 82.7 18.3 23.1 20.9 3.42 8.57 5.63 1.61 0.346"
+W8X21 "6.16 8.28 5.27 0.250 0.400 75.3 9.77 20.4 18.2 3.49 5.69 3.71 1.26 0.282"
+W8X18 "5.26 8.14 5.25 0.230 0.330 61.9 7.97 17.0 15.2 3.43 4.66 3.04 1.23 0.172"
+W8X15 "4.44 8.11 4.02 0.245 0.315 48.0 3.41 13.6 11.8 3.29 2.67 1.70 0.876 0.137"
+W8X13 "3.84 7.99 4.00 0.230 0.255 39.6 2.73 11.4 9.91 3.21 2.15 1.37 0.843 0.0871"
+W8X10 "2.96 7.89 3.94 0.170 0.205 30.8 2.09 8.87 7.81 3.22 1.66 1.06 0.841 0.0426"
+W6X25 "7.34 6.38 6.08 0.320 0.455 53.4 17.1 18.9 16.7 2.70 8.56 5.61 1.52 0.461"
+W6X20 "5.87 6.20 6.02 0.260 0.365 41.4 13.3 15.0 13.4 2.66 6.72 4.41 1.50 0.240"
+W6X15 "4.43 5.99 5.99 0.230 0.260 29.1 9.32 10.8 9.72 2.56 4.75 3.11 1.45 0.101"
+W6X16 "4.74 6.28 4.03 0.260 0.405 32.1 4.43 11.7 10.2 2.60 3.39 2.20 0.967 0.223"
+W6X12 "3.55 6.03 4.00 0.230 0.280 22.1 2.99 8.30 7.31 2.49 2.32 1.50 0.918 0.0903"
+W6X9  "2.68 5.90 3.94 0.170 0.215 16.4 2.20 6.23 5.56 2.47 1.72 1.11 0.905 0.0405"
+W6X8.5 "2.52 5.83 3.94 0.170 0.195 14.9 1.99 5.73 5.10 2.43 1.56 1.01 0.890 0.0333"
+W5X19 "5.56 5.15 5.03 0.270 0.430 26.3 9.13 11.6 10.2 2.17 5.53 3.63 1.28 0.316"
+W5X16 "4.71 5.01 5.00 0.240 0.360 21.4 7.51 9.63 8.55 2.13 4.58 3.00 1.26 0.192"
+W4X13 "3.83 4.16 4.06 0.280 0.345 11.3 3.86 6.28 5.46 1.72 2.92 1.90 1.00 0.151"
 }
