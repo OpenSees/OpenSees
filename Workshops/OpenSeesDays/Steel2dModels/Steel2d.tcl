@@ -288,6 +288,93 @@ proc BeamWithHingesWSection2d {eleTag iNode jNode sectType matTag transfTag args
     element forceBeamColumn $eleTag $iNode $jNode $transfTag "HingeRadau $eleTag $Lp $eleTag $Lp $eleTag"
 }
 
+proc BeamWithSteel01HingesWSection2d {eleTag iNode jNode sectType E Fy b transfTag args} {
+
+    global FiberSteelWSection2d
+    global WSection
+    global in
+
+    set n 10
+    if {[lsearch $args "n"] != -1} {
+	set loc [lsearch $args "n"]
+        set n [lindex $args [expr $loc+1]]
+    }
+
+    set doRayleigh 0
+    if {[lsearch $args "-doRayleigh"] != -1} {
+	set loc [lsearch $args "-doRayleigh"]
+        set doRayleigh [lindex $args [expr $loc+1]]
+    }
+
+    set Orient "XX"
+    if {[lsearch $args "YY"] != -1} {
+        set Orient "YY"
+    }
+
+    set nFlange 10
+    if {[lsearch $args "-nFlange"] != -1} {
+	set loc [lsearch $args "-nFlange"]
+        set nFlange [lindex $args [expr $loc+1]]
+    }
+
+    set nWeb    10
+    if {[lsearch $args "-nWeb"] != -1} {
+	set loc [lsearch $args "-nWeb"]
+        set nWeb [lindex $args [expr $loc+1]]
+    }
+
+    set found 0
+    set d 0
+
+    foreach {section prop} [array get WSection $sectType] {
+	set propList [split $prop]
+
+	#AISC_Manual_Label A d bf tw tf Ix Iy Zx Sx rx Zy Sy ry J
+	set A [expr [lindex $propList 0]*$in*$in]
+	set  d [expr [lindex $propList 1]*$in]
+	set  bf [expr [lindex $propList 2]*$in]
+	set  tw [expr [lindex $propList 3]*$in]
+	set  tf [expr [lindex $propList 4]*$in]
+	set Ixx [expr [lindex $propList 5]*$in*$in*$in*$in]
+	set Iyy [expr [lindex $propList 6]*$in*$in*$in*$in]
+	set Zx [expr [lindex $propList 7]*$in*$in*$in]
+	set found 1
+    }
+
+    set dX [expr [nodeCoord $jNode 1] - [nodeCoord $iNode 1]]
+    set dY [expr [nodeCoord $jNode 2] - [nodeCoord $iNode 2]]
+    set L [expr sqrt($dX*$dX+$dY*$dY)]
+    set Lp $d
+
+
+    # create 2 additional nodes at either end, constrain to move in 1 and 2 with nodes at end
+    set hingeEnd1 1
+    node $eleTag$hingeEnd1 [nodeCoord $iNode 1] [nodeCoord $iNode 2]
+    equalDOF $iNode $eleTag$hingeEnd1 1 2
+
+    set hingeEnd2 2
+    node $eleTag$hingeEnd2 [nodeCoord $jNode 1] [nodeCoord $jNode 2]
+    equalDOF $jNode $eleTag$hingeEnd2 1 2
+
+    #    set iNodeCrds [nodeCoord $iNode]; set x1 [lindex $iNodeCrds 0]; set y1 [lindex $iNodeCrds 1]
+    #    set jNodeCrds [nodeCoord $jNode]; set x2 [lindex $jNodeCrds 0]; set y2 [lindex $jNodeCrds 1]
+    #    set L [expr sqrt(($x2-$x1)*($x2-$x1)+($y2-$y1)*($y2-$y1))]
+    
+    # create a material for the hinge
+    set Ehinge [expr $n*6.0*$Ixx*$E/$L]
+    set bhinge [expr $b/$n]
+    set Mb [expr $Fy*$Zx]
+    uniaxialMaterial Steel01 $eleTag $Mb $Ehinge $bhinge
+
+    # add two zero length rotational hinges
+    set one 1
+    set two 2
+    element zeroLength $eleTag$one $iNode $eleTag$hingeEnd1 -mat $eleTag -dir 6 -doRayleigh $doRayleigh
+    element zeroLength $eleTag$two $eleTag$hingeEnd2 $jNode -mat $eleTag -dir 6 -doRayleigh $doRayleigh
+
+    # add an elastic element in between
+    ElasticBeamWSection2d $eleTag $eleTag$hingeEnd1 $eleTag$hingeEnd2 $sectType $E $transfTag
+}
 
 
 proc BeamWithPlasticHingesWSection2d {eleTag iNode jNode sectType E Fy H Lb Com_Type Comp_Action Lp transfTag args} {   
@@ -353,14 +440,14 @@ proc BeamWithPlasticHingesWSection2d {eleTag iNode jNode sectType E Fy H Lb Com_
     set L [expr sqrt(($x2-$x1)*($x2-$x1)+($y2-$y1)*($y2-$y1))]
     set beta1 [expr -6.0*(3*$L*$L*$Lp - 24*$L*$Lp*$Lp +32*$Lp*$Lp*$Lp)/($L*($L-8.0*$Lp)*($L-8.0*$Lp))]
     set beta2 [expr 3.0*(3*$L*$L*$L - 48*$L*$L*$Lp + 224*$L*$Lp*$Lp - 256*$Lp*$Lp*$Lp)/($L*(3*$L-16.0*$Lp)*(3*$L-16.0*$Lp))]
-	
-	set secTag  $eleTag
+    
+    set secTag  $eleTag
     set countExtra 2
     set secTag2 $eleTag$countExtra;
     incr countExtra 3
     set secTag3 $eleTag$countExtra;
-
-	set found 0
+    
+    set found 0
     foreach {section prop} [array get WSection $sectType] {
 	#AISC_Manual_Label A d bf tw tf Ix Iy Zx Sx rx Zy Sy ry J
 	set propList [split $prop]
@@ -369,22 +456,22 @@ proc BeamWithPlasticHingesWSection2d {eleTag iNode jNode sectType E Fy H Lb Com_
 	set Iy [expr [lindex $propList 6]*$in*$in*$in*$in]
 	set found 1
     }
-
+    
     section Elastic $secTag2 $E $A [expr $beta1*$Ix]
     section Elastic $secTag3 $E $A [expr $beta2*$Ix]
-	
-	if {[lsearch $args "-metric"] != -1} {
-			SteelWSectionMChi02 $secTag $E $Fy $H $L $Lb $sectType $Com_Type $Comp_Action $Lp  -metric
-	} else {
-			SteelWSectionMChi02 $secTag $E $Fy $H $L $Lb $sectType $Com_Type $Comp_Action $Lp
-	}
-	
-	uniaxialMaterial Elastic [expr $secTag*100] [expr $E*$A];
-	section Aggregator $secTag [expr $secTag*100] P $secTag Mz;
-	
+    
+    if {[lsearch $args "-metric"] != -1} {
+	SteelWSectionMChi02 $secTag $E $Fy $H $L $Lb $sectType $Com_Type $Comp_Action $Lp  -metric
+    } else {
+	SteelWSectionMChi02 $secTag $E $Fy $H $L $Lb $sectType $Com_Type $Comp_Action $Lp
+    }
+    
+    uniaxialMaterial Elastic [expr $secTag*100] [expr $E*$A];
+    section Aggregator $secTag [expr $secTag*100] P $secTag Mz;
+    
     set Locations "0 [expr (8.0/3.0*$Lp)/$L] [expr (4.0*$Lp+($L-8*$Lp)/2*(1-1/sqrt(3)))/$L] [expr (4.0*$Lp+($L-8*$Lp)/2*(1+1/sqrt(3)))/$L] [expr ($L-8.0/3.0*$Lp)/$L] 1.0";
     set weights "[expr $Lp/$L] [expr 3.0*$Lp/$L] [expr (($L-8.0*$Lp)/2)/$L] [expr (($L-8.0*$Lp)/2)/$L] [expr 3.0*$Lp/$L] [expr $Lp/$L]"; 
-	set secTags "$secTag $secTag2 $secTag3 $secTag3 $secTag2 $secTag";
+    set secTags "$secTag $secTag2 $secTag3 $secTag3 $secTag2 $secTag";
     set integration "LowOrder 6 $secTags $Locations $weights";
     element forceBeamColumn $eleTag $iNode $jNode $transfTag $integration 
 }
@@ -394,7 +481,7 @@ proc ElasticBeamHSSection2d {eleTag iNode jNode sectType E transfTag args} {
     global HSSection
     global in
     set found 0
-
+    
     set Orient "XX"
     if {[lsearch $args "YY"] != -1} {
         set Orient "YY"
@@ -592,10 +679,10 @@ proc BeamWithConcentratedHingesWSection2d {eleTag iNode jNode sectType E Fy H Lb
 	puts "YY orientation not handled - uses XX!"
     }
 	
-    set hingeEnd1 10
+    set hingeEnd1 1
     node $eleTag$hingeEnd1 [nodeCoord $iNode 1] [nodeCoord $iNode 2]
     equalDOF $iNode $eleTag$hingeEnd1 1 2
-    set hingeEnd2 100
+    set hingeEnd2 2
     node $eleTag$hingeEnd2 [nodeCoord $jNode 1] [nodeCoord $jNode 2]
     equalDOF $jNode $eleTag$hingeEnd2 1 2
     
