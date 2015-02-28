@@ -3287,6 +3287,8 @@ SRC/material/uniaxial/SeriesMaterial.cpp -text
 SRC/material/uniaxial/SeriesMaterial.h -text
 SRC/material/uniaxial/ShearPanelMaterial.cpp -text
 SRC/material/uniaxial/ShearPanelMaterial.h -text
+SRC/material/uniaxial/SimpleFractureMaterial.cpp -text
+SRC/material/uniaxial/SimpleFractureMaterial.h -text
 SRC/material/uniaxial/SmoothPSConcrete.cpp -text
 SRC/material/uniaxial/SmoothPSConcrete.h -text
 SRC/material/uniaxial/Steel01.cpp -text
