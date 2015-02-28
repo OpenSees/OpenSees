@@ -54,7 +54,6 @@
 #include <ViscousMaterial.h>	// Sasani
 #include <PathIndependentMaterial.h>	// MHS
 #include <BackboneMaterial.h>	// MHS
-#include <MinMaxMaterial.h>	// MHS
 #include <FatigueMaterial.h>	// Patxi
 #include <SeriesMaterial.h>		// MHS
 #include <ENTMaterial.h>		// MHS
@@ -95,6 +94,7 @@ extern void *OPS_NewTendonL01Material(void);
 extern void *OPS_NewConfinedConcrete01Material(void);
 extern void *OPS_NewElasticBilin(void);
 extern void *OPS_NewMinMaxMaterial(void);
+extern void *OPS_SimpleFractureMaterial(void);
 extern void *OPS_NewInitStrainMaterial(void);
 extern void *OPS_NewInitStressMaterial(void);
 extern void *OPS_New_pyUCLA(void);
@@ -285,6 +285,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if ((strcmp(argv[1],"MinMaxMaterial") == 0) || (strcmp(argv[1],"MinMax") == 0)) {
       void *theMat = OPS_NewMinMaxMaterial();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if ((strcmp(argv[1],"SimpleFractureMaterial") == 0) || (strcmp(argv[1],"SimpleFracture") == 0)) {
+      opserr << "Max Material\n";
+      void *theMat = OPS_SimpleFractureMaterial();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
@@ -1526,65 +1534,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       }
       
       theMaterial = new BackboneMaterial(tag, *backbone);
-    }
-
-    else if (strcmp(argv[1],"MinMax") == 0) {
-      if (argc < 4) {
-	opserr << "WARNING insufficient arguments\n";
-	printCommand(argc,argv);
-	opserr << "Want: uniaxialMaterial MinMax tag? matTag?";
-	opserr << " <-min min?> <-max max?>" << endln;
-	return TCL_ERROR;
-      }
-      
-      int tag, matTag;
-      
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING invalid uniaxialMaterial MinMax tag" << endln;
-	return TCL_ERROR;		
-      }
-
-      if (Tcl_GetInt(interp, argv[3], &matTag) != TCL_OK) {
-	opserr << "WARNING invalid component tag\n";
-	opserr << "uniaxialMaterial MinMax: " << tag << endln;
-	return TCL_ERROR;
-      }
-
-      // Search for min and max strains
-      double epsmin = NEG_INF_STRAIN;
-      double epsmax = POS_INF_STRAIN;
-	
-      for (int j = 4; j < argc; j++) {
-	if (strcmp(argv[j],"-min") == 0) {
-	  if ((j+1) >= argc || Tcl_GetDouble (interp, argv[j+1], &epsmin) != TCL_OK) {
-	    opserr << "WARNING invalid min\n";
-	    opserr << "uniaxialMaterial MinMax: " << tag << endln;
-	    return TCL_ERROR;
-	  }
-	  j++;
-	}
-	if (strcmp(argv[j],"-max") == 0) {
-	  if ((j+1) >= argc || Tcl_GetDouble (interp, argv[j+1], &epsmax) != TCL_OK) {
-	    opserr << "WARNING invalid max\n";
-	    opserr << "uniaxialMaterial MinMax: " << tag << endln;
-	    return TCL_ERROR;
-	  }
-	  j++;
-	}
-      }
-	
-      UniaxialMaterial *theMat = OPS_getUniaxialMaterial(matTag);
-	    
-      if (theMat == 0) {
-	opserr << "WARNING component material does not exist\n";
-	opserr << "Component material: " << matTag; 
-	opserr << "\nuniaxialMaterial MinMax: " << tag << endln;
-	return TCL_ERROR;
-      }
-	
-      // Parsing was successful, allocate the material
-      theMaterial = new MinMaxMaterial(tag, *theMat, epsmin, epsmax);
-      
     }
 
     else if (strcmp(argv[1],"Fatigue") == 0) {

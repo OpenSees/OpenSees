@@ -38,7 +38,8 @@ OBJS       = UniaxialMaterial.o \
 	SeriesMaterial.o \
 	InitStrainMaterial.o \
 	InitStressMaterial.o \
-	MinMaxMaterial.o \
+	SimpleFractureMaterial.o \
+	MaxMaterial.o \
         PathIndependentMaterial.o \
 	CableMaterial.o \
 	ENTMaterial.o \
