@@ -179,6 +179,8 @@ proc SetValues { } {
 # Define the Reset Procedure
 # ##############################################################
 
+set pointTag 0
+
 proc Reset { } {
     global theCanvas
     global theScale
@@ -190,6 +192,7 @@ proc Reset { } {
     global xLast
     global yLast
     global width
+    global pointTag
 
     set strain 0
 
@@ -203,6 +206,12 @@ proc Reset { } {
     $theCanvas create line [expr $width/2.0] 10 [expr $width/2.0] [expr $height-10]
     $theCanvas create text [expr $width-30] [expr $height/2.0-10] -text "Strain $maxStrain"
     $theCanvas create text [expr $width/2.0+30] 10 -text "Stress $maxStress"
+#    $theCanvas create rectangle 30 30 40 40 -tags "drawing"
+
+    set pointTag [$theCanvas create oval [expr $height/2.-3] [expr $width/2.-3] [expr $height/2.+3] [expr $width/2.+3] -tags "point" -fill "red"]
+#    $theCanvas create rectangle [expr $height/2.-2] [expr $width/2.-2] [expr $height/2.+2] [expr $width/2.+2] -tags "point"
+
+    puts $pointTag
 
     set xLast [expr $width/2]
     set yLast [expr $height/2]
@@ -235,7 +244,8 @@ proc SetStrain {strain} {
     global height
     global width
     global toggleFrame
-    
+    global pointTag
+
     if {$matID != 0} {
 	eval strainUniaxialTest $strain
 	set stress [stressUniaxialTest]
@@ -246,6 +256,9 @@ proc SetStrain {strain} {
 	set x [expr $width / 2 + $strain * $diffStrain]
 	set y [expr $height / 2 - $stress * $diffStress]
 	$theCanvas create line $xLast $yLast $x $y
+
+	$theCanvas move $pointTag [expr $x-$xLast] [expr $y-$yLast]
+
 	set xLast $x
 	set yLast $y
 
