@@ -43,26 +43,26 @@ OPS_SimpleFractureMaterial(void)
   int    iData[2];
 
   int argc = OPS_GetNumRemainingInputArgs();
-  if (argc < 2) {
-    opserr << "WARNING invalid uniaxialMaterial SimpleFractureMaterial $tag $otherTag <-min $minStrain> <-max $maxStrain>" << endln;
+  if (argc < 3) {
+    opserr << "WARNING invalid uniaxialMaterial SimpleFracture $tag $otherTag $maxStrain>" << endln;
     return 0;
   }
 
   int numData = 2;
   if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING invalid uniaxialMaterial SimpleFractureMaterial $tag $otherTag" << endln;
+    opserr << "WARNING invalid uniaxialMaterial SimpleFracture $tag $otherTag $maxStrain" << endln;
     return 0;
   }
 
   theOtherMaterial = OPS_GetUniaxialMaterial(iData[1]);
   if (theOtherMaterial == 0) {
-    opserr << "WARNING invalid otherTag uniaxialMaterial Max tag: " << iData[0] << endln;
+    opserr << "WARNING invalid otherTag:  uniaxialMaterial SimpleFracture $tag $otherTag $max: " << iData[0] << endln;
     return 0;	
   }
 
   numData = 1;
   if (OPS_GetDoubleInput(&numData, &maxStrain) != 0) {
-    opserr << "WARNING invalid uniaxialMaterial SimpleFractureMaterial $tag $otherTag" << endln;
+    opserr << "WARNING invalid maxStrain: uniaxialMaterial  SimpleFracture $tag $otherTag $maxStrain" << endln;
     return 0;
   }
 

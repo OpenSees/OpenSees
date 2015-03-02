@@ -291,7 +291,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
 
     } else if ((strcmp(argv[1],"SimpleFractureMaterial") == 0) || (strcmp(argv[1],"SimpleFracture") == 0)) {
-      opserr << "Max Material\n";
+
       void *theMat = OPS_SimpleFractureMaterial();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
