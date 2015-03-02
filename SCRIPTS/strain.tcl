@@ -63,7 +63,6 @@ pack .mbar -fill x
 
 menubutton .mbar.materials -text "Materials" -relief raised -menu .mbar.materials.menu
 pack .mbar.materials -side left
-
 button .mbar.values -text Values -command "SetValues"
 pack .mbar.values -side left
 button .mbar.settings -text Settings -command "Settings"
@@ -76,6 +75,32 @@ pack .mbar.quit -side left
 frame .style -borderwidth 1 -relief sunken
 pack .style -fill x -pady 1
 
+
+# ##############################################################
+# proc for buttons
+# ##############################################################
+
+
+set buttonlist { .mbar.materials .mbar.values .mbar.settings .mbar.reset }
+
+# Procedure Settings - used to disable/enable all the buttons in the buttonlist
+
+proc disable_buttons {} {
+	global buttonlist
+	foreach x $buttonlist {
+		$x configure -state disabled
+	}
+}
+
+proc enable_buttons {} {
+	global buttonlist
+	foreach x $buttonlist {
+		$x configure -state normal
+	}
+}
+
+
+
 # ##############################################################
 # Material Menu
 # ##############################################################
@@ -84,6 +109,79 @@ set m [menu .mbar.materials.menu]
 
 # source in the material data structures and procedures
 source uniaxialMaterials.tcl
+#source x00_uniaxialMaterials.tcl
+
+# ##############################################################
+# Define sample input data
+# ##############################################################
+
+
+proc uniaxialMaterialSample {matName args} {
+
+    disable_buttons
+
+    global matID
+    incr matID
+
+    set w [toplevel .sampleInput]
+    wm title ${w} ${matName}
+
+    set count 0
+    foreach arg $args {
+
+	set posEq [string first "=" ${arg}]
+
+	global matArg${count}
+
+	if {${posEq} != -1} {
+	    set argName [string range ${arg} 0 [expr ${posEq} - 1]]
+	    set argVal [string range ${arg} [expr ${posEq} + 1] end]
+	} else {
+	    set argName ""
+	    set argVal ${arg}
+	}
+
+	label ${w}.l${count} -text ${argName}
+	entry ${w}.e${count} -textvariable matArg${count} -relief sunken
+	set matArg${count} ${argVal}
+
+	if {${argName} == "matTag"} {
+	    set matArg${count} ${matID}
+	    ${w}.e${count} configure -state disabled
+	} elseif {${posEq} == -1} {
+	    ${w}.e${count} configure -state disabled
+	}
+	
+	grid ${w}.l${count} -row ${count} -column 1 -sticky e -padx 5
+	grid ${w}.e${count} -row ${count} -column 2
+
+	incr count
+    }
+
+    button ${w}.ok -text "OK" -command "doneUniaxialMaterial ${matName} ${count}; destroy ${w}; enable_buttons" -padx 10
+    grid ${w}.ok -row ${count} -column 1 -columnspan 2
+
+}
+
+proc doneUniaxialMaterial {matName count} {
+
+    set matCommand "uniaxialMaterial ${matName}"
+
+    for {set i 0} {${i} < ${count}} {incr i} {
+	set tmp "matArg${i}"
+	global ${tmp}
+	eval "set matCommand \"${matCommand} $${tmp}\""
+    }
+
+    global matID
+    set fileOpen [open results.out w]
+    close $fileOpen
+    eval ${matCommand}
+    eval uniaxialTest $matID
+    SetValues
+    Reset
+
+}
 
 # ##############################################################
 # Define the canvas and slider 
@@ -249,6 +347,11 @@ proc SetStrain {strain} {
     if {$matID != 0} {
 	eval strainUniaxialTest $strain
 	set stress [stressUniaxialTest]
+	set tang [tangUniaxialTest]
+
+	set fileOpen [open results.out a]
+	puts $fileOpen "$strain $stress $tang"
+	close $fileOpen
 	
 	set diffStrain [expr $width/(2*$maxStrain)]
 	set diffStress [expr $height/(2*$maxStress)]
