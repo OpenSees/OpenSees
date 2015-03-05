@@ -63,7 +63,8 @@ class MinMaxMaterial : public UniaxialMaterial
 		 FEM_ObjectBroker &theBroker);    
     
     void Print(OPS_Stream &s, int flag =0);
-    
+    bool hasFailed(void) {return Cfailed;}
+
   protected:
     
   private:

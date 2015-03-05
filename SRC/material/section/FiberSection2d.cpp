@@ -835,6 +835,27 @@ FiberSection2d::setResponse(const char **argv, int argc,
     }
 
     return theResponse;
+
+  } else if (strcmp(argv[0],"fiberData") == 0) {
+    int numData = numFibers*5;
+    for (int j = 0; j < numFibers; j++) {
+      output.tag("FiberOutput");
+      output.attr("yLoc", matData[3*j]);
+      output.attr("zLoc", matData[3*j+1]);
+      output.attr("area", matData[3*j+2]);    
+      output.tag("ResponseType","yCoord");
+      output.tag("ResponseType","zCoord");
+      output.tag("ResponseType","area");
+      output.tag("ResponseType","stress");
+      output.tag("ResponseType","strain");
+      output.endTag();
+    }
+    Vector theResponseData(numData);
+    return theResponse = new MaterialResponse(this, 5, theResponseData);
+
+  } else if ((strcmp(argv[0],"numFailedFiber") == 0) || (strcmp(argv[0],"numFiberFailed") == 0)) {
+    int count = 0;
+    return theResponse = new MaterialResponse(this, 6, count);
   }
 
   // If not a fiber response, call the base class method
@@ -845,8 +866,31 @@ FiberSection2d::setResponse(const char **argv, int argc,
 int 
 FiberSection2d::getResponse(int responseID, Information &sectInfo)
 {
-  // Just call the base class method ... don't need to define
-  // this function, but keeping it here just for clarity
+  if (responseID == 5) {
+    int numData = 5*numFibers;
+    Vector data(numData);
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {
+      double yLoc, zLoc, A, stress, strain;
+      yLoc = matData[3*j];
+      zLoc = matData[3*j+1];
+      A = matData[3*j+2];
+      stress = theMaterials[j]->getStress();
+      strain = theMaterials[j]->getStrain();
+      data(count) = yLoc; data(count+1) = zLoc; data(count+2) = A;
+      data(count+3) = stress; data(count+4) = strain;
+      count += 5;
+    }
+    return sectInfo.setVector(data);	
+  } else  if (responseID == 6) {
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {    
+      if (theMaterials[j]->hasFailed() == true)
+	count++;
+    }
+    return sectInfo.setInt(count);
+  } 
+
   return SectionForceDeformation::getResponse(responseID, sectInfo);
 }
 

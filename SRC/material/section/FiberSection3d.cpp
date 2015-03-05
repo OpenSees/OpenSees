@@ -994,6 +994,10 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     }
     Vector theResponseData(numData);
     theResponse = new MaterialResponse(this, 5, theResponseData);
+
+  } else if ((strcmp(argv[0],"numFailedFiber") == 0) || (strcmp(argv[0],"numFiberFailed") == 0)) {
+    int count = 0;
+    theResponse = new MaterialResponse(this, 6, count);
   }
 
 
@@ -1002,7 +1006,6 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       
       int key = numFibers;
       int passarg = 2;
-      
       
       if (argc <= 3)	{  // fiber number was input directly
 	
@@ -1112,9 +1115,16 @@ FiberSection3d::getResponse(int responseID, Information &sectInfo)
       count += 5;
     }
     return sectInfo.setVector(data);	
-  } else {
-    return SectionForceDeformation::getResponse(responseID, sectInfo);
+  } else  if (responseID == 6) {
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {    
+      if (theMaterials[j]->hasFailed() == true)
+	count++;
+    }
+    return sectInfo.setInt(count);
   }
+  
+  return SectionForceDeformation::getResponse(responseID, sectInfo);
 }
 
 int
