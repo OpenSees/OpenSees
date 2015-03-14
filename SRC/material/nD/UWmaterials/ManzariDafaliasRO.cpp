@@ -147,62 +147,53 @@ ManzariDafaliasRO::getCopy(const char *type)
   	}
 }
 
-int 
-ManzariDafaliasRO::commitState(void)
+void 
+ManzariDafaliasRO::integrate()
 {
 	double chi_e, chi_en;
 	Vector devEps(6), devEps_n(6);
-	//
-	mVoidRatio  = m_e_init - (1 + m_e_init) * GetTrace(mEpsilon);
 	//
 	devEps		= GetDevPart(mEpsilon);
 	devEps_n	= GetDevPart(mEpsilon_n);
 	chi_e		= sqrt(0.5 * DoubleDot2_2_Cov(devEps   - mDevEpsSR, devEps   - mDevEpsSR));
 	chi_en		= sqrt(0.5 * DoubleDot2_2_Cov(devEps_n - mDevEpsSR, devEps_n - mDevEpsSR));
-	if (mIsFirstShear && fabs(chi_e - chi_en) < 1.0e-10) { // This is required in case of consolidation (mEta1 should be updated)
+	if (mIsFirstShear && std::fabs(chi_e - chi_en) < 1.0e-10) { // This is required in case of consolidation (mEta1 should be updated)
 		// how small should 1.0e-10 be?
-		double p = one3 * GetTrace(mSigma);
+		double p = one3 * GetTrace(mSigma_n);
 		double Gmax  = m_B * m_P_atm / (0.3 + 0.7 * mVoidRatio*mVoidRatio) * sqrt(p / m_P_atm);
 		mEta1 = m_a1 * Gmax * m_gamma1 / p;
+		chi_e = chi_en = 0.0;
 	}
 	if ((chi_e - chi_en) * mDChi_e < -1.0e-14) { // how small should be -1.0e-14?
-		mSigmaSR  = mSigma;
+		mSigmaSR  = mSigma_n;
 		//mSigmaSR(3) = mSigmaSR(4) = mSigmaSR(5) -= 0.1;
-		mDevEpsSR = GetDevPart(mEpsilon);
+		mDevEpsSR = GetDevPart(mEpsilon_n);
 		double pSR = one3 * GetTrace(mSigmaSR);
 		double GmaxSR  = m_B * m_P_atm / (0.3 + 0.7 * mVoidRatio*mVoidRatio) * sqrt(pSR / m_P_atm);
 		mEta1 = m_a1 * GmaxSR * m_gamma1 / pSR;
 		mIsFirstShear = false;
-		//chi_e = chi_en = 0.0;
+		GetElasticModuli(mSigma_n, mVoidRatio, mK, mG);
 	}
-	mDChi_e = chi_e - chi_en;
+	ManzariDafalias::integrate();
+}
 
-	// update alpha_in if needed 
+int 
+ManzariDafaliasRO::commitState(void)
+{
+	double chi_e, chi_en;
+    Vector devEps(6), devEps_n(6);
+    
+    devEps          = GetDevPart(mEpsilon);
+    devEps_n        = GetDevPart(mEpsilon_n);
+    chi_e           = sqrt(0.5 * DoubleDot2_2_Cov(devEps   - mDevEpsSR, devEps   - mDevEpsSR));
+    chi_en          = sqrt(0.5 * DoubleDot2_2_Cov(devEps_n - mDevEpsSR, devEps_n - mDevEpsSR));
+
+    mDChi_e			= chi_e - chi_en;
 	
-	// **** currently it is done in the integrate() function using input strains
-	Vector n(6);
-	n = GetNormalToYield(mSigma, mAlpha);
-	if (DoubleDot2_2_Contr(mAlpha - mAlpha_in_n,n) < 0) 
-		mAlpha_in_n     = mAlpha;
-
-	//mAlpha_in_n = mAlpha_in;
-
-	// these variables are used for non-dimensionalizing the jacobian
-	mSigStar	= VectorMax(mSigma - mSigma_n);
-	mEpsStar	= VectorMax(mEpsilon- mEpsilon_n);
-
-	// update commited state variables
-	if ((GetTrace(mSigma) / 3) > (m_P_atm / 5))
-		mTangType   = mOrgTangType;
-	mSigma_n    = mSigma;
-	mEpsilon_n  = mEpsilon;
-	mEpsilonE_n = mEpsilonE;
-	mAlpha_n	= mAlpha;
-	mFabric_n	= mFabric;
-	mDGamma_n   = mDGamma;
-
+	int res = ManzariDafalias::commitState();
 	GetElasticModuli(mSigma, mVoidRatio, mK, mG);
-	return 0;
+
+	return res;
 }
 
 NDMaterial*

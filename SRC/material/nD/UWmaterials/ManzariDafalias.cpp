@@ -316,12 +316,12 @@ ManzariDafalias::commitState(void)
 	// update alpha_in if needed 
 	
 	// **** currently it is done in the integrate() function using input strains
-	Vector n(6);
-	n = GetNormalToYield(mSigma, mAlpha);
-	if (DoubleDot2_2_Contr(mAlpha - mAlpha_in_n,n) < 0) 
-		mAlpha_in_n     = mAlpha;
+	//Vector n(6);
+	//n = GetNormalToYield(mSigma, mAlpha);
+	//if (DoubleDot2_2_Contr(mAlpha - mAlpha_in_n,n) < 0) 
+	//	mAlpha_in_n     = mAlpha;
 
-	//mAlpha_in_n = mAlpha_in;
+	mAlpha_in_n = mAlpha_in;
 
 	// these variables are used for non-dimensionalizing the jacobian
 	mSigStar	= VectorMax(mSigma - mSigma_n);
@@ -337,7 +337,7 @@ ManzariDafalias::commitState(void)
 	mFabric_n	= mFabric;
 	mDGamma_n   = mDGamma;
 	mVoidRatio  = m_e_init - (1 + m_e_init) * GetTrace(mEpsilon);
-	GetElasticModuli(mSigma, mVoidRatio, mK, mG);
+	this->GetElasticModuli(mSigma, mVoidRatio, mK, mG);
 	return 0;
 }
 
@@ -739,6 +739,8 @@ void ManzariDafalias::integrate()
 	//else
 	//	mAlpha_in = mAlpha_in_n;
 
+	mAlpha_in = mAlpha_in_n;
+
 	// Force elastic response
 	if (mElastFlag == 0) {
 		elastic_integrator(mSigma_n, mEpsilon_n, mEpsilonE_n, mEpsilon, mEpsilonE, mSigma, mAlpha, 
@@ -756,6 +758,34 @@ void ManzariDafalias::integrate()
 			explicit_integrator(mSigma_n, mEpsilon_n, mEpsilonE_n, mAlpha_n, mFabric_n, mAlpha_in,
 				mEpsilon, mEpsilonE, mSigma, mAlpha, mFabric, mDGamma, mVoidRatio, mG, 
 				mK, mCe, mCep, mCep_Consistent);
+	}
+
+	// check the converged solution. if it's an unloading alpha_in needs to be updated
+	Vector n(6);
+	n = GetNormalToYield(mSigma, mAlpha);
+	if (DoubleDot2_2_Contr(mAlpha - mAlpha_in,n) < 0) {
+		mAlpha_in	= mAlpha;
+		
+		// do the analysis using new alpha_in
+
+		// Force elastic response
+		if (mElastFlag == 0) {
+			elastic_integrator(mSigma_n, mEpsilon_n, mEpsilonE_n, mEpsilon, mEpsilonE, mSigma, mAlpha, 
+					mVoidRatio, mG, mK, mCe, mCep, mCep_Consistent);
+		} 
+		// ElastoPlastic response
+		else {  
+			// implicit schemes
+			if ((mScheme == INT_BackwardEuler))
+				BackwardEuler_CPPM(mSigma_n, mEpsilon_n, mEpsilonE_n, mAlpha_n, mFabric_n, mAlpha_in,
+					mEpsilon, mEpsilonE, mSigma, mAlpha, mFabric, mDGamma, mVoidRatio, mG, 
+					mK, mCe, mCep, mCep_Consistent);
+			// explicit schemes
+			else
+				explicit_integrator(mSigma_n, mEpsilon_n, mEpsilonE_n, mAlpha_n, mFabric_n, mAlpha_in,
+					mEpsilon, mEpsilonE, mSigma, mAlpha, mFabric, mDGamma, mVoidRatio, mG, 
+					mK, mCe, mCep, mCep_Consistent);
+		}
 	}
 }
 // -------------------------------------------------------------------------------------------------------
