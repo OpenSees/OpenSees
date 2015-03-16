@@ -523,6 +523,13 @@ AnalysisModel::setEigenvalues(const Vector &eigenvalues)
     myDomain->setEigenvalues(eigenvalues);
 }	
 
+const Vector &
+AnalysisModel::getEigenvalues(void)
+{
+  return myDomain->getEigenvalues();
+}	
+
+
 void 
 AnalysisModel::setEigenvector(int mode, const Vector &eigenvalue)
 {
