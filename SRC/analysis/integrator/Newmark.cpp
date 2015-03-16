@@ -51,6 +51,10 @@
 
 #include <elementAPI.h>
 
+#include <fstream>
+static bool converged = false;
+static int count = 0;
+
 TransientIntegrator *
 OPS_NewNewmark(void)
 {
@@ -177,6 +181,21 @@ int Newmark::newStep(double deltaT)
     }
     
     // set response at t to be that at t+deltaT of previous step
+    /*
+    if (converged == true) {
+      std::ofstream outfile;
+
+      outfile.open("Newmark.dat",std::ofstream::out | std::ofstream::app);
+      int size = U->Size();
+      for (int i=0; i<size; i++)
+	outfile << (*U)(i) << " ";
+      outfile << "\n";
+      outfile.close();
+    }
+    */
+
+    converged = true;
+
     (*Ut) = *U;        
     (*Utdot) = *Udot;  
     (*Utdotdot) = *Udotdot;
@@ -222,6 +241,7 @@ int Newmark::newStep(double deltaT)
 int Newmark::revertToLastStep()
 {
     // set response at t+deltaT to be that at t .. for next newStep
+  converged = false;
     if (U != 0)  {
         (*U) = *Ut;        
         (*Udot) = *Utdot;  
@@ -395,11 +415,9 @@ int Newmark::update(const Vector &deltaU)
         (*U) += deltaU;
 
         Udot->addVector(1.0, deltaU, c2);
-
         Udotdot->addVector(1.0, deltaU, c3);
     } else  {
-        U->addVector(1.0, deltaU, c1);
-        
+        U->addVector(1.0, deltaU, c1);        
         Udot->addVector(1.0, deltaU, c2);
         
         (*Udotdot) += deltaU;

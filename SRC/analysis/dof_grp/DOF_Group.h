@@ -99,6 +99,9 @@ class DOF_Group: public TaggedObject
 
     // methods to set the eigen vectors
     virtual void setEigenvector(int mode, const Vector &eigenvalue);
+
+    virtual double getDampingBetaFactor(int mode, double ratio, double wn);
+    virtual const Vector &getDampingBetaForce(int mode, double beta);
 	
     // method added for TransformationDOF_Groups
     virtual Matrix *getT(void);

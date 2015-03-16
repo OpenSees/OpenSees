@@ -281,7 +281,43 @@ IncrementalIntegrator::setModalDampingFactors(const Vector &factors)
 int 
 IncrementalIntegrator::addModalDampingForce(void)
 {
-  int res = -1;
+  int res = 0;
+  
+  if (modalDampingValues == 0)
+    return 0;
+
+  int numModes = modalDampingValues->Size();
+  const Vector &eigenvalues = theAnalysisModel->getEigenvalues();
+  
+  if (eigenvalues.Size() < numModes) 
+    numModes = eigenvalues.Size();
+
+  Vector dampingForces(theSOE->getNumEqn());
+
+  dampingForces.Zero();
+
+  for (int i=0; i<numModes; i++) {
+
+    DOF_GrpIter &theDOFs1 = theAnalysisModel->getDOFs();
+    DOF_Group *dofPtr;
+    double beta = 0.0;
+    double eigenvalue = eigenvalues(i); // theEigenSOE->getEigenvalue(i+1);
+    double wn = 0.;
+    if (eigenvalue > 0)
+      wn = sqrt(eigenvalue);
+
+    while ((dofPtr = theDOFs1()) != 0) { 
+      beta += dofPtr->getDampingBetaFactor(i, (*modalDampingValues)(i), wn);
+    }
+    
+    DOF_GrpIter &theDOFs2 = theAnalysisModel->getDOFs();
+    while ((dofPtr = theDOFs2()) != 0) { 
+      if (theSOE->addB(dofPtr->getDampingBetaForce(i, beta),dofPtr->getID()) <0) {
+	opserr << "WARNING IncrementalIntegrator::failed in dofPtr";
+	res = -1;
+      }    
+    }
+  }
 
   return res;
 }

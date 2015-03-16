@@ -95,10 +95,8 @@ TransientIntegrator::formTangent(int statFlag)
 	    result = -2;
 	}
     }
-
     return result;
 }
-
 
 
     
@@ -117,3 +115,6 @@ TransientIntegrator::formNodUnbalance(DOF_Group *theDof)
   theDof->addPIncInertiaToUnbalance();
   return 0;
 }    
+
+
+
