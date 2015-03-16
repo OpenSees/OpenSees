@@ -50,6 +50,7 @@
 #include <Subdomain.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <map>
 
 PlainHandler::PlainHandler()
 :ConstraintHandler(HANDLER_TAG_PlainHandler)
@@ -76,6 +77,19 @@ PlainHandler::handle(const ID *nodesLast)
 	return -1;
     }
 
+    // get all SPs
+    std::multimap<int,SP_Constraint*> allSPs;
+    SP_ConstraintIter &theSPs = theDomain->getDomainAndLoadPatternSPs();
+    SP_Constraint *theSP; 
+    while ((theSP = theSPs()) != 0) {
+	if (theSP->isHomogeneous() == false) {
+	    opserr << "WARNING PlainHandler::handle() - ";
+	    opserr << " non-homogeneos constraint";
+	    opserr << " for node " << theSP->getNodeTag();
+	    opserr << " homo assumed\n";
+	}
+	allSPs.insert(std::make_pair(theSP->getNodeTag(),theSP));
+    }
 
     // initialse the DOF_Groups and add them to the AnalysisModel.
     //    : must of course set the initial IDs
@@ -102,26 +116,21 @@ PlainHandler::handle(const ID *nodesLast)
 	// loop through the SP_Constraints to see if any of the
 	// DOFs are constrained, if so set initial ID value to -1
 	int nodeID = nodPtr->getTag();
-	SP_ConstraintIter &theSPs = theDomain->getDomainAndLoadPatternSPs();
-	while ((spPtr = theSPs()) != 0)
-	    if (spPtr->getNodeTag() == nodeID) {
-		if (spPtr->isHomogeneous() == false) {
-		    opserr << "WARNING PlainHandler::handle() - ";
-		    opserr << " non-homogeneos constraint";
-		    opserr << " for node " << spPtr->getNodeTag();
-		    opserr << " homo assumed\n";
-		}
-		const ID &id = dofPtr->getID();
-		int dof = spPtr->getDOF_Number();		
-		if (id(dof) == -2) {
-			dofPtr->setID(spPtr->getDOF_Number(),-1);
-			countDOF--;	
-		} else {
-		    opserr << "WARNING PlainHandler::handle() - ";
-		    opserr << " multiple single pointconstraints at DOF " << dof;
-		    opserr << " for node " << spPtr->getNodeTag() << endln;
-		}
+	std::multimap<int,SP_Constraint*>::iterator first = allSPs.lower_bound(nodeID);
+	std::multimap<int,SP_Constraint*>::iterator last = allSPs.upper_bound(nodeID);
+	for(std::multimap<int,SP_Constraint*>::iterator it=first; it!=last; it++) {
+	    spPtr = it->second;
+	    const ID &id = dofPtr->getID();
+	    int dof = spPtr->getDOF_Number();		
+	    if (id(dof) == -2) {
+		dofPtr->setID(spPtr->getDOF_Number(),-1);
+		countDOF--;	
+	    } else {
+		opserr << "WARNING PlainHandler::handle() - ";
+		opserr << " multiple single pointconstraints at DOF " << dof;
+		opserr << " for node " << spPtr->getNodeTag() << endln;
 	    }
+	}
 
     	// loop through the MP_Constraints to see if any of the
 	// DOFs are constrained, note constraint matrix must be diagonal
