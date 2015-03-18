@@ -189,8 +189,6 @@ DomainPartitioner::partition(int numParts, bool usingMain, int mainPartitionTag,
     opserr <<"DomainPartitioner::partition - too few elements for model to be partitioned\n";
     return -1;
   }
-  opserr << "special ele: " << specialElementTag << endln;
-  opserr << "VERTEX ONE: " << vertexOnePartition << endln;
 
   int specialElementColor = 1;
   if (specialElementTag != 0) {
