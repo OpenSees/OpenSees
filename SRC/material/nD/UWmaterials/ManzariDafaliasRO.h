@@ -62,7 +62,7 @@ class ManzariDafaliasRO : public ManzariDafalias
  
     NDMaterial *getCopy(const char *type);
 
-	void ManzariDafaliasRO::integrate();
+   void integrate();
     int commitState(void);
 
     NDMaterial *getCopy(void);
