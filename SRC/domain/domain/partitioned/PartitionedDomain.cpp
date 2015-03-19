@@ -1955,14 +1955,16 @@ bool
 PartitionedDomain::addParameter(Parameter *param)
 {
     bool res = this->Domain::addParameter(param);
-
+	
     // do the same for all the subdomains
     if (theSubdomains != 0) {
+		
       ArrayOfTaggedObjectsIter theSubsIter(*theSubdomains);	
       TaggedObject *theObject;
       while ((theObject = theSubsIter()) != 0) {
 	Subdomain *theSub = (Subdomain *)theObject;	    
 	theSub->addParameter(param);
+
       }
     }
 
@@ -1981,6 +1983,7 @@ PartitionedDomain::removeParameter(int tag)
     while ((theObject = theSubsIter()) != 0) {
       Subdomain *theSub = (Subdomain *)theObject;	    
       theSub->removeParameter(tag);
+
     }
   }
 
@@ -2001,11 +2004,12 @@ PartitionedDomain::updateParameter(int tag, int value)
 
       Subdomain *theSub = (Subdomain *)theObject;
       res += theSub->updateParameter(tag, value);
+
     }
   }
 
   res += this->Domain::updateParameter(tag, value);
-
+ 
   return res;
 }
 
