@@ -23,7 +23,7 @@ Matrix PressureIndependMultiYield::theTangent(6,6);
 T2Vector PressureIndependMultiYield::subStrainRate;
 int PressureIndependMultiYield::matCount=0;
 int* PressureIndependMultiYield::loadStagex=0;  //=0 if elastic; =1 if plastic
-int* PressureIndependMultiYield::ndmx=0;  //num of dimensions (2 or 3)
+int* PressureIndependMultiYield::ndmx=0;        //num of dimensions (2 or 3)
 double* PressureIndependMultiYield::rhox=0;
 double* PressureIndependMultiYield::frictionAnglex=0;
 double* PressureIndependMultiYield::peakShearStrainx=0;
@@ -103,48 +103,47 @@ PressureIndependMultiYield::PressureIndependMultiYield (int tag, int nd,
     r = 0.;
   }
 
-  if (matCount%20 == 0) {
-     int * temp1 = loadStagex;
-     int * temp2 = ndmx;
-     double * temp3 = rhox;
-     double * temp6 = frictionAnglex;
-     double * temp7 = peakShearStrainx;
-     double * temp8 = refPressurex;
-     double * temp9 = cohesionx;
-     double * temp10 = pressDependCoeffx;
-     int * temp11 = numOfSurfacesx;
-     double * temp12 = residualPressx;
+  int * temp1 = loadStagex;
+  int * temp2 = ndmx;
+  double * temp3 = rhox;
+  double * temp6 = frictionAnglex;
+  double * temp7 = peakShearStrainx;
+  double * temp8 = refPressurex;
+  double * temp9 = cohesionx;
+  double * temp10 = pressDependCoeffx;
+  int * temp11 = numOfSurfacesx;
+  double * temp12 = residualPressx;
+  
+  int newCount = matCount+1;
+  loadStagex = new int[newCount];
+  ndmx = new int[newCount];
+  rhox = new double[newCount];
+  frictionAnglex = new double[newCount];
+  peakShearStrainx = new double[newCount];
+  refPressurex = new double[newCount];
+  cohesionx = new double[newCount];
+  pressDependCoeffx = new double[newCount];
+  numOfSurfacesx = new int[newCount];
+  residualPressx = new double[newCount];
 
-     loadStagex = new int[matCount+20];
-     ndmx = new int[matCount+20];
-     rhox = new double[matCount+20];
-     frictionAnglex = new double[matCount+20];
-     peakShearStrainx = new double[matCount+20];
-     refPressurex = new double[matCount+20];
-	 cohesionx = new double[matCount+20];
-     pressDependCoeffx = new double[matCount+20];
-     numOfSurfacesx = new int[matCount+20];
-     residualPressx = new double[matCount+20];
+  for (int i=0; i<matCount; i++) {
+    loadStagex[i] = temp1[i];
+    ndmx[i] = temp2[i];
+    rhox[i] = temp3[i];
+    frictionAnglex[i] = temp6[i];
+    peakShearStrainx[i] = temp7[i];
+    refPressurex[i] = temp8[i];
+    cohesionx[i] = temp9[i];
+    pressDependCoeffx[i] = temp10[i];
+    numOfSurfacesx[i] = temp11[i];
+    residualPressx[i] = temp12[i];
+  }
 
-     for (int i=0; i<matCount; i++) {
-       loadStagex[i] = temp1[i];
-       ndmx[i] = temp2[i];
-       rhox[i] = temp3[i];
-       frictionAnglex[i] = temp6[i];
-       peakShearStrainx[i] = temp7[i];
-       refPressurex[i] = temp8[i];
-       cohesionx[i] = temp9[i];
-       pressDependCoeffx[i] = temp10[i];
-       numOfSurfacesx[i] = temp11[i];
-       residualPressx[i] = temp12[i];
-     }
-
-     if (matCount > 0) {
-       delete [] temp1; delete [] temp2; delete [] temp3;
-       delete [] temp6; delete [] temp7; delete [] temp8;
-       delete [] temp9; delete [] temp10; delete [] temp11;
-       delete [] temp12;
-     }
+  if (matCount > 0) {
+    delete [] temp1; delete [] temp2; delete [] temp3;
+    delete [] temp6; delete [] temp7; delete [] temp8;
+    delete [] temp9; delete [] temp10; delete [] temp11;
+    delete [] temp12;
   }
 
   ndmx[matCount] = nd;
@@ -161,7 +160,7 @@ PressureIndependMultiYield::PressureIndependMultiYield (int tag, int nd,
 
   e2p = 0;
   matN = matCount;
-  matCount ++;
+  matCount=newCount;
 
   theSurfaces = new MultiYieldSurface[numberOfYieldSurf+1]; //first surface not used
   committedSurfaces = new MultiYieldSurface[numberOfYieldSurf+1];
@@ -615,12 +614,13 @@ int PressureIndependMultiYield::sendSelf(int commitTag, Channel &theChannel)
 
   int i, res = 0;
 
-  static ID idData(5);
+  static ID idData(6);
   idData(0) = this->getTag();
   idData(1) = numOfSurfaces;
   idData(2) = loadStage;
   idData(3) = ndm;
   idData(4) = matN;
+  idData(5) = matCount;
 
   res += theChannel.sendID(this->getDbTag(), commitTag, idData);
   if (res < 0) {
@@ -677,7 +677,7 @@ int PressureIndependMultiYield::recvSelf(int commitTag, Channel &theChannel,
 {
   int i, res = 0;
 
-  static ID idData(5);
+  static ID idData(6);
 
   res += theChannel.recvID(this->getDbTag(), commitTag, idData);
   if (res < 0) {
@@ -690,6 +690,8 @@ int PressureIndependMultiYield::recvSelf(int commitTag, Channel &theChannel,
   int loadStage = idData(2);
   int ndm = idData(3);
   matN = idData(4);
+
+  int matCountSendSide = idData(5);
 
   Vector data(24+idData(1)*8);
   static Vector temp(6);
@@ -713,10 +715,12 @@ int PressureIndependMultiYield::recvSelf(int commitTag, Channel &theChannel,
   committedActiveSurf = data(10);
   activeSurfaceNum = data(11);
 
-  for(i = 0; i < 6; i++) temp[i] = data(i+12);
+  for(i = 0; i < 6; i++) 
+    temp[i] = data(i+12);
   currentStress.setData(temp);
 
-  for(i = 0; i < 6; i++) temp[i] = data(i+18);
+  for(i = 0; i < 6; i++) 
+    temp[i] = data(i+18);
   currentStrain.setData(temp);
 
   if (committedSurfaces != 0) {
@@ -741,7 +745,7 @@ int PressureIndependMultiYield::recvSelf(int commitTag, Channel &theChannel,
   int *temp1, *temp2, *temp11;
   double *temp3, *temp6, *temp7, *temp8, *temp9, *temp10, *temp12;
 
-  if (matN >= matCount*20) {  // allocate memory if not enough
+  if (otherMatCount > matCount) {
 
 	 temp1 = loadStagex;
 	 temp2 = ndmx;
@@ -754,38 +758,38 @@ int PressureIndependMultiYield::recvSelf(int commitTag, Channel &theChannel,
 	 temp11 = numOfSurfacesx;
 	 temp12 = residualPressx;
 
-     loadStagex = new int[(matCount+1)*20];
-     ndmx = new int[(matCount+1)*20];
-     rhox = new double[(matCount+1)*20];
-     frictionAnglex = new double[(matCount+1)*20];
-     peakShearStrainx = new double[(matCount+1)*20];
-     refPressurex = new double[(matCount+1)*20];
-	 cohesionx = new double[(matCount+1)*20];
-     pressDependCoeffx = new double[(matCount+1)*20];
-     numOfSurfacesx = new int[(matCount+1)*20];
-     residualPressx = new double[(matCount+1)*20];
-
-	 for (int i=0; i<matCount*20; i++) {
-		 loadStagex[i] = temp1[i];
-		 ndmx[i] = temp2[i];
-		 rhox[i] = temp3[i];
-		 frictionAnglex[i] = temp6[i];
-		 peakShearStrainx[i] = temp7[i];
-		 refPressurex[i] = temp8[i];
-		 cohesionx[i] = temp9[i];
-		 pressDependCoeffx[i] = temp10[i];
-		 numOfSurfacesx[i] = temp11[i];
-		 residualPressx[i] = temp12[i];
+	 loadStagex = new int[otherMatCount];
+	 ndmx = new int[otherMatCount];
+	 rhox = new double[otherMatCount];
+	 frictionAnglex = new double[otherMatCount];
+	 peakShearStrainx = new double[otherMatCount];
+	 refPressurex = new double[otherMatCount];
+	 cohesionx = new double[otherMatCount];
+	 pressDependCoeffx = new double[otherMatCount];
+	 numOfSurfacesx = new int[otherMatCount];
+	 residualPressx = new double[otherMatCount];
+	 
+	 for (int i=0; i<matCount; i++) {
+	   loadStagex[i] = temp1[i];
+	   ndmx[i] = temp2[i];
+	   rhox[i] = temp3[i];
+	   frictionAnglex[i] = temp6[i];
+	   peakShearStrainx[i] = temp7[i];
+	   refPressurex[i] = temp8[i];
+	   cohesionx[i] = temp9[i];
+	   pressDependCoeffx[i] = temp10[i];
+	   numOfSurfacesx[i] = temp11[i];
+	   residualPressx[i] = temp12[i];
 	 }
-     if( matCount > 0 ) {
-	     delete [] temp1; delete [] temp2; delete [] temp3;
-	     delete [] temp6; delete [] temp7; delete [] temp8;
-	     delete [] temp9; delete [] temp10; delete [] temp11;
-		 delete [] temp12;
-     }
-     matCount += 1;
+	 if( matCount > 0 ) {
+	   delete [] temp1; delete [] temp2; delete [] temp3;
+	   delete [] temp6; delete [] temp7; delete [] temp8;
+	   delete [] temp9; delete [] temp10; delete [] temp11;
+	   delete [] temp12;
+	 }
+	 matCount = otherMatCount;
   }
-
+  
   loadStagex[matN] = loadStage;
   ndmx[matN] = ndm;
   numOfSurfacesx[matN] = numOfSurfaces;
@@ -796,7 +800,6 @@ int PressureIndependMultiYield::recvSelf(int commitTag, Channel &theChannel,
   cohesionx[matN] = cohesion;
   pressDependCoeffx[matN] = pressDependCoeff;
   residualPressx[matN] = residualPress;
-
 
   return res;
 }
