@@ -745,7 +745,7 @@ int PressureIndependMultiYield::recvSelf(int commitTag, Channel &theChannel,
   int *temp1, *temp2, *temp11;
   double *temp3, *temp6, *temp7, *temp8, *temp9, *temp10, *temp12;
 
-  if (otherMatCount > matCount) {
+  if (matCountSendSide > matCount) {
 
 	 temp1 = loadStagex;
 	 temp2 = ndmx;
@@ -758,16 +758,16 @@ int PressureIndependMultiYield::recvSelf(int commitTag, Channel &theChannel,
 	 temp11 = numOfSurfacesx;
 	 temp12 = residualPressx;
 
-	 loadStagex = new int[otherMatCount];
-	 ndmx = new int[otherMatCount];
-	 rhox = new double[otherMatCount];
-	 frictionAnglex = new double[otherMatCount];
-	 peakShearStrainx = new double[otherMatCount];
-	 refPressurex = new double[otherMatCount];
-	 cohesionx = new double[otherMatCount];
-	 pressDependCoeffx = new double[otherMatCount];
-	 numOfSurfacesx = new int[otherMatCount];
-	 residualPressx = new double[otherMatCount];
+	 loadStagex = new int[matCountSendSide];
+	 ndmx = new int[matCountSendSide];
+	 rhox = new double[matCountSendSide];
+	 frictionAnglex = new double[matCountSendSide];
+	 peakShearStrainx = new double[matCountSendSide];
+	 refPressurex = new double[matCountSendSide];
+	 cohesionx = new double[matCountSendSide];
+	 pressDependCoeffx = new double[matCountSendSide];
+	 numOfSurfacesx = new int[matCountSendSide];
+	 residualPressx = new double[matCountSendSide];
 	 
 	 for (int i=0; i<matCount; i++) {
 	   loadStagex[i] = temp1[i];
@@ -787,7 +787,7 @@ int PressureIndependMultiYield::recvSelf(int commitTag, Channel &theChannel,
 	   delete [] temp9; delete [] temp10; delete [] temp11;
 	   delete [] temp12;
 	 }
-	 matCount = otherMatCount;
+	 matCount = matCountSendSide;
   }
   
   loadStagex[matN] = loadStage;
