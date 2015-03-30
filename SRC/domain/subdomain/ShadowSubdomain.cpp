@@ -1660,10 +1660,10 @@ ShadowSubdomain::addParameter(Parameter *param)
 {
   msgData(0) = ShadowActorSubdomain_addParameter;
   msgData(1) = param->getClassTag();
+
   this->sendID(msgData);
   
   this->sendObject(*param);
-  
   return 0;
 }
 
@@ -1674,20 +1674,24 @@ ShadowSubdomain::removeParameter(int tag)
 {
     msgData(0) = ShadowActorSubdomain_removeParameter;
     msgData(1) = tag;
+	
     this->sendID(msgData);
 
+	this->recvID(msgData);
     return 0;
 }
 
 int
 ShadowSubdomain::updateParameter(int tag, int value)
 {
+	
     msgData(0) = ShadowActorSubdomain_updateParameterINT;
     msgData(1) = tag;
     msgData(2) = value;
+
+	//msgData(0) = 0;
     this->sendID(msgData);
-	msgData(0) = 0;
-	//this->recvID(msgData);
+    this->recvID(msgData);
     return msgData(0);
 }
 
@@ -1697,12 +1701,16 @@ ShadowSubdomain::updateParameter(int tag, double value)
 {
     msgData(0) = ShadowActorSubdomain_updateParameterDOUBLE;
     msgData(1) = tag;
+
     this->sendID(msgData);
 
     static Vector data(1); 
     data(0) = value;
     this->sendVector(data);
-	msgData(0) = 0;
-	//this->recvID(msgData);
+
+	if (this->recvID(msgData) != 0) {
+       opserr << "ShadowSubdomain::updateParameterD ERROR 4\n";
+	}
+
     return msgData(0);
 }

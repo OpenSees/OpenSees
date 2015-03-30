@@ -1970,11 +1970,14 @@ Domain::updateParameter(int tag, double value)
   TaggedObject *mc = theParameters->getComponentPtr(tag);
   
   // if not there return 0
-  if (mc == 0) 
+  if (mc == 0) {
+	  opserr << "Domain::updateParameter(int tag, double value) - parameter with tag not present\n";
       return 0;
+  }
 
-  Parameter *result = (Parameter *)mc;
-  return result->update(value);
+  Parameter *theParam = (Parameter *)mc;
+  int res =  theParam->update(value);
+  return res;
 }
 
 

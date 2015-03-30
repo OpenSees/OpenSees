@@ -170,7 +170,7 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
 	opserr << "WARNING parameter -- invalid element tag\n";
 	return TCL_ERROR;    
       }
-
+	 
       // Retrieve element from domain
       //  FMK theObject = (DomainComponent *) theTclDomain->getElement(eleTag);
 
@@ -222,45 +222,45 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
     if (strcmp(argv[0],"parameter") == 0) {
       
       if (theParameter != 0) {
-	opserr << "WARNING parameter -- parameter with tag " << paramTag
+		opserr << "WARNING parameter -- parameter with tag " << paramTag
 	       << " already exists in domain\n";
-	return TCL_ERROR;
+		return TCL_ERROR;
       }
 
       Parameter *newParameter;
       if (argc > argStart) {
-	if (eleTag == -1) 
-	  newParameter = new Parameter(paramTag, theObject,
+		if (eleTag == -1) {
+			newParameter = new Parameter(paramTag, theObject,
 				       (const char **)&argv[argStart],
 				       argc-argStart);
-	else
-	  newParameter = new ElementParameter(paramTag, eleTag,
+		} else { 
+			newParameter = new ElementParameter(paramTag, eleTag,
 					      (const char **)&argv[argStart],
 					      argc-argStart);
-	  
-      }  else
-	newParameter = new Parameter(paramTag, 0, 0, 0);
+		}
+	  }  else
+			newParameter = new Parameter(paramTag, 0, 0, 0);
 
       if (theRV != 0) {
-	RVParameter *newRVParameter = new RVParameter(paramTag, theRV, newParameter);
-	theTclDomain->addParameter(newRVParameter);
-      }
+		RVParameter *newRVParameter = new RVParameter(paramTag, theRV, newParameter);
+		theTclDomain->addParameter(newRVParameter);
+	  }
       else {
-	theTclDomain->addParameter(newParameter);
+		theTclDomain->addParameter(newParameter);
       }
 
       char buffer[40];
       sprintf(buffer, "%d", paramTag);
       Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
-    }
+	  }
     // Add to an existing parameter
     if (strcmp(argv[0],"addToParameter") == 0) {
-      
+     
       if (theParameter == 0) {
-	opserr << "WARNING addToParameter -- parameter with tag " << paramTag
+	       opserr << "WARNING addToParameter -- parameter with tag " << paramTag
 	       << " not found in domain\n";
-	return TCL_ERROR;
+	       return TCL_ERROR;
       }
       else {
 	if (eleTag == -1) 
@@ -283,7 +283,7 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
     if (theParameter == 0) {
       opserr << "WARNING updateParameter -- parameter with tag " << paramTag
 	     << " not found in domain\n";
-      return TCL_ERROR;
+    //  return TCL_ERROR;
     }
     
     double newValue;

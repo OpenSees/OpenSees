@@ -96,7 +96,6 @@ MatParameter::setDomain(Domain *theDomain)
 int 
 MatParameter::sendSelf(int commitTag, Channel &theChannel)
 {
-
   static ID theData(3);
   theData[0] = this->getTag();
   theData[1] = theMaterialTag;
@@ -108,10 +107,10 @@ MatParameter::sendSelf(int commitTag, Channel &theChannel)
   theChannel.sendID(commitTag, 0, theData);
   
   if (theParameterName != 0) {
-    Message theMessage(theParameterName, strlen(theParameterName)+1);
+    Message theMessage(theParameterName, strlen(theParameterName));
     theChannel.sendMsg(commitTag, 0, theMessage);
   }
-
+  
   return 0;
 }
 
@@ -122,12 +121,15 @@ MatParameter::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
   theChannel.recvID(commitTag, 0, theData);
   this->setTag(theData[0]);
   theMaterialTag = theData[1];
-
+  
+  
   if (theData(2) != 0) {
-    theParameterName = new char(theData(2)+1);
-    Message theMessage(theParameterName, theData(2)+1);
-    theChannel.recvMsg(commitTag, 0, theMessage);		       
+    theParameterName = new char[theData(2)+1];
+    Message theMessage(theParameterName, theData(2));
+    theChannel.recvMsg(commitTag, 0, theMessage);	
+	theParameterName[theData(2)+1]='\n';
   }
+ 
   return 0;
 }
 

@@ -87,36 +87,13 @@ ElementParameter::~ElementParameter()
 int 
 ElementParameter::update(int newValue)
 {
-  if (numChannels != 0) {
-    // due to stupid design of parameter class (aka addComponnet)
-    // we have to always check if eleTags has changed
-    static ID idData(1);
-    if (numChannels > 0) {
-      idData(0) = eleTags.Size();
-      for (int i=0; i<numChannels; i++) {
-	theChannels[i]->sendID(0,0,idData);
-	theChannels[i]->sendID(0,0,eleTags);
-      }
-    } else {
-
-      theChannels[0]->recvID(0,0,idData);      
-      int numEle = idData(0);
-      if (numEle == eleTags.Size())
-	theChannels[0]->recvID(0,0,eleTags);
-      else {
-	eleTags.resize(numEle);
-	theChannels[0]->recvID(0,0,eleTags);
-	this->setDomain(theDomain);
-      }
-    }
-  }
-  
   return this->Parameter::update(newValue);
 }
 
 int 
 ElementParameter::update(double newValue)
 {
+	/* THIS DOES NOT WORK, NOT ALL PARAMETERS ARE WORKING THE SAME WAY!
   if (numChannels != 0) {
     // due to stupid design of parameter class (aka addComponnet)
     // we have to always check if eleTags has changed
@@ -140,13 +117,14 @@ ElementParameter::update(double newValue)
       }
     }
   }
-
+  */
   return this->Parameter::update(newValue);
 }
 
 int
 ElementParameter::addComponent(int eleTag, const char **theArgv, int theArgc)
 {
+	opserr << "elementParameter::addComponent - hopefully not called\n";
   int numEle = eleTags.Size();
   eleTags[numEle] = eleTag;
 
@@ -173,14 +151,15 @@ ElementParameter::setDomain(Domain *aDomain)
 {
   theDomain = aDomain;
   this->Parameter::clean();
-
+ 
   const char **theArgv = (const char **)argv;
   int numEle = eleTags.Size();
   for (int i=0; i<numEle; i++) {
     int eleTag = eleTags[i];
     Element *theEle = theDomain->getElement(eleTag);
-    if (theEle != 0)
+    if (theEle != 0) {
       this->Parameter::addComponent(theEle, theArgv, argc);
+	}
   }
 }
 
@@ -190,9 +169,9 @@ ElementParameter::sendSelf(int commitTag, Channel &theChannel)
   ID idData(4);
   idData(0) = this->getTag();
   idData(1) = eleTags.Size();
-  idData(3) = argc;
   idData(2) = argvSize;
-  
+  idData(3) = argc; 
+
   if (theChannel.sendID(0, commitTag, idData) < 0) {
 
   }
@@ -200,7 +179,7 @@ ElementParameter::sendSelf(int commitTag, Channel &theChannel)
   if (theChannel.sendID(0, commitTag, eleTags) < 0) {
 
   }
-
+  /*
   ID argData(argc-1);
 
   for (int i=0; i<argc-1; i++) {
@@ -210,12 +189,12 @@ ElementParameter::sendSelf(int commitTag, Channel &theChannel)
   if (theChannel.sendID(0, commitTag, argData) < 0) {
 
   }
-
+  */
   Message msgData(argv[0], argvSize);
   if (theChannel.sendMsg(0, commitTag, msgData) < 0) {
 
   }
-
+  
 
   //
   // add the channel to theChanels array
@@ -231,7 +210,6 @@ ElementParameter::sendSelf(int commitTag, Channel &theChannel)
   if (theChannels != 0)
     delete [] theChannels;
   theChannels = newChannels;
-
   return 0;
 }
 
@@ -261,22 +239,23 @@ ElementParameter::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 
   argc = idData(3);
   argvSize = idData(2);
-
+ 
+  /*
   ID argData(argc-1);
   if (theChannel.recvID(0, commitTag, argData) < 0) {
 
   }
+  */
 
   argv = new char *[argc];
   argv[0] = new char[argvSize];
-
-  for (int i=0; i<argc-1; i++)
-    argv[i+1] = argv[0] + argData[i];
-
   Message msgData(argv[0], argvSize);
   if (theChannel.recvMsg(0, commitTag, msgData) < 0) {
 
-  }  
+  } 
+  
+  for (int i=0; i<argc-1; i++)
+    argv[i+1] = argv[i] + strlen(argv[i])+1;
 
   if (theChannels != 0)
     delete [] theChannels;
@@ -284,7 +263,7 @@ ElementParameter::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
   theChannels = new Channel *[1];
   theChannels[0] = &theChannel;
   numChannels = -1;
-
+ 
   return 0;
 }
 

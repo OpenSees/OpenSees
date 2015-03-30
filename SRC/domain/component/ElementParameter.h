@@ -45,8 +45,8 @@ class ElementParameter : public Parameter
 
   void setDomain(Domain *theDomain);
 
-  int sendSelf(int commitTag, Channel &theChannel);  
-  int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+  virtual int sendSelf(int commitTag, Channel &theChannel);  
+  virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
  protected:
   

@@ -64,12 +64,18 @@ TclCommand_UpdateMaterialsCommand(ClientData clientData,
       opserr << "WARNING UpdateMaterialStage: could not read value" << endln;
       return TCL_ERROR;		
     } else {
+	
       res = theDomain->updateParameter(parTag, valueD);
+	 
 	  theDomain->removeParameter(parTag);
+	 
     }
   } else {
+	 
   res = theDomain->updateParameter(parTag, value);
+ 
   theDomain->removeParameter(parTag);
+ 
   }
   return res;
 }

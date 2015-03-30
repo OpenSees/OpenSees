@@ -65,7 +65,8 @@ ActorSubdomain::~ActorSubdomain()
 int
 ActorSubdomain::run(void)
 {
-    Vector theVect(4);
+    static Vector theVect(4);
+	static Vector theVect1(1);
     bool exitYet = false;
     int res = 0;
 
@@ -948,6 +949,7 @@ ActorSubdomain::run(void)
 	    if (theParameter != 0) {
 		theParameter->setDbTag(dbTag);		
 		this->recvObject(*theParameter);
+		//bool result = true;
 		bool result = this->addParameter(theParameter);
 		if (result == true)
 		    msgData(0) = 0;
@@ -958,9 +960,12 @@ ActorSubdomain::run(void)
 
 	   break;
 
-         case ShadowActorSubdomain_removeParameter:
+       case ShadowActorSubdomain_removeParameter:
 	   theType = msgData(1);
+	  
 	   this->removeParameter(theType);
+	 
+	    this->sendID(msgData);
 	   break;
 
          case ShadowActorSubdomain_updateParameterINT:
@@ -968,16 +973,17 @@ ActorSubdomain::run(void)
 	   dbTag = msgData(2);    // value
 
 	   msgData(0) = this->Domain::updateParameter(theType, dbTag);
-	   //this->sendID(msgData);
+	   this->sendID(msgData);
 	   break;
 
-         case ShadowActorSubdomain_updateParameterDOUBLE:
+       case ShadowActorSubdomain_updateParameterDOUBLE:
 	   theType = msgData(1);  // tag
-	   theV = new Vector(1);
-	   this->recvVector(*theV);
-	   msgData(0) = this->Domain::updateParameter(theType, (*theV)(0));
-	   delete theV;
-	   //this->sendID(msgData);
+	 
+	   this->recvVector(theVect1);
+	
+	   msgData(0) = this->Domain::updateParameter(theType, theVect1(0));
+	  
+	   this->sendID(msgData);
 	   break;
 
 
