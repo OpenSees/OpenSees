@@ -99,7 +99,7 @@ MumpsSOE::~MumpsSOE()
     if (rowA != 0) delete []rowA;
     if (colA != 0) delete []colA;
     if (vectX != 0) delete vectX;    
-    if (vectB != 0) delete vectB;        
+    if (vectB != 0) delete vectB;
 }
 
 

@@ -59,9 +59,11 @@ MumpsParallelSolver::MumpsParallelSolver(int mpi_comm, int ICNTL7, int ICNTL14)
 
 MumpsParallelSolver::~MumpsParallelSolver()
 {
+
   id.job=-2; 
   if (init == true)
 	dmumps_c(&id); /* Terminate instance */
+
 }
 
 int

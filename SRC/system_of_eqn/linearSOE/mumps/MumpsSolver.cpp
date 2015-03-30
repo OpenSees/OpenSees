@@ -58,8 +58,10 @@ MumpsSolver::MumpsSolver(int ICNTL7, int ICNTL14)
 
 MumpsSolver::~MumpsSolver()
 {
+	opserr << "MumpsParallelSOlver::DESTRUCTOR - start\n";
   id.job=-2; 
   dmumps_c(&id); /* Terminate instance */
+  opserr << "MumpsParallelSOlver::DESTRUCTOR - end\n";
 }
 
 int
