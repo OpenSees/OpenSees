@@ -1,3 +1,32 @@
+/* ****************************************************************** **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** Developed by:                                                      **
+**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**                                                                    **
+** ****************************************************************** */
+
+// $Revision: 1.0 $
+// $Date: 25-03-2015 $
+
+// Written by Smail KECHIDI (skechidi@yahoo.com)
+// Created: 2014-01-13 10:24:20 $
+//
+// Description: This file contains the class implementation for CFSSSWP
+// CFSSSWP is based on Pinching4 uniaxialMaterial
+
 #include <elementAPI.h>
 #include "CFSSSWP.h"
 #include <OPS_Globals.h>
@@ -6,22 +35,27 @@
 #include <float.h>
 #include <OPS_Stream.h>
 #include <stdio.h>
+//#include<conio.h>
 #include <string.h>
 #include "CubicSpline.h"
 #include "TriMatrix.h"
  
-#ifndef isnan
-#define isnan _isnan
+#ifdef _USRDLL
+#define OPS_Export extern "C" _declspec(dllexport)
+#elif _MACOSX
+#define OPS_Export extern "C" __attribute__((visibility("default")))
+#else
+#define OPS_Export extern "C"
 #endif
 
 static int numCFSSSWP = 0;
 
-void *
-OPS_CFSSSWP(void)
+OPS_Export void *
+OPS_CFSSSWP()
 {
   // print out some KUDO's
   if (numCFSSSWP == 0) {
-    opserr << "Cold Formed Steel Shear Wall Panel unaxial material - Written by Smail KECHIDI University of Blida 1 - Pleas When using this make references \n";
+    opserr << "Cold Formed Steel Steel Sheathed Shear Wall Panel uniaxialMaterial - Written by Smail KECHIDI PhD student at University of Blida 1 - Please when using this make references \n";
     numCFSSSWP =1;
   }
 
@@ -41,7 +75,7 @@ OPS_CFSSSWP(void)
     return 0;
   }
 
-  numData = 16;
+  numData = 15;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
     opserr << "WARNING invalid Material parameters\n";
     return 0;	
@@ -52,7 +86,7 @@ OPS_CFSSSWP(void)
   //
 
   theMaterial = new CFSSSWP(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5]
-  ,dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14], dData[15]);       
+  ,dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14]);       
 
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type CFSSSWP\n";
@@ -65,12 +99,12 @@ OPS_CFSSSWP(void)
 
 CFSSSWP::CFSSSWP(int tag, double H, double B, double fuf, double fyf,
 		 double tf,double Af,double fus, double fys, double ts,
-		 double np, double ds, double Vs,double sc, double dt, double A, double L): 
+		 double np, double ds, double Vs,double sc, double A, double L): 
   UniaxialMaterial(tag, MAT_TAG_Pinching4), hight(H), width(B), fuf(fuf),
   fyf(fyf), tf(tf),
   Af(Af), fus(fus), fys(fys), ts(ts),
   np(np), ds(ds), Vs(Vs),
-  screw_Spacing(sc),dt(dt), A(A), L(L),
+  screw_Spacing(sc), A(A), L(L),
   envlpPosStress(7), envlpPosStrain(7), envlpNegStress(7), envlpNegStrain(7), tagMat(tag),
   gammaDLimit(0.0),
   gammaFLimit(0.0),
@@ -81,118 +115,118 @@ CFSSSWP::CFSSSWP(int tag, double H, double B, double fuf, double fyf,
   envlpPosDamgdStress(7), envlpNegDamgdStress(7)
   
 {
-  
-  double ddeg;
-  ddeg = 0.1*((hight/(2*width))*(screw_Spacing/152.0));
-  gammaDLimit = ddeg;
-  
-  // set envelope slopes
-  this->lateralShearStrength();
-  this->SetEnvelope();
-  envlpPosDamgdStress = envlpPosStress; envlpNegDamgdStress = envlpNegStress;
-  state3Stress.Zero(); state3Strain.Zero(); state4Stress.Zero(); state4Strain.Zero();
-  
-  // Initialize history variables
-  this->revertToStart();
-  this->revertToLastCommit();
+
+	 double ddeg;
+	 ddeg = 0.1*((hight/(2*width))*(screw_Spacing/152.0));
+	 gammaDLimit = ddeg;
+	
+	        // set envelope slopes
+	        this->lateralShearStrength();
+	        this->SetEnvelope();
+	        envlpPosDamgdStress = envlpPosStress; envlpNegDamgdStress = envlpNegStress;
+	        state3Stress.Zero(); state3Strain.Zero(); state4Stress.Zero(); state4Strain.Zero();
+
+	        // Initialize history variables
+	        this->revertToStart();
+	        this->revertToLastCommit();
 }
 
 void CFSSSWP :: lateralShearStrength(void) 
 {
-  Precision=100;
-  double Alpha,Alpha1,Alpha2,Beta,Beta1,Beta2,Beta3,Lambda,Wmax,Pns,Pns1,
-    Pns2,Pns3,Pnsed,We,rho,V,V1,V2,Gs,Omega1,Omega2,Omega3,Omega4,Delta1,
-    Delta2,Delta3,Delta4,DeltaV,MinPns,MinPns1,MinPns2,N,Pn;
-  Pns=0;
-  MinPns=0;
-  double mu=0.3;
-  E=203000.00;
-  Dy=0;
-  Alpha=hight/width;
-  Alpha1=fus/310.27;
-  Alpha2=fuf/310.27;
-  Beta1=ts/0.4572;
-  Beta2=tf/0.4572;
-  Beta3=screw_Spacing/152.4;
-  Lambda=1.736*(Alpha1*Alpha2)/(Beta1*Beta2*pow(Beta3,2)*Alpha);
-  Wmax=width/(hight/(sqrt(pow(hight,2)+(width*width))));
-  if (tf/ts<=1.0)
-    {
-      Pns1=4.2*sqrt(pow(tf,3)*ds)*fuf;
-      Pns2=2.7*ts*ds*fus;
-      Pns3=2.7*tf*ds*fuf;
-      MinPns=Pns1;
-      MinPns=(Pns2<MinPns)? Pns2:MinPns;
-      MinPns=(Pns3<MinPns)? Pns3:MinPns;
-    }
-  else if (tf/ts>=2.5)
-    {
-      Pns1=2.7*ts*ds*fus;
-      Pns2=2.7*tf*ds*fuf;
-      MinPns=(Pns1<Pns2)? Pns1:Pns2;
-    }
-  else if ((tf/ts)>1.0 && (tf/ts)<2.5)
-    {
-      Pns1=4.2*sqrt(pow(tf,3)*ds)*fuf;
-      Pns2=2.7*ts*ds*fus;
-      Pns3=2.7*tf*ds*fuf;
-      MinPns1=Pns1;
-      MinPns1=(Pns2<MinPns)? Pns2:MinPns1;
-      MinPns1=(Pns3<MinPns)? Pns3:MinPns1;
-      MinPns2=(Pns1<Pns2)? Pns2:Pns3;
-      MinPns=MinPns1+(MinPns2-MinPns1)*((tf/ts)-1)/1.5;
-      
-    }
-  
-  double dis=3*ds;
-  Pnsed=0.5*dis*ts*fus;
-  
-  
-  if (Lambda<=0.0819)
-    We=Wmax;
-  else
-    {
-      rho=(1-0.05*pow((Lambda-0.08),0.12))/pow(Lambda,0.12);
-      We=rho*Wmax;
-    }
-  Pn=(MinPns<Pnsed)? MinPns:Pnsed;
-  V1=(((We/(2*screw_Spacing))*Pn)+((We*width)/(2*screw_Spacing*hight)*Pn)+Vs*(width/(sqrt(pow(hight,2)+(width*width)))));
-  V2=(We*ts*fys)*(width/sqrt(pow(hight,2)+(width*width)));
-  V=(V1<V2)? V1:V2;
-  double r,fo;
-  r=1/(1+A/(hight*(width-L)));
-  fo=r/(3-2*r);
-  stress3p=fo*V/width;
-  Beta=500*(ts/0.457);
-  Gs=E/(2*(1+mu));
-  Omega4=sqrt(227.53/fyf);
-  rho=0.075*(ts/0.457);
-  Delta1=(2*stress3p*pow(hight,3)/(3*E*Af*width));
-  Omega1=screw_Spacing/152.4;
-  Omega2=0.838/tf;
-  Delta2=Omega1*Omega2*(stress3p*hight)/(rho*Gs*ts);
-  Omega3=sqrt(hight/(2*width));
-  Delta3=pow(Omega1,(5/4))*Omega2*Omega3*Omega4*pow((stress3p/(0.0029*Beta)),2);
-  N=stress3p*hight;
-  DeltaV=N*width/(30000*3.14*pow((dt/2),2));
-  Delta4=DeltaV*hight/width;
-  strain3p=Delta1+Delta2+Delta3+Delta4;
-  stress4p=0.8*stress3p;
-  strain4p=1.4*strain3p;
-  stress1p=0.4*stress3p;
-  strain1p=strain3p/9.25;
-  ke=stress1p/strain1p;
-  stress2p=0.85*stress3p;
-  Dy=(stress2p/ke);
-  strain2p=(stress2p*(strain3p+Dy-2*strain4p-strain1p)+stress3p*strain4p+stress4p*(strain4p-strain3p))/(0.6*stress3p);
-  strain1n = -strain1p; stress1n = -stress1p; strain2n = -strain2p; stress2n = -stress2p;
-  strain3n = -strain3p; stress3n = -stress3p; strain4n = -strain4p; stress4n = -stress4p;
-  
-  envlpPosStress.Zero(); envlpPosStrain.Zero(); envlpNegStress.Zero(); envlpNegStrain.Zero(); 
-  energyCapacity = 0.0; kunload = 0.0; elasticStrainEnergy = 0.0; 
+	    Precision=100;
+	    double Alpha,Alpha1,Alpha2,Beta,Beta1,Beta2,Beta3,Lambda,Wmax,Pns,Pns1,
+		Pns2,Pns3,Pnsed,We,rho,V,V1,V2,Gs,Omega1,Omega2,Omega3,Omega4,Delta1,
+        Delta2,Delta3,Delta4,DeltaV,MinPns,MinPns1,MinPns2,N,Pn;
+		Pns=0;
+		MinPns=0;
+        double mu=0.3;
+		E=203000.00;
+        Dy=0;
+		Alpha=hight/width;
+		Alpha1=fus/310.27;
+		Alpha2=fuf/310.27;
+		Beta1=ts/0.4572;
+		Beta2=tf/0.4572;
+		Beta3=screw_Spacing/152.4;
+		Lambda=1.736*(Alpha1*Alpha2)/(Beta1*Beta2*pow(Beta3,2)*Alpha);
+		Wmax=width/(hight/(sqrt(pow(hight,2)+(width*width))));
+		if (tf/ts<=1.0)
+		{
+			Pns1=4.2*sqrt(pow(tf,3)*ds)*fuf;
+			Pns2=2.7*ts*ds*fus;
+			Pns3=2.7*tf*ds*fuf;
+			MinPns=Pns1;
+			MinPns=(Pns2<MinPns)? Pns2:MinPns;
+			MinPns=(Pns3<MinPns)? Pns3:MinPns;
+		}
+		else if (tf/ts>=2.5)
+		{
+			Pns1=2.7*ts*ds*fus;
+			Pns2=2.7*tf*ds*fuf;
+			MinPns=(Pns1<Pns2)? Pns1:Pns2;
+		}
+		else if ((tf/ts)>1.0 && (tf/ts)<2.5)
+		{
+			Pns1=4.2*sqrt(pow(tf,3)*ds)*fuf;
+			Pns2=2.7*ts*ds*fus;
+			Pns3=2.7*tf*ds*fuf;
+			MinPns1=Pns1;
+		  	MinPns1=(Pns2<MinPns)? Pns2:MinPns1;
+ 	     	MinPns1=(Pns3<MinPns)? Pns3:MinPns1;
+			MinPns2=(Pns1<Pns2)? Pns2:Pns3;
+			MinPns=MinPns1+(MinPns2-MinPns1)*((tf/ts)-1)/1.5;
+         }
+			double dis=3*ds;
+			Pnsed=0.5*dis*ts*fus;
+			if (Lambda<=0.0819)
+			We=Wmax;
+			else
+			{
+				rho=(1-0.05*pow((Lambda-0.08),0.12))/pow(Lambda,0.12);
+				We=rho*Wmax;
+			}
+			Pn=(MinPns<Pnsed)? MinPns:Pnsed;
+			V1=(((We/(2*screw_Spacing))*Pn)+((We*width)/(2*screw_Spacing*hight)*Pn)+Vs*(width/(sqrt(pow(hight,2)+(width*width)))));
+			V2=(We*ts*fys)*(width/sqrt(pow(hight,2)+(width*width)));
+			V=(V1<V2)? V1:V2;
+			double r,fo;
+	        r=1/(1+A/(hight*(width-L)));
+	        fo=r/(3-2*r);
+			stress3p=fo*V;
+			if (np==2)
+			{
+				stress3p=stress3p*2;
+			}
+			Beta=500*(ts/0.457);
+			Gs=E/(2*(1+mu));
+    		Omega4=sqrt(227.53/fyf);
+			rho=0.075*(ts/0.457);
+			Delta1=(2*(stress3p/width)*pow(hight,3)/(3*E*Af*width));
+            Omega1=screw_Spacing/152.4;
+			Omega2=0.838/tf; 
+			Delta2=Omega1*Omega2*((stress3p/width)*hight)/(rho*Gs*ts);
+			Omega3=sqrt(hight/(2*width));
+			Delta3=pow(Omega1,(5/4))*Omega2*Omega3*Omega4*pow(((stress3p/width)/(0.0029*Beta)),2);
+			Delta4=2.5*hight/width;
+            strain3p=(Delta1+Delta2+Delta3+Delta4); 
+			stress3p=stress3p/1000;
+        	stress4p=0.8*stress3p;
+			strain4p=1.4*strain3p;
+			stress1p=0.4*stress3p;
+			strain1p=strain3p/9.25;
+			ke=stress1p/strain1p; 
+			stress2p=0.85*stress3p;
+			Dy=(stress2p/ke);
+			strain2p=(stress2p*(strain3p+Dy-2*strain4p-strain1p)+stress3p*strain4p+stress4p*(strain4p-strain3p))/(0.6*stress3p);
+			stress1p=stress1p; stress2p=stress2p; stress3p=stress3p; stress4p=stress4p; 
+			strain1p=strain1p; strain2p=strain2p; strain3p=strain3p; strain4p=strain4p; 
+			strain1n = -strain1p; stress1n = -stress1p; strain2n = -strain2p; stress2n = -stress2p;
+			strain3n = -strain3p; stress3n = -stress3p; strain4n = -strain4p; stress4n = -stress4p;
+            envlpPosStress.Zero(); envlpPosStrain.Zero(); envlpNegStress.Zero(); envlpNegStrain.Zero(); 
+	        energyCapacity = 0.0; kunload = 0.0; elasticStrainEnergy = 0.0; 
 }
 
-CFSSSWP::CFSSSWP():
+ CFSSSWP::CFSSSWP():
    UniaxialMaterial(0, MAT_TAG_Pinching4),
    stress1p(0.0), strain1p(0.0), stress2p(0.0), strain2p(0.0),
    stress3p(0.0), strain3p(0.0), stress4p(0.0), strain4p(0.0),
@@ -225,9 +259,9 @@ int CFSSSWP::setTrialStrain(double strain, double CstrainRate)
          TminStrainDmnd = CminStrainDmnd;
          TmaxStrainDmnd = CmaxStrainDmnd;
          TgammaF = CgammaF;
-	 TgammaFN = CgammaFN;
+		 TgammaFN = CgammaFN;
          TgammaD = CgammaD;
-	 TgammaDN = CgammaDN;
+		 TgammaDN = CgammaDN;
  
          dstrain = Tstrain - Cstrain;
          if (dstrain<1e-12 && dstrain>-1e-12){
@@ -282,11 +316,10 @@ int CFSSSWP::setTrialStrain(double strain, double CstrainRate)
          elasticStrainEnergy = (Tstrain>0.0) ? 0.5*Tstress/kElasticPos*Tstress:0.5*Tstress/kElasticNeg*Tstress;
          Tenergy = Cenergy + denergy;
          updateDmg(Tstrain,dstrain);
-		 
 		 return 0;
  }
 
-static int getIndex(Vector v,double value)
+int getIndex(Vector v,double value)
 {
 	for(int i = 0; i < v.Size(); i++)
 	{
@@ -294,7 +327,7 @@ static int getIndex(Vector v,double value)
 	}
 	return -1;
 }
-static int getIndexNeg(Vector v,double value)
+int getIndexNeg(Vector v,double value)
 {
 	for(int i = 0; i < v.Size(); i++)
 	{
@@ -303,18 +336,17 @@ static int getIndexNeg(Vector v,double value)
 	return -1;
 }
 
-
  void CFSSSWP::SetSpline(void)
  {
-			
 			int Size = 5;
 			double *X = new double[Size], *Y = new double[Size];
 			
 			int fifth = getIndexNeg(envlpNegStrain,state3Strain(0));
 			if(fifth == -1)
 			{
-			  opserr << "CFSSSWP erreur fifth\n";
-			  exit(-5);
+				printf("erreur fifth");
+				//getch();
+				exit(5);
 			}
 			
 			X[0] = state3Strain(0) - 20;
@@ -332,7 +364,7 @@ static int getIndexNeg(Vector v,double value)
 
 			if(X[3] - X[0] < 0)
 			{
-			  opserr << "CFSSSWP erreur 1\n";
+				printf("erreur1\n");	
 			}
 			
 			float a0,an,b0,bn;
@@ -347,8 +379,9 @@ static int getIndexNeg(Vector v,double value)
 			fifth = getIndex(envlpPosStrain,state4Strain(3));
 			if(fifth == -1)
 			{
-			  opserr << "CFSSSWP erreur fifth1\n";
-			  exit(-5);
+				printf("erreur fifth1");
+				//getch();
+				exit(5);
 			}
 			
 			X[0] = state4Strain(0);
@@ -365,8 +398,8 @@ static int getIndexNeg(Vector v,double value)
 			
 			if(X[3] - X[0] < 0)
 			{
-			  opserr << "CFSSSWP erreur2 \n";
-			  exit(-5);
+				printf("erreur2\n");
+				while(1);
 			}
 			
 			a0 = GetTangentFromCurve(state4Strain(0));
@@ -375,8 +408,6 @@ static int getIndexNeg(Vector v,double value)
 			bn = state4Stress(3) - an * state4Strain(3);
 			
 			Spline4.Fit(X,Size,Y,Size);
-
-			
  }
  
  double CFSSSWP::getStrain(void)
@@ -430,7 +461,6 @@ static int getIndexNeg(Vector v,double value)
          envlpPosDamgdStress = envlpPosStress*(1-gammaFUsed);
 		 envlpNegDamgdStress = envlpNegStress*(1-gammaFUsed);
 
-				
          return 0;
  }
  
@@ -481,9 +511,7 @@ static int getIndexNeg(Vector v,double value)
 		 CnCycle = 0.0;
          Ttangent = envlpPosStress(0)/envlpPosStrain(0);
          dstrain = 0.0;       
-
          gammaFUsed = 0.0;
-        
          uMaxDamgd = CmaxStrainDmnd;
          uMinDamgd = CminStrainDmnd;
  
@@ -494,7 +522,7 @@ static int getIndexNeg(Vector v,double value)
  {
          CFSSSWP *theCopy = new CFSSSWP (this->getTag(),
                   hight,  width,  fuf,  fyf, tf,  Af,  fus,  
-				  fys,  ts, np,  ds,  Vs,  screw_Spacing,  dt, A, L );
+				  fys,  ts, np,  ds,  Vs,  screw_Spacing, A, L);
          
          theCopy->rDispN = rDispN;
          theCopy->rDispP = rDispP;
@@ -787,7 +815,6 @@ static int getIndexNeg(Vector v,double value)
 		else
 		{
 			double Stress = BSplineYs[i-1] + (BSplineYs[i] - BSplineYs[i-1]) / (BSplineXs[i] - BSplineXs[i-1]) * (Strain - BSplineXs[i-1]);
-			
 			if(Neg == 1)
 			return -Stress;
 			return  Stress;
@@ -1389,8 +1416,8 @@ double CFSSSWP::posEnvlpStress(double u)
 								 f = Spline3.Eval(u);
 								 if(isnan(f))
 								 {
-								   opserr << "CFSSSWP erreur2\n";
-								   exit(-5);
+										 printf("erreur3");
+										 while(1);
 								 }
 								 if(f != 10e8)
 								 {
@@ -1418,8 +1445,7 @@ double CFSSSWP::posEnvlpStress(double u)
 								 printf("Strain = %f	Stress = %f	Min = %f, Max = %f\n",u,f,s3Strain(0),s3Strain(3));
 								 if(u > s3Strain(3))
 								 {
-								   opserr << "CFSSSWP erreur4\n";
-								   exit(-5);
+									 while(1);
 								 }
                                  return f;
                          }
@@ -1432,8 +1458,8 @@ double CFSSSWP::posEnvlpStress(double u)
 								 f = Spline4.Eval(u);
 								 if(isnan(f))
 								 {
-								   opserr << "CFSSSWP erreur4\n";
-								   exit(-5);
+										 printf("erreur4");
+										 while(1);
 								 }
 								 if(f != 10e8)
 								 {
@@ -1461,8 +1487,7 @@ double CFSSSWP::posEnvlpStress(double u)
 								 printf("Strain = %f	Stress = %f	Min = %f, Max = %f\n",u,f,s4Strain(0),s4Strain(3));
 								 if(u > s4Strain(3))
 								 {
-								   opserr << "CFSSSWP erreur6\n";
-								   exit(-5);
+									 while(1);
 								 }
                                  return f;
                          }

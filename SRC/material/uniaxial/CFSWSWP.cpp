@@ -1,3 +1,32 @@
+/* ****************************************************************** **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** Developed by:                                                      **
+**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**                                                                    **
+** ****************************************************************** */
+
+// $Revision: 1.0 $
+// $Date: 25-03-2015 $
+
+// Written by Smail KECHIDI (skechidi@yahoo.com)
+// Created: 2014-01-13 10:24:20 $
+//
+// Description: This file contains the class implementation for CFSWSWP
+// CFSWSWP is based on Pinching4 uniaxialMaterial
+
 #include <elementAPI.h>
 #include "CFSWSWP.h"
 #include <OPS_Globals.h>
@@ -6,25 +35,22 @@
 #include <float.h>
 #include <OPS_Stream.h>
 #include <stdio.h>
+//#include<conio.h>
 #include <string.h>
 #include "CubicSpline.h"
 #include "TriMatrix.h"
  
 static int numCFSWSWP = 0;
 
-#ifndef isnan
-#define isnan _isnan
-#endif
-
 void *
 OPS_CFSWSWP(void)
 {
   // print out some KUDO's
   if (numCFSWSWP == 0) {
-    opserr << "Cold Formed Steel Wood Sheathed Shear Wall Panel unaxial material - Written by Smail KECHIDI University of Blida - Pleas When using this make references \n";
+    opserr << "Cold Formed Steel Wood Sheathed Shear Wall Panel uniaxial material - Written by Smail KECHIDI PhD student at University of Blida 1 - Please when using this make references \n";
     numCFSWSWP =1;
   }
-  
+
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
 
@@ -32,7 +58,7 @@ OPS_CFSWSWP(void)
   // parse the input line for the material parameters
   //
 
-  int    iData[1];
+  int    iData[2];
   double dData[15];
   int numData;
   numData = 1;
@@ -41,18 +67,30 @@ OPS_CFSWSWP(void)
     return 0;
   }
 
-  numData = 15;
+  numData = 1;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
     opserr << "WARNING invalid Material parameters\n";
     return 0;	
   }
 
+  numData = 1;
+  if (OPS_GetIntInput(&numData, &iData[1]) != 0) {
+    opserr << "WARNING invalid Material parameters\n";
+    return 0;	
+  }
+
+
+  numData = 13;
+  if (OPS_GetDoubleInput(&numData, &dData[2]) != 0) {
+    opserr << "WARNING invalid Material parameters\n";
+    return 0;	
+  }
   // 
   // create a new material
   //
 
-  theMaterial = new CFSWSWP(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5]
-  , dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14]);       
+  theMaterial = new CFSWSWP(iData[0], dData[0], iData[1], dData[2], dData[3], dData[4], dData[5], 
+			    dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14]);       
 
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type CFSWSWP\n";
@@ -248,6 +286,10 @@ void CFSWSWP :: lateralShearStrength(void) {
 	r=1/(1+A/(hight*(width-L)));
 	fo=r/(3-2*r);
 	stress3p=fo*(1+(Kf/Ks))*Ps/1000; 
+	if (np==2)
+	{
+		stress3p=stress3p*2;
+	}
 	strain3p=stress3p*1000/(Kf+Ks);
     stress4p=0.8*stress3p;
 	strain4p=1.4*strain3p;
@@ -363,7 +405,7 @@ int CFSWSWP::setTrialStrain(double strain, double CstrainRate)
          return 0;
  }
 
-static int getIndex(Vector v,double value)
+int getIndex(Vector v,double value)
 {
 	for(int i = 0; i < v.Size(); i++)
 	{
@@ -371,7 +413,7 @@ static int getIndex(Vector v,double value)
 	}
 	return -1;
 }
-static int getIndexNeg(Vector v,double value)
+int getIndexNeg(Vector v,double value)
 {
 	for(int i = 0; i < v.Size(); i++)
 	{
@@ -390,8 +432,9 @@ static int getIndexNeg(Vector v,double value)
 			int fifth = getIndexNeg(envlpNegStrain,state3Strain(0));
 			if(fifth == -1)
 			{
-			  opserr << "CFSWSWP - erreur fifth\n";
-			  exit(-5);
+				printf("erreur fifth");
+				//				getch();
+				exit(5);
 			}
 			
 			X[0] = state3Strain(0) - 20;
@@ -423,8 +466,9 @@ static int getIndexNeg(Vector v,double value)
 			fifth = getIndex(envlpPosStrain,state4Strain(3));
 			if(fifth == -1)
 			{
-			  opserr << "CFSWSWP - erreur fifth1\n";
-			  exit(-5);
+				printf("erreur fifth1");
+				//getch();
+				exit(5);
 			}
 			
 			X[0] = state4Strain(0);
@@ -442,8 +486,8 @@ static int getIndexNeg(Vector v,double value)
 			
 			if(X[3] - X[0] < 0)
 			{
-			  opserr << "CFSWSWP - erreur2\n";
-			  exit(-5);
+				printf("erreur2\n");
+				while(1);
 			}
 			
 			a0 = GetTangentFromCurve(state4Strain(0));
@@ -1463,25 +1507,25 @@ double CFSWSWP::posEnvlpStress(double u)
                                  double k = 0.0;
                                  int i = 0;
                                  double f = 0.0;
-								 f = Spline3.Eval(u);
-								 if(isnan(f))
-								 {
-								   opserr << "CFSWSWP - erreur3\n";
-								   exit(-5);
-								 }
-								 if(f != 10e8)
-								 {
-										 return f;
-										return GetStressFromCurve(u);
-								 }
-								 while ((k==0.0||i<=2) && (i<=2)) 
-                                 {
-                                         if (u>= s3Strain(i)) {
-                                                 k = (s3Stress(i+1)-s3Stress(i))/(s3Strain(i+1)-s3Strain(i));
-                                                 f = s3Stress(i)+(u-s3Strain(i))*k;
-                                         }
-                                         i++;
-                                 }
+				 f = Spline3.Eval(u);
+				 if(isnan(f))
+				   {
+				     printf("erreur3");
+				     while(1);
+				   }
+				 if(f != 10e8)
+				   {
+				     return f;
+				     return GetStressFromCurve(u);
+				   }
+				 while ((k==0.0||i<=2) && (i<=2)) 
+				   {
+				     if (u>= s3Strain(i)) {
+				       k = (s3Stress(i+1)-s3Stress(i))/(s3Strain(i+1)-s3Strain(i));
+				       f = s3Stress(i)+(u-s3Strain(i))*k;
+				     }
+				     i++;
+				   }
                                  if (k==0.0) {
                                          if (u<s3Strain(0)) {
                                                  i = 0;
@@ -1495,8 +1539,7 @@ double CFSWSWP::posEnvlpStress(double u)
 								 printf("Strain = %f	Stress = %f	Min = %f, Max = %f\n",u,f,s3Strain(0),s3Strain(3));
 								 if(u > s3Strain(3))
 								 {
-								   opserr << "CFSWSWP - erreur7\n";
-								   exit(-5);
+									 while(1);
 								 }
                                  return f;
                          }
@@ -1509,8 +1552,8 @@ double CFSWSWP::posEnvlpStress(double u)
 								 f = Spline4.Eval(u);
 								 if(isnan(f))
 								 {
-								   opserr << "CFSWSWP - erreur4\n";
-								   exit(-5);
+										 printf("erreur4");
+										 while(1);
 								 }
 								 if(f != 10e8)
 								 {
@@ -1538,8 +1581,7 @@ double CFSWSWP::posEnvlpStress(double u)
 								 printf("Strain = %f	Stress = %f	Min = %f, Max = %f\n",u,f,s4Strain(0),s4Strain(3));
 								 if(u > s4Strain(3))
 								 {
-								   opserr << "CFSWSWP - erreur8\n";
-								   exit(-5);
+									 while(1);
 								 }
                                  return f;
                          }

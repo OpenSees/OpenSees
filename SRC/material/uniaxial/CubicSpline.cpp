@@ -86,7 +86,7 @@
 			sc1sL = 0;
 			//sc2sL = c2sc;
 			//sc3sL = c3sc;
-			//getch();
+			////getch();
 			Eval(0);
         }
 
