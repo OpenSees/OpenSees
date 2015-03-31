@@ -51,6 +51,12 @@ using namespace std;
 
 #define PI 3.14159l
 
+
+#ifndef fmax
+#define fmax(a,b) ((a)>(b) ? (a) : (b))
+#define fmin(a,b) ((a)>(b) ? (b) : (a))
+#endif
+
 // initialize the class wide variables
 Matrix ElastomericX::theMatrix(12,12);
 Vector ElastomericX::theVector(12);

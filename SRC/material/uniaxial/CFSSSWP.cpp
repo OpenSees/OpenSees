@@ -27,6 +27,8 @@
 // Description: This file contains the class implementation for CFSSSWP
 // CFSSSWP is based on Pinching4 uniaxialMaterial
 
+
+
 #include <elementAPI.h>
 #include "CFSSSWP.h"
 #include <OPS_Globals.h>
@@ -39,19 +41,15 @@
 #include <string.h>
 #include "CubicSpline.h"
 #include "TriMatrix.h"
- 
-#ifdef _USRDLL
-#define OPS_Export extern "C" _declspec(dllexport)
-#elif _MACOSX
-#define OPS_Export extern "C" __attribute__((visibility("default")))
-#else
-#define OPS_Export extern "C"
+
+#ifdef _WIN32
+#define isnan _isnan
 #endif
 
 static int numCFSSSWP = 0;
 
-OPS_Export void *
-OPS_CFSSSWP()
+void *
+OPS_CFSSSWP(void)
 {
   // print out some KUDO's
   if (numCFSSSWP == 0) {

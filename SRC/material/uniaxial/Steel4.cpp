@@ -37,7 +37,7 @@
 #include <math.h>
 
 void*
-OPS_Steel4()
+OPS_Steel4(void)
 {
   //Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
