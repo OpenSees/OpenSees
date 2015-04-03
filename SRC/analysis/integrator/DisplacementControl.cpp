@@ -91,20 +91,19 @@ DisplacementControl::~DisplacementControl()
 int
 DisplacementControl::newStep(void)
 {
-	if (theDofID == -1) {
-		opserr << "DisplacementControl::newStep() - domainChanged has not been called\n";
-		return -1;
-	}
-
-    // get pointers to AnalysisModel and LinearSOE
-    AnalysisModel *theModel = this->getAnalysisModel();
-    LinearSOE *theLinSOE = this->getLinearSOE();    
-    if (theModel == 0 || theLinSOE == 0) {
+  if (theDofID == -1) {
+    opserr << "DisplacementControl::newStep() - dof is fixed or constrained (or domainChanged has not been called!)\n";
+    return -1;
+  }
+  
+  // get pointers to AnalysisModel and LinearSOE
+  AnalysisModel *theModel = this->getAnalysisModel();
+  LinearSOE *theLinSOE = this->getLinearSOE();    
+  if (theModel == 0 || theLinSOE == 0) {
 	opserr << "WARNING DisplacementControl::newStep() ";
 	opserr << "No AnalysisModel or LinearSOE has been set\n";
 	return -1;
-    }
-
+  }
 
     // determine increment for this iteration
     double factor = specNumIncrStep/numIncrLastStep;
