@@ -588,7 +588,7 @@ Domain::addSP_Constraint(int axisDirn, double axisValue,
 
   NodeIter &theNodes = this->getNodes();
   Node *theNode;
-
+  int numAddedSPs = 0;
   // for each node in the domain
   while ((theNode = theNodes()) != 0) {
     const Vector &theCrds = theNode->getCrds();
@@ -609,14 +609,16 @@ Domain::addSP_Constraint(int axisDirn, double axisValue,
 	    if (this->addSP_Constraint(theSP) == false) {
 	      opserr << "WARNING could not add SP_Constraint to domain for node " << theNode->getTag();
 	      delete theSP;
-	    }
+	    } else {
+			numAddedSPs++;
+		}
 	  }
 	}
       }
     }
   }
-
-  return 0;
+  this->domainChange();
+  return numAddedSPs;
 }
 
 

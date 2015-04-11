@@ -297,9 +297,9 @@ PartitionedDomain::addSP_Constraint(int axisDirn, double axisValue,
   SubdomainIter &theSubdomains = this->getSubdomains();
   Subdomain *theSub;
   while ((theSub = theSubdomains()) != 0) {
-    theSub->addSP_Constraint(axisDirn, axisValue, fixityCodes, tol);
+   spTag += theSub->addSP_Constraint(axisDirn, axisValue, fixityCodes, tol);
   }
-
+  
   return spTag;
 }
 

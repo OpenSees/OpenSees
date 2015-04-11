@@ -298,32 +298,44 @@ ActorSubdomain::run(void)
 	    axisDirn = msgData(2);
 	    theI = new ID(msgData(3));
 	    theV = new Vector(2);
+
+		endTag = 0;
+		
 	    this->recvID(*theI);
 	    this->recvVector(*theV);
 
 	    msgData(0) = 0;				 
 	    endTag = this->addSP_Constraint(axisDirn, (*theV)(0), *theI, (*theV)(1));
-	    msgData(1) = endTag;
-	    this->sendID(msgData);
+	
+		numSP = endTag;// - startTag;
 
+	    msgData(1) = endTag;
+		this->domainChange();
+	    this->sendID(msgData);
+		
 	    delete theV;
 	    delete theI;
-
-	    numSP = endTag - startTag;
-	    
+		
+	    /* DONT BOTHER SENDING
 	    if (numSP > 0) {
 	      theI = new ID(numSP);
 	      for (i = 0; i<numSP; i++) {
 		theSP = this->getSP_Constraint(i+startTag);
 		(*theI)(i) = theSP->getClassTag();
 	      }
-	      this->sendID(*theI);	      
+	      this->sendID(*theI);	
+		  opserr << "Actor: sent: " << *theI;
 	      for (i = 0; i<numSP; i++) {
 		theSP = this->getSP_Constraint(i+startTag);
-		this->sendObject(*theSP);	      
+		if (theSP != 0)
+		this->sendObject(*theSP);	
+		else
+			opserr << "ActorSubdomain::addSP_AXIS :: PROBLEMS\n";
 	      }
 	      delete theI;
 	    }
+opserr << "ActorSubdomain::addSP_AXIS :: DONE\n";
+        */
 
 	    break;	    
 	    
@@ -342,7 +354,7 @@ ActorSubdomain::run(void)
 		    msgData(0) = -1;
 	    } else
 		msgData(0) = -1;
-
+		
 	    break;	    
 	    
 	    

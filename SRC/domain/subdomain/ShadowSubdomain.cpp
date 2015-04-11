@@ -334,23 +334,27 @@ ShadowSubdomain::addSP_Constraint(int axisDirn, double axisValue,
     msgData(3) = fixityCodes.Size();
 
     this->sendID(msgData);
+	
 
     this->sendID(fixityCodes);
     static Vector data(2);
     data(0) = axisValue;
     data(1) = tol;
-    this->sendVector(data);
-    // this->Domain::domainChange();
+    this->sendVector(data); 
 
-    this->recvID(msgData);   
-
+     this->recvID(msgData);  
+	 int endTag = msgData(1);
+	
+	/*
     // now if we have created any in the actor we have to add them here
-    int endTag = msgData(1);
-    int numSP = endTag;
-    if (numSP != 0) {
-      ID theID(numSP);
+   
+    int remoteNumSP = msgData(2);
+	opserr << "Shadow: numSPs " << remoteNumSP << endln;
+
+    if (remoteNumSP != 0) {
+      ID theID(remoteNumSP);
       this->recvID(theID);
-      for (int i=0; i<numSP; i++) {
+      for (int i=0; i<remoteNumSP; i++) {
 	SP_Constraint *theSP = theObjectBroker->getNewSP(theID(i));
 	if (theSP != 0) {
 	  this->recvObject(*theSP);
@@ -359,6 +363,7 @@ ShadowSubdomain::addSP_Constraint(int axisDirn, double axisValue,
 	}
       }
     }
+	*/
     return endTag;
 }
 
