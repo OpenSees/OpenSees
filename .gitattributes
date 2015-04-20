@@ -2792,6 +2792,8 @@ SRC/material/Makefile -text
 SRC/material/Material.cpp -text
 SRC/material/Material.h -text
 SRC/material/Material.tex -text
+SRC/material/nD/AcousticMedium.cpp -text
+SRC/material/nD/AcousticMedium.h -text
 SRC/material/nD/BeamFiberMaterial.cpp -text
 SRC/material/nD/BeamFiberMaterial.h -text
 SRC/material/nD/BeamFiberMaterial2d.cpp -text
