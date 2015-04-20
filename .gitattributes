@@ -2860,6 +2860,8 @@ SRC/material/nD/J2PlateFiber.cpp -text
 SRC/material/nD/J2PlateFiber.h -text
 SRC/material/nD/J2ThreeDimensional.cpp -text
 SRC/material/nD/J2ThreeDimensional.h -text
+SRC/material/nD/LinearCap.cpp -text
+SRC/material/nD/LinearCap.h -text
 SRC/material/nD/Makefile -text
 SRC/material/nD/NDMaterial.cpp -text
 SRC/material/nD/NDMaterial.h -text
