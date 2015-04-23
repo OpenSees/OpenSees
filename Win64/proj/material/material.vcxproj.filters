@@ -995,6 +995,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.cpp">
       <Filter>uniaxial\snap</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -1840,6 +1843,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.h">
       <Filter>uniaxial\snap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.h">
+      <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
