@@ -1031,10 +1031,10 @@ CorotCrdTransf3d::getBasicIncrDisp(void)
 const Vector &
 CorotCrdTransf3d::getBasicTrialVel(void)
 {
-    opserr << "ERROR CorotCrdTransf3d::getBasicTrialVel()"
-        << " - has not been implemented yet." << endln;
+    opserr << "WARNING CorotCrdTransf3d::getBasicTrialVel()"
+        << " - has not been implemented yet. Returning zeros." << endln;
     
-    static Vector dummy(1);
+    static Vector dummy(6);
     return dummy;
 }
 
@@ -1042,10 +1042,10 @@ CorotCrdTransf3d::getBasicTrialVel(void)
 const Vector &
 CorotCrdTransf3d::getBasicTrialAccel(void)
 {
-    opserr << "ERROR CorotCrdTransf3d::getBasicTrialAccel()"
-        << " - has not been implemented yet." << endln;
+    opserr << "WARNING CorotCrdTransf3d::getBasicTrialAccel()"
+        << " - has not been implemented yet. Returning zeros." << endln;
     
-    static Vector dummy(1);
+    static Vector dummy(6);
     return dummy;
 }
 

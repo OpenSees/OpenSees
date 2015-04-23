@@ -324,7 +324,7 @@ TCP_SocketSSL::setUpConnection()
         
         // initiate SSL handshake with server
         ssl = SSL_new(ctx);
-        SSL_set_fd(ssl, sockfd);
+        SSL_set_fd(ssl, (int)sockfd);
         if (SSL_connect(ssl) <= 0) {
             opserr << "TCP_SocketSSL::setUpConnection() - could not initiate SSL handshake with server\n";
             SSL_free(ssl);
@@ -403,7 +403,7 @@ TCP_SocketSSL::setUpConnection()
         
         // initiate SSL handshake with client
         ssl = SSL_new(ctx);
-        SSL_set_fd(ssl, sockfd);
+        SSL_set_fd(ssl, (int)sockfd);
         if (SSL_accept(ssl) <= 0) {
             opserr << "TCP_SocketSSL::setUpConnection() - could not initiate SSL handshake with client\n";
             SSL_free(ssl);
