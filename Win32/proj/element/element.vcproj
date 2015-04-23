@@ -163,6 +163,12 @@
 				RelativePath="..\..\..\Src\element\truss\CorotTrussSection.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\element\truss\N4BiaxialTruss.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\truss\N4BiaxialTruss.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\truss\Truss.cpp">
 			</File>
 			<File
@@ -987,6 +993,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\frictionBearing\FlatSliderSimple3d.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\FPBearingPTV.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\FPBearingPTV.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\frictionBearing\MultiFP2d.cpp">

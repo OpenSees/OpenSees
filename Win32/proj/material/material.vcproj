@@ -380,10 +380,22 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\ModIMKPeakOriented.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ModIMKPeakOriented02.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ModIMKPeakOriented02.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\ModIMKPinching.cpp">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\ModIMKPinching.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ModIMKPinching02.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ModIMKPinching02.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\MultiLinear.cpp">
@@ -483,6 +495,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\ShearPanelMaterial.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\SmoothPSConcrete.cpp">
@@ -774,6 +792,12 @@
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\material\uniaxial\snap\Bilin.h">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\material\uniaxial\snap\Bilin02.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\SRC\material\uniaxial\snap\Bilin02.h">
 				</File>
 				<File
 					RelativePath="..\..\..\SRC\material\uniaxial\snap\Bilinear.cpp">
@@ -1074,10 +1098,28 @@
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3D.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3DRO.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3DRO.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrain.cpp">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrain.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\nD\NDMaterial.cpp">
