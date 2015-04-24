@@ -1,17 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
@@ -23,17 +15,7 @@
     <SccLocalPath />
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
@@ -46,13 +28,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
@@ -61,42 +37,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\lib\debug\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\lib\debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\obj\material\debug\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\obj\material\debug\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\lib\release\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\lib\release\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\obj\material\release\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\obj\material\release\</IntDir>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\src\element\UWelements;..\..\..\src\material\nD\UWmaterials;..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\SRC\api;..\..\..\SRC\element\UP-ucsd;..\..\..\src\material\uniaxial\backbone;..\..\..\src\element\dispBeamColumnInt;..\..\..\src\material\section\integration;..\..\..\SRC\material\nD\NewTemplate3Dep;..\..\..\SRC\tagged\storage;..\..\..\SRC\domain\node;..\..\..\SRC\material\uniaxial\limitState\limitCurve;..\..\..\SRC\material\uniaxial\limitState;..\..\..\SRC\package;..\..\..\src\material\nd\cyclicSoil;..\..\..\src\damage;..\..\..\src\material\nd\FiniteDeformation\fdEvolution;..\..\..\src\material\nd\FiniteDeformation\fdFlow;..\..\..\src\material\nd\FiniteDeformation\fdYield;..\..\..\src\material\nd\finitedeformation;..\..\..\src\element\fournodequad;..\..\..\src\material\uniaxial\fedeas;..\..\..\src\material\uniaxial\drain;..\..\..\src\domain\domain;..\..\..\src\renderer;..\..\..\src\material\nD\soil;..\..\..\src\material\nD\template3dep;..\..\..\src\recorder\response;..\..\..\src\material\backbone;..\..\..\src\material\state;..\..\..\src\material\state\strength;..\..\..\src\material\state\deformation;..\..\..\src\material\state\stiffness;..\..\..\src\material\section\repres\section;..\..\..\src\material\section\repres\cell;..\..\..\src\material\section\repres\patch;..\..\..\src\material\section\repres\reinfBar;..\..\..\src\material\section\repres\reinfLayer;..\..\..\src\material\section\fiber;..\..\..\src\element\nonlinearBeamColumn\fiber;..\..\..\src\element\nonlinearBeamColumn\matrixutil;..\..\..\src\material\section;..\..\..\src\handler;..\..\..\src\material\uniaxial;..\..\..\src\material\nD;..\..\..\src\element;..\..\..\src\actor\channel;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\modelbuilder;..\..\..\src\domain\component;..\..\..\src\material;..\..\..\src\modelbuilder\tcl;..\..\..\src\material\nd\template3dep;..\..\..\src\nDarray;..\..\..\src\material\uniaxial\py;..\..\..\src\material\uniaxial\snap;..\..\..\src\material\yieldSurface\yieldSurfaceBC;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldSurface\plasticHardeningMaterial;..\..\..\src\material\section\yieldSurface;..\..\..\src\material\nd\feap;c:\Program Files\tcl\include;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_TCL85;_LIMITSTATEMATERIAL;_NO_NEW_RESTREPO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\..\..\obj\material\debug/material.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\..\..\obj\material\debug/</AssemblerListingLocation>
-      <ObjectFileName>.\..\..\obj\material\debug/</ObjectFileName>
-      <ProgramDataBaseFileName>.\..\..\obj\material\debug/</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
-      <WarningLevel>Level3</WarningLevel>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <CompileAs>Default</CompileAs>
-    </ClCompile>
-    <Lib>
-      <OutputFile>.\..\..\lib\debug\material.lib</OutputFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-    </Lib>
-    <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Culture>0x0409</Culture>
-    </ResourceCompile>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -121,32 +66,6 @@
     </Lib>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Culture>0x0409</Culture>
-    </ResourceCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\..\src\element\UWelements;..\..\..\src\material\nD\UWmaterials;..\..\..\src\domain\pattern;..\..\..\src\coordTransformation;..\..\..\SRC\api;..\..\..\SRC\element\UP-ucsd;..\..\..\src\material\uniaxial\backbone;..\..\..\src\element\dispBeamColumnInt;..\..\..\src\material\section\integration;..\..\..\SRC\material\nD\NewTemplate3Dep;..\..\..\SRC\tagged\storage;..\..\..\SRC\domain\node;..\..\..\SRC\material\uniaxial\limitState\limitCurve;..\..\..\SRC\material\uniaxial\limitState;..\..\..\SRC\package;..\..\..\src\material\nd\cyclicSoil;..\..\..\src\damage;..\..\..\src\material\nd\FiniteDeformation\fdEvolution;..\..\..\src\material\nd\FiniteDeformation\fdFlow;..\..\..\src\material\nd\FiniteDeformation\fdYield;..\..\..\src\material\nd\finitedeformation;..\..\..\src\element\fournodequad;..\..\..\src\material\uniaxial\fedeas;..\..\..\src\material\uniaxial\drain;..\..\..\src\domain\domain;..\..\..\src\renderer;..\..\..\src\material\nD\soil;..\..\..\src\material\nD\template3dep;..\..\..\src\recorder\response;..\..\..\src\material\backbone;..\..\..\src\material\state;..\..\..\src\material\state\strength;..\..\..\src\material\state\deformation;..\..\..\src\material\state\stiffness;..\..\..\src\material\section\repres\section;..\..\..\src\material\section\repres\cell;..\..\..\src\material\section\repres\patch;..\..\..\src\material\section\repres\reinfBar;..\..\..\src\material\section\repres\reinfLayer;..\..\..\src\material\section\fiber;..\..\..\src\element\nonlinearBeamColumn\fiber;..\..\..\src\element\nonlinearBeamColumn\matrixutil;..\..\..\src\material\section;..\..\..\src\handler;..\..\..\src\material\uniaxial;..\..\..\src\material\nD;..\..\..\src\element;..\..\..\src\actor\channel;..\..\..\src\actor\objectBroker;..\..\..\src\matrix;..\..\..\src;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\modelbuilder;..\..\..\src\domain\component;..\..\..\src\material;..\..\..\src\modelbuilder\tcl;..\..\..\src\material\nd\template3dep;..\..\..\src\nDarray;..\..\..\src\material\uniaxial\py;..\..\..\src\material\uniaxial\snap;..\..\..\src\material\yieldSurface\yieldSurfaceBC;..\..\..\src\material\yieldSurface\evolution;..\..\..\src\material\yieldSurface\plasticHardeningMaterial;..\..\..\src\material\section\yieldSurface;..\..\..\src\material\nd\feap;c:\Program Files\tcl\include;c:\Program Files\tcl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_TCL85;_LIMITSTATEMATERIAL;_NO_NEW_RESTREPO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\..\..\obj\material\release/material.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\..\..\obj\material\release/</AssemblerListingLocation>
-      <ObjectFileName>.\..\..\obj\material\release/</ObjectFileName>
-      <ProgramDataBaseFileName>.\..\..\obj\material\release/</ProgramDataBaseFileName>
-      <WarningLevel>Level3</WarningLevel>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <CompileAs>Default</CompileAs>
-    </ClCompile>
-    <Lib>
-      <OutputFile>.\..\..\lib\release\material.lib</OutputFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-    </Lib>
-    <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
