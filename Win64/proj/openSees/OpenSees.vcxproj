@@ -18,12 +18,10 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -44,7 +42,7 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\obj\openSees\release\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\obj\openSees\debug\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\obj\opensees\debug\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -75,7 +73,7 @@
       <AdditionalDependencies>cssparse.lib;tcl.lib;DoddRestrepo.lib;wsock32.lib;OpenGL32.lib;optimization.lib;glu32.lib;damage.lib;fedeas.lib;drain.lib;reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpack.lib;actor.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;utility.lib;tcl85.lib;tk85.lib;libirc.lib;ifconsol.lib;libm.lib;LIBIFCOREMT.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\..\..\bin/OpenSees.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;..\..\lib;..\..\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:\Program Files\tcl64\lib;..\..\lib;..\..\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -94,10 +92,10 @@
       <PreprocessorDefinitions>_DEBUG;_WGL;_RELIABILITY;_WIN32;_FORTRAN;WIN32;_CONSOLE;BUILD_tcl;_TCL85;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeaderOutputFile>.\..\..\obj\openSees\debug/openSees.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\..\..\obj\openSees\debug/</AssemblerListingLocation>
-      <ObjectFileName>.\..\..\obj\openSees\debug/</ObjectFileName>
-      <ProgramDataBaseFileName>.\..\..\obj\openSees\debug/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\opensees\debug/OpenSees.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\opensees\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\opensees\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\opensees\debug/</ProgramDataBaseFileName>
       <BrowseInformation>true</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -111,12 +109,12 @@
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>cssparse.lib;OpenGL32.lib;wsock32.lib;glu32.lib;DoddRestrepo.lib;optimization.lib;damage.lib;tcl.lib;fedeas.lib;drain.lib;reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpack.lib;actor.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;utility.lib;tcl85.lib;tk85.lib;ifconsol.lib;libifcoremt.lib;libm.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\..\..\bin/openSees.exe</OutputFile>
+      <OutputFile>.\..\..\bin/OpenSees.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:\Program Files\tcl64\lib;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>.\..\..\bin/openSees.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>.\..\..\bin/OpenSees.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
@@ -135,16 +133,16 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\actor\actor.vcxproj">
-      <Project>{2f5bd1a6-9ee5-7133-8ee7-8cb3891a5586}</Project>
+      <Project>{d9026bc0-b5bf-3be9-e9cb-3491638f2c38}</Project>
     </ProjectReference>
     <ProjectReference Include="..\analysis\analysis.vcxproj">
-      <Project>{e79ba5a2-d324-9647-4bf7-a6ae18d7d99f}</Project>
+      <Project>{71832cb0-ed48-1caf-ecb3-b9ad954d38e5}</Project>
     </ProjectReference>
     <ProjectReference Include="..\cblas\cblas.vcxproj">
-      <Project>{f8937dc5-cb60-b643-8040-0360b8f8ce98}</Project>
+      <Project>{310dc5fa-1613-d953-4008-15056952e467}</Project>
     </ProjectReference>
     <ProjectReference Include="..\convergence\convergence.vcxproj">
-      <Project>{b8860fe7-309c-522e-69d9-71c80bd84454}</Project>
+      <Project>{63511522-ebef-1468-ad6b-0f365ca756a9}</Project>
     </ProjectReference>
     <ProjectReference Include="..\cssparse\cssparse.vcxproj">
       <Project>{542b4ec8-400f-4be5-a0a1-a53e8830606c}</Project>
@@ -153,58 +151,58 @@
       <Project>{0775a4b2-93d2-4440-83b7-c1df58021602}</Project>
     </ProjectReference>
     <ProjectReference Include="..\database\database.vcxproj">
-      <Project>{5095c76c-7252-0a0a-5272-0a2c1b39d324}</Project>
+      <Project>{2b908396-b6b4-c511-d0e2-87620530aaa2}</Project>
     </ProjectReference>
     <ProjectReference Include="..\domain\domain.vcxproj">
-      <Project>{bac07a21-f82c-4f89-be4b-3023b644b7b9}</Project>
+      <Project>{10be1d68-585d-6b54-0c7f-0cf2962c52f1}</Project>
     </ProjectReference>
     <ProjectReference Include="..\element\element.vcxproj">
-      <Project>{61641ee7-007e-c667-96d0-749b6ab64f10}</Project>
+      <Project>{8062b50d-a609-33d0-8223-81d898de05d5}</Project>
     </ProjectReference>
     <ProjectReference Include="..\graph\graph.vcxproj">
-      <Project>{fcd97d3a-bee4-03ef-1f00-1d4f79bc0ed2}</Project>
+      <Project>{771cf0b5-a9ed-0cba-dcc2-94ee2ff499e8}</Project>
     </ProjectReference>
     <ProjectReference Include="..\handler\handler.vcxproj">
-      <Project>{1643c198-f9ca-294f-a77a-1ea8b174de70}</Project>
+      <Project>{a6947a93-dfd1-060e-f426-ae10230f7861}</Project>
     </ProjectReference>
     <ProjectReference Include="..\material\material.vcxproj">
-      <Project>{cd3a9e1c-b4a1-280b-3168-7ff724130298}</Project>
+      <Project>{b3b28eab-160f-635a-cd8a-4c4baa55cf78}</Project>
     </ProjectReference>
     <ProjectReference Include="..\matrix\matrix.vcxproj">
-      <Project>{82c9c242-6965-8c53-57d5-f6d097a00ef2}</Project>
+      <Project>{a2422b53-1a88-cbc2-aaa3-3a727c91e852}</Project>
     </ProjectReference>
     <ProjectReference Include="..\modelbuilder\modelbuilder.vcxproj">
-      <Project>{0b3243f7-83de-dabd-67bf-aee84cb6051a}</Project>
+      <Project>{d4304671-12ad-a3ab-e4c8-90005c96311c}</Project>
     </ProjectReference>
     <ProjectReference Include="..\optimization\optimization.vcxproj">
       <Project>{d1c15272-e650-4be0-9daf-b79f984d623d}</Project>
     </ProjectReference>
     <ProjectReference Include="..\recorder\recorder.vcxproj">
-      <Project>{b9ed1e32-9b04-e7f2-97dc-7952fffdc9b0}</Project>
+      <Project>{5bb0e918-ce81-7129-15f5-2a3470e92427}</Project>
     </ProjectReference>
     <ProjectReference Include="..\reliability\reliability.vcxproj">
-      <Project>{54f33be7-381e-cc82-58a9-28f594574fb7}</Project>
+      <Project>{85f9e3f0-a6e0-6a77-9683-7150b4be5a09}</Project>
     </ProjectReference>
     <ProjectReference Include="..\renderer\renderer.vcxproj">
-      <Project>{d96e547b-a481-3767-f836-ce032e4a4989}</Project>
+      <Project>{c7780c72-e360-ab77-79d6-f5ceb52c2f00}</Project>
     </ProjectReference>
     <ProjectReference Include="..\string\string.vcxproj">
-      <Project>{d7cb4c8c-b4c0-7f2e-6433-9b192484ecf1}</Project>
+      <Project>{767a7605-a645-c010-dcdd-f981dd6e0a61}</Project>
     </ProjectReference>
     <ProjectReference Include="..\superLU\superLU.vcxproj">
-      <Project>{5d7b6b69-dd41-0b07-2afe-eb30bbf082be}</Project>
+      <Project>{931a4de5-3af2-18c7-6370-37e5deda392a}</Project>
     </ProjectReference>
     <ProjectReference Include="..\system\system.vcxproj">
-      <Project>{92bff6d8-6dfa-bc17-e25f-1138d2318bb5}</Project>
+      <Project>{e68180c9-479c-a9c1-3832-cef06b7f9d8c}</Project>
     </ProjectReference>
     <ProjectReference Include="..\tagged\tagged.vcxproj">
-      <Project>{c3a21ebd-0d8d-518b-094c-40ad07cea603}</Project>
+      <Project>{3285d0ef-7169-f5be-c3ac-3752aaebb765}</Project>
     </ProjectReference>
     <ProjectReference Include="..\tcl\tcl.vcxproj">
       <Project>{b4f48abb-2789-4753-aa82-7e2c1954d31a}</Project>
     </ProjectReference>
     <ProjectReference Include="..\utility\utility.vcxproj">
-      <Project>{606e04fb-e591-31d4-322d-18ffb705ebd4}</Project>
+      <Project>{72ceb368-613b-3977-7be6-0155a5f1ddbc}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

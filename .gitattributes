@@ -4528,7 +4528,6 @@ Win64/proj/tagged/tagged.vcxproj -text
 Win64/proj/tagged/tagged.vcxproj.filters -text
 Win64/proj/tcl/tcl.vcxproj -text
 Win64/proj/tcl/tcl.vcxproj.filters -text
-Win64/proj/utility/utility.vcproj -text
 Win64/proj/utility/utility.vcxproj -text
 Workshops/OpenSeesDays/ALH360.AT2 -text
 Workshops/OpenSeesDays/ALH360.DT2 -text
