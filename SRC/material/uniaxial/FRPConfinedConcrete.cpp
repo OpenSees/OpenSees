@@ -115,27 +115,44 @@ Es = Steel's Elastic modulus, vo = Poisson's coefficient for concrete, k = reduc
 */
 
  FRPConfinedConcrete::FRPConfinedConcrete(int tag, 
-	 double fpc1,
-	 double fpc2, 
-	 double epsc0, 
-	 double D, 
-	 double c, 
-	 double Ej, 
-	 double Sj, 
-	 double tj, 
-	 double eju, 
-	 double S, 
-	 double fyh, 
-	 double dlong, 
-	 double dtrans, 
-	 double Es, 
-	 double v0, 
-	 double k )
+	 double fpc1_,
+	 double fpc2_, 
+	 double epsc0_, 
+	 double D_, 
+	 double c_, 
+	 double Ej_, 
+	 double Sj_, 
+	 double tj_, 
+	 double eju_, 
+	 double S_, 
+	 double fyh_, 
+	 double dlong_, 
+	 double dtrans_, 
+	 double Es_, 
+	 double v0_, 
+	 double k_ )
  :UniaxialMaterial(tag, MAT_TAG_FRPConfinedConcrete),fpc1(fpc1), fpc2(fpc2), epsc0(epsc0), CminStrain(0.0), CendStrain(0.0),Cstrain(0.0), Cstress(0.0), CaLatstress(0.0) ,
    CbLatstress(0.00001),CLatStrain(0.0) ,CConvFlag(false) ,CConfRat(1.0) ,CConfStrain(epsc0)
 {
+  fpc1 = fpc1_;
+  fpc2 = fpc2_;
+  epsc0 = epsc0_;
+  D=D_;
+  c=c_;
+  Ej=Ej_;
+  Sj=Sj_;
+  tj = tj_;
+  eju = eju_;
+  S=S_;
+  fyh = fyh_;
+  dlong = dlong_;
+  dtrans = dtrans_;
+  Es = Es_;
+  v0=v0_;
+  k = k_;
+
    double Ec0;
-   R=D/2;
+   R=D/2.;
    A=pi*pow(R,2);
    //Regions
    //Core Region
@@ -254,20 +271,28 @@ int FRPConfinedConcrete::setTrialStrain (double strain, double strainRate)
     Tstress = 0.0;
     Ttangent = 0.0;
   }
-  
+
+  Tstrain = strain;  
   return 0;
 }
 int 
 FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, double strainRate)
 {
+  //  opserr << "FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, double strainRate)  : START strain: " << strain << endln;
   // Reset trial history variables to last committed state
 
-   TminStrain = CminStrain;
-   TendStrain = CendStrain;
-   TunloadSlope = CunloadSlope;
-   Tstress = Cstress;
-   Ttangent = Ctangent;
-   Tstrain = Cstrain;
+  TminStrain = CminStrain;
+  TendStrain = CendStrain;
+  TunloadSlope = CunloadSlope;
+  Tstress = Cstress;
+  Ttangent = Ctangent;
+  Tstrain = Cstrain;
+  TaLatstress = CaLatstress;
+  TbLatstress = CbLatstress;
+  TConvFlag = CConvFlag;
+  TConfRat = CConfRat;
+  TConfStrain = CConfStrain ;
+  TLatStrain = CLatStrain ;
 
   // Determine change in strain from last converged state
   double dStrain = strain - Cstrain;
@@ -277,6 +302,7 @@ FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, d
     tangent = Ttangent;
     return 0;
   }
+
   // Set trial strain
   Tstrain = strain;
   
@@ -286,6 +312,7 @@ FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, d
     Ttangent = 0;
     stress = 0;
     tangent = 0;
+    //  opserr << "FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, double strainRate)  : END: Tstrain: " << Tstrain << " Tstress:" << Tstress << " Ttangent: " << Ttangent << endln;
     return 0;
   }
 
@@ -299,9 +326,7 @@ FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, d
   if (strain <= Cstrain) {
     TminStrain = CminStrain;
     TendStrain = CendStrain;
-    
     reload ();
-    
     if (tempStress > Tstress) {
       Tstress = tempStress;
       Ttangent = TunloadSlope;
@@ -319,9 +344,10 @@ FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, d
     Tstress = 0.0;
     Ttangent = 0.0;
   }
-  
+  //  Tstrain = strain;  
   stress = Tstress;
   tangent =  Ttangent;
+  //  opserr << "FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, double strainRate)  : END: Tstrain: " << Tstrain << " Tstress:" << Tstress << " Ttangent: " << Ttangent << endln;
   
   return 0;
 }
@@ -367,7 +393,6 @@ void FRPConfinedConcrete::reload ()
     
     // Determine point on envelope
     envelope ();
-    
     unload ();
   }
   else if (Tstrain <= TendStrain) {
@@ -381,14 +406,13 @@ void FRPConfinedConcrete::reload ()
 }
 void FRPConfinedConcrete::envelope ( )
 { 
-    double fla, flb ;
+    double fla =0.0, flb =0.0;
     double arrayLatA[6],arrayLatB[6],arrayLatC[6];
     
     TConvFlag = false;
     double number = 1.0 ;
-    
-    while(!TConvFlag)
-      {
+
+    while(!TConvFlag) {
 	number = number + 1 ;
 	if (Tstrain < 0.0)
 	  Tstrain = -Tstrain ;
@@ -397,9 +421,12 @@ void FRPConfinedConcrete::envelope ( )
 	double ya = arrayLatA[0];
 	flat(TbLatstress,arrayLatB);
 	double yb = arrayLatB[0];
-	if (yb*ya >0)
+
+	if (yb*ya >0) {
 	  flb = 0.1*number;
-        continue;
+	  continue;
+	}
+
 	double dx = ya*(TaLatstress - TbLatstress)/(ya - yb);
 	double flc  = TaLatstress - dx;
 	flat(flc, arrayLatC);
@@ -421,12 +448,11 @@ void FRPConfinedConcrete::envelope ( )
 	  TConvFlag = true ;
 	  return;
 	}
-	if  (yb*yc > 0)
-	  { flb = fla;
+	if  (yb*yc > 0) { flb = fla;
 	    yb = ya;
 	    fla = flc;
 	    ya = yc;
-	  }
+	}
 	else{
 	  fla = flc;
 	  ya = yc;
@@ -434,8 +460,9 @@ void FRPConfinedConcrete::envelope ( )
 	double tol = 0.000001 ;
 	int Maxiter = 30;
 	int iter = 0 ;
-	while (fabs(yc) > tol && iter<=Maxiter)
-	  {iter = iter + 1;
+
+	while (fabs(yc) > tol && iter<=Maxiter) {
+
 	    dx = ya*(TaLatstress - TbLatstress)/(ya - yb);
 	    flc  = fla - dx;
 	    flat(flc, arrayLatC);
@@ -485,14 +512,21 @@ FRPConfinedConcrete::flat (double flcover_n, double arrayLat[6] )
   double v, els, fls, ksl, fls_n, flcore, fcc_core, ecc_core, x_core, Esec_core, r_core, fc_core, fcc_cover, ecc_cover,
 	   x_cover, Esec_cover, r_cover, fc_cover, sig, fcc, el_core, el_cover, et_cover, rj, ke, flj, y ;
   //Braga, Gigliotti & Laterza Model
+
   v=v0*(1+0.2*(Tstrain/epsc0)-pow((Tstrain/epsc0),2.0)+1.55*pow((Tstrain/epsc0),3.0));
   els=v*Tstrain;
-  if (els < eyh)
+
+  if (els < eyh) {
     fls=(Ec1*Es*Ash*v*Tstrain)/(Rcore*Ec1*S+Es*Ash*(1-v)*(v*Tstrain+1));
-  else 
+  }  else {
     fls = 0.5*rs*fyh;
+  }
+
+
   ksl= (45*pow((dlong/S),3))/(45*pow((dlong/S),3)+(dtrans/dlong)*(dtrans/(pi*Rcore/2)));
   fls_n=ksl*fls;
+
+
   //Spoelstra&Monti iteration
   flcore=flcover_n+fls_n;
   //Verical Stresses
@@ -500,6 +534,7 @@ FRPConfinedConcrete::flat (double flcover_n, double arrayLat[6] )
   ecc_core=epsc0*(1+5*(fcc_core/fpc1-1));
   x_core = Tstrain /ecc_core;
   Esec_core = fcc_core/ecc_core ;
+
   r_core  = Ec1/(Ec1-Esec_core);
   fc_core = (fcc_core*x_core*r_core)/(r_core-1+pow(x_core,r_core));
   fcc_cover=fpc2*(2.254*sqrt(1+7.94*(flcover_n/fpc2))-2*(flcover_n/fpc2)-1.254);
@@ -517,6 +552,7 @@ FRPConfinedConcrete::flat (double flcover_n, double arrayLat[6] )
   ke=pow((1-(Sj/(2*D))),2); // 14th fib Bulletin
   flj=(0.5*ke*rj*Ej*et_cover);
   y=flj-flcover_n;
+
   arrayLat[0] = y;
   arrayLat[1] = sig;
   arrayLat[2] = flj;
@@ -580,7 +616,7 @@ double  Ec = getInitialTangent ();
 
 double FRPConfinedConcrete::getStress ()
 {
-   return Tstress;
+  return Tstress;
 }
 
 double FRPConfinedConcrete::getStrain ()
@@ -590,7 +626,7 @@ double FRPConfinedConcrete::getStrain ()
 
 double FRPConfinedConcrete::getTangent ()
 {
-   return Ttangent;
+  return Ttangent;
 }
 
 double FRPConfinedConcrete::getLatstress ()
@@ -676,10 +712,10 @@ int FRPConfinedConcrete::revertToStart ()
    return 0;
 }
 
-UniaxialMaterial* FRPConfinedConcrete::getCopy ()
+UniaxialMaterial* FRPConfinedConcrete::getCopy()
 {
    FRPConfinedConcrete* theCopy = new FRPConfinedConcrete(this->getTag(),
-                                    fpc1, fpc2, epsc0, D, c, Ej, Sj, tj, eju, S, fyh, dlong, dtrans, Es, v0, k);
+							  fpc1, fpc2, epsc0, D, c, Ej, Sj, tj, eju, S, fyh, dlong, dtrans, Es, v0, k);
 
    // Converged history variables
    theCopy->CminStrain = CminStrain;
