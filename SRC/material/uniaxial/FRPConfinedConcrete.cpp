@@ -272,13 +272,12 @@ int FRPConfinedConcrete::setTrialStrain (double strain, double strainRate)
     Ttangent = 0.0;
   }
 
-  Tstrain = strain;  
+  //  Tstrain = strain;  
   return 0;
 }
 int 
 FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, double strainRate)
 {
-  //  opserr << "FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, double strainRate)  : START strain: " << strain << endln;
   // Reset trial history variables to last committed state
 
   TminStrain = CminStrain;
@@ -312,7 +311,6 @@ FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, d
     Ttangent = 0;
     stress = 0;
     tangent = 0;
-    //  opserr << "FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, double strainRate)  : END: Tstrain: " << Tstrain << " Tstress:" << Tstress << " Ttangent: " << Ttangent << endln;
     return 0;
   }
 
@@ -324,9 +322,12 @@ FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, d
   
   // Material goes further into compression
   if (strain <= Cstrain) {
+
     TminStrain = CminStrain;
     TendStrain = CendStrain;
+
     reload ();
+
     if (tempStress > Tstress) {
       Tstress = tempStress;
       Ttangent = TunloadSlope;
@@ -347,8 +348,9 @@ FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, d
   //  Tstrain = strain;  
   stress = Tstress;
   tangent =  Ttangent;
-  //  opserr << "FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, double strainRate)  : END: Tstrain: " << Tstrain << " Tstress:" << Tstress << " Ttangent: " << Ttangent << endln;
-  
+
+  Tstrain = strain;
+
   return 0;
 }
 
@@ -411,11 +413,18 @@ void FRPConfinedConcrete::envelope ( )
     
     TConvFlag = false;
     double number = 1.0 ;
+    bool changedStrain = false;
+
+    double stain = Tstrain;
+
+    if (Tstrain < 0.0) {
+      Tstrain = -Tstrain ;
+      changedStrain = true;
+    }
 
     while(!TConvFlag) {
 	number = number + 1 ;
-	if (Tstrain < 0.0)
-	  Tstrain = -Tstrain ;
+
 	TbLatstress = flb;
 	flat(TaLatstress,arrayLatA);
 	double ya = arrayLatA[0];
@@ -503,6 +512,8 @@ void FRPConfinedConcrete::envelope ( )
     double et_cover = arrayLatC[4];
     if (et_cover >= k*eju)
       opserr << "FRP Rupture" ;
+    if (changedStrain == true)
+      Tstrain = -Tstrain;
 }
 
 void 
