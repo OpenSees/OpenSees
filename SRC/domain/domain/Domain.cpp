@@ -629,7 +629,7 @@ Domain::addSP_Constraint(int axisDirn, double axisValue,
 bool
 Domain::addMP_Constraint(MP_Constraint *mpConstraint)
 {
-#ifdef _G3DEBUG
+//#ifdef _G3DEBUG
     // perform the checks
     int nodeConstrained = mpConstraint->getNodeConstrained();
     Node *nodePtr = this->getNode(nodeConstrained);
@@ -648,7 +648,7 @@ Domain::addMP_Constraint(MP_Constraint *mpConstraint)
       return false;
     }      
     // MISSING CODE
-#endif
+//#endif
 
   // check that no other object with similar tag exists in model
   int tag = mpConstraint->getTag();

@@ -344,9 +344,8 @@ PartitionedDomain::addSP_Constraint(SP_Constraint *load, int pattern)
 
 
 bool
-PartitionedDomain::addMP_Constraint(MP_Constraint *load)
-{
-  bool res = true;
+PartitionedDomain::addMP_Constraint(MP_Constraint *load) {
+  bool res = false;
   bool getRetained = false;
   bool addedMain = false;
 
@@ -361,7 +360,7 @@ PartitionedDomain::addMP_Constraint(MP_Constraint *load)
   // first we check the main domain
   // if has the constrained but not retained we mark as needing retained
   //
-
+  opserr << "SP_Constraint: " << retainedNodeTag << " " << constrainedNodeTag << endln; 
   Node *retainedNodePtr = this->Domain::getNode(retainedNodeTag);
   Node *constrainedNodePtr = this->Domain::getNode(constrainedNodeTag);
   if (constrainedNodePtr != 0) {
@@ -369,12 +368,16 @@ PartitionedDomain::addMP_Constraint(MP_Constraint *load)
 
       res = this->Domain::addMP_Constraint(load);    
       if (res == false) {
-	opserr << "PartitionedDomain::addMP_Constraint - problems adding to main domain\n";
-	return res;
-      }
-      addedMain = true;
-    } else {
+	      opserr << "PartitionedDomain::addMP_Constraint - problems adding to main domain\n";
+	      return res;
+      } else {
+		  opserr << "FMK = partitionedDomain-addMP - added to main\n";
+          addedMain = true;
+	  } 
+	
+	} else {
       getRetained = true;
+	  opserr << "FMK 2 = partitionedDomain-addMP - need retained to add to main\n";
     }
   }
 
@@ -396,15 +399,19 @@ PartitionedDomain::addMP_Constraint(MP_Constraint *load)
 
       if (hasRestrained == true) {
 
-	res = theSub->addMP_Constraint(load);
+	       res = theSub->addMP_Constraint(load);
 
-	if (res == false) {
-	  opserr << "PartitionedDomain::addMP_Constraint - problems adding to subdomain with retained\n";
-	  return res;
+	       if (res == false) {
+	         opserr << "PartitionedDomain::addMP_Constraint - problems adding to subdomain with retained\n";
+	         return res;
+	       } else {
+			    opserr << "FMK 3 = partitionedDomain-addMP - added constraint to subdomain\n";
+		   }
+      } else {
+	     getRetained = true;
+		 opserr << "FMK 4 = partitionedDomain-addMP - need to add retained to subdomain\n";
+       }
 	}
-      } else
-	getRetained = true;
-    }
   }
 
   //
@@ -422,26 +429,28 @@ PartitionedDomain::addMP_Constraint(MP_Constraint *load)
       SubdomainIter &theSubdomains2 = this->getSubdomains();
       while ((theSub = theSubdomains2()) != 0 && retainedNodePtr == 0) {
 	
-	bool hasRestrained = theSub->hasNode(retainedNodeTag);
+	        bool hasRestrained = theSub->hasNode(retainedNodeTag);
 
-	if (hasRestrained == true) {
-	  retainedNodePtr = theSub->getNode(retainedNodeTag);
+	        if (hasRestrained == true) {
+	           retainedNodePtr = theSub->getNode(retainedNodeTag);
 
-	  Matrix mass(retainedNodePtr->getNumberDOF(), retainedNodePtr->getNumberDOF());
-	  mass.Zero();
-	  retainedNodePtr->setMass(mass);
-	}
-      }
-    } else {
+	            Matrix mass(retainedNodePtr->getNumberDOF(), retainedNodePtr->getNumberDOF());
+	            mass.Zero();
+	            retainedNodePtr->setMass(mass);
+	        }
+        }
+	} else {
       // get a copy & zero the mass
       retainedNodePtr = new Node(*retainedNodePtr, false);
-    }
-
+	}
+  
     if (retainedNodePtr == 0) {
       opserr << "partitionedDomain::addMP_Constraint - can't find retained node anywhere!\n";
       return false;
-    }
-
+    } else {
+	  opserr << "FMK 3 = partitionedDomain-addMP - we have now a retained node copy\n";
+	}
+  
     //
     // if main has it we add the retained to main & constraint
     //
@@ -450,17 +459,18 @@ PartitionedDomain::addMP_Constraint(MP_Constraint *load)
       res = this->Domain::addNode(retainedNodePtr);
 
       if (res == false) {
-	opserr << "PartitionedDomain::addMP_Constraint - problems adding retained to main domain\n";
-	return res;
+	     opserr << "PartitionedDomain::addMP_Constraint - problems adding retained to main domain\n";
+	     return res;
       } 
       res = this->Domain::addMP_Constraint(load);
 
       if (res == false) {
-	opserr << "PartitionedDomain::addMP_Constraint - problems adding constraint to main domain after adding node\n";
-	return res;
+	     opserr << "PartitionedDomain::addMP_Constraint - problems adding constraint to main domain after adding node\n";
+	     return res;
       } 
-    }
-
+	   opserr << "FMK 5 = partitionedDomain-addMP - added retained node nd constraint to main\n";	  
+	}
+  
     //
     // to subdmains that have the constrained but no retained
     // 1. we add a copy of retained
@@ -472,25 +482,26 @@ PartitionedDomain::addMP_Constraint(MP_Constraint *load)
       bool hasConstrained = theSub->hasNode(constrainedNodeTag);
       if (hasConstrained == true) {
 
-	bool hasRestrained = theSub->hasNode(retainedNodeTag);
-	if (hasRestrained == false) {
+	      bool hasRestrained = theSub->hasNode(retainedNodeTag);
+	      if (hasRestrained == false) {
 
-	  res = theSub->addNode(retainedNodePtr);
+	          res = theSub->addNode(retainedNodePtr);
 
-	  if (res == false) {
-	    opserr << "PartitionedDomain::addMP_Constraint - problems adding retained to subdomain\n";
-	    return res;
-	  } 
+	          if (res == false) {
+	            opserr << "PartitionedDomain::addMP_Constraint - problems adding retained to subdomain\n";
+	            return res;
+	           } 
 
-	  res = theSub->addMP_Constraint(load);
+	           res = theSub->addMP_Constraint(load);
 
-	  if (res == false) {
-	    opserr << "PartitionedDomain::addMP_Constraint - problems adding constraint to subdomain after adding node\n";
-	    return res;
-	  } 
+	           if (res == false) {
+	               opserr << "PartitionedDomain::addMP_Constraint - problems adding constraint to subdomain after adding node\n";
+	               return res;
+	           } 
+			   opserr << "FMK 6 = partitionedDomain-addMP - added retained node nd constraint to Subdomainn";
+	      }
+	  }
 	}
-      }
-    }
 
     // clean up memory
     if (addedMain == true && getRetained == true) 
