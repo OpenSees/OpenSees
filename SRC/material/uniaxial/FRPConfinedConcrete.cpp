@@ -265,7 +265,7 @@ int FRPConfinedConcrete::setTrialStrain (double strain, double strainRate)
     Tstress = tempStress;
     Ttangent = TunloadSlope;
   }
-  
+
   // Made it into tension
   else {
     Tstress = 0.0;
@@ -453,7 +453,12 @@ void FRPConfinedConcrete::envelope ( )
 	  TbLatstress = flb;
 	  TLatStrain  = et_cover;
 	  double dStrain = Tstrain - Cstrain;
-	  Ttangent= fabs((Tstress-Cstress)/dStrain);
+	  if (changedStrain == true)
+	    dStrain = -Tstrain - Cstrain;
+	  else
+	    dStrain = Tstrain - Cstrain;
+	  //	  Ttangent= fabs((Tstress-Cstress)/dStrain);
+	  Ttangent= (Tstress-Cstress)/dStrain;
 	  TConvFlag = true ;
 	  return;
 	}
@@ -500,8 +505,13 @@ void FRPConfinedConcrete::envelope ( )
 	    TaLatstress = flj;
 	    TbLatstress = flb;
 	    TLatStrain = et_cover;
-	    double dStrain = Tstrain - Cstrain;
-	    Ttangent= fabs((Tstress-Cstress)/dStrain);
+	    double dStrain = 0;
+	    if (changedStrain == true)
+	      dStrain = -Tstrain - Cstrain;
+	    else
+	      dStrain = Tstrain - Cstrain;
+	    //	    Ttangent= fabs((Tstress-Cstress)/dStrain);
+	    Ttangent= (Tstress-Cstress)/dStrain;
 	    TConvFlag = true ;
 	  }
 	else
@@ -512,6 +522,7 @@ void FRPConfinedConcrete::envelope ( )
     double et_cover = arrayLatC[4];
     if (et_cover >= k*eju)
       opserr << "FRP Rupture" ;
+
     if (changedStrain == true)
       Tstrain = -Tstrain;
 }
