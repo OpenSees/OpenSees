@@ -48,7 +48,7 @@ extern OPS_Stream *opserrPtr;
 // #define OPS_Stream ostream
 // #define endln endl
 
-enum NodeResponseType { Disp = 1, Vel = 2, Accel =3, IncrDisp =4, IncrDeltaDisp =5, Reaction =6};
+enum NodeResponseType { Disp = 1, Vel = 2, Accel =3, IncrDisp =4, IncrDeltaDisp =5, Reaction =6, Unbalance =7};
 
 #ifdef _TCL85
 #define TCL_Char const char
