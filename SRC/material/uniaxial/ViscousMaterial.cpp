@@ -158,7 +158,7 @@ ViscousMaterial::revertToStart(void)
 UniaxialMaterial *
 ViscousMaterial::getCopy(void)
 {
-    ViscousMaterial *theCopy = new ViscousMaterial(this->getTag(),C,Alpha);
+  ViscousMaterial *theCopy = new ViscousMaterial(this->getTag(),C,Alpha, minVel);
 
     theCopy->trialRate = trialRate;
 
