@@ -44,7 +44,7 @@
 CTestEnergyIncr::CTestEnergyIncr()	    	
     : ConvergenceTest(CONVERGENCE_TEST_CTestEnergyIncr),
       theSOE(0), tol(0), maxTol(OPS_MAXTOL), maxNumIter(0), currentIter(0), printFlag(0),
-    norms(1), nType(2)
+      nType(2), norms(20)
 {
     
 }
@@ -53,7 +53,7 @@ CTestEnergyIncr::CTestEnergyIncr()
 CTestEnergyIncr::CTestEnergyIncr(double theTol, int maxIter, int printIt, int normType, double max)
     : ConvergenceTest(CONVERGENCE_TEST_CTestEnergyIncr),
       theSOE(0), tol(theTol), maxTol(max), maxNumIter(maxIter), currentIter(0),printFlag(printIt),
-    norms(maxNumIter), nType(normType)
+      nType(normType), norms(maxNumIter)
 {
     
 }
@@ -165,6 +165,8 @@ int CTestEnergyIncr::test(void)
     else if (currentIter >= maxNumIter || product > maxTol) { // >= in case algorithm does not check
         opserr << "WARNING: CTestEnergyIncr::test() - failed to converge \n";
         opserr << "after: " << currentIter << " iterations\n";	
+        opserr << " current EnergyIncr: " << product << " (max: " << tol << ") ";
+        opserr << "\tNorm deltaX: " << x.pNorm(nType) << ", Norm deltaR: " << b.pNorm(nType) << endln;
         currentIter++;    
         return -2;
     } 

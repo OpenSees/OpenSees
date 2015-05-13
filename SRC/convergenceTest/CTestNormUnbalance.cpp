@@ -42,7 +42,7 @@ CTestNormUnbalance::CTestNormUnbalance()
 CTestNormUnbalance::CTestNormUnbalance(double theTol, int maxIter, int printIt, int normType, int maxincr, double max)
     : ConvergenceTest(CONVERGENCE_TEST_CTestNormUnbalance),
       theSOE(0), tol(theTol), maxTol(max), maxNumIter(maxIter), currentIter(0), printFlag(printIt),
-      norms(maxNumIter), nType(normType), maxIncr(maxincr), numIncr(0)
+      nType(normType), norms(maxNumIter), maxIncr(maxincr), numIncr(0)
 {
     if(maxIncr < 0) {
         maxIncr = maxNumIter;
@@ -157,7 +157,9 @@ int CTestNormUnbalance::test(void)
     // algo failed to converged after specified number of iterations - return FAILURE -2
     else if (currentIter >= maxNumIter || numIncr >= maxIncr || norm > maxTol) { // the algorithm failed to converge
         opserr << "WARNING: CTestNormUnbalance::test() - failed to converge \n";
-        opserr << "after: " << currentIter << " iterations\n";	
+        opserr << "after: " << currentIter << " iterations ";	
+        opserr << " current Norm: " << norm << " (max: " << tol;
+        opserr << ", Norm deltaX: " << theSOE->getX().pNorm(nType) << ")\n";
         currentIter++;  // we increment in case analysis does not check for convergence
         return -2;
     } 

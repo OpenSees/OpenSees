@@ -42,7 +42,7 @@ CTestNormDispIncr::CTestNormDispIncr()
 CTestNormDispIncr::CTestNormDispIncr(double theTol, int maxIter, int printIt, int normType, double max)
     : ConvergenceTest(CONVERGENCE_TEST_CTestNormDispIncr),
       theSOE(0), tol(theTol), maxTol(max), maxNumIter(maxIter), currentIter(0), printFlag(printIt),
-      norms(maxIter), nType(normType)
+      nType(normType), norms(maxIter)
 {
     
 }
@@ -57,7 +57,7 @@ CTestNormDispIncr::~CTestNormDispIncr()
 ConvergenceTest* CTestNormDispIncr::getCopy(int iterations)
 {
     CTestNormDispIncr *theCopy ;
-    theCopy = new CTestNormDispIncr(this->tol, iterations, this->printFlag, this->nType, this->maxTol) ;
+    theCopy = new CTestNormDispIncr(this->tol, iterations, 0, this->nType, this->maxTol) ;
     
     theCopy->theSOE = this->theSOE ;
     
@@ -149,7 +149,9 @@ int CTestNormDispIncr::test(void)
     // algo failed to converged after specified number of iterations - return FAILURE -2
     else if (currentIter >= maxNumIter || norm > maxTol) { // failes to converge
         opserr << "WARNING: CTestNormDispIncr::test() - failed to converge \n";
-        opserr << "after: " << currentIter << " iterations\n";	
+        opserr << "after: " << currentIter << " iterations ";	
+        opserr << " current Norm: " << norm << " (max: " << tol;
+        opserr << ", Norm deltaR: " << theSOE->getB().pNorm(nType) << ")\n";
         currentIter++;    
         return -2;
     } 

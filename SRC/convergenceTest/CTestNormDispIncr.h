@@ -76,8 +76,8 @@ private:
     int maxNumIter;     // max number of iterations
     int currentIter;    // number of times test() has been invokes since last start()
     int printFlag;      // a flag indicating if to print on test
+
     int nType;          // type of norm to use (1-norm, 2-norm, p-norm, max-norm)
-    
     Vector norms;       // vector to hold the norms
 };
 
