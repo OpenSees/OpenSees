@@ -497,9 +497,11 @@ Domain::addNode(Node * node)
 bool
 Domain::addSP_Constraint(SP_Constraint *spConstraint)
 {
-#ifdef _G3DEBUG    
+  //#ifdef _G3DEBUG    
     // check the Node exists in the Domain
     int nodeTag = spConstraint->getNodeTag();
+    int dof = spConstraint->getDOF_Number();
+
     Node *nodePtr = this->getNode(nodeTag);
     if (nodePtr == 0) {
       opserr << "Domain::addSP_Constraint - cannot add as node node with tag" <<
@@ -509,19 +511,39 @@ Domain::addSP_Constraint(SP_Constraint *spConstraint)
 
     // check that the DOF specified exists at the Node
     int numDOF = nodePtr->getNumberDOF();
-    if (numDOF < spConstraint->getDOF_Number()) {
-	opserr << "Domain::addSP_Constraint - cannot add as node node with tag" << 
+    if (numDOF < dof) {
+	opserr << "Domain::addSP_Constraint - cannot add as node with tag" << 
 	  nodeTag << "does not have associated constrained DOF\n"; 
 	return false;
     }      
-#endif
+    // #endif
+
+    // check if an existing SP_COnstraint exists for that dof at the node
+    bool found = false;
+    SP_ConstraintIter &theExistingSPs = this->getSPs();
+    SP_Constraint *theExistingSP = 0;
+    while ((found == false) && ((theExistingSP = theExistingSPs()) != 0)) {
+      int spNodeTag = theExistingSP->getNodeTag();
+      int spDof = theExistingSP->getDOF_Number();
+      if (nodeTag == spNodeTag && spDof == dof) {
+	found = true;
+      }
+    }
+    
+    if (found == true) {
+	opserr << "Domain::addSP_Constraint - cannot add as node already constrained in that dof by existing SP_Constraint\n";
+	spConstraint->Print(opserr);
+	return false;
+    }
 
   // check that no other object with similar tag exists in model
   int tag = spConstraint->getTag();
   TaggedObject *other = theSPs->getComponentPtr(tag);
   if (other != 0) {
-    opserr << "Domain::addSP_Constraint - cannot add as constraint with tag" << 
+    opserr << "Domain::addSP_Constraint - cannot add as constraint with tag " << 
       tag << "already exists in model\n";             
+    spConstraint->Print(opserr);
+
     return false;
   }
   
@@ -594,6 +616,7 @@ Domain::addSP_Constraint(int axisDirn, double axisValue,
     const Vector &theCrds = theNode->getCrds();
     int sizeCrds = theCrds.Size();
     int numDOF = theNode->getNumberDOF();
+    int nodeTag = theNode->getTag();
 
     // check it has crds in axis specified
     if (axisDirn < sizeCrds) {
@@ -602,16 +625,36 @@ Domain::addSP_Constraint(int axisDirn, double axisValue,
       // check if coordinate is within tol of value given
       if (fabs(nodeCrdDirn-axisValue) <= tol) {
 
-	// foreach dof to be constrained create an SP & add to domain
+	// foreach dof to be constrained create 
 	for (int i=0; i<fixityConditions.Size(); i++) {
 	  if ((i < numDOF) && (fixityConditions(i) == 1)) {
-	    SP_Constraint *theSP = new SP_Constraint(theNode->getTag(), i, 0.0, true);
-	    if (this->addSP_Constraint(theSP) == false) {
-	      opserr << "WARNING could not add SP_Constraint to domain for node " << theNode->getTag();
-	      delete theSP;
+
+	    // check if an existing SP_COnstraint exists for that dof at the node
+	    bool found = false;
+	    SP_ConstraintIter &theExistingSPs = this->getSPs();
+	    SP_Constraint *theExistingSP = 0;
+	    while ((found == false) && ((theExistingSP = theExistingSPs()) != 0)) {
+	      int spNodeTag = theExistingSP->getNodeTag();
+	      int dof = theExistingSP->getDOF_Number();
+	      if (nodeTag == spNodeTag && i == dof) {
+		found = true;
+	      }
+	    }
+	    
+	    // if no sp constraint, create one and ass it
+	    if (found == false) {
+
+	      SP_Constraint *theSP = new SP_Constraint(nodeTag, i, 0.0, true);
+	      
+	      if (this->addSP_Constraint(theSP) == false) {
+		opserr << "WARNING could not add SP_Constraint to domain for node " << theNode->getTag();
+		delete theSP;
+	      } else {
+		numAddedSPs++;
+	      }
 	    } else {
-			numAddedSPs++;
-		}
+	      ; // opserr << "Domain::addSP(AXIS) - constraint exists at node\n";
+	    }
 	  }
 	}
       }
@@ -648,7 +691,7 @@ Domain::addMP_Constraint(MP_Constraint *mpConstraint)
       return false;
     }      
     // MISSING CODE
-//#endif
+    //#endif
 
   // check that no other object with similar tag exists in model
   int tag = mpConstraint->getTag();
@@ -667,7 +710,7 @@ Domain::addMP_Constraint(MP_Constraint *mpConstraint)
   } else
     opserr << "Domain::addMP_Constraint - cannot add constraint with tag" << 
       tag << "to the container\n";                   
-			      
+  
   return result;
 }
 
@@ -1694,6 +1737,7 @@ Domain::setCommittedTime(double newTime)
 void
 Domain::applyLoad(double timeStep)
 {
+
     // set the current pseudo time in the domai to be newTime
     currentTime = timeStep;
     dT = currentTime - committedTime;
@@ -1726,12 +1770,12 @@ Domain::applyLoad(double timeStep)
     MP_ConstraintIter &theMPs = this->getMPs();
     MP_Constraint *theMP;
     while ((theMP = theMPs()) != 0)
-	theMP->applyConstraint(timeStep);
-
+      theMP->applyConstraint(timeStep);
+    
     SP_ConstraintIter &theSPs = this->getSPs();
     SP_Constraint *theSP;
     while ((theSP = theSPs()) != 0) {
-	theSP->applyConstraint(timeStep);
+      theSP->applyConstraint(timeStep);
     }
 
     ops_Dt = dT;

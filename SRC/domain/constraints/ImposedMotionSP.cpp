@@ -100,20 +100,22 @@ ImposedMotionSP::applyConstraint(double time)
       opserr << "ImposedMotionSP::applyConstraint() - out of memory\n";
       return -2;
     }
-    
+
     LoadPattern *theLoadPattern = theDomain->getLoadPattern(patternTag);
-    if (theLoadPattern == 0)
+    if (theLoadPattern == 0) {
+      opserr << "ImposedMotionSP::applyConstraint() - no load pattern\n";
       return -3;
+    }
 
     theGroundMotion = theLoadPattern->getMotion(groundMotionTag);
-    if (theGroundMotion == 0)
+    if (theGroundMotion == 0) {
+      opserr << "ImposedMotionSP::applyConstraint() - no ground motion\n";
       return -4;
+    }
   }
 
   if (theNodeResponse == 0) 
     return -1;
-
-
   
   // now get the response from the ground motion
   theGroundMotionResponse = theGroundMotion->getDispVelAccel(time);
@@ -137,7 +139,7 @@ ImposedMotionSP::applyConstraint(double time)
   *theNodeResponse = theNode->getTrialAccel();
   (*theNodeResponse)(dofNumber) = theGroundMotionResponse(2);
   theNode->setTrialAccel(*theNodeResponse);        
-  
+
   return 0;
 }
 

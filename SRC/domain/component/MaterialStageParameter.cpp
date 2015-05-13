@@ -71,7 +71,7 @@ MaterialStageParameter::setDomain(Domain *theDomain)
   sprintf(materialIdTag,"%d",theMaterialTag);
   theString[0] = parameterName;
   theString[1] = materialIdTag;
- 
+
   // note because of the way this parameter is updated only need to find one in the domain
   while (((theEle = theEles()) != 0) && (theResult == -1)) {
     theResult = theEle->setParameter(theString, 2, *this);

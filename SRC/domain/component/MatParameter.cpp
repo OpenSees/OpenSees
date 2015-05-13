@@ -74,10 +74,10 @@ MatParameter::setDomain(Domain *theDomain)
   ElementIter &theEles = theDomain->getElements();
 
   int theResult = -1;
-
   
   const char *theString[2]; 
-  char materialIdTag[10];
+  char materialIdTag[20];
+
   sprintf(materialIdTag,"%d",theMaterialTag);
   theString[0] = theParameterName;
   theString[1] = materialIdTag;
@@ -125,6 +125,7 @@ MatParameter::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
   
   if (theData(2) != 0) {
     theParameterName = new char[theData(2)+1];
+    theParameterName[theData(2)]='\0';
     Message theMessage(theParameterName, theData(2));
     theChannel.recvMsg(commitTag, 0, theMessage);	
 	theParameterName[theData(2)+1]='\n';

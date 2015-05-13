@@ -447,6 +447,7 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
 
     // create the UniformExcitation Pattern
     thePattern = new UniformExcitation(*theMotion, dir, patternID);
+    theTclMultiSupportPattern = 0;
 
     if (thePattern == 0) {
     opserr << "WARNING ran out of memory creating load pattern - pattern UniformExcitation ";
@@ -468,9 +469,8 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
       thePattern = theTclMultiSupportPattern;
 
       if (thePattern == 0) {
-    opserr << "WARNING ran out of memory creating load pattern - pattern MultipleSupportExcitation ";
-    opserr << patternID << endln;
-
+	opserr << "WARNING ran out of memory creating load pattern - pattern MultipleSupportExcitation ";
+	opserr << patternID << endln;
       }
       commandEndMarker = 2;
   }
@@ -522,6 +522,7 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
       DRMLoadPattern* ptr = new DRMLoadPattern(1,1.0,patternhandler,theDomain);
       ptr->setMaps();
       thePattern = ptr;
+      theTclMultiSupportPattern = 0;
     } else {
 
       //     TCL_Char * ifp = 0;
@@ -785,7 +786,7 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
       thePattern = new DRMLoadPatternWrapper(patternID,factor,files,nf,dt,num_steps,f_d,15,n1,n2,
 					     drm_box_crds,ele_d,
 					     steps_cached);
-      
+      theTclMultiSupportPattern = 0;      
       commandEndMarker = c_arg;
 
     }
@@ -813,12 +814,12 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
   // use TCL_Eval to evaluate the list of load and single point constraint commands
   if (commandEndMarker < (argc-1)) {
     if (Tcl_Eval(interp, argv[argc-1]) != TCL_OK) {
-  opserr << "WARNING - error reading load pattern information in { } ";
-  return TCL_ERROR;
+      opserr << "WARNING - error reading load pattern information in { } ";
+      return TCL_ERROR;
     }
   }
-
-  theTclMultiSupportPattern = 0;
+  
+  //  theTclMultiSupportPattern = 0;
 
   return TCL_OK;
 }

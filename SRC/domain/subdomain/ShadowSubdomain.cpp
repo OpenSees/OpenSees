@@ -72,6 +72,10 @@ int ShadowSubdomain::count = 0; // MHS
 int ShadowSubdomain::numShadowSubdomains = 0;
 ShadowSubdomain **ShadowSubdomain::theShadowSubdomains = 0;
 
+// 2 procedurs defined in SP_Constraint.cpp
+int SP_Constraint_GetNextTag();
+int SP_Constraint_SetNextTag(int);
+
 ShadowSubdomain::ShadowSubdomain(int tag, 
 				 MachineBroker &theMachineBroker,
 				 FEM_ObjectBroker &theObjectBroker)
@@ -258,22 +262,22 @@ ShadowSubdomain::addElement(Element *theEle)
 bool 
 ShadowSubdomain::addNode(Node *theNode)
 {
-    int tag = theNode->getTag();
+  int tag = theNode->getTag();
 #ifdef _G3DEBUG
-	// do all the checking stuff
+  // do all the checking stuff
 #endif
-    msgData(0) = ShadowActorSubdomain_addNode;
-    msgData(1) = theNode->getClassTag();
-    msgData(2) = theNode->getDbTag();
-    this->sendID(msgData);
-    this->sendObject(*theNode);
-    theNodes[numNodes] = tag;
-    numNodes++;    
-    // this->Domain::domainChange();
-
-    delete theNode;
-    
-    return true;
+  msgData(0) = ShadowActorSubdomain_addNode;
+  msgData(1) = theNode->getClassTag();
+  msgData(2) = theNode->getDbTag();
+  this->sendID(msgData);
+  this->sendObject(*theNode);
+  theNodes[numNodes] = tag;
+  numNodes++;    
+  // this->Domain::domainChange();
+  
+  delete theNode;
+  
+  return true;
 }
 
 bool 
@@ -319,7 +323,6 @@ ShadowSubdomain::addSP_Constraint(SP_Constraint *theSP)
     return true;    
 }
 
-
 int
 ShadowSubdomain::addSP_Constraint(int axisDirn, double axisValue, 
 				  const ID &fixityCodes, double tol)
@@ -330,9 +333,9 @@ ShadowSubdomain::addSP_Constraint(int axisDirn, double axisValue,
 #endif
 
     msgData(0) = ShadowActorSubdomain_addSP_ConstraintAXIS;
-    msgData(2) = axisDirn;
-    msgData(3) = fixityCodes.Size();
-
+    msgData(1) = axisDirn;
+    msgData(2) = fixityCodes.Size();
+    msgData(3) = SP_Constraint_GetNextTag();
     this->sendID(msgData);
 	
 
@@ -342,8 +345,9 @@ ShadowSubdomain::addSP_Constraint(int axisDirn, double axisValue,
     data(1) = tol;
     this->sendVector(data); 
 
-     this->recvID(msgData);  
-	 int endTag = msgData(1);
+    this->recvID(msgData);  
+    int endTag = msgData(1);
+    SP_Constraint_SetNextTag(msgData(2));
 	
 	/*
     // now if we have created any in the actor we have to add them here
@@ -395,6 +399,7 @@ ShadowSubdomain::addLoadPattern(LoadPattern *thePattern)
 #ifdef _G3DEBUG
 	// do all the checking stuff
 #endif
+
     msgData(0) = ShadowActorSubdomain_addLoadPattern;
     msgData(1) = thePattern->getClassTag();
     msgData(2) = thePattern->getDbTag();
@@ -1677,27 +1682,26 @@ ShadowSubdomain::addParameter(Parameter *param)
 Parameter *
 ShadowSubdomain::removeParameter(int tag)
 {
-    msgData(0) = ShadowActorSubdomain_removeParameter;
-    msgData(1) = tag;
-	
-    this->sendID(msgData);
-
-	this->recvID(msgData);
-    return 0;
+  msgData(0) = ShadowActorSubdomain_removeParameter;
+  msgData(1) = tag;
+  
+  this->sendID(msgData);
+  
+  this->recvID(msgData);
+  return 0;
 }
 
 int
 ShadowSubdomain::updateParameter(int tag, int value)
 {
-	
-    msgData(0) = ShadowActorSubdomain_updateParameterINT;
-    msgData(1) = tag;
-    msgData(2) = value;
-
-	//msgData(0) = 0;
-    this->sendID(msgData);
-    this->recvID(msgData);
-    return msgData(0);
+  msgData(0) = ShadowActorSubdomain_updateParameterINT;
+  msgData(1) = tag;
+  msgData(2) = value;
+  
+  //msgData(0) = 0;
+  this->sendID(msgData);
+  this->recvID(msgData);
+  return msgData(0);
 }
 
 
@@ -1713,9 +1717,9 @@ ShadowSubdomain::updateParameter(int tag, double value)
     data(0) = value;
     this->sendVector(data);
 
-	if (this->recvID(msgData) != 0) {
-       opserr << "ShadowSubdomain::updateParameterD ERROR 4\n";
-	}
-
+    if (this->recvID(msgData) != 0) {
+      opserr << "ShadowSubdomain::updateParameterD ERROR 4\n";
+    }
+    
     return msgData(0);
 }

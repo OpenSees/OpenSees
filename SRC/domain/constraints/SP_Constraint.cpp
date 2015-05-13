@@ -37,6 +37,18 @@
 static int numSPs = 0;
 static int nextTag = 0;
 
+// 2 little procedures needed for parallel processing all due to fact that SP's need 
+// to keep unique tags among processes in parallel
+
+int SP_Constraint_SetNextTag(int next) {
+  nextTag = next;
+  return nextTag;
+}
+
+int SP_Constraint_GetNextTag(void) {
+  return nextTag;
+}
+
 // constructor for FEM_ObjectBroker
 SP_Constraint::SP_Constraint(int clasTag)
 :DomainComponent(0,clasTag),
@@ -73,7 +85,6 @@ SP_Constraint::~SP_Constraint()
   if (numSPs == 0)
     nextTag = 0;
 }
-
 
 int
 SP_Constraint::getNodeTag(void) const

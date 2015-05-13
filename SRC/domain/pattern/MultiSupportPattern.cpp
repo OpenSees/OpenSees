@@ -80,8 +80,9 @@ MultiSupportPattern::applyLoad(double time)
 {
   SP_Constraint *sp;
   SP_ConstraintIter &theIter = this->getSPs();
-  while ((sp = theIter()) != 0)
+  while ((sp = theIter()) != 0) {
     sp->applyConstraint(time);
+  }
 }
     
 
@@ -154,7 +155,6 @@ MultiSupportPattern::addElementalLoad(ElementalLoad *)
 int 
 MultiSupportPattern::sendSelf(int commitTag, Channel &theChannel)
 {
-
   // get my current database tag
 
   // NOTE - dbTag equals 0 if not sending to a database OR has not yet been sent
@@ -164,14 +164,6 @@ MultiSupportPattern::sendSelf(int commitTag, Channel &theChannel)
     opserr << "MultiSupportPattern::sendSelf() - LoadPattern class failed in sendSelf()";
     return -1;
   }
-
-  /*
-  SP_Constraint *sp;
-  SP_ConstraintIter &theIter = this->getSPs();
-  int numSP = 0;
-  while ((sp = theIter()) != 0)
-    numSP++;
-  */
 
   static ID myData(3);
   myData(0) = numMotions;
@@ -186,11 +178,11 @@ MultiSupportPattern::sendSelf(int commitTag, Channel &theChannel)
 
   // create the ID and get the node iter
   if (numMotions != 0) {
-    ID motionData(numMotions*2);
+    ID motionData(numMotions*3);
     GroundMotion *theMotion;
     for (int i=0; i<numMotions; i++) {
       theMotion = theMotions[i];
-      motionData(i*2) = theMotion->getClassTag();
+      motionData(i*3) = theMotion->getClassTag();
       int dbTag = theMotion->getDbTag();
 	
       // if dbTag still 0 get one from Channel; 
@@ -200,7 +192,8 @@ MultiSupportPattern::sendSelf(int commitTag, Channel &theChannel)
 	if (dbTag != 0)
 	  theMotion->setDbTag(dbTag);
       }
-      motionData(i*2+1) = dbTag;
+      motionData(i*3+1) = dbTag;
+      motionData(i*3+2) = theMotionTags(i);
     }    
 
     // now send the ID
@@ -255,11 +248,11 @@ MultiSupportPattern::recvSelf(int commitTag, Channel &theChannel,
     return -1;
   }    
 
-  int numMotions = myData(0);
-  int dbMotions = myData(1);
+  numMotions = myData(0);
+  dbMotions = myData(1);
 
   if (numMotions != 0) {
-    ID motionData(numMotions*2);
+    ID motionData(numMotions*3);
 
     // now send the ID
     if (theChannel.recvID(dbMotions, commitTag, motionData) < 0) {
@@ -268,6 +261,9 @@ MultiSupportPattern::recvSelf(int commitTag, Channel &theChannel,
     }
 
     theMotions = new GroundMotion *[numMotions];
+    for (int i=0; i<numMotions; i++)
+      theMotions[i] = 0;
+
     if (theMotions == 0) {
       opserr << "MultiSupportPattern::recvSelf() - out of memory\n";
       return -1;
@@ -275,35 +271,51 @@ MultiSupportPattern::recvSelf(int commitTag, Channel &theChannel,
 
     GroundMotion *theMotion;
     for (int i=0; i<numMotions; i++) {
-      theMotion = theBroker.getNewGroundMotion(motionData(i*2));
+      int motionClassTag = motionData(i*3);
+
+      theMotion = theBroker.getNewGroundMotion(motionClassTag);
       if (theMotion == 0) {
+	opserr << "MultiSupportPattern::sendSelf - failed to get a ground motion from object broker\n";
 	return -1;
       }
 
-      theMotion->setDbTag(motionData(i*2+1));
+      theMotion->setDbTag(motionData(i*3+1));
+      int tag = motionData(i*3+2);
 
       if (theMotion->recvSelf(commitTag, theChannel, theBroker) < 0) {
-	opserr << "MultiSupportPattern::sendSelf - ground motion failed in sendSelf\n";
+	opserr << "MultiSupportPattern::sendSelf - ground motion failed in recvSelf\n";
 	return -7;
       }
+
+      theMotionTags[i] = tag;
+      theMotions[i] = theMotion;
+
+      //      this->addMotion(*theMotion, tag);
     }    
   }
+
   return 0;
 }
 
 void 
 MultiSupportPattern::Print(OPS_Stream &s, int flag)
 {
-  s << "MultiSupportPattern  tag: " << this->getTag() << endln;
+  s << "MultiSupportPattern  tag: " << this->getTag() <<
+    "   numMotions: " << numMotions << endln;
+
   SP_Constraint *sp;
   SP_ConstraintIter &theIter = this->getSPs();
   while ((sp = theIter()) != 0)
     sp->Print(s, flag);
+  
 }
 
 LoadPattern *
 MultiSupportPattern::getCopy(void)
 {
   LoadPattern *theCopy = new MultiSupportPattern(this->getTag());
+  for (int i=0; i<numMotions; i++) {
+    theCopy->addMotion(*theMotions[i], theMotionTags[i]);
+  }  
   return theCopy;
 }

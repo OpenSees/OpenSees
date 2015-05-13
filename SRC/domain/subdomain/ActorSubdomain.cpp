@@ -48,6 +48,10 @@
 #include <ArrayOfTaggedObjects.h>
 #include <ShadowActorSubdomain.h>
 
+// 2 procedurs defined in SP_Constraint.cpp
+int SP_Constraint_GetNextTag();
+int SP_Constraint_SetNextTag(int);
+
 ActorSubdomain::ActorSubdomain(Channel &theChannel,
 			       FEM_ObjectBroker &theBroker)
 :Subdomain(0), Actor(theChannel,theBroker,0),
@@ -276,7 +280,7 @@ ActorSubdomain::run(void)
 	  case ShadowActorSubdomain_addSP_Constraint:
 	    theType = msgData(1);
 	    dbTag = msgData(2);
-	    
+
 	    theSP = theBroker->getNewSP(theType);
 	    
 	    if (theSP != 0) {
@@ -295,22 +299,24 @@ ActorSubdomain::run(void)
 
 	  case ShadowActorSubdomain_addSP_ConstraintAXIS:
 
-	    axisDirn = msgData(2);
-	    theI = new ID(msgData(3));
+	    axisDirn = msgData(1);
+	    theI = new ID(msgData(2));
 	    theV = new Vector(2);
+	    SP_Constraint_SetNextTag(msgData(3));
 
-		endTag = 0;
+	    endTag = 0;
 		
 	    this->recvID(*theI);
 	    this->recvVector(*theV);
 
 	    msgData(0) = 0;				 
-	    endTag = this->addSP_Constraint(axisDirn, (*theV)(0), *theI, (*theV)(1));
-	
-		numSP = endTag;// - startTag;
+	    numSP = this->addSP_Constraint(axisDirn, (*theV)(0), *theI, (*theV)(1));
+	    endTag = SP_Constraint_GetNextTag();
 
-	    msgData(1) = endTag;
-		this->domainChange();
+	    msgData(1) = numSP;
+	    msgData(2) = endTag;
+
+	    this->domainChange();
 	    this->sendID(msgData);
 		
 	    delete theV;
@@ -965,8 +971,10 @@ opserr << "ActorSubdomain::addSP_AXIS :: DONE\n";
 		bool result = this->addParameter(theParameter);
 		if (result == true)
 		    msgData(0) = 0;
-		else
-		    msgData(0) = -1;
+		else {
+		  opserr << "Actor::addParameter - FAILED\n";
+		  msgData(0) = -1;
+		}
 	    } else
 		msgData(0) = -1;
 
