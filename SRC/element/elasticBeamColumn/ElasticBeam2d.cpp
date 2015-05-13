@@ -623,9 +623,6 @@ ElasticBeam2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBrok
       return res;
     }
     
-    // Revert the crdtrasf to its last committed state
-    theCoordTransf->revertToLastCommit();
-    
     return res;
 }
 
