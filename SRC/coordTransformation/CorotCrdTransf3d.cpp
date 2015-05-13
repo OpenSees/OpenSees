@@ -265,21 +265,21 @@ CorotCrdTransf3d::initialize(Node *nodeIPointer, Node *nodeJPointer)
         const Vector &nodeIDisp = nodeIPtr->getDisp();
         const Vector &nodeJDisp = nodeJPtr->getDisp();
         for (int i=0; i<6; i++)
-            if (nodeIDisp(i) != 0.0) {
-                nodeIInitialDisp = new double [6];
-                for (int j=0; j<6; j++)
-                    nodeIInitialDisp[j] = nodeIDisp(j);
-                i = 6;
-            }
+	  if (nodeIDisp(i) != 0.0) {
+	    nodeIInitialDisp = new double [6];
+	    for (int j=0; j<6; j++)
+	      nodeIInitialDisp[j] = nodeIDisp(j);
+	    i = 6;
+	  }
             
-            for (int j=0; j<6; j++)
-                if (nodeJDisp(j) != 0.0) {
-                    nodeJInitialDisp = new double [6];
-                    for (int i=0; i<6; i++)
-                        nodeJInitialDisp[i] = nodeJDisp(i);
-                    j = 6;
-                }
-                initialDispChecked = true;
+	for (int j=0; j<6; j++)
+	  if (nodeJDisp(j) != 0.0) {
+	    nodeJInitialDisp = new double [6];
+	    for (int i=0; i<6; i++)
+	      nodeJInitialDisp[i] = nodeJDisp(i);
+	    j = 6;
+	  }
+	initialDispChecked = true;
     }
     
     static Vector XAxis(3);
@@ -288,7 +288,7 @@ CorotCrdTransf3d::initialize(Node *nodeIPointer, Node *nodeJPointer)
     
     // get 3by3 rotation matrix
     if ((error = this->getLocalAxes(XAxis, YAxis, ZAxis)))
-        return error;
+      return error;
     
     // compute initial pseudo-vectors for nodal triads
     //opserr << setiosflags(ios::scientific);
@@ -304,7 +304,8 @@ CorotCrdTransf3d::initialize(Node *nodeIPointer, Node *nodeJPointer)
     //opserr << "alphaIq: " << alphaIq;
     //opserr << "alphaJq: " << alphaJq;
     
-    
+    this->commitState();
+
     return 0;
 }
 
@@ -367,16 +368,16 @@ CorotCrdTransf3d::update(void)
     // update the nodal triads TI and RJ using quaternions
     static Vector dAlphaIq(4);
     static Vector dAlphaJq(4);
-    
+
     dAlphaIq = this->getQuaternionFromPseudoRotVector (dAlphaI);
     dAlphaJq = this->getQuaternionFromPseudoRotVector (dAlphaJ);
-    
+
     alphaIq = this->quaternionProduct (alphaIq, dAlphaIq);
     alphaJq = this->quaternionProduct (alphaJq, dAlphaJq);
-    
+
     RI = this->getRotationMatrixFromQuaternion (alphaIq);
     RJ = this->getRotationMatrixFromQuaternion (alphaJq);
-    
+
     // compute the mean nodal triad
     static Matrix dRgamma(3,3); 
     static Vector gammaq(4);
@@ -1060,7 +1061,6 @@ CorotCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
     static Vector pl(7);
     pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
     //opserr << "pl: " << pl;
-
     // Add effects of member loads
     // Assuming member loads in local system
     //pl(0) += p0(0);
@@ -1094,6 +1094,9 @@ CorotCrdTransf3d::getGlobalStiffMatrix(const Matrix &kb, const Vector &pb)
     // transform tangent stiffness matrix from the basic system to local coordinates
     static Matrix kl(7,7);
     kl.addMatrixTripleProduct(0.0, Tp, kb, 1.0);      // kl = Tp ^ kb * Tp;
+
+    //    opserr << "kb: " << kb;
+    //    opserr << "Tp: " << Tp;
     
     // transform resisting forces from the basic system to local coordinates
     static Vector pl(7);
@@ -1353,7 +1356,7 @@ CorotCrdTransf3d::getGlobalStiffMatrix(const Matrix &kb, const Vector &pb)
                         kg(i,j) += T(k,i) * factor * T(k,j);
             }
             
-            //opserr << "kg final: " << kg;
+	    //            opserr << "COROATIONAL 3d: kg final: " << kg;
             
             return kg;
 }
@@ -1921,119 +1924,123 @@ CorotCrdTransf3d::getCopy3d(void)
 int 
 CorotCrdTransf3d::sendSelf(int cTag, Channel &theChannel)
 {
-    static Vector data(46);
-    for (int i=0; i<7; i++) 
-        data(i) = ulcommit(i);
-    for (int j=0; j<4; j++) {
-        data(7+j) = alphaIqcommit(j);
-        data(11+j) = alphaJqcommit(j);
-    }
-    
-    for (int k=0; k<3; k++) {
-        data(15+k) = xAxis(k);
-        data(18+k) = vAxis(k);
-        data(21+k) = nodeIOffset(k);
-        data(24+k) = nodeJOffset(k);
-        data(27+k) = alphaI(k);
-        data(30+k) = alphaJ(k);
-    }
-    
-    if (nodeIInitialDisp != 0) {
-        data(34) = nodeIInitialDisp[0];
-        data(35) = nodeIInitialDisp[1];
-        data(36) = nodeIInitialDisp[2];
-        data(37) = nodeIInitialDisp[3];
-        data(38) = nodeIInitialDisp[4];
-        data(39) = nodeIInitialDisp[5];
-    } else {
-        data(34)  = 0.0;
-        data(35)  = 0.0;
-        data(36) = 0.0;
-        data(37) = 0.0;
-        data(38) = 0.0;
-        data(39) = 0.0;
-    }
-    
-    if (nodeJInitialDisp != 0) {
-        data(40) = nodeJInitialDisp[0];
-        data(41) = nodeJInitialDisp[1];
-        data(42) = nodeJInitialDisp[2];
-        data(43) = nodeJInitialDisp[3];
-        data(44) = nodeJInitialDisp[4];
-        data(45) = nodeJInitialDisp[5];
-    } else {
-        data(40) = 0.0;
-        data(41) = 0.0;
-        data(42) = 0.0;
-        data(43) = 0.0;
-        data(44) = 0.0;
-        data(45) = 0.0;
-    }
-    
-    
-    if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
-        opserr << " CorotCrdTransf3d::sendSelf() - data could not be sent\n" ;
-        return -1;
-    }
-    return 0;
+  static Vector data(48);
+  for (int i=0; i<7; i++) 
+    data(i) = ulcommit(i);
+  for (int j=0; j<4; j++) {
+    data(7+j) = alphaIqcommit(j);
+    data(11+j) = alphaJqcommit(j);
+  }
+  
+  for (int k=0; k<3; k++) {
+    data(15+k) = xAxis(k);
+    data(18+k) = vAxis(k);
+    data(21+k) = nodeIOffset(k);
+    data(24+k) = nodeJOffset(k);
+    data(27+k) = alphaI(k);
+    data(30+k) = alphaJ(k);
+  }
+  
+  if (nodeIInitialDisp != 0) {
+    data(34) = nodeIInitialDisp[0];
+    data(35) = nodeIInitialDisp[1];
+    data(36) = nodeIInitialDisp[2];
+    data(37) = nodeIInitialDisp[3];
+    data(38) = nodeIInitialDisp[4];
+    data(39) = nodeIInitialDisp[5];
+  } else {
+    data(34)  = 0.0;
+    data(35)  = 0.0;
+    data(36) = 0.0;
+    data(37) = 0.0;
+    data(38) = 0.0;
+    data(39) = 0.0;
+  }
+  
+  if (nodeJInitialDisp != 0) {
+    data(40) = nodeJInitialDisp[0];
+    data(41) = nodeJInitialDisp[1];
+    data(42) = nodeJInitialDisp[2];
+    data(43) = nodeJInitialDisp[3];
+    data(44) = nodeJInitialDisp[4];
+    data(45) = nodeJInitialDisp[5];
+  } else {
+    data(40) = 0.0;
+    data(41) = 0.0;
+    data(42) = 0.0;
+    data(43) = 0.0;
+    data(44) = 0.0;
+    data(45) = 0.0;
+  }
+  data(46) = L;
+  data(47) = Ln;
+  
+  if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
+    opserr << " CorotCrdTransf3d::sendSelf() - data could not be sent\n" ;
+    return -1;
+  }
+
+
+  return 0;
 }
 
 
 int 
 CorotCrdTransf3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    static Vector data(46);
-    if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
-        opserr << " CorotCrdTransf3d::recvSelf() - data could not be received\n" ;
-        return -1;
+  static Vector data(48);
+  if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
+    opserr << " CorotCrdTransf3d::recvSelf() - data could not be received\n" ;
+    return -1;
     }
-    int i,j;
-    for (i=0; i<7; i++) 
-        ulcommit(i) = data(i);
-    for (j=0; j<4; j++) {
-        alphaIqcommit(j) = data(7+j);
-        alphaJqcommit(j) = data(11+j);
-    }
-    
-    for (int k=0; k<3; k++) {
-        xAxis(k) = data(15+k);
-        vAxis(k) = data(18+k); 
-        nodeIOffset(k) = data(21+k);
-        nodeJOffset(k) = data(24+k);
-        alphaI(k) = data(27+k);
-        alphaJ(k) = data(30+k);
-    }
-    
-    int flag;
-    flag = 0;
-    for (i=34; i<=39; i++)
-        if (data(i) != 0.0)
-            flag = 1;
-        if (flag == 1) {
-            if (nodeIInitialDisp == 0)
-                nodeIInitialDisp = new double[6];
-            for (i=34, j=0; i<=39; i++, j++)
-                nodeIInitialDisp[j] = data(i);
-        }
-        
-        flag = 0;
-        for (i=40; i<=45; i++)
-            if (data(i) != 0.0)
-                flag = 1;
-            if (flag == 1) {
-                if (nodeJInitialDisp == 0)
-                    nodeJInitialDisp = new double[6];
-                for (i=40, j=0; i<=45; i++, j++)
-                    nodeJInitialDisp[j] = data(i);
-            }
-            
-            ul = ulcommit;
-            alphaIq = alphaIqcommit;
-            alphaJq = alphaJqcommit;
-            
-            initialDispChecked = true;
-            return 0;
-            
+  int i,j;
+  for (i=0; i<7; i++) 
+    ulcommit(i) = data(i);
+  for (j=0; j<4; j++) {
+    alphaIqcommit(j) = data(7+j);
+    alphaJqcommit(j) = data(11+j);
+  }
+  
+  for (int k=0; k<3; k++) {
+    xAxis(k) = data(15+k);
+    vAxis(k) = data(18+k); 
+    nodeIOffset(k) = data(21+k);
+    nodeJOffset(k) = data(24+k);
+    alphaI(k) = data(27+k);
+    alphaJ(k) = data(30+k);
+  }
+  
+  int flag;
+  flag = 0;
+  for (i=34; i<=39; i++)
+    if (data(i) != 0.0)
+      flag = 1;
+  if (flag == 1) {
+    if (nodeIInitialDisp == 0)
+      nodeIInitialDisp = new double[6];
+    for (i=34, j=0; i<=39; i++, j++)
+      nodeIInitialDisp[j] = data(i);
+  }
+  
+  flag = 0;
+  for (i=40; i<=45; i++)
+    if (data(i) != 0.0)
+      flag = 1;
+  if (flag == 1) {
+    if (nodeJInitialDisp == 0)
+      nodeJInitialDisp = new double[6];
+    for (i=40, j=0; i<=45; i++, j++)
+      nodeJInitialDisp[j] = data(i);
+  }
+  L = data(46);
+  Ln = data(47);
+  
+  ul = ulcommit;
+  alphaIq = alphaIqcommit;
+  alphaJq = alphaJqcommit;
+  
+  initialDispChecked = true;
+  return 0;  
 }
 
 

@@ -1002,7 +1002,7 @@ PDeltaCrdTransf3d::getGlobalStiffMatrix(const Matrix &KB, const Vector &pb)
                 kg(11,m) += RWJ[0][2]*tmp[6][m]  + RWJ[1][2]*tmp[7][m] + RWJ[2][2]*tmp[8][m];
             }
         }
-        
+
         return kg;
 }
 
