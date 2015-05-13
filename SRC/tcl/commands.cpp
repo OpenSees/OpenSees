@@ -778,8 +778,7 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
   Tcl_CmdInfo putsCommandInfo;
   int res = Tcl_GetCommandInfo(interp, "puts", &putsCommandInfo);
   Tcl_putsCommand = putsCommandInfo.objProc;
-  
-  // if handle, use ouur procedure as opposed to theirs
+// if handle, use ouur procedure as opposed to theirs
   if (Tcl_putsCommand != 0) {
     Tcl_CreateObjCommand(interp, "oldputs", Tcl_putsCommand, NULL, NULL);
     Tcl_CreateObjCommand(interp, "puts", OpenSees_putsCommand, NULL, NULL);
@@ -3077,17 +3076,22 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     int icntl14 = 20;    
     int icntl7 = 7;
 
-    if (argc > 3) {
-      if (strcmp(argv[2],"-ICNTL14") == 0) {
-	if (Tcl_GetInt(interp, argv[3], &icntl14) != TCL_OK)	
-	  ;
-      }
-      if (strcmp(argv[2],"-ICNTL7") == 0) {
-	if (Tcl_GetInt(interp, argv[3], &icntl7) != TCL_OK)	
-	  ;
-      }
-    }    
-    
+    int currentArg = 2;
+    while (currentArg < argc) {
+      if (argc > 2) {
+	if (strcmp(argv[currentArg],"-ICNTL14") == 0) {
+	  if (Tcl_GetInt(interp, argv[currentArg+1], &icntl14) != TCL_OK)	
+	    ;
+	  currentArg += 2;
+	} else  if (strcmp(argv[currentArg],"-ICNTL7") == 0) {
+	  if (Tcl_GetInt(interp, argv[currentArg+1], &icntl7) != TCL_OK)	
+	    ;
+	  currentArg += 2;
+	} else 
+	  currentArg++;
+      }    
+    }
+
 #ifdef _PARALLEL_PROCESSING
     MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl7, icntl14);
     theSOE = new MumpsParallelSOE(*theSolver);
