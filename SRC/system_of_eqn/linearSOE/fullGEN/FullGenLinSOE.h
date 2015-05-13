@@ -57,7 +57,7 @@ class FullGenLinSOE : public LinearSOE
     int addA(const Matrix &, const ID &, double fact = 1.0);
     int addB(const Vector &, const ID &, double fact = 1.0);    
     int setB(const Vector &, double fact = 1.0);        
-    int addColA(const Vector &col, int col, double fact = 1.0);
+    int addColA(const Vector &col, int colIndex, double fact = 1.0);
     
     void zeroA(void);
     void zeroB(void);
