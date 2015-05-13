@@ -53,6 +53,7 @@ class ModifiedNewton: public EquiSolnAlgo
     ~ModifiedNewton();
 
     int solveCurrentStep(void);    
+    int getNumIterations(void);
 
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, 
@@ -64,6 +65,7 @@ class ModifiedNewton: public EquiSolnAlgo
     
   private:
     int tangent;
+    int numIterations;
 };
 
 #endif

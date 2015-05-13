@@ -113,7 +113,7 @@ ModifiedNewton::solveCurrentStep(void)
 
     // repeat until convergence is obtained or reach max num iterations
     int result = -1;
-    int count = 0;
+    numIterations = 0;
     do {
       //Timer timer2;
       //timer2.start();
@@ -137,7 +137,7 @@ ModifiedNewton::solveCurrentStep(void)
 	    return -2;
 	}	
 
-	this->record(count++);
+	this->record(numIterations++);
 	result = theTest->test();
 
     } while (result == -1);
@@ -179,4 +179,10 @@ ModifiedNewton::Print(OPS_Stream &s, int flag)
     if (flag == 0) {
 	s << "ModifiedNewton";
     }
+}
+
+int
+ModifiedNewton::getNumIterations(void)
+{
+  return numIterations;
 }

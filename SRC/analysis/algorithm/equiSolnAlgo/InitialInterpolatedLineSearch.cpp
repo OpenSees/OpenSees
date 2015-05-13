@@ -163,7 +163,9 @@ InitialInterpolatedLineSearch::search(double s0,
 
   // set X in the SOE for the revised dU, needed for convergence tests
   *x = dU;
-  *x *= eta;
+
+  if (eta != 0.0)
+    *x *= eta;
 
   theSOE.setX(*x);
 

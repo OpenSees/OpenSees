@@ -75,6 +75,7 @@ NewtonRaphson::~NewtonRaphson()
 int 
 NewtonRaphson::solveCurrentStep(void)
 {
+  
     // set up some pointers and check they are valid
     // NOTE this could be taken away if we set Ptrs as protecetd in superclass
     AnalysisModel   *theAnaModel = this->getAnalysisModelPtr();
@@ -103,10 +104,11 @@ NewtonRaphson::solveCurrentStep(void)
     }
 
     int result = -1;
-    int count = 0;
+    numIterations = 0;
+
     do {
       if (tangent == INITIAL_THEN_CURRENT_TANGENT) {
-	if (count == 0) {
+	if (numIterations == 0) {
 	  if (theIntegrator->formTangent(INITIAL_TANGENT) < 0){
 	    opserr << "WARNING NewtonRaphson::solveCurrentStep() -";
 	    opserr << "the Integrator failed in formTangent()\n";
@@ -146,7 +148,8 @@ NewtonRaphson::solveCurrentStep(void)
       }	
 
       result = theTest->test();
-      this->record(count++);
+      numIterations++;
+      this->record(numIterations);
 
     } while (result == -1);
 
@@ -191,10 +194,8 @@ NewtonRaphson::Print(OPS_Stream &s, int flag)
 }
 
 
-
-
-
-
-
-
-
+int
+NewtonRaphson::getNumIterations(void)
+{
+  return numIterations;
+}
