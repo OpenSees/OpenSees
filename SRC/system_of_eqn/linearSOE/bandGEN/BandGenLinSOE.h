@@ -57,6 +57,7 @@ class BandGenLinSOE : public LinearSOE
     virtual int setSize(Graph &theGraph);
     
     virtual int addA(const Matrix &, const ID &, double fact = 1.0);
+    virtual int addColA(const Vector &col, int col, double fact = 1.0);
     virtual int addB(const Vector &, const ID &, double fact = 1.0);    
     virtual int setB(const Vector &, double fact = 1.0);        
 

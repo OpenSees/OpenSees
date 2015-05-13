@@ -319,6 +319,69 @@ BandGenLinSOE::addA(const Matrix &m, const ID &id, double fact)
     return 0;
 }
 
+
+
+int 
+BandGenLinSOE::addColA(const Vector &colData, int col, double fact)
+{
+  if (fact == 0.0)  return 0;
+  
+  if (colData.Size() != size) {
+    opserr << "BandGenLinSOE::addColA() - colData size not equal to n\n";
+    return -1;
+  }
+
+  if (col > size && col < 0) {
+    opserr << "BandGenLinSOE::addColA() - col " << col << "outside range 0 to " << size << endln;
+    return -1;
+  }
+    
+  int ldA = 2*numSubD + numSuperD + 1;
+  
+  if (fact == 1.0) { // do not need to multiply 
+
+    double *coliiPtr = A + col*ldA + numSubD + numSuperD;
+    for (int row=0; row<size; row++) {
+      if (row <size && row >= 0) {		    
+	int diff = col - row;
+	if (diff > 0) {
+	  if (diff <= numSuperD) {
+	    double *APtr = coliiPtr - diff;
+	    *APtr += colData(row);
+	  }			
+	} else {
+	  diff *= -1;
+	  if (diff <= numSubD) {
+	    double *APtr = coliiPtr + diff;
+	    *APtr += colData(row);
+	  }
+	}
+      }
+    }  // for j
+  } else {
+
+    double *coliiPtr = A + col*ldA + numSubD + numSuperD;
+    for (int row=0; row<size; row++) {
+      if (row <size && row >= 0) {		    
+	int diff = col - row;
+	if (diff > 0) {
+	  if (diff <= numSuperD) {
+	    double *APtr = coliiPtr - diff;
+	    *APtr += colData(row);
+	  }			
+	} else {
+	  diff *= -1;
+	  if (diff <= numSubD) {
+	    double *APtr = coliiPtr + diff;
+	    *APtr += colData(row) * fact;
+	  }
+	}
+      }
+    }  
+  }
+  return 0;
+}
+
     
 int 
 BandGenLinSOE::addB(const Vector &v, const ID &id, double fact)

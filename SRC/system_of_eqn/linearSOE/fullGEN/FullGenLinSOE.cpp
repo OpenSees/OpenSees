@@ -262,6 +262,46 @@ FullGenLinSOE::addA(const Matrix &m, const ID &id, double fact)
 
 
 
+int 
+FullGenLinSOE::addColA(const Vector &colData, int col, double fact)
+{
+  
+  if (fact == 0.0)  return 0;
+  
+  if (colData.Size() != size) {
+    opserr << "FullGenLinSOE::addColA() - colData size not equal to n\n";
+    return -1;
+  }
+  
+  if (col > size && col < 0) {
+    opserr << "FullGenLinSOE::addColA() - col " << col << "outside range 0 to " << size << endln;
+    return -1;
+  }
+  
+  
+  if (fact == 1.0) { // do not need to multiply 
+
+    double *coliPtr = A + col*size;
+    for (int row=0; row<size; row++) {
+      *coliPtr += colData(row);
+      coliPtr++;
+    }
+
+  } else {
+
+    double *coliPtr = A + col*size;
+    for (int row=0; row<size; row++) {
+      *coliPtr += colData(row) * fact;
+      coliPtr++;
+    }
+
+  }
+
+  return 0;
+}
+
+
+
 
 int 
 FullGenLinSOE::addB(const Vector &v, const ID &id, double fact)

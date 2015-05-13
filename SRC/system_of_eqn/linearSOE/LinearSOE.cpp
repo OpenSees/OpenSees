@@ -94,4 +94,12 @@ LinearSOE::setLinks(AnalysisModel &theModel)
 }
 
 
+int
+LinearSOE::addA(const Matrix &) {
+  return -1;
+}
 
+int
+LinearSOE::addColA(const Vector &col, int row, double fact) {
+  return -1;
+}

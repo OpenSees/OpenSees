@@ -55,6 +55,10 @@
 #include <string.h>
 #include <Channel.h>
 
+#include <fstream>
+#include <iostream>
+using namespace std;
+
 static double *workArea = 0;
 static int sizeWork = 0;
 
@@ -244,10 +248,10 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
     
       theVector.setData(&workd[ipntr[1] - 1], size);
      
-	   if (processID > 0)
-	     theSOE->zeroB();
+      if (processID > 0)
+	theSOE->zeroB();
       else
-	      theSOE->setB(theVector);
+	theSOE->setB(theVector);
 
       ierr = theSOE->solve();
       const Vector &X = theSOE->getX();
@@ -429,7 +433,33 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
   }
   
   numMode = numModes;
-  
+
+  /*
+  ofstream outfile;
+  outfile.open("eigenvectors.dat", ios::out);
+  for (int i=0; i<n; i++) {
+    for (int j=0; j<numMode; j++) {
+      //  int index = (mode - 1) * size;
+      //  theVector.setData(&eigenvectors[index], size);
+      outfile << eigenvectors[j*n + i] << " ";
+    }
+    outfile << "\n";
+  }
+  outfile.close();
+
+  bool mDiagonal = theArpackSOE->mDiagonal;
+  if (mDiagonal == true) {
+    outfile.open("mass.dat", ios::out);
+    int Msize = theArpackSOE->Msize;
+    double *M = theArpackSOE->M;
+    if (n <= Msize) {
+      for (int i=0; i<n; i++)
+	outfile << M[i] << " ";
+    }
+    outfile.close();
+  }
+  */
+
   // clean up the memory
   return 0;
 }
@@ -556,6 +586,9 @@ ArpackSolver::getEigenvector(int mode)
   int index = (mode - 1) * size;
   
   theVector.setData(&eigenvectors[index], size);
+
+
+  
 
   return theVector;;  
 }

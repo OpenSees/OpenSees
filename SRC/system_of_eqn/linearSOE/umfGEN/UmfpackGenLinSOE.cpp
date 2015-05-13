@@ -317,6 +317,60 @@ UmfpackGenLinSOE::addA(const Matrix &m, const ID &id, double fact)
     return 0;
 }
 
+
+
+int 
+UmfpackGenLinSOE::addColA(const Vector &colData, int col, double fact)
+{
+  if (factored == true)
+    return 0;
+
+  // check for a quick return 
+  if (fact == 0.0)  
+    return 0;
+
+
+  if (colData.Size() != size) {
+    opserr << "UmfpackGenLinSOE::addColA() - colData size not equal to n\n";
+    return -1;
+  }
+
+  if (col > size && col < 0) {
+    opserr << "UmfpackGenLinSOE::addColA() - col " << col << "outside range 0 to " << size << endln;
+    return -1;
+  }
+   
+    
+  if (fact == 1.0) { // do not need to multiply 
+
+    for (int row=0; row<size; row++) {
+      int startRowLoc = rowStartA[row];
+      int endRowLoc = rowStartA[row+1];
+      // find place in A using colA
+      for (int k=startRowLoc; k<endRowLoc; k++)
+	if (colA[k] == col) {
+	  A[k] += colData(row);
+	  k = endRowLoc;
+	}
+    }
+
+  } else {
+
+    for (int row=0; row<size; row++) {
+      int startRowLoc = rowStartA[row];
+      int endRowLoc = rowStartA[row+1];
+      // find place in A using colA
+      for (int k=startRowLoc; k<endRowLoc; k++)
+	if (colA[k] == col) {
+	  A[k] += colData(row) * fact;
+	  k = endRowLoc;
+	}
+    }
+  }
+
+  return 0;
+}
+
     
 int 
 UmfpackGenLinSOE::addB(const Vector &v, const ID &id, double fact)

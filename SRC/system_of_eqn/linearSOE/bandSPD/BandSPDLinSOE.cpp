@@ -293,6 +293,51 @@ BandSPDLinSOE::addA(const Matrix &m, const ID &id, double fact)
     return 0;
 }
 
+
+int 
+BandSPDLinSOE::addColA(const Vector &colData, int col, double fact)
+{
+  // check for a quick return 
+  if (fact == 0.0)  return 0;
+  
+  if (colData.Size() != size) {
+    opserr << "BanSPDLinSOE::addColA() - colData size not equal to n\n";
+    return -1;
+  }
+
+  if (col > size && col < 0) {
+    opserr << "BandSPDLinSOE::addColA() - col " << col << "outside range 0 to " << size << endln;
+    return -1;
+  }
+  
+  if (fact == 1.0) { // do not need to multiply 
+    
+    double *coliiPtr = A +(col+1)*half_band -1;
+    int minColRow = col - half_band + 1;
+    for (int row=0; row<size; row++) {
+      if (row <size && row >= 0 && 
+	  row <= col && row >= minColRow) { // only add upper
+	double *APtr = coliiPtr + (row-col);
+	*APtr += colData(row);
+      }
+    }  
+
+  } else {
+
+    double *coliiPtr = A +(col+1)*half_band -1;
+    int minColRow = col - half_band + 1;
+    for (int row=0; row<size; row++) {
+      if (row <size && row >= 0 && 
+	  row <= col && row >= minColRow) { // only add upper
+	double *APtr = coliiPtr + (row-col);
+	*APtr += colData(row) * fact;
+      }
+    }  
+  }
+
+  return 0;
+}
+
     
 int 
 BandSPDLinSOE::addB(const Vector &v, const ID &id, double fact)
