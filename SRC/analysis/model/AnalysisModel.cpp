@@ -590,6 +590,7 @@ AnalysisModel::updateDomain(void)
 int
 AnalysisModel::updateDomain(double newTime, double dT)
 {
+
     // check to see there is a Domain linked to the Model
 
     if (myDomain == 0) {

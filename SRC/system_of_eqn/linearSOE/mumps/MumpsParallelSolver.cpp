@@ -59,11 +59,9 @@ MumpsParallelSolver::MumpsParallelSolver(int mpi_comm, int ICNTL7, int ICNTL14)
 
 MumpsParallelSolver::~MumpsParallelSolver()
 {
-
   id.job=-2; 
   if (init == true)
-	dmumps_c(&id); /* Terminate instance */
-
+    dmumps_c(&id); /* Terminate instance */
 }
 
 int
@@ -82,6 +80,7 @@ MumpsParallelSolver::solve(void)
 
   // No outputs 
   id.ICNTL(1)=-1; id.ICNTL(2)=-1; id.ICNTL(3)=-1; id.ICNTL(4)=0;
+
 
   id.ICNTL(14)=icntl14; 
   id.ICNTL(7)=icntl7; 
@@ -164,7 +163,9 @@ MumpsParallelSolver::setSize()
 {
   if (init == false) {
     id.job=-1; 
-    id.par=1; 
+
+    id.par=1; // host involved in calcs
+
     id.sym=theMumpsSOE->matType; 
 
 #ifdef _OPENMPI    
@@ -173,6 +174,7 @@ MumpsParallelSolver::setSize()
 #else
     id.comm_fortran=MPI_COMM_WORLD;
 #endif
+
     id.ICNTL(5)=0; id.ICNTL(18)=3; 
 
     dmumps_c(&id);
@@ -187,7 +189,8 @@ MumpsParallelSolver::setSize()
   id.ICNTL(5)=0; id.ICNTL(18)=3; 
 
   // No outputs 
-  id.ICNTL(1)=-1; id.ICNTL(2)=-1; id.ICNTL(3)=-1; id.ICNTL(4)=0; 
+  //  id.ICNTL(1)=-1; id.ICNTL(2)=-1; id.ICNTL(3)=-1; id.ICNTL(4)=0; 
+  id.ICNTL(1)=-1; id.ICNTL(2)=-1; id.ICNTL(3)=-1; id.ICNTL(4)=3; 
 
   id.ICNTL(14)=icntl14; 
   id.ICNTL(7)=icntl7; 

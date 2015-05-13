@@ -158,6 +158,12 @@ MumpsParallelSOE::setSize(Graph &theGraph)
     rowA = new int[nnz];
     colA = new int[nnz];
       
+    for (int i=0; i<nnz; i++) {
+      A[i]=0;
+      rowA[i]=0;
+      colA[i]=0;
+    }
+
     if (rowA == 0 || A == 0 || colA == 0) {
       opserr << "WARNING SparseGenColLinSOE::SparseGenColLinSOE :";
       opserr << " ran out of memory for A and rowA with nnz = ";
@@ -293,6 +299,7 @@ MumpsParallelSOE::setSize(Graph &theGraph)
   }
 
   LinearSOESolver *theSolvr = this->getSolver();
+
   int solverOK = theSolvr->setSize();
   if (solverOK < 0) {
     opserr << "WARNING:MumpsParallelSOE::setSize :";
