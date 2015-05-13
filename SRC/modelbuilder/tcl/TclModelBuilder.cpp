@@ -2432,15 +2432,13 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
 
 	// add it to the domain
 	if (theTclDomain->addSP_Constraint(theSP) == false) {
-	  opserr << "WARNING could not add SP_Constraint to domain - fix";
-	  opserr << nodeId << " " << ndf << " [0,1] conditions\n";
+	  opserr << "WARNING could not add SP_Constraint to domain using fix command - node may already be constrained\n";
+	  sprintf(buffer, "%d ", 0);
 	  delete theSP;
-	  return TCL_ERROR;
+	} else {
+	  sprintf(buffer, "%d ", theSP->getTag());
+	  Tcl_AppendResult(interp, buffer, NULL);
 	}
-
-
-	sprintf(buffer, "%d ", theSP->getTag());
-        Tcl_AppendResult(interp, buffer, NULL);
       }
     }
   }
