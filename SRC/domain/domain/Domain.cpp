@@ -91,7 +91,9 @@ Domain::Domain()
  eleGraphBuiltFlag(false),  nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
  theRegions(0), numRegions(0), commitTag(0),
- theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0),
+ theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalDampingFactors(0), inclModalMatrix(false),
+ lastChannel(0),
  paramIndex(0), paramSize(0), numParameters(0)
 {
   
@@ -144,8 +146,9 @@ Domain::Domain(int numNodes, int numElements, int numSPs, int numMPs,
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0),
  theRegions(0), numRegions(0), commitTag(0),
- theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0),
- paramIndex(0), paramSize(0), numParameters(0)
+ theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalDampingFactors(0), inclModalMatrix(false),
+ lastChannel(0), paramIndex(0), paramSize(0), numParameters(0)
 {
     // init the arrays for storing the domain components
     theElements = new MapOfTaggedObjects();
@@ -203,8 +206,9 @@ Domain::Domain(TaggedObjectStorage &theNodesStorage,
  theMPs(&theMPsStorage), 
  theLoadPatterns(&theLoadPatternsStorage),
  theRegions(0), numRegions(0), commitTag(0),
- theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0),
- paramIndex(0), paramSize(0), numParameters(0)
+ theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalDampingFactors(0), inclModalMatrix(false),
+ lastChannel(0),paramIndex(0), paramSize(0), numParameters(0)
 {
     // init the arrays for storing the domain components
     thePCs      = new MapOfTaggedObjects();
@@ -260,8 +264,9 @@ Domain::Domain(TaggedObjectStorage &theStorage)
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
  theRegions(0), numRegions(0), commitTag(0),
- theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0),
- paramIndex(0), paramSize(0), numParameters(0)
+ theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalDampingFactors(0), inclModalMatrix(false),
+ lastChannel(0),paramIndex(0), paramSize(0), numParameters(0)
 {
     // init the arrays for storing the domain components
     theStorage.clearAll(); // clear the storage just in case populated
@@ -365,6 +370,9 @@ Domain::~Domain()
 
   if (theEigenvalues != 0)
     delete theEigenvalues;
+
+  if (theModalDampingFactors != 0)
+    delete theModalDampingFactors;
   
   int i;
   for (i=0; i<numRecorders; i++) 
@@ -2082,6 +2090,44 @@ double
 Domain::getTimeEigenvaluesSet(void) 
 {
   return theEigenvalueSetTime;
+}
+
+int
+Domain::setModalDampingFactors(Vector *theValues, bool inclMatrix)
+{
+  // if theValues == 0, turn off modal damping
+  if (theValues == 0) {
+    if (theModalDampingFactors != 0)
+      delete theModalDampingFactors;
+    theModalDampingFactors = 0;
+    inclModalMatrix = inclMatrix;
+    return 0;
+  }
+
+  // make sure the eigen value vector is large enough
+  if (theModalDampingFactors == 0 || theModalDampingFactors->Size() != theValues->Size()) {
+    if (theModalDampingFactors != 0)
+      delete theModalDampingFactors;
+    theModalDampingFactors = new Vector(*theValues);
+  } else {
+    *theModalDampingFactors = *theValues;
+  }
+
+  inclModalMatrix = inclMatrix;
+
+  return 0;
+}
+
+const Vector *
+Domain::getModalDampingFactors(void)
+{
+  return theModalDampingFactors;
+}
+
+bool
+Domain::inclModalDampingMatrix(void)
+{
+  return inclModalMatrix;
 }
 
 void
