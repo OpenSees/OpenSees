@@ -753,6 +753,20 @@ DOF_Group::setEigenvector(int mode, const Vector &theVector)
 }
 
 
+
+const Matrix &
+DOF_Group::getEigenvectors(void)
+{
+  if (myNode == 0) {
+    opserr << "DOF_Group::setNodeAccel: 0 Node Pointer\n";
+    exit(-1);
+  }
+
+  return myNode->getEigenvectors();
+}
+
+
+
 Matrix *
 DOF_Group::getT(void)
 {

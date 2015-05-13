@@ -196,6 +196,9 @@ int Newmark::newStep(double deltaT)
 
     converged = true;
 
+
+
+
     (*Ut) = *U;        
     (*Utdot) = *Udot;  
     (*Utdotdot) = *Udotdot;
@@ -233,20 +236,26 @@ int Newmark::newStep(double deltaT)
         opserr << "Newmark::newStep() - failed to update the domain\n";
         return -4;
     }
-    
+
     return 0;
 }
 
 
+const Vector &
+Newmark::getVel(void)
+{
+  return *Udot;
+}
+
 int Newmark::revertToLastStep()
 {
-    // set response at t+deltaT to be that at t .. for next newStep
+  // set response at t+deltaT to be that at t .. for next newStep
   converged = false;
-    if (U != 0)  {
-        (*U) = *Ut;        
-        (*Udot) = *Utdot;  
-        (*Udotdot) = *Utdotdot;  
-    }
+  if (U != 0)  {
+    (*U) = *Ut;        
+    (*Udot) = *Utdot;  
+    (*Udotdot) = *Utdotdot;  
+  }
 
     return 0;
 }
@@ -869,3 +878,7 @@ Newmark::commitSensitivity(int gradNum, int numGrads)
 
 // AddingSensitivity:END ////////////////////////////////
 
+double
+Newmark::getCFactor(void) {
+  return c2;
+}

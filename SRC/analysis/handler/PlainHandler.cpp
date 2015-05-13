@@ -154,35 +154,35 @@ PlainHandler::handle(const ID *nodesLast)
 			opserr << " for node " << nodeID << endln;
 			opserr << " non-varyng assumed\n";
 		} else {
-			int ok = 0;
-			for (int i=0; i<numRows; i++) {
-				if (C(i,i) != 1.0) ok = 1;
-				for (int j=0; j<numRows; j++)
-					if (i != j)
-						if (C(i,j) != 0.0)
-							ok = 1;
-			}
-			if (ok != 0) {
-				opserr << "WARNING PlainHandler::handle() - ";
-				opserr << " constraint matrix not identity, ignoring constraint";
-				opserr << " for node " << nodeID << endln;
-				opserr << " non-varyng assumed\n";
-			} else {
-				const ID &dofs = mpPtr->getConstrainedDOFs();
-				const ID &id = dofPtr->getID();				
-				for (int i=0; i<dofs.Size(); i++) {
-					int dof = dofs(i);	
-					if (id(dof) == -2) {
-						dofPtr->setID(dof,-4);
-						countDOF--;	
-					} else {
-		    				opserr << "WARNING PlainHandler::handle() - ";
-		    				opserr << " constraint at dof " << dof << " already specified for constrained node";
-		    				opserr << " in MP_Constraint at node " << nodeID << endln;
-					}
-					
-				}
-			}
+		  int ok = 0;
+		  for (int i=0; i<numRows; i++) {
+		    if (C(i,i) != 1.0) ok = 1;
+		    for (int j=0; j<numRows; j++)
+		      if (i != j)
+			if (C(i,j) != 0.0)
+			  ok = 1;
+		  }
+		  if (ok != 0) {
+		    opserr << "WARNING PlainHandler::handle() - ";
+		    opserr << " constraint matrix not identity, ignoring constraint";
+		    opserr << " for node " << nodeID << endln;
+		    opserr << " non-varyng assumed\n";
+		  } else {
+		    const ID &dofs = mpPtr->getConstrainedDOFs();
+		    const ID &id = dofPtr->getID();				
+		    for (int i=0; i<dofs.Size(); i++) {
+		      int dof = dofs(i);	
+		      if (id(dof) == -2) {
+			dofPtr->setID(dof,-4);
+			countDOF--;	
+		      } else {
+			opserr << "WARNING PlainHandler::handle() - ";
+			opserr << " constraint at dof " << dof << " already specified for constrained node";
+			opserr << " in MP_Constraint at node " << nodeID << endln;
+		      }
+		      
+		    }
+		  }
 		}
 	}
 

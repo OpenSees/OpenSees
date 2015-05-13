@@ -83,8 +83,14 @@ class IncrementalIntegrator : public Integrator
     virtual int revertToLastStep(void);
     virtual int initialize(void);
 
-    int setModalDampingFactors(const Vector &);
-    int addModalDampingForce(void);
+    //    int setModalDampingFactors(const Vector &);
+    int setupModal(const Vector *modalDampingValues);
+    int addModalDampingForce(const Vector *modalDampingValues);
+    int addModalDampingMatrix(const Vector *modalDampingValues);
+    virtual double getCFactor(void);
+    
+    virtual const Vector &getVel(void);
+    int doMv(const Vector &v, Vector &res);
 
 // AddingSensitivity:BEGIN //////////////////////////////////
     virtual int revertToStart();
@@ -102,13 +108,22 @@ class IncrementalIntegrator : public Integrator
     virtual int  formElementResidual(void);            
     int statusFlag;
 
-    Vector *modalDampingValues;
+    //    Vector *modalDampingValues;
     EigenSOE *theEigenSOE;
+    double *eigenVectors;
+    Vector *eigenValues;
+    Vector *dampingForces;
+    bool isDiagonal;
+    double *diagMass;
+    Vector *mV;
+    Vector *tmpV1;
+    Vector *tmpV2;
     
   private:
     LinearSOE *theSOE;
     AnalysisModel *theAnalysisModel;
     ConvergenceTest *theTest;
+
 };
 
 #endif
