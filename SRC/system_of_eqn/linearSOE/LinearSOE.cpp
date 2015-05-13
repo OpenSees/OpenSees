@@ -100,6 +100,6 @@ LinearSOE::addA(const Matrix &) {
 }
 
 int
-LinearSOE::addColA(const Vector &col, int row, double fact) {
+LinearSOE::addColA(const Vector &col, int colIndex, double fact) {
   return -1;
 }

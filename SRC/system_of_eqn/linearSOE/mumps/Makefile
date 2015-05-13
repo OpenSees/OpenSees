@@ -8,8 +8,8 @@ OBJS =
 
 ifdef MUMPS
 
-OBJS       = MumpsSOE.o \
-	MumpsSolver.o
+OBJS       =
+
 
 ifeq ($(PROGRAMMING_MODE), PARALLEL)
 
