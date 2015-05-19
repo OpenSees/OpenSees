@@ -40,6 +40,43 @@ Matrix ** AV3D4QuadWithSensitivity::HH =0;
 ////Added by Qiu
 
 Matrix AV3D4QuadWithSensitivity::CSensitivity(numDOF,numDOF);
+#include <elementAPI.h>
+
+void *
+OPS_AV3D4QuadWithSensitivity(void){
+
+  int eleID, numNodes, matTag;
+  int nodes[8];
+  int i;
+
+  static int idData[6];
+
+  //if the number of arguments is less than the minimum, throw an error
+  int argc = OPS_GetNumRemainingInputArgs();
+  if (argc != 6) {
+    opserr << "element AV3D4Quad incorrect num args .. 6 expected\n";
+    return 0;
+  }
+
+  if (OPS_GetIntInput(&argc, idData) != 0) {
+    opserr << "element AV3D4Quad error reading integers\n";
+    return 0;
+  }  
+
+
+  matTag = idData[5];
+  NDMaterial *theMaterial = OPS_GetNDMaterial(matTag);
+
+  if (theMaterial == 0) {
+    opserr << "command: element AC3D8Hex " << idData[0] << 
+      " - no NDMaterial with tag " << matTag << " exists\n";
+    return 0;      
+  }
+
+  Element *theEle = new AV3D4QuadWithSensitivity(idData[0],idData[1],idData[2],idData[3],idData[4], theMaterial);
+  return theEle;
+}
+
 
 
 // 
@@ -49,7 +86,7 @@ Matrix AV3D4QuadWithSensitivity::CSensitivity(numDOF,numDOF);
 //
 
 AV3D4QuadWithSensitivity::AV3D4QuadWithSensitivity(int element_number,
-  int node_numb_1, int node_numb_2, int node_numb_3, int node_numb_4)
+						   int node_numb_1, int node_numb_2, int node_numb_3, int node_numb_4)
 :Element(element_number, ELE_TAG_AV3D4QuadWithSensitivity),
 connectedExternalNodes(nodes_in_elem), Ki(0), hasConstrained(0)
 {
@@ -74,8 +111,8 @@ connectedExternalNodes(nodes_in_elem), Ki(0), hasConstrained(0)
 
 
 AV3D4QuadWithSensitivity::AV3D4QuadWithSensitivity(int element_number,
-  int node_numb_1, int node_numb_2, int node_numb_3, int node_numb_4, 
-  NDMaterial * Globalmmodel)
+						   int node_numb_1, int node_numb_2, int node_numb_3, int node_numb_4, 
+						   NDMaterial * Globalmmodel)
 :Element(element_number, ELE_TAG_AV3D4QuadWithSensitivity),
 connectedExternalNodes(nodes_in_elem), Ki(0), hasConstrained(0)
 {
