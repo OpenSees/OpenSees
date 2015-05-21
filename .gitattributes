@@ -3130,6 +3130,8 @@ SRC/material/uniaxial/BackboneMaterial.cpp -text
 SRC/material/uniaxial/BackboneMaterial.h -text
 SRC/material/uniaxial/BarSlipMaterial.cpp -text
 SRC/material/uniaxial/BarSlipMaterial.h -text
+SRC/material/uniaxial/BilinearOilDamper.cpp -text
+SRC/material/uniaxial/BilinearOilDamper.h -text
 SRC/material/uniaxial/Bond_SP01.cpp -text
 SRC/material/uniaxial/Bond_SP01.h -text
 SRC/material/uniaxial/BoucWenMaterial.cpp -text
