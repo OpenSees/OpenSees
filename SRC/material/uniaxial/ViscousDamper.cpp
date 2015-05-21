@@ -18,31 +18,37 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.7 $
-// $Date: 2009/03/05 00:52:38 $
+// $Revision: C $
+// $Date: May 2015 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/ViscousDamper.cpp,v $
                                                                         
 // Written: Sarven Akcelyan and Dimitrios G. Lignos, PhD, McGill University
 // Created: January 2013
-// Updated: September 2014
-// Revision: B
+// Updated: May 2015
+// Revision: C
 //
 // Description: This file contains the class interface for 
-// Viscous Damper Model Relationship of the form F = K*u = C*pow(V,a)
-// Reference: Kasai K, Oohara K. (2001). “Algorithm and Computer Code To Simulate Response of Nonlinear Viscous Damper”. 
-// Proceedings Passively Controlled Structure Symposium 2001, Yokohama, Japan.
+// Viscous Damper Model Relationship of the form F = K*u_s = C*pow(V_d,alpha)
+// Reference: 
+// Akcelyan, S., and Lignos, D.G. (2015), “Adaptive Numerical Method Algorithms for Nonlinear Viscous and Bilinear Oil Damper Models Under Random Vibrations”, ASCE Journal of Engineering Mechanics, (under review)
+// Kasai K, Oohara K. (2001). “Algorithm and Computer Code To Simulate Response of Nonlinear Viscous Damper”. Proceedings Passively Controlled Structure Symposium 2001, Yokohama, Japan.
+
 // Variables:
-// K: axial stiffness of a damper
-// C: Velocity constant of a damper
-// Alpha: Exponent of velocity of a damper
+// $K: Elastic stiffness of linear spring (to model the axial flexibility of a viscous damper (brace and damper portion)
+// $C: Viscous damping coefficient of the damper
+// $Alpha: Viscous damper exponent
+// $LGap: gap length to simulate the gap length due to the pin tolerance
+// $NM:	Employed adaptive numerical algorithm (default value NM = 1; 1 = Dormand-Prince54, 2=6th order Adams-Bashforth-Moulton, 3=modified Rosenbrock Triple)
+// $RelTol:	Tolerance for absolute relative error control of the adaptive iterative algorithm (default value 10^-6)
+// $AbsTol:	Tolerance for absolute error control of adaptive iterative algorithm (default value 10^-6)
+// $MaxHalf: Maximum number of sub-step iterations within an integration step, h=dt*(0.5)^MaxHalf (default value 15)
+
 
 #include <math.h>
-
 #include <elementAPI.h>
 #include <ViscousDamper.h>
 #include <Vector.h>
 #include <Channel.h>
-
 #include <OPS_Globals.h>
 
 static int numViscousDamperMaterials = 0;
@@ -60,36 +66,47 @@ OPS_ViscousDamper(void)
   UniaxialMaterial *theMaterial = 0;
   
   int    iData[1];
-  double dData[6];
+  double dData[8];
   int numData = 1;
         // Check tag
   if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING invalid uniaxialMaterial  ViscousDamper tag" << endln;
     return 0;
   }
-  // Check if we have 6 input variables for K, C, Alpha, NM, Tol, MaxHalf
+  // Check if we have 3 or 4 or 8 input variables
   numData = OPS_GetNumRemainingInputArgs();
 
-  if (numData != 3 && numData != 6) {
-    opserr << "Invalid #args, want: uniaxialMaterial ViscousDamper " << iData[0] <<  "K? C? Alpha? <NM? Tol? MaxHalf?>" << endln;
+  if (numData != 3 && numData != 4 && numData != 8) {
+    opserr << "Invalid #args, want: uniaxialMaterial ViscousDamper " << iData[0] <<  " K? C? Alpha? <LGap?> <NM? RelTol? AbsTol? MaxHalf?>" << endln;
     return 0;
   }
-
+  
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid #args want: uniaxialMaterial ViscousDamper " << iData[0] <<  "K? C? Alpha? <NM? Tol? MaxHalf?>" << endln;
+    opserr << "Invalid #args want: uniaxialMaterial ViscousDamper " << iData[0] <<  " K? C? Alpha? <LGap?> <NM? RelTol? AbsTol? MaxHalf?>" << endln;
     
     return 0;   
   }
-    if (numData == 3) {
-	// Default variables
-    dData[3] = 1;
-    dData[4] = 0.000001;
-    dData[5] = 15;
+  
+  if (numData == 3) {
+    // Default variables
+    dData[3] = 0.0;
+    dData[4] = 1;
+    dData[5] = 0.000001;
+    dData[6] = 0.0000000001;
+    dData[7] = 15;
+  }
+  
+  if (numData == 4) {
+    // Default variables
+    dData[4] = 1;
+    dData[5] = 0.000001;
+    dData[6] = 0.0000000001;
+    dData[7] = 15;
   }
   
   // Parsing was successful, allocate the material with zero index
   theMaterial = new ViscousDamper(iData[0], 
-                                  dData[0], dData[1], dData[2], dData[3], dData[4], dData[5]);
+                                  dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7]);
   
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type ViscousDamper Material\n";
@@ -100,8 +117,8 @@ OPS_ViscousDamper(void)
 }
 
 
-ViscousDamper::ViscousDamper(int tag, double k, double c, double a, double nm, double tol, double maxhalf)
-:UniaxialMaterial(tag,MAT_TAG_ViscousDamper), K(k), C(c), Alpha(a),  NM(nm), Tol(tol), MaxHalf(maxhalf)    
+ViscousDamper::ViscousDamper(int tag, double k, double c, double a, double lgap, double nm, double reltol, double abstol, double maxhalf)
+:UniaxialMaterial(tag,MAT_TAG_ViscousDamper), K(k), C(c), Alpha(a), LGap(lgap), NM(nm), RelTol(reltol), AbsTol(abstol), MaxHalf(maxhalf)    
 {
     if (Alpha < 0.0) {
       opserr << "ViscousDamper::ViscousDamper -- Alpha < 0.0, setting to 1.0\n";
@@ -114,7 +131,7 @@ ViscousDamper::ViscousDamper(int tag, double k, double c, double a, double nm, d
 
 ViscousDamper::ViscousDamper()
 :UniaxialMaterial(0,MAT_TAG_ViscousDamper),
- K(0.0), C(0.0), Alpha(0.0),  NM(0.0), Tol(0.0), MaxHalf(0.0)     
+ K(0.0), C(0.0), Alpha(0.0), LGap(0.0),  NM(0.0), RelTol(0.0), AbsTol(0.0), MaxHalf(0.0)     
 {
         this->revertToStart();
 }
@@ -129,103 +146,136 @@ ViscousDamper::setTrialStrain(double strain, double strainRate)
 {
   //all variables to the last commit
   this->revertToLastCommit();
-
-    
-
+  
   // Determine the strain rate and acceleration 
-  //double dStrain = (strain - Tstrain);
-    double dVel, fd0, acc, vel1, vel0;
-	if (fabs(strainRate) == 0.0) { //static analysis
-		dVel = 0.0;
-		acc = 0.0;
-	} else { 
-		//dVel = dStrain/ops_Dt;
-		dVel = strainRate;
-		acc = (dVel - TdVel)/ops_Dt;
-	}
-
-
+  
+  double Vel, fd0, acc, vel1, vel0;
+  if (fabs(strainRate) == 0.0) { //static analysis
+    Vel = 0.0;
+    acc = 0.0;
+    
+  } else { 
+    Vel = strainRate;
+    acc = (Vel - TVel)/ops_Dt;
+  }
+  
   double smin = pow(0.5,MaxHalf);
   double s = 1.0;
   double stot = 0.0;
   double it = 0.0;
   fd0 = Tstress; 
 
-  double h, yt, eps;
-  vel0 = TdVel;  // Velocity of the previous step.
+  double h, yt, eps, error;
+  vel0 = TVel;  // Velocity of the previous step.
 
 
-  while (it < 1.0) {
-  h = s * ops_Dt; // Time step 
-  vel1 = vel0 + acc * h; // Velocity at the time step h
-
- 
-  // Selection of Numerical Method to solve the ODE
+  while (it < 1.0) { //iteration
+    h = s * ops_Dt; // Time step 
+    vel1 = vel0 + acc * h; // Velocity at the time step h
+    
+    
+    // Selection of Numerical Method to solve the ODE
     if (NM == 1.0) {
-        DormandPrince(vel0, vel1, fd0, h, yt, eps);
+      DormandPrince(vel0, vel1, fd0, h, yt, eps, error);
     }
     if (NM == 2.0) {
-        ABM6(vel0, vel1, fd0, h, yt, eps);
+      ABM6(vel0, vel1, fd0, h, yt, eps, error);
     }
     if (NM == 3.0) {
-        ROS(vel0, vel1, fd0, h, yt, eps);
+      ROS(vel0, vel1, fd0, h, yt, eps, error);
     }
-
-	// Error check: Adaptive Step Size
-        if ((eps <= Tol) || (s == smin)) {
-            vel0 = vel1;
-            fd0 = yt;
-            stot = stot+s;
-        }else {
-            if (s > smin) {
-            s=0.5*s; // step gets smaller -now try this step again.
-            } else {
-            s=smin;
-            }
-        }
-
+    
+    // Error check: Adaptive Step Size
+    if ((eps <= RelTol) || (s == smin) || (fabs(error) <= AbsTol)) {
+      vel0 = vel1;
+      fd0 = yt;
+      stot = stot+s;
+    } else {
+      if (s > smin) {
+	s=0.5*s; // step gets smaller -now try this step again.
+      } else {
+	s=smin;
+      }
+    }
+    
     if (stot == 1.0) { // The total internal stepsize reached dt
-     it=1.0;
+      it=1.0;
     }
- }
+  }
 
-
-  // Total Stress 
-  Tstress = fd0;
-  Tstrain = strain;
-  TdVel = dVel;
-  Ttangent = 0.;
+// Effect of gap start 
   
-  //// Total strain in the elastic part of the damper 
-  //double Tstrains = fd0/K;
-  //
-  //// Total strain in the viscous part of the damper
-  //      double Tstraind =  strain - Tstrains;
-
-       
+  if (LGap > 0.) {
+    
+    double dStrain = (strain - Tstrain);
+    
+    if ((fd0 > 0) && (Tstress < 0)) {  //from negtive to positive
+      Tpugr = Tstrain + dStrain * fabs(fd0)/fabs(fd0 - Tstress);  // aproximate displacement for gap initiation
+      Tnugr = 0.;
+      
+      if (fabs(strain-Tpugr) < LGap) {
+	fd0 = 0.;
+      }
+    }  
+    
+    if ((fd0 < 0) && (Tstress > 0)) {  //from positive to negative
+      
+      Tnugr = Tstrain + dStrain * fabs(fd0)/fabs(fd0 - Tstress);  // aproximate displacement for gap initiation
+      Tpugr = 0.;
+      
+      if (fabs(strain-Tnugr) < LGap) {
+	fd0 = 0.;
+      }
+    }
+    
+    // After gap inititon
+    
+    if  ((fabs(Tpugr) > 0.) && (Tstress == 0)) {   //from negtive to positive
+      
+      if ((strain > Tpugr) && ((strain-Tpugr) < LGap)) {
+	fd0 = 0.;
+      }
+    }
+    
+    
+    
+    if  ((fabs(Tnugr) > 0.) && (Tstress == 0)) {   //from positive to negative
+      
+      if ((strain < Tnugr) && ((strain-Tnugr) > -LGap)) {
+	fd0 = 0.;
+      }
+    }
+    
+  }
+  // Effect of gap end 
+  
+  
+  Tstress = fd0; // Stress 
+  TVel = Vel;
+  Tstrain = strain;
+  
    return 0;
 }
 
 double ViscousDamper::getStress(void)
 {
-
-        return  Tstress;
+  return  Tstress;
 }
 
 double ViscousDamper::getTangent(void)
 {
-        return 0;
+  return 0;
 }
 
 double ViscousDamper::getInitialTangent(void)
 {
-    return 0;
+  return 0;
 }
 
 double ViscousDamper::getDampTangent(void)
 {
-        //double DTangent = Tstress/Tstrain;
-    return 0; 
+  
+  return 0; 
 }
 
 
@@ -238,32 +288,34 @@ ViscousDamper::getStrain(void)
 double 
 ViscousDamper::getStrainRate(void)
 {
-    return 0.0;
+  return TVel;
 }
 
 int 
 ViscousDamper::commitState(void)
 {
-        //commit trial  variables
-        Cstrain = Tstrain;
-        Cstress = Tstress;
-        Ctangent = Ttangent;
-        CdVel = TdVel;
- 
-        
-        return 0;
+  //commit trial  variables
+  Cstrain = Tstrain;
+  Cstress = Tstress;
+  Ctangent = Ttangent;
+  CVel = TVel;
+  Cpugr = Tpugr;
+  Cnugr = Tnugr; 
+  
+  return 0;
 }
 
 int 
 ViscousDamper::revertToLastCommit(void)
 {
-        Tstrain = Cstrain;
-        Tstress = Cstress;
-        Ttangent = Ctangent;
-        TdVel = CdVel;
-
-        
-    return 0;
+  Tstrain = Cstrain;
+  Tstress = Cstress;
+  Ttangent = Ctangent;
+  TVel = CVel;
+  Tpugr = Cpugr;
+  Tnugr = Cnugr;
+  
+  return 0;
 }
 
 int 
@@ -273,31 +325,33 @@ ViscousDamper::revertToStart(void)
   Tstrain=0.0;
   Tstress=0.0;
   Ttangent = 0.0;
-  TdVel = 0.0;
-
+  TVel = 0.0;
+  Tpugr = 0.0;
+  Tnugr = 0.0;
   
   Cstrain=0.0;
   Cstress = 0.0;
   Ctangent = 0.0;
-  CdVel = 0.0;
-
+  CVel = 0.0;
+  Cpugr = 0.0;
+  Cnugr = 0.0;
   
   return 0;
 }
 
 double
 ViscousDamper::sgn(double dVariable){ 
-    if (dVariable<0.0){
-                return -1.0;
-        }else{
-                return 1.0;
-        }
+  if (dVariable<0.0){
+    return -1.0;
+  }else{
+    return 1.0;
+  }
 }
 
 int 
-ViscousDamper::DormandPrince(double vel0, double vel1, double y0, double h, double& yt, double& eps){
-  double k1, k2, k3, k4, k5, k6, k7, error;
-
+ViscousDamper::DormandPrince(double vel0, double vel1, double y0, double h, double& yt, double& eps, double& error){
+  double k1, k2, k3, k4, k5, k6, k7;
+  
   k1 = f(vel0, y0) * h;
 
   k2 = f((vel1 - vel0)*(1./5.) + vel0, y0 + (1./5.)*k1) * h;
@@ -318,11 +372,12 @@ ViscousDamper::DormandPrince(double vel0, double vel1, double y0, double h, doub
 
   eps = fabs(error/ yt);
 
+
  return 0;
 }
 
 int 
-ViscousDamper::ABM6(double vel0, double vel1, double y0, double h, double& y6, double& eps){
+ViscousDamper::ABM6(double vel0, double vel1, double y0, double h, double& y6, double& eps, double& error){
  double f0, f1, f2, f3, f4, f5, f6, y11, y2, y3, y4, y5, yp6;
 
     h = h/6.0;
@@ -365,14 +420,17 @@ ViscousDamper::ABM6(double vel0, double vel1, double y0, double h, double& y6, d
 
     y6 = y5 + (h/1440.)*(475.*f6 +1427.*f5  -798.*f4 + 482.*f3 -173.*f2 + 27.*f1); // corrector
 
-    eps = fabs((yp6-y6)/y6);
+	error = (yp6-y6);
+
+    eps = fabs(error/y6);
+
 
  return 0;
 }
 
 int
-ViscousDamper::ROS(double vel0, double vel1, double y0, double h, double& y2, double& eps){
-  double k1, k2, k3, error, J, T, d, e32, W, f0, f1, f2, y3;
+ViscousDamper::ROS(double vel0, double vel1, double y0, double h, double& y2, double& eps, double& error){
+  double k1, k2, k3, J, T, d, e32, W, f0, f1, f2, y3;
     J = -K / (Alpha*C);
     T = K;
     d = 1. / (2. + sqrt(2.));
@@ -395,27 +453,28 @@ ViscousDamper::ROS(double vel0, double vel1, double y0, double h, double& y2, do
 
 double
 ViscousDamper::f(double v, double fd){
-    return (v - sgn(fd/C) * pow(fabs(fd/C),1.0/Alpha))*K;
+    return (v - sgn(fd) * pow(fabs(fd)/C,1.0/Alpha))*K;
 }
 
 UniaxialMaterial *
 ViscousDamper::getCopy(void)
 {
-    ViscousDamper *theCopy = new ViscousDamper(this->getTag(), K, C, Alpha, NM, Tol, MaxHalf);
+    ViscousDamper *theCopy = new ViscousDamper(this->getTag(), K, C, Alpha, LGap, NM, RelTol, AbsTol, MaxHalf);
     // Converged state variables
         theCopy->Cstrain = Cstrain;
         theCopy->Cstress = Cstress;
         theCopy->Ctangent = Ctangent;
-        theCopy->CdVel = CdVel;
- 
+        theCopy->CVel = CVel;
+		theCopy->Cpugr = Cpugr;
+		theCopy->Cnugr = Cnugr; 
         
         // Trial state variables
-    theCopy->Tstrain = Tstrain;
-    theCopy->Tstress = Tstress; 
+		theCopy->Tstrain = Tstrain;
+		theCopy->Tstress = Tstress; 
         theCopy->Ttangent = Ttangent;
-        theCopy->TdVel = TdVel;
-
-        
+        theCopy->TVel = TVel;
+		theCopy->Tpugr = Tpugr;
+		theCopy->Tnugr = Tnugr;        
     return theCopy;
 }
 
@@ -423,22 +482,26 @@ int
 ViscousDamper::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(11);
+  static Vector data(15);
   data(0) = this->getTag();
 
   // Material properties
   data(1) = K;
   data(2) = C;
   data(3) = Alpha;
-  data(4) = NM;
-  data(5) = Tol;
-  data(6) = MaxHalf;
+  data(4) = LGap;
+  data(5) = NM;
+  data(6) = RelTol;
+  data(7) = AbsTol;
+  data(8) = MaxHalf;
   
   // State variables from last converged state
-  data(7) = Cstrain;
-  data(8) = Cstress;
-  data(9) = Ctangent;
-  data(10) = CdVel;
+  data(9) = Cstrain;
+  data(10) = Cstress;
+  data(11) = Ctangent;
+  data(12) = CVel;
+  data(13) = Cpugr;
+  data(14) = Cnugr;
 
         
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
@@ -453,7 +516,7 @@ ViscousDamper::recvSelf(int cTag, Channel &theChannel,
                                FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(11);
+  static Vector data(15);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
@@ -467,23 +530,19 @@ ViscousDamper::recvSelf(int cTag, Channel &theChannel,
         K = data(1);
         C = data(2);
 		Alpha = data(3);
-	    NM = data(4);
-        Tol = data(5);
-		MaxHalf = data(6);
+		LGap = data(4);
+	    NM = data(5);
+        RelTol = data(6);
+		AbsTol = data(7);
+		MaxHalf = data(8);
         
         // State variables from last converged state 
-        Cstrain = data(7);
-        Cstress = data(8);
-        Ctangent = data(9);
-        CdVel = data(10);
-
-          
-        //Copy converged state values into trial values
-        //Tstrain = Cstrain;
-        //Tstress = Cstress;
-        //Ttangent = Ctangent;
-        //TdVel = CdVel;
-        //Tfd = Cfd;
+        Cstrain = data(9);
+        Cstress = data(10);
+        Ctangent = data(11);
+        CVel = data(12);
+		Cpugr = data(13);
+		Cnugr = data(14);
           
   }
     
@@ -497,8 +556,10 @@ ViscousDamper::Print(OPS_Stream &s, int flag)
     s << "  K: " << K << endln; 
     s << "  C: " << C << endln;
     s << "  Alpha: " << Alpha << endln;
+	s << "  LGap: " << LGap << endln; 
 	s << "  NM: " << NM << endln; 
-    s << "  Tol: " << Tol << endln;
+    s << "  RelTol: " << RelTol << endln;
+	s << "  AbsTol: " << AbsTol << endln;
     s << "  MaxHalf: " << MaxHalf << endln;
         
 }

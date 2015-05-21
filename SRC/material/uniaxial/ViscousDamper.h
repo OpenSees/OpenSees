@@ -18,22 +18,30 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1 $
-// $Date: 2011/02/01 12:35:01 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/ViscousDamper.h,v $
+// $Revision: C $
+// $Date: May 2015 $
+// $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/ViscousDamper.cpp,v $
                                                                         
 // Written: Sarven Akcelyan and Dimitrios G. Lignos, PhD, McGill University
 // Created: January 2013
-// Revision: A
+// Updated: May 2015
+// Revision: C
 //
 // Description: This file contains the class interface for 
-// Viscous Damper Model Relationship of the form F = K*u + C*pow(V,a)
-// Reference: Kasai K, Oohara K. (2001). “Algorithm and Computer Code To Simulate Response of Nonlinear Viscous Damper”. 
-// Proceedings Passively Controlled Structure Symposium 2001, Yokohama, Japan.
+// Viscous Damper Model Relationship of the form F = K*u_s = C*pow(V_d,alpha)
+// Reference: 
+// Akcelyan, S., and Lignos, D.G. (2015), “Adaptive Numerical Method Algorithms for Nonlinear Viscous and Bilinear Oil Damper Models Under Random Vibrations”, ASCE Journal of Engineering Mechanics, (under review)
+// Kasai K, Oohara K. (2001). “Algorithm and Computer Code To Simulate Response of Nonlinear Viscous Damper”. Proceedings Passively Controlled Structure Symposium 2001, Yokohama, Japan.
+
 // Variables:
-// K: axial stiffness of a damper
-// C: Velocity constant of a damper
-// Alpha: Exponent of velocity of a damper
+// $K: Elastic stiffness of linear spring (to model the axial flexibility of a viscous damper (brace and damper portion)
+// $C: Viscous damping coefficient of the damper
+// $Alpha: Viscous damper exponent
+// $LGap: gap length to simulate the gap length due to the pin tolerance
+// $NM:	Employed adaptive numerical algorithm (default value NM = 1; 1 = Dormand-Prince54, 2=6th order Adams-Bashforth-Moulton, 3=modified Rosenbrock Triple)
+// $RelTol:	Tolerance for absolute relative error control of the adaptive iterative algorithm (default value 10^-6)
+// $AbsTol:	Tolerance for absolute error control of adaptive iterative algorithm (default value 10^-6)
+// $MaxHalf: Maximum number of sub-step iterations within an integration step, h=dt*(0.5)^MaxHalf (default value 15)
 
 #ifndef ViscousDamper_h
 #define ViscousDamper_h
@@ -42,14 +50,14 @@
 
 class ViscousDamper : public UniaxialMaterial
 {
-  public:
-	 ViscousDamper(int tag, double K, double C, double Alpha, double NM, double Tol, double MaxHalf);   
+  public: 
+    ViscousDamper(int tag, double K, double C, double Alpha, double LGap, double NM, double RelTol, double AbsTol, double MaxHalf);   
     ViscousDamper(); 
     ~ViscousDamper();
 
-   const char *getClassType(void) const {return "ViscousDamper";};
+    const char *getClassType(void) const {return "ViscousDamper";};
 
-    int setTrialStrain(double velocity, double strainRate = 0.0); 
+    int setTrialStrain(double strain, double strainRate); 
     double getStrain(void); 
     double getStrainRate(void);
     double getStress(void);
@@ -63,10 +71,10 @@ class ViscousDamper : public UniaxialMaterial
     int revertToLastCommit(void);    
     int revertToStart(void);        
     double sgn(double dVariable);
-	int DormandPrince(double vel0, double vel1, double y0, double h, double& yt, double& eps);
-	int ABM6(double vel0, double vel1, double y0, double h, double& yt, double& eps);
-	int ROS(double vel0, double vel1, double y0, double h, double& y2, double& eps);
-	double f(double v, double fd);
+    int DormandPrince(double vel0, double vel1, double y0, double h, double& yt, double& eps, double& error);
+    int ABM6(double vel0, double vel1, double y0, double h, double& yt, double& eps, double& error);
+    int ROS(double vel0, double vel1, double y0, double h, double& y2, double& eps, double& error);
+    double f(double v, double fd);
 
         
     UniaxialMaterial *getCopy(void);
@@ -83,25 +91,28 @@ class ViscousDamper : public UniaxialMaterial
         // Fixed Input Material Variables
     double K;
     double C;
-    double Alpha;   
-	double NM;
-    double Tol;
-	double MaxHalf;
-
-        // Trial State Variables
-        double Tstrain; // Trial Strain
-        double Tstress; // Trial Stress
-        double Ttangent; // Trial Tangent
-        double TdVel;   // Trial Incremental Velocity
-
-        
-        // Committeed State Variables
-        double Cstrain;  // Committed Strain
-        double Cstress;  // Committed Stress
-        double Ctangent; // Committed Tangent
-        double CdVel;    // Committed incremental velocity
-
+    double Alpha; 
+    double LGap;
+    double NM;
+    double RelTol;
+    double AbsTol;
+    double MaxHalf;
+    
+    // Trial State Variables
+    double Tstrain; // Trial Strain
+    double Tstress; // Trial Stress
+    double Ttangent; // Trial Tangent
+    double TVel;   // Trial Velocity
+    double Tpugr;   // Trial gap initiation displacement
+    double Tnugr;   // Trial gap initiation displacement
+    
+    // Committeed State Variables
+    double Cstrain;  // Committed Strain
+    double Cstress;  // Committed Stress
+    double Ctangent; // Committed Tangent
+    double CVel;    // Committed velocity
+    double Cpugr;	// Committed gap initiation displacement
+    double Cnugr;   // Trial gap initiation displacement
 };
-
 
 #endif
