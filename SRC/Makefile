@@ -436,6 +436,10 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/HUelements/DBESI0.o \
 	$(FE)/element/HUelements/DBESI1.o \
 	$(FE)/element/HUelements/YamamotoBiaxialHDR.o \
+	$(FE)/element/XMUelements/AC3D8HexWithSensitivity.o \
+	$(FE)/element/XMUelements/ASI3D8QuadWithSensitivity.o \
+	$(FE)/element/XMUelements/AV3D4QuadWithSensitivity.o \
+	$(FE)/element/XMUelements/VS3D4QuadWithSensitivity.o \
 	$(FE)/element/feap/elmt01.o \
 	$(FE)/element/feap/elmt02.o \
 	$(FE)/element/feap/elmt03.o \
@@ -628,6 +632,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ViscousMaterial.o \
 	$(FE)/material/uniaxial/Maxwell.o \
 	$(FE)/material/uniaxial/ViscousDamper.o \
+	$(FE)/material/uniaxial/BilinearOilDamper.o \
 	$(FE)/material/uniaxial/Cast.o \
 	$(FE)/material/uniaxial/DoddRestrepo.o \
 	$(FE)/material/uniaxial/Dodd_Restrepo.o \
@@ -698,6 +703,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/UWmaterials/ManzariDafalias3DRO.o \
 	$(FE)/material/nD/UWmaterials/ManzariDafaliasPlaneStrainRO.o \
 	$(FE)/material/nD/UWmaterials/InitialStateAnalysisWrapper.o \
+	$(FE)/material/nD/LinearCap.o \
+	$(FE)/material/nD/AcousticMedium.o \
 	$(FE)/material/nD/FeapMaterial.o \
 	$(FE)/material/nD/feap/TclFeapMaterialCommand.o \
 	$(FE)/material/nD/feap/FeapMaterial01.o \

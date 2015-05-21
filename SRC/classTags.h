@@ -200,6 +200,7 @@
 #define MAT_TAG_ModIMKPinching02                86
 #define MAT_TAG_Steel4                          87
 #define MAT_TAG_SimpleFractureMaterial          88
+#define MAT_TAG_BilinearOilDamper               89
 
 
 #define MAT_TAG_PySimple1                    205
