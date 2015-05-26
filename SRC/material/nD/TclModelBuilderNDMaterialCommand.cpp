@@ -95,6 +95,9 @@ extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
 extern  void *OPS_NewInitStressNDMaterial(void);
 
+extern void *OPS_NewLinearCap(void);
+extern void *OPS_NewAcousticMedium(void);
+
 #ifdef _HAVE_Damage2P
 extern void *OPS_Damage2p(void);
 #endif
@@ -248,6 +251,24 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     else if ((strcmp(argv[1],"DruckerPrager") == 0)){
 
       void *theMat = OPS_NewDruckerPragerMaterial();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"LinearCap") == 0)){
+
+      void *theMat = OPS_NewLinearCap();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"AcousticMedium") == 0)){
+
+      void *theMat = OPS_NewAcousticMedium();
       if (theMat != 0) 
 	theMaterial = (NDMaterial *)theMat;
       else 
