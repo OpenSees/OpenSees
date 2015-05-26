@@ -114,6 +114,8 @@ extern void *OPS_SSPbrick(void);
 extern void *OPS_SSPbrickUP(void);
 extern void *OPS_NewShellMITC4(void);
 extern void *OPS_NewShellNL(void);
+extern void *OPS_NewShellDKGQ(void);     //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+extern void *OPS_NewShellNLDKGQ(void);   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 extern void *OPS_Quad4FiberOverlay(void);
 extern void *OPS_Brick8FiberOverlay(void);
 extern void *OPS_TripleFrictionPendulum(void);
@@ -124,6 +126,10 @@ extern void *OPS_HDR(void);
 extern void *OPS_LeadRubberX(void);
 extern void *OPS_ElastomericX(void);
 extern void *OPS_N4BiaxialTruss(void);
+extern void *OPS_AC3D8HexWithSensitivity(void);
+extern void *OPS_ASID8QuadWithSensitivity(void);
+extern void *OPS_AV3D4QuadWithSensitivity(void);
+extern void *OPS_VS3D4WuadWithSensitivity(void);
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -625,7 +631,27 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }    
 
+  } else if ((strcmp(argv[1],"shellDKGQ") == 0) || (strcmp(argv[1],"ShellDKGQ") == 0)) {     //Lisha Wang & Xinzheng Lu
+    
+    void *theEle = OPS_NewShellDKGQ();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }    
 
+  } else if ((strcmp(argv[1],"shellNLDKGQ") == 0) || (strcmp(argv[1],"ShellNLDKGQ") == 0)) {    //Lisha Wang & Xinzheng Lu
+    
+    void *theEle = OPS_NewShellDKGQ();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    } 
+    
+    
   } else if ((strcmp(argv[1],"CoupledZeroLength") == 0) || (strcmp(argv[1],"ZeroLengthCoupled") == 0)) {
     
     void *theEle = OPS_CoupledZeroLength();
@@ -802,7 +828,54 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }																								
+  }  
+
+  else if (strcmp(argv[1], "AC3D8WithSensitivity") == 0) {
+      
+    void *theEle = OPS_AC3D8HexWithSensitivity();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }																								
   }
+
+  else if (strcmp(argv[1], "ASI3D8WithSensitivity") == 0) {
+    
+    void *theEle = OPS_ASID8QuadWithSensitivity();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+    
+  } 
+
+  else if (strcmp(argv[1], "AV3D4WithSensitivity") == 0) {
+    
+    void *theEle = OPS_AV3D4QuadWithSensitivity();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  } 
+  
+
+  else if (strcmp(argv[1], "VS3D4WithSensitivity") == 0) {
+
+    void *theEle = OPS_VS3D4WuadWithSensitivity();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  }
+
 
   // if one of the above worked
   if (theElement != 0) {
