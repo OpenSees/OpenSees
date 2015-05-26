@@ -643,7 +643,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   } else if ((strcmp(argv[1],"shellNLDKGQ") == 0) || (strcmp(argv[1],"ShellNLDKGQ") == 0)) {    //Lisha Wang & Xinzheng Lu
     
-    void *theEle = OPS_NewShellDKGQ();
+    void *theEle = OPS_NewShellNLDKGQ();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
