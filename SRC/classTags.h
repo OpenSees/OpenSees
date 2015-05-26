@@ -624,11 +624,12 @@
 #define ELE_TAG_LeadRubberX               153
 #define ELE_TAG_PileToe3D                 154
 #define ELE_TAG_N4BiaxialTruss            155
-
-#define ELE_TAG_MultipleShearSpring 6201
-#define ELE_TAG_MultipleNormalSpring 6202
-#define ELE_TAG_KikuchiBearing 6203
-#define ELE_TAG_YamamotoBiaxialHDR 6204
+#define ELE_TAG_ShellDKGQ                 156
+#define ELE_TAG_ShellNLDKGQ               157
+#define ELE_TAG_MultipleShearSpring       158
+#define ELE_TAG_MultipleNormalSpring      159
+#define ELE_TAG_KikuchiBearing            160
+#define ELE_TAG_YamamotoBiaxialHDR        161
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2

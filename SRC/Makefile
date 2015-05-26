@@ -477,6 +477,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/fourNodeQuad/NineNodeMixedQuad.o \
 	$(FE)/element/shell/ShellMITC4.o \
 	$(FE)/element/shell/ShellNL.o \
+	$(FE)/element/shell/ShellDKGQ.o \
+	$(FE)/element/shell/ShellNLDKGQ.o \
 	$(FE)/element/shell/R3vectors.o \
 	$(FE)/element/brick/Brick.o \
 	$(FE)/element/brick/BbarBrick.o \
