@@ -326,7 +326,7 @@
 #define ND_TAG_CycLiqCPSP3D                       39
 #define ND_TAG_CycLiqCPSPPlaneStrain              40
 #define ND_TAG_ConcreteS                          41
-
+#define ND_TAG_MaterialCMM                        42
 
 
 #define ND_TAG_FluidSolidPorousMaterial        100
