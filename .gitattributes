@@ -2610,10 +2610,14 @@ SRC/element/pyMacro/PY_Macro2D.h -text
 SRC/element/shell/Makefile -text
 SRC/element/shell/R3vectors.cpp -text
 SRC/element/shell/R3vectors.h -text
+SRC/element/shell/ShellDKGQ.cpp -text
+SRC/element/shell/ShellDKGQ.h -text
 SRC/element/shell/ShellMITC4.cpp -text
 SRC/element/shell/ShellMITC4.h -text
 SRC/element/shell/ShellNL.cpp -text
 SRC/element/shell/ShellNL.h -text
+SRC/element/shell/ShellNLDKGQ.cpp -text
+SRC/element/shell/ShellNLDKGQ.h -text
 SRC/element/surfaceLoad/Makefile -text
 SRC/element/surfaceLoad/SurfaceLoad.cpp -text
 SRC/element/surfaceLoad/SurfaceLoad.h -text
