@@ -20,6 +20,7 @@ OBJS       = UniaxialMaterial.o \
 	Neoprene.o \
 	Maxwell.o \
 	ViscousDamper.o \
+	BilinearOilDamper.o \
 	Cast.o \
         HardeningMaterial.o \
 	Concrete01.o \

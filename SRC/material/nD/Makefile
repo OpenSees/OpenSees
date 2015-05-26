@@ -55,6 +55,8 @@ OBJS       = NDMaterial.o \
 	CapPlasticity.o \
 	ConcreteS.o \
 	SimplifiedJ2.o \
+	LinearCap.o \
+	AcousticMedium.o \
 	PlaneStressSimplifiedJ2.o
 
 

@@ -16,7 +16,7 @@
 #include <FEM_ObjectBroker.h>  
 
 #define ND_TAG_LinearCap  12345654342
-#include <t2vector.h>
+#include <T2Vector.h>
 #include <MaterialResponse.h>
 #include <elementAPI.h>
 
