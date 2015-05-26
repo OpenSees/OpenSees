@@ -22,7 +22,7 @@ Vector AcousticMedium::sigma(3);	// global for AcousticMedium only
 Matrix AcousticMedium::DSensitivity(1,1);	  // global for AcousticMedium only
 
 void *
-OPS_AcousticMedium(void)
+OPS_NewAcousticMedium(void)
 {
   NDMaterial *theMaterial = 0;
   

@@ -81,6 +81,7 @@ extern  void *OPS_NewPrestressedConcretePlaneStressMaterial(void);
 extern  void *OPS_NewFAPrestressedConcretePlaneStressMaterial(void);
 extern  void *OPS_NewFAFourSteelPCPlaneStressMaterial(void);
 extern  void *OPS_NewRAFourSteelPCPlaneStressMaterial(void);
+extern  void *OPS_NewMaterialCMM(void);
 
 extern  void *OPS_NewElasticIsotropicMaterial(void);
 extern  void *OPS_NewElasticOrthotropicMaterial(void);
@@ -269,6 +270,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     else if ((strcmp(argv[1],"AcousticMedium") == 0)){
 
       void *theMat = OPS_NewAcousticMedium();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
+	  else if ((strcmp(argv[1],"MaterialCMM") == 0)){
+
+      void *theMat = OPS_NewMaterialCMM();
       if (theMat != 0) 
 	theMaterial = (NDMaterial *)theMat;
       else 
