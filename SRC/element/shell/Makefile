@@ -2,6 +2,8 @@ include ../../../Makefile.def
 
 OBJS       = ShellMITC4.o \
 	ShellNL.o \
+	ShellDKGQ.o \
+	ShellNLDKGQ.o \
 	R3vectors.o
 
 all:         $(OBJS)
