@@ -816,6 +816,43 @@ FE_Element::addD_Force(const Vector &accel, double fact)
 }
 
 void  
+FE_Element::addK_Force(const Vector &disp, double fact)
+{
+    if (myEle != 0) {    
+
+	// check for a quick return
+	if (fact == 0.0) 
+	    return;
+	if (myEle->isSubdomain() == false) {
+	    // get the components we need out of the vector
+	    // and place in a temporary vector
+	    Vector tmp(numDOF);
+	    for (int i=0; i<numDOF; i++) {
+		int loc = myID(i);
+		if (loc >= 0)
+		    tmp(i) = disp(loc);
+		else
+		    tmp(i) = 0.0;		
+	    }	  
+		
+	    if (theResidual->addMatrixVector(1.0, myEle->getTangentStiff(), tmp, fact) < 0){
+		opserr << "WARNING FE_Element::addK_Force() - ";
+		opserr << "- addMatrixVector returned error\n";		 
+	    }		
+	}
+	else {
+	    opserr << "WARNING FE_Element::addK_Force() - ";
+	    opserr << "- this should not be called on a Subdomain!\n";
+	}    	    	    				
+    }
+    else {
+	opserr << "WARNING FE_Element::addK_Force() - no Element *given ";
+	opserr << "- subclasses must provide implementation\n";
+    }    	            
+}
+
+
+void  
 FE_Element::addLocalM_Force(const Vector &accel, double fact)
 {
     if (myEle != 0) {    

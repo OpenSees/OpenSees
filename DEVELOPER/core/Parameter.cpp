@@ -125,7 +125,7 @@ Parameter::~Parameter()
     delete [] theObjects;
 
   if (parameterID != 0)
-    delete [] parameterID;
+    delete [] parameterID;	
 }
 
 int
@@ -196,7 +196,7 @@ Parameter::update(double newValue)
 
   for (int i = 0; i < numObjects; i++)
     ok += theObjects[i]->updateParameter(parameterID[i], theInfo);
-
+  
   return ok;
 }
 
@@ -264,7 +264,8 @@ Parameter::setDomain(Domain *theDomain)
 int 
 Parameter::sendSelf(int commitTag, Channel &theChannel)
 {
-  return 0;
+  opserr << "Parameter::sendSelf - not yet implemented\n";
+  return -1;
 }
 
 int 

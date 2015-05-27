@@ -91,7 +91,9 @@ Domain::Domain()
  eleGraphBuiltFlag(false),  nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
  theRegions(0), numRegions(0), commitTag(0),
- theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0),
+ theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalDampingFactors(0), inclModalMatrix(false),
+ lastChannel(0),
  paramIndex(0), paramSize(0), numParameters(0)
 {
   
@@ -144,8 +146,9 @@ Domain::Domain(int numNodes, int numElements, int numSPs, int numMPs,
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0),
  theRegions(0), numRegions(0), commitTag(0),
- theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0),
- paramIndex(0), paramSize(0), numParameters(0)
+ theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalDampingFactors(0), inclModalMatrix(false),
+ lastChannel(0), paramIndex(0), paramSize(0), numParameters(0)
 {
     // init the arrays for storing the domain components
     theElements = new MapOfTaggedObjects();
@@ -203,8 +206,9 @@ Domain::Domain(TaggedObjectStorage &theNodesStorage,
  theMPs(&theMPsStorage), 
  theLoadPatterns(&theLoadPatternsStorage),
  theRegions(0), numRegions(0), commitTag(0),
- theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0),
- paramIndex(0), paramSize(0), numParameters(0)
+ theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalDampingFactors(0), inclModalMatrix(false),
+ lastChannel(0),paramIndex(0), paramSize(0), numParameters(0)
 {
     // init the arrays for storing the domain components
     thePCs      = new MapOfTaggedObjects();
@@ -260,8 +264,9 @@ Domain::Domain(TaggedObjectStorage &theStorage)
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
  theRegions(0), numRegions(0), commitTag(0),
- theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), lastChannel(0),
- paramIndex(0), paramSize(0), numParameters(0)
+ theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalDampingFactors(0), inclModalMatrix(false),
+ lastChannel(0),paramIndex(0), paramSize(0), numParameters(0)
 {
     // init the arrays for storing the domain components
     theStorage.clearAll(); // clear the storage just in case populated
@@ -365,6 +370,9 @@ Domain::~Domain()
 
   if (theEigenvalues != 0)
     delete theEigenvalues;
+
+  if (theModalDampingFactors != 0)
+    delete theModalDampingFactors;
   
   int i;
   for (i=0; i<numRecorders; i++) 
@@ -406,7 +414,7 @@ Domain::addElement(Element *element)
       int nodeTag = nodes(i);
       Node *nodePtr = this->getNode(nodeTag);
       if (nodePtr == 0) {
-	  opserr << "WARNING Domain::addElement - In element " << *element;
+	opserr << "WARNING Domain::addElement - In element " << eleTag;
 	  opserr << "\n no Node " << nodeTag << " exists in the domain\n";
 	  return false;
       }
@@ -497,9 +505,11 @@ Domain::addNode(Node * node)
 bool
 Domain::addSP_Constraint(SP_Constraint *spConstraint)
 {
-#ifdef _G3DEBUG    
+  //#ifdef _G3DEBUG    
     // check the Node exists in the Domain
     int nodeTag = spConstraint->getNodeTag();
+    int dof = spConstraint->getDOF_Number();
+
     Node *nodePtr = this->getNode(nodeTag);
     if (nodePtr == 0) {
       opserr << "Domain::addSP_Constraint - cannot add as node node with tag" <<
@@ -509,19 +519,39 @@ Domain::addSP_Constraint(SP_Constraint *spConstraint)
 
     // check that the DOF specified exists at the Node
     int numDOF = nodePtr->getNumberDOF();
-    if (numDOF < spConstraint->getDOF_Number()) {
-	opserr << "Domain::addSP_Constraint - cannot add as node node with tag" << 
+    if (numDOF < dof) {
+	opserr << "Domain::addSP_Constraint - cannot add as node with tag" << 
 	  nodeTag << "does not have associated constrained DOF\n"; 
 	return false;
     }      
-#endif
+    // #endif
+
+    // check if an existing SP_COnstraint exists for that dof at the node
+    bool found = false;
+    SP_ConstraintIter &theExistingSPs = this->getSPs();
+    SP_Constraint *theExistingSP = 0;
+    while ((found == false) && ((theExistingSP = theExistingSPs()) != 0)) {
+      int spNodeTag = theExistingSP->getNodeTag();
+      int spDof = theExistingSP->getDOF_Number();
+      if (nodeTag == spNodeTag && spDof == dof) {
+	found = true;
+      }
+    }
+    
+    if (found == true) {
+	opserr << "Domain::addSP_Constraint - cannot add as node already constrained in that dof by existing SP_Constraint\n";
+	spConstraint->Print(opserr);
+	return false;
+    }
 
   // check that no other object with similar tag exists in model
   int tag = spConstraint->getTag();
   TaggedObject *other = theSPs->getComponentPtr(tag);
   if (other != 0) {
-    opserr << "Domain::addSP_Constraint - cannot add as constraint with tag" << 
+    opserr << "Domain::addSP_Constraint - cannot add as constraint with tag " << 
       tag << "already exists in model\n";             
+    spConstraint->Print(opserr);
+
     return false;
   }
   
@@ -588,12 +618,13 @@ Domain::addSP_Constraint(int axisDirn, double axisValue,
 
   NodeIter &theNodes = this->getNodes();
   Node *theNode;
-
+  int numAddedSPs = 0;
   // for each node in the domain
   while ((theNode = theNodes()) != 0) {
     const Vector &theCrds = theNode->getCrds();
     int sizeCrds = theCrds.Size();
     int numDOF = theNode->getNumberDOF();
+    int nodeTag = theNode->getTag();
 
     // check it has crds in axis specified
     if (axisDirn < sizeCrds) {
@@ -602,21 +633,43 @@ Domain::addSP_Constraint(int axisDirn, double axisValue,
       // check if coordinate is within tol of value given
       if (fabs(nodeCrdDirn-axisValue) <= tol) {
 
-	// foreach dof to be constrained create an SP & add to domain
+	// foreach dof to be constrained create 
 	for (int i=0; i<fixityConditions.Size(); i++) {
 	  if ((i < numDOF) && (fixityConditions(i) == 1)) {
-	    SP_Constraint *theSP = new SP_Constraint(theNode->getTag(), i, 0.0, true);
-	    if (this->addSP_Constraint(theSP) == false) {
-	      opserr << "WARNING could not add SP_Constraint to domain for node " << theNode->getTag();
-	      delete theSP;
+
+	    // check if an existing SP_COnstraint exists for that dof at the node
+	    bool found = false;
+	    SP_ConstraintIter &theExistingSPs = this->getSPs();
+	    SP_Constraint *theExistingSP = 0;
+	    while ((found == false) && ((theExistingSP = theExistingSPs()) != 0)) {
+	      int spNodeTag = theExistingSP->getNodeTag();
+	      int dof = theExistingSP->getDOF_Number();
+	      if (nodeTag == spNodeTag && i == dof) {
+		found = true;
+	      }
+	    }
+	    
+	    // if no sp constraint, create one and ass it
+	    if (found == false) {
+
+	      SP_Constraint *theSP = new SP_Constraint(nodeTag, i, 0.0, true);
+	      
+	      if (this->addSP_Constraint(theSP) == false) {
+		opserr << "WARNING could not add SP_Constraint to domain for node " << theNode->getTag();
+		delete theSP;
+	      } else {
+		numAddedSPs++;
+	      }
+	    } else {
+	      ; // opserr << "Domain::addSP(AXIS) - constraint exists at node\n";
 	    }
 	  }
 	}
       }
     }
   }
-
-  return 0;
+  this->domainChange();
+  return numAddedSPs;
 }
 
 
@@ -627,7 +680,7 @@ Domain::addSP_Constraint(int axisDirn, double axisValue,
 bool
 Domain::addMP_Constraint(MP_Constraint *mpConstraint)
 {
-#ifdef _G3DEBUG
+//#ifdef _G3DEBUG
     // perform the checks
     int nodeConstrained = mpConstraint->getNodeConstrained();
     Node *nodePtr = this->getNode(nodeConstrained);
@@ -646,7 +699,7 @@ Domain::addMP_Constraint(MP_Constraint *mpConstraint)
       return false;
     }      
     // MISSING CODE
-#endif
+    //#endif
 
   // check that no other object with similar tag exists in model
   int tag = mpConstraint->getTag();
@@ -665,7 +718,7 @@ Domain::addMP_Constraint(MP_Constraint *mpConstraint)
   } else
     opserr << "Domain::addMP_Constraint - cannot add constraint with tag" << 
       tag << "to the container\n";                   
-			      
+  
   return result;
 }
 
@@ -1692,6 +1745,7 @@ Domain::setCommittedTime(double newTime)
 void
 Domain::applyLoad(double timeStep)
 {
+
     // set the current pseudo time in the domai to be newTime
     currentTime = timeStep;
     dT = currentTime - committedTime;
@@ -1724,12 +1778,12 @@ Domain::applyLoad(double timeStep)
     MP_ConstraintIter &theMPs = this->getMPs();
     MP_Constraint *theMP;
     while ((theMP = theMPs()) != 0)
-	theMP->applyConstraint(timeStep);
-
+      theMP->applyConstraint(timeStep);
+    
     SP_ConstraintIter &theSPs = this->getSPs();
     SP_Constraint *theSP;
     while ((theSP = theSPs()) != 0) {
-	theSP->applyConstraint(timeStep);
+      theSP->applyConstraint(timeStep);
     }
 
     ops_Dt = dT;
@@ -1970,11 +2024,14 @@ Domain::updateParameter(int tag, double value)
   TaggedObject *mc = theParameters->getComponentPtr(tag);
   
   // if not there return 0
-  if (mc == 0) 
+  if (mc == 0) {
+	  opserr << "Domain::updateParameter(int tag, double value) - parameter with tag not present\n";
       return 0;
+  }
 
-  Parameter *result = (Parameter *)mc;
-  return result->update(value);
+  Parameter *theParam = (Parameter *)mc;
+  int res =  theParam->update(value);
+  return res;
 }
 
 
@@ -2033,6 +2090,44 @@ double
 Domain::getTimeEigenvaluesSet(void) 
 {
   return theEigenvalueSetTime;
+}
+
+int
+Domain::setModalDampingFactors(Vector *theValues, bool inclMatrix)
+{
+  // if theValues == 0, turn off modal damping
+  if (theValues == 0) {
+    if (theModalDampingFactors != 0)
+      delete theModalDampingFactors;
+    theModalDampingFactors = 0;
+    inclModalMatrix = inclMatrix;
+    return 0;
+  }
+
+  // make sure the eigen value vector is large enough
+  if (theModalDampingFactors == 0 || theModalDampingFactors->Size() != theValues->Size()) {
+    if (theModalDampingFactors != 0)
+      delete theModalDampingFactors;
+    theModalDampingFactors = new Vector(*theValues);
+  } else {
+    *theModalDampingFactors = *theValues;
+  }
+
+  inclModalMatrix = inclMatrix;
+
+  return 0;
+}
+
+const Vector *
+Domain::getModalDampingFactors(void)
+{
+  return theModalDampingFactors;
+}
+
+bool
+Domain::inclModalDampingMatrix(void)
+{
+  return inclModalMatrix;
 }
 
 void
@@ -2239,6 +2334,16 @@ Domain::getRegion(int tag)
 	return theRegions[i];
 
     return 0;
+}
+
+void
+Domain::getRegionTags(ID& rtags) const
+{
+    rtags.resize(numRegions);
+    for(int i=0; i<numRegions; i++) {
+        rtags(i) = theRegions[i]->getTag();
+    }
+
 }
 
 typedef map<int, int> MAP_INT;

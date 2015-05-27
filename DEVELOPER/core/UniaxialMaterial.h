@@ -78,6 +78,7 @@ class UniaxialMaterial : public Material
     virtual Response *setResponse (const char **argv, int argc, 
 				   OPS_Stream &theOutputStream);
     virtual int getResponse (int responseID, Information &matInformation);    
+    virtual bool hasFailed(void) {return false;}
 
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     virtual double getStressSensitivity     (int gradIndex, bool conditional);

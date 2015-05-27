@@ -753,6 +753,20 @@ DOF_Group::setEigenvector(int mode, const Vector &theVector)
 }
 
 
+
+const Matrix &
+DOF_Group::getEigenvectors(void)
+{
+  if (myNode == 0) {
+    opserr << "DOF_Group::setNodeAccel: 0 Node Pointer\n";
+    exit(-1);
+  }
+
+  return myNode->getEigenvectors();
+}
+
+
+
 Matrix *
 DOF_Group::getT(void)
 {
@@ -962,3 +976,37 @@ DOF_Group::resetNodePtr(void)
 }
 
 
+double 
+DOF_Group::getDampingBetaFactor(int mode, double ratio, double wn)
+{
+  // to return 2.0 * ratio * wn * phi(mode)' * M * v
+  double beta = 0;
+  const Matrix & mass = myNode->getMass();
+  const Matrix & eigenVectors = myNode->getEigenvectors();
+  const Vector & vel = myNode->getTrialVel();
+  int numDOF = eigenVectors.noRows();
+  int numMode = eigenVectors.noCols();
+  Vector Mv = mass * vel;
+  if (mode < numMode) {
+    for (int i = 0; i < numDOF; i++) 
+      beta += 2.0 * ratio * wn * eigenVectors(i, mode) * Mv(i);
+  }
+  return beta;
+}
+
+const Vector &
+DOF_Group::getDampingBetaForce(int mode, double beta)
+{
+  // to return beta * M * phi(mode)
+  const Matrix & mass = myNode->getMass();
+  const Matrix & eigenVectors = myNode->getEigenvectors();
+  int numDOF = eigenVectors.noRows();
+
+  Vector eigenvector(numDOF);
+
+  for (int i=0; i<numDOF; i++)
+    eigenvector(i) = eigenVectors(i,mode);
+
+  unbalance->addMatrixVector(0.0, mass, eigenvector, -beta);
+  return *unbalance;
+}

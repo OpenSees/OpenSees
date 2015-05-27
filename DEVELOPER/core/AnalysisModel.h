@@ -97,6 +97,9 @@ class AnalysisModel: public MovableObject
     virtual void setNumEigenvectors(int numEigenvectors);
     virtual void setEigenvector(int mode, const Vector &);
     virtual void setEigenvalues(const Vector &);    
+    virtual const Vector &getEigenvalues(void);    
+    const Vector *getModalDampingFactors(void);
+    bool inclModalDampingMatrix(void);
     
     // methods which trigger operations in the Domain
     virtual void setLinks(Domain &theDomain, ConstraintHandler &theHandler);

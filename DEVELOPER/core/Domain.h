@@ -195,6 +195,10 @@ class Domain
     virtual int setEigenvalues(const Vector &theEigenvalues);
     virtual const Vector &getEigenvalues(void);
     virtual double getTimeEigenvaluesSet(void);
+
+    int setModalDampingFactors(Vector *, bool inclModalMatrix = false);
+    const Vector *getModalDampingFactors(void);
+    bool inclModalDampingMatrix(void);
     
     // methods for other objects to determine if model has changed
     virtual int hasDomainChanged(void);
@@ -211,6 +215,7 @@ class Domain
 
     virtual int  addRegion(MeshRegion &theRegion);    	
     virtual MeshRegion *getRegion(int region);    	
+    virtual void getRegionTags(ID& rtags) const;
 
     virtual void Print(OPS_Stream &s, int flag =0);
     virtual void Print(OPS_Stream &s, ID *nodeTags, ID *eleTags, int flag =0);
@@ -277,6 +282,8 @@ class Domain
     
     Vector *theEigenvalues;
     double theEigenvalueSetTime;
+    Vector *theModalDampingFactors;
+    bool inclModalMatrix;
 
     int lastChannel;
 

@@ -75,6 +75,16 @@ TransientIntegrator::formTangent(int statFlag)
     
     theLinSOE->zeroA();
 
+    // do modal damping
+    bool inclModalMatrix=theModel->inclModalDampingMatrix();
+    if (inclModalMatrix == true) {
+      const Vector *modalValues = theModel->getModalDampingFactors();
+      if (modalValues != 0) {
+	this->addModalDampingMatrix(modalValues);
+      }
+    }
+
+
     // loop through the DOF_Groups and add the unbalance
     DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
@@ -95,12 +105,44 @@ TransientIntegrator::formTangent(int statFlag)
 	    result = -2;
 	}
     }
-
     return result;
 }
 
 
+    
+int
+TransientIntegrator::formUnbalance(void) {
+    LinearSOE *theLinSOE = this->getLinearSOE();
+    AnalysisModel *theModel = this->getAnalysisModel();
 
+    if (theModel == 0 || theLinSOE == 0) {
+ 	opserr << "WARNING IncrementalIntegrator::formUnbalance -";
+	opserr << " no AnalysisModel or LinearSOE has been set\n";
+	return -1;
+    }
+    
+    theLinSOE->zeroB();
+
+    // do modal damping
+    const Vector *modalValues = theModel->getModalDampingFactors();
+    if (modalValues != 0) {
+      this->addModalDampingForce(modalValues);
+    }
+    
+    if (this->formElementResidual() < 0) {
+	opserr << "WARNING IncrementalIntegrator::formUnbalance ";
+	opserr << " - this->formElementResidual failed\n";
+	return -1;
+    }
+    
+    if (this->formNodalUnbalance() < 0) {
+	opserr << "WARNING IncrementalIntegrator::formUnbalance ";
+	opserr << " - this->formNodalUnbalance failed\n";
+	return -2;
+    }    
+
+    return 0;
+}
     
 int
 TransientIntegrator::formEleResidual(FE_Element *theEle)
@@ -117,3 +159,6 @@ TransientIntegrator::formNodUnbalance(DOF_Group *theDof)
   theDof->addPIncInertiaToUnbalance();
   return 0;
 }    
+
+
+

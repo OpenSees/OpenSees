@@ -27,7 +27,7 @@
 // Description: This file contains global variables used in OpenSees files.
 // if you change some of the variables, you must recompile ALL the code.
 
-#define OPS_VERSION "2.4.5 (rev 5855)"
+#define OPS_VERSION "2.4.6 (rev 5988)"
 
 #define _USING_OpenSees_STREAMS
 #include <OPS_Stream.h>
@@ -48,7 +48,7 @@ extern OPS_Stream *opserrPtr;
 // #define OPS_Stream ostream
 // #define endln endl
 
-enum NodeResponseType { Disp = 1, Vel = 2, Accel =3, IncrDisp =4, IncrDeltaDisp =5, Reaction =6};
+enum NodeResponseType { Disp = 1, Vel = 2, Accel =3, IncrDisp =4, IncrDeltaDisp =5, Reaction =6, Unbalance =7};
 
 #ifdef _TCL85
 #define TCL_Char const char

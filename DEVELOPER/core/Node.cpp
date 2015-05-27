@@ -908,11 +908,8 @@ Node::addInertiaLoadSensitivityToUnbalance(const Vector &accelG, double fact, bo
   //(*unbalLoad) -= ((*mass) * (*R) * accelG)*fact;
 
 
-
 	Matrix massSens(mass->noRows(),mass->noCols());
-	if (parameterID != 0) {
-		massSens(parameterID-1,parameterID-1) = 1.0;
-	}
+	massSens = this->getMassSensitivity();
 
 	Matrix MR(mass->noRows(), R->noCols());
 
@@ -1751,6 +1748,15 @@ Node::getMassSensitivity(void)
 		if ( (parameterID == 1) || (parameterID == 2) || (parameterID == 3) ) {
 			massSens(parameterID-1,parameterID-1) = 1.0;
 		}
+		if (parameterID == 7) {
+		  massSens(0,0) = 1.0;
+		  massSens(1,1) = 1.0;
+		}
+		if (parameterID == 8) {
+		  massSens(0,0) = 1.0;
+		  massSens(1,1) = 1.0;
+		  massSens(2,2) = 1.0;
+		}
 		return massSens;
 	}
 }
@@ -1784,24 +1790,42 @@ Node::setParameter(const char **argv, int argc, Parameter &param)
 
   if ((strstr(argv[0],"mass") != 0) || (strstr(argv[0],"-mass") != 0)) { 
     int direction = 0; // atoi(argv[1]);
-    if ((strcmp(argv[1],"x") == 0)||(strcmp(argv[1],"X") == 0)||(strcmp(argv[1],"1") == 0))
+    if ((strcmp(argv[1],"x") == 0)||(strcmp(argv[1],"X") == 0)||(strcmp(argv[1],"1") == 0)) {
       direction = 1;
-    else if ((strcmp(argv[1],"y") == 0)||(strcmp(argv[1],"Y") == 0)||(strcmp(argv[1],"2") == 0))
+      if (mass != 0)
+	param.setValue((*mass)(0,0));
+    }
+    else if ((strcmp(argv[1],"y") == 0)||(strcmp(argv[1],"Y") == 0)||(strcmp(argv[1],"2") == 0)) {
       direction = 2;
-    else if ((strcmp(argv[1],"z") == 0)||(strcmp(argv[1],"Z") == 0)||(strcmp(argv[1],"3") == 0))					
+      if (mass != 0)
+	param.setValue((*mass)(1,1));
+    }
+    else if ((strcmp(argv[1],"z") == 0)||(strcmp(argv[1],"Z") == 0)||(strcmp(argv[1],"3") == 0)) {
       direction = 3;
-    else if ((strcmp(argv[1],"xy") == 0)||(strcmp(argv[1],"XY") == 0))
+      if (mass != 0)
+	param.setValue((*mass)(2,2));
+    }
+    else if ((strcmp(argv[1],"xy") == 0)||(strcmp(argv[1],"XY") == 0)) {
       direction = 7;
-    else if ((strcmp(argv[1],"xyz") == 0)||(strcmp(argv[1],"XYZ") == 0))
+      if (mass != 0)
+	param.setValue((*mass)(0,0));
+    }
+    else if ((strcmp(argv[1],"xyz") == 0)||(strcmp(argv[1],"XYZ") == 0)) {
       direction = 8;
+      if (mass != 0)
+	param.setValue((*mass)(0,0));
+    }
     
     if ((direction >= 1 && direction <= 3) || direction == 7 || direction == 8)
       return param.addObject(direction, this);
   }
   else if (strstr(argv[0],"coord") != 0) {
     int direction = atoi(argv[1]);
-    if (direction >= 1 && direction <= 3)
+    if (direction >= 1 && direction <= 3) {
+      if (Crd != 0)
+	param.setValue((*Crd)(direction-1));
       return param.addObject(direction+3, this);
+    }
   }
   else
     opserr << "WARNING: Could not set parameter in Node. " << endln;
@@ -2026,6 +2050,8 @@ Node::getResponse(NodeResponseType responseType)
     return &(this->getIncrDeltaDisp());
   else if (responseType == Reaction) 
     return &(this->getReaction());
+  else if (responseType == Unbalance) 
+    return &(this->getUnbalancedLoad());
   else
     return NULL;
 
@@ -2087,6 +2113,8 @@ Node::setCrds(const Vector &newCrds)
 {
   if (Crd != 0 && Crd->Size() == newCrds.Size()) {
     (*Crd) = newCrds;
+
+	return;
 
     // Need to "setDomain" to make the change take effect. 
     Domain *theDomain = this->getDomain();

@@ -34,6 +34,7 @@
 // What: "@(#) Integrator.C, revA"
 
 #include <Integrator.h>
+#include <Vector.h>
 
 Integrator::Integrator(int clasTag)
 :MovableObject(clasTag)
@@ -52,8 +53,26 @@ Integrator::domainChanged()
     return 0;
 }
 
+int
+Integrator::formSensitivityRHS(int gradNum)
+{
+    return 0;
+}
 
+int
+Integrator::formIndependentSensitivityRHS()
+{
+    return 0;
+}
 
+int
+Integrator::saveSensitivity(const Vector& v, int gradNum, int numGrads)
+{
+    return 0;
+}
 
-
-
+int
+Integrator::commitSensitivity(int gradNum, int numGrads)
+{
+    return 0;
+}

@@ -66,6 +66,9 @@ class LinearSOE : public MovableObject
     virtual int addB(const Vector &, const ID &, double fact = 1.0) =0;    
     virtual int setB(const Vector &, double fact = 1.0) =0;        
 
+    virtual int addA(const Matrix &);
+    virtual int addColA(const Vector &col, int colIndex, double fact = 1.0);
+
     virtual void zeroA(void) =0;
     virtual void zeroB(void) =0;
 

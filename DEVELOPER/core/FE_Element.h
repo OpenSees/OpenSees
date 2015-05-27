@@ -83,6 +83,7 @@ class FE_Element: public TaggedObject
     virtual const Vector &getM_Force(const Vector &x, double fact = 1.0);
     virtual void  addM_Force(const Vector &accel, double fact = 1.0);    
     virtual void  addD_Force(const Vector &vel, double fact = 1.0);    
+    virtual void  addK_Force(const Vector &disp, double fact = 1.0);    
 
     virtual int updateElement(void);
 
