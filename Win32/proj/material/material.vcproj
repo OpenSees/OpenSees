@@ -131,6 +131,18 @@
 				RelativePath="..\..\..\SRC\material\uniaxial\BarSlipMaterial.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\snap\Bilin02.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\snap\Bilin02.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\BilinearOilDamper.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\BilinearOilDamper.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\Bond_SP01.cpp">
 			</File>
 			<File
@@ -207,6 +219,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\Concrete07.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ConcreteD.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\uniaxial\ConcreteD.h">
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\material\uniaxial\ConcreteSakaiKawashima.cpp">
@@ -954,6 +972,12 @@
 			Name="nD"
 			Filter="">
 			<File
+				RelativePath="..\..\..\SRC\material\nD\AcousticMedium.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\AcousticMedium.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\nD\BeamFiberMaterial2d.cpp">
 			</File>
 			<File
@@ -1086,6 +1110,12 @@
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\nD\LinearCap.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\LinearCap.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias.cpp">
 			</File>
 			<File
@@ -1110,6 +1140,7 @@
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrain.h">
 			</File>
 			<File
+<<<<<<< .mine
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.cpp">
 			</File>
 			<File
@@ -1122,6 +1153,26 @@
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\material\nD\matCMM\MaterialCMM.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\matCMM\MaterialCMM.h">
+			</File>
+			<File
+=======
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.h">
+			</File>
+			<File
+>>>>>>> .r6014
 				RelativePath="..\..\..\SRC\material\nD\NDMaterial.cpp">
 			</File>
 			<File

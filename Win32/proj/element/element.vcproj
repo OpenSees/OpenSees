@@ -983,6 +983,12 @@
 			Name="frictionBearing"
 			Filter="">
 			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\FPBearingPTV.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\frictionBearing\FPBearingPTV.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\frictionBearing\FlatSliderSimple2d.cpp">
 			</File>
 			<File
@@ -1253,6 +1259,12 @@
 				RelativePath="..\..\..\SRC\element\shell\R3vectors.h">
 			</File>
 			<File
+				RelativePath="..\..\..\SRC\element\shell\ShellDKGQ.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\shell\ShellDKGQ.h">
+			</File>
+			<File
 				RelativePath="..\..\..\SRC\element\shell\ShellMITC4.cpp">
 			</File>
 			<File
@@ -1263,6 +1275,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\shell\ShellNL.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\shell\ShellNLDKGQ.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\shell\ShellNLDKGQ.h">
 			</File>
 		</Filter>
 		<Filter
@@ -1343,6 +1361,34 @@
 			</File>
 			<File
 				RelativePath="..\..\..\SRC\element\HUelements\YamamotoBiaxialHDR.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="XMUelements"
+			Filter="">
+			<File
+				RelativePath="..\..\..\SRC\element\XMUelements\AC3D8HexWithSensitivity.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\XMUelements\AC3D8HexWithSensitivity.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\XMUelements\ASI3D8QuadWithSensitivity.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\XMUelements\ASI3D8QuadWithSensitivity.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\XMUelements\AV3D4QuadWithSensitivity.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\XMUelements\AV3D4QuadWithSensitivity.h">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.cpp">
+			</File>
+			<File
+				RelativePath="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.h">
 			</File>
 		</Filter>
 		<File
