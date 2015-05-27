@@ -6,6 +6,7 @@ OBJS       = UniaxialMaterial.o \
 	Steel2.o \
 	OriginCentered.o \
 	ConcretewBeta.o \
+	ConcreteD.o \
 	ConcreteSakaiKawashima.o \
 	c14-SK-M.o \
 	ElasticMultiLinear.o \

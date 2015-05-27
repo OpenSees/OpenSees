@@ -38,10 +38,63 @@
 #include <float.h>
 #include <Channel.h>
 
+#include <elementAPI.h>
+
+void *
+OPS_HystereticMaterial(void)
+{
+  // Pointer to a uniaxial material that will be returned
+  UniaxialMaterial *theMaterial = 0;
+
+  int numArgs = OPS_GetNumRemainingInputArgs();
+  if (numArgs != 18 || numArgs != 17 || numArgs != 14 || numArgs != 13) {
+    opserr << "Want: uniaxialMaterial Hysteretic tag? mom1p? rot1p? mom2p? rot2p? <mom3p? rot3p?> "
+	   << "\nmom1n? rot1n? mom2n? rot2n? <mom3n? rot3n?> pinchX? pinchY? damfc1? damfc2? <beta?>";
+    return 0;
+  }
+  
+  int iData[1];
+  double dData[17];
+  for (int i=0; i<17; i++) 
+    dData[i] = 0.0;
+
+  int numData = 1;
+  if (OPS_GetIntInput(&numData, iData) != 0) {
+    opserr << "WARNING invalid tag for uniaxialMaterial Hysteretic" << endln;
+    return 0;
+  }
+
+  numData = numArgs-1;
+  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    opserr << "Invalid data for uniaxial Hysteretic " << iData[0] << endln;
+    return 0;	
+  }
+
+  // Parsing was successful, allocate the material
+
+
+  if (numData > 13) 
+    theMaterial = new HystereticMaterial(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+					 dData[6], dData[7], dData[8], dData[19], dData[10], dData[11], dData[12]);
+  else
+    theMaterial = new HystereticMaterial(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+					 dData[6], dData[7], dData[8], dData[19], dData[10], dData[11], dData[12],
+					 dData[13], dData[14], dData[15], dData[16]);
+
+  if (theMaterial == 0) {
+    opserr << "WARNING could not create uniaxialMaterial of type Hysteretic\n";
+    return 0;
+  }
+
+  return theMaterial;
+}
+
+
+
 HystereticMaterial::HystereticMaterial(int tag,
-			double m1p, double r1p, double m2p, double r2p, double m3p, double r3p,
-			double m1n, double r1n, double m2n, double r2n, double m3n, double r3n,
-			double px, double py, double d1, double d2, double b):
+				       double m1p, double r1p, double m2p, double r2p, double m3p, double r3p,
+				       double m1n, double r1n, double m2n, double r2n, double m3n, double r3n,
+				       double px, double py, double d1, double d2, double b):
 UniaxialMaterial(tag, MAT_TAG_Hysteretic),
 pinchX(px), pinchY(py), damfc1(d1), damfc2(d2), beta(b),
 mom1p(m1p), rot1p(r1p), mom2p(m2p), rot2p(r2p), mom3p(m3p), rot3p(r3p),

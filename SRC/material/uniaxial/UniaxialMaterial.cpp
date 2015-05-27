@@ -210,6 +210,11 @@ UniaxialMaterial::setResponse(const char **argv, int argc,
       theOutput.tag("ResponseType", "eps11");
       theResponse =  new MaterialResponse(this, 3, this->getStrain());
     }
+
+    else if (strcmp(argv[0],"plasticStrain") == 0) {
+      theOutput.tag("ResponseType", "eps11");
+      theResponse =  new MaterialResponse(this, 6, this->getStrain());
+    }
     
     // strain
     else if ((strcmp(argv[0],"stressStrain") == 0) || 
@@ -270,6 +275,10 @@ UniaxialMaterial::getResponse(int responseID, Information &matInfo)
       return 0;
   }
 
+  double kInit;
+  double stress;
+  double strain;
+
   switch (responseID) {
     case 1:
       matInfo.setDouble(this->getStress());
@@ -282,6 +291,14 @@ UniaxialMaterial::getResponse(int responseID, Information &matInfo)
     case 3:
       matInfo.setDouble(this->getStrain());
       return 0;      
+
+  case 6: // an approx to plastic strain
+      strain = this->getStrain();
+      stress = this->getStress();
+      kInit = this->getTangent();
+      strain = strain-stress/kInit;
+      matInfo.setDouble(strain);
+      return 0;      
     
     case 4:
       stressStrain(0) = this->getStress();
@@ -292,9 +309,9 @@ UniaxialMaterial::getResponse(int responseID, Information &matInfo)
 	  case 5:
       stressStrainTangent(0) = this->getStress();
       stressStrainTangent(1) = this->getStrain();
-	  stressStrainTangent(2) = this->getTangent();
+      stressStrainTangent(2) = this->getTangent();
       matInfo.setVector(stressStrainTangent);
-	  return 0;
+      return 0;
   default:      
     return -1;
   }
