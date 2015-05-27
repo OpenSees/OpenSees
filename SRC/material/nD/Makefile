@@ -17,6 +17,8 @@ endif
 OBJS       = NDMaterial.o \
 	$(DAMAGE_2P) $(PLAINCONCRETE) BeamFiberMaterial.o \
 	BeamFiberMaterial2d.o \
+	LinearCap.o \
+	AcousticMedium.o \
 	ElasticIsotropicAxiSymm.o\
 	ElasticIsotropicBeamFiber2d.o \
 	ElasticIsotropicBeamFiber.o \
@@ -66,6 +68,7 @@ all: $(OBJS)
 	@$(CD) $(FE)/material/nD/cyclicSoil; $(MAKE);
 	@$(CD) $(FE)/material/nD/reinforcedConcretePlaneStress; $(MAKE); 
 	@$(CD) $(FE)/material/nD/UWmaterials; $(MAKE);
+	@$(CD) $(FE)/material/nD/matCMM; $(MAKE);
 
 # Miscellaneous
 
@@ -83,6 +86,7 @@ spotless: clean
 	@$(CD) $(FE)/material/nD/cyclicSoil; $(MAKE) wipe;
 	@$(CD) $(FE)/material/nD/reinforcedConcretePlaneStress; $(MAKE) wipe; 
 	@$(CD) $(FE)/material/nD/UWmaterials; $(MAKE) wipe;
+	@$(CD) $(FE)/material/nD/matCMM; $(MAKE) wipe;
 
 wipe: spotless
 
