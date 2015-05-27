@@ -3167,6 +3167,8 @@ SRC/material/uniaxial/Concrete06.cpp -text
 SRC/material/uniaxial/Concrete06.h -text
 SRC/material/uniaxial/Concrete07.cpp -text
 SRC/material/uniaxial/Concrete07.h -text
+SRC/material/uniaxial/ConcreteD.cpp -text
+SRC/material/uniaxial/ConcreteD.h -text
 SRC/material/uniaxial/ConcreteSakaiKawashima.cpp -text
 SRC/material/uniaxial/ConcreteSakaiKawashima.h -text
 SRC/material/uniaxial/ConcretewBeta.cpp -text
