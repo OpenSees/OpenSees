@@ -2345,9 +2345,6 @@ SRC/element/XMUelements/ASI3D8QuadWithSensitivity.h -text
 SRC/element/XMUelements/AV3D4QuadWithSensitivity.cpp -text
 SRC/element/XMUelements/AV3D4QuadWithSensitivity.h -text
 SRC/element/XMUelements/Makefile -text
-SRC/element/XMUelements/TclAcousticCommand.cpp -text
-SRC/element/XMUelements/TclElementCommands.cpp -text
-SRC/element/XMUelements/TclQuadCommand.cpp -text
 SRC/element/XMUelements/VS3D4QuadWithSensitivity.cpp -text
 SRC/element/XMUelements/VS3D4QuadWithSensitivity.h -text
 SRC/element/adapter/Actuator.cpp -text
