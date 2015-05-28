@@ -243,6 +243,9 @@
 #include <DispBeamColumn2d.h>
 #include <DispBeamColumn3d.h>
 #include <ShellMITC4.h>
+#include <ShellNL.h>
+#include <ShellDKGQ.h>   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+#include <ShellNLDKGQ.h> //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include <Brick.h>
 #include <BbarBrick.h>
 #include <Joint2D.h>		// Arash
@@ -579,188 +582,194 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 {
     switch(classTag) {
 	     
-	case ELE_TAG_Truss:  
-	     return new Truss(); 
-
-	case ELE_TAG_Truss2:  
-	     return new Truss2(); 
-	     
-	case ELE_TAG_TrussSection:  
-	     return new TrussSection(); 	     
-	     
-	case ELE_TAG_CorotTruss:  
-	     return new CorotTruss(); 
-	     
-	case ELE_TAG_CorotTrussSection:  
-	     return new CorotTrussSection(); 	     
-
-	case ELE_TAG_ZeroLength:  
-	     return new ZeroLength(); 	     
-
-	case ELE_TAG_ZeroLengthSection:  
-	     return new ZeroLengthSection(); 	     
-
-	case ELE_TAG_ZeroLengthContact2D:  
-	     return new ZeroLengthContact2D(); 	     
-
-	case ELE_TAG_ZeroLengthContact3D:  
-	     return new ZeroLengthContact3D(); 	     
-
-	case ELE_TAG_ZeroLengthInterface2D:  
-	     return new ZeroLengthInterface2D(); 	     
-
-	case ELE_TAG_ZeroLengthContactNTS2D:  
-	     return new ZeroLengthContactNTS2D(); 	     
-
-
-	     //case ELE_TAG_ZeroLengthND:  
-	     //return new ZeroLengthND(); 	     
-
-	case ELE_TAG_FourNodeQuadUP:  
-	     return new FourNodeQuadUP(); 	     
-	     
-	case ELE_TAG_FourNodeQuad:  
-	     return new FourNodeQuad(); 	     
-
-	case ELE_TAG_Tri31:  
-	     return new Tri31(); 	     
-	     
-	case ELE_TAG_ElasticBeam2d:
-		return new ElasticBeam2d();
-
-	case ELE_TAG_ElasticBeam3d:
-		return new ElasticBeam3d();
-
-	case ELE_TAG_ElasticTimoshenkoBeam2d:
-		return new ElasticTimoshenkoBeam2d();
-
-	case ELE_TAG_ElasticTimoshenkoBeam3d:
-		return new ElasticTimoshenkoBeam3d();
-
-	case ELE_TAG_ForceBeamColumn2d:  
-	     return new ForceBeamColumn2d();					     
-
-	case ELE_TAG_ForceBeamColumn3d:  
-	     return new ForceBeamColumn3d();  
-				
-	case ELE_TAG_DispBeamColumn2d:  
-	     return new DispBeamColumn2d();					     
-
-	case ELE_TAG_DispBeamColumn3d:  
-	     return new DispBeamColumn3d(); 
-		 
-	case ELE_TAG_EnhancedQuad:
-		return new EnhancedQuad();
-
-        case ELE_TAG_NineNodeMixedQuad:
-		return new NineNodeMixedQuad();
-
-	case ELE_TAG_ConstantPressureVolumeQuad:
-		return new ConstantPressureVolumeQuad();
-
-	case ELE_TAG_Brick:
-		return new Brick();
-
+    case ELE_TAG_Truss:  
+      return new Truss(); 
+      
+    case ELE_TAG_Truss2:  
+      return new Truss2(); 
+      
+    case ELE_TAG_TrussSection:  
+      return new TrussSection(); 	     
+      
+    case ELE_TAG_CorotTruss:  
+      return new CorotTruss(); 
+      
+    case ELE_TAG_CorotTrussSection:  
+      return new CorotTrussSection(); 	     
+      
+    case ELE_TAG_ZeroLength:  
+      return new ZeroLength(); 	     
+      
+    case ELE_TAG_ZeroLengthSection:  
+      return new ZeroLengthSection(); 	     
+      
+    case ELE_TAG_ZeroLengthContact2D:  
+      return new ZeroLengthContact2D(); 	     
+      
+    case ELE_TAG_ZeroLengthContact3D:  
+      return new ZeroLengthContact3D(); 	     
+      
+    case ELE_TAG_ZeroLengthInterface2D:  
+      return new ZeroLengthInterface2D(); 	     
+      
+    case ELE_TAG_ZeroLengthContactNTS2D:  
+      return new ZeroLengthContactNTS2D(); 	     
+      
+      
+      //case ELE_TAG_ZeroLengthND:  
+      //return new ZeroLengthND(); 	     
+      
+    case ELE_TAG_FourNodeQuadUP:  
+      return new FourNodeQuadUP(); 	     
+      
+    case ELE_TAG_FourNodeQuad:  
+      return new FourNodeQuad(); 	     
+      
+    case ELE_TAG_Tri31:  
+      return new Tri31(); 	     
+      
+    case ELE_TAG_ElasticBeam2d:
+      return new ElasticBeam2d();
+      
+    case ELE_TAG_ElasticBeam3d:
+      return new ElasticBeam3d();
+      
+    case ELE_TAG_ElasticTimoshenkoBeam2d:
+      return new ElasticTimoshenkoBeam2d();
+      
+    case ELE_TAG_ElasticTimoshenkoBeam3d:
+      return new ElasticTimoshenkoBeam3d();
+      
+    case ELE_TAG_ForceBeamColumn2d:  
+      return new ForceBeamColumn2d();					     
+      
+    case ELE_TAG_ForceBeamColumn3d:  
+      return new ForceBeamColumn3d();  
+      
+    case ELE_TAG_DispBeamColumn2d:  
+      return new DispBeamColumn2d();					     
+      
+    case ELE_TAG_DispBeamColumn3d:  
+      return new DispBeamColumn3d(); 
+      
+    case ELE_TAG_EnhancedQuad:
+      return new EnhancedQuad();
+      
+    case ELE_TAG_NineNodeMixedQuad:
+      return new NineNodeMixedQuad();
+      
+    case ELE_TAG_ConstantPressureVolumeQuad:
+      return new ConstantPressureVolumeQuad();
+      
+    case ELE_TAG_Brick:
+      return new Brick();
+      
     case ELE_TAG_SSPquad:          
       return new SSPquad();
-
+      
     case ELE_TAG_SSPquadUP:     
       return new SSPquadUP;
-
+      
     case ELE_TAG_SSPbrick:  
       return new SSPbrick();
-
+      
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
-
-	case ELE_TAG_BeamContact2D:
+      
+    case ELE_TAG_BeamContact2D:
       return new BeamContact2D();
-
+      
     case ELE_TAG_BeamContact2Dp:
       return new BeamContact2Dp();
-
-	case ELE_TAG_BeamContact3D:
+      
+    case ELE_TAG_BeamContact3D:
       return new BeamContact3D();
-
+      
     case ELE_TAG_BeamContact3Dp:
       return new BeamContact3Dp();
-
-	case ELE_TAG_BeamEndContact3D:
+      
+    case ELE_TAG_BeamEndContact3D:
       return new BeamEndContact3D();
-
+      
     case ELE_TAG_BeamEndContact3Dp:
       return new BeamEndContact3Dp();
-
-	case ELE_TAG_ShellMITC4:
-		return new ShellMITC4();
-
-	case ELE_TAG_BbarBrick:
-		return new BbarBrick();
-		
-	
-	case ELE_TAG_ElastomericBearingBoucWen2d:
-		return new ElastomericBearingBoucWen2d();
-
-	case ELE_TAG_ElastomericBearingBoucWen3d:
-		return new ElastomericBearingBoucWen3d();
-
+      
+    case ELE_TAG_ShellMITC4:
+      return new ShellMITC4();
+      
+    case ELE_TAG_ShellDKGQ:      //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+      return new ShellDKGQ();  //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+      
+    case ELE_TAG_ShellNLDKGQ:      //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+      return new ShellNLDKGQ();  //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+      
+    case ELE_TAG_BbarBrick:
+      return new BbarBrick();
+      
+      
+    case ELE_TAG_ElastomericBearingBoucWen2d:
+      return new ElastomericBearingBoucWen2d();
+      
+    case ELE_TAG_ElastomericBearingBoucWen3d:
+      return new ElastomericBearingBoucWen3d();
+      
     case ELE_TAG_ElastomericBearingPlasticity2d:
-		return new ElastomericBearingPlasticity2d();
-
-	case ELE_TAG_ElastomericBearingPlasticity3d:
-		return new ElastomericBearingPlasticity3d();
-
-	case ELE_TAG_Joint2D:				// Arash
-		return new Joint2D();			// Arash
-
-	case ELE_TAG_TwoNodeLink:				
-		return new TwoNodeLink();			
-
-        case ELE_TAG_BBarFourNodeQuadUP:
-	  return new BBarFourNodeQuadUP();			
-
-        case ELE_TAG_BBarBrickUP:
-	  return new BBarBrickUP();			
-
-	case ELE_TAG_Nine_Four_Node_QuadUP:
-	    return new NineFourNodeQuadUP();
-
-	case ELE_TAG_BrickUP:
-	    return new BrickUP();
-
-	case ELE_TAG_FlatSliderSimple2d:
-		return new FlatSliderSimple2d();
-
-	case ELE_TAG_FlatSliderSimple3d:
-		return new FlatSliderSimple3d();
-
-	case ELE_TAG_SingleFPSimple2d:
-		return new SingleFPSimple2d();
-
-	case ELE_TAG_SingleFPSimple3d:
-		return new SingleFPSimple3d();
-
-	case ELE_TAG_RJWatsonEQS2d:
-		return new RJWatsonEQS2d();
-
-	case ELE_TAG_RJWatsonEQS3d:
-		return new RJWatsonEQS3d();
-
-	case ELE_TAG_Twenty_Eight_Node_BrickUP:
-	    return new TwentyEightNodeBrickUP();
+      return new ElastomericBearingPlasticity2d();
+      
+    case ELE_TAG_ElastomericBearingPlasticity3d:
+      return new ElastomericBearingPlasticity3d();
+      
+    case ELE_TAG_Joint2D:				// Arash
+      return new Joint2D();			// Arash
+      
+    case ELE_TAG_TwoNodeLink:				
+      return new TwoNodeLink();			
+      
+    case ELE_TAG_BBarFourNodeQuadUP:
+      return new BBarFourNodeQuadUP();			
+      
+    case ELE_TAG_BBarBrickUP:
+      return new BBarBrickUP();			
+      
+    case ELE_TAG_Nine_Four_Node_QuadUP:
+      return new NineFourNodeQuadUP();
+      
+    case ELE_TAG_BrickUP:
+      return new BrickUP();
+      
+    case ELE_TAG_FlatSliderSimple2d:
+      return new FlatSliderSimple2d();
+      
+    case ELE_TAG_FlatSliderSimple3d:
+      return new FlatSliderSimple3d();
+      
+    case ELE_TAG_SingleFPSimple2d:
+      return new SingleFPSimple2d();
+      
+    case ELE_TAG_SingleFPSimple3d:
+      return new SingleFPSimple3d();
+      
+    case ELE_TAG_RJWatsonEQS2d:
+      return new RJWatsonEQS2d();
+      
+    case ELE_TAG_RJWatsonEQS3d:
+      return new RJWatsonEQS3d();
+      
+    case ELE_TAG_Twenty_Eight_Node_BrickUP:
+      return new TwentyEightNodeBrickUP();
 #ifdef _PFEM
     case ELE_TAG_PFEMElement2D:
-        return new PFEMElement2D();
+      return new PFEMElement2D();
 #endif
-	default:
-	     opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";
-	     opserr << " - no Element type exists for class tag " ;
-	     opserr << classTag << endln;
-	     return 0;
-	     
-	 }
+    default:
+      opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";
+      opserr << " - no Element type exists for class tag " ;
+      opserr << classTag << endln;
+      return 0;
+      
+    }
 }
-				
+
 Node          *
 FEM_ObjectBrokerAllClasses::getNewNode(int classTag)
 {
