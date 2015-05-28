@@ -38,6 +38,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/pyMacro; $(MAKE);
 	@$(CD) $(FE)/element/surfaceLoad; $(MAKE);
 	@$(CD) $(FE)/element/UWelements; $(MAKE);
+	@$(CD) $(FE)/element/XMUelements; $(MAKE);
 	@$(CD) $(FE)/element/HUelements; $(MAKE);
 	@$(CD) $(FE)/element/XMUelements; $(MAKE);
 
@@ -76,6 +77,7 @@ spotless: clean
 	@$(CD) $(FE)/element/pyMacro; $(MAKE) wipe;
 	@$(CD) $(FE)/element/surfaceLoad; $(MAKE) wipe;
 	@$(CD) $(FE)/element/UWelements; $(MAKE) wipe;
+	@$(CD) $(FE)/element/XMUelements; $(MAKE) wipe;
 	@$(CD) $(FE)/element/HUelements; $(MAKE) wipe;
 	@$(CD) $(FE)/element/XMUelements; $(MAKE) wipe;
 
