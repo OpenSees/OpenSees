@@ -830,7 +830,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }																								
   }  
 
-  else if (strcmp(argv[1], "AC3D8WithSensitivity") == 0) {
+  else if (strcmp(argv[1], "AC3D8") == 0) {
       
     void *theEle = OPS_AC3D8HexWithSensitivity();
     if (theEle != 0) 
@@ -841,7 +841,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }																								
   }
 
-  else if (strcmp(argv[1], "ASI3D8WithSensitivity") == 0) {
+  else if (strcmp(argv[1], "ASI3D8") == 0) {
     
     void *theEle = OPS_ASID8QuadWithSensitivity();
     if (theEle != 0) 
@@ -853,7 +853,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     
   } 
 
-  else if (strcmp(argv[1], "AV3D4WithSensitivity") == 0) {
+  else if (strcmp(argv[1], "AV3D4") == 0) {
     
     void *theEle = OPS_AV3D4QuadWithSensitivity();
     if (theEle != 0) 
@@ -865,7 +865,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   } 
   
 
-  else if (strcmp(argv[1], "VS3D4WithSensitivity") == 0) {
+  else if (strcmp(argv[1], "VS3D4") == 0) {
 
     void *theEle = OPS_VS3D4WuadWithSensitivity();
     if (theEle != 0) 
