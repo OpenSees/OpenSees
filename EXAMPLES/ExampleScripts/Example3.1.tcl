@@ -40,6 +40,10 @@ node  1       0.0     0.0
 node  2    $width     0.0 
 node  3       0.0 $height
 node  4    $width $height
+node  5       0.0 [expr 2*$height]
+node  6    $width [expr 2*$height]
+node  7       0.0 [expr 3*$height]
+node  8    $width [expr 3*$height]
 
 
 # Fix supports at base of columns
@@ -104,7 +108,7 @@ section Fiber 1 {
 # Geometry of column elements
 #                tag 
 puts "HI 4"
-geomTransf Linear 1  
+geomTransf Corotational 1  
 
 # Number of integration points along length of element
 set np 5
@@ -114,6 +118,10 @@ set np 5
 set eleType forceBeamColumn
 element $eleType  1   1   3   $np    1       1 
 element $eleType  2   2   4   $np    1       1 
+element $eleType  5   3   5   $np    1       1 
+element $eleType  6   4   6   $np    1       1 
+element $eleType  8   5   7   $np    1       1 
+element $eleType  9   6   8   $np    1       1 
 
 # Define beam elment
 # -----------------------------
@@ -125,6 +133,8 @@ geomTransf Linear 2
 # Create the beam element
 #                          tag ndI ndJ     A       E    Iz   transfTag
 element elasticBeamColumn   3   3   4    360    4030  8640    2
+element elasticBeamColumn   7   5   6    360    4030  8640    2
+element elasticBeamColumn   10   7   8    360    4030  8640    2
 
 
 # Define gravity loads
@@ -156,7 +166,7 @@ initialize
 # ------------------------------
 
 # Create the system of equation, a sparse solver with partial pivoting
-system BandGeneral
+system Mumps
 
 # Create the constraint handler, the transformation method
 constraints Transformation
@@ -188,8 +198,8 @@ analysis Static
 # ------------------------------
 
 # Create a recorder to monitor nodal displacements
-recorder Node -xml nodeGravity.out -time -node 3 4 -dof 1 2 3 disp
-recorder Element -file ele.out -ele 1 section  forces
+#recorder Node -xml nodeGravity.out -time -node 3 4 -dof 1 2 3 disp
+#recorder Element -file ele.out -ele 1 section  forces
 
 # --------------------------------
 # End of recorder generation

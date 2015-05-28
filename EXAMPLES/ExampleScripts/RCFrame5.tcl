@@ -131,7 +131,8 @@ if {$analysis == "NONLINEAR"} {
 
    test NormUnbalance 1.0e-06 10 0
    algorithm Newton
-   system SparseGeneral -piv
+#   system SparseGeneral -piv
+system Mumps
 }
 
 if {$analysis == "LINEAR"} {
@@ -163,7 +164,8 @@ if {$analysis == "LINEAR"} {
    element elasticBeamColumn 10   6   9    $Agir $E    $Igir    1
 
    algorithm Linear
-   system BandSPD
+#   system BandSPD
+system Mumps
 }
 
 if {$patternType == "MultipleSupport"} {

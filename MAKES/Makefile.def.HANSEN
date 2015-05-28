@@ -345,11 +345,11 @@ MUMPS_FLAG = -D_MUMPS
 #MUMPS_DIR = /gpfs/fmk/MUMPS_4.6.4
 #MUMPS_DIR = $(PETSC_DIR)/linux
 
-MUMPS_DIR = $(HOME)/MUMPS_4.10.0
+MUMPS_DIR = $(HOME)/MUMPS_5.0.0
 
 PLAT    = 
 
-SCALAP  = $(BLACSlib) $(SCALAPlib) $(BLACSlib)
+#SCALAP  = $(BLACSlib) $(SCALAPlib) $(BLACSlib)
 
 MUMPS_LIB = -L$(MUMPS_DIR)/lib \
 	$(FE)/system_of_eqn/linearSOE/mumps/MumpsSOE.o \
@@ -358,14 +358,20 @@ MUMPS_LIB = -L$(MUMPS_DIR)/lib \
 	$(FE)/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.o \
 	-ldmumps -lmumps_common \
 	-lpord \
-	$(MKL_LIB)/libmkl_scalapack_lp64.a \
-	$(MKL_LIB)/libmkl_blacs_lp64.a \
+	$(MKL_LIB)/libmkl_scalapack_lp64.a -Wl,--start-group \
 	$(MKL_LIB)/libmkl_intel_lp64.a \
-	$(MKL_LIB)/libmkl_sequential.a \
 	$(MKL_LIB)/libmkl_core.a \
-	$(MKL_LIB)/libmkl_sequential.a \
-	$(MKL_LIB)/libmkl_core.a \
-	$(SCALAP) 
+	$(MKL_LIB)/libmkl_sequential.a -Wl,--end-group \
+	$(MKL_LIB)/libmkl_blacs_openmpi_lp64.a -lpthread -lm
+
+#	$(MKL_LIB)/libmkl_scalapack_lp64.a \
+#	$(MKL_LIB)/libmkl_blacs_lp64.a \
+#	$(MKL_LIB)/libmkl_intel_lp64.a \
+#	$(MKL_LIB)/libmkl_sequential.a \
+#	$(MKL_LIB)/libmkl_core.a \
+#	$(MKL_LIB)/libmkl_sequential.a \
+#	$(MKL_LIB)/libmkl_core.a 
+
 
 MUMPS_INCLUDE = -I$(MUMPS_DIR)/include
 
@@ -386,8 +392,8 @@ else
 #	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
 
 PARALLEL_LIB = $(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
-	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
         -Wl,-rpath,$(MKL_LIB) \
 	-L$(MKL_LIB) \
 	$(MKL_LIB)/libmkl_scalapack_lp64.a \
@@ -454,5 +460,5 @@ include $(FE)/Makefile.incl
 
 TCL_INCLUDES = -I$(HOME)/tcl/include
 
-INCLUDES =  $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES)
+INCLUDES =  $(MUMPS_INCLUDE) $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES)
 
