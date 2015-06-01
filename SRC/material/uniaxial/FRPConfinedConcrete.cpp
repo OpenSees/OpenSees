@@ -408,123 +408,117 @@ void FRPConfinedConcrete::reload ()
 }
 void FRPConfinedConcrete::envelope ( )
 { 
-    double fla =0.0, flb =0.0;
-    double arrayLatA[6],arrayLatB[6],arrayLatC[6];
+  //  double fla =0.0, flb =0.0;  Delete this line
+  double arrayLatA[6],arrayLatB[6],arrayLatC[6];
+  double tol = 0.000001 ;//  Add this line
+  
+  TConvFlag = false;
+  double number = 1.0 ;
+  bool changedStrain = false;
+  
+  if (Tstrain < 0.0) {
+    Tstrain = -Tstrain ;
+    changedStrain = true;
+  }
+  
+  while(!TConvFlag) {
+    number = number + 1 ;
     
-    TConvFlag = false;
-    double number = 1.0 ;
-    bool changedStrain = false;
+    flat(TaLatstress,arrayLatA);
+    double ya = arrayLatA[0];
+    flat(TbLatstress,arrayLatB);
+    double yb = arrayLatB[0];
+    
+    if (yb*ya >0) {
+      TbLatstress = 0.1*number; //Change this line
+      continue;
+    }
+    
+    double dx = ya*(TaLatstress - TbLatstress)/(ya - yb);
+    double flc  = TaLatstress - dx;
+    flat(flc, arrayLatC);
+    double yc = arrayLatC[0];
+    double sigc = arrayLatC[1];
+    double flj = arrayLatC[2];
+    double fcc = arrayLatC[3];
+    double et_cover = arrayLatC[4];
+    double el_cover = arrayLatC[5];
+    if (yc == 0 || fabs(yc) <= tol) { 
+      Tstress=-sigc;
+      TConfRat = fcc/fpc;
+      TConfStrain = (5*(TConfRat-1)+1)*epsc0;
+      TaLatstress = flj;
+      TLatStrain  = et_cover;
+      double dStrain = Tstrain - Cstrain;
+      if (changedStrain == true)
+	dStrain = -Tstrain - Cstrain;
+      else
+	dStrain = Tstrain - Cstrain;
 
-    double stain = Tstrain;
-
-    if (Tstrain < 0.0) {
-      Tstrain = -Tstrain ;
-      changedStrain = true;
+      Ttangent= (Tstress-Cstress)/dStrain;
+      TConvFlag = true ;
+      return;
+    }
+    if  (yb*yc > 0) { TbLatstress = TaLatstress; //Change this line
+      yb = ya;
+      TaLatstress = flc; //Change this line
+      ya = yc;
+    }
+    else{
+      TaLatstress = flc; //Change this line
+      ya = yc;
     }
 
-    while(!TConvFlag) {
-	number = number + 1 ;
-
-	TbLatstress = flb;
-	flat(TaLatstress,arrayLatA);
-	double ya = arrayLatA[0];
-	flat(TbLatstress,arrayLatB);
-	double yb = arrayLatB[0];
-
-	if (yb*ya >0) {
-	  flb = 0.1*number;
-	  continue;
-	}
-
-	double dx = ya*(TaLatstress - TbLatstress)/(ya - yb);
-	double flc  = TaLatstress - dx;
-	flat(flc, arrayLatC);
-	double yc = arrayLatC[0];
-	double sigc = arrayLatC[1];
-	double flj = arrayLatC[2];
-	double fcc = arrayLatC[3];
-	double et_cover = arrayLatC[4];
-	double el_cover = arrayLatC[5];
-	if (yc == 0) {
-	  Tstress=-sigc;
-	  TConfRat = fcc/fpc;
-	  TConfStrain = (5*(TConfRat-1)+1)*epsc0;
-	  TaLatstress = flj;
-	  TbLatstress = flb;
-	  TLatStrain  = et_cover;
-	  double dStrain = Tstrain - Cstrain;
-	  if (changedStrain == true)
-	    dStrain = -Tstrain - Cstrain;
-	  else
-	    dStrain = Tstrain - Cstrain;
-	  //	  Ttangent= fabs((Tstress-Cstress)/dStrain);
-	  Ttangent= (Tstress-Cstress)/dStrain;
-	  TConvFlag = true ;
-	  return;
-	}
-	if  (yb*yc > 0) { flb = fla;
-	    yb = ya;
-	    fla = flc;
-	    ya = yc;
-	}
-	else{
-	  fla = flc;
-	  ya = yc;
-	}
-	double tol = 0.000001 ;
-	int Maxiter = 30;
-	int iter = 0 ;
-
-	while (fabs(yc) > tol && iter<=Maxiter) {
-
-	    dx = ya*(TaLatstress - TbLatstress)/(ya - yb);
-	    flc  = fla - dx;
-	    flat(flc, arrayLatC);
-	    yc = arrayLatC[0];
-	    sigc = arrayLatC[1];
-	    flj = arrayLatC[2];
-	    fcc = arrayLatC[3];
-	    et_cover = arrayLatC[4];
-	    el_cover = arrayLatC[5];
-	    if  (yb*yc > 0)
-	      {  flb = fla;
-		yb = ya;
-		fla = flc;
-		ya = yc;
-	      }
-	    else{
-	      fla = flc;
-	      ya = yc;
-	    }
-	  }
-	if (iter<=Maxiter)
-	  {
-	    Tstress=-sigc;
-	    TConfRat = fcc/fpc;
-	    TConfStrain = (5*(TConfRat-1)+1)*epsc0;
-	    TaLatstress = flj;
-	    TbLatstress = flb;
-	    TLatStrain = et_cover;
-	    double dStrain = 0;
-	    if (changedStrain == true)
-	      dStrain = -Tstrain - Cstrain;
-	    else
-	      dStrain = Tstrain - Cstrain;
-	    //	    Ttangent= fabs((Tstress-Cstress)/dStrain);
-	    Ttangent= (Tstress-Cstress)/dStrain;
-	    TConvFlag = true ;
-	  }
-	else
-	  {
-	    TConvFlag = false;
-	  }
+    int Maxiter = 100;   //Change this line
+    int iter = 0 ;
+    
+    while (fabs(yc) > tol && iter<=Maxiter) {
+      
+      dx = ya*(TaLatstress - TbLatstress)/(ya - yb);
+      flc  = TaLatstress - dx; //Change this line
+      flat(flc, arrayLatC);
+      yc = arrayLatC[0];
+      sigc = arrayLatC[1];
+      flj = arrayLatC[2];
+      fcc = arrayLatC[3];
+      et_cover = arrayLatC[4];
+      el_cover = arrayLatC[5];
+      if  (yb*yc > 0) {
+	TbLatstress = TaLatstress; //Change this line
+	yb = ya;
+	TaLatstress = flc;//  Change this line
+	ya = yc;
+      } else {
+	TaLatstress = flc;//  Change this line
+	ya = yc;
       }
-    double et_cover = arrayLatC[4];
-    if (et_cover >= k*eju)
-      opserr << "FRP Rupture" ;
+    }
+    if (iter<=Maxiter) {
 
-    if (changedStrain == true)
-      Tstrain = -Tstrain;
+      Tstress=-sigc;
+      TConfRat = fcc/fpc;
+	TConfStrain = (5*(TConfRat-1)+1)*epsc0;
+	TaLatstress = flj;
+	TLatStrain = et_cover;
+	double dStrain = 0;
+	if (changedStrain == true)
+	  dStrain = -Tstrain - Cstrain;
+	else
+	  dStrain = Tstrain - Cstrain;
+	//      Ttangent= fabs((Tstress-Cstress)/dStrain); Delete this line
+	Ttangent= (Tstress-Cstress)/dStrain;
+	TConvFlag = true ;
+
+    } else {
+      TConvFlag = false;
+    }
+  }
+  double et_cover = arrayLatC[4];
+  if (et_cover >= k*eju)
+    opserr << "FRP Rupture" ;
+  
+  if (changedStrain == true)
+    Tstrain = -Tstrain;
 }
 
 void 
