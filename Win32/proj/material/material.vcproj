@@ -1140,7 +1140,6 @@
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrain.h">
 			</File>
 			<File
-<<<<<<< .mine
 				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.cpp">
 			</File>
 			<File
@@ -1159,20 +1158,6 @@
 				RelativePath="..\..\..\SRC\material\nD\matCMM\MaterialCMM.h">
 			</File>
 			<File
-=======
-				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.h">
-			</File>
-			<File
-				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.cpp">
-			</File>
-			<File
-				RelativePath="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.h">
-			</File>
-			<File
->>>>>>> .r6014
 				RelativePath="..\..\..\SRC\material\nD\NDMaterial.cpp">
 			</File>
 			<File
