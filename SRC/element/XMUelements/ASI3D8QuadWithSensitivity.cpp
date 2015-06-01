@@ -46,17 +46,17 @@ Matrix  ASI3D8QuadWithSensitivity::mass(16,16) ;
 void *
 OPS_ASID8QuadWithSensitivity(void){
 
-  static int idData[10];
+  static int idData[9];
 
   //if the number of arguments is less than the minimum, throw an error
   int argc = OPS_GetNumRemainingInputArgs();
-  if (argc != 10) {
-    opserr << "element ASI3D8Quad incorrect num args .. 11 expected\n";
+  if (argc != 9) {
+    opserr << "element ASI3D8Quad incorrect num args .. 9 expected\n";
     return 0;
   }
 
   if (OPS_GetIntInput(&argc, idData) != 0) {
-    opserr << "element ASI3D8Quad error reading first 5 integers\n";
+    opserr << "element ASI3D8Quad error reading first 9 integers\n";
     return 0;
   }  
 

@@ -258,7 +258,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
-    else if ((strcmp(argv[1],"LinearCap") == 0)){
+    else if ((strcmp(argv[1],"TruncatedDP") == 0)){
 
       void *theMat = OPS_NewLinearCap();
       if (theMat != 0) 

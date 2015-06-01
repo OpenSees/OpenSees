@@ -16,7 +16,7 @@ OPS_ConcreteD(void)
 {
   // print out some KUDO's
   if (numConcreteD == 0) {
-    opserr << "ConcreteD unaxial material - Written by Zenyong Wan Tongji University 2014.01\n";
+   // opserr << "ConcreteD unaxial material - Written by Zenyong Wan Tongji University 2014.01\n";
     numConcreteD =1;
   }
 

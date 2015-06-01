@@ -87,6 +87,7 @@ MumpsParallelSOE::setSize(Graph &theGraph)
   int newNNZ = 0;
   size = theGraph.getNumVertex();
   int mySize = size;
+  //opserr << "MumpsParallelSOE: size : " << size << endln;
 
   VertexIter &theVertices = theGraph.getVertices();
   while ((theVertex = theVertices()) != 0) {
