@@ -47,7 +47,7 @@ OPS_HystereticMaterial(void)
   UniaxialMaterial *theMaterial = 0;
 
   int numArgs = OPS_GetNumRemainingInputArgs();
-  if (numArgs != 18 || numArgs != 17 || numArgs != 14 || numArgs != 13) {
+  if (numArgs != 18 && numArgs != 17 && numArgs != 14 && numArgs != 13) {
     opserr << "Want: uniaxialMaterial Hysteretic tag? mom1p? rot1p? mom2p? rot2p? <mom3p? rot3p?> "
 	   << "\nmom1n? rot1n? mom2n? rot2n? <mom3n? rot3n?> pinchX? pinchY? damfc1? damfc2? <beta?>";
     return 0;
@@ -73,12 +73,12 @@ OPS_HystereticMaterial(void)
   // Parsing was successful, allocate the material
 
 
-  if (numData > 13) 
+  if (numArgs > 14) 
     theMaterial = new HystereticMaterial(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
-					 dData[6], dData[7], dData[8], dData[19], dData[10], dData[11], dData[12]);
+					 dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12]);
   else
     theMaterial = new HystereticMaterial(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
-					 dData[6], dData[7], dData[8], dData[19], dData[10], dData[11], dData[12],
+					 dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12],
 					 dData[13], dData[14], dData[15], dData[16]);
 
   if (theMaterial == 0) {
@@ -100,42 +100,42 @@ pinchX(px), pinchY(py), damfc1(d1), damfc2(d2), beta(b),
 mom1p(m1p), rot1p(r1p), mom2p(m2p), rot2p(r2p), mom3p(m3p), rot3p(r3p),
 mom1n(m1n), rot1n(r1n), mom2n(m2n), rot2n(r2n), mom3n(m3n), rot3n(r3n)
 {
-	bool error = false;
-	// Positive backbone parameters
-	if (rot1p <= 0.0)
-		error = true;
-
-	if (rot2p <= rot1p)
-		error = true;
-
-	if (rot3p <= rot2p)
-		error = true;
-
-	// Negative backbone parameters
-	if (rot1n >= 0.0)
-		error = true;
-
-	if (rot2n >= rot1n)
-		error = true;
-
-	if (rot3n >= rot2n)
-		error = true;
-	
-	if (error) {
-	  opserr << "HystereticMaterial::HystereticMaterial -- input backbone is not unique (one-to-one)\n";
-	  exit(-1);
-	}		
-
-	energyA = 0.5 * (rot1p*mom1p + (rot2p-rot1p)*(mom2p+mom1p) + (rot3p-rot2p)*(mom3p+mom2p) +
-		rot1n*mom1n + (rot2n-rot1n)*(mom2n+mom1n) + (rot3n-rot2n)*(mom3n+mom2n));
-
-	// Set envelope slopes
-	this->setEnvelope();
-
-	// Initialize history variables
-	this->revertToStart();
-	this->revertToLastCommit();
-
+  bool error = false;
+  // Positive backbone parameters
+  if (rot1p <= 0.0)
+    error = true;
+  
+  if (rot2p <= rot1p)
+    error = true;
+  
+  if (rot3p <= rot2p)
+    error = true;
+  
+  // Negative backbone parameters
+  if (rot1n >= 0.0)
+    error = true;
+  
+  if (rot2n >= rot1n)
+    error = true;
+  
+  if (rot3n >= rot2n)
+    error = true;
+  
+  if (error) {
+    opserr << "HystereticMaterial::HystereticMaterial -- input backbone is not unique (one-to-one)\n";
+    exit(-1);
+  }		
+  
+  energyA = 0.5 * (rot1p*mom1p + (rot2p-rot1p)*(mom2p+mom1p) + (rot3p-rot2p)*(mom3p+mom2p) +
+		   rot1n*mom1n + (rot2n-rot1n)*(mom2n+mom1n) + (rot3n-rot2n)*(mom3n+mom2n));
+  
+  // Set envelope slopes
+  this->setEnvelope();
+  
+  // Initialize history variables
+  this->revertToStart();
+  this->revertToLastCommit();
+  
 }
 
 HystereticMaterial::HystereticMaterial(int tag,
