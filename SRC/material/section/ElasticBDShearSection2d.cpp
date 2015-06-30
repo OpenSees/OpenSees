@@ -269,25 +269,31 @@ ElasticBDShearSection2d::Print(OPS_Stream &s, int flag)
 
 int
 ElasticBDShearSection2d::setParameter(const char **argv, int argc,
-				    Parameter &param)
+				      Parameter &param)
 {
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0],"E") == 0)
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E);
     return param.addObject(1, this);
-
-  if (strcmp(argv[0],"b") == 0)
+  }
+  if (strcmp(argv[0],"b") == 0) {
+    param.setValue(b);
     return param.addObject(2, this);
-
-  if (strcmp(argv[0],"d") == 0)
+  }
+  if (strcmp(argv[0],"d") == 0) {
+    param.setValue(d);
     return param.addObject(3, this);
-
-  if (strcmp(argv[0],"G") == 0)
+  }
+  if (strcmp(argv[0],"G") == 0) {
+    param.setValue(G);
     return param.addObject(4, this);
-
-  if (strcmp(argv[0],"alpha") == 0)
+  }
+  if (strcmp(argv[0],"alpha") == 0) {
+    param.setValue(alpha);
     return param.addObject(5, this);
+  }
 
   return -1;
 }
