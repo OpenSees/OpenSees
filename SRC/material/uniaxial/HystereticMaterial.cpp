@@ -73,13 +73,13 @@ OPS_HystereticMaterial(void)
   // Parsing was successful, allocate the material
 
 
-  if (numArgs > 14) 
-    theMaterial = new HystereticMaterial(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
-					 dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12]);
-  else
+  if (numData > 13) 
     theMaterial = new HystereticMaterial(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
 					 dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12],
-					 dData[13], dData[14], dData[15], dData[16]);
+  					 dData[13], dData[14], dData[15], dData[16]);
+  else
+    theMaterial = new HystereticMaterial(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+					 dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12]);
 
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type Hysteretic\n";
