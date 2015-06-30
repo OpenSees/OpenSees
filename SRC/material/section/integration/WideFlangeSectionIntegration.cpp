@@ -157,7 +157,7 @@ WideFlangeSectionIntegration::setParameter(const char **argv, int argc,
     param.setValue(tw);
     return param.addObject(2, this);
   }
-  if (strcmp(argv[0],"bf") == 0) {
+  if (strcmp(argv[0],"bf") == 0 || strcmp(argv[0],"b") == 0) {
     param.setValue(bf);
     return param.addObject(3, this);
   }
