@@ -139,10 +139,19 @@ int
 nodeReaction(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+nodeUnbalance(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
 nodeEigenvector(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
 nodeCoord(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+setNodeCoord(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+updateElementDomain(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
 eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -152,6 +161,9 @@ nodeBounds(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
 int 
 nodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+setNodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
 nodeAccel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);

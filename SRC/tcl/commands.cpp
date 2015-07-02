@@ -516,6 +516,7 @@ ReliabilityDirectIntegrationAnalysis *theReliabilityTransientAnalysis = 0;
 // #ifdef _PFEM
 // static PFEMSensitivityIntegrator* thePFEMSI = 0;
 // #endif
+
 //static SensitivityIntegrator *theSensitivityIntegrator = 0;
 //static NewmarkSensitivityIntegrator *theNSI = 0;
 
@@ -874,9 +875,13 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "nodeReaction", &nodeReaction, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "nodeUnbalance", &nodeUnbalance, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "nodeEigenvector", &nodeEigenvector, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "nodeVel", &nodeVel, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "setNodeVel", &setNodeVel, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "nodeAccel", &nodeAccel, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
@@ -885,6 +890,10 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "reactions", &calculateNodalReactions, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "nodeCoord", &nodeCoord, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+    Tcl_CreateCommand(interp, "setNodeCoord", &setNodeCoord, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+    Tcl_CreateCommand(interp, "updateElementDomain", &updateElementDomain, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "eleNodes", &eleNodes, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);            
@@ -1004,6 +1013,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "sensitivityAlgorithm", &sensitivityAlgorithm, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "sensitivityIntegrator", &sensitivityIntegrator, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "sensNodeDisp", &sensNodeDisp, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "sensNodeVel", &sensNodeVel, 
@@ -1013,7 +1024,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "sensSectionForce", &sensSectionForce, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "sensNodePressure", &sensNodePressure, 
-		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+
 
     theSensitivityAlgorithm =0;
     theSensitivityIntegrator =0;
@@ -1171,6 +1183,13 @@ wipeReliability(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **
   }
   return TCL_OK;
 
+}
+
+int 
+sensitivityIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  // Does nothing, but keeping command for backward compatibility
+  return TCL_OK;
 }
 
 int 
@@ -5979,12 +5998,12 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
   
   else if ((strcmp(argv[1],"SPconstraint") == 0) || (strcmp(argv[1],"sp") == 0)) {
     if (argc < 3) {
-      opserr << "WARNING want - remove SPconstraint spTag?\n";
+      opserr << "WARNING want - remove SPconstraint spTag? -or- remove SPconstraint nodeTag? dofTag? <patternTag?>\n";
       return TCL_ERROR;
     }    
     if (argc == 3) {
       if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING remove loadPattern tag? failed to read tag: " << argv[2] << endln;
+	opserr << "WARNING remove sp tag? failed to read tag: " << argv[2] << endln;
 	return TCL_ERROR;
       }      
 
@@ -5997,17 +6016,17 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
       int patternTag = -1;
       
       if (Tcl_GetInt(interp, argv[2], &nodeTag) != TCL_OK) {
-	opserr << "WARNING remove loadPattern tag? failed to read node tag: " << argv[2] << endln;
+	opserr << "WARNING remove sp tag? failed to read node tag: " << argv[2] << endln;
 	return TCL_ERROR;
       }      
       if (Tcl_GetInt(interp, argv[3], &dofTag) != TCL_OK) {
-	opserr << "WARNING remove loadPattern tag? failed to read dof tag: " << argv[3] << endln;
+	opserr << "WARNING remove sp tag? failed to read dof tag: " << argv[3] << endln;
 	return TCL_ERROR;
       }      
       
       if (argc == 5) {
 	if (Tcl_GetInt(interp, argv[4], &patternTag) != TCL_OK) {
-	  opserr << "WARNING remove loadPattern tag? failed to read pattern tag: " << argv[4] << endln;
+	  opserr << "WARNING remove sp tag? failed to read pattern tag: " << argv[4] << endln;
 	  return TCL_ERROR;
 	}      
 	
@@ -6022,17 +6041,26 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
 
   else if ((strcmp(argv[1],"MPconstraint") == 0) || (strcmp(argv[1],"mp") == 0)) {
     if (argc < 3) {
-      opserr << "WARNING want - remove SPconstraint nNodeTag?\n";
+      opserr << "WARNING want - remove MPconstraint nNodeTag? -or- remove MPconstraint -tag mpTag\n";
       return TCL_ERROR;
     }    
     int nodTag = 0;
     if (argc == 3) {
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING remove mp tag? failed to read tag: " << argv[2] << endln;
+      if (Tcl_GetInt(interp, argv[2], &nodTag) != TCL_OK) {
+	opserr << "WARNING remove mp nodeTag? failed to read nodeTag: " << argv[2] << endln;
 	return TCL_ERROR;
       }      
       
-      theDomain.removeMP_Constraints(tag);
+      theDomain.removeMP_Constraints(nodTag);
+      return TCL_OK;
+    }
+    if (strcmp(argv[2],"-tag") == 0 && argc > 3) {
+      if (Tcl_GetInt(interp, argv[3], &nodTag) != TCL_OK) {
+	opserr << "WARNING remove mp -tag mpTag? failed to read mpTag: " << argv[3] << endln;
+	return TCL_ERROR;
+      }      
+      
+      theDomain.removeMP_Constraint(nodTag);
       return TCL_OK;
     }
   }
@@ -6212,6 +6240,61 @@ nodeReaction(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
       if (dof >= size) {
 	opserr << "WARNING nodeReaction nodeTag? dof? - dofTag? too large\n";
+	return TCL_ERROR;
+      }
+      
+      double value = (*nodalResponse)(dof);
+      
+      // now we copy the value to the tcl string that is returned
+      sprintf(interp->result,"%35.20f ",value);
+    } else {
+      char buffer [40];
+      for (int i=0; i<size; i++) {
+	sprintf(buffer,"%35.20f",(*nodalResponse)(i));
+	Tcl_AppendResult(interp, buffer, NULL);
+      }
+    }	
+	
+    return TCL_OK;
+}
+
+int 
+nodeUnbalance(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+    // make sure at least one other argument to contain type of system
+    if (argc < 2) {
+	opserr << "WARNING want - nodeUnbalance nodeTag? <dof?>\n";
+	return TCL_ERROR;
+   }    
+
+    int tag;
+    int dof = -1;
+
+    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+	opserr << "WARNING nodeUnbalance nodeTag? dof? - could not read nodeTag? \n";
+	return TCL_ERROR;	        
+    } 
+
+    if (argc > 2) {
+      if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+	opserr << "WARNING nodeUnbalance nodeTag? dof? - could not read dof? \n";
+	return TCL_ERROR;	        
+      }   
+    }     
+    
+    dof--;
+
+    const Vector *nodalResponse = theDomain.getNodeResponse(tag, Unbalance);
+
+    if (nodalResponse == 0)
+      return TCL_ERROR;
+
+    int size = nodalResponse->Size();
+
+    if (dof >= 0) {
+
+      if (dof >= size) {
+	opserr << "WARNING nodeUnbalance nodeTag? dof? - dofTag? too large\n";
 	return TCL_ERROR;
       }
       
@@ -6458,7 +6541,7 @@ eleResponse(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
       int size = data->Size();
       char buffer[40];
       for (int i=0; i<size; i++) {
-	sprintf(buffer,"%35.20f",(*data)(i));
+	sprintf(buffer,"%f ",(*data)(i));
 	Tcl_AppendResult(interp, buffer, NULL);
       }
     }
@@ -6525,6 +6608,60 @@ nodeCoord(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   }
 
   return TCL_ERROR;
+}
+
+int 
+setNodeCoord(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  // make sure at least one other argument to contain type of system
+  if (argc < 4) {
+    opserr << "WARNING want - setNodeCoord nodeTag? dim? value?\n";
+    return TCL_ERROR;
+  }    
+  
+  int tag;
+  
+  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+    opserr << "WARNING setNodeCoord nodeTag? dim? value? - could not read nodeTag? \n";
+    return TCL_ERROR;	        
+  }    
+
+	int dim; 
+	double value;
+
+	if (Tcl_GetInt(interp, argv[2], &dim) != TCL_OK) {
+	    opserr << "WARNING setNodeCoord nodeTag? dim? value? - could not read dim? \n";
+		return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[3], &value) != TCL_OK) {
+	    opserr << "WARNING setNodeCoord nodeTag? dim? value? - could not read value? \n";
+		return TCL_ERROR;
+	}
+
+  Node *theNode = theDomain.getNode(tag);
+
+  if (theNode == 0) {
+    return TCL_ERROR;
+  }
+
+  Vector coords(theNode->getCrds());
+  coords(dim-1) = value;
+  theNode->setCrds(coords);
+  
+  return TCL_OK;
+}
+
+int 
+updateElementDomain(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+    // Need to "setDomain" to make the change take effect. 
+    ElementIter &theElements = theDomain.getElements();
+    Element *theElement;
+    while ((theElement = theElements()) != 0) {
+      theElement->setDomain(&theDomain);
+    }
+
+	return 0;
 }
 
 int 
@@ -6710,6 +6847,54 @@ nodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	sprintf(buffer,"%35.20f",(*nodalResponse)(i));
 	Tcl_AppendResult(interp, buffer, NULL);
       }
+    }
+	
+    return TCL_OK;
+}
+
+
+int 
+setNodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+    // make sure at least one other argument to contain type of system
+    if (argc < 4) {
+	opserr << "WARNING want - setNodeVel nodeTag? dof? value?\n";
+	return TCL_ERROR;
+   }    
+
+    int tag;
+    int dof = -1;
+    double value = 0.0;
+
+    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+	opserr << "WARNING setNodeVel nodeTag? dof? value?- could not read nodeTag? \n";
+	return TCL_ERROR;	        
+    }    
+
+    Node *theNode = theDomain.getNode(tag);
+    if (theNode == 0) {
+      opserr << "WARNING setNodeVel -- node with tag " << tag << " not found" << endln;
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+      opserr << "WARNING setNodeVel nodeTag? dof? value?- could not read dof? \n";
+      return TCL_ERROR;	        
+    }        
+    if (Tcl_GetDouble(interp, argv[3], &value) != TCL_OK) {
+      opserr << "WARNING setNodeVel nodeTag? dof? value?- could not read value? \n";
+      return TCL_ERROR;	        
+    }        
+
+    dof--;
+
+    int numDOF = theNode->getNumberDOF();
+
+    if (dof >= 0 && dof < numDOF) {
+      Vector vel(numDOF);
+      vel = theNode->getVel();
+      vel(dof) = value;
+      theNode->setTrialVel(vel);
     }
 	
     return TCL_OK;
@@ -7101,7 +7286,7 @@ sensSectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
   const Vector &theVec = *(info.theVector);
 
   char buffer[40];
-  sprintf(buffer,"%35.20f",theVec(dof-1));
+  sprintf(buffer,"%12.8g",theVec(dof-1));
 
   Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
@@ -7171,7 +7356,7 @@ sectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   const Vector &theVec = *(info.theVector);
 
   char buffer[40];
-  sprintf(buffer,"%35.20f",theVec(dof-1));
+  sprintf(buffer,"%12.8g",theVec(dof-1));
 
   Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
