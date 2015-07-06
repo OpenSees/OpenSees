@@ -92,6 +92,9 @@
     <Filter Include="yieldSurface\plasticHardening">
       <UniqueIdentifier>{705a4ae4-3dce-45bd-96a7-6d75f2b0f0c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="nD\matCMM">
+      <UniqueIdentifier>{03aae77f-2de0-490a-8ce5-d376296d50cd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSp.cpp">
@@ -998,6 +1001,24 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Stage56Material.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteD.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.cpp">
+      <Filter>nD\matCMM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\AcousticMedium.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\LinearCap.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -1846,6 +1867,24 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.h">
       <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Stage56Material.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ConcreteD.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.h">
+      <Filter>nD\matCMM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\AcousticMedium.h">
+      <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\LinearCap.h">
+      <Filter>nD</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

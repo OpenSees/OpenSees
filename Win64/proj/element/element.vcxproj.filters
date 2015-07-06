@@ -102,6 +102,9 @@
     <Filter Include="HUelements">
       <UniqueIdentifier>{5098eaf3-05b5-4c65-8a81-a2b545b7482b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="XMUelements">
+      <UniqueIdentifier>{24473406-20f3-4a25-9f2b-1e4f17b774a0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -707,6 +710,24 @@
     <ClCompile Include="..\..\..\SRC\element\truss\N4BiaxialTruss.cpp">
       <Filter>truss</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGQ.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQ.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\XMUelements\AC3D8HexWithSensitivity.cpp">
+      <Filter>XMUelements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\XMUelements\ASI3D8QuadWithSensitivity.cpp">
+      <Filter>XMUelements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\XMUelements\AV3D4QuadWithSensitivity.cpp">
+      <Filter>XMUelements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.cpp">
+      <Filter>XMUelements</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1203,6 +1224,24 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\truss\N4BiaxialTruss.h">
       <Filter>truss</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellDKGQ.h">
+      <Filter>shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGQ.h">
+      <Filter>shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\XMUelements\AC3D8HexWithSensitivity.h">
+      <Filter>XMUelements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\XMUelements\ASI3D8QuadWithSensitivity.h">
+      <Filter>XMUelements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\XMUelements\AV3D4QuadWithSensitivity.h">
+      <Filter>XMUelements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.h">
+      <Filter>XMUelements</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -272,11 +272,12 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
 
     currentArg++;
     accelSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
+
     if (accelSeries == 0) {
-      opserr << "WARNING invalid accel series: pattern UniformExcitation -accel <args>\n";
+      opserr << "WARNING invalid accel series: " << argv[currentArg];
+      opserr << " pattern UniformExcitation -accel {series}\n";
       return TCL_ERROR;
     }
-    
     currentArg++;
 
   } else if ((strcmp(argv[currentArg],"-vel") == 0) ||
@@ -290,7 +291,6 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << " pattern UniformExcitation -vel {series}\n";
       return TCL_ERROR;
     }
-
     currentArg++;
 
   } else if ((strcmp(argv[currentArg],"-disp") == 0) ||
@@ -300,12 +300,12 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
     dispSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
 
     if (dispSeries == 0) {
-      opserr << "WARNING invalid vel series: " << argv[currentArg];
-      opserr << " pattern UniformExcitation -vel {series}\n";
+      opserr << "WARNING invalid disp series: " << argv[currentArg];
+      opserr << " pattern UniformExcitation -disp {series}\n";
       return TCL_ERROR;
     }
-
     currentArg++;
+
   } else if ((strcmp(argv[currentArg],"-int") == 0) ||
        (strcmp(argv[currentArg],"-integrator") == 0)) {
 

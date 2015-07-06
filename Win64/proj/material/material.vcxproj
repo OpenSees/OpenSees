@@ -95,11 +95,15 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\SRC\material\nD\AcousticMedium.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\LinearCap.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3DRO.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSp.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSpHD.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BWBN.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BarSlipMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Bond_SP01.cpp" />
@@ -115,6 +119,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete04.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete06.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete07.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteD.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteSakaiKawashima.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcretewBeta.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConfinedConcrete01.cpp" />
@@ -167,6 +172,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SmoothPSConcrete.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Stage56Material.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel01Thermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel02.cpp" />
@@ -399,11 +405,15 @@
     <ClCompile Include="..\..\..\SRC\material\Material.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\SRC\material\nD\AcousticMedium.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\LinearCap.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias3DRO.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasPlaneStrainRO.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSpHD.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BWBN.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BarSlipMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Bond_SP01.h" />
@@ -419,6 +429,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete04.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete06.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete07.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ConcreteD.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ConcreteSakaiKawashima.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ConcretewBeta.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ConfinedConcrete01.h" />
@@ -469,6 +480,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SmoothPSConcrete.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Stage56Material.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel01.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel01Thermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel02.h" />

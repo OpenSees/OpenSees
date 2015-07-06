@@ -58,7 +58,7 @@ OPS_Export void *OPS_NewTrigSeries()
     double dData[6];
     dData[3] = 0.0;   // default phaseShift = 0.0
     dData[4] = 1.0;   // default cFactor = 1.0
-    dData[5] = 0.0;   // default zeroShift = 1.0
+    dData[5] = 0.0;   // default zeroShift = 0.0
     int numData = 0;
 
     // get tag if provided
@@ -180,7 +180,7 @@ int TrigSeries::sendSelf(int commitTag, Channel &theChannel)
     int dbTag = this->getDbTag();
     Vector data(6);
     data(0) = cFactor;
-    data(1) = tStart;	
+    data(1) = tStart;
     data(2) = tFinish;
     data(3) = period;
     data(4) = phaseShift;

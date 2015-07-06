@@ -99,6 +99,8 @@
     <ClCompile Include="..\..\..\SRC\element\ElementalLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\FPBearingPTV.cpp" />
     <ClCompile Include="..\..\..\SRC\element\Information.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGQ.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQ.cpp" />
     <ClCompile Include="..\..\..\SRC\element\TclElementCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\element\truss\N4BiaxialTruss.cpp" />
     <ClCompile Include="..\..\..\SRC\element\WrapperElement.cpp" />
@@ -111,6 +113,10 @@
     <ClCompile Include="..\..\..\SRC\element\feap\TclFeapElementCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\feap\fElement.cpp" />
     <ClCompile Include="..\..\..\SRC\element\feap\fElmt02.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\XMUelements\AC3D8HexWithSensitivity.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\XMUelements\ASI3D8QuadWithSensitivity.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\XMUelements\AV3D4QuadWithSensitivity.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\CoupledZeroLength.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\TclZeroLength.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLength.cpp" />
@@ -305,6 +311,8 @@
     <ClInclude Include="..\..\..\SRC\element\ElementalLoad.h" />
     <ClInclude Include="..\..\..\SRC\element\frictionBearing\FPBearingPTV.h" />
     <ClInclude Include="..\..\..\SRC\element\Information.h" />
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellDKGQ.h" />
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGQ.h" />
     <ClInclude Include="..\..\..\SRC\element\truss\N4BiaxialTruss.h" />
     <ClInclude Include="..\..\..\SRC\element\WrapperElement.h" />
     <ClInclude Include="..\..\..\SRC\api\elementAPI.h" />
@@ -316,6 +324,10 @@
     <ClInclude Include="..\..\..\SRC\element\truss\TrussSection.h" />
     <ClInclude Include="..\..\..\SRC\element\feap\fElement.h" />
     <ClInclude Include="..\..\..\SRC\element\feap\fElmt02.h" />
+    <ClInclude Include="..\..\..\SRC\element\XMUelements\AC3D8HexWithSensitivity.h" />
+    <ClInclude Include="..\..\..\SRC\element\XMUelements\ASI3D8QuadWithSensitivity.h" />
+    <ClInclude Include="..\..\..\SRC\element\XMUelements\AV3D4QuadWithSensitivity.h" />
+    <ClInclude Include="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.h" />
     <ClInclude Include="..\..\..\SRC\element\zeroLength\CoupledZeroLength.h" />
     <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLength.h" />
     <ClInclude Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact2D.h" />

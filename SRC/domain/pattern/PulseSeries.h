@@ -50,7 +50,8 @@ public:
         double period,
         double pWidth,
         double phaseShift,
-        double cFactor = 1.0);
+        double cFactor = 1.0,
+        double zeroShift = 0.0);
 
     PulseSeries();
 
@@ -81,6 +82,7 @@ private:
     double pWidth;      // width of pulse series [0..1] 
     double phaseShift;  // phase shift of pulse series (sec)
     double cFactor;     // amplitude of pulse series
+    double zeroShift;   // zero shift of pulse series
 };
 
 #endif

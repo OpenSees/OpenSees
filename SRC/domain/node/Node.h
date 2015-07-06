@@ -150,12 +150,13 @@ class Node : public DomainComponent
     virtual int   addReactionForce(const Vector &, double factor);
     virtual int   resetReactionForce(int flag);
     virtual const Vector *getResponse(NodeResponseType);
-    
- protected:
+
     virtual void setCrds(double Crd1);
     virtual void setCrds(double Crd1, double Crd2);
     virtual void setCrds(double Crd1, double Crd2, double Crd3);
     virtual void setCrds(const Vector &);
+
+  protected:
 
   private:
     // priavte methods used to create the Vector objects 

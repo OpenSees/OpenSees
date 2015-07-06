@@ -89,11 +89,12 @@ TclGroundMotionCommand(ClientData clientData, Tcl_Interp *interp,
 	  
 	currentArg++;
 	accelSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
+
 	if (accelSeries == 0) {
-	  opserr << "WARNING invalid accel series: groundMotion tag Series -accel <args>\n";
+	  opserr << "WARNING invalid accel series: " << argv[currentArg];
+	  opserr << " groundMotion tag Series -accel {series}\n";
 	  return TCL_ERROR;		
 	}
-
 	currentArg++;
 
       } else if ((strcmp(argv[currentArg],"-vel") == 0) ||
@@ -107,7 +108,6 @@ TclGroundMotionCommand(ClientData clientData, Tcl_Interp *interp,
 	  opserr << " groundMotion tag Series -vel {series}\n";
 	  return TCL_ERROR;		
 	}
-	
 	currentArg++;
 
       } else if ((strcmp(argv[currentArg],"-disp") == 0) ||
@@ -117,11 +117,10 @@ TclGroundMotionCommand(ClientData clientData, Tcl_Interp *interp,
 	dispSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
 
 	if (dispSeries == 0) {
-	  opserr << "WARNING invalid vel series: " << argv[currentArg];
-	  opserr << " groundMotion tag Series -vel {series}\n";
+	  opserr << "WARNING invalid disp series: " << argv[currentArg];
+	  opserr << " groundMotion tag Series -disp {series}\n";
 	  return TCL_ERROR;		
 	}
-	  
 	currentArg++;
 
       } else if ((strcmp(argv[currentArg],"-int") == 0) ||
