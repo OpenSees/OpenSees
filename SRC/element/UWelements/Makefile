@@ -14,6 +14,7 @@ OBJS       = SimpleContact2D.o \
              SSPbrickUP.o \
 	     Quad4FiberOverlay.o \
 	     Brick8FiberOverlay.o \
+             QuadBeamEmbedContact.o \
 	     PileToe3D.o
 
 all:         $(OBJS)

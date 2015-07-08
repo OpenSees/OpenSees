@@ -118,6 +118,7 @@ extern void *OPS_NewShellDKGQ(void);     //Added by Lisha Wang, Xinzheng Lu, Lin
 extern void *OPS_NewShellNLDKGQ(void);   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 extern void *OPS_Quad4FiberOverlay(void);
 extern void *OPS_Brick8FiberOverlay(void);
+extern void *OPS_QuadBeamEmbedContact(void);
 extern void *OPS_TripleFrictionPendulum(void);
 extern void *OPS_Truss2(void);
 extern void *OPS_CorotTruss2(void);
@@ -810,6 +811,15 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }																									
+  } else if ((strcmp(argv[1],"QuadBeamEmbedContact") == 0)) { 	//////////////////////// mmc
+    
+    void *theEle = OPS_QuadBeamEmbedContact();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }																								
   } else if ((strcmp(argv[1],"Truss2") == 0)) { 	//////////////////////// mmc
     
     void *theEle = OPS_Truss2();

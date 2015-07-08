@@ -596,6 +596,7 @@
 #define ELE_TAG_BeamEndContact3Dp      125
 #define ELE_TAG_Quad4FiberOverlay      126
 #define ELE_TAG_Brick8FiberOverlay     127
+#define ELE_TAG_QuadBeamEmbedContact   500
 #define ELE_TAG_DispBeamColumn2dThermal 128
 #define ELE_TAG_TPB1D                  129
 #define ELE_TAG_TFP_Bearing            130

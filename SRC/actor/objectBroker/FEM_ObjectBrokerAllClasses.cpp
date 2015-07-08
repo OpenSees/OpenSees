@@ -232,6 +232,7 @@
 #include <BeamContact3Dp.h>
 #include <BeamEndContact3D.h>
 #include <BeamEndContact3Dp.h>
+#include <QuadBeamEmbedContact.h>
 
 #include <Nine_Four_Node_QuadUP.h>
 #include <BrickUP.h>
@@ -693,6 +694,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_BeamEndContact3Dp:
       return new BeamEndContact3Dp();
+	  
+    case ELE_TAG_QuadBeamEmbedContact:
+      return new QuadBeamEmbedContact();
       
     case ELE_TAG_ShellMITC4:
       return new ShellMITC4();
