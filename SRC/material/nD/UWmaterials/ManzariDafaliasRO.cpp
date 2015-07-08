@@ -30,6 +30,12 @@
 
 #include <string.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <algorithm>
+#define fmax std::max
+#define fmin std::min
+#endif
+
 static int numManzariDafaliasMaterials = 0;
 
 void *
@@ -166,6 +172,7 @@ ManzariDafaliasRO::integrate()
 	}
 	if ((chi_e - chi_en) * mDChi_e < -1.0e-14) { // how small should be -1.0e-14?
 		mSigmaSR  = mSigma_n;
+
 		//mSigmaSR(3) = mSigmaSR(4) = mSigmaSR(5) -= 0.1;
 		mDevEpsSR = GetDevPart(mEpsilon_n);
 		double pSR = one3 * GetTrace(mSigmaSR);

@@ -150,6 +150,7 @@ class ManzariDafalias : public NDMaterial
 	char unsigned mOrgTangType;
 	double	mEPS;			// machine epsilon (for FD jacobian)
 	double	m_Pmin;			// Minimum allowable mean effective stress
+	bool	m_isSmallp;		// flag for small p
 	static char unsigned mElastFlag;	// 1: enforce elastic response
 
 	static Vector mI1;			// 2nd Order Identity Tensor
@@ -253,8 +254,13 @@ class ManzariDafalias : public NDMaterial
 					const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
 					Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
 					double& NextDGamma, double& NextVoidRatio,  double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
-
-	int		NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, Matrix& aCepPart);
+	
+	int		NewtonIter(const Vector& xo, const Vector& inVar, Vector& x, Matrix& aCepPart);
+	int		NewtonIter2(const Vector& xo, const Vector& inVar, Vector& sol, Matrix& aCepPart);
+	int		NewtonSol(const Vector& x, const Vector &inVar, Vector& del, Matrix& Cep);
+	int		NewtonIter3(const Vector& xo, const Vector& inVar, Vector& sol, Matrix& aCepPart);
+	int		NewtonSol2(const Vector& x, const Vector &inVar, Vector& res, Vector& JRes, Vector& del, Matrix& Cep);
+	Vector  NewtonRes(const Vector &xo, const Vector &inVar);
 	Vector	GetResidual(const Vector& x, const Vector& inVar);
 	Matrix	GetJacobian(const Vector &x, const Vector &inVar);
 	Matrix	GetFDMJacobian(const Vector &delta, const Vector &inVar);
@@ -277,6 +283,7 @@ class ManzariDafalias : public NDMaterial
 				const Vector& nEStrain, const Vector& cEStrain, double &K, 
 				double &G);
 	void	GetElasticModuli(const Vector& sigma, const double& en, double &K, double &G);
+	void	GetElasticModuli(const Vector& sigma, const double& en, double &K, double &G, const double& D);
 	Matrix	GetStiffness(const double& K, const double& G);
 	Matrix	GetCompliance(const double& K, const double& G);
 	void	GetStateDependent(const Vector &stress, const Vector &alpha, const Vector &fabric

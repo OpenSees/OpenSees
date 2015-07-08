@@ -30,6 +30,12 @@
 
 #include <string.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <algorithm>
+#define fmax std::max
+#define fmin std::min
+#endif
+
 #define INT_ForwardEuler  5
 #define INT_ModifiedEuler 1
 #define INT_BackwardEuler 2
@@ -87,8 +93,8 @@ OPS_NewManzariDafaliasMaterial(void)
   oData[0] = 2;			// IntScheme
   oData[1] = 2;			// TanType
   oData[2] = 1;			// JacoType
-  oData[3] = 1.0e-7;	// TolF
-  oData[4] = 1.0e-7;	// TolR
+  oData[3] = 1.0e-9;	// TolF
+  oData[4] = 1.0e-10;	// TolR
 
   int numData = 1;
   if (OPS_GetInt(&numData, &tag) != 0) {
@@ -162,6 +168,8 @@ ManzariDafalias::ManzariDafalias(int tag, double G0, double nu,
 	m_z_max		= z_max;
 	m_cz		= cz;
 
+	m_isSmallp	= false;
+
 	mEpsStar	= 1.0;
 	mSigStar	= 1.0;
 
@@ -217,6 +225,8 @@ ManzariDafalias::ManzariDafalias(int tag, int classTag, double G0, double nu,
 	m_z_max		= z_max;
 	m_cz		= cz;
 
+	m_isSmallp	= false;
+
 	mEpsStar	= 1.0;
 	mSigStar	= 1.0;
 
@@ -269,12 +279,14 @@ ManzariDafalias ::ManzariDafalias()
 	m_z_max		= 0.0;
 	m_cz		= 0.0;
 
+	m_isSmallp	= false;
+
 	mEpsStar	= 1.0;
 	mSigStar	= 1.0;
 
 	massDen		= 0.0;
-	mTolF		= 1.0e-7;
-	mTolR		= 1.0e-7;
+	mTolF		= 1.0e-9;
+	mTolR		= 1.0e-10;
 	mJacoType	= 1;
 	mScheme		= 2;
 	mTangType	= 2;
@@ -313,9 +325,11 @@ ManzariDafalias::getCopy(const char *type)
 int 
 ManzariDafalias::commitState(void)
 {
+	Vector n(6), d(6), b(6), R(6);
+	double cos3Theta, h, psi, aB, aD, b0, A, D, B, C;
 	// update alpha_in if needed 
-	
-	// **** currently it is done in the integrate() function using input strains
+
+	// currently it's done in the integrate function!
 	//Vector n(6);
 	//n = GetNormalToYield(mSigma, mAlpha);
 	//if (DoubleDot2_2_Contr(mAlpha - mAlpha_in_n,n) < 0) 
@@ -337,7 +351,11 @@ ManzariDafalias::commitState(void)
 	mFabric_n	= mFabric;
 	mDGamma_n   = mDGamma;
 	mVoidRatio  = m_e_init - (1 + m_e_init) * GetTrace(mEpsilon);
-	this->GetElasticModuli(mSigma, mVoidRatio, mK, mG);
+
+
+	GetStateDependent(mSigma, mAlpha, mFabric, mVoidRatio, mAlpha_in, 
+		n, d, b, cos3Theta, h, psi, aB, aD, b0, A, D, B, C, R);
+	this->GetElasticModuli(mSigma, mVoidRatio, mK, mG, D);
 	return 0;
 }
 
@@ -621,6 +639,9 @@ ManzariDafalias::setParameter(const char **argv, int argc, Parameter &param)
 		else if (strcmp(argv[0],"poissonRatio") == 0) {      // change nu
 			return param.addObject(7, this);
 		}
+		else if (strcmp(argv[0],"voidRatio") == 0) {        // change e_init
+			return param.addObject(8, this);
+		}
 	}
     return -1;
 }
@@ -651,6 +672,11 @@ ManzariDafalias::updateParameter(int responseID, Information &info)
 	// called update poissonRatio
 	else if (responseID == 7) {
 		m_nu = info.theDouble;
+	}
+	// called update voidRatio
+	else if (responseID == 8) {
+		double eps_v = GetTrace(mEpsilon);
+		m_e_init = (info.theDouble + eps_v) / (1 - eps_v);
 	}
 	else {
         	return -1;
@@ -733,7 +759,7 @@ ManzariDafalias::getAlpha_in()
 void ManzariDafalias::integrate() 
 {
 	// update alpha_in in case of unloading
-	// **** used to be done in the commitState() function
+	// this is not accurate in case of softening
 	//if (DoubleDot2_2_Mixed(mAlpha - mAlpha_in_n,GetDevPart(mCe*(mEpsilon - mEpsilon_n))) < 0)
 	//	mAlpha_in = mAlpha;
 	//else
@@ -850,7 +876,7 @@ void ManzariDafalias::explicit_integrator(const Vector& CurStress, const Vector&
 			break;
 			
 		default :
-			exp_int = &ManzariDafalias::MaxEnergyInc;
+			exp_int = &ManzariDafalias::MaxStrainInc;
 			break;
 	}
 	
@@ -1234,9 +1260,9 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
 		}
 		
 		if (curStepError > TolE){
-			//if (debugFlag) opserr << "---Unsuccessful increment: Error =  " << curStepError << endln;
-			//if (debugFlag) opserr << "                           T = " << T << ", dT = " << dT << endln;
-			q = std::max(0.9 * sqrt(TolE / curStepError), 0.1);
+			if (debugFlag) opserr << "---Unsuccessful increment: Error =  " << curStepError << endln;
+			if (debugFlag) opserr << "                           T = " << T << ", dT = " << dT << endln;
+			q = fmax(0.9 * sqrt(TolE / curStepError), 0.1);
 			if (dT == dT_min) {
 				
 				NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
@@ -1250,10 +1276,10 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
 				
 				T += dT;
 			}
-			dT = std::max(q * dT, dT_min);
+			dT = fmax(q * dT, dT_min);
 		} else {
 			
-			//if (debugFlag) opserr << "+++Successful increment: T = " << T << ", dT = " << dT << endln;
+			if (debugFlag) opserr << "+++Successful increment: T = " << T << ", dT = " << dT << endln;
 			NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
 			NextStress = nStress;
 			NextAlpha  = nAlpha;
@@ -1263,10 +1289,10 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
 			Stress_Correction(CurStress, CurStrain, CurElasticStrain, CurAlpha, CurFabric, alpha_in, NextStrain, NextElasticStrain, NextStress,
 				NextAlpha, NextFabric, NextDGamma, NextVoidRatio, G, K, aC, aCep, aCep_Consistent);
 		
-			q = std::max(0.9 * sqrt(TolE / curStepError), 1.1);
+			q = fmax(0.9 * sqrt(TolE / curStepError), 1.1);
 			T += dT;
-			dT = std::max(q * dT, dT_min);
-			dT = std::min(dT, 1 - T);
+			dT = fmax(q * dT, dT_min);
+			dT = fmin(dT, 1 - T);
 		}
 		
 	}
@@ -1422,7 +1448,7 @@ void ManzariDafalias::RungeKutta4(const Vector& CurStress, const Vector& CurStra
 
 				T += dT;
 			}
-			dT = std::max(q * dT, 1e-4);
+			dT = fmax(q * dT, 1e-4);
 		} else {
 			
 			//if (debugFlag) opserr << "+++Successful increment: T = " << T << ", dT = " << dT << endln;
@@ -1437,8 +1463,8 @@ void ManzariDafalias::RungeKutta4(const Vector& CurStress, const Vector& CurStra
 		
 			q = 1.1;
 			T += dT;
-			dT = std::max(q * dT, 1e-4);
-			dT = std::min(dT, 1 - T);
+			dT = fmax(q * dT, 1e-4);
+			dT = fmin(dT, 1 - T);
 		}
 		
 	}
@@ -1463,7 +1489,7 @@ int ManzariDafalias::BackwardEuler_CPPM(const Vector& CurStress, const Vector& C
 
 	// check if max number of substepping is reached
 	if (implicitLevel > mMaxSubStep){
-		if (debugFlag) opserr << " !!! MORE THAN 10 LEVELS OF SUBSTEPPING !!!" << endln;
+		if (debugFlag) opserr << "ManzariDafalias (Tag: " << this->getTag() << "): SubStepping did not converge in " << mMaxSubStep << " substeps." << endln;
 		return -3;
 	}
 
@@ -1502,7 +1528,7 @@ int ManzariDafalias::BackwardEuler_CPPM(const Vector& CurStress, const Vector& C
 						CurVoidRatio, NextVoidRatio, alpha_in);
 
 		// do newton iterations
-		errFlag = NewtonSolve(Delta0, InVariants, Delta, aCepConsistent);
+		errFlag = NewtonIter3(Delta0, InVariants, Delta, aCepConsistent);
 		
 		// check if newton converged
 		if (errFlag == 1)
@@ -1539,18 +1565,21 @@ int ManzariDafalias::BackwardEuler_CPPM(const Vector& CurStress, const Vector& C
 				{
 					// use numSteps steps of explicit integration as an initial guess to the newton iteration
 					numSteps = 50;
-					if (debugFlag) opserr << "******* Explicit step as initial guess" << endln;
+					if (debugFlag) opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Explicit step as initial guess" << endln;
 					for(int ii=1; ii <= numSteps; ii++)
 					{
 						nStrain = cStrain + StrainInc / numSteps;
 						ForwardEuler(cStress, cStrain, cEStrain, cAlpha, cFabric, cAlpha_in, nStrain,
 								nEStrain, nStress, nAlpha, nFabric, nDGamma, nVoidRatio, 
 								nG, nK, nCe, nCep, nCepC);
+						//ModifiedEuler(cStress, cStrain, cEStrain, cAlpha, cFabric, cAlpha_in, nStrain,
+						//		nEStrain, nStress, nAlpha, nFabric, nDGamma, nVoidRatio, 
+						//		nG, nK, nCe, nCep, nCepC);
 						cStress = nStress; cStrain = nStrain; cAlpha = nAlpha; cFabric = nFabric; 
 					}
 					// do newton iterations
 					Delta0 = SetManzariComponent(nStress, nAlpha, nFabric, nDGamma);
-					errFlag = NewtonSolve(Delta0, InVariants, Delta, aCepConsistent);
+					errFlag = NewtonIter3(Delta0, InVariants, Delta, aCepConsistent);
 					// check if newton converged
 					if (errFlag == 1) 
 					{
@@ -1574,7 +1603,7 @@ int ManzariDafalias::BackwardEuler_CPPM(const Vector& CurStress, const Vector& C
 				// explicit guess did not work, now do implicit substepping
 				} else if (SchemeControl == 2)
 				{
-					if (debugFlag) opserr << "******* Implicit sub-stepping" << endln;
+					if (debugFlag) opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Implicit sub-stepping" << endln;
 					implicitLevel++;
 					nStrain = cStrain + StrainInc / 2;
 					// do a recursive BackwardEuler_CPPM on the first half of the strain increment
@@ -1615,7 +1644,7 @@ int ManzariDafalias::BackwardEuler_CPPM(const Vector& CurStress, const Vector& C
 						
 						/*
 						Delta0 = SetManzariComponent(nStress, nAlpha,nFabric, nDGamma);
-						errFlag = NewtonSolve(Delta0, InVariants, Delta, aCep);
+						errFlag = NewtonIter2(Delta0, InVariants, Delta, aCep);
 						if (errFlag == 1) 
 						{
 							NextStress.Extract(Delta, 0, 1.0);
@@ -1644,28 +1673,14 @@ int ManzariDafalias::BackwardEuler_CPPM(const Vector& CurStress, const Vector& C
 				} 
 				// do explicit integration on this strain increment
 				else {
-					if (debugFlag) opserr << "******* Explicit integration" << endln;
-					numSteps = 1;
-					for(int ii=1; ii <= numSteps; ii++)
-					{
-						nStrain = cStrain + StrainInc / numSteps;
-						explicit_integrator(cStress, cStrain, cEStrain, cAlpha, cFabric, cAlpha_in, nStrain, 
-								nEStrain, nStress, nAlpha, nFabric, nDGamma, nVoidRatio, 
-								nG, nK, nCe, nCep, nCepC);
-
-						cStress = nStress; cStrain = nStrain; cAlpha = nAlpha; cFabric = nFabric; 
-					}
-
-					// update results from explicit integration
-					NextStress = nStress;
-					NextAlpha  = nAlpha;
-					NextFabric = nFabric;
-					NextDGamma = nDGamma;
-					aC = nCe;
-					aCep = nCe;
-					aCepConsistent = nCe;
-
+					if (debugFlag) 
+						opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Explicit integration" << endln;
+					
+					explicit_integrator(CurStress, CurStrain, CurElasticStrain, CurAlpha, CurFabric, alpha_in, NextStrain, 
+								NextElasticStrain, NextStress, NextAlpha, NextFabric, NextDGamma, NextVoidRatio, 
+								G, K, aC, aCep, aCepConsistent);
 					errFlag = 1;
+					//return errFlag;
 				}
 			}
 		}
@@ -1969,16 +1984,17 @@ ManzariDafalias::Stress_Correction(const Vector& CurStress, const Vector& CurStr
 	return;
 }
 /*************************************************************/
-//            NewtonSolve                                    //
+//            NewtonIter                                    //
 /*************************************************************/
 int
-ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, Matrix& aCepPart)
+ManzariDafalias::NewtonIter(const Vector& xo, const Vector& inVar, Vector& x, Matrix& aCepPart)
 {
 	// Newton Iterations, returns 1 : converged 
 	//                            0 : did not converge in MaxIter number of iterations
 	//                           -1 : the jacobian is singular or system cannot be solved
-
-	int MaxIter = 20;
+	
+	int MaxIter = 50;
+	int MaxLS   = 10;
 	int ResSize = xo.Size();
 	int errFlag = 0;
 	bool jacoFlag = true;
@@ -1990,7 +2006,8 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 	static Vector norms(ResSize+1);
 	static Matrix jaco(ResSize,ResSize);
 	static Matrix jInv(ResSize,ResSize);
-	double normR1, normR2, alpha;
+	double normR1, alpha;
+	double aNormR1, aNormR2;
 
 	switch (mJacoType) {
 		case 0:
@@ -2005,12 +2022,9 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 
 
 	sol = xo;
-	R = GetResidual(sol, inVar);
 	alpha = 1.0;
 	for(mIter = 1; mIter <= MaxIter; mIter++)
 	{
-		normR1 = R.Norm();
-		if (debugFlag) opserr << "Iteration = " << (int)mIter << ", norm(R) = " << normR1 << endln;
 		if (jacoFlag)
 			jaco = (this->*jacoFunc)(sol, inVar);
 		else
@@ -2045,39 +2059,57 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 		//sol -= alpha * dX;
 		*/
 		
+		R = GetResidual(sol, inVar);
 		errFlag = jaco.Solve(R, dX);
 		if (errFlag != 0) 
 		{
+			if (debugFlag)
+				opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Singular Matrix in Newton iterations - Jacobian!" << endln;
 			errFlag = -1;
 			break;
 		}
-		//sol -= dX;
+		// compute Newton decrement
+		//normR1 = R.Norm();
+		normR1 = fabs(R^dX);
+		aNormR1 = R.Norm();
 		
-		for (int i = 0; i < MaxIter; i++)
-		{
-			R2    = GetResidual(sol - alpha * dX, inVar);
-			normR2 = R2.Norm();
-			if (normR2 < normR1)
-			{
-				alpha = 1.0;
-				sol -= alpha * dX;
-				//if (sol(0)+sol(1)+sol(2) < 0)
-				//{
-				//	sol(0) = sol(1) = sol(2) = 0.1;
-				//}
-				R = GetResidual(sol, inVar);
-				break;
-			} else {
-				double alpha_o = alpha;
-				alpha = alpha * alpha * normR1 / (2.0 * (normR2 + alpha * normR1 - normR1));
-				if (alpha < 0.8 * alpha_o) alpha = 0.8 * alpha_o;
-			}
-		}
-		if (normR2 < mTolR) 
+		if (normR1 < mTolR)
 		{
 			errFlag = 1;
 			break;
 		}
+		
+		if (debugFlag) 
+			opserr << "Iteration = " << (int)mIter << " , NewtonDecr = " << normR1 <<   " (tol = " << mTolR << ")" << ", Actual norm(R) = " << aNormR1 << endln;
+
+		//sol -= dX;
+		
+		for (int i = 1; i <= MaxLS; i++)
+		{
+			R2    = GetResidual(sol - alpha * dX, inVar);
+			aNormR2 = R2.Norm();
+			if (debugFlag) 
+				opserr << "			LS Iter = " << (int) i << " , alpha = " << alpha << " , norm(R) = " << aNormR2 << endln;
+
+			if (aNormR2 < aNormR1)
+			{
+				sol -= alpha * dX;
+				normR1 = fabs(alpha*R2^dX);
+				aNormR1 = aNormR2;
+				alpha = 1.0;
+				break;
+			} else {
+				if (i == MaxLS) {
+					sol -=  dX;
+					alpha = 1.0;
+					break;
+				}
+				double alpha_o = alpha;
+				alpha = alpha * alpha * aNormR1 / (2.0 * (aNormR2 + alpha * aNormR1 - aNormR1));
+				if (alpha < 0.8 * alpha_o) alpha = 0.8 * alpha_o;
+			}
+		}
+		
 	}
 	if (errFlag == 1)
 	{	
@@ -2086,7 +2118,9 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 		if (jaco.Invert(jInv) != 0) 
 		{
 			errFlag = -1;
-			if (debugFlag) opserr << "Singular Matrix!!! - Jacobian" << endln;
+			if (debugFlag)
+				opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Singular Matrix in Newton iterations - Jacobian!" << endln;
+			return errFlag;
 		}
 		DenormalizeJacobian(jInv, norms);
 		
@@ -2096,6 +2130,834 @@ ManzariDafalias::NewtonSolve(const Vector& xo, const Vector& inVar, Vector& x, M
 
 	return errFlag;
 }
+
+/*************************************************************/
+//            NewtonIter                                    //
+/*************************************************************/
+int
+ManzariDafalias::NewtonIter2(const Vector& xo, const Vector& inVar, Vector& sol, Matrix& aCepPart)
+{
+	// Newton Iterations, returns 1 : converged 
+	//                            0 : did not converge in MaxIter number of iterations
+	//                           -1 : the jacobian is singular or system cannot be solved
+
+	int MaxIter = 50;
+	int MaxLS   = 10;
+	int errFlag = 0;
+	
+	// residuals and incremenets
+	Vector delSig(6), delAlph(6), delZ(6);
+	Vector del(19), res(19), res2(19);
+	double normR1 = 1.0, normR2 =1.0, alpha = 1.0;
+	double aNormR1 = 1.0, aNormR2 = 1.0;
+	double f1 = 0.0,  f2 = 0.0;
+	
+	sol = xo;
+
+	//if(debugFlag) 
+		opserr << "ManzariDafalias (Tag: " << this->getTag() << ") Newton Iterations:" << endln;
+
+	for (mIter = 1; mIter <= MaxIter; mIter++) {
+		res			= NewtonRes(sol, inVar);
+		errFlag		= NewtonSol(sol, inVar, del, aCepPart);
+		if (errFlag < 0)
+			return errFlag;
+
+		f1 = res ^ sol;
+		normR1		= -1.0*res^del;
+		if ((normR1 < 0) && fabs(normR1) > 1.0e-4)
+			opserr << "Hey I have a problem here!" << endln;
+		aNormR1		= res.Norm();
+
+
+		if (aNormR1 == 0.0) 
+		{
+			errFlag = 1;
+			break;
+		}
+		
+		//if(debugFlag) 
+			opserr << "Iteration = " << (int)mIter << " , NewtonDecr = " << normR1 <<   " (tol = " << mTolR << ")" << ", Actual norm(R) = " << aNormR1 << endln;
+		
+		for (int i = 1; i <= MaxLS; i++)
+		{
+			res2	= GetResidual(sol + (alpha * del), inVar);
+			f2      = res2 ^ (sol + (alpha * del));
+			normR2  = res2 ^ (alpha * del);
+			aNormR2 = res2.Norm();
+			//if(debugFlag) 
+				opserr << "			LS Iter = " << (int) i << " , alpha = " << alpha << " , norm(R) = " << aNormR2 << endln;
+
+			if (aNormR2 <= aNormR1)
+			{
+				sol += (alpha * del);
+				normR1 = -alpha*(res2^del);
+				aNormR1 = aNormR2;
+				alpha = 1.0;
+				break;
+			} else {
+				if (i == MaxLS) {
+					sol +=  del;
+					alpha = 1.0;
+					break;
+				}
+				double alpha_o = alpha;
+				//alpha = alpha * alpha * aNormR1 / (2.0 * (aNormR2 + alpha * aNormR1 - aNormR1));
+				// if (alpha < 0.8 * alpha_o) alpha = 0.8 * alpha_o;
+				alpha = -1.0 * normR2 / (2.0 * (f2 - f1 - normR2));
+				alpha = (alpha < 0.3 * alpha_o) ? 0.3 * alpha_o : alpha;
+				alpha = (alpha > 1.1 * alpha_o) ? 1.1 * alpha_o : alpha;
+			}
+		}
+		
+		if (fabs(normR1) < mTolR) 
+		{
+			errFlag = 1;
+			//if (debugFlag)
+				opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Residual (Norm = " << aNormR1 << "): " << endln << res2 << endln;
+			break;
+		}
+	}
+	
+	return errFlag;
+}
+
+/*************************************************************/
+//            GetResidual                                    //
+/*************************************************************/
+Vector
+ManzariDafalias::NewtonRes(const Vector& x, const Vector& inVar)
+{
+	Vector eStrain(6), strain(6), curStrain(6), curEStrain(6), TrialElasticStrain(6), dEstrain(6); // Strain
+	Vector stress(6), alpha(6), curStress(6), curAlpha(6), alpha_in(6);
+	Vector fabric(6), curFabric(6);
+	double dGamma, curVoidRatio, voidRatio;
+	// state dependent variables
+	Matrix aD(6,6);
+	Vector n(6), d(6), b(6), R(6), devStress(6), r(6), aBar(6), zBar(6); 
+	double Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, B, C, D, p;
+		
+	// residuals
+	Vector R1(6); Vector R2(6); Vector R3(6); double R4;
+	
+	// read the trial values
+	stress.Extract(x, 0, 1.0);
+	alpha.Extract(x, 6, 1.0);
+	fabric.Extract(x, 12, 1.0);
+	dGamma = x(18);
+
+	// current iteration invariants
+	strain.Extract(inVar, 0, 1.0);
+	curStrain.Extract(inVar, 6, 1.0);
+	curStress.Extract(inVar, 12, 1.0);
+	curEStrain.Extract(inVar, 18, 1.0);
+	curAlpha.Extract(inVar, 24, 1.0);
+	curFabric.Extract(inVar, 30, 1.0);
+	curVoidRatio = inVar(36);
+	voidRatio = inVar(37);
+	alpha_in.Extract(inVar,38,1.0);
+
+	// elastic trial strain
+	TrialElasticStrain = curEStrain + (strain - curStrain);
+	aD = GetCompliance(mK, mG);
+
+	GetStateDependent(stress, alpha, fabric, voidRatio, alpha_in, n, d, b, Cos3Theta, h, psi, alphaBtheta, alphaDtheta, 
+					b0, A, D, B, C, R);
+
+	devStress = GetDevPart(stress);
+	p = one3 * GetTrace(stress);
+	p = p < m_Pmin ? m_Pmin : p;
+	aBar = two3 * h * b;
+	zBar = -1.0 * m_cz * Macauley(-1.0 * D) * (m_z_max * n + fabric);
+		
+	dEstrain = aD * (stress - curStress);
+	eStrain = curEStrain + dEstrain;
+		
+	R1 = eStrain - TrialElasticStrain + dGamma * mIIco * R;
+	R2 = alpha   - curAlpha			  - dGamma * aBar;
+	R3 = fabric  - curFabric		  - dGamma * zBar;
+	R4 = GetF(stress, alpha);
+	
+	Vector res(19);
+	// fill out residual vector
+	res.Assemble(R1, 0, 1.0);
+	res.Assemble(R2, 6, 1.0);
+	res.Assemble(R3, 12, 1.0);
+	res(18) = R4;
+
+	return res;
+}
+/*************************************************************/
+//            GetJacobian                                    //
+/*************************************************************/
+int 
+ManzariDafalias::NewtonSol(const Vector &xo, const Vector &inVar, Vector& del, Matrix& Cep)
+{
+	Vector eStrain(6), strain(6), curStrain(6), curEStrain(6), TrialElasticStrain(6), dEstrain(6); // Strain
+	Vector stress(6), alpha(6), curStress(6), curAlpha(6), alpha_in(6);
+	Vector fabric(6), curFabric(6);
+	double dGamma, curVoidRatio, voidRatio;
+	// state dependent variables
+	Matrix aD(6,6), aC(6,6);
+	Vector n(6), n2(6), d(6), b(6), R(6), devStress(6), r(6), aBar(6), zBar(6); 
+	double Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, B, C, D, p, normR, gc;
+		
+	// analytical Jacobian
+	double AlphaAlphaInDotN;
+	// Differentials of quantities with respect to Sigma
+	Matrix dnOverdSigma(6,6), dAbarOverdSigma(6,6), dROverdSigma(6,6), dZbarOverdSigma(6,6);
+	Vector dPsiOverdSigma(6), db0OverdSigma(6), dCos3ThetaOverdSigma(6), dAdOverdSigma(6), dhOverdSigma(6),
+		dgOverdSigma(6), dAlphaDOverdSigma(6), dCOverdSigma(6), dBOverdSigma(6), dAlphaBOverdSigma(6), dDOverdSigma(6);
+	// Differentials of quantities with respect to Alpha
+	Matrix dnOverdAlpha(6,6), dAbarOverdAlpha(6,6), dROverdAlpha(6,6), dZbarOverdAlpha(6,6);
+	Vector dCos3ThetaOverdAlpha(6), dAdOverdAlpha(6), dhOverdAlpha(6), dgOverdAlpha(6), dAlphaDOverdAlpha(6), 
+		dCOverdAlpha(6), dBOverdAlpha(6), dAlphaBOverdAlpha(6), dDOverdAlpha(6);
+	// Differentials of quantities with respect to Fabric
+	Matrix dZbarOverdFabric(6,6), dROverdFabric(6,6);
+	Vector dAdOverdFabric(6), dDOverdFabric(6), dfOverdSigma(6), dfOverdAlpha(6);
+
+	// Variables needed to solve the system of equations
+	Matrix	DAlpha(6,6), DFabric(6,6), DSigma(6,6);
+	Matrix	CAlpha(6,6), CFabric(6,6), CSigma(6,6), ASigma(6,6), ZSigma(6,6);
+	Vector	ALambda(6), AConstant(6), ZLambda(6), ZConstant(6), LSigma(6), 
+			SLambda(6), SConstant(6);
+	double	LConstant;
+
+	// Flags to consider the threshold values
+	double dpFlag = 1.0, dnFlag = 1.0, dhFlag = 1.0;
+	
+	// residuals
+	Vector R1(6); Vector R2(6); Vector R3(6); double R4;
+	
+	// read the trial values
+	stress.Extract(xo, 0, 1.0);
+	alpha.Extract(xo, 6, 1.0);
+	fabric.Extract(xo, 12, 1.0);
+	dGamma = xo(18);
+		
+	// current iteration invariants
+	strain.Extract(inVar, 0, 1.0);
+	curStrain.Extract(inVar, 6, 1.0);
+	curStress.Extract(inVar, 12, 1.0);
+	curEStrain.Extract(inVar, 18, 1.0);
+	curAlpha.Extract(inVar, 24, 1.0);
+	curFabric.Extract(inVar, 30, 1.0);
+	curVoidRatio = inVar(36);
+	voidRatio = inVar(37);
+	alpha_in.Extract(inVar,38,1.0);
+
+	// elastic trial strain
+	TrialElasticStrain = curEStrain + (strain - curStrain);
+	aC = GetStiffness(mK, mG);
+	aD = GetCompliance(mK, mG);
+
+	GetStateDependent(stress, alpha, fabric, voidRatio, alpha_in, n, d, b, Cos3Theta, h, psi, alphaBtheta, alphaDtheta, 
+					b0, A, D, B, C, R);
+	if (DoubleDot2_2_Contr(alpha - alpha_in,n) <= 1.0e-3)
+	{
+		h = 1.0e4 * b0;
+		AlphaAlphaInDotN = 1.0e-4;
+		dhFlag = 0.0;
+	} else {
+		AlphaAlphaInDotN = DoubleDot2_2_Contr(alpha - alpha_in,n);
+		dhFlag = 1.0;
+	}
+
+	n2 = SingleDot(n,n);
+	devStress = GetDevPart(stress);
+	p = one3 * GetTrace(stress);
+	p = p < m_Pmin ? m_Pmin : p;
+	dpFlag = p < m_Pmin ? 0.0 : 1.0;
+	r = devStress - p * alpha;
+	normR = GetNorm_Contr(r);
+	dnFlag = normR == 0 ? 0.0 : 1.0;
+	gc = g(Cos3Theta, m_c);
+	aBar = two3 * h * b;
+	zBar = -1.0 * m_cz * Macauley(-1.0 * D) * (m_z_max * n + fabric);
+		
+	dEstrain = aD * (stress - curStress);
+	eStrain = curEStrain + dEstrain;
+		
+	R1 = eStrain - TrialElasticStrain + dGamma * mIIco * R;
+	R2 = alpha   - curAlpha			  - dGamma * aBar;
+	R3 = fabric  - curFabric		  - dGamma * zBar;
+	R4 = GetF(stress, alpha);
+
+	// d...OverdSigma : Arranged by order of dependence
+	dnOverdSigma          = dnFlag * ( 1.0 / normR * (mIIdevCon - dpFlag*one3*Dyadic2_2(alpha,mI1) - 
+		Dyadic2_2(n,n) + dpFlag*one3*DoubleDot2_2_Contr(alpha,n)*Dyadic2_2(n,mI1)));
+	dPsiOverdSigma        = dpFlag * one3 * m_ksi * m_lambda_c / m_P_atm * pow(p/m_P_atm, m_ksi-1) * mI1;
+	db0OverdSigma         = dpFlag*(-b0 / (6.0*p) * mI1);
+
+	dCos3ThetaOverdSigma  = 3.0 * sqrt(6.0) * DoubleDot2_4(n2, mIIco*dnOverdSigma);
+	dAdOverdSigma         = m_A0 * MacauleyIndex(DoubleDot2_2_Contr(fabric, n)) * 
+		DoubleDot2_4(fabric, mIIco*dnOverdSigma);
+	dhOverdSigma          = dhFlag * (1.0 / AlphaAlphaInDotN * (db0OverdSigma - 
+		h*DoubleDot2_4(alpha-alpha_in, mIIco*dnOverdSigma)));
+
+	dgOverdSigma          = pow(gc,2.0) * (1.0-m_c)/(2.0*m_c) * dCos3ThetaOverdSigma;
+
+	dAlphaDOverdSigma     = m_Mc * exp(m_nd * psi) * (dgOverdSigma + m_nd * gc * dPsiOverdSigma);
+	dCOverdSigma          = 3.0 * sqrt(1.5) * (1 - m_c)/m_c * dgOverdSigma;
+	dBOverdSigma          = 1.5 * (1.0 - m_c)/m_c * (dgOverdSigma * Cos3Theta + gc * dCos3ThetaOverdSigma);
+	dAlphaBOverdSigma     = m_Mc * exp(-1.0*m_nb*psi) * (dgOverdSigma - m_nb * gc * dPsiOverdSigma);
+
+	dDOverdSigma          = dAdOverdSigma * (root23 * alphaDtheta - DoubleDot2_2_Contr(alpha, n)) +
+		A * (root23 * dAlphaDOverdSigma - DoubleDot2_4(alpha, mIIco*dnOverdSigma));
+	dAbarOverdSigma       = two3 * (Dyadic2_2(root23*alphaBtheta*n-alpha, dhOverdSigma) + 
+		root23 * h * (Dyadic2_2(n, dAlphaBOverdSigma)+alphaBtheta * dnOverdSigma));
+
+	dROverdSigma          = B * dnOverdSigma + Dyadic2_2(n, dBOverdSigma) - C * 
+		(Trans_SingleDot4T_2(dnOverdSigma,n) + SingleDot2_4(n, dnOverdSigma)) -
+		Dyadic2_2((n2 - one3 * mI1),dCOverdSigma) + one3 * Dyadic2_2(mI1, dDOverdSigma);
+	dZbarOverdSigma       = -1.0 * m_cz * MacauleyIndex(-1.0*D) * 
+		(-1.0*Dyadic2_2(m_z_max*n + fabric, dDOverdSigma) - m_z_max * D * dnOverdSigma);
+
+	// d...OverdAlpha : Arranged by order of dependence
+	dnOverdAlpha          = dnFlag * (p / normR * (Dyadic2_2(n,n) - mIIcon));
+
+	dCos3ThetaOverdAlpha  = 3.0 * sqrt(6.0) * DoubleDot2_4(n2, mIIco*dnOverdAlpha);
+	dAdOverdAlpha         = m_A0 * MacauleyIndex(DoubleDot2_2_Contr(fabric, n)) * 
+		DoubleDot2_4(fabric, mIIco*dnOverdAlpha);
+	dhOverdAlpha          = dhFlag * (-1.0*h / AlphaAlphaInDotN * (n + 
+		DoubleDot2_4(alpha-alpha_in,mIIco*dnOverdAlpha)));
+
+	dgOverdAlpha          = pow(gc,2.0) * (1.0-m_c)/(2.0*m_c) * dCos3ThetaOverdAlpha;
+
+	dAlphaDOverdAlpha     = m_Mc * exp(m_nd * psi) * dgOverdAlpha;
+	dCOverdAlpha          = 3.0 * sqrt(1.5) * (1 - m_c)/m_c * dgOverdAlpha;
+	dBOverdAlpha          = 1.5 * (1.0 - m_c)/m_c * (dgOverdAlpha * Cos3Theta + gc * dCos3ThetaOverdAlpha);
+	dAlphaBOverdAlpha     = m_Mc * exp(-1.0*m_nb*psi) * dgOverdAlpha;
+
+	dDOverdAlpha          = dAdOverdAlpha * (root23 * alphaDtheta - 
+		DoubleDot2_2_Contr(alpha, n)) + A * (root23 * dAlphaDOverdAlpha -
+		n - DoubleDot2_4(alpha, mIIco*dnOverdAlpha));
+	dAbarOverdAlpha       = two3 * (Dyadic2_2(root23*alphaBtheta*n-alpha, dhOverdAlpha) +
+		root23 * h * (Dyadic2_2(n, dAlphaBOverdAlpha)+alphaBtheta * dnOverdAlpha) - h * mIIcon);
+
+	dROverdAlpha          = B * dnOverdAlpha + Dyadic2_2(n, dBOverdAlpha) - C * 
+		(Trans_SingleDot4T_2(dnOverdAlpha,n) + SingleDot2_4(n, dnOverdAlpha)) -
+		Dyadic2_2((n2 - one3 * mI1),dCOverdAlpha) + one3 * Dyadic2_2(mI1, dDOverdAlpha);
+	dZbarOverdAlpha       = -1.0*m_cz*MacauleyIndex(-1.0*D) * (-1.0*
+		Dyadic2_2(m_z_max*n + fabric, dDOverdAlpha) - m_z_max * D * dnOverdAlpha);
+
+	// d...OverdFabric : Arranged by order of dependence
+	dAdOverdFabric        = m_A0 * MacauleyIndex(DoubleDot2_2_Contr(fabric, n)) * n;
+
+	dDOverdFabric         = dAdOverdFabric * (root23 * alphaDtheta - DoubleDot2_2_Contr(alpha, n));
+	
+	dROverdFabric         = one3 * Dyadic2_2(mI1, dDOverdFabric);
+
+	dZbarOverdFabric      = -1.0*m_cz* MacauleyIndex(-1.0*D) * 
+		(-1.0*Dyadic2_2(m_z_max * n + fabric, dDOverdFabric) - D * mIIcon);
+
+		
+	dfOverdSigma		= (n - one3 * DoubleDot2_2_Contr(devStress/p,n) * mI1);
+	dfOverdAlpha		= -1.0 * p * n;
+
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+		
+	// Jacobian
+	Matrix J11(6,6), J12(6,6), J13(6,6); Vector J14(6);
+	Matrix J21(6,6), J22(6,6);           Vector J24(6);
+	Matrix J31(6,6), J32(6,6), J33(6,6); Vector J34(6);
+	Vector J41(6), J42(6);
+	
+	// inv(J22), inv(J33)
+	Matrix J22_1(6,6), J33_1(6,6);
+	
+	J11		= aD + dGamma * mIIco * dROverdSigma * mIIco;
+	J12		= dGamma * mIIco * dROverdAlpha  * mIIco;
+	J13		= dGamma * mIIco * dROverdFabric * mIIco;
+	J14		= mIIco * R;
+
+	J21		=  -1.0*dGamma * dAbarOverdSigma * mIIco;
+	J22		=  mIImix - dGamma * dAbarOverdAlpha * mIIco;
+	J24		=  -1.0 *  aBar;
+
+	J31		=  -1.0*dGamma * dZbarOverdSigma * mIIco;
+	J32		=  -1.0*dGamma * dZbarOverdAlpha * mIIco;
+	J33		=  mIImix - dGamma * dZbarOverdFabric * mIIco;
+	J34		=  -1.0 * zBar; 
+
+	J41		= mIIco * dfOverdSigma;
+	J42		= mIIco * dfOverdAlpha;
+
+	
+	if (J22.Invert(J22_1) != 0)
+	{
+		if (debugFlag) opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Singular Matrix in Newton iterations - CAlpha!" << endln;
+		J22_1 = mIImix;
+		//return -1;
+	}
+
+	if (J33.Invert(J33_1) != 0)
+	{
+		if (debugFlag) opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Singular Matrix in Newton iterations - CFabric!" << endln;
+		J33_1 = mIImix;
+		//return -1;
+	}
+
+	ASigma		= -1.0 * J22_1 * J21;
+	ALambda		= -1.0 * J22_1 * J24;
+	AConstant	= -1.0 * J22_1 * R2;
+
+	ZSigma		= -1.0 * J33_1 * (J31 + J32 * ASigma);
+	ZLambda		= -1.0 * J33_1 * (J34 + J32 * ALambda);
+	ZConstant	= -1.0 * J33_1 * (R3  + J32 * AConstant);
+
+	LSigma		= -1.0 / (J42 ^ ALambda) * (J41 + (ASigma ^ J42))   ;
+	LConstant	= -1.0 / (J42 ^ ALambda) * (R4  + (J42 ^ AConstant));
+
+	SConstant   = R1 + J12 * (ALambda * LConstant + AConstant) + 
+					J13 * (ZLambda * LConstant + ZConstant) + J14 * LConstant;
+	DSigma		= J11 + J12 * (ASigma + Dyadic2_2(ALambda, LSigma)) + 
+					J13 * (ZSigma + Dyadic2_2(ZLambda, LSigma)) + Dyadic2_2(J14, LSigma);
+	
+
+	DSigma		= aC * DSigma;
+	if (DSigma.Invert(CSigma) != 0) 
+	{
+		if (debugFlag) opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Singular Matrix in Newton iterations - Cep!" << endln;
+		CSigma = aC;
+		//return -1;
+	} else
+		CSigma = CSigma * aC;
+
+	Vector delSig(6), delAlph(6), delZ(6);
+	double delGamma;
+	delSig		= -1.0 *  CSigma * SConstant;
+	delGamma	= (LSigma ^ delSig) + LConstant;
+	// Check if delGamma is NaN
+	if (delGamma != delGamma)
+	{
+		if (debugFlag)
+			opserr << "ManzariDafalias(Tag: " << this->getTag() << "): delGamma is NaN!" << endln;
+		delSig.Zero();
+		delGamma = 0.0;
+		delZ.Zero();
+		delAlph.Zero();
+		Cep = aC;
+	} else {
+		delZ		= ZSigma * delSig + delGamma * ZLambda + ZConstant;
+		delAlph		= ASigma * delSig + delGamma * ALambda + AConstant;
+		Cep			= CSigma;
+	}
+	del			= SetManzariComponent(delSig, delAlph, delZ, delGamma);
+	return 0;	
+}
+
+
+
+
+
+
+
+
+
+
+
+/*************************************************************/
+//            NewtonIter                                    //
+/*************************************************************/
+int
+ManzariDafalias::NewtonIter3(const Vector& xo, const Vector& inVar, Vector& sol, Matrix& aCepPart)
+{
+	// Newton Iterations, returns 1 : converged 
+	//                            0 : did not converge in MaxIter number of iterations
+	//                           -1 : the jacobian is singular or system cannot be solved
+
+	int MaxIter = 50;
+	int MaxLS   = 15;
+	int errFlag = 0;
+	
+	// residuals and incremenets
+	Vector delSig(6), delAlph(6), delZ(6);
+	Vector del(19), res(19), res2(19), JRes(19), sol2(19);
+	double normR1 = 1.0, normR2 =1.0, alpha = 1.0;
+	double aNormR1 = 1.0, aNormR2 = 1.0;
+	double f_old = 0.0,  f_new = 0.0, fdd = 0.0, normDel = 0.0;
+	
+	sol = xo;
+
+	if(debugFlag) 
+		opserr << "ManzariDafalias (Tag: " << this->getTag() << ") Newton Iterations:" << endln;
+
+	for (mIter = 1; mIter <= MaxIter; mIter++) 
+	{
+		res.Zero(); // don't delete this. required because I'm using Assemble() which adds and not replaces
+
+		errFlag		= NewtonSol2(sol, inVar, res, JRes, del, aCepPart);
+
+		if (errFlag < 0)
+			return errFlag;		
+
+		f_old = 0.5 * (res ^ res);
+		normR1		= JRes^del;
+		aNormR1		= res.Norm();
+		fdd			= 1.0e-4 * normR1;
+		normDel		= del.Norm();
+
+		if(debugFlag) 
+			opserr << "Iteration = " << (int)mIter << " , NewtonDecr = " << normR1 <<   " (tol = " << mTolR << ")" << ", Actual norm(R) = " << aNormR1 << endln;
+		
+		if (aNormR1 < mTolR) 
+		{
+			errFlag = 1;
+			break;
+		}
+		
+		for (int i = 1; i <= MaxLS; i++)
+		{
+			if (alpha * normDel < 1.0e-10)
+			{
+				sol = sol2;
+				alpha = 1.0;
+				break;
+			}
+			sol2 = sol + (alpha * del);
+			res2	= NewtonRes(sol2, inVar);
+			f_new      = 0.5 * res2 ^ res2;
+
+			aNormR2 = res2.Norm();
+			if(debugFlag) 
+				opserr << "			LS Iter = " << (int) i << " , alpha = " << alpha << " , norm(R) = " << aNormR2 << endln;
+
+			if ((f_new < f_old + alpha * fdd) || (aNormR2 < mTolR))
+			{
+				sol = sol2;
+				alpha = 1.0;
+				break;
+			} else {
+				alpha *= 0.8;
+			}
+
+			if (i == MaxLS) {
+				sol +=  del;
+				alpha = 1.0;
+				break;
+			}
+		}
+		
+	}
+	
+	if (debugFlag)
+		opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Residual (Norm = " << aNormR1 << "): " << endln << res << endln;
+	return errFlag;
+}
+
+/*************************************************************/
+//            GetJacobian                                    //
+/*************************************************************/
+int 
+ManzariDafalias::NewtonSol2(const Vector &xo, const Vector &inVar, Vector& res, Vector& JRes, Vector& del, Matrix& Cep)
+{
+	Vector eStrain(6), strain(6), curStrain(6), curEStrain(6), TrialElasticStrain(6), dEstrain(6); // Strain
+	Vector stress(6), alpha(6), curStress(6), curAlpha(6), alpha_in(6);
+	Vector fabric(6), curFabric(6);
+	double dGamma, curVoidRatio, voidRatio;
+	// state dependent variables
+	Matrix aD(6,6), aC(6,6);
+	Vector n(6), n2(6), d(6), b(6), R(6), devStress(6), r(6), aBar(6), zBar(6); 
+	double Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, B, C, D, p, normR, gc;
+		
+	// analytical Jacobian
+	double AlphaAlphaInDotN;
+	// Differentials of quantities with respect to Sigma
+	Matrix dnOverdSigma(6,6), dAbarOverdSigma(6,6), dROverdSigma(6,6), dZbarOverdSigma(6,6);
+	Vector dPsiOverdSigma(6), db0OverdSigma(6), dCos3ThetaOverdSigma(6), dAdOverdSigma(6), dhOverdSigma(6),
+		dgOverdSigma(6), dAlphaDOverdSigma(6), dCOverdSigma(6), dBOverdSigma(6), dAlphaBOverdSigma(6), dDOverdSigma(6);
+	// Differentials of quantities with respect to Alpha
+	Matrix dnOverdAlpha(6,6), dAbarOverdAlpha(6,6), dROverdAlpha(6,6), dZbarOverdAlpha(6,6);
+	Vector dCos3ThetaOverdAlpha(6), dAdOverdAlpha(6), dhOverdAlpha(6), dgOverdAlpha(6), dAlphaDOverdAlpha(6), 
+		dCOverdAlpha(6), dBOverdAlpha(6), dAlphaBOverdAlpha(6), dDOverdAlpha(6);
+	// Differentials of quantities with respect to Fabric
+	Matrix dZbarOverdFabric(6,6), dROverdFabric(6,6);
+	Vector dAdOverdFabric(6), dDOverdFabric(6), dfOverdSigma(6), dfOverdAlpha(6);
+
+	// Variables needed to solve the system of equations
+	Matrix	DAlpha(6,6), DFabric(6,6), DSigma(6,6);
+	Matrix	CAlpha(6,6), CFabric(6,6), CSigma(6,6), ASigma(6,6), ZSigma(6,6);
+	Vector	ALambda(6), AConstant(6), ZLambda(6), ZConstant(6), LSigma(6), 
+			SLambda(6), SConstant(6);
+	double	LConstant;
+
+	// Flags to consider the threshold values
+	double dpFlag = 1.0, dnFlag = 1.0, dhFlag = 1.0;
+	
+	// residuals
+	Vector R1(6); Vector R2(6); Vector R3(6); double R4;
+	
+	// read the trial values
+	stress.Extract(xo, 0, 1.0);
+	alpha.Extract(xo, 6, 1.0);
+	fabric.Extract(xo, 12, 1.0);
+	dGamma = xo(18);
+
+	// current iteration invariants
+	strain.Extract(inVar, 0, 1.0);
+	curStrain.Extract(inVar, 6, 1.0);
+	curStress.Extract(inVar, 12, 1.0);
+	curEStrain.Extract(inVar, 18, 1.0);
+	curAlpha.Extract(inVar, 24, 1.0);
+	curFabric.Extract(inVar, 30, 1.0);
+	curVoidRatio = inVar(36);
+	voidRatio = inVar(37);
+	alpha_in.Extract(inVar,38,1.0);
+
+	// elastic trial strain
+	TrialElasticStrain = curEStrain + (strain - curStrain);
+	aC = GetStiffness(mK, mG);
+	aD = GetCompliance(mK, mG);
+
+	GetStateDependent(stress, alpha, fabric, voidRatio, alpha_in, n, d, b, Cos3Theta, h, psi, alphaBtheta, alphaDtheta, 
+					b0, A, D, B, C, R);
+	if (DoubleDot2_2_Contr(alpha - alpha_in,n) <= 1.0e-3)
+	{
+		AlphaAlphaInDotN = 1.0e-4;
+		dhFlag = 0.0;
+	} else {
+		AlphaAlphaInDotN = DoubleDot2_2_Contr(alpha - alpha_in,n);
+		dhFlag = 1.0;
+	}
+
+	n2 = SingleDot(n,n);
+	devStress = GetDevPart(stress);
+	p = one3 * GetTrace(stress);
+	p = p < m_Pmin ? m_Pmin : p;
+	dpFlag = p < m_Pmin ? 0.0 : 1.0;
+	r = devStress - p * alpha;
+	normR = GetNorm_Contr(r);
+	dnFlag = normR == 0 ? 0.0 : 1.0;
+	gc = g(Cos3Theta, m_c);
+	aBar = two3 * h * b;
+	zBar = -1.0 * m_cz * Macauley(-1.0 * D) * (m_z_max * n + fabric);
+		
+	dEstrain = aD * (stress - curStress);
+	eStrain = curEStrain + dEstrain;
+
+	R1 = eStrain - TrialElasticStrain + dGamma * mIIco * R;
+	R2 = alpha   - curAlpha			  - dGamma * aBar;
+	R3 = fabric  - curFabric		  - dGamma * zBar;
+	R4 = GetF(stress, alpha);
+	
+	// fill out residual vector
+	res.Assemble(R1, 0, 1.0);
+	res.Assemble(R2, 6, 1.0);
+	res.Assemble(R3, 12, 1.0);
+	res(18) = R4;
+
+	// d...OverdSigma : Arranged by order of dependence
+	dnOverdSigma          = dnFlag * ( 1.0 / normR * (mIIdevCon - dpFlag*one3*Dyadic2_2(alpha,mI1) - 
+		Dyadic2_2(n,n) + dpFlag*one3*DoubleDot2_2_Contr(alpha,n)*Dyadic2_2(n,mI1)));
+	dPsiOverdSigma        = dpFlag * one3 * m_ksi * m_lambda_c / m_P_atm * pow(p/m_P_atm, m_ksi-1) * mI1;
+	db0OverdSigma         = dpFlag*(-b0 / (6.0*p) * mI1);
+
+	dCos3ThetaOverdSigma  = 3.0 * sqrt(6.0) * DoubleDot2_4(n2, mIIco*dnOverdSigma);
+	dAdOverdSigma         = m_A0 * MacauleyIndex(DoubleDot2_2_Contr(fabric, n)) * 
+		DoubleDot2_4(fabric, mIIco*dnOverdSigma);
+	dhOverdSigma          = dhFlag * (1.0 / AlphaAlphaInDotN * (db0OverdSigma - 
+		h*DoubleDot2_4(alpha-alpha_in, mIIco*dnOverdSigma)));
+
+	dgOverdSigma          = pow(gc,2.0) * (1.0-m_c)/(2.0*m_c) * dCos3ThetaOverdSigma;
+
+	dAlphaDOverdSigma     = m_Mc * exp(m_nd * psi) * (dgOverdSigma + m_nd * gc * dPsiOverdSigma);
+	dCOverdSigma          = 3.0 * sqrt(1.5) * (1 - m_c)/m_c * dgOverdSigma;
+	dBOverdSigma          = 1.5 * (1.0 - m_c)/m_c * (dgOverdSigma * Cos3Theta + gc * dCos3ThetaOverdSigma);
+	dAlphaBOverdSigma     = m_Mc * exp(-1.0*m_nb*psi) * (dgOverdSigma - m_nb * gc * dPsiOverdSigma);
+
+	dDOverdSigma          = dAdOverdSigma * (root23 * alphaDtheta - DoubleDot2_2_Contr(alpha, n)) +
+		A * (root23 * dAlphaDOverdSigma - DoubleDot2_4(alpha, mIIco*dnOverdSigma));
+	dAbarOverdSigma       = two3 * (Dyadic2_2(root23*alphaBtheta*n-alpha, dhOverdSigma) + 
+		root23 * h * (Dyadic2_2(n, dAlphaBOverdSigma)+alphaBtheta * dnOverdSigma));
+
+	dROverdSigma          = B * dnOverdSigma + Dyadic2_2(n, dBOverdSigma) - C * 
+		(Trans_SingleDot4T_2(dnOverdSigma,n) + SingleDot2_4(n, dnOverdSigma)) -
+		Dyadic2_2((n2 - one3 * mI1),dCOverdSigma) + one3 * Dyadic2_2(mI1, dDOverdSigma);
+	dZbarOverdSigma       = -1.0 * m_cz * MacauleyIndex(-1.0*D) * 
+		(-1.0*Dyadic2_2(m_z_max*n + fabric, dDOverdSigma) - m_z_max * D * dnOverdSigma);
+
+	// d...OverdAlpha : Arranged by order of dependence
+	dnOverdAlpha          = dnFlag * (p / normR * (Dyadic2_2(n,n) - mIIcon));
+
+	dCos3ThetaOverdAlpha  = 3.0 * sqrt(6.0) * DoubleDot2_4(n2, mIIco*dnOverdAlpha);
+	dAdOverdAlpha         = m_A0 * MacauleyIndex(DoubleDot2_2_Contr(fabric, n)) * 
+		DoubleDot2_4(fabric, mIIco*dnOverdAlpha);
+	dhOverdAlpha          = dhFlag * (-1.0*h / AlphaAlphaInDotN * (n + 
+		DoubleDot2_4(alpha-alpha_in,mIIco*dnOverdAlpha)));
+
+	dgOverdAlpha          = pow(gc,2.0) * (1.0-m_c)/(2.0*m_c) * dCos3ThetaOverdAlpha;
+
+	dAlphaDOverdAlpha     = m_Mc * exp(m_nd * psi) * dgOverdAlpha;
+	dCOverdAlpha          = 3.0 * sqrt(1.5) * (1 - m_c)/m_c * dgOverdAlpha;
+	dBOverdAlpha          = 1.5 * (1.0 - m_c)/m_c * (dgOverdAlpha * Cos3Theta + gc * dCos3ThetaOverdAlpha);
+	dAlphaBOverdAlpha     = m_Mc * exp(-1.0*m_nb*psi) * dgOverdAlpha;
+
+	dDOverdAlpha          = dAdOverdAlpha * (root23 * alphaDtheta - 
+		DoubleDot2_2_Contr(alpha, n)) + A * (root23 * dAlphaDOverdAlpha -
+		n - DoubleDot2_4(alpha, mIIco*dnOverdAlpha));
+	dAbarOverdAlpha       = two3 * (Dyadic2_2(root23*alphaBtheta*n-alpha, dhOverdAlpha) +
+		root23 * h * (Dyadic2_2(n, dAlphaBOverdAlpha)+alphaBtheta * dnOverdAlpha) - h * mIIcon);
+
+	dROverdAlpha          = B * dnOverdAlpha + Dyadic2_2(n, dBOverdAlpha) - C * 
+		(Trans_SingleDot4T_2(dnOverdAlpha,n) + SingleDot2_4(n, dnOverdAlpha)) -
+		Dyadic2_2((n2 - one3 * mI1),dCOverdAlpha) + one3 * Dyadic2_2(mI1, dDOverdAlpha);
+	dZbarOverdAlpha       = -1.0*m_cz*MacauleyIndex(-1.0*D) * (-1.0*
+		Dyadic2_2(m_z_max*n + fabric, dDOverdAlpha) - m_z_max * D * dnOverdAlpha);
+
+	// d...OverdFabric : Arranged by order of dependence
+	dAdOverdFabric        = m_A0 * MacauleyIndex(DoubleDot2_2_Contr(fabric, n)) * n;
+
+	dDOverdFabric         = dAdOverdFabric * (root23 * alphaDtheta - DoubleDot2_2_Contr(alpha, n));
+	
+	dROverdFabric         = one3 * Dyadic2_2(mI1, dDOverdFabric);
+
+	dZbarOverdFabric      = -1.0*m_cz* MacauleyIndex(-1.0*D) * 
+		(-1.0*Dyadic2_2(m_z_max * n + fabric, dDOverdFabric) - D * mIIcon);
+
+		
+	dfOverdSigma		= (n - one3 * DoubleDot2_2_Contr(devStress/p,n) * mI1);
+	dfOverdAlpha		= -1.0 * p * n;
+
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+		
+	// Jacobian
+	Matrix J11(6,6), J12(6,6), J13(6,6); Vector J14(6);
+	Matrix J21(6,6), J22(6,6);           Vector J24(6);
+	Matrix J31(6,6), J32(6,6), J33(6,6); Vector J34(6);
+	Vector J41(6), J42(6);
+	
+	// inv(J22), inv(J33)
+	Matrix J22_1(6,6), J33_1(6,6);
+	
+	J11		= aD + dGamma * mIIco * dROverdSigma * mIIco;
+	J12		= dGamma * mIIco * dROverdAlpha  * mIIco;
+	J13		= dGamma * mIIco * dROverdFabric * mIIco;
+	J14		= mIIco * R;
+
+	J21		=  -1.0*dGamma * dAbarOverdSigma * mIIco;
+	J22		=  mIImix - dGamma * dAbarOverdAlpha * mIIco;
+	J24		=  -1.0 *  aBar;
+
+	J31		=  -1.0*dGamma * dZbarOverdSigma * mIIco;
+	J32		=  -1.0*dGamma * dZbarOverdAlpha * mIIco;
+	J33		=  mIImix - dGamma * dZbarOverdFabric * mIIco;
+	J34		=  -1.0 * zBar; 
+
+	J41		= mIIco * dfOverdSigma;
+	J42		= mIIco * dfOverdAlpha;
+
+	// JRes
+	Vector temp(6); double temp2;
+	temp = (J11^R1) + (J21^R2) + (J31^R3) + R4 * J41;
+	JRes.Assemble(temp, 0, 1.0);
+	temp = (J12^R1) + (J22^R2) + (J32^R3) + R4 * J42;
+	JRes.Assemble(temp, 6, 1.0);
+	temp = (J13^R1) + (J33^R3);
+	JRes.Assemble(temp, 12, 1.0);
+	temp2 = (J14^R1) + (J24^R2) + (J34^R3);
+	JRes(18) = temp2;
+	
+	if (J22.Invert(J22_1) != 0)
+	{
+		if (debugFlag) opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Singular Matrix in Newton iterations - CAlpha!" << endln;
+		J22_1 = mIImix;
+		//return -1;
+	}
+
+	if (J33.Invert(J33_1) != 0)
+	{
+		if (debugFlag) opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Singular Matrix in Newton iterations - CFabric!" << endln;
+		J33_1 = mIImix;
+		//return -1;
+	}
+
+	ASigma		= -1.0 * J22_1 * J21;
+	ALambda		= -1.0 * J22_1 * J24;
+	AConstant	= -1.0 * J22_1 * R2;
+
+	ZSigma		= -1.0 * J33_1 * (J31 + J32 * ASigma);
+	ZLambda		= -1.0 * J33_1 * (J34 + J32 * ALambda);
+	ZConstant	= -1.0 * J33_1 * (R3  + J32 * AConstant);
+
+	LSigma		= -1.0 / (J42 ^ ALambda) * (J41 + (ASigma ^ J42))   ;
+	LConstant	= -1.0 / (J42 ^ ALambda) * (R4  + (J42 ^ AConstant));
+
+	SConstant   = R1 + J12 * (ALambda * LConstant + AConstant) + 
+					J13 * (ZLambda * LConstant + ZConstant) + J14 * LConstant;
+	DSigma		= J11 + J12 * (ASigma + Dyadic2_2(ALambda, LSigma)) + 
+					J13 * (ZSigma + Dyadic2_2(ZLambda, LSigma)) + Dyadic2_2(J14, LSigma);
+	
+
+	DSigma		= aC * DSigma;
+	if (DSigma.Invert(CSigma) != 0) 
+	{
+		if (debugFlag) opserr << "ManzariDafalias (Tag: " << this->getTag() << "): Singular Matrix in Newton iterations - Cep!" << endln;
+		CSigma = aC;
+		//return -1;
+	} else
+		CSigma = CSigma * aC;
+
+	Vector delSig(6), delAlph(6), delZ(6);
+	double delGamma;
+	delSig		= -1.0 *  CSigma * SConstant;
+	delGamma	= (LSigma ^ delSig) + LConstant;
+	// Check if delGamma is NaN
+	if (delGamma != delGamma)
+	{
+		if (debugFlag)
+			opserr << "ManzariDafalias(Tag: " << this->getTag() << "): delGamma is NaN!" << endln;
+		delSig.Zero();
+		delGamma = 0.0;
+		delZ.Zero();
+		delAlph.Zero();
+		Cep = aC;
+	} else {
+		delZ		= ZSigma * delSig + delGamma * ZLambda + ZConstant;
+		delAlph		= ASigma * delSig + delGamma * ALambda + AConstant;
+		Cep			= CSigma;
+	}
+	del			= SetManzariComponent(delSig, delAlph, delZ, delGamma);
+	return 0;	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*************************************************************/
 //            GetResidual                                    //
 /*************************************************************/
@@ -2175,6 +3037,10 @@ ManzariDafalias::GetJacobian(const Vector &x, const Vector &inVar)
 	Vector stress(6), alpha(6), curStress(6), curAlpha(6), alpha_in(6);
 	Vector fabric(6), curFabric(6);
 	double dGamma, curVoidRatio, voidRatio;
+	double AlphaAlphaInDotN;
+	
+	// Flags to consider the threshold values
+	double dpFlag = 1.0, dnFlag = 1.0, dhFlag = 1.0;
 	
 	// read the trial variables from newton iterations
 	stress.Extract(x, 0, 1.0);
@@ -2201,12 +3067,24 @@ ManzariDafalias::GetJacobian(const Vector &x, const Vector &inVar)
 	double Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, B, C, D;
 	GetStateDependent(stress, alpha, fabric, voidRatio, alpha_in, n, d, b, Cos3Theta, h, psi, alphaBtheta, alphaDtheta, 
 		b0, A, D, B, C, R);
+	if (DoubleDot2_2_Contr(alpha - alpha_in,n) <= 1.0e-3)
+	{
+		h = 1.0e4 * b0;
+		AlphaAlphaInDotN = 1.0e-4;
+		dhFlag = 0.0;
+	} else {
+		AlphaAlphaInDotN = DoubleDot2_2_Contr(alpha - alpha_in,n);
+		dhFlag = 1.0;
+	}
+	
 	n2 = SingleDot(n,n);
 	Vector devStress = GetDevPart(stress);
 	double p = one3 * GetTrace(stress);
 	p = p < m_Pmin ? m_Pmin : p;
+	dpFlag = p < m_Pmin ? 0.0 : 1.0;
 	Vector r(6); r = devStress - p * alpha;
 	double normR = GetNorm_Contr(r);
+	dnFlag = normR == 0 ? 0.0 : 1.0;
 	double gc = g(Cos3Theta, m_c);
 	Vector aBar(6); aBar = two3 * h * b;
 	Vector zBar(6); zBar = -1.0 * m_cz * Macauley(-1.0 * D) * (m_z_max * n + fabric);
@@ -2214,13 +3092,7 @@ ManzariDafalias::GetJacobian(const Vector &x, const Vector &inVar)
 	//double G, K;
 	//GetElasticModuli(curStress, curVoidRatio, voidRatio, TrialElasticStrain, curEStrain, K, G);
 	Matrix aD(6,6);	aD = GetCompliance(mK, mG);
-
-	double AlphaAlphaInDotN;
-	if (fabs(DoubleDot2_2_Contr(alpha - alpha_in,n)) <= (m_h0 / 200))
-		AlphaAlphaInDotN = (m_h0 / 200);
-	else
-		AlphaAlphaInDotN = DoubleDot2_2_Contr(alpha - alpha_in,n);
-
+	
 // analytical Jacobian
 	// Differentials of quantities with respect to Sigma
 	Matrix dnOverdSigma(6,6), dAbarOverdSigma(6,6), dROverdSigma(6,6), dZbarOverdSigma(6,6);
@@ -2235,16 +3107,16 @@ ManzariDafalias::GetJacobian(const Vector &x, const Vector &inVar)
 	Vector dAdOverdFabric(6), dDOverdFabric(6);
 
 	// d...OverdSigma : Arranged by order of dependence
-	dnOverdSigma          = 1.0 / normR * (mIIdevCon - one3*Dyadic2_2(alpha,mI1) - 
-		Dyadic2_2(n,n) + one3*DoubleDot2_2_Contr(alpha,n)*Dyadic2_2(n,mI1));
-	dPsiOverdSigma        = one3 * m_ksi * m_lambda_c / m_P_atm * pow(p/m_P_atm, m_ksi-1) * mI1;
-	db0OverdSigma         = -b0 / (6.0*p) * mI1;
+	dnOverdSigma          = dnFlag * ( 1.0 / normR * (mIIdevCon - dpFlag*one3*Dyadic2_2(alpha,mI1) - 
+		Dyadic2_2(n,n) + dpFlag*one3*DoubleDot2_2_Contr(alpha,n)*Dyadic2_2(n,mI1)));
+	dPsiOverdSigma        = dpFlag * one3 * m_ksi * m_lambda_c / m_P_atm * pow(p/m_P_atm, m_ksi-1) * mI1;
+	db0OverdSigma         = dpFlag*(-b0 / (6.0*p) * mI1);
 
 	dCos3ThetaOverdSigma  = 3.0 * sqrt(6.0) * DoubleDot2_4(n2, mIIco*dnOverdSigma);
 	dAdOverdSigma         = m_A0 * MacauleyIndex(DoubleDot2_2_Contr(fabric, n)) * 
 		DoubleDot2_4(fabric, mIIco*dnOverdSigma);
-	dhOverdSigma          = 1.0 / AlphaAlphaInDotN * (db0OverdSigma - 
-		h*DoubleDot2_4(alpha-alpha_in, mIIco*dnOverdSigma));
+	dhOverdSigma          = dhFlag * (1.0 / AlphaAlphaInDotN * (db0OverdSigma - 
+		h*DoubleDot2_4(alpha-alpha_in, mIIco*dnOverdSigma)));
 
 	dgOverdSigma          = pow(gc,2.0) * (1.0-m_c)/(2.0*m_c) * dCos3ThetaOverdSigma;
 
@@ -2265,13 +3137,13 @@ ManzariDafalias::GetJacobian(const Vector &x, const Vector &inVar)
 		(-1.0*Dyadic2_2(m_z_max*n + fabric, dDOverdSigma) - m_z_max * D * dnOverdSigma);
 
 	// d...OverdAlpha : Arranged by order of dependence
-	dnOverdAlpha          = p / normR * (Dyadic2_2(n,n) - mIIcon);
+	dnOverdAlpha          = dnFlag * (p / normR * (Dyadic2_2(n,n) - mIIcon));
 
 	dCos3ThetaOverdAlpha  = 3.0 * sqrt(6.0) * DoubleDot2_4(n2, mIIco*dnOverdAlpha);
 	dAdOverdAlpha         = m_A0 * MacauleyIndex(DoubleDot2_2_Contr(fabric, n)) * 
 		DoubleDot2_4(fabric, mIIco*dnOverdAlpha);
-	dhOverdAlpha          = -1.0*h / AlphaAlphaInDotN * (n + 
-		DoubleDot2_4(alpha-alpha_in,mIIco*dnOverdAlpha));
+	dhOverdAlpha          = dhFlag * (-1.0*h / AlphaAlphaInDotN * (n + 
+		DoubleDot2_4(alpha-alpha_in,mIIco*dnOverdAlpha)));
 
 	dgOverdAlpha          = pow(gc,2.0) * (1.0-m_c)/(2.0*m_c) * dCos3ThetaOverdAlpha;
 
@@ -2297,7 +3169,7 @@ ManzariDafalias::GetJacobian(const Vector &x, const Vector &inVar)
 
 	dDOverdFabric         = dAdOverdFabric * (root23 * alphaDtheta - DoubleDot2_2_Contr(alpha, n));
 	
-	dROverdFabric         = one3 * mIIcon * Dyadic2_2(mI1, dDOverdFabric);
+	dROverdFabric         = one3 * Dyadic2_2(mI1, dDOverdFabric);
 
 	dZbarOverdFabric      = -1.0*m_cz* MacauleyIndex(-1.0*D) * 
 		(-1.0*Dyadic2_2(m_z_max * n + fabric, dDOverdFabric) - D * mIIcon);
@@ -2315,7 +3187,7 @@ ManzariDafalias::GetJacobian(const Vector &x, const Vector &inVar)
 	dR1OverdDGamma		= mIIco * R;
 
 	dR2OverdSigma		=  -1.0*dGamma * dAbarOverdSigma * mIIco;
-	dR2OverdAlpha		= mIImix - dGamma * dAbarOverdAlpha * mIIco;
+	dR2OverdAlpha		=  mIImix - dGamma * dAbarOverdAlpha * mIIco;
 	dR2OverdFabric.Zero();
 	dR2OverdDGamma		=  -1.0 *  aBar;
 
@@ -2600,6 +3472,25 @@ ManzariDafalias::GetElasticModuli(const Vector& sigma, const double& en, const d
 /*************************************************************/
 // GetElasticModuli() ---------------------------------------------
 void
+ManzariDafalias::GetElasticModuli(const Vector& sigma, const double& en, double &K, double &G, const double& D)
+// Calculates G, K
+{
+	double pn = one3 * GetTrace(sigma);
+	pn = (pn <= m_Pmin) ? m_Pmin : pn;
+
+	G = m_G0 * m_P_atm * pow((2.97 - en),2) / (1 + en) * sqrt(pn / m_P_atm);
+	if (pn > m_Pmin)
+	{
+		K = two3 * (1 + m_nu) / (1 - 2 * m_nu) * G;
+		//m_isSmallp = false;
+	}
+	else
+	{
+		K = MacauleyIndex(-D) * two3 * (1 + m_nu) / (1 - 2 * m_nu) * G + 1.0e-5;
+		m_isSmallp = D > 0;
+	}
+}
+void
 ManzariDafalias::GetElasticModuli(const Vector& sigma, const double& en, double &K, double &G)
 // Calculates G, K
 {
@@ -2613,11 +3504,11 @@ ManzariDafalias::GetElasticModuli(const Vector& sigma, const double& en, double 
 // GetStiffness() ---------------------------------------------
 Matrix
 ManzariDafalias::GetStiffness(const double& K, const double& G)
-// returns the stiffness matrix in its covariant-covarint form
+// returns the stiffness matrix in its contravarinat-contravariant form
 {
 	Matrix C(6,6);
-	double a = K + 4*one3 * G;
-	double b = K - 2*one3 * G;
+	double a = K + 4.0*one3 * G;
+	double b = K - 2.0*one3 * G;
 	C(0,0) = C(1,1) = C(2,2) = a;
 	C(3,3) = C(4,4) = C(5,5) = G;
 	C(0,1) = C(0,2) = C(1,2) = b;
@@ -2628,7 +3519,7 @@ ManzariDafalias::GetStiffness(const double& K, const double& G)
 // GetCompliance() ---------------------------------------------
 Matrix
 ManzariDafalias::GetCompliance(const double& K, const double& G)
-// returns the compliance matrix in its contravarinat-contravariant form
+// returns the compliance matrix in its covariant-covariant form
 {
 	Matrix D(6,6);
 	double a = 1 / (9*K) + 1 / (3*G);
@@ -2689,17 +3580,17 @@ ManzariDafalias::Check(const Vector& TrialStress, const Vector& stress, const Ve
 // Check if the solution of implicit integration makes sense
 {
 	int result = 1;
-
+	
 	if (GetTrace(stress) < 0) result = -2;
-
+	
 	Vector n(6);    n    = GetNormalToYield(stress, CurAlpha);
 	Vector n_tr(6); n_tr = GetNormalToYield(TrialStress, CurAlpha);
-
+	
 	// check the direction of stress and trial stress
 	if (DoubleDot2_2_Contr(n, n_tr) < 0) result = -4;
-
+	
 	// add any other checks here
-
+	
 	return result;
 }
 /*************************************************************/
@@ -2714,26 +3605,65 @@ ManzariDafalias::GetStateDependent(const Vector &stress, const Vector &alpha, co
 	double p = one3 * GetTrace(stress);
 	p = (p < m_Pmin) ? m_Pmin : p;
 
+//	if (p != p)
+//		opserr << "p is a NaN" << endln;
+
 	n = GetNormalToYield(stress, alpha);
+	
+//	for (int j = 0; j < 6; j++) 
+//		if (n(j) != n(j)){
+//			opserr << " stress : " << stress << endln;
+//			opserr << " n : " << n << endln;
+//			break;
+//		}
+
 	psi = GetPSI(e, p);
+
+//	if (psi != psi)
+//		opserr << "pis is a NaN" << endln;
+
 	cos3Theta = GetLodeAngle(n);
+
+//	if (cos3Theta != cos3Theta)
+//		opserr << "cos3Theta is a NaN" << endln;
+
 	alphaBtheta = g(cos3Theta, m_c) * m_Mc * exp(-1.0 * m_nb * psi) - m_m;
+
+//	if (alphaBtheta != alphaBtheta)
+//		opserr << "alphaBtheta is a NaN" << endln;
+
 	alphaDtheta = g(cos3Theta, m_c) * m_Mc * exp(m_nd * psi) - m_m;
+
+//	if (alphaDtheta != alphaDtheta)
+//		opserr << "alphaDtheta is a NaN" << endln;
+
 	b0 = m_G0 * m_h0 * (1.0 - m_ch * e) / sqrt(p / m_P_atm);
+
+//	if (b0 != b0)
+//		opserr << "b0 is a NaN" << endln;
+
 	d    = root23 * alphaDtheta * n - alpha;
 	b    = root23 * alphaBtheta * n - alpha;
-	double alphaAlphaInDotN;
-	if (DoubleDot2_2_Contr(alpha-alpha_in,n) <= (m_h0 / 200))
-		alphaAlphaInDotN = (m_h0 / 200);
+	double AlphaAlphaInDotN;
+	if (DoubleDot2_2_Contr(alpha - alpha_in,n) <= 1.0e-3)
+		h = 1.0e4 * b0;
 	else
-		alphaAlphaInDotN = DoubleDot2_2_Contr(alpha-alpha_in,n);
-	h = b0 / alphaAlphaInDotN;
+	{
+		AlphaAlphaInDotN = DoubleDot2_2_Contr(alpha - alpha_in,n);
+		h = b0 / AlphaAlphaInDotN;
+	}
 
 	A = m_A0 * (1 + Macauley(DoubleDot2_2_Contr(fabric, n)));
 	D = A * DoubleDot2_2_Contr(d, n);
 	B = 1.0 + 1.5 * (1 - m_c)/ m_c * g(cos3Theta, m_c) * cos3Theta;
 	C = 3.0 * sqrt(1.5) * (1 - m_c)/ m_c * g(cos3Theta, m_c);
 	R = B * n - C * (SingleDot(n,n) - one3 * mI1) + one3 * D * mI1;
+//	if (B != B)
+//		opserr << "B is a NaN" << endln;
+//	if (C != C)
+//		opserr << "C is a NaN" << endln;
+//	if (D != D)
+//		opserr << "D is a NaN" << endln;
 }
 
 
@@ -2746,6 +3676,9 @@ ManzariDafalias::GetStateDependent(const Vector &stress, const Vector &alpha, co
 //            SYMMETRIC TENSOR OPERATIONS                    //
 /*************************************************************/
 /*************************************************************/
+// In all the functions below, by contravariant tensors, we mean stress-like tensors
+// and by covariant tensors we mean strain-like tensors
+
 //  GetTrace() ---------------------------------------------
 double
 ManzariDafalias::GetTrace(const Vector& v) 
@@ -2921,7 +3854,7 @@ ManzariDafalias::DoubleDot2_4(const Vector& v1, const Matrix& m1)
 Matrix
 ManzariDafalias::DoubleDot4_4(const Matrix& m1, const Matrix& m2)
 // computes doubledot product for matrix-matrix arguments
-// caution: second coordinate of the matrix should be in opposite 
+// caution: second coordinate of the first matrix should be in opposite 
 // variant form of the first coordinate of second matrix
 {
 	if ((m1.noCols() != 6) || (m1.noRows() != 6) || (m2.noCols() != 6) || (m2.noRows() != 6)) 
@@ -3060,48 +3993,48 @@ double
 MatrixMax_Rows(const Matrix& mat, int rowNo)
 {
 	int n = mat.noCols();
-	double max = fabs(mat(rowNo, 0));
+	double Rmax = fabs(mat(rowNo, 0));
 	for (int i = 1; i < n; i++){
-		if (max < fabs(mat(rowNo, i)))
-			max = fabs(mat(rowNo, i));
+		if (Rmax < fabs(mat(rowNo, i)))
+			Rmax = fabs(mat(rowNo, i));
 	}
-	return max;
+	return Rmax;
 }
 //------------------------------------------------------------
 double
 MatrixMax_Cols(const Matrix& mat, int colNo)
 {
 	int n = mat.noRows();
-	double max = fabs(mat(0, colNo));
+	double Cmax = fabs(mat(0, colNo));
 	for (int i = 1; i < n; i++){
-		if (max < fabs(mat(i, colNo)))
-			max = fabs(mat(i, colNo));
+		if (Cmax < fabs(mat(i, colNo)))
+			Cmax = fabs(mat(i, colNo));
 	}
-	return max;
+	return Cmax;
 }
 //------------------------------------------------------------
 double
 MatrixMin_Rows(const Matrix& mat, int rowNo)
 {
 	int n = mat.noCols();
-	double min = fabs(mat(rowNo, 0));
+	double Rmin = fabs(mat(rowNo, 0));
 	for (int i = 1; i < n; i++){
-		if (min > fabs(mat(rowNo, i)))
-			min = fabs(mat(rowNo, i));
+		if (Rmin > fabs(mat(rowNo, i)))
+			Rmin = fabs(mat(rowNo, i));
 	}
-	return min;
+	return Rmin;
 }
 //------------------------------------------------------------
 double
 MatrixMin_Cols(const Matrix& mat, int colNo)
 {
 	int n = mat.noRows();
-	double min = fabs(mat(0, colNo));
+	double Cmin = fabs(mat(0, colNo));
 	for (int i = 1; i < n; i++){
-		if (min > fabs(mat(i, colNo)))
-			min = fabs(mat(i, colNo));
+		if (Cmin > fabs(mat(i, colNo)))
+			Cmin = fabs(mat(i, colNo));
 	}
-	return min;
+	return Cmin;
 }
 //------------------------------------------------------------
 double
@@ -3114,10 +4047,10 @@ double
 VectorMax(const Vector& v)
 {
 	int n = v.Size();
-	double max = fabs(v(0));
+	double Vmax = fabs(v(0));
 	for (int i = 1; i < n; i++){
-		if (max < fabs(v(i)))
-			max = fabs(v(i));
+		if (Vmax < fabs(v(i)))
+			Vmax = fabs(v(i));
 	}
-	return max;
+	return Vmax;
 }

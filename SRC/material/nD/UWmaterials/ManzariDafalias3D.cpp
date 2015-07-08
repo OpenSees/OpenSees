@@ -116,6 +116,12 @@ ManzariDafalias3D::getStressToRecord()
 const Matrix& 
 ManzariDafalias3D::getTangent() 
 {
+	if (m_isSmallp)
+	{
+		mCe				= mIIdevMix * mCe;
+		mCep			= mIIdevMix * mCep;
+		mCep_Consistent = mIIdevMix * mCep_Consistent;
+	}
     if (mTangType == 0)
 		return mCe;
 	else if (mTangType == 1)
