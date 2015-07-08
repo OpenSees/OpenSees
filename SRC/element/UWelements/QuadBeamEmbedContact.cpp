@@ -36,6 +36,7 @@
 #include <FEM_ObjectBroker.h>
 #include <ElementResponse.h>
 #include <elementAPI.h>
+#include <cmath>
 
 static int num_QuadBeamEmbedContact = 0;
 Matrix QuadBeamEmbedContact::m_ContactStiffness(QBEC_NUM_DOF,QBEC_NUM_DOF);
