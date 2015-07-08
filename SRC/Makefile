@@ -548,7 +548,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/SSPbrick.o \
 	$(FE)/element/UWelements/SSPbrickUP.o \
 	$(FE)/element/UWelements/Quad4FiberOverlay.o \
-	$(FE)/element/UWelements/Brick8FiberOverlay.o
+	$(FE)/element/UWelements/Brick8FiberOverlay.o \
+	$(FE)/element/UWelements/QuadBeamEmbedContact.o
 
 #	$(FE)/material/nD/Damage2p.o \
 #	$(FE)/material/nD/Damage2p3D.o \
