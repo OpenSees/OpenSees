@@ -420,20 +420,23 @@ BeamContact2Dp::update(void)
 	if (mGap < tol && in_bounds) {
 		inContact = true;
 	} else {
-		mGap = 0.0;
+		//mGap = 0.0;
 		inContact = false;
 	}
 
 	// update normal contact force
-	//if (was_inContact) {
     if (inContact) {
+        // compute normal contact force (penalty formulation)
 		mLambda = mPenalty*mGap;
+        // get tensile strength from contact material
+	    tensileStrength = theMaterial->getTensileStrength();
+        // check that contact force is < surface adhesion (tensile strength)
+        if (mLambda > tensileStrength) {
+            mLambda = 0.0;
+        }
 	} else {
 		mLambda = 0.0;
 	}
-
-	// get tensile strength from contact material
-	tensileStrength = theMaterial->getTensileStrength();
 
     // determine trial strain vector based on contact state
 	if (inContact) {
@@ -984,6 +987,10 @@ BeamContact2Dp::setResponse(const char **argv, int argc, OPS_Stream &eleInfo)
 		// reactions (forces and moments) on master nodes
 		return new ElementResponse(this, 4, Vector(6));
 
+    } else if (strcmp(argv[0],"gap") == 0) {
+        // magnitude of gap
+        return new ElementResponse(this, 5, Vector(1));
+
 	} else {
 		// otherwise response quantity is unknown for the BeamContact2Dp class
 		opserr << "BeamContact2Dp::setResponse(const char **argv, int argc, OPS_Stream &eleInfo): "
@@ -1000,6 +1007,7 @@ BeamContact2Dp::getResponse(int responseID, Information &eleInfo)
 	Vector frictForce(2);
 	Vector slaveForce(2);
 	Vector masterForce(6);
+    Vector theGap(1);
 
 	// get contact "stress" vector
 	Vector stress = theMaterial->getStress();
@@ -1033,6 +1041,10 @@ BeamContact2Dp::getResponse(int responseID, Information &eleInfo)
 			masterForce(i+3) = -mInternalForces(i+3);
 		}
 		return eleInfo.setVector(masterForce);
+
+    } else if (responseID == 5) {
+        theGap(0) = mGap;
+        return eleInfo.setVector(theGap);
 
 	} else {
 		// otherwise response quantity is unknown for the BeamContact2Dp class

@@ -3004,6 +3004,17 @@ SRC/material/nD/soil/PressureIndependMultiYield.h -text
 SRC/material/nD/soil/T2Vector.cpp -text
 SRC/material/nD/soil/T2Vector.h -text
 SRC/material/nD/soil/TclUpdateMaterialStageCommand.cpp -text
+SRC/material/nD/stressDilatancyModel/MODULE_ALL_INTERFACES_2D.f90 -text
+SRC/material/nD/stressDilatancyModel/MODULE_ALL_INTERFACES_3D.f90 -text
+SRC/material/nD/stressDilatancyModel/Makefile -text
+SRC/material/nD/stressDilatancyModel/SDM2D.f90 -text
+SRC/material/nD/stressDilatancyModel/SDM3D.f90 -text
+SRC/material/nD/stressDilatancyModel/StressDilatancyModel.cpp -text
+SRC/material/nD/stressDilatancyModel/StressDilatancyModel.h -text
+SRC/material/nD/stressDilatancyModel/StressDilatancyModel2D.cpp -text
+SRC/material/nD/stressDilatancyModel/StressDilatancyModel2D.h -text
+SRC/material/nD/stressDilatancyModel/StressDilatancyModel3D.cpp -text
+SRC/material/nD/stressDilatancyModel/StressDilatancyModel3D.h -text
 SRC/material/section/Bidirectional.cpp -text
 SRC/material/section/Bidirectional.h -text
 SRC/material/section/ElasticBDShearSection2d.cpp -text

@@ -69,6 +69,7 @@ all: $(OBJS)
 	@$(CD) $(FE)/material/nD/reinforcedConcretePlaneStress; $(MAKE); 
 	@$(CD) $(FE)/material/nD/UWmaterials; $(MAKE);
 	@$(CD) $(FE)/material/nD/matCMM; $(MAKE);
+	@$(CD) $(FE)/material/nD/stressDilatancyModel; $(MAKE);
 
 # Miscellaneous
 
@@ -87,6 +88,7 @@ spotless: clean
 	@$(CD) $(FE)/material/nD/reinforcedConcretePlaneStress; $(MAKE) wipe; 
 	@$(CD) $(FE)/material/nD/UWmaterials; $(MAKE) wipe;
 	@$(CD) $(FE)/material/nD/matCMM; $(MAKE) wipe;
+	@$(CD) $(FE)/material/nD/stressDilatancyModel; $(MAKE) wipe;
 
 wipe: spotless
 

@@ -390,6 +390,10 @@
 #define ND_TAG_ManzariDafaliasRO                14015
 #define ND_TAG_ManzariDafalias3DRO              14016
 #define ND_TAG_ManzariDafaliasPlaneStrainRO     14017
+// Stress-Dilatancy material - C.McGann
+#define ND_TAG_StressDilatancyModel             14018
+#define ND_TAG_StressDilatancyModel2D           14019
+#define ND_TAG_StressDilatancyModel3D           14020
 
 // MultiaxialCyclicPlasticity, add by Gang Wang
 #define ND_TAG_MultiaxialCyclicPlasticity             10031
