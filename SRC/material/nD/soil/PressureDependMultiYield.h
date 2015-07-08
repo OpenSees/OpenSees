@@ -80,6 +80,7 @@ public:
      const Vector &getStress (void);
      const Vector &getStrain (void);
      const Vector &getCommittedStress (void);
+     const Vector &getStressToRecord (int numOutput); // Added by Alborz Ghofrani - UW
      const Vector &getCommittedStrain (void);
 
      // Accepts the current trial strain values as being on the solution path, and updates 

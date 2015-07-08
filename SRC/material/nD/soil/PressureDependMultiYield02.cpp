@@ -1343,8 +1343,13 @@ int PressureDependMultiYield02::recvSelf(int commitTag, Channel &theChannel,
 Response*
 PressureDependMultiYield02::setResponse (const char **argv, int argc, OPS_Stream &s)
 {
+  // begin change by Alborz Ghofrani - UW --- get only 6 components of stress
   if (strcmp(argv[0],"stress") == 0 || strcmp(argv[0],"stresses") == 0)
-		return new MaterialResponse(this, 1, this->getCommittedStress());
+	  if ((argc > 1) && (atoi(argv[1]) > 2) && (atoi(argv[1]) < 8)) 
+		 return new MaterialResponse(this, 2 + atoi(argv[1]), this->getStressToRecord(atoi(argv[1])));
+	  else
+		 return new MaterialResponse(this, 1, this->getCommittedStress());
+	// end change by Alborz Ghofrani - UW
 
   else if (strcmp(argv[0],"strain") == 0 || strcmp(argv[0],"strains") == 0)
 		return new MaterialResponse(this, 2, this->getCommittedStrain());
@@ -1428,6 +1433,28 @@ int PressureDependMultiYield02::getResponse (int responseID, Information &matInf
     if (matInfo.theMatrix != 0)
       getBackbone(*(matInfo.theMatrix));
     return 0;
+	// begin change by Alborz Ghofrani UW --- get 6 components of stress
+  case 5:
+    if (matInfo.theVector != 0)
+      *(matInfo.theVector) = getStressToRecord(3);
+    return 0;
+  case 6:
+    if (matInfo.theVector != 0)
+      *(matInfo.theVector) = getStressToRecord(4);
+    return 0;
+  case 7:
+    if (matInfo.theVector != 0)
+      *(matInfo.theVector) = getStressToRecord(5);
+    return 0;
+  case 8:
+    if (matInfo.theVector != 0)
+      *(matInfo.theVector) = getStressToRecord(6);
+    return 0;
+  case 9:
+    if (matInfo.theVector != 0)
+      *(matInfo.theVector) = getStressToRecord(7);
+    return 0;
+	// end change by Alborz Ghofrani UW
   default:
     return -1;
   }
@@ -1494,6 +1521,63 @@ const Vector & PressureDependMultiYield02::getCommittedStress (void)
   }
 }
 
+// begin change by Alborz Ghofrani - UW --- get 6 components of stress
+const Vector &
+PressureDependMultiYield02::getStressToRecord (int numOutput)
+{
+  int ndm = ndmx[matN];
+    if (ndmx[matN] == 0) ndm = 2;
+
+  if (ndm==3) {
+	static Vector temp7(7);
+	temp7 = this->getCommittedStress();
+	if (numOutput == 6)
+	{
+		static Vector temp6(6);
+		temp6[0] = temp7[0];
+		temp6[1] = temp7[1];
+		temp6[2] = temp7[2];
+		temp6[3] = temp7[3];
+		temp6[4] = temp7[4];
+		temp6[5] = temp7[5];
+		return temp6;
+	} else if (numOutput == 7) 
+	{
+		return temp7;
+	} else {
+		opserr << "Wrong number of stress components to record!" << endln;
+		return temp7;
+	}
+  }
+
+  else {
+    static Vector temp5(5);
+	temp5 = this->getCommittedStress();
+	if (numOutput == 3)
+	{
+		static Vector temp3(3);
+		temp3[0] = temp5[0];
+		temp3[1] = temp5[1];
+		temp3[2] = temp5[3];
+		return temp3;
+	} else if (numOutput == 4) 
+	{
+		static Vector temp4(4);
+		temp4[0] = temp5[0];
+		temp4[1] = temp5[1];
+		temp4[2] = temp5[2];
+		temp4[3] = temp5[3];
+		return temp4;
+	} else if (numOutput == 5) 
+	{
+		return temp5;
+	} else {
+		opserr << "Wrong number of stress components to record!" << endln;
+		return temp5;
+	}
+  }
+}
+// end change by Alborz Ghofrani - UW 
 
 const Vector & PressureDependMultiYield02::getCommittedStrain (void)
 {
