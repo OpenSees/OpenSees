@@ -18,6 +18,7 @@ OBJS       = NDMaterial.o \
 	$(DAMAGE_2P) $(PLAINCONCRETE) BeamFiberMaterial.o \
 	BeamFiberMaterial2d.o \
 	LinearCap.o \
+	FSAM.o \
 	AcousticMedium.o \
 	ElasticIsotropicAxiSymm.o\
 	ElasticIsotropicBeamFiber2d.o \

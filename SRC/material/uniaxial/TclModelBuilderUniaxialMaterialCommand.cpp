@@ -126,6 +126,9 @@ extern void *OPS_CFSSSWP(void);
 extern void *OPS_CFSWSWP(void);
 extern void *OPS_ResilienceLow(void);
 extern void *OPS_ViscousMaterial(void);
+extern  void *OPS_SteelMPF(void); // K Kolozvari                                
+extern  void *OPS_ConcreteCM(void); // K Kolozvari
+
 
 #ifdef _HAVE_Steel4
 extern void *OPS_Steel4(void);
@@ -514,6 +517,20 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+    } else if (strcmp(argv[1],"SteelMPF") == 0) { // K Kolozvari            
+      void *theMat = OPS_SteelMPF();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+      
+    } else if (strcmp(argv[1],"ConcreteCM") == 0) { // K Kolozvari          
+      void *theMat = OPS_ConcreteCM();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+      
     } else if (strcmp(argv[1],"ResilienceLow") == 0) {
       void *theMat = OPS_ResilienceLow();
       if (theMat != 0) 

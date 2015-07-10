@@ -8,6 +8,8 @@ OBJS       = UniaxialMaterial.o \
 	ConcretewBeta.o \
 	ConcreteD.o \
 	ConcreteSakaiKawashima.o \
+	ConcreteCM.o \
+	SteelMPF.o \
 	c14-SK-M.o \
 	ElasticMultiLinear.o \
         ElasticPPMaterial.o \

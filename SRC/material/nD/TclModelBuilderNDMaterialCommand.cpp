@@ -100,6 +100,8 @@ extern  void *OPS_NewStressDilatancyMaterial(void);
 extern void *OPS_NewLinearCap(void);
 extern void *OPS_NewAcousticMedium(void);
 
+extern  void *OPS_NewFSAMMaterial(void); // K Kolozvari      
+
 #ifdef _HAVE_Damage2P
 extern void *OPS_Damage2p(void);
 #endif
@@ -259,6 +261,8 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
+
+
     else if ((strcmp(argv[1],"TruncatedDP") == 0)){
 
       void *theMat = OPS_NewLinearCap();
@@ -267,6 +271,19 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else 
 	return TCL_ERROR;
     }
+
+
+    // K Kolozvari                                                            
+    else if ((strcmp(argv[1], "FSAM") == 0) || 
+	     (strcmp(argv[1], "FSAM") == 0)) {
+      
+      void *theMat = OPS_NewFSAMMaterial();
+      if (theMat != 0)
+	theMaterial = (NDMaterial *)theMat;
+      else
+	return TCL_ERROR;
+    }
+    
 
     else if ((strcmp(argv[1],"AcousticMedium") == 0)){
 
