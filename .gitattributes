@@ -2859,6 +2859,8 @@ SRC/material/nD/ElasticOrthotropicMaterial.cpp -text
 SRC/material/nD/ElasticOrthotropicMaterial.h -text
 SRC/material/nD/ElasticOrthotropicThreeDimensional.cpp -text
 SRC/material/nD/ElasticOrthotropicThreeDimensional.h -text
+SRC/material/nD/FSAM.cpp -text
+SRC/material/nD/FSAM.h -text
 SRC/material/nD/FeapMaterial.cpp -text
 SRC/material/nD/FeapMaterial.h -text
 SRC/material/nD/InitStressNDMaterial.cpp -text
@@ -3180,6 +3182,8 @@ SRC/material/uniaxial/Concrete06.cpp -text
 SRC/material/uniaxial/Concrete06.h -text
 SRC/material/uniaxial/Concrete07.cpp -text
 SRC/material/uniaxial/Concrete07.h -text
+SRC/material/uniaxial/ConcreteCM.cpp -text
+SRC/material/uniaxial/ConcreteCM.h -text
 SRC/material/uniaxial/ConcreteD.cpp -text
 SRC/material/uniaxial/ConcreteD.h -text
 SRC/material/uniaxial/ConcreteSakaiKawashima.cpp -text
@@ -3347,6 +3351,8 @@ SRC/material/uniaxial/SteelBRB.cpp -text
 SRC/material/uniaxial/SteelBRB.h -text
 SRC/material/uniaxial/SteelMP.cpp -text
 SRC/material/uniaxial/SteelMP.h -text
+SRC/material/uniaxial/SteelMPF.cpp -text
+SRC/material/uniaxial/SteelMPF.h -text
 SRC/material/uniaxial/TclHyperbolicGapMaterial.cpp -text
 SRC/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.cpp -text
 SRC/material/uniaxial/TclNewUniaxialMaterial.cpp -text
