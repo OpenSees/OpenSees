@@ -494,7 +494,7 @@
 #define ELE_TAG_MyTruss    	        18
 #define ELE_TAG_ZeroLength	        19
 #define ELE_TAG_ZeroLengthSection	20
-#define ELE_TAG_ZeroLengthND	        21
+ #define ELE_TAG_ZeroLengthND	        21
 #define ELE_TAG_ZeroLengthContact2D	22
 #define ELE_TAG_ZeroLengthContact3D	23
 #define ELE_TAG_ZeroLengthContactNTS2D	24
@@ -638,6 +638,8 @@
 #define ELE_TAG_MultipleNormalSpring      159
 #define ELE_TAG_KikuchiBearing            160
 #define ELE_TAG_YamamotoBiaxialHDR        161
+#define ELE_TAG_MVLEM                     162
+#define ELE_TAG_SFI_MVLEM                 163
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
