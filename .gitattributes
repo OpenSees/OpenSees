@@ -2597,6 +2597,11 @@ SRC/element/joint/SimpleJointHelp.txt -text
 SRC/element/joint/TclBeamColumnJointCommand.cpp -text
 SRC/element/joint/TclJoint2dCommand.cpp -text
 SRC/element/joint/TclJoint3dCommand.cpp -text
+SRC/element/mvelm/MVLEM.cpp -text
+SRC/element/mvelm/MVLEM.h -text
+SRC/element/mvelm/Makefile -text
+SRC/element/mvelm/SFI_MVLEM.cpp -text
+SRC/element/mvelm/SFI_MVLEM.h -text
 SRC/element/nonlinearBeamColumn/Makefile -text
 SRC/element/nonlinearBeamColumn/matrixutil/Makefile -text
 SRC/element/nonlinearBeamColumn/matrixutil/MatrixUtil.cpp -text
