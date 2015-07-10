@@ -201,6 +201,8 @@
 #define MAT_TAG_Steel4                          87
 #define MAT_TAG_SimpleFractureMaterial          88
 #define MAT_TAG_BilinearOilDamper               89
+#define MAT_TAG_ConcreteCM                      90
+#define MAT_TAG_SteelMPF                        91
 
 
 #define MAT_TAG_PySimple1                    205
@@ -327,6 +329,7 @@
 #define ND_TAG_CycLiqCPSPPlaneStrain              40
 #define ND_TAG_ConcreteS                          41
 #define ND_TAG_MaterialCMM                        42
+#define ND_TAG_FSAM                               43
 
 
 #define ND_TAG_FluidSolidPorousMaterial        100

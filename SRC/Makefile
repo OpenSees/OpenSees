@@ -607,6 +607,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/CubicSpline.o \
 	$(FE)/material/uniaxial/c14-SK-M.o \
 	$(FE)/material/uniaxial/Steel01.o \
+	$(FE)/material/uniaxial/SteelMPF.o \
+	$(FE)/material/uniaxial/ConcreteCM.o \
 	$(FE)/material/uniaxial/RambergOsgoodSteel.o \
 	$(FE)/material/uniaxial/Steel02.o \
 	$(FE)/material/uniaxial/Steel2.o \
@@ -683,6 +685,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/J2AxiSymm.o \
 	$(FE)/material/nD/J2ThreeDimensional.o \
 	$(FE)/material/nD/J2PlateFiber.o \
+	$(FE)/material/nD/FSAM.o \
 	$(FE)/material/nD/ConcreteMcftNonLinear5.o \
 	$(FE)/material/nD/ConcreteMcftNonLinear7.o \
 	$(FE)/material/nD/InitStressNDMaterial.o \
