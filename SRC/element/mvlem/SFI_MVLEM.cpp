@@ -53,9 +53,8 @@
 #include <elementAPI.h>
 
 // Read input parameters and build the material
-void *OPS_SFI_SFI_MVLEM(void)
+void *OPS_SFI_MVLEM(void)
 {
-  
   // Pointer to a uniaxial material that will be returned                       
   Element *theElement = 0;
   
@@ -192,14 +191,16 @@ SFI_MVLEM::SFI_MVLEM(int tag,
   externalNodes(0) = Nd1;
   externalNodes(1) = Nd2;
   
-  // Create a internal node tag
-  for (int i = 0; i < m; i++){ // Large NEGATIVE integer starting with tag of the element
-    externalNodes(i+2) = -(Nd1*1000 + i + 1); // Max fibers is 999 to avoid overlap
-  } 
   
   // Set external node pointers to NULL - external nodes
   theNodes[0] = 0; 
   theNodes[1] = 0;
+
+  // Create a internal node tags equal to first to get past OpenSees check
+  for (int i = 0; i < m; i++){ 
+    externalNodes(i+2) = Nd1; 
+  } 
+
   
   // Allocate memory for the m internal nodes
   theNodesX = new Node*[m];
@@ -357,8 +358,6 @@ SFI_MVLEM::SFI_MVLEM(int tag,
     Dens[i] = theMaterial[i]->getRho();
   }
   
-  // Revert to start
-  this->revertToStart();
 }  
 
 // Constructor which should be invoked by an FE_ObjectBroker only
@@ -573,6 +572,12 @@ void SFI_MVLEM::setDomain(Domain *theDomain)
   if (end2Crd(0) != end1Crd(0)) {
     opserr << "WARNING: Element is NOT vertical!";
   }
+
+
+  // Create a internal node tag
+  for (int i = 0; i < m; i++){ // Large NEGATIVE integer starting with tag of the element
+    externalNodes(i+2) = -(Nd1*1000 + i + 1); // Max fibers is 999 to avoid overlap
+  } 
 
   // Build m internal nodes (NodesX) and add them to the domain
   for (int i = 0; i < m; i++) {
@@ -1072,87 +1077,86 @@ int SFI_MVLEM::getResponse(int responseID, Information &eleInfo)
 // Get the element intial element tangent matrix
 const Matrix & SFI_MVLEM::getInitialStiff(void)
 {
-
-	double Kh=0.0;
-
-	for (int i=0; i < m; i++)
-	{
-		// Get material initial tangent
-		const Matrix &D = theMaterial[i]->getInitialTangent();
-
-		double D00 = D(0,0); double D01 = D(0,1); double D02 = D(0,2);
-		double D10 = D(1,0); double D11 = D(1,1); double D12 = D(1,2);
-		double D20 = D(2,0); double D21 = D(2,1); double D22 = D(2,2);
-
-		kx[i]  = D00 * h*t[i] / b[i];
-		ky[i]  = D11 * b[i]*t[i] / h;
-		Kh  += D22 * b[i]*t[i] / h;
-
+  double Kh=0.0;
+  
+  for (int i=0; i < m; i++)
+    {
+      // Get material initial tangent
+      const Matrix &D = theMaterial[i]->getInitialTangent();
+      
+      double D00 = D(0,0); double D01 = D(0,1); double D02 = D(0,2);
+      double D10 = D(1,0); double D11 = D(1,1); double D12 = D(1,2);
+      double D20 = D(2,0); double D21 = D(2,1); double D22 = D(2,2);
+      
+      kx[i]  = D00 * h*t[i] / b[i];
+      ky[i]  = D11 * b[i]*t[i] / h;
+      Kh  += D22 * b[i]*t[i] / h;
+      
+    }
+  
+  // Build the initial stiffness matrix
+  double Kv=0.0; double Km=0.0; double e=0.0; double ex=0.0;
+  
+  for(int i=0; i<m; ++i)
+    {
+      Kv+=ky[i];   
+      Km+=ky[i]*x[i]*x[i];
+      e+=ky[i]*x[i];
+      
+      SFI_MVLEMK(6+i,6+i) = kx[i]; // Diagonal terms accounting for horizontal stiffness
+    }                  
+  
+  SFI_MVLEMK(0,0) = Kh;
+  SFI_MVLEMK(0,1) = 0.0;
+  SFI_MVLEMK(0,2) = -Kh*c*h;
+  SFI_MVLEMK(0,3) = -Kh;
+  SFI_MVLEMK(0,4) = 0.0;
+  SFI_MVLEMK(0,5) = -Kh*(1-c)*h;
+  
+  SFI_MVLEMK(1,0) = SFI_MVLEMK(0,1);
+  SFI_MVLEMK(1,1) = Kv;
+  SFI_MVLEMK(1,2) = e;
+  SFI_MVLEMK(1,3) = 0.0;
+  SFI_MVLEMK(1,4) = -Kv;
+  SFI_MVLEMK(1,5) = -e;
+  
+  SFI_MVLEMK(2,0) = SFI_MVLEMK(0,2);
+  SFI_MVLEMK(2,1) = SFI_MVLEMK(1,2);
+  SFI_MVLEMK(2,2) = h*h*c*c*Kh+Km;
+  SFI_MVLEMK(2,3) = h*c*Kh;
+  SFI_MVLEMK(2,4) = -e;
+  SFI_MVLEMK(2,5) = (1-c)*c*h*h*Kh-Km;
+  
+  SFI_MVLEMK(3,0) = SFI_MVLEMK(0,3);
+  SFI_MVLEMK(3,1) = SFI_MVLEMK(1,3);
+  SFI_MVLEMK(3,2) = SFI_MVLEMK(2,3);
+  SFI_MVLEMK(3,3) = Kh;
+  SFI_MVLEMK(3,4) = 0.0;
+  SFI_MVLEMK(3,5) = Kh*(1-c)*h;
+  
+  SFI_MVLEMK(4,0) = SFI_MVLEMK(0,4);
+  SFI_MVLEMK(4,1) = SFI_MVLEMK(1,4);
+  SFI_MVLEMK(4,2) = SFI_MVLEMK(2,4);
+  SFI_MVLEMK(4,3) = SFI_MVLEMK(3,4);
+  SFI_MVLEMK(4,4) = Kv;
+  SFI_MVLEMK(4,5) = e;
+  
+  SFI_MVLEMK(5,0) = SFI_MVLEMK(0,5);
+  SFI_MVLEMK(5,1) = SFI_MVLEMK(1,5);
+  SFI_MVLEMK(5,2) = SFI_MVLEMK(2,5);
+  SFI_MVLEMK(5,3) = SFI_MVLEMK(3,5);
+  SFI_MVLEMK(5,4) = SFI_MVLEMK(4,5);
+  SFI_MVLEMK(5,5) = (1-c)*(1-c)*h*h*Kh+Km;
+  
+  for(int i=0; i<6+m; ++i)
+    {
+      if (SFI_MVLEMK(i,i) == 0.0)
+	{ 
+	  opserr << "Singular SFI_MVLEM_K/n"; 
 	}
-
-	// Build the initial stiffness matrix
-	double Kv=0.0; double Km=0.0; double e=0.0; double ex=0.0;
-
-	for(int i=0; i<m; ++i)
-	{
-		Kv+=ky[i];   
-		Km+=ky[i]*x[i]*x[i];
-		e+=ky[i]*x[i];
-
-		SFI_MVLEMK(6+i,6+i) = kx[i]; // Diagonal terms accounting for horizontal stiffness
-	}                  
-
-	SFI_MVLEMK(0,0) = Kh;
-	SFI_MVLEMK(0,1) = 0.0;
-	SFI_MVLEMK(0,2) = -Kh*c*h;
-	SFI_MVLEMK(0,3) = -Kh;
-	SFI_MVLEMK(0,4) = 0.0;
-	SFI_MVLEMK(0,5) = -Kh*(1-c)*h;
-
-	SFI_MVLEMK(1,0) = SFI_MVLEMK(0,1);
-	SFI_MVLEMK(1,1) = Kv;
-	SFI_MVLEMK(1,2) = e;
-	SFI_MVLEMK(1,3) = 0.0;
-	SFI_MVLEMK(1,4) = -Kv;
-	SFI_MVLEMK(1,5) = -e;
-
-	SFI_MVLEMK(2,0) = SFI_MVLEMK(0,2);
-	SFI_MVLEMK(2,1) = SFI_MVLEMK(1,2);
-	SFI_MVLEMK(2,2) = h*h*c*c*Kh+Km;
-	SFI_MVLEMK(2,3) = h*c*Kh;
-	SFI_MVLEMK(2,4) = -e;
-	SFI_MVLEMK(2,5) = (1-c)*c*h*h*Kh-Km;
-
-	SFI_MVLEMK(3,0) = SFI_MVLEMK(0,3);
-	SFI_MVLEMK(3,1) = SFI_MVLEMK(1,3);
-	SFI_MVLEMK(3,2) = SFI_MVLEMK(2,3);
-	SFI_MVLEMK(3,3) = Kh;
-	SFI_MVLEMK(3,4) = 0.0;
-	SFI_MVLEMK(3,5) = Kh*(1-c)*h;
-
-	SFI_MVLEMK(4,0) = SFI_MVLEMK(0,4);
-	SFI_MVLEMK(4,1) = SFI_MVLEMK(1,4);
-	SFI_MVLEMK(4,2) = SFI_MVLEMK(2,4);
-	SFI_MVLEMK(4,3) = SFI_MVLEMK(3,4);
-	SFI_MVLEMK(4,4) = Kv;
-	SFI_MVLEMK(4,5) = e;
-
-	SFI_MVLEMK(5,0) = SFI_MVLEMK(0,5);
-	SFI_MVLEMK(5,1) = SFI_MVLEMK(1,5);
-	SFI_MVLEMK(5,2) = SFI_MVLEMK(2,5);
-	SFI_MVLEMK(5,3) = SFI_MVLEMK(3,5);
-	SFI_MVLEMK(5,4) = SFI_MVLEMK(4,5);
-	SFI_MVLEMK(5,5) = (1-c)*(1-c)*h*h*Kh+Km;
-
-	for(int i=0; i<6+m; ++i)
-	{
-		if (SFI_MVLEMK(i,i) == 0.0)
-		{ 
-			opserr << "Singular SFI_MVLEM_K/n"; 
-		}
-	}   
-
-	// Return element stiffness matrix
+    }   
+  
+  // Return element stiffness matrix
 	return SFI_MVLEMK;
 
 }

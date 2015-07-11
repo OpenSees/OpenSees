@@ -102,10 +102,10 @@ void *OPS_MVLEM(void)
 
   UniaxialMaterial **theMaterialsConcrete = new UniaxialMaterial* [m];
   UniaxialMaterial **theMaterialsSteel = new UniaxialMaterial*[m];
-  UniaxialMaterial **theMaterialsShear = new UniaxialMaterial*[m];
+  UniaxialMaterial **theMaterialsShear = new UniaxialMaterial*[1];
 
   numArgs = OPS_GetNumRemainingInputArgs();
-  while (numArgs >= (m+1)) {
+  while (numArgs > 0) {
     OPS_GetStringCopy(&str);
     if (strcmp(str, "-thick") == 0) {
       numData = m;
@@ -154,12 +154,12 @@ void *OPS_MVLEM(void)
 	}
       }
     } else if (strcmp(str, "-matShear") == 0) {
-      numData = m;
+      numData = 1;
       if (OPS_GetIntInput(&numData, matTags) != 0) {
 	opserr << "Invalid shear tags for MVLEM  " << iData[0] << endln;
 	return 0;
       }
-      for (int i=0; i<m; i++) {
+      for (int i=0; i<1; i++) {
 	theMaterialsShear[i] = 0;
 	theMaterialsShear[i] = OPS_getUniaxialMaterial(matTags[i]);
 	if (theMaterialsShear[i] == 0) {
