@@ -82,11 +82,13 @@ class WrapperElement : public Element
   double *u;            // to hold u^(k-1)_(n+1) as nodes don't save this
   double *R; 	          // data to hold ele resisting force
   double *K;            // data to hold ele tangent
+  double *M;            // data to hold ele mass AGGIUNTA
   int eleType;          // defines which elmtnn subroutine to invoke
   Matrix *Ki;
 
   static Vector Rvector;    // vector to hold the applied load P
   static Matrix Kmatrix;
+  static Matrix Mmatrix;	// AGGIUNTA
   static ID connectedNodes;
 };
 

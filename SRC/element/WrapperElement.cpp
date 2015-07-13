@@ -39,12 +39,13 @@ extern modelState theModelState;
 
 Vector WrapperElement::Rvector;    // vector to hold the applied load P
 Matrix WrapperElement::Kmatrix;
+Matrix WrapperElement::Mmatrix; // AGGIUNTA
 ID WrapperElement::connectedNodes;
 
 WrapperElement::WrapperElement(const char *name, eleObject *ele)
   :Element(ele->tag,ELEMENT_TAGS_WrapperElement),
  funcName(0), theEle(ele),
- theNodes(0), u(0), R(0), K(0)
+ theNodes(0), u(0), R(0), K(0), M(0)
 {
 
   funcName = new char[strlen(name)+1];
@@ -55,7 +56,7 @@ WrapperElement::WrapperElement(const char *name, eleObject *ele)
 WrapperElement::WrapperElement()
 :Element(0,ELEMENT_TAGS_WrapperElement), 
  funcName(0), theEle(0),
- theNodes(0), u(0), R(0), K(0)
+ theNodes(0), u(0), R(0), K(0), M(0)
 {
 
 }
@@ -71,6 +72,8 @@ WrapperElement::~WrapperElement()
     delete [] R;
   if (K != 0)
     delete [] K;
+  if (M != 0)
+    delete [] M;
 }
 
 int
@@ -133,7 +136,8 @@ WrapperElement::setDomain(Domain *theDomain)
   u = new double [theEle->nDOF];
   R = new double [theEle->nDOF];
   K = new double [theEle->nDOF*theEle->nDOF];
-  if (u == 0 || R == 0 || K == 0) {
+  M = new double [theEle->nDOF*theEle->nDOF];
+  if (u == 0 || R == 0 || K == 0 || M == 0) {
       opserr << "WARNING WrapperElement::setDomain(Domain *theDomain) - out of memory\n";
       return;
   }    
@@ -196,7 +200,7 @@ WrapperElement::revertToStart()
 const Matrix &
 WrapperElement::getTangentStiff(void)
 {
-    // set the vector
+    //// set the vector
     Kmatrix.setData(K, theEle->nDOF, theEle->nDOF);
 
     return  Kmatrix;
@@ -216,12 +220,12 @@ WrapperElement::getMass(void)
     // invoke the element routine
     int isw = ISW_FORM_MASS;
     int error = 0;
-    theEle->eleFunctPtr(theEle, &theModelState, K , R, &isw, &error);
+    theEle->eleFunctPtr(theEle, &theModelState, M , R, &isw, &error);
 
     // set the matrix
-    Kmatrix.setData(K,theEle->nDOF, theEle->nDOF);
+    Mmatrix.setData(M,theEle->nDOF, theEle->nDOF);
 
-    return  Kmatrix;
+    return  Mmatrix;
 }
 
 const Vector &
