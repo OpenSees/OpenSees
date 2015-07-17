@@ -27,6 +27,7 @@
 // Description: This file contains the implementation for the rotation based shear curve.
 //
 // What: "RotationShearCurve.cpp Rev A"
+#include <stdlib.h>
 
 #include "RotationShearCurve.h"
 #include <G3Globals.h>

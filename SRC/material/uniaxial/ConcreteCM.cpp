@@ -47,6 +47,13 @@
 
 #include <elementAPI.h>
 
+#ifndef fmin
+#define fmin(a,b) ( ((a)<(b))?(a):(b) )
+#endif
+
+#ifndef fmax
+#define fmax(a,b) ( ((a)>(b))?(a):(b) )
+#endif
 // Read input parameters and build the material
 void *OPS_ConcreteCM(void)
 {

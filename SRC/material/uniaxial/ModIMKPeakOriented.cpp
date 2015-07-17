@@ -34,6 +34,7 @@
 // Description: This file contains the class implementation for ModIMKPeakOriented Model
 
 #include <math.h>
+#include <string.h>
 
 #include <elementAPI.h>
 #include <ModIMKPeakOriented.h>

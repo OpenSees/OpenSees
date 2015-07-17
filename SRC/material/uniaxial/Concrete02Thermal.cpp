@@ -3,6 +3,7 @@
 
 
 #include <stdlib.h>
+#include <string.h>
 #include <Concrete02Thermal.h>
 #include <OPS_Globals.h>
 #include <float.h>

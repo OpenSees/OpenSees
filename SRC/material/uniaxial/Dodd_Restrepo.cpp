@@ -105,7 +105,8 @@ Dodd_Restrepo::Dodd_Restrepo(int tag,
   numDoddRestrepo++;
   myTag = numDoddRestrepo;
 
-  if (OmegaFac < 0.75) OmegaFac = 0.75;
+
+  if (OmegaFac < 0.65) OmegaFac = 0.65;
   if (OmegaFac > 1.15) OmegaFac = 1.15;
   
   double C1       ; // Temporary constant 

@@ -49,7 +49,18 @@
 #include <elementAPI.h>
 #define OPS_Export 
 
+#include <string.h>
+
+#ifndef fmin
+#define fmin(a,b) ( ((a)<(b))?(a):(b) )
+#endif
+
+#ifndef fmax
+#define fmax(a,b) ( ((a)>(b))?(a):(b) )
+#endif
+
 #include "ConcreteCM.h" // for creating ConcreteCM inside the panel element
+
 
 static int numFSAMMaterials = 0;
 

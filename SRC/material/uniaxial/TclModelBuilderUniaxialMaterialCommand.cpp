@@ -92,6 +92,7 @@ extern void *OPS_NewConfinedConcrete01Material(void);
 extern void *OPS_NewElasticBilin(void);
 extern void *OPS_NewMinMaxMaterial(void);
 extern void *OPS_SimpleFractureMaterial(void);
+extern void *OPS_HoehlerStanton(void);
 extern void *OPS_NewInitStrainMaterial(void);
 extern void *OPS_NewInitStressMaterial(void);
 extern void *OPS_New_pyUCLA(void);
@@ -270,6 +271,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+	    } else if (strcmp(argv[1],"HoehlerStanton") == 0) {
+      void *theMat = OPS_HoehlerStanton();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
 
     } else if (strcmp(argv[1],"Concrete02") == 0) {
       void *theMat = OPS_NewConcrete02();

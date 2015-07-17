@@ -495,8 +495,8 @@ case 11:
         else
 		{
            stress=-Kd*(strain+DPmax)-Pmax;
-		   if(abs(strain)>Di){
-                Di=abs(strain);
+		   if(fabs(strain)>Di){
+                Di=fabs(strain);
 		   }
 		   if(stress>-0.55*Pmax){
                 stress=-0.55*Pmax;

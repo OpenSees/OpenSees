@@ -36,6 +36,8 @@
 #include <float.h>
 #include <MaterialResponse.h>
 #include <Information.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include <elementAPI.h>
 

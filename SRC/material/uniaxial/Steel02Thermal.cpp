@@ -21,6 +21,7 @@
 ////JZ. 05/2010
 
 #include <stdlib.h>
+#include <string.h>
 #include <Steel02Thermal.h>
 #include <OPS_Globals.h>
 #include <float.h>

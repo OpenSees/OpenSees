@@ -28,6 +28,7 @@
 //
 // What: "@(#) PinchingLimitStateMaterial.C, revN/C"
 
+#include <stdlib.h>
 
 #include <elementAPI.h>
 #include "PinchingLimitStateMaterial.h"
