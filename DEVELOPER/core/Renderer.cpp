@@ -139,7 +139,7 @@ Renderer::setColorMap(ColorMap &map)
 }
 
 int 
-Renderer::drawCube(const Matrix &points, const Vector &values)
+Renderer::drawCube(const Matrix &points, const Vector &values, int tag, int mode)
 {
 
   static Matrix polyData(4,3);
@@ -159,7 +159,7 @@ Renderer::drawCube(const Matrix &points, const Vector &values)
     polyValues(2) = values(c);
     polyValues(3) = values(d);
   }
-  this->drawPolygon(polyData, polyValues);
+  this->drawPolygon(polyData, polyValues, tag, mode);
 
   a=5; b=4; c=0; d=1;
   for (int i=0; i<3; i++) {
@@ -172,7 +172,7 @@ Renderer::drawCube(const Matrix &points, const Vector &values)
     polyValues(2) = values(c);
     polyValues(3) = values(d);
   }
-  this->drawPolygon(polyData, polyValues);
+  this->drawPolygon(polyData, polyValues, tag, mode);
 
   a=6; b=7; c=4; d=5;
   for (int i=0; i<3; i++) {
@@ -185,7 +185,7 @@ Renderer::drawCube(const Matrix &points, const Vector &values)
     polyValues(2) = values(c);
     polyValues(3) = values(d);
   }
-  this->drawPolygon(polyData, polyValues);
+  this->drawPolygon(polyData, polyValues, tag, mode);
 
   a=1; b=0; c=3; d=2;
   for (int i=0; i<3; i++) {
@@ -198,7 +198,7 @@ Renderer::drawCube(const Matrix &points, const Vector &values)
     polyValues(2) = values(c);
     polyValues(3) = values(d);
   }
-  this->drawPolygon(polyData, polyValues);
+  this->drawPolygon(polyData, polyValues, tag, mode);
 
   a=7; b=3; c=0; d=4;
   for (int i=0; i<3; i++) {
@@ -211,7 +211,7 @@ Renderer::drawCube(const Matrix &points, const Vector &values)
     polyValues(2) = values(c);
     polyValues(3) = values(d);
   }
-  this->drawPolygon(polyData, polyValues);
+  this->drawPolygon(polyData, polyValues, tag, mode);
 
   a=2; b=6; c=5; d=1;
   for (int i=0; i<3; i++) {
@@ -224,7 +224,7 @@ Renderer::drawCube(const Matrix &points, const Vector &values)
     polyValues(2) = values(c);
     polyValues(3) = values(d);
   }
-  return this->drawPolygon(polyData, polyValues);
+  return this->drawPolygon(polyData, polyValues, tag, mode);
 }
 
 

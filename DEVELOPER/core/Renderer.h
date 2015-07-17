@@ -64,25 +64,28 @@ class Renderer
     virtual int doneImage(void) =0;
 
     // methods invoked by the objects to display themselves    
-    virtual int drawPoint(const Vector &, float V1, int width = 1) =0;
-    virtual int drawPoint(const Vector &, const Vector &rgb1, int width = 1) =0;
+    virtual int drawPoint(const Vector &, float V1, int tag = 0, int mode = 0, int width = 1) =0;
+    virtual int drawPoint(const Vector &, const Vector &rgb1, int tag = 0, int mode = 0, int width = 1) =0;
 
-    virtual int drawLine(const Vector &, const Vector &, 
-			 float V1, float V2, int width = 1, int style = 1) =0;
-
+    virtual int drawLine(const Vector &, const Vector &, float V1, float V2, int tag = 0, int mode = 0,
+			 int width = 1, int style = 1) =0;
+			 
+    
     virtual int drawLine(const Vector &end1, const Vector &end2, 
 			 const Vector &rgb1, const Vector &rgb2,
+			 int tag = 0, int mode = 0,
 			 int width = 1, int style = 1) =0;
     
-    virtual int drawCube(const Matrix &points, const Vector &values);
+    virtual int drawCube(const Matrix &points, const Vector &values, int tag = 0, int mode = 0);
 
-    virtual int drawPolygon(const Matrix &points, const Vector &values) =0;
-    virtual int drawPolygon(const Matrix &points, const Matrix &rgbValues) =0;
+    virtual int drawPolygon(const Matrix &points, const Vector &values, int tag = 0, int mode = 0) =0;
+    virtual int drawPolygon(const Matrix &points, const Matrix &rgbValues, int tag = 0, int mode = 0) =0;
 
     virtual int drawVector(const Vector &position, const Vector &value, double factor);
     
     virtual int drawText(const Vector &posGlobal, char *string, int length, 
-			  char horizontalJustify = 'l', char verticalJustify = 'b') =0;    
+			 char horizontalJustify = 'l', 
+			 char verticalJustify = 'b') =0;    
 
     // 
     // the following are for setting up the vieing system

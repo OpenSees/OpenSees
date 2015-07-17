@@ -67,7 +67,7 @@ Node::Node(int theClassTag)
  incrDeltaDisp(0),
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0), 
- index(-1), reaction(0)
+ index(-1), reaction(0), displayLocation(0)
 {
   // for FEM_ObjectBroker, recvSelf() must be invoked on object
 
@@ -88,7 +88,7 @@ Node::Node(int tag, int theClassTag)
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
   R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0), 
- index(-1), reaction(0)
+ index(-1), reaction(0), displayLocation(0)
 {
   // for subclasses - they must implement all the methods with
   // their own data structures.
@@ -101,7 +101,7 @@ Node::Node(int tag, int theClassTag)
   // AddingSensitivity:END ///////////////////////////////////////////
 }
 
-Node::Node(int tag, int ndof, double Crd1)
+Node::Node(int tag, int ndof, double Crd1, Vector *dLoc)
 :DomainComponent(tag,NOD_TAG_Node), 
  numberDOF(ndof), theDOF_GroupPtr(0),
  Crd(0), commitDisp(0), commitVel(0), commitAccel(0), 
@@ -109,7 +109,7 @@ Node::Node(int tag, int ndof, double Crd1)
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0), 
- index(-1), reaction(0)
+ index(-1), reaction(0), displayLocation(0)
 {
   // AddingSensitivity:BEGIN /////////////////////////////////////////
   dispSensitivity = 0;
@@ -120,6 +120,10 @@ Node::Node(int tag, int ndof, double Crd1)
   
   Crd = new Vector(1);
   (*Crd)(0) = Crd1;
+
+  if (dLoc != 0) {
+    displayLocation = new Vector(*dLoc);
+  }
   
   index = -1;
   if (numMatrices != 0) {
@@ -154,7 +158,7 @@ Node::Node(int tag, int ndof, double Crd1)
 
 //  Node(int tag, int ndof, double Crd1, double yCrd);
 //	constructor for 2d nodes
-Node::Node(int tag, int ndof, double Crd1, double Crd2)
+Node::Node(int tag, int ndof, double Crd1, double Crd2, Vector *dLoc)
 :DomainComponent(tag,NOD_TAG_Node), 
  numberDOF(ndof), theDOF_GroupPtr(0),
  Crd(0), commitDisp(0), commitVel(0), commitAccel(0), 
@@ -162,7 +166,7 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2)
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0),
- reaction(0)
+ reaction(0), displayLocation(0)
 {
   // AddingSensitivity:BEGIN /////////////////////////////////////////
   dispSensitivity = 0;
@@ -174,6 +178,10 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2)
   Crd = new Vector(2);
   (*Crd)(0) = Crd1;
   (*Crd)(1) = Crd2;
+
+  if (dLoc != 0) {
+    displayLocation = new Vector(*dLoc);
+  }
   
   index = -1;
   if (numMatrices != 0) {
@@ -209,7 +217,7 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2)
 //  Node(int tag, int ndof, double Crd1, double Crd2, double zCrd);
 //	constructor for 3d nodes
 
-Node::Node(int tag, int ndof, double Crd1, double Crd2, double Crd3)
+ Node::Node(int tag, int ndof, double Crd1, double Crd2, double Crd3, Vector *dLoc)
 :DomainComponent(tag,NOD_TAG_Node), 
  numberDOF(ndof), theDOF_GroupPtr(0),
  Crd(0), commitDisp(0), commitVel(0), commitAccel(0), 
@@ -217,7 +225,7 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2, double Crd3)
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0),
- reaction(0)
+ reaction(0), displayLocation(0)
 {
   // AddingSensitivity:BEGIN /////////////////////////////////////////
   dispSensitivity = 0;
@@ -230,6 +238,10 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2, double Crd3)
   (*Crd)(0) = Crd1;
   (*Crd)(1) = Crd2;
   (*Crd)(2) = Crd3;    
+
+  if (dLoc != 0) {
+    displayLocation = new Vector(*dLoc);
+  }
   
   index = -1;
   if (numMatrices != 0) {
@@ -273,7 +285,7 @@ Node::Node(const Node &otherNode, bool copyMass)
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0),
- reaction(0)
+   reaction(0), displayLocation(0)
 {
   // AddingSensitivity:BEGIN /////////////////////////////////////////
   dispSensitivity = 0;
@@ -286,6 +298,10 @@ Node::Node(const Node &otherNode, bool copyMass)
   if (Crd == 0) {
     opserr << " FATAL Node::Node(node *) - ran out of memory for Crd\n";
     exit(-1);
+  }
+
+  if (otherNode.displayLocation != 0) {
+    displayLocation = new Vector(*(otherNode.displayLocation));
   }
 
   if (otherNode.commitDisp != 0) {
@@ -440,6 +456,10 @@ Node::~Node()
 
     if (reaction != 0)
       delete reaction;
+
+
+    if (displayLocation != 0)
+      delete displayLocation;
 
     if (theDOF_GroupPtr != 0)
       theDOF_GroupPtr->resetNodePtr();
@@ -1631,11 +1651,8 @@ Node::displaySelf(Renderer &theRenderer, int displayMode, float fact)
   const Vector &theDisp = this->getDisp();
   static Vector position(3);
 
-  for (int i=0; i<3; i++)
-    if (i <Crd->Size())
-      position(i) = (*Crd)(i) + theDisp(i)*fact;	
-    else
-      position(i) = 0.0;	      
+  this->getDisplayCrds(position, fact);
+
   
   if (displayMode == -1) { 
     // draw a text string containing tag
@@ -2124,4 +2141,51 @@ Node::setCrds(const Vector &newCrds)
       theElement->setDomain(theDomain);
     }
   }
+}
+
+int
+Node::getDisplayCrds(Vector &res, double fact) 
+{
+  int ndm = Crd->Size();
+  int resSize = res.Size();
+
+  if (resSize < ndm)
+    return -1;
+
+  if (commitDisp != 0) {
+    if (displayLocation != 0)
+      for (int i=0; i<ndm; i++)
+	res(i) = (*displayLocation)(i)+(*commitDisp)(i)*fact;
+    else
+      for (int i=0; i<ndm; i++)
+	res(i) = (*Crd)(i)+(*commitDisp)(i)*fact;
+  } else {
+    if (displayLocation != 0)
+      for (int i=0; i<ndm; i++)
+	res(i) = (*displayLocation)(i);
+    else
+      for (int i=0; i<ndm; i++)
+	res(i) = (*Crd)(i);
+  }
+
+  // zero rest
+  for (int i=ndm; i<resSize; i++)
+    res(i) = 0;
+
+  return 0;
+}
+
+int
+Node::setDisplayCrds(const Vector &theCrds) 
+{
+  if (theCrds.Size() != Crd->Size()) {
+    return -1;
+  }
+
+  if (displayLocation == 0) {
+    displayLocation = new Vector(theCrds);
+  } else {
+    *displayLocation = theCrds;
+  }
+  return 0;
 }

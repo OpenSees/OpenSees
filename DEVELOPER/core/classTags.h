@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 6003 $
-// $Date: 2015-05-26 15:47:59 -0700 (Tue, 26 May 2015) $
-// $URL: svn://opensees.berkeley.edu/usr/local/svn/OpenSees/trunk/SRC/classTags.h $
+// $Revision: 6045 $
+// $Date: 2015-07-10 16:36:59 -0700 (Fri, 10 Jul 2015) $
+// $URL: svn://peera.berkeley.edu/usr/local/svn/OpenSees/trunk/SRC/classTags.h $
 
 // Written: fmk
 // Revision: A
@@ -201,6 +201,8 @@
 #define MAT_TAG_Steel4                          87
 #define MAT_TAG_SimpleFractureMaterial          88
 #define MAT_TAG_BilinearOilDamper               89
+#define MAT_TAG_ConcreteCM                      90
+#define MAT_TAG_SteelMPF                        91
 
 
 #define MAT_TAG_PySimple1                    205
@@ -327,6 +329,7 @@
 #define ND_TAG_CycLiqCPSPPlaneStrain              40
 #define ND_TAG_ConcreteS                          41
 #define ND_TAG_MaterialCMM                        42
+#define ND_TAG_FSAM                               43
 
 
 #define ND_TAG_FluidSolidPorousMaterial        100
@@ -390,6 +393,10 @@
 #define ND_TAG_ManzariDafaliasRO                14015
 #define ND_TAG_ManzariDafalias3DRO              14016
 #define ND_TAG_ManzariDafaliasPlaneStrainRO     14017
+// Stress-Dilatancy material - C.McGann
+#define ND_TAG_StressDilatancyModel             14018
+#define ND_TAG_StressDilatancyModel2D           14019
+#define ND_TAG_StressDilatancyModel3D           14020
 
 // MultiaxialCyclicPlasticity, add by Gang Wang
 #define ND_TAG_MultiaxialCyclicPlasticity             10031
@@ -487,7 +494,7 @@
 #define ELE_TAG_MyTruss    	        18
 #define ELE_TAG_ZeroLength	        19
 #define ELE_TAG_ZeroLengthSection	20
-#define ELE_TAG_ZeroLengthND	        21
+ #define ELE_TAG_ZeroLengthND	        21
 #define ELE_TAG_ZeroLengthContact2D	22
 #define ELE_TAG_ZeroLengthContact3D	23
 #define ELE_TAG_ZeroLengthContactNTS2D	24
@@ -596,6 +603,7 @@
 #define ELE_TAG_BeamEndContact3Dp      125
 #define ELE_TAG_Quad4FiberOverlay      126
 #define ELE_TAG_Brick8FiberOverlay     127
+#define ELE_TAG_QuadBeamEmbedContact   500
 #define ELE_TAG_DispBeamColumn2dThermal 128
 #define ELE_TAG_TPB1D                  129
 #define ELE_TAG_TFP_Bearing            130
@@ -630,6 +638,8 @@
 #define ELE_TAG_MultipleNormalSpring      159
 #define ELE_TAG_KikuchiBearing            160
 #define ELE_TAG_YamamotoBiaxialHDR        161
+#define ELE_TAG_MVLEM                     162
+#define ELE_TAG_SFI_MVLEM                 163
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
