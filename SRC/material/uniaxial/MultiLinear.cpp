@@ -34,6 +34,7 @@
 #include <Channel.h>
 #include <math.h>
 #include <float.h>
+#include <stdlib.h>
 
 #include <elementAPI.h>
 

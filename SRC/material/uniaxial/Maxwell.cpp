@@ -34,6 +34,7 @@
 #include <Maxwell.h>
 #include <Vector.h>
 #include <Channel.h>
+#include <string.h>
 
 #include <OPS_Globals.h>
 

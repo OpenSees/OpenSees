@@ -33,6 +33,7 @@
 #include <ID.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <string.h>
 
 #include <OPS_Globals.h>
 

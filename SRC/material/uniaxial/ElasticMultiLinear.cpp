@@ -38,6 +38,7 @@
 #include <math.h>
 #include <float.h>
 #include <string.h>
+#include <stdlib.h>
 
 
 void *OPS_NewElasticMultiLinear()

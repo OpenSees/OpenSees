@@ -25,6 +25,7 @@
 // Written: MRL                                                                         
 
 #include <WrapperLimitCurve.h>
+#include <string.h>
 
 extern modelState theModelState;
 
