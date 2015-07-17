@@ -325,10 +325,10 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
       }
 
       if (dispSeries == 0 && velSeries == 0 && accelSeries == 0) {
-    opserr << "WARNING invalid series, want - pattern UniformExcitation";
-    opserr << "-disp {dispSeries} -vel {velSeries} -accel {accelSeries} ";
-    opserr << "-int {Series Integrator}\n";
-    return TCL_ERROR;
+	opserr << "WARNING invalid series, want - pattern UniformExcitation";
+	opserr << "-disp {dispSeries} -vel {velSeries} -accel {accelSeries} ";
+	opserr << "-int {Series Integrator}\n";
+	return TCL_ERROR;
       }
       
       GroundMotion *theMotion = new GroundMotion(dispSeries, velSeries,
