@@ -1278,7 +1278,7 @@ DispBeamColumn2dThermal::Print(OPS_Stream &s, int flag)
 
 
 int
-DispBeamColumn2dThermal::displaySelf(Renderer &theViewer, int displayMode, float fact)
+DispBeamColumn2dThermal::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     // first determine the end points of the quad based on
     // the display factor (a measure of the distorted image)

@@ -96,7 +96,7 @@ class AC3D8HexWithSensitivity: public Element
     Response *setResponse (const char **argv, int argc, OPS_Stream &matInformation);
     int getResponse (int responseID, Information &matInformation);
       
-    int displaySelf (Renderer &theViewer, int displayMode, float fact);
+    int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode);
     void Print(OPS_Stream &s, int flag =0);
     
     // const Vector &getExternalLoadIncInertia(void);

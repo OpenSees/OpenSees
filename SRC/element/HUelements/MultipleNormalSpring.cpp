@@ -874,7 +874,7 @@ int MultipleNormalSpring::recvSelf(int commitTag, Channel &rChannel,
 
 
 int MultipleNormalSpring::displaySelf(Renderer &theViewer,
-				     int displayMode, float fact)
+				      int displayMode, float fact, const char **modes, int numModes)
 {
   // first determine the end points of the element based on
   // the display factor (a measure of the distorted image)

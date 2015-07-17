@@ -252,7 +252,7 @@ WrapperElement::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
 }
 
 int
-WrapperElement::displaySelf(Renderer &theViewer, int displayMode, float fact)
+WrapperElement::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numModes)
 {
     return 0;
 }

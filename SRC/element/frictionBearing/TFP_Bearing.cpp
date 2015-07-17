@@ -964,3 +964,8 @@ TFP_Bearing::getResponse(int responseID, Information &eleInfo)
   }
 }
 
+int 
+TFP_Bearing::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
+{
+  return 0;
+}

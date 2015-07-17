@@ -562,7 +562,7 @@ ZeroLengthContact2D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBrok
 
 
 int
-ZeroLengthContact2D::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ZeroLengthContact2D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 { // nothing to display
     return 0;
 }

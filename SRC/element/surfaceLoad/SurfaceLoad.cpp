@@ -380,7 +380,7 @@ SurfaceLoad::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theB
 }
 
 int
-SurfaceLoad::displaySelf(Renderer &theViewer, int displayMode, float fact)
+SurfaceLoad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   return 0;
 }

@@ -705,7 +705,7 @@ fElement::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBrok
 
 
 int
-fElement::displaySelf(Renderer &theViewer, int displayMode, float fact)
+fElement::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     return 0;
 }

@@ -1625,8 +1625,7 @@ int  Twenty_Node_Brick::recvSelf (int commitTag,
 
 int
 
-Twenty_Node_Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
-
+Twenty_Node_Brick::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 
    return 0;

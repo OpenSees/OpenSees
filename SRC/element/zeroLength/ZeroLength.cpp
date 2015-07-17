@@ -817,39 +817,37 @@ ZeroLength::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
 
 
 int
-ZeroLength::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ZeroLength::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     // ensure setDomain() worked
     if (theNodes[0] == 0 || theNodes[1] == 0 )
        return 0;
 
-    // first determine the two end points of the ZeroLength based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 2 3d vectors v1 and v2
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
-    const Vector &end1Disp = theNodes[0]->getDisp();
-    const Vector &end2Disp = theNodes[1]->getDisp();    
+    static Vector v1(3);
+    static Vector v2(3);
+
+    float d1 = 1.0;
+    float d2 = 1.0;
 
     if (displayMode == 1 || displayMode == 2) {
-	Vector v1(3);
-	Vector v2(3);
-	for (int i=0; i<dimension; i++) {
-	    v1(i) = end1Crd(i)+end1Disp(i)*fact;
-	    v2(i) = end2Crd(i)+end2Disp(i)*fact;    
-	}
+
+      theNodes[0]->getDisplayCrds(v1, fact);
+      theNodes[1]->getDisplayCrds(v2, fact);
 	
-	// don't display strain or force
-	double strain = 0.0;
-	double force  = 0.0;
-    
-	if (displayMode == 2) // use the strain as the drawing measure
-	    return theViewer.drawLine(v1, v2, (float)strain, (float)strain);	
-	else { // otherwise use the axial force as measure
-	    return theViewer.drawLine(v1,v2, (float)force, (float)force);
-	}
+      if (displayMode == 1) 
+	d1 = theMaterial1d[0]->getStress();
+      else 
+	d1 = theMaterial1d[0]->getStrain();
+    } else {
+
+      theNodes[0]->getDisplayCrds(v1, 0.);
+      theNodes[1]->getDisplayCrds(v2, 0.);
+
     }
-    return 0;
+    if (v1 != v2)
+      return theViewer.drawLine(v1, v2, d1, d1);	
+    else
+      return theViewer.drawPoint(v1, d1, 10);	
 }
 
 
@@ -955,7 +953,14 @@ ZeroLength::setResponse(const char **argv, int argc, OPS_Stream &output)
       }
     }
 
+    if ((strcmp(argv[0],"dampingForces") == 0) || (strcmp(argv[0],"rayleighForces") == 0)) {
+            theResponse = new ElementResponse(this, 15, Vector(numDOF));
+    }
+
     output.endTag();
+
+
+
 
     return theResponse;
 }
@@ -973,6 +978,13 @@ ZeroLength::getResponse(int responseID, Information &eleInformation)
 
     case 1:
         return eleInformation.setVector(this->getResistingForce());
+
+    case 15:
+      theVector->Zero();
+      if (useRayleighDamping == 1)
+        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+            *theVector += this->getRayleighDampingForces();      
+        return eleInformation.setVector(*theVector);
 
     case 2:
         if (eleInformation.theVector != 0) {

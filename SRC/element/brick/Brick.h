@@ -27,6 +27,10 @@
 // Eight node Brick element 
 //
 
+#ifndef BRICK_H
+#define BRICK_H
+
+
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <math.h> 
@@ -38,8 +42,6 @@
 #include <Node.h>
 #include <NDMaterial.h>
 
-#ifndef BRICK_H
-#define BRICK_H
 
 class Brick : public Element {
 
@@ -122,7 +124,7 @@ class Brick : public Element {
     int updateParameter(int parameterID, Information &info);
 
     //plotting 
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);
+    int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
 
   private : 
     //

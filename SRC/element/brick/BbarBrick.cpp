@@ -1276,7 +1276,7 @@ int  BbarBrick::recvSelf (int commitTag,
 //**************************************************************************
 
 int
-BbarBrick::displaySelf(Renderer &theViewer, int displayMode, float fact)
+BbarBrick::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 
     const Vector &end1Crd = nodePointers[0]->getCrds();

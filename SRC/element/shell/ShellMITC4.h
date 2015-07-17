@@ -50,16 +50,15 @@ class ShellMITC4 : public Element {
   
   //full constructor
   ShellMITC4( int tag, 
-	          int node1,
-	          int node2,
-			  int node3,
-			  int node4,
-			  SectionForceDeformation &theMaterial ) ;
+	      int node1,
+	      int node2,
+	      int node3,
+	      int node4,
+	      SectionForceDeformation &theMaterial ) ;
   
   //destructor 
   virtual ~ShellMITC4( ) ;
 
-  //set domain because frank is a dumb ass 
   void setDomain( Domain *theDomain ) ;
   
   //get the number of external nodes
@@ -110,7 +109,7 @@ class ShellMITC4 : public Element {
     int getResponse( int responseID, Information &eleInfo );
       
     //plotting 
-    int displaySelf( Renderer &theViewer, int displayMode, float fact );
+    int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
 
   private : 
 

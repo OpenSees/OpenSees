@@ -1119,7 +1119,7 @@ DispBeamColumn3dWithSensitivity::Print(OPS_Stream &s, int flag)
 
 
 int
-DispBeamColumn3dWithSensitivity::displaySelf(Renderer &theViewer, int displayMode, float fact)
+DispBeamColumn3dWithSensitivity::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   // first determine the end points of the quad based on
   // the display factor (a measure of the distorted image)

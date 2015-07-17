@@ -1022,7 +1022,7 @@ int LeadRubberX::recvSelf(int commitTag, Channel &rChannel,
 
 
 int LeadRubberX::displaySelf(Renderer &theViewer,
-    int displayMode, float fact)
+			     int displayMode, float fact, const char **modes, int numMode)
 {
 	// first determine the end points of the element based on
     // the display factor (a measure of the distorted image)

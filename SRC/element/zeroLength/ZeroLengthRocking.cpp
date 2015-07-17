@@ -601,7 +601,7 @@ ZeroLengthRocking::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
 
 
 int
-ZeroLengthRocking::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ZeroLengthRocking::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     // ensure setDomain() worked
     if (theNodes[0] == 0 || theNodes[1] == 0 )

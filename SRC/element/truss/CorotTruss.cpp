@@ -884,7 +884,7 @@ CorotTruss::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
 }
 
 int
-CorotTruss::displaySelf(Renderer &theViewer, int displayMode, float fact)
+CorotTruss::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	// ensure setDomain() worked
 	if (Ln == 0.0)

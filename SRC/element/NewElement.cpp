@@ -192,7 +192,7 @@ NewElement::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
 
 
 int
-NewElement::displaySelf(Renderer &theViewer, int displayMode, float fact)
+NewElement::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   return 0;
 }

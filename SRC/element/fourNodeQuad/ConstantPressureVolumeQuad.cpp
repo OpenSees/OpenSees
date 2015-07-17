@@ -1269,7 +1269,7 @@ void ConstantPressureVolumeQuad :: shape2d( double ss, double tt,
 //***********************************************************************
 
 int
-ConstantPressureVolumeQuad::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ConstantPressureVolumeQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **mode, int numModes)
 {
     // first determine the end points of the quad based on
     // the display factor (a measure of the distorted image)

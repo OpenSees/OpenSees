@@ -552,8 +552,7 @@ ElasticBeam3d::addInertiaLoadToUnbalance(const Vector &accel)
 const Vector &
 ElasticBeam3d::getResistingForceIncInertia()
 {	
-  P = this->getResistingForce();
-  
+  P = this->getResistingForce(); 
   // subtract external load P = P - Q
   P.addVector(1.0, Q, -1.0);
   
@@ -862,42 +861,64 @@ ElasticBeam3d::Print(OPS_Stream &s, int flag)
 }
 
 int
-ElasticBeam3d::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ElasticBeam3d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
-    // first determine the end points of the quad based on
-    // the display factor (a measure of the distorted image)
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
-
     static Vector v1(3);
     static Vector v2(3);
 
-    if (displayMode >= 0) {
-      const Vector &end1Disp = theNodes[0]->getDisp();
-      const Vector &end2Disp = theNodes[1]->getDisp();
-      
-      for (int i = 0; i < 3; i++) {
-	v1(i) = end1Crd(i) + end1Disp(i)*fact;
-	v2(i) = end2Crd(i) + end2Disp(i)*fact;    
-      }
-    } else {
+    theNodes[0]->getDisplayCrds(v1, fact);
+    theNodes[1]->getDisplayCrds(v2, fact);
+    float d1 = 0.0;
+    float d2 = 0.0;
+    int res = 0;
+  
+    if (displayMode > 0) {
+
+      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), 0);
+
+    } else if (displayMode < 0) {
+
+      theNodes[0]->getDisplayCrds(v1, 0.);
+      theNodes[1]->getDisplayCrds(v2, 0.);
+
+      // add eigenvector values
       int mode = displayMode * -1;
       const Matrix &eigen1 = theNodes[0]->getEigenvectors();
       const Matrix &eigen2 = theNodes[1]->getEigenvectors();
       if (eigen1.noCols() >= mode) {
 	for (int i = 0; i < 3; i++) {
-	  v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	  v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
-	}    
-      } else {
-	for (int i = 0; i < 3; i++) {
-	  v1(i) = end1Crd(i);
-	  v2(i) = end2Crd(i);
+	  v1(i) += eigen1(i,mode-1)*fact;
+	  v2(i) += eigen2(i,mode-1)*fact;    
 	}    
       }
+      return theViewer.drawLine (v1, v2, 0.0, 0.0, this->getTag(), 0);
     }
-    
-    return theViewer.drawLine (v1, v2, 1.0, 1.0);
+
+    if (numMode > 0) {
+      // calculate q for potential need below
+      this->getResistingForce();
+    }
+
+  for (int i=0; i<numMode; i++) {
+
+    const char *theMode = modes[i];
+    if (strcmp(theMode, "axialForce") == 0) {
+      d1 = q(0); 
+      d2 = q(0);;
+
+      res +=theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+      
+    } else if (strcmp(theMode, "endMoments") == 0) {
+      d1 = q(1);
+      d2 = q(2);
+      static Vector delta(3); delta = v2-v1; delta/=10;
+      res += theViewer.drawPoint(v1+delta, d1, this->getTag(), i);
+      res += theViewer.drawPoint(v2-delta, d2, this->getTag(), i);
+      
+    }
+  }    
+
+  return res;
 }
 
 Response*

@@ -926,7 +926,7 @@ FourNodeQuadUP::Print(OPS_Stream &s, int flag)
 }
 
 int
-FourNodeQuadUP::displaySelf(Renderer &theViewer, int displayMode, float fact)
+FourNodeQuadUP::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **argv, int numModes)
 {
     // first set the quantity to be displayed at the nodes;
     // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0

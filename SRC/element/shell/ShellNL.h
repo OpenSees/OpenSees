@@ -101,7 +101,7 @@ class ShellNL : public Element
     int getResponse(int responseID, Information &eleInfo);
       
     //plotting 
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);
+    int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
 
   private : 
 

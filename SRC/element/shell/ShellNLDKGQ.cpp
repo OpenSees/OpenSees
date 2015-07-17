@@ -561,7 +561,7 @@ const Matrix&  ShellNLDKGQ::getInitialStiff( )
 	static double dvol[ngauss]; //volume element
 
 	//add for geometric nonlinearity
-	static Vector incrDisp(ndf); //total displacement
+	static Vector incrDisp(ndf); //total displamcement
 
 	static Vector Cstrain(nstress);//commit strain last step/ add for geometric nonlinearity
 
@@ -2471,7 +2471,7 @@ int  ShellNLDKGQ::recvSelf (int commitTag,
 //**************************************************************************
 
 int
-ShellNLDKGQ::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ShellNLDKGQ::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 
     // first determine the end points of the quad based on

@@ -1002,67 +1002,60 @@ Truss::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
   return 0;
 }
 
-
 int
-Truss::displaySelf(Renderer &theViewer, int displayMode, float fact)
+Truss::displaySelf(Renderer &theViewer, int displayMode, float fact, 
+		   const char **displayModes, int numModes)
 {
-    // ensure setDomain() worked
-    if (L == 0.0)
-       return 0;
+  opserr << "Truss::displaySelf() " << this->getTag();
+  int res = 0;
+  if (L == 0.0)
+    return res;
+  
+  static Vector v1(3);
+  static Vector v2(3);
+  float d1 = 0.0;
+  float d2 = 0.0;
+  
+  theNodes[0]->getDisplayCrds(v1, fact);
+  theNodes[1]->getDisplayCrds(v2, fact);
 
-    // first determine the two end points of the truss based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 2 3d vectors v1 and v2
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
-
-    static Vector v1(3);
-    static Vector v2(3);
-
-    if (displayMode == 1 || displayMode == 2) {
-      const Vector &end1Disp = theNodes[0]->getDisp();
-      const Vector &end2Disp = theNodes[1]->getDisp();    
-
-	for (int i=0; i<dimension; i++) {
-	    v1(i) = end1Crd(i)+end1Disp(i)*fact;
-	    v2(i) = end2Crd(i)+end2Disp(i)*fact;    
-	}
-	
-	// compute the strain and axial force in the member
-	double strain, force;
-	if (L == 0.0) {
-	    strain = 0.0;
-	    force = 0.0;
-	} else {
-	    strain = this->computeCurrentStrain();
-	    theMaterial->setTrialStrain(strain);
-	    force = A*theMaterial->getStress();    
-	}
+  if (displayMode > 0) {
+    res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), 0);
+  }
+  
+  for (int i=0; i<numModes; i++) {
     
-	if (displayMode == 2) // use the strain as the drawing measure
-	  return theViewer.drawLine(v1, v2, (float)strain, (float)strain);	
-	else { // otherwise use the axial force as measure
-	  return theViewer.drawLine(v1,v2, (float)force, (float)force);
-	}
-    } else if (displayMode < 0) {
-      int mode = displayMode  *  -1;
-      const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-      const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-      if (eigen1.noCols() >= mode) {
-	for (int i = 0; i < dimension; i++) {
-	  v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	  v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
-	}    
-      } else {
-	for (int i = 0; i < dimension; i++) {
-	  v1(i) = end1Crd(i);
-	  v2(i) = end2Crd(i);
-	}    
-      }
-      return theViewer.drawLine(v1, v2, 1.0, 1.0);	
+    const char *mode = displayModes[i];
+    if (strcmp(mode, "axialForce") == 0) {
+      double force = A*theMaterial->getStress();    	  
+      d1 = force; 
+      d2 = force;
+
+      res +=theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+      
+    } else if (strcmp(mode, "material") == 0) {
+      d1 = theMaterial->getTag();
+      d2 = theMaterial->getTag();
+
+      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+      
+    } else if (strcmp(mode, "materialStress") == 0) {
+      d1 = theMaterial->getStress();
+      d2 = theMaterial->getStress();
+
+      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
+      
+      } else if (strcmp(mode, "materialStrain") == 0) {
+      
+      d1 = theMaterial->getStrain();
+      d2 = theMaterial->getStrain();
+
+      res += theViewer.drawLine(v1, v2, d1, d1, this->getTag(), i);
     }
-    return 0;
+  }    
+  return res;
 }
+
 
 
 void

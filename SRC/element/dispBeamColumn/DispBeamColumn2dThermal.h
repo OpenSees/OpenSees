@@ -94,7 +94,7 @@ class DispBeamColumn2dThermal : public Element
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		  &theBroker);
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);
+    int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes=0, int numModes=0);
     void Print(OPS_Stream &s, int flag =0);
 
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);

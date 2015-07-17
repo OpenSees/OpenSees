@@ -676,7 +676,7 @@ ZeroLengthND::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
 }
 
 int
-ZeroLengthND::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ZeroLengthND::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     // ensure setDomain() worked
     if (end1Ptr == 0 || end2Ptr == 0)

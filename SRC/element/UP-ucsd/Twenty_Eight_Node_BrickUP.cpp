@@ -2311,7 +2311,7 @@ int  TwentyEightNodeBrickUP::recvSelf (int commitTag,
 
 int
 
-TwentyEightNodeBrickUP::displaySelf(Renderer &theViewer, int displayMode, float fact)
+TwentyEightNodeBrickUP::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 
 {
 

@@ -887,7 +887,7 @@ FourNodeQuadWithSensitivity::Print(OPS_Stream &s, int flag)
 
 
 int
-FourNodeQuadWithSensitivity::displaySelf(Renderer &theViewer, int displayMode, float fact)
+FourNodeQuadWithSensitivity::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numModes)
 {
 
     // first set the quantity to be displayed at the nodes;

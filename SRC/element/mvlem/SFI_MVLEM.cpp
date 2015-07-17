@@ -836,7 +836,7 @@ int SFI_MVLEM::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &th
 }
 
 // Display model
-int SFI_MVLEM::displaySelf(Renderer &theViewer, int displayMode, float fact)
+int SFI_MVLEM::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	// First get the end points of the beam based on
 	// the display factor (a measure of the distorted image)

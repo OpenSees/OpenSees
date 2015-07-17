@@ -440,7 +440,7 @@ PFEMElement2DBubble::Print(OPS_Stream &s, int flag)
 }
 
 int
-PFEMElement2DBubble::displaySelf(Renderer &theViewer, int displayMode, float fact)                                          
+PFEMElement2DBubble::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes)
 {
 
     // first set the quantity to be displayed at the nodes;

@@ -740,7 +740,7 @@ CoupledZeroLength::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
 
 
 int
-CoupledZeroLength::displaySelf(Renderer &theViewer, int displayMode, float fact)
+CoupledZeroLength::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     // ensure setDomain() worked
     if (theNodes[0] == 0 || theNodes[1] == 0 )

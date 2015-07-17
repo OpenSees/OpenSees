@@ -523,7 +523,7 @@ BeamEndContact3Dp::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
 }
 
 int
-BeamEndContact3Dp::displaySelf(Renderer &theViewer, int displayMode, float fact)
+BeamEndContact3Dp::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	return 0;
 }

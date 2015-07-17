@@ -572,7 +572,7 @@ Brick8FiberOverlay::getResponse(int responseID, Information &eleInfo)
 }
 
 int
-Brick8FiberOverlay::displaySelf(Renderer &theViewer, int displayMode, float fact)
+Brick8FiberOverlay::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {	
 	int dimension = 3;
     static Vector v1(3);

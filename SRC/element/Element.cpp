@@ -692,3 +692,11 @@ Element::getPreviousK(int num) {
   else
     return 0;
 }
+
+int 
+Element::displaySelf(Renderer &, int mode, float fact, const char **displayModes, int numModes)
+{
+  return 0;
+}
+
+

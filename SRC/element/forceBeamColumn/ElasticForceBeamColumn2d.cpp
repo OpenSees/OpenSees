@@ -339,7 +339,6 @@ ElasticForceBeamColumn2d::computeReactions(double *p0)
       if (aOverL < 0.0 || aOverL > 1.0)
 	continue;
       
-      double a = aOverL*L;
       
       double V1 = P*(1.0-aOverL);
       double V2 = P*aOverL;
@@ -583,8 +582,8 @@ ElasticForceBeamColumn2d::addInertiaLoadToUnbalance(const Vector &accel)
     return 0;
 
   // get R * accel from the nodes
-  const Vector &Raccel1 = theNodes[0]->getRV(accel);
-  const Vector &Raccel2 = theNodes[1]->getRV(accel);    
+  //const Vector &Raccel1 = theNodes[0]->getRV(accel);
+  //  const Vector &Raccel2 = theNodes[1]->getRV(accel);    
 
   double L = crdTransf->getInitialLength();
   double m = 0.5*rho*L;
@@ -929,7 +928,7 @@ OPS_Stream &operator<<(OPS_Stream &s, ElasticForceBeamColumn2d &E)
 }
 
 int
-ElasticForceBeamColumn2d::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ElasticForceBeamColumn2d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   // first determine the end points of the beam based on
   // the display factor (a measure of the distorted image)

@@ -780,7 +780,7 @@ void UpdatedLagrangianBeam2D::getConvLocalDisp(Vector &lDisp)
 // methods for display/recorders... may be overridden if required
 //////////////////////////////////////////////////////////////////////
 
-int UpdatedLagrangianBeam2D::displaySelf(Renderer &theViewer, int displayMode, float fact)
+int UpdatedLagrangianBeam2D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     // first determine the two end points of the element based on
     // the display factor (a measure of the distorted image)

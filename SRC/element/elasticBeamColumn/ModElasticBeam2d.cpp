@@ -795,7 +795,7 @@ ModElasticBeam2d::Print(OPS_Stream &s, int flag)
 }
 
 int
-ModElasticBeam2d::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ModElasticBeam2d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     // first determine the end points of the beam based on
     // the display factor (a measure of the distorted image)

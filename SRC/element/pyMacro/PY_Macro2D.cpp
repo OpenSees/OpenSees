@@ -464,3 +464,9 @@ PY_Macro2D::setResponse(const char **argv, int argc, OPS_Stream &output)
      return 0;
    }
  }
+
+int 
+PY_Macro2D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
+{
+  return 0;
+}

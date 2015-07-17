@@ -858,7 +858,7 @@ SSPquadUP::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBro
 }
 
 int
-SSPquadUP::displaySelf(Renderer &theViewer, int displayMode, float fact)
+SSPquadUP::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	return 0;
 }

@@ -823,8 +823,8 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
 }
 
 
-int TwoNodeLink::displaySelf(Renderer &theViewer,
-    int displayMode, float fact)
+int TwoNodeLink::displaySelf(Renderer &theViewer,int displayMode, float fact, const char **modes, int numMode)
+			     
 {
     // first determine the end points of the element based on
     // the display factor (a measure of the distorted image)

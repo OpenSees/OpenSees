@@ -1022,7 +1022,7 @@ N4BiaxialTruss::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
 
 
 int
-N4BiaxialTruss::displaySelf(Renderer &theViewer, int displayMode, float fact)
+N4BiaxialTruss::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	// ensure setDomain() worked
 	if (L == 0.0)

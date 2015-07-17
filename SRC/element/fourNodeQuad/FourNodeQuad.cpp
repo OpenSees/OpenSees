@@ -878,7 +878,7 @@ FourNodeQuad::Print(OPS_Stream &s, int flag)
 }
 
 int
-FourNodeQuad::displaySelf(Renderer &theViewer, int displayMode, float fact)
+FourNodeQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 
     // first set the quantity to be displayed at the nodes;
@@ -944,8 +944,8 @@ FourNodeQuad::displaySelf(Renderer &theViewer, int displayMode, float fact)
     
     int error = 0;
 
-    // finally we draw the element using drawPolygon
-    error += theViewer.drawPolygon (coords, values);
+    // finally we  the element using drawPolygon
+    error += theViewer.drawPolygon (coords, values, this->getTag());
 
     return error;
 }

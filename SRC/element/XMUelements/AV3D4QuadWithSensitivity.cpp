@@ -342,7 +342,7 @@ AV3D4QuadWithSensitivity::recvSelf (int commitTag, Channel &theChannel,
   return 0;
 }
 
-int AV3D4QuadWithSensitivity::displaySelf (Renderer &theViewer, int displayMode, float fact)
+int AV3D4QuadWithSensitivity::displaySelf (Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   int error = 0;
   

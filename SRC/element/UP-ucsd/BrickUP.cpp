@@ -1374,7 +1374,7 @@ int  BrickUP::recvSelf (int commitTag,
 //**************************************************************************
 
 int
-BrickUP::displaySelf(Renderer &theViewer, int displayMode, float fact)
+BrickUP::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 
     const Vector &end1Crd = nodePointers[0]->getCrds();

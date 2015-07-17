@@ -1147,7 +1147,7 @@ BeamColumnJoint3d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
 }
 
 int
-BeamColumnJoint3d::displaySelf(Renderer &theViewer, int displayMode, float fact)
+BeamColumnJoint3d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   return -1; // yet to do
 }

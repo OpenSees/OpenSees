@@ -64,10 +64,8 @@ DomainComponent::getDomain(void) const
     return theDomain;
 }
 
-
-
-int
-DomainComponent::displaySelf(Renderer &theViewer, int displayMode, float fact)
+int 
+DomainComponent::displaySelf(Renderer &theViewer, int mode, float fact, const char **displayModes, int numModes)
 {
   return 0;
 }

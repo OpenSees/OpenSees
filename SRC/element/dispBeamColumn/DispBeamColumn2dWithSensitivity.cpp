@@ -1,4 +1,3 @@
-
 /* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
@@ -1022,7 +1021,7 @@ DispBeamColumn2dWithSensitivity::Print(OPS_Stream &s, int flag)
 
 
 int
-DispBeamColumn2dWithSensitivity::displaySelf(Renderer &theViewer, int displayMode, float fact)
+DispBeamColumn2dWithSensitivity::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     // first determine the end points of the quad based on
     // the display factor (a measure of the distorted image)

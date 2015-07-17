@@ -55,7 +55,7 @@ class DomainComponent: public TaggedObject, public MovableObject
     virtual Domain *getDomain(void) const;
 
     // Method for visualisation, default does nothing
-    virtual int displaySelf(Renderer &, int displayMode, float fact);
+    virtual int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
 
   protected:
     DomainComponent(int tag, int classTag);

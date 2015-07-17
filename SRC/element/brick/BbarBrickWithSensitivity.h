@@ -110,7 +110,8 @@ class BbarBrickWithSensitivity : public Element {
     int getResponse(int responseID, Information &eleInformation);
 
     //plotting
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);
+    int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
+
 // AddingSensitivity:BEGIN //////////////////////////////////////////
     int            setParameter                (const char **argv, int argc, Parameter &param);
     int            updateParameter             (int parameterID, Information &info);

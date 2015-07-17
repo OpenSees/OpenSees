@@ -1275,7 +1275,7 @@ NineNodeMixedQuad::shape1d( int code, int node, double xi )
 //***********************************************************************
 
 int
-NineNodeMixedQuad::displaySelf(Renderer &theViewer, int displayMode, float fact)
+NineNodeMixedQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **moes, int numMode)
 {
     // first determine the end points of the quad based on
     // the display factor (a measure of the distorted image)

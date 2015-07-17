@@ -2056,7 +2056,7 @@ BeamContact3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &th
 
 
 int
-BeamContact3D::displaySelf(Renderer &theViewer, int displayMode, float fact)
+BeamContact3D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 #ifdef DEBUG
         opserr << "BeamContact3D::displaySelf(Renderer &theViewer, int displayMode, float fact)" << endln;

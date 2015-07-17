@@ -1463,7 +1463,7 @@ int  BbarBrickWithSensitivity::recvSelf (int commitTag,
 //**************************************************************************
 
 int
-BbarBrickWithSensitivity::displaySelf(Renderer &theViewer, int displayMode, float fact)
+BbarBrickWithSensitivity::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     const Vector &end1Crd = nodePointers[0]->getCrds();
     const Vector &end2Crd = nodePointers[1]->getCrds();

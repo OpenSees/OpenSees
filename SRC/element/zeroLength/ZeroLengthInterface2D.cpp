@@ -357,7 +357,7 @@ ZeroLengthInterface2D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBr
 }
 
 int
-ZeroLengthInterface2D::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ZeroLengthInterface2D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 { 
   // nothing to display
   return 0;

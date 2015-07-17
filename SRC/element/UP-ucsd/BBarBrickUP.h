@@ -130,7 +130,7 @@ class BBarBrickUP : public Element {
     int updateParameter(int parameterID, Information &info);
 
     //plotting
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);
+    int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
 
 
     // RWB; PyLiq1 & TzLiq1 need to see the excess pore pressure and initial stresses.

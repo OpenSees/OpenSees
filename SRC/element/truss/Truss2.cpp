@@ -1011,7 +1011,7 @@ int
 
 
 int
-	Truss2::displaySelf(Renderer &theViewer, int displayMode, float fact)
+Truss2::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	// ensure setDomain() worked
 	if (L == 0.0)

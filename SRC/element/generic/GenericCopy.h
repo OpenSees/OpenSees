@@ -81,7 +81,7 @@ public:
     // public methods for element output
     int sendSelf(int commitTag, Channel &sChannel);
     int recvSelf(int commitTag, Channel &rChannel, FEM_ObjectBroker &theBroker);
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);
+    int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode);
     void Print(OPS_Stream &s, int flag = 0);
     
     // public methods for element recorder

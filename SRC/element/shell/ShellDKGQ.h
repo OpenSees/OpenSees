@@ -108,8 +108,8 @@ class ShellDKGQ : public Element {
     Response* setResponse( const char **argv, int argc, OPS_Stream &output );
     int getResponse( int responseID, Information &eleInfo );
       
-    //plotting 
-    int displaySelf( Renderer &theViewer, int displayMode, float fact );
+    //plotting
+    int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
 
   private : 
 

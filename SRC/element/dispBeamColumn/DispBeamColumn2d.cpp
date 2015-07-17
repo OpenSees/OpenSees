@@ -1058,48 +1058,42 @@ DispBeamColumn2d::Print(OPS_Stream &s, int flag)
 
   beamInt->Print(s, flag);
 
+  /*
   for (int i = 0; i < numSections; i++)
     theSections[i]->Print(s,flag);
+  */
 }
 
 
 int
-DispBeamColumn2d::displaySelf(Renderer &theViewer, int displayMode, float fact)
+DispBeamColumn2d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes)
 {
-    // first determine the end points of the quad based on
-    // the display factor (a measure of the distorted image)
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
-
   static Vector v1(3);
   static Vector v2(3);
 
   if (displayMode >= 0) {
-    const Vector &end1Disp = theNodes[0]->getDisp();
-    const Vector &end2Disp = theNodes[1]->getDisp();
-    
-    for (int i = 0; i < 2; i++) {
-      v1(i) = end1Crd(i) + end1Disp(i)*fact;
-      v2(i) = end2Crd(i) + end2Disp(i)*fact;    
-    }
+
+    theNodes[0]->getDisplayCrds(v1, fact);
+    theNodes[1]->getDisplayCrds(v2, fact);
+
   } else {
+
+    theNodes[0]->getDisplayCrds(v1, 0.);
+    theNodes[1]->getDisplayCrds(v2, 0.);
+
+    // add eigenvector values
     int mode = displayMode  *  -1;
     const Matrix &eigen1 = theNodes[0]->getEigenvectors();
     const Matrix &eigen2 = theNodes[1]->getEigenvectors();
     if (eigen1.noCols() >= mode) {
       for (int i = 0; i < 2; i++) {
-	v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
-      }    
-    } else {
-      for (int i = 0; i < 2; i++) {
-	v1(i) = end1Crd(i);
-	v2(i) = end2Crd(i);
+	v1(i) += eigen1(i,mode-1)*fact;
+	v2(i) += eigen2(i,mode-1)*fact;    
       }    
     }
   }
 	
-  return theViewer.drawLine (v1, v2, 1.0, 1.0);
+  return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*
@@ -1169,7 +1163,9 @@ DispBeamColumn2d::setResponse(const char **argv, int argc,
 
     theResponse =  new ElementResponse(this, 4, Vector(3));
 
-  } else if (strcmp(argv[0],"RayleighForces") == 0 || strcmp(argv[0],"rayleighForces") == 0) {
+  } else if (strcmp(argv[0],"RayleighForces") == 0 || 
+	     strcmp(argv[0],"rayleighForces") == 0 ||
+	     strcmp(argv[0],"dampingForces") == 0) {
 
     theResponse =  new ElementResponse(this, 12, P);
   }
@@ -1278,10 +1274,12 @@ DispBeamColumn2d::getResponse(int responseID, Information &eleInfo)
   if (responseID == 1)
     return eleInfo.setVector(this->getResistingForce());
 
-  else if (responseID == 12)
-    return eleInfo.setVector(this->getRayleighDampingForces());
+  else if (responseID == 12) {
+    P.Zero();
+    P.addVector(1.0, this->getRayleighDampingForces(), 1.0);
+    return eleInfo.setVector(P);
 
-  else if (responseID == 2) {
+  } else if (responseID == 2) {
       P(3) =  q(0);
       P(0) = -q(0)+p0[0];
       P(2) = q(1);

@@ -495,7 +495,7 @@ ZeroLengthImpact3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroke
 }
 
 int
-ZeroLengthImpact3D::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ZeroLengthImpact3D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     // nothing to display
     return 0;

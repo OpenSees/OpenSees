@@ -711,3 +711,8 @@ TPB1D::activateParameter(int passedParameterID)
 
 
 
+int 
+TPB1D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
+{
+  return 0;
+}

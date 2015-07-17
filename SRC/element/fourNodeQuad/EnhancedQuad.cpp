@@ -1753,7 +1753,7 @@ int  EnhancedQuad::recvSelf (int commitTag,
 //**************************************************************************
 
 int
-EnhancedQuad::displaySelf(Renderer &theViewer, int displayMode, float fact)
+EnhancedQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     // first set the quantity to be displayed at the nodes;
     // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0

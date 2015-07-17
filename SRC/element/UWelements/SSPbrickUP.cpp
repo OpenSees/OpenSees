@@ -1055,7 +1055,7 @@ SSPbrickUP::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
 }
 
 int
-SSPbrickUP::displaySelf(Renderer &theViewer, int displayMode, float fact)
+SSPbrickUP::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	return 0;
 }

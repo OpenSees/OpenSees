@@ -530,7 +530,7 @@ ElasticTubularJoint::Print(OPS_Stream &s, int flag)
 
 
 
-int ElasticTubularJoint::displaySelf(Renderer &theViewer, int displayMode, float fact)
+int ElasticTubularJoint::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 
   // ensure setDomain() worked

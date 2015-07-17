@@ -2678,7 +2678,7 @@ ForceBeamColumnCBDI2d::setSectionPointers(int numSec, SectionForceDeformation **
 }
 
 int
-ForceBeamColumnCBDI2d::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ForceBeamColumnCBDI2d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   // first determine the end points of the beam based on
   // the display factor (a measure of the distorted image)

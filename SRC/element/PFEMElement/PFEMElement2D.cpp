@@ -487,24 +487,8 @@ PFEMElement2D::Print(OPS_Stream &s, int flag)
 }
 
 int
-PFEMElement2D::displaySelf(Renderer &theViewer, int displayMode, float fact)                                          
+PFEMElement2D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes) 
 {
-
-    // first set the quantity to be displayed at the nodes;
-    // if displayMode is 1 through 3 we will plot material stresses otherwise 0.0
-
-    /*
-  static Vector values(numgp);
-
-    for (int j=0; j<numgp; j++) values(j) = 0.0;
-
-    if (displayMode < numgp && displayMode > 0) {
-		for (int i=0; i<numgp; i++) {
-			const Vector &stress = theMaterial[i]->getStress();
-	        values(i) = stress(displayMode-1);
-	    }
-    }
-    */
 
   static Vector values(3);
 

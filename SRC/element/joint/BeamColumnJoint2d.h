@@ -139,7 +139,7 @@ class BeamColumnJoint2d : public Element
 	       FEM_ObjectBroker &theBroker);
   
   // display element graphically
-  int displaySelf(Renderer &theViewer, int displayMode, float fact);    
+  int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
   
   // print out element data
   void Print(OPS_Stream &s, int flag =0);    

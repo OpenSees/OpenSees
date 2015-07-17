@@ -1749,7 +1749,7 @@ int  ShellNL::recvSelf (int commitTag,Channel &theChannel,
 //**************************************************************************
 
 int
-ShellNL::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ShellNL::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   // first determine the end points of the quad based on
   // the display factor (a measure of the distorted image)

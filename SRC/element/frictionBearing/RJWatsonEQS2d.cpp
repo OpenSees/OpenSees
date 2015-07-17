@@ -733,7 +733,8 @@ int RJWatsonEQS2d::recvSelf(int commitTag, Channel &rChannel,
 
 
 int RJWatsonEQS2d::displaySelf(Renderer &theViewer,
-    int displayMode, float fact)
+			       int displayMode, float fact,
+			       const char **modes, int numMode)
 {
     int errCode = 0;
     

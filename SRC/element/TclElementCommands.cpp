@@ -131,6 +131,8 @@ extern void *OPS_AC3D8HexWithSensitivity(void);
 extern void *OPS_ASID8QuadWithSensitivity(void);
 extern void *OPS_AV3D4QuadWithSensitivity(void);
 extern void *OPS_VS3D4WuadWithSensitivity(void);
+extern void *OPS_MVLEM(void);
+extern void *OPS_SFI_MVLEM(void);
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -600,6 +602,27 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
+
+  } else if (strcmp(argv[1],"MVLEM") == 0) {
+    
+    void *theEle = OPS_MVLEM();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+
+  } else if (strcmp(argv[1],"SFI_MVLEM") == 0) {
+    
+    void *theEle = OPS_SFI_MVLEM();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+
 
   } else if ((strcmp(argv[1],"MultiFP2d") == 0) || (strcmp(argv[1],"MultiFPB2d") == 0)){
     

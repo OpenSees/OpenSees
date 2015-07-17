@@ -94,8 +94,7 @@ public:
   const	Vector &getResistingForceIncInertia(void);
   
   // method for graphics
-  virtual int displaySelf(Renderer &theViewer,
-			  int displayMode, float fact);
+  int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
   
   virtual Response *setResponse(const char **argv, int argc);
   virtual int getResponse(int responseID, Information &eleInformation);

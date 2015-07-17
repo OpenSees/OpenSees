@@ -648,8 +648,8 @@ int ElasticTimoshenkoBeam3d::recvSelf(int commitTag, Channel &rChannel,
 }
 
 
-int ElasticTimoshenkoBeam3d::displaySelf(Renderer &theViewer,
-    int displayMode, float fact)
+int 
+ElasticTimoshenkoBeam3d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)				 
 {
     // first determine the end points of the quad based on
     // the display factor (a measure of the distorted image)

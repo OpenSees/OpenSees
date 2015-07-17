@@ -1576,7 +1576,7 @@ NineFourNodeQuadUP::Print(OPS_Stream &s, int flag)
 
 int
 
-NineFourNodeQuadUP::displaySelf(Renderer &theViewer, int displayMode, float fact)
+NineFourNodeQuadUP::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 
 {
 

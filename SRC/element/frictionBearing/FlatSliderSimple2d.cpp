@@ -713,7 +713,7 @@ int FlatSliderSimple2d::recvSelf(int commitTag, Channel &rChannel,
 
 
 int FlatSliderSimple2d::displaySelf(Renderer &theViewer,
-    int displayMode, float fact)
+				    int displayMode, float fact, const char **modes, int numMode)
 {
     int errCode = 0;
     

@@ -1113,7 +1113,7 @@ MVLEM::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 }
 
 // Display model
-int MVLEM::displaySelf(Renderer &theViewer, int displayMode, float fact)
+int MVLEM::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	// First get the end points of the beam based on
 	// the display factor (a measure of the distorted image)

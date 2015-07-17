@@ -900,7 +900,7 @@ Tri31::Print(OPS_Stream &s, int flag)
 }
 
 int
-Tri31::displaySelf(Renderer &theViewer, int displayMode, float fact)                                          
+Tri31::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 
     // first set the quantity to be displayed at the nodes;

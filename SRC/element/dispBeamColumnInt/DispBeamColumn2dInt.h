@@ -144,8 +144,7 @@ class DispBeamColumn2dInt : public Element
 
 		  &theBroker);
 
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);
-
+    int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode);
     void Print(OPS_Stream &s, int flag =0);
 
 

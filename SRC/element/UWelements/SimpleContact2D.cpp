@@ -756,7 +756,7 @@ SimpleContact2D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &
 
 
 int
-SimpleContact2D::displaySelf(Renderer &theViewer, int displayMode, float fact)
+SimpleContact2D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   return 0;
 }

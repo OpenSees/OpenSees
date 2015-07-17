@@ -550,7 +550,7 @@ Quad4FiberOverlay::getResponse(int responseID, Information &eleInfo)
 }
 
 int
-Quad4FiberOverlay::displaySelf(Renderer &theViewer, int displayMode, float fact)
+Quad4FiberOverlay::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	///////////////////NEEDS TO BE CHECKED/////////////////////
 

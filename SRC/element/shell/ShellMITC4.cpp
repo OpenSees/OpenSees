@@ -2030,7 +2030,7 @@ int  ShellMITC4::recvSelf (int commitTag,
 //**************************************************************************
 
 int
-ShellMITC4::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ShellMITC4::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     // first determine the end points of the quad based on
     // the display factor (a measure of the distorted image)

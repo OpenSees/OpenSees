@@ -855,3 +855,9 @@ TFP_Bearing2d::getResponse(int responseID, Information &eleInfo)
   }
 }
 
+
+int 
+TFP_Bearing2d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
+{
+  return 0;
+}

@@ -37,15 +37,12 @@
 #ifndef Element_h
 #define Element_h
 
-#include <ID.h>
-
 #include <DomainComponent.h>
+#include <ID.h>
 
 class Matrix;
 class Vector;
-class Renderer;
 class Info;
-class Information;
 class Response;
 class ElementalLoad;
 class Node;
@@ -95,6 +92,8 @@ class Element : public DomainComponent
     virtual int getResponse(int responseID, Information &eleInformation);
     virtual int getResponseSensitivity(int responseID, int gradIndex,
 				       Information &eleInformation);
+
+    virtual int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
 
 // AddingSensitivity:BEGIN //////////////////////////////////////////
     virtual int addInertiaLoadSensitivityToUnbalance(const Vector &accel, bool tag);

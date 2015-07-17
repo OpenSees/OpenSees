@@ -913,7 +913,7 @@ TrussSection::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &the
 
 
 int
-TrussSection::displaySelf(Renderer &theViewer, int displayMode, float fact)
+TrussSection::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **mode, int numMode)
 {
     // ensure setDomain() worked
     if (L == 0.0)
@@ -967,9 +967,9 @@ TrussSection::displaySelf(Renderer &theViewer, int displayMode, float fact)
       }
       
       if (displayMode == 2) // use the strain as the drawing measure
-	return theViewer.drawLine(v1, v2, (float)strain, (float)strain);	
+	return theViewer.drawLine(v1, v2, (float)strain, (float)strain, this->getTag());	
       else { // otherwise use the axial force as measure
-	return theViewer.drawLine(v1,v2, (float)force, (float)force);
+	return theViewer.drawLine(v1,v2, (float)force, (float)force, this->getTag());
       }
     } else if (displayMode < 0) {
       int mode = displayMode  *  -1;

@@ -1131,7 +1131,7 @@ SimpleContact3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &
 
 
 int
-SimpleContact3D::displaySelf(Renderer &theViewer, int displayMode, float fact)
+SimpleContact3D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 #ifdef DEBUG
         opserr << "SimpleContact3D::displaySelf(Renderer &theViewer, int displayMode, float fact)" << endln;

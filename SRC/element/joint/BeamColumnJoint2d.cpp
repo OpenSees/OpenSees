@@ -1178,7 +1178,7 @@ BeamColumnJoint2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
 }
 
 int
-BeamColumnJoint2d::displaySelf(Renderer &theViewer, int displayMode, float fact)
+BeamColumnJoint2d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	const Vector &node1Crd = nodePtr[0]->getCrds();
 	const Vector &node2Crd = nodePtr[1]->getCrds();	

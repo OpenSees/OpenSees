@@ -486,7 +486,7 @@ ZeroLengthSection::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
 }
 
 int
-ZeroLengthSection::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ZeroLengthSection::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     // ensure setDomain() worked
     if (theNodes[0] == 0 || theNodes[1] == 0)

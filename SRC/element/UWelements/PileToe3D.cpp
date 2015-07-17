@@ -503,7 +503,7 @@ PileToe3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBro
 
 
 int
-PileToe3D::displaySelf(Renderer &theViewer, int displayMode, float fact)
+PileToe3D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   return 0;
 }

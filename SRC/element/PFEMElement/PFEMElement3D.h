@@ -78,6 +78,7 @@ public:
 
     // DomainComponent
     void setDomain(Domain *theDomain); 
+    int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
 
     // TaggedObject
     void Print(OPS_Stream &s, int flag =0);

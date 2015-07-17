@@ -2118,7 +2118,7 @@ int  ShellDKGQ::recvSelf (int commitTag,
 //**************************************************************************
 
 int
-ShellDKGQ::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ShellDKGQ::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 
     // first determine the end points of the quad based on

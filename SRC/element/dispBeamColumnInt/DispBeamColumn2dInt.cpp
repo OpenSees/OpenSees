@@ -1876,7 +1876,7 @@ DispBeamColumn2dInt::Print(OPS_Stream &s, int flag)
 
 int
 
-DispBeamColumn2dInt::displaySelf(Renderer &theViewer, int displayMode, float fact)
+DispBeamColumn2dInt::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 
 {
 

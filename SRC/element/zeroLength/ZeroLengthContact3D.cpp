@@ -437,7 +437,7 @@ ZeroLengthContact3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBrok
 
 
 int
-ZeroLengthContact3D::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ZeroLengthContact3D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 { // nothing to display
     return 0;
 }

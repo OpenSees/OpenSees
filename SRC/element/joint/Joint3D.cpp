@@ -518,7 +518,7 @@ Joint3D::getResistingForceIncInertia()
 }
 
 
-int Joint3D::displaySelf(Renderer &theViewer, int displayMode, float fact)
+int Joint3D::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	// first determine the four corner points of the element based on
 	// the display factor (a measure of the distorted image)

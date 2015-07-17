@@ -467,7 +467,7 @@ AC3D8HexWithSensitivity::recvSelf (int commitTag, Channel &theChannel,
 }
 
 int 
-AC3D8HexWithSensitivity::displaySelf (Renderer &theViewer, int displayMode, float fact)
+AC3D8HexWithSensitivity::displaySelf (Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   int error  = 0;
   // Not implemtented yet

@@ -647,7 +647,7 @@ int GenericClient::recvSelf(int commitTag, Channel &rChannel,
 
 
 int GenericClient::displaySelf(Renderer &theViewer,
-    int displayMode, float fact)
+			       int displayMode, float fact, const char **modes, int numMode)
 {
     int rValue = 0, i, j;
     

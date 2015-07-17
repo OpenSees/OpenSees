@@ -473,7 +473,7 @@ QuadBeamEmbedContact::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBro
 }
 
 int 
-QuadBeamEmbedContact::displaySelf(Renderer &theViewer, int displayMode, float fact)
+QuadBeamEmbedContact::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	return 0;
 }

@@ -1379,7 +1379,7 @@ int  Brick::recvSelf (int commitTag,
 //**************************************************************************
 
 int
-Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
+Brick::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
     const Vector &end1Crd = nodePointers[0]->getCrds();
     const Vector &end2Crd = nodePointers[1]->getCrds();	
@@ -1450,7 +1450,7 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
 	values(7) = stress8(index);
       }
 
-      error = theViewer.drawCube(coords, values);
+      error = theViewer.drawCube(coords, values, this->getTag());
 
     } else {
 
@@ -1478,7 +1478,7 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
 	  coords(7,i) = end4Crd(i) + eigen8(i,mode-1)*fact;
 	}
 
-	error = theViewer.drawCube(coords, values);
+	error = theViewer.drawCube(coords, values, this->getTag());
 
       } else {
 	values.Zero();
@@ -1493,7 +1493,7 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact)
 	  coords(7,i) = end8Crd(i); 
 	}
 	
-	error = theViewer.drawCube(coords, values);
+	error = theViewer.drawCube(coords, values, this->getTag());
       }
     }
 

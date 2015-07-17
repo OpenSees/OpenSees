@@ -2116,42 +2116,36 @@ ForceBeamColumn2d::setSectionPointers(int numSec, SectionForceDeformation **secP
 }
 
 int
-ForceBeamColumn2d::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ForceBeamColumn2d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes)
 {
-  // first determine the end points of the beam based on
-  // the display factor (a measure of the distorted image)
-  const Vector &end1Crd = theNodes[0]->getCrds();
-  const Vector &end2Crd = theNodes[1]->getCrds();	
-
   static Vector v1(3);
   static Vector v2(3);
 
   if (displayMode >= 0) {
-    const Vector &end1Disp = theNodes[0]->getDisp();
-    const Vector &end2Disp = theNodes[1]->getDisp();
-    
-    for (int i = 0; i < 2; i++) {
-      v1(i) = end1Crd(i) + end1Disp(i)*fact;
-      v2(i) = end2Crd(i) + end2Disp(i)*fact;    
-    }
+
+    theNodes[0]->getDisplayCrds(v1, fact);
+    theNodes[1]->getDisplayCrds(v2, fact);
+
   } else {
+
+    theNodes[0]->getDisplayCrds(v1, 0.);
+    theNodes[1]->getDisplayCrds(v2, 0.);
+
+    // add eigenvector values
     int mode = displayMode  *  -1;
     const Matrix &eigen1 = theNodes[0]->getEigenvectors();
     const Matrix &eigen2 = theNodes[1]->getEigenvectors();
     if (eigen1.noCols() >= mode) {
       for (int i = 0; i < 2; i++) {
-	v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
+	v1(i) += eigen1(i,mode-1)*fact;
+	v2(i) += eigen2(i,mode-1)*fact;    
       }    
-    } else {
-      for (int i = 0; i < 2; i++) {
-	v1(i) = end1Crd(i);
-	v2(i) = end2Crd(i);
-      }    
-    }
+    } 
   }
+
+
   
-  return theViewer.drawLine (v1, v2, 1.0, 1.0);
+  return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*
@@ -2178,7 +2172,6 @@ ForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
 
     theResponse =  new ElementResponse(this, 1, theVector);
   
-  
   // local force -
   } else if (strcmp(argv[0],"localForce") == 0 || strcmp(argv[0],"localForces") == 0) {
 
@@ -2190,7 +2183,6 @@ ForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.tag("ResponseType","M_2");
 
     theResponse =  new ElementResponse(this, 2, theVector);
-  
 
   // basic force -
   } else if (strcmp(argv[0],"basicForce") == 0 || strcmp(argv[0],"basicForces") == 0) {
@@ -2268,11 +2260,17 @@ ForceBeamColumn2d::setResponse(const char **argv, int argc, OPS_Stream &output)
   else if (strcmp(argv[0],"integrationWeights") == 0)
     theResponse = new ElementResponse(this, 11, Vector(numSections));
 
-  else if (strcmp(argv[0],"RayleighForces") == 0 || strcmp(argv[0],"rayleighForces") == 0) {
+  else if (strcmp(argv[0],"RayleighForces") == 0 || strcmp(argv[0],"rayleighForces") ==0 || strcmp(argv[0],"dampingForces") == 0) { 
 
-    theResponse =  new ElementResponse(this, 12, theVector);
+    output.tag("ResponseType","Px_1");
+    output.tag("ResponseType","Py_1");
+    output.tag("ResponseType","Mz_1");
+    output.tag("ResponseType","Px_2");
+    output.tag("ResponseType","Py_2");
+    output.tag("ResponseType","Mz_2");
 
-
+    theResponse =  new ElementResponse(this, 13, theVector);
+  
     // section response -
   } else if (strstr(argv[0],"sectionX") != 0) {
     if (argc > 2) {
@@ -2383,7 +2381,7 @@ ForceBeamColumn2d::getResponse(int responseID, Information &eleInfo)
   if (responseID == 1)
     return eleInfo.setVector(this->getResistingForce());
 
-  else if (responseID == 12)
+  else if (responseID == 13)
     return eleInfo.setVector(this->getRayleighDampingForces());
   
   else if (responseID == 2) {

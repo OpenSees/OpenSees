@@ -39,9 +39,9 @@ class Pressure_Constraint;
 
 class PFEMElement2DCompressible : public Element
 {
-public:
-    PFEMElement2DCompressible();
-    PFEMElement2DCompressible(int tag, int nd1, int nd2, int nd3,
+ public:
+  PFEMElement2DCompressible();
+  PFEMElement2DCompressible(int tag, int nd1, int nd2, int nd3,
                               double r, double m, double b1, double b2, 
                               double thk=1.0, double ka=1e6);
     
@@ -82,7 +82,7 @@ public:
 
     // TaggedObject
     void Print(OPS_Stream &s, int flag =0);
-    int displaySelf(Renderer &theViewer, int displayMode, float fact);
+    int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
 
 protected:
     

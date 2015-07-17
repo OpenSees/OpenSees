@@ -951,7 +951,7 @@ BeamContact2Dp::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
 }
 
 int
-BeamContact2Dp::displaySelf(Renderer &theViewer, int displayMode, float fact)
+BeamContact2Dp::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
 	return 0;
 }
