@@ -911,6 +911,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "modalDamping", &modalDamping, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "modalDampingQ", &modalDampingQ, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "setElementRayleighDampingFactors", 
 		      &setElementRayleighDampingFactors, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
@@ -924,6 +926,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "quit", &OpenSeesExit, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+
+
     Tcl_CreateCommand(interp, "getNP", &getNP, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "getPID", &getPID, 
@@ -992,6 +996,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "numFact", &numFact, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "numIter", &numIter, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+    Tcl_CreateCommand(interp, "systemSize", &systemSize, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "version", &version, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
@@ -1411,16 +1417,9 @@ resetModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
 	theDomain.revertToStart();
 
-
-// AddingSensitivity:BEGIN ////////////////////////////////////
-	// (Calling domainChanged() don't work because the ::getX()
-	// of the linear SOE is being called without the X having
-	// been instantitated.)
 	if (theTransientIntegrator != 0) {
 		theTransientIntegrator->revertToStart();
 	}
-// AddingSensitivity:END //////////////////////////////////////
-
 	
 	return TCL_OK;
 }
@@ -7991,7 +7990,6 @@ rayleighDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **
 int 
 modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-  /*
   if (argc < 2) { 
     opserr << "WARNING modalDamping ?factor - not enough arguments to command\n";
     return TCL_ERROR;
@@ -8005,20 +8003,42 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
     return TCL_ERROR;	        
   }        
-  if (theTransientIntegrator != 0) {
-    Vector modalDampingValues(numEigen);
-    modalDampingValues = factor;
-    for (int i=0; i<numEigen; i++)
-      modalDampingValues[i] = factor;
-    opserr << "factor: " << factor << endln;
+  Vector modalDampingValues(numEigen);
+  for (int i=0; i<numEigen; i++)
+    modalDampingValues[i] = factor;
 
-    theTransientIntegrator->setEigenSOE(theEigenSOE);
-    theTransientIntegrator->setModalDampingFactors(modalDampingValues);
-    opserr << "modalDamping: numEigen: " << numEigen << " factors: " << modalDampingValues;
-  }
-  */
+  theDomain.setModalDampingFactors(&modalDampingValues, true);
+
   return TCL_OK;
 }
+
+int 
+modalDampingQ(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  if (argc < 2) { 
+    opserr << "WARNING modalDamping ?factor - not enough arguments to command\n";
+    return TCL_ERROR;
+  }
+  if (numEigen == 0 || theEigenSOE == 0) {
+    opserr << "WARINING - modalDmping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+  }
+  double factor;
+  //  double numModes;
+  if (Tcl_GetDouble(interp, argv[1], &factor) != TCL_OK) {
+    opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+    return TCL_ERROR;	        
+  }        
+  Vector modalDampingValues(numEigen);
+    for (int i=0; i<numEigen; i++)
+    modalDampingValues[i] = factor;
+
+  theDomain.setModalDampingFactors(&modalDampingValues, false);
+
+  return TCL_OK;
+}
+
+
+
 
 
 int 
@@ -9000,6 +9020,23 @@ numFact(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     return TCL_ERROR;
 
   sprintf(buffer, "%d", theAlgorithm->getNumFactorizations());
+  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
+  return TCL_OK;
+}
+
+int
+systemSize(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  char buffer[20];
+
+  if (theSOE == 0) {
+    sprintf(buffer, "NO SYSTEM SET");
+    return TCL_OK;
+  }
+
+
+  sprintf(buffer, "%d", theSOE->getNumEqn());
   Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
   return TCL_OK;

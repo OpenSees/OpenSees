@@ -233,6 +233,9 @@ rayleighDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **
 int 
 modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
+int 
+modalDampingQ(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
 
 int 
 setElementRayleighDampingFactors(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -285,6 +288,9 @@ numFact(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
 numIter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+systemSize(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 
 
