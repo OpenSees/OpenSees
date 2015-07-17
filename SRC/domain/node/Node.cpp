@@ -1648,7 +1648,7 @@ Node::displaySelf(Renderer &theRenderer, int displayMode, float fact)
   if (displayMode == 0)
     return 0;
 
-  const Vector &theDisp = this->getDisp();
+//  const Vector &theDisp = this->getDisp();
   static Vector position(3);
 
   this->getDisplayCrds(position, fact);
