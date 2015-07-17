@@ -293,8 +293,8 @@ void SteelMPF::determineTrialState(double dStrain)
 				double sigy = -sigyieldn;
 				b = bn;
 
-				if (abs(er) > emaxold) {
-					emax = abs(er);
+				if (fabs(er) > emaxold) {
+					emax = fabs(er);
 				} else {
 					emax = emaxold;
 				}
@@ -320,7 +320,7 @@ void SteelMPF::determineTrialState(double dStrain)
 					em = erold;
 				}
 
-				double ksi = abs((em - e0) / eyieldp);
+				double ksi = fabs((em - e0) / eyieldp);
 				R = R0 - a1*ksi / (a2 + ksi);
 
 			} else {
@@ -343,8 +343,8 @@ void SteelMPF::determineTrialState(double dStrain)
 				double sigy = sigyieldp;
 				b = bp;
 
-				if (abs(er) > emaxold) {
-					emax = abs(er);
+				if (fabs(er) > emaxold) {
+					emax = fabs(er);
 				} else {
 					emax = emaxold;
 				}
@@ -372,7 +372,7 @@ void SteelMPF::determineTrialState(double dStrain)
 					em = erold;
 				}
 
-				double ksi = abs((em - e0) / eyieldn);
+				double ksi = fabs((em - e0) / eyieldn);
 				R = R0 - a1*ksi / (a2 + ksi);
 			}
 
