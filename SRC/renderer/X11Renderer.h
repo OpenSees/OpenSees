@@ -65,18 +65,18 @@ class X11Renderer : public Renderer
     virtual int startImage(void);
     virtual int doneImage(void);
 
-    virtual int drawPoint(const Vector &, float V1, int width = 1);
-    virtual int drawPoint(const Vector &, const Vector &rgb1, int width = 1);
+    virtual int drawPoint(const Vector &, float V1, int tag = 0, int mode = 0, int width = 1);
+    virtual int drawPoint(const Vector &, const Vector &rgb1, int tag = 0, int mode = 0, int width = 1);
     
     virtual int drawLine(const Vector &, const Vector &, 
-			 float V1, float V2, int width = 1, int style = 1);
+			 float V1, float V2, int tag = 0, int mode = 0, int width = 1, int style = 1);
 
     virtual int drawLine(const Vector &end1, const Vector &end2, 
 			 const Vector &rgb1, const Vector &rgb2,
-			 int width = 1, int style = 1);
+			 int tag = 0, int mode = 0, int width = 1, int style = 1);
     
-    virtual int drawPolygon(const Matrix &points, const Vector &values);
-    virtual int drawPolygon(const Matrix &points, const Matrix &rgbValues);
+    virtual int drawPolygon(const Matrix &points, const Vector &values, int tag = 0, int mode = 0);
+    virtual int drawPolygon(const Matrix &points, const Matrix &rgbValues, int tag = 0, int mode = 0);
 
     // 
     // the following are for setting up the vieing system

@@ -184,7 +184,7 @@ X11Renderer::doneImage(void)
 
 
 int 
-X11Renderer::drawPoint(const Vector &pos1, float V1, int numPixels)
+X11Renderer::drawPoint(const Vector &pos1, float V1, int tag, int mode, int numPixels)
 {
     float r, g, b;
     r = theMap->getRed(V1);
@@ -201,7 +201,7 @@ X11Renderer::drawPoint(const Vector &pos1, float V1, int numPixels)
 
 
 int 
-X11Renderer::drawPoint(const Vector &pos1, const Vector &rgb, int numPixels)
+X11Renderer::drawPoint(const Vector &pos1, const Vector &rgb, int tag, int mode, int numPixels)
 {
     float r, g, b;
     r = rgb(0);
@@ -221,7 +221,7 @@ X11Renderer::drawPoint(const Vector &pos1, const Vector &rgb, int numPixels)
 
 int 
 X11Renderer::drawLine(const Vector &pos1, const Vector &pos2, 
-		       float V1, float V2, int width, int style)
+		      float V1, float V2, int tag, int mode, int width, int style)
 {
   FACE *theFace = new FACE();	
   
@@ -301,7 +301,7 @@ X11Renderer::drawLine(const Vector &pos1, const Vector &pos2,
 int 
 X11Renderer::drawLine(const Vector &pos1, const Vector &pos2, 
 		      const Vector &rgb1, const Vector &rgb2,
-		      int width, int style)
+		      int tag, int mode, int width, int style)
 {
   FACE *theFace = new FACE();	
   
@@ -383,7 +383,7 @@ X11Renderer::drawLine(const Vector &pos1, const Vector &pos2,
 
 
 int 
-X11Renderer::drawPolygon(const Matrix &pos, const Vector &data)
+X11Renderer::drawPolygon(const Matrix &pos, const Vector &data, int tag, int mode)
 
 {
 #ifdef _G3DEBUG
@@ -442,7 +442,7 @@ X11Renderer::drawPolygon(const Matrix &pos, const Vector &data)
 
 
 int 
-X11Renderer::drawPolygon(const Matrix &pos, const Matrix &data)
+X11Renderer::drawPolygon(const Matrix &pos, const Matrix &data, int tag, int mode)
 
 {
 #ifdef _G3DEBUG

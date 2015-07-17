@@ -430,7 +430,7 @@ OpenGLRenderer::doneImage(void)
 }
 
 int 
-OpenGLRenderer::drawPoint(const Vector &pos1, float V1, int numPixels)
+OpenGLRenderer::drawPoint(const Vector &pos1, float V1, int tag, int mode, int numPixels)
 {
     glPointSize(numPixels);
 
@@ -453,7 +453,7 @@ OpenGLRenderer::drawPoint(const Vector &pos1, float V1, int numPixels)
 
 
 int 
-OpenGLRenderer::drawPoint(const Vector &pos1, const Vector &rgb, int numPixels)
+OpenGLRenderer::drawPoint(const Vector &pos1, const Vector &rgb, int tag, int mode, int numPixels)
 {
     glPointSize(numPixels);
 
@@ -480,7 +480,7 @@ OpenGLRenderer::drawPoint(const Vector &pos1, const Vector &rgb, int numPixels)
 
 int 
 OpenGLRenderer::drawLine(const Vector &pos1, const Vector &pos2, 
-			 float V1, float V2, int width, int style)
+			 float V1, float V2, int tag, int mode, int width, int style)
 {
     // open gl does a divide by zero error if points are the same - so check
     if (pos1(0) == pos2(0) && pos1(1) == pos2(1) && pos1(2) == pos2(2))
@@ -520,7 +520,7 @@ OpenGLRenderer::drawLine(const Vector &pos1, const Vector &pos2,
 int 
 OpenGLRenderer::drawLine(const Vector &end1, const Vector &end2, 
 			 const Vector &rgb1, const Vector &rgb2,
-			 int width, int style)
+			 int tag, int mode, int width, int style)
 {
     // open gl does a divide by zero error if points are the same
     if (end1(0) == end2(0) && end1(1) == end2(1) && end1(2) == end2(2))
@@ -560,8 +560,7 @@ OpenGLRenderer::drawLine(const Vector &end1, const Vector &end2,
 
 
 int 
-OpenGLRenderer::drawPolygon(const Matrix &pos, const Vector &data)
-
+OpenGLRenderer::drawPolygon(const Matrix &pos, const Vector &data, int tag, int mode)
 {
 #ifdef _G3DEBUG
   if (pos.noCols() != 3) {
@@ -601,7 +600,7 @@ OpenGLRenderer::drawPolygon(const Matrix &pos, const Vector &data)
 
 
 int 
-OpenGLRenderer::drawPolygon(const Matrix &pos, const Matrix &rgbData)
+OpenGLRenderer::drawPolygon(const Matrix &pos, const Matrix &rgbData, int tag, int mode)
 
 {
 #ifdef _G3DEBUG
