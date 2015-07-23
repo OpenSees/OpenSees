@@ -286,8 +286,9 @@
 #define SEC_TAG_FiberSection2dInt		25
 #define SEC_TAG_FiberSection2dThermal		26
 #define SEC_TAG_LayeredShellFiberSection        27
-
-
+#define SEC_TAG_ElasticWarpingShear2d           28
+#define SEC_TAG_DoubleMembranePlateFiberSection 29
+#define SEC_TAG_NDFiberSectionWarping2d         30
 
 #define SEC_TAG_McftSection2dfiber 7601
 
@@ -495,7 +496,7 @@
 #define ELE_TAG_MyTruss    	        18
 #define ELE_TAG_ZeroLength	        19
 #define ELE_TAG_ZeroLengthSection	20
- #define ELE_TAG_ZeroLengthND	        21
+#define ELE_TAG_ZeroLengthND	        21
 #define ELE_TAG_ZeroLengthContact2D	22
 #define ELE_TAG_ZeroLengthContact3D	23
 #define ELE_TAG_ZeroLengthContactNTS2D	24
@@ -539,6 +540,7 @@
 #define ELE_TAG_DispBeamColumn2d        62
 #define ELE_TAG_TimoshenkoBeamColumn2d  63
 #define ELE_TAG_DispBeamColumn3d        64
+#define ELE_TAG_DispBeamColumnWarping3d        641
 #define ELE_TAG_HingedBeam2d            65
 #define ELE_TAG_HingedBeam3d            66
 #define ELE_TAG_TwoPointHingedBeam2d    67
@@ -548,8 +550,10 @@
 #define ELE_TAG_BeamColumnJoint2d       71
 #define ELE_TAG_BeamColumnJoint3d       72
 #define ELE_TAG_ForceBeamColumn2d       73
+#define ELE_TAG_ForceBeamColumnWarping2d 731
 #define ELE_TAG_ForceBeamColumn3d       74
 #define ELE_TAG_ElasticForceBeamColumn2d 75
+#define ELE_TAG_ElasticForceBeamColumnWarping2d 751
 #define ELE_TAG_ElasticForceBeamColumn3d 76
 #define ELE_TAG_ForceBeamColumnCBDI2d   77
 #define ELE_TAG_ForceBeamColumnCBDI3d   78
@@ -687,6 +691,7 @@
 #define CRDTR_TAG_PDeltaCrdTransf2d 2
 #define CRDTR_TAG_ModerateDispCrdTransf2d 8
 #define CRDTR_TAG_CorotCrdTransf2d  3
+#define CRDTR_TAG_CorotCrdTransfWarping2d 31
 #define CRDTR_TAG_LinearCrdTransf3d 4
 #define CRDTR_TAG_PDeltaCrdTransf3d 5
 #define CRDTR_TAG_ModerateDispCrdTransf3d 9
@@ -957,4 +962,3 @@
 #define CHANNEL_TAGS_FileDatastore	  1
 
 #endif
-
