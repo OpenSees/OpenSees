@@ -981,6 +981,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/pattern/EarthquakePattern.o \
 	$(FE)/domain/pattern/MultiSupportPattern.o \
 	$(FE)/domain/pattern/UniformExcitation.o \
+	$(FE)/domain/pattern/UniformRotationalExcitation.o \
 	$(FE)/domain/pattern/LoadPatternIter.o \
 	$(FE)/domain/pattern/TimeSeries.o \
 	$(FE)/domain/pattern/LinearSeries.o \

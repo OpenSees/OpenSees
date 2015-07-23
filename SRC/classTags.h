@@ -455,6 +455,7 @@
 #define PATTERN_TAG_FirePattern           3
 #define PATTERN_TAG_PBowlLoading	  4
 #define PATTERN_TAG_DRMLoadPattern        5
+#define PATTERN_TAG_UniformRotationalExcitation     6
 
 #define LOAD_TAG_Beam2dUniformLoad        3
 #define LOAD_TAG_Beam2dPointLoad          4

@@ -54,6 +54,7 @@
 #include <PathTimeSeries.h>
 #include <PathSeries.h>
 #include <UniformExcitation.h>
+#include <UniformRotationalExcitation.h>
 #include <MultiSupportPattern.h>
 #include <GroundMotion.h>
 #include <GroundMotionRecord.h>
@@ -220,144 +221,288 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if (strcmp(argv[1],"UniformExcitation") == 0) {
 
-  int dir;
-
-  if (Tcl_GetInt(interp, argv[3], &dir) != TCL_OK) {
-    opserr << "WARNING invalid patternID: pattern type " << argv[2]
-	<< "<type args>\n";
-    return TCL_ERROR;
-  }
-
-  dir--; // subtract 1 for c indexing
-
-  TimeSeries *accelSeries = 0;
-  TimeSeries *velSeries = 0;
-  TimeSeries *dispSeries = 0;
-  TimeSeriesIntegrator *seriesIntegrator = 0;
-  double vel0 = 0.0;
-  double fact = 1.0;
-
-  int currentArg = 4;
-  bool doneSeries = false;
-  while (currentArg < argc-1 && doneSeries == false) {
-
-  if ((strcmp(argv[currentArg],"-vel0") == 0) ||
-      (strcmp(argv[currentArg],"-initialVel") == 0)) {
-
-    currentArg++;
-    if ((currentArg < argc) &&
-        (Tcl_GetDouble(interp, argv[currentArg], &vel0) != TCL_OK)) {
-      opserr << "WARNING invalid vel0: pattern type UniformExciation\n";
+    int dir;
+    
+    if (Tcl_GetInt(interp, argv[3], &dir) != TCL_OK) {
+      opserr << "WARNING invalid patternID: pattern type " << argv[2]
+	     << "<type args>\n";
       return TCL_ERROR;
     }
-
-    currentArg++;
-  }
-
-  else if ((strcmp(argv[currentArg],"-fact") == 0) || (strcmp(argv[currentArg],"-factor") == 0)) {
-
-    currentArg++;
-    if ((currentArg < argc) &&
-        (Tcl_GetDouble(interp, argv[currentArg], &fact) != TCL_OK)) {
-      opserr << "WARNING invalid fact: pattern type UniformExciation\n";
-      return TCL_ERROR;
-    }
-
-    currentArg++;
-  }
-
-
-  else if ((strcmp(argv[currentArg],"-accel") == 0) ||
-     (strcmp(argv[currentArg],"-acceleration") == 0)) {
-
-    currentArg++;
-    accelSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
-
-    if (accelSeries == 0) {
-      opserr << "WARNING invalid accel series: " << argv[currentArg];
-      opserr << " pattern UniformExcitation -accel {series}\n";
-      return TCL_ERROR;
-    }
-    currentArg++;
-
-  } else if ((strcmp(argv[currentArg],"-vel") == 0) ||
-       (strcmp(argv[currentArg],"-velocity") == 0)) {
-
-    currentArg++;
-    velSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
-
-    if (velSeries == 0) {
-      opserr << "WARNING invalid vel series: " << argv[currentArg];
-      opserr << " pattern UniformExcitation -vel {series}\n";
-      return TCL_ERROR;
-    }
-    currentArg++;
-
-  } else if ((strcmp(argv[currentArg],"-disp") == 0) ||
-       (strcmp(argv[currentArg],"-displacement") == 0)) {
-
-    currentArg++;
-    dispSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
-
-    if (dispSeries == 0) {
-      opserr << "WARNING invalid disp series: " << argv[currentArg];
-      opserr << " pattern UniformExcitation -disp {series}\n";
-      return TCL_ERROR;
-    }
-    currentArg++;
-
-  } else if ((strcmp(argv[currentArg],"-int") == 0) ||
-       (strcmp(argv[currentArg],"-integrator") == 0)) {
-
-    currentArg++;
-    seriesIntegrator = TclSeriesIntegratorCommand(clientData, interp,
-              argv[currentArg]);
-    if (seriesIntegrator == 0) {
-      opserr << "WARNING invalid series integrator: " << argv[currentArg];
-      opserr << " - pattern UniformExcitation -int {Series Integrator}\n";
-      return TCL_ERROR;
-    }
-    currentArg++;
-  }
-  
-  else
-    doneSeries = true;
-      }
-
-      if (dispSeries == 0 && velSeries == 0 && accelSeries == 0) {
-	opserr << "WARNING invalid series, want - pattern UniformExcitation";
-	opserr << "-disp {dispSeries} -vel {velSeries} -accel {accelSeries} ";
-	opserr << "-int {Series Integrator}\n";
-	return TCL_ERROR;
+    
+    dir--; // subtract 1 for c indexing
+    
+    TimeSeries *accelSeries = 0;
+    TimeSeries *velSeries = 0;
+    TimeSeries *dispSeries = 0;
+    TimeSeriesIntegrator *seriesIntegrator = 0;
+    double vel0 = 0.0;
+    double fact = 1.0;
+    
+    int currentArg = 4;
+    bool doneSeries = false;
+    while (currentArg < argc-1 && doneSeries == false) {
+      
+      if ((strcmp(argv[currentArg],"-vel0") == 0) ||
+	  (strcmp(argv[currentArg],"-initialVel") == 0)) {
+	
+	currentArg++;
+	if ((currentArg < argc) &&
+	    (Tcl_GetDouble(interp, argv[currentArg], &vel0) != TCL_OK)) {
+	  opserr << "WARNING invalid vel0: pattern type UniformExciation\n";
+	  return TCL_ERROR;
+	}
+	
+	currentArg++;
       }
       
-      GroundMotion *theMotion = new GroundMotion(dispSeries, velSeries,
-						 accelSeries, seriesIntegrator);
-
-      if (theMotion == 0) {
-    opserr << "WARNING ran out of memory creating ground motion - pattern UniformExcitation ";
-    opserr << patternID << endln;
-
-    return TCL_ERROR;
+      else if ((strcmp(argv[currentArg],"-fact") == 0) || (strcmp(argv[currentArg],"-factor") == 0)) {
+	
+	currentArg++;
+	if ((currentArg < argc) &&
+	    (Tcl_GetDouble(interp, argv[currentArg], &fact) != TCL_OK)) {
+	  opserr << "WARNING invalid fact: pattern type UniformExciation\n";
+	  return TCL_ERROR;
+	}
+	
+	currentArg++;
       }
-
-  // create the UniformExcitation Pattern
-      thePattern = new UniformExcitation(*theMotion, dir, patternID, vel0, fact);
-
-  if (thePattern == 0) {
+      
+      
+      else if ((strcmp(argv[currentArg],"-accel") == 0) ||
+	       (strcmp(argv[currentArg],"-acceleration") == 0)) {
+	
+	currentArg++;
+	accelSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
+	
+	if (accelSeries == 0) {
+	  opserr << "WARNING invalid accel series: " << argv[currentArg];
+	  opserr << " pattern UniformExcitation -accel {series}\n";
+	  return TCL_ERROR;
+	}
+	currentArg++;
+	
+      } else if ((strcmp(argv[currentArg],"-vel") == 0) ||
+		 (strcmp(argv[currentArg],"-velocity") == 0)) {
+	
+	currentArg++;
+	velSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
+	
+	if (velSeries == 0) {
+	  opserr << "WARNING invalid vel series: " << argv[currentArg];
+	  opserr << " pattern UniformExcitation -vel {series}\n";
+	  return TCL_ERROR;
+	}
+	currentArg++;
+	
+      } else if ((strcmp(argv[currentArg],"-disp") == 0) ||
+		 (strcmp(argv[currentArg],"-displacement") == 0)) {
+	
+	currentArg++;
+	dispSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
+	
+	if (dispSeries == 0) {
+	  opserr << "WARNING invalid disp series: " << argv[currentArg];
+	  opserr << " pattern UniformExcitation -disp {series}\n";
+	  return TCL_ERROR;
+	}
+	currentArg++;
+	
+      } else if ((strcmp(argv[currentArg],"-int") == 0) ||
+		 (strcmp(argv[currentArg],"-integrator") == 0)) {
+	
+	currentArg++;
+	seriesIntegrator = TclSeriesIntegratorCommand(clientData, interp,
+						      argv[currentArg]);
+	if (seriesIntegrator == 0) {
+	  opserr << "WARNING invalid series integrator: " << argv[currentArg];
+	  opserr << " - pattern UniformExcitation -int {Series Integrator}\n";
+	  return TCL_ERROR;
+	}
+	currentArg++;
+      }
+      
+      else
+	doneSeries = true;
+    }
+    
+    if (dispSeries == 0 && velSeries == 0 && accelSeries == 0) {
+      opserr << "WARNING invalid series, want - pattern UniformExcitation";
+      opserr << "-disp {dispSeries} -vel {velSeries} -accel {accelSeries} ";
+      opserr << "-int {Series Integrator}\n";
+      return TCL_ERROR;
+    }
+    
+    GroundMotion *theMotion = new GroundMotion(dispSeries, velSeries,
+					       accelSeries, seriesIntegrator);
+    
+    if (theMotion == 0) {
+      opserr << "WARNING ran out of memory creating ground motion - pattern UniformExcitation ";
+      opserr << patternID << endln;
+      
+      return TCL_ERROR;
+    }
+    
+    // create the UniformExcitation Pattern
+    thePattern = new UniformExcitation(*theMotion, dir, patternID, vel0, fact);
+    
+    if (thePattern == 0) {
       opserr << "WARNING ran out of memory creating load pattern - pattern UniformExcitation ";
       opserr << patternID << endln;
-
+      
       // clean up memory allocated up to this point and return an error
       if (theMotion != 0)
-    delete theMotion;
-
+	delete theMotion;
+      
       return TCL_ERROR;
+    }
+
+    // Added by MHS to prevent call to Tcl_Eval at end of this function
+    commandEndMarker = currentArg;
   }
 
-  // Added by MHS to prevent call to Tcl_Eval at end of this function
-  commandEndMarker = currentArg;
+
+  else if (strcmp(argv[1],"UniformRotationalExcitation") == 0) {
+
+    int dir;
+    
+    if (Tcl_GetInt(interp, argv[3], &dir) != TCL_OK) {
+      opserr << "WARNING invalid patternID: pattern type " << argv[2]
+	     << "<type args>\n";
+      return TCL_ERROR;
+    }
+    
+    dir--; // subtract 1 for c indexing
+    
+    TimeSeries *accelSeries = 0;
+    TimeSeries *velSeries = 0;
+    TimeSeries *dispSeries = 0;
+    TimeSeriesIntegrator *seriesIntegrator = 0;
+    double vel0 = 0.0;
+    double fact = 1.0;
+    
+    int currentArg = 4;
+    bool doneSeries = false;
+    while (currentArg < argc-1 && doneSeries == false) {
+      
+      if ((strcmp(argv[currentArg],"-vel0") == 0) ||
+	  (strcmp(argv[currentArg],"-initialVel") == 0)) {
+	
+	currentArg++;
+	if ((currentArg < argc) &&
+	    (Tcl_GetDouble(interp, argv[currentArg], &vel0) != TCL_OK)) {
+	  opserr << "WARNING invalid vel0: pattern type UniformExciation\n";
+	  return TCL_ERROR;
+	}
+	
+	currentArg++;
+      }
+      
+      else if ((strcmp(argv[currentArg],"-fact") == 0) || (strcmp(argv[currentArg],"-factor") == 0)) {
+	
+	currentArg++;
+	if ((currentArg < argc) &&
+	    (Tcl_GetDouble(interp, argv[currentArg], &fact) != TCL_OK)) {
+	  opserr << "WARNING invalid fact: pattern type UniformExciation\n";
+	  return TCL_ERROR;
+	}
+	
+	currentArg++;
+      }
+      
+      
+      else if ((strcmp(argv[currentArg],"-accel") == 0) ||
+	       (strcmp(argv[currentArg],"-acceleration") == 0)) {
+	
+	currentArg++;
+	accelSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
+	
+	if (accelSeries == 0) {
+	  opserr << "WARNING invalid accel series: " << argv[currentArg];
+	  opserr << " pattern UniformExcitation -accel {series}\n";
+	  return TCL_ERROR;
+	}
+	currentArg++;
+	
+      } else if ((strcmp(argv[currentArg],"-vel") == 0) ||
+		 (strcmp(argv[currentArg],"-velocity") == 0)) {
+	
+	currentArg++;
+	velSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
+	
+	if (velSeries == 0) {
+	  opserr << "WARNING invalid vel series: " << argv[currentArg];
+	  opserr << " pattern UniformExcitation -vel {series}\n";
+	  return TCL_ERROR;
+	}
+	currentArg++;
+	
+      } else if ((strcmp(argv[currentArg],"-disp") == 0) ||
+		 (strcmp(argv[currentArg],"-displacement") == 0)) {
+	
+	currentArg++;
+	dispSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
+	
+	if (dispSeries == 0) {
+	  opserr << "WARNING invalid disp series: " << argv[currentArg];
+	  opserr << " pattern UniformExcitation -disp {series}\n";
+	  return TCL_ERROR;
+	}
+	currentArg++;
+	
+      } else if ((strcmp(argv[currentArg],"-int") == 0) ||
+		 (strcmp(argv[currentArg],"-integrator") == 0)) {
+	
+	currentArg++;
+	seriesIntegrator = TclSeriesIntegratorCommand(clientData, interp,
+						      argv[currentArg]);
+	if (seriesIntegrator == 0) {
+	  opserr << "WARNING invalid series integrator: " << argv[currentArg];
+	  opserr << " - pattern UniformExcitation -int {Series Integrator}\n";
+	  return TCL_ERROR;
+	}
+	currentArg++;
+      }
+      
+      else
+	doneSeries = true;
+    }
+    
+    if (dispSeries == 0 && velSeries == 0 && accelSeries == 0) {
+      opserr << "WARNING invalid series, want - pattern UniformExcitation";
+      opserr << "-disp {dispSeries} -vel {velSeries} -accel {accelSeries} ";
+      opserr << "-int {Series Integrator}\n";
+      return TCL_ERROR;
+    }
+    
+    GroundMotion *theMotion = new GroundMotion(dispSeries, velSeries,
+					       accelSeries, seriesIntegrator);
+    
+    if (theMotion == 0) {
+      opserr << "WARNING ran out of memory creating ground motion - pattern UniformExcitation ";
+      opserr << patternID << endln;
+      
+      return TCL_ERROR;
+    }
+    
+    // create the UniformExcitation Pattern
+    thePattern = new UniformRotationalExcitation(*theMotion, dir, patternID, vel0, fact);
+    
+    if (thePattern == 0) {
+      opserr << "WARNING ran out of memory creating load pattern - pattern UniformExcitation ";
+      opserr << patternID << endln;
+      
+      // clean up memory allocated up to this point and return an error
+      if (theMotion != 0)
+	delete theMotion;
+      
+      return TCL_ERROR;
+    }
+
+    // Added by MHS to prevent call to Tcl_Eval at end of this function
+    commandEndMarker = currentArg;
   }
+
+
 
   else if (strcmp(argv[1],"Uniform") == 0) {
 
