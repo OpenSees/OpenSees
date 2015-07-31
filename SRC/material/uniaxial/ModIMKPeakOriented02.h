@@ -1,4 +1,4 @@
-/* ****************************************************************** **
+ /* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                      
+                                                                     
 // $Revision: 1 $
 // $Date: 2011/02/01 12:35:01 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/ModIMKPeakOriented02.h,v $
@@ -27,7 +27,7 @@
 // Revision: A
 //
 //**********************************************************************
-// Adapted by: Filipe Ribeiro and Andre Barbosa, September 20th 2013
+// Adapted by: Filipe Ribeiro and Andre Barbosa, June 2015
 // Oregon State University, OR, USA
 //**********************************************************************
 //  
@@ -38,26 +38,38 @@
 #define ModIMKPeakOriented02_h
 
 #include <UniaxialMaterial.h>
+// Updated:Filipe Ribeiro and Andre Barbosa
 
 class ModIMKPeakOriented02 : public UniaxialMaterial
 {
   public:
-    ModIMKPeakOriented02(int tag, double Ke0, double AlfanPos, double AlfanNeg, double My_pos, double My_neg,			// Updated: Filipe Ribeiro and Andre Barbosa
-                       double Ls, double Ld, double La, double Lk, double Cs, double Cd, double Ca, double Ck,
-                       double ThetaPpos, double ThetaPneg, double ThetaPCpos, double ThetaPCneg,
-                       double ResfacPos, double ResfacNeg, double FracDispPos, double FracDispNeg,
-                       double DPos, double DNeg, double nFactor);		// Updated: Filipe Ribeiro and Andre Barbosa
-
-	ModIMKPeakOriented02(int tag, double Ke0, double AlfanPos, double AlfanNeg, double My_pos, double My_neg,			// Updated: Filipe Ribeiro and Andre Barbosa 
-					   double Ls, double Ld, double La, double Lk, double Cs, double Cd, double Ca, double Ck,
-					   double ThetaPpos, double ThetaPneg, double ThetaPCpos, double ThetaPCneg,
-					   double ResfacPos, double ResfacNeg, double FracDispPos, double FracDispNeg,
-					   double DPos, double DNeg);					   
-					   
-    ModIMKPeakOriented02();
-    ~ModIMKPeakOriented02();
-   
-    const char *getClassType(void) const {return "ModIMKPeakOriented02";};
+  ModIMKPeakOriented02(int tag, double Ke0, double AlfanPos, double AlfanNeg, double My_pos, double My_neg,
+		       double Ls, double Ld, double La, double Lk, double Cs, double Cd, double Ca, double Ck,
+		       double ThetaPpos, double ThetaPneg, double ThetaPCpos, double ThetaPCneg,
+		       double ResfacPos, double ResfacNeg, double FracDispPos, double FracDispNeg,
+		       double DPos, double DNeg, double C_Fp, double C_Fn, double nFactor);               
+  
+  ModIMKPeakOriented02(int tag, double Ke0, double AlfanPos, double AlfanNeg, double My_pos, double My_neg,  
+		       double Ls, double Ld, double La, double Lk, double Cs, double Cd, double Ca, double Ck,
+		       double ThetaPpos, double ThetaPneg, double ThetaPCpos, double ThetaPCneg,
+		       double ResfacPos, double ResfacNeg, double FracDispPos, double FracDispNeg,
+		       double DPos, double DNeg, double C_Fp, double C_Fn);          
+  
+  ModIMKPeakOriented02(int tag, double Ke0, double AlfanPos, double AlfanNeg, double My_pos, double My_neg,  
+		       double Ls, double Ld, double La, double Lk, double Cs, double Cd, double Ca, double Ck,
+		       double ThetaPpos, double ThetaPneg, double ThetaPCpos, double ThetaPCneg,
+		       double ResfacPos, double ResfacNeg, double FracDispPos, double FracDispNeg,
+		       double DPos, double DNeg);    
+  ModIMKPeakOriented02(int tag, double Ke0, double AlfanPos, double AlfanNeg, double My_pos, double My_neg,  
+		       double Ls, double Ld, double La, double Lk, double Cs, double Cd, double Ca, double Ck,
+		       double ThetaPpos, double ThetaPneg, double ThetaPCpos, double ThetaPCneg,
+		       double ResfacPos, double ResfacNeg, double FracDispPos, double FracDispNeg,
+		       double DPos, double DNeg, double nFactor);   
+  
+  ModIMKPeakOriented02();
+  ~ModIMKPeakOriented02();
+  
+  const char *getClassType(void) const {return "ModIMKPeakOriented02";};
    
     int setTrialStrain(double strain, double strainRate = 0.0);
     double getStrain(void);
@@ -98,10 +110,12 @@ class ModIMKPeakOriented02 : public UniaxialMaterial
                       double fracDisp, int& flagStop);
    
     // Fixed Input Material Variables
-    double Ke0;			// Updated: Filipe Ribeiro and Andre Barbosa    
-	double nFactor;		// Updated: Filipe Ribeiro and Andre Barbosa
-    double AlfanPos;	// Updated: Filipe Ribeiro and Andre Barbosa
-    double AlfanNeg;	// Updated: Filipe Ribeiro and Andre Barbosa
+    double Ke0;                 // Updated:Filipe Ribeiro and Andre Barbosa    
+    double nFactor;         // Updated:Filipe Ribeiro and Andre Barbosa
+    double C_Fp;				// Updated:Filipe Ribeiro and Andre Barbosa
+    double C_Fn;				// Updated:Filipe Ribeiro and Andre Barbosa
+    double AlfanPos;    // Updated:Filipe Ribeiro and Andre Barbosa
+    double AlfanNeg;    // Updated:Filipe Ribeiro and Andre Barbosa
     double My_pos;
     double My_neg;
    
@@ -189,14 +203,15 @@ class ModIMKPeakOriented02 : public UniaxialMaterial
    
     double RSE, CRSE;
     double dres;
-	
-	double Ke, CKe;				// Updated: Filipe Ribeiro and Andre Barbosa
-    double AlfaPos, CAlfaPos;	// Updated: Filipe Ribeiro and Andre Barbosa
-    double AlfaNeg, CAlfaNeg;	// Updated: Filipe Ribeiro and Andre Barbosa
-	double prodBeta, CprodBeta; // Updated: Filipe Ribeiro and Andre Barbosa
-
-	int commitCalledOnce;
+       
+    double Ke, CKe;                         // Updated:Filipe Ribeiro and Andre Barbosa
+    double AlfaPos, CAlfaPos;   // Updated:Filipe Ribeiro and Andre Barbosa
+    double AlfaNeg, CAlfaNeg;   // Updated:Filipe Ribeiro and Andre Barbosa
+    double prodBeta, CprodBeta; // Updated:Filipe Ribeiro and Andre Barbosa
+    int commitCalledOnce;           // Updated:Filipe Ribeiro and Andre Barbosa
 };
 
 
 #endif
+ 
+

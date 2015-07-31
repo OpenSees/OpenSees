@@ -1,4 +1,4 @@
- /* ****************************************************************** **
+/* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
@@ -27,39 +27,37 @@
 // Revision: A
 //
 //**********************************************************************
-// Adapted by: Filipe Ribeiro and Andre Barbosa, Sep 20th 2013
+// Adapted by: Filipe Ribeiro and Andre Barbosa, June 2015
 // Oregon State University, OR, USA
 //**********************************************************************
 //
 // Description: This file contains the class implementation for ModIMKPeakOriented02 Model
 
 #include <math.h>
-#include <string.h>
 
 #include <elementAPI.h>
 #include <ModIMKPeakOriented02.h>
 #include <Vector.h>
 #include <Channel.h>
 #include <MaterialResponse.h>
-#include <cfloat>
+
 #include <OPS_Globals.h>
 
 static int numModIMKPeakOriented02Materials = 0;
 
 void *
-OPS_ModIMKPeakOriented02(void)
+OPS_ModIMKPeakOriented02()
 {
   if (numModIMKPeakOriented02Materials == 0) {
     numModIMKPeakOriented02Materials++;
-    opserr << "Modified Ibarra-Medina-Krawinkler Model with Peak-Oriented Hysteretic Response\n";
-	opserr << "Implementation and Calibration for CPH and FLPH by F.L.A. Ribeiro and A.R. Barbosa\n";   // Updated: Filipe Ribeiro and Andre Barbosa
+    opserr << "Modified Ibarra-Medina-Krawinkler Model with Peak-Oriented02 Hysteretic Response\n";
   }
  
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
  
   int    iData[1];
-  double dData[24];			// Updated: Filipe Ribeiro and Andre Barbosa      
+  double dData[26];                     // Updated:Filipe Ribeiro and Andre Barbosa      
   int numData = 1;
   // Check tag
   if (OPS_GetIntInput(&numData, iData) != 0) {
@@ -67,57 +65,91 @@ OPS_ModIMKPeakOriented02(void)
     return 0;
   }
  
-  //Changed in order to account for the nFactor as an optional input    // Updated: Filipe Ribeiro and Andre Barbosa
-		//numData = 24;														  // Updated: Filipe Ribeiro and Andre Barbosa
-  
-    numData = OPS_GetNumRemainingInputArgs();			// Updated: Filipe Ribeiro and Andre Barbosa
-		
-    if (numData != 23 && numData != 24 ) {				
-			opserr << "Invalid Args want: uniaxialMaterial ModIMKPeakOriented02 tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?"; 
-			opserr << "Ls?, Ld?, La?, Lk?, Cs?, Cd?, Ca?, Ck?, thetaPpos?, thetaPneg?, thetaPCpos?, thetaPCneg? "; 
-			opserr << "ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?, <nFactor?>";		// Updated: Filipe Ribeiro and Andre Barbosa
-		
-	return 0;	
-	}
-	
-	if (numData == 23) {
-		if (OPS_GetDoubleInput(&numData, dData) != 0) {             // Updated: Filipe Ribeiro and Andre Barbosa
-			opserr << "Invalid Args want: uniaxialMaterial ModIMKPeakOriented02 tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?"; 
-			opserr << "Ls?, Ld?, La?, Lk?, Cs?, Cd?, Ca?, Ck?, thetaPpos?, thetaPneg?, thetaPCpos?, thetaPCneg? "; 
-			opserr << "ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?, <nFactor?>";		// Updated: Filipe Ribeiro and Andre Barbosa
-		
-	return 0;  
-	}
-	
-	// Parsing was successful, allocate the material with zero index
-		theMaterial = new ModIMKPeakOriented02(iData[0], 
-					     dData[0], dData[1], dData[2], dData[3],
-					     dData[4], dData[5], dData[6], dData[7],
-					     dData[8], dData[9], dData[10], dData[11],
-					     dData[12], dData[13], dData[14], dData[15],
-					     dData[16], dData[17], dData[18], dData[19],
-					     dData[20], dData[21], dData[22]);					// Updated: Filipe Ribeiro and Andre Barbosa
-	
-	} else if (numData == 24) {			// Updated: Filipe Ribeiro and Andre Barbosa
-	if (OPS_GetDoubleInput(&numData, dData) != 0) {             // Updated: Filipe Ribeiro and Andre Barbosa
-		opserr << "Invalid Args want: uniaxialMaterial ModIMKPeakOriented02 tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?"; 
-		opserr << "Ls?, Ld?, La?, Lk?, Cs?, Cd?, Ca?, Ck?, thetaPpos?, thetaPneg?, thetaPCpos?, thetaPCneg? "; 
-		opserr << "ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?, <nFactor?>";		// Updated: Filipe Ribeiro and Andre Barbosa
-	
-	return 0;  
-	}
+  //Changed in order to account for the nFactor as an optional input    // Updated:Filipe Ribeiro and Andre Barbosa
+                //numData = 24;                                                                                                           // Updated:Filipe Ribeiro and Andre Barbosa
+ 
+    numData = OPS_GetNumRemainingInputArgs();                   // Updated:Filipe Ribeiro and Andre Barbosa
+               
+    if (numData != 23 && numData != 24 && numData != 25 && numData != 26 ) {                             
+                        opserr << "Invalid Args want: uniaxialMaterial ModIMKPeakOriented02 tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?";
+                        opserr << "Ls?, Ld?, La?, Lk?, Cs?, Cd?, Ca?, Ck?, thetaPpos?, thetaPneg?, thetaPCpos?, thetaPCneg? ";
+                        opserr << "ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?, C_Fp?, C_Fn?, <nFactor?>";                // Updated:Filipe Ribeiro and Andre Barbosa
+               
+        return 0;      
+        }
+       
+        if (numData == 23) {
+                if (OPS_GetDoubleInput(&numData, dData) != 0) {             // Updated:Filipe Ribeiro and Andre Barbosa
+                        opserr << "Invalid Args want: uniaxialMaterial ModIMKPeakOriented02 tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?";
+                        opserr << "Ls?, Ld?, La?, Lk?, Cs?, Cd?, Ca?, Ck?, thetaPpos?, thetaPneg?, thetaPCpos?, thetaPCneg? ";
+                        opserr << "ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?, C_Fp?, C_Fn?, <nFactor?>";               // Updated:Filipe Ribeiro and Andre Barbosa
+               
+        return 0;  
+        }
+       
+        // Parsing was successful, allocate the material with zero index
+                theMaterial = new ModIMKPeakOriented02(iData[0],
+                                             dData[0], dData[1], dData[2], dData[3],
+                                             dData[4], dData[5], dData[6], dData[7],
+                                             dData[8], dData[9], dData[10], dData[11],
+                                             dData[12], dData[13], dData[14], dData[15],
+                                             dData[16], dData[17], dData[18], dData[19],
+                                             dData[20], dData[21], dData[22]);                                  // Updated:Filipe Ribeiro and Andre Barbosa
+       
+        } else if (numData == 24) {                     // Updated:Filipe Ribeiro and Andre Barbosa
+        if (OPS_GetDoubleInput(&numData, dData) != 0) {             // Updated:Filipe Ribeiro and Andre Barbosa
+                opserr << "Invalid Args want: uniaxialMaterial ModIMKPeakOriented02 tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?";
+                opserr << "Ls?, Ld?, La?, Lk?, Cs?, Cd?, Ca?, Ck?, thetaPpos?, thetaPneg?, thetaPCpos?, thetaPCneg? ";
+                opserr << "ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?, C_Fp?, C_Fn?, <nFactor?>";                // Updated:Filipe Ribeiro and Andre Barbosa
+       
+        return 0;  
+        }
  
     // Parsing was successful, allocate the material
-		theMaterial = new ModIMKPeakOriented02(iData[0],
+                theMaterial = new ModIMKPeakOriented02(iData[0],
                             dData[0], dData[1], dData[2], dData[3], dData[4],
                             dData[5], dData[6], dData[7], dData[8], dData[9],
                             dData[10], dData[11], dData[12], dData[13], dData[14],
                             dData[15], dData[16], dData[17], dData[18], dData[19],
-                            dData[20], dData[21], dData[22], dData[23]); // Updated: Filipe Ribeiro and Andre Barbosa
+                            dData[20], dData[21], dData[22], dData[23]); // Updated:Filipe Ribeiro and Andre Barbosa
    
-	}
-		
-		
+        } else if (numData == 25) {                     // Updated:Filipe Ribeiro and Andre Barbosa
+        if (OPS_GetDoubleInput(&numData, dData) != 0) {             // Updated:Filipe Ribeiro and Andre Barbosa
+                opserr << "Invalid Args want: uniaxialMaterial ModIMKPeakOriented02 tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?";
+                opserr << "Ls?, Ld?, La?, Lk?, Cs?, Cd?, Ca?, Ck?, thetaPpos?, thetaPneg?, thetaPCpos?, thetaPCneg? ";
+                opserr << "ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?, C_Fp?, C_Fn?, <nFactor?>";                // Updated:Filipe Ribeiro and Andre Barbosa
+       
+        return 0;  
+        }
+ 
+    // Parsing was successful, allocate the material
+                theMaterial = new ModIMKPeakOriented02(iData[0],
+                            dData[0], dData[1], dData[2], dData[3], dData[4],
+                            dData[5], dData[6], dData[7], dData[8], dData[9],
+                            dData[10], dData[11], dData[12], dData[13], dData[14],
+                            dData[15], dData[16], dData[17], dData[18], dData[19],
+                            dData[20], dData[21], dData[22], dData[23], dData[24]); // Updated:Filipe Ribeiro and Andre Barbosa
+   
+        } else if (numData == 26) {                     // Updated:Filipe Ribeiro and Andre Barbosa
+        if (OPS_GetDoubleInput(&numData, dData) != 0) {             // Updated:Filipe Ribeiro and Andre Barbosa
+                opserr << "Invalid Args want: uniaxialMaterial ModIMKPeakOriented02 tag? Ke?, alfaPos?, alfaNeg?, My_pos?, My_neg?";
+                opserr << "Ls?, Ld?, La?, Lk?, Cs?, Cd?, Ca?, Ck?, thetaPpos?, thetaPneg?, thetaPCpos?, thetaPCneg? ";
+                opserr << "ResfacPos?, ResfacNeg?, fracDispPos?, fracDispNeg?,DPos?, DNeg?, C_Fp?, C_Fn?, <nFactor?>";                // Updated:Filipe Ribeiro and Andre Barbosa
+       
+        return 0;  
+        }
+ 
+    // Parsing was successful, allocate the material
+                theMaterial = new ModIMKPeakOriented02(iData[0],
+                            dData[0], dData[1], dData[2], dData[3], dData[4],
+                            dData[5], dData[6], dData[7], dData[8], dData[9],
+                            dData[10], dData[11], dData[12], dData[13], dData[14],
+                            dData[15], dData[16], dData[17], dData[18], dData[19],
+                            dData[20], dData[21], dData[22], dData[23], dData[24], dData[25]); // Updated:Filipe Ribeiro and Andre Barbosa
+   
+        }
+               
+               
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type ModIMKPeakOriented02 Material\n";
     return 0;
@@ -127,46 +159,84 @@ OPS_ModIMKPeakOriented02(void)
 }
 
 
-// if nFactor is assigned							// Updated: Filipe Ribeiro and Andre Barbosa
-ModIMKPeakOriented02::ModIMKPeakOriented02(int tag, double Ke0, double alfanPos, double alfanNeg, double my_pos, double my_neg,		// Updated: Filipe Ribeiro and Andre Barbosa
-				       double ls, double ld, double la, double lk, double cs, double cd, double ca, double ck,
-				       double thetaPpos, double thetaPneg, double thetaPCpos, double thetaPCneg,
-				       double resfacPos, double resfacNeg, double fracDispPos, double fracDispNeg,
-				       double dPos, double dNeg, double NFactor)
- :UniaxialMaterial(tag,MAT_TAG_ModIMKPeakOriented02), Ke0(Ke0), AlfanPos(alfanPos), AlfanNeg(alfanNeg), My_pos(my_pos), My_neg(my_neg), 
-  Ls(ls), Ld(ld), La(la), Lk(lk), Cs(cs), Cd(cd), Ca(ca), Ck(ck),ThetaPpos(thetaPpos), ThetaPneg(thetaPneg), 
-  ThetaPCpos(thetaPCpos), ThetaPCneg(thetaPCneg), ResfacPos(resfacPos), ResfacNeg(resfacNeg), 
-  FracDispPos(fracDispPos), FracDispNeg(fracDispNeg),DPos(dPos), DNeg(dNeg), nFactor(NFactor)		// Updated: Filipe Ribeiro and Andre Barbosa
+// if no optional parameters are assigned                                                       // Updated:Filipe Ribeiro and Andre Barbosa
+ModIMKPeakOriented02::ModIMKPeakOriented02(int tag, double Ke0, double alfanPos, double alfanNeg, double my_pos, double my_neg,             // Updated:Filipe Ribeiro and Andre Barbosa
+                                       double ls, double ld, double la, double lk, double cs, double cd, double ca, double ck,
+                                       double thetaPpos, double thetaPneg, double thetaPCpos, double thetaPCneg,
+                                       double resfacPos, double resfacNeg, double fracDispPos, double fracDispNeg,
+                                       double dPos, double dNeg)
+ :UniaxialMaterial(tag,MAT_TAG_ModIMKPeakOriented02), Ke0(Ke0), AlfanPos(alfanPos), AlfanNeg(alfanNeg), My_pos(my_pos), My_neg(my_neg),
+  Ls(ls), Ld(ld), La(la), Lk(lk), Cs(cs), Cd(cd), Ca(ca), Ck(ck),ThetaPpos(thetaPpos), ThetaPneg(thetaPneg),
+  ThetaPCpos(thetaPCpos), ThetaPCneg(thetaPCneg), ResfacPos(resfacPos), ResfacNeg(resfacNeg),
+  FracDispPos(fracDispPos), FracDispNeg(fracDispNeg),DPos(dPos), DNeg(dNeg)          
 {
   // Initialize Variables by Calling revertToStart function
-  this->revertToStart();	
-  Tangent = Ke; 
+  this->revertToStart();      
+  nFactor=0.0;                                                          // Updated:Filipe Ribeiro and Andre Barbosa
+  C_Fp=0.0;                                                         // Updated:Filipe Ribeiro and Andre Barbosa															
+  C_Fn=0.0;                                                         // Updated:Filipe Ribeiro and Andre Barbosa
+  Tangent = Ke;
 }
 
-// if nFactor is NOT assigned											// Updated: Filipe Ribeiro and Andre Barbosa
-ModIMKPeakOriented02::ModIMKPeakOriented02(int tag, double Ke0, double alfanPos, double alfanNeg, double my_pos, double my_neg,		// Updated: Filipe Ribeiro and Andre Barbosa
-				       double ls, double ld, double la, double lk, double cs, double cd, double ca, double ck,
-				       double thetaPpos, double thetaPneg, double thetaPCpos, double thetaPCneg,
-				       double resfacPos, double resfacNeg, double fracDispPos, double fracDispNeg,
-				       double dPos, double dNeg)
- :UniaxialMaterial(tag,MAT_TAG_ModIMKPeakOriented02), Ke0(Ke0), AlfanPos(alfanPos), AlfanNeg(alfanNeg), My_pos(my_pos), My_neg(my_neg), 
-  Ls(ls), Ld(ld), La(la), Lk(lk), Cs(cs), Cd(cd), Ca(ca), Ck(ck),ThetaPpos(thetaPpos), ThetaPneg(thetaPneg), 
-  ThetaPCpos(thetaPCpos), ThetaPCneg(thetaPCneg), ResfacPos(resfacPos), ResfacNeg(resfacNeg), 
-  FracDispPos(fracDispPos), FracDispNeg(fracDispNeg),DPos(dPos), DNeg(dNeg)		// Updated: Filipe Ribeiro and Andre Barbosa
+// if nFactor is assigned but C_Fp and C_Fn are not                                                      // Updated:Filipe Ribeiro and Andre Barbosa
+ModIMKPeakOriented02::ModIMKPeakOriented02(int tag, double Ke0, double alfanPos, double alfanNeg, double my_pos, double my_neg,             // Updated:Filipe Ribeiro and Andre Barbosa
+                                       double ls, double ld, double la, double lk, double cs, double cd, double ca, double ck,
+                                       double thetaPpos, double thetaPneg, double thetaPCpos, double thetaPCneg,
+                                       double resfacPos, double resfacNeg, double fracDispPos, double fracDispNeg,
+                                       double dPos, double dNeg, double NFactor)
+ :UniaxialMaterial(tag,MAT_TAG_ModIMKPeakOriented02), Ke0(Ke0), AlfanPos(alfanPos), AlfanNeg(alfanNeg), My_pos(my_pos), My_neg(my_neg),
+  Ls(ls), Ld(ld), La(la), Lk(lk), Cs(cs), Cd(cd), Ca(ca), Ck(ck),ThetaPpos(thetaPpos), ThetaPneg(thetaPneg),
+  ThetaPCpos(thetaPCpos), ThetaPCneg(thetaPCneg), ResfacPos(resfacPos), ResfacNeg(resfacNeg),
+  FracDispPos(fracDispPos), FracDispNeg(fracDispNeg),DPos(dPos), DNeg(dNeg), nFactor(NFactor)           // Updated:Filipe Ribeiro and Andre Barbosa
 {
   // Initialize Variables by Calling revertToStart function
-  this->revertToStart();
-  // Default value for no nFactor
-  nFactor=0.0;								// Updated: Filipe Ribeiro and Andre Barbosa
-  Tangent = Ke; 
+  this->revertToStart();       
+  C_Fp=0.0;                                                         // Updated:Filipe Ribeiro and Andre Barbosa															
+  C_Fn=0.0;                                                         // Updated:Filipe Ribeiro and Andre Barbosa
+  Tangent = Ke;
 }
+
+// if C_Fp and C_Fn are assigned but nFactor is not                                                      // Updated:Filipe Ribeiro and Andre Barbosa
+ModIMKPeakOriented02::ModIMKPeakOriented02(int tag, double Ke0, double alfanPos, double alfanNeg, double my_pos, double my_neg,             // Updated:Filipe Ribeiro and Andre Barbosa
+                                       double ls, double ld, double la, double lk, double cs, double cd, double ca, double ck,
+                                       double thetaPpos, double thetaPneg, double thetaPCpos, double thetaPCneg,
+                                       double resfacPos, double resfacNeg, double fracDispPos, double fracDispNeg,
+                                       double dPos, double dNeg, double CFp, double CFn)
+ :UniaxialMaterial(tag,MAT_TAG_ModIMKPeakOriented02), Ke0(Ke0), AlfanPos(alfanPos), AlfanNeg(alfanNeg), My_pos(my_pos), My_neg(my_neg),
+  Ls(ls), Ld(ld), La(la), Lk(lk), Cs(cs), Cd(cd), Ca(ca), Ck(ck),ThetaPpos(thetaPpos), ThetaPneg(thetaPneg),
+  ThetaPCpos(thetaPCpos), ThetaPCneg(thetaPCneg), ResfacPos(resfacPos), ResfacNeg(resfacNeg),
+  FracDispPos(fracDispPos), FracDispNeg(fracDispNeg),DPos(dPos), DNeg(dNeg), C_Fp(CFp), C_Fn(CFn)           // Updated:Filipe Ribeiro and Andre Barbosa
+{
+  // Initialize Variables by Calling revertToStart function
+  this->revertToStart();      
+  nFactor=0.0;                                                          // Updated:Filipe Ribeiro and Andre Barbosa
+  Tangent = Ke;
+}
+
+
+// if nFactor and C_Fp and C_Fn are all assigned                                                       // Updated:Filipe Ribeiro and Andre Barbosa
+ModIMKPeakOriented02::ModIMKPeakOriented02(int tag, double Ke0, double alfanPos, double alfanNeg, double my_pos, double my_neg,             // Updated:Filipe Ribeiro and Andre Barbosa
+                                       double ls, double ld, double la, double lk, double cs, double cd, double ca, double ck,
+                                       double thetaPpos, double thetaPneg, double thetaPCpos, double thetaPCneg,
+                                       double resfacPos, double resfacNeg, double fracDispPos, double fracDispNeg,
+                                       double dPos, double dNeg, double CFp, double CFn, double NFactor)
+ :UniaxialMaterial(tag,MAT_TAG_ModIMKPeakOriented02), Ke0(Ke0), AlfanPos(alfanPos), AlfanNeg(alfanNeg), My_pos(my_pos), My_neg(my_neg),
+  Ls(ls), Ld(ld), La(la), Lk(lk), Cs(cs), Cd(cd), Ca(ca), Ck(ck),ThetaPpos(thetaPpos), ThetaPneg(thetaPneg),
+  ThetaPCpos(thetaPCpos), ThetaPCneg(thetaPCneg), ResfacPos(resfacPos), ResfacNeg(resfacNeg),
+  FracDispPos(fracDispPos), FracDispNeg(fracDispNeg),DPos(dPos), DNeg(dNeg),  C_Fp(CFp), C_Fn(CFn) , nFactor(NFactor)           // Updated:Filipe Ribeiro and Andre Barbosa
+{
+  // Initialize Variables by Calling revertToStart function
+  this->revertToStart();       
+  Tangent = Ke;
+}
+
 
 ModIMKPeakOriented02::ModIMKPeakOriented02()
 :UniaxialMaterial(0,MAT_TAG_ModIMKPeakOriented02),
-Ke0(0.0), AlfanPos(0.0), AlfanNeg(0.0), My_pos(0.0), My_neg(0.0), Ls(0.0), Ld(0.0), La(0.0), Lk(0.0),		// Updated: Filipe Ribeiro and Andre Barbosa
-Cs(0.0), Cd(0.0), Ca(0.0), Ck(0.0), ThetaPpos(0.0), ThetaPneg(0.0), 
-ThetaPCpos(0.0), ThetaPCneg(0.0), ResfacPos(0.0), ResfacNeg(0.0), 
-FracDispPos(0.0), FracDispNeg(0.0), DPos(0.0), DNeg(0.0), nFactor(0.0)     // Updated: Filipe Ribeiro and Andre Barbosa
+Ke0(0.0), AlfanPos(0.0), AlfanNeg(0.0), My_pos(0.0), My_neg(0.0), Ls(0.0), Ld(0.0), La(0.0), Lk(0.0),           // Updated:Filipe Ribeiro and Andre Barbosa
+Cs(0.0), Cd(0.0), Ca(0.0), Ck(0.0), ThetaPpos(0.0), ThetaPneg(0.0),
+ThetaPCpos(0.0), ThetaPCneg(0.0), ResfacPos(0.0), ResfacNeg(0.0),
+FracDispPos(0.0), FracDispNeg(0.0), DPos(0.0), DNeg(0.0), C_Fp(0.0), C_Fn(0.0), nFactor(0.0)     // Updated:Filipe Ribeiro and Andre Barbosa
 {
   // Initialize Variables by Calling revertToStart function
   this->revertToStart();
@@ -190,24 +260,24 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
   d  = strain;
  
   // Determine change in deformation from last converged state
-  deltaD = d - dP;
+  deltaD = d - dP; 
  
   // added by DL 04/22/2013
  
   flagdeg = 0;
-  if (fabs(deltaD) < DBL_EPSILON && commitCalledOnce == 1) {
+  if (fabs(deltaD) < 1.0e-18 && strain != 0.0 && commitCalledOnce == 1) {               // Updated:Filipe Ribeiro and Andre Barbosa
     return 0;
   }
  
   // Initialize parameters in the first cycle
   if (kon==0) {
-  
+ 
     // Amplify the elastic stiffness in case n>0
-    Ke = Ke0*(1 + nFactor);  // Updated: Filipe Ribeiro and Andre Barbosa
+    Ke = Ke0*(1 + nFactor);  // Updated:Filipe Ribeiro and Andre Barbosa
    
-	//Compute strain hardening ratios (Ibarra & Krawinkler, 2005)
-	AlfaNeg=AlfanNeg/(1+nFactor*(1-AlfanNeg));  // Updated: Filipe Ribeiro and Andre Barbosa
-    AlfaPos=AlfanPos/(1+nFactor*(1-AlfanPos));  // Updated: Filipe Ribeiro and Andre Barbosa
+        //Compute strain hardening ratios (Ibarra & Krawinkler, 2005)
+        AlfaNeg=AlfanNeg/(1+nFactor*(1-AlfanNeg));  // Updated:Filipe Ribeiro and Andre Barbosa
+    AlfaPos=AlfanPos/(1+nFactor*(1-AlfanPos));  // Updated:Filipe Ribeiro and Andre Barbosa
    
     // strain hardening range
     ekhardPos = Ke * AlfaPos;
@@ -239,11 +309,11 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
     fPeakPos = My_pos + ekhardPos * (ThetaPpos);
     fPeakNeg = My_neg + ekhardNeg * (-ThetaPneg);
    
-    // Capping Slope (according to Ibarra & Krawinkler 2005)		// Updated: Filipe Ribeiro and Andre Barbosa
-    capSlopePos = -fPeakPos/(ThetaPCpos * Ke0);						// Updated: Filipe Ribeiro and Andre Barbosa
-	capSlopePos = capSlopePos/(1+nFactor*(1- capSlopePos));			// Updated: Filipe Ribeiro and Andre Barbosa
-    capSlopeNeg =  fPeakNeg/(ThetaPCneg * Ke0);						// Updated: Filipe Ribeiro and Andre Barbosa
-	capSlopeNeg = capSlopeNeg/(1+nFactor*(1- capSlopeNeg));	
+    // Capping Slope (according to Ibarra & Krawinkler 2005)            // Updated:Filipe Ribeiro and Andre Barbosa
+    capSlopePos = -fPeakPos/(ThetaPCpos * Ke0);                                         // Updated:Filipe Ribeiro and Andre Barbosa
+        capSlopePos = capSlopePos/(1+nFactor*(1- capSlopePos));                 // Updated:Filipe Ribeiro and Andre Barbosa
+    capSlopeNeg =  fPeakNeg/(ThetaPCneg * Ke0);                                         // Updated:Filipe Ribeiro and Andre Barbosa
+        capSlopeNeg = capSlopeNeg/(1+nFactor*(1- capSlopeNeg));
    
     //Reference Point for Cyclic Deterioration
    
@@ -272,8 +342,8 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
     Unl = 1;
    
     RSE = 0.0;
-	
-	prodBeta=1.0;				// Updated: Filipe Ribeiro and Andre Barbosa 
+       
+        prodBeta=1.0;                           // Updated:Filipe Ribeiro and Andre Barbosa
    
     if(deltaD >= 0.0){
       kon = 1;
@@ -288,8 +358,8 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
    
     if (deltaD >= 0.0){
      
-      if (kon==2){     
-        kon = 1;       
+      if (kon==2){    
+        kon = 1;      
         Unl = 0;
        
         RSE = 0.5 * fP * fP / ekunload;
@@ -302,16 +372,16 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
        
         if(Lk != 0.0){
           betak = pow((Enrgc-RSE)/(Enrgtk-(Enrgtot-RSE)),Ck);
-          
-		  if(((Enrgtot-RSE)>=Enrgtk)) {				// Updated: Filipe Ribeiro and Andre Barbosa	
-			betak = 1.0;
-		  }										// Updated: Filipe Ribeiro and Andre Barbosa
+         
+                  if(((Enrgtot-RSE)>=Enrgtk)) {                         // Updated:Filipe Ribeiro and Andre Barbosa   
+                        betak = 1.0;
+                  }                                                                             // Updated:Filipe Ribeiro and Andre Barbosa
 
-		  	ekunload = Ke*((prodBeta*(1.0-betak))/(1+nFactor*(1-(prodBeta*(1.0-betak)))));			// Updated: Filipe Ribeiro and Andre Barbosa
+                        ekunload = Ke*((prodBeta*(1.0-betak))/(1+nFactor*(1-(prodBeta*(1.0-betak)))));                  // Updated:Filipe Ribeiro and Andre Barbosa
 
-			//compute prodBeta for next iteration
-			prodBeta=prodBeta*(1-betak);			// Updated: Filipe Ribeiro and Andre Barbosa
-    
+                        //compute prodBeta for next iteration
+                        prodBeta=prodBeta*(1-betak);                    // Updated:Filipe Ribeiro and Andre Barbosa
+   
           if(ekunload <= ekhardNeg){
             flagStop = 1;
           }            
@@ -319,16 +389,19 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
        
         //  determination of sn according to the hysteresis status        
        
-        if(fP < 0.0){
+        if(fP < 0.0){					
          
-          double tst = dP-fP/ekunload;
+          double tst = dP-fP/ekunload;	
          
           if(fabs(dmax-My_pos/Ke)>=1.e-10 && fabs(tst) <= 1.e-10){
            
             sn = 1.e-9;
            
           } else {
-            sn = dP-fP/ekunload;
+		    sn = dP-fP/ekunload+fmax*C_Fp/ekunload;			// Updated: Filipe
+			  if(fmax*C_Fp<fmax) {								// Updated: Filipe
+				  sn = dP;										// Updated: Filipe
+			  }													// Updated: Filipe
           }
         }
         if(fabs(dmin - dP) <= 1.e-10){
@@ -351,7 +424,7 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
        
         envelPosCap2 (fyPos,AlfaPos,capSlopePos,cpPos,dmax,fmax, ek, Ke, My_pos, ResfacPos,FracDispPos, flagStop);
        
-        if ( d <= sn){
+        if ( d <= sn){			
           ek = ekunload;
           f  = fP+ek*deltaD;
          
@@ -361,49 +434,67 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
           }
           //    If d>sn,        
         } else {
-          ek = fmax/(dmax-sn);
-          double f2 = ek*(d-sn);
+
+          ek = (1-C_Fp)*fmax/(dmax-sn);		// Updated: Filipe
+		  double f2 = ek*(d-sn)+C_Fp*fmax;		// Updated: Filipe
+		  double ekc2 = (fmax-fP)/(dmax-dP);	// Updated: Filipe
+		  if(ekc2<ek) {							// Updated: Filipe
+			  ek=ekc2;						// Updated: Filipe
+			  f2 = ek*(d-dP)+fP;			// Updated: Filipe
+		  }									// Updated: Filipe
          
           if(dlstPos > sn && dlstPos < dmax){
            
-            double ekc = flstPos/(dlstPos-sn);
+            double ekc = (1-C_Fp)*flstPos/(dlstPos-sn);		// Updated: Filipe
+			double ekc3 = (flstPos-fP)/(dlstPos-dP);	// Updated: Filipe
+			if(ekc3<ek) {							// Updated: Filipe
+			  ekc=ekc3;						// Updated: Filipe
+			  f2 = ek*(d-dP)+fP;			// Updated: Filipe
+			}									// Updated: Filipe
            
             if(ekc>ek && flstPos < fmax){
              
               if(d < dlstPos){
-                ek = flstPos/(dlstPos-sn);
-                f2 = ek*(d-sn);
+                ek = (flstPos-C_Fp*fmax)/(dlstPos-sn);			// Updated: Filipe
+                f2 = ek*(d-sn)+C_Fp*fmax;				// Updated: Filipe
+				double ekc2 = (flstPos-fP)/(dlstPos-dP);	// Updated: Filipe
+				if(ekc2<ek) {							// Updated: Filipe
+					 ek=ekc2;						// Updated: Filipe
+					 f2 = ek*(d-dP)+fP;			// Updated: Filipe
+				}									// Updated: Filipe
                
               } else {
                
-                ek = (fmax-flstPos)/(dmax-dlstPos);
-                f2 = flstPos+ek*(d-dlstPos);
+                ek = (fmax-flstPos)/(dmax-dlstPos);		
+                f2 = ek*(d-dlstPos)+flstPos;			
               }
             }
           }
-         
-          double f1 = fP+ekunload*deltaD;
-         
-          //f = min(f1,f2);
+
+		  double f1 = fP+ekunload*deltaD;
+		  
+		  //f = min(f1,f2);
           if (f1 < f2) {
             f = f1;
            
           } else {
            
             f = f2;
-          }
-         
-          if (fabs(f-f1)<1.e-10) {
+          
+		 }
+			         
+          if (fabs(f-f1)<1.e-10) {	
             ek=ekunload;
-          }
+
+		 }
                                        
         }
        
-      } else {                                                 
+      } else {                                                
         if (d > 0.0) {
-          envelPosCap2(fyPos,AlfaPos,capSlopePos,cpPos,d, f, ek, Ke, My_pos, ResfacPos,FracDispPos, flagStop); 
-        } else {       
-          envelNegCap2(fyNeg,AlfaNeg,capSlopeNeg,cpNeg, d, f, ek, Ke, My_neg, ResfacNeg,-FracDispNeg, flagStop);       
+          envelPosCap2(fyPos,AlfaPos,capSlopePos,cpPos,d, f, ek, Ke, My_pos, ResfacPos,FracDispPos, flagStop);
+        } else {      
+          envelNegCap2(fyNeg,AlfaNeg,capSlopeNeg,cpNeg, d, f, ek, Ke, My_neg, ResfacNeg,-FracDispNeg, flagStop);      
         }
                                
       }
@@ -420,15 +511,15 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
        
         if(Lk!= 0.0 ){
           double betak = pow((Enrgc-RSE)/(Enrgtk-(Enrgtot-RSE)),Ck);
-          
-		  if(((Enrgtot-RSE)>=Enrgtk)) {					// Updated: Filipe Ribeiro and Andre Barbosa
-			betak = 1.0;
-		  }												// Updated: Filipe Ribeiro and Andre Barbosa
+         
+                  if(((Enrgtot-RSE)>=Enrgtk)) {                                 // Updated:Filipe Ribeiro and Andre Barbosa
+                        betak = 1.0;
+                  }                                                                                             // Updated:Filipe Ribeiro and Andre Barbosa
 
-			ekunload = Ke*((prodBeta*(1.0-betak))/(1+nFactor*(1-(prodBeta*(1-betak)))));		// Updated: Filipe Ribeiro and Andre Barbosa
+                        ekunload = Ke*((prodBeta*(1.0-betak))/(1+nFactor*(1-(prodBeta*(1-betak)))));            // Updated:Filipe Ribeiro and Andre Barbosa
        
-			//compute prodBeta for next iteration
-			prodBeta=prodBeta*(1-betak);			// Updated: Filipe Ribeiro and Andre Barbosa
+                        //compute prodBeta for next iteration
+                        prodBeta=prodBeta*(1-betak);                    // Updated:Filipe Ribeiro and Andre Barbosa
 
           if(ekunload<= ekhardPos){
             flagStop=1;
@@ -439,11 +530,14 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
        
         if(fP > 0.0) {
          
-          double tst = dP-fP/ekunload;
+          double tst = dP-fP/ekunload;			
           if(fabs(dmin-My_neg/Ke)>=1.e-10 && fabs(tst) <= 1.e-10){
             sp = 1.e-9;
           } else {
-            sp = dP-fP/ekunload;
+			  sp = dP-fP/ekunload+fmin*C_Fn/ekunload;			// Updated: Filipe
+			  if(fmin*C_Fn>fmax) {								// Updated: Filipe
+				  sp = dP;										// Updated: Filipe
+			  }													// Updated: Filipe
           }
         }
         if(fabs(dmax-dP) <=1.e-10){
@@ -465,53 +559,68 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
       } else if (fabs(sp) > 1.e-10){
         envelNegCap2 (fyNeg,AlfaNeg,capSlopeNeg,cpNeg, dmin, fmin, ek, Ke, My_neg, ResfacNeg,-FracDispNeg, flagStop);
        
-        if ( d >= sp ){
+        if ( d >= sp ){			
          
           ek = ekunload;
           f = fP+ek*deltaD;
-         
+                  
           if(Unl==0 && fabs(ek-ekP) > 1.e-10 && dP != dmax){
             dlstPos = dP;      
             flstPos = fP;
           }
         } else {
          
-          ek = fmin/(dmin-sp);
-          double f2 = ek * (d-sp);
-         
+			
+			ek = (1-C_Fn)*fmin/(dmin-sp);		// Updated: Filipe
+			double f2 = ek * (d-sp)+fmin*C_Fn;			// Updated: Filipe
+		  double ekc2 = (fmin-fP)/(dmin-dP);	// Updated: Filipe
+		  if(ekc2<ek) {							// Updated: Filipe
+			  ek=ekc2;						// Updated: Filipe
+			  f2 = ek*(d-dP)+fP;		// Updated: Filipe
+		  }
+
           if(dlstNeg < sp && dlstNeg > dmin){
            
-            double ekc = flstNeg/(dlstNeg-sp);
+            double ekc = (1-C_Fn)*flstNeg/(dlstNeg-sp);			// Updated: Filipe
+			double ekc3 = (flstNeg-fP)/(dlstNeg-dP);	// Updated: Filipe
+			if(ekc3<ek) {							// Updated: Filipe
+			  ekc=ekc3;						// Updated: Filipe
+			  f2 = ek*(d-dP)+fP;			// Updated: Filipe
+			}									// Updated: Filipe
            
             if(ekc > ek && flstNeg > fmin){
              
-              if(d > dlstNeg) {  
-               
-                ek = flstNeg/(dlstNeg-sp);
-                f2 = ek*(d-sp);
+              if(d > dlstNeg) {     
+                ek = (flstNeg-fmin*C_Fn)/(dlstNeg-sp);			// Updated: Filipe
+                f2 = ek*(d-sp)+fmin*C_Fn;							// Updated: Filipe
+				double ekc2 = (flstNeg-fP)/(dlstNeg-dP);	// Updated: Filipe
+				if(ekc2<ek) {							// Updated: Filipe
+					 ek=ekc2;						// Updated: Filipe
+					 f2 = ek*(d-dP)+fP;			// Updated: Filipe
+				}									// Updated: Filipe
                
               } else {
                
-                ek = (fmin-flstNeg)/(dmin-dlstNeg);                                                            
-                f2 = flstNeg+ek*(d-dlstNeg);                                                   
+                ek = (fmin-flstNeg)/(dmin-dlstNeg);		                                                        
+                f2 = ek*(d-dlstNeg)+flstNeg;				                             
               }
-            }                                  
+            }
           }
-         
+
           double f1 = fP+ekunload*deltaD;
+
           // f=max(f1,f2);
           if (f1>f2) {
             f=f1;
           } else {
             f=f2;
-          }
+          }		 
          
           if (fabs(f-f1) < 1.e-10){
             ek=ekunload;
           }
         }
-       
-       
+
       } else {
        
         if (d > 0.0){
@@ -532,11 +641,9 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
     Enrgtot = Enrgtot + Enrgi;
     RSE = 0.5*f*f/ekunload;
    
-    // Added by DL, 04/22/2013
-   
-    if((f*fP<0.0)) {
+    if((f*fP<0.0)) {			// Updated: Filipe
       if(((fP>0.0)&&(dmax>(fyPos/Ke)))||((fP<0.0)&&(dmin<(fyNeg/Ke)))) {
-        flagdeg = 1;           
+        flagdeg = 1;          
         //interup = 1;
       }
     }  
@@ -548,8 +655,8 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
     double betaa = 0.0;
     double betac = 0.0;
    
-    if(flagdeg == 1){		//this cycle was reformulated // Filipe Ribeiro and Andre Barbosa
-          
+    if(flagdeg == 1){           //this cycle was reformulated // Filipe Ribeiro and Andre Barbosa
+         
       if(Enrgtot >= Enrgts && Enrgts != 0.0){      
         betas = 1.0;
       } else if (Enrgtot >= Enrgta && Enrgta != 0.0) {  
@@ -558,33 +665,33 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
         betac = 1.0;
      
       // cyclic deterioration
-	  } else {
+          } else {
      
-		if(Ls != 0.0){
-			betas = pow(Enrgc/(Enrgts-Enrgtot),Cs);        
-		} else {
-			betas = 0.0;
-		}
-		
-		if(La != 0.0){
-			betaa = pow(Enrgc/(Enrgta-Enrgtot),Ca);
-		} else {
-			betaa = 0.0;
-		}
-		if(Ld != 0.0){
-			betac = pow(Enrgc/(Enrgtd-Enrgtot),Cd);
-		} else {
-			betac = 0.0;
-		}
-		if(fabs(betas) >= 1.0) {
-			betas = 1.0;
-		}
-		if(fabs(betaa) >= 1.0){
-			betaa = 1.0;
-		}
-		if(fabs(betac) >= 1.0){
-			betac = 1.0;                                                           
-		}
+                if(Ls != 0.0){
+                        betas = pow(Enrgc/(Enrgts-Enrgtot),Cs);        
+                } else {
+                        betas = 0.0;
+                }
+               
+                if(La != 0.0){
+                        betaa = pow(Enrgc/(Enrgta-Enrgtot),Ca);
+                } else {
+                        betaa = 0.0;
+                }
+                if(Ld != 0.0){
+                        betac = pow(Enrgc/(Enrgtd-Enrgtot),Cd);
+                } else {
+                        betac = 0.0;
+                }
+                if(fabs(betas) >= 1.0) {
+                        betas = 1.0;
+                }
+                if(fabs(betaa) >= 1.0){
+                        betaa = 1.0;
+                }
+                if(fabs(betac) >= 1.0){
+                        betac = 1.0;                                                          
+                }
       }
    
     //  Update values for the next half cycle
@@ -595,20 +702,20 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
     // if(deltaD > 0.0 && f > 0.0 || deltaD < 0.0 && f >=0.0 && d <=sp) {
     if(deltaD < 0.0 ) {                
       fyNeg = fyNeg*(1.0-betas*DNeg);                  
-      
-	  //change the strain hardening ratio				// Updated: Filipe Ribeiro and Andre Barbosa
-        //1st - recover the strain hardening ratio of the member       
-	    AlfaNeg=AlfaNeg*(1+nFactor)/(1+nFactor*AlfaNeg);            
-	    //2nd - apply the redution to the ratio of the member          
-	    AlfaNeg=AlfaNeg*(1.0-betas*DNeg);	
-		//3rd - recompute the strain hardening ratio (updated) 
-		AlfaNeg=(AlfaNeg)/(1+nFactor*(1-AlfaNeg));	 // Updated: Filipe Ribeiro and Andre Barbosa
-      			   
+     
+          //change the strain hardening ratio                           // Updated:Filipe Ribeiro and Andre Barbosa
+        //1st - recover the strain hardening ratio of the member      
+            AlfaNeg=AlfaNeg*(1+nFactor)/(1+nFactor*AlfaNeg);            
+            //2nd - apply the redution to the ratio of the member          
+            AlfaNeg=AlfaNeg*(1.0-betas*DNeg);  
+                //3rd - recompute the strain hardening ratio (updated)
+                AlfaNeg=(AlfaNeg)/(1+nFactor*(1-AlfaNeg));       // Updated:Filipe Ribeiro and Andre Barbosa
+                           
       fCapRefNeg=fCapRefNeg*(1.0-betac*DNeg);
-	  // dmin = dmin*(1.0+betaa);
-	  
-	  // Auxiliary envelope curve for the real member			// Updated: Filipe Ribeiro and Andre Barbosa
-	  double dCap1NegOrig=fCapRefNeg/(Ke0-capSlopeNeg*(1+nFactor)/(1+nFactor*capSlopeNeg)*Ke0);
+          // dmin = dmin*(1.0+betaa);
+         
+          // Auxiliary envelope curve for the real member                       // Updated:Filipe Ribeiro and Andre Barbosa
+          double dCap1NegOrig=fCapRefNeg/(Ke0-capSlopeNeg*(1+nFactor)/(1+nFactor*capSlopeNeg)*Ke0);
       double dCap2NegOrig=(fCapRefNeg+AlfaNeg*(1+nFactor)/(1+nFactor*AlfaNeg)*Ke0*fyNeg/Ke0-fyNeg)/(AlfaNeg*(1+nFactor)/(1+nFactor*AlfaNeg)*Ke0-capSlopeNeg*(1+nFactor)/(1+nFactor*capSlopeNeg)*Ke0);
       // cpNeg=min(dCap1Neg,dCap2Neg);
       //double fCapNeg = fCapRefNeg + capSlopeNeg*Ke*cpNeg;
@@ -618,23 +725,23 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
       } else {
         cpNegOrig = dCap2NegOrig;
       }
-	  //end												// Updated: Filipe Ribeiro and Andre Barbosa
+          //end                                                                                         // Updated:Filipe Ribeiro and Andre Barbosa
 
-	  //change the minimum displacement				// Updated: Filipe Ribeiro and Andre Barbosa
+          //change the minimum displacement                             // Updated:Filipe Ribeiro and Andre Barbosa
       if (Ke>Ke0) { //if nFactor>0
-		  //1st - recover dmin of the member
-		  dmin = dmin+fmin/Ke0;
-		  //2nd - update dmin
+                  //1st - recover dmin of the member
+                  dmin = dmin+fmin/Ke0;
+                  //2nd - update dmin
           dmin = dmin*(1.0+betaa);
-		  //3rd - compute moment on the dmax point in the next cycle (through the member envelope curve)
-		  double ek0;
-		  double fNegOrig;
-		  envelNegCap2 (fyNeg,AlfaNeg*(1+nFactor)/(1+nFactor*AlfaNeg),capSlopeNeg*(1+nFactor)/(1+nFactor*capSlopeNeg), cpNegOrig, dmin, fNegOrig, ek0, Ke0, My_neg, ResfacNeg,-FracDispNeg, flagStop);
-		  //4th - recompute zero-length's dmin
-		  dmin = dmin-fNegOrig/Ke0;
-		  } else {
-	      dmin = dmin*(1.0+betaa);
-	  }										// Updated: Filipe Ribeiro and Andre Barbosa
+                  //3rd - compute moment on the dmax point in the next cycle (through the member envelope curve)
+                  double ek0;
+                  double fNegOrig;
+                  envelNegCap2 (fyNeg,AlfaNeg*(1+nFactor)/(1+nFactor*AlfaNeg),capSlopeNeg*(1+nFactor)/(1+nFactor*capSlopeNeg), cpNegOrig, dmin, fNegOrig, ek0, Ke0, My_neg, ResfacNeg,-FracDispNeg, flagStop);
+                  //4th - recompute zero-length's dmin
+                  dmin = dmin-fNegOrig/Ke0;
+                  } else {
+              dmin = dmin*(1.0+betaa);
+          }                                                                             // Updated:Filipe Ribeiro and Andre Barbosa
      
       double dyNeg = fyNeg/Ke;
       ekhardNeg=AlfaNeg*Ke;
@@ -653,46 +760,46 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
     } else { //else if (deltaD < 0.0 && f < 0.0 || deltaD > 0.0 && f <=0.0 && d >= sn) {
      
       fyPos = fyPos*(1.0-betas*DPos);
-      
-	  //change the strain hardening ratio					// Updated: Filipe Ribeiro and Andre Barbosa
-        //1st - recover the strain hardening ratio of the member        
-	    AlfaPos=AlfaPos*(1+nFactor)/(1+nFactor*AlfaPos);            
-		//2nd - apply the redution to the ratio of the member           
-	     AlfaPos=AlfaPos*(1.0-betas*DPos);	
-		//3rd - recompute the strain hardening ratio (updated) 
-		AlfaPos=(AlfaPos)/(1+nFactor*(1-AlfaPos));		// Updated: Filipe Ribeiro and Andre Barbosa
-      
-      fCapRefPos=fCapRefPos*(1.0-betac*DPos);
-      //dmax = dmax*(1.0+betaa); 
      
-	 // Auxiliary envelope curve for the real member			// Updated: Filipe Ribeiro and Andre Barbosa
-	  double dCap1PosOrig=fCapRefPos/(Ke0-capSlopePos*(1+nFactor)/(1+nFactor*capSlopePos)*Ke0);
+          //change the strain hardening ratio                                   // Updated:Filipe Ribeiro and Andre Barbosa
+        //1st - recover the strain hardening ratio of the member        
+            AlfaPos=AlfaPos*(1+nFactor)/(1+nFactor*AlfaPos);            
+                //2nd - apply the redution to the ratio of the member          
+             AlfaPos=AlfaPos*(1.0-betas*DPos); 
+                //3rd - recompute the strain hardening ratio (updated)
+                AlfaPos=(AlfaPos)/(1+nFactor*(1-AlfaPos));              // Updated:Filipe Ribeiro and Andre Barbosa
+     
+      fCapRefPos=fCapRefPos*(1.0-betac*DPos);
+      //dmax = dmax*(1.0+betaa);
+     
+         // Auxiliary envelope curve for the real member                        // Updated:Filipe Ribeiro and Andre Barbosa
+          double dCap1PosOrig=fCapRefPos/(Ke0-capSlopePos*(1+nFactor)/(1+nFactor*capSlopePos)*Ke0);
       double dCap2PosOrig=(fCapRefPos+AlfaPos*(1+nFactor)/(1+nFactor*AlfaPos)*Ke0*fyPos/Ke0-fyPos)/(AlfaPos*(1+nFactor)/(1+nFactor*AlfaPos)*Ke0-capSlopePos*(1+nFactor)/(1+nFactor*capSlopePos)*Ke0);
       double cpPosOrig=0.0;
-	  //cpPos=max(dCap1Pos,dCap2Pos);
+          //cpPos=max(dCap1Pos,dCap2Pos);
       //double fCapNeg = fCapRefNeg + capSlopeNeg*Ke*cpNeg;
       if (dCap1PosOrig > dCap2PosOrig){
         cpPosOrig = dCap1PosOrig;
       } else {
         cpPosOrig = dCap2PosOrig;
       }
-	  //end													// Updated: Filipe Ribeiro and Andre Barbosa
+          //end                                                                                                 // Updated:Filipe Ribeiro and Andre Barbosa
 
-	  //change the maximum displacement				// Updated: Filipe Ribeiro and Andre Barbosa
+          //change the maximum displacement                             // Updated:Filipe Ribeiro and Andre Barbosa
       if (Ke>Ke0) { //if nFactor>0
-		  //1st - recover dmax of the member
-		  dmax = dmax+fmax/Ke0;
-		  //2nd - update dmin
+                  //1st - recover dmax of the member
+                  dmax = dmax+fmax/Ke0;
+                  //2nd - update dmin
           dmax = dmax*(1.0+betaa);
-		  //3rd - compute moment on the dmax point in the next cycle (through the member envelope curve)
-		  double ek0;
-		  double fPosOrig;
-		  envelPosCap2(fyPos,AlfaPos*(1+nFactor)/(1+nFactor*AlfaPos),capSlopePos*(1+nFactor)/(1+nFactor*capSlopePos),cpPosOrig,dmax,fPosOrig, ek0, Ke0, My_pos, ResfacPos,FracDispPos, flagStop);
-		  //4th - recompute dmin
-		  dmax = dmax-fPosOrig/Ke0;
-	  } else {
-	      dmax = dmax*(1.0+betaa);
-	  }										// Updated: Filipe Ribeiro and Andre Barbosa
+                  //3rd - compute moment on the dmax point in the next cycle (through the member envelope curve)
+                  double ek0;
+                  double fPosOrig;
+                  envelPosCap2(fyPos,AlfaPos*(1+nFactor)/(1+nFactor*AlfaPos),capSlopePos*(1+nFactor)/(1+nFactor*capSlopePos),cpPosOrig,dmax,fPosOrig, ek0, Ke0, My_pos, ResfacPos,FracDispPos, flagStop);
+                  //4th - recompute dmin
+                  dmax = dmax-fPosOrig/Ke0;
+          } else {
+              dmax = dmax*(1.0+betaa);
+          }                                                                             // Updated:Filipe Ribeiro and Andre Barbosa
  
       double dyPos = fyPos/Ke;
       ekhardPos=AlfaPos*Ke;
@@ -709,8 +816,8 @@ ModIMKPeakOriented02::setTrialStrain(double strain, double strainRate)
       }
       //double fCapPos = fCapRefPos + capSlopePos * Ke * cpPos;
     }
-	
-	}				// this cycle was reformulated // Filipe Ribeiro and Andre Barbosa
+       
+        }                               // this cycle was reformulated // Filipe Ribeiro and Andre Barbosa
    
    
   } else {
@@ -745,7 +852,7 @@ double ModIMKPeakOriented02::getInitialTangent(void)
 double ModIMKPeakOriented02::getDampTangent(void)
 {
   double DTangent = ekP;
-  return DTangent;     
+  return DTangent;    
 }
 
 
@@ -761,8 +868,8 @@ double ModIMKPeakOriented02::getStrainRate(void)
 
 int ModIMKPeakOriented02::commitState(void)
 {
-  commitCalledOnce = 1;
-
+  commitCalledOnce = 1;         // Updated:Filipe Ribeiro and Andre Barbosa
+ 
   Cstrain = dP;
   Cstress = fP;
   Ctangent = Tangent;
@@ -821,11 +928,11 @@ int ModIMKPeakOriented02::commitState(void)
   Cflagdeg = flagdeg;
   CRSE=RSE;
 
-  CKe=Ke;				// Updated: Filipe Ribeiro and Andre Barbosa
-  CAlfaNeg=AlfaNeg;		// Updated: Filipe Ribeiro and Andre Barbosa
-  CAlfaPos=AlfaPos;		// Updated: Filipe Ribeiro and Andre Barbosa
-  CprodBeta=prodBeta;	// Updated: Filipe Ribeiro and Andre Barbosa
-  
+  CKe=Ke;                               // Updated:Filipe Ribeiro and Andre Barbosa
+  CAlfaNeg=AlfaNeg;             // Updated:Filipe Ribeiro and Andre Barbosa
+  CAlfaPos=AlfaPos;             // Updated:Filipe Ribeiro and Andre Barbosa
+  CprodBeta=prodBeta;   // Updated:Filipe Ribeiro and Andre Barbosa
+ 
   return 0;
 }
 
@@ -890,27 +997,26 @@ int ModIMKPeakOriented02::revertToLastCommit(void)
   flagdeg = Cflagdeg;
   RSE=CRSE;
 
-  Ke=CKe;      			// Updated: Filipe Ribeiro and Andre Barbosa
-  AlfaNeg=CAlfaNeg;		// Updated: Filipe Ribeiro and Andre Barbosa
-  AlfaPos=CAlfaPos;		// Updated: Filipe Ribeiro and Andre Barbosa
-  prodBeta=CprodBeta;	// Updated: Filipe Ribeiro and Andre Barbosa
-  
+  Ke=CKe;                       // Updated:Filipe Ribeiro and Andre Barbosa
+  AlfaNeg=CAlfaNeg;             // Updated:Filipe Ribeiro and Andre Barbosa
+  AlfaPos=CAlfaPos;             // Updated:Filipe Ribeiro and Andre Barbosa
+  prodBeta=CprodBeta;   // Updated:Filipe Ribeiro and Andre Barbosa
+ 
   return 0;
 }
 
 int ModIMKPeakOriented02::revertToStart(void)
 {
-  commitCalledOnce = 0;
-  
+  commitCalledOnce = 0;         // Updated:Filipe Ribeiro and Andre Barbosa
+ 
   // Initialize state variables
   dP=CdP=0.0;
   fP=CfP=0.0;
+  ek=Cek=0.0;
   RSE=CRSE=0.0;
  
-  Ke=CKe=Ke0*(1+nFactor);			// Updated: Filipe Ribeiro and Andre Barbosa
-   
-  ek=Cek=Ke;
-  
+  Ke=CKe=Ke0*(1+nFactor);                       // Updated:Filipe Ribeiro and Andre Barbosa
+ 
   Unl=CUnl=1;
   kon=Ckon=0;
   flagStop=CflagStop=0;
@@ -944,11 +1050,11 @@ int ModIMKPeakOriented02::revertToStart(void)
   fPeakPos = My_pos + ekhardPos * ThetaPpos;
   fPeakNeg = My_neg + ekhardNeg * (-ThetaPneg);
  
-  capSlopePos = -fPeakPos/(ThetaPCpos * Ke0);						// Updated: Filipe Ribeiro and Andre Barbosa
-  capSlopePos = capSlopePos/(1+nFactor*(1- capSlopePos));			// Updated: Filipe Ribeiro and Andre Barbosa
-  capSlopeNeg =  fPeakNeg/(ThetaPCneg * Ke0);						// Updated: Filipe Ribeiro and Andre Barbosa
-  capSlopeNeg = capSlopeNeg/(1+nFactor*(1- capSlopeNeg));			// Updated: Filipe Ribeiro and Andre Barbosa
-    
+  capSlopePos = -fPeakPos/(ThetaPCpos * Ke0);                                           // Updated:Filipe Ribeiro and Andre Barbosa
+  capSlopePos = capSlopePos/(1+nFactor*(1- capSlopePos));                       // Updated:Filipe Ribeiro and Andre Barbosa
+  capSlopeNeg =  fPeakNeg/(ThetaPCneg * Ke0);                                           // Updated:Filipe Ribeiro and Andre Barbosa
+  capSlopeNeg = capSlopeNeg/(1+nFactor*(1- capSlopeNeg));                       // Updated:Filipe Ribeiro and Andre Barbosa
+   
   fCapRefPos = -capSlopePos * Ke * (ThetaPpos + My_pos/Ke) + fPeakPos;
   fCapRefNeg = -capSlopeNeg * Ke * (-ThetaPneg + My_neg/Ke) + fPeakNeg;
  
@@ -957,8 +1063,8 @@ int ModIMKPeakOriented02::revertToStart(void)
   cpPos = My_pos/Ke + ThetaPpos;
   cpNeg = My_neg/Ke + (-ThetaPneg);
  
-  ekhardPos = Ke * (AlfanPos)/(1+nFactor*(1-AlfanPos));		// Updated: Filipe Ribeiro and Andre Barbosa
-  ekhardNeg = Ke * (AlfanNeg)/(1+nFactor*(1-AlfanNeg));		// Updated: Filipe Ribeiro and Andre Barbosa
+  ekhardPos = Ke * (AlfanPos)/(1+nFactor*(1-AlfanPos));         // Updated:Filipe Ribeiro and Andre Barbosa
+  ekhardNeg = Ke * (AlfanNeg)/(1+nFactor*(1-AlfanNeg));         // Updated:Filipe Ribeiro and Andre Barbosa
   ekexcurs = Ke;
   ekP = 0.0;
  
@@ -990,9 +1096,9 @@ int ModIMKPeakOriented02::revertToStart(void)
   CfPeakPos = My_pos + ekhardPos * ThetaPpos;
   CfPeakNeg = My_neg + ekhardNeg * (-ThetaPneg);
  
-  CcapSlopePos = -fPeakPos/(ThetaPCpos * Ke0);						// Updated: Filipe Ribeiro and Andre Barbosa
-  CcapSlopePos = CcapSlopePos/(1+nFactor*(1- CcapSlopePos));			// Updated: Filipe Ribeiro and Andre Barbosa
-  CcapSlopeNeg =  fPeakNeg/(ThetaPCneg * Ke0);						// Updated: Filipe Ribeiro and Andre Barbosa
+  CcapSlopePos = -fPeakPos/(ThetaPCpos * Ke0);                                          // Updated:Filipe Ribeiro and Andre Barbosa
+  CcapSlopePos = CcapSlopePos/(1+nFactor*(1- CcapSlopePos));                    // Updated:Filipe Ribeiro and Andre Barbosa
+  CcapSlopeNeg =  fPeakNeg/(ThetaPCneg * Ke0);                                          // Updated:Filipe Ribeiro and Andre Barbosa
   CcapSlopeNeg = CcapSlopeNeg/(1+nFactor*(1- CcapSlopeNeg));
  
   CfCapRefPos = -capSlopePos * Ke * (ThetaPpos + My_pos/Ke) + fPeakPos;
@@ -1003,18 +1109,18 @@ int ModIMKPeakOriented02::revertToStart(void)
   CcpPos = My_pos/Ke + ThetaPpos;
   CcpNeg = My_neg/Ke + (-ThetaPneg);
  
-  CekhardPos = Ke * (AlfanPos)/(1+nFactor*(1-AlfanPos));				// Updated: Filipe Ribeiro and Andre Barbosa
-  CekhardNeg = Ke * (AlfanNeg)/(1+nFactor*(1-AlfanNeg));				// Updated: Filipe Ribeiro and Andre Barbosa
+  CekhardPos = Ke * (AlfanPos)/(1+nFactor*(1-AlfanPos));                                // Updated:Filipe Ribeiro and Andre Barbosa
+  CekhardNeg = Ke * (AlfanNeg)/(1+nFactor*(1-AlfanNeg));                                // Updated:Filipe Ribeiro and Andre Barbosa
 
   Cekexcurs = Ke;
   CekP = 0.0;
  
   Cflagdeg = 0;
-  
+ 
   //Aux variables
-  AlfaNeg=CAlfaNeg=(AlfanNeg)/(1+nFactor*(1-AlfanNeg));	// Updated: Filipe Ribeiro and Andre Barbosa
-  AlfaPos=CAlfaPos=(AlfanPos)/(1+nFactor*(1-AlfanPos));	// Updated: Filipe Ribeiro and Andre Barbosa
-  prodBeta=CprodBeta=1.0;								// Updated: Filipe Ribeiro and Andre Barbosa
+  AlfaNeg=CAlfaNeg=(AlfanNeg)/(1+nFactor*(1-AlfanNeg)); // Updated:Filipe Ribeiro and Andre Barbosa
+  AlfaPos=CAlfaPos=(AlfanPos)/(1+nFactor*(1-AlfanPos)); // Updated:Filipe Ribeiro and Andre Barbosa
+  prodBeta=CprodBeta=1.0;                                                               // Updated:Filipe Ribeiro and Andre Barbosa
  
   return 0;
 }
@@ -1023,7 +1129,7 @@ UniaxialMaterial *
 ModIMKPeakOriented02::getCopy(void)
 {
   ModIMKPeakOriented02 *theCopy = new ModIMKPeakOriented02(this->getTag(), Ke0, AlfanPos, AlfanNeg, My_pos, My_neg, Ls, Ld, La, Lk,
-                                                                                                                 Cs, Cd, Ca, Ck, ThetaPpos, ThetaPneg,ThetaPCpos, ThetaPCneg, ResfacPos, ResfacNeg,FracDispPos, FracDispNeg,DPos, DNeg,nFactor);   // Updated: Filipe Ribeiro and Andre Barbosa
+                                                                                                                 Cs, Cd, Ca, Ck, ThetaPpos, ThetaPneg,ThetaPCpos, ThetaPCneg, ResfacPos, ResfacNeg, FracDispPos, FracDispNeg, DPos, DNeg, C_Fp, C_Fn, nFactor);   // Updated:Filipe Ribeiro and Andre Barbosa
   // Converged state variables
   theCopy->Cstrain = Cstrain;
   theCopy->Cstress = Cstress;
@@ -1140,14 +1246,14 @@ ModIMKPeakOriented02::getCopy(void)
   theCopy->CRSE=CRSE;
  
   //Aux variables
-  theCopy->Ke=Ke;  				// Updated: Filipe Ribeiro and Andre Barbosa
-  theCopy->CKe=CKe;  			// Updated: Filipe Ribeiro and Andre Barbosa
-  theCopy->AlfaNeg=AlfaNeg;		// Updated: Filipe Ribeiro and Andre Barbosa
-  theCopy->CAlfaNeg=CAlfaNeg;	// Updated: Filipe Ribeiro and Andre Barbosa
-  theCopy->AlfaPos=AlfaPos;		// Updated: Filipe Ribeiro and Andre Barbosa
-  theCopy->CAlfaPos=CAlfaPos;	// Updated: Filipe Ribeiro and Andre Barbosa
-  theCopy->CprodBeta=CprodBeta;	// Updated: Filipe Ribeiro and Andre Barbosa
-  theCopy->prodBeta=prodBeta;	// Updated: Filipe Ribeiro and Andre Barbosa
+  theCopy->Ke=Ke;                               // Updated:Filipe Ribeiro and Andre Barbosa
+  theCopy->CKe=CKe;                     // Updated:Filipe Ribeiro and Andre Barbosa
+  theCopy->AlfaNeg=AlfaNeg;             // Updated:Filipe Ribeiro and Andre Barbosa
+  theCopy->CAlfaNeg=CAlfaNeg;   // Updated:Filipe Ribeiro and Andre Barbosa
+  theCopy->AlfaPos=AlfaPos;             // Updated:Filipe Ribeiro and Andre Barbosa
+  theCopy->CAlfaPos=CAlfaPos;   // Updated:Filipe Ribeiro and Andre Barbosa
+  theCopy->CprodBeta=CprodBeta; // Updated:Filipe Ribeiro and Andre Barbosa
+  theCopy->prodBeta=prodBeta;   // Updated:Filipe Ribeiro and Andre Barbosa
 
   return theCopy;
 }
@@ -1156,13 +1262,13 @@ int
 ModIMKPeakOriented02::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(76);			// Updated: Filipe Ribeiro and Andre Barbosa
+  static Vector data(78);                       // Updated:Filipe Ribeiro and Andre Barbosa
   data(0) = this->getTag();
  
   // Material properties
-  data(1) = Ke0;			// Updated: Filipe Ribeiro and Andre Barbosa
-  data(2) = AlfanPos;		// Updated: Filipe Ribeiro and Andre Barbosa
-  data(3) = AlfanNeg;		// Updated: Filipe Ribeiro and Andre Barbosa
+  data(1) = Ke0;                        // Updated:Filipe Ribeiro and Andre Barbosa
+  data(2) = AlfanPos;           // Updated:Filipe Ribeiro and Andre Barbosa
+  data(3) = AlfanNeg;           // Updated:Filipe Ribeiro and Andre Barbosa
   data(4) = My_pos;
   data(5) = My_neg;
   data(6) = Ls;
@@ -1246,16 +1352,18 @@ ModIMKPeakOriented02::sendSelf(int cTag, Channel &theChannel)
   data(65) = RSE;
   data(66) = CRSE;
  
-  data(67)=nFactor;   // Updated: Filipe Ribeiro and Andre Barbosa
-  data(68)=Ke;        // Updated: Filipe Ribeiro and Andre Barbosa
-  data(69)=CKe;       // Updated: Filipe Ribeiro and Andre Barbosa
-  data(70)=AlfaNeg;		// Updated: Filipe Ribeiro and Andre Barbosa
-  data(71)=CAlfaNeg;		// Updated: Filipe Ribeiro and Andre Barbosa
-  data(72)=AlfaPos;		// Updated: Filipe Ribeiro and Andre Barbosa
-  data(73)=CAlfaPos;		// Updated: Filipe Ribeiro and Andre Barbosa
-  data(74)=prodBeta;				// Updated: Filipe Ribeiro and Andre Barbosa
-  data(75)=CprodBeta;				// Updated: Filipe Ribeiro and Andre Barbosa
-	     
+  data(67)=nFactor;   // Updated:Filipe Ribeiro and Andre Barbosa
+  data(68)=Ke;        // Updated:Filipe Ribeiro and Andre Barbosa
+  data(69)=CKe;       // Updated:Filipe Ribeiro and Andre Barbosa
+  data(70)=AlfaNeg;             // Updated:Filipe Ribeiro and Andre Barbosa
+  data(71)=CAlfaNeg;            // Updated:Filipe Ribeiro and Andre Barbosa
+  data(72)=AlfaPos;             // Updated:Filipe Ribeiro and Andre Barbosa
+  data(73)=CAlfaPos;            // Updated:Filipe Ribeiro and Andre Barbosa
+  data(74)=prodBeta;                            // Updated:Filipe Ribeiro and Andre Barbosa
+  data(75)=CprodBeta;                           // Updated:Filipe Ribeiro and Andre Barbosa
+  data(76)=C_Fp;                           // Updated: Filipe 
+  data(77)=C_Fn;                           // Updated: Filipe 
+             
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0)
     opserr << "ModIMKPeakOriented02::sendSelf() - failed to send data\n";
@@ -1268,7 +1376,7 @@ ModIMKPeakOriented02::recvSelf(int cTag, Channel &theChannel,
                                FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(67);
+  static Vector data(78);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
  
   if (res < 0) {
@@ -1278,9 +1386,9 @@ ModIMKPeakOriented02::recvSelf(int cTag, Channel &theChannel,
   else {
     this->setTag((int)data(0));
     // Material properties
-    Ke0 = data(1);						// Updated: Filipe Ribeiro and Andre Barbosa
-    AlfanPos = data(2);					// Updated: Filipe Ribeiro and Andre Barbosa
-    AlfanNeg = data(3);					// Updated: Filipe Ribeiro and Andre Barbosa
+    Ke0 = data(1);                                              // Updated:Filipe Ribeiro and Andre Barbosa
+    AlfanPos = data(2);                                 // Updated:Filipe Ribeiro and Andre Barbosa
+    AlfanNeg = data(3);                                 // Updated:Filipe Ribeiro and Andre Barbosa
     My_pos = data(4);
     My_neg = data(5);
     Ls = data(6);
@@ -1361,16 +1469,19 @@ ModIMKPeakOriented02::recvSelf(int cTag, Channel &theChannel,
     Cflagdeg = data(64);
     RSE = data(65);
     CRSE = data(66);
-	
-	nFactor=data(67);   // Updated: Filipe Ribeiro and Andre Barbosa
-	Ke=data(68);       // Updated: Filipe Ribeiro and Andre Barbosa
-	CKe=data(69);       // Updated: Filipe Ribeiro and Andre Barbosa
-	AlfaNeg=data(70);		// Updated: Filipe Ribeiro and Andre Barbosa
-	CAlfaNeg=data(71);		// Updated: Filipe Ribeiro and Andre Barbosa
-	AlfaPos=data(72);		// Updated: Filipe Ribeiro and Andre Barbosa
-	CAlfaPos=data(73);		// Updated: Filipe Ribeiro and Andre Barbosa
-	prodBeta=data(74);				// Updated: Filipe Ribeiro and Andre Barbosa
-	CprodBeta=data(75);				// Updated: Filipe Ribeiro and Andre Barbosa
+       
+        nFactor=data(67);   // Updated:Filipe Ribeiro and Andre Barbosa
+        Ke=data(68);       // Updated:Filipe Ribeiro and Andre Barbosa
+        CKe=data(69);       // Updated:Filipe Ribeiro and Andre Barbosa
+        AlfaNeg=data(70);               // Updated:Filipe Ribeiro and Andre Barbosa
+        CAlfaNeg=data(71);              // Updated:Filipe Ribeiro and Andre Barbosa
+        AlfaPos=data(72);               // Updated:Filipe Ribeiro and Andre Barbosa
+        CAlfaPos=data(73);              // Updated:Filipe Ribeiro and Andre Barbosa
+        prodBeta=data(74);                              // Updated:Filipe Ribeiro and Andre Barbosa
+        CprodBeta=data(75);                             // Updated:Filipe Ribeiro and Andre Barbosa
+
+		C_Fp=data(76);                             // Updated: Filipe 
+		C_Fn=data(77);                             // Updated: Filipe 
 
   }
  
@@ -1381,10 +1492,10 @@ void
 ModIMKPeakOriented02::Print(OPS_Stream &s, int flag)
 {
     s << "ModIMKPeakOriented02 tag: " << this->getTag() << endln;
-    s << "  Ke: " << Ke0 << endln;						// Updated: Filipe Ribeiro and Andre Barbosa
-	s << "  AlfaPos: " << AlfanPos << endln;			// Updated: Filipe Ribeiro and Andre Barbosa
-	s << "  AlfaNeg: " << AlfanNeg << endln;			// Updated: Filipe Ribeiro and Andre Barbosa
-	s << "  My_pos: " << My_pos << endln;
+    s << "  Ke: " << Ke0 << endln;                                              // Updated:Filipe Ribeiro and Andre Barbosa
+        s << "  AlfaPos: " << AlfanPos << endln;                        // Updated:Filipe Ribeiro and Andre Barbosa
+        s << "  AlfaNeg: " << AlfanNeg << endln;                        // Updated:Filipe Ribeiro and Andre Barbosa
+        s << "  My_pos: " << My_pos << endln;
     s << "  My_neg: " << My_neg << endln;
     s << "  Ls: " << Ls << endln;
     s << "  Ld: " << Ld << endln;
@@ -1404,7 +1515,9 @@ ModIMKPeakOriented02::Print(OPS_Stream &s, int flag)
     s << "  FracDispNeg: " << FracDispNeg << endln;
     s << "  DPos: " << DPos << endln;
     s << "  DNeg: " << DNeg << endln;
-    s << "  nFactor: " << nFactor << endln;			// Updated: Filipe Ribeiro and Andre Barbosa
+	s << "  C_Fp: " << C_Fp << endln;                     // Updated: Filipe 
+	s << "  C_Fn: " << C_Fn << endln;                     // Updated: Filipe 
+    s << "  nFactor: " << nFactor << endln;                     // Updated:Filipe Ribeiro and Andre Barbosa
 }
 
 // Positive and Negative Envelope SubRoutines
@@ -1566,5 +1679,7 @@ ModIMKPeakOriented02::getResponse (int responseID, Information &matInformation)
     return UniaxialMaterial::getResponse(responseID, matInformation);
   return 0;
 }
+ 
+
  
 
