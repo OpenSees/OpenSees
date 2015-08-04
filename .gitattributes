@@ -2787,6 +2787,9 @@ SRC/handler/handler.tex -text
 SRC/interpreter/DL_Interpreter.cpp -text
 SRC/interpreter/DL_Interpreter.h -text
 SRC/interpreter/Makefile -text
+SRC/interpreter/OpenSeesCommandsPython.cpp -text
+SRC/interpreter/OpenSeesCommandsTcl.cpp -text
+SRC/interpreter/OpenSeesUniaxialMaterialCommands.cpp -text
 SRC/interpreter/PythonInterpreter.cpp -text
 SRC/interpreter/PythonInterpreter.h -text
 SRC/interpreter/TclInterpreter.cpp -text
