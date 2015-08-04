@@ -80,6 +80,7 @@ EXTERN int  TclFormatInt _ANSI_ARGS_((char *buffer, long n));
 EXTERN int  TclObjCommandComplete _ANSI_ARGS_((Tcl_Obj *cmdPtr));
 }
 
+extern int addOpenSeesCommands(Tcl_Interp *interp);
 
 int		Tcl_AppInit _ANSI_ARGS_((Tcl_Interp *interp));
 
@@ -224,83 +225,84 @@ int Tcl_AppInit(Tcl_Interp *interp)
 
 TclInterpreter::TclInterpreter(int argc, char **argv) {
 
-	/* fmk - beginning of modifications for OpenSees */
-	fprintf(stderr,"\n\n\t OpenSees -- Open System For Earthquake Engineering Simulation");
-	fprintf(stderr,"\n\tPacific Earthquake Engineering Research Center -- 3.0.0\n\n");
-	
-	fprintf(stderr,"\t    (c) Copyright 1999,2000 The Regents of the University of California");
-	fprintf(stderr,"\n\t\t\t\t All Rights Reserved\n");    
-	fprintf(stderr,"    (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)\n\n\n");
-
-    Tcl_FindExecutable(argv[0]);
-    interp = Tcl_CreateInterp();
-
+  /* fmk - beginning of modifications for OpenSees */
+  fprintf(stderr,"\n\n\t OpenSees -- Open System For Earthquake Engineering Simulation");
+  fprintf(stderr,"\n\tPacific Earthquake Engineering Research Center -- 3.0.0\n\n");
+  
+  fprintf(stderr,"\t    (c) Copyright 1999,2000 The Regents of the University of California");
+  fprintf(stderr,"\n\t\t\t\t All Rights Reserved\n");    
+  fprintf(stderr,"    (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)\n\n\n");
+  
+  Tcl_FindExecutable(argv[0]);
+  interp = Tcl_CreateInterp();
+  
 #ifdef TCL_MEM_DEBUG
-    Tcl_InitMemory(interp);
+  Tcl_InitMemory(interp);
 #endif
-
-    /*
-     * Make command-line arguments available in the Tcl variables "argc"
-     * and "argv".  If the first argument doesn't start with a "-" then
-     * strip it off and use it as the name of a script file to process.
-     */
-
-    if (tclStartupScriptFileName == NULL) {
-	if ((argc > 1) && (argv[1][0] != '-')) {
-	    tclStartupScriptFileName = argv[1];
-	    argc--;
-	    argv++;
-	}
+  
+  /*
+   * Make command-line arguments available in the Tcl variables "argc"
+   * and "argv".  If the first argument doesn't start with a "-" then
+   * strip it off and use it as the name of a script file to process.
+   */
+  
+  if (tclStartupScriptFileName == NULL) {
+    if ((argc > 1) && (argv[1][0] != '-')) {
+      tclStartupScriptFileName = argv[1];
+      argc--;
+      argv++;
     }
-
-    args = Tcl_Merge(argc-1, argv+1);
-    Tcl_ExternalToUtfDString(NULL, args, -1, &argString);
-    Tcl_SetVar(interp, "argv", Tcl_DStringValue(&argString), TCL_GLOBAL_ONLY);
-    Tcl_DStringFree(&argString);
-    ckfree(args);
-
-
-    if (tclStartupScriptFileName == NULL) {
-	Tcl_ExternalToUtfDString(NULL, argv[0], -1, &argString);
-    } else {
-	tclStartupScriptFileName = Tcl_ExternalToUtfDString(NULL,
-		tclStartupScriptFileName, -1, &argString);
-    }
-
-    TclFormatInt(buffer, argc-1);
-    Tcl_SetVar(interp, "argc", buffer, TCL_GLOBAL_ONLY);
-    Tcl_SetVar(interp, "argv0", Tcl_DStringValue(&argString), TCL_GLOBAL_ONLY);
-
-    /*
-     * Set the "tcl_interactive" variable.
-     */
-
-    tty = isatty(0);
-    char one[2] = "1";
-    char zero[2] = "0";
-
-    Tcl_SetVar(interp, "tcl_interactive",
-	    ((tclStartupScriptFileName == NULL) && tty) ? one : zero,
-	    TCL_GLOBAL_ONLY);
-    
-    /*
-     * Invoke application-specific initialization.
-     */
-
+  }
+  
+  args = Tcl_Merge(argc-1, argv+1);
+  Tcl_ExternalToUtfDString(NULL, args, -1, &argString);
+  Tcl_SetVar(interp, "argv", Tcl_DStringValue(&argString), TCL_GLOBAL_ONLY);
+  Tcl_DStringFree(&argString);
+  ckfree(args);
+  
+  
+  if (tclStartupScriptFileName == NULL) {
+    Tcl_ExternalToUtfDString(NULL, argv[0], -1, &argString);
+  } else {
+    tclStartupScriptFileName = Tcl_ExternalToUtfDString(NULL,
+							tclStartupScriptFileName, -1, &argString);
+  }
+  
+  TclFormatInt(buffer, argc-1);
+  Tcl_SetVar(interp, "argc", buffer, TCL_GLOBAL_ONLY);
+  Tcl_SetVar(interp, "argv0", Tcl_DStringValue(&argString), TCL_GLOBAL_ONLY);
+  
+  /*
+   * Set the "tcl_interactive" variable.
+   */
+  
+  tty = isatty(0);
+  char one[2] = "1";
+  char zero[2] = "0";
+  
+  Tcl_SetVar(interp, "tcl_interactive",
+	     ((tclStartupScriptFileName == NULL) && tty) ? one : zero,
+	     TCL_GLOBAL_ONLY);
+  
+  /*
+   * Invoke application-specific initialization.
+   */
+  
 #ifndef TCL_LOCAL_APPINIT
 #define TCL_LOCAL_APPINIT Tcl_AppInit    
 #endif
-
-    if ((*Tcl_AppInit)(interp) != TCL_OK) {
-	errChannel = Tcl_GetStdChannel(TCL_STDERR);
-	if (errChannel) {
-	    Tcl_WriteChars(errChannel,
-		    "application-specific initialization failed: ", -1);
-	    Tcl_WriteObj(errChannel, Tcl_GetObjResult(interp));
-	    Tcl_WriteChars(errChannel, "\n", 1);
+  
+  if ((*Tcl_AppInit)(interp) != TCL_OK) {
+    errChannel = Tcl_GetStdChannel(TCL_STDERR);
+    if (errChannel) {
+      Tcl_WriteChars(errChannel,
+		     "application-specific initialization failed: ", -1);
+      Tcl_WriteObj(errChannel, Tcl_GetObjResult(interp));
+      Tcl_WriteChars(errChannel, "\n", 1);
 	}
-    }
-
+  }
+ 
+  addOpenSeesCommands(interp);
 }
 
 TclInterpreter::~TclInterpreter() {

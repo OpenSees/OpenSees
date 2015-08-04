@@ -1,5 +1,4 @@
 
-
 #include "PythonInterpreter.h"
 
 /* Python interpreter main program */
@@ -237,6 +236,55 @@ static int RunMainFromImporter(char *filename)
 }
 
 }
+
+
+/*
+static char module_docstring[] =
+  "This module provides an interface for adding multiple numbers witten in C.";
+static char opensees_docstring[] =
+  "Calculate sum of a bunch of numbers.";
+
+static PyObject *ops_fmkSum(PyObject *self, PyObject *args)
+{
+  int argc = PyTuple_Size(args);
+
+  double value = argc;
+  PyObject *ret = Py_BuildValue("d", value);
+  return ret;
+}
+
+static PyMethodDef methodsOpenSees[] = {
+  {"fmkSum", ops_fmkSum, METH_VARARGS, opensees_docstring},
+  {NULL, NULL, 0, NULL}
+};
+
+PyMODINIT_FUNC init_fmkSum(void)
+{
+  fprintf(stderr, "HELLO WORLD\n");
+  PyObject *m = Py_InitModule3("_fmkSum", methodsOpenSees, module_docstring);
+  if (m == NULL)
+    return;
+}
+
+
+double fmkSum(double *x, int n) {
+  double result = 0.0;
+
+  for (int i = 0; i < n; i++) {
+    result += x[i];
+  }
+
+  return result;
+}
+
+
+void addOpenSeesCommands(void) {
+  PyImport_AddModule("opensees");
+  Py_InitModule("opensees", methodsOpenSees);
+}
+*/
+
+void addOpenSeesCommands(void);
 
 PythonInterpreter::PythonInterpreter(int argc, char **argv) {
     int c;
@@ -546,6 +594,8 @@ PythonInterpreter::PythonInterpreter(int argc, char **argv) {
     Py_SetProgramName(argv[0]);
 #endif
     Py_Initialize();
+
+    addOpenSeesCommands();
 
     if (Py_VerboseFlag ||
         (command == NULL && filename == NULL && module == NULL && stdin_is_interactive)) {

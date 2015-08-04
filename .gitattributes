@@ -2793,6 +2793,8 @@ SRC/interpreter/TclInterpreter.cpp -text
 SRC/interpreter/TclInterpreter.h -text
 SRC/interpreter/pythonMain.cpp -text
 SRC/interpreter/tclMain.cpp -text
+SRC/interpreter/test.py -text
+SRC/interpreter/test.tcl -text
 SRC/java/Makefile -text
 SRC/java/OpenSeesEvaluator.cpp -text
 SRC/java/OpenSeesEvaluator.h -text
