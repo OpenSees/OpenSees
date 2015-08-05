@@ -72,12 +72,13 @@ OPS_NewMinMaxMaterial(void)
 
   argc = OPS_GetNumRemainingInputArgs();  
   while (argc > 1) {
-    char argvLoc[10];
-    if (OPS_GetString(argvLoc, 10) != 0) {
+    //char argvLoc[10];
+    const char *argvLoc = OPS_GetString();
+    /*    if (OPS_GetString(argvLoc, 10) != 0) {
       opserr << "WARNING invalid string option uniaxialMaterial MinMax tag: " << iData[0] << endln;
       return 0;
     }
-
+    */
     numData = 1;
 
     if ((strcmp(argvLoc, "-min") == 0) || (strcmp(argvLoc, "-Min") == 0) || (strcmp(argvLoc, "-MIN") == 0)) {

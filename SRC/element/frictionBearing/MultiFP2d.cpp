@@ -74,7 +74,7 @@ OPS_MultiFP2d()
 
   numRemainingArgs -= 3;
 
-  char nextArg[30];
+  const char *nextArg;
   int done = 0;
 
   int axialCase = 1; //
@@ -83,7 +83,8 @@ OPS_MultiFP2d()
 
   while (done == 0 && numRemainingArgs > 0) {
 
-    OPS_GetString(nextArg, 30);
+    nextArg = OPS_GetString();
+    //    OPS_GetString(nextArg, 30);
     numRemainingArgs--;
 
     if (strcmp(nextArg, "-W0") == 0) {

@@ -67,7 +67,7 @@ OPS_ParallelMaterial(void)
   }
 
   for (int i=1; i<numArgs; i++) {
-    UniaxialMaterial *theMat = OPS_GetUniaxialMaterial(iData[i]);
+    UniaxialMaterial *theMat = OPS_getUniaxialMaterial(iData[i]);
     if (theMat == 0) {
       opserr << "WARNING no existing material with tag " << iData[i] 
 	     << " for uniaxialMaterial Parallel" << iData[0] << endln;
@@ -160,7 +160,7 @@ ParallelMaterial::setTrialStrain(double strain, double strainRate)
 double 
 ParallelMaterial::getStrain(void)
 {
-    return trialStrain;
+  return trialStrain;
 }
 
 double 
@@ -218,29 +218,28 @@ ParallelMaterial::getDampTangent(void)
 int 
 ParallelMaterial::commitState(void)
 {
-
-    // invoke commitState() on each of local MaterialModel objects
-    for (int i=0; i<numMaterials; i++)
-	if (theModels[i]->commitState() != 0) {
-	    opserr << "WARNING ParallelMaterial::commitState() ";
-	    opserr << "MaterialModel failed to commitState():" ;
-	    theModels[i]->Print(opserr);
-	}
-    
-    return 0;    
+  // invoke commitState() on each of local MaterialModel objects
+  for (int i=0; i<numMaterials; i++)
+    if (theModels[i]->commitState() != 0) {
+      opserr << "WARNING ParallelMaterial::commitState() ";
+      opserr << "MaterialModel failed to commitState():" ;
+      theModels[i]->Print(opserr);
+    }
+  
+  return 0;    
 }
 
 int 
 ParallelMaterial::revertToLastCommit(void)
 {
-    // invoke commitState() on each of local MaterialModel objects
-    for (int i=0; i<numMaterials; i++)
-	if (theModels[i]->revertToLastCommit() != 0) {
-	    opserr << "WARNING ParallelMaterial::revertToLastCommit() ";
-	    opserr << "MaterialModel failed to revertToLastCommit():" ;
-	    theModels[i]->Print(opserr);
-	}
-    
+  // invoke commitState() on each of local MaterialModel objects
+  for (int i=0; i<numMaterials; i++)
+    if (theModels[i]->revertToLastCommit() != 0) {
+      opserr << "WARNING ParallelMaterial::revertToLastCommit() ";
+      opserr << "MaterialModel failed to revertToLastCommit():" ;
+      theModels[i]->Print(opserr);
+    }
+  
     return 0;    
 }
 

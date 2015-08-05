@@ -88,12 +88,7 @@ OPS_NewPeerNGAMotion(void)
     numRemainingArgs -= 1;
   }
 
-  char eqMotion[100];
-  numData = 100;
-  if (OPS_GetString(eqMotion, numData) != 0) {
-    opserr << "WARNING invalid eqMotion for PeerNGAMotion with tag: " << tag << endln;
-    return 0;
-  }    
+  const char *eqMotion = OPS_GetString();
 
   numData = 1;
   if (OPS_GetDouble(&numData, &factor) != 0) {

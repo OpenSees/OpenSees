@@ -80,11 +80,8 @@ OPS_Export void *OPS_NewTriangleSeries()
 
     // parse the optional args
     while (numRemainingArgs > 1) {
-        char argvS[12];
-        if (OPS_GetString(argvS, 12) != 0) {
-            opserr << "WARNING invalid string in Triangle <tag?> <-factor cFactor?>" << endln;
-            return 0;
-        }
+      const char *argvS = OPS_GetString();
+
         if (strcmp(argvS,"-shift") == 0 || strcmp(argvS,"-phaseShift") == 0) {
             numData = 1;
             if (OPS_GetDouble(&numData, &dData[3]) != 0) {

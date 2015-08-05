@@ -185,22 +185,15 @@ int OPS_GetDoubleInput(int *numData, double *data)
 
 
 extern "C" 
-int OPS_GetString(char *arrayData, int sizeArray)
+const char *OPS_GetString(void)
 {
   if (currentArg >= maxArg) {
       opserr << "OPS_GetStringInput -- error reading " << currentArg << endln;
-      return -1;
+      return 0;
   }
-
-  if (strlen(currentArgv[currentArg]) > sizeArray) {
-      opserr << "OPS_GetStringInput -- passed array too small " << currentArg << endln;
-      return -1;
-  }
-
-  strcpy(arrayData, currentArgv[currentArg]);
+  
   currentArg++;
-
-  return 0;  
+  return currentArgv[currentArg-1];
 }
 
 

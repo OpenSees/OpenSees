@@ -6,7 +6,6 @@ include ../Makefile.def
 endif
 
 
-
 ifeq ($(RELIABILITY), YES_RELIABILITY)
 
 all:
@@ -132,11 +131,10 @@ metis:
 	@$(CD) $(FE)/graph/partitioner/metis-2.0; $(MAKE) lib;
 
 FMK_LIBS = $(FE)/database/FE_Datastore.o \
-	$(FE)/api/packages.o \
-	$(FE)/api/elementAPI_TCL.o
+	$(FE)/api/packages.o 
+
 
 KJE_LIBS = $(FE)/material/uniaxial/limitState/LimitStateMaterial.o \
-	$(FE)/material/uniaxial/limitState/TclLimitState.o \
 	$(FE)/material/uniaxial/limitState/limitCurve/LimitCurve.o \
 	$(FE)/material/uniaxial/limitState/limitCurve/AxialCurve.o \
 	$(FE)/material/uniaxial/limitState/limitCurve/WrapperLimitCurve.o \
@@ -149,8 +147,7 @@ GLF_LIBS = $(FE)/element/zeroLength/ZeroLength.o \
 	$(FE)/element/zeroLength/ZeroLengthSection.o \
 	$(FE)/element/zeroLength/CoupledZeroLength.o \
 	$(FE)/element/zeroLength/ZeroLengthND.o \
-	$(FE)/element/zeroLength/ZeroLengthImpact3D.o \
-	$(FE)/element/zeroLength/TclZeroLength.o
+	$(FE)/element/zeroLength/ZeroLengthImpact3D.o
 
 REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn2d.o \
@@ -158,7 +155,6 @@ REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn3d.o \
 	$(FE)/element/forceBeamColumn/ElasticForceBeamColumn2d.o \
 	$(FE)/element/forceBeamColumn/ElasticForceBeamColumn3d.o \
-	$(FE)/element/forceBeamColumn/TclForceBeamColumnCommand.o \
 	$(FE)/element/forceBeamColumn/BeamIntegration.o \
 	$(FE)/element/forceBeamColumn/LobattoBeamIntegration.o \
 	$(FE)/element/forceBeamColumn/CompositeSimpsonBeamIntegration.o \
@@ -183,8 +179,7 @@ REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/coordTransformation/CorotCrdTransf2d.o \
 	$(FE)/coordTransformation/LinearCrdTransf3d.o \
 	$(FE)/coordTransformation/PDeltaCrdTransf3d.o \
-	$(FE)/coordTransformation/CorotCrdTransf3d.o \
-	$(FE)/coordTransformation/TclGeomTransfCommand.o
+	$(FE)/coordTransformation/CorotCrdTransf3d.o
 
 LAW_LIBS = $(FE)/system_of_eqn/linearSOE/sparseSYM/SymSparseLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseSYM/SymSparseLinSolver.o \
@@ -210,25 +205,19 @@ GGD_LIBS = $(FE)/element/joint/MP_Joint2D.o \
 	$(FE)/element/joint/MP_Joint3D.o \
 	$(FE)/element/joint/Joint2D.o \
 	$(FE)/element/joint/Joint3D.o \
-	$(FE)/element/joint/TclJoint2dCommand.o \
-	$(FE)/element/joint/TclJoint3dCommand.o \
 	$(FE)/element/joint/BeamColumnJoint2d.o \
 	$(FE)/element/joint/BeamColumnJoint3d.o \
 	$(FE)/element/joint/ElasticTubularJoint.o \
-	$(FE)/element/joint/TclBeamColumnJointCommand.o \
 	$(FE)/element/updatedLagrangianBeamColumn/Elastic2DGNL.o \
 	$(FE)/element/updatedLagrangianBeamColumn/Inelastic2DYS02.o \
 	$(FE)/element/updatedLagrangianBeamColumn/InelasticYS2DGNL.o \
-	$(FE)/element/updatedLagrangianBeamColumn/TclElement2dYS.o \
 	$(FE)/element/updatedLagrangianBeamColumn/Inelastic2DYS01.o \
 	$(FE)/element/updatedLagrangianBeamColumn/Inelastic2DYS03.o \
-	$(FE)/element/updatedLagrangianBeamColumn/TclElement2dGNL.o \
 	$(FE)/element/updatedLagrangianBeamColumn/UpdatedLagrangianBeam2D.o \
 	$(FE)/element/updatedLagrangianBeamColumn/BilinearCyclic.o \
 	$(FE)/element/updatedLagrangianBeamColumn/CyclicModel.o \
 	$(FE)/element/updatedLagrangianBeamColumn/LinearCyclic.o \
 	$(FE)/element/updatedLagrangianBeamColumn/QuadraticCyclic.o \
-	$(FE)/element/updatedLagrangianBeamColumn/TclCyclicModelCommands.o \
 	$(FE)/material/yieldSurface/yieldSurfaceBC/Attalla2D.o \
 	$(FE)/material/yieldSurface/yieldSurfaceBC/ElTawil2D.o \
 	$(FE)/material/yieldSurface/yieldSurfaceBC/ElTawil2DUnSym.o \
@@ -237,7 +226,6 @@ GGD_LIBS = $(FE)/element/joint/MP_Joint2D.o \
 	$(FE)/material/yieldSurface/yieldSurfaceBC/YieldSurface_BC2D.o \
 	$(FE)/material/yieldSurface/yieldSurfaceBC/YieldSurface_BC.o \
 	$(FE)/material/yieldSurface/yieldSurfaceBC/NullYS2D.o \
-	$(FE)/material/yieldSurface/yieldSurfaceBC/TclModelBuilderYieldSurfaceBCCommand.o \
 	$(FE)/material/yieldSurface/evolution/BkStressLimSurface2D.o \
 	$(FE)/material/yieldSurface/evolution/CombinedIsoKin2D01.o \
 	$(FE)/material/yieldSurface/evolution/Isotropic2D01.o \
@@ -251,20 +239,17 @@ GGD_LIBS = $(FE)/element/joint/MP_Joint2D.o \
 	$(FE)/material/yieldSurface/evolution/NullEvolution.o \
 	$(FE)/material/yieldSurface/evolution/PeakOriented2D02.o \
 	$(FE)/material/yieldSurface/evolution/YS_Evolution2D.o \
-	$(FE)/material/yieldSurface/evolution/TclModelBuilderYS_EvolutionCommand.o \
 	$(FE)/material/yieldSurface/plasticHardeningMaterial/ExponReducing.o \
 	$(FE)/material/yieldSurface/plasticHardeningMaterial/MultiLinearKp.o \
 	$(FE)/material/yieldSurface/plasticHardeningMaterial/NullPlasticMaterial.o \
 	$(FE)/material/yieldSurface/plasticHardeningMaterial/PlasticHardeningMaterial.o \
-	$(FE)/material/yieldSurface/plasticHardeningMaterial/TclModelBuilderYSPlasticMaterialCommand.o \
 	$(FE)/damage/DamageModel.o \
 	$(FE)/damage/Kratzig.o \
 	$(FE)/damage/ParkAng.o \
 	$(FE)/damage/DamageResponse.o \
 	$(FE)/damage/HystereticEnergy.o \
 	$(FE)/damage/Mehanny.o \
-	$(FE)/damage/NormalizedPeak.o \
-	$(FE)/damage/TclModelBuilderDamageModelCommand.o \
+	$(FE)/damage/NormalizedPeak.o
 
 ERRORHANDLER_LIBS = $(FE)/handler/StandardStream.o \
 	$(FE)/handler/FileStream.o \
@@ -278,26 +263,22 @@ ERRORHANDLER_LIBS = $(FE)/handler/StandardStream.o \
 
 
 PY_SJB_RWB_BJ_LIBS = $(FE)/material/uniaxial/PY/PySimple1.o \
-                     $(FE)/material/uniaxial/PY/QzSimple1.o \
-                     $(FE)/material/uniaxial/PY/TzSimple1.o \
-		     $(FE)/material/uniaxial/PY/PySimple2.o \
-                     $(FE)/material/uniaxial/PY/QzSimple2.o \
-                     $(FE)/material/uniaxial/PY/TzSimple2.o \
-                     $(FE)/material/uniaxial/PY/ShallowFoundationGen.o \
-                     $(FE)/material/uniaxial/PY/PyLiq1.o \
-                     $(FE)/material/uniaxial/PY/TzLiq1.o \
-                     $(FE)/material/uniaxial/PY/TclPyTzQzMaterialCommand.o \
-                     $(FE)/material/uniaxial/PY/PySimple1Gen.o \
-                     $(FE)/material/uniaxial/PY/TzSimple1Gen.o
+	$(FE)/material/uniaxial/PY/QzSimple1.o \
+	$(FE)/material/uniaxial/PY/TzSimple1.o \
+	$(FE)/material/uniaxial/PY/PySimple2.o \
+	$(FE)/material/uniaxial/PY/QzSimple2.o \
+	$(FE)/material/uniaxial/PY/TzSimple2.o \
+	$(FE)/material/uniaxial/PY/ShallowFoundationGen.o \
+	$(FE)/material/uniaxial/PY/PyLiq1.o \
+	$(FE)/material/uniaxial/PY/TzLiq1.o \
+	$(FE)/material/uniaxial/PY/PySimple1Gen.o \
+	$(FE)/material/uniaxial/PY/TzSimple1Gen.o
 
-
-
-ZHY_LIBS =	$(FE)/material/nD/soil/FluidSolidPorousMaterial.o \
+ZHY_LIBS = $(FE)/material/nD/soil/FluidSolidPorousMaterial.o \
 	$(FE)/material/nD/soil/MultiYieldSurface.o \
 	$(FE)/material/nD/soil/MultiYieldSurfaceClay.o \
 	$(FE)/material/nD/soil/PressureDependMultiYield.o \
 	$(FE)/material/nD/soil/PressureDependMultiYield02.o \
-	$(FE)/material/nD/soil/TclUpdateMaterialStageCommand.o \
 	$(FE)/material/nD/soil/PressureIndependMultiYield.o \
 	$(FE)/material/nD/soil/T2Vector.o \
 	$(FE)/element/UP-ucsd/BrickUP.o \
@@ -306,9 +287,7 @@ ZHY_LIBS =	$(FE)/material/nD/soil/FluidSolidPorousMaterial.o \
 	$(FE)/element/UP-ucsd/BBarFourNodeQuadUP.o \
 	$(FE)/element/UP-ucsd/Nine_Four_Node_QuadUP.o \
 	$(FE)/element/UP-ucsd/Twenty_Eight_Node_BrickUP.o \
-	$(FE)/element/UP-ucsd/shp3dv.o \
-	$(FE)/element/UP-ucsd/TclFourNodeQuadUPCommand.o 
-
+	$(FE)/element/UP-ucsd/shp3dv.o
 
 ifeq ($(GRAPHICS), UsingOpenGL)
 
@@ -359,7 +338,6 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/NormEnvelopeElementRecorder.o \
 	$(FE)/recorder/NormElementRecorder.o \
 	$(FE)/recorder/EnvelopeElementRecorder.o \
-	$(FE)/recorder/TclRecorderCommands.o \
 	$(FE)/recorder/response/Response.o \
 	$(FE)/recorder/response/CompositeResponse.o \
 	$(FE)/recorder/response/ElementResponse.o \
@@ -370,16 +348,15 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 
 
 DATABASE_LIBS = $(FE)/database/FileDatastore.o \
-	$(FE)/database/NEESData.o \
-	$(FE)/database/TclDatabaseCommands.o
+	$(FE)/database/NEESData.o
 
 MATRIX_LIBS   = $(FE)/matrix/Matrix.o \
 	$(FE)/matrix/Vector.o \
-	$(FE)/matrix/ID.o  
+	$(FE)/matrix/ID.o
 
 TAGGED_LIBS =   $(FE)/tagged/TaggedObject.o \
 	$(FE)/tagged/storage/ArrayOfTaggedObjects.o \
-	$(FE)/tagged/storage/ArrayOfTaggedObjectsIter.o  \
+	$(FE)/tagged/storage/ArrayOfTaggedObjectsIter.o \
 	$(FE)/tagged/storage/MapOfTaggedObjects.o \
 	$(FE)/tagged/storage/MapOfTaggedObjectsIter.o
 
@@ -394,9 +371,9 @@ UTILITY_LIBS = $(FE)/utility/Timer.o \
 
 GRAPH_LIBS = $(FE)/graph/graph/DOF_Graph.o \
 	$(FE)/graph/graph/VertexIter.o \
-	$(FE)/graph/graph/Vertex.o  \
+	$(FE)/graph/graph/Vertex.o \
 	$(FE)/graph/graph/Graph.o \
-	$(FE)/graph/graph/DOF_GroupGraph.o  \
+	$(FE)/graph/graph/DOF_GroupGraph.o \
 	$(FE)/graph/numberer/RCM.o \
 	$(FE)/graph/numberer/AMDNumberer.o \
 	$(FE)/graph/numberer/MyRCM.o \
@@ -450,9 +427,6 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/feap/dummyFeap.o \
 	$(FE)/element/feap/fElement.o \
 	$(FE)/element/feap/fElmt02.o \
-	$(FE)/element/TclElementCommands.o \
-	$(FE)/element/feap/TclFeapElementCommand.o \
-	$(FE)/element/beamWithHinges/TclBeamWithHingesBuilder.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2dThermal.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3d.o \
@@ -461,14 +435,11 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/dispBeamColumnInt/DispBeamColumn2dInt.o \
 	$(FE)/element/dispBeamColumnInt/FiberSection2dInt.o \
 	$(FE)/element/dispBeamColumnInt/LinearCrdTransf2dInt.o \
-	$(FE)/element/dispBeamColumnInt/TclDispBeamColumnIntCommand.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ModElasticBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam3d.o \
-	$(FE)/element/elasticBeamColumn/TclElasticBeamCommand.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam3d.o \
-	$(FE)/element/fourNodeQuad/TclFourNodeQuadCommand.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad3d.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuadWithSensitivity.o \
@@ -485,26 +456,16 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/brick/BbarBrickWithSensitivity.o \
 	$(FE)/element/brick/shp3d.o \
 	$(FE)/element/brick/Twenty_Node_Brick.o \
-	$(FE)/element/brick/TclTwenty_Node_BrickCommand.o \
-	$(FE)/element/brick/TclBrickCommand.o \
 	$(FE)/element/generic/GenericClient.o \
 	$(FE)/element/generic/GenericCopy.o \
-	$(FE)/element/generic/TclGenericClientCommand.o \
-	$(FE)/element/generic/TclGenericCopyCommand.o \
 	$(FE)/element/adapter/ActuatorCorot.o \
 	$(FE)/element/adapter/Actuator.o \
 	$(FE)/element/adapter/Adapter.o \
-	$(FE)/element/adapter/TclActuatorCommand.o \
-	$(FE)/element/adapter/TclActuatorCorotCommand.o \
-	$(FE)/element/adapter/TclAdapterCommand.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingBoucWen2d.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingBoucWen3d.o \
-	$(FE)/element/elastomericBearing/TclElastomericBearingBoucWenCommand.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingUFRP2d.o \
-	$(FE)/element/elastomericBearing/TclElastomericBearingUFRPCommand.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingPlasticity2d.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingPlasticity3d.o \
-	$(FE)/element/elastomericBearing/TclElastomericBearingPlasticityCommand.o \
 	$(FE)/element/elastomericBearing/HDR.o \
 	$(FE)/element/elastomericBearing/LeadRubberX.o \
 	$(FE)/element/elastomericBearing/ElastomericX.o \
@@ -516,29 +477,22 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/frictionBearing/FPBearingPTV.o \
 	$(FE)/element/frictionBearing/FlatSliderSimple2d.o \
 	$(FE)/element/frictionBearing/FlatSliderSimple3d.o \
-	$(FE)/element/frictionBearing/TclFlatSliderCommand.o \
 	$(FE)/element/frictionBearing/SingleFPSimple2d.o \
 	$(FE)/element/frictionBearing/SingleFPSimple3d.o \
-	$(FE)/element/frictionBearing/TclSingleFPCommand.o \
 	$(FE)/element/frictionBearing/frictionModel/Coulomb.o \
 	$(FE)/element/frictionBearing/frictionModel/FrictionModel.o \
 	$(FE)/element/frictionBearing/frictionModel/FrictionResponse.o \
 	$(FE)/element/frictionBearing/frictionModel/VelNormalFrcDep.o \
-	$(FE)/element/frictionBearing/frictionModel/TclModelBuilderFrictionModelCommand.o \
 	$(FE)/element/frictionBearing/RJWatsonEQS2d.o \
 	$(FE)/element/frictionBearing/RJWatsonEQS3d.o \
-	$(FE)/element/frictionBearing/TclRJWatsonEQSCommand.o \
 	$(FE)/element/frictionBearing/frictionModel/VelPressureDep.o \
 	$(FE)/element/frictionBearing/frictionModel/VelDependent.o \
 	$(FE)/element/frictionBearing/frictionModel/VelDepMultiLinear.o \
 	$(FE)/element/twoNodeLink/TwoNodeLink.o \
 	$(FE)/element/pyMacro/PY_Macro2D.o \
-	$(FE)/element/twoNodeLink/TclTwoNodeLinkCommand.o \
 	$(FE)/element/triangle/Tri31.o \
 	$(FE)/element/PFEMElement/PFEMElement2D.o \
 	$(FE)/element/PFEMElement/PFEMElement3D.o \
-	$(FE)/element/PFEMElement/TclModelBuilder_addPFEMElement.o \
-	$(FE)/element/PFEMElement/TclPFEMCommands.o \
 	$(FE)/element/PFEMElement/PFEMMesher2D.o \
 	$(FE)/element/PFEMElement/PFEMMesher3D.o \
 	$(FE)/element/PFEMElement/PFEMElement2DCompressible.o \
@@ -585,7 +539,6 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Elastic2Material.o \
 	$(FE)/material/uniaxial/ElasticMultiLinear.o \
 	$(FE)/material/uniaxial/ReinforcingSteel.o \
-	$(FE)/material/uniaxial/TclReinforcingSteel.o \
 	$(FE)/material/uniaxial/ElasticPPMaterial.o \
 	$(FE)/material/uniaxial/ElasticBilin.o \
 	$(FE)/material/uniaxial/MultiLinear.o \
@@ -666,7 +619,6 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/BarSlipMaterial.o \
 	$(FE)/material/uniaxial/Bond_SP01.o \
 	$(FE)/material/uniaxial/HyperbolicGapMaterial.o \
-	$(FE)/material/uniaxial/TclHyperbolicGapMaterial.o \
 	$(FE)/material/uniaxial/ImpactMaterial.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
@@ -678,7 +630,6 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/backbone/ReeseSandBackbone.o \
 	$(FE)/material/uniaxial/backbone/ManderBackbone.o \
 	$(FE)/material/uniaxial/backbone/RaynorBackbone.o \
-	$(FE)/material/uniaxial/backbone/TclModelBuilderBackboneCommand.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(DAMAGE_2P) $(FE)/material/nD/WrapperNDMaterial.o \
 	$(FE)/material/nD/J2Plasticity.o \
@@ -716,7 +667,6 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/LinearCap.o \
 	$(FE)/material/nD/AcousticMedium.o \
 	$(FE)/material/nD/FeapMaterial.o \
-	$(FE)/material/nD/feap/TclFeapMaterialCommand.o \
 	$(FE)/material/nD/feap/FeapMaterial01.o \
 	$(FE)/material/nD/feap/matl01.o \
 	$(FE)/material/nD/feap/FeapMaterial02.o \
@@ -740,8 +690,6 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlateFiberMaterial.o \
 	$(FE)/material/nD/BeamFiberMaterial.o \
 	$(FE)/material/nD/BeamFiberMaterial2d.o \
-	$(FE)/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.o \
-	$(FE)/material/nD/TclModelBuilderNDMaterialCommand.o \
 	$(FE)/material/nD/cyclicSoil/MultiaxialCyclicPlasticity.o \
 	$(FE)/material/nD/cyclicSoil/MultiaxialCyclicPlasticityPlaneStrain.o \
 	$(FE)/material/nD/cyclicSoil/MultiaxialCyclicPlasticity3D.o \
@@ -765,7 +713,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlaneStressUserMaterial.o $(PLAINCONCRETE) \
 	$(FE)/material/nD/PlateFromPlaneStressMaterial.o \
 	$(FE)/material/nD/PlateRebarMaterial.o \
-    $(FE)/material/nD/stressDilatancyModel/StressDilatancyModel.o \
+	$(FE)/material/nD/stressDilatancyModel/StressDilatancyModel.o \
 	$(FE)/material/nD/stressDilatancyModel/MODULE_ALL_INTERFACES_2D.o \
 	$(FE)/material/nD/stressDilatancyModel/SDM2D.o \
 	$(FE)/material/nD/stressDilatancyModel/StressDilatancyModel2D.o \
@@ -786,8 +734,7 @@ FEDEAS_LIBS = $(FE)/material/uniaxial/FedeasMaterial.o \
 	$(FE)/material/uniaxial/fedeas/FedeasHyster1Material.o \
 	$(FE)/material/uniaxial/fedeas/FedeasHyster2Material.o \
 	$(FE)/material/uniaxial/fedeas/FedeasSteel1Material.o \
-	$(FE)/material/uniaxial/fedeas/FedeasSteel2Material.o \
-	$(FE)/material/uniaxial/fedeas/TclFedeasMaterialCommand.o
+	$(FE)/material/uniaxial/fedeas/FedeasSteel2Material.o
 
 
 DRAIN_LIBS = $(FE)/material/uniaxial/DrainMaterial.o \
@@ -797,10 +744,9 @@ DRAIN_LIBS = $(FE)/material/uniaxial/DrainMaterial.o \
 	$(FE)/material/uniaxial/drain/DrainBilinearMaterial.o \
 	$(FE)/material/uniaxial/drain/DrainClough1Material.o \
 	$(FE)/material/uniaxial/drain/DrainClough2Material.o \
-	$(FE)/material/uniaxial/drain/DrainPinch1Material.o \
-	$(FE)/material/uniaxial/drain/TclDrainMaterialCommand.o
+	$(FE)/material/uniaxial/drain/DrainPinch1Material.o
 
-SNAP_LIBS = $(FE)/material/uniaxial/snap/TclSnapMaterialCommand.o \
+SNAP_LIBS = \
 	$(FE)/material/uniaxial/snap/Pinching.o \
 	$(FE)/material/uniaxial/snap/Bilinear.o \
 	$(FE)/material/uniaxial/snap/Clough.o \
@@ -853,9 +799,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/yieldSurface/YieldSurfaceSection2d.o \
 	$(FE)/material/section/yieldSurface/YS_Section2D01.o \
 	$(FE)/material/section/yieldSurface/YS_Section2D02.o \
-	$(FE)/material/section/yieldSurface/TclModelBuilderYS_SectionCommand.o \
-	$(FE)/material/section/yieldSurface/SoilFootingSection2d.o \
-	$(FE)/material/section/TclModelBuilderSectionCommand.o
+	$(FE)/material/section/yieldSurface/SoilFootingSection2d.o
 
 
 SUPER_LU_OBJ = $(FE)/system_of_eqn/linearSOE/sparseGEN/SuperLU.o 
@@ -913,7 +857,7 @@ SysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenRowLinSOE.o \
-    $(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenRowLinSolver.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenRowLinSolver.o \
 	$(SUPER_LU_OBJ) \
 	$(FE)/system_of_eqn/linearSOE/umfGEN/UmfpackGenLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/umfGEN/UmfpackGenLinSolver.o \
@@ -922,9 +866,6 @@ SysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 
 MODEL_BUILDER_LIBS = $(FE)/modelbuilder/ModelBuilder.o \
 	$(FE)/modelbuilder/PlaneFrame.o \
-	$(FE)/modelbuilder/tcl/TclUniaxialMaterialTester.o \
-	$(FE)/modelbuilder/tcl/TclSectionTester.o \
-	$(FE)/modelbuilder/tcl/TclModelBuilder.o \
 	$(FE)/modelbuilder/tcl/Block2D.o \
 	$(FE)/modelbuilder/tcl/Block3D.o
 
@@ -937,9 +878,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/component/DVParameter.o \
 	$(FE)/domain/component/NodeResponseParameter.o \
 	$(FE)/domain/component/MaterialStageParameter.o \
-	$(FE)/domain/component/TclUpdateMaterialCommand.o \
 	$(FE)/domain/component/MatParameter.o \
-	$(FE)/domain/component/TclParameterCommands.o \
 	$(FE)/domain/domain/Domain.o \
 	$(FE)/domain/domain/single/SingleDomEleIter.o \
 	$(FE)/domain/domain/single/SingleDomNodIter.o \
@@ -953,7 +892,6 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/domain/partitioned/PartitionedDomainSubIter.o \
 	$(FE)/domain/partitioner/DomainPartitioner.o \
 	$(FE)/domain/region/MeshRegion.o \
-	$(FE)/domain/region/TclRegionCommands.o \
 	$(FE)/domain/node/Node.o \
 	$(FE)/domain/node/NodalLoad.o \
 	$(FE)/domain/constraints/SP_Constraint.o \
@@ -994,9 +932,6 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/pattern/PathTimeSeries.o \
 	$(FE)/domain/pattern/PulseSeries.o \
 	$(FE)/domain/pattern/TriangleSeries.o \
-	$(FE)/domain/pattern/TclPatternCommand.o \
-	$(FE)/domain/pattern/TclSeriesCommand.o \
-	$(FE)/domain/pattern/TclSeriesIntegratorCommand.o \
 	$(FE)/domain/pattern/TimeSeriesIntegrator.o \
 	$(FE)/domain/pattern/TrapezoidalTimeSeriesIntegrator.o \
 	$(FE)/domain/pattern/drm/Mesh3DSubdomain.o \
@@ -1009,7 +944,6 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/groundMotion/GroundMotion.o \
 	$(FE)/domain/groundMotion/GroundMotionRecord.o \
 	$(FE)/domain/groundMotion/InterpolatedGroundMotion.o \
-	$(FE)/domain/groundMotion/TclGroundMotionCommand.o \
 	$(FE)/domain/subdomain/Subdomain.o \
 	$(FE)/domain/subdomain/ShadowSubdomain.o \
 	$(FE)/domain/subdomain/ActorSubdomain.o \
@@ -1035,7 +969,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/Broyden.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/BFGS.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/KrylovNewton.o \
-    $(FE)/analysis/algorithm/equiSolnAlgo/PeriodicNewton.o \
+	$(FE)/analysis/algorithm/equiSolnAlgo/PeriodicNewton.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/LineSearch.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/BisectionLineSearch.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/SecantLineSearch.o \
@@ -1077,7 +1011,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/Newmark.o \
 	$(FE)/analysis/integrator/PFEMIntegrator.o \
 	$(FE)/analysis/integrator/TRBDF2.o \
-    $(FE)/analysis/integrator/TRBDF3.o \
+	$(FE)/analysis/integrator/TRBDF3.o \
 	$(FE)/analysis/integrator/HHT.o \
 	$(FE)/analysis/integrator/GeneralizedAlpha.o \
 	$(FE)/analysis/integrator/Newmark1.o \
@@ -1088,24 +1022,24 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/WilsonTheta.o \
 	$(FE)/analysis/integrator/NewmarkExplicit.o \
 	$(FE)/analysis/integrator/NewmarkHSIncrReduct.o \
-    $(FE)/analysis/integrator/NewmarkHSIncrLimit.o \
+	$(FE)/analysis/integrator/NewmarkHSIncrLimit.o \
 	$(FE)/analysis/integrator/NewmarkHSFixedNumIter.o \
 	$(FE)/analysis/integrator/HHTExplicit.o \
 	$(FE)/analysis/integrator/HHTGeneralized.o \
 	$(FE)/analysis/integrator/HHTGeneralizedExplicit.o \
 	$(FE)/analysis/integrator/HHTHSIncrReduct.o \
-    $(FE)/analysis/integrator/HHTHSIncrLimit.o \
+	$(FE)/analysis/integrator/HHTHSIncrLimit.o \
 	$(FE)/analysis/integrator/HHTHSFixedNumIter.o \
 	$(FE)/analysis/integrator/AlphaOS.o \
 	$(FE)/analysis/integrator/KRAlphaExplicit.o \
 	$(FE)/analysis/integrator/AlphaOSGeneralized.o \
 	$(FE)/analysis/integrator/Collocation.o \
 	$(FE)/analysis/integrator/CollocationHSIncrReduct.o \
-    $(FE)/analysis/integrator/CollocationHSIncrLimit.o \
+	$(FE)/analysis/integrator/CollocationHSIncrLimit.o \
 	$(FE)/analysis/integrator/CollocationHSFixedNumIter.o \
-    $(FE)/analysis/integrator/Houbolt.o \
-    $(FE)/analysis/integrator/ParkLMS3.o \
-    $(FE)/analysis/integrator/BackwardEuler.o \
+	$(FE)/analysis/integrator/Houbolt.o \
+	$(FE)/analysis/integrator/ParkLMS3.o \
+	$(FE)/analysis/integrator/BackwardEuler.o \
 	$(FE)/analysis/model/AnalysisModel.o \
 	$(FE)/analysis/model/FE_EleIter.o \
 	$(FE)/analysis/model/DOF_GrpIter.o \
@@ -1130,7 +1064,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 
 ACTOR_LIBS = $(FE)/actor/channel/Channel.o \
 	$(FE)/actor/channel/TCP_Socket.o \
-    $(FE)/actor/channel/UDP_Socket.o \
+	$(FE)/actor/channel/UDP_Socket.o \
 	$(FE)/actor/channel/Socket.o \
 	$(FE)/actor/channel/HTTP.o \
 	$(FE)/actor/message/Message.o \

@@ -693,12 +693,7 @@ OPS_NewZeroLengthInterface2D(void) {
     return 0;
   }
 
-  char nextString[10];
-  numData = 10;
-  if (OPS_GetString(nextString, numData) != 0) {
-    opserr << "ZeroLengthInterface2D::WARNING invalied -sNdNum string\n";
-    return 0;
-  }
+  const char *nextString = OPS_GetString();
 
   if (strcmp(nextString,"-sNdNum") != 0) {
     opserr << "ZeroLengthInterface2D:: expecting -sNdNum \n";
@@ -713,9 +708,7 @@ OPS_NewZeroLengthInterface2D(void) {
   }
 
   numData = 10;
-  if (OPS_GetString(nextString, numData) != 0) {
-    opserr << "ZeroLengthInterface2D::WARNING invalied -mNdNum string\n";
-  }
+  nextString = OPS_GetString();
 
   if (strcmp(nextString,"-mNdNum") != 0) {
     opserr << "ZeroLengthInterface2D:: expecting -mNdNum\n";
@@ -729,10 +722,7 @@ OPS_NewZeroLengthInterface2D(void) {
   }
 
   numData = 10;
-  if (OPS_GetString(nextString, numData) != 0) {
-    opserr << "ZeroLengthInterface2D::WARNING invalied -mNdNum string\n";
-    return 0;
-  }
+  nextString = OPS_GetString();
 
   if (strcmp(nextString,"-dof") != 0) {
     opserr << "ZeroLengthInterface2D:: expecting -sdof in "<<
@@ -761,10 +751,8 @@ OPS_NewZeroLengthInterface2D(void) {
   }
 
   numData = 10;
-  if (OPS_GetString(nextString, numData) != 0) {
-    opserr << "ZeroLengthInterface2D::WARNING invalied -Nodes string\n";
-    return 0;
-  }
+  nextString = OPS_GetString();
+
   if (strcmp(nextString,"-Nodes") != 0) {
     opserr << "ZeroLengthInterface2D:: expecting -Nodes\n";
     return 0;

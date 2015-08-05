@@ -80,19 +80,16 @@ OPS_Export void *OPS_NewTrigSeries()
 
     // parse the optional args
     while (numRemainingArgs > 1) {
-        char argvS[12];
-        if (OPS_GetString(argvS, 12) != 0) {
-            opserr << "WARNING invalid string in Trig <tag?> <-factor cFactor?>" << endln;
-            return 0;
-        }
-        if (strcmp(argvS,"-shift") == 0 || strcmp(argvS,"-phaseShift") == 0) {
-            numData = 1;
-            if (OPS_GetDouble(&numData, &dData[3]) != 0) {
-                opserr << "WARNING invalid phase shift in Trig Series with tag?" << tag << endln;
+      const char *argvS = OPS_GetString();
+
+      if (strcmp(argvS,"-shift") == 0 || strcmp(argvS,"-phaseShift") == 0) {
+	numData = 1;
+	if (OPS_GetDouble(&numData, &dData[3]) != 0) {
+	  opserr << "WARNING invalid phase shift in Trig Series with tag?" << tag << endln;
                 return 0;
-            }
-        } else if (strcmp(argvS,"-factor") == 0) {
-            numData = 1;
+	}
+      } else if (strcmp(argvS,"-factor") == 0) {
+	numData = 1;
             if (OPS_GetDouble(&numData, &dData[4]) != 0) {
                 opserr << "WARNING invalid factor in Trig Series with tag?" << tag << endln;
                 return 0;

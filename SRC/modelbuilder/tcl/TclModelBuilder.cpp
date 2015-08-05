@@ -1158,6 +1158,25 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
 	mass(i,i) = theMass;
       }
       theNode->setMass(mass);      
+    } else if (strcmp(argv[currentArg],"-dispLoc") == 0) {
+      currentArg++;
+      if (argc < currentArg+ndm) {
+	opserr << "WARNING incorrect number of nodal display location terms, need ndm\n";
+	opserr << "node: " << nodeId << endln;
+	return TCL_ERROR;      
+      }	
+      Vector displayLoc(ndm);
+      double theCrd;
+      for (int i=0; i<ndm; i++) {
+	if (Tcl_GetDouble(interp, argv[currentArg++], &theCrd) != TCL_OK) {
+	  opserr << "WARNING invalid nodal mass term\n";
+	  opserr << "node: " << nodeId << ", dof: " << i+1 << endln;
+	  return TCL_ERROR;
+	}
+	displayLoc(i) = theCrd;
+      }
+      theNode->setDisplayCrds(displayLoc);
+
     } else if (strcmp(argv[currentArg],"-disp") == 0) {
       currentArg++;
       if (argc < currentArg+ndf) {
@@ -1177,6 +1196,7 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
       }
       theNode->setTrialDisp(disp);      
       theNode->commitState();
+
     } else if (strcmp(argv[currentArg],"-vel") == 0) {
       currentArg++;
       if (argc < currentArg+ndf) {
@@ -1196,6 +1216,7 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
       }
       theNode->setTrialVel(disp); 
       theNode->commitState();
+
     } else
       currentArg++;
   }
@@ -2500,47 +2521,6 @@ TclCommand_addHomogeneousBC_X(ClientData clientData, Tcl_Interp *interp,
 
   theTclDomain->addSP_Constraint(0, xLoc, fixity, tol);
 
-  /******************************************************************************
-  NodeIter &theNodes = theTclDomain->getNodes();
-  Node *theNode;
-
-  // loop over all the nodes
-  while ((theNode = theNodes()) != 0) {
-    const Vector &theCrd = theNode->getCrds();
-    double nodeX = theCrd(0);
-
-    // add a single point constraint if Xcrd of node is within tol of xLoc
-    if (fabs(nodeX - xLoc) < tol) {
-      int nodeId = theNode->getTag();
-      int theFixity = 0;
-
-      // loop over all the ndf values valid for the node
-      int numDOF = theNode->getNumberDOF();
-      if (numDOF  < ndf) numDOF = ndf;
-
-      for (int i=0; i<numDOF; i++) {
-	theFixity = fixity(i);
-	if (theFixity != 0) {
-	  // create a homogeneous constraint
-	  SP_Constraint *theSP = new SP_Constraint(currentSpTag, nodeId, i, 0.0, true);
-	  if (theSP == 0) {
-	    opserr << "WARNING ran out of memory for SP_Constraint at node " << nodeId;
-	    opserr << " - fixX " << xLoc << " " << ndf << " [0,1] conditions\n";
-	    return TCL_ERROR;
-	  }
-	  if (theTclDomain->addSP_Constraint(theSP) == false) {
-	    opserr << "WARNING could not add SP_Constraint to domain for node " << nodeId;
-	    opserr << " - fixX " << xLoc << " " << ndf << " [0,1] conditions\n";
-	    delete theSP;
-	    return TCL_ERROR;
-	  }
-	  currentSpTag++;      
-	}
-      }
-    }
-  }
-  **********************************************************************************/
-
   // if get here we have sucessfully created the node and added it to the domain
   return TCL_OK;
 }
@@ -2601,51 +2581,6 @@ TclCommand_addHomogeneousBC_Y(ClientData clientData, Tcl_Interp *interp,
 
   theTclDomain->addSP_Constraint(1, yLoc, fixity, tol);
 
-  /******************************************************************************
-
-  NodeIter &theNodes = theTclDomain->getNodes();
-  Node *theNode;
-
-  // loop over all the nodes
-  while ((theNode = theNodes()) != 0) {
-    const Vector &theCrd = theNode->getCrds();
-    if (theCrd.Size() > 1) {
-      double nodeY = theCrd(1);
-
-      // add a single point constraint if Xcrd of node is within tol of yLoc
-      if (fabs(nodeY - yLoc) < tol) {
-
-	int nodeId = theNode->getTag();
-	int theFixity = 0;
-
-	// loop over all the ndf values valid for the node
-	int numDOF = theNode->getNumberDOF();
-	if (numDOF  < ndf) numDOF = ndf;
-
-	for (int i=0; i<numDOF; i++) {
-	  theFixity = fixity(i);
-	  if (theFixity != 0) {
-	    // create a homogeneous constraint
-	    SP_Constraint *theSP = new SP_Constraint(currentSpTag, nodeId, i, 0.0, true);
-	    if (theSP == 0) {
-	      opserr << "WARNING ran out of memory for SP_Constraint at node " << nodeId;
-	      opserr << " - fixY " << yLoc << " " << ndf << " [0,1] conditions\n";
-	      return TCL_ERROR;
-	    }
-	    if (theTclDomain->addSP_Constraint(theSP) == false) {
-	      opserr << "WARNING could not add SP_Constraint to domain for node " << nodeId;
-	      opserr << " - fixY " << yLoc << " " << ndf << " [0,1] conditions\n";
-	      delete theSP;
-	      return TCL_ERROR;
-	    }
-	    currentSpTag++;      
-	  }
-	}
-      }
-    }
-  }
-  ******************************************************************************/
-
   // if get here we have sucessfully created the node and added it to the domain
   return TCL_OK;
 }
@@ -2703,52 +2638,6 @@ TclCommand_addHomogeneousBC_Z(ClientData clientData, Tcl_Interp *interp,
   }
 
   theTclDomain->addSP_Constraint(2, zLoc, fixity, tol);
-
-  /******************************************************************************
-
-  NodeIter &theNodes = theTclDomain->getNodes();
-  Node *theNode;
-
-  // loop over all the nodes
-  while ((theNode = theNodes()) != 0) {
-    const Vector &theCrd = theNode->getCrds();
-    if (theCrd.Size() > 2) {
-      double nodeZ = theCrd(2);
-
-      // add a single point constraint if Xcrd of node is within tol of zLoc
-      if (fabs(nodeZ - zLoc) < tol) {
-
-	int nodeId = theNode->getTag();
-	int theFixity = 0;
-
-	// loop over all the ndf values valid for the node
-	int numDOF = theNode->getNumberDOF();
-	if (numDOF  < ndf) numDOF = ndf;
-
-	for (int i=0; i<numDOF; i++) {
-	  theFixity = fixity(i);
-	  if (theFixity != 0) {
-	    // create a homogeneous constraint
-	    SP_Constraint *theSP = new SP_Constraint(currentSpTag, nodeId, i, 0.0);
-	    if (theSP == 0) {
-	      opserr << "WARNING ran out of memory for SP_Constraint at node " << nodeId;
-	      opserr << " - fixZ " << zLoc << " " << ndf << " [0,1] conditions\n";
-	      return TCL_ERROR;
-	    }
-	    if (theTclDomain->addSP_Constraint(theSP) == false) {
-	      opserr << "WARNING could not add SP_Constraint to domain for node " << nodeId;
-	      opserr << " - fixZ " << zLoc << " " << ndf << " [0,1] conditions\n";
-	      delete theSP;
-	      return TCL_ERROR;
-	    }
-	    currentSpTag++;      
-	  }
-	}
-      }
-    }
-  }
-
-  ******************************************************************************/
 
   // if get here we have sucessfully created the node and added it to the domain
   return TCL_OK;

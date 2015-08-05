@@ -75,11 +75,8 @@ OPS_NewRectangularSeries(void)
   numRemainingArgs -= 2;
 
   while (numRemainingArgs > 1) {
-    char argvS[10];
-    if (OPS_GetString(argvS, 10) != 0) {
-      opserr << "WARNING invalid string in Constant <tag?> <-factor cFactor?>" << endln;
-      return 0;
-    } 
+    const char *argvS = OPS_GetString();
+
     if (strcmp(argvS,"-factor") == 0) {
       numData = 1;
       if (OPS_GetDouble(&numData, &dData[2]) != 0) {

@@ -71,7 +71,7 @@
 
 #include <SimulationInformation.h>
 extern SimulationInformation simulationInfo;
-extern const char * getInterpPWD(Tcl_Interp *interp);  // commands.cpp
+//extern const char * getInterpPWD(Tcl_Interp *interp);  // commands.cpp
 
 LoadPattern *theTclLoadPattern =0;
 MultiSupportPattern *theTclMultiSupportPattern =0;
@@ -587,8 +587,8 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
-    const char *pwd = getInterpPWD(interp);
-    simulationInfo.addInputFile(accelFileName, pwd);  
+    //    const char *pwd = getInterpPWD(interp);
+    //    simulationInfo.addInputFile(accelFileName, pwd);  
 
     // create the UniformExcitation Pattern
     thePattern = new UniformExcitation(*theMotion, dir, patternID);

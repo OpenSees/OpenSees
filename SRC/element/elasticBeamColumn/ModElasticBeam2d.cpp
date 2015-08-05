@@ -115,13 +115,9 @@ OPS_ModElasticBeam2d()
 	
   numRemainingArgs = OPS_GetNumRemainingInputArgs();
   while (numRemainingArgs > 1) {
-    char argvLoc[10];
+    const char *argvLoc = OPS_GetString();;
     numData = 1;
 
-    if (OPS_GetString(argvLoc, 10) != 0) {
-      opserr << "WARNING invalid string element ElasticBeamColumn2d " << eleTag << endln;
-      return 0;
-    }
     if ((strcmp(argvLoc, "-alpha") == 0) || (strcmp(argvLoc, "-Alpha") == 0) || (strcmp(argvLoc, "-ALPHA") == 0)) {
       if (OPS_GetDoubleInput(&numData, &dData[6]) != 0) {
 	opserr << "WARNING error reading element data (alpha) element ElasticBeamColumn2d " << eleTag << endln;

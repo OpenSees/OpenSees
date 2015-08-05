@@ -78,10 +78,12 @@ OPS_NewNewmark(void)
   if (argc == 2)
     theIntegrator = new Newmark(dData[0], dData[1]);
   else {
-    char nextString[10];
-    OPS_GetString(nextString, 10);
+    //    char nextString[10];
+    const char *nextString = OPS_GetString();
+    //    OPS_GetString(nextString, 10);
     if (strcmp(nextString,"-form") == 0) {
-      OPS_GetString(nextString, 10);
+      //      OPS_GetString(nextString, 10);
+      nextString = OPS_GetString();
       if ((nextString[0] == 'D') || (nextString[0] == 'd')) 
 	dispFlag = true;
       else if ((nextString[0] == 'A') || (nextString[0] == 'a')) 

@@ -79,17 +79,19 @@ void *
 
 		total -= 12;
 
-		char optionFlag[12];
+		//		char optionFlag[12];
+		const char *optionFlag;
 		while (total > 0) {
-			OPS_GetString(optionFlag,12);
-			if (strcmp(optionFlag,"-beta") == 0) {
-				numData = 4;
-				if (OPS_GetDoubleInput(&numData, bData) != 0) {
-					opserr << "WARNING invalid uniaxialMaterial ConcretewBeta argument of -beta for tag " << tag << endln;
-					return 0;
-				}
-				total -= 5;
-			} else if (strcmp(optionFlag,"-lambda") == 0) {
+		  //			OPS_GetString(optionFlag,12);
+		  optionFlag = OPS_GetString();
+		  if (strcmp(optionFlag,"-beta") == 0) {
+		    numData = 4;
+		    if (OPS_GetDoubleInput(&numData, bData) != 0) {
+		      opserr << "WARNING invalid uniaxialMaterial ConcretewBeta argument of -beta for tag " << tag << endln;
+		      return 0;
+		    }
+		    total -= 5;
+		  } else if (strcmp(optionFlag,"-lambda") == 0) {
 				numData = 1;
 				if (OPS_GetDoubleInput(&numData, &lambda) != 0) {
 					opserr << "WARNING invalid uniaxialMaterial ConcretewBeta argument of -lambda for tag " << tag << endln;

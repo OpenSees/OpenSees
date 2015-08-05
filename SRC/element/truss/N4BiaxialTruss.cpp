@@ -105,12 +105,7 @@ OPS_N4BiaxialTruss(void)
 
 	numRemainingArgs -= 6;
 	while (numRemainingArgs > 1) {
-		char argvS[15];
-		if (OPS_GetString(argvS, 15) != 0) {
-			opserr << "WARNING: Invalid optional string element N4BiaxialTruss " << iData[0] << 
-		    " $i1Node $j1Node $iG2Node $j2Node $A $matTag1 <-rho $rho> <-doRayleigh $flag>\n";
-			return 0;
-		} 
+	  const char *argvS = OPS_GetString();
 
 		if (strcmp(argvS,"-rho") == 0) {
 			numData = 1;

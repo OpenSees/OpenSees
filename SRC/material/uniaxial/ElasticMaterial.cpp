@@ -63,6 +63,7 @@ OPS_ElasticMaterial(void)
   }
 
   numData = OPS_GetNumRemainingInputArgs();
+
   if (numData >= 3) {
     numData = 3;
     if (OPS_GetDoubleInput(&numData, dData) != 0) {

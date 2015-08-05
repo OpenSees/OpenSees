@@ -102,13 +102,9 @@ void *OPS_ElasticTimoshenkoBeam3d()
     
     numRemainingArgs = OPS_GetNumRemainingInputArgs();
     while (numRemainingArgs > 0)  {
-        char argvLoc[10];
+      const char *argvLoc = OPS_GetString();
         numData = 1;
         
-        if (OPS_GetString(argvLoc, 10) != 0)  {
-            opserr << "WARNING invalid string element ElasticTimoshenkoBeam3d " << iData[0] << endln;
-            return 0;
-        }
         if ((strcmp(argvLoc, "-mass") == 0) || (strcmp(argvLoc, "mass") == 0))  {
             if (OPS_GetDoubleInput(&numData, &dData[8]) != 0)  {
                 opserr << "WARNING error reading element data (mass) element ElasticTimoshenkoBeam3d " << iData[0] << endln;

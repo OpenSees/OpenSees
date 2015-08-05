@@ -112,12 +112,7 @@ OPS_NewCorotTrussElement()
   
   numRemainingArgs -= 5;
   while (numRemainingArgs > 1) {
-    char argvS[15];
-    if (OPS_GetString(argvS, 15) != 0) {
-      opserr << "WARNING: Invalid optional string element CorotTruss " << iData[0] << 
-	" $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
-      return 0;
-    } 
+    const char *argvS = OPS_GetString();
   
     if (strcmp(argvS,"-rho") == 0) {
       numData = 1;

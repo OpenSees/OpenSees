@@ -146,7 +146,7 @@ int OPS_GetDoubleInput(int *numData, double *data)
 
 
 extern "C" 
-int OPS_GetString(char *arrayData, int sizeArray)
+const char *OPS_GetString(void)
 {
   return 0;  
 }

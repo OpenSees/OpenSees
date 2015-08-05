@@ -56,6 +56,7 @@
 #include <OPS_Globals.h>
 
 Matrix **Node::theMatrices = 0;
+Matrix **Node::theVectors = 0;
 int Node::numMatrices = 0;
 
 // for FEM_Object Broker to use

@@ -63,7 +63,7 @@ extern RandomNumberGenerator *theRandomNumberGenerator;
 
 #include <SimulationInformation.h>
 extern SimulationInformation simulationInfo;
-extern const char * getInterpPWD(Tcl_Interp *interp);  // commands.cpp
+//extern const char * getInterpPWD(Tcl_Interp *interp);  // commands.cpp
 
 // little function to free memory after invoke Tcl_SplitList
 //   note Tcl_Split list stores the array of pointers and the strings in 
@@ -306,20 +306,20 @@ TclTimeSeriesCommand(ClientData clientData,
     
 
     if (filePathName != 0 && fileTimeName == 0 && timeIncr != 0.0) {
-      const char *pwd = getInterpPWD(interp);
-      simulationInfo.addInputFile(argv[filePathName], pwd);  
+      //      const char *pwd = getInterpPWD(interp);
+      //      simulationInfo.addInputFile(argv[filePathName], pwd);  
       theSeries = new PathSeries(tag, argv[filePathName], timeIncr, cFactor);
     }
 
     else if (fileName != 0) {
-      const char *pwd = getInterpPWD(interp);
-      simulationInfo.addInputFile(argv[fileName], pwd);  
+      //const char *pwd = getInterpPWD(interp);
+      //      simulationInfo.addInputFile(argv[fileName], pwd);  
       theSeries = new PathTimeSeries(tag, argv[fileName], cFactor);
 
     } else if (filePathName != 0 && fileTimeName != 0) {
-      const char *pwd = getInterpPWD(interp);
-      simulationInfo.addInputFile(argv[filePathName], pwd);  
-      simulationInfo.addInputFile(argv[fileTimeName], pwd);  
+      //      const char *pwd = getInterpPWD(interp);
+      //      simulationInfo.addInputFile(argv[filePathName], pwd);  
+      //      simulationInfo.addInputFile(argv[fileTimeName], pwd);  
       theSeries = new PathTimeSeries(tag, argv[filePathName], argv[fileTimeName], cFactor); 
 
     } else if (dataPath != 0 && dataTime == 0 && timeIncr != 0.0) {

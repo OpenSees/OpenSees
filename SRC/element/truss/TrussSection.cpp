@@ -99,12 +99,7 @@ OPS_NewTrussSectionElement()
   
   numRemainingArgs -= 4;
   while (numRemainingArgs > 1) {
-    char argvS[15];
-    if (OPS_GetString(argvS, 15) != 0) {
-      opserr << "WARNING: Invalid optional string element TrussSection " << iData[0] << 
-	" $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
-      return 0;
-    } 
+    const char *argvS = OPS_GetString();
   
     if (strcmp(argvS,"-rho") == 0) {
       numData = 1;

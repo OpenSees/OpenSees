@@ -66,16 +66,13 @@ OPS_NewConstantSeries(void)
     }
 
     if (numRemainingArgs > 1) {
-	char argvS[10];
-	if (OPS_GetString(argvS, 10) != 0) {
-	  opserr << "WARNING invalid string in ConstantSeries with tag: " << tag << endln;
-	  return 0;
-	}
-	numData = 1;
-	if (OPS_GetDouble(&numData, &cFactor) != 0) {
+      const char *argvS = OPS_GetString();
+
+      numData = 1;
+      if (OPS_GetDouble(&numData, &cFactor) != 0) {
 	  opserr << "WARNING invalid factor in  ConstantSeries with tag: " << tag << endln;
 	  return 0;
-	}
+      }
     }
   }
 

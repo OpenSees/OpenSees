@@ -81,12 +81,16 @@ statevdata(0),
 nstatevs(istatevs), nprops(iprops)
 {
   props = new double[nprops];
-  vprops = new Vector(nprops);
   for (int i = 0; i < nprops; i++)
   {
     props[i] = rprops[i];
   }
-  vprops->setData(props, nprops);
+  vprops = new Vector(props, nprops);
+
+  //  vprops->setData(props, nprops);
+  for (int i=0; i<9; i++)
+    tangentdata[i]=0;
+
 
   statevdata = new double[nstatevs];
   statev0 = new Vector(istatevs);
@@ -129,10 +133,17 @@ void PlaneStressUserMaterial::setInitials()
          statevdata, tangentdata);
 
   for (i = 0; i < 3; i++)
-    for (int j = 0; j < 3; j++)
+    for (int j = 0; j < 3; j++) {
       eTangent(i,j) = tangentdata[j + 3 * i];
+      opserr << " " << tangentdata[j + 3*i];
+    }
   
   tangent = eTangent;
+
+  opserr << "PlaneStressUSer::setInitials: nprops: " << nprops << "  vprops\n";
+  opserr << *vprops;
+  opserr << "PlaneStressUSer::setInitials: eTangent\n";
+  opserr << eTangent;
 }
 
 //make a clone of this material
@@ -260,6 +271,7 @@ PlaneStressUserMaterial::getStress( )
 const Matrix&  
 PlaneStressUserMaterial::getTangent( )
 {
+  opserr << "PlaneStressUSerMaterial::getTangent : " << tangent;
   return tangent ;
 }
 

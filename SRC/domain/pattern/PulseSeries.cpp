@@ -81,11 +81,8 @@ OPS_Export void *OPS_NewPulseSeries()
 
     // parse the optional args
     while (numRemainingArgs > 1) {
-        char argvS[12];
-        if (OPS_GetString(argvS, 12) != 0) {
-            opserr << "WARNING invalid string in Pulse <tag?> <-factor cFactor?>" << endln;
-            return 0;
-        }
+      const char *argvS = OPS_GetString();
+
         if (strcmp(argvS,"-width") == 0) {
             numData = 1;
             if (OPS_GetDouble(&numData, &dData[3]) != 0) {

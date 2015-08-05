@@ -1810,12 +1810,16 @@ OPS_NewConfinedConcrete01Material()
   // ==Read required ConfinedConcrete01 material parameters===========================
   
   // --Parse section type-----------------------------------------------------
-  char argvS[5];
+  //  char argvS[5];
+  const char *argvS;
+  argvS = OPS_GetString();
+  /*
   if (OPS_GetString(argvS, 5) != 0) {
     opserr << "WARNING invalid uniaxialMaterial ConfinedConcrete01 tag" << endln;
     return 0;
   }
-  
+  */
+
   if (strcmp(argvS, "S1") == 0 || strcmp(argvS, "s1") == 0) {
     secType = 1;
   } else if (strcmp(argvS, "S2") == 0 || strcmp(argvS, "s2") == 0) {
@@ -1861,13 +1865,17 @@ OPS_NewConfinedConcrete01Material()
   // --Parse epsilon_cu: 3 options-----------------------------------------------
   double epscuLimit = 0.05;
 
-  char argvEPSCU[10];
+  //char argvEPSCU[10];
+  const char *argvEPSCU = OPS_GetString();
+  argLoc++;
+
+  /*
   if (OPS_GetString(argvEPSCU, 10) != 0) {
     opserr << "WARNING invalid uniaxialMaterial ConfinedConcrete01 tag" << endln;
     return 0;
   } else
-    argLoc++;
 
+  */
 
   if (strcmp(argvEPSCU, "-scott") == 0 || strcmp(argvEPSCU, "-Scott") == 0) {
     epscuOption = 1;
@@ -1902,14 +1910,17 @@ OPS_NewConfinedConcrete01Material()
   
   // --Parse nu----------------------------------------------------------------
 
-  char argvNu[10];
+  //  char argvNu[10];
+  const char *argvNu = OPS_GetString();
+  /*
   if (OPS_GetString(argvNu, 10) != 0) {
     opserr << "WARNING invalid uniaxialMaterial ConfinedConcrete01 tag" << endln;
     return 0;
   } else
-    argLoc++;
-  
-    
+
+  */
+  argLoc++;    
+
   if (strcmp(argvNu, "-varUB") == 0 || strcmp(argvNu, "-varub") == 0) {
     nuOption = 1;
   } else if (strcmp(argvNu, "-varNoUB") == 0 || strcmp(argvNu, "-varnoub") == 0) {
@@ -2041,11 +2052,13 @@ OPS_NewConfinedConcrete01Material()
   // LATER 
   argc = OPS_GetNumRemainingInputArgs();
   while (argc > 0) {
-    char argvLoc[10];
+    const char * argvLoc = OPS_GetString();;
+    /*
     if (OPS_GetString(argvLoc, 10) != 0) {
       opserr << "WARNING invalid uniaxialMaterial ConfinedConcrete01 tag" << endln;
       return 0;
     }
+    */
 
     if (strcmp(argvLoc, "-stRatio") == 0) {
       if (OPS_GetDouble(&numData, &stRatio) != 0 || stRatio > 1.0 || stRatio < 0.0) {

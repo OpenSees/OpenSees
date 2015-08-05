@@ -102,12 +102,7 @@ OPS_CorotTruss2(void)
   
   numRemainingArgs -= 7;
   while (numRemainingArgs > 1) {
-    char argvS[10];
-    if (OPS_GetString(argvS, 10) != 0) {
-      opserr << "WARNING: Invalid optional string element CorotTruss2 " << iData[0] << 
-	" $iNode $jNode $auxN1 $auxN2 $A $matTag <-rho $rho> <-rayleigh $flagh>\n";
-      return 0;
-    } 
+    const char *argvS = OPS_GetString();
   
     if (strcmp(argvS,"-rho") == 0) {
       numData = 1;

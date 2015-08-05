@@ -59,7 +59,8 @@ void *OPS_NewElasticMultiLinear()
     double strainData[64];
     double stressData[64];
     double eta = 0.0;
-    char paraStr[8];
+    //char paraStr[8];
+    const char *paraStr;
     
     int numData = 1;
     if (OPS_GetIntInput(&numData,tag) != 0)  {
@@ -80,7 +81,7 @@ void *OPS_NewElasticMultiLinear()
     
     // get strain data points
     numData = (argc - 3)/2;
-    OPS_GetString(paraStr,7);
+    paraStr = OPS_GetString();
     if (strcmp(paraStr,"-strain") == 0)  {
         if (OPS_GetDoubleInput(&numData,strainData) != 0)  {
             opserr << "WARNING invalid strainPoints\n";
@@ -95,7 +96,8 @@ void *OPS_NewElasticMultiLinear()
     Vector strainPts(strainData,numData);
     
     // get stress data points
-    OPS_GetString(paraStr,7);
+    paraStr = OPS_GetString();
+    //    OPS_GetString(paraStr,7);
     if (strcmp(paraStr,"-stress") == 0)  {
         if (OPS_GetDoubleInput(&numData, stressData) != 0)  {
             opserr << "WARNING invalid stressPoints\n";

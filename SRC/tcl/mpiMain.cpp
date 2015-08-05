@@ -179,13 +179,14 @@ extern int numChannels;
 extern int OPS_rank;
 extern int OPS_np;
 
+#include <mpi.h>
+
 int
 main(int argc, char **argv)
 {
+  theMachineBroker = new MPI_MachineBroker(0, argc, argv);
   FEM_ObjectBrokerAllClasses theBroker;
-  // MPI_MachineBroker theMachine(&theBroker, argc, argv);
-  // theMachineBroker = &theMachine;
-  theMachineBroker = new MPI_MachineBroker(&theBroker, argc, argv);
+  theMachineBroker->setObjectBroker(&theBroker);
 
   OPS_rank = theMachineBroker->getPID();
   OPS_np = theMachineBroker->getNP();
