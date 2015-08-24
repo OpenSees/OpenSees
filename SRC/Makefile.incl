@@ -198,6 +198,6 @@ FE_INCLUDES  = -I$(FE)/matrix \
 	       -I$(FE)/../OTHER/AMD \
                -I$(FE)/../OTHER/CSPARSE \
                -I$(FE)/../OTHER/Triangle \
-               -I$(FE)/../OTHER/tetgen1.4.3
+               -I$(FE)/../OTHER/Tetgen
                
                
