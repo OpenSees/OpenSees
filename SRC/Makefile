@@ -497,6 +497,9 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/PFEMElement/PFEMMesher3D.o \
 	$(FE)/element/PFEMElement/PFEMElement2DCompressible.o \
 	$(FE)/element/PFEMElement/PFEMElement2DBubble.o \
+	$(FE)/element/PFEMElement/tetgen.o \
+	$(FE)/element/PFEMElement/predicates.o \
+	$(FE)/element/PFEMElement/triangle.o \
 	$(FE)/element/UWelements/SSPquad.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \
