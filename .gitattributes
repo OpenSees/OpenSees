@@ -1440,6 +1440,14 @@ OTHER/SuperLU_MT/supermatrix.h -text
 OTHER/SuperLU_MT/util.c -text
 OTHER/SuperLU_MT/util.h -text
 OTHER/SuperLU_MT/xerbla.c -text
+OTHER/Tetgen/CMakeLists.txt -text
+OTHER/Tetgen/LICENSE -text
+OTHER/Tetgen/README -text
+OTHER/Tetgen/example.poly -text
+OTHER/Tetgen/makefile -text
+OTHER/Tetgen/predicates.cxx -text
+OTHER/Tetgen/tetgen.cxx -text
+OTHER/Tetgen/tetgen.h -text
 OTHER/Triangle/A.poly -text
 OTHER/Triangle/Makefile -text
 OTHER/Triangle/README -text
