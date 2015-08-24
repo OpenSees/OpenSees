@@ -38,8 +38,8 @@ extern OPS_Stream *opserrPtr;
 #define opserr (*opserrPtr)
 #define endln "\n"
 
-//#include <string.h>
-//#include <stdlib.h>
+#include <string.h>
+#include <stdlib.h>
 
 enum NodeResponseType { Disp = 1, Vel = 2, Accel =3, IncrDisp =4, IncrDeltaDisp =5, Reaction =6, Unbalance =7};
 
