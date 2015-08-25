@@ -18,12 +18,13 @@ c      end type modelState
       public matObject
       type, bind(C) :: matObject
       integer(C_INT) ::tag;
+      integer(C_INT) ::matType;  !  GR added
       integer(C_INT) ::nParam;
       integer(C_INT) ::nState
       type (c_ptr) :: theParam;
       type (c_ptr) :: cState;
       type (c_ptr) :: tState;
-      type(c_funptr) ::functPtr
+      type(c_funptr) ::functPtr;
       type (c_ptr) :: matObjPtr;
       end type matObject;
 
