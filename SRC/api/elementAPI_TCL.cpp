@@ -75,9 +75,7 @@ static LimitCurveFunction *theLimitCurveFunctions = NULL;//MRL
 
 static Tcl_Interp *theInterp = 0;
 static Domain *theDomain = 0;
-
 static TclModelBuilder *theModelBuilder = 0;
-
 static TCL_Char **currentArgv = 0;
 static int currentArg = 0;
 static int maxArg = 0;
@@ -185,15 +183,18 @@ int OPS_GetDoubleInput(int *numData, double *data)
 
 
 extern "C" 
-const char *OPS_GetString(void)
+const char * OPS_GetString(void)
 {
+  const char *res = 0;
   if (currentArg >= maxArg) {
       opserr << "OPS_GetStringInput -- error reading " << currentArg << endln;
-      return 0;
+      return res;
   }
+  res = currentArgv[currentArg];
   
   currentArg++;
-  return currentArgv[currentArg-1];
+
+  return res;  
 }
 
 
@@ -749,10 +750,11 @@ Tcl_addWrapperUniaxialMaterial(matObj *theMat, ClientData clientData, Tcl_Interp
 
   // invoke the mat function with isw = 0
   int isw = ISW_INIT;
-  int result;
+  int result = 0;
   theMat->matFunctPtr(theMat, &theModelState, 0, 0, 0, &isw, &result);
+  int matType = theMat->matType; // GR added to support material
 
-  if (result != 1 && result != OPS_UNIAXIAL_MATERIAL_TYPE) {
+  if (result != 0 || matType != OPS_UNIAXIAL_MATERIAL_TYPE) {
     opserr << "Tcl_addWrapperUniaxialMaterial - failed in element function " << result << endln;
     return 0;
   }
@@ -785,17 +787,18 @@ Tcl_addWrapperNDMaterial(matObj *theMat, ClientData clientData, Tcl_Interp *inte
 
   // invoke the mat function with isw = 0
   int isw = ISW_INIT;
-  int result;
+  int result = 0;
   theMat->matFunctPtr(theMat, &theModelState, 0, 0, 0, &isw, &result);
+  int matType = theMat->matType; // GR added to support material
 
-  if (result != OPS_PLANESTRESS_TYPE && 
-      result != OPS_PLANESTRAIN_TYPE &&
-      result != OPS_THREEDIMENSIONAL_TYPE) {
+  if (result != 0 || (matType != OPS_PLANESTRESS_TYPE && 
+      matType != OPS_PLANESTRAIN_TYPE &&
+      matType != OPS_THREEDIMENSIONAL_TYPE) ) {
     opserr << "Tcl_addWrapperNDMaterial - failed in element function " << result << endln;
     return 0;
   }
 
-  WrapperNDMaterial*theMaterial = new WrapperNDMaterial(argv[1], theMat, result);
+  WrapperNDMaterial*theMaterial = new WrapperNDMaterial(argv[1], theMat, theMat->matType);
 
   return theMaterial;
 }
@@ -973,10 +976,6 @@ const char *OPS_GetInterpPWD()
 Domain *OPS_GetDomain(void)
 {
   return theDomain;
-}
-
-void TCL_OPS_setModelBuilder(TclModelBuilder *theNewBuilder) {
-  theModelBuilder = theNewBuilder;
 }
 
 //////////start MRL

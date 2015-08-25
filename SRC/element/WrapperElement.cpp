@@ -201,6 +201,12 @@ const Matrix &
 WrapperElement::getTangentStiff(void)
 {
     //// set the vector
+    //Kmatrix.setData(K, theEle->nDOF, theEle->nDOF);
+
+    //return  Kmatrix;
+
+	//this->update();
+    // set the vector
     Kmatrix.setData(K, theEle->nDOF, theEle->nDOF);
 
     return  Kmatrix;
@@ -222,6 +228,7 @@ WrapperElement::getMass(void)
     int error = 0;
     theEle->eleFunctPtr(theEle, &theModelState, M , R, &isw, &error);
 
+	//this->update();
     // set the matrix
     Mmatrix.setData(M,theEle->nDOF, theEle->nDOF);
 
@@ -252,7 +259,7 @@ WrapperElement::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
 }
 
 int
-WrapperElement::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numModes)
+WrapperElement::displaySelf(Renderer &theViewer, int displayMode, float fact)
 {
     return 0;
 }

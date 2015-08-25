@@ -53,7 +53,7 @@ WrapperNDMaterial::WrapperNDMaterial(const char *name, matObject *theMat_, int m
     strain = new Vector(&data[0],6);
     stress = new Vector(&data[6],6);
     tangent = new Matrix(&data[12],6,6);
-    tangent = new Matrix(&data[48],6,6);
+    initTangent = new Matrix(&data[48],6,6); // GR: corrected from "tangent" to "initTangent"
   } else {
     opserr << "FATAL:WrapperNDMaterial::WrapperNDMaterial - unknown material type: " << matType << endln;
     exit(-1);
@@ -254,6 +254,8 @@ WrapperNDMaterial::getCopy (const char *code)
   } else if (matType == OPS_THREEDIMENSIONAL_TYPE) {
     if (strcmp(code, "PlaneStrain") == 0)
       ok = 0;
+	if (strcmp(code, "ThreeDimensional") == 0) // GR added 3D material support
+      ok = 0;
   }
 
   if (ok != 0) {
@@ -266,6 +268,7 @@ WrapperNDMaterial::getCopy (const char *code)
   theMatObject->tag = theMat->tag;
   theMatObject->nParam = theMat->nParam;
   theMatObject->nState = theMat->nState;
+  theMatObject->matType = theMat->matType; // GR added 3D material support
   
   OPS_AllocateMaterial(theMatObject);
   
