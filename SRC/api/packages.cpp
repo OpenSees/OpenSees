@@ -113,7 +113,7 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
     typedef int (_cdecl *OPS_GetNumRemainingInputArgsType)();
     typedef int (_cdecl *OPS_GetIntInputPtrType)(int *, int *);
     typedef int (_cdecl *OPS_GetDoubleInputPtrType)(int *, double *);
-    typedef int (_cdecl *OPS_GetStringType)(char *, int);
+    typedef const char * (_cdecl *OPS_GetStringType)(void);
     typedef int (_cdecl *OPS_GetStringCopyType)(char **);
     typedef int (_cdecl *OPS_AllocateElementPtrType)(eleObj *, int *matTags, int *maType);
     typedef int (_cdecl *OPS_AllocateMaterialPtrType)(matObj *);

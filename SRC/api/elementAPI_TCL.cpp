@@ -978,6 +978,10 @@ Domain *OPS_GetDomain(void)
   return theDomain;
 }
 
+void TCL_OPS_setModelBuilder(TclModelBuilder *theNewBuilder) {
+	theModelBuilder = theNewBuilder;
+}
+
 //////////start MRL
 LimitCurve *
 OPS_GetLimitCurve(int LimCrvTag) {

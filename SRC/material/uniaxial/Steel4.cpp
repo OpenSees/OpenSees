@@ -105,14 +105,11 @@ OPS_Steel4(void)
 
   //Read the optional string tags to see what else is there to model
   argc = OPS_GetNumRemainingInputArgs();
+  //const char *argvLoc = 0;
   while (argc > 1) {
-    char argvLoc[10];
+    //char argvLoc[10];
     //if there are no valid string tags throw an error
-    if (OPS_GetString(argvLoc, 10) != 0) {
-      opserr << "WARNING invalid string option for Steel4 (tag: " << iData[0] << ")\n" <<
-        "valid options are: -asym | -kin | -iso | -ult | -mem | -init " << endln;
-      return 0;
-    }
+	const char *argvLoc = OPS_GetString();
   
     //if the material is asymmetric, modify the number of required parameters
     if (strcmp(argvLoc, "-asym") == 0) {
