@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.17 $
-// $Date: 2010-04-23 22:47:42 $
-// $Source: /usr/local/cvs/OpenSees/SRC/recorder/NodeRecorder.h,v $
+// $Revision: $
+// $Date: $
+// $URL: $
                                                                         
 #ifndef NodeRecorder_h
 #define NodeRecorder_h
@@ -32,8 +32,6 @@
 // Description: This file contains the class definition for 
 // NodeRecorder. A NodeRecorder is used to store the specified nodal dof responses
 // for the specified nodes in a file.
-//
-// What: "@(#) NodeRecorder.h, revA"
 
 
 #include <Recorder.h>
@@ -42,6 +40,7 @@
 #include <TimeSeries.h>
 
 class Domain;
+class Matrix;
 class FE_Datastore;
 class Node;
 
@@ -57,7 +56,8 @@ class NodeRecorder: public Recorder
 		 OPS_Stream &theOutputHandler,
 		 double deltaT = 0.0,
 		 bool echoTimeFlag = true,
-		 TimeSeries **timeSeries = 0); 
+		 TimeSeries **timeSeries = 0,
+		 int writeBufferSize = 0);
     
     ~NodeRecorder();
 
@@ -78,6 +78,7 @@ class NodeRecorder: public Recorder
     ID *theNodalTags;
     Node **theNodes;
     Vector response;
+    Matrix *buffer;
 
     Domain *theDomain;
     OPS_Stream *theOutputHandler;
@@ -99,6 +100,9 @@ class NodeRecorder: public Recorder
 
     TimeSeries **theTimeSeries;
     double *timeSeriesValues;
+
+    int writeBufferSize;
+    int iRow, numRows;
 };
 
 #endif

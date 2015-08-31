@@ -18,14 +18,12 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.14 $
-// $Date: 2009-04-14 21:14:22 $
-// $Source: /usr/local/cvs/OpenSees/SRC/recorder/ElementRecorder.h,v $
-                                                                        
+// $Revision: $
+// $Date: $
+// $URL: $
                                                                         
 #ifndef ElementRecorder_h
 #define ElementRecorder_h
-
 
 // Written: fmk 
 // Created: 09/99
@@ -34,8 +32,7 @@
 // Description: This file contains the class definition for ElementRecorder.
 // A ElementRecorder is used to obtain a response from an element during 
 // the analysis.
-//
-// What: "@(#) ElementRecorder.h, revA"
+
 
 #include <Recorder.h>
 #include <Information.h>
@@ -59,7 +56,8 @@ class ElementRecorder: public Recorder
 		    Domain &theDomain, 
 		    OPS_Stream &theOutputHandler,
 		    double deltaT = 0.0,
-		    const ID *dof = 0);
+		    const ID *dof = 0,
+		    int writeBufferSize = 0);
 
     ~ElementRecorder();
 
@@ -94,12 +92,15 @@ class ElementRecorder: public Recorder
     double nextTimeStampToRecord;
 
     Vector *data;
+    Matrix *buffer;
     bool initializationDone;
     char **responseArgs;
     int numArgs;
 
     int addColumnInfo;
-};
 
+    int writeBufferSize;
+    int iRow, numRows;
+};
 
 #endif

@@ -20,7 +20,7 @@
 
  // $Revision: 1.58 $
  // $Date: 2010-05-27 17:51:54 $
- // $Source: /usr/local/cvs/OpenSees/SRC/recorder/TclRecorderCommands.cpp,v $
+ // $URL: $
 
 
  // Written: fmk 
@@ -45,11 +45,11 @@
  // recorders
  #include <NodeRecorder.h>
  #include <EnvelopeNodeRecorder.h>
- #include <EnvelopeElementRecorder.h>
  #include <PatternRecorder.h>
  #include <DriftRecorder.h>
  #include <EnvelopeDriftRecorder.h>
  #include <ElementRecorder.h>
+ #include <EnvelopeElementRecorder.h>
  #include <NormElementRecorder.h>
  #include <NormEnvelopeElementRecorder.h>
 
@@ -160,6 +160,7 @@
        const char *inetAddr = 0;
        int inetPort;
        bool closeOnWrite = false;
+       int writeBufferSize = 0;
        bool doScientific = false;
 
        ID *specificIndices = 0;
@@ -332,13 +333,21 @@
 	   } else if (strcmp(argv[loc],"-headings") == 0) {
 	     eMode = DATA_STREAM;
 	     loc +=1;
-	 }
+	   }
 
 	 } else if (strcmp(argv[loc],"-closeOnWrite") == 0) {
 	   closeOnWrite = true;
 	   loc +=1;
 	 }
-
+     
+	 else if (strcmp(argv[loc],"-buffer") == 0 ||
+       strcmp(argv[loc],"-bufferSize") == 0)  {
+       loc++;
+	   if (Tcl_GetInt(interp, argv[loc], &writeBufferSize) != TCL_OK)	
+	     return TCL_ERROR;		  
+	   loc++;
+	 }
+     
 	 else if ((strcmp(argv[loc],"-fileCSV") == 0) || (strcmp(argv[loc],"-csv") == 0)) {
 	   fileName = argv[loc+1];
 	   eMode = DATA_STREAM_CSV;
@@ -434,7 +443,8 @@
 					      theDomain, 
 					      *theOutputStream,
 					      dT,
-					      specificIndices);
+					      specificIndices,
+                          writeBufferSize);
 
        } else if (strcmp(argv[1],"EnvelopeElement") == 0) {
 
@@ -1049,6 +1059,7 @@
        int inetPort;
 
        bool closeOnWrite = false;
+       int writeBufferSize = 0;
 
 
        while (flags == 0 && pos < argc) {
@@ -1083,6 +1094,14 @@
 	   pos += 1;
 	 }
 
+	 else if (strcmp(argv[pos],"-buffer") == 0 ||
+       strcmp(argv[pos],"-bufferSize") == 0)  {
+       pos++;
+	   if (Tcl_GetInt(interp, argv[pos], &writeBufferSize) != TCL_OK)	
+	     return TCL_ERROR;		  
+	   pos++;
+	 }
+
 	 else if (strcmp(argv[pos],"-fileCSV") == 0) {
 	   fileName = argv[pos+1];
 	   const char *pwd = getInterpPWD(interp);
@@ -1107,7 +1126,7 @@
 	 else if ((strcmp(argv[pos],"-TCP") == 0) || (strcmp(argv[pos],"-tcp") == 0)) {
 	   inetAddr = argv[pos+1];
 	   if (Tcl_GetInt(interp, argv[pos+2], &inetPort) != TCL_OK) {
-	     ;
+	     return TCL_ERROR;
 	   }
 	   eMode = TCP_STREAM;
 	   pos += 3;
@@ -1331,7 +1350,8 @@
 					   *theOutputStream, 
 					   dT, 
 					   echoTimeFlag,
-					   theTimeSeries);
+					   theTimeSeries,
+                       writeBufferSize);
 
        } else {
 
