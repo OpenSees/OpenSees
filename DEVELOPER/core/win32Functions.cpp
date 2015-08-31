@@ -11,8 +11,8 @@
 
 #define DllExport _declspec(dllexport)
 
-BOOL APIENTRY DllMain(HANDLE hModule, 
-                      DWORD  ul_reason_for_call, 
+BOOL APIENTRY DllMain(HANDLE hModule,
+                      DWORD  ul_reason_for_call,
                       LPVOID lpReserved)
 {
     return TRUE;
@@ -28,7 +28,7 @@ typedef int (*OPS_ErrorPtrType)(char *, int);
 typedef int (*OPS_GetNumRemainingInputArgsType)();
 typedef int (*OPS_GetIntInputPtrType)(int *, int *);
 typedef int (*OPS_GetDoubleInputPtrType)(int *, double *);
-typedef int (*OPS_GetStringType)(char *, int);
+typedef const char *(*OPS_GetStringType)();
 typedef int (*OPS_GetStringCopyType)(char **);
 typedef int (*OPS_AllocateElementPtrType)(eleObj *, int *matTags, int *maType);
 typedef int (*OPS_AllocateMaterialPtrType)(matObj *);
@@ -72,7 +72,7 @@ OPS_GetInterpPWD_PtrType OPS_GetInterpPWD_Ptr = 0;
 
 extern "C" DllExport
 void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
-		       Domain *theDomain,
+                       Domain *theDomain,
                        SimulationInformation *theSimulationInfoPtr,
                        OPS_ErrorPtrType errorFunct,
                        OPS_GetIntInputPtrType getIntInputFunct,
@@ -81,7 +81,7 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
                        OPS_AllocateMaterialPtrType allocateMaterialFunct,
                        OPS_GetUniaxialMaterialPtrType OPS_GetUniaxialMaterialFunct,
                        OPS_GetNDMaterialPtrType OPS_GetNDMaterialFunct,
-		       OPS_GetSectionForceDeformationPtrType OPS_GetSectionForceDeformationFunct,
+                       OPS_GetSectionForceDeformationPtrType OPS_GetSectionForceDeformationFunct,
                        OPS_InvokeMaterialDirectlyPtrType OPS_InvokeMaterialDirectlyFunct,
                        OPS_GetNodeInfoPtrType OPS_GetNodeCrdFunct,
                        OPS_GetNodeInfoPtrType OPS_GetNodeDispFunct,
@@ -108,7 +108,7 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
     OPS_AllocateMaterialPtr = allocateMaterialFunct;
     OPS_GetUniaxialMaterialPtr = OPS_GetUniaxialMaterialFunct;
     OPS_GetNDMaterialPtr = OPS_GetNDMaterialFunct;
-	OPS_GetSectionForceDeformationPtr = OPS_GetSectionForceDeformationFunct;
+    OPS_GetSectionForceDeformationPtr = OPS_GetSectionForceDeformationFunct;
     OPS_GetNodeCrdPtr = OPS_GetNodeCrdFunct;
     OPS_GetNodeDispPtr = OPS_GetNodeDispFunct;
     OPS_GetNodeVelPtr = OPS_GetNodeVelFunct;
@@ -142,7 +142,7 @@ OPS_GetNDMaterial(int matTag)
 SectionForceDeformation *
 OPS_GetSectionForceDeformation(int matTag)
 {
-return (*OPS_GetSectionForceDeformationPtr)(matTag);
+    return (*OPS_GetSectionForceDeformationPtr)(matTag);
 }
 
 CrdTransf *
@@ -212,19 +212,19 @@ extern "C" int OPS_InvokeMaterialDirectly(matObject **theMat, modelState *model,
     return (*OPS_InvokeMaterialDirectlyPtr)(theMat, model, strain, stress, tang, isw);
 }
 
-extern "C" int OPS_GetString(char *cArray, int sizeArray)
+extern "C" const char *OPS_GetString()
 {
-    return (*OPS_GetStringPtr)(cArray, sizeArray);  
+    return (*OPS_GetStringPtr)();
 }
 
 extern "C" int OPS_GetStringCopy(char **cArray)
 {
-    return (*OPS_GetStringCopyPtr)(cArray);  
+    return (*OPS_GetStringCopyPtr)(cArray);
 }
 
 extern "C" int OPS_GetNumRemainingInputArgs()
 {
-    return (*OPS_GetNumRemainingInputArgsPtr)();  
+    return (*OPS_GetNumRemainingInputArgsPtr)();
 }
 
 extern "C" int OPS_GetNDM()
@@ -237,13 +237,12 @@ extern "C" int OPS_GetNDF()
     return (*OPS_GetNDF_Ptr)();
 }
 
-FE_Datastore *
-OPS_GetFEDatastore()
+FE_Datastore *OPS_GetFEDatastore()
 {
     return (*OPS_GetFEDatastorePtr)();
 }
 
-extern "C" const char *OPS_GetInterpPWD() 
+extern "C" const char *OPS_GetInterpPWD()
 {
     return (*OPS_GetInterpPWD_Ptr)();
 }

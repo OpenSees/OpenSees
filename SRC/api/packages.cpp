@@ -113,12 +113,12 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
     typedef int (_cdecl *OPS_GetNumRemainingInputArgsType)();
     typedef int (_cdecl *OPS_GetIntInputPtrType)(int *, int *);
     typedef int (_cdecl *OPS_GetDoubleInputPtrType)(int *, double *);
-    typedef const char * (_cdecl *OPS_GetStringType)(void);
+    typedef const char *(_cdecl *OPS_GetStringType)();
     typedef int (_cdecl *OPS_GetStringCopyType)(char **);
     typedef int (_cdecl *OPS_AllocateElementPtrType)(eleObj *, int *matTags, int *maType);
     typedef int (_cdecl *OPS_AllocateMaterialPtrType)(matObj *);
     typedef UniaxialMaterial *(*OPS_GetUniaxialMaterialPtrType)(int matTag);
-	typedef SectionForceDeformation *(*OPS_GetSectionForceDeformationPtrType)(int matTag);
+    typedef SectionForceDeformation *(*OPS_GetSectionForceDeformationPtrType)(int matTag);
     typedef NDMaterial *(*OPS_GetNDMaterialPtrType)(int matTag);
     typedef CrdTransf *(*OPS_GetCrdTransfPtrType)(int matTag);
     typedef int (_cdecl *OPS_GetNodeInfoPtrType)(int *, int *, double *);
@@ -126,11 +126,11 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
     typedef int (_cdecl *OPS_GetIntPtrType)();
 
     typedef FE_Datastore *(*OPS_GetFEDatastorePtrType)();
-    typedef const char * (_cdecl *OPS_GetInterpPWD_PtrType)();
+    typedef const char *(_cdecl *OPS_GetInterpPWD_PtrType)();
     
-	/*
-	void setGlobalPointers(OPS_Stream *,
-					   Domain *,
+    /*
+    void setGlobalPointers(OPS_Stream *,
+                       Domain *,
                        SimulationInformation
                        OPS_ErrorPtrType,
                        OPS_GetIntInputPtrType,
@@ -139,7 +139,7 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
                        OPS_AllocateMaterialPtrType,
                        OPS_GetUniaxialMaterialPtrType,
                        OPS_GetNDMaterialPtrType,
-					   OPS_GetSectionForceDeformationPtrType,
+                       OPS_GetSectionForceDeformationPtrType,
                        OPS_InvokeMaterialDirectlyPtrType,
                        OPS_GetNodeInfoPtrType,
                        OPS_GetNodeInfoPtrType,
@@ -155,33 +155,34 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
                        OPS_GetIntPtrType,
                        OPS_GetFEDatastorePtrType,
                        OPS_GetInterpPWD_PtrType,
-					   */
+                       */
 
-    typedef void (_cdecl *setGlobalPointersFunction)(OPS_Stream *, Domain *,
-						     SimulationInformation *,
-						     OPS_ErrorPtrType,
-						     OPS_GetIntInputPtrType,
-						     OPS_GetDoubleInputPtrType,
-						     OPS_AllocateElementPtrType,
-						     OPS_AllocateMaterialPtrType,
-						     OPS_GetUniaxialMaterialPtrType,
-						     OPS_GetNDMaterialPtrType,
-							 OPS_GetSectionForceDeformationPtrType,
-						     OPS_InvokeMaterialDirectlyPtrType,
-						     OPS_GetNodeInfoPtrType,
-						     OPS_GetNodeInfoPtrType,
-						     OPS_GetNodeInfoPtrType,
-						     OPS_GetNodeInfoPtrType,
-						     OPS_GetNodeInfoPtrType,
-						     OPS_GetNodeInfoPtrType,
-						     OPS_GetNumRemainingInputArgsType,
-						     OPS_GetStringType,
-						     OPS_GetStringCopyType,
-						     OPS_GetCrdTransfPtrType,
-						     OPS_GetIntPtrType,
-						     OPS_GetIntPtrType,
-						     OPS_GetFEDatastorePtrType,
-						     OPS_GetInterpPWD_PtrType);
+    typedef void (_cdecl *setGlobalPointersFunction)(OPS_Stream *,
+                             Domain *,
+                             SimulationInformation *,
+                             OPS_ErrorPtrType,
+                             OPS_GetIntInputPtrType,
+                             OPS_GetDoubleInputPtrType,
+                             OPS_AllocateElementPtrType,
+                             OPS_AllocateMaterialPtrType,
+                             OPS_GetUniaxialMaterialPtrType,
+                             OPS_GetNDMaterialPtrType,
+                             OPS_GetSectionForceDeformationPtrType,
+                             OPS_InvokeMaterialDirectlyPtrType,
+                             OPS_GetNodeInfoPtrType,
+                             OPS_GetNodeInfoPtrType,
+                             OPS_GetNodeInfoPtrType,
+                             OPS_GetNodeInfoPtrType,
+                             OPS_GetNodeInfoPtrType,
+                             OPS_GetNodeInfoPtrType,
+                             OPS_GetNumRemainingInputArgsType,
+                             OPS_GetStringType,
+                             OPS_GetStringCopyType,
+                             OPS_GetCrdTransfPtrType,
+                             OPS_GetIntPtrType,
+                             OPS_GetIntPtrType,
+                             OPS_GetFEDatastorePtrType,
+                             OPS_GetInterpPWD_PtrType);
 
     setGlobalPointersFunction funcPtr;
     
@@ -194,41 +195,41 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
   
     // invoke pointer function
     (funcPtr)(opserrPtr, 
-			ops_TheActiveDomain, 
-			theSimulationInfoPtr, 
-			OPS_Error, 
-			OPS_GetIntInput, 
-			OPS_GetDoubleInput,
-			OPS_AllocateElement, 
-			OPS_AllocateMaterial, 
-			OPS_GetUniaxialMaterial, 
-			OPS_GetNDMaterial, 
-			OPS_GetSectionForceDeformation, 
-			OPS_InvokeMaterialDirectly, 
-			OPS_GetNodeCrd, 
-			OPS_GetNodeDisp, 
-			OPS_GetNodeVel, 
-			OPS_GetNodeAcc, 
-			OPS_GetNodeIncrDisp, 
-			OPS_GetNodeIncrDeltaDisp,
-			OPS_GetNumRemainingInputArgs, 
-			OPS_GetString, 
-			OPS_GetStringCopy, 
-			OPS_GetCrdTransfPtr, 
-			OPS_GetNDM, 
-			OPS_GetNDF,
-			OPS_GetFEDatastore, 
-			OPS_GetInterpPWD);
+            ops_TheActiveDomain, 
+            theSimulationInfoPtr, 
+            OPS_Error, 
+            OPS_GetIntInput, 
+            OPS_GetDoubleInput,
+            OPS_AllocateElement, 
+            OPS_AllocateMaterial, 
+            OPS_GetUniaxialMaterial, 
+            OPS_GetNDMaterial, 
+            OPS_GetSectionForceDeformation, 
+            OPS_InvokeMaterialDirectly, 
+            OPS_GetNodeCrd, 
+            OPS_GetNodeDisp, 
+            OPS_GetNodeVel, 
+            OPS_GetNodeAcc, 
+            OPS_GetNodeIncrDisp, 
+            OPS_GetNodeIncrDeltaDisp,
+            OPS_GetNumRemainingInputArgs, 
+            OPS_GetString, 
+            OPS_GetStringCopy, 
+            OPS_GetCrdTransfPtr, 
+            OPS_GetNDM, 
+            OPS_GetNDF,
+            OPS_GetFEDatastore, 
+            OPS_GetInterpPWD);
 
    LocalInitPtrType initPtr;
    initPtr = (LocalInitPtrType)GetProcAddress((HMODULE)hLib,"localInit");
    if (initPtr !=0) {
      initPtr();
    } else {
-	  initPtr = (LocalInitPtrType)GetProcAddress((HMODULE)hLib,"localinit_");
-	  if (initPtr !=0) {
-	    initPtr();
-	  }
+      initPtr = (LocalInitPtrType)GetProcAddress((HMODULE)hLib,"localinit_");
+      if (initPtr !=0) {
+        initPtr();
+      }
    }
     
   } else // no lib exists
@@ -281,8 +282,8 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
     int funcNameLength  =strlen(funcName);
     char *underscoreFunctionName = new char[funcNameLength+2];
     strcpy(underscoreFunctionName, funcName);
-    strcpy(&underscoreFunctionName[funcNameLength], "_");   
-    strcpy(&underscoreFunctionName[funcNameLength+1], "");    
+    strcpy(&underscoreFunctionName[funcNameLength], "_");
+    strcpy(&underscoreFunctionName[funcNameLength+1], "");
     funcPtr = dlsym(*libHandle, underscoreFunctionName);
     delete [] underscoreFunctionName;
   } 

@@ -279,6 +279,9 @@
     <ClCompile Include="..\..\..\SRC\domain\region\TclRegionCommands.cpp">
       <Filter>region</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\UniformRotationalExcitation.cpp">
+      <Filter>pattern</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h">
@@ -514,6 +517,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\region\MeshRegion.h">
       <Filter>region</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\UniformRotationalExcitation.h">
+      <Filter>pattern</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

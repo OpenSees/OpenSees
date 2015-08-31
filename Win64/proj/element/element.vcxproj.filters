@@ -105,6 +105,9 @@
     <Filter Include="XMUelements">
       <UniqueIdentifier>{24473406-20f3-4a25-9f2b-1e4f17b774a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mvlem">
+      <UniqueIdentifier>{192f6adf-59e2-4e68-8259-4093172b605a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -728,6 +731,15 @@
     <ClCompile Include="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.cpp">
       <Filter>XMUelements</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\UWelements\QuadBeamEmbedContact.cpp">
+      <Filter>UWelements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1242,6 +1254,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\XMUelements\VS3D4QuadWithSensitivity.h">
       <Filter>XMUelements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\UWelements\QuadBeamEmbedContact.h">
+      <Filter>UWelements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM.h">
+      <Filter>mvlem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.h">
+      <Filter>mvlem</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
