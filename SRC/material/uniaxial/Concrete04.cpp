@@ -319,6 +319,9 @@ int Concrete04::commitState ()
   CunloadSlope = TunloadSlope;   
   CendStrain = TendStrain;   
   CUtenSlope = TUtenSlope;
+  CcompStrain = TcompStrain;
+  CUtenStress = TUtenStress;
+  CUtenSlope = TUtenSlope;
   
   /*// State variables*/   
   Cstrain = Tstrain;   
@@ -332,8 +335,11 @@ int Concrete04::revertToLastCommit ()
   /*// Reset trial history variables to last committed state*/
   TminStrain = CminStrain;   
   TmaxStrain = CmaxStrain;   
-  TendStrain = CendStrain;   
   TunloadSlope = CunloadSlope;   
+  TendStrain = CendStrain;   
+  TUtenSlope = CUtenSlope;
+  TcompStrain = CcompStrain;
+  TUtenStress = CUtenStress;
   TUtenSlope = CUtenSlope;
   
   /*// Recompute trial stress and tangent*/   
@@ -370,7 +376,7 @@ int Concrete04::sendSelf (int commitTag, Channel& theChannel)
 {   
   int res = 0;   
 
-  static Vector data(14);   
+  static Vector data(16);   
   data(0) = this->getTag();
   
   /* Material properties*/   
@@ -379,17 +385,21 @@ int Concrete04::sendSelf (int commitTag, Channel& theChannel)
   data(3) = epscu;   
   data(4) = Ec0;   
   data(5) = fct;
+
   /*// History variables from last converged state*/
   data(6) = CminStrain;   
-  data(7) = CunloadSlope;   
-  data(8) = CendStrain;   
-  data(9) = CUtenSlope;   
-  data(10) = CmaxStrain;
+  data(7) = CmaxStrain;
+  data(8) = CunloadSlope;   
+  data(9) = CendStrain;   
+  data(10) = CcompStrain;
+  data(11) = CUtenStress;   
+  data(12) = CUtenSlope;   
+
   
   /*// State variables from last converged state*/   
-  data(11) = Cstrain;   
-  data(12) = Cstress;   
-  data(13) = Ctangent;   
+  data(13) = Cstrain;   
+  data(14) = Cstress;   
+  data(15) = Ctangent;   
   /*// Data is only sent after convergence, so no trial variables   // need to be sent through data vector*/
   
   res = theChannel.sendVector(this->getDbTag(), commitTag, data);   
@@ -402,7 +412,7 @@ int Concrete04::recvSelf (int commitTag, Channel& theChannel,
 			  FEM_ObjectBroker& theBroker)
 {
   int res = 0;
-  static Vector data(14);
+  static Vector data(16);
   res = theChannel.recvVector(this->getDbTag(), commitTag, data);
   
   if (res < 0) {
@@ -421,15 +431,18 @@ int Concrete04::recvSelf (int commitTag, Channel& theChannel,
     
     /*// History variables from last converged state*/
     CminStrain = data(6);      
-    CunloadSlope = data(7);      
-    CendStrain = data(8);      
-    CcompStrain = data(9);      
-    CmaxStrain = data(10); 
+    CmaxStrain = data(7); 
+    CunloadSlope = data(8);      
+    CendStrain = data(9);      
+    CcompStrain = data(10);      
+    CUtenStress = data(11);      
+    CUtenSlope = data(12);      
+
     
     /*// State variables from last converged state*/      
-    Cstrain = data(11);      
-    Cstress = data(12);      
-    Ctangent = data(13);
+    Cstrain = data(13);      
+    Cstress = data(14);      
+    Ctangent = data(15);
     
     /*// Set trial state variables*/      
     this->revertToLastCommit();

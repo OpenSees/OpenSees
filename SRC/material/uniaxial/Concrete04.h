@@ -90,7 +90,7 @@ class Concrete04 : public UniaxialMaterial
   // at etu. 
   
   /*** CONVERGED History Variables ***/
-  double CminStrain;   // Smallest previous concrete strain (compression)      
+  double CminStrain;   // Smallest previous concrete strain (compression)
   double CmaxStrain;  
   double CunloadSlope; // Unloading (reloading) slope from CminStrain
   double CendStrain;   // Strain at the end of unloading from CminStrain
@@ -106,7 +106,8 @@ class Concrete04 : public UniaxialMaterial
   // Storing it is better than recomputing it!!!
   
   double TminStrain;
-  /*** TRIAL History Variables ***/      double TmaxStrain;
+  /*** TRIAL History Variables ***/      
+  double TmaxStrain;
   double TunloadSlope;
   double TendStrain;
   double TcompStrain;
