@@ -29,7 +29,7 @@
 #define PythonInterpreter_h
 
 #include "DL_Interpreter.h"
-#include <python.h>
+#include <Python.h>
 
 
 
