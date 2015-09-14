@@ -35,10 +35,59 @@
 #include <Channel.h>
 #include <Information.h>
 #include <Parameter.h>
+#include <string>
+#include <elementAPI.h>
 
 // AddingSensitivity:BEGIN /////////////////////////////////////
 Vector NodalLoad::gradientVector(1);
 // AddingSensitivity:END ///////////////////////////////////////
+
+static int nodeLoadTag = 0;
+
+void* OPS_NewNodalLoad()
+{
+    // check inputs
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
+
+    if(ndm<=0 || ndf<=0) {
+	opserr<<"zero ndm or ndf\n";
+	return 0;
+    }
+    
+    if(OPS_GetNumRemainingInputArgs() < 1+ndf) {
+	opserr<<"insufficient number of args\n";
+	return 0;
+    }
+
+    // get node tag
+    int ndtag;
+    int numData = 1;
+    if(OPS_GetIntInput(&numData, &ndtag) < 0) return 0;
+
+    // get load vector
+    Vector forces(ndf);
+    if(OPS_GetDoubleInput(&ndf, &forces(0)) < 0) return 0;
+
+    // get load const
+    bool isLoadConst = false;
+    if(OPS_GetNumRemainingInputArgs() > 0) {
+	std::string type = OPS_GetString();
+	if(type == "-const") {
+	    isLoadConst = true;
+	}
+    }
+
+    // create the load
+    NodalLoad* theLoad = new NodalLoad(nodeLoadTag, ndtag, forces, isLoadConst);
+
+    if(theLoad == 0) return 0;
+
+    nodeLoadTag++;
+
+    return theLoad;
+       
+}
 
 NodalLoad::NodalLoad(int theClasTag)
 :Load(0,theClasTag), 

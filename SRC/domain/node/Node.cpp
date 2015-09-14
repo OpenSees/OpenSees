@@ -54,10 +54,102 @@
 // AddingSensitivity:END ////////////////////////////
 
 #include <OPS_Globals.h>
+#include <elementAPI.h>
+#include <string>
 
 Matrix **Node::theMatrices = 0;
 Matrix **Node::theVectors = 0;
 int Node::numMatrices = 0;
+
+void* OPS_NewNode()
+{
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
+
+    if(ndm<=0 || ndf<=0) {
+	opserr<<"zero ndm or ndf\n";
+	return 0;
+    }
+
+    if(OPS_GetNumRemainingInputArgs() < 1+ndm) {
+	opserr<<"insufficient number of arguments\n";
+	return 0;
+    }
+
+    // get tag
+    int tag = 0;
+    int numData = 1;
+    OPS_GetIntInput(&numData, &tag);
+
+    // get crds
+    Vector crds(ndm);
+    double* ptr = &crds(0);
+    OPS_GetDoubleInput(&ndm, ptr);
+
+    // create node
+    Node* theNode = 0;
+    if(ndm == 1) {
+	theNode = new Node(tag,ndf,crds(0));
+    } else if(ndm == 2) {
+	theNode = new Node(tag,ndf,crds(0),crds(1));
+    } else {
+	theNode = new Node(tag,ndf,crds(0),crds(1),crds(2));
+    }
+    if(theNode == 0) {
+	opserr<<"run out of memory for node "<<tag<<"\n";
+	return 0;
+    }
+
+    // check options
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+	std::string type = OPS_GetString();
+	if(type=="-disp" || type=="-Disp") {
+	    if(OPS_GetNumRemainingInputArgs() < ndf) {
+		opserr<<"incorrect number of nodal disp terms\n";
+		delete theNode;
+		return 0;
+	    }
+	    Vector data(ndf);
+	    OPS_GetDoubleInput(&ndf, &data(0));
+	    theNode->setTrialDisp(data);
+	    theNode->commitState();
+	} else if(type=="-vel" || type=="-Vel") {
+	    if(OPS_GetNumRemainingInputArgs() < ndf) {
+		opserr<<"incorrect number of nodal vel terms\n";
+		delete theNode;
+		return 0;
+	    }
+	    Vector data(ndf);
+	    OPS_GetDoubleInput(&ndf, &data(0));
+	    theNode->setTrialVel(data);
+	    theNode->commitState();
+	} else if(type=="-mass" || type=="-Mass") {
+	    if(OPS_GetNumRemainingInputArgs() < ndf) {
+		opserr<<"incorrect number of nodal mass terms\n";
+		delete theNode;
+		return 0;
+	    }
+	    Vector data(ndf);
+	    OPS_GetDoubleInput(&ndf, &data(0));
+	    Matrix ndmass(ndf,ndf);
+	    for(int i=0; i<ndf; i++) {
+		ndmass(i,i) = data(i);
+	    }
+	    theNode->setMass(ndmass);
+	} else if(type=="-dispLoc" || type=="-dispLoc") {
+	    if(OPS_GetNumRemainingInputArgs() < ndm) {
+		opserr<<"incorrect number of nodal mass terms\n";
+		delete theNode;
+		return 0;
+	    }
+	    Vector data(ndm);
+	    OPS_GetDoubleInput(&ndm, &data(0));
+	    theNode->setDisplayCrds(data);
+	}
+    }
+
+    return theNode;
+}
 
 // for FEM_Object Broker to use
 Node::Node(int theClassTag)
