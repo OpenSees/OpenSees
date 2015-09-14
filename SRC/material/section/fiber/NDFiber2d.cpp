@@ -46,10 +46,41 @@
 #include <Information.h>
 #include <Parameter.h>
 #include <FiberResponse.h>
+#include <elementAPI.h>
 
 Matrix NDFiber2d::ks(3,3); 
 Vector NDFiber2d::fs(3); 
 ID NDFiber2d::code(3);
+
+static int numNDFiber2d = 0;
+
+void* OPS_NewNDFiber2d()
+{
+    if(OPS_GetNumRemainingInputArgs() < 4) {
+	opserr<<"insufficient arguments for NDFiber2d\n";
+	return 0;
+    }
+
+    // get data
+    int numData = 3;
+    double data[3];
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+
+    // get mat tag
+    int tag;
+    numData = 1;
+    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    // get material
+    NDMaterial* theMat = OPS_getNDMaterial(tag);
+    if(theMat == 0) {
+	opserr<<"invalid NDMaterial tag\n";
+	return 0;
+    }
+
+    return new NDFiber2d(numNDFiber2d++,*theMat,data[2],data[0]);
+}
+
 
 // constructor:
 NDFiber2d::NDFiber2d(int tag, 
