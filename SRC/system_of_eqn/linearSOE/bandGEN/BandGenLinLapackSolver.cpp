@@ -39,6 +39,12 @@
 #include <BandGenLinSOE.h>
 #include <math.h>
 
+void* OPS_NewBandGenLinLapack()
+{
+    BandGenLinSolver *theSolver = new BandGenLinLapackSolver();
+    BandGenLinSOE *theSOE = new BandGenLinSOE(*theSolver);
+    return theSOE;
+}
 
 BandGenLinLapackSolver::BandGenLinLapackSolver()
 :BandGenLinSolver(SOLVER_TAGS_BandGenLinLapackSolver),
