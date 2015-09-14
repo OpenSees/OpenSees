@@ -38,7 +38,8 @@
 #include <Matrix.h>
 #include <Node.h>
 #include <Channel.h>
-
+#include <elementAPI.h>
+#include <string>
 #include <CorotCrdTransf3d.h>
 
 // initialize static variables
@@ -53,6 +54,38 @@ Matrix CorotCrdTransf3d::kg(12,12);
 Matrix CorotCrdTransf3d::Lr2(12,3);
 Matrix CorotCrdTransf3d::Lr3(12,3);
 Matrix CorotCrdTransf3d::A(3,3);
+
+void* OPS_NewCorotCrdTransf3d()
+{
+    if(OPS_GetNumRemainingInputArgs() < 4) {
+	opserr<<"insufficient arguments for CorotCrdTransf3d\n";
+	return 0;
+    }
+
+    // get tag
+    int tag;
+    int numData = 1;
+    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    // get vector
+    Vector vec(3);
+    double* vptr = &vec(0);
+    numData = 3;
+    if(OPS_GetDoubleInput(&numData,vptr) < 0) return 0;
+
+    // get option
+    Vector jntOffsetI(3), jntOffsetJ(3);
+    double *iptr=&jntOffsetI(0), *jptr=&jntOffsetJ(0);
+    while(OPS_GetNumRemainingInputArgs() > 6) {
+	std::string type = OPS_GetString();
+	if(type == "-jntOffset") {
+	    if(OPS_GetDoubleInput(&numData,iptr) < 0) return 0;
+	    if(OPS_GetDoubleInput(&numData,jptr) < 0) return 0;
+	}
+    }
+
+    return new CorotCrdTransf3d(tag,vec,jntOffsetI,jntOffsetJ);
+}
 
 
 // constructor:
