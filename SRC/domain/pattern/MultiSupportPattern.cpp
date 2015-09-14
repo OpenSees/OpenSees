@@ -38,6 +38,24 @@
 #include <stdlib.h>
 #include <Channel.h>
 #include <ErrorHandler.h>
+#include <elementAPI.h>
+
+void* OPS_NewMultiSupportPattern()
+{
+    int tag;
+
+    if(OPS_GetNumRemainingInputArgs() < 1) {
+	opserr<<"insufficient number of args\n";
+	return 0;
+    }
+    
+    // get tag 
+    int numData = 1;
+    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    return new MultiSupportPattern(tag);
+}
+
 
 MultiSupportPattern::MultiSupportPattern(int tag, int _classTag)
   :LoadPattern(tag, _classTag), 

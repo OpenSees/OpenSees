@@ -31,6 +31,7 @@
 // The LoadPattern interface:
 
 #include <string.h>
+#include <string>
 #include <stdlib.h>
 
 #include <LoadPattern.h>
@@ -49,6 +50,57 @@
 #include <GroundMotion.h>
 
 #include <OPS_Globals.h>
+#include <elementAPI.h>
+
+void* OPS_NewLoadPattern()
+{
+    if(OPS_GetNumRemainingInputArgs() < 2) {
+	opserr<<"insufficient number of args\n";
+	return 0;
+    }
+
+    LoadPattern *thePattern = 0;
+
+    // get tags
+    int tags[2];
+    int numData = 2;
+    if(OPS_GetIntInput(&numData, &tags[0]) < 0) return 0;
+
+    // get factor
+    double fact = 1.0;
+    if(OPS_GetNumRemainingInputArgs() > 1) {
+	std::string type = OPS_GetString();
+	if(type=="-fact" || type=="-factor") {
+	    numData = 1;
+	    if(OPS_GetDoubleInput(&numData,&fact) < 0) return 0;
+	}
+    }
+
+    // create pattern
+    thePattern = new LoadPattern(tags[0], fact);
+    TimeSeries *theSeries = OPS_getTimeSeries(tags[1]);
+
+    // check 
+    if(thePattern == 0 || theSeries == 0) {
+
+	if(thePattern == 0) {
+	    opserr << "WARNING - out of memory creating LoadPattern \n";
+	} else {
+	    opserr << "WARNING - problem creating TimeSeries for LoadPattern \n";
+	}
+
+	// clean up the memory and return an error
+	if(thePattern != 0)
+	    delete thePattern;
+	if(theSeries != 0)
+	    delete theSeries;
+	return 0;
+    }
+    
+    thePattern->setTimeSeries(theSeries);
+
+    return thePattern;
+}
 
 LoadPattern::LoadPattern(int tag, int clasTag, double fact)
 :DomainComponent(tag,clasTag),

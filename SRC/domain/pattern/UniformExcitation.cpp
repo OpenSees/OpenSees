@@ -42,6 +42,67 @@
 #include <FEM_ObjectBroker.h>
 #include <SP_ConstraintIter.h>
 #include <SP_Constraint.h>
+#include <elementAPI.h>
+#include <string>
+
+void* OPS_NewUniformExcitationPattern()
+{
+    TimeSeries* accelSeries = 0;
+    TimeSeries* velSeries = 0;
+    TimeSeries* dispSeries = 0;
+    TimeSeriesIntegrator* seriesIntegrator = 0;
+    double fact = 1.0;
+    double vel0 = 0.0;
+    int iData[2];
+
+    if(OPS_GetNumRemainingInputArgs() < 2) {
+	opserr<<"insufficient number of args\n";
+	return 0;
+    }
+    
+    // get tag and direction
+    int numData = 2;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+    iData[1]--; // subtract 1 for c indexing
+
+    // get options
+    numData = 1;
+    while(OPS_GetNumRemainingInputArgs() > 1) {
+	std::string type = OPS_GetString();
+	if(type == "-accel"||type == "-acceleration") {
+	    int tstag;
+	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
+	    accelSeries = OPS_getTimeSeries(tstag);
+	} else if(type == "-vel"||type == "-velocity") {
+	    int tstag;
+	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
+	    velSeries = OPS_getTimeSeries(tstag);
+	} else if(type == "-disp"||type == "-displacement") {
+	    int tstag;
+	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
+	    dispSeries = OPS_getTimeSeries(tstag);
+	} else if(type == "-fact"||type == "-factor") {
+	    if(OPS_GetDoubleInput(&numData,&fact) < 0) return 0;
+	} else if(type == "-vel0"||type == "-initialVel") {
+	    if(OPS_GetDoubleInput(&numData,&vel0) < 0) return 0;
+	}
+    }
+
+    // create groundmotion
+    if(accelSeries==0&&dispSeries==0&&velSeries==0) {
+	opserr<<"no time series is specified\n";
+	return 0;
+    }
+
+    GroundMotion* theMotion = new GroundMotion(dispSeries,velSeries,accelSeries,seriesIntegrator);
+    if(theMotion == 0) {
+	opserr << "WARNING ran out of memory creating ground motion - pattern UniformExcitation\n";
+	return 0;
+    }
+
+    //
+    return new UniformExcitation(*theMotion,iData[1],iData[0],vel0,fact);
+}
 
 UniformExcitation::UniformExcitation()
 :EarthquakePattern(0, PATTERN_TAG_UniformExcitation), 
