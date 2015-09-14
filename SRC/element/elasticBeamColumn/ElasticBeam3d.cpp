@@ -48,9 +48,85 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include <elementAPI.h>
+
 Matrix ElasticBeam3d::K(12,12);
 Vector ElasticBeam3d::P(12);
 Matrix ElasticBeam3d::kb(6,6);
+
+void* OPS_NewElasticBeam3d()
+{
+    int numArgs = OPS_GetNumRemainingInputArgs();
+    if(numArgs < 10 && numArgs != 5) {
+	opserr<<"insufficient arguments:eleTag,iNode,jNode,A,E,G,J,Iy,Iz,transfTag\n";
+	return 0;
+    }
+
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
+    if(ndm != 3 || ndf != 6) {
+	opserr<<"ndm must be 3 and ndf must be 6\n";
+	return 0;
+    }
+
+    // inputs: 
+    int iData[3];
+    int numData = 3;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+
+    SectionForceDeformation* theSection = 0;
+    CrdTransf* theTrans = 0;
+    double data[6];
+    int transfTag, secTag;
+    if(numArgs == 5) {
+	numData = 1;
+	if(OPS_GetIntInput(&numData,&secTag) < 0) return 0;
+	if(OPS_GetIntInput(&numData,&transfTag) < 0) return 0;
+
+	theSection = OPS_getSectionForceDeformation(secTag);
+	if(theSection == 0) {
+	    opserr<<"no section is found\n";
+	    return 0;
+	}
+	theTrans = OPS_GetCrdTransf(transfTag);
+	if(theTrans == 0) {
+	    opserr<<"no CrdTransf is found\n";
+	    return 0;
+	}
+    } else {
+	numData = 6;
+	if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+	numData = 1;
+	if(OPS_GetIntInput(&numData,&transfTag) < 0) return 0;
+	theTrans = OPS_GetCrdTransf(transfTag);
+	if(theTrans == 0) {
+	    opserr<<"no CrdTransf is found\n";
+	    return 0;
+	}
+    }
+    
+    // options
+    double mass = 0.0;
+    int cMass = 0;
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+	std::string type = OPS_GetString();
+	if(type == "-mass") {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetDoubleInput(&numData,&mass) < 0) return 0;
+	    }
+	} else if(type == "-cMass") {
+	    cMass = 1;
+	}
+    }
+
+    if(theSection == 0) {
+	return new ElasticBeam3d(iData[0],iData[1],iData[2],theSection,*theTrans,mass,cMass); 
+    } else {
+	return new ElasticBeam3d(iData[0],data[0],data[1],data[2],data[3],data[4],
+				 data[5],iData[1],iData[2],*theTrans, mass,cMass);
+    }
+}
+
 
 ElasticBeam3d::ElasticBeam3d()
   :Element(0,ELE_TAG_ElasticBeam3d), 

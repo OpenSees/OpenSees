@@ -47,10 +47,72 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <elementAPI.h>
+#include <string>
 
 Matrix ElasticBeam2d::K(6,6);
 Vector ElasticBeam2d::P(6);
 Matrix ElasticBeam2d::kb(3,3);
+
+void* OPS_NewElasticBeam2d()
+{
+    if(OPS_GetNumRemainingInputArgs() < 7) {
+	opserr<<"insufficient arguments:eleTag,iNode,jNode,A,E,Iz,transfTag\n";
+	return 0;
+    }
+
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
+    if(ndm != 2 || ndf != 3) {
+	opserr<<"ndm must be 2 and ndf must be 3\n";
+	return 0;
+    }
+
+    // inputs: 
+    int iData[3];
+    int numData = 3;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+
+    double data[3];
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+
+    numData = 1;
+    int transfTag;
+    if(OPS_GetIntInput(&numData,&transfTag) < 0) return 0;
+    
+    // options
+    double mass = 0.0, alpha=0.0, depth=0.0;
+    int cMass = 0;
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+	std::string type = OPS_GetString();
+	if(type == "-alpha") {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetDoubleInput(&numData,&alpha) < 0) return 0;
+	    }
+	} else if(type == "-depth") {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetDoubleInput(&numData,&depth) < 0) return 0;
+	    }
+
+	} else if(type == "-mass") {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetDoubleInput(&numData,&mass) < 0) return 0;
+	    }
+	} else if(type == "-cMass") {
+	    cMass = 1;
+	}
+    }
+
+    // check transf
+    CrdTransf* theTransf = OPS_GetCrdTransf(transfTag);
+    if(theTransf == 0) {
+	opserr<<"coord transfomration not found\n";
+	return 0;
+    }
+
+    return new ElasticBeam2d(iData[0],data[0],data[1],data[2],iData[1],iData[2],
+			     *theTransf,alpha,depth,mass,cMass);
+}
 
 ElasticBeam2d::ElasticBeam2d()
   :Element(0,ELE_TAG_ElasticBeam2d), 
