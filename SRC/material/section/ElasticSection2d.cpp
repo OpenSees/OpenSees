@@ -34,10 +34,31 @@
 #include <string.h>
 
 #include <classTags.h>
+#include <elementAPI.h>
 
 Vector ElasticSection2d::s(2);
 Matrix ElasticSection2d::ks(2,2);
 ID ElasticSection2d::code(2);
+
+void* OPS_NewElasticSection2d()
+{
+    if(OPS_GetNumRemainingInputArgs() < 4) {
+	opserr<<"insufficient arguments for ealstic section\n";
+	return 0;
+    }
+
+    // get tag
+    int tag;
+    int numData = 1;
+    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    // get data
+    numData = 3;
+    double data[3];
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+
+    return new ElasticSection2d(tag,data[0],data[1],data[2]);
+}
 
 ElasticSection2d::ElasticSection2d(void)
 :SectionForceDeformation(0, SEC_TAG_Elastic2d),
