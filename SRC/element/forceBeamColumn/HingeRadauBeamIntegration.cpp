@@ -42,6 +42,32 @@ Force-Based Beam-Column Elements." Journal of Structural Engineering,
 #include <Information.h>
 #include <Parameter.h>
 #include <math.h>
+#include <elementAPI.h>
+#include <ID.h>
+
+void* OPS_NewHingeRadauBeamIntegration(int& integrationTag, ID& secTags)
+{
+    if(OPS_GetNumRemainingInputArgs() < 6) {
+	opserr<<"insufficient arguments:integrationTag,secTagI,lpI,secTagJ,lpJ,secTagE\n";
+	return 0;
+    }
+
+    // inputs: 
+    int iData[6];
+    int numData = 6;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+
+    integrationTag = iData[0];
+    secTags.resize(6);
+    secTags(0) = iData[1];
+    secTags(1) = iData[5];
+    secTags(2) = iData[5];
+    secTags(3) = iData[5];
+    secTags(4) = iData[5];
+    secTags(5) = iData[3];
+
+    return new HingeRadauBeamIntegration(iData[2],iData[4]);
+}
 
 HingeRadauBeamIntegration::HingeRadauBeamIntegration(double lpi,
 						     double lpj):

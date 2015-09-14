@@ -30,6 +30,50 @@
 #include <FEM_ObjectBroker.h>
 #include <Information.h>
 #include <Parameter.h>
+#include <elementAPI.h>
+
+void* OPS_NewUserDefinedBeamIntegration(int& integrationTag, ID& secTags)
+{
+    if(OPS_GetNumRemainingInputArgs() < 5) {
+	opserr<<"insufficient arguments:integrationTag,N,secTags,locations,weights\n";
+	return 0;
+    }
+
+    // inputs: integrationTag,N
+    int iData[2];
+    int numData = 2;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+
+    integrationTag = iData[0];
+    int N = iData[1];
+    if(N > 0) {
+	secTags.resize(N);
+    } else {
+	secTags.resize(1);
+	N = 1;
+    }
+
+    // check argumments
+    Vector pt(N), wt(N);
+    if(OPS_GetNumRemainingInputArgs() < 3*N) {
+	opserr<<"There must be "<<N<<"secTags,locations and weights\n";
+	return 0;
+    }
+
+    // secTags
+    int *secptr = &secTags(0);
+    if(OPS_GetIntInput(&N,secptr) < 0) return 0;
+
+    // locations
+    double *locptr = &pt(0);
+    if(OPS_GetDoubleInput(&N,locptr) < 0) return 0;
+
+    // weights
+    double *wtptr = &wt(0);
+    if(OPS_GetDoubleInput(&N,wtptr) < 0) return 0;
+    
+    return new UserDefinedBeamIntegration(N,pt,wt);
+}
 
 UserDefinedBeamIntegration::UserDefinedBeamIntegration(int nIP,
 						       const Vector &pt,

@@ -30,6 +30,77 @@
 #include <FEM_ObjectBroker.h>
 #include <Information.h>
 #include <math.h>
+#include <elementAPI.h>
+#include <ID.h>
+
+void* OPS_NewUserHingeBeamIntegration(int& integrationTag, ID& secTags)
+{
+    if(OPS_GetNumRemainingInputArgs() < 10) {
+	opserr<<"insufficient arguments:integrationTag,secTagE,npL,secTagLs,ptLs,wtLs,npR,secTagRs,ptRs,wtRs\n";
+	return 0;
+    }
+
+    // inputs: 
+    int numData = 1;
+    int secTagE;
+    if(OPS_GetIntInput(&numData,&integrationTag) < 0) return 0;
+    if(OPS_GetIntInput(&numData,&secTagE) < 0) return 0;
+
+    // npL
+    int npL;
+    if(OPS_GetIntInput(&numData,&npL) < 0) return 0;
+    if(npL <= 0) npL = 1;
+
+    ID secTagL(npL);
+    Vector ptL(npL), wtL(npL);
+    if(OPS_GetNumRemainingInputArgs() < 3*npL) {
+	opserr<<"There must be "<<npL<<"secTagL,ptL and wtL\n";
+	return 0;
+    }
+
+    int *secptr = &secTagL(0);
+    if(OPS_GetIntInput(&npL,secptr) < 0) return 0;
+
+    double *locptr = &ptL(0);
+    if(OPS_GetDoubleInput(&npL,locptr) < 0) return 0;
+
+    double *wtptr = &wtL(0);
+    if(OPS_GetDoubleInput(&npL,wtptr) < 0) return 0;
+
+    // npR
+    int npR;
+    if(OPS_GetIntInput(&numData,&npR) < 0) return 0;
+    if(npR <= 0) npR = 1;
+    
+    ID secTagR(npR);
+    Vector ptR(npR), wtR(npR);
+    if(OPS_GetNumRemainingInputArgs() < 3*npR) {
+	opserr<<"There must be "<<npR<<"secTagR,ptR and wtR\n";
+	return 0;
+    }
+
+    secptr = &secTagR(0);
+    if(OPS_GetIntInput(&npR,secptr) < 0) return 0;
+
+    locptr = &ptR(0);
+    if(OPS_GetDoubleInput(&npR,locptr) < 0) return 0;
+
+    wtptr = &wtR(0);
+    if(OPS_GetDoubleInput(&npR,wtptr) < 0) return 0;
+
+    // secTags
+    secTags.resize(npL+npR+2);
+    for(int i=0; i<npL; i++) {
+	secTags(i) = secTagL(i);
+    }
+    for(int i=0; i<npR; i++) {
+	secTags(i+npL) = secTagR(i);
+    }
+    secTags(npL+npR) = secTagE;
+    secTags(npL+npR+1) = secTagE;
+    
+    return new UserDefinedHingeIntegration(npL,ptL,wtL,npR,ptR,wtR);
+}
 
 UserDefinedHingeIntegration::UserDefinedHingeIntegration(int npL,
 							 const Vector &ptL,

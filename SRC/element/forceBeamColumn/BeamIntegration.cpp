@@ -25,6 +25,30 @@
 #include <BeamIntegration.h>
 #include <Matrix.h>
 
+#include <AutocleanMapOfTaggedObjects.h>
+
+static AutocleanMapOfTaggedObjects theBeamIntegrationRuleObjects;
+
+bool OPS_addBeamIntegrationRule(BeamIntegrationRule *newComponent) {
+  return theBeamIntegrationRuleObjects.addComponent(newComponent);
+}
+
+BeamIntegrationRule *OPS_getBeamIntegrationRule(int tag) {
+
+  TaggedObject *theResult = theBeamIntegrationRuleObjects.getComponentPtr(tag);
+  if (theResult == 0) {
+    opserr << "BeamIntegrationRule - none found with tag: " << tag << endln;
+    return 0;
+  }
+  BeamIntegrationRule *theMat = (BeamIntegrationRule *)theResult;
+
+  return theMat;
+}
+
+void OPS_clearAllBeamIntegrationRule(void) {
+  theBeamIntegrationRuleObjects.clearAll();
+}
+
 BeamIntegration::BeamIntegration(int classTag):
   MovableObject(classTag)
 {

@@ -30,6 +30,47 @@
 #include <FEM_ObjectBroker.h>
 #include <Information.h>
 #include <math.h>
+#include <elementAPI.h>
+#include <ID.h>
+
+void* OPS_NewFixedLocationBeamIntegration(int& integrationTag, ID& secTags)
+{
+    if(OPS_GetNumRemainingInputArgs() < 4) {
+	opserr<<"insufficient arguments:integrationTag,N,secTags,locations\n";
+	return 0;
+    }
+
+    // inputs: integrationTag,N
+    int iData[2];
+    int numData = 2;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+
+    integrationTag = iData[0];
+    int N = iData[1];
+    if(N > 0) {
+	secTags.resize(N);
+    } else {
+	secTags.resize(1);
+	N = 1;
+    }
+
+    // check argumments
+    Vector pt(N);
+    if(OPS_GetNumRemainingInputArgs() < 2*N) {
+	opserr<<"There must be "<<N<<"secTags and locations\n";
+	return 0;
+    }
+
+    // secTags
+    int *secptr = &secTags(0);
+    if(OPS_GetIntInput(&N,secptr) < 0) return 0;
+
+    // locations
+    double *locptr = &pt(0);
+    if(OPS_GetDoubleInput(&N,locptr) < 0) return 0;
+
+    return new FixedLocationBeamIntegration(N,pt);
+}
 
 FixedLocationBeamIntegration::FixedLocationBeamIntegration(int nIP,
 							   const Vector &pt):

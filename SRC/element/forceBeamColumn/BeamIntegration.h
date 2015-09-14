@@ -27,6 +27,8 @@
 
 #include <OPS_Globals.h>
 #include <MovableObject.h>
+#include <TaggedObject.h>
+#include <ID.h>
 
 class Matrix;
 class ElementalLoad;
@@ -64,5 +66,26 @@ class BeamIntegration : public MovableObject
 
   virtual void Print(OPS_Stream &s, int flag = 0) = 0;
 };
+
+// a BeamIntegrationRule store BeamIntegration and section tags
+class BeamIntegrationRule : public TaggedObject
+{
+public:
+    BeamIntegrationRule(int tag, BeamIntegration* bi, const ID& stags)
+	:TaggedObject(tag),theInt(bi),secTags(stags){}
+    ~BeamIntegrationRule(){}
+
+    BeamIntegration* getBeamIntegration(){return theInt;}
+    const ID& getSectionTags() const {return secTags;}
+
+    void Print(OPS_Stream &s, int flag){return;}
+private:
+    BeamIntegration* theInt;
+    ID secTags;
+};
+
+bool       OPS_addBeamIntegrationRule(BeamIntegrationRule *newComponent);
+BeamIntegrationRule *OPS_getBeamIntegrationRule(int tag);
+void       OPS_clearAllBeamIntegrationRule(void);
 
 #endif
