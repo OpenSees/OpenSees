@@ -33,10 +33,34 @@
 #include <string.h>
 
 #include <classTags.h>
+#include <elementAPI.h>
 
 Vector ElasticShearSection3d::s(6);
 Matrix ElasticShearSection3d::ks(6,6);
 ID ElasticShearSection3d::code(6);
+
+void* OPS_NewElasticShearSection3d()
+{
+    if(OPS_GetNumRemainingInputArgs() < 9) {
+	opserr<<"insufficient arguments for ealstic shear 3d section\n";
+	return 0;
+    }
+
+    // get tag
+    int tag;
+    int numData = 1;
+    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    // get data
+    numData = 8;
+    double data[8];
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+
+    return new ElasticShearSection3d(tag,data[0],data[1],data[2],
+				     data[3],data[4],data[5],data[6],
+				     data[7]);
+}
+
 
 ElasticShearSection3d::ElasticShearSection3d(void)
 :SectionForceDeformation(0, SEC_TAG_ElasticShear3d),
