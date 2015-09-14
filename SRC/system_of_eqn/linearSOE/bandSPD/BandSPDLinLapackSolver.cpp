@@ -35,6 +35,12 @@
 //#include <f2c.h>
 #include <math.h>
 
+void* OPS_NewBandSPDLinLapack()
+{
+    BandSPDLinSolver *theSolver = new BandSPDLinLapackSolver();
+    BandSPDLinSOE *theSOE = new BandSPDLinSOE(*theSolver);
+    return theSOE;
+}
 
 BandSPDLinLapackSolver::BandSPDLinLapackSolver()
 :BandSPDLinSolver(SOLVER_TAGS_BandSPDLinLapackSolver)
