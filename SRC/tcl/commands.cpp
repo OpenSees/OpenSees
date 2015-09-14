@@ -172,7 +172,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <PFEMIntegrator.h>
 //#include <HHT.h>
 
-extern TransientIntegrator *OPS_NewNewmark(void);
+extern void *OPS_NewNewmark(void);
 extern TransientIntegrator *OPS_NewHHT(void);
 extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 
@@ -4291,7 +4291,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   }
     
   else if (strcmp(argv[1],"Newmark") == 0) {
-    theTransientIntegrator = OPS_NewNewmark();
+      theTransientIntegrator = (TransientIntegrator*)OPS_NewNewmark();
 
     // if the analysis exists - we want to change the Integrator
     if (theTransientAnalysis != 0)
