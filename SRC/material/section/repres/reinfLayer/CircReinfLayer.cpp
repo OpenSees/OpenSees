@@ -33,6 +33,37 @@
 
 #include <ReinfBar.h>
 #include <CircReinfLayer.h>
+#include <elementAPI.h>
+
+void* OPS_NewCircReinfLayer()
+{
+    if(OPS_GetNumRemainingInputArgs() < 6) {
+	opserr<<"insufficient arguments for CircReinfLayer\n";
+	return 0;
+    }
+
+    // get idata
+    int numData = 2;
+    int idata[2];
+    if(OPS_GetIntInput(&numData,&idata[0]) < 0) return 0;
+
+    // get data
+    double data[6] = {0,0,0,0,0,0};
+    numData = OPS_GetNumRemainingInputArgs();
+    if(numData > 6) numData = 6;
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+    static Vector cpos(2);
+    cpos(0) = data[1];
+    cpos(1) = data[2];
+
+    if(numData < 6) {
+	return new CircReinfLayer(idata[0],idata[1],data[0],
+				  cpos,data[3]);
+    } else {
+	return new CircReinfLayer(idata[0],idata[1],data[0],
+				  cpos,data[3],data[4],data[5]);
+    }
+}
 
 
 CircReinfLayer::CircReinfLayer(void):
