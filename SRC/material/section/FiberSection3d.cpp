@@ -43,16 +43,32 @@
 #include <MaterialResponse.h>
 #include <UniaxialMaterial.h>
 #include <SectionIntegration.h>
-
+#include <elementAPI.h>
 #include <string.h>
 
 ID FiberSection3d::code(3);
 
+void* OPS_NewFiberSection3d()
+{
+    int numData = OPS_GetNumRemainingInputArgs();
+    if(numData < 1) {
+	opserr<<"insufficient arguments for FiberSection3d\n";
+	return 0;
+    }
+
+    numData = 1;
+    int tag;
+    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    int num = 30;
+    return new FiberSection3d(tag,num);
+}
+
 // constructors:
 FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers): 
   SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
-  numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
+  numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
+  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -69,19 +85,15 @@ FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers):
       exit(-1);
     }
 
-    double Qz = 0.0;
-    double Qy = 0.0;
-    double A  = 0.0;
-    
     for (int i = 0; i < numFibers; i++) {
       Fiber *theFiber = fibers[i];
       double yLoc, zLoc, Area;
       theFiber->getFiberLocation(yLoc, zLoc);
       Area = theFiber->getArea();
 
-      Qz += yLoc*Area;
-      Qy += zLoc*Area;
-      A  += Area;
+      QzBar += yLoc*Area;
+      QyBar += zLoc*Area;
+      Abar  += Area;
 
       matData[i*3] = yLoc;
       matData[i*3+1] = zLoc;
@@ -95,8 +107,8 @@ FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers):
       }
     }
 
-    yBar = Qz/A;
-    zBar = Qy/A;
+    yBar = QzBar/Abar;
+    zBar = QyBar/Abar;
   }
 
   s = new Vector(sData, 3);
@@ -114,11 +126,54 @@ FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers):
   code(2) = SECTION_RESPONSE_MY;
 }
 
+FiberSection3d::FiberSection3d(int tag, int num): 
+    SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
+    numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
+    QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
+{
+    if(sizeFibers != 0) {
+	theMaterials = new UniaxialMaterial *[sizeFibers];
+
+	if (theMaterials == 0) {
+	    opserr << "FiberSection3d::FiberSection3d -- failed to allocate Material pointers\n";
+	    exit(-1);
+	}
+
+	matData = new double [sizeFibers*3];
+
+	if (matData == 0) {
+	    opserr << "FiberSection3d::FiberSection3d -- failed to allocate double array for material data\n";
+	    exit(-1);
+	}
+
+	for (int i = 0; i < sizeFibers; i++) {
+	    matData[i*3] = 0.0;
+	    matData[i*3+1] = 0.0;
+	    matData[i*3+2] = .0;
+	    theMaterials[i] = 0;
+	}
+    }
+
+    s = new Vector(sData, 3);
+    ks = new Matrix(kData, 3, 3);
+
+    sData[0] = 0.0;
+    sData[1] = 0.0;
+    sData[2] = 0.0;
+
+    for (int i=0; i<9; i++)
+	kData[i] = 0.0;
+
+    code(0) = SECTION_RESPONSE_P;
+    code(1) = SECTION_RESPONSE_MZ;
+    code(2) = SECTION_RESPONSE_MY;
+}
+
 FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
 			       SectionIntegration &si):
   SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
-  numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
+  numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
+  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -147,16 +202,12 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
   
   static double fiberArea[10000];
   sectionIntegr->getFiberWeights(numFibers, fiberArea);
-
-  double Qz = 0.0;
-  double Qy = 0.0;
-  double A  = 0.0;
   
   for (int i = 0; i < numFibers; i++) {
 
-    A  += fiberArea[i];
-    Qz += yLocs[i]*fiberArea[i];
-    Qy += zLocs[i]*fiberArea[i];
+    Abar  += fiberArea[i];
+    QzBar += yLocs[i]*fiberArea[i];
+    QyBar += zLocs[i]*fiberArea[i];
 
     theMaterials[i] = mats[i]->getCopy();
     
@@ -166,8 +217,8 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
     }
   }    
   
-  yBar = Qz/A;  
-  zBar = Qy/A;  
+  yBar = QzBar/Abar;  
+  zBar = QyBar/Abar;  
 
   s = new Vector(sData, 3);
   ks = new Matrix(kData, 3, 3);
@@ -186,8 +237,8 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
 // constructor for blank object that recvSelf needs to be invoked upon
 FiberSection3d::FiberSection3d():
   SectionForceDeformation(0, SEC_TAG_FiberSection3d),
-  numFibers(0), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
+  numFibers(0), sizeFibers(0), theMaterials(0), matData(0),
+  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
 {
   s = new Vector(sData, 3);
   ks = new Matrix(kData, 3, 3);
@@ -208,69 +259,67 @@ int
 FiberSection3d::addFiber(Fiber &newFiber)
 {
   // need to create a larger array
-  int newSize = numFibers+1;
+  if(numFibers == sizeFibers) {
+      int newSize = 2*sizeFibers;
+      UniaxialMaterial **newArray = new UniaxialMaterial *[newSize]; 
+      double *newMatData = new double [3 * newSize];
+      
+      if (newArray == 0 || newMatData == 0) {
+	  opserr << "FiberSection3d::addFiber -- failed to allocate Fiber pointers\n";
+	  exit(-1);
+      }
 
-  UniaxialMaterial **newArray = new UniaxialMaterial *[newSize]; 
-  double *newMatData = new double [3 * newSize];
-  
-  if (newArray == 0 || newMatData == 0) {
-    opserr << "FiberSection3d::addFiber -- failed to allocate Fiber pointers\n";
-    exit(-1);
-  }
+      // copy the old pointers
+      for (int i = 0; i < numFibers; i++) {
+	  newArray[i] = theMaterials[i];
+	  newMatData[3*i] = matData[3*i];
+	  newMatData[3*i+1] = matData[3*i+1];
+	  newMatData[3*i+2] = matData[3*i+2];
+      }
 
-  // copy the old pointers
-  int i;
-  for (i = 0; i < numFibers; i++) {
-    newArray[i] = theMaterials[i];
-    newMatData[3*i] = matData[3*i];
-    newMatData[3*i+1] = matData[3*i+1];
-    newMatData[3*i+2] = matData[3*i+2];
+      // initialize new memomry
+      for (int i = numFibers; i < newSize; i++) {
+	  newArray[i] = 0;
+	  newMatData[3*i] = 0.0;
+	  newMatData[3*i+1] = 0.0;
+	  newMatData[3*i+2] = 0.0;
+      }
+      sizeFibers = newSize;
+
+      // set new memory
+      if (theMaterials != 0) {
+	  delete [] theMaterials;
+	  delete [] matData;
+      }
+
+      theMaterials = newArray;
+      matData = newMatData;
   }
+	    
   // set the new pointers
   double yLoc, zLoc, Area;
   newFiber.getFiberLocation(yLoc, zLoc);
   Area = newFiber.getArea();
-  newMatData[numFibers*3] = yLoc;
-  newMatData[numFibers*3+1] = zLoc;
-  newMatData[numFibers*3+2] = Area;
+  matData[numFibers*3] = yLoc;
+  matData[numFibers*3+1] = zLoc;
+  matData[numFibers*3+2] = Area;
   UniaxialMaterial *theMat = newFiber.getMaterial();
-  newArray[numFibers] = theMat->getCopy();
+  theMaterials[numFibers] = theMat->getCopy();
 
-  if (newArray[numFibers] == 0) {
+  if (theMaterials[numFibers] == 0) {
     opserr << "FiberSection3d::addFiber -- failed to get copy of a Material\n";
-    exit(-1);
-
-    delete [] newArray;
-    delete [] newMatData;
     return -1;
   }
 
   numFibers++;
-  
-  if (theMaterials != 0) {
-    delete [] theMaterials;
-    delete [] matData;
-  }
-
-  theMaterials = newArray;
-  matData = newMatData;
-
-  double Qz = 0.0;
-  double Qy = 0.0;
-  double A  = 0.0;
 
   // Recompute centroid
-  for (i = 0; i < numFibers; i++) {
-    yLoc = matData[3*i];
-    zLoc = matData[3*i+1];
-    Area = matData[3*i+2];
-    A  += Area;
-    Qz += yLoc*Area;
-    Qy += zLoc*Area;
-  }
+  Abar  += Area;
+  QzBar += yLoc*Area;
+  QyBar += zLoc*Area;
 
-  yBar = Qz/A;
-  zBar = Qy/A;
+  yBar = QzBar/Abar;
+  zBar = QyBar/Abar;
 
   return 0;
 }
@@ -454,6 +503,7 @@ FiberSection3d::getCopy(void)
   theCopy->setTag(this->getTag());
 
   theCopy->numFibers = numFibers;
+  theCopy->sizeFibers = numFibers;
 
   if (numFibers != 0) {
     theCopy->theMaterials = new UniaxialMaterial *[numFibers];
@@ -485,6 +535,9 @@ FiberSection3d::getCopy(void)
   }
 
   theCopy->e = e;
+  theCopy->QzBar = QzBar;
+  theCopy->QyBar = QyBar;
+  theCopy->Abar = Abar;
   theCopy->yBar = yBar;
   theCopy->zBar = zBar;
 
@@ -755,6 +808,7 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
 
       // create memory to hold material pointers and fiber data
       numFibers = data(1);
+      sizeFibers = data(1);
       if (numFibers != 0) {
 
 	theMaterials = new UniaxialMaterial *[numFibers];
@@ -806,9 +860,9 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
       res += theMaterials[i]->recvSelf(commitTag, theChannel, theBroker);
     }
 
-    double Qz = 0.0;
-    double Qy = 0.0;
-    double A  = 0.0;
+    QzBar = 0.0;
+    QyBar = 0.0;
+    Abar  = 0.0;
     double yLoc, zLoc, Area;
 
     // Recompute centroid
@@ -816,13 +870,13 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
       yLoc = matData[3*i];
       zLoc = matData[3*i+1];
       Area = matData[3*i+2];
-      A  += Area;
-      Qz += yLoc*Area;
-      Qy += zLoc*Area;
+      Abar  += Area;
+      QzBar += yLoc*Area;
+      QyBar += zLoc*Area;
     }
     
-    yBar = Qz/A;
-    zBar = Qy/A;
+    yBar = QzBar/Abar;
+    zBar = QyBar/Abar;
   }    
 
   return res;

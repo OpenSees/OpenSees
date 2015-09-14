@@ -47,6 +47,7 @@ class FiberSection3d : public SectionForceDeformation
   public:
     FiberSection3d(); 
     FiberSection3d(int tag, int numFibers, Fiber **fibers);
+    FiberSection3d(int tag, int numFibers);
     FiberSection3d(int tag, int numFibers, UniaxialMaterial **mats,
 		   SectionIntegration &si);
     ~FiberSection3d();
@@ -94,12 +95,13 @@ class FiberSection3d : public SectionForceDeformation
   protected:
     
   private:
-    int numFibers;                   // number of fibers in the section
+    int numFibers, sizeFibers;       // number of fibers in the section
     UniaxialMaterial **theMaterials; // array of pointers to materials
     double   *matData;               // data for the materials [yloc and area]
     double   kData[9];               // data for ks matrix 
     double   sData[3];               // data for s vector 
-    
+
+    double QzBar, QyBar, Abar;
     double yBar;       // Section centroid
     double zBar;
   
