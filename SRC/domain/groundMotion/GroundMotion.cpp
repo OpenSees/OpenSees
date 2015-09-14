@@ -34,6 +34,48 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <ID.h>
+#include <elementAPI.h>
+#include <string>
+
+void* OPS_NewGroundMotion()
+{
+    TimeSeries* accelSeries = 0;
+    TimeSeries* velSeries = 0;
+    TimeSeries* dispSeries = 0;
+    TimeSeriesIntegrator* seriesIntegrator = 0;
+    double dtInt = 0.01;
+    double fact = 1.0;
+    
+    while(OPS_GetNumRemainingInputArgs() > 1) {
+	std::string type = OPS_GetString();
+	if(type == "-accel"||type == "-acceleration") {
+	    int tstag;
+	    int numData = 1;
+	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
+	    accelSeries = OPS_getTimeSeries(tstag);
+	} else if(type == "-vel"||type == "-velocity") {
+	    int tstag;
+	    int numData = 1;
+	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
+	    velSeries = OPS_getTimeSeries(tstag);
+	} else if(type == "-disp"||type == "-displacement") {
+	    int tstag;
+	    int numData = 1;
+	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
+	    dispSeries = OPS_getTimeSeries(tstag);
+	} else if(type == "-fact"||type == "-factor") {
+	    int numData = 1;
+	    if(OPS_GetDoubleInput(&numData,&fact) < 0) return 0;
+	}
+    }
+
+    if(accelSeries==0&&dispSeries==0&&velSeries==0) {
+	opserr<<"no time series is specified\n";
+	return 0;
+    }
+
+    return new GroundMotion(dispSeries,velSeries,accelSeries,seriesIntegrator,dtInt,fact);
+}
 
 GroundMotion::GroundMotion(TimeSeries *dispSeries, 
 			   TimeSeries *velSeries, 
