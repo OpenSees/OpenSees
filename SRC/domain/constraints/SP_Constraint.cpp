@@ -33,9 +33,45 @@
 #include <Vector.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <string>
+#include <elementAPI.h>
 
 static int numSPs = 0;
 static int nextTag = 0;
+
+void* OPS_NewSP()
+{
+    if(OPS_GetNumRemainingInputArgs() < 3) {
+	opserr<<"insufficient number of args\n";
+	return 0;
+    }
+
+    SP_Constraint *theSP = 0;
+
+    // get tags
+    int tags[2];
+    int numData = 2;
+    if(OPS_GetIntInput(&numData, &tags[0]) < 0) return 0;
+
+    // get value
+    double value;
+    numData = 1;
+    if(OPS_GetDoubleInput(&numData,&value) < 0) return 0;
+
+    // get sp const
+    bool isSpConst = false;
+    if(OPS_GetNumRemainingInputArgs() > 0) {
+	std::string type = OPS_GetString();
+	if(type == "-const") {
+	    isSpConst = true;
+	}
+    }
+	    
+    // create pattern
+    theSP = new SP_Constraint(tags[0], tags[1]-1, value, isSpConst);
+
+    return theSP;
+}
 
 // 2 little procedures needed for parallel processing all due to fact that SP's need 
 // to keep unique tags among processes in parallel
