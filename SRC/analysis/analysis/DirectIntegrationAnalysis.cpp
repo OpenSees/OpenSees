@@ -467,6 +467,10 @@ DirectIntegrationAnalysis::setAlgorithm(EquiSolnAlgo &theNewAlgorithm)
 int 
 DirectIntegrationAnalysis::setIntegrator(TransientIntegrator &theNewIntegrator)
 {
+  // invoke the destructor on the old one
+  if (theIntegrator != 0) {
+      delete theIntegrator;
+  }
   // set the links needed by the other objects in the aggregation
   Domain *the_Domain = this->getDomainPtr();
   theIntegrator = &theNewIntegrator;
