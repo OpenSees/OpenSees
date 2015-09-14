@@ -49,7 +49,30 @@
 #include <LoadPattern.h>
 #include <LoadPatternIter.h>
 #include <Domain.h>
+#include <elementAPI.h>
+#include <iostream>
 
+void* OPS_NewLoadControlIntegrator()
+{
+    if(OPS_GetNumRemainingInputArgs() < 1) {
+	opserr<<"insufficient arguments\n";
+	return 0;
+    }
+
+    double lambda;
+    int numData = 1;
+    if(OPS_GetDoubleInput(&numData,&lambda) < 0) return 0;
+
+    int numIter = 1;
+    double mLambda[2] = {lambda,lambda};
+    if(OPS_GetNumRemainingInputArgs() > 2) {
+	if(OPS_GetIntInput(&numData,&numIter) < 0) return 0;
+	numData = 2;
+	if(OPS_GetDoubleInput(&numData,&mLambda[0]) < 0) return 0;
+    }
+
+    return new LoadControl(lambda,numIter,mLambda[0],mLambda[1]);
+}
 
 LoadControl::LoadControl(double dLambda, int numIncr, double min, double max)
 :StaticIntegrator(INTEGRATOR_TAGS_LoadControl),

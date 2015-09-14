@@ -55,7 +55,7 @@
 static bool converged = false;
 static int count = 0;
 
-TransientIntegrator *
+void *
 OPS_NewNewmark(void)
 {
   // Pointer to a uniaxial material that will be returned
