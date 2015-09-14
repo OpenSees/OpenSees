@@ -51,7 +51,21 @@
 #include <FEM_ObjectBroker.h>
 #include <PenaltySP_FE.h>
 #include <PenaltyMP_FE.h>
+#include <elementAPI.h>
 
+void* OPS_NewPenaltyConstraintHandler()
+{
+    if(OPS_GetNumRemainingInputArgs() < 2) {
+	opserr<<"insufficient number of args\n";
+	return 0;
+    }
+
+    double data[2];
+    int numData = 2;
+    if(OPS_GetDoubleInput(&numData, &data[0]) < 0) return 0;
+
+    return new PenaltyConstraintHandler(data[0], data[1]);
+}
 
 PenaltyConstraintHandler::PenaltyConstraintHandler(double sp, double mp)
 :ConstraintHandler(HANDLER_TAG_PenaltyConstraintHandler),

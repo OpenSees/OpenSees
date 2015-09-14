@@ -54,6 +54,10 @@
 #include <TransformationDOF_Group.h>
 #include <TransformationFE.h>
 
+void* OPS_NewTransformationConstraintHandler()
+{
+    return new TransformationConstraintHandler;
+}
 
 TransformationConstraintHandler::TransformationConstraintHandler()
 :ConstraintHandler(HANDLER_TAG_TransformationConstraintHandler),

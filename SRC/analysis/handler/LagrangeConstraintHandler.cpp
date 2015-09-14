@@ -51,7 +51,20 @@
 #include <LagrangeDOF_Group.h>
 #include <LagrangeSP_FE.h>
 #include <LagrangeMP_FE.h>
+#include <elementAPI.h>
 
+void* OPS_NewLagrangeConstraintHandler()
+{
+    int numData = OPS_GetNumRemainingInputArgs();
+    double data[2] = {1,1};
+    if(numData > 2) numData = 2;
+    if(numData > 0) {
+	if(OPS_GetDoubleInput(&numData, &data[0]) < 0) return 0;
+    }
+
+    return new LagrangeConstraintHandler(data[0], data[1]);
+
+}
 
 LagrangeConstraintHandler::LagrangeConstraintHandler(double sp, double mp)
 :ConstraintHandler(HANDLER_TAG_LagrangeConstraintHandler),

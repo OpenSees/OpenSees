@@ -52,6 +52,11 @@
 #include <FEM_ObjectBroker.h>
 #include <map>
 
+void* OPS_NewPlainHandler()
+{
+    return new PlainHandler();
+}
+
 PlainHandler::PlainHandler()
 :ConstraintHandler(HANDLER_TAG_PlainHandler)
 {
