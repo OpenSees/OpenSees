@@ -33,6 +33,31 @@
 #include <CircPatch.h>
 #include <QuadCell.h>
 #include <CircSectionCell.h>
+#include <elementAPI.h>
+
+void* OPS_NewCircPatch()
+{
+    if(OPS_GetNumRemainingInputArgs() < 9) {
+	opserr<<"insufficient arguments for CircPatch\n";
+	return 0;
+    }
+
+    // get idata
+    int numData = 3;
+    int idata[3];
+    if(OPS_GetIntInput(&numData,&idata[0]) < 0) return 0;
+
+    // get data
+    double data[6];
+    numData = 6;
+    static Vector centerPos(2);
+    centerPos(0) = data[0];
+    centerPos(1) = data[1];
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+
+    return new CircPatch(idata[0],idata[1],idata[2],centerPos,
+			 data[2],data[3],data[4],data[5]);
+}
 
 
 CircPatch::CircPatch(): matID(0), nDivCirc(1), nDivRad(1), centerPosit(2),

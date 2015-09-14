@@ -31,6 +31,62 @@
 #include <Patch.h>
 #include <QuadPatch.h>
 #include <QuadCell.h>
+#include <elementAPI.h>
+
+void* OPS_NewQuadPatch()
+{
+    if(OPS_GetNumRemainingInputArgs() < 11) {
+	opserr<<"insufficient arguments for QuadPatch\n";
+	return 0;
+    }
+
+    // get idata
+    int numData = 3;
+    int idata[3];
+    if(OPS_GetIntInput(&numData,&idata[0]) < 0) return 0;
+
+    // get data
+    static Matrix vertexCoords(4,2);
+    double data[8];
+    numData = 8;
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+    for(int i=0; i<4; i++) {
+	for(int j=0; j<2; j++) {
+	    vertexCoords(i,j) = data[i*2+j];
+	}
+    }
+
+    return new QuadPatch(idata[0],idata[1],idata[2],vertexCoords);
+}
+
+void* OPS_NewRectPatch()
+{
+    if(OPS_GetNumRemainingInputArgs() < 7) {
+	opserr<<"insufficient arguments for RectPatch\n";
+	return 0;
+    }
+
+    // get idata
+    int numData = 3;
+    int idata[3];
+    if(OPS_GetIntInput(&numData,&idata[0]) < 0) return 0;
+
+    // get data
+    static Matrix vertexCoords(4,2);
+    double data[4];
+    numData = 4;
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+    vertexCoords(0,0) = data[0];
+    vertexCoords(0,1) = data[1];
+    vertexCoords(1,0) = data[2];
+    vertexCoords(1,1) = data[1];
+    vertexCoords(2,0) = data[2];
+    vertexCoords(2,1) = data[3];
+    vertexCoords(3,0) = data[0];
+    vertexCoords(3,1) = data[3];
+
+    return new QuadPatch(idata[0],idata[1],idata[2],vertexCoords);
+}
 
 
 QuadPatch::QuadPatch():
