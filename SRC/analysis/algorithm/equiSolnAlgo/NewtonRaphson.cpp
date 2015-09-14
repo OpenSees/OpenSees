@@ -47,6 +47,27 @@
 #include <FEM_ObjectBroker.h>
 #include <ConvergenceTest.h>
 #include <ID.h>
+#include <elementAPI.h>
+#include <string>
+
+void* OPS_NewNewtonRaphsonAlgorithm()
+{
+    int formTangent = CURRENT_TANGENT;
+
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+	std::string type = OPS_GetString();
+	if(type=="-secant" || type=="-Secant") {
+	    formTangent = CURRENT_SECANT;
+	} else if(type=="-initial" || type=="-Initial") {
+	    formTangent = INITIAL_TANGENT;
+	} else if(type=="-intialThenCurrent" || type=="-intialCurrent") {
+	    formTangent = INITIAL_THEN_CURRENT_TANGENT;
+	}
+    }
+
+    return new NewtonRaphson(formTangent);
+
+}
 
 // Constructor
 NewtonRaphson::NewtonRaphson(int theTangentToUse)

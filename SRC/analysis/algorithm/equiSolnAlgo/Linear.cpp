@@ -49,6 +49,29 @@
 #include <ID.h>
 
 #include <Timer.h>
+#include <elementAPI.h>
+#include <string>
+
+void* OPS_NewLinearAlgorithm()
+{
+    int formTangent = CURRENT_TANGENT;
+    int factorOnce = 0;
+
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+	std::string type = OPS_GetString();
+	if(type=="-secant" || type=="-Secant") {
+	    formTangent = CURRENT_SECANT;
+	} else if(type=="-initial" || type=="-Initial") {
+	    formTangent = INITIAL_TANGENT;
+	} else if(type=="-factorOnce" || type=="-FactorOnce") {
+	    factorOnce = 1;
+	}
+    }
+
+    return new Linear(formTangent, factorOnce);
+
+}
+
 // Constructor
 Linear::Linear(int theTangent, int Fact)
   :EquiSolnAlgo(EquiALGORITHM_TAGS_Linear), incrTangent(theTangent), factorOnce(Fact)
