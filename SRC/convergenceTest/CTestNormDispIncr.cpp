@@ -28,7 +28,36 @@
 #include <Channel.h>
 #include <EquiSolnAlgo.h>
 #include <LinearSOE.h>
+#include <elementAPI.h>
 
+void* OPS_NewCTestNormDispIncr()
+{
+    if(OPS_GetNumRemainingInputArgs() < 2) {
+	opserr<<"insufficient number of arguments\n";
+	return 0;
+    }
+
+    // tolerance
+    double tol = 1e-6;
+    int numData = 1;
+    if(OPS_GetDoubleInput(&numData,&tol) < 0) return 0;
+
+    // maxIter
+    numData = OPS_GetNumRemainingInputArgs();
+    if(numData > 3) numData = 3;
+    int data[3] = {0,0,2};
+    if(OPS_GetIntInput(&numData,&data[0]) < 0) return 0;
+
+    // maxTol
+    double maxTol = OPS_MAXTOL;
+    if(OPS_GetNumRemainingInputArgs() > 0) {
+	numData = 1;
+	if(OPS_GetDoubleInput(&numData,&maxTol) < 0) return 0;
+    }
+    
+    // create test
+    return new CTestNormDispIncr(tol,data[0],data[1],data[2],maxTol);
+}
 
 CTestNormDispIncr::CTestNormDispIncr()	    	
     : ConvergenceTest(CONVERGENCE_TEST_CTestNormDispIncr),

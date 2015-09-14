@@ -28,7 +28,36 @@
 #include <Channel.h>
 #include <EquiSolnAlgo.h>
 #include <LinearSOE.h>
+#include <elementAPI.h>
 
+void* OPS_NewCTestNormUnbalance()
+{
+    if(OPS_GetNumRemainingInputArgs() < 2) {
+	opserr<<"insufficient number of arguments\n";
+	return 0;
+    }
+
+    // tolerance
+    double tol = 1e-6;
+    int numData = 1;
+    if(OPS_GetDoubleInput(&numData,&tol) < 0) return 0;
+
+    // maxIter
+    numData = OPS_GetNumRemainingInputArgs();
+    if(numData > 4) numData = 4;
+    int data[4] = {0,0,2,-1};
+    if(OPS_GetIntInput(&numData,&data[0]) < 0) return 0;
+
+    // maxTol
+    double maxTol = OPS_MAXTOL;
+    if(OPS_GetNumRemainingInputArgs() > 0) {
+	numData = 1;
+	if(OPS_GetDoubleInput(&numData,&maxTol) < 0) return 0;
+    }
+    
+    // create test
+    return new CTestNormUnbalance(tol,data[0],data[1],data[2],data[3],maxTol);
+}
 
 CTestNormUnbalance::CTestNormUnbalance()	    	
     : ConvergenceTest(CONVERGENCE_TEST_CTestNormUnbalance),
