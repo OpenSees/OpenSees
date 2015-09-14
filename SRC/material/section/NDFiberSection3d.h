@@ -47,6 +47,7 @@ class NDFiberSection3d : public SectionForceDeformation
   public:
     NDFiberSection3d(); 
     NDFiberSection3d(int tag, int numFibers, Fiber **fibers, double a = 5.0/6);
+    NDFiberSection3d(int tag, int numFibers, double a = 5.0/6);
     NDFiberSection3d(int tag, int numFibers, NDMaterial **mats,
 		     SectionIntegration &si, double a = 5.0/6);
     ~NDFiberSection3d();
@@ -94,12 +95,13 @@ class NDFiberSection3d : public SectionForceDeformation
   protected:
     
     //  private:
-    int numFibers;                   // number of fibers in the section
+    int numFibers, sizeFibers;                   // number of fibers in the section
     NDMaterial **theMaterials; // array of pointers to materials
     double   *matData;               // data for the materials [yloc and area]
     double   kData[36];               // data for ks matrix 
     double   sData[6];               // data for s vector 
-    
+
+    double Abar,QyBar, QzBar;
     double yBar;       // Section centroid
     double zBar;       // Section centroid
     double alpha;      // Shear shape factor

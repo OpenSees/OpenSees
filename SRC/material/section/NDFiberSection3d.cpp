@@ -45,14 +45,31 @@
 #include <NDMaterial.h>
 #include <SectionIntegration.h>
 #include <Parameter.h>
+#include <elementAPI.h>
 
 ID NDFiberSection3d::code(6);
+
+void* OPS_NewNDFiberSection3d()
+{
+    int numData = OPS_GetNumRemainingInputArgs();
+    if(numData < 1) {
+	opserr<<"insufficient arguments for NDFiberSection3d\n";
+	return 0;
+    }
+
+    numData = 1;
+    int tag;
+    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    int num = 30;
+    return new NDFiberSection3d(tag,num);
+}
 
 // constructors:
 NDFiberSection3d::NDFiberSection3d(int tag, int num, Fiber **fibers, double a): 
   SectionForceDeformation(tag, SEC_TAG_NDFiberSection3d),
-  numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), alpha(a), sectionIntegr(0), e(6), s(0), ks(0), 
+  numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
+  Abar(0.0), QyBar(0.0), QzBar(0.0), yBar(0.0), zBar(0.0), alpha(a), sectionIntegr(0), e(6), s(0), ks(0), 
   parameterID(0), dedh(6)
 {
   if (numFibers != 0) {
@@ -71,18 +88,14 @@ NDFiberSection3d::NDFiberSection3d(int tag, int num, Fiber **fibers, double a):
     }
 
 
-    double Qz = 0.0;
-    double Qy = 0.0;
-    double A  = 0.0;
-    
     for (int i = 0; i < numFibers; i++) {
       Fiber *theFiber = fibers[i];
       double yLoc, zLoc, Area;
       theFiber->getFiberLocation(yLoc, zLoc);
       Area = theFiber->getArea();
-      A  += Area;
-      Qz += yLoc*Area;
-      Qy += zLoc*Area;
+      Abar  += Area;
+      QzBar += yLoc*Area;
+      QyBar += zLoc*Area;
       matData[i*3] = yLoc;
       matData[i*3+1] = zLoc;
       matData[i*3+2] = Area;
@@ -95,8 +108,8 @@ NDFiberSection3d::NDFiberSection3d(int tag, int num, Fiber **fibers, double a):
       }
     }    
 
-    yBar = Qz/A;  
-    zBar = Qy/A;  
+    yBar = QzBar/Abar;  
+    zBar = QyBar/Abar;  
   }
 
   s = new Vector(sData, 6);
@@ -116,11 +129,58 @@ NDFiberSection3d::NDFiberSection3d(int tag, int num, Fiber **fibers, double a):
   code(5) = SECTION_RESPONSE_T;
 }
 
+NDFiberSection3d::NDFiberSection3d(int tag, int num, double a): 
+    SectionForceDeformation(tag, SEC_TAG_NDFiberSection3d),
+    numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
+    Abar(0.0), QyBar(0.0), QzBar(0.0), yBar(0.0), zBar(0.0), alpha(a), sectionIntegr(0), e(6), s(0), ks(0), 
+    parameterID(0), dedh(6)
+{
+    if (sizeFibers != 0) {
+	theMaterials = new NDMaterial *[sizeFibers];
+
+	if (theMaterials == 0) {
+	    opserr << "NDFiberSection3d::NDFiberSection3d -- failed to allocate Material pointers";
+	    exit(-1);
+	}
+
+	matData = new double [sizeFibers*3];
+
+	if (matData == 0) {
+	    opserr << "NDFiberSection3d::NDFiberSection3d -- failed to allocate double array for material data\n";
+	    exit(-1);
+	}
+
+
+	for (int i = 0; i < sizeFibers; i++) {
+	    matData[i*3] = 0.0;
+	    matData[i*3+1] = 0.0;
+	    matData[i*3+2] = 0.0;
+	    theMaterials[i] = 0;
+	}    
+    }
+
+    s = new Vector(sData, 6);
+    ks = new Matrix(kData, 6, 6);
+
+    for (int i = 0; i < 6; i++)
+	sData[i] = 0.0;
+
+    for (int i = 0; i < 6*6; i++)
+	kData[i] = 0.0;
+
+    code(0) = SECTION_RESPONSE_P;
+    code(1) = SECTION_RESPONSE_MZ;
+    code(2) = SECTION_RESPONSE_MY;
+    code(3) = SECTION_RESPONSE_VY;
+    code(4) = SECTION_RESPONSE_VZ;
+    code(5) = SECTION_RESPONSE_T;
+}
+
 NDFiberSection3d::NDFiberSection3d(int tag, int num, NDMaterial **mats,
 				   SectionIntegration &si, double a):
   SectionForceDeformation(tag, SEC_TAG_NDFiberSection3d),
-  numFibers(num), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), alpha(a), sectionIntegr(0), e(6), s(0), ks(0), 
+  numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
+  Abar(0.0), QyBar(0.0), QzBar(0.0), yBar(0.0), zBar(0.0), alpha(a), sectionIntegr(0), e(6), s(0), ks(0), 
   parameterID(0), dedh(6)
 {
   if (numFibers != 0) {
@@ -151,15 +211,11 @@ NDFiberSection3d::NDFiberSection3d(int tag, int num, NDMaterial **mats,
   static double fiberArea[10000];
   sectionIntegr->getFiberWeights(numFibers, fiberArea);
 
-  double Qz = 0.0;
-  double Qy = 0.0;
-  double A  = 0.0;
-  
   for (int i = 0; i < numFibers; i++) {
 
-    A  += fiberArea[i];
-    Qz += yLocs[i]*fiberArea[i];
-    Qy += zLocs[i]*fiberArea[i];
+    Abar  += fiberArea[i];
+    QzBar += yLocs[i]*fiberArea[i];
+    QyBar += zLocs[i]*fiberArea[i];
 
     theMaterials[i] = mats[i]->getCopy("BeamFiber");
     
@@ -169,8 +225,8 @@ NDFiberSection3d::NDFiberSection3d(int tag, int num, NDMaterial **mats,
     }
   }    
   
-  yBar = Qz/A;  
-  zBar = Qy/A;  
+  yBar = QzBar/Abar;  
+  zBar = QyBar/Abar;  
 
   s = new Vector(sData, 6);
   ks = new Matrix(kData, 6, 6);
@@ -192,8 +248,8 @@ NDFiberSection3d::NDFiberSection3d(int tag, int num, NDMaterial **mats,
 // constructor for blank object that recvSelf needs to be invoked upon
 NDFiberSection3d::NDFiberSection3d():
   SectionForceDeformation(0, SEC_TAG_NDFiberSection3d),
-  numFibers(0), theMaterials(0), matData(0),
-  yBar(0.0), zBar(0.0), alpha(5.0/6), sectionIntegr(0), 
+  numFibers(0), sizeFibers(0), theMaterials(0), matData(0),
+  Abar(0.0), QyBar(0.0), QzBar(0.0), yBar(0.0), zBar(0.0), alpha(5.0/6), sectionIntegr(0), 
   e(6), s(0), ks(0), parameterID(0), dedh(6)
 {
   s = new Vector(sData, 6);
@@ -217,65 +273,65 @@ int
 NDFiberSection3d::addFiber(Fiber &newFiber)
 {
   // need to create larger arrays
-  int newSize = numFibers+1;
-  NDMaterial **newArray = new NDMaterial *[newSize]; 
-  double *newMatData = new double [3 * newSize];
-  if (newArray == 0 || newMatData == 0) {
-    opserr <<"NDFiberSection3d::addFiber -- failed to allocate Fiber pointers\n";
-    return -1;
-  }
+  if(numFibers == sizeFibers) {
+      int newSize = 2*sizeFibers;
+      NDMaterial **newArray = new NDMaterial *[newSize]; 
+      double *newMatData = new double [3 * newSize];
+      if (newArray == 0 || newMatData == 0) {
+	  opserr <<"NDFiberSection3d::addFiber -- failed to allocate Fiber pointers\n";
+	  return -1;
+      }
+      
+      // copy the old pointers and data
+      for (int i = 0; i < numFibers; i++) {
+	  newArray[i] = theMaterials[i];
+	  newMatData[3*i] = matData[3*i];
+	  newMatData[3*i+1] = matData[3*i+1];
+	  newMatData[3*i+2] = matData[3*i+2];
+      }
 
-  // copy the old pointers and data
-  int i;
-  for (i = 0; i < numFibers; i++) {
-    newArray[i] = theMaterials[i];
-    newMatData[3*i] = matData[3*i];
-    newMatData[3*i+1] = matData[3*i+1];
-    newMatData[3*i+2] = matData[3*i+2];
+      // initialize new memory
+      for (int i = numFibers; i < newSize; i++) {
+	  newArray[i] = 0;
+	  newMatData[3*i] = 0.0;
+	  newMatData[3*i+1] = 0.0;
+	  newMatData[3*i+2] = 0.0;
+      }
+
+      // set new memory
+      if (theMaterials != 0) {
+	  delete [] theMaterials;
+	  delete [] matData;
+      }
+
+      theMaterials = newArray;
+      matData = newMatData;
   }
 
   // set the new pointers and data
   double yLoc, zLoc, Area;
   newFiber.getFiberLocation(yLoc, zLoc);
   Area = newFiber.getArea();
-  newMatData[numFibers*3] = yLoc;
-  newMatData[numFibers*3+1] = zLoc;
-  newMatData[numFibers*3+2] = Area;
+  matData[numFibers*3] = yLoc;
+  matData[numFibers*3+1] = zLoc;
+  matData[numFibers*3+2] = Area;
   NDMaterial *theMat = newFiber.getNDMaterial();
-  newArray[numFibers] = theMat->getCopy("BeamFiber");
+  theMaterials[numFibers] = theMat->getCopy("BeamFiber");
 
-  if (newArray[numFibers] == 0) {
+  if (theMaterials[numFibers] == 0) {
     opserr <<"NDFiberSection3d::addFiber -- failed to get copy of a Material\n";
-    delete [] newMatData;
     return -1;
   }
 
   numFibers++;
 
-  if (theMaterials != 0) {
-    delete [] theMaterials;
-    delete [] matData;
-  }
-
-  theMaterials = newArray;
-  matData = newMatData;
-
-  double Qz = 0.0;
-  double Qy = 0.0;
-  double A  = 0.0;
-
   // Recompute centroid
-  for (i = 0; i < numFibers; i++) {
-    yLoc = matData[3*i];
-    zLoc = matData[3*i+1];
-    Area = matData[3*i+2];
-    A  += Area;
-    Qz += yLoc*Area;
-    Qy += zLoc*Area;
-  }
+  Abar  += Area;
+  QzBar += yLoc*Area;
+  QyBar += zLoc*Area;
 
-  yBar = Qz/A;
-  zBar = Qy/A;
+  yBar = QzBar/Abar;
+  zBar = QyBar/Abar;
 
   return 0;
 }
@@ -602,6 +658,7 @@ NDFiberSection3d::getCopy(void)
   theCopy->setTag(this->getTag());
 
   theCopy->numFibers = numFibers;
+  theCopy->sizeFibers = numFibers;
 
   if (numFibers != 0) {
     theCopy->theMaterials = new NDMaterial *[numFibers];
@@ -632,6 +689,9 @@ NDFiberSection3d::getCopy(void)
   }
 
   theCopy->e = e;
+  theCopy->QzBar = QzBar;
+  theCopy->QyBar = QyBar;
+  theCopy->Abar = Abar;
   theCopy->yBar = yBar;
   theCopy->zBar = zBar;
   theCopy->alpha = alpha;
@@ -1048,6 +1108,7 @@ NDFiberSection3d::recvSelf(int commitTag, Channel &theChannel,
 
       // create memory to hold material pointers and fiber data
       numFibers = data(1);
+      sizeFibers = data(1);
       if (numFibers != 0) {
 	theMaterials = new NDMaterial *[numFibers];
 	
@@ -1098,9 +1159,9 @@ NDFiberSection3d::recvSelf(int commitTag, Channel &theChannel,
       res += theMaterials[i]->recvSelf(commitTag, theChannel, theBroker);
     }
 
-    double Qz = 0.0;
-    double Qy = 0.0;
-    double A  = 0.0;
+    QzBar = 0.0;
+    QyBar = 0.0;
+    Abar  = 0.0;
     double yLoc, zLoc, Area;
 
     // Recompute centroid
@@ -1108,12 +1169,13 @@ NDFiberSection3d::recvSelf(int commitTag, Channel &theChannel,
       yLoc = matData[3*i];
       zLoc = matData[3*i+1];
       Area = matData[3*i+2];
-      A  += Area;
-      Qz += yLoc*Area;
+      Abar  += Area;
+      QzBar += yLoc*Area;
+      QyBar += zLoc*Area;
     }
     
-    yBar = Qz/A;
-    zBar = Qy/A;
+    yBar = QzBar/Abar;
+    zBar = QyBar/Abar;
   }    
 
   return res;
