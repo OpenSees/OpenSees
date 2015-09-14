@@ -42,12 +42,56 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <elementAPI.h>
+#include <string>
 
 Matrix ZeroLengthSection::K6(6,6);
 Matrix ZeroLengthSection::K12(12,12);
 
 Vector ZeroLengthSection::P6(6);
 Vector ZeroLengthSection::P12(12);
+
+void* OPS_NewZeroLengthSection()
+{
+    if(OPS_GetNumRemainingInputArgs() < 4) {
+	opserr<<"insufficient arguments for ZeroLengthSection\n";
+	return 0;
+    }
+
+    // get eleTag,iNode,jNode,secTag
+    int iData[4];
+    int numData = 4;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+
+    // options
+    Vector x(3); x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
+    Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
+    double *x_ptr=&x(0), *y_ptr=&y(0);
+    int doRayleighDamping = 1;
+    while(OPS_GetNumRemainingInputArgs() > 1) {
+	std::string type = OPS_GetString();
+	if(type == "-orient") {
+	    if(OPS_GetNumRemainingInputArgs() > 5) {
+		numData = 3;
+		if(OPS_GetDoubleInput(&numData,x_ptr) < 0) return 0;
+		if(OPS_GetDoubleInput(&numData,y_ptr) < 0) return 0;
+	    }
+	} else if(type == "-doRayleigh") {
+	    numData = 1;
+	    if(OPS_GetIntInput(&numData,&doRayleighDamping) < 0) return 0;
+	}
+    }
+
+    // get section
+    SectionForceDeformation* theSection = OPS_getSectionForceDeformation(iData[3]);
+    if(theSection == 0) {
+	opserr << "zeroLengthSection -- no section with tag " << iData[0] << " exists in Domain\n";
+	return 0;
+    }
+
+    int ndm = OPS_GetNDM();
+    return new ZeroLengthSection(iData[0],ndm,iData[1],iData[2],x,y,*theSection,doRayleighDamping);
+}
 
 //  Constructor:
 //  responsible for allocating the necessary space needed by each object
