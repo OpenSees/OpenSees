@@ -25,9 +25,9 @@
 #include <BeamIntegration.h>
 #include <Matrix.h>
 
-#include <AutocleanMapOfTaggedObjects.h>
+#include <MapOfTaggedObjects.h>
 
-static AutocleanMapOfTaggedObjects theBeamIntegrationRuleObjects;
+static MapOfTaggedObjects theBeamIntegrationRuleObjects;
 
 bool OPS_addBeamIntegrationRule(BeamIntegrationRule *newComponent) {
   return theBeamIntegrationRuleObjects.addComponent(newComponent);
