@@ -63,6 +63,9 @@ class SectionRepres: public TaggedObject
   private:
 };
 
+bool OPS_addSectionRepres(SectionRepres *newComponent);
+SectionRepres *OPS_getSectionRepres(int tag);
+void OPS_clearAllSectionRepres(void);
 
 #endif
 

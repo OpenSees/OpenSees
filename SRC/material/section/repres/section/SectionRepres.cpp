@@ -29,6 +29,31 @@
 // November 1998
 
 #include <SectionRepres.h>
+#include <TaggedObject.h>
+#include <MapOfTaggedObjects.h>
+
+static MapOfTaggedObjects theSectionRepresObjects;
+
+bool OPS_addSectionRepres(SectionRepres *newComponent)
+{
+    return theSectionRepresObjects.addComponent(newComponent);
+}
+
+SectionRepres *OPS_getSectionRepres(int tag)
+{
+    TaggedObject *theResult = theSectionRepresObjects.getComponentPtr(tag);
+    if(theResult == 0) {
+	return 0;
+    }
+    SectionRepres *theRep = (SectionRepres *)theResult;
+
+    return theRep;
+}
+
+void OPS_clearAllSectionRepres(void)
+{
+    theSectionRepresObjects.clearAll();
+}
 
 SectionRepres::SectionRepres(int tag):
                  TaggedObject(tag)
