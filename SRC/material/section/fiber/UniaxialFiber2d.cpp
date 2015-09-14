@@ -46,10 +46,41 @@
 #include <Information.h>
 #include <Parameter.h>
 #include <FiberResponse.h>
+#include <elementAPI.h>
 
 Matrix UniaxialFiber2d::ks(2,2); 
 Vector UniaxialFiber2d::fs(2); 
 ID UniaxialFiber2d::code(2);
+
+static int numUniaxialFiber2d = 0;
+
+void* OPS_NewUniaxialFiber2d()
+{
+    if(OPS_GetNumRemainingInputArgs() < 4) {
+	opserr<<"insufficient arguments for UniaxialFiber2d\n";
+	return 0;
+    }
+
+    // get data
+    int numData = 3;
+    double data[3];
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+
+    // get mat tag
+    int tag;
+    numData = 1;
+    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    // get material
+    UniaxialMaterial* theMat = OPS_getUniaxialMaterial(tag);
+    if(theMat == 0) {
+	opserr<<"invalid UniaxialMaterial tag\n";
+	return 0;
+    }
+
+    return new UniaxialFiber2d(numUniaxialFiber2d++,*theMat,data[2],data[0]);
+}
+
 
 // constructor:
 UniaxialFiber2d::UniaxialFiber2d(int tag, 

@@ -51,10 +51,44 @@
 #include <SectionForceDeformation.h>
 #include <Information.h>
 #include <FiberResponse.h>
+#include <elementAPI.h>
 
 Matrix UniaxialFiber3d::ks(3,3); 
 Vector UniaxialFiber3d::fs(3); 
-ID UniaxialFiber3d::code(3); 
+ID UniaxialFiber3d::code(3);
+
+static int numUniaxialFiber3d = 0;
+
+void* OPS_NewUniaxialFiber3d()
+{
+    if(OPS_GetNumRemainingInputArgs() < 4) {
+	opserr<<"insufficient arguments for UniaxialFiber3d\n";
+	return 0;
+    }
+
+    // get data
+    int numData = 3;
+    double data[3];
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+
+    // get mat tag
+    int tag;
+    numData = 1;
+    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    // get material
+    UniaxialMaterial* theMat = OPS_getUniaxialMaterial(tag);
+    if(theMat == 0) {
+	opserr<<"invalid UniaxialMaterial tag\n";
+	return 0;
+    }
+
+    static Vector fiberPos(2);
+    fiberPos(0) = data[0];
+    fiberPos(1) = data[1];
+    return new UniaxialFiber3d(numUniaxialFiber3d++,*theMat,data[2],fiberPos);
+}
+
 
 // constructor:
 UniaxialFiber3d::UniaxialFiber3d()
