@@ -39,7 +39,47 @@
 #include <FEM_ObjectBroker.h>
 #include <DataFileStream.h>
 #include <iostream>
+#include <elementAPI.h>
+#include <string>
 using std::nothrow;
+
+void* OPS_NewSuperLUSolver()
+{
+    int count = 2;
+    double thresh = 0.0;
+    int npRow = 1;
+    int npCol = 1;
+    int np = 1;
+    int permSpec = 0;
+    int panelSize = 6;
+    int relax = 6;
+    char symmetric = 'N';
+    double drop_tol = 0.0;
+    
+    int numData = 1;
+
+    while(OPS_GetNumRemainingInputArgs() > 1) {
+	std::string type = OPS_GetString();
+	if(type=="p"||type=="piv"||type=="-piv") {
+	    thresh = 1.0;
+	} else if(type=="np"||type=="-np") {
+	    if(OPS_GetIntInput(&numData,&np)<0) return 0;
+	} else if(type=="npRow"||type=="-npRow") {
+	    if(OPS_GetIntInput(&numData,&npRow)<0) return 0;
+	} else if(type=="npCol"||type=="-npCol") {
+	    if(OPS_GetIntInput(&numData,&npCol)<0) return 0;
+	} else if(type=="s"||type=="symmetric"||type=="-symm") {
+	    symmetric = 'Y';
+	}
+    }
+
+    SparseGenColLinSolver *theSolver = new SuperLU(permSpec,drop_tol,panelSize,relax,symmetric);
+    if(theSolver == 0) {
+	opserr<<"run out of memory in creating SuperLU\n";
+	return 0;
+    }
+    return new SparseGenColLinSOE(*theSolver);
+}
 
 SuperLU::SuperLU(int perm, 
 		 double drop_tolerance, 
