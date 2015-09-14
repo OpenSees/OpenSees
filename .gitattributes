@@ -2798,8 +2798,12 @@ SRC/interpreter/Makefile -text
 SRC/interpreter/OpenSeesCommandsPython.cpp -text
 SRC/interpreter/OpenSeesCommandsTcl.cpp -text
 SRC/interpreter/OpenSeesUniaxialMaterialCommands.cpp -text
+SRC/interpreter/PythonAnalysisBuilder.cpp -text
+SRC/interpreter/PythonAnalysisBuilder.h -text
 SRC/interpreter/PythonInterpreter.cpp -text
 SRC/interpreter/PythonInterpreter.h -text
+SRC/interpreter/PythonModelBuilder.cpp -text
+SRC/interpreter/PythonModelBuilder.h -text
 SRC/interpreter/TclInterpreter.cpp -text
 SRC/interpreter/TclInterpreter.h -text
 SRC/interpreter/pythonMain.cpp -text
