@@ -1,5 +1,7 @@
 import opensees
 
+opensees.wipe()
+
 opensees.uniaxialMaterial("Elastic", 1, 1000.);
 opensees.testUniaxialMaterial(1);
 
