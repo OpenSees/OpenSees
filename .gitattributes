@@ -2806,6 +2806,7 @@ SRC/interpreter/PythonModelBuilder.cpp -text
 SRC/interpreter/PythonModelBuilder.h -text
 SRC/interpreter/TclInterpreter.cpp -text
 SRC/interpreter/TclInterpreter.h -text
+SRC/interpreter/Truss.py -text
 SRC/interpreter/pythonMain.cpp -text
 SRC/interpreter/tclMain.cpp -text
 SRC/interpreter/test.py -text
