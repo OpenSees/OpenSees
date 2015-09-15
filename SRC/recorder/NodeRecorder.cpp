@@ -84,7 +84,6 @@ NodeRecorder::NodeRecorder(const ID &dofs,
   //
   
   int numDOF = dofs.Size();
-
   if (numDOF != 0) {
     
     theDofs = new ID(numDOF);
@@ -194,7 +193,6 @@ NodeRecorder::~NodeRecorder()
   //
   // write the data
   //
-  
   if (theOutputHandler != 0) {
     
     // flush the buffer one last time
@@ -213,27 +211,21 @@ NodeRecorder::~NodeRecorder()
   //
   // clean up the memory
   //
-  
-  int numDOF = theDofs->Size();
-  
+  int numDOF;
   if (theDofs != 0)
+    numDOF = theDofs->Size();
     delete theDofs;
-  
   if (theNodalTags != 0)
     delete theNodalTags;
-  
   if (theNodes != 0)
     delete [] theNodes;
-  
   if (buffer != 0)
     delete buffer;
-  
   if (theTimeSeries != 0) {
     for (int i=0; i<numDOF; i++)
       delete theTimeSeries[i];
     delete [] theTimeSeries;
   }
-  
   if (timeSeriesValues != 0) 
     delete [] timeSeriesValues;
 }
