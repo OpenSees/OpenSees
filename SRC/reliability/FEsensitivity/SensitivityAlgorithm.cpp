@@ -48,7 +48,6 @@ SensitivityAlgorithm::SensitivityAlgorithm(Domain *passedDomain,
 					   Integrator *passedSensitivityIntegrator,
 					   int passedAnalysisTypeTag):
   theDomain(passedDomain), theAlgorithm(passedAlgorithm), 
-  theSensitivityIntegrator(passedSensitivityIntegrator),
   analysisTypeTag(passedAnalysisTypeTag)
 {
   
@@ -96,12 +95,7 @@ SensitivityAlgorithm::computeSensitivities(void)
 	// Zero out the old right-hand side of the SOE
 	theSOE->zeroB();
 		
-
-	if (theSensitivityIntegrator == 0) {
-	  opserr << "ERROR SensitivityAlgorithm::computeSensitivities() -";
-	  opserr << "the SensitivityIntegrator is NULL\n";
-	  return -1;
-	}
+	Integrator* theSensitivityIntegrator = theIncInt;
 
 	// Form the part of the RHS which are indepent of parameter
 	theSensitivityIntegrator->formIndependentSensitivityRHS();

@@ -60,7 +60,6 @@ class SensitivityAlgorithm
     Domain *theDomain;
     ReliabilityDomain *theReliabilityDomain;
     EquiSolnAlgo *theAlgorithm;
-    Integrator *theSensitivityIntegrator;
     int analysisTypeTag; 
 };
 
