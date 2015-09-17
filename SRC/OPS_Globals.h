@@ -28,7 +28,7 @@
 // if you change some of the variables, you must recompile ALL the code.
 
 
-#define OPS_VERSION "2.4.6 (rev 6022)"
+#define OPS_VERSION "2.4.6 (rev 6123)"
 
 
 #define _USING_OpenSees_STREAMS

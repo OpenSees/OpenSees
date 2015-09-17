@@ -156,7 +156,7 @@ void* OPS_NewForceBeamColumn3d()
 
     // check sections
     const ID& secTags = theRule->getSectionTags();
-    SectionForceDeformation* sections[secTags.Size()];
+    SectionForceDeformation** sections = new SectionForceDeformation *[secTags.Size()];
     for(int i=0; i<secTags.Size(); i++) {
 	sections[i] = OPS_getSectionForceDeformation(secTags(i));
 	if(sections[i] == 0) {
@@ -165,8 +165,10 @@ void* OPS_NewForceBeamColumn3d()
 	}
     }
 
-    return new ForceBeamColumn3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
+    Element *theEle =  new ForceBeamColumn3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
 				 *bi,*theTransf,mass,maxIter,tol);
+	delete [] sections;
+	return theEle;
 }
 
 

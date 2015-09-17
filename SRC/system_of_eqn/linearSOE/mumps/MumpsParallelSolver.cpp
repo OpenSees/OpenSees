@@ -120,10 +120,14 @@ MumpsParallelSolver::solve(void)
   }	
 
   int info = id.infog[0];
+  int info2   = id.infog[1];
   if (info != 0) {	
     opserr << "WARNING MumpsParallelSolver::solve(void)- ";
     opserr << " Error " << info << " returned in substitution dmumps()\n";
 	switch(info) {
+	  case -2:
+		opserr << "nz " << info2 << " out of range\n";
+	    break;
 	  case -5:
 		opserr << " out of memory allocation error\n";
 		break;
@@ -142,6 +146,9 @@ MumpsParallelSolver::solve(void)
 	  case -10:  
 		opserr << " cause: Matrix is Singular Numerically\n";
 		break;
+	  case -13:
+		  opserr << " out of memory wanted " << info2 << " (if < 0 mult absolute by 1 million)\n";
+		  break;
 	  default:
 		  ;
 	}

@@ -47,7 +47,7 @@
 #include <ID.h>
 #include <math.h>
 #include <stdlib.h>
-
+#include <string>
 #include <elementAPI.h>
 
 Matrix ElasticBeam3d::K(12,12);
@@ -109,12 +109,12 @@ void* OPS_NewElasticBeam3d()
     double mass = 0.0;
     int cMass = 0;
     while(OPS_GetNumRemainingInputArgs() > 0) {
-	std::string type = OPS_GetString();
-	if(type == "-mass") {
+	std::string theType = OPS_GetString();
+	if (theType == "-mass") {
 	    if(OPS_GetNumRemainingInputArgs() > 0) {
 		if(OPS_GetDoubleInput(&numData,&mass) < 0) return 0;
 	    }
-	} else if(type == "-cMass") {
+	} else if (theType == "-cMass") {
 	    cMass = 1;
 	}
     }
