@@ -177,7 +177,6 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SmoothPSConcrete.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.cpp" />
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\Stage56Material.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel01Thermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel02.cpp" />
@@ -491,7 +490,6 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SmoothPSConcrete.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.h" />
-    <ClInclude Include="..\..\..\SRC\material\uniaxial\Stage56Material.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel01.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel01Thermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel02.h" />

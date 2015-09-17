@@ -1004,9 +1004,6 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\Stage56Material.cpp">
-      <Filter>uniaxial</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteD.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -1887,9 +1884,6 @@
       <Filter>uniaxial\snap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\SimpleFractureMaterial.h">
-      <Filter>uniaxial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\uniaxial\Stage56Material.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ConcreteD.h">
