@@ -408,7 +408,9 @@ int HDR::commitState()
 		Fcrn=Fcr*Ar/A;
 	}
 
-	Fcrmin=max(Fcrmin,Fcrn);
+	//Fcrmin=max(Fcrmin,Fcrn);
+	if (Fcrn > Fcrmin)
+		Fcrmin = Fcrn;
 	ucrn = Fcrn/Kv;
 
 	// Horizontal motion
