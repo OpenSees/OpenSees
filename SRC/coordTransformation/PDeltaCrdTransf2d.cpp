@@ -47,7 +47,7 @@
 Matrix PDeltaCrdTransf2d::Tlg(6,6);
 Matrix PDeltaCrdTransf2d::kg(6,6);
 
-void* OPS_NewPDeltaCrdTransf2d()
+void* OPS_PDeltaCrdTransf2d()
 {
     if(OPS_GetNumRemainingInputArgs() < 1) {
 	opserr<<"insufficient arguments for PDeltaCrdTransf2d\n";

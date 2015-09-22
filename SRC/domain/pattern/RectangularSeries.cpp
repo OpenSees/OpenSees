@@ -40,7 +40,7 @@
 #define OPS_Export 
 
 OPS_Export void *
-OPS_NewRectangularSeries(void)
+OPS_RectangularSeries(void)
 {
   // Pointer to a uniaxial material that will be returned
   TimeSeries *theSeries = 0;

@@ -39,7 +39,7 @@
 static int numSPs = 0;
 static int nextTag = 0;
 
-void* OPS_NewSP()
+void* OPS_SP()
 {
     if(OPS_GetNumRemainingInputArgs() < 3) {
 	opserr<<"insufficient number of args\n";

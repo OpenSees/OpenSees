@@ -47,7 +47,7 @@
 Matrix LinearCrdTransf3d::Tlg(12,12);
 Matrix LinearCrdTransf3d::kg(12,12);
 
-void* OPS_NewLinearCrdTransf3d()
+void* OPS_LinearCrdTransf3d()
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments for LinearCrdTransf3d\n";

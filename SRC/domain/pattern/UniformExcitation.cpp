@@ -45,7 +45,7 @@
 #include <elementAPI.h>
 #include <string>
 
-void* OPS_NewUniformExcitationPattern()
+void* OPS_UniformExcitationPattern()
 {
     TimeSeries* accelSeries = 0;
     TimeSeries* velSeries = 0;

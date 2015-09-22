@@ -50,7 +50,7 @@
 ID NDFiberSection2d::code(3);
 Matrix NDFiberSection2d::fs(3,3);
 
-void* OPS_NewNDFiberSection2d()
+void* OPS_NDFiberSection2d()
 {
     int numData = OPS_GetNumRemainingInputArgs();
     if(numData < 1) {

@@ -40,7 +40,7 @@
 #include <ErrorHandler.h>
 #include <elementAPI.h>
 
-void* OPS_NewMultiSupportPattern()
+void* OPS_MultiSupportPattern()
 {
     int tag;
 

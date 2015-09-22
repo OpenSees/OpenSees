@@ -40,7 +40,7 @@ Vector ElasticSection2d::s(2);
 Matrix ElasticSection2d::ks(2,2);
 ID ElasticSection2d::code(2);
 
-void* OPS_NewElasticSection2d()
+void* OPS_ElasticSection2d()
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments for ealstic section\n";

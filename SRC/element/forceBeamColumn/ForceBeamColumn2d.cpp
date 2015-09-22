@@ -86,7 +86,7 @@ Vector *ForceBeamColumn2d::vsSubdivide = 0;
 Matrix *ForceBeamColumn2d::fsSubdivide = 0;
 Vector *ForceBeamColumn2d::SsrSubdivide = 0;
 
-void* OPS_NewForceBeamColumn2d()
+void* OPS_ForceBeamColumn2d()
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag\n";

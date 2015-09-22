@@ -79,7 +79,7 @@ extern void printCommand(int argc, TCL_Char **argv);
 // THE PROTOTYPES OF THE FUNCTIONS INVOKED BY THE INTERPRETER
 //
 
-extern  void *OPS_NewTrussElement(void);
+extern  void *OPS_TrussElement(void);
 extern  void *OPS_NewTrussSectionElement(void);
 extern  void *OPS_NewCorotTrussElement(void);
 extern  void *OPS_NewCorotTrussSectionElement(void);
@@ -375,7 +375,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   if ((strcmp(argv[1],"truss") == 0) || (strcmp(argv[1],"Truss") == 0)) {
     
-    void *theEle = OPS_NewTrussElement();
+    void *theEle = OPS_TrussElement();
     // for backward compatability
 	if (theEle == 0) {
       theEle = OPS_NewTrussSectionElement(); 

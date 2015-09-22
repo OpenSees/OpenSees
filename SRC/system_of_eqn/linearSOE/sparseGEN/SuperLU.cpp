@@ -43,7 +43,7 @@
 #include <string>
 using std::nothrow;
 
-void* OPS_NewSuperLUSolver()
+void* OPS_SuperLUSolver()
 {
     int count = 2;
     double thresh = 0.0;

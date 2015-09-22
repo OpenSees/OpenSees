@@ -26,7 +26,7 @@
 #include <elementAPI.h>
 #include <ID.h>
 
-void* OPS_NewLegendreBeamIntegration(int& integrationTag, ID& secTags)
+void* OPS_LegendreBeamIntegration(int& integrationTag, ID& secTags)
 {
     if(OPS_GetNumRemainingInputArgs() < 3) {
 	opserr<<"insufficient arguments:integrationTag,secTag,N\n";

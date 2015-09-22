@@ -85,18 +85,18 @@ extern CrdTransf* OPS_ParseCrdTransfCommand(const char *pType);
 extern BeamIntegrationRule* OPS_ParseBeamIntegrationRuleCommand(const char *pType);
 extern GroundMotion* OPS_ParseGroundMotionCommand(MultiSupportPattern& thePattern,int& gmTag);
 
-extern void* OPS_NewNode();
-extern void* OPS_NewNodalLoad();
-extern void* OPS_NewSP();
-extern void* OPS_NewNDFiber3d();
-extern void* OPS_NewNDFiber2d();
-extern void* OPS_NewUniaxialFiber3d();
-extern void* OPS_NewUniaxialFiber2d();
-extern void* OPS_NewQuadPatch();
-extern void* OPS_NewRectPatch();
-extern void* OPS_NewCircPatch();
-extern void* OPS_NewCircReinfLayer();
-extern void* OPS_NewStraightReinfLayer();
+extern void* OPS_Node();
+extern void* OPS_NodalLoad();
+extern void* OPS_SP();
+extern void* OPS_NDFiber3d();
+extern void* OPS_NDFiber2d();
+extern void* OPS_UniaxialFiber3d();
+extern void* OPS_UniaxialFiber2d();
+extern void* OPS_QuadPatch();
+extern void* OPS_RectPatch();
+extern void* OPS_CircPatch();
+extern void* OPS_CircReinfLayer();
+extern void* OPS_StraightReinfLayer();
 
 PythonModelBuilder::PythonModelBuilder()
     :ndm(0), ndf(0), isset(false), currentLoadPattern(0),
@@ -172,7 +172,7 @@ PyObject *ops_addNode(PyObject *self, PyObject *args)
     OPS_ResetCommandLine(PyTuple_Size(args), 0, args);
 
     // get node
-    Node* theNode = (Node*) OPS_NewNode();
+    Node* theNode = (Node*) OPS_Node();
     if(theNode == 0) {
 	PyErr_SetString(PyExc_RuntimeError,"ERROR failed to create node");
 	return NULL;
@@ -201,7 +201,7 @@ PyObject *ops_addHomogeneousBC(PyObject *self, PyObject *args)
     int numberArgs = OPS_GetNumRemainingInputArgs();
 
     // get data
-    int data[numberArgs];
+    ID data(numberArgs);
     if(OPS_GetIntInput(&numberArgs, &data[0]) < 0) {
 	return NULL;
     }
@@ -347,7 +347,7 @@ PyObject *ops_addNodalLoad(PyObject *self, PyObject *args)
 
     OPS_ResetCommandLine(PyTuple_Size(args), 0, args);
     
-    NodalLoad *theLoad = (NodalLoad*) OPS_NewNodalLoad();
+    NodalLoad *theLoad = (NodalLoad*) OPS_NodalLoad();
     if(theLoad == 0) {
     	PyErr_SetString(PyExc_RuntimeError, "ERROR could not create NodalLoad.");
     	return NULL;
@@ -399,7 +399,7 @@ PyObject *ops_addSP(PyObject *self, PyObject *args)
 
     OPS_ResetCommandLine(PyTuple_Size(args), 0, args);
     
-    SP_Constraint *theSP = (SP_Constraint*) OPS_NewSP();
+    SP_Constraint *theSP = (SP_Constraint*) OPS_SP();
     if(theSP == 0) {
     	PyErr_SetString(PyExc_RuntimeError, "ERROR could not create SP_Constraint.");
     	return NULL;
@@ -581,13 +581,13 @@ PyObject *ops_addFiber(PyObject *self, PyObject *args)
     // create fiber
     Fiber *theFiber =0;
     if(section->getClassTag() == SEC_TAG_FiberSection2d) {
-	theFiber = (Fiber*) OPS_NewUniaxialFiber2d();
+	theFiber = (Fiber*) OPS_UniaxialFiber2d();
     } else if(section->getClassTag() == SEC_TAG_FiberSection3d) {
-	theFiber = (Fiber*) OPS_NewUniaxialFiber3d();
+	theFiber = (Fiber*) OPS_UniaxialFiber3d();
     } else if(section->getClassTag() == SEC_TAG_NDFiberSection2d) {
-	theFiber = (Fiber*) OPS_NewNDFiber2d();
+	theFiber = (Fiber*) OPS_NDFiber2d();
     } else if(section->getClassTag() == SEC_TAG_NDFiberSection3d) {
-	theFiber = (Fiber*) OPS_NewNDFiber3d();
+	theFiber = (Fiber*) OPS_NDFiber3d();
     }
 
     if(theFiber == 0) {
@@ -622,11 +622,11 @@ PyObject *ops_addPatch(PyObject *self, PyObject *args)
     Patch *thePatch =0;
     std::string type = OPS_GetString();
     if(type == "quad" || type == "quadrilateral") {
-	thePatch = (Patch*) OPS_NewQuadPatch();
+	thePatch = (Patch*) OPS_QuadPatch();
     } else if(type == "rect" || type == "rectangular") {
-	thePatch = (Patch*) OPS_NewRectPatch();
+	thePatch = (Patch*) OPS_RectPatch();
     } else if(type == "circ" || type == "circular") {
-	thePatch = (Patch*) OPS_NewCircPatch();
+	thePatch = (Patch*) OPS_CircPatch();
     } else {
 	PyErr_SetString(PyExc_RuntimeError,"ERROR unknow patch type");
 	return NULL;
@@ -730,9 +730,9 @@ PyObject *ops_addLayer(PyObject *self, PyObject *args)
     ReinfLayer *theLayer =0;
     std::string type = OPS_GetString();
     if(type == "straight") {
-	theLayer = (ReinfLayer*) OPS_NewStraightReinfLayer();
+	theLayer = (ReinfLayer*) OPS_StraightReinfLayer();
     } else if(type == "circ" || type == "circular") {
-	theLayer = (ReinfLayer*) OPS_NewCircReinfLayer();
+	theLayer = (ReinfLayer*) OPS_CircReinfLayer();
     } else {
 	PyErr_SetString(PyExc_RuntimeError,"ERROR unknow layer type");
 	return NULL;
@@ -899,7 +899,7 @@ PyObject *ops_addNodalMass(PyObject *self, PyObject *args)
 
     // mass terms
     Matrix mass(ndf,ndf);
-    double massvec[ndf];
+    Vector massvec(ndf);
     if(OPS_GetDoubleInput(&ndf,&massvec[0]) < 0) return NULL;
     for(int i=0; i<ndf; i++) {
 	mass(i,i) = massvec[i];
@@ -1022,7 +1022,7 @@ PyObject *ops_addElementalLoad(PyObject *self, PyObject *args)
 	    }
 	    // get loads
 	    if(numData > ndm) numData = ndm;
-	    double data[ndm];
+	    Vector data(ndm);
 	    for(int i=0; i<ndm; i++) {
 		data[i] = 0.0;
 	    }
@@ -1065,7 +1065,7 @@ PyObject *ops_addElementalLoad(PyObject *self, PyObject *args)
 	    }
 	    // get loads
 	    if(numData > ndm+1) numData = ndm+1;
-	    double data[ndm+1];
+	    Vector data(ndm+1);
 	    for(int i=0; i<ndm+1; i++) {
 		data[i] = 0.0;
 	    }

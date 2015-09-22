@@ -34,7 +34,7 @@
 #include <math.h>
 #include <elementAPI.h>
 
-void* OPS_NewLowOrderBeamIntegration(int& integrationTag, ID& secTags)
+void* OPS_LowOrderBeamIntegration(int& integrationTag, ID& secTags)
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments:integrationTag,N,secTags,locations,weights\n";

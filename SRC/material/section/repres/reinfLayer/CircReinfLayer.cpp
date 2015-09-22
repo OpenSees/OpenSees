@@ -35,7 +35,7 @@
 #include <CircReinfLayer.h>
 #include <elementAPI.h>
 
-void* OPS_NewCircReinfLayer()
+void* OPS_CircReinfLayer()
 {
     if(OPS_GetNumRemainingInputArgs() < 6) {
 	opserr<<"insufficient arguments for CircReinfLayer\n";

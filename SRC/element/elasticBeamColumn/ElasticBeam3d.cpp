@@ -54,7 +54,7 @@ Matrix ElasticBeam3d::K(12,12);
 Vector ElasticBeam3d::P(12);
 Matrix ElasticBeam3d::kb(6,6);
 
-void* OPS_NewElasticBeam3d()
+void* OPS_ElasticBeam3d()
 {
     int numArgs = OPS_GetNumRemainingInputArgs();
     if(numArgs < 10 && numArgs != 5) {

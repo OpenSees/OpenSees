@@ -52,7 +52,7 @@
 #include <FEM_ObjectBroker.h>
 #include <map>
 
-void* OPS_NewPlainHandler()
+void* OPS_PlainHandler()
 {
     return new PlainHandler();
 }

@@ -53,7 +53,7 @@
 #include <LagrangeMP_FE.h>
 #include <elementAPI.h>
 
-void* OPS_NewLagrangeConstraintHandler()
+void* OPS_LagrangeConstraintHandler()
 {
     int numData = OPS_GetNumRemainingInputArgs();
     double data[2] = {1,1};

@@ -35,7 +35,7 @@
 #include <StraightReinfLayer.h>
 #include <elementAPI.h>
 
-void* OPS_NewStraightReinfLayer()
+void* OPS_StraightReinfLayer()
 {
     if(OPS_GetNumRemainingInputArgs() < 7) {
 	opserr<<"insufficient arguments for StraintReinfLayer\n";

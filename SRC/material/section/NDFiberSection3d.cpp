@@ -49,7 +49,7 @@
 
 ID NDFiberSection3d::code(6);
 
-void* OPS_NewNDFiberSection3d()
+void* OPS_NDFiberSection3d()
 {
     int numData = OPS_GetNumRemainingInputArgs();
     if(numData < 1) {

@@ -52,7 +52,7 @@
 #include<stdlib.h>
 #include <elementAPI.h>
 
-void* OPS_NewDisplacementControlIntegrator()
+void* OPS_DisplacementControlIntegrator()
 {
     if(OPS_GetNumRemainingInputArgs() < 3) {
 	opserr<<"insufficient arguments for DisplacementControl\n";

@@ -32,7 +32,7 @@
 #include <Parameter.h>
 #include <elementAPI.h>
 
-void* OPS_NewUserDefinedBeamIntegration(int& integrationTag, ID& secTags)
+void* OPS_UserDefinedBeamIntegration(int& integrationTag, ID& secTags)
 {
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:integrationTag,N,secTags,locations,weights\n";

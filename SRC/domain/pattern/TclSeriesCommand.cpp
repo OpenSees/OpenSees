@@ -72,12 +72,12 @@ static void cleanup(TCL_Char **argv) {
   Tcl_Free((char *) argv);
 }
 
-extern void *OPS_NewConstantSeries(void);
-extern void *OPS_NewLinearSeries(void);
-extern void *OPS_NewTriangleSeries(void);
-extern void *OPS_NewTrigSeries(void);
-extern void *OPS_NewRectangularSeries(void);
-extern void *OPS_NewPulseSeries(void);
+extern void *OPS_ConstantSeries(void);
+extern void *OPS_LinearSeries(void);
+extern void *OPS_TriangleSeries(void);
+extern void *OPS_TrigSeries(void);
+extern void *OPS_RectangularSeries(void);
+extern void *OPS_PulseSeries(void);
 extern void *OPS_NewPeerMotion(void);
 extern void *OPS_NewPeerNGAMotion(void);
 
@@ -106,14 +106,14 @@ TclTimeSeriesCommand(ClientData clientData,
 
   if ((strcmp(argv[0],"Constant") == 0) || (strcmp(argv[0],"ConstantSeries") == 0)) {
 
-    void *theResult = OPS_NewConstantSeries();
+    void *theResult = OPS_ConstantSeries();
     if (theResult != 0)
       theSeries = (TimeSeries *)theResult;
     
   } else if ((strcmp(argv[0],"Trig") == 0) || (strcmp(argv[0],"TrigSeries") == 0) || 
 	     (strcmp(argv[0],"Sine") == 0) || (strcmp(argv[0],"SineSeries") == 0)) {
 
-    void *theResult = OPS_NewTrigSeries();
+    void *theResult = OPS_TrigSeries();
     if (theResult != 0)
       theSeries = (TimeSeries *)theResult;
 
@@ -121,7 +121,7 @@ TclTimeSeriesCommand(ClientData clientData,
 
   else if ((strcmp(argv[0],"Linear") == 0) || (strcmp(argv[0],"LinearSeries") == 0)) {
 
-    void *theResult = OPS_NewLinearSeries();
+    void *theResult = OPS_LinearSeries();
     if (theResult != 0)
       theSeries = (TimeSeries *)theResult;
 
@@ -129,7 +129,7 @@ TclTimeSeriesCommand(ClientData clientData,
 
   else if (strcmp(argv[0],"Rectangular") == 0) {
 
-    void *theResult = OPS_NewRectangularSeries();
+    void *theResult = OPS_RectangularSeries();
     if (theResult != 0)
       theSeries = (TimeSeries *)theResult;
 
@@ -137,7 +137,7 @@ TclTimeSeriesCommand(ClientData clientData,
 
   else if ((strcmp(argv[0],"Pulse") == 0) || (strcmp(argv[0],"PulseSeries") == 0))  {
 
-    void *theResult = OPS_NewPulseSeries();
+    void *theResult = OPS_PulseSeries();
     if (theResult != 0)
       theSeries = (TimeSeries *)theResult;
 
@@ -145,7 +145,7 @@ TclTimeSeriesCommand(ClientData clientData,
 
   else if ((strcmp(argv[0],"Triangle") == 0) || (strcmp(argv[0],"TriangleSeries") == 0))  {
 
-    void *theResult = OPS_NewTriangleSeries();
+    void *theResult = OPS_TriangleSeries();
     if (theResult != 0)
       theSeries = (TimeSeries *)theResult;
 

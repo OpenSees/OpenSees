@@ -48,7 +48,7 @@
 
 ID FiberSection3d::code(3);
 
-void* OPS_NewFiberSection3d()
+void* OPS_FiberSection3d()
 {
     int numData = OPS_GetNumRemainingInputArgs();
     if(numData < 1) {

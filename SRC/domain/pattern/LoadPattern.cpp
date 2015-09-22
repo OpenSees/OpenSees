@@ -52,7 +52,7 @@
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 
-void* OPS_NewLoadPattern()
+void* OPS_LoadPattern()
 {
     if(OPS_GetNumRemainingInputArgs() < 2) {
 	opserr<<"insufficient number of args\n";

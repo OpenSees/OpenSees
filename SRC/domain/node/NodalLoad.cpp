@@ -44,7 +44,7 @@ Vector NodalLoad::gradientVector(1);
 
 static int nodeLoadTag = 0;
 
-void* OPS_NewNodalLoad()
+void* OPS_NodalLoad()
 {
     // check inputs
     int ndm = OPS_GetNDM();

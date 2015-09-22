@@ -54,7 +54,7 @@
 #include <TransformationDOF_Group.h>
 #include <TransformationFE.h>
 
-void* OPS_NewTransformationConstraintHandler()
+void* OPS_TransformationConstraintHandler()
 {
     return new TransformationConstraintHandler;
 }

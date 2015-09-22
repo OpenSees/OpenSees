@@ -33,7 +33,7 @@
 #include <elementAPI.h>
 #include <ID.h>
 
-void* OPS_NewFixedLocationBeamIntegration(int& integrationTag, ID& secTags)
+void* OPS_FixedLocationBeamIntegration(int& integrationTag, ID& secTags)
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments:integrationTag,N,secTags,locations\n";

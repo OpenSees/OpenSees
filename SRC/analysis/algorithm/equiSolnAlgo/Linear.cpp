@@ -52,7 +52,7 @@
 #include <elementAPI.h>
 #include <string>
 
-void* OPS_NewLinearAlgorithm()
+void* OPS_LinearAlgorithm()
 {
     int formTangent = CURRENT_TANGENT;
     int factorOnce = 0;

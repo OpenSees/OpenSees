@@ -50,7 +50,7 @@
 #include <elementAPI.h>
 #include <string>
 
-void* OPS_NewNewtonRaphsonAlgorithm()
+void* OPS_NewtonRaphsonAlgorithm()
 {
     int formTangent = CURRENT_TANGENT;
 

@@ -52,7 +52,7 @@
 #include <elementAPI.h>
 #include <iostream>
 
-void* OPS_NewLoadControlIntegrator()
+void* OPS_LoadControlIntegrator()
 {
     if(OPS_GetNumRemainingInputArgs() < 1) {
 	opserr<<"insufficient arguments\n";

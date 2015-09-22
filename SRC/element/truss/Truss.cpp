@@ -68,7 +68,7 @@ Vector Truss::trussV12(12);
 #define OPS_Export 
 
 OPS_Export void *
-OPS_NewTrussElement()
+OPS_TrussElement()
 {
   Element *theElement = 0;
 

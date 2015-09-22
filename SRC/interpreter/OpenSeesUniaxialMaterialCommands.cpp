@@ -167,40 +167,40 @@ OPS_ParseUniaxialMaterialCommand(const char *matType) {
 /// OPS_ParseElementCommand
 static OPS_ParsingFunctionMap elementsMap;
 
-extern void *OPS_NewTrussElement(void);
-extern void *OPS_NewZeroLengthSection(void);
-extern void* OPS_NewForceBeamColumn2d();
-extern void* OPS_NewForceBeamColumn3d();
-extern void* OPS_NewElasticBeam3d();
-extern void* OPS_NewElasticBeam2d();
+extern void *OPS_TrussElement(void);
+extern void *OPS_ZeroLengthSection(void);
+extern void* OPS_ForceBeamColumn2d();
+extern void* OPS_ForceBeamColumn3d();
+extern void* OPS_ElasticBeam3d();
+extern void* OPS_ElasticBeam2d();
 
-void* OPS_NewForceBeamColumn()
+void* OPS_ForceBeamColumn()
 {
     int ndm = OPS_GetNDM();
     if(ndm == 2) {
-	return OPS_NewForceBeamColumn2d();
+	return OPS_ForceBeamColumn2d();
     } else {
-	return OPS_NewForceBeamColumn3d();
+	return OPS_ForceBeamColumn3d();
     }
 }
 
-void* OPS_NewElasticBeam()
+void* OPS_ElasticBeam()
 {
     int ndm = OPS_GetNDM();
     if(ndm == 2) {
-	return OPS_NewElasticBeam2d();
+	return OPS_ElasticBeam2d();
     } else {
-	return OPS_NewElasticBeam3d();
+	return OPS_ElasticBeam3d();
     }
 }
 
 
 int OPS_SetUpElements(void) {
-    elementsMap.insert(std::make_pair("Truss", &OPS_NewTrussElement));
-    elementsMap.insert(std::make_pair("truss", &OPS_NewTrussElement));
-    elementsMap.insert(std::make_pair("zeroLengthSection", &OPS_NewZeroLengthSection));
-    elementsMap.insert(std::make_pair("forceBeamColumn", &OPS_NewForceBeamColumn));
-    elementsMap.insert(std::make_pair("elasticBeamColumn", &OPS_NewElasticBeam));
+    elementsMap.insert(std::make_pair("Truss", &OPS_TrussElement));
+    elementsMap.insert(std::make_pair("truss", &OPS_TrussElement));
+    elementsMap.insert(std::make_pair("zeroLengthSection", &OPS_ZeroLengthSection));
+    elementsMap.insert(std::make_pair("forceBeamColumn", &OPS_ForceBeamColumn));
+    elementsMap.insert(std::make_pair("elasticBeamColumn", &OPS_ElasticBeam));
     return 0;
 }
 
@@ -237,14 +237,14 @@ OPS_ParseElementCommand(const char *eleType)
 /////// OPS_ParseTimeSeriesCommand ///////////////
 static OPS_ParsingFunctionMap tsMap;
 
-extern void *OPS_NewConstantSeries(void);
-extern void *OPS_NewLinearSeries(void);
-extern void *OPS_NewTriangleSeries(void);
-extern void *OPS_NewTrigSeries(void);
-extern void *OPS_NewRectangularSeries(void);
-extern void *OPS_NewPulseSeries(void);
+extern void *OPS_ConstantSeries(void);
+extern void *OPS_LinearSeries(void);
+extern void *OPS_TriangleSeries(void);
+extern void *OPS_TrigSeries(void);
+extern void *OPS_RectangularSeries(void);
+extern void *OPS_PulseSeries(void);
 
-void* OPS_NewPathSeries()
+void* OPS_PathSeries()
 {
     if(OPS_GetNumRemainingInputArgs() < 1) {
 	opserr<<"insufficient arguments: PathSeries\n";
@@ -345,14 +345,14 @@ void* OPS_NewPathSeries()
 }
 
 int OPS_SetUpTimeSeries(void) {
-    tsMap.insert(std::make_pair("Constant", &OPS_NewConstantSeries));
-    tsMap.insert(std::make_pair("Trig", &OPS_NewTrigSeries));
-    tsMap.insert(std::make_pair("Sine", &OPS_NewTrigSeries));
-    tsMap.insert(std::make_pair("Linear", &OPS_NewLinearSeries));
-    tsMap.insert(std::make_pair("Rectangular", &OPS_NewRectangularSeries));
-    tsMap.insert(std::make_pair("Pulse", &OPS_NewPulseSeries));
-    tsMap.insert(std::make_pair("Triangle", &OPS_NewTriangleSeries));
-    tsMap.insert(std::make_pair("Path", &OPS_NewPathSeries));
+    tsMap.insert(std::make_pair("Constant", &OPS_ConstantSeries));
+    tsMap.insert(std::make_pair("Trig", &OPS_TrigSeries));
+    tsMap.insert(std::make_pair("Sine", &OPS_TrigSeries));
+    tsMap.insert(std::make_pair("Linear", &OPS_LinearSeries));
+    tsMap.insert(std::make_pair("Rectangular", &OPS_RectangularSeries));
+    tsMap.insert(std::make_pair("Pulse", &OPS_PulseSeries));
+    tsMap.insert(std::make_pair("Triangle", &OPS_TriangleSeries));
+    tsMap.insert(std::make_pair("Path", &OPS_PathSeries));
     return 0;
 }
 
@@ -386,14 +386,14 @@ OPS_ParseTimeSeriesCommand(const char *tsType)
 /////////////// OPS_ParseLoadPatternCommand //////////////
 static OPS_ParsingFunctionMap patternMap;
 
-extern void *OPS_NewLoadPattern(void);
-extern void *OPS_NewUniformExcitationPattern(void);
-extern void *OPS_NewMultiSupportPattern(void);
+extern void *OPS_LoadPattern(void);
+extern void *OPS_UniformExcitationPattern(void);
+extern void *OPS_MultiSupportPattern(void);
 
 int OPS_SetUpLoadpattern(void) {
-    patternMap.insert(std::make_pair("Plain", &OPS_NewLoadPattern));
-    patternMap.insert(std::make_pair("UniformExcitation", &OPS_NewUniformExcitationPattern));
-    patternMap.insert(std::make_pair("MultipleSupport", &OPS_NewMultiSupportPattern));
+    patternMap.insert(std::make_pair("Plain", &OPS_LoadPattern));
+    patternMap.insert(std::make_pair("UniformExcitation", &OPS_UniformExcitationPattern));
+    patternMap.insert(std::make_pair("MultipleSupport", &OPS_MultiSupportPattern));
     return 0;
 }
 
@@ -426,17 +426,17 @@ OPS_ParseLoadPatternCommand(const char *pType)
 /////////////// OPS_ParsedSOECommand //////////////
 static OPS_ParsingFunctionMap soeMap;
 
-extern void *OPS_NewBandGenLinLapack(void);
-extern void *OPS_NewBandSPDLinLapack(void);
-extern void *OPS_NewSuperLUSolver();
+extern void *OPS_BandGenLinLapack(void);
+extern void *OPS_BandSPDLinLapack(void);
+extern void *OPS_SuperLUSolver();
 
 int OPS_SetUpSOE(void) {
-    soeMap.insert(std::make_pair("BandGeneral", &OPS_NewBandGenLinLapack));
-    soeMap.insert(std::make_pair("BandGEN", &OPS_NewBandGenLinLapack));
-    soeMap.insert(std::make_pair("BandSPD", &OPS_NewBandSPDLinLapack));
-    soeMap.insert(std::make_pair("SuperLU", &OPS_NewSuperLUSolver));
-    soeMap.insert(std::make_pair("SparseGeneral", &OPS_NewSuperLUSolver));
-    soeMap.insert(std::make_pair("SparseGEN", &OPS_NewSuperLUSolver));
+    soeMap.insert(std::make_pair("BandGeneral", &OPS_BandGenLinLapack));
+    soeMap.insert(std::make_pair("BandGEN", &OPS_BandGenLinLapack));
+    soeMap.insert(std::make_pair("BandSPD", &OPS_BandSPDLinLapack));
+    soeMap.insert(std::make_pair("SuperLU", &OPS_SuperLUSolver));
+    soeMap.insert(std::make_pair("SparseGeneral", &OPS_SuperLUSolver));
+    soeMap.insert(std::make_pair("SparseGEN", &OPS_SuperLUSolver));
     return 0;
 }
 
@@ -469,22 +469,22 @@ OPS_ParseSOECommand(const char *type)
 /////////////// OPS_ParsedNumbererCommand //////////////
 static OPS_ParsingFunctionMap numbererMap;
 
-extern void *OPS_NewPlainNumberer(void);
-void *OPS_NewRCMNumberer() {
+extern void *OPS_PlainNumberer(void);
+void *OPS_RCMNumberer() {
     RCM* theRCM = new RCM(false);
     DOF_Numberer *theNumberer = new DOF_Numberer(*theRCM);
     return theNumberer;
 }
-void *OPS_NewAMDNumberer() {
+void *OPS_AMDNumberer() {
     AMD* theAMD = new AMD();
     DOF_Numberer *theNumberer = new DOF_Numberer(*theAMD);
     return theNumberer;
 }
 
 int OPS_SetUpNumberer(void) {
-    numbererMap.insert(std::make_pair("Plain", &OPS_NewPlainNumberer));
-    numbererMap.insert(std::make_pair("RCM", &OPS_NewRCMNumberer));
-    numbererMap.insert(std::make_pair("AMD", &OPS_NewAMDNumberer));
+    numbererMap.insert(std::make_pair("Plain", &OPS_PlainNumberer));
+    numbererMap.insert(std::make_pair("RCM", &OPS_RCMNumberer));
+    numbererMap.insert(std::make_pair("AMD", &OPS_AMDNumberer));
     return 0;
 }
 
@@ -517,17 +517,17 @@ OPS_ParseNumbererCommand(const char *type)
 /////////////// OPS_ParsedConstraintHandlerCommand //////////////
 static OPS_ParsingFunctionMap handlerMap;
 
-extern void *OPS_NewPlainHandler(void);
-extern void *OPS_NewPenaltyConstraintHandler(void);
-extern void *OPS_NewLagrangeConstraintHandler(void);
-extern void *OPS_NewTransformationConstraintHandler(void);
+extern void *OPS_PlainHandler(void);
+extern void *OPS_PenaltyConstraintHandler(void);
+extern void *OPS_LagrangeConstraintHandler(void);
+extern void *OPS_TransformationConstraintHandler(void);
 
 
 int OPS_SetUpHandler(void) {
-    handlerMap.insert(std::make_pair("Plain", &OPS_NewPlainHandler));
-    handlerMap.insert(std::make_pair("Penalty", &OPS_NewPenaltyConstraintHandler));
-    handlerMap.insert(std::make_pair("Lagrange", &OPS_NewLagrangeConstraintHandler));
-    handlerMap.insert(std::make_pair("Transformation", &OPS_NewTransformationConstraintHandler));
+    handlerMap.insert(std::make_pair("Plain", &OPS_PlainHandler));
+    handlerMap.insert(std::make_pair("Penalty", &OPS_PenaltyConstraintHandler));
+    handlerMap.insert(std::make_pair("Lagrange", &OPS_LagrangeConstraintHandler));
+    handlerMap.insert(std::make_pair("Transformation", &OPS_TransformationConstraintHandler));
     return 0;
 }
 
@@ -560,13 +560,13 @@ OPS_ParseConstraintHandlerCommand(const char *type)
 /////////////// OPS_ParsedAlgorithmCommand //////////////
 static OPS_ParsingFunctionMap algoMap;
 
-extern void *OPS_NewLinearAlgorithm();
-extern void *OPS_NewNewtonRaphsonAlgorithm();
+extern void *OPS_LinearAlgorithm();
+extern void *OPS_NewtonRaphsonAlgorithm();
 
 
 int OPS_SetUpAlgorithm(void) {
-    algoMap.insert(std::make_pair("Linear", &OPS_NewLinearAlgorithm));
-    algoMap.insert(std::make_pair("Newton", &OPS_NewNewtonRaphsonAlgorithm));
+    algoMap.insert(std::make_pair("Linear", &OPS_LinearAlgorithm));
+    algoMap.insert(std::make_pair("Newton", &OPS_NewtonRaphsonAlgorithm));
     return 0;
 }
 
@@ -602,16 +602,16 @@ OPS_ParsingIntegratorMap;
 
 static OPS_ParsingIntegratorMap integMap;
 
-extern void* OPS_NewLoadControlIntegrator();
-extern void* OPS_NewDisplacementControlIntegrator();
-extern void* OPS_NewNewmark();
+extern void* OPS_LoadControlIntegrator();
+extern void* OPS_DisplacementControlIntegrator();
+extern void* OPS_Newmark();
 
 
 int OPS_SetUpIntegrator(void) {
-    integMap.insert(std::make_pair("LoadControl", std::make_pair(&OPS_NewLoadControlIntegrator,1)));
+    integMap.insert(std::make_pair("LoadControl", std::make_pair(&OPS_LoadControlIntegrator,1)));
     integMap.insert(std::make_pair("DisplacementControl",
-				   std::make_pair(&OPS_NewDisplacementControlIntegrator,1)));
-    integMap.insert(std::make_pair("Newmark",std::make_pair(&OPS_NewNewmark,2)));
+				   std::make_pair(&OPS_DisplacementControlIntegrator,1)));
+    integMap.insert(std::make_pair("Newmark",std::make_pair(&OPS_Newmark,2)));
     return 0;
 }
 
@@ -645,12 +645,12 @@ OPS_ParseIntegratorCommand(const char *type, int& isstatic)
 /////////////// OPS_ParseCTestCommand //////////////
 static OPS_ParsingFunctionMap testMap;
 
-extern void *OPS_NewCTestNormUnbalance(void);
-extern void *OPS_NewCTestNormDispIncr(void);
+extern void *OPS_CTestNormUnbalance(void);
+extern void *OPS_CTestNormDispIncr(void);
 
 int OPS_SetUpCTest(void) {
-    testMap.insert(std::make_pair("NormUnbalance", &OPS_NewCTestNormUnbalance));
-    testMap.insert(std::make_pair("NormDispIncr", &OPS_NewCTestNormDispIncr));
+    testMap.insert(std::make_pair("NormUnbalance", &OPS_CTestNormUnbalance));
+    testMap.insert(std::make_pair("NormDispIncr", &OPS_CTestNormDispIncr));
     return 0;
 }
 
@@ -683,67 +683,67 @@ OPS_ParseCTestCommand(const char *type)
 /////// OPS_ParseSectionCommand ///////////////
 static OPS_ParsingFunctionMap secMap;
 
-extern void* OPS_NewElasticSection2d();
-extern void* OPS_NewElasticShearSection2d();
-extern void* OPS_NewElasticSection3d();
-extern void* OPS_NewElasticShearSection3d();
-extern void* OPS_NewFiberSection2d();
-extern void* OPS_NewFiberSection3d();
-extern void* OPS_NewNDFiberSection2d();
-extern void* OPS_NewNDFiberSection3d();
+extern void* OPS_ElasticSection2d();
+extern void* OPS_ElasticShearSection2d();
+extern void* OPS_ElasticSection3d();
+extern void* OPS_ElasticShearSection3d();
+extern void* OPS_FiberSection2d();
+extern void* OPS_FiberSection3d();
+extern void* OPS_NDFiberSection2d();
+extern void* OPS_NDFiberSection3d();
 
-void *OPS_NewElasticSection(void)
+void *OPS_ElasticSection(void)
 {
     int numData = OPS_GetNumRemainingInputArgs();
     void* theSec = 0;
     int ndm = OPS_GetNDM();
     if(ndm == 2) {
 	if(numData == 3) {
-	    theSec = OPS_NewElasticSection2d();
+	    theSec = OPS_ElasticSection2d();
 	} else if(numData >=5) {
-	    theSec = OPS_NewElasticShearSection2d();
+	    theSec = OPS_ElasticShearSection2d();
 	}
     } else if(ndm == 3) {
 	if(numData == 6) {
-	    theSec = OPS_NewElasticSection3d();
+	    theSec = OPS_ElasticSection3d();
 	} else if(numData >= 8) {
-	    theSec = OPS_NewElasticShearSection3d();
+	    theSec = OPS_ElasticShearSection3d();
 	}
     }
 
     return theSec;
 }
 
-void* OPS_NewFiberSection()
+void* OPS_FiberSection()
 {
     void* theSec = 0;
     int ndm = OPS_GetNDM();
     if(ndm == 2) {
-	theSec = OPS_NewFiberSection2d();
+	theSec = OPS_FiberSection2d();
     } else if(ndm == 3) {
-	theSec = OPS_NewFiberSection3d();
+	theSec = OPS_FiberSection3d();
     }
 
     return theSec;
 }
 
-void* OPS_NewNDFiberSection()
+void* OPS_NDFiberSection()
 {
     void* theSec = 0;
     int ndm = OPS_GetNDM();
     if(ndm == 2) {
-	theSec = OPS_NewNDFiberSection2d();
+	theSec = OPS_NDFiberSection2d();
     } else if(ndm == 3) {
-	theSec = OPS_NewNDFiberSection3d();
+	theSec = OPS_NDFiberSection3d();
     }
 
     return theSec;
 }
 
 int OPS_SetUpSection(void) {
-    secMap.insert(std::make_pair("Elastic", &OPS_NewElasticSection));
-    secMap.insert(std::make_pair("Fiber", &OPS_NewFiberSection));
-    secMap.insert(std::make_pair("NDFiber", &OPS_NewNDFiberSection));
+    secMap.insert(std::make_pair("Elastic", &OPS_ElasticSection));
+    secMap.insert(std::make_pair("Fiber", &OPS_FiberSection));
+    secMap.insert(std::make_pair("NDFiber", &OPS_NDFiberSection));
     return 0;
 }
 
@@ -835,47 +835,47 @@ OPS_ParseNDMaterialCommand(const char *type) {
 ////////// OPS_ParseCrdTransfCommand /////
 static OPS_ParsingFunctionMap transfMap;
 
-extern void* OPS_NewLinearCrdTransf2d();
-extern void* OPS_NewLinearCrdTransf3d();
-extern void* OPS_NewPDeltaCrdTransf2d();
-extern void* OPS_NewPDeltaCrdTransf3d();
-extern void* OPS_NewCorotCrdTransf2d();
-extern void* OPS_NewCorotCrdTransf3d();
+extern void* OPS_LinearCrdTransf2d();
+extern void* OPS_LinearCrdTransf3d();
+extern void* OPS_PDeltaCrdTransf2d();
+extern void* OPS_PDeltaCrdTransf3d();
+extern void* OPS_CorotCrdTransf2d();
+extern void* OPS_CorotCrdTransf3d();
 
-void* OPS_NewLinearCrdTransf()
+void* OPS_LinearCrdTransf()
 {
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();
     if(ndm == 2 && ndf == 3) {
-	return OPS_NewLinearCrdTransf2d();
+	return OPS_LinearCrdTransf2d();
     } else if(ndm == 3 && ndf == 6) {
-	return OPS_NewLinearCrdTransf3d();
+	return OPS_LinearCrdTransf3d();
     } else {
 	opserr<<"current NDM and NDF is incompatible with frame elements\n";
 	return 0;
     }
 }
-void* OPS_NewPDeltaCrdTransf()
+void* OPS_PDeltaCrdTransf()
 {
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();
     if(ndm == 2 && ndf == 3) {
-	return OPS_NewPDeltaCrdTransf2d();
+	return OPS_PDeltaCrdTransf2d();
     } else if(ndm == 3 && ndf == 6) {
-	return OPS_NewPDeltaCrdTransf3d();
+	return OPS_PDeltaCrdTransf3d();
     } else {
 	opserr<<"current NDM and NDF is incompatible with frame elements\n";
 	return 0;
     }
 }
-void* OPS_NewCorotCrdTransf()
+void* OPS_CorotCrdTransf()
 {
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();
     if(ndm == 2 && ndf == 3) {
-	return OPS_NewCorotCrdTransf2d();
+	return OPS_CorotCrdTransf2d();
     } else if(ndm == 3 && ndf == 6) {
-	return OPS_NewCorotCrdTransf3d();
+	return OPS_CorotCrdTransf3d();
     } else {
 	opserr<<"current NDM and NDF is incompatible with frame elements\n";
 	return 0;
@@ -883,9 +883,9 @@ void* OPS_NewCorotCrdTransf()
 }
 
 int OPS_SetUpCrdsTransf(void) {
-    transfMap.insert(std::make_pair("Linear", &OPS_NewLinearCrdTransf));
-    transfMap.insert(std::make_pair("PDelta", &OPS_NewPDeltaCrdTransf));
-    transfMap.insert(std::make_pair("Corotational", &OPS_NewCorotCrdTransf));
+    transfMap.insert(std::make_pair("Linear", &OPS_LinearCrdTransf));
+    transfMap.insert(std::make_pair("PDelta", &OPS_PDeltaCrdTransf));
+    transfMap.insert(std::make_pair("Corotational", &OPS_CorotCrdTransf));
     return 0;
 }
 
@@ -918,38 +918,38 @@ OPS_ParseCrdTransfCommand(const char *type) {
 typedef std::map<const char *, void *(*)(int&,ID&), char_cmp> OPS_BeamIntegraionRuleMap;
 static OPS_BeamIntegraionRuleMap ruleMap;
 
-extern void* OPS_NewLobattoBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewLegendreBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewNewtonCotesBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewRadauBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewTrapezoidalBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewCompositeSimpsonBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewUserDefinedBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewFixedLocationBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewLowOrderBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewMidDistanceBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewUserHingeBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewHingeMidpointBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewHingeRadauBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewHingeRadauTwoBeamIntegration(int& integrationTag, ID& secTags);
-extern void* OPS_NewHingeEndpointBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_LobattoBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_LegendreBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_NewtonCotesBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_RadauBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_TrapezoidalBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_CompositeSimpsonBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_UserDefinedBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_FixedLocationBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_LowOrderBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_MidDistanceBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_UserHingeBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_HingeMidpointBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_HingeRadauBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_HingeRadauTwoBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_HingeEndpointBeamIntegration(int& integrationTag, ID& secTags);
 
 int OPS_SetUpBeamIntegrationRule(void) {
-    ruleMap.insert(std::make_pair("Lobatto", &OPS_NewLobattoBeamIntegration));
-    ruleMap.insert(std::make_pair("Legendre", &OPS_NewLegendreBeamIntegration));
-    ruleMap.insert(std::make_pair("NewtoCotes", &OPS_NewNewtonCotesBeamIntegration));
-    ruleMap.insert(std::make_pair("Radau", &OPS_NewRadauBeamIntegration));
-    ruleMap.insert(std::make_pair("Trapezoidal", &OPS_NewTrapezoidalBeamIntegration));
-    ruleMap.insert(std::make_pair("CompositeSimpson", &OPS_NewCompositeSimpsonBeamIntegration));
-    ruleMap.insert(std::make_pair("UserDefined", &OPS_NewUserDefinedBeamIntegration));
-    ruleMap.insert(std::make_pair("FixedLocation", &OPS_NewFixedLocationBeamIntegration));
-    ruleMap.insert(std::make_pair("LowOrder", &OPS_NewLowOrderBeamIntegration));
-    ruleMap.insert(std::make_pair("MidDistance", &OPS_NewMidDistanceBeamIntegration));
-    ruleMap.insert(std::make_pair("UserHinge", &OPS_NewUserHingeBeamIntegration));
-    ruleMap.insert(std::make_pair("HingeMidpoint", &OPS_NewHingeMidpointBeamIntegration));
-    ruleMap.insert(std::make_pair("HingeRadau", &OPS_NewHingeRadauBeamIntegration));
-    ruleMap.insert(std::make_pair("HingeRadauTwo", &OPS_NewHingeRadauTwoBeamIntegration));
-    ruleMap.insert(std::make_pair("HingeEndpoint", &OPS_NewHingeEndpointBeamIntegration));
+    ruleMap.insert(std::make_pair("Lobatto", &OPS_LobattoBeamIntegration));
+    ruleMap.insert(std::make_pair("Legendre", &OPS_LegendreBeamIntegration));
+    ruleMap.insert(std::make_pair("NewtoCotes", &OPS_NewtonCotesBeamIntegration));
+    ruleMap.insert(std::make_pair("Radau", &OPS_RadauBeamIntegration));
+    ruleMap.insert(std::make_pair("Trapezoidal", &OPS_TrapezoidalBeamIntegration));
+    ruleMap.insert(std::make_pair("CompositeSimpson", &OPS_CompositeSimpsonBeamIntegration));
+    ruleMap.insert(std::make_pair("UserDefined", &OPS_UserDefinedBeamIntegration));
+    ruleMap.insert(std::make_pair("FixedLocation", &OPS_FixedLocationBeamIntegration));
+    ruleMap.insert(std::make_pair("LowOrder", &OPS_LowOrderBeamIntegration));
+    ruleMap.insert(std::make_pair("MidDistance", &OPS_MidDistanceBeamIntegration));
+    ruleMap.insert(std::make_pair("UserHinge", &OPS_UserHingeBeamIntegration));
+    ruleMap.insert(std::make_pair("HingeMidpoint", &OPS_HingeMidpointBeamIntegration));
+    ruleMap.insert(std::make_pair("HingeRadau", &OPS_HingeRadauBeamIntegration));
+    ruleMap.insert(std::make_pair("HingeRadauTwo", &OPS_HingeRadauTwoBeamIntegration));
+    ruleMap.insert(std::make_pair("HingeEndpoint", &OPS_HingeEndpointBeamIntegration));
     return 0;
 }
 
@@ -985,8 +985,8 @@ OPS_ParseBeamIntegrationRuleCommand(const char *type) {
 
 
 ////////// OPS_ParseGroundMotionCommand /////
-extern void* OPS_NewGroundMotion();
-void* OPS_NewInterpolatedGroundMotion(MultiSupportPattern& thePattern)
+extern void* OPS_GroundMotion();
+void* OPS_InterpolatedGroundMotion(MultiSupportPattern& thePattern)
 {
     int numArgs = OPS_GetNumRemainingInputArgs();
     int numMotions = (numArgs-1)/2;
@@ -1034,9 +1034,9 @@ OPS_ParseGroundMotionCommand(MultiSupportPattern& thePattern, int&gmTag)
     // create object
     GroundMotion* theObj = 0;
     if(gmType == "Plain") {
-	theObj = (GroundMotion*) OPS_NewGroundMotion();
+	theObj = (GroundMotion*) OPS_GroundMotion();
     } else if(gmType == "Interpolated") {
-	theObj = (GroundMotion*) OPS_NewInterpolatedGroundMotion(thePattern);
+	theObj = (GroundMotion*) OPS_InterpolatedGroundMotion(thePattern);
     }
 
     if(theObj == 0) return 0;

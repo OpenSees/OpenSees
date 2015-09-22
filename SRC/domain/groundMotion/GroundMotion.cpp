@@ -37,7 +37,7 @@
 #include <elementAPI.h>
 #include <string>
 
-void* OPS_NewGroundMotion()
+void* OPS_GroundMotion()
 {
     TimeSeries* accelSeries = 0;
     TimeSeries* velSeries = 0;

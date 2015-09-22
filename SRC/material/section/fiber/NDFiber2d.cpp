@@ -54,7 +54,7 @@ ID NDFiber2d::code(3);
 
 static int numNDFiber2d = 0;
 
-void* OPS_NewNDFiber2d()
+void* OPS_NDFiber2d()
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments for NDFiber2d\n";

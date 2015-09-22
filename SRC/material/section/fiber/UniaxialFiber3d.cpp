@@ -59,7 +59,7 @@ ID UniaxialFiber3d::code(3);
 
 static int numUniaxialFiber3d = 0;
 
-void* OPS_NewUniaxialFiber3d()
+void* OPS_UniaxialFiber3d()
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments for UniaxialFiber3d\n";

@@ -54,7 +54,7 @@ ID UniaxialFiber2d::code(2);
 
 static int numUniaxialFiber2d = 0;
 
-void* OPS_NewUniaxialFiber2d()
+void* OPS_UniaxialFiber2d()
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments for UniaxialFiber2d\n";

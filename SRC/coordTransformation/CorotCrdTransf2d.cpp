@@ -64,7 +64,7 @@ Vector CorotCrdTransf2d::dub(3);
 Vector CorotCrdTransf2d::Dub(3); 
 Matrix CorotCrdTransf2d::kg(6,6);
 
-void* OPS_NewCorotCrdTransf2d()
+void* OPS_CorotCrdTransf2d()
 {
     if(OPS_GetNumRemainingInputArgs() < 1) {
 	opserr<<"insufficient arguments for CorotCrdTransf2d\n";

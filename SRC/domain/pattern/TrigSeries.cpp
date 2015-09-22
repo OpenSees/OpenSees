@@ -42,7 +42,7 @@
 #define OPS_Export 
 
 
-OPS_Export void *OPS_NewTrigSeries()
+OPS_Export void *OPS_TrigSeries()
 {
     // Pointer to a uniaxial material that will be returned
     TimeSeries *theSeries = 0;

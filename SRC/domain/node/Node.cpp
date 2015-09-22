@@ -61,7 +61,7 @@ Matrix **Node::theMatrices = 0;
 Matrix **Node::theVectors = 0;
 int Node::numMatrices = 0;
 
-void* OPS_NewNode()
+void* OPS_Node()
 {
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();

@@ -35,7 +35,7 @@
 //#include <f2c.h>
 #include <math.h>
 
-void* OPS_NewBandSPDLinLapack()
+void* OPS_BandSPDLinLapack()
 {
     BandSPDLinSolver *theSolver = new BandSPDLinLapackSolver();
     BandSPDLinSOE *theSOE = new BandSPDLinSOE(*theSolver);

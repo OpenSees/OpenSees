@@ -53,7 +53,7 @@
 #include <Node.h>
 #include <MP_ConstraintIter.h>
 
-void* OPS_NewPlainNumberer()
+void* OPS_PlainNumberer()
 {
     return new PlainNumberer();
 }

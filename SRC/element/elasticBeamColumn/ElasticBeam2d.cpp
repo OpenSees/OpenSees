@@ -54,7 +54,7 @@ Matrix ElasticBeam2d::K(6,6);
 Vector ElasticBeam2d::P(6);
 Matrix ElasticBeam2d::kb(3,3);
 
-void* OPS_NewElasticBeam2d()
+void* OPS_ElasticBeam2d()
 {
     if(OPS_GetNumRemainingInputArgs() < 7) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,A,E,Iz,transfTag\n";

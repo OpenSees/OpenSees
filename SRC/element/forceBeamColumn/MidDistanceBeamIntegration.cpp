@@ -32,7 +32,7 @@
 #include <elementAPI.h>
 #include <ID.h>
 
-void* OPS_NewMidDistanceBeamIntegration(int& integrationTag, ID& secTags)
+void* OPS_MidDistanceBeamIntegration(int& integrationTag, ID& secTags)
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments:integrationTag,N,secTags,locations\n";

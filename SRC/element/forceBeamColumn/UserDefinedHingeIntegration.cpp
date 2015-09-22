@@ -33,7 +33,7 @@
 #include <elementAPI.h>
 #include <ID.h>
 
-void* OPS_NewUserHingeBeamIntegration(int& integrationTag, ID& secTags)
+void* OPS_UserHingeBeamIntegration(int& integrationTag, ID& secTags)
 {
     if(OPS_GetNumRemainingInputArgs() < 10) {
 	opserr<<"insufficient arguments:integrationTag,secTagE,npL,secTagLs,ptLs,wtLs,npR,secTagRs,ptRs,wtRs\n";

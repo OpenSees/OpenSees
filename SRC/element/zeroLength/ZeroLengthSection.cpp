@@ -51,7 +51,7 @@ Matrix ZeroLengthSection::K12(12,12);
 Vector ZeroLengthSection::P6(6);
 Vector ZeroLengthSection::P12(12);
 
-void* OPS_NewZeroLengthSection()
+void* OPS_ZeroLengthSection()
 {
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments for ZeroLengthSection\n";
