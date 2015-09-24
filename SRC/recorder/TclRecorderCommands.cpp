@@ -343,8 +343,8 @@
 	 else if (strcmp(argv[loc],"-buffer") == 0 ||
        strcmp(argv[loc],"-bufferSize") == 0)  {
        loc++;
-	   if (Tcl_GetInt(interp, argv[loc], &writeBufferSize) != TCL_OK)	
-	     return TCL_ERROR;		  
+	   if (Tcl_GetInt(interp, argv[loc], &writeBufferSize) != TCL_OK)
+	     return TCL_ERROR;
 	   loc++;
 	 }
      
@@ -443,8 +443,7 @@
 					      theDomain, 
 					      *theOutputStream,
 					      dT,
-					      specificIndices,
-                          writeBufferSize);
+					      specificIndices);
 
        } else if (strcmp(argv[1],"EnvelopeElement") == 0) {
 
@@ -1097,8 +1096,8 @@
 	 else if (strcmp(argv[pos],"-buffer") == 0 ||
        strcmp(argv[pos],"-bufferSize") == 0)  {
        pos++;
-	   if (Tcl_GetInt(interp, argv[pos], &writeBufferSize) != TCL_OK)	
-	     return TCL_ERROR;		  
+	   if (Tcl_GetInt(interp, argv[pos], &writeBufferSize) != TCL_OK)
+	     return TCL_ERROR;
 	   pos++;
 	 }
 
@@ -1350,8 +1349,7 @@
 					   *theOutputStream, 
 					   dT, 
 					   echoTimeFlag,
-					   theTimeSeries,
-                       writeBufferSize);
+					   theTimeSeries);
 
        } else {
 

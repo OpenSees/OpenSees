@@ -18,14 +18,16 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: $
-// $Date: $
-// $URL: $
+// $Revision: 1.34 $
+// $Date: 2009-04-30 23:25:33 $
+// $Source: /usr/local/cvs/OpenSees/SRC/recorder/ElementRecorder.cpp,v $
                                                                         
 // Written: fmk 
 // Created: 09/99
 //
 // Description: This file contains the class implementatation of ElementRecorder.
+//
+// What: "@(#) ElementRecorder.C, revA"
 
 #include <ElementRecorder.h>
 #include <Domain.h>
@@ -46,10 +48,8 @@ ElementRecorder::ElementRecorder()
 :Recorder(RECORDER_TAGS_ElementRecorder),
  numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), 
  theDomain(0), theOutputHandler(0),
- echoTimeFlag(true), deltaT(0), nextTimeStampToRecord(0.0),
- data(0), buffer(0), 
- initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0),
- writeBufferSize(0), iRow(0), numRows(1)
+ echoTimeFlag(true), deltaT(0), nextTimeStampToRecord(0.0), data(0), 
+ initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
 {
 
 }
@@ -61,16 +61,14 @@ ElementRecorder::ElementRecorder(const ID *ele,
 				 Domain &theDom, 
 				 OPS_Stream &theOutputHandler,
 				 double dT,
-				 const ID *theDOFs,
-				 int bufferSize)
+				 const ID *theDOFs)
 :Recorder(RECORDER_TAGS_ElementRecorder),
  numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), 
  theDomain(&theDom), theOutputHandler(&theOutputHandler),
- echoTimeFlag(echoTime), deltaT(dT), nextTimeStampToRecord(0.0),
- data(0), buffer(0),
- initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0),
- writeBufferSize(bufferSize), iRow(0), numRows(1)
+ echoTimeFlag(echoTime), deltaT(dT), nextTimeStampToRecord(0.0), data(0),
+ initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
 {
+
   if (ele != 0) {
     numEle = ele->Size();
     eleID = new ID(*ele);
@@ -109,21 +107,7 @@ ElementRecorder::ElementRecorder(const ID *ele,
 
 ElementRecorder::~ElementRecorder()
 {
-  //
-  // write the data
-  //
-  
   if (theOutputHandler != 0) {
-    
-    // flush the buffer one last time
-    for (int i=0; i<iRow; i++)  {
-      for (int j=0; j<data->Size(); j++)  {
-        (*data)(j) = (*buffer)(i,j);
-      }
-      // insert the data into the database
-      theOutputHandler->write(*data);
-    }
-    
     theOutputHandler->endTag(); // Data
     delete theOutputHandler;
   }
@@ -147,9 +131,6 @@ ElementRecorder::~ElementRecorder()
   if (data != 0)
     delete data;
   
-  if (buffer != 0)
-    delete buffer;
-  
   // 
   // invoke destructor on response args
   //
@@ -157,6 +138,7 @@ ElementRecorder::~ElementRecorder()
   for (int i=0; i<numArgs; i++)
     delete [] responseArgs[i];
   delete [] responseArgs;
+
 }
 
 
@@ -182,7 +164,7 @@ ElementRecorder::record(int commitTag, double timeStamp)
 
     int loc = 0;
     if (echoTimeFlag == true) 
-      (*buffer)(iRow,loc++) = timeStamp;
+      (*data)(loc++) = timeStamp;
     
     //
     // for each element if responses exist, put them in response vector
@@ -198,36 +180,25 @@ ElementRecorder::record(int commitTag, double timeStamp)
 	  const Vector &eleData = eleInfo.getData();
 	  if (numDOF == 0) {
 	    for (int j=0; j<eleData.Size(); j++)
-	      (*buffer)(iRow,loc++) = eleData(j);
+	      (*data)(loc++) = eleData(j);
 	  } else {
 	    int dataSize = data->Size();
 	    for (int j=0; j<numDOF; j++) {
 	      int index = (*dof)(j);
 	      if (index >= 0 && index < dataSize)
-		(*buffer)(iRow,loc++) = eleData(index);
+		(*data)(loc++) = eleData(index);		
 	      else
-		(*buffer)(iRow,loc++) = 0.0;
+		(*data)(loc++) = 0.0;		
 	    }
 	  }
 	}
       }
     }
 
-    // increment row in buffer matrix
-    iRow++;
-      
-    // flush the buffer if full
-    if (iRow == numRows)  {
-      for (int i=0; i<numRows; i++)  {
-          for (int j=0; j<data->Size(); j++)  {
-          (*data)(j) = (*buffer)(i,j);
-        }
-        // send the response vector to the output handler for o/p
-        theOutputHandler->write(*data);
-      }
-      iRow = 0;
-      buffer->Zero();
-    }    
+    //
+    // send the response vector to the output handler for o/p
+    //
+    theOutputHandler->write(*data);
   }
   
   // succesfull completion - return 0
@@ -239,8 +210,6 @@ ElementRecorder::restart(void)
 {
   if (data != 0)
     data->Zero();
-  if (buffer != 0)
-    buffer->Zero();
   return 0;
 }
 
@@ -249,7 +218,6 @@ int
 ElementRecorder::setDomain(Domain &theDom)
 {
   theDomain = &theDom;
-  initializationDone = false;
   return 0;
 }
 
@@ -268,7 +236,7 @@ ElementRecorder::sendSelf(int commitTag, Channel &theChannel)
   // into an ID, place & send (*eleID) size, numArgs and length of all responseArgs
   //
 
-  static ID idData(8);
+  static ID idData(7);
   if (eleID != 0)
     idData(0) = eleID->Size();
   else
@@ -295,8 +263,6 @@ ElementRecorder::sendSelf(int commitTag, Channel &theChannel)
 
   idData(5) = this->getTag();
   idData(6) = numDOF;
-  
-  idData(7) = writeBufferSize;
 
   if (theChannel.sendID(0, commitTag, idData) < 0) {
     opserr << "ElementRecorder::sendSelf() - failed to send idData\n";
@@ -402,7 +368,7 @@ ElementRecorder::recvSelf(int commitTag, Channel &theChannel,
   // into an ID of size 2 recv eleID size and length of all responseArgs
   //
 
-  static ID idData(8);
+  static ID idData(7);
   if (theChannel.recvID(0, commitTag, idData) < 0) {
     opserr << "ElementRecorder::recvSelf() - failed to recv idData\n";
     return -1;
@@ -414,9 +380,7 @@ ElementRecorder::recvSelf(int commitTag, Channel &theChannel,
 
   this->setTag(idData(5));
   numDOF = idData(6);
-  
-  writeBufferSize = idData(7);
-  
+
   if (idData(4) == 1)
     echoTimeFlag = true;
   else
@@ -709,20 +673,7 @@ ElementRecorder::initialize(void)
     opserr << "ElementRecorder::initialize() - out of memory\n";
     return -1;
   }
-
-  int rowSize = sizeof(double)*numDbColumns;  // in bytes
-  if (writeBufferSize > rowSize)  {
-    numRows = writeBufferSize/rowSize;
-  }
-  writeBufferSize = numRows*rowSize;
-  buffer = new Matrix(numRows,numDbColumns);
-  if (buffer == 0) {
-    opserr << "ElementRecorder::initialize() - out of memory\n";
-    return -1;
-  }
-  buffer->Zero();
-  //opserr << "ElementRecorder::initialize() - buffer = " << writeBufferSize << "bytes, numRows = " << numRows << endln;
-
+  
   theOutputHandler->tag("Data");
   initializationDone = true;
 
