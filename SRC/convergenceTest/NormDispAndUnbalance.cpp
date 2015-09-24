@@ -81,12 +81,7 @@ void NormDispAndUnbalance::setTolerance(double newTolDisp)
 int NormDispAndUnbalance::setEquiSolnAlgo(EquiSolnAlgo &theAlgo)
 {
     theSOE = theAlgo.getLinearSOEptr();
-    if (theSOE == 0) {
-        opserr << "WARNING: NormDispAndUnbalance::setEquiSolnAlgo() - no SOE\n";	
-        return -1;
-    }
-    else
-        return 0;
+    return 0;
 }
 
 
@@ -94,8 +89,10 @@ int NormDispAndUnbalance::test(void)
 {
     // check to ensure the SOE has been set - this should not happen if the 
     // return from start() is checked
-    if (theSOE == 0)
+    if (theSOE == 0) {
+		 opserr << "WARNING: NormDispAndUnbalance::test() - no soe set.\n";	
         return -2;
+	}
     
     // check to ensure the algo does invoke start() - this is needed otherwise
     // may never get convergence later on in analysis!

@@ -105,12 +105,7 @@ void CTestNormUnbalance::setTolerance(double newTol)
 int CTestNormUnbalance::setEquiSolnAlgo(EquiSolnAlgo &theAlgo)
 {
     theSOE = theAlgo.getLinearSOEptr();
-    if (theSOE == 0) {
-        opserr << "WARNING: CTestNormUnbalance::setEquiSolnAlgo - no SOE\n";	
-        return -1;
-    }
-    else
-        return 0;
+    return 0;
 }
 
 
@@ -118,8 +113,10 @@ int CTestNormUnbalance::test(void)
 {
     // check to ensure the SOE has been set - this should not happen if the 
     // return from start() is checked
-    if (theSOE == 0)
+    if (theSOE == 0) {
+		 opserr << "WARNING: CTestNormUnbalance::test() - no SOE set.\n";
         return -2;
+	}
     
     // check to ensure the algo does invoke start() - this is needed otherwise
     // may never get convergence later on in analysis!
