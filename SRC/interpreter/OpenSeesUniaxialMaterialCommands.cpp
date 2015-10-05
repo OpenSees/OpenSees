@@ -698,13 +698,13 @@ void *OPS_ElasticSection(void)
     void* theSec = 0;
     int ndm = OPS_GetNDM();
     if(ndm == 2) {
-	if(numData == 3) {
+	if(numData == 4) {
 	    theSec = OPS_ElasticSection2d();
 	} else if(numData >=5) {
 	    theSec = OPS_ElasticShearSection2d();
 	}
     } else if(ndm == 3) {
-	if(numData == 6) {
+	if(numData == 7) {
 	    theSec = OPS_ElasticSection3d();
 	} else if(numData >= 8) {
 	    theSec = OPS_ElasticShearSection3d();
