@@ -19,15 +19,13 @@
 ** ****************************************************************** */
 
 // $Revision: 1.0 $
-// $Date: 25-03-2015 $
+// $Date: 12-10-2015 $
 
-// Written by Smail KECHIDI (skechidi@yahoo.com)
-// Created: 2014-01-13 10:24:20 $
+// Written by Smail KECHIDI, Ph.D student at University of Blida 1 (s_kechidi@univ-blida.dz), PhD mobility Student at University of Porto FEUP (smail.kechidi@fe.up.pt)
+// Created: 12-10-2015 12:24:20 $
 //
 // Description: This file contains the class implementation for CFSSSWP
 // CFSSSWP is based on Pinching4 uniaxialMaterial
-
-
 
 #include <elementAPI.h>
 #include "CFSSSWP.h"
@@ -37,23 +35,19 @@
 #include <float.h>
 #include <OPS_Stream.h>
 #include <stdio.h>
-//#include<conio.h>
 #include <string.h>
 #include "CubicSpline.h"
 #include "TriMatrix.h"
-
-#ifdef _WIN32
-#define isnan _isnan
-#endif
+ 
 
 static int numCFSSSWP = 0;
 
-void *
-OPS_CFSSSWP(void)
+extern "C" void *
+OPS_CFSSSWP()
 {
   // print out some KUDO's
   if (numCFSSSWP == 0) {
-    opserr << "Cold Formed Steel Steel Sheathed Shear Wall Panel uniaxialMaterial - Written by Smail KECHIDI PhD student at University of Blida 1 - Please when using this make references \n";
+    opserr << "Cold Formed Steel Steel-Sheathed Shear Wall Panel uniaxialMaterial - Written by Smail KECHIDI Ph.D Student at University of Blida 1 - Please when using this make reference as: Smail Kechidi and Nouredine Bourahla (2016), Deteriorating hysteresis model for cold-formed steel shear wall panel based on its physical and mechanical characteristics, Journal of Thin-Walled Structures, DOI: 10.1016/j.tws.2015.09.022\n";
     numCFSSSWP =1;
   }
 
@@ -95,24 +89,24 @@ OPS_CFSSSWP(void)
   return theMaterial;
 }
 
-CFSSSWP::CFSSSWP(int tag, double H, double B, double fuf, double fyf,
-		 double tf,double Af,double fus, double fys, double ts,
-		 double np, double ds, double Vs,double sc, double A, double L): 
-  UniaxialMaterial(tag, MAT_TAG_Pinching4), hight(H), width(B), fuf(fuf),
-  fyf(fyf), tf(tf),
-  Af(Af), fus(fus), fys(fys), ts(ts),
-  np(np), ds(ds), Vs(Vs),
-  screw_Spacing(sc), A(A), L(L),
-  envlpPosStress(7), envlpPosStrain(7), envlpNegStress(7), envlpNegStrain(7), tagMat(tag),
-  gammaDLimit(0.0),
-  gammaFLimit(0.0),
-  gammaE(10.0),
-  TnCycle(0.0), CnCycle(0.0),
-  rDispP(0.488), rForceP(0.183), uForceP(-0.08), rDispN(0.488), rForceN(0.244), uForceN(-0.08),
-  state3Stress(4), state3Strain(4), state4Stress(4), state4Strain(4), 
-  envlpPosDamgdStress(7), envlpNegDamgdStress(7)
-  
-{
+CFSSSWP::CFSSSWP(int tag, double H, int B, double fuf, double fyf,
+                          double tf,double Af,double fus, double fys, double ts,
+						  double np, double ds, double Vs,double sc, double A, double L): 
+             UniaxialMaterial(tag, MAT_TAG_Pinching4), hight(H), width(B), fuf(fuf),
+             fyf(fyf), tf(tf),
+	         Af(Af), fus(fus), fys(fys), ts(ts),
+             np(np), ds(ds), Vs(Vs),
+             screw_Spacing(sc), A(A), L(L),
+      envlpPosStress(7), envlpPosStrain(7), envlpNegStress(7), envlpNegStrain(7), tagMat(tag),
+      gammaDLimit(0.0),
+	  gammaFLimit(0.0),
+	  gammaE(10.0),
+	  TnCycle(0.0), CnCycle(0.0),
+	  rDispP(0.488), rForceP(0.183), uForceP(-0.08), rDispN(0.488), rForceN(0.244), uForceN(-0.08),
+	  state3Stress(4), state3Strain(4), state4Stress(4), state4Strain(4), 
+	  envlpPosDamgdStress(7), envlpNegDamgdStress(7)
+
+    {
 
 	 double ddeg;
 	 ddeg = 0.1*((hight/(2*width))*(screw_Spacing/152.0));
@@ -178,11 +172,11 @@ void CFSSSWP :: lateralShearStrength(void)
 			Pnsed=0.5*dis*ts*fus;
 			if (Lambda<=0.0819)
 			We=Wmax;
-			else
-			{
-				rho=(1-0.05*pow((Lambda-0.08),0.12))/pow(Lambda,0.12);
-				We=rho*Wmax;
-			}
+		else
+		{
+			rho=(1-0.05*pow((Lambda-0.08),0.12))/pow(Lambda,0.12);
+			We=rho*Wmax;
+		}
 			Pn=(MinPns<Pnsed)? MinPns:Pnsed;
 			V1=(((We/(2*screw_Spacing))*Pn)+((We*width)/(2*screw_Spacing*hight)*Pn)+Vs*(width/(sqrt(pow(hight,2)+(width*width)))));
 			V2=(We*ts*fys)*(width/sqrt(pow(hight,2)+(width*width)));
@@ -190,24 +184,19 @@ void CFSSSWP :: lateralShearStrength(void)
 			double r,fo;
 	        r=1/(1+A/(hight*(width-L)));
 	        fo=r/(3-2*r);
-			stress3p=fo*V;
-			if (np==2)
-			{
-				stress3p=stress3p*2;
-			}
+			stress3p=fo*V*np;
 			Beta=500*(ts/0.457);
 			Gs=E/(2*(1+mu));
     		Omega4=sqrt(227.53/fyf);
 			rho=0.075*(ts/0.457);
-			Delta1=(2*(stress3p/width)*pow(hight,3)/(3*E*Af*width));
+			Delta1=(2*(stress3p/(width*np))*pow(hight,3)/(3*E*Af*width));
             Omega1=screw_Spacing/152.4;
 			Omega2=0.838/tf; 
-			Delta2=Omega1*Omega2*((stress3p/width)*hight)/(rho*Gs*ts);
+			Delta2=Omega1*Omega2*((stress3p/(width*np))*hight)/(rho*Gs*ts);
 			Omega3=sqrt(hight/(2*width));
-			Delta3=pow(Omega1,(5/4))*Omega2*Omega3*Omega4*pow(((stress3p/width)/(0.0029*Beta)),2);
+			Delta3=pow(Omega1,(5/4))*Omega2*Omega3*Omega4*pow((stress3p/(width*np)/(0.0029*Beta)),2);
 			Delta4=2.5*hight/width;
-            strain3p=(Delta1+Delta2+Delta3+Delta4); 
-			stress3p=stress3p/1000;
+            strain3p=(Delta1+Delta2+Delta3+Delta4)/(1000); 
         	stress4p=0.8*stress3p;
 			strain4p=1.4*strain3p;
 			stress1p=0.4*stress3p;
@@ -246,7 +235,6 @@ void CFSSSWP :: lateralShearStrength(void)
  
 int CFSSSWP::setTrialStrain(double strain, double CstrainRate)
  {
- 
          Tstate = Cstate;
          Tenergy = Cenergy;
          Tstrain = strain;
@@ -317,7 +305,7 @@ int CFSSSWP::setTrialStrain(double strain, double CstrainRate)
 		 return 0;
  }
 
-static int getIndex(Vector v,double value)
+int getIndex(Vector v,double value)
 {
 	for(int i = 0; i < v.Size(); i++)
 	{
@@ -325,7 +313,7 @@ static int getIndex(Vector v,double value)
 	}
 	return -1;
 }
-static int getIndexNeg(Vector v,double value)
+int getIndexNeg(Vector v,double value)
 {
 	for(int i = 0; i < v.Size(); i++)
 	{
@@ -343,7 +331,6 @@ static int getIndexNeg(Vector v,double value)
 			if(fifth == -1)
 			{
 				printf("erreur fifth");
-				//getch();
 				exit(5);
 			}
 			
@@ -378,7 +365,6 @@ static int getIndexNeg(Vector v,double value)
 			if(fifth == -1)
 			{
 				printf("erreur fifth1");
-				//getch();
 				exit(5);
 			}
 			
@@ -1407,66 +1393,66 @@ double CFSSSWP::posEnvlpStress(double u)
  
  
  double CFSSSWP::Envlp3Stress(Vector s3Strain, Vector s3Stress, double u)
-                         {
-                                 double k = 0.0;
-                                 int i = 0;
-                                 double f = 0.0;
-								 f = Spline3.Eval(u);
-								 if(isnan(f))
-								 {
-										 printf("erreur3");
-										 while(1);
-								 }
-								 if(f != 10e8)
-								 {
-										 return f;
-										return GetStressFromCurve(u);
-								 }
-								 while ((k==0.0||i<=2) && (i<=2)) 
-                                 {
-                                         if (u>= s3Strain(i)) {
-                                                 k = (s3Stress(i+1)-s3Stress(i))/(s3Strain(i+1)-s3Strain(i));
-                                                 f = s3Stress(i)+(u-s3Strain(i))*k;
-                                         }
-                                         i++;
-                                 }
-                                 if (k==0.0) {
-                                         if (u<s3Strain(0)) {
-                                                 i = 0;
-                                         }
-                                         else {
-                                                 i = 2;
-                                         }
-                                         k = (s3Stress(i+1)-s3Stress(i))/(s3Strain(i+1)-s3Strain(i));
-                                         f = s3Stress(i)+(u-s3Strain(i))*k;
-                                 }
-								 printf("Strain = %f	Stress = %f	Min = %f, Max = %f\n",u,f,s3Strain(0),s3Strain(3));
-								 if(u > s3Strain(3))
-								 {
-									 while(1);
-								 }
-                                 return f;
-                         }
- 
- double CFSSSWP::Envlp4Stress(Vector s4Strain, Vector s4Stress, double u)
-                         {
-                                 double k = 0.0;
-                                 int i = 0;
-                                 double f = 0.0;
-								 f = Spline4.Eval(u);
-								 if(isnan(f))
-								 {
+{
+  double k = 0.0;
+  int i = 0;
+  double f = 0.0;
+  f = Spline3.Eval(u);
+  if(isnan(f))
+    {
+      printf("erreur3");
+      while(1);
+    }
+  if(f != 10e8)
+    {
+      return f;
+      return GetStressFromCurve(u);
+    }
+  while ((k==0.0||i<=2) && (i<=2)) 
+    {
+      if (u>= s3Strain(i)) {
+	k = (s3Stress(i+1)-s3Stress(i))/(s3Strain(i+1)-s3Strain(i));
+	f = s3Stress(i)+(u-s3Strain(i))*k;
+      }
+      i++;
+    }
+  if (k==0.0) {
+    if (u<s3Strain(0)) {
+      i = 0;
+    }
+    else {
+      i = 2;
+    }
+    k = (s3Stress(i+1)-s3Stress(i))/(s3Strain(i+1)-s3Strain(i));
+    f = s3Stress(i)+(u-s3Strain(i))*k;
+  }
+  printf("Strain = %f	Stress = %f	Min = %f, Max = %f\n",u,f,s3Strain(0),s3Strain(3));
+  if(u > s3Strain(3))
+    {
+      while(1);
+    }
+  return f;
+}
+
+double CFSSSWP::Envlp4Stress(Vector s4Strain, Vector s4Stress, double u)
+{
+  double k = 0.0;
+  int i = 0;
+  double f = 0.0;
+  f = Spline4.Eval(u);
+  if(isnan(f))
+    {
 										 printf("erreur4");
 										 while(1);
-								 }
-								 if(f != 10e8)
+    }
+  if(f != 10e8)
 								 {
-										return f;
-										return GetStressFromCurve(u);
+								   return f;
+								   return GetStressFromCurve(u);
 								 }
-								 while ((k==0.0||i<=2) && (i<=2)) 
-                                 {
-                                         if (u>= s4Strain(i)) {
+  while ((k==0.0||i<=2) && (i<=2)) 
+    {
+      if (u>= s4Strain(i)) {
                                                  k = (s4Stress(i+1)-s4Stress(i))/(s4Strain(i+1)-s4Strain(i));
                                                  f = s4Stress(i)+(u-s4Strain(i))*k;
                                          }
@@ -1495,7 +1481,7 @@ double CFSSSWP::posEnvlpStress(double u)
                  double tes = 0.0;
 				 double umaxAbs = (TmaxStrainDmnd>-TminStrainDmnd) ? TmaxStrainDmnd:-TminStrainDmnd;
                  double uultAbs = (envlpPosStrain(1)>-envlpNegStrain(1)) ? envlpPosStrain(1):-envlpNegStrain(1);
-				 TnCycle = CnCycle + 0.0000000000000000000000000000001*fabs(dstrain)/(4*umaxAbs);
+				 TnCycle = CnCycle;
                  if ((strain<uultAbs && strain>-uultAbs) && Tenergy < elasticStrainEnergy)
                  {
                       

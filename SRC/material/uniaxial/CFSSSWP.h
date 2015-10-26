@@ -18,34 +18,31 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.0 $
-// $Date: 25-03-2015 $
+// $Revision: 2.0 $
+// $Date: 12-10-2015 $
 
-// Written by Smail KECHIDI (skechidi@yahoo.com)
-// Created: 2014-01-13 10:24:20 $
+// Written by Smail KECHIDI, Ph.D student at University of Blida 1 (s_kechidi@univ-blida.dz), PhD mobility Student at University of Porto FEUP (smail.kechidi@fe.up.pt)
+// Created: 12-10-2015 10:24:20 $
 //
 // Description: This file contains the class implementation for CFSSSWP
 // CFSSSWP is based on Pinching4 uniaxialMaterial
  
 #ifndef CFSSSWP_h
- #define CFSSSWP_h
+#define CFSSSWP_h
  
  #include <UniaxialMaterial.h>
- //#include <FileStream.h>
  #include <OPS_Stream.h>
  #include <Vector.h>
  #include"CubicSpline.h"
- //#include "CFSSSWP\CFSSSWP\MonoCubicSpline.h"
  
  class CFSSSWP : public UniaxialMaterial
  {
  public :
 
    CFSSSWP(int tag,
-	   double hight, double width, double fuf, double fyf,
+	   double hight, int width, double fuf, double fyf,
 	   double tf, double Af, double fus, double fys, double ts,
 	   double np, double ds, double Vs, double screw_Spacing, double A, double L);
-   
    
    CFSSSWP();
    ~CFSSSWP();
@@ -61,7 +58,6 @@
    double getStress(void);
    double getTangent(void);
    double getInitialTangent(void);
-   
    int commitState(void);
    int revertToLastCommit(void);
    int revertToStart(void);
@@ -71,10 +67,8 @@
    int sendSelf(int commitTag, Channel &theChannel);
    int recvSelf(int commitTag, Channel &theChannel,
 		FEM_ObjectBroker &theBroker);
-   
    void Print(OPS_Stream &s, int flag = 0);
    
- 
  protected:
    
  private:
@@ -83,10 +77,7 @@
    void SetSpline(void);
    
    double* BSplineXs,*BSplineYs,*BSplinePosDamgdYs, *BSplineNegDamgdYs; int BSplineXLength,BSplineYLength;
-   //double* BSpline3Xs,*BSpline3Ys,*BSplinePosDamgd3Ys, *BSplineNegDamgd3Ys; int BSplineX3Length,BSplineY3Length;
-   //double* BSpline4Xs,*BSpline4Ys,*BSplinePosDamgd4Ys, *BSplineNegDamgd4Ys; int BSplineX4Length,BSplineY4Length;
    CubicSpline Spline3,Spline4;
-   //MonoCubicSpline MonoSpline3,MonoSpline4;
    
    //  Physical and mechanical characteristics of the panel:
    
@@ -179,7 +170,7 @@
    double kElasticNeg;
    double uMaxDamgd;
    double uMinDamgd;
-   
+ 
    
    // energy parameters
    double energyCapacity;
@@ -199,6 +190,5 @@
    double Envlp4Tangent(Vector , Vector , double);
    double Envlp4Stress(Vector , Vector , double);
    void updateDmg(double, double);
-   
  };
-#endif
+ #endif

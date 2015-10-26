@@ -19,17 +19,16 @@
 ** ****************************************************************** */
 
 // $Revision: 1.0 $
-// $Date: 25-03-2015 $
+// $Date: 11-10-2015 $
 
-// Written by Smail KECHIDI (skechidi@yahoo.com)
-// Created: 2014-01-13 10:24:20 $
+// Written by Smail KECHIDI, Ph.D Student at University of Blida 1 (s_kechidi@univ-blida.dz), PhD mobility Student at University of Porto FEUP (smail.kechidi@fe.up.pt)
+// Created: 11-10-2015 10:24:20 $
 //
 // Description: This file contains the class implementation for CFSWSWP
 // CFSWSWP is based on Pinching4 uniaxialMaterial
 
  #ifndef CFSWSWP_h
  #define CFSWSWP_h
- 
  #include <UniaxialMaterial.h>
  #include <OPS_Stream.h>
  #include <Vector.h>
@@ -38,7 +37,7 @@
  class CFSWSWP : public UniaxialMaterial
  {
  public :
-
+   
    CFSWSWP(int tag,
 	   double hight, int width, double fuf,
 	   double tf, double Ife,
@@ -61,7 +60,6 @@
    double getStress(void);
    double getTangent(void);
    double getInitialTangent(void);
-   
    int commitState(void);
    int revertToLastCommit(void);
    int revertToStart(void);
@@ -71,22 +69,18 @@
    int sendSelf(int commitTag, Channel &theChannel);
    int recvSelf(int commitTag, Channel &theChannel,
 		FEM_ObjectBroker &theBroker);
-   
    void Print(OPS_Stream &s, int flag = 0);
    
-   
- protected:
  
+ protected:
+   
  private:
-         
-		     //  BSpline Adds
+   
+   //  BSpline Adds
    void SetSpline(void);
    
    double* BSplineXs,*BSplineYs,*BSplinePosDamgdYs, *BSplineNegDamgdYs; int BSplineXLength,BSplineYLength;
-   //double* BSpline3Xs,*BSpline3Ys,*BSplinePosDamgd3Ys, *BSplineNegDamgd3Ys; int BSplineX3Length,BSplineY3Length;
-   //double* BSpline4Xs,*BSpline4Ys,*BSplinePosDamgd4Ys, *BSplineNegDamgd4Ys; int BSplineX4Length,BSplineY4Length;
    CubicSpline Spline3,Spline4;
-   //MonoCubicSpline MonoSpline3,MonoSpline4;
    
    //  Physical and mechanical characteristics of the panel:
    
@@ -130,7 +124,7 @@
    // unloading-reloading parameters
    double rDispP; double rForceP; double uForceP;
    double rDispN; double rForceN; double uForceN;
-   
+	 
    Vector state3Stress; Vector state3Strain; Vector state4Stress; Vector state4Strain;
    
    Vector envlpPosDamgdStress; Vector envlpNegDamgdStress;
@@ -201,4 +195,4 @@
    void updateDmg(double, double);
    
  };
- #endif
+#endif
