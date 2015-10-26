@@ -42,8 +42,8 @@
 
 static int numCFSSSWP = 0;
 
-extern "C" void *
-OPS_CFSSSWP()
+void *
+OPS_CFSSSWP(void)
 {
   // print out some KUDO's
   if (numCFSSSWP == 0) {
@@ -305,7 +305,8 @@ int CFSSSWP::setTrialStrain(double strain, double CstrainRate)
 		 return 0;
  }
 
-int getIndex(Vector v,double value)
+static int 
+getIndex(Vector v,double value)
 {
 	for(int i = 0; i < v.Size(); i++)
 	{
@@ -313,7 +314,8 @@ int getIndex(Vector v,double value)
 	}
 	return -1;
 }
-int getIndexNeg(Vector v,double value)
+static int 
+getIndexNeg(Vector v,double value)
 {
 	for(int i = 0; i < v.Size(); i++)
 	{
