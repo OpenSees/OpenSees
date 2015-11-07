@@ -1187,6 +1187,7 @@ DispBeamColumnNL2d::Print(OPS_Stream &s, int flag)
   s << "\tConnected external nodes:  " << connectedExternalNodes;
   s << "\tCoordTransf: " << crdTransf->getTag() << endln;
   s << "\tmass density:  " << rho << endln;
+  s << "\tNum sections:  " << numSections << endln;
   
   double L = crdTransf->getInitialLength();
   double P  = q(0);
@@ -1367,7 +1368,14 @@ DispBeamColumnNL2d::setResponse(const char **argv, int argc,
 	beamInt->getSectionLocations(numSections, L, xi);
 	output.attr("eta",xi[sectionNum-1]*L);
 
-	theResponse = theSections[sectionNum-1]->setResponse(&argv[2], argc-2, output);
+	if (strcmp(argv[2],"dsdh") != 0) {
+	  theResponse = theSections[sectionNum-1]->setResponse(&argv[2], argc-2, output);
+	} else {
+	  int order = theSections[sectionNum-1]->getOrder();
+	  theResponse = new ElementResponse(this, 76, Vector(order));
+	  Information &info = theResponse->getInformation();
+	  info.theInt = sectionNum;
+	}
 	
 	output.endTag();
       
@@ -1538,9 +1546,81 @@ DispBeamColumnNL2d::getResponse(int responseID, Information &eleInfo)
   }
 
   else
-    return -1;
+    return Element::getResponse(responseID, eleInfo);
 }
 
+int 
+DispBeamColumnNL2d::getResponseSensitivity(int responseID, int gradNumber,
+					   Information &eleInfo)
+{
+  // Basic deformation sensitivity
+  if (responseID == 3) {  
+    const Vector &dvdh = crdTransf->getBasicDisplSensitivity(gradNumber);
+    return eleInfo.setVector(dvdh);
+  }
+
+  // Basic force sensitivity
+  else if (responseID == 9) {
+    static Vector dqdh(3);
+
+    dqdh.Zero();
+
+    return eleInfo.setVector(dqdh);
+  }
+
+  // dsdh
+  else if (responseID == 76) {
+
+    int sectionNum = eleInfo.theInt;
+    int order = theSections[sectionNum-1]->getOrder();
+    const ID &code = theSections[sectionNum-1]->getType();
+
+    Vector dsdh(order);
+    dsdh = theSections[sectionNum-1]->getStressResultantSensitivity(gradNumber, true);
+
+    const Vector &v = crdTransf->getBasicTrialDisp();
+    const Vector &dvdh = crdTransf->getBasicDisplSensitivity(gradNumber);
+
+    double L = crdTransf->getInitialLength();
+    double oneOverL = 1.0/L;
+
+    const Matrix &ks = theSections[sectionNum-1]->getSectionTangent();
+
+    Vector dedh(order);
+
+    //const Matrix &pts = quadRule.getIntegrPointCoords(numSections);
+    double xi[maxNumSections];
+    beamInt->getSectionLocations(numSections, L, xi);
+
+    double x = xi[sectionNum-1];
+
+    //double xi6 = 6.0*pts(i,0);
+    double xi6 = 6.0*x;
+    double zeta = x;
+
+    double theta = (3*zeta*zeta-4*zeta+1)*v(1) + (3*zeta*zeta-2*zeta)*v(2);
+    double dthetadh = (3*zeta*zeta-4*zeta+1)*dvdh(1) + (3*zeta*zeta-2*zeta)*dvdh(2);
+
+    int j;
+    for (j = 0; j < order; j++) {
+      switch(code(j)) {
+      case SECTION_RESPONSE_P:
+	dedh(j) = oneOverL*dvdh(0) + theta*dthetadh; break;
+      case SECTION_RESPONSE_MZ:
+	dedh(j) = oneOverL*((xi6-4.0)*dvdh(1) + (xi6-2.0)*dvdh(2)); break;
+      default:
+	dedh(j) = 0.0; break;
+      }
+    }
+
+    dsdh.addMatrixVector(1.0, ks, dedh, 1.0);
+
+    return eleInfo.setVector(dsdh);
+  }
+
+  else
+    return -1;
+}
 
 // AddingSensitivity:BEGIN ///////////////////////////////////
 int
@@ -1609,6 +1689,7 @@ DispBeamColumnNL2d::setParameter(const char **argv, int argc, Parameter &param)
   ok = beamInt->setParameter(argv, argc, param);
   if (ok != -1)
     result = ok;
+
   return result;
 }
 
