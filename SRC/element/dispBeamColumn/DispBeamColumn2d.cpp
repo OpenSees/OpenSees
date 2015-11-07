@@ -315,20 +315,15 @@ DispBeamColumn2d::update(void)
   return 0;
 }
 
-const Matrix&
-DispBeamColumn2d::getTangentStiff()
+void
+DispBeamColumn2d::getBasicStiff(Matrix &kb, int initial)
 {
-  static Matrix kb(3,3);
-
   // Zero for integral
   kb.Zero();
-  q.Zero();
   
   double L = crdTransf->getInitialLength();
   double oneOverL = 1.0/L;
   
-  //const Matrix &pts = quadRule.getIntegrPointCoords(numSections);
-  //const Vector &wts = quadRule.getIntegrPointWeights(numSections);
   double xi[maxNumSections];
   beamInt->getSectionLocations(numSections, L, xi);
   double wt[maxNumSections];
@@ -343,12 +338,10 @@ DispBeamColumn2d::getTangentStiff()
     Matrix ka(workArea, order, 3);
     ka.Zero();
 
-    //double xi6 = 6.0*pts(i,0);
     double xi6 = 6.0*xi[i];
 
     // Get the section tangent stiffness and stress resultant
     const Matrix &ks = theSections[i]->getSectionTangent();
-    const Vector &s = theSections[i]->getStressResultant();
         
     // Perform numerical integration
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
@@ -390,10 +383,45 @@ DispBeamColumn2d::getTangentStiff()
 	break;
       }
     }
+  }
+}
+
+const Matrix&
+DispBeamColumn2d::getTangentStiff()
+{
+  static Matrix kb(3,3);
+
+  this->getBasicStiff(kb);
+
+  // Zero for integral
+  q.Zero();
+  
+  double L = crdTransf->getInitialLength();
+  double oneOverL = 1.0/L;
+  
+  //const Matrix &pts = quadRule.getIntegrPointCoords(numSections);
+  //const Vector &wts = quadRule.getIntegrPointWeights(numSections);
+  double xi[maxNumSections];
+  beamInt->getSectionLocations(numSections, L, xi);
+  double wt[maxNumSections];
+  beamInt->getSectionWeights(numSections, L, wt);
+
+  // Loop over the integration points
+  for (int i = 0; i < numSections; i++) {
     
+    int order = theSections[i]->getOrder();
+    const ID &code = theSections[i]->getType();
+
+    //double xi6 = 6.0*pts(i,0);
+    double xi6 = 6.0*xi[i];
+
+    // Get the section tangent stiffness and stress resultant
+    const Vector &s = theSections[i]->getStressResultant();
+        
+    // Perform numerical integration
     //q.addMatrixTransposeVector(1.0, *B, s, wts(i));
     double si;
-    for (j = 0; j < order; j++) {
+    for (int j = 0; j < order; j++) {
       //si = s(j)*wts(i);
       si = s(j)*wt[i];
       switch(code(j)) {
@@ -1144,6 +1172,15 @@ DispBeamColumn2d::setResponse(const char **argv, int argc,
 
     theResponse =  new ElementResponse(this, 9, Vector(3));
 
+  // basic stiffness -
+  } else if (strcmp(argv[0],"basicStiffness") == 0) {
+
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","M1");
+    output.tag("ResponseType","M2");
+
+    theResponse =  new ElementResponse(this, 19, Matrix(3,3));
+
   // chord rotation -
   } else if (strcmp(argv[0],"chordRotation") == 0 || strcmp(argv[0],"chordDeformation") == 0 
 	     || strcmp(argv[0],"basicDeformation") == 0) {
@@ -1212,8 +1249,15 @@ DispBeamColumn2d::setResponse(const char **argv, int argc,
 	beamInt->getSectionLocations(numSections, L, xi);
 	output.attr("eta",xi[sectionNum-1]*L);
 
-	theResponse = theSections[sectionNum-1]->setResponse(&argv[2], argc-2, output);
-	
+	if (strcmp(argv[2],"dsdh") != 0) {
+	  theResponse = theSections[sectionNum-1]->setResponse(&argv[2], argc-2, output);
+	} else {
+	  int order = theSections[sectionNum-1]->getOrder();
+	  theResponse = new ElementResponse(this, 76, Vector(order));
+	  Information &info = theResponse->getInformation();
+	  info.theInt = sectionNum;
+	}
+		
 	output.endTag();
       
       } else if (sectionNum == 0) { // argv[1] was not an int, we want all sections, 
@@ -1262,7 +1306,11 @@ DispBeamColumn2d::setResponse(const char **argv, int argc,
     return new ElementResponse(this, 8, Vector(numSections));
   
   output.endTag();
-  return theResponse;
+
+  if (theResponse == 0)
+    return Element::setResponse(argv, argc, output);
+  else
+    return theResponse;
 }
 
 int 
@@ -1294,9 +1342,16 @@ DispBeamColumn2d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(q);
   }
 
+  else if (responseID == 19) {
+    static Matrix kb(3,3);
+    this->getBasicStiff(kb);
+    return eleInfo.setMatrix(kb);
+  }
+
   // Chord rotation
-  else if (responseID == 3)
+  else if (responseID == 3) {
     return eleInfo.setVector(crdTransf->getBasicTrialDisp());
+  }
 
   // Plastic rotation
   else if (responseID == 4) {
@@ -1379,9 +1434,77 @@ DispBeamColumn2d::getResponse(int responseID, Information &eleInfo)
   }
 
   else
-    return -1;
+    return Element::getResponse(responseID, eleInfo);
 }
 
+int 
+DispBeamColumn2d::getResponseSensitivity(int responseID, int gradNumber,
+					 Information &eleInfo)
+{
+  // Basic deformation sensitivity
+  if (responseID == 3) {  
+    const Vector &dvdh = crdTransf->getBasicDisplSensitivity(gradNumber);
+    return eleInfo.setVector(dvdh);
+  }
+
+  // Basic force sensitivity
+  else if (responseID == 9) {
+    static Vector dqdh(3);
+
+    dqdh.Zero();
+
+    return eleInfo.setVector(dqdh);
+  }
+
+  // dsdh
+  else if (responseID == 76) {
+
+    int sectionNum = eleInfo.theInt;
+    int order = theSections[sectionNum-1]->getOrder();
+    const ID &code = theSections[sectionNum-1]->getType();
+
+    Vector dsdh(order);
+    dsdh = theSections[sectionNum-1]->getStressResultantSensitivity(gradNumber, true);
+
+    const Vector &v = crdTransf->getBasicTrialDisp();
+    const Vector &dvdh = crdTransf->getBasicDisplSensitivity(gradNumber);
+
+    double L = crdTransf->getInitialLength();
+    double oneOverL = 1.0/L;
+
+    const Matrix &ks = theSections[sectionNum-1]->getSectionTangent();
+
+    Vector dedh(order);
+
+    //const Matrix &pts = quadRule.getIntegrPointCoords(numSections);
+    double xi[maxNumSections];
+    beamInt->getSectionLocations(numSections, L, xi);
+
+    double x = xi[sectionNum-1];
+
+    //double xi6 = 6.0*pts(i,0);
+    double xi6 = 6.0*x;
+
+    int j;
+    for (j = 0; j < order; j++) {
+      switch(code(j)) {
+      case SECTION_RESPONSE_P:
+	dedh(j) = oneOverL*dvdh(0); break;
+      case SECTION_RESPONSE_MZ:
+	dedh(j) = oneOverL*((xi6-4.0)*dvdh(1) + (xi6-2.0)*dvdh(2)); break;
+      default:
+	dedh(j) = 0.0; break;
+      }
+    }
+
+    dsdh.addMatrixVector(1.0, ks, dedh, 1.0);
+
+    return eleInfo.setVector(dsdh);
+  }
+
+  else
+    return -1;
+}
 
 // AddingSensitivity:BEGIN ///////////////////////////////////
 int
@@ -1506,6 +1629,15 @@ DispBeamColumn2d::getResistingForceSensitivity(int gradNumber)
   double wt[maxNumSections];
   beamInt->getSectionWeights(numSections, L, wt);
 
+  double dLdh = crdTransf->getdLdh();
+  double d1oLdh = crdTransf->getd1overLdh();
+
+  double dptsdh[maxNumSections];
+  beamInt->getLocationsDeriv(numSections, L, dLdh, dptsdh);
+
+  double dwtsdh[maxNumSections];
+  beamInt->getWeightsDeriv(numSections, L, dLdh, dwtsdh);
+
   // Zero for integration
   static Vector dqdh(3);
   dqdh.Zero();
@@ -1520,10 +1652,10 @@ DispBeamColumn2d::getResistingForceSensitivity(int gradNumber)
     double xi6 = 6.0*xi[i];
     //double wti = wts(i);
     double wti = wt[i];
-    
+
     // Get section stress resultant gradient
     const Vector &dsdh = theSections[i]->getStressResultantSensitivity(gradNumber,true);
-    
+
     // Perform numerical integration on internal force gradient
     double sensi;
     for (int j = 0; j < order; j++) {
@@ -1534,12 +1666,37 @@ DispBeamColumn2d::getResistingForceSensitivity(int gradNumber)
 	break;
       case SECTION_RESPONSE_MZ:
 	dqdh(1) += (xi6-4.0)*sensi; 
-	dqdh(2) += (xi6-2.0)*sensi; 
+	dqdh(2) += (xi6-2.0)*sensi;
 	break;
       default:
 	break;
       }
     }
+
+    const Vector &s = theSections[i]->getStressResultant();
+
+    double dxi6dh = 6.0*dptsdh[i];
+    double dwtLdh = wt[i]*dLdh + dwtsdh[i]*L;
+    //dwtLdh = dwtsdh[i];
+
+    // Perform numerical integration on internal force gradient
+    for (int j = 0; j < order; j++) {
+      switch(code(j)) {
+      case SECTION_RESPONSE_P:
+	//dqdh(0) += d1oLdh*s(j)*wti*L;
+	break;
+      case SECTION_RESPONSE_MZ:
+	//dqdh(1) += (dxi6dh*oneOverL + d1oLdh*(xi6-4.0))*s(j)*wti*L;
+	//dqdh(2) += (dxi6dh*oneOverL + d1oLdh*(xi6-2.0))*s(j)*wti*L;
+
+	//dqdh(1) += oneOverL*(xi6-4.0)*s(j)*dwtLdh;
+	//dqdh(2) += oneOverL*(xi6-2.0)*s(j)*dwtLdh;
+	break;
+      default:
+	break;
+      }
+    }
+
   }
   
   // Transform forces
