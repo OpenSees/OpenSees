@@ -500,22 +500,29 @@ SSPbrick::zeroLoad(void)
 int
 SSPbrick::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
-	// body forces can be applied in a load pattern
-	int type;
-	const Vector &data = theLoad->getData(type, loadFactor);
+  // body forces can be applied in a load pattern
+  int type;
+  const Vector &data = theLoad->getData(type, loadFactor);
+  
+  if (type == LOAD_TAG_SelfWeight) {
+    
+    if (data.Size() != 3) {
+      opserr << "SSPbrick::addLoad - too few SelfWeight data points, need 3 for ele " << this->getTag() << endln;
+      return -1;
+    }
+    
+    applyLoad = 1;
+    appliedB[0] += loadFactor*data(0)*b[0];
+    appliedB[1] += loadFactor*data(1)*b[1];
+    appliedB[2] += loadFactor*data(2)*b[2];
+    return 0;
 
-	if (type == LOAD_TAG_SelfWeight) {
-		applyLoad = 1;
-		appliedB[0] += loadFactor*data(0)*b[0];
-		appliedB[1] += loadFactor*data(1)*b[1];
-		appliedB[2] += loadFactor*data(2)*b[2];
-		return 0;
-	} else {
-		opserr << "SSPbrick::addLoad - load type unknown for ele with tag: " << this->getTag() << endln;
-		return -1;
-	} 
-
-	return -1;
+  } else {
+    opserr << "SSPbrick::addLoad - load type unknown for ele with tag: " << this->getTag() << endln;
+    return -1;
+  } 
+  
+  return -1;
 }
 
 int
