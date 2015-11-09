@@ -1058,8 +1058,18 @@ ElasticBeam3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.tag("ResponseType","T");
     
     theResponse = new ElementResponse(this, 4, Vector(6));
-  }  
 
+  }  else if (strcmp(argv[0],"deformatons") == 0 || 
+	      strcmp(argv[0],"basicDeformations") == 0) {
+    
+    output.tag("ResponseType","eps");
+    output.tag("ResponseType","thete11");
+    output.tag("ResponseType","thete12");
+    output.tag("ResponseType","theta21");
+    output.tag("ResponseType","theta22");
+    output.tag("ResponseType","phi");
+    theResponse = new ElementResponse(this, 5, Vector(6));
+  }  
   output.endTag(); // ElementOutput
 
   return theResponse;
@@ -1115,6 +1125,9 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
   case 4: // basic forces
 
     return eleInfo.setVector(q);
+
+  case 5:
+    return eleInfo.setVector(theCoordTransf->getBasicTrialDisp());
 
   default:
     return -1;

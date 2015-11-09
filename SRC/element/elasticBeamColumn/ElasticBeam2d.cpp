@@ -299,6 +299,12 @@ ElasticBeam2d::getTangentStiff(void)
   kb(0,0) = EAoverL;
   kb(1,1) = kb(2,2) = EIoverL4;
   kb(2,1) = kb(1,2) = EIoverL2;
+
+  if (this->getTag() == 1) {
+    static Matrix res(6,6);
+    res = theCoordTransf->getGlobalStiffMatrix(kb, q);
+    opserr << res;
+  }
   
   return theCoordTransf->getGlobalStiffMatrix(kb, q);
 }
@@ -562,6 +568,9 @@ ElasticBeam2d::getResistingForce()
   q(0) = EAoverL*v(0);
   q(1) = EIoverL4*v(1) + EIoverL2*v(2);
   q(2) = EIoverL2*v(1) + EIoverL4*v(2);
+
+  if (this->getTag() == 1)
+    opserr << "q: " << q;
   
   q(0) += q0[0];
   q(1) += q0[1];
@@ -571,6 +580,9 @@ ElasticBeam2d::getResistingForce()
   Vector p0Vec(p0, 3);
   
   P = theCoordTransf->getGlobalResistingForce(q, p0Vec);
+
+  if (this->getTag() == 1) 
+    opserr << "ResistingForce: " << P << endln;
   
   return P;
 }
@@ -868,10 +880,19 @@ ElasticBeam2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.tag("ResponseType","M_2");
     
     theResponse = new ElementResponse(this, 4, Vector(3));
+
+    // deformations
+  }  else if (strcmp(argv[0],"deformatons") == 0 || 
+	      strcmp(argv[0],"basicDeformations") == 0) {
+    
+    output.tag("ResponseType","eps");
+    output.tag("ResponseType","thete1");
+    output.tag("ResponseType","theta2");
+    theResponse = new ElementResponse(this, 5, Vector(3));
   }  
-
+  
   output.endTag(); // ElementOutput
-
+  
   return theResponse;
 }
 
@@ -907,6 +928,9 @@ ElasticBeam2d::getResponse (int responseID, Information &eleInfo)
     
   case 4: // basic forces
     return eleInfo.setVector(q);
+
+  case 5:
+    return eleInfo.setVector(theCoordTransf->getBasicTrialDisp());
 
   default:
     return -1;
