@@ -343,7 +343,6 @@ TclCommand_UpdateMaterialStage(ClientData clientData,
 			       Tcl_Interp *interp,  
 			       int argc,
 			       TCL_Char **argv);
-
 int
 TclCommand_UpdateMaterials(ClientData clientData, 
 			   Tcl_Interp *interp,  
@@ -1947,10 +1946,13 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 	  opserr << "WARNING eleLoad - invalid yFactor " << argv[count+1] << " for -selfWeight\n";
 	  return TCL_ERROR;
 	}
-    if (Tcl_GetDouble(interp, argv[count+2], &zf) != TCL_OK) {
-	  opserr << "WARNING eleLoad - invalid zFactor " << argv[count+2] << " for -selfWeight\n";
-	  return TCL_ERROR;
-	}
+    if (count+2 < argc) { // adding to stop seg faults
+      if (Tcl_GetDouble(interp, argv[count+2], &zf) != TCL_OK) {
+	opserr << "WARNING eleLoad - invalid zFactor " << argv[count+2] << " for -selfWeight\n";
+	return TCL_ERROR;
+      }
+      else zf = 0.0;
+    }
 
     for (int i=0; i<theEleTags.Size(); i++) {
       theLoad = new SelfWeight(eleLoadTag, xf, yf, zf, theEleTags(i));
