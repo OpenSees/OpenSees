@@ -93,6 +93,8 @@ class DispBeamColumn2d : public Element
 
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
     int getResponse(int responseID, Information &eleInfo);
+    int getResponseSensitivity(int responseID, int gradNumber,
+			       Information &eleInformation);
 
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     int setParameter(const char **argv, int argc, Parameter &param);
@@ -108,6 +110,7 @@ class DispBeamColumn2d : public Element
     
   private:
     const Matrix &getInitialBasicStiff(void);
+    void getBasicStiff(Matrix &kb, int initial = 0);
 
     int numSections;
     SectionForceDeformation **theSections; // pointer to the ND material objects
