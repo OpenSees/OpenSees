@@ -97,6 +97,7 @@ ModifiedNewton::solveCurrentStep(void)
 	return -2;
     }	
 
+    SOLUTION_ALGORITHM_tangentFlag = tangent;
     if (theIncIntegratorr->formTangent(tangent) < 0){
 	opserr << "WARNING ModifiedNewton::solveCurrentStep() -";
 	opserr << "the Integrator failed in formTangent()\n";

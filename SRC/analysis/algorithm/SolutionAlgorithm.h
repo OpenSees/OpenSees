@@ -44,6 +44,8 @@ class Channel;
 class FEM_ObjectBroker;
 class Recorder;
 
+extern int SOLUTION_ALGORITHM_tangentFlag;
+
 class SolutionAlgorithm: public MovableObject
 {
   public:

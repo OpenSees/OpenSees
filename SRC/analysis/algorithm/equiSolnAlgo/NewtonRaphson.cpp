@@ -50,6 +50,7 @@
 #include <elementAPI.h>
 #include <string>
 
+
 void* OPS_NewtonRaphsonAlgorithm()
 {
     int formTangent = CURRENT_TANGENT;
@@ -130,12 +131,14 @@ NewtonRaphson::solveCurrentStep(void)
     do {
       if (tangent == INITIAL_THEN_CURRENT_TANGENT) {
 	if (numIterations == 0) {
+	  SOLUTION_ALGORITHM_tangentFlag = INITIAL_TANGENT;
 	  if (theIntegrator->formTangent(INITIAL_TANGENT) < 0){
 	    opserr << "WARNING NewtonRaphson::solveCurrentStep() -";
 	    opserr << "the Integrator failed in formTangent()\n";
 	    return -1;
 	  } 
 	} else {
+	  SOLUTION_ALGORITHM_tangentFlag = CURRENT_TANGENT;
 	  if (theIntegrator->formTangent(CURRENT_TANGENT) < 0){
 	    opserr << "WARNING NewtonRaphson::solveCurrentStep() -";
 	    opserr << "the Integrator failed in formTangent()\n";
@@ -143,6 +146,7 @@ NewtonRaphson::solveCurrentStep(void)
 	  } 
 	}	  
       } else {
+	  SOLUTION_ALGORITHM_tangentFlag = tangent;
 	if (theIntegrator->formTangent(tangent) < 0){
 	    opserr << "WARNING NewtonRaphson::solveCurrentStep() -";
 	    opserr << "the Integrator failed in formTangent()\n";
