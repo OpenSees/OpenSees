@@ -43,6 +43,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/XMUelements; $(MAKE);
 	@$(CD) $(FE)/element/mvlem; $(MAKE);
 	@$(CD) $(FE)/element/PFEMElement; $(MAKE);
+	@$(CD) $(FE)/element/componentElement; $(MAKE);
 
 # Miscellaneous
 tidy:	
@@ -84,6 +85,7 @@ spotless: clean
 	@$(CD) $(FE)/element/XMUelements; $(MAKE) wipe;
 	@$(CD) $(FE)/element/mvlem; $(MAKE) wipe;
 	@$(CD) $(FE)/element/PFEMElement; $(MAKE) wipe;
+	@$(CD) $(FE)/element/componentElement; $(MAKE) wipe;
 
 wipe: spotless
 
