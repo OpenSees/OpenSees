@@ -126,7 +126,7 @@ Renderer::saveImage(const char *rendererTitle, const char *fileName)
 }
 
 int
-Renderer::drawVector(const Vector &position, const Vector &value, double factor)
+Renderer::drawVector(const Vector &position, const Vector &value, double factor, int tag)
 {
     return 0;
 }
