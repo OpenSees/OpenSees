@@ -85,9 +85,6 @@ OPS_ComponentElement2d(void)
   UniaxialMaterial *end1 = OPS_getUniaxialMaterial(iData[4]);
   UniaxialMaterial *end2 = OPS_getUniaxialMaterial(iData[5]);
 
-  end1->Print(opserr);
-  end2->Print(opserr);
-
   // Parsing was successful, allocate the material
   theElement = new ComponentElement2d(iData[0], dData[0], dData[1], dData[2], 
 				      iData[1], iData[2], 
@@ -104,7 +101,7 @@ OPS_ComponentElement2d(void)
 
 ComponentElement2d::ComponentElement2d()
   :Element(0,ELE_TAG_ComponentElement2d), 
-  A(0.0), E(0.0), I(0.0), alpha(0.0), d(0.0), rho(0.0), cMass(0),
+  A(0.0), E(0.0), I(0.0), rho(0.0), 
   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0)
 {
   // does nothing
@@ -124,9 +121,9 @@ ComponentElement2d::ComponentElement2d()
 ComponentElement2d::ComponentElement2d(int tag, double a, double e, double i, 
 				       int Nd1, int Nd2, CrdTransf &coordTransf,
 				       UniaxialMaterial *end1, UniaxialMaterial *end2,
-				       double Alpha, double depth, double r, int cm)
+				       double r)
   :Element(tag,ELE_TAG_ComponentElement2d), 
-  A(a), E(e), I(i), alpha(Alpha), d(depth), rho(r), cMass(cm),
+  A(a), E(e), I(i), rho(r), 
    Q(6), q(3), kb(3,3),
    connectedExternalNodes(2), theCoordTransf(0), end1Hinge(0), end2Hinge(0),
    kTrial(2,2), R(4), uTrial(4), uCommit(4), init(false)
@@ -333,16 +330,16 @@ ComponentElement2d::update(void)
   }
 
   // calculate forces for our superelement structure
-  double P1 = -F1;
-  double P2 =  F1 + EIoverL2*(2*u2 + u3) + q0[1];
-  double P3 = -F2 + EIoverL2*(u2 + 2*u3) + q0[2];
-  double P4 =  F2;
+  double R1 = -F1;
+  double R2 =  F1 + EIoverL2*(2*u2 + u3) + q0[1];
+  double R3 = -F2 + EIoverL2*(u2 + 2*u3) + q0[2];
+  double R4 =  F2;
 
   // determine change in internal dof, using last K
   // dUi = inv(Kii)*(Pi-Kie*dUe)
   double delta = 1.0/((k1+EIoverL4)*(k2+EIoverL4)-EIoverL2*EIoverL2);
-  double du2 = delta*((k2+EIoverL4)*(k1*du1+P2) - EIoverL2*(k2*du4+P3));
-  double du3 = delta*(-EIoverL2*(k1*du1+P2) + (k1+EIoverL4)*(k2*du4+P3));
+  double du2 = delta*((k2+EIoverL4)*(k1*du1-R2) - EIoverL2*(k2*du4-R3));
+  double du3 = delta*(-EIoverL2*(k1*du1-R2) + (k1+EIoverL4)*(k2*du4-R3));
 
   // update displacements at nodes
   u1 += du1;
@@ -378,24 +375,24 @@ ComponentElement2d::update(void)
     }
     
     // determine nodal forces
-    P1 = -F1;
-    P2 =  F1 + EIoverL2 * (2*u2 + u3) + q0[1];
-    P3 = -F2 + EIoverL2 * (u2 + 2*u3) + q0[2];
-    P4 =  F2;
+    R1 = -F1;
+    R2 =  F1 + EIoverL2 * (2*u2 + u3) + q0[1];
+    R3 = -F2 + EIoverL2 * (u2 + 2*u3) + q0[2];
+    R4 =  F2;
 
     // check if converged:
     //    norm resisting forces at internal dof or change in displacement
     //    at these internal dof is less than some tolerance
 
-    if ((sqrt(P2*P2 + P3*P3) > tol) && 
+    if ((sqrt(R2*R2 + R3*R3) > tol) && 
 	(sqrt(du2*du2+du3*du3) > tol) &&
 	count < maxCount) {
 
       // if not converged we determine new internal dof displacements
       // note we have not changed du1 or du4 from previous step
       delta = 1.0/((k1+EIoverL4)*(k2+EIoverL4)-EIoverL2*EIoverL2);
-      du2 = delta*((k2+EIoverL4)*P2 - EIoverL2*P3);
-      du3 = delta*((k1+EIoverL4)*P3 - EIoverL2*P2);
+      du2 = delta*((k2+EIoverL4)*R2 - EIoverL2*R3);
+      du3 = delta*((k1+EIoverL4)*R3 - EIoverL2*R2);
 
       // unbalance was negative of P so subtract instead of add
       u2 -= du2;
@@ -417,8 +414,8 @@ ComponentElement2d::update(void)
 
   // compute basic forces, leaving off q0's .. added in getResistingForce
   q(0) = EAoverL*v(0);
-  q(1) = P1 + delta*k1*((k2+EIoverL4)*P2 - EIoverL2*P3);
-  q(2) = P4 + delta*k2*((k1+EIoverL4)*P3 - EIoverL2*P2);
+  q(1) = R1 + delta*k1*((k2+EIoverL4)*R2 - EIoverL2*R3);
+  q(2) = R4 + delta*k2*((k1+EIoverL4)*R3 - EIoverL2*R2);
 
   // store new displacements
   uTrial(0) = u1;
@@ -458,17 +455,17 @@ ComponentElement2d::getResistingForce()
   double u3 = uTrial(2);
 
   // compute internal forces in our superelement structure
-  double P1 = -F1;
-  double P2 =  F1 + EIoverL2*(2*u2 + u3) + q0[1];
-  double P3 = -F2 + EIoverL2*(u2 + 2*u3) + q0[2];
-  double P4 =  F2;
+  double R1 = -F1;
+  double R2 =  F1 + EIoverL2*(2*u2 + u3) + q0[1];
+  double R3 = -F2 + EIoverL2*(u2 + 2*u3) + q0[2];
+  double R4 =  F2;
 
   // condense out internal forces
   double delta = 1.0/((k1+EIoverL4)*(k2+EIoverL4)-EIoverL2*EIoverL2);
 
   q(0) += q0[0];
-  q(1) = P1 + delta*k1*((k2+EIoverL4)*P2 - EIoverL2*P3);
-  q(2) = P4 + delta*k2*((k1+EIoverL4)*P3 - EIoverL2*P2);
+  q(1) = R1 + delta*k1*((k2+EIoverL4)*R2 - EIoverL2*R3);
+  q(2) = R4 + delta*k2*((k1+EIoverL4)*R3 - EIoverL2*R2);
 
   // Vector for reactions in basic system
   Vector p0Vec(p0, 3);
@@ -509,15 +506,7 @@ ComponentElement2d::getInitialStiff(void)
     k1 = end1Hinge->getInitialTangent();
   double k2 = 0.;
   if (end2Hinge != 0) 
-    k2 = end1Hinge->getInitialTangent();
-
-  k1 = 0.;
-  if (end1Hinge != 0) 
-    k1 = end1Hinge->getTangent();
-
-  k2 = 0.;
-  if (end2Hinge != 0) 
-    k2 = end2Hinge->getTangent();
+    k2 = end2Hinge->getInitialTangent();
 
   double delta = 1.0/((k1+EIoverL4)*(k2+EIoverL4)-EIoverL2*EIoverL2);
   
@@ -535,18 +524,18 @@ ComponentElement2d::getInitialStiff(void)
 const Matrix &
 ComponentElement2d::getMass(void)
 { 
-    K.Zero();
+  K.Zero();
+  
+  if (rho > 0.0)  {
+    // get initial element length
+    double L = theCoordTransf->getInitialLength();
     
-    if (rho > 0.0)  {
-        // get initial element length
-        double L = theCoordTransf->getInitialLength();
-
-	// lumped mass matrix
-	double m = 0.5*rho*L;
-	K(0,0) = K(1,1) = K(3,3) = K(4,4) = m;
-    }
-    
-    return K;
+    // lumped mass matrix
+    double m = 0.5*rho*L;
+    K(0,0) = K(1,1) = K(3,3) = K(4,4) = m;
+  }
+  
+  return K;
 }
 
 void 
@@ -621,33 +610,6 @@ ComponentElement2d::addLoad(ElementalLoad *theLoad, double loadFactor)
     q0[2] += M2;
   }
   
-  else if (type == LOAD_TAG_Beam2dTempLoad) {
-    double Ttop1 = data(0)* loadFactor;
-    double Tbot1 = data(1)* loadFactor;
-    double Ttop2 = data(2)* loadFactor;
-    double Tbot2 = data(3)* loadFactor;
-        
-    // fixed end forces due to a linear thermal load
-    double dT1 = Ttop1-Tbot1;
-    double dT = (Ttop2-Tbot2)-(Ttop1-Tbot1);
-    double a = alpha/d;  // constant based on temp difference at top and bottom, 
-    // coefficient of thermal expansion and beam depth
-    double M1 = a*E*I*(-dT1+(4.0/3.0)*dT); //Fixed End Moment end 1
-    double M2 = a*E*I*(dT1+(5.0/3.0)*dT); //Fixed End Moment end 2
-    double F = alpha*(((Ttop2+Ttop1)/2+(Tbot2+Tbot1)/2)/2)*E*A; // Fixed End Axial Force
-    double M1M2divL =(M1+M2)/L; // Fixed End Shear
-    
-    // Reactions in basic system
-    p0[0] += 0;
-    p0[1] += M1M2divL;
-    p0[2] -= M1M2divL;
-
-    // Fixed end forces in basic system
-    q0[0] -= F;
-    q0[1] += M1;
-    q0[2] += M2;
-  }
-
   else {
     opserr << "ComponentElement2d::addLoad()  -- load type unknown for element with tag: " << this->getTag() << endln;
     return -1;
@@ -672,25 +634,15 @@ ComponentElement2d::addInertiaLoadToUnbalance(const Vector &accel)
   }
     
   // want to add ( - fact * M R * accel ) to unbalance
-  if (cMass == 0)  {
-    // take advantage of lumped mass matrix
-    double L = theCoordTransf->getInitialLength();
-    double m = 0.5*rho*L;
-
-    Q(0) -= m * Raccel1(0);
-    Q(1) -= m * Raccel1(1);
-
-    Q(3) -= m * Raccel2(0);
-    Q(4) -= m * Raccel2(1);
-  } else  {
-    // use matrix vector multip. for consistent mass matrix
-    static Vector Raccel(6);
-    for (int i=0; i<3; i++)  {
-      Raccel(i)   = Raccel1(i);
-      Raccel(i+3) = Raccel2(i);
-    }
-    Q.addMatrixVector(1.0, this->getMass(), Raccel, -1.0);
-  }
+  // take advantage of lumped mass matrix
+  double L = theCoordTransf->getInitialLength();
+  double m = 0.5*rho*L;
+  
+  Q(0) -= m * Raccel1(0);
+  Q(1) -= m * Raccel1(1);
+  
+  Q(3) -= m * Raccel2(0);
+  Q(4) -= m * Raccel2(1);
   
   return 0;
 }
@@ -714,25 +666,15 @@ ComponentElement2d::getResistingForceIncInertia()
   const Vector &accel1 = theNodes[0]->getTrialAccel();
   const Vector &accel2 = theNodes[1]->getTrialAccel();    
   
-  if (cMass == 0)  {
-    // take advantage of lumped mass matrix
-    double L = theCoordTransf->getInitialLength();
-    double m = 0.5*rho*L;
-
-    P(0) += m * accel1(0);
-    P(1) += m * accel1(1);
-
-    P(3) += m * accel2(0);
-    P(4) += m * accel2(1);
-  } else  {
-    // use matrix vector multip. for consistent mass matrix
-    static Vector accel(6);
-    for (int i=0; i<3; i++)  {
-      accel(i)   = accel1(i);
-      accel(i+3) = accel2(i);
-    }
-    P.addMatrixVector(1.0, this->getMass(), accel, 1.0);
-  }
+  // take advantage of lumped mass matrix
+  double L = theCoordTransf->getInitialLength();
+  double m = 0.5*rho*L;
+  
+  P(0) += m * accel1(0);
+  P(1) += m * accel1(1);
+  
+  P(3) += m * accel2(0);
+  P(4) += m * accel2(1);
   
   return P;
 }
@@ -744,50 +686,51 @@ ComponentElement2d::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
 
-    static Vector data(16);
-    
-    data(0) = A;
-    data(1) = E; 
-    data(2) = I; 
-    data(3) = rho;
-    data(4) = cMass;
-    data(5) = this->getTag();
-    data(6) = connectedExternalNodes(0);
-    data(7) = connectedExternalNodes(1);
-    data(8) = theCoordTransf->getClassTag();
-    	
-    int dbTag = theCoordTransf->getDbTag();
-    
-    if (dbTag == 0) {
-      dbTag = theChannel.getDbTag();
-      if (dbTag != 0)
-	theCoordTransf->setDbTag(dbTag);
-    }
+  static Vector data(16);
+  
+  data(0) = A;
+  data(1) = E; 
+  data(2) = I; 
+  data(3) = rho;
+  //  data(4) = cMass;
+  data(5) = this->getTag();
+  data(6) = connectedExternalNodes(0);
+  data(7) = connectedExternalNodes(1);
+  data(8) = theCoordTransf->getClassTag();
+  
+  int dbTag = theCoordTransf->getDbTag();
+  
+  if (dbTag == 0) {
+    dbTag = theChannel.getDbTag();
+    if (dbTag != 0)
+      theCoordTransf->setDbTag(dbTag);
+  }
+  
+  data(9) = dbTag;
 
-    data(9) = dbTag;
-    data(10) = alpha;
-    data(11) = d;
-
-    data(12) = alphaM;
-    data(13) = betaK;
-    data(14) = betaK0;
-    data(15) = betaKc;
-
-    // Send the data vector
-    res += theChannel.sendVector(this->getDbTag(), cTag, data);
-    if (res < 0) {
+  // data(10) = alpha;
+  //  data(11) = d;
+  
+  data(12) = alphaM;
+  data(13) = betaK;
+  data(14) = betaK0;
+  data(15) = betaKc;
+  
+  // Send the data vector
+  res += theChannel.sendVector(this->getDbTag(), cTag, data);
+  if (res < 0) {
       opserr << "ComponentElement2d::sendSelf -- could not send data Vector\n";
       return res;
-    }
-
-    // Ask the CoordTransf to send itself
-    res += theCoordTransf->sendSelf(cTag, theChannel);
-    if (res < 0) {
-      opserr << "ComponentElement2d::sendSelf -- could not send CoordTransf\n";
-      return res;
-    }
-    
+  }
+  
+  // Ask the CoordTransf to send itself
+  res += theCoordTransf->sendSelf(cTag, theChannel);
+  if (res < 0) {
+    opserr << "ComponentElement2d::sendSelf -- could not send CoordTransf\n";
     return res;
+  }
+  
+  return res;
 }
 
 int
@@ -806,8 +749,9 @@ ComponentElement2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
     A = data(0);
     E = data(1); 
     I = data(2); 
-    alpha = data(10);
-    d = data(11);
+
+    //    alpha = data(10);
+    //    d = data(11);
 
     alphaM = data(12);
     betaK  = data(13);
@@ -815,7 +759,7 @@ ComponentElement2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
     betaKc = data(15);
 
     rho = data(3);
-    cMass = (int)data(4);
+    //    cMass = (int)data(4);
     this->setTag((int)data(5));
     connectedExternalNodes(0) = (int)data(6);
     connectedExternalNodes(1) = (int)data(7);
@@ -868,7 +812,7 @@ ComponentElement2d::Print(OPS_Stream &s, int flag)
     s << "\nComponentElement2d: " << this->getTag() << endln;
     s << "\tConnected Nodes: " << connectedExternalNodes ;
     s << "\tCoordTransf: " << theCoordTransf->getTag() << endln;
-    s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
+    s << "\tmass density:  " << rho << endln;
     double P  = q(0);
     double M1 = q(1);
     double M2 = q(2);

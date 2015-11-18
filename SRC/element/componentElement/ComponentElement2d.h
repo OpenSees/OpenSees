@@ -47,8 +47,7 @@ class ComponentElement2d : public Element
     ComponentElement2d(int tag, double A, double E, double I, 
 		       int Nd1, int Nd2, CrdTransf &theTransf, 
 		       UniaxialMaterial *end1, UniaxialMaterial *end2,
-		       double alpha = 0.0, double d = 0.0,
-		       double rho = 0.0, int cMass = 0);
+		       double rho = 0.0);
     ~ComponentElement2d();
 
     const char *getClassType(void) const {return "ComponentElement2d";};
@@ -90,9 +89,7 @@ class ComponentElement2d : public Element
 
   private:
     double A,E,I;     // area, elastic modulus, moment of inertia
-    double alpha, d;  // coeff. of thermal expansion, depth
     double rho;       // mass per unit length
-    int cMass;        // consistent mass flag
 
     Vector Q;
     
