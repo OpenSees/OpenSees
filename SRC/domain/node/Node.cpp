@@ -1027,10 +1027,10 @@ Node::addInertiaLoadSensitivityToUnbalance(const Vector &accelG, double fact, bo
 	Matrix MR(mass->noRows(), R->noCols());
 
 	if (somethingRandomInMotions) {
-		MR.addMatrixProduct(0.0, *mass, *R, 1.0);
+	  MR.addMatrixProduct(0.0, *mass, *R, 1.0);
 	}
 	else {
-		MR.addMatrixProduct(0.0, massSens, *R, 1.0);
+	  MR.addMatrixProduct(0.0, massSens, *R, 1.0);
 	}
 	unbalLoad->addMatrixVector(1.0, MR, accelG, -fact);
 
@@ -1722,6 +1722,7 @@ Node::Print(OPS_Stream &s, int flag)
     if (mass != 0) {
 	s << "\tMass : " << *mass;
 	s << "\t Rayleigh Factor: alphaM: " << alphaM << endln;
+	s << "\t Rayleigh Forces: " << *this->getResponse(RayleighForces);
     }
     if (theEigenvectors != 0)
 	s << "\t Eigenvectors: " << *theEigenvectors;
@@ -2162,7 +2163,18 @@ Node::getResponse(NodeResponseType responseType)
     return &(this->getReaction());
   else if (responseType == Unbalance) 
     return &(this->getUnbalancedLoad());
-  else
+  else if (responseType == RayleighForces) {
+    if (unbalLoadWithInertia == 0) {
+      unbalLoadWithInertia = new Vector(this->getUnbalancedLoad());
+    }
+    if (alphaM != 0.0 && mass != 0) {
+      const Vector &theVel = this->getTrialVel(); // in case vel not created
+      unbalLoadWithInertia->addMatrixVector(0.0, *mass, theVel, -alphaM);
+    } else
+      unbalLoadWithInertia->Zero();
+
+    return unbalLoadWithInertia;
+  } else
     return NULL;
 
   return result;
