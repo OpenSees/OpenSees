@@ -384,8 +384,8 @@ MultiLinear::Print(OPS_Stream &s, int flag)
 {
     s << "MultiLinear tag: " << this->getTag() << endln;
     s << "  stress: " << tStress << " tangent: " << tTangent << endln;
-  opserr << "tSlope: " << tSlope << "numSlope: " << numSlope << endln;
-  opserr << data;
+    s << "tSlope: " << tSlope << "numSlope: " << numSlope << endln;
+    s << data;
 }
 
 
