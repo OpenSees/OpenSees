@@ -146,6 +146,9 @@ NodeRecorder::NodeRecorder(const ID &dofs,
 	     || ((strcmp(dataToStore, "rayleighDampingForces") == 0))) {
     dataFlag = 9;
 
+  } else if (((strcmp(dataToStore, "nodalRayleighForces") == 0))) {
+    dataFlag = 10001;
+
   } else if ((strcmp(dataToStore, "dispNorm") == 0)) {
     dataFlag = 10000;
 
@@ -419,7 +422,17 @@ NodeRecorder::record(int commitTag, double timeStamp)
 	    
 	    cnt++;
 	  }
-	  
+
+	} else if (dataFlag == 10001) {
+	  const Vector *theResponse = theNode->getResponse(RayleighForces);
+	  for (int j=0; j<numDOF; j++) {
+	    int dof = (*theDofs)(j);
+	    if (theResponse->Size() > dof) {
+	      response(cnt) = (*theResponse)(dof);
+	    } else 
+	      response(cnt) = 0.0;
+	    cnt++;
+	  }
 	  
 	} else if (dataFlag == 7 || dataFlag == 8 || dataFlag == 9) {
 	  const Vector &theResponse = theNode->getReaction();

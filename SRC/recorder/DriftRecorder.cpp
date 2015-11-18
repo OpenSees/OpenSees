@@ -126,7 +126,7 @@ DriftRecorder::record(int commitTag, double timeStamp)
     return -1;
   }
 
-  if (initializationDone != true) 
+  if (initializationDone == false) 
     if (this->initialize() != 0) {
       opserr << "DriftRecorder::record() - failed in initialize()\n";
       return -1;
