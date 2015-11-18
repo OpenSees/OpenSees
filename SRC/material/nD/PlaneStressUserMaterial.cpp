@@ -131,19 +131,13 @@ void PlaneStressUserMaterial::setInitials()
   PSUMAT(&nstatevs, &nprops, props,
          stressdata, strain0data, straindata, dstraindata,
          statevdata, tangentdata);
-
+  
   for (i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++) {
       eTangent(i,j) = tangentdata[j + 3 * i];
-      opserr << " " << tangentdata[j + 3*i];
     }
   
   tangent = eTangent;
-
-  opserr << "PlaneStressUSer::setInitials: nprops: " << nprops << "  vprops\n";
-  opserr << *vprops;
-  opserr << "PlaneStressUSer::setInitials: eTangent\n";
-  opserr << eTangent;
 }
 
 //make a clone of this material
@@ -271,7 +265,6 @@ PlaneStressUserMaterial::getStress( )
 const Matrix&  
 PlaneStressUserMaterial::getTangent( )
 {
-  opserr << "PlaneStressUSerMaterial::getTangent : " << tangent;
   return tangent ;
 }
 
