@@ -79,6 +79,7 @@ extern void printCommand(int argc, TCL_Char **argv);
 // THE PROTOTYPES OF THE FUNCTIONS INVOKED BY THE INTERPRETER
 //
 
+extern  void *OPS_ComponentElement2d(void);
 extern  void *OPS_TrussElement(void);
 extern  void *OPS_NewTrussSectionElement(void);
 extern  void *OPS_NewCorotTrussElement(void);
@@ -438,6 +439,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     Element *theEle = OPS_NewZeroLengthInterface2D();
     if (theEle != 0) 
       theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+
+
+  } else if (strcmp(argv[1],"componentElement2d") == 0) {
+    void *theEle = OPS_ComponentElement2d();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
     else {
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
