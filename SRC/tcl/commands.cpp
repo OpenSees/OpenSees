@@ -7982,6 +7982,7 @@ rayleighDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **
   }        
   
   theDomain.setRayleighDampingFactors(alphaM, betaK, betaK0, betaKc);
+
   return TCL_OK;
 }
 
@@ -8102,11 +8103,18 @@ logFile(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     return TCL_ERROR;
   }
   openMode mode = OVERWRITE;
-  if (argc >= 3) 
-    if (strcmp(argv[2],"-append") == 0) 
-      mode = APPEND;
+  bool echo = true;
 
-  if (opserr.setFile(argv[1], mode) < 0) 
+  int cArg = 2;
+  while (cArg < argc) {
+    if (strcmp(argv[cArg],"-append") == 0) 
+      mode = APPEND;
+    if (strcmp(argv[cArg],"-noEcho") == 0) 
+      echo = false;
+    cArg++;
+  }
+
+  if (opserr.setFile(argv[1], mode, echo) < 0) 
     opserr << "WARNING logFile " << argv[1] << " failed to set the file\n";
 
   const char *pwd = getInterpPWD(interp);  
