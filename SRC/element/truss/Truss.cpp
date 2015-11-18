@@ -1001,7 +1001,6 @@ int
 Truss::displaySelf(Renderer &theViewer, int displayMode, float fact, 
 		   const char **displayModes, int numModes)
 {
-  opserr << "Truss::displaySelf() " << this->getTag();
   int res = 0;
   if (L == 0.0)
     return res;
