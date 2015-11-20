@@ -52,6 +52,9 @@
  #include <EnvelopeElementRecorder.h>
  #include <NormElementRecorder.h>
  #include <NormEnvelopeElementRecorder.h>
+ #include <PVDRecorder.h>
+
+extern void* OPS_PVDRecorder();
 
  #include <NodeIter.h>
  #include <ElementIter.h>
@@ -1791,7 +1794,11 @@
 								    displayRecord, fileName);
 	 (*theRecorder) = thePlotter;
  #endif
+     } else if (strcmp(argv[1],"pvd") == 0 || strcmp(argv[1],"PVD") == 0) {
+	 OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+	 (*theRecorder) = (Recorder*) OPS_PVDRecorder();
      }
+     
 
      /* *****************************************
      else if (strcmp(argv[1],"GSA") == 0) {

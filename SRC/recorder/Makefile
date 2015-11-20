@@ -19,7 +19,8 @@ OBJS       = Recorder.o \
 	EnvelopeDriftRecorder.o \
 	PatternRecorder.o \
 	RemoveRecorder.o \
-	DamageRecorder.o $(GRAPHIC_OBJECTS)
+	DamageRecorder.o $(GRAPHIC_OBJECTS) \
+	PVDRecorder.o
 
 
 

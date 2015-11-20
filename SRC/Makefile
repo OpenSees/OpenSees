@@ -413,7 +413,8 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/response/MaterialResponse.o \
 	$(FE)/recorder/response/FiberResponse.o \
 	$(FE)/recorder/DamageRecorder.o \
-	$(FE)/recorder/RemoveRecorder.o 
+	$(FE)/recorder/RemoveRecorder.o \
+	$(FE)/recorder/PVDRecorder.o 
 
 
 DATABASE_LIBS = $(FE)/database/FileDatastore.o \
