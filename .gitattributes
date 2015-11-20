@@ -3659,6 +3659,8 @@ SRC/recorder/NormElementRecorder.cpp -text
 SRC/recorder/NormElementRecorder.h -text
 SRC/recorder/NormEnvelopeElementRecorder.cpp -text
 SRC/recorder/NormEnvelopeElementRecorder.h -text
+SRC/recorder/PVDRecorder.cpp -text
+SRC/recorder/PVDRecorder.h -text
 SRC/recorder/PatternRecorder.cpp -text
 SRC/recorder/PatternRecorder.h -text
 SRC/recorder/Recorder.cpp -text

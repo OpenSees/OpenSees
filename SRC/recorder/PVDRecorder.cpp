@@ -1,0 +1,1426 @@
+/* ****************************************************************** **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** Developed by:                                                      **
+**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**                                                                    **
+** ****************************************************************** */
+                                                                        
+// $Revision: 1.0 $
+// $Date: 2015-11-12 $
+// Save all data into paraview format
+
+#include "PVDRecorder.h"
+#include <sstream>
+#include <elementAPI.h>
+#include <OPS_Globals.h>
+#include <Domain.h>
+#include <Element.h>
+#include <ElementIter.h>
+#include <Node.h>
+#include <Pressure_Constraint.h>
+#include <Pressure_ConstraintIter.h>
+#include <Matrix.h>
+#include <classTags.h>
+
+std::map<int,PVDRecorder::VtkType> PVDRecorder::vtktypes;
+
+void* OPS_PVDRecorder()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if(numdata < 1) {
+	opserr<<"WARNING: insufficient number of arguments\n";
+	return 0;
+    }
+
+    PVDRecorder::setVTKType();
+
+    // filename
+    const char* name = OPS_GetString();
+
+    // plotting options
+    numdata = OPS_GetNumRemainingInputArgs();
+    int indent=2;
+    int precision = 10;
+    PVDRecorder::NodeData nodedata;
+    std::vector<PVDRecorder::EleData> eledata;
+    while(numdata > 0) {
+	std::string type = OPS_GetString();
+	if(type == "disp") {
+	    nodedata.disp = true;
+	} else if(type=="vel") {
+	    nodedata.vel = true;
+	} else if(type=="accel") {
+	    nodedata.accel = true;
+	} else if(type=="incrDisp") {
+	    nodedata.incrdisp = true;
+	} else if(type=="reaction") {
+	    nodedata.reaction = true;
+	} else if(type=="pressure") {
+	    nodedata.pressure = true;
+	} else if(type=="unbalancedLoad") {
+	    nodedata.unbalanced = true;
+	} else if(type=="mass") {
+	    nodedata.mass = true;
+	} else if(type=="eigen") {
+	    numdata = OPS_GetNumRemainingInputArgs();
+	    if(numdata < 1) {
+		opserr<<"WARNING: eigen needs 'numEigenvector'\n";
+		return 0;
+	    }
+	    numdata = 1;
+	    if(OPS_GetIntInput(&numdata,&nodedata.numeigen) < 0) return 0;
+	} else if(type=="-precision") {
+	    numdata = OPS_GetNumRemainingInputArgs();
+	    if(numdata < 1) {
+		opserr<<"WARNING: needs precision \n";
+		return 0;
+	    }
+	    numdata = 1;
+	    if(OPS_GetIntInput(&numdata,&precision) < 0) return 0;
+	} else if(type=="eleResponse") {
+	    numdata = OPS_GetNumRemainingInputArgs();
+	    if(numdata < 1) {
+		opserr<<"WANRING: elementResponse needs 'argc','argv'\n";
+		return 0;
+	    }
+	    PVDRecorder::EleData edata;
+	    numdata = OPS_GetNumRemainingInputArgs();
+	    edata.resize(numdata);
+	    for(int i=0; i<numdata; i++) {
+		edata[i] = OPS_GetString();
+	    }
+	    eledata.push_back(edata);
+	}
+	numdata = OPS_GetNumRemainingInputArgs();
+    }
+
+    // create recorder
+    return new PVDRecorder(name,nodedata,eledata,indent,precision);
+}
+
+PVDRecorder::PVDRecorder(const char *name, const NodeData& ndata,
+			 const std::vector<EleData>& edata, int ind, int pre)
+    :Recorder(RECORDER_TAGS_PVDRecorder), indentsize(ind), precision(pre),
+     indentlevel(0), filename(name),
+     timestep(), timeparts(), theFile(), quota('\"'), parts(),
+     nodedata(ndata), eledata(edata), theDomain(0), partnum()
+{
+}
+
+PVDRecorder::~PVDRecorder()
+{
+}
+
+int
+PVDRecorder::record(int ctag, double timestamp)
+{
+    // get current time
+    timestep.push_back(timestamp);
+
+    // save vtu file
+    if(vtu() < 0) return -1;
+
+    // save pvd file
+    if(pvd() < 0) return -1;
+
+    return 0;
+}
+
+int
+PVDRecorder::restart()
+{
+    timestep.clear();
+    timeparts.clear();
+    return 0;
+}
+
+int
+PVDRecorder::domainChanged()
+{
+    return 0;
+}
+
+int
+PVDRecorder::setDomain(Domain& domain)
+{
+    theDomain = &domain;
+    return 0;
+}
+
+int
+PVDRecorder::pvd()
+{
+    // open pvd file
+    theFile.close();
+    std::string pvdname = filename+".pvd";
+    theFile.open(pvdname.c_str(), std::ios::trunc|std::ios::out);
+    if(theFile.fail()) {
+	opserr<<"WARNING: Failed to open file "<<pvdname.c_str()<<"\n";
+	return -1;
+    }
+    theFile.precision(precision);
+
+    // header
+    theFile<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
+    theFile<<"<VTKFile type="<<quota<<"Collection"<<quota;
+    theFile<<" compressor="<<quota<<"vtkZLibDataCompressor"<<quota;
+    theFile<<">\n";
+
+    // collection
+    this->incrLevel();
+    this->indent();
+    theFile<<"<Collection>\n";
+
+    // all data files
+    this->incrLevel();
+    for(int i=0; i<(int)timestep.size(); i++) {
+	double t = timestep[i];
+	const ID& partno = timeparts[i];
+	for(int j=0; j<partno.Size(); j++) {
+	    this->indent();
+	    theFile<<"<DataSet timestep="<<quota<<t<<quota;
+	    theFile<<" group="<<quota<<quota;
+	    theFile<<" part="<<quota<<partno(j)<<quota;
+	    theFile<<" file="<<quota<<filename<<'/'<<filename<<"_T"<<t<<"_P";
+	    theFile<<partno(j)<<".vtu"<<quota;
+	    theFile<<"/>\n";
+	}
+    }
+
+    // end colloection
+    this->decrLevel();
+    this->indent();
+    theFile<<"</Collection>\n";
+
+    // end VTKFile
+    this->decrLevel();
+    this->indent();
+    theFile<<"</VTKFile>\n";
+
+    theFile.close();
+
+    return 0;
+}
+
+int
+PVDRecorder::vtu()
+{
+    // get parts
+    this->getParts();
+    
+    // save parts
+    ID partno(0,parts.size());
+    for(std::map<int,ID>::iterator it=parts.begin(); it!=parts.end(); it++) {
+	int& no = partnum[it->first];
+	if (no == 0) {
+	    no = partnum.size();
+	}
+	partno[partno.Size()] = no;
+	if (it->first == ICTAG) {
+	    if(this->saveIsoPart(no) < 0) return -1;
+	} else {
+	    if(this->savePart(no,it->first) < 0) return -1;
+	}
+    }
+    
+    timeparts.push_back(partno);
+    
+    // clear parts
+    parts.clear();
+    
+    return 0;
+}
+
+void
+PVDRecorder::getParts()
+{
+    if (theDomain == 0) {
+	opserr<<"WARNING: setDomain has not been called -- PVDRecorder\n";
+	return;
+    }
+    
+    ElementIter* eiter = &(theDomain->getElements());
+    Element* theEle = 0;
+    while((theEle = (*eiter)()) != 0) {
+	int ctag = theEle->getClassTag();
+	int etag = theEle->getTag();
+	parts[ctag].insert(etag);
+    }
+    Pressure_ConstraintIter& thePCs = theDomain->getPCs();
+    Pressure_Constraint* thePC = 0;
+    parts[ICTAG] = ID();
+    while ((thePC = thePCs()) != 0) {
+	if (thePC->isIsolated() == true) {
+	    parts[ICTAG].insert(thePC->getTag());
+	}
+    }
+}
+
+int
+PVDRecorder::savePart(int partno, int ctag)
+{
+    if (theDomain == 0) {
+	opserr<<"WARNING: setDomain has not been called -- PVDRecorder\n";
+	return -1;
+    }
+    
+    // get time and part
+    std::stringstream ss;
+    ss << partno << ' ' << timestep.back();
+    std::string stime, spart;
+    ss >> spart >> stime;
+    
+    // open file
+    theFile.close();
+    std::string vtuname = filename+'/'+filename+"_T"+stime+"_P"+spart+".vtu";
+    theFile.open(vtuname.c_str(), std::ios::trunc|std::ios::out);
+    if(theFile.fail()) {
+	opserr<<"WARNING: Failed to open file "<<vtuname.c_str()<<"\n";
+	return -1;
+    }
+    theFile.precision(precision);
+
+    // header
+    theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
+    theFile<<" version="<<quota<<"1.0"<<quota;
+    theFile<<" byte_order="<<quota<<"LittleEndian"<<quota;
+    theFile<<" compressor="<<quota<<"vtkZLibDataCompressor"<<quota;
+    theFile<<">\n";
+    this->incrLevel();
+    this->indent();
+    theFile<<"<UnstructuredGrid>\n";
+
+    // get nodes
+    const ID& eletags = parts[ctag];
+    ID ndtags(0,eletags.Size()*3);
+    std::vector<Element*> eles(eletags.Size());
+    int numelenodes = 0;
+    for(int i=0; i<eletags.Size(); i++) {
+	eles[i] = theDomain->getElement(eletags(i));
+	if (eles[i] == 0) {
+	    opserr<<"WARNING: element "<<eletags(i)<<" is not defined--pvdRecorder\n";
+	    return -1;
+	}
+	const ID& elenodes = eles[i]->getExternalNodes();
+	if(numelenodes == 0) {
+	    numelenodes = elenodes.Size();
+	    if(ctag==ELE_TAG_PFEMElement2D||ctag==ELE_TAG_PFEMElement2DCompressible||
+	       ctag==ELE_TAG_PFEMElement2DBubble||ctag==ELE_TAG_PFEMElement2Dmini) {
+		numelenodes /= 2;
+	    }
+	}
+	for(int j=0; j<elenodes.Size(); j+=elenodes.Size()/numelenodes) {
+	    ndtags.insert(elenodes(j));
+	}
+    }
+
+    // Piece
+    this->incrLevel();
+    this->indent();
+    theFile<<"<Piece NumberOfPoints="<<quota<<ndtags.Size()<<quota;
+    theFile<<" NumberOfCells="<<quota<<eletags.Size()<<quota<<">\n";
+        
+    // points
+    this->incrLevel();
+    this->indent();
+    theFile<<"<Points>\n";
+
+    // points header
+    this->incrLevel();
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+    theFile<<" Name="<<quota<<"Points"<<quota;
+    theFile<<" NumberOfComponents="<<quota<<3<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+
+    // points coordinates
+    this->incrLevel();
+    std::vector<Node*> nodes(ndtags.Size());
+    int nodendf = 0;
+    for(int i=0; i<ndtags.Size(); i++) {
+	nodes[i] = theDomain->getNode(ndtags(i));
+	if(nodes[i] == 0) {
+	    opserr<<"WARNIG: Node "<<ndtags(i)<<" is not defined\n";
+	    return -1;
+	}
+	const Vector& crds = nodes[i]->getCrds();
+	if(nodendf < nodes[i]->getNumberDOF()) nodendf = nodes[i]->getNumberDOF();
+	this->indent();
+	for(int j=0; j<3; j++) {
+	    if(j < crds.Size()) {
+		theFile<<crds(j)<<' ';
+	    } else {
+		theFile<<0.0<<' ';
+	    }
+	}
+	theFile<<std::endl;
+    }
+    if(nodendf < 3) nodendf = 3;
+
+    // points footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+    this->decrLevel();
+    this->indent();
+    theFile<<"</Points>\n";
+
+    // cells
+    this->indent();
+    theFile<<"<Cells>\n";
+
+    // connectivity
+    this->incrLevel();
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"connectivity"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    for(int i=0; i<eletags.Size(); i++) {
+	const ID& elenodes = eles[i]->getExternalNodes();
+	this->indent();
+	for(int j=0; j<elenodes.Size(); j+=elenodes.Size()/numelenodes) {
+	    theFile<<ndtags.getLocationOrdered(elenodes(j))<<' ';
+	}
+	theFile<<std::endl;
+    }
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // offsets
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"offsets"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    int offset = numelenodes;
+    for(int i=0; i<eletags.Size(); i++) {
+	this->indent();
+	theFile<<offset<<std::endl;
+	offset += numelenodes;
+    }
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // types
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"types"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    int type = vtktypes[ctag];
+    if (type == 0) {
+	opserr<<"WARNING: the element type cannot be assigned a VTK type\n";
+	return -1;
+    }
+    for(int i=0; i<eletags.Size(); i++) {
+	this->indent();
+	theFile<<type<<std::endl;
+    }
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // cells footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</Cells>\n";
+
+    // point data
+    this->indent();
+    theFile<<"<PointData>\n";
+
+    // node tags
+    this->incrLevel();
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"NodeTag"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    for(int i=0; i<ndtags.Size(); i++) {
+	this->indent();
+	theFile<<ndtags(i)<<std::endl;
+    }
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // node velocity
+    if(nodedata.vel) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Velocity"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getTrialVel();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node displacement
+    if(nodedata.disp) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Displacement"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getTrialDisp();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node incr displacement
+    if(nodedata.incrdisp) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"IncrDisplacement"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getIncrDisp();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node acceleration
+    if(nodedata.accel) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Acceleration"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getTrialAccel();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node pressure
+    if(nodedata.pressure) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Pressure"<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    double pressure = 0.0;
+	    Pressure_Constraint* thePC = theDomain->getPressure_Constraint(ndtags(i));
+	    if(thePC != 0) {
+		pressure = thePC->getPressure();
+	    }
+	    this->indent();
+	    theFile<<pressure<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node reaction
+    if(nodedata.reaction) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Reaction"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getReaction();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+    
+    // node unbalanced load
+    if(nodedata.unbalanced) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"UnbalancedLoad"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getUnbalancedLoad();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node mass
+    if(nodedata.mass) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"NodeMass"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Matrix& mat = nodes[i]->getMass();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < mat.noRows()) {
+		    theFile<<mat(j,j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node eigen vector
+    for(int k=0; k<nodedata.numeigen; k++) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"EigenVector"<<k+1<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Matrix& eigens = nodes[i]->getEigenvectors();
+	    if(k >= eigens.noCols()) {
+		opserr<<"WARNING: eigenvector "<<k+1<<" is too large\n";
+		return -1;
+	    }
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < eigens.noRows()) {
+		    theFile<<eigens(j,k)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // point data footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</PointData>\n";
+
+    // cell data
+    this->indent();
+    theFile<<"<CellData>\n";
+
+    // element tags
+    this->incrLevel();
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"ElementTag"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    for(int i=0; i<eletags.Size(); i++) {
+	this->indent();
+	theFile<<eletags(i)<<std::endl;
+    }
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // element response
+    for(int i=0; i<(int)eledata.size(); i++) {
+
+	if(eletags.Size() == 0) break;
+
+	// check data
+	int argc = eledata[i].size();
+	if(argc == 0) continue;
+	std::vector<const char*> argv(argc);
+	for(int j=0; j<argc; j++) {
+	    argv[j] = eledata[i][j].c_str();
+	}
+	const Vector* data =theDomain->getElementResponse(eletags(0),&(argv[0]),argc);
+	if(data==0) continue;
+	int eressize = data->Size();
+	if(eressize == 0) continue;
+
+	// save data
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<eles[0]->getClassType();
+	for(int j=0; j<argc; j++) {
+	    theFile<<argv[j];
+	}
+	theFile<<quota;
+	theFile<<" NumberOfComponents="<<quota<<eressize<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int j=0; j<eletags.Size(); j++) {
+	    data=theDomain->getElementResponse(eletags(j),&(argv[0]),argc);
+	    if(data==0) {
+		opserr<<"WARNING: can't get response for element "<<eletags(j)<<"\n";
+		return -1;
+	    }
+	    this->indent();
+	    for(int k=0; k<eressize; k++) {
+		if (k>=data->Size()) {
+		    theFile<<0.0<<" ";
+		} else {
+		    theFile<<(*data)(k)<<" ";
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // cell data footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</CellData>\n";
+
+    // footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</Piece>\n";
+
+    this->decrLevel();
+    this->indent();
+    theFile<<"</UnstructuredGrid>\n";
+
+    this->decrLevel();
+    this->indent();
+    theFile<<"</VTKFile>\n";
+
+    theFile.close();
+
+    return 0;
+}
+
+int
+PVDRecorder::saveIsoPart(int partno)
+{
+    if (theDomain == 0) {
+	opserr<<"WARNING: setDomain has not been called -- PVDRecorder\n";
+	return -1;
+    }
+    
+    // get time and part
+    std::stringstream ss;
+    ss << partno << ' ' << timestep.back();
+    std::string stime, spart;
+    ss >> spart >> stime;
+    
+    // open file
+    theFile.close();
+    std::string vtuname = filename+'/'+filename+"_T"+stime+"_P"+spart+".vtu";
+    theFile.open(vtuname.c_str(), std::ios::trunc|std::ios::out);
+    if(theFile.fail()) {
+	opserr<<"WARNING: Failed to open file "<<vtuname.c_str()<<"\n";
+	return -1;
+    }
+    theFile.precision(precision);
+
+    // header
+    theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
+    theFile<<" version="<<quota<<"1.0"<<quota;
+    theFile<<" byte_order="<<quota<<"LittleEndian"<<quota;
+    theFile<<" compressor="<<quota<<"vtkZLibDataCompressor"<<quota;
+    theFile<<">\n";
+    this->incrLevel();
+    this->indent();
+    theFile<<"<UnstructuredGrid>\n";
+
+    // get nodes
+    const ID& pctags = parts[ICTAG];
+    ID ndtags(0,pctags.Size());
+    for(int i=0; i<pctags.Size(); i++) {
+	ndtags.insert(pctags(i));
+    }
+    std::vector<Pressure_Constraint*> pcs(pctags.Size());
+    for(int i=0; i<ndtags.Size(); i++) {
+	pcs[i] = theDomain->getPressure_Constraint(ndtags(i));
+	if (pcs[i] == 0) {
+	    opserr<<"WARNING: pressure_constraint "<<ndtags(i)<<" is not defined--pvdRecorder\n";
+	    return -1;
+	}
+    }
+
+    // Piece
+    this->incrLevel();
+    this->indent();
+    theFile<<"<Piece NumberOfPoints="<<quota<<ndtags.Size()<<quota;
+    theFile<<" NumberOfCells="<<quota<<ndtags.Size()<<quota<<">\n";
+        
+    // points
+    this->incrLevel();
+    this->indent();
+    theFile<<"<Points>\n";
+
+    // points header
+    this->incrLevel();
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+    theFile<<" Name="<<quota<<"Points"<<quota;
+    theFile<<" NumberOfComponents="<<quota<<3<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+
+    // points coordinates
+    this->incrLevel();
+    std::vector<Node*> nodes(ndtags.Size());
+    int nodendf = 0;
+    for(int i=0; i<ndtags.Size(); i++) {
+	nodes[i] = theDomain->getNode(ndtags(i));
+	if(nodes[i] == 0) {
+	    opserr<<"WARNIG: Node "<<ndtags(i)<<" is not defined\n";
+	    return -1;
+	}
+	const Vector& crds = nodes[i]->getCrds();
+	if(nodendf < nodes[i]->getNumberDOF()) nodendf = nodes[i]->getNumberDOF();
+	this->indent();
+	for(int j=0; j<3; j++) {
+	    if(j < crds.Size()) {
+		theFile<<crds(j)<<' ';
+	    } else {
+		theFile<<0.0<<' ';
+	    }
+	}
+	theFile<<std::endl;
+    }
+    if(nodendf < 3) nodendf = 3;
+
+    // points footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+    this->decrLevel();
+    this->indent();
+    theFile<<"</Points>\n";
+
+    // cells
+    this->indent();
+    theFile<<"<Cells>\n";
+
+    // connectivity
+    this->incrLevel();
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"connectivity"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    for(int i=0; i<ndtags.Size(); i++) {
+	this->indent();
+	theFile<<i<<' ';
+	theFile<<std::endl;
+    }
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // offsets
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"offsets"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    int offset = 1;
+    for(int i=0; i<ndtags.Size(); i++) {
+	this->indent();
+	theFile<<offset<<std::endl;
+	offset += 1;
+    }
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // types
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"types"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    int type = VTK_VERTEX;
+    for(int i=0; i<ndtags.Size(); i++) {
+	this->indent();
+	theFile<<type<<std::endl;
+    }
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // cells footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</Cells>\n";
+
+    // point data
+    this->indent();
+    theFile<<"<PointData>\n";
+
+    // node tags
+    this->incrLevel();
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"NodeTag"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    for(int i=0; i<ndtags.Size(); i++) {
+	this->indent();
+	theFile<<ndtags(i)<<std::endl;
+    }
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // node velocity
+    if(nodedata.vel) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Velocity"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getTrialVel();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node displacement
+    if(nodedata.disp) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Displacement"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getTrialDisp();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node incr displacement
+    if(nodedata.incrdisp) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"IncrDisplacement"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getIncrDisp();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node acceleration
+    if(nodedata.accel) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Acceleration"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getTrialAccel();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node pressure
+    if(nodedata.pressure) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Pressure"<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    double pressure = 0.0;
+	    Pressure_Constraint* thePC = theDomain->getPressure_Constraint(ndtags(i));
+	    if(thePC != 0) {
+		pressure = thePC->getPressure();
+	    }
+	    this->indent();
+	    theFile<<pressure<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node reaction
+    if(nodedata.reaction) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Reaction"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getReaction();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+    
+    // node unbalanced load
+    if(nodedata.unbalanced) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"UnbalancedLoad"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Vector& vel = nodes[i]->getUnbalancedLoad();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node mass
+    if(nodedata.mass) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"NodeMass"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Matrix& mat = nodes[i]->getMass();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < mat.noRows()) {
+		    theFile<<mat(j,j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node eigen vector
+    for(int k=0; k<nodedata.numeigen; k++) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"EigenVector"<<k+1<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<ndtags.Size(); i++) {
+	    const Matrix& eigens = nodes[i]->getEigenvectors();
+	    if(k >= eigens.noCols()) {
+		opserr<<"WARNING: eigenvector "<<k+1<<" is too large\n";
+		return -1;
+	    }
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < eigens.noRows()) {
+		    theFile<<eigens(j,k)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // point data footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</PointData>\n";
+
+    // cell data
+    this->indent();
+    theFile<<"<CellData>\n";
+
+    this->incrLevel();
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"ElementTag"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    for(int i=0; i<ndtags.Size(); i++) {
+	this->indent();
+	theFile<<ndtags(i)<<std::endl;
+    }
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // cell data footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</CellData>\n";
+
+    // footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</Piece>\n";
+
+    this->decrLevel();
+    this->indent();
+    theFile<<"</UnstructuredGrid>\n";
+
+    this->decrLevel();
+    this->indent();
+    theFile<<"</VTKFile>\n";
+
+    theFile.close();
+
+    return 0;
+}
+
+
+void
+PVDRecorder::indent() {
+    for(int i=0; i<indentlevel*indentsize; i++) {
+	theFile<<' ';
+    }
+}
+
+int
+PVDRecorder::sendSelf(int commitTag, Channel &theChannel)
+{
+    return 0;
+}
+
+int
+PVDRecorder::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+{
+    return 0;
+}
+
+void
+PVDRecorder::setVTKType()
+{
+    if (vtktypes.empty() == false) {
+	return;
+    }
+    vtktypes[ELE_TAG_Subdomain] = VTK_POLY_VERTEX;
+    vtktypes[ELEMENT_TAGS_WrapperElement] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ElasticBeam2d] = VTK_LINE;
+    vtktypes[ELE_TAG_ModElasticBeam2d] = VTK_LINE;
+    vtktypes[ELE_TAG_ElasticBeam3d] = VTK_LINE;
+    vtktypes[ELE_TAG_Beam2d] = VTK_LINE;
+    vtktypes[ELE_TAG_beam2d02] = VTK_LINE;
+    vtktypes[ELE_TAG_beam2d03] = VTK_LINE;
+    vtktypes[ELE_TAG_beam2d04] = VTK_LINE;
+    vtktypes[ELE_TAG_beam3d01] = VTK_LINE;
+    vtktypes[ELE_TAG_beam3d02] = VTK_LINE;
+    vtktypes[ELE_TAG_Truss] = VTK_LINE;
+    vtktypes[ELE_TAG_TrussSection] = VTK_LINE;
+    vtktypes[ELE_TAG_CorotTruss] = VTK_LINE;
+    vtktypes[ELE_TAG_CorotTrussSection] = VTK_LINE;
+    vtktypes[ELE_TAG_fElmt05] = VTK_LINE;
+    vtktypes[ELE_TAG_fElmt02] = VTK_LINE;
+    vtktypes[ELE_TAG_MyTruss] = VTK_LINE;
+    vtktypes[ELE_TAG_ZeroLength] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ZeroLengthSection] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ZeroLengthND] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ZeroLengthContact2D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ZeroLengthContact3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ZeroLengthContactNTS2D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ZeroLengthInterface2D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_CoupledZeroLength] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ZeroLengthRocking] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_NLBeamColumn2d] = VTK_LINE;
+    vtktypes[ELE_TAG_NLBeamColumn3d] = VTK_LINE;
+    vtktypes[ELE_TAG_LargeDispBeamColumn3d] = VTK_LINE;
+    vtktypes[ELE_TAG_FourNodeQuad] = VTK_QUAD;
+    vtktypes[ELE_TAG_FourNodeQuad3d] = VTK_QUAD;
+    vtktypes[ELE_TAG_Tri31] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_BeamWithHinges2d] = VTK_LINE;
+    vtktypes[ELE_TAG_BeamWithHinges3d] = VTK_LINE;
+    vtktypes[ELE_TAG_EightNodeBrick] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_TwentyNodeBrick] = VTK_QUADRATIC_HEXAHEDRON;
+    vtktypes[ELE_TAG_EightNodeBrick_u_p_U] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_TwentyNodeBrick_u_p_U] = VTK_QUADRATIC_HEXAHEDRON;
+    vtktypes[ELE_TAG_FourNodeQuadUP] = VTK_QUAD;
+    vtktypes[ELE_TAG_TotalLagrangianFD20NodeBrick] = VTK_QUADRATIC_HEXAHEDRON;
+    vtktypes[ELE_TAG_TotalLagrangianFD8NodeBrick] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_EightNode_LDBrick_u_p] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_EightNode_Brick_u_p] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_TwentySevenNodeBrick] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_BrickUP] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_Nine_Four_Node_QuadUP] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_Twenty_Eight_Node_BrickUP] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_Twenty_Node_Brick] = VTK_QUADRATIC_HEXAHEDRON;
+    vtktypes[ELE_TAG_BBarFourNodeQuadUP] = VTK_QUAD;
+    vtktypes[ELE_TAG_BBarBrickUP] = VTK_QUAD;
+    vtktypes[ELE_TAG_PlateMITC4] = VTK_QUAD;
+    vtktypes[ELE_TAG_ShellMITC4] = VTK_QUAD;
+    vtktypes[ELE_TAG_ShellNL] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_Plate1] = VTK_QUAD;
+    vtktypes[ELE_TAG_Brick] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_BbarBrick] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_FLBrick] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_EnhancedQuad] = VTK_QUAD;
+    vtktypes[ELE_TAG_ConstantPressureVolumeQuad] = VTK_QUAD;
+    vtktypes[ELE_TAG_NineNodeMixedQuad] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_DispBeamColumn2d] = VTK_LINE;
+    vtktypes[ELE_TAG_TimoshenkoBeamColumn2d] = VTK_LINE;
+    vtktypes[ELE_TAG_DispBeamColumn3d] = VTK_LINE;
+    vtktypes[ELE_TAG_DispBeamColumnWarping3d] = VTK_LINE;
+    vtktypes[ELE_TAG_HingedBeam2d] = VTK_LINE;
+    vtktypes[ELE_TAG_HingedBeam3d] = VTK_LINE;
+    vtktypes[ELE_TAG_TwoPointHingedBeam2d] = VTK_LINE;
+    vtktypes[ELE_TAG_TwoPointHingedBeam3d] = VTK_LINE;
+    vtktypes[ELE_TAG_OnePointHingedBeam2d] = VTK_LINE;
+    vtktypes[ELE_TAG_OnePointHingedBeam3d] = VTK_LINE;
+    vtktypes[ELE_TAG_BeamColumnJoint2d] = VTK_QUAD;
+    vtktypes[ELE_TAG_BeamColumnJoint3d] = VTK_QUAD;
+    vtktypes[ELE_TAG_ForceBeamColumn2d] = VTK_LINE;
+    vtktypes[ELE_TAG_ForceBeamColumnWarping2d] = VTK_LINE;
+    vtktypes[ELE_TAG_ForceBeamColumn3d] = VTK_LINE;
+    vtktypes[ELE_TAG_ElasticForceBeamColumn2d] = VTK_LINE;
+    vtktypes[ELE_TAG_ElasticForceBeamColumnWarping2d] = VTK_LINE;
+    vtktypes[ELE_TAG_ElasticForceBeamColumn3d] = VTK_LINE;
+    vtktypes[ELE_TAG_ForceBeamColumnCBDI2d] = VTK_LINE;
+    vtktypes[ELE_TAG_ForceBeamColumnCBDI3d] = VTK_LINE;
+    vtktypes[ELE_TAG_DispBeamColumn2dInt] = VTK_LINE;
+    vtktypes[ELE_TAG_InternalSpring] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_SimpleJoint2D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_Joint2D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_Joint3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ElastomericBearingPlasticity3d] = VTK_LINE;
+    vtktypes[ELE_TAG_ElastomericBearingPlasticity2d] = VTK_LINE;
+    vtktypes[ELE_TAG_TwoNodeLink] = VTK_LINE;
+    vtktypes[ELE_TAG_ActuatorCorot] = VTK_LINE;
+    vtktypes[ELE_TAG_Actuator] = VTK_LINE;
+    vtktypes[ELE_TAG_Adapter] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ElastomericBearingBoucWen2d] = VTK_LINE;
+    vtktypes[ELE_TAG_ElastomericBearingBoucWen3d] = VTK_LINE;
+    vtktypes[ELE_TAG_FlatSliderSimple2d] = VTK_LINE;
+    vtktypes[ELE_TAG_FlatSliderSimple3d] = VTK_LINE;
+    vtktypes[ELE_TAG_FlatSlider2d] = VTK_LINE;
+    vtktypes[ELE_TAG_FlatSlider3d] = VTK_LINE;
+    vtktypes[ELE_TAG_SingleFPSimple2d] = VTK_LINE;
+    vtktypes[ELE_TAG_SingleFPSimple3d] = VTK_LINE;
+    vtktypes[ELE_TAG_SingleFP2d] = VTK_LINE;
+    vtktypes[ELE_TAG_SingleFP3d] = VTK_LINE;
+    vtktypes[ELE_TAG_DoubleFPSimple2d] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_DoubleFPSimple3d] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_DoubleFP2d] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_DoubleFP3d] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_TripleFPSimple2d] = VTK_LINE;
+    vtktypes[ELE_TAG_TripleFPSimple3d] = VTK_LINE;
+    vtktypes[ELE_TAG_TripleFP2d] = VTK_LINE;
+    vtktypes[ELE_TAG_TripleFP3d] = VTK_LINE;
+    vtktypes[ELE_TAG_MultiFP2d] = VTK_LINE;
+    vtktypes[ELE_TAG_MultiFP3d] = VTK_LINE;
+    vtktypes[ELE_TAG_GenericClient] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_GenericCopy] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_PY_MACRO2D] = VTK_LINE;
+    vtktypes[ELE_TAG_SimpleContact2D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_SimpleContact3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_BeamContact3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_SurfaceLoad] = VTK_QUAD;
+    vtktypes[ELE_TAG_BeamContact2D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_BeamEndContact3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_SSPquad] = VTK_QUAD;
+    vtktypes[ELE_TAG_SSPquadUP] = VTK_QUAD;
+    vtktypes[ELE_TAG_SSPbrick] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_SSPbrickUP] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_BeamContact2Dp] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_BeamContact3Dp] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_BeamEndContact3Dp] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_Quad4FiberOverlay] = VTK_QUAD;
+    vtktypes[ELE_TAG_Brick8FiberOverlay] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_QuadBeamEmbedContact] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_DispBeamColumn2dThermal] = VTK_LINE;
+    vtktypes[ELE_TAG_TPB1D] = VTK_LINE;
+    vtktypes[ELE_TAG_TFP_Bearing] = VTK_LINE;
+    vtktypes[ELE_TAG_TFP_Bearing2d] = VTK_LINE;
+    vtktypes[ELE_TAG_TripleFrictionPendulum] = VTK_LINE;
+    vtktypes[ELE_TAG_PFEMElement2D] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_FourNodeQuad02] = VTK_QUAD;
+    vtktypes[ELE_TAG_cont2d01] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_cont2d02] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_CST] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_Truss2] = VTK_LINE;
+    vtktypes[ELE_TAG_CorotTruss2] = VTK_LINE;
+    vtktypes[ELE_Tag_ZeroLengthImpact3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_PFEMElement3D] = VTK_TETRA;
+    vtktypes[ELE_TAG_PFEMElement2DCompressible] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_PFEMElement2DBubble] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_PFEMElement2Dmini] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_ElasticTimoshenkoBeam2d] = VTK_LINE;
+    vtktypes[ELE_TAG_ElasticTimoshenkoBeam3d] = VTK_LINE;
+    vtktypes[ELE_TAG_ElastomericBearingUFRP2d] = VTK_LINE;
+    vtktypes[ELE_TAG_ElastomericBearingUFRP3d] = VTK_LINE;
+    vtktypes[ELE_TAG_RJWatsonEQS2d] = VTK_LINE;
+    vtktypes[ELE_TAG_RJWatsonEQS3d] = VTK_LINE;
+    vtktypes[ELE_TAG_HDR] = VTK_LINE;
+    vtktypes[ELE_TAG_ElastomericX] = VTK_LINE;
+    vtktypes[ELE_TAG_LeadRubberX] = VTK_LINE;
+    vtktypes[ELE_TAG_PileToe3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_N4BiaxialTruss] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_ShellDKGQ] = VTK_QUAD;
+    vtktypes[ELE_TAG_ShellNLDKGQ] = VTK_QUAD;
+    vtktypes[ELE_TAG_MultipleShearSpring] = VTK_LINE;
+    vtktypes[ELE_TAG_MultipleNormalSpring] = VTK_LINE;
+    vtktypes[ELE_TAG_KikuchiBearing] = VTK_LINE;
+    vtktypes[ELE_TAG_YamamotoBiaxialHDR] = VTK_LINE;
+    vtktypes[ELE_TAG_MVLEM] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_SFI_MVLEM] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_PFEMElement3Dmini] = VTK_TETRA;
+    vtktypes[ELE_TAG_PFEMElement2DFIC] = VTK_TRIANGLE;
+
+}
