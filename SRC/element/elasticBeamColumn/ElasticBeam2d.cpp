@@ -886,11 +886,20 @@ ElasticBeam2d::setResponse(const char **argv, int argc, OPS_Stream &output)
 	      strcmp(argv[0],"basicDeformations") == 0) {
     
     output.tag("ResponseType","eps");
-    output.tag("ResponseType","thete1");
+    output.tag("ResponseType","theta1");
     output.tag("ResponseType","theta2");
     theResponse = new ElementResponse(this, 5, Vector(3));
-  }  
   
+  // chord rotation -
+  } else if (strcmp(argv[0],"chordRotation") == 0 || strcmp(argv[0],"chordDeformation") == 0 
+	     || strcmp(argv[0],"basicDeformation") == 0) {
+
+    output.tag("ResponseType","eps");
+    output.tag("ResponseType","theta1");
+    output.tag("ResponseType","theta2");
+
+    theResponse =  new ElementResponse(this, 5, Vector(3));
+  }
   output.endTag(); // ElementOutput
   
   return theResponse;
