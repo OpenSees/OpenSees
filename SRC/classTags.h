@@ -645,6 +645,7 @@
 #define ELE_TAG_YamamotoBiaxialHDR        161
 #define ELE_TAG_MVLEM                     162
 #define ELE_TAG_SFI_MVLEM                 163
+#define ELE_TAG_PFEMElement2DFIC          164
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
@@ -897,6 +898,7 @@
 #define RECORDER_TAGS_NormElementRecorder	16
 #define RECORDER_TAGS_NormNodeRecorder	        17
 #define RECORDER_TAGS_NormEnvelopeElementRecorder	18
+#define RECORDER_TAGS_PVDRecorder               19
 
 #define OPS_STREAM_TAGS_FileStream		1
 #define OPS_STREAM_TAGS_StandardStream		2
