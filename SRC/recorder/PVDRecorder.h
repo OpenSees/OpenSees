@@ -75,8 +75,8 @@ private:
     virtual void incrLevel() {indentlevel++;}
     virtual void decrLevel() {indentlevel--;}
     virtual void getParts();
-    virtual int savePart(int partno, int ctag);
-    virtual int saveIsoPart(int partno);
+    virtual int savePart(int partno, int ctag, int ndf);
+    virtual int savePart0(int ndf);
     
 private:
     int indentsize, precision, indentlevel;
@@ -89,7 +89,6 @@ private:
     NodeData nodedata;
     std::vector<EleData> eledata;
     Domain* theDomain;
-    static const int ICTAG = -9847;
     std::map<int,int> partnum;
 
 public:
