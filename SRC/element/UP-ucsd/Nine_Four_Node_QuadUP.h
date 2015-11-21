@@ -129,6 +129,8 @@ class NineFourNodeQuadUP : public Element
     double mixtureRho(int ipt);  // Mixture mass density at integration point i
     void shapeFunction(double *w, int nint, int nen, int mode);
     void globalShapeFunction(double *dvol, double *w, int nint, int nen, int mode);
+
+    double *initNodeDispl;
 };
 
 #endif

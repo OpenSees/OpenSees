@@ -1,33 +1,14 @@
 ///////////////////////////////////////////////////////////////////////////////
-
 // Description: This file contains the class definition for                  //
-
 // NineFourNodeQuadUP, a 9-4-node (9 node for solid and 4 node for fluid) //
-
 // plane strain element for solid-fluid fully coupled analysis. This         //
-
 // implementation is a simplified u-p formulation of Biot theory             //
-
 // (u - solid displacement, p - fluid pressure). Each element node has two   //
-
 // DOFs for u and 1 DOF for p.                                               //
-
 //                                                                           //
-
 // Written by Zhaohui Yang	(March 2004)                                     //
-
 //                                                                           //
-
 ///////////////////////////////////////////////////////////////////////////////
-
-
-
-// $Revision: 1.8 $
-
-// $Date: 2008-07-08 00:01:54 $
-
-// $Source: /usr/local/cvs/OpenSees/SRC/element/UP-ucsd/Nine_Four_Node_QuadUP.cpp,v $
-
 
 
 #include <Nine_Four_Node_QuadUP.h>
@@ -86,19 +67,13 @@ const int NineFourNodeQuadUP::nenp=4;
 
 
 NineFourNodeQuadUP::NineFourNodeQuadUP(int tag,
-
 	int nd1, int nd2, int nd3, int nd4,int nd5, int nd6, int nd7, int nd8,int nd9,
-
 	NDMaterial &m, const char *type, double t, double bulk, double r,
-
 		  double p1, double p2, double b1, double b2)
-
 :Element (tag, ELE_TAG_Nine_Four_Node_QuadUP),
-
   theMaterial(0), connectedExternalNodes(9),
-
-  Ki(0), Q(22), applyLoad(0), thickness(t), kc(bulk), rho(r)
-
+ Ki(0), Q(22), applyLoad(0), thickness(t), kc(bulk), rho(r),
+ initNodeDispl(0)
 {
 
     this->shapeFunction(wu, nintu, nenu, 0);
@@ -211,8 +186,8 @@ NineFourNodeQuadUP::NineFourNodeQuadUP()
 
   theMaterial(0), connectedExternalNodes(9),
 
-  Ki(0), Q(22), applyLoad(0), thickness(0.0), kc(0.0), rho(0.0)
-
+ Ki(0), Q(22), applyLoad(0), thickness(0.0), kc(0.0), rho(0.0),
+ initNodeDispl(0)
 {
 
     this->shapeFunction(wu, nintu, nenu, 0);
@@ -346,27 +321,32 @@ NineFourNodeQuadUP::setDomain(Domain *theDomain)
 
 
   int dof;
-
+  bool allZero = true;
   for (i=0; i<nenu; i++) {
 
     dof = theNodes[i]->getNumberDOF();
 
     if ((i<nenp && dof != 3) || (i>=nenp && dof != 2)) {
-
       opserr << "FATAL ERROR NineFourNodeQuadUP, has wrong number of DOFs at its nodes "
-
 	     << this->getTag();
 
       return;
-
-		 }
-
+    }
+    const Vector &disp = theNodes[i]->getDisp();
+    if (disp.Norm() != 0)
+      allZero = false;
   }
 
-
+  if (allZero == false) {
+    initNodeDispl = new double[nenu*2];
+    for (i=0; i<nenu; i++) {
+      const Vector &disp = theNodes[i]->getDisp();    
+      initNodeDispl[i*2] = disp(0);
+      initNodeDispl[i*2+1] = disp(1);
+    }
+  }
 
   this->DomainComponent::setDomain(theDomain);
-
 }
 
 
@@ -468,10 +448,14 @@ NineFourNodeQuadUP::update()
   for (i = 0; i < nenu; i++) {
 
     const Vector &disp = theNodes[i]->getTrialDisp();
-
-    u[0][i] = disp(0);
-
-    u[1][i] = disp(1);
+    
+    if (initNodeDispl == 0) {
+      u[0][i] = disp(0);
+      u[1][i] = disp(1);
+    } else {
+      u[0][i] = disp(0)-initNodeDispl[i*2];
+      u[1][i] = disp(1)-initNodeDispl[i*2+1];
+    }
 
   }
 
