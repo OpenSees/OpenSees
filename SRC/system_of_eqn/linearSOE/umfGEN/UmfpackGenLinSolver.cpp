@@ -28,149 +28,71 @@
 //
 // Description: This file contains the class definition for 
 // UmfpackGenLinSolver. It solves the UmfpackGenLinSOEobject by calling
-// UMFPACK2.2.1 routines.
+// UMFPACK5.7.1 routines.
 //
 // What: "@(#) UmfpackGenLinSolver.C, revA"
 
 #include <UmfpackGenLinSOE.h>
 #include <UmfpackGenLinSolver.h>
-#include <f2c.h>
 #include <math.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
-#include <Timer.h>
-
-#ifdef _WIN32
-extern "C" int UMD21I(int *keep, double *cntl, int *icntl);
-#else
-extern "C" int umd21i_(int *keep, double *cntl, int *icntl);
-#endif
-
 
 UmfpackGenLinSolver::
 UmfpackGenLinSolver()
-:LinearSOESolver(SOLVER_TAGS_UmfpackGenLinSolver),
- copyIndex(0), lIndex(0), work(0), theSOE(0)
+    :LinearSOESolver(SOLVER_TAGS_UmfpackGenLinSolver), Symbolic(0), theSOE(0)
 {
-  // perform the initialisation needed in UMFpack
-#ifdef _WIN32
-  UMD21I(keep, cntl, icntl);    
-#else
-  umd21i_(keep, cntl, icntl);
-#endif
 }
 
 
 UmfpackGenLinSolver::~UmfpackGenLinSolver()
 {
-  if (copyIndex != 0)
-    delete [] copyIndex;
-
-  if (work != 0)
-    delete [] work;
+    if (Symbolic != 0) {
+	umfpack_di_free_symbolic(&Symbolic);
+    }
 }
-
-#ifdef _WIN32
-extern "C" int UMD2FA(int *n, int *ne, int *job, logical *transa,
-		       int *lvalue, int *lindex, double *value,
-		       int *index, int *keep, double *cntl, int *icntl,
-		       int *info, double *rinfo);
-
-/*
-extern "C" int umd2rf_(int *n, int *ne, int *job, logical *transa,
-		       int *lvalue, int *lindex, double *value,
-		       int *index, int *keep, double *cntl, int *icntl,
-		       int *info, double *rinfo);
-*/
-extern "C" int  UMD2SO(int *n, int *job, logical *transa,
-		       int *lvalue, int *lindex, double *value,
-		       int *index, int *keep, double *b, double *x, 
-		       double *w, double *cntl, int *icntl,
-		       int *info, double *rinfo);
-#else
-extern "C" int umd2fa_(int *n, int *ne, int *job, logical *transa,
-		       int *lvalue, int *lindex, double *value,
-		       int *index, int *keep, double *cntl, int *icntl,
-		       int *info, double *rinfo);
-
-extern "C" int umd2so_(int *n, int *job, logical *transa,
-		       int *lvalue, int *lindex, double *value,
-		       int *index, int *keep, double *b, double *x, 
-		       double *w, double *cntl, int *icntl,
-		       int *info, double *rinfo);
-#endif
 
 int
 UmfpackGenLinSolver::solve(void)
 {
-    if (theSOE == 0) {
-	opserr << "WARNING UmfpackGenLinSolver::solve(void)- ";
-	opserr << " No LinearSOE object has been set\n";
+    int n = theSOE->X.Size();
+    int nnz = (int)theSOE->Ai.size();
+    if (n == 0 || nnz==0) return 0;
+    
+    int* Ap = &(theSOE->Ap[0]);
+    int* Ai = &(theSOE->Ai[0]);
+    double* Ax = &(theSOE->Ax[0]);
+    double* X = &(theSOE->X(0));
+    double* B = &(theSOE->B(0));
+
+    // check if symbolic is done
+    if (Symbolic == 0) {
+	opserr<<"WARNING: setSize has not been called -- Umfpackgenlinsolver::solve\n";
 	return -1;
     }
     
-    int n = theSOE->size;
-    int ne = theSOE->nnz;
-    int lValue = theSOE->lValue;
+    // numerical analysis
+    void* Numeric = 0;
+    int status = umfpack_di_numeric(Ap,Ai,Ax,Symbolic,&Numeric,Control,Info);
 
-    // check for quick return
-    if (n == 0)
-	return 0;
+    // check error
+    if (status!=UMFPACK_OK) {
+	opserr<<"WARNING: numeric analysis returns "<<status<<" -- Umfpackgenlinsolver::solve\n";
+	return -1;
+    }
 
-    // first copy B into X
-    double *Xptr = theSOE->X;
-    double *Bptr = theSOE->B;
-    double *Aptr = theSOE->A;
+    // solve
+    status = umfpack_di_solve(UMFPACK_A,Ap,Ai,Ax,X,B,Numeric,Control,Info);
 
-    int job =0; // set to 1 if wish to do iterative refinment
-    logical trans = FALSE_;
-
-	if (theSOE->printSolveTime == 1) {
-		Timer a;
-		a.start();
-	}
-
-    if (theSOE->factored == false) {
-
-      // make a copy of index
-      for (int i=0; i<2*ne; i++) {
-	copyIndex[i] = theSOE->index[i];
-      }
-
-      // factor the matrix
-#ifdef _WIN32
-      UMD2FA(&n, &ne, &job, &trans, &lValue, &lIndex, Aptr,
-	      copyIndex, keep, cntl, icntl, info, rinfo);
-#else
-      umd2fa_(&n, &ne, &job, &trans, &lValue, &lIndex, Aptr,
-	      copyIndex, keep, cntl, icntl, info, rinfo);
-#endif      
-      
-      if (info[0] != 0) {	
-	opserr << "WARNING UmfpackGenLinSolver::solve(void)- ";
-	opserr << info[0] << " returned in factorization UMD2FA()\n";
-	return -info[0];
-      }
-      theSOE->factored = true;
-    }	
-
-    // do forward and backward substitution
-#ifdef _WIN32
-    UMD2SO(&n, &job, &trans, &lValue, &lIndex, Aptr, copyIndex, 
-	   keep, Bptr, Xptr, work, cntl, icntl, info, rinfo);    
-#else
-    umd2so_(&n, &job, &trans, &lValue, &lIndex, Aptr, copyIndex, 
-	    keep, Bptr, Xptr, work, cntl, icntl, info, rinfo);
-#endif
-	
-	if (theSOE->printSolveTime == 1) {
-		Timer a;
-		a.pause();
-	}
-    if (info[0] != 0) {	
-       opserr << "WARNING UmfpackGenLinSolver::solve(void)- ";
-       opserr << info[0] << " returned in substitution dgstrs()\n";
-       return -info[0];
+    // delete Numeric
+    if (Numeric != 0) {
+	umfpack_di_free_numeric(&Numeric);
+    }
+    
+    // check error
+    if (status!=UMFPACK_OK) {
+	opserr<<"WARNING: solving returns "<<status<<" -- Umfpackgenlinsolver::solve\n";
+	return -1;
     }
 
     return 0;
@@ -180,28 +102,37 @@ UmfpackGenLinSolver::solve(void)
 int
 UmfpackGenLinSolver::setSize()
 {
-    int n = theSOE->size;
-    int ne = theSOE->nnz;
-    if (n > 0) {
-      if (work != 0)
-	delete [] work;
+    // set default control parameters
+    umfpack_di_defaults(Control);
 
-      work = new double[4*n];
+    int n = theSOE->X.Size();
+    int nnz = (int)theSOE->Ai.size();
+    if (n == 0 || nnz==0) return 0;
+    
+    int* Ap = &(theSOE->Ap[0]);
+    int* Ai = &(theSOE->Ai[0]);
+    double* Ax = &(theSOE->Ax[0]);
 
-      lIndex = 37*n + 4*ne + 10;
-      if (copyIndex != 0)
-	delete [] copyIndex;
+    // symbolic analysis
+    if (Symbolic != 0) {
+	umfpack_di_free_symbolic(&Symbolic);
+    }
+    int status = umfpack_di_symbolic(n,n,Ap,Ai,Ax,&Symbolic,Control,Info);
 
-      copyIndex = new int[lIndex];
-    }	
+    // check error
+    if (status!=UMFPACK_OK) {
+	opserr<<"WARNING: symbolic analysis returns "<<status<<" -- Umfpackgenlinsolver::setsize\n";
+	Symbolic = 0;
+	return -1;
+    }
     return 0;
 }
 
 int
 UmfpackGenLinSolver::setLinearSOE(UmfpackGenLinSOE &theLinearSOE)
 {
-  theSOE = &theLinearSOE;
-  return 0;
+    theSOE = &theLinearSOE;
+    return 0;
 }
 
 int

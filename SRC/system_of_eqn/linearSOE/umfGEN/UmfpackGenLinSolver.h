@@ -28,7 +28,7 @@
 //
 // Description: This file contains the class definition for 
 // UmfpackGenLinSolver. It solves the UmfpackGenLinSOEobject by calling
-// UMFPACK2.2.1 routines.
+// UMFPACK5.7.1 routines.
 //
 // What: "@(#) UmfpackGenLinSolver.h, revA"
 
@@ -36,6 +36,7 @@
 #define UmfpackGenLinSolver_h
 
 #include <LinearSOESolver.h>
+#include "../../../../OTHER/UMFPACK/umfpack.h"
 
 class UmfpackGenLinSOE;
 
@@ -57,16 +58,8 @@ class UmfpackGenLinSolver : public LinearSOESolver
   protected:
 
   private:
-    int icntl[20];
-    int keep[20];
-    double cntl[10];
-    int info[40];
-    double rinfo[20];
-    
-    int *copyIndex;
-    int lIndex;
-    double *work;
-    
+    void *Symbolic;
+    double Control[UMFPACK_CONTROL], Info[UMFPACK_INFO];
     UmfpackGenLinSOE *theSOE;
 };
 

@@ -37,26 +37,21 @@
 
 #include <LinearSOE.h>
 #include <Vector.h>
+#include <vector>
 
 class UmfpackGenLinSolver;
 
 class UmfpackGenLinSOE : public LinearSOE
 {
-  public:
-    UmfpackGenLinSOE(UmfpackGenLinSolver &theSolver, 
-		int factLVALUE = 10, 
-		int factorOnce = 0,
-		int printSolveTime = 0);        
+public:
+    UmfpackGenLinSOE(UmfpackGenLinSolver &theSolver);
     UmfpackGenLinSOE();        
-    UmfpackGenLinSOE(int N, int NNZ, int *rowStartA, int *colA,
-		    UmfpackGenLinSolver &theSolver);        
 
     ~UmfpackGenLinSOE();
 
     int getNumEqn(void) const;
     int setSize(Graph &theGraph);
     int addA(const Matrix &, const ID &, double fact = 1.0);
-    int addColA(const Vector &colData, int row, double fact = 1.0);
     int addB(const Vector &, const ID &, double fact = 1.0);    
     int setB(const Vector &, double fact = 1.0);        
     
@@ -77,22 +72,12 @@ class UmfpackGenLinSOE : public LinearSOE
 
     friend class UmfpackGenLinSolver;
 
-  protected:
+protected:
     
-  private:
-    int size;            // order of A
-    int nnz;             // number of non-zeros in A
-    double *A, *B, *X;   // 1d arrays containing coefficients of A, B and X
-    int *colA, *rowStartA; // int arrays containing info about coeff's in A
-    int lValue;
-    int *index;   // keep only for UMFpack
-    Vector *vectX;
-    Vector *vectB;    
-    int Asize, Bsize;    // size of the 1d array holding A
-    bool factored;
-    int factLVALUE;
-	int factorOnce;
-	int printSolveTime;
+private:
+    Vector X,B;
+    std::vector<int> Ap, Ai;
+    std::vector<double> Ax;
 };
 
 
