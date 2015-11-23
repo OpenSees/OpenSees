@@ -3,29 +3,14 @@
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-/* AMD, Copyright (c) Timothy A. Davis,					     */
+/* AMD, Copyright (c) Timothy A. Davis,                                      */
 /* Patrick R. Amestoy, and Iain S. Duff.  See ../README.txt for License.     */
-/* email: davis at cise.ufl.edu    CISE Department, Univ. of Florida.        */
-/* web: http://www.cise.ufl.edu/research/sparse/amd                          */
+/* email: DrTimothyAldenDavis@gmail.com                                      */
 /* ------------------------------------------------------------------------- */
 
 /* This file is for internal use in AMD itself, and does not normally need to
  * be included in user code (it is included in UMFPACK, however).   All others
  * should use amd.h instead.
- *
- * The following compile-time definitions affect how AMD is compiled.
- *
- *	-DNPRINT
- *
- *	    Disable all printing.  stdio.h will not be included.  Printing can
- *	    be re-enabled at run-time by setting the global pointer amd_printf
- *	    to printf (or mexPrintf for a MATLAB mexFunction).
- *
- *	-DNMALLOC
- *
- *	    No memory manager is defined at compile-time.  You MUST define the
- *	    function pointers amd_malloc, amd_free, amd_realloc, and
- *	    amd_calloc at run-time for AMD to work properly.
  */
 
 /* ========================================================================= */
@@ -154,21 +139,25 @@
 
 /* largest value of size_t */
 #ifndef SIZE_T_MAX
+#ifdef SIZE_MAX
+/* C99 only */
+#define SIZE_T_MAX SIZE_MAX
+#else
 #define SIZE_T_MAX ((size_t) (-1))
+#endif
 #endif
 
 /* ------------------------------------------------------------------------- */
-/* integer type for AMD: int or UF_long */
+/* integer type for AMD: int or SuiteSparse_long */
 /* ------------------------------------------------------------------------- */
 
-/* define UF_long */
-#include "UFconfig.h"
+#include "amd.h"
 
 #if defined (DLONG) || defined (ZLONG)
 
-#define Int UF_long
-#define ID  UF_long_id
-#define Int_MAX UF_long_max
+#define Int SuiteSparse_long
+#define ID  SuiteSparse_long_id
+#define Int_MAX SuiteSparse_long_max
 
 #define AMD_order amd_l_order
 #define AMD_defaults amd_l_defaults
@@ -207,19 +196,6 @@
 #define AMD_preprocess amd_preprocess
 
 #endif
-
-/* ========================================================================= */
-/* === PRINTF macro ======================================================== */
-/* ========================================================================= */
-
-/* All output goes through the PRINTF macro.  */
-#define PRINTF(params) { if (amd_printf != NULL) (void) amd_printf params ; }
-
-/* ------------------------------------------------------------------------- */
-/* AMD routine definitions (user-callable) */
-/* ------------------------------------------------------------------------- */
-
-#include "amd.h"
 
 /* ------------------------------------------------------------------------- */
 /* AMD routine definitions (not user-callable) */
@@ -331,11 +307,11 @@ GLOBAL void AMD_dump
 #define ASSERT(expression) (assert (expression))
 #endif
 
-#define AMD_DEBUG0(params) { PRINTF (params) ; }
-#define AMD_DEBUG1(params) { if (AMD_debug >= 1) PRINTF (params) ; }
-#define AMD_DEBUG2(params) { if (AMD_debug >= 2) PRINTF (params) ; }
-#define AMD_DEBUG3(params) { if (AMD_debug >= 3) PRINTF (params) ; }
-#define AMD_DEBUG4(params) { if (AMD_debug >= 4) PRINTF (params) ; }
+#define AMD_DEBUG0(params) { SUITESPARSE_PRINTF (params) ; }
+#define AMD_DEBUG1(params) { if (AMD_debug >= 1) SUITESPARSE_PRINTF (params) ; }
+#define AMD_DEBUG2(params) { if (AMD_debug >= 2) SUITESPARSE_PRINTF (params) ; }
+#define AMD_DEBUG3(params) { if (AMD_debug >= 3) SUITESPARSE_PRINTF (params) ; }
+#define AMD_DEBUG4(params) { if (AMD_debug >= 4) SUITESPARSE_PRINTF (params) ; }
 
 #else
 

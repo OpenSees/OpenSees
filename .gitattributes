@@ -604,6 +604,8 @@ MAKES/Makefile.def.UNR_GRID -text
 /Makefile -text
 OTHER/AMD/License -text
 OTHER/AMD/Makefile -text
+OTHER/AMD/SuiteSparse_config.c -text
+OTHER/AMD/SuiteSparse_config.h -text
 OTHER/AMD/UFconfig.h -text
 OTHER/AMD/amd.f -text
 OTHER/AMD/amd.h -text
@@ -622,6 +624,7 @@ OTHER/AMD/amd_postorder.c -text
 OTHER/AMD/amd_preprocess.c -text
 OTHER/AMD/amd_valid.c -text
 OTHER/AMD/amdbar.f -text
+OTHER/AMD/lesser.txt -text
 OTHER/ARPACK/Makefile -text
 OTHER/ARPACK/cgetv0.f -text
 OTHER/ARPACK/cmout.f -text
