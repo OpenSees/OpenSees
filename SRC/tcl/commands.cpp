@@ -2993,7 +2993,8 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     }
   
     UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
-    theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
+    //theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
+    theSOE = new UmfpackGenLinSOE(*theSolver);      
   }	  
 #ifdef _ITPACK
 //  else if (strcmp(argv[1],"Itpack") == 0) {
