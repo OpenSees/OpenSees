@@ -318,6 +318,7 @@ ComponentElement2d::update(void)
     else
       k1 = end1Hinge->getTangent();
   }
+  //  k1 = end1Hinge->getTangent();
 
   double k2 = 0.;
   double F2 = 0.0;
@@ -328,6 +329,7 @@ ComponentElement2d::update(void)
     else
       k2 = end2Hinge->getTangent();
   }
+  //  k2 = end2Hinge->getTangent();
 
   // calculate forces for our superelement structure
   double R1 = -F1;
@@ -441,6 +443,8 @@ ComponentElement2d::getResistingForce()
     else
       k1 = end1Hinge->getTangent();
   }
+  //  k1 = end1Hinge->getTangent();
+
   double k2 = 0.;
   double F2 = 0.0;
   if (end2Hinge != 0) {
@@ -450,6 +454,7 @@ ComponentElement2d::getResistingForce()
     else
       k2 = end2Hinge->getTangent();
   }
+  //  k2 = end2Hinge->getTangent();
 
   double u2 = uTrial(1);
   double u3 = uTrial(2);
