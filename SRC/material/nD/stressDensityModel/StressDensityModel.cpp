@@ -23,9 +23,9 @@
 // Updated: Chris McGann
 //          June 2015, Washington State University
 
-#include <StressDilatancyModel.h>
-#include <StressDilatancyModel2D.h>
-#include <StressDilatancyModel3D.h>
+#include <StressDensityModel.h>
+#include <StressDensityModel2D.h>
+#include <StressDensityModel3D.h>
 
 #include <Information.h>
 #include <MaterialResponse.h>
@@ -38,20 +38,20 @@
 
 #define OPS_Export 
 OPS_Export void *
-OPS_NewStressDilatancyMaterial(void)
+OPS_NewStressDensityMaterial(void)
 {
-	static int numStressDilatancyModel = 0;
+	static int numStressDensityModel = 0;
 
-	if(numStressDilatancyModel == 0) {
-		opserr << "StressDilatancyModel nDmaterial - Written: Saumyasuchi Das, U.Canterbury\n" << endln;
-		numStressDilatancyModel++;
+	if(numStressDensityModel == 0) {
+		opserr << "StressDensityModel nDmaterial - Written: Saumyasuchi Das, U.Canterbury\n" << endln;
+		numStressDensityModel++;
 
 	}
 
   // Pointer to an NDmaterial that will be returned
     NDMaterial *theMaterial = 0;
     int numArgs;
-    const int numDbl=38;
+    const int numDbl=40;
     const char *variable[]={
 		"Density",
 		"Void Ratio",
@@ -100,7 +100,7 @@ OPS_NewStressDilatancyMaterial(void)
 	   opserr << "WARNING: Insufficient number of arguments" << endln;
 
 	   for(int i=numArgs+1; i < numDbl; i++)
-		   opserr << "Want: nDMaterial StressDilatancyModel::"<<variable[i]<<" ?"<<endln;
+		   opserr << "Want: nDMaterial StressDensityModel::"<<variable[i]<<" ?"<<endln;
 	  
 	   return 0;
    }
@@ -113,76 +113,64 @@ OPS_NewStressDilatancyMaterial(void)
 
 	numData = 1;
 	if (OPS_GetInt(&numData, &tag) != 0) {
-		opserr << "WARNING invalid nDMaterial StressDilatancy material  tag" << endln;
+		opserr << "WARNING invalid nDMaterial StressDensity material  tag" << endln;
 		return 0;
 	}
 
 	numData = numArgs;
 	if (OPS_GetDouble(&numData, dData) != 0) {
-		opserr << "WARNING invalid material data for nDMaterial StressDilatancy material  with tag: " << tag << endln;
+		opserr << "WARNING invalid material data for nDMaterial StressDensity material  with tag: " << tag << endln;
 		return 0;
 	}
 
-	if (numArgs == 38) {
-		theMaterial = new StressDilatancyModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
-		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],
-		dData[15],dData[16],dData[17],dData[18],dData[19],dData[20],dData[21],dData[22],dData[23],dData[24],
-		dData[25],dData[26],dData[27],dData[28],dData[29],dData[30],dData[31],dData[32],dData[33],dData[34],
-		dData[35],dData[36],dData[37]);
-    } else if (numArgs == 39) {
-		theMaterial = new StressDilatancyModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
-		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],
-		dData[15],dData[16],dData[17],dData[18],dData[19],dData[20],dData[21],dData[22],dData[23],dData[24],
-		dData[25],dData[26],dData[27],dData[28],dData[29],dData[30],dData[31],dData[32],dData[33],dData[34],
-		dData[35],dData[36],dData[37],dData[38]);
-    } else if (numArgs == 40) {
-		theMaterial = new StressDilatancyModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+	if (numArgs == 40) {
+		theMaterial = new StressDensityModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
 		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],
 		dData[15],dData[16],dData[17],dData[18],dData[19],dData[20],dData[21],dData[22],dData[23],dData[24],
 		dData[25],dData[26],dData[27],dData[28],dData[29],dData[30],dData[31],dData[32],dData[33],dData[34],
 		dData[35],dData[36],dData[37],dData[38],dData[39]);
     } else if (numArgs == 41) {
-		theMaterial = new StressDilatancyModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+		theMaterial = new StressDensityModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
 		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],
 		dData[15],dData[16],dData[17],dData[18],dData[19],dData[20],dData[21],dData[22],dData[23],dData[24],
 		dData[25],dData[26],dData[27],dData[28],dData[29],dData[30],dData[31],dData[32],dData[33],dData[34],
 		dData[35],dData[36],dData[37],dData[38],dData[39],dData[40]);
     } else if (numArgs == 42) {
-		theMaterial = new StressDilatancyModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+		theMaterial = new StressDensityModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
 		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],
 		dData[15],dData[16],dData[17],dData[18],dData[19],dData[20],dData[21],dData[22],dData[23],dData[24],
 		dData[25],dData[26],dData[27],dData[28],dData[29],dData[30],dData[31],dData[32],dData[33],dData[34],
 		dData[35],dData[36],dData[37],dData[38],dData[39],dData[40],dData[41]);
     } else if (numArgs == 43) {
-		theMaterial = new StressDilatancyModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+		theMaterial = new StressDensityModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
 		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],
 		dData[15],dData[16],dData[17],dData[18],dData[19],dData[20],dData[21],dData[22],dData[23],dData[24],
 		dData[25],dData[26],dData[27],dData[28],dData[29],dData[30],dData[31],dData[32],dData[33],dData[34],
 		dData[35],dData[36],dData[37],dData[38],dData[39],dData[40],dData[41],dData[42]);
     } else if (numArgs == 44) {
-		theMaterial = new StressDilatancyModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+		theMaterial = new StressDensityModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
 		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],
 		dData[15],dData[16],dData[17],dData[18],dData[19],dData[20],dData[21],dData[22],dData[23],dData[24],
 		dData[25],dData[26],dData[27],dData[28],dData[29],dData[30],dData[31],dData[32],dData[33],dData[34],
 		dData[35],dData[36],dData[37],dData[38],dData[39],dData[40],dData[41],dData[42],dData[43]);
-    }
+    } 
 
 	if (theMaterial == 0) {
-	    opserr << "WARNING ran out of memory for nDMaterial StressDilatancy material  with tag: " << tag << endln;
+	    opserr << "WARNING ran out of memory for nDMaterial StressDensity material  with tag: " << tag << endln;
     }
 
     return theMaterial;
 }
 
 // full constructor
-StressDilatancyModel::StressDilatancyModel(int tag, int classTag, double constDensity,
+StressDensityModel::StressDensityModel(int tag, int classTag, double constDensity,
 						                   // SD model  parameters		
 						                   double initialVoidRatio,	double constA, double exponentN,		
 						                   double poissonRatio, double constAlpha1, double constBeta1,
 						                   double constAlpha2, double constBeta2, double constAlpha3,
                                            double constBeta3, double constDegradation, double constMumin,				
 						                   double constMucyclic, double constDilatancyStrain,	
-						                   double constMumax, double constPatm,
+						                   double constMumax, double constPatm, 
 						                   // steady state line void ratio
 						                   double constsslvoidatP1, double constsslvoidatP2, double constsslvoidatP3,
 						                   double constsslvoidatP4, double constsslvoidatP5, double constsslvoidatP6,
@@ -262,7 +250,7 @@ StressDilatancyModel::StressDilatancyModel(int tag, int classTag, double constDe
 }
 
 // null constructor
-StressDilatancyModel::StressDilatancyModel()
+StressDensityModel::StressDensityModel()
   : NDMaterial()
 {
     theStage = 0;
@@ -281,25 +269,25 @@ StressDilatancyModel::StressDilatancyModel()
 }
 
 // destructor
-StressDilatancyModel::~StressDilatancyModel()
+StressDensityModel::~StressDensityModel()
 {
 }
 
 double 
-StressDilatancyModel::getRho(void) 
+StressDensityModel::getRho(void) 
 {
 	return theDensity;
 }
 
 int 
-StressDilatancyModel::setParameter(const char **argv, int argc, Parameter &param)
+StressDensityModel::setParameter(const char **argv, int argc, Parameter &param)
 {	
     if (strcmp(argv[0],"updateMaterialStage") == 0) {
         return param.addObject(1, this);
     } else if (strcmp(argv[0],"materialState") == 0) {
         return param.addObject(5, this);
     } else {
-        opserr << "WARNING: invalid parameter command StressDilatancyModel nDMaterial tag: " << this->getTag() << endln;
+        opserr << "WARNING: invalid parameter command StressDensityModel nDMaterial tag: " << this->getTag() << endln;
         return -1;
     }
 
@@ -307,7 +295,7 @@ StressDilatancyModel::setParameter(const char **argv, int argc, Parameter &param
 }
 
 int 
-StressDilatancyModel::updateParameter(int parameterID, Information &info)
+StressDensityModel::updateParameter(int parameterID, Information &info)
 {	
 	if (parameterID == 1) {
 		theStage = info.theInt;
@@ -319,54 +307,54 @@ StressDilatancyModel::updateParameter(int parameterID, Information &info)
 }
 
 void 
-StressDilatancyModel::Print(OPS_Stream &s, int flag)
+StressDensityModel::Print(OPS_Stream &s, int flag)
 {
-	s<<"StressDilatancyModel::Tag "<<this->getTag()<<endln;
+	s<<"StressDensityModel::Tag "<<this->getTag()<<endln;
 	s<<"Material Stage: "<< theStage;
 }
 
 int 
-StressDilatancyModel::commitState(void) {
+StressDensityModel::commitState(void) {
 
 	return 0; //Subclass responsibility
 }
 
 int
-StressDilatancyModel::revertToLastCommit(void)
+StressDensityModel::revertToLastCommit(void)
 {
 	return 0;
 }
 
 int 
-StressDilatancyModel::revertToStart(void)
+StressDensityModel::revertToStart(void)
 {
 	return 0;
 }
 
 NDMaterial *
-StressDilatancyModel::getCopy(void)
+StressDensityModel::getCopy(void)
 {
 	return 0; //Subclass responsibility
 }
 
 const char *
-StressDilatancyModel::getType(void) const
+StressDensityModel::getType(void) const
 {
 	return 0; //Subclass responsibility
 }
 
 int
-StressDilatancyModel::getOrder(void) const 
+StressDensityModel::getOrder(void) const 
 {
     return 0; //Subclass responsibility
 }
 
 NDMaterial *
-StressDilatancyModel::getCopy(const char *code) 
+StressDensityModel::getCopy(const char *code) 
 {
 	if (strcmp(code, "PlaneStrain")==0||strcmp(code,"2D")==0) {
-		StressDilatancyModel2D *theCopy;
-		theCopy = new StressDilatancyModel2D(this->getTag(), theDensity, modelParameter[0], modelParameter[1],
+		StressDensityModel2D *theCopy;
+		theCopy = new StressDensityModel2D(this->getTag(), theDensity, modelParameter[0], modelParameter[1],
 											 modelParameter[2], modelParameter[3], modelParameter[4],
 											 modelParameter[5], modelParameter[6], modelParameter[7],
 											 modelParameter[8], modelParameter[9], modelParameter[10],
@@ -380,8 +368,8 @@ StressDilatancyModel::getCopy(const char *code)
 											 refOrigin[0], refOrigin[1], refOrigin[3]);
 		return theCopy;
 	} else if  (strcmp(code, "ThreeDimensional")==0||strcmp(code,"3D")==0) {
-		StressDilatancyModel3D *theCopy;
-		theCopy = new StressDilatancyModel3D(this->getTag(), theDensity, modelParameter[0], modelParameter[1],
+		StressDensityModel3D *theCopy;
+		theCopy = new StressDensityModel3D(this->getTag(), theDensity, modelParameter[0], modelParameter[1],
 											 modelParameter[2], modelParameter[3], modelParameter[4],
 											 modelParameter[5], modelParameter[6], modelParameter[7],
 											 modelParameter[8], modelParameter[9], modelParameter[10],
@@ -397,13 +385,13 @@ StressDilatancyModel::getCopy(const char *code)
 				
 		return theCopy;
 	} else {
-		opserr<<"StressDilatancyModel::getCopy failed to get copy: " << code << endln;
+		opserr<<"StressDensityModel::getCopy failed to get copy: " << code << endln;
 	  	return 0;
 	}
 }
 
 Response *
-StressDilatancyModel::setResponse (const char **argv, int argc, OPS_Stream &output)
+StressDensityModel::setResponse (const char **argv, int argc, OPS_Stream &output)
 {
 	output.tag("NdMaterialOutput");
 	output.attr("matType",this->getClassType());
@@ -420,7 +408,7 @@ StressDilatancyModel::setResponse (const char **argv, int argc, OPS_Stream &outp
 }
 
 int 
-StressDilatancyModel::getResponse (int responseID, Information &matInformation)
+StressDensityModel::getResponse (int responseID, Information &matInformation)
 {
 	switch (responseID) {
         case -1:
@@ -439,13 +427,13 @@ StressDilatancyModel::getResponse (int responseID, Information &matInformation)
 }
 
 int
-StressDilatancyModel::sendSelf(int commitTag, Channel &theChannel)
+StressDensityModel::sendSelf(int commitTag, Channel &theChannel)
 {
 	return 0; //subclass responsibility
 }
 
 int 
-StressDilatancyModel::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBroker &theBroker)
+StressDensityModel::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBroker &theBroker)
 {
 	return 0; //subclass responsibility
 }

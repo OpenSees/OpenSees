@@ -23,7 +23,7 @@
 // Updated: Chris McGann
 //          June 2015, Washington State University
 
-# include "StressDilatancyModel.h"
+# include "StressDensityModel.h"
 
 #ifdef _WIN32
 
@@ -58,15 +58,15 @@ extern "C"  {void sdm2d_(
 			 double (*_tangent)[3]);}
 #endif
 
-class StressDilatancyModel2D : public StressDilatancyModel {
+class StressDensityModel2D : public StressDensityModel {
 
 public:
 	
 	//default constructor 
-	StressDilatancyModel2D();
+	StressDensityModel2D();
 
 	//initialisation constructor
-	StressDilatancyModel2D(int tag, double constDensity,
+	StressDensityModel2D(int tag, double constDensity,
                            // SD model  parameters
                            double initialVoidRatio,	double constA, double exponentN, double poissonRatio,	
                            double constAlpha1, double constBeta1, double constAlpha2, double constBeta2,
@@ -86,7 +86,7 @@ public:
                            double constRxx, double constRyy, double constRxy);
 
 	//destructor
-	~StressDilatancyModel2D();
+	~StressDensityModel2D();
 
 	NDMaterial* getCopy( ) ;
     const char* getType( ) const ;

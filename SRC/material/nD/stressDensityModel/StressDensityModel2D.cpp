@@ -23,12 +23,12 @@
 // Updated: Chris McGann
 //          June 2015, Washington State University
 
-#include <StressDilatancyModel2D.h>
+#include <StressDensityModel2D.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
 // full constructor
-StressDilatancyModel2D::StressDilatancyModel2D(int tag, double constDensity, double initialVoidRatio, double constA,
+StressDensityModel2D::StressDensityModel2D(int tag, double constDensity, double initialVoidRatio, double constA,
                                                double exponentN, double poissonRatio, double constAlpha1, 
                                                double constBeta1, double constAlpha2, double constBeta2, 
                                                double constAlpha3, double constBeta3, double constDegradation,
@@ -41,7 +41,7 @@ StressDilatancyModel2D::StressDilatancyModel2D(int tag, double constDensity, dou
                                                double constP4, double constP5, double constP6, double constP7, 
                                                double constP8, double constP9, double constP10, double constRxx,
                                                double constRyy, double constRxy)
-  : StressDilatancyModel(tag, ND_TAG_StressDilatancyModel2D, constDensity, initialVoidRatio, constA, exponentN,	poissonRatio,
+  : StressDensityModel(tag, ND_TAG_StressDensityModel2D, constDensity, initialVoidRatio, constA, exponentN,	poissonRatio,
                           constAlpha1, constBeta1, constAlpha2, constBeta2, constAlpha3, constBeta3, constDegradation,
                           constMumin, constMucyclic, constDilatancyStrain, constMumax, constPatm, constsslvoidatP1,
                           constsslvoidatP2, constsslvoidatP3, constsslvoidatP4, constsslvoidatP5, constsslvoidatP6,
@@ -65,8 +65,8 @@ StressDilatancyModel2D::StressDilatancyModel2D(int tag, double constDensity, dou
 }
 
 // null constructor
-StressDilatancyModel2D::StressDilatancyModel2D()
-  : StressDilatancyModel(),
+StressDensityModel2D::StressDensityModel2D()
+  : StressDensityModel(),
     stressCurrent(3),
     stressNext(3),
     strainCurrent(3),
@@ -78,37 +78,37 @@ StressDilatancyModel2D::StressDilatancyModel2D()
 }
 
 // destructor
-StressDilatancyModel2D::~StressDilatancyModel2D()
+StressDensityModel2D::~StressDensityModel2D()
 {
 }
 
 NDMaterial *
-StressDilatancyModel2D::getCopy(void)
+StressDensityModel2D::getCopy(void)
 {
-	StressDilatancyModel2D *theCopy = 0;
+	StressDensityModel2D *theCopy = 0;
 	if(theCopy){
 		*theCopy=*this;
 		return theCopy;
 	} else {
-		opserr<<"StressDilatancyModel2D::getCopy failed to get copy: " << endln;
+		opserr<<"StressDensityModel2D::getCopy failed to get copy: " << endln;
 	  	return 0;
 	}
 }
 
 const char *
-StressDilatancyModel2D::getType(void) const 
+StressDensityModel2D::getType(void) const 
 {
 	return "PlaneStrain";
 }
 
 int 
-StressDilatancyModel2D::getOrder( ) const 
+StressDensityModel2D::getOrder( ) const 
 {
 	return 3;
 }
 
 int 
-StressDilatancyModel2D::setTrialStrain(const Vector &strain_from_element) 
+StressDensityModel2D::setTrialStrain(const Vector &strain_from_element) 
 {
     strainNext = strain_from_element;
 	this->GetCurrentStress(); // calculates the trial stress and current tangent
@@ -116,38 +116,38 @@ StressDilatancyModel2D::setTrialStrain(const Vector &strain_from_element)
 }
 
 int 
-StressDilatancyModel2D::setTrialStrain(const Vector &v, const Vector &r)
+StressDensityModel2D::setTrialStrain(const Vector &v, const Vector &r)
 {
 	return this->setTrialStrain(v);
 }
 
 const Matrix &
-StressDilatancyModel2D:: getTangent(void) 
+StressDensityModel2D:: getTangent(void) 
 {
     return currentTangent;
 }
 
 const Matrix &
-StressDilatancyModel2D::getInitialTangent(void) 
+StressDensityModel2D::getInitialTangent(void) 
 {
     this->CalInitialTangent();
     return initialTangent;
 }
 
 const Vector &
-StressDilatancyModel2D::getStress(void)
+StressDensityModel2D::getStress(void)
 {
     return stressNext;
 }
 
 const Vector &
-StressDilatancyModel2D::getStrain(void)
+StressDensityModel2D::getStrain(void)
 {
     return strainCurrent;
 }
 
 int 
-StressDilatancyModel2D::commitState(void) 
+StressDensityModel2D::commitState(void) 
 {
     //Commit stress and strain
 	stressCurrent=stressNext;
@@ -165,7 +165,7 @@ StressDilatancyModel2D::commitState(void)
 }
 
 int 
-StressDilatancyModel2D::sendSelf(int commitTag, Channel &theChannel)
+StressDensityModel2D::sendSelf(int commitTag, Channel &theChannel)
 {
     int res = 0;
 
@@ -219,7 +219,7 @@ StressDilatancyModel2D::sendSelf(int commitTag, Channel &theChannel)
 
 	res = theChannel.sendVector(this->getDbTag(), commitTag, vData);
 	if (res < 0) {
-      opserr << "StressDilatancyModel::sendSelf() - failed to send vData\n";
+      opserr << "StressDensityModel::sendSelf() - failed to send vData\n";
 	  return -1;
 	}
 
@@ -227,7 +227,7 @@ StressDilatancyModel2D::sendSelf(int commitTag, Channel &theChannel)
 }
 
 int 
-StressDilatancyModel2D::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBroker &theBroker)
+StressDensityModel2D::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBroker &theBroker)
 {
     int res = 0;
 
@@ -236,7 +236,7 @@ StressDilatancyModel2D::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBr
 
 	res = theChannel.recvVector(this->getDbTag(), commitTag, vData);
 	if (res < 0) {
-		opserr << "StressDilatancyModel::recvSelf() - failed to recv vData\n";
+		opserr << "StressDensityModel::recvSelf() - failed to recv vData\n";
 		return -1;
     }
 	
@@ -291,7 +291,7 @@ StressDilatancyModel2D::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBr
 // ******************************* PRIVATE METHODS **********************************
 
 void
-StressDilatancyModel2D::initialise() 
+StressDensityModel2D::initialise() 
 {
     // initialise hardening parameters to zeros
     for (int i=0;i<7*Nsurface+3;i++) {
@@ -348,7 +348,7 @@ variables; else not.
 The temporary variables have an underscore as the prefix.
 -----------------------------------------------------------------------------------*/
 void
-StressDilatancyModel2D::GetCurrentStress(void){
+StressDensityModel2D::GetCurrentStress(void){
 
 	// Elastic 
 	// ---------
@@ -426,7 +426,7 @@ StressDilatancyModel2D::GetCurrentStress(void){
 }
 
 void 
-StressDilatancyModel2D::CalInitialTangent(void)
+StressDensityModel2D::CalInitialTangent(void)
 {
     double nu, G, A, m, eo, patm;
 

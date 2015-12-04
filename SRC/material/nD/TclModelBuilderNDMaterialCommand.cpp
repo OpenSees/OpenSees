@@ -95,7 +95,7 @@ extern  void *OPS_NewManzariDafaliasMaterialRO(void);
 extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
 extern  void *OPS_NewInitStressNDMaterial(void);
-extern  void *OPS_NewStressDilatancyMaterial(void);
+extern  void *OPS_NewStressDensityMaterial(void);
 
 extern void *OPS_NewLinearCap(void);
 extern void *OPS_NewAcousticMedium(void);
@@ -375,9 +375,9 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
-    else if ((strcmp(argv[1],"StressDilatancyModel") == 0)){
+    else if ((strcmp(argv[1],"StressDensityModel") == 0)){
       
-      void *theMat = OPS_NewStressDilatancyMaterial();
+      void *theMat = OPS_NewStressDensityMaterial();
       if (theMat != 0)
 	theMaterial = (NDMaterial *)theMat;
       else

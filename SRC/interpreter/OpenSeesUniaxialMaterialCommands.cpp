@@ -797,7 +797,7 @@ extern  void *OPS_NewManzariDafaliasMaterialRO(void);
 extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
 extern  void *OPS_NewInitStressNDMaterial(void);
-extern  void *OPS_NewStressDilatancyMaterial(void);
+extern  void *OPS_NewStressDensityMaterial(void);
 
 int OPS_SetUpNDMaterial(void) {
     nDMaterialMap.insert(std::make_pair("ElasticIsotropic3D", &OPS_NewElasticIsotropicMaterial));

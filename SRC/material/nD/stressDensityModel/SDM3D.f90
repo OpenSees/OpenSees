@@ -16,7 +16,6 @@ SUBROUTINE SDM3D (STRESS_CURRENT, &
                   ANISOTROPY, &
                   TANGENT)
                   
-    !USE KIND_DBL_3D_E
     USE ALL_INTERFACES_3D
     IMPLICIT NONE
     

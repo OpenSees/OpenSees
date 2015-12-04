@@ -23,14 +23,14 @@
 // Updated: Chris McGann
 //          June 2015, Washington State University
 
-#include <StressDilatancyModel3D.h>
+#include <StressDensityModel3D.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <Information.h>
 #include <Parameter.h>
 
 // full constructor
-StressDilatancyModel3D::StressDilatancyModel3D(int tag, double constDensity, double initialVoidRatio, double constA,
+StressDensityModel3D::StressDensityModel3D(int tag, double constDensity, double initialVoidRatio, double constA,
                                                double exponentN, double poissonRatio, double constAlpha1,
                                                double constBeta1, double constAlpha2, double constBeta2,
                                                double constAlpha3, double constBeta3, double constDegradation,	
@@ -44,7 +44,7 @@ StressDilatancyModel3D::StressDilatancyModel3D(int tag, double constDensity, dou
                                                double constP8, double constP9, double constP10,	double constRxx,
                                                double constRyy,	double constRzz, double constRxy, double constRyz,
                                                double constRzx)
-  : StressDilatancyModel(tag, ND_TAG_StressDilatancyModel3D, constDensity, initialVoidRatio, constA, exponentN, poissonRatio,
+  : StressDensityModel(tag, ND_TAG_StressDensityModel3D, constDensity, initialVoidRatio, constA, exponentN, poissonRatio,
                      constAlpha1, constBeta1, constAlpha2, constBeta2, constAlpha3, constBeta3, constDegradation,
                      constMumin, constMucyclic, constDilatancyStrain, constMumax, constPatm, constsslvoidatP1,
                      constsslvoidatP2, constsslvoidatP3, constsslvoidatP4, constsslvoidatP5, constsslvoidatP6,
@@ -65,11 +65,12 @@ StressDilatancyModel3D::StressDilatancyModel3D(int tag, double constDensity, dou
 	this->CalInitialTangent();
     // set current tangent as initial to start
 	currentTangent = initialTangent;
+    modelParameter[3] = 0.25;
 }
 
 // null constructor
-StressDilatancyModel3D::StressDilatancyModel3D()
-  : StressDilatancyModel(),
+StressDensityModel3D::StressDensityModel3D()
+  : StressDensityModel(),
     stressCurrent(6),
     stressNext(6),
     strainCurrent(6),
@@ -80,37 +81,37 @@ StressDilatancyModel3D::StressDilatancyModel3D()
     this->initialise();
 }
 
-StressDilatancyModel3D::~StressDilatancyModel3D() 
+StressDensityModel3D::~StressDensityModel3D() 
 {
 }
 
 NDMaterial *
-StressDilatancyModel3D::getCopy(void)
+StressDensityModel3D::getCopy(void)
 {
-	StressDilatancyModel3D *theCopy = 0;
+	StressDensityModel3D *theCopy = 0;
 	if(theCopy){
 		*theCopy=*this;
 		return theCopy;
 	} else {
-		opserr<<"StressDilatancyModel3D::getCopy failed to get copy: " << endln;
+		opserr<<"StressDensityModel3D::getCopy failed to get copy: " << endln;
 	  	return 0;
 	}
 }
 
 const char *
-StressDilatancyModel3D::getType(void) const 
+StressDensityModel3D::getType(void) const 
 {
 	return "ThreeDimensional";
 }
 
 int 
-StressDilatancyModel3D::getOrder( ) const 
+StressDensityModel3D::getOrder( ) const 
 {
 	return 6;
 }
 
 int 
-StressDilatancyModel3D::setTrialStrain(const Vector &strain_from_element) 
+StressDensityModel3D::setTrialStrain(const Vector &strain_from_element) 
 {
 	strainNext = strain_from_element;
 	this->GetCurrentStress(); //calculates stresses as well as the current tangent
@@ -118,38 +119,38 @@ StressDilatancyModel3D::setTrialStrain(const Vector &strain_from_element)
 }
 
 int 
-StressDilatancyModel3D::setTrialStrain(const Vector &v, const Vector &r) 
+StressDensityModel3D::setTrialStrain(const Vector &v, const Vector &r) 
 {
 	return this->setTrialStrain(v);
 }
 
 const Matrix &
-StressDilatancyModel3D::getTangent(void) 
+StressDensityModel3D::getTangent(void) 
 {
 	return currentTangent;
 }
 
 const Matrix &
-StressDilatancyModel3D::getInitialTangent(void)
+StressDensityModel3D::getInitialTangent(void)
 {
 	this->CalInitialTangent();
 	return initialTangent;
 }
 
 const Vector &
-StressDilatancyModel3D::getStress(void)
+StressDensityModel3D::getStress(void)
 {
 	return stressNext;
 }
 
 const Vector &
-StressDilatancyModel3D::getStrain(void)
+StressDensityModel3D::getStrain(void)
 {
 	return strainCurrent;
 }
 
 int 
-StressDilatancyModel3D::commitState(void) 
+StressDensityModel3D::commitState(void) 
 {
     //Commit stress and strain
 	stressCurrent=stressNext;
@@ -167,7 +168,7 @@ StressDilatancyModel3D::commitState(void)
 }
 
 int 
-StressDilatancyModel3D::sendSelf(int commitTag, Channel &theChannel)
+StressDensityModel3D::sendSelf(int commitTag, Channel &theChannel)
 {
     int res = 0;
 
@@ -233,7 +234,7 @@ StressDilatancyModel3D::sendSelf(int commitTag, Channel &theChannel)
 
 	res = theChannel.sendVector(this->getDbTag(), commitTag, vData);
 	if (res < 0) {
-      opserr << "StressDilatancyModel::sendSelf() - failed to send vData\n";
+      opserr << "StressDensityModel::sendSelf() - failed to send vData\n";
 	  return -1;
 	}
 
@@ -241,7 +242,7 @@ StressDilatancyModel3D::sendSelf(int commitTag, Channel &theChannel)
 }
 
 int 
-StressDilatancyModel3D::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBroker &theBroker)
+StressDensityModel3D::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBroker &theBroker)
 {
     int res = 0;
 
@@ -250,7 +251,7 @@ StressDilatancyModel3D::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBr
 
 	res = theChannel.recvVector(this->getDbTag(), commitTag, vData);
 	if (res < 0) {
-		opserr << "StressDilatancyModel::recvSelf() - failed to recv vData\n";
+		opserr << "StressDensityModel::recvSelf() - failed to recv vData\n";
 		return -1;
     }
 	
@@ -317,7 +318,7 @@ StressDilatancyModel3D::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBr
 // ******************************* PRIVATE METHODS **********************************
 
 void
-StressDilatancyModel3D::initialise() 
+StressDensityModel3D::initialise() 
 {
     // initialise hardening parameters to zeros
     for (int i=0;i<13*Nsurface+3;i++) {
@@ -374,7 +375,7 @@ variables; else not.
 The temporary variables have an underscore as the prefix.
 -----------------------------------------------------------------------------------*/
 void
-StressDilatancyModel3D::GetCurrentStress(void)
+StressDensityModel3D::GetCurrentStress(void)
 {   
 	// Elastic 
 	// ---------
@@ -462,7 +463,7 @@ StressDilatancyModel3D::GetCurrentStress(void)
 }
 
 void 
-StressDilatancyModel3D::CalInitialTangent(void)
+StressDensityModel3D::CalInitialTangent(void)
 {
 	double nu, G, A, m, eo, patm;
 

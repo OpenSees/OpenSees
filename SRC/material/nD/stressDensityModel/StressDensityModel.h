@@ -23,8 +23,8 @@
 // Updated: Chris McGann
 //          June 2015, Washington State University
 
-#ifndef StressDilatancyModel_h
-#define StressDilatancyModel_h
+#ifndef StressDensityModel_h
+#define StressDensityModel_h
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,19 +35,19 @@
 #include <Vector.h>
 #include <ID.h>
 
-class StressDilatancyModel : public NDMaterial
+class StressDensityModel : public NDMaterial
 {
   public:
 
     // full constructor
-	StressDilatancyModel(int tag, int classTag, double constDensity,
+	StressDensityModel(int tag, int classTag, double constDensity,
 						 // SD model  parameters		
 						 double initialVoidRatio, double constA, double exponentN,
                          double poissonRatio, double constAlpha1, double constBeta1,	
                          double constAlpha2, double constBeta2, double constAlpha3,
                          double constBeta3, double constDegradation, double constMumin,
                          double constMucyclic, double constDilatancyStrain,	
-                         double constMumax, double constPatm,
+                         double constMumax, double constPatm, 
                          // steady state line void ratio
                          double constsslvoidatP1, double constsslvoidatP2, double constsslvoidatP3,
                          double constsslvoidatP4, double constsslvoidatP5, double constsslvoidatP6,
@@ -64,10 +64,10 @@ class StressDilatancyModel : public NDMaterial
                          double constRxy=0.0, double constRyz=0.0, double constRzx=0.0);
 
     // null constructor
-    StressDilatancyModel();
+    StressDensityModel();
 
     // destructor
-	~StressDilatancyModel();
+	~StressDensityModel();
 
     NDMaterial *getCopy(const char *type);
 
