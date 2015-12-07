@@ -1,0 +1,186 @@
+clacon.c:    static int iter;
+clacon.c:    static int jump, jlast;
+clacon.c:    static float altsgn, estold;
+clacon.c:    static int i, j;
+colamd.c:#define PRIVATE static
+colamd.c:    can use it for a statically-allocated array size.
+creadhb.c:static int ReadVector(FILE *fp, int n, int *where, int perline, int persize)
+creadhb.c:static void
+creadrb.c:static int cDumpLine(FILE *fp)
+creadrb.c:static int cParseIntFormat(char *buf, int *num, int *size)
+creadrb.c:static int cParseFloatFormat(char *buf, int *num, int *size)
+creadrb.c:static int ReadVector(FILE *fp, int n, int *where, int perline, int persize)
+creadrb.c:static int cReadValues(FILE *fp, int n, complex *destination, int perline, int persize)
+creadrb.c:static void
+dlacon.c:    static int iter;
+dlacon.c:    static int jump, jlast;
+dlacon.c:    static double altsgn, estold;
+dlacon.c:    static int i, j;
+dlamch.c:    static int first = TRUE_;
+dlamch.c:    static double base;
+dlamch.c:    static int beta;
+dlamch.c:    static double emin, prec, emax;
+dlamch.c:    static int imin, imax;
+dlamch.c:    static int lrnd;
+dlamch.c:    static double rmin, rmax, t, rmach;
+dlamch.c:    static double small, sfmin;
+dlamch.c:    static int it;
+dlamch.c:    static double rnd, eps;
+dlamch.c:    static int first = TRUE_;
+dlamch.c:    static int lrnd;
+dlamch.c:    static double a, b, c, f;
+dlamch.c:    static int lbeta;
+dlamch.c:    static double savec;
+dlamch.c:    static int lieee1;
+dlamch.c:    static double t1, t2;
+dlamch.c:    static int lt;
+dlamch.c:    static double one, qtr;
+dlamch.c:    static int c__1 = 1;
+dlamch.c:    static int first = TRUE_;
+dlamch.c:    static int iwarn = FALSE_;
+dlamch.c:    static int ieee;
+dlamch.c:    static double half;
+dlamch.c:    static int lrnd;
+dlamch.c:    static double leps, zero, a, b, c;
+dlamch.c:    static int i, lbeta;
+dlamch.c:    static double rbase;
+dlamch.c:    static int lemin, lemax, gnmin;
+dlamch.c:    static double small;
+dlamch.c:    static int gpmin;
+dlamch.c:    static double third, lrmin, lrmax, sixth;
+dlamch.c:    static int lieee1;
+dlamch.c:    static int lt, ngnmin, ngpmin;
+dlamch.c:    static double one, two;
+dlamch.c:    static double zero, a;
+dlamch.c:    static int i;
+dlamch.c:    static double rbase, b1, b2, c1, c2, d1, d2;
+dlamch.c:    static double one;
+dlamch.c:    static double c_b5 = 0.;
+dlamch.c:    static int lexp;
+dlamch.c:    static double oldy;
+dlamch.c:    static int uexp, i;
+dlamch.c:    static double y, z;
+dlamch.c:    static int nbits;
+dlamch.c:    static double recbas;
+dlamch.c:    static int exbits, expsum, try__;
+dreadhb.c:static int ReadVector(FILE *fp, int n, int *where, int perline, int persize)
+dreadhb.c:static void
+dreadrb.c:static int dDumpLine(FILE *fp)
+dreadrb.c:static int dParseIntFormat(char *buf, int *num, int *size)
+dreadrb.c:static int dParseFloatFormat(char *buf, int *num, int *size)
+dreadrb.c:static int ReadVector(FILE *fp, int n, int *where, int perline, int persize)
+dreadrb.c:static int dReadValues(FILE *fp, int n, double *destination, int perline,
+dreadrb.c:static void
+icmax1.c:    static float smax;
+icmax1.c:    static int i, ix;
+ilu_ccolumn_dfs.c:    static  int  first = 1, maxsuper;
+ilu_ccopy_to_ucol.c:static complex *A;  /* used in _compare_ only */
+ilu_ccopy_to_ucol.c:static int _compare_(const void *a, const void *b)
+ilu_cdrop_row.c:static float *A;  /* used in _compare_ only */
+ilu_cdrop_row.c:static int _compare_(const void *a, const void *b)
+ilu_dcolumn_dfs.c:    static  int  first = 1, maxsuper;
+ilu_dcopy_to_ucol.c:static double *A;  /* used in _compare_ only */
+ilu_dcopy_to_ucol.c:static int _compare_(const void *a, const void *b)
+ilu_ddrop_row.c:static double *A;  /* used in _compare_ only */
+ilu_ddrop_row.c:static int _compare_(const void *a, const void *b)
+ilu_scolumn_dfs.c:    static  int  first = 1, maxsuper;
+ilu_scopy_to_ucol.c:static float *A;  /* used in _compare_ only */
+ilu_scopy_to_ucol.c:static int _compare_(const void *a, const void *b)
+ilu_sdrop_row.c:static float *A;  /* used in _compare_ only */
+ilu_sdrop_row.c:static int _compare_(const void *a, const void *b)
+ilu_zcolumn_dfs.c:    static  int  first = 1, maxsuper;
+ilu_zcopy_to_ucol.c:static doublecomplex *A;  /* used in _compare_ only */
+ilu_zcopy_to_ucol.c:static int _compare_(const void *a, const void *b)
+ilu_zdrop_row.c:static double *A;  /* used in _compare_ only */
+ilu_zdrop_row.c:static int _compare_(const void *a, const void *b)
+mc64ad.c:static int_t c__1 = 1;
+mc64ad.c:static int_t c__2 = 2;
+mmd.c:    static int mdeg, ehead, i, mdlmt, mdnode;
+mmd.c:    static int nextmd, tag, num;
+mmd.c:    static int ndeg, node, fnode;
+mmd.c:    static int node, link, rloc, rlmt, i, j, nabor, rnode, elmnt, xqnbr, 
+mmd.c:    static int node, mtag, link, mdeg0, i, j, enode, fnode, nabor, elmnt, 
+mmd.c:    static int node, root, nextf, father, nqsize, num;
+scsum1.c:    static int i, nincx;
+scsum1.c:    static float stemp;
+slacon.c:    static int iter;
+slacon.c:    static int jump, jlast;
+slacon.c:    static float altsgn, estold;
+slacon.c:    static int i, j;
+slamch.c:    static int first = TRUE_;
+slamch.c:    static float base;
+slamch.c:    static int beta;
+slamch.c:    static float emin, prec, emax;
+slamch.c:    static int imin, imax;
+slamch.c:    static int lrnd;
+slamch.c:    static float rmin, rmax, t, rmach;
+slamch.c:    static float small, sfmin;
+slamch.c:    static int it;
+slamch.c:    static float rnd, eps;
+slamch.c:    static int first = TRUE_;
+slamch.c:    static int lrnd;
+slamch.c:    static float a, b, c, f;
+slamch.c:    static int lbeta;
+slamch.c:    static float savec;
+slamch.c:    static int lieee1;
+slamch.c:    static float t1, t2;
+slamch.c:    static int lt;
+slamch.c:    static float one, qtr;
+slamch.c:    static int c__1 = 1;
+slamch.c:    static int first = TRUE_;
+slamch.c:    static int iwarn = FALSE_;
+slamch.c:    static int ieee;
+slamch.c:    static float half;
+slamch.c:    static int lrnd;
+slamch.c:    static float leps, zero, a, b, c;
+slamch.c:    static int i, lbeta;
+slamch.c:    static float rbase;
+slamch.c:    static int lemin, lemax, gnmin;
+slamch.c:    static float small;
+slamch.c:    static int gpmin;
+slamch.c:    static float third, lrmin, lrmax, sixth;
+slamch.c:    static int lieee1;
+slamch.c:    static int lt, ngnmin, ngpmin;
+slamch.c:    static float one, two;
+slamch.c:    static float zero, a;
+slamch.c:    static int i;
+slamch.c:    static float rbase, b1, b2, c1, c2, d1, d2;
+slamch.c:    static float one;
+slamch.c:    static float c_b5 = 0.f;
+slamch.c:    static int lexp;
+slamch.c:    static float oldy;
+slamch.c:    static int uexp, i;
+slamch.c:    static float y, z;
+slamch.c:    static int nbits;
+slamch.c:    static float recbas;
+slamch.c:    static int exbits, expsum, try__;
+sp_coletree.c:static 
+sp_coletree.c:static
+sp_coletree.c:static
+sp_coletree.c:static
+sp_coletree.c:static
+sp_coletree.c:static
+sp_coletree.c:static
+sp_coletree.c:static
+sp_coletree.c:static
+sreadhb.c:static int ReadVector(FILE *fp, int n, int *where, int perline, int persize)
+sreadhb.c:static void
+sreadrb.c:static int sDumpLine(FILE *fp)
+sreadrb.c:static int sParseIntFormat(char *buf, int *num, int *size)
+sreadrb.c:static int sParseFloatFormat(char *buf, int *num, int *size)
+sreadrb.c:static int ReadVector(FILE *fp, int n, int *where, int perline, int persize)
+sreadrb.c:static int sReadValues(FILE *fp, int n, float *destination, int perline,
+sreadrb.c:static void
+util.c:static 	int	max_sup_size;
+zlacon.c:    static int iter;
+zlacon.c:    static int jump, jlast;
+zlacon.c:    static double altsgn, estold;
+zlacon.c:    static int i, j;
+zreadhb.c:static int ReadVector(FILE *fp, int n, int *where, int perline, int persize)
+zreadhb.c:static void
+zreadrb.c:static int zDumpLine(FILE *fp)
+zreadrb.c:static int zParseIntFormat(char *buf, int *num, int *size)
+zreadrb.c:static int zParseFloatFormat(char *buf, int *num, int *size)
+zreadrb.c:static int ReadVector(FILE *fp, int n, int *where, int perline, int persize)
+zreadrb.c:static int zReadValues(FILE *fp, int n, doublecomplex *destination, int perline, int persize)
+zreadrb.c:static void
