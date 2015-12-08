@@ -726,6 +726,7 @@ Node::setTrialDisp(double value, int dof)
     // check vector arg is of correct size
     if (dof < 0 || dof >=  numberDOF) {
       opserr << "WARNING Node::setTrialDisp() - incompatable sizes\n";
+      opserr << "node: " << this->getTag() << endln;
       return -2;
     }    
 
@@ -754,9 +755,10 @@ Node::setTrialDisp(const Vector &newTrialDisp)
 {
     // check vector arg is of correct size
     if (newTrialDisp.Size() != numberDOF) {
-	    opserr << "WARNING Node::setTrialDisp() - incompatable sizes\n";
-	    return -2;
-	}    
+      opserr << "WARNING Node::setTrialDisp() - incompatable sizes\n";
+      opserr << "node: " << this->getTag() << endln;
+      return -2;
+    }    
 
     // construct memory and Vectors for trial and committed
     // accel on first call to this method, getTrialDisp(),
