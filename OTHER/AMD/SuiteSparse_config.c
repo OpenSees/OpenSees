@@ -354,10 +354,10 @@ void SuiteSparse_tic
 )
 {
     /* POSIX C 1993 timer, requires -librt */
-    struct timespec t ;
-    clock_gettime (CLOCK_MONOTONIC, &t) ;
-    tic [0] = (double) (t.tv_sec) ;
-    tic [1] = (double) (t.tv_nsec) ;
+    //struct timespec t ;
+    //clock_gettime (CLOCK_MONOTONIC, &t) ;
+    //tic [0] = (double) (t.tv_sec) ;
+    //tic [1] = (double) (t.tv_nsec) ;
 }
 
 #else
