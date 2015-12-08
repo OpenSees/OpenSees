@@ -39,10 +39,8 @@
 #include <math.h>
 
 #include <elementAPI.h>
-#define OPS_Export 
 
-
-OPS_Export void *OPS_PulseSeries()
+void *OPS_PulseSeries(void)
 {
     // Pointer to a uniaxial material that will be returned
     TimeSeries *theSeries = 0;

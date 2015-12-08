@@ -37,9 +37,8 @@
 #include <Channel.h>
 
 #include <elementAPI.h>
-#define OPS_Export 
 
-OPS_Export void *
+void *
 OPS_RectangularSeries(void)
 {
   // Pointer to a uniaxial material that will be returned
