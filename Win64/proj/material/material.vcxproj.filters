@@ -95,7 +95,7 @@
     <Filter Include="nD\matCMM">
       <UniqueIdentifier>{03aae77f-2de0-490a-8ce5-d376296d50cd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="nD\stressDilatancyModel">
+    <Filter Include="nD\stressDensityModel">
       <UniqueIdentifier>{6e3e6f77-1c02-4196-ab9f-b240564e4535}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -1028,14 +1028,14 @@
     <ClCompile Include="..\..\..\SRC\material\nD\FSAM.cpp">
       <Filter>nD</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDilatancyModel\StressDilatancyModel.cpp">
-      <Filter>nD\stressDilatancyModel</Filter>
+    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.cpp">
+      <Filter>nD\stressDensityModel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDilatancyModel\StressDilatancyModel2D.cpp">
-      <Filter>nD\stressDilatancyModel</Filter>
+    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.cpp">
+      <Filter>nD\stressDensityModel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDilatancyModel\StressDilatancyModel3D.cpp">
-      <Filter>nD\stressDilatancyModel</Filter>
+    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.cpp">
+      <Filter>nD\stressDensityModel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1910,14 +1910,14 @@
     <ClInclude Include="..\..\..\SRC\material\nD\FSAM.h">
       <Filter>nD</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDilatancyModel\StressDilatancyModel.h">
-      <Filter>nD\stressDilatancyModel</Filter>
+    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.h">
+      <Filter>nD\stressDensityModel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDilatancyModel\StressDilatancyModel2D.h">
-      <Filter>nD\stressDilatancyModel</Filter>
+    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.h">
+      <Filter>nD\stressDensityModel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDilatancyModel\StressDilatancyModel3D.h">
-      <Filter>nD\stressDilatancyModel</Filter>
+    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.h">
+      <Filter>nD\stressDensityModel</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

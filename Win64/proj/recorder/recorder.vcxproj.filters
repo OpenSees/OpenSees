@@ -83,6 +83,9 @@
     <ClCompile Include="..\..\..\SRC\recorder\response\Response.cpp">
       <Filter>response</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\recorder\PVDRecorder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\recorder\DamageRecorder.h">
@@ -147,6 +150,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\recorder\response\Response.h">
       <Filter>response</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\recorder\PVDRecorder.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

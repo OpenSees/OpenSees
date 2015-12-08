@@ -108,6 +108,7 @@
     <ClCompile Include="..\..\..\SRC\recorder\NormElementRecorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\NormEnvelopeElementRecorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\PatternRecorder.cpp" />
+    <ClCompile Include="..\..\..\SRC\recorder\PVDRecorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\Recorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\RemoveRecorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\TclRecorderCommands.cpp" />
@@ -121,6 +122,7 @@
     <ClInclude Include="..\..\..\SRC\recorder\DamageRecorder.h" />
     <ClInclude Include="..\..\..\SRC\recorder\NormElementRecorder.h" />
     <ClInclude Include="..\..\..\SRC\recorder\NormEnvelopeElementRecorder.h" />
+    <ClInclude Include="..\..\..\SRC\recorder\PVDRecorder.h" />
     <ClInclude Include="..\..\..\SRC\recorder\RemoveRecorder.h" />
     <ClInclude Include="..\..\..\SRC\recorder\AlgorithmIncrements.h" />
     <ClInclude Include="..\..\..\SRC\recorder\DatastoreRecorder.h" />

@@ -108,6 +108,9 @@
     <Filter Include="mvlem">
       <UniqueIdentifier>{192f6adf-59e2-4e68-8259-4093172b605a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="componentElement">
+      <UniqueIdentifier>{3c5b233e-0ad7-418e-bf3b-9ad6e0c6e47c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -740,6 +743,9 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp">
+      <Filter>componentElement</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1263,6 +1269,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.h">
       <Filter>mvlem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h">
+      <Filter>componentElement</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
