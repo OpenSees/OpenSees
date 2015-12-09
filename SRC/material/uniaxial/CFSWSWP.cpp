@@ -41,6 +41,10 @@
  
 static int numCFSWSWP = 0;
 
+#ifdef _WIN32
+#define isnan _isnan
+#endif
+
 void *
 OPS_CFSWSWP(void)
 {
