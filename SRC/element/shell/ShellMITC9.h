@@ -34,14 +34,14 @@
 #include <SectionForceDeformation.h>
 #include <R3vectors.h>
 
-class ShellNL : public Element
+class ShellMITC9 : public Element
 {
   public:
 
     //null constructor
-    ShellNL();
+    ShellMITC9();
     //full constructor
-    ShellNL(int tag, 
+    ShellMITC9(int tag, 
 	     int node1,
 	     int node2,
 	     int node3,
@@ -53,7 +53,7 @@ class ShellNL : public Element
 	     int node9,
 	     SectionForceDeformation &theMaterial ) ;
     //destructor 
-    virtual ~ShellNL( ) ;
+    virtual ~ShellMITC9( ) ;
 
     //get the number of external nodes
     int getNumExternalNodes( ) const ;

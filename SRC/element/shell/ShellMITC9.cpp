@@ -33,7 +33,7 @@
 #include <SectionForceDeformation.h>
 #include <Domain.h>
 #include <ErrorHandler.h>
-#include <ShellNL.h>
+#include <ShellMITC9.h>
 #include <R3vectors.h>
 #include <Renderer.h>
 #include <ElementResponse.h>
@@ -43,39 +43,39 @@
 #include <elementAPI.h>
 #define min(a,b) ( (a)<(b) ? (a):(b) )
 
-static int numShellNL = 0;
+static int numShellMITC9 = 0;
 
 void *
-OPS_NewShellNL(void)
+OPS_NewShellMITC9(void)
 {
-  if (numShellNL == 0) {
-    opserr << "Using ShellNL - Developed by: Leopoldo Tesser and Diego A. Talledo\n";
-    numShellNL++;
+  if (numShellMITC9 == 0) {
+    opserr << "Using ShellMITC9 - Developed by: Leopoldo Tesser and Diego A. Talledo\n";
+    numShellMITC9++;
   }
 
   Element *theElement = 0;
   int numArgs = OPS_GetNumRemainingInputArgs();
   
   if (numArgs < 11) {
-    opserr << "Want: element ShellNL $tag $node1 $node2 .... $node9 $secTag";
+    opserr << "Want: element ShellMITC9 $tag $node1 $node2 .... $node9 $secTag";
     return 0;	
   }
   
   int iData[11];
   int numData = 11;
   if (OPS_GetInt(&numData, iData) != 0) {
-    opserr << "WARNING invalid integer tag: element ShellNL\n";
+    opserr << "WARNING invalid integer tag: element ShellMITC9\n";
     return 0;
   }
 
   SectionForceDeformation *theSection = OPS_GetSectionForceDeformation(iData[10]);
 
   if (theSection == 0) {
-    opserr << "ERROR:  element ShellNL " << iData[0] << "section " << iData[10] << " not found\n";
+    opserr << "ERROR:  element ShellMITC9 " << iData[0] << "section " << iData[10] << " not found\n";
     return 0;
   }
   
-  theElement = new ShellNL(iData[0], iData[1], iData[2], iData[3],
+  theElement = new ShellMITC9(iData[0], iData[1], iData[2], iData[3],
 			   iData[4], iData[5], iData[6], iData[7],
 			   iData[8], iData[9], *theSection);
 
@@ -84,21 +84,21 @@ OPS_NewShellNL(void)
 
 
 //static data
-Matrix  ShellNL::stiff(54,54) ;
-Vector  ShellNL::resid(54) ; 
-Matrix  ShellNL::mass(54,54) ;
+Matrix  ShellMITC9::stiff(54,54) ;
+Vector  ShellMITC9::resid(54) ; 
+Matrix  ShellMITC9::mass(54,54) ;
 
 //quadrature data
-const double  ShellNL::root3 = sqrt(3.0) ;
-const double  ShellNL::root3_over_root5 = root3 / sqrt(5.0) ;
+const double  ShellMITC9::root3 = sqrt(3.0) ;
+const double  ShellMITC9::root3_over_root5 = root3 / sqrt(5.0) ;
 
-double ShellNL::sg[9] ;
-double ShellNL::tg[9] ;
-double ShellNL::wg[9] ;
+double ShellMITC9::sg[9] ;
+double ShellMITC9::tg[9] ;
+double ShellMITC9::wg[9] ;
 
 //null constructor
-ShellNL::ShellNL( ) :
-Element( 0, ELE_TAG_ShellNL ),
+ShellMITC9::ShellMITC9( ) :
+Element( 0, ELE_TAG_ShellMITC9 ),
 connectedExternalNodes(9), load(0), Ki(0)
 { 
   for (int i = 0 ;  i < 9; i++ )
@@ -138,7 +138,7 @@ connectedExternalNodes(9), load(0), Ki(0)
 
 //*********************************************************************
 //full constructor
-ShellNL::ShellNL(  int tag,
+ShellMITC9::ShellMITC9(  int tag,
                    int node1,
                    int node2,
 		   int node3,
@@ -149,7 +149,7 @@ ShellNL::ShellNL(  int tag,
                    int node8,
 		   int node9,
 		   SectionForceDeformation &theMaterial ) :
-Element( tag, ELE_TAG_ShellNL ),
+Element( tag, ELE_TAG_ShellMITC9 ),
 connectedExternalNodes(9), load(0), Ki(0)
 {
   int i;
@@ -167,7 +167,7 @@ connectedExternalNodes(9), load(0), Ki(0)
   for ( i = 0 ;  i < 9; i++ ) {
     materialPointers[i] = theMaterial.getCopy( ) ;
     if (materialPointers[i] == 0) {
-      opserr << "ShellNL::constructor - failed to get a material of type: ShellSection\n";
+      opserr << "ShellMITC9::constructor - failed to get a material of type: ShellSection\n";
     } //end if
   } //end for i
 
@@ -205,7 +205,7 @@ connectedExternalNodes(9), load(0), Ki(0)
 //******************************************************************
 
 //destructor 
-ShellNL::~ShellNL( )
+ShellMITC9::~ShellMITC9( )
 {
   int i ;
   
@@ -229,7 +229,7 @@ ShellNL::~ShellNL( )
 
 
 //set domain
-void  ShellNL::setDomain( Domain *theDomain ) 
+void  ShellMITC9::setDomain( Domain *theDomain ) 
 {
   int i,j ;
   static Vector eig(3) ;
@@ -240,7 +240,7 @@ void  ShellNL::setDomain( Domain *theDomain )
      nodePointers[i] = theDomain->getNode( connectedExternalNodes(i) ) ;
      
      if (nodePointers[i] == 0) {
-       opserr << "ShellNL::setDomain - no node " << connectedExternalNodes(i);
+       opserr << "ShellMITC9::setDomain - no node " << connectedExternalNodes(i);
        opserr << " exists in the model\n";
      }
   }
@@ -269,40 +269,40 @@ void  ShellNL::setDomain( Domain *theDomain )
 
 
 //get the number of external nodes
-int  ShellNL::getNumExternalNodes( ) const
+int  ShellMITC9::getNumExternalNodes( ) const
 {
   return 9 ;
 } 
  
 
 //return connected external nodes
-const ID&  ShellNL::getExternalNodes( ) 
+const ID&  ShellMITC9::getExternalNodes( ) 
 {
   return connectedExternalNodes ;
 } 
 
 
 Node **
-ShellNL::getNodePtrs(void) 
+ShellMITC9::getNodePtrs(void) 
 {
   return nodePointers;
 } 
 
 //return number of dofs
-int  ShellNL::getNumDOF( ) 
+int  ShellMITC9::getNumDOF( ) 
 {
   return 54 ;
 }
 
 
 //commit state
-int  ShellNL::commitState( )
+int  ShellMITC9::commitState( )
 {
   int success = 0 ;
 
   // call element commitState to do any base class stuff
   if ((success = this->Element::commitState()) != 0) {
-    opserr << "ShellNL::commitState () - failed in base class";
+    opserr << "ShellMITC9::commitState () - failed in base class";
   }    
 
   for (int i = 0; i < 9; i++ )
@@ -314,7 +314,7 @@ int  ShellNL::commitState( )
 
 
 //revert to last commit 
-int  ShellNL::revertToLastCommit( ) 
+int  ShellMITC9::revertToLastCommit( ) 
 {
   int i ;
   int success = 0 ;
@@ -327,7 +327,7 @@ int  ShellNL::revertToLastCommit( )
     
 
 //revert to start 
-int  ShellNL::revertToStart( ) 
+int  ShellMITC9::revertToStart( ) 
 {
   int i ;
   int success = 0 ;
@@ -339,11 +339,11 @@ int  ShellNL::revertToStart( )
 }
 
 //print out element data
-void  ShellNL::Print( OPS_Stream &s, int flag )
+void  ShellMITC9::Print( OPS_Stream &s, int flag )
 {
   if (flag == -1) {
     int eleTag = this->getTag();
-    s << "EL_ShellNL\t" << eleTag << "\t";
+    s << "EL_ShellMITC9\t" << eleTag << "\t";
     s << eleTag << "\t" << 1; 
     s  << "\t" << connectedExternalNodes(0) << "\t" << connectedExternalNodes(1);
     s  << "\t" << connectedExternalNodes(2) << "\t" << connectedExternalNodes(3);
@@ -390,12 +390,12 @@ void  ShellNL::Print( OPS_Stream &s, int flag )
 }
 
 Response*
-ShellNL::setResponse(const char **argv, int argc, OPS_Stream &output)
+ShellMITC9::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
   Response *theResponse = 0;
 
   output.tag("ElementOutput");
-  output.attr("eleType", "ShellNL");
+  output.attr("eleType", "ShellMITC9");
   output.attr("eleTag",this->getTag());
   int numNodes = this->getNumExternalNodes();
   const ID &nodes = this->getExternalNodes();
@@ -419,7 +419,7 @@ ShellNL::setResponse(const char **argv, int argc, OPS_Stream &output)
 
   else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"Material") == 0) {
     if (argc < 2) {
-      opserr << "ShellNL::setResponse() - need to specify more data\n";
+      opserr << "ShellMITC9::setResponse() - need to specify more data\n";
       return 0;
     }
     int pointNum = atoi(argv[1]);
@@ -495,7 +495,7 @@ ShellNL::setResponse(const char **argv, int argc, OPS_Stream &output)
 }
 
 int
-ShellNL::getResponse(int responseID, Information &eleInfo)
+ShellMITC9::getResponse(int responseID, Information &eleInfo)
 {
   int i;
   int cnt = 0;
@@ -550,7 +550,7 @@ ShellNL::getResponse(int responseID, Information &eleInfo)
 
 
 //return stiffness matrix 
-const Matrix&  ShellNL::getTangentStiff( ) 
+const Matrix&  ShellMITC9::getTangentStiff( ) 
 {
   int tang_flag = 1 ; //get the tangent 
 
@@ -561,7 +561,7 @@ const Matrix&  ShellNL::getTangentStiff( )
 }    
 
 //return secant matrix 
-const Matrix&  ShellNL::getInitialStiff( ) 
+const Matrix&  ShellMITC9::getInitialStiff( ) 
 {
   if (Ki != 0)
     return *Ki;
@@ -750,7 +750,7 @@ const Matrix&  ShellNL::getInitialStiff( )
 }
 
 //return mass matrix
-const Matrix&  ShellNL::getMass( ) 
+const Matrix&  ShellMITC9::getMass( ) 
 {
 
   int tangFlag = 1 ;
@@ -760,7 +760,7 @@ const Matrix&  ShellNL::getMass( )
   return mass ;
 } 
 
-void  ShellNL::zeroLoad( )
+void  ShellMITC9::zeroLoad( )
 {
 
   if (load != 0)
@@ -770,14 +770,14 @@ void  ShellNL::zeroLoad( )
 }
 
 int 
-ShellNL::addLoad(ElementalLoad *theLoad, double loadFactor)
+ShellMITC9::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
-  opserr << "ShellNL::addLoad - load type unknown for ele with tag: " << this->getTag() << endln;
+  opserr << "ShellMITC9::addLoad - load type unknown for ele with tag: " << this->getTag() << endln;
   return -1;
 }
 
 int 
-ShellNL::addInertiaLoadToUnbalance(const Vector &accel)
+ShellMITC9::addInertiaLoadToUnbalance(const Vector &accel)
 {
   static Vector r(54);
   int tangFlag = 1 ;
@@ -810,7 +810,7 @@ ShellNL::addInertiaLoadToUnbalance(const Vector &accel)
 }
 
 //get residual
-const Vector&  ShellNL::getResistingForce( ) 
+const Vector&  ShellMITC9::getResistingForce( ) 
 {
   int tang_flag = 0 ; //don't get the tangent
 
@@ -824,7 +824,7 @@ const Vector&  ShellNL::getResistingForce( )
 }
 
 //get residual with inertia terms
-const Vector&  ShellNL::getResistingForceIncInertia( )
+const Vector&  ShellMITC9::getResistingForceIncInertia( )
 {
   static Vector res(54);
   int tang_flag = 0 ; //don't get the tangent
@@ -850,7 +850,7 @@ const Vector&  ShellNL::getResistingForceIncInertia( )
 //form inertia terms
 
 void   
-ShellNL::formInertiaTerms( int tangFlag ) 
+ShellMITC9::formInertiaTerms( int tangFlag ) 
 {
   //translational mass only
   //rotational inertia terms are neglected
@@ -941,7 +941,7 @@ ShellNL::formInertiaTerms( int tangFlag )
 
 //form residual and tangent
 void  
-ShellNL::formResidAndTangent( int tang_flag ) 
+ShellMITC9::formResidAndTangent( int tang_flag ) 
 {
   //
   //  six(6) nodal dof's ordered :
@@ -1218,7 +1218,7 @@ ShellNL::formResidAndTangent( int tang_flag )
 //************************************************************************
 //compute local coordinates and basis
 void   
-ShellNL::computeBasis( ) 
+ShellMITC9::computeBasis( ) 
 {
   //could compute derivatives \frac{ \partial {\bf x} }{ \partial L_1 } 
   //                     and  \frac{ \partial {\bf x} }{ \partial L_2 }
@@ -1297,7 +1297,7 @@ ShellNL::computeBasis( )
 //*************************************************************************
 //compute Bdrill
 double*
-ShellNL::computeBdrill( int node, const double shp[3][9] )
+ShellMITC9::computeBdrill( int node, const double shp[3][9] )
 {
   static double Bdrill[6] ;
   static double B1 ;
@@ -1328,7 +1328,7 @@ ShellNL::computeBdrill( int node, const double shp[3][9] )
 //*************************************************************************
 //assemble a B matrix
 const Matrix&  
-ShellNL::assembleB( const Matrix &Bmembrane,
+ShellMITC9::assembleB( const Matrix &Bmembrane,
                     const Matrix &Bbend, 
                     const Matrix &Bshear ) 
 {
@@ -1424,7 +1424,7 @@ ShellNL::assembleB( const Matrix &Bmembrane,
 //***********************************************************************
 //compute Bmembrane matrix
 const Matrix&   
-ShellNL::computeBmembrane( int node, const double shp[3][9] ) 
+ShellMITC9::computeBmembrane( int node, const double shp[3][9] ) 
 {
   static Matrix Bmembrane(3,2) ;
 
@@ -1450,7 +1450,7 @@ ShellNL::computeBmembrane( int node, const double shp[3][9] )
 //***********************************************************************
 //compute Bbend matrix
 const Matrix&   
-ShellNL::computeBbend( int node, const double shp[3][9] )
+ShellMITC9::computeBbend( int node, const double shp[3][9] )
 {
   static Matrix Bbend(3,2) ;
 
@@ -1476,7 +1476,7 @@ ShellNL::computeBbend( int node, const double shp[3][9] )
 //***********************************************************************
 //compute standard Bshear matrix
 const Matrix&  
-ShellNL::computeBshear( int node, const double shp[3][9] )
+ShellMITC9::computeBshear( int node, const double shp[3][9] )
 {
   static Matrix Bshear(2,3) ;
 
@@ -1502,7 +1502,7 @@ ShellNL::computeBshear( int node, const double shp[3][9] )
 //************************************************************************
 //shape function routine for four node quads
 void  
-ShellNL::shape2d( double ss, double tt,const double x[2][9], 
+ShellMITC9::shape2d( double ss, double tt,const double x[2][9], 
 		          double shp[3][9],double &xsj)
 
 {
@@ -1584,7 +1584,7 @@ ShellNL::shape2d( double ss, double tt,const double x[2][9],
 	   
 //**********************************************************************
 Matrix  
-ShellNL::transpose( int dim1,int dim2,const Matrix &M ) 
+ShellMITC9::transpose( int dim1,int dim2,const Matrix &M ) 
 {
   int i ;
   int j ;
@@ -1598,7 +1598,7 @@ ShellNL::transpose( int dim1,int dim2,const Matrix &M )
 }
 
 //**********************************************************************
-int  ShellNL::sendSelf (int commitTag,Channel &theChannel)
+int  ShellMITC9::sendSelf (int commitTag,Channel &theChannel)
 {
   int res = 0;
   // note: we don't check for dataTag == 0 for Element
@@ -1635,7 +1635,7 @@ int  ShellNL::sendSelf (int commitTag,Channel &theChannel)
   idData(27) = connectedExternalNodes(8);
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
-    opserr << "WARNING ShellNL::sendSelf() - " << this->getTag() << " failed to send ID\n";
+    opserr << "WARNING ShellMITC9::sendSelf() - " << this->getTag() << " failed to send ID\n";
     return res;
   }
 
@@ -1648,7 +1648,7 @@ int  ShellNL::sendSelf (int commitTag,Channel &theChannel)
 
   res += theChannel.sendVector(dataTag, commitTag, vectData);
   if (res < 0) {
-    opserr << "WARNING ShellNL::sendSelf() - " << this->getTag() << " failed to send ID\n";
+    opserr << "WARNING ShellMITC9::sendSelf() - " << this->getTag() << " failed to send ID\n";
     return res;
   }
 
@@ -1656,14 +1656,14 @@ int  ShellNL::sendSelf (int commitTag,Channel &theChannel)
   for (i = 0; i < 9; i++) {
     res += materialPointers[i]->sendSelf(commitTag, theChannel);
     if (res < 0) {
-      opserr << "WARNING ShellNL::sendSelf() - " << this->getTag() << " failed to send its Material\n";
+      opserr << "WARNING ShellMITC9::sendSelf() - " << this->getTag() << " failed to send its Material\n";
       return res;
     }
   }
   return res;
 }
     
-int  ShellNL::recvSelf (int commitTag,Channel &theChannel, 
+int  ShellMITC9::recvSelf (int commitTag,Channel &theChannel, 
 		       FEM_ObjectBroker &theBroker)
 {
   int res = 0;
@@ -1672,7 +1672,7 @@ int  ShellNL::recvSelf (int commitTag,Channel &theChannel,
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
-    opserr << "WARNING ShellNL::recvSelf() - " << this->getTag() << " failed to receive ID\n";
+    opserr << "WARNING ShellMITC9::recvSelf() - " << this->getTag() << " failed to receive ID\n";
     return res;
   }
 
@@ -1689,7 +1689,7 @@ int  ShellNL::recvSelf (int commitTag,Channel &theChannel,
   static Vector vectData(5);
   res += theChannel.recvVector(dataTag, commitTag, vectData);
   if (res < 0) {
-    opserr << "WARNING ShellNL::sendSelf() - " << this->getTag() << " failed to send ID\n";
+    opserr << "WARNING ShellMITC9::sendSelf() - " << this->getTag() << " failed to send ID\n";
     return res;
   }
 
@@ -1708,14 +1708,14 @@ int  ShellNL::recvSelf (int commitTag,Channel &theChannel,
       // Allocate new material with the sent class tag
       materialPointers[i] = theBroker.getNewSection(matClassTag);
       if (materialPointers[i] == 0) {
-	     opserr << "ShellNL::recvSelf() - Broker could not create NDMaterial of class type" << matClassTag << endln;;
+	     opserr << "ShellMITC9::recvSelf() - Broker could not create NDMaterial of class type" << matClassTag << endln;;
 	     return -1;
       }
       // Now receive materials into the newly allocated space
       materialPointers[i]->setDbTag(matDbTag);
       res += materialPointers[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
-	     opserr << "ShellNL::recvSelf() - material " << i << "failed to recv itself\n";
+	     opserr << "ShellMITC9::recvSelf() - material " << i << "failed to recv itself\n";
 	     return res;
       }
     }
@@ -1731,7 +1731,7 @@ int  ShellNL::recvSelf (int commitTag,Channel &theChannel,
 	    delete materialPointers[i];
 	    materialPointers[i] = theBroker.getNewSection(matClassTag);
 	    if (materialPointers[i] == 0) {
-	      opserr << "ShellNL::recvSelf() - Broker could not create NDMaterial of class type" << matClassTag << endln;
+	      opserr << "ShellMITC9::recvSelf() - Broker could not create NDMaterial of class type" << matClassTag << endln;
 	      exit(-1);
 		}
 	  }
@@ -1739,7 +1739,7 @@ int  ShellNL::recvSelf (int commitTag,Channel &theChannel,
       materialPointers[i]->setDbTag(matDbTag);
       res += materialPointers[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
-	    opserr << "ShellNL::recvSelf() - material " << i << "failed to recv itself\n";
+	    opserr << "ShellMITC9::recvSelf() - material " << i << "failed to recv itself\n";
 	    return res;
       }
     }
@@ -1749,7 +1749,7 @@ int  ShellNL::recvSelf (int commitTag,Channel &theChannel,
 //**************************************************************************
 
 int
-ShellNL::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
+ShellMITC9::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
   // first determine the end points of the quad based on
   // the display factor (a measure of the distorted image)

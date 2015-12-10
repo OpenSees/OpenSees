@@ -1,7 +1,7 @@
 include ../../../Makefile.def
 
 OBJS       = ShellMITC4.o \
-	ShellNL.o \
+	ShellMITC9.o \
 	ShellDKGQ.o \
 	ShellNLDKGQ.o \
 	R3vectors.o
