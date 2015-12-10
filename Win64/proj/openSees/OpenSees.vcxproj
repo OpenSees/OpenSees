@@ -39,7 +39,7 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\obj\openSees\release\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\obj\opensees\release\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\obj\opensees\debug\</IntDir>
@@ -47,7 +47,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
-      <TypeLibraryName>.\..\..\bin/openSees.tlb</TypeLibraryName>
+      <TypeLibraryName>.\..\..\bin\OpenSees.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
@@ -56,10 +56,10 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeaderOutputFile>.\..\..\obj\openSees\release/openSees.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\..\..\obj\openSees\release/</AssemblerListingLocation>
-      <ObjectFileName>.\..\..\obj\openSees\release/</ObjectFileName>
-      <ProgramDataBaseFileName>.\..\..\obj\openSees\release/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\opensees\release\OpenSees.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\opensees\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\opensees\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\opensees\release/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
@@ -71,7 +71,7 @@
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>cssparse.lib;tcl.lib;DoddRestrepo.lib;wsock32.lib;OpenGL32.lib;optimization.lib;glu32.lib;damage.lib;fedeas.lib;drain.lib;reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpackC.lib;actor.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;utility.lib;tcl85.lib;tk85.lib;libirc.lib;ifconsol.lib;libm.lib;LIBIFCOREMT.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\..\..\bin/OpenSees.exe</OutputFile>
+      <OutputFile>.\..\..\bin\OpenSees.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;..\..\lib;..\..\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -84,7 +84,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
-      <TypeLibraryName>.\..\..\bin/openSees.tlb</TypeLibraryName>
+      <TypeLibraryName>.\..\..\bin\OpenSees.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -92,7 +92,7 @@
       <PreprocessorDefinitions>_DEBUG;_WGL;_RELIABILITY;_WIN32;_FORTRAN;WIN32;_CONSOLE;BUILD_tcl;_TCL85;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeaderOutputFile>.\..\..\obj\opensees\debug/OpenSees.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\opensees\debug\OpenSees.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\opensees\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\opensees\debug/</ObjectFileName>
       <ProgramDataBaseFileName>.\..\..\obj\opensees\debug/</ProgramDataBaseFileName>
@@ -109,12 +109,12 @@
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>cssparse.lib;OpenGL32.lib;wsock32.lib;glu32.lib;DoddRestrepo.lib;optimization.lib;damage.lib;tcl.lib;fedeas.lib;drain.lib;reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpackC.lib;actor.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;utility.lib;tcl85.lib;tk85.lib;ifconsol.lib;libifcoremt.lib;libm.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\..\..\bin/OpenSees.exe</OutputFile>
+      <OutputFile>.\..\..\bin\OpenSees.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>.\..\..\bin/OpenSees.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>.\..\..\bin\OpenSees.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>

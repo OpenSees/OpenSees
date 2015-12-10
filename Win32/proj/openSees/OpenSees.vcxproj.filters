@@ -28,9 +28,6 @@
     <ClInclude Include="..\..\..\SRC\tcl\commands.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\FiniteDeformation\FiniteDeformationElastic3D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\OPS_Globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>

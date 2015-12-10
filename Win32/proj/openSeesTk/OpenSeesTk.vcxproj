@@ -41,15 +41,15 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\obj\openSeesTk\release\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\obj\openseesTk\release\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\obj\openSeesTk\debug\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\obj\openseesTk\debug\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
-      <TypeLibraryName>.\..\..\bin/openSeesTk.tlb</TypeLibraryName>
+      <TypeLibraryName>.\..\..\bin\OpenSeesTk.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
@@ -60,10 +60,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <PrecompiledHeaderOutputFile>.\..\..\obj\openSeesTk\release/openSeesTk.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\..\..\obj\openSeesTk\release/</AssemblerListingLocation>
-      <ObjectFileName>.\..\..\obj\openSeesTk\release/</ObjectFileName>
-      <ProgramDataBaseFileName>.\..\..\obj\openSeesTk\release/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\openseesTk\release\OpenSeesTk.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\openseesTk\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\openseesTk\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\openseesTk\release/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
@@ -74,12 +74,12 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 /FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>cssparse.lib;DoddRestrepo.lib;OpenGL32.lib;glu32.lib;damage.lib;wsock32.lib;fedeas.lib;drain.lib;reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpack.lib;actor.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;utility.lib;tcl85.lib;tk85.lib;ifconsol.lib;libifcoremt.lib;libm.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\..\..\bin/openSeesTk.exe</OutputFile>
+      <AdditionalDependencies>cssparse.lib;DoddRestrepo.lib;OpenGL32.lib;glu32.lib;damage.lib;wsock32.lib;fedeas.lib;drain.lib;reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpackC.lib;actor.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;utility.lib;tcl85.lib;tk85.lib;ifconsol.lib;libifcoremt.lib;libm.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\..\..\bin\OpenSeesTk.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>c:\program files\tcl\lib;..\..\lib\release;..\..\lib;..\..\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ProgramDatabaseFile>.\..\..\bin/openSeesTk.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>.\..\..\bin\OpenSeesTk.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
@@ -88,7 +88,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
-      <TypeLibraryName>.\..\..\bin/openSeesTk.tlb</TypeLibraryName>
+      <TypeLibraryName>.\..\..\bin\OpenSeesTk.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -98,10 +98,10 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <PrecompiledHeaderOutputFile>.\..\..\obj\openSeesTk\debug/openSeesTk.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\..\..\obj\openSeesTk\debug/</AssemblerListingLocation>
-      <ObjectFileName>.\..\..\obj\openSeesTk\debug/</ObjectFileName>
-      <ProgramDataBaseFileName>.\..\..\obj\openSeesTk\debug/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\openseesTk\debug\OpenSeesTk.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\openseesTk\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\openseesTk\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\openseesTk\debug/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -113,13 +113,13 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 /FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>cssparse.lib;OpenGL32.lib;wsock32.lib;glu32.lib;DoddRestrepo.lib;damage.lib;fedeas.lib;drain.lib;reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpack.lib;actor.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;utility.lib;tcl85.lib;tk85.lib;ifconsol.lib;libifcoremt.lib;libm.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\..\..\bin/openSeesTk.exe</OutputFile>
+      <AdditionalDependencies>cssparse.lib;OpenGL32.lib;wsock32.lib;glu32.lib;DoddRestrepo.lib;damage.lib;fedeas.lib;drain.lib;reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpackC.lib;actor.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;utility.lib;tcl85.lib;tk85.lib;ifconsol.lib;libifcoremt.lib;libm.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\..\..\bin\OpenSeesTk.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>c:\program Files\tcl\lib;..\..\lib\debug;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>.\..\..\bin/openSeesTk.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>.\..\..\bin\OpenSeesTk.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>

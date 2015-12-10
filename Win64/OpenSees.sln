@@ -50,6 +50,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcl", "proj\tcl\tcl.vcxproj
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utility", "proj\utility\utility.vcxproj", "{72CEB368-613B-3977-7BE6-0155A5F1DDBC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenSeesTk", "proj\openSeesTk\OpenSeesTk.vcxproj", "{DEBED636-6061-42B1-B277-FAB92DF0E446}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -156,6 +158,10 @@ Global
 		{72CEB368-613B-3977-7BE6-0155A5F1DDBC}.Debug|x64.Build.0 = Debug|x64
 		{72CEB368-613B-3977-7BE6-0155A5F1DDBC}.Release|x64.ActiveCfg = Release|x64
 		{72CEB368-613B-3977-7BE6-0155A5F1DDBC}.Release|x64.Build.0 = Release|x64
+		{DEBED636-6061-42B1-B277-FAB92DF0E446}.Debug|x64.ActiveCfg = Debug|x64
+		{DEBED636-6061-42B1-B277-FAB92DF0E446}.Debug|x64.Build.0 = Debug|x64
+		{DEBED636-6061-42B1-B277-FAB92DF0E446}.Release|x64.ActiveCfg = Release|x64
+		{DEBED636-6061-42B1-B277-FAB92DF0E446}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
