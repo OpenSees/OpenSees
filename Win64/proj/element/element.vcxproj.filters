@@ -665,7 +665,7 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC4.cpp">
       <Filter>shell</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellNL.cpp">
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC9.cpp">
       <Filter>shell</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.cpp">
@@ -1198,7 +1198,7 @@
     <ClInclude Include="..\..\..\SRC\element\shell\ShellMITC4.h">
       <Filter>shell</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\shell\ShellNL.h">
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellMITC9.h">
       <Filter>shell</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.h">

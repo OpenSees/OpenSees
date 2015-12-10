@@ -103,6 +103,7 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGQ.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC9.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQ.cpp" />
     <ClCompile Include="..\..\..\SRC\element\TclElementCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\element\truss\N4BiaxialTruss.cpp" />
@@ -294,7 +295,6 @@
     <ClCompile Include="..\..\..\SRC\element\triangle\Tri31.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\R3vectors.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC4.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellNL.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.cpp" />
@@ -319,6 +319,7 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellDKGQ.h" />
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellMITC9.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGQ.h" />
     <ClInclude Include="..\..\..\SRC\element\truss\N4BiaxialTruss.h" />
     <ClInclude Include="..\..\..\SRC\element\UWelements\QuadBeamEmbedContact.h" />
@@ -473,7 +474,6 @@
     <ClInclude Include="..\..\..\SRC\element\triangle\Tri31.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\R3vectors.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellMITC4.h" />
-    <ClInclude Include="..\..\..\SRC\element\shell\ShellNL.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.h" />
