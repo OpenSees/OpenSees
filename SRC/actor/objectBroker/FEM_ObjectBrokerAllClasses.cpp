@@ -247,7 +247,7 @@
 #include <DispBeamColumn2d.h>
 #include <DispBeamColumn3d.h>
 #include <ShellMITC4.h>
-#include <ShellNL.h>
+#include <ShellMITC9.h>
 #include <ShellDKGQ.h>   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include <ShellNLDKGQ.h> //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include <Brick.h>
@@ -703,6 +703,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_ShellMITC4:
       return new ShellMITC4();
+
+    case ELE_TAG_ShellMITC9:
+      return new ShellMITC9();
       
     case ELE_TAG_ShellDKGQ:      //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
       return new ShellDKGQ();  //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
@@ -712,8 +715,7 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_BbarBrick:
       return new BbarBrick();
-      
-      
+            
     case ELE_TAG_ElastomericBearingBoucWen2d:
       return new ElastomericBearingBoucWen2d();
       
