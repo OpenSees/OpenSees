@@ -114,7 +114,7 @@ extern void *OPS_SSPquadUP(void);
 extern void *OPS_SSPbrick(void);
 extern void *OPS_SSPbrickUP(void);
 extern void *OPS_NewShellMITC4(void);
-extern void *OPS_NewShellNL(void);
+extern void *OPS_NewShellMITC9(void);
 extern void *OPS_NewShellDKGQ(void);     //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 extern void *OPS_NewShellNLDKGQ(void);   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 extern void *OPS_Quad4FiberOverlay(void);
@@ -134,6 +134,11 @@ extern void *OPS_AV3D4QuadWithSensitivity(void);
 extern void *OPS_VS3D4WuadWithSensitivity(void);
 extern void *OPS_MVLEM(void);
 extern void *OPS_SFI_MVLEM(void);
+#ifdef _HAVE_USHNISH
+extern void *OPS_fElmt03(void);
+extern void *OPS_fElmt04(void);
+extern void *OPS_fElmt41(void);
+#endif
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -454,6 +459,33 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
+#ifdef _HAVE_USHNISH
+  } else if (strcmp(argv[1],"fElmt03") == 0) {
+    void *theEle = OPS_fElmt03();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  } else if (strcmp(argv[1],"fElmt04") == 0) {
+    void *theEle = OPS_fElmt04();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  } else if (strcmp(argv[1],"fElmt41") == 0) {
+    void *theEle = OPS_fElmt41();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+#endif
+
   } else if (strcmp(argv[1],"zeroLengthImpact3D") == 0) {
     void *theEle = OPS_ZeroLengthImpact3D();
     if (theEle != 0) 
@@ -656,9 +688,10 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }    
 
-  } else if ((strcmp(argv[1],"shellNL") == 0) || (strcmp(argv[1],"ShellNL") == 0)) {
+  } else if ((strcmp(argv[1],"shellNL") == 0) || (strcmp(argv[1],"ShellNL") == 0) ||
+	     (strcmp(argv[1],"shellMITC9") == 0) || (strcmp(argv[1],"ShellMITC9") == 0)) {
     
-    void *theEle = OPS_NewShellNL();
+    void *theEle = OPS_NewShellMITC9();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
