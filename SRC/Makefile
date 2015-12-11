@@ -489,15 +489,9 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/XMUelements/VS3D4QuadWithSensitivity.o \
 	$(FE)/element/feap/elmt01.o \
 	$(FE)/element/feap/elmt02.o \
-	$(FE)/element/feap/basuElmt03.o \
-	$(FE)/element/feap/fElmt03.o \
+	$(FE)/element/feap/elmt03.o \
 	$(FE)/element/feap/elmt04.o \
-	$(FE)/element/feap/fElmt04.o \
 	$(FE)/element/feap/elmt05.o \
-	$(FE)/element/feap/elmt06.o \
-	$(FE)/element/feap/fElmt06.o \
-	$(FE)/element/feap/elmt41.o \
-	$(FE)/element/feap/fElmt41.o \
 	$(FE)/element/feap/fillCommon.o \
 	$(FE)/element/feap/getCommon.o \
 	$(FE)/element/feap/dummyFeap.o \
