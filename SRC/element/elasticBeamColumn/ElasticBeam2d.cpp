@@ -135,7 +135,7 @@ ElasticBeam2d::ElasticBeam2d()
 
 ElasticBeam2d::ElasticBeam2d(int tag, double a, double e, double i, 
 			     int Nd1, int Nd2, CrdTransf &coordTransf,
-                 double Alpha, double depth, double r, int cm)
+			     double Alpha, double depth, double r, int cm)
   :Element(tag,ELE_TAG_ElasticBeam2d), 
   A(a), E(e), I(i), alpha(Alpha), d(depth), rho(r), cMass(cm),
   Q(6), q(3),
@@ -300,12 +300,6 @@ ElasticBeam2d::getTangentStiff(void)
   kb(1,1) = kb(2,2) = EIoverL4;
   kb(2,1) = kb(1,2) = EIoverL2;
 
-  if (this->getTag() == 1) {
-    static Matrix res(6,6);
-    res = theCoordTransf->getGlobalStiffMatrix(kb, q);
-    opserr << res;
-  }
-  
   return theCoordTransf->getGlobalStiffMatrix(kb, q);
 }
 

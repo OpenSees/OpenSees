@@ -1059,12 +1059,12 @@ ElasticBeam3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     
     theResponse = new ElementResponse(this, 4, Vector(6));
 
-  }  else if (strcmp(argv[0],"deformatons") == 0 || 
+  }  else if (strcmp(argv[0],"deformations") == 0 || 
 	      strcmp(argv[0],"basicDeformations") == 0) {
     
     output.tag("ResponseType","eps");
-    output.tag("ResponseType","thete11");
-    output.tag("ResponseType","thete12");
+    output.tag("ResponseType","theta11");
+    output.tag("ResponseType","theta12");
     output.tag("ResponseType","theta21");
     output.tag("ResponseType","theta22");
     output.tag("ResponseType","phi");
