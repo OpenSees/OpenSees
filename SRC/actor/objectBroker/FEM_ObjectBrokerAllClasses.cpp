@@ -89,6 +89,7 @@
 #include <ENTMaterial.h>
 #include <MinMaxMaterial.h>
 #include <ModIMKPeakOriented.h>
+#include <Clough.h>
 
 //PY springs: RWBoulanger and BJeremic
 #include <PySimple1.h>
@@ -1056,6 +1057,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_ModIMKPeakOriented:
 		return new ModIMKPeakOriented();
+
+	case MAT_TAG_SnapClough:
+		return new Clough();
 
 	case MAT_TAG_EPPGap:
 		return new EPPGapMaterial();
