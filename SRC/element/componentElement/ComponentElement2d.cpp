@@ -981,7 +981,25 @@ ComponentElement2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.tag("ResponseType","M_2");
     
     theResponse = new ElementResponse(this, 4, Vector(3));
+    
+  
+  } else if (strcmp(argv[0],"hingeDefoAndForce") == 0) {
+
+    output.tag("ResponseType","end1_Defo");
+    output.tag("ResponseType","end1_Force");
+    output.tag("ResponseType","end2_Defo");
+    output.tag("ResponseType","end2_Force");
+    
+    theResponse = new ElementResponse(this, 5, Vector(4));
+
+  } else if (strcmp(argv[0],"hingeTangent") == 0) {
+
+    output.tag("ResponseType","end1_Tangent");
+    output.tag("ResponseType","end1_Tangent");
+    
+    theResponse = new ElementResponse(this, 6, Vector(2));
   }  
+
 
   output.endTag(); // ElementOutput
 
@@ -994,6 +1012,8 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
   double N, M1, M2, V;
   double L = theCoordTransf->getInitialLength();
   this->getResistingForce();
+  static Vector vect4(4);
+  static Vector vect2(2);
 
   switch (responseID) {
   case 1: // stiffness
@@ -1020,6 +1040,29 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
     
   case 4: // basic forces
     return eleInfo.setVector(q);
+
+  case 5: // basic forces
+    vect4.Zero();
+    if (end1Hinge != 0) {
+      vect4(0) = end1Hinge->getStrain();
+      vect4(1) = end1Hinge->getStress();
+    }
+    if (end1Hinge != 0) {
+      vect4(2) = end2Hinge->getStrain();
+      vect4(3) = end2Hinge->getStress();
+    }
+    return eleInfo.setVector(vect4);
+
+  case 6: // basic forces
+    if (end1Hinge != 0) {
+      vect2(0) = end1Hinge->getTangent();
+    }
+    if (end1Hinge != 0) {
+      vect2(1) = end2Hinge->getTangent();
+    }
+    return eleInfo.setVector(vect2);
+
+
 
   default:
     return -1;
