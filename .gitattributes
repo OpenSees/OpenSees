@@ -2990,6 +2990,8 @@ SRC/element/elastomericBearing/ElastomericBearingBoucWen2d.cpp -text
 SRC/element/elastomericBearing/ElastomericBearingBoucWen2d.h -text
 SRC/element/elastomericBearing/ElastomericBearingBoucWen3d.cpp -text
 SRC/element/elastomericBearing/ElastomericBearingBoucWen3d.h -text
+SRC/element/elastomericBearing/ElastomericBearingBoucWenMod3d.cpp -text
+SRC/element/elastomericBearing/ElastomericBearingBoucWenMod3d.h -text
 SRC/element/elastomericBearing/ElastomericBearingPlasticity2d.cpp -text
 SRC/element/elastomericBearing/ElastomericBearingPlasticity2d.h -text
 SRC/element/elastomericBearing/ElastomericBearingPlasticity3d.cpp -text
