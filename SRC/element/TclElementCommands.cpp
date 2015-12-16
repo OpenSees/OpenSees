@@ -134,11 +134,7 @@ extern void *OPS_AV3D4QuadWithSensitivity(void);
 extern void *OPS_VS3D4WuadWithSensitivity(void);
 extern void *OPS_MVLEM(void);
 extern void *OPS_SFI_MVLEM(void);
-#ifdef _HAVE_USHNISH
-extern void *OPS_fElmt03(void);
-extern void *OPS_fElmt04(void);
-extern void *OPS_fElmt41(void);
-#endif
+extern void *OPS_ElastomericBearingBoucWenMod3d(void);
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -458,33 +454,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-
-#ifdef _HAVE_USHNISH
-  } else if (strcmp(argv[1],"fElmt03") == 0) {
-    void *theEle = OPS_fElmt03();
-    if (theEle != 0) 
-      theElement = (Element *)theEle;
-    else {
-      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
-      return TCL_ERROR;
-    }
-  } else if (strcmp(argv[1],"fElmt04") == 0) {
-    void *theEle = OPS_fElmt04();
-    if (theEle != 0) 
-      theElement = (Element *)theEle;
-    else {
-      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
-      return TCL_ERROR;
-    }
-  } else if (strcmp(argv[1],"fElmt41") == 0) {
-    void *theEle = OPS_fElmt41();
-    if (theEle != 0) 
-      theElement = (Element *)theEle;
-    else {
-      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
-      return TCL_ERROR;
-    }
-#endif
 
   } else if (strcmp(argv[1],"zeroLengthImpact3D") == 0) {
     void *theEle = OPS_ZeroLengthImpact3D();
@@ -942,6 +911,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   } 
   
 
+  else if (strcmp(argv[1],"elastomericBearingBoucWenMod") == 0) {
+    void *theEle = OPS_ElastomericBearingBoucWenMod3d();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  }
+
+
   else if (strcmp(argv[1], "VS3D4") == 0) {
 
     void *theEle = OPS_VS3D4WuadWithSensitivity();
@@ -1226,6 +1206,7 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
 						       theTclDomain, theTclBuilder, eleArgStart);
     return result;
   }
+
 
   else if (strcmp(argv[1],"elastomericBearingUFRP") == 0) {
     int eleArgStart = 1;

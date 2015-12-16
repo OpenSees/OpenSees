@@ -534,6 +534,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/adapter/Adapter.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingBoucWen2d.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingBoucWen3d.o \
+	$(FE)/element/elastomericBearing/ElastomericBearingBoucWenMod3d.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingUFRP2d.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingPlasticity2d.o \
 	$(FE)/element/elastomericBearing/ElastomericBearingPlasticity3d.o \
