@@ -142,7 +142,8 @@ extern "C" int        OPS_Error(char *, int length);
 extern "C" int        OPS_GetNumRemainingInputArgs();
 extern "C" int        OPS_GetIntInput(int *numData, int*data);
 extern "C" int        OPS_GetDoubleInput(int *numData, double *data);
-extern "C" int        OPS_GetString(char *cArray, int sizeArray); // does a strcpy
+extern "C" const char *OPS_GetString(void); // does a strcpy
+//extern "C" int        OPS_GetString(char *cArray, int sizeArray); // does a strcpy
 extern "C" int        OPS_GetStringCopy(char **cArray); // returns a new copy
 extern "C" matObj    *OPS_GetMaterial(int *matTag, int *matType);
 extern "C" void       OPS_GetMaterialPtr(int *, matObj *);
@@ -195,6 +196,8 @@ int     OPS_Error(char *, int length);
 int     OPS_GetIntInput(int *numData, int*data);
 int     OPS_GetDoubleInput(int *numData, double *data);
 int     OPS_GetString(char *cArray, int sizeArray);
+
+
 matObj  *OPS_GetMaterial(int *matTag, int *matType);
 void    OPS_GetMaterialPtr(int *, matObj *);
 eleObj  *OPS_GetElement(int *);

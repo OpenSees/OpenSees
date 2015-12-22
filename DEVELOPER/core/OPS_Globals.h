@@ -28,7 +28,7 @@
 // if you change some of the variables, you must recompile ALL the code.
 
 
-#define OPS_VERSION "2.4.6 (rev 6022)"
+#define OPS_VERSION "2.4.6 (rev 6123)"
 
 
 #define _USING_OpenSees_STREAMS
@@ -38,10 +38,10 @@ extern OPS_Stream *opserrPtr;
 #define opserr (*opserrPtr)
 #define endln "\n"
 
-//#include <string.h>
-//#include <stdlib.h>
+#include <string.h>
+#include <stdlib.h>
 
-enum NodeResponseType { Disp = 1, Vel = 2, Accel =3, IncrDisp =4, IncrDeltaDisp =5, Reaction =6, Unbalance =7};
+enum NodeResponseType { Disp = 1, Vel = 2, Accel =3, IncrDisp =4, IncrDeltaDisp =5, Reaction =6, Unbalance =7, RayleighForces =8};
 
 #ifdef _TCL85
 #define TCL_Char const char

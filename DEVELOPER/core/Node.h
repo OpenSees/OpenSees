@@ -197,6 +197,8 @@ class Node : public DomainComponent
 
     static Matrix **theMatrices;
     static int numMatrices;
+    static Matrix **theVectors;
+    static int numVectors;
     int index;
 
     Vector *reaction;

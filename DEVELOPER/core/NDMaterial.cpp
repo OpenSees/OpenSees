@@ -46,9 +46,35 @@
 #include <BeamFiberMaterial2d.h>
 #include <PlateFiberMaterial.h>
 #include <string.h>
+#include <TaggedObject.h>
+#include <MapOfTaggedObjects.h>
 
 Matrix NDMaterial::errMatrix(1,1);
 Vector NDMaterial::errVector(1);
+
+static MapOfTaggedObjects theNDMaterialObjects;
+
+bool OPS_addNDMaterial(NDMaterial *newComponent)
+{
+    return theNDMaterialObjects.addComponent(newComponent);
+}
+
+NDMaterial *OPS_getNDMaterial(int tag)
+{
+
+  TaggedObject *theResult = theNDMaterialObjects.getComponentPtr(tag);
+  if(theResult == 0) {
+      opserr << "NDMaterial no found with tag: " << tag << "\n";
+      return 0;
+  }
+  NDMaterial *theMat = (NDMaterial *)theResult;
+
+  return theMat;
+}
+
+void OPS_clearAllNDMaterial(void) {
+    theNDMaterialObjects.clearAll();
+}
 
 NDMaterial::NDMaterial(int tag, int classTag)
 :Material(tag,classTag)

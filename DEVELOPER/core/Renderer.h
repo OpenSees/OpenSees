@@ -81,7 +81,8 @@ class Renderer
     virtual int drawPolygon(const Matrix &points, const Vector &values, int tag = 0, int mode = 0) =0;
     virtual int drawPolygon(const Matrix &points, const Matrix &rgbValues, int tag = 0, int mode = 0) =0;
 
-    virtual int drawVector(const Vector &position, const Vector &value, double factor);
+    virtual int drawVector(const Vector &position, const Vector &value, double fcator = 1.0, int tag = 0);
+
     
     virtual int drawText(const Vector &posGlobal, char *string, int length, 
 			 char horizontalJustify = 'l', 

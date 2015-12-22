@@ -53,6 +53,7 @@ MapOfTaggedObjects::MapOfTaggedObjects()
 MapOfTaggedObjects::~MapOfTaggedObjects()
 {
     // does nothing
+    this->clearAll();
 }
 
 

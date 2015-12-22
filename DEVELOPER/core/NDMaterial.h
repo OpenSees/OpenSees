@@ -97,5 +97,9 @@ class NDMaterial : public Material
     static Vector errVector;
 };
 
+bool OPS_addNDMaterial(NDMaterial *newComponent);
+NDMaterial *OPS_getNDMaterial(int tag);
+void OPS_clearAllNDMaterial(void);
+
 
 #endif

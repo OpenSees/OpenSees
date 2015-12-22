@@ -28,6 +28,9 @@
 #include <stdlib.h>
 #include <OPS_Globals.h>
 
+
+int SOLUTION_ALGORITHM_tangentFlag = 0;
+
 SolutionAlgorithm::SolutionAlgorithm(int clasTag)
 :MovableObject(clasTag), theRecorders(0), numRecorders(0)
 {

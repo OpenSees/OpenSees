@@ -32,7 +32,7 @@ using std::setiosflags;
 
 StandardStream::StandardStream(int indent)
   :OPS_Stream(OPS_STREAM_TAGS_FileStream), 
-   fileOpen(0),  indentSize(indent), numIndent(-1)
+   fileOpen(0), echoApplication(true),  indentSize(indent), numIndent(-1)
 {
   if (indentSize < 1) indentSize = 1;
   indentString = new char[indentSize+1];
@@ -47,7 +47,7 @@ StandardStream::~StandardStream()
 }
 
 int 
-StandardStream::setFile(const char *fileName, openMode mode)
+StandardStream::setFile(const char *fileName, openMode mode, bool echo)
 {
   if (fileOpen == 1) {
     theFile.close();
@@ -66,6 +66,8 @@ StandardStream::setFile(const char *fileName, openMode mode)
     return -1;
   } else
     fileOpen = 1;
+
+  echoApplication = echo;
 
   return 0;
 }
@@ -174,7 +176,8 @@ StandardStream::write(Vector &data)
 OPS_Stream& 
 StandardStream::write(const char *s,int n)
 {
-  cerr.write(s, n);
+  if (echoApplication == true)
+    cerr.write(s, n);
 
   if (fileOpen != 0)
     theFile.write(s, n);
@@ -185,7 +188,8 @@ StandardStream::write(const char *s,int n)
 OPS_Stream& 
 StandardStream::write(const unsigned char*s, int n)
 {
-  cerr.write((const char *) s, n);
+  if (echoApplication == true)
+    cerr.write((const char *) s, n);
 
   if (fileOpen != 0)
     theFile.write((const char *) s, n);
@@ -195,7 +199,8 @@ StandardStream::write(const unsigned char*s, int n)
 OPS_Stream& 
 StandardStream::write(const signed char*s, int n)
 {
-  cerr.write((const char *)s, n);
+  if (echoApplication == true)
+    cerr.write((const char *)s, n);
 
   if (fileOpen != 0)
     theFile.write((const char *) s, n);
@@ -205,7 +210,8 @@ StandardStream::write(const signed char*s, int n)
 OPS_Stream& 
 StandardStream::write(const void *s, int n)
 {
-  cerr.write((const char *)s, n);
+  if (echoApplication == true)
+    cerr.write((const char *)s, n);
 
   if (fileOpen != 0)
    theFile.write((const char *) s, n);
@@ -215,7 +221,8 @@ StandardStream::write(const void *s, int n)
 OPS_Stream& 
 StandardStream::operator<<(char c)
 {
-  cerr << c;
+  if (echoApplication == true)
+    cerr << c;
 
   if (fileOpen != 0)
     theFile << c;
@@ -225,7 +232,8 @@ StandardStream::operator<<(char c)
 OPS_Stream& 
 StandardStream::operator<<(unsigned char c)
 {
-  cerr << c;
+  if (echoApplication == true)
+    cerr << c;
 
   if (fileOpen != 0)
     theFile << c;
@@ -235,8 +243,8 @@ StandardStream::operator<<(unsigned char c)
 OPS_Stream& 
 StandardStream::operator<<(signed char c)
 {
-
-  cerr << c;
+  if (echoApplication == true)
+    cerr << c;
 
   if (fileOpen != 0)
     theFile << c;
@@ -248,8 +256,10 @@ StandardStream::operator<<(const char *s)
 {
   // note that we do the flush so that a "/n" before
   // a crash will cause a flush() - similar to what 
-  cerr << s;
-  cerr.flush();
+  if (echoApplication == true) {
+    cerr << s;
+    cerr.flush();
+  }
 
   if (fileOpen != 0) {
     theFile << s;
@@ -262,7 +272,8 @@ StandardStream::operator<<(const char *s)
 OPS_Stream& 
 StandardStream::operator<<(const unsigned char *s)
 {
-  cerr << s;
+  if (echoApplication == true)
+    cerr << s;
 
   if (fileOpen != 0)
     theFile << s;
@@ -272,7 +283,8 @@ StandardStream::operator<<(const unsigned char *s)
 OPS_Stream& 
 StandardStream::operator<<(const signed char *s)
 {
-  cerr << s;
+  if (echoApplication == true)
+    cerr << s;
 
   if (fileOpen != 0)
     theFile << s;
@@ -293,7 +305,8 @@ StandardStream::operator<<(const void *p)
 OPS_Stream& 
 StandardStream::operator<<(int n)
 {
-  cerr <<  n;
+  if (echoApplication == true)
+    cerr <<  n;
 
   if (fileOpen != 0)
     theFile << n;
@@ -304,7 +317,8 @@ StandardStream::operator<<(int n)
 OPS_Stream& 
 StandardStream::operator<<(unsigned int n)
 {
-  cerr << 1.0*n;
+  if (echoApplication == true)
+    cerr << 1.0*n;
 
   if (fileOpen != 0)
     theFile << 1.0*n;
@@ -370,7 +384,8 @@ StandardStream::operator<<(bool b)
 OPS_Stream& 
 StandardStream::operator<<(double n)
 {
-  cerr << n;
+  if (echoApplication == true)
+    cerr << n;
 
   if (fileOpen != 0)
     theFile << n;
@@ -380,7 +395,8 @@ StandardStream::operator<<(double n)
 OPS_Stream& 
 StandardStream::operator<<(float n)
 {
-  cerr << n;
+  if (echoApplication == true)
+    cerr << n;
 
   if (fileOpen != 0)
     theFile << n;

@@ -966,6 +966,8 @@ Domain::clearAll(void) {
   committedTime = 0.0;
   dT = 0.0;
 
+  this->setModalDampingFactors(0);
+
   // set the bounds around the origin
   theBounds(0) = 0;
   theBounds(1) = 0;

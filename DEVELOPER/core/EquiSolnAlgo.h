@@ -56,9 +56,9 @@ class EquiSolnAlgo: public SolutionAlgorithm
 
     // public functions defined for subclasses
     virtual void setLinks(AnalysisModel &theModel, 
-		  IncrementalIntegrator &theIntegrator,
-		  LinearSOE &theSOE,
-		  ConvergenceTest *theTest);
+			  IncrementalIntegrator &theIntegrator,
+			  LinearSOE &theSOE,
+			  ConvergenceTest *theTest);
     
     // virtual functions
     virtual int solveCurrentStep(void) =0;
