@@ -90,6 +90,7 @@
 #include <MinMaxMaterial.h>
 #include <ModIMKPeakOriented.h>
 #include <Clough.h>
+#include <LimitStateMaterial.h>
 
 //PY springs: RWBoulanger and BJeremic
 #include <PySimple1.h>
@@ -1060,6 +1061,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_SnapClough:
 		return new Clough();
+
+	case MAT_TAG_LimitState:
+		return new LimitStateMaterial();
 
 	case MAT_TAG_EPPGap:
 		return new EPPGapMaterial();
