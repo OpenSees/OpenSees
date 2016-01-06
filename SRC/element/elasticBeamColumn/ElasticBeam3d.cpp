@@ -54,7 +54,7 @@ Matrix ElasticBeam3d::K(12,12);
 Vector ElasticBeam3d::P(12);
 Matrix ElasticBeam3d::kb(6,6);
 
-void* OPS_ElasticBeam3d()
+void* OPS_ElasticBeam3d(void)
 {
     int numArgs = OPS_GetNumRemainingInputArgs();
     if(numArgs < 10 && numArgs != 5) {
@@ -78,6 +78,7 @@ void* OPS_ElasticBeam3d()
     CrdTransf* theTrans = 0;
     double data[6];
     int transfTag, secTag;
+
     if(numArgs == 5) {
 	numData = 1;
 	if(OPS_GetIntInput(&numData,&secTag) < 0) return 0;
@@ -119,7 +120,7 @@ void* OPS_ElasticBeam3d()
 	}
     }
 
-    if(theSection == 0) {
+    if (theSection != 0) {
 	return new ElasticBeam3d(iData[0],iData[1],iData[2],theSection,*theTrans,mass,cMass); 
     } else {
 	return new ElasticBeam3d(iData[0],data[0],data[1],data[2],data[3],data[4],
