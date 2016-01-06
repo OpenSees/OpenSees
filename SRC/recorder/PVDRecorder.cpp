@@ -173,6 +173,7 @@ PVDRecorder::pvd()
 	return -1;
     }
     theFile.precision(precision);
+    theFile << std::scientific;
 
     // header
     theFile<<"<?xml version="<<quota<<"1.0"<<quota<<"?>\n";
@@ -288,6 +289,8 @@ PVDRecorder::savePart0(int nodendf)
     
     // get time and part
     std::stringstream ss;
+    ss.precision(precision);
+    ss << std::scientific;
     ss << 0 << ' ' << timestep.back();
     std::string stime, spart;
     ss >> spart >> stime;
@@ -301,6 +304,7 @@ PVDRecorder::savePart0(int nodendf)
 	return -1;
     }
     theFile.precision(precision);
+    theFile << std::scientific;
 
     // header
     theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
@@ -723,6 +727,8 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     
     // get time and part
     std::stringstream ss;
+    ss.precision(precision);
+    ss << std::scientific;
     ss << partno << ' ' << timestep.back();
     std::string stime, spart;
     ss >> spart >> stime;
@@ -736,6 +742,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
 	return -1;
     }
     theFile.precision(precision);
+    theFile << std::scientific;
 
     // header
     theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
@@ -752,6 +759,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     ID ndtags(0,eletags.Size()*3);
     std::vector<Element*> eles(eletags.Size());
     int numelenodes = 0;
+    int increlenodes = 1;
     for(int i=0; i<eletags.Size(); i++) {
 	eles[i] = theDomain->getElement(eletags(i));
 	if (eles[i] == 0) {
@@ -763,11 +771,12 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
 	    numelenodes = elenodes.Size();
 	    if(ctag==ELE_TAG_PFEMElement2D||ctag==ELE_TAG_PFEMElement2DCompressible||
 	       ctag==ELE_TAG_PFEMElement2DBubble||ctag==ELE_TAG_PFEMElement2Dmini) {
-		numelenodes /= 2;
+		numelenodes = 3;
+		increlenodes = 2;
 	    }
 	}
-	for(int j=0; j<elenodes.Size(); j+=elenodes.Size()/numelenodes) {
-	    ndtags.insert(elenodes(j));
+	for(int j=0; j<numelenodes; j++) {
+	    ndtags.insert(elenodes(j*increlenodes));
 	}
     }
 
@@ -833,8 +842,8 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     for(int i=0; i<eletags.Size(); i++) {
 	const ID& elenodes = eles[i]->getExternalNodes();
 	this->indent();
-	for(int j=0; j<elenodes.Size(); j+=elenodes.Size()/numelenodes) {
-	    theFile<<ndtags.getLocationOrdered(elenodes(j))<<' ';
+	for(int j=0; j<numelenodes; j++) {
+	    theFile<<ndtags.getLocationOrdered(elenodes(j*increlenodes))<<' ';
 	}
 	theFile<<std::endl;
     }
