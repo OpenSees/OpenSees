@@ -165,7 +165,7 @@ foreach eleType $eleTypes {
 
 
 
-set solverTypes {-genBandArpack -fullGenLapack -UmfPack -SuperLU}
+set solverTypes {-genBandArpack -fullGenLapack -UmfPack -SuperLU -ProfileSPD}
 
 foreach solverType $solverTypes {
 

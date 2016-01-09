@@ -13,5 +13,6 @@ source EigenFrame.tcl
 source EigenFrame.Extra.tcl
 source AISC25.tcl
 source PlanarShearWall.tcl
+source PinchedCylinder.tcl
 
 exit

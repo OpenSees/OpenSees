@@ -111,7 +111,6 @@ for {set i 0} {$i<$numEigen} {incr i 1} {
 }
 
 puts "\nChecking Computation of Largest Eigenvalues:"
-puts [eigen -findLargest $numEigen]
 set eigenValues [eigen -findLargest $numEigen]
 
 set formatString {%15s%15s}

@@ -562,6 +562,7 @@ EXAMPLES/verification/AISC25.tcl -text
 EXAMPLES/verification/EigenFrame.Extra.tcl -text
 EXAMPLES/verification/EigenFrame.tcl -text
 EXAMPLES/verification/NewmarkIntegrator.tcl -text
+EXAMPLES/verification/PinchedCylinder.tcl -text
 EXAMPLES/verification/PlanarShearWall.tcl -text
 EXAMPLES/verification/PlanarTruss.Extra.tcl -text
 EXAMPLES/verification/PlanarTruss.tcl -text
