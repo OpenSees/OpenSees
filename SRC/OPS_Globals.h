@@ -30,6 +30,11 @@
 
 #define OPS_VERSION "2.4.6 (rev 6123)"
 
+#ifndef _WIN64
+#define WIN_ARCH "32-Bit"
+#else
+#define WIN_ARCH "64-Bit"
+#endif
 
 #define _USING_OpenSees_STREAMS
 #include <OPS_Stream.h>

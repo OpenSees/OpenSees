@@ -1943,8 +1943,8 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
   // Added: C.McGann, U.Washington
   else if ((strcmp(argv[count],"-selfWeight") == 0) || (strcmp(argv[count],"-SelfWeight") == 0)) {
     count++;
-
-    double xf, yf, zf;
+    
+    double xf = 0.0, yf = 0.0, zf = 0.0;
     if (Tcl_GetDouble(interp, argv[count], &xf) != TCL_OK) {
 	  opserr << "WARNING eleLoad - invalid xFactor " << argv[count] << " for -selfWeight\n";
 	  return TCL_ERROR;
@@ -1955,12 +1955,11 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 	}
     if (count+2 < argc) { // adding to stop seg faults
       if (Tcl_GetDouble(interp, argv[count+2], &zf) != TCL_OK) {
-	opserr << "WARNING eleLoad - invalid zFactor " << argv[count+2] << " for -selfWeight\n";
-	return TCL_ERROR;
+	    opserr << "WARNING eleLoad - invalid zFactor " << argv[count+2] << " for -selfWeight\n";
+	    return TCL_ERROR;
       }
-      else zf = 0.0;
     }
-
+    
     for (int i=0; i<theEleTags.Size(); i++) {
       theLoad = new SelfWeight(eleLoadTag, xf, yf, zf, theEleTags(i));
       
