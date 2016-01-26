@@ -142,13 +142,21 @@ int OPS_Error(char *errorMessage, int length)
   return 0;
 }
 
-extern "C"   
+extern "C" 
 int OPS_GetNumRemainingInputArgs()
 {
-    return maxArg-currentArg;
+  return maxArg-currentArg;
 }
 
-extern "C"   
+extern "C" 
+int OPS_ResetCurrentInputArg(int cArg)
+{
+  currentArg = cArg;
+  
+  return 0;
+}
+
+extern "C" 
 int OPS_GetIntInput(int *numData, int*data)
 {
   int size = *numData;
@@ -949,8 +957,7 @@ OPS_ResetInputNoBuilder(ClientData clientData,
 
   return 0;
 }
-	       
-			       
+
 int     
 OPS_GetNDF()
 {

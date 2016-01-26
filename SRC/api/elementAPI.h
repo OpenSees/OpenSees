@@ -140,6 +140,7 @@ extern "C" int        OPS_GetNDM();
 extern "C" int        OPS_GetNDF();
 extern "C" int        OPS_Error(char *, int length);
 extern "C" int        OPS_GetNumRemainingInputArgs();
+extern "C" int        OPS_ResetCurrentInputArg(int cArg);
 extern "C" int        OPS_GetIntInput(int *numData, int*data);
 extern "C" int        OPS_GetDoubleInput(int *numData, double *data);
 extern "C" const char *OPS_GetString(void); // does a strcpy

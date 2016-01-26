@@ -33,8 +33,6 @@
 // Description: This file contains the class definition for 
 // ParallelMaterial. ParallelMaterial is an aggregation
 // of UniaxialMaterial objects all considered acting in parallel.
-//
-// What: "@(#) ParallelMaterial.h, revA"
 
 #include <UniaxialMaterial.h>
 
@@ -43,7 +41,8 @@ class ParallelMaterial : public UniaxialMaterial
   public:
     ParallelMaterial(int tag, 
 		     int numMaterial, 
-		     UniaxialMaterial **theMaterials);
+		     UniaxialMaterial **theMaterials,
+             Vector *theFactors = 0);
     ParallelMaterial();
     ~ParallelMaterial();
 
@@ -80,8 +79,7 @@ class ParallelMaterial : public UniaxialMaterial
     double trialStrainRate;
     int numMaterials;   // the number of UniaxialMaterials in the aggregation
     UniaxialMaterial **theModels; // an array of pointers to the UniaxialMaterials
+    Vector *theFactors;  // vector with material factors
 };
 
-
 #endif
-
