@@ -641,20 +641,20 @@ int TripleFrictionPendulum::sendSelf(int commitTag, Channel &theChannel)
     // send element parameters
     int res;
     int dataTag = this->getDbTag();
-    Vector data(13);
-    data(0) = this->getTag();
-    data(1) = L1;
-    data(2) = L2;
-    data(3) = L3;
-    data(4) = Ubar1;
-    data(5) = Ubar2;
-    data(6) = Ubar3;
-    data(7)= W;
-    data(8)= Uy;
-    data(9)= Kvc;
-    data(10)= Kvt;
-    data(11)= MinFv;
-    data(12)= TOL;
+    static Vector data(13);
+    data(0)  = this->getTag();
+    data(1)  = L1;
+    data(2)  = L2;
+    data(3)  = L3;
+    data(4)  = Ubar1;
+    data(5)  = Ubar2;
+    data(6)  = Ubar3;
+    data(7)  = W;
+    data(8)  = Uy;
+    data(9)  = Kvc;
+    data(10) = Kvt;
+    data(11) = MinFv;
+    data(12) = TOL;
     res = theChannel.sendVector(dataTag, commitTag, data);
     if (res < 0) {
         opserr << "WARNING TripleFrictionPendulum::sendSelf() - failed to send Vector\n";
@@ -672,7 +672,11 @@ int TripleFrictionPendulum::sendSelf(int commitTag, Channel &theChannel)
     ID frnClassTags(3);
     for (int i=0; i<3; i++)
         frnClassTags(i) = theFrnMdls[i]->getClassTag();
-    theChannel.sendID(dataTag, commitTag, frnClassTags);
+    res = theChannel.sendID(dataTag, commitTag, frnClassTags);
+    if (res < 0) {
+        opserr << "WARNING TripleFrictionPendulum::sendSelf() - failed to send ID\n";
+        return -3;
+    }
     
     // send the friction models
     for (int i=0; i<3; i++)
@@ -686,7 +690,7 @@ int TripleFrictionPendulum::recvSelf(int commitTag, Channel &theChannel, FEM_Obj
 {
     int res;
     int dataTag = this->getDbTag();
-    Vector data(17);
+    static Vector data(13);
     res = theChannel.recvVector(dataTag, commitTag, data);
     if (res < 0) {
         opserr << "WARNING TripleFrictionPendulum::recvSelf() - failed to receive Vector\n";
@@ -697,19 +701,40 @@ int TripleFrictionPendulum::recvSelf(int commitTag, Channel &theChannel, FEM_Obj
     L1 = data(1);
     L2 = data(2);
     L3 = data(3);
-    Ubar1 = data(7);
-    Ubar2 = data(8);
-    Ubar3 = data(9);
-    W = data(31);
-    Uy = data(32);
-    Kvc = data(33);
-    Kvt = data(34);
-    MinFv = data(35);
-    TOL = data(37);
+    Ubar1 = data(4);
+    Ubar2 = data(5);
+    Ubar3 = data(6);
+    W = data(7);
+    Uy = data(8);
+    Kvc = data(9);
+    Kvt = data(10);
+    MinFv = data(11);
+    TOL = data(12);
+    
+    // receive the two end nodes
     res = theChannel.recvID(dataTag, commitTag, externalNodes);
     if (res < 0) {
         opserr << "WARNING TripleFrictionPendulum::recvSelf() - failed to receive ID\n";
         return -2;
+    }
+    
+    // receive the friction model class tag
+    ID frnClassTags(3);
+    res = theChannel.recvID(dataTag, commitTag, frnClassTags);
+    if (res < 0) {
+        opserr << "WARNING TripleFrictionPendulum::recvSelf() - failed to receive ID\n";
+        return -3;
+    }
+    
+    // receive the friction model
+    for (int i=0; i<3; i++)  {
+        theFrnMdls[i] = theBroker.getNewFrictionModel(frnClassTags(i));
+        if (theFrnMdls[i] == 0) {
+            opserr << "TripleFrictionPendulum::recvSelf() - "
+                << "failed to get blank friction model.\n";
+            return -4;
+        }
+        theFrnMdls[i]->recvSelf(commitTag, theChannel, theBroker);
     }
     
     return 0;

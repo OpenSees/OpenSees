@@ -58,7 +58,6 @@ using namespace std;
 Matrix FPBearingPTV::theMatrix(12,12);
 Vector FPBearingPTV::theVector(12);
 Vector FPBearingPTV::theLoad(12);
-int ELE_TAG_FPBearingPTV;
 
 static int numMyBearing = 0;
 void *OPS_FPBearingPTV()
