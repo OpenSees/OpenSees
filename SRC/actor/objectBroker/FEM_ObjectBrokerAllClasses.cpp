@@ -195,6 +195,7 @@
 #include <VelDependent.h>
 #include <VelPressureDep.h>
 #include <VelDepMultiLinear.h>
+#include <VelNormalFrcDep.h>
 
 // element header files
 #include <Element.h>
@@ -267,6 +268,8 @@
 #include <SingleFPSimple3d.h>
 #include <RJWatsonEQS2d.h>
 #include <RJWatsonEQS3d.h>
+#include <TripleFrictionPendulum.h>
+#include <FPBearingPTV.h>
 
 #ifdef _PFEM
 #include <PFEMElement2D.h>
@@ -765,6 +768,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_RJWatsonEQS3d:
       return new RJWatsonEQS3d();
+      
+    case ELE_TAG_TripleFrictionPendulum:
+      return new TripleFrictionPendulum();
+      
+    case ELE_TAG_FPBearingPTV:
+      return new FPBearingPTV();
       
     case ELE_TAG_Twenty_Eight_Node_BrickUP:
       return new TwentyEightNodeBrickUP();
@@ -1380,17 +1389,20 @@ FrictionModel *
 FEM_ObjectBrokerAllClasses::getNewFrictionModel(int classTag)
 {
     switch(classTag) {
-	case FRN_TAG_Coulomb:  
+	case FRN_TAG_Coulomb:
 	     return new Coulomb();
 
-	case FRN_TAG_VelDependent:  
+	case FRN_TAG_VelDependent:
 	     return new VelDependent();
 	     
-	case FRN_TAG_VelPressureDep:  
+	case FRN_TAG_VelPressureDep:
 	     return new VelPressureDep();
 
-	case FRN_TAG_VelDepMultiLinear:  
+	case FRN_TAG_VelDepMultiLinear:
 	     return new VelDepMultiLinear();
+
+	case FRN_TAG_VelNormalFrcDep:
+	     return new VelNormalFrcDep();
 
 	default:
 	  opserr << "FEM_ObjectBrokerAllClasses::getNewFrictionModel - ";
