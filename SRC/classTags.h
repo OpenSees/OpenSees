@@ -647,7 +647,7 @@
 #define ELE_TAG_SFI_MVLEM                 163
 #define ELE_TAG_PFEMElement2DFIC          164
 #define ELE_TAG_ElastomericBearingBoucWenMod3d 165
-
+#define ELE_TAG_FPBearingPTV              166
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
