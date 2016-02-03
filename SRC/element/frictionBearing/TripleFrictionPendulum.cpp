@@ -118,28 +118,27 @@ TripleFrictionPendulum::TripleFrictionPendulum(int tag,
     double kvt,
     double minFv,
     double tol)
-    : Element(tag,ELE_TAG_TripleFrictionPendulum),
-    externalNodes(2), L1(l1), L2(l2), L3(l3), Ubar1(ubar1), Ubar2(ubar2), Ubar3(ubar3),
-    W(w), Uy(uy), Kvc(kvc), Kvt(kvt), MinFv(minFv), TOL(tol),
+    : Element(tag, ELE_TAG_TripleFrictionPendulum), externalNodes(2),
+    L1(l1), L2(l2), L3(l3), Ubar1(ubar1), Ubar2(ubar2), Ubar3(ubar3),
+    W(w), Uy(uy), Kvc(kvc), Kvt(kvt), MinFv(minFv), TOL(tol), Niter(20),
     K(2,2), Kpr(2,2), f(2), fpr(2),
     k12(2,2), k12pr(2,2), k34(2,2), k34pr(2,2), k56(2,2), k56pr(2,2),
     d1(2), d1pr(2), d3(2), d3pr(2), d5(2), d5pr(2),
     ep1(2), ep1pr(2), ep3(2), ep3pr(2), ep5(2), ep5pr(2),
     q1(2), q1pr(2), q3(2), q3pr(2), q5(2), q5pr(2),
-    ep1tmp(2), ep3tmp(2), ep5tmp(2)
+    ep1tmp(2), ep3tmp(2), ep5tmp(2), q1tmp(2), q3tmp(2), q5tmp(2)
 {
     // fill in the ID containing external node info with node id's
     if (externalNodes.Size() != 2) {
         opserr << "FATAL TripleFrictionPendulum::TripleFrictionPendulum() - out of memory, could not create an ID of size 2\n";
         exit(-1);
     }
-    Niter = 20;
     externalNodes(0) = Nd1;
     externalNodes(1) = Nd2;
     theNodes[0] = 0; 
     theNodes[1] = 0;
     
-    // check material input
+    // check friction model input
     if (frnmdls == 0)  {
         opserr << "TripleFrictionPendulum::TripleFrictionPendulum() - "
             << "null friction model array passed.\n";
@@ -161,64 +160,34 @@ TripleFrictionPendulum::TripleFrictionPendulum(int tag,
         }
     }
     
-    // get transition-rate/velocity factors
+    // initialize constants
     v1Fact = 0.5;
-    v3Fact = L2/(L2-L1);
-    v5Fact = L3/(L3-L1);
+    v3Fact = L2/(L2 - L1);
+    v5Fact = L3/(L3 - L1);
     
-    Vel1Avg = Vel3Avg = Vel5Avg = 0.0;
-    Fy1pr = Fy3pr = Fy5pr = 0.0;
-    Wpr = W; Wcr = W; Wavg = W;
-    
-    for (int i=0; i<3; i++)  {
-        theFrnMdls[i]->setTrial(Wavg, 0.0);
-    }
-    Fy1 = theFrnMdls[0]->getFrictionCoeff();
-    Fy3 = theFrnMdls[1]->getFrictionCoeff();
-    Fy5 = theFrnMdls[2]->getFrictionCoeff();
-    
-    E1 = E2 = 3*Fy1/Uy;
-    E3 = E4 = 3*Fy1/Uy;
-    E5 = E6 = 3*Fy1/Uy;
-    
-    double E1p = 1./2./L1;
-    double E3p = 1./(L2 - L1);
-    double E5p = 1./(L3 - L1);
-    H1 = E1*E1p/(E1-E1p);
-    H3 = E3*E3p/(E3-E3p);
-    H5 = E5*E5p/(E5-E5p);
     Gap2 = 2*(L1/L3*Ubar3 + Ubar1);
-    Gap4 = Ubar2*(1-L1/L2);
-    Gap6 = Ubar3*(1-L1/L3);	
+    Gap4 = Ubar2*(1 - L1/L2);
+    Gap6 = Ubar3*(1 - L1/L3);
     
-    Vector tmp1(2), tmp2(2), tmp3(2);	
-    
-    d1pr.Zero();
-    d3pr.Zero();
-    d5pr.Zero();
-    ep1pr.Zero();
-    ep3pr.Zero();
-    ep5pr.Zero();
-    q1pr.Zero();
-    q3pr.Zero();
-    q5pr.Zero();
-    fpr.Zero();
-    
-    BidirectionalPlastic(k12pr, tmp1, tmp2, tmp3, Fy1, E1, H1, ep1pr, q1pr, d1pr);
-    BidirectionalPlastic(k34pr, tmp1, tmp2, tmp3, Fy3, E3, H3, ep3pr, q3pr, d3pr);
-    BidirectionalPlastic(k56pr, tmp1, tmp2, tmp3, Fy5, E5, H5, ep5pr, q5pr, d5pr);
-    StiffnessForm(Kpr, k12pr, k34pr, k56pr);
+    // initialize other variables
+    this->revertToStart();
 }
 
 
 // constructor which should be invoked by an FE_ObjectBroker only
 TripleFrictionPendulum::TripleFrictionPendulum()
-    : Element(0,ELE_TAG_TripleFrictionPendulum),
-    externalNodes(2), L1(0.0), L2(0.0), L3(0.0), Ubar1(0.0), Ubar2(0.0), Ubar3(0.0),
-    W(0.0), Uy(0.0), Kvc(0.0), Kvt(0.0), MinFv(0.0)
+    : Element(0, ELE_TAG_TripleFrictionPendulum), externalNodes(2),
+    L1(0.0), L2(0.0), L3(0.0), Ubar1(0.0), Ubar2(0.0), Ubar3(0.0),
+    W(0.0), Uy(0.0), Kvc(0.0), Kvt(0.0), MinFv(0.0), TOL(1E-6), Niter(20),
+    K(2,2), Kpr(2,2), f(2), fpr(2),
+    k12(2,2), k12pr(2,2), k34(2,2), k34pr(2,2), k56(2,2), k56pr(2,2),
+    d1(2), d1pr(2), d3(2), d3pr(2), d5(2), d5pr(2),
+    ep1(2), ep1pr(2), ep3(2), ep3pr(2), ep5(2), ep5pr(2),
+    q1(2), q1pr(2), q3(2), q3pr(2), q5(2), q5pr(2),
+    ep1tmp(2), ep3tmp(2), ep5tmp(2), q1tmp(2), q3tmp(2), q5tmp(2)
 {
     // set node pointers to NULL
-    theNodes[0] = 0; 
+    theNodes[0] = 0;
     theNodes[1] = 0;
     
     // set friction model pointers to NULL
@@ -230,6 +199,7 @@ TripleFrictionPendulum::TripleFrictionPendulum()
 //  destructor - provided to clean up any memory
 TripleFrictionPendulum::~TripleFrictionPendulum()
 {
+    // clean up all the friction model objects
     for (int i=0; i<3; i++)
         if (theFrnMdls[i] != 0)
             delete theFrnMdls[i];
@@ -276,8 +246,8 @@ void TripleFrictionPendulum::setDomain(Domain *theDomain)
     Node *end1Ptr, *end2Ptr;    
     int Nd1 = externalNodes(0);
     int Nd2 = externalNodes(1);
-    end1Ptr=(*theDomain).getNode(Nd1);
-    end2Ptr=(*theDomain).getNode(Nd2);
+    end1Ptr = (*theDomain).getNode(Nd1);
+    end2Ptr = (*theDomain).getNode(Nd2);
     if (end1Ptr == 0) {
         opserr << "WARNING TripleFrictionPendulum::setDomain() - at TripleFrictionPendulum " << this->getTag() << " node " <<
             Nd1 << "  does not exist in domain\n";
@@ -318,6 +288,7 @@ int TripleFrictionPendulum::commitState()
     // commit the base class
     errCode += this->Element::commitState();
     
+    // commit other history variables
     Wpr = Wcr;
     Fy1pr = Fy1; Fy3pr = Fy3; Fy5pr = Fy5;
     Kpr = K;
@@ -333,25 +304,53 @@ int TripleFrictionPendulum::commitState()
 
 int TripleFrictionPendulum::revertToLastCommit()
 {
+    int errCode = 0;
+    
+    // revert friction models
+    for (int i=0; i<3; i++)
+        errCode += theFrnMdls[i]->revertToLastCommit();
+    
     return 0;
 }
 
 
 int TripleFrictionPendulum::revertToStart()
 {
+    int errCode = 0;
     Vector tmp1(2), tmp2(2), tmp3(2);
     
     Vel1Avg = Vel3Avg = Vel5Avg = 0.0;
     Fy1pr = Fy3pr = Fy5pr = 0.0;
-    Wpr = W; Wcr = W; Wavg = W;
+    Wpr = Wcr = Wavg = W;
     
+    // revert friction models and reinitialize
     for (int i=0; i<3; i++)  {
+        errCode += theFrnMdls[i]->revertToStart();
         theFrnMdls[i]->setTrial(Wavg, 0.0);
     }
     Fy1 = theFrnMdls[0]->getFrictionCoeff();
     Fy3 = theFrnMdls[1]->getFrictionCoeff();
     Fy5 = theFrnMdls[2]->getFrictionCoeff();
     
+    E1 = E2 = 3*Fy1/Uy;
+    E3 = E4 = 3*Fy1/Uy;
+    E5 = E6 = 3*Fy1/Uy;
+    
+    double E1p = 1/(2*L1);
+    double E3p = 1/(L2 - L1);
+    double E5p = 1/(L3 - L1);
+    
+    H1 = E1*E1p/(E1 - E1p);
+    H3 = E3*E3p/(E3 - E3p);
+    H5 = E5*E5p/(E5 - E5p);
+    
+    // initialize remaining variables
+    Fvert = 0.0;
+    Kvert = Kvc;
+    Hisolator = 0.0;
+    Dx = Dy = Dz = 0.0;
+    
+    // reset history variables
     d1pr.Zero();
     d3pr.Zero();
     d5pr.Zero();
@@ -368,7 +367,7 @@ int TripleFrictionPendulum::revertToStart()
     BidirectionalPlastic(k56pr, tmp1, tmp2, tmp3, Fy5, E5, H5, ep5pr, q5pr, d5pr);
     StiffnessForm(Kpr, k12pr, k34pr, k56pr);
     
-    return 0;
+    return errCode;
 }
 
 
@@ -394,13 +393,13 @@ int TripleFrictionPendulum::update()
     dusub(0) = duNd2(0) - duNd1(0); // incremental displacement
     dusub(1) = duNd2(1) - duNd1(1);
     
-    double uvert = utrialNd2(2) - utrialNd1(2); // vertical displacement
+    Dz = utrialNd2(2) - utrialNd1(2); // vertical displacement
     // vertical force and stiffness
-    if (uvert > 0) {
-        Fvert = uvert*Kvt;
+    if (Dz > 0) {
+        Fvert = Dz*Kvt;
         Kvert = Kvt;
     } else {
-        Fvert = uvert*Kvc;
+        Fvert = Dz*Kvc;
         Kvert = Kvc;
     }
     // vertical force for computing friction
@@ -547,9 +546,9 @@ const Matrix& TripleFrictionPendulum::getInitialStiff()
     a.Zero();
     aT.Zero();
     a(0,0) = a(1,1) = -1;
-    a(0,6) = a(1,7) = 1;
-    aT(0,0)=aT(1,1)=-1;
-    aT(6,0)=aT(7,1)=1;
+    a(0,6) = a(1,7) =  1;
+    aT(0,0) = aT(1,1) = -1;
+    aT(6,0) = aT(7,1) =  1;
     eleKinit = aT*Kinit*a;
     eleKinit *= W;
     eleKinit(2,2) = eleKinit(8,8) = Kvc;
@@ -737,12 +736,24 @@ int TripleFrictionPendulum::recvSelf(int commitTag, Channel &theChannel, FEM_Obj
         theFrnMdls[i]->recvSelf(commitTag, theChannel, theBroker);
     }
     
+    // initialize constants
+    v1Fact = 0.5;
+    v3Fact = L2/(L2 - L1);
+    v5Fact = L3/(L3 - L1);
+    
+    Gap2 = 2*(L1/L3*Ubar3 + Ubar1);
+    Gap4 = Ubar2*(1 - L1/L2);
+    Gap6 = Ubar3*(1 - L1/L3);
+    
+    // initialize other variables
+    this->revertToStart();
+    
     return 0;
 }
 
 
 int TripleFrictionPendulum::displaySelf(Renderer &theViewer,
-					int displayMode, float fact, const char **modes, int numMode)
+    int displayMode, float fact, const char **modes, int numMode)
 {
     int errCode = 0;
     
@@ -836,6 +847,74 @@ Response* TripleFrictionPendulum::setResponse(const char **argv, int argc,
         
         theResponse = new ElementResponse(this, 1, eleR);
     }
+    // local forces
+    else if (strcmp(argv[0],"localForce") == 0 ||
+        strcmp(argv[0],"localForces") == 0)
+    {
+        output.tag("ResponseType","N_ 1");
+        output.tag("ResponseType","Vy_1");
+        output.tag("ResponseType","Vz_1");
+        output.tag("ResponseType","T_1");
+        output.tag("ResponseType","My_1");
+        output.tag("ResponseType","Tz_1");
+        output.tag("ResponseType","N_2");
+        output.tag("ResponseType","Py_2");
+        output.tag("ResponseType","Pz_2");
+        output.tag("ResponseType","T_2");
+        output.tag("ResponseType","My_2");
+        output.tag("ResponseType","Mz_2");
+        
+        theResponse = new ElementResponse(this, 2, Vector(12));
+    }
+    // basic forces
+    else if (strcmp(argv[0],"basicForce") == 0 ||
+        strcmp(argv[0],"basicForces") == 0)
+    {
+        output.tag("ResponseType","qb1");
+        output.tag("ResponseType","qb2");
+        output.tag("ResponseType","qb3");
+        output.tag("ResponseType","qb4");
+        output.tag("ResponseType","qb5");
+        output.tag("ResponseType","qb6");
+        
+        theResponse = new ElementResponse(this, 3, Vector(6));
+    }
+    // local displacements
+    else if (strcmp(argv[0],"localDisplacement") == 0 ||
+        strcmp(argv[0],"localDisplacements") == 0)
+    {
+        output.tag("ResponseType","ux_1");
+        output.tag("ResponseType","uy_1");
+        output.tag("ResponseType","uz_1");
+        output.tag("ResponseType","rx_1");
+        output.tag("ResponseType","ry_1");
+        output.tag("ResponseType","rz_1");
+        output.tag("ResponseType","ux_2");
+        output.tag("ResponseType","uy_2");
+        output.tag("ResponseType","uz_2");
+        output.tag("ResponseType","rx_2");
+        output.tag("ResponseType","ry_2");
+        output.tag("ResponseType","rz_2");
+        
+        theResponse = new ElementResponse(this, 4, Vector(12));
+    }
+    // basic displacements
+    else if (strcmp(argv[0],"deformation") == 0 ||
+        strcmp(argv[0],"deformations") == 0 || 
+        strcmp(argv[0],"basicDeformation") == 0 ||
+        strcmp(argv[0],"basicDeformations") == 0 ||
+        strcmp(argv[0],"basicDisplacement") == 0 ||
+        strcmp(argv[0],"basicDisplacements") == 0)
+    {
+        output.tag("ResponseType","ub1");
+        output.tag("ResponseType","ub2");
+        output.tag("ResponseType","ub3");
+        output.tag("ResponseType","ub4");
+        output.tag("ResponseType","ub5");
+        output.tag("ResponseType","ub6");
+        
+        theResponse = new ElementResponse(this, 5, Vector(6));
+    }
     // friction model output
     else if (strcmp(argv[0],"frictionModel") == 0 || strcmp(argv[0],"frnMdl") == 0 ||
         strcmp(argv[0],"frictionMdl") == 0 || strcmp(argv[0],"frnModel") == 0)  {
@@ -854,17 +933,57 @@ Response* TripleFrictionPendulum::setResponse(const char **argv, int argc,
 
 int TripleFrictionPendulum::getResponse(int responseID, Information &eleInfo)
 {
+    Vector locForce(12), locDisp(12), basForce(6), basDisp(6);
     switch (responseID)  {
     case 1:  // global forces
         return eleInfo.setVector(this->getResistingForce());
-    
+        
+    case 2:  // local forces
+        this->getResistingForce();
+        locForce(0) = eleR(2);
+        locForce(1) = eleR(0);
+        locForce(2) = eleR(1);
+        locForce(3) = eleR(5);
+        locForce(4) = eleR(3);
+        locForce(5) = eleR(4);
+        locForce(6) = eleR(8);
+        locForce(7) = eleR(6);
+        locForce(8) = eleR(7);
+        locForce(9) = eleR(11);
+        locForce(10) = eleR(9);
+        locForce(11) = eleR(10);
+        return eleInfo.setVector(locForce);
+        
+    case 3:  // basic forces
+        this->getResistingForce();
+        basForce(0) = eleR(8);
+        basForce(1) = eleR(6);
+        basForce(2) = eleR(7);
+        basForce(3) = eleR(11);
+        basForce(4) = eleR(9);
+        basForce(5) = eleR(10);
+        return eleInfo.setVector(basForce);
+        
+    case 4:  // local displacements
+        locDisp.Zero();
+        return eleInfo.setVector(locDisp);
+        
+    case 5:  // basic displacements
+        basDisp(0) = Dz;
+        basDisp(1) = Dx;
+        basDisp(2) = Dy;
+        basDisp(3) = 0.0;
+        basDisp(4) = 0.0;
+        basDisp(5) = 0.0;
+        return eleInfo.setVector(basDisp);
+        
     default:
         return -1;
     }
 }
 
 
-void TripleFrictionPendulum::CircularElasticGap(Matrix &kj, Vector &fj, double Ej,double Gapj,Vector di)
+void TripleFrictionPendulum::CircularElasticGap(Matrix &kj, Vector &fj, double Ej, double Gapj, Vector di)
 {
     double r = di.Norm();
     if (r==0)
@@ -902,8 +1021,8 @@ void TripleFrictionPendulum::BidirectionalPlastic(Matrix &ki, Vector &fi, Vector
     double fn;
     fi = Ei*(di - epi); 	//trial stress
     xsi = fi - qi;
-    normxsi=xsi.Norm();
-    fn=normxsi-Fyi; 	//yield function
+    normxsi = xsi.Norm();
+    fn = normxsi - Fyi; 	//yield function
     
     // Elastic step
     if (fn <= 0)
@@ -948,8 +1067,8 @@ void TripleFrictionPendulum::Segment(Vector &epitmp, Vector &qitmp, bool &conv, 
     Vector fprime(2);
     Matrix invkij(2,2);
     
-    MInverse(kij,invkij,2);	
-    dd=invkij*dftmp;
+    kij.Invert(invkij);
+    dd = invkij*dftmp;
     register int iter = 1;
     epitmp = epi;
     qitmp = qi;
@@ -962,21 +1081,17 @@ void TripleFrictionPendulum::Segment(Vector &epitmp, Vector &qitmp, bool &conv, 
         iter++;
         di = di + dd;
         BidirectionalPlastic(ki, fi, epitmp, qitmp, Fyi, Ei, Hi, epi, qi, di);
-        CircularElasticGap(kj, fj, Ej,Gapj,di);
+        CircularElasticGap(kj, fj, Ej, Gapj, di);
         kij = ki + kj;
         fprime = fi + fj;
         dftmp = f + df - fprime;
-        MInverse(kij,invkij,2);
+        kij.Invert(invkij);
         dd = invkij*dftmp;
     }
     if (iter > Niter)
-    {
         conv = false;
-    }
     else
-    {
         conv = true;
-    }
 }
 
 
@@ -1021,18 +1136,16 @@ void TripleFrictionPendulum::TFPElement(bool &Conv, Vector &ep1tmp, Vector &ep3t
             Conv = false;
             break;
         }
-        f=f + df;
-        //opserr << "finside=" << f(0) <<endln;
+        f = f + df;
+        
         uprime(0) = d1(0) + d3(0) + d5(0);
         uprime(1) = d1(1) + d3(1) + d5(1);
         du(0) = u(0) + dusub(0) - uprime(0);
         du(1) = u(1) + dusub(1) - uprime(1);
-        StiffnessForm(K,k12,k34,k56);
+        StiffnessForm(K, k12, k34, k56);
     }
     if (iter > Niter)
-    {
         Conv = false;
-    }
 }
 
 
@@ -1061,75 +1174,30 @@ void TripleFrictionPendulum::StiffnessForm(Matrix &K, Matrix k12, Matrix k34, Ma
     K88(3,3) = k56(1,1);
     K88(3,6) = K88(6,3) = -k56(0,1);
     K88(3,7) = K88(7,3) = -k56(1,1);
-    K88(4,4) = k12(0,0)+k34(0,0);
-    K88(4,5) = K88(5,4) = k12(0,1)+k34(0,1);
+    K88(4,4) = k12(0,0) + k34(0,0);
+    K88(4,5) = K88(5,4) = k12(0,1) + k34(0,1);
     K88(4,6) = K88(6,4) = -k34(0,0);
     K88(4,7) = K88(7,4) = -k34(0,1);
-    K88(5,5) = k12(1,1)+k34(1,1);
+    K88(5,5) = k12(1,1) + k34(1,1);
     K88(5,6) = K88(6,5) = -k34(0,1);
     K88(5,7) = K88(7,5) = -k34(1,1);
-    K88(6,6) = k34(0,0)+k56(0,0);
-    K88(6,7) = K88(7,6) = k34(0,1)+k56(0,1);
-    K88(7,7) = k34(1,1)+k56(1,1);
+    K88(6,6) = k34(0,0) + k56(0,0);
+    K88(6,7) = K88(7,6) = k34(0,1) + k56(0,1);
+    K88(7,7) = k34(1,1) + k56(1,1);
     
     for (int i=0; i < 4; i++) {
         for (int j=0; j < 4; j++) {
-            ktt(i,j)=K88(i+4,j+4);
+            ktt(i,j) = K88(i+4,j+4);
             kot(i,j) = kto(j,i) = K88(i+4,j);
-            Ktmp1(i,j)=K88(i,j);
+            Ktmp1(i,j) = K88(i,j);
         }
     }
     invktt.Zero();
-    MInverse(ktt,invktt,4);
+    ktt.Invert(invktt);
     Ktmp2 = Ktmp1 - kot*invktt*kto;
     for (int i=0; i<2; i++) {
         for (int j=0; j<2; j++) {
             K(i,j) = Ktmp2(i+2,j+2);
-        }
-    }
-}
-
-
-void TripleFrictionPendulum::MInverse(Matrix MInput, Matrix &Mout, int ncol)
-{
-    // This part was adapted to the current code in OpenSees
-    double tmp;
-    int i,ii,j;	
-    Matrix MIn = MInput;
-    Mout.Zero();
-    for (i=0;i<ncol;i++) {
-        Mout(i,i)=1.0;
-    }
-    // Go forward to find U
-    for (i=0;i<ncol-1;i++) {
-        if (MIn(i,i) == 0.) {MIn(i,i)=1.e-12;}
-        tmp = MIn(i,i);
-        for (j=i;j<ncol;j++) {MIn(i,j)=MIn(i,j)/tmp;}
-        for (j=0;j<ncol;j++) {Mout(i,j)=Mout(i,j)/tmp;}
-        for (ii=i+1;ii<ncol;ii++) {
-            tmp = MIn(ii,i);
-            for (j=i;j<ncol;j++) {MIn(ii,j)=MIn(ii,j)-tmp*MIn(i,j);}
-            for (j=0;j<ncol;j++) {Mout(ii,j)=Mout(ii,j)-tmp*Mout(i,j);}
-        }
-    }
-    if (MIn(ncol-1,ncol-1)==0.) {MIn(ncol-1,ncol-1)=1.e-12;}
-    tmp=MIn(ncol-1,ncol-1);
-    MIn(ncol-1,ncol-1)=1.;
-    for (j=0;j<ncol;j++) {Mout(ncol-1,j)=Mout(ncol-1,j)/tmp;}
-    //Go backward to find L
-    for (i=ncol-1;i>0;i--) {
-        for (ii=i-1;ii>=0;ii--) {
-            for (j=0;j<ncol;j++) {Mout(ii,j)=Mout(ii,j)-MIn(ii,i)*Mout(i,j);}
-        }
-    }
-    
-    // Check results
-    Matrix I = Mout;
-    I=MInput*Mout;
-    for (i=0;i<ncol;i++) {
-        if ((I(i,i)<0.99999) || (I(i,i)>1.00001)) {
-            opserr << "Invert Matrix failed!" << I(i,i);
-            exit(1);
         }
     }
 }

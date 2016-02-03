@@ -104,7 +104,6 @@ private:
     void Segment(Vector &epitmp, Vector &qitmp, bool &conv, Matrix &kij, Vector &di, Vector epi, Vector qi, Vector f, Vector df, double Fyi, double Ei, double Hi, double Ej, double Gapj, double Tol, int Niter);
     void TFPElement(bool &Conv, Vector &ep1tmp, Vector &ep3tmp, Vector &ep5tmp, Vector &q1tmp, Vector &q3tmp, Vector &q5tmp, Matrix &K, Vector &f, Matrix &k12, Matrix &k34, Matrix &k56, Vector &d1, Vector &d3, Vector &d5, Vector ep1, Vector ep3, Vector ep5, Vector q1, Vector q3, Vector q5, Vector u, Vector dusub, double Fy1, double Fy3, double Fy5, double E1, double E3, double E5, double H1, double H3, double H5, double E2, double E4, double E6, double Gap2, double Gap4, double Gap6, double Tol, int Niter);
     void StiffnessForm(Matrix &K, Matrix k12, Matrix k34, Matrix k56);
-    void MInverse(Matrix MInput,Matrix &Mout,int ncol);
     
     FrictionModel *theFrnMdls[3];  // array of friction models for three sliding surfaces
     
@@ -158,18 +157,19 @@ private:
     Vector q5tmp;
     
     double v1Fact, v3Fact, v5Fact;
-    double Vel1Avg, Vel3Avg, Vel5Avg;
-    double Wcr, Wavg, Wpr;
-    double Fy1, Fy3, Fy5, Fy1pr, Fy3pr, Fy5pr;
-    double E1, E3, E5;
-    double H1, H3, H5;
-    double E2, E4, E6;
     double Gap2, Gap4, Gap6;
-    bool Conv;
+    double Vel1Avg, Vel3Avg, Vel5Avg;
+    double Fy1pr, Fy3pr, Fy5pr;
+    double Wpr, Wcr, Wavg;
+    double Fy1, Fy3, Fy5;
+    double E1, E3, E5;
+    double E2, E4, E6;
+    double H1, H3, H5;
     double Fvert;
     double Kvert;
     double Hisolator;
-    double Dx, Dy;
+    double Dx, Dy, Dz;
+    bool Conv;
     
     // private attributes - a copy for each object of the class
     ID  externalNodes;  // contains the id's of end nodes
