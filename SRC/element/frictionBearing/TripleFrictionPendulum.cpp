@@ -687,6 +687,11 @@ int TripleFrictionPendulum::sendSelf(int commitTag, Channel &theChannel)
 
 int TripleFrictionPendulum::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
+    // delete friction model memory
+    for (int i=0; i<3; i++)
+        if (theFrnMdls[i] != 0)
+            delete theFrnMdls[i];
+
     int res;
     int dataTag = this->getDbTag();
     static Vector data(13);
@@ -1069,7 +1074,7 @@ void TripleFrictionPendulum::Segment(Vector &epitmp, Vector &qitmp, bool &conv, 
     
     kij.Invert(invkij);
     dd = invkij*dftmp;
-    register int iter = 1;
+    int iter = 1;
     epitmp = epi;
     qitmp = qi;
     
