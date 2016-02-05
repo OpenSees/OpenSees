@@ -6,6 +6,7 @@ OBJS       = IncrementalIntegrator.o \
 	StaticIntegrator.o \
 	TransientIntegrator.o \
 	HHT.o \
+	HHT_TP.o \
 	GeneralizedAlpha.o \
 	WilsonTheta.o \
 	Newmark.o \
@@ -13,11 +14,10 @@ OBJS       = IncrementalIntegrator.o \
 	CentralDifference.o \
 	Integrator.o \
 	LoadControl.o \
-	HHT1.o \
 	Newmark1.o \
 	CentralDifferenceAlternative.o \
 	TRBDF2.o \
-        TRBDF3.o \
+    TRBDF3.o \
 	ArcLength.o \
 	ArcLength1.o \
 	LoadPath.o \
@@ -33,6 +33,7 @@ OBJS       = IncrementalIntegrator.o \
 	NewmarkHSIncrLimit.o \
 	HHTExplicit.o \
 	HHTGeneralized.o \
+	HHTGeneralized_TP.o \
 	HHTGeneralizedExplicit.o \
 	HHTHSFixedNumIter.o \
 	HHTHSIncrReduct.o \
@@ -42,11 +43,14 @@ OBJS       = IncrementalIntegrator.o \
 	CollocationHSIncrReduct.o \
 	CollocationHSIncrLimit.o \
 	AlphaOSGeneralized.o \
+	AlphaOSGeneralized_TP.o \
 	AlphaOS.o \
+	AlphaOS_TP.o \
 	Houbolt.o \
 	ParkLMS3.o \
 	BackwardEuler.o \
-	KRAlphaExplicit.o 
+	KRAlphaExplicit.o \
+	KRAlphaExplicit_TP.o 
 
 all:         $(OBJS)
 

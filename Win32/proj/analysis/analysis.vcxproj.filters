@@ -329,7 +329,19 @@
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\SecantLineSearch.cpp">
       <Filter>lineSearch</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHT1.cpp">
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHT_TP.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralized_TP.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\KRAlphaExplicit_TP.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOS_TP.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized_TP.cpp">
       <Filter>integrator</Filter>
     </ClCompile>
   </ItemGroup>
@@ -622,7 +634,19 @@
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\SecantLineSearch.h">
       <Filter>lineSearch</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHT1.h">
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHT_TP.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTGeneralized_TP.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\KRAlphaExplicit_TP.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOS_TP.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized_TP.h">
       <Filter>integrator</Filter>
     </ClInclude>
   </ItemGroup>

@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.19 $
-// $Date: 2010-07-27 23:23:26 $
-// $Source: /usr/local/cvs/OpenSees/SRC/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
                                                                         
 // Written: fmk
 // Revision: A
@@ -29,8 +29,6 @@
 // FEM_ObjectBrokerAllClasses is is an object broker class for the finite element
 // method. All methods are virtual to allow for subclasses; which can be
 // used by programmers when introducing new subclasses of the main objects.
-//
-// What: "@(#) FEM_ObjectBrokerAllClasses.C, revA"
 
 #ifdef _PARALLEL_PROCESSING
 #include <mpi.h>
@@ -390,7 +388,9 @@
 
 #include <TransientIntegrator.h>
 #include <AlphaOS.h>
+#include <AlphaOS_TP.h>
 #include <AlphaOSGeneralized.h>
+#include <AlphaOSGeneralized_TP.h>
 #include <CentralDifference.h>
 #include <CentralDifferenceAlternative.h>
 #include <CentralDifferenceNoDamping.h>
@@ -399,8 +399,10 @@
 #include <CollocationHSIncrLimit.h>
 #include <CollocationHSIncrReduct.h>
 #include <HHT.h>
+#include <HHT_TP.h>
 #include <HHTExplicit.h>
 #include <HHTGeneralized.h>
+#include <HHTGeneralized_TP.h>
 #include <HHTGeneralizedExplicit.h>
 #include <HHTHSFixedNumIter.h>
 #include <HHTHSIncrLimit.h>
@@ -417,6 +419,7 @@
 #include <TRBDF3.h>
 #include <WilsonTheta.h>
 #include <KRAlphaExplicit.h>
+#include <KRAlphaExplicit_TP.h>
 
 // system of eqn header files
 #include <LinearSOE.h>
@@ -1878,8 +1881,14 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
 	case INTEGRATOR_TAGS_AlphaOS:  
 	     return new AlphaOS();
 
+	case INTEGRATOR_TAGS_AlphaOS_TP:  
+	     return new AlphaOS_TP();
+
 	case INTEGRATOR_TAGS_AlphaOSGeneralized:  
 	     return new AlphaOSGeneralized();
+
+	case INTEGRATOR_TAGS_AlphaOSGeneralized_TP:  
+	     return new AlphaOSGeneralized_TP();
 
 	case INTEGRATOR_TAGS_CentralDifference:  
 	     return new CentralDifference();      // must recvSelf
@@ -1905,11 +1914,17 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
 	case INTEGRATOR_TAGS_HHT:  
 	     return new HHT();
 
+	case INTEGRATOR_TAGS_HHT_TP:  
+	     return new HHT_TP();
+
 	case INTEGRATOR_TAGS_HHTExplicit:  
 	     return new HHTExplicit();
 
 	case INTEGRATOR_TAGS_HHTGeneralized:  
 	     return new HHTGeneralized();
+
+	case INTEGRATOR_TAGS_HHTGeneralized_TP:  
+	     return new HHTGeneralized_TP();
 
 	case INTEGRATOR_TAGS_HHTGeneralizedExplicit:  
 	     return new HHTGeneralizedExplicit();
@@ -1954,6 +1969,9 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
 
     case INTEGRATOR_TAGS_KRAlphaExplicit:  
         return new KRAlphaExplicit();
+
+    case INTEGRATOR_TAGS_KRAlphaExplicit_TP:  
+        return new KRAlphaExplicit_TP();
 
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewTransientIntegrator - ";

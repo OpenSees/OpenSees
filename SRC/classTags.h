@@ -26,8 +26,6 @@
 // Revision: A
 //
 // Purpose: This file contains the declarations of all class tags used.
-//
-// What: "@(#) classTags.h, revA"
 
 #ifndef classTags_h
 #define classTags_h
@@ -777,48 +775,58 @@
 
 #define INTEGRATOR_TAGS_Newmark                          1
 #define INTEGRATOR_TAGS_HHT                              2
-#define INTEGRATOR_TAGS_WilsonTheta                      3
-#define INTEGRATOR_TAGS_CentralDifference                4
-#define INTEGRATOR_TAGS_LoadControl                      5
-#define INTEGRATOR_TAGS_DisplacementControl              6
-#define INTEGRATOR_TAGS_ArcLength                        7
-#define INTEGRATOR_TAGS_LoadPath                         8
-#define INTEGRATOR_TAGS_Newmark1                         9
-#define INTEGRATOR_TAGS_HHT1                            10
-#define INTEGRATOR_TAGS_MinUnbalDispNorm                11
-#define INTEGRATOR_TAGS_ArcLength1                      12
-#define INTEGRATOR_TAGS_StaticSensitivity               13
-#define INTEGRATOR_TAGS_HSConstraint                    14
-#define INTEGRATOR_TAGS_DistributedDisplacementControl  15
-#define INTEGRATOR_TAGS_CentralDifferenceAlternative    16
-#define INTEGRATOR_TAGS_CentralDifferenceNoDamping      17
-#define INTEGRATOR_TAGS_NewmarkExplicit                 18
-#define INTEGRATOR_TAGS_NewmarkHSIncrReduct             19
-#define INTEGRATOR_TAGS_NewmarkHSIncrLimit              20
-#define INTEGRATOR_TAGS_NewmarkHSFixedNumIter           21
-#define INTEGRATOR_TAGS_HHTExplicit                     22
-#define INTEGRATOR_TAGS_HHTGeneralized                  23
-#define INTEGRATOR_TAGS_HHTGeneralizedExplicit          24
-#define INTEGRATOR_TAGS_HHTHSIncrReduct                 25
-#define INTEGRATOR_TAGS_HHTHSIncrLimit                  26
-#define INTEGRATOR_TAGS_HHTHSFixedNumIter               27
-#define INTEGRATOR_TAGS_AlphaOS                         28
-#define INTEGRATOR_TAGS_AlphaOSGeneralized              29
-#define INTEGRATOR_TAGS_Collocation                     30
-#define INTEGRATOR_TAGS_CollocationHSIncrReduct         31
-#define INTEGRATOR_TAGS_CollocationHSIncrLimit          32
-#define INTEGRATOR_TAGS_CollocationHSFixedNumIter       33
-#define INTEGRATOR_TAGS_TRBDF2                          34
-#define INTEGRATOR_TAGS_GeneralizedAlpha                35
-#define INTEGRATOR_TAGS_DisplacementPath                36
-#define INTEGRATOR_TAGS_FSI                             37
-#define INTEGRATOR_TAGS_TRBDF3                          38
-#define INTEGRATOR_TAGS_Houbolt                         39
-#define INTEGRATOR_TAGS_ParkLMS3                        40
-#define INTEGRATOR_TAGS_BackwardEuler                   41
-#define INTEGRATOR_TAGS_EnergyConserved                 42
-#define INTEGRATOR_TAGS_PFEMIntegrator                  43
-#define INTEGRATOR_TAGS_KRAlphaExplicit                 44
+#define INTEGRATOR_TAGS_HHT_TP                           3
+#define INTEGRATOR_TAGS_WilsonTheta                      4
+#define INTEGRATOR_TAGS_CentralDifference                5
+#define INTEGRATOR_TAGS_LoadControl                      6
+#define INTEGRATOR_TAGS_DisplacementControl              7
+#define INTEGRATOR_TAGS_ArcLength                        8
+#define INTEGRATOR_TAGS_LoadPath                         9
+#define INTEGRATOR_TAGS_Newmark1                        10
+#define INTEGRATOR_TAGS_HHT1                            11
+#define INTEGRATOR_TAGS_MinUnbalDispNorm                12
+#define INTEGRATOR_TAGS_ArcLength1                      13
+#define INTEGRATOR_TAGS_StaticSensitivity               14
+#define INTEGRATOR_TAGS_HSConstraint                    15
+#define INTEGRATOR_TAGS_DistributedDisplacementControl  16
+#define INTEGRATOR_TAGS_CentralDifferenceAlternative    17
+#define INTEGRATOR_TAGS_CentralDifferenceNoDamping      18
+#define INTEGRATOR_TAGS_NewmarkExplicit                 19
+#define INTEGRATOR_TAGS_NewmarkHSIncrReduct             20
+#define INTEGRATOR_TAGS_NewmarkHSIncrLimit              21
+#define INTEGRATOR_TAGS_NewmarkHSFixedNumIter           22
+#define INTEGRATOR_TAGS_HHTExplicit                     23
+#define INTEGRATOR_TAGS_HHTExplicit_TP                  24
+#define INTEGRATOR_TAGS_HHTGeneralized                  25
+#define INTEGRATOR_TAGS_HHTGeneralized_TP               26
+#define INTEGRATOR_TAGS_HHTGeneralizedExplicit          27
+#define INTEGRATOR_TAGS_HHTGeneralizedExplicit_TP       28
+#define INTEGRATOR_TAGS_HHTHSIncrReduct                 29
+#define INTEGRATOR_TAGS_HHTHSIncrReduct_TP              30
+#define INTEGRATOR_TAGS_HHTHSIncrLimit                  31
+#define INTEGRATOR_TAGS_HHTHSIncrLimit_TP               32
+#define INTEGRATOR_TAGS_HHTHSFixedNumIter               33
+#define INTEGRATOR_TAGS_HHTHSFixedNumIter_TP            34
+#define INTEGRATOR_TAGS_AlphaOS                         35
+#define INTEGRATOR_TAGS_AlphaOS_TP                      36
+#define INTEGRATOR_TAGS_AlphaOSGeneralized              37
+#define INTEGRATOR_TAGS_AlphaOSGeneralized_TP           38
+#define INTEGRATOR_TAGS_Collocation                     39
+#define INTEGRATOR_TAGS_CollocationHSIncrReduct         40
+#define INTEGRATOR_TAGS_CollocationHSIncrLimit          41
+#define INTEGRATOR_TAGS_CollocationHSFixedNumIter       42
+#define INTEGRATOR_TAGS_TRBDF2                          43
+#define INTEGRATOR_TAGS_GeneralizedAlpha                44
+#define INTEGRATOR_TAGS_DisplacementPath                45
+#define INTEGRATOR_TAGS_FSI                             46
+#define INTEGRATOR_TAGS_TRBDF3                          47
+#define INTEGRATOR_TAGS_Houbolt                         48
+#define INTEGRATOR_TAGS_ParkLMS3                        49
+#define INTEGRATOR_TAGS_BackwardEuler                   50
+#define INTEGRATOR_TAGS_EnergyConserved                 51
+#define INTEGRATOR_TAGS_PFEMIntegrator                  52
+#define INTEGRATOR_TAGS_KRAlphaExplicit                 53
+#define INTEGRATOR_TAGS_KRAlphaExplicit_TP              54
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2

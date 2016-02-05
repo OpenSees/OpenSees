@@ -746,6 +746,9 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC9.cpp">
       <Filter>shell</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWenMod3d.cpp">
+      <Filter>elastomericBearing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1272,6 +1275,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\shell\ShellMITC9.h">
       <Filter>shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWenMod3d.h">
+      <Filter>elastomericBearing</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -18,8 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-05-19 22:17:14 $
+// $Revision$
+// $Date$
 // $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/NewmarkHSFixedNumIter.cpp,v $
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
@@ -27,8 +27,6 @@
 // Revision: A
 //
 // Description: This file contains the implementation of the NewmarkHSFixedNumIter class.
-//
-// What: "@(#) NewmarkHSFixedNumIter.cpp, revA"
 
 #include <NewmarkHSFixedNumIter.h>
 #include <FE_Element.h>
@@ -46,7 +44,7 @@
 
 NewmarkHSFixedNumIter::NewmarkHSFixedNumIter()
     : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSFixedNumIter),
-    gamma(0.5), beta(0.25), polyOrder(2),
+    gamma(0.5), beta(0.25), polyOrder(2), updDomFlag(true),
     c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0),  U(0), Udot(0), Udotdot(0),
     Utm1(0), Utm2(0), scaledDeltaU(0)
@@ -56,9 +54,9 @@ NewmarkHSFixedNumIter::NewmarkHSFixedNumIter()
 
 
 NewmarkHSFixedNumIter::NewmarkHSFixedNumIter(double _gamma,
-    double _beta, int polyorder)
+    double _beta, int polyorder, bool upddomflag)
     : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSFixedNumIter),
-    gamma(_gamma), beta(_beta), polyOrder(polyorder),
+    gamma(_gamma), beta(_beta), polyOrder(polyorder), updDomFlag(upddomflag),
     c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0),  U(0), Udot(0), Udotdot(0),
     Utm1(0), Utm2(0), scaledDeltaU(0)
@@ -102,7 +100,7 @@ int NewmarkHSFixedNumIter::newStep(double deltaT)
     if (deltaT <= 0.0)  {
         opserr << "NewmarkHSFixedNumIter::newStep() - error in variable\n";
         opserr << "dT = " << deltaT << endln;
-        return -2;	
+        return -2;
     }
     
     // get a pointer to the AnalysisModel
@@ -115,7 +113,7 @@ int NewmarkHSFixedNumIter::newStep(double deltaT)
     
     if (U == 0)  {
         opserr << "NewmarkHSFixedNumIter::newStep() - domainChange() failed or hasn't been called\n";
-        return -3;	
+        return -3;
     }
     
     // set response at t to be that at t+deltaT of previous step
@@ -273,7 +271,7 @@ int NewmarkHSFixedNumIter::domainChanged()
             
             return -1;
         }
-    }        
+    }
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
@@ -284,7 +282,7 @@ int NewmarkHSFixedNumIter::domainChanged()
         int idSize = id.Size();
         
         int i;
-        const Vector &disp = dofPtr->getCommittedDisp();	
+        const Vector &disp = dofPtr->getCommittedDisp();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
@@ -302,7 +300,7 @@ int NewmarkHSFixedNumIter::domainChanged()
             }
         }
         
-        const Vector &accel = dofPtr->getCommittedAccel();	
+        const Vector &accel = dofPtr->getCommittedAccel();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
@@ -337,7 +335,7 @@ int NewmarkHSFixedNumIter::update(const Vector &deltaU)
     if (Ut == 0)  {
         opserr << "WARNING NewmarkHSFixedNumIter::update() - domainChange() failed or not called\n";
         return -3;
-    }	
+    }
     
     // check deltaU is of correct size
     if (deltaU.Size() != U->Size())  {
@@ -389,34 +387,36 @@ int NewmarkHSFixedNumIter::commit(void)
         return -1;
     }
     
-    LinearSOE *theSOE = this->getLinearSOE();
-    if (theSOE == 0)  {
-        opserr << "WARNING NewmarkHSFixedNumIter::commit() - no LinearSOE set\n";
-        return -2;
+    if (updDomFlag == true)  {
+        LinearSOE *theSOE = this->getLinearSOE();
+        if (theSOE == 0)  {
+            opserr << "WARNING NewmarkHSFixedNumIter::commit() - no LinearSOE set\n";
+            return -2;
+        }
+        
+        if (this->formTangent(statusFlag) < 0)  {
+            opserr << "WARNING NewmarkHSFixedNumIter::commit() - "
+                << "the Integrator failed in formTangent()\n";
+            return -3;
+        }
+        
+        if (theSOE->solve() < 0)  {
+            opserr << "WARNING NewmarkHSFixedNumIter::commit() - "
+                << "the LinearSysOfEqn failed in solve()\n";
+            return -4;
+        }
+        const Vector &deltaU = theSOE->getX();
+        
+        //  determine the response at t+deltaT
+        U->addVector(1.0, deltaU, c1);
+        
+        Udot->addVector(1.0, deltaU, c2);
+        
+        Udotdot->addVector(1.0, deltaU, c3);
+        
+        // update the response at the DOFs
+        theModel->setResponse(*U,*Udot,*Udotdot);
     }
-    
-    if (this->formTangent(statusFlag) < 0)  {
-        opserr << "WARNING NewmarkHSFixedNumIter::commit() - "
-            << "the Integrator failed in formTangent()\n";	
-        return -3;
-    }
-    
-    if (theSOE->solve() < 0)  {
-        opserr << "WARNING NewmarkHSFixedNumIter::commit() - "
-            << "the LinearSysOfEqn failed in solve()\n";	
-        return -4;
-    }
-    const Vector &deltaU = theSOE->getX();
-    
-    //  determine the response at t+deltaT
-    U->addVector(1.0, deltaU, c1);
-    
-    Udot->addVector(1.0, deltaU, c2);
-    
-    Udotdot->addVector(1.0, deltaU, c3);
-    
-    // update the response at the DOFs
-    theModel->setResponse(*U,*Udot,*Udotdot);
     
     return theModel->commitDomain();
 }
@@ -464,6 +464,10 @@ void NewmarkHSFixedNumIter::Print(OPS_Stream &s, int flag)
         s << "  gamma: " << gamma << "  beta: " << beta << endln;
         s << "  polyOrder: " << polyOrder << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
+        if (updDomFlag)
+            s << "  update Domain: yes\n";
+        else
+            s << "  update Domain: no\n";
     } else 
         s << "NewmarkHSFixedNumIter - no associated AnalysisModel\n";
 }
@@ -473,19 +477,18 @@ void NewmarkHSFixedNumIter::Print(OPS_Stream &s, int flag)
 // improved results if numIter = 2 and has no effect if numIter >= 3
 int NewmarkHSFixedNumIter::formElementResidual(void)
 {
-    // calculate Residual Force     
+    // calculate Residual Force
     AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theSOE = this->getLinearSOE();
     
     // loop through the FE_Elements and add the residual
-    int res = 0;    
     FE_Element *elePtr;
     FE_EleIter &theEles = theModel->getFEs();
     while ((elePtr = theEles()) != 0)  {
         if (theSOE->addB(elePtr->getResidual(this),elePtr->getID()) < 0)  {
             opserr << "WARNING NewmarkHSFixedNumIter::formElementResidual -";
             opserr << " failed in addB for ID " << elePtr->getID();
-            res = -2;
+            return -1;
         }
         if (correctForce)  {
             const Vector &deltaU = theSOE->getX();
@@ -493,13 +496,13 @@ int NewmarkHSFixedNumIter::formElementResidual(void)
                 if (theSOE->addB(elePtr->getK_Force(deltaU), elePtr->getID()) < 0)  {
                     opserr << "WARNING NewmarkHSFixedNumIter::formElementResidual -";
                     opserr << " failed in addB for ID " << elePtr->getID();
-                    res = -2;
+                    return -2;
                 }
             } else if (statusFlag == INITIAL_TANGENT)  {
                 if (theSOE->addB(elePtr->getKi_Force(deltaU), elePtr->getID()) < 0)  {
                     opserr << "WARNING NewmarkHSFixedNumIter::formElementResidual -";
                     opserr << " failed in addB for ID " << elePtr->getID();
-                    res = -2;
+                    return -2;
                 }
             }
         }
@@ -507,5 +510,5 @@ int NewmarkHSFixedNumIter::formElementResidual(void)
 
     correctForce = false;
 
-    return res;
+    return 0;
 }*/

@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.162 $
-// $Date: 2010/09/16 00:07:34 $
-// $Source: /usr/local/cvs/OpenSees/SRC/tcl/commands.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
                                                                         
                                                                         
 // Written: fmk 
@@ -29,8 +29,6 @@
 // Description: This file contains the functions that will be called by
 // the interpreter when the appropriate command name is specified,
 // see tkAppInit.C for command names.
-//
-// What: "@(#) commands.C, revA"
 
 #include <classTags.h>
 
@@ -162,25 +160,30 @@ OPS_Stream *opserrPtr = &sserr;
 #include <LoadControl.h>
 #include <ArcLength.h>
 #include <ArcLength1.h>
-/******************************/
 #include <HSConstraint.h>
-/******************************/
 #include <MinUnbalDispNorm.h>
 #include <DisplacementControl.h>
 
-#include <Newmark.h>
 #include <PFEMIntegrator.h>
-//#include <HHT.h>
 
 extern void *OPS_Newmark(void);
 extern TransientIntegrator *OPS_NewHHT(void);
+extern TransientIntegrator *OPS_NewHHT_TP(void);
+extern TransientIntegrator *OPS_NewHHTGeneralized(void);
+extern TransientIntegrator *OPS_NewHHTGeneralized_TP(void);
 extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
+extern TransientIntegrator *OPS_NewKRAlphaExplicit(void);
+extern TransientIntegrator *OPS_NewKRAlphaExplicit_TP(void);
+extern TransientIntegrator *OPS_NewAlphaOS(void);
+extern TransientIntegrator *OPS_NewAlphaOS_TP(void);
+extern TransientIntegrator *OPS_NewAlphaOSGeneralized(void);
+extern TransientIntegrator *OPS_NewAlphaOSGeneralized_TP(void);
 
+#include <Newmark.h>
 #include <TRBDF2.h>
 #include <TRBDF3.h>
 #include <WilsonTheta.h>
-#include <HHT1.h>
-#include <Newmark1.h> 
+#include <Newmark1.h>
 #include <CentralDifferenceAlternative.h>
 #include <CentralDifferenceNoDamping.h>
 #include <CentralDifference.h>
@@ -189,13 +192,10 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 #include <NewmarkHSIncrLimit.h>
 #include <NewmarkHSFixedNumIter.h>
 #include <HHTExplicit.h>
-#include <HHTGeneralized.h>
 #include <HHTGeneralizedExplicit.h>
 #include <HHTHSIncrReduct.h>
 #include <HHTHSIncrLimit.h>
 #include <HHTHSFixedNumIter.h>
-#include <AlphaOS.h>
-#include <AlphaOSGeneralized.h>
 #include <Collocation.h>
 #include <CollocationHSIncrReduct.h>
 #include <CollocationHSIncrLimit.h>
@@ -203,8 +203,6 @@ extern TransientIntegrator *OPS_NewGeneralizedAlpha(void);
 #include <Houbolt.h>
 #include <ParkLMS3.h>
 #include <BackwardEuler.h>
-#include <KRAlphaExplicit.h>
-
 
 // analysis
 #include <StaticAnalysis.h>
@@ -4331,31 +4329,6 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }  
 
-  else if (strcmp(argv[1],"KRAlphaExplicit") == 0) {
-    double rhoInf;
-    bool updDomFlag = false;
-    if (argc < 3 || argc > 4) {
-	opserr << "WARNING integrator KRAlphaExplicit rhoInf <-updateDomain>\n";
-	return TCL_ERROR;
-      }    
-      if (Tcl_GetDouble(interp, argv[2], &rhoInf) != TCL_OK) {
-	  opserr << "WARNING integrator KRAlphaExplicit rhoInf - undefined rhoInf\n";	  
-	  return TCL_ERROR;	
-      }
-      for (int i=3; i<argc; i++) {
-          if (strcmp(argv[i],"-updateDomain") == 0) {
-              updDomFlag = true;
-              argc--;
-          }
-      }
-	  theTransientIntegrator = new KRAlphaExplicit(rhoInf,updDomFlag);       
-
-      // if the analysis exists - we want to change the Integrator
-	  if (theTransientAnalysis != 0)
-		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
-  }  
-
-
   else if (strcmp(argv[1],"NewmarkHSIncrReduct") == 0) {
       double beta, gamma, reduct;
       if (argc != 5) {
@@ -4417,11 +4390,12 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 
   else if (strcmp(argv[1],"NewmarkHSFixedNumIter") == 0) {
       double beta, gamma;
-      int argi = 4, polyOrder = 2;
-      if (argc < 4 || argc > 6) {
+      int polyOrder = 2;
+      int updDomFlag = 1;
+      if (argc < 4 || argc > 8) {
 	opserr << "WARNING integrator NewmarkHSFixedNumIter gamma beta <-polyOrder O>\n";
 	return TCL_ERROR;
-      }    
+      }
       if (Tcl_GetDouble(interp, argv[2], &gamma) != TCL_OK) {
 	  opserr << "WARNING integrator NewmarkHSFixedNumIter gamma beta - undefined gamma\n";	  
 	  return TCL_ERROR;	
@@ -4430,15 +4404,21 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	  opserr << "WARNING integrator NewmarkHSFixedNumIter gamma beta - undefined beta\n";
 	  return TCL_ERROR;	
       }
-      if (argi<argc) {
-      if (strcmp(argv[argi],"-polyOrder") == 0) {
-      if (Tcl_GetInt(interp, argv[argi+1], &polyOrder) != TCL_OK) {
-	  opserr << "WARNING integrator NewmarkHSFixedNumIter gamma beta - undefined polyOrder\n";	  
-	  return TCL_ERROR;	
+      for (int argi=4; argi<argc; argi++) {
+        if (strcmp(argv[argi],"-polyOrder") == 0) {
+          if (Tcl_GetInt(interp, argv[argi+1], &polyOrder) != TCL_OK) {
+	        opserr << "WARNING integrator NewmarkHSFixedNumIter gamma beta - undefined polyOrder\n";	  
+	        return TCL_ERROR;	
+          }
+        }
+        if (strcmp(argv[argi],"-updateDomain") == 0) {
+          if (Tcl_GetInt(interp, argv[argi+1], &updDomFlag) != TCL_OK) {
+	        opserr << "WARNING integrator NewmarkHSFixedNumIter gamma beta - undefined updDomFlag\n";	  
+	        return TCL_ERROR;	
+          }
+        }
       }
-      }
-      }
-	  theTransientIntegrator = new NewmarkHSFixedNumIter(gamma,beta,polyOrder);       
+	  theTransientIntegrator = new NewmarkHSFixedNumIter(gamma,beta,polyOrder,bool(updDomFlag));       
 
       // if the analysis exists - we want to change the Integrator
 	  if (theTransientAnalysis != 0)
@@ -4662,6 +4642,27 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   } 
 
+  else if (strcmp(argv[1],"HHT_TP") == 0) {
+    theTransientIntegrator = OPS_NewHHT_TP();
+
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  } 
+
+  else if (strcmp(argv[1],"HHTGeneralized") == 0) {
+    theTransientIntegrator = OPS_NewHHTGeneralized();
+
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  } 
+
+  else if (strcmp(argv[1],"HHTGeneralized_TP") == 0) {
+    theTransientIntegrator = OPS_NewHHTGeneralized_TP();
+
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  } 
+
   else if (strcmp(argv[1],"GeneralizedAlpha") == 0) {
     theTransientIntegrator = OPS_NewGeneralizedAlpha();
 
@@ -4669,47 +4670,48 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }    
 
-  else if (strcmp(argv[1],"HHTGeneralized") == 0) {
-      double rhoInf, alphaI, alphaF, beta, gamma;
-      if (argc != 3 && argc != 6) {
-	opserr << "WARNING integrator HHTGeneralized rhoInf\n";
-    opserr << "     or integrator HHTGeneralized alphaI alphaF beta gamma\n";
-	return TCL_ERROR;
-      }
-      if (argc == 3) {
-      if (Tcl_GetDouble(interp, argv[2], &rhoInf) != TCL_OK) {
-	  opserr << "WARNING integrator HHTGeneralized rhoInf - undefined rhoInf\n";	  
-	  return TCL_ERROR;	
-      }
-      }
-      if (argc == 6) {
-      if (Tcl_GetDouble(interp, argv[2], &alphaI) != TCL_OK) {
-	  opserr << "WARNING integrator HHTGeneralized alphaI alphaF beta gamma - undefined alphaI\n";	  
-	  return TCL_ERROR;	
-      }
-      if (Tcl_GetDouble(interp, argv[3], &alphaF) != TCL_OK) {
-	  opserr << "WARNING integrator HHTGeneralized alphaI alphaF beta gamma - undefined alphaF\n";	  
-	  return TCL_ERROR;	
-      }
-      if (Tcl_GetDouble(interp, argv[4], &beta) != TCL_OK) {
-	  opserr << "WARNING integrator HHTGeneralized alphaI alphaF beta gamma - undefined beta\n";	  
-	  return TCL_ERROR;	
-      }
-      if (Tcl_GetDouble(interp, argv[5], &gamma) != TCL_OK) {
-	  opserr << "WARNING integrator HHTGeneralized alphaI alphaF beta gamma - undefined gamma\n";	  
-	  return TCL_ERROR;	
-      }
-      }
-      if (argc == 3)
-	  theTransientIntegrator = new HHTGeneralized(rhoInf);       
-      else if (argc == 6)
-      theTransientIntegrator = new HHTGeneralized(alphaI,alphaF,beta,gamma);
+  else if (strcmp(argv[1],"KRAlphaExplicit") == 0) {
+    theTransientIntegrator = OPS_NewKRAlphaExplicit();
 
-      // if the analysis exists - we want to change the Integrator
-	  if (theTransientAnalysis != 0)
-		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
-  }
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }    
 
+  else if (strcmp(argv[1],"KRAlphaExplicit_TP") == 0) {
+    theTransientIntegrator = OPS_NewKRAlphaExplicit_TP();
+
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }    
+  
+  else if (strcmp(argv[1],"AlphaOS") == 0) {
+    theTransientIntegrator = OPS_NewAlphaOS();
+
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }    
+  
+  else if (strcmp(argv[1],"AlphaOS_TP") == 0) {
+    theTransientIntegrator = OPS_NewAlphaOS_TP();
+
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }    
+  
+  else if (strcmp(argv[1],"AlphaOSGeneralized") == 0) {
+    theTransientIntegrator = OPS_NewAlphaOSGeneralized();
+
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }    
+  
+  else if (strcmp(argv[1],"AlphaOSGeneralized_TP") == 0) {
+    theTransientIntegrator = OPS_NewAlphaOSGeneralized_TP();
+
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }    
+  
   else if (strcmp(argv[1],"HHTExplicit") == 0) {
       double alpha, gamma;
       bool updDomFlag = false;
@@ -4964,93 +4966,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	  if (theTransientAnalysis != 0)
 		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
-
-  else if (strcmp(argv[1],"AlphaOS") == 0) {
-      double alpha, beta, gamma;
-      bool updDomFlag = false;
-      if (argc < 3 || argc > 6) {
-	      opserr << "WARNING integrator AlphaOS alpha <-updateDomain>\n";
-	      opserr << "     or integrator AlphaOS alpha beta gamma <-updateDomain>\n";
-		  return TCL_ERROR;
-      }    
-      if (Tcl_GetDouble(interp, argv[2], &alpha) != TCL_OK) {
-	      opserr << "WARNING integrator AlphaOS alpha - undefined alpha\n";	  
-	      return TCL_ERROR;	
-      }
-      for (int i=3; i<argc; i++) {
-          if (strcmp(argv[i],"-updateDomain") == 0) {
-              updDomFlag = true;
-              argc--;
-          }
-      }
-      if (argc == 5) {
-      if (Tcl_GetDouble(interp, argv[3], &beta) != TCL_OK) {
-	  opserr << "WARNING integrator AlphaOS alpha beta gamma - undefined beta\n";	  
-	  return TCL_ERROR;	
-      }
-      if (Tcl_GetDouble(interp, argv[4], &gamma) != TCL_OK) {
-	  opserr << "WARNING integrator AlphaOS alpha beta gamma - undefined gamma\n";	  
-	  return TCL_ERROR;	
-      }
-      }
-      if (argc == 3)
-	  theTransientIntegrator = new AlphaOS(alpha,updDomFlag);
-      else if (argc == 5)
-	  theTransientIntegrator = new AlphaOS(alpha,beta,gamma,updDomFlag);
-
-      // if the analysis exists - we want to change the Integrator
-	  if (theTransientAnalysis != 0)
-		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
-  }    
-
-  else if (strcmp(argv[1],"AlphaOSGeneralized") == 0) {
-      double rhoInf, alphaI, alphaF, beta, gamma;
-      bool updDomFlag = false;
-      if (argc < 3 && argc > 7) {
-	      opserr << "WARNING integrator AlphaOSGeneralized rhoInf <-updateDomain>\n";
-	      opserr << "     or integrator AlphaOSGeneralized alphaI alphaF beta gamma <-updateDomain>\n";
-		  return TCL_ERROR;
-      }
-      for (int i=3; i<argc; i++) {
-          if (strcmp(argv[i],"-updateDomain") == 0) {
-              updDomFlag = true;
-              argc--;
-          }
-      }
-      if (argc == 3) {
-      if (Tcl_GetDouble(interp, argv[2], &rhoInf) != TCL_OK) {
-	      opserr << "WARNING integrator AlphaOSGeneralized rhoInf - undefined rhoInf\n";	  
-	      return TCL_ERROR;	
-      }
-      }
-      if (argc == 6) {
-      if (Tcl_GetDouble(interp, argv[2], &alphaI) != TCL_OK) {
-	  opserr << "WARNING integrator AlphaOSGeneralized alphaI alphaF beta gamma - undefined alphaI\n";	  
-	  return TCL_ERROR;	
-      }
-      if (Tcl_GetDouble(interp, argv[3], &alphaF) != TCL_OK) {
-	  opserr << "WARNING integrator AlphaOSGeneralized alphaI alphaF beta gamma - undefined alphaF\n";	  
-	  return TCL_ERROR;	
-      }
-      if (Tcl_GetDouble(interp, argv[4], &beta) != TCL_OK) {
-	  opserr << "WARNING integrator AlphaOSGeneralized alphaI alphaF beta gamma - undefined beta\n";	  
-	  return TCL_ERROR;	
-      }
-      if (Tcl_GetDouble(interp, argv[5], &gamma) != TCL_OK) {
-	  opserr << "WARNING integrator AlphaOSGeneralized alphaI alphaF beta gamma - undefined gamma\n";	  
-	  return TCL_ERROR;	
-      }
-      }
-      if (argc == 3)
-	  theTransientIntegrator = new AlphaOSGeneralized(rhoInf,updDomFlag);
-      else if (argc == 6)
-	  theTransientIntegrator = new AlphaOSGeneralized(alphaI,alphaF,beta,gamma,updDomFlag);
-
-      // if the analysis exists - we want to change the Integrator
-	  if (theTransientAnalysis != 0)
-		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
-  }    
-
+  
   else if (strcmp(argv[1],"Collocation") == 0) {
       double theta, beta, gamma;
       if (argc != 3 && argc != 5) {
@@ -5262,7 +5178,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
 
-  else if (strcmp(argv[1],"HHT1") == 0) {
+  /*else if (strcmp(argv[1],"HHT1") == 0) {
       double alpha;
       double alphaM, betaK, betaKi, betaKc;
       if (argc != 3 && argc != 7) {
@@ -5299,7 +5215,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       // if the analysis exists - we want to change the Integrator
 	  if (theTransientAnalysis != 0)
 		theTransientAnalysis->setIntegrator(*theTransientIntegrator);
-  }    
+  }*/
 
   
   else if (strcmp(argv[1],"WilsonTheta") == 0) {

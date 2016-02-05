@@ -18,10 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.3 $
-// $Date: 2009-05-19 22:10:05 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/AlphaOS.h,v $
-
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef AlphaOS_h
 #define AlphaOS_h
@@ -34,8 +33,6 @@
 // AlphaOS is an algorithmic class for performing a transient analysis
 // using the Alpha-Operator-Splitting integration scheme.
 // The parameter alpha corresponds to 1+alpha_{HHT}.
-//
-// What: "@(#) AlphaOS.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -52,17 +49,17 @@ public:
         bool updDomFlag = false);
     AlphaOS(double alpha, double beta, double gamma,
         bool updDomFlag = false);
-
+    
     // destructor
     ~AlphaOS();
     
     // methods which define what the FE_Element and DOF_Groups add
     // to the system of equation object.
     int formEleTangent(FE_Element *theEle);
-    int formNodTangent(DOF_Group *theDof);       
+    int formNodTangent(DOF_Group *theDof);
     
     int domainChanged(void);
-    int newStep(double deltaT);    
+    int newStep(double deltaT);
     int revertToLastStep(void);
     int update(const Vector &deltaU);
     int commit(void);
@@ -70,7 +67,7 @@ public:
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
-    void Print(OPS_Stream &s, int flag = 0);        
+    void Print(OPS_Stream &s, int flag = 0);
     
 protected:
     virtual int formElementResidual(void);
@@ -87,7 +84,7 @@ private:
     Vector *Ut, *Utdot, *Utdotdot;  // response quantities at time t
     Vector *U, *Udot, *Udotdot;     // response quantities at time t+deltaT
     Vector *Ualpha, *Ualphadot;     // response quantities at time t+alpha*deltaT
-    Vector *Upt, *Uptdot;           // predictor quantities at time t
+    Vector *Upt;                    // predictor displacements at time t
 };
 
 #endif

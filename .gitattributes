@@ -2278,6 +2278,10 @@ SRC/analysis/integrator/AlphaOS.cpp -text
 SRC/analysis/integrator/AlphaOS.h -text
 SRC/analysis/integrator/AlphaOSGeneralized.cpp -text
 SRC/analysis/integrator/AlphaOSGeneralized.h -text
+SRC/analysis/integrator/AlphaOSGeneralized_TP.cpp -text
+SRC/analysis/integrator/AlphaOSGeneralized_TP.h -text
+SRC/analysis/integrator/AlphaOS_TP.cpp -text
+SRC/analysis/integrator/AlphaOS_TP.h -text
 SRC/analysis/integrator/ArcLength.cpp -text
 SRC/analysis/integrator/ArcLength.h -text
 SRC/analysis/integrator/ArcLength.tex -text
@@ -2321,12 +2325,16 @@ SRC/analysis/integrator/HHTGeneralized.cpp -text
 SRC/analysis/integrator/HHTGeneralized.h -text
 SRC/analysis/integrator/HHTGeneralizedExplicit.cpp -text
 SRC/analysis/integrator/HHTGeneralizedExplicit.h -text
+SRC/analysis/integrator/HHTGeneralized_TP.cpp -text
+SRC/analysis/integrator/HHTGeneralized_TP.h -text
 SRC/analysis/integrator/HHTHSFixedNumIter.cpp -text
 SRC/analysis/integrator/HHTHSFixedNumIter.h -text
 SRC/analysis/integrator/HHTHSIncrLimit.cpp -text
 SRC/analysis/integrator/HHTHSIncrLimit.h -text
 SRC/analysis/integrator/HHTHSIncrReduct.cpp -text
 SRC/analysis/integrator/HHTHSIncrReduct.h -text
+SRC/analysis/integrator/HHT_TP.cpp -text
+SRC/analysis/integrator/HHT_TP.h -text
 SRC/analysis/integrator/HSConstraint.cpp -text
 SRC/analysis/integrator/HSConstraint.h -text
 SRC/analysis/integrator/Houbolt.cpp -text
@@ -2339,6 +2347,8 @@ SRC/analysis/integrator/Integrator.h -text
 SRC/analysis/integrator/Integrator.tex -text
 SRC/analysis/integrator/KRAlphaExplicit.cpp -text
 SRC/analysis/integrator/KRAlphaExplicit.h -text
+SRC/analysis/integrator/KRAlphaExplicit_TP.cpp -text
+SRC/analysis/integrator/KRAlphaExplicit_TP.h -text
 SRC/analysis/integrator/LoadControl.cpp -text
 SRC/analysis/integrator/LoadControl.h -text
 SRC/analysis/integrator/LoadControl.tex -text

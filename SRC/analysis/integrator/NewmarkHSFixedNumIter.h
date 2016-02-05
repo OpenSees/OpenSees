@@ -18,8 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-05-19 22:17:14 $
+// $Revision$
+// $Date$
 // $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/NewmarkHSFixedNumIter.h,v $
 
 #ifndef NewmarkHSFixedNumIter_h
@@ -37,8 +37,6 @@
 // are utilized to update the elements. The reduced command displacements are determined
 // by means of Lagrange interpolation using the trial displacements of the current
 // iteration step and the last n committed displacements.
-//
-// What: "@(#) NewmarkHSFixedNumIter.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -51,7 +49,8 @@ class NewmarkHSFixedNumIter : public TransientIntegrator
 public:
     // constructors
     NewmarkHSFixedNumIter();
-    NewmarkHSFixedNumIter(double gamma, double beta, int polyOrder);
+    NewmarkHSFixedNumIter(double gamma, double beta,
+        int polyOrder, bool updDomFlag = true);
     
     // destructor
     ~NewmarkHSFixedNumIter();
@@ -78,7 +77,8 @@ protected:
 private:
     double gamma;
     double beta;
-    int polyOrder;  // order of Lagrange interpolation polynomial
+    int polyOrder;    // order of Lagrange interpolation polynomial
+    bool updDomFlag;  // a flag indicating if response is updated at commit
     
     double c1, c2, c3;              // some constants we need to keep
     double x;                       // interpolation location 0<=x<=1

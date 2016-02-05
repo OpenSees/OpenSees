@@ -20,8 +20,7 @@
 
 // $Revision$
 // $Date$
-// $Source: $
-
+// $URL$
 
 #ifndef KRAlphaExplicit_h
 #define KRAlphaExplicit_h
@@ -33,7 +32,7 @@
 //
 // Description: This file contains the class definition for KRAlphaExplicit.
 // KRAlphaExplicit is an algorithmic class for performing a transient analysis
-// using the explicit Kolay-Ricles integration scheme.
+// using the explicit Kolay-Ricles integration scheme based on the midpoint rule.
 //
 // Reference: Kolay, C. and J. Ricles (2014). "Development of a family of
 // unconditionally stable explicit direct integration algorithms with
