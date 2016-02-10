@@ -150,7 +150,6 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/database/TclDatabaseCommands.o \
 	$(FE)/element/TclElementCommands.o \
 	$(FE)/element/dispBeamColumnInt/TclDispBeamColumnIntCommand.o \
-	$(FE)/element/elasticBeamColumn/TclElasticBeamCommand.o \
 	$(FE)/element/fourNodeQuad/TclFourNodeQuadCommand.o \
 	$(FE)/element/brick/TclTwenty_Node_BrickCommand.o \
 	$(FE)/element/brick/TclBrickCommand.o \
@@ -1101,17 +1100,23 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/NewmarkHSFixedNumIter.o \
 	$(FE)/analysis/integrator/HHTExplicit.o \
 	$(FE)/analysis/integrator/HHTGeneralized.o \
+	$(FE)/analysis/integrator/HHTGeneralized_TP.o \
 	$(FE)/analysis/integrator/HHTGeneralizedExplicit.o \
 	$(FE)/analysis/integrator/HHTHSIncrReduct.o \
 	$(FE)/analysis/integrator/HHTHSIncrLimit.o \
 	$(FE)/analysis/integrator/HHTHSFixedNumIter.o \
 	$(FE)/analysis/integrator/AlphaOS.o \
+	$(FE)/analysis/integrator/AlphaOS_TP.o \
 	$(FE)/analysis/integrator/KRAlphaExplicit.o \
+	$(FE)/analysis/integrator/KRAlphaExplicit_TP.o \
 	$(FE)/analysis/integrator/AlphaOSGeneralized.o \
+	$(FE)/analysis/integrator/AlphaOSGeneralized_TP.o \
 	$(FE)/analysis/integrator/Collocation.o \
 	$(FE)/analysis/integrator/CollocationHSIncrReduct.o \
 	$(FE)/analysis/integrator/CollocationHSIncrLimit.o \
 	$(FE)/analysis/integrator/CollocationHSFixedNumIter.o \
+	$(FE)/analysis/integrator/KRAlphaExplicit_TP.o \
+	$(FE)/analysis/integrator/HHT_TP.o \
 	$(FE)/analysis/integrator/Houbolt.o \
 	$(FE)/analysis/integrator/ParkLMS3.o \
 	$(FE)/analysis/integrator/BackwardEuler.o \
