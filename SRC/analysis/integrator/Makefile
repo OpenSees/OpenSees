@@ -6,6 +6,7 @@ OBJS       = IncrementalIntegrator.o \
 	StaticIntegrator.o \
 	TransientIntegrator.o \
 	HHT.o \
+	HHT1.o \
 	HHT_TP.o \
 	GeneralizedAlpha.o \
 	WilsonTheta.o \
