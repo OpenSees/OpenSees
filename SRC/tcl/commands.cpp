@@ -486,16 +486,16 @@ static int numParam = 0;
 static char **paramNames =0;
 static char **paramValues =0;
 
-static AnalysisModel *theAnalysisModel =0;
-static EquiSolnAlgo *theAlgorithm =0;
-static ConstraintHandler *theHandler =0;
-static DOF_Numberer *theNumberer =0;
-static LinearSOE *theSOE =0;
-static EigenSOE *theEigenSOE =0;
-static StaticAnalysis *theStaticAnalysis = 0;
-static DirectIntegrationAnalysis *theTransientAnalysis = 0;
-static VariableTimeStepDirectIntegrationAnalysis *theVariableTimeStepTransientAnalysis = 0;
-static int numEigen = 0;
+AnalysisModel *theAnalysisModel =0;
+EquiSolnAlgo *theAlgorithm =0;
+ConstraintHandler *theHandler =0;
+DOF_Numberer *theNumberer =0;
+LinearSOE *theSOE =0;
+EigenSOE *theEigenSOE =0;
+StaticAnalysis *theStaticAnalysis = 0;
+DirectIntegrationAnalysis *theTransientAnalysis = 0;
+VariableTimeStepDirectIntegrationAnalysis *theVariableTimeStepTransientAnalysis = 0;
+int numEigen = 0;
 
 #ifdef _PFEM
 static PFEMAnalysis* thePFEMAnalysis = 0;
@@ -525,10 +525,10 @@ static TclOptimizationBuilder *theOptimizationBuilder = 0;   // Quan March 2010 
 // AddingSensitivity:END ///////////////////////////////////////////////
 
 
-static StaticIntegrator *theStaticIntegrator =0;
-static TransientIntegrator *theTransientIntegrator =0;
-static ConvergenceTest *theTest =0;
-static bool builtModel = false;
+StaticIntegrator *theStaticIntegrator =0;
+TransientIntegrator *theTransientIntegrator =0;
+ConvergenceTest *theTest =0;
+bool builtModel = false;
 
 static char *resDataPtr = 0;
 static int resDataSize = 0;
