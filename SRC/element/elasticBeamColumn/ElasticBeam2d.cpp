@@ -563,9 +563,6 @@ ElasticBeam2d::getResistingForce()
   q(1) = EIoverL4*v(1) + EIoverL2*v(2);
   q(2) = EIoverL2*v(1) + EIoverL4*v(2);
 
-  if (this->getTag() == 1)
-    opserr << "q: " << q;
-  
   q(0) += q0[0];
   q(1) += q0[1];
   q(2) += q0[2];
@@ -575,9 +572,6 @@ ElasticBeam2d::getResistingForce()
   
   P = theCoordTransf->getGlobalResistingForce(q, p0Vec);
 
-  if (this->getTag() == 1) 
-    opserr << "ResistingForce: " << P << endln;
-  
   return P;
 }
 
