@@ -69,13 +69,30 @@ typedef struct limitCurveFunction {
 } LimitCurveFunction;
 //MRL end
 
+extern AnalysisModel *theAnalysisModel;
+extern EquiSolnAlgo *theAlgorithm;
+extern ConstraintHandler *theHandler;
+extern DOF_Numberer *theNumberer;
+extern LinearSOE *theSOE;
+extern EigenSOE *theEigenSOE;
+extern StaticAnalysis *theStaticAnalysis;
+extern DirectIntegrationAnalysis *theTransientAnalysis;
+extern VariableTimeStepDirectIntegrationAnalysis *theVariableTimeStepTransientAnalysis;
+extern int numEigen;
+extern StaticIntegrator *theStaticIntegrator;
+extern TransientIntegrator *theTransientIntegrator;
+extern ConvergenceTest *theTest;
+extern bool builtModel;
+
 static ElementFunction *theElementFunctions = NULL;
 static MaterialFunction *theMaterialFunctions = NULL;
 static LimitCurveFunction *theLimitCurveFunctions = NULL;//MRL
 
 static Tcl_Interp *theInterp = 0;
 static Domain *theDomain = 0;
+
 static TclModelBuilder *theModelBuilder = 0;
+
 static TCL_Char **currentArgv = 0;
 static int currentArg = 0;
 static int maxArg = 0;
@@ -142,21 +159,22 @@ int OPS_Error(char *errorMessage, int length)
   return 0;
 }
 
-extern "C" 
+extern "C"   
 int OPS_GetNumRemainingInputArgs()
 {
-  return maxArg-currentArg;
+    return maxArg-currentArg;
 }
 
-extern "C" 
+extern "C"
 int OPS_ResetCurrentInputArg(int cArg)
 {
-  currentArg = cArg;
-  
-  return 0;
+    currentArg = cArg;
+
+    return 0;
 }
 
-extern "C" 
+
+extern "C"   
 int OPS_GetIntInput(int *numData, int*data)
 {
   int size = *numData;
@@ -202,7 +220,7 @@ const char * OPS_GetString(void)
   
   currentArg++;
 
-  return res;  
+  return res;
 }
 
 
@@ -957,7 +975,8 @@ OPS_ResetInputNoBuilder(ClientData clientData,
 
   return 0;
 }
-
+	       
+			       
 int     
 OPS_GetNDF()
 {
@@ -986,7 +1005,7 @@ Domain *OPS_GetDomain(void)
 }
 
 void TCL_OPS_setModelBuilder(TclModelBuilder *theNewBuilder) {
-	theModelBuilder = theNewBuilder;
+  theModelBuilder = theNewBuilder;
 }
 
 //////////start MRL
@@ -995,3 +1014,73 @@ OPS_GetLimitCurve(int LimCrvTag) {
   return OPS_getLimitCurve(LimCrvTag);
 }
 /////////end MRL
+
+AnalysisModel **OPS_GetAnalysisModel(void)
+{
+	return &theAnalysisModel;
+}
+
+EquiSolnAlgo **OPS_GetAlgorithm(void)
+{
+	return &theAlgorithm;
+}
+
+ConstraintHandler **OPS_GetHandler(void)
+{
+	return &theHandler;
+}
+
+DOF_Numberer **OPS_GetNumberer(void)
+{
+	return &theNumberer;
+}
+
+LinearSOE **OPS_GetSOE(void)
+{
+	return &theSOE;
+}
+
+EigenSOE **OPS_GetEigenSOE(void)
+{
+	return &theEigenSOE;
+}
+
+StaticAnalysis **OPS_GetStaticAnalysis(void)
+{
+	return &theStaticAnalysis;
+}
+
+DirectIntegrationAnalysis **OPS_GetTransientAnalysis(void)
+{
+	return &theTransientAnalysis;
+}
+
+VariableTimeStepDirectIntegrationAnalysis **OPS_GetVariableTimeStepTransientAnalysis(void)
+{
+	return &theVariableTimeStepTransientAnalysis;
+}
+
+int *OPS_GetNumEigen(void)
+{
+	return &numEigen;
+}
+
+StaticIntegrator **OPS_GetStaticIntegrator(void)
+{
+	return &theStaticIntegrator;
+}
+
+TransientIntegrator **OPS_GetTransientIntegrator(void)
+{
+	return &theTransientIntegrator;
+}
+
+ConvergenceTest **OPS_GetTest(void)
+{
+	return &theTest;
+}
+
+bool *OPS_builtModel(void)
+{
+	return &builtModel;
+}
