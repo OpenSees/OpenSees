@@ -2674,6 +2674,8 @@ SRC/domain/groundMotion/InterpolatedGroundMotion.cpp -text
 SRC/domain/groundMotion/InterpolatedGroundMotion.h -text
 SRC/domain/groundMotion/Makefile -text
 SRC/domain/groundMotion/TclGroundMotionCommand.cpp -text
+SRC/domain/load/Beam2dPartialUniformLoad.cpp -text
+SRC/domain/load/Beam2dPartialUniformLoad.h -text
 SRC/domain/load/Beam2dPointLoad.cpp -text
 SRC/domain/load/Beam2dPointLoad.h -text
 SRC/domain/load/Beam2dTempLoad.cpp -text
