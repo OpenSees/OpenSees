@@ -119,8 +119,6 @@ class ForceBeamColumn2d: public Element
   
   Response *setResponse(const char **argv, int argc, OPS_Stream &s);
   int getResponse(int responseID, Information &eleInformation);
-  int getResponseSensitivity(int responseID, int gradNumber,
-			     Information &eleInformation);
   
   // AddingSensitivity:BEGIN //////////////////////////////////////////
   int setParameter(const char **argv, int argc, Parameter &param);
@@ -130,6 +128,8 @@ class ForceBeamColumn2d: public Element
   const Matrix &getKiSensitivity(int gradNumber);
   const Matrix &getMassSensitivity(int gradNumber);
   int commitSensitivity(int gradNumber, int numGrads);
+  int getResponseSensitivity(int responseID, int gradNumber,
+			     Information &eleInformation);
   // AddingSensitivity:END ///////////////////////////////////////////
 
  protected:
@@ -212,6 +212,8 @@ class ForceBeamColumn2d: public Element
   void computeReactionSensitivity(double *dp0dh, int gradNumber);
   void computeSectionForceSensitivity(Vector &dspdh, int isec, int gradNumber);
   // AddingSensitivity:END ///////////////////////////////////////////
+
+  Matrix tjcMass;
 };
 
 #endif

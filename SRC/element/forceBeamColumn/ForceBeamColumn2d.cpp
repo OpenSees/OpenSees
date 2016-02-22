@@ -189,7 +189,7 @@ ForceBeamColumn2d::ForceBeamColumn2d():
 }
 
 // constructor which takes the unique element tag, sections,
-// and the node ID's of it's nodal end points. 
+// and the node ID's of its nodal end points. 
 // allocates the necessary space needed by each object
 ForceBeamColumn2d::ForceBeamColumn2d (int tag, int nodeI, int nodeJ,
 				      int numSec, SectionForceDeformation **sec,
@@ -530,6 +530,18 @@ ForceBeamColumn2d::computeReactions(double *p0)
       p0[1] -= V;
       p0[2] -= V;
     }
+    else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
+      double wa = data(1)*loadFactor;  // Axial
+      double wy = data(0)*loadFactor;  // Transverse
+      double a = data(2)*L;
+      double b = data(3)*L;
+
+      p0[0] -= wa*(b-a);
+      double Fy = wy*(b-a);
+      double c = a + 0.5*(b-a);
+      p0[1] -= Fy*(1-c/L);
+      p0[2] -= Fy*c/L;
+    }
     else if (type == LOAD_TAG_Beam2dPointLoad) {
       double P = data(0)*loadFactor;
       double N = data(1)*loadFactor;
@@ -567,7 +579,7 @@ ForceBeamColumn2d::computeReactionSensitivity(double *dp0dh, int gradNumber)
       const Vector &sens = eleLoads[i]->getSensitivityData(gradNumber);
       double dwydh = sens(0);
       double dwadh = sens(1);
-      
+
       //p0[0] -= wa*L;
       dp0dh[0] -= wa*dLdh + dwadh*L;
 
@@ -1157,6 +1169,64 @@ ForceBeamColumn2d::computeSectionForces(Vector &sp, int isec)
 	  break;
 	default:
 	  break;
+	}
+      }
+    }
+    if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
+      double wa = data(1)*loadFactor;  // Axial
+      double wy = data(0)*loadFactor;  // Transverse
+      double a = data(2)*L;
+      double b = data(3)*L;
+
+      double Fa = wa*(b-a); // resultant axial load
+      double Fy = wy*(b-a); // resultant transverse load
+      double c = a + 0.5*(b-a);
+      double VI = Fy*(1-c/L);
+      double VJ = Fy*c/L;
+
+      for (int ii = 0; ii < order; ii++) {
+	
+	if (x <= a) {
+	  switch(code(ii)) {
+	  case SECTION_RESPONSE_P:
+	    sp(ii) += Fa;
+	    break;
+	  case SECTION_RESPONSE_MZ:
+	    sp(ii) -= VI*x;
+	    break;
+	  case SECTION_RESPONSE_VY:
+	    sp(ii) -= VI;
+	    break;
+	  default:
+	    break;
+	  }
+	}
+	else if (x >= b) {
+	  switch(code(ii)) {
+	  case SECTION_RESPONSE_MZ:
+	    sp(ii) += VJ*(x-L);
+	    break;
+	  case SECTION_RESPONSE_VY:
+	    sp(ii) += VJ;
+	    break;
+	  default:
+	    break;
+	  }
+	}
+	else {
+	  switch(code(ii)) {
+	  case SECTION_RESPONSE_P:
+	    sp(ii) += Fa-wa*(x-a);
+	    break;
+	  case SECTION_RESPONSE_MZ:
+	    sp(ii) += -VI*x + 0.5*wy*x*x + wy*a*(0.5*a-x);
+	    break;
+	  case SECTION_RESPONSE_VY:
+	    sp(ii) += -VI + wy*(x-a);
+	    break;
+	  default:
+	    break;
+	  }
 	}
       }
     }
@@ -2768,8 +2838,10 @@ ForceBeamColumn2d::setParameter(const char **argv, int argc, Parameter &param)
 
   int result = -1;
 
-  if (strcmp(argv[0],"rho") == 0)
+  if (strcmp(argv[0],"rho") == 0) {
+    param.setValue(rho);
     return param.addObject(1, this);
+  }
   
   // section response -
   if (strstr(argv[0],"sectionX") != 0) {
@@ -2877,6 +2949,11 @@ const Matrix&
 ForceBeamColumn2d::getMassSensitivity(int gradNumber)
 {
   theMatrix.Zero();
+  
+  double L = crdTransf->getInitialLength();
+  if (rho != 0.0 && parameterID == 1)
+    theMatrix(0,0) = theMatrix(1,1) = theMatrix(3,3) = theMatrix(4,4) = 0.5*L;
+  
   return theMatrix;
 }
 
