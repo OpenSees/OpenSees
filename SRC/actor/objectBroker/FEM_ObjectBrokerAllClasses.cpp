@@ -89,6 +89,8 @@
 #include <ModIMKPeakOriented.h>
 #include <Clough.h>
 #include <LimitStateMaterial.h>
+#include <InitStressMaterial.h>
+#include <InitStrainMaterial.h>
 
 //PY springs: RWBoulanger and BJeremic
 #include <PySimple1.h>
@@ -1148,6 +1150,13 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
         case MAT_TAG_MinMax:
 	  return new MinMaxMaterial();
+
+        case MAT_TAG_InitStrain:
+ 	  return new InitStrainMaterial();
+
+        case MAT_TAG_InitStress:
+	  return new InitStressMaterial();
+
 
 	default:
 
