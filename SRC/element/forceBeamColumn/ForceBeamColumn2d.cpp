@@ -1172,7 +1172,7 @@ ForceBeamColumn2d::computeSectionForces(Vector &sp, int isec)
 	}
       }
     }
-    if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
+    else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
       double wa = data(1)*loadFactor;  // Axial
       double wy = data(0)*loadFactor;  // Transverse
       double a = data(2)*L;
