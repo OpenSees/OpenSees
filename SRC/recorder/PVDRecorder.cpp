@@ -196,7 +196,8 @@ PVDRecorder::pvd()
 	    theFile<<"<DataSet timestep="<<quota<<t<<quota;
 	    theFile<<" group="<<quota<<quota;
 	    theFile<<" part="<<quota<<partno(j)<<quota;
-	    theFile<<" file="<<quota<<filename<<'/'<<filename<<"_T"<<t<<"_P";
+	    //theFile<<" file="<<quota<<filename<<'/'<<filename<<"_T"<<t<<"_P";
+
 	    theFile<<partno(j)<<".vtu"<<quota;
 	    theFile<<"/>\n";
 	}

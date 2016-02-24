@@ -465,7 +465,7 @@
 #define LOAD_TAG_SurfaceLoader            9 // C.McGann, U.W.
 #define LOAD_TAG_SelfWeight              10 // C.McGann, U.W.
 #define LOAD_TAG_Beam2dThermalAction      11
-
+#define LOAD_TAG_Beam2dPartialUniformLoad 12
 
 
 
