@@ -45,8 +45,8 @@ using std::nothrow;
 
 void* OPS_SuperLUSolver()
 {
-    int count = 2;
-    double thresh = 0.0;
+  //    int count = 2;
+  double thresh = 0.0;
     int npRow = 1;
     int npCol = 1;
     int np = 1;
@@ -223,6 +223,8 @@ SuperLU::solve(void)
     for (int i=0; i<n; i++)
 	*(Xptr++) = *(Bptr++);
 
+    GlobalLU_t Glu; /* Not needed on return. */
+
     if (theSOE->factored == false) {
 	// factor the matrix
 	int info;
@@ -233,7 +235,7 @@ SuperLU::solve(void)
 	}
 
 	dgstrf(&options, &AC, relax, panelSize,
-	       etree, NULL, 0, perm_c, perm_r, &L, &U, &stat, &info);
+	       etree, NULL, 0, perm_c, perm_r, &L, &U, &Glu, &stat, &info);
 
 
 	if (info != 0) {	
