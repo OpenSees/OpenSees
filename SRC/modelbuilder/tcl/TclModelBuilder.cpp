@@ -61,6 +61,7 @@
 #include <NodalLoad.h>
 #include <Beam2dPointLoad.h>
 #include <Beam2dUniformLoad.h>
+#include <Beam2dPartialUniformLoad.h>
 #include <Beam2dTempLoad.h>
 #include <Beam2dThermalAction.h>
 #include <Beam3dPointLoad.h>
@@ -1716,9 +1717,23 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 	opserr << "WARNING eleLoad - invalid wa for beamUniform \n";
 	return TCL_ERROR;
       }
-      
+      double aL = 0.0;
+      double bL = 1.0;
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &aL) != TCL_OK) {
+	opserr << "WARNING eleLoad - invalid aOverL for beamUniform \n";
+	return TCL_ERROR;
+      }
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &bL) != TCL_OK) {
+	opserr << "WARNING eleLoad - invalid bOverL for beamUniform \n";
+	return TCL_ERROR;
+      }
       for (int i=0; i<theEleTags.Size(); i++) {
-	theLoad = new Beam2dUniformLoad(eleLoadTag, wt, wa, theEleTags(i));    
+	if (aL > 0.0 || bL < 1.0)
+	  theLoad = new Beam2dPartialUniformLoad(eleLoadTag, wt, wa, aL, bL, theEleTags(i));
+	else 
+	  theLoad = new Beam2dUniformLoad(eleLoadTag, wt, wa, theEleTags(i));    
 
 	if (theLoad == 0) {
 	  opserr << "WARNING eleLoad - out of memory creating load of type " << argv[count] ;
