@@ -130,6 +130,7 @@ extern void *OPS_ResilienceLow(void);
 extern void *OPS_ViscousMaterial(void);
 extern  void *OPS_SteelMPF(void); // K Kolozvari                                
 extern  void *OPS_ConcreteCM(void); // K Kolozvari
+extern  void *OPS_Bond_SP01(void); // K Kolozvari
 
 
 #ifdef _HAVE_Steel4
@@ -343,6 +344,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+    } else if ((strcmp(argv[1],"Bond_SP01") == 0) || (strcmp(argv[1],"Bond") == 0)) { 
+      void *theMat = OPS_Bond_SP01();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;      
 
     } else if ((strcmp(argv[1],"Cast") == 0) || (strcmp(argv[1],"CastFuse") == 0)) {
       void *theMat = OPS_Cast();
@@ -2227,106 +2234,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }
   }
     
-  else if ((strcmp(argv[1],"Bond_SP01") == 0) || (strcmp(argv[1],"Bond") == 0)) {  //%strain penetration material
-      // Check that there is the minimum number of arguments
-      if (argc < 9) {
-	opserr << "WARNING insufficient arguments\n";
-	printCommand(argc,argv);
-	opserr << "Want: uniaxialMaterial Bond_SP01 tag? fy? sy? fu? su? b? R?";
-	opserr << " <Cd? db? fc? la?>" << endln;	
-	return TCL_ERROR;
-      }
-      
-      int tag;
-      
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-	opserr << "WARNING invalid uniaxialMaterial Bond_SP01 tag" << endln;
-	return TCL_ERROR;
-      }
-      
-      // Read required Bond_SP01 material parameters
-      double fy, sy, fu, su, Kz, R;
-      
-      if (Tcl_GetDouble(interp, argv[3], &fy) != TCL_OK) {
-	opserr << "WARNING invalid bar yield strength (ksi): fy\n";
-	opserr << "uniaxialMaterial Bond_SP01: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp, argv[4], &sy) != TCL_OK) {
-	opserr << "WARNING invalid slip (in.) @ bar yield: sy\n";
-	opserr << "uniaxialMaterial Bond_SP01: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp, argv[5], &fu) != TCL_OK) {
-	opserr << "WARNING invalid bar failure strength (1.57fy? ksi) fu\n";
-	opserr << "uniaxialMaterial Bond_SP01: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp, argv[6], &su) != TCL_OK) {
-	opserr << "WARNING invalid slip (in.) @ bar failure: su\n";
-	opserr << "uniaxialMaterial Bond_SP01: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp, argv[7], &Kz) != TCL_OK) {
-	opserr << "WARNING invalid hardening ratio for envelop(<0.25<b(0.3)<0.5?): Cr\n";
-	opserr << "uniaxialMaterial Bond_SP01: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      if (Tcl_GetDouble(interp, argv[8], &R) != TCL_OK) {
-	opserr << "WARNING invalid pinching factor (0.5<R<1.0?): R\n";
-	opserr << "uniaxialMaterial Bond_SP01: " << tag << endln;
-	return TCL_ERROR;
-      }
-      
-      // Read optional Bond_SP01 material parameters (reserved for non-fully anchored cases
-      double Cd, db, fc, la;
-      
-      if (argc > 9) {
-	if (argc < 13) {
-	  opserr << "WARNING insufficient number of Bond_SP01 parameters\n";
-	  opserr << "uniaxialMaterial Bond_SP01: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	if (Tcl_GetDouble(interp, argv[9], &Cd) != TCL_OK) {
-	  opserr << "WARNING invalid bond damage factor (0<Cd<1?): Cd\n";
-	  opserr << "uniaxialMaterial Bond_SP01: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	if (Tcl_GetDouble(interp, argv[10], &db) != TCL_OK) {
-	  opserr << "WARNING invalid bar diameter (in.): db\n";
-	  opserr << "uniaxialMaterial Bond_SP01: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	if (Tcl_GetDouble(interp, argv[11], &fc) != TCL_OK) {
-	  opserr << "WARNING invalid concrete strength (ksi): fc\n";
-	  opserr << "uniaxialMaterial Bond_SP01: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	if (Tcl_GetDouble(interp, argv[12], &la) != TCL_OK) {
-	  opserr << "WARNING invalid embedded length (in.): la\n";
-	  opserr << "uniaxialMaterial Bond_SP01: " << tag << endln;
-	  return TCL_ERROR;
-	}
-	
-	// Parsing was successful, allocate the material
-	theMaterial = new Bond_SP01 (tag, fy, sy, fu, su, Kz, R, Cd, db, fc, la);
-      }
-      else
-	// Parsing was successful, allocate the material
-	theMaterial = new Bond_SP01 (tag, fy, sy, fu, su, Kz, R);
-      
-    }		//%strain penetration material
-
-
     else if (strcmp(argv[1],"Concrete01WithSITC") == 0) {
       if (argc < 7) {
 	  opserr << "WARNING insufficient arguments\n";

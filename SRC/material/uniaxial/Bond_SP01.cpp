@@ -39,29 +39,69 @@
 #include <math.h>
 #include <float.h>
 
+#include <elementAPI.h>
+
+void *
+OPS_Bond_SP01(void)
+{
+  // Pointer to a uniaxial material that will be returned
+  UniaxialMaterial *theMaterial = 0;
+
+  int numInput = OPS_GetNumRemainingInputArgs();
+  if (numInput != 7 && numInput != 11) {
+    opserr << "Invalid #args,  uniaxialMaterial Bond_SP01 tag? fy? sy? fu? su? b? R?";
+    opserr << " <Cd? db? fc? la?>" << endln;	
+    return 0;
+  }
+  
+  int iData[1];
+  double dData[10];
+  int numData = 1;
+  if (OPS_GetIntInput(&numData, iData) != 0) {
+    opserr << "WARNING invalid tag for uniaxialMaterial Elastic" << endln;
+    return 0;
+  }
+
+  numData = numInput-1;
+  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    opserr << "WARNING invalid tag for uniaxialMaterial Elastic" << endln;
+    return 0;
+  }
+
+  if (numInput == 7)
+    theMaterial = new Bond_SP01 (iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], 
+				 dData[5]);
+  else
+    theMaterial = new Bond_SP01 (iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], 
+				 dData[5], dData[6], dData[7], dData[8], dData[9]);
+
+  return theMaterial;
+}
+
+
 Bond_SP01::Bond_SP01
 (int tag, double FY, double SY, double FU, double SU, double KZ, double r, double CD, double DB, double FC, double LA):
-UniaxialMaterial(tag,MAT_TAG_Bond_SP01),
-fy(FY), sy(SY),  fu(FU), su(SU), Kz(KZ), R(r), Cd(CD), db(DB), fc(FC), lba(LA)
+  UniaxialMaterial(tag,MAT_TAG_Bond_SP01),
+  fy(FY), sy(SY),  fu(FU), su(SU), Kz(KZ), R(r), Cd(CD), db(DB), fc(FC), lba(LA)
 {
-	// Check units.  Need parameters in ksi and in.
-	if ( fy >= 1000 || sy >= 1)
-		opserr << "WARNING: For the Strain-Penetration Model: input values in ksi and in." << endln;
-
-	
-	// Set parameters for bar stress-slip envelope 
-	Cr = 1.01;						//% need to be large than 1 pretty arbitary
-	Ks = pow(R,Kz/2.5);		//% pretty arbitary
-	slvrg = pow(12.0/30.0,1/0.4)*0.04;			//%the slip corresponding to the virgin friction in local bond-slip model
-
-	// Assume symmetric envelope. This needs to be changed later because end-bearing participate when under compression
-	E0 = fy/sy;
-
-	// bond condition (for future use) 
-    la = fy*db*1000.0/40.0/pow(fc*1000,0.5);	// effective anchorage length (not being used inversions 1.x)
-
-	// Set all history and state variables to initial values
-	this->revertToStart ();
+  // Check units.  Need parameters in ksi and in.
+  if ( fy >= 1000 || sy >= 1)
+    opserr << "WARNING: For the Strain-Penetration Model: input values in ksi and in." << endln;
+  
+  
+  // Set parameters for bar stress-slip envelope 
+  Cr = 1.01;						//% need to be large than 1 pretty arbitary
+  Ks = pow(R,Kz/2.5);		//% pretty arbitary
+  slvrg = pow(12.0/30.0,1/0.4)*0.04;			//%the slip corresponding to the virgin friction in local bond-slip model
+  
+  // Assume symmetric envelope. This needs to be changed later because end-bearing participate when under compression
+  E0 = fy/sy;
+  
+  // bond condition (for future use) 
+  la = fy*db*1000.0/40.0/pow(fc*1000,0.5);	// effective anchorage length (not being used inversions 1.x)
+  
+  // Set all history and state variables to initial values
+  this->revertToStart ();
 
 }
 
@@ -689,15 +729,85 @@ UniaxialMaterial* Bond_SP01::getCopy ()
    return theCopy;
 }
 
-int Bond_SP01::sendSelf (int commitTag, Channel& theChannel)
+int Bond_SP01::sendSelf (int cTag, Channel& theChannel)
 {
-   return -1;
+  int res = 0;
+  static Vector dData(26);
+
+  dData(0) = this->getTag();
+  dData(1) =db;
+  dData(2) =fc;
+  dData(3) =lba;
+  dData(4) =la;
+  dData(5) =sy;
+  dData(6) =su;
+  dData(7) =fy;
+  dData(8) =fu;
+  dData(9) =E0;
+  dData(10) =Kz;
+  dData(11) =Cr;
+  dData(12) =Ks;
+  dData(13) =slvrg;
+  dData(14) =R;		
+  dData(15) =Cd;	
+  dData(16) =CRSlip;	
+  dData(17) =CRLoad;	
+  dData(18) =CRSlope;	
+  dData(19) =CmaxHSlip;	
+  dData(20) =CminHSlip;	
+  dData(21) =Cloading;	
+  dData(22) =  CYieldFlag;
+  dData(23) =Cslip;
+  dData(24) =Cload;
+  dData(25) =Ctangent;
+
+  res = theChannel.sendVector(this->getDbTag(), cTag, dData);
+  if (res < 0) 
+    opserr << "Bond_SP01::sendSelf() - failed to send data\n";
+
+  return res;
 }
 
-int Bond_SP01::recvSelf (int commitTag, Channel& theChannel,
-                                FEM_ObjectBroker& theBroker)
+int Bond_SP01::recvSelf (int cTag, Channel& theChannel,
+			 FEM_ObjectBroker& theBroker)
 {
-   return -1;
+  int res = 0;
+  static Vector dData(26);
+
+  res = theChannel.recvVector(this->getDbTag(), cTag, dData);
+  if (res < 0) 
+    opserr << "Bond_SP01::sendSelf() - failed to send data\n";
+
+  this->setTag(int(dData(0)));
+  db = dData(1);
+  fc= dData(2);
+  lba= dData(3);
+  la= dData(4);
+  sy= dData(5);
+  su= dData(6);
+  fy= dData(7);
+  fu= dData(8);
+  E0= dData(9);
+  Kz= dData(10);
+  Cr= dData(11);
+  Ks= dData(12);
+  slvrg= dData(13);
+  R= dData(14);		
+  Cd= dData(15);	
+  CRSlip= dData(16);	
+  CRLoad= dData(17);	
+  CRSlope= dData(18);	
+  CmaxHSlip= dData(19);	
+  CminHSlip= dData(20);	
+  Cloading= int(dData(21));	
+  CYieldFlag= int(dData(22));
+  Cslip= dData(23);
+  Cload= dData(24);
+  Ctangent = dData(25);
+  
+  this->revertToLastCommit();
+    
+  return res;
 }
 
 void Bond_SP01::Print (OPS_Stream& s, int flag)
