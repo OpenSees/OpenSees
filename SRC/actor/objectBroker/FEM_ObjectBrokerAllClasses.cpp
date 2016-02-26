@@ -91,6 +91,7 @@
 #include <LimitStateMaterial.h>
 #include <InitStressMaterial.h>
 #include <InitStrainMaterial.h>
+#include <Bond_SP01.h>
 
 //PY springs: RWBoulanger and BJeremic
 #include <PySimple1.h>
@@ -1156,6 +1157,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
         case MAT_TAG_InitStress:
 	  return new InitStressMaterial();
+
+        case MAT_TAG_Bond_SP01:
+	  return new Bond_SP01();
 
 
 	default:
