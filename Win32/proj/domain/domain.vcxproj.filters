@@ -282,6 +282,9 @@
     <ClCompile Include="..\..\..\SRC\domain\pattern\UniformRotationalExcitation.cpp">
       <Filter>pattern</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\Beam2dPartialUniformLoad.cpp">
+      <Filter>load\beam</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h">
@@ -520,6 +523,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\pattern\UniformRotationalExcitation.h">
       <Filter>pattern</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\Beam2dPartialUniformLoad.h">
+      <Filter>load\beam</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
