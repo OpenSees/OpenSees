@@ -18,10 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.5 $
-// $Date: 2010-01-20 18:53:18 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/CentralDifference.h,v $
-
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef CentralDifference_h
 #define CentralDifference_h
@@ -33,8 +32,6 @@
 // Description: This file contains the class definition for CentralDifference.
 // CentralDifference is an algorithmic class for performing a transient analysis
 // using the central difference integration scheme.
-//
-// What: "@(#) CentralDifference.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -48,30 +45,30 @@ public:
     // constructors
     CentralDifference();
     CentralDifference(double alphaM, double betaK, double betaKi, double betaKc);
-
+    
     // destructor
     ~CentralDifference();
     
     // methods which define what the FE_Element and DOF_Groups add
     // to the system of equation object.
     int formEleTangent(FE_Element *theEle);
-    int formNodTangent(DOF_Group *theDof);        
+    int formNodTangent(DOF_Group *theDof);
     
-    int domainChanged(void);    
-    int newStep(double deltaT);    
+    int domainChanged(void);
+    int newStep(double deltaT);
     int update(const Vector &U);
     int commit(void);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
-    void Print(OPS_Stream &s, int flag = 0);        
+    void Print(OPS_Stream &s, int flag = 0);
     
 protected:
     
 private:
     double deltaT;
-
+    
     // rayleigh damping factors
     double alphaM;
     double betaK;

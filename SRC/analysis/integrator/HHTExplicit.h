@@ -18,10 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.3 $
-// $Date: 2009-05-19 22:10:05 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/HHTExplicit.h,v $
-
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef HHTExplicit_h
 #define HHTExplicit_h
@@ -33,8 +32,6 @@
 // Description: This file contains the class definition for HHTExplicit.
 // HHTExplicit is an algorithmic class for performing a transient analysis
 // using the HHTExplicit integration scheme (beta = 0).
-//
-// What: "@(#) HHTExplicit.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -48,9 +45,9 @@ public:
     // constructors
     HHTExplicit();
     HHTExplicit(double alpha,
-        bool updDomFlag = false);
+        bool updElemDisp = false);
     HHTExplicit(double alpha, double gamma,
-        bool updDomFlag = false);
+        bool updElemDisp = false);
     
     // destructor
     ~HHTExplicit();
@@ -58,25 +55,25 @@ public:
     // methods which define what the FE_Element and DOF_Groups add
     // to the system of equation object.
     int formEleTangent(FE_Element *theEle);
-    int formNodTangent(DOF_Group *theDof);        
+    int formNodTangent(DOF_Group *theDof);
     
-    int domainChanged(void);    
-    int newStep(double deltaT);    
-    int revertToLastStep(void);        
+    int domainChanged(void);
+    int newStep(double deltaT);
+    int revertToLastStep(void);
     int update(const Vector &aiPlusOne);
     int commit(void);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
-    void Print(OPS_Stream &s, int flag = 0);        
+    void Print(OPS_Stream &s, int flag = 0);
     
 protected:
     
 private:
     double alpha;
     double gamma;
-    bool updDomFlag;    // a flag indicating if updateDomain() is called
+    bool updElemDisp;  // a flag indicating if element displacements are updated during commit
     double deltaT;
     
     int updateCount;                // method should only have one update per step

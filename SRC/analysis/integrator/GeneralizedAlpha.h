@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2010-02-04 01:05:34 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/GeneralizedAlpha.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef GeneralizedAlpha_h
 #define GeneralizedAlpha_h
@@ -36,8 +36,6 @@
 // J.Chung, G.M.Hulbert "A Time Integration Algorithm for Structural Dynamics With
 // Improved Numerical Dissipation: The Generalized-alpha Method" ASME Journal of Applied
 // Mechanics, Vol 60, 371-375, 1993.
-//
-// What: "@(#) GeneralizedAlpha.h, revA"
 
 #include <TransientIntegrator.h>
 

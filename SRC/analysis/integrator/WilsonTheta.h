@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.5 $
-// $Date: 2007-04-05 01:22:20 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/WilsonTheta.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef WilsonTheta_h
 #define WilsonTheta_h
@@ -32,8 +32,6 @@
 // Description: This file contains the class definition for WilsonTheta.
 // WilsonTheta is an algorithmic class for performing a transient analysis
 // using the WilsonTheta integration scheme.
-//
-// What: "@(#) WilsonTheta.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -47,16 +45,16 @@ public:
     // constructors
     WilsonTheta();
     WilsonTheta(double theta);
-
+    
     // destructor
     ~WilsonTheta();
     
     // methods which define what the FE_Element and DOF_Groups add
     // to the system of equation object.
     int formEleTangent(FE_Element *theEle);
-    int formNodTangent(DOF_Group *theDof);        
+    int formNodTangent(DOF_Group *theDof);
     
-    int domainChanged(void);    
+    int domainChanged(void);
     int newStep(double deltaT);
     int revertToLastStep(void);
     int update(const Vector &deltaU);
@@ -65,12 +63,12 @@ public:
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
-    void Print(OPS_Stream &s, int flag = 0);        
+    void Print(OPS_Stream &s, int flag = 0);
     
 protected:
     
 private:
-    double theta;    
+    double theta;
     double deltaT;
     
     double c1, c2, c3;              // some constants we need to keep

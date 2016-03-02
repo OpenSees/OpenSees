@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.1 $
-// $Date: 2005-02-22 22:21:10 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/CentralDifferenceNoDamping.h,v $
+// $Revision$
+// $Date$
+// $URL$
                                                                         
 #ifndef CentralDifferenceNoDamping_h
 #define CentralDifferenceNoDamping_h
@@ -38,8 +38,6 @@
 // which is an explicit direct integration scheme as outlined in the paper:
 // Goudreau, G.L. and J.O. Hallquist, "Recent Developments in Large Scale Finite Element Lagrangian 
 // Hydrocode Technology", Journal of Computer Methods in Applied Mechanics and Engineering, 30, 1982.
-//
-// What: "@(#) CentralDifferenceNoDamping.h, revA"
 
 #include <TransientIntegrator.h>
 

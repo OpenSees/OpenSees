@@ -2,56 +2,60 @@
 
 include ../../../Makefile.def
 
-OBJS       = IncrementalIntegrator.o \
-	StaticIntegrator.o \
-	TransientIntegrator.o \
-	HHT.o \
-	HHT1.o \
-	HHT_TP.o \
-	GeneralizedAlpha.o \
-	WilsonTheta.o \
-	Newmark.o \
-	PFEMIntegrator.o \
-	CentralDifference.o \
-	Integrator.o \
-	LoadControl.o \
-	Newmark1.o \
-	CentralDifferenceAlternative.o \
-	TRBDF2.o \
-    TRBDF3.o \
+OBJS       = AlphaOS.o \
+    AlphaOS_TP.o \
+    AlphaOSGeneralized.o \
+	AlphaOSGeneralized_TP.o \
 	ArcLength.o \
 	ArcLength1.o \
-	LoadPath.o \
+	BackwardEuler.o \
+	CentralDifference.o \
+	CentralDifferenceAlternative.o \
+	CentralDifferenceNoDamping.o \
+	Collocation.o \
+	CollocationHSFixedNumIter.o \
+	CollocationHSIncrLimit.o \
+	CollocationHSIncrReduct.o \
 	DisplacementControl.o \
 	DistributedDisplacementControl.o \
-	MinUnbalDispNorm.o \
 	EigenIntegrator.o \
-	HSConstraint.o \
-	CentralDifferenceNoDamping.o \
-	NewmarkExplicit.o \
-	NewmarkHSFixedNumIter.o \
-	NewmarkHSIncrReduct.o \
-	NewmarkHSIncrLimit.o \
+	GeneralizedAlpha.o \
+	HHT.o \
+	HHT_TP.o \
 	HHTExplicit.o \
+	HHTExplicit_TP.o \
 	HHTGeneralized.o \
 	HHTGeneralized_TP.o \
 	HHTGeneralizedExplicit.o \
+	HHTGeneralizedExplicit_TP.o \
 	HHTHSFixedNumIter.o \
-	HHTHSIncrReduct.o \
+	HHTHSFixedNumIter_TP.o \
 	HHTHSIncrLimit.o \
-	Collocation.o \
-	CollocationHSFixedNumIter.o \
-	CollocationHSIncrReduct.o \
-	CollocationHSIncrLimit.o \
-	AlphaOSGeneralized.o \
-	AlphaOSGeneralized_TP.o \
-	AlphaOS.o \
-	AlphaOS_TP.o \
+	HHTHSIncrLimit_TP.o \
+	HHTHSIncrReduct.o \
+	HHTHSIncrReduct_TP.o \
 	Houbolt.o \
-	ParkLMS3.o \
-	BackwardEuler.o \
+	HSConstraint.o \
+    IncrementalIntegrator.o \
+	Integrator.o \
 	KRAlphaExplicit.o \
 	KRAlphaExplicit_TP.o 
+	LoadControl.o \
+	LoadPath.o \
+	MinUnbalDispNorm.o \
+	Newmark.o \
+	Newmark1.o \
+	NewmarkExplicit.o \
+	NewmarkHSFixedNumIter.o \
+	NewmarkHSIncrLimit.o \
+	NewmarkHSIncrReduct.o \
+	ParkLMS3.o \
+	PFEMIntegrator.o \
+	StaticIntegrator.o \
+	TransientIntegrator.o \
+	TRBDF2.o \
+    TRBDF3.o \
+	WilsonTheta.o \
 
 all:         $(OBJS)
 

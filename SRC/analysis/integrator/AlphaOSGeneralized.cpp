@@ -44,19 +44,19 @@
 
 
 TransientIntegrator *
-    OPS_NewAlphaOSGeneralized(void)
+    OPS_AlphaOSGeneralized(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;
     
     int argc = OPS_GetNumRemainingInputArgs();
     if (argc != 1 && argc != 2 && argc != 4 && argc != 5) {
-        opserr << "WARNING - incorrect number of args want AlphaOSGeneralized $rhoInf <-updateDomain>\n";
-        opserr << "          or integrator AlphaOSGeneralized $alphaI $alphaF $beta $gamma <-updateDomain>\n";
+        opserr << "WARNING - incorrect number of args want AlphaOSGeneralized $rhoInf <-updateElemDisp>\n";
+        opserr << "          or AlphaOSGeneralized $alphaI $alphaF $beta $gamma <-updateElemDisp>\n";
         return 0;
     }
     
-    bool updDomFlag = false;
+    bool updElemDisp = false;
     double dData[4];
     int numData;
     if (argc < 3)
@@ -65,20 +65,21 @@ TransientIntegrator *
         numData = 4;
     
     if (OPS_GetDouble(&numData, dData) != 0) {
-        opserr << "WARNING - invalid args want AlphaOSGeneralized $alpha <-updateDomain>\n";
+        opserr << "WARNING - invalid args want AlphaOSGeneralized $alpha <-updateElemDisp>\n";
+        opserr << "          or AlphaOSGeneralized $alphaI $alphaF $beta $gamma <-updateElemDisp>\n";
         return 0;
     }
     
     if (argc == 2 || argc == 5) {
         const char *argvLoc = OPS_GetString();
-        if (strcmp(argvLoc, "-updateDomain") == 0)
-            updDomFlag = true;
+        if (strcmp(argvLoc, "-updateElemDisp") == 0)
+            updElemDisp = true;
     }
     
     if (argc < 3)
-        theIntegrator = new AlphaOSGeneralized(dData[0], updDomFlag);
+        theIntegrator = new AlphaOSGeneralized(dData[0], updElemDisp);
     else
-        theIntegrator = new AlphaOSGeneralized(dData[0], dData[1], dData[2], dData[3], updDomFlag);
+        theIntegrator = new AlphaOSGeneralized(dData[0], dData[1], dData[2], dData[3], updElemDisp);
     
     if (theIntegrator == 0)
         opserr << "WARNING - out of memory creating AlphaOSGeneralized integrator\n";
@@ -90,7 +91,7 @@ TransientIntegrator *
 AlphaOSGeneralized::AlphaOSGeneralized()
     : TransientIntegrator(INTEGRATOR_TAGS_AlphaOSGeneralized),
     alphaI(0.5), alphaF(0.5), beta(0.0), gamma(0.0),
-    updDomFlag(0), deltaT(0.0),
+    updElemDisp(0), deltaT(0.0),
     updateCount(0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0), Upt(0)
@@ -100,11 +101,11 @@ AlphaOSGeneralized::AlphaOSGeneralized()
 
 
 AlphaOSGeneralized::AlphaOSGeneralized(double _rhoInf,
-    bool upddomflag)
+    bool updelemdisp)
     : TransientIntegrator(INTEGRATOR_TAGS_AlphaOSGeneralized),
     alphaI((2.0-_rhoInf)/(1.0+_rhoInf)), alphaF(1.0/(1.0+_rhoInf)),
     beta(1.0/(1.0+_rhoInf)/(1.0+_rhoInf)), gamma(0.5*(3.0-_rhoInf)/(1.0+_rhoInf)),
-    updDomFlag(upddomflag), deltaT(0.0),
+    updElemDisp(updelemdisp), deltaT(0.0),
     updateCount(0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0), Upt(0)
@@ -115,10 +116,10 @@ AlphaOSGeneralized::AlphaOSGeneralized(double _rhoInf,
 
 AlphaOSGeneralized::AlphaOSGeneralized(double _alphaI, double _alphaF,
     double _beta, double _gamma,
-    bool upddomflag)
+    bool updelemdisp)
     : TransientIntegrator(INTEGRATOR_TAGS_AlphaOSGeneralized),
     alphaI(_alphaI), alphaF(_alphaF), beta(_beta), gamma(_gamma),
-    updDomFlag(upddomflag), deltaT(0.0),
+    updElemDisp(updelemdisp), deltaT(0.0),
     updateCount(0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0), Upt(0)
@@ -157,13 +158,13 @@ int AlphaOSGeneralized::newStep(double _deltaT)
 {
     updateCount = 0;
     
-    deltaT = _deltaT;
     if (beta == 0 || gamma == 0 )  {
         opserr << "AlphaOSGeneralized::newStep() - error in variable\n";
         opserr << "gamma = " << gamma << " beta = " << beta << endln;
         return -1;
     }
     
+    deltaT = _deltaT;
     if (deltaT <= 0.0)  {
         opserr << "AlphaOSGeneralized::newStep() - error in variable\n";
         opserr << "dT = " << deltaT << "\n";
@@ -262,7 +263,7 @@ int AlphaOSGeneralized::formNodTangent(DOF_Group *theDof)
 
 int AlphaOSGeneralized::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -316,7 +317,7 @@ int AlphaOSGeneralized::domainChanged()
             Ualphadotdot == 0 || Ualphadotdot->Size() != size ||
             Upt == 0 || Upt->Size() != size)  {
             
-            opserr << "AlphaOSGeneralized::domainChanged - ran out of memory\n";
+            opserr << "AlphaOSGeneralized::domainChanged() - ran out of memory\n";
             
             // delete the old
             if (Ut != 0)
@@ -351,7 +352,7 @@ int AlphaOSGeneralized::domainChanged()
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
@@ -382,7 +383,7 @@ int AlphaOSGeneralized::domainChanged()
                 (*Udotdot)(loc) = accel(i);
             }
         }
-    }    
+    }
     
     return 0;
 }
@@ -427,13 +428,14 @@ int AlphaOSGeneralized::update(const Vector &deltaU)
     Udotdot->addVector(0.0, deltaU, c3);
     
     // update the response at the DOFs
-    theModel->setResponse(*U, *Udot, *Udotdot);
-    if (updDomFlag == true)  {
-        if (theModel->updateDomain() < 0)  {
-            opserr << "AlphaOSGeneralized::update() - failed to update the domain\n";
-            return -5;
-        }
+    theModel->setVel(*Udot);
+    theModel->setAccel(*Udotdot);
+    if (theModel->updateDomain() < 0)  {
+        opserr << "AlphaOSGeneralized::update() - failed to update the domain\n";
+        return -5;
     }
+    // do not update displacements in elements only at nodes
+    theModel->setDisp(*U);
     
     return 0;
 }
@@ -452,6 +454,10 @@ int AlphaOSGeneralized::commit(void)
     time += (1.0-alphaF)*deltaT;
     theModel->setCurrentDomainTime(time);
     
+    // update the displacements in the elements
+    if (updElemDisp == true)
+        theModel->updateDomain();
+    
     return theModel->commitDomain();
 }
 
@@ -463,7 +469,7 @@ int AlphaOSGeneralized::sendSelf(int cTag, Channel &theChannel)
     data(1) = alphaF;
     data(2) = beta;
     data(3) = gamma;
-    if (updDomFlag == false)
+    if (updElemDisp == false)
         data(4) = 0.0;
     else
         data(4) = 1.0;
@@ -490,9 +496,9 @@ int AlphaOSGeneralized::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker
     beta   = data(2);
     gamma  = data(3);
     if (data(4) == 0.0)
-        updDomFlag = false;
+        updElemDisp = false;
     else
-        updDomFlag = true;
+        updElemDisp = true;
     
     return 0;
 }
@@ -506,10 +512,10 @@ void AlphaOSGeneralized::Print(OPS_Stream &s, int flag)
         s << "AlphaOSGeneralized - currentTime: " << currentTime << endln;
         s << "  alphaI: " << alphaI << "  alphaF: " << alphaF  << "  beta: " << beta  << "  gamma: " << gamma << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-        if (updDomFlag)
-            s << "  update Domain: yes\n";
+        if (updElemDisp)
+            s << "  updateElemDisp: yes\n";
         else
-            s << "  update Domain: no\n";
+            s << "  updateElemDisp: no\n";
     } else
         s << "AlphaOSGeneralized - no associated AnalysisModel\n";
 }
@@ -526,26 +532,26 @@ int AlphaOSGeneralized::formElementResidual(void)
     FE_EleIter &theEles = theModel->getFEs();
     while((elePtr = theEles()) != 0)  {
         if (theSOE->addB(elePtr->getResidual(this), elePtr->getID()) < 0)  {
-            opserr << "WARNING AlphaOSGeneralized::formElementResidual -";
+            opserr << "WARNING AlphaOSGeneralized::formElementResidual() -";
             opserr << " failed in addB for ID " << elePtr->getID();
             return -1;
         }
         if (alphaF < 1.0)  {
             if (statusFlag == CURRENT_TANGENT)  {
                 if (theSOE->addB(elePtr->getK_Force(*Ut-*Upt), elePtr->getID(), alphaF-1.0) < 0)  {
-                    opserr << "WARNING AlphaOSGeneralized::formElementResidual -";
+                    opserr << "WARNING AlphaOSGeneralized::formElementResidual() -";
                     opserr << " failed in addB for ID " << elePtr->getID();
                     return -2;
                 }
             } else if (statusFlag == INITIAL_TANGENT)  {
                 if (theSOE->addB(elePtr->getKi_Force(*Ut-*Upt), elePtr->getID(), alphaF-1.0) < 0)  {
-                    opserr << "WARNING AlphaOSGeneralized::formElementResidual -";
+                    opserr << "WARNING AlphaOSGeneralized::formElementResidual() -";
                     opserr << " failed in addB for ID " << elePtr->getID();
                     return -2;
                 }
             }
         }
     }
-
+    
     return 0;
 }

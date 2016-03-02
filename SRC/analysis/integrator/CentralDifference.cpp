@@ -18,20 +18,19 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.8 $
-// $Date: 2010-01-20 18:53:18 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/CentralDifference.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: fmk
 // Created: 11/98
 // Revision: A
 //
 // Description: This file contains the implementation of the CentralDifference class.
-//
-// What: "@(#) CentralDifference.cpp, revA"
 
 #include <CentralDifference.h>
 #include <FE_Element.h>
+#include <FE_EleIter.h>
 #include <LinearSOE.h>
 #include <AnalysisModel.h>
 #include <Vector.h>
@@ -40,6 +39,23 @@
 #include <AnalysisModel.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
+#define OPS_Export 
+
+
+TransientIntegrator *
+    OPS_CentralDifference(void)
+{
+    // pointer to an integrator that will be returned
+    TransientIntegrator *theIntegrator = 0;
+    
+    theIntegrator = new CentralDifference();
+    
+    if (theIntegrator == 0)
+        opserr << "WARNING - out of memory creating CentralDifference integrator\n";
+    
+    return theIntegrator;
+}
 
 
 CentralDifference::CentralDifference()
@@ -93,7 +109,7 @@ int CentralDifference::newStep(double _deltaT)
     if (deltaT <= 0.0)  {
         opserr << "CentralDifference::newStep() - error in variable\n";
         opserr << "dT = " << deltaT << endln;
-        return -2;	
+        return -1;
     }
     
     // get a pointer to the AnalysisModel
@@ -105,9 +121,9 @@ int CentralDifference::newStep(double _deltaT)
     
     if (Ut == 0)  {
         opserr << "CentralDifference::newStep() - domainChange() failed or hasn't been called\n";
-        return -3;	
+        return -2;
     }
-        
+    
     // determine the garbage velocities and accelerations at t
     Utdot->addVector(0.0, *Utm1, -c2);
     
@@ -117,12 +133,12 @@ int CentralDifference::newStep(double _deltaT)
     // set the garbage response quantities for the nodes
     theModel->setVel(*Utdot);
     theModel->setAccel(*Utdotdot);
-
+    
     // increment the time to t and apply the load
     double time = theModel->getCurrentDomainTime();
     if (theModel->updateDomain(time, deltaT) < 0)  {
         opserr << "CentralDifference::newStep() - failed to update the domain\n";
-        return -4;
+        return -3;
     }
     
     // set response at t to be that at t+deltaT of previous step
@@ -141,7 +157,7 @@ int CentralDifference::formEleTangent(FE_Element *theEle)
     theEle->addMtoTang(c3);
     
     return 0;
-}    
+}
 
 
 int CentralDifference::formNodTangent(DOF_Group *theDof)
@@ -150,22 +166,22 @@ int CentralDifference::formNodTangent(DOF_Group *theDof)
     
     theDof->addCtoTang(c2);
     theDof->addMtoTang(c3);
-
+    
     return(0);
-}    
+}
 
 
 int CentralDifference::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
     
     // if damping factors exist set them in the element & node of the domain
     if (alphaM != 0.0 || betaK != 0.0 || betaKi != 0.0 || betaKc != 0.0)
-        myModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
-
+        theModel->setRayleighDampingFactors(alphaM, betaK, betaKi, betaKc);
+    
     // create the new Vector objects
     if (Ut == 0 || Ut->Size() != size)  {
         
@@ -217,26 +233,26 @@ int CentralDifference::domainChanged()
             Utm1 = 0;
             Ut = 0; Utdot = 0; Utdotdot = 0;
             Udot = 0; Udotdot = 0;
-
+            
             return -1;
         }
-    }        
+    }
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
         int idSize = id.Size();
         
         int i;
-        const Vector &disp = dofPtr->getCommittedDisp();	
+        const Vector &disp = dofPtr->getCommittedDisp();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
                 (*Utm1)(loc) = disp(i);
-                (*Ut)(loc) = disp(i);		
+                (*Ut)(loc) = disp(i);
             }
         }
         
@@ -248,14 +264,14 @@ int CentralDifference::domainChanged()
             }
         }
         
-        const Vector &accel = dofPtr->getCommittedAccel();	
+        const Vector &accel = dofPtr->getCommittedAccel();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
                 (*Udotdot)(loc) = accel(i);
             }
         }
-    }    
+    }
     
     opserr << "WARNING: CentralDifference::domainChanged() - assuming Ut-1 = Ut\n";
     
@@ -275,20 +291,20 @@ int CentralDifference::update(const Vector &U)
     AnalysisModel *theModel = this->getAnalysisModel();
     if (theModel == 0)  {
         opserr << "WARNING CentralDifference::update() - no AnalysisModel set\n";
-        return -1;
-    }	
+        return -2;
+    }
     
     // check domainChanged() has been called, i.e. Ut will not be zero
     if (Ut == 0)  {
         opserr << "WARNING CentralDifference::update() - domainChange() failed or not called\n";
-        return -2;
-    }	
+        return -3;
+    }
     
     // check U is of correct size
     if (U.Size() != Ut->Size()) {
         opserr << "WARNING CentralDifference::update() - Vectors of incompatible size ";
         opserr << " expecting " << Ut->Size() << " obtained " << U.Size() << endln;
-        return -3;
+        return -4;
     }
     
     //  determine the response at t+deltaT
@@ -300,20 +316,20 @@ int CentralDifference::update(const Vector &U)
     Udotdot->addVector(0.0, *Udot, 1.0);
     Udotdot->addVector(1.0, *Utdot, -1.0);
     (*Udotdot) /= deltaT;
-       
+    
     // update the response at the DOFs
     theModel->setResponse(U, *Udot, *Udotdot);
     if (theModel->updateDomain() < 0)  {
         opserr << "CentralDifference::update() - failed to update the domain\n";
-        return -4;
+        return -5;
     }
     
     // set response at t to be that at t+deltaT of previous step
     (*Utm1) = *Ut;
     (*Ut) = U;
-
+    
     return 0;
-}    
+}
 
 
 int CentralDifference::commit(void)
@@ -322,7 +338,7 @@ int CentralDifference::commit(void)
     if (theModel == 0) {
         opserr << "WARNING CentralDifference::commit() - no AnalysisModel set\n";
         return -1;
-    }	  
+    }
     
     // set the time to be t+deltaT
     double time = theModel->getCurrentDomainTime();
@@ -345,7 +361,7 @@ int CentralDifference::sendSelf(int cTag, Channel &theChannel)
         opserr << "WARNING CentralDifference::sendSelf() - could not send data\n";
         return -1;
     }
-
+    
     return 0;
 }
 
@@ -372,9 +388,9 @@ void CentralDifference::Print(OPS_Stream &s, int flag)
     AnalysisModel *theModel = this->getAnalysisModel();
     if (theModel != 0) {
         double currentTime = theModel->getCurrentDomainTime();
-        s << "\t CentralDifference - currentTime: " << currentTime << endln;
+        s << "CentralDifference - currentTime: " << currentTime << endln;
         s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
         s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;	    
     } else 
-        s << "\t CentralDifference - no associated AnalysisModel\n";
+        s << "CentralDifference - no associated AnalysisModel\n";
 }

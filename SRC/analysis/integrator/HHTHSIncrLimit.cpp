@@ -18,20 +18,19 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: $
-// $Date: $
-// $Source: $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 11/09
 // Revision: A
 //
 // Description: This file contains the implementation of the HHTHSIncrLimit class.
-//
-// What: "@(#) HHTHSIncrLimit.cpp, revA"
 
 #include <HHTHSIncrLimit.h>
 #include <FE_Element.h>
+#include <FE_EleIter.h>
 #include <LinearSOE.h>
 #include <AnalysisModel.h>
 #include <Vector.h>
@@ -40,11 +39,63 @@
 #include <AnalysisModel.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
+#define OPS_Export
+
+
+TransientIntegrator *
+    OPS_HHTHSIncrLimit(void)
+{
+    // pointer to an integrator that will be returned
+    TransientIntegrator *theIntegrator = 0;
+    
+    int argc = OPS_GetNumRemainingInputArgs();
+    if (argc != 2 && argc != 4 && argc != 5 && argc != 7) {
+        opserr << "WARNING - incorrect number of args want HHTHSIncrLimit $rhoInf $limit <-normType $T>\n";
+        opserr << "          or HHTHSIncrLimit $alphaI $alphaF $beta $gamma $limit <-normType $T>\n";
+        return 0;
+    }
+    
+    double dData[5];
+    int normType = 2;
+    int numData;
+    if (argc < 5)
+        numData = 2;
+    else
+        numData = 5;
+    
+    if (OPS_GetDouble(&numData, dData) != 0) {
+        opserr << "WARNING - invalid args want HHTHSIncrLimit $rhoInf $limit <-normType $T>\n";
+        opserr << "          or HHTHSIncrLimit $alphaI $alphaF $beta $gamma $limit <-normType $T>\n";
+        return 0;
+    }
+    
+    if (argc == 4 || argc == 7) {
+        const char *argvLoc = OPS_GetString();
+        if (strcmp(argvLoc, "-normType") == 0) {
+            numData = 1;
+            if (OPS_GetInt(&numData, &normType) != 0) {
+                opserr << "WARNING - invalid normType want HHTHSIncrLimit $rhoInf $limit <-normType $T>\n";
+                opserr << "          or HHTHSIncrLimit $alphaI $alphaF $beta $gamma $limit <-normType $T>\n";
+            }
+        }
+    }
+    
+    if (argc < 5)
+        theIntegrator = new HHTHSIncrLimit(dData[0], dData[1], normType);
+    else
+        theIntegrator = new HHTHSIncrLimit(dData[0], dData[1], dData[2], dData[3], dData[4], normType);
+    
+    if (theIntegrator == 0)
+        opserr << "WARNING - out of memory creating HHTHSIncrLimit integrator\n";
+    
+    return theIntegrator;
+}
 
 
 HHTHSIncrLimit::HHTHSIncrLimit()
     : TransientIntegrator(INTEGRATOR_TAGS_HHTHSIncrLimit),
-    alphaI(0.5), alphaF(0.5), beta(0.0), gamma(0.0), limit(0.1), normType(2),
+    alphaI(0.5), alphaF(0.5), beta(0.25), gamma(0.5), limit(0.1), normType(2),
     deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
@@ -58,8 +109,8 @@ HHTHSIncrLimit::HHTHSIncrLimit(double _rhoInf, double _limit, int normtype)
     : TransientIntegrator(INTEGRATOR_TAGS_HHTHSIncrLimit),
     alphaI((2.0-_rhoInf)/(1.0+_rhoInf)), alphaF(1.0/(1.0+_rhoInf)),
     beta(1.0/(1.0+_rhoInf)/(1.0+_rhoInf)), gamma(0.5*(3.0-_rhoInf)/(1.0+_rhoInf)),
-    limit(_limit), normType(normtype), deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
+    limit(_limit), normType(normtype),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
     scaledDeltaU(0)
@@ -72,8 +123,8 @@ HHTHSIncrLimit::HHTHSIncrLimit(double _alphaI, double _alphaF,
     double _beta, double _gamma, double _limit, int normtype)
     : TransientIntegrator(INTEGRATOR_TAGS_HHTHSIncrLimit),
     alphaI(_alphaI), alphaF(_alphaF), beta(_beta), gamma(_gamma),
-    limit(_limit), normType(normtype), deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
+    limit(_limit), normType(normtype),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
     scaledDeltaU(0)
@@ -110,17 +161,17 @@ HHTHSIncrLimit::~HHTHSIncrLimit()
 
 int HHTHSIncrLimit::newStep(double _deltaT)
 {
-    deltaT = _deltaT;
     if (beta == 0 || gamma == 0 )  {
         opserr << "HHTHSIncrLimit::newStep() - error in variable\n";
         opserr << "gamma = " << gamma << " beta = " << beta << endln;
         return -1;
     }
     
+    deltaT = _deltaT;
     if (deltaT <= 0.0)  {
         opserr << "HHTHSIncrLimit::newStep() - error in variable\n";
         opserr << "dT = " << deltaT << endln;
-        return -2;	
+        return -2;
     }
     
     // get a pointer to the AnalysisModel
@@ -133,7 +184,7 @@ int HHTHSIncrLimit::newStep(double _deltaT)
     
     if (U == 0)  {
         opserr << "HHTHSIncrLimit::newStep() - domainChange() failed or hasn't been called\n";
-        return -3;	
+        return -3;
     }
     
     // set response at t to be that at t+deltaT of previous step
@@ -190,15 +241,13 @@ int HHTHSIncrLimit::formEleTangent(FE_Element *theEle)
 {
     theEle->zeroTangent();
     
-    if (statusFlag == CURRENT_TANGENT)  {
+    if (statusFlag == CURRENT_TANGENT)
         theEle->addKtToTang(alphaF*c1);
-        theEle->addCtoTang(alphaF*c2);
-        theEle->addMtoTang(alphaI*c3);
-    } else if (statusFlag == INITIAL_TANGENT)  {
+    else if (statusFlag == INITIAL_TANGENT)
         theEle->addKiToTang(alphaF*c1);
-        theEle->addCtoTang(alphaF*c2);
-        theEle->addMtoTang(alphaI*c3);
-    }
+    
+    theEle->addCtoTang(alphaF*c2);
+    theEle->addMtoTang(alphaI*c3);
     
     return 0;
 }
@@ -217,7 +266,7 @@ int HHTHSIncrLimit::formNodTangent(DOF_Group *theDof)
 
 int HHTHSIncrLimit::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -271,7 +320,7 @@ int HHTHSIncrLimit::domainChanged()
             Ualphadotdot == 0 || Ualphadotdot->Size() != size ||
             scaledDeltaU == 0 || scaledDeltaU->Size() != size)  {
             
-            opserr << "HHTHSIncrLimit::domainChanged - ran out of memory\n";
+            opserr << "HHTHSIncrLimit::domainChanged() - ran out of memory\n";
             
             // delete the old
             if (Ut != 0)
@@ -302,18 +351,18 @@ int HHTHSIncrLimit::domainChanged()
             
             return -1;
         }
-    }        
+    }
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
         int idSize = id.Size();
         
         int i;
-        const Vector &disp = dofPtr->getCommittedDisp();	
+        const Vector &disp = dofPtr->getCommittedDisp();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
@@ -329,7 +378,7 @@ int HHTHSIncrLimit::domainChanged()
             }
         }
         
-        const Vector &accel = dofPtr->getCommittedAccel();	
+        const Vector &accel = dofPtr->getCommittedAccel();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
@@ -354,7 +403,7 @@ int HHTHSIncrLimit::update(const Vector &deltaU)
     if (Ut == 0)  {
         opserr << "WARNING HHTHSIncrLimit::update() - domainChange() failed or not called\n";
         return -2;
-    }	
+    }
     
     // check deltaU is of correct size
     if (deltaU.Size() != U->Size())  {
@@ -388,7 +437,7 @@ int HHTHSIncrLimit::update(const Vector &deltaU)
     Ualphadotdot->addVector((1.0-alphaI), *Udotdot, alphaI);
     
     // update the response at the DOFs
-    theModel->setResponse(*Ualpha,*Ualphadot,*Ualphadotdot);
+    theModel->setResponse(*Ualpha, *Ualphadot, *Ualphadotdot);
     if (theModel->updateDomain() < 0)  {
         opserr << "HHTHSIncrLimit::update() - failed to update the domain\n";
         return -4;
@@ -404,10 +453,10 @@ int HHTHSIncrLimit::commit(void)
     if (theModel == 0)  {
         opserr << "WARNING HHTHSIncrLimit::commit() - no AnalysisModel set\n";
         return -1;
-    }	  
+    }
     
     // update the response at the DOFs
-    theModel->setResponse(*U,*Udot,*Udotdot);
+    theModel->setResponse(*U, *Udot, *Udotdot);
     if (theModel->updateDomain() < 0)  {
         opserr << "HHTHSIncrLimit::commit() - failed to update the domain\n";
         return -2;
@@ -417,7 +466,7 @@ int HHTHSIncrLimit::commit(void)
     double time = theModel->getCurrentDomainTime();
     time += (1.0-alphaF)*deltaT;
     theModel->setCurrentDomainTime(time);
-
+    
     return theModel->commitDomain();
 }
 
@@ -446,7 +495,6 @@ int HHTHSIncrLimit::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
     Vector data(6);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING HHTHSIncrLimit::recvSelf() - could not receive data\n";
-        alphaI = 1.0; alphaF = 1.0; limit = 0.1; normType = 2;
         return -1;
     }
     
@@ -467,9 +515,10 @@ void HHTHSIncrLimit::Print(OPS_Stream &s, int flag)
     if (theModel != 0)  {
         double currentTime = theModel->getCurrentDomainTime();
         s << "HHTHSIncrLimit - currentTime: " << currentTime << endln;
-        s << "  alphaI: " << alphaI << "  alphaF: " << alphaF  << "  beta: " << beta  << "  gamma: " << gamma << endln;
-        s << "  limit: " << limit << "  normType: " << normType << endln;
+        s << "  alphaI: " << alphaI << "  alphaF: " << alphaF;
+        s << "  beta: " << beta  << "  gamma: " << gamma << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-    } else 
+        s << "  limit: " << limit << "  normType: " << normType << endln;
+    } else
         s << "HHTHSIncrLimit - no associated AnalysisModel\n";
 }

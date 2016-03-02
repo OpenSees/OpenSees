@@ -51,8 +51,7 @@ class KRAlphaExplicit_TP : public TransientIntegrator
 public:
     // constructors
     KRAlphaExplicit_TP();
-    KRAlphaExplicit_TP(double rhoInf,
-        bool updDomFlag = false);
+    KRAlphaExplicit_TP(double rhoInf);
     
     // destructor
     ~KRAlphaExplicit_TP();
@@ -73,6 +72,7 @@ public:
     int newStep(double deltaT);
     int revertToLastStep(void);
     int update(const Vector &aiPlusOne);
+    int commit(void);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
@@ -87,20 +87,18 @@ private:
     double beta;
     double gamma;
     double deltaT;
-    bool updDomFlag;  // a flag indicating if updateDomain() is called
     
     Matrix *alpha1, *alpha3;  // integration parameter matrices, alpha2 = (0.5 + gamma)*alpha1
     Matrix *Mhat;             // effective mass matrix for linear SOE
     
-    int updateCount;                            // method should only have one update per step
-    int initAlphaMatrices;                      // a flag to initialize the alpha matrices
-    double c1, c2, c3;                          // some constants we need to keep
-    double alphaM, alphaD, alphaR, alphaP;      // some more constants we need to keep
-    Vector *Ut, *Utdot, *Utdotdot;              // response quantities at time t
-    Vector *U, *Udot, *Udotdot;                 // response quantities at time t + deltaT
-    Vector *Ualpha, *Ualphadot, *Ualphadotdot;  // response quantities at time t + alpha*deltaT
-    Vector *Utdothat;                           // velocity-like vector at time t
-    Vector *Put;                                // unbalance at time t
+    int updateCount;                        // method should only have one update per step
+    int initAlphaMatrices;                  // a flag to initialize the alpha matrices
+    double c1, c2, c3;                      // some constants we need to keep
+    double alphaM, alphaD, alphaR, alphaP;  // weighting factors we need to keep
+    Vector *Ut, *Utdot, *Utdotdot;          // response quantities at time t
+    Vector *U, *Udot, *Udotdot;             // response quantities at time t + deltaT
+    Vector *Utdothat;                       // velocity-like vector at time t
+    Vector *Put;                            // unbalance at time t
 };
 
 #endif

@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: $
-// $Date: $
-// $Source: $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef CollocationHSIncrLimit_h
 #define CollocationHSIncrLimit_h
@@ -35,8 +35,6 @@
 // for hybrid simulation where the response increments are limited by a user
 // specified value. This enhances the smoothness of the convergence path and
 // reduces the possibility of spurious loading/unloading cycles during iteration.
-//
-// What: "@(#) CollocationHSIncrLimit.h, revA"
 
 #include <TransientIntegrator.h>
 

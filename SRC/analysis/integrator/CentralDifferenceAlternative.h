@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.1 $
-// $Date: 2005-01-27 04:32:07 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/CentralDifferenceAlternative.h,v $
+// $Revision$
+// $Date$
+// $URL$
                                                                         
 #ifndef CentralDifferenceAlternative_h
 #define CentralDifferenceAlternative_h
@@ -34,8 +34,6 @@
 // analysis using the alternative form of the Central Differenceintegration scheme, 
 // which is an explicit direct integration scheme as outlined in the book 'Concepts
 // and Applications of Finite Element Analysis' by Cook, Malkus & Plesha.
-//
-// What: "@(#) CentralDifferenceAlternative.h, revA"
 
 #include <TransientIntegrator.h>
 

@@ -45,7 +45,7 @@
 
 
 TransientIntegrator *
-    OPS_NewHHT_TP(void)
+    OPS_HHT_TP(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;
@@ -76,10 +76,9 @@ TransientIntegrator *
 
 HHT_TP::HHT_TP()
     : TransientIntegrator(INTEGRATOR_TAGS_HHT_TP),
-    alpha(1.0), beta(0.0), gamma(0.0),
-    deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
-    alphaM(1.0), alphaD(alpha), alphaR(alpha), alphaP(alpha),
+    alpha(1.0), beta(0.25), gamma(0.5),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
+    alphaM(1.0), alphaD(1.0), alphaR(1.0), alphaP(1.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Put(0)
 {
@@ -90,8 +89,7 @@ HHT_TP::HHT_TP()
 HHT_TP::HHT_TP(double _alpha)
     : TransientIntegrator(INTEGRATOR_TAGS_HHT_TP),
     alpha(_alpha), beta((2-_alpha)*(2-_alpha)*0.25), gamma(1.5-_alpha),
-    deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0), 
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     alphaM(1.0), alphaD(alpha), alphaR(alpha), alphaP(alpha),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Put(0)
@@ -103,8 +101,7 @@ HHT_TP::HHT_TP(double _alpha)
 HHT_TP::HHT_TP(double _alpha, double _beta, double _gamma)
     : TransientIntegrator(INTEGRATOR_TAGS_HHT_TP),
     alpha(_alpha), beta(_beta), gamma(_gamma),
-    deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0), 
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     alphaM(1.0), alphaD(alpha), alphaR(alpha), alphaP(alpha),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Put(0)
@@ -167,20 +164,9 @@ int HHT_TP::newStep(double _deltaT)
         return -4;
     }
     
-    // set response at t to be that at t+deltaT of previous step
-    (*Ut) = *U;
-    (*Utdot) = *Udot;
-    (*Utdotdot) = *Udotdot;
-    
-    // get unbalance at t and store it
-    alphaM = 0.0;
-    alphaD = alphaR = alphaP = (1.0 - alpha);
-    if (alpha < 1.0)  {
-        this->TransientIntegrator::formUnbalance();
-        (*Put) = theLinSOE->getB();
-    } else {
-        Put->Zero();
-    }
+    // set weighting factors for subsequent iterations
+    alphaM = 1.0;
+    alphaD = alphaR = alphaP = alpha;
     
     // determine new velocities and accelerations at t+deltaT
     double a1 = (1.0 - gamma/beta);
@@ -202,10 +188,6 @@ int HHT_TP::newStep(double _deltaT)
         opserr << "HHT_TP::newStep() - failed to update the domain\n";
         return -5;
     }
-    
-    // modify constants for subsequent iterations
-    alphaM = 1.0;
-    alphaD = alphaR = alphaP = alpha;
     
     return 0;
 }
@@ -244,13 +226,13 @@ int HHT_TP::formUnbalance()
     }
     
     if (this->formElementResidual() < 0)  {
-        opserr << "WARNING HHT_TP::formUnbalance ";
+        opserr << "WARNING HHT_TP::formUnbalance() ";
         opserr << " - this->formElementResidual failed\n";
         return -2;
     }
     
     if (this->formNodalUnbalance() < 0)  {
-        opserr << "WARNING HHT_TP::formUnbalance ";
+        opserr << "WARNING HHT_TP::formUnbalance() ";
         opserr << " - this->formNodalUnbalance failed\n";
         return -3;
     }
@@ -319,7 +301,7 @@ int HHT_TP::formNodUnbalance(DOF_Group *theDof)
 
 int HHT_TP::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -361,7 +343,7 @@ int HHT_TP::domainChanged()
             Udotdot == 0 || Udotdot->Size() != size ||
             Put == 0 || Put->Size() != size)  {
             
-            opserr << "HHT_TP::domainChanged - ran out of memory\n";
+            opserr << "HHT_TP::domainChanged() - ran out of memory\n";
             
             // delete the old
             if (Ut != 0)
@@ -389,7 +371,7 @@ int HHT_TP::domainChanged()
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
@@ -412,13 +394,25 @@ int HHT_TP::domainChanged()
             }
         }
         
-        const Vector &accel = dofPtr->getCommittedAccel();	
+        const Vector &accel = dofPtr->getCommittedAccel();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
                 (*Udotdot)(loc) = accel(i);
             }
         }
+    }
+    
+    // now get unbalance at last commit and store it
+    // warning: this will use committed stiffness prop. damping
+    // from current step instead of previous step
+    alphaM = 0.0;
+    alphaD = alphaR = alphaP = (1.0 - alpha);
+    if (alpha < 1.0)  {
+        this->TransientIntegrator::formUnbalance();
+        (*Put) = theLinSOE->getB();
+    } else {
+        Put->Zero();
     }
     
     return 0;
@@ -464,6 +458,36 @@ int HHT_TP::update(const Vector &deltaU)
 }
 
 
+int HHT_TP::commit(void)
+{
+    // get a pointer to the LinearSOE and the AnalysisModel
+    LinearSOE *theLinSOE = this->getLinearSOE();
+    AnalysisModel *theModel = this->getAnalysisModel();
+    if (theLinSOE == 0 || theModel == 0)  {
+        opserr << "WARNING HHT_TP::commit() - ";
+        opserr << "no LinearSOE or AnalysisModel has been set\n";
+        return -1;
+    }
+    
+    // set response at t of next step to be that at t+deltaT
+    (*Ut) = *U;
+    (*Utdot) = *Udot;
+    (*Utdotdot) = *Udotdot;
+    
+    // get unbalance Put and store it for next step
+    alphaM = 0.0;
+    alphaD = alphaR = alphaP = (1.0 - alpha);
+    if (alpha < 1.0)  {
+        this->TransientIntegrator::formUnbalance();
+        (*Put) = theLinSOE->getB();
+    } else {
+        Put->Zero();
+    }
+    
+    return theModel->commitDomain();
+}
+
+
 int HHT_TP::sendSelf(int cTag, Channel &theChannel)
 {
     Vector data(3);
@@ -506,9 +530,10 @@ void HHT_TP::Print(OPS_Stream &s, int flag)
     AnalysisModel *theModel = this->getAnalysisModel();
     if (theModel != 0)  {
         double currentTime = theModel->getCurrentDomainTime();
-        s << "\t HHT_TP - currentTime: " << currentTime << endln;
-        s << "  alpha: " << alpha << "  beta: " << beta  << "  gamma: " << gamma << endln;
+        s << "HHT_TP - currentTime: " << currentTime << endln;
+        s << "  alpha: " << alpha;
+        s << "  beta: " << beta  << "  gamma: " << gamma << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-    } else 
-        s << "\t HHT_TP - no associated AnalysisModel\n";
+    } else
+        s << "HHT_TP - no associated AnalysisModel\n";
 }

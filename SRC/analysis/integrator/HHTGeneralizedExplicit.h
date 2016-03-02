@@ -18,10 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.3 $
-// $Date: 2009-05-19 22:10:05 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/HHTGeneralizedExplicit.h,v $
-
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef HHTGeneralizedExplicit_h
 #define HHTGeneralizedExplicit_h
@@ -33,8 +32,6 @@
 // Description: This file contains the class definition for HHTGeneralizedExplicit.
 // HHTGeneralizedExplicit is an algorithmic class for performing a transient analysis
 // using the HHTGeneralizedExplicit integration scheme.
-//
-// What: "@(#) HHTGeneralizedExplicit.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -48,9 +45,9 @@ public:
     // constructors
     HHTGeneralizedExplicit();
     HHTGeneralizedExplicit(double rhoB, double alphaF,
-        bool updDomFlag = false);
-    HHTGeneralizedExplicit(double alphaI, double alphaF, double beta, double gamma,
-        bool updDomFlag = false);
+        bool updElemDisp = false);
+    HHTGeneralizedExplicit(double alphaI, double alphaF,
+        double beta, double gamma, bool updElemDisp = false);
     
     // destructor
     ~HHTGeneralizedExplicit();
@@ -58,18 +55,18 @@ public:
     // methods which define what the FE_Element and DOF_Groups add
     // to the system of equation object.
     int formEleTangent(FE_Element *theEle);
-    int formNodTangent(DOF_Group *theDof);        
+    int formNodTangent(DOF_Group *theDof);
     
-    int domainChanged(void);    
-    int newStep(double deltaT);    
-    int revertToLastStep(void);        
+    int domainChanged(void);
+    int newStep(double deltaT);
+    int revertToLastStep(void);
     int update(const Vector &aiPlusOne);
     int commit(void);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
-    void Print(OPS_Stream &s, int flag = 0);        
+    void Print(OPS_Stream &s, int flag = 0);
     
 protected:
     
@@ -78,7 +75,7 @@ private:
     double alphaF;
     double beta;
     double gamma;
-    bool updDomFlag;    // a flag indicating if updateDomain() is called
+    bool updElemDisp;  // a flag indicating if element displacements are updated during commit
     double deltaT;
     
     int updateCount;                            // method should only have one update per step

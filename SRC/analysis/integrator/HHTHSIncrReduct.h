@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-05-19 22:17:31 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/HHTHSIncrReduct.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef HHTHSIncrReduct_h
 #define HHTHSIncrReduct_h
@@ -35,8 +35,6 @@
 // simulation where a reduction factor, that modifies the response increments,
 // is introduced to enhance the smoothness of the convergence path and to reduce
 // the possibility of spurious loading/unloading cycles during iteration.
-//
-// What: "@(#) HHTHSIncrReduct.h, revA"
 
 #include <TransientIntegrator.h>
 

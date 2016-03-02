@@ -20,7 +20,7 @@
 
 // $Revision$
 // $Date$
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/HHTGeneralized.h,v $
+// $URL$
 
 #ifndef HHTGeneralized_h
 #define HHTGeneralized_h
@@ -32,8 +32,6 @@
 // Description: This file contains the class definition for HHTGeneralized.
 // HHTGeneralized is an algorithmic class for performing a transient analysis
 // using the HHTGeneralized integration scheme.
-//
-// What: "@(#) HHTGeneralized.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -55,18 +53,18 @@ public:
     // methods which define what the FE_Element and DOF_Groups add
     // to the system of equation object.
     int formEleTangent(FE_Element *theEle);
-    int formNodTangent(DOF_Group *theDof);        
+    int formNodTangent(DOF_Group *theDof);
     
-    int domainChanged(void);    
-    int newStep(double deltaT);    
-    int revertToLastStep(void);        
+    int domainChanged(void);
+    int newStep(double deltaT);
+    int revertToLastStep(void);
     int update(const Vector &deltaU);
     int commit(void);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
-    void Print(OPS_Stream &s, int flag = 0);        
+    void Print(OPS_Stream &s, int flag = 0);
     
 protected:
     

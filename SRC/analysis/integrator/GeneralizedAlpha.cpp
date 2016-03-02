@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.2 $
-// $Date: 2010-02-04 22:40:24 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/GeneralizedAlpha.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: fmk
 // Created: 1/10
@@ -30,8 +30,6 @@
 // J.Chung, G.M.Hulbert "A Time Integration Algorithm for Structural Dynamics With
 // Improved Numerical Dissipation: The Generalized-alpha Method" ASME Journal of Applied
 // Mechanics, Vol 60, 371-375, 1993.
-//
-// What: "@(#) GeneralizedAlpha.cpp, revA"
 
 #include <GeneralizedAlpha.h>
 #include <FE_Element.h>
@@ -48,7 +46,7 @@
 #define OPS_Export 
 
 TransientIntegrator *
-OPS_NewGeneralizedAlpha(void)
+OPS_GeneralizedAlpha(void)
 {
   // Pointer to a uniaxial material that will be returned
   TransientIntegrator *theIntegrator = 0;

@@ -404,12 +404,19 @@
 #include <HHT.h>
 #include <HHT_TP.h>
 #include <HHTExplicit.h>
+#include <HHTExplicit_TP.h>
 #include <HHTGeneralized.h>
 #include <HHTGeneralized_TP.h>
 #include <HHTGeneralizedExplicit.h>
+#include <HHTGeneralizedExplicit_TP.h>
 #include <HHTHSFixedNumIter.h>
+#include <HHTHSFixedNumIter_TP.h>
 #include <HHTHSIncrLimit.h>
+#include <HHTHSIncrLimit_TP.h>
 #include <HHTHSIncrReduct.h>
+#include <HHTHSIncrReduct_TP.h>
+#include <KRAlphaExplicit.h>
+#include <KRAlphaExplicit_TP.h>
 #include <Newmark.h>
 #include <NewmarkExplicit.h>
 #include <NewmarkHSFixedNumIter.h>
@@ -421,8 +428,6 @@
 #include <TRBDF2.h>
 #include <TRBDF3.h>
 #include <WilsonTheta.h>
-#include <KRAlphaExplicit.h>
-#include <KRAlphaExplicit_TP.h>
 
 // system of eqn header files
 #include <LinearSOE.h>
@@ -1933,6 +1938,9 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
 	case INTEGRATOR_TAGS_HHTExplicit:  
 	     return new HHTExplicit();
 
+	case INTEGRATOR_TAGS_HHTExplicit_TP:  
+	     return new HHTExplicit_TP();
+
 	case INTEGRATOR_TAGS_HHTGeneralized:  
 	     return new HHTGeneralized();
 
@@ -1942,14 +1950,32 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
 	case INTEGRATOR_TAGS_HHTGeneralizedExplicit:  
 	     return new HHTGeneralizedExplicit();
 
+	case INTEGRATOR_TAGS_HHTGeneralizedExplicit_TP:  
+	     return new HHTGeneralizedExplicit_TP();
+
 	case INTEGRATOR_TAGS_HHTHSFixedNumIter:  
 	     return new HHTHSFixedNumIter();
+
+	case INTEGRATOR_TAGS_HHTHSFixedNumIter_TP:  
+	     return new HHTHSFixedNumIter_TP();
 
 	case INTEGRATOR_TAGS_HHTHSIncrLimit:  
 	     return new HHTHSIncrLimit();
 
+	case INTEGRATOR_TAGS_HHTHSIncrLimit_TP:  
+	     return new HHTHSIncrLimit_TP();
+
 	case INTEGRATOR_TAGS_HHTHSIncrReduct:  
 	     return new HHTHSIncrReduct();
+
+	case INTEGRATOR_TAGS_HHTHSIncrReduct_TP:  
+	     return new HHTHSIncrReduct_TP();
+
+    case INTEGRATOR_TAGS_KRAlphaExplicit:  
+         return new KRAlphaExplicit();
+
+    case INTEGRATOR_TAGS_KRAlphaExplicit_TP:  
+         return new KRAlphaExplicit_TP();
 
     case INTEGRATOR_TAGS_Newmark:  
 	     return new Newmark();
@@ -1979,12 +2005,6 @@ FEM_ObjectBrokerAllClasses::getNewTransientIntegrator(int classTag)
 
     case INTEGRATOR_TAGS_WilsonTheta:  
         return new WilsonTheta();
-
-    case INTEGRATOR_TAGS_KRAlphaExplicit:  
-        return new KRAlphaExplicit();
-
-    case INTEGRATOR_TAGS_KRAlphaExplicit_TP:  
-        return new KRAlphaExplicit_TP();
 
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewTransientIntegrator - ";

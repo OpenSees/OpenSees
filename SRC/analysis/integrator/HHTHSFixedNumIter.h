@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-05-19 22:17:31 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/HHTHSFixedNumIter.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef HHTHSFixedNumIter_h
 #define HHTHSFixedNumIter_h
@@ -37,8 +37,6 @@
 // increments are utilized to update the elements. The reduced command displacements
 // are determined by means of Lagrange interpolation using the trial displacements
 // of the current iteration step and the last n committed displacements.
-//
-// What: "@(#) HHTHSFixedNumIter.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -51,9 +49,11 @@ class HHTHSFixedNumIter : public TransientIntegrator
 public:
     // constructors
     HHTHSFixedNumIter();
-    HHTHSFixedNumIter(double rhoInf, int polyOrder);
+    HHTHSFixedNumIter(double rhoInf, int polyOrder,
+        bool updDomFlag = true);
     HHTHSFixedNumIter(double alphaI, double alphaF,
-        double beta, double gamma, int polyOrder);
+        double beta, double gamma, int polyOrder,
+        bool updDomFlag = true);
     
     // destructor
     ~HHTHSFixedNumIter();
@@ -81,7 +81,8 @@ private:
     double alphaF;
     double beta;
     double gamma;
-    int polyOrder;  // order of Lagrange interpolation polynomial
+    int polyOrder;    // order of Lagrange interpolation polynomial
+    bool updDomFlag;  // a flag indicating if response is updated at commit
     double deltaT;
     
     double c1, c2, c3;                          // some constants we need to keep

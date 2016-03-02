@@ -107,7 +107,12 @@
     <ClCompile Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\AlphaOS_TP.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTExplicit_TP.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralizedExplicit_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTGeneralized_TP.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTHSFixedNumIter_TP.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTHSIncrLimit_TP.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\HHTHSIncrReduct_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HHT_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\integrator\KRAlphaExplicit_TP.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\model\AnalysisModel.cpp" />
@@ -210,7 +215,12 @@
     <ClInclude Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOSGeneralized_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\AlphaOS_TP.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTExplicit_TP.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTGeneralizedExplicit_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTGeneralized_TP.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTHSFixedNumIter_TP.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTHSIncrLimit_TP.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTHSIncrReduct_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\HHT_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\KRAlphaExplicit_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\model\AnalysisModel.h" />

@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-05-19 22:17:14 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/NewmarkHSIncrReduct.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef NewmarkHSIncrReduct_h
 #define NewmarkHSIncrReduct_h
@@ -35,8 +35,6 @@
 // simulation where a reduction factor, that modifies the response increments, is
 // introduced to enhance the smoothness of the convergence path and to reduce the
 // possibility of spurious loading/unloading cycles during iteration.
-//
-// What: "@(#) NewmarkHSIncrReduct.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -59,16 +57,16 @@ public:
     int formEleTangent(FE_Element *theEle);
     int formNodTangent(DOF_Group *theDof);
     
-    int domainChanged(void);    
-    int newStep(double deltaT);    
-    int revertToLastStep(void);        
+    int domainChanged(void);
+    int newStep(double deltaT);
+    int revertToLastStep(void);
     int update(const Vector &deltaU);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
-    void Print(OPS_Stream &s, int flag = 0);        
-        
+    void Print(OPS_Stream &s, int flag = 0);
+    
 private:
     double gamma;
     double beta;
@@ -76,7 +74,7 @@ private:
     
     double c1, c2, c3;              // some constants we need to keep
     Vector *Ut, *Utdot, *Utdotdot;  // response quantities at time t
-    Vector *U, *Udot, *Udotdot;     // response quantities at time t+deltaT    
+    Vector *U, *Udot, *Udotdot;     // response quantities at time t+deltaT
     Vector *scaledDeltaU;           // scaled displacement increment
 };
 

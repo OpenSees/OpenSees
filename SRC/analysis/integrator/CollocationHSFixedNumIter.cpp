@@ -18,17 +18,15 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-05-19 22:16:53 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/CollocationHSFixedNumIter.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 10/05
 // Revision: A
 //
 // Description: This file contains the implementation of CollocationHSFixedNumIter.
-//
-// What: "@(#) CollocationHSFixedNumIter.cpp, revA"
 
 #include <CollocationHSFixedNumIter.h>
 #include <FE_Element.h>
@@ -43,12 +41,71 @@
 #include <FEM_ObjectBroker.h>
 #include <ConvergenceTest.h>
 #include <math.h>
+#include <elementAPI.h>
+#define OPS_Export 
+
+
+TransientIntegrator *
+    OPS_CollocationHSFixedNumIter(void)
+{
+    // pointer to an integrator that will be returned
+    TransientIntegrator *theIntegrator = 0;
+    
+    int argc = OPS_GetNumRemainingInputArgs();
+    if (argc != 1 && argc != 3 && argc != 5) {
+        opserr << "WARNING - incorrect number of args want CollocationHSFixedNumIter $theta <-polyOrder $O>\n";
+        opserr << "          or CollocationHSFixedNumIter $theta $beta $gamma <-polyOrder $O>\n";
+        return 0;
+    }
+    
+    double dData[3];
+    int polyOrder = 2;
+    int numData = 0;
+    
+    // count number of numeric parameters
+    while (OPS_GetNumRemainingInputArgs() > 0)  {
+        const char *argvLoc = OPS_GetString();
+        if (strcmp(argvLoc, "-polyOrder") == 0) {
+            break;
+        }
+        numData++;
+    }
+    // reset to read from beginning
+    OPS_ResetCurrentInputArg(2);
+    
+    if (OPS_GetDouble(&numData, dData) != 0) {
+        opserr << "WARNING - invalid args want CollocationHSFixedNumIter $theta <-polyOrder $O>\n";
+        opserr << "          or CollocationHSFixedNumIter $theta $beta $gamma <-polyOrder $O>\n";
+        return 0;
+    }
+    
+    if (numData+2 == argc) {
+        const char *argvLoc = OPS_GetString();
+        if (strcmp(argvLoc, "-polyOrder") == 0) {
+            int numData2 = 1;
+            if (OPS_GetInt(&numData2, &polyOrder) != 0) {
+                opserr << "WARNING - invalid polyOrder want CollocationHSFixedNumIter $rhoInf <-polyOrder $O>\n";
+                opserr << "          or CollocationHSFixedNumIter $alphaI $alphaF $beta $gamma <-polyOrder $O>\n";
+            }
+        }
+    }
+    
+    if (numData == 1)
+        theIntegrator = new CollocationHSFixedNumIter(dData[0], polyOrder);
+    else if (numData == 3)
+        theIntegrator = new CollocationHSFixedNumIter(dData[0], dData[1], dData[2], polyOrder);
+    
+    if (theIntegrator == 0)
+        opserr << "WARNING - out of memory creating CollocationHSFixedNumIter integrator\n";
+    
+    return theIntegrator;
+}
 
 
 CollocationHSFixedNumIter::CollocationHSFixedNumIter()
     : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSFixedNumIter),
-    theta(1.0), beta(0.25), gamma(0.5), polyOrder(2), deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0), x(1.0),
+    theta(1.0), beta(0.25), gamma(0.5), polyOrder(2),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Utm1(0), Utm2(0), scaledDeltaU(0)
 {
@@ -59,9 +116,8 @@ CollocationHSFixedNumIter::CollocationHSFixedNumIter()
 CollocationHSFixedNumIter::CollocationHSFixedNumIter(
     double _theta, int polyorder)
     : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSFixedNumIter),
-    theta(_theta), beta(0.0), gamma(0.5),
-    polyOrder(polyorder), deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0), x(1.0),
+    theta(_theta), beta(0.0), gamma(0.5), polyOrder(polyorder),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Utm1(0), Utm2(0), scaledDeltaU(0)
 {
@@ -81,9 +137,8 @@ CollocationHSFixedNumIter::CollocationHSFixedNumIter(
 CollocationHSFixedNumIter::CollocationHSFixedNumIter(
     double _theta, double _beta, double _gamma, int polyorder)
     : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSFixedNumIter),
-    theta(_theta), beta(_beta), gamma(_gamma),
-    polyOrder(polyorder), deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0), x(1.0),
+    theta(_theta), beta(_beta), gamma(_gamma), polyOrder(polyorder),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Utm1(0), Utm2(0), scaledDeltaU(0)
 {
@@ -117,13 +172,13 @@ CollocationHSFixedNumIter::~CollocationHSFixedNumIter()
 
 int CollocationHSFixedNumIter::newStep(double _deltaT)
 {
-    deltaT = _deltaT;
     if (theta <= 0.0 )  {
         opserr << "CollocationHSFixedNumIter::newStep() - error in variable\n";
         opserr << "theta: " << theta << " <= 0.0\n";
         return -1;
     }
     
+    deltaT = _deltaT;
     if (deltaT <= 0.0)  {
         opserr << "CollocationHSFixedNumIter::newStep() - error in variable\n";
         opserr << "dT = " << deltaT << endln;
@@ -140,13 +195,13 @@ int CollocationHSFixedNumIter::newStep(double _deltaT)
     
     if (U == 0)  {
         opserr << "CollocationHSFixedNumIter::newStep() - domainChange() failed or hasn't been called\n"; 
-        return -3;	
+        return -3;
     }
     
     // set response at t to be that at t+deltaT of previous step
     (*Utm2) = *Utm1;
     (*Utm1) = *Ut;
-    (*Ut)   = *U;
+    (*Ut) = *U;
     (*Utdot) = *Udot;
     (*Utdotdot) = *Udotdot;
     
@@ -190,15 +245,14 @@ int CollocationHSFixedNumIter::revertToLastStep()
 int CollocationHSFixedNumIter::formEleTangent(FE_Element *theEle)
 {
     theEle->zeroTangent();
-    if (statusFlag == CURRENT_TANGENT)  {
+    
+    if (statusFlag == CURRENT_TANGENT)
         theEle->addKtToTang(c1);
-        theEle->addCtoTang(c2);
-        theEle->addMtoTang(c3);
-    } else if (statusFlag == INITIAL_TANGENT)  {
+    else if (statusFlag == INITIAL_TANGENT)
         theEle->addKiToTang(c1);
-        theEle->addCtoTang(c2);
-        theEle->addMtoTang(c3);
-    }
+    
+    theEle->addCtoTang(c2);
+    theEle->addMtoTang(c3);
     
     return 0;
 }
@@ -212,12 +266,12 @@ int CollocationHSFixedNumIter::formNodTangent(DOF_Group *theDof)
     theDof->addMtoTang(c3);
     
     return 0;
-}    
+}
 
 
 int CollocationHSFixedNumIter::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -267,7 +321,7 @@ int CollocationHSFixedNumIter::domainChanged()
             Utm2 == 0 || Utm2->Size() != size ||
             scaledDeltaU == 0 || scaledDeltaU->Size() != size)  {
             
-            opserr << "CollocationHSFixedNumIter::domainChanged - ran out of memory\n";
+            opserr << "CollocationHSFixedNumIter::domainChanged() - ran out of memory\n";
             
             // delete the old
             if (Ut != 0)
@@ -295,24 +349,24 @@ int CollocationHSFixedNumIter::domainChanged()
             
             return -1;
         }
-    }        
+    }
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
         int idSize = id.Size();
         
         int i;
-        const Vector &disp = dofPtr->getCommittedDisp();	
+        const Vector &disp = dofPtr->getCommittedDisp();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
                 (*Utm1)(loc) = disp(i);
                 (*Ut)(loc) = disp(i);
-                (*U)(loc) = disp(i);		
+                (*U)(loc) = disp(i);
             }
         }
         
@@ -324,14 +378,14 @@ int CollocationHSFixedNumIter::domainChanged()
             }
         }
         
-        const Vector &accel = dofPtr->getCommittedAccel();	
+        const Vector &accel = dofPtr->getCommittedAccel();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
                 (*Udotdot)(loc) = accel(i);
             }
-        }        
-    }    
+        }
+    }
     
     if (polyOrder == 2)
         opserr << "\nWARNING: CollocationHSFixedNumIter::domainChanged() - assuming Ut-1 = Ut\n";
@@ -359,7 +413,7 @@ int CollocationHSFixedNumIter::update(const Vector &deltaU)
     if (Ut == 0)  {
         opserr << "WARNING CollocationHSFixedNumIter::update() - domainChange() failed or not called\n";
         return -3;
-    }	
+    }
     
     // check deltaU is of correct size
     if (deltaU.Size() != U->Size())  {
@@ -383,6 +437,7 @@ int CollocationHSFixedNumIter::update(const Vector &deltaU)
     }
     else  {
         opserr << "WARNING CollocationHSFixedNumIter::update() - polyOrder > 3 not supported\n";
+        return -5;
     }
     
     // determine the response at t+theta*deltaT
@@ -393,14 +448,14 @@ int CollocationHSFixedNumIter::update(const Vector &deltaU)
     Udotdot->addVector(1.0, *scaledDeltaU, c3);
     
     // update the response at the DOFs
-    theModel->setResponse(*U,*Udot,*Udotdot);
+    theModel->setResponse(*U, *Udot, *Udotdot);
     if (theModel->updateDomain() < 0)  {
         opserr << "CollocationHSFixedNumIter::update() - failed to update the domain\n";
         return -5;
     }
     
     return 0;
-}    
+}
 
 
 int CollocationHSFixedNumIter::commit(void)
@@ -409,7 +464,7 @@ int CollocationHSFixedNumIter::commit(void)
     if (theModel == 0)  {
         opserr << "WARNING CollocationHSFixedNumIter::commit() - no AnalysisModel set\n";
         return -1;
-    }	  
+    }
     
     LinearSOE *theSOE = this->getLinearSOE();
     if (theSOE == 0)  {
@@ -448,7 +503,7 @@ int CollocationHSFixedNumIter::commit(void)
     U->addVector(1.0, *Udotdot, a4);
     
     // update the response at the DOFs
-    theModel->setResponse(*U,*Udot,*Udotdot);
+    theModel->setResponse(*U, *Udot, *Udotdot);
     
     // set the time to be t+deltaT
     double time = theModel->getCurrentDomainTime();

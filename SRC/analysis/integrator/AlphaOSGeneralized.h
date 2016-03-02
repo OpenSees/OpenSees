@@ -46,10 +46,10 @@ public:
     // constructors
     AlphaOSGeneralized();
     AlphaOSGeneralized(double rhoInf,
-        bool updDomFlag = false);
+        bool updElemDisp = false);
     AlphaOSGeneralized(double alphaI, double alphaF,
         double beta, double gamma,
-        bool updDomFlag = false);
+        bool updElemDisp = false);
     
     // destructor
     ~AlphaOSGeneralized();
@@ -78,7 +78,7 @@ private:
     double alphaF;
     double beta;
     double gamma;
-    bool updDomFlag;    // a flag indicating if updateDomain() is called
+    bool updElemDisp;  // a flag indicating if element displacements are updated during commit
     double deltaT;
     
     int updateCount;                            // method should only have one update per step

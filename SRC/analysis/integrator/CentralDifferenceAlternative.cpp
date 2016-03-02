@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.3 $
-// $Date: 2007-04-02 23:42:26 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/CentralDifferenceAlternative.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: fmk 
 // Created: 11/98
@@ -28,11 +28,10 @@
 //
 // Description: This file contains the implementation of the CentralDifferenceAlternative 
 // class.
-//
-// What: "@(#) CentralDifferenceAlternative.C, revA"
 
 #include <CentralDifferenceAlternative.h>
 #include <FE_Element.h>
+#include <FE_EleIter.h>
 #include <LinearSOE.h>
 #include <AnalysisModel.h>
 #include <Vector.h>
@@ -41,6 +40,24 @@
 #include <AnalysisModel.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
+#define OPS_Export 
+
+
+TransientIntegrator *
+    OPS_CentralDifferenceAlternative(void)
+{
+    // pointer to an integrator that will be returned
+    TransientIntegrator *theIntegrator = 0;
+    
+    theIntegrator = new CentralDifferenceAlternative();
+    
+    if (theIntegrator == 0)
+        opserr << "WARNING - out of memory creating CentralDifferenceAlternative integrator\n";
+    
+    return theIntegrator;
+}
+
 
 CentralDifferenceAlternative::CentralDifferenceAlternative()
 :TransientIntegrator(INTEGRATOR_TAGS_CentralDifferenceAlternative),

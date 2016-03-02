@@ -18,20 +18,19 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: $
-// $Date: $
-// $Source: $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 11/09
 // Revision: A
 //
 // Description: This file contains the implementation of CollocationHSIncrLimit.
-//
-// What: "@(#) CollocationHSIncrLimit.cpp, revA"
 
 #include <CollocationHSIncrLimit.h>
 #include <FE_Element.h>
+#include <FE_EleIter.h>
 #include <LinearSOE.h>
 #include <AnalysisModel.h>
 #include <Vector.h>
@@ -41,6 +40,65 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <math.h>
+#include <elementAPI.h>
+#define OPS_Export 
+
+
+TransientIntegrator *
+    OPS_CollocationHSIncrLimit(void)
+{
+    // pointer to an integrator that will be returned
+    TransientIntegrator *theIntegrator = 0;
+    
+    int argc = OPS_GetNumRemainingInputArgs();
+    if (argc != 2 && argc != 4 && argc != 6) {
+        opserr << "WARNING - incorrect number of args want CollocationHSIncrLimit $theta $limit <-normType $T>\n";
+        opserr << "          or CollocationHSIncrLimit $theta $beta $gamma $limit <-normType $T>\n";
+        return 0;
+    }
+    
+    double dData[4];
+    int normType = 2;
+    int numData = 0;
+    
+    // count number of numeric parameters
+    while (OPS_GetNumRemainingInputArgs() > 0)  {
+        const char *argvLoc = OPS_GetString();
+        if (strcmp(argvLoc, "-normType") == 0) {
+            break;
+        }
+        numData++;
+    }
+    // reset to read from beginning
+    OPS_ResetCurrentInputArg(2);
+    
+    if (OPS_GetDouble(&numData, dData) != 0) {
+        opserr << "WARNING - invalid args want CollocationHSIncrLimit $theta $limit <-normType $T>\n";
+        opserr << "          or CollocationHSIncrLimit $theta $beta $gamma $limit <-normType $T>\n";
+        return 0;
+    }
+    
+    if (numData+2 == argc) {
+        const char *argvLoc = OPS_GetString();
+        if (strcmp(argvLoc, "-normType") == 0) {
+            int numData2 = 1;
+            if (OPS_GetInt(&numData2, &normType) != 0) {
+                opserr << "WARNING - invalid normType want CollocationHSIncrLimit $theta $limit <-normType $T>\n";
+                opserr << "          or CollocationHSIncrLimit $theta $beta $gamma $limit <-normType $T>\n";
+            }
+        }
+    }
+    
+    if (numData == 2)
+        theIntegrator = new CollocationHSIncrLimit(dData[0], dData[1], normType);
+    else if (numData == 4)
+        theIntegrator = new CollocationHSIncrLimit(dData[0], dData[1], dData[2], dData[3], normType);
+    
+    if (theIntegrator == 0)
+        opserr << "WARNING - out of memory creating CollocationHSIncrLimit integrator\n";
+    
+    return theIntegrator;
+}
 
 
 CollocationHSIncrLimit::CollocationHSIncrLimit()
@@ -58,8 +116,8 @@ CollocationHSIncrLimit::CollocationHSIncrLimit(double _theta,
     double _limit, int normtype)
     : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSIncrLimit),
     theta(_theta), beta(0.0), gamma(0.5),
-    limit(_limit), normType(normtype), deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
+    limit(_limit), normType(normtype),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
 {
@@ -80,8 +138,8 @@ CollocationHSIncrLimit::CollocationHSIncrLimit(double _theta,
     double _beta, double _gamma, double _limit, int normtype)
     : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSIncrLimit),
     theta(_theta), beta(_beta), gamma(_gamma),
-    limit(_limit), normType(normtype), deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
+    limit(_limit), normType(normtype),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
 {
@@ -111,13 +169,13 @@ CollocationHSIncrLimit::~CollocationHSIncrLimit()
 
 int CollocationHSIncrLimit::newStep(double _deltaT)
 {
-    deltaT = _deltaT;
     if (theta <= 0.0 )  {
         opserr << "CollocationHSIncrLimit::newStep() - error in variable\n";
         opserr << "theta: " << theta << " <= 0.0\n";
         return -1;
     }
     
+    deltaT = _deltaT;
     if (deltaT <= 0.0)  {
         opserr << "CollocationHSIncrLimit::newStep() - error in variable\n";
         opserr << "dT = " << deltaT << endln;
@@ -134,11 +192,11 @@ int CollocationHSIncrLimit::newStep(double _deltaT)
     
     if (U == 0)  {
         opserr << "CollocationHSIncrLimit::newStep() - domainChange() failed or hasn't been called\n"; 
-        return -3;	
+        return -3;
     }
     
     // set response at t to be that at t+deltaT of previous step
-    (*Ut)   = *U;
+    (*Ut) = *U;
     (*Utdot) = *Udot;
     (*Utdotdot) = *Udotdot;
     
@@ -180,15 +238,14 @@ int CollocationHSIncrLimit::revertToLastStep()
 int CollocationHSIncrLimit::formEleTangent(FE_Element *theEle)
 {
     theEle->zeroTangent();
-    if (statusFlag == CURRENT_TANGENT)  {
+    
+    if (statusFlag == CURRENT_TANGENT)
         theEle->addKtToTang(c1);
-        theEle->addCtoTang(c2);
-        theEle->addMtoTang(c3);
-    } else if (statusFlag == INITIAL_TANGENT)  {
+    else if (statusFlag == INITIAL_TANGENT)
         theEle->addKiToTang(c1);
-        theEle->addCtoTang(c2);
-        theEle->addMtoTang(c3);
-    }
+    
+    theEle->addCtoTang(c2);
+    theEle->addMtoTang(c3);
     
     return 0;
 }
@@ -202,12 +259,12 @@ int CollocationHSIncrLimit::formNodTangent(DOF_Group *theDof)
     theDof->addMtoTang(c3);
     
     return 0;
-}    
+}
 
 
 int CollocationHSIncrLimit::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -249,7 +306,7 @@ int CollocationHSIncrLimit::domainChanged()
             Udotdot == 0 || Udotdot->Size() != size ||
             scaledDeltaU == 0 || scaledDeltaU->Size() != size)  {
             
-            opserr << "CollocationHSIncrLimit::domainChanged - ran out of memory\n";
+            opserr << "CollocationHSIncrLimit::domainChanged() - ran out of memory\n";
             
             // delete the old
             if (Ut != 0)
@@ -273,22 +330,22 @@ int CollocationHSIncrLimit::domainChanged()
             
             return -1;
         }
-    }        
+    }
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
         int idSize = id.Size();
         
         int i;
-        const Vector &disp = dofPtr->getCommittedDisp();	
+        const Vector &disp = dofPtr->getCommittedDisp();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
-                (*U)(loc) = disp(i);		
+                (*U)(loc) = disp(i);
             }
         }
         
@@ -300,14 +357,14 @@ int CollocationHSIncrLimit::domainChanged()
             }
         }
         
-        const Vector &accel = dofPtr->getCommittedAccel();	
+        const Vector &accel = dofPtr->getCommittedAccel();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
                 (*Udotdot)(loc) = accel(i);
             }
-        }        
-    }    
+        }
+    }
     
     return 0;
 }
@@ -324,14 +381,14 @@ int CollocationHSIncrLimit::update(const Vector &deltaU)
     // check domainChanged() has been called, i.e. Ut will not be zero
     if (Ut == 0)  {
         opserr << "WARNING CollocationHSIncrLimit::update() - domainChange() failed or not called\n";
-        return -3;
-    }	
+        return -2;
+    }
     
     // check deltaU is of correct size
     if (deltaU.Size() != U->Size())  {
         opserr << "WARNING CollocationHSIncrLimit::update() - Vectors of incompatible size ";
         opserr << " expecting " << U->Size() << " obtained " << deltaU.Size() << endln;
-        return -4;
+        return -3;
     }
     
     // get scaled increment
@@ -349,14 +406,14 @@ int CollocationHSIncrLimit::update(const Vector &deltaU)
     Udotdot->addVector(1.0, *scaledDeltaU, c3);
     
     // update the response at the DOFs
-    theModel->setResponse(*U,*Udot,*Udotdot);        
+    theModel->setResponse(*U, *Udot, *Udotdot);
     if (theModel->updateDomain() < 0)  {
         opserr << "CollocationHSIncrLimit::update() - failed to update the domain\n";
-        return -5;
+        return -4;
     }
     
     return 0;
-}    
+}
 
 
 int CollocationHSIncrLimit::commit(void)
@@ -384,7 +441,7 @@ int CollocationHSIncrLimit::commit(void)
     U->addVector(1.0, *Udotdot, a4);
     
     // update the response at the DOFs
-    theModel->setResponse(*U,*Udot,*Udotdot);
+    theModel->setResponse(*U, *Udot, *Udotdot);
     
     // set the time to be t+deltaT
     double time = theModel->getCurrentDomainTime();

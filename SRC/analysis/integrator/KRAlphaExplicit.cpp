@@ -31,36 +31,36 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
-#define OPS_Export 
+#define OPS_Export
 
 
 TransientIntegrator *
-    OPS_NewKRAlphaExplicit(void)
+    OPS_KRAlphaExplicit(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;
     
     int argc = OPS_GetNumRemainingInputArgs();
     if (argc != 1 && argc != 2) {
-        opserr << "WARNING - incorrect number of args want KRAlphaExplicit $rhoInf <-updateDomain>\n";
+        opserr << "WARNING - incorrect number of args want KRAlphaExplicit $rhoInf <-updateElemDisp>\n";
         return 0;
     }
     
-    bool updDomFlag = false;
-    double dData;
+    bool updElemDisp = false;
+    double rhoInf;
     int numData = 1;
-    if (OPS_GetDouble(&numData, &dData) != 0) {
-        opserr << "WARNING - invalid args want KRAlphaExplicit $rhoInf <-updateDomain>\n";
+    if (OPS_GetDouble(&numData, &rhoInf) != 0) {
+        opserr << "WARNING - invalid args want KRAlphaExplicit $rhoInf <-updateElemDisp>\n";
         return 0;
     }
     
     if (argc == 2) {
         const char *argvLoc = OPS_GetString();
-        if (strcmp(argvLoc, "-updateDomain") == 0)
-            updDomFlag = true;
+        if (strcmp(argvLoc, "-updateElemDisp") == 0)
+            updElemDisp = true;
     }
     
-    theIntegrator = new KRAlphaExplicit(dData, updDomFlag);
+    theIntegrator = new KRAlphaExplicit(rhoInf, updElemDisp);
     
     if (theIntegrator == 0)
         opserr << "WARNING - out of memory creating KRAlphaExplicit integrator\n";
@@ -71,8 +71,8 @@ TransientIntegrator *
 
 KRAlphaExplicit::KRAlphaExplicit()
     : TransientIntegrator(INTEGRATOR_TAGS_KRAlphaExplicit),
-    alphaM(0.5), alphaF(0.5), beta(0.0), gamma(0.0),
-    deltaT(0.0), updDomFlag(0),
+    alphaM(0.5), alphaF(0.5), beta(0.25), gamma(0.5),
+    updElemDisp(0), deltaT(0.0),
     alpha1(0), alpha3(0), Mhat(0),
     updateCount(0), initAlphaMatrices(1),
     c1(0.0), c2(0.0), c3(0.0),
@@ -86,11 +86,11 @@ KRAlphaExplicit::KRAlphaExplicit()
 
 
 KRAlphaExplicit::KRAlphaExplicit(double _rhoInf,
-    bool upddomflag)
+    bool updelemdisp)
     : TransientIntegrator(INTEGRATOR_TAGS_KRAlphaExplicit),
     alphaM((2.0-_rhoInf)/(1.0+_rhoInf)), alphaF(1.0/(1.0+_rhoInf)),
     beta(1.0/(1.0+_rhoInf)/(1.0+_rhoInf)), gamma(0.5*(3.0-_rhoInf)/(1.0+_rhoInf)),
-    deltaT(0.0), updDomFlag(upddomflag),
+    updElemDisp(updelemdisp), deltaT(0.0),
     alpha1(0), alpha3(0), Mhat(0),
     updateCount(0),  initAlphaMatrices(1),
     c1(0.0), c2(0.0), c3(0.0),
@@ -182,10 +182,9 @@ int KRAlphaExplicit::newStep(double _deltaT)
         // get a pointer to the A matrix of the FullLinearSOE
         const Matrix *tmp = theFullLinSOE->getA();
         if (tmp == 0)  {
-            opserr << "WARNING KRAlphaExplicit::domainChanged() - ";
+            opserr << "WARNING KRAlphaExplicit::newStep() - ";
             opserr << "failed to get A matrix of FullGeneral LinearSOE\n";
             return -5;
-        
         }
         
         // calculate the integration parameter matrices
@@ -338,7 +337,7 @@ int KRAlphaExplicit::formNodTangent(DOF_Group *theDof)
 
 int KRAlphaExplicit::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -447,7 +446,7 @@ int KRAlphaExplicit::domainChanged()
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
@@ -498,20 +497,20 @@ int KRAlphaExplicit::update(const Vector &aiPlusOne)
     AnalysisModel *theModel = this->getAnalysisModel();
     if (theModel == 0)  {
         opserr << "WARNING KRAlphaExplicit::update() - no AnalysisModel set\n";
-        return -1;
+        return -2;
     }
     
     // check domainChanged() has been called, i.e. Ut will not be zero
     if (Ut == 0)  {
         opserr << "WARNING KRAlphaExplicit::update() - domainChange() failed or not called\n";
-        return -2;
+        return -3;
     }
     
     // check aiPlusOne is of correct size
     if (aiPlusOne.Size() != U->Size())  {
         opserr << "WARNING KRAlphaExplicit::update() - Vectors of incompatible size ";
         opserr << " expecting " << U->Size() << " obtained " << aiPlusOne.Size() << endln;
-        return -3;
+        return -4;
     }
     
     //  determine the response at t+deltaT
@@ -519,16 +518,17 @@ int KRAlphaExplicit::update(const Vector &aiPlusOne)
     
     //Udot->addVector(1.0, aiPlusOne, c2);  // c2 = 0.0
     
-    Udotdot->addVector(0.0, aiPlusOne, 1.0);
+    Udotdot->addVector(0.0, aiPlusOne, c3);
     
     // update the response at the DOFs
-    theModel->setResponse(*U, *Udot, *Udotdot);
-    if (updDomFlag == true)  {
-        if (theModel->updateDomain() < 0)  {
-            opserr << "WARNING KRAlphaExplicit::update() - failed to update the domain\n";
-            return -4;
-        }
+    theModel->setVel(*Udot);
+    theModel->setAccel(*Udotdot);
+    if (theModel->updateDomain() < 0)  {
+        opserr << "KRAlphaExplicit::update() - failed to update the domain\n";
+        return -5;
     }
+    // do not update displacements in elements only at nodes
+    theModel->setDisp(*U);
     
     return 0;
 }
@@ -547,6 +547,10 @@ int KRAlphaExplicit::commit(void)
     time += (1.0-alphaF)*deltaT;
     theModel->setCurrentDomainTime(time);
     
+    // update the displacements in the elements
+    if (updElemDisp == true)
+        theModel->updateDomain();
+    
     return theModel->commitDomain();
 }
 
@@ -558,7 +562,7 @@ int KRAlphaExplicit::sendSelf(int cTag, Channel &theChannel)
     data(1) = alphaF;
     data(2) = beta;
     data(3) = gamma;
-    if (updDomFlag == false) 
+    if (updElemDisp == false) 
         data(4) = 0.0;
     else
         data(4) = 1.0;
@@ -585,9 +589,9 @@ int KRAlphaExplicit::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &t
     beta   = data(2);
     gamma  = data(3);
     if (data(4) == 0.0)
-        updDomFlag = false;
+        updElemDisp = false;
     else
-        updDomFlag = true;
+        updElemDisp = true;
     
     return 0;
 }
@@ -601,10 +605,10 @@ void KRAlphaExplicit::Print(OPS_Stream &s, int flag)
         s << "KRAlphaExplicit - currentTime: " << currentTime << endln ;
         s << "  alphaM: " << alphaM << "  alphaF: " << alphaF  << "  beta: " << beta  << "  gamma: " << gamma << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-        if (updDomFlag)
-            s << "  update Domain: yes\n";
+        if (updElemDisp)
+            s << "  updateElemDisp: yes\n";
         else
-            s << "  update Domain: no\n";
-    } else 
+            s << "  updateElemDisp: no\n";
+    } else
         s << "KRAlphaExplicit - no associated AnalysisModel\n";
 }

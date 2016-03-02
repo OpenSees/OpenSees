@@ -17,22 +17,22 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision: 1.4 $
-// $Date: 2003-02-14 23:00:48 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/HHT1.h,v $
-                                                                        
-                                                                        
-#ifndef HHT1_h
-#define HHT1_h
 
-// Written: fmk 
+// $Revision$
+// $Date$
+// $URL$
+
+#ifndef HHTExplicit_TP_h
+#define HHTExplicit_TP_h
+
+// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
+// Created: 02/05
+// Revision: A
 //
-// Description: This file contains the class definition for HHT1.
-// HHT1 is an algorithmic class for performing a transient analysis
-// using the HHT1 integration scheme.
-//
-// What: "@(#) HHT1.h, revA"
+// Description: This file contains the class definition for HHTExplicit_TP.
+// HHTExplicit_TP is an algorithmic class for performing a transient analysis
+// using the HHTExplicit_TP integration scheme (beta = 0) based on the
+// trapezoidal rule.
 
 #include <TransientIntegrator.h>
 
@@ -40,47 +40,51 @@ class DOF_Group;
 class FE_Element;
 class Vector;
 
-class HHT1 : public TransientIntegrator
+class HHTExplicit_TP : public TransientIntegrator
 {
-  public:
-    HHT1();
-    HHT1(double alpha);
-    HHT1(double alpha, double alphaM, double betaK, double betaKi, double betaKc);        
-
-    ~HHT1();
-
+public:
+    // constructors
+    HHTExplicit_TP();
+    HHTExplicit_TP(double alpha);
+    HHTExplicit_TP(double alpha, double gamma);
+    
+    // destructor
+    ~HHTExplicit_TP();
+    
+    // method to set up the system of equations
+    int formUnbalance(void);
+    
     // methods which define what the FE_Element and DOF_Groups add
     // to the system of equation object.
     int formEleTangent(FE_Element *theEle);
-    int formNodTangent(DOF_Group *theDof);        
-
-    int domainChanged(void);    
-    int initialize(void);        
-    int newStep(double deltaT);    
-    int update(const Vector &deltaU);
-
+    int formNodTangent(DOF_Group *theDof);
+    int formEleResidual(FE_Element *theEle);
+    int formNodUnbalance(DOF_Group *theDof);
+    
+    int domainChanged(void);
+    int newStep(double deltaT);
+    int revertToLastStep(void);
+    int update(const Vector &aiPlusOne);
     int commit(void);
-
+    
     virtual int sendSelf(int commitTag, Channel &theChannel);
-    virtual int recvSelf(int commitTag, Channel &theChannel, 
-			 FEM_ObjectBroker &theBroker);
-
-    void Print(OPS_Stream &s, int flag =0);        
+    virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
-  protected:
+    void Print(OPS_Stream &s, int flag = 0);
     
-  private:
+protected:
+    
+private:
     double alpha;
     double gamma;
-    double beta;
-
-    double alphaM, betaK, betaKi, betaKc;
-
-    double c1, c2, c3;  // some constants we need to keep
-    Vector *Ut, *Utdot, *Utdotdot; // response quantities at time t
-    Vector *U, *Udot, *Udotdot; // response quantities at time t + delta t
-    Vector *Ualpha, *Udotalpha; // response quantities at time t+alpha delta t
+    double deltaT;
+    
+    int updateCount;                // method should only have one update per step
+    double c2, c3;                  // some constants we need to keep
+    double alphaD, alphaR, alphaP;  // weighting factors we need to keep
+    Vector *Ut, *Utdot, *Utdotdot;  // response quantities at time t
+    Vector *U, *Udot, *Udotdot;     // response quantities at time t + deltaT
+    Vector *Put;                    // unbalance at time t
 };
 
 #endif
-

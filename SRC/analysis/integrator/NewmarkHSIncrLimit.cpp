@@ -18,20 +18,19 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: $
-// $Date: $
-// $Source: $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 11/09
 // Revision: A
 //
 // Description: This file contains the implementation of the NewmarkHSIncrLimit class.
-//
-// What: "@(#) NewmarkHSIncrLimit.cpp, revA"
 
 #include <NewmarkHSIncrLimit.h>
 #include <FE_Element.h>
+#include <FE_EleIter.h>
 #include <LinearSOE.h>
 #include <AnalysisModel.h>
 #include <Vector.h>
@@ -40,12 +39,54 @@
 #include <AnalysisModel.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
+#define OPS_Export
+
+
+TransientIntegrator *
+    OPS_NewmarkHSIncrLimit(void)
+{
+    // pointer to an integrator that will be returned
+    TransientIntegrator *theIntegrator = 0;
+    
+    int argc = OPS_GetNumRemainingInputArgs();
+    if (argc != 3 && argc != 5) {
+        opserr << "WARNING - incorrect number of args want NewmarkHSIncrLimit $gamma $beta $limit <-normType $T>\n";
+        return 0;
+    }
+    
+    double dData[3];
+    int normType = 2;
+    int numData = 3;
+    
+    if (OPS_GetDouble(&numData, dData) != 0) {
+        opserr << "WARNING - invalid args want NewmarkHSIncrLimit $gamma $beta $limit <-normType $T>\n";
+        return 0;
+    }
+    
+    if (argc == 5) {
+        const char *argvLoc = OPS_GetString();
+        if (strcmp(argvLoc, "-normType") == 0) {
+            numData = 1;
+            if (OPS_GetInt(&numData, &normType) != 0) {
+                opserr << "WARNING - invalid normType want NewmarkHSIncrLimit $gamma $beta $limit <-normType $T>\n";
+            }
+        }
+    }
+    
+    theIntegrator = new NewmarkHSIncrLimit(dData[0], dData[1], dData[2], normType);
+    
+    if (theIntegrator == 0)
+        opserr << "WARNING - out of memory creating NewmarkHSIncrLimit integrator\n";
+    
+    return theIntegrator;
+}
 
 
 NewmarkHSIncrLimit::NewmarkHSIncrLimit()
     : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSIncrLimit),
     gamma(0.5), beta(0.25), limit(0.1), normType(2),
-    c1(0.0), c2(0.0), c3(0.0), 
+    c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
 {
@@ -57,7 +98,7 @@ NewmarkHSIncrLimit::NewmarkHSIncrLimit(double _gamma,
     double _beta, double _limit, int normtype)
     : TransientIntegrator(INTEGRATOR_TAGS_NewmarkHSIncrLimit),
     gamma(_gamma), beta(_beta), limit(_limit), normType(normtype),
-    c1(0.0), c2(0.0), c3(0.0), 
+    c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
 {
@@ -97,7 +138,7 @@ int NewmarkHSIncrLimit::newStep(double deltaT)
     if (deltaT <= 0.0)  {
         opserr << "NewmarkHSIncrLimit::newStep() - error in variable\n";
         opserr << "dT = " << deltaT << endln;
-        return -2;	
+        return -2;
     }
     
     // get a pointer to the AnalysisModel
@@ -110,7 +151,7 @@ int NewmarkHSIncrLimit::newStep(double deltaT)
     
     if (U == 0)  {
         opserr << "NewmarkHSIncrLimit::newStep() - domainChange() failed or hasn't been called\n";
-        return -3;	
+        return -3;
     }
     
     // set response at t to be that at t+deltaT of previous step
@@ -160,15 +201,13 @@ int NewmarkHSIncrLimit::formEleTangent(FE_Element *theEle)
 {
     theEle->zeroTangent();
     
-    if (statusFlag == CURRENT_TANGENT)  {
+    if (statusFlag == CURRENT_TANGENT)
         theEle->addKtToTang(c1);
-        theEle->addCtoTang(c2);
-        theEle->addMtoTang(c3);
-    } else if (statusFlag == INITIAL_TANGENT)  {
+    else if (statusFlag == INITIAL_TANGENT)
         theEle->addKiToTang(c1);
-        theEle->addCtoTang(c2);
-        theEle->addMtoTang(c3);
-    }
+    
+    theEle->addCtoTang(c2);
+    theEle->addMtoTang(c3);
     
     return 0;
 }
@@ -187,7 +226,7 @@ int NewmarkHSIncrLimit::formNodTangent(DOF_Group *theDof)
 
 int NewmarkHSIncrLimit::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -229,7 +268,7 @@ int NewmarkHSIncrLimit::domainChanged()
             Udotdot == 0 || Udotdot->Size() != size ||
             scaledDeltaU == 0 || scaledDeltaU->Size() != size)  {
             
-            opserr << "NewmarkHSIncrLimit::domainChanged - ran out of memory\n";
+            opserr << "NewmarkHSIncrLimit::domainChanged() - ran out of memory\n";
             
             // delete the old
             if (Ut != 0)
@@ -253,22 +292,22 @@ int NewmarkHSIncrLimit::domainChanged()
             
             return -1;
         }
-    }        
+    }
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
         int idSize = id.Size();
         
         int i;
-        const Vector &disp = dofPtr->getCommittedDisp();	
+        const Vector &disp = dofPtr->getCommittedDisp();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
-                (*U)(loc) = disp(i);		
+                (*U)(loc) = disp(i);
             }
         }
         
@@ -280,7 +319,7 @@ int NewmarkHSIncrLimit::domainChanged()
             }
         }
         
-        const Vector &accel = dofPtr->getCommittedAccel();	
+        const Vector &accel = dofPtr->getCommittedAccel();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
@@ -299,13 +338,13 @@ int NewmarkHSIncrLimit::update(const Vector &deltaU)
     if (theModel == 0)  {
         opserr << "WARNING NewmarkHSIncrLimit::update() - no AnalysisModel set\n";
         return -1;
-    }	
+    }
     
     // check domainChanged() has been called, i.e. Ut will not be zero
     if (Ut == 0)  {
         opserr << "WARNING NewmarkHSIncrLimit::update() - domainChange() failed or not called\n";
         return -2;
-    }	
+    }
     
     // check deltaU is of correct size
     if (deltaU.Size() != U->Size())  {
@@ -329,14 +368,14 @@ int NewmarkHSIncrLimit::update(const Vector &deltaU)
     Udotdot->addVector(1.0, *scaledDeltaU, c3);
     
     // update the response at the DOFs
-    theModel->setResponse(*U,*Udot,*Udotdot);
+    theModel->setResponse(*U, *Udot, *Udotdot);
     if (theModel->updateDomain() < 0)  {
         opserr << "NewmarkHSIncrLimit::update() - failed to update the domain\n";
         return -4;
     }
     
     return 0;
-}    
+}
 
 
 int NewmarkHSIncrLimit::sendSelf(int cTag, Channel &theChannel)
@@ -361,7 +400,6 @@ int NewmarkHSIncrLimit::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker
     Vector data(4);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING NewmarkHSIncrLimit::recvSelf() - could not receive data\n";
-        gamma = 0.5; beta = 0.25; limit = 0.1; normType = 2;
         return -1;
     }
     
@@ -379,10 +417,10 @@ void NewmarkHSIncrLimit::Print(OPS_Stream &s, int flag)
     AnalysisModel *theModel = this->getAnalysisModel();
     if (theModel != 0) {
         double currentTime = theModel->getCurrentDomainTime();
-        s << "NewmarkHSIncrLimit - currentTime: " << currentTime;
-        s << "  gamma: " << gamma << "  beta: " << beta;
-        s << "  limit: " << limit << "  normType: " << normType << endln;
+        s << "NewmarkHSIncrLimit - currentTime: " << currentTime << endln;
+        s << "  gamma: " << gamma << "  beta: " << beta << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-    } else 
+        s << "  limit: " << limit << "  normType: " << normType << endln;
+    } else
         s << "NewmarkHSIncrLimit - no associated AnalysisModel\n";
 }

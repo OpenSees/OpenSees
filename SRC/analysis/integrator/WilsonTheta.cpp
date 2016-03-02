@@ -18,20 +18,19 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.6 $
-// $Date: 2007-04-05 01:29:04 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/WilsonTheta.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: fmk 
 // Created: 11/98
 // Revision: A
 //
 // Description: This file contains the implementation of WilsonTheta.
-//
-// What: "@(#) WilsonTheta.C, revA"
 
 #include <WilsonTheta.h>
 #include <FE_Element.h>
+#include <FE_EleIter.h>
 #include <LinearSOE.h>
 #include <AnalysisModel.h>
 #include <Vector.h>
@@ -40,12 +39,41 @@
 #include <AnalysisModel.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
+#define OPS_Export 
+
+
+TransientIntegrator *
+    OPS_WilsonTheta(void)
+{
+    // pointer to an integrator that will be returned
+    TransientIntegrator *theIntegrator = 0;
+    
+    int argc = OPS_GetNumRemainingInputArgs();
+    if (argc != 1) {
+        opserr << "WARNING - incorrect number of args want WilsonTheta $theta\n";
+        return 0;
+    }
+    
+    double theta;    
+    if (OPS_GetDouble(&argc, &theta) != 0) {
+        opserr << "WARNING - invalid args want WilsonTheta $theta\n";
+        return 0;
+    }
+    
+    theIntegrator = new WilsonTheta(theta);
+    
+    if (theIntegrator == 0)
+        opserr << "WARNING - out of memory creating WilsonTheta integrator\n";
+    
+    return theIntegrator;
+}
 
 
 WilsonTheta::WilsonTheta()
     : TransientIntegrator(INTEGRATOR_TAGS_WilsonTheta),
     theta(0), deltaT(0),
-    c1(0.0), c2(0.0), c3(0.0), 
+    c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0)
 {
     
@@ -54,8 +82,8 @@ WilsonTheta::WilsonTheta()
 
 WilsonTheta::WilsonTheta(double _theta)
     : TransientIntegrator(INTEGRATOR_TAGS_WilsonTheta),
-    theta(_theta), deltaT(0.0), 
-    c1(0.0), c2(0.0), c3(0.0), 
+    theta(_theta), deltaT(0.0),
+    c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0)
 {
     
@@ -88,16 +116,16 @@ int WilsonTheta::newStep(double _deltaT)
         opserr << "theta: " << theta << " <= 0.0\n";
         return -1;
     }
-        
+    
     if (deltaT <= 0.0)  {
         opserr << "WilsonTheta::newStep() - error in variable\n";
         opserr << "dT = " << deltaT << endln;
-        return -2;	
+        return -2;
     }
     
     // get a pointer to the AnalysisModel
     AnalysisModel *theModel = this->getAnalysisModel();
-
+    
     // set the constants
     c1 = 1.0;
     c2 = 3.0/(theta*deltaT);
@@ -105,21 +133,21 @@ int WilsonTheta::newStep(double _deltaT)
     
     if (U == 0)  {
         opserr << "WilsonTheta::newStep() - domainChange() failed or hasn't been called\n"; 
-        return -3;	
+        return -3;
     }
     
     // set response at t to be that at t+deltaT of previous step
-    (*Ut) = *U;        
-    (*Utdot) = *Udot;  
-    (*Utdotdot) = *Udotdot;  
+    (*Ut) = *U;
+    (*Utdot) = *Udot;
+    (*Utdotdot) = *Udotdot;
     
     // determine new velocities and accelerations at t+theta*deltaT
-    double a1 = -0.5*theta*deltaT; 
+    double a1 = -0.5*theta*deltaT;
     Udot->addVector(-2.0, *Utdotdot, a1);
     
     double a2 = -6.0/theta/deltaT; 
     Udotdot->addVector(-2.0, *Utdot, a2);
-     
+    
     // set the trial response quantities
     theModel->setVel(*Udot);
     theModel->setAccel(*Udotdot);
@@ -144,7 +172,7 @@ int WilsonTheta::revertToLastStep()
         (*Udot) = *Utdot;
         (*Udotdot) = *Utdotdot;
     }
-
+    
     return 0;
 }
 
@@ -152,15 +180,14 @@ int WilsonTheta::revertToLastStep()
 int WilsonTheta::formEleTangent(FE_Element *theEle)
 {
     theEle->zeroTangent();
-    if (statusFlag == CURRENT_TANGENT)  {
+    
+    if (statusFlag == CURRENT_TANGENT)
         theEle->addKtToTang(c1);
-        theEle->addCtoTang(c2);
-        theEle->addMtoTang(c3);
-    } else if (statusFlag == INITIAL_TANGENT)  {
+    else if (statusFlag == INITIAL_TANGENT)
         theEle->addKiToTang(c1);
-        theEle->addCtoTang(c2);
-        theEle->addMtoTang(c3);
-    }
+    
+    theEle->addCtoTang(c2);
+    theEle->addMtoTang(c3);
     
     return 0;
 }
@@ -169,17 +196,17 @@ int WilsonTheta::formEleTangent(FE_Element *theEle)
 int WilsonTheta::formNodTangent(DOF_Group *theDof)
 {
     theDof->zeroTangent();
-
-    theDof->addCtoTang(c2);        
+    
+    theDof->addCtoTang(c2);
     theDof->addMtoTang(c3);
     
     return 0;
-}    
+}
 
 
 int WilsonTheta::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -217,7 +244,7 @@ int WilsonTheta::domainChanged()
             Udot == 0 || Udot->Size() != size ||
             Udotdot == 0 || Udotdot->Size() != size) {
             
-            opserr << "WilsonTheta::domainChanged - ran out of memory\n";
+            opserr << "WilsonTheta::domainChanged() - ran out of memory\n";
             
             // delete the old
             if (Ut != 0)
@@ -235,25 +262,25 @@ int WilsonTheta::domainChanged()
             
             Ut = 0; Utdot = 0; Utdotdot = 0;
             U = 0; Udot = 0; Udotdot = 0;
-
+            
             return -1;
         }
-    }        
+    }
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
         int idSize = id.Size();
         
         int i;
-        const Vector &disp = dofPtr->getCommittedDisp();	
+        const Vector &disp = dofPtr->getCommittedDisp();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
-                (*U)(loc) = disp(i);		
+                (*U)(loc) = disp(i);
             }
         }
         
@@ -265,14 +292,14 @@ int WilsonTheta::domainChanged()
             }
         }
         
-        const Vector &accel = dofPtr->getCommittedAccel();	
+        const Vector &accel = dofPtr->getCommittedAccel();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
                 (*Udotdot)(loc) = accel(i);
             }
-        }        
-    }    
+        }
+    }
     
     return 0;
 }
@@ -284,13 +311,13 @@ int WilsonTheta::update(const Vector &deltaU)
     if (theModel == 0)  {
         opserr << "WARNING WilsonTheta::update() - no AnalysisModel set\n";
         return -1;
-    }	
+    }
     
     // check domainChanged() has been called, i.e. Ut will not be zero
     if (Ut == 0)  {
         opserr << "WARNING WilsonTheta::update() - domainChange() failed or not called\n";
         return -2;
-    }	
+    }
     
     // check deltaU is of correct size
     if (deltaU.Size() != U->Size())  {
@@ -300,21 +327,21 @@ int WilsonTheta::update(const Vector &deltaU)
     }
     
     // determine the response at t+theta*deltaT
-    (*U) += deltaU;
-
+    U->addVector(1.0, deltaU, c1);
+    
     Udot->addVector(1.0, deltaU, c2);
     
     Udotdot->addVector(1.0, deltaU, c3);
     
     // update the response at the DOFs
-    theModel->setResponse(*U,*Udot,*Udotdot);        
+    theModel->setResponse(*U,*Udot,*Udotdot);
     if (theModel->updateDomain() < 0)  {
         opserr << "WilsonTheta::update() - failed to update the domain\n";
         return -4;
     }
     
     return 0;
-}    
+}
 
 
 int WilsonTheta::commit(void)
@@ -323,27 +350,27 @@ int WilsonTheta::commit(void)
     if (theModel == 0)  {
         opserr << "WARNING WilsonTheta::commit() - no AnalysisModel set\n";
         return -1;
-    }	  
+    }
         
     // determine response quantities at t+deltaT
     Udotdot->addVector(1.0/theta, *Utdotdot, (theta-1.0)/theta);
-
+    
     (*Udot) = *Utdot;
     double a1 = 0.5*deltaT;
     Udot->addVector(1.0, *Udotdot, a1);
     Udot->addVector(1.0, *Utdotdot, a1);
-      
+    
     (*U) = *Ut;
     U->addVector(1.0, *Utdot, deltaT);
     double a2 = deltaT*deltaT/6.0;
     U->addVector(1.0, *Udotdot, a2);
     U->addVector(1.0, *Utdotdot, 2.0*a2);
-
+    
     // update the response at the DOFs 
-    theModel->setResponse(*U,*Udot,*Udotdot);        
+    theModel->setResponse(*U,*Udot,*Udotdot);
     if (theModel->updateDomain() < 0)  {
         opserr << "WilsonTheta::commit() - failed to update the domain\n";
-        return -4;
+        return -2;
     }
     
     // set the time to be t+deltaT
@@ -364,7 +391,7 @@ int WilsonTheta::sendSelf(int cTag, Channel &theChannel)
         opserr << "WilsonTheta::sendSelf() - failed to send the data\n";
         return -1;
     }
-
+    
     return 0;
 }
 
@@ -391,6 +418,6 @@ void WilsonTheta::Print(OPS_Stream &s, int flag)
         s << "\t WilsonTheta - currentTime: " << currentTime << endln;
         s << "  theta: " << theta << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-    } else 
+    } else
         s << "\t WilsonTheta - no associated AnalysisModel\n";
 }

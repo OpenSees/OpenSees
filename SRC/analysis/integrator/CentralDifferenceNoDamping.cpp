@@ -18,20 +18,19 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.3 $
-// $Date: 2007-04-02 23:42:26 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/CentralDifferenceNoDamping.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: fmk 
 // Created: 11/98
 //
 // Description: This file contains the implementation of the CentralDifferenceNoDamping 
 // class.
-//
-// What: "@(#) CentralDifferenceNoDamping.C, revA"
 
 #include <CentralDifferenceNoDamping.h>
 #include <FE_Element.h>
+#include <FE_EleIter.h>
 #include <LinearSOE.h>
 #include <AnalysisModel.h>
 #include <Vector.h>
@@ -40,6 +39,24 @@
 #include <AnalysisModel.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
+#define OPS_Export 
+
+
+TransientIntegrator *
+    OPS_CentralDifferenceNoDamping(void)
+{
+    // pointer to an integrator that will be returned
+    TransientIntegrator *theIntegrator = 0;
+    
+    theIntegrator = new CentralDifferenceNoDamping();
+    
+    if (theIntegrator == 0)
+        opserr << "WARNING - out of memory creating CentralDifferenceNoDamping integrator\n";
+    
+    return theIntegrator;
+}
+
 
 CentralDifferenceNoDamping::CentralDifferenceNoDamping()
 :TransientIntegrator(INTEGRATOR_TAGS_CentralDifferenceNoDamping),

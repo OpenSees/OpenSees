@@ -30,6 +30,7 @@
 
 #include <HHTGeneralized.h>
 #include <FE_Element.h>
+#include <FE_EleIter.h>
 #include <LinearSOE.h>
 #include <AnalysisModel.h>
 #include <Vector.h>
@@ -43,7 +44,7 @@
 
 
 TransientIntegrator *
-    OPS_NewHHTGeneralized(void)
+    OPS_HHTGeneralized(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;
@@ -76,7 +77,7 @@ TransientIntegrator *
 
 HHTGeneralized::HHTGeneralized()
     : TransientIntegrator(INTEGRATOR_TAGS_HHTGeneralized),
-    alphaI(0.5), alphaF(0.5), beta(0.0), gamma(0.0),
+    alphaI(0.5), alphaF(0.5), beta(0.25), gamma(0.5),
     deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0)
@@ -135,17 +136,17 @@ HHTGeneralized::~HHTGeneralized()
 
 int HHTGeneralized::newStep(double _deltaT)
 {
-    deltaT = _deltaT;
     if (beta == 0 || gamma == 0 )  {
         opserr << "HHTGeneralized::newStep() - error in variable\n";
         opserr << "gamma = " << gamma << " beta = " << beta << endln;
         return -1;
     }
     
+    deltaT = _deltaT;
     if (deltaT <= 0.0)  {
         opserr << "HHTGeneralized::newStep() - error in variable\n";
         opserr << "dT = " << deltaT << endln;
-        return -2;	
+        return -2;
     }
     
     // get a pointer to the AnalysisModel
@@ -155,10 +156,10 @@ int HHTGeneralized::newStep(double _deltaT)
     c1 = 1.0;
     c2 = gamma/(beta*deltaT);
     c3 = 1.0/(beta*deltaT*deltaT);
-       
+    
     if (U == 0)  {
         opserr << "HHTGeneralized::newStep() - domainChange() failed or hasn't been called\n";
-        return -3;	
+        return -3;
     }
     
     // set response at t to be that at t+deltaT of previous step
@@ -193,7 +194,7 @@ int HHTGeneralized::newStep(double _deltaT)
         opserr << "HHTGeneralized::newStep() - failed to update the domain\n";
         return -4;
     }
-
+    
     return 0;
 }
 
@@ -206,7 +207,7 @@ int HHTGeneralized::revertToLastStep()
         (*Udot) = *Utdot;
         (*Udotdot) = *Utdotdot;
     }
-
+    
     return 0;
 }
 
@@ -224,13 +225,13 @@ int HHTGeneralized::formEleTangent(FE_Element *theEle)
     theEle->addMtoTang(alphaI*c3);
     
     return 0;
-}    
+}
 
 
 int HHTGeneralized::formNodTangent(DOF_Group *theDof)
 {
     theDof->zeroTangent();
-
+    
     theDof->addCtoTang(alphaF*c2);
     theDof->addMtoTang(alphaI*c3);
     
@@ -240,7 +241,7 @@ int HHTGeneralized::formNodTangent(DOF_Group *theDof)
 
 int HHTGeneralized::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -290,7 +291,7 @@ int HHTGeneralized::domainChanged()
             Ualphadot == 0 || Ualphadot->Size() != size ||
             Ualphadotdot == 0 || Ualphadotdot->Size() != size)  {
             
-            opserr << "HHTGeneralized::domainChanged - ran out of memory\n";
+            opserr << "HHTGeneralized::domainChanged() - ran out of memory\n";
             
             // delete the old
             if (Ut != 0)
@@ -322,7 +323,7 @@ int HHTGeneralized::domainChanged()
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
@@ -352,7 +353,7 @@ int HHTGeneralized::domainChanged()
                 (*Udotdot)(loc) = accel(i);
             }
         }
-    }    
+    }
     
     return 0;
 }
@@ -380,7 +381,7 @@ int HHTGeneralized::update(const Vector &deltaU)
     }
     
     //  determine the response at t+deltaT
-    (*U) += deltaU;
+    U->addVector(1.0, deltaU, c1);
     
     Udot->addVector(1.0, deltaU, c2);
     
@@ -397,7 +398,7 @@ int HHTGeneralized::update(const Vector &deltaU)
     Ualphadotdot->addVector((1.0-alphaI), *Udotdot, alphaI);
     
     // update the response at the DOFs
-    theModel->setResponse(*Ualpha,*Ualphadot,*Ualphadotdot);
+    theModel->setResponse(*Ualpha, *Ualphadot, *Ualphadotdot);
     if (theModel->updateDomain() < 0)  {
         opserr << "HHTGeneralized::update() - failed to update the domain\n";
         return -4;
@@ -416,10 +417,10 @@ int HHTGeneralized::commit(void)
     }
     
     // update the response at the DOFs
-    theModel->setResponse(*U,*Udot,*Udotdot);
+    theModel->setResponse(*U, *Udot, *Udotdot);
     if (theModel->updateDomain() < 0)  {
         opserr << "HHTGeneralized::commit() - failed to update the domain\n";
-        return -4;
+        return -2;
     }
     
     // set the time to be t+deltaT
@@ -470,10 +471,11 @@ void HHTGeneralized::Print(OPS_Stream &s, int flag)
     AnalysisModel *theModel = this->getAnalysisModel();
     if (theModel != 0)  {
         double currentTime = theModel->getCurrentDomainTime();
-        s << "\t HHTGeneralized - currentTime: " << currentTime << endln;
-        s << "  alphaI: " << alphaI << "  alphaF: " << alphaF  << "  beta: " << beta  << "  gamma: " << gamma << endln;
+        s << "HHTGeneralized - currentTime: " << currentTime << endln;
+        s << "  alphaI: " << alphaI << "  alphaF: " << alphaF;
+        s << "  beta: " << beta  << "  gamma: " << gamma << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-    } else 
-        s << "\t HHTGeneralized - no associated AnalysisModel\n";
+    } else
+        s << "HHTGeneralized - no associated AnalysisModel\n";
 }
 

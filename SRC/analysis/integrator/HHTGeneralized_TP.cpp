@@ -44,7 +44,7 @@
 
 
 TransientIntegrator *
-    OPS_NewHHTGeneralized_TP(void)
+    OPS_HHTGeneralized_TP(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;
@@ -77,7 +77,7 @@ TransientIntegrator *
 
 HHTGeneralized_TP::HHTGeneralized_TP()
     : TransientIntegrator(INTEGRATOR_TAGS_HHTGeneralized_TP),
-    alphaI(0.5), alphaF(0.5), beta(0.0), gamma(0.0),
+    alphaI(0.5), alphaF(0.5), beta(0.25), gamma(0.5),
     deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     alphaM(0.5), alphaD(0.5), alphaR(0.5), alphaP(0.5),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
@@ -161,22 +161,15 @@ int HHTGeneralized_TP::newStep(double _deltaT)
     c1 = 1.0;
     c2 = gamma/(beta*deltaT);
     c3 = 1.0/(beta*deltaT*deltaT);
-       
+    
     if (U == 0)  {
         opserr << "HHTGeneralized_TP::newStep() - domainChange() failed or hasn't been called\n";
         return -4;
     }
     
-    // set response at t to be that at t+deltaT of previous step
-    (*Ut) = *U;
-    (*Utdot) = *Udot;
-    (*Utdotdot) = *Udotdot;
-    
-    // get unbalance at t and store it
-    alphaM = (1.0 - alphaI);
-    alphaD = alphaR = alphaP = (1.0 - alphaF);
-    this->TransientIntegrator::formUnbalance();
-    (*Put) = theLinSOE->getB();
+    // set weighting factors for subsequent iterations
+    alphaM = alphaI;
+    alphaD = alphaR = alphaP = alphaF;
     
     // determine new velocities and accelerations at t+deltaT
     double a1 = (1.0 - gamma/beta);
@@ -198,10 +191,6 @@ int HHTGeneralized_TP::newStep(double _deltaT)
         opserr << "HHTGeneralized_TP::newStep() - failed to update the domain\n";
         return -5;
     }
-    
-    // modify constants for subsequent iterations
-    alphaM = alphaI;
-    alphaD = alphaR = alphaP = alphaF;
     
     return 0;
 }
@@ -240,13 +229,13 @@ int HHTGeneralized_TP::formUnbalance()
     }
     
     if (this->formElementResidual() < 0)  {
-        opserr << "WARNING HHTGeneralized_TP::formUnbalance ";
+        opserr << "WARNING HHTGeneralized_TP::formUnbalance() ";
         opserr << " - this->formElementResidual failed\n";
         return -2;
     }
     
     if (this->formNodalUnbalance() < 0)  {
-        opserr << "WARNING HHTGeneralized_TP::formUnbalance ";
+        opserr << "WARNING HHTGeneralized_TP::formUnbalance() ";
         opserr << " - this->formNodalUnbalance failed\n";
         return -3;
     }
@@ -315,7 +304,7 @@ int HHTGeneralized_TP::formNodUnbalance(DOF_Group *theDof)
 
 int HHTGeneralized_TP::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -357,7 +346,7 @@ int HHTGeneralized_TP::domainChanged()
             Udotdot == 0 || Udotdot->Size() != size ||
             Put == 0 || Put->Size() != size)  {
             
-            opserr << "HHTGeneralized_TP::domainChanged - ran out of memory\n";
+            opserr << "HHTGeneralized_TP::domainChanged() - ran out of memory\n";
             
             // delete the old
             if (Ut != 0)
@@ -385,7 +374,7 @@ int HHTGeneralized_TP::domainChanged()
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
@@ -416,6 +405,14 @@ int HHTGeneralized_TP::domainChanged()
             }
         }
     }
+    
+    // now get unbalance at last commit and store it
+    // warning: this will use committed stiffness prop. damping
+    // from current step instead of previous step
+    alphaM = (1.0 - alphaI);
+    alphaD = alphaR = alphaP = (1.0 - alphaF);
+    this->TransientIntegrator::formUnbalance();
+    (*Put) = theLinSOE->getB();
     
     return 0;
 }
@@ -457,6 +454,32 @@ int HHTGeneralized_TP::update(const Vector &deltaU)
     }
     
     return 0;
+}
+
+
+int HHTGeneralized_TP::commit(void)
+{
+    // get a pointer to the LinearSOE and the AnalysisModel
+    LinearSOE *theLinSOE = this->getLinearSOE();
+    AnalysisModel *theModel = this->getAnalysisModel();
+    if (theLinSOE == 0 || theModel == 0)  {
+        opserr << "WARNING HHTGeneralized_TP::commit() - ";
+        opserr << "no LinearSOE or AnalysisModel has been set\n";
+        return -1;
+    }
+    
+    // set response at t of next step to be that at t+deltaT
+    (*Ut) = *U;
+    (*Utdot) = *Udot;
+    (*Utdotdot) = *Udotdot;
+    
+    // get unbalance Put and store it for next step
+    alphaM = (1.0 - alphaI);
+    alphaD = alphaR = alphaP = (1.0 - alphaF);
+    this->TransientIntegrator::formUnbalance();
+    (*Put) = theLinSOE->getB();
+    
+    return theModel->commitDomain();
 }
 
 
@@ -504,9 +527,10 @@ void HHTGeneralized_TP::Print(OPS_Stream &s, int flag)
     AnalysisModel *theModel = this->getAnalysisModel();
     if (theModel != 0)  {
         double currentTime = theModel->getCurrentDomainTime();
-        s << "\t HHTGeneralized_TP - currentTime: " << currentTime << endln;
-        s << "  alphaI: " << alphaI << "  alphaF: " << alphaF  << "  beta: " << beta  << "  gamma: " << gamma << endln;
+        s << "HHTGeneralized_TP - currentTime: " << currentTime << endln;
+        s << "  alphaI: " << alphaI << "  alphaF: " << alphaF;
+        s << "  beta: " << beta  << "  gamma: " << gamma << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-    } else 
-        s << "\t HHTGeneralized_TP - no associated AnalysisModel\n";
+    } else
+        s << "HHTGeneralized_TP - no associated AnalysisModel\n";
 }

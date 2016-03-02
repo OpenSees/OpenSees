@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: $
-// $Date: $
-// $Source: $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef NewmarkHSIncrLimit_h
 #define NewmarkHSIncrLimit_h
@@ -35,8 +35,6 @@
 // simulation where the response increments are limited by a user specified value.
 // This enhances the smoothness of the convergence path and reduces the
 // possibility of spurious loading/unloading cycles during iteration.
-//
-// What: "@(#) NewmarkHSIncrLimit.h, revA"
 
 #include <TransientIntegrator.h>
 
@@ -60,16 +58,16 @@ public:
     int formEleTangent(FE_Element *theEle);
     int formNodTangent(DOF_Group *theDof);
     
-    int domainChanged(void);    
-    int newStep(double deltaT);    
-    int revertToLastStep(void);        
+    int domainChanged(void);
+    int newStep(double deltaT);
+    int revertToLastStep(void);
     int update(const Vector &deltaU);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
-    void Print(OPS_Stream &s, int flag = 0);        
-        
+    void Print(OPS_Stream &s, int flag = 0);
+    
 private:
     double gamma;
     double beta;
@@ -78,7 +76,7 @@ private:
     
     double c1, c2, c3;              // some constants we need to keep
     Vector *Ut, *Utdot, *Utdotdot;  // response quantities at time t
-    Vector *U, *Udot, *Udotdot;     // response quantities at time t+deltaT    
+    Vector *U, *Udot, *Udotdot;     // response quantities at time t+deltaT
     Vector *scaledDeltaU;           // scaled displacement increment
 };
 

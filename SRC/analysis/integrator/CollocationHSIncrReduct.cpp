@@ -18,20 +18,19 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-05-19 22:16:53 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/CollocationHSIncrReduct.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 10/05
 // Revision: A
 //
 // Description: This file contains the implementation of CollocationHSIncrReduct.
-//
-// What: "@(#) CollocationHSIncrReduct.cpp, revA"
 
 #include <CollocationHSIncrReduct.h>
 #include <FE_Element.h>
+#include <FE_EleIter.h>
 #include <LinearSOE.h>
 #include <AnalysisModel.h>
 #include <Vector.h>
@@ -41,12 +40,46 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <math.h>
+#include <elementAPI.h>
+#define OPS_Export
+
+
+TransientIntegrator *
+    OPS_CollocationHSIncrReduct(void)
+{
+    // pointer to an integrator that will be returned
+    TransientIntegrator *theIntegrator = 0;
+    
+    int argc = OPS_GetNumRemainingInputArgs();
+    if (argc != 2 && argc != 4) {
+        opserr << "WARNING - incorrect number of args want CollocationHSIncrReduct $theta $reduct\n";
+        opserr << "          or CollocationHSIncrReduct $theta $beta $gamma $reduct\n";
+        return 0;
+    }
+    
+    double dData[4];
+    if (OPS_GetDouble(&argc, dData) != 0) {
+        opserr << "WARNING - invalid args want CollocationHSIncrReduct $theta $reduct\n";
+        opserr << "          or CollocationHSIncrReduct $theta $beta $gamma $reduct\n";
+        return 0;
+    }
+    
+    if (argc == 2)
+        theIntegrator = new CollocationHSIncrReduct(dData[0], dData[1]);
+    else
+        theIntegrator = new CollocationHSIncrReduct(dData[0], dData[1], dData[2], dData[3]);
+    
+    if (theIntegrator == 0)
+        opserr << "WARNING - out of memory creating CollocationHSIncrReduct integrator\n";
+    
+    return theIntegrator;
+}
 
 
 CollocationHSIncrReduct::CollocationHSIncrReduct()
     : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSIncrReduct),
-    theta(1.0), beta(0.25), gamma(0.5), reduct(0.0), deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
+    theta(1.0), beta(0.25), gamma(0.5), reduct(0.0),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
 {
@@ -57,9 +90,8 @@ CollocationHSIncrReduct::CollocationHSIncrReduct()
 CollocationHSIncrReduct::CollocationHSIncrReduct(
     double _theta, double _reduct)
     : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSIncrReduct),
-    theta(_theta), beta(0.0), gamma(0.5),
-    reduct(_reduct), deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
+    theta(_theta), beta(0.0), gamma(0.5), reduct(_reduct),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
 {
@@ -79,9 +111,8 @@ CollocationHSIncrReduct::CollocationHSIncrReduct(
 CollocationHSIncrReduct::CollocationHSIncrReduct(
     double _theta, double _beta, double _gamma, double _reduct)
     : TransientIntegrator(INTEGRATOR_TAGS_CollocationHSIncrReduct),
-    theta(_theta), beta(_beta), gamma(_gamma),
-    reduct(_reduct), deltaT(0.0),
-    c1(0.0), c2(0.0), c3(0.0),
+    theta(_theta), beta(_beta), gamma(_gamma), reduct(_reduct),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     scaledDeltaU(0)
 {
@@ -111,13 +142,13 @@ CollocationHSIncrReduct::~CollocationHSIncrReduct()
 
 int CollocationHSIncrReduct::newStep(double _deltaT)
 {
-    deltaT = _deltaT;
     if (theta <= 0.0 )  {
         opserr << "CollocationHSIncrReduct::newStep() - error in variable\n";
         opserr << "theta: " << theta << " <= 0.0\n";
         return -1;
     }
     
+    deltaT = _deltaT;
     if (deltaT <= 0.0)  {
         opserr << "CollocationHSIncrReduct::newStep() - error in variable\n";
         opserr << "dT = " << deltaT << endln;
@@ -134,11 +165,11 @@ int CollocationHSIncrReduct::newStep(double _deltaT)
     
     if (U == 0)  {
         opserr << "CollocationHSIncrReduct::newStep() - domainChange() failed or hasn't been called\n"; 
-        return -3;	
+        return -3;
     }
     
     // set response at t to be that at t+deltaT of previous step
-    (*Ut)   = *U;
+    (*Ut) = *U;
     (*Utdot) = *Udot;
     (*Utdotdot) = *Udotdot;
     
@@ -180,15 +211,14 @@ int CollocationHSIncrReduct::revertToLastStep()
 int CollocationHSIncrReduct::formEleTangent(FE_Element *theEle)
 {
     theEle->zeroTangent();
-    if (statusFlag == CURRENT_TANGENT)  {
+    
+    if (statusFlag == CURRENT_TANGENT)
         theEle->addKtToTang(c1);
-        theEle->addCtoTang(c2);
-        theEle->addMtoTang(c3);
-    } else if (statusFlag == INITIAL_TANGENT)  {
+    else if (statusFlag == INITIAL_TANGENT)
         theEle->addKiToTang(c1);
-        theEle->addCtoTang(c2);
-        theEle->addMtoTang(c3);
-    }
+    
+    theEle->addCtoTang(c2);
+    theEle->addMtoTang(c3);
     
     return 0;
 }
@@ -202,12 +232,12 @@ int CollocationHSIncrReduct::formNodTangent(DOF_Group *theDof)
     theDof->addMtoTang(c3);
     
     return 0;
-}    
+}
 
 
 int CollocationHSIncrReduct::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -249,7 +279,7 @@ int CollocationHSIncrReduct::domainChanged()
             Udotdot == 0 || Udotdot->Size() != size ||
             scaledDeltaU == 0 || scaledDeltaU->Size() != size)  {
             
-            opserr << "CollocationHSIncrReduct::domainChanged - ran out of memory\n";
+            opserr << "CollocationHSIncrReduct::domainChanged() - ran out of memory\n";
             
             // delete the old
             if (Ut != 0)
@@ -273,22 +303,22 @@ int CollocationHSIncrReduct::domainChanged()
             
             return -1;
         }
-    }        
+    }
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
         int idSize = id.Size();
         
         int i;
-        const Vector &disp = dofPtr->getCommittedDisp();	
+        const Vector &disp = dofPtr->getCommittedDisp();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
-                (*U)(loc) = disp(i);		
+                (*U)(loc) = disp(i);
             }
         }
         
@@ -300,14 +330,14 @@ int CollocationHSIncrReduct::domainChanged()
             }
         }
         
-        const Vector &accel = dofPtr->getCommittedAccel();	
+        const Vector &accel = dofPtr->getCommittedAccel();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
                 (*Udotdot)(loc) = accel(i);
             }
-        }        
-    }    
+        }
+    }
     
     return 0;
 }
@@ -324,14 +354,14 @@ int CollocationHSIncrReduct::update(const Vector &deltaU)
     // check domainChanged() has been called, i.e. Ut will not be zero
     if (Ut == 0)  {
         opserr << "WARNING CollocationHSIncrReduct::update() - domainChange() failed or not called\n";
-        return -3;
-    }	
+        return -2;
+    }
     
     // check deltaU is of correct size
     if (deltaU.Size() != U->Size())  {
         opserr << "WARNING CollocationHSIncrReduct::update() - Vectors of incompatible size ";
         opserr << " expecting " << U->Size() << " obtained " << deltaU.Size() << endln;
-        return -4;
+        return -3;
     }
     
     // get scaled increment
@@ -345,14 +375,14 @@ int CollocationHSIncrReduct::update(const Vector &deltaU)
     Udotdot->addVector(1.0, *scaledDeltaU, c3);
     
     // update the response at the DOFs
-    theModel->setResponse(*U,*Udot,*Udotdot);        
+    theModel->setResponse(*U, *Udot, *Udotdot);
     if (theModel->updateDomain() < 0)  {
         opserr << "CollocationHSIncrReduct::update() - failed to update the domain\n";
-        return -5;
+        return -4;
     }
     
     return 0;
-}    
+}
 
 
 int CollocationHSIncrReduct::commit(void)
@@ -380,7 +410,7 @@ int CollocationHSIncrReduct::commit(void)
     U->addVector(1.0, *Udotdot, a4);
     
     // update the response at the DOFs
-    theModel->setResponse(*U,*Udot,*Udotdot);
+    theModel->setResponse(*U, *Udot, *Udotdot);
     
     // set the time to be t+deltaT
     double time = theModel->getCurrentDomainTime();
@@ -434,6 +464,6 @@ void CollocationHSIncrReduct::Print(OPS_Stream &s, int flag)
         s << "  theta: " << theta << endln;
         s << "  reduct: " << reduct << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-    } else 
+    } else
         s << "CollocationHSIncrReduct - no associated AnalysisModel\n";
 }

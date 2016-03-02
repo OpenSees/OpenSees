@@ -26,7 +26,7 @@
 #define KRAlphaExplicit_h
 
 // Developed: Chinmoy Kolay (chk311@lehigh.edu)
-// Implemented: Andreas Schellenberg (andreas.schellenberg@gmail.com) 
+// Implemented: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 08/14
 // Revision: A
 //
@@ -52,7 +52,7 @@ public:
     // constructors
     KRAlphaExplicit();
     KRAlphaExplicit(double rhoInf,
-        bool updDomFlag = false);
+        bool updElemDisp = false);
     
     // destructor
     ~KRAlphaExplicit();
@@ -84,8 +84,8 @@ private:
     double alphaF;
     double beta;
     double gamma;
+    bool updElemDisp;  // a flag indicating if element displacements are updated during commit
     double deltaT;
-    bool updDomFlag;  // a flag indicating if updateDomain() is called
     
     Matrix *alpha1, *alpha3;  // integration parameter matrices, alpha2 = (0.5 + gamma)*alpha1
     Matrix *Mhat;             // effective mass matrix for linear SOE

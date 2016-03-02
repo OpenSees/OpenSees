@@ -46,10 +46,10 @@ public:
     // constructors
     AlphaOSGeneralized_TP();
     AlphaOSGeneralized_TP(double rhoInf,
-        bool updDomFlag = false);
+        bool updElemDisp = false);
     AlphaOSGeneralized_TP(double alphaI, double alphaF,
         double beta, double gamma,
-        bool updDomFlag = false);
+        bool updElemDisp = false);
     
     // destructor
     ~AlphaOSGeneralized_TP();
@@ -68,6 +68,7 @@ public:
     int newStep(double deltaT);
     int revertToLastStep(void);
     int update(const Vector &deltaU);
+    int commit(void);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
@@ -82,12 +83,12 @@ private:
     double alphaF;
     double beta;
     double gamma;
-    bool updDomFlag;    // a flag indicating if updateDomain() is called
+    bool updElemDisp;  // a flag indicating if element displacements are updated during commit
     double deltaT;
     
     int updateCount;                                 // method should only have one update per step
     double c1, c2, c3;                               // some constants we need to keep
-    double alphaM, alphaD, alphaR, alphaKU, alphaP;  // some more constants we need to keep
+    double alphaM, alphaD, alphaR, alphaKU, alphaP;  // weighting factors we need to keep
     Vector *Ut, *Utdot, *Utdotdot;                   // response quantities at time t
     Vector *U, *Udot, *Udotdot;                      // response quantities at time t+deltaT
     Vector *Upt;                                     // predictor displacements at time t

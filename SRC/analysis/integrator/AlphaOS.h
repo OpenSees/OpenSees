@@ -46,9 +46,9 @@ public:
     // constructors
     AlphaOS();
     AlphaOS(double alpha,
-        bool updDomFlag = false);
+        bool updElemDisp = false);
     AlphaOS(double alpha, double beta, double gamma,
-        bool updDomFlag = false);
+        bool updElemDisp = false);
     
     // destructor
     ~AlphaOS();
@@ -76,7 +76,7 @@ private:
     double alpha;
     double beta;
     double gamma;
-    bool updDomFlag;    // a flag indicating if updateDomain() is called
+    bool updElemDisp;  // a flag indicating if element displacements are updated during commit
     double deltaT;
     
     int updateCount;                // method should only have one update per step

@@ -36,32 +36,24 @@
 
 
 TransientIntegrator *
-    OPS_NewKRAlphaExplicit_TP(void)
+    OPS_KRAlphaExplicit_TP(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;
     
     int argc = OPS_GetNumRemainingInputArgs();
-    if (argc != 1 && argc != 2) {
-        opserr << "WARNING - incorrect number of args want KRAlphaExplicit_TP $rhoInf <-updateDomain>\n";
+    if (argc != 1) {
+        opserr << "WARNING - incorrect number of args want KRAlphaExplicit_TP $rhoInf\n";
         return 0;
     }
     
-    bool updDomFlag = false;
-    double dData;
-    int numData = 1;
-    if (OPS_GetDouble(&numData, &dData) != 0) {
-        opserr << "WARNING - invalid args want KRAlphaExplicit_TP $rhoInf <-updateDomain>\n";
+    double rhoInf;
+    if (OPS_GetDouble(&argc, &rhoInf) != 0) {
+        opserr << "WARNING - invalid args want KRAlphaExplicit_TP $rhoInf\n";
         return 0;
     }
     
-    if (argc == 2) {
-        const char *argvLoc = OPS_GetString();
-        if (strcmp(argvLoc, "-updateDomain") == 0)
-            updDomFlag = true;
-    }
-    
-    theIntegrator = new KRAlphaExplicit_TP(dData, updDomFlag);
+    theIntegrator = new KRAlphaExplicit_TP(rhoInf);
     
     if (theIntegrator == 0)
         opserr << "WARNING - out of memory creating KRAlphaExplicit_TP integrator\n";
@@ -72,34 +64,29 @@ TransientIntegrator *
 
 KRAlphaExplicit_TP::KRAlphaExplicit_TP()
     : TransientIntegrator(INTEGRATOR_TAGS_KRAlphaExplicit_TP),
-    alphaI(0.5), alphaF(0.5), beta(0.0), gamma(0.0),
-    deltaT(0.0), updDomFlag(0),
-    alpha1(0), alpha3(0), Mhat(0),
+    alphaI(0.5), alphaF(0.5), beta(0.25), gamma(0.5),
+    deltaT(0.0), alpha1(0), alpha3(0), Mhat(0),
     updateCount(0), initAlphaMatrices(1),
     c1(0.0), c2(0.0), c3(0.0),
     alphaM(0.0), alphaD(0.5), alphaR(0.5), alphaP(0.5),
     Ut(0), Utdot(0), Utdotdot(0),
     U(0), Udot(0), Udotdot(0),
-    Ualpha(0), Ualphadot(0), Ualphadotdot(0),
     Utdothat(0), Put(0)
 {
     
 }
 
 
-KRAlphaExplicit_TP::KRAlphaExplicit_TP(double _rhoInf,
-    bool upddomflag)
+KRAlphaExplicit_TP::KRAlphaExplicit_TP(double _rhoInf)
     : TransientIntegrator(INTEGRATOR_TAGS_KRAlphaExplicit_TP),
     alphaI((2.0-_rhoInf)/(1.0+_rhoInf)), alphaF(1.0/(1.0+_rhoInf)),
     beta(1.0/(1.0+_rhoInf)/(1.0+_rhoInf)), gamma(0.5*(3.0-_rhoInf)/(1.0+_rhoInf)),
-    deltaT(0.0), updDomFlag(upddomflag),
-    alpha1(0), alpha3(0), Mhat(0),
+    deltaT(0.0), alpha1(0), alpha3(0), Mhat(0),
     updateCount(0),  initAlphaMatrices(1),
     c1(0.0), c2(0.0), c3(0.0),
     alphaM(0.0), alphaD(alphaF), alphaR(alphaF), alphaP(alphaF),
     Ut(0), Utdot(0), Utdotdot(0),
     U(0), Udot(0), Udotdot(0),
-    Ualpha(0), Ualphadot(0), Ualphadotdot(0),
     Utdothat(0), Put(0)
 {
     
@@ -127,12 +114,6 @@ KRAlphaExplicit_TP::~KRAlphaExplicit_TP()
         delete Udot;
     if (Udotdot != 0)
         delete Udotdot;
-    if (Ualpha != 0)
-        delete Ualpha;
-    if (Ualphadot != 0)
-        delete Ualphadot;
-    if (Ualphadotdot != 0)
-        delete Ualphadotdot;
     if (Utdothat != 0)
         delete Utdothat;
     if (Put != 0)
@@ -189,10 +170,9 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
         // get a pointer to the A matrix of the FullLinearSOE
         const Matrix *tmp = theFullLinSOE->getA();
         if (tmp == 0)  {
-            opserr << "WARNING KRAlphaExplicit_TP::domainChanged() - ";
+            opserr << "WARNING KRAlphaExplicit_TP::newStep() - ";
             opserr << "failed to get A matrix of FullGeneral LinearSOE\n";
             return -5;
-        
         }
         
         // calculate the integration parameter matrices
@@ -228,6 +208,21 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
         // switch the SOE back to the user specified one
         this->IncrementalIntegrator::setLinks(*theModel, *theLinSOE, theTest);
         
+        // get initial unbalance at time t (in case domain changed)
+        // warning: this will use committed stiffness prop. damping
+        // from current step instead of previous step
+        (*Utdotdot) = *Udotdot;
+        alphaM = 1.0;
+        alphaD = alphaR = alphaP = (1.0 - alphaF);
+        Udotdot->addMatrixVector(0.0, *alpha3, *Utdotdot, 1.0);
+        theModel->setAccel(*Udotdot);
+        this->TransientIntegrator::formUnbalance();
+        (*Put) = theLinSOE->getB();
+        // reset accelerations at t+deltaT
+        (*Udotdot) = *Utdotdot;
+        theModel->setAccel(*Udotdot);
+        
+        // set flag that initializations are done
         initAlphaMatrices = 0;
     }
     
@@ -236,20 +231,12 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
         return -6;
     }
     
-    // set response at t to be that at t+deltaT of previous step
-    (*Ut) = *U;
-    (*Utdot) = *Udot;
-    (*Utdotdot) = *Udotdot;
-    
-    // get unbalance at t and store it
-    alphaM = 1.0;
-    alphaD = alphaR = alphaP = (1.0 - alphaF);
-    Udotdot->addMatrixVector(0.0, *alpha3, *Utdotdot, 1.0);
-    this->TransientIntegrator::formUnbalance();
-    (*Put) = theLinSOE->getB();
+    // set weighting factors for subsequent iterations
+    alphaM = 0.0;
+    alphaD = alphaR = alphaP = alphaF;
     
     // determine new response at time t+deltaT
-    Utdothat->addMatrixVector(0.0, *alpha1, *Utdotdot, deltaT); 
+    Utdothat->addMatrixVector(0.0, *alpha1, *Utdotdot, deltaT);
     
     U->addVector(1.0, *Utdot, deltaT);
     double a1 = (0.5 + gamma)*deltaT;
@@ -257,10 +244,13 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
     
     Udot->addVector(1.0, *Utdothat, 1.0);
     
-    Udotdot->Zero();
+    // no need to zero accelerations because alphaM = 0
+    //Udotdot->Zero();
+    //theModel->setResponse(*U, *Udot, *Udotdot);
     
     // set the trial response quantities
-    theModel->setResponse(*U, *Udot, *Udotdot);
+    theModel->setDisp(*U);
+    theModel->setVel(*Udot);
     
     // increment the time to t+deltaT and apply the load
     double time = theModel->getCurrentDomainTime();
@@ -269,10 +259,6 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
         opserr << "WARNING KRAlphaExplicit_TP::newStep() - failed to update the domain\n";
         return -7;
     }
-    
-    // modify constants for subsequent iterations
-    alphaM = 0.0;
-    alphaD = alphaR = alphaP = alphaF;
     
     return 0;
 }
@@ -340,13 +326,13 @@ int KRAlphaExplicit_TP::formUnbalance()
     }
     
     if (this->formElementResidual() < 0)  {
-        opserr << "WARNING KRAlphaExplicit_TP::formUnbalance ";
+        opserr << "WARNING KRAlphaExplicit_TP::formUnbalance() ";
         opserr << " - this->formElementResidual failed\n";
         return -2;
     }
     
     if (this->formNodalUnbalance() < 0)  {
-        opserr << "WARNING KRAlphaExplicit_TP::formUnbalance ";
+        opserr << "WARNING KRAlphaExplicit_TP::formUnbalance() ";
         opserr << " - this->formNodalUnbalance failed\n";
         return -3;
     }
@@ -415,7 +401,7 @@ int KRAlphaExplicit_TP::formNodUnbalance(DOF_Group *theDof)
 
 int KRAlphaExplicit_TP::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -442,12 +428,6 @@ int KRAlphaExplicit_TP::domainChanged()
             delete Udot;
         if (Udotdot != 0)
             delete Udotdot;
-        if (Ualpha != 0)
-            delete Ualpha;
-        if (Ualphadot != 0)
-            delete Ualphadot;
-        if (Ualphadotdot != 0)
-            delete Ualphadotdot;
         if (Utdothat != 0)
             delete Utdothat;
         if (Put != 0)
@@ -463,9 +443,6 @@ int KRAlphaExplicit_TP::domainChanged()
         U = new Vector(size);
         Udot = new Vector(size);
         Udotdot = new Vector(size);
-        Ualpha = new Vector(size);
-        Ualphadot = new Vector(size);
-        Ualphadotdot = new Vector(size);
         Utdothat = new Vector(size);
         Put = new Vector(size);
         
@@ -479,12 +456,9 @@ int KRAlphaExplicit_TP::domainChanged()
             U == 0 || U->Size() != size ||
             Udot == 0 || Udot->Size() != size ||
             Udotdot == 0 || Udotdot->Size() != size ||
-            Ualpha == 0 || Ualpha->Size() != size ||
-            Ualphadot == 0 || Ualphadot->Size() != size ||
-            Ualphadotdot == 0 || Ualphadotdot->Size() != size ||
             Utdothat == 0 || Utdothat->Size() != size ||
             Put == 0 || Put->Size() != size)  {
-           
+            
             opserr << "WARNING KRAlphaExplicit_TP::domainChanged() - ";
             opserr << "ran out of memory\n";
             
@@ -507,12 +481,6 @@ int KRAlphaExplicit_TP::domainChanged()
                 delete Udot;
             if (Udotdot != 0)
                 delete Udotdot;
-            if (Ualpha != 0)
-                delete Ualpha;
-            if (Ualphadot != 0)
-                delete Ualphadot;
-            if (Ualphadotdot != 0)
-                delete Ualphadotdot;
             if (Utdothat != 0)
                 delete Utdothat;
             if (Put != 0)
@@ -521,7 +489,6 @@ int KRAlphaExplicit_TP::domainChanged()
             alpha1 = 0; alpha3 = 0; Mhat = 0;
             Ut = 0; Utdot = 0; Utdotdot = 0;
             U = 0; Udot = 0; Udotdot = 0;
-            Ualpha = 0; Ualphadot = 0; Ualphadotdot = 0;
             Utdothat = 0; Put = 0;
             
             return -1;
@@ -530,7 +497,7 @@ int KRAlphaExplicit_TP::domainChanged()
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
@@ -581,20 +548,20 @@ int KRAlphaExplicit_TP::update(const Vector &aiPlusOne)
     AnalysisModel *theModel = this->getAnalysisModel();
     if (theModel == 0)  {
         opserr << "WARNING KRAlphaExplicit_TP::update() - no AnalysisModel set\n";
-        return -1;
+        return -2;
     }
     
     // check domainChanged() has been called, i.e. Ut will not be zero
     if (Ut == 0)  {
         opserr << "WARNING KRAlphaExplicit_TP::update() - domainChange() failed or not called\n";
-        return -2;
+        return -3;
     }
     
     // check aiPlusOne is of correct size
     if (aiPlusOne.Size() != U->Size())  {
         opserr << "WARNING KRAlphaExplicit_TP::update() - Vectors of incompatible size ";
         opserr << " expecting " << U->Size() << " obtained " << aiPlusOne.Size() << endln;
-        return -3;
+        return -4;
     }
     
     //  determine the response at t+deltaT
@@ -602,32 +569,57 @@ int KRAlphaExplicit_TP::update(const Vector &aiPlusOne)
     
     //Udot->addVector(1.0, aiPlusOne, c2);  // c2 = 0.0
     
-    Udotdot->addVector(0.0, aiPlusOne, 1.0);
+    Udotdot->addVector(0.0, aiPlusOne, c3);
     
     // update the response at the DOFs
-    theModel->setResponse(*U, *Udot, *Udotdot);
-    if (updDomFlag == true)  {
-        if (theModel->updateDomain() < 0)  {
-            opserr << "WARNING KRAlphaExplicit_TP::update() - failed to update the domain\n";
-            return -4;
-        }
+    theModel->setAccel(*Udotdot);
+    if (theModel->updateDomain() < 0)  {
+        opserr << "WARNING KRAlphaExplicit_TP::update() - failed to update the domain\n";
+        return -5;
     }
     
     return 0;
 }
 
 
+int KRAlphaExplicit_TP::commit(void)
+{
+    // get a pointer to the LinearSOE and the AnalysisModel
+    LinearSOE *theLinSOE = this->getLinearSOE();
+    AnalysisModel *theModel = this->getAnalysisModel();
+    if (theLinSOE == 0 || theModel == 0)  {
+        opserr << "WARNING KRAlphaExplicit_TP::commit() - ";
+        opserr << "no LinearSOE or AnalysisModel has been set\n";
+        return -1;
+    }
+    
+    // set response at t of next step to be that at t+deltaT
+    (*Ut) = *U;
+    (*Utdot) = *Udot;
+    (*Utdotdot) = *Udotdot;
+    
+    // get unbalance Put and store it for next step
+    alphaM = 1.0;
+    alphaD = alphaR = alphaP = (1.0 - alphaF);
+    Udotdot->addMatrixVector(0.0, *alpha3, *Utdotdot, 1.0);
+    theModel->setAccel(*Udotdot);
+    this->TransientIntegrator::formUnbalance();
+    (*Put) = theLinSOE->getB();
+    // reset accelerations at t+deltaT
+    (*Udotdot) = *Utdotdot;
+    theModel->setAccel(*Udotdot);
+    
+    return theModel->commitDomain();
+}
+
+
 int KRAlphaExplicit_TP::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(5);
+    Vector data(4);
     data(0) = alphaI;
     data(1) = alphaF;
     data(2) = beta;
     data(3) = gamma;
-    if (updDomFlag == false) 
-        data(4) = 0.0;
-    else
-        data(4) = 1.0;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING KRAlphaExplicit_TP::sendSelf() - could not send data\n";
@@ -640,7 +632,7 @@ int KRAlphaExplicit_TP::sendSelf(int cTag, Channel &theChannel)
 
 int KRAlphaExplicit_TP::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(5);
+    Vector data(4);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING KRAlphaExplicit_TP::recvSelf() - could not receive data\n";
         return -1;
@@ -650,10 +642,6 @@ int KRAlphaExplicit_TP::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker
     alphaF = data(1);
     beta   = data(2);
     gamma  = data(3);
-    if (data(4) == 0.0)
-        updDomFlag = false;
-    else
-        updDomFlag = true;
     
     alphaM = 0.0;
     alphaD = alphaF;
@@ -672,10 +660,6 @@ void KRAlphaExplicit_TP::Print(OPS_Stream &s, int flag)
         s << "KRAlphaExplicit_TP - currentTime: " << currentTime << endln ;
         s << "  alphaI: " << alphaI << "  alphaF: " << alphaF  << "  beta: " << beta  << "  gamma: " << gamma << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-        if (updDomFlag)
-            s << "  update Domain: yes\n";
-        else
-            s << "  update Domain: no\n";
-    } else 
+    } else
         s << "KRAlphaExplicit_TP - no associated AnalysisModel\n";
 }

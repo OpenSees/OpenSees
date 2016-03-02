@@ -18,17 +18,15 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-05-19 22:17:31 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/HHTHSFixedNumIter.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 10/05
 // Revision: A
 //
 // Description: This file contains the implementation of the HHTHSFixedNumIter class.
-//
-// What: "@(#) HHTHSFixedNumIter.cpp, revA"
 
 #include <HHTHSFixedNumIter.h>
 #include <FE_Element.h>
@@ -42,11 +40,65 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <ConvergenceTest.h>
+#include <elementAPI.h>
+#define OPS_Export 
+
+
+TransientIntegrator *
+    OPS_HHTHSFixedNumIter(void)
+{
+    // pointer to an integrator that will be returned
+    TransientIntegrator *theIntegrator = 0;
+    
+    int argc = OPS_GetNumRemainingInputArgs();
+    if (argc != 1 && argc != 3 && argc != 4 && argc != 6) {
+        opserr << "WARNING - incorrect number of args want HHTHSFixedNumIter $rhoInf <-polyOrder $O>\n";
+        opserr << "          or HHTHSFixedNumIter $alphaI $alphaF $beta $gamma <-polyOrder $O>\n";
+        return 0;
+    }
+    
+    double dData[4];
+    int polyOrder = 2;
+    bool updDomFlag = true;
+    int numData;
+    if (argc < 4)
+        numData = 1;
+    else
+        numData = 4;
+    
+    if (OPS_GetDouble(&numData, dData) != 0) {
+        opserr << "WARNING - invalid args want HHTHSFixedNumIter $rhoInf <-polyOrder $O>\n";
+        opserr << "          or HHTHSFixedNumIter $alphaI $alphaF $beta $gamma <-polyOrder $O>\n";
+        return 0;
+    }
+    
+    if (argc == 3 || argc == 6) {
+        const char *argvLoc = OPS_GetString();
+        if (strcmp(argvLoc, "-polyOrder") == 0) {
+            numData = 1;
+            if (OPS_GetInt(&numData, &polyOrder) != 0) {
+                opserr << "WARNING - invalid polyOrder want HHTHSFixedNumIter $rhoInf <-polyOrder $O>\n";
+                opserr << "          or HHTHSFixedNumIter $alphaI $alphaF $beta $gamma <-polyOrder $O>\n";
+            }
+        }
+    }
+    
+    if (argc < 4)
+        theIntegrator = new HHTHSFixedNumIter(dData[0], polyOrder, updDomFlag);
+    else
+        theIntegrator = new HHTHSFixedNumIter(dData[0], dData[1], dData[2], dData[3], polyOrder, updDomFlag);
+    
+    if (theIntegrator == 0)
+        opserr << "WARNING - out of memory creating HHTHSFixedNumIter integrator\n";
+    
+    return theIntegrator;
+}
 
 
 HHTHSFixedNumIter::HHTHSFixedNumIter()
     : TransientIntegrator(INTEGRATOR_TAGS_HHTHSFixedNumIter),
-    alphaI(0.5), alphaF(0.5), beta(0.0), gamma(0.0), polyOrder(2),
+    alphaI(0.5), alphaF(0.5), beta(0.25), gamma(0.5),
+    polyOrder(2), updDomFlag(true),
     deltaT(0.0), c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
@@ -56,11 +108,13 @@ HHTHSFixedNumIter::HHTHSFixedNumIter()
 }
 
 
-HHTHSFixedNumIter::HHTHSFixedNumIter(double _rhoInf, int polyorder)
+HHTHSFixedNumIter::HHTHSFixedNumIter(double _rhoInf,
+    int polyorder, bool upddomflag)
     : TransientIntegrator(INTEGRATOR_TAGS_HHTHSFixedNumIter),
     alphaI((2.0-_rhoInf)/(1.0+_rhoInf)), alphaF(1.0/(1.0+_rhoInf)),
     beta(1.0/(1.0+_rhoInf)/(1.0+_rhoInf)), gamma(0.5*(3.0-_rhoInf)/(1.0+_rhoInf)),
-    polyOrder(polyorder), deltaT(0.0), c1(0.0), c2(0.0), c3(0.0), x(1.0),
+    polyOrder(polyorder), updDomFlag(upddomflag),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
     Utm1(0), Utm2(0), scaledDeltaU(0)
@@ -70,10 +124,11 @@ HHTHSFixedNumIter::HHTHSFixedNumIter(double _rhoInf, int polyorder)
 
 
 HHTHSFixedNumIter::HHTHSFixedNumIter(double _alphaI, double _alphaF,
-    double _beta, double _gamma, int polyorder)
+    double _beta, double _gamma, int polyorder, bool upddomflag)
     : TransientIntegrator(INTEGRATOR_TAGS_HHTHSFixedNumIter),
     alphaI(_alphaI), alphaF(_alphaF), beta(_beta), gamma(_gamma),
-    polyOrder(polyorder), deltaT(0.0), c1(0.0), c2(0.0), c3(0.0), x(1.0),
+    polyOrder(polyorder), updDomFlag(upddomflag),
+    deltaT(0.0), c1(0.0), c2(0.0), c3(0.0), x(1.0),
     Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
     Ualpha(0), Ualphadot(0), Ualphadotdot(0),
     Utm1(0), Utm2(0), scaledDeltaU(0)
@@ -124,7 +179,7 @@ int HHTHSFixedNumIter::newStep(double _deltaT)
     if (deltaT <= 0.0)  {
         opserr << "HHTHSFixedNumIter::newStep() - error in variable\n";
         opserr << "dT = " << deltaT << endln;
-        return -2;	
+        return -2;
     }
     
     // get a pointer to the AnalysisModel
@@ -137,7 +192,7 @@ int HHTHSFixedNumIter::newStep(double _deltaT)
     
     if (U == 0)  {
         opserr << "HHTHSFixedNumIter::newStep() - domainChange() failed or hasn't been called\n";
-        return -3;	
+        return -3;
     }
     
     // set response at t to be that at t+deltaT of previous step
@@ -195,15 +250,13 @@ int HHTHSFixedNumIter::formEleTangent(FE_Element *theEle)
 {
     theEle->zeroTangent();
     
-    if (statusFlag == CURRENT_TANGENT)  {
+    if (statusFlag == CURRENT_TANGENT)
         theEle->addKtToTang(alphaF*c1);
-        theEle->addCtoTang(alphaF*c2);
-        theEle->addMtoTang(alphaI*c3);
-    } else if (statusFlag == INITIAL_TANGENT)  {
+    else if (statusFlag == INITIAL_TANGENT)
         theEle->addKiToTang(alphaF*c1);
-        theEle->addCtoTang(alphaF*c2);
-        theEle->addMtoTang(alphaI*c3);
-    }
+    
+    theEle->addCtoTang(alphaF*c2);
+    theEle->addMtoTang(alphaI*c3);
     
     return 0;
 }
@@ -222,7 +275,7 @@ int HHTHSFixedNumIter::formNodTangent(DOF_Group *theDof)
 
 int HHTHSFixedNumIter::domainChanged()
 {
-    AnalysisModel *myModel = this->getAnalysisModel();
+    AnalysisModel *theModel = this->getAnalysisModel();
     LinearSOE *theLinSOE = this->getLinearSOE();
     const Vector &x = theLinSOE->getX();
     int size = x.Size();
@@ -284,7 +337,7 @@ int HHTHSFixedNumIter::domainChanged()
             Utm2 == 0 || Utm2->Size() != size ||
             scaledDeltaU == 0 || scaledDeltaU->Size() != size)  {
             
-            opserr << "HHTHSFixedNumIter::domainChanged - ran out of memory\n";
+            opserr << "HHTHSFixedNumIter::domainChanged() - ran out of memory\n";
             
             // delete the old
             if (Ut != 0)
@@ -319,18 +372,18 @@ int HHTHSFixedNumIter::domainChanged()
             
             return -1;
         }
-    }        
+    }
     
     // now go through and populate U, Udot and Udotdot by iterating through
     // the DOF_Groups and getting the last committed velocity and accel
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
+    DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = theDOFs()) != 0)  {
         const ID &id = dofPtr->getID();
         int idSize = id.Size();
         
         int i;
-        const Vector &disp = dofPtr->getCommittedDisp();	
+        const Vector &disp = dofPtr->getCommittedDisp();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
@@ -348,7 +401,7 @@ int HHTHSFixedNumIter::domainChanged()
             }
         }
         
-        const Vector &accel = dofPtr->getCommittedAccel();	
+        const Vector &accel = dofPtr->getCommittedAccel();
         for (i=0; i < idSize; i++)  {
             int loc = id(i);
             if (loc >= 0)  {
@@ -383,7 +436,7 @@ int HHTHSFixedNumIter::update(const Vector &deltaU)
     if (Ut == 0)  {
         opserr << "WARNING HHTHSFixedNumIter::update() - domainChange() failed or not called\n";
         return -3;
-    }	
+    }
     
     // check deltaU is of correct size
     if (deltaU.Size() != U->Size())  {
@@ -407,6 +460,7 @@ int HHTHSFixedNumIter::update(const Vector &deltaU)
     }
     else  {
         opserr << "WARNING HHTHSFixedNumIter::update() - polyOrder > 3 not supported\n";
+        return -5;
     }
     
     // determine the response at t+deltaT
@@ -427,10 +481,10 @@ int HHTHSFixedNumIter::update(const Vector &deltaU)
     Ualphadotdot->addVector((1.0-alphaI), *Udotdot, alphaI);
     
     // update the response at the DOFs
-    theModel->setResponse(*Ualpha,*Ualphadot,*Ualphadotdot);
+    theModel->setResponse(*Ualpha, *Ualphadot, *Ualphadotdot);
     if (theModel->updateDomain() < 0)  {
         opserr << "HHTHSFixedNumIter::update() - failed to update the domain\n";
-        return -5;
+        return -6;
     }
     
     return 0;
@@ -445,34 +499,36 @@ int HHTHSFixedNumIter::commit(void)
         return -1;
     }
     
-    LinearSOE *theSOE = this->getLinearSOE();
-    if (theSOE == 0)  {
-        opserr << "WARNING HHTHSFixedNumIter::commit() - no LinearSOE set\n";
-        return -2;
+    if (updDomFlag == true)  {
+        LinearSOE *theSOE = this->getLinearSOE();
+        if (theSOE == 0)  {
+            opserr << "WARNING HHTHSFixedNumIter::commit() - no LinearSOE set\n";
+            return -2;
+        }
+        
+        if (this->formTangent(statusFlag) < 0)  {
+            opserr << "WARNING HHTHSFixedNumIter::commit() - "
+                << "the Integrator failed in formTangent()\n";
+            return -3;
+        }
+        
+        if (theSOE->solve() < 0)  {
+            opserr << "WARNING HHTHSFixedNumIter::commit() - "
+                << "the LinearSysOfEqn failed in solve()\n";
+            return -4;
+        }
+        const Vector &deltaU = theSOE->getX();
+        
+        //  determine the response at t+deltaT
+        U->addVector(1.0, deltaU, c1);
+        
+        Udot->addVector(1.0, deltaU, c2);
+        
+        Udotdot->addVector(1.0, deltaU, c3);
     }
-    
-    if (this->formTangent(statusFlag) < 0)  {
-        opserr << "WARNING HHTHSFixedNumIter::commit() - "
-            << "the Integrator failed in formTangent()\n";	
-        return -3;
-    }
-    
-    if (theSOE->solve() < 0)  {
-        opserr << "WARNING HHTHSFixedNumIter::commit() - "
-            << "the LinearSysOfEqn failed in solve()\n";	
-        return -4;
-    }
-    const Vector &deltaU = theSOE->getX();
-    
-    //  determine the response at t+deltaT
-    U->addVector(1.0, deltaU, c1);
-    
-    Udot->addVector(1.0, deltaU, c2);
-    
-    Udotdot->addVector(1.0, deltaU, c3);
     
     // update the response at the DOFs
-    theModel->setResponse(*U,*Udot,*Udotdot);
+    theModel->setResponse(*U, *Udot, *Udotdot);
     
     // set the time to be t+deltaT
     double time = theModel->getCurrentDomainTime();
@@ -485,12 +541,16 @@ int HHTHSFixedNumIter::commit(void)
 
 int HHTHSFixedNumIter::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(5);
+    Vector data(6);
     data(0) = alphaI;
     data(1) = alphaF;
     data(2) = beta;
     data(3) = gamma;
     data(4) = polyOrder;
+    if (updDomFlag == true) 
+        data(5) = 1.0;
+    else
+        data(5) = 0.0;
     
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING HHTHSFixedNumIter::sendSelf() - could not send data\n";
@@ -503,10 +563,9 @@ int HHTHSFixedNumIter::sendSelf(int cTag, Channel &theChannel)
 
 int HHTHSFixedNumIter::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(5);
+    Vector data(6);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING HHTHSFixedNumIter::recvSelf() - could not receive data\n";
-        alphaI = 0.5; alphaF = 0.5; polyOrder = 2;
         return -1;
     }
     
@@ -515,6 +574,10 @@ int HHTHSFixedNumIter::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker 
     beta      = data(2);
     gamma     = data(3);
     polyOrder = int(data(4));
+    if (data(5) == 1.0)
+        updDomFlag = true;
+    else
+        updDomFlag = false;
     
     return 0;
 }
@@ -526,9 +589,14 @@ void HHTHSFixedNumIter::Print(OPS_Stream &s, int flag)
     if (theModel != 0)  {
         double currentTime = theModel->getCurrentDomainTime();
         s << "HHTHSFixedNumIter - currentTime: " << currentTime << endln;
-        s << "  alphaI: " << alphaI << "  alphaF: " << alphaF  << "  beta: " << beta  << "  gamma: " << gamma << endln;
-        s << "  polyOrder: " << polyOrder << endln;
+        s << "  alphaI: " << alphaI << "  alphaF: " << alphaF;
+        s << "  beta: " << beta  << "  gamma: " << gamma << endln;
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
-    } else 
+        s << "  polyOrder: " << polyOrder << endln;
+        if (updDomFlag)
+            s << "  update Domain: yes\n";
+        else
+            s << "  update Domain: no\n";
+    } else
         s << "HHTHSFixedNumIter - no associated AnalysisModel\n";
 }

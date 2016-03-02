@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2009-05-19 22:16:53 $
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/CollocationHSIncrReduct.h,v $
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef CollocationHSIncrReduct_h
 #define CollocationHSIncrReduct_h
@@ -35,8 +35,6 @@
 // for hybrid simulation where a reduction factor, that modifies the response
 // increments, is introduced to enhance the smoothness of the convergence path and to
 // reduce the possibility of spurious loading/unloading cycles during iteration.
-//
-// What: "@(#) CollocationHSIncrReduct.h, revA"
 
 #include <TransientIntegrator.h>
 

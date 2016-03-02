@@ -20,7 +20,7 @@
 
 // $Revision$
 // $Date$
-// $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/NewmarkHSFixedNumIter.h,v $
+// $URL$
 
 #ifndef NewmarkHSFixedNumIter_h
 #define NewmarkHSFixedNumIter_h

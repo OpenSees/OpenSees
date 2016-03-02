@@ -65,6 +65,7 @@ public:
     int newStep(double deltaT);
     int revertToLastStep(void);
     int update(const Vector &deltaU);
+    int commit(void);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
@@ -80,7 +81,7 @@ private:
     double deltaT;
     
     double c1, c2, c3;                      // some constants we need to keep
-    double alphaM, alphaD, alphaR, alphaP;  // some more constants we need to keep
+    double alphaM, alphaD, alphaR, alphaP;  // weighting factors we need to keep
     Vector *Ut, *Utdot, *Utdotdot;          // response quantities at time t
     Vector *U, *Udot, *Udotdot;             // response quantities at time t + deltaT
     Vector *Put;                            // unbalance at time t
