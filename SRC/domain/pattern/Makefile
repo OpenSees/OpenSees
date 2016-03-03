@@ -28,6 +28,7 @@ OBJS       = $(RELIABILITY_OBJS) \
 	UniformRotationalExcitation.o \
 	TimeSeriesIntegrator.o \
 	TrapezoidalTimeSeriesIntegrator.o \
+	SimpsonTimeSeriesIntegrator.o \
 	MultiSupportPattern.o \
 	TclSeriesCommand.o \
 	PulseSeries.o \

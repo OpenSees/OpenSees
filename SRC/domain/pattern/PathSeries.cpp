@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.10 $
-// $Date: 2010-02-04 00:34:10 $
-// $Source: /usr/local/cvs/OpenSees/SRC/domain/pattern/PathSeries.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
                                                                         
 // Written: fmk 
 // Created: 07/99
@@ -30,9 +30,6 @@
 // PathSeries is a concrete class. A PathSeries object provides
 // a linear time series. the factor is given by the pseudoTime and 
 // a constant factor provided in the constructor.
-//
-// What: "@(#) PathSeries.C, revA"
-
 
 #include <PathSeries.h>
 #include <Vector.h>
@@ -45,6 +42,7 @@ using std::ifstream;
 #include <iomanip>
 using std::ios;
 
+
 PathSeries::PathSeries()	
   :TimeSeries(TSERIES_TAG_PathSeries),
    thePath(0), pathTimeIncr(0.0), cFactor(0.0), otherDbTag(0), lastSendCommitTag(-1)
@@ -52,16 +50,26 @@ PathSeries::PathSeries()
   // does nothing
 }
 
+
 PathSeries::PathSeries(int tag,
 		       const Vector &theLoadPath, 
 		       double theTimeIncr, 
 		       double theFactor,
-		       bool last)
+		       bool last,
+               bool prependZero,
+               double tStart)
   :TimeSeries(tag, TSERIES_TAG_PathSeries),
-   thePath(0), pathTimeIncr(theTimeIncr), cFactor(theFactor), otherDbTag(0), lastSendCommitTag(-1), useLast(last)
+   thePath(0), pathTimeIncr(theTimeIncr), cFactor(theFactor),
+   otherDbTag(0), lastSendCommitTag(-1), useLast(last), startTime(tStart)
 {
   // create a copy of the vector containg path points
-  thePath = new Vector(theLoadPath);
+  if (prependZero == false) {
+    thePath = new Vector(theLoadPath);
+  } else {
+    // prepend a zero value
+    thePath = new Vector(1 + theLoadPath.Size());
+    thePath->Assemble(theLoadPath, 1);
+  }
 
   // ensure we did not run out of memory
   if (thePath == 0 || thePath->Size() == 0) {
@@ -78,12 +86,15 @@ PathSeries::PathSeries(int tag,
 		       const char *fileName, 
 		       double theTimeIncr, 
 		       double theFactor,
-		       bool last)
+		       bool last,
+               bool prependZero,
+               double tStart)
   :TimeSeries(tag, TSERIES_TAG_PathSeries),
-   thePath(0), pathTimeIncr(theTimeIncr), cFactor(theFactor), otherDbTag(0), lastSendCommitTag(-1), useLast(last)
+   thePath(0), pathTimeIncr(theTimeIncr), cFactor(theFactor),
+   otherDbTag(0), lastSendCommitTag(-1), useLast(last), startTime(tStart)
 {
   // determine the number of data points .. open file and count num entries
-  int numDataPoints =0;
+  int numDataPoints = 0;
   double dataPoint;
 
   ifstream theFile;
@@ -101,6 +112,10 @@ PathSeries::PathSeries(int tag,
   // create a vector and read in the data
   if (numDataPoints != 0) {
 
+    // increment size if we need to prepend a zero value
+    if (prependZero == true)
+      numDataPoints++;
+    
     // first open the file
     ifstream theFile1;
     theFile1.open(fileName, ios::in);
@@ -125,6 +140,8 @@ PathSeries::PathSeries(int tag,
       // read the data from the file
       else {
 	int count = 0;
+    if (prependZero == true)
+      count++;
 	while (theFile1 >> dataPoint) {
 	  (*thePath)(count) = dataPoint;
 	  count++;
@@ -144,20 +161,23 @@ PathSeries::~PathSeries()
     delete thePath;
 }
 
+
 TimeSeries *
 PathSeries::getCopy(void) {
-  return new PathSeries(this->getTag(), *thePath, pathTimeIncr, cFactor);
+  return new PathSeries(this->getTag(), *thePath, pathTimeIncr, cFactor,
+                        useLast, false, startTime);
 }
+
 
 double
 PathSeries::getFactor(double pseudoTime)
 {
   // check for a quick return
-  if (pseudoTime < 0.0 || thePath == 0)
+  if (pseudoTime < startTime || thePath == 0)
     return 0.0;
 
   // determine indexes into the data array whose boundary holds the time
-  double incr = pseudoTime/pathTimeIncr; 
+  double incr = (pseudoTime-startTime)/pathTimeIncr; 
   int incr1 = floor(incr);
   int incr2 = incr1+1;
 
@@ -169,7 +189,7 @@ PathSeries::getFactor(double pseudoTime)
   } else {
     double value1 = (*thePath)[incr1];
     double value2 = (*thePath)[incr2];
-    return cFactor*(value1 + (value2-value1)*(pseudoTime/pathTimeIncr - incr1));
+    return cFactor*(value1 + (value2-value1)*(incr - incr1));
   }
 }
 
@@ -182,8 +202,9 @@ PathSeries::getDuration()
     opserr << "WARNING -- PathSeries::getDuration() on empty Vector" << endln;
 	return 0.0;
   }
-  return (thePath->Size() * pathTimeIncr);
+  return (startTime + thePath->Size()*pathTimeIncr);
 }
+
 
 double
 PathSeries::getPeakFactor()
@@ -208,12 +229,13 @@ PathSeries::getPeakFactor()
   return (peak*cFactor);
 }
 
+
 int
 PathSeries::sendSelf(int commitTag, Channel &theChannel)
 {
   int dbTag = this->getDbTag();
 
-  Vector data(6);
+  Vector data(7);
   data(0) = cFactor;
   data(1) = pathTimeIncr;
   data(2) = -1;
@@ -237,7 +259,9 @@ PathSeries::sendSelf(int commitTag, Channel &theChannel)
   else
     data(5) = 0;
 
-  int result = theChannel.sendVector(dbTag,commitTag, data);
+  data(6) = startTime;
+
+  int result = theChannel.sendVector(dbTag, commitTag, data);
   if (result < 0) {
     opserr << "PathSeries::sendSelf() - channel failed to send data\n";
     return result;
@@ -267,8 +291,8 @@ PathSeries::recvSelf(int commitTag, Channel &theChannel,
 {
   int dbTag = this->getDbTag();
 
-  Vector data(6);
-  int result = theChannel.recvVector(dbTag,commitTag, data);
+  Vector data(7);
+  int result = theChannel.recvVector(dbTag, commitTag, data);
   if (result < 0) {
     opserr << "PathSeries::sendSelf() - channel failed to receive data\n";
     cFactor = 1.0;
@@ -285,6 +309,8 @@ PathSeries::recvSelf(int commitTag, Channel &theChannel,
     useLast = true;
   else
     useLast = false;
+
+  startTime = data(6);
   
   // get the path vector, only receive it once as it can't change
   if (thePath == 0 && size > 0) {
@@ -308,7 +334,6 @@ PathSeries::recvSelf(int commitTag, Channel &theChannel,
 
   return 0;    
 }
-
 
 
 void

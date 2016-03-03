@@ -18,9 +18,9 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.22 $
-// $Date: 2010-02-04 20:12:56 $
-// $Source: /usr/local/cvs/OpenSees/SRC/domain/pattern/TclSeriesCommand.cpp,v $
+// $Revision$
+// $Date$
+// $URL$
 
 // Written: fmk 
 // Created: 11/00
@@ -30,8 +30,6 @@
 // the Pattern command in the interpreter. It is invoked by the 
 // TclModelBuilder_addPattern function in the TclModelBuilder.C file. Current 
 // valid Pattern types are:
-
-// What: "@(#) TclPatternCommand.C, revA"
 
 #include <tcl.h>
 #include <Domain.h>
@@ -172,6 +170,9 @@ TclTimeSeriesCommand(ClientData clientData,
     int filePathName = 0;
     Vector *dataPath = 0;
     Vector *dataTime = 0;
+    bool useLast = false;
+    bool prependZero = false;
+    double startTime = 0.0;
 
     if (Tcl_GetInt(interp, argv[endMarker], &tag) == TCL_OK) {
       endMarker++;
@@ -192,7 +193,7 @@ TclTimeSeriesCommand(ClientData clientData,
       } 
 
       else if (strcmp(argv[endMarker],"-tag") == 0) {
-	// allow user to specify the factor
+	// allow user to specify the tag
 	endMarker++;
 	if (endMarker == argc || 
 	    Tcl_GetInt(interp, argv[endMarker], &tag) != TCL_OK) {
@@ -301,6 +302,27 @@ TclTimeSeriesCommand(ClientData clientData,
 	}
       }
       
+      else if (strcmp(argv[endMarker],"-useLast") == 0) {
+	    useLast = true;
+      }
+
+      else if (strcmp(argv[endMarker],"-prependZero") == 0) {
+	    prependZero = true;
+      }
+
+      else if (strcmp(argv[endMarker],"-startTime") == 0 ||
+          strcmp(argv[endMarker],"-tStart") == 0) {
+	// allow user to specify the start time
+	endMarker++;
+	if (endMarker == argc || 
+	    Tcl_GetDouble(interp, argv[endMarker], &startTime) != TCL_OK) {
+	  
+	  opserr << "WARNING invalid tStart " << argv[endMarker] << " - ";
+	  opserr << " Series -startTime tStart ... \n";
+	  return 0;
+	}
+      } 
+
       endMarker++;
     }
     
@@ -308,7 +330,8 @@ TclTimeSeriesCommand(ClientData clientData,
     if (filePathName != 0 && fileTimeName == 0 && timeIncr != 0.0) {
       //      const char *pwd = getInterpPWD(interp);
       //      simulationInfo.addInputFile(argv[filePathName], pwd);  
-      theSeries = new PathSeries(tag, argv[filePathName], timeIncr, cFactor);
+      theSeries = new PathSeries(tag, argv[filePathName], timeIncr, cFactor,
+                                 useLast, prependZero, startTime);
     }
 
     else if (fileName != 0) {
@@ -323,7 +346,8 @@ TclTimeSeriesCommand(ClientData clientData,
       theSeries = new PathTimeSeries(tag, argv[filePathName], argv[fileTimeName], cFactor); 
 
     } else if (dataPath != 0 && dataTime == 0 && timeIncr != 0.0) {
-      theSeries = new PathSeries(tag, *dataPath, timeIncr, cFactor); 
+      theSeries = new PathSeries(tag, *dataPath, timeIncr, cFactor,
+                                 useLast, prependZero, startTime);
       delete dataPath;
 
     } else if (dataPath != 0 && dataTime != 0) {

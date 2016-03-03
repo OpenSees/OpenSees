@@ -88,6 +88,7 @@
 #define REGION_TAG_MeshRegion      1
 
 #define TIMESERIES_INTEGRATOR_TAG_Trapezoidal 1
+#define TIMESERIES_INTEGRATOR_TAG_Simpson     2
 
 #define SECT_TAG_Section         1
 

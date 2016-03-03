@@ -18,11 +18,10 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.5 $
-// $Date: 2010-02-04 00:34:29 $
-// $Source: /usr/local/cvs/OpenSees/SRC/domain/pattern/PathSeries.h,v $
-                                                                        
-                                                                        
+// $Revision$
+// $Date$
+// $URL$
+
 #ifndef PathSeries_h
 #define PathSeries_h
 
@@ -35,8 +34,6 @@
 // load factor using user specified control points provided in a vector object.
 // the points in the vector are given at regular time increments pathTimeIncr
 // apart. (could be provided in another vector if different)
-//
-// What: "@(#) PathSeries.h, revA"
 
 #include <TimeSeries.h>
 
@@ -45,24 +42,28 @@ class Vector;
 class PathSeries : public TimeSeries
 {
   public:
-    // constructors  
+    // constructors
     PathSeries(int tag,
-	       const Vector &thePath, 
-	       double pathTimeIncr = 1.0, 
-	       double cfactor = 1.0,
-	       bool useLast = false);
+        const Vector &thePath,
+        double pathTimeIncr = 1.0,
+        double cfactor = 1.0,
+        bool useLast = false,
+        bool prependZero = false,
+        double startTime = 0.0);
     PathSeries(int tag,
-	       const char *fileName, 
-	       double pathTimeIncr = 1.0, 
-	       double cfactor = 1.0,
-	       bool useLast = false);    
-    PathSeries();    
+        const char *fileName, 
+        double pathTimeIncr = 1.0,
+        double cfactor = 1.0,
+        bool useLast = false,
+        bool prependZero = false,
+        double startTime = 0.0);
+    PathSeries();
     
-    // destructor    
+    // destructor
     ~PathSeries();
-
+    
     TimeSeries *getCopy(void);
-
+    
     // method to get factor
     double getFactor(double pseudoTime);
     double getDuration ();
@@ -71,10 +72,10 @@ class PathSeries : public TimeSeries
     
     // methods for output
     int sendSelf(int commitTag, Channel &theChannel);
-    int recvSelf(int commitTag, Channel &theChannel, 
-		 FEM_ObjectBroker &theBroker);
-
-    void Print(OPS_Stream &s, int flag =0);    
+    int recvSelf(int commitTag, Channel &theChannel,
+        FEM_ObjectBroker &theBroker);
+    
+    void Print(OPS_Stream &s, int flag =0);
     
   protected:
     
@@ -84,8 +85,8 @@ class PathSeries : public TimeSeries
     double cFactor;       // additional factor on the returned load factor
     int otherDbTag;       // a database tag needed for the vector object
     int lastSendCommitTag;
-
     bool useLast;
+    double startTime;
 };
 
 #endif

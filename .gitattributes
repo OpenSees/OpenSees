@@ -2775,6 +2775,8 @@ SRC/domain/pattern/PulseSeries.h -text
 SRC/domain/pattern/RectangularSeries.cpp -text
 SRC/domain/pattern/RectangularSeries.h -text
 SRC/domain/pattern/RectangularSeries.tex -text
+SRC/domain/pattern/SimpsonTimeSeriesIntegrator.cpp -text
+SRC/domain/pattern/SimpsonTimeSeriesIntegrator.h -text
 SRC/domain/pattern/SimulatedRandomProcessSeries.cpp -text
 SRC/domain/pattern/SimulatedRandomProcessSeries.h -text
 SRC/domain/pattern/TclPatternCommand.cpp -text
