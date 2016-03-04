@@ -5,7 +5,7 @@
 //								John Wallace
 //								University of California, Los Angeles
 //
-// Created: 07/2015
+// Created: 10/2015
 //
 // Description: This file contains the class implementation for uniaxialMaterial 
 // SteelMPF, which represents the well-known uniaxial constitutive nonlinear 
@@ -23,7 +23,7 @@
 //
 // Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/SteelMPF.h
 //
-// Rev: 1
+// Rev: 2
 
 
 #ifndef SteelMPF_h
@@ -37,11 +37,11 @@ public:
 	// Typical constructor
 	SteelMPF(int tag, double sigyieldp, double sigyieldn,
 		double E0, double bp, double bn, double R0, double a1, double a2);
-	
+
 	// Constructor with strain hardening parameters a3 and a4
 	SteelMPF(int tag, double sigyieldp, double sigyieldn,
-		double E0, double bp, double bn, double R0, double a1, double a2, double a3, double a4);
-	
+		double E0, double bp, double bn, double R0, double a1, double a2, double a3, double a4, double a5, double a6);
+
 	// Blank constructor
 	SteelMPF();
 
@@ -83,38 +83,99 @@ private:
 	double bn;			// Strain hardening ratio in compression
 	double R0;			// Initial value of the curvature parameter R 
 	double a1;			// Curvature degradation parameter 
+	double aa1;			// Curvature degradation parameter 
 	double a2;			// Curvature degradation parameter 
 	double a3;			// Isotropic hardening parameter 
 	double a4;			// Isotropic hardening parameter 
+	double a5;			// Isotropic hardening parameter 
+	double a6;			// Isotropic hardening parameter 
 
 	// TRIAL State Variables
 	double def;
 	double F;
 	double stif;
-	double R;
 
 	// CONVERGED State Variables
 	double defold;
 	double Fold;
 	double stifold;
-	double Rold;
 
-	// TRIAL History Variables 
-	double sigr;
-	double sig0;
-	double er;
-	double e0;
-	double emax;
+	// TRIAL History Variables
 	int inc;
+
+	double Rptwoprev;
+	double Rntwoprev;
+
+	int outp;
+	int outn;
+
+	double erp;
+	double sigrp;
+
+	double ern;
+	double sigrn;
+
+	double erpmaxmax;
+	double ernmaxmax;
+
+	double e0p;
+	double sig0p;
+
+	double e0n;
+	double sig0n;
+
+	double erntwoprev;
+	double sigrntwoprev;
+	double e0ntwoprev;
+	double sig0ntwoprev;
+
+	double erptwoprev;
+	double sigrptwoprev;
+	double e0ptwoprev;
+	double sig0ptwoprev;
+
+	double Rp;
+	double Rn;
+
 	int nloop;
 
 	// CONVERGED History Variables
-	double sigrold;
-	double sig0old;
-	double erold;
-	double e0old;
-	double emaxold;
 	int incold;
+
+	double Rptwoprevold; 
+	double Rntwoprevold; 
+
+	int outpold;
+	int outnold;
+
+	double erpold;
+	double sigrpold;
+
+	double ernold;
+	double sigrnold;
+
+	double erpmaxmaxold;
+	double ernmaxmaxold;
+
+	double e0pold;
+	double sig0pold;
+
+	double e0nold;
+	double sig0nold;
+
+	double erntwoprevold;
+	double sigrntwoprevold;
+	double e0ntwoprevold;
+	double sig0ntwoprevold;
+
+	double erptwoprevold;
+	double sigrptwoprevold;
+	double e0ptwoprevold;
+	double sig0ptwoprevold;
+
+	double Rpold;
+	double Rnold;
+
 	int nloopold;
 
 	// Calculates the trial state variables based on the trial strain
