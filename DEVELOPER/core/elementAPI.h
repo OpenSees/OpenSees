@@ -108,6 +108,19 @@ struct eleObject {
 
 typedef struct eleObject eleObj;
 
+class AnalysisModel;
+class EquiSolnAlgo;
+class ConstraintHandler;
+class DOF_Numberer;
+class LinearSOE;
+class EigenSOE;
+class StaticAnalysis ;
+class DirectIntegrationAnalysis;
+class VariableTimeStepDirectIntegrationAnalysis;
+class StaticIntegrator;
+class TransientIntegrator;
+class ConvergenceTest;
+
 #define OPS_Error ops_error_
 #define OPS_GetIntInput ops_getintinput_
 #define OPS_GetDoubleInput ops_getdoubleinput_
@@ -135,11 +148,27 @@ typedef struct eleObject eleObj;
 #define OPS_AllocateLimitCurve ops_allocatelimitcurve_//**MRL
 #define OPS_GetLimitCurveType ops_getlimitcurvetype_//**MRL
 
+#define OPS_GetAnalysisModel ops_getanalysismodel_
+#define OPS_GetAlgorithm ops_getalgorithm_
+#define OPS_GetHandler ops_gethandler_
+#define OPS_GetNumberer ops_getnumberer_
+#define OPS_GetSOE ops_getsoe_
+#define OPS_GetEigenSOE ops_geteigensoe_
+#define OPS_GetStaticAnalysis ops_getstaticanalysis_
+#define OPS_GetTransientAnalysis ops_gettransientanalysis_
+#define OPS_GetVariableTimeStepTransientAnalysis ops_getvariabletimesteptransientanalysis_
+#define OPS_GetNumEigen ops_getnumeigen_
+#define OPS_GetStaticIntegrator ops_getstaticintegrator_
+#define OPS_GetTransientIntegrator ops_gettransientintegrator_
+#define OPS_GetTest ops_gettest_
+#define OPS_builtModel ops_builtmodel_
+
 #ifdef __cplusplus
 extern "C" int        OPS_GetNDM();
 extern "C" int        OPS_GetNDF();
 extern "C" int        OPS_Error(char *, int length);
 extern "C" int        OPS_GetNumRemainingInputArgs();
+extern "C" int        OPS_ResetCurrentInputArg(int cArg);
 extern "C" int        OPS_GetIntInput(int *numData, int*data);
 extern "C" int        OPS_GetDoubleInput(int *numData, double *data);
 extern "C" const char *OPS_GetString(void); // does a strcpy
@@ -187,6 +216,21 @@ extern Domain *OPS_GetDomain(void);//**MRL
 extern FE_Datastore *OPS_GetFEDatastore();
 extern "C" const char *OPS_GetInterpPWD();
 
+extern "C" AnalysisModel			**OPS_GetAnalysisModel(void);
+extern "C" EquiSolnAlgo				**OPS_GetAlgorithm(void);
+extern "C" ConstraintHandler	**OPS_GetHandler(void);
+extern "C" DOF_Numberer				**OPS_GetNumberer(void);
+extern "C" LinearSOE					**OPS_GetSOE(void);
+extern "C" EigenSOE						**OPS_GetEigenSOE(void);
+extern "C" StaticAnalysis			**OPS_GetStaticAnalysis(void);
+extern "C" DirectIntegrationAnalysis									**OPS_GetTransientAnalysis(void);
+extern "C" VariableTimeStepDirectIntegrationAnalysis	**OPS_GetVariableTimeStepTransientAnalysis(void);
+extern "C" int								*OPS_GetNumEigen(void);
+extern "C" StaticIntegrator		**OPS_GetStaticIntegrator(void);
+extern "C" TransientIntegrator	**OPS_GetTransientIntegrator(void);
+extern "C" ConvergenceTest		**OPS_GetTest(void);
+extern "C" bool								*OPS_builtModel(void);
+
 #else
 
 int     OPS_GetNDF();
@@ -219,6 +263,21 @@ int    OPS_GetNodeVel(int *nodeTag, int *sizeData, double *data);
 int    OPS_GetNodeAcc(int *nodeTag, int *sizeData, double *data);
 int    OPS_GetNodeIncrDisp(int *nodeTag, int *sizeData, double *data);
 int    OPS_GetNodeIncrDeltaDisp(int *nodeTag, int *sizeData, double *data);
+
+AnalysisModel		**OPS_GetAnalysisModel(void);
+EquiSolnAlgo		**OPS_GetAlgorithm(void);
+ConstraintHandler **OPS_GetHandler(void);
+DOF_Numberer		**OPS_GetNumberer(void);
+LinearSOE				**OPS_GetSOE(void);
+EigenSOE				**OPS_GetEigenSOE(void);
+StaticAnalysis	**OPS_GetStaticAnalysis(void);
+DirectIntegrationAnalysis	**OPS_GetTransientAnalysis(void);
+VariableTimeStepDirectIntegrationAnalysis **OPS_GetVariableTimeStepTransientAnalysis(void);
+int							*OPS_GetNumEigen(void);
+StaticIntegrator	**OPS_GetStaticIntegrator(void);
+TransientIntegrator	**OPS_GetTransientIntegrator(void);
+ConvergenceTest		**OPS_GetTest(void);
+bool						*OPS_builtModel(void);
 
 #endif
 

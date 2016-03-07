@@ -11,8 +11,8 @@
 
 #define DllExport _declspec(dllexport)
 
-BOOL APIENTRY DllMain(HANDLE hModule,
-                      DWORD  ul_reason_for_call,
+BOOL APIENTRY DllMain(HANDLE hModule, 
+                      DWORD  ul_reason_for_call, 
                       LPVOID lpReserved)
 {
     return TRUE;
@@ -42,6 +42,20 @@ typedef int (*OPS_GetIntPtrType)();
 typedef FE_Datastore *(*OPS_GetFEDatastorePtrType)();
 typedef const char *(_cdecl *OPS_GetInterpPWD_PtrType)();
 
+typedef AnalysisModel **(*OPS_GetAnalysisModelPtrType)(void);
+typedef EquiSolnAlgo **(*OPS_GetAlgorithmPtrType)(void);
+typedef ConstraintHandler **(*OPS_GetHandlerPtrType)(void);
+typedef DOF_Numberer **(*OPS_GetNumbererPtrType)(void);
+typedef LinearSOE **(*OPS_GetSOEPtrType)(void);
+typedef EigenSOE **(*OPS_GetEigenSOEPtrType)(void);
+typedef StaticAnalysis **(*OPS_GetStaticAnalysisPtrType)(void);
+typedef DirectIntegrationAnalysis **(*OPS_GetTransientAnalysisPtrType)(void);
+typedef VariableTimeStepDirectIntegrationAnalysis **(*OPS_GetVariableTimeStepTransientAnalysisPtrType)(void);
+typedef int *(*OPS_GetNumEigenPtrType)(void);
+typedef StaticIntegrator **(*OPS_GetStaticIntegratorPtrType)(void);
+typedef TransientIntegrator **(*OPS_GetTransientIntegratorPtrType)(void);
+typedef ConvergenceTest **(*OPS_GetTestPtrType)(void);
+typedef bool *(*OPS_builtModelPtrType)(void);
 
 //int    OPS_InvokeMaterial(struct eleObj *, int *,modelState *, double *, double *, double *, int *);
 
@@ -68,11 +82,25 @@ OPS_GetIntPtrType OPS_GetNDM_Ptr = 0;
 OPS_GetIntPtrType OPS_GetNDF_Ptr = 0;
 OPS_GetFEDatastorePtrType OPS_GetFEDatastorePtr = 0;
 OPS_GetInterpPWD_PtrType OPS_GetInterpPWD_Ptr = 0;
+OPS_GetAnalysisModelPtrType                    	OPS_GetAnalysisModelPtr  = 0;
+OPS_GetAlgorithmPtrType                        	OPS_GetAlgorithmPtr  = 0;
+OPS_GetHandlerPtrType                          	OPS_GetHandlerPtr  = 0;
+OPS_GetNumbererPtrType                         	OPS_GetNumbererPtr  = 0;
+OPS_GetSOEPtrType                              	OPS_GetSOEPtr  = 0;
+OPS_GetEigenSOEPtrType                         	OPS_GetEigenSOEPtr  = 0;
+OPS_GetStaticAnalysisPtrType                   	OPS_GetStaticAnalysisPtr  = 0;
+OPS_GetTransientAnalysisPtrType                	OPS_GetTransientAnalysisPtr  = 0;
+OPS_GetVariableTimeStepTransientAnalysisPtrType	OPS_GetVariableTimeStepTransientAnalysisPtr  = 0;
+OPS_GetNumEigenPtrType                         	OPS_GetNumEigenPtr  = 0;
+OPS_GetStaticIntegratorPtrType                 	OPS_GetStaticIntegratorPtr  = 0;
+OPS_GetTransientIntegratorPtrType              	OPS_GetTransientIntegratorPtr  = 0;
+OPS_GetTestPtrType                             	OPS_GetTestPtr  = 0;
+OPS_builtModelPtrType                          	OPS_builtModelPtr = 0;
 
 
 extern "C" DllExport
 void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
-                       Domain *theDomain,
+		       Domain *theDomain,
                        SimulationInformation *theSimulationInfoPtr,
                        OPS_ErrorPtrType errorFunct,
                        OPS_GetIntInputPtrType getIntInputFunct,
@@ -81,7 +109,7 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
                        OPS_AllocateMaterialPtrType allocateMaterialFunct,
                        OPS_GetUniaxialMaterialPtrType OPS_GetUniaxialMaterialFunct,
                        OPS_GetNDMaterialPtrType OPS_GetNDMaterialFunct,
-                       OPS_GetSectionForceDeformationPtrType OPS_GetSectionForceDeformationFunct,
+											 OPS_GetSectionForceDeformationPtrType OPS_GetSectionForceDeformationFunct,
                        OPS_InvokeMaterialDirectlyPtrType OPS_InvokeMaterialDirectlyFunct,
                        OPS_GetNodeInfoPtrType OPS_GetNodeCrdFunct,
                        OPS_GetNodeInfoPtrType OPS_GetNodeDispFunct,
@@ -96,7 +124,21 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
                        OPS_GetIntPtrType OPS_GetNDM_Funct,
                        OPS_GetIntPtrType OPS_GetNDF_Funct,
                        OPS_GetFEDatastorePtrType OPS_GetFEDatastoreFunct,
-                       OPS_GetInterpPWD_PtrType OPS_GetInterpPWD_Funct)
+                       OPS_GetInterpPWD_PtrType OPS_GetInterpPWD_Funct,
+											 OPS_GetAnalysisModelPtrType OPS_GetAnalysisModelFunct,
+											 OPS_GetAlgorithmPtrType OPS_GetAlgorithmFunct,
+											 OPS_GetHandlerPtrType OPS_GetHandlerFunct,
+											 OPS_GetNumbererPtrType OPS_GetNumbererFunct,
+											 OPS_GetSOEPtrType OPS_GetSOEFunct,
+											 OPS_GetEigenSOEPtrType OPS_GetEigenSOEFunct,
+											 OPS_GetStaticAnalysisPtrType OPS_GetStaticAnalysisFunct,
+											 OPS_GetTransientAnalysisPtrType OPS_GetTransientAnalysisFunct,
+											 OPS_GetVariableTimeStepTransientAnalysisPtrType OPS_GetVariableTimeStepTransientAnalysisFunct,
+											 OPS_GetNumEigenPtrType OPS_GetNumEigenFunct,
+											 OPS_GetStaticIntegratorPtrType OPS_GetStaticIntegratorFunct,
+											 OPS_GetTransientIntegratorPtrType OPS_GetTransientIntegratorFunct,
+											 OPS_GetTestPtrType OPS_GetTestFunct,
+											 OPS_builtModelPtrType OPS_builtModelFunct)
 {
     opserrPtr = theErrorStreamPtr;
     ops_TheActiveDomain = theDomain;
@@ -108,7 +150,7 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
     OPS_AllocateMaterialPtr = allocateMaterialFunct;
     OPS_GetUniaxialMaterialPtr = OPS_GetUniaxialMaterialFunct;
     OPS_GetNDMaterialPtr = OPS_GetNDMaterialFunct;
-    OPS_GetSectionForceDeformationPtr = OPS_GetSectionForceDeformationFunct;
+	OPS_GetSectionForceDeformationPtr = OPS_GetSectionForceDeformationFunct;
     OPS_GetNodeCrdPtr = OPS_GetNodeCrdFunct;
     OPS_GetNodeDispPtr = OPS_GetNodeDispFunct;
     OPS_GetNodeVelPtr = OPS_GetNodeVelFunct;
@@ -124,6 +166,20 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
     OPS_GetNDF_Ptr = OPS_GetNDF_Funct;
     OPS_GetFEDatastorePtr = OPS_GetFEDatastoreFunct;
     OPS_GetInterpPWD_Ptr = OPS_GetInterpPWD_Funct;
+		OPS_GetAnalysisModelPtr = OPS_GetAnalysisModelFunct;
+		OPS_GetAlgorithmPtr = OPS_GetAlgorithmFunct;
+		OPS_GetHandlerPtr = OPS_GetHandlerFunct;
+		OPS_GetNumbererPtr = OPS_GetNumbererFunct;
+		OPS_GetSOEPtr = OPS_GetSOEFunct;
+		OPS_GetEigenSOEPtr = OPS_GetEigenSOEFunct;
+		OPS_GetStaticAnalysisPtr = OPS_GetStaticAnalysisFunct;
+		OPS_GetTransientAnalysisPtr = OPS_GetTransientAnalysisFunct;
+		OPS_GetVariableTimeStepTransientAnalysisPtr = OPS_GetVariableTimeStepTransientAnalysisFunct;
+		OPS_GetNumEigenPtr = OPS_GetNumEigenFunct;
+		OPS_GetStaticIntegratorPtr = OPS_GetStaticIntegratorFunct;
+		OPS_GetTransientIntegratorPtr = OPS_GetTransientIntegratorFunct;
+		OPS_GetTestPtr = OPS_GetTestFunct;
+		OPS_builtModelPtr = OPS_builtModelFunct;
 }
 
 
@@ -142,7 +198,7 @@ OPS_GetNDMaterial(int matTag)
 SectionForceDeformation *
 OPS_GetSectionForceDeformation(int matTag)
 {
-    return (*OPS_GetSectionForceDeformationPtr)(matTag);
+return (*OPS_GetSectionForceDeformationPtr)(matTag);
 }
 
 CrdTransf *
@@ -219,12 +275,12 @@ extern "C" const char *OPS_GetString()
 
 extern "C" int OPS_GetStringCopy(char **cArray)
 {
-    return (*OPS_GetStringCopyPtr)(cArray);
+    return (*OPS_GetStringCopyPtr)(cArray);  
 }
 
 extern "C" int OPS_GetNumRemainingInputArgs()
 {
-    return (*OPS_GetNumRemainingInputArgsPtr)();
+    return (*OPS_GetNumRemainingInputArgsPtr)();  
 }
 
 extern "C" int OPS_GetNDM()
@@ -237,12 +293,83 @@ extern "C" int OPS_GetNDF()
     return (*OPS_GetNDF_Ptr)();
 }
 
-FE_Datastore *OPS_GetFEDatastore()
+FE_Datastore *
+OPS_GetFEDatastore()
 {
     return (*OPS_GetFEDatastorePtr)();
 }
 
-extern "C" const char *OPS_GetInterpPWD()
+extern "C" const char *OPS_GetInterpPWD() 
 {
     return (*OPS_GetInterpPWD_Ptr)();
+}
+
+extern "C" AnalysisModel			**OPS_GetAnalysisModel(void)
+{
+	return (*OPS_GetAnalysisModelPtr)();
+}
+
+extern "C" EquiSolnAlgo **OPS_GetAlgorithm(void)
+{
+	return (*OPS_GetAlgorithmPtr)();
+}
+
+extern "C" ConstraintHandler **OPS_GetHandler(void)
+{
+	return (*OPS_GetHandlerPtr)();
+}
+
+extern "C" DOF_Numberer **OPS_GetNumberer(void)
+{
+	return (*OPS_GetNumbererPtr)();
+}
+
+extern "C" LinearSOE **OPS_GetSOE(void)
+{
+	return (*OPS_GetSOEPtr)();
+}
+
+extern "C" EigenSOE **OPS_GetEigenSOE(void)
+{
+	return (*OPS_GetEigenSOEPtr)();
+}
+
+extern "C" StaticAnalysis **OPS_GetStaticAnalysis(void)
+{
+	return (*OPS_GetStaticAnalysisPtr)();
+}
+
+extern "C" DirectIntegrationAnalysis **OPS_GetTransientAnalysis(void)
+{
+	return (*OPS_GetTransientAnalysisPtr)();
+}
+
+extern "C" VariableTimeStepDirectIntegrationAnalysis **OPS_GetVariableTimeStepTransientAnalysis(void)
+{
+	return (*OPS_GetVariableTimeStepTransientAnalysisPtr)();
+}
+
+extern "C" int *OPS_GetNumEigen(void)
+{
+	return (*OPS_GetNumEigenPtr)();
+}
+
+extern "C" StaticIntegrator **OPS_GetStaticIntegrator(void)
+{
+	return (*OPS_GetStaticIntegratorPtr)();
+}
+
+extern "C" TransientIntegrator **OPS_GetTransientIntegrator(void)
+{
+	return (*OPS_GetTransientIntegratorPtr)();
+}
+
+extern "C" ConvergenceTest **OPS_GetTest(void)
+{
+	return (*OPS_GetTestPtr)();
+}
+
+extern "C" bool *OPS_builtModel(void)
+{
+	return (*OPS_builtModelPtr)();
 }
