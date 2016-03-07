@@ -492,14 +492,14 @@ LoadPattern::sendSelf(int cTag, Channel &theChannel)
     return -1;
   }    
   
-  if (isConstant == 0) {
+ 
     Vector data(2);
     data(0) = loadFactor;
     data(1) = scaleFactor;
     if (theChannel.sendVector(myDbTag, cTag, data) < 0) {
       opserr << "LoadPattern::sendSelf - channel failed to send the Vector\n";
       return -2;
-    }
+  
 
   }
 
@@ -686,7 +686,7 @@ LoadPattern::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker
 
   this->setTag(lpData(10));
 
-  if (isConstant == 0) { // we must recv the load factor in a Vector
+ 
     Vector data(2);
     if (theChannel.recvVector(myDbTag, cTag, data) < 0) {
       opserr << "LoadPattern::recvSelf - channel failed to recv the Vector\n";
@@ -694,7 +694,7 @@ LoadPattern::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker
     }
     loadFactor = data(0);
     scaleFactor = data(1);
-  }
+  
   
   // read data about the time series
   if (lpData(8) != -1) {
