@@ -103,7 +103,7 @@ protected:
 private:
 
 	// private member functions - only available to objects of the class
-	double *computeCurrentStrain(void);
+	void computeCurrentStrain(void);
 	double getShearDef(void);
 	double getCurvature(void);
 	Vector getResistingForce_6DOF(void);

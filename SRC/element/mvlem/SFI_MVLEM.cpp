@@ -495,36 +495,35 @@ double SFI_MVLEM::getCurvature(void)
 // Get global forces at 6 DOFs (top and bottom node)
 Vector SFI_MVLEM::getResistingForce_6DOF(void) 
 {
-
-	for (int i=0; i < 6; i++) {
-	P_6DOF(i) = SFI_MVLEMR(i);
-	}
-	
-	return P_6DOF;
+  for (int i=0; i < 6; i++) {
+    P_6DOF(i) = SFI_MVLEMR(i);
+  }
+  
+  return P_6DOF;
 }
 
 // Get node pointers
 Node ** SFI_MVLEM::getNodePtrs(void)
 {
 	
-	// Pack external and internal node pointers into one array
-	for (int i=0; i < 2; i++) {
-	theNodesALL[i] = theNodes[i];
-	}
-	
-	for (int i=2; i < m+2; i++) {
-	theNodesALL[i] = theNodesX[i-2];
-	}
-		
-	return theNodesALL;
+  // Pack external and internal node pointers into one array
+  for (int i=0; i < 2; i++) {
+    theNodesALL[i] = theNodes[i];
+  }
+  
+  for (int i=2; i < m+2; i++) {
+    theNodesALL[i] = theNodesX[i-2];
+  }
+  
+  return theNodesALL;
 }
 
 // Get number of DOFs 
 int SFI_MVLEM::getNumDOF(void) {
-
-	int NumDOF = 6+m; // 3 DOFs per external nodes, 1 DOF per internal nodes
-
-	return NumDOF;
+  
+  int NumDOF = 6+m; // 3 DOFs per external nodes, 1 DOF per internal nodes
+  
+  return NumDOF;
 }
 
 // Set Domain
@@ -550,7 +549,7 @@ void SFI_MVLEM::setDomain(Domain *theDomain)
   
   theNodes[0] = theDomain->getNode(Nd1);
   theNodes[1] = theDomain->getNode(Nd2);	
-
+  
   // Get coordinates of end nodes - used for defining locations of internal nodes
   const Vector &end1Crd = theNodes[0]->getCrds();
   const Vector &end2Crd = theNodes[1]->getCrds();
@@ -568,17 +567,22 @@ void SFI_MVLEM::setDomain(Domain *theDomain)
     return;
   }
 
+  // Calculate concrete areas in X and Y directions
+  for (int i=0; i < m; i++) {
+    AcX[i] = h*t[i];
+  }
+  
   // Currently element can be only vertical
   if (end2Crd(0) != end1Crd(0)) {
     opserr << "WARNING: Element is NOT vertical!";
   }
-
-
+  
+  
   // Create a internal node tag
   for (int i = 0; i < m; i++){ // Large NEGATIVE integer starting with tag of the element
     externalNodes(i+2) = -(Nd1*1000 + i + 1); // Max fibers is 999 to avoid overlap
   } 
-
+  
   // Build m internal nodes (NodesX) and add them to the domain
   for (int i = 0; i < m; i++) {
     
@@ -677,70 +681,68 @@ void SFI_MVLEM::setDomain(Domain *theDomain)
 // Commit state
 int SFI_MVLEM::commitState()
 {
-	int errCode = 0;
-
-	// Commit material models
-	for (int i=0; i < m; i++)
-	
-		errCode += theMaterial[i]->commitState();
-
-	return errCode;
+  int errCode = 0;
+  
+  // Commit material models
+  for (int i=0; i < m; i++)
+    
+    errCode += theMaterial[i]->commitState();
+  
+  return errCode;
 }
 
 // Revert to last commited state (if convergence is not achieved)
 int SFI_MVLEM::revertToLastCommit()
 {
-	int errCode = 0;
-
-	// Revert material models
-	for (int i=0; i < m; i++)
-
-		errCode += theMaterial[i]->revertToLastCommit();
-	
-	return errCode;
+  int errCode = 0;
+  
+  // Revert material models
+  for (int i=0; i < m; i++)
+    
+    errCode += theMaterial[i]->revertToLastCommit();
+  
+  return errCode;
 }
 
 // Revert to start
 int SFI_MVLEM::revertToStart()
 {
-
-	int errCode = 0;
-
-	// Revert material models
-	for (int i=0; i < m; i++)
-		errCode += theMaterial[i]->revertToStart();
-
-	// Compute initial stiffness
-	this->getInitialStiff();
-
-	return errCode;
-
+  
+  int errCode = 0;
+  
+  // Revert material models
+  for (int i=0; i < m; i++)
+    errCode += theMaterial[i]->revertToStart();
+  
+  // Compute initial stiffness
+  this->getInitialStiff();
+  
+  return errCode;
+  
 }
 
 // Update state
 int SFI_MVLEM::update()
 {
-
-	// Get the current strain given trial displacements at nodes
-	SFI_MVLEMStrain = this->computeCurrentStrain();                 
-
-	// Set the strain in the materials
-	int errCode1 = 0;
-
-	for (int i=0; i < m; i++) {
-
-		Vector strain(3);
-
-		strain(0) = SFI_MVLEMStrain[i];
-		strain(1) = SFI_MVLEMStrain[i+m];
-		strain(2) = SFI_MVLEMStrain[i+2*m];
-
-		// Set trial response for material models
-		errCode1 += theMaterial[i] -> setTrialStrain(strain); 
-
-	}
-	
-	return errCode1 ;
+  
+  // Get the current strain given trial displacements at nodes
+  this->computeCurrentStrain();                 
+  
+  // Set the strain in the materials
+  int errCode1 = 0;
+  
+  for (int i=0; i < m; i++) {
+    
+    Vector strain(3);
+    
+    strain(0) = SFI_MVLEMStrain[i];
+    strain(1) = SFI_MVLEMStrain[i+m];
+    strain(2) = SFI_MVLEMStrain[i+2*m];
+    
+    // Set trial response for material models
+    errCode1 += theMaterial[i]->setTrialStrain(strain); 
+  }
+  return errCode1 ;
 }
 
 // Send Self
@@ -1296,115 +1298,109 @@ int SFI_MVLEM::addInertiaLoadToUnbalance(const Vector &accel)
 // Get element force vector
 const Vector & SFI_MVLEM::getResistingForce()
 {	
-	// Get the current force matrix from panel stresses
-	for (int i=0; i < m; i++)
-	{
-		// Get the material stress
-		const Vector &Stress = theMaterial[i]->getStress();
+  // Get the current force matrix from panel stresses
+  for (int i=0; i < m; i++)
+    {
+      // Get the material stress
+      const Vector &Stress = theMaterial[i]->getStress();
 
-		double fx = Stress(0); 
-		double fy = Stress(1); 
-		double tauxy = Stress(2); 
+      double fx = Stress(0); 
+      double fy = Stress(1); 
+      double tauxy = Stress(2); 
+      
+      Fx[i] = fx * AcX[i];
+      Fy[i] = fy * AcY[i];
+      Fxy[i] = tauxy * AcY[i];
+    }
 
-		Fx[i] = fx * AcX[i];
-		Fy[i] = fy * AcY[i];
-		Fxy[i] = tauxy * AcY[i];
-
-	}
-
-	// Build force vector 
-	double Fh = 0.0; // Force in horizontal spring (at location c*h)
-	double Fysum = 0.0; // Sum of vertical forces
-
-	for (int i=0; i < m; i++)
-	{
-		Fh += -1.0*Fxy[i];
-		Fysum += Fy[i];
-		SFI_MVLEMR[6+i] = Fx[i]; // Force on internal (dummy) DOFs
-	}
-
-	SFI_MVLEMR(0) = Fh;
-	SFI_MVLEMR(1) = -Fysum;
-	SFI_MVLEMR(2) = -Fh*c*h;
-	SFI_MVLEMR(3) = -Fh;
-	SFI_MVLEMR(4) = Fysum;
-	SFI_MVLEMR(5) = -Fh*(1-c)*h;
-
-	for (int i=0; i<m; i++) {
-		SFI_MVLEMR(2) -= Fy[i]*x[i];        
-		SFI_MVLEMR(5) += +Fy[i]*x[i]; 
-	}
-
-	// Return element force vector
-	return SFI_MVLEMR;
+  // Build force vector 
+  double Fh = 0.0; // Force in horizontal spring (at location c*h)
+  double Fysum = 0.0; // Sum of vertical forces
+  
+  for (int i=0; i < m; i++)
+    {
+      Fh += -1.0*Fxy[i];
+      Fysum += Fy[i];
+      SFI_MVLEMR[6+i] = Fx[i]; // Force on internal (dummy) DOFs
+    }
+  
+  SFI_MVLEMR(0) = Fh;
+  SFI_MVLEMR(1) = -Fysum;
+  SFI_MVLEMR(2) = -Fh*c*h;
+  SFI_MVLEMR(3) = -Fh;
+  SFI_MVLEMR(4) = Fysum;
+  SFI_MVLEMR(5) = -Fh*(1-c)*h;
+  
+  for (int i=0; i<m; i++) {
+    SFI_MVLEMR(2) -= Fy[i]*x[i];        
+    SFI_MVLEMR(5) += +Fy[i]*x[i]; 
+  }
+  
+  // Return element force vector
+  return SFI_MVLEMR;
 }
 
 // Get current strains at RC panels (macro-fibers)
-double *SFI_MVLEM::computeCurrentStrain(void)   
+void SFI_MVLEM::computeCurrentStrain(void)   
 {
-	const Vector &disp1 = theNodes[0]->getTrialDisp(); // DOFs D1,D2,D3
-	const Vector &disp2 = theNodes[1]->getTrialDisp(); // DOFs D4,D5,D6
-
-	for (int i=0; i<m; i++){
-	const Vector &dispXi = theNodesX[i]->getTrialDisp(); // 1 DOF at theNodesX - Vector of size 1
-	Dx[i] = dispXi(0); // get displacements in X direction from the nodes
-	}
-	
-	// Deformations at each RC panel (macro-fiber)
-	for(int i=0; i<m; i++) {
-		Dy[i] = -disp1(1) - x[i]*disp1(2) + disp2(1) + x[i]*disp2(2); 
-		Dxy[i] = disp1(0) - disp2(0) - c*h*disp1(2) - (1-c)*h*disp2(2);
-	}
-
-	Dsh = - Dxy[0]; // Store shear deformations for the recorder
-
-	// Strains at each RC panel (macro-fiber)
-	for(int i=0;i<m;i++) {
-		SFI_MVLEMStrainX[i]  =  Dx[i]/b[i];
-		SFI_MVLEMStrainY[i]  =  Dy[i]/h;
-		SFI_MVLEMStrainXY[i] = - Dxy[i]/h;
-	}
-
-	// Store strains into a single vector
-	for(int i=0; i<m; i++) {
-			SFI_MVLEMStrain[i] = SFI_MVLEMStrainX[i];
-			SFI_MVLEMStrain[i+m] = SFI_MVLEMStrainY[i];
-			SFI_MVLEMStrain[i+2*m] = SFI_MVLEMStrainXY[i];
-	}
-
-	// Return strain vector
-	return SFI_MVLEMStrain;
-
+  const Vector &disp1 = theNodes[0]->getTrialDisp(); // DOFs D1,D2,D3
+  const Vector &disp2 = theNodes[1]->getTrialDisp(); // DOFs D4,D5,D6
+  
+  for (int i=0; i<m; i++){
+    const Vector &dispXi = theNodesX[i]->getTrialDisp(); // 1 DOF at theNodesX - Vector of size 1
+    Dx[i] = dispXi(0); // get displacements in X direction from the nodes
+  }
+  
+  // Deformations at each RC panel (macro-fiber)
+  for(int i=0; i<m; i++) {
+    Dy[i] = -disp1(1) - x[i]*disp1(2) + disp2(1) + x[i]*disp2(2); 
+    Dxy[i] = disp1(0) - disp2(0) - c*h*disp1(2) - (1-c)*h*disp2(2);
+  }
+  
+  Dsh = - Dxy[0]; // Store shear deformations for the recorder
+  
+  // Strains at each RC panel (macro-fiber)
+  for(int i=0;i<m;i++) {
+    SFI_MVLEMStrainX[i]  =  Dx[i]/b[i];
+    SFI_MVLEMStrainY[i]  =  Dy[i]/h;
+    SFI_MVLEMStrainXY[i] = - Dxy[i]/h;
+  }
+  
+  // Store strains into a single vector
+  for(int i=0; i<m; i++) {
+    SFI_MVLEMStrain[i] = SFI_MVLEMStrainX[i];
+    SFI_MVLEMStrain[i+m] = SFI_MVLEMStrainY[i];
+    SFI_MVLEMStrain[i+2*m] = SFI_MVLEMStrainXY[i];
+  }
 }
 
 // Get resisting force incremenet from inertial forces
 const Vector & SFI_MVLEM::getResistingForceIncInertia()
 {
-
-	// compute the current resisting force
-	this->getResistingForce();  
-
-	if (TotalMass != 0.0) {
-
-		// Get nodal accelerations
-		const Vector &accel1 = theNodes[0]->getTrialAccel();
-		const Vector &accel2 = theNodes[1]->getTrialAccel();
-
-		SFI_MVLEMR(0) += NodeMass*accel1(0);
-		SFI_MVLEMR(1) += NodeMass*accel1(1);
-		SFI_MVLEMR(3) += NodeMass*accel2(0);
-		SFI_MVLEMR(4) += NodeMass*accel2(1);
-
-		// Add the damping forces if rayleigh damping
-		if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-			SFI_MVLEMR += this->getRayleighDampingForces(); 
-	
-	} else {
-
-		// Add the damping forces if rayleigh damping
-		if (betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-			SFI_MVLEMR += this->getRayleighDampingForces();
-	}
-
-	return SFI_MVLEMR;
+  // compute the current resisting force
+  this->getResistingForce();  
+  
+  if (TotalMass != 0.0) {
+    
+    // Get nodal accelerations
+    const Vector &accel1 = theNodes[0]->getTrialAccel();
+    const Vector &accel2 = theNodes[1]->getTrialAccel();
+    
+    SFI_MVLEMR(0) += NodeMass*accel1(0);
+    SFI_MVLEMR(1) += NodeMass*accel1(1);
+    SFI_MVLEMR(3) += NodeMass*accel2(0);
+    SFI_MVLEMR(4) += NodeMass*accel2(1);
+    
+    // Add the damping forces if rayleigh damping
+    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+      SFI_MVLEMR += this->getRayleighDampingForces(); 
+    
+  } else {
+    
+    // Add the damping forces if rayleigh damping
+    if (betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+      SFI_MVLEMR += this->getRayleighDampingForces();
+  }
+  
+  return SFI_MVLEMR;
 }
