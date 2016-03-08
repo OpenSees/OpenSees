@@ -1091,7 +1091,6 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/HHT.o \
 	$(FE)/analysis/integrator/AlphaOS_TP.o \
 	$(FE)/analysis/integrator/AlphaOSGeneralized_TP.o \
-	$(FE)/analysis/integrator/AlphaOSGeneralizedExplicit_TP.o \
 	$(FE)/analysis/integrator/HHT_TP.o \
 	$(FE)/analysis/integrator/HHTExplicit_TP.o \
 	$(FE)/analysis/integrator/HHTGeneralized_TP.o \
