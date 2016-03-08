@@ -1009,6 +1009,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/pattern/TriangleSeries.o \
 	$(FE)/domain/pattern/TimeSeriesIntegrator.o \
 	$(FE)/domain/pattern/TrapezoidalTimeSeriesIntegrator.o \
+	$(FE)/domain/pattern/SimpsonTimeSeriesIntegrator.o \
 	$(FE)/domain/pattern/drm/Mesh3DSubdomain.o \
 	$(FE)/domain/pattern/drm/GeometricBrickDecorator.o \
 	$(FE)/domain/pattern/drm/DRMBoundaryLayerDecorator.o \
@@ -1090,11 +1091,13 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/HHT.o \
 	$(FE)/analysis/integrator/AlphaOS_TP.o \
 	$(FE)/analysis/integrator/AlphaOSGeneralized_TP.o \
+	$(FE)/analysis/integrator/AlphaOSGeneralizedExplicit_TP.o \
 	$(FE)/analysis/integrator/HHT_TP.o \
 	$(FE)/analysis/integrator/HHTExplicit_TP.o \
 	$(FE)/analysis/integrator/HHTGeneralized_TP.o \
 	$(FE)/analysis/integrator/HHTHSFixedNumIter_TP.o \
 	$(FE)/analysis/integrator/HHTHSIncrLimit_TP.o \
+	$(FE)/analysis/integrator/HHTHSIncrReduct_TP.o \
 	$(FE)/analysis/integrator/GeneralizedAlpha.o \
 	$(FE)/analysis/integrator/Newmark1.o \
 	$(FE)/analysis/integrator/HHT1.o \
