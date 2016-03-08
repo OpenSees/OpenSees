@@ -39,7 +39,7 @@ OBJS       = AlphaOS.o \
     IncrementalIntegrator.o \
 	Integrator.o \
 	KRAlphaExplicit.o \
-	KRAlphaExplicit_TP.o 
+	KRAlphaExplicit_TP.o \
 	LoadControl.o \
 	LoadPath.o \
 	MinUnbalDispNorm.o \
