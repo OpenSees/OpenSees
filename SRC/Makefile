@@ -1094,12 +1094,12 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/HHT_TP.o \
 	$(FE)/analysis/integrator/HHTExplicit_TP.o \
 	$(FE)/analysis/integrator/HHTGeneralized_TP.o \
+	$(FE)/analysis/integrator/HHTGeneralizedExplicit_TP.o \
 	$(FE)/analysis/integrator/HHTHSFixedNumIter_TP.o \
 	$(FE)/analysis/integrator/HHTHSIncrLimit_TP.o \
 	$(FE)/analysis/integrator/HHTHSIncrReduct_TP.o \
 	$(FE)/analysis/integrator/GeneralizedAlpha.o \
 	$(FE)/analysis/integrator/Newmark1.o \
-	$(FE)/analysis/integrator/HHT1.o \
 	$(FE)/analysis/integrator/CentralDifference.o \
 	$(FE)/analysis/integrator/CentralDifferenceAlternative.o \
 	$(FE)/analysis/integrator/CentralDifferenceNoDamping.o \
