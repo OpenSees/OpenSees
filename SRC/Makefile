@@ -1088,6 +1088,13 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/TRBDF2.o \
 	$(FE)/analysis/integrator/TRBDF3.o \
 	$(FE)/analysis/integrator/HHT.o \
+	$(FE)/analysis/integrator/AlphaOS_TP.o \
+	$(FE)/analysis/integrator/AlphaOSGeneralized_TP.o \
+	$(FE)/analysis/integrator/HHT_TP.o \
+	$(FE)/analysis/integrator/HHTExplicit_TP.o \
+	$(FE)/analysis/integrator/HHTGeneralized_TP.o \
+	$(FE)/analysis/integrator/HHTHSFixedNumIter_TP.o \
+	$(FE)/analysis/integrator/HHTHSIncrLimit_TP.o \
 	$(FE)/analysis/integrator/GeneralizedAlpha.o \
 	$(FE)/analysis/integrator/Newmark1.o \
 	$(FE)/analysis/integrator/HHT1.o \
