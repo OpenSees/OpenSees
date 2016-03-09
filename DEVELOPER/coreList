@@ -61,6 +61,10 @@ SRC/system_of_eqn/linearSOE/LinearSOE.cpp
 SRC/system_of_eqn/linearSOE/LinearSOE.h
 SRC/system_of_eqn/linearSOE/LinearSOESolver.cpp
 SRC/system_of_eqn/linearSOE/LinearSOESolver.h
+SRC/system_of_eqn/eigenSOE/EigenSOE.cpp
+SRC/system_of_eqn/eigenSOE/EigenSOE.h
+SRC/system_of_eqn/eigenSOE/EigenSolver.cpp
+SRC/system_of_eqn/eigenSOE/EigenSolver.h
 SRC/domain/load/Load.cpp
 SRC/domain/load/Load.h
 SRC/domain/pattern/LoadPattern.h

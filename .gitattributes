@@ -37,6 +37,10 @@ DEVELOPER/core/DomainComponent.h -text
 DEVELOPER/core/DomainDecompositionAnalysis.h -text
 DEVELOPER/core/DummyStream.cpp -text
 DEVELOPER/core/DummyStream.h -text
+DEVELOPER/core/EigenSOE.cpp -text
+DEVELOPER/core/EigenSOE.h -text
+DEVELOPER/core/EigenSolver.cpp -text
+DEVELOPER/core/EigenSolver.h -text
 DEVELOPER/core/Element.cpp -text
 DEVELOPER/core/Element.h -text
 DEVELOPER/core/ElementIter.h -text
