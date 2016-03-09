@@ -40,6 +40,11 @@ Now test it,
 27. cd into directory containing example (cd ..\material)
 28. source an example script containing your new command, i.e. type: "source example1.tcl"
 
+If it fails and you are using the x64 bit version you need to change the code generated
+30. Under build, choose the configuration manager, you woill see the project marked as win32
+31. in the pull down platform menu, choose new, x64 should pop up .. select that
+32. build again
+
 IT SHOULD RUN THE SCRIPT! .. IF IT FAILS GET MY ATTENTION.
 
 
