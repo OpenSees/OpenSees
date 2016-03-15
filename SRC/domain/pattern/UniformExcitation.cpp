@@ -210,45 +210,45 @@ UniformExcitation::applyLoad(double time)
         int ndm = crds.Size();
         
         if (ndm == 1) {
-            theNode->setR(theDof, 0, fact);
+	  theNode->setR(theDof, 0, fact);
         }
         else if (ndm == 2) {
-            if (theDof < 2) {
-                theNode->setR(theDof, 0, fact);
-            }
-            else if (theDof == 2) {
-                double xCrd = crds(0);
-                double yCrd = crds(1);
-                theNode->setR(0, 0, -fact*yCrd);
-                theNode->setR(1, 0, fact*xCrd);
-                theNode->setR(2, 0, fact);
-            }
+	  if (theDof < 3) {
+	    theNode->setR(theDof, 0, fact);
+	  }
+	  else if (theDof == 3) {
+	    double xCrd = crds(0);
+	    double yCrd = crds(1);
+	    theNode->setR(0, 0, -fact*yCrd);
+	    theNode->setR(1, 0, fact*xCrd);
+	    theNode->setR(2, 0, fact);
+	  }
         }
         else if (ndm == 3) {
-            if (theDof < 3) {
-                theNode->setR(theDof, 0, fact);
-            }
-            else if (theDof == 3) {
-                double yCrd = crds(1);
-                double zCrd = crds(2);
-                theNode->setR(1, 0, -fact*zCrd);
-                theNode->setR(2, 0, fact*yCrd);
-                theNode->setR(3, 0, fact);
-            }
-            else if (theDof == 4) {
-                double xCrd = crds(0);
-                double zCrd = crds(2);
-                theNode->setR(0, 0, fact*zCrd);
-                theNode->setR(2, 0, -fact*xCrd);
-                theNode->setR(4, 0, fact);
-            }
-            else if (theDof == 5) {
-                double xCrd = crds(0);
-                double yCrd = crds(1);
-                theNode->setR(0, 0, -fact*yCrd);
-                theNode->setR(1, 0, fact*xCrd);
-                theNode->setR(5, 0, fact);
-            }
+	  if (theDof < 4) {
+	    theNode->setR(theDof, 0, fact);
+	  }
+	  else if (theDof == 4) {
+	    double yCrd = crds(1);
+	    double zCrd = crds(2);
+	    theNode->setR(1, 0, -fact*zCrd);
+	    theNode->setR(2, 0, fact*yCrd);
+	    theNode->setR(3, 0, fact);
+	  }
+	  else if (theDof == 5) {
+	    double xCrd = crds(0);
+	    double zCrd = crds(2);
+	    theNode->setR(0, 0, fact*zCrd);
+	    theNode->setR(2, 0, -fact*xCrd);
+	    theNode->setR(4, 0, fact);
+	  }
+	  else if (theDof == 6) {
+	    double xCrd = crds(0);
+	    double yCrd = crds(1);
+	    theNode->setR(0, 0, -fact*yCrd);
+	    theNode->setR(1, 0, fact*xCrd);
+	    theNode->setR(5, 0, fact);
+	  }
         }
     }
     
