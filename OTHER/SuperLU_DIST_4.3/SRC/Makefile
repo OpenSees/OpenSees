@@ -31,14 +31,14 @@ ARCHFLAGS = $(ARFLAGS)
 #       make clean
 #
 #######################################################################
-include ../make.inc
+# include ../make.inc
 #
 # Precision independent routines
 #
 ALLAUX 	= sp_ienv.o etree.o sp_colorder.o get_perm_c.o \
 	  mmd.o comm.o memory.o util.o superlu_grid.o \
 	  pxerr_dist.o superlu_timer.o GetDiagU.o symbfact.o \
-	  psymbfact.o psymbfact_util.o get_perm_c_parmetis.o mc64ad_dist.o \
+	  psymbfact.o psymbfact_util.o mc64ad_dist.o \
 	  static_schedule.o xerr_dist.o smach_dist.o dmach_dist.o
 
 ifeq "${ACC}" "GPU"

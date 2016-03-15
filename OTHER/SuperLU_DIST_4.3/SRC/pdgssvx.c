@@ -919,14 +919,13 @@ pdgssvx(superlu_options_t *options, SuperMatrix *A,
 	 *   permc_spec = MY_PERMC: the ordering already supplied in perm_c[]
 	 */
 	permc_spec = options->ColPerm;
-
-
+	/*
 	if ( parSymbFact == YES || permc_spec == PARMETIS ) {	
 	    nprocs_num = grid->nprow * grid->npcol;
   	    noDomains = (int) ( pow(2, ((int) LOG2( nprocs_num ))));
 
-	    /* create a new communicator for the first noDomains
-               processes in grid->comm */
+	    // create a new communicator for the first noDomains
+            //   processes in grid->comm 
 	    key = iam;
     	    if (iam < noDomains) col = 0;
 	    else col = MPI_UNDEFINED;
@@ -946,19 +945,21 @@ pdgssvx(superlu_options_t *options, SuperMatrix *A,
 		}
 		sizes[2*noDomains - 2] = m;
 		fstVtxSep[2*noDomains - 2] = 0;
-	    } else if ( permc_spec != PARMETIS ) {   /* same as before */
+	    } else if ( permc_spec != PARMETIS ) {   // same as before 
 		printf("{" IFMT "," IFMT "}: pdgssvx: invalid ColPerm option when ParSymbfact is used\n",
 		       MYROW(grid->iam, grid), MYCOL(grid->iam, grid));
 	    }
         }
+	*/
 
+	/*
 	if ( permc_spec != MY_PERMC && Fact == DOFACT ) {
 	  if ( permc_spec == PARMETIS ) {
-	      /* Get column permutation vector in perm_c.                    *
-	       * This routine takes as input the distributed input matrix A  *
-	       * and does not modify it.  It also allocates memory for       *
-	       * sizes[] and fstVtxSep[] arrays, that contain information    *
-	       * on the separator tree computed by ParMETIS.                 */
+	      // Get column permutation vector in perm_c.                    *
+	      // This routine takes as input the distributed input matrix A  *
+	      // and does not modify it.  It also allocates memory for       *
+	      // sizes[] and fstVtxSep[] arrays, that contain information    *
+	      // on the separator tree computed by ParMETIS.                 *
 	      flinfo = get_perm_c_parmetis(A, perm_r, perm_c, nprocs_num,
                                   	   noDomains, &sizes, &fstVtxSep,
                                            grid, &symb_comm);
@@ -969,10 +970,12 @@ pdgssvx(superlu_options_t *options, SuperMatrix *A,
 		  *info = flinfo;
 		  return;
      	      }
-	  } else {
+
+	  } else { 
 	      get_perm_c_dist(iam, permc_spec, &GA, perm_c);
           }
         }
+	*/
 
 	stat->utime[COLPERM] = SuperLU_timer_() - t;
 
