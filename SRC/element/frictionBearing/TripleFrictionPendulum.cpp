@@ -464,7 +464,7 @@ int TripleFrictionPendulum::update()
     Fy3cr = theFrnMdls[1]->getFrictionCoeff();
     Fy5cr = theFrnMdls[2]->getFrictionCoeff();
     
-    dFy1 = Fy1cr - Fy1pr; dFy3 = Fy3cr - Fy3pr;dFy5 = Fy5cr - Fy5pr;
+    dFy1 = Fy1cr - Fy1pr; dFy3 = Fy3cr - Fy3pr; dFy5 = Fy5cr - Fy5pr;
     Fy1 = Fy1pr; Fy3 = Fy3pr; Fy5 = Fy5pr;
     
     int nDiv = 0; int nWhileIter = 0;
@@ -527,8 +527,10 @@ const Matrix& TripleFrictionPendulum::getTangentStiff()
     }
     if (Fvert > 0.0) {
         eleK(2,2) = eleK(8,8) = Kvt;
+        eleK(2,8) = eleK(8,2) = -Kvt;
     } else {
         eleK(2,2) = eleK(8,8) = Kvc;
+        eleK(2,8) = eleK(8,2) = -Kvc;
     }
     
     return eleK;
@@ -552,6 +554,7 @@ const Matrix& TripleFrictionPendulum::getInitialStiff()
     eleKinit = aT*Kinit*a;
     eleKinit *= W;
     eleKinit(2,2) = eleKinit(8,8) = Kvc;
+    eleKinit(2,8) = eleKinit(8,2) = -Kvc;
     
     return eleKinit;
 }
