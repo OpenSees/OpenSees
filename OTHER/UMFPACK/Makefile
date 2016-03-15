@@ -9,7 +9,7 @@ C = $(CC) -O3 -fexceptions -fPIC -DNCHOLMOD $(I)
 
 # non-user-callable umf_*.[ch] files:
 UMFCH = umf_assemble umf_blas3_update umf_build_tuples umf_create_element \
-	umf_dump umf_extend_front umf_garbage_collection umf_get_memory \
+	umf_extend_front umf_garbage_collection umf_get_memory \
 	umf_init_front umf_kernel umf_kernel_init umf_kernel_wrapup \
 	umf_local_search umf_lsolve umf_ltsolve umf_mem_alloc_element \
 	umf_mem_alloc_head_block umf_mem_alloc_tail_block \

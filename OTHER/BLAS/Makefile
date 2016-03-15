@@ -2,7 +2,7 @@ include ../../Makefile.def
 
 DOBJ  = idamax.o dasum.o daxpy.o dcopy.o ddot.o  dnrm2.o drot.o  drotg.o\
         dscal.o  dswap.o dgemv.o dger.o  dsymv.o dsyr2.o dtrmm.o dgbmv.o\
-	dgemm.o dtrsm.o dtbsv.o dsyr.o dtrsv.o dsyrk.o dtrmv.o
+	dgemm.o dtrsm.o dtbsv.o dsyr.o dtrsv.o dsyrk.o dtrmv.o dsymm.o dsyr2k.o
 
 
 all: double 
