@@ -20,7 +20,7 @@
                                                                         
 // $Revision: 1.8 $
 // $Date: 2008-02-29 20:47:08 $
-// $Source: /usr/local/cvs/OpenSees/SRC/domain/pattern/UniformExcitation.cpp,v $
+// $URL: /usr/local/cvs/OpenSees/SRC/domain/pattern/UniformExcitation.cpp,v $
                                                                         
                                                                         
 // File: ~/domain/load/UniformExcitation.h
@@ -198,22 +198,63 @@ UniformExcitation::setDomain(Domain *theDomain)
 void
 UniformExcitation::applyLoad(double time)
 {
-  Domain *theDomain = this->getDomain();
-  if (theDomain == 0)
-    return;
-
-//  if (numNodes != theDomain->getNumNodes()) {
+    Domain *theDomain = this->getDomain();
+    if (theDomain == 0)
+        return;
+    
     NodeIter &theNodes = theDomain->getNodes();
     Node *theNode;
     while ((theNode = theNodes()) != 0) {
-      theNode->setNumColR(1);
-      theNode->setR(theDof, 0, fact);
+        theNode->setNumColR(1);
+        const Vector &crds=theNode->getCrds();
+        int ndm = crds.Size();
+        
+        if (ndm == 1) {
+            theNode->setR(theDof, 0, fact);
+        }
+        else if (ndm == 2) {
+            if (theDof < 2) {
+                theNode->setR(theDof, 0, fact);
+            }
+            else if (theDof == 2) {
+                double xCrd = crds(0);
+                double yCrd = crds(1);
+                theNode->setR(0, 0, -fact*yCrd);
+                theNode->setR(1, 0, fact*xCrd);
+                theNode->setR(2, 0, fact);
+            }
+        }
+        else if (ndm == 3) {
+            if (theDof < 3) {
+                theNode->setR(theDof, 0, fact);
+            }
+            else if (theDof == 3) {
+                double yCrd = crds(1);
+                double zCrd = crds(2);
+                theNode->setR(1, 0, -fact*zCrd);
+                theNode->setR(2, 0, fact*yCrd);
+                theNode->setR(3, 0, fact);
+            }
+            else if (theDof == 4) {
+                double xCrd = crds(0);
+                double zCrd = crds(2);
+                theNode->setR(0, 0, fact*zCrd);
+                theNode->setR(2, 0, -fact*xCrd);
+                theNode->setR(4, 0, fact);
+            }
+            else if (theDof == 5) {
+                double xCrd = crds(0);
+                double yCrd = crds(1);
+                theNode->setR(0, 0, -fact*yCrd);
+                theNode->setR(1, 0, fact*xCrd);
+                theNode->setR(5, 0, fact);
+            }
+        }
     }
-//  }
-
-  this->EarthquakePattern::applyLoad(time);
-
-  return;
+    
+    this->EarthquakePattern::applyLoad(time);
+    
+    return;
 }
 
 

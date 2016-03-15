@@ -2800,8 +2800,6 @@ SRC/domain/pattern/TrigSeries.h -text
 SRC/domain/pattern/UniformExcitation.cpp -text
 SRC/domain/pattern/UniformExcitation.h -text
 SRC/domain/pattern/UniformExcitation.tex -text
-SRC/domain/pattern/UniformRotationalExcitation.cpp -text
-SRC/domain/pattern/UniformRotationalExcitation.h -text
 SRC/domain/pattern/drm/DRMBoundaryLayerDecorator.cpp -text
 SRC/domain/pattern/drm/DRMBoundaryLayerDecorator.h -text
 SRC/domain/pattern/drm/DRMInputHandler.cpp -text

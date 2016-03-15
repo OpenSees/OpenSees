@@ -279,9 +279,6 @@
     <ClCompile Include="..\..\..\SRC\domain\region\TclRegionCommands.cpp">
       <Filter>region</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\domain\pattern\UniformRotationalExcitation.cpp">
-      <Filter>pattern</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\domain\load\Beam2dPartialUniformLoad.cpp">
       <Filter>load\beam</Filter>
     </ClCompile>
@@ -523,9 +520,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\region\MeshRegion.h">
       <Filter>region</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\domain\pattern\UniformRotationalExcitation.h">
-      <Filter>pattern</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\load\Beam2dPartialUniformLoad.h">
       <Filter>load\beam</Filter>
