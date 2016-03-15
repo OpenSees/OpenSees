@@ -1091,6 +1091,7 @@ OTHER/SuperLU_5.1.1/SRC/ilu_dsnode_dfs.c -text
 OTHER/SuperLU_5.1.1/SRC/ilu_heap_relax_snode.c -text
 OTHER/SuperLU_5.1.1/SRC/ilu_relax_snode.c -text
 OTHER/SuperLU_5.1.1/SRC/input_error.c -text
+OTHER/SuperLU_5.1.1/SRC/lsame.c -text
 OTHER/SuperLU_5.1.1/SRC/mark_relax.c -text
 OTHER/SuperLU_5.1.1/SRC/mc64ad.c -text
 OTHER/SuperLU_5.1.1/SRC/memory.c -text
@@ -1108,6 +1109,7 @@ OTHER/SuperLU_5.1.1/SRC/superlu_enum_consts.h -text
 OTHER/SuperLU_5.1.1/SRC/superlu_timer.c -text
 OTHER/SuperLU_5.1.1/SRC/supermatrix.h -text
 OTHER/SuperLU_5.1.1/SRC/util.c -text
+OTHER/SuperLU_5.1.1/SRC/xerbla.c -text
 OTHER/SuperLU_DIST_2.0/SRC/Cnames.h -text
 OTHER/SuperLU_DIST_2.0/SRC/Makefile -text
 OTHER/SuperLU_DIST_2.0/SRC/colamd.c -text
