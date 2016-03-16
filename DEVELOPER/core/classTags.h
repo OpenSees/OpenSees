@@ -18,8 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 6225 $
-// $Date: 2016-03-03 13:07:01 -0800 (Thu, 03 Mar 2016) $
+// $Revision: 6238 $
+// $Date: 2016-03-14 18:46:15 -0700 (Mon, 14 Mar 2016) $
 // $URL: svn://peera.berkeley.edu/usr/local/svn/OpenSees/trunk/SRC/classTags.h $
 
 // Written: fmk
@@ -449,13 +449,12 @@
 #define DEG_TAG_STRENGTH_Energy		5
 #define DEG_TAG_STRENGTH_Section	6
 
-#define PATTERN_TAG_LoadPattern		  1
+#define PATTERN_TAG_LoadPattern           1
 #define PATTERN_TAG_MultiSupportPattern	  3
 #define PATTERN_TAG_UniformExcitation     2
 #define PATTERN_TAG_FirePattern           3
-#define PATTERN_TAG_PBowlLoading	  4
+#define PATTERN_TAG_PBowlLoading          4
 #define PATTERN_TAG_DRMLoadPattern        5
-#define PATTERN_TAG_UniformRotationalExcitation     6
 
 #define LOAD_TAG_Beam2dUniformLoad        3
 #define LOAD_TAG_Beam2dPointLoad          4

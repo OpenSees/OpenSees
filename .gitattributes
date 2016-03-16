@@ -732,9 +732,11 @@ OTHER/BLAS/drot.f -text
 OTHER/BLAS/drotg.f -text
 OTHER/BLAS/dscal.f -text
 OTHER/BLAS/dswap.f -text
+OTHER/BLAS/dsymm.f -text
 OTHER/BLAS/dsymv.f -text
 OTHER/BLAS/dsyr.f -text
 OTHER/BLAS/dsyr2.f -text
+OTHER/BLAS/dsyr2k.f -text
 OTHER/BLAS/dsyrk.f -text
 OTHER/BLAS/dtbsv.f -text
 OTHER/BLAS/dtrmm.f -text
