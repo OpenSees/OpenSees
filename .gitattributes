@@ -724,10 +724,12 @@ OTHER/BLAS/daxpy.f -text
 OTHER/BLAS/dcopy.f -text
 OTHER/BLAS/ddot.f -text
 OTHER/BLAS/dgbmv.f -text
+OTHER/BLAS/dgeev.f -text
 OTHER/BLAS/dgemm.f -text
 OTHER/BLAS/dgemv.f -text
 OTHER/BLAS/dger.f -text
 OTHER/BLAS/dnrm2.f -text
+OTHER/BLAS/dpotrf.f -text
 OTHER/BLAS/drot.f -text
 OTHER/BLAS/drotg.f -text
 OTHER/BLAS/dscal.f -text
@@ -743,6 +745,7 @@ OTHER/BLAS/dtrmm.f -text
 OTHER/BLAS/dtrmv.f -text
 OTHER/BLAS/dtrsm.f -text
 OTHER/BLAS/dtrsv.f -text
+OTHER/BLAS/dtrtrs.f -text
 OTHER/BLAS/dzasum.f -text
 OTHER/BLAS/dznrm2.f -text
 OTHER/BLAS/icamax.f -text
