@@ -234,7 +234,7 @@ DistributedSuperLU::setSize()
     // Initialize ScalePermstruct and LUstruct.
     //
     ScalePermstructInit(n, n, &ScalePermstruct);
-    LUstructInit(n, n, &LUstruct);
+    LUstructInit(n, &LUstruct);
   }  
 			      
 			      
