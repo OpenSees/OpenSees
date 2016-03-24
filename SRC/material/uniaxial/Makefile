@@ -106,6 +106,7 @@ OBJS       = UniaxialMaterial.o \
 	TriMatrix.o \
 	CFSSSWP.o \
 	CFSWSWP.o \
+	Steel4.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)

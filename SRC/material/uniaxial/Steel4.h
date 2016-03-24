@@ -18,8 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.0 $
-// $Date: 2015-02-05 $
+// $Revision: 1.01 $
+// $Date: 2016-03-23 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/Steel4.h,v $
 
 // Written by Adam Zsarnoczay (zsarnoczay@vbt.bme.hu)
@@ -33,7 +33,6 @@
 #define Steel4_h
 
 #include <UniaxialMaterial.h>
-#include <array>
 #include <vector>
 
 typedef std::vector<int>    int_vec;
