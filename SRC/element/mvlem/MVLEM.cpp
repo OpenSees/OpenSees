@@ -178,7 +178,7 @@ void *OPS_MVLEM(void)
 
   theElement = new MVLEM(iData[0], dData[0], iData[1], iData[2], 
 			 theMaterialsConcrete, theMaterialsSteel, theMaterialsShear,
-			 theRho, theThickness, theWidth , iData[3], dData[2]);
+			 theRho, theThickness, theWidth , iData[3], dData[0]);
   
   // Cleanup dynamic memory
   if (theThickness != 0) 
