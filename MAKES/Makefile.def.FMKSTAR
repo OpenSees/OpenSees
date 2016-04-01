@@ -13,7 +13,12 @@
 #
 ############################################################################
 
+# install OpenSees and TCL & build in usual way
+# for paralle get the scalapack_installer and run the following
 
+./setup.py --prefix=/home/ubuntu --downall --mpiincdir=/usr/include/mpich2/mpi.h 
+
+#the opbatin MUMPS and build
 
 DAMAGE2P_FLAG = -D_HAVE_Damage2p
 PLAINCONCRETE_FLAG = -D_HAVE_PSUMAT
