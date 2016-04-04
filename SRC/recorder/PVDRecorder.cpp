@@ -167,6 +167,7 @@ PVDRecorder::pvd()
     // open pvd file
     theFile.close();
     std::string pvdname = filename+".pvd";
+
     theFile.open(pvdname.c_str(), std::ios::trunc|std::ios::out);
     if(theFile.fail()) {
 	opserr<<"WARNING: Failed to open file "<<pvdname.c_str()<<"\n";
@@ -196,8 +197,7 @@ PVDRecorder::pvd()
 	    theFile<<"<DataSet timestep="<<quota<<t<<quota;
 	    theFile<<" group="<<quota<<quota;
 	    theFile<<" part="<<quota<<partno(j)<<quota;
-	    //theFile<<" file="<<quota<<filename<<'/'<<filename<<"_T"<<t<<"_P";
-
+	    theFile<<" file="<<quota<<filename.c_str()<<'/'<<filename.c_str()<<"_T"<<t<<"_P";
 	    theFile<<partno(j)<<".vtu"<<quota;
 	    theFile<<"/>\n";
 	}
