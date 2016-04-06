@@ -132,6 +132,7 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/material/uniaxial/limitState/TclLimitState.o \
 	$(FE)/element/zeroLength/TclZeroLength.o \
 	$(FE)/element/forceBeamColumn/TclForceBeamColumnCommand.o \
+	$(FE)/element/elasticBeamColumn/TclElasticBeamCommand.o \
 	$(FE)/coordTransformation/TclGeomTransfCommand.o \
 	$(FE)/element/joint/TclJoint2dCommand.o \
 	$(FE)/element/joint/TclJoint3dCommand.o \
@@ -323,6 +324,7 @@ ERRORHANDLER_LIBS = $(FE)/handler/StandardStream.o \
 	$(FE)/handler/FileStream.o \
 	$(FE)/handler/OPS_Stream.o \
 	$(FE)/handler/DataFileStream.o \
+	$(FE)/handler/DataFileStreamAdd.o \
 	$(FE)/handler/XmlFileStream.o \
 	$(FE)/handler/BinaryFileStream.o \
 	$(FE)/handler/DummyStream.o \

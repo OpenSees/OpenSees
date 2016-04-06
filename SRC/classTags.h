@@ -920,6 +920,7 @@
 #define OPS_STREAM_TAGS_TCP_Stream              8
 #define OPS_STREAM_TAGS_ChannelStream           9
 #define OPS_STREAM_TAGS_DataTurbineStream      10
+#define OPS_STREAM_TAGS_DataFileStreamAdd      11
 
 
 #define DomDecompALGORITHM_TAGS_DomainDecompAlgo 1

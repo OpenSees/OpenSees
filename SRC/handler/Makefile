@@ -5,6 +5,7 @@ OBJS       = OPS_Stream.o \
 	FileStream.o \
 	XmlFileStream.o \
 	DataFileStream.o \
+	DataFileStreamAdd.o \
 	BinaryFileStream.o \
 	DatabaseStream.o \
 	DummyStream.o \

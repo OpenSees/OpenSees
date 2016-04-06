@@ -2925,6 +2925,8 @@ SRC/handler/ConsoleErrorHandler.h -text
 SRC/handler/ConsoleErrorHandler.tex -text
 SRC/handler/DataFileStream.cpp -text
 SRC/handler/DataFileStream.h -text
+SRC/handler/DataFileStreamAdd.cpp -text
+SRC/handler/DataFileStreamAdd.h -text
 SRC/handler/DataOutputDatabaseHandler.cpp -text
 SRC/handler/DataOutputDatabaseHandler.h -text
 SRC/handler/DataOutputFileHandler.cpp -text

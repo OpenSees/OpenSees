@@ -301,6 +301,7 @@
 #include <StandardStream.h>
 #include <XmlFileStream.h>
 #include <DataFileStream.h>
+#include <DataFileStreamAdd.h>
 #include <BinaryFileStream.h>
 #include <DatabaseStream.h>
 #include <DummyStream.h>
@@ -1639,6 +1640,9 @@ FEM_ObjectBrokerAllClasses::getPtrNewStream(int classTag)
 
     case OPS_STREAM_TAGS_DataFileStream:
 	     return new DataFileStream();
+
+    case OPS_STREAM_TAGS_DataFileStreamAdd:
+	     return new DataFileStreamAdd();
 
     case OPS_STREAM_TAGS_BinaryFileStream:
 	     return new BinaryFileStream();

@@ -70,6 +70,7 @@ extern void* OPS_PVDRecorder();
 
  #include <StandardStream.h>
  #include <DataFileStream.h>
+ #include <DataFileStreamAdd.h>
  #include <XmlFileStream.h>
  #include <BinaryFileStream.h>
  #include <DatabaseStream.h>
@@ -101,7 +102,7 @@ extern void* OPS_PVDRecorder();
 
  static ExternalRecorderCommand *theExternalRecorderCommands = NULL;
 
- enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BINARY_STREAM, DATA_STREAM_CSV, TCP_STREAM};
+enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BINARY_STREAM, DATA_STREAM_CSV, TCP_STREAM, DATA_STREAM_ADD};
 
 
  #include <EquiSolnAlgo.h>
@@ -336,7 +337,10 @@ extern void* OPS_PVDRecorder();
 	   } else if (strcmp(argv[loc],"-headings") == 0) {
 	     eMode = DATA_STREAM;
 	     loc +=1;
-	   }
+	   } else if (strcmp(argv[loc],"-fileAdd") == 0) {
+	     eMode = DATA_STREAM_ADD;
+	     loc +=1;
+	   }	   
 
 	 } else if (strcmp(argv[loc],"-closeOnWrite") == 0) {
 	   closeOnWrite = true;
@@ -378,6 +382,15 @@ extern void* OPS_PVDRecorder();
 	   const char *pwd = getInterpPWD(interp);
 	   simulationInfo.addOutputFile(fileName, pwd);
 	   eMode = XML_STREAM;
+	   loc += 2;
+	 }	    
+       
+	 else if (strcmp(argv[loc],"-fileAdd") == 0) {
+	   // allow user to specify load pattern other than current
+	   fileName = argv[loc+1];
+	   const char *pwd = getInterpPWD(interp);
+	   simulationInfo.addOutputFile(fileName, pwd);
+	   eMode = DATA_STREAM_ADD;
 	   loc += 2;
 	 }	    
 
@@ -422,6 +435,8 @@ extern void* OPS_PVDRecorder();
        // construct the DataHandler
        if (eMode == DATA_STREAM && fileName != 0) {
 	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
+       } else if (eMode == DATA_STREAM_ADD && fileName != 0) {
+	 theOutputStream = new DataFileStreamAdd(fileName, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
        } else if (eMode == DATA_STREAM_CSV && fileName != 0) {
 	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1, closeOnWrite, precision, doScientific);
        } else if (eMode == XML_STREAM && fileName != 0) {
@@ -1091,6 +1106,14 @@ extern void* OPS_PVDRecorder();
 	   pos += 2;
 	 }
 
+	 else if (strcmp(argv[pos],"-fileAdd") == 0) {
+	   fileName = argv[pos+1];
+	   const char *pwd = getInterpPWD(interp);
+	   simulationInfo.addOutputFile(fileName, pwd);
+	   eMode = DATA_STREAM_ADD;
+	   pos += 2;
+	 }
+
 	 else if (strcmp(argv[pos],"-closeOnWrite") == 0)  {
 	   closeOnWrite = true;
 	   pos += 1;
@@ -1316,6 +1339,8 @@ extern void* OPS_PVDRecorder();
        // construct the DataHandler
        if (eMode == DATA_STREAM && fileName != 0) {
 	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
+       } else if (eMode == DATA_STREAM_ADD && fileName != 0) {
+	 theOutputStream = new DataFileStreamAdd(fileName, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
        } else if (eMode == DATA_STREAM_CSV && fileName != 0) {
 	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1, closeOnWrite, precision, doScientific);
        } else if (eMode == XML_STREAM && fileName != 0) {
