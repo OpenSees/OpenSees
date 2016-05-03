@@ -78,6 +78,7 @@ extern void *OPS_CableMaterial(void);
 extern void *OPS_Bilin(void);
 extern void *OPS_Bilin02(void);
 extern void *OPS_NewSteel01(void);
+extern void *OPS_FRPConfinedConcrete02(void);
 //extern void *OPS_HoehlerStanton(void);
 extern void *OPS_NewSteel02(void);
 extern void *OPS_RambergOsgoodSteel(void);
@@ -109,6 +110,7 @@ extern void *OPS_SteelBRB(void);
 extern void *OPS_New_MultiLinear(void);
 extern void *OPS_NewHookGap(void);
 extern void *OPS_FRPConfinedConcrete(void);
+extern void *OPS_FRPConfinedConcrete02(void);
 extern void *OPS_NewSteel01Thermal(void);
 extern void *OPS_NewSteel02Thermal(void);
 extern void *OPS_NewConcrete02Thermal(void);
@@ -131,11 +133,8 @@ extern void *OPS_ViscousMaterial(void);
 extern  void *OPS_SteelMPF(void); // K Kolozvari                                
 extern  void *OPS_ConcreteCM(void); // K Kolozvari
 extern  void *OPS_Bond_SP01(void); // K Kolozvari
-
-
-#ifdef _HAVE_Steel4
 extern void *OPS_Steel4(void);
-#endif
+
 
 //extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp *interp, int argc, 
 //					 TCL_Char **argv, TclModelBuilder *theTclBuilder);
@@ -256,15 +255,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
-#ifdef _HAVE_Steel4
     } else if (strcmp(argv[1],"Steel4") == 0) {
       void *theMat = OPS_Steel4();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;
-#endif
-  
 
     } else if (strcmp(argv[1],"Concrete01") == 0) {
       void *theMat = OPS_NewConcrete01();
@@ -415,6 +411,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if (strcmp(argv[1],"HookGap") == 0) {
       void *theMat = OPS_NewHookGap();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"FRPConfinedConcrete02") == 0) {
+      void *theMat = OPS_FRPConfinedConcrete02();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 

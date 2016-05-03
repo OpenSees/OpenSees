@@ -81,6 +81,7 @@ OBJS       = UniaxialMaterial.o \
 	Concrete01WithSITC.o \
 	ConcretewBeta.o \
 	FRPConfinedConcrete.o \
+	FRPConfinedConcrete02.o \
 	KikuchiAikenHDR.o \
 	KikuchiAikenLRB.o \
 	Concrete05.o \
