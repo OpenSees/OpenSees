@@ -42,11 +42,12 @@
 #include <Information.h>
 #include <MaterialResponse.h>
 #include <UniaxialMaterial.h>
+#include <ElasticMaterial.h>
 #include <SectionIntegration.h>
 #include <elementAPI.h>
 #include <string.h>
 
-ID FiberSection3d::code(3);
+ID FiberSection3d::code(4);
 
 void* OPS_FiberSection3d()
 {
@@ -65,10 +66,10 @@ void* OPS_FiberSection3d()
 }
 
 // constructors:
-FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers): 
+FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers, UniaxialMaterial *torsion): 
   SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
-  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
+  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
@@ -111,25 +112,36 @@ FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers):
     zBar = QyBar/Abar;
   }
 
-  s = new Vector(sData, 3);
-  ks = new Matrix(kData, 3, 3);
+  if (torsion != 0) {
+    theTorsion = torsion->getCopy();
+  } else {
+    theTorsion = new ElasticMaterial(0, 1.0e10);
+  }
+  if (theTorsion == 0) {
+    opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
+  }
+
+  s = new Vector(sData, 4);
+  ks = new Matrix(kData, 4, 4);
 
   sData[0] = 0.0;
   sData[1] = 0.0;
   sData[2] = 0.0;
+  sData[3] = 0.0;
 
-  for (int i=0; i<9; i++)
+  for (int i=0; i<16; i++)
     kData[i] = 0.0;
 
   code(0) = SECTION_RESPONSE_P;
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
+  code(3) = SECTION_RESPONSE_T;
 }
 
-FiberSection3d::FiberSection3d(int tag, int num): 
+FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial *torsion): 
     SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
     numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
-    QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
+    QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
 {
     if(sizeFibers != 0) {
 	theMaterials = new UniaxialMaterial *[sizeFibers];
@@ -154,45 +166,56 @@ FiberSection3d::FiberSection3d(int tag, int num):
 	}
     }
 
-    s = new Vector(sData, 3);
-    ks = new Matrix(kData, 3, 3);
+  if (torsion != 0) {
+    theTorsion = torsion->getCopy();
+  } else {
+    theTorsion = new ElasticMaterial(0, 1.0e10);
+  }
+  if (theTorsion == 0) {
+    opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
+  }
+
+    s = new Vector(sData, 4);
+    ks = new Matrix(kData, 4, 4);
 
     sData[0] = 0.0;
     sData[1] = 0.0;
     sData[2] = 0.0;
+    sData[3] = 0.0;
 
-    for (int i=0; i<9; i++)
+    for (int i=0; i<16; i++)
 	kData[i] = 0.0;
 
     code(0) = SECTION_RESPONSE_P;
     code(1) = SECTION_RESPONSE_MZ;
     code(2) = SECTION_RESPONSE_MY;
+    code(3) = SECTION_RESPONSE_T;
 }
 
 FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
-			       SectionIntegration &si):
+			       SectionIntegration &si, UniaxialMaterial *torsion):
   SectionForceDeformation(tag, SEC_TAG_FiberSection3d),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
-  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
+  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
 {
   if (numFibers != 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theMaterials == 0) {
-      opserr << "NDFiberSection3d::NDFiberSection3d -- failed to allocate Material pointers";
+      opserr << "FiberSection3d::FiberSection3d -- failed to allocate Material pointers";
       exit(-1);
     }
     matData = new double [numFibers*3];
 
     if (matData == 0) {
-      opserr << "NDFiberSection3d::NDFiberSection3d -- failed to allocate double array for material data\n";
+      opserr << "FiberSection3d::FiberSection3d -- failed to allocate double array for material data\n";
       exit(-1);
     }
   }
 
   sectionIntegr = si.getCopy();
   if (sectionIntegr == 0) {
-    opserr << "Error: NDFiberSection3d::NDFiberSection3d: could not create copy of section integration object" << endln;
+    opserr << "Error: FiberSection3d::FiberSection3d: could not create copy of section integration object" << endln;
     exit(-1);
   }
 
@@ -220,39 +243,51 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
   yBar = QzBar/Abar;  
   zBar = QyBar/Abar;  
 
-  s = new Vector(sData, 3);
-  ks = new Matrix(kData, 3, 3);
+  if (torsion != 0) {
+    theTorsion = torsion->getCopy();
+  } else {
+    theTorsion = new ElasticMaterial(0, 1.0e10);
+  }
+  if (theTorsion == 0) {
+    opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
+  }
+
+  s = new Vector(sData, 4);
+  ks = new Matrix(kData, 4, 4);
   
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 4; i++)
     sData[i] = 0.0;
 
-  for (int i = 0; i < 3*3; i++)
+  for (int i = 0; i < 16; i++)
     kData[i] = 0.0;
   
   code(0) = SECTION_RESPONSE_P;
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
+  code(3) = SECTION_RESPONSE_T;
 }
 
 // constructor for blank object that recvSelf needs to be invoked upon
 FiberSection3d::FiberSection3d():
   SectionForceDeformation(0, SEC_TAG_FiberSection3d),
   numFibers(0), sizeFibers(0), theMaterials(0), matData(0),
-  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(3), s(0), ks(0)
+  QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
 {
-  s = new Vector(sData, 3);
-  ks = new Matrix(kData, 3, 3);
+  s = new Vector(sData, 4);
+  ks = new Matrix(kData, 4, 4);
 
   sData[0] = 0.0;
   sData[1] = 0.0;
   sData[2] = 0.0;
+  sData[3] = 0.0;
 
-  for (int i=0; i<9; i++)
+  for (int i=0; i<16; i++)
     kData[i] = 0.0;
 
   code(0) = SECTION_RESPONSE_P;
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
+  code(3) = SECTION_RESPONSE_T;
 }
 
 int
@@ -348,6 +383,9 @@ FiberSection3d::~FiberSection3d()
 
   if (sectionIntegr != 0)
     delete sectionIntegr;
+
+  if (theTorsion != 0)
+    delete theTorsion;
 }
 
 int
@@ -356,14 +394,15 @@ FiberSection3d::setTrialSectionDeformation (const Vector &deforms)
   int res = 0;
   e = deforms;
 
-  kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0; kData[3] = 0.0;
-  kData[4] = 0.0; kData[5] = 0.0; kData[6] = 0.0; kData[7] = 0.0;
-  kData[8] = 0.0; 
-  sData[0] = 0.0; sData[1] = 0.0;  sData[2] = 0.0; 
+  for (int i = 0; i < 4; i++)
+    sData[i] = 0.0;
+  for (int i = 0; i < 16; i++)
+    kData[i] = 0.0;
 
   double d0 = deforms(0);
   double d1 = deforms(1);
   double d2 = deforms(2);
+  double d3 = deforms(3);
 
   static double yLocs[10000];
   static double zLocs[10000];
@@ -381,6 +420,7 @@ FiberSection3d::setTrialSectionDeformation (const Vector &deforms)
     }
   }
 
+  double tangent, stress;
   for (int i = 0; i < numFibers; i++) {
     UniaxialMaterial *theMat = theMaterials[i];
     double y = yLocs[i] - yBar;
@@ -389,7 +429,6 @@ FiberSection3d::setTrialSectionDeformation (const Vector &deforms)
 
     // determine material strain and set it
     double strain = d0 - y*d1 + z*d2;
-    double tangent, stress;
     res += theMat->setTrial(strain, stress, tangent);
 
     double value = tangent * A;
@@ -401,10 +440,10 @@ FiberSection3d::setTrialSectionDeformation (const Vector &deforms)
     kData[1] += vas1;
     kData[2] += vas2;
     
-    kData[4] += vas1 * -y;
-    kData[5] += vas1as2;
+    kData[5] += vas1 * -y;
+    kData[6] += vas1as2;
     
-    kData[8] += vas2 * z; 
+    kData[10] += vas2 * z; 
 
     double fs0 = stress * A;
 
@@ -413,9 +452,13 @@ FiberSection3d::setTrialSectionDeformation (const Vector &deforms)
     sData[2] += fs0 * z;
   }
 
-  kData[3] = kData[1];
-  kData[6] = kData[2];
-  kData[7] = kData[5];
+  kData[4] = kData[1];
+  kData[8] = kData[2];
+  kData[9] = kData[6];
+
+  res += theTorsion->setTrial(d3, stress, tangent);
+  sData[3] = stress;
+  kData[15] = tangent;
 
   return res;
 }
@@ -423,14 +466,10 @@ FiberSection3d::setTrialSectionDeformation (const Vector &deforms)
 const Matrix&
 FiberSection3d::getInitialTangent(void)
 {
-  static double kInitialData[9];
-  static Matrix kInitial(kInitialData, 3, 3);
+  static double kInitialData[16];
+  static Matrix kInitial(kInitialData, 4, 4);
   
-  kInitialData[0] = 0.0; kInitialData[1] = 0.0; 
-  kInitialData[2] = 0.0; kInitialData[3] = 0.0;
-  kInitialData[4] = 0.0; kInitialData[5] = 0.0; 
-  kInitialData[6] = 0.0; kInitialData[7] = 0.0;
-  kInitialData[8] = 0.0; 
+  kInitial.Zero();
 
   static double yLocs[10000];
   static double zLocs[10000];
@@ -465,15 +504,17 @@ FiberSection3d::getInitialTangent(void)
     kInitialData[1] += vas1;
     kInitialData[2] += vas2;
     
-    kInitialData[4] += vas1 * -y;
-    kInitialData[5] += vas1as2;
+    kInitialData[5] += vas1 * -y;
+    kInitialData[6] += vas1as2;
     
-    kInitialData[8] += vas2 * z; 
+    kInitialData[10] += vas2 * z; 
   }
 
-  kInitialData[3] = kInitialData[1];
-  kInitialData[6] = kInitialData[2];
-  kInitialData[7] = kInitialData[5];
+  kInitialData[4] = kInitialData[1];
+  kInitialData[8] = kInitialData[2];
+  kInitialData[9] = kInitialData[6];
+
+  kInitialData[15] = theTorsion->getInitialTangent();
 
   return kInitial;
 }
@@ -541,12 +582,18 @@ FiberSection3d::getCopy(void)
   theCopy->yBar = yBar;
   theCopy->zBar = zBar;
 
-  for (int i=0; i<9; i++)
+  for (int i=0; i<16; i++)
     theCopy->kData[i] = kData[i];
 
   theCopy->sData[0] = sData[0];
   theCopy->sData[1] = sData[1];
   theCopy->sData[2] = sData[2];
+  theCopy->sData[3] = sData[3];
+
+  if (theTorsion != 0)
+    theCopy->theTorsion = theTorsion->getCopy();
+  else
+    theCopy->theTorsion = 0;
 
   if (sectionIntegr != 0)
     theCopy->sectionIntegr = sectionIntegr->getCopy();
@@ -565,7 +612,7 @@ FiberSection3d::getType ()
 int
 FiberSection3d::getOrder () const
 {
-  return 3;
+  return 4;
 }
 
 int
@@ -575,6 +622,8 @@ FiberSection3d::commitState(void)
 
   for (int i = 0; i < numFibers; i++)
     err += theMaterials[i]->commitState();
+
+  err += theTorsion->commitState();
 
   return err;
 }
@@ -587,7 +636,8 @@ FiberSection3d::revertToLastCommit(void)
   kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0; kData[3] = 0.0;
   kData[4] = 0.0; kData[5] = 0.0; kData[6] = 0.0; kData[7] = 0.0;
   kData[8] = 0.0; 
-  sData[0] = 0.0; sData[1] = 0.0;  sData[2] = 0.0; 
+  kData[15] = 0.0;
+  sData[0] = 0.0; sData[1] = 0.0;  sData[2] = 0.0; sData[3] = 0.0;
 
   static double yLocs[10000];
   static double zLocs[10000];
@@ -626,10 +676,10 @@ FiberSection3d::revertToLastCommit(void)
     kData[1] += vas1;
     kData[2] += vas2;
     
-    kData[4] += vas1 * -y;
-    kData[5] += vas1as2;
+    kData[5] += vas1 * -y;
+    kData[6] += vas1as2;
     
-    kData[8] += vas2 * z; 
+    kData[10] += vas2 * z; 
 
     double fs0 = stress * A;
     sData[0] += fs0;
@@ -637,9 +687,12 @@ FiberSection3d::revertToLastCommit(void)
     sData[2] += fs0 * z;
   }
 
-  kData[3] = kData[1];
-  kData[6] = kData[2];
-  kData[7] = kData[5];
+  kData[4] = kData[1];
+  kData[8] = kData[2];
+  kData[9] = kData[6];
+
+  err += theTorsion->revertToLastCommit();
+  kData[15] = theTorsion->getTangent();
 
   return err;
 }
@@ -650,11 +703,11 @@ FiberSection3d::revertToStart(void)
   // revert the fibers to start    
   int err = 0;
 
-
   kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0; kData[3] = 0.0;
   kData[4] = 0.0; kData[5] = 0.0; kData[6] = 0.0; kData[7] = 0.0;
-  kData[8] = 0.0; 
-  sData[0] = 0.0; sData[1] = 0.0;  sData[2] = 0.0; 
+  kData[8] = 0.0;
+  kData[15] = 0.0; 
+  sData[0] = 0.0; sData[1] = 0.0;  sData[2] = 0.0; sData[3] = 0.0;
 
   static double yLocs[10000];
   static double zLocs[10000];
@@ -693,10 +746,10 @@ FiberSection3d::revertToStart(void)
     kData[1] += vas1;
     kData[2] += vas2;
     
-    kData[4] += vas1 * -y;
-    kData[5] += vas1as2;
+    kData[5] += vas1 * -y;
+    kData[6] += vas1as2;
     
-    kData[8] += vas2 * z; 
+    kData[10] += vas2 * z; 
 
     double fs0 = stress * A;
     sData[0] += fs0;
@@ -704,9 +757,13 @@ FiberSection3d::revertToStart(void)
     sData[2] += fs0 * z;
   }
 
-  kData[3] = kData[1];
-  kData[6] = kData[2];
-  kData[7] = kData[5];
+  kData[4] = kData[1];
+  kData[8] = kData[2];
+  kData[9] = kData[6];
+
+  err += theTorsion->revertToStart();
+  kData[15] = theTorsion->getTangent();
+  sData[3] = theTorsion->getStress();
 
   return err;
 }
@@ -895,7 +952,7 @@ FiberSection3d::Print(OPS_Stream &s, int flag)
     s << "\tSection code: " << code;
     s << "\tNumber of Fibers: " << numFibers << endln;
     s << "\tCentroid: (" << -yBar << ", " << zBar << ')' << endln;
-    
+    theTorsion->Print(s,flag);    
     if (flag == 1) {
       for (int i = 0; i < numFibers; i++) {
 	s << "\nLocation (y, z) = (" << matData[3*i] << ", " << matData[3*i+1] << ")";
@@ -1205,6 +1262,11 @@ FiberSection3d::setParameter(const char **argv, int argc, Parameter &param)
 	  result = ok;
       }
     
+    if (paramMatTag == theTorsion->getTag()) {
+	ok = theTorsion->setParameter(&argv[2], argc-2, param);
+	if (ok != -1)
+	  result = ok;
+    }
     return result;
   }    
 
@@ -1224,6 +1286,9 @@ FiberSection3d::setParameter(const char **argv, int argc, Parameter &param)
     if (ok != -1)
       result = ok;
   }
+  ok = theTorsion->setParameter(argv, argc, param);
+  if (ok != -1)
+    result = ok;
 
   if (sectionIntegr != 0) {
     ok = sectionIntegr->setParameter(argv, argc, param);
@@ -1237,7 +1302,7 @@ FiberSection3d::setParameter(const char **argv, int argc, Parameter &param)
 const Vector &
 FiberSection3d::getSectionDeformationSensitivity(int gradIndex)
 {
-  static Vector dummy(3);
+  static Vector dummy(4);
   
   dummy.Zero();
   
@@ -1248,7 +1313,7 @@ FiberSection3d::getSectionDeformationSensitivity(int gradIndex)
 const Vector &
 FiberSection3d::getStressResultantSensitivity(int gradIndex, bool conditional)
 {
-  static Vector ds(3);
+  static Vector ds(4);
   
   ds.Zero();
   
@@ -1295,7 +1360,7 @@ FiberSection3d::getStressResultantSensitivity(int gradIndex, bool conditional)
     z = zLocs[i] - zBar;
     A = fiberArea[i];
     
-    dsigdh = theMaterials[i]->getStressSensitivity(gradIndex,true);
+    dsigdh = theMaterials[i]->getStressSensitivity(gradIndex, conditional);
 
     ds(0) += dsigdh*A;
     ds(1) += -y*dsigdh*A;
@@ -1336,15 +1401,19 @@ FiberSection3d::getStressResultantSensitivity(int gradIndex, bool conditional)
     ds.addMatrixVector(1.0, tmpMatrix, e, A);
   }
 
+  ds(3) = theTorsion->getStressSensitivity(gradIndex, conditional);
+
   return ds;
 }
 
 const Matrix &
 FiberSection3d::getSectionTangentSensitivity(int gradIndex)
 {
-  static Matrix something(3,3);
+  static Matrix something(4,4);
   
   something.Zero();
+
+  something(3,3) = theTorsion->getTangentSensitivity(gradIndex);
   
   return something;
 }
@@ -1356,6 +1425,7 @@ FiberSection3d::commitSensitivity(const Vector& defSens, int gradIndex, int numG
   double d0 = defSens(0);
   double d1 = defSens(1);
   double d2 = defSens(2);
+  double d3 = defSens(3);
 
   //dedh = defSens;
 
@@ -1397,6 +1467,8 @@ FiberSection3d::commitSensitivity(const Vector& defSens, int gradIndex, int numG
 
     theMat->commitSensitivity(depsdh,gradIndex,numGrads);
   }
+
+  theTorsion->commitSensitivity(d3, gradIndex, numGrads);
 
   return 0;
 }
