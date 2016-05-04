@@ -3228,6 +3228,8 @@ SRC/material/section/ElasticShearSection3d.cpp -text
 SRC/material/section/ElasticShearSection3d.h -text
 SRC/material/section/ElasticTubeSection3d.cpp -text
 SRC/material/section/ElasticTubeSection3d.h -text
+SRC/material/section/ElasticWarpingShearSection2d.cpp -text
+SRC/material/section/ElasticWarpingShearSection2d.h -text
 SRC/material/section/FiberSection.cpp -text
 SRC/material/section/FiberSection.h -text
 SRC/material/section/FiberSection2d.cpp -text
@@ -3255,6 +3257,8 @@ SRC/material/section/NDFiberSection2d.cpp -text
 SRC/material/section/NDFiberSection2d.h -text
 SRC/material/section/NDFiberSection3d.cpp -text
 SRC/material/section/NDFiberSection3d.h -text
+SRC/material/section/NDFiberSectionWarping2d.cpp -text
+SRC/material/section/NDFiberSectionWarping2d.h -text
 SRC/material/section/ParallelSection.cpp -text
 SRC/material/section/ParallelSection.h -text
 SRC/material/section/SectionAggregator.cpp -text
