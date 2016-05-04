@@ -39,6 +39,7 @@
 #include <ElasticSection3d.h>
 #include <ElasticShearSection2d.h>
 #include <ElasticShearSection3d.h>
+#include <ElasticWarpingShearSection2d.h>
 #include <ElasticTubeSection3d.h>
 //#include <GenericSection1d.h>
 //#include <GenericSectionNd.h>
@@ -48,6 +49,7 @@
 #include <FiberSection2d.h>
 #include <NDFiberSection2d.h>
 #include <NDFiberSection3d.h>
+#include <NDFiberSectionWarping2d.h>
 #include <FiberSection2dInt.h>
 #include <FiberSection3d.h>
 //#include <FiberSectionGJ.h>
@@ -222,7 +224,70 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	    theSection = new ElasticSection3d(tag, E, A, Iz, Iy, G, J);
 	}
     }	
+
+    else if (strcmp(argv[1],"ElasticWarpingShear") == 0) {
+      if (argc < 11) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: section ElasticWarpingShear tag? E? A? Iz? G? alpha? J? B? C?>" << endln;
+	return TCL_ERROR;
+      }
 	
+      int tag;
+      double E, A, Iz, G, alpha, J, B, C;
+      
+      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+	opserr << "WARNING invalid section ElasticWarpingShearSection2d tag" << endln;
+	return TCL_ERROR;		
+      }
+      
+      if (Tcl_GetDouble (interp, argv[3], &E) != TCL_OK) {
+	opserr << "WARNING invalid E" << endln;
+	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    
+	return TCL_ERROR;
+      }	
+      
+      if (Tcl_GetDouble (interp, argv[4], &A) != TCL_OK) {
+	opserr << "WARNING invalid A" << endln;
+	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    
+	return TCL_ERROR;
+      }	
+      
+      if (Tcl_GetDouble (interp, argv[5], &Iz) != TCL_OK) {
+	opserr << "WARNING invalid Iz" << endln;
+	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    	    
+	return TCL_ERROR;
+      }	
+      
+      if (Tcl_GetDouble (interp, argv[6], &G) != TCL_OK) {
+	opserr << "WARNING invalid G" << endln;
+	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    	    
+	return TCL_ERROR;
+      }
+      
+      if (Tcl_GetDouble (interp, argv[7], &alpha) != TCL_OK) {
+	opserr << "WARNING invalid alpha" << endln;
+	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    	    
+	return TCL_ERROR;
+      }
+      if (Tcl_GetDouble (interp, argv[8], &J) != TCL_OK) {
+	opserr << "WARNING invalid J" << endln;
+	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    	    
+	return TCL_ERROR;
+      }
+      if (Tcl_GetDouble (interp, argv[9], &B) != TCL_OK) {
+	opserr << "WARNING invalid B" << endln;
+	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    	    
+	return TCL_ERROR;
+      }
+      if (Tcl_GetDouble (interp, argv[10], &C) != TCL_OK) {
+	opserr << "WARNING invalid C" << endln;
+	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    	    
+	return TCL_ERROR;
+      }
+      
+      theSection = new ElasticWarpingShearSection2d(tag, E, A, Iz, G, alpha, J, B, C);
+    }
+    	
     // Check argv[1] for section type
     else if (strcmp(argv[1],"ElasticTube") == 0) {
       if (argc < 7) {
@@ -451,7 +516,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 
 	int numFibers = wfsect.getNumFibers();
 
-	if (argc > 10 && strcmp(argv[10],"-nd") == 0) {
+	if (argc > 10) {
 
 	  double shape = 1.0;
 	  if (argc > 11) {
@@ -474,9 +539,13 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	  NDMaterial **theMats = new NDMaterial *[numFibers];
 	  
 	  wfsect.arrangeFibers(theMats, theSteel);
-	  
+
 	  // Parsing was successful, allocate the section
-	  theSection = new NDFiberSection2d(tag, numFibers, theMats, wfsect, shape);
+	  theSection = 0;
+	  if (strcmp(argv[10],"-nd") == 0)
+	    theSection = new NDFiberSection2d(tag, numFibers, theMats, wfsect, shape);
+	  if (strcmp(argv[10],"-ndWarping") == 0)
+	    theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats, wfsect, shape);
 
 	  delete [] theMats;	  
 	}
@@ -2976,7 +3045,8 @@ TclCommand_addUCFiberSection (ClientData clientData, Tcl_Interp *interp, int arg
       section = section2d;
       //SectionForceDeformation *section = new FiberSection(secTag, 0, 0);
     } else if (NDM == 3) {
-      section3d = new FiberSection3d(secTag, 0, 0);
+      ElasticMaterial theGJ(0, 1e10);
+      section3d = new FiberSection3d(secTag, 0, 0, &theGJ);
       section = section3d;
     } 
 
