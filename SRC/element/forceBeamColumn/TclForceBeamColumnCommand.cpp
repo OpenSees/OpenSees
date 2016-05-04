@@ -98,7 +98,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
   int ndf = theTclBuilder->getNDF();
   
   int ok = 0;
-  if (ndm == 2 && ndf == 3)
+  if ((ndm == 2 && ndf == 3) || (ndm == 2 && ndf == 4))
     ok = 1;
   if (ndm == 3 && ndf == 6)
     ok = 1;
