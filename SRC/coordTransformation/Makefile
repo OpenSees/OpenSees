@@ -7,8 +7,10 @@ OBJS       = CrdTransf.o \
 	LinearCrdTransf3d.o \
 	PDeltaCrdTransf2d.o \
 	PDeltaCrdTransf3d.o \
+	ModerateDispCrdTransf2d.o \
 	CorotCrdTransf2d.o \
 	CorotCrdTransf3d.o \
+	CorotCrdTransfWarping2d.o \
 	TclGeomTransfCommand.o
 
 # Compilation control
