@@ -3426,6 +3426,8 @@ SRC/material/uniaxial/ElasticPPMaterial.h -text
 SRC/material/uniaxial/ElasticPPMaterial.tex -text
 SRC/material/uniaxial/FRPConfinedConcrete.cpp -text
 SRC/material/uniaxial/FRPConfinedConcrete.h -text
+SRC/material/uniaxial/FRPConfinedConcrete02.cpp -text
+SRC/material/uniaxial/FRPConfinedConcrete02.h -text
 SRC/material/uniaxial/FatigueMaterial.cpp -text
 SRC/material/uniaxial/FatigueMaterial.h -text
 SRC/material/uniaxial/FedeasMaterial.cpp -text
