@@ -31,6 +31,7 @@
 #include <PDeltaCrdTransf3d.h>
 #include <CorotCrdTransf2d.h>
 #include <CorotCrdTransf3d.h>
+#include <CorotCrdTransfWarping2d.h>
 
 static Domain *theTclModelBuilderDomain = 0;
 static TclModelBuilder *theTclModelBuilder = 0;
@@ -61,7 +62,7 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp,
   NDF = theTclModelBuilder->getNDF();   // number of degrees of freedom per node
   
   // create 2d coordinate transformation
-  if (NDM == 2 && NDF == 3) {
+  if ((NDM == 2 && NDF == 3) || (NDM == 2 && NDF == 4)) {
     
     int crdTransfTag;
     Vector jntOffsetI(2), jntOffsetJ(2);
@@ -118,9 +119,12 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp,
     
     else if (strcmp(argv[1],"PDelta") == 0 || strcmp(argv[1],"LinearWithPDelta") == 0)
       crdTransf2d = new PDeltaCrdTransf2d(crdTransfTag, jntOffsetI, jntOffsetJ);
-    
-    else if (strcmp(argv[1],"Corotational") == 0)
+
+    else if (strcmp(argv[1],"Corotational") == 0 && NDF == 3)
       crdTransf2d = new CorotCrdTransf2d(crdTransfTag, jntOffsetI, jntOffsetJ);
+
+    else if (strcmp(argv[1],"Corotational") == 0 && NDF == 4)
+      crdTransf2d = new CorotCrdTransfWarping2d(crdTransfTag, jntOffsetI, jntOffsetJ);
 
     else {
       opserr << "WARNING TclElmtBuilder - addGeomTransf - invalid Type\n";
