@@ -36,6 +36,8 @@
 
 #include <ForceBeamColumn2d.h>
 #include <ForceBeamColumn3d.h>
+#include <ForceBeamColumnWarping2d.h>
+#include <ElasticForceBeamColumnWarping2d.h>
 //#include <TimoshenkoBeamColumn2d.h>
 #include <DispBeamColumn2d.h>
 #include <DispBeamColumn3d.h>
@@ -378,6 +380,10 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 	theElement = new ForceBeamColumnCBDI2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
       else if (strcmp(argv[1],"forceBeamColumnCSBDI") == 0)
 	theElement = new ForceBeamColumnCBDI2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass, true);
+      else if (strcmp(argv[1],"forceBeamColumnWarping") == 0)
+	theElement = new ForceBeamColumnWarping2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
+      else if (strcmp(argv[1],"elasticForceBeamColumnWarping") == 0)
+	theElement = new ElasticForceBeamColumnWarping2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
       else if (strcmp(argv[1],"dispBeamColumnThermal") == 0)
 	theElement = new DispBeamColumn2dThermal(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
       else if (strcmp(argv[1],"dispBeamColumnWithSensitivity") == 0)
@@ -1309,6 +1315,10 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       theElement = new ForceBeamColumnCBDI2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, mass);
     else if (strcmp(argv[1],"forceBeamColumnCSBDI") == 0)
       theElement = new ForceBeamColumnCBDI2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, mass, true);
+    else if (strcmp(argv[1],"forceBeamColumnWarping") == 0)
+      theElement = new ForceBeamColumnWarping2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d);
+    else if (strcmp(argv[1],"elasticForceBeamColumnWarping") == 0)
+      theElement = new ElasticForceBeamColumnWarping2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d);
     else 
       theElement = new ForceBeamColumn2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, mass, numIter, tol);
   }
