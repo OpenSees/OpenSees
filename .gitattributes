@@ -2645,6 +2645,8 @@ SRC/element/forceBeamColumn/ElasticForceBeamColumn2d.cpp -text
 SRC/element/forceBeamColumn/ElasticForceBeamColumn2d.h -text
 SRC/element/forceBeamColumn/ElasticForceBeamColumn3d.cpp -text
 SRC/element/forceBeamColumn/ElasticForceBeamColumn3d.h -text
+SRC/element/forceBeamColumn/ElasticForceBeamColumnWarping2d.cpp -text
+SRC/element/forceBeamColumn/ElasticForceBeamColumnWarping2d.h -text
 SRC/element/forceBeamColumn/FixedLocationBeamIntegration.cpp -text
 SRC/element/forceBeamColumn/FixedLocationBeamIntegration.h -text
 SRC/element/forceBeamColumn/ForceBeamColumn2d.cpp -text
@@ -2653,6 +2655,8 @@ SRC/element/forceBeamColumn/ForceBeamColumn3d.cpp -text
 SRC/element/forceBeamColumn/ForceBeamColumn3d.h -text
 SRC/element/forceBeamColumn/ForceBeamColumnCBDI2d.cpp -text
 SRC/element/forceBeamColumn/ForceBeamColumnCBDI2d.h -text
+SRC/element/forceBeamColumn/ForceBeamColumnWarping2d.cpp -text
+SRC/element/forceBeamColumn/ForceBeamColumnWarping2d.h -text
 SRC/element/forceBeamColumn/HingeEndpointBeamIntegration.cpp -text
 SRC/element/forceBeamColumn/HingeEndpointBeamIntegration.h -text
 SRC/element/forceBeamColumn/HingeMidpointBeamIntegration.cpp -text
