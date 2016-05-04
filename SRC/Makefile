@@ -221,8 +221,10 @@ GLF_LIBS = $(FE)/element/zeroLength/ZeroLength.o \
 REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn2d.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumnCBDI2d.o \
+	$(FE)/element/forceBeamColumn/ForceBeamColumnWarping2d.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn3d.o \
 	$(FE)/element/forceBeamColumn/ElasticForceBeamColumn2d.o \
+	$(FE)/element/forceBeamColumn/ElasticForceBeamColumnWarping2d.o \
 	$(FE)/element/forceBeamColumn/ElasticForceBeamColumn3d.o \
 	$(FE)/element/forceBeamColumn/BeamIntegration.o \
 	$(FE)/element/forceBeamColumn/LobattoBeamIntegration.o \
@@ -246,6 +248,7 @@ REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/coordTransformation/LinearCrdTransf2d.o \
 	$(FE)/coordTransformation/PDeltaCrdTransf2d.o \
 	$(FE)/coordTransformation/CorotCrdTransf2d.o \
+	$(FE)/coordTransformation/CorotCrdTransfWarping2d.o \
 	$(FE)/coordTransformation/LinearCrdTransf3d.o \
 	$(FE)/coordTransformation/PDeltaCrdTransf3d.o \
 	$(FE)/coordTransformation/CorotCrdTransf3d.o
@@ -842,9 +845,11 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/ElasticSection3d.o \
 	$(FE)/material/section/ElasticShearSection2d.o \
 	$(FE)/material/section/ElasticShearSection3d.o \
+	$(FE)/material/section/ElasticWarpingShearSection2d.o \
 	$(FE)/material/section/ElasticTubeSection3d.o \
 	$(FE)/material/section/FiberSection2d.o \
 	$(FE)/material/section/NDFiberSection2d.o \
+	$(FE)/material/section/NDFiberSectionWarping2d.o \
 	$(FE)/material/section/FiberSection2dThermal.o \
 	$(FE)/material/section/FiberSection3d.o \
 	$(FE)/material/section/NDFiberSection3d.o \
