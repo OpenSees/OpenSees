@@ -2047,6 +2047,8 @@ SRC/coordTransformation/CorotCrdTransf2d.cpp -text
 SRC/coordTransformation/CorotCrdTransf2d.h -text
 SRC/coordTransformation/CorotCrdTransf3d.cpp -text
 SRC/coordTransformation/CorotCrdTransf3d.h -text
+SRC/coordTransformation/CorotCrdTransfWarping2d.cpp -text
+SRC/coordTransformation/CorotCrdTransfWarping2d.h -text
 SRC/coordTransformation/CrdTransf.cpp -text
 SRC/coordTransformation/CrdTransf.h -text
 SRC/coordTransformation/LinearCrdTransf2d.cpp -text
