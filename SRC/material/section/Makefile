@@ -4,6 +4,7 @@ OBJS       = SectionForceDeformation.o \
 	ElasticSection2d.o ElasticSection3d.o \
 	ElasticShearSection2d.o ElasticShearSection3d.o \
 	ElasticBDShearSection2d.o \
+	ElasticWarpingShearSection2d.o \
 	ElasticTubeSection3d.o \
 	GenericSection1d.o \
 	SectionAggregator.o \
@@ -15,6 +16,7 @@ OBJS       = SectionForceDeformation.o \
 	FiberSection2d.o \
 	NDFiberSection2d.o \
 	NDFiberSection3d.o \
+	NDFiberSectionWarping2d.o \
 	FiberSection2dThermal.o \
 	FiberSection3d.o \
 	FiberSectionGJ.o \
