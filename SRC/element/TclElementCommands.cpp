@@ -980,6 +980,8 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
 	     strcmp(argv[1],"timoshenkoBeamColumn") == 0  || 
 	     strcmp(argv[1],"forceBeamColumnCBDI") == 0  || 
 	     strcmp(argv[1],"forceBeamColumnCSBDI") == 0  || 
+	     strcmp(argv[1],"forceBeamColumnWarping") == 0  || 
+	     strcmp(argv[1],"elasticForceBeamColumnWarping") == 0  || 
 	     strcmp(argv[1],"dispBeamColumnNL") == 0  || 
 	     strcmp(argv[1],"dispBeamColumnThermal") == 0  || 
 	     strcmp(argv[1],"elasticForceBeamColumn") == 0 || 
