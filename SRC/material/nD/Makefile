@@ -37,6 +37,8 @@ OBJS       = NDMaterial.o \
 	J2PlaneStress.o \
 	J2Plasticity.o \
 	J2PlateFiber.o \
+	J2PlateFibre.o \
+	J2BeamFiber2d.o \
 	J2ThreeDimensional.o \
 	PlaneStrainMaterial.o \
 	PlaneStressMaterial.o \
