@@ -96,6 +96,8 @@ extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
 extern  void *OPS_NewInitStressNDMaterial(void);
 extern  void *OPS_NewStressDensityMaterial(void);
+extern  void *OPS_NewJ2BeamFiber2dMaterial(void);
+extern  void *OPS_NewJ2PlateFibreMaterial(void);
 
 extern void *OPS_NewLinearCap(void);
 extern void *OPS_NewAcousticMedium(void);
@@ -166,6 +168,22 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 
     else if ((strcmp(argv[1],"InitStressMaterial") == 0) || (strcmp(argv[1],"InitStress") == 0)) {
       void *theMat = OPS_NewInitStressNDMaterial();
+      if (theMat != 0) 
+        theMaterial = (NDMaterial *)theMat;
+      else 
+        return TCL_ERROR;
+    }
+
+    else if (strcmp(argv[1],"J2BeamFiber") == 0) {
+      void *theMat = OPS_NewJ2BeamFiber2dMaterial();
+      if (theMat != 0) 
+        theMaterial = (NDMaterial *)theMat;
+      else 
+        return TCL_ERROR;
+    }
+
+    else if (strcmp(argv[1],"J2PlateFibre") == 0) {
+      void *theMat = OPS_NewJ2PlateFibreMaterial();
       if (theMat != 0) 
         theMaterial = (NDMaterial *)theMat;
       else 
