@@ -3064,6 +3064,8 @@ SRC/material/nD/InitStressNDMaterial.cpp -text
 SRC/material/nD/InitStressNDMaterial.h -text
 SRC/material/nD/J2AxiSymm.cpp -text
 SRC/material/nD/J2AxiSymm.h -text
+SRC/material/nD/J2BeamFiber2d.cpp -text
+SRC/material/nD/J2BeamFiber2d.h -text
 SRC/material/nD/J2PlaneStrain.cpp -text
 SRC/material/nD/J2PlaneStrain.h -text
 SRC/material/nD/J2PlaneStress.cpp -text
@@ -3072,6 +3074,8 @@ SRC/material/nD/J2Plasticity.cpp -text
 SRC/material/nD/J2Plasticity.h -text
 SRC/material/nD/J2PlateFiber.cpp -text
 SRC/material/nD/J2PlateFiber.h -text
+SRC/material/nD/J2PlateFibre.cpp -text
+SRC/material/nD/J2PlateFibre.h -text
 SRC/material/nD/J2ThreeDimensional.cpp -text
 SRC/material/nD/J2ThreeDimensional.h -text
 SRC/material/nD/LinearCap.cpp -text
