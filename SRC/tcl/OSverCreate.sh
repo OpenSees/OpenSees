@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 # used to create version.txt file for OpenSees on UNIX
 # Boris Jeremic@ucdavis.edu Oct2002 
 
