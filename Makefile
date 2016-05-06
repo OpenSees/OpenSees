@@ -53,7 +53,7 @@ endif
 		$(CD) ..; \
 	done );
 	@$(ECHO) LIBRARIES BUILT ... NOW LINKING OpenSees PROGRAM;
-	@$(CD) $(FE)/tcl; ./OSverCreate.sh ; $(MAKE) tcl; ./OSverRemove.sh 
+	@$(CD) $(FE)/tcl; $(MAKE) tcl;
 	@$(CD) $(FE)/modelbuilder/tcl;  $(MAKE) tcl;
 
 OpenSees: tcl
