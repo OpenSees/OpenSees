@@ -749,6 +749,15 @@
     <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWenMod3d.cpp">
       <Filter>elastomericBearing</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping2d.cpp">
+      <Filter>crdTransf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.cpp">
+      <Filter>forceBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnWarping2d.cpp">
+      <Filter>forceBeamColumn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1278,6 +1287,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWenMod3d.h">
       <Filter>elastomericBearing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping2d.h">
+      <Filter>crdTransf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.h">
+      <Filter>forceBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnWarping2d.h">
+      <Filter>forceBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

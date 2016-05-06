@@ -95,10 +95,13 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWenMod3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\Element.cpp" />
     <ClCompile Include="..\..\..\SRC\element\ElementalLoad.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnWarping2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\FPBearingPTV.cpp" />
     <ClCompile Include="..\..\..\SRC\element\Information.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM.cpp" />
@@ -312,10 +315,13 @@
     <ClCompile Include="..\..\..\SRC\element\NewElement.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping2d.h" />
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h" />
     <ClInclude Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWenMod3d.h" />
     <ClInclude Include="..\..\..\SRC\element\Element.h" />
     <ClInclude Include="..\..\..\SRC\element\ElementalLoad.h" />
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ElasticForceBeamColumnWarping2d.h" />
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnWarping2d.h" />
     <ClInclude Include="..\..\..\SRC\element\frictionBearing\FPBearingPTV.h" />
     <ClInclude Include="..\..\..\SRC\element\Information.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM.h" />

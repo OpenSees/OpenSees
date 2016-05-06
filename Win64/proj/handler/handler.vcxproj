@@ -96,6 +96,7 @@
     <ClCompile Include="..\..\..\SRC\handler\BinaryFileStream.cpp" />
     <ClCompile Include="..\..\..\SRC\handler\DataFileStream.cpp" />
     <ClCompile Include="..\..\..\SRC\handler\DatabaseStream.cpp" />
+    <ClCompile Include="..\..\..\SRC\handler\DataFileStreamAdd.cpp" />
     <ClCompile Include="..\..\..\SRC\handler\DummyStream.cpp" />
     <ClCompile Include="..\..\..\Src\handler\FileStream.cpp" />
     <ClCompile Include="..\..\..\Src\handler\OPS_Stream.cpp" />
@@ -106,6 +107,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\handler\BinaryFileStream.h" />
     <ClInclude Include="..\..\..\SRC\handler\DataFileStream.h" />
+    <ClInclude Include="..\..\..\SRC\handler\DataFileStreamAdd.h" />
     <ClInclude Include="..\..\..\SRC\handler\DummyStream.h" />
     <ClInclude Include="..\..\..\Src\handler\FileStream.h" />
     <ClInclude Include="..\..\..\Src\handler\OPS_Stream.h" />

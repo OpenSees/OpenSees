@@ -1037,6 +1037,24 @@
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.cpp">
       <Filter>nD\stressDensityModel</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel4.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\J2PlateFibre.cpp">
+      <Filter>nD\j2Plasticity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\NDFiberSectionWarping2d.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\J2BeamFiber2d.cpp">
+      <Filter>nD\j2Plasticity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -1918,6 +1936,24 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.h">
       <Filter>nD\stressDensityModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel4.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\J2PlateFibre.h">
+      <Filter>nD\j2Plasticity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.h">
+      <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\NDFiberSectionWarping2d.h">
+      <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\J2BeamFiber2d.h">
+      <Filter>nD\j2Plasticity</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
