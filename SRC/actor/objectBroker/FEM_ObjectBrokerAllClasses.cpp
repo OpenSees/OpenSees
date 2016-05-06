@@ -259,18 +259,23 @@
 #include <Joint2D.h>		// Arash
 #include <TwoNodeLink.h>
 
-#include <ElastomericBearingPlasticity2d.h>
-#include <ElastomericBearingPlasticity3d.h>
 #include <ElastomericBearingBoucWen2d.h>
 #include <ElastomericBearingBoucWen3d.h>
+#include <ElastomericBearingPlasticity2d.h>
+#include <ElastomericBearingPlasticity3d.h>
+#include <ElastomericBearingUFRP2d.h>
+#include <ElastomericX.h>
+#include <HDR.h>
+#include <LeadRubberX.h>
+
 #include <FlatSliderSimple2d.h>
 #include <FlatSliderSimple3d.h>
-#include <SingleFPSimple2d.h>
-#include <SingleFPSimple3d.h>
+#include <FPBearingPTV.h>
 #include <RJWatsonEQS2d.h>
 #include <RJWatsonEQS3d.h>
+#include <SingleFPSimple2d.h>
+#include <SingleFPSimple3d.h>
 #include <TripleFrictionPendulum.h>
-#include <FPBearingPTV.h>
 
 #ifdef _PFEM
 #include <PFEMElement2D.h>
@@ -733,18 +738,6 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_BbarBrick:
       return new BbarBrick();
             
-    case ELE_TAG_ElastomericBearingBoucWen2d:
-      return new ElastomericBearingBoucWen2d();
-      
-    case ELE_TAG_ElastomericBearingBoucWen3d:
-      return new ElastomericBearingBoucWen3d();
-      
-    case ELE_TAG_ElastomericBearingPlasticity2d:
-      return new ElastomericBearingPlasticity2d();
-      
-    case ELE_TAG_ElastomericBearingPlasticity3d:
-      return new ElastomericBearingPlasticity3d();
-      
     case ELE_TAG_Joint2D:				// Arash
       return new Joint2D();			// Arash
       
@@ -763,17 +756,41 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_BrickUP:
       return new BrickUP();
       
+    case ELE_TAG_Twenty_Eight_Node_BrickUP:
+      return new TwentyEightNodeBrickUP();
+      
+    case ELE_TAG_ElastomericBearingBoucWen2d:
+      return new ElastomericBearingBoucWen2d();
+      
+    case ELE_TAG_ElastomericBearingBoucWen3d:
+      return new ElastomericBearingBoucWen3d();
+      
+    case ELE_TAG_ElastomericBearingPlasticity2d:
+      return new ElastomericBearingPlasticity2d();
+      
+    case ELE_TAG_ElastomericBearingPlasticity3d:
+      return new ElastomericBearingPlasticity3d();
+      
+    case ELE_TAG_ElastomericBearingUFRP2d:
+      return new ElastomericBearingUFRP2d();
+      
+    case ELE_TAG_ElastomericX:
+      return new ElastomericX();
+      
+    case ELE_TAG_HDR:
+      return new HDR();
+      
+    case ELE_TAG_LeadRubberX:
+      return new LeadRubberX();
+      
     case ELE_TAG_FlatSliderSimple2d:
       return new FlatSliderSimple2d();
       
     case ELE_TAG_FlatSliderSimple3d:
       return new FlatSliderSimple3d();
       
-    case ELE_TAG_SingleFPSimple2d:
-      return new SingleFPSimple2d();
-      
-    case ELE_TAG_SingleFPSimple3d:
-      return new SingleFPSimple3d();
+    case ELE_TAG_FPBearingPTV:
+      return new FPBearingPTV();
       
     case ELE_TAG_RJWatsonEQS2d:
       return new RJWatsonEQS2d();
@@ -781,14 +798,14 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_RJWatsonEQS3d:
       return new RJWatsonEQS3d();
       
+    case ELE_TAG_SingleFPSimple2d:
+      return new SingleFPSimple2d();
+      
+    case ELE_TAG_SingleFPSimple3d:
+      return new SingleFPSimple3d();
+      
     case ELE_TAG_TripleFrictionPendulum:
       return new TripleFrictionPendulum();
-      
-    case ELE_TAG_FPBearingPTV:
-      return new FPBearingPTV();
-      
-    case ELE_TAG_Twenty_Eight_Node_BrickUP:
-      return new TwentyEightNodeBrickUP();
 #ifdef _PFEM
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
