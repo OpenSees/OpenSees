@@ -633,6 +633,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Concrete07.o \
 	$(FE)/material/uniaxial/ConcreteSakaiKawashima.o \
 	$(FE)/material/uniaxial/FRPConfinedConcrete.o \
+	$(FE)/material/uniaxial/FRPConfinedConcrete02.o \
 	$(FE)/material/uniaxial/ResilienceMaterialHR.o \
 	$(FE)/material/uniaxial/ResilienceLow.o \
 	$(FE)/material/uniaxial/CFSSSWP.o \
