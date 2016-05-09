@@ -1066,6 +1066,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
     
     else if (strcmp(argv[1],"Fiber") == 0 || 
 	     strcmp(argv[1],"fiberSec") == 0 ||
+	     strcmp(argv[1],"NDFiberWarping") == 0 ||
 	     strcmp(argv[1],"NDFiber") == 0)
 	return TclCommand_addFiberSection (clientData, interp, argc, argv,
 					   theTclBuilder);
@@ -1444,6 +1445,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 
 static int currentSectionTag = 0;
 static bool currentSectionIsND = false;
+static bool currentSectionIsWarping = false;
     
 int
 buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
@@ -1472,8 +1474,11 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
     
     currentSectionTag = secTag;
     currentSectionIsND = false;
+    currentSectionIsWarping = false;
     if (strcmp(argv[1],"NDFiber") == 0)
       currentSectionIsND = true;
+    if (strcmp(argv[1],"NDFiberWarping") == 0)
+      currentSectionIsWarping = true;
 
     // create the fiber section representation (with the geometric information) 
       
@@ -2652,8 +2657,12 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	
 	 
 	 SectionForceDeformation *section = 0;
-	 if (currentSectionIsND)
-	   section = new NDFiberSection2d(secTag, numFibers, fiber);
+	 if (currentSectionIsND) {
+           if (currentSectionIsWarping)
+  	     section = new NDFiberSectionWarping2d(secTag, numFibers, fiber);
+           else 
+	     section = new NDFiberSection2d(secTag, numFibers, fiber);
+         }
 	 else
 	   section = new FiberSection2d(secTag, numFibers, fiber);
 
@@ -2715,9 +2724,10 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	 if (currentSectionIsND)
 	   section = new NDFiberSection3d(secTag, numFibers, fiber);
 	 else if (isTorsion) {
-	   ElasticMaterial theGJ(0, GJ);
-	   FiberSection3d theFS(0, numFibers, fiber);
-	   section = new SectionAggregator(secTag, theFS, theGJ, SECTION_RESPONSE_T);
+           ElasticMaterial theGJ(0, GJ);
+           //FiberSection3d theFS(0, numFibers, fiber);
+           //section = new SectionAggregator(secTag, theFS, theGJ, SECTION_RESPONSE_T);
+           section = new FiberSection3d(secTag, numFibers, fiber, &theGJ);
 	 }
 	 else
 	   section = new FiberSection3d(secTag, numFibers, fiber);
@@ -2972,9 +2982,10 @@ buildSectionInt(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	
 	 SectionForceDeformation *section = 0;
 	 if (isTorsion) {
-	   ElasticMaterial theGJ(0, GJ);
-	   FiberSection3d theFS(0, numFibers, fiber);
-	   section = new SectionAggregator(secTag, theFS, theGJ, SECTION_RESPONSE_T);
+           ElasticMaterial theGJ(0, GJ);
+           //FiberSection3d theFS(0, numFibers, fiber);
+           //section = new SectionAggregator(secTag, theFS, theGJ, SECTION_RESPONSE_T);
+           section = new FiberSection3d(secTag, numFibers, fiber, &theGJ);
 	 }
 	 else
 	   section = new FiberSection3d(secTag, numFibers, fiber);
@@ -3355,9 +3366,10 @@ int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	  //SectionForceDeformation *section = new FiberSection(secTag, numFibers, fiber);
 	  SectionForceDeformation *section = 0;
 	  if (isTorsion) {
-	    ElasticMaterial theGJ(0, GJ);
-	    FiberSection3d theFS(0, numFibers, fiber);
-	    section = new SectionAggregator(secTag, theFS, theGJ, SECTION_RESPONSE_T);
+           ElasticMaterial theGJ(0, GJ);
+           //FiberSection3d theFS(0, numFibers, fiber);
+           //section = new SectionAggregator(secTag, theFS, theGJ, SECTION_RESPONSE_T);
+           section = new FiberSection3d(secTag, numFibers, fiber, &theGJ);
 	  }
 	  else
 	    section = new FiberSection3d(secTag, numFibers, fiber);
