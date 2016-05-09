@@ -1477,8 +1477,10 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
     currentSectionIsWarping = false;
     if (strcmp(argv[1],"NDFiber") == 0)
       currentSectionIsND = true;
-    if (strcmp(argv[1],"NDFiberWarping") == 0)
+    if (strcmp(argv[1],"NDFiberWarping") == 0) {
+      currentSectionIsND = true;
       currentSectionIsWarping = true;
+    }
 
     // create the fiber section representation (with the geometric information) 
       
