@@ -30,6 +30,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modelbuilder", "proj\modelb
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenSees", "proj\openSees\OpenSees.vcxproj", "{C7EE51CA-305A-4F27-9CB0-85114FC32172}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenSeesTk", "proj\openSeesTk\OpenSeesTk.vcxproj", "{DEBED636-6061-42B1-B277-FAB92DF0E446}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "optimization", "proj\optimization\optimization.vcxproj", "{D1C15272-E650-4BE0-9DAF-B79F984D623D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "recorder", "proj\recorder\recorder.vcxproj", "{5BB0E918-CE81-7129-15F5-2A3470E92427}"
@@ -49,8 +51,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcl", "proj\tcl\tcl.vcxproj", "{B4F48ABB-2789-4753-AA82-7E2C1954D31A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utility", "proj\utility\utility.vcxproj", "{72CEB368-613B-3977-7BE6-0155A5F1DDBC}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenSeesTk", "proj\openSeesTk\OpenSeesTk.vcxproj", "{DEBED636-6061-42B1-B277-FAB92DF0E446}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

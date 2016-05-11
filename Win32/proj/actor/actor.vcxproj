@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
+    <ProjectGuid>{F217D50C-777C-2BDF-A01D-65526329C4F5}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
   </PropertyGroup>

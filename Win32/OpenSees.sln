@@ -8,6 +8,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cblas", "proj\cblas\cblas.v
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "convergence", "proj\convergence\convergence.vcxproj", "{1758A5F4-739A-ECEC-F823-AA97F0080356}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssparse", "proj\cssparse\cssparse.vcxproj", "{542B4EC8-400F-4BE5-A0A1-A53E8830606C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "damage", "proj\damage\damage.vcxproj", "{0775A4B2-93D2-4440-83B7-C1DF58021602}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "database", "proj\database\database.vcxproj", "{4742A96F-17C4-82A2-061D-E869FEF7D231}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "domain", "proj\domain\domain.vcxproj", "{1BAF252F-8F4F-46B1-E113-068017D9B6A3}"
@@ -28,6 +32,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenSees", "proj\openSees\O
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenSeesTk", "proj\openSeesTk\OpenSeesTk.vcxproj", "{DEBED636-6061-42B1-B277-FAB92DF0E446}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "optimization", "proj\optimization\optimization.vcxproj", "{D1C15272-E650-4BE0-9DAF-B79F984D623D}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quickMain", "proj\quickMain\quickMain.vcxproj", "{79627CFD-A1B2-437B-BA21-2D2D67378B4D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "recorder", "proj\recorder\recorder.vcxproj", "{D5A37082-DB5D-6EBD-A103-CF73C7FBB0C4}"
@@ -44,15 +50,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "system", "proj\system\syste
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tagged", "proj\tagged\tagged.vcxproj", "{0ED1E7E5-FFDB-F516-7B8A-B8AD48A64303}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utility", "proj\utility\utility.vcxproj", "{4CD190F9-BD41-F3BE-53B2-D247F7AF6EC7}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "damage", "proj\damage\damage.vcxproj", "{0775A4B2-93D2-4440-83B7-C1DF58021602}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcl", "proj\tcl\tcl.vcxproj", "{B4F48ABB-2789-4753-AA82-7E2C1954D31A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "optimization", "proj\optimization\optimization.vcxproj", "{D1C15272-E650-4BE0-9DAF-B79F984D623D}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssparse", "proj\cssparse\cssparse.vcxproj", "{542B4EC8-400F-4BE5-A0A1-A53E8830606C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utility", "proj\utility\utility.vcxproj", "{4CD190F9-BD41-F3BE-53B2-D247F7AF6EC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

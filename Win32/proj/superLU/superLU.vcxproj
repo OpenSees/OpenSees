@@ -80,6 +80,7 @@
     <ClInclude Include="..\..\..\OTHER\SuperLU_5.1.1\SRC\supermatrix.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
+    <ProjectGuid>{A2C9BDDE-7418-88DF-CFF2-F82A013DBE22}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
   </PropertyGroup>
