@@ -23,7 +23,15 @@
 // Updated: Chris McGann
 //          June 2015, Washington State University
 
-# include "StressDensityModel.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include <NDMaterial.h>
+#include <Vector.h>
+#include <Matrix.h>
+
+#include <StressDensityModel.h>
 
 #ifdef _WIN32
 
@@ -134,7 +142,6 @@ public:
 		   _hsl_void_ratio[10], 
 		   _hsl_pressure[10], 
            _hard_para_real[248],
-		   _anisotropy[3],
 		   _tangent[3][3];
     int _hard_para_int[2];
 

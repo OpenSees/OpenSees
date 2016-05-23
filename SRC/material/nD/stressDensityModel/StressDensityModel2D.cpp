@@ -26,6 +26,8 @@
 #include <StressDensityModel2D.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <Information.h>
+#include <Parameter.h>
 
 // full constructor
 StressDensityModel2D::StressDensityModel2D(int tag, double constDensity, double initialVoidRatio, double constA,
@@ -323,7 +325,6 @@ StressDensityModel2D::initialise()
         _stress_current[i] = 0.0;
         _strain_current[i] = 0.0;
         _strain_next[i] = 0.0;
-	    _anisotropy[i] = 0.0;
     }
     for (int i=0;i<7*Nsurface+3;i++) {
         _hard_para_real[i]=0.0;
@@ -375,15 +376,25 @@ StressDensityModel2D::GetCurrentStress(void){
 	for(int i=0;i<2;i++)_strain_next[i] = -strainNext(i);
 	for(int i=2;i<3;i++)_strain_next[i] =  strainNext(i)/2.;		// convert to true strain
 
-	for(int i=0;i<16;i++)_model_parameter[i] = modelParameter[i];
+	for(int i=0;i<16;i++) {
+        _model_parameter[i] = modelParameter[i];
+    }
 
-	for(int i=0;i<10;i++)_ssl_void_ratio[i] = sslVoidratio[i];
+	for(int i=0;i<10;i++) {
+        _ssl_void_ratio[i] = sslVoidratio[i];
+    }
 
-	for(int i=0;i<10;i++)_ssl_pressure[i] = refPressure[i];
+	for(int i=0;i<10;i++) {
+        _ssl_pressure[i] = refPressure[i];
+    }
 
-	for(int i=0;i<10;i++)_hsl_void_ratio[i] = hslVoidratio[i];
+	for(int i=0;i<10;i++) {
+        _hsl_void_ratio[i] = hslVoidratio[i];
+    }
 
-	for(int i=0;i<10;i++)_hsl_pressure[i] = refPressure[i];
+	for(int i=0;i<10;i++) {
+        _hsl_pressure[i] = refPressure[i];
+    }
 
 	for(int i=0;i<Nsurface*7+3;i++) {
         _hard_para_real[i] = hard_para_real[i];
@@ -392,8 +403,6 @@ StressDensityModel2D::GetCurrentStress(void){
 	for(int i=0;i<2;i++) {
         _hard_para_int[i] = hard_para_int[i];
     }
-
-	for(int i=0;i<2;i++)_anisotropy[i] = refOrigin[i];
 
 	// in Fortran the double-scripted arrays will be transposed
 	for(int i=0;i<3;i++) {

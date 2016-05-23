@@ -45,14 +45,12 @@ OPS_NewStressDensityMaterial(void)
 	if(numStressDensityModel == 0) {
 		opserr << "StressDensityModel nDmaterial - Written: Saumyasuchi Das, U.Canterbury\n" << endln;
 		numStressDensityModel++;
-
 	}
 
   // Pointer to an NDmaterial that will be returned
     NDMaterial *theMaterial = 0;
-    int numArgs;
-    const int numDbl=40;
     const char *variable[]={
+        "matTag",
 		"Density",
 		"Void Ratio",
 		"Const A",
@@ -70,60 +68,92 @@ OPS_NewStressDensityMaterial(void)
 		"Dilatancy Strain",
 		"Mumax",
         "Atmospheric pressure",
-		"SSL void ratio at P1",
-		"SSL void ratio at P2",
-		"SSL void ratio at P3",
-		"SSL void ratio at P4",
-		"SSL void ratio at P5",
-		"SSL void ratio at P6",
-		"SSL void ratio at P7",
-		"SSL void ratio at P8",
-		"SSL void ratio at P9",
-		"SSL void ratio at P10",
-		"HSL void ratio at all P",
-		"Reference pressure P1",
-		"Reference pressure P2",
-		"Reference pressure P3",
-		"Reference pressure P4",
-		"Reference pressure P5",
-		"Reference pressure P6",
-		"Reference pressure P7",
-		"Reference pressure P8",
-		"Reference pressure P9",
-		"Reference pressure P10"
-	};
+		"<SSL void ratio at P1>",
+		"<SSL void ratio at P2>",
+		"<SSL void ratio at P3>",
+		"<SSL void ratio at P4>",
+		"<SSL void ratio at P5>",
+		"<SSL void ratio at P6>",
+		"<SSL void ratio at P7>",
+		"<SSL void ratio at P8>",
+		"<SSL void ratio at P9>",
+		"<SSL void ratio at P10>",
+		"<HSL void ratio at all P>",
+		"<Reference pressure P1>",
+		"<Reference pressure P2>",
+		"<Reference pressure P3>",
+		"<Reference pressure P4>",
+		"<Reference pressure P5>",
+		"<Reference pressure P6>",
+		"<Reference pressure P7>",
+		"<Reference pressure P8>",
+		"<Reference pressure P9>",
+		"<Reference pressure P10>"};
 					
-    numArgs = OPS_GetNumRemainingInputArgs()-1; //numArgs = 38
+    int numArgs = OPS_GetNumRemainingInputArgs();
 
-    if (numArgs < numDbl) {
+    if (numArgs < 18) {
+	    opserr << "ERROR: Insufficient mandatory arguments for StressDensity material " << endln;
 
-	   opserr << "WARNING: Insufficient number of arguments" << endln;
-
-	   for(int i=numArgs+1; i < numDbl; i++)
-		   opserr << "Want: nDMaterial StressDensityModel::"<<variable[i]<<" ?"<<endln;
+	    for(int i=numArgs; i < 18; i++)
+		    opserr << "Missing: " << variable[i] << endln;
 	  
-	   return 0;
-   }
+	    return 0;
+    } else if (numArgs > 18 && numArgs < 29) {
+        opserr << "ERROR: Insufficient optional void ratio arguments for StressDensity materal" << endln;
+        opserr << "All ten SSL values and single HSL value must be specified if defaults are not used" << endln;
+
+        for(int i=numArgs; i < 29; i++)
+		    opserr << "Missing: " << variable[i] << endln;
+
+        return 0;
+    } else if (numArgs > 29 && numArgs < 39) {
+        opserr << "ERROR: Insufficient optional SSL pressure arguments for StressDensity materal" << endln;
+        opserr << "All ten pressure values must be specified if defaults are not used" << endln;
+
+        for(int i=numArgs; i < 39; i++)
+		    opserr << "Missing: " << variable[i] << endln;
+
+        return 0;
+    } else if (numArgs > 39 && numArgs < 45) {
+        opserr << "WARNING: Initial backstress tensor components have been specified for StressDensity mat" << endln;
+        opserr << "If this is not desired, please ensure material arguments are correct" << endln;
+    } else if (numArgs > 45) {
+        opserr << "ERROR: Too many input arguments specified for StressDensity material" << endln;
+        return 0;
+    }
   
-  //tag = variable to contain tag of the material
-  //numData =  number of arguments, same as argc
+	int tag;
+	double dData[numArgs];
 
-	int tag, numData;
-	double dData[numDbl+6];
-
-	numData = 1;
+	int numData = 1;
 	if (OPS_GetInt(&numData, &tag) != 0) {
-		opserr << "WARNING invalid nDMaterial StressDensity material  tag" << endln;
+		opserr << "WARNING invalid nDMaterial StressDensity material tag" << endln;
 		return 0;
 	}
 
-	numData = numArgs;
+	numData = numArgs-1;
 	if (OPS_GetDouble(&numData, dData) != 0) {
-		opserr << "WARNING invalid material data for nDMaterial StressDensity material  with tag: " << tag << endln;
+		opserr << "WARNING invalid material data for nDMaterial StressDensity material with tag: " << tag << endln;
 		return 0;
 	}
 
-	if (numArgs == 40) {
+	if (numArgs == 18) {
+        theMaterial = new StressDensityModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],
+		dData[15],dData[16],dData[17]);
+    } else if (numArgs == 29) {
+        theMaterial = new StressDensityModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],
+		dData[15],dData[16],dData[17],dData[18],dData[19],dData[20],dData[21],dData[22],dData[23],dData[24],
+		dData[25],dData[26],dData[27],dData[28]);
+    } else if (numArgs == 39) {
+        theMaterial = new StressDensityModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],
+		dData[15],dData[16],dData[17],dData[18],dData[19],dData[20],dData[21],dData[22],dData[23],dData[24],
+		dData[25],dData[26],dData[27],dData[28],dData[29],dData[30],dData[31],dData[32],dData[33],dData[34],
+		dData[35],dData[36],dData[37],dData[38]);
+    } else if (numArgs == 40) {
 		theMaterial = new StressDensityModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
 		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],
 		dData[15],dData[16],dData[17],dData[18],dData[19],dData[20],dData[21],dData[22],dData[23],dData[24],
@@ -153,10 +183,16 @@ OPS_NewStressDensityMaterial(void)
 		dData[15],dData[16],dData[17],dData[18],dData[19],dData[20],dData[21],dData[22],dData[23],dData[24],
 		dData[25],dData[26],dData[27],dData[28],dData[29],dData[30],dData[31],dData[32],dData[33],dData[34],
 		dData[35],dData[36],dData[37],dData[38],dData[39],dData[40],dData[41],dData[42],dData[43]);
+    } else if (numArgs == 45) {
+		theMaterial = new StressDensityModel(tag, 0, dData[0], dData[1], dData[2], dData[3], dData[4], dData[5],
+		dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14],
+		dData[15],dData[16],dData[17],dData[18],dData[19],dData[20],dData[21],dData[22],dData[23],dData[24],
+		dData[25],dData[26],dData[27],dData[28],dData[29],dData[30],dData[31],dData[32],dData[33],dData[34],
+		dData[35],dData[36],dData[37],dData[38],dData[39],dData[40],dData[41],dData[42],dData[43]);
     } 
 
 	if (theMaterial == 0) {
-	    opserr << "WARNING ran out of memory for nDMaterial StressDensity material  with tag: " << tag << endln;
+	    opserr << "WARNING ran out of memory for nDMaterial StressDensity material with tag: " << tag << endln;
     }
 
     return theMaterial;
@@ -168,7 +204,7 @@ StressDensityModel::StressDensityModel(int tag, int classTag, double constDensit
 						                   double initialVoidRatio,	double constA, double exponentN,		
 						                   double poissonRatio, double constAlpha1, double constBeta1,
 						                   double constAlpha2, double constBeta2, double constAlpha3,
-                                           double constBeta3, double constDegradation, double constMumin,				
+                                           double constBeta3, double constDegradation, double constMumin,
 						                   double constMucyclic, double constDilatancyStrain,	
 						                   double constMumax, double constPatm, 
 						                   // steady state line void ratio
@@ -286,6 +322,8 @@ StressDensityModel::setParameter(const char **argv, int argc, Parameter &param)
         return param.addObject(1, this);
     } else if (strcmp(argv[0],"materialState") == 0) {
         return param.addObject(5, this);
+    } else if (strcmp(argv[0],"poissonRatio") == 0) {
+        return param.addObject(7,this);
     } else {
         opserr << "WARNING: invalid parameter command StressDensityModel nDMaterial tag: " << this->getTag() << endln;
         return -1;
@@ -301,6 +339,8 @@ StressDensityModel::updateParameter(int parameterID, Information &info)
 		theStage = info.theInt;
 	} else if (parameterID == 5) {
         theStage = (int)info.theDouble;
+    } else if (parameterID == 7) {
+        modelParameter[3] = info.theDouble;
     }
 
     return 0;

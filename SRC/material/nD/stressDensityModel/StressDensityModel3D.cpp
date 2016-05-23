@@ -65,7 +65,7 @@ StressDensityModel3D::StressDensityModel3D(int tag, double constDensity, double 
 	this->CalInitialTangent();
     // set current tangent as initial to start
 	currentTangent = initialTangent;
-    modelParameter[3] = 0.25;
+    //modelParameter[3] = 0.25;
 }
 
 // null constructor

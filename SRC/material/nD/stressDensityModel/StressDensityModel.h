@@ -41,27 +41,27 @@ class StressDensityModel : public NDMaterial
 
     // full constructor
 	StressDensityModel(int tag, int classTag, double constDensity,
-						 // SD model  parameters		
-						 double initialVoidRatio, double constA, double exponentN,
-                         double poissonRatio, double constAlpha1, double constBeta1,	
-                         double constAlpha2, double constBeta2, double constAlpha3,
-                         double constBeta3, double constDegradation, double constMumin,
-                         double constMucyclic, double constDilatancyStrain,	
-                         double constMumax, double constPatm, 
-                         // steady state line void ratio
-                         double constsslvoidatP1, double constsslvoidatP2, double constsslvoidatP3,
-                         double constsslvoidatP4, double constsslvoidatP5, double constsslvoidatP6,
-                         double constsslvoidatP7, double constsslvoidatP8, double constsslvoidatP9,
-                         double constsslvoidatP10,
-                         // hydrostatic state line void ratio
-                         double consthslvoid, 
-                         // reference pressures
-                         double constP1, double constP2, double constP3, double constP4, 
-                         double constP5, double constP6, double constP7, double constP8, 
-                         double constP9, double constP10,
-                         // offset of the failure surface
-                         double constRxx=0.0, double constRyy=0.0, double constRzz=0.0,
-                         double constRxy=0.0, double constRyz=0.0, double constRzx=0.0);
+					   // SD model  parameters		
+					   double initialVoidRatio, double constA, double exponentN,
+                       double poissonRatio, double constAlpha1, double constBeta1,	
+                       double constAlpha2, double constBeta2, double constAlpha3,
+                       double constBeta3, double constDegradation, double constMumin,
+                       double constMucyclic, double constDilatancyStrain,	
+                       double constMumax, double constPatm, 
+                       // steady state line void ratio
+                       double constsslvoidatP1=0.877, double constsslvoidatP2=0.877, double constsslvoidatP3=0.873,
+                       double constsslvoidatP4=0.870, double constsslvoidatP5=0.860, double constsslvoidatP6=0.850,
+                       double constsslvoidatP7=0.833, double constsslvoidatP8=0.833, double constsslvoidatP9=0.833,
+                       double constsslvoidatP10=0.833,
+                       // hydrostatic state line void ratio
+                       double consthslvoid=0.895, 
+                       // reference pressures
+                       double constP1=1.0, double constP2=10.0, double constP3=30.0, double constP4=50.0, 
+                       double constP5=100.0, double constP6=200.0, double constP7=400.0, double constP8=400.0, 
+                       double constP9=400.0, double constP10=400.0,
+                       // offset of the failure surface
+                       double constRxx=0.0, double constRyy=0.0, double constRzz=0.0,
+                       double constRxy=0.0, double constRyz=0.0, double constRzx=0.0);
 
     // null constructor
     StressDensityModel();
