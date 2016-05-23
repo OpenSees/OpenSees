@@ -942,12 +942,8 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
 void
 FiberSection3d::Print(OPS_Stream &s, int flag)
 {
-  if (flag == 2) {
-    for (int i = 0; i < numFibers; i++) {
-      s << matData[3*i] << " "  << matData[3*i+1] << " "  << matData[3*i+2] << " " ;
-      s << theMaterials[i]->getStress() << " "  << theMaterials[i]->getStrain() << endln;
-    } 
-  } else {
+  
+  if (flag == 1) {    
     s << "\nFiberSection3d, tag: " << this->getTag() << endln;
     s << "\tSection code: " << code;
     s << "\tNumber of Fibers: " << numFibers << endln;
@@ -957,7 +953,23 @@ FiberSection3d::Print(OPS_Stream &s, int flag)
       for (int i = 0; i < numFibers; i++) {
 	s << "\nLocation (y, z) = (" << matData[3*i] << ", " << matData[3*i+1] << ")";
 	s << "\nArea = " << matData[3*i+2] << endln;
-      theMaterials[i]->Print(s, flag);
+	theMaterials[i]->Print(s, flag);
+	
+      }
+    }
+    
+    if (flag == 2) {
+      for (int i = 0; i < numFibers; i++) {
+	s << theMaterials[i]->getTag() << " " << matData[3*i] << " "  << matData[3*i+1] << " "  << matData[3*i+2] << " " ;
+	s << theMaterials[i]->getStress() << " "  << theMaterials[i]->getStrain() << endln;
+      } 
+    }
+    
+    if (flag == 4) {
+      for (int i = 0; i < numFibers; i++) {
+	s << "add fiber # " << i+1 << " using material # " << theMaterials[i]->getTag() << " to section # 1\n";
+	s << "fiber_cross_section = " << matData[3*i+2] << "*m^2\n";
+	s << "fiber_location = (" << matData[3*i] << "*m, " << matData[3*i+1] << "*m);\n\n";
       }
     }
   }
