@@ -1079,6 +1079,7 @@ DispBeamColumn2d::Print(OPS_Stream &s, int flag)
   double M1 = q(1);
   double M2 = q(2);
   double V = (M1+M2)/L;
+
   s << "\tEnd 1 Forces (P V M): " << -P+p0[0]
     << " " << V+p0[1] << " " << M1 << endln;
   s << "\tEnd 2 Forces (P V M): " << P
@@ -1086,10 +1087,8 @@ DispBeamColumn2d::Print(OPS_Stream &s, int flag)
 
   beamInt->Print(s, flag);
 
-  /*
   for (int i = 0; i < numSections; i++)
     theSections[i]->Print(s,flag);
-  */
 }
 
 
