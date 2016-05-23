@@ -463,7 +463,7 @@ DispBeamColumn3d::getTangentStiff()
 
   // Transform to global stiffness
   K = crdTransf->getGlobalStiffMatrix(kb, q);
-  
+  //   opserr << this->getTag() << " " << K;
   return K;
 }
 
@@ -1176,8 +1176,8 @@ DispBeamColumn3d::Print(OPS_Stream &s, int flag)
   s << "\tEnd 2 Forces (P Mz Vy My Vz T): "
     <<  N << ' ' << Mz2 << ' ' << -Vy+p0[2] << ' ' << My2 << ' ' << -Vz+p0[4] << ' ' <<  T << endln;
   
-  //for (int i = 0; i < numSections; i++)
-  //theSections[i]->Print(s,flag);
+  for (int i = 0; i < numSections; i++)
+    theSections[i]->Print(s,flag);
 }
 
 
