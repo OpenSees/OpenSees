@@ -46,7 +46,8 @@ class FiberSection3d : public SectionForceDeformation
 {
   public:
     FiberSection3d(); 
-    FiberSection3d(int tag, int numFibers, Fiber **fibers, UniaxialMaterial *torsion = 0);
+    FiberSection3d(int tag, int numFibers, Fiber **fibers, 
+		   UniaxialMaterial *torsion = 0);
     FiberSection3d(int tag, int numFibers, UniaxialMaterial *torsion = 0);
     FiberSection3d(int tag, int numFibers, UniaxialMaterial **mats,
 		   SectionIntegration &si, UniaxialMaterial *torsion = 0);

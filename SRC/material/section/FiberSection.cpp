@@ -524,8 +524,10 @@ FiberSection::Print(OPS_Stream &s, int flag)
 	s << "\tNumber of Fibers: " << numFibers << endln;
 	
 	if (flag == 1)
-		for (int i = 0; i < numFibers; i++)
-			theFibers[i]->Print(s, flag);
+	  for (int i = 0; i < numFibers; i++)
+	    theFibers[i]->Print(s, flag);
+
+
 }
 
 Response*

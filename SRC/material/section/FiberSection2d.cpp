@@ -796,17 +796,19 @@ FiberSection2d::recvSelf(int commitTag, Channel &theChannel,
 void
 FiberSection2d::Print(OPS_Stream &s, int flag)
 {
-  s << "\nFiberSection2d, tag: " << this->getTag() << endln;
-  s << "\tSection code: " << code;
-  s << "\tNumber of Fibers: " << numFibers << endln;
-  s << "\tCentroid: " << yBar << endln;
-  theMaterials[0]->Print(s, flag);
-
-  if (flag == 1) {
-    for (int i = 0; i < numFibers; i++) {
-      s << "\nLocation (y) = (" << matData[2*i] << ")";
-      s << "\nArea = " << matData[2*i+1] << endln;
-      theMaterials[i]->Print(s, flag);
+  if (flag== 1 || flag == 2) {
+    s << "\nFiberSection2d, tag: " << this->getTag() << endln;
+    s << "\tSection code: " << code;
+    s << "\tNumber of Fibers: " << numFibers << endln;
+    s << "\tCentroid: " << yBar << endln;
+    theMaterials[0]->Print(s, flag);
+    
+    if (flag == 2) {
+      for (int i = 0; i < numFibers; i++) {
+	s << "\nLocation (y) = (" << matData[2*i] << ")";
+	s << "\nArea = " << matData[2*i+1] << endln;
+	theMaterials[i]->Print(s, flag);
+      }
     }
   }
 }

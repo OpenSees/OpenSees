@@ -3368,13 +3368,17 @@ int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	  //SectionForceDeformation *section = new FiberSection(secTag, numFibers, fiber);
 	  SectionForceDeformation *section = 0;
 	  if (isTorsion) {
-           ElasticMaterial theGJ(0, GJ);
+
+	    ElasticMaterial theGJ(0, GJ);
            //FiberSection3d theFS(0, numFibers, fiber);
            //section = new SectionAggregator(secTag, theFS, theGJ, SECTION_RESPONSE_T);
            section = new FiberSection3d(secTag, numFibers, fiber, &theGJ);
 	  }
-	  else
-	    section = new FiberSection3d(secTag, numFibers, fiber);
+	  else {
+	    ElasticMaterial theGJ(0, 1e10);
+	    section = new FiberSection3d(secTag, numFibers, fiber, &theGJ);
+	  }
+
 	  // Delete fibers
 	  for (i = 0; i < numFibers; i++)
 	    delete fiber[i];
