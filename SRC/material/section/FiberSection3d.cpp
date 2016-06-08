@@ -393,7 +393,7 @@ FiberSection3d::setTrialSectionDeformation (const Vector &deforms)
 {
   int res = 0;
   e = deforms;
-
+ 
   for (int i = 0; i < 4; i++)
     sData[i] = 0.0;
   for (int i = 0; i < 16; i++)
@@ -407,19 +407,21 @@ FiberSection3d::setTrialSectionDeformation (const Vector &deforms)
   static double yLocs[10000];
   static double zLocs[10000];
   static double fiberArea[10000];
-
+ 
   if (sectionIntegr != 0) {
     sectionIntegr->getFiberLocations(numFibers, yLocs, zLocs);
     sectionIntegr->getFiberWeights(numFibers, fiberArea);
   }  
   else {
+	
     for (int i = 0; i < numFibers; i++) {
+		
       yLocs[i] = matData[3*i];
       zLocs[i] = matData[3*i+1];
       fiberArea[i] = matData[3*i+2];
     }
   }
-
+ 
   double tangent, stress;
   for (int i = 0; i < numFibers; i++) {
     UniaxialMaterial *theMat = theMaterials[i];
@@ -455,7 +457,7 @@ FiberSection3d::setTrialSectionDeformation (const Vector &deforms)
   kData[4] = kData[1];
   kData[8] = kData[2];
   kData[9] = kData[6];
-
+ 
   res += theTorsion->setTrial(d3, stress, tangent);
   sData[3] = stress;
   kData[15] = tangent;
@@ -779,11 +781,16 @@ FiberSection3d::sendSelf(int commitTag, Channel &theChannel)
   data(0) = this->getTag();
   data(1) = numFibers;
   int dbTag = this->getDbTag();
+  theTorsion->setDbTag(dbTag);
+  data(2) = theTorsion->getClassTag();
+
   res += theChannel.sendID(dbTag, commitTag, data);
   if (res < 0) {
     opserr << "FiberSection2d::sendSelf - failed to send ID data\n";
     return res;
   }    
+
+  theTorsion->sendSelf(commitTag, theChannel);
 
   if (numFibers != 0) {
     
@@ -841,6 +848,20 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
    
   this->setTag(data(0));
 
+  if (theTorsion == 0) {	
+	  int cTag = data(2);
+	  theTorsion = theBroker.getNewUniaxialMaterial(cTag);
+	  theTorsion->setDbTag(dbTag);
+  } 
+  if (theTorsion == 0) {
+	    opserr << "FiberSection3d::sendSelf - failed to get torsion material \n";
+		return -1;
+  }
+  if (theTorsion->recvSelf(commitTag, theChannel, theBroker) < 0) {
+	   opserr << "FiberSection3d::sendSelf - torsion failed to recvSelf \n";
+       return -2;
+  }
+  
   // recv data about materials objects, classTag and dbTag
   if (data(1) != 0) {
     ID materialData(2*data(1));
