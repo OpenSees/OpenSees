@@ -576,7 +576,6 @@ FatigueMaterial::commitState(void)
   }
   else 
     return theMaterial->commitState();
-  
 }
 
 
@@ -833,7 +832,9 @@ FatigueMaterial::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
     theResponse =  new MaterialResponse(this, 5, DI);
     theOutput.tag("ResponseType", "DI");
     // added 6/9/2006
-  }   else if (strcmp(argv[0],"cyclesAndRange") == 0) {
+  }   
+
+  else if (strcmp(argv[0],"cyclesAndRange") == 0) {
     theOutput.tag("ResponseType", "UnknownResponse");    
     theOutput.tag("ResponseType", "UnknownResponse");    
     theOutput.tag("ResponseType", "UnknownResponse");    
@@ -841,6 +842,12 @@ FatigueMaterial::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
     theOutput.tag("ResponseType", "UnknownResponse");    
     theOutput.tag("ResponseType", "UnknownResponse");    
     theResponse =  new MaterialResponse(this, 6, Vector(6));
+  }
+
+  else if (strcmp(argv[0],"failure") == 0) {
+    double res;
+    theResponse =  new MaterialResponse(this, 7, res);
+    theOutput.tag("ResponseType", "Failure");
   }
   // end add
 
@@ -888,11 +895,23 @@ FatigueMaterial::getResponse(int responseID, Information &matInfo)
     cyclesAndRange(5) = SR3;
     matInfo.setVector(cyclesAndRange);
     return 0;
+
+  case 7:
+    if (Cfailed == true)
+      matInfo.setDouble(1.);
+    else
+      matInfo.setDouble(0.);
+    return 0;      
     
   default:      
     return -1;
 
   }
+}
+
+bool 
+FatigueMaterial::hasFailed(void) {
+  return Cfailed;
 }
 
 

@@ -84,7 +84,8 @@ class FatigueMaterial : public UniaxialMaterial
 
   Response *setResponse (const char **argv, int argc, OPS_Stream &s);
   int getResponse (int responseID, Information &matInformation);    
-  
+  bool hasFailed(void);  
+
  protected:
   
  private:
