@@ -916,13 +916,18 @@ FiberSection2d::setResponse(const char **argv, int argc,
     Vector theResponseData(numData);
     return theResponse = new MaterialResponse(this, 5, theResponseData);
 
+  
   } else if ((strcmp(argv[0],"numFailedFiber") == 0) || (strcmp(argv[0],"numFiberFailed") == 0)) {
     int count = 0;
     return theResponse = new MaterialResponse(this, 6, count);
+
+  } else if ((strcmp(argv[0],"sectionFailed") == 0)) {
+    int count = 0;
+    return theResponse = new MaterialResponse(this, 7, count);
   }
 
-  // If not a fiber response, call the base class method
-  return SectionForceDeformation::setResponse(argv, argc, output);
+// If not a fiber response, call the base class method
+return SectionForceDeformation::setResponse(argv, argc, output);
 }
 
 
@@ -950,6 +955,16 @@ FiberSection2d::getResponse(int responseID, Information &sectInfo)
     for (int j = 0; j < numFibers; j++) {    
       if (theMaterials[j]->hasFailed() == true)
 	count++;
+    }
+    return sectInfo.setInt(count);
+
+  } else  if (responseID == 7) {
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {    
+      if (theMaterials[j]->hasFailed() == true) {
+	count=1;
+	j = numFibers;
+      }
     }
     return sectInfo.setInt(count);
   } 
