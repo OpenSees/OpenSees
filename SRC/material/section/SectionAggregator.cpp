@@ -556,6 +556,7 @@ SectionAggregator::revertToStart(void)
   return err;
 }
 
+
 int
 SectionAggregator::sendSelf(int cTag, Channel &theChannel)
 {
@@ -573,6 +574,10 @@ SectionAggregator::sendSelf(int cTag, Channel &theChannel)
   data(0) = this->getTag();
   data(1) = otherDbTag;
   data(2) = order;
+  if (theSection == 0)
+	  data(3) = 0;
+  else 
+	  data(3) = theSection->getOrder();
   data(3) = (theSection != 0) ? theSection->getOrder() : 0;
   data(4) = numMats;
 
@@ -754,36 +759,37 @@ SectionAggregator::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &the
   }
 
   // If there is no Section to receive, return
-  if (theSectionOrder == 0)
-    return res;
+  if (theSectionOrder != 0) {
+	
+ 
+	classTag = classTags(numTags-1);
   
-  classTag = classTags(numTags-1);
+	// Check if the Section is null; if so, get a new one
+	if (theSection == 0)
+		theSection = theBroker.getNewSection(classTag);
   
-  // Check if the Section is null; if so, get a new one
-  if (theSection == 0)
-    theSection = theBroker.getNewSection(classTag);
+	// Check that the Section is of the right type; if not, delete
+	// the current one and get a new one of the right type
+	else if (theSection->getClassTag() != classTag) {
+		delete theSection;
+		theSection = theBroker.getNewSection(classTag);
+	}
   
-  // Check that the Section is of the right type; if not, delete
-  // the current one and get a new one of the right type
-  else if (theSection->getClassTag() != classTag) {
-    delete theSection;
-    theSection = theBroker.getNewSection(classTag);
-  }
-  
-  // Check if either allocation failed
-  if (theSection == 0) {
-    opserr << "SectionAggregator::recvSelf -- could not get a SectionForceDeformation\n";
-    return -1;
+	// Check if either allocation failed
+	if (theSection == 0) {
+		opserr << "SectionAggregator::recvSelf -- could not get a SectionForceDeformation\n";
+		return -1;
+	}
+
+	// Now, receive the Section
+	theSection->setDbTag(classTags(2*numTags-1));
+	res += theSection->recvSelf(cTag, theChannel, theBroker);
+	if (res < 0) {
+		opserr << "SectionAggregator::recvSelf -- could not receive SectionForceDeformation\n";
+		return res;
+	}
   }
 
-  // Now, receive the Section
-  theSection->setDbTag(classTags(2*numTags-1));
-  res += theSection->recvSelf(cTag, theChannel, theBroker);
-  if (res < 0) {
-    opserr << "SectionAggregator::recvSelf -- could not receive SectionForceDeformation\n";
-    return res;
-  }
-  
   // Fill in the section code
   int j = 2*numTags;
   for (i = 0; i < numMats; i++, j++)
