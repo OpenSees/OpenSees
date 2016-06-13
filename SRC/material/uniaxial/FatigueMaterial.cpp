@@ -845,7 +845,7 @@ FatigueMaterial::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
   }
 
   else if (strcmp(argv[0],"failure") == 0) {
-    double res;
+    int res;
     theResponse =  new MaterialResponse(this, 7, res);
     theOutput.tag("ResponseType", "Failure");
   }
@@ -897,10 +897,10 @@ FatigueMaterial::getResponse(int responseID, Information &matInfo)
     return 0;
 
   case 7:
-    if (Cfailed == true)
-      matInfo.setDouble(1.);
+    if (Cfailed == true) 
+      matInfo.setInt(1);
     else
-      matInfo.setDouble(0.);
+      matInfo.setInt(0);
     return 0;      
     
   default:      
