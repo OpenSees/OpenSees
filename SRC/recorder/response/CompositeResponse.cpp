@@ -61,7 +61,9 @@ CompositeResponse::addResponse(Response *nextResponse)
 
   Information&otherType = nextResponse->getInformation();
 
-  if (otherType.theType == DoubleType || otherType.theType == VectorType) {
+  if (otherType.theType == DoubleType || 
+      otherType.theType == VectorType) {
+
     if (myInfo.theType == UnknownType) {
       myInfo.theType = VectorType;
       myInfo.theVector = new Vector();
@@ -73,6 +75,7 @@ CompositeResponse::addResponse(Response *nextResponse)
     }
     
     int curSize = myInfo.theVector->Size();
+
     if (otherType.theType == DoubleType)
       curSize++;
     else
@@ -80,7 +83,9 @@ CompositeResponse::addResponse(Response *nextResponse)
 
     myInfo.theVector->resize(curSize);
 
-  } else if (otherType.theType == IntType || otherType.theType == IdType) {
+  } else if (otherType.theType == IntType || 
+	     otherType.theType == IdType) {
+
     if (myInfo.theType == UnknownType) {
       myInfo.theID = new ID();
       myInfo.theType = IdType;    
@@ -148,8 +153,9 @@ CompositeResponse::getResponse(void)
 	  (*myInfo.theVector)(currentLoc) = (*otherType.theVector)(i);
       }
     } else if (otherType.theType == IntType || otherType.theType == IdType) {
-      if (otherType.theType == IntType)
-	(*myInfo.theVector)(currentLoc++) = otherType.theInt;
+      if (otherType.theType == IntType) {
+	(*myInfo.theID)(currentLoc++) = otherType.theInt;
+      }
       else {
 	int otherSize = otherType.theID->Size();
 	for (int i=0; i<otherSize; i++, currentLoc++) 
