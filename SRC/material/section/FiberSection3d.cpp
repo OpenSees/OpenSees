@@ -1138,11 +1138,15 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     Vector theResponseData(numData);
     theResponse = new MaterialResponse(this, 5, theResponseData);
 
-  } else if ((strcmp(argv[0],"numFailedFiber") == 0) || (strcmp(argv[0],"numFiberFailed") == 0)) {
+  } else if ((strcmp(argv[0],"numFailedFiber") == 0) || 
+	     (strcmp(argv[0],"numFiberFailed") == 0)) {
     int count = 0;
     theResponse = new MaterialResponse(this, 6, count);
 
-  } else if ((strcmp(argv[0],"sectionFailed") == 0)) {
+  } else if ((strcmp(argv[0],"sectionFailed") == 0) ||
+	     (strcmp(argv[0],"hasSectionFailed") == 0) ||
+	     (strcmp(argv[0],"hasFailed") == 0)) {
+
     int count = 0;
     return theResponse = new MaterialResponse(this, 7, count);
   }
@@ -1273,10 +1277,14 @@ FiberSection3d::getResponse(int responseID, Information &sectInfo)
     int count = 0;
     for (int j = 0; j < numFibers; j++) {    
       if (theMaterials[j]->hasFailed() == true) {
-	count=1;
-	j = numFibers;
+	count+=1;
       }
     }
+    if (count == numFibers)
+      count = 1;
+    else
+      count = 0;
+
     return sectInfo.setInt(count);
   } 
   
