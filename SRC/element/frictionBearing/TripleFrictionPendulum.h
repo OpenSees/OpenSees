@@ -35,6 +35,7 @@
 class Node;
 class Channel;
 class FrictionModel;
+class UniaxialMaterial;
 
 class TripleFrictionPendulum : public Element
 {
@@ -43,6 +44,7 @@ public:
     TripleFrictionPendulum(int tag,
         int Nd1, int Nd2,
         FrictionModel **theFrnMdls,
+        UniaxialMaterial **theMaterials,
         double L1,
         double L2,
         double L3,
@@ -51,7 +53,6 @@ public:
         double Ubar3,
         double W,
         double Uy,
-        double Kvc,
         double Kvt,
         double minFv,
         double tol);
@@ -106,6 +107,7 @@ private:
     void StiffnessForm(Matrix &K, Matrix k12, Matrix k34, Matrix k56);
     
     FrictionModel *theFrnMdls[3];  // array of friction models for three sliding surfaces
+    UniaxialMaterial *theMaterials[4];  // array of uniaxial materials
     
     double L1;
     double L2;
@@ -115,7 +117,6 @@ private:
     double Ubar3;
     double W;
     double Uy;
-    double Kvc;
     double Kvt;
     double MinFv;
     double TOL;
@@ -137,6 +138,9 @@ private:
     Vector d3pr;
     Vector d5;
     Vector d5pr;
+    Vector v1;
+    Vector v3;
+    Vector v5;
     Vector ep1;
     Vector ep1pr;
     Vector ep3;
@@ -165,8 +169,10 @@ private:
     double E1, E3, E5;
     double E2, E4, E6;
     double H1, H3, H5;
-    double Fvert;
-    double Kvert;
+    double Fvert, Kvert;
+    double TorqX, KrotX;
+    double TorqY, KrotY;
+    double TorqZ, KrotZ;
     double Hisolator;
     double Dx, Dy, Dz;
     bool Conv;
@@ -183,7 +189,7 @@ private:
     static Matrix eleK;      // class wide matrix for returning stiffness
     static Matrix eleKinit;  // class wide matrix for returning initial stiffness
     static Matrix eleD;      // class wide matrix for returning damping
-    static Matrix eleM;      // class wide matrix for returning mass 
+    static Matrix eleM;      // class wide matrix for returning mass
     static Vector eleR;      // class wide vector for returning residual
 };
 
