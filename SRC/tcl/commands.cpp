@@ -165,6 +165,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <DisplacementControl.h>
 
 #include <PFEMIntegrator.h>
+#include<Integrator.h>//Abbas
 
 extern void *OPS_Newmark(void);
 extern TransientIntegrator *OPS_AlphaOS(void);
@@ -509,7 +510,7 @@ static PFEMAnalysis* thePFEMAnalysis = 0;
 #ifdef _RELIABILITY
 static TclReliabilityBuilder *theReliabilityBuilder = 0;
 
-SensitivityAlgorithm *theSensitivityAlgorithm = 0;
+Integrator *theSensitivityAlgorithm = 0;
 Integrator *theSensitivityIntegrator = 0;
 ReliabilityStaticAnalysis *theReliabilityStaticAnalysis = 0;
 ReliabilityDirectIntegrationAnalysis *theReliabilityTransientAnalysis = 0;
@@ -1032,7 +1033,9 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "sensNodeDisp", &sensNodeDisp, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
-    Tcl_CreateCommand(interp, "sensNodeVel", &sensNodeVel, 
+     Tcl_CreateCommand(interp, "sensLambda", &sensLambda, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); //Abbas
+     Tcl_CreateCommand(interp, "sensNodeVel", &sensNodeVel, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "sensNodeAccel", &sensNodeAccel, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
@@ -1254,33 +1257,50 @@ sensitivityAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
 	  // 			    theSensitivityIntegrator,
 	  // 			    analysisTypeTag);
 	} else {
-	  theSensitivityAlgorithm = new 
-	    SensitivityAlgorithm(&theDomain,
-				 theAlgorithm,
-				 theSensitivityIntegrator,
-				 analysisTypeTag);
+	//  theSensitivityAlgorithm = new 
+	 //   SensitivityAlgorithm(&theDomain,
+	//			 theAlgorithm,
+	//			 theSensitivityIntegrator,
+	//			 analysisTypeTag);
+	
+	
+    IncrementalIntegrator *theIntegrator;
+      
+	   if (theStaticAnalysis != 0 && theStaticIntegrator != 0) {
+               theIntegrator = theStaticIntegrator;
+             
+        theIntegrator->shouldComputeAtEachStep();
+       	theIntegrator->activateSensitivityKey();
+    
+	   } else if (theTransientAnalysis != 0 && theTransientIntegrator != 0) {
+  
+    theIntegrator = theTransientIntegrator;
+    theIntegrator->shouldComputeAtEachStep();
+    theIntegrator->activateSensitivityKey();
+
 	}
-	if (theSensitivityAlgorithm == 0) {
+		    
+	if (theIntegrator == 0) {
 	  opserr << "ERROR: Could not create theSensitivityAlgorithm. " << endln;
 	  return TCL_ERROR;
-	}
-	
+	}	
 	// ---- by Quan 2009 for recover the previous framework ---
 
-	if (theSensitivityAlgorithm->shouldComputeAtEachStep()) {
+	if (theIntegrator->shouldComputeAtEachStep()) {
 	
 		if (theStaticAnalysis !=0)
-			theStaticAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
+			theStaticAnalysis->setSensitivityAlgorithm(theIntegrator);
 		else if (theTransientAnalysis !=0)
-			theTransientAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
+			theTransientAnalysis->setSensitivityAlgorithm(theIntegrator);
 		else if (theVariableTimeStepTransientAnalysis !=0)
-			theVariableTimeStepTransientAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
+			theVariableTimeStepTransientAnalysis->setSensitivityAlgorithm(theIntegrator);
 		else {
 			// do nothing		
 		}
 	
 	
 	}
+        }
 
 	return TCL_OK;
 }
@@ -1354,7 +1374,7 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
 // AddingSensitivity:BEGIN /////////////////////////////////////////////////
 #ifdef _RELIABILITY
-  theSensitivityAlgorithm =0;
+  //theSensitivityAlgorithm =0;
   theSensitivityIntegrator =0;
 #endif
 // AddingSensitivity:END /////////////////////////////////////////////////
@@ -1402,7 +1422,8 @@ wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   theTransientIntegrator =0;
   theStaticAnalysis =0;
   theTransientAnalysis =0;    
-  theVariableTimeStepTransientAnalysis =0;    
+  theVariableTimeStepTransientAnalysis =0;   
+  theSensitivityAlgorithm=0; 
 #ifdef _PFEM
   thePFEMAnalysis = 0;
 #endif
@@ -1530,9 +1551,63 @@ getLoadFactor(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
   return TCL_OK;
 }
 
+////////////////////////////////////////////////Abbas//////////////////////////////
+
+int 
+sensLambda(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv )
+{
+  if (argc < 3) {
+    opserr << "WARNING no load pattern supplied -- getLoadFactor\n";
+    return TCL_ERROR;
+  }
+
+  int pattern, paramTag;
+  if (Tcl_GetInt(interp, argv[1], &pattern) != TCL_OK) {
+    opserr << "ERROR reading load pattern tag -- getLoadFactor\n";
+    return TCL_ERROR;
+  }
+
+  LoadPattern *thePattern = theDomain.getLoadPattern(pattern);
+  if (thePattern == 0) {
+    opserr << "ERROR load pattern with tag " << pattern << " not found in domain -- getLoadFactor\n";
+    return TCL_ERROR;
+  }
+ if (Tcl_GetInt(interp, argv[2], &paramTag) != TCL_OK) {
+	opserr << "WARNING sensLambda patternTag?  paramTag?- could not read paramTag? ";
+	return TCL_ERROR;	        
+   }        
+ Parameter *theParam = theDomain.getParameter(paramTag);
+    if (theParam == 0) {
+      opserr << "sensLambda: parameter " << paramTag << " not found" << endln;
+      return TCL_ERROR;
+    }
+
+            IncrementalIntegrator *theIntegrator;
+
+	   if (theStaticAnalysis != 0 && theStaticIntegrator != 0) {
+               theIntegrator = theStaticIntegrator;
+	    //   opserr<<" commands.cpp: calling static integrator"<<endln;
+             
+        } else if (theTransientAnalysis != 0 && theTransientIntegrator != 0) {
+  
+    theIntegrator = theTransientIntegrator;
+ //   opserr<<"commands.cpp:calling transientIntegrator"<<endln;
+	} 
+
+// double   factor = thePattern->getSensLambda(theIntegrator);
+  double factor=theIntegrator->dLambdadh();
+	   sprintf(interp->result,"%35.20f", factor);
+	   return TCL_OK;
+}
+
+
+
+//////////////////////////////////////////////Abbas///////////////////////////////////////
+
 
 // command invoked to build the model, i.e. to invoke buildFE_Model() 
 // on the ModelBuilder
+
 int 
 buildModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {

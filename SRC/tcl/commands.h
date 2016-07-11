@@ -211,6 +211,9 @@ int
 sensNodeDisp(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+sensLambda(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);//Abbas
+
+int 
 sensNodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
