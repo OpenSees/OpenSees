@@ -102,6 +102,7 @@ NewtonRaphson::solveCurrentStep(void)
     // NOTE this could be taken away if we set Ptrs as protecetd in superclass
     AnalysisModel   *theAnaModel = this->getAnalysisModelPtr();
     IncrementalIntegrator *theIntegrator = this->getIncrementalIntegratorPtr();
+    //IncrementalIntegrator *theIntegratorSens=this->getIncrementalIntegratorPtr();//Abbas
     LinearSOE  *theSOE = this->getLinearSOEptr();
 
     if ((theAnaModel == 0) || (theIntegrator == 0) || (theSOE == 0)
@@ -129,6 +130,7 @@ NewtonRaphson::solveCurrentStep(void)
     numIterations = 0;
 
     do {
+
       if (tangent == INITIAL_THEN_CURRENT_TANGENT) {
 	if (numIterations == 0) {
 	  SOLUTION_ALGORITHM_tangentFlag = INITIAL_TANGENT;
@@ -144,17 +146,17 @@ NewtonRaphson::solveCurrentStep(void)
 	    opserr << "the Integrator failed in formTangent()\n";
 	    return -1;
 	  } 
-	}	  
-      } else {
+	}
+      }	else {
+	
 	  SOLUTION_ALGORITHM_tangentFlag = tangent;
 	if (theIntegrator->formTangent(tangent) < 0){
 	    opserr << "WARNING NewtonRaphson::solveCurrentStep() -";
 	    opserr << "the Integrator failed in formTangent()\n";
 	    return -1;
 	}		    
-      }
-
-      if (theSOE->solve() < 0) {
+      } 
+           if (theSOE->solve() < 0) {
 	opserr << "WARNING NewtonRaphson::solveCurrentStep() -";
 	opserr << "the LinearSysOfEqn failed in solve()\n";	
 	return -3;
@@ -165,16 +167,32 @@ NewtonRaphson::solveCurrentStep(void)
 	opserr << "the Integrator failed in update()\n";	
 	return -4;
       }	        
-
       if (theIntegrator->formUnbalance() < 0) {
 	opserr << "WARNING NewtonRaphson::solveCurrentStep() -";
 	opserr << "the Integrator failed in formUnbalance()\n";	
 	return -2;
       }	
 
+     
+     
+
+
       result = theTest->test();
-      numIterations++;
+       numIterations++;
       this->record(numIterations);
+
+      ///////////////////*
+//ActivateAensitivity() is to account for the reliability effect.
+//SensitivityintegratorScheme returns:  true for DC, and false for LC
+ if( ((theIntegrator->activateSensitivity())==true) && (theIntegrator->computeSensitivityAtEachIteration())==true)
+    {
+       
+ theIntegrator->computeSensitivities();
+ theIntegrator->formUnbalance();
+
+    } 
+     
+////////////////////
 
     } while (result == -1);
 
@@ -183,10 +201,16 @@ NewtonRaphson::solveCurrentStep(void)
       opserr << "the ConvergenceTest object failed in test()\n";
       return -3;
     }
+//IntegratorSens=theIntegrator;
 
-    // note - if postive result we are returning what the convergence test returned
+    if( ((theIntegrator->activateSensitivity())==true) && (theIntegrator->computeSensitivityAtEachIteration())==false)
+    {
+      theIntegrator->computeSensitivities();//Abbas
+    }    
+// note - if postive result we are returning what the convergence test returned
     // which should be the number of iterations
-    return result;
+    
+        return result;
 }
 
 
@@ -224,3 +248,5 @@ NewtonRaphson::getNumIterations(void)
 {
   return numIterations;
 }
+
+

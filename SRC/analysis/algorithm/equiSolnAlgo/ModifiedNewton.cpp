@@ -141,6 +141,13 @@ ModifiedNewton::solveCurrentStep(void)
 	this->record(numIterations++);
 	result = theTest->test();
 
+	if(((theIncIntegratorr->activateSensitivity())==true) && (theIncIntegratorr->computeSensitivityAtEachIteration())==true)
+	{
+	theIncIntegratorr->computeSensitivities();
+	theIncIntegratorr->formUnbalance();
+	
+	}
+
     } while (result == -1);
 
     //timer1.pause();
@@ -151,7 +158,14 @@ ModifiedNewton::solveCurrentStep(void)
       opserr << "the ConvergenceTest object failed in test()\n";
       return -3;
     }
-
+    //////////////////////////Abbas////////////////////////////////
+	if(((theIncIntegratorr->activateSensitivity())==true) && (theIncIntegratorr->computeSensitivityAtEachIteration())==false)
+	{
+	theIncIntegratorr->computeSensitivities();
+	
+	
+	}
+/////////////////////Abbas/////////////////////////////
     return result;
 }
 
