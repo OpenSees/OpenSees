@@ -43,9 +43,11 @@
 #include <Matrix.h>
 #include <ID.h>
 #include <Graph.h>
+
 // AddingSensitivity:BEGIN ////////////////////////////////////
 //#ifdef _RELIABILITY
 #include <SensitivityAlgorithm.h>
+#include<Integrator.h>
 //#endif
 // AddingSensitivity:END ////////////////////////////////////
 
@@ -301,7 +303,7 @@ ReliabilityDirectIntegrationAnalysis::domainChanged(void)
 // AddingSensitivity:BEGIN //////////////////////////////
 //#ifdef _RELIABILITY
 int 
-ReliabilityDirectIntegrationAnalysis::setSensitivityAlgorithm(SensitivityAlgorithm *passedSensitivityAlgorithm)
+ReliabilityDirectIntegrationAnalysis::setSensitivityAlgorithm(/*SensitivityAlgorithm*/ Integrator *passedSensitivityAlgorithm)
 {
     int result = 0;
 

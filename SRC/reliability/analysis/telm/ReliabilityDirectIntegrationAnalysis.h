@@ -40,6 +40,7 @@
 // AddingSensitivity:BEGIN //////////////////////////////////
 #include <SensitivityAlgorithm.h>
 #include <GFunEachStepEvaluator.h>
+#include<Integrator.h>
 // AddingSensitivity:END ////////////////////////////////////
 
 class ConstraintHandler;
@@ -49,6 +50,7 @@ class TransientIntegrator;
 class LinearSOE;
 class EquiSolnAlgo;
 class ConvergenceTest;
+class Integrator;//Abbas
 
 class ReliabilityDirectIntegrationAnalysis: public TransientAnalysis
 {
@@ -83,7 +85,7 @@ class ReliabilityDirectIntegrationAnalysis: public TransientAnalysis
     ConvergenceTest *getConvergenceTest(void);
 
     // AddingSensitivity:BEGIN ///////////////////////////////
-    int setSensitivityAlgorithm(SensitivityAlgorithm *theSensitivityAlgorithm);
+    int setSensitivityAlgorithm(/*SensitivityAlgorithm*/ Integrator  *theSensitivityAlgorithm);
 	///// added by K Fujimura /////
 	bool reliabilityAnalysis(void){ return true;}
     // AddingSensitivity:END /////////////////////////////////
@@ -91,7 +93,8 @@ class ReliabilityDirectIntegrationAnalysis: public TransientAnalysis
 	//////////////////////////
 	// added by K Fujimura //
 	//////////////////////////
-	SensitivityAlgorithm* getSensitivityAlgorithm()
+	//SensitivityAlgorithm* getSensitivityAlgorithm()
+	Integrator* getSensitivityAlgorithm()//Abbas
 	{return  theSensitivityAlgorithm;};
 	void setGFunEachStepEvaluator(GFunEachStepEvaluator *pGFunEachStepEvaluator)
 	{ theGFunEachStepEvaluator=pGFunEachStepEvaluator;}
@@ -117,8 +120,10 @@ class ReliabilityDirectIntegrationAnalysis: public TransientAnalysis
     int domainStamp;
 
     // AddingSensitivity:BEGIN ///////////////////////////////
-    SensitivityAlgorithm *theSensitivityAlgorithm;
-	GFunEachStepEvaluator* theGFunEachStepEvaluator;
+   // SensitivityAlgorithm *theSensitivityAlgorithm;
+    Integrator *theSensitivityAlgorithm;
+
+    GFunEachStepEvaluator* theGFunEachStepEvaluator;
     // AddingSensitivity:END ///////////////////////////////
 
 };
