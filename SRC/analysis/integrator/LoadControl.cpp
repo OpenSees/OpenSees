@@ -49,6 +49,10 @@
 #include <LoadPattern.h>
 #include <LoadPatternIter.h>
 #include <Domain.h>
+#include<Parameter.h>
+#include<ParameterIter.h>
+#include<EquiSolnAlgo.h>
+#include<ReliabilityDomain.h>
 #include <elementAPI.h>
 #include <iostream>
 
@@ -118,8 +122,8 @@ LoadControl::newStep(void)
     theModel->applyLoadDomain(currentLambda);
 
     numIncrLastStep = 0;
-    
-    return 0;
+   
+     return 0;
 }
     
 int
@@ -198,8 +202,8 @@ LoadControl::recvSelf(int cTag,
 
 void
 LoadControl::Print(OPS_Stream &s, int flag)
-{
-    AnalysisModel *theModel = this->getAnalysisModel();
+{ 
+     AnalysisModel *theModel = this->getAnalysisModel();
     if (theModel != 0) {
 	double currentLambda = theModel->getCurrentDomainTime();
 	s << "\t LoadControl - currentLambda: " << currentLambda;
@@ -217,6 +221,7 @@ LoadControl::formEleResidual(FE_Element* theEle)
     } else {
 	theEle->zeroResidual();
 	theEle->addResistingForceSensitivity(gradNumber);
+//	opserr<<" dprdh "<<theEle<<endln;//Abbas
     }
     return 0;
 }
@@ -231,21 +236,23 @@ int
 LoadControl::formSensitivityRHS(int passedGradNumber)
 {
     sensitivityFlag = 1;
-    
+ //  this->getK();//Abbas 
     // Set a couple of data members
     gradNumber = passedGradNumber;
-
+  // opserr<<" passed gradient number "<<passedGradNumber<<endln;//Abbas..........
     // get model
-    AnalysisModel* theAnalysisModel = this->getAnalysisModel();
+ AnalysisModel* theAnalysisModel = this->getAnalysisModel();
     LinearSOE* theSOE = this->getLinearSOE();
 
     // Loop through elements
     FE_Element *elePtr;
-    FE_EleIter &theEles = theAnalysisModel->getFEs();    
+    FE_EleIter &theEles = theAnalysisModel->getFEs();   
     while((elePtr = theEles()) != 0) {
-	theSOE->addB(  elePtr->getResidual(this),  elePtr->getID()  );
+    theSOE->addB(  elePtr->getResidual(this),  elePtr->getID()  );
+    //opserr<<" getID "<<elePtr->getID()<<endln;//Abbas.............................
+    //opserr<<"dPrdh= "<<elePtr->getResidual(this)<<endln;//Abbas...............
     }
-
+ //  opserr<<"dPrdh = "<<theSOE->getB()<<endln;
     // Loop through the loadPatterns and add the dPext/dh contributions
     static Vector oneDimVectorWithOne(1);
     oneDimVectorWithOne(0) = 1.0;
@@ -255,17 +262,21 @@ LoadControl::formSensitivityRHS(int passedGradNumber)
     DOF_Group *aDofGroup;
     int nodeNumber, dofNumber, relevantID, i, sizeRandomLoads, numRandomLoads;
     LoadPattern *loadPatternPtr;
+  //  opserr<<" nodeNumber "<<nodeNumber<<"dofNumber "<<dofNumber<<relevantID<<endln;//Abbas.....
     Domain *theDomain = theAnalysisModel->getDomainPtr();
     LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
     while((loadPatternPtr = thePatterns()) != 0) {
 	const Vector &randomLoads = loadPatternPtr->getExternalForceSensitivity(gradNumber);
+//	opserr<<" ExternalLoad sensitivity "<<loadPatternPtr->getExternalForceSensitivity(gradNumber)<<endln;//Abbas
 	sizeRandomLoads = randomLoads.Size();
+//	opserr<<"sizeRandomLoad "<<sizeRandomLoads<<endln;//Abbas
 	if (sizeRandomLoads == 1) {
 	    // No random loads in this load pattern
 	}
 	else {
 	    // Random loads: add contributions to the 'B' vector
 	    numRandomLoads = (int)(sizeRandomLoads/2);
+	    //opserr<<" is it possible to create random load "<<numRandomLoads<<endln;//Abbas
 	    for (i=0; i<numRandomLoads*2; i=i+2) {
 		nodeNumber = (int)randomLoads(i);
 		dofNumber = (int)randomLoads(i+1);
@@ -295,8 +306,9 @@ LoadControl::saveSensitivity(const Vector &v, int gradNum, int numGrads)
     DOF_Group 	*dofPtr;
     
     while ( (dofPtr = theDOFGrps() ) != 0)  {
-	//dofPtr->saveSensitivity(vNewPtr,0,0,gradNum,numGrads);
+//	dofPtr->saveSensitivity(v,0,0,gradNum,numGrads);
 	dofPtr->saveDispSensitivity(v,gradNum,numGrads);
+	
     }
     
     return 0;
@@ -305,7 +317,7 @@ LoadControl::saveSensitivity(const Vector &v, int gradNum, int numGrads)
 int 
 LoadControl::commitSensitivity(int gradNum, int numGrads)
 {
-    // get model
+      // get model
     AnalysisModel* theAnalysisModel = this->getAnalysisModel();
     
     // Loop through the FE_Elements and set unconditional sensitivities
@@ -313,7 +325,122 @@ LoadControl::commitSensitivity(int gradNum, int numGrads)
     FE_EleIter &theEles = theAnalysisModel->getFEs();    
     while((elePtr = theEles()) != 0) {
 	elePtr->commitSensitivity(gradNum, numGrads);
+	//opserr<<"commitSensitivity "<<elePtr->commitSensitivity(gradNum,numGrads)<<endln;//Abbas
     }
     
     return 0;
 }
+
+
+
+// false for LC and true for DC
+   bool 
+LoadControl::computeSensitivityAtEachIteration()
+{
+
+return false;
+}
+
+
+
+
+
+int 
+LoadControl::computeSensitivities(void)
+{
+//  opserr<<" computeSensitivity::start"<<endln; 
+    LinearSOE *theSOE = this->getLinearSOE();
+
+    /*
+  if (theAlgorithm == 0) {
+    opserr << "ERROR the FE algorithm must be defined before ";
+    opserr << "the sensitivity algorithm\n";
+    return -1;
+  }
+*/
+/*
+   // Get pointer to the system of equations (SOE)
+	LinearSOE *theSOE = theAlgorithm->getLinearSOEptr();
+	if (theSOE == 0) {
+	  opserr << "ERROR the FE linearSOE must be defined before ";
+	  opserr << "the sensitivity algorithm\n";
+	  return -1;
+	}
+
+	// Get pointer to incremental integrator
+	IncrementalIntegrator *theIncInt = theAlgorithm->getIncrementalIntegratorPtr();
+//	IncrementalIntegrator *theIncIntSens=theAlgorithm->getIncrementalIntegratorPtr();//Abbas
+	if (theIncInt == 0 ) {
+	  opserr << "ERROR the FE integrator must be defined before ";
+	  opserr << "the sensitivity algorithm\n";
+	  return -1;
+	}
+
+	// Form current tangent at converged state
+	// (would be nice with an if-statement here in case
+	// the current tangent is already formed)
+	if (this->formTangent(CURRENT_TANGENT) < 0){
+		opserr << "WARNING SensitivityAlgorithm::computeGradients() -";
+		opserr << "the Integrator failed in formTangent()\n";
+		return -1;
+	}
+	*/
+	// Zero out the old right-hand side of the SOE
+	theSOE->zeroB();
+		
+
+	if (this == 0) {
+	  opserr << "ERROR SensitivityAlgorithm::computeSensitivities() -";
+	  opserr << "the SensitivityIntegrator is NULL\n";
+	  return -1;
+	}
+
+	// Form the part of the RHS which are indepent of parameter
+	this->formIndependentSensitivityRHS();
+	 AnalysisModel *theModel = this->getAnalysisModel();  //Abbas 
+      Domain *theDomain=theModel->getDomainPtr();//Abbas
+	ParameterIter &paramIter = theDomain->getParameters();
+//	opserr<<" get parameters "<<theDomain->getParameters()<<endln;//Abbas.......
+	Parameter *theParam;
+	// De-activate all parameters
+	while ((theParam = paramIter()) != 0)
+	  theParam->activate(false);
+
+	// Now, compute sensitivity wrt each parameter
+	int numGrads = theDomain->getNumParameters();
+	//opserr<<"the numGrads is "<<numGrads<<endln;//Abbas...............................
+	paramIter = theDomain->getParameters();
+	
+	while ((theParam = paramIter()) != 0) {
+
+	  // Activate this parameter
+	  theParam->activate(true);
+
+	  // Zero the RHS vector
+	  theSOE->zeroB();
+
+	  // Get the grad index for this parameter
+	  int gradIndex = theParam->getGradIndex();
+       //   opserr<<"gradNumber = "<<gradIndex<<endln;
+	  // Form the RHS
+	  this->formSensitivityRHS(gradIndex);
+         
+	  // Solve for displacement sensitivity
+	 
+	  theSOE->solve();
+	  // Save sensitivity to nodes
+	  this->saveSensitivity( theSOE->getX(), gradIndex, numGrads );
+	 
+
+
+	  // Commit unconditional history variables (also for elastic problems; strain sens may be needed anyway)
+	  this->commitSensitivity(gradIndex, numGrads);
+	  
+	  // De-activate this parameter for next sensitivity calc
+	  theParam->activate(false);
+	//  opserr<<"LoadControl::..........ComputeSensitivities. end"<<endln;
+	}
+
+	return 0;
+}
+

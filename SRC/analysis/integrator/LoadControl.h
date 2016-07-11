@@ -44,6 +44,8 @@ class LinearSOE;
 class AnalysisModel;
 class FE_Element;
 class Vector;
+class EquiSolnAlgo;
+class ReliabilityDomain;
 
 class LoadControl : public StaticIntegrator
 {
@@ -71,6 +73,10 @@ class LoadControl : public StaticIntegrator
     int formIndependentSensitivityRHS();
     int saveSensitivity(const Vector &v, int gradNum, int numGrads);
     int commitSensitivity(int gradNum, int numGrads);
+    int computeSensitivities(void);//Abbas
+    bool computeSensitivityAtEachIteration();
+
+
     ///////////////////////
     
 protected:
@@ -84,6 +90,8 @@ protected:
     // Adding sensitivity
     int gradNumber;
     int sensitivityFlag;
+   // EquiSolnAlgo *theAlgorithm;
+    ReliabilityDomain *theDomain;
     ////////////////////
 };
 
