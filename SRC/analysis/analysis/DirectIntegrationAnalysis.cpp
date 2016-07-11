@@ -58,6 +58,7 @@
 // AddingSensitivity:BEGIN //////////////////////////////////
 #ifdef _RELIABILITY
 #include <SensitivityAlgorithm.h>
+#include<Integrator.h>//Abbas
 #endif
 // AddingSensitivity:END ////////////////////////////////////
 
@@ -179,8 +180,8 @@ DirectIntegrationAnalysis::analyze(int numSteps, double dT)
 {
   int result = 0;
   Domain *the_Domain = this->getDomainPtr();
-  if (theEigenSOE != 0)
-    theIntegrator->setEigenSOE(theEigenSOE);
+ // if (theEigenSOE != 0)
+ //   theIntegrator->setEigenSOE(theEigenSOE);
 
   for (int i=0; i<numSteps; i++) {
 
@@ -221,7 +222,7 @@ DirectIntegrationAnalysis::analyze(int numSteps, double dT)
 // AddingSensitivity:BEGIN ////////////////////////////////////
 #ifdef _RELIABILITY
     if (theSensitivityAlgorithm != 0) {
-      result = theSensitivityAlgorithm->computeSensitivities();
+      result = theIntegrator->computeSensitivities();
       if (result < 0) {
 	opserr << "StaticAnalysis::analyze() - the SensitivityAlgorithm failed";
 	opserr << " at iteration: " << i << " with domain at load factor ";
@@ -408,7 +409,7 @@ DirectIntegrationAnalysis::domainChanged(void)
 // AddingSensitivity:BEGIN //////////////////////////////
 #ifdef _RELIABILITY
 int 
-DirectIntegrationAnalysis::setSensitivityAlgorithm(SensitivityAlgorithm *passedSensitivityAlgorithm)
+DirectIntegrationAnalysis::setSensitivityAlgorithm(/*SensitivityAlgorithm*/ Integrator *passedSensitivityAlgorithm)
 {
     int result = 0;
 

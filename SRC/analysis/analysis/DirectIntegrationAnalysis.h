@@ -41,6 +41,7 @@
 // AddingSensitivity:BEGIN //////////////////////////////////
 #ifdef _RELIABILITY
 #include <SensitivityAlgorithm.h>
+#include<Integrator.h>//Abbas
 #endif
 // AddingSensitivity:END ////////////////////////////////////
 
@@ -90,7 +91,7 @@ class DirectIntegrationAnalysis: public TransientAnalysis
 
     // AddingSensitivity:BEGIN ///////////////////////////////
 #ifdef _RELIABILITY
-    int setSensitivityAlgorithm(SensitivityAlgorithm *theSensitivityAlgorithm);
+    int setSensitivityAlgorithm(/*SensitivityAlgorithm*/ Integrator  *theSensitivityAlgorithm);
 #endif
     // AddingSensitivity:END /////////////////////////////////
     
@@ -110,7 +111,9 @@ class DirectIntegrationAnalysis: public TransientAnalysis
 
     // AddingSensitivity:BEGIN ///////////////////////////////
 #ifdef _RELIABILITY
-    SensitivityAlgorithm *theSensitivityAlgorithm;
+//    SensitivityAlgorithm *theSensitivityAlgorithm;
+ Integrator *theSensitivityAlgorithm;
+
 #endif
     // AddingSensitivity:END ///////////////////////////////
 
