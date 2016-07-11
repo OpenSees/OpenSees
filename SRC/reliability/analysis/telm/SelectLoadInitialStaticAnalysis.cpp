@@ -192,11 +192,12 @@ void SelectLoadInitialStaticAnalysis::createStaticAnalysis(void)
 	}
 	int analysisTypeTag=1;	
 	if(theSensitivityAlgorithm!=NULL){delete theSensitivityAlgorithm; theSensitivityAlgorithm=NULL;}
-	theSensitivityAlgorithm = new 
-	    SensitivityAlgorithm(theDomain,
-				 theAlgorithm,
-				 theStaticIntegrator,
-				 analysisTypeTag);
+
+//	theSensitivityAlgorithm = new   // Discuss with Prof Scott
+//	    SensitivityAlgorithm(theDomain,
+//				 theAlgorithm,
+//				 theStaticIntegrator,
+//				 analysisTypeTag);
 	if(theSensitivityAlgorithm == NULL) {
 	opserr << "Fail to generate theSensitivityAlgorithm\n";
 	opserr << "in SelectLoadStaticAnalysis::createStaticAnalysis \n";
@@ -479,7 +480,9 @@ void SelectLoadInitialStaticAnalysis::activateSensitivity(void)
 		output << " SelectLoadStaticAnalysis::activateSensitivity \n";
 		output << "\n";
 	}
-	SensitivityAlgorithm* currentSensitivityAlgorithm
+//	SensitivityAlgorithm* currentSensitivityAlgorithm
+	Integrator* currentSensitivityAlgorithm
+
 		=theReliabilityStaticAnalysis->getSensitivityAlgorithm();
 	if(!activeSensitivity){
 //		currently inactive	
@@ -506,8 +509,10 @@ void SelectLoadInitialStaticAnalysis::inactivateSensitivity(void)
 		output << " SelectLoadStaticAnalysis::inactivateSensitivity \n";
 		output << "\n";
 	}
-	SensitivityAlgorithm* currentSensitivityAlgorithm
-		=theReliabilityStaticAnalysis->getSensitivityAlgorithm();
+//	SensitivityAlgorithm* currentSensitivityAlgorithm
+	Integrator* currentSensitivityAlgorithm
+
+	   =theReliabilityStaticAnalysis->getSensitivityAlgorithm();
 	if(activeSensitivity){
 		if(currentSensitivityAlgorithm == NULL){
 			opserr << " SelectLoadStaticAnalysis::activateSensitivity \n";
@@ -516,7 +521,9 @@ void SelectLoadInitialStaticAnalysis::inactivateSensitivity(void)
 //			exit(-1);
 		}
 		activeSensitivity=false;
-		SensitivityAlgorithm* zeroSensitivityAlgrithm=0;
+	//	SensitivityAlgorithm* zeroSensitivityAlgrithm=0;
+		Integrator* zeroSensitivityAlgrithm=0;
+
 		theReliabilityStaticAnalysis->setSensitivityAlgorithm(zeroSensitivityAlgrithm);
 	}else{
 		if(currentSensitivityAlgorithm != NULL){

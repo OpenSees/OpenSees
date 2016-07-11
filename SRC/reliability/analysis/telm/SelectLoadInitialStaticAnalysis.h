@@ -48,6 +48,7 @@ using std::setprecision;
 #include<DOF_Numberer.h>
 #include<LinearSOE.h>
 #include<SensitivityAlgorithm.h>
+#include<SensitivityIntegrator.h>//Abbas
 #include<StaticIntegrator.h>
 #include<ConvergenceTest.h>
 #include<CTestNormUnbalance.h>
@@ -62,7 +63,8 @@ using std::setprecision;
 #include<BandGenLinLapackSolver.h>
 #include<BandGenLinSOE.h>
 #include<ReliabilityStaticAnalysis.h>
-
+#include<NewStaticSensitivityIntegrator.h>//Abbas
+#include<NewSensitivityAlgorithm.h>//Abbas
 #include <InitialStaticAnalysis.h>
 #include <LoadPattern.h>
 #include <LoadPatternIter.h>
@@ -70,6 +72,7 @@ using std::setprecision;
 #include <NodeIter.h>
 #include <RandomVariablePositioner.h>
 #include <RandomVariable.h>
+#include<Integrator.h>
 
 
 
@@ -116,7 +119,9 @@ private:
 	ConvergenceTest *theTest;
 	
 	bool activeSensitivity;
-	SensitivityAlgorithm *theSensitivityAlgorithm;
+//	SensitivityAlgorithm *theSensitivityAlgorithm;
+           Integrator        *theSensitivityAlgorithm;
+	SensitivityIntegrator *theSensitivityIntegrator;//Abbas
 };
 
 #endif
