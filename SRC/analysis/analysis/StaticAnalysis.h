@@ -41,6 +41,8 @@
 // AddingSensitivity:BEGIN //////////////////////////////////
 #ifdef _RELIABILITY
 #include <SensitivityAlgorithm.h>
+#include<Integrator.h>
+#include<IncrementalIntegrator.h>
 #endif
 // AddingSensitivity:END ////////////////////////////////////
 
@@ -57,7 +59,7 @@ class EigenSOE;
 class StaticAnalysis: public Analysis
 {
   public:
-    StaticAnalysis(Domain &theDomain,
+        StaticAnalysis(Domain &theDomain,
 		   ConstraintHandler &theHandler,
 		   DOF_Numberer &theNumberer,
 		   AnalysisModel &theModel,
@@ -88,7 +90,7 @@ class StaticAnalysis: public Analysis
 
     // AddingSensitivity:BEGIN ///////////////////////////////
 #ifdef _RELIABILITY
-    int setSensitivityAlgorithm(SensitivityAlgorithm *theSensitivityAlgorithm);
+    int setSensitivityAlgorithm(/*SensitivityAlgorithm*/Integrator *theSensitivityAlgorithm);
 #endif
     // AddingSensitivity:END /////////////////////////////////
     
@@ -104,10 +106,13 @@ class StaticAnalysis: public Analysis
     StaticIntegrator    *theIntegrator;
     ConvergenceTest     *theTest;
     int domainStamp;
+   
 
     // AddingSensitivity:BEGIN ///////////////////////////////
 #ifdef _RELIABILITY
-    SensitivityAlgorithm *theSensitivityAlgorithm;
+//    SensitivityAlgorithm *theSensitivityAlgorithm;
+      //StaticIntegrator  *theSensitivityAlgorithm;
+
 #endif
     // AddingSensitivity:END ///////////////////////////////
 
