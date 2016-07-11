@@ -50,6 +50,7 @@ NewSensitivityAlgorithm::NewSensitivityAlgorithm(ReliabilityDomain *passedReliab
 						 Domain* passedFEDomain,
 						 EquiSolnAlgo *passedAlgorithm,
 						 Integrator *passedSensitivityIntegrator,
+                                                 //  SensitivityIntegrator *passedSensitivityIntegrator,//Abbas						
 						 int passedAnalysisTypeTag)
   
 :SensitivityAlgorithm(passedFEDomain, passedAlgorithm,
@@ -358,7 +359,7 @@ NewSensitivityAlgorithm::sensitivityDomainChanged(void)
 
 	opserr << "FATAL NewSensitivityAlgorithm::TALK TO MHS\n";
 	exit(0);
-	//theSensitivityIntegrator->sensitivityDomainChanged(numGrads);
+//	theSensitivityIntegrator->sensitivityDomainChanged(numGrads);//Abbas...............................
 
 	if (analysisTypeTag==1 || analysisTypeTag==3) {
 		// inactivate all positioner //
