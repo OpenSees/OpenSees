@@ -48,6 +48,7 @@
 StaticIntegrator::StaticIntegrator(int clasTag)
 :IncrementalIntegrator(clasTag)
 {
+   
     // for subclasses
 }
 
@@ -58,12 +59,17 @@ StaticIntegrator::~StaticIntegrator()
 int
 StaticIntegrator::formEleTangent(FE_Element *theEle)
 {
+   
+  // opserr<<" this is form ELE tangent function "<<endln;//Abbas
     // only elements stiffness matrix needed
 
   if (statusFlag == CURRENT_TANGENT) {
+  //   opserr<<" Am I in the current tangent"<<endln;//Abbas
     theEle->zeroTangent();
     theEle->addKtToTang();
+    
   } else if (statusFlag == INITIAL_TANGENT) {
+    // opserr<<" Am I in the initial tangent"<<endln;//Abbas
     theEle->zeroTangent();
     theEle->addKiToTang();
   } 
@@ -77,7 +83,7 @@ StaticIntegrator::formEleResidual(FE_Element *theEle)
     // only elements residual needed
     theEle->zeroResidual();
     theEle->addRtoResidual();
-    return 0;
+         return 0;
 }    
 
 int
@@ -97,4 +103,24 @@ StaticIntegrator::formNodUnbalance(DOF_Group *theDof)
     theDof->addPtoUnbalance();
     return 0;
 }    
+
+//////////////////////////////////////////Abbas////////////////////
+
+   int
+StaticIntegrator::formEleTangentSensitivity(FE_Element *theEle,int gradNumber)
+{
+ 
+    if (statusFlag == CURRENT_TANGENT) {
+   //  opserr<<" Am I in the current tangent sensitivity"<<endln;//Abbas
+    theEle->zeroTangent();
+    theEle->addKtToTangSensitivity(gradNumber,1.0);
+   
+  } else if (statusFlag == INITIAL_TANGENT) {
+    theEle->zeroTangent();
+    theEle->addKiToTang();
+  } 
+
+    return 0;
+}    
+////////////////////////////////////////////Abbas//////////////////
 
