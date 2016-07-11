@@ -29,15 +29,19 @@
 
 #include <DynamicAnalyzer.h>
 //#include <RandomVariablePositionerIter.h>
+#include<Integrator.h>
 
 DynamicAnalyzer::DynamicAnalyzer
 				(ReliabilityDomain* passedReliabilityDomain,
 				 Domain* passedStructuralDomain,
 				 InitialStaticAnalysis* passedInitialStaticAnalysis,
 				 ReliabilityDirectIntegrationAnalysis* passedTransientAnalysis,
-				 SensitivityAlgorithm* passedSensitivityAlgorithm,
-				 Integrator* passedSensitivityIntegrator,
-				 int passednstep,
+				// SensitivityAlgorithm* passedSensitivityAlgorithm,
+				    Integrator* passedSensitivityAlgorithm,//Abbas
+				//SensitivityIntegrator* passedSensitivityIntegrator,
+				Integrator* passedSensitivityIntegrator,
+
+			        int passednstep,
 				 double passeddelta,
 				 int passednumLoadPatterns,
 				 int* passedDynamicLoadPatterns,
@@ -48,7 +52,9 @@ DynamicAnalyzer::DynamicAnalyzer
 		  passeddelta,passednumLoadPatterns,passedDynamicLoadPatterns,passedprint)
 {
     theTransientAnalysis = passedTransientAnalysis;
-	SensitivityAlgorithm* currentSensitivityAlgorithm
+//	SensitivityAlgorithm* currentSensitivityAlgorithm
+          Integrator* currentSensitivityAlgorithm 
+
 		=theTransientAnalysis->getSensitivityAlgorithm();
 	if(currentSensitivityAlgorithm!=0){
 		activeSensitivity=true;
@@ -272,8 +278,9 @@ void DynamicAnalyzer::activateSensitivty()
 		output << " DynamicAnalyzer::activateSensitivity \n";
 		output << "\n";
 	}
-	SensitivityAlgorithm* currentSensitivityAlgorithm
-		=theTransientAnalysis->getSensitivityAlgorithm();
+//	SensitivityAlgorithm* currentSensitivityAlgorithm
+       Integrator* currentSensitivityAlgorithm   //Abbas
+	=theTransientAnalysis->getSensitivityAlgorithm();
 	if(!activeSensitivity){
 //		currently inactive	
 		if(currentSensitivityAlgorithm != 0){
@@ -302,7 +309,9 @@ void DynamicAnalyzer::inactivateSensitivty()
 		output << " DynamicAnalyzer::inactivateSensitivity \n";
 		output << "\n";
 	}
-	SensitivityAlgorithm* currentSensitivityAlgorithm
+//	SensitivityAlgorithm* currentSensitivityAlgorithm
+	Integrator* currentSensitivityAlgorithm
+
 		=theTransientAnalysis->getSensitivityAlgorithm();
 	if(activeSensitivity){
 		if(currentSensitivityAlgorithm == 0){
@@ -312,7 +321,9 @@ void DynamicAnalyzer::inactivateSensitivty()
 			exit(-1);
 		}
 		activeSensitivity=false;
-		SensitivityAlgorithm* zeroSensitivityAlgrithm=0;
+	      //	SensitivityAlgorithm* zeroSensitivityAlgrithm=0;
+	     	Integrator* zeroSensitivityAlgrithm=0;//Abbas
+
 		theTransientAnalysis->setSensitivityAlgorithm(zeroSensitivityAlgrithm);
 	}else{
 		if(currentSensitivityAlgorithm != 0){
