@@ -38,28 +38,31 @@ class Domain;
 class ReliabilityDomain;
 class EquiSolnAlgo;
 class Integrator;
-
+//class SensitivityIntegrator;
 class SensitivityAlgorithm
 {
  public:
-  SensitivityAlgorithm(Domain *passedDomain,
+
+    SensitivityAlgorithm(Domain *passedDomain,
 		       EquiSolnAlgo *passedAlgorithm,
 		       Integrator *passedSensitivityIntegrator,
+                       		      
 		       int analysisTypeTag);
 
   ~SensitivityAlgorithm();
-  int computeSensitivities(void);
-  bool shouldComputeAtEachStep(void);
-  int sensitivityDomainChanged(void) {return 0;}
+//  int computeSensitivities(void);
+//  bool shouldComputeAtEachStep(void);
+//  int sensitivityDomainChanged(void) {return 0;}
   // This method needs to go -- MHS
-  bool newAlgorithm(void) {return true;};
+//  bool newAlgorithm(void) {return true;};
   
  protected:
-  
+ //int gradNumber;//Abbas......... 
  private:
     Domain *theDomain;
     ReliabilityDomain *theReliabilityDomain;
     EquiSolnAlgo *theAlgorithm;
+    //  SensitivityIntegrator *theSensitivityIntegrator;
     int analysisTypeTag; 
 };
 

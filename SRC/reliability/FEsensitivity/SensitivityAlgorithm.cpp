@@ -50,17 +50,19 @@ SensitivityAlgorithm::SensitivityAlgorithm(Domain *passedDomain,
   theDomain(passedDomain), theAlgorithm(passedAlgorithm), 
   analysisTypeTag(passedAnalysisTypeTag)
 {
-  
+
+   
 }
 
 SensitivityAlgorithm::~SensitivityAlgorithm()
 {
 
 }
-
+/*
 int 
 SensitivityAlgorithm::computeSensitivities(void)
 {
+   
   if (theAlgorithm == 0) {
     opserr << "ERROR the FE algorithm must be defined before ";
     opserr << "the sensitivity algorithm\n";
@@ -77,7 +79,8 @@ SensitivityAlgorithm::computeSensitivities(void)
 
 	// Get pointer to incremental integrator
 	IncrementalIntegrator *theIncInt = theAlgorithm->getIncrementalIntegratorPtr();
-	if (theIncInt == 0) {
+//	IncrementalIntegrator *theIncIntSens=theAlgorithm->getIncrementalIntegratorPtr();//Abbas
+	if (theIncInt == 0 ) {
 	  opserr << "ERROR the FE integrator must be defined before ";
 	  opserr << "the sensitivity algorithm\n";
 	  return -1;
@@ -91,7 +94,6 @@ SensitivityAlgorithm::computeSensitivities(void)
 		opserr << "the Integrator failed in formTangent()\n";
 		return -1;
 	}
-
 	// Zero out the old right-hand side of the SOE
 	theSOE->zeroB();
 		
@@ -101,6 +103,7 @@ SensitivityAlgorithm::computeSensitivities(void)
 	theSensitivityIntegrator->formIndependentSensitivityRHS();
 
 	ParameterIter &paramIter = theDomain->getParameters();
+//	opserr<<" get parameters "<<theDomain->getParameters()<<endln;//Abbas.......
 	Parameter *theParam;
 	// De-activate all parameters
 	while ((theParam = paramIter()) != 0)
@@ -108,7 +111,9 @@ SensitivityAlgorithm::computeSensitivities(void)
 
 	// Now, compute sensitivity wrt each parameter
 	int numGrads = theDomain->getNumParameters();
+	//opserr<<"the numGrads is "<<numGrads<<endln;//Abbas...............................
 	paramIter = theDomain->getParameters();
+	
 	while ((theParam = paramIter()) != 0) {
 
 	  // Activate this parameter
@@ -122,13 +127,16 @@ SensitivityAlgorithm::computeSensitivities(void)
 
 	  // Form the RHS
 	  theSensitivityIntegrator->formSensitivityRHS(gradIndex);
-
+         
 	  // Solve for displacement sensitivity
+	 
 	  theSOE->solve();
 
 	  // Save sensitivity to nodes
 	  theSensitivityIntegrator->saveSensitivity( theSOE->getX(), gradIndex, numGrads );
-	  
+	 
+
+
 	  // Commit unconditional history variables (also for elastic problems; strain sens may be needed anyway)
 	  theSensitivityIntegrator->commitSensitivity(gradIndex, numGrads);
 	  
@@ -138,9 +146,12 @@ SensitivityAlgorithm::computeSensitivities(void)
 
 	return 0;
 }
+*/
 
+/*
 bool 
 SensitivityAlgorithm::shouldComputeAtEachStep(void)
 {
   return (analysisTypeTag == 1);
 }
+*/
