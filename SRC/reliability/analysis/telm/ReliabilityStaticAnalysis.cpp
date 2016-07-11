@@ -42,7 +42,9 @@
 
 // AddingSensitivity:BEGIN //////////////////////////////////
 //#ifdef _RELIABILITY
-#include <SensitivityAlgorithm.h>
+//#include <SensitivityAlgorithm.h>
+#include<Integrator.h>
+
 //#endif
 // AddingSensitivity:END ////////////////////////////////////
 
@@ -330,7 +332,7 @@ ReliabilityStaticAnalysis::domainChanged(void)
 // AddingSensitivity:BEGIN //////////////////////////////
 //#ifdef _RELIABILITY
 int 
-ReliabilityStaticAnalysis::setSensitivityAlgorithm(SensitivityAlgorithm *passedSensitivityAlgorithm)
+ReliabilityStaticAnalysis::setSensitivityAlgorithm(/*SensitivityAlgorithm*/ Integrator *passedSensitivityAlgorithm)
 {
     int result = 0;
 

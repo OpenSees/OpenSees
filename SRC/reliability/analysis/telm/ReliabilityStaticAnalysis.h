@@ -39,7 +39,8 @@
 
 // AddingSensitivity:BEGIN //////////////////////////////////
 //#ifdef _RELIABILITY
-#include <SensitivityAlgorithm.h>
+//#include <SensitivityAlgorithm.h>
+#include<Integrator.h>//Abbas
 //#endif
 // AddingSensitivity:END ////////////////////////////////////
 
@@ -51,6 +52,7 @@ class StaticIntegrator;
 class LinearSOE;
 class EquiSolnAlgo;
 class ConvergenceTest;
+class Integrator;//Abbas
 
 class ReliabilityStaticAnalysis: public Analysis
 {
@@ -84,14 +86,16 @@ class ReliabilityStaticAnalysis: public Analysis
 
 
     // AddingSensitivity:BEGIN ///////////////////////////////
-    int setSensitivityAlgorithm(SensitivityAlgorithm *theSensitivityAlgorithm);
+    int setSensitivityAlgorithm(/*SensitivityAlgorithm*/ Integrator *theSensitivityAlgorithm);
 	///// added by K Fujimura /////
 	bool reliabilityAnalysis(void){ return true;}
     // AddingSensitivity:END /////////////////////////////////
 	//////////////////////////
 	// added by K Fujimura //
 	//////////////////////////
-	SensitivityAlgorithm* getSensitivityAlgorithm()
+	//SensitivityAlgorithm* getSensitivityAlgorithm()
+        Integrator* getSensitivityAlgorithm()
+
 	{return  theSensitivityAlgorithm;};
 	//////////////////////////	// added by K Fujimura //
 	//////////////////////////
@@ -111,7 +115,9 @@ class ReliabilityStaticAnalysis: public Analysis
 
     // AddingSensitivity:BEGIN ///////////////////////////////
 //#ifdef _RELIABILITY
-    SensitivityAlgorithm *theSensitivityAlgorithm;
+  //  SensitivityAlgorithm *theSensitivityAlgorithm;
+      Integrator  *theSensitivityAlgorithm;
+
 //#endif
     // AddingSensitivity:END ///////////////////////////////
 

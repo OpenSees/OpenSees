@@ -31,6 +31,7 @@
 
 #include <Analyzer.h>
 #include <ReliabilityDirectIntegrationAnalysis.h>
+//#include<Integrator.h>
 
 class DynamicAnalyzer : public Analyzer
 {
@@ -39,8 +40,10 @@ public:
 					Domain* passedStructuralDomain,
 					InitialStaticAnalysis* passedInitialStaticAnalysis,
 					ReliabilityDirectIntegrationAnalysis* passedTransientAnalysis,
-					SensitivityAlgorithm* passedSensitivityAlgorithm,
-					Integrator* passedSensitivityIntegrator,
+			                Integrator* passedSensitivityAlgorithm,
+				//	SensitivityIntegrator* passedSensitivityIntegrator,
+				        Integrator* passedSensitivityIntegrator,//Abbas
+
 					int passednstep,
 					double passeddelta,
 					int passednumLoadPatterns,
