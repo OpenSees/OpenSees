@@ -40,9 +40,10 @@
 #include <ReliabilityDomain.h>
 #include <Domain.h>
 #include <FunctionEvaluator.h>
+#include<Integrator.h>//Abbas
 
-class SensitivityAlgorithm;
-
+//class SensitivityAlgorithm;
+class Integrator;//Abbas
 class ImplicitGradient : public GradientEvaluator
 {
 
@@ -50,8 +51,9 @@ public:
 	ImplicitGradient(FunctionEvaluator *passedGFunEvaluator,
 				   ReliabilityDomain *passedReliabilityDomain,
 				   Domain *passedOpenSeesDomain,
-			       SensitivityAlgorithm *theAlgo);
-	~ImplicitGradient();
+			      // SensitivityAlgorithm *theAlgo);
+                                 Integrator *theAlgo);
+   	   ~ImplicitGradient();
 
 	int		computeGradient(double gFunValue);
 	Vector	getGradient();
@@ -59,7 +61,8 @@ public:
 protected:
 
 private:
-	SensitivityAlgorithm *theSensAlgo;
+	//SensitivityAlgorithm *theSensAlgo;
+           Integrator *theSensAlgo;//Abbas
 	Domain *theOpenSeesDomain;
 	Vector *grad_g;
 

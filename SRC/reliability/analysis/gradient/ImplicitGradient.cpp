@@ -39,12 +39,14 @@
 #include <LimitStateFunction.h>
 #include <SensitivityAlgorithm.h>
 #include <string.h>
+#include<Integrator.h>//Abbas
 
 
 ImplicitGradient::ImplicitGradient(FunctionEvaluator *passedGFunEvaluator,
 				   ReliabilityDomain *passedReliabilityDomain,
 				   Domain *passedOpenSeesDomain,
-				   SensitivityAlgorithm *theAlgo)
+				  // SensitivityAlgorithm *theAlgo)
+				    Integrator *theAlgo)
   :GradientEvaluator(passedReliabilityDomain, passedGFunEvaluator), 
    theOpenSeesDomain(passedOpenSeesDomain)
 {
@@ -74,11 +76,17 @@ ImplicitGradient::getGradient()
 int
 ImplicitGradient::computeGradient(double g)
 {
+
+   opserr<<" this is the Implicit:: computeGradient function"<<endln;
+   
     // Compute gradients if this is a path-INdependent analysis
     // (This command only has effect if it IS path-independent.)
     //if (theSensAlgo != 0 && !(theSensAlgo->shouldComputeAtEachStep()) ) {
-    if (theSensAlgo != 0)
+   if (theSensAlgo != 0){ 
         theSensAlgo->computeSensitivities();
+   opserr<<" Implicit function SensAlgo is not zero"<<endln;
+   }
+    
     //}
 
     // Initialize gradient vector
