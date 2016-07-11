@@ -38,6 +38,7 @@
 #include <InitialStaticAnalysis.h>
 #include <SensitivityAlgorithm.h>
 #include <Integrator.h>
+#include<SensitivityIntegrator.h>
 #include <GFunEachStepEvaluator.h>
 #include <Node.h>
 #include <NodeIter.h>
@@ -56,8 +57,11 @@ public:
 	Analyzer(ReliabilityDomain* passedReliabilityDomain,
 		     Domain* passedStructuralDomain,
 		     InitialStaticAnalysis* passedInitialStaticAnalysis,
-		     SensitivityAlgorithm* passedSensitivityAlgorithm,
-		     Integrator* passedSensitivityIntegrator,
+		     //SensitivityAlgorithm* passedSensitivityAlgorithm,
+		     Integrator* passedSensitivityAlgorithm,//Abbas
+		     //SensitivityIntegrator *passedSensitivityIntegrator,
+		     Integrator *passedSensitivityIntegrator,//Abbas
+
 		     int passedNumstep,
 		     double passeddelta,
 		     int passedNumLoadPatterns,
@@ -84,9 +88,13 @@ protected:
 	ReliabilityDomain*	theReliabilityDomain;
 	Domain* theDomain;
 	InitialStaticAnalysis* theInitialStaticAnalysis;
-	SensitivityAlgorithm* theSensitivityAlgorithm;
-	Integrator* theSensitivityIntegrator;
-	bool activeSensitivity;
+//	SensitivityAlgorithm* theSensitivityAlgorithm;
+	Integrator* theSensitivityAlgorithm;
+
+      // SensitivityIntegrator *theSensitivityIntegrator;
+       Integrator *theSensitivityIntegrator;//Abbas
+
+       bool activeSensitivity;
 	bool print;
 	ofstream output;
 

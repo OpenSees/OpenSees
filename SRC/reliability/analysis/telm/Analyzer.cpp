@@ -34,9 +34,12 @@ Analyzer::Analyzer
 		 (ReliabilityDomain* passedReliabilityDomain,
 		  Domain* passedStructuralDomain,
 		  InitialStaticAnalysis* passedInitialStaticAnalysis,
-		  SensitivityAlgorithm* passedSensitivityAlgorithm,
-		  Integrator* passedSensitivityIntegrator,
-		  int passedNumstep,
+		 // SensitivityAlgorithm* passedSensitivityAlgorithm,
+		 Integrator* passedSensitivityAlgorithm,
+	        // SensitivityIntegrator *passedSensitivityIntegrator,
+            	Integrator *passedSensitivityIntegrator,
+
+	       	 int passedNumstep,
 		  double passeddelta,
 		  int passedNumLoadPatterns,
 		  int* passedLoadPatterns,
@@ -51,6 +54,7 @@ Analyzer::Analyzer
 	theInitialStaticAnalysis = passedInitialStaticAnalysis;
 	theSensitivityAlgorithm = passedSensitivityAlgorithm;
 	theSensitivityIntegrator = passedSensitivityIntegrator;
+
 	if(theSensitivityAlgorithm == 0){
 		activeSensitivity=false;
 	}else{
