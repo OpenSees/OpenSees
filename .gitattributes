@@ -3373,6 +3373,8 @@ SRC/material/uniaxial/Cast.h -text
 SRC/material/uniaxial/Concrete01.cpp -text
 SRC/material/uniaxial/Concrete01.h -text
 SRC/material/uniaxial/Concrete01.tex -text
+SRC/material/uniaxial/Concrete01A.cpp -text
+SRC/material/uniaxial/Concrete01A.h -text
 SRC/material/uniaxial/Concrete01WithSITC.cpp -text
 SRC/material/uniaxial/Concrete01WithSITC.h -text
 SRC/material/uniaxial/Concrete02.cpp -text
