@@ -45,8 +45,17 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
+#include <Domain.h>
+#include <Node.h>
+#include <FE_Element.h>
+#include <FE_EleIter.h>
+#include <DOF_Group.h>
+#include <DOF_GrpIter.h>
+#include <LoadPattern.h>
+#include <LoadPatternIter.h>
+
 StaticIntegrator::StaticIntegrator(int clasTag)
-:IncrementalIntegrator(clasTag)
+ :IncrementalIntegrator(clasTag)
 {
    
     // for subclasses
@@ -106,21 +115,20 @@ StaticIntegrator::formNodUnbalance(DOF_Group *theDof)
 
 //////////////////////////////////////////Abbas////////////////////
 
-   int
+int
 StaticIntegrator::formEleTangentSensitivity(FE_Element *theEle,int gradNumber)
 {
  
-    if (statusFlag == CURRENT_TANGENT) {
-   //  opserr<<" Am I in the current tangent sensitivity"<<endln;//Abbas
+  if (statusFlag == CURRENT_TANGENT) {
+    //  opserr<<" Am I in the current tangent sensitivity"<<endln;//Abbas
     theEle->zeroTangent();
-    theEle->addKtToTangSensitivity(gradNumber,1.0);
-   
+    //theEle->addKtToTangSensitivity(gradNumber,1.0);
+    
   } else if (statusFlag == INITIAL_TANGENT) {
     theEle->zeroTangent();
     theEle->addKiToTang();
   } 
-
+  
     return 0;
 }    
 ////////////////////////////////////////////Abbas//////////////////
-
