@@ -127,6 +127,9 @@ int
 eleForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+localForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
 eleDynamicalForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
@@ -164,6 +167,12 @@ nodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
 setNodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+setNodeDisp(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+setNodeAccel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
 nodeAccel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);

@@ -869,13 +869,17 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
 
     Tcl_CreateCommand(interp, "eleForce", &eleForce, 
-		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);    
+    Tcl_CreateCommand(interp, "localForce", &localForce, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);          
     Tcl_CreateCommand(interp, "eleDynamicalForce", &eleDynamicalForce, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "eleResponse", &eleResponse, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "nodeDisp", &nodeDisp, 
-		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
+    Tcl_CreateCommand(interp, "setNodeDisp", &setNodeDisp, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);            
     Tcl_CreateCommand(interp, "nodeReaction", &nodeReaction, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "nodeUnbalance", &nodeUnbalance, 
@@ -887,7 +891,9 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "setNodeVel", &setNodeVel, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "nodeAccel", &nodeAccel, 
-		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
+    Tcl_CreateCommand(interp, "setNodeAccel", &setNodeAccel, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);             
     Tcl_CreateCommand(interp, "nodeResponse", &nodeResponse, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "reactions", &calculateNodalReactions, 
@@ -5897,7 +5903,70 @@ eleForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     return TCL_OK;
 }
 
+int 
+localForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+    // make sure at least one other argument to contain type of system
+    if (argc < 2) {
+	opserr << "WARNING want - localForce eleTag? <dof?>\n";
+	return TCL_ERROR;
+   }    
 
+    int tag;
+    int dof = -1;
+
+    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+	opserr << "WARNING localForce eleTag? dof? - could not read eleTag? \n";
+	return TCL_ERROR;	        
+    }    
+
+    if (argc > 2) {
+      if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+	opserr << "WARNING localForce eleTag? dof? - could not read dof? \n";
+	return TCL_ERROR;	        
+      }   
+    }     
+    
+    dof--;
+
+    /*
+    Element *theEle = theDomain.getElement(tag);
+    if (theEle == 0)
+      return TCL_ERROR;
+    
+    const Vector &force = theEle->getResistingForce();
+    */
+
+    const char *myArgv[1];
+    char myArgv0[8]; 
+    strcpy(myArgv0,"localForces");
+    myArgv[0] = myArgv0;
+
+    const Vector *force = theDomain.getElementResponse(tag, &myArgv[0], 1);
+    if (force != 0) {
+      int size = force->Size();
+      
+      if (dof >= 0) {
+	
+	if (size < dof)
+	  return TCL_ERROR;
+	
+	double value = (*force)(dof);
+	
+	// now we copy the value to the tcl string that is returned
+	sprintf(interp->result,"%35.20f",value);
+	
+      } else {
+	char buffer[40];
+	for (int i=0; i<size; i++) {
+	  sprintf(buffer,"%35.20f",(*force)(i));
+	  Tcl_AppendResult(interp, buffer, NULL);
+	}
+      }
+    }
+
+    return TCL_OK;
+}
 
 int 
 eleDynamicalForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -6306,19 +6375,19 @@ nodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     return TCL_OK;
 }
 
-
 int 
 setNodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
     // make sure at least one other argument to contain type of system
     if (argc < 4) {
-	opserr << "WARNING want - setNodeVel nodeTag? dof? value?\n";
+	opserr << "WARNING want - setNodeVel nodeTag? dof? value? <-commit>\n";
 	return TCL_ERROR;
    }    
 
     int tag;
     int dof = -1;
     double value = 0.0;
+    bool commit = false;
 
     if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
 	opserr << "WARNING setNodeVel nodeTag? dof? value?- could not read nodeTag? \n";
@@ -6339,6 +6408,8 @@ setNodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       opserr << "WARNING setNodeVel nodeTag? dof? value?- could not read value? \n";
       return TCL_ERROR;	        
     }        
+    if (argc > 4 && strcmp(argv[4],"-commit") == 0)
+      commit = true;
 
     dof--;
 
@@ -6350,10 +6421,115 @@ setNodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       vel(dof) = value;
       theNode->setTrialVel(vel);
     }
+    if (commit)
+      theNode->commitState();
 	
     return TCL_OK;
 }
 
+int 
+setNodeDisp(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+    // make sure at least one other argument to contain type of system
+    if (argc < 4) {
+	opserr << "WARNING want - setNodeDisp nodeTag? dof? value? <-commit>\n";
+	return TCL_ERROR;
+   }    
+
+    int tag;
+    int dof = -1;
+    double value = 0.0;
+    bool commit = false;
+
+    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+	opserr << "WARNING setNodeDisp nodeTag? dof? value?- could not read nodeTag? \n";
+	return TCL_ERROR;	        
+    }    
+
+    Node *theNode = theDomain.getNode(tag);
+    if (theNode == 0) {
+      opserr << "WARNING setNodeDisp -- node with tag " << tag << " not found" << endln;
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+      opserr << "WARNING setNodeDisp nodeTag? dof? value?- could not read dof? \n";
+      return TCL_ERROR;	        
+    }        
+    if (Tcl_GetDouble(interp, argv[3], &value) != TCL_OK) {
+      opserr << "WARNING setNodeDisp nodeTag? dof? value?- could not read value? \n";
+      return TCL_ERROR;	        
+    }        
+    if (argc > 4 && strcmp(argv[4],"-commit") == 0)
+      commit = true;
+
+    dof--;
+
+    int numDOF = theNode->getNumberDOF();
+
+    if (dof >= 0 && dof < numDOF) {
+      Vector vel(numDOF);
+      vel = theNode->getDisp();
+      vel(dof) = value;
+      theNode->setTrialDisp(vel);
+    }
+    if (commit)
+      theNode->commitState();
+
+    return TCL_OK;
+}
+
+int 
+setNodeAccel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+    // make sure at least one other argument to contain type of system
+    if (argc < 4) {
+	opserr << "WARNING want - setNodeAccel nodeTag? dof? value? <-commit>\n";
+	return TCL_ERROR;
+   }    
+
+    int tag;
+    int dof = -1;
+    double value = 0.0;
+    bool commit = false;
+
+    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+	opserr << "WARNING setNodeAccel nodeTag? dof? value?- could not read nodeTag? \n";
+	return TCL_ERROR;	        
+    }    
+
+    Node *theNode = theDomain.getNode(tag);
+    if (theNode == 0) {
+      opserr << "WARNING setNodeAccel -- node with tag " << tag << " not found" << endln;
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+      opserr << "WARNING setNodeDisp nodeTag? dof? value?- could not read dof? \n";
+      return TCL_ERROR;	        
+    }        
+    if (Tcl_GetDouble(interp, argv[3], &value) != TCL_OK) {
+      opserr << "WARNING setNodeAccel nodeTag? dof? value?- could not read value? \n";
+      return TCL_ERROR;	        
+    }        
+    if (argc > 4 && strcmp(argv[4],"-commit") == 0)
+      commit = true;
+
+    dof--;
+
+    int numDOF = theNode->getNumberDOF();
+
+    if (dof >= 0 && dof < numDOF) {
+      Vector vel(numDOF);
+      vel = theNode->getAccel();
+      vel(dof) = value;
+      theNode->setTrialAccel(vel);
+    }
+    if (commit)
+      theNode->commitState();
+	
+    return TCL_OK;
+}
 
 int 
 nodeAccel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -6672,8 +6848,8 @@ sensSectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
 {
 #ifdef _RELIABILITY
   // make sure at least one other argument to contain type of system
-  if (argc < 5) {
-    interp->result = "WARNING want - sensSectionForce eleTag? secNum? dof? paramTag?\n";
+  if (argc < 4) {
+    interp->result = "WARNING want - sensSectionForce eleTag? <secNum?> dof? paramTag?\n";
     return TCL_ERROR;
   }    
   
@@ -6682,21 +6858,27 @@ sensSectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
   //  opserr << argv[i] << ' ' ;
   //opserr << endln;
 
-  int tag, secNum, dof, paramTag;
+  int tag, dof, paramTag;
+  int secNum = 0;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
     opserr << "WARNING sensSectionForce eleTag? secNum? dof? paramTag?- could not read eleTag? \n";
     return TCL_ERROR;	        
   }    
-  if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-    opserr << "WARNING sensSectionForce eleTag? secNum? dof? paramTag?- could not read secNum? \n";
-    return TCL_ERROR;	        
-  }    
-  if (Tcl_GetInt(interp, argv[3], &dof) != TCL_OK) {
+
+  // Make this work for zeroLengthSection too
+  int currentArg = 2;
+  if (argc > 4) {
+    if (Tcl_GetInt(interp, argv[currentArg++], &secNum) != TCL_OK) {
+      opserr << "WARNING sensSectionForce eleTag? secNum? dof? paramTag?- could not read secNum? \n";
+      return TCL_ERROR;	        
+    }
+  }
+  if (Tcl_GetInt(interp, argv[currentArg++], &dof) != TCL_OK) {
     opserr << "WARNING sensSectionForce eleTag? secNum? dof? paramTag?- could not read dof? \n";
     return TCL_ERROR;	        
   }        
-  if (Tcl_GetInt(interp, argv[4], &paramTag) != TCL_OK) {
+  if (Tcl_GetInt(interp, argv[currentArg++], &paramTag) != TCL_OK) {
     opserr << "WARNING sensSectionForce eleTag? secNum? dof? paramTag?- could not read paramTag? \n";
     return TCL_ERROR;	        
   }
@@ -6716,15 +6898,19 @@ sensSectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
     return TCL_ERROR; 
   }
 
-  int argcc = 3;
   char a[80] = "section";
   char b[80];
   sprintf(b, "%d", secNum);
   char c[80] = "dsdh";
   const char *argvv[3];
+  int argcc = 3;
   argvv[0] = a;
   argvv[1] = b;
   argvv[2] = c;
+  if (argc < 5) { // For zeroLengthSection
+    argcc = 2;
+    argvv[1] = c;
+  }
 
   DummyStream dummy;
 
@@ -6755,8 +6941,8 @@ int
 sectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
   // make sure at least one other argument to contain type of system
-  if (argc < 4) {
-    interp->result = "WARNING want - sectionForce eleTag? secNum? dof? \n";
+  if (argc < 3) {
+    interp->result = "WARNING want - sectionForce eleTag? <secNum?> dof? \n";
     return TCL_ERROR;
   }    
   
@@ -6765,17 +6951,23 @@ sectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   //  opserr << argv[i] << ' ' ;
   //opserr << endln;
 
-  int tag, secNum, dof;
+  int tag, dof;
+  int secNum = 0;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
     opserr << "WARNING sectionForce eleTag? secNum? dof? - could not read eleTag? \n";
     return TCL_ERROR;	        
-  }    
-  if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-    opserr << "WARNING sectionForce eleTag? secNum? dof? - could not read secNum? \n";
-    return TCL_ERROR;	        
-  }    
-  if (Tcl_GetInt(interp, argv[3], &dof) != TCL_OK) {
+  }
+
+  // Make this work for zeroLengthSection too
+  int currentArg = 2;
+  if (argc > 3) {
+    if (Tcl_GetInt(interp, argv[currentArg++], &secNum) != TCL_OK) {
+      opserr << "WARNING sectionForce eleTag? secNum? dof? - could not read secNum? \n";
+      return TCL_ERROR;	        
+    }
+  }
+  if (Tcl_GetInt(interp, argv[currentArg++], &dof) != TCL_OK) {
     opserr << "WARNING sectionForce eleTag? secNum? dof? - could not read dof? \n";
     return TCL_ERROR;	        
   }        
@@ -6795,6 +6987,10 @@ sectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   argvv[0] = a;
   argvv[1] = b;
   argvv[2] = c;
+  if (argc < 4) { // For zeroLengthSection
+    argcc = 2;
+    argvv[1] = c;
+  }
 
   DummyStream dummy;
 
