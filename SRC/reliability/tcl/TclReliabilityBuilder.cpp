@@ -145,7 +145,7 @@ using std::setiosflags;
 #include <NarrowBandSpectrum.h>
 #include <PointsSpectrum.h>
 
-#include <SensitivityAlgorithm.h>
+//#include <SensitivityAlgorithm.h>
 #include <RootFinding.h>
 #include <SecantRootFinding.h>
 
@@ -183,17 +183,24 @@ using std::setiosflags;
 #include <NonStatRandomVibrationSimulation.h>
 #include <RandomVibrationAnalysis.h>
 #include <AllIndependentTransformation.h>
+#include<Integrator.h>//Abbas
 /////////////////////////////////////////////////////////
 /////E Modified by K Fujimura /////////////////////////////
 /////////////////////////////////////////////////////////
 
-extern SensitivityAlgorithm *theSensitivityAlgorithm;
+//extern SensitivityAlgorithm *theSensitivityAlgorithm;
+extern Integrator *theSensitivityAlgorithm;
+
 /////////////////////////////////////////////////////////
 /////S Modified by K Fujimura /////////////////////////////
 /////////////////////////////////////////////////////////
 extern ReliabilityStaticAnalysis* theReliabilityStaticAnalysis;
 extern ReliabilityDirectIntegrationAnalysis* theReliabilityTransientAnalysis;
 extern Integrator* theSensitivityIntegrator;
+//extern SensitivityIntegrator* theSensitivityIntegrator; //Abbas
+
+
+
 /////////////////////////////////////////////////////////
 /////E Modified by K Fujimura /////////////////////////////
 /////////////////////////////////////////////////////////
@@ -722,6 +729,7 @@ inputCheck()
         theSearchDirection = new HLRFSearchDirection();
     }
 
+   
     //meritFunctionCheck           AdkZhang         -multi 2.0    -add 10.0   -factor 0.5
     //stepSizeRule                 Armijo           -maxNum 5    -base 0.5   -initial 1.0 2  -print 0
     //startPoint                   Mean
@@ -3116,10 +3124,10 @@ TclReliabilityModelBuilder_addGradientEvaluator(ClientData clientData, Tcl_Inter
 		bool doGradientCheck = false;
 
 	//Quan Apr. 2006	
-		if (theSensitivityAlgorithm == 0) {
-			opserr << "Warning:Need a DDM sensitivity algorithm before a OpenSees sensitivity evaluator can be created" << endln;
+	//	if (theSensitivityAlgorithm == 0) {
+	//		opserr << "Warning:Need a DDM sensitivity algorithm before a OpenSees sensitivity evaluator can be created" << endln;
 	//		return TCL_ERROR;
-		}
+	//	}
 
 		if (argc==2) {
 			// Do nothing
@@ -3136,6 +3144,7 @@ TclReliabilityModelBuilder_addGradientEvaluator(ClientData clientData, Tcl_Inter
 
 		theGradientEvaluator = new ImplicitGradient(theFunctionEvaluator, 
 					theReliabilityDomain, theStructuralDomain, theSensitivityAlgorithm);
+	
 	}
 	////////////////////////////////////////
 	//////S modified by K Fujimura 10/10/2004
@@ -5349,7 +5358,7 @@ TclReliabilityModelBuilder_updateParameterValue(ClientData clientData, Tcl_Inter
 				
 	}	
 
-  */
+*/ 
 
 	return TCL_OK;
 
@@ -5866,6 +5875,7 @@ TclReliabilityModelBuilder_transformUtoX(ClientData clientData, Tcl_Interp *inte
 	
     Vector pointX;
 	theProbabilityTransformation->transform_u_to_x(pointU, pointX);
+
 
 	ofstream outputFile( filenameX, ios::out);
 	outputFile.precision(16);
