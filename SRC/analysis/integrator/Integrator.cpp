@@ -35,12 +35,28 @@
 
 #include <Integrator.h>
 #include <Vector.h>
+///////////////////////
+#include <ReliabilityDomain.h>
+#include <LinearSOE.h>
+#include <EquiSolnAlgo.h>
+#include <Domain.h>
+//#include <Parameter.h>
+//#include <ParameterIter.h>
 
-Integrator::Integrator(int clasTag)
+
+//////////////////////
+ Integrator::Integrator(int clasTag)
 :MovableObject(clasTag)
 {
-
+SensitivityKey=0;
 }
+
+
+
+
+//////////////////////////////////
+
+
 
 Integrator::~Integrator()
 {
@@ -52,6 +68,7 @@ Integrator::domainChanged()
 {
     return 0;
 }
+
 
 int
 Integrator::formSensitivityRHS(int gradNum)
@@ -76,3 +93,68 @@ Integrator::commitSensitivity(int gradNum, int numGrads)
 {
     return 0;
 }
+///////////////////////Abbas///////////////////////////////////////////
+
+ int Integrator:: formEleTangentSensitivity(FE_Element 
+      *theEle, int gradNumber)
+{
+return 0;
+}
+
+double 
+Integrator::getLambdaSensitivity(int gradNumber)
+{
+return 0.0;
+
+
+}
+
+
+int
+Integrator::computeSensitivities()
+{
+
+//should not be called
+return 0;
+
+}
+int 
+Integrator::sensitivityDomainChanged()
+{
+// I do not think I need it
+return 0;
+}
+
+
+bool 
+Integrator::shouldComputeAtEachStep(void)
+{
+  return (analysisTypeTag == 1);
+}
+bool
+Integrator::computeSensitivityAtEachIteration()
+{
+opserr<<"SensitivityIntegratorScheme: this method should never be called"<<endln;
+return false ;
+}
+
+// the following function is to activate the sensitivity key, and it will be called in the commands.cpp
+bool
+Integrator::activateSensitivityKey()
+{
+SensitivityKey=true;
+
+return SensitivityKey;
+
+}
+
+
+
+   double
+Integrator::dLambdadh()
+{
+return 0.0;
+
+}
+
+ ////////////////////////Abbas/////////////////////////////////////
