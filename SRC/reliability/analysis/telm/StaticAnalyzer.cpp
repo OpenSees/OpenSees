@@ -27,6 +27,7 @@
 // $Source: /usr/local/cvs/OpenSees/SRC/reliability/analysis/telm/StaticAnalyzer.cpp,v $
 
 #include <StaticAnalyzer.h>
+#include<Integrator.h>
 //#include <RandomVariablePositionerIter.h>
 
 StaticAnalyzer::StaticAnalyzer
@@ -34,8 +35,10 @@ StaticAnalyzer::StaticAnalyzer
 				 Domain* passedStructuralDomain,
 				 InitialStaticAnalysis* passedInitialStaticAnalysis,
 				 ReliabilityStaticAnalysis* passedStaticAnalysis,
-				 SensitivityAlgorithm* passedSensitivityAlgorithm,
-				 Integrator* passedSensitivityIntegrator,
+				// SensitivityAlgorithm* passedSensitivityAlgorithm,
+			         Integrator* passedSensitivityAlgorithm,
+				 //SensitivityIntegrator *passedSensitivityIntegrator,
+				   Integrator *passedSensitivityIntegrator,//Abbas 
 				 int passednstep,
 				 double passeddelta,
 				 int passednumLoadPatterns,
@@ -47,8 +50,10 @@ StaticAnalyzer::StaticAnalyzer
 		  passeddelta,passednumLoadPatterns,passedStaticLoadPatterns,passedprint)
 {
     theStaticAnalysis = passedStaticAnalysis;
-	SensitivityAlgorithm* currentSensitivityAlgorithm
-		=theStaticAnalysis->getSensitivityAlgorithm();
+//	SensitivityAlgorithm* currentSensitivityAlgorithm
+	Integrator* currentSensitivityAlgorithm
+
+   	   =theStaticAnalysis->getSensitivityAlgorithm();
 	if(currentSensitivityAlgorithm!=0){
 		activeSensitivity=false;
 	}else{
@@ -266,8 +271,11 @@ void StaticAnalyzer::activateSensitivty()
 		output << " StaticAnalyzer::activateSensitivity \n";
 		output << "\n";
 	}
-	SensitivityAlgorithm* currentSensitivityAlgorithm
-		=theStaticAnalysis->getSensitivityAlgorithm();
+	//SensitivityAlgorithm* currentSensitivityAlgorithm
+
+	Integrator* currentSensitivityAlgorithm
+
+	   =theStaticAnalysis->getSensitivityAlgorithm();
 	if(!activeSensitivity){
 //		currently inactive	
 		if(currentSensitivityAlgorithm != 0){
@@ -296,8 +304,10 @@ void StaticAnalyzer::inactivateSensitivty()
 		output << " StaticAnalyzer::inactivateSensitivity \n";
 		output << "\n";
 	}
-	SensitivityAlgorithm* currentSensitivityAlgorithm
-		=theStaticAnalysis->getSensitivityAlgorithm();
+//	SensitivityAlgorithm* currentSensitivityAlgorithm
+       	Integrator* currentSensitivityAlgorithm
+
+	   =theStaticAnalysis->getSensitivityAlgorithm();
 	if(activeSensitivity){
 		if(currentSensitivityAlgorithm == 0){
 			opserr << " SelectLoadStaticAnalysis::activateSensitivity \n";
@@ -306,7 +316,9 @@ void StaticAnalyzer::inactivateSensitivty()
 			exit(-1);
 		}
 		activeSensitivity=false;
-		SensitivityAlgorithm* zeroSensitivityAlgrithm=0;
+	//	SensitivityAlgorithm* zeroSensitivityAlgrithm=0;
+		Integrator* zeroSensitivityAlgrithm=0;
+
 		theStaticAnalysis->setSensitivityAlgorithm(zeroSensitivityAlgrithm);
 	}else{
 		if(currentSensitivityAlgorithm != 0){

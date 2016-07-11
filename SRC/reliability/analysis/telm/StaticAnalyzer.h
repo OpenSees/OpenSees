@@ -39,8 +39,11 @@ public:
 					Domain* passedStructuralDomain,
 					InitialStaticAnalysis* passedInitialStaticAnalysis,
 					ReliabilityStaticAnalysis* passedStaticAnalysis,
-					SensitivityAlgorithm* passedSensitivityAlgorithm,
-					Integrator* passedSensitivityIntegrator,
+				//	SensitivityAlgorithm* passedSensitivityAlgorithm,
+				        Integrator *passedSensitivityAlgorithm,
+				     //   SensitivityIntegrator *passedSensitivityIntegrator,//Abbas
+				       Integrator *passedSensitivityIntegrator,//Abbas
+
 					int passednstep,
 					double passeddelta,
 					int passednumLoadPatterns,
