@@ -93,38 +93,38 @@ OPS_NewStressDensityMaterial(void)
     int numArgs = OPS_GetNumRemainingInputArgs();
 
     if (numArgs < 18) {
-	    opserr << "ERROR: Insufficient mandatory arguments for StressDensity material " << endln;
-
-	    for(int i=numArgs; i < 18; i++)
-		    opserr << "Missing: " << variable[i] << endln;
-	  
-	    return 0;
+      opserr << "ERROR: Insufficient mandatory arguments for StressDensity material " << endln;
+      
+      for(int i=numArgs; i < 18; i++)
+	opserr << "Missing: " << variable[i] << endln;
+      
+      return 0;
     } else if (numArgs > 18 && numArgs < 29) {
-        opserr << "ERROR: Insufficient optional void ratio arguments for StressDensity materal" << endln;
-        opserr << "All ten SSL values and single HSL value must be specified if defaults are not used" << endln;
-
-        for(int i=numArgs; i < 29; i++)
-		    opserr << "Missing: " << variable[i] << endln;
-
-        return 0;
+      opserr << "ERROR: Insufficient optional void ratio arguments for StressDensity materal" << endln;
+      opserr << "All ten SSL values and single HSL value must be specified if defaults are not used" << endln;
+      
+      for(int i=numArgs; i < 29; i++)
+	opserr << "Missing: " << variable[i] << endln;
+      
+      return 0;
     } else if (numArgs > 29 && numArgs < 39) {
-        opserr << "ERROR: Insufficient optional SSL pressure arguments for StressDensity materal" << endln;
-        opserr << "All ten pressure values must be specified if defaults are not used" << endln;
-
-        for(int i=numArgs; i < 39; i++)
-		    opserr << "Missing: " << variable[i] << endln;
-
-        return 0;
+      opserr << "ERROR: Insufficient optional SSL pressure arguments for StressDensity materal" << endln;
+      opserr << "All ten pressure values must be specified if defaults are not used" << endln;
+      
+      for(int i=numArgs; i < 39; i++)
+	opserr << "Missing: " << variable[i] << endln;
+      
+      return 0;
     } else if (numArgs > 39 && numArgs < 45) {
-        opserr << "WARNING: Initial backstress tensor components have been specified for StressDensity mat" << endln;
-        opserr << "If this is not desired, please ensure material arguments are correct" << endln;
+      opserr << "WARNING: Initial backstress tensor components have been specified for StressDensity mat" << endln;
+      opserr << "If this is not desired, please ensure material arguments are correct" << endln;
     } else if (numArgs > 45) {
-        opserr << "ERROR: Too many input arguments specified for StressDensity material" << endln;
+      opserr << "ERROR: Too many input arguments specified for StressDensity material" << endln;
         return 0;
     }
   
 	int tag;
-	double dData[numArgs];
+	double dData[45];
 
 	int numData = 1;
 	if (OPS_GetInt(&numData, &tag) != 0) {
