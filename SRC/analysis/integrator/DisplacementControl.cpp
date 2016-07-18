@@ -57,7 +57,6 @@
 #include <LoadPatternIter.h>
 #include <Parameter.h>
 #include <ParameterIter.h>
-#include <ReliabilityDomain.h>
 #include <EquiSolnAlgo.h>
 #include <Matrix.h>
 #include <TaggedObjectStorage.h>

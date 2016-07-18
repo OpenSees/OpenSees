@@ -35,16 +35,7 @@
 
 #include <Integrator.h>
 #include <Vector.h>
-///////////////////////
-#include <ReliabilityDomain.h>
-#include <LinearSOE.h>
-#include <EquiSolnAlgo.h>
-#include <Domain.h>
-//#include <Parameter.h>
-//#include <ParameterIter.h>
 
-
-//////////////////////
  Integrator::Integrator(int clasTag)
 :MovableObject(clasTag)
 {

@@ -46,9 +46,6 @@ class Vector;
 class ID;
 class FEM_ObjectBroker;
 class Matrix;
-class Domain;
-class ReliabilityDomain;
-class EquiSolnAlgo;
 
 class Integrator: public MovableObject
 {
@@ -89,9 +86,7 @@ public:
 
  protected:
 private:
-Domain *theDomain;
-ReliabilityDomain * theReliabilityDomain;
-EquiSolnAlgo *theAlgorithm;
+
 
 int analysisTypeTag;
 bool SensitivityKey; // toactivate the sensitivity ind 
