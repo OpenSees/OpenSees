@@ -137,36 +137,32 @@ DisplacementControl::~DisplacementControl()
     // delete any vector object created
    if (deltaUhat != 0)
       delete deltaUhat;
-     if (deltaU != 0)
-      delete deltaU;
+   if (deltaU != 0)
+     delete deltaU;
    if (deltaUstep != 0)
-      delete deltaUstep;
+     delete deltaUstep;
    if (deltaUbar != 0)
-      delete deltaUbar;
+     delete deltaUbar;
    if (phat != 0)
-      delete phat;
-   opserr<<"A"<<endln;
-     if(dUhatdh !=0)
-      delete dUhatdh;
-     if(dUIJdh !=0)
-      delete dUIJdh; 
-     if(Residual !=0)
-    delete Residual;
-     opserr<<"B"<<endln;
-    if(sensU !=0)
-      delete sensU;
-    if(Residual2 !=0)
-      delete Residual2;
-    opserr<<"Before dlambdadh "<<endln;
-    if(dLAMBDAdh !=0) 
-        delete dLAMBDAdh;
-    opserr<<"After dLambdadh "<<endln;
+     delete phat;
+   if(dUhatdh !=0)
+     delete dUhatdh;
+   if(dUIJdh !=0)
+     delete dUIJdh; 
+   if(Residual !=0)
+     delete Residual;
+   if(sensU !=0)
+     delete sensU;
+   if(Residual2 !=0)
+     delete Residual2;
+   if(dLAMBDAdh !=0) 
+     delete dLAMBDAdh;
    if(dphatdh !=0)
       delete dphatdh;
 
    dLAMBDAdh=0;
    dUhatdh=0;
-    }
+}
  
    int
 DisplacementControl::newStep(void)
