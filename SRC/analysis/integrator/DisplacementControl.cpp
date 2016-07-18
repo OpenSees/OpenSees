@@ -353,7 +353,7 @@ int DisplacementControl::update(const Vector &dU)
 DisplacementControl::domainChanged(void)
 {
    // we first create the Vectors needed
-    opserr<<" this is the domain change function"<<endln;//Abbas
+  //opserr<<" this is the domain change function"<<endln;//Abbas
    AnalysisModel *theModel = this->getAnalysisModel();
    LinearSOE *theLinSOE = this->getLinearSOE(); 
     if (theModel == 0 || theLinSOE == 0) {
