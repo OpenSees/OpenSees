@@ -45,8 +45,7 @@ class NewSensitivityAlgorithm: public SensitivityAlgorithm
   NewSensitivityAlgorithm(ReliabilityDomain *passedReliabilityDomain,
 			  Domain *passedFEDomain,
 			  EquiSolnAlgo *passedAlgorithm,
-			 // Integrator *passedSensitivityIntegrator,
-			  SensitivityIntegrator *passedSensitivityIntegrator,//Abbas
+			  Integrator *passedSensitivityIntegrator,
 			  int analysisTypeTag);
   ~NewSensitivityAlgorithm();
   //	int computeSensitivities(void);
@@ -63,8 +62,8 @@ class NewSensitivityAlgorithm: public SensitivityAlgorithm
  private:
   ReliabilityDomain *theReliabilityDomain;
   EquiSolnAlgo *theAlgorithm;
-//  Integrator *theSensitivityIntegrator;
-  SensitivityIntegrator *theSensitivityIntegrator;//Abbas
+ Integrator *theSensitivityIntegrator;
+//  SensitivityIntegrator *theSensitivityIntegrator;//Abbas
   int analysisTypeTag; 
   Vector* zeroVector;
   LinearSOE *theSOE;

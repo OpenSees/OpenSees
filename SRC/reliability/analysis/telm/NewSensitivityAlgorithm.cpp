@@ -49,8 +49,7 @@ using std::setprecision;
 NewSensitivityAlgorithm::NewSensitivityAlgorithm(ReliabilityDomain *passedReliabilityDomain,
 						 Domain* passedFEDomain,
 						 EquiSolnAlgo *passedAlgorithm,
-						 Integrator *passedSensitivityIntegrator,
-                                                 //  SensitivityIntegrator *passedSensitivityIntegrator,//Abbas						
+						 Integrator *passedSensitivityIntegrator,					
 						 int passedAnalysisTypeTag)
   
 :SensitivityAlgorithm(passedFEDomain, passedAlgorithm,
