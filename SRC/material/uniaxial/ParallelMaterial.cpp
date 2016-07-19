@@ -54,6 +54,7 @@ OPS_ParallelMaterial(void)
   Vector *theFactors = 0;
 
   int argc = OPS_GetNumRemainingInputArgs();
+
   if (argc < 2) {
     opserr << "Invalid #args,  want: uniaxialMaterial Parallel $tag $tag1 $tag2 ... <-factors $fact1 $fact2 ...>" << endln;
     return 0;
@@ -62,6 +63,7 @@ OPS_ParallelMaterial(void)
   // count the number of materials
   int numMats = -1;
   int gotFactors = 0;
+
   while (argc > 0)  {
     const char *argvLoc = OPS_GetString();
     if (strcmp(argvLoc, "-factors") == 0) {
@@ -79,6 +81,7 @@ OPS_ParallelMaterial(void)
   int *iData = new int[numData];
   UniaxialMaterial **theMats = new UniaxialMaterial *[numMats];
   double *dData = 0;
+
   if (gotFactors) {
       dData = new double[numMats];
       theFactors = new Vector(dData, numMats);
@@ -108,7 +111,7 @@ OPS_ParallelMaterial(void)
       return 0;
     }
   }
-  
+
   // Parsing was successful, allocate the material
   theMaterial = new ParallelMaterial(iData[0], numMats, theMats, theFactors);
   if (theMaterial == 0) {
@@ -118,6 +121,9 @@ OPS_ParallelMaterial(void)
   
   delete [] iData;
   delete [] theMats;
+
+  if (theFactors != 0) 
+    delete theFactors;
   
   return theMaterial;
 }
@@ -128,10 +134,10 @@ ParallelMaterial::ParallelMaterial(
 				 int tag, 
 				 int num, 
 				 UniaxialMaterial **theMaterialModels,
-                 Vector *factors)
+				 Vector *factors)
 :UniaxialMaterial(tag, MAT_TAG_ParallelMaterial),
  trialStrain(0.0), trialStrainRate(0.0), numMaterials(num),
- theModels(0), theFactors(factors)
+ theModels(0), theFactors(0)
 {
     // create an array (theModels) to store copies of the MaterialModels
     theModels = new UniaxialMaterial *[num];
@@ -146,6 +152,11 @@ ParallelMaterial::ParallelMaterial(
     // of the UniaxialMaterial stored in theMaterialModels
     for (int i=0; i<num; i++) {
 	theModels[i] = theMaterialModels[i]->getCopy();
+    }
+
+    // copy the factors
+    if (factors != 0) {
+      theFactors = new Vector(*factors);
     }
 }
 
@@ -324,20 +335,19 @@ ParallelMaterial::revertToStart(void)
 UniaxialMaterial *
 ParallelMaterial::getCopy(void)
 {
-    ParallelMaterial *theCopy = new 
-      ParallelMaterial(this->getTag(), numMaterials, theModels, theFactors);
-
-    theCopy->trialStrain = trialStrain;
-    theCopy->trialStrainRate = trialStrainRate;
-
-    return theCopy;
+  ParallelMaterial *theCopy = new 
+    ParallelMaterial(this->getTag(), numMaterials, theModels, theFactors);
+  
+  theCopy->trialStrain = trialStrain;
+  theCopy->trialStrainRate = trialStrainRate;
+  
+  return theCopy;
 }
 
 
 int 
 ParallelMaterial::sendSelf(int cTag, Channel &theChannel)
 {
-
     int res = 0;
 
     static ID data(3);
@@ -477,7 +487,8 @@ ParallelMaterial::Print(OPS_Stream &s, int flag)
       s << " ";
       theModels[i]->Print(s, flag);
     }
-    
+    if (theFactors != 0)
+      opserr << " Factors: " << *theFactors;
 }
 
 Response*
