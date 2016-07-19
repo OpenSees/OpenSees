@@ -90,7 +90,7 @@ StaticAnalysis::StaticAnalysis(Domain &the_Domain,
 
     // AddingSensitivity:BEGIN ////////////////////////////////////
 #ifdef _RELIABILITY
-    //theSensitivityAlgorithm = 0;
+
 #endif
     // AddingSensitivity:END //////////////////////////////////////
 }    
@@ -107,43 +107,30 @@ void
 StaticAnalysis::clearAll(void)
 {
     // invoke the destructor on all the objects in the aggregation
-    opserr<<"StaticAnalysis: clear all function"<<endln;
   if (theAnalysisModel != 0)     
     delete theAnalysisModel;
   if (theConstraintHandler != 0) 
     delete theConstraintHandler;
    if (theDOF_Numberer != 0)      
     delete theDOF_Numberer;
-   opserr<<"StaticAnalysis AAAA"<<endln;
-    if (theIntegrator != 0) 
-    delete theIntegrator;
-    opserr<<"StaticAnalysis BBBB"<<endln;
-    if (theAlgorithm != 0)  
-    delete theAlgorithm;
-  if (theSOE != 0)
-    delete theSOE;
+   if (theIntegrator != 0) 
+     delete theIntegrator;
+   if (theAlgorithm != 0)  
+     delete theAlgorithm;
+   if (theSOE != 0)
+     delete theSOE;
    if (theTest != 0)
-    delete theTest;
+     delete theTest;
    if (theEigenSOE != 0)
-    delete theEigenSOE;
- //  if(theSensitivityAlgorithm !=0)
-  //    delete theSensitivityAlgorithm;
-  theAnalysisModel =0;
-  theConstraintHandler =0;
-  theDOF_Numberer =0;
-  theIntegrator =0;
-  theAlgorithm =0;
-  theSOE =0;
-  theEigenSOE =0;
-  theTest = 0;
-// theSensitivityAlgorithm=0;
-  // AddingSensitivity:BEGIN ////////////////////////////////////
-#ifdef _RELIABILITY
- // delete theSensitivityAlgorithm;
-//  theSensitivityAlgorithm =0;
-  theIntegrator=0;
-  #endif
-  // AddingSensitivity:END //////////////////////////////////////
+     delete theEigenSOE;
+   theAnalysisModel =0;
+   theConstraintHandler =0;
+   theDOF_Numberer =0;
+   theIntegrator =0;
+   theAlgorithm =0;
+   theSOE =0;
+   theEigenSOE =0;
+   theTest = 0;
 }    
 
 
@@ -211,8 +198,6 @@ StaticAnalysis::analyze(int numSteps)
 
 #ifdef _RELIABILITY
 
-
-
 //	if (theSensitivityAlgorithm != 0) {
 //	opserr<<"Static analysiss:reliability is defined"<<endln;
 
@@ -275,7 +260,6 @@ StaticAnalysis::eigen(int numMode, bool generalized, bool findSmallest)
 	return -1;
       }	
     }
-
 
     //
     // zero A and M
@@ -477,17 +461,18 @@ StaticAnalysis::domainChanged(void)
 
 #ifdef _RELIABILITY
 int 
-StaticAnalysis::setSensitivityAlgorithm(/*SensitivityAlgorithm*/ Integrator *passedSensitivityAlgorithm)
+StaticAnalysis::setSensitivityAlgorithm(Integrator *passedSensitivityAlgorithm)
 {
-    int result = 0;
-
-    // invoke the destructor on the old one
- //  if (theSensitivityAlgorithm != 0) {
+  opserr << "StaticAnalysis::setSensitivityAlgorithm() - DOES NOTHING!\n";
+  int result = 0;
+  
+  // invoke the destructor on the old one
+  //  if (theSensitivityAlgorithm != 0) {
   //    delete theSensitivityAlgorithm;
   //  }
-    
-    //theSensitivityAlgorithm = passedSensitivityAlgorithm;
-    
+  
+  //theSensitivityAlgorithm = passedSensitivityAlgorithm;
+  
     return 0;
 }
 #endif

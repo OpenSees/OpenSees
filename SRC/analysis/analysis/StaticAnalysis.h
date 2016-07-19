@@ -106,17 +106,10 @@ class StaticAnalysis: public Analysis
     StaticIntegrator    *theIntegrator;
     ConvergenceTest     *theTest;
     int domainStamp;
-   
 
-    // AddingSensitivity:BEGIN ///////////////////////////////
 #ifdef _RELIABILITY
-//    SensitivityAlgorithm *theSensitivityAlgorithm;
-      //StaticIntegrator  *theSensitivityAlgorithm;
 
 #endif
-    // AddingSensitivity:END ///////////////////////////////
-
-
 };
 
 #endif
