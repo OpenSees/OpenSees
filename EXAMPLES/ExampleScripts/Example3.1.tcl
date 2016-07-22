@@ -166,7 +166,7 @@ initialize
 # ------------------------------
 
 # Create the system of equation, a sparse solver with partial pivoting
-system Mumps
+system ProfileSPD
 
 # Create the constraint handler, the transformation method
 constraints Transformation
