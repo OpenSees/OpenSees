@@ -387,9 +387,9 @@ int TripleFrictionPendulum::revertToStart()
     E3 = E4 = 3*Fy1/Uy;
     E5 = E6 = 3*Fy1/Uy;
     
-    double E1p = 1/(2*L1);
-    double E3p = 1/(L2 - L1);
-    double E5p = 1/(L3 - L1);
+    double E1p = 1.0/(2.0*L1);
+    double E3p = 1.0/(L2 - L1);
+    double E5p = 1.0/(L3 - L1);
     
     H1 = E1*E1p/(E1 - E1p);
     H3 = E3*E3p/(E3 - E3p);
@@ -485,7 +485,7 @@ int TripleFrictionPendulum::update()
     // vertical force for computing friction
     if (Fvert >= 0.0) {
         Kvert = theMaterials[0]->getInitialTangent();
-        if (Fvert > 0.0) {
+        if (Fvert > Kvert*DBL_EPSILON) {
             theMaterials[0]->setTrialStrain(DzOld, 0.0);
             Kvert = Kvt;
         }
@@ -641,7 +641,18 @@ const Matrix& TripleFrictionPendulum::getInitialStiff()
 
 const Matrix& TripleFrictionPendulum::getDamp()
 {
+    // zero the matrix
     eleD.Zero();
+    
+    // add damping tangent from materials
+    eleD(2,2) = eleD(8,8) = theMaterials[0]->getDampTangent();
+    eleD(2,8) = eleD(8,2) = -eleD(2,2);
+    eleD(3,3) = eleD(9,9) = theMaterials[2]->getDampTangent();
+    eleD(3,9) = eleD(9,3) = -eleD(3,3);
+    eleD(4,4) = eleD(10,10) = theMaterials[3]->getDampTangent();
+    eleD(4,10) = eleD(10,4) = -eleD(4,4);
+    eleD(5,5) = eleD(11,11) = theMaterials[1]->getDampTangent();
+    eleD(5,11) = eleD(11,5) = -eleD(5,5);
     
     return eleD;
 }
@@ -920,9 +931,24 @@ int TripleFrictionPendulum::displaySelf(Renderer &theViewer,
 
 void TripleFrictionPendulum::Print(OPS_Stream &s, int flag)
 {
-    s << "Element: " << this->getTag(); 
-    s << ". Type: TripleFrictionPendulum,  iNode: " << externalNodes(0);
-    s << ", jNode: " << externalNodes(1);
+    if (flag == 0)  {
+        // print everything
+        s << "Element: " << this->getTag(); 
+        s << "  type: TripleFrictionPendulum, iNode: " << externalNodes(0);
+        s << ", jNode: " << externalNodes(1) << endln;
+        s << "  FrictionModels: " << theFrnMdls[0]->getTag() << ", ";
+        s << theFrnMdls[1]->getTag() << ", " << theFrnMdls[2]->getTag() << endln;
+        s << "  Materials: " << theMaterials[0]->getTag() << ", ";
+        s << theMaterials[1]->getTag() << ", " << theMaterials[2]->getTag();
+        s << ", " << theMaterials[3]->getTag() << endln;
+        s << "  L1: " << L1 << ", L2: " << L2 << ", L3: " << L3 << endln;
+        s << "  d1: " << Ubar1 << ", d2: " << Ubar2 << ", d3: " << Ubar3 << endln;
+        s << "  uy: " << Uy << ", kvt: " << Kvt << ",  minFv: " << MinFv << endln;
+        // determine resisting forces in global system
+        s << "  resisting force: " << this->getResistingForce() << endln;
+    } else if (flag == 1)  {
+        // does nothing
+    }
 }
 
 
@@ -1129,22 +1155,17 @@ int TripleFrictionPendulum::getResponse(int responseID, Information &eleInfo)
 void TripleFrictionPendulum::CircularElasticGap(Matrix &kj, Vector &fj, double Ej, double Gapj, Vector di)
 {
     double r = di.Norm();
-    if (r==0)
-    {
+    if (r == 0) {
         kj.Zero();
         fj.Zero();
-    }
-    else
-    {
+    } else {
         double sn = di(1)/r;
         double cs = di(0)/r;
-        if (r <= Gapj)
-        {
+        
+        if (r <= Gapj) {
             kj.Zero();
             fj.Zero();
-        }
-        else
-        {
+        } else {
             kj(0,0) = Ej*(1 - Gapj/r*sn*sn);
             kj(0,1) = kj(1,0) = Ej*Gapj/r*sn*cs;
             kj(1,1) = Ej*(1 - Gapj/r*cs*cs);
