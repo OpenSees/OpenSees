@@ -192,7 +192,9 @@ int ElasticMultiLinear::setTrialStrain(double strain, double strainRate)
     
     // get the stress for the selected interval
     trialStress = sig1 + trialTangent*(trialStrain-eps1) + eta*trialStrainRate;
-    
+    if (fabs(trialStress) < trialTangent*DBL_EPSILON)
+        trialStress = 0.0;
+
     return 0;
 }
 
