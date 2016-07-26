@@ -538,8 +538,7 @@ double CapPlasticity::Newton_k(double tol, int mode /*, double normS, double I1,
     }//while
     
     if (fabs(f) > tol) {
-      opserr<< "Fatal : Newton algorithm does not converge, in CapPlasticity, mode =0! ";
-	 // opserr<< "Warning: errors in CapPlasticity::Newton_k"<<<" "<"mode="<<mode<<endln;	
+      opserr<< "Fatal : Newton algorithm does not converge, in CapPlasticity, mode =0! \n";
      // exit(-1);
     }
     solution = k;
@@ -567,8 +566,9 @@ double CapPlasticity::Newton_k(double tol, int mode /*, double normS, double I1,
   }  // mode = 1,2,5-2
   
  if (solution <0 ) {
-   opserr<<"Warning: CapPlasticity:: Newton_k, solution <0! mode is " <<mode<< "! k should be adjusted to CHardening_k! "endln;    // --- April 2013. 
- 	solution = CHardening_k;         // change to stress I1 according to the definition of I1_p, 2013-6-14 
+   opserr<<"Warning: CapPlasticity:: Newton_k, solution <0! mode is " << mode 
+	 << "! k should be adjusted to CHardening_k! " << endln;    // --- April 2013. 
+   solution = CHardening_k;         // change to stress I1 according to the definition of I1_p, 2013-6-14 
  
  }
 	
@@ -1031,7 +1031,7 @@ const Vector & CapPlasticity::getStress(void) {
   computeConsistentTangent(deltGammar1, deltGammar2, deltGammar3, mode); 
   
   
-  theMode = mode;  //  ÎªÁË±£´æmodeµ½³ÉÔ±º¯Êý£¬ÎªÁËgetTangent()µ÷ÊÔÓÃ¡£
+  theMode = mode;  //  ÃŽÂªÃÃ‹Â±Â£Â´Ã¦modeÂµÂ½Â³Ã‰Ã”Â±ÂºÂ¯ÃŠÃ½Â£Â¬ÃŽÂªÃÃ‹getTangent()ÂµÃ·ÃŠÃ”Ã“ÃƒÂ¡Â£
   
   
   if (ndm==3){
