@@ -1423,7 +1423,7 @@ wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   theStaticAnalysis =0;
   theTransientAnalysis =0;    
   theVariableTimeStepTransientAnalysis =0;   
-  theSensitivityAlgorithm=0; 
+  //  theSensitivityAlgorithm=0; 
 #ifdef _PFEM
   thePFEMAnalysis = 0;
 #endif
@@ -3060,26 +3060,27 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     
     // now must determine the type of solver to create from rest of args
     int factLVALUE = 10;
-	int factorOnce=0;
-	int printTime = 0;
-	int count = 2;
-	while (count < argc) {
+    int factorOnce=0;
+    int printTime = 0;
+    int count = 2;
+    while (count < argc) {
       if ((strcmp(argv[count],"-lValueFact") == 0) || (strcmp(argv[count],"-lvalueFact") == 0) || (strcmp(argv[count],"-LVALUE") == 0)) {
-		 if (Tcl_GetInt(interp, argv[count+1], &factLVALUE) != TCL_OK)
-			return TCL_ERROR;
-	     count++;
-	  } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
-	     factorOnce = 1;
+	if (Tcl_GetInt(interp, argv[count+1], &factLVALUE) != TCL_OK)
+	  return TCL_ERROR;
+	count++;
+      } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
+	factorOnce = 1;
       } else if ((strcmp(argv[count],"-printTime") == 0) || (strcmp(argv[count],"-time") ==0 )) {
-	     printTime = 1;
+	printTime = 1;
       }
       count++;
     }
-  
+    
     UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
-    //theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
+    // theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
     theSOE = new UmfpackGenLinSOE(*theSolver);      
-  }	  
+  }	
+  
 #ifdef _ITPACK
 //  else if (strcmp(argv[1],"Itpack") == 0) {
 //    
@@ -7721,19 +7722,46 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     opserr << "WARNING modalDamping ?factor - not enough arguments to command\n";
     return TCL_ERROR;
   }
-  if (numEigen == 0 || theEigenSOE == 0) {
-    opserr << "WARINING - modalDmping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
-  }
-  double factor;
-  //  double numModes;
-  if (Tcl_GetDouble(interp, argv[1], &factor) != TCL_OK) {
-    opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
-    return TCL_ERROR;	        
-  }        
-  Vector modalDampingValues(numEigen);
-  for (int i=0; i<numEigen; i++)
-    modalDampingValues[i] = factor;
 
+  if (numEigen == 0 || theEigenSOE == 0) {
+    opserr << "WARNING - modalDmping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+  }
+
+  int numModes = argc - 1;
+  double factor;
+  Vector modalDampingValues(numEigen);
+
+  if (numModes != 1 && numModes != numEigen) {
+    opserr << "WARNING modalDmping - same #damping factors as modes must be specified\n";
+    opserr << "                    - same damping ratio will be applied to all\n";
+  }
+
+  // 
+  // read in values and set factors
+  //
+
+  if (numModes == numEigen) {
+
+    for (int i=0; i<numEigen; i++) {
+      if (Tcl_GetDouble(interp, argv[1+i], &factor) != TCL_OK) {
+	opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+	return TCL_ERROR;	        
+      }        
+      modalDampingValues[i] = factor;    
+    } 
+
+  } else {
+
+    if (Tcl_GetDouble(interp, argv[1], &factor) != TCL_OK) {
+      opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+      return TCL_ERROR;	        
+    }        
+
+    for (int i=0; i<numEigen; i++)
+      modalDampingValues[i] = factor;
+  }
+
+  // set factors in domain
   theDomain.setModalDampingFactors(&modalDampingValues, true);
 
   return TCL_OK;
@@ -7746,21 +7774,50 @@ modalDampingQ(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
     opserr << "WARNING modalDamping ?factor - not enough arguments to command\n";
     return TCL_ERROR;
   }
+
   if (numEigen == 0 || theEigenSOE == 0) {
     opserr << "WARINING - modalDmping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
   }
-  double factor;
-  //  double numModes;
-  if (Tcl_GetDouble(interp, argv[1], &factor) != TCL_OK) {
-    opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
-    return TCL_ERROR;	        
-  }        
+
+
+  int numModes = argc - 1;
+  double factor = 0;
   Vector modalDampingValues(numEigen);
+
+  if (numModes != 1 && numModes != numEigen) {
+    opserr << "WARNING modalDmping - same #damping factors as modes must be specified\n";
+    opserr << "                    - same damping ratio will be applied to all";
+  }
+
+  // 
+  // read in values and set factors
+  //
+
+  if (numModes == numEigen) {
+
+    // read in all factors one at a time
+    for (int i=0; i<numEigen; i++) {
+      if (Tcl_GetDouble(interp, argv[1+i], &factor) != TCL_OK) {
+	opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+	return TCL_ERROR;	        
+      }        
+      modalDampingValues[i] = factor;    
+    } 
+
+  } else {
+
+    //  read in one & set all factors to that value
+    if (Tcl_GetDouble(interp, argv[1], &factor) != TCL_OK) {
+      opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read betaK? \n";
+      return TCL_ERROR;	        
+    } 
+
     for (int i=0; i<numEigen; i++)
-    modalDampingValues[i] = factor;
+      modalDampingValues[i] = factor;
+  } 
 
+  // set factors in domain
   theDomain.setModalDampingFactors(&modalDampingValues, false);
-
   return TCL_OK;
 }
 
