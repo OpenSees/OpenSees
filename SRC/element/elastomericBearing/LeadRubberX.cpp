@@ -59,7 +59,7 @@ Vector LeadRubberX::theVector(12);
 
 
 static int numMyBearing = 0;
-static int tag = 0;	// Tag to identify if bearing has failed in buckling
+static int tag = 0;  // Tag to identify if bearing has failed in buckling
 void *OPS_LeadRubberX(void)
 {
     // print out a message about who wrote this element & any copyright info wanted
@@ -497,7 +497,8 @@ int LeadRubberX::commitState()
     // compression
     if (tag2 == 1) {
         double Delta = 2.0*acos(uh/D2);   // this becomes undefined for uh/D2 > 1.0
-        Ar = (D2*D2/4.0)*(Delta-sin(Delta));
+        //Ar = (D2*D2/4.0)*(Delta-sin(Delta));
+        Ar = ((D2+tc)*(D2+tc) - D1*D1)/4.0*(Delta-sin(Delta));  // A does not include lead core
         if (Ar/A < 0.2 || uh/D2 >= 1.0) {
             Fcrn = 0.2*Fcr;
         } else {
@@ -512,14 +513,15 @@ int LeadRubberX::commitState()
     // horizontal motion
     if (tag3 == 1) {
         ke = (G*A/Tr)*(1.0-pow(qb(0)/Fcrn,2));
-        // if (ke<0) ke = 0.01*(G*A/Tr);  // a fraction of ke to avoid convergance issues
-        // if (ke<0) opserr << "Negative horizontal stiffness\n";
+        //if (ke < 0) {
+        //    ke = 0.01*(G*A/Tr);  // a fraction of ke to avoid convergence issues
+        //    opserr << "WARNING LeadRubberX::commitState() - Negative horizontal stiffness\n";
+        //}
     }
     
     // lead core heating
     TL_commit = TL_trial;
     tCommit = (this->getDomain())->getCurrentTime();
-    
     if (tag5 == 1) {
         qYield = qYield0*exp(-0.0069*TL_commit);
     }
