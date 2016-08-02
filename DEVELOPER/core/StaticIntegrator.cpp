@@ -45,9 +45,19 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
+#include <Domain.h>
+#include <Node.h>
+#include <FE_Element.h>
+#include <FE_EleIter.h>
+#include <DOF_Group.h>
+#include <DOF_GrpIter.h>
+#include <LoadPattern.h>
+#include <LoadPatternIter.h>
+
 StaticIntegrator::StaticIntegrator(int clasTag)
-:IncrementalIntegrator(clasTag)
+ :IncrementalIntegrator(clasTag)
 {
+   
     // for subclasses
 }
 
@@ -58,11 +68,10 @@ StaticIntegrator::~StaticIntegrator()
 int
 StaticIntegrator::formEleTangent(FE_Element *theEle)
 {
-    // only elements stiffness matrix needed
-
   if (statusFlag == CURRENT_TANGENT) {
     theEle->zeroTangent();
     theEle->addKtToTang();
+    
   } else if (statusFlag == INITIAL_TANGENT) {
     theEle->zeroTangent();
     theEle->addKiToTang();
@@ -77,7 +86,7 @@ StaticIntegrator::formEleResidual(FE_Element *theEle)
     // only elements residual needed
     theEle->zeroResidual();
     theEle->addRtoResidual();
-    return 0;
+         return 0;
 }    
 
 int
@@ -95,6 +104,21 @@ StaticIntegrator::formNodUnbalance(DOF_Group *theDof)
     // only nodes unbalance need be added
     theDof->zeroUnbalance();
     theDof->addPtoUnbalance();
+    return 0;
+}    
+
+
+int
+StaticIntegrator::formEleTangentSensitivity(FE_Element *theEle,int gradNumber)
+{
+ 
+  if (statusFlag == CURRENT_TANGENT) {
+    theEle->zeroTangent();
+  } else if (statusFlag == INITIAL_TANGENT) {
+    theEle->zeroTangent();
+    theEle->addKiToTang();
+  } 
+  
     return 0;
 }    
 

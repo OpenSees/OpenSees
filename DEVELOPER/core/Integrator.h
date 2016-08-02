@@ -40,17 +40,17 @@
 
 #include <MovableObject.h>
 #include <OPS_Globals.h>
-
 class FE_Element;
 class DOF_Group;
 class Vector;
 class ID;
 class FEM_ObjectBroker;
+class Matrix;
 
 class Integrator: public MovableObject
 {
 public:
-    Integrator(int classTag);
+     Integrator(int classTag);
     virtual ~Integrator();
     
     virtual int domainChanged(void);
@@ -71,11 +71,26 @@ public:
     virtual int formIndependentSensitivityRHS();
     virtual int saveSensitivity   (const Vector &v, int gradNum, int numGrads);
     virtual int commitSensitivity (int gradNum, int numGrads);
-    
-protected:
-    
+    ////////////////////////////////Abbas//////////////////
+    virtual int formEleTangentSensitivity(FE_Element *theEle, int gradNumber);  
+    virtual double getLambdaSensitivity(int gradNumber);
+    virtual double dLambdadh();
+    virtual int computeSensitivities();//Abbas
+    int sensitivityDomainChanged();//Abbass
+    bool shouldComputeAtEachStep(void);
+    bool newAlgorithm(void) {return true;};
+    virtual  bool computeSensitivityAtEachIteration();
+    bool activateSensitivityKey();
+    bool activateSensitivity( ){return SensitivityKey;}; 
+     ///////////////////////////////Abbas//////////////////
+
+ protected:
 private:
-    
+
+
+int analysisTypeTag;
+bool SensitivityKey; // toactivate the sensitivity ind 
+
 };
 
 #endif

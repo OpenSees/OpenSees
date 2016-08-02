@@ -18,8 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 6238 $
-// $Date: 2016-03-14 18:46:15 -0700 (Mon, 14 Mar 2016) $
+// $Revision: 6262 $
+// $Date: 2016-05-04 09:10:39 -0700 (Wed, 04 May 2016) $
 // $URL: svn://peera.berkeley.edu/usr/local/svn/OpenSees/trunk/SRC/classTags.h $
 
 // Written: fmk
@@ -295,6 +295,7 @@
 #define SECTION_INTEGRATION_TAG_RC 2
 #define SECTION_INTEGRATION_TAG_RCT 3
 #define SECTION_INTEGRATION_TAG_RCTUM 4
+#define SECTION_INTEGRATION_TAG_RCCIRCULAR 5
 
 #define ND_TAG_WrapperNDMaterial		9
 #define ND_TAG_ElasticIsotropic			10
@@ -330,7 +331,7 @@
 #define ND_TAG_ConcreteS                          41
 #define ND_TAG_MaterialCMM                        42
 #define ND_TAG_FSAM                               43
-
+#define ND_TAG_PlasticDamageConcrete3d            44
 
 #define ND_TAG_FluidSolidPorousMaterial        100
 #define ND_TAG_PressureDependMultiYield		101
@@ -920,6 +921,7 @@
 #define OPS_STREAM_TAGS_TCP_Stream              8
 #define OPS_STREAM_TAGS_ChannelStream           9
 #define OPS_STREAM_TAGS_DataTurbineStream      10
+#define OPS_STREAM_TAGS_DataFileStreamAdd      11
 
 
 #define DomDecompALGORITHM_TAGS_DomainDecompAlgo 1
