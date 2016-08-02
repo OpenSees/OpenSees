@@ -220,7 +220,6 @@ LoadControl::formEleResidual(FE_Element* theEle)
     } else {
 	theEle->zeroResidual();
 	theEle->addResistingForceSensitivity(gradNumber);
-//	opserr<<" dprdh "<<theEle<<endln;//Abbas
     }
     return 0;
 }
@@ -235,23 +234,21 @@ int
 LoadControl::formSensitivityRHS(int passedGradNumber)
 {
     sensitivityFlag = 1;
- //  this->getK();//Abbas 
+
     // Set a couple of data members
     gradNumber = passedGradNumber;
-  // opserr<<" passed gradient number "<<passedGradNumber<<endln;//Abbas..........
+
     // get model
- AnalysisModel* theAnalysisModel = this->getAnalysisModel();
+    AnalysisModel* theAnalysisModel = this->getAnalysisModel();
     LinearSOE* theSOE = this->getLinearSOE();
 
     // Loop through elements
     FE_Element *elePtr;
     FE_EleIter &theEles = theAnalysisModel->getFEs();   
     while((elePtr = theEles()) != 0) {
-    theSOE->addB(  elePtr->getResidual(this),  elePtr->getID()  );
-    //opserr<<" getID "<<elePtr->getID()<<endln;//Abbas.............................
-    //opserr<<"dPrdh= "<<elePtr->getResidual(this)<<endln;//Abbas...............
+      theSOE->addB(  elePtr->getResidual(this),  elePtr->getID()  );
     }
- //  opserr<<"dPrdh = "<<theSOE->getB()<<endln;
+
     // Loop through the loadPatterns and add the dPext/dh contributions
     static Vector oneDimVectorWithOne(1);
     oneDimVectorWithOne(0) = 1.0;
@@ -261,21 +258,18 @@ LoadControl::formSensitivityRHS(int passedGradNumber)
     DOF_Group *aDofGroup;
     int nodeNumber, dofNumber, relevantID, i, sizeRandomLoads, numRandomLoads;
     LoadPattern *loadPatternPtr;
-  //  opserr<<" nodeNumber "<<nodeNumber<<"dofNumber "<<dofNumber<<relevantID<<endln;//Abbas.....
+
     Domain *theDomain = theAnalysisModel->getDomainPtr();
     LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
     while((loadPatternPtr = thePatterns()) != 0) {
 	const Vector &randomLoads = loadPatternPtr->getExternalForceSensitivity(gradNumber);
-//	opserr<<" ExternalLoad sensitivity "<<loadPatternPtr->getExternalForceSensitivity(gradNumber)<<endln;//Abbas
 	sizeRandomLoads = randomLoads.Size();
-//	opserr<<"sizeRandomLoad "<<sizeRandomLoads<<endln;//Abbas
 	if (sizeRandomLoads == 1) {
 	    // No random loads in this load pattern
 	}
 	else {
 	    // Random loads: add contributions to the 'B' vector
 	    numRandomLoads = (int)(sizeRandomLoads/2);
-	    //opserr<<" is it possible to create random load "<<numRandomLoads<<endln;//Abbas
 	    for (i=0; i<numRandomLoads*2; i=i+2) {
 		nodeNumber = (int)randomLoads(i);
 		dofNumber = (int)randomLoads(i+1);
@@ -324,7 +318,6 @@ LoadControl::commitSensitivity(int gradNum, int numGrads)
     FE_EleIter &theEles = theAnalysisModel->getFEs();    
     while((elePtr = theEles()) != 0) {
 	elePtr->commitSensitivity(gradNum, numGrads);
-	//opserr<<"commitSensitivity "<<elePtr->commitSensitivity(gradNum,numGrads)<<endln;//Abbas
     }
     
     return 0;
@@ -396,18 +389,17 @@ LoadControl::computeSensitivities(void)
 
 	// Form the part of the RHS which are indepent of parameter
 	this->formIndependentSensitivityRHS();
-	 AnalysisModel *theModel = this->getAnalysisModel();  //Abbas 
-      Domain *theDomain=theModel->getDomainPtr();//Abbas
+	AnalysisModel *theModel = this->getAnalysisModel();  
+	Domain *theDomain=theModel->getDomainPtr();
 	ParameterIter &paramIter = theDomain->getParameters();
-//	opserr<<" get parameters "<<theDomain->getParameters()<<endln;//Abbas.......
+	
 	Parameter *theParam;
 	// De-activate all parameters
 	while ((theParam = paramIter()) != 0)
 	  theParam->activate(false);
-
+	
 	// Now, compute sensitivity wrt each parameter
 	int numGrads = theDomain->getNumParameters();
-	//opserr<<"the numGrads is "<<numGrads<<endln;//Abbas...............................
 	paramIter = theDomain->getParameters();
 	
 	while ((theParam = paramIter()) != 0) {
@@ -420,7 +412,7 @@ LoadControl::computeSensitivities(void)
 
 	  // Get the grad index for this parameter
 	  int gradIndex = theParam->getGradIndex();
-       //   opserr<<"gradNumber = "<<gradIndex<<endln;
+
 	  // Form the RHS
 	  this->formSensitivityRHS(gradIndex);
          

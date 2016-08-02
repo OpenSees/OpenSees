@@ -68,17 +68,11 @@ StaticIntegrator::~StaticIntegrator()
 int
 StaticIntegrator::formEleTangent(FE_Element *theEle)
 {
-   
-  // opserr<<" this is form ELE tangent function "<<endln;//Abbas
-    // only elements stiffness matrix needed
-
   if (statusFlag == CURRENT_TANGENT) {
-  //   opserr<<" Am I in the current tangent"<<endln;//Abbas
     theEle->zeroTangent();
     theEle->addKtToTang();
     
   } else if (statusFlag == INITIAL_TANGENT) {
-    // opserr<<" Am I in the initial tangent"<<endln;//Abbas
     theEle->zeroTangent();
     theEle->addKiToTang();
   } 
@@ -113,17 +107,13 @@ StaticIntegrator::formNodUnbalance(DOF_Group *theDof)
     return 0;
 }    
 
-//////////////////////////////////////////Abbas////////////////////
 
 int
 StaticIntegrator::formEleTangentSensitivity(FE_Element *theEle,int gradNumber)
 {
  
   if (statusFlag == CURRENT_TANGENT) {
-    //  opserr<<" Am I in the current tangent sensitivity"<<endln;//Abbas
     theEle->zeroTangent();
-    //theEle->addKtToTangSensitivity(gradNumber,1.0);
-    
   } else if (statusFlag == INITIAL_TANGENT) {
     theEle->zeroTangent();
     theEle->addKiToTang();
@@ -131,4 +121,4 @@ StaticIntegrator::formEleTangentSensitivity(FE_Element *theEle,int gradNumber)
   
     return 0;
 }    
-////////////////////////////////////////////Abbas//////////////////
+

@@ -60,7 +60,7 @@ class StaticIntegrator : public IncrementalIntegrator
     virtual int formEleResidual(FE_Element *theEle);
     virtual int formNodTangent(DOF_Group *theDof);        
     virtual int formNodUnbalance(DOF_Group *theDof);    
-   virtual int formEleTangentSensitivity(FE_Element *theEle,int gradNumber);//Abbas 
+   virtual int formEleTangentSensitivity(FE_Element *theEle,int gradNumber); 
    
    virtual int newStep(void) =0;    
 
