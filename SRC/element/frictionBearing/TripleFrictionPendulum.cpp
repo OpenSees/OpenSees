@@ -42,6 +42,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
+
 
 // initialize the class wide variables
 Matrix TripleFrictionPendulum::eleK(12,12);
