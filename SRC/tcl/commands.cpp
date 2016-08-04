@@ -3955,7 +3955,35 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
               return TCL_ERROR;
       }
 
-  } else if (strcmp(argv[1],"FixedNumIter") != 0) {
+  } else if (strcmp(argv[1],"FixedNumIter") == 0) {
+
+    if (argc == 3) {
+      if (Tcl_GetInt(interp, argv[2], &numIter) != TCL_OK)	
+	return TCL_ERROR;			  
+    } else if (argc == 4) {
+      if (Tcl_GetInt(interp, argv[2], &numIter) != TCL_OK)	
+	return TCL_ERROR;			  
+      if (Tcl_GetInt(interp, argv[3], &printIt) != TCL_OK)	
+	return TCL_ERROR;			  
+    } else if (argc == 5) {
+      if (Tcl_GetInt(interp, argv[2], &numIter) != TCL_OK)	
+	return TCL_ERROR;			  
+      if (Tcl_GetInt(interp, argv[3], &printIt) != TCL_OK)	
+	return TCL_ERROR;			  
+      if (Tcl_GetInt(interp, argv[4], &normType) != TCL_OK)	
+	return TCL_ERROR;			  		  
+    } else if (argc == 6) {
+      if (Tcl_GetInt(interp, argv[2], &numIter) != TCL_OK)	
+	return TCL_ERROR;			  
+      if (Tcl_GetInt(interp, argv[3], &printIt) != TCL_OK)	
+	return TCL_ERROR;			  
+      if (Tcl_GetInt(interp, argv[4], &normType) != TCL_OK)	
+	return TCL_ERROR;			  		  
+      if (Tcl_GetDouble(interp, argv[5], &maxTol) != TCL_OK)	
+	return TCL_ERROR;			  		  
+    }    
+
+  } else {
     if (argc == 4) {
       if (Tcl_GetDouble(interp, argv[2], &tol) != TCL_OK)	
 	return TCL_ERROR;			  
@@ -3986,38 +4014,12 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;			  
       if (Tcl_GetInt(interp, argv[5], &normType) != TCL_OK)	
 	return TCL_ERROR;
-      if (Tcl_GetInt(interp, argv[6], &maxIncr) != TCL_OK)	
+      if (Tcl_GetDouble(interp, argv[6], &maxTol) != TCL_OK)	
 	return TCL_ERROR;		  
     }
-
-  } else {
-    if (argc == 3) {
-      if (Tcl_GetInt(interp, argv[2], &numIter) != TCL_OK)	
-	return TCL_ERROR;			  
-    } else if (argc == 4) {
-      if (Tcl_GetInt(interp, argv[2], &numIter) != TCL_OK)	
-	return TCL_ERROR;			  
-      if (Tcl_GetInt(interp, argv[3], &printIt) != TCL_OK)	
-	return TCL_ERROR;			  
-    } else if (argc == 5) {
-      if (Tcl_GetInt(interp, argv[2], &numIter) != TCL_OK)	
-	return TCL_ERROR;			  
-      if (Tcl_GetInt(interp, argv[3], &printIt) != TCL_OK)	
-	return TCL_ERROR;			  
-      if (Tcl_GetInt(interp, argv[4], &normType) != TCL_OK)	
-	return TCL_ERROR;			  		  
-    } else if (argc == 6) {
-      if (Tcl_GetInt(interp, argv[2], &numIter) != TCL_OK)	
-	return TCL_ERROR;			  
-      if (Tcl_GetInt(interp, argv[3], &printIt) != TCL_OK)	
-	return TCL_ERROR;			  
-      if (Tcl_GetInt(interp, argv[4], &normType) != TCL_OK)	
-	return TCL_ERROR;			  		  
-      if (Tcl_GetDouble(interp, argv[5], &maxTol) != TCL_OK)	
-	return TCL_ERROR;			  		  
-    }    
   }
-  
+
+
   ConvergenceTest *theNewTest = 0;
   
   if (numIter == 0) {
