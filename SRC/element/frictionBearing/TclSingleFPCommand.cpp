@@ -67,9 +67,9 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         // check plane frame problem has 3 dof per node
         if (ndf != 3)  {
             opserr << "WARNING invalid ndf: " << ndf;
-            opserr << ", for plane problem need 3 - singleFPBearing\n";    
+            opserr << ", for plane problem need 3 - singleFPBearing\n";
             return TCL_ERROR;
-        } 
+        }
         
         // check the number of arguments is correct
         if ((argc-eleArgStart) < 11)  {
@@ -77,7 +77,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
             printCommand(argc, argv);
             opserr << "Want: singleFPBearing eleTag iNode jNode frnMdlTag Reff kInit -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-inclVertDisp> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
-        }    
+        }
         
         // get the id and end nodes 
         int iNode, jNode, frnMdlTag, matTag, argi, i, j;
@@ -89,7 +89,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         double mass = 0.0;
         int maxIter = 25;
         double tol = 1E-12;
-        double kFactUplift = 1E-6;
+        double kFactUplift = 1E-12;
         
         if (Tcl_GetInt(interp, argv[1+eleArgStart], &tag) != TCL_OK)  {
             opserr << "WARNING invalid singleFPBearing eleTag\n";
@@ -211,7 +211,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                             return TCL_ERROR;
                         } else  {
                             argi++;
-                            y(j) = value;		
+                            y(j) = value;
                         }
                     }
                 }
@@ -289,24 +289,24 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
             opserr << "singleFPBearing element: " << tag << endln;
             delete theElement;
             return TCL_ERROR;
-        }       
+        }
     }
 
     else if (ndm == 3)  {
         // check space frame problem has 6 dof per node
         if (ndf != 6)  {
             opserr << "WARNING invalid ndf: " << ndf;
-            opserr << ", for space problem need 6 - singleFPBearing \n";    
+            opserr << ", for space problem need 6 - singleFPBearing \n";
             return TCL_ERROR;
-        } 
-
+        }
+        
         // check the number of arguments is correct
         if ((argc-eleArgStart) < 15)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
             opserr << "Want: singleFPBearing eleTag iNode jNode frnMdlTag Reff kInit -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-inclVertDsip> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
-        }    
+        }
         
         // get the id and end nodes 
         int iNode, jNode, frnMdlTag, matTag, argi, i, j;
@@ -318,7 +318,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
         double mass = 0.0;
         int maxIter = 25;
         double tol = 1E-12;
-        double kFactUplift = 1E-6;
+        double kFactUplift = 1E-12;
         
         if (Tcl_GetInt(interp, argv[1+eleArgStart], &tag) != TCL_OK)  {
             opserr << "WARNING invalid singleFPBearing eleTag\n";
@@ -487,7 +487,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
                             return TCL_ERROR;
                         } else  {
                             argi++;
-                            y(j) = value;		
+                            y(j) = value;
                         }
                     }
                 }
@@ -565,7 +565,7 @@ int TclModelBuilder_addSingleFPBearing(ClientData clientData, Tcl_Interp *interp
             opserr << "singleFPBearing element: " << tag << endln;
             delete theElement;
             return TCL_ERROR;
-        }       
+        }
     }
     
     else  {

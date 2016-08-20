@@ -55,10 +55,11 @@ Vector FlatSliderSimple3d::theVector(12);
 FlatSliderSimple3d::FlatSliderSimple3d(int tag, int Nd1, int Nd2,
     FrictionModel &thefrnmdl, double kInit, UniaxialMaterial **materials,
     const Vector _y, const Vector _x, double sdI, int addRay, double m,
-    int maxiter, double _tol)
+    int maxiter, double _tol, double kfactuplift)
     : Element(tag, ELE_TAG_FlatSliderSimple3d),
     connectedExternalNodes(2), theFrnMdl(0), k0(kInit), x(_x), y(_y),
     shearDistI(sdI), addRayleigh(addRay), mass(m), maxIter(maxiter), tol(_tol),
+    kFactUplift(kfactuplift),
     L(0.0), onP0(true), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6), theLoad(12)
 {
@@ -124,10 +125,11 @@ FlatSliderSimple3d::FlatSliderSimple3d()
     : Element(0, ELE_TAG_FlatSliderSimple3d),
     connectedExternalNodes(2), theFrnMdl(0), k0(0.0), x(0), y(0),
     shearDistI(0.0), addRayleigh(0), mass(0.0), maxIter(25), tol(1E-12),
+    kFactUplift(1E-12),
     L(0.0), onP0(false), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6), theLoad(12)
 {
-    // ensure the connectedExternalNode ID is of correct size & set values
+    // ensure the connectedExternalNode ID is of correct size
     if (connectedExternalNodes.Size() != 2)  {
         opserr << "FlatSliderSimple3d::FlatSliderSimple3d() - element: "
             << this->getTag() << " - failed to create an ID of size 2.\n";
@@ -163,19 +165,19 @@ int FlatSliderSimple3d::getNumExternalNodes() const
 }
 
 
-const ID& FlatSliderSimple3d::getExternalNodes() 
+const ID& FlatSliderSimple3d::getExternalNodes()
 {
     return connectedExternalNodes;
 }
 
 
-Node** FlatSliderSimple3d::getNodePtrs() 
+Node** FlatSliderSimple3d::getNodePtrs()
 {
     return theNodes;
 }
 
 
-int FlatSliderSimple3d::getNumDOF() 
+int FlatSliderSimple3d::getNumDOF()
 {
     return 12;
 }
@@ -198,11 +200,11 @@ void FlatSliderSimple3d::setDomain(Domain *theDomain)
     // if can't find both - send a warning message
     if (!theNodes[0] || !theNodes[1])  {
         if (!theNodes[0])  {
-            opserr << "WARNING FlatSliderSimple3d::setDomain() - Nd1: " 
+            opserr << "WARNING FlatSliderSimple3d::setDomain() - Nd1: "
                 << connectedExternalNodes(0)
                 << " does not exist in the model for";
         } else  {
-            opserr << "WARNING FlatSliderSimple3d::setDomain() - Nd2: " 
+            opserr << "WARNING FlatSliderSimple3d::setDomain() - Nd2: "
                 << connectedExternalNodes(1)
                 << " does not exist in the model for";
         }
@@ -253,7 +255,7 @@ int FlatSliderSimple3d::commitState()
     
     // commit the base class
     errCode += this->Element::commitState();
-
+    
     return errCode;
 }
 
@@ -332,15 +334,17 @@ int FlatSliderSimple3d::update()
     
     // check for uplift
     if (qb(0) >= 0.0)  {
+        // update plastic displacements
+        ubPlastic(0) = ub(1);
+        ubPlastic(1) = ub(2);
+        // set basic forces
+        qb.Zero();
+        // set tangent stiffnesses
         kb = kbInit;
         if (qb(0) > 0.0)  {
             theMaterials[0]->setTrialStrain(ub0Old, 0.0);
-            kb = DBL_EPSILON*kbInit;
-            // update plastic displacements
-            ubPlastic(0) = ub(1);
-            ubPlastic(1) = ub(2);
+            kb = kFactUplift*kbInit;  // kb = DBL_EPSILON*kbInit;
         }
-        qb.Zero();
         return 0;
     }
     
@@ -349,11 +353,13 @@ int FlatSliderSimple3d::update()
     Vector qbOld(2);
     do  {
         // save old shear forces
+        iter++;
         qbOld(0) = qb(1);
         qbOld(1) = qb(2);
         
         // get normal and friction (yield) forces
         double N = -qb(0) - qb(1)*ul(5) + qb(2)*ul(4);
+        N = N > 0.0 ? N : 0.0;  // can not be negative
         theFrnMdl->setTrial(N, ubdotAbs);
         double qYield = (theFrnMdl->getFrictionForce());
         
@@ -387,12 +393,11 @@ int FlatSliderSimple3d::update()
             qb(2) = qYield*qTrial(1)/qTrialNorm + N*ul(4);
             // set tangent stiffnesses
             double D = pow(qTrialNorm,3);
-            kb(1,1) =  qYield*k0*qTrial(1)*qTrial(1)/D;
-            kb(1,2) = -qYield*k0*qTrial(0)*qTrial(1)/D;
-            kb(2,1) =  kb(1,2);
-            kb(2,2) =  qYield*k0*qTrial(0)*qTrial(0)/D;
+            kb(1,1) = qYield*k0*qTrial(1)*qTrial(1)/D;
+            kb(1,2) = kb(2,1) = -qYield*k0*qTrial(1)*qTrial(0)/D;
+            kb(2,2) = qYield*k0*qTrial(0)*qTrial(0)/D;
         }
-        iter++;
+        
     } while ((sqrt(pow(qb(1)-qbOld(0),2)+pow(qb(2)-qbOld(1),2)) >= tol) && (iter <= maxIter));
     
     // issue warning if iteration did not converge
@@ -625,7 +630,7 @@ const Vector& FlatSliderSimple3d::getResistingForceIncInertia()
     if (mass != 0.0)  {
         const Vector &accel1 = theNodes[0]->getTrialAccel();
         const Vector &accel2 = theNodes[1]->getTrialAccel();
-
+        
         double m = 0.5*mass;
         for (int i=0; i<3; i++)  {
             theVector(i)   += m * accel1(i);
@@ -640,20 +645,21 @@ const Vector& FlatSliderSimple3d::getResistingForceIncInertia()
 int FlatSliderSimple3d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(13);
-    data(0) = this->getTag();
-    data(1) = k0;
-    data(2) = shearDistI;
-    data(3) = addRayleigh;
-    data(4) = mass;
-    data(5) = maxIter;
-    data(6) = tol;
-    data(7) = x.Size();
-    data(8) = y.Size();
-    data(9) = alphaM;
-    data(10) = betaK;
-    data(11) = betaK0;
-    data(12) = betaKc;
+    static Vector data(14);
+    data(0)  = this->getTag();
+    data(1)  = k0;
+    data(2)  = shearDistI;
+    data(3)  = addRayleigh;
+    data(4)  = mass;
+    data(5)  = maxIter;
+    data(6)  = tol;
+    data(7)  = kFactUplift;
+    data(8)  = x.Size();
+    data(9)  = y.Size();
+    data(10) = alphaM;
+    data(11) = betaK;
+    data(12) = betaK0;
+    data(13) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -696,7 +702,7 @@ int FlatSliderSimple3d::recvSelf(int commitTag, Channel &rChannel,
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(13);
+    static Vector data(14);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
@@ -705,10 +711,11 @@ int FlatSliderSimple3d::recvSelf(int commitTag, Channel &rChannel,
     mass = data(4);
     maxIter = (int)data(5);
     tol = data(6);
-    alphaM = data(9);
-    betaK = data(10);
-    betaK0 = data(11);
-    betaKc = data(12);
+    kFactUplift = data(7);
+    alphaM = data(10);
+    betaK = data(11);
+    betaK0 = data(12);
+    betaKc = data(13);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -742,11 +749,11 @@ int FlatSliderSimple3d::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive remaining data
-    if ((int)data(7) == 3)  {
+    if ((int)data(8) == 3)  {
         x.resize(3);
         rChannel.recvVector(0, commitTag, x);
     }
-    if ((int)data(8) == 3)  {
+    if ((int)data(9) == 3)  {
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
@@ -768,14 +775,15 @@ int FlatSliderSimple3d::recvSelf(int commitTag, Channel &rChannel,
 
 
 int FlatSliderSimple3d::displaySelf(Renderer &theViewer,
-				    int displayMode, float fact, const char **modes, int numMode)
+    int displayMode, float fact, const char **modes, int numMode)
 {
     int errCode = 0;
     
     // first determine the end points of the element based on
     // the display factor (a measure of the distorted image)
     const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
+    const Vector &end2Crd = theNodes[1]->getCrds();
+    Vector xp = end2Crd - end1Crd;
     
     static Vector v1(3);
     static Vector v2(3);
@@ -787,9 +795,11 @@ int FlatSliderSimple3d::displaySelf(Renderer &theViewer,
         
         for (int i=0; i<3; i++)  {
             v1(i) = end1Crd(i) + end1Disp(i)*fact;
-            v2(i) = end1Crd(i) + (end1Disp(i) + end2Disp(i))*fact;
-            v3(i) = end2Crd(i) + end2Disp(i)*fact;    
+            v3(i) = end2Crd(i) + end2Disp(i)*fact;
         }
+        v2(0) = end1Crd(0) + (end2Disp(0) + xp(1)*end2Disp(5) - xp(2)*end2Disp(4))*fact;
+        v2(1) = end1Crd(1) + (end2Disp(1) - xp(0)*end2Disp(5) + xp(2)*end2Disp(3))*fact;
+        v2(2) = end1Crd(2) + (end2Disp(2) + xp(0)*end2Disp(4) - xp(1)*end2Disp(3))*fact;
     } else  {
         int mode = displayMode * -1;
         const Matrix &eigen1 = theNodes[0]->getEigenvectors();
@@ -798,9 +808,11 @@ int FlatSliderSimple3d::displaySelf(Renderer &theViewer,
         if (eigen1.noCols() >= mode)  {
             for (int i=0; i<3; i++)  {
                 v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-                v2(i) = end1Crd(i) + (eigen1(i,mode-1) + eigen2(i,mode-1))*fact;
                 v3(i) = end2Crd(i) + eigen2(i,mode-1)*fact;
             }
+            v2(0) = end1Crd(0) + (eigen2(0,mode-1) + xp(1)*eigen2(5,mode-1) - xp(2)*eigen2(4,mode-1))*fact;
+            v2(1) = end1Crd(1) + (eigen2(1,mode-1) - xp(0)*eigen2(5,mode-1) + xp(2)*eigen2(3,mode-1))*fact;
+            v2(2) = end1Crd(2) + (eigen2(2,mode-1) + xp(0)*eigen2(4,mode-1) - xp(1)*eigen2(3,mode-1))*fact;
         } else  {
             for (int i=0; i<3; i++)  {
                 v1(i) = end1Crd(i);
@@ -1012,7 +1024,7 @@ int FlatSliderSimple3d::getResponse(int responseID, Information &eleInfo)
 void FlatSliderSimple3d::setUp()
 {
     const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
+    const Vector &end2Crd = theNodes[1]->getCrds();
     Vector xp = end2Crd - end1Crd;
     L = xp.Norm();
     
@@ -1021,7 +1033,7 @@ void FlatSliderSimple3d::setUp()
             x.resize(3);
             x = xp;
         } else if (onP0)  {
-            opserr << "WARNING FlatSliderSimple3d::setUp() - " 
+            opserr << "WARNING FlatSliderSimple3d::setUp() - "
                 << "element: " << this->getTag()
                 << " - ignoring nodes and using specified "
                 << "local x vector to determine orientation.\n";
@@ -1080,15 +1092,4 @@ void FlatSliderSimple3d::setUp()
     Tlb(1,11) = -(1.0 - shearDistI)*L;
     Tlb(2,4) = -Tlb(1,5);
     Tlb(2,10) = -Tlb(1,11);
-}
-
-
-double FlatSliderSimple3d::sgn(double x)
-{
-    if (x > 0)
-        return 1.0;
-    else if (x < 0)
-        return -1.0;
-    else
-        return 0.0;
 }

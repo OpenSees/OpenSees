@@ -53,7 +53,7 @@ public:
         double shearDistI = 0.0, int addRayleigh = 0,
         int inclVertDisp = 0, double mass = 0.0,
         int maxIter = 25, double tol = 1E-12,
-        double kFactUplift = 1E-6);
+        double kFactUplift = 1E-12);
     SingleFPSimple3d();
     
     // destructor
@@ -102,7 +102,6 @@ protected:
 private:
     // private methods
     void setUp();
-    double sgn(double x);
     
     // private attributes - a copy for each object of the class
     ID connectedExternalNodes;          // contains the tags of the end nodes

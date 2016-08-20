@@ -53,14 +53,13 @@ Vector RJWatsonEQS3d::theVector(12);
 
 
 RJWatsonEQS3d::RJWatsonEQS3d(int tag, int Nd1, int Nd2,
-    FrictionModel &thefrnmdl, double kInit, double _k2,
-    UniaxialMaterial **materials, const Vector _y, const Vector _x,
-    double _k3, double _mu, double sdI, int addRay, double m,
+    FrictionModel &thefrnmdl, double kInit, UniaxialMaterial **materials,
+    const Vector _y, const Vector _x, double sdI, int addRay, double m,
     int maxiter, double _tol, double kfactuplift)
     : Element(tag, ELE_TAG_RJWatsonEQS3d),
-    connectedExternalNodes(2), theFrnMdl(0), k0(0.0), k2(_k2), k3(_k3),
-    mu(_mu), x(_x), y(_y), shearDistI(sdI), addRayleigh(addRay), mass(m),
-    maxIter(maxiter), tol(_tol), kFactUplift(kfactuplift),
+    connectedExternalNodes(2), theFrnMdl(0), k0(kInit), x(_x), y(_y),
+    shearDistI(sdI), addRayleigh(addRay), mass(m), maxIter(maxiter), tol(_tol),
+    kFactUplift(kfactuplift),
     L(0.0), onP0(true), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6), theLoad(12)
 {
@@ -87,9 +86,6 @@ RJWatsonEQS3d::RJWatsonEQS3d(int tag, int Nd1, int Nd2,
         exit(-1);
     }
     
-    // initialize parameters
-    k0 = kInit - k2;
-
     // check material input
     if (materials == 0)  {
         opserr << "RJWatsonEQS3d::RJWatsonEQS3d() - "
@@ -98,7 +94,7 @@ RJWatsonEQS3d::RJWatsonEQS3d(int tag, int Nd1, int Nd2,
     }
     
     // get copies of the uniaxial materials
-    for (int i=0; i<4; i++)  {
+    for (int i=0; i<6; i++)  {
         if (materials[i] == 0)  {
             opserr << "RJWatsonEQS3d::RJWatsonEQS3d() - "
                 "null uniaxial material pointer passed.\n";
@@ -115,10 +111,11 @@ RJWatsonEQS3d::RJWatsonEQS3d(int tag, int Nd1, int Nd2,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = kbInit(2,2) = kInit;
-    kbInit(3,3) = theMaterials[1]->getInitialTangent();
-    kbInit(4,4) = theMaterials[2]->getInitialTangent();
-    kbInit(5,5) = theMaterials[3]->getInitialTangent();
+    kbInit(1,1) = k0 + theMaterials[1]->getInitialTangent();
+    kbInit(2,2) = k0 + theMaterials[2]->getInitialTangent();
+    kbInit(3,3) = theMaterials[3]->getInitialTangent();
+    kbInit(4,4) = theMaterials[4]->getInitialTangent();
+    kbInit(5,5) = theMaterials[5]->getInitialTangent();
     
     // initialize other variables
     this->revertToStart();
@@ -127,13 +124,13 @@ RJWatsonEQS3d::RJWatsonEQS3d(int tag, int Nd1, int Nd2,
 
 RJWatsonEQS3d::RJWatsonEQS3d()
     : Element(0, ELE_TAG_RJWatsonEQS3d),
-    connectedExternalNodes(2), theFrnMdl(0), k0(0.0), k2(0.0), k3(0.0),
-    mu(2.0), x(0), y(0), shearDistI(0.0), addRayleigh(0), mass(0.0),
-    maxIter(25), tol(1E-12), kFactUplift(1E-6), L(0.0), onP0(false),
-    ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12), Tgl(12,12), Tlb(6,12),
-    ubPlasticC(2), kbInit(6,6), theLoad(12)
+    connectedExternalNodes(2), theFrnMdl(0), k0(0.0), x(0), y(0),
+    shearDistI(0.0), addRayleigh(0), mass(0.0), maxIter(25), tol(1E-12),
+    kFactUplift(1E-12),
+    L(0.0), onP0(false), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
+    Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6), theLoad(12)
 {
-    // ensure the connectedExternalNode ID is of correct size & set values
+    // ensure the connectedExternalNode ID is of correct size
     if (connectedExternalNodes.Size() != 2)  {
         opserr << "RJWatsonEQS3d::RJWatsonEQS3d() - element: "
             << this->getTag() << " - failed to create an ID of size 2.\n";
@@ -145,7 +142,7 @@ RJWatsonEQS3d::RJWatsonEQS3d()
         theNodes[i] = 0;
     
     // set material pointers to NULL
-    for (int i=0; i<4; i++)
+    for (int i=0; i<6; i++)
         theMaterials[i] = 0;
 }
 
@@ -157,7 +154,7 @@ RJWatsonEQS3d::~RJWatsonEQS3d()
     if (theFrnMdl)
         delete theFrnMdl;
     
-    for (int i=0; i<4; i++)
+    for (int i=0; i<6; i++)
         if (theMaterials[i] != 0)
             delete theMaterials[i];
 }
@@ -169,19 +166,19 @@ int RJWatsonEQS3d::getNumExternalNodes() const
 }
 
 
-const ID& RJWatsonEQS3d::getExternalNodes() 
+const ID& RJWatsonEQS3d::getExternalNodes()
 {
     return connectedExternalNodes;
 }
 
 
-Node** RJWatsonEQS3d::getNodePtrs() 
+Node** RJWatsonEQS3d::getNodePtrs()
 {
     return theNodes;
 }
 
 
-int RJWatsonEQS3d::getNumDOF() 
+int RJWatsonEQS3d::getNumDOF()
 {
     return 12;
 }
@@ -204,11 +201,11 @@ void RJWatsonEQS3d::setDomain(Domain *theDomain)
     // if can't find both - send a warning message
     if (!theNodes[0] || !theNodes[1])  {
         if (!theNodes[0])  {
-            opserr << "WARNING RJWatsonEQS3d::setDomain() - Nd1: " 
+            opserr << "WARNING RJWatsonEQS3d::setDomain() - Nd1: "
                 << connectedExternalNodes(0)
                 << " does not exist in the model for";
         } else  {
-            opserr << "WARNING RJWatsonEQS3d::setDomain() - Nd2: " 
+            opserr << "WARNING RJWatsonEQS3d::setDomain() - Nd2: "
                 << connectedExternalNodes(1)
                 << " does not exist in the model for";
         }
@@ -259,7 +256,7 @@ int RJWatsonEQS3d::commitState()
     
     // commit the base class
     errCode += this->Element::commitState();
-
+    
     return errCode;
 }
 
@@ -272,7 +269,7 @@ int RJWatsonEQS3d::revertToLastCommit()
     errCode += theFrnMdl->revertToLastCommit();
     
     // revert material models
-    for (int i=0; i<4; i++)
+    for (int i=0; i<6; i++)
         errCode += theMaterials[i]->revertToLastCommit();
     
     return errCode;
@@ -298,7 +295,7 @@ int RJWatsonEQS3d::revertToStart()
     errCode += theFrnMdl->revertToStart();
     
     // revert material models
-    for (int i=0; i<4; i++)
+    for (int i=0; i<6; i++)
         errCode += theMaterials[i]->revertToStart();
     
     return errCode;
@@ -338,32 +335,43 @@ int RJWatsonEQS3d::update()
     
     // check for uplift
     if (qb(0) >= 0.0)  {
+        theMaterials[1]->setTrialStrain(ub(1), ubdot(1));
+        theMaterials[2]->setTrialStrain(ub(2), ubdot(2));
+        // update plastic displacements
+        ubPlastic(0) = ub(1);
+        ubPlastic(1) = ub(2);
+        // set basic forces
+        qb.Zero();
+        qb(1) = theMaterials[1]->getStress();
+        qb(2) = theMaterials[2]->getStress();
+        // set tangent stiffnesses
         kb = kbInit;
         if (qb(0) > 0.0)  {
             theMaterials[0]->setTrialStrain(ub0Old, 0.0);
-            //kb = DBL_EPSILON*kbInit;
-            kb = kFactUplift*kbInit;
-            // update plastic displacements
-            ubPlastic(0) = ub(1);
-            ubPlastic(1) = ub(2);
+            kb = kFactUplift*kbInit;  // kb = DBL_EPSILON*kbInit;
+            kb(1,1) = theMaterials[1]->getTangent();
+            kb(2,2) = theMaterials[2]->getTangent();
             //opserr << "WARNING: RJWatsonEQS3d::update() - element: "
             //    << this->getTag() << " - uplift encountered, scaling "
             //    << "stiffness matrix by: " << kFactUplift << endln;
         }
-        qb.Zero();
         return 0;
     }
     
-    // 2) calculate shear forces and stiffnesses in basic y- and z-direction
+    // 2a) calculate sliding shear forces and stiffnesses in basic y- and z-direction
     int iter = 0;
     Vector qbOld(2);
+    qb(1) -= theMaterials[1]->getStress();
+    qb(2) -= theMaterials[2]->getStress();
     do  {
         // save old shear forces
+        iter++;
         qbOld(0) = qb(1);
         qbOld(1) = qb(2);
         
         // get normal and friction (yield) forces
         double N = -qb(0) - qb(1)*ul(11) + qb(2)*ul(10);
+        N = N > 0.0 ? N : 0.0;  // can not be negative
         theFrnMdl->setTrial(N, ubdotAbs);
         double qYield = (theFrnMdl->getFrictionForce());
         
@@ -379,14 +387,11 @@ int RJWatsonEQS3d::update()
         // elastic step -> no updates required
         if (Y <= 0.0)  {
             // set shear forces
-            qb(1) = qTrial(0) + k2*ub(1)
-                  + k3*sgn(ub(1))*pow(fabs(ub(1)),mu) - N*ul(11);
-            qb(2) = qTrial(1) + k2*ub(2)
-                  + k3*sgn(ub(2))*pow(fabs(ub(2)),mu) + N*ul(10);
+            qb(1) = qTrial(0) - N*ul(11);
+            qb(2) = qTrial(1) + N*ul(10);
             // set tangent stiffnesses
-            kb(1,1) = k0 + k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
+            kb(1,1) = kb(2,2) = k0;
             kb(1,2) = kb(2,1) = 0.0;
-            kb(2,2) = k0 + k2 + k3*mu*pow(fabs(ub(2)),mu-1.0);
         }
         // plastic step -> return mapping
         else  {
@@ -396,20 +401,14 @@ int RJWatsonEQS3d::update()
             ubPlastic(0) = ubPlasticC(0) + dGamma*qTrial(0)/qTrialNorm;
             ubPlastic(1) = ubPlasticC(1) + dGamma*qTrial(1)/qTrialNorm;
             // set shear forces
-            qb(1) = qYield*qTrial(0)/qTrialNorm + k2*ub(1)
-                  + k3*sgn(ub(1))*pow(fabs(ub(1)),mu) - N*ul(11);
-            qb(2) = qYield*qTrial(1)/qTrialNorm + k2*ub(2)
-                  + k3*sgn(ub(2))*pow(fabs(ub(2)),mu) + N*ul(10);
+            qb(1) = qYield*qTrial(0)/qTrialNorm - N*ul(11);
+            qb(2) = qYield*qTrial(1)/qTrialNorm + N*ul(10);
             // set tangent stiffnesses
             double D = pow(qTrialNorm,3);
-            kb(1,1) =  qYield*k0*qTrial(1)*qTrial(1)/D
-                    + k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
-            kb(1,2) = -qYield*k0*qTrial(0)*qTrial(1)/D;
-            kb(2,1) =  kb(1,2);
-            kb(2,2) =  qYield*k0*qTrial(0)*qTrial(0)/D
-                    + k2 + k3*mu*pow(fabs(ub(2)),mu-1.0);
+            kb(1,1) = qYield*k0*qTrial(1)*qTrial(1)/D;
+            kb(1,2) = kb(2,1) = -qYield*k0*qTrial(1)*qTrial(0)/D;
+            kb(2,2) = qYield*k0*qTrial(0)*qTrial(0)/D;
         }
-        iter++;
     } while ((sqrt(pow(qb(1)-qbOld(0),2)+pow(qb(2)-qbOld(1),2)) >= tol) && (iter <= maxIter));
     
     // issue warning if iteration did not converge
@@ -421,20 +420,28 @@ int RJWatsonEQS3d::update()
         return -1;
     }
     
+    // 2b) add MER-spring contributions to shear forces in basic y- and z-direction
+    theMaterials[1]->setTrialStrain(ub(1), ubdot(1));
+    theMaterials[2]->setTrialStrain(ub(2), ubdot(2));
+    qb(1) += theMaterials[1]->getStress();
+    qb(2) += theMaterials[2]->getStress();
+    kb(1,1) += theMaterials[1]->getTangent();
+    kb(2,2) += theMaterials[2]->getTangent();
+    
     // 3) get moment and stiffness in basic x-direction
-    theMaterials[1]->setTrialStrain(ub(3), ubdot(3));
-    qb(3) = theMaterials[1]->getStress();
-    kb(3,3) = theMaterials[1]->getTangent();
+    theMaterials[3]->setTrialStrain(ub(3), ubdot(3));
+    qb(3) = theMaterials[3]->getStress();
+    kb(3,3) = theMaterials[3]->getTangent();
     
     // 4) get moment and stiffness in basic y-direction
-    theMaterials[2]->setTrialStrain(ub(4), ubdot(4));
-    qb(4) = theMaterials[2]->getStress();
-    kb(4,4) = theMaterials[2]->getTangent();
+    theMaterials[4]->setTrialStrain(ub(4), ubdot(4));
+    qb(4) = theMaterials[4]->getStress();
+    kb(4,4) = theMaterials[4]->getTangent();
     
     // 5) get moment and stiffness in basic z-direction
-    theMaterials[3]->setTrialStrain(ub(5), ubdot(5));
-    qb(5) = theMaterials[3]->getStress();
-    kb(5,5) = theMaterials[3]->getTangent();
+    theMaterials[5]->setTrialStrain(ub(5), ubdot(5));
+    qb(5) = theMaterials[5]->getStress();
+    kb(5,5) = theMaterials[5]->getTangent();
     
     return 0;
 }
@@ -509,9 +516,11 @@ const Matrix& RJWatsonEQS3d::getDamp()
     static Matrix cb(6,6);
     cb.Zero();
     cb(0,0) = theMaterials[0]->getDampTangent();
-    cb(3,3) = theMaterials[1]->getDampTangent();
-    cb(4,4) = theMaterials[2]->getDampTangent();
-    cb(5,5) = theMaterials[3]->getDampTangent();
+    cb(1,1) = theMaterials[1]->getDampTangent();
+    cb(2,2) = theMaterials[2]->getDampTangent();
+    cb(3,3) = theMaterials[3]->getDampTangent();
+    cb(4,4) = theMaterials[4]->getDampTangent();
+    cb(5,5) = theMaterials[5]->getDampTangent();
     
     // transform from basic to local system
     static Matrix cl(12,12);
@@ -642,7 +651,7 @@ const Vector& RJWatsonEQS3d::getResistingForceIncInertia()
     if (mass != 0.0)  {
         const Vector &accel1 = theNodes[0]->getTrialAccel();
         const Vector &accel2 = theNodes[1]->getTrialAccel();
-
+        
         double m = 0.5*mass;
         for (int i=0; i<3; i++)  {
             theVector(i)   += m * accel1(i);
@@ -657,24 +666,21 @@ const Vector& RJWatsonEQS3d::getResistingForceIncInertia()
 int RJWatsonEQS3d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(17);
-    data(0) = this->getTag();
-    data(1) = k0;
-    data(2) = k2;
-    data(3) = k3;
-    data(4) = mu;
-    data(5) = shearDistI;
-    data(6) = addRayleigh;
-    data(7) = mass;
-    data(8) = maxIter;
-    data(9) = tol;
-    data(10) = kFactUplift;
-    data(11) = x.Size();
-    data(12) = y.Size();
-    data(13) = alphaM;
-    data(14) = betaK;
-    data(15) = betaK0;
-    data(16) = betaKc;
+    static Vector data(14);
+    data(0)  = this->getTag();
+    data(1)  = k0;
+    data(2)  = shearDistI;
+    data(3)  = addRayleigh;
+    data(4)  = mass;
+    data(5)  = maxIter;
+    data(6)  = tol;
+    data(7)  = kFactUplift;
+    data(8)  = x.Size();
+    data(9)  = y.Size();
+    data(10) = alphaM;
+    data(11) = betaK;
+    data(12) = betaK0;
+    data(13) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -689,13 +695,13 @@ int RJWatsonEQS3d::sendSelf(int commitTag, Channel &sChannel)
     theFrnMdl->sendSelf(commitTag, sChannel);
     
     // send the material class tags
-    ID matClassTags(4);
-    for (int i=0; i<4; i++)
+    ID matClassTags(6);
+    for (int i=0; i<6; i++)
         matClassTags(i) = theMaterials[i]->getClassTag();
     sChannel.sendID(0, commitTag, matClassTags);
     
     // send the material models
-    for (int i=0; i<4; i++)
+    for (int i=0; i<6; i++)
         theMaterials[i]->sendSelf(commitTag, sChannel);
     
     // send remaining data
@@ -712,28 +718,25 @@ int RJWatsonEQS3d::recvSelf(int commitTag, Channel &rChannel,
     FEM_ObjectBroker &theBroker)
 {
     // delete material memory
-    for (int i=0; i<4; i++)
+    for (int i=0; i<6; i++)
         if (theMaterials[i] != 0)
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(17);
+    static Vector data(14);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
-    k2 = data(2);
-    k3 = data(3);
-    mu = data(4);
-    shearDistI = data(5);
-    addRayleigh = (int)data(6);
-    mass = data(7);
-    maxIter = (int)data(8);
-    tol = data(9);
-    kFactUplift = data(10);
-    alphaM = data(13);
-    betaK = data(14);
-    betaK0 = data(15);
-    betaKc = data(16);
+    shearDistI = data(2);
+    addRayleigh = (int)data(3);
+    mass = data(4);
+    maxIter = (int)data(5);
+    tol = data(6);
+    kFactUplift = data(7);
+    alphaM = data(10);
+    betaK = data(11);
+    betaK0 = data(12);
+    betaKc = data(13);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -752,11 +755,11 @@ int RJWatsonEQS3d::recvSelf(int commitTag, Channel &rChannel,
     theFrnMdl->recvSelf(commitTag, rChannel, theBroker);
     
     // receive the material class tags
-    ID matClassTags(4);
+    ID matClassTags(6);
     rChannel.recvID(0, commitTag, matClassTags);
     
     // receive the material models
-    for (int i=0; i<4; i++)  {
+    for (int i=0; i<6; i++)  {
         theMaterials[i] = theBroker.getNewUniaxialMaterial(matClassTags(i));
         if (theMaterials[i] == 0) {
             opserr << "RJWatsonEQS3d::recvSelf() - "
@@ -767,11 +770,11 @@ int RJWatsonEQS3d::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive remaining data
-    if ((int)data(11) == 3)  {
+    if ((int)data(8) == 3)  {
         x.resize(3);
         rChannel.recvVector(0, commitTag, x);
     }
-    if ((int)data(12) == 3)  {
+    if ((int)data(9) == 3)  {
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
@@ -780,10 +783,11 @@ int RJWatsonEQS3d::recvSelf(int commitTag, Channel &rChannel,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = kbInit(2,2) = k0 + k2;
-    kbInit(3,3) = theMaterials[1]->getInitialTangent();
-    kbInit(4,4) = theMaterials[2]->getInitialTangent();
-    kbInit(5,5) = theMaterials[3]->getInitialTangent();
+    kbInit(1,1) = k0 + theMaterials[1]->getInitialTangent();
+    kbInit(2,2) = k0 + theMaterials[2]->getInitialTangent();
+    kbInit(3,3) = theMaterials[3]->getInitialTangent();
+    kbInit(4,4) = theMaterials[4]->getInitialTangent();
+    kbInit(5,5) = theMaterials[5]->getInitialTangent();
     
     // initialize variables
     this->revertToStart();
@@ -793,15 +797,15 @@ int RJWatsonEQS3d::recvSelf(int commitTag, Channel &rChannel,
 
 
 int RJWatsonEQS3d::displaySelf(Renderer &theViewer,
-			       int displayMode, float fact,
-			       const char **modes, int numMode)
+    int displayMode, float fact, const char **modes, int numMode)
 {
     int errCode = 0;
     
     // first determine the end points of the element based on
     // the display factor (a measure of the distorted image)
     const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
+    const Vector &end2Crd = theNodes[1]->getCrds();
+    Vector xp = end2Crd - end1Crd;
     
     static Vector v1(3);
     static Vector v2(3);
@@ -813,9 +817,11 @@ int RJWatsonEQS3d::displaySelf(Renderer &theViewer,
         
         for (int i=0; i<3; i++)  {
             v1(i) = end1Crd(i) + end1Disp(i)*fact;
-            v2(i) = end1Crd(i) + (end1Disp(i) + end2Disp(i))*fact;
-            v3(i) = end2Crd(i) + end2Disp(i)*fact;    
+            v3(i) = end2Crd(i) + end2Disp(i)*fact;
         }
+        v2(0) = end2Crd(0) + (end1Disp(0) - xp(1)*end1Disp(5) + xp(2)*end1Disp(4))*fact;
+        v2(1) = end2Crd(1) + (end1Disp(1) + xp(0)*end1Disp(5) - xp(2)*end1Disp(3))*fact;
+        v2(2) = end2Crd(2) + (end1Disp(2) - xp(0)*end1Disp(4) + xp(1)*end1Disp(3))*fact;
     } else  {
         int mode = displayMode * -1;
         const Matrix &eigen1 = theNodes[0]->getEigenvectors();
@@ -824,9 +830,11 @@ int RJWatsonEQS3d::displaySelf(Renderer &theViewer,
         if (eigen1.noCols() >= mode)  {
             for (int i=0; i<3; i++)  {
                 v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-                v2(i) = end1Crd(i) + (eigen1(i,mode-1) + eigen2(i,mode-1))*fact;
                 v3(i) = end2Crd(i) + eigen2(i,mode-1)*fact;
             }
+            v2(0) = end2Crd(0) + (eigen1(0,mode-1) - xp(1)*eigen1(5,mode-1) + xp(2)*eigen1(4,mode-1))*fact;
+            v2(1) = end2Crd(1) + (eigen1(1,mode-1) + xp(0)*eigen1(5,mode-1) - xp(2)*eigen1(3,mode-1))*fact;
+            v2(2) = end2Crd(2) + (eigen1(2,mode-1) - xp(0)*eigen1(4,mode-1) + xp(1)*eigen1(3,mode-1))*fact;
         } else  {
             for (int i=0; i<3; i++)  {
                 v1(i) = end1Crd(i);
@@ -850,13 +858,14 @@ void RJWatsonEQS3d::Print(OPS_Stream &s, int flag)
         s << "Element: " << this->getTag(); 
         s << "  type: RJWatsonEQS3d  iNode: " << connectedExternalNodes(0);
         s << "  jNode: " << connectedExternalNodes(1) << endln;
-        s << "  FrictionModel: " << theFrnMdl->getTag() << endln;
-        s << "  k0: " << k0 << "  k2: " << k2 << endln;
-        s << "  k3: " << k3 << "  mu: " << mu << endln;
+        s << "  FrictionModel: " << theFrnMdl->getTag()
+            << " k0: " << k0 << endln;
         s << "  Material ux: " << theMaterials[0]->getTag() << endln;
-        s << "  Material rx: " << theMaterials[1]->getTag() << endln;
-        s << "  Material ry: " << theMaterials[2]->getTag() << endln;
-        s << "  Material rz: " << theMaterials[3]->getTag() << endln;
+        s << "  Material uy: " << theMaterials[1]->getTag() << endln;
+        s << "  Material uz: " << theMaterials[2]->getTag() << endln;
+        s << "  Material rx: " << theMaterials[3]->getTag() << endln;
+        s << "  Material ry: " << theMaterials[4]->getTag() << endln;
+        s << "  Material rz: " << theMaterials[5]->getTag() << endln;
         s << "  shearDistI: " << shearDistI << "  addRayleigh: "
             << addRayleigh << "  mass: " << mass << endln;
         s << "  maxIter: " << maxIter << "  tol: " << tol << endln;
@@ -972,7 +981,7 @@ Response* RJWatsonEQS3d::setResponse(const char **argv, int argc,
     else if (strcmp(argv[0],"material") == 0)  {
         if (argc > 2)  {
             int matNum = atoi(argv[1]);
-            if (matNum >= 1 && matNum <= 4)
+            if (matNum >= 1 && matNum <= 6)
                 theResponse = theMaterials[matNum-1]->setResponse(&argv[2], argc-2, output);
         }
     }
@@ -1039,7 +1048,7 @@ int RJWatsonEQS3d::getResponse(int responseID, Information &eleInfo)
 void RJWatsonEQS3d::setUp()
 {
     const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
+    const Vector &end2Crd = theNodes[1]->getCrds();
     Vector xp = end2Crd - end1Crd;
     L = xp.Norm();
     
@@ -1048,7 +1057,7 @@ void RJWatsonEQS3d::setUp()
             x.resize(3);
             x = xp;
         } else if (onP0)  {
-            opserr << "WARNING RJWatsonEQS3d::setUp() - " 
+            opserr << "WARNING RJWatsonEQS3d::setUp() - "
                 << "element: " << this->getTag()
                 << " - ignoring nodes and using specified "
                 << "local x vector to determine orientation.\n";
@@ -1107,15 +1116,4 @@ void RJWatsonEQS3d::setUp()
     Tlb(1,11) = -(1.0 - shearDistI)*L;
     Tlb(2,4) = -Tlb(1,5);
     Tlb(2,10) = -Tlb(1,11);
-}
-
-
-double RJWatsonEQS3d::sgn(double x)
-{
-    if (x > 0)
-        return 1.0;
-    else if (x < 0)
-        return -1.0;
-    else
-        return 0.0;
 }
