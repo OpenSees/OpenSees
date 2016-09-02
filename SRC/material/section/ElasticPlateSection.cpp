@@ -33,6 +33,35 @@
 #include <Vector.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
+
+void* OPS_ElasticPlateSection()
+{
+    if (OPS_GetNumRemainingInputArgs() < 4) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: section ElasticPlateSection tag? E? nu? h? " << endln;
+	return 0;
+    }
+	
+    int tag;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid section ElasticPlateSection tag" << endln;
+	return 0;
+    }
+
+    numdata = 3;
+    double data[3];
+    if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	opserr << "WARNING invalid section ElasticPlateSection double inputs" << endln;
+	return 0;
+    }
+    double E = data[0];
+    double nu = data[1];
+    double h = data[2];
+
+    return new ElasticPlateSection (tag, E, nu, h);
+}
 
 //parameters
 const double ElasticPlateSection::five6 = 5.0/6.0 ; //shear correction

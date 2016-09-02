@@ -33,6 +33,38 @@
 #include <Parameter.h>
 
 #include <classTags.h>
+#include <elementAPI.h>
+
+void* OPS_ElasticTubeSection3d()
+{
+    if (OPS_GetNumRemainingInputArgs() < 5) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: section ElasticTube tag? E? d? tw? G?" << endln;
+	return 0;
+    }
+	
+    int tag;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid section ElasticTube tag" << endln;
+	return 0;
+    }
+
+    numdata = 4;
+    double data[4];
+    if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	opserr << "WARNING invalid double inputs" << endln;
+	opserr << "ElasticTube section: " << tag << endln;	    
+	return 0;
+    }
+
+    double E = data[0];
+    double d = data[1];
+    double tw = data[2];
+    double G = data[3];
+
+    return new ElasticTubeSection3d(tag, E, d, tw, G);	
+}
 
 Vector ElasticTubeSection3d::s(4);
 Matrix ElasticTubeSection3d::ks(4,4);

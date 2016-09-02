@@ -32,7 +32,41 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <string.h>
+#include <elementAPI.h>
 
+void* OPS_MembranePlateFiberSection()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 3) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: section PlateFiber tag? matTag? h? " << endln;
+	return 0;
+    }
+    
+    int idata[2];
+    numdata = 2;
+    if (OPS_GetIntInput(&numdata, idata) < 0) {
+	opserr << "WARNING: invalid tags\n";
+	return 0;
+    }
+
+    double h;
+    numdata = 1;
+    if (OPS_GetDoubleInput(&numdata, &h) < 0) {
+	opserr << "WARNING: invalid h\n";
+	return 0;
+    }
+
+    NDMaterial *theMaterial = OPS_getNDMaterial(idata[1]);
+    if (theMaterial == 0) {
+	opserr << "WARNING nD material does not exist\n";
+	opserr << "nD material: " << idata[1]; 
+	opserr << "\nPlateFiber section: " << idata[0] << endln;
+	return 0;
+    }
+
+    return new MembranePlateFiberSection(idata[0], h, *theMaterial);
+}
 
 //parameters
 const double MembranePlateFiberSection::root56 = sqrt(5.0/6.0) ; //shear correction

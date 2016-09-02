@@ -34,6 +34,42 @@
 #include <string.h>
 
 #include <classTags.h>
+#include <elementAPI.h>
+
+void* OPS_ElasticWarpingShearSection2d()
+{
+    if (OPS_GetNumRemainingInputArgs() < 9) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: section ElasticWarpingShear tag? E? A? Iz? G? alpha? J? B? C?>" << endln;
+	return 0;
+    }
+	
+    int tag;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid section ElasticWarpingShearSection2d tag" << endln;
+	return 0;
+    }
+
+    numdata = 8;
+    double data[8];
+    if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	opserr << "WARNING invalid double inputs" << endln;
+	opserr << "ElasticWarpingShearSection2d section: " << tag << endln;	    
+	return 0;
+    }
+    double E = data[0];
+    double A = data[1];
+    double Iz = data[2];
+    double G = data[3];
+    double alpha = data[4];
+    double J = data[5];
+    double B = data[6];
+    double C = data[7];
+      
+    return new ElasticWarpingShearSection2d(tag, E, A, Iz, G, alpha, J, B, C);
+
+}
 
 Vector ElasticWarpingShearSection2d::s(5);
 Matrix ElasticWarpingShearSection2d::ks(5,5);

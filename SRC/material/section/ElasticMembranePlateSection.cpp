@@ -31,6 +31,7 @@
 #include <ElasticMembranePlateSection.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
 
 //parameters
 const double ElasticMembranePlateSection::five6 = 5.0/6.0 ; //shear correction
@@ -40,6 +41,31 @@ Vector  ElasticMembranePlateSection::stress(8) ;
 Matrix  ElasticMembranePlateSection::tangent(8,8) ;
 ID      ElasticMembranePlateSection::array(8) ;
 
+void* OPS_ElasticMembranePlateSection()
+{
+    if (OPS_GetNumRemainingInputArgs() < 4) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: section ElasticMembranePlateSection tag? E? nu? h? <rho?>\n";
+	return 0;
+    }
+
+    int tag;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid tag\n";
+	return 0;
+    }
+
+    double data[4] = {0,0,0,0.0};
+    numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata > 4) numdata = 4;
+    if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	opserr << "WARNING invalid double values\n";
+	return 0;
+    }
+
+    return new ElasticMembranePlateSection(tag,data[0],data[1],data[2],data[3]);
+}
 
 //null constructor
 ElasticMembranePlateSection::ElasticMembranePlateSection( ) : 

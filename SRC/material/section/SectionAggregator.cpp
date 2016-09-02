@@ -46,6 +46,98 @@
 #include <string.h>
 
 #include <classTags.h>
+#include <elementAPI.h>
+#include <vector>
+
+void* OPS_SectionAggregator()
+{
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: section Aggregator tag? uniTag1? code1? ... <-section secTag?>" << endln;
+	return 0;
+    }
+	    
+    int tag;
+    int secTag;
+    SectionForceDeformation *theSec = 0;
+
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid Aggregator tag" << endln;
+	return 0;
+    }
+
+    // uni mat tags and section dofs
+    std::vector<UniaxialMaterial*> theMats;
+    ID codes(0, 10);
+    while (OPS_GetNumRemainingInputArgs() > 1) {
+	int matTag;
+	if (OPS_GetIntInput(&numdata, &matTag) < 0) {
+	    OPS_ResetCurrentInputArg(-1);
+	    break;
+	}
+
+	UniaxialMaterial* mat = OPS_getUniaxialMaterial(matTag);
+	    
+	if (mat == 0) {
+	    opserr << "WARNING uniaxial material does not exist\n";
+	    opserr << "uniaxial material: " << matTag; 
+	    opserr << "\nsection Aggregator: " << tag << endln;
+	    return 0;
+	}
+
+	theMats.push_back(mat);
+	
+	const char* type = OPS_GetString();
+	int code = 0;
+	if (strcmp(type,"Mz") == 0) 
+	    code = SECTION_RESPONSE_MZ;
+	else if (strcmp(type,"P") == 0)
+	    code = SECTION_RESPONSE_P;
+	else if (strcmp(type,"Vy") == 0)
+	    code = SECTION_RESPONSE_VY;
+	else if (strcmp(type,"My") == 0)
+	    code = SECTION_RESPONSE_MY;
+	else if (strcmp(type,"Vz") == 0)
+	    code = SECTION_RESPONSE_VZ;
+	else if (strcmp(type,"T") == 0)
+	    code = SECTION_RESPONSE_T;
+	else {
+	    opserr << "WARNING invalid code" << endln;
+	    opserr << "\nsection Aggregator: " << tag << endln;
+	    return 0;
+	}
+	codes[codes.Size()] = code;
+    }
+
+    // section
+    if (OPS_GetNumRemainingInputArgs() > 1) {
+	const char* flag = OPS_GetString();
+	if (strcmp(flag, "-section") == 0) {
+	    if (OPS_GetIntInput(&numdata, &secTag) < 0) {
+		opserr << "WARNING invalid Aggregator section tag" << endln;
+		return 0;
+	    }
+	    theSec = OPS_getSectionForceDeformation(secTag);
+	    if (theSec == 0) {
+		opserr << "WARNING section does not exist\n";
+		opserr << "section: " << secTag; 
+		opserr << "\nsection Aggregator: " << tag << endln;
+		return 0;
+	    }
+	}
+    }
+
+    int nMats = (int)theMats.size();
+	
+    if (theSec) {
+	return new SectionAggregator (tag, *theSec, nMats, &theMats[0], codes);
+    } else {
+	return new SectionAggregator (tag, nMats, &theMats[0], codes);
+    }
+	
+    return 0;
+}
 
 #define maxOrder 10
 

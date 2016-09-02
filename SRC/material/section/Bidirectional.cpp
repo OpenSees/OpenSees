@@ -24,10 +24,84 @@
 
 #include <Bidirectional.h>           
 #include <Channel.h>
+#include <elementAPI.h>
 
 Vector Bidirectional::s(2);
 Matrix Bidirectional::ks(2,2);
 ID Bidirectional::code(2);
+
+void* OPS_Bidirectional()
+{
+    if (OPS_GetNumRemainingInputArgs() < 5) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: section Bidirectional tag? E? sigY? Hiso? Hkin?" << endln;
+	return 0;
+    }    
+
+    int tag;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid Bidirectional tag" << endln;
+	return 0;
+    }
+
+    numdata = 4;
+    double data[4];
+    if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	opserr << "WARNING invalid double inputs\n";
+	opserr << "section Bidirectional: " << tag << endln;
+	return 0;
+    }
+    double E = data[0];
+    double sigY = data[1];
+    double Hi = data[2];
+    double Hk = data[3];
+
+    if (OPS_GetNumRemainingInputArgs() > 1) {
+	int code1, code2;
+	const char* type1 = OPS_GetString();
+	const char* type2 = OPS_GetString();
+	if (strcmp(type1,"Mz") == 0)
+	    code1 = SECTION_RESPONSE_MZ;
+	else if (strcmp(type1,"P") == 0)
+	    code1 = SECTION_RESPONSE_P;
+	else if (strcmp(type1,"Vy") == 0)
+	    code1 = SECTION_RESPONSE_VY;
+	else if (strcmp(type1,"My") == 0)
+	    code1 = SECTION_RESPONSE_MY;
+	else if (strcmp(type1,"Vz") == 0)
+	    code1 = SECTION_RESPONSE_VZ;
+	else if (strcmp(type1,"T") == 0)
+	    code1 = SECTION_RESPONSE_T;
+	else {
+	    opserr << "WARNING invalid code 1 " << type1 << endln;
+	    opserr << "section Bidirectional: " << tag << endln;
+	    return 0;
+	}
+
+	if (strcmp(type2,"Mz") == 0)
+	    code2 = SECTION_RESPONSE_MZ;
+	else if (strcmp(type2,"P") == 0)
+	    code2 = SECTION_RESPONSE_P;
+	else if (strcmp(type2,"Vy") == 0)
+	    code2 = SECTION_RESPONSE_VY;
+	else if (strcmp(type2,"My") == 0)
+	    code2 = SECTION_RESPONSE_MY;
+	else if (strcmp(type2,"Vz") == 0)
+	    code2 = SECTION_RESPONSE_VZ;
+	else if (strcmp(type2,"T") == 0)
+	    code2 = SECTION_RESPONSE_T;
+	else {
+	    opserr << "WARNING invalid code 2 " << type2 << endln;
+	    opserr << "section Bidirectional: " << tag << endln;
+	    return 0;
+	}
+	return new Bidirectional(tag, E, sigY, Hi, Hk, code1, code2);
+    } else {
+	return new Bidirectional(tag, E, sigY, Hi, Hk);
+    }
+
+}
 
 Bidirectional::Bidirectional
 (int tag, double e, double sy, double Hi, double Hk, int c1, int c2) :

@@ -27,6 +27,8 @@
 //  Elastic Plate Section with membrane
 //
 
+#ifndef ElasticMembranePlateSection_h
+#define ElasticMembranePlateSection_h
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -129,3 +131,4 @@ class ElasticMembranePlateSection : public SectionForceDeformation{
 
 
 
+#endif

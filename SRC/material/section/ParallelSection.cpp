@@ -45,6 +45,7 @@
 #include <ID.h>
 
 #include <classTags.h>
+#include <elementAPI.h>
 
 #define maxOrder 10
 
@@ -52,6 +53,64 @@
 // Can increase if needed!!!
 double ParallelSection::workArea[2*maxOrder*(maxOrder+1)];
 int    ParallelSection::codeArea[maxOrder];
+
+void* OPS_ParallelSection()
+{
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: section Parallel tag? tag1? tag2? ..." << endln;
+	return 0;
+    }
+ 
+    int tag;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid section Parallel tag" << endln;
+	return 0;
+    }
+
+    int numMaterials = OPS_GetNumRemainingInputArgs();
+	
+    if (numMaterials == 0) {
+	opserr << "WARNING no component section(s) provided\n";
+	opserr << "section Parallel: " << tag << endln;
+	return 0;
+    }
+    
+    // Create an array to hold pointers to component materials
+    SectionForceDeformation **theMats = new SectionForceDeformation *[numMaterials];
+	
+    // For each material get the tag and ensure it exists in model already
+    for (int i = 0; i < numMaterials; i++) {
+	int tagI;
+	if (OPS_GetIntInput(&numdata, &tagI) < 0) {
+	    opserr << "WARNING invalid component tag\n";
+	    opserr << "section Parallel: " << tag << endln;
+	    return 0;
+	}
+	    
+	SectionForceDeformation *theMat = OPS_getSectionForceDeformation(tagI);
+	    
+	if (theMat == 0) {
+	    opserr << "WARNING component section does not exist\n";
+	    opserr << "Component section: "; 
+	    opserr << "\tsection Parallel: " << tag << endln;
+	    delete [] theMats;
+	    return 0;
+	}
+	else
+	    theMats[i] = theMat;
+    }	
+	
+    // Parsing was successful, allocate the material
+    SectionForceDeformation* theSection = new ParallelSection(tag, numMaterials, theMats);
+	
+    // Deallocate the temporary pointers
+    delete [] theMats;
+
+    return theSection;
+}
 
 // constructors:
 ParallelSection::ParallelSection (int tag, int numSecs,

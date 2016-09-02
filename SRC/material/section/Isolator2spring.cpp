@@ -38,6 +38,42 @@
 #include <Channel.h>
 #include <Matrix.h>
 #include <Vector.h>
+#include <elementAPI.h>
+
+void* OPS_Isolator2spring()
+{
+    if (OPS_GetNumRemainingInputArgs() < 8) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: section Iso2spring tag? tol? k1? Fy? k2? kv? hb? Pe? <Po?>" << endln;
+	return 0;
+    }    
+	  
+    int tag;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid Iso2spring tag" << endln;
+	return 0;
+    }
+
+    numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata > 8) numdata = 8;
+    double data[8] = {0,0,0,0,0,0,0,0};
+    if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	opserr << "WARNING invalid double inputs\n";
+	opserr << "section Iso2spring: " << tag << endln;
+	return 0;
+    }
+    double tol = data[0];
+    double k1 = data[1];
+    double Fy = data[2];
+    double kb = data[3];
+    double kvo = data[4];
+    double hb = data[5];
+    double Pe = data[6];
+    double Po = data[7];
+
+    return new Isolator2spring(tag, tol, k1, Fy, kb, kvo, hb, Pe, Po);
+}
 
 Vector Isolator2spring::s(2);
 Vector Isolator2spring::s3(3);

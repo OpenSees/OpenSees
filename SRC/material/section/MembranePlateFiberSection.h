@@ -27,6 +27,8 @@
 // Generic Plate Section with membrane
 //
 
+#ifndef MembranePlateFiberSection_h
+#define MembranePlateFiberSection_h
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -134,3 +136,4 @@ class MembranePlateFiberSection : public SectionForceDeformation{
 
 
 
+#endif

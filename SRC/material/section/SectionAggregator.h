@@ -100,6 +100,8 @@ class SectionAggregator : public SectionForceDeformation
     const Vector &getdedh(void); // MHS hack
     // AddingSensitivity:END ///////////////////////////////////////////
 
+    SectionForceDeformation* getSection() {return theSection;}
+
   protected:
     
   private:
