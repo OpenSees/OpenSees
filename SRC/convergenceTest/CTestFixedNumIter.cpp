@@ -37,6 +37,22 @@
 #include <EquiSolnAlgo.h>
 #include <LinearSOE.h>
 
+#include <elementAPI.h>
+
+void* OPS_CTestFixedNumIter()
+{
+
+    int idata[3] = {0,0,2};
+    if (OPS_GetNumRemainingInputArgs() >= 3) {
+	int numdata = 3;
+	if (OPS_GetIntInput(&numdata, idata) < 0) {
+	    opserr << "WARNING FixedNumIter test failed to get int values\n";
+	    return 0;
+	}
+    }
+
+    return new CTestFixedNumIter(idata[0],idata[1],idata[2]);
+}
 
 CTestFixedNumIter::CTestFixedNumIter()	    	
     : ConvergenceTest(CONVERGENCE_TEST_CTestFixedNumIter),

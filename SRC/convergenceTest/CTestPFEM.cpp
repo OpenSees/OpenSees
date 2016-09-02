@@ -29,7 +29,39 @@
 #include <PFEMLinSOE.h>
 #include <typeinfo>
 #include <cmath>
+#include <elementAPI.h>
+#ifdef _PARALLEL_INTERPRETERS
+#include <mpi.h>
+#endif
 
+void* OPS_CTestPFEM()
+{
+    if(OPS_GetNumRemainingInputArgs() < 7) {
+	opserr<<"insufficient number of arguments\n";
+	return 0;
+    }
+
+    // tolerance
+    double tol[6];
+    int numData = 6;
+    if(OPS_GetDoubleInput(&numData,&tol[0]) < 0) {
+	opserr << "WARNING PFEM test failed to get tolerance\n";
+	return 0;
+    }
+
+    // maxIter
+    numData = OPS_GetNumRemainingInputArgs();
+    if(numData > 4) numData = 4;
+    int data[4] = {20,3,0,2};
+    if(OPS_GetIntInput(&numData,&data[0]) < 0) {
+	opserr << "WARNING PFEM test failed to get int values\n";
+	return 0;
+    }
+
+    // create test
+    return new CTestPFEM(tol[0],tol[1],tol[2],tol[3],tol[4],tol[5],
+			 data[0],data[1],data[2],data[3]);
+}
 
 CTestPFEM::CTestPFEM()	    	
     : ConvergenceTest(CONVERGENCE_TEST_CTestPFEM),
@@ -145,6 +177,39 @@ int CTestPFEM::test(void)
     double normresv = resv.pNorm(nType);
     double normresp = resp.pNorm(nType);
     double normrespi = respi.pNorm(nType);
+
+#ifdef _PARALLEL_INTERPRETERS
+
+    // copy norms from host to all processors
+    int myid;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+    double norms[6];
+    if(myid == 0) {
+	norms[0] = normv;
+	norms[1] = normp;
+	norms[2] = normpi;
+	norms[3] = normresv;
+	norms[4] = normresp;
+	norms[5] = normrespi;
+    }
+
+    if(MPI_Bcast(&norms,6,MPI_DOUBLE,0,MPI_COMM_WORLD) != MPI_SUCCESS) {
+	opserr<<"WARNING: failed to copy norms to all processors\n";
+	return -1;
+    }
+
+    if(myid != 0) {
+	normv = norms[0];
+	normp = norms[1];
+	normpi = norms[2];
+	normresv = norms[3];
+	normresp = norms[4];
+	normrespi = norms[5];
+    }
+
+    // no print except host
+    if(myid != 0) printFlag = 0;
+#endif
 
     // norm at first step
     if(currentIter == 1) {
