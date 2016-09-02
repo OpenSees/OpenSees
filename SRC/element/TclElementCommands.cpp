@@ -45,6 +45,11 @@
 #include <packages.h>
 #include <elementAPI.h>
 
+#include <UniaxialMaterial.h>
+#include <MultipleShearSpring.h>
+#include <KikuchiBearing.h>
+#include <YamamotoBiaxialHDR.h>
+
 extern 
 #ifdef _WIN32
 int __cdecl
@@ -81,12 +86,12 @@ extern void printCommand(int argc, TCL_Char **argv);
 
 extern  void *OPS_ComponentElement2d(void);
 extern  void *OPS_TrussElement(void);
-extern  void *OPS_NewTrussSectionElement(void);
-extern  void *OPS_NewCorotTrussElement(void);
-extern  void *OPS_NewCorotTrussSectionElement(void);
+extern  void *OPS_TrussSectionElement(void);
+extern  void *OPS_CorotTrussElement(void);
+extern  void *OPS_CorotTrussSectionElement(void);
 extern  void *OPS_ElasticTubularJoint(void);
-extern Element *OPS_NewZeroLengthContactNTS2D(void);
-extern Element *OPS_NewZeroLengthInterface2D(void);
+extern void *OPS_ZeroLengthContactNTS2D(void);
+extern void *OPS_ZeroLengthInterface2D(void);
 extern "C" void *OPS_PY_Macro2D(void);
 extern void *OPS_SimpleContact2D(void);
 extern void *OPS_SimpleContact3D(void);
@@ -113,10 +118,10 @@ extern void *OPS_SSPquad(void);
 extern void *OPS_SSPquadUP(void);
 extern void *OPS_SSPbrick(void);
 extern void *OPS_SSPbrickUP(void);
-extern void *OPS_NewShellMITC4(void);
-extern void *OPS_NewShellMITC9(void);
-extern void *OPS_NewShellDKGQ(void);     //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
-extern void *OPS_NewShellNLDKGQ(void);   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+extern void *OPS_ShellMITC4(void);
+extern void *OPS_ShellMITC9(void);
+extern void *OPS_ShellDKGQ(void);     //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+extern void *OPS_ShellNLDKGQ(void);   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 extern void *OPS_Quad4FiberOverlay(void);
 extern void *OPS_Brick8FiberOverlay(void);
 extern void *OPS_QuadBeamEmbedContact(void);
@@ -135,6 +140,10 @@ extern void *OPS_VS3D4WuadWithSensitivity(void);
 extern void *OPS_MVLEM(void);
 extern void *OPS_SFI_MVLEM(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
+
+extern void *OPS_PFEMElement2DBubble();
+extern void *OPS_PFEMElement2DMini();
+extern void *OPS_PFEMElement2D();
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -209,14 +218,6 @@ TclModelBuilder_addZeroLengthND(ClientData, Tcl_Interp *, int, TCL_Char **,
 extern int
 TclModelBuilder_addBeamWithHinges(ClientData, Tcl_Interp *, int, TCL_Char **,
 				  Domain*, TclModelBuilder *);
-// Minjie Zhu
-extern int
-TclModelBuilder_addPFEMElement2D(ClientData clientData, Tcl_Interp *interp,  int argc,
-                                 TCL_Char **argv, Domain*, TclModelBuilder *);
-extern int
-TclModelBuilder_addPFEMElement3D(ClientData clientData, Tcl_Interp *interp,  int argc,
-                                 TCL_Char **argv, Domain*, TclModelBuilder *);
-
 // Quan
 extern int
 TclModelBuilder_addFourNodeQuadWithSensitivity(ClientData, Tcl_Interp *, int, TCL_Char **,
@@ -380,7 +381,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     void *theEle = OPS_TrussElement();
     // for backward compatability
 	if (theEle == 0) {
-      theEle = OPS_NewTrussSectionElement(); 
+      theEle = OPS_TrussSectionElement(); 
 	}
 
     if (theEle != 0) 
@@ -393,7 +394,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   } else if ((strcmp(argv[1],"trussSection") == 0) || (strcmp(argv[1],"TrussSection") == 0)) {
 
-    void *theEle = OPS_NewTrussSectionElement(); 
+    void *theEle = OPS_TrussSectionElement(); 
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else  {
@@ -404,11 +405,11 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if ((strcmp(argv[1],"corotTruss") == 0) || (strcmp(argv[1],"CorotTruss") == 0)) {
     
-    void *theEle = OPS_NewCorotTrussElement();
+    void *theEle = OPS_CorotTrussElement();
     
     // for backward compatability
     if (theEle == 0)
-      theEle = OPS_NewCorotTrussSectionElement(); 
+      theEle = OPS_CorotTrussSectionElement(); 
     
     if (theEle != 0) 
       theElement = (Element *)theEle;
@@ -419,7 +420,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   } else if ((strcmp(argv[1],"corotTrussSection") == 0) || (strcmp(argv[1],"CorotTrussSection") == 0)) {
 
-    void *theEle = OPS_NewCorotTrussSectionElement(); 
+    void *theEle = OPS_CorotTrussSectionElement(); 
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else  {
@@ -428,7 +429,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
 
   } else if (strcmp(argv[1],"zeroLengthContactNTS2D") == 0) {
-    Element *theEle = OPS_NewZeroLengthContactNTS2D();
+      Element *theEle = (Element*) OPS_ZeroLengthContactNTS2D();
     if (theEle != 0) 
       theElement = theEle;
     else {
@@ -437,7 +438,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
 
   } else if (strcmp(argv[1],"zeroLengthInterface2D") == 0) {
-    Element *theEle = OPS_NewZeroLengthInterface2D();
+      Element *theEle = (Element*) OPS_ZeroLengthInterface2D();
     if (theEle != 0) 
       theElement = theEle;
     else {
@@ -649,7 +650,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   } else if ((strcmp(argv[1],"shell") == 0) || (strcmp(argv[1],"shellMITC4") == 0) ||
 	     (strcmp(argv[1],"Shell") == 0) || (strcmp(argv[1],"ShellMITC4") == 0)) {
     
-    void *theEle = OPS_NewShellMITC4();
+    void *theEle = OPS_ShellMITC4();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
@@ -660,7 +661,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   } else if ((strcmp(argv[1],"shellNL") == 0) || (strcmp(argv[1],"ShellNL") == 0) ||
 	     (strcmp(argv[1],"shellMITC9") == 0) || (strcmp(argv[1],"ShellMITC9") == 0)) {
     
-    void *theEle = OPS_NewShellMITC9();
+    void *theEle = OPS_ShellMITC9();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
@@ -670,7 +671,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   } else if ((strcmp(argv[1],"shellDKGQ") == 0) || (strcmp(argv[1],"ShellDKGQ") == 0)) {     //Lisha Wang & Xinzheng Lu
     
-    void *theEle = OPS_NewShellDKGQ();
+    void *theEle = OPS_ShellDKGQ();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
@@ -680,7 +681,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   } else if ((strcmp(argv[1],"shellNLDKGQ") == 0) || (strcmp(argv[1],"ShellNLDKGQ") == 0)) {    //Lisha Wang & Xinzheng Lu
     
-    void *theEle = OPS_NewShellNLDKGQ();
+    void *theEle = OPS_ShellNLDKGQ();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
@@ -931,6 +932,39 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "tclelementcommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
+  }
+
+  else if (strcmp(argv[1], "PFEMElement2DBuble") == 0) {
+      void *theEle = OPS_PFEMElement2DBubble();
+      if (theEle != 0) {
+	  theElement = (Element*)theEle;
+      } else {
+	  opserr<<"tclelementcommand -- unable to create element of type : "
+		<<argv[1]<<endln;
+	  return TCL_ERROR;
+      }
+  }
+
+  else if (strcmp(argv[1], "PFEMElement2DMini") == 0) {
+      void *theEle = OPS_PFEMElement2DMini();
+      if (theEle != 0) {
+	  theElement = (Element*)theEle;
+      } else {
+	  opserr<<"tclelementcommand -- unable to create element of type : "
+		<<argv[1]<<endln;
+	  return TCL_ERROR;
+      }
+  }
+
+  else if (strcmp(argv[1], "PFEMElement2D") == 0) {
+      void *theEle = OPS_PFEMElement2D();
+      if (theEle != 0) {
+	  theElement = (Element*)theEle;
+      } else {
+	  opserr<<"tclelementcommand -- unable to create element of type : "
+		<<argv[1]<<endln;
+	  return TCL_ERROR;
+      }
   }
 
 
@@ -1223,19 +1257,7 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
 						theTclDomain, theTclBuilder, eleArgStart);
     return result;
   }
-
-  else if (strcmp(argv[1],"PFEMElement2D") == 0) {
-      int result = TclModelBuilder_addPFEMElement2D(clientData, interp, argc, argv,
-                                                    theTclDomain, theTclBuilder);
-    return result;
-  }
-
-  else if (strcmp(argv[1],"PFEMElement3D") == 0) {
-      int result = TclModelBuilder_addPFEMElement3D(clientData, interp, argc, argv,
-                                                    theTclDomain, theTclBuilder);
-    return result;
-  }
-
+  
   else if ((strcmp(argv[1],"multipleShearSpring") == 0) ||
 	   (strcmp(argv[1],"MSS") == 0)) {
     int result = TclModelBuilder_addMultipleShearSpring(clientData, interp, argc, argv,
@@ -1363,3 +1385,1189 @@ else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
   opserr << "ERROR -- element of type " << argv[1] << " not known" << endln;
   return TCL_ERROR;
 }
+
+
+int TclModelBuilder_addMultipleShearSpring(ClientData clientData,
+    Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theTclDomain,
+    TclModelBuilder *theTclBuilder)
+{
+
+  // ensure the destructor has not been called
+  if (theTclBuilder == 0)  {
+    opserr << "WARNING builder has been destroyed - multipleShearSpring\n";    
+    return TCL_ERROR;
+  }
+
+  // 3-dim, 6-dof
+  int ndm = theTclBuilder->getNDM();
+  int ndf = theTclBuilder->getNDF();
+
+  if (ndm != 3 || ndf != 6) {
+    opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
+    opserr << "WARNING multipleShearSpring command only works when ndm is 3 and ndf is 6" << endln;
+    return TCL_ERROR;
+  }
+
+  //arguments (necessary)
+  int eleTag;
+  int iNode;
+  int jNode;
+  int nSpring;
+  int matTag;
+
+  //material
+  UniaxialMaterial *material = 0;
+  UniaxialMaterial **theMaterials = 0;
+  int recvMat = 0;
+
+  //arguments (optional)
+  double limDisp = 0.0;
+  Vector oriX(0);
+  Vector oriYp(3); oriYp(0) = 0.0; oriYp(1) = 1.0; oriYp(2) = 0.0;
+  double mass = 0.0;
+
+  //
+  Element *theElement = 0;
+
+
+  //error flag
+  bool ifNoError = true;
+
+
+  if (argc < 8)  { //element multipleShearSpring eleTag? iNode? jNode? nSpring? -mat matTag?
+
+    opserr << "WARNING insufficient arguments\n";
+    ifNoError = false;
+
+  } else {
+
+    //argv[2~5]
+    if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK)  {
+      opserr << "WARNING invalid multipleShearSpring eleTag\n";
+      ifNoError = false;
+    }
+
+    if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK)  {
+      opserr << "WARNING invalid iNode\n";
+      ifNoError = false;
+    }
+
+    if (Tcl_GetInt(interp, argv[4], &jNode) != TCL_OK)  {
+      opserr << "WARNING invalid jNode\n";
+      ifNoError = false;
+    }
+
+    if (Tcl_GetInt(interp, argv[5], &nSpring) != TCL_OK || nSpring <= 0)  {
+      opserr << "WARNING invalid nSpring\n";
+      ifNoError = false;
+    }
+
+    //argv[6~]
+    for (int i=6; i<=(argc-1); i++) {
+      
+      double value;
+      
+      if (strcmp(argv[i],"-mat")==0 && (i+1)<=(argc-1)) { // -mat matTag?
+	
+	if (Tcl_GetInt(interp,argv[i+1], &matTag) != TCL_OK) {
+	  opserr << "WARNING invalid matTag\n";
+	  ifNoError = false;
+	}
+
+	material = OPS_getUniaxialMaterial(matTag);
+	if (material == 0)  {
+	  opserr << "WARNING material model not found\n";
+	  opserr << "uniaxialMaterial: " << matTag << endln;
+	  opserr << "multipleShearSpring element: " << eleTag << endln;
+	  return TCL_ERROR;
+	}
+
+	//opserr << "org material " << material->getClassType() << "\n";
+	recvMat++ ;
+	i += 1;
+
+      } else if (strcmp(argv[i],"-nMat")==0 && (i+nSpring)<=(argc-1)) { // -mat matTag?
+
+	theMaterials = new UniaxialMaterial *[nSpring];
+	for (int j=0; j<nSpring; j++) {
+	  if (Tcl_GetInt(interp,argv[j+i+1], &matTag) != TCL_OK) {
+	    opserr << "WARNING invalid matTag\n";
+	    ifNoError = false;
+	  }
+	  
+	  theMaterials[j] = OPS_getUniaxialMaterial(matTag);
+	  if (theMaterials[j] == 0)  {
+	    opserr << "WARNING material model not found\n";
+	    opserr << "uniaxialMaterial: " << matTag << endln;
+	    opserr << "multipleShearSpring element: " << eleTag << endln;
+	    return TCL_ERROR;
+	  }
+	}
+	//opserr << "org material " << material->getClassType() << "\n";
+	recvMat++ ;
+	i += nSpring;	
+
+      } else if (strcmp(argv[i],"-orient")==0 && (i+6)<=(argc-1) && Tcl_GetDouble(interp,argv[i+4], &value) == TCL_OK) { // <-orient x1? x2? x3? yp1? yp2? yp3?>
+
+	oriX.resize(3);
+
+	for (int j=1; j<=3; j++) {
+	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
+	    opserr << "WARNING invalid -orient value\n";
+	    ifNoError = false;
+	  } else {
+	    oriX(j-1) = value;
+	  }
+	}
+
+	i += 3;
+
+	for (int j=1; j<=3; j++) {
+	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
+	    opserr << "WARNING invalid -orient value\n";
+	    ifNoError = false;
+	  } else {
+	    oriYp(j-1) = value;
+	  }
+	}
+
+	i += 3;
+
+
+      } else if (strcmp(argv[i],"-orient")==0 && (i+3)<=(argc-1)) { // <-orient yp1? yp2? yp3?> の読み込み	  
+
+	for (int j=1; j<=3; j++) {
+	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
+	    opserr << "WARNING invalid -orient value\n";
+	    ifNoError = false;
+	  } else {
+	    oriYp(j-1) = value;
+	  }
+	}
+
+	i += 3;
+
+      } else if (strcmp(argv[i],"-mass")==0 && (i+1)<=(argc-1)) { // <-mass m?> の読み込み
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK || mass <= 0)  {
+	  opserr << "WARNING invalid mass\n";
+	  ifNoError = false;
+	}
+
+	i += 1;
+
+      } else if (strcmp(argv[i],"-lim")==0 && (i+1)<=(argc-1)) { // <-lim limDisp?> の読み込み
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &limDisp) != TCL_OK || limDisp < 0)  {
+	  opserr << "WARNING invalid limDisp\n";
+	  ifNoError = false;
+	}
+
+	i += 1;
+	
+      } else { //invalid option
+	
+	opserr << "WARNING invalid optional arguments \n";
+	ifNoError = false;
+	break;
+
+      }
+
+    }
+    
+  } //end input
+  
+
+
+  //confirm material
+  if (recvMat != 1)  {
+    opserr << "WARNING wrong number of -mat inputs\n";
+    opserr << "got " << recvMat << " inputs, but want 1 input\n";
+    ifNoError = false;
+  }
+
+  
+  //if error detected
+  if (!ifNoError) {
+    //input:
+    printCommand(argc, argv);
+    //want:
+    opserr << "Want: element multipleShearSpring eleTag? iNode? jNode? nSpring? -mat matTag? <-lim dsp> <-orient <x1? x2? x3?> yp1? yp2? yp3?> <-mass m?>\n";
+    return TCL_ERROR;
+  }
+  
+
+  // now create the multipleShearSpring
+  if (theMaterials == 0) {
+    theElement = new MultipleShearSpring(eleTag, iNode, jNode, nSpring, material, limDisp, oriYp, oriX, mass);
+  } else {
+    theElement = new MultipleShearSpring(eleTag, iNode, jNode, theMaterials, nSpring, limDisp, oriYp, oriX, mass);
+    delete [] theMaterials;
+  }
+
+  if (theElement == 0)  {
+    opserr << "WARNING ran out of memory creating element\n";
+    opserr << "multipleShearSpring element: " << eleTag << endln;
+    return TCL_ERROR;
+  }
+  
+  // then add the multipleShearSpring to the domain
+  if (theTclDomain->addElement(theElement) == false)  {
+    opserr << "WARNING could not add element to the domain\n";
+    opserr << "multipleShearSpring element: " << eleTag << endln;
+    delete theElement;
+    return TCL_ERROR;
+  }       
+  
+  // if get here we have successfully created the multipleShearSpring and added it to the domain
+  return TCL_OK;
+}
+
+static bool errDetected(bool ifNoError,char *msg){
+  if (ifNoError){
+    opserr << "" << endln;
+    opserr << "========================================" << endln;
+    opserr << " element : input error detected" << endln;
+    opserr << "------------------------------" << endln;
+  }
+  opserr << "  " << msg << endln;
+  return false;
+};
+
+int TclModelBuilder_addMultipleNormalSpring(ClientData clientData,
+    Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theTclDomain,
+    TclModelBuilder *theTclBuilder)
+{
+
+  // ensure the destructor has not been called
+  if (theTclBuilder == 0)  {
+    opserr << "WARNING builder has been destroyed - multipleNormalSpring\n";    
+    return TCL_ERROR;
+  }
+
+  // 3-dim, 6-dof
+  int ndm = theTclBuilder->getNDM();
+  int ndf = theTclBuilder->getNDF();
+
+  if (ndm != 3 || ndf != 6) {
+    opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
+    opserr << "WARNING multipleNormalSpring command only works when ndm is 3 and ndf is 6" << endln;
+    return TCL_ERROR;
+  }
+
+
+  //arguments (necessary)
+  int eleTag;
+  int iNode;
+  int jNode;
+  int nDivide;
+
+  //arguments (necessary, input with -???)
+  int matTag;
+  UniaxialMaterial *material;
+  int shape;
+  double size;
+
+  //arguments (optional, input with -???)
+  double lambda = -1.0;
+  Vector oriX(0);
+  Vector oriYp(3); oriYp(0) = 0.0; oriYp(1) = 1.0; oriYp(2) = 0.0;
+  double mass = 0.0;
+
+  // input comfirmation
+  int recvMat    = 0;
+  int recvShape  = 0;
+  int recvSize   = 0;
+  int recvLambda = 0;
+  int recvOrient = 0;
+  int recvMass   = 0;
+
+
+  //
+  Element *theElement = 0;
+
+
+  // error flag
+  bool ifNoError = true;
+
+
+
+  if (argc < 6)  { //element multipleNormalSpring eleTag? iNode? jNode? nDivide?
+
+    ifNoError = errDetected(ifNoError,"insufficient arguments");
+
+  } else {
+
+    //argv[2~5]
+    if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK)  {
+      ifNoError = errDetected(ifNoError,"invalid eleTag");
+    }
+
+    if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK)  {
+      ifNoError = errDetected(ifNoError,"invalid iNode");
+    }
+
+    if (Tcl_GetInt(interp, argv[4], &jNode) != TCL_OK)  {
+      ifNoError = errDetected(ifNoError,"invalid jNode");
+    }
+
+    if (Tcl_GetInt(interp, argv[5], &nDivide) != TCL_OK || nDivide <= 0)  {
+      ifNoError = errDetected(ifNoError,"invalid nDivide");
+    }
+
+    //argv[6~]
+    for (int i=6; i<=(argc-1); i++) {
+      
+      double value;
+      
+      if (strcmp(argv[i],"-mat")==0 && (i+1)<=(argc-1)) { // -mat matTag?
+	
+	if (Tcl_GetInt(interp,argv[i+1], &matTag) != TCL_OK) {
+	  ifNoError = errDetected(ifNoError,"invalid matTag");
+	}
+
+
+	material = OPS_getUniaxialMaterial(matTag);
+	if (material == 0)  {
+	  ifNoError = errDetected(ifNoError,"material model not found");
+	}
+
+	recvMat++ ;
+	i += 1;
+
+
+      } else if (strcmp(argv[i],"-shape")==0 && (i+1)<=(argc-1)) { // -shape shape?
+	
+	if (strcmp(argv[i+1],"round") == 0) {
+	  shape = 1; //round shape
+	} else if (strcmp(argv[i+1],"square") == 0) {
+	  shape = 2; //square
+	} else {
+	  ifNoError = errDetected(ifNoError,"invalid shape (\"round\" or \"square\" are available)");
+	}
+	
+	recvShape++ ;
+	i += 1;
+	
+      } else if (strcmp(argv[i],"-size")==0 && (i+1)<=(argc-1)) { // -size size?
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &size) != TCL_OK || size <= 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid size");
+	}
+
+	recvSize++ ;
+	i += 1;
+
+      } else if (strcmp(argv[i],"-lambda")==0 && (i+1)<=(argc-1)) { // <-lambda lambda?>
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &lambda) != TCL_OK || lambda < 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid lambda");
+	}
+
+	recvLambda++ ;
+	i += 1;
+
+      } else if (strcmp(argv[i],"-orient")==0 && (i+6)<=(argc-1) && Tcl_GetDouble(interp,argv[i+4], &value) == TCL_OK) { // <-orient x1? x2? x3? yp1? yp2? yp3?>
+
+	oriX.resize(3);
+
+	for (int j=1; j<=3; j++) {
+	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
+	    ifNoError = errDetected(ifNoError,"invalid orient");
+	  } else {
+	    oriX(j-1) = value;
+	  }
+	}
+
+	i += 3;
+
+	for (int j=1; j<=3; j++) {
+	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
+	    ifNoError = errDetected(ifNoError,"invalid orient");
+	  } else {
+	    oriYp(j-1) = value;
+	  }
+	}
+
+	recvOrient++ ;
+	i += 3;
+
+      } else if (strcmp(argv[i],"-orient")==0 && (i+3)<=(argc-1)) { // <-orient yp1? yp2? yp3?>
+
+	for (int j=1; j<=3; j++) {
+	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
+	    ifNoError = errDetected(ifNoError,"invalid orient");
+	  } else {
+	    oriYp(j-1) = value;
+	  }
+	}
+
+	recvOrient++ ;
+	i += 3;
+
+      } else if (strcmp(argv[i],"-mass")==0 && (i+1)<=(argc-1)) { // <-mass m?> の読み込み
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK || mass <= 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid mass");
+	}
+
+	recvMass++ ;
+	i += 1;
+	
+      } else { //invalid option
+	
+	ifNoError = errDetected(ifNoError,"invalid optional arguments");
+	break;
+
+      }
+
+    }
+    
+  } // end input
+  
+
+
+  // input cofirmation
+  // necessary arguments
+  if (recvMat != 1)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -mat inputs (got %d inputs, but want 1 input)",recvMat);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvShape != 1)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -shape inputs (got %d inputs, but want 1 input)",recvShape);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvSize != 1)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -size inputs (got %d inputs, but want 1 input)",recvSize);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  // optional arguments
+  if (recvLambda >= 2)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -lambda inputs (got %d inputs, but want 1 input)",recvLambda);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvOrient >= 2)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -ori inputs (got %d inputs, but want 1 input)",recvOrient);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvMass >= 2)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -mass inputs (got %d inputs, but want 1 input)",recvMass);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  
+  // if error detected
+  if (!ifNoError) {
+    opserr << "------------------------------" << endln;
+    //input:
+    printCommand(argc, argv);
+    //want:
+    opserr << "Want: element multipleNormalSpring eleTag? iNode? jNode? nDivide? -mat matTag? -shape shape? -size size? <-lambda lambda?> <-orient <x1? x2? x3?> yp1? yp2? yp3?> <-mass m?>\n";
+    opserr << "========================================" << endln;
+    opserr << "" << endln;
+    return TCL_ERROR;
+  }
+ 
+  
+
+  // now create the multipleNormalSpring
+  //theElement = new MultipleNormalSpring(eleTag, iNode, jNode, nDivide, material, shape, size, lambda, oriYp, oriX, mass);
+
+  if (theElement == 0)  {
+    opserr << "WARNING ran out of memory creating element\n";
+    opserr << "multipleNormalSpring element: " << eleTag << endln;
+    return TCL_ERROR;
+  }
+  
+  // then add the multipleNormalSpring to the domain
+  if (theTclDomain->addElement(theElement) == false)  {
+    opserr << "WARNING could not add element to the domain\n";
+    opserr << "multipleNormalSpring element: " << eleTag << endln;
+    delete theElement;
+    return TCL_ERROR;
+  }       
+  
+  // if get here we have successfully created the multipleNormalSpring and added it to the domain
+  return TCL_OK;
+}
+
+int TclModelBuilder_addKikuchiBearing(ClientData clientData,
+    Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theTclDomain,
+    TclModelBuilder *theTclBuilder)
+{
+
+  // ensure the destructor has not been called
+  if (theTclBuilder == 0)  {
+    opserr << "WARNING builder has been destroyed - KikuchiBearing\n";    
+    return TCL_ERROR;
+  }
+
+  //3-dim, 6dof
+  int ndm = theTclBuilder->getNDM();
+  int ndf = theTclBuilder->getNDF();
+
+  if (ndm != 3 || ndf != 6) {
+    opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
+    opserr << "WARNING KikuchiBearing command only works when ndm is 3 and ndf is 6" << endln;
+    return TCL_ERROR;
+  }
+
+  //arguments (necessary)
+  int eleTag;
+  int iNode;
+  int jNode;
+
+  //arguments (necessary, input with -???)
+  int shape;
+  double size;
+  double totalRubber;
+  int nMSS;
+  int matMSSTag;
+  UniaxialMaterial *matMSS;
+  int nMNS;
+  int matMNSTag;
+  UniaxialMaterial *matMNS;
+
+  //arguments (optional, input with -???)
+  double totalHeight = -1.0; //default: Norm(I->J)
+  double limDisp = -1.0; //default: INF
+  double lambda = -1.0; //default: INF
+  Vector oriX(0); //default: local-x Vec(I->J)
+  Vector oriYp(3); oriYp(0) = 0.0; oriYp(1) = 1.0; oriYp(2) = 0.0; //default: global-Y
+  double mass = 0.0;
+  bool ifPDInput = true;
+  bool ifTilt = true;
+  double adjCi = 0.5;
+  double adjCj = 0.5;
+  bool ifBalance = false;
+  double limFo = -1.0; //default: INF
+  double limFi = -1.0; //default: INF
+  int nIter = 1;
+
+  // input comfirmation
+  int recvShape  = 0;
+  int recvSize   = 0;
+  int recvHeight = 0;
+  int recvNMSS  = 0;
+  int recvMatMSS  = 0;
+  int recvLimDisp = 0;
+  int recvNMNS  = 0;
+  int recvMatMNS  = 0;
+  int recvLambda = 0;
+  int recvOrient = 0;
+  int recvMass   = 0;
+  int recvIfPD = 0;
+  int recvIfTl = 0;
+  int recvAdj = 0;
+  int recvBal = 0;
+
+  //
+  Element *theElement = 0;
+
+
+  //error flag
+  bool ifNoError = true;
+
+
+
+  if (argc < 5)  { //element KikuchiBearing eleTag? iNode? jNode?
+
+    ifNoError = errDetected(ifNoError,"insufficient arguments");
+
+  } else {
+
+    //argv[2~4]
+    if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK)  {
+      ifNoError = errDetected(ifNoError,"invalid eleTag");
+    }
+
+    if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK)  {
+      ifNoError = errDetected(ifNoError,"invalid iNode");
+    }
+
+    if (Tcl_GetInt(interp, argv[4], &jNode) != TCL_OK)  {
+      ifNoError = errDetected(ifNoError,"invalid jNode");
+    }
+
+    //argv[5~]
+    for (int i=5; i<=(argc-1); i++) {
+      
+      double value;
+
+      if (strcmp(argv[i],"-shape")==0 && (i+1)<=(argc-1)) { // -shape shape?
+	
+      	if (strcmp(argv[i+1],"round") == 0) {
+	  shape = 1; //round
+	} else if (strcmp(argv[i+1],"square") == 0) {
+	  shape = 2; //square
+	} else {
+	  ifNoError = errDetected(ifNoError,"invalid shape (\"round\" or \"square\" are available)");
+	}
+	
+	recvShape++ ;
+	i += 1;
+
+
+      } else if (strcmp(argv[i],"-size")==0 && (i+2)<=(argc-1)) { // -size size? totalRubber?
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &size) != TCL_OK || size <= 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid size");
+	}
+
+	if (Tcl_GetDouble(interp, argv[i+2], &totalRubber) != TCL_OK || totalRubber <= 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid totalRubber");
+	}
+
+	recvSize++ ;
+	i += 2;
+	
+      } else if (strcmp(argv[i],"-totalHeight")==0 && (i+1)<=(argc-1)) { // -totalHeight totalHeight?
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &totalHeight) != TCL_OK || totalHeight <= 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid totalHeight");
+	}
+
+	recvHeight++ ;
+	i += 1;
+
+      } else if (strcmp(argv[i],"-nMSS")==0 && (i+1)<=(argc-1)) { // -nMSS nMSS?
+	
+	if (Tcl_GetInt(interp, argv[i+1], &nMSS) != TCL_OK || nMSS <= 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid nMSS");
+	}
+
+	recvNMSS++ ;
+	i += 1;
+
+
+      } else if (strcmp(argv[i],"-matMSS")==0 && (i+1)<=(argc-1)) { // -matMSS matMSSTag?
+	
+	if (Tcl_GetInt(interp,argv[i+1], &matMSSTag) != TCL_OK) {
+	  ifNoError = errDetected(ifNoError,"invalid matMSSTag");
+	}
+
+	matMSS = OPS_getUniaxialMaterial(matMSSTag);
+	if (matMSS == 0)  {
+	  ifNoError = errDetected(ifNoError,"material for MSS model not found");
+	}
+
+	recvMatMSS++ ;
+	i += 1;
+
+
+      } else if (strcmp(argv[i],"-limDisp")==0 && (i+1)<=(argc-1)) { // <-limDisp limDisp?>
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &limDisp) != TCL_OK || limDisp < 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid limDisp");
+	}
+
+	recvLimDisp++ ;
+	i += 1;
+
+
+      } else if (strcmp(argv[i],"-nMNS")==0 && (i+1)<=(argc-1)) { // -nMNS nMNS?
+	
+	if (Tcl_GetInt(interp, argv[i+1], &nMNS) != TCL_OK || nMNS <= 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid nMNS");
+	}
+
+	recvNMNS++ ;
+	i += 1;
+
+
+      } else if (strcmp(argv[i],"-matMNS")==0 && (i+1)<=(argc-1)) { // -matMNS matMNSTag?
+	
+	if (Tcl_GetInt(interp,argv[i+1], &matMNSTag) != TCL_OK) {
+	  ifNoError = errDetected(ifNoError,"invalid matMNSTag");
+	}
+
+	matMNS = OPS_getUniaxialMaterial(matMNSTag);
+	if (matMNS == 0)  {
+	  ifNoError = errDetected(ifNoError,"material for MNS model not found");
+	}
+
+	recvMatMNS++ ;
+	i += 1;
+
+
+      } else if (strcmp(argv[i],"-lambda")==0 && (i+1)<=(argc-1)) { // <-lambda lambda?>
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &lambda) != TCL_OK || lambda < 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid lambda");
+	}
+
+	recvLambda++ ;
+	i += 1;
+
+
+      } else if (strcmp(argv[i],"-orient")==0 && (i+6)<=(argc-1) && Tcl_GetDouble(interp,argv[i+4], &value) == TCL_OK) { // <-orient x1? x2? x3? yp1? yp2? yp3?>
+
+	oriX.resize(3);
+
+	for (int j=1; j<=3; j++) {
+	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
+	    ifNoError = errDetected(ifNoError,"invalid orient");
+	  } else {
+	    oriX(j-1) = value;
+	  }
+	}
+
+	i += 3;
+
+	for (int j=1; j<=3; j++) {
+	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
+	    ifNoError = errDetected(ifNoError,"invalid orient");
+	  } else {
+	    oriYp(j-1) = value;
+	  }
+	}
+
+	recvOrient++ ;
+	i += 3;
+
+      } else if (strcmp(argv[i],"-orient")==0 && (i+3)<=(argc-1)) { // <-orient yp1? yp2? yp3?>
+
+	for (int j=1; j<=3; j++) {
+	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
+	    ifNoError = errDetected(ifNoError,"invalid orient");
+	  } else {
+	    oriYp(j-1) = value;
+	  }
+	}
+
+	recvOrient++ ;
+	i += 3;
+
+      } else if (strcmp(argv[i],"-mass")==0 && (i+1)<=(argc-1)) { // <-mass mass?>
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK || mass <= 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid mass");
+	}
+
+	recvMass++ ;
+	i += 1;
+
+      } else if (strcmp(argv[i],"-noPDInput")==0) { // <-noPDInput>
+	
+	ifPDInput = false;
+
+	recvIfPD++ ;
+	i += 0;
+
+      } else if (strcmp(argv[i],"-noTilt")==0) { // <-noTilt>
+	
+	ifTilt = false;
+
+	recvIfTl++ ;
+	i += 0;
+	
+      } else if (strcmp(argv[i],"-adjustPDOutput")==0 && (i+2)<=(argc-1)) { // -adjustPDOutput ci? cj?
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &adjCi) != TCL_OK)  {
+	  ifNoError = errDetected(ifNoError,"invalid ci");
+	}
+
+	if (Tcl_GetDouble(interp, argv[i+2], &adjCj) != TCL_OK)  {
+	  ifNoError = errDetected(ifNoError,"invalid cj");
+	}
+
+	recvAdj++ ;
+	i += 2;
+
+      } else if (strcmp(argv[i],"-doBalance")==0 && (i+3)<=(argc-1)) { // -doBalance limFo? limFi? nIter?
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &limFo) != TCL_OK || limFo <= 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid limFo");
+	}
+
+	if (Tcl_GetDouble(interp, argv[i+2], &limFi) != TCL_OK || limFi <= 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid limFi");
+	}
+
+	if (Tcl_GetInt(interp, argv[i+3], &nIter) != TCL_OK || nIter <= 0)  {
+	  ifNoError = errDetected(ifNoError,"invalid nIter");
+	}
+
+	ifBalance = true;
+
+	recvBal++ ;
+	i += 3;
+
+
+      } else { //invalid option
+	
+	ifNoError = errDetected(ifNoError,"invalid optional arguments");
+	break;
+
+      }
+
+    }
+    
+  } //end input
+  
+
+  // input cofirmation
+  // necessary arguments
+  if (recvShape != 1)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -shape inputs (got %d inputs, but want 1 input)",recvShape);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvSize != 1)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -size inputs (got %d inputs, but want 1 input)",recvSize);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvNMSS != 1)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -NMSS inputs (got %d inputs, but want 1 input)",recvNMSS);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvMatMSS != 1)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -matMSS inputs (got %d inputs, but want 1 input)",recvMatMSS);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvNMNS != 1)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -NMNS inputs (got %d inputs, but want 1 input)",recvNMNS);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvMatMNS != 1)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -matMNS inputs (got %d inputs, but want 1 input)",recvMatMNS);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+
+  //optional arguments
+  if (recvHeight >= 2)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -totalHeight inputs (got %d inputs, but want 1 input)",recvHeight);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvLimDisp >= 2)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -limDisp inputs (got %d inputs, but want 1 input)",recvLimDisp);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvLambda >= 2)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -lambda inputs (got %d inputs, but want 1 input)",recvLambda);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvOrient >= 2)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -ori inputs (got %d inputs, but want 1 input)",recvOrient);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvMass >= 2)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -mass inputs (got %d inputs, but want 1 input)",recvMass);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvIfPD >= 2)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -noPDInput inputs (got %d inputs, but want 1 input)",recvIfPD);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvIfTl >= 2)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -noTilt inputs (got %d inputs, but want 1 input)",recvIfTl);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvAdj >= 2)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -adjustPDOutput inputs (got %d inputs, but want 1 input)",recvAdj);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  if (recvBal >= 2)  {
+    char buf[100];
+    sprintf(buf,"wrong number of -doBalance inputs (got %d inputs, but want 1 input)",recvBal);
+    ifNoError = errDetected(ifNoError,buf);
+  }
+
+  
+  //if error detected
+  if (!ifNoError) {
+    opserr << "------------------------------" << endln;
+    //input:
+    printCommand(argc, argv);
+    //want:
+    opserr << "Want: element KikuchiBearing eleTag? iNode? jNode?\n";
+    opserr << "                             -shape shape? -size size? totalRubber? <-totalHeight totalHeight?>\n";
+    opserr << "                             -nMSS nMSS? -matMSS matMSSTag? <-lim limDisp?>\n";
+    opserr << "                             -nMNS nMNS? -matMNS matMNSTag? <-lambda lambda?>\n";
+    opserr << "                             <-orient <x1? x2? x3?> yp1? yp2? yp3?> <-mass m?>\n";
+    opserr << "                             <-noPDInput> <-noTilt> <-adjustPDOutput ci? cj?> <-doBalance limFo? limFi? nIter?>\n";
+    opserr << "========================================" << endln;
+    opserr << "" << endln;
+    return TCL_ERROR;
+  }
+
+  // now create the KikuchiBearing
+  theElement = new KikuchiBearing(eleTag, iNode, jNode, shape, size, totalRubber, totalHeight, nMSS, matMSS, limDisp, nMNS, matMNS, lambda, oriYp, oriX, mass, ifPDInput, ifTilt, adjCi, adjCj, ifBalance, limFo, limFi, nIter);
+
+  if (theElement == 0)  {
+    opserr << "WARNING ran out of memory creating element\n";
+    opserr << "KikuchiBearing element: " << eleTag << endln;
+    return TCL_ERROR;
+  }
+  
+  // then add the KikuchiBearing to the domain
+  if (theTclDomain->addElement(theElement) == false)  {
+    opserr << "WARNING could not add element to the domain\n";
+    opserr << "KikuchiBearing element: " << eleTag << endln;
+    delete theElement;
+    return TCL_ERROR;
+  }       
+  
+  // if get here we have successfully created the KikuchiBearing and added it to the domain
+  return TCL_OK;
+}
+
+int TclModelBuilder_addYamamotoBiaxialHDR(ClientData clientData,
+				      Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theTclDomain,
+				      TclModelBuilder *theTclBuilder)
+{
+
+  // ensure the destructor has not been called
+  if (theTclBuilder == 0)  {
+    opserr << "WARNING builder has been destroyed - YamamotoBiaxialHDR\n";    
+    return TCL_ERROR;
+  }
+
+
+  // 3-dim, 6-dof
+  int ndm = theTclBuilder->getNDM();
+  int ndf = theTclBuilder->getNDF();
+
+  if (ndm != 3 || ndf != 6) {
+    opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
+    opserr << "WARNING YamamotoBiaxialHDR command only works when ndm is 3 and ndf is 6" << endln;
+    return TCL_ERROR;
+  }
+
+
+  //arguments (necessary)
+  int eleTag;
+  int iNode;
+  int jNode;
+
+  int Tp = 1;
+  double DDo;
+  double DDi;
+  double Hr;
+
+  //arguments (optional)
+  double Cr=1.0;
+  double Cs=1.0;
+  Vector oriX(0);
+  Vector oriYp(3); oriYp(0) = 0.0; oriYp(1) = 1.0; oriYp(2) = 0.0;
+  double mass = 0.0;
+
+
+  //
+  Element *theElement = 0;
+
+
+  //error flag
+  bool ifNoError = true;
+
+
+  if (argc < 9)  { //element YamamotoBiaxialHDR eleTag? iNode? jNode? Tp? DDo? DDi? Hr?
+    // argc =            1           2             3      4      5     6   7    8    9
+    // argv =       argv[0]      argv[1]      argv[2]  argv[3] ................. argv[8]
+    opserr << "WARNING insufficient arguments\n";
+    ifNoError = false;
+
+  } else {
+
+
+    //argv[2~8]
+    if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK)  {
+      opserr << "WARNING invalid YamamotoBiaxialHDR eleTag\n";
+      ifNoError = false;
+    }
+
+    // iNode
+    if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK)  {
+      opserr << "WARNING invalid iNode\n";
+      ifNoError = false;
+    }
+
+    // jNode
+    if (Tcl_GetInt(interp, argv[4], &jNode) != TCL_OK)  {
+      opserr << "WARNING invalid jNode\n";
+      ifNoError = false;
+    }
+
+    // Tp
+    if (strcmp(argv[5],"1") == 0) {
+      Tp = 1; // Bridgestone X0.6R (EESD version)
+    } else {
+      opserr << "WARNING invalid YamamotoBiaxialHDR Tp" << endln;
+      ifNoError = false;
+    }
+
+    // DDo
+    if (Tcl_GetDouble(interp, argv[6], &DDo) != TCL_OK || DDo <= 0.0) {
+      opserr << "WARNING invalid YamamotoBiaxialHDR DDo" << endln;
+      ifNoError = false;
+    }
+
+    // DDi
+    if (Tcl_GetDouble(interp, argv[7], &DDi) != TCL_OK || DDi < 0.0) {
+      opserr << "WARNING invalid YamamotoBiaxialHDR DDi" << endln;
+      ifNoError = false;
+    }
+
+    // Hr
+    if (Tcl_GetDouble(interp, argv[8], &Hr) != TCL_OK || Hr <= 0.0) {
+      opserr << "WARNING invalid YamamotoBiaxialHDR Hr" << endln;
+      ifNoError = false;
+    }
+
+    // check print--------------------------------------------/
+    //  opserr << "   \n";
+    //  opserr << "TclModelBuilder_addYamamotoBiaxialHDR()\n";
+    //  opserr << "  tp  = " << Tp << endln;
+    //  opserr << "  ddo = " << DDo << endln;
+    //  opserr << "  ddi = " << DDi << endln;
+    //  opserr << "  hr  = " << Hr << endln;
+    //------------------------------------------------------
+
+    // argv[9~]
+    for (int i=9; i<=(argc-1); i++) {
+      double value;
+
+      if (strcmp(argv[i],"-orient")==0 && (i+6)<=(argc-1) && Tcl_GetDouble(interp,argv[i+4], &value) == TCL_OK) { // <-orient x1? x2? x3? yp1? yp2? yp3?>
+
+	oriX.resize(3);
+
+	// x1, x2, x3
+	for (int j=1; j<=3; j++) {
+	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
+	    opserr << "WARNING invalid -orient value\n";
+	    ifNoError = false;
+	  } else {
+	    oriX(j-1) = value;
+	  }
+	}
+	
+	i += 3;
+	
+	// yp1, yp2, yp3
+	for (int j=1; j<=3; j++) {
+	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
+	    opserr << "WARNING invalid -orient value\n";
+	    ifNoError = false;
+	  } else {
+	    oriYp(j-1) = value;
+	  }
+	}
+	
+	i += 3;
+	
+      } else if (strcmp(argv[i],"-orient")==0 && (i+3)<=(argc-1)) { // <-orient yp1? yp2? yp3?>
+	
+	for (int j=1; j<=3; j++) {
+	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
+	    opserr << "WARNING invalid -orient value\n";
+	    ifNoError = false;
+	  } else {
+	    oriYp(j-1) = value;
+	  }
+	}
+	
+	i += 3;
+	
+      } else if (strcmp(argv[i],"-mass")==0 && (i+1)<=(argc-1)) { // <-mass m?>
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK || mass <= 0)  {
+	  opserr << "WARNING invalid mass\n";
+	  ifNoError = false;
+	}
+
+	i += 1;
+
+      } else if (strcmp(argv[i],"-coRS")==0 && (i+2)<=(argc-1)) { // <-coRS cr? cs?>
+	
+	if (Tcl_GetDouble(interp, argv[i+1], &Cr) != TCL_OK || Cr <= 0)  {
+	  opserr << "WARNING invalid cr\n";
+	  ifNoError = false;
+	}
+	if (Tcl_GetDouble(interp, argv[i+2], &Cs) != TCL_OK || Cs <= 0)  {
+	  opserr << "WARNING invalid cs\n";
+	  ifNoError = false;
+	}
+
+	i += 2;
+
+	
+      } else {
+	
+	opserr << "WARNING invalid optional arguments \n";
+	ifNoError = false;
+	break;
+	
+      }
+    }
+
+  } //end input
+
+  
+  //if error detected
+  if (!ifNoError) {
+    //input:
+    printCommand(argc, argv);
+    //want:
+    opserr << "Want: element YamamotoBiaxialHDR eleTag? iNode? jNode? Tp? DDo? DDi? Hr?  <-coRS cr? cs?> <-orient <x1? x2? x3?> y1? y2? y3?> <-mass m?>\n";
+    return TCL_ERROR;
+  }
+  
+
+  // now create the YamamotoBiaxialHDR
+  theElement = new YamamotoBiaxialHDR(eleTag, iNode, jNode, Tp, DDo, DDi, Hr, Cr, Cs, oriYp, oriX, mass);
+
+  if (theElement == 0)  {
+    opserr << "WARNING ran out of memory creating element\n";
+    opserr << "YamamotoBiaxialHDR element: " << eleTag << endln;
+    return TCL_ERROR;
+  }
+  
+  // then add the YamamotoBiaxialHDR to the domain
+  if (theTclDomain->addElement(theElement) == false)  {
+    opserr << "WARNING could not add element to the domain\n";
+    opserr << "YamamotoBiaxialHDR element: " << eleTag << endln;
+    delete theElement;
+    return TCL_ERROR;
+  }       
+  
+  // if get here we have successfully created the YamamotoBiaxialHDR and added it to the domain
+  return TCL_OK;
+  }
