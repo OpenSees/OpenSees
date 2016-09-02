@@ -55,7 +55,7 @@ OPS_SurfaceLoad(void)
 {
   if (num_SurfaceLoad == 0) {
     num_SurfaceLoad++;
-    OPS_Error("SurfaceLoad element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n", 1);
+    opserr<<"SurfaceLoad element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n";
   }
 
   // Pointer to a uniaxial material that will be returned
