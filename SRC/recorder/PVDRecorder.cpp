@@ -35,6 +35,9 @@
 #include <Matrix.h>
 #include <classTags.h>
 #include <NodeIter.h>
+#include <BackgroundMesh.h>
+
+extern BackgroundMesh& OPS_GetBackgroundMesh();
 
 std::map<int,PVDRecorder::VtkType> PVDRecorder::vtktypes;
 
@@ -238,22 +241,33 @@ PVDRecorder::vtu()
     this->getParts();
 
     // part 0
-    ID partno(parts.size()+1);
-    partno(0) = 0;
+    ID partno(0, (int)parts.size()+2);
+    partno[0] = 0;
     if (this->savePart0(nodendf) < 0) {
 	return -1;
     }
     
-    // save other parts
-    int index = 1;
-    for(std::map<int,ID>::iterator it=parts.begin(); it!=parts.end(); it++) {
-	int& no = partnum[it->first];
-	if (no == 0) {
-	    no = partnum.size();
+    // particle part
+    BackgroundMesh& background = OPS_GetBackgroundMesh();
+    if (background.numParticleGroups() > 0) {
+	partno[1] = 1;
+	if (this->savePartParticle(nodendf) < 0) {
+	    return -1;
 	}
-	partno(index++) = no;
+    }
+
+    // save other parts
+    // int index = 1;
+    for(std::map<int,ID>::iterator it=parts.begin(); it!=parts.end(); it++) {
+	// int& no = partnum[it->first];
+	// if (no == 0) {
+	//     no = (int)partnum.size();
+	// }
+	int no = partno.Size();
+	partno[no] = no;
 	if(this->savePart(no,it->first,nodendf) < 0) return -1;
     }
+
     
     timeparts.push_back(partno);
     
@@ -719,6 +733,392 @@ PVDRecorder::savePart0(int nodendf)
 }
 
 int
+PVDRecorder::savePartParticle(int nodendf)
+{
+    if (theDomain == 0) {
+	opserr<<"WARNING: setDomain has not been called -- PVDRecorder\n";
+	return -1;
+    }
+    
+    // get time and part
+    std::stringstream ss;
+    ss.precision(precision);
+    ss << std::scientific;
+    ss << 1 << ' ' << timestep.back();
+    std::string stime, spart;
+    ss >> spart >> stime;
+    
+    // open file
+    theFile.close();
+    std::string vtuname = filename+'/'+filename+"_T"+stime+"_P"+spart+".vtu";
+    theFile.open(vtuname.c_str(), std::ios::trunc|std::ios::out);
+    if(theFile.fail()) {
+	opserr<<"WARNING: Failed to open file "<<vtuname.c_str()<<"\n";
+	return -1;
+    }
+    theFile.precision(precision);
+    theFile << std::scientific;
+
+    // header
+    theFile<<"<VTKFile type="<<quota<<"UnstructuredGrid"<<quota;
+    theFile<<" version="<<quota<<"1.0"<<quota;
+    theFile<<" byte_order="<<quota<<"LittleEndian"<<quota;
+    theFile<<" compressor="<<quota<<"vtkZLibDataCompressor"<<quota;
+    theFile<<">\n";
+    this->incrLevel();
+    this->indent();
+    theFile<<"<UnstructuredGrid>\n";
+
+    // get all particles
+    std::vector<Particle*> particles;
+    BackgroundMesh& background = OPS_GetBackgroundMesh();
+    for(int i=0; i<background.numParticleGroups(); i++) {
+	ParticleGroup* group = background.getParticleGroup(i);
+	if(group == 0) continue;
+	for(int j=0; j<group->numParticles(); j++) {
+	    Particle* p = group->getParticle(j);
+	    if(p == 0) continue;
+	    particles.push_back(p);
+	}
+    }
+
+    // Piece
+    this->incrLevel();
+    this->indent();
+    theFile<<"<Piece NumberOfPoints="<<quota<<(int)particles.size()<<quota;
+    theFile<<" NumberOfCells="<<quota<<1<<quota<<">\n";
+        
+    // points
+    this->incrLevel();
+    this->indent();
+    theFile<<"<Points>\n";
+
+    // points header
+    this->incrLevel();
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+    theFile<<" Name="<<quota<<"Points"<<quota;
+    theFile<<" NumberOfComponents="<<quota<<3<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+
+    // points coordinates
+    this->incrLevel();
+    for(int i=0; i<(int)particles.size(); i++) {
+	const Vector& crds = particles[i]->getCrds();
+	this->indent();
+	for(int j=0; j<3; j++) {
+	    if(j < crds.Size()) {
+		theFile<<crds(j)<<' ';
+	    } else {
+		theFile<<0.0<<' ';
+	    }
+	}
+	theFile<<std::endl;
+    }
+
+    // points footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+    this->decrLevel();
+    this->indent();
+    theFile<<"</Points>\n";
+
+    // cells
+    this->indent();
+    theFile<<"<Cells>\n";
+
+    // connectivity
+    this->incrLevel();
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"connectivity"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    for(int i=0; i<(int)particles.size(); i++) {
+	this->indent();
+	theFile<<i<<std::endl;
+    }
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // offsets
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"offsets"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    this->indent();
+    theFile<<(int)particles.size()<<std::endl;
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // types
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"types"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    this->indent();
+    theFile<<VTK_POLY_VERTEX<<std::endl;
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // cells footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</Cells>\n";
+
+    // point data
+    this->indent();
+    theFile<<"<PointData>\n";
+
+    // node tags
+    this->incrLevel();
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"NodeTag"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    for(int i=0; i<(int)particles.size(); i++) {
+	this->indent();
+	theFile<<i<<std::endl;
+    }
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // node velocity
+    if(nodedata.vel) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Velocity"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<(int)particles.size(); i++) {
+	    const Vector& vel = particles[i]->getVel();
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		if(j < vel.Size()) {
+		    theFile<<vel(j)<<' ';
+		} else {
+		    theFile<<0.0<<' ';
+		}
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node displacement
+    if(nodedata.disp) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Displacement"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<(int)particles.size(); i++) {
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		theFile<<0.0<<' ';
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node incr displacement
+    if(nodedata.incrdisp) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"IncrDisplacement"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<(int)particles.size(); i++) {
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		theFile<<0.0<<' ';
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node acceleration
+    if(nodedata.accel) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Acceleration"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<(int)particles.size(); i++) {
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		theFile<<0.0<<' ';
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node pressure
+    if(nodedata.pressure) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Pressure"<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<(int)particles.size(); i++) {
+	    double pressure = particles[i]->getPressure();
+	    this->indent();
+	    theFile<<pressure<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node reaction
+    if(nodedata.reaction) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"Reaction"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<(int)particles.size(); i++) {
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		theFile<<0.0<<' ';
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+    
+    // node unbalanced load
+    if(nodedata.unbalanced) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"UnbalancedLoad"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<(int)particles.size(); i++) {
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		theFile<<0.0<<' ';
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node mass
+    if(nodedata.mass) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"NodeMass"<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<(int)particles.size(); i++) {
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		theFile<<0.0<<' ';
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // node eigen vector
+    for(int k=0; k<nodedata.numeigen; k++) {
+	this->indent();
+	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<" Name="<<quota<<"EigenVector"<<k+1<<quota;
+	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
+	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+	this->incrLevel();
+	for(int i=0; i<(int)particles.size(); i++) {
+	    this->indent();
+	    for(int j=0; j<nodendf; j++) {
+		theFile<<0.0<<' ';
+	    }
+	    theFile<<std::endl;
+	}
+	this->decrLevel();
+	this->indent();
+	theFile<<"</DataArray>\n";
+    }
+
+    // point data footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</PointData>\n";
+
+    // cell data
+    this->indent();
+    theFile<<"<CellData>\n";
+
+    // element tags
+    this->incrLevel();
+    this->indent();
+    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<" Name="<<quota<<"ElementTag"<<quota;
+    theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
+    this->incrLevel();
+    this->indent();
+    theFile<<0<<std::endl;
+    this->decrLevel();
+    this->indent();
+    theFile<<"</DataArray>\n";
+
+    // cell data footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</CellData>\n";
+
+    // footer
+    this->decrLevel();
+    this->indent();
+    theFile<<"</Piece>\n";
+
+    this->decrLevel();
+    this->indent();
+    theFile<<"</UnstructuredGrid>\n";
+
+    this->decrLevel();
+    this->indent();
+    theFile<<"</VTKFile>\n";
+
+    theFile.close();
+
+    return 0;
+}
+
+int
 PVDRecorder::savePart(int partno, int ctag, int nodendf)
 {
     if (theDomain == 0) {
@@ -806,7 +1206,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     for(int i=0; i<ndtags.Size(); i++) {
 	nodes[i] = theDomain->getNode(ndtags(i));
 	if(nodes[i] == 0) {
-	    opserr<<"WARNIG: Node "<<ndtags(i)<<" is not defined\n";
+	    opserr<<"WARNIG: Node "<<ndtags(i)<<" is not defined -- pvdRecorder\n";
 	    return -1;
 	}
 	const Vector& crds = nodes[i]->getCrds();
@@ -1166,7 +1566,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
 	if(eletags.Size() == 0) break;
 
 	// check data
-	int argc = eledata[i].size();
+	int argc = (int)eledata[i].size();
 	if(argc == 0) continue;
 	std::vector<const char*> argv(argc);
 	for(int j=0; j<argc; j++) {

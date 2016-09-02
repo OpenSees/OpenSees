@@ -77,6 +77,7 @@ private:
     virtual void getParts();
     virtual int savePart(int partno, int ctag, int ndf);
     virtual int savePart0(int ndf);
+    virtual int savePartParticle(int ndf);
     
 private:
     int indentsize, precision, indentlevel;
