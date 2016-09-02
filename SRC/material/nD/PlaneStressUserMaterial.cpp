@@ -32,7 +32,7 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <MaterialResponse.h>
-
+#include <elementAPI.h>
 
 #ifdef _HAVE_PSUMAT
 
@@ -56,6 +56,45 @@ void PSUMAT(int *nstatev, int *nprops, double *props,
   opserr << "PSUMAT - NOT DEFINED IN THIS VERSION, SOURCE CODE RESTRICTED\n";
 }
 #endif
+
+void* OPS_PlaneStressUserMaterial()
+{
+    int argc = OPS_GetNumRemainingInputArgs() + 2;
+    if (argc < 6) {
+	opserr << "WARNING: Insufficient arguements\n";
+	opserr << "Want: nDMaterial PlaneStressUserMaterial tag? nstatevs? nprops? prop1? ... propn?" << endln;
+	return 0;
+    }
+
+    // int tag, nstatevs, nprops;
+    int idata[3];
+    int numdata = 3;
+    if (OPS_GetIntInput(&numdata,idata) < 0) {
+	opserr << "WARNING invalid nDMaterial PlaneStressUserMaterial int inputs" << endln;
+	return 0;
+    }
+    int tag = idata[0];
+    int nstatevs = idata[1];
+    int nprops = idata[2];
+    if (nstatevs < 1) nstatevs = 1;
+    if (nprops < 1) nprops = 1;
+
+    if (OPS_GetNumRemainingInputArgs() < nprops) {
+	opserr << "WARNING insufficient arguments\n";
+	return 0;
+    }
+    double *props;
+    props = new double[nprops];
+    if (OPS_GetDoubleInput(&nprops , props) < 0) {
+	opserr << "WARNING invalid prop" << endln;
+	opserr << "PlaneStressUserMaterial: " << tag << endln;
+	return 0;
+    }
+    void* temp = new PlaneStressUserMaterial( tag, nstatevs, nprops, props);
+    if (props != 0) delete props;
+
+    return temp;
+}
 
 
 //null constructor
