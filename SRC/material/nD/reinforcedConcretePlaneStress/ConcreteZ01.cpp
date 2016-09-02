@@ -23,7 +23,7 @@
 #include <string.h>
 
 OPS_Export void *
-OPS_NewConcreteZ01Material(void)
+OPS_ConcreteZ01Material(void)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

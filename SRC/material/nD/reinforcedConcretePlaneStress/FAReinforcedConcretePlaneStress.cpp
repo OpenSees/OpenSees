@@ -32,7 +32,7 @@
 static int numFAReinforcedConcretePlaneStressMaterials = 0;
 
 OPS_Export void *
-OPS_NewFAReinforcedConcretePlaneStressMaterial()
+OPS_FAReinforcedConcretePlaneStressMaterial()
 {
   if (numFAReinforcedConcretePlaneStressMaterials == 0) {
     numFAReinforcedConcretePlaneStressMaterials++;

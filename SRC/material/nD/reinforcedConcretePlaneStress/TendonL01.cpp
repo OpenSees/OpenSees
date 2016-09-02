@@ -22,7 +22,7 @@
 #include <MaterialResponse.h>
 
 OPS_Export void *
-OPS_NewTendonL01Material(void)
+OPS_TendonL01Material(void)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

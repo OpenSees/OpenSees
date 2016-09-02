@@ -22,7 +22,7 @@
 #define OPS_Export 
 
 OPS_Export void *
-OPS_NewSteelZ01Material(void)
+OPS_SteelZ01Material(void)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

@@ -25,7 +25,7 @@
 static int numRAFourSteelRCPlaneStressMaterials = 0;
 
 OPS_Export void *
-OPS_NewRAFourSteelPCPlaneStressMaterial()
+OPS_RAFourSteelPCPlaneStressMaterial()
 {
   if (numRAFourSteelRCPlaneStressMaterials == 0) {
     numRAFourSteelRCPlaneStressMaterials++;

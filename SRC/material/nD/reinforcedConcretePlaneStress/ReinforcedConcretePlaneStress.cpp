@@ -24,7 +24,7 @@
 static int numReinforcedConcretePlaneStressMaterials = 0;
 
 OPS_Export void *
-OPS_NewReinforcedConcretePlaneStressMaterial()
+OPS_ReinforcedConcretePlaneStressMaterial()
 {
   if (numReinforcedConcretePlaneStressMaterials == 0) {
     numReinforcedConcretePlaneStressMaterials++;
