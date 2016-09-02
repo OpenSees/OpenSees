@@ -43,6 +43,8 @@
 extern "C" {
 #include <cs.h>
 }
+#include "../../../../OTHER/UMFPACK/umfpack.h"
+
 
 class PFEMCompressibleLinSOE;
 
@@ -54,7 +56,7 @@ public:
 
     int solve();
     int setSize();
-    int setLinearSOE(PFEMCompressibleLinSOE& theSOE);
+    virtual int setLinearSOE(PFEMCompressibleLinSOE& theSOE);
 
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);  
@@ -62,6 +64,7 @@ public:
 private:
     
     PFEMCompressibleLinSOE* theSOE;
+    double Control[UMFPACK_CONTROL], Info[UMFPACK_INFO];
 };
 
 #endif

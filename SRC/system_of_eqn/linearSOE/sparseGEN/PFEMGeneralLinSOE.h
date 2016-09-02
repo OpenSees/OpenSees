@@ -17,53 +17,59 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision: 1.0 $
-// $Date: 2012-09-17 10:51:44 $
-// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h,v $
-                                                                        
-                                                                        
-#ifndef PFEMSolver_h
-#define PFEMSolver_h
+// $Date: 2015-03-27 9:29:32 $
 
-// File: ~/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h
+// Written: Minjie Zhu
+// Created: March 2015
 //
-// Written: Minjie 
-// Created: Sep 17 2012
+// Description: This file contains the class definition for PFEMGeneralLinSOE
+// PFEMGeneralLinSOE is a subclass of LinearSOE. It stores the matrix equation
+// Ax=b using the sparse column-compacted storage scheme for storing the
+// matrix A.
 //
-// Description: This file contains the class definition for PFEMSolver.
-// A PFEMSolver object can be constructed to solve a PFEMLinSOE
-// object. It obtains the solution by making calls on the
-// The PFEMSolver uses Fractional Step Method to solve PFEM equations. 
-//
-// What: "@(#) PFEMSolver.h, revA"
 
-#include <LinearSOESolver.h>
-extern "C" {
-#include <cs.h>
-}
+#ifndef PFEMGeneralLinSOE_h
+#define PFEMGeneralLinSOE_h
 
-class PFEMLinSOE;
 
-class PFEMSolver : public LinearSOESolver
+#include <PFEMLinSOE.h>
+#include <Vector.h>
+#include <ID.h>
+#include <vector>
+
+class PFEMUnifiedSolver_Hybrid;
+
+class PFEMGeneralLinSOE : public PFEMLinSOE
 {
 public:
-    PFEMSolver();
-    virtual ~PFEMSolver();
+    PFEMGeneralLinSOE(PFEMUnifiedSolver_Hybrid &theSolver);
+    PFEMGeneralLinSOE();
 
-    virtual int solve();
-    virtual int setSize();
-    virtual int setLinearSOE(PFEMLinSOE& theSOE);
+    virtual ~PFEMGeneralLinSOE();
 
-    int sendSelf(int commitTag, Channel &theChannel);
-    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);  
+    virtual int addA(const Matrix &, const ID &, double fact = 1.0);
+    virtual void zeroA(void);
+
+    virtual int sendSelf(int commitTag, Channel &theChannel);
+    virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+
+    friend class PFEMUnifiedSolver_Hybrid;
 
 private:
-    
-    PFEMLinSOE* theSOE;
-    css* Msym;
-    csn* Mnum;
+
+    virtual int setMatIDs(Graph& theGraph, int Ssize, int Fsize, int Isize, int Psize, int Pisize);
+
+private:
+
+    typedef std::vector<int> Index;
+    typedef std::vector<double> Value;
+
+    int N;
+    Index rowInd, colPtr;
+    Value A;
+    ID newDofID;
 };
 
 #endif
-

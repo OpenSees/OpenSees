@@ -20,39 +20,40 @@
                                                                         
 // $Revision: 1.0 $
 // $Date: 2012-09-17 10:51:44 $
-// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_Umfpack.h,v $
                                                                         
                                                                         
-#ifndef PFEMSolver_h
-#define PFEMSolver_h
+#ifndef PFEMSolverUmfpack_h
+#define PFEMSolver_Umfpack_h
 
-// File: ~/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h
+// File: ~/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_Umfpack.h
 //
 // Written: Minjie 
 // Created: Sep 17 2012
 //
-// Description: This file contains the class definition for PFEMSolver.
-// A PFEMSolver object can be constructed to solve a PFEMLinSOE
+// Description: This file contains the class definition for PFEMSolver_Umfpack.
+// A PFEMSolver_Umfpack object can be constructed to solve a PFEMLinSOE
 // object. It obtains the solution by making calls on the
-// The PFEMSolver uses Fractional Step Method to solve PFEM equations. 
+// The PFEMSolver_Umfpack uses Fractional Step Method to solve PFEM equations. 
 //
-// What: "@(#) PFEMSolver.h, revA"
+// What: "@(#) PFEMSolver_Umfpack.h, revA"
 
-#include <LinearSOESolver.h>
+#include <PFEMSolver.h>
 extern "C" {
 #include <cs.h>
 }
+#include "../../../../OTHER/UMFPACK/umfpack.h"
 
 class PFEMLinSOE;
 
-class PFEMSolver : public LinearSOESolver
+class PFEMSolver_Umfpack : public PFEMSolver
 {
 public:
-    PFEMSolver();
-    virtual ~PFEMSolver();
+    PFEMSolver_Umfpack();
+    virtual ~PFEMSolver_Umfpack();
 
-    virtual int solve();
-    virtual int setSize();
+    int solve();
+    int setSize();
     virtual int setLinearSOE(PFEMLinSOE& theSOE);
 
     int sendSelf(int commitTag, Channel &theChannel);
@@ -60,9 +61,9 @@ public:
 
 private:
     
+    void *Symbolic;
+    double Control[UMFPACK_CONTROL], Info[UMFPACK_INFO];
     PFEMLinSOE* theSOE;
-    css* Msym;
-    csn* Mnum;
 };
 
 #endif

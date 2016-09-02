@@ -78,6 +78,8 @@ class PFEMLinSOE : public LinearSOE
     virtual const ID& getDofID()const {return dofID;}
 
     friend class PFEMSolver;
+    friend class PFEMSolver_Mumps;
+    friend class PFEMSolver_Umfpack;
 
 private:    
 

@@ -21,7 +21,10 @@ OBJS       = SparseGenColLinSOE.o \
 	PFEMSolver.o \
 	PFEMLinSOE.o \
 	PFEMCompressibleSolver.o \
-	PFEMCompressibleLinSOE.o 
+	PFEMCompressibleLinSOE.o \
+	PFEMSolver_Mumps.o \
+	PFEMSolver_Umfpack.o \
+	PFEMCompressibleSolver_Mumps.o
 else
 
 ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
@@ -37,7 +40,10 @@ OBJS       = SparseGenColLinSOE.o \
 	PFEMSolver.o \
 	PFEMLinSOE.o \
 	PFEMCompressibleSolver.o \
-	PFEMCompressibleLinSOE.o 
+	PFEMCompressibleLinSOE.o \
+	PFEMSolver_Mumps.o \
+	PFEMSolver_Umfpack.o \
+	PFEMCompressibleSolver_Mumps.o
 else
 
 OBJS       = $(CULA_SOLVER) SparseGenColLinSOE.o \
@@ -46,6 +52,7 @@ OBJS       = $(CULA_SOLVER) SparseGenColLinSOE.o \
 	SparseGenRowLinSolver.o \
 	SuperLU.o \
 	PFEMSolver.o \
+	PFEMSolver_Umfpack.o \
 	PFEMLinSOE.o \
 	PFEMCompressibleSolver.o \
 	PFEMCompressibleLinSOE.o 
@@ -55,6 +62,12 @@ endif
 
 
 all:         $(OBJS)
+
+ifdef NVCC
+
+# PFEMUnifiedSolver_Hybrid.o : PFEMUnifiedSolver_Hybrid.h PFEMUnifiedSolver_Hybrid.cpp
+# 	$(NVCC) $(INCLUDES) -c -O3 -x cu PFEMUnifiedSolver_Hybrid.cpp
+endif
 
 # Miscellaneous
 tidy:	

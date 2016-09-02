@@ -19,48 +19,49 @@
 ** ****************************************************************** */
                                                                         
 // $Revision: 1.0 $
-// $Date: 2012-09-17 10:51:44 $
-// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h,v $
-                                                                        
-                                                                        
-#ifndef PFEMSolver_h
-#define PFEMSolver_h
+// $Date: 2014-09-06 13:53:05 $
+// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/PFEMUnifiedSolver.h,v $
 
-// File: ~/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h
+// Written: Minjie Zhu
+// Created: September 2014
+                                                                        
+                                                                        
+#ifndef PFEMUnifiedSolver_h
+#define PFEMUnifiedSolver_h
+
 //
-// Written: Minjie 
-// Created: Sep 17 2012
-//
-// Description: This file contains the class definition for PFEMSolver.
-// A PFEMSolver object can be constructed to solve a PFEMLinSOE
+// Description: This file contains the class definition for PFEMUnifiedSolver.
+// A PFEMUnifiedSolver object can be constructed to solve a PFEMUnifiedLinSOE
 // object. It obtains the solution by making calls on the
-// The PFEMSolver uses Fractional Step Method to solve PFEM equations. 
+// The PFEMUnifiedSolver uses Fractional Step Method to solve PFEM equations. 
 //
-// What: "@(#) PFEMSolver.h, revA"
+// What: "@(#) PFEMUnifiedSolver.h, revA"
 
 #include <LinearSOESolver.h>
+
 extern "C" {
 #include <cs.h>
 }
 
-class PFEMLinSOE;
+class PFEMUnifiedLinSOE;
 
-class PFEMSolver : public LinearSOESolver
+class PFEMUnifiedSolver : public LinearSOESolver
 {
 public:
-    PFEMSolver();
-    virtual ~PFEMSolver();
+    PFEMUnifiedSolver();
+    virtual ~PFEMUnifiedSolver();
 
-    virtual int solve();
-    virtual int setSize();
-    virtual int setLinearSOE(PFEMLinSOE& theSOE);
+    int solve();
+    int setSize();
+    int setLinearSOE(PFEMUnifiedLinSOE& theSOE);
 
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);  
 
 private:
     
-    PFEMLinSOE* theSOE;
+    PFEMUnifiedLinSOE* theSOE;
+
     css* Msym;
     csn* Mnum;
 };

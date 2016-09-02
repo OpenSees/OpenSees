@@ -39,6 +39,7 @@
 #include <PFEMLinSOE.h>
 
 class PFEMCompressibleSolver;
+class PFEMCompressibleSolver_Mumps;
 
 class PFEMCompressibleLinSOE : public PFEMLinSOE
 {
@@ -57,6 +58,7 @@ class PFEMCompressibleLinSOE : public PFEMLinSOE
     virtual const ID& getDofID()const {return newDofID;}
 
     friend class PFEMCompressibleSolver;
+    friend class PFEMCompressibleSolver_Mumps;
 
 private:    
 
@@ -64,10 +66,9 @@ private:
 
 private:
 
-    cs* M, *Gt;
+    cs* M, *Gt, *G;
     Vector Mp;
     ID newDofID;
-    bool expl;
 };
 
 #endif

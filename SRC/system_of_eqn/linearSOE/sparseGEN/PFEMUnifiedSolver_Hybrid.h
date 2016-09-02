@@ -19,50 +19,66 @@
 ** ****************************************************************** */
                                                                         
 // $Revision: 1.0 $
-// $Date: 2012-09-17 10:51:44 $
-// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h,v $
-                                                                        
-                                                                        
-#ifndef PFEMSolver_h
-#define PFEMSolver_h
+// $Date: 2015-3-18 11:02:54 $
 
-// File: ~/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h
+// Written: Minjie Zhu
+// Created: March 2015
+                                                                        
+                                                                        
+#ifndef PFEMUnifiedSolver_Hybrid_h
+#define PFEMUnifiedSolver_Hybrid_h
+
 //
-// Written: Minjie 
-// Created: Sep 17 2012
-//
-// Description: This file contains the class definition for PFEMSolver.
-// A PFEMSolver object can be constructed to solve a PFEMLinSOE
+// Description: This file contains the class definition for PFEMUnifiedSolver_Hybrid.
+// A PFEMUnifiedSolver_Hybrid object can be constructed to solve a PFEMUnifiedLinSOE
 // object. It obtains the solution by making calls on the
-// The PFEMSolver uses Fractional Step Method to solve PFEM equations. 
+// The PFEMUnifiedSolver_Hybrid uses Fractional Step Method to solve PFEM equations. 
 //
-// What: "@(#) PFEMSolver.h, revA"
+// What: "@(#) PFEMUnifiedSolver_Hybrid.h, revA"
 
 #include <LinearSOESolver.h>
-extern "C" {
-#include <cs.h>
-}
+#include <Vector.h>
+#include <dmumps_c.h>
+#include <cuda.h>
+#include <cusolverDn.h>
+#include <vector>
 
-class PFEMLinSOE;
+class PFEMGeneralLinSOE;
 
-class PFEMSolver : public LinearSOESolver
+class PFEMUnifiedSolver_Hybrid : public LinearSOESolver
 {
 public:
-    PFEMSolver();
-    virtual ~PFEMSolver();
+    PFEMUnifiedSolver_Hybrid(int r, int e, int h, int s);
+    virtual ~PFEMUnifiedSolver_Hybrid();
 
-    virtual int solve();
-    virtual int setSize();
-    virtual int setLinearSOE(PFEMLinSOE& theSOE);
+    int solve();
+    int setSize();
+    int setLinearSOE(PFEMGeneralLinSOE& theSOE);
 
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);  
 
 private:
+
+    typedef std::vector<int> Index;
+    typedef std::vector<double> Value;
+
+private:
+    PFEMGeneralLinSOE* theSOE;
     
-    PFEMLinSOE* theSOE;
-    css* Msym;
-    csn* Mnum;
+    DMUMPS_STRUC_C id;
+    int myid;
+    cusolverDnHandle_t handle;
+
+    static const int JOB_INIT = -1;
+    static const int JOB_END = -2;
+    static const int JOB_ANALYSIS = 1;
+    static const int JOB_FACTORIZATION = 2;
+    static const int JOB_SOLUTION = 3;
+    static const int USE_COMM_WORLD = -987654;
+    void ICNTL(int I, int val);
+
+    int relax, err, host, sym;
 };
 
 #endif

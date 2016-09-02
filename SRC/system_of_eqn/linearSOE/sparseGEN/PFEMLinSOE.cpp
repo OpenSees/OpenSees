@@ -55,6 +55,9 @@ using std::nothrow;
 #include <NodeIter.h>
 #include <DOF_Group.h>
 #include <AnalysisModel.h>
+#ifdef _PARALLEL_INTERPRETERS
+#include <mpi.h>
+#endif
 
 PFEMLinSOE::PFEMLinSOE(PFEMSolver &the_Solver)
     :LinearSOE(the_Solver, LinSOE_TAGS_PFEMLinSOE),
@@ -387,6 +390,7 @@ PFEMLinSOE::setX(const Vector &x)
 {
     X.Zero();
     X += x;
+
 }
 
 const Vector &
@@ -462,6 +466,7 @@ PFEMLinSOE::setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int&
     Pressure_ConstraintIter& thePCs = domain->getPCs();
     Pressure_Constraint* thePC = 0;
     Ssize = Fsize = Isize = Psize = Pisize = 0;
+    int Isosize = 0;
     while((thePC = thePCs()) != 0) {
         // int ptag = thePC->getPressureNode();
         int ntag = thePC->getTag();
@@ -553,6 +558,7 @@ PFEMLinSOE::setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int&
                     dofType(nid(i)) = -1;     // which are not connected to any elements 
                     dofID(nid(i)) = -1;
                 }
+		Isosize++;
             }
         }
     }
@@ -562,12 +568,26 @@ PFEMLinSOE::setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int&
             dofID(col) = Ssize++;
         }
     }
-    
+
+#ifdef _PARALLEL_INTERPRETERS
+    int myid;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+    if(myid == 0) {
+	opserr<<"Ssize = "<<Ssize<<", ";
+	opserr<<"Fsize = "<<Fsize<<", ";
+	opserr<<"Isize = "<<Isize<<", ";
+	opserr<<"Psize = "<<Psize<<", ";
+	opserr<<"Isosize = "<<Isosize<<"\n";
+    }
+
+#else
     opserr<<"Ssize = "<<Ssize<<", ";
     opserr<<"Fsize = "<<Fsize<<", ";
     opserr<<"Isize = "<<Isize<<", ";
     opserr<<"Psize = "<<Psize<<", ";
-    opserr<<"Pisize = "<<Pisize<<"\n";
+    opserr<<"Isosize = "<<Isosize<<"\n";
+#endif
+	
     return 0;
 }
 
@@ -613,7 +633,6 @@ PFEMLinSOE::setMatIDs(Graph& theGraph, int Ssize, int Fsize, int Isize, int Psiz
             int row = theAdjacency(i);       // row 
             int rowtype = dofType(row);      // row type
             int rowid = dofID(row);          // row id
-
             
             if(rowtype==0 && coltype==0) {                // Ms
                 cs_entry(M1, rowid, colid, 0.0);
@@ -655,6 +674,22 @@ PFEMLinSOE::setMatIDs(Graph& theGraph, int Ssize, int Fsize, int Isize, int Psiz
     if(Qt != 0) cs_spfree(Qt);
     Qt = cs_compress(Qt1);
     cs_spfree(Qt1);
+
+    // reorder rows
+    // cs* mats[5] = {M,Gft,Git,L,Qt};
+    // for (int i=0; i<5; i++) {
+    // 	cs* mat = mats[i];
+    // 	for (int j=0; j<mat->n; j++) {
+    // 	    ID col(0, mat->p[j+1]-mat->p[j]);
+    // 	    for (int k=mat->p[j]; k<mat->p[j+1]; k++) {
+    // 		col.insert(mat->i[k]);
+    // 	    }
+    // 	    int index = 0;
+    // 	    for (int k=mat->p[j]; k<mat->p[j+1]; k++) {
+    // 		mat->i[k] = col[index++];
+    // 	    }
+    // 	}
+    // }
 
     return 0;
 }

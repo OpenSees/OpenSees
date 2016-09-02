@@ -20,50 +20,71 @@
                                                                         
 // $Revision: 1.0 $
 // $Date: 2012-09-17 10:51:44 $
-// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleSolver_Mumps.h,v $
                                                                         
                                                                         
-#ifndef PFEMSolver_h
-#define PFEMSolver_h
+#ifndef PFEMCompressibleSolver_Mumps_h
+#define PFEMCompressibleSolver_Mumps_h
 
-// File: ~/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h
+// File: ~/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleSolver_Mumps.h
 //
 // Written: Minjie 
 // Created: Sep 17 2012
 //
-// Description: This file contains the class definition for PFEMSolver.
-// A PFEMSolver object can be constructed to solve a PFEMLinSOE
+// Description: This file contains the class definition for PFEMCompressibleSolver_Mumps.
+// A PFEMCompressibleSolver_Mumps object can be constructed to solve a PFEMCompressibleLinSOE
 // object. It obtains the solution by making calls on the
-// The PFEMSolver uses Fractional Step Method to solve PFEM equations. 
+// The PFEMCompressibleSolver_Mumps uses quasi-incompressible method to solve PFEM equations. 
 //
-// What: "@(#) PFEMSolver.h, revA"
+// What: "@(#) PFEMCompressibleSolver_Mumps.h, revA"
 
-#include <LinearSOESolver.h>
+#ifdef _PARALLEL_INTERPRETERS
+
+#include <PFEMCompressibleSolver.h>
+#include <Vector.h>
 extern "C" {
 #include <cs.h>
 }
+#include <dmumps_c.h>
 
-class PFEMLinSOE;
+class PFEMCompressibleLinSOE;
 
-class PFEMSolver : public LinearSOESolver
+class PFEMCompressibleSolver_Mumps : public PFEMCompressibleSolver
 {
 public:
-    PFEMSolver();
-    virtual ~PFEMSolver();
+    PFEMCompressibleSolver_Mumps(int r, int e, int s);
+    virtual ~PFEMCompressibleSolver_Mumps();
 
-    virtual int solve();
-    virtual int setSize();
-    virtual int setLinearSOE(PFEMLinSOE& theSOE);
+    int solve();
+    int setSize();
+    int setLinearSOE(PFEMCompressibleLinSOE& theSOE);
 
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);  
 
 private:
     
-    PFEMLinSOE* theSOE;
-    css* Msym;
-    csn* Mnum;
+    PFEMCompressibleLinSOE* theSOE;
+
+    DMUMPS_STRUC_C sid;
+    int myid;
+
+    static const int JOB_INIT = -1;
+    static const int JOB_END = -2;
+    static const int JOB_ANALYSIS = 1;
+    static const int JOB_FACTORIZATION = 2;
+    static const int JOB_SOLUTION = 3;
+    static const int JOB_SOLVE = 6;
+    static const int USE_COMM_WORLD = -987654;
+    void ICNTL(DMUMPS_STRUC_C& id, int I, int val);
+
+    int relax, err;
 };
+
+#else
+class PFEMCompressibleSolver_Mumps{};
+
+#endif
 
 #endif
 

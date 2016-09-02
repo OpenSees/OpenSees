@@ -33,27 +33,38 @@
 #include <PFEMCompressibleLinSOE.h>
 #include <iostream>
 #include <cmath>
+#include <Timer.h>
+
+void* OPS_PFEMCompressibleSolver()
+{
+    PFEMCompressibleSolver* theSolver = new PFEMCompressibleSolver();
+    return new PFEMCompressibleLinSOE(*theSolver);
+}
 
 PFEMCompressibleSolver::PFEMCompressibleSolver()
     :LinearSOESolver(SOLVER_TAGS_PFEMCompressibleSolver), theSOE(0)
 {
+    // set default control parameters
+    umfpack_di_defaults(Control);
 }
 
 PFEMCompressibleSolver::~PFEMCompressibleSolver()
 {
-
+    
 }
 
 int
 PFEMCompressibleSolver::solve()
 {
+    // Timer timer;
+    // timer.start();
     cs* M = theSOE->M;
     cs* Gt = theSOE->Gt;
+    cs* G = theSOE->G;
     const Vector& B = theSOE->getB();
     Vector& Mp = theSOE->Mp;
     const ID& dofType = theSOE->getDofType();
     const ID& dofID = theSOE->getDofID();
-    bool expl = theSOE->expl;
     
     int Vsize = M->n;
     int Psize = Mp.Size();
@@ -64,9 +75,11 @@ PFEMCompressibleSolver::solve()
         opserr<<"PFEMCompressibleSolver::solve\n";
         return -1;
     }
+    // timer.pause();
+    // timer.start();
 
-    // solve velocity
-    cs* GMp = cs_transpose(Gt,1);
+    // get velocity tangent and rhs
+    cs* GMp = G;
     for(int j=0; j<Psize; j++) {
         if(Mp(j) == 0.0) {
             opserr<<"WARNING: Mp is zero at "<<j<<"\n";
@@ -79,8 +92,9 @@ PFEMCompressibleSolver::solve()
     }
 
     cs* GMpGt = cs_multiply(GMp, Gt);
-    cs* H = cs_add(M, GMpGt, 1.0, 1.0);
-
+    cs* H = cs_add(M, GMpGt, 1.0, -1.0);
+    cs_spfree(GMpGt);
+    
     Vector dP(Psize);
     double* dP_ptr = &dP(0);
     for(int i=0; i<size; i++) {        // row
@@ -99,37 +113,107 @@ PFEMCompressibleSolver::solve()
         int rowtype = dofType(i);      // row type
         int rowid = dofID(i);          // row id
         if(rowtype < 3 && rowtype>=0) {
-            dV(rowid) += B(i);         // rm+GMp*rp
+            dV(rowid) = B(i)-dV(rowid);         // rm-GMp*rp
         }
     }
+    // timer.pause();
+    // opserr<<"velocity tangent time = "<<timer.getReal()<<"\n";
+    // timer.start();
 
-    cs_lusol(3, H, dV_ptr, 1e-16);
-    cs_spfree(GMp);
-    cs_spfree(GMpGt);
-    cs_spfree(H);
+    // reorder rows of H for umfpack
+    int* Ap = H->p;
+    int* Ai = H->i;
+    double* Ax = H->x;
 
+    for (int j=0; j<Vsize; j++) {
+	ID col(0, Ap[j+1]-Ap[j]);
+	Vector colval(Ap[j+1]-Ap[j]);
+	ID col0(colval.Size());
+	int index = 0;
+	for (int k=Ap[j]; k<Ap[j+1]; k++) {
+	    col.insert(Ai[k]);
+	    col0(index) = Ai[k];
+	    colval(index++) = Ax[k];
+	}
+
+	index = 0;
+	for (int k=Ap[j]; k<Ap[j+1]; k++) {
+	    Ai[k] = col[index++];
+	    Ax[k] = colval(col0.getLocation(Ai[k]));
+	}
+    }
+
+    
+    // symbolic analysis of H
+    void* Symbolic = 0;
+    int status = umfpack_di_symbolic(Vsize,Vsize,Ap,Ai,Ax,&Symbolic,Control,Info);
+
+    // check errors
+    if (status!=UMFPACK_OK) {
+	opserr<<"WARNING: symbolic analysis returns "<<status<<" -- PFEMCompressibleSolver::solve\n";
+	return -1;
+    }
+    // timer.pause();
+    // opserr<<"analysis time = "<<timer.getReal()<<"\n";
+    // timer.start();
+
+    // numerical analysis
+    void* Numeric = 0;
+    status = umfpack_di_numeric(Ap,Ai,Ax,Symbolic,&Numeric,Control,Info);
+
+    // check error
+    if (status!=UMFPACK_OK) {
+    	opserr<<"WARNING: numeric analysis returns "<<status<<" -- PFEMCompressibleSolver::solve\n";
+	if (Symbolic != 0) {
+	    umfpack_di_free_symbolic(&Symbolic);
+	}
+    	return -1;
+    }
+
+    // timer.pause();
+    // opserr<<"numeric time = "<<timer.getReal()<<"\n";
+    // timer.start();
+    
+    // solve velocity
+    Vector x(Vsize);
+    double* x_ptr = &x(0);
+    status = umfpack_di_solve(UMFPACK_A,Ap,Ai,Ax,x_ptr,dV_ptr,Numeric,Control,Info);
+    dV = x;
+    
+    // check error
+    if (status!=UMFPACK_OK) {
+	opserr<<"WARNING: solving returns "<<status<<" -- PFEMCompressibleSolver::solve\n";
+	if (Numeric != 0) {
+	    umfpack_di_free_numeric(&Numeric);
+	}
+	if (Symbolic != 0) {
+	    umfpack_di_free_symbolic(&Symbolic);
+	}
+	return -1;
+    }
+	
+    // timer.pause();
+    // opserr<<"solve velocity time = "<<timer.getReal()<<"\n";
+    // timer.start();
+    
     // solve pressure
     dP *= -1;                          // -rp
     cs_gaxpy(Gt, dV_ptr, dP_ptr);      // Gt*dV - rp
     for(int i=0; i<Psize; i++) {       // (rp - Gt*dV) / Mp
         dP(i) /= -Mp(i);
     }
+    // timer.pause();
+    // opserr<<"solve pressure time = "<<timer.getReal()<<"\n";
 
-    // pressure gradient
-    // Vector dPi(Pisize);
-    // double* dPi_ptr = &dPi(0);
-    // cs_gaxpy(Qt, dP_ptr, dPi_ptr);
-    // for(int i=0; i<size; i++) {        // row
-    //     int rowtype = dofType(i);      // row type
-    //     int rowid = dofID(i);          // row id
-    //     if(rowtype == 4) {
-    //         if(Mhat(rowid) == 0) {
-    //             opserr<<"WARNING: Mhat is zero at "<<rowid<<"\n";
-    //             return -1;
-    //         }
-    //         dPi(rowid) = (B(i) - dPi(rowid))/Mhat(rowid);         // (rpi-Qt*dP) / Mhat
-    //     }
-    // }
+    // clean up
+    if (Numeric != 0) {
+	umfpack_di_free_numeric(&Numeric);
+    }
+    if (Symbolic != 0) {
+	umfpack_di_free_symbolic(&Symbolic);
+    }
+    cs_spfree(H);
+
 
     // copy to X
     Vector X(size);
@@ -146,6 +230,9 @@ PFEMCompressibleSolver::solve()
 
     }
     theSOE->setX(X);
+
+    // timer.pause();
+    // opserr<<"solving time for PFEMCompressiblesolver = "<<timer.getReal()<<"\n";
 
     return 0;
 }

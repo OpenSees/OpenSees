@@ -20,36 +20,36 @@
                                                                         
 // $Revision: 1.0 $
 // $Date: 2012-09-17 10:51:44 $
-// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_Mumps.h,v $
                                                                         
                                                                         
-#ifndef PFEMSolver_h
-#define PFEMSolver_h
+#ifndef PFEMSolver_Mumps_h
+#define PFEMSolver_Mumps_h
 
-// File: ~/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.h
+// File: ~/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_Mumps.h
 //
 // Written: Minjie 
 // Created: Sep 17 2012
 //
-// Description: This file contains the class definition for PFEMSolver.
-// A PFEMSolver object can be constructed to solve a PFEMLinSOE
+// Description: This file contains the class definition for PFEMSolver_Mumps.
+// A PFEMSolver_Mumps object can be constructed to solve a PFEMLinSOE
 // object. It obtains the solution by making calls on the
-// The PFEMSolver uses Fractional Step Method to solve PFEM equations. 
+// The PFEMSolver_Mumps uses Fractional Step Method to solve PFEM equations. 
 //
-// What: "@(#) PFEMSolver.h, revA"
+// What: "@(#) PFEMSolver_Mumps.h, revA"
 
-#include <LinearSOESolver.h>
-extern "C" {
-#include <cs.h>
-}
+#ifdef _PARALLEL_INTERPRETERS
+
+#include <PFEMSolver.h>
+#include <dmumps_c.h>
 
 class PFEMLinSOE;
 
-class PFEMSolver : public LinearSOESolver
+class PFEMSolver_Mumps : public PFEMSolver
 {
 public:
-    PFEMSolver();
-    virtual ~PFEMSolver();
+    PFEMSolver_Mumps(int r, int e, int h, int s);
+    virtual ~PFEMSolver_Mumps();
 
     virtual int solve();
     virtual int setSize();
@@ -61,9 +61,25 @@ public:
 private:
     
     PFEMLinSOE* theSOE;
-    css* Msym;
-    csn* Mnum;
+
+    DMUMPS_STRUC_C sid, pid;
+    int myid;
+
+    static const int JOB_INIT = -1;
+    static const int JOB_END = -2;
+    static const int JOB_ANALYSIS = 1;
+    static const int JOB_FACTORIZATION = 2;
+    static const int JOB_SOLUTION = 3;
+    static const int JOB_SOLVE = 6;
+    static const int USE_COMM_WORLD = -987654;
+    void ICNTL(DMUMPS_STRUC_C& id, int I, int val);
+
+    int relax, err, host, sym;
 };
 
-#endif
+#else
 
+class PFEMSolver_Mumps{};
+
+#endif
+#endif
