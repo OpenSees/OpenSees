@@ -54,7 +54,7 @@
 static int numShellDKGQ = 0;
 
 void *
-OPS_NewShellDKGQ(void)
+OPS_ShellDKGQ(void)
 {
   if (numShellDKGQ == 0) {
 //    opserr << "Using ShellDKGQ - Developed by: Lisha Wang and Xinzheng Lu\n";
@@ -77,7 +77,7 @@ OPS_NewShellDKGQ(void)
     return 0;
   }
 
-  SectionForceDeformation *theSection = OPS_GetSectionForceDeformation(iData[5]);
+  SectionForceDeformation *theSection = OPS_getSectionForceDeformation(iData[5]);
 
   if (theSection == 0) {
     opserr << "ERROR:  element ShellDKGQ " << iData[0] << "section " << iData[5] << " not found\n";

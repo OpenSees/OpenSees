@@ -29,6 +29,9 @@
 //      element for general nonlinear analysis,
 //      Eng.Comput.,1,77-88,1984
 
+#ifndef ShellMITC4_h
+#define ShellMITC4_h
+
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <math.h> 
@@ -191,3 +194,4 @@ class ShellMITC4 : public Element {
 
 
 
+#endif

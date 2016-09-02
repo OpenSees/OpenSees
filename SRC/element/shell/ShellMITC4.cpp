@@ -55,7 +55,7 @@
 static int numShellMITC4 = 0;
 
 void *
-OPS_NewShellMITC4(void)
+OPS_ShellMITC4(void)
 {
   if (numShellMITC4 == 0) {
 //    opserr << "Using ShellMITC4 - Developed by: Leopoldo Tesser, Diego A. Talledo, Véronique Le Corvec\n";
@@ -78,7 +78,7 @@ OPS_NewShellMITC4(void)
     return 0;
   }
 
-  SectionForceDeformation *theSection = OPS_GetSectionForceDeformation(iData[5]);
+  SectionForceDeformation *theSection = OPS_getSectionForceDeformation(iData[5]);
 
   if (theSection == 0) {
     opserr << "ERROR:  element ShellMITC4 " << iData[0] << "section " << iData[5] << " not found\n";

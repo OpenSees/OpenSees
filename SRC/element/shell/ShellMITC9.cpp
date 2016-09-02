@@ -46,7 +46,7 @@
 static int numShellMITC9 = 0;
 
 void *
-OPS_NewShellMITC9(void)
+OPS_ShellMITC9(void)
 {
   if (numShellMITC9 == 0) {
     opserr << "Using ShellMITC9 - Developed by: Leopoldo Tesser and Diego A. Talledo\n";
@@ -68,7 +68,7 @@ OPS_NewShellMITC9(void)
     return 0;
   }
 
-  SectionForceDeformation *theSection = OPS_GetSectionForceDeformation(iData[10]);
+  SectionForceDeformation *theSection = OPS_getSectionForceDeformation(iData[10]);
 
   if (theSection == 0) {
     opserr << "ERROR:  element ShellMITC9 " << iData[0] << "section " << iData[10] << " not found\n";
