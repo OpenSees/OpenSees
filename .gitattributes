@@ -2439,6 +2439,14 @@ SRC/element/Information.h -text
 SRC/element/Makefile -text
 SRC/element/NewElement.cpp -text
 SRC/element/NewElement.h -text
+SRC/element/PFEMElement/BackgroundFixData.cpp -text
+SRC/element/PFEMElement/BackgroundFixData.h -text
+SRC/element/PFEMElement/BackgroundGrid.cpp -text
+SRC/element/PFEMElement/BackgroundGrid.h -text
+SRC/element/PFEMElement/BackgroundMesh.cpp -text
+SRC/element/PFEMElement/BackgroundMesh.h -text
+SRC/element/PFEMElement/BackgroundStructure.cpp -text
+SRC/element/PFEMElement/BackgroundStructure.h -text
 SRC/element/PFEMElement/LineMesh.cpp -text
 SRC/element/PFEMElement/LineMesh.h -text
 SRC/element/PFEMElement/Makefile -text
@@ -2460,6 +2468,10 @@ SRC/element/PFEMElement/PFEMMesher2D.cpp -text
 SRC/element/PFEMElement/PFEMMesher2D.h -text
 SRC/element/PFEMElement/PFEMMesher3D.cpp -text
 SRC/element/PFEMElement/PFEMMesher3D.h -text
+SRC/element/PFEMElement/Particle.cpp -text
+SRC/element/PFEMElement/Particle.h -text
+SRC/element/PFEMElement/ParticleGroup.cpp -text
+SRC/element/PFEMElement/ParticleGroup.h -text
 SRC/element/PFEMElement/TclModelBuilder_addPFEMElement.cpp -text
 SRC/element/PFEMElement/TclModelBuilder_addPFEMElement.h -text
 SRC/element/PFEMElement/TclPFEMCommands.cpp -text
