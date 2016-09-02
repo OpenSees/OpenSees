@@ -49,6 +49,7 @@
 #include <stdlib.h>
 #include <elementAPI.h>
 #include <string>
+#include <ElementIter.h>
 
 Matrix ElasticBeam2d::K(6,6);
 Vector ElasticBeam2d::P(6);
@@ -71,14 +72,23 @@ void* OPS_ElasticBeam2d(void)
     // inputs: 
     int iData[3];
     int numData = 3;
-    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
+	opserr<<"WARNING failed to read integers\n";
+	return 0;
+    }
 
     double data[3];
-    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) {
+	opserr<<"WARNING failed to read doubles\n";
+	return 0;
+    }
 
     numData = 1;
     int transfTag;
-    if(OPS_GetIntInput(&numData,&transfTag) < 0) return 0;
+    if(OPS_GetIntInput(&numData,&transfTag) < 0) {
+	opserr<<"WARNING transfTag is not integer\n";
+	return 0;
+    }
     
     // options
     double mass = 0.0, alpha=0.0, depth=0.0;
@@ -112,6 +122,78 @@ void* OPS_ElasticBeam2d(void)
 
     return new ElasticBeam2d(iData[0],data[0],data[1],data[2],iData[1],iData[2],
 			     *theTransf,alpha,depth,mass,cMass);
+}
+
+int OPS_ElasticBeam2d(Domain& theDomain, const ID& elenodes, ID& eletags)
+{
+    if(OPS_GetNumRemainingInputArgs() < 4) {
+	opserr<<"insufficient arguments:A,E,Iz,transfTag\n";
+	return -1;
+    }
+
+    // inputs: 
+    double data[3];
+    int numData = 3;
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return -1;
+
+    numData = 1;
+    int transfTag;
+    if(OPS_GetIntInput(&numData,&transfTag) < 0) return -1;
+    
+    // options
+    double mass = 0.0, alpha=0.0, depth=0.0;
+    int cMass = 0;
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+	std::string type = OPS_GetString();
+	if(type == "-alpha") {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetDoubleInput(&numData,&alpha) < 0) return -1;
+	    }
+	} else if(type == "-depth") {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetDoubleInput(&numData,&depth) < 0) return -1;
+	    }
+
+	} else if(type == "-mass") {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetDoubleInput(&numData,&mass) < 0) return -1;
+	    }
+	} else if(type == "-cMass") {
+	    cMass = 1;
+	}
+    }
+
+    // check transf
+    CrdTransf* theTransf = OPS_GetCrdTransf(transfTag);
+    if(theTransf == 0) {
+	opserr<<"coord transfomration not found\n";
+	return -1;
+    }
+
+    // create elements
+    ElementIter& theEles = theDomain.getElements();
+    Element* theEle = theEles();
+    int currTag = 0;
+    if (theEle != 0) {
+	currTag = theEle->getTag();
+    }
+    eletags.resize(elenodes.Size()/2);
+    for (int i=0; i<elenodes.Size()/2; i++) {
+	theEle = new ElasticBeam2d(--currTag,data[0],data[1],data[2],elenodes(2*i),elenodes(2*i+1),
+				   *theTransf,alpha,depth,mass,cMass);
+	if (theEle == 0) {
+	    opserr<<"WARING: run out of memory for creating element\n";
+	    return -1;
+	}
+	if (theDomain.addElement(theEle) == false) {
+	    opserr<<"WARNING: failed to add element to domain\n";
+	    delete theEle;
+	    return -1;
+	}
+	eletags(i) = currTag;
+    }
+
+    return 0;
 }
 
 ElasticBeam2d::ElasticBeam2d()

@@ -141,7 +141,7 @@ OPS_ModElasticBeam2d()
     numRemainingArgs = OPS_GetNumRemainingInputArgs();      
   }
 
-  CrdTransf *theTransf = OPS_GetCrdTransfPtr(iData[3]);
+  CrdTransf *theTransf = OPS_GetCrdTransf(iData[3]);
   if (theTransf == 0) {
     opserr << "WARNING error could not find a transformation with tag: " << iData[3] << "element ElasticBeamColumn2d " << eleTag << endln;
     return 0;
