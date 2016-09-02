@@ -50,7 +50,7 @@ public:
                  LinearSOE &theSOE,
                  TransientIntegrator &theIntegrator,
                  ConvergenceTest *theTest,
-                 double max, double min, double r);
+                 double max, double min, double g, double r);
 
     int analyze();
 
@@ -58,8 +58,11 @@ public:
 
 private:
 
+    int identify();
+
     double dtmax;
     double dtmin;
+    double gravity;
     double ratio;
     double dt;
     double next;
