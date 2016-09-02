@@ -38,6 +38,12 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
+void* OPS_FullGenLinLapackSolver()
+{
+    FullGenLinLapackSolver *theSolver = new FullGenLinLapackSolver();
+    return new FullGenLinSOE(*theSolver);
+}
+
 FullGenLinLapackSolver::FullGenLinLapackSolver()
 :FullGenLinSolver(SOLVER_TAGS_FullGenLinLapackSolver),iPiv(0),sizeIpiv(0)
 {
