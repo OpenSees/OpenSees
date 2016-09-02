@@ -80,7 +80,7 @@ OPS_FourNodeQuad3d()
   int numData;
   int matTag = 0;
   int eleTag = 0;
-  char *pType;
+  const char *pType;
 
   numData = 5;
   if (OPS_GetIntInput(&numData, iData) != 0) {
@@ -95,7 +95,8 @@ OPS_FourNodeQuad3d()
     return 0;
   }
 
-  if (OPS_GetStringCopy(&pType) != 0) {
+  pType = OPS_GetString();
+  if (pType != 0) {
     opserr << "WARNING element FourNodeQuad3d : invalid pType for element: " << eleTag << "\n";
   }
 
@@ -107,7 +108,7 @@ OPS_FourNodeQuad3d()
   }
 
 
-  NDMaterial *theMaterial = OPS_GetNDMaterial(matTag);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matTag);
   
   if (theMaterial == 0) {
     opserr << "WARNING material with tag " << matTag << "not found for element " << eleTag << endln;
