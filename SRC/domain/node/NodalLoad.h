@@ -48,6 +48,7 @@ class NodalLoad : public Load
     virtual void setDomain(Domain *newDomain);
     virtual int getNodeTag(void) const;
     virtual void applyLoad(double loadFactor);
+    virtual void applyLoadSensitivity(double loadFactor);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, 

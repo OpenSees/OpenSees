@@ -55,37 +55,92 @@
 
 #include <OPS_Globals.h>
 #include <elementAPI.h>
-#include <string>
 
 Matrix **Node::theMatrices = 0;
 Matrix **Node::theVectors = 0;
 int Node::numMatrices = 0;
 
-void* OPS_Node()
+int OPS_Node()
 {
+    Domain* theDomain = OPS_GetDomain();
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();
-
+    
+    if(theDomain == 0) {
+	opserr<<"WARNING: domain is not defined\n";
+	return -1;
+    }
     if(ndm<=0 || ndf<=0) {
-	opserr<<"zero ndm or ndf\n";
-	return 0;
+	opserr<<"WARNING: system ndm and ndf are zero\n";
+	return -1;
     }
 
     if(OPS_GetNumRemainingInputArgs() < 1+ndm) {
 	opserr<<"insufficient number of arguments\n";
-	return 0;
+	return -1;
     }
 
     // get tag
     int tag = 0;
     int numData = 1;
-    OPS_GetIntInput(&numData, &tag);
+    if(OPS_GetIntInput(&numData, &tag) < 0) {
+	opserr<<"WARNING tag is not integer\n";
+	return -1;
+    }
 
     // get crds
     Vector crds(ndm);
-    double* ptr = &crds(0);
-    OPS_GetDoubleInput(&ndm, ptr);
+    if(OPS_GetDoubleInput(&ndm, &crds(0)) < 0) {
+	opserr<<"WARNING noda coord are not double\n";
+	return -1;
+    }
 
+    // check options
+    Vector disp,vel,mass,dispLoc;
+    Matrix ndmass;
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+	const char* type = OPS_GetString();
+	
+	if(strcmp(type,"-disp")==0 || strcmp(type,"-Disp")==0) {
+	    if(OPS_GetNumRemainingInputArgs() < ndf) {
+		opserr<<"incorrect number of nodal disp terms\n";
+		return -1;
+	    }
+	    disp.resize(ndf);
+	    if(OPS_GetDoubleInput(&ndf, &disp(0)) < 0) return -1;
+
+	} else if(strcmp(type,"-vel")==0 || strcmp(type,"-Vel")==0) {
+	    if(OPS_GetNumRemainingInputArgs() < ndf) {
+		opserr<<"incorrect number of nodal vel terms\n";
+		return -1;
+	    }
+	    vel.resize(ndf);
+	    if(OPS_GetDoubleInput(&ndf, &vel(0)) < 0) return -1;
+
+	} else if(strcmp(type,"-mass")==0 || strcmp(type,"-Mass")==0) {
+	    if(OPS_GetNumRemainingInputArgs() < ndf) {
+		opserr<<"incorrect number of nodal mass terms\n";
+		return -1;
+	    }
+	    Vector data(ndf);
+	    if(OPS_GetDoubleInput(&ndf, &data(0)) < 0) return -1;
+	    ndmass.resize(ndf,ndf);
+	    ndmass.Zero();
+	    for(int i=0; i<ndf; i++) {
+		ndmass(i,i) = data(i);
+	    }
+
+	} else if(strcmp(type,"-dispLoc")==0 || strcmp(type,"-dispLoc")==0) {
+	    if(OPS_GetNumRemainingInputArgs() < ndm) {
+		opserr<<"incorrect number of nodal mass terms\n";
+		return -1;
+	    }
+	    dispLoc.resize(ndm);
+	    if(OPS_GetDoubleInput(&ndm, &dispLoc(0)) < 0) return -1;
+
+	}
+    }
+    
     // create node
     Node* theNode = 0;
     if(ndm == 1) {
@@ -95,60 +150,35 @@ void* OPS_Node()
     } else {
 	theNode = new Node(tag,ndf,crds(0),crds(1),crds(2));
     }
+
     if(theNode == 0) {
 	opserr<<"run out of memory for node "<<tag<<"\n";
-	return 0;
+	return -1;
     }
 
-    // check options
-    while(OPS_GetNumRemainingInputArgs() > 0) {
-	std::string type = OPS_GetString();
-	if(type=="-disp" || type=="-Disp") {
-	    if(OPS_GetNumRemainingInputArgs() < ndf) {
-		opserr<<"incorrect number of nodal disp terms\n";
-		delete theNode;
-		return 0;
-	    }
-	    Vector data(ndf);
-	    OPS_GetDoubleInput(&ndf, &data(0));
-	    theNode->setTrialDisp(data);
-	    theNode->commitState();
-	} else if(type=="-vel" || type=="-Vel") {
-	    if(OPS_GetNumRemainingInputArgs() < ndf) {
-		opserr<<"incorrect number of nodal vel terms\n";
-		delete theNode;
-		return 0;
-	    }
-	    Vector data(ndf);
-	    OPS_GetDoubleInput(&ndf, &data(0));
-	    theNode->setTrialVel(data);
-	    theNode->commitState();
-	} else if(type=="-mass" || type=="-Mass") {
-	    if(OPS_GetNumRemainingInputArgs() < ndf) {
-		opserr<<"incorrect number of nodal mass terms\n";
-		delete theNode;
-		return 0;
-	    }
-	    Vector data(ndf);
-	    OPS_GetDoubleInput(&ndf, &data(0));
-	    Matrix ndmass(ndf,ndf);
-	    for(int i=0; i<ndf; i++) {
-		ndmass(i,i) = data(i);
-	    }
-	    theNode->setMass(ndmass);
-	} else if(type=="-dispLoc" || type=="-dispLoc") {
-	    if(OPS_GetNumRemainingInputArgs() < ndm) {
-		opserr<<"incorrect number of nodal mass terms\n";
-		delete theNode;
-		return 0;
-	    }
-	    Vector data(ndm);
-	    OPS_GetDoubleInput(&ndm, &data(0));
-	    theNode->setDisplayCrds(data);
-	}
+    // set node
+    if(disp.Size() == ndf) {
+	theNode->setTrialDisp(disp);
+    }
+    if(vel.Size() == ndf) {
+	theNode->setTrialVel(disp);
+    }
+    if(ndmass.noRows() == ndf) {
+	theNode->setMass(ndmass);
+    }
+    if(dispLoc.Size() == ndm) {
+	theNode->setDisplayCrds(dispLoc);
+    }
+    theNode->commitState();
+
+    // add node to domain
+    if(theDomain->addNode(theNode) == false) {
+	opserr<<"WARNING: failed to add node to domain\n";
+	delete theNode;
+	return -1;
     }
 
-    return theNode;
+    return 0;
 }
 
 // for FEM_Object Broker to use
