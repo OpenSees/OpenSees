@@ -44,6 +44,13 @@
 #include <FEM_ObjectBroker.h>
 //#include <Timer.h>
 
+void* OPS_ProfileSPDLinDirectSolver()
+{
+    ProfileSPDLinSolver *theSolver = new ProfileSPDLinDirectSolver();
+    ProfileSPDLinSOE* theSOE = new ProfileSPDLinSOE(*theSolver);
+    return theSOE;
+}
+
 ProfileSPDLinDirectSolver::ProfileSPDLinDirectSolver(double tol)
 :ProfileSPDLinSolver(SOLVER_TAGS_ProfileSPDLinDirectSolver),
  minDiagTol(tol), size(0), RowTop(0), topRowPtr(0), invD(0)

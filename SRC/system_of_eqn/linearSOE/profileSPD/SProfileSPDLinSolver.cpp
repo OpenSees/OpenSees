@@ -37,6 +37,12 @@
 #include <FEM_ObjectBroker.h>
 #include <Timer.h>
 
+void* OPS_SProfileSPDLinSolver()
+{
+    SProfileSPDLinSolver *theSolver = new SProfileSPDLinSolver(); 	
+    return new SProfileSPDLinSOE(*theSolver); 
+}
+
 SProfileSPDLinSolver::SProfileSPDLinSolver(double tol)
 :LinearSOESolver(SOLVER_TAGS_SProfileSPDLinSolver),
  minDiagTol(tol), size(0), RowTop(0), topRowPtr(0), invD(0)
