@@ -19,12 +19,30 @@
 #include <math.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
 
 extern "C" {
-  #include "FeStructs.h"
+#include "FeStructs.h"
 }
 
+void* OPS_SymSparseLinSolver()
+{
+    // now determine ordering scheme
+    //   1 -- MMD
+    //   2 -- ND
+    //   3 -- RCM
+    int lSparse = 1;
+    int numdata = 1;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+	if (OPS_GetIntInput(&numdata, &lSparse) < 0) {
+	    opserr << "WARNING SparseSPD failed to read lSparse\n";
+	    return 0;
+	}
+    }
 
+    SymSparseLinSolver *theSolver = new SymSparseLinSolver();
+    return new SymSparseLinSOE(*theSolver, lSparse);  
+}
 
 SymSparseLinSolver::SymSparseLinSolver()
 :LinearSOESolver(SOLVER_TAGS_SymSparseLinSolver),
