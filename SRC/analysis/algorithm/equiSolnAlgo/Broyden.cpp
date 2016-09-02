@@ -42,6 +42,36 @@
 #include <ConvergenceTest.h>
 #include <ID.h>
 #include <math.h>
+#include <elementAPI.h>
+
+void* OPS_Broyden()
+{
+    int formTangent = CURRENT_TANGENT;
+    int count = -1;
+
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+	const char* flag = OPS_GetString();
+	
+	if (strcmp(flag,"-secant") == 0) {
+	    formTangent = CURRENT_SECANT;
+	    
+	} else if (strcmp(flag,"-initial") == 0) {
+	    formTangent = INITIAL_TANGENT;
+	    
+	} else if (strcmp(flag,"-count") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    int numdata = 1;
+	    if (OPS_GetIntInput(&numdata, &count) < 0) {
+		opserr << "WARNING Broyden failed to read count\n";
+		return 0;
+	    }
+	}
+    }
+
+    if (count == -1)
+	return new Broyden(formTangent); 
+    else
+	return new Broyden(formTangent, count); 
+}
 
 // Constructor
 Broyden::Broyden(int theTangentToUse, int n )

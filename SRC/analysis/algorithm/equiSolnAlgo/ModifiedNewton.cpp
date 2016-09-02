@@ -47,6 +47,24 @@
 #include <FEM_ObjectBroker.h>
 #include <ConvergenceTest.h>
 #include <Timer.h>
+#include <elementAPI.h>
+
+void* OPS_ModifiedNewton()
+{
+    int formTangent = CURRENT_TANGENT;
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+	const char* type = OPS_GetString();
+	if (strcmp(type,"-secant") == 0) {
+	    formTangent = CURRENT_SECANT;
+	} else if (strcmp(type,"-initial") == 0) {
+	    formTangent = INITIAL_TANGENT;
+	}
+    }
+
+    return new ModifiedNewton(formTangent);
+
+}
 
 // Constructor
 ModifiedNewton::ModifiedNewton(int theTangentToUse)

@@ -56,12 +56,12 @@ void* OPS_NewtonRaphsonAlgorithm()
     int formTangent = CURRENT_TANGENT;
 
     while(OPS_GetNumRemainingInputArgs() > 0) {
-	std::string type = OPS_GetString();
-	if(type=="-secant" || type=="-Secant") {
+	const char* type = OPS_GetString();
+	if(strcmp(type,"-secant")==0 || strcmp(type,"-Secant")==0) {
 	    formTangent = CURRENT_SECANT;
-	} else if(type=="-initial" || type=="-Initial") {
+	} else if(strcmp(type,"-initial")==0 || strcmp(type,"-Initial")==0) {
 	    formTangent = INITIAL_TANGENT;
-	} else if(type=="-intialThenCurrent" || type=="-intialCurrent") {
+	} else if(strcmp(type,"-intialThenCurrent")==0 || strcmp(type,"-intialCurrent")==0) {
 	    formTangent = INITIAL_THEN_CURRENT_TANGENT;
 	}
     }
