@@ -2439,6 +2439,8 @@ SRC/element/Information.h -text
 SRC/element/Makefile -text
 SRC/element/NewElement.cpp -text
 SRC/element/NewElement.h -text
+SRC/element/PFEMElement/LineMesh.cpp -text
+SRC/element/PFEMElement/LineMesh.h -text
 SRC/element/PFEMElement/Makefile -text
 SRC/element/PFEMElement/PFEMElement2D.cpp -text
 SRC/element/PFEMElement/PFEMElement2D.h -text
