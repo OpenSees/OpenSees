@@ -39,6 +39,12 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
+void* OPS_DiagonalDirectSolver()
+{
+    DiagonalSolver *theSolver = new DiagonalDirectSolver();   
+    return new DiagonalSOE(*theSolver);
+}
+
 DiagonalDirectSolver::DiagonalDirectSolver(double tol)
 :DiagonalSolver(SOLVER_TAGS_DiagonalDirectSolver),
  minDiagTol(tol)
