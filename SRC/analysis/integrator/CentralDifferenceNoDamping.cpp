@@ -43,8 +43,7 @@
 #define OPS_Export 
 
 
-TransientIntegrator *
-    OPS_CentralDifferenceNoDamping(void)
+void *    OPS_CentralDifferenceNoDamping(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

@@ -43,8 +43,7 @@
 #define OPS_Export
 
 
-TransientIntegrator *
-    OPS_AlphaOS(void)
+void *    OPS_AlphaOS(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

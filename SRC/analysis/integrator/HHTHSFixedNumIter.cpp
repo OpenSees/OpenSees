@@ -44,8 +44,7 @@
 #define OPS_Export 
 
 
-TransientIntegrator *
-    OPS_HHTHSFixedNumIter(void)
+void *    OPS_HHTHSFixedNumIter(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

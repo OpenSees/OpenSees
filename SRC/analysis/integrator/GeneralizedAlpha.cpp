@@ -45,8 +45,7 @@
 #include <elementAPI.h>
 #define OPS_Export 
 
-TransientIntegrator *
-OPS_GeneralizedAlpha(void)
+void *OPS_GeneralizedAlpha(void)
 {
   // Pointer to a uniaxial material that will be returned
   TransientIntegrator *theIntegrator = 0;

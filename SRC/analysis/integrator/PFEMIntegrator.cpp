@@ -51,15 +51,19 @@
 #include <LoadPatternIter.h>
 #include <LoadPattern.h>
 #include <FE_EleIter.h>
-
 #include <elementAPI.h>
+
+void* OPS_PFEMIntegrator()
+{
+    return new PFEMIntegrator();
+}
 
 PFEMIntegrator::PFEMIntegrator()
     : TransientIntegrator(INTEGRATOR_TAGS_PFEMIntegrator),
       c1(0.0), c2(0.0), c3(0.0), 
       Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
       determiningMass(false), sensitivityFlag(0),gradNumber(0),
-      dVn()
+      dVn(), dUn()
 {
     
 }
@@ -144,6 +148,18 @@ int PFEMIntegrator::newStep(double deltaT)
     return 0;
 }
 
+int PFEMIntegrator::commit()
+{
+    // get a pointer to the AnalysisModel and Domain
+    AnalysisModel *theModel = this->getAnalysisModel();
+    if(theModel == 0) {
+        opserr << "Analysis model has not been linked - PFEMIntegrator::newStep()\n";
+        return -1;
+    }
+
+    return theModel->commitDomain();
+}
+
 
 int PFEMIntegrator::revertToLastStep()
 {
@@ -169,6 +185,9 @@ int PFEMIntegrator::formEleTangent(FE_Element *theEle)
         theEle->addKtToTang(c1);
         theEle->addCtoTang(c2);
         theEle->addMtoTang(c3);
+	if (sensitivityFlag == 1) {
+	    theEle->addKgToTang(c1);
+	}
     } else if (statusFlag == INITIAL_TANGENT)  {
         theEle->addKiToTang(c1);
         theEle->addCtoTang(c2);
@@ -210,33 +229,35 @@ PFEMIntegrator::formEleResidual(FE_Element *theEle)
 
 
         // Obtain sensitivity vectors from previous step
-        dVn.resize(U->Size()); dVn.Zero();
-        Vector dUn(U->Size());
+        // dVn.resize(U->Size()); dVn.Zero();
+        // Vector dUn(U->Size());
 
-        AnalysisModel *myModel = this->getAnalysisModel();
-        DOF_GrpIter &theDOFs = myModel->getDOFs();
-        DOF_Group *dofPtr = 0;
-        while ((dofPtr = theDOFs()) != 0) {
+        // AnalysisModel *myModel = this->getAnalysisModel();
+        // DOF_GrpIter &theDOFs = myModel->getDOFs();
+        // DOF_Group *dofPtr = 0;
+        // while ((dofPtr = theDOFs()) != 0) {
 
-            const ID &id = dofPtr->getID();
-            int idSize = id.Size();
+        //     const ID &id = dofPtr->getID();
+        //     int idSize = id.Size();
 
-            const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);
-            for (int i=0; i < idSize; i++) {
-                int loc = id(i);
-                if (loc >= 0) {
-                    dUn(loc) = dispSens(i);
-                }
-            }
+        //     //const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);
+        //     for (int i=0; i < idSize; i++) {
+        //         int loc = id(i);
+        //         if (loc >= 0) {
+        //             //dUn(loc) = dispSens(i);
+	// 	    dUn(loc) = 0;
+        //         }
+        //     }
 
-            const Vector &velSens = dofPtr->getVelSensitivity(gradNumber);
-            for (int i=0; i < idSize; i++) {
-                int loc = id(i);
-                if (loc >= 0) {
-                    dVn(loc) = velSens(i);
-                }
-            }
-        }
+        //     //const Vector &velSens = dofPtr->getVelSensitivity(gradNumber);
+        //     for (int i=0; i < idSize; i++) {
+        //         int loc = id(i);
+        //         if (loc >= 0) {
+        //             //dVn(loc) = velSens(i);
+	// 	    dVn(loc) = 0;
+        //         }
+        //     }
+        // }
 
         // Now we're ready to make calls to the FE Element:
 
@@ -251,6 +272,9 @@ PFEMIntegrator::formEleResidual(FE_Element *theEle)
 
         // The term -K*(dun)
         theEle->addK_Force(dUn, -1.0);
+
+	// The term -Kg*(dun)
+        theEle->addKg_Force(dUn, -1.0);
 
         // The term -dC/dh*vel
         theEle->addD_ForceSensitivity(gradNumber, *Udot,-1.0);
@@ -325,6 +349,8 @@ int PFEMIntegrator::domainChanged()
         U = new Vector(size);
         Udot = new Vector(size);
         Udotdot = new Vector(size);
+	dVn.resize(size); dVn.Zero();
+	dUn.resize(size); dUn.Zero();
         
         // check we obtained the new
         if (Ut == 0 || Ut->Size() != size ||
@@ -389,6 +415,22 @@ int PFEMIntegrator::domainChanged()
                 (*Udotdot)(loc) = accel(i);
             }
         }
+
+	const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);
+	for (int i=0; i < idSize; i++) {
+	    int loc = id(i);
+	    if (loc >= 0) {
+		dUn(loc) = dispSens(i);
+	    }
+	}
+
+	const Vector &velSens = dofPtr->getVelSensitivity(gradNumber);
+	for (int i=0; i < idSize; i++) {
+	    int loc = id(i);
+	    if (loc >= 0) {
+		dVn(loc) = velSens(i);
+	    }
+	}
     }    
     
     return 0;
@@ -546,42 +588,29 @@ PFEMIntegrator::formIndependentSensitivityRHS()
     return 0;
 }
 
+int
+PFEMIntegrator::formIndependentSensitivityLHS(int statFlag)
+{
+    // set the sensitivity flag
+    sensitivityFlag = 1;
+
+    // call formTangent
+    int res = this->formTangent(statFlag);
+
+    // Reset the sensitivity flag
+    sensitivityFlag = 0;
+    
+    return res;
+}
+
 int 
 PFEMIntegrator::saveSensitivity(const Vector & dVNew,int gradNum,int numGrads)
 {
     // Recover sensitivity results from previous step
-    int vectorSize = U->Size();
-    Vector dUn(vectorSize);
-    dVn.resize(vectorSize); dVn.Zero();
-
     AnalysisModel *myModel = this->getAnalysisModel();
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
-    DOF_Group *dofPtr;
-    while ((dofPtr = theDOFs()) != 0) {
-	  
-        const ID &id = dofPtr->getID();
-        int idSize = id.Size();
-        const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);	
-        for (int i=0; i < idSize; i++) {
-	    int loc = id(i);
-	    if (loc >= 0) {
-                dUn(loc) = dispSens(i);		
-	    }
-        }
-	  
-        const Vector &velSens = dofPtr->getVelSensitivity(gradNumber);
-        for (int i=0; i < idSize; i++) {
-	    int loc = id(i);
-	    if (loc >= 0) {
-                dVn(loc) = velSens(i);
-	    }
-        }
-
-    }
-
 
     // Compute new acceleration and velocity vectors:
-    Vector dUNew(vectorSize);
+    int vectorSize = dVNew.Size();
     Vector dANew(vectorSize);
 
     // dudotdot = 1/dt*dv{n+1} - 1/dt*dvn
@@ -589,14 +618,16 @@ PFEMIntegrator::saveSensitivity(const Vector & dVNew,int gradNum,int numGrads)
     dANew.addVector(1.0, dVn, -c3);
 
     // du       = dun + dt*dv{n+1}
-    dUNew.addVector(0.0, dVNew, c1);
-    dUNew.addVector(1.0, dUn, 1.0);
+    dUn.addVector(1.0, dVNew, c1);
+
+    // dv
+    dVn = dVNew;
 
     // Now we can save vNew, vdotNew and vdotdotNew
     DOF_GrpIter &theDOFGrps = myModel->getDOFs();
     DOF_Group 	*dofPtr1;
     while ( (dofPtr1 = theDOFGrps() ) != 0)  {
-        dofPtr1->saveSensitivity(dUNew,dVNew,dANew,gradNum,numGrads);
+        dofPtr1->saveSensitivity(dUn,dVn,dANew,gradNum,numGrads);
     }
 	
     return 0;

@@ -45,8 +45,7 @@
 #define OPS_Export 
 
 
-TransientIntegrator *
-    OPS_CollocationHSFixedNumIter(void)
+void *    OPS_CollocationHSFixedNumIter(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

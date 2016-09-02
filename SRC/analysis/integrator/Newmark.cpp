@@ -106,7 +106,8 @@ Newmark::Newmark()
       Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
       determiningMass(false),
       sensitivityFlag(0), gradNumber(0), massMatrixMultiplicator(0),
-      dampingMatrixMultiplicator(0), assemblyFlag(0), independentRHS()
+      dampingMatrixMultiplicator(0), assemblyFlag(0), independentRHS(),
+      dUn(), dVn(), dAn()
 {
     
 }
@@ -119,7 +120,8 @@ Newmark::Newmark(double _gamma, double _beta, bool dispFlag, bool aflag)
       Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
       determiningMass(false),
       sensitivityFlag(0), gradNumber(0), massMatrixMultiplicator(0),
-      dampingMatrixMultiplicator(0), assemblyFlag(aflag), independentRHS()
+      dampingMatrixMultiplicator(0), assemblyFlag(aflag), independentRHS(),
+      dUn(), dVn(), dAn()
 {
     
 }
@@ -330,6 +332,9 @@ int Newmark::domainChanged()
         U = new Vector(size);
         Udot = new Vector(size);
         Udotdot = new Vector(size);
+	dUn.resize(size); dUn.Zero();
+	dVn.resize(size); dVn.Zero();
+	dAn.resize(size); dAn.Zero();
         
         // check we obtained the new
         if (Ut == 0 || Ut->Size() != size ||
@@ -394,6 +399,30 @@ int Newmark::domainChanged()
                 (*Udotdot)(loc) = accel(i);
             }
         }
+
+	const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);	
+	for (i=0; i < idSize; i++) {
+	    int loc = id(i);
+	    if (loc >= 0) {
+		dUn(loc) = dispSens(i);		
+	    }
+	}
+
+	const Vector &velSens = dofPtr->getVelSensitivity(gradNumber);
+	for (i=0; i < idSize; i++) {
+	    int loc = id(i);
+	    if (loc >= 0) {
+		dVn(loc) = velSens(i);
+	    }
+	}
+
+	const Vector &accelSens = dofPtr->getAccSensitivity(gradNumber);	
+	for (i=0; i < idSize; i++) {
+	    int loc = id(i);
+	    if (loc >= 0) {
+		dAn(loc) = accelSens(i);
+	    }
+	}
     }    
     
     return 0;
@@ -558,58 +587,18 @@ int Newmark::formEleResidual(FE_Element* theEle)
 	double dt = gamma/(beta*c2);
 	double a8 = dt*(1.0 - gamma/(2.0*beta));
 
-
-	// Obtain sensitivity vectors from previous step
-	int vectorSize = U->Size();
-	Vector V(vectorSize);
-	Vector Vdot(vectorSize);
-	Vector Vdotdot(vectorSize);
-	int i, loc;
-
-	AnalysisModel *myModel = this->getAnalysisModel();
-	DOF_GrpIter &theDOFs = myModel->getDOFs();
-	DOF_Group *dofPtr;
-	while ((dofPtr = theDOFs()) != 0) {
-
-	    const ID &id = dofPtr->getID();
-	    int idSize = id.Size();
-	    const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);	
-	    for (i=0; i < idSize; i++) {
-		loc = id(i);
-		if (loc >= 0) {
-		    V(loc) = dispSens(i);		
-		}
-	    }
-
-	    const Vector &velSens = dofPtr->getVelSensitivity(gradNumber);
-	    for (i=0; i < idSize; i++) {
-		loc = id(i);
-		if (loc >= 0) {
-		    Vdot(loc) = velSens(i);
-		}
-	    }
-
-	    const Vector &accelSens = dofPtr->getAccSensitivity(gradNumber);	
-	    for (i=0; i < idSize; i++) {
-		loc = id(i);
-		if (loc >= 0) {
-		    Vdotdot(loc) = accelSens(i);
-		}
-	    }
-	}
-
-
 	// Pre-compute the vectors involving a2, a3, etc.
 	//Vector tmp1 = V*a2 + Vdot*a3 + Vdotdot*a4;
+	int vectorSize = U->Size();
 	Vector tmp1(vectorSize);
-	tmp1.addVector(0.0, V, a2);
-	tmp1.addVector(1.0, Vdot, a3);
-	tmp1.addVector(1.0, Vdotdot, a4);
+	tmp1.addVector(0.0, dUn, a2);
+	tmp1.addVector(1.0, dVn, a3);
+	tmp1.addVector(1.0, dAn, a4);
 	//Vector tmp2 = V*a6 + Vdot*a7 + Vdotdot*a8;
 	Vector tmp2(vectorSize);
-	tmp2.addVector(0.0, V, a6);
-	tmp2.addVector(1.0, Vdot, a7);
-	tmp2.addVector(1.0, Vdotdot, a8);
+	tmp2.addVector(0.0, dUn, a6);
+	tmp2.addVector(1.0, dVn, a7);
+	tmp2.addVector(1.0, dAn, a8);
 
 	if (massMatrixMultiplicator == 0)
 	    massMatrixMultiplicator = new Vector(tmp1.Size());
@@ -800,59 +789,29 @@ Newmark::saveSensitivity(const Vector & vNew,int gradNum,int numGrads)
 
     // Recover sensitivity results from previous step
     int vectorSize = U->Size();
-    Vector V(vectorSize);
-    Vector Vdot(vectorSize);
-    Vector Vdotdot(vectorSize);
-    int i, loc;
-
-    AnalysisModel *myModel = this->getAnalysisModel();
-    DOF_GrpIter &theDOFs = myModel->getDOFs();
-    DOF_Group *dofPtr;
-    while ((dofPtr = theDOFs()) != 0) {
-	  
-	const ID &id = dofPtr->getID();
-	int idSize = id.Size();
-	const Vector &dispSens = dofPtr->getDispSensitivity(gradNumber);	
-	for (i=0; i < idSize; i++) {
-	    loc = id(i);
-	    if (loc >= 0) {
-		V(loc) = dispSens(i);		
-	    }
-	}
-	  
-	const Vector &velSens = dofPtr->getVelSensitivity(gradNumber);
-	for (i=0; i < idSize; i++) {
-	    loc = id(i);
-	    if (loc >= 0) {
-		Vdot(loc) = velSens(i);
-	    }
-	}
-	  
-	const Vector &accelSens = dofPtr->getAccSensitivity(gradNumber);	
-	for (i=0; i < idSize; i++) {
-	    loc = id(i);
-	    if (loc >= 0) {
-		Vdotdot(loc) = accelSens(i);
-	    }
-	}
-    }
-
 
     // Compute new acceleration and velocity vectors:
     Vector vdotNew(vectorSize);
     Vector vdotdotNew(vectorSize);
     //(*vdotdotNewPtr) = vNew*a1 + V*a2 + Vdot*a3 + Vdotdot*a4;
     vdotdotNew.addVector(0.0, vNew, a1);
-    vdotdotNew.addVector(1.0, V, a2);
-    vdotdotNew.addVector(1.0, Vdot, a3);
-    vdotdotNew.addVector(1.0, Vdotdot, a4);
+    vdotdotNew.addVector(1.0, dUn, a2);
+    vdotdotNew.addVector(1.0, dVn, a3);
+    vdotdotNew.addVector(1.0, dAn, a4);
+    
     //(*vdotNewPtr) = vNew*a5 + V*a6 + Vdot*a7 + Vdotdot*a8;
     vdotNew.addVector(0.0, vNew, a5);
-    vdotNew.addVector(1.0, V, a6);
-    vdotNew.addVector(1.0, Vdot, a7);
-    vdotNew.addVector(1.0, Vdotdot, a8);
+    vdotNew.addVector(1.0, dUn, a6);
+    vdotNew.addVector(1.0, dVn, a7);
+    vdotNew.addVector(1.0, dAn, a8);
+
+    // update
+    dUn = vNew;
+    dVn = vdotNew;
+    dAn = vdotdotNew;
 
     // Now we can save vNew, vdotNew and vdotdotNew
+    AnalysisModel *myModel = this->getAnalysisModel();
     DOF_GrpIter &theDOFGrps = myModel->getDOFs();
     DOF_Group 	*dofPtr1;
     while ( (dofPtr1 = theDOFGrps() ) != 0)  {

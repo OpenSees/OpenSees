@@ -72,20 +72,32 @@ void* OPS_DisplacementControlIntegrator()
     // node, dof
     int iData[2];
     int numData = 2;
-    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
+	opserr << "WARNING failed to read node tag and ndf\n";
+	return 0;
+    }
 
     double incr;
     numData = 1;
-    if(OPS_GetDoubleInput(&numData,&incr) < 0) return 0;
+    if(OPS_GetDoubleInput(&numData,&incr) < 0) {
+	opserr << "WARNING failed to read incr\n";
+	return 0;
+    }
 
     // numIter,dumin,dumax
     int numIter = 1;
     double data[2] = {incr,incr};
     if(OPS_GetNumRemainingInputArgs() > 2) {
        numData = 1;
-       if(OPS_GetIntInput(&numData,&numIter) < 0) return 0;
+       if(OPS_GetIntInput(&numData,&numIter) < 0) {
+	   opserr << "WARNING failed to read numIter\n";
+	   return 0;
+       }
        numData = 2;
-       if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+       if(OPS_GetDoubleInput(&numData,&data[0]) < 0) {
+	   opserr << "WARNING failed to read dumin and dumax\n";
+	   return 0;
+       }
     }
 
     // check node
@@ -834,7 +846,7 @@ DisplacementControl::formIndependentSensitivityRHS()
 }
 
 
-
+   
    int
 DisplacementControl::formSensitivityRHS(int passedGradNumber)
 {

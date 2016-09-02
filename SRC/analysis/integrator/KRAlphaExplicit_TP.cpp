@@ -35,8 +35,7 @@
 #define OPS_Export
 
 
-TransientIntegrator *
-    OPS_KRAlphaExplicit_TP(void)
+void *    OPS_KRAlphaExplicit_TP(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

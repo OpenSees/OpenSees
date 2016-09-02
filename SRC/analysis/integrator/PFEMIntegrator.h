@@ -62,6 +62,7 @@ public:
     int newStep(double deltaT);    
     int revertToLastStep(void);        
     int update(const Vector &deltaU);
+    int commit();
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
@@ -72,6 +73,7 @@ public:
     int revertToStart();
     int formSensitivityRHS(int gradNum);
     int formIndependentSensitivityRHS();
+    int formIndependentSensitivityLHS(int statusFlag = CURRENT_TANGENT);
     int saveSensitivity   (const Vector &v, int gradNum, int numGrads);
     int commitSensitivity (int gradNum, int numGrads);  
     // AddingSensitivity:END ////////////////////////////////////
@@ -87,7 +89,7 @@ protected:
     // Adding sensitivity
     int sensitivityFlag;
     int gradNumber;
-    Vector dVn;
+    Vector dVn, dUn;
     /////////////////////
     
 private:

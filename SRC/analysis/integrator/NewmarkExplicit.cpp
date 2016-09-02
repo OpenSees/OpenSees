@@ -43,8 +43,7 @@
 #define OPS_Export
 
 
-TransientIntegrator *
-    OPS_NewmarkExplicit(void)
+void*  OPS_NewmarkExplicit(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

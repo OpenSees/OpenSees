@@ -43,8 +43,7 @@
 #define OPS_Export
 
 
-TransientIntegrator *
-    OPS_HHTExplicit(void)
+void *    OPS_HHTExplicit(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

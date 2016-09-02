@@ -43,8 +43,7 @@
 #define OPS_Export
 
 
-TransientIntegrator *
-    OPS_NewmarkHSIncrLimit(void)
+void *  OPS_NewmarkHSIncrLimit(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

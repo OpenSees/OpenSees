@@ -112,6 +112,11 @@ IncrementalIntegrator::formTangent(int statFlag)
     return result;
 }
 
+int
+IncrementalIntegrator::formIndependentSensitivityLHS(int statFlag)
+{
+    return this->formTangent(statFlag);
+}
 
 int 
 IncrementalIntegrator::formUnbalance(void)

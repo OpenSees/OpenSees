@@ -99,6 +99,7 @@ protected:
     Vector *dampingMatrixMultiplicator;
     int assemblyFlag;
     Vector independentRHS;
+    Vector dUn, dVn, dAn;
     //////////////////////
     
 private:

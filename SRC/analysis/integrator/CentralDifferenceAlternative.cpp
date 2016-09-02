@@ -44,8 +44,7 @@
 #define OPS_Export 
 
 
-TransientIntegrator *
-    OPS_CentralDifferenceAlternative(void)
+void *    OPS_CentralDifferenceAlternative(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

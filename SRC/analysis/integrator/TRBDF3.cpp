@@ -41,6 +41,10 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
+void* OPS_TRBDF3()
+{
+    return new TRBDF3();
+}
 
 TRBDF3::TRBDF3()
   : TransientIntegrator(INTEGRATOR_TAGS_TRBDF3),

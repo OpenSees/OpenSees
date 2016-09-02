@@ -44,8 +44,7 @@
 #define OPS_Export 
 
 
-TransientIntegrator *
-    OPS_HHT_TP(void)
+void *    OPS_HHT_TP(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;

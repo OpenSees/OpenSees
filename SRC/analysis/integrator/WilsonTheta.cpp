@@ -43,8 +43,7 @@
 #define OPS_Export 
 
 
-TransientIntegrator *
-    OPS_WilsonTheta(void)
+void *    OPS_WilsonTheta(void)
 {
     // pointer to an integrator that will be returned
     TransientIntegrator *theIntegrator = 0;
