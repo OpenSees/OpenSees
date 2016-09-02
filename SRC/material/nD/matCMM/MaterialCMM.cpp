@@ -51,7 +51,7 @@ extern "C"
 #include <elementAPI.h>
 
 void *
-OPS_NewMaterialCMM(void)
+OPS_MaterialCMM(void)
 {
   NDMaterial *theMaterial = 0;
   
