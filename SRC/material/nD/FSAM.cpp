@@ -65,7 +65,7 @@
 static int numFSAMMaterials = 0;
 
 // Read input parameters and build the material
-OPS_Export void *OPS_NewFSAMMaterial()
+OPS_Export void *OPS_FSAMMaterial()
 {
 	if (numFSAMMaterials == 0) {
 		numFSAMMaterials++;

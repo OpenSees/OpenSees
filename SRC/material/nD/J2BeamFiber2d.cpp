@@ -43,7 +43,7 @@ Vector J2BeamFiber2d::sigma(2);
 Matrix J2BeamFiber2d::D(2,2);
 
 void *
-OPS_NewJ2BeamFiber2dMaterial(void)
+OPS_J2BeamFiber2dMaterial(void)
 {
   NDMaterial *theMaterial = 0;
   

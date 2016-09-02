@@ -31,7 +31,7 @@ Matrix LinearCap::tempMatrix(6,6);
 static int numLinearCap = 0;
 
 void *
-OPS_NewLinearCap(void) {
+OPS_LinearCap(void) {
 
   if (numLinearCap == 0) {
     numLinearCap++;

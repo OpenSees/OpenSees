@@ -33,6 +33,35 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <MaterialResponse.h>
+#include <elementAPI.h>
+
+void* OPS_ConcreteS()
+{
+    int argc = OPS_GetNumRemainingInputArgs() + 2;
+    if (argc < 8) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: nDMaterial ConcreteS tag? E? nu? fc? ft? Es?" << endln;
+	return 0;
+    }
+
+    int tag;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid nDMaterial ConcreteS tag" << endln;
+	return 0;
+    }
+
+    // double E, nu, fc, ft, Es;
+    double data[5];
+    numdata = 5;
+    if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	opserr << "WARNING invalid double inputs" << endln;
+	opserr << "ConcreteS: " << tag << endln;
+	return 0;
+    }
+
+    return new ConcreteS( tag, data[0], data[1], data[2], data[3], data[4]);
+}
 
 //null constructor
 ConcreteS::ConcreteS( ) : 

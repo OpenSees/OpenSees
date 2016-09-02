@@ -51,7 +51,7 @@
 
 
 void *
-OPS_NewElasticOrthotropicMaterial(void)
+OPS_ElasticOrthotropicMaterial(void)
 {
   NDMaterial *theMaterial = 0;
   

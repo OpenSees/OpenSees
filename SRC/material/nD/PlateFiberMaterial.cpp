@@ -32,6 +32,7 @@
 #include <PlateFiberMaterial.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
 
 //static vector and matrices
 Vector  PlateFiberMaterial::stress(5);
@@ -40,6 +41,40 @@ Matrix  PlateFiberMaterial::tangent(5,5);
 //      0  1  2  3  4  5
 // ND: 11 22 33 12 23 31
 // PF: 11 22 12 23 31 33
+
+void* OPS_PlateFiberMaterial()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 2) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: nDMaterial PlateFiber tag? matTag?" << endln;
+	return 0;
+    }
+
+    int tag[2];
+    numdata = 2;
+    if (OPS_GetIntInput(&numdata,tag)<0) {
+	opserr << "WARNING invalid tags\n";
+	return 0;
+    }
+
+    NDMaterial *threeDMaterial = OPS_getNDMaterial(tag[1]);
+    if (threeDMaterial == 0) {
+	opserr << "WARNING nD material does not exist\n";
+	opserr << "nD material: " << tag[1];
+	opserr << "\nPlateFiber nDMaterial: " << tag[0] << endln;
+	return 0;
+    }
+      
+    NDMaterial* mat = new PlateFiberMaterial( tag[0], *threeDMaterial );
+
+    if (mat == 0) {
+	opserr << "WARNING: failed to create PlaneStrain material\n";
+	return 0;
+    }
+
+    return mat;
+}
 
 //null constructor
 PlateFiberMaterial::PlateFiberMaterial() : 

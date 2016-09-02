@@ -43,7 +43,7 @@ Vector J2PlateFibre::sigma(5);
 Matrix J2PlateFibre::D(5,5);
 
 void *
-OPS_NewJ2PlateFibreMaterial(void)
+OPS_J2PlateFibreMaterial(void)
 {
   NDMaterial *theMaterial = 0;
   

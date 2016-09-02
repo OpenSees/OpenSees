@@ -56,6 +56,7 @@
 #include <string.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
 
 //parameters
 const double J2Plasticity :: one3   = 1.0 / 3.0 ;
@@ -65,7 +66,42 @@ const double J2Plasticity :: root23 = sqrt( 2.0 / 3.0 ) ;
 
 double J2Plasticity::initialTangent[3][3][3][3] ;   //material tangent
 double J2Plasticity::IIdev[3][3][3][3] ; //rank 4 deviatoric 
-double J2Plasticity::IbunI[3][3][3][3] ; //rank 4 I bun I 
+double J2Plasticity::IbunI[3][3][3][3] ; //rank 4 I bun I
+
+void* OPS_J2Plasticity()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 7) {
+	opserr << "WARNING: Insufficient arguements\n";
+	opserr << "Want: nDMaterial J2Plasticity tag? K? G? sig0? sigInf? delta? H? <eta?>\n";
+	return 0;
+    }
+
+    int tag;
+    numdata = 1;
+    if (OPS_GetIntInput(&numdata,&tag) < 0) {
+	opserr << "WARNING invalid J2Plasticity tag\n";
+	return 0;
+    }
+
+    double data[7] = {0,0,0,0,0,0,0};
+    numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata > 7) {
+	numdata = 7;
+    }
+    if (OPS_GetDoubleInput(&numdata,data)) {
+	opserr << "WARNING invalid J2Plasticity double inputs\n";
+	return 0;
+    }
+
+    NDMaterial* mat = new J2Plasticity(tag,data[0],data[1],data[2],data[3],data[4],data[5],data[6]);
+    if (mat == 0) {
+	opserr << "WARNING: failed to create J2Plasticity material\n";
+	return 0;
+    }
+
+    return mat;
+}
 
 //zero internal variables
 void J2Plasticity :: zero ( ) 

@@ -66,7 +66,8 @@ OPS_CycLiqCPMaterial(void)
 {
   if (numCycLiqCPMaterials == 0) {
     numCycLiqCPMaterials=1;
-    OPS_Error("\nCycLiqCP - Written: Rui Wang, Jian-Min Zhang, Gang Wang, Tsinghua University\nPlease refer to: Zhang and Wang, 2012, 'Large post-liquefaction deformation of sand, part I: physical mechanism, constitutive description and numerical algorithm', Acta Geotechnica\n", 1);
+    //OPS_Error("\nCycLiqCP - Written: Rui Wang, Jian-Min Zhang, Gang Wang, Tsinghua University\nPlease refer to: Zhang and Wang, 2012, 'Large post-liquefaction deformation of sand, part I: physical mechanism, constitutive description and numerical algorithm', Acta Geotechnica\n", 1);
+    opserr<<"\nCycLiqCP - Written: Rui Wang, Jian-Min Zhang, Gang Wang, Tsinghua University\nPlease refer to: Zhang and Wang, 2012, 'Large post-liquefaction deformation of sand, part I: physical mechanism, constitutive description and numerical algorithm', Acta Geotechnica\n";
   }
 
   NDMaterial *theMaterial = 0;

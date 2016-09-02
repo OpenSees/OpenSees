@@ -36,10 +36,52 @@ Earthquake Engineering & Structural Dynamics, 2013, 42(5): 705-723*/
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <MaterialResponse.h>
+#include <elementAPI.h>
 
 //static vector and matrices
 Vector  PlateFromPlaneStressMaterial::stress(5) ;
 Matrix  PlateFromPlaneStressMaterial::tangent(5,5) ;
+
+void* OPS_PlateFromPlaneStressMaterial()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 3) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: nDMaterial PlateFromPlaneStress tag? matTag? gmod?" << endln;
+	return 0;
+    }
+
+    int tag[2];
+    numdata = 2;
+    if (OPS_GetIntInput(&numdata,tag)<0) {
+	opserr << "WARNING invalid nDMaterial PlateFromPlaneStress tag and matTag" << endln;
+	return 0;
+    }
+
+    NDMaterial *threeDMaterial = OPS_getNDMaterial(tag[1]);
+    if (threeDMaterial == 0) {
+	opserr << "WARNING nD material does not exist\n";
+	opserr << "nD material: " << tag[1];
+	opserr << "\nPlateFromplanestress nDMaterial: " << tag[0] << endln;
+	return 0;
+    }
+
+    double gmod;
+    numdata = 1;
+    if (OPS_GetDoubleInput(&numdata,&gmod)<0) {
+	opserr << "WARNING invalid gmod" << endln;
+	return 0;
+    }
+      
+    NDMaterial* mat = new PlateFromPlaneStressMaterial( tag[0], *threeDMaterial, gmod);
+
+    if (mat == 0) {
+	opserr << "WARNING: failed to create PlateFromplanestress material\n";
+	return 0;
+    }
+
+    return mat;
+}
 
 //null constructor
 PlateFromPlaneStressMaterial::PlateFromPlaneStressMaterial( ) : 

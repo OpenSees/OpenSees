@@ -33,6 +33,41 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <MaterialResponse.h>   //Antonios Vytiniotis used for the recorder
+#include <elementAPI.h>
+
+void* OPS_PlaneStrain()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 2) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: nDMaterial PlaneStrain tag? matTag?" << endln;
+	return 0;
+    }
+
+    int tag[2];
+    numdata = 2;
+    if (OPS_GetIntInput(&numdata,tag)<0) {
+	opserr << "WARNING invalid nDMaterial PlaneStrain tags" << endln;
+	return 0;
+    }
+
+    NDMaterial *threeDMaterial = OPS_getNDMaterial(tag[1]);
+    if (threeDMaterial == 0) {
+	opserr << "WARNING nD material does not exist\n";
+	opserr << "nD material: " << tag[1];
+	opserr << "\nPlaneStrain nDMaterial: " << tag[0] << endln;
+	return 0;
+    }
+      
+    NDMaterial* mat = new PlaneStrainMaterial( tag[0], *threeDMaterial );
+
+    if (mat == 0) {
+	opserr << "WARNING: failed to create PlaneStrain material\n";
+	return 0;
+    }
+
+    return mat;
+}
 
 //static vector and matrices
 Vector  PlaneStrainMaterial::stress(3) ;

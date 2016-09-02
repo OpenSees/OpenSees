@@ -41,7 +41,7 @@
 #define OPS_Export 
 
 OPS_Export void *
-OPS_NewInitStressNDMaterial(void)
+OPS_InitStressNDMaterial(void)
 {
   // Pointer to a uniaxial material that will be returned
   NDMaterial *theMaterial = 0;
@@ -55,7 +55,7 @@ OPS_NewInitStressNDMaterial(void)
     return 0;
   }
 
-  theOtherMaterial = OPS_GetNDMaterial(iData[1]);
+  theOtherMaterial = OPS_getNDMaterial(iData[1]);
   if (theOtherMaterial == 0) {
     opserr << "Could not find material with tag: " << iData[1] << "uniaxialMaterial InitStress $tag $otherTag $sig0" << endln;
     return 0;	
