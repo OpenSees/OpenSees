@@ -76,8 +76,8 @@ extern void *OPS_TriangleSeries(void);
 extern void *OPS_TrigSeries(void);
 extern void *OPS_RectangularSeries(void);
 extern void *OPS_PulseSeries(void);
-extern void *OPS_NewPeerMotion(void);
-extern void *OPS_NewPeerNGAMotion(void);
+extern void *OPS_PeerMotion(void);
+extern void *OPS_PeerNGAMotion(void);
 
 #include <TclModelBuilder.h>
 
@@ -369,7 +369,7 @@ TclTimeSeriesCommand(ClientData clientData,
 
   else if ((strcmp(argv[0],"PeerDatabase") == 0) || (strcmp(argv[0],"PeerMotion") == 0)) {
 
-    void *theResult = OPS_NewPeerMotion();
+    void *theResult = OPS_PeerMotion();
     if (theResult != 0)
       theSeries = (TimeSeries *)theResult;
     
@@ -402,7 +402,7 @@ TclTimeSeriesCommand(ClientData clientData,
   else if ((strcmp(argv[0],"PeerNGADatabase") == 0) || (strcmp(argv[0],"PeerNGAMotion") == 0)) {
 
 
-    void *theResult = OPS_NewPeerNGAMotion();
+    void *theResult = OPS_PeerNGAMotion();
     if (theResult != 0)
       theSeries = (TimeSeries *)theResult;
     

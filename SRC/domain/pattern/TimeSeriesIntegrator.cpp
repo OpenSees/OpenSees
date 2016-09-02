@@ -32,6 +32,43 @@
 // What: "@(#) TimeSeriesIntegrator.C, revA"
 
 #include <TimeSeriesIntegrator.h>
+#include <elementAPI.h>
+
+
+void* OPS_TrapezoidalTimeSeriesIntegrator();
+void* OPS_SimpsonTimeSeriesIntegrator();
+
+void* OPS_TimeSeriesIntegrator()
+{
+    void *seriesIntegrator = 0;
+
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING TimeSeriesIntegrator type is required\n";
+	return 0;
+    }
+
+    const char* type = OPS_GetString();
+    if (strcmp(type,"Trapezoidal") == 0) {
+	seriesIntegrator = (TimeSeriesIntegrator*)OPS_TrapezoidalTimeSeriesIntegrator();
+		
+    } else if (strcmp(type,"Simpson") == 0) {
+	seriesIntegrator = (TimeSeriesIntegrator*)OPS_SimpsonTimeSeriesIntegrator();
+		
+    } else {
+	// type of load pattern type unknown
+	opserr << "WARNING unknown TimeSeriesIntegrator type " << type << " - ";
+	opserr << " SeriesIntegratorType <type args>\n\tvalid types: Trapezoidal or Simpson\n";
+	return 0;
+    }
+    if (seriesIntegrator == 0) {
+	opserr << "WARNING invalid series integrator: " << type;
+	opserr << " - pattern UniformExcitation -int {Series Integrator}\n";
+	return 0;
+    }
+
+    return seriesIntegrator;
+}
+
 
 TimeSeriesIntegrator::TimeSeriesIntegrator (int classTag)
 :MovableObject(classTag)

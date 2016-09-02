@@ -40,6 +40,11 @@
 #include <Channel.h>
 #include <PathSeries.h>
 
+void* OPS_TrapezoidalTimeSeriesIntegrator()
+{
+    return new TrapezoidalTimeSeriesIntegrator();
+}
+
 TrapezoidalTimeSeriesIntegrator::TrapezoidalTimeSeriesIntegrator() 
   :TimeSeriesIntegrator(TIMESERIES_INTEGRATOR_TAG_Trapezoidal)
 {

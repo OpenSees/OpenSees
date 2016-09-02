@@ -42,6 +42,185 @@ using std::ifstream;
 #include <iomanip>
 using std::ios;
 
+#include <PathTimeSeries.h>
+#include <elementAPI.h>
+#include <string>
+
+void* OPS_PathSeries()
+{
+    if(OPS_GetNumRemainingInputArgs() < 1) {
+	opserr<<"insufficient arguments: PathSeries\n";
+	return 0;
+    }
+
+    // get tag
+    int tag =0;
+    int numData = 1;
+    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+
+    // get other inputs
+    double factor = 1.0, dt = 1.0;
+    const char* timefile = 0, *valfile=0;
+    Vector values, times;
+
+    // check inputs
+    TimeSeries* theSeries = 0;
+    numData = OPS_GetNumRemainingInputArgs();
+    if(numData < 1) return 0;
+    std::string type = OPS_GetString();
+    if(type == "-dt") {
+	numData = OPS_GetNumRemainingInputArgs();
+	// get dt
+	if(numData < 1) {
+	    opserr<<"dt is not specified\n";
+	    return 0;
+	}
+	numData = 1;
+	if(OPS_GetDoubleInput(&numData,&dt) < 0) return 0;
+	
+	// get values
+	numData = OPS_GetNumRemainingInputArgs();
+	if(numData < 1) {
+	    opserr<<"data points are not specified\n";
+	    return 0;
+	}
+
+	// get data type
+	type = OPS_GetString();
+	if(type == "-values") {
+	    
+	    // value list
+	    numData = OPS_GetNumRemainingInputArgs();
+	    if(numData < 1) {
+		opserr<<"number of values is not specified\n";
+		return 0;
+	    }
+	    // get number of values
+	    numData = 1;
+	    int nval;
+	    if(OPS_GetIntInput(&numData,&nval) < 0) return 0;
+	    
+	    // get value list
+	    numData = OPS_GetNumRemainingInputArgs();
+	    if(numData < nval) {
+		opserr<<nval<<" data points are required\n";
+		return 0;
+	    }
+	    values.resize(nval);
+	    if(OPS_GetDoubleInput(&nval,&values(0)) < 0) return 0;
+	    
+	} else if(type == "-filePath") {
+	    // value file
+	    numData = OPS_GetNumRemainingInputArgs();
+	    if(numData <= 0) {
+		opserr<<"file path is not specified\n";
+		return 0;
+	    }
+	    valfile = OPS_GetString();
+	}
+
+	// get factor
+	numData = OPS_GetNumRemainingInputArgs();
+	if(numData > 1) {
+	    if(std::string(OPS_GetString()) == "-factor") {
+		numData = 1;
+		if(OPS_GetDoubleInput(&numData,&factor) < 0) return 0;
+	    }
+	}
+
+	// path serise
+	if(type == "-values") {
+	    theSeries = new PathSeries(tag,values,dt,factor);
+	} else if(type == "-filePath") {
+	    theSeries = new PathSeries(tag,valfile,dt,factor);
+	}
+
+    } else if(type == "-time") {
+	numData = OPS_GetNumRemainingInputArgs();
+	if(numData <= 0) {
+	    opserr<<"number of time points is not specified\n";
+	    return 0;
+	}
+	
+	// get number time points
+	int ntime;
+	numData = 1;
+	if(OPS_GetIntInput(&numData,&ntime) < 0) return 0;
+	    
+	// get time ponts
+	numData = OPS_GetNumRemainingInputArgs();
+	if(numData < ntime) {
+	    opserr<<ntime<<" number of time points are required\n";
+	    return 0;
+	}
+	times.resize(ntime);
+	if(OPS_GetDoubleInput(&ntime,&times(0)) < 0) return 0;
+
+	// get values
+	numData = OPS_GetNumRemainingInputArgs();
+	if(numData < 1) {
+	    opserr<<"number of values is not specified\n";
+	    return 0;
+	}
+	numData = 1;
+	int nval;
+	if(OPS_GetIntInput(&numData,&nval) < 0) return 0;
+
+	// get value list
+	numData = OPS_GetNumRemainingInputArgs();
+	if(numData < nval) {
+	    opserr<<nval<<" number of values are required\n";
+	    return 0;
+	}
+	values.resize(nval);
+	if(OPS_GetDoubleInput(&nval,&values(0)) < 0) return 0;
+
+	// get factor
+	numData = OPS_GetNumRemainingInputArgs();
+	if(numData > 1) {
+	    if(std::string(OPS_GetString()) == "-factor") {
+		numData = 1;
+		if(OPS_GetDoubleInput(&numData,&factor) < 0) return 0;
+	    }
+	}
+
+	// path time
+	theSeries = new PathTimeSeries(tag,values,times,factor);
+	    
+    } else if(type == "-fileTime") {
+	numData = OPS_GetNumRemainingInputArgs();
+	if(numData < 2) {
+	    opserr<<"fileTime and filePath are not specified\n";
+	    return 0;
+	}
+	timefile = OPS_GetString();
+	valfile = OPS_GetString();
+	
+	// get factor
+	numData = OPS_GetNumRemainingInputArgs();
+	if(numData > 1) {
+	    if(std::string(OPS_GetString()) == "-factor") {
+		numData = 1;
+		if(OPS_GetDoubleInput(&numData,&factor) < 0) return 0;
+	    }
+	}
+	theSeries = new PathTimeSeries(tag,timefile,valfile,factor);
+    }
+
+    if(theSeries == 0) {
+	opserr<<"choice of options for PathSeries is invalid\n";
+	return 0;
+    }
+
+    // if(OPS_addTimeSeries(theSeries) == false) {
+    // 	opserr<<"WARNING: failed to add TimeSeries\n";
+    // 	delete theSeries;
+    // 	return 0;
+    // }
+    
+    return theSeries;
+}
+
 
 PathSeries::PathSeries()	
   :TimeSeries(TSERIES_TAG_PathSeries),

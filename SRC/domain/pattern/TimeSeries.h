@@ -78,5 +78,6 @@ class TimeSeries : public TaggedObject, public MovableObject
 extern void OPS_clearAllTimeSeries(void);
 extern bool OPS_addTimeSeries(TimeSeries *newComponent);
 extern TimeSeries *OPS_getTimeSeries(int tag);
+extern bool OPS_removeTimeSeries(int tag);
 
 #endif

@@ -43,65 +43,149 @@
 #include <SP_ConstraintIter.h>
 #include <SP_Constraint.h>
 #include <elementAPI.h>
-#include <string>
+
+void* OPS_TimeSeriesIntegrator();
 
 void* OPS_UniformExcitationPattern()
 {
-    TimeSeries* accelSeries = 0;
-    TimeSeries* velSeries = 0;
-    TimeSeries* dispSeries = 0;
-    TimeSeriesIntegrator* seriesIntegrator = 0;
-    double fact = 1.0;
-    double vel0 = 0.0;
-    int iData[2];
-
-    if(OPS_GetNumRemainingInputArgs() < 2) {
-	opserr<<"insufficient number of args\n";
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	opserr << "WARNING insufficient args : pattern UniformExcitation tag dir\n";
 	return 0;
     }
     
-    // get tag and direction
-    int numData = 2;
-    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
-    iData[1]--; // subtract 1 for c indexing
+    int patternID;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &patternID) < 0) {
+	opserr << "WARNING invalid patternID\n";
+	return 0;
+    }
+    
+    int dir;
+    if (OPS_GetIntInput(&numdata, &dir) < 0) {
+	opserr << "WARNING invalid dir \n";
+	return 0;
+    }
+    
+    dir--; // subtract 1 for c indexing
+    
+    TimeSeries *accelSeries = 0;
+    TimeSeries *velSeries = 0;
+    TimeSeries *dispSeries = 0;
+    TimeSeriesIntegrator *seriesIntegrator = 0;
+    double vel0 = 0.0;
+    double fact = 1.0;
+    
+    bool doneSeries = false;
+    while (OPS_GetNumRemainingInputArgs()>1 && doneSeries == false) {
 
-    // get options
-    numData = 1;
-    while(OPS_GetNumRemainingInputArgs() > 1) {
-	std::string type = OPS_GetString();
-	if(type == "-accel"||type == "-acceleration") {
-	    int tstag;
-	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
-	    accelSeries = OPS_getTimeSeries(tstag);
-	} else if(type == "-vel"||type == "-velocity") {
-	    int tstag;
-	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
-	    velSeries = OPS_getTimeSeries(tstag);
-	} else if(type == "-disp"||type == "-displacement") {
-	    int tstag;
-	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
-	    dispSeries = OPS_getTimeSeries(tstag);
-	} else if(type == "-fact"||type == "-factor") {
-	    if(OPS_GetDoubleInput(&numData,&fact) < 0) return 0;
-	} else if(type == "-vel0"||type == "-initialVel") {
-	    if(OPS_GetDoubleInput(&numData,&vel0) < 0) return 0;
+	const char* flag = OPS_GetString();
+      
+	if ((strcmp(flag,"-vel0") == 0) || (strcmp(flag,"-initialVel") == 0)) {
+	
+	    if (OPS_GetDoubleInput(&numdata, &vel0) < 0) {
+		opserr << "WARNING invalid vel0: pattern type UniformExciation\n";
+		return 0;
+	    }
 	}
-    }
+      
+	else if ((strcmp(flag,"-fact") == 0) || (strcmp(flag,"-factor") == 0)) {
+	
+	    if (OPS_GetDoubleInput(&numdata, &fact) < 0) {
+		opserr << "WARNING invalid fact: pattern type UniformExciation\n";
+		return 0;
+	    }
+	}
+      
+      
+	else if ((strcmp(flag,"-accel") == 0) || (strcmp(flag,"-acceleration") == 0)) {
 
-    // create groundmotion
-    if(accelSeries==0&&dispSeries==0&&velSeries==0) {
-	opserr<<"no time series is specified\n";
+	    int tsTag;
+	    if (OPS_GetIntInput(&numdata, &tsTag) < 0) {
+		opserr << "WARING invalid accel series tag\n";
+		return 0;
+	    }
+	
+	    accelSeries = OPS_getTimeSeries(tsTag);
+	
+	    if (accelSeries == 0) {
+		opserr << "WARNING invalid accel series: " << tsTag;
+		opserr << " pattern UniformExcitation -accel {series}\n";
+		return 0;
+	    }
+	    
+	} else if ((strcmp(flag,"-vel") == 0) || (strcmp(flag,"-velocity") == 0)) {
+
+	    int tsTag;
+	    if (OPS_GetIntInput(&numdata, &tsTag) < 0) {
+		opserr << "WARING invalid vel series tag\n";
+		return 0;
+	    }
+	    velSeries = OPS_getTimeSeries(tsTag);
+	
+	    if (velSeries == 0) {
+		opserr << "WARNING invalid vel series: " << tsTag;
+		opserr << " pattern UniformExcitation -vel {series}\n";
+		return 0;
+	    }
+	
+	} else if ((strcmp(flag,"-disp") == 0) || (strcmp(flag,"-displacement") == 0)) {
+
+	    int tsTag;
+	    if (OPS_GetIntInput(&numdata, &tsTag) < 0) {
+		opserr << "WARING invalid disp series tag\n";
+		return 0;
+	    }
+	
+	    dispSeries = OPS_getTimeSeries(tsTag);
+	
+	    if (dispSeries == 0) {
+		opserr << "WARNING invalid disp series: " << tsTag;
+		opserr << " pattern UniformExcitation -disp {series}\n";
+		return 0;
+	    }
+	
+	} else if ((strcmp(flag,"-int") == 0) || (strcmp(flag,"-integrator") == 0)) {
+
+	    seriesIntegrator = (TimeSeriesIntegrator*) OPS_TimeSeriesIntegrator();
+	    if (seriesIntegrator == 0) return 0;
+	}
+    
+	else 
+	    doneSeries = true;
+    }
+    
+    if (dispSeries == 0 && velSeries == 0 && accelSeries == 0) {
+	opserr << "WARNING invalid series, want - pattern UniformExcitation";
+	opserr << "-disp {dispSeries} -vel {velSeries} -accel {accelSeries} ";
+	opserr << "-int {Series Integrator}\n";
+	return 0;
+    }
+    
+    GroundMotion *theMotion = new GroundMotion(dispSeries, velSeries,
+					       accelSeries, seriesIntegrator);
+    
+    if (theMotion == 0) {
+	opserr << "WARNING ran out of memory creating ground motion - pattern UniformExcitation ";
+	opserr << patternID << endln;
+      
+	return 0;
+    }
+    
+    // create the UniformExcitation Pattern
+    UniformExcitation* thePattern = new UniformExcitation(*theMotion, dir, patternID, vel0, fact);
+    
+    if (thePattern == 0) {
+	opserr << "WARNING ran out of memory creating load pattern - pattern UniformExcitation ";
+	opserr << patternID << endln;
+      
+	// clean up memory allocated up to this point and return an error
+	if (theMotion != 0)
+	    delete theMotion;
+      
 	return 0;
     }
 
-    GroundMotion* theMotion = new GroundMotion(dispSeries,velSeries,accelSeries,seriesIntegrator);
-    if(theMotion == 0) {
-	opserr << "WARNING ran out of memory creating ground motion - pattern UniformExcitation\n";
-	return 0;
-    }
-
-    //
-    return new UniformExcitation(*theMotion,iData[1],iData[0],vel0,fact);
+    return thePattern;
 }
 
 UniformExcitation::UniformExcitation()

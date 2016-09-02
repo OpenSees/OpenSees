@@ -61,7 +61,7 @@ httpGet(char const *URL, char const *page, unsigned int port, char **dataPtr);
 #define OPS_Export 
 
 OPS_Export void *
-OPS_NewPeerNGAMotion(void)
+OPS_PeerNGAMotion(void)
 {
   // Pointer to a uniaxial material that will be returned
   TimeSeries *theSeries = 0;
