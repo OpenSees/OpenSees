@@ -146,4 +146,8 @@ private:
 };
 */
 
+bool OPS_addYieldSurface_BC(YieldSurface_BC *newComponent);
+YieldSurface_BC *OPS_getYieldSurface_BC(int tag);
+void OPS_clearAllYieldSurface_BC(void);
+
 #endif

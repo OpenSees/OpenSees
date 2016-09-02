@@ -4,7 +4,7 @@
 
 #include "YieldSurface_BC.h"
 #include <stdlib.h>
-
+#include <MapOfTaggedObjects.h>
 
 const int YieldSurface_BC::dFReturn(0);
 const int YieldSurface_BC::RadialReturn(1);
@@ -13,6 +13,30 @@ const int YieldSurface_BC::ConstantYReturn(3);
 const int YieldSurface_BC::NoFP(4);
 const int YieldSurface_BC::SurfOnly(5);
 const int YieldSurface_BC::StateLoading(6);
+
+static MapOfTaggedObjects theYieldSurface_BCObjects;
+
+bool OPS_addYieldSurface_BC(YieldSurface_BC *newComponent)
+{
+    return theYieldSurface_BCObjects.addComponent(newComponent);
+}
+
+YieldSurface_BC *OPS_getYieldSurface_BC(int tag)
+{
+
+  TaggedObject *theResult = theYieldSurface_BCObjects.getComponentPtr(tag);
+  if(theResult == 0) {
+      opserr << "NDMaterial no found with tag: " << tag << "\n";
+      return 0;
+  }
+  YieldSurface_BC *theobj = (YieldSurface_BC *)theResult;
+
+  return theobj;
+}
+
+void OPS_clearAllYieldSurface_BC(void) {
+    theYieldSurface_BCObjects.clearAll();
+}
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
