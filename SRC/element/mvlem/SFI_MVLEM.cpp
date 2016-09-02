@@ -82,7 +82,7 @@ void *OPS_SFI_MVLEM(void)
   }
 
   int m = iData[3];
-  char *str = 0;
+  const char *str = 0;
 
   double *theThickness = new double[m];
   double *theWidth = new double[m];
@@ -92,7 +92,8 @@ void *OPS_SFI_MVLEM(void)
 
   numArgs = OPS_GetNumRemainingInputArgs();
   while (numArgs >= (m+1)) {
-    OPS_GetStringCopy(&str);
+      //OPS_GetStringCopy(&str);
+      str = OPS_GetString();
     if (strcmp(str, "-thick") == 0) {
       numData = m;
       if (OPS_GetDoubleInput(&numData, theThickness) != 0) {
@@ -113,7 +114,7 @@ void *OPS_SFI_MVLEM(void)
       }
       for (int i=0; i<m; i++) {
 	theMaterials[i] = 0;
-	theMaterials[i] = OPS_GetNDMaterial(matTags[i]);
+	theMaterials[i] = OPS_getNDMaterial(matTags[i]);
 	if (theMaterials[i] == 0) {
 	  opserr << "Invalid material tag " << matTags[i] << "  for SFI_MVLEM  " << iData[0] << endln;
 	  return 0;

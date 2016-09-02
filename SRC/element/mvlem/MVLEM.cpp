@@ -93,7 +93,7 @@ void *OPS_MVLEM(void)
   }
 
   int m = iData[3];
-  char *str = 0;
+  const char *str = 0;
 
   double *theThickness = new double[m];
   double *theWidth = new double[m];
@@ -106,7 +106,8 @@ void *OPS_MVLEM(void)
 
   numArgs = OPS_GetNumRemainingInputArgs();
   while (numArgs > 0) {
-    OPS_GetStringCopy(&str);
+      //OPS_GetStringCopy(&str);
+      str = OPS_GetString();
     if (strcmp(str, "-thick") == 0) {
       numData = m;
       if (OPS_GetDoubleInput(&numData, theThickness) != 0) {
