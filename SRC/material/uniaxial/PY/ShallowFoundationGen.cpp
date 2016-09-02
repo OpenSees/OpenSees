@@ -47,6 +47,44 @@
 #include <string>
 using namespace std;
 
+#include <elementAPI.h>
+#include <sstream>
+
+int OPS_ShallowFoundationGen()
+{
+    if (OPS_GetNumRemainingInputArgs() < 4) {
+	opserr << "WARNING ShallowFoundationGen FoundationID? ConnectingNode? InputDataFile? FoundationMatType?";
+	opserr << "Must have 4 arguments." << endln;
+	return -1;
+    }
+
+    int tags[2];
+    int num = 2;
+    if (OPS_GetIntInput(&num,tags) < 0) {
+	opserr<<"WARNING: invalid integer input\n";
+	return -1;
+    }
+
+    const char* filename = OPS_GetString();
+
+    int ftype;
+    num = 1;
+    if (OPS_GetIntInput(&num,&ftype) < 0) {
+	opserr<<"WARNING: invalid integer input\n";
+	return -1;
+    }
+
+    std::stringstream ss;
+    ss << tags[0] << " " << tags[1] << " " << ftype;
+    std::string id, cnode, foundtype;
+    ss >> id >> cnode >> foundtype;
+
+    ShallowFoundationGen gen;
+    gen.GetShallowFoundation(id.c_str(), cnode.c_str(), filename, foundtype.c_str());
+
+    return 0;
+}
+
 ////////////////////////////////////////////////////////////////////////
 // Constructor initializes global variables to zero
 ShallowFoundationGen::ShallowFoundationGen()
