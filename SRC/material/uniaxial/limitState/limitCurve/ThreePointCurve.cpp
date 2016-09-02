@@ -20,7 +20,7 @@
 
 // $Revision: 1.3 $
 // $Date: 2007-02-02 01:19:30 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/limitState/limitCurve/ThreePointCurve.cpp,v $                                                                        
+// $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/limitState/limitCurve/ThreePointCurve.cpp,v $
 // Written: KJE
 // Created: Aug 2001
 // Modified: Jul 2002
@@ -37,8 +37,107 @@
 #include <float.h>
 
 #include <DummyStream.h>
+#include <elementAPI.h>
 
-ThreePointCurve::ThreePointCurve(int tag, int eTag, Domain *theDom, 
+void* OPS_ThreePointCurve()
+{
+    if (OPS_GetNumRemainingInputArgs() < 12) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: limitCurve ThreePoint tag? eleTag? x1? y1? x2? y2? x3? y3?";
+	opserr << "Kdeg? Fres? defType? forType?" << endln;
+	opserr << "<ndI? ndJ? dof? perpDirn?>" << endln;
+	return 0;
+    }
+    int tag;
+    int eleTag;
+    double Kdeg;
+    double Fres;
+    int defType, forType;
+    double x1, y1;
+    double x2, y2;
+    double x3, y3;
+    int ndI = 0;
+    int ndJ = 0;
+    int dof = 0;
+    int perpDirn = 0;
+
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid limitCurve ThreePoint tag" << endln;
+	return 0;
+    }
+    if (OPS_GetIntInput(&numdata, &eleTag) < 0) {
+	opserr << "WARNING invalid element tag for associated beam-column element (eleTag)\n";
+	opserr << "LimitCurve ThreePoint: " << tag << endln;
+	return 0;
+    }
+
+    numdata = 8;
+    double data[8];
+    if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	opserr << "WARNING invalid double data\n";
+	opserr << "limitCurve ThreePoint: " << tag << endln;
+	return 0;
+    }
+    x1 = data[0];
+    y1 = data[1];
+    x2 = data[2];
+    y2 = data[3];
+    x3 = data[4];
+    y3 = data[5];
+    Kdeg = data[6];
+    Fres = data[7];
+
+    numdata = 1;
+    if (OPS_GetIntInput(&numdata, &defType) < 0) {
+	opserr << "WARNING invalid deformation type defType\n";
+	opserr << "LimitCurve ThreePoint: " << tag << endln;
+	return 0;
+    }
+    if (OPS_GetIntInput(&numdata, &forType) < 0) {
+	opserr << "WARNING invalid force type forType\n";
+	opserr << "LimitCurve ThreePoint: " << tag << endln;
+	return 0;
+    }
+    if (defType == 2) {
+
+	if (OPS_GetNumRemainingInputArgs() < 4) {
+	    opserr << "WARNING insufficient arguments\n";
+	    opserr << "Want: limitCurve ThreePoint tag? eleTag? x1? y1? x2? y2? x3? y3?";
+	    opserr << "Kdeg? Fres? defType? forType?" << endln;
+	    opserr << "ndI? ndJ? dof? perpDirn?" << endln;
+	}
+	if (OPS_GetIntInput(&numdata, &ndI) < 0) {
+	    opserr << "WARNING invalid node I\n";
+	    opserr << "LimitCurve ThreePoint: " << tag << endln;
+	    return 0;
+	}
+	if (OPS_GetIntInput(&numdata, &ndJ) < 0) {
+	    opserr << "WARNING invalid node J\n";
+	    opserr << "LimitCurve ThreePoint: " << tag << endln;
+	    return 0;
+	}
+	if (OPS_GetIntInput(&numdata, &dof) < 0) {
+	    opserr << "WARNING invalid degree of freedom for drift\n";
+	    opserr << "LimitCurve ThreePoint: " << tag << endln;
+	    return 0;
+	}
+	if (OPS_GetIntInput(&numdata, &perpDirn) < 0) {
+	    opserr << "WARNING invalid direction for column length\n";
+	    opserr << "LimitCurve ThreePoint: " << tag << endln;
+	    return 0;
+	}
+    }
+    // Parsing was successful, allocate the material
+    // Subtract one from dof and perpDirn for C indexing
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return 0;
+    return new ThreePointCurve(tag, eleTag, theDomain,
+			       x1, y1, x2, y2, x3, y3, Kdeg, Fres, defType, forType,
+			       ndI, ndJ, dof-1, perpDirn-1);
+}
+
+ThreePointCurve::ThreePointCurve(int tag, int eTag, Domain *theDom,
 			double a1, double b1, double a2, double b2,
 			double a3, double b3, double Kd, double Fr,
 			int dType, int fType,
@@ -108,7 +207,7 @@ ThreePointCurve::checkElementState(double springForce)
 
 				oneOverL = 0.0;
 			}
-			else 
+			else
 				oneOverL = 1.0/fabs(crdJ(perpDirn) - crdI(perpDirn));
 		}
 	}
@@ -118,7 +217,7 @@ ThreePointCurve::checkElementState(double springForce)
 	int result; //junk variable
 
 
-	// Based on "defType" and "forType" calculate 
+	// Based on "defType" and "forType" calculate
 	// the desired response parameters "deform" and "force"
 	if (defType == 1) // maximum chord rotations
 	{
@@ -145,19 +244,19 @@ ThreePointCurve::checkElementState(double springForce)
 		Information &theInfo = theRotations->getInformation();
 		rotVec = (theInfo.theVector);
 
-		deform = (fabs((*rotVec)(1)) > fabs((*rotVec)(2))) ? 
+		deform = (fabs((*rotVec)(1)) > fabs((*rotVec)(2))) ?
 			fabs((*rotVec)(1)) : fabs((*rotVec)(2));  //use larger of two end rotations
 	}
 	else if (defType == 2) // interstory drift
 	{
-		// find associated nodes 
+		// find associated nodes
 		Node *nodeI = theDomain->getNode(ndI);
 		Node *nodeJ = theDomain->getNode(ndJ);
 
 		// get displacements
 		const Vector &dispI = nodeI->getTrialDisp();
 		const Vector &dispJ = nodeJ->getTrialDisp();
-		
+
 		// calc drift
 		double dx = fabs(dispJ(dof)-dispI(dof));
 		deform = dx*oneOverL;
@@ -184,16 +283,16 @@ ThreePointCurve::checkElementState(double springForce)
 	// Local forces (assuming no element loads)
 	if (forType == 0)
 		force = fabs(springForce); //force in associated hysteretic material
-	else if (forType == 1) 
+	else if (forType == 1)
 		force = fabs((*forceVec)(1)); //shear
 	else if (forType == 2) //axial
-		force = fabs((*forceVec)(0)); 
+		force = fabs((*forceVec)(0));
 	else {
 //		g3ErrorHandler->fatal("WARNING ThreePointCurve - force type flag %i not implemented",forType);
 	}
 
 	// Determine if (deform,force) is outside limit state surface.
-	// 
+	//
 	// Use absolute value of deform and force
 	// In future will include one positive and one negative limit state surfaces
 	double forceSurface = findLimit(deform); // force on surface at deform
@@ -203,7 +302,7 @@ ThreePointCurve::checkElementState(double springForce)
 	if (stateFlag == 0) //prior to failure
 	{
 		if (force >= forceSurface) // on/outside failure surface
-		{	
+		{
 			stateFlag = 1;
 			//Pshear = fabs((*forceVec)(0)); // axial load at shear failure (not currently used)
 //			g3ErrorHandler->warning("ThreePointCurve - failure detected at deform = %f", deform);
@@ -216,7 +315,7 @@ ThreePointCurve::checkElementState(double springForce)
 	else //after failure
 	{
 		if (force >= forceSurface) // on/outside failure surface
-		{	
+		{
 			stateFlag = 2;
 //			g3ErrorHandler->warning("WARNING ThreePointCurve - response past limit surface after failure at deform=%f", deform);
 		}
@@ -240,7 +339,7 @@ ThreePointCurve::getDegSlope(void)
 double
 ThreePointCurve::getResForce(void)
 {
-	return Fres;  
+	return Fres;
 }
 
 double
@@ -257,12 +356,12 @@ ThreePointCurve::sendSelf(int commitTag, Channel &theChannel)
 }
 
 int
-ThreePointCurve::recvSelf(int commitTag, Channel &theChannel, 
+ThreePointCurve::recvSelf(int commitTag, Channel &theChannel,
 			FEM_ObjectBroker &theBroker)
 {
 	return -1;
 }
-    
+
 void
 ThreePointCurve::Print(OPS_Stream &s, int flag)
 {
@@ -295,7 +394,7 @@ ThreePointCurve::findLimit(double x)
 		y = y2+(y3-y2)/(x3-x2)*(x-x2);
 	else
 		y = y3;
-	
+
 	return y;
 }
 
