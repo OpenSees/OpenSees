@@ -36,7 +36,7 @@
 #include <MeshRegion.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <Matrix.h>
 #include <Element.h>
 #include <Node.h>
 #include <ID.h>
@@ -47,11 +47,13 @@
 #include <ElementIter.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <SP_Constraint.h>
+#include <elementAPI.h>
 
 MeshRegion::MeshRegion(int tag) 
   :DomainComponent(tag, REGION_TAG_MeshRegion), 
   alphaM(0), betaK(0), betaK0(0), betaKc(0),
-  theNodes(0), theElements(0),
+   theNodes(0), theElements(0), xEles(),
   currentGeoTag(0), lastGeoSendTag(-1), dbNod(0), dbEle(0)
 {
     // does nothing
@@ -59,7 +61,7 @@ MeshRegion::MeshRegion(int tag)
 
 MeshRegion::MeshRegion(int tag, int cTag) 
   :DomainComponent(tag, cTag), alphaM(0), betaK(0), betaK0(0), betaKc(0),
-  theNodes(0), theElements(0),
+  theNodes(0), theElements(0), xEles(),
   currentGeoTag(0), lastGeoSendTag(-1), dbNod(0), dbEle(0)
 {
     // does nothing

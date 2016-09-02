@@ -210,6 +210,59 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
       }      
       loc += 5;
 
+    } else if (strcmp(argv[loc],"getNodeTags") == 0) {
+
+	MeshRegion* region = theDomain.getRegion(tag);
+	if (region == 0) {
+	    opserr<<"WARNING: region "<<tag<<"does not exist\n";
+	    return TCL_ERROR;
+	}
+
+	const ID& nodes = region->getNodes();
+	char buffer[20];
+	for (int i=0; i<nodes.Size(); i++) {
+	    sprintf(buffer, "%d ", nodes(i));
+	    Tcl_AppendResult(interp, buffer, NULL);
+	}
+
+	return TCL_OK;
+
+    } else if (strcmp(argv[loc],"getConnectedEleTags") == 0) {
+
+	MeshRegion* region = theDomain.getRegion(tag);
+	if (region == 0) {
+	    opserr<<"WARNING: region "<<tag<<"does not exist\n";
+	    return TCL_ERROR;
+	}
+
+	const ID& eles = region->getElements();
+	char buffer[20];
+
+	for (int i=0; i<eles.Size(); i++) {
+	    sprintf(buffer, "%d ", eles(i));
+	    Tcl_AppendResult(interp, buffer, NULL);
+	}
+
+	return TCL_OK;
+
+    } else if (strcmp(argv[loc],"getEleTags") == 0) {
+
+	MeshRegion* region = theDomain.getRegion(tag);
+	if (region == 0) {
+	    opserr<<"WARNING: region "<<tag<<"does not exist\n";
+	    return TCL_ERROR;
+	}
+
+	const ID& eles = region->getExtraEles();
+	char buffer[20];
+
+	for (int i=0; i<eles.Size(); i++) {
+	    sprintf(buffer, "%d ", eles(i));
+	    Tcl_AppendResult(interp, buffer, NULL);
+	}
+
+	return TCL_OK;
+
     } else
       loc++;
 

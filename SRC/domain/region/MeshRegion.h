@@ -36,6 +36,7 @@
 #define MeshRegion_h
 
 #include <DomainComponent.h>
+#include <ID.h>
 
 class Element;
 class Node;
@@ -52,10 +53,12 @@ class MeshRegion : public DomainComponent
     // methods dealing with setting up the region
     virtual int setNodes(const ID &theNodes);
     virtual int setElements(const ID &theEles);
+    virtual void setExtraEles(const ID& theEles) {xEles=theEles;}
 
     // methods getting the ID's of nodes & ele
     virtual const ID &getNodes(void);
     virtual const ID &getElements(void);
+    virtual const ID &getExtraEles() const {return xEles;}
 
     // methods dealing with setting parameters in the region
     virtual int setRayleighDampingFactors(double alphaM, 
@@ -76,6 +79,7 @@ class MeshRegion : public DomainComponent
 
     ID *theNodes;
     ID *theElements;
+    ID xEles;
 
     int	   currentGeoTag;
     int    lastGeoSendTag;
