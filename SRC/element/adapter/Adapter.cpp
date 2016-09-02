@@ -42,7 +42,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <elementAPI.h>
 
 // responsible for allocating the necessary space needed
 // by each object and storing the tags of the end nodes.
