@@ -30,8 +30,8 @@
 
 #include "DL_Interpreter.h"
 #include <Python.h>
-
-
+#include "PythonWrapper.h"
+#include "OpenSeesCommands.h"
 
 
 class PythonInterpreter: public DL_Interpreter
@@ -51,13 +51,18 @@ class PythonInterpreter: public DL_Interpreter
     virtual int getNumRemainingInputArgs(void);
     virtual int getInt(int *, int numArgs);
     virtual int getDouble(double *, int numArgs);
-    virtual int getString(char *cArray, int size);
+    virtual const char* getString();
     virtual int getStingCopy(char **stringPtr);
+    virtual void resetInput(int cArg);
 
     // methods for interpreters to output results
-    
-  private:
+    virtual int setInt(int *, int numArgs);
+    virtual int setDouble(double *, int numArgs);
+    virtual int setString(const char*);
 
+  private:
+    PythonWrapper wrapper;
+    OpenSeesCommands cmds;
 };
 
 

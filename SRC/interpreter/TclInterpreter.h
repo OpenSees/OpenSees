@@ -30,6 +30,9 @@
 
 #include "DL_Interpreter.h"
 #include <tcl.h>
+#include <OPS_Globals.h>
+#include "TclWrapper.h"
+#include "OpenSeesCommands.h"
 
 
 class TclInterpreter: public DL_Interpreter
@@ -49,10 +52,14 @@ class TclInterpreter: public DL_Interpreter
     virtual int getNumRemainingInputArgs(void);
     virtual int getInt(int *, int numArgs);
     virtual int getDouble(double *, int numArgs);
-    virtual int getString(char *cArray, int size);
+    virtual const char* getString();
     virtual int getStingCopy(char **stringPtr);
+    virtual void resetInput(int cArg);
 
     // methods for interpreters to output results
+    virtual int setInt(int *, int numArgs);
+    virtual int setDouble(double *, int numArgs);
+    virtual int setString(const char*);
     
   private:
     Tcl_Obj *resultPtr;
@@ -63,6 +70,9 @@ class TclInterpreter: public DL_Interpreter
     Tcl_Channel inChannel, outChannel, errChannel;
     Tcl_DString argString;
     Tcl_Interp *interp;
+
+    TclWrapper wrapper;
+    OpenSeesCommands cmds;
 };
 
 

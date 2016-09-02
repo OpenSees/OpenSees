@@ -18,28 +18,29 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// Written: fmk 
-// Created: Nov, 2012
+// Written: Minjie
 
-// Description: This file contains the class definition for DL_Interpreter
-// DL_Interpreter is the abstract base class for dynamic language interpreters
-//   concrete examples being TclInterpreter, PythonInterpreter, MatlabInterpreter,...
+// Description: This file contains the class definition for Python Module
+// PythonModule implements a DL_Interpreter for the python language
 //
 
-#ifndef DL_Interpreter_h
-#define DL_Interpreter_h
+#ifndef PythonModule_h
+#define PythonModule_h
+
+#include "DL_Interpreter.h"
+#include <Python.h>
+#include "PythonWrapper.h"
+#include "OpenSeesCommands.h"
 
 
-class Command;
-
-class DL_Interpreter
+class PythonModule: public DL_Interpreter
 {
   public:
-    DL_Interpreter();
-    virtual ~DL_Interpreter();
+    PythonModule();
+    virtual ~PythonModule();
 
     // method to run once the interpreter is set up
-    virtual int run() =0;
+    virtual int run();
 
     // methods to add & remove additional commands
     virtual int addCommand(const char *, Command &);
@@ -57,9 +58,13 @@ class DL_Interpreter
     virtual int setInt(int *, int numArgs);
     virtual int setDouble(double *, int numArgs);
     virtual int setString(const char*);
+
+    // getwrapper
+    PythonWrapper* getWrapper() {return &wrapper;}
     
   private:
-
+    PythonWrapper wrapper;
+    OpenSeesCommands cmds;
 };
 
 

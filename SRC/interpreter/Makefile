@@ -9,22 +9,28 @@ OBJS       = DL_Interpreter.o \
 	OpenSeesUniaxialMaterialCommands.o \
 	PythonModelBuilder.o PythonAnalysisBuilder.o
 
+OBJS  = DL_Interpreter.o OpenSeesCommands.o OpenSeesUniaxialMaterialCommands.o OpenSeesElementCommands.o OpenSeesTimeSeriesCommands.o OpenSeesPatternCommands.o OpenSeesSectionCommands.o OpenSeesOutputCommands.o OpenSeesCrdTransfCommands.o OpenSeesBeamIntegrationCommands.o OpenSeesNDMaterialCommands.o OpenSeesMiscCommands.o
+
+TclOBJS =  tclMain.o TclInterpreter.o TclWrapper.o $(OBJS)
+PythonOBJS = pythonMain.o PythonInterpreter.o PythonWrapper.o $(OBJS)
+PythonModuleOBJS = PythonModule.o PythonWrapper.o $(OBJS)
+
 # Compilation control
 
-all:         python
+all:      tcl   python pythonmodule
 
-tcl: tclMain.o $(OBJS)
-	$(LINKER) $(LINKFLAGS) tclMain.o DL_Interpreter.o TclInterpreter.o OpenSeesCommandsTcl.o OpenSeesUniaxialMaterialCommands.o \
+tcl: $(TclOBJS)
+	$(LINKER) $(LINKFLAGS) $(TclOBJS) \
 	$(FE_LIBRARY) $(MACHINE_LINKLIBS) $(TCL_LIBRARY) \
-	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS) $(FE)/api/elementAPI_Tcl.o \
+	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS) \
 	 -o tclInterpreter
 
 ifdef __APPLE__
 PYTHON_LIBRARY = -framework python
 endif
 
-python: pythonMain.o PythonInterpreter.o OpenSeesCommandsPython.o $(OBJS)
-	$(LINKER) $(LINKFLAGS) pythonMain.o DL_Interpreter.o PythonInterpreter.o OpenSeesCommandsPython.o OpenSeesUniaxialMaterialCommands.o PythonModelBuilder.o PythonAnalysisBuilder.o \
+python:  $(PythonOBJS)
+	$(LINKER) $(LINKFLAGS) $(PythonOBJS) \
 	$(FE_LIBRARY) $(MACHINE_LINKLIBS) $(PYTHON_LIBRARY) \
 	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS)  \
 	 -o pythonInterpreter
@@ -33,8 +39,8 @@ python: pythonMain.o PythonInterpreter.o OpenSeesCommandsPython.o $(OBJS)
 
 OBJSm = OpenSeesCommandsPython.o OpenSeesUniaxialMaterialCommands.o PythonModelBuilder.o PythonAnalysisBuilder.o
 
-pythonmodule: $(OBJSm)
-	$(LINKER) $(LINKFLAGS) -shared $(OBJSm) \
+pythonmodule: $(PythonModuleOBJS)
+	$(LINKER) $(LINKFLAGS) -shared $(PythonModuleOBJS) \
 	$(FE_LIBRARY) $(MACHINE_LINKLIBS) $(PYTHON_LIBRARY) \
 	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS)  \
 	 -o opensees.so

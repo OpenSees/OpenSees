@@ -80,7 +80,7 @@ EXTERN int  TclFormatInt _ANSI_ARGS_((char *buffer, long n));
 EXTERN int  TclObjCommandComplete _ANSI_ARGS_((Tcl_Obj *cmdPtr));
 }
 
-extern int addOpenSeesCommands(Tcl_Interp *interp);
+// extern int addOpenSeesCommands(Tcl_Interp *interp);
 
 int		Tcl_AppInit _ANSI_ARGS_((Tcl_Interp *interp));
 
@@ -223,7 +223,9 @@ int Tcl_AppInit(Tcl_Interp *interp)
 }
 
 
-TclInterpreter::TclInterpreter(int argc, char **argv) {
+TclInterpreter::TclInterpreter(int argc, char **argv)
+    :wrapper(), cmds(this)
+{
 
   /* fmk - beginning of modifications for OpenSees */
   fprintf(stderr,"\n\n\t OpenSees -- Open System For Earthquake Engineering Simulation");
@@ -302,7 +304,7 @@ TclInterpreter::TclInterpreter(int argc, char **argv) {
 	}
   }
  
-  addOpenSeesCommands(interp);
+  wrapper.addOpenSeesCommands(interp);
 }
 
 TclInterpreter::~TclInterpreter() {
@@ -492,25 +494,88 @@ TclInterpreter::removeCommand(const char *) {
 
 int 
 TclInterpreter::getNumRemainingInputArgs(void) {
-  return -1;
+    return wrapper.getNumberArgs() - wrapper.getCurrentArg();
 }
 
 int 
-TclInterpreter::getInt(int *, int numArgs) {
-  return -1;
+TclInterpreter::getInt(int *data, int numArgs) {
+
+    if ((wrapper.getNumberArgs() - wrapper.getCurrentArg()) < numArgs) {
+	return -1;
+    }
+    
+    for (int i=0; i<numArgs; i++) {
+	if (Tcl_GetInt(interp, wrapper.getCurrentArgv()[wrapper.getCurrentArg()], &data[i]) != TCL_OK) {
+	    wrapper.incrCurrentArg();
+	    return -1;
+	}
+	else {
+	    wrapper.incrCurrentArg();
+	}
+    }
+    return 0;
 }
 
 int 
-TclInterpreter::getDouble(double *, int numArgs) {
-  return -1;
+TclInterpreter::getDouble(double *data, int numArgs) {
+
+    if ((wrapper.getNumberArgs() - wrapper.getCurrentArg()) < numArgs) {
+	return -1;
+    }
+    
+    for (int i=0; i<numArgs; i++) {
+	if (Tcl_GetDouble(interp, wrapper.getCurrentArgv()[wrapper.getCurrentArg()], &data[i]) != TCL_OK) {
+	    wrapper.incrCurrentArg();
+	    return -1;
+	}
+	else {
+	    wrapper.incrCurrentArg();
+	}
+    }
+    return 0;
 }
 
-int 
-TclInterpreter::getString(char *cArray, int size) {
-  return -1;
+const char*
+TclInterpreter::getString() {
+
+    if (wrapper.getCurrentArg() >= wrapper.getNumberArgs()) {
+	return 0;
+    }
+
+    const char* res = wrapper.getCurrentArgv()[wrapper.getCurrentArg()];
+    wrapper.incrCurrentArg();
+    
+    return res;
 }
 
 int 
 TclInterpreter::getStingCopy(char **stringPtr) {
   return -1;
+}
+
+void
+TclInterpreter::resetInput(int cArg)
+{
+    wrapper.resetCommandLine(cArg);
+}
+
+int
+TclInterpreter::setInt(int* data, int numArgs)
+{
+    wrapper.setOutputs(interp, data, numArgs);
+    return 0;
+}
+
+int
+TclInterpreter::setDouble(double* data, int numArgs)
+{
+    wrapper.setOutputs(interp, data, numArgs);
+    return 0;
+}
+
+int
+TclInterpreter::setString(const char* str)
+{
+    wrapper.setOutputs(interp, str);
+    return 0;
 }

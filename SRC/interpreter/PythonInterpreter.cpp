@@ -284,9 +284,20 @@ void addOpenSeesCommands(void) {
 }
 */
 
-void addOpenSeesCommands(void);
+// void addOpenSeesCommands(void);
 
-PythonInterpreter::PythonInterpreter(int argc, char **argv) {
+PythonInterpreter::PythonInterpreter(int argc, char **argv)
+    :wrapper(), cmds(this)
+{
+
+    /* fmk - beginning of modifications for OpenSees */
+    fprintf(stderr,"\n\n\t OpenSees -- Open System For Earthquake Engineering Simulation");
+    fprintf(stderr,"\n\tPacific Earthquake Engineering Research Center -- 3.0.0\n\n");
+    
+    fprintf(stderr,"\t    (c) Copyright 1999,2000 The Regents of the University of California");
+    fprintf(stderr,"\n\t\t\t\t All Rights Reserved\n");    
+    fprintf(stderr,"    (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)\n\n\n");
+    
     int c;
     int sts;
     char *command = NULL;
@@ -595,7 +606,8 @@ PythonInterpreter::PythonInterpreter(int argc, char **argv) {
 #endif
     Py_Initialize();
 
-    addOpenSeesCommands();
+    wrapper.addOpenSeesCommands();
+    Py_InitModule("opensees", wrapper.getMethods());
 
     if (Py_VerboseFlag ||
         (command == NULL && filename == NULL && module == NULL && stdin_is_interactive)) {
@@ -758,25 +770,91 @@ PythonInterpreter::removeCommand(const char *) {
 
 int 
 PythonInterpreter::getNumRemainingInputArgs(void) {
-  return -1;
+    return wrapper.getNumberArgs() - wrapper.getCurrentArg();
 }
 
 int 
-PythonInterpreter::getInt(int *, int numArgs) {
-  return -1;
+PythonInterpreter::getInt(int *data, int numArgs) {
+    if ((wrapper.getNumberArgs() - wrapper.getCurrentArg()) < numArgs) {
+	return -1;
+    }
+
+    for (int i=0; i<numArgs; i++) {
+	PyObject *o = PyTuple_GetItem(wrapper.getCurrentArgv(),wrapper.getCurrentArg());
+	wrapper.incrCurrentArg();
+	if (!PyInt_Check(o)) {
+	    return -1;
+	}
+	data[i] = PyInt_AS_LONG(o);
+    }
+    
+    return 0;
 }
 
 int 
-PythonInterpreter::getDouble(double *, int numArgs) {
-  return -1;
+PythonInterpreter::getDouble(double *data, int numArgs) {
+    if ((wrapper.getNumberArgs() - wrapper.getCurrentArg()) < numArgs) {
+	return -1;
+    }
+
+    for (int i=0; i<numArgs; i++) {
+	PyObject *o = PyTuple_GetItem(wrapper.getCurrentArgv(),wrapper.getCurrentArg());
+	wrapper.incrCurrentArg();
+	if (!PyFloat_Check(o)) {
+	    return -1;
+	}
+	data[i] = PyFloat_AS_DOUBLE(o);
+    }
+    
+    return 0;
 }
 
-int 
-PythonInterpreter::getString(char *cArray, int size) {
-  return -1;
+const char* 
+PythonInterpreter::getString() {
+    
+    if (wrapper.getCurrentArg() >= wrapper.getNumberArgs()) {
+	return 0;
+    }
+    
+    PyObject *o = PyTuple_GetItem(wrapper.getCurrentArgv(),wrapper.getCurrentArg());
+    wrapper.incrCurrentArg();
+    if (!PyString_Check(o)) {
+	return 0;
+    }
+    
+    
+    return PyString_AS_STRING(o);;
 }
 
 int 
 PythonInterpreter::getStingCopy(char **stringPtr) {
   return -1;
 }
+
+void
+PythonInterpreter::resetInput(int cArg)
+{
+    wrapper.resetCommandLine(cArg);
+}
+
+int
+PythonInterpreter::setInt(int* data, int numArgs)
+{
+    wrapper.setOutputs(data, numArgs);
+    return 0;
+}
+
+int
+PythonInterpreter::setDouble(double* data, int numArgs)
+{
+    wrapper.setOutputs(data, numArgs);
+    return 0;
+}
+
+int
+PythonInterpreter::setString(const char* str)
+{
+    wrapper.setOutputs(str);
+    return 0;
+}
+

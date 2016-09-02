@@ -18,50 +18,53 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// Written: fmk 
-// Created: Nov, 2012
+// Written: Minjie
 
-// Description: This file contains the class definition for DL_Interpreter
-// DL_Interpreter is the abstract base class for dynamic language interpreters
-//   concrete examples being TclInterpreter, PythonInterpreter, MatlabInterpreter,...
+// Description: A python wrapper for OpenSees commands
 //
+#ifndef PythonWrapper_h
+#define PythonWrapper_h
 
-#ifndef DL_Interpreter_h
-#define DL_Interpreter_h
+#include <Python.h>
+#include <vector>
 
-
-class Command;
-
-class DL_Interpreter
+class PythonWrapper
 {
-  public:
-    DL_Interpreter();
-    virtual ~DL_Interpreter();
+public:
 
-    // method to run once the interpreter is set up
-    virtual int run() =0;
+    PythonWrapper();
+    ~PythonWrapper();
 
-    // methods to add & remove additional commands
-    virtual int addCommand(const char *, Command &);
-    virtual int removeCommand(const char *);
+    // reset command line
+    void resetCommandLine(int nArgs, int cArg, PyObject* argv);
+    void resetCommandLine(int cArg);
 
-    // methods for commands to parse the command line
-    virtual int getNumRemainingInputArgs(void);
-    virtual int getInt(int *, int numArgs);
-    virtual int getDouble(double *, int numArgs);
-    virtual const char* getString();
-    virtual int getStingCopy(char **stringPtr);
-    virtual void resetInput(int cArg);
+    // wrapper commands
+    void addOpenSeesCommands();
+    void addCommand(const char* name, PyCFunction proc);
+    PyMethodDef* getMethods();
 
-    // methods for interpreters to output results
-    virtual int setInt(int *, int numArgs);
-    virtual int setDouble(double *, int numArgs);
-    virtual int setString(const char*);
-    
-  private:
+    // get command line arguments
+    PyObject* getCurrentArgv() {return currentArgv;}
+    int getCurrentArg() const {return currentArg;}
+    int getNumberArgs() const {return numberArgs;}
+    void incrCurrentArg() {currentArg++;}
 
+    // set outputs
+    void setOutputs(int* data, int numArgs);
+    void setOutputs(double* data, int numArgs);
+    void setOutputs(const char* str);
+    PyObject* getResults();
+
+private:
+    // command line arguments
+    PyObject* currentArgv;
+    int currentArg;
+    int numberArgs;
+
+    // methods table
+    std::vector<PyMethodDef> methodsOpenSees;
+    const char* opensees_docstring;
+    PyObject* currentResult;
 };
-
-
 #endif
-

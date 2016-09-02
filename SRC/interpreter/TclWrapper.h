@@ -18,50 +18,48 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// Written: fmk 
-// Created: Nov, 2012
+// Written: Minjie
 
-// Description: This file contains the class definition for DL_Interpreter
-// DL_Interpreter is the abstract base class for dynamic language interpreters
-//   concrete examples being TclInterpreter, PythonInterpreter, MatlabInterpreter,...
+// Description: A tcl wrapper for OpenSees commands
 //
+#ifndef TclWrapper_h
+#define TclWrapper_h
 
-#ifndef DL_Interpreter_h
-#define DL_Interpreter_h
+#include <OPS_Globals.h>
+#include <tcl.h>
 
-
-class Command;
-
-class DL_Interpreter
+class TclWrapper
 {
-  public:
-    DL_Interpreter();
-    virtual ~DL_Interpreter();
+public:
 
-    // method to run once the interpreter is set up
-    virtual int run() =0;
+    TclWrapper();
+    ~TclWrapper();
 
-    // methods to add & remove additional commands
-    virtual int addCommand(const char *, Command &);
-    virtual int removeCommand(const char *);
+    // reset command line
+    void resetCommandLine(int nArgs, int cArg, TCL_Char** argv);
+    void resetCommandLine(int cArg);
 
-    // methods for commands to parse the command line
-    virtual int getNumRemainingInputArgs(void);
-    virtual int getInt(int *, int numArgs);
-    virtual int getDouble(double *, int numArgs);
-    virtual const char* getString();
-    virtual int getStingCopy(char **stringPtr);
-    virtual void resetInput(int cArg);
+    // wrapper commands
+    void addOpenSeesCommands(Tcl_Interp* interp);
+    void addCommand(Tcl_Interp* interp, const char* name, Tcl_CmdProc* proc);
 
-    // methods for interpreters to output results
-    virtual int setInt(int *, int numArgs);
-    virtual int setDouble(double *, int numArgs);
-    virtual int setString(const char*);
-    
-  private:
+    // get command line arguments
+    TCL_Char** getCurrentArgv() {return currentArgv;}
+    int getCurrentArg() const {return currentArg;}
+    int getNumberArgs() const {return numberArgs;}
+    void incrCurrentArg() {currentArg++;}
+
+    // set outputs
+    void setOutputs(Tcl_Interp* interp, int* data, int numArgs);
+    void setOutputs(Tcl_Interp* interp, double* data, int numArgs);
+    void setOutputs(Tcl_Interp* interp, const char* str);
+
+private:
+
+    // command line arguments
+    TCL_Char** currentArgv;
+    int currentArg;
+    int numberArgs;
 
 };
-
-
 #endif
-

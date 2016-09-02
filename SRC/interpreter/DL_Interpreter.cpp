@@ -36,12 +36,33 @@ DL_Interpreter::getDouble(double *, int numArgs) {
   return -1;
 }
 
-int 
-DL_Interpreter::getString(char *cArray, int size) {
-  return -1;
+const char*
+DL_Interpreter::getString() {
+  return 0;
 }
 
 int 
 DL_Interpreter::getStingCopy(char **stringPtr) {
   return -1;
+}
+
+void
+DL_Interpreter::resetInput(int cArg)
+{
+}
+
+int
+DL_Interpreter::setInt(int *, int numArgs) {
+    return -1;
+}
+
+int
+DL_Interpreter::setDouble(double *, int numArgs) {
+    return -1;
+}
+
+int
+DL_Interpreter::setString(const char*)
+{
+    return -1;
 }
