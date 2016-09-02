@@ -224,6 +224,10 @@
 #define ANSI_DECLARATORS
 #endif
 
+#ifdef _WIN32
+#define NO_TIMER
+#endif
+
 /* If yours is not a Unix system, define the NO_TIMER compiler switch to     */
 /*   remove the Unix-specific timing code.                                   */
 
@@ -320,7 +324,7 @@
 /*   compiler is smarter, feel free to replace the "int" with "void".        */
 /*   Not that it matters.                                                    */
 
-#define VOID int
+#define VOID void
 
 /* Two constants for algorithms based on random sampling.  Both constants    */
 /*   have been chosen empirically to optimize their respective algorithms.   */
