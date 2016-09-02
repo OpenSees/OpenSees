@@ -39,7 +39,7 @@
 static int numManzariDafaliasMaterials = 0;
 
 void *
-OPS_NewManzariDafaliasMaterialRO(void)
+OPS_ManzariDafaliasMaterialRO(void)
 {
   if (numManzariDafaliasMaterials == 0) {
     numManzariDafaliasMaterials++;

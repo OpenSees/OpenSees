@@ -56,7 +56,7 @@ const double DruckerPrager :: root23 = sqrt( 2.0 / 3.0 ) ;
 static int numDruckerPragerMaterials = 0;
 
 OPS_Export void *
-OPS_NewDruckerPragerMaterial(void)
+OPS_DruckerPragerMaterial(void)
 {
   if (numDruckerPragerMaterials == 0) {
     numDruckerPragerMaterials++;

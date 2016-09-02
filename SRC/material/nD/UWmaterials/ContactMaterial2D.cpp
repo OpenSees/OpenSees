@@ -48,7 +48,7 @@ static int numContactMaterial2DMaterials = 0;
 int ContactMaterial2D::mFrictFlag = 1;
 
 void *
-OPS_NewContactMaterial2DMaterial(void)
+OPS_ContactMaterial2DMaterial(void)
 {
   if (numContactMaterial2DMaterials == 0) {
     numContactMaterial2DMaterials++;

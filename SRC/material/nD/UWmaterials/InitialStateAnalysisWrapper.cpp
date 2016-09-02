@@ -41,7 +41,7 @@
 static int numInitialStateAnalysisWrapperMaterials = 0;
 
 void *
-OPS_NewInitialStateAnalysisWrapperMaterial(void)
+OPS_InitialStateAnalysisWrapperMaterial(void)
 {
 	if (numInitialStateAnalysisWrapperMaterials == 0) {
 		numInitialStateAnalysisWrapperMaterials++;
@@ -66,7 +66,7 @@ OPS_NewInitialStateAnalysisWrapperMaterial(void)
   	}
 
 	int matID = iData[1];
-	NDMaterial *theMainMaterial = OPS_GetNDMaterial(matID);
+	NDMaterial *theMainMaterial = OPS_getNDMaterial(matID);
 	if (theMainMaterial == 0) {
 		opserr << "WARNING: For InitialStateAnalysisWrapper " << iData[0] << endln;
 		opserr << "Material: " << matID << "not found\n";

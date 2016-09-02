@@ -69,7 +69,7 @@ ManzariDafalias::initTensors ManzariDafalias::initTensorOps;
 static int numManzariDafaliasMaterials = 0;
 
 void *
-OPS_NewManzariDafaliasMaterial(void)
+OPS_ManzariDafaliasMaterial(void)
 {
   if (numManzariDafaliasMaterials == 0) {
     numManzariDafaliasMaterials++;

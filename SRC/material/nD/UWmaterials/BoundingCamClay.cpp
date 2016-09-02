@@ -48,7 +48,7 @@ double BoundingCamClay::mElastFlag = 1;
 static int numBoundingCamClayMaterials = 0;
 
 void *
-OPS_NewBoundingCamClayMaterial(void)
+OPS_BoundingCamClayMaterial(void)
 {
     if (numBoundingCamClayMaterials == 0) {
       numBoundingCamClayMaterials++;
