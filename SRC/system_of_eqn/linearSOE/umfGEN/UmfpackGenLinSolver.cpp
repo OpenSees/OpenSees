@@ -38,6 +38,12 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
+void* OPS_UmfpackGenLinSolver()
+{
+    UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
+    return new UmfpackGenLinSOE(*theSolver);  
+}
+
 UmfpackGenLinSolver::
 UmfpackGenLinSolver()
     :LinearSOESolver(SOLVER_TAGS_UmfpackGenLinSolver), Symbolic(0), theSOE(0)
