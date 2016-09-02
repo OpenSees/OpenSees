@@ -44,7 +44,7 @@
 #include <elementAPI.h>
 
 void *
-OPS_NewHookGap(void)
+OPS_HookGap(void)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

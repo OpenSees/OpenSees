@@ -39,7 +39,7 @@
 
 
 void *
-OPS_NewOriginCentered(void)
+OPS_OriginCentered(void)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

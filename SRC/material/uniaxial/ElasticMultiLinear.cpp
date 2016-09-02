@@ -41,7 +41,7 @@
 #include <stdlib.h>
 
 
-void *OPS_NewElasticMultiLinear()
+void *OPS_ElasticMultiLinear()
 {
     // Pointer to a uniaxial material that will be returned
     UniaxialMaterial *theMaterial = 0;

@@ -47,7 +47,7 @@
 #include <OPS_Globals.h>
 
 void *
-OPS_NewConcrete01()
+OPS_Concrete01()
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

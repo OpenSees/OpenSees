@@ -78,8 +78,8 @@ OPS_FRPConfinedConcrete02()
       return 0;	
     }
     
-    char *str = 0;
-    OPS_GetStringCopy(&str);
+    const char *str = OPS_GetString();
+    // OPS_GetStringCopy(&str);
     if (strcmp(str, "-Ultimate") == 0) {
       if (OPS_GetDoubleInput(&numData2, dData+3) != 0) {
 	opserr << "Invalid #args, want: uniaxialMaterial FRPConfinedConcrete02 " << iData[0] << "fc0? ec0? Ec? -Ultimate fcc? ecu? ft? Ets? Unit?" << endln;
@@ -99,8 +99,8 @@ OPS_FRPConfinedConcrete02()
       return 0;	
     }
     
-    char *str = 0;
-    OPS_GetStringCopy(&str);
+    const char *str = OPS_GetString();
+    //OPS_GetStringCopy(&str);
     if (strcmp(str, "-JacketC") == 0) {
       if (OPS_GetDoubleInput(&numData2, dData+3) != 0) {
 	opserr << "Invalid #args, want: uniaxialMaterial FRPConfinedConcrete02 " << iData[0] << "fc0? ec0? Ec? -JacketC tfrp? Efrp? erup? R? ft? Ets? Unit?" << endln;

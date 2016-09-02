@@ -39,7 +39,7 @@
 #define OPS_Export 
 
 OPS_Export void *
-OPS_NewInitStressMaterial(void)
+OPS_InitStressMaterial(void)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

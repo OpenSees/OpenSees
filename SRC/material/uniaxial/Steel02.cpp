@@ -49,7 +49,7 @@
 
 
 void *
-OPS_NewSteel02()
+OPS_Steel02()
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
@@ -73,7 +73,7 @@ OPS_NewSteel02()
 
   if (numData == 3) {
     if (OPS_GetDoubleInput(&numData, dData) != 0) {
-      opserr << "Invalid arggs: uniaxialMaterial Steel02 " << iData[0] << 
+      opserr << "Invalid double: uniaxialMaterial Steel02 " << iData[0] << 
 	" fy? E? b? <R0? cR1? cR2? <a1? a2? a3? a4?>>" << endln;
       return 0;
     }
@@ -83,7 +83,7 @@ OPS_NewSteel02()
 
   } else if (numData == 6) {
     if (OPS_GetDoubleInput(&numData, dData) != 0) {
-      opserr << "Invalid arggs: uniaxialMaterial Steel02 " << iData[0] << 
+      opserr << "Invalid int: uniaxialMaterial Steel02 " << iData[0] << 
 	" fy? E? b? <R0? cR1? cR2? <a1? a2? a3? a4?>>" << endln;
       return 0;
     }

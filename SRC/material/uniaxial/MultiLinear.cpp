@@ -39,7 +39,7 @@
 #include <elementAPI.h>
 
 void *
-OPS_New_MultiLinear(void)
+OPS_MultiLinear(void)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

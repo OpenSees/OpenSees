@@ -37,9 +37,34 @@
 #include <Channel.h>
 #include <Information.h>
 #include <Parameter.h>
-
+#include <elementAPI.h>
 #include <string.h>
 #include <math.h>
+
+void* OPS_ENTMaterial()
+{
+    if(OPS_GetNumRemainingInputArgs() < 2) {
+	opserr<<"WARNING: invalid #args: ENT matTag E\n";
+	return 0;
+    }
+
+    int tag;
+    int num = 1;
+    if(OPS_GetIntInput(&num, &tag) < 0) return 0;
+
+    double E;
+    if(OPS_GetDoubleInput(&num, &E) < 0) return 0;
+
+    UniaxialMaterial* mat = new ENTMaterial(tag,E);
+    if(mat == 0) return 0;
+
+    // if(OPS_addUniaxialMaterial(mat) == false) {
+    // 	opserr<<"WARNING: failed to add ENT material\n";
+    // 	delete mat;
+    // 	return 0;
+    // }
+    return mat;
+}
 
 ENTMaterial::ENTMaterial(int tag, double e, double A, double B)
   :UniaxialMaterial(tag,MAT_TAG_ENTMaterial),

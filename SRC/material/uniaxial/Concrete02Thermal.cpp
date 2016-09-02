@@ -14,7 +14,7 @@
 #include <OPS_Globals.h>
 
 void *
-OPS_NewConcrete02Thermal()
+OPS_Concrete02Thermal()
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

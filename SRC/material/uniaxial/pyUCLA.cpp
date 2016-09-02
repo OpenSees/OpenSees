@@ -43,11 +43,12 @@
 static int num_pyUCLA = 0;
 
 OPS_Export void *
-OPS_New_pyUCLA(void)
+OPS_pyUCLA(void)
 {
   if (num_pyUCLA == 0) {
     num_pyUCLA++;
-    OPS_Error("pyUCLAMaterial unaxial material - Written by H.Shin, P.Arduino, U.Washington\n based on model of E.Taciroglu, C.Rha, J.Wallace, UCLA", 1);
+    //OPS_Error("pyUCLAMaterial unaxial material - Written by H.Shin, P.Arduino, U.Washington\n based on model of E.Taciroglu, C.Rha, J.Wallace, UCLA", 1);
+    opserr << "pyUCLAMaterial unaxial material - Written by H.Shin, P.Arduino, U.Washington\n based on model of E.Taciroglu, C.Rha, J.Wallace, UCLA\n";
   }
 
   // Pointer to a uniaxial material that will be returned

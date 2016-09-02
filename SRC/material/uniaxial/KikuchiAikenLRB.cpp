@@ -31,9 +31,7 @@
 // uniaxialMaterial KikuchiAikenLRB matTag? type? ar? hr? gr? ap? tp? alph? beta? <-T temp? > <-coKQ rk? rq?> <-coMSS rs? rf?>
 
 
-#include <TclModelBuilder.h>
 #include <string.h>
-#include <tcl.h>
 
 #include <KikuchiAikenLRB.h>
 #include <Vector.h>
@@ -42,180 +40,76 @@
 #include <math.h>
 #include <float.h>
 
+#include <elementAPI.h>
 
-int
-TclCommand_KikuchiAikenLRB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+void* OPS_KikuchiAikenLRB()
 {
-  //arguments (necessary)
-  int tag;
-  int type = 1;
-  double ar = 0.0;
-  double hr = 0.0;
-  double gr = 0.392e6;
-  double ap = 0.0;
-  double tp = 8.33e6;
-  double alph = 0.588e6;
-  double beta = 13.0;
-
-  //arguments (optional)
-  double temp = 15.0;
-  double rk = 1.0;
-  double rq = 1.0;
-  double rs = 1.0;
-  double rf = 1.0;
-
-  //
-  UniaxialMaterial *theMaterial = 0;
-
-
-  //error flag
-  bool ifNoError = true;
-
-  if (argc < 11) { // uniaxialMaterial KikuchiAikenLRB matTag? type? ar? hr? gr? ap? tp? alph? beta?
-
-    opserr << "WARNING KikuchiAikenLRB invalid number of arguments\n";
-    ifNoError = false;
-
-  } else {
-
-    //argv[2~10]
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING KikuchiAikenLRB invalid tag" << endln;
-      ifNoError = false;
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 9) {
+	opserr << "WARNING invalid number of arguments\n";
+	return 0;
     }
 
-    if (Tcl_GetInt(interp, argv[3], &type) != TCL_OK) {
-      opserr << "WARNING KikuchiAikenLRB invalid type" << endln;
-      ifNoError = false;
+    int idata[2];
+    numdata = 2;
+    if (OPS_GetIntInput(&numdata, idata) < 0) {
+	opserr << "WARNING invalid KikuchiAikenHDR tag\n";
+	return 0;
     }
 
-    if (Tcl_GetDouble(interp, argv[4], &ar) != TCL_OK || ar <= 0.0) {
-      opserr << "WARNING KikuchiAikenLRB invalid ar" << endln;
-      ifNoError = false;
+    double ddata[7];
+    numdata = 7;
+    if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
+	opserr << "WARNING invalid double inputs\n";
+	return 0;
     }
 
-    if (Tcl_GetDouble(interp, argv[5], &hr) != TCL_OK || ar <= 0.0) {
-      opserr << "WARNING KikuchiAikenLRB invalid hr" << endln;
-      ifNoError = false;
-    }
+    double temp = 15.0;
+    double ddata2[2] = {1,1};
+    double ddata3[2] = {1,1};
 
-    if (Tcl_GetDouble(interp, argv[6], &gr) != TCL_OK || gr <= 0.0) {
-      opserr << "WARNING KikuchiAikenLRB invalid gr" << endln;
-      ifNoError = false;
-    }
-
-    if (Tcl_GetDouble(interp, argv[7], &ap) != TCL_OK || ap <= 0.0) {
-      opserr << "WARNING KikuchiAikenLRB invalid ap" << endln;
-      ifNoError = false;
-    }
-
-    if (Tcl_GetDouble(interp, argv[8], &tp) != TCL_OK || tp <= 0.0) {
-      opserr << "WARNING KikuchiAikenLRB invalid tp" << endln;
-      ifNoError = false;
-    }
-
-    if (Tcl_GetDouble(interp, argv[9], &alph) != TCL_OK || alph <= 0.0) {
-      opserr << "WARNING KikuchiAikenLRB invalid alph" << endln;
-      ifNoError = false;
-    }
-
-    if (Tcl_GetDouble(interp, argv[10], &beta) != TCL_OK || beta <= 0.0) {
-      opserr << "WARNING KikuchiAikenLRB invalid beta" << endln;
-      ifNoError = false;
-    }
-
-
-    //argv[11~]
-    for (int i=11; i<=(argc-1); i++) {
-
-      if (strcmp(argv[i],"-T")==0 && (i+1)<=(argc-1)) { // <-T temp?>
-
-	if (Tcl_GetDouble(interp,argv[i+1], &temp) != TCL_OK) {
-	  opserr << "WARNING KikuchiAikenLRB invalid temp" << endln;
-	  ifNoError = false;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+	const char* opt = OPS_GetString();
+	if (strcmp(opt, "-coKQ") == 0) {
+	    if (OPS_GetNumRemainingInputArgs() >= 2) {
+		numdata = 2;
+		if (OPS_GetDoubleInput(&numdata, ddata2) < 0) {
+		    opserr << "WARNING invalid double inputs\n";
+		    return 0;
+		}
+	    }
+	} else if (strcmp(opt, "-coMSS") == 0) {
+	    if (OPS_GetNumRemainingInputArgs() >= 2) {
+		numdata = 2;
+		if (OPS_GetDoubleInput(&numdata, ddata3) < 0) {
+		    opserr << "WARNING invalid double inputs\n";
+		    return 0;
+		}
+	    }
+	} else if (strcmp(opt, "-T") == 0) {
+	    if (OPS_GetNumRemainingInputArgs() >= 1) {
+		numdata = 1;
+		if (OPS_GetDoubleInput(&numdata, &temp) < 0) {
+		    opserr << "WARNING invalid temp\n";
+		    return 0;
+		}
+	    }
+	    
+	} else {
+	    opserr << "WARNING invalid optional arguments \n";
+	    return 0;
 	}
-	
-	i += 1;
-	
-      } else if (strcmp(argv[i],"-coKQ")==0 && (i+2)<=(argc-1)) { // <-coKQ rk? rq?>
-	
-	if (Tcl_GetDouble(interp,argv[i+1], &rk) != TCL_OK || rk < 0.0) {
-	  opserr << "WARNING KikuchiAikenLRB invalid rk" << endln;
-	  ifNoError = false;
-	}
-	
-	if (Tcl_GetDouble(interp,argv[i+2], &rq) != TCL_OK || rq < 0.0) {
-	  opserr << "WARNING KikuchiAikenLRB invalid rq" << endln;
-	  ifNoError = false;
-	} 
-
-	i += 2;
-      } else if (strcmp(argv[i],"-coMSS")==0 && (i+2)<=(argc-1)) { // <-coMSS rs? rf?>
-	
-	if (Tcl_GetDouble(interp,argv[i+1], &rs) != TCL_OK || rs < 0.0) {
-	  opserr << "WARNING KikuchiAikenLRB invalid rs" << endln;
-	  ifNoError = false;
-	}
-	
-	if (Tcl_GetDouble(interp,argv[i+2], &rf) != TCL_OK || rf < 0.0) {
-	  opserr << "WARNING KikuchiAikenLRB invalid rf" << endln;
-	  ifNoError = false;
-	} 
-
-	i += 2;
-	
-      } else { // invalid option
-	opserr << "WAINING KikuchiAikenLRB invalid optional arguments" << endln;
-	ifNoError = false;
-	break;
-      }
-
     }
 
-  }
-
-  //if error detected
-  if (!ifNoError) {
-    //input:
-    opserr << "Input command: ";
-    for (int i=0; i<argc; i++){
-      opserr << argv[i] << " ";
+    for (int i=0; i<2; i++) {
+	if (ddata2[i] == 0.0) ddata2[i] = 1.0;
     }
-    opserr << endln;
-    
-    //want:
-    opserr << "Want: uniaxialMaterial KikuchiAikenLRB matTag? type? ar? hr? gr? ap? tp? alph? beta? <-T temp? > <-coKQ rk? rq?> <-coMSS rs? rf?>" << endln;
-//
-    return TCL_ERROR;
-  }
+    for (int i=0; i<2; i++) {
+	if (ddata3[i] == 0.0) ddata3[i] = 1.0;
+    }
 
-  //regard 0.0 input as misteke (substitute 1.0 for 0.0)
-  if (rk == 0.0) rk = 1.0;
-  if (rq == 0.0) rq = 1.0;
-  if (rs == 0.0) rs = 1.0;
-  if (rf == 0.0) rf = 1.0;
-
-  // Parsing was successful, allocate the material
-  theMaterial = new KikuchiAikenLRB(tag, type, ar, hr, gr, ap, tp, alph, beta, temp, rk, rq, rs, rf);
-
-
-  if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial " << argv[1] << endln;
-    return TCL_ERROR;
-  }
-
-  // Now add the material to the modelBuilder
-  if (OPS_addUniaxialMaterial(theMaterial) == false) {
-    opserr << "WARNING could not add uniaxialMaterial to the modelbuilder\n";
-    opserr << *theMaterial << endln;
-    delete theMaterial; // invoke the material objects destructor, otherwise mem leak
-    return TCL_ERROR;
-  } else {
-    return TCL_OK;
-  }
-
+    return new KikuchiAikenLRB(idata[0],idata[1],ddata[0],ddata[1],ddata[2],ddata[3],ddata[4],ddata[5],ddata[6],temp,ddata2[0],ddata2[1],ddata3[0],ddata3[1]);
 }
-
 
 
 

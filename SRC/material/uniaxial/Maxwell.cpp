@@ -75,8 +75,8 @@ OPS_Maxwell()
   }
 
   if (numRData == 6) {
-    char *cArray = 0;
-    OPS_GetStringCopy(&cArray);
+    const char *cArray = OPS_GetString();
+    // OPS_GetStringCopy(&cArray);
     if ((strcmp(cArray, "-returnD") == 0) || (strcmp(cArray, "-D") == 0)) 
       iData[1] = 1;
     delete [] cArray;

@@ -39,6 +39,46 @@
 
 #include <math.h>
 #include <float.h>
+#include <elementAPI.h>
+
+void* OPS_HardeningMaterial()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 5) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: uniaxialMaterial Hardening tag? E? sigmaY? H_iso? H_kin? <eta?>" << endln;
+	return 0;
+    }
+
+    int tag;
+    numdata = 1;
+    if (OPS_GetIntInput(&numdata,&tag) < 0) {
+	return 0;
+    }
+
+    double data[5];
+    numdata = 5;
+    if (OPS_GetDoubleInput(&numdata,data)) {
+	return 0;
+    }
+
+    double eta = 0.0;
+    numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata > 0) {
+	numdata = 1;
+	if (OPS_GetDouble(&numdata,&eta)<0) {
+	    return 0;
+	}
+    }
+
+    UniaxialMaterial* mat = new HardeningMaterial(tag,data[0],data[1],data[2],data[3],eta);
+    if (mat == 0) {
+	opserr << "WARNING: failed to create Hardeningmaterial material\n";
+	return 0;
+    }
+
+    return mat;
+}
 
 HardeningMaterial::HardeningMaterial(int tag, double e, double s,
 				     double hi, double hk, double n)

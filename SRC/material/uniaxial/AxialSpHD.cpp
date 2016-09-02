@@ -38,157 +38,46 @@
 // uniaxialMaterial AxialSpHD matTag? sce? fty? fcy? < bte? bty? bth? bcy? fcr? ath? >
 
 
-#include <TclModelBuilder.h>
 #include <string.h>
-#include <tcl.h>
-
 #include <AxialSpHD.h>
 #include <Vector.h>
 #include <Channel.h>
 #include <math.h>
 #include <float.h>
 
+#include <elementAPI.h>
 
-extern void printCommand(int argc, TCL_Char **argv);
-
-int
-TclCommand_AxialSpHD(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+void* OPS_AxialSpHD()
 {
-  //arguments (necessary)
-  int tag;
-  double sce;
-  double fty;
-  double fcy;
-
-  //arguments (optional)
-  double bte = 1.0;
-  double bty = 1.0;
-  double bth = 1.0;
-  double bcy = 1.0;
-  double fcr = 0.0;
-  double ath = 1.0;
-      
-  //
-  UniaxialMaterial *theMaterial = 0;
-
-
-  //error flag
-  bool ifNoError = true;
-  
-  if (argc < 6 || argc > 12) { // uniaxialMaterial AxialSpHD matTag? sce? fty? fcy?
-
-    opserr << "WARNING invalid number of arguments\n";
-    ifNoError = false;
-
-  }
-
-    //argv[2~5]
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid AxialSpHD tag" << endln;
-      ifNoError = false;
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 4) {
+	opserr << "WARNING invalid number of arguments\n";
+	return 0;
     }
 
-    if (Tcl_GetDouble(interp, argv[3], &sce) != TCL_OK) {
-      opserr << "WARNING invalid sce\n";
-      opserr << "AxialSpHD: " << tag << endln;
-      ifNoError = false;
+    int tag;
+    numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid AxialSp tag\n";
+	return 0;
     }
 
-    if (Tcl_GetDouble(interp, argv[4], &fty) != TCL_OK) {
-      opserr << "WARNING invalid fty\n";
-      opserr << "AxialSpHD: " << tag << endln;
-      ifNoError = false;
+    double data[3];
+    numdata = 3;
+    if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	opserr << "WARNING invalid double inputs\n";
+	return 0;
     }
 
-    if (Tcl_GetDouble(interp, argv[5], &fcy) != TCL_OK) {
-      opserr << "WARNING invalid fcy\n";
-      opserr << "AxialSpHD: " << tag << endln;
-      ifNoError = false;
-    }
-    
-    //argv[6~]
-    if (argc >= 7) {
-      if (Tcl_GetDouble(interp, argv[6], &bte) != TCL_OK) {
-	opserr << "WARNING invalid bte\n";
-	opserr << "AxialSpHD: " << tag << endln;
-	ifNoError = false;
-      }
+    double opt[6] = {1,1,1,1,0,1};
+    numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata > 6) numdata = 6;
+    if (OPS_GetDoubleInput(&numdata, opt) < 0) {
+	opserr << "WARNING invalid double inputs\n";
+	return 0;
     }
 
-    if (argc >= 8) {
-      if (Tcl_GetDouble(interp, argv[7], &bty) != TCL_OK) {
-	opserr << "WARNING invalid bty\n";
-	opserr << "AxialSpHD: " << tag << endln;
-	ifNoError = false;
-      }
-    }
-
-    if (argc >= 9) {
-      if (Tcl_GetDouble(interp, argv[8], &bth) != TCL_OK) {
-	opserr << "WARNING invalid bth\n";
-	opserr << "AxialSpHD: " << tag << endln;
-	ifNoError = false;
-      }
-    }
-
-    if (argc >= 10) {
-      if (Tcl_GetDouble(interp, argv[9], &bcy) != TCL_OK) {
-	opserr << "WARNING invalid bcy\n";
-	opserr << "AxialSpHD: " << tag << endln;
-	ifNoError = false;
-      }
-    }
-
-    if (argc >= 11) {
-      if (Tcl_GetDouble(interp, argv[10], &fcr) != TCL_OK) {
-	opserr << "WARNING invalid fcr\n";
-	opserr << "AxialSpHD: " << tag << endln;
-	ifNoError = false;
-      }
-    }
-
-    if (argc == 12) {
-      if (Tcl_GetDouble(interp, argv[11], &ath) != TCL_OK) {
-	opserr << "WARNING invalid ath\n";
-	opserr << "AxialSpHD: " << tag << endln;
-	ifNoError = false;
-      }
-    }
-
-  //if error detected
-  if (!ifNoError) {
-    //input:
-    opserr << "Input command: ";
-    for (int i=0; i<argc; i++){
-      opserr << argv[i] << " ";
-    }
-    opserr << endln;
-    
-    //wand:
-    opserr << "WANT: AxialSpHD tag? sce? fty? fcy? <bte?> <bty?> <bth?> <bcy?> <fcr?> <ath?>" << endln;
-
-    return TCL_ERROR;
-  }
-
-  
-  // Parsing was successful, allocate the material
-  theMaterial = new AxialSpHD(tag, sce, fty, fcy, bte, bty, bth, bcy, fcr, ath);
-
-  if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial " << argv[1] << endln;
-    return TCL_ERROR;
-  }
-
-  // Now add the material to the modelBuilder
-  if (OPS_addUniaxialMaterial(theMaterial) == false) {
-    opserr << "WARNING could not add uniaxialMaterial to the modelbuilder\n";
-    opserr << *theMaterial << endln;
-    delete theMaterial; // invoke the material objects destructor, otherwise mem leak
-    return TCL_ERROR;
-  } else {
-    return TCL_OK;
-  }
-
+    return new AxialSpHD(tag,data[0],data[1],data[2],opt[0],opt[1],opt[2],opt[3],opt[4],opt[5]);
 }
 
 

@@ -37,160 +37,86 @@
 #include <Vector.h>
 #include <Channel.h>
 
-#include <TclModelBuilder.h>
 #include <string.h>
-#include <tcl.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <float.h>
 
+#include <elementAPI.h>
 
-
-int
-TclCommand_KikuchiAikenHDR(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+void* OPS_KikuchiAikenHDR()
 {
-  //arguments (necessary)
-  int tag;
-  int tp;
-  double ar;
-  double hr;
-
-  //arguments (optional)
-  double cg = 1.0;
-  double ch = 1.0;
-  double cu = 1.0;
-  double rs = 1.0;
-  double rf = 1.0;
-      
-  //
-  UniaxialMaterial *theMaterial = 0;
-
-
-  //error flag
-  bool ifNoError = true;
-  
-  if (argc < 6) { // uniaxialMaterial KikuchiAikenHDR matTag? tp? ar? hr?
-
-    opserr << "WARNING invalid number of arguments\n";
-    ifNoError = false;
-
-  } else {
-
-    //argv[2~5]
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << "WARNING invalid KikuchiAikenHDR tag" << endln;
-      ifNoError = false;
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 4) {
+	opserr << "WARNING invalid number of arguments\n";
+	return 0;
     }
-  
-    if ((strcmp(argv[3],"X0.6") == 0) || (strcmp(argv[3],"1") == 0)) {
+
+    int tag;
+    numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid KikuchiAikenHDR tag\n";
+	return 0;
+    }
+
+    const char* arg = OPS_GetString();
+    int tp;
+    if ((strcmp(arg,"X0.6") == 0) || (strcmp(arg,"1") == 0)) {
       tp = 1;
-    } else if ((strcmp(argv[3],"X0.6-0MPa") == 0) || (strcmp(argv[3],"2") == 0)) {
+    } else if ((strcmp(arg,"X0.6-0MPa") == 0) || (strcmp(arg,"2") == 0)) {
       tp = 2;
     } else {
-      opserr << "WARNING invalid KikuchiAikenHDR tp" << endln;
-      ifNoError = false;
+      opserr << "WARNING invalid KikuchiAikenHDR tp\n";
+      return 0;
     }
-  
-    if (Tcl_GetDouble(interp, argv[4], &ar) != TCL_OK || ar <= 0.0) {
-      opserr << "WARNING invalid ar\n";
-      ifNoError = false;
-    }
-    
-    if (Tcl_GetDouble(interp, argv[5], &hr) != TCL_OK || hr <= 0.0) {
-      opserr << "WARNING invalid hr\n";
-      ifNoError = false;
-    }
-    
-    
-    //argv[6~]
-    for (int i=6; i<=(argc-1); i++) {
-      
-      if (strcmp(argv[i],"-coGHU")==0 && (i+3)<=(argc-1)) { // <-coGHU cg? ch? cu?>
 
-	if (Tcl_GetDouble(interp,argv[i+1], &cg) != TCL_OK || cg < 0.0) {
-	  opserr << "WARNING invalid cg\n";
-	  ifNoError = false;
+    double ddata[2];
+    numdata = 2;
+    if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
+	opserr << "WARNING invalid double inputs\n";
+	return 0;
+    }
+
+    double ddata2[3] = {1,1,1};
+    double ddata3[2] = {1,1};
+
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+	const char* opt = OPS_GetString();
+	if (strcmp(opt, "-coGHU") == 0) {
+	    if (OPS_GetNumRemainingInputArgs() >= 3) {
+		numdata = 3;
+		if (OPS_GetDoubleInput(&numdata, ddata2) < 0) {
+		    opserr << "WARNING invalid double inputs\n";
+		    return 0;
+		}
+	    }
+	} else if (strcmp(opt, "-coMSS") == 0) {
+	    if (OPS_GetNumRemainingInputArgs() >= 2) {
+		numdata = 2;
+		if (OPS_GetDoubleInput(&numdata, ddata3) < 0) {
+		    opserr << "WARNING invalid double inputs\n";
+		    return 0;
+		}
+	    }
+	} else {
+	    opserr << "WARNING invalid optional arguments \n";
+	    return 0;
 	}
-	
-	if (Tcl_GetDouble(interp,argv[i+2], &ch) != TCL_OK || ch < 0.0) {
-	  opserr << "WARNING invalid ch\n";
-	  ifNoError = false;
-	}
-	
-	if (Tcl_GetDouble(interp,argv[i+3], &cu) != TCL_OK || cu < 0.0) {
-	  opserr << "WARNING invalid cu\n";
-	  ifNoError = false;
-	}
-	
-	i += 3;
-	
-      } else if (strcmp(argv[i],"-coMSS")==0 && (i+2)<=(argc-1)) { // <-coMSS rs? rf?>
-	
-	if (Tcl_GetDouble(interp,argv[i+1], &rs) != TCL_OK || rs < 0.0) {
-	  opserr << "WARNING invalid rs\n";
-	  ifNoError = false;
-	}
-	
-	if (Tcl_GetDouble(interp,argv[i+2], &rf) != TCL_OK || rf < 0.0) {
-	  opserr << "WARNING invalid rf\n";
-	  ifNoError = false;
-	} 
-
-	i += 2;
-	
-      } else { // invalid option
-	opserr << "WARNING invalid optional arguments \n";
-	ifNoError = false;
-	break;
-      }
-
     }
 
-  }
-
-  //if error detected
-  if (!ifNoError) {
-    //input:
-    opserr << "Input command: ";
-    for (int i=0; i<argc; i++){
-      opserr << argv[i] << " ";
+    for (int i=0; i<3; i++) {
+	if (ddata2[i] == 0.0) ddata2[i] = 1.0;
     }
-    opserr << endln;
-    
-    //want:
-    opserr << "Want: uniaxialMaterial KikuchiAikenHDR matTag? tp? ar? hr? <-coGHU cg? ch? cu?> <-coMSS rs? rf?>" << endln;
-    return TCL_ERROR;
-  }
+    for (int i=0; i<2; i++) {
+	if (ddata3[i] == 0.0) ddata3[i] = 1.0;
+    }
 
-  //regard 0.0 input as mistake (substitute 1.0 for 0.0)
-  if (cg == 0.0) cg = 1.0;
-  if (ch == 0.0) ch = 1.0;
-  if (cu == 0.0) cu = 1.0;
-  if (rs == 0.0) rs = 1.0;
-  if (rf == 0.0) rf = 1.0;
-
-
-  // Parsing was successful, allocate the material
-  theMaterial = new KikuchiAikenHDR(tag, tp, ar, hr, cg, ch, cu, rs, rf);
-
-  if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial " << argv[1] << endln;
-    return TCL_ERROR;
-  }
-
-  // Now add the material to the modelBuilder
-  if (OPS_addUniaxialMaterial(theMaterial) == false) {
-    opserr << "WARNING could not add uniaxialMaterial to the modelbuilder\n";
-    opserr << *theMaterial << endln;
-    delete theMaterial; // invoke the material objects destructor, otherwise mem leak
-    return TCL_ERROR;
-  } 
-
-  // succeeded
-  return TCL_OK;
-
+    return new KikuchiAikenHDR(tag,tp,ddata[0],ddata[1],ddata2[0],ddata2[1],ddata2[2],ddata3[0],ddata3[1]);
 }
+
+
+
 
 
 

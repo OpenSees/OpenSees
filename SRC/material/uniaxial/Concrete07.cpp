@@ -37,6 +37,40 @@
 #include <Information.h>
 #include <float.h>
 #include <iostream>
+#include <elementAPI.h>
+
+void* OPS_Concrete07()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 9) {
+	opserr << "WARNING: Insufficient arguements\n";
+	opserr << "Want: uniaxialMaterial Concrete07 tag? ";
+	opserr << "fpc? epsc0? Ec? fpt? epst0? xcrp? xcrn? r?\n";
+	return 0;
+    }
+
+    int tag;
+    numdata = 1;
+    if (OPS_GetIntInput(&numdata,&tag) < 0) {
+	opserr << "WARNING invalid tag\n";
+	return 0;
+    }
+
+    double data[8];
+    numdata = 8;
+    if (OPS_GetDoubleInput(&numdata,data)) {
+	opserr << "WARNING invalid double data\n";
+	return 0;
+    }
+
+    UniaxialMaterial* mat = new Concrete07(tag,data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
+    if (mat == 0) {
+	opserr << "WARNING: failed to create Concrete07 material\n";
+	return 0;
+    }
+
+    return mat;
+}
 
 Concrete07::Concrete07 (int tag, double FPC, double EPSC0, double EC, double FPT, double EPST0, double XCRP, double XCRN, double R)
 :UniaxialMaterial(tag, MAT_TAG_Concrete07), fpc(FPC), epsc0(EPSC0), Ec(EC), fpt(FPT), epst0(EPST0), xcrp(XCRP), xcrn(XCRN), r(R) {

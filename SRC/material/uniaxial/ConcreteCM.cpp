@@ -109,8 +109,8 @@ void *OPS_ConcreteCM(void)
     int gap;
     numData = 1;
     
-    char *str = 0;
-    OPS_GetStringCopy(&str);
+    const char *str = OPS_GetString();
+    // OPS_GetStringCopy(&str);
     if (strcmp(str, "-GapClose") == 0) {
       if (OPS_GetIntInput(&numData, &gap) != 0) {
 	opserr << "Invalid $gap parameter for uniaxialMaterial ConcreteCM with tag  " << iData[0] << endln;
