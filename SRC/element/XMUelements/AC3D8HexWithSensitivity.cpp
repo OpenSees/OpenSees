@@ -65,7 +65,7 @@ OPS_AC3D8HexWithSensitivity(void){
   }  
 
   matTag = idData[9];
-  NDMaterial *theMaterial = OPS_GetNDMaterial(matTag);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matTag);
 
   if (theMaterial == 0) {
     opserr << "command: element AC3D8Hex " << idData[0] << 

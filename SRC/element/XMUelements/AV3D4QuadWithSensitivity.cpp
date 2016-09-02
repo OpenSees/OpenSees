@@ -65,7 +65,7 @@ OPS_AV3D4QuadWithSensitivity(void){
 
 
   matTag = idData[5];
-  NDMaterial *theMaterial = OPS_GetNDMaterial(matTag);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matTag);
 
   if (theMaterial == 0) {
     opserr << "command: element AC3D8Hex " << idData[0] << 
