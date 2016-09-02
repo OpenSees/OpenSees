@@ -64,5 +64,10 @@ const static int Loading,Unloading, Crossover;
 const static double Tol, delK;
 };
 
+bool OPS_addCyclicModel(CyclicModel *newComponent);
+CyclicModel *OPS_getCyclicModel(int tag);
+void OPS_clearAllCyclicModel(void);
+
+
 #endif
 

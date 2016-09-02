@@ -1,11 +1,36 @@
 #include "CyclicModel.h"
 #include <math.h>
+#include <MapOfTaggedObjects.h>
 
 const int    CyclicModel::Loading(1);
 const int    CyclicModel::Unloading(2);
 const int    CyclicModel::Crossover(3);
 const double CyclicModel::Tol(1e-10);
 const double CyclicModel::delK(0.85);
+
+static MapOfTaggedObjects theCyclicModelObjects;
+
+bool OPS_addCyclicModel(CyclicModel *newComponent)
+{
+    return theCyclicModelObjects.addComponent(newComponent);
+}
+
+CyclicModel *OPS_getCyclicModel(int tag)
+{
+
+  TaggedObject *theResult = theCyclicModelObjects.getComponentPtr(tag);
+  if(theResult == 0) {
+      opserr << "NDMaterial no found with tag: " << tag << "\n";
+      return 0;
+  }
+  CyclicModel *theobj = (CyclicModel *)theResult;
+
+  return theobj;
+}
+
+void OPS_clearAllCyclicModel(void) {
+    theCyclicModelObjects.clearAll();
+}
 
 CyclicModel::CyclicModel(int tag, int clasTag)
 :TaggedObject(tag), MovableObject(clasTag),
