@@ -43,7 +43,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <elementAPI.h>
-#include <string>
 
 Matrix ZeroLengthSection::K6(6,6);
 Matrix ZeroLengthSection::K12(12,12);
@@ -53,6 +52,8 @@ Vector ZeroLengthSection::P12(12);
 
 void* OPS_ZeroLengthSection()
 {
+    int ndm = OPS_GetNDM();
+    
     if(OPS_GetNumRemainingInputArgs() < 4) {
 	opserr<<"insufficient arguments for ZeroLengthSection\n";
 	return 0;
@@ -61,7 +62,10 @@ void* OPS_ZeroLengthSection()
     // get eleTag,iNode,jNode,secTag
     int iData[4];
     int numData = 4;
-    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
+	opserr<<"WARNING: invalid integer inputs\n";
+	return 0;
+    }
 
     // options
     Vector x(3); x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
@@ -69,16 +73,25 @@ void* OPS_ZeroLengthSection()
     double *x_ptr=&x(0), *y_ptr=&y(0);
     int doRayleighDamping = 1;
     while(OPS_GetNumRemainingInputArgs() > 1) {
-	std::string type = OPS_GetString();
-	if(type == "-orient") {
+	const char* type = OPS_GetString();
+	if(strcmp(type, "-orient") == 0) {
 	    if(OPS_GetNumRemainingInputArgs() > 5) {
 		numData = 3;
-		if(OPS_GetDoubleInput(&numData,x_ptr) < 0) return 0;
-		if(OPS_GetDoubleInput(&numData,y_ptr) < 0) return 0;
+		if(OPS_GetDoubleInput(&numData,x_ptr) < 0) {
+		    opserr<<"WARNING: invalid double inputs\n";
+		    return 0;
+		}
+		if(OPS_GetDoubleInput(&numData,y_ptr) < 0) {
+		    opserr<<"WARNING: invalid double inputs\n";
+		    return 0;
+		}
 	    }
-	} else if(type == "-doRayleigh") {
+	} else if(strcmp(type, "-doRayleigh") == 0) {
 	    numData = 1;
-	    if(OPS_GetIntInput(&numData,&doRayleighDamping) < 0) return 0;
+	    if(OPS_GetIntInput(&numData,&doRayleighDamping) < 0) {
+		opserr<<"WARNING: invalid integer inputs\n";
+		return 0;
+	    }
 	}
     }
 
@@ -89,7 +102,6 @@ void* OPS_ZeroLengthSection()
 	return 0;
     }
 
-    int ndm = OPS_GetNDM();
     return new ZeroLengthSection(iData[0],ndm,iData[1],iData[2],x,y,*theSection,doRayleighDamping);
 }
 

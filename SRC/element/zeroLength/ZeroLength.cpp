@@ -45,6 +45,8 @@
 #include <string.h>
 
 #include <ElementResponse.h>
+#include <elementAPI.h>
+#include <vector>
 
 // initialise the class wide variables
 Matrix ZeroLength::ZeroLengthM2(2,2);
@@ -55,6 +57,137 @@ Vector ZeroLength::ZeroLengthV2(2);
 Vector ZeroLength::ZeroLengthV4(4);
 Vector ZeroLength::ZeroLengthV6(6);
 Vector ZeroLength::ZeroLengthV12(12);
+
+void* OPS_ZeroLength()
+{
+    int ndm = OPS_GetNDM();
+
+    //
+    // first scan the command line to obtain eleID, iNode, jNode, material ID's
+    // and their directions, and the orientation of ele xPrime and yPrime not
+    // along the global x and y axis
+    //
+    
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 7) {
+        opserr << "WARNING too few arguments " <<
+            "want - element ZeroLength eleTag? iNode? jNode? " <<
+            "-mat matID1? ... -dir dirMat1? .. " <<
+            "<-orient x1? x2? x3? y1? y2? y3?>\n";
+
+        return 0;
+    }
+
+    // eleTag, iNode, jNode
+    int idata [3];
+    numdata = 3;
+    if (OPS_GetIntInput(&numdata,idata) < 0) {
+        opserr << "WARNING: failed to get integer data\n";
+        return 0;
+    }
+
+    // create an array of material pointers, to do this first count
+    // the materials to create the array then get matID's and from ModelBuilder
+    // obtain pointers to the material objects
+    const char* type = OPS_GetString();
+    if (strcmp(type,"-mat") != 0) {
+        opserr << "WARNING expecting " <<
+            "- element ZeroLength eleTag? iNode? jNode? " <<
+            "-mat matID1? ... -dir dirMat1? .. " <<
+            "<-orient x1? x2? x3? y1? y2? y3?>\n";
+
+        return 0;
+    }
+
+    std::vector<UniaxialMaterial*> mats;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        int mtag;
+        numdata = 1;
+	// the first one not an int
+        if (OPS_GetIntInput(&numdata,&mtag) < 0) {
+	    OPS_ResetCurrentInputArg(-1); // move current arg back by one
+	    break;
+        }
+        UniaxialMaterial* mat = OPS_getUniaxialMaterial(mtag);
+        if (mat == 0) {
+            opserr << "WARNING no material " << mtag <<
+                "exitsts - element ZeroLength eleTag? iNode? jNode? " <<
+                "-mat matID1? ... -dir dirMat1? .. " <<
+                "<-orient x1? x2? x3? y1? y2? y3?>\n";
+            return 0;
+        }
+        mats.push_back(mat);
+    }
+    int numMat = (int)mats.size();
+    if (numMat == 0) {
+	opserr << "WARNING no material is given\n";
+	return 0;
+    }
+
+    // now read the dirn ID's for the materials added
+    type = OPS_GetString();
+    if (strcmp(type,"-dir") != 0) {
+        opserr << "WARNING expecting -dir flag " <<
+            "- element ZeroLength eleTag? iNode? jNode? " <<
+            "-mat matID1? ... -dir dirMat1? .. " <<
+            "<-orient x1? x2? x3? y1? y2? y3?>\n";
+        return 0;
+    }
+    if (OPS_GetNumRemainingInputArgs() < numMat) {
+	opserr << "WARNING not enough directions provided for ele " << idata[0] <<
+	    "- element ZeroLength eleTag? iNode? jNode? " <<
+	    "-mat matID1? ... -dir dirMat1? .. " <<
+	    "<-orient x1? x2? x3? y1? y2? y3?>\n";
+	return 0;
+    }
+    
+    ID dirs((int)mats.size());
+    if (OPS_GetIntInput(&numMat,&dirs(0)) < 0) {
+	opserr << "WARNING invalid dir\n";
+	return 0;
+    }
+    for (int i=0; i<dirs.Size(); i++) {
+	dirs(i)--; // subscrit to C++
+    }
+
+    // create the vectors for the element orientation
+    Vector x(3); x(0) = 1.0; x(1) = 0.0; x(2) = 0.0;
+    Vector y(3); y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
+
+    // finally check the command line to see if user specified orientation
+    int doRayleighDamping = 0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+	type = OPS_GetString();
+	if (strcmp(type,"-doRayleigh") == 0) {
+	    doRayleighDamping = 1;
+	    if (OPS_GetNumRemainingInputArgs() > 0) {
+		numdata = 1;
+		if (OPS_GetIntInput(&numdata,&doRayleighDamping) < 0) {
+		    opserr<<"WARNING: invalid integer\n";
+		    return 0;
+		}
+	    }
+	} else if (strcmp(type,"orient") == 0) {
+	    if (OPS_GetNumRemainingInputArgs() < 6) {
+		opserr<<"WARNING: insufficient orient values\n";
+		return 0;
+	    }
+	    numdata = 3;
+	    if (OPS_GetDoubleInput(&numdata,&x(0)) < 0) {
+		opserr<<"WARNING: invalid double input\n";
+		return 0;
+	    }
+	    if (OPS_GetDoubleInput(&numdata,&y(0)) < 0) {
+		opserr<<"WARNING: invalid double input\n";
+		return 0;
+	    }
+	}
+    }
+
+    return new ZeroLength(idata[0],ndm,idata[1],idata[2],x,y,mats.size(),&mats[0],dirs,
+			  doRayleighDamping);
+}
+
 
 //  Constructor:
 //  responsible for allocating the necessary space needed by each object

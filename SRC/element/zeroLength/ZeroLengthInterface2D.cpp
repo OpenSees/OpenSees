@@ -673,8 +673,8 @@ void  ZeroLengthInterface2D::formGlobalResidAndTangent( int tang_flag )
 static int numZeroLengthInterface2D = 0;
 #include <elementAPI.h>
 
-Element * 
-OPS_NewZeroLengthInterface2D(void) {
+void * 
+OPS_ZeroLengthInterface2D(void) {
 
   if (numZeroLengthInterface2D == 0) {
     numZeroLengthInterface2D++;
