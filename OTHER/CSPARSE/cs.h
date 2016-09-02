@@ -13,7 +13,7 @@
 #define CS_SUBSUB 0
 #define CS_DATE "Jun 1, 2012"       /* CSparse release date */
 #define CS_COPYRIGHT "Copyright (c) Timothy A. Davis, 2006-2012"
-
+#define csi int
 #ifdef MATLAB_MEX_FILE
 #undef csi
 #define csi mwSignedIndex
