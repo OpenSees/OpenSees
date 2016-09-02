@@ -700,3 +700,15 @@ Element::displaySelf(Renderer &, int mode, float fact, const char **displayModes
 }
 
 
+const Matrix &
+Element::getGeometricTangentStiff()
+{
+    if (index == -1) {
+	this->setRayleighDampingFactors(alphaM, betaK, betaK0, betaKc);
+    }
+    
+    Matrix *theMatrix = theMatrices[index];
+    theMatrix->Zero();
+    
+    return *theMatrix;
+}

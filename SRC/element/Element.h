@@ -72,7 +72,8 @@ class Element : public DomainComponent
     virtual const Matrix &getTangentStiff(void) =0;
     virtual const Matrix &getInitialStiff(void) =0;
     virtual const Matrix &getDamp(void);    
-    virtual const Matrix &getMass(void);    
+    virtual const Matrix &getMass(void);
+    virtual const Matrix &getGeometricTangentStiff();
 
     // methods for applying loads
     virtual void zeroLoad(void);	
