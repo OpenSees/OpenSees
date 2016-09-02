@@ -109,14 +109,20 @@
 #include <StrengthDegradation.h>
 #endif
 #include <HystereticBackbone.h>
-
+#include <BeamIntegration.h>
 
 ////////////////////// gnp adding damping 
 #include <Element.h>
 ////////////////////////////////////////////
 
 extern void TCL_OPS_setModelBuilder(TclModelBuilder *theNewBuilder);
-
+extern int OPS_ResetInput(ClientData clientData, 
+			  Tcl_Interp *interp,  
+			  int cArg, 
+			  int mArg, 
+			  TCL_Char **argv, 
+			  Domain *domain,
+			  TclModelBuilder *builder);
 #include <packages.h>
 
 //
@@ -157,7 +163,20 @@ TclCommand_PFEM3D(ClientData clientData, Tcl_Interp *interp,  int argc,
                   TCL_Char **argv);
 
 int
+TclCommand_mesh(ClientData clientData, Tcl_Interp *interp,  int argc, 
+		TCL_Char **argv);
+int
+TclCommand_remesh(ClientData clientData, Tcl_Interp *interp,  int argc, 
+		  TCL_Char **argv);
+
+int 
+TclCommand_backgroundMesh(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int
 TclCommand_addUniaxialMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int
+TclCommand_addBeamIntegration(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int
 TclCommand_addLimitCurve(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -454,7 +473,19 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
   Tcl_CreateCommand(interp, "PFEM3D", TclCommand_PFEM3D,
 		    (ClientData)NULL, NULL);
 
+  Tcl_CreateCommand(interp, "mesh", TclCommand_mesh,
+		    (ClientData)NULL, NULL);
+  Tcl_CreateCommand(interp, "remesh", TclCommand_remesh,
+		    (ClientData)NULL, NULL);
+
+  Tcl_CreateCommand(interp, "background", &TclCommand_backgroundMesh, 
+		    (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+
+
   Tcl_CreateCommand(interp, "uniaxialMaterial", TclCommand_addUniaxialMaterial,
+		    (ClientData)NULL, NULL);
+  
+  Tcl_CreateCommand(interp, "beamIntegration", TclCommand_addBeamIntegration,
 		    (ClientData)NULL, NULL);
 
   Tcl_CreateCommand(interp, "limitCurve", TclCommand_addLimitCurve,
@@ -692,6 +723,9 @@ TclModelBuilder::~TclModelBuilder()
   Tcl_DeleteCommand(theInterp, "element");
   Tcl_DeleteCommand(theInterp, "PFEM2D");
   Tcl_DeleteCommand(theInterp, "PFEM3D");
+  Tcl_DeleteCommand(theInterp, "mesh");
+  Tcl_DeleteCommand(theInterp, "remesh");
+  Tcl_DeleteCommand(theInterp, "background");
   Tcl_DeleteCommand(theInterp, "uniaxialMaterial");
   Tcl_DeleteCommand(theInterp, "nDMaterial");
   Tcl_DeleteCommand(theInterp, "section");
@@ -1368,6 +1402,193 @@ TclCommand_PFEM3D(ClientData clientData, Tcl_Interp *interp,  int argc,
 #else
     return 0;
 #endif
+}
+
+extern int OPS_LineMesh(Domain& domain, int ndm);
+extern int OPS_TriMesh(Domain& domain);
+extern int OPS_TriReMesh(Domain& domain, int ndf);
+int
+TclCommand_mesh(ClientData clientData, Tcl_Interp *interp,  int argc, 
+		TCL_Char **argv) 
+{
+    // ensure the destructor has not been called - 
+    if (theTclBuilder == 0) {
+	opserr << "WARNING builder has been destroyed" << endln;
+	return TCL_ERROR;
+    }
+
+    int ndm = theTclBuilder->getNDM();
+
+    // make sure corect number of arguments on command line
+    if (argc < 2) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: mesh type? ...>\n";
+	return TCL_ERROR;
+    }
+
+    OPS_ResetInput(clientData,interp,2,argc,argv,theTclDomain,theTclBuilder);
+
+    // mesh type
+    int res = 0;
+    if (strcmp(argv[1], "line") == 0) {
+	res = OPS_LineMesh(*theTclDomain,ndm);
+    } else if (strcmp(argv[1], "tri") == 0) {
+	res = OPS_TriMesh(*theTclDomain);
+    } else {
+	opserr<<"WARNING: mesh type "<<argv[1]<<" is unknown\n";
+	return TCL_ERROR;
+    }
+
+    if (res < 0) {
+	return TCL_ERROR;
+    }
+
+    return 0;
+
+}
+
+int
+TclCommand_remesh(ClientData clientData, Tcl_Interp *interp,  int argc, 
+		TCL_Char **argv) 
+{
+    // ensure the destructor has not been called - 
+    if (theTclBuilder == 0) {
+	opserr << "WARNING builder has been destroyed" << endln;
+	return TCL_ERROR;
+    }
+
+    int ndf = theTclBuilder->getNDF();
+
+    // make sure corect number of arguments on command line
+    if (argc < 2) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: mesh type? ...>\n";
+	return TCL_ERROR;
+    }
+
+    OPS_ResetInput(clientData,interp,2,argc,argv,theTclDomain,theTclBuilder);
+
+    // mesh type
+    int res = 0;
+    if (strcmp(argv[1], "line") == 0) {
+	//res = OPS_LineMesh(*theTclDomain,ndm);
+    } else if (strcmp(argv[1], "tri") == 0) {
+	res = OPS_TriReMesh(*theTclDomain,ndf);
+    } else {
+	opserr<<"WARNING: remesh type "<<argv[1]<<" is unknown\n";
+	return TCL_ERROR;
+    }
+
+    if (res < 0) {
+	return TCL_ERROR;
+    }
+    
+    return 0;
+
+}
+
+extern int OPS_BackgroundMesh();
+
+int 
+TclCommand_backgroundMesh(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+    // ensure the destructor has not been called - 
+    if (theTclBuilder == 0) {
+	opserr << "WARNING builder has been destroyed" << endln;
+	return TCL_ERROR;
+    }
+    
+    OPS_ResetInput(clientData, interp, 1, argc, argv, theTclDomain, theTclBuilder);
+
+    if(OPS_BackgroundMesh() >= 0) return TCL_OK;
+    else return TCL_ERROR;
+    return TCL_OK;
+}
+
+extern void* OPS_LobattoBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_LegendreBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_NewtonCotesBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_RadauBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_TrapezoidalBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_CompositeSimpsonBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_UserDefinedBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_FixedLocationBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_LowOrderBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_MidDistanceBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_UserHingeBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_HingeMidpointBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_HingeRadauBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_HingeRadauTwoBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_HingeEndpointBeamIntegration(int& integrationTag, ID& secTags);
+
+int
+TclCommand_addBeamIntegration(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+    if (argc < 2) {
+	opserr << "WARNING: want beamIntegration type itag...\n";
+	return TCL_ERROR;
+    }
+
+    OPS_ResetInput(clientData,interp,2,argc,argv,theTclDomain,theTclBuilder);
+    
+    int iTag;
+    ID secTags;
+    BeamIntegration* bi = 0;
+    if (strcmp(argv[1],"Lobatto") == 0) {
+	bi = (BeamIntegration*)OPS_LobattoBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"Legendre") == 0) {
+	bi = (BeamIntegration*)OPS_LegendreBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"NewtoCotes") == 0) {
+	bi = (BeamIntegration*)OPS_NewtonCotesBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"Radau") == 0) {
+	bi = (BeamIntegration*)OPS_RadauBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"Trapezoidal") == 0) {
+	bi = (BeamIntegration*)OPS_TrapezoidalBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"CompositeSimpson") == 0) {
+	bi = (BeamIntegration*)OPS_CompositeSimpsonBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"UserDefined") == 0) {
+	bi = (BeamIntegration*)OPS_UserDefinedBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"FixedLocation") == 0) {
+	bi = (BeamIntegration*)OPS_FixedLocationBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"LowOrder") == 0) {
+	bi = (BeamIntegration*)OPS_LowOrderBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"MidDistance") == 0) {
+	bi = (BeamIntegration*)OPS_MidDistanceBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"UserHinge") == 0) {
+	bi = (BeamIntegration*)OPS_UserHingeBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"HingeMidpoint") == 0) {
+	bi = (BeamIntegration*)OPS_HingeMidpointBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"HingeRadau") == 0) {
+	bi = (BeamIntegration*)OPS_HingeRadauBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"HingeRadauTwo") == 0) {
+	bi = (BeamIntegration*)OPS_HingeRadauTwoBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"HingeEndpoint") == 0) {
+	bi = (BeamIntegration*)OPS_HingeEndpointBeamIntegration(iTag,secTags);
+    } else {
+	opserr<<"WARNING: integration type "<<argv[1]<<" is unknown\n";
+	return TCL_ERROR;
+    }
+
+    if (bi == 0) {
+	opserr<<"WARNING: failed to create beam integration\n";
+	return TCL_ERROR;
+    }
+
+    BeamIntegrationRule* rule = new BeamIntegrationRule(iTag,bi,secTags);
+    if (rule == 0) {
+	opserr<<"WARNING: failed to create beam integration\n";
+	delete bi;
+	return TCL_ERROR;
+    }
+
+    // Now add the 
+    if(OPS_addBeamIntegrationRule(rule) == false) {
+	opserr<<"WARNING: could not add BeamIntegrationRule.";
+	delete rule; // invoke the destructor, otherwise mem leak
+	return TCL_ERROR;;
+    }
+
+    return TCL_OK;
 }
 
 extern int
