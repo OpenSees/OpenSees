@@ -46,10 +46,83 @@
 #include <BeamIntegration.h>
 #include <Parameter.h>
 #include <math.h>
+#include <elementAPI.h>
+#include <string>
 
 Matrix DispBeamColumn3d::K(12,12);
 Vector DispBeamColumn3d::P(12);
 double DispBeamColumn3d::workArea[200];
+
+void* OPS_DispBeamColumn3d()
+{
+    if(OPS_GetNumRemainingInputArgs() < 5) {
+	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";
+	return 0;
+    }
+
+    // inputs: 
+    int iData[5];
+    int numData = 5;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
+	opserr<<"WARNING: invalid integer inputs\n";
+	return 0;
+    }
+
+    // options
+    double mass = 0.0;
+    int cmass = 0;
+    numData = 1;
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+	const char* type = OPS_GetString();
+	if(strcmp(type,"-cMass") == 0) {
+	    cmass = 1;
+	} else if(strcmp(type,"-mass") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetDoubleInput(&numData,&mass) < 0) {
+		    opserr<<"WARNING: invalid mass\n";
+		    return 0;
+		}
+	    }
+	}
+    }
+
+    // check transf
+    CrdTransf* theTransf = OPS_GetCrdTransf(iData[3]);
+    if(theTransf == 0) {
+	opserr<<"coord transfomration not found\n";
+	return 0;
+    }
+
+    // check beam integrataion
+    BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(iData[4]);
+    if(theRule == 0) {
+	opserr<<"beam integration not found\n";
+	return 0;
+    }
+    BeamIntegration* bi = theRule->getBeamIntegration();
+    if(bi == 0) {
+	opserr<<"beam integration is null\n";
+	return 0;
+    }
+
+    // check sections
+    const ID& secTags = theRule->getSectionTags();
+    SectionForceDeformation** sections = new SectionForceDeformation *[secTags.Size()];
+    for(int i=0; i<secTags.Size(); i++) {
+	sections[i] = OPS_getSectionForceDeformation(secTags(i));
+	if(sections[i] == 0) {
+	    opserr<<"section "<<secTags(i)<<"not found\n";
+		delete [] sections;
+	    return 0;
+	}
+    }
+    
+    Element *theEle =  new DispBeamColumn3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
+					    *bi,*theTransf,mass,cmass);
+    delete [] sections;
+    return theEle;
+}
+
 
 DispBeamColumn3d::DispBeamColumn3d(int tag, int nd1, int nd2,
 				   int numSec, SectionForceDeformation **s,
