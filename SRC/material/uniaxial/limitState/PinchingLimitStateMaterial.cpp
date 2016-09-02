@@ -165,7 +165,7 @@ OPS_PinchingLimitState(void)
   int crvTyp = iCrvData[0];
   int crvTag = iCrvData[1];
   if (crvTyp == 2) {
-    theCurve = OPS_GetLimitCurve(crvTag);
+    theCurve = OPS_getLimitCurve(crvTag);
     if (theCurve == 0 && crvTyp != 0) {
       opserr << "WARNING PinchingLimitStateMaterial -- limit curve with tag " << crvTag << " not found for material tag " << iTagData[0] << endln << endln;
       return 0;
