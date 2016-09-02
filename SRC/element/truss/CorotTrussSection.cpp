@@ -58,7 +58,7 @@ Vector CorotTrussSection::V12(12);
 #define OPS_Export 
 
 OPS_Export void *
-OPS_NewCorotTrussSectionElement()
+OPS_CorotTrussSectionElement()
 {
   Element *theElement = 0;
 
@@ -81,7 +81,7 @@ OPS_NewCorotTrussSectionElement()
     return 0;
   }
 
-  SectionForceDeformation *theSection = OPS_GetSectionForceDeformation(iData[3]);
+  SectionForceDeformation *theSection = OPS_getSectionForceDeformation(iData[3]);
     
   if (theSection == 0) {
     opserr << "WARNING: Invalid section not found element CorotTrussSection " << iData[0] << " $iNode $jNode " << 

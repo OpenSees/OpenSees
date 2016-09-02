@@ -66,7 +66,7 @@ Vector TrussSection::trussV12(12);
 #define OPS_Export 
 
 OPS_Export void *
-OPS_NewTrussSectionElement()
+OPS_TrussSectionElement()
 {
   Element *theElement = 0;
 
@@ -89,7 +89,7 @@ OPS_NewTrussSectionElement()
     return 0;
   }
 
-  SectionForceDeformation *theSection = OPS_GetSectionForceDeformation(iData[3]);
+  SectionForceDeformation *theSection = OPS_getSectionForceDeformation(iData[3]);
     
   if (theSection == 0) {
     opserr << "WARNING: Invalid section not found element TrussSection " << iData[0] << " $iNode $jNode " << 

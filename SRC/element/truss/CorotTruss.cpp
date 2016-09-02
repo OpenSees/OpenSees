@@ -59,7 +59,7 @@ Vector CorotTruss::V12(12);
 #define OPS_Export 
 
 OPS_Export void *
-OPS_NewCorotTrussElement()
+OPS_CorotTrussElement()
 {
   Element *theElement = 0;
 
