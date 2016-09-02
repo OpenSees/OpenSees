@@ -70,6 +70,7 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
 
   Parameter *theParameter = theTclDomain->getParameter(paramTag);
   int eleTag = -1;
+  bool isele = false;
 
   // First, check special case of a blank parameter
   if (argc == 2 && strcmp(argv[0],"parameter") == 0) {
@@ -170,6 +171,7 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
 	opserr << "WARNING parameter -- invalid element tag\n";
 	return TCL_ERROR;    
       }
+      isele = true;
 	 
       // Retrieve element from domain
       //  FMK theObject = (DomainComponent *) theTclDomain->getElement(eleTag);
@@ -229,7 +231,7 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
 
       Parameter *newParameter;
       if (argc > argStart) {
-		if (eleTag == -1) {
+		if (isele == false) {
 			newParameter = new Parameter(paramTag, theObject,
 				       (const char **)&argv[argStart],
 				       argc-argStart);
@@ -263,7 +265,7 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
 	       return TCL_ERROR;
       }
       else {
-	if (eleTag == -1) 
+	if (isele == false) 
 	  theParameter->addComponent(theObject, (const char **)&argv[argStart], argc-argStart);
 	else {
 	  theObject = (DomainComponent *) theTclDomain->getElement(eleTag);
