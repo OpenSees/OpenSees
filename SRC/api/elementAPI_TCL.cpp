@@ -168,7 +168,8 @@ int OPS_GetNumRemainingInputArgs()
 extern "C"
 int OPS_ResetCurrentInputArg(int cArg)
 {
-    currentArg = cArg;
+    if (cArg < 0) currentArg += cArg;
+    else currentArg = cArg;
 
     return 0;
 }
