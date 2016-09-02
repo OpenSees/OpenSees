@@ -2457,6 +2457,10 @@ SRC/element/PFEMElement/PFEMMesher3D.h -text
 SRC/element/PFEMElement/TclModelBuilder_addPFEMElement.cpp -text
 SRC/element/PFEMElement/TclModelBuilder_addPFEMElement.h -text
 SRC/element/PFEMElement/TclPFEMCommands.cpp -text
+SRC/element/PFEMElement/TriMesh.cpp -text
+SRC/element/PFEMElement/TriMesh.h -text
+SRC/element/PFEMElement/TriangleMeshGenerator.cpp -text
+SRC/element/PFEMElement/TriangleMeshGenerator.h -text
 SRC/element/TclElementCommands.cpp -text
 SRC/element/UP-ucsd/BBarBrickUP.cpp -text
 SRC/element/UP-ucsd/BBarBrickUP.h -text
