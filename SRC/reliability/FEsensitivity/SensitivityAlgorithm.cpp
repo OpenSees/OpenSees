@@ -89,7 +89,7 @@ SensitivityAlgorithm::computeSensitivities(void)
 	// Form current tangent at converged state
 	// (would be nice with an if-statement here in case
 	// the current tangent is already formed)
-	if (theIncInt->formTangent(CURRENT_TANGENT) < 0){
+	if (theIncInt->formIndependentSensitivityLHS(CURRENT_TANGENT) < 0){
 		opserr << "WARNING SensitivityAlgorithm::computeGradients() -";
 		opserr << "the Integrator failed in formTangent()\n";
 		return -1;
