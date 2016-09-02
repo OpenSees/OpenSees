@@ -77,6 +77,7 @@ Journal of Structural Engineering, Approved for publication, February 2007.
 #include <ElementResponse.h>
 #include <CompositeResponse.h>
 #include <ElementalLoad.h>
+#include <ElementIter.h>
 
 Matrix ForceBeamColumn2d::theMatrix(6,6);
 Vector ForceBeamColumn2d::theVector(6);
@@ -103,22 +104,34 @@ void* OPS_ForceBeamColumn2d()
     // inputs: 
     int iData[5];
     int numData = 5;
-    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
+	opserr << "WARNING invalid int inputs\n";
+	return 0;
+    }
 
     // options
     double mass = 0.0, tol=1e-12;
     int maxIter = 10;
     numData = 1;
     while(OPS_GetNumRemainingInputArgs() > 0) {
-	std::string type = OPS_GetString();
-	if(type == "-iter") {
+	const char* type = OPS_GetString();
+	if(strcmp(type,"-iter") == 0) {
 	    if(OPS_GetNumRemainingInputArgs() > 1) {
-		if(OPS_GetIntInput(&numData,&maxIter) < 0) return 0;
-		if(OPS_GetDoubleInput(&numData,&tol) < 0) return 0;
+		if(OPS_GetIntInput(&numData,&maxIter) < 0) {
+		    opserr << "WARNING invalid maxIter\n";
+		    return 0;
+		}
+		if(OPS_GetDoubleInput(&numData,&tol) < 0) {
+		    opserr << "WARNING invalid tol\n";
+		    return 0;
+		}
 	    }
-	} else if(type == "-mass") {
+	} else if(strcmp(type,"-mass") == 0) {
 	    if(OPS_GetNumRemainingInputArgs() > 0) {
-		if(OPS_GetDoubleInput(&numData,&mass) < 0) return 0;
+		if(OPS_GetDoubleInput(&numData,&mass) < 0) {
+		    opserr << "WARNING invalid mass\n";
+		    return 0;
+		}
 	    }
 	}
     }
@@ -149,15 +162,103 @@ void* OPS_ForceBeamColumn2d()
 	sections[i] = OPS_getSectionForceDeformation(secTags(i));
 	if(sections[i] == 0) {
 	    opserr<<"section "<<secTags(i)<<"not found\n";
-		delete [] sections;
+	    delete [] sections;
 	    return 0;
 	}
     }
 
     Element *theEle =  new ForceBeamColumn2d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-				 *bi,*theTransf,mass,maxIter,tol);
-	delete [] sections;
-	return theEle;
+					     *bi,*theTransf,mass,maxIter,tol);
+    delete [] sections;
+    return theEle;
+}
+
+int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
+{
+    if(OPS_GetNumRemainingInputArgs() < 2) {
+	opserr<<"insufficient arguments:transfTag,integrationTag\n";
+	return -1;
+    }
+
+    // inputs: 
+    int iData[2];
+    int numData = 2;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return -1;
+
+    // options
+    double mass = 0.0, tol=1e-12;
+    int maxIter = 10;
+    numData = 1;
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+	const char* type = OPS_GetString();
+	if(strcmp(type,"-iter") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 1) {
+		if(OPS_GetIntInput(&numData,&maxIter) < 0) return -1;
+		if(OPS_GetDoubleInput(&numData,&tol) < 0) return -1;
+	    }
+	} else if(strcmp(type,"-mass") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetDoubleInput(&numData,&mass) < 0) return -1;
+	    }
+	}
+    }
+
+    // check transf
+    CrdTransf* theTransf = OPS_GetCrdTransf(iData[0]);
+    if(theTransf == 0) {
+	opserr<<"coord transfomration not found\n";
+	return -1;
+    }
+
+    // check beam integrataion
+    BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(iData[1]);
+    if(theRule == 0) {
+	opserr<<"beam integration not found\n";
+	return -1;
+    }
+    BeamIntegration* bi = theRule->getBeamIntegration();
+    if(bi == 0) {
+	opserr<<"beam integration is null\n";
+	return -1;
+    }
+
+    // check sections
+    const ID& secTags = theRule->getSectionTags();
+    SectionForceDeformation** sections = new SectionForceDeformation *[secTags.Size()];
+    for(int i=0; i<secTags.Size(); i++) {
+	sections[i] = OPS_getSectionForceDeformation(secTags(i));
+	if(sections[i] == 0) {
+	    opserr<<"section "<<secTags(i)<<"not found\n";
+		delete [] sections;
+	    return -1;
+	}
+    }
+
+    // create elements
+    ElementIter& theEles = theDomain.getElements();
+    Element* theEle = theEles();
+    int currTag = 0;
+    if (theEle != 0) {
+	currTag = theEle->getTag();
+    }
+    eletags.resize(elenodes.Size()/2);
+    for (int i=0; i<elenodes.Size()/2; i++) {
+	theEle = new ForceBeamColumn2d(--currTag,elenodes(2*i),elenodes(2*i+1),secTags.Size(),
+				       sections,*bi,*theTransf,mass,maxIter,tol);
+	if (theEle == 0) {
+	    opserr<<"WARING: run out of memory for creating element\n";
+	    return -1;
+	}
+	if (theDomain.addElement(theEle) == false) {
+	    opserr<<"WARNING: failed to add element to domain\n";
+	    delete theEle;
+	    return -1;
+	}
+	eletags(i) = currTag;
+    }
+    
+    delete [] sections;
+    return 0;
 }
 
 // constructor:

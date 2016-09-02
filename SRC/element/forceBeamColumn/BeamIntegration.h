@@ -73,7 +73,9 @@ class BeamIntegrationRule : public TaggedObject
 public:
     BeamIntegrationRule(int tag, BeamIntegration* bi, const ID& stags)
 	:TaggedObject(tag),theInt(bi),secTags(stags){}
-    ~BeamIntegrationRule(){}
+    ~BeamIntegrationRule(){
+	if (theInt != 0) delete theInt;
+    }
 
     BeamIntegration* getBeamIntegration(){return theInt;}
     const ID& getSectionTags() const {return secTags;}

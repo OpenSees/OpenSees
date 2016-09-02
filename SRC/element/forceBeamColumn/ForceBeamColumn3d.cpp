@@ -115,22 +115,34 @@ void* OPS_ForceBeamColumn3d()
     // inputs: 
     int iData[5];
     int numData = 5;
-    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
+	opserr << "WARNING invalid int inputs\n";
+	return 0;
+    }
 
     // options
     double mass = 0.0, tol=1e-12;
     int maxIter = 10;
     numData = 1;
     while(OPS_GetNumRemainingInputArgs() > 0) {
-	std::string type = OPS_GetString();
-	if(type == "-iter") {
+	const char* type = OPS_GetString();
+	if(strcmp(type,"-iter") == 0) {
 	    if(OPS_GetNumRemainingInputArgs() > 1) {
-		if(OPS_GetIntInput(&numData,&maxIter) < 0) return 0;
-		if(OPS_GetDoubleInput(&numData,&tol) < 0) return 0;
+		if(OPS_GetIntInput(&numData,&maxIter) < 0) {
+		    opserr << "WARNING invalid maxIter\n";
+		    return 0;
+		}
+		if(OPS_GetDoubleInput(&numData,&tol) < 0) {
+		    opserr << "WARNING invalid tol\n";
+		    return 0;
+		}
 	    }
-	} else if(type == "-mass") {
+	} else if(strcmp(type,"-mass") == 0) {
 	    if(OPS_GetNumRemainingInputArgs() > 0) {
-		if(OPS_GetDoubleInput(&numData,&mass) < 0) return 0;
+		if(OPS_GetDoubleInput(&numData,&mass) < 0) {
+		    opserr << "WARNING invalid mass\n";
+		    return 0;
+		}
 	    }
 	}
     }
@@ -166,9 +178,9 @@ void* OPS_ForceBeamColumn3d()
     }
 
     Element *theEle =  new ForceBeamColumn3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-				 *bi,*theTransf,mass,maxIter,tol);
-	delete [] sections;
-	return theEle;
+					     *bi,*theTransf,mass,maxIter,tol);
+    delete [] sections;
+    return theEle;
 }
 
 
