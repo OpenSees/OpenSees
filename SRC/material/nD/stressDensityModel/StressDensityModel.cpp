@@ -38,7 +38,7 @@
 
 #define OPS_Export 
 OPS_Export void *
-OPS_NewStressDensityMaterial(void)
+OPS_StressDensityMaterial(void)
 {
 	static int numStressDensityModel = 0;
 
