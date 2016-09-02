@@ -64,7 +64,7 @@ OPS_ElasticTubularJoint(void)
 
   if (numElasticTubularJoint == 0) {
     numElasticTubularJoint++;
-    OPS_Error("ElasticTubularJoint element - Written by Kia & Alanjari\n", 1);
+    opserr<<"ElasticTubularJoint element - Written by Kia & Alanjari\n";
   }
 
   // get the id and end nodes 
