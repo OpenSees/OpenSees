@@ -79,7 +79,7 @@ OPS_SSPbrick(void)
   	}
 
   	int matID = iData[9];
-  	NDMaterial *theMaterial = OPS_GetNDMaterial(matID);
+  	NDMaterial *theMaterial = OPS_getNDMaterial(matID);
   	if (theMaterial == 0) {
     	opserr << "WARNING element SSPbrick " << iData[0] << endln;
 		opserr << " Material: " << matID << "not found\n";

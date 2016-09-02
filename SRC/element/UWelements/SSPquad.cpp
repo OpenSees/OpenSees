@@ -71,7 +71,7 @@ OPS_SSPquad(void)
   	}
 
   	int iData[6];
-  	char *theType;
+  	const char *theType;
 	double dData[3];
 	dData[1] = 0.0;
 	dData[2] = 0.0;
@@ -82,10 +82,8 @@ OPS_SSPquad(void)
 		return 0;
   	}
 
-	if (OPS_GetStringCopy(&theType) != 0) {
-    	opserr << "WARNING invalid type, want: ""PlaneStress"" or ""PlaneStrain""  element SSPquad " << iData[0] << endln;
-    	return 0;
-  	}
+	theType = OPS_GetString();
+
 
 	numData = 1;
 	if (OPS_GetDoubleInput(&numData, dData) != 0) {
@@ -94,7 +92,7 @@ OPS_SSPquad(void)
 	}
 
   	int matID = iData[5];
-  	NDMaterial *theMaterial = OPS_GetNDMaterial(matID);
+  	NDMaterial *theMaterial = OPS_getNDMaterial(matID);
   	if (theMaterial == 0) {
     	opserr << "WARNING element SSPquad " << iData[0] << endln;
 		opserr << " Material: " << matID << "not found\n";

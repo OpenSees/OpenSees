@@ -53,7 +53,7 @@ OPS_BeamContact2Dp(void)
 {
   if (num_BeamContact2Dp == 0) {
     num_BeamContact2Dp++;
-    OPS_Error("BeamContact2Dp element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n", 1);
+    opserr<<"BeamContact2Dp element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n";
   }
 
   // Pointer to an element that will be returned
@@ -83,7 +83,7 @@ OPS_BeamContact2Dp(void)
   }
   
   int matID = iData[4];
-  NDMaterial *theMaterial = OPS_GetNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
   if (theMaterial == 0) {
     opserr << "WARNING element BeamContact2Dp " << iData[0] << endln;
 	opserr << " Material: " << matID << "not found\n";

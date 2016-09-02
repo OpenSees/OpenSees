@@ -51,7 +51,7 @@ OPS_BeamEndContact3D(void)
 {
   	if (num_BeamEndContact3D == 0) {
     	num_BeamEndContact3D++;
-    	OPS_Error("BeamEndContact3D element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n", 1);
+    	opserr<<"BeamEndContact3D element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n";
   	}
 
   	// Pointer to an element that will be returned

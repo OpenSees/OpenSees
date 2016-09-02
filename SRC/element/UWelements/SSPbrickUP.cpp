@@ -60,7 +60,7 @@ OPS_SSPbrickUP(void)
 {
 	if (num_SSPbrickUP == 0) {
     	num_SSPbrickUP++;
-    	OPS_Error("SSPbrickUP element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n", 1);
+    	opserr<<"SSPbrickUP element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n";
   	}
 
   	// Pointer to an element that will be returned
@@ -86,7 +86,7 @@ OPS_SSPbrickUP(void)
   	}
 
   	int matID = iData[9];
-  	NDMaterial *theMaterial = OPS_GetNDMaterial(matID);
+  	NDMaterial *theMaterial = OPS_getNDMaterial(matID);
   	if (theMaterial == 0) {
     	opserr << "WARNING element SSPbrickUP " << iData[0] << endln;
 		opserr << " Material: " << matID << "not found\n";

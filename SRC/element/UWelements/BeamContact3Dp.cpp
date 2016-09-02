@@ -52,7 +52,8 @@ OPS_BeamContact3Dp(void)
 {
   if (num_BeamContact3Dp == 0) {
     num_BeamContact3Dp++;
-    OPS_Error("BeamContact3Dp element - Written: K.Petek, C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n", 1);
+    //OPS_Error("BeamContact3Dp element - Written: K.Petek, C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n", 1);
+    opserr << "BeamContact3Dp element - Written: K.Petek, C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n";
   }
 
   // Pointer to a uniaxial material that will be returned
@@ -102,7 +103,7 @@ OPS_BeamContact3Dp(void)
   }
 
   int matID = iData[5];
-  NDMaterial *theMaterial = OPS_GetNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
   if (theMaterial == 0) {
     opserr << "WARNING element BeamContact3Dp " << iData[0] << endln;
     opserr << " Material: " << matID << "not found\n";

@@ -62,7 +62,8 @@ OPS_SimpleContact3D(void)
 {
   if (num_SimpleContact3D == 0) {
     num_SimpleContact3D++;
-    OPS_Error("SimpleContact3D element - Written: K.Petek, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n", 1);
+    //OPS_Error("SimpleContact3D element - Written: K.Petek, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n", 1);
+    opserr<<"SimpleContact3D element - Written: K.Petek, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n";
   }
 
   // Pointer to a uniaxial material that will be returned
@@ -89,7 +90,7 @@ OPS_SimpleContact3D(void)
   }
 
   int matID = iData[7];
-  NDMaterial *theMaterial = OPS_GetNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
   if (theMaterial == 0) {
     opserr << "WARNING element SimpleContact3D " << iData[0] << endln;
     opserr << " Material: " << matID << "not found\n";

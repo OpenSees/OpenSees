@@ -57,7 +57,7 @@ OPS_Brick8FiberOverlay(void)
 {
 if (num_Brick8FiberOverlay == 0) {
 	num_Brick8FiberOverlay++;
-    OPS_Error("Brick8FiberOverlay element - Written: M.Chiaramonte, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n", 1);
+	opserr<<"Brick8FiberOverlay element - Written: M.Chiaramonte, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n";
   }
 
   Element *theElement = 0;

@@ -48,7 +48,7 @@ OPS_QuadBeamEmbedContact(void)
 {
 	if (num_QuadBeamEmbedContact == 0) {
         num_QuadBeamEmbedContact++;
-		OPS_Error("QuadBeamEmbedContact element - Written: A.Ghofrani, P.Arduino, U.Washington\n", 1);
+	opserr<<"QuadBeamEmbedContact element - Written: A.Ghofrani, P.Arduino, U.Washington\n";
 	}
 	
 	Element *theElement = 0;
