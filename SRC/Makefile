@@ -573,9 +573,19 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/PFEMElement/PFEMMesher3D.o \
 	$(FE)/element/PFEMElement/PFEMElement2DCompressible.o \
 	$(FE)/element/PFEMElement/PFEMElement2DBubble.o \
+	$(FE)/element/PFEMElement/PFEMElement2Dmini.o \
+	$(FE)/element/PFEMElement/PFEMElement2DFIC.o \
+	$(FE)/element/PFEMElement/LineMesh.o \
+	$(FE)/element/PFEMElement/TriMesh.o \
+	$(FE)/element/PFEMElement/TriangleMeshGenerator.o \
 	$(FE)/element/PFEMElement/tetgen.o \
 	$(FE)/element/PFEMElement/predicates.o \
 	$(FE)/element/PFEMElement/triangle.o \
+	$(FE)/element/PFEMElement/BackgroundMesh.o \
+	$(FE)/element/PFEMElement/ParticleGroup.o \
+	$(FE)/element/PFEMElement/Particle.o \
+	$(FE)/element/PFEMElement/BackgroundFixData.o \
+	$(FE)/element/PFEMElement/BackgroundGrid.o \
 	$(FE)/element/UWelements/SSPquad.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \
@@ -938,6 +948,7 @@ SysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMSolver.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_Umfpack.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
@@ -948,6 +959,12 @@ SysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(FE)/system_of_eqn/linearSOE/umfGEN/UmfpackGenLinSolver.o \
 	$(FE)/system_of_eqn/eigenSOE/FullGenEigenSOE.o \
 	$(FE)/system_of_eqn/eigenSOE/FullGenEigenSolver.o
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
+SysOfEqn_LIBS = $(SysOfEqn_LIBS) \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_Mumps.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleSolver_Mumps.o
+endif
 
 MODEL_BUILDER_LIBS = $(FE)/modelbuilder/ModelBuilder.o \
 	$(FE)/modelbuilder/PlaneFrame.o \
