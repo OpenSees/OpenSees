@@ -37,7 +37,43 @@
 #include <Matrix.h>
 #include <ID.h>
 #include <RigidBeam.h>
+#include <RigidRod.h>
+#include <elementAPI.h>
+#include <string.h>
 
+int OPS_RigidLink(Domain* theDomain)
+{
+    if (theDomain==0) {
+	opserr<<"WARNING: domain is not defined\n";
+	return -1;
+    }
+
+    int num = OPS_GetNumRemainingInputArgs();
+    if (num < 3) {
+	opserr<<"WARNING: invalid # of args: rigidLink type rNode cNode\n";
+	return -1;
+    }
+
+    // get type
+    const char* type = OPS_GetString();
+
+    // get all data
+    num = 2;
+    ID data(num);
+    if(OPS_GetIntInput(&num,&data(0)) < 0) return -1;
+
+    // construct a rigid rod or beam depending on type
+    if (strcmp(type,"-bar")==0 || strcmp(type,"bar")==0) {
+	RigidRod theLink(*theDomain,data(0),data(1));
+    } else if (strcmp(type,"-beam")==0 || strcmp(type,"beam")==0) {
+	RigidBeam theLink(*theDomain,data(0),data(1));
+    } else {
+	opserr<<"WARNING: unrecognised link type (-bar,-beam)\n";
+	return -1;
+    }
+
+    return 0;
+}
 
 RigidBeam::RigidBeam(Domain &theDomain, int nR, int nC) {
 

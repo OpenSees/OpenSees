@@ -39,9 +39,156 @@
 #include <ID.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
+#include <Domain.h>
 
 static int numMPs = 0;
 static int nextTag = 0;
+
+int OPS_EqualDOF()
+{
+    Domain* theDomain = OPS_GetDomain();
+    if(theDomain == 0) {
+	opserr<<"WARNING: domain is not defined\n";
+	return -1;
+    }
+
+    if(OPS_GetNumRemainingInputArgs() < 3) {
+	opserr<<"WARNING: invalid # of args: equalDOF rNodeTag cNodeTag dof1 ...\n";
+	return -1;
+    }
+
+    // get all data
+    int num = OPS_GetNumRemainingInputArgs();
+    ID data(num);
+    if(OPS_GetIntInput(&num, &data(0)) < 0) {
+	opserr<<"WARNING invalid int inputs\n";
+	return -1;
+    }
+
+    // get ndf
+    int ndf = num-2;
+
+    // constraint matrix
+    Matrix Ccr(ndf,ndf);
+
+    // retained and constrained dofs
+    ID rcDOF(ndf);
+
+    // create mp constraint
+    for(int i=0; i<ndf; i++) {
+	rcDOF(i) = data(2+i)-1;
+	Ccr(i,i) = 1.0;
+    }
+    MP_Constraint* theMP = new MP_Constraint(data(0),data(1),Ccr,rcDOF,rcDOF);
+    if(theMP == 0) {
+	opserr<<"WARNING: failed to create MP_Constraint\n";
+	return -1;
+    }
+    if(theDomain->addMP_Constraint(theMP) == false) {
+	opserr<<"WARNING: failed to add MP_Constraint to domain\n";
+	delete theMP;
+	return -1;
+    }
+    return 0;
+}
+
+int OPS_EqualDOF_Mixed()
+{
+    // Check number of arguments
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+	opserr << "WARNING bad command - want: equalDOFmixed RnodeID? CnodeID? numDOF? RDOF1? CDOF1? ... ...";
+	return -1;
+    }
+
+    // Read in the node IDs and the DOF
+    int RnodeID, CnodeID, dofIDR, dofIDC, numDOF;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &RnodeID) < 0) {
+	opserr << "WARNING invalid RnodeID: "
+	       << " equalDOF RnodeID? CnodeID? numDOF? RDOF1? CDOF1? ...";
+	return -1;
+    }
+    if (OPS_GetIntInput(&numdata, &CnodeID) < 0) {
+	opserr << "WARNING invalid CnodeID: "
+	       << " equalDOF RnodeID? CnodeID? numDOF? RDOF1? CDOF1? ...";
+	return -1;
+    }
+
+    if (OPS_GetIntInput(&numdata, &numDOF) < 0) {
+	opserr << "WARNING invalid numDOF: "
+	       << " equalDOF RnodeID? CnodeID? numDOF? RDOF1? CDOF1? ...";
+	return -1;
+    }
+
+    // The number of DOF to be coupled
+    //        int numDOF = argc - 3;
+
+    // The constraint matrix ... U_c = C_cr * U_r
+    Matrix Ccr (numDOF, numDOF);
+    Ccr.Zero();
+
+    // The vector containing the retained and constrained DOFs
+    ID rDOF (numDOF);
+    ID cDOF (numDOF);
+
+    // check inputs
+    if (OPS_GetNumRemainingInputArgs() < numDOF*2) {
+	opserr << "WARNING insufficient args - want: equalDOFmixed RnodeID? CnodeID? numDOF? RDOF1? CDOF1? ... ...";
+	return -1;
+    }
+
+    // Read the degrees of freedom which are to be coupled
+    for (int k = 0; k < numDOF; k++) {
+	if (OPS_GetIntInput(&numdata, &dofIDR) < 0) {
+	    opserr << "WARNING invalid dofID: "
+		   << " equalDOF RnodeID? CnodeID? DOF1? DOF2? ...";
+	    return -1;
+	}
+	if (OPS_GetIntInput(&numdata, &dofIDC) < 0) {
+	    opserr << "WARNING invalid dofID: "
+		   << " equalDOF RnodeID? CnodeID? DOF1? DOF2? ...";
+	    return -1;
+	}
+
+	dofIDR -= 1; // Decrement for C++ indexing
+	dofIDC -= 1;
+	if (dofIDC < 0 || dofIDR < 0) {
+	    opserr << "WARNING invalid dofID: "
+		   << " must be >= 1";
+	    return -1;
+	}
+	rDOF(k) = dofIDR;    
+	cDOF(k) = dofIDC;    
+	Ccr(k,k) = 1.0;
+    }
+
+    // Create the multi-point constraint
+    MP_Constraint *theMP = new MP_Constraint (RnodeID, CnodeID, Ccr, cDOF, rDOF);
+    if (theMP == 0) {
+	opserr << "WARNING ran out of memory for equalDOF MP_Constraint ";
+	return -1;
+    }
+
+    // Add the multi-point constraint to the domain
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+    if (theDomain->addMP_Constraint (theMP) == false) {
+	opserr << "WARNING could not add equalDOF MP_Constraint to domain ";
+	delete theMP;
+	return -1;
+    }
+
+    // output
+    // int mpTag = theMP->getTag();
+    // if (OPS_SetIntOutput(&numdata, &mpTag) < 0) {
+    // 	opserr << "WARNING failed to set output\n";
+    // 	return -1;
+    // }
+    
+    return 0;
+}
  
 // constructor for FEM_ObjectBroker			// Arash
 MP_Constraint::MP_Constraint(int clasTag )		

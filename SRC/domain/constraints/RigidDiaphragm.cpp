@@ -38,7 +38,33 @@
 #include <Matrix.h>
 #include <ID.h>
 #include <RigidDiaphragm.h>
+#include <elementAPI.h>
 
+int OPS_RigidDiaphragm(Domain* theDomain)
+{
+    if (theDomain==0) {
+	opserr<<"WARNING: domain is not defined\n";
+	return -1;
+    }
+    int num = OPS_GetNumRemainingInputArgs();
+    if(num < 2) {
+	opserr<<"WARNING: invalid # of args: rigidDiaphragm perpDirn rNode cNode1 ...\n";
+	return -1;
+    }
+
+    // all data
+    ID data(num);
+    if(OPS_GetIntInput(&num, &data(0)) < 0) return -1;
+
+    // constrained ndoes
+    ID cNodes(num-2);
+    for(int i=0; i<cNodes.Size(); i++) {
+	cNodes(i) = data(i+2);
+    }
+
+    RigidDiaphragm theLink(*theDomain,data(1),cNodes,data(0)-1);
+    return 0;
+}
 
 RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC, 
 			       int perpPlaneConstrained) {
