@@ -124,9 +124,9 @@ complex16: $(ZLUSRC) $(ALLAUX) $(DZLAUX)
 ##################################
 # Do not optimize these routines #
 ##################################
-smach.o: smach.c ; $(CC) -c $(NOOPTS) $(CDEFS) $<
-dmach.o: dmach.c ; $(CC) -c $(NOOPTS) $(CDEFS) $<
-superlu_timer.o:  superlu_timer.c ; $(CC) -c $(NOOPTS) $<
+smach.o: smach.c ; $(CC) -c -fPIC $(NOOPTS) $(CDEFS) $<
+dmach.o: dmach.c ; $(CC) -c -fPIC $(NOOPTS) $(CDEFS) $<
+superlu_timer.o:  superlu_timer.c ; $(CC) -c -fPIC $(NOOPTS) $<
 ##################################
 
 .c.o:
