@@ -36,31 +36,103 @@
 #include <Pressure_Constraint.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <cmath>
+#include <ElementIter.h>
 
 Matrix PFEMElement2D::K;
 Vector PFEMElement2D::P;
 
+void* OPS_PFEMElement2D()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if(numdata < 8) {
+	opserr<<"WARNING: insufficient number of arguments\n";
+	return 0;
+    }
+
+    // tag, nd1, nd2, nd3
+    numdata = 4;
+    int idata[4];
+    if(OPS_GetIntInput(&numdata,idata)<0) return 0;
+
+    // rho, mu, b1, b2, (thickness, kappa, lumped)
+    numdata = OPS_GetNumRemainingInputArgs();
+    if(numdata > 7) numdata = 7;
+    double data[7] = {0,0,0,0,1.0,-1,1};
+    if(OPS_GetDoubleInput(&numdata,data) < 0) return 0;
+
+    return new PFEMElement2D(idata[0],idata[1],idata[2],idata[3],
+			     data[0],data[1],data[2],data[3],data[4],data[5],data[6]);
+}
+
+int OPS_PFEMElement2D(Domain& theDomain, const ID& elenodes, ID& eletags)
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if(numdata < 4) {
+	opserr<<"WARNING: insufficient number of arguments\n";
+	return 0;
+    }
+
+    // rho, mu, b1, b2, (thickness, kappa, lumped)
+    numdata = OPS_GetNumRemainingInputArgs();
+    if(numdata > 7) numdata = 7;
+    double data[7] = {0,0,0,0,1.0,-1,1};
+    if(OPS_GetDoubleInput(&numdata,data) < 0) return 0;
+
+    // create elements
+    ElementIter& theEles = theDomain.getElements();
+    Element* theEle = theEles();
+    int currTag = 0;
+    if (theEle != 0) {
+	currTag = theEle->getTag();
+    }
+
+    eletags.resize(elenodes.Size()/3);
+
+    for (int i=0; i<eletags.Size(); i++) {
+	theEle = new PFEMElement2D(--currTag,elenodes(3*i),elenodes(3*i+1),elenodes(3*i+2),
+				   data[0],data[1],data[2],data[3],data[4],data[5],data[6]);
+	if (theEle == 0) {
+	    opserr<<"WARING: run out of memory for creating element\n";
+	    return -1;
+	}
+	if (theDomain.addElement(theEle) == false) {
+	    opserr<<"WARNING: failed to add element to domain\n";
+	    delete theEle;
+	    return -1;
+	}
+	eletags(i) = currTag;
+    }
+
+    return 0;
+}
 
 // for FEM_ObjectBroker, recvSelf must invoke
 PFEMElement2D::PFEMElement2D()
     :Element(0, ELE_TAG_PFEMElement2D), ntags(6), 
-     rho(0), mu(0), bx(0), by(0), J(0.0), numDOFs(),thickness(1.0)
+     rho(0), mu(0), b1(0), b2(0), thickness(1.0), kappa(-1),
+     lumped(true), ndf(0), M(0.0), Mp(0.0), Km(6,6), S(3,3),
+     Gx(3), Gy(3), F(2), Fp(3)
 {
     for(int i=0;i<3;i++)
     {
         nodes[2*i] = 0;
         nodes[2*i+1] = 0;
         thePCs[i] = 0;
-        dNdx[i] = 0.0;
-        dNdy[i] = 0.0;
+	vxdof[i] = 0;
+	vydof[i] = 0;
+	pdof[i] = 0;
     }
 }
 
 // for object
 PFEMElement2D::PFEMElement2D(int tag, int nd1, int nd2, int nd3,
-                             double r, double m, double b1, double b2, double thk)
-    :Element(tag, ELE_TAG_PFEMElement2D), ntags(6), 
-     rho(r), mu(m), bx(b1), by(b2), J(0.0), numDOFs(), thickness(thk)
+                             double r, double m, double bx, double by, double thk,
+			     double ka, bool l)
+    :Element(tag, ELE_TAG_PFEMElement2D), ntags(6),
+     rho(r), mu(m), b1(bx), b2(by), thickness(thk), kappa(ka),
+     lumped(l), ndf(0), M(0.0), Mp(0.0), Km(6,6), S(3,3),
+     Gx(3), Gy(3), F(2), Fp(3)
 {
     ntags(0)=nd1; ntags(2)=nd2; ntags(4)=nd3;
     for(int i=0;i<3;i++)
@@ -69,8 +141,9 @@ PFEMElement2D::PFEMElement2D(int tag, int nd1, int nd2, int nd3,
         nodes[2*i+1] = 0;
         ntags(2*i+1) = ntags(2*i);
         thePCs[i] = 0;
-        dNdx[i] = 0.0;
-        dNdy[i] = 0.0;
+	vxdof[i] = 0;
+	vydof[i] = 0;
+	pdof[i] = 0;
     }
 }
 
@@ -84,68 +157,114 @@ PFEMElement2D::~PFEMElement2D()
     }
 }
 
-
-
-int
-PFEMElement2D::getNumExternalNodes() const
-{
-    return ntags.Size();
-}
-
-const ID&
-PFEMElement2D::getExternalNodes()
-{
-    if(numDOFs.Size() == 0) return numDOFs;
-    return ntags;
-}
-
-Node **
-PFEMElement2D::getNodePtrs(void) 
-{
-    return nodes;
-}
-
-int
-PFEMElement2D::getNumDOF()
-{
-    if(numDOFs.Size() == 0) return 0;
-    return numDOFs(numDOFs.Size()-1);
-}
-
-int
-PFEMElement2D::revertToLastCommit()
-{
-    return 0;
-}
-
-int PFEMElement2D::commitState()
-{
-    return Element::commitState();
-}
-
 int
 PFEMElement2D::update()
 {
-    // get nodal coordinates 
+    // get nodal coordinates
     double x[3], y[3];
-    for(int i=0; i<3; i++) {
-        const Vector& coord = nodes[2*i]->getCrds();
-        const Vector& disp = nodes[2*i]->getTrialDisp();
-        x[i] = coord[0] + disp[0];
-        y[i] = coord[1] + disp[1];
+    for(int a=0; a<3; a++) {
+        const Vector& coord = nodes[2*a]->getCrds();
+        const Vector& disp = nodes[2*a]->getTrialDisp();
+        x[a] = coord(0) + disp(0);
+        y[a] = coord(1) + disp(1);
     }
+
+    // get c and d
+    double cc[3], dd[3];
+    cc[0] = y[1]-y[2];
+    dd[0] = x[2]-x[1];
+    cc[1] = y[2]-y[0];
+    dd[1] = x[0]-x[2];
+    cc[2] = y[0]-y[1];
+    dd[2] = x[1]-x[0];
 
     // get Jacobi
-    J = (x[1]-x[0])*(y[2]-y[0])-(x[2]-x[0])*(y[1]-y[0]);
-    J *= thickness;
+    double J = cc[0]*dd[1]-dd[0]*cc[1];
 
-    // get derivatives
-    double dndx[3] = {(y[1]-y[2])/J, (y[2]-y[0])/J, (y[0]-y[1])/J};
-    double dndy[3] = {(x[2]-x[1])/J, (x[0]-x[2])/J, (x[1]-x[0])/J};
-    for(int i=0; i<3; i++) {
-        dNdx[i] = dndx[i];
-        dNdy[i] = dndy[i];
+    if(fabs(J)<1e-15) {
+        opserr<<"WARING: element area is nearly zero";
+        opserr<<" -- PFEMElement2D::update\n";
+	for (int i=0; i<3; i++) {
+	    opserr<<"node "<<ntags[2*i]<<"\n";
+	    opserr<<"x = "<<x[i]<<" , y = "<<y[i]<<"\n";
+	}
+
+        return -1;
     }
+
+    // get M
+    M = rho*J*thickness/6.0;
+    Mp = (kappa<=0? 0.0 : J*thickness/kappa/24.0);
+    double Mb = 9.*rho*J*thickness/40.0;
+
+    // get Km
+    Km.Zero();
+    double fact = mu*thickness/(6.*J);
+    for (int a=0; a<3; a++) {
+	for (int b=0; b<3; b++) {
+	    Km(2*a,2*b) = fact*(4*cc[a]*cc[b]+3*dd[a]*dd[b]); // Kxx
+	    Km(2*a,2*b+1) = fact*(3*dd[a]*cc[b]-2*cc[a]*dd[b]); // Kxy
+	    Km(2*a+1,2*b) = fact*(3*cc[a]*dd[b]-2*dd[a]*cc[b]); // Kyx
+	    Km(2*a+1,2*b+1) = fact*(3*cc[a]*cc[b]+4*dd[a]*dd[b]); // Kyy
+	}
+    }
+
+    // get Kb
+    Matrix Kb(2,2);
+    fact = 27.*mu*thickness/(40.*J);
+    double cc2 = 0., dd2 = 0., cd2 = 0.;
+    for(int a=0; a<3; a++) {
+	cc2 += cc[a]*cc[a];
+	dd2 += dd[a]*dd[a];
+	cd2 += cc[a]*dd[a];
+    }
+    Kb(0,0) = fact*(4*cc2+3*dd2); // Kxx
+    Kb(0,1) = fact*cd2; // Kxy
+    Kb(1,0) = fact*cd2; // Kyx
+    Kb(1,1) = fact*(3*cc2+4*dd2); // Kyy
+
+    // get Gx and Gy
+    Gx.Zero(); Gy.Zero();
+    fact = thickness/6.0;
+    for (int a=0; a<3; a++) {
+	Gx(a) = cc[a]*fact;
+	Gy(a) = dd[a]*fact;
+    }
+
+    // get Gb
+    Matrix Gb(2,3);
+    fact = -9.*thickness/40.0;
+    for (int a=0; a<3; a++) {
+	Gb(0,a) = cc[a]*fact;
+	Gb(1,a) = dd[a]*fact;
+    }
+
+    // get S
+    S.Zero();
+    if (ops_Dt > 0) {
+	Kb(0,0) += Mb/ops_Dt;
+	Kb(1,1) += Mb/ops_Dt;
+    }
+    if (Kb(0,0)!=0 && Kb(1,1)!=0) {
+	this->inverse(Kb);
+    }
+    S.addMatrixTripleProduct(0.0, Gb, Kb, 1);
+
+    // get F
+    F.Zero();
+    fact = rho*J*thickness/6.0;
+    F(0) = fact*b1;
+    F(1) = fact*b2;
+
+    // get Fb
+    Vector Fb(2);
+    fact = 9.*rho*J*thickness/40.;
+    Fb(0) = fact*b1;
+    Fb(1) = fact*b2;
+
+    // get Fp
+    Fp.Zero();
+    Fp.addMatrixTransposeVector(0.0, Gb, Kb*Fb, -1);
 
     return 0;
 }
@@ -153,25 +272,25 @@ PFEMElement2D::update()
 const Matrix&
 PFEMElement2D::getMass()
 {
-
     // resize K
-    int ndf = this->getNumDOF();
     K.resize(ndf, ndf);
     K.Zero();
 
-    double J2 = J/2.;
-    
-    // mass 
+    // M
+    for (int a=0; a<3; a++) {
+	K(vxdof[a], vxdof[a]) = M;
+	K(vydof[a], vydof[a]) = M;
+    }
+
+    // Mp
     for(int a=0; a<3; a++) {
-        double m = rho*J2/3.0;
-        K(numDOFs(2*a), numDOFs(2*a)) = m;          // Mxd
-        K(numDOFs(2*a)+1, numDOFs(2*a)+1) = m;      // Myd
-        // for(int b=0; b<3; b++) {
-        //     double m = rho*J2/12.0;
-        //     if(a == b) m *= 2.0;
-        //     K(numDOFs(2*a), numDOFs(2*b)) = m;          // Mx
-        //     K(numDOFs(2*a)+1, numDOFs(2*b)+1) = m;      // My
-        // }
+	for (int b=0; b<3; b++) {
+	    if (a == b) {
+		K(pdof[a],pdof[b]) = Mp*2;
+	    } else {
+		K(pdof[a],pdof[b]) = Mp;
+	    }
+	}
     }
 
     return K;
@@ -182,77 +301,35 @@ PFEMElement2D::getDamp()
 {
 
     // resize K
-    int ndf = this->getNumDOF();
     K.resize(ndf, ndf);
     K.Zero();
 
-    double J2 = J/2.;
-    double tau = 1./(rho/ops_Dt+mu/J2);
+    // K, G, Gt
+    for (int a=0; a<3; a++) {
+	for (int b=0; b<3; b++) {
 
-    for(int a=0; a<3; a++) {
-        for(int b=0; b<3; b++) {
+	    // K
+	    if (lumped == false) {
+		K(vxdof[a], vxdof[b]) += Km(2*a,2*b);
+		K(vxdof[a], vydof[b]) += Km(2*a,2*b+1);
+		K(vydof[a], vxdof[b]) += Km(2*a+1,2*b);
+		K(vydof[a], vydof[b]) += Km(2*a+1,2*b+1);
+	    }
 
-            K(numDOFs(2*a+1), numDOFs(2*b)) = dNdx[b]/3.*J2;   // GxT
-            K(numDOFs(2*a+1), numDOFs(2*b)+1) = dNdy[b]/3.*J2; // GyT
+	    // -G
+	    K(vxdof[a], pdof[b]) = -Gx[a];
+	    K(vydof[a], pdof[b]) = -Gy[a];
 
-            K(numDOFs(2*a), numDOFs(2*b+1)) = -dNdx[a]/3.*J2;   // -Gx
-            K(numDOFs(2*a)+1, numDOFs(2*b+1)) = -dNdy[a]/3.*J2; // -Gy
+	    // Gt
+	    K(pdof[b], vxdof[a]) = Gx[a];
+	    K(pdof[b], vydof[a]) = Gy[a];
 
-            K(numDOFs(2*a+1), numDOFs(2*b+1)) = tau*J2*(dNdx[a]*dNdx[b] + dNdy[a]*dNdy[b]); // L
+	    // S
+	    K(pdof[a], pdof[b]) = S(a,b);
+	}
 
-            K(numDOFs(2*a+1), numDOFs(2*b+1)+1) = tau*dNdx[a]/3.*J2;   // Qx
-            K(numDOFs(2*a+1), numDOFs(2*b+1)+2) = tau*dNdy[a]/3.*J2;   // Qy
-
-            K(numDOFs(2*a+1)+1, numDOFs(2*b+1)) = tau*dNdx[b]/3.*J2;   // QxT
-            K(numDOFs(2*a+1)+2, numDOFs(2*b+1)) = tau*dNdy[b]/3.*J2;   // QyT
-
-        }
-        double m = tau*J2/3.0;
-        K(numDOFs(2*a+1)+1, numDOFs(2*a+1)+1) = m; // Mhatxd
-        K(numDOFs(2*a+1)+2, numDOFs(2*a+1)+2) = m; // Mhatyd
     }
 
-    return K;
-}
-
-const Matrix&
-PFEMElement2D::getDampWithK()
-{
-
-    // resize K
-    int ndf = this->getNumDOF();
-    K.resize(ndf, ndf);
-    K.Zero();
-
-    double J2 = J/2.;
-    double tau = 1./(rho/ops_Dt+mu/J2);
-
-    for(int a=0; a<3; a++) {
-        for(int b=0; b<3; b++) {
-            K(numDOFs(2*a), numDOFs(2*b)) = mu*J2*(2*dNdx[a]*dNdx[b] + dNdy[a]*dNdy[b]); // K
-            K(numDOFs(2*a), numDOFs(2*b)+1) = mu*J2*dNdy[a]*dNdx[b]; // K
-            K(numDOFs(2*a)+1, numDOFs(2*b)) = mu*J2*dNdx[a]*dNdy[b]; // K
-            K(numDOFs(2*a)+1, numDOFs(2*b)+1) = mu*J2*(2*dNdy[a]*dNdy[b] + dNdx[a]*dNdx[b]); // K;
-
-            K(numDOFs(2*a+1), numDOFs(2*b)) = dNdx[b]/3.*J2;   // GxT
-            K(numDOFs(2*a+1), numDOFs(2*b)+1) = dNdy[b]/3.*J2; // GyT
-
-            K(numDOFs(2*a), numDOFs(2*b+1)) = -dNdx[a]/3.*J2;   // -Gx
-            K(numDOFs(2*a)+1, numDOFs(2*b+1)) = -dNdy[a]/3.*J2; // -Gy
-
-            K(numDOFs(2*a+1), numDOFs(2*b+1)) = tau*J2*(dNdx[a]*dNdx[b] + dNdy[a]*dNdy[b]); // L
-
-            K(numDOFs(2*a+1), numDOFs(2*b+1)+1) = tau*dNdx[a]/3.*J2;   // Qx
-            K(numDOFs(2*a+1), numDOFs(2*b+1)+2) = tau*dNdy[a]/3.*J2;   // Qy
-
-            K(numDOFs(2*a+1)+1, numDOFs(2*b+1)) = tau*dNdx[b]/3.*J2;   // QxT
-            K(numDOFs(2*a+1)+2, numDOFs(2*b+1)) = tau*dNdy[b]/3.*J2;   // QyT
-
-        }
-        double m = tau*J2/3.0;
-        K(numDOFs(2*a+1)+1, numDOFs(2*a+1)+1) = m; // Mhatxd
-        K(numDOFs(2*a+1)+2, numDOFs(2*a+1)+2) = m; // Mhatyd
-    }
 
     return K;
 }
@@ -261,7 +338,6 @@ const Matrix&
 PFEMElement2D::getTangentStiff()
 {
     // resize K
-    int ndf = this->getNumDOF();
     K.resize(ndf, ndf);
     K.Zero();
 
@@ -273,7 +349,6 @@ const Matrix&
 PFEMElement2D::getInitialStiff()
 {
     // resize K
-    int ndf = this->getNumDOF();
     K.resize(ndf, ndf);
     K.Zero();
 
@@ -289,9 +364,7 @@ PFEMElement2D::addInertiaLoadToUnbalance(const Vector &accel)
 const Vector&
 PFEMElement2D::getResistingForce()
 {
-
     // resize P
-    int ndf = this->getNumDOF();
     P.resize(ndf);
     P.Zero();
 
@@ -301,39 +374,38 @@ PFEMElement2D::getResistingForce()
 const Vector&
 PFEMElement2D::getResistingForceIncInertia()
 {
-
     // resize P
-    int ndf = this->getNumDOF();
     P.resize(ndf);
     P.Zero();
 
-    // get velocity, accleration
+    // get v and p
     Vector v(ndf), vdot(ndf);
-    for(int i=0; i<3; i++) {
-        const Vector& accel = nodes[2*i]->getTrialAccel();
-        vdot(numDOFs(2*i)) = accel(0);
-        vdot(numDOFs(2*i)+1) = accel(1);
+    for(int a=0; a<3; a++) {
 
-        const Vector& vel = nodes[2*i]->getTrialVel();
-        v(numDOFs(2*i)) = vel(0);
-        v(numDOFs(2*i)+1) = vel(1);
+        const Vector& vel = nodes[2*a]->getTrialVel();
+	const Vector& accel = nodes[2*a]->getTrialAccel();
+	v(vxdof[a]) = vel(0);
+	v(vydof[a]) = vel(1);
+	vdot(vxdof[a]) = accel(0);
+	vdot(vydof[a]) = accel(1);
 
-        const Vector& vel2 = nodes[2*i+1]->getTrialVel();
-        v(numDOFs(2*i+1)) = vel2(0);
-        v(numDOFs(2*i+1)+1) = vel2(1);
-        v(numDOFs(2*i+1)+2) = vel2(2);
+	const Vector& pressure = nodes[2*a+1]->getTrialVel();
+	const Vector& pressuredot = nodes[2*a+1]->getTrialAccel();
+	v(pdof[a]) = pressure(0);
+	vdot(pdof[a]) = pressuredot(0);
+
+	// F, Fp
+	P(vxdof[a]) = F(0);
+	P(vydof[a]) = F(1);
+	P(pdof[a]) = Fp[a];
     }
 
-    P.addMatrixVector(1.0, getMass(), vdot, 1.0);
-    P.addMatrixVector(1.0, getDampWithK(), v, 1.0);
-
-    // get Jacobi
-    double J2 = J/2.;
-    for(int i=0; i<3; i++) {
-        P(numDOFs(2*i)) -= rho*bx/3.*J2;
-        P(numDOFs(2*i)+1) -= rho*by/3.*J2;
-    }
-
+    // M*vdot+K*v
+    P.addMatrixVector(-1.0, getMass(), vdot, 1.0);
+    bool l = lumped;
+    lumped = false;
+    P.addMatrixVector(1.0, getDamp(), v, 1.0);
+    lumped = l;
 
     return P;
 }
@@ -348,32 +420,32 @@ PFEMElement2D::getClassType()const
 int
 PFEMElement2D::sendSelf(int commitTag, Channel &theChannel)
 {
-    int res = 0;
-    int dataTag = this->getDbTag();
+    // int res = 0;
+    // int dataTag = this->getDbTag();
 
-    // send vector
-    static Vector data(25);
-    data(0) = this->getTag();
-    data(1) = rho;
-    data(2) = mu;
-    data(3) = bx;
-    data(4) = by;
-    for(int i=0; i<3; i++) {
-        data(5+i) = dNdx[i];
-        data(8+i) = dNdy[i];
-    }
-    data(11) = J;
-    for(int i=0; i<6; i++) {
-        data(12+i) = ntags(i);
-        data(18+i) = numDOFs(i);
-    }
-    data(24) = numDOFs(6);
+    // // send vector
+    // static Vector data(25);
+    // data(0) = this->getTag();
+    // data(1) = rho;
+    // data(2) = mu;
+    // data(3) = b1;
+    // data(4) = b2;
+    // for(int i=0; i<3; i++) {
+    //     data(5+i) = dNdx[i];
+    //     data(8+i) = dNdy[i];
+    // }
+    // data(11) = J;
+    // for(int i=0; i<6; i++) {
+    //     data(12+i) = ntags(i);
+    //     data(18+i) = numDOFs(i);
+    // }
+    // data(24) = numDOFs(6);
 
-    res = theChannel.sendVector(dataTag, commitTag, data);
-    if(res < 0) {
-        opserr<<"WARNING: PFEMElement2D::sendSelf - "<<this->getTag()<<" failed to send vector\n";
-        return -1;
-    }
+    // res = theChannel.sendVector(dataTag, commitTag, data);
+    // if(res < 0) {
+    //     opserr<<"WARNING: PFEMElement2D::sendSelf - "<<this->getTag()<<" failed to send vector\n";
+    //     return -1;
+    // }
 
 
     return 0;
@@ -382,31 +454,31 @@ PFEMElement2D::sendSelf(int commitTag, Channel &theChannel)
 int
 PFEMElement2D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    int res;
-    int dataTag = this->getDbTag();
+    // int res;
+    // int dataTag = this->getDbTag();
 
-    // receive vector
-    static Vector data(12);
-    res = theChannel.recvVector(dataTag, commitTag, data);
-    if(res < 0) {
-        opserr<<"WARNING: PFEMElement2D::recvSelf - failed to receive vector\n";
-        return -1;
-    }
-    this->setTag((int)data(0));
-    rho = data(1);
-    mu = data(2);
-    bx = data(3);
-    by = data(4);
-    for(int i=0; i<3; i++) {
-        dNdx[i] = data(5+i);
-        dNdy[i] = data(8+i);
-    }
-    J = data(11);
-    for(int i=0; i<6; i++) {
-        ntags(i) = (int)data(12+i);
-        numDOFs(i) = (int)data(18+i);
-    }
-    numDOFs(6) = (int)data(24);
+    // // receive vector
+    // static Vector data(12);
+    // res = theChannel.recvVector(dataTag, commitTag, data);
+    // if(res < 0) {
+    //     opserr<<"WARNING: PFEMElement2D::recvSelf - failed to receive vector\n";
+    //     return -1;
+    // }
+    // this->setTag((int)data(0));
+    // rho = data(1);
+    // mu = data(2);
+    // bx = data(3);
+    // by = data(4);
+    // for(int i=0; i<3; i++) {
+    //     dNdx[i] = data(5+i);
+    //     dNdy[i] = data(8+i);
+    // }
+    // J = data(11);
+    // for(int i=0; i<6; i++) {
+    //     ntags(i) = (int)data(12+i);
+    //     numDOFs(i) = (int)data(18+i);
+    // }
+    // numDOFs(6) = (int)data(24);
 
     return 0;
 }
@@ -414,20 +486,15 @@ PFEMElement2D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &th
 void
 PFEMElement2D::setDomain(Domain *theDomain)
 {
-    numDOFs.resize(7);
     this->DomainComponent::setDomain(theDomain);
 
     if(theDomain == 0) {
         return;
     }
 
-    numDOFs.Zero();
-    int ndf = 0;
+    ndf = 0;
     int eletag = this->getTag();
     for(int i=0; i<3; i++) {
-
-        // set ndf
-        numDOFs(2*i) = ndf;
 
         // get node
         nodes[2*i] = theDomain->getNode(ntags(2*i));
@@ -436,13 +503,17 @@ PFEMElement2D::setDomain(Domain *theDomain)
             opserr<<"in PFEMElement2D - setDomain() "<<eletag<<"\n ";
             return;
         }
+	if(nodes[2*i]->getNumberDOF() < 2) {
+            opserr<<"WARNING: node "<<ntags(2*i)<<" ndf < 2 ";
+            opserr<<"in PFEMElement2D - setDomain() "<<eletag<<"\n ";
+            return;
+        }
+	vxdof[i] = ndf;
+	vydof[i] = ndf+1;
         ndf += nodes[2*i]->getNumberDOF();
  
-        // set ndf
-        numDOFs(2*i+1) = ndf;
-
         // get pc 
-        int pndf = 3;
+        int pndf = 1;
         thePCs[i] = theDomain->getPressure_Constraint(ntags(2*i));
         if(thePCs[i] != 0) {
             thePCs[i]->setDomain(theDomain);
@@ -466,8 +537,6 @@ PFEMElement2D::setDomain(Domain *theDomain)
         thePCs[i]->connect(eletag);
 
         // get pressure node
-        // ntags(2*i+1) = thePCs[i]->getPressureNode();
-        // nodes[2*i+1] = theDomain->getNode(ntags(2*i+1));
         nodes[2*i+1] = thePCs[i]->getPressureNode();
         if(nodes[2*i+1] == 0) {
             opserr<<"WARNING: pressure node does not exist ";
@@ -475,9 +544,10 @@ PFEMElement2D::setDomain(Domain *theDomain)
             return;
         }
         ntags(2*i+1) = nodes[2*i+1]->getTag();
+	pdof[i] = ndf;
         ndf += nodes[2*i+1]->getNumberDOF();
     }
-    numDOFs(numDOFs.Size()-1) = ndf;
+
 }
 
 void
@@ -539,4 +609,18 @@ PFEMElement2D::displaySelf(Renderer &theViewer, int displayMode, float fact, con
     error += theViewer.drawPolygon (coords, values);
 
     return error;
+}
+
+void
+PFEMElement2D::inverse(Matrix& mat) const
+{
+    double tmp = mat(0,0);
+    mat(0,0) = mat(1,1);
+    mat(1,1) = tmp;
+    mat(0,1) = -mat(0,1);
+    mat(1,0) = -mat(1,0);
+
+    tmp = mat(0,0)*mat(1,1)-mat(1,0)*mat(0,1);
+    
+    mat /= tmp;
 }

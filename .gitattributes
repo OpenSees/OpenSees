@@ -2448,8 +2448,14 @@ SRC/element/PFEMElement/PFEMElement2DBubble.cpp -text
 SRC/element/PFEMElement/PFEMElement2DBubble.h -text
 SRC/element/PFEMElement/PFEMElement2DCompressible.cpp -text
 SRC/element/PFEMElement/PFEMElement2DCompressible.h -text
+SRC/element/PFEMElement/PFEMElement2DFIC.cpp -text
+SRC/element/PFEMElement/PFEMElement2DFIC.h -text
+SRC/element/PFEMElement/PFEMElement2Dmini.cpp -text
+SRC/element/PFEMElement/PFEMElement2Dmini.h -text
 SRC/element/PFEMElement/PFEMElement3D.cpp -text
 SRC/element/PFEMElement/PFEMElement3D.h -text
+SRC/element/PFEMElement/PFEMElement3Dmini.cpp -text
+SRC/element/PFEMElement/PFEMElement3Dmini.h -text
 SRC/element/PFEMElement/PFEMMesher2D.cpp -text
 SRC/element/PFEMElement/PFEMMesher2D.h -text
 SRC/element/PFEMElement/PFEMMesher3D.cpp -text

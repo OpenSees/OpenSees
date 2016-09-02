@@ -42,27 +42,27 @@ class PFEMElement2D : public Element
 public:
     PFEMElement2D();
     PFEMElement2D(int tag, int nd1, int nd2, int nd3,
-                  double r, double m, double b1, double b2, double thk=1.0);
+                  double r, double m, double b1, double b2, double thk=1.0,
+		  double ka=-1, bool lumped=true);
     
     ~PFEMElement2D();
 
     // methods dealing with nodes and number of external dof
-    int getNumExternalNodes(void) const;
-    const ID &getExternalNodes(void);
-    Node **getNodePtrs(void);
-    int getNumDOF(void);
+    int getNumExternalNodes(void) const {return ntags.Size();}
+    const ID &getExternalNodes(void) {return ntags;}
+    Node **getNodePtrs(void) {return nodes;}
+    int getNumDOF(void) {return ndf;}
 
     // public methods to set the state of the element    
-    int revertToLastCommit(void);
-    //int revertToStart(void);   
+    int revertToLastCommit(void) {return 0;}
+    int revertToStart(void) {return Element::revertToStart();}
     int update(void);
-    int commitState(void);    
+    int commitState(void) {return Element::commitState();}
 
     // public methods to obtain stiffness, mass, damping and residual information    
     const Matrix &getTangentStiff(void);
     const Matrix &getInitialStiff(void);    
     const Matrix &getDamp();
-    const Matrix &getDampWithK();
     const Matrix &getMass(void);    
 
     // methods for applying loads
@@ -84,7 +84,9 @@ public:
     void Print(OPS_Stream &s, int flag =0);
     int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
 
-protected:
+private:
+
+    void inverse(Matrix& mat) const;
     
 private:
 
@@ -93,12 +95,15 @@ private:
     Pressure_Constraint* thePCs[3];
     double rho;  // density
     double mu;   // viscocity
-    double bx;    // body force
-    double by;    // body force
-    double dNdx[3], dNdy[3];
-    double J;
-    ID numDOFs;
+    double b1, b2; // body force
     double thickness;
+    double kappa;
+    bool lumped;
+    int ndf;
+    int vxdof[3], vydof[3], pdof[3];
+    double M, Mp;
+    Matrix Km, S;
+    Vector Gx, Gy, F, Fp;
 
     static Matrix K;
     static Vector P;

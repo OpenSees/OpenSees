@@ -38,10 +38,79 @@
 #include <FEM_ObjectBroker.h>
 #include <Parameter.h>
 #include <cmath>
+#include <ElementIter.h>
 
 Matrix PFEMElement2DBubble::K;
 Vector PFEMElement2DBubble::P;
 Matrix PFEMElement2DBubble::C;
+
+void* OPS_PFEMElement2DBubble()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if(numdata < 8) {
+	opserr<<"WARNING: insufficient number of arguments\n";
+	return 0;
+    }
+
+    // tag, nd1, nd2, nd3
+    numdata = 4;
+    int idata[4];
+    if(OPS_GetIntInput(&numdata,idata)<0) return 0;
+
+    // rho, mu, b1, b2, (thinknes,kappa)
+    numdata = OPS_GetNumRemainingInputArgs();
+    if(numdata > 6) numdata = 6;
+    double data[6] = {0,0,0,0,1.0,1e9};
+    if(OPS_GetDoubleInput(&numdata,data) < 0) return 0;
+
+    return new PFEMElement2DBubble(idata[0],idata[1],idata[2],idata[3],
+				   data[0],data[1],data[2],data[3],data[4],data[5]);
+}
+
+int OPS_PFEMElement2DBubble(Domain& theDomain, const ID& elenodes, ID& eletags)
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if(numdata < 4) {
+	opserr<<"WARNING: insufficient number of arguments\n";
+	return 0;
+    }
+
+    // rho, mu, b1, b2, (thickness, kappa)
+    numdata = OPS_GetNumRemainingInputArgs();
+    if(numdata > 6) numdata = 6;
+    double data[6] = {0,0,0,0,1.0,2.15e9};
+    if(OPS_GetDoubleInput(&numdata,data) < 0) {
+	opserr << "WARNING failed to read data for PFEMElement2DBubble\n";
+	return -1;
+    }
+
+    // create elements
+    ElementIter& theEles = theDomain.getElements();
+    Element* theEle = theEles();
+    int currTag = 0;
+    if (theEle != 0) {
+	currTag = theEle->getTag();
+    }
+
+    eletags.resize(elenodes.Size()/3);
+
+    for (int i=0; i<eletags.Size(); i++) {
+	theEle = new PFEMElement2DBubble(--currTag,elenodes(3*i),elenodes(3*i+1),elenodes(3*i+2),
+					 data[0],data[1],data[2],data[3],data[4],data[5]);
+	if (theEle == 0) {
+	    opserr<<"WARING: run out of memory for creating element\n";
+	    return -1;
+	}
+	if (theDomain.addElement(theEle) == false) {
+	    opserr<<"WARNING: failed to add element to domain\n";
+	    delete theEle;
+	    return -1;
+	}
+	eletags(i) = currTag;
+    }
+
+    return 0;
+}
 
 // for FEM_ObjectBroker, recvSelf must invoke
 PFEMElement2DBubble::PFEMElement2DBubble()
@@ -133,7 +202,8 @@ PFEMElement2DBubble::update()
     setJ();
 
     if(fabs(J)<1e-15) {
-        opserr<<"WARING: area is nearly zero";
+	//if(J < 0) {
+        opserr<<"WARING: element "<<this->getTag()<<" area is negative";
         opserr<<" -- PFEMElement2DBubble::update\n";
         return -1;
     }
@@ -556,7 +626,8 @@ PFEMElement2DBubble::setdJ()
 double 
 PFEMElement2DBubble::getM() const
 {
-    return (1.0/6.0+3.0/40.0)*rho*thickness*J;
+    //return (1.0/6.0+3.0/40.0)*rho*thickness*J;
+    return rho*thickness*J/6.0;
 }
 
 double
@@ -569,7 +640,8 @@ PFEMElement2DBubble::getMp() const
 double
 PFEMElement2DBubble::getinvMbub() const
 {
-    return 5040.0*ops_Dt/(rho*thickness*J*1863.0);
+    //return 5040.0*ops_Dt/(rho*thickness*J*1863.0);
+    return 40.*ops_Dt/(9.*rho*J*thickness);
 }
 
 void
@@ -880,14 +952,16 @@ double
 PFEMElement2DBubble::getdM() const
 {
     if(parameterID != 2) return 0.0;
-    return (1.0/6.0+3.0/40.0)*J*thickness;
+    //return (1.0/6.0+3.0/40.0)*J*thickness;
+    return thickness*J/6.0;
 }
 
 double
 PFEMElement2DBubble::getdinvMbub() const
 {
     if(parameterID != 2) return 0.0;
-    return -5040.0*ops_Dt/(1863.0*thickness*J*rho*rho);
+    //return -5040.0*ops_Dt/(1863.0*thickness*J*rho*rho);
+    return -40.*ops_Dt/(9.*rho*rho*J*thickness);
 }
 
 void
@@ -1029,7 +1103,8 @@ PFEMElement2DBubble::getdM(const Vector& vdot, Matrix& dm) const
             dm(a,b) = vdot(a)*dJ(b);
         }
     }
-    dm *= (1.0/6.0+3.0/40.0)*rho*thickness;
+    //dm *= (1.0/6.0+3.0/40.0)*rho*thickness;
+    dm *= rho*thickness/6.0;
 }
 
 void 
@@ -1043,7 +1118,8 @@ PFEMElement2DBubble::getdinvMbub(const Vector& vb, Matrix& dmb) const {
             dmb(a,b) = vb(a)*dJ(b);
         }
     }
-    dmb *= -5040.0*ops_Dt/(1863.0*thickness*rho*J*J);
+    // dmb *= -5040.0*ops_Dt/(1863.0*thickness*rho*J*J);
+    dmb *= -40.*ops_Dt/(9.*rho*J*J*thickness);
 }
 
 void 

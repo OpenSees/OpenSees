@@ -20,16 +20,16 @@
                                                                         
 // $Revision: 1.00 $
 // $Date: 2012/01/11 13:48:46 $
-// $Source: /usr/local/cvs/OpenSees/SRC/element/PFEMElement/PFEMElement2DCompressible.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/element/PFEMElement/PFEMElement2DFIC.h,v $
                                                                         
 // Written: Minjie Zhu (zhum@engr.orst.edu)
 // Created: Jan 2012
 // Revised: --------
 //
-// Description: This file contains the class definition for PFEMElement2DCompressible.
+// Description: This file contains the class definition for PFEMElement2DFIC.
 
-#ifndef PFEMElement2DCompressible_h
-#define PFEMElement2DCompressible_h
+#ifndef PFEMElement2DFIC_h
+#define PFEMElement2DFIC_h
 
 #include <Matrix.h>
 #include <Vector.h>
@@ -37,33 +37,32 @@
 
 class Pressure_Constraint;
 
-class PFEMElement2DCompressible : public Element
+class PFEMElement2DFIC : public Element
 {
 public:
-    PFEMElement2DCompressible();
-    PFEMElement2DCompressible(int tag, int nd1, int nd2, int nd3,
-			      double r, double m, double b1, double b2, double thk=1.0,
-			      double ka=2.15e9);
+    PFEMElement2DFIC();
+    PFEMElement2DFIC(int tag, int nd1, int nd2, int nd3,
+                  double r, double m, double b1, double b2, double thk=1.0);
     
-    ~PFEMElement2DCompressible();
+    ~PFEMElement2DFIC();
 
     // methods dealing with nodes and number of external dof
-    int getNumExternalNodes(void) const {return ntags.Size();}
-    const ID &getExternalNodes(void) {return ntags;}
-    Node **getNodePtrs(void) {return nodes;}
-    int getNumDOF(void) {return ndf;}
+    int getNumExternalNodes(void) const;
+    const ID &getExternalNodes(void);
+    Node **getNodePtrs(void);
+    int getNumDOF(void);
 
     // public methods to set the state of the element    
-    int revertToLastCommit(void) {return 0;}
-    int revertToStart(void) {return Element::revertToStart();}
+    int revertToLastCommit(void);
+    //int revertToStart(void);   
     int update(void);
-    int commitState(void);
+    int commitState(void);    
 
     // public methods to obtain stiffness, mass, damping and residual information    
     const Matrix &getTangentStiff(void);
-    const Matrix &getGeometricTangentStiff(void);
     const Matrix &getInitialStiff(void);    
     const Matrix &getDamp();
+    const Matrix &getDampWithK();
     const Matrix &getMass(void);    
 
     // methods for applying loads
@@ -85,39 +84,24 @@ public:
     void Print(OPS_Stream &s, int flag =0);
     int displaySelf(Renderer &, int mode, float fact, const char **displayModes=0, int numModes=0);
 
-    // sensitivity
-    int setParameter(const char **argv, int argc, Parameter &param);
-    int updateParameter (int parameterID, Information &info);
-    int activateParameter(int passedParameterID);
-    const Matrix& getDampSensitivity(int gradNumber);
-    const Matrix& getMassSensitivity(int gradNumber);
-    const Vector& getResistingForceSensitivity(int gradNumber);
-    int commitSensitivity(int gradNumber, int numGrads);
-
+protected:
+    
 private:
 
     ID ntags; // Tags of nodes
-    Node* nodes[7]; // pointers of nodes
+    Node* nodes[6]; // pointers of nodes
     Pressure_Constraint* thePCs[3];
     double rho;  // density
     double mu;   // viscocity
-    double b1, b2; // body force
-    double thickness, kappa;
-    int ndf;
-    int vxdof[4], vydof[4], pdof[4];
+    double bx;    // body force
+    double by;    // body force
+    double dNdx[3], dNdy[3];
     double J;
-    double cc[3], dd[3];
-    int parameterID;
+    ID numDOFs;
+    double thickness;
 
     static Matrix K;
     static Vector P;
-
-    // geometric sensitivity
-    void getdM(const Vector& vdot, Matrix& dm) const;
-    void getdK(const Vector& v, Matrix& dk) const;
-    void getdG(const Vector& p, const Vector& v, Matrix& dg, Matrix& dgt) const;
-    void getdF(Matrix& df) const;
-    void getdMp(const Vector& pdot, Matrix& dmp) const;
 };
 
 #endif
