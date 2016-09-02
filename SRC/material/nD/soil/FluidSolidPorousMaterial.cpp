@@ -18,6 +18,7 @@
 #include <Parameter.h>
 
 #include <string.h>
+#include <elementAPI.h>
 
 int* FluidSolidPorousMaterial::loadStagex = 0;
 int* FluidSolidPorousMaterial::ndmx = 0;
@@ -29,6 +30,53 @@ Vector FluidSolidPorousMaterial::workV3(3);
 Vector FluidSolidPorousMaterial::workV6(6);
 Matrix FluidSolidPorousMaterial::workM3(3,3);
 Matrix FluidSolidPorousMaterial::workM6(6,6);
+
+void* OPS_FluidSolidPorousMaterial()
+{
+    int tag;  double param[4];
+    char * arg[] = {"nd", "soilMatTag", "combinedBulkModul", "Atmospheric pressure"};
+
+    int argc = OPS_GetNumRemainingInputArgs() + 2;
+    if (argc < 6) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: nDMaterial FluidSolidPorous tag? "<< arg[0];
+	opserr << "? "<< "\n";
+	opserr << arg[1] << "? "<< arg[2] << "? "<< endln;
+	return 0;
+    }
+
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid FluidSolidPorous tag" << endln;
+	return 0;
+    }
+
+    for (int i=3; i<6; i++)
+	if (OPS_GetDoubleInput(&numdata, &param[i-3]) < 0) {
+	    opserr << "WARNING invalid " << " double" << "\n";
+	    opserr << "nDMaterial FluidSolidPorous: " << tag << endln;
+	    return 0;
+	}
+
+    NDMaterial *soil = OPS_getNDMaterial(param[1]);
+    if (soil == 0) {
+	opserr << "WARNING FluidSolidPorous: couldn't get soil material ";
+	opserr << "tagged: " << param[1] << "\n";
+	return 0;
+    }
+
+    param[3] = 101.;
+    if (argc == 7) {
+	if (OPS_GetDoubleInput(&numdata, &param[3]) < 0) {
+	    opserr << "WARNING invalid " << " double" << "\n";
+	    opserr << "nDMaterial FluidSolidPorous: " << tag << endln;
+	    return 0;
+	}
+    }
+
+    return new FluidSolidPorousMaterial (tag, param[0], *soil,
+					 param[2],param[3]);
+}
 
 FluidSolidPorousMaterial::FluidSolidPorousMaterial (int tag, int nd, NDMaterial &soilMat,
 						    double combinedBulkModul, double atm)

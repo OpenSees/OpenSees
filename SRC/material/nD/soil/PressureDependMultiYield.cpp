@@ -18,6 +18,7 @@
 #include <MaterialResponse.h>
 #include <Parameter.h>
 #include <string.h>
+#include <elementAPI.h>
 
 int PressureDependMultiYield::matCount=0;
 int* PressureDependMultiYield::loadStagex = 0;  //=0 if elastic; =1 if plastic
@@ -55,6 +56,107 @@ Vector PressureDependMultiYield::workV6(6);
 T2Vector PressureDependMultiYield::workT2V;
 
 const	double pi = 3.14159265358979;
+
+void* OPS_PressureDependMultiYield()
+{
+    const int numParam = 15;
+    const int totParam = 24;
+    int tag;
+    double param[24];
+    param[15] = 20;
+    param[16] = 0.6;
+    param[17] = 0.9;
+    param[18] = 0.02;
+    param[19] = 0.7;
+    param[20] = 101.;
+    param[21] = .3;
+    param[22] = 0.;
+    param[23] = 1.;
+
+    int argc = OPS_GetNumRemainingInputArgs() + 2;
+    char * arg[] = {"nd", "rho", "refShearModul",
+		    "refBulkModul", "frictionAng",
+		    "peakShearStra", "refPress", "pressDependCoe",
+		    "phaseTransformAngle", "contractionParam1",
+		    "dilationParam1", "dilationParam2",
+		    "liquefactionParam1", "liquefactionParam2",
+		    "liquefactionParam4", "numberOfYieldSurf (=20)",
+		    "e (=0.6)", "volLimit1 (=0.9)", "volLimit2 (=0.02)",
+		    "volLimit3 (=0.7)", "Atmospheric pressure (=101)", "cohesi (=.5)",
+		    "Hv (=0)", "Pv (=1.)" };
+    if (argc < (3+numParam)) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: nDMaterial PressureDependMultiYield tag? "<< arg[0];
+	opserr << "? "<< "\n";
+	opserr << arg[1] << "? "<< arg[2] << "? "<< arg[3] << "? "<< "\n";
+	opserr << arg[4] << "? "<< arg[5] << "? "<< arg[6] << "? "<< "\n";
+	opserr << arg[7] << "? "<< arg[8] << "? "<< arg[9] << "? "<< "\n";
+	opserr << arg[10] << "? "<< arg[11] << "? "<< arg[12] << "? "<< "\n";
+	opserr << arg[13] << "? "<< arg[14] << "? "<< arg[15] << "? "<< "\n";
+	opserr << arg[16] << "? "<< arg[17] << "? "<< arg[18] << "? "<< "\n";
+	opserr << arg[19] << "? "<< arg[20] << "? "<< arg[21] << "? "<< "\n";
+	return 0;
+    }
+
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid PressureDependMultiYield tag" << "\n";
+	return 0;
+    }
+
+    for (int i=3; (i<argc && i<19); i++)
+	if (OPS_GetDoubleInput(&numdata, &param[i-3]) < 0) {
+	    opserr << "WARNING invalid " << " double " << "\n";
+	    opserr << "nDMaterial PressureDependMultiYield: " << tag << "\n";
+	    return 0;
+	}
+
+    static double * gredu = 0;
+    // user defined yield surfaces
+    if (param[15] < 0 && param[15] > -40) {
+	param[15] = -int(param[15]);
+	gredu = new double[int(2*param[15])];
+
+	for (int i=0; i<2*param[15]; i++)
+	    if (OPS_GetDoubleInput(&numdata, &gredu[i]) < 0) {
+		opserr << "WARNING invalid " << arg[i-3] << "\n";
+		opserr << "nDMaterial PressureIndependMultiYield: " << tag << "\n";
+		return 0;
+	    }
+    }
+
+    if (gredu != 0) {
+	for (int i=19+int(2*param[15]); i<argc; i++)
+	    if (OPS_GetDoubleInput(&numdata, &param[i-3-int(2*param[15])]) < 0) {
+		opserr << "WARNING invalid " << " double " << "\n";
+		opserr << "nDMaterial PressureDependMultiYield: " << tag << "\n";
+		return 0;
+	    }
+    } else {
+	for (int i=19; i<argc; i++)
+	    if (OPS_GetDoubleInput(&numdata, &param[i-3]) < 0) {
+		opserr << "WARNING invalid " << " double " << "\n";
+		opserr << "nDMaterial PressureDependMultiYield: " << tag << "\n";
+		return 0;
+	    }
+    }
+
+    PressureDependMultiYield * temp =
+	new PressureDependMultiYield (tag, param[0], param[1], param[2],
+				      param[3], param[4], param[5],
+				      param[6], param[7], param[8],
+				      param[9], param[10], param[11],
+				      param[12], param[13], param[14],
+				      param[15], gredu, param[16], param[17],
+				      param[18], param[19], param[20], param[21], param[22], param[23]);
+
+    if (gredu != 0) {
+	delete [] gredu;
+	gredu = 0;
+    }
+
+    return temp;
+}
 
 PressureDependMultiYield::PressureDependMultiYield (int tag, int nd,
 						    double r, double refShearModul,

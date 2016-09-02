@@ -17,7 +17,7 @@
 #include <MaterialResponse.h>
 #include <Parameter.h>
 #include <string.h>
-
+#include <elementAPI.h>
 
 Matrix PressureIndependMultiYield::theTangent(6,6);
 T2Vector PressureIndependMultiYield::subStrainRate;
@@ -32,6 +32,69 @@ double* PressureIndependMultiYield::cohesionx=0;
 double* PressureIndependMultiYield::pressDependCoeffx=0;
 int*    PressureIndependMultiYield::numOfSurfacesx=0;
 double* PressureIndependMultiYield::residualPressx=0;
+
+void* OPS_PressureIndependMultiYield()
+{
+    const int numParam = 6;
+    const int totParam = 10;
+
+    int argc = OPS_GetNumRemainingInputArgs() + 2;
+
+    char * arg[] = {"nd", "rho", "refShearModul", "refBulkModul",
+		    "cohesi", "peakShearStra",
+		    "frictionAng (=0)", "refPress (=100)", "pressDependCoe (=0.0)",
+		    "numberOfYieldSurf (=20)"};
+    if (argc < (3+numParam)) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: nDMaterial PressureIndependMultiYield tag? " << arg[0];
+	opserr << "? "<< "\n";
+	opserr << arg[1] << "? "<< arg[2] << "? "<< arg[3] << "? "<< "\n";
+	opserr << arg[4] << "? "<< arg[5] << "? "<< arg[6] << "? "<< "\n";
+	opserr << arg[7] << "? "<< arg[8] << "? "<< arg[9] << "? "<<"\n";
+	return 0;
+    }
+    
+    int tag;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING invalid PressureIndependMultiYield tag" << "\n";
+	return 0;
+    }
+
+    double param[10];
+    param[6] = 0.0;
+    param[7] = 100.;
+    param[8] = 0.0;
+    param[9] = 20;
+    numdata = 10;
+    if (OPS_GetDoubleInput(&numdata, param) < 0) {
+	opserr << "WARNING invalid PressureIndependMultiYield double inputs" << "\n";
+	return 0;
+    }
+
+    static double * gredu = 0;
+    // user defined yield surfaces
+    if (param[9] < 0 && param[9] > -40) {
+	param[9] = -int(param[9]);
+	numdata = int(2*param[9]);
+	gredu = new double[numdata];
+	if (OPS_GetDoubleInput(&numdata, gredu) < 0) {
+	    opserr << "WARNING invalid PressureIndependMultiYield double inputs" << "\n";
+	    return 0;
+	}
+    }
+
+    PressureIndependMultiYield * temp =
+	new PressureIndependMultiYield (tag, param[0], param[1], param[2],
+					param[3], param[4], param[5], param[6],
+					param[7], param[8], param[9], gredu);
+    if (gredu != 0) {
+	delete [] gredu;
+	gredu = 0;
+    }
+
+    return temp;
+}
 
 PressureIndependMultiYield::PressureIndependMultiYield (int tag, int nd,
 							double r, double refShearModul,
