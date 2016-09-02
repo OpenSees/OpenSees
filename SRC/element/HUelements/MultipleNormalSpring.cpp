@@ -37,8 +37,6 @@
 // Stiffness of local-y,z,rx remain zero.
 
 
-#include <TclModelBuilder.h>
-
 #include <ID.h>
 #include <Vector.h>
 
@@ -58,8 +56,9 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <elementAPI.h>
 
-extern void printCommand(int argc, TCL_Char **argv);
+//extern void printCommand(int argc, TCL_Char **argv);
 #ifdef _WIN32
 extern "C" double dbesi0(double);
 extern "C" double dbesi1(double);
@@ -70,7 +69,7 @@ extern double dbesi1(double);
 
 
 
-static bool errDetected(bool ifNoError,char *msg){
+static bool errDetected(bool ifNoError, const char *msg){
   if (ifNoError){
     opserr << "" << endln;
     opserr << "========================================" << endln;
@@ -81,272 +80,241 @@ static bool errDetected(bool ifNoError,char *msg){
   return false;
 };
 
-int TclModelBuilder_addMultipleNormalSpring(ClientData clientData,
-    Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theTclDomain,
-    TclModelBuilder *theTclBuilder)
+void* OPS_MultipleNormalSpring()
 {
+    // 3-dim, 6-dof
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
 
-  // ensure the destructor has not been called
-  if (theTclBuilder == 0)  {
-    opserr << "WARNING builder has been destroyed - multipleNormalSpring\n";    
-    return TCL_ERROR;
-  }
-
-  // 3-dim, 6-dof
-  int ndm = theTclBuilder->getNDM();
-  int ndf = theTclBuilder->getNDF();
-
-  if (ndm != 3 || ndf != 6) {
-    opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
-    opserr << "WARNING multipleNormalSpring command only works when ndm is 3 and ndf is 6" << endln;
-    return TCL_ERROR;
-  }
-
-
-  //arguments (necessary)
-  int eleTag;
-  int iNode;
-  int jNode;
-  int nDivide;
-
-  //arguments (necessary, input with -???)
-  int matTag;
-  UniaxialMaterial *material;
-  int shape;
-  double size;
-
-  //arguments (optional, input with -???)
-  double lambda = -1.0;
-  Vector oriX(0);
-  Vector oriYp(3); oriYp(0) = 0.0; oriYp(1) = 1.0; oriYp(2) = 0.0;
-  double mass = 0.0;
-
-  // input comfirmation
-  int recvMat    = 0;
-  int recvShape  = 0;
-  int recvSize   = 0;
-  int recvLambda = 0;
-  int recvOrient = 0;
-  int recvMass   = 0;
-
-
-  //
-  Element *theElement = 0;
-
-
-  // error flag
-  bool ifNoError = true;
-
-
-
-  if (argc < 6)  { //element multipleNormalSpring eleTag? iNode? jNode? nDivide?
-
-    ifNoError = errDetected(ifNoError,"insufficient arguments");
-
-  } else {
-
-    //argv[2~5]
-    if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK)  {
-      ifNoError = errDetected(ifNoError,"invalid eleTag");
+    if (ndm != 3 || ndf != 6) {
+	opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
+	opserr << "WARNING multipleNormalSpring command only works when ndm is 3 and ndf is 6" << endln;
+	return 0;
     }
 
-    if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK)  {
-      ifNoError = errDetected(ifNoError,"invalid iNode");
-    }
 
-    if (Tcl_GetInt(interp, argv[4], &jNode) != TCL_OK)  {
-      ifNoError = errDetected(ifNoError,"invalid jNode");
-    }
+    //arguments (necessary)
+    int eleTag;
+    int iNode;
+    int jNode;
+    int nDivide;
 
-    if (Tcl_GetInt(interp, argv[5], &nDivide) != TCL_OK || nDivide <= 0)  {
-      ifNoError = errDetected(ifNoError,"invalid nDivide");
-    }
+    //arguments (necessary, input with -???)
+    int matTag;
+    UniaxialMaterial *material;
+    int shape;
+    double size;
 
-    //argv[6~]
-    for (int i=6; i<=(argc-1); i++) {
+    //arguments (optional, input with -???)
+    double lambda = -1.0;
+    Vector oriX(0);
+    Vector oriYp(3); oriYp(0) = 0.0; oriYp(1) = 1.0; oriYp(2) = 0.0;
+    double mass = 0.0;
+
+    // input comfirmation
+    int recvMat    = 0;
+    int recvShape  = 0;
+    int recvSize   = 0;
+    int recvLambda = 0;
+    int recvOrient = 0;
+    int recvMass   = 0;
+
+
+    //
+    Element *theElement = 0;
+
+
+    // error flag
+    bool ifNoError = true;
+
+
+
+    if (OPS_GetNumRemainingInputArgs() < 4)  { //element multipleNormalSpring eleTag? iNode? jNode? nDivide?
+
+	ifNoError = errDetected(ifNoError,"insufficient arguments");
+
+    } else {
+
+	//argv[2~5]
+	int idata[4];
+	int numdata = 4;
+	if (OPS_GetIntInput(&numdata, idata) < 0) {
+	    ifNoError = errDetected(ifNoError,"invalid int inputs");
+	}
+
+	eleTag = idata[0];
+	iNode = idata[1];
+	jNode = idata[2];
+	nDivide = idata[3];
+	if (nDivide <= 0)  {
+	    ifNoError = errDetected(ifNoError,"invalid nDivide");
+	}
+
+	//argv[6~]
+	while (OPS_GetNumRemainingInputArgs() > 0) {
       
-      double value;
-      
-      if (strcmp(argv[i],"-mat")==0 && (i+1)<=(argc-1)) { // -mat matTag?
+	    double value;
+	    const char* flag = OPS_GetString();
+	    if (strcmp(flag,"-mat")==0 && OPS_GetNumRemainingInputArgs()>0) { // -mat matTag?
+
+		numdata = 1;
+		if (OPS_GetIntInput(&numdata, &matTag) < 0) {
+		    ifNoError = errDetected(ifNoError,"invalid matTag");
+		}
+
+
+		material = OPS_getUniaxialMaterial(matTag);
+		if (material == 0)  {
+		    ifNoError = errDetected(ifNoError,"material model not found");
+		}
+
+		recvMat++ ;
+
+	    } else if (strcmp(flag,"-shape")==0 && OPS_GetNumRemainingInputArgs()>0) { // -shape shape?
+		const char* shapeflag = OPS_GetString();
+		if (strcmp(shapeflag,"round") == 0) {
+		    shape = 1; //round shape
+		} else if (strcmp(shapeflag,"square") == 0) {
+		    shape = 2; //square
+		} else {
+		    ifNoError = errDetected(ifNoError,"invalid shape (\"round\" or \"square\" are available)");
+		}
 	
-	if (Tcl_GetInt(interp,argv[i+1], &matTag) != TCL_OK) {
-	  ifNoError = errDetected(ifNoError,"invalid matTag");
-	}
-
-
-	material = OPS_getUniaxialMaterial(matTag);
-	if (material == 0)  {
-	  ifNoError = errDetected(ifNoError,"material model not found");
-	}
-
-	recvMat++ ;
-	i += 1;
-
-
-      } else if (strcmp(argv[i],"-shape")==0 && (i+1)<=(argc-1)) { // -shape shape?
+		recvShape++ ;
 	
-	if (strcmp(argv[i+1],"round") == 0) {
-	  shape = 1; //round shape
-	} else if (strcmp(argv[i+1],"square") == 0) {
-	  shape = 2; //square
-	} else {
-	  ifNoError = errDetected(ifNoError,"invalid shape (\"round\" or \"square\" are available)");
-	}
+	    } else if (strcmp(flag,"-size")==0 && OPS_GetNumRemainingInputArgs()>0) { // -size size?
+
+		numdata = 1;
+		if (OPS_GetDoubleInput(&numdata, &size)<0 || size<=0) {
+		    ifNoError = errDetected(ifNoError,"invalid size");
+		}
+
+		recvSize++ ;
+
+	    } else if (strcmp(flag,"-lambda")==0 && OPS_GetNumRemainingInputArgs()>0) { // <-lambda lambda?>
+		numdata = 1;
+		if (OPS_GetDoubleInput(&numdata, &lambda)<0 || lambda<0) {
+		    ifNoError = errDetected(ifNoError,"invalid lambda");
+		}
+
+		recvLambda++ ;
+
+	    } else if (strcmp(flag,"-orient")==0 && OPS_GetNumRemainingInputArgs()>=6) { // <-orient x1? x2? x3? yp1? yp2? yp3?>
+
+		oriX.resize(3);
+
+		for (int j=1; j<=3; j++) {
+		    numdata = 1;
+		    if (OPS_GetDoubleInput(&numdata, &value) < 0) {
+			ifNoError = errDetected(ifNoError,"invalid orient");
+		    } else {
+			oriX(j-1) = value;
+		    }
+		}
+
+		for (int j=1; j<=3; j++) {
+		    numdata = 1;
+		    if (OPS_GetDoubleInput(&numdata, &value) < 0) {
+			ifNoError = errDetected(ifNoError,"invalid orient");
+		    } else {
+			oriYp(j-1) = value;
+		    }
+		}
+
+		recvOrient++ ;
+
+	    } else if (strcmp(flag,"-orient")==0 && OPS_GetNumRemainingInputArgs()>=3) { // <-orient yp1? yp2? yp3?>
+
+		for (int j=1; j<=3; j++) {
+		    numdata = 1;
+		    if (OPS_GetDoubleInput(&numdata, &value) < 0) {
+			ifNoError = errDetected(ifNoError,"invalid orient");
+		    } else {
+			oriYp(j-1) = value;
+		    }
+		}
+
+		recvOrient++ ;
+
+	    } else if (strcmp(flag,"-mass")==0 && OPS_GetNumRemainingInputArgs()>0) { // <-mass m?> ÇÃì«Ç›çûÇ›
+		numdata = 1;
+		if (OPS_GetDoubleInput(&numdata, &mass)<0 || mass<=0) {
+		    ifNoError = errDetected(ifNoError,"invalid mass");
+		}
+
+		recvMass++ ;
 	
-	recvShape++ ;
-	i += 1;
+	    } else { //invalid option
 	
-      } else if (strcmp(argv[i],"-size")==0 && (i+1)<=(argc-1)) { // -size size?
-	
-	if (Tcl_GetDouble(interp, argv[i+1], &size) != TCL_OK || size <= 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid size");
+		ifNoError = errDetected(ifNoError,"invalid optional arguments");
+		break;
+
+	    }
+
 	}
-
-	recvSize++ ;
-	i += 1;
-
-      } else if (strcmp(argv[i],"-lambda")==0 && (i+1)<=(argc-1)) { // <-lambda lambda?>
-	
-	if (Tcl_GetDouble(interp, argv[i+1], &lambda) != TCL_OK || lambda < 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid lambda");
-	}
-
-	recvLambda++ ;
-	i += 1;
-
-      } else if (strcmp(argv[i],"-orient")==0 && (i+6)<=(argc-1) && Tcl_GetDouble(interp,argv[i+4], &value) == TCL_OK) { // <-orient x1? x2? x3? yp1? yp2? yp3?>
-
-	oriX.resize(3);
-
-	for (int j=1; j<=3; j++) {
-	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
-	    ifNoError = errDetected(ifNoError,"invalid orient");
-	  } else {
-	    oriX(j-1) = value;
-	  }
-	}
-
-	i += 3;
-
-	for (int j=1; j<=3; j++) {
-	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
-	    ifNoError = errDetected(ifNoError,"invalid orient");
-	  } else {
-	    oriYp(j-1) = value;
-	  }
-	}
-
-	recvOrient++ ;
-	i += 3;
-
-      } else if (strcmp(argv[i],"-orient")==0 && (i+3)<=(argc-1)) { // <-orient yp1? yp2? yp3?>
-
-	for (int j=1; j<=3; j++) {
-	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
-	    ifNoError = errDetected(ifNoError,"invalid orient");
-	  } else {
-	    oriYp(j-1) = value;
-	  }
-	}
-
-	recvOrient++ ;
-	i += 3;
-
-      } else if (strcmp(argv[i],"-mass")==0 && (i+1)<=(argc-1)) { // <-mass m?> ÇÃì«Ç›çûÇ›
-	
-	if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK || mass <= 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid mass");
-	}
-
-	recvMass++ ;
-	i += 1;
-	
-      } else { //invalid option
-	
-	ifNoError = errDetected(ifNoError,"invalid optional arguments");
-	break;
-
-      }
-
-    }
     
-  } // end input
+    } // end input
   
 
 
-  // input cofirmation
-  // necessary arguments
-  if (recvMat != 1)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -mat inputs (got %d inputs, but want 1 input)",recvMat);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    // input cofirmation
+    // necessary arguments
+    if (recvMat != 1)  {
+	char buf[100];
+	sprintf(buf,"wrong number of -mat inputs (got %d inputs, but want 1 input)",recvMat);
+	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvShape != 1)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -shape inputs (got %d inputs, but want 1 input)",recvShape);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvShape != 1)  {
+	char buf[100];
+	sprintf(buf,"wrong number of -shape inputs (got %d inputs, but want 1 input)",recvShape);
+	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvSize != 1)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -size inputs (got %d inputs, but want 1 input)",recvSize);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvSize != 1)  {
+	char buf[100];
+	sprintf(buf,"wrong number of -size inputs (got %d inputs, but want 1 input)",recvSize);
+	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  // optional arguments
-  if (recvLambda >= 2)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -lambda inputs (got %d inputs, but want 1 input)",recvLambda);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    // optional arguments
+    if (recvLambda >= 2)  {
+	char buf[100];
+	sprintf(buf,"wrong number of -lambda inputs (got %d inputs, but want 1 input)",recvLambda);
+	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvOrient >= 2)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -ori inputs (got %d inputs, but want 1 input)",recvOrient);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvOrient >= 2)  {
+	char buf[100];
+	sprintf(buf,"wrong number of -ori inputs (got %d inputs, but want 1 input)",recvOrient);
+	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvMass >= 2)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -mass inputs (got %d inputs, but want 1 input)",recvMass);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvMass >= 2)  {
+	char buf[100];
+	sprintf(buf,"wrong number of -mass inputs (got %d inputs, but want 1 input)",recvMass);
+	ifNoError = errDetected(ifNoError,buf);
+    }
 
   
-  // if error detected
-  if (!ifNoError) {
-    opserr << "------------------------------" << endln;
-    //input:
-    printCommand(argc, argv);
-    //want:
-    opserr << "Want: element multipleNormalSpring eleTag? iNode? jNode? nDivide? -mat matTag? -shape shape? -size size? <-lambda lambda?> <-orient <x1? x2? x3?> yp1? yp2? yp3?> <-mass m?>\n";
-    opserr << "========================================" << endln;
-    opserr << "" << endln;
-    return TCL_ERROR;
-  }
+    // if error detected
+    if (!ifNoError) {
+	opserr << "------------------------------" << endln;
+	//input:
+	// printCommand(argc, argv);
+	//want:
+	opserr << "Want: element multipleNormalSpring eleTag? iNode? jNode? nDivide? -mat matTag? -shape shape? -size size? <-lambda lambda?> <-orient <x1? x2? x3?> yp1? yp2? yp3?> <-mass m?>\n";
+	opserr << "========================================" << endln;
+	opserr << "" << endln;
+	return 0;
+    }
  
   
 
-  // now create the multipleNormalSpring
-  //theElement = new MultipleNormalSpring(eleTag, iNode, jNode, nDivide, material, shape, size, lambda, oriYp, oriX, mass);
+    // now create the multipleNormalSpring
+    theElement = new MultipleNormalSpring(eleTag, iNode, jNode, nDivide, material, shape, size, lambda, oriYp, oriX, mass);
 
-  if (theElement == 0)  {
-    opserr << "WARNING ran out of memory creating element\n";
-    opserr << "multipleNormalSpring element: " << eleTag << endln;
-    return TCL_ERROR;
-  }
-  
-  // then add the multipleNormalSpring to the domain
-  if (theTclDomain->addElement(theElement) == false)  {
-    opserr << "WARNING could not add element to the domain\n";
-    opserr << "multipleNormalSpring element: " << eleTag << endln;
-    delete theElement;
-    return TCL_ERROR;
-  }       
-  
-  // if get here we have successfully created the multipleNormalSpring and added it to the domain
-  return TCL_OK;
+    return theElement;
 }
 
 

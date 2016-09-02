@@ -47,242 +47,205 @@
 
 #include <ID.h>
 #include <Vector.h>
-#include <TclModelBuilder.h>
 
 #include <float.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <elementAPI.h>
 
-
-extern void printCommand(int argc, TCL_Char **argv);
-
-
-int TclModelBuilder_addYamamotoBiaxialHDR(ClientData clientData,
-				      Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theTclDomain,
-				      TclModelBuilder *theTclBuilder)
+void* OPS_YamamotoBiaxialHDR()
 {
+    // 3-dim, 6-dof
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
 
-  // ensure the destructor has not been called
-  if (theTclBuilder == 0)  {
-    opserr << "WARNING builder has been destroyed - YamamotoBiaxialHDR\n";    
-    return TCL_ERROR;
-  }
-
-
-  // 3-dim, 6-dof
-  int ndm = theTclBuilder->getNDM();
-  int ndf = theTclBuilder->getNDF();
-
-  if (ndm != 3 || ndf != 6) {
-    opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
-    opserr << "WARNING YamamotoBiaxialHDR command only works when ndm is 3 and ndf is 6" << endln;
-    return TCL_ERROR;
-  }
-
-
-  //arguments (necessary)
-  int eleTag;
-  int iNode;
-  int jNode;
-
-  int Tp = 1;
-  double DDo;
-  double DDi;
-  double Hr;
-
-  //arguments (optional)
-  double Cr=1.0;
-  double Cs=1.0;
-  Vector oriX(0);
-  Vector oriYp(3); oriYp(0) = 0.0; oriYp(1) = 1.0; oriYp(2) = 0.0;
-  double mass = 0.0;
-
-
-  //
-  Element *theElement = 0;
-
-
-  //error flag
-  bool ifNoError = true;
-
-
-  if (argc < 9)  { //element YamamotoBiaxialHDR eleTag? iNode? jNode? Tp? DDo? DDi? Hr?
-    // argc =            1           2             3      4      5     6   7    8    9
-    // argv =       argv[0]      argv[1]      argv[2]  argv[3] ................. argv[8]
-    opserr << "WARNING insufficient arguments\n";
-    ifNoError = false;
-
-  } else {
-
-
-    //argv[2~8]
-    if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK)  {
-      opserr << "WARNING invalid YamamotoBiaxialHDR eleTag\n";
-      ifNoError = false;
+    if (ndm != 3 || ndf != 6) {
+	opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
+	opserr << "WARNING YamamotoBiaxialHDR command only works when ndm is 3 and ndf is 6" << endln;
+	return 0;
     }
 
-    // iNode
-    if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK)  {
-      opserr << "WARNING invalid iNode\n";
-      ifNoError = false;
-    }
 
-    // jNode
-    if (Tcl_GetInt(interp, argv[4], &jNode) != TCL_OK)  {
-      opserr << "WARNING invalid jNode\n";
-      ifNoError = false;
-    }
+    //arguments (necessary)
+    int eleTag;
+    int iNode;
+    int jNode;
 
-    // Tp
-    if (strcmp(argv[5],"1") == 0) {
-      Tp = 1; // Bridgestone X0.6R (EESD version)
-    } else {
-      opserr << "WARNING invalid YamamotoBiaxialHDR Tp" << endln;
-      ifNoError = false;
-    }
+    int Tp = 1;
+    double DDo;
+    double DDi;
+    double Hr;
 
-    // DDo
-    if (Tcl_GetDouble(interp, argv[6], &DDo) != TCL_OK || DDo <= 0.0) {
-      opserr << "WARNING invalid YamamotoBiaxialHDR DDo" << endln;
-      ifNoError = false;
-    }
+    //arguments (optional)
+    double Cr=1.0;
+    double Cs=1.0;
+    Vector oriX(0);
+    Vector oriYp(3); oriYp(0) = 0.0; oriYp(1) = 1.0; oriYp(2) = 0.0;
+    double mass = 0.0;
 
-    // DDi
-    if (Tcl_GetDouble(interp, argv[7], &DDi) != TCL_OK || DDi < 0.0) {
-      opserr << "WARNING invalid YamamotoBiaxialHDR DDi" << endln;
-      ifNoError = false;
-    }
 
-    // Hr
-    if (Tcl_GetDouble(interp, argv[8], &Hr) != TCL_OK || Hr <= 0.0) {
-      opserr << "WARNING invalid YamamotoBiaxialHDR Hr" << endln;
-      ifNoError = false;
-    }
+    //
+    Element *theElement = 0;
 
-    // check print--------------------------------------------/
-    //  opserr << "   \n";
-    //  opserr << "TclModelBuilder_addYamamotoBiaxialHDR()\n";
-    //  opserr << "  tp  = " << Tp << endln;
-    //  opserr << "  ddo = " << DDo << endln;
-    //  opserr << "  ddi = " << DDi << endln;
-    //  opserr << "  hr  = " << Hr << endln;
-    //------------------------------------------------------
 
-    // argv[9~]
-    for (int i=9; i<=(argc-1); i++) {
-      double value;
+    //error flag
+    bool ifNoError = true;
 
-      if (strcmp(argv[i],"-orient")==0 && (i+6)<=(argc-1) && Tcl_GetDouble(interp,argv[i+4], &value) == TCL_OK) { // <-orient x1? x2? x3? yp1? yp2? yp3?>
+    // 
+    int numdata = 1;
 
-	oriX.resize(3);
-
-	// x1, x2, x3
-	for (int j=1; j<=3; j++) {
-	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
-	    opserr << "WARNING invalid -orient value\n";
-	    ifNoError = false;
-	  } else {
-	    oriX(j-1) = value;
-	  }
-	}
-	
-	i += 3;
-	
-	// yp1, yp2, yp3
-	for (int j=1; j<=3; j++) {
-	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
-	    opserr << "WARNING invalid -orient value\n";
-	    ifNoError = false;
-	  } else {
-	    oriYp(j-1) = value;
-	  }
-	}
-	
-	i += 3;
-	
-      } else if (strcmp(argv[i],"-orient")==0 && (i+3)<=(argc-1)) { // <-orient yp1? yp2? yp3?>
-	
-	for (int j=1; j<=3; j++) {
-	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
-	    opserr << "WARNING invalid -orient value\n";
-	    ifNoError = false;
-	  } else {
-	    oriYp(j-1) = value;
-	  }
-	}
-	
-	i += 3;
-	
-      } else if (strcmp(argv[i],"-mass")==0 && (i+1)<=(argc-1)) { // <-mass m?>
-	
-	if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK || mass <= 0)  {
-	  opserr << "WARNING invalid mass\n";
-	  ifNoError = false;
-	}
-
-	i += 1;
-
-      } else if (strcmp(argv[i],"-coRS")==0 && (i+2)<=(argc-1)) { // <-coRS cr? cs?>
-	
-	if (Tcl_GetDouble(interp, argv[i+1], &Cr) != TCL_OK || Cr <= 0)  {
-	  opserr << "WARNING invalid cr\n";
-	  ifNoError = false;
-	}
-	if (Tcl_GetDouble(interp, argv[i+2], &Cs) != TCL_OK || Cs <= 0)  {
-	  opserr << "WARNING invalid cs\n";
-	  ifNoError = false;
-	}
-
-	i += 2;
-
-	
-      } else {
-	
-	opserr << "WARNING invalid optional arguments \n";
+    if (OPS_GetNumRemainingInputArgs() < 7)  {
+        // element YamamotoBiaxialHDR eleTag? iNode? jNode? Tp? DDo? DDi? Hr?
+	// argc =            1           2             3      4      5     6   7    8    9
+	// argv =       argv[0]      argv[1]      argv[2]  argv[3] ................. argv[8]
+	opserr << "WARNING insufficient arguments\n";
 	ifNoError = false;
-	break;
 	
-      }
+    } else {
+
+
+	//argv[2~8]
+	if (OPS_GetIntInput(&numdata, &eleTag) < 0) {
+	    opserr << "WARNING invalid YamamotoBiaxialHDR eleTag\n";
+	    ifNoError = false;
+	}
+
+	// iNode
+	if (OPS_GetIntInput(&numdata, &iNode) < 0) {
+	    opserr << "WARNING invalid iNode\n";
+	    ifNoError = false;
+	}
+
+	// jNode
+	if (OPS_GetIntInput(&numdata, &jNode) < 0) {
+	    opserr << "WARNING invalid jNode\n";
+	    ifNoError = false;
+	}
+
+	// Tp
+	const char* tparg = OPS_GetString();
+	if (strcmp(tparg,"1") == 0) {
+	    Tp = 1; // Bridgestone X0.6R (EESD version)
+	} else {
+	    opserr << "WARNING invalid YamamotoBiaxialHDR Tp" << endln;
+	    ifNoError = false;
+	}
+
+	// DDo
+	if (OPS_GetDoubleInput(&numdata, &DDo) < 0 || DDo <= 0.0) {
+	    opserr << "WARNING invalid YamamotoBiaxialHDR DDo" << endln;
+	    ifNoError = false;
+	}
+
+	// DDi
+	if (OPS_GetDoubleInput(&numdata, &DDi) < 0 || DDi < 0.0) {
+	    opserr << "WARNING invalid YamamotoBiaxialHDR DDi" << endln;
+	    ifNoError = false;
+	}
+
+	// Hr
+	if (OPS_GetDoubleInput(&numdata, &Hr) < 0 || Hr <= 0.0) {
+	    opserr << "WARNING invalid YamamotoBiaxialHDR Hr" << endln;
+	    ifNoError = false;
+	}
+
+	// check print--------------------------------------------/
+	//  opserr << "   \n";
+	//  opserr << "TclModelBuilder_addYamamotoBiaxialHDR()\n";
+	//  opserr << "  tp  = " << Tp << endln;
+	//  opserr << "  ddo = " << DDo << endln;
+	//  opserr << "  ddi = " << DDi << endln;
+	//  opserr << "  hr  = " << Hr << endln;
+	//------------------------------------------------------
+
+	// argv[9~]
+	while (OPS_GetNumRemainingInputArgs() > 0) {
+	    double value;
+	    const char* flag = OPS_GetString();
+	    if (strcmp(flag,"-orient")==0 && OPS_GetNumRemainingInputArgs() >= 6) { // <-orient x1? x2? x3? yp1? yp2? yp3?>
+
+		oriX.resize(3);
+
+		// x1, x2, x3
+		for (int j=1; j<=3; j++) {
+		    if (OPS_GetDoubleInput(&numdata, &value) < 0) {
+			opserr << "WARNING invalid -orient value\n";
+			ifNoError = false;
+		    } else {
+			oriX(j-1) = value;
+		    }
+		}
+	
+		// yp1, yp2, yp3
+		for (int j=1; j<=3; j++) {
+		    if (OPS_GetDoubleInput(&numdata, &value) < 0) {
+			opserr << "WARNING invalid -orient value\n";
+			ifNoError = false;
+		    } else {
+			oriYp(j-1) = value;
+		    }
+		}
+	
+	    } else if (strcmp(flag,"-orient")==0 && OPS_GetNumRemainingInputArgs() >= 3) { // <-orient yp1? yp2? yp3?>
+	
+		for (int j=1; j<=3; j++) {
+		    if (OPS_GetDoubleInput(&numdata, &value) < 0) {
+			opserr << "WARNING invalid -orient value\n";
+			ifNoError = false;
+		    } else {
+			oriYp(j-1) = value;
+		    }
+		}
+	
+	    } else if (strcmp(flag,"-mass")==0 && OPS_GetNumRemainingInputArgs()>0) { // <-mass m?>
+
+		if (OPS_GetDoubleInput(&numdata, &mass) < 0 || mass <= 0) {
+		    opserr << "WARNING invalid mass\n";
+		    ifNoError = false;
+		}
+
+	    } else if (strcmp(flag,"-coRS")==0 && OPS_GetNumRemainingInputArgs()>=2) { // <-coRS cr? cs?>
+		if (OPS_GetDoubleInput(&numdata, &Cr) < 0 || Cr <= 0) {
+		    opserr << "WARNING invalid cr\n";
+		    ifNoError = false;
+		}
+		if (OPS_GetDoubleInput(&numdata, &Cs) < 0 || Cs <= 0) {
+		    opserr << "WARNING invalid cs\n";
+		    ifNoError = false;
+		}
+
+	    } else {
+	
+		opserr << "WARNING invalid optional arguments \n";
+		ifNoError = false;
+		break;
+	
+	    }
+	}
+
+    } //end input
+
+  
+    //if error detected
+    if (!ifNoError) {
+	//input:
+	//want:
+	opserr << "Want: element YamamotoBiaxialHDR eleTag? iNode? jNode? Tp? DDo? DDi? Hr?  <-coRS cr? cs?> <-orient <x1? x2? x3?> y1? y2? y3?> <-mass m?>\n";
+	return 0;
     }
-
-  } //end input
-
-  
-  //if error detected
-  if (!ifNoError) {
-    //input:
-    printCommand(argc, argv);
-    //want:
-    opserr << "Want: element YamamotoBiaxialHDR eleTag? iNode? jNode? Tp? DDo? DDi? Hr?  <-coRS cr? cs?> <-orient <x1? x2? x3?> y1? y2? y3?> <-mass m?>\n";
-    return TCL_ERROR;
-  }
   
 
-  // now create the YamamotoBiaxialHDR
-  theElement = new YamamotoBiaxialHDR(eleTag, iNode, jNode, Tp, DDo, DDi, Hr, Cr, Cs, oriYp, oriX, mass);
-
-  if (theElement == 0)  {
-    opserr << "WARNING ran out of memory creating element\n";
-    opserr << "YamamotoBiaxialHDR element: " << eleTag << endln;
-    return TCL_ERROR;
-  }
+    // now create the YamamotoBiaxialHDR
+    theElement = new YamamotoBiaxialHDR(eleTag, iNode, jNode, Tp, DDo, DDi, Hr, Cr, Cs, oriYp, oriX, mass);
   
-  // then add the YamamotoBiaxialHDR to the domain
-  if (theTclDomain->addElement(theElement) == false)  {
-    opserr << "WARNING could not add element to the domain\n";
-    opserr << "YamamotoBiaxialHDR element: " << eleTag << endln;
-    delete theElement;
-    return TCL_ERROR;
-  }       
-  
-  // if get here we have successfully created the YamamotoBiaxialHDR and added it to the domain
-  return TCL_OK;
-  }
+    // if get here we have successfully created the YamamotoBiaxialHDR and added it to the domain
+    return theElement;
+}
 
 
-// --- end of TclModelBuilder_addYamamotoBiaxialHDR
+// --- end of OPS_YamamotoBiaxialHDR
 
 
 

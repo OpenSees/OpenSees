@@ -42,7 +42,6 @@
 // The multiple shear springs are distributed in local-yz plane.
 
 
-#include <TclModelBuilder.h>
 #include <ID.h>
 #include <Vector.h>
 
@@ -62,8 +61,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <elementAPI.h>
 
-extern void printCommand(int argc, TCL_Char **argv);
 
 // Bessel function, Copyright(C) 1996 Takuya OOURA
 #ifdef _WIN32
@@ -75,7 +74,7 @@ extern double dbesi1(double);
 #endif
 
 
-static bool errDetected(bool ifNoError,char *msg){
+static bool errDetected(bool ifNoError, const char *msg){
   if (ifNoError){
     opserr << "" << endln;
     opserr << "========================================" << endln;
@@ -87,452 +86,425 @@ static bool errDetected(bool ifNoError,char *msg){
 };
 
 
-int TclModelBuilder_addKikuchiBearing(ClientData clientData,
-    Tcl_Interp *interp, int argc, TCL_Char **argv, Domain *theTclDomain,
-    TclModelBuilder *theTclBuilder)
+void* OPS_KikuchiBearing()
 {
 
-  // ensure the destructor has not been called
-  if (theTclBuilder == 0)  {
-    opserr << "WARNING builder has been destroyed - KikuchiBearing\n";    
-    return TCL_ERROR;
-  }
+    //3-dim, 6dof
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
 
-  //3-dim, 6dof
-  int ndm = theTclBuilder->getNDM();
-  int ndf = theTclBuilder->getNDF();
-
-  if (ndm != 3 || ndf != 6) {
-    opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
-    opserr << "WARNING KikuchiBearing command only works when ndm is 3 and ndf is 6" << endln;
-    return TCL_ERROR;
-  }
-
-  //arguments (necessary)
-  int eleTag;
-  int iNode;
-  int jNode;
-
-  //arguments (necessary, input with -???)
-  int shape;
-  double size;
-  double totalRubber;
-  int nMSS;
-  int matMSSTag;
-  UniaxialMaterial *matMSS;
-  int nMNS;
-  int matMNSTag;
-  UniaxialMaterial *matMNS;
-
-  //arguments (optional, input with -???)
-  double totalHeight = -1.0; //default: Norm(I->J)
-  double limDisp = -1.0; //default: INF
-  double lambda = -1.0; //default: INF
-  Vector oriX(0); //default: local-x Vec(I->J)
-  Vector oriYp(3); oriYp(0) = 0.0; oriYp(1) = 1.0; oriYp(2) = 0.0; //default: global-Y
-  double mass = 0.0;
-  bool ifPDInput = true;
-  bool ifTilt = true;
-  double adjCi = 0.5;
-  double adjCj = 0.5;
-  bool ifBalance = false;
-  double limFo = -1.0; //default: INF
-  double limFi = -1.0; //default: INF
-  int nIter = 1;
-
-  // input comfirmation
-  int recvShape  = 0;
-  int recvSize   = 0;
-  int recvHeight = 0;
-  int recvNMSS  = 0;
-  int recvMatMSS  = 0;
-  int recvLimDisp = 0;
-  int recvNMNS  = 0;
-  int recvMatMNS  = 0;
-  int recvLambda = 0;
-  int recvOrient = 0;
-  int recvMass   = 0;
-  int recvIfPD = 0;
-  int recvIfTl = 0;
-  int recvAdj = 0;
-  int recvBal = 0;
-
-  //
-  Element *theElement = 0;
-
-
-  //error flag
-  bool ifNoError = true;
-
-
-
-  if (argc < 5)  { //element KikuchiBearing eleTag? iNode? jNode?
-
-    ifNoError = errDetected(ifNoError,"insufficient arguments");
-
-  } else {
-
-    //argv[2~4]
-    if (Tcl_GetInt(interp, argv[2], &eleTag) != TCL_OK)  {
-      ifNoError = errDetected(ifNoError,"invalid eleTag");
+    if (ndm != 3 || ndf != 6) {
+    	opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
+    	opserr << "WARNING KikuchiBearing command only works when ndm is 3 and ndf is 6" << endln;
+    	return 0;
     }
 
-    if (Tcl_GetInt(interp, argv[3], &iNode) != TCL_OK)  {
-      ifNoError = errDetected(ifNoError,"invalid iNode");
-    }
+    //arguments (necessary)
+    int eleTag;
+    int iNode;
+    int jNode;
 
-    if (Tcl_GetInt(interp, argv[4], &jNode) != TCL_OK)  {
-      ifNoError = errDetected(ifNoError,"invalid jNode");
-    }
+    //arguments (necessary, input with -???)
+    int shape;
+    double size;
+    double totalRubber;
+    int nMSS;
+    int matMSSTag;
+    UniaxialMaterial *matMSS;
+    int nMNS;
+    int matMNSTag;
+    UniaxialMaterial *matMNS;
 
-    //argv[5~]
-    for (int i=5; i<=(argc-1); i++) {
-      
-      double value;
+    //arguments (optional, input with -???)
+    double totalHeight = -1.0; //default: Norm(I->J)
+    double limDisp = -1.0; //default: INF
+    double lambda = -1.0; //default: INF
+    Vector oriX(0); //default: local-x Vec(I->J)
+    Vector oriYp(3); oriYp(0) = 0.0; oriYp(1) = 1.0; oriYp(2) = 0.0; //default: global-Y
+    double mass = 0.0;
+    bool ifPDInput = true;
+    bool ifTilt = true;
+    double adjCi = 0.5;
+    double adjCj = 0.5;
+    bool ifBalance = false;
+    double limFo = -1.0; //default: INF
+    double limFi = -1.0; //default: INF
+    int nIter = 1;
 
-      if (strcmp(argv[i],"-shape")==0 && (i+1)<=(argc-1)) { // -shape shape?
-	
-      	if (strcmp(argv[i+1],"round") == 0) {
-	  shape = 1; //round
-	} else if (strcmp(argv[i+1],"square") == 0) {
-	  shape = 2; //square
-	} else {
-	  ifNoError = errDetected(ifNoError,"invalid shape (\"round\" or \"square\" are available)");
-	}
-	
-	recvShape++ ;
-	i += 1;
+    // input comfirmation
+    int recvShape  = 0;
+    int recvSize   = 0;
+    int recvHeight = 0;
+    int recvNMSS  = 0;
+    int recvMatMSS  = 0;
+    int recvLimDisp = 0;
+    int recvNMNS  = 0;
+    int recvMatMNS  = 0;
+    int recvLambda = 0;
+    int recvOrient = 0;
+    int recvMass   = 0;
+    int recvIfPD = 0;
+    int recvIfTl = 0;
+    int recvAdj = 0;
+    int recvBal = 0;
 
-
-      } else if (strcmp(argv[i],"-size")==0 && (i+2)<=(argc-1)) { // -size size? totalRubber?
-	
-	if (Tcl_GetDouble(interp, argv[i+1], &size) != TCL_OK || size <= 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid size");
-	}
-
-	if (Tcl_GetDouble(interp, argv[i+2], &totalRubber) != TCL_OK || totalRubber <= 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid totalRubber");
-	}
-
-	recvSize++ ;
-	i += 2;
-	
-      } else if (strcmp(argv[i],"-totalHeight")==0 && (i+1)<=(argc-1)) { // -totalHeight totalHeight?
-	
-	if (Tcl_GetDouble(interp, argv[i+1], &totalHeight) != TCL_OK || totalHeight <= 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid totalHeight");
-	}
-
-	recvHeight++ ;
-	i += 1;
-
-      } else if (strcmp(argv[i],"-nMSS")==0 && (i+1)<=(argc-1)) { // -nMSS nMSS?
-	
-	if (Tcl_GetInt(interp, argv[i+1], &nMSS) != TCL_OK || nMSS <= 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid nMSS");
-	}
-
-	recvNMSS++ ;
-	i += 1;
+    //
+    Element *theElement = 0;
 
 
-      } else if (strcmp(argv[i],"-matMSS")==0 && (i+1)<=(argc-1)) { // -matMSS matMSSTag?
-	
-	if (Tcl_GetInt(interp,argv[i+1], &matMSSTag) != TCL_OK) {
-	  ifNoError = errDetected(ifNoError,"invalid matMSSTag");
-	}
-
-	matMSS = OPS_getUniaxialMaterial(matMSSTag);
-	if (matMSS == 0)  {
-	  ifNoError = errDetected(ifNoError,"material for MSS model not found");
-	}
-
-	recvMatMSS++ ;
-	i += 1;
+    //error flag
+    bool ifNoError = true;
 
 
-      } else if (strcmp(argv[i],"-limDisp")==0 && (i+1)<=(argc-1)) { // <-limDisp limDisp?>
-	
-	if (Tcl_GetDouble(interp, argv[i+1], &limDisp) != TCL_OK || limDisp < 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid limDisp");
-	}
 
-	recvLimDisp++ ;
-	i += 1;
+    if (OPS_GetNumRemainingInputArgs() < 3)  { //element KikuchiBearing eleTag? iNode? jNode?
 
+	ifNoError = errDetected(ifNoError,"insufficient arguments");
 
-      } else if (strcmp(argv[i],"-nMNS")==0 && (i+1)<=(argc-1)) { // -nMNS nMNS?
-	
-	if (Tcl_GetInt(interp, argv[i+1], &nMNS) != TCL_OK || nMNS <= 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid nMNS");
-	}
+    } else {
 
-	recvNMNS++ ;
-	i += 1;
+    	//argv[2~4]
+    	int numdata = 1;
+    	if (OPS_GetIntInput(&numdata, &eleTag) < 0) {
+    	    ifNoError = errDetected(ifNoError,"invalid eleTag");
+    	}
 
+    	if (OPS_GetIntInput(&numdata, &iNode) < 0) {
+    	    ifNoError = errDetected(ifNoError,"invalid iNode");
+    	}
 
-      } else if (strcmp(argv[i],"-matMNS")==0 && (i+1)<=(argc-1)) { // -matMNS matMNSTag?
-	
-	if (Tcl_GetInt(interp,argv[i+1], &matMNSTag) != TCL_OK) {
-	  ifNoError = errDetected(ifNoError,"invalid matMNSTag");
-	}
-
-	matMNS = OPS_getUniaxialMaterial(matMNSTag);
-	if (matMNS == 0)  {
-	  ifNoError = errDetected(ifNoError,"material for MNS model not found");
-	}
-
-	recvMatMNS++ ;
-	i += 1;
-
-
-      } else if (strcmp(argv[i],"-lambda")==0 && (i+1)<=(argc-1)) { // <-lambda lambda?>
-	
-	if (Tcl_GetDouble(interp, argv[i+1], &lambda) != TCL_OK || lambda < 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid lambda");
-	}
-
-	recvLambda++ ;
-	i += 1;
-
-
-      } else if (strcmp(argv[i],"-orient")==0 && (i+6)<=(argc-1) && Tcl_GetDouble(interp,argv[i+4], &value) == TCL_OK) { // <-orient x1? x2? x3? yp1? yp2? yp3?>
-
-	oriX.resize(3);
-
-	for (int j=1; j<=3; j++) {
-	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
-	    ifNoError = errDetected(ifNoError,"invalid orient");
-	  } else {
-	    oriX(j-1) = value;
-	  }
-	}
-
-	i += 3;
-
-	for (int j=1; j<=3; j++) {
-	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
-	    ifNoError = errDetected(ifNoError,"invalid orient");
-	  } else {
-	    oriYp(j-1) = value;
-	  }
-	}
-
-	recvOrient++ ;
-	i += 3;
-
-      } else if (strcmp(argv[i],"-orient")==0 && (i+3)<=(argc-1)) { // <-orient yp1? yp2? yp3?>
-
-	for (int j=1; j<=3; j++) {
-	  if (Tcl_GetDouble(interp, argv[i+j], &value) != TCL_OK )  {
-	    ifNoError = errDetected(ifNoError,"invalid orient");
-	  } else {
-	    oriYp(j-1) = value;
-	  }
-	}
-
-	recvOrient++ ;
-	i += 3;
-
-      } else if (strcmp(argv[i],"-mass")==0 && (i+1)<=(argc-1)) { // <-mass mass?>
-	
-	if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK || mass <= 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid mass");
-	}
-
-	recvMass++ ;
-	i += 1;
-
-      } else if (strcmp(argv[i],"-noPDInput")==0) { // <-noPDInput>
-	
-	ifPDInput = false;
-
-	recvIfPD++ ;
-	i += 0;
-
-      } else if (strcmp(argv[i],"-noTilt")==0) { // <-noTilt>
-	
-	ifTilt = false;
-
-	recvIfTl++ ;
-	i += 0;
-	
-      } else if (strcmp(argv[i],"-adjustPDOutput")==0 && (i+2)<=(argc-1)) { // -adjustPDOutput ci? cj?
-	
-	if (Tcl_GetDouble(interp, argv[i+1], &adjCi) != TCL_OK)  {
-	  ifNoError = errDetected(ifNoError,"invalid ci");
-	}
-
-	if (Tcl_GetDouble(interp, argv[i+2], &adjCj) != TCL_OK)  {
-	  ifNoError = errDetected(ifNoError,"invalid cj");
-	}
-
-	recvAdj++ ;
-	i += 2;
-
-      } else if (strcmp(argv[i],"-doBalance")==0 && (i+3)<=(argc-1)) { // -doBalance limFo? limFi? nIter?
-	
-	if (Tcl_GetDouble(interp, argv[i+1], &limFo) != TCL_OK || limFo <= 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid limFo");
-	}
-
-	if (Tcl_GetDouble(interp, argv[i+2], &limFi) != TCL_OK || limFi <= 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid limFi");
-	}
-
-	if (Tcl_GetInt(interp, argv[i+3], &nIter) != TCL_OK || nIter <= 0)  {
-	  ifNoError = errDetected(ifNoError,"invalid nIter");
-	}
-
-	ifBalance = true;
-
-	recvBal++ ;
-	i += 3;
-
-
-      } else { //invalid option
-	
-	ifNoError = errDetected(ifNoError,"invalid optional arguments");
-	break;
-
-      }
-
-    }
+    	if (OPS_GetIntInput(&numdata, &jNode) < 0) {
+    	    ifNoError = errDetected(ifNoError,"invalid jNode");
+    	}
     
-  } //end input
+	//argv[5~]
+    	while (OPS_GetNumRemainingInputArgs() > 0) {
+      
+	    double value;
+     	    const char* flag = OPS_GetString();
+
+	    if (strcmp(flag,"-shape")==0 && OPS_GetNumRemainingInputArgs()>0) { // -shape shape?
+    		const char* shapeflag = OPS_GetString();
+    		if (strcmp(shapeflag,"round") == 0) {
+    		    shape = 1; //round
+    		} else if (strcmp(shapeflag,"square") == 0) {
+    		    shape = 2; //square
+    		} else {
+    		    ifNoError = errDetected(ifNoError,"invalid shape (\"round\" or \"square\" are available)");
+    		}
+	
+    		recvShape++ ;
+
+
+    	    } else if (strcmp(flag,"-size")==0 && OPS_GetNumRemainingInputArgs()>1) { // -size size? totalRubber?
+
+    		numdata = 1;
+    		if (OPS_GetDoubleInput(&numdata, &size)<0 || size<=0) {
+    		    ifNoError = errDetected(ifNoError,"invalid size");
+    		}
+
+    		if (OPS_GetDoubleInput(&numdata, &totalRubber)<0 || totalRubber<=0) {
+    		    ifNoError = errDetected(ifNoError,"invalid totalRubber");
+    		}
+
+    		recvSize++ ;
+	
+    	    } else if (strcmp(flag,"-totalHeight")==0 && OPS_GetNumRemainingInputArgs()>0) { // -totalHeight totalHeight?
+
+    		numdata = 1;
+    		if (OPS_GetDoubleInput(&numdata, &totalHeight)<0 || totalHeight<=0) {
+    		    ifNoError = errDetected(ifNoError,"invalid totalHeight");
+    		}
+
+    		recvHeight++ ;
+
+    	    } else if (strcmp(flag,"-nMSS")==0 && OPS_GetNumRemainingInputArgs()>0) { // -nMSS nMSS?
+
+    		numdata = 1;
+    		if (OPS_GetIntInput(&numdata, &nMSS)<0 || nMSS<=0) {
+    		    ifNoError = errDetected(ifNoError,"invalid nMSS");
+    		}
+
+    		recvNMSS++ ;
+
+
+    	    } else if (strcmp(flag,"-matMSS")==0 && OPS_GetNumRemainingInputArgs()>0) { // -matMSS matMSSTag?
+
+    		numdata = 1;
+    		if (OPS_GetIntInput(&numdata, &matMSSTag)<0) {
+    		    ifNoError = errDetected(ifNoError,"invalid matMSSTag");
+    		}
+
+    		matMSS = OPS_getUniaxialMaterial(matMSSTag);
+    		if (matMSS == 0)  {
+    		    ifNoError = errDetected(ifNoError,"material for MSS model not found");
+    		}
+
+    		recvMatMSS++ ;
+
+
+    	    } else if (strcmp(flag,"-limDisp")==0 && OPS_GetNumRemainingInputArgs()>0) { // <-limDisp limDisp?>
+
+    		numdata = 1;
+    		if (OPS_GetDoubleInput(&numdata, &limDisp)<0 || limDisp<0) {
+    		    ifNoError = errDetected(ifNoError,"invalid limDisp");
+    		}
+
+    		recvLimDisp++ ;
+
+
+    	    } else if (strcmp(flag,"-nMNS")==0 && OPS_GetNumRemainingInputArgs()>0) { // -nMNS nMNS?
+
+    		numdata = 1;
+    		if (OPS_GetIntInput(&numdata, &nMNS)<0 || nMNS<=0) {
+    		    ifNoError = errDetected(ifNoError,"invalid nMNS");
+    		}
+
+    		recvNMNS++ ;
+
+
+    	    } else if (strcmp(flag,"-matMNS")==0 && OPS_GetNumRemainingInputArgs()>0) { // -matMNS matMNSTag?
+    		numdata = 1;
+    		if (OPS_GetIntInput(&numdata, &matMNSTag)<0) {
+    		    ifNoError = errDetected(ifNoError,"invalid matMNSTag");
+    		}
+
+    		matMNS = OPS_getUniaxialMaterial(matMNSTag);
+    		if (matMNS == 0)  {
+    		    ifNoError = errDetected(ifNoError,"material for MNS model not found");
+    		}
+
+    		recvMatMNS++ ;
+
+
+    	    } else if (strcmp(flag,"-lambda")==0 && OPS_GetNumRemainingInputArgs()>0) { // <-lambda lambda?>
+    		numdata = 1;
+    		if (OPS_GetDoubleInput(&numdata, &lambda)<0 || lambda<0) {
+    		    ifNoError = errDetected(ifNoError,"invalid lambda");
+    		}
+
+    		recvLambda++ ;
+
+
+    	    } else if (strcmp(flag,"-orient")==0 && OPS_GetNumRemainingInputArgs()>=6) { // <-orient x1? x2? x3? yp1? yp2? yp3?>
+
+    		oriX.resize(3);
+
+    		for (int j=1; j<=3; j++) {
+    		    numdata = 1;
+    		    if (OPS_GetDoubleInput(&numdata, &value)<0) {
+    			ifNoError = errDetected(ifNoError,"invalid orient");
+    		    } else {
+    			oriX(j-1) = value;
+    		    }
+    		}
+
+    		for (int j=1; j<=3; j++) {
+    		    numdata = 1;
+    		    if (OPS_GetDoubleInput(&numdata, &value)<0) {
+    			ifNoError = errDetected(ifNoError,"invalid orient");
+    		    } else {
+    			oriYp(j-1) = value;
+    		    }
+    		}
+
+    		recvOrient++ ;
+
+    	    } else if (strcmp(flag,"-orient")==0 && OPS_GetNumRemainingInputArgs()>=3) { // <-orient yp1? yp2? yp3?>
+
+    		for (int j=1; j<=3; j++) {
+    		    numdata = 1;
+    		    if (OPS_GetDoubleInput(&numdata, &value)<0) {
+    			ifNoError = errDetected(ifNoError,"invalid orient");
+    		    } else {
+    			oriYp(j-1) = value;
+    		    }
+    		}
+
+    		recvOrient++ ;
+
+    	    } else if (strcmp(flag,"-mass")==0 && OPS_GetNumRemainingInputArgs()>0) { // <-mass mass?>
+
+    		numdata = 1;
+    		if (OPS_GetDoubleInput(&numdata, &mass)<0 || mass<=0) {
+    		    ifNoError = errDetected(ifNoError,"invalid mass");
+    		}
+
+    		recvMass++ ;
+
+    	    } else if (strcmp(flag,"-noPDInput")==0) { // <-noPDInput>
+	
+    		ifPDInput = false;
+
+    		recvIfPD++ ;
+
+    	    } else if (strcmp(flag,"-noTilt")==0) { // <-noTilt>
+	
+    		ifTilt = false;
+
+    		recvIfTl++ ;
+	
+    	    } else if (strcmp(flag,"-adjustPDOutput")==0 && OPS_GetNumRemainingInputArgs()>1) { // -adjustPDOutput ci? cj?
+
+    		numdata = 1;
+    		if (OPS_GetDoubleInput(&numdata, &adjCi)<0 || adjCi<=0) {
+    		    ifNoError = errDetected(ifNoError,"invalid ci");
+    		}
+
+    		if (OPS_GetDoubleInput(&numdata, &adjCj)<0 || adjCj<=0) {
+    		    ifNoError = errDetected(ifNoError,"invalid cj");
+    		}
+
+    		recvAdj++ ;
+
+    	    } else if (strcmp(flag,"-doBalance")==0 && OPS_GetNumRemainingInputArgs()>2) { // -doBalance limFo? limFi? nIter?
+
+    		numdata = 1;
+    		if (OPS_GetDoubleInput(&numdata, &limFo)<0 || limFo<=0) {
+    		    ifNoError = errDetected(ifNoError,"invalid limFo");
+    		}
+
+    		if (OPS_GetDoubleInput(&numdata, &limFi)<0 || limFi<=0) {
+    		    ifNoError = errDetected(ifNoError,"invalid limFi");
+    		}
+
+    		if (OPS_GetIntInput(&numdata, &nIter)<0 || nIter<=0) {
+    		    ifNoError = errDetected(ifNoError,"invalid nIter");
+    		}
+
+    		ifBalance = true;
+
+    		recvBal++ ;
+
+
+    	    } else { //invalid option
+	
+    		ifNoError = errDetected(ifNoError,"invalid optional arguments");
+    		break;
+
+    	    }
+
+    	}
+    
+    } //end input
   
 
-  // input cofirmation
-  // necessary arguments
-  if (recvShape != 1)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -shape inputs (got %d inputs, but want 1 input)",recvShape);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    // input cofirmation
+    // necessary arguments
+    if (recvShape != 1)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -shape inputs (got %d inputs, but want 1 input)",recvShape);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvSize != 1)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -size inputs (got %d inputs, but want 1 input)",recvSize);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvSize != 1)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -size inputs (got %d inputs, but want 1 input)",recvSize);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvNMSS != 1)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -NMSS inputs (got %d inputs, but want 1 input)",recvNMSS);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvNMSS != 1)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -NMSS inputs (got %d inputs, but want 1 input)",recvNMSS);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvMatMSS != 1)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -matMSS inputs (got %d inputs, but want 1 input)",recvMatMSS);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvMatMSS != 1)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -matMSS inputs (got %d inputs, but want 1 input)",recvMatMSS);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvNMNS != 1)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -NMNS inputs (got %d inputs, but want 1 input)",recvNMNS);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvNMNS != 1)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -NMNS inputs (got %d inputs, but want 1 input)",recvNMNS);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvMatMNS != 1)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -matMNS inputs (got %d inputs, but want 1 input)",recvMatMNS);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvMatMNS != 1)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -matMNS inputs (got %d inputs, but want 1 input)",recvMatMNS);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
 
-  //optional arguments
-  if (recvHeight >= 2)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -totalHeight inputs (got %d inputs, but want 1 input)",recvHeight);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    //optional arguments
+    if (recvHeight >= 2)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -totalHeight inputs (got %d inputs, but want 1 input)",recvHeight);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvLimDisp >= 2)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -limDisp inputs (got %d inputs, but want 1 input)",recvLimDisp);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvLimDisp >= 2)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -limDisp inputs (got %d inputs, but want 1 input)",recvLimDisp);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvLambda >= 2)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -lambda inputs (got %d inputs, but want 1 input)",recvLambda);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvLambda >= 2)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -lambda inputs (got %d inputs, but want 1 input)",recvLambda);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvOrient >= 2)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -ori inputs (got %d inputs, but want 1 input)",recvOrient);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvOrient >= 2)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -ori inputs (got %d inputs, but want 1 input)",recvOrient);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvMass >= 2)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -mass inputs (got %d inputs, but want 1 input)",recvMass);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvMass >= 2)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -mass inputs (got %d inputs, but want 1 input)",recvMass);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvIfPD >= 2)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -noPDInput inputs (got %d inputs, but want 1 input)",recvIfPD);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvIfPD >= 2)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -noPDInput inputs (got %d inputs, but want 1 input)",recvIfPD);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvIfTl >= 2)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -noTilt inputs (got %d inputs, but want 1 input)",recvIfTl);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvIfTl >= 2)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -noTilt inputs (got %d inputs, but want 1 input)",recvIfTl);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvAdj >= 2)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -adjustPDOutput inputs (got %d inputs, but want 1 input)",recvAdj);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvAdj >= 2)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -adjustPDOutput inputs (got %d inputs, but want 1 input)",recvAdj);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
-  if (recvBal >= 2)  {
-    char buf[100];
-    sprintf(buf,"wrong number of -doBalance inputs (got %d inputs, but want 1 input)",recvBal);
-    ifNoError = errDetected(ifNoError,buf);
-  }
+    if (recvBal >= 2)  {
+    	char buf[100];
+    	sprintf(buf,"wrong number of -doBalance inputs (got %d inputs, but want 1 input)",recvBal);
+    	ifNoError = errDetected(ifNoError,buf);
+    }
 
   
-  //if error detected
-  if (!ifNoError) {
-    opserr << "------------------------------" << endln;
-    //input:
-    printCommand(argc, argv);
-    //want:
-    opserr << "Want: element KikuchiBearing eleTag? iNode? jNode?\n";
-    opserr << "                             -shape shape? -size size? totalRubber? <-totalHeight totalHeight?>\n";
-    opserr << "                             -nMSS nMSS? -matMSS matMSSTag? <-lim limDisp?>\n";
-    opserr << "                             -nMNS nMNS? -matMNS matMNSTag? <-lambda lambda?>\n";
-    opserr << "                             <-orient <x1? x2? x3?> yp1? yp2? yp3?> <-mass m?>\n";
-    opserr << "                             <-noPDInput> <-noTilt> <-adjustPDOutput ci? cj?> <-doBalance limFo? limFi? nIter?>\n";
-    opserr << "========================================" << endln;
-    opserr << "" << endln;
-    return TCL_ERROR;
-  }
+    //if error detected
+    if (!ifNoError) {
+    	opserr << "------------------------------" << endln;
+    	//input:
+    	//printCommand(argc, argv);
+    	//want:
+    	opserr << "Want: element KikuchiBearing eleTag? iNode? jNode?\n";
+    	opserr << "                             -shape shape? -size size? totalRubber? <-totalHeight totalHeight?>\n";
+    	opserr << "                             -nMSS nMSS? -matMSS matMSSTag? <-lim limDisp?>\n";
+    	opserr << "                             -nMNS nMNS? -matMNS matMNSTag? <-lambda lambda?>\n";
+    	opserr << "                             <-orient <x1? x2? x3?> yp1? yp2? yp3?> <-mass m?>\n";
+    	opserr << "                             <-noPDInput> <-noTilt> <-adjustPDOutput ci? cj?> <-doBalance limFo? limFi? nIter?>\n";
+    	opserr << "========================================" << endln;
+    	opserr << "" << endln;
+    	return 0;
+    }
 
-  // now create the KikuchiBearing
-  theElement = new KikuchiBearing(eleTag, iNode, jNode, shape, size, totalRubber, totalHeight, nMSS, matMSS, limDisp, nMNS, matMNS, lambda, oriYp, oriX, mass, ifPDInput, ifTilt, adjCi, adjCj, ifBalance, limFo, limFi, nIter);
+    // now create the KikuchiBearing
+    theElement = new KikuchiBearing(eleTag, iNode, jNode, shape, size, totalRubber, totalHeight, nMSS, matMSS, limDisp, nMNS, matMNS, lambda, oriYp, oriX, mass, ifPDInput, ifTilt, adjCi, adjCj, ifBalance, limFo, limFi, nIter);
+    return theElement;
 
-  if (theElement == 0)  {
-    opserr << "WARNING ran out of memory creating element\n";
-    opserr << "KikuchiBearing element: " << eleTag << endln;
-    return TCL_ERROR;
-  }
-  
-  // then add the KikuchiBearing to the domain
-  if (theTclDomain->addElement(theElement) == false)  {
-    opserr << "WARNING could not add element to the domain\n";
-    opserr << "KikuchiBearing element: " << eleTag << endln;
-    delete theElement;
-    return TCL_ERROR;
-  }       
-  
-  // if get here we have successfully created the KikuchiBearing and added it to the domain
-  return TCL_OK;
 }
 
 
