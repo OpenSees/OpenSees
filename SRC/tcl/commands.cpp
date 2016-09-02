@@ -248,9 +248,15 @@ extern TransientIntegrator *OPS_WilsonTheta(void);
 
 #include <SparseGenColLinSOE.h>
 #include <PFEMSolver.h>
+#include <PFEMSolver_Umfpack.h>
 #include <PFEMLinSOE.h>
 #include <PFEMCompressibleSolver.h>
 #include <PFEMCompressibleLinSOE.h>
+#ifdef _MUMPS
+#include <PFEMSolver_Mumps.h>
+#include <PFEMCompressibleSolver_Mumps.h>
+#endif
+
 #ifdef _THREADS
 #include <ThreadedSuperLU.h>
 #else
@@ -503,6 +509,7 @@ DirectIntegrationAnalysis *theTransientAnalysis = 0;
 VariableTimeStepDirectIntegrationAnalysis *theVariableTimeStepTransientAnalysis = 0;
 int numEigen = 0;
 
+#define _PFEM
 #ifdef _PFEM
 static PFEMAnalysis* thePFEMAnalysis = 0;
 #endif
@@ -2261,11 +2268,11 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 #ifdef _PFEM
     } else if(strcmp(argv[1], "PFEM") == 0) {
 
-        if(argc < 4) {
-            opserr<<"WARNING: wrong no of args -- analysis PFEM dtmax dtmin <ratio>\n";
+        if(argc < 5) {
+            opserr<<"WARNING: wrong no of args -- analysis PFEM dtmax dtmin gravity <ratio>\n";
             return TCL_ERROR;
         }
-        double dtmax, dtmin, ratio=0.5;
+        double dtmax, dtmin, gravity, ratio=0.5;
         if(Tcl_GetDouble(interp, argv[2], &dtmax) != TCL_OK) {  
             opserr<<"WARNING: invalid dtmax "<<argv[2]<<"\n";
             return TCL_ERROR;
@@ -2274,9 +2281,13 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
             opserr<<"WARNING: invalid dtmin "<<argv[3]<<"\n";
             return TCL_ERROR;
         }
-        if(argc > 4) {
-            if(Tcl_GetDouble(interp, argv[4], &ratio) != TCL_OK) {  
-                opserr<<"WARNING: invalid ratio "<<argv[4]<<"\n";
+	if(Tcl_GetDouble(interp, argv[4], &gravity) != TCL_OK) {  
+            opserr<<"WARNING: invalid gravity "<<argv[4]<<"\n";
+            return TCL_ERROR;
+        }
+        if(argc > 5) {
+            if(Tcl_GetDouble(interp, argv[5], &ratio) != TCL_OK) {  
+                opserr<<"WARNING: invalid ratio "<<argv[5]<<"\n";
                 return TCL_ERROR;
             }
         }
@@ -2312,7 +2323,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
                                            *theAlgorithm,
                                            *theSOE,
                                            *theTransientIntegrator,
-                                           theTest,dtmax,dtmin,ratio);
+                                           theTest,dtmax,dtmin,gravity,ratio);
 
         theTransientAnalysis = thePFEMAnalysis;
 #endif
@@ -2793,10 +2804,37 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       if(argc <= 2) {
           PFEMSolver* theSolver = new PFEMSolver();
           theSOE = new PFEMLinSOE(*theSolver);
-      } else if(strcmp(argv[2], "-quasi-incompressible") == 0) {
+      } else if(strcmp(argv[2], "-quasi") == 0) {
           PFEMCompressibleSolver* theSolver = new PFEMCompressibleSolver();
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
-}
+      } else if(strcmp(argv[2], "-umfpack") == 0) {
+	  PFEMSolver_Umfpack* theSolver = new PFEMSolver_Umfpack();
+          theSOE = new PFEMLinSOE(*theSolver);
+      } else if (strcmp(argv[2],"-mumps") ==0) {
+#ifdef _PARALLEL_INTERPRETERS
+	  int relax = 20;
+	  if (argc > 3) {
+	      if (Tcl_GetInt(interp, argv[3], &relax) != TCL_OK) {
+		  opserr<<"WARNING: failed to read relax\n";
+		  return TCL_ERROR;
+	      }
+	  }
+	  PFEMSolver_Mumps* theSolver = new PFEMSolver_Mumps(relax,0,0,0);
+          theSOE = new PFEMLinSOE(*theSolver);
+#endif
+      } else if (strcmp(argv[2],"-quasi-mumps")==0) {
+#ifdef _PARALLEL_INTERPRETERS
+	  int relax = 20;
+	  if (argc > 3) {
+	      if (Tcl_GetInt(interp, argv[3], &relax) != TCL_OK) {
+		  opserr<<"WARNING: failed to read relax\n";
+		  return TCL_ERROR;
+	      }
+	  }
+	  PFEMCompressibleSolver_Mumps* theSolver = new PFEMCompressibleSolver_Mumps(relax,0,0);
+          theSOE = new PFEMCompressibleLinSOE(*theSolver);
+#endif
+      }
 #endif
   }
 
@@ -5305,7 +5343,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     } // theEigenSOE != 0    
 
 
-    int requiredDataSize = 20*numEigen;
+    int requiredDataSize = 40*numEigen;
     if (requiredDataSize > resDataSize) {
       if (resDataPtr != 0) {
 	delete [] resDataPtr;
@@ -5330,7 +5368,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
       const Vector &eigenvalues = theDomain.getEigenvalues();
       int cnt = 0;
       for (int i=0; i<numEigen; i++) {
-	cnt += sprintf(&resDataPtr[cnt], "%.6e  ", eigenvalues[i]);
+	cnt += sprintf(&resDataPtr[cnt], "%35.20f  ", eigenvalues[i]);
       }
       
       Tcl_SetResult(interp, resDataPtr, TCL_STATIC);
@@ -7876,6 +7914,7 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
 int 
 addRegion(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
+    OPS_ResetInput(clientData, interp, 1, argc, argv, &theDomain, NULL);
   return TclAddMeshRegion(clientData, interp, argc, argv, theDomain);
 }
 
