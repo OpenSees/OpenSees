@@ -95,7 +95,16 @@ class TrussSection : public Element
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
     int getResponse(int responseID, Information &eleInformation);
     
-    int setParameter (const char **argv, int argc, Parameter &param);
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+    int addInertiaLoadSensitivityToUnbalance(const Vector &accel, bool tag);
+    int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
+    int activateParameter(int parameterID);
+    const Vector & getResistingForceSensitivity(int gradNumber);
+    const Matrix & getKiSensitivity(int gradNumber);
+    const Matrix & getMassSensitivity(int gradNumber);
+    int commitSensitivity(int gradNumber, int numGrads);
+    // AddingSensitivity:END ///////////////////////////////////////////
 
   protected:
     
@@ -123,6 +132,11 @@ class TrussSection : public Element
 
     SectionForceDeformation  *theSection;
     
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+    int parameterID;
+    Vector *theLoadSens;
+    // AddingSensitivity:END ///////////////////////////////////////////
+
     // static data - single copy for all objects of the class	
     static Matrix trussM2;   // class wide matrix for 2*2
     static Matrix trussM3;   // class wide matrix for 3*3	
