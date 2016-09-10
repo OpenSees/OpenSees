@@ -1532,9 +1532,11 @@ DispBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
   }
   
   // If the parameter belongs to the element itself
-  if (strcmp(argv[0],"rho") == 0)
+  if (strcmp(argv[0],"rho") == 0) {
+    param.setValue(rho);
     return param.addObject(1, this);
-  
+  }
+
   if (strstr(argv[0],"sectionX") != 0) {
     if (argc < 3)
 		return -1;
@@ -1563,16 +1565,13 @@ DispBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
     if (argc < 3)
       return -1;
     
-    // Get section and material tag numbers from user input
-    int paramSectionTag = atoi(argv[1]);
+    // Get section number
+    int sectionNum = atoi(argv[1]);
     
-    // Find the right section and call its setParameter method
-    int ok = 0;
-    for (int i = 0; i < numSections; i++)
-      if (paramSectionTag == theSections[i]->getTag())
-	ok += theSections[i]->setParameter(&argv[2], argc-2, param);
-
-    return ok;
+    if (sectionNum > 0 && sectionNum <= numSections)
+      return theSections[sectionNum-1]->setParameter(&argv[2], argc-2, param);
+    else
+      return -1;
   }
   
   else if (strstr(argv[0],"integration") != 0) {
@@ -1585,10 +1584,19 @@ DispBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
 
   // Default, send to every object
   int ok = 0;
-  for (int i = 0; i < numSections; i++)
-    ok += theSections[i]->setParameter(argv, argc, param);
-  ok += beamInt->setParameter(argv, argc, param);
-  return ok;
+  int result = 0;
+
+  for (int i = 0; i < numSections; i++) {
+    ok = theSections[i]->setParameter(argv, argc, param);
+    if (ok != -1)
+      result = ok;
+  }
+  
+  ok = beamInt->setParameter(argv, argc, param);
+  if (ok != -1)
+    result = ok;
+
+  return result;
 }
 
 int
@@ -1623,8 +1631,50 @@ DispBeamColumn3d::getKiSensitivity(int gradNumber)
 const Matrix &
 DispBeamColumn3d::getMassSensitivity(int gradNumber)
 {
-	K.Zero();
-	return K;
+  K.Zero();
+  
+  if (rho == 0.0 || parameterID != 1)
+    return K;
+  
+  double L = crdTransf->getInitialLength();
+  if (cMass == 0)  {
+    // lumped mass matrix
+    //double m = 0.5*rho*L;
+    double m = 0.5*L;
+    K(0,0) = K(1,1) = K(2,2) = K(6,6) = K(7,7) = K(8,8) = m;
+  } else  {
+    // consistent mass matrix
+    static Matrix ml(12,12);
+    //double m = rho*L/420.0;
+    double m = L/420.0;
+    ml(0,0) = ml(6,6) = m*140.0;
+    ml(0,6) = ml(6,0) = m*70.0;
+    //ml(3,3) = ml(9,9) = m*(Jx/A)*140.0;  // CURRENTLY NO TORSIONAL MASS 
+    //ml(3,9) = ml(9,3) = m*(Jx/A)*70.0;   // CURRENTLY NO TORSIONAL MASS
+    
+    ml(2,2) = ml(8,8) = m*156.0;
+    ml(2,8) = ml(8,2) = m*54.0;
+    ml(4,4) = ml(10,10) = m*4.0*L*L;
+    ml(4,10) = ml(10,4) = -m*3.0*L*L;
+    ml(2,4) = ml(4,2) = -m*22.0*L;
+    ml(8,10) = ml(10,8) = -ml(2,4);
+    ml(2,10) = ml(10,2) = m*13.0*L;
+    ml(4,8) = ml(8,4) = -ml(2,10);
+    
+    ml(1,1) = ml(7,7) = m*156.0;
+    ml(1,7) = ml(7,1) = m*54.0;
+    ml(5,5) = ml(11,11) = m*4.0*L*L;
+    ml(5,11) = ml(11,5) = -m*3.0*L*L;
+    ml(1,5) = ml(5,1) = m*22.0*L;
+    ml(7,11) = ml(11,7) = -ml(1,5);
+    ml(1,11) = ml(11,1) = -m*13.0*L;
+    ml(5,7) = ml(7,5) = -ml(1,11);
+    
+    // transform local mass matrix to global system
+    K = crdTransf->getGlobalMatrixFromLocal(ml);
+  }
+  
+  return K;
 }
 
 

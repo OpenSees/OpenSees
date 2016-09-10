@@ -1774,8 +1774,39 @@ DispBeamColumn2d::getKiSensitivity(int gradNumber)
 const Matrix &
 DispBeamColumn2d::getMassSensitivity(int gradNumber)
 {
-	K.Zero();
-	return K;
+  K.Zero();
+
+  if (rho == 0.0 || parameterID != 1)
+    return K;
+  
+  double L = crdTransf->getInitialLength();
+  if (cMass == 0)  {
+    // lumped mass matrix
+    //double m = 0.5*rho*L;
+    double m = 0.5*L;
+    K(0,0) = K(1,1) = K(3,3) = K(4,4) = m;
+  } else  {
+    // consistent mass matrix
+    static Matrix ml(6,6);
+    //double m = rho*L/420.0;    
+    double m = L/420.0;
+    ml(0,0) = ml(3,3) = m*140.0;
+    ml(0,3) = ml(3,0) = m*70.0;
+    
+    ml(1,1) = ml(4,4) = m*156.0;
+    ml(1,4) = ml(4,1) = m*54.0;
+    ml(2,2) = ml(5,5) = m*4.0*L*L;
+    ml(2,5) = ml(5,2) = -m*3.0*L*L;
+    ml(1,2) = ml(2,1) = m*22.0*L;
+    ml(4,5) = ml(5,4) = -ml(1,2);
+    ml(1,5) = ml(5,1) = -m*13.0*L;
+    ml(2,4) = ml(4,2) = -ml(1,5);
+    
+    // transform local mass matrix to global system
+    K = crdTransf->getGlobalMatrixFromLocal(ml);
+  }
+  
+  return K;
 }
 
 
