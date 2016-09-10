@@ -310,7 +310,13 @@ Tri31::getNodePtrs(void)
 int
 Tri31::getNumDOF()
 {
-    return 6;
+  int sum = 0;
+
+  sum += theNodes[0]->getNumberDOF();
+  sum += theNodes[1]->getNumberDOF();
+  sum += theNodes[2]->getNumberDOF();
+
+  return sum;
 }
 
 void
