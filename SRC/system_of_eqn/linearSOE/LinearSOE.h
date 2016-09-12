@@ -72,6 +72,8 @@ class LinearSOE : public MovableObject
     virtual void zeroA(void) =0;
     virtual void zeroB(void) =0;
 
+    virtual int formAp(const Vector &p, Vector &Ap);
+
     virtual const Vector &getX(void) = 0;
     virtual const Vector &getB(void) = 0;    
     virtual const Matrix *getA(void) {return 0;};    
