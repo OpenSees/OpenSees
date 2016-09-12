@@ -296,6 +296,15 @@ DiagonalSOE::zeroB(void)
     *Bptr++ = 0;
 }
 
+int
+DiagonalSOE::formAp(const Vector &p, Vector &Ap)
+{
+  double *Aptr = A;
+  for (int i = 0; i < size; i++, Aptr++)
+    Ap(i) = (*Aptr) * p(i);
+
+  return 0;
+}
 
 void 
 DiagonalSOE::setX(int loc, double value)
