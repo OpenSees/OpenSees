@@ -168,39 +168,39 @@ OPS_Stream *opserrPtr = &sserr;
 #include<Integrator.h>//Abbas
 
 extern void *OPS_Newmark(void);
-extern TransientIntegrator *OPS_AlphaOS(void);
-extern TransientIntegrator *OPS_AlphaOS_TP(void);
-extern TransientIntegrator *OPS_AlphaOSGeneralized(void);
-extern TransientIntegrator *OPS_AlphaOSGeneralized_TP(void);
-extern TransientIntegrator *OPS_CentralDifference(void);
-extern TransientIntegrator *OPS_CentralDifferenceAlternative(void);
-extern TransientIntegrator *OPS_CentralDifferenceNoDamping(void);
-extern TransientIntegrator *OPS_Collocation(void);
-extern TransientIntegrator *OPS_CollocationHSFixedNumIter(void);
-extern TransientIntegrator *OPS_CollocationHSIncrLimit(void);
-extern TransientIntegrator *OPS_CollocationHSIncrReduct(void);
-extern TransientIntegrator *OPS_GeneralizedAlpha(void);
-extern TransientIntegrator *OPS_HHT(void);
-extern TransientIntegrator *OPS_HHT_TP(void);
-extern TransientIntegrator *OPS_HHTExplicit(void);
-extern TransientIntegrator *OPS_HHTExplicit_TP(void);
-extern TransientIntegrator *OPS_HHTGeneralized(void);
-extern TransientIntegrator *OPS_HHTGeneralized_TP(void);
-extern TransientIntegrator *OPS_HHTGeneralizedExplicit(void);
-extern TransientIntegrator *OPS_HHTGeneralizedExplicit_TP(void);
-extern TransientIntegrator *OPS_HHTHSFixedNumIter(void);
-extern TransientIntegrator *OPS_HHTHSFixedNumIter_TP(void);
-extern TransientIntegrator *OPS_HHTHSIncrLimit(void);
-extern TransientIntegrator *OPS_HHTHSIncrLimit_TP(void);
-extern TransientIntegrator *OPS_HHTHSIncrReduct(void);
-extern TransientIntegrator *OPS_HHTHSIncrReduct_TP(void);
-extern TransientIntegrator *OPS_KRAlphaExplicit(void);
-extern TransientIntegrator *OPS_KRAlphaExplicit_TP(void);
-extern TransientIntegrator *OPS_NewmarkExplicit(void);
-extern TransientIntegrator *OPS_NewmarkHSFixedNumIter(void);
-extern TransientIntegrator *OPS_NewmarkHSIncrLimit(void);
-extern TransientIntegrator *OPS_NewmarkHSIncrReduct(void);
-extern TransientIntegrator *OPS_WilsonTheta(void);
+extern void *OPS_AlphaOS(void);
+extern void *OPS_AlphaOS_TP(void);
+extern void *OPS_AlphaOSGeneralized(void);
+extern void *OPS_AlphaOSGeneralized_TP(void);
+extern void *OPS_CentralDifference(void);
+extern void *OPS_CentralDifferenceAlternative(void);
+extern void *OPS_CentralDifferenceNoDamping(void);
+extern void *OPS_Collocation(void);
+extern void *OPS_CollocationHSFixedNumIter(void);
+extern void *OPS_CollocationHSIncrLimit(void);
+extern void *OPS_CollocationHSIncrReduct(void);
+extern void *OPS_GeneralizedAlpha(void);
+extern void *OPS_HHT(void);
+extern void *OPS_HHT_TP(void);
+extern void *OPS_HHTExplicit(void);
+extern void *OPS_HHTExplicit_TP(void);
+extern void *OPS_HHTGeneralized(void);
+extern void *OPS_HHTGeneralized_TP(void);
+extern void *OPS_HHTGeneralizedExplicit(void);
+extern void *OPS_HHTGeneralizedExplicit_TP(void);
+extern void *OPS_HHTHSFixedNumIter(void);
+extern void *OPS_HHTHSFixedNumIter_TP(void);
+extern void *OPS_HHTHSIncrLimit(void);
+extern void *OPS_HHTHSIncrLimit_TP(void);
+extern void *OPS_HHTHSIncrReduct(void);
+extern void *OPS_HHTHSIncrReduct_TP(void);
+extern void *OPS_KRAlphaExplicit(void);
+extern void *OPS_KRAlphaExplicit_TP(void);
+extern void *OPS_NewmarkExplicit(void);
+extern void *OPS_NewmarkHSFixedNumIter(void);
+extern void *OPS_NewmarkHSIncrLimit(void);
+extern void *OPS_NewmarkHSIncrReduct(void);
+extern void *OPS_WilsonTheta(void);
 
 #include <Newmark.h>
 #include <TRBDF2.h>
@@ -4414,7 +4414,8 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
       }
       theTransientIntegrator = new BackwardEuler(optn);     
   }
-    
+
+  
   else if (strcmp(argv[1],"Newmark") == 0) {
     theTransientIntegrator = (TransientIntegrator*)OPS_Newmark();
     
@@ -4434,28 +4435,28 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 #endif
   
   else if (strcmp(argv[1],"NewmarkExplicit") == 0) {
-    theTransientIntegrator = OPS_NewmarkExplicit();
+    theTransientIntegrator = (TransientIntegrator *)OPS_NewmarkExplicit();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"NewmarkHSIncrReduct") == 0) {
-    theTransientIntegrator = OPS_NewmarkHSIncrReduct();
+    theTransientIntegrator = (TransientIntegrator *)OPS_NewmarkHSIncrReduct();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"NewmarkHSIncrLimit") == 0) {
-    theTransientIntegrator = OPS_NewmarkHSIncrLimit();
+    theTransientIntegrator = (TransientIntegrator *)OPS_NewmarkHSIncrLimit();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"NewmarkHSFixedNumIter") == 0) {
-    theTransientIntegrator = OPS_NewmarkHSFixedNumIter();
+    theTransientIntegrator = (TransientIntegrator *)OPS_NewmarkHSFixedNumIter();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
@@ -4672,175 +4673,175 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 // #endif
   
   else if (strcmp(argv[1],"HHT") == 0) {
-    theTransientIntegrator = OPS_HHT();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHT();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHT_TP") == 0) {
-    theTransientIntegrator = OPS_HHT_TP();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHT_TP();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHTGeneralized") == 0) {
-    theTransientIntegrator = OPS_HHTGeneralized();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHTGeneralized();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHTGeneralized_TP") == 0) {
-    theTransientIntegrator = OPS_HHTGeneralized_TP();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHTGeneralized_TP();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHTExplicit") == 0) {
-    theTransientIntegrator = OPS_HHTExplicit();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHTExplicit();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHTExplicit_TP") == 0) {
-    theTransientIntegrator = OPS_HHTExplicit_TP();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHTExplicit_TP();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHTGeneralizedExplicit") == 0) {
-    theTransientIntegrator = OPS_HHTGeneralizedExplicit();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHTGeneralizedExplicit();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHTGeneralizedExplicit_TP") == 0) {
-    theTransientIntegrator = OPS_HHTGeneralizedExplicit_TP();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHTGeneralizedExplicit_TP();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHTHSIncrLimit") == 0) {
-    theTransientIntegrator = OPS_HHTHSIncrLimit();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHTHSIncrLimit();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHTHSIncrLimit_TP") == 0) {
-    theTransientIntegrator = OPS_HHTHSIncrLimit_TP();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHTHSIncrLimit_TP();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHTHSIncrReduct") == 0) {
-    theTransientIntegrator = OPS_HHTHSIncrReduct();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHTHSIncrReduct();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHTHSIncrReduct_TP") == 0) {
-    theTransientIntegrator = OPS_HHTHSIncrReduct_TP();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHTHSIncrReduct_TP();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHTHSFixedNumIter") == 0) {
-    theTransientIntegrator = OPS_HHTHSFixedNumIter();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHTHSFixedNumIter();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"HHTHSFixedNumIter_TP") == 0) {
-    theTransientIntegrator = OPS_HHTHSFixedNumIter_TP();
+    theTransientIntegrator = (TransientIntegrator *)OPS_HHTHSFixedNumIter_TP();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"GeneralizedAlpha") == 0) {
-    theTransientIntegrator = OPS_GeneralizedAlpha();
+    theTransientIntegrator = (TransientIntegrator *)OPS_GeneralizedAlpha();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"KRAlphaExplicit") == 0) {
-    theTransientIntegrator = OPS_KRAlphaExplicit();
+    theTransientIntegrator = (TransientIntegrator *)OPS_KRAlphaExplicit();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"KRAlphaExplicit_TP") == 0) {
-    theTransientIntegrator = OPS_KRAlphaExplicit_TP();
+    theTransientIntegrator = (TransientIntegrator *)OPS_KRAlphaExplicit_TP();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"AlphaOS") == 0) {
-    theTransientIntegrator = OPS_AlphaOS();
+    theTransientIntegrator = (TransientIntegrator *)OPS_AlphaOS();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"AlphaOS_TP") == 0) {
-    theTransientIntegrator = OPS_AlphaOS_TP();
+    theTransientIntegrator = (TransientIntegrator *)OPS_AlphaOS_TP();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"AlphaOSGeneralized") == 0) {
-    theTransientIntegrator = OPS_AlphaOSGeneralized();
+    theTransientIntegrator = (TransientIntegrator *)OPS_AlphaOSGeneralized();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"AlphaOSGeneralized_TP") == 0) {
-    theTransientIntegrator = OPS_AlphaOSGeneralized_TP();
+    theTransientIntegrator = (TransientIntegrator *)OPS_AlphaOSGeneralized_TP();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"Collocation") == 0) {
-    theTransientIntegrator = OPS_Collocation();
+    theTransientIntegrator = (TransientIntegrator *)OPS_Collocation();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"CollocationHSIncrReduct") == 0) {
-    theTransientIntegrator = OPS_CollocationHSIncrReduct();
+    theTransientIntegrator = (TransientIntegrator *)OPS_CollocationHSIncrReduct();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"CollocationHSIncrLimit") == 0) {
-    theTransientIntegrator = OPS_CollocationHSIncrLimit();
+    theTransientIntegrator = (TransientIntegrator *)OPS_CollocationHSIncrLimit();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"CollocationHSFixedNumIter") == 0) {
-    theTransientIntegrator = OPS_CollocationHSFixedNumIter();
+    theTransientIntegrator = (TransientIntegrator *)OPS_CollocationHSFixedNumIter();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
@@ -4892,28 +4893,28 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   }
   
   else if (strcmp(argv[1],"WilsonTheta") == 0) {
-    theTransientIntegrator = OPS_WilsonTheta();
+    theTransientIntegrator = (TransientIntegrator *)OPS_WilsonTheta();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"CentralDifference") == 0) {
-    theTransientIntegrator = OPS_CentralDifference();
+    theTransientIntegrator = (TransientIntegrator *)OPS_CentralDifference();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"CentralDifferenceAlternative") == 0) {
-    theTransientIntegrator = OPS_CentralDifferenceAlternative();
+    theTransientIntegrator = (TransientIntegrator *)OPS_CentralDifferenceAlternative();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
   
   else if (strcmp(argv[1],"CentralDifferenceNoDamping") == 0) {
-    theTransientIntegrator = OPS_CentralDifferenceNoDamping();
+    theTransientIntegrator = (TransientIntegrator *)OPS_CentralDifferenceNoDamping();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
