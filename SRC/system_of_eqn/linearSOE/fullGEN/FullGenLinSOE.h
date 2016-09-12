@@ -62,6 +62,8 @@ class FullGenLinSOE : public LinearSOE
     void zeroA(void);
     void zeroB(void);
     
+    int formAp(const Vector &p, Vector &Ap);
+
     const Vector &getX(void);
     const Vector &getB(void);    
     const Matrix *getA(void);

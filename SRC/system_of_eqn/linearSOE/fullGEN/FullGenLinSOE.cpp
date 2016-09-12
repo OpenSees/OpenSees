@@ -388,6 +388,28 @@ FullGenLinSOE::zeroB(void)
 	*Bptr++ = 0;
 }
 
+int
+FullGenLinSOE::formAp(const Vector &p, Vector &Ap)
+{
+  // Check that p and A are same size
+  if (size != p.Size() || size != Ap.Size() || p.Size() != Ap.Size()) {
+    opserr << "FullGenLinSOE::formAp -- vectors not of same size\n";
+    return -1;
+  }
+
+  for (int row = 0; row < size; row++) {
+    double sum = 0.0;
+    double *APtr = A + row;
+    for (int col = 0; col < size; col++) {
+      APtr += size;
+      sum += (*APtr) * p(col);
+    }
+    Ap(row) = sum;
+  }
+
+  return 0;
+}
+
 void 
 FullGenLinSOE::setX(int loc, double value)
 {
