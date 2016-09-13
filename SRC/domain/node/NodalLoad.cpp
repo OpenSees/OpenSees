@@ -139,7 +139,7 @@ NodalLoad::applyLoad(double loadFactor)
 	myNodePtr->addUnbalancedLoad(*load,1.0);	
     
     //    opserr << "loadFactor: " << loadFactor << *myNodePtr;
-} 
+}
 
 void
 NodalLoad::applyLoadSensitivity(double loadFactor)
@@ -246,23 +246,30 @@ NodalLoad::setParameter(const char **argv, int argc, Parameter &param)
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0],"1") == 0)
+  if (strcmp(argv[0],"1") == 0) {
+    param.setValue((*load)(0));
     return param.addObject(1, this);
-
-  if (strcmp(argv[0],"2") == 0)
+  }
+  if (strcmp(argv[0],"2") == 0) {
+    param.setValue((*load)(1));
     return param.addObject(2, this);
-
-  if (strcmp(argv[0],"3") == 0)
+  }
+  if (strcmp(argv[0],"3") == 0) {
+    param.setValue((*load)(2));
     return param.addObject(3, this);
-
-  if (strcmp(argv[0],"4") == 0)
+  }
+  if (strcmp(argv[0],"4") == 0) {
+    param.setValue((*load)(3));
     return param.addObject(4, this);
-
-  if (strcmp(argv[0],"5") == 0)
+  }
+  if (strcmp(argv[0],"5") == 0) {
+    param.setValue((*load)(4));
     return param.addObject(5, this);
-
-  if (strcmp(argv[0],"6") == 0)
+  }
+  if (strcmp(argv[0],"6") == 0) {
+    param.setValue((*load)(5));
     return param.addObject(6, this);
+  }
 
   return -1;
 }
