@@ -105,6 +105,9 @@ class LoadPattern : public DomainComponent
     virtual int  updateParameter(int parameterID, Information &info);
     virtual int  activateParameter(int parameterID);
     virtual const Vector & getExternalForceSensitivity(int gradNumber);
+
+    virtual int saveLoadFactorSensitivity(double dlambdadh, int gradIndex, int numGrads);
+    virtual double getLoadFactorSensitivity(int gradIndex);
     // AddingSensitivity:END ///////////////////////////////////////////
 
   protected:
@@ -133,6 +136,7 @@ class LoadPattern : public DomainComponent
     // AddingSensitivity:BEGIN //////////////////////////////////////
     Vector *randomLoads;
     bool RVisRandomProcessDiscretizer;
+    Vector *dLambdadh;
     // AddingSensitivity:END ////////////////////////////////////////
 
     int lastChannel; 

@@ -134,6 +134,7 @@ LoadPattern::LoadPattern(int tag, int clasTag, double fact)
     }  
     // AddingSensitivity:BEGIN /////////////////////////////
     randomLoads = 0;
+    dLambdadh = 0;
     // AddingSensitivity:END ///////////////////////////////
 }
 
@@ -166,6 +167,7 @@ LoadPattern::LoadPattern()
     }
     // AddingSensitivity:BEGIN /////////////////////////////
     randomLoads = 0;
+    dLambdadh = 0;
     // AddingSensitivity:END ///////////////////////////////
 }
 
@@ -198,6 +200,7 @@ LoadPattern::LoadPattern(int tag, double fact)
     }
     // AddingSensitivity:BEGIN /////////////////////////////
     randomLoads = 0;
+    dLambdadh = 0;
     // AddingSensitivity:END ///////////////////////////////
 }
 
@@ -231,6 +234,8 @@ LoadPattern::~LoadPattern()
     // AddingSensitivity:BEGIN /////////////////////////////
     if (randomLoads != 0)
       delete randomLoads;
+    if (dLambdadh != 0)
+      delete dLambdadh;
     // AddingSensitivity:END ///////////////////////////////
 }
 
@@ -245,7 +250,6 @@ LoadPattern::setTimeSeries(TimeSeries *theTimeSeries)
     // set the pointer to the new series object
     theSeries = theTimeSeries;
 }
-
 
 void
 LoadPattern::setDomain(Domain *theDomain)
@@ -962,16 +966,26 @@ LoadPattern::getMotion(int tag)
 void
 LoadPattern::applyLoadSensitivity(double pseudoTime)
 {
-  if (theSeries != 0 && isConstant != 0) {
-    loadFactor = theSeries->getFactorSensitivity(pseudoTime);
-    loadFactor *= scaleFactor;
-  }
+    // P*dfactor/dh
+    if (theSeries != 0 && isConstant != 0) {
+	loadFactor = theSeries->getFactorSensitivity(pseudoTime);
+	loadFactor *= scaleFactor;
+    }
   
-  NodalLoad *nodLoad;
-  NodalLoadIter &theNodalIter = this->getNodalLoads();
-  while ((nodLoad = theNodalIter()) != 0)
-    nodLoad->applyLoad(loadFactor);
-  
+    NodalLoad *nodLoad;
+    NodalLoadIter &theNodalIter = this->getNodalLoads();
+    while ((nodLoad = theNodalIter()) != 0)
+	nodLoad->applyLoad(loadFactor);
+
+    // factor*dP/dh
+    if (theSeries != 0 && isConstant != 0) {
+	loadFactor = theSeries->getFactor(pseudoTime);
+	loadFactor *= scaleFactor;
+    }
+
+    NodalLoadIter &theNodalIter2 = this->getNodalLoads();
+    while ((nodLoad = theNodalIter2()) != 0)
+	nodLoad->applyLoadSensitivity(loadFactor);
   
   // Don't inlude element loads and sp constraints for now
   /*
@@ -1249,6 +1263,36 @@ LoadPattern::getExternalForceSensitivity(int gradNumber)
     }
 
     return (*randomLoads);
+}
+
+int
+LoadPattern::saveLoadFactorSensitivity(double dlambdadh, int gradIndex, int numGrads)
+{
+  if (dLambdadh == 0) {
+    dLambdadh = new Vector(numGrads);
+  }
+  if (dLambdadh != 0 && dLambdadh->Size() != numGrads) {
+    delete dLambdadh;
+    dLambdadh = new Vector(numGrads);
+  }
+
+  if (gradIndex >= 0 && gradIndex < numGrads) {
+    (*dLambdadh)(gradIndex) = dlambdadh;
+    return 0;
+  }
+  else {
+    opserr << "LoadPattern::saveLoadFactorSensitivity -- gradIndex out of bounds" << endln;
+    return -1;
+  }
+}
+
+double
+LoadPattern::getLoadFactorSensitivity(int gradIndex)
+{
+  if (dLambdadh != 0 && gradIndex >= 0 && gradIndex < dLambdadh->Size())
+    return (*dLambdadh)(gradIndex);
+  else
+    return 0.0;
 }
 
 // AddingSensitivity:END //////////////////////////////////////
