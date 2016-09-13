@@ -50,6 +50,7 @@ class Load : public DomainComponent
 
     // pure virtual functions
     virtual void applyLoad(double loadfactor) =0;
+    virtual void applyLoadSensitivity(double loadfactor) {return;}
     
     virtual void setLoadPatternTag(int loadPaternTag);
     virtual int  getLoadPatternTag(void) const;
