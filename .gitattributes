@@ -2190,6 +2190,8 @@ SRC/domain/component/ElementStateParameter.cpp -text
 SRC/domain/component/ElementStateParameter.h -text
 SRC/domain/component/InitialStateParameter.cpp -text
 SRC/domain/component/InitialStateParameter.h -text
+SRC/domain/component/LoadFactorParameter.cpp -text
+SRC/domain/component/LoadFactorParameter.h -text
 SRC/domain/component/Makefile -text
 SRC/domain/component/MatParameter.cpp -text
 SRC/domain/component/MatParameter.h -text

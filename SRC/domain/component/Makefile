@@ -6,6 +6,7 @@ OBJS       = DomainComponent.o \
 	RVParameter.o \
 	DVParameter.o \
 	NodeResponseParameter.o \
+	LoadFactorParameter.o \
 	TclParameterCommands.o \
 	MaterialStageParameter.o \
 	MatParameter.o \
