@@ -74,6 +74,7 @@ class DisplacementControl : public StaticIntegrator
       int formSensitivityRHS(int gradNum);// it's been modified to compute dLambdadh and dUdh
       int formIndependentSensitivityRHS();
       int saveSensitivity(const Vector &v, int gradNum, int numGrads);
+      int saveLambdaSensitivity(double dlambdadh, int gradNum, int numGrads);
       int commitSensitivity(int gradNum, int numGrads);
       int computeSensitivities(void);// this function is modified to obtain both dLambdadh and dUdh 
 
@@ -82,7 +83,6 @@ class DisplacementControl : public StaticIntegrator
      // Vector *formResidualDispSensitivity(Vector *dUIJdh,int gradNumber);// Obtain dKdh*deltaUbar
       double formdLambdaDh(int gradNumber);//calculate dLambdadh for J=1
       double getLambdaSensitivity(int gradNumber);// update the dLambdadh for J>1
-      double dLambdadh();// return the sensitivty of the load factor (dLambdadh).
       bool computeSensitivityAtEachIteration();// A key that return 1 for loadControl and 2 for DisplacementControl
      // int newStepSens(int gradIndex);
       ////////////////////Sensitivity End/////////////////////////////////////

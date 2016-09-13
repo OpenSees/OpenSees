@@ -250,12 +250,9 @@ DisplacementControl::newStep(void)
     int numGrads = theDomain->getNumParameters();
     
     while ((theParam = paramIter()) != 0)
-      
       theParam->activate(false);
     
     paramIter = theDomain->getParameters();
-    
-    
     while ((theParam = paramIter()) != 0) {
       // Activate this parameter
       theParam->activate(true);
@@ -263,7 +260,7 @@ DisplacementControl::newStep(void)
       gradNumber = theParam->getGradIndex();
       
       this->formTangDispSensitivity(dUhatdh,gradNumber);
-      //opserr<<"newStep: gradNumber=  "<<gradNumber<<endln;
+
       this->formdLambdaDh(gradNumber);
       theParam->activate(false);
     } 
@@ -699,41 +696,30 @@ while((loadPatternPtr = thePatterns()) != 0) {
 }
 
 // form dLambda for each time step dLambda
-   double 
+double 
 DisplacementControl::formdLambdaDh(int gradNumber)
 {
- 
- //      opserr<<"formdLambdaDh: .....start"<<endln;
-//  opserr<<"formdLambda:duhatdh is "<<*dUhatdh<<endln;
   Vector &duHatdh=*dUhatdh;
 
-   //the component of the duHatdh vector
-   double duHatdh_Comp=duHatdh(theDofID);
-//   opserr<<"dUftdh= "<<duahatdh_Comp<<endln;
+  //the component of the duHatdh vector
+  double duHatdh_Comp=duHatdh(theDofID);
 
-   // call the deltaUhat component
-   Vector &UFT=(*deltaUhat);
+  // call the deltaUhat component
+  Vector &UFT=(*deltaUhat);
 
-   double UFT_Comp=UFT(theDofID);// cll the component of the dUhat again
-   dlambdadh=-(theIncrement*duHatdh_Comp)/(UFT_Comp*UFT_Comp);
-   
+  double UFT_Comp=UFT(theDofID);// cll the component of the dUhat again
+  dlambdadh=-(theIncrement*duHatdh_Comp)/(UFT_Comp*UFT_Comp);
 
-  // opserr<<"formdLambdaDH.ncrement..."<<dlambdadh<<endln;
-   if(UFT_Comp==0)
-   {
-      dlambdadh=0.0;// to avoid dividing by zero
-   }
-
- 
-if(dLAMBDAdh !=0) {
-(*dLAMBDAdh)(gradNumber) = (*dLAMBDAdh)(gradNumber)+dlambdadh;
-}
-  // opserr<<"formdLambdaDh......dlambda_1_dh="<<(*dLAMBDAdh)(gradNumber)<<endln;
- 
-//  opserr<<"formdLambda....-1-dh :end"<<endln; 
-
-//}
-   return 0.0;
+  if(UFT_Comp==0) {
+    dlambdadh=0.0;// to avoid dividing by zero
+  }
+  
+  if(dLAMBDAdh !=0) {
+    (*dLAMBDAdh)(gradNumber) = (*dLAMBDAdh)(gradNumber) + dlambdadh;
+    return (*dLAMBDAdh)(gradNumber);
+  } else {
+    return 0.0;
+  }
 }
 
 /*
@@ -757,89 +743,70 @@ DisplacementControl::formResidualDispSensitivity( Vector *dUIJdh,int gradNumber)
 
 */
 
-// dLambdadh of the subsequent iterations (J>1)
-   double 
+ // dLambdadh of the subsequent iterations (J>1)
+double 
 DisplacementControl::getLambdaSensitivity(int gradNumber)
 {
 
-//opserr<<"getLambdaSensitivity:: begin"<<endln;
-
-//call the tangent displacement component (deltaUhat)
+  //call the tangent displacement component (deltaUhat)
   // LinearSOE *theLinSOE = this->getLinearSOE(); 
 
-//  this->formTangent();
- //  theLinSOE->setB(*phat);
-//   if (theLinSOE->solve() < 0) {
-//      opserr << "DisplacementControl::newStep(void) - failed in solver\n";
-//      return -1;
-//   }
+  //  this->formTangent();
+  //  theLinSOE->setB(*phat);
+  //   if (theLinSOE->solve() < 0) {
+  //      opserr << "DisplacementControl::newStep(void) - failed in solver\n";
+  //      return -1;
+  //   }
 
- //  (*deltaUhat) = theLinSOE->getX();
+  //  (*deltaUhat) = theLinSOE->getX();
  
    Vector &UFT=*deltaUhat;
    double UFT_Comp=UFT(theDofID);
-//opserr<<"ComputeSensitivities: UFTComp is ....."<<UFT_Comp<<endln;
 
    //call the derivative of the tangent displacement component (dUftdh).
    Vector &duHatdh=*dUhatdh;
    double duHatdh_Comp=duHatdh(theDofID);
-  // opserr<<" getLambdaSensitivity:: duHat_dh="<<*dUhatdh<<endln;
- //  opserr<<"duHatdh_Comp "<<duHatdh_Comp<<endln;
 
    //Call the residual displacement component
-  // opserr<<"getLambdaSensitivity::deltaUbar="<<*deltaUbar<<endln;
    Vector &dufR=*deltaUbar;
    double dufR_Comp=dufR(theDofID);
-  // opserr<<"dufR_Comp "<<dufR_Comp<<endln;
 
- //  opserr<<"DisplacementControl:: computeSensitivities: dUIJdh="<<*dUIJdh<<endln;
    Vector &dufRdh=*dUIJdh;// component of the dUfrDh: derivative of the residual displacement
    double dufRdh_Comp=dufRdh(theDofID);
-//opserr<<" getLambdaSensitivity dUfRdh======="<<dufRdh_Comp<<endln;
-     if(UFT_Comp==0.0 )
-   {
-      opserr<<"UFTComp=0"<<endln;
-      Dlambdadh=0.0;
-    } else {
 
-   // dLambdadh_ij( the sensitivity of the load component to the parameter h)
-   Dlambdadh=((-dufRdh_Comp*UFT_Comp  +(dufR_Comp*duHatdh_Comp)))/(UFT_Comp*UFT_Comp);  //   
-    }
+   if(UFT_Comp==0.0 ) {
+     opserr<<"UFTComp=0"<<endln;
+     Dlambdadh=0.0;
+   } else {
+     // dLambdadh_ij( the sensitivity of the load component to the parameter h)
+     Dlambdadh=((-dufRdh_Comp*UFT_Comp  +(dufR_Comp*duHatdh_Comp)))/(UFT_Comp*UFT_Comp);  //   
+   }
   
  
-//opserr<<"getLambdaSensitivity:: "<<Dlambdadh<<endln;
-//opserr<<"dLAMBDAdh before updating:  "<<(*dLAMBDAdh)(gradNumber)<<endln;
-
    // Now update Lambda_ij
-
-  
-  if(dLAMBDAdh !=0) {
-   (*dLAMBDAdh)(gradNumber) = (*dLAMBDAdh)(gradNumber)+ Dlambdadh;
-  }  
-  
- //  opserr<<"dLambdaStepDh :final"<<(*dLAMBDAdh)(gradNumber)<<endln;
-  // return dLambdaStepDh;
-   
-  return 0.0;
+   if(dLAMBDAdh !=0) {
+     (*dLAMBDAdh)(gradNumber) = (*dLAMBDAdh)(gradNumber)+ Dlambdadh;
+     return (*dLAMBDAdh)(gradNumber);
+   } else {
+     return 0.0;
+   }
 }
 
 
 
-   int
+int
 DisplacementControl::formEleResidual(FE_Element* theEle)
 {
-
    if(sensitivityFlag == 0) {  // no sensitivity
-      this->StaticIntegrator::formEleResidual(theEle);
+     this->StaticIntegrator::formEleResidual(theEle);
    } else {
-      theEle->zeroResidual();
-      theEle->addResistingForceSensitivity(gradNumber);
-    //  opserr<<"DisplacementControl: formResidual:gradNumber="<<gradNumber<<endln;//.....
+     theEle->zeroResidual();
+     theEle->addResistingForceSensitivity(gradNumber);
    }
    return 0;
 }
 
-   int
+int
 DisplacementControl::formIndependentSensitivityRHS()
 {
    return 0;
@@ -847,148 +814,141 @@ DisplacementControl::formIndependentSensitivityRHS()
 
 
    
-   int
+int
 DisplacementControl::formSensitivityRHS(int passedGradNumber)
 {
+  sensitivityFlag = 1;
+  //this->Activatesensitivity();//Abbas
+  // Set a couple of data members
+  gradNumber = passedGradNumber;
 
-  // opserr<<"RHS:: passedGradNumber"<<passedGradNumber<<endln;//...
- //  opserr<<"RHS ::Begins"<<endln; 
-   sensitivityFlag = 1;
-//this->Activatesensitivity();//Abbas
-   // Set a couple of data members
-   gradNumber = passedGradNumber;
+  // get model
+  AnalysisModel* theAnalysisModel = this->getAnalysisModel();
+  LinearSOE* theSOE = this->getLinearSOE();
 
-   // get model
-   AnalysisModel* theAnalysisModel = this->getAnalysisModel();
-   LinearSOE* theSOE = this->getLinearSOE();
+  // Loop through elements
+  FE_Element *elePtr;
+  FE_EleIter &theEles = theAnalysisModel->getFEs(); 
 
-   // Loop through elements
-   FE_Element *elePtr;
-   FE_EleIter &theEles = theAnalysisModel->getFEs(); 
+  while((elePtr = theEles()) != 0) {
+    theSOE->addB(elePtr->getResidual(this) ,elePtr->getID()  );
+  }
 
-   while((elePtr = theEles()) != 0) {
-
-      theSOE->addB(elePtr->getResidual(this) ,elePtr->getID()  );
-      
-   }
-
-   //  opserr<<" dKdh*deltaUbar after while loop is "<<*dUIJdh<<endln;
-    (*Residual)=theSOE->getB();
+  //  opserr<<" dKdh*deltaUbar after while loop is "<<*dUIJdh<<endln;
+  (*Residual)=theSOE->getB();
  
- // opserr<<"RHS():getB()............"<<theSOE->getB()<<endln;
+  // opserr<<"RHS():getB()............"<<theSOE->getB()<<endln;
   // (*Residual) += (*dUIJdh);
 
-//   (*Residual2)=theSOE->getB();
+  //   (*Residual2)=theSOE->getB();
 
- //  opserr<<" the new RHS is  "<<*Residual<<endln;
- //  opserr<<"where dUIJ is "<<*dUIJdh<<endln;
+  //  opserr<<" the new RHS is  "<<*Residual<<endln;
+  //  opserr<<"where dUIJ is "<<*dUIJdh<<endln;
 
   
-      //    if(CallParam==1) {
-       //  opserr<<"inside if statment of gradIndex # "<<gradNumber<<endln;
-         //  this->formTangDispSensitivity(dUhatdh,gradNumber);
-        //  this->formdLambdaDh(gradNumber);
-     	// }
+  //    if(CallParam==1) {
+  //  opserr<<"inside if statment of gradIndex # "<<gradNumber<<endln;
+  //  this->formTangDispSensitivity(dUhatdh,gradNumber);
+  //  this->formdLambdaDh(gradNumber);
+  // }
+  
 
+  //   opserr<<"RHS: dLambdaStepdh is "<<(*dLAMBDAdh)(gradNumber)<<endln;
 
-//   opserr<<"RHS: dLambdaStepdh is "<<(*dLAMBDAdh)(gradNumber)<<endln;
-
-double CallDlambda1dh=(*dLAMBDAdh)(gradNumber);
-// opserr<<"RHS:: dphatdh is ....................................//"<<*dphatdh<<endln;
+  double CallDlambda1dh=(*dLAMBDAdh)(gradNumber);
+  // opserr<<"RHS:: dphatdh is ....................................//"<<*dphatdh<<endln;
   Residual->addVector(1.0,*phat, CallDlambda1dh ); //needed to calculate dLambdadh
-//opserr<<"The residual sensitivity... dRdh= "<<*Residual<<endln;
-//    opserr<<"Pref=  "<<*phat<<endln;
-//    opserr<<"dLambdadh= "<<CallDlambda1dh<<endln;
-//opserr<<" dPrdh after adding dLamdh= "<<*Residual<<endln;
+  //opserr<<"The residual sensitivity... dRdh= "<<*Residual<<endln;
+  //    opserr<<"Pref=  "<<*phat<<endln;
+  //    opserr<<"dLambdadh= "<<CallDlambda1dh<<endln;
+  //opserr<<" dPrdh after adding dLamdh= "<<*Residual<<endln;
   Residual->addVector(1.0,*dphatdh, currentLambda ); //needed to calculate dLambdadh
+  
+  //  Matrix dKdh(size,size);
+  //	 dKdh.Zero();
+  //	 dKdh=this->getdKdh();
+  //	 Residual->addMatrixVector(1.0,dKdh,*deltaUbar,-1.0);
+  
+  
+  /*
+    Matrix Kt(size,size);
+    Kt.Zero();
+    Kt=this->ActivateSensitivity();
+    if(sensU==0) {
+    opserr<<"sensU is zero ........."<<endln;
+    sensU = new Vector(size);
+    
+    sensU->Zero();
+    }
+    Residual->addMatrixVector(1.0,Kt,(*sensU),-1.0);
+    
+    opserr<<"Resid= "<<*Residual<<endln;
+  */
+  
 
-       //  Matrix dKdh(size,size);
-//	 dKdh.Zero();
-//	 dKdh=this->getdKdh();
-//	 Residual->addMatrixVector(1.0,dKdh,*deltaUbar,-1.0);
 
-	 
-/*
-Matrix Kt(size,size);
-  Kt.Zero();
-  Kt=this->ActivateSensitivity();
-  if(sensU==0) {
-     opserr<<"sensU is zero ........."<<endln;
-  sensU = new Vector(size);
 
-     sensU->Zero();
+
+  Residual2->addVector(1.0,*phat,CallDlambda1dh);// needed to calculate dUdh
+  //  Residual2->addVector(1.0,*dphatdh, currentLambda );
+  theSOE->setB(*Residual);
+  
+
+
+  // Loop through the loadPatterns and add the dPext/dh contributions
+  static Vector oneDimVectorWithOne(1);
+  oneDimVectorWithOne(0) = 1.0;
+  static ID oneDimID(1);
+  
+  Node *aNode;
+  DOF_Group *aDofGroup;
+  int nodeNumber, dofNumber, relevantID, i, sizeRandomLoads, numRandomLoads;
+  LoadPattern *loadPatternPtr;
+  Domain *theDomain = theAnalysisModel->getDomainPtr();
+  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
+  while((loadPatternPtr = thePatterns()) != 0) {
+    const Vector &randomLoads = loadPatternPtr->getExternalForceSensitivity(gradNumber);
+    sizeRandomLoads = randomLoads.Size();
+    if (sizeRandomLoads == 1) {
+      // No random loads in this load pattern
+      //	 opserr<<"No sensitivity Load Parameter is involved"<<endln;
+    }
+    else {
+      //	 opserr<<"there is sensitivity load parameter"<<endln;//Abbas.............
+      // Random loads: add contributions to the 'B' vector
+      numRandomLoads = (int)(sizeRandomLoads/2);
+      for (i=0; i<numRandomLoads*2; i=i+2) {
+	nodeNumber = (int)randomLoads(i);
+	dofNumber = (int)randomLoads(i+1);
+	aNode = theDomain->getNode(nodeNumber);
+	aDofGroup = aNode->getDOF_GroupPtr();
+	const ID &anID = aDofGroup->getID();
+	relevantID = anID(dofNumber-1);
+	oneDimID(0) = relevantID;
+	theSOE->addB(oneDimVectorWithOne, oneDimID);
+	
+	
+      }
+    }
+    //  (*Residual) =theSOE->getB();
   }
-  Residual->addMatrixVector(1.0,Kt,(*sensU),-1.0);
-
-  opserr<<"Resid= "<<*Residual<<endln;
-*/
-
-
-
-
-
-   Residual2->addVector(1.0,*phat,CallDlambda1dh);// needed to calculate dUdh
- //  Residual2->addVector(1.0,*dphatdh, currentLambda );
-   theSOE->setB(*Residual);
-
-
-
-   // Loop through the loadPatterns and add the dPext/dh contributions
-   static Vector oneDimVectorWithOne(1);
-   oneDimVectorWithOne(0) = 1.0;
-   static ID oneDimID(1);
-
-   Node *aNode;
-   DOF_Group *aDofGroup;
-   int nodeNumber, dofNumber, relevantID, i, sizeRandomLoads, numRandomLoads;
-   LoadPattern *loadPatternPtr;
-   Domain *theDomain = theAnalysisModel->getDomainPtr();
-   LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
-   while((loadPatternPtr = thePatterns()) != 0) {
-           const Vector &randomLoads = loadPatternPtr->getExternalForceSensitivity(gradNumber);
-      sizeRandomLoads = randomLoads.Size();
-      if (sizeRandomLoads == 1) {
-	 // No random loads in this load pattern
-//	 opserr<<"No sensitivity Load Parameter is involved"<<endln;
-      }
-      else {
-//	 opserr<<"there is sensitivity load parameter"<<endln;//Abbas.............
-	 // Random loads: add contributions to the 'B' vector
-	 numRandomLoads = (int)(sizeRandomLoads/2);
-	 for (i=0; i<numRandomLoads*2; i=i+2) {
-	    nodeNumber = (int)randomLoads(i);
-	    dofNumber = (int)randomLoads(i+1);
-	    aNode = theDomain->getNode(nodeNumber);
-	    aDofGroup = aNode->getDOF_GroupPtr();
-	    const ID &anID = aDofGroup->getID();
-	    relevantID = anID(dofNumber-1);
-	    oneDimID(0) = relevantID;
-	    theSOE->addB(oneDimVectorWithOne, oneDimID);
-
-	  
-	 }
-      }
-   //  (*Residual) =theSOE->getB();
-   }
- 
-   
-   theSOE->setB(*Residual);
-
-   //  (*Residual2)=theSOE->getB();
- 
-
-//reset sensitivity flag
-   sensitivityFlag=0;
- //  opserr<<"RHS :Ends"<<endln;
-   return 0;
+  
+  
+  theSOE->setB(*Residual);
+  
+  //  (*Residual2)=theSOE->getB();
+  
+  
+  //reset sensitivity flag
+  sensitivityFlag=0;
+  //  opserr<<"RHS :Ends"<<endln;
+  return 0;
 }
 
 
-   int
+int
 DisplacementControl::saveSensitivity(const Vector &v, int gradNum, int numGrads)
 {
-
-
    AnalysisModel* theAnalysisModel = this->getAnalysisModel();
 
    DOF_GrpIter &theDOFGrps = theAnalysisModel->getDOFs();
@@ -999,6 +959,20 @@ DisplacementControl::saveSensitivity(const Vector &v, int gradNum, int numGrads)
       dofPtr->saveDispSensitivity(v,gradNum,numGrads);
 
    }
+
+   return 0;
+}
+
+int
+DisplacementControl::saveLambdaSensitivity(double dlambdadh, int gradNum, int numGrads)
+{
+   AnalysisModel* theAnalysisModel = this->getAnalysisModel();
+   Domain *theDomain = theAnalysisModel->getDomainPtr();
+
+   LoadPattern *lpPtr;
+   LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
+   while ( (lpPtr = thePatterns() ) != 0)
+     lpPtr->saveLoadFactorSensitivity(dlambdadh, gradNum, numGrads);
 
    return 0;
 }
@@ -1031,117 +1005,91 @@ DisplacementControl::computeSensitivityAtEachIteration()
    int 
 DisplacementControl::computeSensitivities(void)
 {
-  //opserr<<" computeSensitivity: Start"<<endln;
-
-   LinearSOE *theSOE = this->getLinearSOE();
-   // Zero out the old right-hand side of the SOE
- 
-   theSOE->zeroB();
-   if (this == 0) {
-      opserr << "ERROR SensitivityAlgorithm::computeSensitivities() -";
-      opserr << "the SensitivityIntegrator is NULL\n";
-      return -1;
-   }
-
-
-   // Form the part of the RHS which are indepent of parameter
-   this->formIndependentSensitivityRHS();
-
-   AnalysisModel *theModel = this->getAnalysisModel();   
-   Domain *theDomain=theModel->getDomainPtr();//Abbas
-   ParameterIter &paramIter = theDomain->getParameters();
-   Parameter *theParam;
-
-      // De-activate all parameters
-   while ((theParam = paramIter()) != 0)
- 
-      theParam->activate(false);
+  LinearSOE *theSOE = this->getLinearSOE();
   
-   // Now, compute sensitivity wrt each parameter
-   int  numGrads = theDomain->getNumParameters();
-   paramIter = theDomain->getParameters();
+  // Zero out the old right-hand side of the SOE
+  theSOE->zeroB();
+  if (this == 0) {
+    opserr << "ERROR SensitivityAlgorithm::computeSensitivities() -";
+    opserr << "the SensitivityIntegrator is NULL\n";
+    return -1;
+  }
+
+
+  // Form the part of the RHS which are indepent of parameter
+  this->formIndependentSensitivityRHS();
+
+  AnalysisModel *theModel = this->getAnalysisModel();   
+  Domain *theDomain=theModel->getDomainPtr();//Abbas
+  ParameterIter &paramIter = theDomain->getParameters();
+  Parameter *theParam;
+
+  // De-activate all parameters
+  while ((theParam = paramIter()) != 0)
+    theParam->activate(false);
+  
+  // Now, compute sensitivity wrt each parameter
+  int  numGrads = theDomain->getNumParameters();
+  paramIter = theDomain->getParameters();
 
  
-   while ((theParam = paramIter()) != 0) {
-//opserr<<"computeSensitivities: InsideWhile Loop"<<endln;
-      // Activate this parameter
-      theParam->activate(true);
-
-      // Zero the RHS vector
-      theSOE->zeroB();
-
-      // Get the grad index for this parameter
-      int gradIndex = theParam->getGradIndex();
-     // opserr<<"ComputeSensitivities:: this is grad index # "<<gradIndex<<endln;
-     
+  while ((theParam = paramIter()) != 0) {
+    // Activate this parameter
+    theParam->activate(true);
+    
+    // Zero the RHS vector
+    theSOE->zeroB();
+    
+    // Get the grad index for this parameter
+    int gradIndex = theParam->getGradIndex();
                   
-     // this->formResidualDispSensitivity( dUIJdh, gradIndex);//./.
+    // this->formResidualDispSensitivity( dUIJdh, gradIndex);//./.
  
-      // Form the RHS
-     
+    // Form the RHS
+    
     //  this->formTangDispSensitivity(dUhatdh,gradIndex);
-      this->formSensitivityRHS(gradIndex);
+    this->formSensitivityRHS(gradIndex);
      
-      this->formTangent();
-      theSOE->solve();
-      *dUIJdh=theSOE->getX();// sensitivity of the residual displacement
+    this->formTangent();
+    theSOE->solve();
+    *dUIJdh=theSOE->getX();// sensitivity of the residual displacement
  
-      //  opserr<<"computeSensitivities: dUfRdh is  "<<*dUIJdh<<endln;//
-     //    opserr<<"deltaUbar is "<<*deltaUbar<<endln;   
-      this->formTangDispSensitivity(dUhatdh,gradIndex);
-      this->getLambdaSensitivity( gradIndex);
+    //  opserr<<"computeSensitivities: dUfRdh is  "<<*dUIJdh<<endln;//
+    //    opserr<<"deltaUbar is "<<*deltaUbar<<endln;   
+    this->formTangDispSensitivity(dUhatdh,gradIndex);
+    double dlamdh = this->getLambdaSensitivity(gradIndex);
 
-
-           
-      
-     // To obtain the response sensitivity 
-      theSOE->setB(*Residual);
-      theSOE->solve();
-      theSOE->getX();
- 
-      
-
-      
-//opserr<<"computeSensitivities:Residual1=   "<<*Residual<<endln; 
-  //  opserr<<"before SensU///////........"<<endln;
-     
-//Vector *x=new Vector(size);
-//(*x)=theSOE->getX();
-//  x->addVector(1.0,*deltaUhat,Dlambdadh);
-//  x->addVector(1.0,*dUhatdh,dLambda);
-(*sensU) =theSOE->getX();//.................................
-   //   sensU->addVector(1.0,*deltaUhat,Dlambdadh);
-     //    opserr<<" computeSensitivities::...... final dudh is "<<theSOE->getX()<<endln;
-//(*sensU) +=(*x);
-    Vector &SENSU=*sensU;
+    // To obtain the response sensitivity 
+    theSOE->setB(*Residual);
+    theSOE->solve();
+    //theSOE->getX();
+       
+    //Vector *x=new Vector(size);
+    //(*x)=theSOE->getX();
+    //  x->addVector(1.0,*deltaUhat,Dlambdadh);
+    //  x->addVector(1.0,*dUhatdh,dLambda);
+    (*sensU) = theSOE->getX();//.................................
+    //   sensU->addVector(1.0,*deltaUhat,Dlambdadh);
+    //    opserr<<" computeSensitivities::...... final dudh is "<<theSOE->getX()<<endln;
+    //(*sensU) +=(*x);
 
     // Save sensitivity to nodes
-      this->saveSensitivity( SENSU, gradIndex, numGrads );
+    this->saveSensitivity( (*sensU), gradIndex, numGrads );
+    this->saveLambdaSensitivity(dlamdh, gradIndex, numGrads);
     
-      // Commit unconditional history variables (also for elastic problems; strain sens may be needed anyway)
+    // Commit unconditional history variables (also for elastic problems; strain sens may be needed anyway)
     this->commitSensitivity(gradIndex, numGrads);
-      // De-activate this parameter for next sensitivity calc
-      theParam->activate(false);
+    // De-activate this parameter for next sensitivity calc
+    theParam->activate(false);
 
-     theSOE->zeroB();//reset the SOE to zero ;Abbas
+    theSOE->zeroB();//reset the SOE to zero ;Abbas
  
-   } 
-   // end of if statment to be run only one time during the iteration process.
- //  opserr<<"computeSensitivity: End"<<endln;
- //  CallParam=0;
+  } 
+  // end of if statment to be run only one time during the iteration process.
+  //  opserr<<"computeSensitivity: End"<<endln;
+  //  CallParam=0;
   // opserr<<"CallParam now is "<<CallParam<<endln;
-//opserr<<" computeSensitivities: end"<<endln;
-   return 0;
+  //opserr<<" computeSensitivities: end"<<endln;
+
+  return 0;
 }
-
-// call the sensitivity of the load factor
-   double 
-DisplacementControl::dLambdadh()
-{
-  // return dLambdaStepDh;
- 
-   double M=(*dLAMBDAdh)(gradNumber);
-return M;
-
-}
-
