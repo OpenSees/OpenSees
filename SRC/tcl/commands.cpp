@@ -1567,44 +1567,51 @@ sensLambda(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv 
     opserr << "WARNING no load pattern supplied -- getLoadFactor\n";
     return TCL_ERROR;
   }
-
+  
   int pattern, paramTag;
   if (Tcl_GetInt(interp, argv[1], &pattern) != TCL_OK) {
     opserr << "ERROR reading load pattern tag -- getLoadFactor\n";
     return TCL_ERROR;
   }
-
+  
   LoadPattern *thePattern = theDomain.getLoadPattern(pattern);
   if (thePattern == 0) {
     opserr << "ERROR load pattern with tag " << pattern << " not found in domain -- getLoadFactor\n";
     return TCL_ERROR;
   }
- if (Tcl_GetInt(interp, argv[2], &paramTag) != TCL_OK) {
-	opserr << "WARNING sensLambda patternTag?  paramTag?- could not read paramTag? ";
-	return TCL_ERROR;	        
-   }        
- Parameter *theParam = theDomain.getParameter(paramTag);
-    if (theParam == 0) {
-      opserr << "sensLambda: parameter " << paramTag << " not found" << endln;
-      return TCL_ERROR;
-    }
-
-            IncrementalIntegrator *theIntegrator;
-
-	   if (theStaticAnalysis != 0 && theStaticIntegrator != 0) {
-               theIntegrator = theStaticIntegrator;
-	    //   opserr<<" commands.cpp: calling static integrator"<<endln;
-             
-        } else if (theTransientAnalysis != 0 && theTransientIntegrator != 0) {
+  if (Tcl_GetInt(interp, argv[2], &paramTag) != TCL_OK) {
+    opserr << "WARNING sensLambda patternTag?  paramTag?- could not read paramTag? ";
+    return TCL_ERROR;	        
+  }        
+  Parameter *theParam = theDomain.getParameter(paramTag);
+  if (theParam == 0) {
+    opserr << "sensLambda: parameter " << paramTag << " not found" << endln;
+    return TCL_ERROR;
+  }
   
+  IncrementalIntegrator *theIntegrator;
+  
+  if (theStaticAnalysis != 0 && theStaticIntegrator != 0) {
+    theIntegrator = theStaticIntegrator;
+    //   opserr<<" commands.cpp: calling static integrator"<<endln;
+    
+  } else if (theTransientAnalysis != 0 && theTransientIntegrator != 0) {
+    
     theIntegrator = theTransientIntegrator;
- //   opserr<<"commands.cpp:calling transientIntegrator"<<endln;
-	} 
+    //   opserr<<"commands.cpp:calling transientIntegrator"<<endln;
+  } 
+  
+  int gradIndex = theParam->getGradIndex();
+  // double   factor = thePattern->getSensLambda(theIntegrator);
+  //double factor = theIntegrator->dLambdadh(gradIndex);
+  double factor = thePattern->getLoadFactorSensitivity(gradIndex);
 
-// double   factor = thePattern->getSensLambda(theIntegrator);
-  double factor=theIntegrator->dLambdadh();
-	   sprintf(interp->result,"%35.20f", factor);
-	   return TCL_OK;
+  char buffer[40];
+  sprintf(buffer,"%35.20f",factor);
+  
+  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
+  return TCL_OK;
 }
 
 
