@@ -100,7 +100,7 @@ DirectIntegrationAnalysis::DirectIntegrationAnalysis(Domain &the_Domain,
   
 // AddingSensitivity:BEGIN ////////////////////////////////////
 #ifdef _RELIABILITY
-	theSensitivityAlgorithm = 0;
+//	theSensitivityAlgorithm = 0;
 #endif
 // AddingSensitivity:END //////////////////////////////////////
 }    
@@ -135,7 +135,7 @@ DirectIntegrationAnalysis::clearAll(void)
 
 // AddingSensitivity:BEGIN ////////////////////////////////////
 #ifdef _RELIABILITY
-	delete theSensitivityAlgorithm;
+//	delete theSensitivityAlgorithm;
 #endif
 // AddingSensitivity:END //////////////////////////////////////
 
@@ -221,6 +221,7 @@ DirectIntegrationAnalysis::analyze(int numSteps, double dT)
     
 // AddingSensitivity:BEGIN ////////////////////////////////////
 #ifdef _RELIABILITY
+   /*
     if (theSensitivityAlgorithm != 0) {
       result = theIntegrator->computeSensitivities();
       if (result < 0) {
@@ -232,6 +233,7 @@ DirectIntegrationAnalysis::analyze(int numSteps, double dT)
 	return -5;
       }    
     }
+    */
 #endif
     // AddingSensitivity:END //////////////////////////////////////
     
@@ -414,11 +416,11 @@ DirectIntegrationAnalysis::setSensitivityAlgorithm(/*SensitivityAlgorithm*/ Inte
     int result = 0;
 
     // invoke the destructor on the old one
-    if (theSensitivityAlgorithm != 0) {
-      delete theSensitivityAlgorithm;
-    }
+  //  if (theSensitivityAlgorithm != 0) {
+   //   delete theSensitivityAlgorithm;
+  //  }
 
-    theSensitivityAlgorithm = passedSensitivityAlgorithm;
+ //   theSensitivityAlgorithm = passedSensitivityAlgorithm;
     
     return 0;
 }

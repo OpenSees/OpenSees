@@ -47,7 +47,7 @@
 #include <ID.h>
 #include <Graph.h>
 #include <Timer.h>
-#include<Integrator.h>//Abbas
+#include <Integrator.h>//Abbas
 
 // AddingSensitivity:BEGIN //////////////////////////////////
 #ifdef _RELIABILITY
@@ -106,31 +106,40 @@ StaticAnalysis::~StaticAnalysis()
 void
 StaticAnalysis::clearAll(void)
 {
-    // invoke the destructor on all the objects in the aggregation
+  // invoke the destructor on all the objects in the aggregation
   if (theAnalysisModel != 0)     
     delete theAnalysisModel;
   if (theConstraintHandler != 0) 
     delete theConstraintHandler;
-   if (theDOF_Numberer != 0)      
+  if (theDOF_Numberer != 0)      
     delete theDOF_Numberer;
-   if (theIntegrator != 0) 
-     delete theIntegrator;
-   if (theAlgorithm != 0)  
-     delete theAlgorithm;
-   if (theSOE != 0)
-     delete theSOE;
-   if (theTest != 0)
-     delete theTest;
-   if (theEigenSOE != 0)
-     delete theEigenSOE;
-   theAnalysisModel =0;
-   theConstraintHandler =0;
-   theDOF_Numberer =0;
-   theIntegrator =0;
-   theAlgorithm =0;
-   theSOE =0;
-   theEigenSOE =0;
-   theTest = 0;
+  if (theIntegrator != 0) 
+    delete theIntegrator;
+  if (theAlgorithm != 0)  
+    delete theAlgorithm;
+  if (theSOE != 0)
+    delete theSOE;
+  if (theTest != 0)
+    delete theTest;
+  if (theEigenSOE != 0)
+    delete theEigenSOE;
+  
+  theAnalysisModel =0;
+  theConstraintHandler =0;
+  theDOF_Numberer =0;
+  theIntegrator =0;
+  theAlgorithm =0;
+  theSOE =0;
+  theEigenSOE =0;
+  theTest = 0;
+  
+  // AddingSensitivity:BEGIN ////////////////////////////////////
+#ifdef _RELIABILITY
+  //if(theSensitivityAlgorithm !=0)
+  //delete theSensitivityAlgorithm;
+  //theSensitivityAlgorithm =0;
+#endif
+  // AddingSensitivity:END //////////////////////////////////////
 }    
 
 

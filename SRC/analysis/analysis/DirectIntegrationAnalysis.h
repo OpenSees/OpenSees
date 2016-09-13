@@ -112,7 +112,7 @@ class DirectIntegrationAnalysis: public TransientAnalysis
     // AddingSensitivity:BEGIN ///////////////////////////////
 #ifdef _RELIABILITY
 //    SensitivityAlgorithm *theSensitivityAlgorithm;
- Integrator *theSensitivityAlgorithm;
+ //Integrator *theSensitivityAlgorithm;
 
 #endif
     // AddingSensitivity:END ///////////////////////////////
