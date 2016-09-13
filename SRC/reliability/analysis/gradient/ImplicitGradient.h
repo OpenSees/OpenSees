@@ -56,7 +56,7 @@ public:
    	   ~ImplicitGradient();
 
 	int		computeGradient(double gFunValue);
-	Vector	getGradient();
+	const Vector &getGradient();
 
 protected:
 

@@ -66,7 +66,7 @@ ImplicitGradient::~ImplicitGradient()
 }
 
 
-Vector
+const Vector&
 ImplicitGradient::getGradient()
 {
   return *grad_g;
@@ -76,9 +76,6 @@ ImplicitGradient::getGradient()
 int
 ImplicitGradient::computeGradient(double g)
 {
-
-   opserr<<" this is the Implicit:: computeGradient function"<<endln;
-   
     // Compute gradients if this is a path-INdependent analysis
     // (This command only has effect if it IS path-independent.)
     //if (theSensAlgo != 0 && !(theSensAlgo->shouldComputeAtEachStep()) ) {
@@ -107,56 +104,56 @@ ImplicitGradient::computeGradient(double g)
         // get parameter tag
         Parameter *theParam = theOpenSeesDomain->getParameterFromIndex(i);
         int tag = theParam->getTag();
-
         if (theParam->isImplicit()) {
-            // check for analytic gradient first on dg/dimplicit
-            const char *gradExpression = theLimitStateFunction->getGradientExpression(tag);
-            if (gradExpression != 0) {
-                theFunctionEvaluator->setExpression(gradExpression);
-                
-                if (theFunctionEvaluator->setVariables() < 0) {
-                    opserr << "ERROR ImplicitGradient -- error setting variables in namespace" << endln;
-                    return -1;
-                }
-                
-                partials(i) = theFunctionEvaluator->evaluateExpression();
-                
-                // Reset limit state function in evaluator -- subsequent calls could receive gradient expression
-                theFunctionEvaluator->setExpression(lsfExpression);
-            }
 
-            // if no analytic gradient automatically do finite differences to get dg/dimplicit
-            else {
-                // use parameter defined perturbation after updating implicit parameter
-                theParam->update(0.0);
-                double h = theParam->getPerturbation();
-                double original = theParam->getValue();
-                theParam->setValue(original+h);
-                
-                // set perturbed values in the variable namespace
-                if (theFunctionEvaluator->setVariables() < 0) {
-                    opserr << "ERROR ImplicitGradient -- error setting variables in namespace" << endln;
-                    return -1;
-                }
-
-                // run analysis
-                //if (theFunctionEvaluator->runAnalysis() < 0) {
-                //    opserr << "ERROR ImplicitGradient -- error running analysis" << endln;
-                //    return -1;
-                //}
-
-                // evaluate LSF and obtain result
-                theFunctionEvaluator->setExpression(lsfExpression);
-                
-                // Add gradient contribution
-                double g_perturbed = theFunctionEvaluator->evaluateExpression();
-                partials(i) = (g_perturbed-g)/h;
-                
-                // return values to previous state
-                theParam->update(0.0);
-                
-                //opserr << "g_pert " << g_perturbed << ", g0 = " << g << endln;
-            }
+	  // check for analytic gradient first on dg/dimplicit
+	  const char *gradExpression = theLimitStateFunction->getGradientExpression(tag);
+	  if (gradExpression != 0) {
+	    theFunctionEvaluator->setExpression(gradExpression);
+            
+	    if (theFunctionEvaluator->setVariables() < 0) {
+	      opserr << "ERROR ImplicitGradient -- error setting variables in namespace" << endln;
+	      return -1;
+	    }
+            
+	    partials(i) = theFunctionEvaluator->evaluateExpression();
+            
+	    // Reset limit state function in evaluator -- subsequent calls could receive gradient expression
+	    theFunctionEvaluator->setExpression(lsfExpression);
+	  }
+	  
+	  // if no analytic gradient automatically do finite differences to get dg/dimplicit
+	  else {
+	    // use parameter defined perturbation after updating implicit parameter
+	    theParam->update(0.0);
+	    double h = theParam->getPerturbation();
+	    double original = theParam->getValue();
+	    theParam->setValue(original+h);
+            
+	    // set perturbed values in the variable namespace
+	    if (theFunctionEvaluator->setVariables() < 0) {
+	      opserr << "ERROR ImplicitGradient -- error setting variables in namespace" << endln;
+	      return -1;
+	    }
+	    
+	    // run analysis
+	    //if (theFunctionEvaluator->runAnalysis() < 0) {
+	    //    opserr << "ERROR ImplicitGradient -- error running analysis" << endln;
+	    //    return -1;
+	    //}
+	    
+	    // evaluate LSF and obtain result
+	    theFunctionEvaluator->setExpression(lsfExpression);
+            
+	    // Add gradient contribution
+	    double g_perturbed = theFunctionEvaluator->evaluateExpression();
+	    partials(i) = (g_perturbed-g)/h;
+            
+	    // return values to previous state
+	    theParam->update(0.0);
+            
+	    //opserr << "g_pert " << g_perturbed << ", g0 = " << g << endln;
+	  }
         }
     }	
     
