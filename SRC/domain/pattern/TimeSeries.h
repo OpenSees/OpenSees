@@ -67,6 +67,9 @@ class TimeSeries : public TaggedObject, public MovableObject
 
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     virtual double getFactorSensitivity(double pseudoTime) {return 0.0;}
+    virtual int setParameter(const char **argv, int argc, Parameter &param) {return 0;}
+    virtual int updateParameter(int parameterID, Information &info) {return 0;}
+    virtual int activateParameter(int parameterID) {return 0;}
     // AddingSensitivity:BEGIN //////////////////////////////////////////
 
   protected:

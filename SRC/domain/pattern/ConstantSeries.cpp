@@ -38,6 +38,7 @@
 #include <Vector.h>
 #include <Channel.h>
 #include <classTags.h>
+#include <Parameter.h>
 
 #include <elementAPI.h>
 #define OPS_Export 
@@ -92,7 +93,7 @@ OPS_ConstantSeries(void)
 
 ConstantSeries::ConstantSeries(int tag, double theFactor)
   :TimeSeries(tag,  TSERIES_TAG_ConstantSeries),
-   cFactor(theFactor)
+   cFactor(theFactor), parameterID(0)
 {
   // does nothing
 }
@@ -148,5 +149,44 @@ void
 ConstantSeries::Print(OPS_Stream &s, int flag)
 {
     s << "Constant Series: factor: " << cFactor << "\n";
+}
 
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+double
+ConstantSeries::getFactorSensitivity(double pseudoTime)
+{
+  if (parameterID == 1)
+    return 1.0;
+  else
+    return 0.0;
+}
+
+int 
+ConstantSeries::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strstr(argv[0],"factor") != 0) {
+    param.setValue(cFactor);
+    return param.addObject(1, this);
+  }
+
+  return -1;
+}
+   
+int 
+ConstantSeries::updateParameter(int parameterID, Information &info)
+{
+  if (parameterID == 1) {
+    cFactor = info.theDouble;
+    return 0;
+  }
+
+  return -1;
+}
+
+int
+ConstantSeries::activateParameter(int paramID)
+{
+  parameterID = paramID;
+
+  return 0;
 }
