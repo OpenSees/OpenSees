@@ -80,6 +80,7 @@ public:
     int formIndependentSensitivityRHS();
     int saveSensitivity   (const Vector &v, int gradNum, int numGrads);
     int commitSensitivity (int gradNum, int numGrads);  
+   int computeSensitivities( );
     // AddingSensitivity:END ////////////////////////////////////
     
 protected:

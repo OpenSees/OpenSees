@@ -48,10 +48,11 @@
 #include <Node.h>
 #include <LoadPattern.h>
 #include <LoadPatternIter.h>
-
 #include <elementAPI.h>
-
 #include <fstream>
+#include<ReliabilityDomain.h>//Abbas
+#include<Parameter.h>
+#include<ParameterIter.h>//Abbas
 static bool converged = false;
 static int count = 0;
 
@@ -843,3 +844,107 @@ double
 Newmark::getCFactor(void) {
   return c2;
 }
+
+
+
+
+
+int 
+Newmark::computeSensitivities(void)
+{
+  //  opserr<<" computeSensitivity::start"<<endln; 
+  LinearSOE *theSOE = this->getLinearSOE();
+  
+  /*
+    if (theAlgorithm == 0) {
+    opserr << "ERROR the FE algorithm must be defined before ";
+    opserr << "the sensitivity algorithm\n";
+    return -1;
+    }
+  */
+  /*
+  // Get pointer to the system of equations (SOE)
+  LinearSOE *theSOE = theAlgorithm->getLinearSOEptr();
+  if (theSOE == 0) {
+  opserr << "ERROR the FE linearSOE must be defined before ";
+  opserr << "the sensitivity algorithm\n";
+  return -1;
+  }
+  
+  // Get pointer to incremental integrator
+  IncrementalIntegrator *theIncInt = theAlgorithm->getIncrementalIntegratorPtr();
+  //	IncrementalIntegrator *theIncIntSens=theAlgorithm->getIncrementalIntegratorPtr();//Abbas
+  if (theIncInt == 0 ) {
+  opserr << "ERROR the FE integrator must be defined before ";
+  opserr << "the sensitivity algorithm\n";
+  return -1;
+  }
+  
+  // Form current tangent at converged state
+  // (would be nice with an if-statement here in case
+  // the current tangent is already formed)
+  if (this->formTangent(CURRENT_TANGENT) < 0){
+  opserr << "WARNING SensitivityAlgorithm::computeGradients() -";
+  opserr << "the Integrator failed in formTangent()\n";
+  return -1;
+  }
+  */
+  // Zero out the old right-hand side of the SOE
+  theSOE->zeroB();
+  
+  
+  if (this == 0) {
+    opserr << "ERROR SensitivityAlgorithm::computeSensitivities() -";
+    opserr << "the SensitivityIntegrator is NULL\n";
+    return -1;
+  }
+  
+  // Form the part of the RHS which are indepent of parameter
+  this->formIndependentSensitivityRHS();
+  AnalysisModel *theModel = this->getAnalysisModel();  //Abbas 
+  Domain *theDomain=theModel->getDomainPtr();//Abbas
+  ParameterIter &paramIter = theDomain->getParameters();
+  //	opserr<<" get parameters "<<theDomain->getParameters()<<endln;//Abbas.......
+  Parameter *theParam;
+  // De-activate all parameters
+  while ((theParam = paramIter()) != 0)
+    theParam->activate(false);
+  
+  // Now, compute sensitivity wrt each parameter
+  int numGrads = theDomain->getNumParameters();
+  //opserr<<"the numGrads is "<<numGrads<<endln;//Abbas...............................
+  paramIter = theDomain->getParameters();
+  
+  while ((theParam = paramIter()) != 0) {
+    
+    // Activate this parameter
+    theParam->activate(true);
+    
+    // Zero the RHS vector
+    theSOE->zeroB();
+    
+    // Get the grad index for this parameter
+    int gradIndex = theParam->getGradIndex();
+    //   opserr<<"gradNumber = "<<gradIndex<<endln;
+    // Form the RHS
+    this->formSensitivityRHS(gradIndex);
+    
+    // Solve for displacement sensitivity
+    
+    theSOE->solve();
+    // Save sensitivity to nodes
+    this->saveSensitivity( theSOE->getX(), gradIndex, numGrads );
+    
+    
+    
+    // Commit unconditional history variables (also for elastic problems; strain sens may be needed anyway)
+    this->commitSensitivity(gradIndex, numGrads);
+    
+    // De-activate this parameter for next sensitivity calc
+    theParam->activate(false);
+    //  opserr<<"LoadControl::..........ComputeSensitivities. end"<<endln;
+  }
+  
+  return 0;
+}
+
