@@ -62,7 +62,7 @@ FiniteDifferenceGradient::~FiniteDifferenceGradient()
 }
 
 
-Vector
+const Vector&
 FiniteDifferenceGradient::getGradient()
 {
 	return *grad_g;

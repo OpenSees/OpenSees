@@ -50,7 +50,7 @@ class GradientEvaluator
   
   // Methods provided by the sub-classes
   virtual int computeGradient(double gFunValue) = 0;
-  virtual Vector getGradient(void) = 0;
+  virtual const Vector &getGradient(void) = 0;
   
   //////S added by K Fujimura ///////////
   int initializeNumberOfEvaluations();

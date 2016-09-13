@@ -51,7 +51,7 @@ public:
 	~FiniteDifferenceGradient();
 	
 	int		computeGradient(double gFunValue);
-	Vector	getGradient();
+	const Vector &getGradient();
 	
 protected:
 	
