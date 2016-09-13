@@ -100,6 +100,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\SRC\domain\component\LoadFactorParameter.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\load\Beam2dPartialUniformLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\node\NodalLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\node\Node.cpp" />
@@ -184,6 +185,7 @@
     <ClCompile Include="..\..\..\SRC\domain\region\TclRegionCommands.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\SRC\domain\component\LoadFactorParameter.h" />
     <ClInclude Include="..\..\..\SRC\domain\load\Beam2dPartialUniformLoad.h" />
     <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h" />
     <ClInclude Include="..\..\..\SRC\domain\node\Node.h" />

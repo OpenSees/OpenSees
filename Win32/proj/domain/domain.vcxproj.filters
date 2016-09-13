@@ -285,6 +285,9 @@
     <ClCompile Include="..\..\..\SRC\domain\pattern\SimpsonTimeSeriesIntegrator.cpp">
       <Filter>timeSeries</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\component\LoadFactorParameter.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h">
@@ -526,6 +529,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\pattern\SimpsonTimeSeriesIntegrator.h">
       <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\component\LoadFactorParameter.h">
+      <Filter>component</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

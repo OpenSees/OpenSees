@@ -12,9 +12,6 @@
     <Filter Include="profileSPD">
       <UniqueIdentifier>{490d6465-b0e7-4169-99b1-31d1650e830e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="symSparse">
-      <UniqueIdentifier>{054429bc-cc10-4819-8690-5a3cea042ac3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="bandGEN">
       <UniqueIdentifier>{c68e139e-6efc-444e-8854-6d65354383e5}</UniqueIdentifier>
     </Filter>
@@ -23,14 +20,6 @@
     </Filter>
     <Filter Include="fullGEN">
       <UniqueIdentifier>{e0cb2524-4cf0-4bc2-8174-528f424ad1ee}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="umfpack">
-      <UniqueIdentifier>{9eaba530-26b5-40d8-9ca8-bde87bdd7557}</UniqueIdentifier>
-      <Extensions>.cpp; .h</Extensions>
-    </Filter>
-    <Filter Include="superLU">
-      <UniqueIdentifier>{ba4f5aa9-dbc0-4ab5-8b2a-2182cd0917ef}</UniqueIdentifier>
-      <Extensions>.cpp; .h</Extensions>
     </Filter>
     <Filter Include="arpack">
       <UniqueIdentifier>{06b2d02a-1c1c-432a-9629-dcfd5f43daac}</UniqueIdentifier>
@@ -43,6 +32,17 @@
     </Filter>
     <Filter Include="itpack">
       <UniqueIdentifier>{a8c065bd-dc7a-471a-ac64-9831bd307b0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sparseGEN">
+      <UniqueIdentifier>{ba4f5aa9-dbc0-4ab5-8b2a-2182cd0917ef}</UniqueIdentifier>
+      <Extensions>.cpp; .h</Extensions>
+    </Filter>
+    <Filter Include="sparseSYM">
+      <UniqueIdentifier>{054429bc-cc10-4819-8690-5a3cea042ac3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="umfGEN">
+      <UniqueIdentifier>{9eaba530-26b5-40d8-9ca8-bde87bdd7557}</UniqueIdentifier>
+      <Extensions>.cpp; .h</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -89,34 +89,34 @@
       <Filter>profileSPD</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\SymSparseLinSOE.cpp">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\SymSparseLinSolver.cpp">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\grcm.c">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\nest.c">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\newordr.c">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\nmat.c">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\nnsim.c">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\symbolic.c">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\tim.c">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\utility.c">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\bandGEN\BandGenLinLapackSolver.cpp">
       <Filter>bandGEN</Filter>
@@ -158,40 +158,40 @@
       <Filter>fullGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\umfGEN\UmfpackGenLinSOE.cpp">
-      <Filter>umfpack</Filter>
+      <Filter>umfGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\umfGEN\UmfpackGenLinSolver.cpp">
-      <Filter>umfpack</Filter>
+      <Filter>umfGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\CuSPSolver.cpp">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMCompressibleLinSOE.cpp">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMCompressibleSolver.cpp">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMLinSOE.cpp">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMSolver.cpp">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenColLinSOE.cpp">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenColLinSolver.cpp">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenRowLinSOE.cpp">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenRowLinSolver.cpp">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SuperLU.cpp">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\ArpackSOE.cpp">
       <Filter>arpack</Filter>
@@ -219,6 +219,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\diagonal\DistributedDiagonalSolver.cpp">
       <Filter>diagonal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMSolver_Umfpack.cpp">
+      <Filter>sparseGEN</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -265,22 +268,22 @@
       <Filter>profileSPD</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\FeStructs.h">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\SymSparseLinSOE.h">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\SymSparseLinSolver.h">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\globalVars.h">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\tim.h">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseSYM\utility.h">
-      <Filter>symSparse</Filter>
+      <Filter>sparseSYM</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\bandGEN\BandGenLinLapackSolver.h">
       <Filter>bandGEN</Filter>
@@ -322,40 +325,40 @@
       <Filter>fullGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\umfGEN\UmfpackGenLinSOE.h">
-      <Filter>umfpack</Filter>
+      <Filter>umfGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\umfGEN\UmfpackGenLinSolver.h">
-      <Filter>umfpack</Filter>
+      <Filter>umfGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\CuSPSolver.h">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMCompressibleLinSOE.h">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMCompressibleSolver.h">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMLinSOE.h">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMSolver.h">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenColLinSOE.h">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenColLinSolver.h">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenRowLinSOE.h">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SparseGenRowLinSolver.h">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\SuperLU.h">
-      <Filter>superLU</Filter>
+      <Filter>sparseGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\ArpackSOE.h">
       <Filter>arpack</Filter>
@@ -383,6 +386,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\diagonal\DistributedDiagonalSolver.h">
       <Filter>diagonal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMSolver_Umfpack.h">
+      <Filter>sparseGEN</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
