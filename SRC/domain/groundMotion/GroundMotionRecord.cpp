@@ -336,7 +336,7 @@ GroundMotionRecord::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroke
   static ID idData(6);
   int res = theChannel.recvID(dbTag, commitTag, idData);
   if (res < 0) {
-    opserr << "UniformExcitation::sendSelf() - channel failed to send data\n";
+    opserr << "GroundMotionRecord::recvSelf() - channel failed to send data\n";
     return res;
   }
 
@@ -348,14 +348,14 @@ GroundMotionRecord::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroke
 	delete theAccelTimeSeries;
       theAccelTimeSeries = theBroker.getNewTimeSeries(seriesClassTag);
       if (theAccelTimeSeries == 0) {
-	opserr << "GroundMotionRecord::sendSelf - could not create a TimeSeries object\n";
+	opserr << "GroundMotionRecord::recvSelf - could not create a TimeSeries object\n";
 	return -2;
       }
     }
     theAccelTimeSeries->setDbTag(seriesDbTag);
     res = theAccelTimeSeries->recvSelf(commitTag, theChannel, theBroker);
     if (res < 0) {
-      opserr << "UniformExcitation::sendSelf() - accel series failed to send data\n";
+      opserr << "GroundMotionRecord::recvSelf() - accel series failed to send data\n";
       return res;
     }
   }
@@ -368,14 +368,14 @@ GroundMotionRecord::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroke
 	delete theVelTimeSeries;
       theVelTimeSeries = theBroker.getNewTimeSeries(seriesClassTag);
       if (theVelTimeSeries == 0) {
-	opserr << "GroundMotionRecord::sendSelf - could not create a TimeSeries object\n";
+	opserr << "GroundMotionRecord::recvSelf - could not create a TimeSeries object\n";
 	return -2;
       }
     }
     theVelTimeSeries->setDbTag(seriesDbTag);
     res = theVelTimeSeries->recvSelf(commitTag, theChannel, theBroker);
     if (res < 0) {
-      opserr << "UniformExcitation::sendSelf() - accel series failed to send data\n";
+      opserr << "GroundMotionRecord::recvSelf() - accel series failed to send data\n";
       return res;
     }
   }
@@ -388,14 +388,14 @@ GroundMotionRecord::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroke
 	delete theDispTimeSeries;
       theDispTimeSeries = theBroker.getNewTimeSeries(seriesClassTag);
       if (theDispTimeSeries == 0) {
-	opserr << "GroundMotionRecord::sendSelf - could not create a TimeSeries object\n";
+	opserr << "GroundMotionRecord::recvSelf - could not create a TimeSeries object\n";
 	return -2;
       }
     }
     theDispTimeSeries->setDbTag(seriesDbTag);
     res = theDispTimeSeries->recvSelf(commitTag, theChannel, theBroker);
     if (res < 0) {
-      opserr << "UniformExcitation::sendSelf() - accel series failed to send data\n";
+      opserr << "GroundMotionRecord::recvSelf() - accel series failed to send data\n";
       return res;
     }
   }
