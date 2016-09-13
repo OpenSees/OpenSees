@@ -57,7 +57,6 @@
 #include <elementAPI.h>
 
 Matrix **Node::theMatrices = 0;
-Matrix **Node::theVectors = 0;
 int Node::numMatrices = 0;
 
 int OPS_Node()
