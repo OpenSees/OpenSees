@@ -979,6 +979,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/component/RVParameter.o \
 	$(FE)/domain/component/DVParameter.o \
 	$(FE)/domain/component/NodeResponseParameter.o \
+	$(FE)/domain/component/LoadFactorParameter.o \
 	$(FE)/domain/component/MaterialStageParameter.o \
 	$(FE)/domain/component/MatParameter.o \
 	$(FE)/domain/domain/Domain.o \
