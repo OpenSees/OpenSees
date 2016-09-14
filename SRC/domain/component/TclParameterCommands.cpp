@@ -34,6 +34,7 @@
 
 #include <RVParameter.h>
 #include <NodeResponseParameter.h>
+#include <LoadFactorParameter.h>
 
 #ifdef _RELIABILITY
 
@@ -130,7 +131,25 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_OK;
   }
 
+  if (argc >= 5 && strcmp(argv[0],"parameter") == 0 && strcmp(argv[2],"pattern") == 0 
+      && strcmp(argv[4],"lambda") == 0) {
 
+      int patternTag;
+      if (Tcl_GetInt(interp, argv[3], &patternTag) != TCL_OK) {
+	return TCL_ERROR;    
+      }
+      LoadPattern *thePattern = theTclDomain->getLoadPattern(patternTag);
+
+      Parameter *newParameter = new LoadFactorParameter(paramTag, thePattern);
+
+      theTclDomain->addParameter(newParameter);
+      
+      char buffer[40];
+      sprintf(buffer, "%d", paramTag);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+      
+      return TCL_OK;
+  }
 
   RandomVariable *theRV = 0;
 
@@ -175,6 +194,7 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
 	 
       // Retrieve element from domain
       //  FMK theObject = (DomainComponent *) theTclDomain->getElement(eleTag);
+      theObject = (DomainComponent *) theTclDomain->getElement(eleTag);
 
       argStart = (theRV) ? 6 : 4;
     }
