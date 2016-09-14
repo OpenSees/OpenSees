@@ -708,13 +708,12 @@ DisplacementControl::formdLambdaDh(int gradNumber)
   Vector &UFT=(*deltaUhat);
 
   double UFT_Comp=UFT(theDofID);// cll the component of the dUhat again
-  dlambdadh=-(theIncrement*duHatdh_Comp)/(UFT_Comp*UFT_Comp);
-
-  if(UFT_Comp==0) {
+  if(UFT_Comp == 0.0)
     dlambdadh=0.0;// to avoid dividing by zero
-  }
-  
-  if(dLAMBDAdh !=0) {
+  else
+    dlambdadh=-(theIncrement*duHatdh_Comp)/(UFT_Comp*UFT_Comp);
+
+  if(dLAMBDAdh != 0) {
     (*dLAMBDAdh)(gradNumber) = (*dLAMBDAdh)(gradNumber) + dlambdadh;
     return (*dLAMBDAdh)(gradNumber);
   } else {
@@ -774,14 +773,11 @@ DisplacementControl::getLambdaSensitivity(int gradNumber)
    Vector &dufRdh=*dUIJdh;// component of the dUfrDh: derivative of the residual displacement
    double dufRdh_Comp=dufRdh(theDofID);
 
-   if(UFT_Comp==0.0 ) {
-     opserr<<"UFTComp=0"<<endln;
+   if(UFT_Comp==0.0 )
      Dlambdadh=0.0;
-   } else {
+   else
      // dLambdadh_ij( the sensitivity of the load component to the parameter h)
      Dlambdadh=((-dufRdh_Comp*UFT_Comp  +(dufR_Comp*duHatdh_Comp)))/(UFT_Comp*UFT_Comp);  //   
-   }
-  
  
    // Now update Lambda_ij
    if(dLAMBDAdh !=0) {
