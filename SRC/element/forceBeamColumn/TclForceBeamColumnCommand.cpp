@@ -402,6 +402,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 	theElement = new ForceBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass, numIter, tol);
     }
 
+    delete beamIntegr;
     delete [] sections;    
     if (theElement == 0) {
       opserr << "WARNING ran out of memory creating element\n";
