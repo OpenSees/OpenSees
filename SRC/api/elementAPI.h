@@ -165,7 +165,7 @@ class ConvergenceTest;
 #define OPS_GetTransientIntegrator ops_gettransientintegrator_
 #define OPS_GetTest ops_gettest_
 #define OPS_builtModel ops_builtmodel_
-#define extern OPS_GetDomain ops_getdomain_
+#define OPS_GetDomain ops_getdomain_
 
 
 #ifdef __cplusplus
