@@ -323,7 +323,7 @@ HardeningMaterial::Print(OPS_Stream &s, int flag)
 int
 HardeningMaterial::setParameter(const char **argv, int argc, Parameter &param)
 {
-  if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0) {
+  if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0 || strcmp(argv[0],"Fy") == 0) {
     param.setValue(sigmaY);
     return param.addObject(1, this);
   }
@@ -408,7 +408,7 @@ HardeningMaterial::getStressSensitivity(int gradIndex, bool conditional)
 	// Then pick up history variables for this gradient number
 	double CplasticStrainSensitivity = 0.0;
 	double ChardeningSensitivity	 = 0.0;
-	if (SHVs != 0) {
+	if (SHVs != 0 && gradIndex < SHVs->noCols()) {
 		CplasticStrainSensitivity = (*SHVs)(0,gradIndex);
 		ChardeningSensitivity	 = (*SHVs)(1,gradIndex);
 	}
@@ -485,15 +485,15 @@ HardeningMaterial::getTangentSensitivity(int gradIndex)
   // Plastic step
   else { 
 
-    double den = E + Hiso + Hkin;
-    double den2 = den*den;
+    double EHK = E + Hiso + Hkin;
+    double EHK2 = EHK*EHK;
 
     if (parameterID == 2)  // E
-      return (den*(Hkin+Hiso)-E*(Hkin+Hiso)) / den2;
+      return (EHK*(Hkin+Hiso)-E*(Hkin+Hiso)) / EHK2;
     else if (parameterID == 3)  // Hkin
-      return (den*E          -E*(Hkin+Hiso)) / den2;
+      return (EHK*E          -E*(Hkin+Hiso)) / EHK2;
     else if (parameterID == 4)  // Hiso
-      return (den*E          -E*(Hkin+Hiso)) / den2;
+      return (EHK*E          -E*(Hkin+Hiso)) / EHK2;
   }
 
   return 0.0;
