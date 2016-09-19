@@ -25,6 +25,7 @@ SimulationInformation *theSimulationInfo = 0;
 //double ops_Dt = 0;
 typedef int (*OPS_ErrorPtrType)(char *, int);
 typedef int (*OPS_GetNumRemainingInputArgsType)();
+typedef int (*OPS_ResetCurrentInputArgType)();
 typedef int (*OPS_GetIntInputPtrType)(int *, int *);
 typedef int (*OPS_GetDoubleInputPtrType)(int *, double *);
 typedef const char *(*OPS_GetStringType)();
@@ -75,6 +76,7 @@ OPS_GetNodeInfoPtrType OPS_GetNodeIncrDispPtr = 0;
 OPS_GetNodeInfoPtrType OPS_GetNodeIncrDeltaDispPtr = 0;
 OPS_InvokeMaterialDirectlyPtrType OPS_InvokeMaterialDirectlyPtr = 0;
 OPS_GetNumRemainingInputArgsType OPS_GetNumRemainingInputArgsPtr = 0;
+OPS_ResetCurrentInputArgType OPS_ResetCurrentInputArgPtr = 0;
 OPS_GetStringType OPS_GetStringPtr = 0;
 OPS_GetStringCopyType OPS_GetStringCopyPtr = 0;
 OPS_GetIntPtrType OPS_GetNDM_Ptr = 0;
@@ -118,6 +120,7 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
                        OPS_GetNodeInfoPtrType OPS_GetNodeIncrDispFunct,
                        OPS_GetNodeInfoPtrType OPS_GetNodeIncrDeltaDispFunct,
                        OPS_GetNumRemainingInputArgsType OPS_GetNumRemainingArgsFunct,
+                       OPS_ResetCurrentInputArgType OPS_ResetCurrentInputArgFunct,
                        OPS_GetStringType OPS_GetStringFunct,
                        OPS_GetStringCopyType OPS_GetStringCopyFunct,
                        OPS_GetCrdTransfPtrType OPS_GetCrdTransfFunct,
@@ -160,6 +163,7 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
   OPS_GetNodeIncrDeltaDispPtr = OPS_GetNodeIncrDeltaDispFunct;
   OPS_InvokeMaterialDirectlyPtr = OPS_InvokeMaterialDirectlyFunct;
   OPS_GetNumRemainingInputArgsPtr = OPS_GetNumRemainingArgsFunct;
+  OPS_ResetCurrentInputArgPtr = OPS_ResetCurrentInputArgFunct;
   OPS_GetStringPtr = OPS_GetStringFunct;
   OPS_GetStringCopyPtr = OPS_GetStringCopyFunct;
   OPS_GetCrdTransfPtrFunc = OPS_GetCrdTransfFunct;
@@ -283,6 +287,11 @@ extern "C" int OPS_GetStringCopy(char **cArray)
 extern "C" int OPS_GetNumRemainingInputArgs()
 {
     return (*OPS_GetNumRemainingInputArgsPtr)();  
+}
+
+extern "C" int OPS_ResetCurrentInputArg()
+{
+    return (*OPS_ResetCurrentInputArgPtr)();  
 }
 
 extern "C" int OPS_GetNDM()

@@ -166,6 +166,7 @@ class ConvergenceTest;
 #define OPS_GetTest ops_gettest_
 #define OPS_builtModel ops_builtmodel_
 #define OPS_GetDomain ops_getdomain_
+#define OPS_ResetCurrentInputArg ops_resetcurrentinputarg_
 
 
 #ifdef __cplusplus
