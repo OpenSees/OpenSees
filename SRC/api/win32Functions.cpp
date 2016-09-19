@@ -376,7 +376,7 @@ extern "C" bool *OPS_builtModel(void)
 	return (*OPS_builtModelPtr)();
 }
 
-extern "C" bool *OPS_GetDomain(void)
+extern "C" Domain *OPS_GetDomain(void)
 {
   return (*OPS_GetDomainPtr)();
 }
