@@ -67,6 +67,7 @@ class ID
     int operator==(int) const;
     int operator!=(const ID &V) const;
     int operator!=(int) const;
+    int operator<(const ID &V) const;
 
     int insert(int value);  // differs from using [] in that inserted in order
     int getLocation(int value) const;

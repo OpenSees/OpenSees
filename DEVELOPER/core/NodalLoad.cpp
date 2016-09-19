@@ -42,53 +42,6 @@
 Vector NodalLoad::gradientVector(1);
 // AddingSensitivity:END ///////////////////////////////////////
 
-static int nodeLoadTag = 0;
-
-void* OPS_NodalLoad()
-{
-    // check inputs
-    int ndm = OPS_GetNDM();
-    int ndf = OPS_GetNDF();
-
-    if(ndm<=0 || ndf<=0) {
-	opserr<<"zero ndm or ndf\n";
-	return 0;
-    }
-    
-    if(OPS_GetNumRemainingInputArgs() < 1+ndf) {
-	opserr<<"insufficient number of args\n";
-	return 0;
-    }
-
-    // get node tag
-    int ndtag;
-    int numData = 1;
-    if(OPS_GetIntInput(&numData, &ndtag) < 0) return 0;
-
-    // get load vector
-    Vector forces(ndf);
-    if(OPS_GetDoubleInput(&ndf, &forces(0)) < 0) return 0;
-
-    // get load const
-    bool isLoadConst = false;
-    if(OPS_GetNumRemainingInputArgs() > 0) {
-	std::string type = OPS_GetString();
-	if(type == "-const") {
-	    isLoadConst = true;
-	}
-    }
-
-    // create the load
-    NodalLoad* theLoad = new NodalLoad(nodeLoadTag, ndtag, forces, isLoadConst);
-
-    if(theLoad == 0) return 0;
-
-    nodeLoadTag++;
-
-    return theLoad;
-       
-}
-
 NodalLoad::NodalLoad(int theClasTag)
 :Load(0,theClasTag), 
  myNode(0), myNodePtr(0), load(0), konstant(false)
@@ -186,9 +139,35 @@ NodalLoad::applyLoad(double loadFactor)
 	myNodePtr->addUnbalancedLoad(*load,1.0);	
     
     //    opserr << "loadFactor: " << loadFactor << *myNodePtr;
+}
+
+void
+NodalLoad::applyLoadSensitivity(double loadFactor)
+{
+    if (myNodePtr == 0) {
+	Domain *theDomain=this->getDomain();
+	if ((theDomain == 0) || 
+	    (myNodePtr = theDomain->getNode(myNode)) == 0) {
+	    opserr << "WARNING NodalLoad::applyLoadSensitivity() - No associated Node node " ;
+	    opserr << " for NodalLoad " << *this;
+	    return;
+	}
+    }
+
+    // load sensitivity
+    Vector loadsens(load->Size());
+    if(parameterID == 0) return;
+    if(parameterID > loadsens.Size()) return;
+    loadsens(parameterID-1) = 1;
+
+    // add the load times the loadfactor to nodal unbalanced load
+    if (konstant == false)
+	myNodePtr->addUnbalancedLoad(loadsens,loadFactor);
+    else
+	myNodePtr->addUnbalancedLoad(loadsens,1.0);	
+    
+    //    opserr << "loadFactor: " << loadFactor << *myNodePtr;
 } 
-
-
 
 int 
 NodalLoad::sendSelf(int cTag, Channel &theChannel)
@@ -267,23 +246,30 @@ NodalLoad::setParameter(const char **argv, int argc, Parameter &param)
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0],"1") == 0)
+  if (strcmp(argv[0],"1") == 0) {
+    param.setValue((*load)(0));
     return param.addObject(1, this);
-
-  if (strcmp(argv[0],"2") == 0)
+  }
+  if (strcmp(argv[0],"2") == 0) {
+    param.setValue((*load)(1));
     return param.addObject(2, this);
-
-  if (strcmp(argv[0],"3") == 0)
+  }
+  if (strcmp(argv[0],"3") == 0) {
+    param.setValue((*load)(2));
     return param.addObject(3, this);
-
-  if (strcmp(argv[0],"4") == 0)
+  }
+  if (strcmp(argv[0],"4") == 0) {
+    param.setValue((*load)(3));
     return param.addObject(4, this);
-
-  if (strcmp(argv[0],"5") == 0)
+  }
+  if (strcmp(argv[0],"5") == 0) {
+    param.setValue((*load)(4));
     return param.addObject(5, this);
-
-  if (strcmp(argv[0],"6") == 0)
+  }
+  if (strcmp(argv[0],"6") == 0) {
+    param.setValue((*load)(5));
     return param.addObject(6, this);
+  }
 
   return -1;
 }

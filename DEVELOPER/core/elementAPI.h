@@ -123,7 +123,9 @@ class ConvergenceTest;
 
 #define OPS_Error ops_error_
 #define OPS_GetIntInput ops_getintinput_
+#define OPS_SetIntoutput ops_setintoutput_
 #define OPS_GetDoubleInput ops_getdoubleinput_
+#define OPS_SetDoubleOutput ops_setdoubleoutput_
 #define OPS_AllocateMaterial ops_allocatematerial_
 #define OPS_AllocateElement ops_allocateelement_
 #define OPS_GetMaterialType ops_getmaterialtype_
@@ -140,6 +142,7 @@ class ConvergenceTest;
 #define OPS_GetInt ops_getintinput_
 #define OPS_GetDouble ops_getdoubleinput_
 #define OPS_GetString ops_getstring
+#define OPS_SetString ops_setstring
 #define OPS_GetNDM ops_getndm_
 #define OPS_GetNDF ops_getndf_
 #define OPS_GetCrdTransfPtr ops_getcrdtransfptr_
@@ -162,6 +165,8 @@ class ConvergenceTest;
 #define OPS_GetTransientIntegrator ops_gettransientintegrator_
 #define OPS_GetTest ops_gettest_
 #define OPS_builtModel ops_builtmodel_
+#define OPS_GetDomain ops_getdomain_
+
 
 #ifdef __cplusplus
 extern "C" int        OPS_GetNDM();
@@ -170,8 +175,11 @@ extern "C" int        OPS_Error(char *, int length);
 extern "C" int        OPS_GetNumRemainingInputArgs();
 extern "C" int        OPS_ResetCurrentInputArg(int cArg);
 extern "C" int        OPS_GetIntInput(int *numData, int*data);
+extern "C" int        OPS_SetIntOutput(int *numData, int*data);
 extern "C" int        OPS_GetDoubleInput(int *numData, double *data);
+extern "C" int        OPS_SetDoubleOutput(int *numData, double *data);
 extern "C" const char *OPS_GetString(void); // does a strcpy
+extern "C" int        OPS_SetString(const char*); 
 //extern "C" int        OPS_GetString(char *cArray, int sizeArray); // does a strcpy
 extern "C" int        OPS_GetStringCopy(char **cArray); // returns a new copy
 extern "C" matObj    *OPS_GetMaterial(int *matTag, int *matType);

@@ -65,6 +65,7 @@ class FE_Element: public TaggedObject
     virtual void  zeroTangent(void);
     virtual void  addKtToTang(double fact = 1.0);
     virtual void  addKiToTang(double fact = 1.0);
+    virtual void  addKgToTang(double fact = 1.0);
     virtual void  addCtoTang(double fact = 1.0);    
     virtual void  addMtoTang(double fact = 1.0);    
     virtual void  addKpToTang(double fact = 1.0, int numP = 0);
@@ -83,7 +84,8 @@ class FE_Element: public TaggedObject
     virtual const Vector &getM_Force(const Vector &x, double fact = 1.0);
     virtual void  addM_Force(const Vector &accel, double fact = 1.0);    
     virtual void  addD_Force(const Vector &vel, double fact = 1.0);    
-    virtual void  addK_Force(const Vector &disp, double fact = 1.0);    
+    virtual void  addK_Force(const Vector &disp, double fact = 1.0);
+    virtual void  addKg_Force(const Vector &disp, double fact = 1.0);    
 
     virtual int updateElement(void);
 

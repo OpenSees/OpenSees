@@ -125,7 +125,6 @@ Integrator::shouldComputeAtEachStep(void)
 bool
 Integrator::computeSensitivityAtEachIteration()
 {
-opserr<<"SensitivityIntegratorScheme: this method should never be called"<<endln;
 return false ;
 }
 
@@ -139,13 +138,5 @@ return SensitivityKey;
 
 }
 
-
-
-   double
-Integrator::dLambdadh()
-{
-return 0.0;
-
-}
 
  ////////////////////////Abbas/////////////////////////////////////

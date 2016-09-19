@@ -524,6 +524,27 @@ ID::operator!=(int value) const
   return 0;
 }
 
+// ID operator!=(const ID &V):
+//	The != operator checks the two IDs are of the same size.
+// 	Then returns 1 if first component of the first ID is less than the second ID
+
+int
+ID::operator<(const ID &V) const
+{
+    if (sz != V.sz) {
+	return sz < V.sz;
+    }
+
+    for (int i=0; i<sz; i++) {
+	if (data[i] < V.data[i]) {
+	    return 1;
+	} else if (data[i] > V.data[i]) {
+	    return 0;
+	}
+    }
+
+    return 0;
+}
 
 // friend OPS_Stream &operator<<(OPS_Stream &s, const ID &V)
 //	A function is defined to allow user to print the IDs using OPS_Streams.

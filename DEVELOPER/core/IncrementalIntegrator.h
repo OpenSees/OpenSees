@@ -94,6 +94,7 @@ class IncrementalIntegrator : public Integrator
 
 // AddingSensitivity:BEGIN //////////////////////////////////
     virtual int revertToStart();
+    virtual int formIndependentSensitivityLHS(int statusFlag = CURRENT_TANGENT);
 // AddingSensitivity:END ////////////////////////////////////
     
     // method introduced for domain decomposition

@@ -74,7 +74,6 @@ public:
     ////////////////////////////////Abbas//////////////////
     virtual int formEleTangentSensitivity(FE_Element *theEle, int gradNumber);  
     virtual double getLambdaSensitivity(int gradNumber);
-    virtual double dLambdadh();
     virtual int computeSensitivities();//Abbas
     int sensitivityDomainChanged();//Abbass
     bool shouldComputeAtEachStep(void);

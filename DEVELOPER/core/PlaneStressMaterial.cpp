@@ -32,6 +32,7 @@
 #include <PlaneStressMaterial.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
 
 //static vector and matrices
 Vector  PlaneStressMaterial::stress(3) ;
@@ -47,7 +48,39 @@ NDMaterial(0, ND_TAG_PlaneStressMaterial ),
 strain(3) 
 { }
 
+void* OPS_PlaneStress()
+{
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 2) {
+	opserr << "WARNING insufficient arguments\n";
+	opserr << "Want: nDMaterial PlaneStress tag? matTag?" << endln;
+	return 0;
+    }
 
+    int tag[2];
+    numdata = 2;
+    if (OPS_GetIntInput(&numdata,tag)<0) {
+	opserr << "WARNING invalid nDMaterial PlaneStress tags" << endln;
+	return 0;
+    }
+
+    NDMaterial *threeDMaterial = OPS_getNDMaterial(tag[1]);
+    if (threeDMaterial == 0) {
+	opserr << "WARNING nD material does not exist\n";
+	opserr << "nD material: " << tag[1];
+	opserr << "\nPlaneStress nDMaterial: " << tag[0] << endln;
+	return 0;
+    }
+      
+    NDMaterial* mat = new PlaneStressMaterial( tag[0], *threeDMaterial );
+
+    if (mat == 0) {
+	opserr << "WARNING: failed to create PlaneStress material\n";
+	return 0;
+    }
+
+    return mat;
+}
 
 //full constructor
 PlaneStressMaterial::PlaneStressMaterial(    

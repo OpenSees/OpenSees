@@ -27,6 +27,8 @@
 // Generic Plate Fiber Material
 //
 
+#ifndef PlateFiberMaterial_h
+#define PlateFiberMaterial_h
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -121,3 +123,4 @@ class PlateFiberMaterial: public NDMaterial{
 
 
 
+#endif

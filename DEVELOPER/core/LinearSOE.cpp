@@ -61,6 +61,11 @@ LinearSOE::solve(void)
     return -1;
 }
 
+int
+LinearSOE::formAp(const Vector &p, Vector &Ap)
+{
+  return 0;
+}
 
 double
 LinearSOE::getDeterminant(void)

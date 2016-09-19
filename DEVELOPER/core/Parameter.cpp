@@ -215,7 +215,6 @@ double
 Parameter::getSensitivity(int index)
 {
   //return 1.0;
-
   return (index == gradIndex) ? 1.0 : 0.0;
 }
 
@@ -265,7 +264,8 @@ int
 Parameter::sendSelf(int commitTag, Channel &theChannel)
 {
   opserr << "Parameter::sendSelf - not yet implemented\n";
-  return -1;
+  //return -1;
+  return 0;
 }
 
 int 

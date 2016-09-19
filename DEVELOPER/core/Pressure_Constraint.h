@@ -71,6 +71,7 @@ public:
     virtual void setDomain(Domain* theDomain);
     virtual Node* getPressureNode();
     virtual double getPressure(int last=1);
+    virtual void setPressure(double p);
     virtual const ID& getFluidElements();
     virtual const ID& getOtherElements();
     virtual void connect(int eleId, bool fluid=true);

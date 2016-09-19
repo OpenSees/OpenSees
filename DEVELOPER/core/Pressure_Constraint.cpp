@@ -175,6 +175,19 @@ Pressure_Constraint::getPressureNode()
     return theDomain->getNode(pTag);
 }
 
+void
+Pressure_Constraint::setPressure(double p)
+{
+    Node* pnode = this->getPressureNode();
+    if (pnode == 0) return;
+    const Vector& vel = pnode->getVel();
+    Vector newvel(vel);
+    newvel.Zero();
+    newvel(0) = p;
+    pnode->setTrialVel(newvel);
+    pnode->commitState();
+}
+
 double
 Pressure_Constraint::getPressure(int last)
 {
