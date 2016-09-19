@@ -25,7 +25,7 @@ SimulationInformation *theSimulationInfo = 0;
 //double ops_Dt = 0;
 typedef int (*OPS_ErrorPtrType)(char *, int);
 typedef int (*OPS_GetNumRemainingInputArgsType)();
-typedef int (*OPS_ResetCurrentInputArgType)();
+typedef int (*OPS_ResetCurrentInputArgType)(int);
 typedef int (*OPS_GetIntInputPtrType)(int *, int *);
 typedef int (*OPS_GetDoubleInputPtrType)(int *, double *);
 typedef const char *(*OPS_GetStringType)();
@@ -289,9 +289,9 @@ extern "C" int OPS_GetNumRemainingInputArgs()
     return (*OPS_GetNumRemainingInputArgsPtr)();  
 }
 
-extern "C" int OPS_ResetCurrentInputArg()
+extern "C" int OPS_ResetCurrentInputArg(int cArg)
 {
-    return (*OPS_ResetCurrentInputArgPtr)();  
+    return (*OPS_ResetCurrentInputArgPtr)(cArg);  
 }
 
 extern "C" int OPS_GetNDM()
@@ -385,7 +385,7 @@ extern "C" bool *OPS_builtModel(void)
 	return (*OPS_builtModelPtr)();
 }
 
-extern "C" Domain *OPS_GetDomain(void)
+Domain *OPS_GetDomain(void)
 {
   return (*OPS_GetDomainPtr)();
 }

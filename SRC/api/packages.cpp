@@ -111,7 +111,7 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
     typedef int (_cdecl *LocalInitPtrType)();
     typedef int (_cdecl *OPS_ErrorPtrType)(char *, int);
     typedef int (_cdecl *OPS_GetNumRemainingInputArgsType)();
-    typedef int (_cdecl *OPS_ResetCurrentInputArgType)();
+    typedef int (_cdecl *OPS_ResetCurrentInputArgType)(int);
     typedef int (_cdecl *OPS_GetIntInputPtrType)(int *, int *);
     typedef int (_cdecl *OPS_GetDoubleInputPtrType)(int *, double *);
     typedef const char *(_cdecl *OPS_GetStringType)();
@@ -143,7 +143,7 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
     typedef TransientIntegrator **(*OPS_GetTransientIntegratorPtrType)(void);
     typedef ConvergenceTest **(*OPS_GetTestPtrType)(void);
     typedef bool *(*OPS_builtModelPtrType)(void);
-`   typedef Domain *(*OPS_GetDomainPointerType)(void);    
+    typedef Domain *(*OPS_GetDomainPointerType)(void);    
     
     typedef void (_cdecl *setGlobalPointersFunction)(OPS_Stream *,
 						     Domain *,
