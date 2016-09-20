@@ -66,6 +66,10 @@ DEVELOPER/core/File.cpp -text
 DEVELOPER/core/File.h -text
 DEVELOPER/core/FileIter.cpp -text
 DEVELOPER/core/FileIter.h -text
+DEVELOPER/core/FrictionModel.cpp -text
+DEVELOPER/core/FrictionModel.h -text
+DEVELOPER/core/FrictionResponse.cpp -text
+DEVELOPER/core/FrictionResponse.h -text
 DEVELOPER/core/G3Globals.h -text
 DEVELOPER/core/Graph.cpp -text
 DEVELOPER/core/Graph.h -text

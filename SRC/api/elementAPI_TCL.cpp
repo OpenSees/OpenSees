@@ -40,6 +40,8 @@
 #include <UniaxialMaterial.h>
 #include <NDMaterial.h>
 #include <SectionForceDeformation.h>
+#include <CrdTransf.h>
+#include <FrictionModel.h>
 #include <WrapperUniaxialMaterial.h>
 #include <WrapperNDMaterial.h>
 #include <LimitCurve.h> //MRL
@@ -47,7 +49,6 @@
 
 #include <OPS_Globals.h>
 
-#include <CrdTransf.h>
 
 typedef struct elementFunction {
   char *funcName;
@@ -118,7 +119,7 @@ std::map<char *, eleFunct, cmp_str>theUniaxialMaterialFunctions; // map of user 
 static 
 void OPS_InvokeMaterialObject(struct matObject *theMat, modelState *theModel,double *strain, double *tang, double *stress, int *isw, int *result)
 {
-  int matType = theMat->theParam[0];
+  int matType = (int)theMat->theParam[0];
 
   if (matType == 1) {
     //  UniaxialMaterial *theMaterial = theUniaxialMaterials[matCount];
@@ -900,7 +901,6 @@ OPS_InvokeMaterialDirectly(matObject **theMat, modelState *model, double *strain
   return error;
 }
 
-
 extern "C" int        
 OPS_InvokeMaterialDirectly2(matObject *theMat, modelState *model, double *strain, double *stress, double *tang, int *isw)
 {
@@ -914,7 +914,6 @@ OPS_InvokeMaterialDirectly2(matObject *theMat, modelState *model, double *strain
   return error;
 }
 
-
 UniaxialMaterial *
 OPS_GetUniaxialMaterial(int matTag) {
   return OPS_getUniaxialMaterial(matTag);
@@ -926,18 +925,23 @@ OPS_GetNDMaterial(int matTag)
   return theModelBuilder->getNDMaterial(matTag);
 }
 
-CrdTransf * 
-OPS_GetCrdTransfPtr(int tag)
-{
-  return OPS_GetCrdTransf(tag);
-}
-
 SectionForceDeformation *
-OPS_GetSectionForceDeformation(int matTag)
+OPS_GetSectionForceDeformation(int secTag)
 {
-  return OPS_getSectionForceDeformation(matTag);
+  return OPS_getSectionForceDeformation(secTag);
 }
 
+CrdTransf * 
+OPS_GetCrdTransfPtr(int crdTag)
+{
+  return OPS_GetCrdTransf(crdTag);
+}
+
+FrictionModel * 
+OPS_GetFrictionModelPtr(int frnTag)
+{
+  return OPS_getFrictionModel(frnTag);
+}
 
 int
 OPS_ResetInput(ClientData clientData, 
@@ -948,7 +952,6 @@ OPS_ResetInput(ClientData clientData,
 	       Domain *domain,
 	       TclModelBuilder *builder)
 {
-
   theInterp = interp;
   theDomain = domain;
   theModelBuilder = builder;
@@ -967,7 +970,6 @@ OPS_ResetInputNoBuilder(ClientData clientData,
 			TCL_Char **argv, 
 			Domain *domain)
 {
-
   theInterp = interp;
   theDomain = domain;
   currentArgv = argv;
@@ -976,8 +978,7 @@ OPS_ResetInputNoBuilder(ClientData clientData,
 
   return 0;
 }
-	       
-			       
+
 int     
 OPS_GetNDF()
 {

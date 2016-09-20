@@ -70,7 +70,7 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
   // first try and open dll
   //
   
-  int libNameLength = strlen(libName);
+  int libNameLength = (int)strlen(libName);
   char *localLibName = new char[libNameLength+5];
   strcpy(localLibName, libName);
   strcpy(&localLibName[libNameLength], ".dll");
@@ -119,9 +119,10 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
     typedef int (_cdecl *OPS_AllocateElementPtrType)(eleObj *, int *matTags, int *maType);
     typedef int (_cdecl *OPS_AllocateMaterialPtrType)(matObj *);
     typedef UniaxialMaterial *(*OPS_GetUniaxialMaterialPtrType)(int matTag);
-	typedef SectionForceDeformation *(*OPS_GetSectionForceDeformationPtrType)(int matTag);
+	typedef SectionForceDeformation *(*OPS_GetSectionForceDeformationPtrType)(int secTag);
     typedef NDMaterial *(*OPS_GetNDMaterialPtrType)(int matTag);
-    typedef CrdTransf *(*OPS_GetCrdTransfPtrType)(int matTag);
+    typedef CrdTransf *(*OPS_GetCrdTransfPtrType)(int crdTag);
+    typedef FrictionModel *(*OPS_GetFrictionModelPtrType)(int frnTag);
     typedef int (_cdecl *OPS_GetNodeInfoPtrType)(int *, int *, double *);
     typedef int (_cdecl *OPS_InvokeMaterialDirectlyPtrType)(matObject **, modelState *, double *, double *, double *, int *);
     typedef int (_cdecl *OPS_GetIntPtrType)();
@@ -168,6 +169,7 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
 						     OPS_GetStringType,
 						     OPS_GetStringCopyType,
 						     OPS_GetCrdTransfPtrType,
+                             OPS_GetFrictionModelPtrType,
 						     OPS_GetIntPtrType,
 						     OPS_GetIntPtrType,
 						     OPS_GetFEDatastorePtrType,
@@ -221,6 +223,7 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
 	      OPS_GetString, 
 	      OPS_GetStringCopy, 
 	      OPS_GetCrdTransfPtr, 
+          OPS_GetFrictionModelPtr,
 	      OPS_GetNDM, 
 	      OPS_GetNDF,
 	      OPS_GetFEDatastore, 
