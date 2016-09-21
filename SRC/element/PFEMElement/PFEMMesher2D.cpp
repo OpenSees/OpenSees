@@ -929,7 +929,7 @@ PFEMMesher2D::doTriangulation(int starteletag, double alpha, const ID& groups,
         return res;
     }
 
-    NDMaterial *theMaterial = OPS_GetNDMaterial(matTag);
+    NDMaterial *theMaterial = OPS_getNDMaterial(matTag);
     if(theMaterial == 0) {
         opserr << "WARNING:  Material " << matTag << "not found\n";
         opserr<<"PFEMMesher2D::doTriangulation\n";
