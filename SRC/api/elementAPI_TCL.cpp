@@ -920,7 +920,7 @@ OPS_GetUniaxialMaterial(int matTag) {
 }
 
 NDMaterial *
-OPS_GetNDMaterial(int matTag)
+OPS_GetNDMaterialPointer(int matTag)
 {
   return theModelBuilder->getNDMaterial(matTag);
 }
