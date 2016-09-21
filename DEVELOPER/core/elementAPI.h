@@ -146,6 +146,7 @@ class ConvergenceTest;
 #define OPS_GetNDM ops_getndm_
 #define OPS_GetNDF ops_getndf_
 #define OPS_GetCrdTransfPtr ops_getcrdtransfptr_
+#define OPS_GetFrictionModelPtr ops_getfrictionmodelptr_
 #define OPS_GetFEDatastore ops_getfedatastore_
 #define OPS_GetInterpPWD ops_getinterppwd_
 #define OPS_AllocateLimitCurve ops_allocatelimitcurve_//**MRL
@@ -166,7 +167,7 @@ class ConvergenceTest;
 #define OPS_GetTest ops_gettest_
 #define OPS_builtModel ops_builtmodel_
 #define OPS_GetDomain ops_getdomain_
-#define OPS_ResetCurrentInputArg ops_resetcurrentinputarg_
+
 
 
 #ifdef __cplusplus
@@ -208,16 +209,16 @@ class UniaxialMaterial;
 class NDMaterial;
 class SectionForceDeformation;
 class CrdTransf;
+class FrictionModel;
 class FE_Datastore;
-
 class LimitCurve; //MRL
 class Domain; //**MRL
 
 extern UniaxialMaterial *OPS_GetUniaxialMaterial(int matTag);
-extern NDMaterial *OPS_GetNDMaterial(int matTag);
-extern SectionForceDeformation *OPS_GetSectionForceDeformation(int matTag);
-extern CrdTransf *OPS_GetCrdTransfPtr(int tag);
-
+extern NDMaterial *OPS_GetNDMaterialPointer(int matTag);
+extern SectionForceDeformation *OPS_GetSectionForceDeformation(int secTag);
+extern CrdTransf *OPS_GetCrdTransfPtr(int crdTag);
+extern FrictionModel *OPS_GetFrictionModelPtr(int frnTag);
 extern LimitCurve *OPS_GetLimitCurve(int LimCrvTag);//MRL
 extern Domain *OPS_GetDomain(void);//**MRL
 
