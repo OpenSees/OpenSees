@@ -156,7 +156,7 @@ TclModelBuilder_addFourNodeQuadUP(ClientData clientData, Tcl_Interp *interp,
 		}
 	}
 
-  NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
 
   if (theMaterial == 0) {
       opserr << "WARNING material not found\n";
@@ -298,7 +298,7 @@ TclModelBuilder_addBrickUP(ClientData clientData, Tcl_Interp *interp,
 		}
 	}
 
-  NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
 
   if (theMaterial == 0) {
       opserr << "WARNING material not found\n";
@@ -431,7 +431,7 @@ TclModelBuilder_addNineFourNodeQuadUP(ClientData clientData, Tcl_Interp *interp,
 		}
 	}
 
-  NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
 
   if (theMaterial == 0) {
       opserr << "WARNING material not found\n";
@@ -573,7 +573,7 @@ TclModelBuilder_addTwentyEightNodeBrickUP(ClientData clientData, Tcl_Interp *int
 		}
 	}
 
-  NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
 
   if (theMaterial == 0) {
       opserr << "WARNING material not found\n";
@@ -734,7 +734,7 @@ TclModelBuilder_addBBarFourNodeQuadUP(ClientData clientData, Tcl_Interp *interp,
 		}
 	}
 
-  NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
 
   if (theMaterial == 0) {
       opserr << "WARNING material not found\n";
@@ -876,7 +876,7 @@ TclModelBuilder_addBBarBrickUP(ClientData clientData, Tcl_Interp *interp,
 		}
 	}
 
-  NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
 
   if (theMaterial == 0) {
       opserr << "WARNING material not found\n";
