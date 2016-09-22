@@ -1052,6 +1052,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\J2PlateFibre.cpp">
       <Filter>nD\j2Plasticity</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\PlasticDamageConcrete3d.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -1951,6 +1954,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\J2PlateFibre.h">
       <Filter>nD\j2Plasticity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\PlasticDamageConcrete3d.h">
+      <Filter>nD</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

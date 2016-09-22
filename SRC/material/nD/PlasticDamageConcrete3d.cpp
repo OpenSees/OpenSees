@@ -130,11 +130,11 @@ PlasticDamageConcrete3d::PlasticDamageConcrete3d(int tag,
   C = Ce;
   
   double f2c = 1.16*fc;
-  double k = sqrt(2)*(f2c - fc)/(2.*f2c - fc);
+  double k = sqrt(2.0)*(f2c - fc)/(2.*f2c - fc);
 
   //      % initial damage threshold
   double rp0 = ft/sqrt(E);
-  double rn0 = sqrt((k+sqrt(2))*fc/sqrt(3));
+  double rn0 = sqrt((k+sqrt(2.0))*fc/sqrt(3.0));
       
   rp = rp0;
   rn = rn0;
@@ -218,7 +218,7 @@ void StrsDecA(const Vector &sig, Vector &sigpos, Vector &signeg, Matrix &Qpos, M
 
 int
 PlasticDamageConcrete3d::setTrialStrain(Vector const&v1, Vector const&v2){
-  this->setTrialStrain(v1);
+  return this->setTrialStrain(v1);
 }
 
 int
@@ -246,10 +246,10 @@ PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
   static Matrix Cbar(6,6);
 
   double f2c = 1.16*fc;
-  double k = sqrt(2)*(f2c - fc)/(2.*f2c - fc);
+  double k = sqrt(2.0)*(f2c - fc)/(2.*f2c - fc);
   // initial damage threshold
   double rp0 = ft/sqrt(E);
-  double rn0 = sqrt((k+sqrt(2))*fc/sqrt(3));
+  double rn0 = sqrt((k+sqrt(2.0))*fc/sqrt(3.0));
 
   double tol = 1.0e-5;
   
@@ -457,7 +457,7 @@ PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
     Dsigoct_Dsigneg = Iv6; Dsigoct_Dsigneg/=3.;
     static Vector Dtauoct_Dsigneg(6);
     
-    Dtauoct_Dsigneg = n; Dtauoct_Dsigneg/=sqrt(3);
+    Dtauoct_Dsigneg = n; Dtauoct_Dsigneg/=sqrt(3.0);
     opserr << "Dtaun_Dsigoct: " << Dtaun_Dsigoct << endln;
     opserr << "Dsigoct_Dsigneg: " << Dsigoct_Dsigneg << endln;
     opserr << "Dtaun_Dtauoct: " << Dtaun_Dtauoct << endln;

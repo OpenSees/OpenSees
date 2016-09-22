@@ -101,6 +101,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\J2PlateFibre.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\LinearCap.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\PlasticDamageConcrete3d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.cpp" />
@@ -422,6 +423,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\J2PlateFibre.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\LinearCap.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\PlasticDamageConcrete3d.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.h" />
