@@ -75,8 +75,9 @@ class TclModelBuilder : public ModelBuilder
 
     // methods needed for the continuum elements and generic section
     // models to add/get ND material models
-    int addNDMaterial(NDMaterial &theMaterial);
-    NDMaterial *getNDMaterial(int tag);
+
+    //    int addNDMaterial(NDMaterial &theMaterial);
+    //    NDMaterial *getNDMaterial(int tag);
     
     // methods needed for the nonlinear beam column elements to
     // add/get section objects

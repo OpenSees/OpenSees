@@ -435,7 +435,7 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
   :ModelBuilder(theDomain), ndm(NDM), ndf(NDF), theInterp(interp)
 {
   // theUniaxialMaterials = new ArrayOfTaggedObjects(32);
-  theNDMaterials = new ArrayOfTaggedObjects(32);
+   theNDMaterials = new ArrayOfTaggedObjects(32);
   theSections  = new ArrayOfTaggedObjects(32);
   theSectionRepresents = new ArrayOfTaggedObjects(32);  
 #ifdef OO_HYSTERETIC
@@ -670,6 +670,7 @@ TclModelBuilder::~TclModelBuilder()
   OPS_clearAllDamageModel();
   OPS_clearAllFrictionModel();
   OPS_clearAllHystereticBackbone();
+  OPS_clearAllNDMaterial();
 
   // theUniaxialMaterials->clearAll();
   theNDMaterials->clearAll();
@@ -871,6 +872,7 @@ TclModelBuilder::getStrengthDegradation(int tag)
 }
 #endif
 
+/*
 int 
 TclModelBuilder::addNDMaterial(NDMaterial &theMaterial)
 {
@@ -895,6 +897,7 @@ TclModelBuilder::getNDMaterial(int tag)
   NDMaterial *result = (NDMaterial *)mc;
   return result;
 }
+*/
 
 int 
 TclModelBuilder::addSection(SectionForceDeformation &theSection)
