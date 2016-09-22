@@ -119,8 +119,8 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
     typedef int (_cdecl *OPS_AllocateElementPtrType)(eleObj *, int *matTags, int *maType);
     typedef int (_cdecl *OPS_AllocateMaterialPtrType)(matObj *);
     typedef UniaxialMaterial *(*OPS_GetUniaxialMaterialPtrType)(int matTag);
-	typedef SectionForceDeformation *(*OPS_GetSectionForceDeformationPtrType)(int secTag);
     typedef NDMaterial *(*OPS_GetNDMaterialPtrType)(int matTag);
+	typedef SectionForceDeformation *(*OPS_GetSectionForceDeformationPtrType)(int secTag);
     typedef CrdTransf *(*OPS_GetCrdTransfPtrType)(int crdTag);
     typedef FrictionModel *(*OPS_GetFrictionModelPtrType)(int frnTag);
     typedef int (_cdecl *OPS_GetNodeInfoPtrType)(int *, int *, double *);
@@ -157,6 +157,8 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
 						     OPS_GetUniaxialMaterialPtrType,
 						     OPS_GetNDMaterialPtrType,
 						     OPS_GetSectionForceDeformationPtrType,
+						     OPS_GetCrdTransfPtrType,
+                             OPS_GetFrictionModelPtrType,
 						     OPS_InvokeMaterialDirectlyPtrType,
 						     OPS_GetNodeInfoPtrType,
 						     OPS_GetNodeInfoPtrType,
@@ -168,8 +170,6 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
 						     OPS_ResetCurrentInputArgType,
 						     OPS_GetStringType,
 						     OPS_GetStringCopyType,
-						     OPS_GetCrdTransfPtrType,
-                             OPS_GetFrictionModelPtrType,
 						     OPS_GetIntPtrType,
 						     OPS_GetIntPtrType,
 						     OPS_GetFEDatastorePtrType,
@@ -209,8 +209,10 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
 	      OPS_AllocateElement, 
 	      OPS_AllocateMaterial, 
 	      OPS_GetUniaxialMaterial, 
-	      OPS_GetNDMaterialPointer, 
+	      OPS_GetNDMaterial, 
 	      OPS_GetSectionForceDeformation, 
+	      OPS_GetCrdTransf, 
+          OPS_GetFrictionModel,
 	      OPS_InvokeMaterialDirectly, 
 	      OPS_GetNodeCrd, 
 	      OPS_GetNodeDisp, 
@@ -222,8 +224,6 @@ getLibraryFunction(const char *libName, const char *funcName, void **libHandle, 
 	      OPS_ResetCurrentInputArg, 
 	      OPS_GetString, 
 	      OPS_GetStringCopy, 
-	      OPS_GetCrdTransfPtr, 
-          OPS_GetFrictionModelPtr,
 	      OPS_GetNDM, 
 	      OPS_GetNDF,
 	      OPS_GetFEDatastore, 

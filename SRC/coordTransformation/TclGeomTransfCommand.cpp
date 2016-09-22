@@ -138,7 +138,7 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp,
     }
     
     // add the transformation to the modelBuilder
-    if (OPS_AddCrdTransf(crdTransf2d) != true) {
+    if (OPS_addCrdTransf(crdTransf2d) != true) {
       opserr << "WARNING TclElmtBuilder - addGeomTransf  - could not add geometric transformation to model Builder\n";
       return TCL_ERROR;
     }
@@ -226,7 +226,7 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp,
     }
     
     // add the transformation to the modelBuilder
-    if (OPS_AddCrdTransf(crdTransf3d) != true) {
+    if (OPS_addCrdTransf(crdTransf3d) != true) {
       opserr << "WARNING TclElmtBuilder - addGeomTransf  - could not add geometric transformation to model Builder\n";
       return TCL_ERROR;
     }

@@ -1745,7 +1745,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     }
 
     // Now add the material to the modelBuilder
-    if (theTclBuilder->addNDMaterial(*theMaterial) < 0) {
+    if (OPS_addNDMaterial(theMaterial) == false) {
 	opserr << "WARNING could not add material to the domain\n";
 	opserr << *theMaterial << endln;
 	delete theMaterial; // invoke the material objects destructor, otherwise mem leak

@@ -663,7 +663,7 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 TclModelBuilder::~TclModelBuilder()
 {
   OPS_clearAllTimeSeries();
-  OPS_ClearAllCrdTransf();
+  OPS_clearAllCrdTransf();
   OPS_clearAllUniaxialMaterial();
   OPS_clearAllSectionForceDeformation();
   OPS_clearAllLimitCurve();

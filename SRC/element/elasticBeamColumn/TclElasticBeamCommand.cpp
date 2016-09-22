@@ -137,7 +137,7 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
       argi = 8;
     }
 
-    CrdTransf *theTrans = OPS_GetCrdTransf(transTag);
+    CrdTransf *theTrans = OPS_getCrdTransf(transTag);
     
     if (theTrans == 0) {
 	opserr << "WARNING transformation object not found - elasticBeamColumn " << beamId;
@@ -228,7 +228,7 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
 	return TCL_ERROR;
       }      
       
-      CrdTransf *theTrans = OPS_GetCrdTransf(transTag);
+      CrdTransf *theTrans = OPS_getCrdTransf(transTag);
     
       if (theTrans == 0) {
 	opserr << "WARNING transformation object not found - elasticBeamColumn " << beamId;
@@ -303,7 +303,7 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
 	return TCL_ERROR;
       }      
       
-      CrdTransf *theTrans = OPS_GetCrdTransf(transTag);
+      CrdTransf *theTrans = OPS_getCrdTransf(transTag);
     
       if (theTrans == 0) {
 	opserr << "WARNING transformation object not found - elasticBeamColumn " << beamId;

@@ -39,11 +39,11 @@
 
 static MapOfTaggedObjects theCrdTransfObjects;
 
-bool OPS_AddCrdTransf(CrdTransf *newComponent) {
+bool OPS_addCrdTransf(CrdTransf *newComponent) {
   return theCrdTransfObjects.addComponent(newComponent);
 }
 
-CrdTransf *OPS_GetCrdTransf(int tag) {
+CrdTransf *OPS_getCrdTransf(int tag) {
 
   TaggedObject *theResult = theCrdTransfObjects.getComponentPtr(tag);
   if (theResult == 0) {
@@ -55,7 +55,7 @@ CrdTransf *OPS_GetCrdTransf(int tag) {
   return theSeries;
 }
 
-void OPS_ClearAllCrdTransf(void) {
+void OPS_clearAllCrdTransf(void) {
   theCrdTransfObjects.clearAll();
 }
 

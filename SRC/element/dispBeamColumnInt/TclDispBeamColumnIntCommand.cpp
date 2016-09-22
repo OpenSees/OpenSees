@@ -148,7 +148,7 @@ TclModelBuilder_addDispBeamColumnInt(ClientData clientData, Tcl_Interp *interp,
 
 	if (ndm == 2) {
 
-		CrdTransf *theTransf = OPS_GetCrdTransf(transfTag);
+		CrdTransf *theTransf = OPS_getCrdTransf(transfTag);
       
 		if (theTransf == 0) {
 			opserr << "WARNING transformation not found\n";

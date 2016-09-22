@@ -332,7 +332,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       
     if (ndm == 2) {
       
-      theTransf2d = OPS_GetCrdTransf(transfTag);
+      theTransf2d = OPS_getCrdTransf(transfTag);
       
       if (theTransf2d == 0) {
 	opserr << "WARNING transformation not found\n";
@@ -344,7 +344,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
     
     if (ndm == 3) {
       
-      theTransf3d = OPS_GetCrdTransf(transfTag);
+      theTransf3d = OPS_getCrdTransf(transfTag);
       
       if (theTransf3d == 0) {
 	opserr << "WARNING transformation not found\n";
@@ -436,7 +436,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
   
   if (ndm == 2) {
     
-    theTransf2d = OPS_GetCrdTransf(transfTag);
+    theTransf2d = OPS_getCrdTransf(transfTag);
     
     if (theTransf2d == 0) {
       opserr << "WARNING transformation not found\n";
@@ -448,7 +448,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
   
   if (ndm == 3) {
     
-    theTransf3d = OPS_GetCrdTransf(transfTag);
+    theTransf3d = OPS_getCrdTransf(transfTag);
     
     if (theTransf3d == 0) {
       opserr << "WARNING transformation not found\n";

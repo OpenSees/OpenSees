@@ -68,8 +68,8 @@ OPS_AllocateMaterialPtrType OPS_AllocateMaterialPtr = 0;
 OPS_GetUniaxialMaterialPtrType OPS_GetUniaxialMaterialPtr = 0;
 OPS_GetNDMaterialPtrType OPS_GetNDMaterialPtr = 0;
 OPS_GetSectionForceDeformationPtrType OPS_GetSectionForceDeformationPtr = 0;
-OPS_GetCrdTransfPtrType OPS_GetCrdTransfPtrFunc = 0;
-OPS_GetFrictionModelPtrType OPS_GetFrictionModelPtrFunc = 0;
+OPS_GetCrdTransfPtrType OPS_GetCrdTransfPtr = 0;
+OPS_GetFrictionModelPtrType OPS_GetFrictionModelPtr = 0;
 OPS_GetNodeInfoPtrType OPS_GetNodeCrdPtr = 0;
 OPS_GetNodeInfoPtrType OPS_GetNodeDispPtr = 0;
 OPS_GetNodeInfoPtrType OPS_GetNodeVelPtr = 0;
@@ -114,6 +114,8 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
                        OPS_GetUniaxialMaterialPtrType OPS_GetUniaxialMaterialFunct,
                        OPS_GetNDMaterialPtrType OPS_GetNDMaterialFunct,
                        OPS_GetSectionForceDeformationPtrType OPS_GetSectionForceDeformationFunct,
+                       OPS_GetCrdTransfPtrType OPS_GetCrdTransfFunct,
+                       OPS_GetFrictionModelPtrType OPS_GetFrictionModelFunct,
                        OPS_InvokeMaterialDirectlyPtrType OPS_InvokeMaterialDirectlyFunct,
                        OPS_GetNodeInfoPtrType OPS_GetNodeCrdFunct,
                        OPS_GetNodeInfoPtrType OPS_GetNodeDispFunct,
@@ -125,8 +127,6 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
                        OPS_ResetCurrentInputArgType OPS_ResetCurrentInputArgFunct,
                        OPS_GetStringType OPS_GetStringFunct,
                        OPS_GetStringCopyType OPS_GetStringCopyFunct,
-                       OPS_GetCrdTransfPtrType OPS_GetCrdTransfFunct,
-                       OPS_GetFrictionModelPtrType OPS_GetFrictionModelFunct,
                        OPS_GetIntPtrType OPS_GetNDM_Funct,
                        OPS_GetIntPtrType OPS_GetNDF_Funct,
                        OPS_GetFEDatastorePtrType OPS_GetFEDatastoreFunct,
@@ -200,7 +200,7 @@ OPS_GetUniaxialMaterial(int matTag)
 }
 
 NDMaterial *
-OPS_GetNDMaterialPointer(int matTag)
+OPS_GetNDMaterial(int matTag)
 {
     return (*OPS_GetNDMaterialPtr)(matTag);
 }
@@ -212,15 +212,15 @@ OPS_GetSectionForceDeformation(int secTag)
 }
 
 CrdTransf *
-OPS_GetCrdTransfPtr(int crdTag)
+OPS_GetCrdTransf(int crdTag)
 {
-    return (*OPS_GetCrdTransfPtrFunc)(crdTag);
+    return (*OPS_GetCrdTransfPtr)(crdTag);
 }
 
 FrictionModel *
-OPS_GetFrictionModelPtr(int frnTag)
+OPS_GetFrictionModel(int frnTag)
 {
-    return (*OPS_GetFrictionModelPtrFunc)(frnTag);
+    return (*OPS_GetFrictionModelPtr)(frnTag);
 }
 
 int OPS_Error(char *data, int length)

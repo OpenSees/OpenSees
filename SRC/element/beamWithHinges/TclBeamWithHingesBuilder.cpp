@@ -215,7 +215,7 @@ TclModelBuilder_addBeamWithHinges (ClientData clientData, Tcl_Interp *interp,
 	    return TCL_ERROR;
 	}
 
-	CrdTransf *theTransf = OPS_GetCrdTransf(transfTag);
+	CrdTransf *theTransf = OPS_getCrdTransf(transfTag);
 
 	if (theTransf == 0) {
 	    opserr << "WARNING geometric transformation does not exist\n";
@@ -471,7 +471,7 @@ TclModelBuilder_addBeamWithHinges (ClientData clientData, Tcl_Interp *interp,
 	    return TCL_ERROR;
 	}
 
-	CrdTransf *theTransf = OPS_GetCrdTransf(transfTag);
+	CrdTransf *theTransf = OPS_getCrdTransf(transfTag);
 
 	if (theTransf == 0) {
 	    opserr << "WARNING geometric transformation does not exist\n";

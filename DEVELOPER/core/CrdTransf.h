@@ -101,8 +101,8 @@ private:
 };
 
 // some additional methods related to prototypes created for copy constructors
-extern bool       OPS_AddCrdTransf(CrdTransf *newComponent);
-extern CrdTransf *OPS_GetCrdTransf(int tag);
-extern void       OPS_ClearAllCrdTransf(void);
+extern bool       OPS_addCrdTransf(CrdTransf *newComponent);
+extern CrdTransf *OPS_getCrdTransf(int tag);
+extern void       OPS_clearAllCrdTransf(void);
 
 #endif

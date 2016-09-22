@@ -915,14 +915,15 @@ OPS_InvokeMaterialDirectly2(matObject *theMat, modelState *model, double *strain
 }
 
 UniaxialMaterial *
-OPS_GetUniaxialMaterial(int matTag) {
+OPS_GetUniaxialMaterial(int matTag)
+{
   return OPS_getUniaxialMaterial(matTag);
 }
 
 NDMaterial *
-OPS_GetNDMaterialPointer(int matTag)
+OPS_GetNDMaterial(int matTag)
 {
-  return theModelBuilder->getNDMaterial(matTag);
+  return OPS_getNDMaterial(matTag);
 }
 
 SectionForceDeformation *
@@ -932,13 +933,13 @@ OPS_GetSectionForceDeformation(int secTag)
 }
 
 CrdTransf * 
-OPS_GetCrdTransfPtr(int crdTag)
+OPS_GetCrdTransf(int crdTag)
 {
-  return OPS_GetCrdTransf(crdTag);
+  return OPS_getCrdTransf(crdTag);
 }
 
 FrictionModel * 
-OPS_GetFrictionModelPtr(int frnTag)
+OPS_GetFrictionModel(int frnTag)
 {
   return OPS_getFrictionModel(frnTag);
 }
