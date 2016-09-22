@@ -360,6 +360,17 @@ SSPbrick::setDomain(Domain *theDomain)
 
 	// call the base-class method
 	this->DomainComponent::setDomain(theDomain);
+
+	/*
+	this->update();
+	const Matrix &t = this->getTangentStiff();
+	for (int i=0; i<t.noRows(); i++) {
+	  if (t(i,i) < 0.) {
+	    opserr << "ERROR SSP_Brick bad tangent from element: " << this->getTag() << " ";
+	    i = 100;
+	  }
+	}
+	*/
 }
 
 int
@@ -903,7 +914,70 @@ SSPbrick::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBrok
 int
 SSPbrick::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
-	return 0;
+    const Vector &end1Crd = theNodes[0]->getCrds();
+    const Vector &end2Crd = theNodes[1]->getCrds();	
+    const Vector &end3Crd = theNodes[2]->getCrds();	
+    const Vector &end4Crd = theNodes[3]->getCrds();	
+
+    const Vector &end5Crd = theNodes[4]->getCrds();
+    const Vector &end6Crd = theNodes[5]->getCrds();	
+    const Vector &end7Crd = theNodes[6]->getCrds();	
+    const Vector &end8Crd = theNodes[7]->getCrds();	
+
+    static Matrix coords(8,3);
+    static Vector values(8);
+    static Vector P(24) ;
+    
+    for (int i=0; i<8; i++)
+      values(i) = 1.0;
+
+    int error = 0;
+    int i;
+
+    const Vector &end1Disp = theNodes[0]->getDisp();
+    const Vector &end2Disp = theNodes[1]->getDisp();
+    const Vector &end3Disp = theNodes[2]->getDisp();
+    const Vector &end4Disp = theNodes[3]->getDisp();
+    const Vector &end5Disp = theNodes[4]->getDisp();
+    const Vector &end6Disp = theNodes[5]->getDisp();
+    const Vector &end7Disp = theNodes[6]->getDisp();
+    const Vector &end8Disp = theNodes[7]->getDisp();
+    
+    for (i = 0; i < 3; i++) {
+      coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
+      coords(1,i) = end2Crd(i) + end2Disp(i)*fact;    
+      coords(2,i) = end3Crd(i) + end3Disp(i)*fact;    
+      coords(3,i) = end4Crd(i) + end4Disp(i)*fact;
+      coords(4,i) = end5Crd(i) + end5Disp(i)*fact;
+      coords(5,i) = end6Crd(i) + end6Disp(i)*fact;    
+      coords(6,i) = end7Crd(i) + end7Disp(i)*fact;    
+      coords(7,i) = end8Crd(i) + end8Disp(i)*fact;
+    }
+    values(0) = 1.;
+    values(1) = 1.;
+    values(2) = 1.;
+    values(3) = 1.;
+    values(4) = -1.;
+    values(5) = -1.;
+    values(6) = -1.;
+    values(7) = -1.;
+
+    theViewer.drawLine(end1Crd, end2Crd, 1., 1., this->getTag());
+    theViewer.drawLine(end2Crd, end3Crd, 1., 1., this->getTag());
+    theViewer.drawLine(end3Crd, end4Crd, 1., 1., this->getTag());
+    theViewer.drawLine(end4Crd, end1Crd, 1., 1., this->getTag());
+
+    theViewer.drawLine(end5Crd, end6Crd, -1., -1., this->getTag());
+    theViewer.drawLine(end6Crd, end7Crd, -1., -1., this->getTag());
+    theViewer.drawLine(end7Crd, end8Crd, -1., -1., this->getTag());
+    theViewer.drawLine(end8Crd, end5Crd, -1., -1., this->getTag());
+
+    theViewer.drawLine(end1Crd, end5Crd, 1., -1., this->getTag());
+    theViewer.drawLine(end2Crd, end6Crd, 1., -1., this->getTag());
+    theViewer.drawLine(end3Crd, end7Crd, 1., -1., this->getTag());
+    theViewer.drawLine(end4Crd, end8Crd, 1., -1., this->getTag());
+    return 0;
+    //    return theViewer.drawCube(coords, values, this->getTag());    
 }
 
 void
