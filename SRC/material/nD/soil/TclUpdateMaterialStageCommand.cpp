@@ -107,7 +107,7 @@ TclModelBuilderUpdateParameterCommand(ClientData clientData,
     return TCL_ERROR;		
   }
   
-  NDMaterial * a = theTclBuilder->getNDMaterial(tag);
+  NDMaterial * a = OPS_getNDMaterial(tag);
   
   if (a==0) {
     //opserr << "WARNING UpdateParameter: couldn't get NDmaterial tagged: " << tag << endln;

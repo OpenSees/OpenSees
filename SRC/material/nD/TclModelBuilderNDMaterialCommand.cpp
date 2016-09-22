@@ -82,7 +82,8 @@ extern  void *OPS_FAPrestressedConcretePlaneStressMaterial(void);
 extern  void *OPS_FAFourSteelPCPlaneStressMaterial(void);
 extern  void *OPS_RAFourSteelPCPlaneStressMaterial(void);
 extern  void *OPS_MaterialCMM(void);
-
+extern  void *OPS_NewMaterialCMM(void);
+extern  void *  OPS_NewPlasticDamageConcrete3d(void);
 extern  void *OPS_ElasticIsotropicMaterial(void);
 extern  void *OPS_ElasticOrthotropicMaterial(void);
 extern  void *OPS_DruckerPragerMaterial(void);
@@ -104,7 +105,7 @@ extern void *OPS_AcousticMedium(void);
 
 extern  void *OPS_FSAMMaterial(void); // K Kolozvari      
 
-#ifdef _HAVE_Damage2P
+#ifdef _HAVE_Damage2p
 extern void *OPS_Damage2p(void);
 #endif
 
@@ -166,6 +167,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
+    if ((strcmp(argv[1],"PlasticDamageConcrete") == 0) || (strcmp(argv[1],"PlasticDamageConcrete3d") == 0)) {
+
+      void *theMat = OPS_NewPlasticDamageConcrete3d();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
     else if ((strcmp(argv[1],"InitStressMaterial") == 0) || (strcmp(argv[1],"InitStress") == 0)) {
       void *theMat = OPS_InitStressNDMaterial();
       if (theMat != 0) 
@@ -217,7 +227,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
-#ifdef _HAVE_Damage2P
+#ifdef _HAVE_Damage2p
     else if ((strcmp(argv[1],"Damage2p") == 0)){
 
       void *theMat = OPS_Damage2p();
@@ -420,8 +430,6 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
-    //Jul. 07, 2001 Boris Jeremic & ZHaohui Yang jeremic|zhyang@ucdavis.edu
-    // Pressure dependent elastic material
     else if (strcmp(argv[1],"PressureDependentElastic3D") == 0) {
 	if (argc < 6) {
 	    opserr << "WARNING insufficient arguments\n";
@@ -1117,7 +1125,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	      return TCL_ERROR;
 	  }
 
-	NDMaterial *soil = theTclBuilder->getNDMaterial(param[1]);
+	NDMaterial *soil = OPS_getNDMaterial(param[1]);
 	if (soil == 0) {
 	      opserr << "WARNING FluidSolidPorous: couldn't get soil material ";
 	      opserr << "tagged: " << param[1] << "\n";
@@ -1159,7 +1167,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
       }
       
-      NDMaterial *threeDMaterial = theTclBuilder->getNDMaterial(matTag);
+      NDMaterial *threeDMaterial = OPS_getNDMaterial(matTag);
       if (threeDMaterial == 0) {
 	opserr << "WARNING nD material does not exist\n";
 	opserr << "nD material: " << matTag;
@@ -1193,7 +1201,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	 return TCL_ERROR;
        }
        
-       NDMaterial *threeDMaterial = theTclBuilder->getNDMaterial(matTag);
+       NDMaterial *threeDMaterial = OPS_getNDMaterial(matTag);
        if (threeDMaterial == 0) {
 	 opserr << "WARNING nD material does not exist\n";
 	 opserr << "nD material: " << matTag;
@@ -1226,7 +1234,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
  	    return TCL_ERROR;
  	}
 
- 	NDMaterial *threeDMaterial = theTclBuilder->getNDMaterial(matTag);
+ 	NDMaterial *threeDMaterial = OPS_getNDMaterial(matTag);
  	if (threeDMaterial == 0) {
  	    opserr << "WARNING nD material does not exist\n";
  	    opserr << "nD material: " << matTag;
@@ -1497,7 +1505,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
  	    return TCL_ERROR;
  	}
 
- 	NDMaterial *theMat = theTclBuilder->getNDMaterial(matTag);
+ 	NDMaterial *theMat = OPS_getNDMaterial(matTag);
  	if (theMat == 0) {
  	    opserr << "WARNING ndMaterial does not exist\n";
  	    opserr << "ndMaterial: " << matTag;
@@ -1634,7 +1642,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
  	    return TCL_ERROR;
  	}
 
- 	NDMaterial *threeDMaterial = theTclBuilder->getNDMaterial(matTag);
+ 	NDMaterial *threeDMaterial = OPS_getNDMaterial(matTag);
  	if (threeDMaterial == 0) {
  	    opserr << "WARNING nD material does not exist\n";
  	    opserr << "nD material: " << matTag;

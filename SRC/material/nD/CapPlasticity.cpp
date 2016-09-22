@@ -830,7 +830,7 @@ double CapPlasticity::Bisection(double tol, double normS, double I1_trial ){
   } // while
   
   if (fabs(f) > relative_tol) {
-    opserr<< "Warning3:No convergence in CapPlasticity::Bisection"<<endln;
+    opserr<< "Warning3:No convergence in CapPlasticity::Bisection" << endln;
     //exit(-1); 
   }
   
