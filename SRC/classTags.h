@@ -331,7 +331,7 @@
 #define ND_TAG_ConcreteS                          41
 #define ND_TAG_MaterialCMM                        42
 #define ND_TAG_FSAM                               43
-
+#define ND_TAG_PlasticDamageConcrete3d            44
 
 #define ND_TAG_FluidSolidPorousMaterial        100
 #define ND_TAG_PressureDependMultiYield		101
