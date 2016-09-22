@@ -3139,6 +3139,8 @@ SRC/material/nD/PlaneStressSimplifiedJ2.cpp -text
 SRC/material/nD/PlaneStressSimplifiedJ2.h -text
 SRC/material/nD/PlaneStressUserMaterial.cpp -text
 SRC/material/nD/PlaneStressUserMaterial.h -text
+SRC/material/nD/PlasticDamageConcrete3d.cpp -text
+SRC/material/nD/PlasticDamageConcrete3d.h -text
 SRC/material/nD/PlateFiberMaterial.cpp -text
 SRC/material/nD/PlateFiberMaterial.h -text
 SRC/material/nD/PlateFromPlaneStressMaterial.cpp -text
