@@ -158,6 +158,8 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
     OPS_GetUniaxialMaterialPtr = OPS_GetUniaxialMaterialFunct;
     OPS_GetNDMaterialPtr = OPS_GetNDMaterialFunct;
     OPS_GetSectionForceDeformationPtr = OPS_GetSectionForceDeformationFunct;
+    OPS_GetCrdTransfPtr = OPS_GetCrdTransfFunct;
+    OPS_GetFrictionModelPtr = OPS_GetFrictionModelFunct;
     OPS_GetNodeCrdPtr = OPS_GetNodeCrdFunct;
     OPS_GetNodeDispPtr = OPS_GetNodeDispFunct;
     OPS_GetNodeVelPtr = OPS_GetNodeVelFunct;
@@ -169,8 +171,6 @@ void setGlobalPointers(OPS_Stream *theErrorStreamPtr,
     OPS_ResetCurrentInputArgPtr = OPS_ResetCurrentInputArgFunct;
     OPS_GetStringPtr = OPS_GetStringFunct;
     OPS_GetStringCopyPtr = OPS_GetStringCopyFunct;
-    OPS_GetCrdTransfPtrFunc = OPS_GetCrdTransfFunct;
-    OPS_GetFrictionModelPtrFunc = OPS_GetFrictionModelFunct;
     OPS_GetNDM_Ptr = OPS_GetNDM_Funct;
     OPS_GetNDF_Ptr = OPS_GetNDF_Funct;
     OPS_GetFEDatastorePtr = OPS_GetFEDatastoreFunct;

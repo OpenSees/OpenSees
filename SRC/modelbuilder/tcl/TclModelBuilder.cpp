@@ -328,7 +328,7 @@ TclCommand_addRemoGeomTransf(ClientData clientData,
 			     TCL_Char **argv); 
 
 int
-TclModelBuilder_addFrictionModel(ClientData clientData,
+TclCommand_addFrictionModel(ClientData clientData,
 				 Tcl_Interp *interp,
 				 int argc,   
 				 TCL_Char **argv);
@@ -434,8 +434,6 @@ TclCommand_Package(ClientData clientData, Tcl_Interp *interp, int argc,
 TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM, int NDF)
   :ModelBuilder(theDomain), ndm(NDM), ndf(NDF), theInterp(interp)
 {
-  // theUniaxialMaterials = new ArrayOfTaggedObjects(32);
-   theNDMaterials = new ArrayOfTaggedObjects(32);
   theSections  = new ArrayOfTaggedObjects(32);
   theSectionRepresents = new ArrayOfTaggedObjects(32);  
 #ifdef OO_HYSTERETIC
@@ -446,10 +444,8 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
   //theHystereticBackbones= new ArrayOfTaggedObjects(32);
   theYieldSurface_BCs = new ArrayOfTaggedObjects(32);
   theCycModels = new ArrayOfTaggedObjects(32); //!!
-  //theDamageModels = new ArrayOfTaggedObjects(32); //!!
   theYS_EvolutionModels = new ArrayOfTaggedObjects(32);
   thePlasticMaterials = new ArrayOfTaggedObjects(32);
-  //theFrictionModels = new ArrayOfTaggedObjects(32);
 
   // call Tcl_CreateCommand for class specific commands
   Tcl_CreateCommand(interp, "parameter", TclCommand_addParameter,
@@ -604,7 +600,7 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 		    (ClientData)NULL, NULL);    
 
   Tcl_CreateCommand(interp, "frictionModel",
-		    TclModelBuilder_addFrictionModel,
+		    TclCommand_addFrictionModel,
 		    (ClientData)NULL, NULL);
 
 #ifdef OO_HYSTERETIC
@@ -663,25 +659,23 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 TclModelBuilder::~TclModelBuilder()
 {
   OPS_clearAllTimeSeries();
-  OPS_clearAllCrdTransf();
   OPS_clearAllUniaxialMaterial();
+  OPS_clearAllNDMaterial();
   OPS_clearAllSectionForceDeformation();
+  OPS_clearAllCrdTransf();
+  OPS_clearAllFrictionModel();
   OPS_clearAllLimitCurve();
   OPS_clearAllDamageModel();
   OPS_clearAllFrictionModel();
   OPS_clearAllHystereticBackbone();
   OPS_clearAllNDMaterial();
 
-  // theUniaxialMaterials->clearAll();
-  theNDMaterials->clearAll();
   theSections->clearAll(); 
   theSectionRepresents->clearAll();
   theYieldSurface_BCs->clearAll();
   theYS_EvolutionModels->clearAll();
   thePlasticMaterials->clearAll();
   theCycModels->clearAll();//!!
-  // theDamageModels->clearAll();//!!
-  // theFrictionModels->clearAll();
 
 #ifdef OO_HYSTERETIC
   theStiffnessDegradations->clearAll();
@@ -691,16 +685,12 @@ TclModelBuilder::~TclModelBuilder()
   // theHystereticBackbones->clearAll();
 
   // free up memory allocated in the constructor
-  // delete theUniaxialMaterials;
-  delete theNDMaterials;
   delete theSections;
   delete theSectionRepresents;
   delete theYieldSurface_BCs;
   delete theYS_EvolutionModels;
   delete thePlasticMaterials;
   delete theCycModels;//!!
-  // delete theDamageModels;//!!
-  // delete theFrictionModels;
 
 #ifdef OO_HYSTERETIC
   delete theStiffnessDegradations;
@@ -3963,7 +3953,7 @@ TclModelBuilderFrictionModelCommand (ClientData clienData,
 				     Domain *theDomain);
 
 int
-TclModelBuilder_addFrictionModel(ClientData clientData,
+TclCommand_addFrictionModel(ClientData clientData,
                     Tcl_Interp *interp, int argc, TCL_Char **argv)                      
 {
   return TclModelBuilderFrictionModelCommand(clientData, interp, argc, argv, theTclDomain);
