@@ -344,6 +344,7 @@ void  Brick::Print( OPS_Stream &s, int flag )
 	  << " " <<connectedExternalNodes(7)
       << endln ;
 
+    s << "Body Forces: " << b[0] << " " << b[1] << " " << b[2] << endln;
     s << "Resisting Force (no inertia): " << this->getResistingForce();
   }
 }
@@ -547,10 +548,10 @@ Brick::addLoad(ElementalLoad *theLoad, double loadFactor)
   } else if (type == LOAD_TAG_SelfWeight) {
       // added compatability with selfWeight class implemented for all continuum elements, C.McGann, U.W.
       applyLoad = 1;
-	  appliedB[0] += loadFactor*data(0)*b[0];
-	  appliedB[1] += loadFactor*data(1)*b[1];
-	  appliedB[2] += loadFactor*data(2)*b[2];
-	  return 0;
+      appliedB[0] += loadFactor*data(0)*b[0];
+      appliedB[1] += loadFactor*data(1)*b[1];
+      appliedB[2] += loadFactor*data(2)*b[2];
+      return 0;
   } else {
     opserr << "Brick::addLoad() - ele with tag: " << this->getTag() << " does not deal with load type: " << type << "\n";
     return -1;
@@ -1459,8 +1460,7 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact, const char 
       const Vector &stress6 = materialPointers[5]->getStress();
       const Vector &stress7 = materialPointers[6]->getStress();
       const Vector &stress8 = materialPointers[7]->getStress();
-      
- 
+       
       // for each face of the brick we:
       //   1) determine the coordinates of the displaced point
       //   2) determine the value to be drawn, the stress at nearest gauss point in displayMode dirn
@@ -1505,21 +1505,31 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact, const char 
       const Matrix &eigen8 = nodePointers[7]->getEigenvectors();
       
       if (eigen1.noCols() >= mode) {
-
+	
 	for (i = 0; i < 3; i++) {
 	  coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
 	  coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
 	  coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;    
 	  coords(3,i) = end4Crd(i) + eigen4(i,mode-1)*fact;
-	  coords(4,i) = end1Crd(i) + eigen5(i,mode-1)*fact;
-	  coords(5,i) = end2Crd(i) + eigen6(i,mode-1)*fact;    
-	  coords(6,i) = end3Crd(i) + eigen7(i,mode-1)*fact;    
-	  coords(7,i) = end4Crd(i) + eigen8(i,mode-1)*fact;
+	  coords(4,i) = end5Crd(i) + eigen5(i,mode-1)*fact;
+	  coords(5,i) = end6Crd(i) + eigen6(i,mode-1)*fact;    
+	  coords(6,i) = end7Crd(i) + eigen7(i,mode-1)*fact;    
+	  coords(7,i) = end8Crd(i) + eigen8(i,mode-1)*fact;
 	}
 
-	error = theViewer.drawCube(coords, values, this->getTag());
+	for (int i=0; i<8; i++)
+	  values(i) = 0.0;
 
-      } else {
+	error = theViewer.drawCube(coords, values, this->getTag());
+	opserr << "\n tag: " << this->getTag() << endln;
+	opserr << coords;
+	opserr << values;
+
+      }
+    }
+
+      /*
+    } else {
 	values.Zero();
 	for (i = 0; i < 3; i++) {
 	  coords(0,i) = end1Crd(i); 
@@ -1535,6 +1545,7 @@ Brick::displaySelf(Renderer &theViewer, int displayMode, float fact, const char 
 	error = theViewer.drawCube(coords, values, this->getTag());
       }
     }
+      */
 
 
     return error;

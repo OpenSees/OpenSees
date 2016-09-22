@@ -198,7 +198,7 @@ TclModelBuilder_addTwentyNodeBrick(ClientData clientData, Tcl_Interp *interp,
 
 
 
-  NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
 
 
 

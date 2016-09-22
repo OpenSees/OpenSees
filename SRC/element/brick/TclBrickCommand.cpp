@@ -120,7 +120,7 @@ TclModelBuilder_addBrick(ClientData clientData, Tcl_Interp *interp,  int argc,
     return TCL_ERROR;
   }
 
-   NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);      
+   NDMaterial *theMaterial = OPS_getNDMaterial(matID);      
       
   if (theMaterial== 0) {
     opserr << "WARNING material not found\n";
