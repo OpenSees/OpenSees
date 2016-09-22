@@ -527,7 +527,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	    }
 	  }
 
-	  NDMaterial *theSteel = theTclBuilder->getNDMaterial(matTag);
+	  NDMaterial *theSteel = OPS_getNDMaterial(matTag);
 	
 	  if (theSteel == 0) {
 	    opserr << "WARNING ND material does not exist\n";
@@ -852,7 +852,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	delete [] theUniMat;
       } 
       else {
-	NDMaterial *theCore = theTclBuilder->getNDMaterial(coreTag);
+	NDMaterial *theCore = OPS_getNDMaterial(coreTag);
 	if (theCore == 0) {
 	  opserr << "WARNING uniaxial material does not exist\n";
 	  opserr << "material: " << coreTag; 
@@ -860,7 +860,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	  return TCL_ERROR;
 	}
 
-	NDMaterial *theCover = theTclBuilder->getNDMaterial(coverTag);      
+	NDMaterial *theCover = OPS_getNDMaterial(coverTag);      
 	if (theCover == 0) {
 	  opserr << "WARNING uniaxial material does not exist\4n";
 	  opserr << "material: " << coverTag; 
@@ -1190,7 +1190,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	    return TCL_ERROR;
 	}	
 
-	NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matTag);
+	NDMaterial *theMaterial = OPS_getNDMaterial(matTag);
 	if (theMaterial == 0) {
 	    opserr << "WARNING nD material does not exist\n";
 	    opserr << "nD material: " << matTag; 
@@ -1241,7 +1241,7 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	  return TCL_ERROR;
 	}
 	
-	theMats[iLayer] = theTclBuilder->getNDMaterial(matTag);
+	theMats[iLayer] = OPS_getNDMaterial(matTag);
 	if (theMats[iLayer] == 0) {
 	  opserr << "WARNING nD material does not exist" << endln;;
 	  opserr << "nD material: " << matTag; 
@@ -2039,7 +2039,7 @@ TclCommand_addFiber(ClientData clientData, Tcl_Interp *interp, int argc,
     if (NDM == 2) {
 
       if (currentSectionIsND) {
-	NDMaterial *material = theTclModelBuilder->getNDMaterial(matTag);
+	NDMaterial *material = OPS_getNDMaterial(matTag);
 	if (material == 0) {
 	  opserr <<  "WARNING invalid NDMaterial ID for patch\n";
 	  return TCL_ERROR;
@@ -2068,7 +2068,7 @@ TclCommand_addFiber(ClientData clientData, Tcl_Interp *interp, int argc,
       fiberPosition(1) = zLoc;
       
       if (currentSectionIsND) {
-	NDMaterial *material = theTclModelBuilder->getNDMaterial(matTag);
+	NDMaterial *material = OPS_getNDMaterial(matTag);
 	if (material == 0) {
 	  opserr <<  "WARNING invalid NDMaterial ID for patch\n";
 	  return TCL_ERROR;
@@ -2633,7 +2633,7 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	 k = 0;
 	 for (i = numSectionRepresFibers; i < numFibers; i++) {    
 	   if (currentSectionIsND) {
-	     ndmaterial = theTclModelBuilder->getNDMaterial(fibersMaterial(k));
+	     ndmaterial = OPS_getNDMaterial(fibersMaterial(k));
 	     if (ndmaterial == 0) {
                opserr <<  "WARNING invalid NDmaterial ID for patch\n";
                return TCL_ERROR;
@@ -2698,7 +2698,7 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	   fiberPosition(0) = fibersPosition(0,k);
 	   fiberPosition(1) = fibersPosition(1,k);  
 	   if (currentSectionIsND) {
-	     ndmaterial = theTclModelBuilder->getNDMaterial(fibersMaterial(k));
+	     ndmaterial = OPS_getNDMaterial(fibersMaterial(k));
 	     if (ndmaterial == 0) {
                opserr <<  "WARNING invalid NDmaterial ID for patch\n";
                return TCL_ERROR;
