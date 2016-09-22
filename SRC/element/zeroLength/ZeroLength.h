@@ -60,7 +60,7 @@ class ZeroLength : public Element
 {
   public:
     
-    // Constructor for a single 1d material model
+  // Constructor for a single 1d material model
   ZeroLength(int tag, 			      
 	     int dimension,
 	     int Nd1, int Nd2, 
@@ -69,6 +69,16 @@ class ZeroLength : public Element
 	     UniaxialMaterial& theMaterial,
 	     int direction,
 	     int doRayleighDamping = 0);
+
+  // Constructor for a single 1d material model
+  ZeroLength(int tag, 			      
+	     int dimension,
+	     int Nd1, int Nd2, 
+	     const Vector& x,
+	     const Vector& yprime,
+	     UniaxialMaterial& theMaterial,
+	     UniaxialMaterial& theDampingMaterial,
+	     int direction);
   
   // Constructor for a multiple 1d material models
   ZeroLength(int tag, 			      
@@ -78,6 +88,18 @@ class ZeroLength : public Element
 	     const Vector& yprime,
 	     int n1dMat,
 	     UniaxialMaterial** theMaterial,  
+	     const ID& direction,
+	     int doRaylieghDamping = 0);
+
+  // Constructor for a multiple 1d material models
+  ZeroLength(int tag, 			      
+	     int dimension,
+	     int Nd1, int Nd2, 
+	     const Vector& x,
+	     const Vector& yprime,
+	     int n1dMat,
+	     UniaxialMaterial** theMaterial,  
+	     UniaxialMaterial** theDampMaterial,  
 	     const ID& direction,
 	     int doRaylieghDamping = 0);
 

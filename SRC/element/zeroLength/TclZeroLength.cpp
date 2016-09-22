@@ -43,6 +43,7 @@
 #include <Vector.h>
 #include <Domain.h>
 #include <UniaxialMaterial.h>
+#include <NDMaterial.h>
 
 int
 TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
@@ -135,6 +136,8 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
 
     // create the array
     UniaxialMaterial **theMats = new UniaxialMaterial *[numMat];
+    UniaxialMaterial **theDampMats = new UniaxialMaterial *[numMat];
+
     if (theMats == 0) {
       opserr << "WARNING out of memory " <<
 	"creating material array of size " << numMat <<
@@ -147,31 +150,32 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
     // fill in the material array
     argi=6; 
     for (int i=0; i<numMat; i++) {
+      theDampMats[i] = 0;
 
-	int matID;	
+      int matID;	
+      
+      // read the material tag	
+      if (Tcl_GetInt(interp, argv[argi], &matID) != TCL_OK) {
+	opserr << "WARNING invalid matID " << argv[argi] <<
+	  "- element ZeroLength eleTag? iNode? jNode? " <<
+	  "-mat matID1? ... -dir dirMat1? .. " <<
+	  "<-orient x1? x2? x3? y1? y2? y3?>\n";
+	delete [] theMats;	    
+        return TCL_ERROR;
+      } else {
 
-	// read the material tag
-	if (Tcl_GetInt(interp, argv[argi], &matID) != TCL_OK) {
-	  opserr << "WARNING invalid matID " << argv[argi] <<
-	    "- element ZeroLength eleTag? iNode? jNode? " <<
+	// get a pointer to the material from the modelbuilder	    
+	argi++;
+	UniaxialMaterial *theMat = OPS_getUniaxialMaterial(matID);
+	if (theMat == 0) {
+	  opserr << "WARNING no material " << matID <<
+	    "exitsts - element ZeroLength eleTag? iNode? jNode? " <<
 	    "-mat matID1? ... -dir dirMat1? .. " <<
-	    "<-orient x1? x2? x3? y1? y2? y3?>\n";
-	    delete [] theMats;	    
-	    return TCL_ERROR;
+	    "<-orient x1? x2? x3? y1? y2? y3?>\n"  ;
+	  delete [] theMats;		
+	  return TCL_ERROR;		
 	} else {
-
-	    // get a pointer to the material from the modelbuilder	    
-	    argi++;
-	    UniaxialMaterial *theMat = OPS_getUniaxialMaterial(matID);
-	    if (theMat == 0) {
-	      opserr << "WARNING no material " << matID <<
-		"exitsts - element ZeroLength eleTag? iNode? jNode? " <<
-		"-mat matID1? ... -dir dirMat1? .. " <<
-		"<-orient x1? x2? x3? y1? y2? y3?>\n"  ;
-		delete [] theMats;		
-		return TCL_ERROR;		
-	    } else {
-		
+	  
 		// add the material to the array
 		theMats[i] = theMat;
 	    }
@@ -278,7 +282,42 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
 	  if (argi < argc) 
 	    if ((Tcl_GetInt(interp, argv[argi], &doRayleighDamping) == TCL_OK))
 	      argi++;
+	} else 	if (strcmp(argv[argi],"-dampMats") == 0)  {
+	  doRayleighDamping = 2;
+	  argi++;
+	  for (int i=0; i<numMat; i++) {
+
+	    int matID;	
+      
+	    // read the material tag	
+	    if (Tcl_GetInt(interp, argv[argi], &matID) != TCL_OK) {
+	      opserr << "WARNING invalid matID " << argv[argi] <<
+		"- element ZeroLength eleTag? iNode? jNode? " <<
+		"-mat matID1? ... -dir dirMat1? .. " <<
+		"<-orient x1? x2? x3? y1? y2? y3?>\n";
+	      delete [] theMats;	    
+	      return TCL_ERROR;
+	    } else {
+	      UniaxialMaterial *theMat = OPS_getUniaxialMaterial(matID);
+	      if (theMat == 0) {
+		opserr << "WARNING no material " << matID <<
+		  "exitsts - element ZeroLength eleTag? iNode? jNode? " <<
+		  "-mat matID1? ... -dir dirMat1? .. " <<
+		  "<-orient x1? x2? x3? y1? y2? y3?>\n"  ;
+		delete [] theMats;		
+		return TCL_ERROR;		
+	      } else {
+		theDampMats[i] = theMat;
+	      }
+	    }
+
+	    argi++;
+	  }
+
 	}  else
+
+
+
 	  argi++;
     }
     
@@ -287,7 +326,12 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
     //
 
     Element *theEle;
-    theEle = new ZeroLength(eleTag, ndm, iNode, jNode, x, y, numMat, theMats, theDirns, doRayleighDamping);
+
+    if (doRayleighDamping != 2) 
+      theEle = new ZeroLength(eleTag, ndm, iNode, jNode, x, y, numMat, theMats, theDirns, doRayleighDamping);
+    else
+      theEle = new ZeroLength(eleTag, ndm, iNode, jNode, x, y, numMat, theMats, theDampMats, theDirns, doRayleighDamping);
+
     if (theEle == 0) {
 	delete [] theMats;	
 	return TCL_ERROR;
@@ -300,6 +344,7 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
 
     // return the memory we stole and return OK
     delete [] theMats;    
+    delete [] theDampMats;
     return TCL_OK;
 }
 
@@ -824,7 +869,7 @@ TclModelBuilder_addZeroLengthND(ClientData clientData, Tcl_Interp *interp,
     // now we create the element and add it to the domain
     //
 
-	NDMaterial *theNDMat = theBuilder->getNDMaterial(NDTag);
+	NDMaterial *theNDMat = OPS_getNDMaterial(NDTag);
 
 	if (theNDMat == 0) {
 	  opserr << "zeroLengthND -- no NDMaterial with tag " << NDTag << " exists in Domain\n";

@@ -99,7 +99,10 @@ void* OPS_ZeroLength()
         return 0;
     }
 
-    std::vector<UniaxialMaterial*> mats;
+    //    std::vector<UniaxialMaterial*> mats;
+    // create the array
+    ID matTags(0);
+    int numMats = 0;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         int mtag;
         numdata = 1;
@@ -108,21 +111,26 @@ void* OPS_ZeroLength()
 	    OPS_ResetCurrentInputArg(-1); // move current arg back by one
 	    break;
         }
-        UniaxialMaterial* mat = OPS_getUniaxialMaterial(mtag);
-        if (mat == 0) {
-            opserr << "WARNING no material " << mtag <<
-                "exitsts - element ZeroLength eleTag? iNode? jNode? " <<
-                "-mat matID1? ... -dir dirMat1? .. " <<
-                "<-orient x1? x2? x3? y1? y2? y3?>\n";
-            return 0;
-        }
-        mats.push_back(mat);
+	matTags[numMats] = mtag;
+	numMats++;
     }
-    int numMat = (int)mats.size();
-    if (numMat == 0) {
-	opserr << "WARNING no material is given\n";
+    UniaxialMaterial **theMats = new UniaxialMaterial *[numMats];
+    UniaxialMaterial **theDampMats = new UniaxialMaterial *[numMats];
+    
+    for (int i=0; i<numMats; i++) {
+
+      theMats[i] = OPS_getUniaxialMaterial(matTags(i));
+      theDampMats[i] = 0;
+
+      if (theMats[i] == 0) {
+	opserr << "WARNING no material " << matTags(i) <<
+	  "exitsts - element ZeroLength eleTag? iNode? jNode? " <<
+	  "-mat matID1? ... -dir dirMat1? .. " <<
+	  "<-orient x1? x2? x3? y1? y2? y3?>\n";
 	return 0;
+      }
     }
+
 
     // now read the dirn ID's for the materials added
     type = OPS_GetString();
@@ -133,7 +141,7 @@ void* OPS_ZeroLength()
             "<-orient x1? x2? x3? y1? y2? y3?>\n";
         return 0;
     }
-    if (OPS_GetNumRemainingInputArgs() < numMat) {
+    if (OPS_GetNumRemainingInputArgs() < numMats) {
 	opserr << "WARNING not enough directions provided for ele " << idata[0] <<
 	    "- element ZeroLength eleTag? iNode? jNode? " <<
 	    "-mat matID1? ... -dir dirMat1? .. " <<
@@ -141,8 +149,8 @@ void* OPS_ZeroLength()
 	return 0;
     }
     
-    ID dirs((int)mats.size());
-    if (OPS_GetIntInput(&numMat,&dirs(0)) < 0) {
+    ID dirs(numMats);
+    if (OPS_GetIntInput(&numMats,&dirs(0)) < 0) {
 	opserr << "WARNING invalid dir\n";
 	return 0;
     }
@@ -167,6 +175,23 @@ void* OPS_ZeroLength()
 		    return 0;
 		}
 	    }
+	} else 	if (strcmp(type,"-dampMats") == 0)  {
+	  doRayleighDamping = 2;
+	  numdata = 1;
+	  int matType;
+	  for (int i=0; i<numMats; i++) {
+	    // the first one not an int
+	    if (OPS_GetIntInput(&numdata,&matType) < 0) {
+	      UniaxialMaterial *theMat = OPS_getUniaxialMaterial(matType);
+	      if (theMat == 0) {
+		opserr << "WARNING no damp material material " << matType << " for zeroLength ele: " << idata[0] << endln;
+		return 0;
+	      } else {
+		theDampMats[i] = theMat;
+	      }
+	    }
+	  }
+
 	} else if (strcmp(type,"orient") == 0) {
 	    if (OPS_GetNumRemainingInputArgs() < 6) {
 		opserr<<"WARNING: insufficient orient values\n";
@@ -184,14 +209,24 @@ void* OPS_ZeroLength()
 	}
     }
 
-    return new ZeroLength(idata[0],ndm,idata[1],idata[2],x,y,mats.size(),&mats[0],dirs,
-			  doRayleighDamping);
+    Element *theEle = 0;
+    if (doRayleighDamping != 2) 
+      theEle = new ZeroLength(idata[0], ndm, idata[1], idata[2], x, y, numMats, theMats, dirs, doRayleighDamping);
+    else
+      theEle = new ZeroLength(idata[0], ndm, idata[1], idata[2], x, y, numMats, theMats, theDampMats, dirs, doRayleighDamping);
+
+    // return the memory we stole and return OK
+    delete [] theMats;    
+    delete [] theDampMats;
+    
+    return theEle;
 }
 
 
 //  Constructor:
 //  responsible for allocating the necessary space needed by each object
 //  and storing the tags of the ZeroLength end nodes.
+
 
 //  Construct element with one unidirectional material (numMaterials1d=1)
 ZeroLength::ZeroLength(int tag,
@@ -236,6 +271,55 @@ ZeroLength::ZeroLength(int tag,
   // designate to setDomain that this is the initial construction of the element
   mInitialize = 1;
 }
+
+
+ZeroLength::ZeroLength(int tag,
+		       int dim,
+		       int Nd1, int Nd2, 
+		       const Vector &x, const Vector &yp,
+		       UniaxialMaterial &theMat,
+		       UniaxialMaterial &theDampMat,
+		       int direction)
+ :Element(tag,ELE_TAG_ZeroLength),     
+  connectedExternalNodes(2),
+  dimension(dim), numDOF(0), transformation(3,3), useRayleighDamping(2),
+  theMatrix(0), theVector(0),
+  numMaterials1d(1), theMaterial1d(0), dir1d(0), t1d(0), d0(0), v0(0)
+{
+  // allocate memory for numMaterials1d uniaxial material models
+  theMaterial1d = new UniaxialMaterial*[2];
+  dir1d	  = new ID(numMaterials1d);
+  
+  if ( theMaterial1d == 0 || dir1d == 0 ) {
+    opserr << "FATAL ZeroLength::ZeroLength - failed to create a 1d  material or direction array\n";
+    exit(-1);
+  }
+
+  // initialize uniaxial materials and directions and check for valid values
+  if (direction == 2 && dim == 2) // For Keri Ryan
+    direction = 5;
+
+  (*dir1d)(0) = direction;
+  this->checkDirection( *dir1d );
+  
+  // get a copy of the material and check we obtained a valid copy
+
+  theMaterial1d[0] = theMat.getCopy();
+
+  theMaterial1d[1] = theDampMat.getCopy();
+  if (theMaterial1d[0] == 0 || theMaterial1d[1] == 0) {
+    opserr << "FATAL ZeroLength::ZeroLength - failed to get a copy of material " << theMat.getTag() << endln;
+    exit(-1);
+  }
+
+  // establish the connected nodes and set up the transformation matrix for orientation
+  this->setUp( Nd1, Nd2, x, yp);
+
+  // designate to setDomain that this is the initial construction of the element
+  mInitialize = 1;
+}
+
+
 
 
 //  Construct element with multiple unidirectional materials
@@ -288,6 +372,58 @@ ZeroLength::ZeroLength(int tag,
 }
 
 
+//  Construct element with multiple unidirectional materials
+ZeroLength::ZeroLength(int tag,
+		       int dim,
+		       int Nd1, int Nd2, 
+		       const Vector& x, const Vector& yp,
+		       int n1dMat,
+		       UniaxialMaterial** theMat,
+		       UniaxialMaterial** theDampMat,
+		       const ID& direction,
+		       int doRayleigh)
+ :Element(tag,ELE_TAG_ZeroLength),     
+  connectedExternalNodes(2),
+  dimension(dim), numDOF(0), transformation(3,3), useRayleighDamping(doRayleigh),
+  theMatrix(0), theVector(0),
+  numMaterials1d(n1dMat), theMaterial1d(0), dir1d(0), t1d(0), d0(0), v0(0)
+{
+
+    // allocate memory for numMaterials1d uniaxial material models
+    theMaterial1d = new UniaxialMaterial*  [2*numMaterials1d];
+    dir1d	  = new ID(numMaterials1d);
+    
+    if ( theMaterial1d == 0 || dir1d == 0 ) {
+      opserr << "FATAL ZeroLength::ZeroLength - failed to create a 1d  material or direction array\n";
+      exit(-1);
+    }
+    
+    // initialize uniaxial materials and directions and check for valid values
+    *dir1d = direction;
+    for (int i = 0; i < n1dMat; i++) {
+      if ((*dir1d)(i) == 2 && dim == 2) // For Keri Ryan
+	(*dir1d)(i) = 5;
+    }
+    this->checkDirection( *dir1d );
+    
+    // get a copy of the material objects and check we obtained a valid copy
+    for (int i=0; i<numMaterials1d; i++) {
+      theMaterial1d[i] = theMat[i]->getCopy();
+      theMaterial1d[i+numMaterials1d] = theDampMat[i]->getCopy();
+      if (theMaterial1d[i] == 0) {
+	opserr << "FATAL ZeroLength::ZeroLength - failed to get a copy of material " <<theMat[i]->getTag() << endln;
+	exit(-1);
+      }
+     }
+	
+    // establish the connected nodes and set up the transformation matrix for orientation
+    this->setUp( Nd1, Nd2, x, yp);
+
+    // designate to setDomain that this is the initial construction of the element
+    mInitialize = 1;
+}
+
+
 //   Constructor:
 //   invoked by a FEM_ObjectBroker - blank object that recvSelf needs
 //   to be invoked upon
@@ -317,7 +453,10 @@ ZeroLength::~ZeroLength()
     // that the object still holds a pointer to
 
     // invoke destructors on material objects
-    for (int mat=0; mat<numMaterials1d; mat++) 
+  int numMat = numMaterials1d;
+  if (useRayleighDamping == 2)
+    numMat *= 2;
+    for (int mat=0; mat<numMat; mat++) 
 	delete theMaterial1d[mat];
 
     // delete memory of 1d materials    
@@ -508,7 +647,10 @@ ZeroLength::commitState()
     }    
 
     // commit 1d materials
-    for (int i=0; i<numMaterials1d; i++) 
+    int numMat = numMaterials1d;
+    if (useRayleighDamping == 2)
+      numMat *= 2;
+    for (int i=0; i<numMat; i++) 
 	code += theMaterial1d[i]->commitState();
 
     return code;
@@ -520,7 +662,10 @@ ZeroLength::revertToLastCommit()
     int code=0;
     
     // revert state for 1d materials
-    for (int i=0; i<numMaterials1d; i++)
+    int numMat = numMaterials1d;
+    if (useRayleighDamping == 2)
+      numMat *= 2;
+    for (int i=0; i<numMat; i++) 
 	code += theMaterial1d[i]->revertToLastCommit();
     
     return code;
@@ -533,7 +678,10 @@ ZeroLength::revertToStart()
     int code=0;
     
     // revert to start for 1d materials
-    for (int i=0; i<numMaterials1d; i++)
+    int numMat = numMaterials1d;
+    if (useRayleighDamping == 2)
+      numMat *= 2;
+    for (int i=0; i<numMat; i++) 
 	code += theMaterial1d[i]->revertToStart();
     
     return code;
@@ -569,6 +717,9 @@ ZeroLength::update(void)
 	strain     = this->computeCurrentStrain1d(mat,diff );
         strainRate = this->computeCurrentStrain1d(mat,diffv);
 	ret += theMaterial1d[mat]->setTrialStrain(strain,strainRate);
+	if (useRayleighDamping == 2) {
+	  ret += theMaterial1d[mat+numMaterials1d]->setTrialStrain(strainRate);	  
+	}
     }
 
     return ret;
@@ -658,29 +809,50 @@ ZeroLength::getDamp(void)
     damp.Zero();
 
     // get Rayleigh damping matrix 
-    if (useRayleighDamping == 1)
+    
+    if (useRayleighDamping == 1) {
+
         damp = this->Element::getDamp();
 
-    // loop over 1d materials and add their damping tangents
-    double eta;
-    Matrix& tran = *t1d;;
-    for (int mat=0; mat<numMaterials1d; mat++) {
-
+    } else if (useRayleighDamping == 2) {
+      
+      // loop over 1d materials and add their damping tangents
+      double eta;
+      Matrix& tran = *t1d;;
+      for (int mat=0; mat<numMaterials1d; mat++) {
+	
         // get tangent for material
-        eta = theMaterial1d[mat]->getDampTangent();
-
+        eta = theMaterial1d[mat+numMaterials1d]->getTangent();
+	
         // compute contribution of material to tangent matrix
         for (int i=0; i<numDOF; i++)
-            for(int j=0; j<i+1; j++)
-                damp(i,j) +=  tran(mat,i) * eta * tran(mat,j);
+	  for(int j=0; j<i+1; j++)
+	    damp(i,j) +=  tran(mat,i) * eta * tran(mat,j);
+      }
 
-    } // end loop over 1d materials 
+    } else {
+
+      // loop over 1d materials and add their damping tangents
+      double eta;
+      Matrix& tran = *t1d;;
+      for (int mat=0; mat<numMaterials1d; mat++) {
+	
+        // get tangent for material
+        eta = theMaterial1d[mat]->getDampTangent();
+	
+        // compute contribution of material to tangent matrix
+        for (int i=0; i<numDOF; i++)
+	  for(int j=0; j<i+1; j++)
+	    damp(i,j) +=  tran(mat,i) * eta * tran(mat,j);
+	
+      } // end loop over 1d materials 
+    }
 
     // complete symmetric damping matrix
     for (int i=0; i<numDOF; i++)
-        for(int j=0; j<i; j++)
-            damp(j,i) = damp(i,j);
-
+      for(int j=0; j<i; j++)
+	damp(j,i) = damp(i,j);
+    
     return damp;
 }
 
@@ -688,9 +860,9 @@ ZeroLength::getDamp(void)
 const Matrix &
 ZeroLength::getMass(void)
 {
-    // no mass 
-    theMatrix->Zero();    
-    return *theMatrix; 
+  // no mass 
+  theMatrix->Zero();    
+  return *theMatrix; 
 }
 
 
@@ -719,39 +891,52 @@ ZeroLength::addInertiaLoadToUnbalance(const Vector &accel)
 const Vector &
 ZeroLength::getResistingForce()
 {
-    double force;
-
-    // zero the residual
-    theVector->Zero();
-
-    // loop over 1d materials
-    for (int mat=0; mat<numMaterials1d; mat++) {
-
-        // get resisting force for material
-        force = theMaterial1d[mat]->getStress();
-
-        // compute residual due to resisting force
-        for (int i=0; i<numDOF; i++)
-            (*theVector)(i)  += (*t1d)(mat,i) * force;
-
-    } // end loop over 1d materials 
-
-    return *theVector;
+  double force;
+  
+  // zero the residual
+  theVector->Zero();
+  
+  // loop over 1d materials
+  for (int mat=0; mat<numMaterials1d; mat++) {
+    
+    // get resisting force for material
+    force = theMaterial1d[mat]->getStress();
+    
+    // compute residual due to resisting force
+    for (int i=0; i<numDOF; i++)
+      (*theVector)(i)  += (*t1d)(mat,i) * force;
+    
+  } // end loop over 1d materials 
+  
+  return *theVector;
 }
 
 
 const Vector &
 ZeroLength::getResistingForceIncInertia()
 {	
-    // this already includes damping forces from materials
-    this->getResistingForce();
+  // this already includes damping forces from materials
+  this->getResistingForce();
+  
+  // add the damping forces from rayleigh damping
+  if (useRayleighDamping == 1) {
+    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0) {
+      *theVector += this->getRayleighDampingForces();
+    }  
+  } else if (useRayleighDamping == 2) {
+      // loop over 1d materials
+      for (int mat=0; mat<numMaterials1d; mat++) {
+	
+	// get resisting force for material
+	double force = theMaterial1d[mat+numMaterials1d]->getStress();
+    
+	// compute residual due to resisting force
+	for (int i=0; i<numDOF; i++)
+	  (*theVector)(i)  += (*t1d)(mat,i) * force;
+      }
+  }
 
-    // add the damping forces from rayleigh damping
-    if (useRayleighDamping == 1)
-        if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
-            *theVector += this->getRayleighDampingForces();
-
-    return *theVector;
+  return *theVector;
 }
 
 
@@ -1003,6 +1188,14 @@ ZeroLength::Print(OPS_Stream &s, int flag)
 			<< ", dir: " << (*dir1d)(j) << endln;
 		s << *(theMaterial1d[j]);
 	}
+	if (useRayleighDamping == 2) {
+	  s << "Damping Materials:\n";
+	  for (int j = numMaterials1d; j < 2*numMaterials1d; j++) {
+	    s << "\tMaterial1d, tag: " << theMaterial1d[j]->getTag() 
+	      << ", dir: " << (*dir1d)(j) << endln;
+	    s << *(theMaterial1d[j]);
+	  }
+	}
     } else if (flag == 1) {
 	s << this->getTag() << "  " << strain << "  ";
     }
@@ -1065,23 +1258,27 @@ ZeroLength::setResponse(const char **argv, int argc, OPS_Stream &output)
     } else if ((strcmp(argv[0],"defoANDforce") == 0) ||
         (strcmp(argv[0],"deformationANDforces") == 0) ||
         (strcmp(argv[0],"deformationsANDforces") == 0)) {
-
-            int i;
-            for (i=0; i<numMaterials1d; i++) {
-                sprintf(outputData,"e%d",i+1);
-                output.tag("ResponseType",outputData);
-            }
-            for (i=0; i<numMaterials1d; i++) {
-                sprintf(outputData,"P%d",i+1);
-                output.tag("ResponseType",outputData);
-            }
-            theResponse = new ElementResponse(this, 4, Vector(2*numMaterials1d));
-
-    // a material quantity
+      
+      int i;
+      for (i=0; i<numMaterials1d; i++) {
+	sprintf(outputData,"e%d",i+1);
+	output.tag("ResponseType",outputData);
+      }
+      for (i=0; i<numMaterials1d; i++) {
+	sprintf(outputData,"P%d",i+1);
+	output.tag("ResponseType",outputData);
+	    }
+      theResponse = new ElementResponse(this, 4, Vector(2*numMaterials1d));
+      
+      
+      // a material quantity
     } else if (strcmp(argv[0],"material") == 0) {
       if (argc > 2) {
 	int matNum = atoi(argv[1]);
-	if (matNum >= 1 && matNum <= numMaterials1d)
+	int numMat = numMaterials1d;
+	if (useRayleighDamping == 2)
+	  numMat *= 2;
+	if (matNum >= 1 && matNum <= numMat)
 	  theResponse =  theMaterial1d[matNum-1]->setResponse(&argv[2], argc-2, output);
       }
     }
@@ -1114,10 +1311,21 @@ ZeroLength::getResponse(int responseID, Information &eleInformation)
 
     case 15:
       theVector->Zero();
-      if (useRayleighDamping == 1)
+      if (useRayleighDamping == 1) {
         if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
             *theVector += this->getRayleighDampingForces();      
-        return eleInformation.setVector(*theVector);
+      } else if (useRayleighDamping == 2) {
+	for (int mat=0; mat<numMaterials1d; mat++) {
+	  
+	  // get resisting force for material
+	  double force = theMaterial1d[mat+numMaterials1d]->getStress();
+	  
+	  // compute residual due to resisting force
+	  for (int i=0; i<numDOF; i++)
+	    (*theVector)(i)  += (*t1d)(mat,i) * force;
+	}
+      }
+      return eleInformation.setVector(*theVector);
 
     case 2:
         if (eleInformation.theVector != 0) {
