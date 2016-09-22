@@ -154,7 +154,7 @@ TclModelBuilder_addFourNodeQuad(ClientData clientData, Tcl_Interp *interp,
     }
   }
   
-  NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
       
   if (theMaterial == 0) {
       opserr << "WARNING material not found\n";
@@ -257,7 +257,7 @@ TclModelBuilder_addConstantPressureVolumeQuad(ClientData clientData, Tcl_Interp 
      return TCL_ERROR;
   }
 
-  NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
       
   if (theMaterial == 0) {
       opserr << "WARNING material not found\n";
@@ -362,7 +362,7 @@ TclModelBuilder_addEnhancedQuad(ClientData clientData, Tcl_Interp *interp,
      return TCL_ERROR;
   }
 
-  NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
       
   if (theMaterial == 0) {
       opserr << "WARNING material not found\n";
@@ -503,7 +503,7 @@ TclModelBuilder_addNineNodeMixedQuad(ClientData clientData, Tcl_Interp *interp,
      return TCL_ERROR;
   }
 
-  NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
       
   if (theMaterial == 0) {
       opserr << "WARNING material not found\n";
@@ -637,7 +637,7 @@ TclModelBuilder_addFourNodeQuadWithSensitivity(ClientData clientData, Tcl_Interp
 
 	}
 
-  NDMaterial *theMaterial = theTclBuilder->getNDMaterial(matID);
+  NDMaterial *theMaterial = OPS_getNDMaterial(matID);
       
   if (theMaterial == 0) {
       opserr << "WARNING material not found\n";
