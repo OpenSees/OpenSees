@@ -32,13 +32,12 @@
 //
 // What: "@(#) TclModelBuilder.C, revA"
 
+#include <Element.h>
 #include <stdlib.h>
 #include <string.h>
 #include <OPS_Stream.h>
 #include <Domain.h>
 
-#include <ElasticBeam2d.h>
-#include <ElasticBeam3d.h>
 #include <CrdTransf.h>
 
 #include <TclModelBuilder.h>
@@ -85,6 +84,7 @@ extern void printCommand(int argc, TCL_Char **argv);
 //
 
 extern  void *OPS_ComponentElement2d(void);
+//extern  void *OPS_ComponentElementDamp2d(void);
 extern  void *OPS_TrussElement(void);
 extern  void *OPS_TrussSectionElement(void);
 extern  void *OPS_CorotTrussElement(void);
@@ -102,6 +102,8 @@ extern void *OPS_BeamContact3Dp(void);
 extern void *OPS_PileToe3D(void);
 extern void *OPS_SurfaceLoad(void);
 extern void *OPS_ModElasticBeam2d(void);
+extern void *OPS_ElasticBeam2d(void);
+extern void *OPS_ElasticBeam3d(void);
 extern void *OPS_ElasticTimoshenkoBeam2d(void);
 extern void *OPS_ElasticTimoshenkoBeam3d(void);
 extern void *OPS_TPB1D(void);
@@ -139,6 +141,7 @@ extern void *OPS_AV3D4QuadWithSensitivity(void);
 extern void *OPS_VS3D4WuadWithSensitivity(void);
 extern void *OPS_MVLEM(void);
 extern void *OPS_SFI_MVLEM(void);
+
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
 
 extern void *OPS_PFEMElement2DBubble();
@@ -151,10 +154,6 @@ extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *inter
 extern int
 Tcl_addWrapperElement(eleObj *, ClientData clientData, Tcl_Interp *interp,  int argc,
 		      TCL_Char **argv, Domain*, TclModelBuilder *);
-
-extern int
-TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp,  int argc,
-			       TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
 
 extern int
 TclModelBuilder_addBrick(ClientData clientData, Tcl_Interp *interp,
@@ -456,6 +455,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
+    /*
+  } else if (strcmp(argv[1],"componentElementDamp2d") == 0) {
+    void *theEle = OPS_ComponentElementDamp2d();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+    */
   } else if (strcmp(argv[1],"zeroLengthImpact3D") == 0) {
     void *theEle = OPS_ZeroLengthImpact3D();
     if (theEle != 0) 
@@ -467,6 +476,19 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   } else if ((strcmp(argv[1],"ModElasticBeam2d") == 0) || (strcmp(argv[1],"modElasticBeam2d")) == 0) {
     Element *theEle = (Element *)OPS_ModElasticBeam2d();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+
+  } else if ((strcmp(argv[1],"elasticBeamColumn") == 0) || (strcmp(argv[1],"elasticBeam")) == 0) {
+    Element *theEle = 0;
+    if (OPS_GetNDM() == 2)
+      theEle = (Element *)OPS_ElasticBeam2d();
+    else
+      theEle = (Element *)OPS_ElasticBeam3d();
     if (theEle != 0) 
       theElement = theEle;
     else {
@@ -635,7 +657,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-
 
   } else if ((strcmp(argv[1],"MultiFP2d") == 0) || (strcmp(argv[1],"MultiFPB2d") == 0)){
     
@@ -986,25 +1007,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 					      theTclDomain, theTclBuilder, eleArgStart);
     return result;
 
-  } else if (strcmp(argv[1],"elasticBeamColumn") == 0) {
-    int eleArgStart = 1;
-    int result = TclModelBuilder_addElasticBeam(clientData, interp, argc, argv,
-						theTclDomain, theTclBuilder, eleArgStart);
-    return result;
-  }
-  /*
-else if (strcmp(argv[1],"nonlinearBeamColumn") == 0) {
-    int result = TclModelBuilder_addNLBeamColumn(clientData, interp, argc, argv,
-						 theTclDomain, theTclBuilder);
-    return result;
-  } else if (strcmp(argv[1],"dispBeamColumn") == 0) {
-    int result = TclModelBuilder_addDispBeamColumn(clientData, interp, argc, argv,
-						   theTclDomain, theTclBuilder);
-    return result;
-
-  }
-  */
-  else if (strcmp(argv[1],"dispBeamColumnInt") == 0) {
+  } else if (strcmp(argv[1],"dispBeamColumnInt") == 0) {
     int result = TclModelBuilder_addDispBeamColumnInt(clientData, interp, argc, argv,
 						   theTclDomain, theTclBuilder);
     return result;
