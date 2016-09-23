@@ -49,16 +49,19 @@ class PathTimeSeries : public TimeSeries
   PathTimeSeries(int tag,
 		 const Vector &thePath, 
 		 const Vector &theTime, 
-		 double cfactor = 1.0);
+		 double cfactor = 1.0,
+         bool useLast = false);
   
   PathTimeSeries(int tag,
 		 const char *fileNamePath, 
 		 const char *fileNameTime, 
-		 double cfactor = 1.0);    
+		 double cfactor = 1.0,
+         bool useLast = false);
   
   PathTimeSeries(int tag,
 		 const char *fileName,
-		 double cfactor = 1.0);
+		 double cfactor = 1.0,
+         bool useLast = false);
 
     PathTimeSeries();    
     
@@ -89,8 +92,8 @@ class PathTimeSeries : public TimeSeries
     double cFactor;       // additional factor on the returned load factor
     int dbTag1, dbTag2;   // additional database tags needed for vector objects
     int lastSendCommitTag;
-
     Channel *lastChannel;
+    bool useLast;
 };
 
 #endif

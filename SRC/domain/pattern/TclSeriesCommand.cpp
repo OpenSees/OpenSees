@@ -337,13 +337,14 @@ TclTimeSeriesCommand(ClientData clientData,
     else if (fileName != 0) {
       //const char *pwd = getInterpPWD(interp);
       //      simulationInfo.addInputFile(argv[fileName], pwd);  
-      theSeries = new PathTimeSeries(tag, argv[fileName], cFactor);
+      theSeries = new PathTimeSeries(tag, argv[fileName], cFactor, useLast);
 
     } else if (filePathName != 0 && fileTimeName != 0) {
       //      const char *pwd = getInterpPWD(interp);
       //      simulationInfo.addInputFile(argv[filePathName], pwd);  
       //      simulationInfo.addInputFile(argv[fileTimeName], pwd);  
-      theSeries = new PathTimeSeries(tag, argv[filePathName], argv[fileTimeName], cFactor); 
+      theSeries = new PathTimeSeries(tag, argv[filePathName], argv[fileTimeName],
+                                     cFactor, useLast); 
 
     } else if (dataPath != 0 && dataTime == 0 && timeIncr != 0.0) {
       theSeries = new PathSeries(tag, *dataPath, timeIncr, cFactor,
@@ -351,9 +352,9 @@ TclTimeSeriesCommand(ClientData clientData,
       delete dataPath;
 
     } else if (dataPath != 0 && dataTime != 0) {
-      theSeries = new PathTimeSeries(tag, *dataPath, *dataTime, cFactor);  
-      delete dataPath;      
-      delete dataTime;      
+      theSeries = new PathTimeSeries(tag, *dataPath, *dataTime, cFactor, useLast);  
+      delete dataPath;
+      delete dataTime;
 
     } else {
       opserr << "WARNING choice of options for Path Series invalid - valid options for ";

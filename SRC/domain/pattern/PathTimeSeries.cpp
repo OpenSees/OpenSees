@@ -48,20 +48,21 @@ using std::ios;
 
 PathTimeSeries::PathTimeSeries()	
   :TimeSeries(TSERIES_TAG_PathTimeSeries),
-   thePath(0), time(0), currentTimeLoc(0), 
-   cFactor(0.0), dbTag1(0), dbTag2(0), lastSendCommitTag(-1)
+   thePath(0), time(0), currentTimeLoc(0), cFactor(0.0),
+   dbTag1(0), dbTag2(0), lastSendCommitTag(-1)
 {
   // does nothing
 }
 
-		   
 PathTimeSeries::PathTimeSeries(int tag, 
 			       const Vector &theLoadPath, 
 			       const Vector &theTimePath, 
-			       double theFactor)
+			       double theFactor,
+			       bool last)
   :TimeSeries(tag, TSERIES_TAG_PathTimeSeries),
-   thePath(0), time(0), currentTimeLoc(0), 
-   cFactor(theFactor), dbTag1(0), dbTag2(0), lastSendCommitTag(-1), lastChannel(0)
+   thePath(0), time(0), currentTimeLoc(0), cFactor(theFactor),
+   dbTag1(0), dbTag2(0), lastSendCommitTag(-1), lastChannel(0),
+   useLast(last)
 {
   // check vectors are of same size
   if (theLoadPath.Size() != theTimePath.Size()) {
@@ -88,24 +89,23 @@ PathTimeSeries::PathTimeSeries(int tag,
   }
 }
 
-
 PathTimeSeries::PathTimeSeries(int tag,
 			       const char *filePathName, 
 			       const char *fileTimeName, 
-			       double theFactor)
-			       
+			       double theFactor,
+			       bool last)
   :TimeSeries(tag, TSERIES_TAG_PathTimeSeries),
-   thePath(0), time(0), currentTimeLoc(0), 
-   cFactor(theFactor), dbTag1(0), dbTag2(0), lastSendCommitTag(-1), lastChannel(0)
+   thePath(0), time(0), currentTimeLoc(0), cFactor(theFactor),
+   dbTag1(0), dbTag2(0), lastSendCommitTag(-1), lastChannel(0),
+   useLast(last)
 {
-
   // determine the number of data points
   int numDataPoints1 =0;
   int numDataPoints2 =0;
   double dataPoint;
   ifstream theFile;
   
-  // first open and go through file containg path
+  // first open and go through file containing path
   theFile.open(filePathName, ios::in);
   if (theFile.bad() || !theFile.is_open()) {
     opserr << "WARNING - PathTimeSeries::PathTimeSeries()";
@@ -116,7 +116,7 @@ PathTimeSeries::PathTimeSeries(int tag,
   }   
   theFile.close();
 
-  // now open and go through file containg time
+  // now open and go through file containing time
   ifstream theFile1;
   theFile1.open(fileTimeName, ios::in);
   if (theFile1.bad() || !theFile1.is_open()) {
@@ -198,16 +198,14 @@ PathTimeSeries::PathTimeSeries(int tag,
   }
 }
 
-
 PathTimeSeries::PathTimeSeries(int tag,
 			       const char *fileName, 
-			       double theFactor)
+			       double theFactor,
+			       bool last)
   :TimeSeries(tag, TSERIES_TAG_PathTimeSeries),
-   thePath(0), time(0), currentTimeLoc(0), 
-   cFactor(theFactor), dbTag1(0), dbTag2(0), lastChannel(0)
+   thePath(0), time(0), currentTimeLoc(0), cFactor(theFactor),
+   dbTag1(0), dbTag2(0), lastChannel(0), useLast(last)
 {
-
-
   // determine the number of data points
   int numDataPoints = 0;
   double dataPoint;
@@ -293,9 +291,8 @@ PathTimeSeries::~PathTimeSeries()
 TimeSeries *
 PathTimeSeries::getCopy(void) 
 {
-  return new PathTimeSeries(this->getTag(), *thePath, *time, cFactor);
+  return new PathTimeSeries(this->getTag(), *thePath, *time, cFactor, useLast);
 }
-
 
 double
 PathTimeSeries::getTimeIncr (double pseudoTime)
@@ -315,6 +312,8 @@ PathTimeSeries::getFactor(double pseudoTime)
   double time1 = (*time)(currentTimeLoc);
 
   // check for another quick return
+  if (pseudoTime < time1 && currentTimeLoc == 0)
+    return 0.0;
   if (pseudoTime == time1)
     return cFactor * (*thePath)[currentTimeLoc];
 
@@ -323,11 +322,12 @@ PathTimeSeries::getFactor(double pseudoTime)
   int sizem2 = size - 2;
   
   // check we are not at the end
-  if (pseudoTime > time1 && currentTimeLoc == sizem1)
-    return 0.0;
-
-  if (pseudoTime < time1 && currentTimeLoc == 0)
-    return 0.0;
+  if (pseudoTime > time1 && currentTimeLoc == sizem1) {
+    if (useLast == false)
+      return 0.0;
+    else
+      return cFactor*(*thePath)[sizem1];
+  }
 
   // otherwise go find the current interval
   double time2 = (*time)(currentTimeLoc+1);
@@ -337,9 +337,13 @@ PathTimeSeries::getFactor(double pseudoTime)
       time1 = time2;
       time2 = (*time)(currentTimeLoc+1);
     }
-    // if pseudo time greater than ending time reurn 0
-    if (pseudoTime > time2)
-      return 0.0;
+    // if pseudo time greater than ending time return 0
+    if (pseudoTime > time2) {
+      if (useLast == false)
+        return 0.0;
+      else
+        return cFactor*(*thePath)[sizem1];
+    }
 
   } else if (pseudoTime < time1) {
     while ((pseudoTime < time1) && (currentTimeLoc > 0)) {
@@ -397,7 +401,7 @@ int
 PathTimeSeries::sendSelf(int commitTag, Channel &theChannel)
 {
   int dbTag = this->getDbTag();
-  Vector data(5);
+  Vector data(6);
   data(0) = cFactor;
   data(1) = -1;
   
@@ -418,6 +422,11 @@ PathTimeSeries::sendSelf(int commitTag, Channel &theChannel)
 
   data(4) = lastSendCommitTag;
   
+  if (useLast == true)
+    data(5) = 1;
+  else
+    data(5) = 0;
+
   int result = theChannel.sendVector(dbTag,commitTag, data);
   if (result < 0) {
     opserr << "PathTimeSeries::sendSelf() - channel failed to send data\n";
@@ -452,13 +461,12 @@ PathTimeSeries::sendSelf(int commitTag, Channel &theChannel)
   return 0;
 }
 
-
 int 
 PathTimeSeries::recvSelf(int commitTag, Channel &theChannel, 
 		       FEM_ObjectBroker &theBroker)
 {
   int dbTag = this->getDbTag();
-  Vector data(5);
+  Vector data(6);
   int result = theChannel.recvVector(dbTag,commitTag, data);
   if (result < 0) {
     opserr << "PathTimeSeries::sendSelf() - channel failed to receive data\n";
@@ -468,6 +476,11 @@ PathTimeSeries::recvSelf(int commitTag, Channel &theChannel,
   cFactor = data(0);
   int size = data(1);
   lastSendCommitTag = data(4);
+
+  if (data(5) == 1)
+    useLast = true;
+  else
+    useLast = false;
 
   // get the data cvector, only receive them once as they cannot change
   if (thePath == 0 && size > 0) {
@@ -503,8 +516,6 @@ PathTimeSeries::recvSelf(int commitTag, Channel &theChannel,
   }
   return 0;    
 }
-
-
 
 void
 PathTimeSeries::Print(OPS_Stream &s, int flag)

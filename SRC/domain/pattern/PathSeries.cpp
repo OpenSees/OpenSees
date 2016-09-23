@@ -221,14 +221,12 @@ void* OPS_PathSeries()
     return theSeries;
 }
 
-
 PathSeries::PathSeries()	
   :TimeSeries(TSERIES_TAG_PathSeries),
    thePath(0), pathTimeIncr(0.0), cFactor(0.0), otherDbTag(0), lastSendCommitTag(-1)
 {
   // does nothing
 }
-
 
 PathSeries::PathSeries(int tag,
 		       const Vector &theLoadPath, 
@@ -259,7 +257,6 @@ PathSeries::PathSeries(int tag,
     thePath = 0;
   }
 }
-
 
 PathSeries::PathSeries(int tag,
 		       const char *fileName, 
@@ -333,20 +330,17 @@ PathSeries::PathSeries(int tag,
   }
 }
 
-
 PathSeries::~PathSeries()
 {
   if (thePath != 0)
     delete thePath;
 }
 
-
 TimeSeries *
 PathSeries::getCopy(void) {
   return new PathSeries(this->getTag(), *thePath, pathTimeIncr, cFactor,
                         useLast, false, startTime);
 }
-
 
 double
 PathSeries::getFactor(double pseudoTime)
@@ -359,19 +353,19 @@ PathSeries::getFactor(double pseudoTime)
   double incr = (pseudoTime-startTime)/pathTimeIncr; 
   int incr1 = floor(incr);
   int incr2 = incr1+1;
+  int size = thePath->Size();
 
-  if (incr2 >= thePath->Size()) {
+  if (incr2 >= size) {
     if (useLast == false)
       return 0.0;
     else
-      return (*thePath)[thePath->Size()];
+      return cFactor*(*thePath)[size-1];
   } else {
     double value1 = (*thePath)[incr1];
     double value2 = (*thePath)[incr2];
     return cFactor*(value1 + (value2-value1)*(incr - incr1));
   }
 }
-
 
 double
 PathSeries::getDuration()
@@ -383,7 +377,6 @@ PathSeries::getDuration()
   }
   return (startTime + thePath->Size()*pathTimeIncr);
 }
-
 
 double
 PathSeries::getPeakFactor()
@@ -407,7 +400,6 @@ PathSeries::getPeakFactor()
   
   return (peak*cFactor);
 }
-
 
 int
 PathSeries::sendSelf(int commitTag, Channel &theChannel)
@@ -463,7 +455,6 @@ PathSeries::sendSelf(int commitTag, Channel &theChannel)
   return 0;
 }
 
-
 int 
 PathSeries::recvSelf(int commitTag, Channel &theChannel, 
 		       FEM_ObjectBroker &theBroker)
@@ -513,7 +504,6 @@ PathSeries::recvSelf(int commitTag, Channel &theChannel,
 
   return 0;    
 }
-
 
 void
 PathSeries::Print(OPS_Stream &s, int flag)
