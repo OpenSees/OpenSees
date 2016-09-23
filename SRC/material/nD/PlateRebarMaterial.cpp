@@ -196,10 +196,15 @@ PlateRebarMaterial::setTrialStrain( const Vector &strainFromElement )
   strain(3) = strainFromElement(3) ;
   strain(4) = strainFromElement(4) ;
 
+  if (angle == 0)
+    return theMat->setTrialStrain(strain(0));
+  else if (angle == 90)
+    return theMat->setTrialStrain(strain(1));
+  
   return theMat->setTrialStrain(   strain(0) * c * c
-                                 + strain(1) * s * s
-                                 + strain(2) * c * s,
-                                 0) ;
+				   + strain(1) * s * s
+				   + strain(2) * c * s,
+				   0) ;
 }
 
 
@@ -216,11 +221,17 @@ const Vector&
 PlateRebarMaterial::getStress( )
 {
   double sig = theMat->getStress();
-  stress(0) = sig * c * c;
-  stress(1) = sig * s * s;
-  stress(2) = sig * c * s;
-  stress(3) = 0.0;
-  stress(4) = 0.0;
+
+  stress.Zero();
+  if (angle == 0) 
+    stress(0) = sig; 
+  else if (angle == 90)
+    stress(1)= sig;
+  else {
+    stress(0) = sig * c * c;
+    stress(1) = sig * s * s;
+    stress(2) = sig * c * s;
+  }
 
   return stress ;
 }
@@ -232,16 +243,23 @@ PlateRebarMaterial::getTangent( )
 {
   double tan = theMat->getTangent( ) ;
 
-  tangent(0,0) = tan * c * c * c * c ;
-  tangent(0,2) = tan * c * c * c * s ;
-  tangent(0,1) = tan * c * c * s * s ;
-  tangent(2,0) = tangent(0,1) ;
-  tangent(2,2) = tangent(0,2) ;
-  tangent(2,1) = tan * c * s * s * s ;
-  tangent(1,0) = tangent(0,2) ;
-  tangent(1,2) = tangent(1,2) ;
-  tangent(1,1) = tan * s * s * s * s ;
-  opserr << tangent;
+  tangent.Zero();
+  if (angle == 0) 
+    tangent(0,0) = tan;
+  else if (angle == 90)
+    tangent(1,1) = tan;
+  else {
+    tangent(0,0) = tan * c * c * c * c ;
+    tangent(0,2) = tan * c * c * c * s ;
+    tangent(0,1) = tan * c * c * s * s ;
+    tangent(2,0) = tangent(0,1) ;
+    tangent(2,2) = tangent(0,2) ;
+    tangent(2,1) = tan * c * s * s * s ;
+    tangent(1,0) = tangent(0,2) ;
+    tangent(1,2) = tangent(1,2) ;
+    tangent(1,1) = tan * s * s * s * s ;
+  }
+
   return tangent ;
 }
 
@@ -250,16 +268,22 @@ PlateRebarMaterial::getInitialTangent
 ( )
 {
   double tan = theMat->getInitialTangent( ) ;
-
-  tangent(0,0) = tan * c * c * c * c ;
-  tangent(0,1) = tan * c * c * c * s ;
-  tangent(0,2) = tan * c * c * s * s ;
-  tangent(1,0) = tangent(0,1) ;
-  tangent(1,1) = tangent(0,2) ;
-  tangent(1,2) = tan * c * s * s * s ;
-  tangent(2,0) = tangent(0,2) ;
-  tangent(2,1) = tangent(1,2) ;
-  tangent(2,2) = tan * s * s * s * s ;
+  tangent.Zero();
+  if (angle == 0) 
+    tangent(0,0) = tan;
+  else if (angle == 90)
+    tangent(1,1) = tan;
+  else {
+    tangent(0,0) = tan * c * c * c * c ;
+    tangent(0,1) = tan * c * c * c * s ;
+    tangent(0,2) = tan * c * c * s * s ;
+    tangent(1,0) = tangent(0,1) ;
+    tangent(1,1) = tangent(0,2) ;
+    tangent(1,2) = tan * c * s * s * s ;
+    tangent(2,0) = tangent(0,2) ;
+    tangent(2,1) = tangent(1,2) ;
+    tangent(2,2) = tan * s * s * s * s ;
+  }
 
   return tangent ;
 }
