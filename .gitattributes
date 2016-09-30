@@ -260,6 +260,7 @@ EXAMPLES/ExampleScripts/27NodeCorrected.ops -text
 EXAMPLES/ExampleScripts/ARL360.at2 -text
 EXAMPLES/ExampleScripts/ArcLength01.tcl -text
 EXAMPLES/ExampleScripts/ArcLength02.tcl -text
+EXAMPLES/ExampleScripts/ConcretePanel.tcl -text
 EXAMPLES/ExampleScripts/CrossAnisotropicElastic.tcl -text
 EXAMPLES/ExampleScripts/Cube_tcl/Apply_FrictionBC.tcl -text
 EXAMPLES/ExampleScripts/Cube_tcl/Apply_IsotropicPressure.tcl -text
