@@ -138,14 +138,20 @@ strainResultant(8)
   sg = new double[iLayers];
   wg = new double[iLayers];
   theFibers = new NDMaterial*[iLayers];
-  
+
   h = 0.0;
   int i;
   for ( i = 0; i < iLayers; i++ )
   {
     h = h + thickness[i];
     theFibers[i] = fibers[i]->getCopy( "PlateFiber" ) ;
+    if (theFibers[i]==0) {
+      opserr << "LayeredShellFiberSection::ERROR: Could Not return a PlateFiber Material: ";
+      opserr << fibers[i]->getTag() << endln;
+      exit(-1);
+    }
   }
+
   for ( i = 0; i < iLayers; i++ ) wg[i] = 2.0 * thickness[i] / h;
   double currLoc = 0.0;
   double h1 = 1.0 / h;
@@ -184,12 +190,14 @@ SectionForceDeformation  *LayeredShellFiberSection::getCopy( )
     for (int i = 0; i < nLayers; i++ ) 
       thickness[i] = 0.5 * wg[i] * h;
 
-    clone = new LayeredShellFiberSection( this->getTag(),
-					  nLayers,
-					  thickness,
-					  theFibers ) ; //make the copy
+    
+    clone = new LayeredShellFiberSection(this->getTag(),
+					 nLayers,
+					 thickness,
+					 theFibers ) ; //make the copy
     delete thickness;
   }
+  
   return clone ;
 }
 
