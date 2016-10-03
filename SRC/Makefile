@@ -918,7 +918,7 @@ endif
 
 CUDA_CLASSES = 
 
-SysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
+SequentialSysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(FE)/system_of_eqn/linearSOE/LinearSOESolver.o \
 	$(FE)/system_of_eqn/linearSOE/DomainSolver.o \
 	$(FE)/system_of_eqn/linearSOE/bandGEN/BandGenLinSOE.o \
@@ -962,9 +962,11 @@ SysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(FE)/system_of_eqn/eigenSOE/FullGenEigenSolver.o
 
 ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
-SysOfEqn_LIBS = $(SysOfEqn_LIBS) \
+SysOfEqn_LIBS = $(SequentialSysOfEqn_LIBS) \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_Mumps.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleSolver_Mumps.o
+else
+SysOfEqn_LIBS = $(SequentialSysOfEqn_LIBS)
 endif
 
 MODEL_BUILDER_LIBS = $(FE)/modelbuilder/ModelBuilder.o \
