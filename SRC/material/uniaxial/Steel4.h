@@ -34,6 +34,7 @@
 
 #include <UniaxialMaterial.h>
 #include <vector>
+#include <algorithm>
 
 typedef std::vector<int>    int_vec;
 typedef std::vector<double> double_vec;

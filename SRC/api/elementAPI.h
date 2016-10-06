@@ -131,8 +131,8 @@ class ConvergenceTest;
 #define OPS_GetMaterialType ops_getmaterialtype_
 #define OPS_GetMaterial ops_getmaterial_
 #define OPS_GetMaterialPtr ops_getmaterialptr_
-#define OPS_GetCrdTransfPtr ops_getcrdtransfptr_
-#define OPS_GetFrictionModelPtr ops_getfrictionmodelptr_
+#define OPS_GetCrdTransf ops_getcrdtransf_
+#define OPS_GetFrictionModel ops_getfrictionmodel_
 #define OPS_GetNodeCrd ops_getnodecrd_
 #define OPS_GetNodeDisp ops_getnodedisp_
 #define OPS_GetNodeVel ops_getnodevel_
