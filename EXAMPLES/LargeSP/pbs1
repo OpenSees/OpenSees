@@ -1,0 +1,8 @@
+#!/bin/bash
+#SBATCH -J myMPI        # Job Name
+#SBATCH -o myMPI.o%j    # Output and error file name (%j expands to jobID)
+#SBATCH -n 8           # Total number of mpi tasks requested
+#SBATCH -p normal  # Queue (partition) name -- normal, development, etc.
+#SBATCH -t 00:30:00     # Run time (hh:mm:ss) - 1.5 hours
+module load petsc/3.5 
+ibrun ./OpenSeesSP ./Example.tcl    # Run the MPI executable named a.out

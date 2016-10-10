@@ -433,6 +433,8 @@ EXAMPLES/ExamplesForTesting/fdSimpleShear.ops -text
 EXAMPLES/ExamplesForTesting/fdepPureUniaxial.ops -text
 EXAMPLES/ExamplesForTesting/fdepSimpleShear.ops -text
 EXAMPLES/ExamplesForTesting/rrsmv1_1.txt -text
+EXAMPLES/LargeSP/Example.tcl -text
+EXAMPLES/LargeSP/pbs1 -text
 EXAMPLES/Makefile -text
 EXAMPLES/MaterialModels/ConcreteEPmodelDP.tcl -text
 EXAMPLES/MaterialModels/DenseSandEPmodelDP.tcl -text
