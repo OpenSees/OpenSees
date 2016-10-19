@@ -58,7 +58,7 @@ void* OPS_ElastomericBearingPlasticity3d()
     
     if (OPS_GetNumRemainingInputArgs() < 16) {
 	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: elastomericBearing eleTag iNode jNode kInit fy alpha1 alpha2 mu -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-mass m>\n";
+	opserr << "Want: elastomericBearing eleTag iNode jNode kInit qd alpha1 alpha2 mu -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-mass m>\n";
 	return 0;
     }
 
@@ -221,11 +221,11 @@ Vector ElastomericBearingPlasticity3d::theVector(12);
 
 
 ElastomericBearingPlasticity3d::ElastomericBearingPlasticity3d(int tag,
-    int Nd1, int Nd2, double kInit, double fy, double alpha1,
+    int Nd1, int Nd2, double kInit, double qd, double alpha1,
     UniaxialMaterial **materials, const Vector _y, const Vector _x,
     double alpha2, double _mu, double sdI, int addRay, double m)
     : Element(tag, ELE_TAG_ElastomericBearingPlasticity3d),
-    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0), k3(0.0),
+    connectedExternalNodes(2), k0(0.0), qYield(qd), k2(0.0), k3(0.0),
     mu(_mu), x(_x), y(_y), shearDistI(sdI), addRayleigh(addRay), mass(m),
     L(0.0), onP0(true), ub(6), ubPlastic(2), qb(6), kb(6,6), ul(12),
     Tgl(12,12), Tlb(6,12), ubPlasticC(2), kbInit(6,6), theLoad(12)
@@ -244,11 +244,10 @@ ElastomericBearingPlasticity3d::ElastomericBearingPlasticity3d(int tag,
     for (int i=0; i<2; i++)
         theNodes[i] = 0;
     
-    // initialize parameters
+    // initialize stiffnesses
     k0 = (1.0-alpha1)*kInit;
     k2 = alpha1*kInit;
     k3 = alpha2*kInit;
-    qYield = (1.0-alpha1-alpha2*pow(fy/kInit,mu-1.0))*fy;
     
     // check material input
     if (materials == 0)  {

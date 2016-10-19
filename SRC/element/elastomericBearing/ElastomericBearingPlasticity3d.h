@@ -50,7 +50,7 @@ class ElastomericBearingPlasticity3d : public Element
 public:
     // constructor
     ElastomericBearingPlasticity3d(int tag, int Nd1, int Nd2,
-        double kInit, double fy, double alpha1,
+        double kInit, double qd, double alpha1,
         UniaxialMaterial **theMaterials,
         const Vector y, const Vector x = 0,
         double alpha2 = 0.0, double mu = 2.0,

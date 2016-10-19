@@ -71,14 +71,14 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
         if ((argc-eleArgStart) < 13)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: elastomericBearing eleTag iNode jNode kInit fy alpha1 alpha2 mu -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m>\n";
+            opserr << "Want: elastomericBearing eleTag iNode jNode kInit qd alpha1 alpha2 mu -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m>\n";
             return TCL_ERROR;
         }    
         
         // get the id and end nodes
         int iNode, jNode, matTag, argi, j;
         int recvMat = 0;
-        double kInit, fy, alpha1;
+        double kInit, qd, alpha1;
         double alpha2 = 0.0;
         double mu = 2.0;
         double shearDistI = 0.5;
@@ -104,8 +104,8 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
             opserr << "elastomericBearing element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &fy) != TCL_OK)  {
-            opserr << "WARNING invalid fy\n";
+        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &qd) != TCL_OK)  {
+            opserr << "WARNING invalid qd\n";
             opserr << "elastomericBearing element: " << tag << endln;
             return TCL_ERROR;
         }
@@ -240,7 +240,7 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
         }
         
         // now create the elastomericBearing
-        theElement = new ElastomericBearingPlasticity2d(tag, iNode, jNode, kInit, fy, 
+        theElement = new ElastomericBearingPlasticity2d(tag, iNode, jNode, kInit, qd, 
             alpha1, theMaterials, y, x, alpha2, mu, shearDistI, doRayleigh, mass);
         
         if (theElement == 0)  {
@@ -270,14 +270,14 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
         if ((argc-eleArgStart) < 17)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: elastomericBearing eleTag iNode jNode kInit fy alpha1 alpha2 mu -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-mass m>\n";
+            opserr << "Want: elastomericBearing eleTag iNode jNode kInit qd alpha1 alpha2 mu -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-mass m>\n";
             return TCL_ERROR;
         }
         
         // get the id and end nodes
         int iNode, jNode, matTag, argi, i, j;
         int recvMat = 0;
-        double kInit, fy, alpha1;
+        double kInit, qd, alpha1;
         double alpha2 = 0.0;
         double mu = 2.0;
         double shearDistI = 0.5;
@@ -303,8 +303,8 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
             opserr << "elastomericBearing element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &fy) != TCL_OK)  {
-            opserr << "WARNING invalid fy\n";
+        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &qd) != TCL_OK)  {
+            opserr << "WARNING invalid qd\n";
             opserr << "elastomericBearing element: " << tag << endln;
             return TCL_ERROR;
         }
@@ -486,7 +486,7 @@ int TclModelBuilder_addElastomericBearingPlasticity(ClientData clientData,
         }
         
         // now create the elastomericBearing
-        theElement = new ElastomericBearingPlasticity3d(tag, iNode, jNode, kInit, fy, 
+        theElement = new ElastomericBearingPlasticity3d(tag, iNode, jNode, kInit, qd, 
             alpha1, theMaterials, y, x, alpha2, mu, shearDistI, doRayleigh, mass);
         
         if (theElement == 0)  {

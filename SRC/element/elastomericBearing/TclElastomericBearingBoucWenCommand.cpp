@@ -71,14 +71,14 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
         if ((argc-eleArgStart) < 16)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: elastomericBearingBoucWen eleTag iNode jNode kInit fy alpha1 alpha2 mu eta beta gamma -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
+            opserr << "Want: elastomericBearingBoucWen eleTag iNode jNode kInit qd alpha1 alpha2 mu eta beta gamma -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
         }    
         
         // get the id and end nodes
         int iNode, jNode, matTag, argi, i, j;
         int recvMat = 0;
-        double kInit, fy, alpha1;
+        double kInit, qd, alpha1;
         double alpha2 = 0.0;
         double mu = 2.0;
         double eta = 1.0;
@@ -109,8 +109,8 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &fy) != TCL_OK)  {
-            opserr << "WARNING invalid fy\n";
+        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &qd) != TCL_OK)  {
+            opserr << "WARNING invalid qd\n";
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
@@ -275,7 +275,7 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
         }
         
         // now create the elastomericBearingBoucWen
-        theElement = new ElastomericBearingBoucWen2d(tag, iNode, jNode, kInit, fy,
+        theElement = new ElastomericBearingBoucWen2d(tag, iNode, jNode, kInit, qd,
             alpha1, theMaterials, y, x, alpha2, mu, eta, beta, gamma, shearDistI,
             doRayleigh, mass, maxIter, tol);
         
@@ -306,14 +306,14 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
         if ((argc-eleArgStart) < 18)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: elastomericBearingBoucWen eleTag iNode jNode kInit fy alpha eta beta gamma -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-mass m> <-iter maxIter tol>\n";
+            opserr << "Want: elastomericBearingBoucWen eleTag iNode jNode kInit qd alpha1 alpha2 mu eta beta gamma -P matTag -T matTag -My matTag -Mz matTag <-orient <x1 x2 x3> y1 y2 y3> <-shearDist sDratio> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
         }
         
         // get the id and end nodes
         int iNode, jNode, matTag, argi, i, j;
         int recvMat = 0;
-        double kInit, fy, alpha1;
+        double kInit, qd, alpha1;
         double alpha2 = 0.0;
         double mu = 2.0;
         double eta = 1.0;
@@ -344,8 +344,8 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
-        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &fy) != TCL_OK)  {
-            opserr << "WARNING invalid fy\n";
+        if (Tcl_GetDouble(interp, argv[5+eleArgStart], &qd) != TCL_OK)  {
+            opserr << "WARNING invalid qd\n";
             opserr << "elastomericBearingBoucWen element: " << tag << endln;
             return TCL_ERROR;
         }
@@ -557,7 +557,7 @@ int TclModelBuilder_addElastomericBearingBoucWen(ClientData clientData,
         }
         
         // now create the elastomericBearingBoucWen
-        theElement = new ElastomericBearingBoucWen3d(tag, iNode, jNode, kInit, fy,
+        theElement = new ElastomericBearingBoucWen3d(tag, iNode, jNode, kInit, qd,
             alpha1, theMaterials, y, x, alpha2, mu, eta, beta, gamma, shearDistI,
             doRayleigh, mass, maxIter, tol);
         

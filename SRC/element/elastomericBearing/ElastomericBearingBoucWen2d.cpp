@@ -62,7 +62,7 @@ void* OPS_ElastomericBearingBoucWen2d()
     
     if (OPS_GetNumRemainingInputArgs() < 15) {
 	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: elastomericBearingBoucWen eleTag iNode jNode kInit fy alpha1 alpha2 mu eta beta gamma -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
+	opserr << "Want: elastomericBearingBoucWen eleTag iNode jNode kInit qd alpha1 alpha2 mu eta beta gamma -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
 	return 0;
     }
 
@@ -193,12 +193,12 @@ void* OPS_ElastomericBearingBoucWen2d()
 
 
 ElastomericBearingBoucWen2d::ElastomericBearingBoucWen2d(int tag,
-    int Nd1, int Nd2, double kInit, double fy, double alpha1,
+    int Nd1, int Nd2, double kInit, double qd, double alpha1,
     UniaxialMaterial **materials, const Vector _y, const Vector _x,
     double alpha2, double _mu, double _eta, double _beta, double _gamma,
     double sdI, int addRay, double m, int maxiter, double _tol)
     : Element(tag, ELE_TAG_ElastomericBearingBoucWen2d),
-    connectedExternalNodes(2), k0(0.0), qYield(0.0), k2(0.0), k3(0.0),
+    connectedExternalNodes(2), k0(0.0), qYield(qd), k2(0.0), k3(0.0),
     mu(_mu), eta(_eta), beta(_beta), gamma(_gamma), A(1.0), x(_x), y(_y),
     shearDistI(sdI), addRayleigh(addRay), mass(m), maxIter(maxiter), tol(_tol),
     L(0.0), onP0(true), ub(3), z(0.0), dzdu(0.0), qb(3), kb(3,3), ul(6),
@@ -218,11 +218,10 @@ ElastomericBearingBoucWen2d::ElastomericBearingBoucWen2d(int tag,
     for (int i=0; i<2; i++)
         theNodes[i] = 0;
     
-    // initialize parameters
+    // initialize stiffnesses
     k0 = (1.0-alpha1)*kInit;
     k2 = alpha1*kInit;
     k3 = alpha2*kInit;
-    qYield = (1.0-alpha1-alpha2*pow(fy/kInit,mu-1.0))*fy;
     
     // check material input
     if (materials == 0)  {

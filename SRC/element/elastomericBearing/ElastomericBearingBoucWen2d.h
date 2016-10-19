@@ -50,7 +50,7 @@ class ElastomericBearingBoucWen2d : public Element
 public:
     // constructors
     ElastomericBearingBoucWen2d(int tag, int Nd1, int Nd2,
-        double kInit, double fy, double alpha1,
+        double kInit, double qd, double alpha1,
         UniaxialMaterial **theMaterials,
         const Vector y = 0, const Vector x = 0,
         double alpha2 = 0.0, double mu = 2.0,
