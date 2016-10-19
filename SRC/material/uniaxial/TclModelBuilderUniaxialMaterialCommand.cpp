@@ -87,6 +87,7 @@ extern void *OPS_FRPConfinedConcrete02(void);
 //extern void *OPS_HoehlerStanton(void);
 extern void *OPS_Steel02(void);
 extern void *OPS_RambergOsgoodSteel(void);
+extern void *OPS_ReinforcingSteel(void);
 extern void *OPS_Concrete01(void);
 extern void *OPS_Concrete02(void);
 extern void *OPS_PinchingLimitStateMaterial(void);
@@ -114,6 +115,7 @@ extern void *OPS_ImpactMaterial(void);
 extern void *OPS_SteelBRB(void);
 extern void *OPS_MultiLinear(void);
 extern void *OPS_HookGap(void);
+extern void *OPS_HyperbolicGapMaterial(void);
 extern void *OPS_FRPConfinedConcrete(void);
 extern void *OPS_FRPConfinedConcrete02(void);
 extern void *OPS_Steel01Thermal(void);
@@ -135,9 +137,9 @@ extern void *OPS_CFSSSWP(void);
 extern void *OPS_CFSWSWP(void);
 extern void *OPS_ResilienceLow(void);
 extern void *OPS_ViscousMaterial(void);
-extern  void *OPS_SteelMPF(void); // K Kolozvari                                
-extern  void *OPS_ConcreteCM(void); // K Kolozvari
-extern  void *OPS_Bond_SP01(void); // K Kolozvari
+extern void *OPS_SteelMPF(void); // K Kolozvari                                
+extern void *OPS_ConcreteCM(void); // K Kolozvari
+extern void *OPS_Bond_SP01(void); // K Kolozvari
 extern void *OPS_Steel4(void);
 
 
@@ -146,11 +148,6 @@ extern void *OPS_Steel4(void);
 
 extern UniaxialMaterial *
 Tcl_AddLimitStateMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg);
-
-extern int
-TclCommand_HyperbolicGapMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
-				 
-
 
 extern UniaxialMaterial *Tcl_addWrapperUniaxialMaterial(matObj *, ClientData clientData, Tcl_Interp *interp,
 							int argc, TCL_Char **argv);
@@ -183,9 +180,6 @@ static void printCommand(int argc, TCL_Char **argv)
 
 
 // external functions
-
-int
-TclCommand_ReinforcingSteel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int
 TclCommand_KikuchiAikenHDR(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -399,6 +393,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+    } else if (strcmp(argv[1],"ReinforcingSteel") == 0) {
+      void *theMat = OPS_ReinforcingSteel();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
 
     } else if (strcmp(argv[1],"Steel2") == 0) {
       void *theMat = OPS_Steel2();
@@ -416,6 +416,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 
     } else if (strcmp(argv[1],"HookGap") == 0) {
       void *theMat = OPS_HookGap();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } else if (strcmp(argv[1],"HyperbolicGapMaterial") == 0) {
+      void *theMat = OPS_HyperbolicGapMaterial();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
@@ -630,11 +637,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	// Parsing was successful, allocate the material
 	theMaterial = new Elastic2Material(tag, E, eta);       
       
-    } else if (strcmp(argv[1], "ReinforcingSteel") == 0) {
-      return TclCommand_ReinforcingSteel(clientData,interp,argc,argv);
-    }
-    
-    else if (strcmp(argv[1],"ENT") == 0) {
+    } else if (strcmp(argv[1],"ENT") == 0) {
       if (argc < 4) {
 	opserr << "WARNING invalid number of arguments\n";
 	printCommand(argc,argv);
@@ -2534,11 +2537,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       }
     }
     
-    else if (strcmp(argv[1],"HyperbolicGapMaterial") == 0) { 
-      return TclCommand_HyperbolicGapMaterial(clientData, interp, argc, argv);
-    }
-
-
     else if (strcmp(argv[1],"SteelMP") == 0) {
       // Check that there is the minimum number of arguments
       if (argc < 4) {

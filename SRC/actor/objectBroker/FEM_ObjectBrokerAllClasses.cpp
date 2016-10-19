@@ -121,6 +121,7 @@
 #include <DrainClough2Material.h>
 #include <DrainPinch1Material.h>
 #include <HyperbolicGapMaterial.h>
+#include <ImpactMaterial.h>
 
 // Sections
 #include <ElasticSection2d.h>
@@ -1160,6 +1161,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_HyperbolicGapMaterial:
 		return new HyperbolicGapMaterial();
+
+	case MAT_TAG_ImpactMaterial:
+		return new ImpactMaterial();
 
 	case MAT_TAG_Bilin:
 		return new Bilin();

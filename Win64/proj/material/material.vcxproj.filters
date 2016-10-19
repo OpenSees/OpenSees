@@ -319,13 +319,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\SteelMP.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\TclHyperbolicGapMaterial.cpp">
-      <Filter>uniaxial</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TclModelBuilderUniaxialMaterialCommand.cpp">
-      <Filter>uniaxial</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\TclReinforcingSteel.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TriMatrix.cpp">
@@ -1960,6 +1954,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\PlasticDamageConcrete3d.h">
       <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Dodd_Restrepo.h">
+      <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

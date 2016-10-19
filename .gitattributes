@@ -3614,10 +3614,8 @@ SRC/material/uniaxial/SteelMP.cpp -text
 SRC/material/uniaxial/SteelMP.h -text
 SRC/material/uniaxial/SteelMPF.cpp -text
 SRC/material/uniaxial/SteelMPF.h -text
-SRC/material/uniaxial/TclHyperbolicGapMaterial.cpp -text
 SRC/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.cpp -text
 SRC/material/uniaxial/TclNewUniaxialMaterial.cpp -text
-SRC/material/uniaxial/TclReinforcingSteel.cpp -text
 SRC/material/uniaxial/TriMatrix.cpp -text
 SRC/material/uniaxial/TriMatrix.h -text
 SRC/material/uniaxial/UniaxialJ2Plasticity.cpp -text
@@ -4680,7 +4678,6 @@ SRC/utility/Timer.cpp -text
 SRC/utility/Timer.h -text
 SRC/utility/Timer.tex -text
 SRC/utility/utility.tex -text
-Win32/DoddRestrepo/DoddRestrepo/DoddRestrepo.vfproj -text
 Win32/OpenSees.opt -text
 Win32/OpenSees.sln -text
 Win32/OpenSeesFortran.mak -text
@@ -4788,7 +4785,6 @@ Win32/proj/tcl/tcl.vcxproj.filters -text
 Win32/proj/utility/utility.dsp -text
 Win32/proj/utility/utility.mak -text
 Win32/proj/utility/utility.vcxproj -text
-Win64/DoddRestrepo/DoddRestrepo/DoddRestrepo.vfproj -text
 Win64/OpenSees.sln -text
 Win64/VC2005errno.cpp -text
 Win64/proj/OpenSeesMP/OpenSeesMP.vcproj -text

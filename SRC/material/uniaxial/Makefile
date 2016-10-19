@@ -65,15 +65,11 @@ OBJS       = UniaxialMaterial.o \
 	Bond_SP01.o \
 	UniaxialJ2Plasticity.o \
 	HyperbolicGapMaterial.o \
-	TclHyperbolicGapMaterial.o \
 	ImpactMaterial.o \
-	TclImpactMaterial.o \
 	KinematicHardening.o \
-	TclKinematicHardening.o \
 	NewUniaxialMaterial.o \
 	TclNewUnixialMaterial.o \
 	ReinforcingSteel.o \
-	TclReinforcingSteel.o \
 	PenaltyMaterial.o \
 	ContinuumUniaxial.o \
 	WrappedMaterial.o \
