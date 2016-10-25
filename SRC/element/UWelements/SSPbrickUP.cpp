@@ -460,6 +460,10 @@ SSPbrickUP::getDamp(void)
 	// solid phase stiffness matrix
 	GetSolidStiffness();
 
+    // contribution of mass matrix for Rayleigh damping
+	if (alphaM != 0.0) {
+		dampC.addMatrix(0.0, mSolidM, alphaM);
+	}
 	// contribution of stiffness matrix for Rayleigh damping
 	if (betaK != 0.0) {
     	dampC.addMatrix(1.0, mSolidK, betaK);
@@ -467,11 +471,6 @@ SSPbrickUP::getDamp(void)
     	dampC.addMatrix(1.0, mSolidK, betaK0);
 	} if (betaKc != 0.0) {
     	dampC.addMatrix(1.0, mSolidK, betaKc);
-	}
-
-	// contribution of mass matrix for Rayleigh damping
-	if (alphaM != 0.0) {
-		dampC.addMatrix(1.0, mSolidM, alphaM);
 	}
 
 	// compute coupling matrix Q
@@ -484,7 +483,7 @@ SSPbrickUP::getDamp(void)
 	INp(2,0) = 0.125; INp(2,1) = 0.125; INp(2,2) = 0.125; INp(2,3) = 0.125; INp(2,4) = 0.125; INp(2,5) = 0.125; INp(2,6) = 0.125; INp(2,7) = 0.125;
 
 	couple.Zero();
-	couple.addMatrixTransposeProduct(1.0, Bnot, INp, mVol);	
+	couple.addMatrixTransposeProduct(0.0, Bnot, INp, mVol);	
 
 	// assemble full element damping matrix   [  C  -Q ]
 	// comprised of C, Q, and H submatrices   [ -Q' -H ]
@@ -676,7 +675,7 @@ SSPbrickUP::addInertiaLoadToUnbalance(const Vector &accel)
 	// compute mass matrix
 	this->getMass();
 
-	for (int i = 0; i < 24; i++) {
+	for (int i = 0; i < 32; i++) {
 		Q(i) -= mMass(i,i)*ra[i];
 	}
 	
@@ -688,7 +687,9 @@ SSPbrickUP::getResistingForce(void)
 // this function computes the resisting force vector for the element
 {
 	Vector f1(24);
+    f1.Zero();
 	Vector f2(8);
+    f2.Zero();
 	
 	// get stress from the material
 	Vector mStress = theMaterial->getStress();
@@ -742,9 +743,12 @@ SSPbrickUP::getResistingForce(void)
 	if (applyLoad == 0) {
 		double polyJac = 0.0;
 		for (int i = 0; i < 8; i++) {
-			polyJac = J[0] + (J[1]*xi(i) + J[2]*et(i) + J[3]*ze(i) + J[7] + J[8] + J[9])/3.0
+			/*polyJac = J[0] + (J[1]*xi(i) + J[2]*et(i) + J[3]*ze(i) + J[7] + J[8] + J[9])/3.0
                      + (J[4]*hut(i) + J[5]*hus(i) + J[6]*hst(i) + J[10]*ze(i) + J[11]*et(i) + J[12]*xi(i) + J[13]*ze(i) + J[14]*et(i) + J[15]*xi(i))/9.0
-					 + (J[16]*hstu(i) + J[17]*hut(i) + J[18]*hus(i) + J[19]*hst(i))/27.0;
+					 + (J[16]*hstu(i) + J[17]*hut(i) + J[18]*hus(i) + J[19]*hst(i))/27.0;*/
+            polyJac = J[0]*(1.0 + (J[1]*xi(i) + J[2]*et(i) + J[3]*ze(i) + J[7] + J[8] + J[9])/3.0
+                     + (J[4]*hut(i) + J[5]*hus(i) + J[6]*hst(i) + J[10]*ze(i) + J[11]*et(i) + J[12]*xi(i) + J[13]*ze(i) + J[14]*et(i) + J[15]*xi(i))/9.0
+					 + (J[16]*hstu(i) + J[17]*hut(i) + J[18]*hus(i) + J[19]*hst(i))/27.0);
 			f1(3*i)   -= density*b[0]*polyJac;
 			f1(3*i+1) -= density*b[1]*polyJac;
 			f1(3*i+2) -= density*b[2]*polyJac;
@@ -752,9 +756,12 @@ SSPbrickUP::getResistingForce(void)
 	} else {
 		double polyJac = 0.0;
 		for (int i = 0; i < 8; i++) {
-			polyJac = J[0] + (J[1]*xi(i) + J[2]*et(i) + J[3]*ze(i) + J[7] + J[8] + J[9])/3.0
+			/*polyJac = J[0] + (J[1]*xi(i) + J[2]*et(i) + J[3]*ze(i) + J[7] + J[8] + J[9])/3.0
                      + (J[4]*hut(i) + J[5]*hus(i) + J[6]*hst(i) + J[10]*ze(i) + J[11]*et(i) + J[12]*xi(i) + J[13]*ze(i) + J[14]*et(i) + J[15]*xi(i))/9.0
-					 + (J[16]*hstu(i) + J[17]*hut(i) + J[18]*hus(i) + J[19]*hst(i))/27.0;
+					 + (J[16]*hstu(i) + J[17]*hut(i) + J[18]*hus(i) + J[19]*hst(i))/27.0;*/
+            polyJac = J[0]*(1.0 + (J[1]*xi(i) + J[2]*et(i) + J[3]*ze(i) + J[7] + J[8] + J[9])/3.0
+                     + (J[4]*hut(i) + J[5]*hus(i) + J[6]*hst(i) + J[10]*ze(i) + J[11]*et(i) + J[12]*xi(i) + J[13]*ze(i) + J[14]*et(i) + J[15]*xi(i))/9.0
+					 + (J[16]*hstu(i) + J[17]*hut(i) + J[18]*hus(i) + J[19]*hst(i))/27.0);
 			f1(3*i)   -= density*appliedB[0]*polyJac;
 			f1(3*i+1) -= density*appliedB[1]*polyJac;
 			f1(3*i+2) -= density*appliedB[2]*polyJac;
@@ -873,7 +880,7 @@ SSPbrickUP::getResistingForceIncInertia()
 	a(31) = accel8(3);
 
 	mInternalForces.addMatrixVector(1.0, mMass, a, 1.0);
-	
+
 	// terms stemming from velocity
 	const Vector &vel1 = theNodes[0]->getTrialVel();
 	const Vector &vel2 = theNodes[1]->getTrialVel();

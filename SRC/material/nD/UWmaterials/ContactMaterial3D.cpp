@@ -624,3 +624,23 @@ int ContactMaterial3D::updateParameter(int responseID, Information &info)
   
   return 0;
 }
+
+double ContactMaterial3D::getcohesion(void)
+{
+    return cohesion;
+}
+
+void ContactMaterial3D::ScaleCohesion(const double len) 
+{
+    cohesion *= len;
+}
+
+double ContactMaterial3D::getTensileStrength(void)
+{
+    return tensileStrength;
+}
+
+void ContactMaterial3D::ScaleTensileStrength(const double len)
+{
+    tensileStrength *= len;
+}

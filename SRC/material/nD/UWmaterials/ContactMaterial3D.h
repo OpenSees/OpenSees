@@ -72,12 +72,12 @@ class ContactMaterial3D : public NDMaterial
   const Vector &getStrain ();
   
   //Get cohesion function for use in contact element
-  double getcohesion ()  {return cohesion;}
+  double getcohesion ();
+  void ScaleCohesion (const double len); 
+
   //Get tensile strength function for use in contact element
-  double getTensileStrength() {return tensileStrength;}
-  
-  void ScaleCohesion (const double len) {cohesion *= len;}
-  void ScaleTensileStrength (const double len) {tensileStrength *= len;}
+  double getTensileStrength ();
+  void ScaleTensileStrength (const double len); 
   
   // get metric tensor for material class
   void setMetricTensor(Matrix &m);

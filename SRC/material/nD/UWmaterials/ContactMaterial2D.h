@@ -71,15 +71,12 @@ public:
     const Vector &getStrain ();
 
     //Get cohesion function for use in contact element
-    double getcohesion ()  {return cohesion;}
-
-    void ScaleCohesion (const double len) {cohesion *= len;}
+    double getcohesion ();
+    void ScaleCohesion (const double len);
 
     //Get tensile strength function for use in contact element
-    double getTensileStrength() {return tensileStrength;}
-    
-    void ScaleTensileStrength(const double len) {tensileStrength *= len;}
-
+    double getTensileStrength ();
+    void ScaleTensileStrength (const double len);
 
     // Accepts the current trial strain values as being on the
     // solution path, and updates all model parameters related
