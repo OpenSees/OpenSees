@@ -419,8 +419,8 @@ FedeasMaterial::invokeSubroutine(int ist)
   double dEpsilon = epsilon-epsilonP;
   
   switch (this->getClassTag()) {
-#ifdef _WIN32
   case MAT_TAG_FedeasHardening:
+#ifdef _WIN32
     hard_1__(data, hstv, &hstv[numHstv], &epsilonP, &sigmaP, &dEpsilon, 
 	     &sigma, &tangent, &ist);
 #else
