@@ -28,7 +28,8 @@
 //
 // Description: This file contains the implementation of the TwoNodeLink class.
 
-#include "TwoNodeLink.h"
+#include <TwoNodeLink.h>
+#include <Information.h>
 
 #include <Domain.h>
 #include <Node.h>
@@ -1532,4 +1533,32 @@ void TwoNodeLink::addPDeltaStiff(Matrix &kLocal)
             }
         }
     }
+}
+
+
+int 
+TwoNodeLink::setParameter(const char **argv, int argc, Parameter &param)
+{
+  int result = -1;
+            
+  if (argc < 1)
+    return -1;
+             
+  if (strcmp(argv[0], "material") == 0) {
+      if (argc > 2) {
+        int matNum = atoi(argv[1]);
+        if (matNum >= 1 && matNum <= numDir)
+          return theMaterials[matNum-1]->setParameter(&argv[2], argc-2, param);
+      } else {
+        return -1;
+      }
+  }
+
+  for (int i=0; i<numDir; i++) {
+    int res = theMaterials[i]->setParameter(argv, argc, param);
+    if (res != -1) {
+      result = res;
+    }
+  } 
+  return result;
 }

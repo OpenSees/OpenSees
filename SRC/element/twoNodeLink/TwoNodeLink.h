@@ -102,6 +102,8 @@ public:
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
     int getResponse(int responseID, Information &eleInfo);
 
+    int setParameter(const char **argv, int argc, Parameter &param);
+
 private:
     Etype elemType;
     
