@@ -62,7 +62,7 @@ TCP_SocketSSL::TCP_SocketSSL()
     // initialize SSL library and context object
     SSL_library_init();
     SSL_load_error_strings();
-    meth = SSLv23_server_method();
+    meth = TLS_server_method();
     ctx = SSL_CTX_new(meth);
 
     // server verification
@@ -133,7 +133,7 @@ TCP_SocketSSL::TCP_SocketSSL(unsigned int port, bool checkendianness, int nodela
     // initialize SSL library and context object
     SSL_library_init();
     SSL_load_error_strings();
-    meth = SSLv23_server_method();
+    meth = TLS_server_method();
     ctx = SSL_CTX_new(meth);
 
     // server verification
@@ -210,7 +210,7 @@ TCP_SocketSSL::TCP_SocketSSL(unsigned int other_Port,
     // initialize SSL library and context object
     SSL_library_init();
     SSL_load_error_strings();
-    meth = SSLv3_client_method();
+    meth = TLS_client_method();
     ctx = SSL_CTX_new(meth);
 
     // client verification
