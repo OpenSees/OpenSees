@@ -6333,14 +6333,13 @@ eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   strcpy(myArgv0,"nodeTags");
   myArgv[0] = myArgv0;
 
-  const Vector *tags = theDomain.getElementResponse(tag, &myArgv[0], 1);
-  //  Element *theElement = theDomain.getElement(tag);
-  if (tags != 0) {
-    int numTags = tags->Size();
-    for (int i = 0; i < numTags; i++) {
-      sprintf(buffer, "%.0f ", (*tags)(i));
-      Tcl_AppendResult(interp, buffer, NULL);
-    }
+  //const Vector *tags = theDomain.getElementResponse(tag, &myArgv[0], 1);
+  Element *theElement = theDomain.getElement(tag);
+  int numTags = theElement->getNumExternalNodes();
+  const ID &tags = theElement->getExternalNodes();
+  for (int i = 0; i < numTags; i++) {
+    sprintf(buffer, "%d ", tags(i));
+    Tcl_AppendResult(interp, buffer, NULL);
   }
   
   return TCL_OK;
