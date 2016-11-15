@@ -111,6 +111,7 @@ UmfpackGenLinSolver::setSize()
     // set default control parameters
     umfpack_di_defaults(Control);
     Control[UMFPACK_PIVOT_TOLERANCE] = 1.0;
+    Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_SYMMETRIC;
 
     int n = theSOE->X.Size();
     int nnz = (int)theSOE->Ai.size();
