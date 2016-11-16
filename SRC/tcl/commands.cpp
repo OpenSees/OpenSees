@@ -32,6 +32,7 @@
 
 #include <classTags.h>
 
+#include <DOF_Group.h>
 
 #ifdef _PARALLEL_PROCESSING
 #include <mpi.h>
@@ -658,6 +659,7 @@ int
 maxOpenFiles(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 
+
 // pointer for old putsCommand
 
 static Tcl_ObjCmdProc *Tcl_putsCommand = 0;
@@ -943,7 +945,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "quit", &OpenSeesExit, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
-
+    Tcl_CreateCommand(interp, "findNodeWithID", &findID, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
 
     Tcl_CreateCommand(interp, "getNP", &getNP, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
@@ -6210,6 +6213,46 @@ eleResponse(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
       }
     }
 
+    return TCL_OK;
+}
+
+
+
+int 
+findID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+    // make sure at least one other argument to contain type of system
+    if (argc < 2) {
+	opserr << "WARNING want - findNodesWithID ?id\n";
+	return TCL_ERROR;
+   }    
+
+    int tag;
+
+    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+	opserr << "WARNING eleForce eleTag? dof? - could not read nodeTag? \n";
+	return TCL_ERROR;	        
+    }    
+
+    NodeIter &theNodes = theDomain.getNodes();
+    Node *theNode;
+    char buffer[20] ={0};
+    
+
+    while ((theNode = theNodes()) != 0) {
+      DOF_Group *theGroup = theNode->getDOF_GroupPtr();
+      if (theGroup != 0) {
+	const ID &nodeID =  theGroup->getID();
+	for (int i=0; i<nodeID.Size(); i++) {
+	  if (nodeID(i) == tag) {
+	    sprintf(buffer, "%d ", theNode->getTag());
+	    Tcl_AppendResult(interp, buffer, NULL);
+	    break;
+	  }
+	}
+      }
+    }
+      
     return TCL_OK;
 }
 

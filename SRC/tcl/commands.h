@@ -135,6 +135,10 @@ eleDynamicalForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char 
 int 
 eleResponse(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
+
+int
+findID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
 int 
 nodeDisp(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
