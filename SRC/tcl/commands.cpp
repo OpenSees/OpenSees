@@ -5513,6 +5513,23 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
       delete thePattern;
     }
   }
+
+  else if ((strcmp(argv[1],"TimeSeries") == 0) ||
+	   (strcmp(argv[1],"timeSeries") == 0)) {
+    if (argc < 3) {
+      opserr << "WARNING want - remove loadPattern patternTag?\n";
+      return TCL_ERROR;
+    }    
+    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+	opserr << "WARNING remove loadPattern tag? failed to read tag: " << argv[2] << endln;
+	return TCL_ERROR;
+    }      
+    bool ok =  OPS_removeTimeSeries(tag);
+    if (ok == true)
+      return TCL_OK;
+    else
+      return TCL_ERROR;
+  }
   
   else if (strcmp(argv[1],"parameter") == 0) {
     if (argc < 3) {
