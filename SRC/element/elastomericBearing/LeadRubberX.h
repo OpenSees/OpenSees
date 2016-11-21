@@ -18,23 +18,23 @@
 **                                                                    **
 ** ****************************************************************** */
 
-
-// Written by: Manish Kumar (mkumar2@buffalo.edu)
-// Credits: This element extends the formulation of elastomericBearing element written by Andreas Schellenberg 
-// Created: 02/29/2012
-// Revision: A
+// $Revision$
+// $Date$
+// $URL$
 
 #ifndef LeadRubberX_h
 #define LeadRubberX_h
 
-
-class Channel;
-class UniaxialMaterial;
-class Response;
+// Written: Manish Kumar (mkumar2@buffalo.edu)
+// Credits: This element extends the formulation of elastomericBearing element written by Andreas Schellenberg 
+// Created: 02/29/2012
 
 #include <Element.h>
 #include <Matrix.h>
 #include <Vector.h>
+
+class Channel;
+class Response;
 
 class LeadRubberX : public Element
 {
@@ -42,8 +42,9 @@ public:
     // Constructor
     LeadRubberX(int eleTag, int Nd1, int Nd2, double qd, double alpha, double Gr, double Kbulk,
         double D1, double D2, double ts, double tr, double n, const Vector y, const Vector x=0,
-        double kc=10, double PhiM=0.75, double ac=1.0, double sDratio=0.5, double m=0.0, double cd=0.0, double tc=0.0, double qL=11200,
-        double cL=130, double kS=50, double aS=1.41e-05, int tag1=0, int tag2=0, int tag3=0, int tag4=0, int tag5=0);
+        double kc=10, double PhiM=0.5, double ac=1.0, double sDratio=0.5, double m=0.0,
+        double cd=0.0, double tc=0.0, double qL=11200.0, double cL=130.0, double kS=50.0,
+        double aS=1.41e-05, int tag1=0, int tag2=0, int tag3=0, int tag4=0, int tag5=0);
     
     LeadRubberX();
     
@@ -65,9 +66,6 @@ public:
     int revertToLastCommit();
     int revertToStart();
     int update();
-    
-    // Public method to get the current temperature of lead core
-    double getCurrentTemp(double qy, double currentTemp, double v);
     
     // Public methods to obtain stiffness, mass, damping and residual information
     const Matrix &getTangentStiff();
@@ -98,6 +96,7 @@ private:
     // Private methods
     void setUp();
     double sgn(double x);
+    double getCurrentTemp(double qy, double currentTemp, double v);
     
     // Private attributes - a copy for each object of the class
     ID connectedExternalNodes;         // Contains the tags of the end nodes
@@ -117,11 +116,11 @@ private:
     double S;                          // Shape facor
     double Ec;                         // Compression modulus
     double Kv0;                        // Stiffness at zero horizontal displacement
-    double Kv;                         // elastic stiffness in compression and tension
+    double Kv;                         // Elastic stiffness in compression and tension
     double kc;                         // Quality index of elastomer (cavitation parameter)
     double PhiM;                       // Maximum reduction in the cavitation strength of elastomer
     double ac;                         // Strength degradation parameter
-    double Fcr;                        // Initial Critical buckling force and deformation
+    double Fcr;                        // Critical buckling load at zero lateral deformation
     double ucr;                        // Critical buckling deformation at zero lateral deformation
     double Fc;                         // Initial cavitation strength
     double uc;                         // Initial cavitation deformation
@@ -155,20 +154,21 @@ private:
     double Fcn, ucn;                   // Current cavitation strength and deformation
     double Fmax, umax;                 // Maximum force and deformation ever experienced by the elastomer
     
-    Vector ub;                         // displacements in basic system
-    Vector ubdot;                      // velocities in basic system
-    Vector z;                          // hysteretic dimensionless quantity
-    Matrix dzdu;                       // tangent of hysteretic evolution parameters
-    Vector qb;                         // forces in basic system
-    Matrix kb;                         // stiffness matrix in basic system
-    Vector ul;                         // displacements in local system
-    Matrix Tgl;                        // transformation matrix from global to local system
-    Matrix Tlb;                        // transformation matrix from local to basic system
+    Vector ub;                         // Displacements in basic system
+    Vector ubdot;                      // Velocities in basic system
+    Vector z;                          // Hysteretic dimensionless quantity
+    Matrix dzdu;                       // Tangent of hysteretic evolution parameters
+    Vector qb;                         // Forces in basic system
+    Matrix kb;                         // Stiffness matrix in basic system
+    Vector ul;                         // Displacements in local system
+    Matrix Tgl;                        // Transformation matrix from global to local system
+    Matrix Tlb;                        // Transformation matrix from local to basic system
     
     // Committed history variables
-    Vector ubC;                        // displacements in basic system
-    Vector zC;                         // plastic displacements in basic system
-    // initial stiffness matrix in basic system
+    Vector ubC;                        // Displacements in basic system
+    Vector zC;                         // Plastic displacements in basic system
+    
+    // Initial stiffness matrix in basic system
     Matrix kbInit;
     
     static Matrix theMatrix;

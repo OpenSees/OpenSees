@@ -23,8 +23,8 @@
 // $URL$
 
 // Written: Manish Kumar (mkumar2@buffalo.edu)
+// Credits: This element extends the formulation of elastomericBearing element written by Andreas Schellenberg 
 // Created: 02/12
-// Revision: A
 //
 // Description: This file contains the implementation of the
 // LeadRubberX class.
@@ -60,7 +60,7 @@ Vector LeadRubberX::theVector(12);
 
 static int numMyBearing = 0;
 static int tag = 0;  // Tag to identify if bearing has failed in buckling
-void *OPS_LeadRubberX(void)
+void *OPS_LeadRubberX()
 {
     // print out a message about who wrote this element & any copyright info wanted
     if (numMyBearing == 0) {
@@ -76,8 +76,9 @@ void *OPS_LeadRubberX(void)
         return theEle;
     }
     
-    if (numArgs !=12 && numArgs !=18 && numArgs !=19 && numArgs !=20 && numArgs !=24 && numArgs !=25 
-        && numArgs !=29 && numArgs !=30 && numArgs !=31 && numArgs !=32 && numArgs !=33 && numArgs !=34) {
+    if (numArgs !=12 && numArgs !=18 && numArgs !=19 && numArgs !=20
+        && numArgs !=24 && numArgs !=25 && numArgs !=29 && numArgs !=30
+        && numArgs !=31 && numArgs !=32 && numArgs !=33 && numArgs !=34) {
             opserr << "ERROR - LeadRubberX incorrect # args provided";
             return theEle;
     }
@@ -114,7 +115,7 @@ void *OPS_LeadRubberX(void)
     
     // The default values of the parameters
     double kl = 10.0;       // Cavitation parameter
-    double phi = 0.75;      // Damage index
+    double phi = 0.5;       // Damage index
     double al = 1.0;        // Strength degradation parameter
     double sDratio = 0.5;   // Shear distance ratio
     double m = 0.0;         // Mass of the bearing
@@ -131,15 +132,15 @@ void *OPS_LeadRubberX(void)
         numData = 1;
         for (int i=0; i<3; i++) {
             if (OPS_GetDoubleInput(&numData, &value) != 0) {
-                opserr << "WARNING error reading element properties for element" << eleTag << endln;
+                opserr << "WARNING invalid orientation value for element" << eleTag << endln;
                 return 0;
             } else {
                 x(i) = value;
             }
         }
-        for (int i=0; i<3; i++){
+        for (int i=0; i<3; i++) {
             if (OPS_GetDoubleInput(&numData, &value) != 0) {
-                opserr << "WARNING error reading element properties for element" << eleTag << endln;
+                opserr << "WARNING invalid orientation value for element" << eleTag << endln;
                 return 0;
             } else {
                 y(i) = value;
@@ -270,8 +271,8 @@ void *OPS_LeadRubberX(void)
 }
 
 
-LeadRubberX::LeadRubberX(int eleTag, int Nd1, int Nd2, double qd, double alpha1, double Gr, double kbulk, double Di, double Do, 
-    double ts1, double tr, double n1, const Vector _y, const Vector _x, double kl, double PhiMax, double al, double sDratio, 
+LeadRubberX::LeadRubberX(int eleTag, int Nd1, int Nd2, double qd, double alpha1, double Gr, double kbulk, double Di, double Do,
+    double ts1, double tr, double n1, const Vector _y, const Vector _x, double kl, double PhiMax, double al, double sDratio,
     double m, double cd1, double tc1, double qL2, double cL2, double kS2, double aS2, int tg1, int tg2, int tg3, int tg4, int tg5)
     : Element(eleTag, ELE_TAG_LeadRubberX), connectedExternalNodes(2),
     qYield0(qd), alpha(alpha1), cd(cd1), TL_trial(0.0), TL_commit(0.0), qL(qL2), cL(cL2),
@@ -298,7 +299,7 @@ LeadRubberX::LeadRubberX(int eleTag, int Nd1, int Nd2, double qd, double alpha1,
     
     // vertical motion
     A = (PI/4.0)*((D2+tc)*(D2+tc) - D1*D1);                 // Bonded rubber area of bearing
-    S = (D2*D2 - D1*D1)/(4*D2*tr);                          // Shape facor
+    S = (D2*D2 - D1*D1)/(4*D2*tr);                          // Shape factor for case with lead core
     Tr = n*tr;                                              // height of rubber in the bearing
     h = Tr + (n-1)*ts;                                      // height of rubber + shims
     double F;
@@ -367,7 +368,7 @@ LeadRubberX::LeadRubberX()
     S(0.0), Ec(0.0), Kv0(0.0), Kv(0.0), kc(10.0), PhiM(0.5), ac(1.0), Fcr(0.0),
     ucr(0.0), Fc(0.0), uc(0.0), tCurrent(0.0), tCommit(0.0), Kt(0.0), Kr(0.0),
     G(0.0), Kbulk(0.0), x(0), y(0), tag1(0), tag2(0), tag3(0), tag4(0), tag5(0),
-    shearDistI(0.5), mass(0.0), tc(0.0), D1(0.0), D2(0.0), L(0.0), h(0.0),
+    shearDistI(0.5), mass(0.0), tc(0.0), Tr(0.0), D1(0.0), D2(0.0), L(0.0), h(0.0),
     rg(0.0), A(0.0), Ar(0.0), n(0.0), ts(0.0), Fcrn(0.0), ucrn(0.0), Fcrmin(0.0),
     Fcn(0.0), ucn(0.0), Fmax(0.0), umax(0.0),
     ub(6), ubdot(6), z(2), dzdu(2,2), qb(6), kb(6,6), ul(12),
@@ -442,7 +443,7 @@ void LeadRubberX::setDomain(Domain *theDomain)
                 << connectedExternalNodes(1)
                 << " does not exist in the model for";
         }
-        opserr << " element: " << this->getTag() << ".\n";
+        opserr << " element: " << this->getTag() << endln;
         
         return;
     }
@@ -544,8 +545,8 @@ int LeadRubberX::revertToLastCommit()
 
 
 int LeadRubberX::revertToStart()
-{  
-    int errCode=0;
+{
+    int errCode = 0;
     
     // reset trial history variables
     ub.Zero();
@@ -616,7 +617,7 @@ int LeadRubberX::update()
                 qb(0) = kb(0,0)*ub(0);
             } else if (ub(0) < umax) {
                 kb(0,0) = (Fmax-Fcn)/(umax-ucn);
-                qb(0) = Fcn + ((Fmax-Fcn)/(umax-ucn))*(ub(0)-ucn);
+                qb(0) = Fcn + (Fmax-Fcn)/(umax-ucn)*(ub(0)-ucn);
             } else {
                 kb(0,0) = (Fc/Tr)*exp(-kc*(ub(0)-uc));
                 qb(0) = Fc*(1.0+(1.0/(Tr*kc))*(1.0-exp(-kc*(ub(0)-uc))));
@@ -699,7 +700,7 @@ int LeadRubberX::update()
         dzdu(1,1) = (1.0/uy)*(1.0 - z(1)*(z(0)*tmp1*du1du2+z(1)*tmp2));
         
         tCurrent = (this->getDomain())->getCurrentTime();
-        double dT = tCurrent-tCommit;
+        double dT = tCurrent - tCommit;
         
         // set shear force
         qb(1) = cd*ubdot(1) + qYield*z(0) + ke*ub(1);
@@ -731,6 +732,7 @@ int LeadRubberX::update()
     
     return 0;
 }
+
 
 const Matrix& LeadRubberX::getTangentStiff()
 {
@@ -784,6 +786,7 @@ const Matrix& LeadRubberX::getInitialStiff()
     return theMatrix;
 }
 
+
 const Matrix& LeadRubberX::getDamp()
 {
     // zero the matrix
@@ -791,6 +794,7 @@ const Matrix& LeadRubberX::getDamp()
     
     return theMatrix;
 }
+
 
 const Matrix& LeadRubberX::getMass()
 {
@@ -841,7 +845,7 @@ int LeadRubberX::addInertiaLoadToUnbalance(const Vector &accel)
     
     if (6 != Raccel1.Size() || 6 != Raccel2.Size())  {
         opserr << "LeadRubberX::addInertiaLoadToUnbalance() - "
-            << "matrix and vector sizes are incompatible\n";
+            << "matrix and vector sizes are incompatible.\n";
         return -1;
     }
     
@@ -896,7 +900,10 @@ const Vector& LeadRubberX::getResistingForce()
 
 const Vector& LeadRubberX::getResistingForceIncInertia()
 {
-    theVector = this->getResistingForce();
+    this->getResistingForce();
+    
+    // subtract external load
+    theVector.addVector(1.0, theLoad, -1.0);
     
     // add the damping forces if rayleigh damping
     //if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
@@ -1124,25 +1131,26 @@ void LeadRubberX::Print(OPS_Stream &s, int flag)
         s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "************************************************************" << endln;
         s << "GEOMETRIC PROPERTIES" << endln;
-        s << "D1: "<< D1 << " D2: "<< D2 <<" L: "<< L<<" Tr: "<< Tr <<" S: "<< S <<" A: "<< A <<endln;
+        s << "D1: " << D1 << " D2: " << D2 << " L: " << L << " Tr: " << Tr << " S: " << S << " A: " << A << endln;
         s << "MATERIAL PROPERTIES" << endln;
-        s << "kc: "<< kc << " PhiM: "<< PhiM <<"  shearDistI: " << shearDistI << "  mass: " << mass<<endln;
-        s <<" qL: "<< qL<<" cL: "<< cL <<" kS: "<< kS <<" aS: "<< aS <<endln;
-        s << "MECHANICAL PROPERTIES: HORIZONTAL MOTION\n"<<endln;
-        s << "k0: " << k0 << "  ke: " << ke << " qYield: " << qYield  << " DeltaT: "<<TL_commit <<" Fcrmin: "<< Fcrmin <<endln;
-        s << "MECHANICAL PROPERTIES: VERTICAL MOTION"<<endln;
-        s << "Kpre: "<< Kv <<" Fc: "<< Fc <<" Fcr: "<< Fcr << " Fcn: "<< Fcn <<" umax: "<< umax <<endln;
+        s << "G: " << G << " kc: " << kc << " ac: " << ac << " PhiM: " << PhiM << " shearDistI: " << shearDistI << " mass: " << mass << endln;
+        s << " qL: " << qL << " cL: " << cL << " kS: " << kS << " aS: " << aS << endln;
+        s << "MECHANICAL PROPERTIES: HORIZONTAL MOTION\n" << endln;
+        s << "k0: " << k0 << " ke: " << ke << " qYield: " << qYield << " DeltaT: " << TL_commit << " Fcrmin: " << Fcrmin << endln;
+        s << "MECHANICAL PROPERTIES: VERTICAL MOTION" << endln;
+        s << "Kv: "<< Kv << " Fc: " << Fc << " Fcr: " << Fcr << " Fcn: " << Fcn << " umax: " << umax << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
         s << "************************************************************" << endln;
-        //s <<"time: " << tCommit <<"  ke0: " << G*A/Tr  <<"  ke: " << ke <<" Fcr: "<< Fcr << " Fcrmin: "<< Fcrmin <<" Kv0: "<< Kv0<<" Kv: "<< Kv << " qYield0: " << qYield0  << " qYield: " << qYield  << " DeltaT: "<<TL_commit<<endln;
+        //s <<"time: " << tCommit <<" ke0: " << G*A/Tr  <<" ke: " << ke <<" Fcr: "<< Fcr << " Fcrmin: "<< Fcrmin <<" Kv0: "<< Kv0<<" Kv: "<< Kv << " qYield0: " << qYield0 << " qYield: " << qYield << " DeltaT: " << TL_commit << endln;
     } else if (flag == 1)  {
         // does nothing
     }
 }
 
 
-Response* LeadRubberX::setResponse(const char **argv, int argc, OPS_Stream &output)
+Response* LeadRubberX::setResponse(const char **argv, int argc,
+    OPS_Stream &output)
 {
     Response *theResponse = 0;
     
@@ -1267,7 +1275,7 @@ Response* LeadRubberX::setResponse(const char **argv, int argc, OPS_Stream &outp
     }
     // parameters
     else if (strcmp(argv[0],"param") == 0 || strcmp(argv[0],"Param") == 0 ||
-        strcmp(argv[0],"Parameters") == 0)
+        strcmp(argv[0],"parameters") == 0 || strcmp(argv[0],"Parameters") == 0)
     {
         output.tag("ResponseType","Fcn");
         output.tag("ResponseType","Fcrn");
@@ -1344,9 +1352,9 @@ int LeadRubberX::getResponse(int responseID, Information &eleInfo)
         
     case 9:  // parameters that vary with time
         Param(0) = Fcn;
-        Param(1) = Fcrn; 
+        Param(1) = Fcrn;
         Param(2) = Kv;
-        Param(3) = ke; 
+        Param(3) = ke;
         Param(4) = TL_commit;
         Param(5) = qYield;
         return eleInfo.setVector(Param);
@@ -1441,6 +1449,7 @@ double LeadRubberX::sgn(double x)
     else
         return 0.0;
 }
+
 
 double LeadRubberX::getCurrentTemp(double qYield, double TL_commit, double v)
 {
