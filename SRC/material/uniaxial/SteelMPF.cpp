@@ -23,7 +23,7 @@
 //
 // Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/SteelMPF.cpp
 //
-// Rev: 2
+// Rev: 3
 
 
 #include <SteelMPF.h>
@@ -341,12 +341,6 @@ int SteelMPF::setTrialStrain(double strain, double strainRate)
 
 	nloop = nloopold;
 
-	// "dummy" step 
-	if (strain == 0.0 && strainRate == 0.0)
-	{
-		return 0;
-	}
-
 	// Set trial strain
 	def = strain;
 
@@ -397,12 +391,6 @@ int SteelMPF::setTrial (double strain, double &stress, double &tangent, double s
 	Rn = Rnold;
 
 	nloop = nloopold;
-
-	// "dummy" step 
-	if (strain == 0.0 && strainRate == 0.0)
-	{
-		return 0;
-	}
 
 	// Set trial strain
 	def = strain;
@@ -482,8 +470,8 @@ void SteelMPF::determineTrialState(double def)
 			double sig=sigrp+sigstp*(sig0p-sigrp);
 			double Et=((sig0p-sigrp)/(e0p-erp))*(bp+((1.0-bp)/pow((1.0+pow(estp,Rp)),(1.0/Rp)))*(1.0-pow(estp,Rp)/(1.0+pow(estp,Rp))));
 
-			F=sig;
-			stif=Et;
+			F = sig;
+			stif = Et;
 
 		} else {
 
@@ -497,8 +485,8 @@ void SteelMPF::determineTrialState(double def)
 			double sig=sigrn+sigstn*(sig0n-sigrn);
 			double Et=((sig0n-sigrn)/(e0n-ern))*(bn+((1.0-bn)/pow((1.0+pow(estn,Rn)),(1.0/Rn)))*(1.0-pow(estn,Rn)/(1.0+pow(estn,Rn))));
 
-			F=sig;
-			stif=Et;
+			F = sig;
+			stif = Et;
 
 		}
 
@@ -777,6 +765,7 @@ void SteelMPF::determineTrialState(double def)
 
 				F = sig;
 				stif = Et;
+
 			}
 
 			else {

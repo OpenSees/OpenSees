@@ -23,7 +23,7 @@
 //
 // Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/SteelMPF.h
 //
-// Rev: 2
+// Rev: 3
 
 
 #ifndef SteelMPF_h
