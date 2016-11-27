@@ -119,9 +119,18 @@ class ForceBeamColumn3d: public Element
   Response *setResponse(const char **argv, int argc, OPS_Stream &s);
   int getResponse(int responseID, Information &eleInformation);
   
+ // AddingSensitivity:BEGIN //////////////////////////////////////////
   int setParameter(const char **argv, int argc, Parameter &param);
   int updateParameter(int parameterID, Information &info);
-  
+  int activateParameter(int parameterID);
+  const Vector &getResistingForceSensitivity(int gradNumber);
+  const Matrix &getKiSensitivity(int gradNumber);
+  const Matrix &getMassSensitivity(int gradNumber);
+  int commitSensitivity(int gradNumber, int numGrads);
+  int getResponseSensitivity(int responseID, int gradNumber,
+			     Information &eleInformation);
+  // AddingSensitivity:END ///////////////////////////////////////////
+
  protected:
   void setSectionPointers(int numSections, SectionForceDeformation **secPtrs);
   int getInitialFlexibility(Matrix &fe);
@@ -133,6 +142,12 @@ class ForceBeamColumn3d: public Element
   void compSectionDisplacements(Vector sectionCoords[], Vector sectionDispls[]) const;
   void initializeSectionHistoryVariables (void);
   
+  // Reactions of basic system due to element loads
+  void computeReactions(double *p0);
+
+  // Section forces due to element loads
+  void computeSectionForces(Vector &sp, int isec);
+
   // internal data
   ID     connectedExternalNodes; // tags of the end nodes
 
@@ -161,6 +176,17 @@ class ForceBeamColumn3d: public Element
   
   Vector *vscommit;              // array of commited section deformation vectors
   
+  enum {maxNumEleLoads = 100};
+  enum {NDM = 2};         // dimension of the problem (2d)
+  enum {NND = 3};         // number of nodal dof's
+  enum {NEGD = 6};         // number of element global dof's
+  enum {NEBD = 3};         // number of element dof's in the basic system
+
+  int numEleLoads; // Number of element load objects
+  int sizeEleLoads;
+  ElementalLoad **eleLoads;
+  double *eleLoadFactors;
+
   Matrix *sp;
   double p0[5]; // Reactions in the basic system due to element loads
   double v0[5]; // Initial deformations due to element loads
@@ -182,6 +208,14 @@ class ForceBeamColumn3d: public Element
   static Vector *SsrSubdivide;
   static Matrix *fsSubdivide;
   //static int maxNumSections;
+
+  // AddingSensitivity:BEGIN //////////////////////////////////////////
+  int parameterID;
+  const Vector &computedqdh(int gradNumber);
+  const Matrix &computedfedh(int gradNumber);
+  void computeReactionSensitivity(double *dp0dh, int gradNumber);
+  void computeSectionForceSensitivity(Vector &dspdh, int isec, int gradNumber);
+  // AddingSensitivity:END ///////////////////////////////////////////
 };
 
 #endif
