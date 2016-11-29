@@ -1294,9 +1294,8 @@ FiberSection3d::getResponse(int responseID, Information &sectInfo)
 int
 FiberSection3d::setParameter(const char **argv, int argc, Parameter &param)
 {
-  if (argc < 3)
+  if (argc < 1)
     return -1;
-
 
   int result = 0;
 
@@ -1451,7 +1450,10 @@ FiberSection3d::getStressResultantSensitivity(int gradIndex, bool conditional)
     static Matrix tmpMatrix(3,3);
     tmpMatrix.addMatrixTransposeProduct(0.0, as, dasdh, tangent);
     
-    ds.addMatrixVector(1.0, tmpMatrix, e, A);
+    //ds.addMatrixVector(1.0, tmpMatrix, e, A);
+    ds(0) += (tmpMatrix(0,0)*e(0) + tmpMatrix(0,1)*e(1) + tmpMatrix(0,2)*e(2))*A;
+    ds(1) += (tmpMatrix(1,0)*e(0) + tmpMatrix(1,1)*e(1) + tmpMatrix(1,2)*e(2))*A;
+    ds(2) += (tmpMatrix(2,0)*e(0) + tmpMatrix(2,1)*e(1) + tmpMatrix(2,2)*e(2))*A;
   }
 
   ds(3) = theTorsion->getStressSensitivity(gradIndex, conditional);
