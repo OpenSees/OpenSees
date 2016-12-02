@@ -1338,9 +1338,11 @@ FiberSection3d::setParameter(const char **argv, int argc, Parameter &param)
     if (ok != -1)
       result = ok;
   }
-  ok = theTorsion->setParameter(argv, argc, param);
-  if (ok != -1)
-    result = ok;
+
+  // Don't really need to do this in "default" mode
+  //ok = theTorsion->setParameter(argv, argc, param);
+  //if (ok != -1)
+  //  result = ok;
 
   if (sectionIntegr != 0) {
     ok = sectionIntegr->setParameter(argv, argc, param);
