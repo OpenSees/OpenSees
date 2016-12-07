@@ -35,6 +35,7 @@
 #include <ElasticPPMaterial.h>
 #include <Vector.h>
 #include <Channel.h>
+#include <Parameter.h>
 #include <math.h>
 #include <float.h>
 
@@ -319,3 +320,45 @@ ElasticPPMaterial::Print(OPS_Stream &s, int flag)
 }
 
 
+int
+ElasticPPMaterial::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0 || strcmp(argv[0],"Fy") == 0) {
+    param.setValue(fyp);
+    return param.addObject(1, this);
+  }
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E);
+    return param.addObject(2, this);
+  }
+  if (strcmp(argv[0],"epsP") == 0 || strcmp(argv[0],"ep") == 0) {
+    param.setValue(ep);
+    return param.addObject(3, this);
+  }
+
+  return -1;
+}
+
+int
+ElasticPPMaterial::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case -1:
+    return -1;
+  case 1:
+    this->fyp = info.theDouble;
+    this->fyn = -fyp;
+    break;
+  case 2:
+    this->E = info.theDouble;
+    trialTangent = E;
+    break;
+  case 3:
+    this->ep = info.theDouble;
+    break;
+  default:
+    return -1;
+  }
+  
+  return 0;
+}
