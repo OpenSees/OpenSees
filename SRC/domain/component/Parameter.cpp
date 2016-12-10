@@ -34,6 +34,7 @@ Parameter::Parameter(int passedTag,
    theComponents(0), numComponents(0), maxNumComponents(0),
    gradIndex(-1)
 {
+  theInfo.theDouble = 1.0;
   int ok = -1;
 
   maxNumObjects = initialSize;
