@@ -836,7 +836,7 @@ int ElastomericBearingBoucWen2d::recvSelf(int commitTag, Channel &rChannel,
 
 
 int ElastomericBearingBoucWen2d::displaySelf(Renderer &theViewer,
-					     int displayMode, float fact, const char **modes, int numMode)					     
+    int displayMode, float fact, const char **modes, int numMode)					     
 {
     // first determine the end points of the element based on
     // the display factor (a measure of the distorted image)
@@ -872,7 +872,7 @@ int ElastomericBearingBoucWen2d::displaySelf(Renderer &theViewer,
         }
     }
     
-    return theViewer.drawLine (v1, v2, 1.0, 1.0);
+    return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag(), 0);
 }
 
 

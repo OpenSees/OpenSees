@@ -403,7 +403,7 @@ int GenericCopy::recvSelf(int commitTag, Channel &rChannel,
 
 
 int GenericCopy::displaySelf(Renderer &theViewer,
-			     int displayMode, float fact, const char **modes, int numMode)
+    int displayMode, float fact, const char **modes, int numMode)
 {
     int rValue = 0, i, j;
 
@@ -426,7 +426,7 @@ int GenericCopy::displaySelf(Renderer &theViewer,
                 for (j=0; j<end2NumCrds; j++)
                     v2(j) = end2Crd(j) + end2Disp(j)*fact;
 
-                rValue += theViewer.drawLine(v1, v2, 1.0, 1.0);
+                rValue += theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag(), 0);
             }
         } else  {
             int mode = displayMode * -1;
@@ -454,7 +454,7 @@ int GenericCopy::displaySelf(Renderer &theViewer,
                         v2(j) = end2Crd(j);
                 }
 
-                rValue += theViewer.drawLine(v1, v2, 1.0, 1.0);
+                rValue += theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag(), 0);
             }
         }
     }

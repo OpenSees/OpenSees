@@ -53,7 +53,8 @@ Adapter::Adapter(int tag, ID nodes, ID *dof,
     numDOF(0), numBasicDOF(0), kb(_kb), ipPort(ipport), addRayleigh(addRay),
     mb(0), tPast(0.0), theMatrix(1,1), theVector(1), theLoad(1), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
-    ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
+    ctrlDisp(0), ctrlVel(0), ctrlAccel(0), ctrlForce(0), ctrlTime(0),
+    daqDisp(0), daqVel(0), daqAccel(0), daqForce(0), daqTime(0)
 {
     // initialize nodes
     numExternalNodes = connectedExternalNodes.Size();
@@ -104,7 +105,8 @@ Adapter::Adapter()
     numDOF(0), numBasicDOF(0), kb(1,1), ipPort(0), addRayleigh(0), mb(0),
     tPast(0.0), theMatrix(1,1), theVector(1), theLoad(1), db(1), q(1),
     theChannel(0), rData(0), recvData(0), sData(0), sendData(0),
-    ctrlDisp(0), ctrlForce(0), daqDisp(0), daqForce(0)
+    ctrlDisp(0), ctrlVel(0), ctrlAccel(0), ctrlForce(0), ctrlTime(0),
+    daqDisp(0), daqVel(0), daqAccel(0), daqForce(0), daqTime(0)
 {
     // initialize variables
     theNodes = 0;
@@ -126,12 +128,25 @@ Adapter::~Adapter()
     
     if (daqDisp != 0)
         delete daqDisp;
+    if (daqVel != 0)
+        delete daqVel;
+    if (daqAccel != 0)
+        delete daqAccel;
     if (daqForce != 0)
         delete daqForce;
+    if (daqTime != 0)
+        delete daqTime;
+    
     if (ctrlDisp != 0)
         delete ctrlDisp;
+    if (ctrlVel != 0)
+        delete ctrlVel;
+    if (ctrlAccel != 0)
+        delete ctrlAccel;
     if (ctrlForce != 0)
         delete ctrlForce;
+    if (ctrlTime != 0)
+        delete ctrlTime;
     
     if (sendData != 0)
         delete sendData;
@@ -339,7 +354,7 @@ void Adapter::zeroLoad()
 
 
 int Adapter::addLoad(ElementalLoad *theLoad, double loadFactor)
-{  
+{
     opserr <<"Adapter::addLoad() - "
         << "load type unknown for element: "
         << this->getTag() << endln;
@@ -349,7 +364,7 @@ int Adapter::addLoad(ElementalLoad *theLoad, double loadFactor)
 
 
 int Adapter::addInertiaLoadToUnbalance(const Vector &accel)
-{    
+{
     // check for quick return
     if (mb == 0)
         return 0;
@@ -401,6 +416,32 @@ const Vector& Adapter::getResistingForce()
                     << rData[0] << endln;
             }
             exit(-1);
+        }
+        
+        // set velocities at nodes
+        if (ctrlVel != 0)  {
+            int i, j, ndim = 0;
+            for (i=0; i<numExternalNodes; i++ )  {
+                Vector vel = theNodes[i]->getTrialVel();
+                for (j=0; j<theDOF[i].Size(); j++)  {
+                    vel(theDOF[i](j)) = (*ctrlVel)(ndim);
+                    ndim++;
+                }
+                theNodes[i]->setTrialVel(vel);
+            }
+        }
+        
+        // set accelerations at nodes
+        if (ctrlAccel != 0)  {
+            int i, j, ndim = 0;
+            for (i=0; i<numExternalNodes; i++ )  {
+                Vector accel = theNodes[i]->getTrialAccel();
+                for (j=0; j<theDOF[i].Size(); j++)  {
+                    accel(theDOF[i](j)) = (*ctrlAccel)(ndim);
+                    ndim++;
+                }
+                theNodes[i]->setTrialAccel(accel);
+            }
         }
         
         // save current time
@@ -561,8 +602,7 @@ int Adapter::recvSelf(int commitTag, Channel &rChannel,
 
 
 int Adapter::displaySelf(Renderer &theViewer,
-			 int displayMode, float fact,
-			 const char **modes, int numMode)
+    int displayMode, float fact, const char **modes, int numMode)
 {
     int rValue = 0, i, j;
     
@@ -585,7 +625,7 @@ int Adapter::displaySelf(Renderer &theViewer,
                 for (j=0; j<end2NumCrds; j++)
                     v2(j) = end2Crd(j) + end2Disp(j)*fact;
                 
-                rValue += theViewer.drawLine(v1, v2, 1.0, 1.0);
+                rValue += theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag(), 0);
             }
         } else  {
             int mode = displayMode * -1;
@@ -613,7 +653,7 @@ int Adapter::displaySelf(Renderer &theViewer,
                         v2(j) = end2Crd(j);
                 }
                 
-                rValue += theViewer.drawLine(v1, v2, 1.0, 1.0);
+                rValue += theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag(), 0);
             }
         }
     }
@@ -716,6 +756,36 @@ Response* Adapter::setResponse(const char **argv, int argc,
         theResponse = new ElementResponse(this, 5, Vector(numBasicDOF));
     }
     
+    // ctrl basic velocities
+    else if (strcmp(argv[0],"basicVel") == 0 ||
+        strcmp(argv[0],"basicVelocity") == 0 ||
+        strcmp(argv[0],"basicVelocities") == 0 ||
+        strcmp(argv[0],"ctrlVel") == 0 ||
+        strcmp(argv[0],"ctrlVelocity") == 0 ||
+        strcmp(argv[0],"ctrlVelocities") == 0)
+    {
+        for (i=0; i<numBasicDOF; i++)  {
+            sprintf(outputData,"vb%d",i+1);
+            output.tag("ResponseType",outputData);
+        }
+        theResponse = new ElementResponse(this, 6, Vector(numBasicDOF));
+    }
+    
+    // ctrl basic accelerations
+    else if (strcmp(argv[0],"basicAccel") == 0 ||
+        strcmp(argv[0],"basicAcceleration") == 0 ||
+        strcmp(argv[0],"basicAccelerations") == 0 ||
+        strcmp(argv[0],"ctrlAccel") == 0 ||
+        strcmp(argv[0],"ctrlAcceleration") == 0 ||
+        strcmp(argv[0],"ctrlAccelerations") == 0)
+    {
+        for (i=0; i<numBasicDOF; i++)  {
+            sprintf(outputData,"ab%d",i+1);
+            output.tag("ResponseType",outputData);
+        }
+        theResponse = new ElementResponse(this, 7, Vector(numBasicDOF));
+    }
+    
     // daq basic displacements
     else if (strcmp(argv[0],"daqDisp") == 0 ||
         strcmp(argv[0],"daqDisplacement") == 0 ||
@@ -725,7 +795,7 @@ Response* Adapter::setResponse(const char **argv, int argc,
             sprintf(outputData,"dbm%d",i+1);
             output.tag("ResponseType",outputData);
         }
-        theResponse = new ElementResponse(this, 6, Vector(numBasicDOF));
+        theResponse = new ElementResponse(this, 8, Vector(numBasicDOF));
     }
     
     output.endTag(); // ElementOutput
@@ -735,7 +805,7 @@ Response* Adapter::setResponse(const char **argv, int argc,
 
 
 int Adapter::getResponse(int responseID, Information &eleInformation)
-{    
+{
     switch (responseID)  {
     case -1:
         return -1;
@@ -765,13 +835,25 @@ int Adapter::getResponse(int responseID, Information &eleInformation)
         return 0;
         
     case 5:  // ctrl basic displacements
-        if (eleInformation.theVector != 0)  {
+        if (eleInformation.theVector != 0  &&  ctrlDisp != 0)  {
             *(eleInformation.theVector) = *ctrlDisp;
         }
         return 0;
         
-    case 6:  // daq basic displacements
-        if (eleInformation.theVector != 0)  {
+    case 6:  // ctrl basic velocities
+        if (eleInformation.theVector != 0  &&  ctrlVel != 0)  {
+            *(eleInformation.theVector) = *ctrlVel;
+        }
+        return 0;
+        
+    case 7:  // ctrl basic accelerations
+        if (eleInformation.theVector != 0  &&  ctrlAccel != 0)  {
+            *(eleInformation.theVector) = *ctrlAccel;
+        }
+        return 0;
+        
+    case 8:  // daq basic displacements
+        if (eleInformation.theVector != 0  &&  daqDisp != 0)  {
             *(eleInformation.theVector) = *daqDisp;
         }
         return 0;
@@ -805,13 +887,12 @@ int Adapter::setupConnection()
     //          daqDisp,  daqVel,  daqAccel,  daqForce,  daqTime,  dataSize}
     ID sizes(11);
     theChannel->recvID(0, 0, sizes, 0);
-    if ((sizes(0) != 0 && sizes(0) != numBasicDOF) ||
-        (sizes(3) != 0 && sizes(3) != numBasicDOF) ||
-        (sizes(5) != 0 && sizes(5) != numBasicDOF) ||
-        (sizes(8) != 0 && sizes(8) != numBasicDOF))  {
-        opserr << "Adapter::Adapter() - wrong data sizes != "
-            << numBasicDOF << " received\n";
-        return -3;
+    for (int i=0; i<10; i++)  {
+        if (sizes(i) != 0 && sizes(i) != numBasicDOF)  {
+            opserr << "Adapter::Adapter() - wrong data sizes != "
+                << numBasicDOF << " received\n";
+            return -3;
+        }
     }
     
     // allocate memory for the receive vectors
@@ -822,9 +903,21 @@ int Adapter::setupConnection()
         ctrlDisp = new Vector(&rData[id], sizes(0));
         id += sizes(0);
     }
+    if (sizes(1) != 0)  {
+        ctrlVel = new Vector(&rData[id], sizes(1));
+        id += sizes(1);
+    }
+    if (sizes(2) != 0)  {
+        ctrlAccel = new Vector(&rData[id], sizes(2));
+        id += sizes(2);
+    }
     if (sizes(3) != 0)  {
         ctrlForce = new Vector(&rData[id], sizes(3));
         id += sizes(3);
+    }
+    if (sizes(4) != 0)  {
+        ctrlTime = new Vector(&rData[id], sizes(4));
+        id += sizes(4);
     }
     recvData->Zero();
     
@@ -836,9 +929,21 @@ int Adapter::setupConnection()
         daqDisp = new Vector(&sData[id], sizes(5));
         id += sizes(5);
     }
+    if (sizes(6) != 0)  {
+        daqVel = new Vector(&sData[id], sizes(6));
+        id += sizes(6);
+    }
+    if (sizes(7) != 0)  {
+        daqAccel = new Vector(&sData[id], sizes(7));
+        id += sizes(7);
+    }
     if (sizes(8) != 0)  {
         daqForce = new Vector(&sData[id], sizes(8));
         id += sizes(8);
+    }
+    if (sizes(9) != 0)  {
+        daqTime = new Vector(&sData[id], sizes(9));
+        id += sizes(9);
     }
     sendData->Zero();
     

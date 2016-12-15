@@ -1117,7 +1117,7 @@ int LeadRubberX::displaySelf(Renderer &theViewer,
         }
     }
     
-    return theViewer.drawLine (v1, v2, 1.0, 1.0);
+    return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag(), 0);
 }
 
 

@@ -893,7 +893,7 @@ int SingleFPSimple2d::recvSelf(int commitTag, Channel &rChannel,
 
 
 int SingleFPSimple2d::displaySelf(Renderer &theViewer,
-				  int displayMode, float fact, const char **modes, int numMode)
+    int displayMode, float fact, const char **modes, int numMode)
 {
     int errCode = 0;
     
@@ -938,8 +938,8 @@ int SingleFPSimple2d::displaySelf(Renderer &theViewer,
         }
     }
     
-    errCode += theViewer.drawLine (v1, v2, 1.0, 1.0);
-    errCode += theViewer.drawLine (v2, v3, 1.0, 1.0);
+    errCode += theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag(), 0);
+    errCode += theViewer.drawLine (v2, v3, 1.0, 1.0, this->getTag(), 0);
     
     return errCode;
 }

@@ -869,7 +869,7 @@ int ElastomericBearingPlasticity3d::recvSelf(int commitTag, Channel &rChannel,
 
 
 int ElastomericBearingPlasticity3d::displaySelf(Renderer &theViewer,
-						int displayMode, float fact, const char **numMode, int mode)
+    int displayMode, float fact, const char **numMode, int mode)
 {
     // first determine the end points of the element based on
     // the display factor (a measure of the distorted image)
@@ -905,7 +905,7 @@ int ElastomericBearingPlasticity3d::displaySelf(Renderer &theViewer,
         }
     }
     
-    return theViewer.drawLine (v1, v2, 1.0, 1.0);
+    return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag(), 0);
 }
 
 

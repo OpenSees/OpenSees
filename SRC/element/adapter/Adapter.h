@@ -103,7 +103,7 @@ public:
     int sendSelf(int commitTag, Channel &sChannel);
     int recvSelf(int commitTag, Channel &rChannel, FEM_ObjectBroker &theBroker);
     int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode);
-
+    
     void Print(OPS_Stream &s, int flag = 0);
     
     // public methods for element recorder
@@ -142,9 +142,15 @@ private:
     Vector *sendData;           // send vector
     
     Vector *ctrlDisp;           // ctrl displacements in basic system
+    Vector *ctrlVel;            // ctrl velocities in basic system
+    Vector *ctrlAccel;          // ctrl accelerations in basic system
     Vector *ctrlForce;          // ctrl forces in basic system
+    Vector *ctrlTime;           // ctrl time in basic system
     Vector *daqDisp;            // daq displacements in basic system
+    Vector *daqVel;             // daq velocities in basic system
+    Vector *daqAccel;           // daq accelerations in basic system
     Vector *daqForce;           // daq forces in basic system
+    Vector *daqTime;            // daq time in basic system
     
     Node **theNodes;
     

@@ -1787,7 +1787,7 @@ Node::displaySelf(Renderer &theRenderer, int displayMode, float fact)
 
   } else if (displayMode > 0) {
     // draw a point - pixel size equals displayMode tag
-    return theRenderer.drawPoint(position, 0.0, displayMode);
+    return theRenderer.drawPoint(position, 0.0, this->getTag(), 0.0, displayMode);
   }
 
 
