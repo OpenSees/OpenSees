@@ -178,9 +178,7 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/domain/region/TclRegionCommands.o \
 	$(FE)/element/twoNodeLink/TclTwoNodeLinkCommand.o \
 	$(FE)/element/frictionBearing/TclRJWatsonEQSCommand.o \
-	$(FE)/material/uniaxial/TclReinforcingSteel.o \
 	$(FE)/material/uniaxial/snap/TclSnapMaterialCommand.o \
-	$(FE)/material/uniaxial/TclHyperbolicGapMaterial.o \
 	$(FE)/element/frictionBearing/TclFlatSliderCommand.o \
 	$(FE)/element/elastomericBearing/TclElastomericBearingPlasticityCommand.o \
 	$(FE)/element/elastomericBearing/TclElastomericBearingUFRPCommand.o \
