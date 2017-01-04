@@ -85,12 +85,7 @@ Vector::Vector(int size)
 Vector::Vector(double *data, int size)
 : sz(size),theData(data),fromFree(1)
 {
-#ifdef _G3DEBUG
-  if (sz <= 0) {
-    opserr << "Vector::Vector(double *, size) - size " << size << " specified <= 0\n";
-    sz = 0;
-  }
-#endif
+  
 }
  
 
@@ -101,20 +96,13 @@ Vector::Vector(double *data, int size)
 Vector::Vector(const Vector &other)
 : sz(other.sz),theData(0),fromFree(0)
 {
-#ifdef _G3DEBUG
-  if (sz < 0) {
-    opserr << "Vector::Vector(int) - size " << sz << " specified <= 0\n";
-    sz = 1;
+  if (sz != 0) {
+    theData = new (nothrow) double [other.sz];    
+    
+    if (theData == 0) {
+      opserr << "Vector::Vector(int) - out of memory creating vector of size " << sz << endln;
+    }
   }
-#endif
-
-  //  theData = (double *)malloc(other.sz*sizeof(double));    
-  theData = new (nothrow) double [other.sz];    
-  
-  if (theData == 0) {
-    opserr << "Vector::Vector(int) - out of memory creating vector of size " << sz << endln;
-  }
-
   // copy the component data
   for (int i=0; i<sz; i++)
     theData[i] = other.theData[i];
@@ -126,15 +114,14 @@ Vector::Vector(const Vector &other)
 
 Vector::~Vector()
 {
-  if (sz != 0 && fromFree == 0) 
+  if (theData != 0 && fromFree == 0) 
     delete [] theData;
-  //  free((void *)theData);
 }
 
 
 int 
 Vector::setData(double *newData, int size){
-  if (sz != 0 && fromFree == 0) 
+  if (theData != 0 && fromFree == 0) 
     delete [] theData;      
   sz = size;
   theData = newData;
@@ -163,7 +150,7 @@ Vector::resize(int newSize){
   else if (newSize > sz) {
 
     // delete the old array
-    if (sz != 0 && fromFree == 0) 
+    if (theData != 0 && fromFree == 0) 
 	delete [] theData;
     sz = 0;
     fromFree = 0;
@@ -642,7 +629,7 @@ Vector::operator[](int x)
     for (int j=sz; j<x; j++)
       dataNew[j] = 0.0;
     
-    if (fromFree == 1)
+    if (fromFree == 0)
       if (theData != 0)
 	delete [] theData;
 
