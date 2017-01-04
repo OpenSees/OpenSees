@@ -137,9 +137,14 @@ BandGenLinLapackSolver::solve(void)
 #endif
     // check if successfull
     if (info != 0) {
+      if (info > 0) {
 	opserr << "WARNING BandGenLinLapackSolver::solve() -";
-	opserr << "LAPACK routine returned " << info << endln;
+	opserr << "factorization failed, matrix singular U(i,i) = 0, i= " << info << endln;
 	return -info;
+      } else {
+	opserr << "WARNING BandGenLinLapackSolver::solve() - OpenSees code error\n";
+	return info;
+      }
     }
 
     theSOE->factored = true;
