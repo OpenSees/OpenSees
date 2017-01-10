@@ -6,7 +6,7 @@
 
 typedef int (*CUSPSOLVE)(double* Aptr, double* Bptr, double* Xptr,int n,int nnz,int* rowPtr,int*  colInd,int maxInt,double relTol,int pre,int solv);
 
-class CuSPSolver :
+class CuSPSolver~ :
 	public SparseGenRowLinSolver
 {
 public:
@@ -47,7 +47,7 @@ private:
 
 	int error;
 
-	CUSPSOLVE SolveFunc;
+	//CUSPSOLVE SolveFunc;
 	
 
 
