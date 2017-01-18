@@ -3,7 +3,7 @@
 include ../../../Makefile.def
 
 OBJS       = TclModelBuilder.o myCommands.o TclUniaxialMaterialTester.o \
-	Block2D.o Block3D.o TclSectionTester.o
+	Block2D.o Block3D.o TclSectionTester.o TclPlaneStressMaterialTester.o
 
 # Compilation control
 
@@ -150,6 +150,7 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/material/section/yieldSurface/TclModelBuilderYS_SectionCommand.o \
 	$(FE)/material/section/TclModelBuilderSectionCommand.o \
 	$(FE)/modelbuilder/tcl/TclUniaxialMaterialTester.o \
+	$(FE)/modelbuilder/tcl/TclPlaneStressMaterialTester.o \
 	$(FE)/modelbuilder/tcl/TclSectionTester.o \
 	$(FE)/modelbuilder/tcl/TclModelBuilder.o \
 	$(FE)/domain/component/TclUpdateMaterialCommand.o \
