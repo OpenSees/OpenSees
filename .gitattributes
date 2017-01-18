@@ -3136,6 +3136,8 @@ SRC/material/nD/NDMaterial.h -text
 SRC/material/nD/NDMaterial.tex -text
 SRC/material/nD/PlaneStrainMaterial.cpp -text
 SRC/material/nD/PlaneStrainMaterial.h -text
+SRC/material/nD/PlaneStressLayeredMaterial.cpp -text
+SRC/material/nD/PlaneStressLayeredMaterial.h -text
 SRC/material/nD/PlaneStressMaterial.cpp -text
 SRC/material/nD/PlaneStressMaterial.h -text
 SRC/material/nD/PlaneStressSimplifiedJ2.cpp -text
