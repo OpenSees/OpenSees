@@ -48,8 +48,15 @@ extern "C" {
 #include <TclModelBuilder.h>
 #include <Matrix.h>
 
+extern void OPS_clearAllUniaxialMaterial(void);
+extern void OPS_clearAllNDMaterial(void);
+extern void OPS_clearAllSectionForceDeformation(void);
+
+
+
 // the following is a little kludgy but it works!
 #ifdef _USING_STL_STREAMS
+
 
 #include <iomanip>
 using std::ios;
@@ -1351,6 +1358,9 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     delete theDatabase;
 
   theDomain.clearAll();
+  OPS_clearAllUniaxialMaterial();
+  OPS_clearAllNDMaterial();
+  OPS_clearAllSectionForceDeformation();
 
   ops_Dt = 0.0;
 
@@ -7870,6 +7880,8 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
   // set factors in domain
   theDomain.setModalDampingFactors(&modalDampingValues, true);
+
+  opserr << "modalDamping Factors: " << modalDampingValues;
 
   return TCL_OK;
 }
