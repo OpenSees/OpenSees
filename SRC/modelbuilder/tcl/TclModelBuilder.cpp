@@ -659,16 +659,16 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 TclModelBuilder::~TclModelBuilder()
 {
   OPS_clearAllTimeSeries();
-  OPS_clearAllUniaxialMaterial();
-  OPS_clearAllNDMaterial();
-  OPS_clearAllSectionForceDeformation();
+  //  OPS_clearAllUniaxialMaterial();
+  //  OPS_clearAllNDMaterial();
+  //  OPS_clearAllSectionForceDeformation();
   OPS_clearAllCrdTransf();
   OPS_clearAllFrictionModel();
   OPS_clearAllLimitCurve();
   OPS_clearAllDamageModel();
   OPS_clearAllFrictionModel();
   OPS_clearAllHystereticBackbone();
-  OPS_clearAllNDMaterial();
+  //  OPS_clearAllNDMaterial();
 
   theSections->clearAll(); 
   theSectionRepresents->clearAll();
