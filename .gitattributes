@@ -3820,6 +3820,8 @@ SRC/modelbuilder/tcl/Block3D.h -text
 SRC/modelbuilder/tcl/Makefile -text
 SRC/modelbuilder/tcl/TclModelBuilder.cpp -text
 SRC/modelbuilder/tcl/TclModelBuilder.h -text
+SRC/modelbuilder/tcl/TclPlaneStressMaterialTester.cpp -text
+SRC/modelbuilder/tcl/TclPlaneStressMaterialTester.h -text
 SRC/modelbuilder/tcl/TclSectionTester.cpp -text
 SRC/modelbuilder/tcl/TclSectionTester.h -text
 SRC/modelbuilder/tcl/TclUniaxialMaterialTester.cpp -text
