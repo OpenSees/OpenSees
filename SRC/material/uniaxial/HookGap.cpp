@@ -103,7 +103,9 @@ HookGap::HookGap(int tag, double e, double gapNeg, double gapPos)
  trialStrain(0.0),  
  E(e), gapN(gapNeg), gapP(gapPos)
 {
-
+  // Make sure gapN is negative
+  if (gapN > 0.0)
+    gapN = -gapN;
 }
 
 HookGap::HookGap()
