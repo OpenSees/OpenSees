@@ -18,9 +18,6 @@
     <Filter Include="bandSPD">
       <UniqueIdentifier>{cb51e1bb-c75f-44e7-9753-fe8a28720922}</UniqueIdentifier>
     </Filter>
-    <Filter Include="fullGEN">
-      <UniqueIdentifier>{e0cb2524-4cf0-4bc2-8174-528f424ad1ee}</UniqueIdentifier>
-    </Filter>
     <Filter Include="arpack">
       <UniqueIdentifier>{06b2d02a-1c1c-432a-9629-dcfd5f43daac}</UniqueIdentifier>
     </Filter>
@@ -43,6 +40,9 @@
     <Filter Include="umfGEN">
       <UniqueIdentifier>{9eaba530-26b5-40d8-9ca8-bde87bdd7557}</UniqueIdentifier>
       <Extensions>.cpp; .h</Extensions>
+    </Filter>
+    <Filter Include="itpack\fullGEN">
+      <UniqueIdentifier>{e0cb2524-4cf0-4bc2-8174-528f424ad1ee}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -143,28 +143,25 @@
       <Filter>bandSPD</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\FullGenEigenSOE.cpp">
-      <Filter>fullGEN</Filter>
+      <Filter>itpack\fullGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\FullGenEigenSolver.cpp">
-      <Filter>fullGEN</Filter>
+      <Filter>itpack\fullGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\fullGEN\FullGenLinLapackSolver.cpp">
-      <Filter>fullGEN</Filter>
+      <Filter>itpack\fullGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\fullGEN\FullGenLinSOE.cpp">
-      <Filter>fullGEN</Filter>
+      <Filter>itpack\fullGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\fullGEN\FullGenLinSolver.cpp">
-      <Filter>fullGEN</Filter>
+      <Filter>itpack\fullGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\umfGEN\UmfpackGenLinSOE.cpp">
       <Filter>umfGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\umfGEN\UmfpackGenLinSolver.cpp">
       <Filter>umfGEN</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\CuSPSolver.cpp">
-      <Filter>sparseGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMCompressibleLinSOE.cpp">
       <Filter>sparseGEN</Filter>
@@ -310,28 +307,25 @@
       <Filter>bandSPD</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\FullGenEigenSOE.h">
-      <Filter>fullGEN</Filter>
+      <Filter>itpack\fullGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\FullGenEigenSolver.h">
-      <Filter>fullGEN</Filter>
+      <Filter>itpack\fullGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\fullGEN\FullGenLinLapackSolver.h">
-      <Filter>fullGEN</Filter>
+      <Filter>itpack\fullGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\fullGEN\FullGenLinSOE.h">
-      <Filter>fullGEN</Filter>
+      <Filter>itpack\fullGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\fullGEN\FullGenLinSolver.h">
-      <Filter>fullGEN</Filter>
+      <Filter>itpack\fullGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\umfGEN\UmfpackGenLinSOE.h">
       <Filter>umfGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\umfGEN\UmfpackGenLinSolver.h">
       <Filter>umfGEN</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\CuSPSolver.h">
-      <Filter>sparseGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMCompressibleLinSOE.h">
       <Filter>sparseGEN</Filter>

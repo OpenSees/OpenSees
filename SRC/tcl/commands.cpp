@@ -271,7 +271,7 @@ extern void *OPS_WilsonTheta(void);
 #include <SuperLU.h>
 #endif
 
-#ifdef _WIN32
+#ifdef _CUSP
 #include <CuSPSolver.h>
 #endif
 
@@ -2858,7 +2858,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
   }
 
-#ifdef _WIN32
+#ifdef _CUSP
   else if ((_stricmp(argv[1],"CuSP")==0)) {
 
     

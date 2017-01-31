@@ -163,9 +163,6 @@
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\umfGEN\UmfpackGenLinSolver.cpp">
       <Filter>umfGEN</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\CuSPSolver.cpp">
-      <Filter>sparseGEN</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMCompressibleLinSOE.cpp">
       <Filter>sparseGEN</Filter>
     </ClCompile>
@@ -329,9 +326,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\umfGEN\UmfpackGenLinSolver.h">
       <Filter>umfGEN</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\CuSPSolver.h">
-      <Filter>sparseGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMCompressibleLinSOE.h">
       <Filter>sparseGEN</Filter>
