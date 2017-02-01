@@ -2905,6 +2905,14 @@ TclCommand_KikuchiAikenHDR(ClientData clientData, Tcl_Interp *interp, int argc, 
       tp = 1;
     } else if ((strcmp(argv[3],"X0.6-0MPa") == 0) || (strcmp(argv[3],"2") == 0)) {
       tp = 2;
+    } else if ((strcmp(argv[3],"X0.4") == 0) || (strcmp(argv[3],"3") == 0)) {
+      tp = 3;
+    } else if ((strcmp(argv[3],"X0.4-0MPa") == 0) || (strcmp(argv[3],"4") == 0)) {
+      tp = 4;
+    } else if ((strcmp(argv[3],"X0.3") == 0) || (strcmp(argv[3],"5") == 0)) {
+      tp = 5;
+    } else if ((strcmp(argv[3],"X0.3-0MPa") == 0) || (strcmp(argv[3],"6") == 0)) {
+      tp = 6;
     } else {
       opserr << "WARNING invalid KikuchiAikenHDR tp" << endln;
       ifNoError = false;

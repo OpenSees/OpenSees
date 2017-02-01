@@ -25,6 +25,11 @@
 // Written: Ken Ishii
 // Created: June 2012
 //
+// Jan 31, 2017: mkiku
+//    X0.6 standard and zero vertical stress Geq eqs are modified
+//    New compound X0.4 and X0.3
+//    compABisection is fixed
+//
 // Kikuchi&Aiken model for high-damping rubber bearing
 //
 // Description: This file contains the class definition for KikuchiAikenHDR.
@@ -72,7 +77,7 @@ class KikuchiAikenHDR : public UniaxialMaterial
  private:
 
   // input values
-  int    Tp; // type  =1;X0.6(standard compressive stress), 2;X0.6(zero compressive stress)
+  int    Tp; // type = 1;X0.6(standard compressive stress), 2;X0.6(zero compressive stress), 3;X0.4(standard), 4;X0.4(zero), 5;X0.3(standard), 6;X0.3(zero)
   double Ar; // area [m^2]
   double Hr; // total rubber thickness [m]
   double Cg; // correction coefficient of Geq
@@ -189,8 +194,40 @@ class KikuchiAikenHDR : public UniaxialMaterial
   static double calcATp2(double gm, double heq, double u);
   static double calcBTp2(double gm, double a, double c,double heq, double u);
   static double calcCTp2(double gm);
-  
 
+  //X0.4 standard compressive stress
+  static double calcGeqTp3(double gm);
+  static double calcHeqTp3(double gm);
+  static double calcUTp3(double gm);
+  static double calcNTp3(double gm);
+  static double calcATp3(double gm, double heq, double u);
+  static double calcBTp3(double gm, double a, double c,double heq, double u);
+  static double calcCTp3(double gm);
+  //X0.4 zero compressive stress
+  static double calcGeqTp4(double gm);
+  static double calcHeqTp4(double gm);
+  static double calcUTp4(double gm);
+  static double calcNTp4(double gm);
+  static double calcATp4(double gm, double heq, double u);
+  static double calcBTp4(double gm, double a, double c,double heq, double u);
+  static double calcCTp4(double gm);
+
+  //X0.3 standard compressive stress
+  static double calcGeqTp5(double gm);
+  static double calcHeqTp5(double gm);
+  static double calcUTp5(double gm);
+  static double calcNTp5(double gm);
+  static double calcATp5(double gm, double heq, double u);
+  static double calcBTp5(double gm, double a, double c,double heq, double u);
+  static double calcCTp5(double gm);
+  //X0.3 zero compressive stress
+  static double calcGeqTp6(double gm);
+  static double calcHeqTp6(double gm);
+  static double calcUTp6(double gm);
+  static double calcNTp6(double gm);
+  static double calcATp6(double gm, double heq, double u);
+  static double calcBTp6(double gm, double a, double c,double heq, double u);
+  static double calcCTp6(double gm);
 
 };
 

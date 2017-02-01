@@ -25,6 +25,11 @@
 // Written: Ken Ishii
 // Created: June 2012
 //
+// Jan 31, 2017: mkiku
+//    X0.6 standard and zero vertical stress Geq eqs are modified
+//    New compound X0.4 and X0.3
+//    compABisection is fixed
+//
 // Kikuchi&Aiken model for high-damping rubber bearing
 //
 // Description: This file contains the class definition for KikuchiAikenHDR.
@@ -66,6 +71,14 @@ void* OPS_KikuchiAikenHDR()
       tp = 1;
     } else if ((strcmp(arg,"X0.6-0MPa") == 0) || (strcmp(arg,"2") == 0)) {
       tp = 2;
+    } else if ((strcmp(arg,"X0.4"     ) == 0) || (strcmp(arg,"3") == 0)) {
+      tp = 3;
+    } else if ((strcmp(arg,"X0.4-0MPa") == 0) || (strcmp(arg,"4") == 0)) {
+      tp = 4;
+    } else if ((strcmp(arg,"X0.3"     ) == 0) || (strcmp(arg,"5") == 0)) {
+      tp = 5;
+    } else if ((strcmp(arg,"X0.3-0MPa") == 0) || (strcmp(arg,"6") == 0)) {
+      tp = 6;
     } else {
       opserr << "WARNING invalid KikuchiAikenHDR tp\n";
       return 0;
@@ -151,6 +164,54 @@ KikuchiAikenHDR::KikuchiAikenHDR(int tag, int tp, double ar, double hr,
     calcA   = KikuchiAikenHDR::calcATp2;
     calcB   = KikuchiAikenHDR::calcBTp2;
     calcC   = KikuchiAikenHDR::calcCTp2;
+    break;
+
+  case 3: // Bridgestone HDR X0.4 (standard compressive stress)
+    trgStrain = 0.05;
+    lmtStrain = 4.10;
+    calcGeq = KikuchiAikenHDR::calcGeqTp3;
+    calcHeq = KikuchiAikenHDR::calcHeqTp3;
+    calcU   = KikuchiAikenHDR::calcUTp3;
+    calcN   = KikuchiAikenHDR::calcNTp3;
+    calcA   = KikuchiAikenHDR::calcATp3;
+    calcB   = KikuchiAikenHDR::calcBTp3;
+    calcC   = KikuchiAikenHDR::calcCTp3;
+    break;
+
+  case 4: // Bridgestone HDR X0.4 (zero compressive stress)
+    trgStrain = 0.05;
+    lmtStrain = 4.10;
+    calcGeq = KikuchiAikenHDR::calcGeqTp4;
+    calcHeq = KikuchiAikenHDR::calcHeqTp4;
+    calcU   = KikuchiAikenHDR::calcUTp4;
+    calcN   = KikuchiAikenHDR::calcNTp4;
+    calcA   = KikuchiAikenHDR::calcATp4;
+    calcB   = KikuchiAikenHDR::calcBTp4;
+    calcC   = KikuchiAikenHDR::calcCTp4;
+    break;
+
+  case 5: // Bridgestone HDR X0.3 (standard compressive stress)
+    trgStrain = 0.05;
+    lmtStrain = 4.10;
+    calcGeq = KikuchiAikenHDR::calcGeqTp5;
+    calcHeq = KikuchiAikenHDR::calcHeqTp5;
+    calcU   = KikuchiAikenHDR::calcUTp5;
+    calcN   = KikuchiAikenHDR::calcNTp5;
+    calcA   = KikuchiAikenHDR::calcATp5;
+    calcB   = KikuchiAikenHDR::calcBTp5;
+    calcC   = KikuchiAikenHDR::calcCTp5;
+    break;
+
+  case 6: // Bridgestone HDR X0.3 (zero compressive stress)
+    trgStrain = 0.05;
+    lmtStrain = 4.10;
+    calcGeq = KikuchiAikenHDR::calcGeqTp6;
+    calcHeq = KikuchiAikenHDR::calcHeqTp6;
+    calcU   = KikuchiAikenHDR::calcUTp6;
+    calcN   = KikuchiAikenHDR::calcNTp6;
+    calcA   = KikuchiAikenHDR::calcATp6;
+    calcB   = KikuchiAikenHDR::calcBTp6;
+    calcC   = KikuchiAikenHDR::calcCTp6;
     break;
   }
   
@@ -795,6 +856,7 @@ KikuchiAikenHDR::compABisection(double heq, double u, double min, double max, do
       aMax = aTmp;
     } else {
       aMin = aTmp;
+      if (aMin>lim) return lim;
     }
   }
 
@@ -810,17 +872,17 @@ KikuchiAikenHDR::compABisection(double heq, double u, double min, double max, do
 
 // tp=1 : Bridgestone HDR X0.6 (standard compressive stress)
 double KikuchiAikenHDR::calcGeqTp1(double gm)
-{if (gm<1.15) {return (0.68385*pow(gm,-0.39964))*1e6;}
-         else {return (1.1015-0.61971*gm+0.22056*gm*gm-0.022200*gm*gm*gm)*1e6;}}
+{if (gm<1.15) {return (0.68358*pow(gm,-0.39964))*1e6;}
+         else {return (1.10103-0.61946*gm+0.22047*gm*gm-0.022191*gm*gm*gm)*1e6;}}
 
 double KikuchiAikenHDR::calcHeqTp1(double gm)
-{return 0.23834-0.028108*gm-0.000087664*gm*gm;}
+{return 0.23834-0.028108*gm+0.000087664*gm*gm;}
 
 double KikuchiAikenHDR::calcUTp1(double gm)
 {return 0.44236-0.062943*gm-0.0037571*gm*gm;}
 
 double KikuchiAikenHDR::calcNTp1(double gm)
-{if (gm<1.5) {return 1.0;} 
+{if (gm<1.5) {return 1.0;}
         else {return 0.91173-0.59184*gm+0.43379*gm*gm;}}
 
 double KikuchiAikenHDR::calcATp1(double gm, double heq, double u)
@@ -828,13 +890,12 @@ double KikuchiAikenHDR::calcATp1(double gm, double heq, double u)
         else {return 10.19171;}}
 
 double KikuchiAikenHDR::calcBTp1(double gm, double a, double c, double heq, double u)
-{if (gm<1.4) {return 0.0;} 
+{if (gm<1.4) {return 0.0;}
         else {return c*c*(M_PI*heq/u-(2+2/a*(exp(-2*a)-1)));}}
 
 double
 KikuchiAikenHDR::calcCTp1(double gm)
 {return 5.0;}
-
 
 
 // tp=2 : Bridgestone HDR X0.6  (zero compressive stress)
@@ -849,7 +910,7 @@ double KikuchiAikenHDR::calcUTp2(double gm)
 {return 0.44226-0.091218*gm+0.0030028*gm*gm;}
 
 double KikuchiAikenHDR::calcNTp2(double gm)
-{if (gm<1.5) {return 1.0;} 
+{if (gm<1.5) {return 1.0;}
         else {return 2.10973-1.6166*gm+0.58452*gm*gm;}}
 
 double KikuchiAikenHDR::calcATp2(double gm, double heq, double u)
@@ -857,11 +918,122 @@ double KikuchiAikenHDR::calcATp2(double gm, double heq, double u)
         else {return 10.38035;}}
 
 double KikuchiAikenHDR::calcBTp2(double gm, double a, double c, double heq, double u)
-{if (gm<1.3) {return 0.0;} 
+{if (gm<1.3) {return 0.0;}
         else {return c*c*(M_PI*heq/u-(2+2/a*(exp(-2*a)-1)));}}
 
 double
 KikuchiAikenHDR::calcCTp2(double gm)
 {return 6.0;}
 
+
+// tp=3 : Bridgestone HDR X0.4 (standard compressive stress)
+double KikuchiAikenHDR::calcGeqTp3(double gm)
+{if (gm<2.0) {return (0.38073*pow(gm,-0.42052))*1e6;}
+        else {return (0.46499-0.12723*gm+0.0184823*gm*gm)*1e6;}}
+
+double KikuchiAikenHDR::calcHeqTp3(double gm)
+{return 0.22184+0.0059574*gm-0.0072693*gm*gm+0.0014267*gm*gm*gm;}
+
+double KikuchiAikenHDR::calcUTp3(double gm)
+{return 0.42715-0.041644*gm+0.0070867*gm*gm-0.0019158*gm*gm*gm;}
+
+double KikuchiAikenHDR::calcNTp3(double gm)
+{if (gm<2.0) {return 1.0;}
+        else {return 0.20924+0.39538*gm;}}
+
+double KikuchiAikenHDR::calcATp3(double gm, double heq, double u)
+{if (gm<1.5) {return compABisection(heq,u,0.0,20.0,1e-6,12.5603);}
+        else {return 12.5603;}}
+
+double KikuchiAikenHDR::calcBTp3(double gm, double a, double c, double heq, double u)
+{if (gm<1.5) {return 0.0;}
+        else {return c*c*(M_PI*heq/u-(2+2/a*(exp(-2*a)-1)));}}
+
+double
+KikuchiAikenHDR::calcCTp3(double gm)
+{return 5.5;}
+
+
+// tp=4 : Bridgestone HDR X0.4  (zero compressive stress)
+double KikuchiAikenHDR::calcGeqTp4(double gm)
+{if (gm<2.0) {return (0.40132*pow(gm,-0.39224))*1e6;}
+        else {return (0.53123-0.18673*gm+0.037003*gm*gm)*1e6;}}
+
+double KikuchiAikenHDR::calcHeqTp4(double gm)
+{return 0.18932+0.010906*gm-0.007593*gm*gm;}
+
+double KikuchiAikenHDR::calcUTp4(double gm)
+{return 0.36558-0.0021387*gm-0.013006*gm*gm;}
+
+double KikuchiAikenHDR::calcNTp4(double gm)
+{if (gm<2.0) {return 1.0;}
+        else {return -0.842+0.921*gm;}}
+
+double KikuchiAikenHDR::calcATp4(double gm, double heq, double u)
+{if (gm<1.2) {return compABisection(heq,u,0.0,20.0,1e-6,15.7279);}
+        else {return 15.7279;}}
+
+double KikuchiAikenHDR::calcBTp4(double gm, double a, double c, double heq, double u)
+{if (gm<1.2) {return 0.0;}
+        else {return c*c*(M_PI*heq/u-(2+2/a*(exp(-2*a)-1)));}}
+
+double
+KikuchiAikenHDR::calcCTp4(double gm)
+{return 6.0;}
+
+
+// tp=5 : Bridgestone HDR X0.3 (standard compressive stress)
+double KikuchiAikenHDR::calcGeqTp5(double gm)
+{if (gm<2.0) {return (0.32669*pow(gm,-0.34317))*1e6;}
+         else {return (0.50315-0.23474*gm+0.069144*gm*gm-0.0065894*gm*gm*gm)*1e6;}}
+
+double KikuchiAikenHDR::calcHeqTp5(double gm)
+{return 0.18872-0.028833*gm+0.0070127*gm*gm-0.00073321*gm*gm*gm;}
+
+double KikuchiAikenHDR::calcUTp5(double gm)
+{return 0.40097-0.12992*gm+0.038851*gm*gm-0.0052934*gm*gm*gm;}
+
+double KikuchiAikenHDR::calcNTp5(double gm)
+{if (gm<2.0) {return 1.0;}
+        else {return 0.26386+0.19679*gm+0.085685*gm*gm;}}
+
+double KikuchiAikenHDR::calcATp5(double gm, double heq, double u)
+{if (gm<1.5) {return compABisection(heq,u,0.0,20.0,1e-6,10.5057);}
+        else {return 10.5057;}}
+
+double KikuchiAikenHDR::calcBTp5(double gm, double a, double c, double heq, double u)
+{if (gm<1.5) {return 0.0;}
+        else {return c*c*(M_PI*heq/u-(2+2/a*(exp(-2*a)-1)));}}
+
+double
+KikuchiAikenHDR::calcCTp5(double gm)
+{return 6.0;}
+
+
+// tp=6 : Bridgestone HDR X0.3 (zero compressive stress)
+double KikuchiAikenHDR::calcGeqTp6(double gm)
+{if (gm<2.0) {return (0.33433*pow(gm,-0.34538))*1e6;}
+         else {return (0.49000-0.21014*gm+0.057652*gm*gm-0.0046475*gm*gm*gm)*1e6;}}
+
+double KikuchiAikenHDR::calcHeqTp6(double gm)
+{return 0.18956-0.05284*gm+0.019156*gm*gm-0.0028118*gm*gm*gm;}
+
+double KikuchiAikenHDR::calcUTp6(double gm)
+{return 0.38928-0.15678*gm+0.05432*gm*gm-0.0077259*gm*gm*gm;}
+
+double KikuchiAikenHDR::calcNTp6(double gm)
+{if (gm<2.0) {return 1.0;}
+        else {return 1.86072-1.135*gm+0.35232*gm*gm;}}
+
+double KikuchiAikenHDR::calcATp6(double gm, double heq, double u)
+{if (gm<1.5) {return compABisection(heq,u,0.0,20.0,1e-6,10.3411);}
+        else {return 10.3411;}}
+
+double KikuchiAikenHDR::calcBTp6(double gm, double a, double c, double heq, double u)
+{if (gm<1.5) {return 0.0;}
+        else {return c*c*(M_PI*heq/u-(2+2/a*(exp(-2*a)-1)));}}
+
+double
+KikuchiAikenHDR::calcCTp6(double gm)
+{return 6.0;}
 
