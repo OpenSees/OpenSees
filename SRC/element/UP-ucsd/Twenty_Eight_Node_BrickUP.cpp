@@ -2395,7 +2395,7 @@ TwentyEightNodeBrickUP::setParameter(const char **argv, int argc, Parameter &par
   } else {
 
     int matRes = res;
-    for (int i=0; i<8; i++) {
+    for (int i=0; i<nintu; i++) {
         matRes =  materialPointers[i]->setParameter(argv, argc, param);
         if (matRes != -1)
             res = matRes;

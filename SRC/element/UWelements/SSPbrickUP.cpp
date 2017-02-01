@@ -1111,19 +1111,6 @@ SSPbrickUP::setParameter(const char **argv, int argc, Parameter &param)
 	} else if (strcmp(argv[0],"zPerm") == 0) {
         // permeability in direction 3
     	return param.addObject(6, this);
-
-    // now check for material parameters
-	} else if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
-
-    	if (argc < 3) {
-      		return -1;
-		}
-    	int pointNum = atoi(argv[1]);
-    	if (pointNum > 0 && pointNum <= 4) {
-      		return theMaterial->setParameter(&argv[2], argc-2, param);
-    	} else {
-      		return -1;
-		}
   	} else {
         // default is to call setParameter in the material
     	int matRes = res;

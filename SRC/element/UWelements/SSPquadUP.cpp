@@ -614,7 +614,7 @@ SSPquadUP::addInertiaLoadToUnbalance(const Vector &accel)
 	// compute mass matrix
 	this->getMass();
 
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < 12; i++) {
 		Q(i) += -mMass(i,i)*ra[i];
 	}
 	
@@ -973,21 +973,7 @@ SSPquadUP::setParameter(const char **argv, int argc, Parameter &param)
         return param.addObject(11, this);
 	} else if (strcmp(argv[0],"pressureRightSide") == 0) {
         return param.addObject(12, this);
-    }
     //LM change
-  
-    // now check for material parameters
-    else if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
-
-        if (argc < 3) {
-                return -1;
-                }
-        int pointNum = atoi(argv[1]);
-        if (pointNum > 0 && pointNum <= 4) {
-                return theMaterial->setParameter(&argv[2], argc-2, param);
-        } else {
-                return -1;
-                }
     } else {
         // default is to call setParameter in the material
         int matRes = res;

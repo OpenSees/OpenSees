@@ -702,28 +702,16 @@ SSPquad::setParameter(const char **argv, int argc, Parameter &param)
 	if (argc < 1) {
 		return -1;
 	}
+
 	int res = -1;
 
-  	if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
+    // no element parameters, call setParameter in the material	
+    int matRes = res;
+	matRes =  theMaterial->setParameter(argv, argc, param);
 
-    	if (argc < 3) {
-      		return -1;
-		}
-
-    	int pointNum = atoi(argv[1]);
-    	if (pointNum > 0 && pointNum <= 4) {
-      		return theMaterial->setParameter(&argv[2], argc-2, param);
-    	} else {
-      		return -1;
-		}
-  	} else {
-    	int matRes = res;
-      	matRes =  theMaterial->setParameter(argv, argc, param);
-
-      	if (matRes != -1) {
-			res = matRes;
-		}
-  	}
+    if (matRes != -1) {
+		res = matRes;
+	}
   
   return res;
 }

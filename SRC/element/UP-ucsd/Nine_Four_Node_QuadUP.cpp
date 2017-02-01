@@ -569,7 +569,6 @@ NineFourNodeQuadUP::update()
 
 
     // Set the material strain
-
     ret += theMaterial[i]->setTrialStrain(eps);
 
   }
@@ -1865,7 +1864,7 @@ NineFourNodeQuadUP::setParameter(const char **argv, int argc, Parameter &param)
       return -1;
 
     int pointNum = atoi(argv[1]);
-    if (pointNum > 0 && pointNum <= 4)
+    if (pointNum > 0 && pointNum <= 9)
       return theMaterial[pointNum-1]->setParameter(&argv[2], argc-2, param);
     else
       return -1;
@@ -1874,7 +1873,7 @@ NineFourNodeQuadUP::setParameter(const char **argv, int argc, Parameter &param)
   // otherwise it could be a for all material pointer
   else {
     int matRes = res;
-    for (int i=0; i<4; i++) {
+    for (int i=0; i<9; i++) {
       matRes =  theMaterial[i]->setParameter(argv, argc, param);
       if (matRes != -1)
 	res = matRes;

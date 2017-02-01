@@ -87,14 +87,19 @@ StressDensityModel2D::~StressDensityModel2D()
 NDMaterial *
 StressDensityModel2D::getCopy(void)
 {
-	StressDensityModel2D *theCopy = 0;
+	/*StressDensityModel2D *theCopy = 0;
 	if(theCopy){
 		*theCopy=*this;
 		return theCopy;
 	} else {
 		opserr<<"StressDensityModel2D::getCopy failed to get copy: " << endln;
 	  	return 0;
-	}
+	}*/
+    StressDensityModel2D *theCopy;
+    theCopy = new StressDensityModel2D();
+    *theCopy = *this;
+    return theCopy;
+
 }
 
 const char *

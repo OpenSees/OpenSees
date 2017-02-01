@@ -88,14 +88,18 @@ StressDensityModel3D::~StressDensityModel3D()
 NDMaterial *
 StressDensityModel3D::getCopy(void)
 {
-	StressDensityModel3D *theCopy = 0;
+	/*StressDensityModel3D *theCopy = 0;
 	if(theCopy){
 		*theCopy=*this;
 		return theCopy;
 	} else {
 		opserr<<"StressDensityModel3D::getCopy failed to get copy: " << endln;
 	  	return 0;
-	}
+	}*/
+    StressDensityModel3D *theCopy;
+    theCopy = new StressDensityModel3D();
+    *theCopy = *this;
+    return theCopy;
 }
 
 const char *
