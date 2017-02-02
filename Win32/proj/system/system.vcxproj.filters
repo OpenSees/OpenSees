@@ -41,7 +41,7 @@
       <UniqueIdentifier>{9eaba530-26b5-40d8-9ca8-bde87bdd7557}</UniqueIdentifier>
       <Extensions>.cpp; .h</Extensions>
     </Filter>
-    <Filter Include="itpack\fullGEN">
+    <Filter Include="fullGEN">
       <UniqueIdentifier>{e0cb2524-4cf0-4bc2-8174-528f424ad1ee}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -143,19 +143,19 @@
       <Filter>bandSPD</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\FullGenEigenSOE.cpp">
-      <Filter>itpack\fullGEN</Filter>
+      <Filter>fullGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\FullGenEigenSolver.cpp">
-      <Filter>itpack\fullGEN</Filter>
+      <Filter>fullGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\fullGEN\FullGenLinLapackSolver.cpp">
-      <Filter>itpack\fullGEN</Filter>
+      <Filter>fullGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\fullGEN\FullGenLinSOE.cpp">
-      <Filter>itpack\fullGEN</Filter>
+      <Filter>fullGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\fullGEN\FullGenLinSolver.cpp">
-      <Filter>itpack\fullGEN</Filter>
+      <Filter>fullGEN</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\umfGEN\UmfpackGenLinSOE.cpp">
       <Filter>umfGEN</Filter>
@@ -307,19 +307,19 @@
       <Filter>bandSPD</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\FullGenEigenSOE.h">
-      <Filter>itpack\fullGEN</Filter>
+      <Filter>fullGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\FullGenEigenSolver.h">
-      <Filter>itpack\fullGEN</Filter>
+      <Filter>fullGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\fullGEN\FullGenLinLapackSolver.h">
-      <Filter>itpack\fullGEN</Filter>
+      <Filter>fullGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\fullGEN\FullGenLinSOE.h">
-      <Filter>itpack\fullGEN</Filter>
+      <Filter>fullGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\fullGEN\FullGenLinSolver.h">
-      <Filter>itpack\fullGEN</Filter>
+      <Filter>fullGEN</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\umfGEN\UmfpackGenLinSOE.h">
       <Filter>umfGEN</Filter>
