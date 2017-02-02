@@ -88,6 +88,11 @@ GroundMotion::GroundMotion(TimeSeries *dispSeries,
  data(3), delta(dTintegration), fact(factor)
 {
 
+  if (theAccelSeries != 0 && theVelSeries == 0 ) 
+    theVelSeries = this->integrate(theAccelSeries, delta);
+
+  if (theVelSeries != 0 && theDispSeries == 0 ) 
+    theDispSeries = this->integrate(theVelSeries, delta);
 }
 
 
