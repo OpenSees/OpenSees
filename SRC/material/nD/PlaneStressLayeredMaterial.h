@@ -70,6 +70,12 @@ class PlaneStressLayeredMaterial : public NDMaterial {
     int sendSelf(int commitTag, Channel &theChannel);  
     int recvSelf(int commitTag, Channel &theChannel, 
 		 FEM_ObjectBroker &theBroker);    
+
+
+    Response *setResponse (const char **argv, int argc, 
+			   OPS_Stream &s);
+    int getResponse (int responseID, Information &matInformation);
+
     
   private :
     double h ; // total thickness of section

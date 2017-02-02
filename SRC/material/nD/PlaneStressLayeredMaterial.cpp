@@ -129,6 +129,7 @@ PlaneStressLayeredMaterial::PlaneStressLayeredMaterial(int tag,
   for (int i = 0; i < iLayers; i++ ) {
     h = h + thickness[i];
     wg[i] = thickness[i];
+    opserr << "PlaneStressLayeredMaterial - getCopy - PlaneStress2D\n";
     theFibers[i] = fibers[i]->getCopy( "PlaneStress2D" ) ;
     if (theFibers[i]==0) {
       opserr << "PlaneStressLayeredMaterial::ERROR: Could Not return a PlateFiber Material: ";
@@ -327,4 +328,86 @@ PlaneStressLayeredMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_Obj
 }
  
 
+
+Response* 
+PlaneStressLayeredMaterial::setResponse (const char **argv, int argc, 
+					 OPS_Stream &output)
+{
+  Response *theResponse =0;
+  const char *matType = this->getType();
+
+  output.tag("NdMaterialOutput");
+  output.attr("matType",this->getClassType());
+  output.attr("matTag",this->getTag());
+
+  if (strcmp(argv[0],"stress") == 0 || strcmp(argv[0],"stresses") == 0) {
+    const Vector &res = this->getStress();
+    int size = res.Size();
+    
+    if ( (strcmp(matType,"PlaneStress") == 0 && size == 3) ||
+	 (strcmp(matType,"PlaneStrain") == 0 && size == 3)) {
+	output.tag("ResponseType","sigma11");
+	output.tag("ResponseType","sigma22");
+	output.tag("ResponseType","sigma12");
+    } else if (strcmp(matType,"ThreeDimensional") == 0 && size == 6) {
+	output.tag("ResponseType","sigma11");
+	output.tag("ResponseType","sigma22");
+	output.tag("ResponseType","sigma33");
+	output.tag("ResponseType","sigma12");
+	output.tag("ResponseType","sigma23");
+	output.tag("ResponseType","sigma13");
+    } else {
+      for (int i=0; i<size; i++) 
+	output.tag("ResponseType","UnknownStress");
+    }
+    theResponse =  new MaterialResponse(this, 1, this->getStress());
+
+  } else if (strcmp(argv[0],"strain") == 0 || strcmp(argv[0],"strains") == 0) {
+    const Vector &res = this->getStrain();
+    int size = res.Size();
+    if ( (strcmp(matType,"PlaneStress") == 0 && size == 3) ||
+	 (strcmp(matType,"PlaneStrain") == 0 && size == 3)) {
+	output.tag("ResponseType","eta11");
+	output.tag("ResponseType","eta22");
+	output.tag("ResponseType","eta12");
+    } else if (strcmp(matType,"ThreeDimensional") == 0 && size == 6) {
+	output.tag("ResponseType","eps11");
+	output.tag("ResponseType","eps22");
+	output.tag("ResponseType","eps33");
+	output.tag("ResponseType","eps12");
+	output.tag("ResponseType","eps23");
+	output.tag("ResponseType","eps13");
+    } else {
+      for (int i=0; i<size; i++) 
+	output.tag("ResponseType","UnknownStrain");
+    }      
+    theResponse =  new MaterialResponse(this, 2, this->getStress());
+
+  } else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"layer") == 0) {
+    if (argc > 1) {
+      int matNum = atoi(argv[1]) - 1;
+      if (matNum >= 0 && matNum < nLayers)
+	theResponse =  theFibers[matNum]->setResponse(&argv[2], argc-2, output);
+    }
+  }
+ 
+  output.endTag(); // NdMaterialOutput
+
+  return theResponse;
+}
+
+int 
+PlaneStressLayeredMaterial::getResponse (int responseID, Information &matInfo)
+{
+  switch (responseID) {
+  case 1:
+    return matInfo.setVector(this->getStress());
+    
+  case 2:
+    return matInfo.setVector(this->getStrain());
+    
+  default:
+    return -1;
+  }
+}
 
