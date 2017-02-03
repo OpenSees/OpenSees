@@ -333,6 +333,12 @@
 #define ND_TAG_FSAM                               43
 #define ND_TAG_PlasticDamageConcrete3d            44
 #define ND_TAG_PlaneStressLayeredMaterial         45
+#define ND_TAG_PlaneStressRebarMaterial           46
+#define ND_TAG_Faria1998PlaneStrain               48
+#define ND_TAG_Faria1998PlaneStress               49
+#define ND_TAG_Faria1998PlaneStress2d               50
+#define ND_TAG_Faria1998               51
+#define ND_TAG_Faria1998ThreeDimensional               52
 
 #define ND_TAG_FluidSolidPorousMaterial        100
 #define ND_TAG_PressureDependMultiYield		101
