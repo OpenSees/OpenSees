@@ -55,6 +55,7 @@ class ElasticIsotropicPlaneStress2D : public ElasticIsotropicMaterial
     int setTrialStrain (const Vector &v, const Vector &r);
     int setTrialStrainIncr (const Vector &v);
     int setTrialStrainIncr (const Vector &v, const Vector &r);
+
     const Matrix &getTangent (void);
     const Matrix &getInitialTangent (void);
 

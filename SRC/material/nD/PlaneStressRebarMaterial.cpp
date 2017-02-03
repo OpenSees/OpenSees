@@ -40,7 +40,6 @@ strain(5)
 
 void* OPS_PlaneStressRebarMaterial()
 {
-  opserr << "OPS_PlaneStressRebarMaterial() - START\n";
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 3) {
 	opserr << "WARNING insufficient arguments\n";
@@ -76,8 +75,6 @@ void* OPS_PlaneStressRebarMaterial()
 	opserr << "WARNING: failed to create PlaneStressRebarMaterial material\n";
 	return 0;
     }
-
-    opserr << "OPS_PlaneStressRebarMaterial() - END\n";
     return mat;
 }
 
@@ -89,12 +86,10 @@ PlaneStressRebarMaterial::PlaneStressRebarMaterial(int tag,
 :NDMaterial( tag, ND_TAG_PlaneStressRebarMaterial),
  strain(3),angle(ang)
 {
-  opserr << "PlaneStressRebar::PlaneStressRebar-START\n";
   theMat = uniMat.getCopy() ;
   double rang = ang * 4.0 * asin(1.0)/360.0;
   c = cos(rang);
   s = sin(rang);
-  opserr << "PlaneStressRebar::PlaneStressRebar-END\n";
 }
 
 

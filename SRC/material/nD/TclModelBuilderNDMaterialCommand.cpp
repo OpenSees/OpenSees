@@ -105,7 +105,7 @@ extern  void *OPS_PlaneStressRebarMaterial(void);
 extern void *OPS_LinearCap(void);
 extern void *OPS_AcousticMedium(void);
 
-#ifdef _Faria1998
+#ifdef _HAVE_Faria1998
 extern void *OPS_Faria1998(void);
 #endif
 
@@ -232,7 +232,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
         return TCL_ERROR;
     }
 
-#ifdef _Faia1998
+#ifdef _HAVE_Faria1998
     else if (strcmp(argv[1],"Faria1998") == 0) {
       void *theMat = OPS_Faria1998();
       if (theMat != 0) 

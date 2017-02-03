@@ -198,6 +198,8 @@ PlateFromPlaneStressMaterial::setTrialStrain( const Vector &strainFromElement )
   PSStrain(0) = strain(0);
   PSStrain(1) = strain(1);
   PSStrain(2) = strain(2);
+
+  opserr << "PlateFromPlaneStressMaterial::setStreain( ) "  << PSStrain;
   
   return theMat->setTrialStrain(PSStrain);
 }
@@ -221,9 +223,10 @@ PlateFromPlaneStressMaterial::getStress( )
   stress(0) = PSStress(0);
   stress(1) = PSStress(1);
   stress(2) = PSStress(2);
+
   stress(3) = gmod * strain(3);
   stress(4) = gmod * strain(4);
-
+  opserr << "PlateFromPlaneStress::getStress(): " << stress;
   return stress ;
 }
 
@@ -245,9 +248,10 @@ PlateFromPlaneStressMaterial::getTangent( )
   tangent(2,0) = PSTangent(2,0);
   tangent(2,1) = PSTangent(2,1);
   tangent(2,2) = PSTangent(2,2);
+
   tangent(3,3) = gmod;
   tangent(4,4) = gmod;
-
+  opserr << "PlateFromPlaneStress::getTangent(): " << tangent;
   return tangent ;
 }
 

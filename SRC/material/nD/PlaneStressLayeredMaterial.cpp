@@ -129,7 +129,6 @@ PlaneStressLayeredMaterial::PlaneStressLayeredMaterial(int tag,
   for (int i = 0; i < iLayers; i++ ) {
     h = h + thickness[i];
     wg[i] = thickness[i];
-    opserr << "PlaneStressLayeredMaterial - getCopy - PlaneStress2D\n";
     theFibers[i] = fibers[i]->getCopy( "PlaneStress2D" ) ;
     if (theFibers[i]==0) {
       opserr << "PlaneStressLayeredMaterial::ERROR: Could Not return a PlateFiber Material: ";
