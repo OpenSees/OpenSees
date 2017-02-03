@@ -84,6 +84,7 @@ extern  void *OPS_RAFourSteelPCPlaneStressMaterial(void);
 extern  void *OPS_MaterialCMM(void);
 extern  void *OPS_NewMaterialCMM(void);
 extern  void *  OPS_NewPlasticDamageConcrete3d(void);
+extern  void *  OPS_NewPlasticDamageConcretePlaneStress(void);
 extern  void *OPS_ElasticIsotropicMaterial(void);
 extern  void *OPS_ElasticOrthotropicMaterial(void);
 extern  void *OPS_DruckerPragerMaterial(void);
@@ -99,9 +100,14 @@ extern  void *OPS_InitStressNDMaterial(void);
 extern  void *OPS_StressDensityMaterial(void);
 extern  void *OPS_J2BeamFiber2dMaterial(void);
 extern  void *OPS_J2PlateFibreMaterial(void);
-
+extern  void *OPS_PlaneStressLayeredMaterial(void);
+extern  void *OPS_PlaneStressRebarMaterial(void);
 extern void *OPS_LinearCap(void);
 extern void *OPS_AcousticMedium(void);
+
+#ifdef _Faria1998
+extern void *OPS_Faria1998(void);
+#endif
 
 extern  void *OPS_FSAMMaterial(void); // K Kolozvari      
 
@@ -167,9 +173,18 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
-    if ((strcmp(argv[1],"PlasticDamageConcrete") == 0) || (strcmp(argv[1],"PlasticDamageConcrete3d") == 0)) {
+    else if ((strcmp(argv[1],"PlasticDamageConcrete") == 0) || (strcmp(argv[1],"PlasticDamageConcrete3d") == 0)) {
 
       void *theMat = OPS_NewPlasticDamageConcrete3d();
+      if (theMat != 0)  {
+	theMaterial = (NDMaterial *)theMat;
+      }
+      else 
+	return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"PlasticDamageConcretePlaneStress") == 0)) {
+      void *theMat = OPS_NewPlasticDamageConcretePlaneStress();
       if (theMat != 0) 
 	theMaterial = (NDMaterial *)theMat;
       else 
@@ -184,6 +199,23 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
         return TCL_ERROR;
     }
 
+    else if (strcmp(argv[1],"PlaneStressLayeredMaterial") == 0) {
+      void *theMat = OPS_PlaneStressLayeredMaterial();
+      if (theMat != 0) 
+        theMaterial = (NDMaterial *)theMat;
+      else 
+        return TCL_ERROR;
+    }
+
+    else if (strcmp(argv[1],"PlaneStressRebarMaterial") == 0) {
+      void *theMat = OPS_PlaneStressRebarMaterial();
+      if (theMat != 0) 
+        theMaterial = (NDMaterial *)theMat;
+      else 
+        return TCL_ERROR;
+    }
+    
+    
     else if (strcmp(argv[1],"J2BeamFiber") == 0) {
       void *theMat = OPS_J2BeamFiber2dMaterial();
       if (theMat != 0) 
@@ -199,6 +231,16 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else 
         return TCL_ERROR;
     }
+
+#ifdef _Faia1998
+    else if (strcmp(argv[1],"Faria1998") == 0) {
+      void *theMat = OPS_Faria1998();
+      if (theMat != 0) 
+        theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+#endif
 
     else if ((strcmp(argv[1],"FAReinforceConcretePlaneStress") == 0) || (strcmp(argv[1],"FAReinforcedConcretePlaneStress") == 0)) {
 
@@ -1440,7 +1482,6 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     }
 
 
-    //start Yuli Huang & Xinzheng Lu PlateRebarMaterial
      else if (strcmp(argv[1],"PlateRebarMaterial") == 0 ||
 	      strcmp(argv[1],"PlateRebar") == 0) {
  	if (argc < 5) {
@@ -1666,7 +1707,6 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 						    argv,
 						    theTclBuilder);
     }
-
 
     if (theMaterial == 0) {
       //
