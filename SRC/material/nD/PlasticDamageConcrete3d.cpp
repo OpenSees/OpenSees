@@ -67,7 +67,7 @@ OPS_NewPlasticDamageConcrete3d(void)
   theMaterial = new PlasticDamageConcrete3d(iData[0], 
 					    dData[0], dData[1], dData[2],dData[3], 
 					    dData[4], dData[5], dData[6],dData[7]);
-					    
+
   return theMaterial;
 }
 
@@ -224,7 +224,7 @@ PlasticDamageConcrete3d::setTrialStrain(Vector const&v1, Vector const&v2){
 int
 PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
 {
-  opserr << "PlasticDamageConcrete3d::setTrialStrain: " << strain << endln;
+  //  opserr << "PlasticDamageConcrete3d::setTrialStrain: " << strain << endln;
 
   // bunch of Vectors and Matrices used in the method
   static Vector Depse_tr(6);
@@ -286,17 +286,19 @@ PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
   double sigoct, tauoct;
   StrsInvar(signeg, sigoct, tauoct);
 
+  /*
   opserr << "sige_tr: " << sige_tr << endln;
   opserr << "sige: " << sige << endln;
   opserr << "sigeP: " << sigeP << endln;
   opserr << "signeg: " << signeg << endln;
+  */
 
   // check tauneg
-  opserr << "K: " << k << " sigoct: " << sigoct << " tauoct: " << tauoct << endln;
+  //  opserr << "K: " << k << " sigoct: " << sigoct << " tauoct: " << tauoct << endln;
   double taun = sqrt(sqrt(3.0)*(k*sigoct + tauoct)); // % negative equivalent stress
 
   // Correction
-  opserr << "taun1: " << taun << endln;
+  //  opserr << "taun1: " << taun << endln;
 
   if ((taun - rn) <= (tol*rn0)) { // elastic state, accept trial response
     sige = sige_tr;                                                    
@@ -315,19 +317,21 @@ PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
 
     double lam    = 1 - beta*E/nrm * L_trDotDeps;      //  scale factor
     
-    opserr << "lam: " << lam << endln;
+    //    opserr << "lam: " << lam << endln;
 
     sige   = sige_tr; sige *= lam;                   //  corrected effective stress
         
     // check damage
     StrsDecA(sige, sigpos, signeg, Qpos, Qneg);         //  decompose the effective stress        
     StrsInvar(signeg, sigoct, tauoct);                  //  find octahedral stresses
-    opserr << "k:" << k << "sigoct: " << sigoct << " tauoct: " << tauoct << endln;
+    //    opserr << "k:" << k << "sigoct: " << sigoct << " tauoct: " << tauoct << endln;
     taun = sqrt(sqrt(3.)*(k*sigoct + tauoct));          //  negative equivalent stress
-        
+
+    /*
     opserr << "taun: " << taun << endln;
     opserr << "rn: " << rn << endln;
     opserr << "L_trDotDeps: " << L_trDotDeps << endln;
+    */
 
     if ((taun - rn <= tol*rn0) || (L_trDotDeps <= 0)) { //  no damage or sige and eps in different direction
 	sige = sige_tr;
@@ -349,10 +353,12 @@ PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
       // Dlam_Deps = Dlam_Dnrm * Ce * Dnrm_Dsig + Ce*Dlam_Dsig + Dlam_Deps; 
       Dlam_Deps = Dlam_Dnrm * (Ce * Dnrm_Dsig) + Ce*Dlam_Dsig + Dlam_Deps;
 
+      /*
       opserr << "lam: " << lam << endln;
       opserr << "Ce: " << Ce << endln;
       opserr << "sige_tr: " << sige_tr << endln;
       opserr << "Dlam_Deps: " << Dlam_Deps << endln;
+      */
 
       Cbar = lam*Ce + sige_tr % Dlam_Deps;   
     }
@@ -381,8 +387,7 @@ PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
   } else {                                       // positive damage evolves
     rp = taup;                                   // update rp = max(taup, rp)
     dp = 1 - rp0/rp * exp(Ap*(1 - rp/rp0));
-    opserr << "dp: " << dp << " rpo: " << rp0 << " rp: " << rp <<
-      "Ap: " << Ap << endln;
+    //    opserr << "dp: " << dp << " rpo: " << rp0 << " rp: " << rp << "Ap: " << Ap << endln;
 
     Ddp_Drp =  (Ap*rp + rp0)/(rp*rp) * exp(Ap*(1 - rp/rp0));               
     dp = dp*(1-tol);                             // cap the damage variable 
@@ -392,8 +397,8 @@ PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
     }
   }
 
-  opserr << "db: " << dp << endln;
-  opserr << "Ddp_Drp: " << Ddp_Drp << endln;
+  //  opserr << "db: " << dp << endln;
+  //  opserr << "Ddp_Drp: " << Ddp_Drp << endln;
 
   // negative damage
   double Ddn_Drn;
@@ -416,16 +421,18 @@ PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
   // TANGENT
   Dsigpos_Deps = Qpos*Cbar;
   Dsigneg_Deps = Qneg*Cbar;
-  
+
+  /*  
   opserr << "Qpos: " << Qpos;
   opserr << "Qneg: " << Qneg;
   opserr << "Cbar: " << Cbar;
+  */
   
   static Vector s(6);
   s = Idp*signeg;                    // deviatoric stress
 
-  opserr << "Idp: " << Idp;
-  opserr << "signeg: " << signeg;
+  //  opserr << "Idp: " << Idp;
+  //  opserr << "signeg: " << signeg;
 
   // norm of deviatoric stress
   double nrms = sqrt( pow(s(0),2) + pow(s(1),2) + pow(s(2),2) +  
@@ -458,11 +465,13 @@ PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
     static Vector Dtauoct_Dsigneg(6);
     
     Dtauoct_Dsigneg = n; Dtauoct_Dsigneg/=sqrt(3.0);
+    /*
     opserr << "Dtaun_Dsigoct: " << Dtaun_Dsigoct << endln;
     opserr << "Dsigoct_Dsigneg: " << Dsigoct_Dsigneg << endln;
     opserr << "Dtaun_Dtauoct: " << Dtaun_Dtauoct << endln;
     opserr << "Dtauoct_Dsigneg: " << Dtauoct_Dsigneg << endln;
     opserr << "n: " << n;
+    */
     Dtaun_Dsigneg = Dtaun_Dsigoct * Dsigoct_Dsigneg + Dtaun_Dtauoct * Dtauoct_Dsigneg;
   }
 
@@ -476,7 +485,7 @@ PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
   C = (1-dp)*Dsigpos_Deps + (1-dn)*Dsigneg_Deps - 
     sigpos % Ddp_Deps - signeg % Ddn_Deps;  
 
-
+  /*
   opserr << "dp: " << dp << endln;
   opserr << "Dsigpos_Deps: " << Dsigpos_Deps << endln;
   opserr << "dn: " << dn << endln;
@@ -502,6 +511,7 @@ PlasticDamageConcrete3d::setTrialStrain (const Vector &strain)
 
   opserr << "TANGENT: " << C << endln;
   opserr << "Stress: " << sig << endln;
+  */
 
   return 0;
 }

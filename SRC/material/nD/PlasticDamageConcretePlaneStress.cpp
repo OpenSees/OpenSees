@@ -26,7 +26,7 @@
  #include <cmath>
  #include <elementAPI.h>
 
-#define _DEBUG_PDC_PlaneStress 1
+//#define _DEBUG_PDC_PlaneStress 1
 
  static Vector Iv6(6); 
  static Matrix Ivp(6,6); 
@@ -155,7 +155,6 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
  int
  PlasticDamageConcretePlaneStress::setTrialStrain (const Vector &strain)
  {
-   opserr << "\n\n setTrialSTrain\n";
    eps[0] = strain(0);
    eps[1] = strain(1);
    eps[2] = strain(2);
@@ -896,9 +895,11 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
    dDnp_ds.Zero();
 
    //FMK
+#ifdef _DEBUG_PDC_PlaneStress
    opserr << "lam: " << lam << endln;
    Vector DLAM_DS(dlam_ds,3);
    opserr << "DLAM_DS: " << DLAM_DS;
+#endif
 
    if (lam > 0.0) {
      // dDpp_ds = lam*dsigpp_ds + sigpepos'*dlam_ds;
@@ -1054,12 +1055,6 @@ PlasticDamageConcretePlaneStress::commitState (void)
   Committed_dp = dp;
   Committed_dn = dn;
 
-  opserr << "commitState:\n";
-  Vector EPS_P(eps_p,3);
-  opserr << "EPS_P: " << EPS_P;
-  opserr << "rn: " << rn << " rp: " << rp << endln;
-  opserr << "dn: " << dn << " dp: " << dp << endln;
-  
   Cstress = stress;
   Cstrain = strain;
   
@@ -1117,7 +1112,7 @@ PlasticDamageConcretePlaneStress::getCopy (void)
 const char*
 PlasticDamageConcretePlaneStress::getType (void) const
 {
-  return "ThreeDimensional";
+  return "PlaneStress2d";
 }
 
 int
