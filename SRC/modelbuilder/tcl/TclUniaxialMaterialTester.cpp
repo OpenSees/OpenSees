@@ -49,14 +49,20 @@ static UniaxialMaterial *theTestingUniaxialMaterial =0;
 // THE PROTOTYPES OF THE FUNCTIONS INVOKED BY THE INTERPRETER
 //
 
-int  TclUniaxialMaterialTester_setUniaxialMaterial(ClientData clientData, Tcl_Interp *interp, 
-						   int argc,   TCL_Char **argv);
+int  TclUniaxialMaterialTester_setUniaxialMaterial(ClientData clientData, 
+						   Tcl_Interp *interp, 
+						   int argc,   
+						   TCL_Char **argv);
 				    
-int  TclUniaxialMaterialTester_setStrainUniaxialMaterial(ClientData clientData, Tcl_Interp *interp,
-							 int argc,   TCL_Char **argv);
+int  TclUniaxialMaterialTester_setStrainUniaxialMaterial(ClientData clientData,
+							 Tcl_Interp *interp,
+							 int argc,   
+							 TCL_Char **argv);
 
-int  TclUniaxialMaterialTester_getStressUniaxialMaterial(ClientData clientData, Tcl_Interp *interp,
-							 int argc,   TCL_Char **argv);
+int  TclUniaxialMaterialTester_getStressUniaxialMaterial(ClientData clientData,
+							 Tcl_Interp *interp,
+							 int argc,   
+							 TCL_Char **argv);
 
 
 int  TclUniaxialMaterialTester_getTangUniaxialMaterial(ClientData clientData, Tcl_Interp *interp,

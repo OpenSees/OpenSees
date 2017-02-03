@@ -50,18 +50,26 @@ static NDMaterial *theMaterial =0;
 // THE PROTOTYPES OF THE FUNCTIONS INVOKED BY THE INTERPRETER
 //
 
-int  TclPlaneStressMaterialTester_setPlaneStressMaterial(ClientData clientData, Tcl_Interp *interp, 
-							 int argc,   TCL_Char **argv);
+int  TclPlaneStressMaterialTester_setPlaneStressMaterial(ClientData clientData,
+							 Tcl_Interp *interp, 
+							 int argc,   
+							 TCL_Char **argv);
 
-int  TclPlaneStressMaterialTester_setStrainPlaneStressMaterial(ClientData clientData, Tcl_Interp *interp,
-							       int argc,   TCL_Char **argv);
+int  TclPlaneStressMaterialTester_setStrainPlaneStressMaterial(ClientData clientData, 
+							       Tcl_Interp *interp,
+							       int argc,   
+							       TCL_Char **argv);
 
-int  TclPlaneStressMaterialTester_getStressPlaneStressMaterial(ClientData clientData, Tcl_Interp *interp,
-							       int argc,   TCL_Char **argv);
+int  TclPlaneStressMaterialTester_getStressPlaneStressMaterial(ClientData clientData,
+							       Tcl_Interp *interp,
+							       int argc,
+							       TCL_Char **argv);
 
 
-int  TclPlaneStressMaterialTester_getTangPlaneStressMaterial(ClientData clientData, Tcl_Interp *interp,
-						       int argc,   TCL_Char **argv);
+int  TclPlaneStressMaterialTester_getTangPlaneStressMaterial(ClientData clientData, 
+							     Tcl_Interp *interp,
+							     int argc,   
+							     TCL_Char **argv);
 
 //
 // CLASS CONSTRUCTOR & DESTRUCTOR
