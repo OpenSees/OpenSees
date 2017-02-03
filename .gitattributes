@@ -3140,6 +3140,8 @@ SRC/material/nD/PlaneStressLayeredMaterial.cpp -text
 SRC/material/nD/PlaneStressLayeredMaterial.h -text
 SRC/material/nD/PlaneStressMaterial.cpp -text
 SRC/material/nD/PlaneStressMaterial.h -text
+SRC/material/nD/PlaneStressRebarMaterial.cpp -text
+SRC/material/nD/PlaneStressRebarMaterial.h -text
 SRC/material/nD/PlaneStressSimplifiedJ2.cpp -text
 SRC/material/nD/PlaneStressSimplifiedJ2.h -text
 SRC/material/nD/PlaneStressUserMaterial.cpp -text
