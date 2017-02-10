@@ -460,7 +460,7 @@ ShellMITC9::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.endTag(); // NdMaterialOutput
     }
     
-    theResponse =  new ElementResponse(this, 2, Vector(84));
+    theResponse =  new ElementResponse(this, 2, Vector(72));
 
   } else if (strcmp(argv[0],"strains") ==0) {
 
@@ -487,7 +487,7 @@ ShellMITC9::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.endTag(); // NdMaterialOutput
     }
     
-    theResponse =  new ElementResponse(this, 3, Vector(84));
+    theResponse =  new ElementResponse(this, 3, Vector(72));
   }
 
   output.endTag();
