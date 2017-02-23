@@ -58,7 +58,7 @@
       <BrowseInformation>true</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <Lib>
@@ -100,7 +100,10 @@
     <ClCompile Include="..\..\..\SRC\material\nD\FSAM.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\J2BeamFiber2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\J2PlateFibre.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressLayeredMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressRebarMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlasticDamageConcrete3d.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\PlasticDamageConcretePlaneStress.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.cpp" />
@@ -420,7 +423,10 @@
     <ClInclude Include="..\..\..\SRC\material\nD\FSAM.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\J2BeamFiber2d.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\J2PlateFibre.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressLayeredMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressRebarMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlasticDamageConcrete3d.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\PlasticDamageConcretePlaneStress.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.h" />

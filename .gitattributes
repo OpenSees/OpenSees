@@ -4692,6 +4692,10 @@ Win32/OpenSeesFortran.mak -text
 Win32/OpenSeesFortran.mdp -text svneol=unset#unset
 Win32/OpenSeesVC6.sln -text
 Win32/VC2005errno.cpp -text
+Win32/lib/debug/DoddRestrepo.pdb -text
+Win32/lib/debug/arpack.pdb -text
+Win32/lib/debug/fedeas.pdb -text
+Win32/lib/debug/umfpackC.pdb -text
 Win32/proj/OpenSeesMP/OpenSeesMP.vcproj -text svneol=unset#application/octet-stream
 Win32/proj/OpenSeesSP/OpenSeesSP.vcproj -text svneol=unset#application/octet-stream
 Win32/proj/ParallelOpenSeesManyInterpreters/ParallelOpenSeesManyInterpreters.vcproj -text
@@ -4795,6 +4799,10 @@ Win32/proj/utility/utility.mak -text
 Win32/proj/utility/utility.vcxproj -text
 Win64/OpenSees.sln -text
 Win64/VC2005errno.cpp -text
+Win64/lib/debug/DoddRestrepo.pdb -text
+Win64/lib/debug/arpack.pdb -text
+Win64/lib/debug/fedeas.pdb -text
+Win64/lib/debug/umfpackC.pdb -text
 Win64/proj/OpenSeesMP/OpenSeesMP.vcproj -text
 Win64/proj/OpenSeesSP/OpenSeesSP.vcproj -text
 Win64/proj/ParallelOpenSeesManyInterpreters/ParallelOpenSeesManyInterpreters.vcproj -text

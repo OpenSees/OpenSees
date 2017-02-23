@@ -48,8 +48,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderOutputFile>.\..\..\obj\reliability\debug/reliability.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\reliability\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\reliability\debug/</ObjectFileName>
@@ -58,6 +57,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Lib>
       <OutputFile>.\..\..\lib\debug\reliability.lib</OutputFile>
@@ -76,8 +76,7 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderOutputFile>.\..\..\obj\reliability\release/reliability.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\reliability\release/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\reliability\release/</ObjectFileName>

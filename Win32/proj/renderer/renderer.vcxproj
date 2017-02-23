@@ -39,7 +39,7 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\lib\debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\obj\render\debug\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\obj\renderer\debug\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\lib\release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\obj\renderer\release\</IntDir>
   </PropertyGroup>
@@ -50,14 +50,14 @@
       <PreprocessorDefinitions>_WIN32;_DEBUG;_LIB;_WGL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeaderOutputFile>.\..\..\obj\render\debug/renderer.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\..\..\obj\render\debug/</AssemblerListingLocation>
-      <ObjectFileName>.\..\..\obj\render\debug/</ObjectFileName>
-      <ProgramDataBaseFileName>.\..\..\obj\render\debug/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\renderer\debug/renderer.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\renderer\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\renderer\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\renderer\debug/</ProgramDataBaseFileName>
       <BrowseInformation>true</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <Lib>

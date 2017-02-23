@@ -56,8 +56,9 @@
       <ProgramDataBaseFileName>.\..\..\obj\string\debug/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Lib>
       <OutputFile>.\..\..\lib\debug\string.lib</OutputFile>
@@ -76,8 +77,7 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderOutputFile>.\..\..\obj\string\release/string.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\string\release/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\string\release/</ObjectFileName>

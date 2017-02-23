@@ -184,12 +184,14 @@ Tk_MainOpenSees(int argc, char **argv, Tcl_AppInitProc *appInitProc, Tcl_Interp 
 #endif
 
     /* fmk - beginning of modifications for OpenSees */
-    fprintf(stderr,"\n\n\t OpenSees -- Open System For Earthquake Engineering Simulation");
-    fprintf(stderr,"\n\tPacific Earthquake Engineering Research Center -- %s\n\n", OPS_VERSION);
-    
-    fprintf(stderr,"\t    (c) Copyright 1999 The Regents of the University of California");
-    fprintf(stderr,"\n\t\t\t\t All Rights Reserved \n\n\n");    
-    fprintf(stderr,"\t(Copyright statement @ http://www.berkeley.edu/OpenSees/copyright.html)\n\n\n");
+    fprintf(stderr,"\n\n");
+	fprintf(stderr,"         OpenSees -- Open System For Earthquake Engineering Simulation\n");
+	fprintf(stderr,"                 Pacific Earthquake Engineering Research Center\n");
+	fprintf(stderr,"                        Version %s %s\n\n", OPS_VERSION, WIN_ARCH);
+	
+	fprintf(stderr,"      (c) Copyright 1999-2016 The Regents of the University of California\n");
+	fprintf(stderr,"                              All Rights Reserved\n");
+	fprintf(stderr,"  (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)\n\n\n");
     /* fmk - end of modifications for OpenSees */
 
     /*

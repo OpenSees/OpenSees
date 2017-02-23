@@ -1049,6 +1049,15 @@
     <ClCompile Include="..\..\..\SRC\material\nD\PlasticDamageConcrete3d.cpp">
       <Filter>nD</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressLayeredMaterial.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressRebarMaterial.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\PlasticDamageConcretePlaneStress.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -1954,6 +1963,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Dodd_Restrepo.h">
       <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressLayeredMaterial.h">
+      <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressRebarMaterial.h">
+      <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\PlasticDamageConcretePlaneStress.h">
+      <Filter>nD</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1783,11 +1783,11 @@ Node::displaySelf(Renderer &theRenderer, int displayMode, float fact)
     // draw a text string containing tag
     static char theText[20];
     sprintf(theText,"%d",this->getTag());
-    return theRenderer.drawText(position, theText, strlen(theText));
+    return theRenderer.drawText(position, theText, (int) strlen(theText));
 
   } else if (displayMode > 0) {
     // draw a point - pixel size equals displayMode tag
-    return theRenderer.drawPoint(position, 0.0, this->getTag(), 0.0, displayMode);
+    return theRenderer.drawPoint(position, 0.0, this->getTag(), 0, displayMode);
   }
 
 

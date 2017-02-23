@@ -48,7 +48,8 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_TCL85;_LIMITSTATEMATERIAL;_NO_NEW_RESTREPO;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
       <PrecompiledHeaderOutputFile>.\..\..\obj\material\debug/material.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\material\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\material\debug/</ObjectFileName>
@@ -58,6 +59,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Lib>
       <OutputFile>.\..\..\lib\debug\material.lib</OutputFile>
@@ -76,7 +78,8 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
       <PrecompiledHeaderOutputFile>.\..\..\obj\material\release/material.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\material\release/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\material\release/</ObjectFileName>
@@ -101,7 +104,10 @@
     <ClCompile Include="..\..\..\SRC\material\nD\J2PlateFibre.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\LinearCap.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressLayeredMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressRebarMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlasticDamageConcrete3d.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\PlasticDamageConcretePlaneStress.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.cpp" />
@@ -421,7 +427,10 @@
     <ClInclude Include="..\..\..\SRC\material\nD\J2PlateFibre.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\LinearCap.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressLayeredMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressRebarMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlasticDamageConcrete3d.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\PlasticDamageConcretePlaneStress.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.h" />

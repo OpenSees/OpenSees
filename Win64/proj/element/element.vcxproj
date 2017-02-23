@@ -48,7 +48,8 @@
       <PreprocessorDefinitions>_DEBUG;WIN32;_LIB;_WGL;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
       <PrecompiledHeaderOutputFile>.\..\..\obj\element\debug/element.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\element\debug/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\element\debug/</ObjectFileName>
@@ -76,7 +77,8 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
       <PrecompiledHeaderOutputFile>.\..\..\obj\element\release/element.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\..\..\obj\element\release/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\element\release/</ObjectFileName>
