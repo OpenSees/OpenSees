@@ -612,6 +612,7 @@ MAKES/Makefile.def.OSG -text
 MAKES/Makefile.def.RANGER -text
 MAKES/Makefile.def.SOLARIS -text
 MAKES/Makefile.def.STAMPEDE -text
+MAKES/Makefile.def.STAMPEDE-KNL -text
 MAKES/Makefile.def.TERAGRID.IA_64 -text
 MAKES/Makefile.def.UNR_GRID -text
 /Makefile -text
