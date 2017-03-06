@@ -37,6 +37,7 @@
 #include <ID.h>
 #include <Vector.h>
 #include <elementAPI.h>
+#include <Channel.h>
 
 void* OPS_fElmt02()
 {
@@ -110,3 +111,14 @@ fElmt02::~fElmt02()
     // does nothing
 }
 
+int 
+fElmt02::sendSelf(int commitTag, Channel &theChannel)
+{
+  return this->fElement::sendSelf(commitTag, theChannel);
+}
+int 
+fElmt02::recvSelf(int commitTag, Channel &theChannel, 
+			 FEM_ObjectBroker &theBroker)
+{
+  return this->fElement::recvSelf(commitTag, theChannel, theBroker);
+}

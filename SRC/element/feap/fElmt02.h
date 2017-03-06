@@ -56,6 +56,9 @@ class fElmt02 : public fElement
     // destructor
     ~fElmt02();
 
+    int sendSelf(int cTag, Channel &theChannel);
+    int recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+			 
   protected:
 	     
   private:

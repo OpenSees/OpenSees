@@ -692,15 +692,40 @@ fElement::getResistingForceIncInertia()
 int
 fElement::sendSelf(int commitTag, Channel &theChannel)
 {
-  opserr << "fElement::sendSelf() - not yet implemented\n";
-  return -1;
+  int res = 0;
+  static ID sizeData(2);
+  sizeData(0) = data->Size();
+  sizeData(1) = connectedNodes->Size();
+  res += theChannel.sendID(this->getDbTag(),commitTag, sizeData);
+  res += theChannel.sendVector(this->getDbTag(), commitTag, *data);  
+  res += theChannel.sendID(this->getDbTag(),commitTag, *connectedNodes);
+  return res;
 }
 
 int
-fElement::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+fElement::recvSelf(int commitTag, 
+		   Channel &theChannel, 
+		   FEM_ObjectBroker &theBroker)
 {
-  opserr << "fElement::recvSelf() - not yet implemented\n";
-  return -1;
+  int res = 0;
+  static ID sizeData(2);
+  res += theChannel.recvID(this->getDbTag(),commitTag, sizeData);
+  if (d == 0 || data->Size() != sizeData(0)) {
+    if (data != 0) {
+      delete [] d;
+      delete data;
+    }
+    d = new double[sizeData(0)];
+    data = new Vector(d, sizeData(0));    
+
+    if (connectedNodes != 0)
+      delete connectedNodes;
+    connectedNodes = new ID(sizeData(1));
+  }
+
+  res += theChannel.recvVector(this->getDbTag(), commitTag, *data);  
+  res += theChannel.recvID(this->getDbTag(),commitTag, *connectedNodes);
+  return res;
 }
 
 
