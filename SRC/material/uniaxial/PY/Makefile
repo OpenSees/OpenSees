@@ -4,6 +4,7 @@ OBJS       = PySimple1.o \
 	QzSimple1.o \
 	TzSimple1.o \
 	PySimple2.o \
+	PySimple3.o \
 	QzSimple2.o \
 	TzSimple2.o \
 	TclPyTzQzMaterialCommand.o \
