@@ -3548,6 +3548,8 @@ SRC/material/uniaxial/PY/PySimple1Gen.h -text
 SRC/material/uniaxial/PY/PySimple1_documentation.PDF -text svneol=unset#unset
 SRC/material/uniaxial/PY/PySimple2.cpp -text
 SRC/material/uniaxial/PY/PySimple2.h -text
+SRC/material/uniaxial/PY/PySimple3.cpp -text
+SRC/material/uniaxial/PY/PySimple3.h -text
 SRC/material/uniaxial/PY/QzSimple1[!!-~]documentation.PDF -text
 SRC/material/uniaxial/PY/QzSimple1.cpp -text
 SRC/material/uniaxial/PY/QzSimple1.h -text
