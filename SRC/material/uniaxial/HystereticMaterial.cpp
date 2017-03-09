@@ -177,8 +177,6 @@ mom1n(m1n), rot1n(r1n), mom3n(m2n), rot3n(r2n)
 	rot2p = 0.5*(rot1p+rot3p);
 	rot2n = 0.5*(rot1n+rot3n);
 
-	opserr << mom1p << " " << mom2p << " " << mom3p << " " << rot1p << " " << rot2p << " " << rot3p << endln;
-
 	// Set envelope slopes
 	this->setEnvelope();
 
