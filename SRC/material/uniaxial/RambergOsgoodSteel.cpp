@@ -18,18 +18,21 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                        
-// $Revision: 1.1
-// $Date
+// $Revision: 1.2
+// $Date: 03/2017
 // $Source:
                                                                      
 // Written: R.Rahimi & R.Sepasdar & Dr. M. R. Banan
 // Created: 09/2012
+// 
 //
 // Description: This file contains the class implementation of RambergOsgoodSteel.
 //-----------------------------------------------------------------------
 //              RAMBERG-OSGOOD STEEL MODEL
-//      written by REZA RAHIMI & REZA SEPASDAR (2012)
-//             Supervisor: Dr. Mo. R. Banan
+//      Developed  by REZA RAHIMI, (Reza.Rahimi@Dal.Ca)   (2012)
+//
+//	Co-Developer: REZA SEPASDAR,
+//	Supervisor: Dr. Mo. R. Banan,
 //-----------------------------------------------------------------------
  
 #include <elementAPI.h>
@@ -48,7 +51,7 @@ void *
 OPS_RambergOsgoodSteel(void)
 {
   if (numRambergOsgoodSteel == 0) {
-    opserr << "RambergOsgoodSteel unaxial material - Written by R.Rahimi & R.Sepasdar & Dr. Mo. R. Banan Shiraz University Copyright 2012 \n";
+    opserr << "RambergOsgoodSteel unaxial material - Written by R.Rahimi & R.Sepasdar & Dr. Mo. R. Banan Shiraz University Copyright 2012; \n";
     numRambergOsgoodSteel++;
   }
 
@@ -212,26 +215,37 @@ RambergOsgoodSteel::setTrialStrain(double trialStrain, double strainRate)
   if (kon == 2 && deps > 0.0) {
 
 
-    kon = 1;
+    kon = 20;
     epsr = epsP;
     sigr = sigP;
+    //sigs0 = fabs(sigP) / (pow((1-(fabs(sigP)/(rezaAA * E0))),(1/rezaNN))); // the code will find a new sigma_y based on the yield offset in case of cyclic loading (ADDED to Rev 1.2)
     //epsmin = min(epsP, epsmin);
 
   } else if (kon == 1 && deps < 0.0) {
 
+    kon = 10;
+    epsr = epsP;
+    sigr = sigP;
+    //sigs0 = fabs(sigP) / (pow((1-(fabs(sigP)/(rezaAA * E0))),(1/rezaNN))); // (ADD to  Rev 1.2)
+
+  } else if (kon == 10 && sigP <= 0 ) {
     kon = 2;
     epsr = epsP;
     sigr = sigP;
-
+  } else if (kon == 20 && sigP >= 0 ) {
+    kon = 1; 
+    epsr = epsP;
+    sigr = sigP;
   }
- 
+
+  /* (REMOVED in Rev 1.2) 
   if (sigr !=0)
   {
           sigs0=2*Fy;
   }
- 
+  */ 
   // calculate current stress sig and tangent modulus E
- 
+  if (kon == 2 || kon == 1){
   double trialSig[1000], F[1000], dF[1000], o;
   int kk=1;
   trialSig[1]=1;
@@ -254,6 +268,10 @@ RambergOsgoodSteel::setTrialStrain(double trialStrain, double strainRate)
     }
  
   e = 1/((1/E0) + rezaAA*(1/sigs0)*rezaNN*(pow((sig/sigs0),(rezaNN-1))));
+  } else if (kon == 20 || kon == 10) {
+    e = E0;
+    sig = E0 * fabs(eps-epsr);
+  }
     if (eps<epsr){
 		sig=-1*sig;
 	}

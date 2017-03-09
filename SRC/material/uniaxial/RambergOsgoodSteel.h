@@ -18,19 +18,22 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                        
-// $Revision: 1.1 $
-// $Date:
-// $Source:
-                                                                     
-// Written: R.Rahimi & R.Sepasdar & Dr. M. R. Banan
-// Created: 09/2012
-//
-// Description: This file contains the class implementation of RambergOsgood.
-//-----------------------------------------------------------------------
-//              RAMBERG-OSGOOD STEEL MODEL
-//      written by REZA RAHIMI & REZA SEPASDAR (2012)
-//             Supervisor: Dr. Mo. R. Banan
-//-----------------------------------------------------------------------
+// $Revision: 1.2                                                                              
+// $Date: 03/2017                                                                              
+// $Source:                                                                                    
+
+// Written: R.Rahimi & R.Sepasdar & Dr. M. R. Banan                                            
+// Created: 09/2012                                                                            
+//                                                                                             
+//                                                                                             
+// Description: This file contains the class implementation of RambergOsgoodSteel.             
+//-----------------------------------------------------------------------                      
+//              RAMBERG-OSGOOD STEEL MODEL                                                     
+//      Developed  by REZA RAHIMI, (Reza.Rahimi@Dal.Ca)   (2012)                               
+//                                                                                             
+//      Co-Developer: REZA SEPASDAR,                                                           
+//      Supervisor: Dr. Mo. R. Banan,                                                          
+//----------------------------------------------------------------------- 
 
 
 
