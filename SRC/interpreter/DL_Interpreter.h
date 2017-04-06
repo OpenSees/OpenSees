@@ -50,7 +50,7 @@ class DL_Interpreter
     virtual int getInt(int *, int numArgs);
     virtual int getDouble(double *, int numArgs);
     virtual const char* getString();
-    virtual int getStingCopy(char **stringPtr);
+    virtual int getStringCopy(char **stringPtr);
     virtual void resetInput(int cArg);
 
     // methods for interpreters to output results

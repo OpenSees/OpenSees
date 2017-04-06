@@ -827,7 +827,7 @@ PythonInterpreter::getString() {
 }
 
 int 
-PythonInterpreter::getStingCopy(char **stringPtr) {
+PythonInterpreter::getStringCopy(char **stringPtr) {
   return -1;
 }
 

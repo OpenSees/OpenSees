@@ -42,7 +42,7 @@ DL_Interpreter::getString() {
 }
 
 int 
-DL_Interpreter::getStingCopy(char **stringPtr) {
+DL_Interpreter::getStringCopy(char **stringPtr) {
   return -1;
 }
 

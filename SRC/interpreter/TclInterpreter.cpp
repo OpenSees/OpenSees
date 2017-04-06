@@ -549,7 +549,7 @@ TclInterpreter::getString() {
 }
 
 int 
-TclInterpreter::getStingCopy(char **stringPtr) {
+TclInterpreter::getStringCopy(char **stringPtr) {
   return -1;
 }
 

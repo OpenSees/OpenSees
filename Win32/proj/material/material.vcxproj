@@ -115,6 +115,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BarSlipMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteCM.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Bond_SP01.cpp" />
@@ -439,6 +440,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ConcreteCM.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Dodd_Restrepo.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\snap\Bilin02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BilinearOilDamper.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Bond_SP01.h" />
