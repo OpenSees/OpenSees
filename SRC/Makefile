@@ -876,6 +876,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/ElasticMembranePlateSection.o \
 	$(FE)/material/section/MembranePlateFiberSection.o \
 	$(FE)/material/section/Bidirectional.o \
+	$(FE)/material/section/Elliptical2.o \
 	$(FE)/material/section/Isolator2spring.o \
 	$(FE)/material/section/LayeredShellFiberSection.o \
 	$(FE)/material/section/integration/SectionIntegration.o \
