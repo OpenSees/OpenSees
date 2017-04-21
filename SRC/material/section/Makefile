@@ -22,6 +22,7 @@ OBJS       = SectionForceDeformation.o \
 	FiberSectionGJ.o \
 	Bidirectional.o \
 	Elliptical.o \
+	Elliptical2.o \
 	TimoshenkoSection3d.o \
 	Isolator2spring.o \
 	McftSection2dfiber.o \
