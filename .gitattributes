@@ -3299,6 +3299,8 @@ SRC/material/section/ElasticTubeSection3d.cpp -text
 SRC/material/section/ElasticTubeSection3d.h -text
 SRC/material/section/ElasticWarpingShearSection2d.cpp -text
 SRC/material/section/ElasticWarpingShearSection2d.h -text
+SRC/material/section/Elliptical2.cpp -text
+SRC/material/section/Elliptical2.h -text
 SRC/material/section/FiberSection.cpp -text
 SRC/material/section/FiberSection.h -text
 SRC/material/section/FiberSection2d.cpp -text
