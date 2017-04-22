@@ -289,6 +289,7 @@
 #define SEC_TAG_ElasticWarpingShear2d           28
 #define SEC_TAG_DoubleMembranePlateFiberSection 29
 #define SEC_TAG_NDFiberSectionWarping2d         30
+#define SEC_TAG_Elliptical2                     31
 
 #define SEC_TAG_McftSection2dfiber 7601
 
@@ -340,6 +341,10 @@
 #define ND_TAG_Faria1998PlaneStress2d               50
 #define ND_TAG_Faria1998               51
 #define ND_TAG_Faria1998ThreeDimensional               52
+#define ND_TAG_CPlaneStress   53
+#define ND_TAG_CPlaneStrain   54
+#define ND_TAG_CPlaneStress2d   55
+#define ND_TAG_CThreeDimensional   55
 
 #define ND_TAG_FluidSolidPorousMaterial        100
 #define ND_TAG_PressureDependMultiYield		101
