@@ -100,7 +100,7 @@ Vector *ForceBeamColumn3d::SsrSubdivide = 0;
 
 void* OPS_ForceBeamColumn3d()
 {
-    if(OPS_GetNumRemainingInputArgs() < 5) {
+    if (OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag\n";
 	return 0;
     }
@@ -2639,10 +2639,38 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
     } else if (strcmp(argv[0],"getRemCriteria2") == 0) {
       theResponse = new ElementResponse(this, 8, Vector(2), ID(6));
 
-    } else if (strcmp(argv[0],"RayleighForces") == 0 || strcmp(argv[0],"rayleighForces") == 0) {theResponse = new ElementResponse(this, 12, theVector);
+    } else if (strcmp(argv[0],"RayleighForces") == 0 || 
+	       strcmp(argv[0],"rayleighForces") == 0) {
 
-      // section response -
-    } else if (strcmp(argv[0],"section") ==0) { 
+      theResponse = new ElementResponse(this, 12, theVector);
+
+    } else if (strcmp(argv[0],"sections") ==0) { 
+      CompositeResponse *theCResponse = new CompositeResponse();
+      int numResponse = 0;
+      double xi[maxNumSections];
+      double L = crdTransf->getInitialLength();
+      beamIntegr->getSectionLocations(numSections, L, xi);
+      
+      for (int i=0; i<numSections; i++) {
+	
+	output.tag("GaussPointOutput");
+	output.attr("number",i+1);
+	output.attr("eta",xi[i]*L);
+	
+	Response *theSectionResponse = sections[i]->setResponse(&argv[1], argc-1, output);
+	
+	if (theSectionResponse != 0) {
+	  numResponse = theCResponse->addResponse(theSectionResponse);
+	}
+      }
+      
+      if (numResponse == 0) // no valid responses found
+	delete theCResponse;
+	  else
+	    theResponse = theCResponse;
+    }
+
+    else if (strcmp(argv[0],"section") ==0) { 
 
       if (argc > 1) {
 
