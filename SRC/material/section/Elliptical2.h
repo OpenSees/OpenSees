@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision$
-// $Date$
-// $Source$
-                                                                        
 #ifndef Elliptical2_h
 #define Elliptical2_h
 
@@ -30,8 +26,6 @@
 #include <Matrix.h>
 #include <Vector.h>
 #include <ID.h>
-
-#define SEC_TAG_Elliptical2 1976
 
 class Elliptical2 : public SectionForceDeformation
 {
