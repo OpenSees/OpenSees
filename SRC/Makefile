@@ -732,6 +732,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/J2BeamFiber2d.o \
+	$(FE)/material/nD/J2BeamFiber3d.o \
 	$(FE)/material/nD/FSAM.o \
 	$(FE)/material/nD/ConcreteMcftNonLinear5.o \
 	$(FE)/material/nD/ConcreteMcftNonLinear7.o \
