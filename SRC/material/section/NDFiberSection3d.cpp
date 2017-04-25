@@ -249,7 +249,7 @@ NDFiberSection3d::NDFiberSection3d(int tag, int num, NDMaterial **mats,
 NDFiberSection3d::NDFiberSection3d():
   SectionForceDeformation(0, SEC_TAG_NDFiberSection3d),
   numFibers(0), sizeFibers(0), theMaterials(0), matData(0),
-  Abar(0.0), QyBar(0.0), QzBar(0.0), yBar(0.0), zBar(0.0), alpha(5.0/6), sectionIntegr(0), 
+  Abar(0.0), QyBar(0.0), QzBar(0.0), yBar(0.0), zBar(0.0), alpha(1.0), sectionIntegr(0), 
   e(6), s(0), ks(0), parameterID(0), dedh(6)
 {
   s = new Vector(sData, 6);
