@@ -99,6 +99,7 @@ extern  void *OPS_CycLiqCPSPMaterial(void);
 extern  void *OPS_InitStressNDMaterial(void);
 extern  void *OPS_StressDensityMaterial(void);
 extern  void *OPS_J2BeamFiber2dMaterial(void);
+extern  void *OPS_J2BeamFiber3dMaterial(void);
 extern  void *OPS_J2PlateFibreMaterial(void);
 extern  void *OPS_PlaneStressLayeredMaterial(void);
 extern  void *OPS_PlaneStressRebarMaterial(void);
@@ -217,7 +218,12 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     
     
     else if (strcmp(argv[1],"J2BeamFiber") == 0) {
-      void *theMat = OPS_J2BeamFiber2dMaterial();
+      void *theMat = 0;
+      if (theTclBuilder->getNDM() == 2)
+	theMat = OPS_J2BeamFiber2dMaterial();
+      else
+	theMat = OPS_J2BeamFiber3dMaterial();
+
       if (theMat != 0) 
         theMaterial = (NDMaterial *)theMat;
       else 
