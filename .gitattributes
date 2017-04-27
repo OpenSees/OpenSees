@@ -3195,6 +3195,8 @@ SRC/material/nD/UWmaterials/ManzariDafaliasPlaneStrainRO.cpp -text
 SRC/material/nD/UWmaterials/ManzariDafaliasPlaneStrainRO.h -text
 SRC/material/nD/UWmaterials/ManzariDafaliasRO.cpp -text
 SRC/material/nD/UWmaterials/ManzariDafaliasRO.h -text
+SRC/material/nD/UWmaterials/PM4Sand.cpp -text
+SRC/material/nD/UWmaterials/PM4Sand.h -text
 SRC/material/nD/WrapperNDMaterial.cpp -text
 SRC/material/nD/WrapperNDMaterial.h -text
 SRC/material/nD/cyclicSoil/Makefile -text

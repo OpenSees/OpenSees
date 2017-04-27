@@ -14,7 +14,8 @@ OBJS       = BoundingCamClay.o \
 	     ManzariDafaliasPlaneStrain.o\
 	     ManzariDafaliasRO.o\
 	     ManzariDafalias3DRO.o\
-	     ManzariDafaliasPlaneStrainRO.o
+	     ManzariDafaliasPlaneStrainRO.o\
+	     PM4Sand.o
 
 all:	$(OBJS)
 

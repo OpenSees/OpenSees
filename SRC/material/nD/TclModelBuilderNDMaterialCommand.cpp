@@ -93,6 +93,7 @@ extern  void *OPS_ContactMaterial2DMaterial(void);
 extern  void *OPS_ContactMaterial3DMaterial(void);
 extern  void *OPS_InitialStateAnalysisWrapperMaterial(void);
 extern  void *OPS_ManzariDafaliasMaterial(void);
+extern  void *OPS_PM4Sand(void);
 extern  void *OPS_ManzariDafaliasMaterialRO(void);
 extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
@@ -409,6 +410,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     else if ((strcmp(argv[1],"ManzariDafalias") == 0)){
 
       void *theMat = OPS_ManzariDafaliasMaterial();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1],"PM4Sand") == 0)){
+
+      void *theMat = OPS_PM4Sand();
       if (theMat != 0) 
 	theMaterial = (NDMaterial *)theMat;
       else 
