@@ -1505,7 +1505,7 @@ void PressureIndependMultiYield::updateActiveSurface(void)
 	X = secondOrderEqn(A,B,C,0);
 	if ( fabs(X-1.) < LOW_LIMIT ) X = 1.;
 	if (X < 1.){
-	  opserr << "FATAL:PressureIndependMultiYield::updateActiveSurface(): error in Direction of surface motion."
+	  opserr << "FATAL:PressureIndependMultiYield::updateActiveSurface(): error in Direction of surface motion." 
 	       << endln;
 	  exit(-1);
 	}
@@ -1528,6 +1528,12 @@ void PressureIndependMultiYield::updateActiveSurface(void)
 	if (fabs(B) < LOW_LIMIT) B = 0.;
 	C = (t1 && t1) - 2./3.* size * size;
 	if ( fabs(C) < LOW_LIMIT || fabs(C)/(t1 && t1) < LOW_LIMIT ) return;
+
+	// Added by Alborz Ghofrani UW to avoid solving quadratic equations with very small coefficients B and C
+	if ( (fabs(B) < 1.0e-10) && (fabs(C) < 1.0e-10) ){
+		return;
+	}
+	// End Alborz Ghofrani UW
 
 	if (B > 0. || C < 0.) {
 	  opserr << "FATAL:PressureIndependMultiYield::updateActiveSurface(): error in surface motion.\n"
