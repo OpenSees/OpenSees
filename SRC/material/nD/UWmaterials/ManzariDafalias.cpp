@@ -623,6 +623,7 @@ void ManzariDafalias::Print(OPS_Stream &s, int flag )
 {
 	s << "ManzariDafalias Material, tag: " << this->getTag() << endln;
 	s << "Type: " << this->getType() << endln;
+	s << "Poisson ratio: " << m_nu << endln;
 }
 
 int
