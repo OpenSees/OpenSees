@@ -761,6 +761,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/UWmaterials/ManzariDafalias3DRO.o \
 	$(FE)/material/nD/UWmaterials/ManzariDafaliasPlaneStrainRO.o \
 	$(FE)/material/nD/UWmaterials/InitialStateAnalysisWrapper.o \
+	$(FE)/material/nD/UWmaterials/PM4Sand.o \
 	$(FE)/material/nD/LinearCap.o \
 	$(FE)/material/nD/AcousticMedium.o \
 	$(FE)/material/nD/FeapMaterial.o \
