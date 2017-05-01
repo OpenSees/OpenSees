@@ -1935,72 +1935,7 @@ Vector PM4Sand::Inv(const Vector& aV)
 //            OTHER AUXILLARY MATH FUNCTIONS                 //
 /*************************************************************/
 /*************************************************************/
-//------------------------------------------------------------
-double
-MatrixMax_Rows(const Matrix& mat, int rowNo)
-{
-	int n = mat.noCols();
-	double Rmax = fabs(mat(rowNo, 0));
-	for (int i = 1; i < n; i++){
-		if (Rmax < fabs(mat(rowNo, i)))
-			Rmax = fabs(mat(rowNo, i));
-	}
-	return Rmax;
-}
-//------------------------------------------------------------
-double
-MatrixMax_Cols(const Matrix& mat, int colNo)
-{
-	int n = mat.noRows();
-	double Cmax = fabs(mat(0, colNo));
-	for (int i = 1; i < n; i++){
-		if (Cmax < fabs(mat(i, colNo)))
-			Cmax = fabs(mat(i, colNo));
-	}
-	return Cmax;
-}
-//------------------------------------------------------------
-double
-MatrixMin_Rows(const Matrix& mat, int rowNo)
-{
-	int n = mat.noCols();
-	double Rmin = fabs(mat(rowNo, 0));
-	for (int i = 1; i < n; i++){
-		if (Rmin > fabs(mat(rowNo, i)))
-			Rmin = fabs(mat(rowNo, i));
-	}
-	return Rmin;
-}
-//------------------------------------------------------------
-double
-MatrixMin_Cols(const Matrix& mat, int colNo)
-{
-	int n = mat.noRows();
-	double Cmin = fabs(mat(0, colNo));
-	for (int i = 1; i < n; i++){
-		if (Cmin > fabs(mat(i, colNo)))
-			Cmin = fabs(mat(i, colNo));
-	}
-	return Cmin;
-}
-//------------------------------------------------------------
-double
-Sgn(const double& x)
-{
-	return x == 0 ? 1.0 : (fabs(x)/x);
-}
-//------------------------------------------------------------
-double
-VectorMax(const Vector& v)
-{
-	int n = v.Size();
-	double Vmax = fabs(v(0));
-	for (int i = 1; i < n; i++){
-		if (Vmax < fabs(v(i)))
-			Vmax = fabs(v(i));
-	}
-	return Vmax;
-}
+
 //------------------------------------------------------------
 // max of two vectors
 Vector 
