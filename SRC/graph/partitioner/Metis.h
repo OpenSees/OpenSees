@@ -40,6 +40,10 @@
 #ifndef Metis_h
 #define Metis_h
 
+#ifdef _USE_METIS_5p1
+#include <metis.h>
+#endif
+
 #include <GraphPartitioner.h>
 #include <GraphNumberer.h>
 
