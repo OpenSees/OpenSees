@@ -121,6 +121,22 @@ Vector::Vector(const Vector &other)
 }	
 
 
+
+// Vector(const Vector&):
+//  Move constructor
+#ifdef USE_CXX11   
+Vector::Vector(Vector &&other)
+: sz(other.sz),theData(other.theData),fromFree(0)
+{
+  //opserr << "move ctor!\n";
+  other.theData = 0;
+  other.sz = 0;
+} 
+#endif
+
+
+
+
 // ~Vector():
 // 	destructor, deletes the [] data
 
@@ -740,6 +756,27 @@ Vector::operator=(const Vector &V)
 
   return *this;
 }
+
+// Move assignment operator.  
+#ifdef USE_CXX11   
+Vector &
+Vector::operator=(Vector &&V) 
+{
+  // first check we are not trying v = v
+  if (this != &V) {
+    // opserr << "move assign!\n";
+    if (this->theData != 0) delete [] this->theData;
+    theData = V.theData;
+    this->sz = V.sz;
+    V.theData = 0;
+    V.sz = 0;
+  }
+  return *this;
+}
+#endif
+
+
+
 
 
 // Vector &operator+=(double fact):

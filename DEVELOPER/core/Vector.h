@@ -46,7 +46,11 @@ class Vector
     // constructors and destructor
     Vector();
     Vector(int);
-    Vector(const Vector &);    
+    Vector(const Vector &); 
+#ifdef USE_CXX11   
+    Vector(Vector &&);    
+#endif
+
     Vector(double *data, int size);
     ~Vector();
 
@@ -72,7 +76,9 @@ class Vector
     double &operator[](int x);
     Vector operator()(const ID &rows) const;
     Vector &operator=(const Vector  &V);
-    
+#ifdef USE_CXX11   
+    Vector &operator=(Vector  &&V);
+#endif
     Vector &operator+=(double fact);
     Vector &operator-=(double fact);
     Vector &operator*=(double fact);
