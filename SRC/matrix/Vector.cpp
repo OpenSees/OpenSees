@@ -107,7 +107,7 @@ Vector::Vector(const Vector &other)
     if (theData == 0) {
       opserr << "Vector::Vector(int) - out of memory creating vector of size " << sz << endln;
     }
-
+  }
   // copy the component data
   for (int i=0; i<sz; i++)
     theData[i] = other.theData[i];
