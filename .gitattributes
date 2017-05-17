@@ -4707,8 +4707,6 @@ Win32/lib/debug/DoddRestrepo.pdb -text
 Win32/lib/debug/arpack.pdb -text
 Win32/lib/debug/fedeas.pdb -text
 Win32/lib/debug/umfpackC.pdb -text
-Win32/proj/OpenSeesMP/OpenSeesMP.vcproj -text svneol=unset#application/octet-stream
-Win32/proj/OpenSeesSP/OpenSeesSP.vcproj -text svneol=unset#application/octet-stream
 Win32/proj/ParallelOpenSeesManyInterpreters/ParallelOpenSeesManyInterpreters.vcproj -text
 Win32/proj/ParallelOpenSeesSingleInterpreter/ParallelOpenSeesSingleInterpreters.vcproj -text
 Win32/proj/actor/actor.dsp -text
@@ -4768,6 +4766,8 @@ Win32/proj/openSees/OpenSees.vcxproj -text
 Win32/proj/openSees/OpenSees.vcxproj.filters -text
 Win32/proj/openSees/openSees.dsp -text
 Win32/proj/openSees/openSees.mak -text
+Win32/proj/openSeesMP/OpenSeesMP.vcproj -text svneol=unset#application/octet-stream
+Win32/proj/openSeesSP/OpenSeesSP.vcproj -text svneol=unset#application/octet-stream
 Win32/proj/openSeesTk/OpenSeesTk.vcxproj -text
 Win32/proj/openSeesTk/OpenSeesTk.vcxproj.filters -text
 Win32/proj/openSeesTk/openSeesTk.dsp -text
@@ -4814,8 +4814,6 @@ Win64/lib/debug/DoddRestrepo.pdb -text
 Win64/lib/debug/arpack.pdb -text
 Win64/lib/debug/fedeas.pdb -text
 Win64/lib/debug/umfpackC.pdb -text
-Win64/proj/OpenSeesMP/OpenSeesMP.vcproj -text
-Win64/proj/OpenSeesSP/OpenSeesSP.vcproj -text
 Win64/proj/ParallelOpenSeesManyInterpreters/ParallelOpenSeesManyInterpreters.vcproj -text
 Win64/proj/ParallelOpenSeesSingleInterpreter/ParallelOpenSeesSingleInterpreters.vcproj -text
 Win64/proj/actor/actor.vcxproj -text
@@ -4848,6 +4846,8 @@ Win64/proj/modelbuilder/modelbuilder.vcxproj -text
 Win64/proj/modelbuilder/modelbuilder.vcxproj.filters -text
 Win64/proj/openSees/OpenSees.vcxproj -text
 Win64/proj/openSees/OpenSees.vcxproj.filters -text
+Win64/proj/openSeesMP/OpenSeesMP.vcproj -text
+Win64/proj/openSeesSP/OpenSeesSP.vcproj -text
 Win64/proj/openSeesTk/OpenSeesTk.vcxproj -text
 Win64/proj/openSeesTk/OpenSeesTk.vcxproj.filters -text
 Win64/proj/optimization/optimization.vcxproj -text
