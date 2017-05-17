@@ -185,6 +185,17 @@ Matrix::Matrix(const Matrix &other)
     }
 }
 
+// Move ctor
+#ifdef USE_CXX11
+Matrix::Matrix(Matrix &&other)
+:numRows(other.numRows), numCols(other.numCols), dataSize(other.dataSize), data(other.data), fromFree(0)
+{
+  other.numRows = 0;
+  other.numCols = 0;
+  other.dataSize = 0;
+  other.data = 0;
+}
+#endif
 
 //
 // DESTRUCTOR
@@ -1198,6 +1209,32 @@ Matrix::operator=(const Matrix &other)
 }
 
 
+// Move assignment
+//
+#ifdef USE_CXX11
+Matrix &
+Matrix::operator=( Matrix &&other)
+{
+  // first check we are not trying other = other
+  if (this == &other) 
+    return *this;
+
+
+  if (this->data != 0)
+    delete [] this->data;
+        
+  data = other.data;
+  this->dataSize = other.numCols*other.numRows;
+  this->numCols = other.numCols;
+  this->numRows = other.numRows;
+  other.data = 0;
+  other.dataSize = 0;
+  other.numCols = 0;
+  other.numRows = 0;
+
+  return *this;
+}
+#endif
 
 
 // virtual Matrix &operator+=(double fact);

@@ -85,7 +85,12 @@ Vector::Vector(int size)
 Vector::Vector(double *data, int size)
 : sz(size),theData(data),fromFree(1)
 {
-  
+#ifdef _G3DEBUG
+  if (sz <= 0) {
+    opserr << "Vector::Vector(double *, size) - size " << size << " specified <= 0\n";
+    sz = 0;
+  }
+#endif
 }
  
 
@@ -102,11 +107,27 @@ Vector::Vector(const Vector &other)
     if (theData == 0) {
       opserr << "Vector::Vector(int) - out of memory creating vector of size " << sz << endln;
     }
-  }
+
   // copy the component data
   for (int i=0; i<sz; i++)
     theData[i] = other.theData[i];
 }	
+
+
+
+// Vector(const Vector&):
+//  Move constructor
+#ifdef USE_CXX11   
+Vector::Vector(Vector &&other)
+: sz(other.sz),theData(other.theData),fromFree(0)
+{
+  //opserr << "move ctor!\n";
+  other.theData = 0;
+  other.sz = 0;
+} 
+#endif
+
+
 
 
 // ~Vector():
@@ -727,6 +748,27 @@ Vector::operator=(const Vector &V)
 
   return *this;
 }
+
+// Move assignment operator.  
+#ifdef USE_CXX11   
+Vector &
+Vector::operator=(Vector &&V) 
+{
+  // first check we are not trying v = v
+  if (this != &V) {
+    // opserr << "move assign!\n";
+    if (this->theData != 0) delete [] this->theData;
+    theData = V.theData;
+    this->sz = V.sz;
+    V.theData = 0;
+    V.sz = 0;
+  }
+  return *this;
+}
+#endif
+
+
+
 
 
 // Vector &operator+=(double fact):

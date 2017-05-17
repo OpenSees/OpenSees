@@ -53,6 +53,9 @@ class Matrix
     Matrix(int nrows, int ncols);
     Matrix(double *data, int nrows, int ncols);    
     Matrix(const Matrix &M);    
+#ifdef USE_CXX11
+    Matrix( Matrix &&M);    
+#endif
     ~Matrix();
 
     // utility methods
@@ -82,6 +85,10 @@ class Matrix
     Matrix operator()(const ID &rows, const ID & cols) const;
     
     Matrix &operator=(const Matrix &M);
+
+#ifdef USE_CXX11
+    Matrix &operator=(Matrix &&M);
+#endif
     
     // matrix operations which will preserve the derived type and
     // which can be implemented efficiently without many constructor calls.
