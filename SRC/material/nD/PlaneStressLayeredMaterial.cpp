@@ -51,8 +51,8 @@ void* OPS_PlaneStressLayeredMaterial(void)
 	return 0;
     }
 	
-    if (nLayers < 3) {
-	opserr << "ERROR number of layers must be larger than 2" << endln;
+    if (nLayers < 1) {
+	opserr << "ERROR number of layers must be at least 1" << endln;
 	opserr << "nDMaterial planeStressLayeredMaterial tag: " << tag << endln;
 	return 0;
     }
@@ -93,6 +93,13 @@ void* OPS_PlaneStressLayeredMaterial(void)
 	
 	thickness[iLayer] = h;
     }
+
+    /*
+    for (int i=0; i<nLayers; i++) {
+      opserr << "LAYER THICK: " << i << " " << thickness[i] << endln;
+      theMats[i]->Print(opserr);
+    }
+    */
       
     NDMaterial* theSection = new PlaneStressLayeredMaterial(tag, nLayers, thickness, theMats);
 
@@ -267,7 +274,7 @@ const Vector&  PlaneStressLayeredMaterial::getStress( )
   stress.Zero();
 
   for (int i = 0; i < nLayers; i++ ) {
-      stress += theFibers[i]->getStress( ) * wg[i];
+    stress += theFibers[i]->getStress( ) * wg[i];
   } 
 
    return stress;
@@ -301,11 +308,11 @@ PlaneStressLayeredMaterial::getTangent( ){
 
 void  PlaneStressLayeredMaterial::Print( OPS_Stream &s, int flag )
 {
-  s << "PlaneStressFiber Section tag: " << this->getTag() << endln ; 
+  s << "PlaneStressLayered Section tag: " << this->getTag() << endln ; 
   s << "Total thickness h = " << h << endln ;
 
   for (int i = 0; i < nLayers; i++) {
-    s << "Layer " << i+1 << ", thickness h = " << 0.5 * wg[i] * h << endln;
+    s << "Layer " << i+1 << ", thickness h = " << wg[i]  << endln;
     theFibers[i]->Print( s, flag ) ;
     s << endln;
   }
