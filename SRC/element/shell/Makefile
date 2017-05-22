@@ -4,6 +4,8 @@ OBJS       = ShellMITC4.o \
 	ShellMITC9.o \
 	ShellDKGQ.o \
 	ShellNLDKGQ.o \
+	ShellDKGT.o \
+	ShellNLDKGT.o \
 	R3vectors.o
 
 all:         $(OBJS)

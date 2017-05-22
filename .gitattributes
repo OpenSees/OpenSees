@@ -2830,12 +2830,16 @@ SRC/element/shell/R3vectors.cpp -text
 SRC/element/shell/R3vectors.h -text
 SRC/element/shell/ShellDKGQ.cpp -text
 SRC/element/shell/ShellDKGQ.h -text
+SRC/element/shell/ShellDKGT.cpp -text
+SRC/element/shell/ShellDKGT.h -text
 SRC/element/shell/ShellMITC4.cpp -text
 SRC/element/shell/ShellMITC4.h -text
 SRC/element/shell/ShellMITC9.cpp -text
 SRC/element/shell/ShellMITC9.h -text
 SRC/element/shell/ShellNLDKGQ.cpp -text
 SRC/element/shell/ShellNLDKGQ.h -text
+SRC/element/shell/ShellNLDKGT.cpp -text
+SRC/element/shell/ShellNLDKGT.h -text
 SRC/element/surfaceLoad/Makefile -text
 SRC/element/surfaceLoad/SurfaceLoad.cpp -text
 SRC/element/surfaceLoad/SurfaceLoad.h -text
