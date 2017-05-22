@@ -67,7 +67,7 @@ OPS_ShellMITC4(void)
   int numArgs = OPS_GetNumRemainingInputArgs();
   
   if (numArgs < 6) {
-    opserr << "Want: element ShellMITC4 $tag $iNode $jNoe $kNode $lNode $secTag";
+    opserr << "Want: element ShellMITC4 $tag $iNode $jNoe $kNode $lNode $secTag<-updateBasis>";
     return 0;	
   }
   
@@ -76,6 +76,13 @@ OPS_ShellMITC4(void)
   if (OPS_GetInt(&numData, iData) != 0) {
     opserr << "WARNING invalid integer tag: element ShellMITC4 \n";
     return 0;
+  }
+  bool updateBasis = false;
+
+  if (numArgs == 7) {
+    const char* type = OPS_GetString();    
+    if(strcmp(type,"-updateBasis") == 0) 
+      updateBasis = true;
   }
 
   SectionForceDeformation *theSection = OPS_getSectionForceDeformation(iData[5]);
@@ -86,7 +93,7 @@ OPS_ShellMITC4(void)
   }
   
   theElement = new ShellMITC4(iData[0], iData[1], iData[2], iData[3],
-			      iData[4], *theSection);
+			      iData[4], *theSection, updateBasis);
 
   return theElement;
 }
@@ -110,7 +117,7 @@ double ShellMITC4::wg[4] ;
 //null constructor
 ShellMITC4::ShellMITC4( ) :
 Element( 0, ELE_TAG_ShellMITC4 ),
-connectedExternalNodes(4), load(0), Ki(0)
+connectedExternalNodes(4), load(0), Ki(0), doUpdateBasis(false)
 { 
   for (int i = 0 ;  i < 4; i++ ) 
     materialPointers[i] = 0;
@@ -137,11 +144,12 @@ connectedExternalNodes(4), load(0), Ki(0)
 ShellMITC4::ShellMITC4(  int tag, 
                          int node1,
                          int node2,
-   	                     int node3,
+			 int node3,
                          int node4,
-	                     SectionForceDeformation &theMaterial ) :
+			 SectionForceDeformation &theMaterial,
+			 bool UpdateBasis) :
 Element( tag, ELE_TAG_ShellMITC4 ),
-connectedExternalNodes(4), load(0), Ki(0)
+connectedExternalNodes(4), load(0), Ki(0), doUpdateBasis(UpdateBasis)
 {
   int i;
 
@@ -1126,7 +1134,8 @@ ShellMITC4::formResidAndTangent( int tang_flag )
   resid.Zero( ) ;
   
 //start Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
-  updateBasis( );
+  if (doUpdateBasis == true)
+    updateBasis( );
 //end Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
 
   double dx34 = xl[0][2]-xl[0][3];
@@ -1891,7 +1900,7 @@ int  ShellMITC4::sendSelf (int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(13);
+  static ID idData(14);
   
   int i;
   for (i = 0; i < 4; i++) {
@@ -1912,6 +1921,10 @@ int  ShellMITC4::sendSelf (int commitTag, Channel &theChannel)
   idData(10) = connectedExternalNodes(1);
   idData(11) = connectedExternalNodes(2);
   idData(12) = connectedExternalNodes(3);
+  if (doUpdateBasis == true)
+    idData(13) = 0;
+  else
+    idData(13) = 1;
 
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -1952,7 +1965,7 @@ int  ShellMITC4::recvSelf (int commitTag,
   
   int dataTag = this->getDbTag();
 
-  static ID idData(13);
+  static ID idData(14);
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -1965,6 +1978,10 @@ int  ShellMITC4::recvSelf (int commitTag,
   connectedExternalNodes(1) = idData(10);
   connectedExternalNodes(2) = idData(11);
   connectedExternalNodes(3) = idData(12);
+  if (idData(13) == 0)
+    doUpdateBasis = true;
+  else
+    doUpdateBasis = false;
 
   static Vector vectData(5);
   res += theChannel.recvVector(dataTag, commitTag, vectData);

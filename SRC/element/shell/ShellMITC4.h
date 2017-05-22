@@ -57,7 +57,8 @@ class ShellMITC4 : public Element {
 	      int node2,
 	      int node3,
 	      int node4,
-	      SectionForceDeformation &theMaterial ) ;
+	      SectionForceDeformation &theMaterial,
+	      bool updateBasis=false) ;
   
   //destructor 
   virtual ~ShellMITC4( ) ;
@@ -150,9 +151,10 @@ class ShellMITC4 : public Element {
 
     //compute local coordinates and basis
     void computeBasis( ) ;
-//start Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
+    //start Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
+    bool doUpdateBasis;
     void updateBasis( ) ;
-//end Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
+    //end Yuli Huang (yulihuang@gmail.com) & Xinzheng Lu (luxz@tsinghua.edu.cn)
         
     //inertia terms
     void formInertiaTerms( int tangFlag ) ;
@@ -187,10 +189,6 @@ class ShellMITC4 : public Element {
     Vector *load;
     Matrix *Ki;
 } ; 
-
-
-
-
 
 
 

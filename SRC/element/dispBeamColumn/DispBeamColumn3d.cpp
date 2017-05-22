@@ -1253,8 +1253,10 @@ DispBeamColumn3d::Print(OPS_Stream &s, int flag)
 
   for (int i = 0; i < numSections; i++) {
     opserr << "Section Type: " << theSections[i]->getClassTag() << endln;
-    theSections[i]->Print(s,flag);
+    //    theSections[i]->Print(s,flag);
   }
+  if (rho != 0)
+    opserr << "Mass: \n" << this->getMass();
 }
 
 

@@ -1,6 +1,6 @@
 include ../../../Makefile.def
 
-OBJS       = 	ComponentElement2d.o
+OBJS       = 	ComponentElement2d.o ComponentElementDamp2d.o
 
 # Compilation control
 

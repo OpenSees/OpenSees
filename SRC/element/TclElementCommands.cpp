@@ -124,6 +124,8 @@ extern void *OPS_ShellMITC4(void);
 extern void *OPS_ShellMITC9(void);
 extern void *OPS_ShellDKGQ(void);     //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 extern void *OPS_ShellNLDKGQ(void);   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+extern void *OPS_ShellDKGT(void);     //Added by Shuhao Zhang and  Xinzheng Lu 
+extern void *OPS_ShellNLDKGT(void);   //Added by Shuhao Zhang and  Xinzheng Lu 
 extern void *OPS_Quad4FiberOverlay(void);
 extern void *OPS_Brick8FiberOverlay(void);
 extern void *OPS_QuadBeamEmbedContact(void);
@@ -703,6 +705,26 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   } else if ((strcmp(argv[1],"shellNLDKGQ") == 0) || (strcmp(argv[1],"ShellNLDKGQ") == 0)) {    //Lisha Wang & Xinzheng Lu
     
     void *theEle = OPS_ShellNLDKGQ();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    } 
+
+  } else if ((strcmp(argv[1],"shellDKGT") == 0) || (strcmp(argv[1],"ShellDKGT") == 0)) {  
+    
+    void *theEle = OPS_ShellDKGT();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }    
+
+  } else if ((strcmp(argv[1],"shellNLDKGT"G) == 0) || (strcmp(argv[1],"ShellNLDKGT") == 0)) {    
+    
+    void *theEle = OPS_ShellNLDKGT();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {

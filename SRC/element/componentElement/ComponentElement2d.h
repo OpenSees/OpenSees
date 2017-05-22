@@ -47,7 +47,7 @@ class ComponentElement2d : public Element
     ComponentElement2d(int tag, double A, double E, double I, 
 		       int Nd1, int Nd2, CrdTransf &theTransf, 
 		       UniaxialMaterial *end1, UniaxialMaterial *end2,
-		       double rho = 0.0);
+		       double rho = 0.0, double maxCM = 1e20, double cmRatio = 0.);
     ~ComponentElement2d();
 
     const char *getClassType(void) const {return "ComponentElement2d";};
@@ -66,6 +66,7 @@ class ComponentElement2d : public Element
     int update(void);
     const Matrix &getTangentStiff(void);
     const Matrix &getInitialStiff(void);
+    const Matrix &getDamp(void);    
     const Matrix &getMass(void);    
 
     void zeroLoad(void);	
@@ -111,6 +112,7 @@ class ComponentElement2d : public Element
     Vector rTrial;
     Vector rCommit;
     Matrix kb;
+    Matrix kb0;
 
     static Vector P;
     static Matrix K;
@@ -120,6 +122,9 @@ class ComponentElement2d : public Element
   double EAoverL;		// EA/L
   double EIoverL2;		// 2EI/L
   double EIoverL4;		// 4EI/L
+
+  double maxCM;
+  double cmRatio;
 };
 
 #endif
