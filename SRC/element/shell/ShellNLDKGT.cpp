@@ -1024,7 +1024,7 @@ const Vector&  ShellNLDKGT::getResistingForceIncInertia( )
 //form inertia terms
 
 void   
-ShellNLDKGT::formInertiaTerms( int tangFlag ) /////需要编写
+ShellNLDKGT::formInertiaTerms( int tangFlag ) 
 
 {
 
@@ -2268,7 +2268,7 @@ int  ShellNLDKGT::sendSelf (int commitTag, Channel &theChannel)
 
 int  ShellNLDKGT::recvSelf (int commitTag, 
 		       Channel &theChannel, 
-		       FEM_ObjectBroker &theBroker)      //idData后面的编号是什么意思
+		       FEM_ObjectBroker &theBroker)
 {
   int res = 0;
   
