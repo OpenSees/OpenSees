@@ -47,7 +47,7 @@ class ShellNLDKGT : public Element {
  public:
   
   //null constructor
-  ShellNLDKGT( );                        //////各种参数带修改，主要是与节点数量相关
+  ShellNLDKGT( );
   
   //full constructor
   ShellNLDKGT( int tag, 

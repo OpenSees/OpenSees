@@ -45,14 +45,14 @@ class ShellDKGT : public Element {
  public:
   
   //null constructor
-  ShellDKGT( );                        //////各种参数带修改，主要是与节点数量相关
+  ShellDKGT( ); 
   
   //full constructor
   ShellDKGT( int tag, 
-	          int node1,
-	          int node2,
-			  int node3,
-			  SectionForceDeformation &theMaterial ) ;
+	     int node1,
+	     int node2,
+	     int node3,
+	     SectionForceDeformation &theMaterial ) ;
   
   //destructor 
   virtual ~ShellDKGT( ) ;
@@ -63,13 +63,13 @@ class ShellDKGT : public Element {
   //get the number of external nodes
   int getNumExternalNodes( ) const ;
     
-    //return connected external nodes
-    const ID &getExternalNodes( ) ;
-    Node **getNodePtrs( );
-
-    //return number of dofs
+  //return connected external nodes
+  const ID &getExternalNodes( ) ;
+  Node **getNodePtrs( );
+  
+  //return number of dofs
     int getNumDOF( ) ;
-
+    
     //commit state
     int commitState( ) ;
     
