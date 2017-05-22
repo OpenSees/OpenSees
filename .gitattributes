@@ -1905,6 +1905,8 @@ SRC/analysis/integrator/DistributedDisplacementControl.cpp -text
 SRC/analysis/integrator/DistributedDisplacementControl.h -text
 SRC/analysis/integrator/EigenIntegrator.cpp -text
 SRC/analysis/integrator/EigenIntegrator.h -text
+SRC/analysis/integrator/ExplicitDifference.cpp -text
+SRC/analysis/integrator/ExplicitDifference.h -text
 SRC/analysis/integrator/GeneralizedAlpha.cpp -text
 SRC/analysis/integrator/GeneralizedAlpha.h -text
 SRC/analysis/integrator/HHT.cpp -text
