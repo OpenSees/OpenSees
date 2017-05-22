@@ -55,7 +55,7 @@ OPS_ComponentElement2d(void)
   Element *theElement = 0;
 
   int numArgs = OPS_GetNumRemainingInputArgs();
-  if (numArgs < 9) {
+  if (numArgs < 3) {
     opserr << "Invalid #args,  want: element CompositeElement tag iNode jNode A E I crdTag hinge1 hinge2 \n";
     return 0;
   }
@@ -85,34 +85,11 @@ OPS_ComponentElement2d(void)
   UniaxialMaterial *end1 = OPS_getUniaxialMaterial(iData[4]);
   UniaxialMaterial *end2 = OPS_getUniaxialMaterial(iData[5]);
 
-
-  double maxCM = 1e20;
-  double cmRatio = 0.;
-  double mass = 0;
-  while(OPS_GetNumRemainingInputArgs() > 0) {
-    const char *type = OPS_GetString();
-
-    if (strcmp(type,"-maxC") == 0) {
-      if (OPS_GetNumRemainingInputArgs() > 0) {
-	numData = 1;
-	if (OPS_GetDoubleInput(&numData,&maxCM) < 0) return 0;
-	if (OPS_GetNumRemainingInputArgs() > 0) {
-	  numData = 1;
-	  if (OPS_GetDoubleInput(&numData,&cmRatio) < 0) return 0;
-	}
-      }
-    } else if (strcmp(type,"-rho")==0) {
-      if (OPS_GetNumRemainingInputArgs() > 0) {
-	numData = 1;
-	if (OPS_GetDoubleInput(&numData,&mass) < 0) return 0;
-      }
-    }
-  }
-
   // Parsing was successful, allocate the material
   theElement = new ComponentElement2d(iData[0], dData[0], dData[1], dData[2], 
 				      iData[1], iData[2], 
-				      *theTrans, end1, end2, mass, maxCM, cmRatio);
+				      *theTrans, end1, end2);
+
   if (theElement == 0) {
     opserr << "WARNING could not create element of type ComponentElement2d\n";
     return 0;
@@ -124,10 +101,8 @@ OPS_ComponentElement2d(void)
 
 ComponentElement2d::ComponentElement2d()
   :Element(0,ELE_TAG_ComponentElement2d), 
-   A(0.0), E(0.0), I(0.0), rho(0.0), 
-   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0),
-   end1Hinge(0), end2Hinge(0),
-   kTrial(2,2), R(4), uTrial(4), uCommit(4), kb(3,3), kb0(3,3), init(false)
+  A(0.0), E(0.0), I(0.0), rho(0.0), 
+  Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0)
 {
   // does nothing
   q0[0] = 0.0;
@@ -146,13 +121,12 @@ ComponentElement2d::ComponentElement2d()
 ComponentElement2d::ComponentElement2d(int tag, double a, double e, double i, 
 				       int Nd1, int Nd2, CrdTransf &coordTransf,
 				       UniaxialMaterial *end1, UniaxialMaterial *end2,
-				       double r, double maxC, double cmRat)
+				       double r)
   :Element(tag,ELE_TAG_ComponentElement2d), 
   A(a), E(e), I(i), rho(r), 
-   Q(6), q(3), 
+   Q(6), q(3), kb(3,3),
    connectedExternalNodes(2), theCoordTransf(0), end1Hinge(0), end2Hinge(0),
-  kTrial(2,2), R(4), uTrial(4), uCommit(4), kb(3,3), kb0(3,3), init(false),
-   maxCM(maxC), cmRatio(cmRat)
+   kTrial(2,2), R(4), uTrial(4), uCommit(4), init(false)
 {
   connectedExternalNodes(0) = Nd1;
   connectedExternalNodes(1) = Nd2;
@@ -273,22 +247,6 @@ ComponentElement2d::setDomain(Domain *theDomain)
     EAoverL  = A*E/L;		// EA/L
     EIoverL2 = 2.0*I*E/L;	// 2EI/L
     EIoverL4 = 4.0*E*I/L;	// 4EI/L
-
-    double k1 = 0.;
-    if (end1Hinge != 0) 
-      k1 = end1Hinge->getInitialTangent();
-    double k2 = 0.;
-    if (end2Hinge != 0) 
-      k2 = end2Hinge->getInitialTangent();
-    
-    double delta = 1.0/((k1+EIoverL4)*(k2+EIoverL4)-EIoverL2*EIoverL2);
-    
-    // compute new condensed matrix
-    kb0(0,0) = EAoverL;
-    kb0(1,1) = k1 - delta*(k1*k1*(k2+EIoverL4));
-    kb0(2,2) = k2 - delta*(k2*k2*(k1+EIoverL4));
-    kb0(1,2) = delta*(k1*k2*EIoverL2);
-    kb0(2,1) = delta*(k1*k2*EIoverL2);
 }
 
 int
@@ -394,7 +352,7 @@ ComponentElement2d::update(void)
   bool converged = false;
   int count = 0;
   int maxCount = 10;
-  double tol = 1.0e-14;
+  double tol = 1.0e-10;
 
   // iterate, at least once, to remove internal node unbalance
   while (converged == false) {
@@ -530,9 +488,9 @@ ComponentElement2d::getTangentStiff(void)
   // determine q = kv + q0
   static Vector R(6);  
 
-  //  q(0) += q0[0];
-  //  q(1) += q0[1];
-  //  q(2) += q0[2];
+  q(0) += q0[0];
+  q(1) += q0[1];
+  q(2) += q0[2];
   
   kb(0,0) = EAoverL;
   kb(1,1) = kTrial(0,0);
@@ -546,34 +504,26 @@ ComponentElement2d::getTangentStiff(void)
 const Matrix &
 ComponentElement2d::getInitialStiff(void)
 {
-  return theCoordTransf->getInitialGlobalStiffMatrix(kb0);
-}
+  double L = theCoordTransf->getInitialLength();
 
+  double k1 = 0.;
+  if (end1Hinge != 0) 
+    k1 = end1Hinge->getInitialTangent();
+  double k2 = 0.;
+  if (end2Hinge != 0) 
+    k2 = end2Hinge->getInitialTangent();
 
-const Matrix &
-ComponentElement2d::getDamp(void)
-{ 
-  static Matrix damp(6,6);
-  damp.Zero();
-
-  //  static Vector theVectorD(6); 
-  //  theVectorD = this->getRayleighDampingForces();
+  double delta = 1.0/((k1+EIoverL4)*(k2+EIoverL4)-EIoverL2*EIoverL2);
   
-  // check moment values, if greater than allowed recompute
-  //  if (fabs(theVectorD(2)) > maxCM || fabs(theVectorD(5)) > maxCM) 
-  //    return damp;
-
-  if (alphaM != 0.0)
-    damp.addMatrix(0.0, this->getMass(), alphaM);
-  if (betaK != 0.0)
-    damp.addMatrix(1.0, this->getTangentStiff(), betaK);      
-  if (betaK0 != 0.0)
-    damp.addMatrix(1.0, this->getInitialStiff(), betaK0);      
-  if (betaKc != 0.0)
-    damp.addMatrix(1.0, *Kc, betaKc);      
-
-  // return the computed matrix
-  return damp;
+  // compute new condensed matrix
+  static Matrix kb0(3,3);
+  kb0(0,0) = EAoverL;
+  kb0(1,1) = k1 - delta*(k1*k1*(k2+EIoverL4));
+  kb0(2,2) = k2 - delta*(k2*k2*(k1+EIoverL4));
+  kb0(1,2) = delta*(k1*k2*EIoverL2);
+  kb0(2,1) = delta*(k1*k2*EIoverL2);
+  
+  return theCoordTransf->getInitialGlobalStiffMatrix(kb0);
 }
 
 const Matrix &
@@ -711,39 +661,8 @@ ComponentElement2d::getResistingForceIncInertia()
   P.addVector(1.0, Q, -1.0);
   
   // add the damping forces if rayleigh damping
-  if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0) {
-      static Vector theVectorD(6); 
-      theVectorD = this->getRayleighDampingForces();
-      
-      // check moment values, if greater than allowed recompute
-      if (fabs(theVectorD(2)) > maxCM || fabs(theVectorD(5)) > maxCM) {
-	//		opserr << "maxCM: " << maxCM << "\nBEFORE: " << theVectorD;
-	const Vector &basicVel = theCoordTransf->getBasicTrialVel();
-
-	kb(0,0) = EAoverL;
-	kb(1,1) = kTrial(0,0);
-	kb(2,2) = kTrial(1,1);
-	kb(1,2) = kTrial(0,1);
-	kb(2,1) = kTrial(1,0);
-	
-	Vector localCv(3);
-	static Vector c0Vec(3); 
-
-	localCv = (betaK + betaKc) * kb * basicVel;
-	localCv += (betaK0) * kb0 * basicVel;
-
-
-	if (localCv(1) > maxCM) localCv(1) = maxCM + cmRatio*(localCv(1)-maxCM);
-	if (localCv(2) > maxCM) localCv(2) = maxCM + cmRatio*(localCv(2)-maxCM);
-	if (localCv(1) < -maxCM) localCv(1) = -maxCM + cmRatio*(localCv(1)+maxCM);
-	if (localCv(2) < -maxCM) localCv(2) = -maxCM + cmRatio*(localCv(2)+maxCM);
-
-        theVectorD = theCoordTransf->getGlobalResistingForce(localCv, c0Vec);
-	//	opserr << this->getTag() << " AFTER: " << theVectorD;
-      }
-      P.addVector(1.0, theVectorD, 1.0);
-  }
-  //    P.addVector(1.0, this->getRayleighDampingForces(), 1.0);
+  if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+    P.addVector(1.0, this->getRayleighDampingForces(), 1.0);
     
   if (rho == 0.0)
     return P;
@@ -1081,18 +1000,6 @@ ComponentElement2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse = new ElementResponse(this, 6, Vector(2));
   }  
 
-  else  if (strcmp(argv[0],"rayleighForce") == 0 || strcmp(argv[0],"rayleighForces") == 0) {
-
-
-    output.tag("ResponseType","Px_1");
-    output.tag("ResponseType","Py_1");
-    output.tag("ResponseType","Mz_1");
-    output.tag("ResponseType","Px_2");
-    output.tag("ResponseType","Py_2");
-    output.tag("ResponseType","Mz_2");
-
-    theResponse =  new ElementResponse(this, 7, P);
-  }
 
   output.endTag(); // ElementOutput
 
@@ -1155,11 +1062,6 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
     }
     return eleInfo.setVector(vect2);
 
-
-  case 7: // basic forces
-
-    //    return eleInfo.setVector(this->getRayleighDampingForces());
-    return eleInfo.setVector(this->getResistingForceIncInertia());
 
 
   default:
