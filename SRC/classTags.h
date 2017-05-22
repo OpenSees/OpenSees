@@ -661,6 +661,8 @@
 #define ELE_TAG_PFEMElement2DFIC          164
 #define ELE_TAG_ElastomericBearingBoucWenMod3d 165
 #define ELE_TAG_FPBearingPTV              166
+#define ELE_TAG_ShellDKGT                 167
+#define ELE_TAG_ShellNLDKGT               168
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
@@ -842,6 +844,7 @@
 #define INTEGRATOR_TAGS_PFEMIntegrator                  52
 #define INTEGRATOR_TAGS_KRAlphaExplicit                 53
 #define INTEGRATOR_TAGS_KRAlphaExplicit_TP              54
+#define INTEGRATOR_TAGS_ExplicitDifference              55
 
 #define LinSOE_TAGS_FullGenLinSOE		1
 #define LinSOE_TAGS_BandGenLinSOE		2
