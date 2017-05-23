@@ -722,7 +722,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }    
 
-  } else if ((strcmp(argv[1],"shellNLDKGT"G) == 0) || (strcmp(argv[1],"ShellNLDKGT") == 0)) {    
+  } else if ((strcmp(argv[1],"shellNLDKGT") == 0) || (strcmp(argv[1],"ShellNLDKGT") == 0)) {    
     
     void *theEle = OPS_ShellNLDKGT();
     if (theEle != 0) 
