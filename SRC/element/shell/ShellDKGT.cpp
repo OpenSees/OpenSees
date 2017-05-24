@@ -60,7 +60,7 @@ using namespace std;
 static int numShellDKGT = 0;
 
 void *
-OPS_NewShellDKGT(void)         
+OPS_ShellDKGT(void)         
 {
   if (numShellDKGT == 0) {
 //    opserr << "Using ShellDKGT - Developed by: Shuhao Zhang and Xinzheng Lu\n";

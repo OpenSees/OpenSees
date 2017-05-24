@@ -53,7 +53,7 @@
 static int numShellNLDKGT = 0;
 
 void *
-OPS_NewShellNLDKGT(void)          
+OPS_ShellNLDKGT(void)          
 {
   if (numShellNLDKGT == 0) {
 //    opserr << "Using ShellNLDKGT - Developed by:Shuhao Zhang & Xinzheng Lu";
