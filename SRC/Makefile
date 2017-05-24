@@ -171,6 +171,7 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/material/section/yieldSurface/TclModelBuilderYS_SectionCommand.o \
 	$(FE)/material/section/TclModelBuilderSectionCommand.o \
 	$(FE)/modelbuilder/tcl/TclUniaxialMaterialTester.o \
+	$(FE)/modelbuilder/tcl/TclPlaneStressMaterialTester.o \
 	$(FE)/modelbuilder/tcl/TclSectionTester.o \
 	$(FE)/modelbuilder/tcl/TclModelBuilder.o \
 	$(FE)/domain/component/TclUpdateMaterialCommand.o \
@@ -524,6 +525,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/shell/ShellMITC9.o \
 	$(FE)/element/shell/ShellDKGQ.o \
 	$(FE)/element/shell/ShellNLDKGQ.o \
+	$(FE)/element/shell/ShellDKGT.o \
+	$(FE)/element/shell/ShellNLDKGT.o \
 	$(FE)/element/shell/R3vectors.o \
 	$(FE)/element/brick/Brick.o \
 	$(FE)/element/brick/BbarBrick.o \
@@ -601,13 +604,15 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 
 
 ifdef DAMAGE2P_FLAG
-	DAMAGE_2P = $(FE)/material/nD/Damage2p.o $(FE)/material/nD/Damage2p3D.o $(FE)/material/nD/Damage2ppstress.o
+	DAMAGE_2P = $(FE)/material/nD/Damage2p.o $(FE)/material/nD/Damage2p3D.o $(FE)/material/nD/Damage2ppstress.o \
+	$(FE)/material/nD/Concrete.o $(FE)/material/nD/CPlaneStress.o $(FE)/material/nD/CPlaneStress2d.o $(FE)/material/nD/CPlaneStrain.o $(FE)/material/nD/CThreeDimensional.o 
 else
 	DAMAGE_2P =
 endif
 
 ifdef DAMAGE2P_FLAG
-	DAMAGE_2P = $(FE)/material/nD/Damage2p.o $(FE)/material/nD/Damage2p3D.o $(FE)/material/nD/Damage2ppstress.o
+	DAMAGE_2P = $(FE)/material/nD/Damage2p.o $(FE)/material/nD/Damage2p3D.o $(FE)/material/nD/Damage2ppstress.o \
+	$(FE)/material/nD/Concrete.o $(FE)/material/nD/CPlaneStress.o $(FE)/material/nD/CPlaneStress2d.o $(FE)/material/nD/CPlaneStrain.o $(FE)/material/nD/CThreeDimensional.o 
 else
 	DAMAGE_2P =
 endif
@@ -617,6 +622,12 @@ ifdef PLAINCONCRETE_FLAG
 else
 	PLAINCONCRETE = 
 endif
+
+#	$(FE)/material/nD/Faria1998PlaneStress.o \
+#	$(FE)/material/nD/Faria1998PlaneStress2d.o \
+#	$(FE)/material/nD/Faria1998PlaneStrain.o \
+#	$(FE)/material/nD/Faria1998.o \
+#	$(FE)/material/nD/Faria1998ThreeDimensional.o \
 
 
 MATERIAL_LIBS   =  $(FE)/material/Material.o \
@@ -721,6 +732,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/backbone/ManderBackbone.o \
 	$(FE)/material/uniaxial/backbone/RaynorBackbone.o \
 	$(FE)/material/nD/NDMaterial.o \
+	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
+	$(FE)/material/nD/PlaneStressRebarMaterial.o \
 	$(DAMAGE_2P) $(FE)/material/nD/WrapperNDMaterial.o \
 	$(FE)/material/nD/J2Plasticity.o \
 	$(FE)/material/nD/J2PlaneStress.o \
@@ -740,6 +753,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/matCMM/MaterialCMM.o \
 	$(FE)/material/nD/PlasticDamageConcrete3d.o \
 	$(FE)/material/nD/PlasticDamageConcretePlaneStress.o \
+	$(FE)/material/nD/eig3.o \
 	$(FE)/material/nD/CycLiqCP.o \
 	$(FE)/material/nD/CycLiqCP3D.o \
 	$(FE)/material/nD/CycLiqCPPlaneStrain.o \
@@ -1140,6 +1154,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/integrator/CentralDifferenceAlternative.o \
 	$(FE)/analysis/integrator/CentralDifferenceNoDamping.o \
 	$(FE)/analysis/integrator/WilsonTheta.o \
+	$(FE)/analysis/integrator/ExplicitDifference.o \
 	$(FE)/analysis/integrator/NewmarkExplicit.o \
 	$(FE)/analysis/integrator/NewmarkHSIncrReduct.o \
 	$(FE)/analysis/integrator/NewmarkHSIncrLimit.o \
