@@ -3214,6 +3214,8 @@ SRC/material/nD/cyclicSoil/MultiaxialCyclicPlasticityAxiSymm.cpp -text
 SRC/material/nD/cyclicSoil/MultiaxialCyclicPlasticityAxiSymm.h -text
 SRC/material/nD/cyclicSoil/MultiaxialCyclicPlasticityPlaneStrain.cpp -text
 SRC/material/nD/cyclicSoil/MultiaxialCyclicPlasticityPlaneStrain.h -text
+SRC/material/nD/eig3.cpp -text
+SRC/material/nD/eig3.h -text
 SRC/material/nD/feap/FeapMaterial01.cpp -text
 SRC/material/nD/feap/FeapMaterial01.h -text
 SRC/material/nD/feap/FeapMaterial02.cpp -text
