@@ -356,9 +356,6 @@ extern int
 TclModelBuilder_addYamamotoBiaxialHDR(ClientData clientData, Tcl_Interp *interp,  int argc,
 				  TCL_Char **argv, Domain*, TclModelBuilder *);
 
-extern int
-TclModelBuilder_addCatenaryCable(ClientData clientData, Tcl_Interp *interp,  int argc,
-          TCL_Char **argv, Domain*, TclModelBuilder *);
 
 int
 TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
@@ -1323,12 +1320,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   else if (strcmp(argv[1],"YamamotoBiaxialHDR") == 0) {
     int result = TclModelBuilder_addYamamotoBiaxialHDR(clientData, interp, argc, argv,
 						 theTclDomain, theTclBuilder);
-    return result;
-  }
-
-  else if (strcmp(argv[1],"CatenaryCable") == 0) {
-    int result = TclModelBuilder_addCatenaryCable(clientData, interp, argc, argv,
-             theTclDomain, theTclBuilder);
     return result;
   }
 
