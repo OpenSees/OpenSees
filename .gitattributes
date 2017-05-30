@@ -2592,6 +2592,9 @@ SRC/element/brick/Twenty_Node_Brick.cpp -text
 SRC/element/brick/Twenty_Node_Brick.h -text
 SRC/element/brick/shp3d.cpp -text
 SRC/element/brick/shp3d.h -text
+SRC/element/catenaryCable/CatenaryCable.cpp -text
+SRC/element/catenaryCable/CatenaryCable.h -text
+SRC/element/catenaryCable/Makefile -text
 SRC/element/componentElement/ComponentElement2d.cpp -text
 SRC/element/componentElement/ComponentElement2d.h -text
 SRC/element/componentElement/Makefile -text
