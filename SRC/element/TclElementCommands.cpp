@@ -150,6 +150,8 @@ extern void *OPS_PFEMElement2DBubble();
 extern void *OPS_PFEMElement2DMini();
 extern void *OPS_PFEMElement2D();
 
+extern  void *OPS_CatenaryCableElement(void);
+
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
 
@@ -353,6 +355,10 @@ TclModelBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,  in
 extern int
 TclModelBuilder_addYamamotoBiaxialHDR(ClientData clientData, Tcl_Interp *interp,  int argc,
 				  TCL_Char **argv, Domain*, TclModelBuilder *);
+
+extern int
+TclModelBuilder_addCatenaryCable(ClientData clientData, Tcl_Interp *interp,  int argc,
+          TCL_Char **argv, Domain*, TclModelBuilder *);
 
 int
 TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
@@ -1010,6 +1016,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       }
   }
 
+  else if (strcmp(argv[1], "CatenaryCable") == 0) {
+      void *theEle = OPS_CatenaryCableElement();
+      if (theEle != 0) {
+    theElement = (Element*)theEle;
+      } else {
+    opserr<<"tclelementcommand -- unable to create element of type : "
+    <<argv[1]<<endln;
+    return TCL_ERROR;
+      }
+  }
+
 
   // if one of the above worked
   if (theElement != 0) {
@@ -1306,6 +1323,12 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   else if (strcmp(argv[1],"YamamotoBiaxialHDR") == 0) {
     int result = TclModelBuilder_addYamamotoBiaxialHDR(clientData, interp, argc, argv,
 						 theTclDomain, theTclBuilder);
+    return result;
+  }
+
+  else if (strcmp(argv[1],"CatenaryCable") == 0) {
+    int result = TclModelBuilder_addCatenaryCable(clientData, interp, argc, argv,
+             theTclDomain, theTclBuilder);
     return result;
   }
 

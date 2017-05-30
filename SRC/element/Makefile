@@ -44,6 +44,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/mvlem; $(MAKE);
 	@$(CD) $(FE)/element/PFEMElement; $(MAKE);
 	@$(CD) $(FE)/element/componentElement; $(MAKE);
+	@$(CD) $(FE)/element/catenaryCable; $(MAKE);
 
 # Miscellaneous
 tidy:	
@@ -86,6 +87,7 @@ spotless: clean
 	@$(CD) $(FE)/element/mvlem; $(MAKE) wipe;
 	@$(CD) $(FE)/element/PFEMElement; $(MAKE) wipe;
 	@$(CD) $(FE)/element/componentElement; $(MAKE) wipe;
+	@$(CD) $(FE)/element/catenaryCable; $(MAKE) wipe;
 
 wipe: spotless
 

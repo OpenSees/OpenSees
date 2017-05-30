@@ -79,7 +79,8 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/element	\
                -I$(FE)/element/beam2d	\
                -I$(FE)/element/beam3d	\
-               -I$(FE)/element/truss	\
+               -I$(FE)/element/truss    \
+               -I$(FE)/element/catenaryCable	\
                -I$(FE)/element/fortran	\
                -I$(FE)/element/feap	\
                -I$(FE)/element/zeroLength	\

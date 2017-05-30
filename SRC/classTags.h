@@ -663,6 +663,8 @@
 #define ELE_TAG_FPBearingPTV              166
 #define ELE_TAG_ShellDKGT                 167
 #define ELE_TAG_ShellNLDKGT               168
+#define ELE_TAG_CatenaryCable             169
+
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
