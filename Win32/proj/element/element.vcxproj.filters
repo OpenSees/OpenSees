@@ -111,6 +111,9 @@
     <Filter Include="componentElement">
       <UniqueIdentifier>{f9ae4ba5-03f0-4bec-ba3c-56ec0395d69c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="catenaryCable">
+      <UniqueIdentifier>{7156b1ec-2ba3-42b3-9b09-8bfa3bdc5eeb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -797,6 +800,15 @@
     <ClCompile Include="..\..\..\OTHER\Triangle\triangle.c">
       <Filter>pfem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.cpp">
+      <Filter>catenaryCable</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGT.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGT.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1371,6 +1383,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\OTHER\Triangle\triangle.h">
       <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.h">
+      <Filter>catenaryCable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellDKGT.h">
+      <Filter>shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGT.h">
+      <Filter>shell</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
