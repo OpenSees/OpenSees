@@ -1234,26 +1234,43 @@ opserr << "DispBeamColumn2d::recvSelf() - out of memory creating sections array 
 void
 DispBeamColumn2d::Print(OPS_Stream &s, int flag)
 {
-  s << "\nDispBeamColumn2d, element id:  " << this->getTag() << endln;
-  s << "\tConnected external nodes:  " << connectedExternalNodes;
-  s << "\tCoordTransf: " << crdTransf->getTag() << endln;
-  s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
-  
-  double L = crdTransf->getInitialLength();
-  double P  = q(0);
-  double M1 = q(1);
-  double M2 = q(2);
-  double V = (M1+M2)/L;
+  if (flag == OPS_PRINT_CURRENTSTATE) {
+    s << "\nDispBeamColumn2d, element id:  " << this->getTag() << endln;
+    s << "\tConnected external nodes:  " << connectedExternalNodes;
+    s << "\tCoordTransf: " << crdTransf->getTag() << endln;
+    s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
+    
+    double L = crdTransf->getInitialLength();
+    double P  = q(0);
+    double M1 = q(1);
+    double M2 = q(2);
+    double V = (M1+M2)/L;
+    
+    s << "\tEnd 1 Forces (P V M): " << -P+p0[0]
+      << " " << V+p0[1] << " " << M1 << endln;
+    s << "\tEnd 2 Forces (P V M): " << P
+      << " " << -V+p0[2] << " " << M2 << endln;
+    
+    beamInt->Print(s, flag);
+    
+    for (int i = 0; i < numSections; i++)
+      theSections[i]->Print(s,flag);
+  }
 
-  s << "\tEnd 1 Forces (P V M): " << -P+p0[0]
-    << " " << V+p0[1] << " " << M1 << endln;
-  s << "\tEnd 2 Forces (P V M): " << P
-    << " " << -V+p0[2] << " " << M2 << endln;
-
-  beamInt->Print(s, flag);
-
-  for (int i = 0; i < numSections; i++)
-    theSections[i]->Print(s,flag);
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\{";
+    s << "\"type\":\"DispBeamColumn2d\",";
+    s << "\"name\":" << this->getTag() << ",";
+    s << "\"nodes\":[ " << connectedExternalNodes(0) << "," << connectedExternalNodes(1) << " ],";
+    s << "\"sections\":[ " ;
+    for (int i = 0; i < numSections-1; i++)
+      s << theSections[i]->getTag() << ", ";
+    s << theSections[numSections-1]->getTag() << " ],";
+    s << "\"integration\":";
+    beamInt->Print(opserr,flag);
+    s << ",\"crdTransformation\":" << crdTransf->getTag();
+    s << "}";
+  }
 }
 
 

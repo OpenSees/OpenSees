@@ -351,7 +351,22 @@ Concrete02::recvSelf(int commitTag, Channel &theChannel,
 void 
 Concrete02::Print(OPS_Stream &s, int flag)
 {
-  s << "Concrete02:(strain, stress, tangent) " << eps << " " << sig << " " << e << endln;
+  if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {      
+    s << "Concrete02:(strain, stress, tangent) " << eps << " " << sig << " " << e << endln;
+  }
+
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\{";
+    s << "\"type\":\"Concrete02\",";
+    s << "\"name\":" << this->getTag() << ",";
+    s << "\"fc\":" << fc << ",";
+    s << "\"epsc0\":" << epsc0 << ",";
+    s << "\"fcu\":" << fcu << ",";
+    s << "\"epscu\":" << epscu << ",";
+    s << "\"rat\":" << rat << ",";
+    s << "\"ft\":" << ft << ",";
+    s << "\"Ets\":" << Ets << "}";
+  }
 }
 
 

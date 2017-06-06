@@ -179,5 +179,5 @@ puts "eigen values at start of transient: [eigen -Umfpack 2]"
 # Print state of node 3
 print node 3
 
-wipe
+
 

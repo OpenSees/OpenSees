@@ -63,6 +63,26 @@ OPS_clearAllCrdTransf(void) {
 }
 
 
+void OPS_printCrdTransf(OPS_Stream &s, int flag) {
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\"coordTransf\": [\n";        
+    MapOfTaggedObjectsIter theObjects = theCrdTransfObjects.getIter();
+    theObjects.reset();
+    TaggedObject *theObject;
+    int count = 0;
+    int numComponents = theCrdTransfObjects.getNumComponents();    
+    while ((theObject = theObjects()) != 0) {
+      CrdTransf *theTransf = (CrdTransf *)theObject;
+      theTransf->Print(s, flag);
+      if (count < numComponents-1)
+	s << ",\n";
+      count++;      
+    }
+    s << "]";
+  }
+}
+
+
 // constructor:
 CrdTransf::CrdTransf(int tag, int classTag):TaggedObject(tag), MovableObject(classTag)
 {

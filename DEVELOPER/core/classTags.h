@@ -18,8 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 6262 $
-// $Date: 2016-05-04 09:10:39 -0700 (Wed, 04 May 2016) $
+// $Revision: 6524 $
+// $Date: 2017-02-03 12:03:50 -0800 (Fri, 03 Feb 2017) $
 // $URL: svn://peera.berkeley.edu/usr/local/svn/OpenSees/trunk/SRC/classTags.h $
 
 // Written: fmk
@@ -332,6 +332,13 @@
 #define ND_TAG_MaterialCMM                        42
 #define ND_TAG_FSAM                               43
 #define ND_TAG_PlasticDamageConcrete3d            44
+#define ND_TAG_PlaneStressLayeredMaterial         45
+#define ND_TAG_PlaneStressRebarMaterial           46
+#define ND_TAG_Faria1998PlaneStrain               48
+#define ND_TAG_Faria1998PlaneStress               49
+#define ND_TAG_Faria1998PlaneStress2d               50
+#define ND_TAG_Faria1998               51
+#define ND_TAG_Faria1998ThreeDimensional               52
 
 #define ND_TAG_FluidSolidPorousMaterial        100
 #define ND_TAG_PressureDependMultiYield		101
@@ -345,7 +352,6 @@
 #define ND_TAG_FAPrestressedConcretePlaneStress  109
 #define ND_TAG_FAFourSteelPCPlaneStress  110
 #define ND_TAG_RAFourSteelPCPlaneStress  111
-
 
 #define ND_TAG_J2PlaneStrain                  3005
 #define ND_TAG_J2PlaneStress                  3006

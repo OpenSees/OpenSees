@@ -120,5 +120,6 @@ class SectionForceDeformation : public Material
 extern bool OPS_addSectionForceDeformation(SectionForceDeformation *newComponent);
 extern SectionForceDeformation *OPS_getSectionForceDeformation(int tag);
 extern void OPS_clearAllSectionForceDeformation(void);
+extern void OPS_printSectionForceDeformation(OPS_Stream &s, int flag=0);
 
 #endif

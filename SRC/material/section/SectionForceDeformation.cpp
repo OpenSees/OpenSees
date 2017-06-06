@@ -46,6 +46,7 @@ void invertMatrix(int n, const Matrix &a, Matrix &b);
 
 #include <TaggedObject.h>
 #include <MapOfTaggedObjects.h>
+#include <MapOfTaggedObjectsIter.h>
 
 static MapOfTaggedObjects theSectionForceDeformationObjects;
 
@@ -67,6 +68,26 @@ SectionForceDeformation *OPS_getSectionForceDeformation(int tag) {
 
 void OPS_clearAllSectionForceDeformation(void) {
   theSectionForceDeformationObjects.clearAll();
+}
+
+void OPS_printSectionForceDeformation(OPS_Stream &s, int flag) {
+
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\"sections\": [\n";    
+    MapOfTaggedObjectsIter theObjects = theSectionForceDeformationObjects.getIter();
+    theObjects.reset();
+    TaggedObject *theObject;
+    int count = 0;
+    int numComponents = theSectionForceDeformationObjects.getNumComponents();
+    while ((theObject = theObjects()) != 0) {
+      SectionForceDeformation *theSection = (SectionForceDeformation *)theObject;
+      theSection->Print(s, flag);
+      if (count < numComponents-1)
+	s << ",\n";
+      count++;
+    }
+    s << "]";
+  }
 }
 
 

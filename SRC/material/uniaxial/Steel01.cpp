@@ -525,14 +525,30 @@ int Steel01::recvSelf (int commitTag, Channel& theChannel,
 
 void Steel01::Print (OPS_Stream& s, int flag)
 {
-   s << "Steel01 tag: " << this->getTag() << endln;
-   s << "  fy: " << fy << " ";
-   s << "  E0: " << E0 << " ";
-   s << "  b:  " << b << " ";
-   s << "  a1: " << a1 << " ";
-   s << "  a2: " << a2 << " ";
-   s << "  a3: " << a3 << " ";
-   s << "  a4: " << a4 << " ";
+  if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {    
+    s << "Steel01 tag: " << this->getTag() << endln;
+    s << "  fy: " << fy << " ";
+    s << "  E0: " << E0 << " ";
+    s << "   b: " << b << " ";
+    s << "  a1: " << a1 << " ";
+    s << "  a2: " << a2 << " ";
+    s << "  a3: " << a3 << " ";
+    s << "  a4: " << a4 << " ";
+  }
+
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\{";
+    s << "\"type\":\"Steel01\",";
+    s << "\"name\":" << this->getTag() << ",";
+    s << "\"fy\":" << fy << ",";
+    s << "\"E0\":" << E0 << ",";
+    s << "\"b\":" << b << ",";
+    s << "\"a1\":" << a1 << ",";
+    s << "\"a2\":" << a2 << ",";
+    s << "\"a3\":" << a3 << ",";
+    s << "\"a4\":" << a4 << "}";
+  }
+  
 }
 
 

@@ -1737,7 +1737,7 @@ Node::recvSelf(int cTag, Channel &theChannel,
 void
 Node::Print(OPS_Stream &s, int flag)
 {
-  if (flag == 0) { // print out everything
+  if (flag == OPS_PRINT_CURRENTSTATE) { // print out everything
     s << "\n Node: " << this->getTag() << endln;
     s << "\tCoordinates  : " << *Crd;
     if (commitDisp != 0)         
@@ -1756,14 +1756,26 @@ Node::Print(OPS_Stream &s, int flag)
 	s << "\t Rayleigh Forces: " << *this->getResponse(RayleighForces);
     }
     if (theEigenvectors != 0)
-	s << "\t Eigenvectors: " << *theEigenvectors;
+      s << "\t Eigenvectors: " << *theEigenvectors;
     if (theDOF_GroupPtr != 0)
       s << "\tID : " << theDOF_GroupPtr->getID();
     s << "\n"; 
   }
   else if (flag == 1) { // print out: nodeId displacements
     s << this->getTag() << "  " << *commitDisp;
+
+
+  } else if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    
+    s << "{\"name\": "<< this->getTag() << ","
+      << "\"ndf\": " << numberDOF << ","
+      << "\"crd\": [";
+    int numCrd = Crd->Size();
+    for (int i=0; i<numCrd-1; i++)
+      s << (*Crd)(i) << ", ";
+    s << (*Crd)(numCrd-1) << "]}";
   }
+  
 }
   
 int

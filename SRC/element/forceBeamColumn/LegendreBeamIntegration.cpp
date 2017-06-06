@@ -272,5 +272,9 @@ LegendreBeamIntegration::getSectionWeights(int numSections, double L,
 void
 LegendreBeamIntegration::Print(OPS_Stream &s, int flag)
 {
-  s << "Legendre" << endln;
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "{\"type\":\"Lobatto\"}" << endln;
+  } else {
+    s << "Lobatto" << endln;
+  }  
 }

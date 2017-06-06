@@ -218,3 +218,5 @@ print node 3 4
 
 # Print out the state of element 1
 print ele 1 2 3
+
+print -JSON -file test.json 

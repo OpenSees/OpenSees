@@ -796,20 +796,37 @@ FiberSection2d::recvSelf(int commitTag, Channel &theChannel,
 void
 FiberSection2d::Print(OPS_Stream &s, int flag)
 {
-  if (flag== 1 || flag == 2) {
+  if (flag== OPS_PRINT_PRINTMODEL_MATERIAL || flag == OPS_PRINT_PRINTMODEL_SECTION) {
     s << "\nFiberSection2d, tag: " << this->getTag() << endln;
     s << "\tSection code: " << code;
     s << "\tNumber of Fibers: " << numFibers << endln;
     s << "\tCentroid: " << yBar << endln;
     theMaterials[0]->Print(s, flag);
     
-    if (flag == 2) {
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
       for (int i = 0; i < numFibers; i++) {
 	s << "\nLocation (y) = (" << matData[2*i] << ")";
 	s << "\nArea = " << matData[2*i+1] << endln;
 	theMaterials[i]->Print(s, flag);
       }
     }
+  }
+
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\{";
+    s << "\"type\":\"FiberSection2d\",";
+    s << "\"name\":" << this->getTag() << ",";
+    s << "\"fibers\":[ \n";
+    for (int i = 0; i < numFibers; i++) {
+      s << "{\"coord\": [" << matData[2*i] << ", 0.0],";
+      s << "\"area\": " << matData[2*i+1] << ",";
+      s << "\"material\":" << theMaterials[i]->getTag();
+      if (i < numFibers-1)
+	s << "},\n";
+      else
+	s << "}\n";	
+    }
+    s << "]\n}";
   }
 }
 

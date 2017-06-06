@@ -1141,9 +1141,20 @@ CorotCrdTransf2d::getPointGlobalDisplFromBasic(double xi, const Vector &uxb)
 void
 CorotCrdTransf2d::Print(OPS_Stream &s, int flag)
 {
-    s << "\nCrdTransf: " << this->getTag() << " Type: LinearCrdTransf2d";
+   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+     s << "{\"type\":\"CorotCrdTransf2d\", \"name\": " << this->getTag();
+     if (nodeIOffset != 0)
+       s << ",\"iOffset\": [" << nodeIOffset[0] << ", " << nodeIOffset[1] << "]";
+     if (nodeJOffset != 0)
+       s << ",\"jOffset\": [" << nodeJOffset[0] << ", " << nodeJOffset[1] << "]";
+     s << "}";
+   }
+
+   if (flag == OPS_PRINT_CURRENTSTATE) {     
+    s << "\nCrdTransf: " << this->getTag() << " Type: CorotCrdTransf2d";
     s << "\tnodeI Offset: " << nodeIOffset;
     s << "\tnodeJ Offset: " << nodeJOffset;
+   }
 }
 
 

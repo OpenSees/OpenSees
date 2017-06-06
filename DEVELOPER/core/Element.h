@@ -118,14 +118,13 @@ class Element : public DomainComponent
     Matrix **previousK;
     int numPreviousK;
 
+  private:
     int index, nodeIndex;
 
     static Matrix ** theMatrices; 
     static Vector ** theVectors1; 
     static Vector ** theVectors2; 
     static int numMatrices;
-
-  private:
 };
 
 

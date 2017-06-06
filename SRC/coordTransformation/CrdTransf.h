@@ -104,5 +104,6 @@ private:
 extern bool       OPS_addCrdTransf(CrdTransf *newComponent);
 extern CrdTransf *OPS_getCrdTransf(int tag);
 extern void       OPS_clearAllCrdTransf(void);
+extern void       OPS_printCrdTransf(OPS_Stream &s, int flag=0);
 
 #endif

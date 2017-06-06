@@ -543,11 +543,23 @@ int Concrete01::recvSelf (int commitTag, Channel& theChannel,
 
 void Concrete01::Print (OPS_Stream& s, int flag)
 {
-   s << "Concrete01, tag: " << this->getTag() << endln;
-   s << "  fpc: " << fpc << endln;
-   s << "  epsc0: " << epsc0 << endln;
-   s << "  fpcu: " << fpcu << endln;
-   s << "  epscu: " << epscu << endln;
+  if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {      
+    s << "Concrete01, tag: " << this->getTag() << endln;
+    s << "  fpc: " << fpc << endln;
+    s << "  epsc0: " << epsc0 << endln;
+    s << "  fpcu: " << fpcu << endln;
+    s << "  epscu: " << epscu << endln;
+  }
+    
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\{";
+    s << "\"type\":\"Concrete01\",";
+    s << "\"name\":" << this->getTag() << ",";
+    s << "\"fpc\":" << fpc << ",";
+    s << "\"epsc0\":" << epsc0 << ",";
+    s << "\"fpcu\":" << fpcu << ",";
+    s << "\"epscu\":" << epscu << "}";
+  }
 }
 
 

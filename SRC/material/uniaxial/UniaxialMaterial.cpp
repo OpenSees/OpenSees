@@ -65,6 +65,25 @@ void OPS_clearAllUniaxialMaterial(void) {
   theUniaxialMaterialObjects.clearAll();
 }
 
+void OPS_printUniaxialMaterial(OPS_Stream &s, int flag) {
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\"uniaxialMaterials\": [\n";        
+    MapOfTaggedObjectsIter theObjects = theUniaxialMaterialObjects.getIter();
+    theObjects.reset();
+    TaggedObject *theObject;
+    int count = 0;
+    int numComponents = theUniaxialMaterialObjects.getNumComponents();    
+    while ((theObject = theObjects()) != 0) {
+      UniaxialMaterial *theMaterial = (UniaxialMaterial *)theObject;
+      theMaterial->Print(s, flag);
+      if (count < numComponents-1)
+	s << ",\n";
+      count++;      
+    }
+    s << "]";
+  }
+}
+
 
 UniaxialMaterial::UniaxialMaterial(int tag, int clasTag)
 :Material(tag,clasTag)

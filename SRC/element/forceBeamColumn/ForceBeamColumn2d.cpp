@@ -2227,52 +2227,9 @@ ForceBeamColumn2d::Print(OPS_Stream &s, int flag)
     vp = crdTransf->getBasicTrialDisp();
     vp.addMatrixVector(1.0, fe, Se, -1.0);
     s << "#PLASTIC_HINGE_ROTATION " << vp[1] << " " << vp[2] << " " << 0.1*L << " " << 0.1*L << endln;
-/*
-    // allocate array of vectors to store section coordinates and displacements
-    static int maxNumSections = 0;
-    static Vector *coords = 0;
-    static Vector *displs = 0;
-    if (maxNumSections < numSections) {
-      if (coords != 0) 
-	delete [] coords;
-      if (displs != 0)
-	delete [] displs;
-      
-      coords = new Vector [numSections];
-      displs = new Vector [numSections];
-      
-      if (!coords) {
-	opserr << "NLBeamColumn3d::Print() -- failed to allocate coords array";   
-	exit(-1);
-      }
-      
-      int i;
-      for (i = 0; i < numSections; i++)
-	coords[i] = Vector(NDM);
-      
-      if (!displs) {
-	opserr << "NLBeamColumn3d::Print() -- failed to allocate coords array";   
-	exit(-1);
-      }
-      
-      for (i = 0; i < numSections; i++)
-	displs[i] = Vector(NDM);
-      
-      
-      maxNumSections = numSections;
-    }
-    
-    // compute section location & displacements
-    this->compSectionDisplacements(coords, displs);
-    
-    // spit out the section location & invoke print on the scetion
-    for (int i=0; i<numSections; i++) {
-      s << "#SECTION " << (coords[i])(0) << " " << (coords[i])(1);       
-      s << " " << (displs[i])(0) << " " << (displs[i])(1) << endln;
-      sections[i]->Print(s, flag); 
-    }
-    */
-  } else {
+  }
+
+  if (flag == OPS_PRINT_CURRENTSTATE) {
 
     s << "\nElement: " << this->getTag() << " Type: ForceBeamColumn2d ";
     s << "\tConnected Nodes: " << connectedExternalNodes ;
@@ -2298,6 +2255,22 @@ ForceBeamColumn2d::Print(OPS_Stream &s, int flag)
 	s << "\nSection "<<i<<" :" << *sections[i];
     }
   }
+
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\{";
+    s << "\"type\":\"DispBeamColumn2d\",";
+    s << "\"name\":" << this->getTag() << ",";
+    s << "\"nodes\":[ " << connectedExternalNodes(0) << "," << connectedExternalNodes(1) << " ],";
+    s << "\"sections\":[ ";
+    for (int i = 0; i < numSections-1; i++)
+      s << sections[i]->getTag() << ", ";
+    s << sections[numSections-1]->getTag() << " ],";
+    s << "\"integration\":";
+    beamIntegr->Print(s,flag);
+    s << ",";
+    s << "\"crdTransformation\":"<<crdTransf->getTag();
+    s << "}";
+  }  
 }
 
 OPS_Stream &operator<<(OPS_Stream &s, ForceBeamColumn2d &E)

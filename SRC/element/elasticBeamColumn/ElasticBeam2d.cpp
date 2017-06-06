@@ -1,5 +1,5 @@
 /* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**    Openers - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
@@ -781,7 +781,9 @@ ElasticBeam2d::Print(OPS_Stream &s, int flag)
     s << "EL_BEAM\t" << eleTag << "\t";
     s << 0 << "\t" << 0 << "\t" << connectedExternalNodes(0) << "\t" << connectedExternalNodes(1) ;
     s << "0\t0.0000000\n";
-  } else {
+  }
+
+  if (flag == OPS_PRINT_CURRENTSTATE) {
     this->getResistingForce();
     s << "\nElasticBeam2d: " << this->getTag() << endln;
     s << "\tConnected Nodes: " << connectedExternalNodes ;
@@ -796,6 +798,19 @@ ElasticBeam2d::Print(OPS_Stream &s, int flag)
       << " " << V+p0[1] << " " << M1 << endln;
     s << "\tEnd 2 Forces (P V M): " << P
       << " " << -V+p0[2] << " " << M2 << endln;
+  }
+
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\{";
+    s << "\"type\":\"ElasticBeam2d\",";
+    s << "\"name\":" << this->getTag() << ",";
+    s << "\"nodes\":[ " << connectedExternalNodes(0) << "," << connectedExternalNodes(1) << " ],";
+    s << "\"A\":"<< A << ",";
+    s << "\"E\":"<< E << ",";
+    s << "\"I\":"<< I << ",";
+    s << "\"rho\":"<< rho << ",";
+    s << "\"crdTransformation\":" << theCoordTransf->getTag();
+    s << "}";
   }
 }
 

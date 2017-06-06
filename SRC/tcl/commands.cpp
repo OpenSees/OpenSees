@@ -1856,6 +1856,8 @@ printModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   int currentArg = 1;
   int res = 0;
 
+  int flag = OPS_PRINT_CURRENTSTATE;
+  
   FileStream outputFile;
   OPS_Stream *output = &opserr;
   bool done = false;
@@ -1896,6 +1898,11 @@ printModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       done = true;
     }
 
+    else if ((strcmp(argv[currentArg],"-JSON") == 0)) {
+      currentArg++;
+      flag = OPS_PRINT_PRINTMODEL_JSON;
+    }    
+
     else {
 
       if ((strcmp(argv[currentArg],"file") == 0) || 
@@ -1910,7 +1917,7 @@ printModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
       // if just 'print <filename>' then print out the entire domain to eof
       if (argc == currentArg) {
-	outputFile << theDomain;
+	theDomain.Print(outputFile, flag);
 	return TCL_OK;
       }  
 
