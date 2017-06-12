@@ -41,7 +41,7 @@
 using namespace std;
 
 void *
-OPS_StainlessECThermal()
+OPS_StainlessECThermal(void)
 {
 	// Pointer to a uniaxial material that will be returned
 	UniaxialMaterial *theMaterial = 0;

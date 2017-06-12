@@ -118,9 +118,15 @@ extern void *OPS_HookGap(void);
 extern void *OPS_HyperbolicGapMaterial(void);
 extern void *OPS_FRPConfinedConcrete(void);
 extern void *OPS_FRPConfinedConcrete02(void);
+
 extern void *OPS_Steel01Thermal(void);
 extern void *OPS_Steel02Thermal(void);
 extern void *OPS_Concrete02Thermal(void);
+extern void *OPS_StainlessECThermal(void); // L.Jiang [SIF]
+extern void *OPS_SteelECThermal(void); // L.Jiang [SIF]
+extern void *OPS_ConcreteECThermal(void);// L.Jiang [SIF]
+extern void *OPS_ElasticMaterialThermal(void); //L.Jiang[SIF]
+
 extern void *OPS_BWBN(void);
 extern void *OPS_ModIMKPeakOriented(void);
 extern void *OPS_ModIMKPeakOriented02(void);
@@ -533,6 +539,39 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;
+
+	  // More thermo-mechanical uniaxial materials, L.Jiang[SIF]
+	}
+	else if (strcmp(argv[1], "SteelECThermal") == 0) {
+		void *theMat = OPS_SteelECThermal();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+		//------End of adding identity for SteelEcThermal	
+	}
+	else if (strcmp(argv[1], "StainlessECThermal") == 0) {
+		void *theMat = OPS_StainlessECThermal();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+		//------End of adding identity for StainlessECThermal
+	}
+	else if (strcmp(argv[1], "ElasticThermal") == 0) {
+		void *theMat = OPS_ElasticMaterialThermal();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+
+	} else if (strcmp(argv[1], "ConcreteECThermal") == 0) {
+		void *theMat = OPS_ConcreteECThermal();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+		// end of adding More thermo-mechanical uniaxial materials, L.Jiang[SIF]
 
     } else if (strcmp(argv[1],"ConcretewBeta") == 0) {
       void *theMat = OPS_ConcretewBeta();

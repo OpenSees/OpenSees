@@ -75,7 +75,16 @@ OBJS       = NDMaterial.o \
 	SimplifiedJ2.o \
 	LinearCap.o \
 	AcousticMedium.o \
-	PlaneStressSimplifiedJ2.o
+	PlaneStressSimplifiedJ2.o \
+	DruckerPrager3DThermal.o \
+	DruckerPragerThermal.o \
+	ElasticIsotropic3DThermal.o \
+	ElasticIsotropicMaterialThermal.o \
+	J2PlasticityThermal.o \
+	J2ThreeDimensionalThermal.o \
+	PlateFiberMaterialThermal.o \
+	PlateFromPlaneStressMaterialThermal.o \
+	PlateRebarMaterialThermal.o 
 
 
 all: $(OBJS) 

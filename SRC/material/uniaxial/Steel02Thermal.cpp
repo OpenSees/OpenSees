@@ -17,11 +17,18 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-////JZ. 05/2010
+ 
+//This file contains the definition of material Steel02Thermal, which is
+// modified from Steel02 by adding fuctions for considering temperature
+// dependent material properties
+
+//Modified by:  Jian Zhang(j.zhang@ed.ac.uk)---------07,2010// 
+//              Panagiotis Kotsovinos(P.Kotsovinos@ed.ac.uk)// 
+//              Liming Jiang(liming.jiang@ed.ac.uk)
+
+
 
 #include <stdlib.h>
-#include <string.h>
 #include <Steel02Thermal.h>
 #include <OPS_Globals.h>
 #include <float.h>

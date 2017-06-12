@@ -114,7 +114,7 @@ extern void *OPS_AcousticMedium(void);
 
 extern  void *OPS_ElasticIsotropicMaterialThermal(void);  //L.Jiang [SIF]
 extern  void *OPS_DruckerPragerMaterialThermal(void);//L.Jiang [SIF]
-extern  void *OPS_PlasticDamageConcretePlaneStressThermal(void);//L.Jiang [SIF]
+//extern  void *OPS_PlasticDamageConcretePlaneStressThermal(void);//L.Jiang [SIF]
 
 #ifdef _HAVE_Faria1998
 extern void *OPS_Faria1998(void);
@@ -1735,6 +1735,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 			return TCL_ERROR;
 	}
 	//-------------------------------------------------------------
+    /*
 	else if ((strcmp(argv[1], "CDPPlaneStressThermal") == 0)) {
 		void *theMat = OPS_PlasticDamageConcretePlaneStressThermal();
 		if (theMat != 0)
@@ -1742,6 +1743,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 		else
 			return TCL_ERROR;
 	}
+    */
 	//-------------------------------------------------------------
 	else if (strcmp(argv[1], "PlateFromPlaneStressThermal") == 0 ) {
 		if (argc < 5) {

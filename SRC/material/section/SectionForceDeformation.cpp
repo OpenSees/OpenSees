@@ -504,12 +504,20 @@ SectionForceDeformation::setTrialSectionDeformation(const Vector& nouse, const V
   return -1;
 }
 
-//static Vector errRes(3);
+static Vector errRes(3);
 
 const Vector &
 SectionForceDeformation::getTemperatureStress(const Vector &tData) //PK
 {
   opserr << "SectionForceDeformation::getTemperatureStress(double *dataMixed) - should not be called\n";
-  return this->getStressResultant();
+  errRes.resize(this->getStressResultant().Size());
+  return errRes;
+  //  return this->getStressResultant();
 }
 //--- Adding Thermal Functions:[END]   by UoE OpenSees Group ----//
+
+const Vector& SectionForceDeformation::getThermalElong(void)
+{
+  errRes.resize(this->getStressResultant().Size());
+  return errRes;
+}

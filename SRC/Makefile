@@ -219,6 +219,7 @@ GLF_LIBS = $(FE)/element/zeroLength/ZeroLength.o \
 
 REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn2d.o \
+	$(FE)/element/forceBeamColumn/ForceBeamColumn2dThermal.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumnCBDI2d.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumnWarping2d.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn3d.o \
@@ -504,6 +505,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2d.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2dThermal.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3d.o \
+	$(FE)/element/dispBeamColumn/DispBeamColumn3dThermal.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn2dWithSensitivity.o \
 	$(FE)/element/dispBeamColumn/DispBeamColumn3dWithSensitivity.o \
 	$(FE)/element/dispBeamColumnInt/DispBeamColumn2dInt.o \
@@ -522,11 +524,13 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/componentElement/ComponentElement2d.o \
 	$(FE)/element/fourNodeQuad/NineNodeMixedQuad.o \
 	$(FE)/element/shell/ShellMITC4.o \
+	$(FE)/element/shell/ShellMITC4Thermal.o \
 	$(FE)/element/shell/ShellMITC9.o \
 	$(FE)/element/shell/ShellDKGQ.o \
 	$(FE)/element/shell/ShellNLDKGQ.o \
 	$(FE)/element/shell/ShellDKGT.o \
 	$(FE)/element/shell/ShellNLDKGT.o \
+	$(FE)/element/shell/ShellNLDKGQThermal.o \
 	$(FE)/element/shell/R3vectors.o \
 	$(FE)/element/brick/Brick.o \
 	$(FE)/element/brick/BbarBrick.o \
@@ -676,6 +680,11 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Steel01Thermal.o \
 	$(FE)/material/uniaxial/Steel02Thermal.o \
 	$(FE)/material/uniaxial/Concrete02Thermal.o \
+	$(FE)/material/uniaxial/Concrete02Thermal.o \
+	$(FE)/material/uniaxial/ConcreteECThermal.o \
+	$(FE)/material/uniaxial/ElasticMaterialThermal.o \
+	$(FE)/material/uniaxial/StainlessECThermal.o \
+	$(FE)/material/uniaxial/SteelECThermal.o \
 	$(FE)/material/uniaxial/limitState/PinchingLimitStateMaterial.o \
 	$(FE)/material/uniaxial/ModIMKPinching.o \
 	$(FE)/material/uniaxial/ModIMKPinching02.o \
@@ -801,6 +810,16 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlaneStressMaterial.o \
 	$(FE)/material/nD/PlaneStrainMaterial.o \
 	$(FE)/material/nD/PlateFiberMaterial.o \
+	$(FE)/material/nD/ElasticIsotropic3DThermal.o \
+	$(FE)/material/nD/ElasticIsotropicMaterialThermal.o \
+	$(FE)/material/nD/J2PlasticityThermal.o \
+	$(FE)/material/nD/J2ThreeDimensionalThermal.o \
+	$(FE)/material/nD/DruckerPrager3DThermal.o \
+	$(FE)/material/nD/DruckerPragerThermal.o \
+	$(FE)/material/nD/J2ThreeDimensionalThermal.o \
+	$(FE)/material/nD/PlateFiberMaterialThermal.o \
+	$(FE)/material/nD/PlateFromPlaneStressMaterialThermal.o \
+	$(FE)/material/nD/PlateRebarMaterialThermal.o \
 	$(FE)/material/nD/BeamFiberMaterial.o \
 	$(FE)/material/nD/BeamFiberMaterial2d.o \
 	$(FE)/material/nD/cyclicSoil/MultiaxialCyclicPlasticity.o \
@@ -884,6 +903,10 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/NDFiberSection2d.o \
 	$(FE)/material/section/NDFiberSectionWarping2d.o \
 	$(FE)/material/section/FiberSection2dThermal.o \
+	$(FE)/material/section/LayeredShellFiberSectionThermal.o \
+	$(FE)/material/section/FiberSection3dThermal.o \
+	$(FE)/material/section/MembranePlateFiberSectionThermal.o \
+	$(FE)/material/section/FiberSectionGJThermal.o \
 	$(FE)/material/section/FiberSection3d.o \
 	$(FE)/material/section/NDFiberSection3d.o \
 	$(FE)/material/section/SectionAggregator.o \
@@ -1040,6 +1063,10 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/load/Beam2dPointLoad.o \
 	$(FE)/domain/load/Beam2dTempLoad.o \
 	$(FE)/domain/load/Beam2dThermalAction.o \
+	$(FE)/domain/load/NodalThermalAction.o \
+	$(FE)/domain/load/ThermalActionWrapper.o \
+	$(FE)/domain/load/Beam3dThermalAction.o \
+	$(FE)/domain/load/ShellThermalAction.o \
 	$(FE)/domain/load/Beam3dUniformLoad.o \
 	$(FE)/domain/load/Beam3dPointLoad.o \
 	$(FE)/domain/load/BrickSelfWeight.o \
@@ -1060,6 +1087,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/pattern/PeerMotion.o \
 	$(FE)/domain/pattern/PeerNGAMotion.o \
 	$(FE)/domain/pattern/PathTimeSeries.o \
+	$(FE)/domain/pattern/PathTimeSeriesThermal.o \
 	$(FE)/domain/pattern/PulseSeries.o \
 	$(FE)/domain/pattern/TriangleSeries.o \
 	$(FE)/domain/pattern/TimeSeriesIntegrator.o \

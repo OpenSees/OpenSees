@@ -41,7 +41,7 @@
 #include <OPS_Globals.h>
 
 void *
-OPS_ConcreteECThermal()
+OPS_ConcreteECThermal(void)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

@@ -493,7 +493,7 @@ Steel01Thermal::getElongTangent(double TempT, double &ET, double &Elong, double 
       ThermalElongation = 11e-3;
   }
   else if (TempT <= 1180) {
-      ThermalElongation = -6.2e-3 + (2e-5*TempT+20);
+      ThermalElongation = -6.2e-3 + 2e-5*(TempT+20);
   }
   else {
 	  opserr << "the temperature is invalid\n";

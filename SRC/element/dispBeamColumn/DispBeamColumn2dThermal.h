@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision: 1.1 $
 // $Date: 2011-07-18 10:11:35 $
 // $Source: /usr/local/cvs/OpenSees/SRC/element/dispBeamColumn/DispBeamColumn2dThermal.h,v $
@@ -27,7 +27,7 @@
 // Modified: Jian Zhang[Univeristy of Edinburgh]
 // Modified: Panagiotis Kotsovinos[Univeristy of Edinburgh]
 // Modified: Jian Jiang[Univeristy of Edinburgh]
-
+// Modified: Liming Jiang[Univeristy of Edinburgh,2014
 
 
 
@@ -94,7 +94,7 @@ class DispBeamColumn2dThermal : public Element
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		  &theBroker);
-    int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes=0, int numModes=0);
+    int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes);
     void Print(OPS_Stream &s, int flag =0);
 
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
@@ -144,7 +144,8 @@ class DispBeamColumn2dThermal : public Element
 	double q0Temperature[3];  // Fixed end thermal forces  of current step in basic system
 	double q0TemperatureP[3];  // Fixed end thermal forces of last step in basic system
 	int counterTemperature; // trace to remove thermal force from the second interation step
-
+    double SectionThermalElong[20];
+    double AverageThermalElong;
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     int parameterID;
     // AddingSensitivity:END ///////////////////////////////////////////

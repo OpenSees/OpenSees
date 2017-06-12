@@ -20,80 +20,73 @@
 
 // $Revision: 1.1 $
 // $Date: 2011-07-18 10:11:35 $
-// $Source: /usr/local/cvs/OpenSees/SRC/domain/load/Beam2dThermalAction.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/domain/load/NodalThermalAction.h,v $
 
-//Modified by Jian Zhang, [Univeristy of Edinburgh]
-//Modified by Panagiotis Kotsovinos, [Univeristy of Edinburgh]
-//Modified by Liming Jiang [http://openseesforfire.github.io]
 
-// Description: This file contains the class definition for Beam2dThermalAction.
-// Beam2dThermalAction is a thermal field class created to store the temperature
+// Description: This file contains the class definition for NodalThermalAction.
+// NodalThermalAction is a thermal field class created to store the temperature
 // distribution through the depth of section defined by temperature and location.
 
 
-#ifndef Beam2dThermalAction_h
-#define Beam2dThermalAction_h
+//Created by Liming Jiang
+
+#ifndef NodalThermalAction_h
+#define NodalThermalAction_h
 
 class TimeSeries;
-
-#include <ElementalLoad.h>
+class Vector;
+#include <NodalLoad.h>
 #include <TimeSeries.h>
 #include <PathTimeSeriesThermal.h>
+#include <Vector.h>
 
-
-class Beam2dThermalAction : public ElementalLoad
+class NodalThermalAction : public NodalLoad
 {
   public:
   // Constructors based on 9, 5 or 2 temperature points 
   // t-temperature; locY-coordinate through the depth of section
-  Beam2dThermalAction(int tag,
-		      double t1, double locY1, double t2, double locY2,
-		      double t3, double locY3, double t4, double locY4,
-		      double t5, double locY5, double t6, double locY6,
-		      double t7, double locY7, double t8, double locY8,
-		      double t9, double locY9, 
-		      int theElementTag);
+  NodalThermalAction(int tag,int theNodeTag,
+		      const Vector& locy, TimeSeries* theSeries, Vector* crds=0
+		      );
+  NodalThermalAction(int tag,int theNodeTag,
+		      double locY1, double locY2, double locZ1, double locZ2,
+		      TimeSeries* theSeries, Vector* crds=0
+		      );
   
-
-  Beam2dThermalAction(int tag, 
-					 double locY1, double locY2,
-					 TimeSeries* theSeries, int theElementTag
-					 );
+  NodalThermalAction(int tag, int theNodeTag,
+		      double t1, double locY1, double t2, double locY2, Vector* crds =0
+		       );
   
-  Beam2dThermalAction(int tag, 
-					 const Vector& locs,
-					 TimeSeries* theSeries, int theElementTag
-					 );
-  Beam2dThermalAction(int tag, int theElementTag);
+  NodalThermalAction();    
   
-  Beam2dThermalAction();    
-  
-  ~Beam2dThermalAction();
-  
-  const Vector &getData(int &type, double loadFactor);
+  ~NodalThermalAction();
+      
+  const Vector &getData(int& type);
+  const Vector &getCrds(void);
   virtual void applyLoad(const Vector &loadFactors); 
   virtual void applyLoad(double loadFactor); 
-  
-  int sendSelf(int commitTag, Channel &theChannel);  
-  int recvSelf(int commitTag, Channel &theChannel,  
-	       FEM_ObjectBroker &theBroker);
+
+  int getThermalActionType(void);
+  //int sendSelf(int commitTag, Channel &theChannel);  
+  //int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
   void Print(OPS_Stream &s, int flag =0);       
   
  protected:
   
  private:
-  double Temp[9]; //Initial Temperature 
-  double TempApp[9]; // Temperature applied
-  double Loc[9]; // Location through the depth of section
-  static Vector data; // data for temperature and locations
-
-  int ThermalActionType;
-
+  double Temp[15]; //Temperature
+  double TempApp[15]; //Temperature applied
+  double Loc[10]; // Location through the depth of section
+  Vector data; // data for temperature and locations
 
   //--Adding a factor vector for FireLoadPattern [-BEGIN-]: by L.J&P.K(university of Edinburgh)-07-MAY-2012-///
- int indicator; //indicator if fireloadpattern was called
+  //static Vector factors;
+  int indicator; //indicator if fireloadpattern was called
+  int ThermalActionType; //1:Default, for 2D Beam or Shell elements, 2: for 3D beam element
   Vector Factors;
+  Vector Crds;
   TimeSeries* theSeries;
+ 
   //--Adding a factor vector for FireLoadPattern [-END-]: by L.J&P.K(university of Edinburgh)-07-MAY-2012-///
  };
 

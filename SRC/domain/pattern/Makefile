@@ -19,6 +19,7 @@ OBJS       = $(RELIABILITY_OBJS) \
 	LoadPatternIter.o \
 	PathSeries.o \
 	PathTimeSeries.o \
+	PathTimeSeriesThermal.o \
 	RectangularSeries.o \
 	TimeSeries.o \
 	TclPatternCommand.o \

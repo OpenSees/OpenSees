@@ -53,6 +53,9 @@
 #include <SP_ConstraintIter.h>
 // AddingSensitivity:END ////////////////////////////
 
+#include <NodalLoad.h> 
+//Added by Liming Jiang for link NodalLoadPtr, [SIF]
+
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 
@@ -199,6 +202,8 @@ Node::Node(int theClassTag)
   accSensitivity = 0;
   parameterID = 0;
   // AddingSensitivity:END ///////////////////////////////////////////
+
+  theNodalThermalActionPtr = 0;//Added by Liming for initializing NodalLoadPointer, [SIF]
 }    
 
 
@@ -221,6 +226,8 @@ Node::Node(int tag, int theClassTag)
   accSensitivity = 0;
   parameterID = 0;
   // AddingSensitivity:END ///////////////////////////////////////////
+
+  theNodalThermalActionPtr = 0;//Added by Liming for initializing NodalLoadPointer, [SIF]
 }
 
 Node::Node(int tag, int ndof, double Crd1, Vector *dLoc)
@@ -239,6 +246,8 @@ Node::Node(int tag, int ndof, double Crd1, Vector *dLoc)
   accSensitivity = 0;
   parameterID = 0;
   // AddingSensitivity:END ///////////////////////////////////////////
+
+  theNodalThermalActionPtr = 0;//Added by Liming for initializing NodalLoadPointer, [SIF]
   
   Crd = new Vector(1);
   (*Crd)(0) = Crd1;
@@ -296,6 +305,8 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2, Vector *dLoc)
   accSensitivity = 0;
   parameterID = 0;
   // AddingSensitivity:END ///////////////////////////////////////////
+
+  theNodalThermalActionPtr = 0;//Added by Liming for initializing NodalLoadPointer, [SIF]
 
   Crd = new Vector(2);
   (*Crd)(0) = Crd1;
@@ -355,6 +366,8 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2, Vector *dLoc)
   accSensitivity = 0;
   parameterID = 0;
   // AddingSensitivity:END ///////////////////////////////////////////
+
+  theNodalThermalActionPtr = 0;//Added by Liming for initializing NodalLoadPointer, [SIF]
   
   Crd = new Vector(3);
   (*Crd)(0) = Crd1;
@@ -415,6 +428,8 @@ Node::Node(const Node &otherNode, bool copyMass)
   accSensitivity = 0;
   parameterID = 0;
   // AddingSensitivity:END ///////////////////////////////////////////
+
+  theNodalThermalActionPtr = 0;//Added by Liming for initializing NodalLoadPointer, [SIF]
 
   Crd = new Vector(otherNode.getCrds());
   if (Crd == 0) {
@@ -1737,7 +1752,7 @@ Node::recvSelf(int cTag, Channel &theChannel,
 void
 Node::Print(OPS_Stream &s, int flag)
 {
-  if (flag == OPS_PRINT_CURRENTSTATE) { // print out everything
+  if (flag == 0) { // print out everything
     s << "\n Node: " << this->getTag() << endln;
     s << "\tCoordinates  : " << *Crd;
     if (commitDisp != 0)         
@@ -1756,26 +1771,14 @@ Node::Print(OPS_Stream &s, int flag)
 	s << "\t Rayleigh Forces: " << *this->getResponse(RayleighForces);
     }
     if (theEigenvectors != 0)
-      s << "\t Eigenvectors: " << *theEigenvectors;
+	s << "\t Eigenvectors: " << *theEigenvectors;
     if (theDOF_GroupPtr != 0)
       s << "\tID : " << theDOF_GroupPtr->getID();
     s << "\n"; 
   }
   else if (flag == 1) { // print out: nodeId displacements
     s << this->getTag() << "  " << *commitDisp;
-
-
-  } else if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-    
-    s << "{\"name\": "<< this->getTag() << ","
-      << "\"ndf\": " << numberDOF << ","
-      << "\"crd\": [";
-    int numCrd = Crd->Size();
-    for (int i=0; i<numCrd-1; i++)
-      s << (*Crd)(i) << ", ";
-    s << (*Crd)(numCrd-1) << "]}";
   }
-  
 }
   
 int
@@ -2337,3 +2340,17 @@ Node::setDisplayCrds(const Vector &theCrds)
   }
   return 0;
 }
+
+
+//Add Pointer to NodalThermalAction id applicable------begin-----L.Jiang, [SIF]
+NodalThermalAction*
+Node::getNodalThermalActionPtr(void)
+{
+	return theNodalThermalActionPtr;
+}
+void
+Node::setNodalThermalActionPtr(NodalThermalAction* theAction)
+{
+	theNodalThermalActionPtr = theAction;
+}
+//Add Pointer to NodalThermalAction id applicable-----end------L.Jiang, {SIF]

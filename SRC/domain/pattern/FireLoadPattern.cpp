@@ -22,13 +22,11 @@
 // $Date: 2006/09/05 20:51:38 $
 // $Source: /usr/local/cvs/OpenSees/SRC/domain/pattern/EarthquakePattern.cpp,v $
                                                                         
-// Written: fmk 11/98
-// Revised:
-//
+// Based on load pattern 
 // Purpose: This file contains the class definition for EarthquakePattern.
 // EarthquakePattern is an abstract class.
 
-//Modified by Panagistis Kotsoivnos,[Univeristy of Edinburgh]
+//Modified by Panagistis Kotsoivnos,Liming Jiang[Univeristy of Edinburgh]
 
 #include <FireLoadPattern.h>
 #include <GroundMotion.h>
@@ -151,7 +149,7 @@ FireLoadPattern::setFireTimeSeries(TimeSeries *theTimeSeries1, TimeSeries *theTi
 void 
 FireLoadPattern::applyLoad(double time)
 {
-  // first determine the load factor
+	// first determine the load factor
   if (theSeries1 != 0 && isConstant != 0) {
     loadFactors(0) = theSeries1->getFactor(time);
     loadFactors(1) = theSeries2->getFactor(time);
@@ -164,10 +162,16 @@ FireLoadPattern::applyLoad(double time)
     loadFactors(8) = theSeries9->getFactor(time);
   }
   //this is a fire load pattern so we always need multiple timeseries
+	NodalLoad *nodLoad;
+	NodalLoadIter &theNodalIter = this->getNodalLoads();
+	while ((nodLoad = theNodalIter()) != 0)
+		 nodLoad->applyLoad(loadFactors);
+
   ElementalLoad *eleLoad;
   ElementalLoadIter &theElementalIter = this->getElementalLoads();
   while ((eleLoad = theElementalIter()) != 0)
     eleLoad->applyLoad(loadFactors);
+
 }
 
 bool
@@ -176,14 +180,14 @@ FireLoadPattern::addSP_Constraint(SP_Constraint *)
   opserr << "FireLoadPattern::addSP_Constraint() - cannot add SP_Constraint to FireLoadPattern\n";
   return false;
 }
-
+/*
 bool
 FireLoadPattern::addNodalLoad(NodalLoad *)
 {
   opserr << "FireLoadPattern::addNodalLoad() - cannot add NodalLoad to FireLoadPattern\n";  
   return false;
 }
-
+*/
 
 //***************************************************************************************** */
 

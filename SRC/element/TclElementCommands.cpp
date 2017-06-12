@@ -150,6 +150,9 @@ extern void *OPS_PFEMElement2DBubble();
 extern void *OPS_PFEMElement2DMini();
 extern void *OPS_PFEMElement2D();
 
+extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
+extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
+
 extern  void *OPS_CatenaryCableElement(void);
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
@@ -684,6 +687,30 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }    
 
+    //Added by L.Jiang [SIF]
+  } else if ((strcmp(argv[1], "shellMITC4Thermal") == 0) 
+	     || (strcmp(argv[1], "ShellMITC4Thermal") == 0)) {
+      
+      void *theEle = OPS_ShellMITC4Thermal();
+      if (theEle != 0)
+	theElement = (Element *)theEle;
+      else {
+	opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+	return TCL_ERROR;
+      }      
+    }
+
+    else if ((strcmp(argv[1], "shellNLDKGQThermal") == 0) || (strcmp(argv[1], "ShellNLDKGQThermal") == 0)) {
+      
+      void *theEle = OPS_ShellNLDKGQThermal();
+      if (theEle != 0)
+	theElement = (Element *)theEle;
+      else {
+	opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+	return TCL_ERROR;
+      }
+      //end of adding thermo-mechanical shell elments by L.Jiang [SIF]  
+      
   } else if ((strcmp(argv[1],"shellNL") == 0) || (strcmp(argv[1],"ShellNL") == 0) ||
 	     (strcmp(argv[1],"shellMITC9") == 0) || (strcmp(argv[1],"ShellMITC9") == 0)) {
     

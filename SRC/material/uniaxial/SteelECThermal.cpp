@@ -44,7 +44,7 @@
 
 
 void *
-OPS_NewSteelECThermal()
+OPS_SteelECThermal(void)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;

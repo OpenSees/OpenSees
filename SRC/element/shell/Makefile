@@ -6,6 +6,8 @@ OBJS       = ShellMITC4.o \
 	ShellNLDKGQ.o \
 	ShellDKGT.o \
 	ShellNLDKGT.o \
+	ShellMITC4Thermal.o \
+	ShellNLDKGQThermal.o \
 	R3vectors.o
 
 all:         $(OBJS)

@@ -104,6 +104,10 @@ OBJS       = UniaxialMaterial.o \
 	CFSSSWP.o \
 	CFSWSWP.o \
 	Steel4.o \
+	ConcreteECThermal.o \
+	ElasticMaterialThermal.o \
+	StainlessECThermal.o \
+	SteelECThermal.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)

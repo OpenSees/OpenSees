@@ -84,7 +84,6 @@ void OPS_printUniaxialMaterial(OPS_Stream &s, int flag) {
   }
 }
 
-
 UniaxialMaterial::UniaxialMaterial(int tag, int clasTag)
 :Material(tag,clasTag)
 {
@@ -207,7 +206,8 @@ UniaxialMaterial::setResponse(const char **argv, int argc,
        (strcmp(argv[0],"stressStrainTangent") == 0) || 
        (strcmp(argv[0],"stressANDstrainANDtangent") == 0) ||
        (strstr(argv[0],"stressSensitivity") != 0) ||
-       (strstr(argv[0],"strainSensitivity") != 0) ) {
+       (strstr(argv[0],"strainSensitivity") != 0)||
+	  (strstr(argv[0], "TempElong") != 0)) {
     
     theOutput.tag("UniaxialMaterialOutput");
     theOutput.attr("matType", this->getClassType());
@@ -251,7 +251,7 @@ UniaxialMaterial::setResponse(const char **argv, int argc,
       theOutput.tag("ResponseType", "C11");
       theResponse =  new MaterialResponse(this, 5, Vector(3));
     }
-    
+
     // stress sensitivity for local sensitivity recorder purpose.  Quan 2009
     // limit:  no more than 10000 random variables/sensitivity parameters
     else if (strstr(argv[0],"stressSensitivity") != 0) {
@@ -269,6 +269,13 @@ UniaxialMaterial::setResponse(const char **argv, int argc,
       theOutput.tag("ResponseType", "epssens11");
       theResponse =  new MaterialResponse(this, gradient+20000, this->getStrain());
     }
+	//Added by Liming, UoE, for temperature and elongation output,[SIF]2017
+	else if ((strcmp(argv[0], "TempElong") == 0) ||
+		(strcmp(argv[0], "tempANDelong") == 0)) {
+		theOutput.tag("ResponseType", "temp11");
+		theOutput.tag("ResponseType", "Elong11");
+		theResponse = new MaterialResponse(this, 7, Vector(2));
+	}
     
     theOutput.endTag();
   }
@@ -282,6 +289,10 @@ UniaxialMaterial::getResponse(int responseID, Information &matInfo)
 {
   static Vector stressStrain(2);
   static Vector stressStrainTangent(3);
+
+  static Vector tempData(2);  //L.jiang [SIF]
+  static Information infoData(tempData);  //L.jiang [SIF]
+
   // each subclass must implement its own stuff   
 
   // added for sensitivity recorder. Quan 2009
@@ -331,6 +342,16 @@ UniaxialMaterial::getResponse(int responseID, Information &matInfo)
       stressStrainTangent(2) = this->getTangent();
       matInfo.setVector(stressStrainTangent);
       return 0;
+	 
+	  //Added by Liming, UoE, for temperature and elongation output,[SIF]2017
+	  case 7:
+		  if ((this->getVariable("TempAndElong", infoData)) != 0) {
+			  opserr << "Warning: invalid tag in uniaxialMaterial:getVariable" << endln;
+			  return -1;
+		  }
+		  tempData = infoData.getData();
+		  matInfo.setVector(tempData);
+		  return 0;
   default:      
     return -1;
   }

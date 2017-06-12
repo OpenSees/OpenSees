@@ -167,6 +167,7 @@ class PlasticDamageConcretePlaneStressThermal : public NDMaterial
   Vector strain;
   Vector Cstress;
   Vector Cstrain;
+  Vector TempAndElong;
 };
 
 #endif

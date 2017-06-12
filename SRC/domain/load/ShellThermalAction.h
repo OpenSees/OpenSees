@@ -18,62 +18,53 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2011-07-18 10:11:35 $
-// $Source: /usr/local/cvs/OpenSees/SRC/domain/load/Beam2dThermalAction.h,v $
+                                                                        
+#ifndef ShellThermalAction_h
+#define ShellThermalAction_h
 
-//Modified by Jian Zhang, [Univeristy of Edinburgh]
-//Modified by Panagiotis Kotsovinos, [Univeristy of Edinburgh]
-//Modified by Liming Jiang [http://openseesforfire.github.io]
-
-// Description: This file contains the class definition for Beam2dThermalAction.
-// Beam2dThermalAction is a thermal field class created to store the temperature
-// distribution through the depth of section defined by temperature and location.
-
-
-#ifndef Beam2dThermalAction_h
-#define Beam2dThermalAction_h
-
-class TimeSeries;
+  //Based on JZ, JJ @Edinburgh University                                                                    
+ //Modified by Liming Jiang [http://openseesforfire.github.io]
 
 #include <ElementalLoad.h>
 #include <TimeSeries.h>
 #include <PathTimeSeriesThermal.h>
+#include <Element.h>
 
-
-class Beam2dThermalAction : public ElementalLoad
+class ShellThermalAction : public ElementalLoad
 {
   public:
-  // Constructors based on 9, 5 or 2 temperature points 
-  // t-temperature; locY-coordinate through the depth of section
-  Beam2dThermalAction(int tag,
-		      double t1, double locY1, double t2, double locY2,
-		      double t3, double locY3, double t4, double locY4,
-		      double t5, double locY5, double t6, double locY6,
-		      double t7, double locY7, double t8, double locY8,
-		      double t9, double locY9, 
-		      int theElementTag);
-  
+  // Constructors based on 9, 2 or 0 temperature changes given
+  ShellThermalAction(int tag,
+                double t1, double locY1, double t2, double locY2,
+                double t3, double locY3, double t4, double locY4,
+                double t5, double locY5, double t6, double locY6,
+                double t7, double locY7, double t8, double locY8,
+                double t9, double locY9, 
+		        int theElementTag);
 
-  Beam2dThermalAction(int tag, 
+  ShellThermalAction(int tag,
+                double t1, double locY1, double t2, double locY2,
+				double t3, double locY3, double t4, double locY4,
+                double t5, double locY5, int theElementTag);
+
+
+    ShellThermalAction(int tag,
+                double t1, double locY1, double t2, double locY2,
+                int theElementTag);
+	ShellThermalAction(int tag, 
 					 double locY1, double locY2,
-					 TimeSeries* theSeries, int theElementTag
+					 TimeSeries* theSeries,int theElementTag
 					 );
-  
-  Beam2dThermalAction(int tag, 
-					 const Vector& locs,
-					 TimeSeries* theSeries, int theElementTag
-					 );
-  Beam2dThermalAction(int tag, int theElementTag);
-  
-  Beam2dThermalAction();    
-  
-  ~Beam2dThermalAction();
+
+	ShellThermalAction(int tag, int theElementTag);
+
+  ShellThermalAction();    
+
+  ~ShellThermalAction();
   
   const Vector &getData(int &type, double loadFactor);
-  virtual void applyLoad(const Vector &loadFactors); 
-  virtual void applyLoad(double loadFactor); 
-  
+  virtual void applyLoad(const Vector &factors);
+  virtual void applyLoad(double loadFactor);
   int sendSelf(int commitTag, Channel &theChannel);  
   int recvSelf(int commitTag, Channel &theChannel,  
 	       FEM_ObjectBroker &theBroker);
@@ -86,17 +77,14 @@ class Beam2dThermalAction : public ElementalLoad
   double TempApp[9]; // Temperature applied
   double Loc[9]; // Location through the depth of section
   static Vector data; // data for temperature and locations
-
   int ThermalActionType;
 
-
   //--Adding a factor vector for FireLoadPattern [-BEGIN-]: by L.J&P.K(university of Edinburgh)-07-MAY-2012-///
- int indicator; //indicator if fireloadpattern was called
+  int indicator; //indicator if fireloadpattern was called
   Vector Factors;
   TimeSeries* theSeries;
   //--Adding a factor vector for FireLoadPattern [-END-]: by L.J&P.K(university of Edinburgh)-07-MAY-2012-///
- };
-
+};
 
 #endif
 

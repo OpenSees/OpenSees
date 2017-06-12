@@ -18,9 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.6 $
-// $Date: 2006/09/05 20:51:38 $
-// $Source: /usr/local/cvs/OpenSees/SRC/domain/pattern/EarthquakePattern.h,v $
                                                                         
                                                                         
 #ifndef FireLoadPattern_h
@@ -62,7 +59,7 @@ class FireLoadPattern : public LoadPattern
     void applyLoad(double time);
 	
     bool addSP_Constraint(SP_Constraint *);
-    bool addNodalLoad(NodalLoad *);
+
     
     void setFireTimeSeries(TimeSeries *theSeries1, TimeSeries *theSeries2, 
 			   TimeSeries *theSeries3, TimeSeries *theSeries4, TimeSeries *theSeries5, 
