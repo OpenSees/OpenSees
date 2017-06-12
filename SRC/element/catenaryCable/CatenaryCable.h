@@ -26,11 +26,20 @@
 #ifndef CatenaryCable_h
 #define CatenaryCable_h
 
-// Written: jaabell 
-// Created: 05/2017
+// Written: jaabell  (Jose Abell)
+// Created: May 2017
 // Revision: A
 //
-// Description: This file ....
+// Description: This element is a catenary cable, suitable for static and dynamic analysis of 
+//              cable structures including thermal effects. Based on:
+//
+//  Salehi Ahmad Abad, M., Shooshtari, A., Esmaeili, V., & Naghavi Riabi, A. (2013). 
+//        Nonlinear analysis of cable structures under general loadings. Finite Elements in Analysis and Design, 
+//        73, 11–19. https://doi.org/10.1016/j.finel.2013.05.002
+//
+//  With dynamical extensions (mass matrix).
+// 
+//  Verification suite can be found in www.joseabell.com
 //
 // What: "@(#) CatenaryCable.h, revA"
 

@@ -23,11 +23,25 @@
 // $URL: svn://peera.berkeley.edu/usr/local/svn/OpenSees/trunk/SRC/element/CatenaryCable/CatenaryCable.cpp $
                                                                         
                                                                         
-// Written: fmk 
-// Created: 07/98
+// Written: jaabell  (Jose Abell)
+// Created: May 2017
 // Revision: A
 //
-// Description: This file contains the implementation for the CatenaryCable class.
+// Written: jaabell  (Jose Abell)
+// Created: May 2017
+// Revision: A
+//
+// Description: This element is a catenary cable, suitable for static and dynamic analysis of 
+//              cable structures including thermal effects. Based on:
+//
+//  Salehi Ahmad Abad, M., Shooshtari, A., Esmaeili, V., & Naghavi Riabi, A. (2013). 
+//        Nonlinear analysis of cable structures under general loadings. Finite Elements in Analysis and Design, 
+//        73, 11–19. https://doi.org/10.1016/j.finel.2013.05.002
+//
+//  With dynamical extensions (mass matrix).
+// 
+//  Verification suite can be found in www.joseabell.com
+//
 //
 // What: "@(#) CatenaryCable.C, revA"
 
@@ -82,9 +96,9 @@ OPS_CatenaryCableElement()
     return 0; 
   }
 
-  if (numRemainingArgs != 12 )
+  if (numRemainingArgs != 13 )
   {
-    opserr << "Got " << numRemainingArgs << " args. Expected 10\n";
+    opserr << "Got " << numRemainingArgs << " args. Expected 13\n";
         opserr << "Invalid Args want: element CatenaryCable $tag $iNode $jNode $weight $E $A $L0 $alpha $temperature_change $rho $errorTol $Nsubsteps\n";
         return 0; // it's a CatenaryCableSection
   }
