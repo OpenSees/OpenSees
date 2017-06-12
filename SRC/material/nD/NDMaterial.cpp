@@ -179,6 +179,31 @@ NDMaterial::getStrain(void)
    return errVector;    
 }
 
+
+
+//Functions for obtaining and updating temperature-dependent information Added by L.Jiang [SIF]
+double
+NDMaterial::getThermalTangentAndElongation(double &TempT, double &ET, double &Elong)
+{
+	opserr << "NDMaterial::getThermalTangentAndElongation -- subclass responsibility\n";
+	return -1;
+}
+
+double
+NDMaterial::setThermalTangentAndElongation(double &TempT, double &ET, double &Elong)
+{
+	opserr << "NDMaterial::setThermalTangentAndElongation -- subclass responsibility\n";
+	return -1;
+}
+
+const Vector&
+NDMaterial::getTempAndElong()
+{
+	opserr << "NDMaterial::getTempAndElong -- subclass responsibility\n";
+	return errVector;
+}
+//end of adding thermo-mechanical functions, L.Jiang [SIF]
+
 Response*
 NDMaterial::setResponse (const char **argv, int argc, 
 			 OPS_Stream &output)
@@ -233,6 +258,24 @@ NDMaterial::setResponse (const char **argv, int argc,
     }      
     theResponse =  new MaterialResponse(this, 2, this->getStress());
   }
+  //Adding temperature and thermal expansion output,L.Jiang [SIF]
+  else if (strcmp(argv[0], "TempAndElong") == 0 || strcmp(argv[0], "TempAndElong") == 0) {
+	  const Vector &res = this->getTempAndElong();
+	  int size = res.Size();
+	  if (size == 2) {
+		  output.tag("ResponseType", "Temp");
+		  output.tag("ResponseType", "Elong");
+	  }
+	  //opserr<<"tempElong "<<this->getTempAndElong()<<endln;
+	  theResponse = new MaterialResponse(this, 3, this->getTempAndElong());
+
+  }
+  else if (strcmp(argv[0], "Tangent") == 0 || strcmp(argv[0], "tangent") == 0) {
+	  const Matrix &res = this->getTangent();
+	  theResponse = new MaterialResponse(this, 4, this->getTangent());
+
+  }
+  //end of adding output request,L.Jiang [SIF]
 
   output.endTag(); // NdMaterialOutput
 

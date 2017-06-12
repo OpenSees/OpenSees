@@ -67,6 +67,11 @@
 #include <PressureDependMultiYield02.h>
 #include <FluidSolidPorousMaterial.h>
 
+#include <J2PlasticityThermal.h>   //added by L.Jiang [SIF]
+#include <PlateFiberMaterialThermal.h>//L.Jiang [SIF]
+#include <PlateFromPlaneStressMaterialThermal.h>   //Liming Jiang [SIF]
+#include <PlateRebarMaterialThermal.h> //Liming Jiang [SIF]
+
 #include <MultiYieldSurfaceClay.h>
 #include <string.h>
 
@@ -93,8 +98,8 @@ extern  void *OPS_ContactMaterial2DMaterial(void);
 extern  void *OPS_ContactMaterial3DMaterial(void);
 extern  void *OPS_InitialStateAnalysisWrapperMaterial(void);
 extern  void *OPS_ManzariDafaliasMaterial(void);
-extern  void *OPS_PM4Sand(void);
 extern  void *OPS_ManzariDafaliasMaterialRO(void);
+extern  void *OPS_PM4Sand(void);
 extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
 extern  void *OPS_InitStressNDMaterial(void);
@@ -106,6 +111,10 @@ extern  void *OPS_PlaneStressLayeredMaterial(void);
 extern  void *OPS_PlaneStressRebarMaterial(void);
 extern void *OPS_LinearCap(void);
 extern void *OPS_AcousticMedium(void);
+
+extern  void *OPS_ElasticIsotropicMaterialThermal(void);  //L.Jiang [SIF]
+extern  void *OPS_DruckerPragerMaterialThermal(void);//L.Jiang [SIF]
+extern  void *OPS_PlasticDamageConcretePlaneStressThermal(void);//L.Jiang [SIF]
 
 #ifdef _HAVE_Faria1998
 extern void *OPS_Faria1998(void);
@@ -416,15 +425,6 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
-    else if ((strcmp(argv[1],"PM4Sand") == 0)){
-
-      void *theMat = OPS_PM4Sand();
-      if (theMat != 0) 
-	theMaterial = (NDMaterial *)theMat;
-      else 
-	return TCL_ERROR;
-    }
-
     else if ((strcmp(argv[1],"ManzariDafaliasRO") == 0)){
 
       void *theMat = OPS_ManzariDafaliasMaterialRO();
@@ -433,6 +433,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else 
 	return TCL_ERROR;
     }	
+
+    else if ((strcmp(argv[1],"PM4Sand") == 0)){
+
+      void *theMat = OPS_PM4Sand();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
 
     else if ((strcmp(argv[1],"ContactMaterial2D") == 0)){
 
@@ -1699,7 +1708,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
  	    return TCL_ERROR;
  	}
 
- 	NDMaterial *threeDMaterial = OPS_getNDMaterial(matTag);
+	NDMaterial *threeDMaterial = OPS_getNDMaterial(matTag);
  	if (threeDMaterial == 0) {
  	    opserr << "WARNING nD material does not exist\n";
  	    opserr << "nD material: " << matTag;
@@ -1716,6 +1725,205 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       return TCL_ERROR;
     }
 
+	//-------nD materials for thermo-mechanical analysis---Added by L.Jiang[SIF]
+	else if ((strcmp(argv[1], "DruckerPragerThermal") == 0)) {
+
+		void *theMat = OPS_DruckerPragerMaterialThermal();
+		if (theMat != 0)
+			theMaterial = (NDMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+	//-------------------------------------------------------------
+	else if ((strcmp(argv[1], "CDPPlaneStressThermal") == 0)) {
+		void *theMat = OPS_PlasticDamageConcretePlaneStressThermal();
+		if (theMat != 0)
+			theMaterial = (NDMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+	//-------------------------------------------------------------
+	else if (strcmp(argv[1], "PlateFromPlaneStressThermal") == 0 ) {
+		if (argc < 5) {
+			opserr << "WARNING insufficient arguments\n";
+			printCommand(argc, argv);
+			opserr << "Want: nDMaterial PlateFromPlaneStress tag? matTag? gmod?" << endln;
+			return TCL_ERROR;
+		}
+
+		int tag, matTag;
+		double gmod;
+
+		if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+			opserr << "WARNING invalid nDMaterial PlateFromPlaneStress tag" << endln;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetInt(interp, argv[3], &matTag) != TCL_OK) {
+			opserr << "WARNING invalid matTag" << endln;
+			opserr << "PlateFromPlaneStress: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		NDMaterial *theMat = OPS_getNDMaterial(matTag);
+		if (theMat == 0) {
+			opserr << "WARNING ndMaterial does not exist\n";
+			opserr << "ndMaterial: " << matTag;
+			opserr << "\nPlateFromPlaneStress nDMaterial: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetDouble(interp, argv[4], &gmod) != TCL_OK) {
+			opserr << "WARNING invalid gmod" << endln;
+			opserr << "PlateFromPlaneStress: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		theMaterial = new PlateFromPlaneStressMaterialThermal(tag, *theMat, gmod);
+	}
+	else if (strcmp(argv[1], "PlateRebarMaterialThermal") == 0 ||
+		strcmp(argv[1], "PlateRebarThermal") == 0) {
+		if (argc < 5) {
+			opserr << "WARNING insufficient arguments\n";
+			printCommand(argc, argv);
+			opserr << "Want: nDMaterial PlateRebar tag? matTag? angle?" << endln;
+			return TCL_ERROR;
+		}
+
+		int tag, matTag;
+		double angle;
+
+		if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+			opserr << "WARNING invalid nDMaterial PlateRebar tag" << endln;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetInt(interp, argv[3], &matTag) != TCL_OK) {
+			opserr << "WARNING invalid matTag" << endln;
+			opserr << "PlateRebar: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		UniaxialMaterial *theMat = OPS_getUniaxialMaterial(matTag);
+		if (theMat == 0) {
+			opserr << "WARNING uniaxialmaterial does not exist\n";
+			opserr << "UniaxialMaterial: " << matTag;
+			opserr << "\nPlateRebar nDMaterial: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetDouble(interp, argv[4], &angle) != TCL_OK) {
+			opserr << "WARNING invalid angle" << endln;
+			opserr << "PlateRebar: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		theMaterial = new PlateRebarMaterialThermal(tag, *theMat, angle);
+	}
+	else if ((strcmp(argv[1], "J2PlasticityThermal") == 0) ||
+		(strcmp(argv[1], "J2Thermal") == 0)) {
+		if (argc < 9) {
+			opserr << "WARNING insufficient arguments\n";
+			printCommand(argc, argv);
+			opserr << "Want: nDMaterial J2PlasticityThermal tag? K? G? sig0? sigInf? delta? H? <eta?>" << endln;
+			return TCL_ERROR;
+		}
+
+		int tag;
+		double K, G, sig0, sigInf, delta, H;
+		double eta = 0.0;
+
+		if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+			opserr << "WARNING invalid J2PlasticityThermal tag" << endln;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetDouble(interp, argv[3], &K) != TCL_OK) {
+			opserr << "WARNING invalid K\n";
+			opserr << "nDMaterial J2PlasticityThermal: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetDouble(interp, argv[4], &G) != TCL_OK) {
+			opserr << "WARNING invalid G\n";
+			opserr << "nDMaterial J2PlasticityThermal: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetDouble(interp, argv[5], &sig0) != TCL_OK) {
+			opserr << "WARNING invalid sig0\n";
+			opserr << "nDMaterial J2PlasticityThermal: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetDouble(interp, argv[6], &sigInf) != TCL_OK) {
+			opserr << "WARNING invalid sigInf\n";
+			opserr << "nDMaterial J2PlasticityThermal: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetDouble(interp, argv[7], &delta) != TCL_OK) {
+			opserr << "WARNING invalid delta\n";
+			opserr << "nDMaterial J2PlasticityThermal: " << tag << endln;
+			return TCL_ERROR;
+		}
+		if (Tcl_GetDouble(interp, argv[8], &H) != TCL_OK) {
+			opserr << "WARNING invalid H\n";
+			opserr << "nDMaterial J2PlasticityThermal: " << tag << endln;
+			return TCL_ERROR;
+		}
+		if (argc > 9 && Tcl_GetDouble(interp, argv[9], &eta) != TCL_OK) {
+			opserr << "WARNING invalid eta\n";
+			opserr << "nDMaterial J2PlasticityThermal: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		theMaterial = new J2PlasticityThermal(tag, 0, K, G, sig0, sigInf,
+			delta, H, eta);
+	}
+	else if (strcmp(argv[1], "PlateFiberMaterialThermal") == 0 ||
+		strcmp(argv[1], "PlateFiberThermal") == 0) {
+		if (argc < 4) {
+			opserr << "WARNING insufficient arguments\n";
+			printCommand(argc, argv);
+			opserr << "Want: nDMaterial PlateFiberThermal tag? matTag?" << endln;
+			return TCL_ERROR;
+		}
+
+		int tag, matTag;
+
+		if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+			opserr << "WARNING invalid nDMaterial PlateFiberThermal tag" << endln;
+			return TCL_ERROR;
+		}
+
+		if (Tcl_GetInt(interp, argv[3], &matTag) != TCL_OK) {
+			opserr << "WARNING invalid matTag" << endln;
+			opserr << "PlateFiberThermal: " << matTag << endln;
+			return TCL_ERROR;
+		}
+
+		NDMaterial *threeDMaterial = OPS_getNDMaterial(matTag);
+		if (threeDMaterial == 0) {
+			opserr << "WARNING nD material does not exist\n";
+			opserr << "nD material: " << matTag;
+			opserr << "\nPlateFiberThermal nDMaterial: " << tag << endln;
+			return TCL_ERROR;
+		}
+
+		theMaterial = new PlateFiberMaterialThermal(tag, *threeDMaterial);
+	}
+	//--------End of adding PlateFiberMaterialThermal
+	else if ( (strcmp(argv[1], "ElasticIsotropicThermal") == 0) || (strcmp(argv[1], "ElasticIsotropic3DThermal") == 0)) {
+
+		void *theMat = OPS_ElasticIsotropicMaterialThermal();
+		if (theMat != 0)
+			theMaterial = (NDMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+
+	//end of adding thermo-mechanical nd materials-L.Jiang[SIF]
     else {
       theMaterial = TclModelBuilder_addFeapMaterial(clientData,
 						    interp,

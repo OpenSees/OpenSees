@@ -63,6 +63,12 @@ class NDMaterial : public Material
     virtual const Matrix &getTangent(void);
     virtual const Matrix &getInitialTangent(void) {return this->getTangent();};
 
+	//Added by L.Jiang, [SIF]
+	virtual double getThermalTangentAndElongation(double &TempT, double &, double &);
+	virtual double setThermalTangentAndElongation(double &TempT, double &, double &);
+	virtual const Vector& getTempAndElong(void);
+	//Added by L.Jiang, [SIF]
+
     virtual const Vector &getStress(void);
     virtual const Vector &getStrain(void);
 
