@@ -1998,7 +1998,7 @@ DispBeamColumn2dThermal::getResistingForceSensitivity(int gradNumber)
     dqdh.addMatrixVector(1.0, kbmine, A_u, d1overLdh);
 
     // k dAdh u
-    const Vector &dAdh_u = crdTransf->getBasicTrialDispShapeSensitivity();
+    const Vector &dAdh_u = crdTransf->getBasicTrialDispShapeSensitivity(gradNumber);
     dqdh.addMatrixVector(1.0, kbmine, dAdh_u, oneOverL);
 
     // dAdh^T q
