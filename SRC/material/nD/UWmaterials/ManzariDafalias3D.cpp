@@ -78,8 +78,6 @@ ManzariDafalias3D::setTrialStrain(const Vector &strain_from_element)
 {
 	mEpsilon = -1.0 * strain_from_element; // -1.0 is for geotechnical sign convention
 
-	this->integrate();
-
 	return 0 ;
 }
 
@@ -102,6 +100,7 @@ ManzariDafalias3D::getStrain()
 const Vector& 
 ManzariDafalias3D::getStress() 
 {
+	this->integrate();
 	mSigma_M = -1.0 * mSigma;
  	return mSigma_M; // -1.0 is for geotechnical sign convention
 }
@@ -116,12 +115,6 @@ ManzariDafalias3D::getStressToRecord()
 const Matrix& 
 ManzariDafalias3D::getTangent() 
 {
-	if (m_isSmallp)
-	{
-		mCe				= mIIdevMix * mCe;
-		mCep			= mIIdevMix * mCep;
-		mCep_Consistent = mIIdevMix * mCep_Consistent;
-	}
     if (mTangType == 0)
 		return mCe;
 	else if (mTangType == 1)

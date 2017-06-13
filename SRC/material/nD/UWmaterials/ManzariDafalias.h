@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <iostream>
+#include <fstream>
 
 #include <NDMaterial.h>
 #include <Matrix.h>
@@ -139,7 +141,6 @@ class ManzariDafalias : public NDMaterial
 	double massDen;     // mass density for dynamic analysis
 	double mVoidRatio;	// material void ratio
 
-	double	mEpsStar, mSigStar; // used to regularize the jacobian
 	double	mTolF;			// max drift from yield surface
 	double	mTolR;			// tolerance for Newton iterations
 	char unsigned mIter;	// number of iterations
@@ -147,10 +148,9 @@ class ManzariDafalias : public NDMaterial
 	char unsigned mScheme;	// 0: Forward Euler Explicit, 1: Backward Euler Implicit, 2: Backward Euler Implicit with considerations for stability, 
 														// 3: FE Explicit with constrained strain increment
 	char unsigned mTangType;// 0: Elastic Tangent, 1: Contiuum ElastoPlastic Tangent, 2: Consistent ElastoPlastic Tangent
-	char unsigned mOrgTangType;
+	bool    mUseElasticTan;
 	double	mEPS;			// machine epsilon (for FD jacobian)
 	double	m_Pmin;			// Minimum allowable mean effective stress
-	bool	m_isSmallp;		// flag for small p
 	static char unsigned mElastFlag;	// 1: enforce elastic response
 
 	static Vector mI1;			// 2nd Order Identity Tensor
@@ -260,7 +260,10 @@ class ManzariDafalias : public NDMaterial
 	int		NewtonSol(const Vector& x, const Vector &inVar, Vector& del, Matrix& Cep);
 	int		NewtonIter3(const Vector& xo, const Vector& inVar, Vector& sol, Matrix& aCepPart);
 	int		NewtonSol2(const Vector& x, const Vector &inVar, Vector& res, Vector& JRes, Vector& del, Matrix& Cep);
+	int		NewtonIter2_negP(const Vector& xo, const Vector& inVar, Vector& sol, Matrix& aCepPart);
+	int		NewtonSol_negP(const Vector &xo, const Vector &inVar, Vector& del, Matrix& Cep);
 	Vector  NewtonRes(const Vector &xo, const Vector &inVar);
+	Vector  NewtonRes_negP(const Vector &xo, const Vector &inVar);
 	Vector	GetResidual(const Vector& x, const Vector& inVar);
 	Matrix	GetJacobian(const Vector &x, const Vector &inVar);
 	Matrix	GetFDMJacobian(const Vector &delta, const Vector &inVar);
@@ -269,8 +272,6 @@ class ManzariDafalias : public NDMaterial
 	Vector	SetManzariStateInVar(const Vector& nStrain, const Vector& cStrain, const Vector& cStress, 
 				const Vector& cEStrain, const Vector& cAlpha, const Vector& cFabric,
 				const double& cVoidRatio, const double& nVoidRatio, const Vector& Alpha_in);
-	Vector	NormalizeJacobian(Matrix& Jaco);
-	void	DenormalizeJacobian(Matrix& JInv, const Vector& norms);
 	double	machineEPS();
 	// Material Specific Methods
 	double	Macauley(double x);
@@ -315,15 +316,11 @@ class ManzariDafalias : public NDMaterial
 	Matrix Trans_SingleDot4T_2(const Matrix& m1, const Vector& v1);
 	double Det(const Vector& aV);
 	Vector Inv(const Vector& aV);
+	Vector ToContraviant(const Vector& v1);
+	Vector ToCovariant(const Vector& v1);
+	Matrix ToContraviant(const Matrix& m1);
+	Matrix ToCovariant(const Matrix& m1);
 
 };
-
-// Other auxillary functions
-double MatrixMax_Rows(const Matrix& mat, int rowNo);
-double MatrixMax_Cols(const Matrix& mat, int colNo);
-double MatrixMin_Rows(const Matrix& mat, int rowNo);
-double MatrixMin_Cols(const Matrix& mat, int colNo);
-double Sgn(const double& x);
-double VectorMax(const Vector& v);
 
 #endif

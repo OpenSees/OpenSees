@@ -22,6 +22,9 @@
 //          Nov 2016, University of Washington
                                                                       
 // Description: This file contains the implementation for the PM4Sand class.
+// PM4Sand(Version 3): A Sand Plasticity Model For Earthquake Engineering Applications
+// by R.W.Boulanger and K.Ziotopoulou
+// March 2015
 
 #include <PM4Sand.h>
 #include <MaterialResponse.h>
@@ -43,7 +46,7 @@ const double		PM4Sand::two3			= 2.0/3.0;
 const double		PM4Sand::root23			= sqrt(2.0/3.0);
 const double		PM4Sand::small			= 1e-10;
 const double		PM4Sand::maxStrainInc   = 1e-5;
-const bool  		PM4Sand::debugFlag		= true;
+const bool  		PM4Sand::debugFlag		= false;
 const char unsigned	PM4Sand::mMaxSubStep	= 10;
 char  unsigned		PM4Sand::mElastFlag		= 1;
 
@@ -401,12 +404,14 @@ PM4Sand::commitState(void)
 	mFabric_n	= mFabric;
 	mDGamma_n   = mDGamma;
 	mVoidRatio  = m_e_init - (1 + m_e_init) * GetTrace(mEpsilon);
-	dr = (m_emax - mVoidRatio) / (m_emax - m_emin);;
+	dr = (m_emax - mVoidRatio) / (m_emax - m_emin);
 
 	this->GetElasticModuli(mSigma, mK, mG, mMcur, mzcum);
 	GetStateDependent(mSigma, mAlpha, mAlpha_in,  mFabric, mFabric_in, mG, mzcum
 		, mzpeak, mpzp, mMcur, mksi, dr, n, D, R, K_p, alphaD, Cka);
-
+	// opserr << "D = " << D << "\n";
+	// opserr << "zcum = " << mzcum << "\n";
+	// opserr << "dr = " << dr << "\n";
 	mCe = GetStiffness(mK,mG);
 	mCep = GetElastoPlasticTangent(mSigma_n, mCe, R, n, K_p);
 	mCep_Consistent = mCe;
@@ -426,7 +431,7 @@ int PM4Sand::revertToStart(void)
 		// do nothing, keep state variables from last step
 	} else {
 		// normal call for revertToStart (not initialStateAnalysis)
-    	this->setStress(mSigma);
+    	this->initialize(mSigma);
 	}
 
     return 0;
@@ -704,9 +709,9 @@ PM4Sand::setParameter(const char **argv, int argc, Parameter &param)
 		else if (strcmp(argv[0], "firstCall") == 0) {       // update first call, remove fabric
 			return param.addObject(8, this);
 		}
-		//else if (strcmp(argv[0], "voidRatio") == 0) {        // change e_init
-		//	return param.addObject(8, this);
-		//}
+		else if (strcmp(argv[0], "voidRatio") == 0) {        // change e_init
+			return param.addObject(8, this);
+		}
 	}
 	return -1;
 }
@@ -719,7 +724,7 @@ PM4Sand::updateParameter(int responseID, Information &info)
 		mElastFlag = info.theInt;
 		if (mElastFlag == 1) {
 			// set zmax and Ado when changing from elastic to plastic stage
-			setStress(mSigma);
+			initialize(mSigma);
 		}
 	}
 	// called materialState in tcl file
@@ -727,7 +732,7 @@ PM4Sand::updateParameter(int responseID, Information &info)
 		mElastFlag = (int)info.theDouble;
 		if (mElastFlag == 1) {
 			// set zmax and Ado when changing from elastic to plastic stage
-			setStress(mSigma);
+			initialize(mSigma);
 		}
 	}
 	// called update IntegrationScheme
@@ -745,13 +750,13 @@ PM4Sand::updateParameter(int responseID, Information &info)
 	//called update first call
 	else if (responseID == 8) {
 		m_FirstCall = 0;
-		setStress(mSigma_n);
+		initialize(mSigma_n);
 	}
 	// called update voidRatio
-	//else if (responseID == 8) {
-	//	double eps_v = GetTrace(mEpsilon);
-	//	m_e_init = (info.theDouble + eps_v) / (1 - eps_v);
-	//}
+	else if (responseID == 8) {
+		double eps_v = GetTrace(mEpsilon);
+		m_e_init = (info.theDouble + eps_v) / (1 - eps_v);
+	}
 	else {
 		return -1;
 	}
@@ -760,60 +765,123 @@ PM4Sand::updateParameter(int responseID, Information &info)
 }
 
 int
-PM4Sand::setStress(const Vector&initStress)
+PM4Sand::initialize(const Vector&initStress)
 {	
 	// set minimum allowable p
-    m_Pmin = m_P_atm / 1000;
-	if (m_FirstCall == 0) {
-		double p = fmax(0.5 * GetTrace(mSigma), m_Pmin);
-		if (mSigma(0) < 0.0) {
-			//stress tensile
-			p = m_P_atm / 20.0;
-			mSigma = p * mI1;
-		}
-		mSigma_n = mSigma;
-		m_chg = fmax(p*m_crhg, m_chg);
-		mksi = GetKsi(m_Dr, p);
-		if (m_z_max < 0) {
-			m_z_max = fmin(0.7 * exp(-6.1 * mksi), 20.0);
-		}
-		if (m_Ado < 0) {
-			if (mksi < 0) {
-				// dense of critical
-				mMb = m_Mc * exp(-1.0 * m_nb * mksi);
-				mMd = m_Mc * exp(m_nd * mksi);
-				m_Ado = 2.5 * (asin(mMb / 2.0) - asin(m_Mc / 2.0)) / (mMb - mMd);
+    m_Pmin = m_P_atm / 200.0;
+	m_Pmin2 = m_P_atm / 20.0;
+	mSigma_n = initStress;
+	double p = fmax(0.5 * GetTrace(mSigma_n), m_Pmin);
+	// minimum p'
+	//m_Pmin = fmin(m_Pmin, p / 200.0);
+	// p_min for Cpmin and Cpzp2
+	//m_Pmin2 = p / 20.0;
+	if (mSigma_n(0) < 0.0) {
+		//stress tensile
+		p = m_P_atm / 20.0;
+		mSigma_n = p * mI1;
+	}
+	m_chg = fmax(p*m_crhg, m_chg);
+	mksi = GetKsi(m_Dr, p);
+	if (m_z_max < 0) {
+		m_z_max = fmin(0.7 * exp(-6.1 * mksi), 20.0);
+	}
+
+  if (mksi < 0) {
+ 		// dense of critical
+ 		mMb = m_Mc * exp(-1.0 * m_nb * mksi);
+ 		mMd = m_Mc * exp(m_nd * mksi);
+ 		if (m_Ado < 0) {
+			if (mMb > 2.0) {
+				opserr << "Warning, Mb is larger than 2, using Ado = 1.5. \n";
+				m_Ado = 1.5;
 			}
 			else {
-				mMb = m_Mc * exp(-1.0 * m_nb / 4.0 * mksi);
-				mMd = m_Mc * exp(m_nd * 4.0 * mksi);
-				m_Ado = 1.24;
+				m_Ado = 2.5 * (asin(mMb / 2.0) - asin(m_Mc / 2.0)) / (mMb - mMd);
+			}
+ 		}
+	}
+	else {
+ 		mMb = m_Mc * exp(-1.0 * m_nb / 4.0 * mksi);
+ 		mMd = m_Mc * exp(m_nd * 4.0 * mksi);
+ 		if (m_Ado < 0) {
+ 			m_Ado = 1.24;
+ 		}
+	}
+	
+	double Mcut = fmax(mMb, mMd);
+	double Mfin = -2.0 / p * sqrt(0.5) * GetNorm_Contr(mSigma_n - p * mI1);
+	if (Mfin > Mcut) {
+		Vector r = (mSigma_n - p * mI1) / p * Mcut / Mfin;
+		mSigma_n = p * mI1 + r * p;
+		mAlpha_n = r * (Mcut - m_m) / Mcut;
+	}
+	else {
+		mAlpha_n = (mSigma_n - p * mI1) / p;
+	}
+	GetElasticModuli(mSigma_n, mK, mG);
+	mCe = mCep = mCep_Consistent = GetStiffness(mK, mG);
+	mKp = 100 * mG;
+	mAlpha_in = mAlpha_n;
+	mAlpha_in_max = mAlpha_n;
+	mAlpha_in_min = mAlpha_n;
+	mFabric.Zero();
+	mFabric_in.Zero();
+	mFabric_n.Zero();
+	mzcum = 0.0;
+	mzpeak = m_z_max / 100000.0;
+	mpzp = p / 100.0;
+	m_FirstCall = 1;
+
+	return 0;
+}
+
+// Initialize PM4Sand Material
+int 
+PM4Sand::initialize()
+{
+	// set Initial parameters with p = p_atm
+	Vector mSig(3);
+	m_Pmin = m_P_atm / 200.0;
+	m_Pmin2 = m_P_atm / 20.0;
+	mSig(0) = m_P_atm;
+	mSig(1) = m_P_atm;
+	mSig(2) = m_P_atm;
+
+	m_chg = fmax(m_P_atm*m_crhg, m_chg);
+	mksi = GetKsi(m_Dr, m_P_atm);
+	if (m_z_max < 0) {
+		m_z_max = fmin(0.7 * exp(-6.1 * mksi), 20.0);
+	}
+
+	if (mksi < 0) {
+		// dense of critical
+		mMb = m_Mc * exp(-1.0 * m_nb * mksi);
+		mMd = m_Mc * exp(m_nd * mksi);
+		if (m_Ado < 0) {
+			if (mMb > 2.0) {
+				opserr << "Warning, Mb is larger than 2, using Ado = 1.5. \n";
+				m_Ado = 1.5;
+			}
+			else {
+				m_Ado = 2.5 * (asin(mMb / 2.0) - asin(m_Mc / 2.0)) / (mMb - mMd);
 			}
 		}
-		double Mcut = fmax(mMb, mMd);
-		double Mfin = -2.0 / p * sqrt(0.5) * GetNorm_Contr(mSigma - p * mI1);
-		if (Mfin > Mcut) {
-			Vector r = (mSigma - p * mI1) / p * Mcut / Mfin;
-			mSigma = p * mI1 + r * p;
-			mAlpha = r * (Mcut - m_m) / Mcut;
-		}
-		else {
-			mAlpha = (mSigma - p * mI1) / p;
-		}
-		GetElasticModuli(mSigma, mK, mG);
-		mCe = mCep = mCep_Consistent = GetStiffness(mK, mG);
-		mKp = 100 * mG;
-		mAlpha_in = mAlpha;
-		mAlpha_in_max = mAlpha;
-		mAlpha_in_min = mAlpha;
-		mFabric.Zero();
-		mFabric_in.Zero();
-		mFabric_n.Zero();
-		mzcum = 0.0;
-		mzpeak = m_z_max / 100000.0;
-		mpzp = p / 100.0;
-		m_FirstCall = 1;
 	}
+	else {
+		mMb = m_Mc * exp(-1.0 * m_nb / 4.0 * mksi);
+		mMd = m_Mc * exp(m_nd * 4.0 * mksi);
+		if (m_Ado < 0) {
+			m_Ado = 1.24;
+		}
+	}
+	GetElasticModuli(mSig, mK, mG);
+	mCe = mCep = mCep_Consistent = GetStiffness(mK, mG);
+	mKp = 100 * mG;
+	mzcum = 0.0;
+	mzpeak = m_z_max / 100000.0;
+	mpzp = m_P_atm / 100.0;
+
 	return 0;
 }
 
@@ -829,19 +897,6 @@ int
 PM4Sand::setTrialStrain(const Vector &v, const Vector &r)
 {
 	return this->setTrialStrain(v);
-}
-
-// Initialize PM4Sand Material
-void 
-PM4Sand::initialize()
-{
-	// set Initial Ce with p = p_atm
-	Vector mSig(3);
-	mSig(0) = m_P_atm;
-	mSig(1) = m_P_atm;
-	mSig(2) = m_P_atm;
-	
-	setStress(mSig);
 }
 
 //send back the state parameters to the recorders
@@ -1034,6 +1089,8 @@ void PM4Sand::explicit_integrator(const Vector& CurStress, const Vector& CurStra
 				}
 			}
 			mFabric_in = CurFabric;
+		// Update pzp only once at first loading reversal, 
+				if (mpzp < m_P_atm / 50) mpzp = 0.5 * GetTrace(CurStress);
 		}
 }
 
@@ -1109,10 +1166,11 @@ void PM4Sand::ForwardEuler(const Vector& CurStress, const Vector& CurStrain, con
 	GetStateDependent(CurStress,  CurAlpha, alpha_in, CurFabric, mFabric_in, mG, mzcum
 		, mzpeak, mpzp, mMcur, ksi, CurDr, n, D, R, K_p, alphaD, Cka);
 	double dVolStrain = GetTrace(NextStrain - CurStrain);
-	Vector dDevStrain = (NextStrain - CurStrain) - dVolStrain / 3 * mI1;
+	Vector dDevStrain = (NextStrain - CurStrain) - dVolStrain / 3.0 * mI1;
 	Vector r = GetDevPart(CurStress) / p;
 	
 	double temp4 = K_p + 2 * mG - mK* D *DoubleDot2_2_Contr(n, r);
+
 	if (fabs(temp4) < small) temp4 = small;
 
 	NextL = (2 * mG * DoubleDot2_2_Mixed(n, dDevStrain) - DoubleDot2_2_Contr(n, r) * mK * dVolStrain)/temp4;
@@ -1166,7 +1224,7 @@ void PM4Sand::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 		NextVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(NextStrain + T*(NextStrain - CurStrain));
 		NextDr = (m_emax - NextVoidRatio) / (m_emax - m_emin);
 		dVolStrain = dT * GetTrace(NextStrain - CurStrain);
-		dDevStrain = dT * (NextStrain - CurStrain) - dVolStrain / 3 * mI1;
+		dDevStrain = dT * (NextStrain - CurStrain) - dVolStrain / 3.0 * mI1;
 
 		// Calc Delta 1
 		GetStateDependent(NextStress, NextAlpha, alpha_in, NextFabric, mFabric_in, mG, mzcum
@@ -1434,8 +1492,10 @@ PM4Sand::GetElasticModuli(const Vector& sigma, double &K, double &G, double &Mcu
 	double pn = 0.5 * GetTrace(sigma);
 	pn = (pn <= m_Pmin) ? m_Pmin : pn;
 	double qn = 2 * sqrt(pow((0.5*(sigma(0) - sigma(1))), 2) + pow(sigma(2), 2));
+	//double q = sqrt(2.0 * DoubleDot2_2_Contr(GetDevPart(sigma), GetDevPart(sigma)));
 	Mcur = qn / pn;
 	double Csr = 1 - Csr0 *pow((Mcur / mMb), msr);
+	Csr = (Csr < 0.5) ? 0.5 : Csr;
 	double temp = zcum / m_z_max;
 	if (mElastFlag == 0)
 		G = m_G0 * m_P_atm;
@@ -1556,12 +1616,13 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	alphaD = root12 * (mMd - m_m) * n;
 	double Czpk1 = zpeak / (zcum + m_z_max / 5.0);
 	double Czpk2 = zpeak / (zcum + m_z_max / 100.0);
-	double Cpzp2 = 1.0;
-	//double Cpzp2 = Macauley((pzp-p))/(Macauley((pzp-p))+m_Pmin);
+	//double Cpzp2 = 1.0;
+	double Cpzp2 = Macauley((pzp-p))/(Macauley((pzp-p))+m_Pmin2);
 	double Cg1 = m_h0 / 200.0;
 	double Ckp = 2.0;
 
 	Cka = 1.0 + m_Ckaf / (1.0 + pow(2.5*Macauley(DoubleDot2_2_Contr(alpha - alpha_in, n)), 2.0))*Cpzp2*Czpk1;
+	//Cka = 1.0;
 	K_p = G * m_h0 * sqrt(abs(DoubleDot2_2_Contr((alphaB - alpha), n))) /
 		(exp(DoubleDot2_2_Contr(alpha - alpha_in, n)) - 1 + Cg1) *
 		Cka / (1 + Ckp * zpeak / m_z_max * Macauley(DoubleDot2_2_Contr(alphaB - alpha, n)) * sqrt(1 - Czpk2));
@@ -1575,13 +1636,12 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	// dilation
 	if (DoubleDot2_2_Contr(alphaD - alpha, n) <= 0) {
 		double C_epsilon = m_ce;
-		//double Cpzp = (pzp == 0.0) ? 1.0 : 1.0 / (1.0 + pow((2.5*p / pzp), 5.0));
-		double Cpzp = 1.0;
-		double Cpmin = 1.0 / (1.0 + pow((5.0 * m_Pmin / p), 3));
+		double Cpzp = (pzp == 0.0) ? 1.0 : 1.0 / (1.0 + pow((2.5*p / pzp), 5.0));
+		double Cpmin = 1.0 / (1.0 + pow((5.0 * m_Pmin2 / p), 3));
 		double Czin1 = 1.0 - exp(-2.0*abs((DoubleDot2_2_Contr(fabric_in, n) - DoubleDot2_2_Contr(fabric, n)) / m_z_max));
 		double Czin2 = (1 + Czin1*(zcum - zpeak) / 3.0 / m_z_max) / (1 + 3.0 * Czin1*(zcum - zpeak) / 3 / m_z_max);
 		double temp = pow((1.0 - Macauley(DoubleDot2_2_Contr(-1.0 * fabric, n)) * root12 / zpeak), 3);
-		double Ad = m_Ado * Czin2 / ((pow(zcum, 2) / m_z_max)*temp*C_epsilon*Cpzp*Cpmin*Czin1 + 1.0);
+		double Ad = m_Ado * Czin2 / ((pow(zcum, 2) / m_z_max)*temp* pow(C_epsilon,2)*Cpzp*Cpmin*Czin1 + 1.0);
 		D = Ad * DoubleDot2_2_Contr(alphaD - alpha, n);
 		// rotated dilatancy surface
 		double Crot1 = fmax(1.0 + 2 * Macauley(DoubleDot2_2_Contr(-1.0*fabric, n)) / (sqrt(2.0)*m_z_max)*(1 - Czin1), 1.0);
@@ -1590,18 +1650,18 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 		double Cdr = fmin(5 + 25 * Macauley(m_Dr - 0.35), 10.0);
 		double Drot = Ad * Macauley(DoubleDot2_2_Contr(-1.0*fabric, n)) / (sqrt(2.0)*m_z_max) * DoubleDot2_2_Contr(alphaDr - alpha, n) / Cdr;
 		if (D > Drot) {
-			D = D + (Drot - D)*Macauley(mMb - Mcur) / Macauley(mMb - Mcur + 0.01);
+			D = D + (Drot - D)*Macauley(mMb - Mcur) / (Macauley(mMb - Mcur) + 0.01);
 		}
-		if (ksi > 0) {
-			D = 0;
-		}
+		// if (ksi > 0) {
+		// 	D = 0;
+		// }
 	}
 	else {
 		//contraction
 		double hp;
 		if (ksi <= 0.5) {
-			// change exponent from 2.5 to 2 to improve contraction rate
-			hp = m_hpo * exp(-0.7 + 7.0 * pow((0.5 - ksi), 2.5));
+			// in PMV3 manual the exponenet is 2.5. should be 2. 
+			hp = m_hpo * exp(-0.7 + 7.0 * pow((0.5 - ksi), 2.0));
 		}
 		else {
 			hp = m_hpo * exp(-0.7);
@@ -1609,11 +1669,10 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 		double Crot2 = 1 - Czpk2;
 		double Cdz = fmax((1 - Crot2*sqrt(2.0)*zpeak / m_z_max)*(m_z_max / (m_z_max + Crot2*zcum)), 1 / (1 + m_z_max / 2.0));
 		double Adc = m_Ado * (1 + Macauley(DoubleDot2_2_Contr(fabric, n))) / hp / Cdz;
-		double Cin = 2.0 * DoubleDot2_2_Contr(fabric, n) / sqrt(2.0) / m_z_max;
+		double Cin = 2.0 * Macauley(DoubleDot2_2_Contr(fabric, n)) / sqrt(2.0) / m_z_max;
 		D = fmin(Adc * pow((DoubleDot2_2_Contr(alpha - alpha_in, n) + Cin),2), 1.5 * m_Ado) *
 			DoubleDot2_2_Contr(alphaD - alpha, n) / (DoubleDot2_2_Contr(alphaD - alpha, n) + 0.1);
-		//    D = D / 1.66;
-		if (p <= m_Pmin) D = D * 1e-4;
+		if (p <= m_Pmin) D = D * 1e-3;
 	}
 	R = n + one3 * D * mI1;
 }
@@ -1935,7 +1994,7 @@ Vector PM4Sand::Inv(const Vector& aV)
 //            OTHER AUXILLARY MATH FUNCTIONS                 //
 /*************************************************************/
 /*************************************************************/
-
+//------------------------------------------------------------
 //------------------------------------------------------------
 // max of two vectors
 Vector 

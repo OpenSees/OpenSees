@@ -22,6 +22,9 @@
 //          Nov 2016, University of Washington
                                                                       
 // Description: This file contains the implementation for the PM4Sand class.
+// PM4Sand(Version 3): A Sand Plasticity Model For Earthquake Engineering Applications
+// by R.W.Boulanger and K.Ziotopoulou
+// March 2015
 
 #ifndef PM4Sand_h
 #define PM4Sand_h
@@ -52,13 +55,13 @@ class PM4Sand : public NDMaterial
 	 PM4Sand(int tag, int classTag, double Dr, double G0, double hp0, double mDen, double P_atm = 101.3, double h0 = -1, double emax = 0.8,
 		  double emin = 0.5, double nb = 0.5, double nd = 0.1, double Ado = -1, double z_max = -1, double cz = 250,
 		  double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Ckaf = -1, double Q = 10,
-		  double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, int FirstCall = 0, int integrationScheme = 2, int tangentType = 2,
+		  double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, int FirstCall = 0, int integrationScheme = 1, int tangentType = 0,
 		  double TolF = 1.0e-7, double TolR = 1.0e-7);
 	// full constructor
 	PM4Sand(int tag, double Dr, double G0, double hp0, double mDen, double P_atm = 101.3, double h0 = -1, double emax = 0.8,
 					double emin = 0.5, double nb = 0.5, double nd = 0.1, double Ado = -1, double z_max = -1, double cz = 250,
 					double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Ckaf = -1, double Q = 10,
-					double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, int FirstCall = 0, int integrationScheme = 2, int tangentType = 2,
+					double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, int FirstCall = 0, int integrationScheme = 1, int tangentType = 0,
 					double TolF = 1.0e-7, double TolR = 1.0e-7);
     // null constructor
     PM4Sand();
@@ -72,8 +75,8 @@ class PM4Sand : public NDMaterial
 
 	int setTrialStrain(const Vector &v);
 	int setTrialStrain(const Vector &v, const Vector &r);
-	int setStress(const Vector& initStress);
-	void initialize();
+	int initialize(const Vector& initStress);
+	int initialize();
     NDMaterial *getCopy(const char *type);
 
     int commitState(void);
@@ -186,6 +189,7 @@ class PM4Sand : public NDMaterial
 	char unsigned mOrgTangType;
 	double	mEPS;			// machine epsilon (for FD jacobian)
 	double	m_Pmin;			// Minimum allowable mean effective stress
+	double  m_Pmin2;        // Minimum p for Cpzp2 and Cpmin
 	bool	m_isSmallp;		// flag for small p
 	static char unsigned mElastFlag;	// 1: enforce elastic response
 
@@ -308,12 +312,6 @@ class PM4Sand : public NDMaterial
 };
 
 // Other auxillary functions
-double MatrixMax_Rows(const Matrix& mat, int rowNo);
-double MatrixMax_Cols(const Matrix& mat, int colNo);
-double MatrixMin_Rows(const Matrix& mat, int rowNo);
-double MatrixMin_Cols(const Matrix& mat, int colNo);
-double Sgn(const double& x);
-double VectorMax(const Vector& v);
 Vector Vector2Max(const Vector& v1, const Vector& v2);
 Vector Vector2Min(const Vector& v1, const Vector& v2);
 
