@@ -1,5 +1,6 @@
-#ifndef ExplicitDifference_h
-#define ExplicitDifference_h
+
+#ifndef Explicitdifference_h
+#define Explicitdifference_h
 
 
 #include<TransientIntegrator.h>
@@ -8,12 +9,12 @@ class DOF_Group;
 class FE_Element;
 class Vector;
 
-class ExplicitDifference : public TransientIntegrator
+class Explicitdifference : public TransientIntegrator
 {
 public:
-	ExplicitDifference();
-	ExplicitDifference(double alphaM, double betaK, double betaKi, double betaKc);
-	~ExplicitDifference();                                                                //constructors and unconstructor
+	Explicitdifference();
+	Explicitdifference(double alphaM, double betaK, double betaKi, double betaKc);
+	~Explicitdifference();                                                                //constructors and unconstructor
 
 	                                                 
 
@@ -21,7 +22,7 @@ public:
 
 	int formNodTangent(DOF_Group *theDof);
 	
-	const Vector & getVecel(void);    //added for Modal damping
+	const Vector & getVel(void);    //added for Modal damping
 
 	int domainChanged(void);
 	int newStep(double deltaT);
