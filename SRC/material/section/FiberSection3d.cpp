@@ -115,7 +115,9 @@ FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers, UniaxialMateria
   if (torsion != 0) {
     theTorsion = torsion->getCopy();
   } else {
-    theTorsion = new ElasticMaterial(0, 1.0e10);
+    // assign zero torsional stiffness because people often use
+    // the aggregator section to assign torsional stiffness
+    theTorsion = new ElasticMaterial(0, 0.0);
   }
   if (theTorsion == 0) {
     opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
@@ -169,7 +171,9 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial *torsion):
   if (torsion != 0) {
     theTorsion = torsion->getCopy();
   } else {
-    theTorsion = new ElasticMaterial(0, 1.0e10);
+    // assign zero torsional stiffness because people often use
+    // the aggregator section to assign torsional stiffness
+    theTorsion = new ElasticMaterial(0, 0.0);
   }
   if (theTorsion == 0) {
     opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
@@ -246,7 +250,9 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
   if (torsion != 0) {
     theTorsion = torsion->getCopy();
   } else {
-    theTorsion = new ElasticMaterial(0, 1.0e10);
+    // assign zero torsional stiffness because people often use
+    // the aggregator section to assign torsional stiffness
+    theTorsion = new ElasticMaterial(0, 0.0);
   }
   if (theTorsion == 0) {
     opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
@@ -963,14 +969,15 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
 void
 FiberSection3d::Print(OPS_Stream &s, int flag)
 {
-  if (flag == 1 || flag == 2) {    
+  if (flag == OPS_PRINT_PRINTMODEL_SECTION || flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
     s << "\nFiberSection3d, tag: " << this->getTag() << endln;
     s << "\tSection code: " << code;
     s << "\tNumber of Fibers: " << numFibers << endln;
     s << "\tCentroid: (" << -yBar << ", " << zBar << ')' << endln;
-    theTorsion->Print(s,flag);    
+    if (theTorsion != 0)
+        theTorsion->Print(s, flag);    
 
-    if (flag == 2) {
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
       for (int i = 0; i < numFibers; i++) {
 	s << "\nLocation (y, z) = (" << matData[3*i] << ", " << matData[3*i+1] << ")";
 	s << "\nArea = " << matData[3*i+2] << endln;
@@ -992,6 +999,25 @@ FiberSection3d::Print(OPS_Stream &s, int flag)
       s << "fiber_cross_section = " << matData[3*i+2] << "*m^2\n";
       s << "fiber_location = (" << matData[3*i] << "*m, " << matData[3*i+1] << "*m);\n\n";
     }
+  }
+
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+	  s << "\t\t\t{";
+	  s << "\"name\": \"" << this->getTag() << "\", ";
+	  s << "\"type\": \"FiberSection3d\", ";
+      if (theTorsion != 0)
+          s << "\"torsion\": " << theTorsion->getInitialTangent() << ", ";
+	  s << "\"fibers\": [\n";
+	  for (int i = 0; i < numFibers; i++) {
+		  s << "\t\t\t\t{\"coord\": [" << matData[3*i] << ", " << matData[3*i+1] << "], ";
+		  s << "\"area\": " << matData[3*i+2] << ", ";
+		  s << "\"material\": \"" << theMaterials[i]->getTag() << "\"";
+		  if (i < numFibers - 1)
+			  s << "},\n";
+		  else
+			  s << "}\n";
+	  }
+	  s << "\t\t\t]}";
   }
 }
 
