@@ -1171,22 +1171,21 @@ LinearCrdTransf2d::getPointGlobalDisplFromBasic(double xi, const Vector &uxb)
 void
 LinearCrdTransf2d::Print(OPS_Stream &s, int flag)
 {
-   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-     s << "{\"type\":\"LinearCrdTransf2d\", \"name\": " << this->getTag();
-     if (nodeIOffset != 0)
-       s << ",\"iOffset\": [" << nodeIOffset[0] << ", " << nodeIOffset[1] << "]";
-     if (nodeJOffset != 0)
-       s << ",\"jOffset\": [" << nodeJOffset[0] << ", " << nodeJOffset[1] << "]";
-     s << "}";
-   }
-   
-
-   if (flag == OPS_PRINT_CURRENTSTATE) {
-     s << "\nCrdTransf: " << this->getTag() << " Type: LinearCrdTransf2d";
-     if (nodeIOffset != 0)
-       s << "\tnodeI Offset: " << nodeIOffset[0] << ' ' << nodeIOffset[1] << endln;
-     if (nodeJOffset != 0)
-       s << "\tnodeJ Offset: " << nodeJOffset[0] << ' ' << nodeJOffset[1] << endln;
+	if (flag == OPS_PRINT_CURRENTSTATE) {
+		s << "\nCrdTransf: " << this->getTag() << " Type: LinearCrdTransf2d";
+		if (nodeIOffset != 0)
+			s << "\tnodeI Offset: " << nodeIOffset[0] << ' ' << nodeIOffset[1] << endln;
+		if (nodeJOffset != 0)
+			s << "\tnodeJ Offset: " << nodeJOffset[0] << ' ' << nodeJOffset[1] << endln;
+	}
+	
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{\"name\": \"" << this->getTag() << "\", \"type\": \"LinearCrdTransf2d\"";
+		if (nodeIOffset != 0)
+			s << ", \"iOffset\": [" << nodeIOffset[0] << ", " << nodeIOffset[1] << "]";
+		if (nodeJOffset != 0)
+			s << ", \"jOffset\": [" << nodeJOffset[0] << ", " << nodeJOffset[1] << "]";
+		s << "}";
    }
 }
 

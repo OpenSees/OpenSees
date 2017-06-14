@@ -2078,7 +2078,7 @@ void ShellANDeS::calculate_E_planestress_and_beta0()
                              3 * pow(E22, 2) - 4 * (6 * pow(E12, 2) + 5 * pow(E13, 2) - 6 * E13 * E23 + 5 * pow(E23, 2))) * E33 +
                      4 * (5 * E11 - 6 * E12 + 5 * E22) * pow(E33, 2)) / (128 * Edet);
 
-    beta0 = max(2.0 / E11C11 - 1.5, 0.01);
+    beta0 = fmax(2.0 / E11C11 - 1.5, 0.01);
 }
 
 void ShellANDeS::initializeGeometry()

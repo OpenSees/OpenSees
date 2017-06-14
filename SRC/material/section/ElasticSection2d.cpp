@@ -249,7 +249,7 @@ ElasticSection2d::recvSelf(int commitTag, Channel &theChannel,
 void
 ElasticSection2d::Print(OPS_Stream &s, int flag)
 {
-  if (flag== 1 || flag == 2) {
+  if (flag == OPS_PRINT_PRINTMODEL_SECTION) {
     s << "ElasticSection2d, tag: " << this->getTag() << endln;
     s << "\tE: " << E << endln;
     s << "\tA: " << A << endln;
@@ -257,12 +257,12 @@ ElasticSection2d::Print(OPS_Stream &s, int flag)
   }
   
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-    s << "\{";
-    s << "\"type\":\"ElasticSection2d\",";
-    s << "\"name\":" << this->getTag() << ",";
-    s << "\"E\": " << E << "\n";
-    s << "\"A\": " << A << "\n";
-    s << "\"I\": " << A << "\n}";
+    s << "\t\t\t{";
+	s << "\"name\": \"" << this->getTag() << "\", ";
+	s << "\"type\": \"ElasticSection2d\", ";
+    s << "\"E\": " << E << ", ";
+    s << "\"A\": " << A << ", ";
+    s << "\"Iz\": " << I << "}";
   }
 }  
 

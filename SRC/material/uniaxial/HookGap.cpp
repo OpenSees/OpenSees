@@ -224,7 +224,7 @@ HookGap::recvSelf(int cTag, Channel &theChannel,
       this->setTag(0);      
   }
   else {
-    this->setTag(data(0));
+    this->setTag(int(data(0)));
     E   = data(1);
     gapN = data(2);
     gapP = data(3);
@@ -236,8 +236,19 @@ HookGap::recvSelf(int cTag, Channel &theChannel,
 void 
 HookGap::Print(OPS_Stream &s, int flag)
 {
-    s << "HookGap tag: " << this->getTag() << endln;
-    s << "  E: " << E << " gapN: " << gapN << " gapP: " << gapP << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "HookGap tag: " << this->getTag() << endln;
+        s << "  E: " << E << " gapN: " << gapN << " gapP: " << gapP << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"HookGap\", ";
+        s << "\"E\": " << E << ", ";
+        s << "\"gapN\": " << gapN << ", ";
+        s << "\"gapP\": " << gapP << "}";
+    }
 }
 
 int

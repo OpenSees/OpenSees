@@ -671,21 +671,33 @@ int ElasticTimoshenkoBeam2d::displaySelf(Renderer &theViewer,
 
 void ElasticTimoshenkoBeam2d::Print(OPS_Stream &s, int flag)
 {
-    if (flag == 0)  {
-        // print everything
-        s << "Element: " << this->getTag(); 
-        s << "  type: ElasticTimoshenkoBeam2d";
-        s << "  iNode: " << connectedExternalNodes(0);
-        s << "  jNode: " << connectedExternalNodes(1) << endln;
-        s << "  E: " << E << "  G: " << G << endln;
-        s << "  A: " << A << "  Iz: " << Iz << "  Avy: " << Avy << endln;
-        s << "  coordTransf: " << theCoordTransf->getClassType() << endln;
-        s << "  rho: " << rho << "  cMass: " << cMass << endln;
-        // determine resisting forces in global system
-        s << "  resisting force: " << this->getResistingForce() << endln;
-    } else if (flag == 1)  {
-        // does nothing
-    }
+	if (flag == OPS_PRINT_CURRENTSTATE) {
+		// print everything
+		s << "Element: " << this->getTag();
+		s << "  type: ElasticTimoshenkoBeam2d";
+		s << "  iNode: " << connectedExternalNodes(0);
+		s << "  jNode: " << connectedExternalNodes(1) << endln;
+		s << "  E: " << E << "  G: " << G << endln;
+		s << "  A: " << A << "  Iz: " << Iz << "  Avy: " << Avy << endln;
+		s << "  coordTransf: " << theCoordTransf->getClassType() << endln;
+		s << "  rho: " << rho << "  cMass: " << cMass << endln;
+		// determine resisting forces in global system
+		s << "  resisting force: " << this->getResistingForce() << endln;
+	}
+	
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"ElasticTimoshenkoBeam2d\", ";
+		s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+		s << "\"E\": " << E << ", ";
+		s << "\"G\": " << G << ", ";
+		s << "\"A\": " << A << ", ";
+		s << "\"Avy\": " << Avy << ", ";
+		s << "\"Iz\": " << Iz << ", ";
+		s << "\"rho\": " << rho << ", ";
+		s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
+	}
 }
 
 

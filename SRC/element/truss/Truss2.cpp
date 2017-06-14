@@ -1075,31 +1075,43 @@ void
 	strain = theMaterial->getStrain();
 	force = A * theMaterial->getStress();
 
-	if (flag == 0) { // print everything
-		s << "Element: " << this->getTag(); 
-		s << " type: Truss2  iNode: " << connectedExternalNodes(0);
-		s << " jNode: " << connectedExternalNodes(1);
-		s << " Area: " << A << " Mass/Length: " << rho;
-
-		s << " \n\t strain: " << strain;
-		s << " axial load: " <<  force;
-		if (L != 0.0) {
-			int numDOF2 = numDOF/2;
-			double temp;
-			for (int i = 0; i < dimension; i++) {
-				temp = cosX[i]*force;
-				(*theVector)(i) = -temp;
-				(*theVector)(i+numDOF2) = temp;
-			}
-			s << " \n\t unbalanced load: " << *theVector;	
-		}
-
-		s << " \t Material: " << *theMaterial;
-		s << endln;
-	} else if (flag == 1) {
-		s << this->getTag() << "  " << strain << "  ";
-		s << force << endln;
-	}
+    if (flag == OPS_PRINT_CURRENTSTATE) { // print everything
+        s << "Element: " << this->getTag();
+        s << " type: Truss2  iNode: " << connectedExternalNodes(0);
+        s << " jNode: " << connectedExternalNodes(1);
+        s << " Area: " << A << " Mass/Length: " << rho;
+        
+        s << " \n\t strain: " << strain;
+        s << " axial load: " << force;
+        if (L != 0.0) {
+            int numDOF2 = numDOF / 2;
+            double temp;
+            for (int i = 0; i < dimension; i++) {
+                temp = cosX[i] * force;
+                (*theVector)(i) = -temp;
+                (*theVector)(i + numDOF2) = temp;
+            }
+            s << " \n\t unbalanced load: " << *theVector;
+        }
+        
+        s << " \t Material: " << *theMaterial;
+        s << endln;
+    }
+    
+    if (flag == 1) {
+        s << this->getTag() << "  " << strain << "  ";
+        s << force << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"Truss2\", ";
+        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+        s << "\"A\": " << A << ", ";
+        s << "\"rho\": " << rho << ", ";
+        s << "\"material\": \"" << theMaterial->getTag() << "\"}";
+    }
 }
 
 double

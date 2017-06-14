@@ -851,16 +851,29 @@ FatigueMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 FatigueMaterial::Print(OPS_Stream &s, int flag)
 {
-  if (flag == 100) {
-    s << DL << endln;
-  } else {
-    s << "FatigueMaterial tag: " << this->getTag() << endln;
-    s << "\tMaterial: " << theMaterial->getTag() << endln;
-    s << "\tDI: " << DI << " Dmax: " << Dmax << endln;
-    s << "\tE0: " << E0 <<  " m: " << m  << endln;
-    s << "\tDL: " << DL << endln;
-
-  }
+	if (flag == 100) {
+		s << DL << endln;
+	}
+	
+	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+		s << "FatigueMaterial tag: " << this->getTag() << endln;
+		s << "\tMaterial: " << theMaterial->getTag() << endln;
+		s << "\tDI: " << DI << " Dmax: " << Dmax << endln;
+		s << "\tE0: " << E0 << " m: " << m << endln;
+		s << "\tDL: " << DL << endln;
+	}
+		
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"FatigueMaterial\", ";
+		s << "\"material\": \"" << theMaterial->getTag() << "\", ";
+		s << "\"tDI\": " << DI << ", ";
+		s << "\"Dmax\": " << Dmax << ", ";
+		s << "\"tE0\": " << E0 << ", ";
+		s << "\"m\": " << m << ", ";
+		s << "\"tDL\": " << DL << "}";
+	}
 }
 
 Response* 

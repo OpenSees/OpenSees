@@ -194,9 +194,25 @@ MidDistanceBeamIntegration::activateParameter(int paramID)
 void
 MidDistanceBeamIntegration::Print(OPS_Stream &s, int flag)
 {
-  s << "MidDistance" << endln;
-  s << " Points: " << pts;
-  s << " Weights: " << wts;
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "{\"type\": \"MidDistance\", ";
+		s << "\"points\": [";
+		int nIP = pts.Size();
+		for (int i = 0; i < nIP-1; i++)
+			s << pts(i) << ", ";
+		s << pts(nIP-1) << "], ";
+		s << "\"weights\": [";
+		nIP = wts.Size();
+		for (int i = 0; i < nIP-1; i++)
+			s << wts(i) << ", ";
+		s << wts(nIP-1) << "]}";
+	}
+	
+	else {
+		s << "MidDistance" << endln;
+		s << " Points: " << pts;
+		s << " Weights: " << wts;
+	}
 }
 
 void 

@@ -322,45 +322,56 @@ int  ShellDKGT::revertToStart( )
 
 void  ShellDKGT::Print( OPS_Stream &s, int flag )
 {
-  if (flag == -1) {
-    int eleTag = this->getTag();
-    s << "EL_ShellDKGQ\t" << eleTag << "\t";
-    s << eleTag << "\t" << 1; 
-    s  << "\t" << connectedExternalNodes(0) << "\t" << connectedExternalNodes(1);
-    s  << "\t" << connectedExternalNodes(2) << "\t"  << "\t0.00";
-    s << endln;
-    s << "PROP_3D\t" << eleTag << "\t";
-    s << eleTag << "\t" << 1; 
-    s  << "\t" << -1 << "\tSHELL\t1.0\0.0";
-    s << endln;
-  }  else if (flag < -1) {
-
-     int counter = (flag + 1) * -1;
-     int eleTag = this->getTag();
-     int i,j;
-     for ( i = 0; i < 4; i++ ) {
-       const Vector &stress = materialPointers[i]->getStressResultant();
-       
-       s << "STRESS\t" << eleTag << "\t" << counter << "\t" << i << "\tTOP";
-       for (j=0; j<6; j++)
-	 s << "\t" << stress(j);
-       s << endln;
-     }
-
-   } else {
-    s << endln ;
-    s << "DKGT Non-Locking Three Node Shell \n" ;
-    s << "Element Number: " << this->getTag() << endln ;
-    s << "Node 1 : " << connectedExternalNodes(0) << endln ;
-    s << "Node 2 : " << connectedExternalNodes(1) << endln ;
-    s << "Node 3 : " << connectedExternalNodes(2) << endln ;
-   
+    if (flag == -1) {
+        int eleTag = this->getTag();
+        s << "EL_ShellDKGQ\t" << eleTag << "\t";
+        s << eleTag << "\t" << 1;
+        s << "\t" << connectedExternalNodes(0) << "\t" << connectedExternalNodes(1);
+        s << "\t" << connectedExternalNodes(2) << "\t" << "\t0.00";
+        s << endln;
+        s << "PROP_3D\t" << eleTag << "\t";
+        s << eleTag << "\t" << 1;
+        s << "\t" << -1 << "\tSHELL\t1.0\0.0";
+        s << endln;
+    }
     
-    s << "Material Information : \n " ;
-    materialPointers[0]->Print( s, flag ) ;
+    else if (flag < -1) {
+        
+        int counter = (flag + 1) * -1;
+        int eleTag = this->getTag();
+        int i, j;
+        for (i = 0; i < 4; i++) {
+            const Vector &stress = materialPointers[i]->getStressResultant();
+            
+            s << "STRESS\t" << eleTag << "\t" << counter << "\t" << i << "\tTOP";
+            for (j = 0; j < 6; j++)
+                s << "\t" << stress(j);
+            s << endln;
+        }
+    }
     
-    s << endln ;
-  }
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        s << endln;
+        s << "DKGT Non-Locking Three Node Shell \n";
+        s << "Element Number: " << this->getTag() << endln;
+        s << "Node 1 : " << connectedExternalNodes(0) << endln;
+        s << "Node 2 : " << connectedExternalNodes(1) << endln;
+        s << "Node 3 : " << connectedExternalNodes(2) << endln;
+        
+        s << "Material Information : \n ";
+        materialPointers[0]->Print(s, flag);
+        
+        s << endln;
+    }
+
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ShellDKGT\", ";
+        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\", ";
+        s << "\"" << connectedExternalNodes(2) << "\"], ";
+        s << "\"section\": \"" << materialPointers[0]->getTag() << "\"}";
+    }
 }
 
 Response*

@@ -550,15 +550,16 @@ void Concrete01::Print (OPS_Stream& s, int flag)
     s << "  fpcu: " << fpcu << endln;
     s << "  epscu: " << epscu << endln;
   }
-    
+  
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-    s << "\{";
-    s << "\"type\":\"Concrete01\",";
-    s << "\"name\":" << this->getTag() << ",";
-    s << "\"fpc\":" << fpc << ",";
-    s << "\"epsc0\":" << epsc0 << ",";
-    s << "\"fpcu\":" << fpcu << ",";
-    s << "\"epscu\":" << epscu << "}";
+    s << "\t\t\t{";
+	s << "\"name\": \"" << this->getTag() << "\", ";
+	s << "\"type\": \"Concrete01\", ";
+	s << "\"Ec\": " << 2.0*fpc/epsc0 << ", ";
+	s << "\"fc\": " << fpc << ", ";
+    s << "\"epsc\": " << epsc0 << ", ";
+    s << "\"fcu\": " << fpcu << ", ";
+    s << "\"epscu\": " << epscu << "}";
   }
 }
 

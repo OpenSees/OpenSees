@@ -223,9 +223,35 @@ UserDefinedHingeIntegration::recvSelf(int cTag, Channel &theChannel,
 void
 UserDefinedHingeIntegration::Print(OPS_Stream &s, int flag)
 {
-  s << "UserHinge" << endln;
-  s << " Points hinge I: " << ptsL;
-  s << " Weights hinge I: " << wtsL;
-  s << " Points hinge J: " << ptsR;
-  s << " Weights hinge J: " << wtsR;
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "{\"type\": \"UserHinge\", ";
+		s << "\"pointsI\": [";
+		int nIP = ptsL.Size();
+		for (int i = 0; i < nIP-1; i++)
+			s << ptsL(i) << ", ";
+		s << ptsL(nIP - 1) << "], ";
+		s << "\"weightsI\": [";
+		nIP = wtsL.Size();
+		for (int i = 0; i < nIP-1; i++)
+			s << wtsL(i) << ", ";
+		s << wtsL(nIP - 1) << "], ";
+		s << "\"pointsJ\": [";
+		nIP = ptsR.Size();
+		for (int i = 0; i < nIP-1; i++)
+			s << ptsR(i) << ", ";
+		s << ptsR(nIP - 1) << "], ";
+		s << "\"weightsJ\": [";
+		nIP = wtsR.Size();
+		for (int i = 0; i < nIP-1; i++)
+			s << wtsR(i) << ", ";
+		s << wtsR(nIP - 1) << "]}";
+	}
+	
+	else {
+		s << "UserHinge" << endln;
+		s << " Points hinge I: " << ptsL;
+		s << " Weights hinge I: " << wtsL;
+		s << " Points hinge J: " << ptsR;
+		s << " Weights hinge J: " << wtsR;
+	}
 }

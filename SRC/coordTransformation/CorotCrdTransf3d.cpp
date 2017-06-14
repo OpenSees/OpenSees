@@ -2111,8 +2111,20 @@ CorotCrdTransf3d::getPointGlobalDisplFromBasic(double xi, const Vector &uxb)
 void
 CorotCrdTransf3d::Print(OPS_Stream &s, int flag)
 {
-    s << "\nCrdTransf: " << this->getTag() << " Type: CorotCrdTransf3d";
-    s << "\tvAxis: " << vAxis;
-    s << "\tnodeI Offset: " << nodeIOffset;
-    s << "\tnodeJ Offset: " << nodeJOffset;
+	if (flag == OPS_PRINT_CURRENTSTATE) {
+		s << "\nCrdTransf: " << this->getTag() << " Type: CorotCrdTransf3d";
+		s << "\tvAxis: " << vAxis;
+		s << "\tnodeI Offset: " << nodeIOffset;
+		s << "\tnodeJ Offset: " << nodeJOffset;
+	}
+
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{\"name\": \"" << this->getTag() << "\", \"type\": \"CorotCrdTransf3d\"";
+        s << ", \"vecInLocXZPlane\": [" << vAxis(0) << ", " << vAxis(1) << ", " << vAxis(2) << "]";
+        if (nodeIOffset != 0)
+            s << ", \"iOffset\": [" << nodeIOffset[0] << ", " << nodeIOffset[1] << ", " << nodeIOffset[2] << "]";
+        if (nodeJOffset != 0)
+            s << ", \"jOffset\": [" << nodeJOffset[0] << ", " << nodeJOffset[1] << ", " << nodeJOffset[2] << "]";
+        s << "}";
+    }
 }

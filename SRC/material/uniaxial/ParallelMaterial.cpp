@@ -482,13 +482,31 @@ ParallelMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 ParallelMaterial::Print(OPS_Stream &s, int flag)
 {
-    s << "Parallel tag: " << this->getTag() << endln;
-    for (int i=0; i<numMaterials; i++) {
-      s << " ";
-      theModels[i]->Print(s, flag);
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "ParallelMaterial tag: " << this->getTag() << endln;
+        for (int i = 0; i < numMaterials; i++) {
+            s << " ";
+            theModels[i]->Print(s, flag);
+        }
+        if (theFactors != 0)
+            opserr << " Factors: " << *theFactors;
     }
-    if (theFactors != 0)
-      opserr << " Factors: " << *theFactors;
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ParallelMaterial\", ";
+        s << "\"materials\": [";
+        for (int i = 0; i < numMaterials-1; i++)
+            s << "\"" << theModels[i]->getTag() << "\", ";
+        s << "\"" << theModels[numMaterials-1]->getTag() << "\"]}";
+        if (theFactors != 0) {
+            s << "\"factors\": [";
+            for (int i = 0; i < numMaterials-1; i++)
+                s << (*theFactors)(i) << ", ";
+            s << (*theFactors)(numMaterials-1) << "]}";
+        }
+    }
 }
 
 Response*

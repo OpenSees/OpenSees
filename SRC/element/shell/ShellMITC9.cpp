@@ -341,52 +341,67 @@ int  ShellMITC9::revertToStart( )
 //print out element data
 void  ShellMITC9::Print( OPS_Stream &s, int flag )
 {
-  if (flag == -1) {
-    int eleTag = this->getTag();
-    s << "EL_ShellMITC9\t" << eleTag << "\t";
-    s << eleTag << "\t" << 1; 
-    s  << "\t" << connectedExternalNodes(0) << "\t" << connectedExternalNodes(1);
-    s  << "\t" << connectedExternalNodes(2) << "\t" << connectedExternalNodes(3);
-	s  << "\t" << connectedExternalNodes(4) << "\t" << connectedExternalNodes(5);
-    s  << "\t" << connectedExternalNodes(6) << "\t" << connectedExternalNodes(7);
-    s  << "\t" << connectedExternalNodes(8) << "\t0.00";
-    s << endln;
-    s << "PROP_3D\t" << eleTag << "\t";
-    s << eleTag << "\t" << 1; 
-    s  << "\t" << -1 << "\tSHELL\t1.0\0.0";
-    s << endln;
-  }  else if (flag < -1) {
-
-     int counter = (flag + 1) * -1;
-     int eleTag = this->getTag();
-     int i,j;
-     for ( i = 0; i < 9; i++ ) {
-       const Vector &stress = materialPointers[i]->getStressResultant();
-       
-       s << "STRESS\t" << eleTag << "\t" << counter << "\t" << i << "\tTOP";
-       for (j=0; j<6; j++)
-	 s << "\t" << stress(j);
-       s << endln;
-     }
-
-   } else {
-    s << endln ;
-    s << "NL Nine Node Shell \n" ;
-    s << "Element Number: " << this->getTag() << endln ;
-    s << "Node 1 : " << connectedExternalNodes(0) << endln ;
-    s << "Node 2 : " << connectedExternalNodes(1) << endln ;
-    s << "Node 3 : " << connectedExternalNodes(2) << endln ;
-    s << "Node 4 : " << connectedExternalNodes(3) << endln ;
-    s << "Node 5 : " << connectedExternalNodes(4) << endln ;
-    s << "Node 6 : " << connectedExternalNodes(5) << endln ;
-    s << "Node 7 : " << connectedExternalNodes(6) << endln ;
-    s << "Node 8 : " << connectedExternalNodes(7) << endln ;
-    s << "Node 9 : " << connectedExternalNodes(8) << endln ;
-    s << "Material Information : \n " ;
-    materialPointers[0]->Print( s, flag ) ;
+    if (flag == -1) {
+        int eleTag = this->getTag();
+        s << "EL_ShellMITC9\t" << eleTag << "\t";
+        s << eleTag << "\t" << 1;
+        s << "\t" << connectedExternalNodes(0) << "\t" << connectedExternalNodes(1);
+        s << "\t" << connectedExternalNodes(2) << "\t" << connectedExternalNodes(3);
+        s << "\t" << connectedExternalNodes(4) << "\t" << connectedExternalNodes(5);
+        s << "\t" << connectedExternalNodes(6) << "\t" << connectedExternalNodes(7);
+        s << "\t" << connectedExternalNodes(8) << "\t0.00";
+        s << endln;
+        s << "PROP_3D\t" << eleTag << "\t";
+        s << eleTag << "\t" << 1;
+        s << "\t" << -1 << "\tSHELL\t1.0\0.0";
+        s << endln;
+    }
     
-    s << endln ;
-  }
+    else if (flag < -1) {
+        
+        int counter = (flag + 1) * -1;
+        int eleTag = this->getTag();
+        int i, j;
+        for (i = 0; i < 9; i++) {
+            const Vector &stress = materialPointers[i]->getStressResultant();
+            
+            s << "STRESS\t" << eleTag << "\t" << counter << "\t" << i << "\tTOP";
+            for (j = 0; j < 6; j++)
+                s << "\t" << stress(j);
+            s << endln;
+        }
+    }
+    
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        s << endln;
+        s << "NL Nine Node Shell \n";
+        s << "Element Number: " << this->getTag() << endln;
+        s << "Node 1 : " << connectedExternalNodes(0) << endln;
+        s << "Node 2 : " << connectedExternalNodes(1) << endln;
+        s << "Node 3 : " << connectedExternalNodes(2) << endln;
+        s << "Node 4 : " << connectedExternalNodes(3) << endln;
+        s << "Node 5 : " << connectedExternalNodes(4) << endln;
+        s << "Node 6 : " << connectedExternalNodes(5) << endln;
+        s << "Node 7 : " << connectedExternalNodes(6) << endln;
+        s << "Node 8 : " << connectedExternalNodes(7) << endln;
+        s << "Node 9 : " << connectedExternalNodes(8) << endln;
+        s << "Material Information : \n ";
+        materialPointers[0]->Print(s, flag);
+        
+        s << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ShellMITC9\", ";
+        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\", ";
+        s << "\"" << connectedExternalNodes(2) << "\", \"" << connectedExternalNodes(3) << "\", ";
+        s << "\"" << connectedExternalNodes(4) << "\", \"" << connectedExternalNodes(5) << "\", ";
+        s << "\"" << connectedExternalNodes(6) << "\", \"" << connectedExternalNodes(7) << "\", ";
+        s << "\"" << connectedExternalNodes(8) << "\"], ";
+        s << "\"section\": \"" << materialPointers[0]->getTag() << "\"}";
+    }
 }
 
 Response*

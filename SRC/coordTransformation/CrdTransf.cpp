@@ -65,7 +65,7 @@ OPS_clearAllCrdTransf(void) {
 
 void OPS_printCrdTransf(OPS_Stream &s, int flag) {
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-    s << "\"coordTransf\": [\n";        
+    s << "\t\t\"crdTransformations\": [\n";        
     MapOfTaggedObjectsIter theObjects = theCrdTransfObjects.getIter();
     theObjects.reset();
     TaggedObject *theObject;
@@ -78,7 +78,7 @@ void OPS_printCrdTransf(OPS_Stream &s, int flag) {
 	s << ",\n";
       count++;      
     }
-    s << "]";
+    s << "\n\t\t]";
   }
 }
 

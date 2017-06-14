@@ -509,11 +509,11 @@ Steel02::recvSelf(int commitTag, Channel &theChannel,
   sigs0P = data(14); 
   epssrP = data(15); 
   sigsrP = data(16); 
-  konP = data(17);   
+  konP = int(data(17));   
   epsP = data(18);   
   sigP = data(19);   
   eP   = data(20);   
-  this->setTag(data(21));
+  this->setTag(int(data(21)));
   sigini = data(22);
 
   e = eP;
@@ -542,19 +542,19 @@ Steel02::Print(OPS_Stream &s, int flag)
   }
   
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-    s << "\{";
-    s << "\"type\":\"Steel01\",";
-    s << "\"name\":" << this->getTag() << ",";
-    s << "\"fy\":" << Fy << ",";
-    s << "\"E0\":" << E0 << ",";
-    s << "\"b\":" << b << ",";
-    s << "\"R0\":" << R0 << ",";
-    s << "\"cR1\":" << cR1 << ",";
-    s << "\"cR2\":" << cR2 << ",";
-    s << "\"a1\":" << a1 << ",";
-    s << "\"a2\":" << a2 << ",";
-    s << "\"a3\":" << a3 << ",";
-    s << "\"a4\":" << a4 << ",";    
-    s << "\"sigini\":" << sigini << "}";
+    s << "\t\t\t{";
+	s << "\"name\": \"" << this->getTag() << "\", ";
+	s << "\"type\": \"Steel02\", ";
+	s << "\"E\": " << E0 << ", ";
+	s << "\"fy\": " << Fy << ", ";
+    s << "\"b\": " << b << ", ";
+    s << "\"R0\": " << R0 << ", ";
+    s << "\"cR1\": " << cR1 << ", ";
+    s << "\"cR2\": " << cR2 << ", ";
+    s << "\"a1\": " << a1 << ", ";
+    s << "\"a2\": " << a2 << ", ";
+    s << "\"a3\": " << a3 << ", ";
+    s << "\"a4\": " << a4 << ", ";    
+    s << "\"sigini\": " << sigini << "}";
   }
 }

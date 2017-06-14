@@ -282,17 +282,27 @@ ElasticSection3d::recvSelf(int commitTag, Channel &theChannel,
 void
 ElasticSection3d::Print(OPS_Stream &s, int flag)
 {
-  if (flag == 2) {
+	if (flag == OPS_PRINT_PRINTMODEL_SECTION) {
+		s << "ElasticSection3d, tag: " << this->getTag() << endln;
+		s << "\t E: " << E << endln;
+		s << "\t A: " << A << endln;
+		s << "\tIz: " << Iz << endln;
+		s << "\tIy: " << Iy << endln;
+		s << "\t G: " << G << endln;
+		s << "\t J: " << J << endln;
+	}
 
-  } else {
-    s << "ElasticSection3d, tag: " << this->getTag() << endln;
-    s << "\t E: " << E << endln;
-    s << "\t A: " << A << endln;
-    s << "\tIz: " << Iz << endln;
-    s << "\tIy: " << Iy << endln;
-    s << "\t G: " << G << endln;
-    s << "\t J: " << J << endln;
-  }
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"ElasticSection3d\", ";
+		s << "\"E\": " << E << ", ";
+		s << "\"G\": " << G << ", ";
+		s << "\"A\": " << A << ", ";
+		s << "\"Jx\": " << J << ", ";
+		s << "\"Iy\": " << Iy << ", ";
+		s << "\"Iz\": " << Iz << "}";
+	}
 }
 
 int

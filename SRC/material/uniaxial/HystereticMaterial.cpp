@@ -616,33 +616,67 @@ HystereticMaterial::recvSelf(int commitTag, Channel &theChannel,
 void
 HystereticMaterial::Print(OPS_Stream &s, int flag)
 {
-	s << "Hysteretic Material, tag: " << this->getTag() << endln;
-	s << "mom1p: " << mom1p << endln;
-	s << "rot1p: " << rot1p << endln;
-	s << "E1p: " << E1p << endln;
-	s << "mom2p: " << mom2p << endln;
-	s << "rot2p: " << rot2p << endln;
-	s << "E2p: " << E2p << endln;
-	s << "mom3p: " << mom3p << endln;
-	s << "rot3p: " << rot3p << endln;
-	s << "E3p: " << E3p << endln;
-
-	s << "mom1n: " << mom1n << endln;
-	s << "rot1n: " << rot1n << endln;
-	s << "E1n: " << E1n << endln;
-	s << "mom2n: " << mom2n << endln;
-	s << "rot2n: " << rot2n << endln;
-	s << "E2n: " << E2n << endln;
-	s << "mom3n: " << mom3n << endln;
-	s << "rot3n: " << rot3n << endln;
-	s << "E3n: " << E3n << endln;
-
-	s << "pinchX: " << pinchX << endln;
-	s << "pinchY: " << pinchY << endln;
-	s << "damfc1: " << damfc1 << endln;
-	s << "damfc2: " << damfc2 << endln;
-	s << "energyA: " << energyA << endln;
-	s << "beta: " << beta << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "HHystereticMaterial, tag: " << this->getTag() << endln;
+        s << "s1p: " << mom1p << endln;
+        s << "e1p: " << rot1p << endln;
+        s << "E1p: " << E1p << endln;
+        s << "s2p: " << mom2p << endln;
+        s << "e2p: " << rot2p << endln;
+        s << "E2p: " << E2p << endln;
+        s << "s3p: " << mom3p << endln;
+        s << "e3p: " << rot3p << endln;
+        s << "E3p: " << E3p << endln;
+        
+        s << "s1n: " << mom1n << endln;
+        s << "e1n: " << rot1n << endln;
+        s << "E1n: " << E1n << endln;
+        s << "s2n: " << mom2n << endln;
+        s << "e2n: " << rot2n << endln;
+        s << "E2n: " << E2n << endln;
+        s << "s3n: " << mom3n << endln;
+        s << "e3n: " << rot3n << endln;
+        s << "E3n: " << E3n << endln;
+        
+        s << "pinchX: " << pinchX << endln;
+        s << "pinchY: " << pinchY << endln;
+        s << "damfc1: " << damfc1 << endln;
+        s << "damfc2: " << damfc2 << endln;
+        s << "energyA: " << energyA << endln;
+        s << "beta: " << beta << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"HystereticMaterial\", ";
+        s << "\"s1p\": " << mom1p << ", ";
+        s << "\"e1p\": " << rot1p << ", ";
+        s << "\"E1p\": " << E1p << ", ";
+        s << "\"s2p\": " << mom2p << ", ";
+        s << "\"e2p\": " << rot2p << ", ";
+        s << "\"E2p\": " << E2p << ", ";
+        s << "\"s3p\": " << mom3p << ", ";
+        s << "\"e3p\": " << rot3p << ", ";
+        s << "\"E3p\": " << E3p << ", ";
+        
+        s << "\"s1n\": " << mom1n << ", ";
+        s << "\"e1n\": " << rot1n << ", ";
+        s << "\"E1n\": " << E1n << ", ";
+        s << "\"s2n\": " << mom2n << ", ";
+        s << "\"e2n\": " << rot2n << ", ";
+        s << "\"E2n\": " << E2n << ", ";
+        s << "\"s3n\": " << mom3n << ", ";
+        s << "\"e3n\": " << rot3n << ", ";
+        s << "\"E3n\": " << E3n << ", ";
+        
+        s << "\"pinchX\": " << pinchX << ", ";
+        s << "\"pinchY\": " << pinchY << ", ";
+        s << "\"damfc1\": " << damfc1 << ", ";
+        s << "\"damfc2\": " << damfc2 << ", ";
+        s << "\"energyA\": " << energyA << ", ";
+        s << "\"beta\": " << beta << "}";
+    }
 }
 
 void

@@ -270,12 +270,25 @@ ElasticShearSection2d::recvSelf(int commitTag, Channel &theChannel,
 void
 ElasticShearSection2d::Print(OPS_Stream &s, int flag)
 {
-  s << "ElasticShearSection2d, tag: " << this->getTag() << endln;
-  s << "\tE: " << E << endln;
-  s << "\tA: " << A << endln;
-  s << "\tI: " << I << endln;
-  s << "\tG: " << G << endln;
-  s << "\talpha: " << alpha << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_SECTION) {
+		s << "ElasticShearSection2d, tag: " << this->getTag() << endln;
+		s << "\tE: " << E << endln;
+		s << "\tA: " << A << endln;
+		s << "\tI: " << I << endln;
+		s << "\tG: " << G << endln;
+		s << "\talpha: " << alpha << endln;
+	}
+
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"ElasticShearSection2d\", ";
+		s << "\"E\": " << E << ", ";
+		s << "\"G\": " << E << ", ";
+		s << "\"A\": " << A << ", ";
+		s << "\"Avy\": " << alpha*A << ", ";
+		s << "\"Iz\": " << I << "}";
+	}
 }
 
 int

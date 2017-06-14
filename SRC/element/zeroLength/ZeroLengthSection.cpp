@@ -573,10 +573,31 @@ ZeroLengthSection::displaySelf(Renderer &theViewer, int displayMode, float fact,
 void
 ZeroLengthSection::Print(OPS_Stream &s, int flag)
 {
-	s << "ZeroLengthSection, tag: " << this->getTag() << endln;
-	s << "\tConnected Nodes: " << connectedExternalNodes << endln;
-	s << "\tSection, tag: " << theSection->getTag() << endln;
-	theSection->Print(s, flag);
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        s << "ZeroLengthSection, tag: " << this->getTag() << endln;
+        s << "\tConnected Nodes: " << connectedExternalNodes << endln;
+        s << "\tSection, tag: " << theSection->getTag() << endln;
+        theSection->Print(s, flag);
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ZeroLengthSection\", ";
+        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+        s << "\"section\": \"" << theSection->getTag() << "\", ";
+        s << "\"transMatrix\": [[";
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (j < 2)
+                    s << transformation(i, j) << ", ";
+                else if (j == 2 && i < 2)
+                    s << transformation(i, j) << "], [";
+                else if (j == 2 && i == 2)
+                    s << transformation(i, j) << "]]}";
+            }
+        }
+    }
 }
 
 Response*

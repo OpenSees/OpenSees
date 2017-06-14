@@ -66,8 +66,9 @@
 #include <SingleDomAllSP_Iter.h>
 #include <SingleDomParamIter.h>
 
-#include <SectionForceDeformation.h>
 #include <UniaxialMaterial.h>
+#include <NDMaterial.h>
+#include <SectionForceDeformation.h>
 #include <CrdTransf.h>
 
 #include <Vertex.h>
@@ -2183,28 +2184,31 @@ Domain::Print(OPS_Stream &s, int flag)
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
 
     s << "{\n";
-    s << "\"properties\":{\n";
+    s << "\t\"properties\": {\n";
 
-    OPS_printUniaxialMaterial(s,flag);
+    OPS_printUniaxialMaterial(s, flag);
     s << ",\n";   
+    OPS_printNDMaterial(s, flag);
+    s << ",\n";
     OPS_printSectionForceDeformation(s, flag);
     s << ",\n";   
     OPS_printCrdTransf(s, flag);      
 
-    s << "},\n";
-    
+    s << "\n\t},\n";
+	s << "\t\"geometry\": {\n";
+
     int numToPrint = theNodes->getNumComponents();
     NodeIter &theNodess = this->getNodes();
     Node *theNode;
     int numPrinted = 0;
-    s << "\"nodes\":[\n";
+    s << "\t\t\"nodes\": [\n";
     while ((theNode = theNodess()) != 0) {    
       theNode->Print(s, flag);
       numPrinted += 1;
       if (numPrinted < numToPrint)
 	s << ",\n";
       else
-	s << "],\n";
+	s << "\n\t\t],\n";
     }
 
 
@@ -2212,17 +2216,20 @@ Domain::Print(OPS_Stream &s, int flag)
     ElementIter &theElementss = this->getElements();
     numToPrint = theElements->getNumComponents();
     numPrinted = 0;
-    s << "\"elements\":[\n";
+    s << "\t\t\"elements\": [\n";
     while ((theEle = theElementss()) != 0) {
       theEle->Print(s, flag);
       numPrinted += 1;
       if (numPrinted < numToPrint)
 	s << ",\n";
       else
-	s << "]\n";
+	s << "\n\t\t]\n";
       }
-    s << "}\n";
-    return;
+
+	s << "\t}\n";
+	s << "}\n";
+    
+	return;
   }
       
   

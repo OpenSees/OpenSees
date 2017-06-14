@@ -1166,7 +1166,7 @@ PlasticDamageConcretePlaneStressThermal::Print(OPS_Stream &s, int flag) {
 
 //send back TempAndElong(Liming,UoE)
 const Vector&
-ConcreteSThermal::getTempAndElong( void)
+PlasticDamageConcretePlaneStressThermal::getTempAndElong( void)
 {
     return TempAndElong;
 }
@@ -1174,7 +1174,7 @@ ConcreteSThermal::getTempAndElong( void)
 //Set TemperatureAndElongation
 
 double
-ConcreteSThermal::setThermalTangentAndElongation(double &tempT, double&ET, double&Elong)
+PlasticDamageConcretePlaneStressThermal::setThermalTangentAndElongation(double &tempT, double&ET, double&Elong)
 {
 
   double Temp = tempT;

@@ -375,13 +375,25 @@ RegularizedHingeIntegration::recvSelf(int cTag, Channel &theChannel,
 void
 RegularizedHingeIntegration::Print(OPS_Stream &s, int flag)
 {
-  s << "RegularizedHinge" << endln;
-  s << " lpI = " << lpI;
-  s << " lpJ = " << lpJ << endln;
-  s << " epsI = " << epsI;
-  s << " epsJ = " << epsJ << endln;
-
-  beamInt->Print(s, flag);
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "{\"type\": \"RegularizedHinge\", ";
+		s << "\"lpI\": " << lpI << ", ";
+		s << "\"lpJ\": " << lpJ << ", ";
+		s << "\"epsI\": " << epsI << ", ";
+		s << "\"epsJ\": " << epsJ << ", ";
+		s << "\"integration\": ";
+		beamInt->Print(s, flag);
+		s << "}";
+	}
+	
+	else {
+		s << "RegularizedHinge" << endln;
+		s << " lpI = " << lpI;
+		s << " lpJ = " << lpJ << endln;
+		s << " epsI = " << epsI;
+		s << " epsJ = " << epsJ << endln;
+		beamInt->Print(s, flag);
+	}
 
   return;
 }

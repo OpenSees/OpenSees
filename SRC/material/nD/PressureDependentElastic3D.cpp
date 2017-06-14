@@ -350,13 +350,24 @@ int PressureDependentElastic3D::recvSelf(int commitTag,
 
 void PressureDependentElastic3D::Print(OPS_Stream &s, int flag)
 {
-    s << "PressureDependentElastic3D" << "\n";
-    s << "tag: " << this->getTag() << "\n";
-    s << "E: " << E << "\n";
-    s << "v: " << v << "\n";
-    s << "exp: " << exp0 << "\n";
-    s << "p_ref: " << p_ref << "\n";
-    s << "p_cutoff: " << p_cutoff << "\n";
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "PressureDependentElastic3D" << "\n";
+        s << "tag: " << this->getTag() << "\n";
+        s << "E: " << E << "\n";
+        s << "v: " << v << "\n";
+        s << "exp: " << exp0 << "\n";
+        s << "p_ref: " << p_ref << "\n";
+        s << "p_cutoff: " << p_cutoff << "\n";
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"PressureDependentElastic3D\", ";
+        s << "\"E\": " << E << ", ";
+        s << "\"nu\": " << v << ", ";
+        s << "\"exp\": " << exp0 << ", ";
+        s << "\"pRef\": " << p_ref << ", ";
+        s << "\"pCutoff\": " << p_cutoff << "}";
+    }
 }
-
-

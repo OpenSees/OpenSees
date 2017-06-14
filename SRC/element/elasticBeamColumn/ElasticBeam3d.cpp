@@ -825,116 +825,132 @@ ElasticBeam3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBrok
 void
 ElasticBeam3d::Print(OPS_Stream &s, int flag)
 {
-
-  this->getResistingForce(); 
-
-   if (flag == -1) { 
-    int eleTag = this->getTag();
-    s << "EL_BEAM\t" << eleTag << "\t";
-    s << sectionTag << "\t" << sectionTag; 
-    s  << "\t" << connectedExternalNodes(0) << "\t" << connectedExternalNodes(1);
-    s << "\t0\t0.0000000\n";
-   }  else if (flag < -1) {
-     int counter = (flag + 1) * -1;
-     int eleTag = this->getTag();
-     const Vector &force = this->getResistingForce();
-
-    double P, MZ1, MZ2, VY, MY1, MY2, VZ, T;
-    double L = theCoordTransf->getInitialLength();
-    double oneOverL = 1.0/L;
+	this->getResistingForce(); 
+	
+	if (flag == -1) {
+		int eleTag = this->getTag();
+		s << "EL_BEAM\t" << eleTag << "\t";
+		s << sectionTag << "\t" << sectionTag;
+		s << "\t" << connectedExternalNodes(0) << "\t" << connectedExternalNodes(1);
+		s << "\t0\t0.0000000\n";
+	}
     
-    P   = q(0);
-    MZ1 = q(1);
-    MZ2 = q(2);
-    VY  = (MZ1+MZ2)*oneOverL;
-    MY1 = q(3);
-    MY2 = q(4);
-    VZ  = (MY1+MY2)*oneOverL;
-    T   = q(5);
+	else if (flag < -1) {
+		int counter = (flag + 1) * -1;
+		int eleTag = this->getTag();
+		const Vector &force = this->getResistingForce();
 
-    s << "FORCE\t" << eleTag << "\t" << counter << "\t0";
-    s << "\t" << -P+p0[0] << "\t"  <<  VY+p0[1] << "\t"  << -VZ+p0[3]  << endln;
-    s << "FORCE\t" << eleTag << "\t" << counter << "\t1";
-    s << "\t"  << P  << ' '  << -VY+p0[2] << ' ' << VZ+p0[4] << endln;
-    s << "MOMENT\t" << eleTag << "\t" << counter << "\t0";
-    s << "\t" << -T << "\t"  << MY1 << "\t" << MZ1 << endln;
-    s << "MOMENT\t" << eleTag << "\t" << counter << "\t1";
-    s << "\t" << T << ' ' << MY2 << ' '  <<  MZ2 << endln;
-    
-   }
+		double P, MZ1, MZ2, VY, MY1, MY2, VZ, T;
+		double L = theCoordTransf->getInitialLength();
+		double oneOverL = 1.0 / L;
 
-   else if (flag == 2){
-     this->getResistingForce(); // in case linear algo
+		P = q(0);
+		MZ1 = q(1);
+		MZ2 = q(2);
+		VY = (MZ1 + MZ2)*oneOverL;
+		MY1 = q(3);
+		MY2 = q(4);
+		VZ = (MY1 + MY2)*oneOverL;
+		T = q(5);
 
-     static Vector xAxis(3);
-     static Vector yAxis(3);
-     static Vector zAxis(3);
-     
-     theCoordTransf->getLocalAxes(xAxis, yAxis, zAxis);
-                        
-     s << "#ElasticBeamColumn3D\n";
-     s << "#LocalAxis " << xAxis(0) << " " << xAxis(1) << " " << xAxis(2);
-     s << " " << yAxis(0) << " " << yAxis(1) << " " << yAxis(2) << " ";
-     s << zAxis(0) << " " << zAxis(1) << " " << zAxis(2) << endln;
+		s << "FORCE\t" << eleTag << "\t" << counter << "\t0";
+		s << "\t" << -P + p0[0] << "\t" << VY + p0[1] << "\t" << -VZ + p0[3] << endln;
+		s << "FORCE\t" << eleTag << "\t" << counter << "\t1";
+		s << "\t" << P << ' ' << -VY + p0[2] << ' ' << VZ + p0[4] << endln;
+		s << "MOMENT\t" << eleTag << "\t" << counter << "\t0";
+		s << "\t" << -T << "\t" << MY1 << "\t" << MZ1 << endln;
+		s << "MOMENT\t" << eleTag << "\t" << counter << "\t1";
+		s << "\t" << T << ' ' << MY2 << ' ' << MZ2 << endln;
+	}
+	
+	else if (flag == 2) {
+		this->getResistingForce(); // in case linear algo
 
-     const Vector &node1Crd = theNodes[0]->getCrds();
-     const Vector &node2Crd = theNodes[1]->getCrds();	
-     const Vector &node1Disp = theNodes[0]->getDisp();
-     const Vector &node2Disp = theNodes[1]->getDisp();    
-     
-     s << "#NODE " << node1Crd(0) << " " << node1Crd(1) << " " << node1Crd(2)
-       << " " << node1Disp(0) << " " << node1Disp(1) << " " << node1Disp(2)
-       << " " << node1Disp(3) << " " << node1Disp(4) << " " << node1Disp(5) << endln;
-     
-     s << "#NODE " << node2Crd(0) << " " << node2Crd(1) << " " << node2Crd(2)
-       << " " << node2Disp(0) << " " << node2Disp(1) << " " << node2Disp(2)
-       << " " << node2Disp(3) << " " << node2Disp(4) << " " << node2Disp(5) << endln;
+		static Vector xAxis(3);
+		static Vector yAxis(3);
+		static Vector zAxis(3);
 
-    double N, Mz1, Mz2, Vy, My1, My2, Vz, T;
-    double L = theCoordTransf->getInitialLength();
-    double oneOverL = 1.0/L;
-    
-    N   = q(0);
-    Mz1 = q(1);
-    Mz2 = q(2);
-    Vy  = (Mz1+Mz2)*oneOverL;
-    My1 = q(3);
-    My2 = q(4);
-    Vz  = -(My1+My2)*oneOverL;
-    T   = q(5);
-    
-    s << "#END_FORCES " << -N+p0[0] << ' ' <<  Vy+p0[1] << ' ' << Vz+p0[3] << ' ' 
-      << -T << ' ' << My1 << ' ' <<  Mz1 << endln;
-    s << "#END_FORCES " <<  N << ' ' << -Vy+p0[2] << ' ' << -Vz+p0[4] << ' ' 
-      << T << ' ' << My2 << ' ' << Mz2 << endln;
-   }
-   else {
+		theCoordTransf->getLocalAxes(xAxis, yAxis, zAxis);
 
-     this->getResistingForce(); // in case linear algo
+		s << "#ElasticBeamColumn3D\n";
+		s << "#LocalAxis " << xAxis(0) << " " << xAxis(1) << " " << xAxis(2);
+		s << " " << yAxis(0) << " " << yAxis(1) << " " << yAxis(2) << " ";
+		s << zAxis(0) << " " << zAxis(1) << " " << zAxis(2) << endln;
 
-    s << "\nElasticBeam3d: " << this->getTag() << endln;
-    s << "\tConnected Nodes: " << connectedExternalNodes ;
-    s << "\tCoordTransf: " << theCoordTransf->getTag() << endln;
-    s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
-    
-    double N, Mz1, Mz2, Vy, My1, My2, Vz, T;
-    double L = theCoordTransf->getInitialLength();
-    double oneOverL = 1.0/L;
-    
-    N   = q(0);
-    Mz1 = q(1);
-    Mz2 = q(2);
-    Vy  = (Mz1+Mz2)*oneOverL;
-    My1 = q(3);
-    My2 = q(4);
-    Vz  = -(My1+My2)*oneOverL;
-    T   = q(5);
-    
-    s << "\tEnd 1 Forces (P Mz Vy My Vz T): "
-      << -N+p0[0] << ' ' << Mz1 << ' ' <<  Vy+p0[1] << ' ' << My1 << ' ' <<  Vz+p0[3] << ' ' << -T << endln;
-    s << "\tEnd 2 Forces (P Mz Vy My Vz T): "
-      <<  N << ' ' << Mz2 << ' ' << -Vy+p0[2] << ' ' << My2 << ' ' << -Vz+p0[4] << ' ' <<  T << endln;
-  }
+		const Vector &node1Crd = theNodes[0]->getCrds();
+		const Vector &node2Crd = theNodes[1]->getCrds();
+		const Vector &node1Disp = theNodes[0]->getDisp();
+		const Vector &node2Disp = theNodes[1]->getDisp();
+
+		s << "#NODE " << node1Crd(0) << " " << node1Crd(1) << " " << node1Crd(2)
+			<< " " << node1Disp(0) << " " << node1Disp(1) << " " << node1Disp(2)
+			<< " " << node1Disp(3) << " " << node1Disp(4) << " " << node1Disp(5) << endln;
+
+		s << "#NODE " << node2Crd(0) << " " << node2Crd(1) << " " << node2Crd(2)
+			<< " " << node2Disp(0) << " " << node2Disp(1) << " " << node2Disp(2)
+			<< " " << node2Disp(3) << " " << node2Disp(4) << " " << node2Disp(5) << endln;
+
+		double N, Mz1, Mz2, Vy, My1, My2, Vz, T;
+		double L = theCoordTransf->getInitialLength();
+		double oneOverL = 1.0 / L;
+
+		N = q(0);
+		Mz1 = q(1);
+		Mz2 = q(2);
+		Vy = (Mz1 + Mz2)*oneOverL;
+		My1 = q(3);
+		My2 = q(4);
+		Vz = -(My1 + My2)*oneOverL;
+		T = q(5);
+
+		s << "#END_FORCES " << -N + p0[0] << ' ' << Vy + p0[1] << ' ' << Vz + p0[3] << ' '
+			<< -T << ' ' << My1 << ' ' << Mz1 << endln;
+		s << "#END_FORCES " << N << ' ' << -Vy + p0[2] << ' ' << -Vz + p0[4] << ' '
+			<< T << ' ' << My2 << ' ' << Mz2 << endln;
+	}
+	
+	if (flag == OPS_PRINT_CURRENTSTATE) {
+
+		this->getResistingForce(); // in case linear algo
+
+		s << "\nElasticBeam3d: " << this->getTag() << endln;
+		s << "\tConnected Nodes: " << connectedExternalNodes;
+		s << "\tCoordTransf: " << theCoordTransf->getTag() << endln;
+		s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
+
+		double N, Mz1, Mz2, Vy, My1, My2, Vz, T;
+		double L = theCoordTransf->getInitialLength();
+		double oneOverL = 1.0 / L;
+
+		N = q(0);
+		Mz1 = q(1);
+		Mz2 = q(2);
+		Vy = (Mz1 + Mz2)*oneOverL;
+		My1 = q(3);
+		My2 = q(4);
+		Vz = -(My1 + My2)*oneOverL;
+		T = q(5);
+
+		s << "\tEnd 1 Forces (P Mz Vy My Vz T): "
+			<< -N + p0[0] << ' ' << Mz1 << ' ' << Vy + p0[1] << ' ' << My1 << ' ' << Vz + p0[3] << ' ' << -T << endln;
+		s << "\tEnd 2 Forces (P Mz Vy My Vz T): "
+			<< N << ' ' << Mz2 << ' ' << -Vy + p0[2] << ' ' << My2 << ' ' << -Vz + p0[4] << ' ' << T << endln;
+	}
+	
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"ElasticBeam3d\", ";
+		s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+		s << "\"E\": " << E << ", ";
+		s << "\"G\": " << G << ", ";
+		s << "\"A\": " << A << ", ";
+		s << "\"Jx\": " << Jx << ", ";
+		s << "\"Iy\": " << Iy << ", ";
+		s << "\"Iz\": " << Iz << ", ";
+		s << "\"rho\": " << rho << ", ";
+		s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
+	}
 }
 
 int

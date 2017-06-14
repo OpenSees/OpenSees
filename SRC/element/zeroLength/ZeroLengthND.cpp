@@ -771,11 +771,34 @@ ZeroLengthND::displaySelf(Renderer &theViewer, int displayMode, float fact, cons
 void
 ZeroLengthND::Print(OPS_Stream &s, int flag)
 {
-	s << "ZeroLengthND, tag: " << this->getTag() << endln;
-	s << "\tConnected Nodes: " << connectedExternalNodes << endln;
-	s << "\tNDMaterial, tag: " << theNDMaterial->getTag() << endln;
-	if (the1DMaterial != 0)
-	  s << "\tUniaxialMaterial, tag: " << the1DMaterial->getTag() << endln;
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        s << "ZeroLengthND, tag: " << this->getTag() << endln;
+        s << "\tConnected Nodes: " << connectedExternalNodes << endln;
+        s << "\tNDMaterial, tag: " << theNDMaterial->getTag() << endln;
+        if (the1DMaterial != 0)
+            s << "\tUniaxialMaterial, tag: " << the1DMaterial->getTag() << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ZeroLengthND\", ";
+        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+        s << "\"ndMaterial\": \"" << theNDMaterial->getTag() << "\", ";
+        if (the1DMaterial != 0)
+            s << "\"uniaxialMaterial\": \"" << the1DMaterial->getTag() << "\", ";
+        s << "\"transMatrix\": [[";
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (j < 2)
+                    s << transformation(i, j) << ", ";
+                else if (j == 2 && i < 2)
+                    s << transformation(i, j) << "], [";
+                else if (j == 2 && i == 2)
+                    s << transformation(i, j) << "]]}";
+            }
+        }
+    }
 }
 
 Response*

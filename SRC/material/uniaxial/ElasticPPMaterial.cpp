@@ -293,7 +293,7 @@ ElasticPPMaterial::recvSelf(int cTag, Channel &theChannel,
   if (res < 0) 
     opserr << "ElasticPPMaterial::recvSelf() - failed to recv data\n";
   else {
-    this->setTag(data(0));
+    this->setTag(int(data(0)));
     ep    = data(1);
     E     = data(2);
     ezero = data(3);
@@ -313,10 +313,20 @@ ElasticPPMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 ElasticPPMaterial::Print(OPS_Stream &s, int flag)
 {
-    s << "ElasticPP tag: " << this->getTag() << endln;
-    s << "  E: " << E << endln;
-    s << "  ep: " << ep << endln;
-    s << "  Otress: " << trialStress << " tangent: " << trialTangent << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+		s << "ElasticPPMaterial tag: " << this->getTag() << endln;
+		s << "  E: " << E << endln;
+		s << "  ep: " << ep << endln;
+		s << "  stress: " << trialStress << " tangent: " << trialTangent << endln;
+	}
+    
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"ElasticPPMaterial\", ";
+		s << "\"E\": " << E << ", ";
+		s << "\"epsp\": " << ep << "}";
+	}
 }
 
 

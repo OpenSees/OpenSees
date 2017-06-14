@@ -906,19 +906,31 @@ CorotTruss::displaySelf(Renderer &theViewer, int displayMode, float fact, const 
 void
 CorotTruss::Print(OPS_Stream &s, int flag)
 {
-	s << "\nCorotTruss, tag: " << this->getTag() << endln;
-	s << "\tConnected Nodes: " << connectedExternalNodes;
-	s << "\tSection Area: " << A << endln;
-	s << "\tUndeformed Length: " << Lo << endln;
-	s << "\tCurrent Length: " << Ln << endln;
-	s << "\tMass Density/Length: " << rho << endln;
-	s << "\tConsistent Mass: " << cMass << endln;
-	s << "\tRotation matrix: " << endln;
-
-	if (theMaterial) {
-		s << "\tAxial Force: " << A*theMaterial->getStress() << endln;
-		s << "\tUniaxialMaterial, tag: " << theMaterial->getTag() << endln;
-		theMaterial->Print(s,flag);
+	if (flag == OPS_PRINT_CURRENTSTATE) {
+		s << "\nCorotTruss, tag: " << this->getTag() << endln;
+		s << "\tConnected Nodes: " << connectedExternalNodes;
+		s << "\tSection Area: " << A << endln;
+		s << "\tUndeformed Length: " << Lo << endln;
+		s << "\tCurrent Length: " << Ln << endln;
+		s << "\tMass Density/Length: " << rho << endln;
+		s << "\tConsistent Mass: " << cMass << endln;
+		s << "\tRotation matrix: " << endln;
+        
+		if (theMaterial) {
+			s << "\tAxial Force: " << A*theMaterial->getStress() << endln;
+			s << "\tUniaxialMaterial, tag: " << theMaterial->getTag() << endln;
+			theMaterial->Print(s, flag);
+		}
+	}
+    
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"CorotTruss\", ";
+		s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+		s << "\"A\": " << A << ", ";
+		s << "\"rho\": " << rho << ", ";
+		s << "\"material\": \"" << theMaterial->getTag() << "\"}";
 	}
 }
 

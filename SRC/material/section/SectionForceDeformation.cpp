@@ -73,7 +73,7 @@ void OPS_clearAllSectionForceDeformation(void) {
 void OPS_printSectionForceDeformation(OPS_Stream &s, int flag) {
 
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-    s << "\"sections\": [\n";    
+    s << "\t\t\"sections\": [\n";    
     MapOfTaggedObjectsIter theObjects = theSectionForceDeformationObjects.getIter();
     theObjects.reset();
     TaggedObject *theObject;
@@ -86,13 +86,18 @@ void OPS_printSectionForceDeformation(OPS_Stream &s, int flag) {
 	s << ",\n";
       count++;
     }
-    s << "]";
+    s << "\n\t\t]";
   }
 }
 
-
 SectionForceDeformation::SectionForceDeformation(int tag, int classTag)
   :Material(tag,classTag), fDefault(0), sDefault(0)
+{
+
+}
+
+SectionForceDeformation::SectionForceDeformation()
+    : Material(0, 0), fDefault(0), sDefault(0)
 {
 
 }

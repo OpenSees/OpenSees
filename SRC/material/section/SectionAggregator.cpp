@@ -915,19 +915,61 @@ SectionAggregator::setResponse(const char **argv, int argc, OPS_Stream &output)
 void
 SectionAggregator::Print(OPS_Stream &s, int flag)
 {
-  if (flag == 2) {
-      theSection->Print(s, flag);
-  } else {
-    s << "\nSection Aggregator, tag: " << this->getTag() << endln;
-    if (theSection) {
-      s << "\tSection, tag: " << theSection->getTag() << endln;
-      theSection->Print(s, flag);
+    if (flag == OPS_PRINT_PRINTMODEL_SECTION) {
+        s << "\nSection Aggregator, tag: " << this->getTag() << endln;
+        if (theSection) {
+            s << "\tSection, tag: " << theSection->getTag() << endln;
+            theSection->Print(s, flag);
+        }
+        s << "\tUniaxial Additions" << endln;
+        for (int i = 0; i < numMats; i++)
+            s << "\t\tUniaxial Material, tag: " << theAdditions[i]->getTag() << endln;
+        s << "\tUniaxial codes " << *matCodes << endln;
     }
-    s << "\tUniaxial Additions" << endln;
-    for (int i = 0; i < numMats; i++)
-      s << "\t\tUniaxial Material, tag: " << theAdditions[i]->getTag() << endln;
-    s << "\tUniaxial codes " << *matCodes << endln;
-  }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        theSection->Print(s, flag);
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"SectionAggregator\", ";
+        if (theSection) {
+            s << "\"section\": \"" << theSection->getTag() << "\", ";
+        }
+        s << "\"materials\": [";
+        for (int i = 0; i < numMats - 1; i++)
+            s << "\"" << theAdditions[i]->getTag() << "\", ";
+        s << "\"" << theAdditions[numMats - 1]->getTag() << "\"], ";
+        s << "\"dof\": [";
+        for (int i = 0; i < numMats - 1; i++) {
+            if ((*matCodes)(i) == 2)
+                s << "\"P\", ";
+            else if ((*matCodes)(i) == 3)
+                s << "\"Vy\", ";
+            else if ((*matCodes)(i) == 5)
+                s << "\"Vz\", ";
+            else if ((*matCodes)(i) == 6)
+                s << "\"T\", ";
+            else if ((*matCodes)(i) == 4)
+                s << "\"My\", ";
+            else if ((*matCodes)(i) == 1)
+                s << "\"Mz\", ";
+        }
+        if ((*matCodes)(numMats - 1) == 2)
+            s << "\"P\"]}";
+        else if ((*matCodes)(numMats - 1) == 3)
+            s << "\"Vy\"]}";
+        else if ((*matCodes)(numMats - 1) == 5)
+            s << "\"Vz\"]}";
+        else if ((*matCodes)(numMats - 1) == 6)
+            s << "\"T\"]}";
+        else if ((*matCodes)(numMats - 1) == 4)
+            s << "\"My\"]}";
+        else if ((*matCodes)(numMats - 1) == 1)
+            s << "\"Mz\"]}";
+    }
 }
 
 

@@ -1226,37 +1226,54 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
 void
 DispBeamColumn3d::Print(OPS_Stream &s, int flag)
 {
-  s << "\nDispBeamColumn3d, element id:  " << this->getTag() << endln;
-  s << "\tConnected external nodes:  " << connectedExternalNodes;
-  s << "\tCoordTransf: " << crdTransf->getTag() << endln;
-  s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
+	if (flag == OPS_PRINT_CURRENTSTATE) {
+		s << "\nDispBeamColumn3d, element id:  " << this->getTag() << endln;
+		s << "\tConnected external nodes:  " << connectedExternalNodes;
+		s << "\tCoordTransf: " << crdTransf->getTag() << endln;
+		s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
 
-  double N, Mz1, Mz2, Vy, My1, My2, Vz, T;
-  double L = crdTransf->getInitialLength();
-  double oneOverL = 1.0/L;
+		double N, Mz1, Mz2, Vy, My1, My2, Vz, T;
+		double L = crdTransf->getInitialLength();
+		double oneOverL = 1.0 / L;
 
-  N   = q(0);
-  Mz1 = q(1);
-  Mz2 = q(2);
-  Vy  = (Mz1+Mz2)*oneOverL;
-  My1 = q(3);
-  My2 = q(4);
-  Vz  = -(My1+My2)*oneOverL;
-  T   = q(5);
+		N = q(0);
+		Mz1 = q(1);
+		Mz2 = q(2);
+		Vy = (Mz1 + Mz2)*oneOverL;
+		My1 = q(3);
+		My2 = q(4);
+		Vz = -(My1 + My2)*oneOverL;
+		T = q(5);
 
-  s << "\tEnd 1 Forces (P Mz Vy My Vz T): "
-    << -N+p0[0] << ' ' << Mz1 << ' ' <<  Vy+p0[1] << ' ' << My1 << ' ' <<  Vz+p0[3] << ' ' << -T << endln;
-  s << "\tEnd 2 Forces (P Mz Vy My Vz T): "
-    <<  N << ' ' << Mz2 << ' ' << -Vy+p0[2] << ' ' << My2 << ' ' << -Vz+p0[4] << ' ' <<  T << endln;
+		s << "\tEnd 1 Forces (P Mz Vy My Vz T): "
+			<< -N + p0[0] << ' ' << Mz1 << ' ' << Vy + p0[1] << ' ' << My1 << ' ' << Vz + p0[3] << ' ' << -T << endln;
+		s << "\tEnd 2 Forces (P Mz Vy My Vz T): "
+			<< N << ' ' << Mz2 << ' ' << -Vy + p0[2] << ' ' << My2 << ' ' << -Vz + p0[4] << ' ' << T << endln;
 
-  beamInt->Print(s, flag);
+		beamInt->Print(s, flag);
 
-  for (int i = 0; i < numSections; i++) {
-    opserr << "Section Type: " << theSections[i]->getClassTag() << endln;
-    //    theSections[i]->Print(s,flag);
-  }
-  //  if (rho != 0)
-  //    opserr << "Mass: \n" << this->getMass();
+		for (int i = 0; i < numSections; i++) {
+			opserr << "Section Type: " << theSections[i]->getClassTag() << endln;
+			//    theSections[i]->Print(s,flag);
+		}
+		//  if (rho != 0)
+		//    opserr << "Mass: \n" << this->getMass();
+	}
+
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"DispBeamColumn3d\", ";
+		s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+		s << "\"sections\": [";
+		for (int i = 0; i < numSections - 1; i++)
+			s << "\"" << theSections[i]->getTag() << "\", ";
+		s << "\"" << theSections[numSections - 1]->getTag() << "\"], ";
+		s << "\"integration\": ";
+		beamInt->Print(s, flag);
+		s << ", \"rho\": " << rho << ", ";
+		s << "\"crdTransformation\": \"" << crdTransf->getTag() << "\"}";
+	}
 }
 
 

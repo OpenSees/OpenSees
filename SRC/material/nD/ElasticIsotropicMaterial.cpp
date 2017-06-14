@@ -331,12 +331,21 @@ ElasticIsotropicMaterial::recvSelf (int commitTag, Channel &theChannel,
 void
 ElasticIsotropicMaterial::Print (OPS_Stream &s, int flag)
 {
-	s << "Elastic Isotropic Material Model" << endln;
-	s << "\tE:  " << E << endln;
-	s << "\tv:  " << v << endln;
-	s << "\trho:  " << rho << endln;
-
-	return;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "Elastic Isotropic Material Model" << endln;
+        s << "\tE:  " << E << endln;
+        s << "\tv:  " << v << endln;
+        s << "\trho:  " << rho << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ElasticIsotropicMaterial\", ";
+        s << "\"E\": " << E << ", ";
+        s << "\"nu\": " << v << ", ";
+        s << "\"rho\": " << rho << "}";
+    }
 }
 
 int

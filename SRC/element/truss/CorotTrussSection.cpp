@@ -874,18 +874,29 @@ CorotTrussSection::displaySelf(Renderer &theViewer, int displayMode, float fact,
 void
 CorotTrussSection::Print(OPS_Stream &s, int flag)
 {
-	s << "\nCorotTrussSection, tag: " << this->getTag() << endln;
-	s << "\tConnected Nodes: " << connectedExternalNodes;
-	s << "\tUndeformed Length: " << Lo << endln;
-	s << "\tCurrent Length: " << Ln << endln;
-	s << "\tMass Density/Length: " << rho << endln;
-    s << "\tConsistent Mass: " << cMass << endln;
-	s << "\tRotation matrix: " << endln;
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        s << "\nCorotTrussSection, tag: " << this->getTag() << endln;
+        s << "\tConnected Nodes: " << connectedExternalNodes;
+        s << "\tUndeformed Length: " << Lo << endln;
+        s << "\tCurrent Length: " << Ln << endln;
+        s << "\tMass Density/Length: " << rho << endln;
+        s << "\tConsistent Mass: " << cMass << endln;
+        s << "\tRotation matrix: " << endln;
+        
+        if (theSection) {
+            s << "\tSection, tag: " << theSection->getTag() << endln;
+            theSection->Print(s, flag);
+        }
+    }
 
-	if (theSection) {
-		s << "\tSection, tag: " << theSection->getTag() << endln;
-		theSection->Print(s,flag);
-	}
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"CorotTrussSection\", ";
+        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+        s << "\"rho\": " << rho << ", ";
+        s << "\"material\": \"" << theSection->getTag() << "\"}";
+    }
 }
 
 double

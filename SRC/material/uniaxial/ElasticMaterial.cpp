@@ -278,19 +278,19 @@ ElasticMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 ElasticMaterial::Print(OPS_Stream &s, int flag)
 {
-  if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {  
-    s << "Elastic tag: " << this->getTag() << endln;
-    s << "  Epos: " << Epos << " Eneg: " << Eneg << " eta: " << eta << endln;
-  }
-  
-  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-    s << "\{";
-    s << "\"type\":\"ElasticMaterial\",";
-    s << "\"name\":" << this->getTag() << ",";
-    s << "\"Epos\":" << Epos << ",";
-    s << "\"Eneg\":" << Eneg << ",";
-    s << "\"eta\":" << eta << "}";
-  }    
+	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+		s << "ElasticMaterial tag: " << this->getTag() << endln;
+		s << "  Epos: " << Epos << " Eneg: " << Eneg << " eta: " << eta << endln;
+	}
+    
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"ElasticMaterial\", ";
+		s << "\"Epos\": " << Epos << ", ";
+		s << "\"Eneg\": " << Eneg << ", ";
+		s << "\"eta\": " << eta << "}";
+	}
 }
 
 

@@ -901,9 +901,20 @@ CorotCrdTransfWarping2d::getPointGlobalDisplFromBasic (double xi, const Vector &
 void
 CorotCrdTransfWarping2d::Print(OPS_Stream &s, int flag)
 {
-    s << "\nCrdTransf: " << this->getTag() << " Type: CorotCrdTransfWarping2d";
-    s << "\tnodeI Offset: " << nodeIOffset;
-    s << "\tnodeJ Offset: " << nodeJOffset;
+	if (flag == OPS_PRINT_CURRENTSTATE) {
+		s << "\nCrdTransf: " << this->getTag() << " Type: CorotCrdTransfWarping2d";
+		s << "\tnodeI Offset: " << nodeIOffset;
+		s << "\tnodeJ Offset: " << nodeJOffset;
+	}
+	
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{\"name\": \"" << this->getTag() << "\", \"type\": \"CorotCrdTransfWarping2d\"";
+		if (nodeIOffset != 0)
+			s << ", \"iOffset\": [" << nodeIOffset[0] << ", " << nodeIOffset[1] << "]";
+		if (nodeJOffset != 0)
+			s << ", \"jOffset\": [" << nodeJOffset[0] << ", " << nodeJOffset[1] << "]";
+		s << "}";
+	}
 }
 
 const Vector &

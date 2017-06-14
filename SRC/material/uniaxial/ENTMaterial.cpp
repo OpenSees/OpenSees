@@ -187,8 +187,17 @@ ENTMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 ENTMaterial::Print(OPS_Stream &s, int flag)
 {
-    s << "ENTMaterial, tag: " << this->getTag() << endln;
-    s << "  E: " << E << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+		s << "ENTMaterial, tag: " << this->getTag() << endln;
+		s << "  E: " << E << endln;
+	}
+    
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"ENTMaterial\", ";
+		s << "\"E\": " << E << "}";
+	}
 }
 
 int
@@ -240,5 +249,5 @@ ENTMaterial::commitSensitivity(double strainGradient,
 			       int gradIndex, int numGrads)
 {
   // Nothing to commit ... path independent
-  return 0.0;
+  return 0;
 }

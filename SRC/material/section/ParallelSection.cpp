@@ -419,18 +419,29 @@ ParallelSection::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
 void
 ParallelSection::Print(OPS_Stream &s, int flag)
 {
-  s << "\nSection Parallel, tag: " << this->getTag() << endln;
-
-  if (flag == 2) {
-    for (int i = 0; i < numSections; i++) {
-      s << "\t\tSection, tag: " << endln;
-      theSections[i]->Print(s, flag);
+    if (flag == OPS_PRINT_PRINTMODEL_SECTION || flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "\nSection Parallel, tag: " << this->getTag() << endln;
+        if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+            for (int i = 0; i < numSections; i++) {
+                s << "\t\tSection, tag: " << endln;
+                theSections[i]->Print(s, flag);
+            }
+        }
+        else {
+            for (int i = 0; i < numSections; i++)
+                s << "\t\tSection, tag: " << theSections[i]->getTag() << endln;
+        }
     }
-  }
-  else {
-    for (int i = 0; i < numSections; i++)
-      s << "\t\tSection, tag: " << theSections[i]->getTag() << endln;
-  }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ParallelSection\", ";
+        s << "\"sections\": [";
+        for (int i = 0; i < numSections-1; i++)
+            s << "\"" << theSections[i]->getTag() << "\", ";
+        s << "\"" << theSections[numSections - 1]->getTag() << "\"]}";
+    }
 }
 
 Response*

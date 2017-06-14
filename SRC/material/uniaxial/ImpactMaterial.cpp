@@ -265,9 +265,21 @@ ImpactMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 ImpactMaterial::Print(OPS_Stream &s, int flag)
 {
-    s << "ImpactMaterial tag: " << this->getTag() << endln;
-    s << "  K1: " << K1 << endln;
-    s << "  K2: " << K2 << endln;
-    s << "  Delta_y: " << Delta_y << endln;
-    s << "  initial gap: " << gap << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "ImpactMaterial tag: " << this->getTag() << endln;
+        s << "  K1: " << K1 << endln;
+        s << "  K2: " << K2 << endln;
+        s << "  Delta_y: " << Delta_y << endln;
+        s << "  initial gap: " << gap << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ImpactMaterial\", ";
+        s << "\"K1\": " << K1 << ", ";
+        s << "\"K2\": " << K2 << ", ";
+        s << "\"deltaY\": " << Delta_y << ", ";
+        s << "\"gap\": " << gap << "}";
+    }
 }

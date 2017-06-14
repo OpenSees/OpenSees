@@ -205,13 +205,21 @@ DistHingeIntegration::activateParameter(int paramID)
 void
 DistHingeIntegration::Print(OPS_Stream &s, int flag)
 {
-  s << "DistHinge" << endln;
-  s << " lpI = " << lpI;
-  s << " lpJ = " << lpJ << endln;
-
-  beamInt->Print(s, flag);
-
-  return;
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "{\"type\": \"DistHinge\", ";
+		s << "\"lpI\": " << lpI << ", ";
+		s << "\"lpJ\": " << lpJ << ", ";
+		s << "\"integration\": ";
+		beamInt->Print(s, flag);
+		s << "}";
+	}
+	
+	else {
+		s << "DistHinge" << endln;
+		s << " lpI = " << lpI;
+		s << " lpJ = " << lpJ << endln;
+		beamInt->Print(s, flag);
+	}
 }
 
 void 

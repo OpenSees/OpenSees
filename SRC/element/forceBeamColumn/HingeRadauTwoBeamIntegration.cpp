@@ -219,11 +219,17 @@ HingeRadauTwoBeamIntegration::activateParameter(int paramID)
 void
 HingeRadauTwoBeamIntegration::Print(OPS_Stream &s, int flag)
 {
-  s << "HingeRadauTwo" << endln;
-  s << " lpI = " << lpI;
-  s << " lpJ = " << lpJ << endln;
-
-  return;
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "{\"type\": \"HingeRadauTwo\", ";
+		s << "\"lpI\": " << lpI << ", ";
+		s << "\"lpJ\": " << lpJ << "}";
+	}
+	
+	else {
+		s << "HingeRadauTwo" << endln;
+		s << " lpI = " << lpI;
+		s << " lpJ = " << lpJ << endln;
+	}
 }
 
 void 

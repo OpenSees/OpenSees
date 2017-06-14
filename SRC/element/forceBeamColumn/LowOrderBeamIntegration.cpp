@@ -298,14 +298,34 @@ LowOrderBeamIntegration::activateParameter(int paramID)
 void
 LowOrderBeamIntegration::Print(OPS_Stream &s, int flag)
 {
-  s << "LowOrder" << endln;
-  s << " Points: " << pts;
-  s << " Weights: " << wts;
-  double sum = 0.0;
-  int N = wts.Size();
-  for (int i = 0; i < N; i++)
-    sum += fabs(wts(i));
-  s << " Condition Number: " << sum << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "{\"type\": \"LowOrder\", ";
+        s << "\"points\": [";
+        int nIP = pts.Size();
+        for (int i = 0; i < nIP-1; i++)
+            s << pts(i) << ", ";
+        s << pts(nIP - 1) << "], ";
+        s << "\"weights\": [";
+        double sum = 0.0;
+        nIP = wts.Size();
+        for (int i = 0; i < nIP-1; i++) {
+            s << wts(i) << ", ";
+            sum += fabs(wts(i));
+        }
+        s << wts(nIP - 1) << "], ";
+        s << "\"conditionNumber\": " << sum << "}";
+    }
+    
+    else {
+        s << "LowOrder" << endln;
+        s << " Points: " << pts;
+        s << " Weights: " << wts;
+        double sum = 0.0;
+        int N = wts.Size();
+        for (int i = 0; i < N; i++)
+            sum += fabs(wts(i));
+        s << " Condition Number: " << sum << endln;
+    }
 }
 
 void 

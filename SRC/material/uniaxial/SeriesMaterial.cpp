@@ -555,10 +555,22 @@ SeriesMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 SeriesMaterial::Print(OPS_Stream &s, int flag)
 {
-    s << "\nSeriesMaterial, tag: " << this->getTag() << endln;
-    s << "\tUniaxial Componenets" << endln;
-    for (int i = 0; i < numMaterials; i++)
-		s << "\t\tUniaxial Material, tag: " << theModels[i]->getTag() << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "\nSeriesMaterial, tag: " << this->getTag() << endln;
+        s << "\tUniaxial Componenets" << endln;
+        for (int i = 0; i < numMaterials; i++)
+            s << "\t\tUniaxial Material, tag: " << theModels[i]->getTag() << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"SeriesMaterial\", ";
+        s << "\"materials\": [";
+        for (int i = 0; i < numMaterials - 1; i++)
+            s << "\"" << theModels[i]->getTag() << "\", ";
+        s << "\"" << theModels[numMaterials - 1]->getTag() << "\"]}";
+    }
 }
 
 Response*

@@ -780,14 +780,49 @@ void
 CoupledZeroLength::Print(OPS_Stream &s, int flag)
 {
     // compute the strain and axial force in the member
-    if (flag == 0) { // print everything
-	s << "Element: " << this->getTag(); 
-	s << " type: CoupledZeroLength  iNode: " << connectedExternalNodes(0);
-	s << " jNode: " << connectedExternalNodes(1) << endln;
-	s << "\tMaterial1d, tag: " << theMaterial->getTag() ;
-	  s << *(theMaterial);
-    } else if (flag == 1) {
-      s << this->getTag() << "  " << theMaterial->getStrain() << "  ";
+    if (flag == OPS_PRINT_CURRENTSTATE) { // print everything
+        s << "Element: " << this->getTag();
+        s << " type: CoupledZeroLength  iNode: " << connectedExternalNodes(0);
+        s << " jNode: " << connectedExternalNodes(1) << endln;
+        s << "\tMaterial1d, tag: " << theMaterial->getTag();
+        s << *(theMaterial);
+    }
+    
+    else if (flag == 1) {
+        s << this->getTag() << "  " << theMaterial->getStrain() << "  ";
+    }
+
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"CoupledZeroLength\", ";
+        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+        s << "\"material\": \"" << theMaterial->getTag() << "\", ";
+        s << "\"dof\": [";
+        if (dirn1 == 0)
+            s << "\"P\", ";
+        else if (dirn1 == 1)
+            s << "\"Vy\", ";
+        else if (dirn1 == 2)
+            s << "\"Vz\", ";
+        else if (dirn1 == 3)
+            s << "\"T\", ";
+        else if (dirn1 == 4)
+            s << "\"My\", ";
+        else if (dirn1 == 5)
+            s << "\"Mz\", ";
+        if (dirn2 == 0)
+            s << "\"P\"]}";
+        else if (dirn2 == 1)
+            s << "\"Vy\"]}";
+        else if (dirn2 == 2)
+            s << "\"Vz\"]}";
+        else if (dirn2 == 3)
+            s << "\"T\"]}";
+        else if (dirn2 == 4)
+            s << "\"My\"]}";
+        else if (dirn2 == 5)
+            s << "\"Mz\"]}";
     }
 }
 

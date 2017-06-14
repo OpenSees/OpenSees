@@ -107,5 +107,11 @@ TrapezoidalBeamIntegration::getSectionWeights(int numSections, double L,
 void
 TrapezoidalBeamIntegration::Print(OPS_Stream &s, int flag)
 {
-  s << "Trapezoidal" << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "{\"type\": \"Trapezoidal\"}";
+	}
+	
+	else {
+		s << "Trapezoidal" << endln;
+	}
 }

@@ -310,12 +310,25 @@ HardeningMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 HardeningMaterial::Print(OPS_Stream &s, int flag)
 {
-    s << "HardeningMaterial, tag: " << this->getTag() << endln;
-    s << "  E: " << E << endln;
-    s << "  sigmaY: " << sigmaY << endln;
-    s << "  Hiso: " << Hiso << endln;
-    s << "  Hkin: " << Hkin << endln;
-    s << "  eta: " << eta << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+		s << "HardeningMaterial, tag: " << this->getTag() << endln;
+		s << "  E: " << E << endln;
+		s << "  sigmaY: " << sigmaY << endln;
+		s << "  Hiso: " << Hiso << endln;
+		s << "  Hkin: " << Hkin << endln;
+		s << "  eta: " << eta << endln;
+	}
+    
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"HardeningMaterial\", ";
+		s << "\"E\": " << E << ", ";
+		s << "\"fy\": " << sigmaY << ", ";
+		s << "\"Hiso\": " << Hiso << ", ";
+		s << "\"Hkin\": " << Hkin << ", ";
+		s << "\"eta\": " << eta << "}";
+	}
 }
 
 

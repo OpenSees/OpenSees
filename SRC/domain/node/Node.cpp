@@ -1752,33 +1752,52 @@ Node::recvSelf(int cTag, Channel &theChannel,
 void
 Node::Print(OPS_Stream &s, int flag)
 {
-  if (flag == 0) { // print out everything
-    s << "\n Node: " << this->getTag() << endln;
-    s << "\tCoordinates  : " << *Crd;
-    if (commitDisp != 0)         
-	s << "\tDisps: " << *trialDisp;
-    if (commitVel != 0)     
-	s << "\tVelocities   : " << *trialVel;
-    if (commitAccel != 0)         
-	s << "\tcommitAccels: " << *trialAccel;
-    if (unbalLoad != 0)
-      s << "\t unbalanced Load: " << *unbalLoad;
-    if (reaction != 0)
-      s << "\t reaction: " << *reaction;
-    if (mass != 0) {
-	s << "\tMass : " << *mass;
-	s << "\t Rayleigh Factor: alphaM: " << alphaM << endln;
-	s << "\t Rayleigh Forces: " << *this->getResponse(RayleighForces);
+    if (flag == OPS_PRINT_CURRENTSTATE) { // print out everything
+        s << "\n Node: " << this->getTag() << endln;
+        s << "\tCoordinates  : " << *Crd;
+        if (commitDisp != 0)
+            s << "\tDisps: " << *trialDisp;
+        if (commitVel != 0)
+            s << "\tVelocities   : " << *trialVel;
+        if (commitAccel != 0)
+            s << "\tcommitAccels: " << *trialAccel;
+        if (unbalLoad != 0)
+            s << "\t unbalanced Load: " << *unbalLoad;
+        if (reaction != 0)
+            s << "\t reaction: " << *reaction;
+        if (mass != 0) {
+            s << "\tMass : " << *mass;
+            s << "\t Rayleigh Factor: alphaM: " << alphaM << endln;
+            s << "\t Rayleigh Forces: " << *this->getResponse(RayleighForces);
+        }
+        if (theEigenvectors != 0)
+            s << "\t Eigenvectors: " << *theEigenvectors;
+        if (theDOF_GroupPtr != 0)
+            s << "\tID : " << theDOF_GroupPtr->getID();
+        s << "\n";
     }
-    if (theEigenvectors != 0)
-	s << "\t Eigenvectors: " << *theEigenvectors;
-    if (theDOF_GroupPtr != 0)
-      s << "\tID : " << theDOF_GroupPtr->getID();
-    s << "\n"; 
-  }
-  else if (flag == 1) { // print out: nodeId displacements
-    s << this->getTag() << "  " << *commitDisp;
-  }
+    
+    else if (flag == 1) { // print out: nodeId displacements
+        s << this->getTag() << "  " << *commitDisp;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"ndf\": " << numberDOF << ", ";
+        s << "\"crd\": [";
+        int numCrd = Crd->Size();
+        for (int i = 0; i < numCrd - 1; i++)
+            s << (*Crd)(i) << ", ";
+        s << (*Crd)(numCrd - 1) << "]";
+        if (mass != 0) {
+            s << ", \"mass\": [";
+            for (int i = 0; i < numberDOF - 1; i++)
+                s << (*mass)(i, i) << ", ";
+            s << (*mass)(numberDOF - 1, numberDOF - 1) << "]";
+        }
+        s << "}";
+    }
 }
   
 int

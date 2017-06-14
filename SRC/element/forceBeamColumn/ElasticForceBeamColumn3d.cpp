@@ -964,7 +964,7 @@ ElasticForceBeamColumn3d::Print(OPS_Stream &s, int flag)
     }
 
     // flag set to 2 used to print everything .. used for viewing data for UCSD renderer  
-     else if (flag == 2) {
+    else if (flag == 2) {
        static Vector xAxis(3);
        static Vector yAxis(3);
        static Vector zAxis(3);
@@ -1056,9 +1056,9 @@ ElasticForceBeamColumn3d::Print(OPS_Stream &s, int flag)
 	 sections[i]->Print(s, flag); 
        }
 	   */
-     }
+    }
 
-     else {
+	if (flag == OPS_PRINT_CURRENTSTATE) {
        s << "\nElement: " << this->getTag() << " Type: ElasticForceBeamColumn3d ";
        s << "\tConnected Nodes: " << connectedExternalNodes ;
        s << "\tNumber of Sections: " << numSections;
@@ -1087,7 +1087,22 @@ ElasticForceBeamColumn3d::Print(OPS_Stream &s, int flag)
 	 for (int i = 0; i < numSections; i++)
 	   s << "\numSections "<<i<<" :" << *sections[i];
        }
-     }
+    }
+	
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"ElasticForceBeamColumn3d\", ";
+		s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+		s << "\"sections\": [";
+		for (int i = 0; i < numSections - 1; i++)
+			s << "\"" << sections[i]->getTag() << "\", ";
+		s << "\"" << sections[numSections - 1]->getTag() << "\"], ";
+		s << "\"integration\": ";
+		beamIntegr->Print(s, flag);
+		s << ", \"rho\": " << rho << ", ";
+		s << "\"crdTransformation\": \"" << crdTransf->getTag() << "\"}";
+	}
   }
 
   OPS_Stream &operator<<(OPS_Stream &s, ElasticForceBeamColumn3d &E)

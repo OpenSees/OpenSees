@@ -1013,13 +1013,13 @@ int TwoNodeLink::displaySelf(Renderer &theViewer,
 
 void TwoNodeLink::Print(OPS_Stream &s, int flag)
 {
-    if (flag == 0)  {
+    if (flag == OPS_PRINT_CURRENTSTATE) {
         // print everything
         s << "Element: " << this->getTag() << endln;
         s << "  type: TwoNodeLink" << endln;
-        s << "  iNode: " << connectedExternalNodes(0) 
+        s << "  iNode: " << connectedExternalNodes(0)
             << ", jNode: " << connectedExternalNodes(1) << endln;
-        for (int i=0; i<numDir; i++)  {
+        for (int i = 0; i < numDir; i++) {
             s << "  Material dir" << (*dir)(i) << ": ";
             s << theMaterials[i]->getTag() << endln;
         }
@@ -1027,8 +1027,60 @@ void TwoNodeLink::Print(OPS_Stream &s, int flag)
         s << "  addRayleigh: " << addRayleigh << "  mass: " << mass << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
-    } else if (flag == 1)  {
-        // does nothing
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"TwoNodeLink\", ";
+        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+        s << "\"materials\": [";
+        for (int i = 0; i < numDir - 1; i++)
+            s << "\"" << theMaterials[i]->getTag() << "\", ";
+        s << "\"" << theMaterials[numDir - 1]->getTag() << "\"], ";
+        s << "\"dof\": [";
+        for (int i = 0; i < numDir - 1; i++) {
+            if ((*dir)(i) == 0)
+                s << "\"P\", ";
+            else if ((*dir)(i) == 1)
+                s << "\"Vy\", ";
+            else if ((*dir)(i) == 2)
+                s << "\"Vz\", ";
+            else if ((*dir)(i) == 3)
+                s << "\"T\", ";
+            else if ((*dir)(i) == 4)
+                s << "\"My\", ";
+            else if ((*dir)(i) == 5)
+                s << "\"Mz\", ";
+        }
+        if ((*dir)(numDir - 1) == 0)
+            s << "\"P\"], ";
+        else if ((*dir)(numDir - 1) == 1)
+            s << "\"Vy\"], ";
+        else if ((*dir)(numDir - 1) == 2)
+            s << "\"Vz\"], ";
+        else if ((*dir)(numDir - 1) == 3)
+            s << "\"T\"], ";
+        else if ((*dir)(numDir - 1) == 4)
+            s << "\"My\"], ";
+        else if ((*dir)(numDir - 1) == 5)
+            s << "\"Mz\"], ";
+        s << "\"sDratios\": [" << shearDistI(0) << ", " << shearDistI(1) << "], ";
+        if (Mratio.Size() == 4) {
+            s << "\"Mratios\": [" << Mratio(0) << ", " << Mratio(1);
+            s << ", " << Mratio(2) << ", " << Mratio(3) << "], ";
+        }
+        s << "\"transMatrix\": [[";
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (j < 2)
+                    s << trans(i, j) << ", ";
+                else if (j == 2 && i < 2)
+                    s << trans(i, j) << "], [";
+                else if (j == 2 && i == 2)
+                    s << trans(i, j) << "]]}";
+            }
+        }
     }
 }
 

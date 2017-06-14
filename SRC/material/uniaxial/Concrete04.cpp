@@ -518,14 +518,28 @@ int Concrete04::recvSelf (int commitTag, Channel& theChannel,
 
 void Concrete04::Print (OPS_Stream& s, int flag)
 {
-  s << "Concrete04, tag: " << this->getTag() << endln;
-  s << "  fpc: " << fpc << endln;
-  s << "  epsc0: " << epsc0 << endln;
-  s << "  fct: " << fct << endln;
-  s << "  epscu: " << epscu << endln;
-  s << "  Ec0:  " << Ec0 << endln;
-  s << "  etu:  " << etu << endln;
-  s << "  beta: " << beta << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+		s << "Concrete04, tag: " << this->getTag() << endln;
+		s << "  fpc: " << fpc << endln;
+		s << "  epsc0: " << epsc0 << endln;
+		s << "  fct: " << fct << endln;
+		s << "  epscu: " << epscu << endln;
+		s << "  Ec0:  " << Ec0 << endln;
+		s << "  etu:  " << etu << endln;
+		s << "  beta: " << beta << endln;
+	}
+
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"Concrete04\", ";
+		s << "\"Ec\": " << Ec0 << ", ";
+		s << "\"fc\": " << fpc << ", ";
+		s << "\"epsc\": " << epsc0 << ", ";
+		s << "\"ft\": " << fct << ", ";
+		s << "\"epstu\": " << etu << ", ";
+		s << "\"beta\": " << beta << "}";
+	}
 }
 
 /*// LOWES: add functions for variable hinge-length model*/

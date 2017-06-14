@@ -686,7 +686,7 @@ int ElasticTimoshenkoBeam3d::displaySelf(Renderer &theViewer,
 
 void ElasticTimoshenkoBeam3d::Print(OPS_Stream &s, int flag)
 {
-    if (flag == 0)  {
+    if (flag == OPS_PRINT_CURRENTSTATE)  {
         // print everything
         s << "Element: " << this->getTag(); 
         s << "  type: ElasticTimoshenkoBeam3d";
@@ -699,9 +699,24 @@ void ElasticTimoshenkoBeam3d::Print(OPS_Stream &s, int flag)
         s << "  rho: " << rho << "  cMass: " << cMass << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
-    } else if (flag == 1)  {
-        // does nothing
     }
+	
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"ElasticTimoshenkoBeam3d\", ";
+		s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+		s << "\"E\": " << E << ", ";
+		s << "\"G\": " << G << ", ";
+		s << "\"A\": " << A << ", ";
+		s << "\"Avy\": " << Avy << ", ";
+		s << "\"Avz\": " << Avz << ", ";
+		s << "\"Jx\": " << Jx << ", ";
+		s << "\"Iy\": " << Iy << ", ";
+		s << "\"Iz\": " << Iz << ", ";
+		s << "\"rho\": " << rho << ", ";
+		s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
+	}
 }
 
 

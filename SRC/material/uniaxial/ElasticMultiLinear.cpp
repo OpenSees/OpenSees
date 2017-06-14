@@ -305,10 +305,29 @@ int ElasticMultiLinear::recvSelf(int cTag, Channel &theChannel,
 
 void ElasticMultiLinear::Print(OPS_Stream &s, int flag)
 {
-    s << "ElasticMultiLinear tag: " << this->getTag() << endln;
-    s << "Input Parameter: strainPoints: " << strainPoints << endln;
-    s << "Input Parameter: stressPoints: " << stressPoints << endln;
-    s << "Input Parameter: eta: " << eta << endln;
-    s << "Current State: strain: "<< trialStrain << " stress: ";
-    s << trialStress << " tangent: " << trialTangent << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+		s << "ElasticMultiLinear tag: " << this->getTag() << endln;
+		s << "Input Parameter: strainPoints: " << strainPoints << endln;
+		s << "Input Parameter: stressPoints: " << stressPoints << endln;
+		s << "Input Parameter: eta: " << eta << endln;
+		s << "Current State: strain: " << trialStrain << " stress: ";
+		s << trialStress << " tangent: " << trialTangent << endln;
+	}
+    
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"ElasticMultiLinear\", ";
+		s << "\"strainPoints\": [";
+		int numPts = strainPoints.Size();
+		for (int i = 0; i < numPts-1; i++)
+			s << strainPoints(i) << ", ";
+		s << strainPoints(numPts - 1) << "], ";
+		s << "\"stressPoints\": [";
+		numPts = stressPoints.Size();
+		for (int i = 0; i < numPts-1; i++)
+			s << stressPoints(i) << ", ";
+		s << stressPoints(numPts - 1) << "], ";
+		s << "\"eta\": " << eta << "}";
+	}
 }

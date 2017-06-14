@@ -109,5 +109,11 @@ CompositeSimpsonBeamIntegration::getSectionWeights(int numSections, double L,
 void
 CompositeSimpsonBeamIntegration::Print(OPS_Stream &s, int flag)
 {
-  s << "CompositeSimpson" << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "{\"type\": \"CompositeSimpson\"}";
+	}
+		
+	else {
+		s << "CompositeSimpson" << endln;
+	}
 }

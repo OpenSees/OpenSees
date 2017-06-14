@@ -801,16 +801,15 @@ ElasticBeam2d::Print(OPS_Stream &s, int flag)
   }
 
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-    s << "\{";
-    s << "\"type\":\"ElasticBeam2d\",";
-    s << "\"name\":" << this->getTag() << ",";
-    s << "\"nodes\":[ " << connectedExternalNodes(0) << "," << connectedExternalNodes(1) << " ],";
-    s << "\"A\":"<< A << ",";
-    s << "\"E\":"<< E << ",";
-    s << "\"I\":"<< I << ",";
-    s << "\"rho\":"<< rho << ",";
-    s << "\"crdTransformation\":" << theCoordTransf->getTag();
-    s << "}";
+    s << "\t\t\t{";
+	s << "\"name\": \"" << this->getTag() << "\", ";
+	s << "\"type\": \"ElasticBeam2d\", ";
+    s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+	s << "\"E\": " << E << ", ";
+	s << "\"A\": "<< A << ", ";
+    s << "\"Iz\": "<< I << ", ";
+    s << "\"rho\": "<< rho << ", ";
+    s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
   }
 }
 

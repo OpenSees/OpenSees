@@ -2847,9 +2847,9 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 					  count++;
 				  }
 
-				  for (int i = 1; i<9; i++) {
+				  for (int i = 0; i<9; i++) {
 					  Temp[i] = indata[2 * i];
-					  Loc[i] = indata[2 * i + 1];
+					  Loc[i]  = indata[2 * i + 1];
 				  }
 
 			  }
@@ -2870,11 +2870,11 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 				  }
 
 				  Temp[0] = indata[0]; Temp[2] = indata[2]; Temp[4] = indata[4]; Temp[6] = indata[6]; Temp[8] = indata[8];
-				  Loc[0] = indata[1]; Loc[2] = indata[3]; Loc[4] = indata[5]; Loc[6] = indata[7]; Loc[8] = indata[10];
+				  Loc[0]  = indata[1]; Loc[2]  = indata[3]; Loc[4]  = indata[5]; Loc[6]  = indata[7]; Loc[8]  = indata[9];
 
 				  for (int i = 1; i<5; i++) {
 					  Temp[2 * i - 1] = (Temp[2 * i - 2] + Temp[2 * i]) / 2;
-					  Loc[2 * i - 1] = (Loc[2 * i - 2] + Loc[2 * i]) / 2;
+					  Loc[2 * i - 1]  = (Loc[2 * i - 2] + Loc[2 * i]) / 2;
 				  }
 			  }
 			  //End for 5 inputs
@@ -2895,7 +2895,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 				  }
 
 				  Temp[0] = indata[0]; Temp[8] = indata[2];
-				  Loc[0] = indata[1]; Loc[8] = indata[3];
+				  Loc[0]  = indata[1]; Loc[8]  = indata[3];
 				  for (int i = 1; i<8; i++) {
 					  Temp[i] = Temp[0] - i*(Temp[0] - Temp[8]) / 8;
 					  Loc[i] = Loc[0] - i*(Loc[0] - Loc[8]) / 8;
@@ -2909,7 +2909,8 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 					  Temp[0], Loc[0], Temp[1], Loc[1],
 					  Temp[2], Loc[2], Temp[3], Loc[3],
 					  Temp[4], Loc[4], Temp[5], Loc[5],
-					  Temp[6], Loc[6], Temp[7], Loc[7], Temp[8], Loc[8], theEleTags(i));
+					  Temp[6], Loc[6], Temp[7], Loc[7],
+                      Temp[8], Loc[8], theEleTags(i));
 
 				  if (theLoad == 0) {
 					  opserr << "WARNING eleLoad - out of memory creating load of type beamThermal";

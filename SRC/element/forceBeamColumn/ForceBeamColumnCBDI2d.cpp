@@ -2766,7 +2766,9 @@ ForceBeamColumnCBDI2d::Print(OPS_Stream &s, int flag)
       sections[i]->Print(s, flag); 
     }
     */
-  } else {
+  }
+  
+  if (flag == OPS_PRINT_CURRENTSTATE) {
 
     s << "\nEment: " << this->getTag() << " Type: ForceBeamColumnCBDI2d ";
     s << "\tConnected Nodes: " << connectedExternalNodes ;
@@ -2791,6 +2793,21 @@ ForceBeamColumnCBDI2d::Print(OPS_Stream &s, int flag)
       for (int i = 0; i < numSections; i++)
 	s << "\nSection "<<i<<" :" << *sections[i];
     }
+  }
+
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+	  s << "\t\t\t{";
+	  s << "\"name\": \"" << this->getTag() << "\", ";
+	  s << "\"type\": \"ForceBeamColumnCBDI2d\", ";
+	  s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+	  s << "\"sections\": [";
+	  for (int i = 0; i < numSections - 1; i++)
+		  s << "\"" << sections[i]->getTag() << "\", ";
+	  s << "\"" << sections[numSections - 1]->getTag() << "\"], ";
+	  s << "\"integration\": ";
+	  beamIntegr->Print(s, flag);
+	  s << ", \"rho\": " << rho << ", ";
+	  s << "\"crdTransformation\": \"" << crdTransf->getTag() << "\"}";
   }
 }
 

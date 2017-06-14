@@ -286,5 +286,11 @@ RadauBeamIntegration::getSectionWeights(int numSections, double L,
 void
 RadauBeamIntegration::Print(OPS_Stream &s, int flag)
 {
-  s << "Radau" << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "{\"type\": \"Radau\"}";
+	}
+	
+	else {
+		s << "Radau" << endln;
+	}
 }

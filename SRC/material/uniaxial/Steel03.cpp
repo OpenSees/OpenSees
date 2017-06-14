@@ -594,14 +594,32 @@ int Steel03::recvSelf (int commitTag, Channel& theChannel,
 
 void Steel03::Print (OPS_Stream& s, int flag)
 {
-   s << "Steel03 tag: " << this->getTag() << endln;
-   s << " fy: " << fy << " ";
-   s << "  E0: " << E0 << " ";
-   s << "  b: " << b << " ";
-   s << "  r:  " << r << " cR1: " << cR1 << " cR2: " << cR2 << endln;
-   s << "  a1: " << a1 << " ";
-   s << "  a2: " << a2 << " ";
-   s << "  a3: " << a3 << " ";
-   s << "  a4: " << a4 << " ";
+	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+		s << "Steel03 tag: " << this->getTag() << endln;
+		s << " fy: " << fy << " ";
+		s << "  E0: " << E0 << " ";
+		s << "  b: " << b << " ";
+		s << "  r:  " << r << " cR1: " << cR1 << " cR2: " << cR2 << endln;
+		s << "  a1: " << a1 << " ";
+		s << "  a2: " << a2 << " ";
+		s << "  a3: " << a3 << " ";
+		s << "  a4: " << a4 << " ";
+	}
+
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"Steel03\", ";
+		s << "\"E\": " << E0 << ", ";
+		s << "\"fy\": " << fy << ", ";
+		s << "\"b\": " << b << ", ";
+		s << "\"R0\": " << r << ", ";
+		s << "\"cR1\": " << cR1 << ", ";
+		s << "\"cR2\": " << cR2 << ", ";
+		s << "\"a1\": " << a1 << ", ";
+		s << "\"a2\": " << a2 << ", ";
+		s << "\"a3\": " << a3 << ", ";
+		s << "\"a4\": " << a4 << "}";
+	}
 }
 

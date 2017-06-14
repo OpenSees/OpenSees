@@ -319,11 +319,21 @@ PlaneStressUserMaterial::getInitialTangent
 void  
 PlaneStressUserMaterial::Print( OPS_Stream &s, int flag )
 {
-  s << "PlaneStressUserMaterial Material tag: " << this->getTag() << endln ;
-  for (int i = 0; i < nprops; i++)
-  {
-    s << "prop" << i << ":  " << props[i]  << " ";
-  }
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "PlaneStressUserMaterial tag: " << this->getTag() << endln;
+        for (int i = 0; i < nprops; i++)
+            s << "prop" << i << ":  " << props[i] << " ";
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"PlaneStressUserMaterial\", ";
+        s << "\"properties\": [";
+        for (int i = 0; i < nprops-1; i++)
+            s << props[i] << ", ";
+        s << props[nprops-1] << "]}";
+    }
 }
 
 

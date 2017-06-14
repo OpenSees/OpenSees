@@ -866,16 +866,27 @@ ReinforcingSteel::recvSelf(int cTag, Channel &theChannel,
 void 
 ReinforcingSteel::Print(OPS_Stream &s, int flag)
 {
-  if(flag == 3) {
-	s << CStrain << "  " << CStress << "  " << CTangent << endln;
-  } else {
-    s << "ReinforcingSteel, tag: " << this->getTag() << endln;
-    s << "  N2p: " << CFatDamage << endln;
-    //s << "  sigmaY: " << sigmaY << endln;
-    //s << "  Hiso: " << Hiso << endln;
-    //s << "  Hkin: " << Hkin << endln;
-    //s << "  eta: " << eta << endln;
-  }
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"ReinforcingSteel\", ";
+		s << "\"E\": " << "" << ", ";
+		s << "\"Eh\": " << Esh << ", ";
+		s << "\"fy\": " << "" << ", ";
+		s << "\"fu\": " << "" << "}";
+	}
+	
+	if(flag == 3) {
+		s << CStrain << "  " << CStress << "  " << CTangent << endln;
+	
+	} else {
+		s << "ReinforcingSteel, tag: " << this->getTag() << endln;
+		s << "  N2p: " << CFatDamage << endln;
+		//s << "  sigmaY: " << sigmaY << endln;
+		//s << "  Hiso: " << Hiso << endln;
+		//s << "  Hkin: " << Hkin << endln;
+		//s << "  eta: " << eta << endln;
+	}
 }
 
 int

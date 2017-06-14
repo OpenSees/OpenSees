@@ -335,12 +335,25 @@ HyperbolicGapMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 HyperbolicGapMaterial::Print(OPS_Stream &s, int flag)
 {
-    s << "HyperbolicGapMaterial tag: " << this->getTag() << endln;
-    s << "  Kmax: " << Kmax << endln;
-    s << "  Kur: " << Kur << endln;
-    s << "  Rf: " << Rf << endln;
-    s << "  Fult: " << Fult << endln;
-    s << "  initial gap: " << gap << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "HyperbolicGapMaterial tag: " << this->getTag() << endln;
+        s << "  Kmax: " << Kmax << endln;
+        s << "  Kur: " << Kur << endln;
+        s << "  Rf: " << Rf << endln;
+        s << "  Fult: " << Fult << endln;
+        s << "  initial gap: " << gap << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"HyperbolicGapMaterial\", ";
+        s << "\"Kmax\": " << Kmax << ", ";
+        s << "\"Kur\": " << Kur << ", ";
+        s << "\"Rf\": " << Rf << ", ";
+        s << "\"Fult\": " << Fult << ", ";
+        s << "\"gap\": " << gap << "}";
+    }
 }
 
 double

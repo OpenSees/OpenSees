@@ -356,16 +356,17 @@ Concrete02::Print(OPS_Stream &s, int flag)
   }
 
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-    s << "\{";
-    s << "\"type\":\"Concrete02\",";
-    s << "\"name\":" << this->getTag() << ",";
-    s << "\"fc\":" << fc << ",";
-    s << "\"epsc0\":" << epsc0 << ",";
-    s << "\"fcu\":" << fcu << ",";
-    s << "\"epscu\":" << epscu << ",";
-    s << "\"rat\":" << rat << ",";
-    s << "\"ft\":" << ft << ",";
-    s << "\"Ets\":" << Ets << "}";
+    s << "\t\t\t{";
+	s << "\"name\": \"" << this->getTag() << "\", ";
+	s << "\"type\": \"Concrete02\", ";
+	s << "\"Ec\": " << 2.0*fc/epsc0 << ", ";
+	s << "\"fc\": " << fc << ", ";
+    s << "\"epsc\": " << epsc0 << ", ";
+    s << "\"fcu\": " << fcu << ", ";
+    s << "\"epscu\": " << epscu << ", ";
+    s << "\"ratio\": " << rat << ", ";
+    s << "\"ft\": " << ft << ", ";
+    s << "\"Ets\": " << Ets << "}";
   }
 }
 

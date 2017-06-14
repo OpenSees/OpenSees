@@ -213,11 +213,17 @@ HingeMidpointBeamIntegration::activateParameter(int paramID)
 void
 HingeMidpointBeamIntegration::Print(OPS_Stream &s, int flag)
 {
-  s << "HingeMidpoint" << endln;
-  s << " lpI = " << lpI;
-  s << " lpJ = " << lpJ << endln;
-
-  return;
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "{\"type\": \"HingeMidpoint\", ";
+		s << "\"lpI\": " << lpI << ", ";
+		s << "\"lpJ\": " << lpJ << "}";
+	}
+	
+	else {
+		s << "HingeMidpoint" << endln;
+		s << " lpI = " << lpI;
+		s << " lpJ = " << lpJ << endln;
+	}
 }
 
 void 

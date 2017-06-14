@@ -251,7 +251,7 @@ PlateFromPlaneStressMaterial::getTangent( )
 
   tangent(3,3) = gmod;
   tangent(4,4) = gmod;
-  opserr << "PlateFromPlaneStress::getTangent(): " << tangent;
+  //opserr << "PlateFromPlaneStress::getTangent(): " << tangent;
   return tangent ;
 }
 
@@ -284,11 +284,20 @@ PlateFromPlaneStressMaterial::getInitialTangent
 void  
 PlateFromPlaneStressMaterial::Print( OPS_Stream &s, int flag )
 {
-  s << "PlateFromPlaneStress Material tag: " << this->getTag() << "" << endln ; 
-  s << "using PlaneStress material : " << endln ;
-
-  theMat->Print( s, flag ) ;
-
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "PlateFromPlaneStress Material tag: " << this->getTag() << "" << endln;
+        s << "G: " << gmod << endln;
+        s << "using PlaneStress material: " << endln;
+        theMat->Print(s, flag);
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"PlateFromPlaneStressMaterial\", ";
+        s << "\"G\": " << gmod << ", ";
+        s << "\"material\": \"" << theMat->getTag() << "\"}";
+    }
 }
 
 

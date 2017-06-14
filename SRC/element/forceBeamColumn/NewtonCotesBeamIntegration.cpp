@@ -255,5 +255,11 @@ NewtonCotesBeamIntegration::getSectionWeights(int numSections, double L,
 void
 NewtonCotesBeamIntegration::Print(OPS_Stream &s, int flag)
 {
-  s << "NewtonCotes" << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "{\"type\": \"NewtonCotes\"}";
+	}
+	
+	else {
+		s << "NewtonCotes" << endln;
+	}
 }

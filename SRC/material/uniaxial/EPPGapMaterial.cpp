@@ -312,10 +312,23 @@ EPPGapMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 EPPGapMaterial::Print(OPS_Stream &s, int flag)
 {
-    s << "EPPGap tag: " << this->getTag() << endln;
-    s << "  E: " << E << ", kinematic hardening ratio: " << eta << endln;
-    s << "  fy: " << fy << endln;
-    s << "  initial gap: " << gap << endln;
-    if (damage == 1)
-        s << "  damage accumulation specified" << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+		s << "EPPGap tag: " << this->getTag() << endln;
+		s << "  E: " << E << ", kinematic hardening ratio: " << eta << endln;
+		s << "  fy: " << fy << endln;
+		s << "  initial gap: " << gap << endln;
+		if (damage == 1)
+			s << "  damage accumulation specified" << endln;
+	}
+	
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"EPPGap\", ";
+		s << "\"E\": " << E << ", ";
+		s << "\"eta\": " << eta << ", ";
+		s << "\"fy\": " << fy << ", ";
+		s << "\"gap\": " << gap << ", ";
+		s << "\"damageFlag\": " << damage << "}";
+	}
 }

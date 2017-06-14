@@ -634,15 +634,33 @@ const Matrix&  LayeredShellFiberSection::getSectionTangent( )
 //print out data
 void  LayeredShellFiberSection::Print( OPS_Stream &s, int flag )
 {
-  s << "LayeredShellFiber Section tag: " << this->getTag() << endln ; 
-  s << "Total thickness h = " << h << endln ;
-
-  for (int i = 0; i < nLayers; i++) {
-  s << "Layer " << i+1 << ", thickness h = " << 0.5 * wg[i] * h << endln;
-    theFibers[i]->Print( s, flag ) ;
-  s << endln;
-  }
-
+    if (flag == OPS_PRINT_PRINTMODEL_SECTION || flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "LayeredShellFiber Section tag: " << this->getTag() << endln;
+        s << "Total thickness h = " << h << endln;
+        for (int i = 0; i < nLayers; i++) {
+            s << "Layer " << i + 1 << ", thickness h = " << 0.5 * wg[i] * h << endln;
+            theFibers[i]->Print(s, flag);
+            s << endln;
+        }
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"LayeredShellFiberSection\", ";
+        s << "\"totalThickness\": " << h << ", ";
+        s << "\"fibers\": [\n";
+        for (int i = 0; i < nLayers; i++) {
+            s << "\t\t\t\t{\"layer\": " << i+1 << ", ";
+            s << "\"thickness\": " << 0.5*wg[i]*h << ", ";
+            s << "\"material\": \"" << theFibers[i]->getTag() << "\"";
+            if (i < nLayers - 1)
+                s << "},\n";
+            else
+                s << "}\n";
+        }
+        s << "\t\t\t]}";
+    }
 }
 
 int 

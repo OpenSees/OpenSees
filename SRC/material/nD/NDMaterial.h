@@ -103,9 +103,9 @@ class NDMaterial : public Material
     static Vector errVector;
 };
 
-bool OPS_addNDMaterial(NDMaterial *newComponent);
-NDMaterial *OPS_getNDMaterial(int tag);
-void OPS_clearAllNDMaterial(void);
-
+extern bool OPS_addNDMaterial(NDMaterial *newComponent);
+extern NDMaterial *OPS_getNDMaterial(int tag);
+extern void OPS_clearAllNDMaterial(void);
+extern void OPS_printNDMaterial(OPS_Stream &s, int flag = 0);
 
 #endif

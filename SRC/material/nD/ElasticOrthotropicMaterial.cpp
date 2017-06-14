@@ -326,19 +326,35 @@ ElasticOrthotropicMaterial::recvSelf (int commitTag, Channel &theChannel,
 void
 ElasticOrthotropicMaterial::Print (OPS_Stream &s, int flag)
 {
-	s << "Elastic Isotropic Material Model" << endln;
-	s << "\tEx:  " << Ex << endln;
-	s << "\tEy:  " << Ey << endln;
-	s << "\tEz:  " << Ez << endln;
-	s << "\tvxy:  " << vxy << endln;
-	s << "\tvyz:  " << vyz << endln;
-	s << "\tvzx:  " << vzx << endln;
-	s << "\tGxy:  " << Gxy << endln;
-	s << "\tGyz:  " << Gyz << endln;
-	s << "\tGzx:  " << Gzx << endln;
-	s << "\trho:  " << rho << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "Elastic Isotropic Material Model" << endln;
+        s << "\tEx:  " << Ex << endln;
+        s << "\tEy:  " << Ey << endln;
+        s << "\tEz:  " << Ez << endln;
+        s << "\tvxy:  " << vxy << endln;
+        s << "\tvyz:  " << vyz << endln;
+        s << "\tvzx:  " << vzx << endln;
+        s << "\tGxy:  " << Gxy << endln;
+        s << "\tGyz:  " << Gyz << endln;
+        s << "\tGzx:  " << Gzx << endln;
+        s << "\trho:  " << rho << endln;
+    }
 
-	return;
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ElasticOrthotropicMaterial\", ";
+        s << "\"Ex\": " << Ex << ", ";
+        s << "\"Ey\": " << Ey << ", ";
+        s << "\"Ez\": " << Ez << ", ";
+        s << "\"nuxy\": " << vxy << ", ";
+        s << "\"nuyz\": " << vyz << ", ";
+        s << "\"nuzx\": " << vzx << ", ";
+        s << "\"Gxy\": " << Gxy << ", ";
+        s << "\"Gyz\": " << Gyz << ", ";
+        s << "\"Gzx\": " << Gzx << ", ";
+        s << "\"rho\": " << rho << "}";
+    }
 }
 
 int
