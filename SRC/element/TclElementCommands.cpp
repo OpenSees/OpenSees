@@ -154,6 +154,7 @@ extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
 
 extern  void *OPS_CatenaryCableElement(void);
+extern  void *OPS_ShellANDeS(void);
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -1051,6 +1052,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       }
   }
 
+  else if (strcmp(argv[1], "ShellANDeS") == 0) {
+      void *theEle = OPS_ShellANDeS();
+      if (theEle != 0) {
+    theElement = (Element*)theEle;
+      } else {
+    opserr<<"tclelementcommand -- unable to create element of type : "
+    <<argv[1]<<endln;
+    return TCL_ERROR;
+      }
+  }
 
   // if one of the above worked
   if (theElement != 0) {

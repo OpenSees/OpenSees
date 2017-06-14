@@ -690,6 +690,7 @@
 #define ELE_TAG_ForceBeamColumn3dThermal  172  //L.Jiang [SIF] //Still testing
 #define ELE_TAG_ShellMITC4Thermal         173   //L.Jiang [SIF]
 #define ELE_TAG_ShellNLDKGQThermal        174   //L.Jiang [SIF]
+#define ELE_TAG_ShellANDeS                175   //L.Jiang [SIF]
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2

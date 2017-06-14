@@ -532,6 +532,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/shell/ShellNLDKGT.o \
 	$(FE)/element/shell/ShellNLDKGQThermal.o \
 	$(FE)/element/shell/R3vectors.o \
+	$(FE)/element/shell/ShellANDeS.o \
 	$(FE)/element/brick/Brick.o \
 	$(FE)/element/brick/BbarBrick.o \
 	$(FE)/element/brick/BbarBrickWithSensitivity.o \
