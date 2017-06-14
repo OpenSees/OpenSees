@@ -64,7 +64,10 @@
 
 #include <ElementalLoad.h>
 
-//#include <fstream>
+
+//Types of mass matrices available 
+#define CATENARY_CABLE_MASS_LUMPED 0
+#define CATENARY_CABLE_MASS_INTEGRATION 1
 
 // initialise the class wide variables
 Matrix CatenaryCable::Flexibility(3,3);
@@ -581,7 +584,8 @@ CatenaryCable::getDamp(void)
 const Matrix &
 CatenaryCable::getMass(void)
 {
-  return ZeroMatrix;
+  computeMass();
+  return Mass;
 }
 
 void 
@@ -633,6 +637,7 @@ CatenaryCable::addInertiaLoadToUnbalance(const Vector &accel)
   
 
   // // want to add ( - fact * M R * accel ) to unbalance
+  computeMass();
   load->addMatrixVector(1.0, Mass, resid, -1.0);
   
   return 0;
@@ -701,8 +706,8 @@ CatenaryCable::getResistingForceIncInertia()
   //     theVector->addVector(1.0, this->getRayleighDampingForces(), 1.0);
   // }
 
-  static Vector resid(6);
-  resid.Zero();
+  static Vector accel(6);
+  accel.Zero();
 
   // check for a quick return
   if ( rho == 0.0) 
@@ -713,10 +718,11 @@ CatenaryCable::getResistingForceIncInertia()
   {
     const Vector &Raccel = theNodes[i]->getTrialAccel();
     for (int j = 0; j < 3; j++)
-      resid(count++) = Raccel(j);
+      accel(count++) = Raccel(j);
   }
-  
-  
+  computeMass();
+  load->addMatrixVector(1.0, Mass, accel, -1.0);
+
   return *load;
 }
 
@@ -1059,4 +1065,37 @@ void CatenaryCable::compute_flexibility_matrix(void)
       }
     }
 
+}
+
+
+void CatenaryCable::computeMass()
+{
+  switch (massType)
+  {
+    case CATENARY_CABLE_MASS_LUMPED:
+      computeMassLumped();
+      break;
+    case CATENARY_CABLE_MASS_INTEGRATION:
+      computeMassByIntegration();
+      break;
+    default:
+      opserr << "CatenaryCable::computeMass() -- Unknown massType = " << massType << endln;
+  }
+}
+
+void CatenaryCable::computeMassLumped()
+{
+  double nodal_mass = rho*L0/2;
+  Mass(0,0) = nodal_mass;
+  Mass(1,1) = nodal_mass;
+  Mass(2,2) = nodal_mass;
+  Mass(3,3) = nodal_mass;
+  Mass(4,4) = nodal_mass;
+  Mass(5,5) = nodal_mass;
+}
+
+void CatenaryCable::computeMassByIntegration()
+{
+    opserr << "CatenaryCable::computeMass() -- Mass by integration not yet available -- Defaulting to lumped " << endln;
+    computeMassLumped();  // To be implemented
 }

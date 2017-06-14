@@ -104,6 +104,9 @@ class CatenaryCable : public Element
     void compute_lambda0(void) ;
     void compute_projected_lengths(void) ;
     void compute_flexibility_matrix(void) ;
+    void computeMass();
+    void computeMassLumped();
+    void computeMassByIntegration();
     
     // private attributes - a copy for each object of the class
     ID  connectedExternalNodes;     // contains the tags of the end nodes
