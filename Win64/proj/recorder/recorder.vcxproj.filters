@@ -88,18 +88,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\SRC\recorder\DamageRecorder.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\recorder\NormElementRecorder.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\recorder\NormEnvelopeElementRecorder.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\recorder\RemoveRecorder.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\recorder\AlgorithmIncrements.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -152,6 +140,21 @@
       <Filter>response</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\recorder\PVDRecorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\recorder\DamageRecorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\recorder\NormElementRecorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\recorder\NormEnvelopeElementRecorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\recorder\RemoveRecorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\recorder\EnvelopeDriftRecorder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

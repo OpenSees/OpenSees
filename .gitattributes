@@ -4764,18 +4764,12 @@ SRC/utility/Timer.cpp -text
 SRC/utility/Timer.h -text
 SRC/utility/Timer.tex -text
 SRC/utility/utility.tex -text
-Win32/OpenSees.opt -text
 Win32/OpenSees.sln -text
-Win32/OpenSeesFortran.mak -text
-Win32/OpenSeesFortran.mdp -text svneol=unset#unset
-Win32/OpenSeesVC6.sln -text
 Win32/VC2005errno.cpp -text
 Win32/lib/debug/DoddRestrepo.pdb -text
 Win32/lib/debug/arpack.pdb -text
 Win32/lib/debug/fedeas.pdb -text
 Win32/lib/debug/umfpackC.pdb -text
-Win32/proj/ParallelOpenSeesManyInterpreters/ParallelOpenSeesManyInterpreters.vcproj -text
-Win32/proj/ParallelOpenSeesSingleInterpreter/ParallelOpenSeesSingleInterpreters.vcproj -text
 Win32/proj/actor/actor.dsp -text
 Win32/proj/actor/actor.mak -text
 Win32/proj/actor/actor.vcxproj -text
@@ -4881,8 +4875,6 @@ Win64/lib/debug/DoddRestrepo.pdb -text
 Win64/lib/debug/arpack.pdb -text
 Win64/lib/debug/fedeas.pdb -text
 Win64/lib/debug/umfpackC.pdb -text
-Win64/proj/ParallelOpenSeesManyInterpreters/ParallelOpenSeesManyInterpreters.vcproj -text
-Win64/proj/ParallelOpenSeesSingleInterpreter/ParallelOpenSeesSingleInterpreters.vcproj -text
 Win64/proj/actor/actor.vcxproj -text
 Win64/proj/analysis/analysis.vcxproj -text
 Win64/proj/analysis/analysis.vcxproj.filters -text
@@ -4914,6 +4906,8 @@ Win64/proj/modelbuilder/modelbuilder.vcxproj.filters -text
 Win64/proj/openSees/OpenSees.vcxproj -text
 Win64/proj/openSees/OpenSees.vcxproj.filters -text
 Win64/proj/openSeesMP/OpenSeesMP.vcproj -text
+Win64/proj/openSeesPy/OpenSeesPy.vcxproj -text
+Win64/proj/openSeesPy/OpenSeesPy.vcxproj.filters -text
 Win64/proj/openSeesSP/OpenSeesSP.vcproj -text
 Win64/proj/openSeesTk/OpenSeesTk.vcxproj -text
 Win64/proj/openSeesTk/OpenSeesTk.vcxproj.filters -text

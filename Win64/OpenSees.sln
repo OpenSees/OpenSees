@@ -1,5 +1,7 @@
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.12
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "actor", "proj\actor\actor.vcxproj", "{D9026BC0-B5BF-3BE9-E9CB-3491638F2C38}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "analysis", "proj\analysis\analysis.vcxproj", "{71832CB0-ED48-1CAF-ECB3-B9AD954D38E5}"
@@ -51,6 +53,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcl", "proj\tcl\tcl.vcxproj", "{B4F48ABB-2789-4753-AA82-7E2C1954D31A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utility", "proj\utility\utility.vcxproj", "{72CEB368-613B-3977-7BE6-0155A5F1DDBC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenSeesPy", "proj\openSeesPy\OpenSeesPy.vcxproj", "{F26CA968-C7ED-4246-A732-388C23BF8822}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -162,6 +166,10 @@ Global
 		{72CEB368-613B-3977-7BE6-0155A5F1DDBC}.Debug|x64.Build.0 = Debug|x64
 		{72CEB368-613B-3977-7BE6-0155A5F1DDBC}.Release|x64.ActiveCfg = Release|x64
 		{72CEB368-613B-3977-7BE6-0155A5F1DDBC}.Release|x64.Build.0 = Release|x64
+		{F26CA968-C7ED-4246-A732-388C23BF8822}.Debug|x64.ActiveCfg = Debug|x64
+		{F26CA968-C7ED-4246-A732-388C23BF8822}.Debug|x64.Build.0 = Debug|x64
+		{F26CA968-C7ED-4246-A732-388C23BF8822}.Release|x64.ActiveCfg = Release|x64
+		{F26CA968-C7ED-4246-A732-388C23BF8822}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

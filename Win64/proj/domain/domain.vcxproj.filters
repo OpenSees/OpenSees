@@ -37,6 +37,9 @@
     <Filter Include="region">
       <UniqueIdentifier>{2a3ebe70-1c27-4ec0-b136-1eced6a30558}</UniqueIdentifier>
     </Filter>
+    <Filter Include="load\shell">
+      <UniqueIdentifier>{171577b3-4b22-46e8-929e-386e834719f0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\domain\node\NodalLoad.cpp">
@@ -107,9 +110,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\domain\component\TclUpdateMaterialCommand.cpp">
       <Filter>component</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\domain\load\Beam2dThermalAction.cpp">
-      <Filter>load</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\domain\load\ElementalLoadIter.cpp">
       <Filter>load</Filter>
@@ -288,6 +288,24 @@
     <ClCompile Include="..\..\..\SRC\domain\component\LoadFactorParameter.cpp">
       <Filter>component</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\Beam2dThermalAction.cpp">
+      <Filter>load\beam</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\Beam3dThermalAction.cpp">
+      <Filter>load\beam</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\NodalThermalAction.cpp">
+      <Filter>load</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\ThermalActionWrapper.cpp">
+      <Filter>load</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\ShellThermalAction.cpp">
+      <Filter>load\shell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\PathTimeSeriesThermal.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h">
@@ -367,9 +385,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\component\RVParameter.h">
       <Filter>component</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\domain\load\Beam2dThermalAction.h">
-      <Filter>load</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\load\ElementalLoadIter.h">
       <Filter>load</Filter>
@@ -532,6 +547,24 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\component\LoadFactorParameter.h">
       <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\Beam2dThermalAction.h">
+      <Filter>load\beam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\Beam3dThermalAction.h">
+      <Filter>load\beam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\NodalThermalAction.h">
+      <Filter>load</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\ThermalActionWrapper.h">
+      <Filter>load</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\ShellThermalAction.h">
+      <Filter>load\shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\PathTimeSeriesThermal.h">
+      <Filter>timeSeries</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

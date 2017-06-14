@@ -1,5 +1,7 @@
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.12
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "actor", "proj\actor\actor.vcxproj", "{F217D50C-777C-2BDF-A01D-65526329C4F5}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "analysis", "proj\analysis\analysis.vcxproj", "{EF8DF42A-3076-51FF-65A8-FAA0A5B78026}"
@@ -33,8 +35,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenSeesTk", "proj\openSeesTk\OpenSeesTk.vcxproj", "{DEBED636-6061-42B1-B277-FAB92DF0E446}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "optimization", "proj\optimization\optimization.vcxproj", "{D1C15272-E650-4BE0-9DAF-B79F984D623D}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quickMain", "proj\quickMain\quickMain.vcxproj", "{79627CFD-A1B2-437B-BA21-2D2D67378B4D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "recorder", "proj\recorder\recorder.vcxproj", "{D5A37082-DB5D-6EBD-A103-CF73C7FBB0C4}"
 EndProject
@@ -128,10 +128,6 @@ Global
 		{D1C15272-E650-4BE0-9DAF-B79F984D623D}.Debug|Win32.Build.0 = Debug|Win32
 		{D1C15272-E650-4BE0-9DAF-B79F984D623D}.Release|Win32.ActiveCfg = Release|Win32
 		{D1C15272-E650-4BE0-9DAF-B79F984D623D}.Release|Win32.Build.0 = Release|Win32
-		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Debug|Win32.ActiveCfg = Debug|Win32
-		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Debug|Win32.Build.0 = Debug|Win32
-		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Release|Win32.ActiveCfg = Release|Win32
-		{79627CFD-A1B2-437B-BA21-2D2D67378B4D}.Release|Win32.Build.0 = Release|Win32
 		{D5A37082-DB5D-6EBD-A103-CF73C7FBB0C4}.Debug|Win32.ActiveCfg = Debug|Win32
 		{D5A37082-DB5D-6EBD-A103-CF73C7FBB0C4}.Debug|Win32.Build.0 = Debug|Win32
 		{D5A37082-DB5D-6EBD-A103-CF73C7FBB0C4}.Release|Win32.ActiveCfg = Release|Win32

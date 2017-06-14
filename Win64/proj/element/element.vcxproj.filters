@@ -461,9 +461,6 @@
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumnInt\DispBeamColumn2dInt.cpp">
       <Filter>dispBeamColumnInt</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn2dThermal.cpp">
-      <Filter>dispBeamColumnInt</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumnInt\FiberSection2dInt.cpp">
       <Filter>dispBeamColumnInt</Filter>
     </ClCompile>
@@ -809,6 +806,24 @@
     <ClCompile Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.cpp">
       <Filter>catenaryCable</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn2dThermal.cpp">
+      <Filter>forceBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn2dThermal.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dThermal.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC4Thermal.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQThermal.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellANDeS.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1094,9 +1109,6 @@
       <Filter>up</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumnInt\DispBeamColumn2dInt.h">
-      <Filter>dispBeamColumnInt</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn2dThermal.h">
       <Filter>dispBeamColumnInt</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumnInt\FiberSection2dInt.h">
@@ -1392,6 +1404,30 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.h">
       <Filter>catenaryCable</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn2dThermal.h">
+      <Filter>forceBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn2dThermal.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dThermal.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellMITC4Thermal.h">
+      <Filter>shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGQThermal.h">
+      <Filter>shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn2dWithSensitivity.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dWithSensitivity.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellANDeS.h">
+      <Filter>shell</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
