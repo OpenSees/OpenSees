@@ -111,7 +111,7 @@ int OPS_CrdTransf()
     }
 
     // add it
-    if (OPS_AddCrdTransf(transf) == false) {
+    if (OPS_addCrdTransf(transf) == false) {
 	opserr << "WARNING failed to add CrdTransf\n";
 	delete transf;
 	return -1;

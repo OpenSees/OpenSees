@@ -876,7 +876,7 @@ int OPS_peerNGA()
 
     int len = 3;
     for (int i=0; i<numStrings; i++) {
-	len += strlen(ngaRecordNames.getString(i))+3;
+	len += (int)strlen(ngaRecordNames.getString(i))+3;
     }
 
     char* result = new char[len];

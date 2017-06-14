@@ -37,9 +37,175 @@
 #include <FE_Datastore.h>
 #include <FEM_ObjectBroker.h>
 
+#include <StandardStream.h>
+#include <DataFileStream.h>
+#include <DataFileStreamAdd.h>
+#include <XmlFileStream.h>
+#include <BinaryFileStream.h>
+#include <DatabaseStream.h>
+#include <TCP_Stream.h>
+
+#include <elementAPI.h>
+
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+
+void*
+OPS_NodeRecorder()
+{
+    if (OPS_GetNumRemainingInputArgs() < 5) {
+        opserr << "WARING: recorder node ";
+        opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> reponse";
+        return 0;
+    }
+
+    const char* responseID = 0;
+    OPS_Stream *theOutputStream = 0;
+    const char* filename = 0;
+
+    const int STANDARD_STREAM = 0;
+    const int DATA_STREAM = 1;
+    const int DATA_STREAM_CSV = 2;
+    const int DATA_STREAM_ADD = 2;
+
+    int eMode = STANDARD_STREAM;
+
+    bool echoTimeFlag = false;
+    double dT = 0.0;
+    bool doScientific = false;
+
+    int precision = 6;
+
+    bool closeOnWrite = false;
+    int writeBufferSize = 0;
+
+    int sensitivity = 0;
+
+    TimeSeries **theTimeSeries = 0;
+
+    ID nodes(0, 6);
+    ID dofs(0, 6);
+
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+
+        const char* option = OPS_GetString();
+        responseID = option;
+
+        if (strcmp(option, "-time") == 0) {
+            echoTimeFlag = true;
+        }
+        else if (strcmp(option, "-load") == 0) {
+            echoTimeFlag = true;
+        }
+        else if (strcmp(option, "-scientific") == 0) {
+            doScientific = true;
+        }
+        else if (strcmp(option, "-file") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                filename = OPS_GetString();
+            }
+            eMode = DATA_STREAM;
+        }
+        else if (strcmp(option, "-fileAdd") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                filename = OPS_GetString();
+            }
+            eMode = DATA_STREAM_ADD;
+        }
+        else if (strcmp(option, "-closeOnWrite") == 0) {
+            closeOnWrite = true;
+
+        }
+        else if (strcmp(option, "-buffer") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetIntInput(&num, &writeBufferSize) < 0) {
+                    opserr << "WARNING: failed to read buffer size\n";
+                    return 0;
+                }
+            }
+        }
+        else if (strcmp(option, "-fileCSV") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                filename = OPS_GetString();
+            }
+            eMode = DATA_STREAM_CSV;
+        }
+        else if (strcmp(option, "-dT") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetDoubleInput(&num, &dT) < 0) {
+                    opserr << "WARNING: failed to read dT\n";
+                    return 0;
+                }
+            }
+        }
+        else if (strcmp(option, "-precision") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetIntInput(&num, &precision) < 0) {
+                    opserr << "WARNING: failed to read precision\n";
+                    return 0;
+                }
+            }
+        }
+        else if (strcmp(option, "-node") == 0) {
+
+            int numNodes = 0;
+            while (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                int nd;
+                if (OPS_GetIntInput(&num, &nd) < 0) {
+                    OPS_ResetCurrentInputArg(-1);
+                    break;
+                }
+                nodes[numNodes] = nd;
+                numNodes++;
+            }
+        }
+        else if (strcmp(option, "-dof") == 0) {
+
+            int numDOF = 0;
+            while (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                int dof;
+                if (OPS_GetIntInput(&num, &dof) < 0) {
+                    OPS_ResetCurrentInputArg(-1);
+                    break;
+                }
+                dofs[numDOF] = dof - 1;
+                numDOF++;
+            }
+        }
+    }
+
+    // data handler
+    if (eMode == DATA_STREAM && filename != 0) {
+        theOutputStream = new DataFileStream(filename, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
+    }
+    else if (eMode == DATA_STREAM_ADD && filename != 0) {
+        theOutputStream = new DataFileStreamAdd(filename, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
+    }
+    else if (eMode == DATA_STREAM_CSV && filename != 0) {
+        theOutputStream = new DataFileStream(filename, OVERWRITE, 2, 1, closeOnWrite, precision, doScientific);
+    }
+    else {
+        theOutputStream = new StandardStream();
+    }
+
+    theOutputStream->setPrecision(precision);
+
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0)
+        return 0;
+    NodeRecorder* recorder = new NodeRecorder(dofs, &nodes, sensitivity,
+        responseID, *domain, *theOutputStream,
+        dT, echoTimeFlag, theTimeSeries);
+
+    return recorder;
+}
+
 
 NodeRecorder::NodeRecorder()
 :Recorder(RECORDER_TAGS_NodeRecorder),
@@ -52,6 +218,7 @@ NodeRecorder::NodeRecorder()
 {
 
 }
+
 
 NodeRecorder::NodeRecorder(const ID &dofs, 
 			   const ID *nodes, 
@@ -214,6 +381,7 @@ NodeRecorder::~NodeRecorder()
   }
 
 }
+
 
 int 
 NodeRecorder::record(int commitTag, double timeStamp)
@@ -649,7 +817,6 @@ NodeRecorder::sendSelf(int commitTag, Channel &theChannel)
 }
 
 
-
 int 
 NodeRecorder::recvSelf(int commitTag, Channel &theChannel, 
 		       FEM_ObjectBroker &theBroker)
@@ -777,11 +944,13 @@ NodeRecorder::recvSelf(int commitTag, Channel &theChannel,
   return 0;
 }
 
+
 int
 NodeRecorder::domainChanged(void)
 {
   return 0;
 }
+
 
 int
 NodeRecorder::initialize(void)

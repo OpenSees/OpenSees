@@ -41,6 +41,74 @@
 #include <DummyStream.h>
 #include <Response.h>
 
+void* OPS_NodeRecorder();
+//void* OPS_ElementRecorder();
+//void* OPS_DriftRecorder();
+//void* OPS_PatternRecorder();
+
+namespace {
+
+    struct char_cmp {
+        bool operator () (const char *a, const char *b) const
+        {
+            return strcmp(a, b)<0;
+        }
+    };
+
+    typedef std::map<const char *, void *(*)(void), char_cmp> OPS_ParsingFunctionMap;
+
+    static OPS_ParsingFunctionMap recordersMap;
+
+    static int setUpRecorders(void) {
+        recordersMap.insert(std::make_pair("Node", &OPS_NodeRecorder));
+        //recordersMap.insert(std::make_pair("Element", &OPS_ElementRecorder));
+        //recordersMap.insert(std::make_pair("Drift", &OPS_DriftRecorder));
+        //recordersMap.insert(std::make_pair("Pattern", &OPS_PatternRecorder));
+
+        return 0;
+    }
+}
+
+int OPS_Recorder()
+{
+    static bool initDone = false;
+    if (initDone == false) {
+        setUpRecorders();
+        initDone = true;
+    }
+
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+        opserr << "WARNING too few arguments: recorder type? tag? ...\n";
+        return -1;
+    }
+
+    const char* type = OPS_GetString();
+    opserr << "recorderType = " << type << endln;
+    OPS_ParsingFunctionMap::const_iterator iter = recordersMap.find(type);
+    if (iter == recordersMap.end()) {
+        opserr << "WARNING recorder type " << type << " is unknown\n";
+        return -1;
+    }
+
+    Recorder* theRecorder = (Recorder*)(*iter->second)();
+    if (theRecorder == 0) {
+        opserr << "WARNING failed to create recorder\n";
+        return -1;
+    }
+
+    // now add the recorder to the domain
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    if (theDomain->addRecorder(*theRecorder) < 0) {
+        opserr << "ERROR could not add to domain - recorder.\n";
+        delete theRecorder;
+        return -1;
+    }
+
+    return 0;
+}
+
 int OPS_nodeDisp()
 {
     if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -906,36 +974,6 @@ int OPS_printModelGID()
     return res;
 }
 
-
-int OPS_Recorder()
-{
-    if (OPS_GetNumRemainingInputArgs() < 2) {
-	opserr<<"WARNING too few arguments: recorder type? tag? ...\n";
-	return -1;
-    }
-
-    // const char* type = OPS_GetString();
-
-    Recorder* theRecorder = 0;
-    if (theRecorder == 0) {
-	opserr << "WARNING failed to create recorder\n";
-	return -1;
-    }
-
-    // Now add the element to the domain
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-
-    if (theDomain->addRecorder(*theRecorder) < 0) {
-	opserr<<"ERROR could not add to domain - recorder.\n";
-	delete theRecorder;
-	return -1;
-    }
-
-    return 0;
-
-}
-
 int OPS_eleForce()
 {
     // make sure at least one other argument to contain type of system
@@ -1505,7 +1543,7 @@ int OPS_eleNodes()
 	int numTags = tags->Size();
 	int* data = new int[numTags];
 	for (int i = 0; i < numTags; i++) {
-	    data[i] = (*tags)(i);
+	    data[i] = (int)(*tags)(i);
 	}
 
 	if (OPS_SetIntOutput(&numTags, data) < 0) {

@@ -967,7 +967,7 @@ OpenSeesCommands::wipe()
     OPS_clearAllTimeSeries();
 
     // wipe GeomTransf
-    OPS_ClearAllCrdTransf();
+    OPS_clearAllCrdTransf();
 
     // wipe BeamIntegration
     OPS_clearAllBeamIntegrationRule();

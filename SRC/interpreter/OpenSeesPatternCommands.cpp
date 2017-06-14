@@ -544,36 +544,16 @@ int OPS_ElementalLoad()
 	    // the temperature at each fiber is obtained by interpolating of temperatures at the nearby temperature points.
 	    int numdata = OPS_GetNumRemainingInputArgs();
 	    double data[18];
-	    if (numdata == 18){
+        double Temp[9]; double Loc[9];
+	    if (numdata == 18) {
 		if (OPS_GetDoubleInput(&numdata, data) < 0) {
 		    opserr << "WARNING eleLoad - invalid input\n";
 		    return -1;
 		}
-		for (int i=0; i<theEleTags.Size(); i++) {
-		    theLoad = new Beam2dThermalAction(eleLoadTag,
-						      data[0], data[1], data[2],
-						      data[3], data[4], data[5],
-						      data[6], data[7], data[8],
-						      data[9], data[10], data[11],
-						      data[12], data[13], data[14],
-						      data[15], data[16], data[17],
-						      theEleTags(i));
-
-		    if (theLoad == 0) {
-			opserr << "WARNING eleLoad - out of memory creating load of type " << type;
-			return -1;
-		    }
-
-		    // add the load to the domain
-		    if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
-			opserr << "WARNING eleLoad - could not add following load to domain:\n ";
-			opserr << theLoad;
-			delete theLoad;
-			return -1;
-		    }
-		    eleLoadTag++;
-		}
-		return 0;
+        for (int i = 0; i < 9; i++) {
+            Temp[i] = data[2 * i];
+            Loc[i] = data[2 * i + 1];
+        }
 	    }
 
 	    // 5 temperatures are given, i.e. 4 layers are defined.
@@ -583,32 +563,12 @@ int OPS_ElementalLoad()
 		    return -1;
 		}
 
-		for (int i=0; i<theEleTags.Size(); i++) {
-		    theLoad = new Beam2dThermalAction(eleLoadTag,
-						      data[0], data[1], data[2],
-						      data[3], data[4], data[5],
-						      data[6], data[7], data[8],
-						      data[9], theEleTags(i));
-
-
-		    if (theLoad == 0) {
-			opserr << "WARNING eleLoad - could not add following load to domain:\n ";
-			return -1;
-		    }
-
-
-		    // add the load to the domain
-		    if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
-			opserr << "WARNING eleLoad - could not add following load to domain:\n ";
-			opserr << theLoad;
-			delete theLoad;
-			return -1;
-		    }
-		    eleLoadTag++;
-		}
-
-		return 0;
-
+        Temp[0] = data[0]; Temp[2] = data[2]; Temp[4] = data[4]; Temp[6] = data[6]; Temp[8] = data[8];
+        Loc[0]  = data[1]; Loc[2]  = data[3]; Loc[4]  = data[5]; Loc[6]  = data[7]; Loc[8]  = data[9];
+        for (int i = 1; i < 5; i++) {
+            Temp[2 * i - 1] = (Temp[2 * i - 2] + Temp[2 * i]) / 2;
+            Loc[2 * i - 1] = (Loc[2 * i - 2] + Loc[2 * i]) / 2;
+        }
 	    }
 
 	    // two temperature is given,
@@ -620,31 +580,41 @@ int OPS_ElementalLoad()
 		    return -1;
 		}
 
-		for (int i=0; i<theEleTags.Size(); i++) {
-		    theLoad = new Beam2dThermalAction(eleLoadTag,
-						      data[0], data[1], data[2],
-						      data[3], theEleTags(i));
-
-		    if (theLoad == 0) {
-			opserr << "WARNING eleLoad - out of memory creating load of type " << type;
-			return -1;
-		    }
-
-		    // add the load to the domain
-		    if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
-			opserr << "WARNING eleLoad - could not add following load to domain:\n ";
-			opserr << theLoad;
-			delete theLoad;
-			return -1;
-		    }
-		    eleLoadTag++;
-		}
-		return 0;
+        Temp[0] = data[0]; Temp[8] = data[2];
+        Loc[0]  = data[1]; Loc[8]  = data[3];
+        for (int i = 1; i < 8; i++) {
+            Temp[i] = Temp[0] - i*(Temp[0] - Temp[8]) / 8;
+            Loc[i] = Loc[0] - i*(Loc[0] - Loc[8]) / 8;
+        }
 	    }
-	    //finish the temperature arguments
-	    else {
-		opserr << "WARNING eleLoad -beamThermalAction invalid number of temperature aguments,/n looking for 0, 2, 5 or 9 arguments.\n";
-	    }
+
+        //finish the temperature arguments
+        else {
+            opserr << "WARNING eleLoad -beamThermalAction invalid number of temperature aguments,/n looking for 0, 2, 5 or 9 arguments.\n";
+        }
+
+        for (int i = 0; i<theEleTags.Size(); i++) {
+            theLoad = new Beam2dThermalAction(eleLoadTag,
+                Temp[0], Loc[0], Temp[1], Loc[1],
+                Temp[2], Loc[2], Temp[3], Loc[3],
+                Temp[4], Loc[4], Temp[5], Loc[5],
+                Temp[6], Loc[6], Temp[7], Loc[7],
+                Temp[8], Loc[8], theEleTags(i));
+
+            if (theLoad == 0) {
+                opserr << "WARNING eleLoad - out of memory creating load of type " << type;
+                return -1;
+            }
+
+            // add the load to the domain
+            if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+                opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+                opserr << theLoad;
+                delete theLoad;
+                return -1;
+            }
+            eleLoadTag++;
+        }
 	} // for the if (ndm==2)
 	else {//if (ndm=3)
 	    opserr << "WARNING eleLoad -beamThermalAction type currently only valid only for ndm=2\n";

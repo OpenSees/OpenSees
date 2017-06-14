@@ -405,6 +405,8 @@ void* OPS_ModifiedNewton();
 void* OPS_Broyden();
 void* OPS_BFGS();
 
+void* OPS_NodeRecorder();
+//void* OPS_ElementRecorder();
 
 //////////////////////////////////////////////////////
 

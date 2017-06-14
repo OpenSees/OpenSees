@@ -116,7 +116,9 @@ void* OPS_CFSSSWP();
 void* OPS_SteelBRB();
 void* OPS_SimpleFractureMaterial();
 void* OPS_Maxwell();
-void* OPS_DoddRestr();
+#ifndef _NO_NEW_RESTREPO
+    void* OPS_DoddRestr();
+#endif
 void* OPS_Steel2();
 void* OPS_OriginCentered();
 void* OPS_HookGap();

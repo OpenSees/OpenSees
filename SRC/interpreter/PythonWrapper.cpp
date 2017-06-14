@@ -125,7 +125,6 @@ PythonWrapper::getResults()
     return result;
 }
 
-
 //////////////////////////////////////////////
 /////// Python wrapper functions  ////////////
 /////////////////////////////////////////////
@@ -191,7 +190,6 @@ static PyObject *Py_ops_getDampTangent(PyObject *self, PyObject *args)
 
     return wrapper->getResults();
 }
-
 
 static PyObject *Py_ops_wipe(PyObject *self, PyObject *args)
 {
@@ -1220,7 +1218,6 @@ static PyObject *Py_ops_rigidLink(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-
 static PyObject *Py_ops_rigidDiaphragm(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -1402,6 +1399,4 @@ PythonWrapper::addOpenSeesCommands()
     
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);
-
-    
 }

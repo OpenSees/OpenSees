@@ -455,7 +455,7 @@ namespace {
 	functionMap.insert(std::make_pair("SurfaceLoad", &OPS_SurfaceLoad));
 	functionMap.insert(std::make_pair("elasticBeamColumn", &OPS_ElasticBeam));
 	functionMap.insert(std::make_pair("forceBeamColumn", &OPS_ForceBeamColumn));
-	functionMap.insert(std::make_pair("nonlineareBeamColumn", &OPS_ForceBeamColumn));
+	functionMap.insert(std::make_pair("nonlinearBeamColumn", &OPS_ForceBeamColumn));
 	functionMap.insert(std::make_pair("dispBeamColumn", &OPS_DispBeamColumn));
 	functionMap.insert(std::make_pair("forceBeamColumnCBDI", &OPS_ForceBeamColumnCBDI2d));
 	functionMap.insert(std::make_pair("forceBeamColumnCSBDI", &OPS_ForceBeamColumnCSBDI2d));
