@@ -410,6 +410,10 @@ int ShellANDeS::addLoad(ElementalLoad *theLoad, double loadFactor)
 
         Vector Fbody = this->getBodyForce(loadFactor, data);
 
+        // opserr << "   loadfactor = " << loadFactor << endln;
+        // opserr << "   data       = " << data << endln;
+        // opserr << "   Fbody      = " << Fbody << endln;
+
         Q.addVector(1.0, Fbody, 1.0);
 
     }
@@ -498,6 +502,8 @@ const Vector &ShellANDeS::getResistingForce ()
     }
 
     P = K * NodalDisplacements;
+    // Add nodal equivalent loads from surface or body loads
+    P += Q;
 
     return P;
 }
@@ -2048,8 +2054,8 @@ void ShellANDeS::calculate_E_planestress_and_beta0()
     double M  = E / ( 1.0 - nu*nu ) ; //membrane modulus
     double G  =  0.5 * E / ( 1.0 + nu ) ; //shear modulus
 
-    G *= thickness ;  //multiply by thickness
-    M *= thickness ;
+    // G *= thickness ;  //multiply by thickness
+    // M *= thickness ;
 
     E_planestress.Zero() ;
 
