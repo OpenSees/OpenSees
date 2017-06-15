@@ -39,11 +39,6 @@
 
 #include <string.h>
 
-double invert2by2Matrix(const Matrix &a, Matrix &b);
-double invert3by3Matrix(const Matrix &a, Matrix &b);
-void invertMatrix(int n, const Matrix &a, Matrix &b);
-
-
 #include <TaggedObject.h>
 #include <MapOfTaggedObjects.h>
 #include <MapOfTaggedObjectsIter.h>
@@ -130,14 +125,8 @@ SectionForceDeformation::getSectionFlexibility ()
     if (k(0,0) != 0.0)
       (*fDefault)(0,0) = 1.0/k(0,0);
     break;
-  case 2:
-    invert2by2Matrix(k,*fDefault);
-    break;
-  case 3:
-    invert3by3Matrix(k,*fDefault);
-    break;
   default:
-    invertMatrix(order,k,*fDefault);
+    k.Invert(*fDefault);
     break;
   }
 
@@ -164,14 +153,8 @@ SectionForceDeformation::getInitialFlexibility ()
     if (k(0,0) != 0.0)
       (*fDefault)(0,0) = 1.0/k(0,0);
     break;
-  case 2:
-    invert2by2Matrix(k,*fDefault);
-    break;
-  case 3:
-    invert3by3Matrix(k,*fDefault);
-    break;
   default:
-    invertMatrix(order,k,*fDefault);
+    k.Invert(*fDefault);
     break;
   }
   
