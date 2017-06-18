@@ -27,7 +27,7 @@ TransientIntegrator * OPS_Explicitdifference(void)
 
 
 Explicitdifference::Explicitdifference()
-	: TransientIntegrator(INTEGRATOR_TAGS_Explicitdifference),
+	: TransientIntegrator(INTEGRATOR_TAGS_ExplicitDifference),
 	deltaT(0.0),
 	alphaM(0.0), betaK(0.0), betaKi(0.0), betaKc(0.0),
 	updateCount(0), c2(0.0), c3(0.0),
@@ -40,7 +40,7 @@ Explicitdifference::Explicitdifference()
 
 Explicitdifference::Explicitdifference(
 	double _alphaM, double _betaK, double _betaKi, double _betaKc)
-	: TransientIntegrator(INTEGRATOR_TAGS_Explicitdifference),
+	: TransientIntegrator(INTEGRATOR_TAGS_ExplicitDifference),
 	deltaT(0.0),
 	alphaM(_alphaM), betaK(_betaK), betaKi(_betaKi), betaKc(_betaKc),
 	updateCount(0), c2(0.0), c3(0.0),
