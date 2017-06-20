@@ -94,6 +94,7 @@ OPS_NodeRecorder()
     
     ID nodes(0, 6);
     ID dofs(0, 6);
+    ID timeseries(0, 6);
     
     while (OPS_GetNumRemainingInputArgs() > 0) {
         
@@ -162,6 +163,25 @@ OPS_NodeRecorder()
                     opserr << "WARNING: failed to read dT\n";
                     return 0;
                 }
+            }
+        }
+        else if (strcmp(option, "-timeSeries") == 0) {
+            int numTimeSeries = 0;
+            while (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                int ts;
+                if (OPS_GetIntInput(&num, &ts) < 0) {
+                    OPS_ResetCurrentInputArg(-1);
+                    break;
+                }
+                timeseries[numTimeSeries++] = ts;
+            }
+            theTimeSeries = new TimeSeries *[numTimeSeries];
+            for (int j = 0; j<numTimeSeries; j++) {
+                if (timeseries(j) != 0 && timeseries(j) != -1)
+                    theTimeSeries[j] = OPS_getTimeSeries(timeseries(j));
+                else
+                    theTimeSeries[j] = 0;
             }
         }
         else if (strcmp(option, "-precision") == 0) {
