@@ -36,6 +36,8 @@
 #include <Matrix.h>
 #include <FE_Datastore.h>
 #include <FEM_ObjectBroker.h>
+#include <MeshRegion.h>
+#include <TimeSeries.h>
 
 #include <StandardStream.h>
 #include <DataFileStream.h>
@@ -55,43 +57,49 @@ void*
 OPS_NodeRecorder()
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
-        opserr << "WARING: recorder node ";
+        opserr << "WARING: recorder Node ";
         opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> reponse";
         return 0;
     }
-
+    
     const char* responseID = 0;
     OPS_Stream *theOutputStream = 0;
     const char* filename = 0;
-
+    
     const int STANDARD_STREAM = 0;
     const int DATA_STREAM = 1;
-    const int DATA_STREAM_CSV = 2;
-    const int DATA_STREAM_ADD = 2;
-
+    const int XML_STREAM = 2;
+    const int DATABASE_STREAM = 3;
+    const int BINARY_STREAM = 4;
+    const int DATA_STREAM_CSV = 5;
+    const int TCP_STREAM = 6;
+    const int DATA_STREAM_ADD = 7;
+    
     int eMode = STANDARD_STREAM;
-
+    
     bool echoTimeFlag = false;
     double dT = 0.0;
     bool doScientific = false;
-
+    
     int precision = 6;
-
+    
     bool closeOnWrite = false;
-    int writeBufferSize = 0;
-
+    
+    const char *inetAddr = 0;
+    int inetPort;
+    
     int sensitivity = 0;
-
+    
     TimeSeries **theTimeSeries = 0;
-
+    
     ID nodes(0, 6);
     ID dofs(0, 6);
-
+    
     while (OPS_GetNumRemainingInputArgs() > 0) {
-
+        
         const char* option = OPS_GetString();
         responseID = option;
-
+        
         if (strcmp(option, "-time") == 0) {
             echoTimeFlag = true;
         }
@@ -115,22 +123,37 @@ OPS_NodeRecorder()
         }
         else if (strcmp(option, "-closeOnWrite") == 0) {
             closeOnWrite = true;
-
         }
-        else if (strcmp(option, "-buffer") == 0) {
-            if (OPS_GetNumRemainingInputArgs() > 0) {
-                int num = 1;
-                if (OPS_GetIntInput(&num, &writeBufferSize) < 0) {
-                    opserr << "WARNING: failed to read buffer size\n";
-                    return 0;
-                }
-            }
-        }
-        else if (strcmp(option, "-fileCSV") == 0) {
+        else if (strcmp(option, "-csv") == 0) {
             if (OPS_GetNumRemainingInputArgs() > 0) {
                 filename = OPS_GetString();
             }
             eMode = DATA_STREAM_CSV;
+        }
+        else if (strcmp(option, "-tcp") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                inetAddr = OPS_GetString();
+            }
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetIntInput(&num, &inetPort) < 0) {
+                    opserr << "WARNING: failed to read inetPort\n";
+                    return 0;
+                }
+            }
+            eMode = TCP_STREAM;
+        }
+        else if (strcmp(option, "-xml") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                filename = OPS_GetString();
+            }
+            eMode = XML_STREAM;
+        }
+        else if (strcmp(option, "-binary") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                filename = OPS_GetString();
+            }
+            eMode = BINARY_STREAM;
         }
         else if (strcmp(option, "-dT") == 0) {
             if (OPS_GetNumRemainingInputArgs() > 0) {
@@ -151,7 +174,6 @@ OPS_NodeRecorder()
             }
         }
         else if (strcmp(option, "-node") == 0) {
-
             int numNodes = 0;
             while (OPS_GetNumRemainingInputArgs() > 0) {
                 int num = 1;
@@ -160,12 +182,55 @@ OPS_NodeRecorder()
                     OPS_ResetCurrentInputArg(-1);
                     break;
                 }
-                nodes[numNodes] = nd;
-                numNodes++;
+                nodes[numNodes++] = nd;
             }
         }
+        else if (strcmp(option, "-nodeRange") == 0) {
+            int start, end;
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetIntInput(&num, &start) < 0) {
+                    opserr << "WARNING: failed to read start node\n";
+                    return 0;
+                }
+            }
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetIntInput(&num, &end) < 0) {
+                    opserr << "WARNING: failed to read end node\n";
+                    return 0;
+                }
+            }
+            if (start > end) {
+                int swap = end;
+                end = start;
+                start = swap;
+            }
+            int numNodes = 0;
+            for (int i = start; i <= end; i++)
+                nodes[numNodes++] = i;
+        }
+        else if (strcmp(option, "-region") == 0) {
+            int tag;
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetIntInput(&num, &tag) < 0) {
+                    opserr << "WARNING: failed to read region tag\n";
+                    return 0;
+                }
+            }
+            Domain *domain = OPS_GetDomain();
+            MeshRegion *theRegion = domain->getRegion(tag);
+            if (theRegion == 0) {
+                opserr << "WARNING: region does not exist\n";
+                return 0;
+            }
+            const ID &nodeRegion = theRegion->getNodes();
+            int numNodes = 0;
+            for (int i = 0; i < nodeRegion.Size(); i++)
+                nodes[numNodes++] = nodeRegion(i);
+        }
         else if (strcmp(option, "-dof") == 0) {
-
             int numDOF = 0;
             while (OPS_GetNumRemainingInputArgs() > 0) {
                 int num = 1;
@@ -174,35 +239,38 @@ OPS_NodeRecorder()
                     OPS_ResetCurrentInputArg(-1);
                     break;
                 }
-                dofs[numDOF] = dof - 1;
-                numDOF++;
+                dofs[numDOF++] = dof - 1;
             }
         }
     }
-
+    
     // data handler
-    if (eMode == DATA_STREAM && filename != 0) {
+    if (eMode == DATA_STREAM && filename != 0)
         theOutputStream = new DataFileStream(filename, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
-    }
-    else if (eMode == DATA_STREAM_ADD && filename != 0) {
+    else if (eMode == DATA_STREAM_ADD && filename != 0)
         theOutputStream = new DataFileStreamAdd(filename, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
-    }
-    else if (eMode == DATA_STREAM_CSV && filename != 0) {
+    else if (eMode == DATA_STREAM_CSV && filename != 0)
         theOutputStream = new DataFileStream(filename, OVERWRITE, 2, 1, closeOnWrite, precision, doScientific);
-    }
-    else {
+    else if (eMode == XML_STREAM && filename != 0)
+        theOutputStream = new XmlFileStream(filename);
+    //else if (eMode == DATABASE_STREAM && tableName != 0)
+    //    theOutputStream = new DatabaseStream(theDatabase, tableName);
+    else if (eMode == BINARY_STREAM && filename != 0)
+        theOutputStream = new BinaryFileStream(filename);
+    else if (eMode == TCP_STREAM && inetAddr != 0)
+        theOutputStream = new TCP_Stream(inetPort, inetAddr);
+    else
         theOutputStream = new StandardStream();
-    }
-
+    
     theOutputStream->setPrecision(precision);
-
+    
     Domain* domain = OPS_GetDomain();
     if (domain == 0)
         return 0;
     NodeRecorder* recorder = new NodeRecorder(dofs, &nodes, sensitivity,
         responseID, *domain, *theOutputStream,
         dT, echoTimeFlag, theTimeSeries);
-
+    
     return recorder;
 }
 

@@ -920,6 +920,15 @@ static PyObject *Py_ops_domainChange(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_record(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_record() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_metaData(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -1357,6 +1366,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("setPrecision", &Py_ops_setPrecision);
     addCommand("searchPeerNGA", &Py_ops_searchPeerNGA);
     addCommand("domainChange", &Py_ops_domainChange);
+    addCommand("record", &Py_ops_record);
     addCommand("metaData", &Py_ops_metaData);
     addCommand("neesUpload", &Py_ops_neesUpload);
     addCommand("stripXML", &Py_ops_stripXML);

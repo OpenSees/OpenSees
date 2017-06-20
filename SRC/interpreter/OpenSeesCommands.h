@@ -256,6 +256,7 @@ int OPS_setElementRayleighDampingFactors();
 int OPS_MeshRegion();
 int OPS_peerNGA();
 int OPS_domainChange();
+int OPS_record();
 int OPS_stripOpenSeesXML();
 int OPS_convertBinaryToText();
 int OPS_convertTextToBinary();
@@ -405,9 +406,6 @@ void* OPS_ModifiedNewton();
 void* OPS_Broyden();
 void* OPS_BFGS();
 
-void* OPS_NodeRecorder();
-//void* OPS_ElementRecorder();
-
 //////////////////////////////////////////////////////
 
 // commands that changed or added:
@@ -417,8 +415,8 @@ void* OPS_NodeRecorder();
 //    elasticForceBeamColumnWarping dispBeamColumnNL dispBeamColumnThermal
 //    elasticForceBeamColumn nonlinearBeamColumn dispBeamColumnWithSensitivity
 //
-//    missing : recorder, video, logFile, getNP, getPI, barrier, send, recv, partition,
-//              record, defaultUnits, setParameter, reliability, wipeReliability,
+//    missing : video, logFile, getNP, getPI, barrier, send, recv, partition,
+//              defaultUnits, setParameter, reliability, wipeReliability,
 //              parameter, addToParameter, updateParameter, FiberThermal, FiberInt,
 //              UCFiber, TclModelBuilderYS_SectionCommand, yieldSurface_BC,
 //              ysEvolutionModel, plasticMaterial, cyclicModel, damageModel,

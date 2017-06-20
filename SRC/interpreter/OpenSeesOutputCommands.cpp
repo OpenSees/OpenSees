@@ -42,7 +42,9 @@
 #include <Response.h>
 
 void* OPS_NodeRecorder();
-//void* OPS_ElementRecorder();
+void* OPS_EnvelopeNodeRecorder();
+void* OPS_ElementRecorder();
+void* OPS_EnvelopeElementRecorder();
 //void* OPS_DriftRecorder();
 //void* OPS_PatternRecorder();
 
@@ -61,7 +63,9 @@ namespace {
 
     static int setUpRecorders(void) {
         recordersMap.insert(std::make_pair("Node", &OPS_NodeRecorder));
-        //recordersMap.insert(std::make_pair("Element", &OPS_ElementRecorder));
+        recordersMap.insert(std::make_pair("EnvelopeNode", &OPS_EnvelopeNodeRecorder));
+        recordersMap.insert(std::make_pair("Element", &OPS_ElementRecorder));
+        recordersMap.insert(std::make_pair("EnvelopeElement", &OPS_EnvelopeElementRecorder));
         //recordersMap.insert(std::make_pair("Drift", &OPS_DriftRecorder));
         //recordersMap.insert(std::make_pair("Pattern", &OPS_PatternRecorder));
 
@@ -83,7 +87,6 @@ int OPS_Recorder()
     }
 
     const char* type = OPS_GetString();
-    opserr << "recorderType = " << type << endln;
     OPS_ParsingFunctionMap::const_iterator iter = recordersMap.find(type);
     if (iter == recordersMap.end()) {
         opserr << "WARNING recorder type " << type << " is unknown\n";

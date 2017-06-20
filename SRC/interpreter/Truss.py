@@ -102,7 +102,7 @@ ops.analysis("Static")
 # ------------------------------
 
 # create a Recorder object for the nodal displacements at node 4
-#ops.recorder("Node", "-file", "example.out", "-time", "-node", 4, "-dof", 1, 2, "disp")
+ops.recorder("Node", "-file", "example.out", "-time", "-node", 4, "-dof", 1, 2, "disp")
 
 # create a recorder for element forces, one in global and the other local system
 #ops.recorder("Element", "-file", "eleGlobal.out", "-time", "-ele", 1, 2, 3, "forces")

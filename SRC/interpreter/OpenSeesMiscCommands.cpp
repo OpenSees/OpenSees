@@ -906,6 +906,16 @@ int OPS_domainChange()
     return 0;
 }
 
+int OPS_record()
+{
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    theDomain->record(false);
+
+    return 0;
+}
+
 int OPS_stripOpenSeesXML()
 {
     if (OPS_GetNumRemainingInputArgs() < 2) {
@@ -954,14 +964,16 @@ int OPS_stripOpenSeesXML()
 	if (spitData == true) {
 	    if (strstr(inputLine,"</Data>") != 0)
 		spitData = false;
-	    else
-		; //	theOutputDataFile << line << endln;
+        else {
+            //theOutputDataFile << line << endln;
+        }
 	} else {
 	    const char *inputLine = line.c_str();
 	    if (strstr(inputLine,"<Data>") != 0)
 		spitData = true;
-	    else if (outputDescriptiveFile != 0)
-		; // theOutputDescriptiveFile << line << endln;
+        else if (outputDescriptiveFile != 0) {
+            //theOutputDescriptiveFile << line << endln;
+        }
 	}
     }
 
