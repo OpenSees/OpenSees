@@ -256,6 +256,13 @@ EXAMPLES/DeveloperTestScripts/example_cyclic_time.txt -text
 EXAMPLES/DeveloperTestScripts/runAll.tcl -text
 EXAMPLES/Example1/Makefile -text
 EXAMPLES/Example1/main.cpp -text
+EXAMPLES/ExamplePython/ARL360.g3 -text
+EXAMPLES/ExamplePython/Example1.1.py -text
+EXAMPLES/ExamplePython/Example2.1.py -text
+EXAMPLES/ExamplePython/Example3.1.py -text
+EXAMPLES/ExamplePython/Example3.2.py -text
+EXAMPLES/ExamplePython/Example3.3.py -text
+EXAMPLES/ExamplePython/MomentCurvature.py -text
 EXAMPLES/ExampleScripts/27NodeCorrected.ops -text
 EXAMPLES/ExampleScripts/ARL360.at2 -text
 EXAMPLES/ExampleScripts/ArcLength01.tcl -text
@@ -3058,7 +3065,6 @@ SRC/interpreter/TclInterpreter.cpp -text
 SRC/interpreter/TclInterpreter.h -text
 SRC/interpreter/TclWrapper.cpp -text
 SRC/interpreter/TclWrapper.h -text
-SRC/interpreter/Truss.py -text
 SRC/interpreter/pythonMain.cpp -text
 SRC/interpreter/tclMain.cpp -text
 SRC/interpreter/test.py -text

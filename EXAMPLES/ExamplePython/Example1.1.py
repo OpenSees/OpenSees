@@ -2,18 +2,19 @@
 # Pacific Earthquake Engineering Research Center
 # http://opensees.berkeley.edu/
 #
-# Basic Truss Example
-# ----------------------
+# Basic Truss Example 1.1
+# -----------------------
 #  2d 3 Element Elastic Truss
 #  Single Nodal Load, Static Analysis
 # 
 # Example Objectives
-# -----------------
+# ------------------
 #  Simple Introduction to OpenSees
 # 
 # Units: kips, in, sec
-# Written: Minjie
-# Date: 
+#
+# Written: fmk
+# Date: January 2001
 
 # import the OpenSees Python module
 import opensees as ops
@@ -129,3 +130,4 @@ ops.analyze(1)
 #print("node 4 displacement: ", ops.nodeDisp(4))
 ops.Print('node', 0, 4)
 ops.Print('ele')
+ops.wipe()
