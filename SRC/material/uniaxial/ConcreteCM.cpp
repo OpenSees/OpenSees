@@ -21,8 +21,8 @@
 // crack closure effects. 
 //
 // References:
-// 1) Chang, G.A. and Mander, J.B. (1994), ìSeismic Energy Based Fatigue Damage 
-// Analysis of Bridge Columns: Part I ñ Evaluation of Seismic Capacityî, NCEER 
+// 1) Chang, G.A. and Mander, J.B. (1994), ‚ÄúSeismic Energy Based Fatigue Damage 
+// Analysis of Bridge Columns: Part I ‚Äì Evaluation of Seismic Capacity‚Äù, NCEER 
 // Technical Report No. NCEER-94-0006, State University of New York, Buffalo.
 // 2) Kutay Orakcal (2004), "Nonlinear Modeling and Analysis of Slender Reinforced 
 // Concrete Walls", PhD Dissertation, Department of Civil and Environmental Engineering, 
@@ -57,12 +57,12 @@
 // Read input parameters and build the material
 void *OPS_ConcreteCM(void)
 {
-  
+
   // Pointer to a uniaxial material that will be returned                       
   UniaxialMaterial *theMaterial = 0;
   
   int numArgs = OPS_GetNumRemainingInputArgs();
-  
+
   // Parse the script for material parameters
   if (numArgs != 10 && numArgs !=  11 && numArgs != 12) {
     opserr << "Incorrect # args Want: uniaxialMaterial ConcreteCM tag? fpcc? epcc? Ec? rc? xcrn? ft? et? rt? xcrp? <-GapClose gap?>" << endln;
@@ -105,7 +105,7 @@ void *OPS_ConcreteCM(void)
     theMaterial = new ConcreteCM(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], mon);
     
   } else {
-    
+
     int gap;
     numData = 1;
     
@@ -113,15 +113,15 @@ void *OPS_ConcreteCM(void)
     // OPS_GetStringCopy(&str);
     if (strcmp(str, "-GapClose") == 0) {
       if (OPS_GetIntInput(&numData, &gap) != 0) {
-	opserr << "Invalid $gap parameter for uniaxialMaterial ConcreteCM with tag  " << iData[0] << endln;
-	return 0;
+		opserr << "Invalid $gap parameter for uniaxialMaterial ConcreteCM with tag  " << iData[0] << endln;
+		return 0;
       }
     } else {
       opserr << "Invalid input parameter for uniaxialMaterial ConcreteCM with tag  " << iData[0] << ", want: -GapClose"<< endln;
       return 0;
     }
     
-    delete [] str;
+    // delete [] str;
     
     if (gap != 0 && gap != 1) {
       opserr << "Invalid $gap parameter for uniaxialMaterial ConcreteCM with tag  " << iData[0] << endln;
