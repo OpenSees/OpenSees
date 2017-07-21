@@ -860,7 +860,6 @@ void ManzariDafalias::explicit_integrator(const Vector& CurStress, const Vector&
             exp_int = &ManzariDafalias::ModifiedEuler;
             break;
     }
-    
     double elasticRatio, p, pn, f, fn;
     Vector dSigma(6), dStrain(6);
     bool   p_tr_pos = true;
@@ -874,11 +873,11 @@ void ManzariDafalias::explicit_integrator(const Vector& CurStress, const Vector&
     f                    = GetF(NextStress, CurAlpha);
     p                    = one3 * GetTrace(NextStress);
 
-    if (p < m_Pmin)
+    if (p < 0)
         p_tr_pos = false;
 
     if (p_tr_pos && (f <= mTolF))
-    { 
+    {
         // This is a pure elastic loading/unloading
         NextAlpha        = CurAlpha;
         NextFabric        = CurFabric;
@@ -1179,6 +1178,7 @@ void ManzariDafalias::ModifiedEuler(const Vector& CurStress, const Vector& CurSt
         if (debugFlag)
             opserr << "Tag = " << this->getTag() << " : I have a problem (p < 0) - This should not happen!!!" << endln;        
         NextStress = GetDevPart(NextStress) + m_Pmin * mI1;
+		p = m_Pmin;
     }
     // Set aCep_Consistent to zero for substepping process
     aCep_Consistent.Zero();

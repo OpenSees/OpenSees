@@ -77,6 +77,7 @@ int
 ManzariDafalias3D::setTrialStrain(const Vector &strain_from_element) 
 {
 	mEpsilon = -1.0 * strain_from_element; // -1.0 is for geotechnical sign convention
+	this->integrate();
 
 	return 0 ;
 }
@@ -100,7 +101,7 @@ ManzariDafalias3D::getStrain()
 const Vector& 
 ManzariDafalias3D::getStress() 
 {
-	this->integrate();
+	// this->integrate();
 	mSigma_M = -1.0 * mSigma;
  	return mSigma_M; // -1.0 is for geotechnical sign convention
 }
