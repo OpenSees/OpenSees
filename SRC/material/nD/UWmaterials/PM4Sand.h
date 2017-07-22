@@ -94,6 +94,7 @@ class PM4Sand : public NDMaterial
 	const Vector getAlpha();
 	const Vector getFabric();
 	const Vector getAlpha_in();
+	const double getDilatancy();
 	const Vector getAlpha_in_p();
 	const Matrix &getTangent();
 	const Matrix &getInitialTangent();
@@ -173,7 +174,8 @@ class PM4Sand : public NDMaterial
 	double mKp;         // plastic mudulus
 	double mzcum;       // current cumulated fabric
 	double mzpeak;      // current peak fabric
-	double mpzp;    
+	double mpzp; 
+	bool   pzpFlag;
 	double mMb;    
 	double mMd;
 	double mMcur;       // current stress ratio
@@ -182,12 +184,9 @@ class PM4Sand : public NDMaterial
 	double	mTolF;			// max drift from yield surface
 	double	mTolR;			// tolerance for Newton iterations
 	char unsigned mIter;	// number of iterations
-	//char unsigned mJacoType;// 0: Finite Difference Jacobian, 1: Analytical Jacobian
-	char unsigned mScheme;	// 0: Forward Euler Explicit, 1: Backward Euler Implicit, 2: Backward Euler Implicit with considerations for stability, 
-														// 3: FE Explicit with constrained strain increment
+	char unsigned mScheme;	// 1: Forward Euler Explicit, 2: Modified Euler Explicit
 	char unsigned mTangType;// 0: Elastic Tangent, 1: Contiuum ElastoPlastic Tangent, 2: Consistent ElastoPlastic Tangent
 	char unsigned mOrgTangType;
-	double	mEPS;			// machine epsilon (for FD jacobian)
 	double	m_Pmin;			// Minimum allowable mean effective stress
 	double  m_Pmin2;        // Minimum p for Cpzp2 and Cpmin
 	bool	m_isSmallp;		// flag for small p
@@ -308,7 +307,7 @@ class PM4Sand : public NDMaterial
 	Matrix Trans_SingleDot4T_2(const Matrix& m1, const Vector& v1);
 	double Det(const Vector& aV);
 	Vector Inv(const Vector& aV);
-
+	Vector ToContraviant(const Vector& v1);
 };
 
 // Other auxillary functions
