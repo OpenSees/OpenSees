@@ -25,10 +25,6 @@
 #ifndef MumpsSOE_h
 #define MumpsSOE_h
 
-#ifdef _MUMPS
-#include <mpi.h>
-#endif
-
 // Written: fmk 
 // Created: 02/06
 //

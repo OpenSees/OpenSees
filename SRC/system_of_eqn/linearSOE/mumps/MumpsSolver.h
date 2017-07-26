@@ -26,11 +26,6 @@
 #ifndef MumpsSolver_h
 #define MumpsSolver_h
 
-
-#ifdef _MUMPS
-#include <mpi.h>
-#endif
-
 // Written: fmk 
 // Created: 02/06
 //
@@ -74,6 +69,10 @@ class MumpsSolver : public LinearSOESolver
  protected:
 
  private:
+
+  int initializeMumps(void);
+  int solveAfterInitialization(void);
+
   DMUMPS_STRUC_C id;
   MumpsSOE *theMumpsSOE;
   bool init;

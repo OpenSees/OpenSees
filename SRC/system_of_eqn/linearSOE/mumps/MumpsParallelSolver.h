@@ -75,6 +75,10 @@ class MumpsParallelSolver : public LinearSOESolver
  protected:
 
  private:
+
+  int initializeMumps(void);
+  int solveAfterInitialization(void);
+
   bool init;
   MumpsParallelSOE *theMumpsSOE;
 
