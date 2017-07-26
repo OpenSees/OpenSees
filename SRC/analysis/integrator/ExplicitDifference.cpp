@@ -1,4 +1,4 @@
-#include <Explicitdifference.h>
+#include <ExplicitDifference.h>
 #include <FE_Element.h>
 #include <FE_EleIter.h>
 #include <LinearSOE.h>
