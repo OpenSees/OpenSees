@@ -1262,15 +1262,15 @@ DispBeamColumn3dWithSensitivity::setResponse(const char **argv, int argc, OPS_St
     // local force -
     }  else if (strcmp(argv[0],"localForce") == 0 || strcmp(argv[0],"localForces") == 0) {
 
-      output.tag("ResponseType","N_ 1");
+      output.tag("ResponseType","N_1");
       output.tag("ResponseType","Vy_1");
       output.tag("ResponseType","Vz_1");
       output.tag("ResponseType","T_1");
       output.tag("ResponseType","My_1");
-      output.tag("ResponseType","Tz_1");
+      output.tag("ResponseType","Mz_1");
       output.tag("ResponseType","N_2");
-      output.tag("ResponseType","Py_2");
-      output.tag("ResponseType","Pz_2");
+      output.tag("ResponseType","Vy_2");
+      output.tag("ResponseType","Vz_2");
       output.tag("ResponseType","T_2");
       output.tag("ResponseType","My_2");
       output.tag("ResponseType","Mz_2");
