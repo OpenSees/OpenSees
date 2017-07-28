@@ -78,6 +78,7 @@ class MumpsSolver : public LinearSOESolver
   bool init;
   int icntl14;
   int icntl7;
+  bool needsSetSize;
 };
 
 #endif

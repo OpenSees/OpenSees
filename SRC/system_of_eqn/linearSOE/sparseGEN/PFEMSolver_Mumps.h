@@ -38,8 +38,6 @@
 //
 // What: "@(#) PFEMSolver_Mumps.h, revA"
 
-#ifdef _PARALLEL_INTERPRETERS
-
 #include <PFEMSolver.h>
 #include <dmumps_c.h>
 
@@ -77,9 +75,4 @@ private:
     int relax, err, host, sym;
 };
 
-#else
-
-class PFEMSolver_Mumps{};
-
-#endif
 #endif

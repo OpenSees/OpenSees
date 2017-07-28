@@ -38,8 +38,6 @@
 //
 // What: "@(#) PFEMCompressibleSolver_Mumps.h, revA"
 
-#ifdef _PARALLEL_INTERPRETERS
-
 #include <PFEMCompressibleSolver.h>
 #include <Vector.h>
 extern "C" {
@@ -83,8 +81,6 @@ private:
 
 #else
 class PFEMCompressibleSolver_Mumps{};
-
-#endif
 
 #endif
 

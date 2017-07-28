@@ -56,6 +56,8 @@ MumpsSolver::MumpsSolver(int ICNTL7, int ICNTL14)
 
   id.ICNTL(14) = ICNTL14;
   id.ICNTL(7)=ICNTL7;;
+
+  needsSetSize = false;
 }
 
 MumpsSolver::~MumpsSolver()
@@ -69,49 +71,58 @@ MumpsSolver::~MumpsSolver()
 int 
 MumpsSolver::initializeMumps(void)
 {
-	if (init == false) {
-		id.sym = theMumpsSOE->matType;
+	if (needsSetSize == false) {
+		return 0;
+	}
+	else {
+
+		if (init == false) {
+			id.sym = theMumpsSOE->matType;
+			dmumps_c(&id);
+			init = true;
+		}
+
+		int nnz = theMumpsSOE->nnz;
+		int *rowA = theMumpsSOE->rowA;
+		int *colA = theMumpsSOE->colA;
+
+		// increment row and col A values by 1 for mumps fortran indexing
+		for (int i = 0; i < nnz; i++) {
+			rowA[i]++;
+			colA[i]++;
+		}
+
+		// analyze the matrix
+		id.n = theMumpsSOE->size;
+		id.nz = theMumpsSOE->nnz;
+		id.irn = theMumpsSOE->rowA;
+		id.jcn = theMumpsSOE->colA;
+		id.a = theMumpsSOE->A;
+		id.rhs = theMumpsSOE->X;
+
+		// No outputs 
+		id.ICNTL(1) = -1; id.ICNTL(2) = -1; id.ICNTL(3) = -1; id.ICNTL(4) = 0;
+		// Call the MUMPS package to factor & solve the system
+		id.job = 1;
 		dmumps_c(&id);
-		init = true;
-	}
 
-	int nnz = theMumpsSOE->nnz;
-	int *rowA = theMumpsSOE->rowA;
-	int *colA = theMumpsSOE->colA;
+		int info = id.infog[0];
+		if (info != 0) {
+			opserr << "WARNING MumpsSolver::setSize(void)- ";
+			opserr << " Error " << info << " returned in substitution dmumps()\n";
+			return info;
+		}
 
-	// increment row and col A values by 1 for mumps fortran indexing
-	for (int i = 0; i<nnz; i++) {
-		rowA[i]++;
-		colA[i]++;
-	}
+		// decrement row and col A values by 1 to return to C++ indexing
+		for (int i = 0; i < nnz; i++) {
+			rowA[i]--;
+			colA[i]--;
+		}
 
-	// analyze the matrix
-	id.n = theMumpsSOE->size;
-	id.nz = theMumpsSOE->nnz;
-	id.irn = theMumpsSOE->rowA;
-	id.jcn = theMumpsSOE->colA;
-	id.a = theMumpsSOE->A;
-	id.rhs = theMumpsSOE->X;
+		needsSetSize = false;
 
-	// No outputs 
-	id.ICNTL(1) = -1; id.ICNTL(2) = -1; id.ICNTL(3) = -1; id.ICNTL(4) = 0;
-	// Call the MUMPS package to factor & solve the system
-	id.job = 1;
-	dmumps_c(&id);
-
-	int info = id.infog[0];
-	if (info != 0) {
-		opserr << "WARNING MumpsSolver::setSize(void)- ";
-		opserr << " Error " << info << " returned in substitution dmumps()\n";
 		return info;
 	}
-
-	// decrement row and col A values by 1 to return to C++ indexing
-	for (int i = 0; i<nnz; i++) {
-		rowA[i]--;
-		colA[i]--;
-	}
-	return info;
 }
 
 int 
@@ -224,7 +235,8 @@ MumpsSOE::setMumpsSolver(MumpsSolver &newSolver)
 int
 MumpsSolver::setSize()
 {
-  return 0;
+	needsSetSize = true;
+	return 0;
 }
 
 int

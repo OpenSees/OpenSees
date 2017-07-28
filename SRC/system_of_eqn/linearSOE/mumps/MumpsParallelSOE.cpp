@@ -175,7 +175,6 @@ MumpsParallelSOE::setSize(Graph &theGraph)
     Asize = nnz;
   }
 
-  
   if (size > Bsize) { // we have to get space for the vectors
 
     if (B != 0) delete [] B;
@@ -405,6 +404,7 @@ MumpsParallelSOE::addB(const Vector &v, const ID &id, double fact)
 	myB[pos] += v(i) * fact;
     }
   }
+   
   return 0;
 }
 
@@ -437,6 +437,7 @@ MumpsParallelSOE::setB(const Vector &v, double fact)
       myB[i] = v(i) * fact;
     }
   }
+
    //opserr << "MumpsParallelSOE::setB() - end()\n";
   return 0;
 }

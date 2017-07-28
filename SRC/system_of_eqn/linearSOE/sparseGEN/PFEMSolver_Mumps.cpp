@@ -28,7 +28,6 @@
 // Written: Minjie 
 // Created: Sep 17 2012
 //
-#ifdef _PARALLEL_INTERPRETERS
 
 #include <PFEMSolver_Mumps.h>
 #include <PFEMLinSOE.h>
@@ -589,5 +588,3 @@ PFEMSolver_Mumps::ICNTL(DMUMPS_STRUC_C& id, int I, int val)
 }
 
 
-
-#endif

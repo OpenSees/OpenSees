@@ -28,8 +28,6 @@
 // Written: Minjie 
 // Created: Sep 17 2012
 //
-#ifdef _PARALLEL_INTERPRETERS
-
 #include <PFEMCompressibleSolver_Mumps.h>
 #include <PFEMCompressibleLinSOE.h>
 #include <iostream>
@@ -290,5 +288,3 @@ PFEMCompressibleSolver_Mumps::ICNTL(DMUMPS_STRUC_C& id, int I, int val)
 {
     id.icntl[I-1] = val;
 }
-
-#endif

@@ -88,6 +88,8 @@ class MumpsParallelSolver : public LinearSOESolver
   int icntl7;
 
   DMUMPS_STRUC_C id;
+
+  bool needsSetSize;
 };
 
 #endif
