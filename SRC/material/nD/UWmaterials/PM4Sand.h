@@ -284,7 +284,7 @@ class PM4Sand : public NDMaterial
 	void	GetStateDependent(const Vector &stress, const Vector &alpha, const Vector &alpha_in
 		, const Vector &fabric, const Vector &fabric_in, const double &G, const double &zcum, const double &zpeak
 		, const double &pzp, const double &Mcur, double &ksi, const double &dr, Vector &n, double &D, Vector &R, double &K_p
-		, Vector &alphaD, double &Cka);
+		, Vector &alphaD, double &Cka, double &h, Vector &b);
 	Matrix	GetElastoPlasticTangent(const Vector& NextStress, const Matrix& aCe, const Vector& R, const Vector& n, const double K_p);
 	Vector	GetNormalToYield(const Vector &stress, const Vector &alpha);
 	int	Check(const Vector& TrialStress, const Vector& stress, const Vector& CurAlpha, const Vector& NextAlpha);
