@@ -20,7 +20,7 @@
 
 // Written: Long Chen, Pedro Arduino
 //          Nov 2016, University of Washington
-                                                                      
+
 // Description: This file contains the implementation for the PM4Sand class.
 // PM4Sand(Version 3): A Sand Plasticity Model For Earthquake Engineering Applications
 // by R.W.Boulanger and K.Ziotopoulou
@@ -50,24 +50,24 @@
 
 class PM4Sand : public NDMaterial
 {
-  public:
+public:
 	// full constructor
-	 PM4Sand(int tag, int classTag, double Dr, double G0, double hp0, double mDen, double P_atm = 101.3, double h0 = -1, double emax = 0.8,
-		  double emin = 0.5, double nb = 0.5, double nd = 0.1, double Ado = -1, double z_max = -1, double cz = 250,
-		  double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Ckaf = -1, double Q = 10,
-		  double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, int FirstCall = 0, int integrationScheme = 1, int tangentType = 0,
-		  double TolF = 1.0e-7, double TolR = 1.0e-7);
+	PM4Sand(int tag, int classTag, double Dr, double G0, double hp0, double mDen, double P_atm = 101.3, double h0 = -1, double emax = 0.8,
+		double emin = 0.5, double nb = 0.5, double nd = 0.1, double Ado = -1, double z_max = -1, double cz = 250,
+		double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Ckaf = -1, double Q = 10,
+		double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, int FirstCall = 0, int integrationScheme = 1, int tangentType = 0,
+		double TolF = 1.0e-7, double TolR = 1.0e-7);
 	// full constructor
 	PM4Sand(int tag, double Dr, double G0, double hp0, double mDen, double P_atm = 101.3, double h0 = -1, double emax = 0.8,
-					double emin = 0.5, double nb = 0.5, double nd = 0.1, double Ado = -1, double z_max = -1, double cz = 250,
-					double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Ckaf = -1, double Q = 10,
-					double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, int FirstCall = 0, int integrationScheme = 1, int tangentType = 0,
-					double TolF = 1.0e-7, double TolR = 1.0e-7);
-    // null constructor
-    PM4Sand();
-    // destructor
-    ~PM4Sand();
-	
+		double emin = 0.5, double nb = 0.5, double nd = 0.1, double Ado = -1, double z_max = -1, double cz = 250,
+		double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Ckaf = -1, double Q = 10,
+		double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, int FirstCall = 0, int integrationScheme = 1, int tangentType = 0,
+		double TolF = 1.0e-7, double TolR = 1.0e-7);
+	// null constructor
+	PM4Sand();
+	// destructor
+	~PM4Sand();
+
 	// send mass density to element in dynamic analysis
 	double getRho(void) { return massDen; };
 	double getVoidRatio(void) { return mVoidRatio; };
@@ -77,18 +77,18 @@ class PM4Sand : public NDMaterial
 	int setTrialStrain(const Vector &v, const Vector &r);
 	int initialize(const Vector& initStress);
 	int initialize();
-    NDMaterial *getCopy(const char *type);
+	NDMaterial *getCopy(const char *type);
 
-    int commitState(void);
-    int revertToLastCommit(void);
-    int revertToStart(void);
+	int commitState(void);
+	int revertToLastCommit(void);
+	int revertToStart(void);
 
-    NDMaterial *getCopy(void);
-    const char *getType(void) const;
-    int        getOrder(void) const;
+	NDMaterial *getCopy(void);
+	const char *getType(void) const;
+	int        getOrder(void) const;
 
 	// Recorder functions
-	virtual const Vector& getStressToRecord() {return mSigma;};
+	virtual const Vector& getStressToRecord() { return mSigma; };
 	const double getDGamma();
 	const Vector getState();
 	const Vector getAlpha();
@@ -102,19 +102,19 @@ class PM4Sand : public NDMaterial
 	const Vector &getStrain();
 	const Vector &getElasticStrain();
 
-    Response *setResponse (const char **argv, int argc, OPS_Stream &output);
-    int getResponse (int responseID, Information &matInformation);
+	Response *setResponse(const char **argv, int argc, OPS_Stream &output);
+	int getResponse(int responseID, Information &matInformation);
 
-    int sendSelf(int commitTag, Channel &theChannel);  
-    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker); 
+	int sendSelf(int commitTag, Channel &theChannel);
+	int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
-    void Print(OPS_Stream &s, int flag =0);
+	void Print(OPS_Stream &s, int flag = 0);
 
 	int setParameter(const char **argv, int argc, Parameter &param);
 	int updateParameter(int responseID, Information &info);
 
 
-  protected:
+protected:
 
 	// Material constants
 	double m_Dr;
@@ -142,7 +142,7 @@ class PM4Sand : public NDMaterial
 	double m_chg;
 	double m_z_max;
 	int m_FirstCall;
-	
+
 	// internal variables
 	Vector mEpsilon;    // strain tensor
 	Vector mEpsilon_n;  // strain tensor (last committed)
@@ -158,8 +158,9 @@ class PM4Sand : public NDMaterial
 	Vector mAlpha_in;	// back-stress ratio at loading reversal
 	Vector mAlpha_in_n;	// back-stress ratio at loading reversal (last committed)
 	Vector mAlpha_in_p; // previous back-stress ratio at loading reversal
-	Vector mAlpha_in_max; // Maximum value of initial back pressure ratio
-	Vector mAlpha_in_min; // Minimum value of initial back pressure ratio
+	Vector mAlpha_in_true;  // true initial back stress ratio tensor
+	Vector mAlpha_in_max; // Maximum value of initial back stress ratio
+	Vector mAlpha_in_min; // Minimum value of initial back stress ratio
 	double mDGamma;		// plastic multiplier
 	double mDGamma_n;	// plastic multiplier (last committed)
 	Vector mFabric;		// fabric tensor
@@ -174,9 +175,9 @@ class PM4Sand : public NDMaterial
 	double mKp;         // plastic mudulus
 	double mzcum;       // current cumulated fabric
 	double mzpeak;      // current peak fabric
-	double mpzp; 
+	double mpzp;
 	bool   pzpFlag;
-	double mMb;    
+	double mMb;
 	double mMd;
 	double mMcur;       // current stress ratio
 	double mksi;        // current state parameter
@@ -202,7 +203,7 @@ class PM4Sand : public NDMaterial
 	static Matrix mIIdevCo;		// 4th order deviatoric tensor, covariant
 	// initialize these Vector and Matrices:
 	static class initTensors {
-	public :
+	public:
 		initTensors() {
 			// 2nd order identity tensor
 			mI1.Zero();
@@ -210,25 +211,25 @@ class PM4Sand : public NDMaterial
 			mI1(1) = 1.0;
 			// 4th order mixed variant identity tensor
 			mIImix.Zero();
-			for (int i = 0; i<3; i++) {
-				mIImix(i,i) = 1.0;
+			for (int i = 0; i < 3; i++) {
+				mIImix(i, i) = 1.0;
 			}
 			// 4th order covariant identity tensor
 			mIIco = mIImix;
-			mIIco(2,2) = 2.0;
+			mIIco(2, 2) = 2.0;
 			// 4th order contravariant identity tensor
 			mIIcon = mIImix;
-			mIIcon(2,2) = 0.5;
+			mIIcon(2, 2) = 0.5;
 			// 4th order volumetric tensor, IIvol = I1 tensor I1
 			mIIvol.Zero();
-			for (int i = 0; i<2; i++) {
-				mIIvol(i,0) = 1.0;
-				mIIvol(i,1) = 1.0;
+			for (int i = 0; i < 2; i++) {
+				mIIvol(i, 0) = 1.0;
+				mIIvol(i, 1) = 1.0;
 			}
 			// 4th order contravariant deviatoric tensor
 			mIIdevCon = mIIcon - 0.5*mIIvol;
 			// 4th order covariant deviatoric tensor
-			mIIdevCo  = mIIco  - 0.5*mIIvol;
+			mIIdevCo = mIIco - 0.5*mIIvol;
 			// 4th order mixed variant deviatoric tensor
 			mIIdevMix = mIImix - 0.5*mIIvol;
 		}
@@ -248,21 +249,29 @@ class PM4Sand : public NDMaterial
 	//void	initialize();
 	void	integrate();
 	void	elastic_integrator(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-					const Vector& NextStrain, Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha,
-					double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
+		const Vector& NextStrain, Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha,
+		double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
 	void	explicit_integrator(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-					const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
-					Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
-					double& NextDGamma, double& NextVoidRatio,  double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) ;
+		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
+		double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
 	void	ForwardEuler(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-					const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
-					Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric, 
-					double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) ;
+		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
+		double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
 	void	ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-					const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
-					Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
-					double& NextDGamma, double& NextVoidRatio,  double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) ;
-	
+		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
+		double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
+	void	RungeKutta4(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
+		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
+		double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
+	void	MaxStrainInc(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
+		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
+		double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
+
 	double	IntersectionFactor(const Vector& CurStress, const Vector& CurStrain, const Vector& NextStrain, const Vector& CurAlpha,
 		double a0, double a1);
 	double	IntersectionFactor_Unloading(const Vector& CurStress, const Vector& CurStrain, const Vector& NextStrain, const Vector& CurAlpha);
@@ -302,11 +311,6 @@ class PM4Sand : public NDMaterial
 	Vector DoubleDot4_2(const Matrix& m1, const Vector& v1);
 	Vector DoubleDot2_4(const Vector& v1, const Matrix& m1);
 	Matrix DoubleDot4_4(const Matrix& m1, const Matrix& m2);
-	Matrix SingleDot4_2(const Matrix& m1, const Vector& v1);
-	Matrix SingleDot2_4(const Vector& v1, const Matrix& m1);
-	Matrix Trans_SingleDot4T_2(const Matrix& m1, const Vector& v1);
-	double Det(const Vector& aV);
-	Vector Inv(const Vector& aV);
 	Vector ToContraviant(const Vector& v1);
 };
 
