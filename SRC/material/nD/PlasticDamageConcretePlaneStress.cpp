@@ -186,8 +186,8 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
 
    //  tolerance for function sign evaluation
    //  tolerance for rotation angle
-   double tol = 1.0e-14;
-   double tolFi = 1.0e-14;
+   //   double tol = 1.0e-14;
+   //   double tolFi = 1.0e-14;
    
    //       %% state determination
    //  retrieve history variables from last convergence
@@ -203,7 +203,7 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
    eps_p[1] = Committed_eps_p[1];
    eps_p[2] = Committed_eps_p[2];
    
-   double b_MatState[3];
+   //   double b_MatState[3];
    
    for (int i0 = 0; i0 < 3; i0++) {
      Deps[i0] = eps[i0] - Committed_eps[i0];
@@ -298,7 +298,7 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
    //  check if plastic strain coefficient is positive
    // THANH
    double nrm = 0.0;
-   int L_tr_size_idx_0 = 1;
+   //   int L_tr_size_idx_0 = 1;
    double L_tr[3];
    double LDeps = 0.0;
    double gp = 0.0;
@@ -310,11 +310,11 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
    double ddp_drp = 0;
    double drn_dtaun = 0;
    double ddn_drn = 0;
-   double d_sige_tr[9];
+   //   double d_sige_tr[9];
    double dlam_dLDeps;
    double dlam_dnrm;
-   double b_dnrm_ds;
-   double dnrm_ds[3];
+   //   double b_dnrm_ds;
+   //   double dnrm_ds[3];
 
    double Deps_p[3];
    for (int i=0; i<3; i++) 
@@ -1043,10 +1043,10 @@ PlasticDamageConcretePlaneStress::commitState (void)
   CeCommitted = Ce;
 
   for (int i=0; i<4; i++) {
-    Committed_sig[i] = sig[i];
     Committed_eps_p[i] = eps_p[i];
   }
   for (int i=0; i<3; i++) {
+    Committed_sig[i] = sig[i];
     Committed_eps[i] = eps[i];
   }
 
@@ -1067,8 +1067,11 @@ PlasticDamageConcretePlaneStress::revertToLastCommit (void)
   Ce = CeCommitted; 
 
   for (int i=0; i<4; i++) {
-    sig[i] = Committed_sig[i];
     eps_p[i] = Committed_eps_p[i];
+  }
+  for (int i=0; i<3; i++) {
+    sig[i] = Committed_sig[i];
+    eps[i] = Committed_eps[i];
   }
   rn = Committed_rn;
   rp = Committed_rp;
