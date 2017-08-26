@@ -180,7 +180,6 @@ protected:
 	double mMb;
 	double mMd;
 	double mMcur;       // current stress ratio
-	double mksi;        // current state parameter
 
 	double	mTolF;			// max drift from yield surface
 	double	mTolR;			// tolerance for Newton iterations
@@ -275,10 +274,7 @@ protected:
 	double	IntersectionFactor(const Vector& CurStress, const Vector& CurStrain, const Vector& NextStrain, const Vector& CurAlpha,
 		double a0, double a1);
 	double	IntersectionFactor_Unloading(const Vector& CurStress, const Vector& CurStrain, const Vector& NextStrain, const Vector& CurAlpha);
-	/*void	Stress_Correction(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
-		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
-		double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);*/
+	void Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& alpha_in, const Vector& CurFabric, double& NextVoidRatio);
 	void Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& dAlpha, const double m, const Vector& R, const Vector& n, const Vector& r);
 	// Material Specific Methods
 	double	Macauley(double x);
@@ -292,7 +288,7 @@ protected:
 	Matrix	GetCompliance(const double& K, const double& G);
 	void	GetStateDependent(const Vector &stress, const Vector &alpha, const Vector &alpha_in
 		, const Vector &fabric, const Vector &fabric_in, const double &G, const double &zcum, const double &zpeak
-		, const double &pzp, const double &Mcur, double &ksi, const double &dr, Vector &n, double &D, Vector &R, double &K_p
+		, const double &pzp, const double &Mcur, const double &dr, Vector &n, double &D, Vector &R, double &K_p
 		, Vector &alphaD, double &Cka, double &h, Vector &b);
 	Matrix	GetElastoPlasticTangent(const Vector& NextStress, const Matrix& aCe, const Vector& R, const Vector& n, const double K_p);
 	Vector	GetNormalToYield(const Vector &stress, const Vector &alpha);
@@ -301,7 +297,6 @@ protected:
 	// Symmetric Tensor Operations
 	double GetTrace(const Vector& v);
 	Vector GetDevPart(const Vector& aV);
-	Vector SingleDot(const Vector& v1, const Vector& v2);
 	double DoubleDot2_2_Contr(const Vector& v1, const Vector& v2);
 	double DoubleDot2_2_Cov(const Vector& v1, const Vector& v2);
 	double DoubleDot2_2_Mixed(const Vector& v1, const Vector& v2);
@@ -312,6 +307,7 @@ protected:
 	Vector DoubleDot2_4(const Vector& v1, const Matrix& m1);
 	Matrix DoubleDot4_4(const Matrix& m1, const Matrix& m2);
 	Vector ToContraviant(const Vector& v1);
+	Vector ToCovariant(const Vector& v1);
 };
 
 // Other auxillary functions
