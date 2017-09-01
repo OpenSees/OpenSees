@@ -395,7 +395,17 @@ PlaneStressLayeredMaterial::setResponse (const char **argv, int argc,
       if (matNum >= 0 && matNum < nLayers)
 	theResponse =  theFibers[matNum]->setResponse(&argv[2], argc-2, output);
     }
+
+  } else if (strcmp(argv[0],"materialStresses") == 0) {
+    Vector data(nLayers*3);
+    theResponse =  new MaterialResponse(this, 3, data);
+  
+
+  } else if (strcmp(argv[0],"materialStrains") == 0) {
+    Vector data(nLayers*3);
+    theResponse =  new MaterialResponse(this, 4, data);
   }
+
  
   output.endTag(); // NdMaterialOutput
 
@@ -405,13 +415,33 @@ PlaneStressLayeredMaterial::setResponse (const char **argv, int argc,
 int 
 PlaneStressLayeredMaterial::getResponse (int responseID, Information &matInfo)
 {
+  Vector data(nLayers*3);
+
   switch (responseID) {
   case 1:
     return matInfo.setVector(this->getStress());
     
   case 2:
     return matInfo.setVector(this->getStrain());
-    
+
+  case 3:
+    for (int i=0; i<nLayers; i++) {
+      const Vector &stress = theFibers[i]->getStress();
+      data(i*3) = stress(0);
+      data(i*3+1) = stress(1);
+      data(i*3+2) = stress(2);
+    }
+    return matInfo.setVector(data);      
+
+  case 4:
+    for (int i=0; i<nLayers; i++) {
+      const Vector &strain = theFibers[i]->getStrain();
+      data(i*3) = strain(0);
+      data(i*3+1) = strain(1);
+      data(i*3+2) = strain(2);
+    }
+    return matInfo.setVector(data);      
+
   default:
     return -1;
   }
