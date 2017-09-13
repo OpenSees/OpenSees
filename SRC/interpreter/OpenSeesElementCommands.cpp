@@ -580,7 +580,7 @@ int OPS_doBlock2D()
 	
     } else if (strcmp(type, "bbarQuad") == 0 || strcmp(type,"mixedQuad") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 1) {
-	    opserr<<"WARNING: want - secTag\n";
+	    opserr<<"WARNING: want - matTag\n";
 	    return -1;
 	}
 	int numdata = 1;
@@ -814,7 +814,7 @@ int OPS_doBlock2D()
 		int nd2 = nodeTags(1) + idata[2];
 		int nd3 = nodeTags(2) + idata[2];
 		int nd4 = nodeTags(3) + idata[2];
-		theEle = new EnhancedQuad(eleID,nd1,nd2,nd3,nd4,*mat,type);
+		theEle = new EnhancedQuad(eleID,nd1,nd2,nd3,nd4,*mat,subtype);
 	
 	    } else if (strcmp(type, "SSPquad") == 0 || strcmp(type, "SSPQuad") == 0) {
 		

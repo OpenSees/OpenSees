@@ -126,35 +126,11 @@ namespace {
 	void* theSec = 0;
 	int ndm = OPS_GetNDM();
 	if(ndm == 2) {
-	    
 	    theSec = OPS_FiberSection2d();
 	    theActiveFiberSection2d = (FiberSection2d*)theSec;
-	    
 	} else if(ndm == 3) {
-	    if (OPS_GetNumRemainingInputArgs() == 1) {
-		
-		theSec = OPS_FiberSection3d();
-		theActiveFiberSection3d = (FiberSection3d*)theSec;
-		
-	    } else if (OPS_GetNumRemainingInputArgs() >= 3) {
-		
-		int tag;
-		int numdata = 1;
-		if (OPS_GetIntInput(&numdata, &tag) < 0) return 0;
-		const char* opt = OPS_GetString();
-		if (strcmp(opt,"-GJ") == 0) {
-		    double GJ;
-		    if (OPS_GetDoubleInput(&numdata, &GJ) < 0) return 0;
-		    ElasticMaterial theGJ(0, GJ);
-		    FiberSection3d theFS(tag,30);
-		    SectionAggregator* sa = new SectionAggregator(tag, theFS, theGJ, SECTION_RESPONSE_T);
-		    theActiveFiberSection3d = (FiberSection3d*)sa->getSection();
-		    theSec = sa;
-		} else {
-		    return 0;
-		}
-	    }
-	    
+        theSec = OPS_FiberSection3d();
+        theActiveFiberSection3d = (FiberSection3d*)theSec;
 	}
 
 	return theSec;
