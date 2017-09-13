@@ -49,7 +49,8 @@ OBJS       = UniaxialMaterial.o \
 	ENTMaterial.o \
 	FedeasMaterial.o \
 	DrainMaterial.o \
-	BoucWenMaterial.o \
+	BoucWenOriginal.o \
+    BoucWenMaterial.o \
 	SecantConcrete.o \
 	HardeningMaterial2.o \
 	Pinching4Material.o \

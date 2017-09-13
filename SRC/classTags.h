@@ -207,6 +207,7 @@
 #define MAT_TAG_SteelECThermal			93   //L.Jiang [SIF]
 #define MAT_TAG_StainlessECThermal              94   //L.Jiang [SIF]
 #define MAT_TAG_ConcreteECThermal		95   //L.Jiang [SIF]
+#define MAT_TAG_BoucWenOriginal                 96
 
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206

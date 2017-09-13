@@ -1121,6 +1121,9 @@
     <ClCompile Include="..\..\..\SRC\material\section\MembranePlateFiberSectionThermal.cpp">
       <Filter>section</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2098,6 +2101,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\section\MembranePlateFiberSectionThermal.h">
       <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.h">
+      <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

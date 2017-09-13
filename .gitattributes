@@ -3498,6 +3498,8 @@ SRC/material/uniaxial/Bond_SP01.cpp -text
 SRC/material/uniaxial/Bond_SP01.h -text
 SRC/material/uniaxial/BoucWenMaterial.cpp -text
 SRC/material/uniaxial/BoucWenMaterial.h -text
+SRC/material/uniaxial/BoucWenOriginal.cpp -text
+SRC/material/uniaxial/BoucWenOriginal.h -text
 SRC/material/uniaxial/BraceMaterial.cpp -text
 SRC/material/uniaxial/BraceMaterial.h -text
 SRC/material/uniaxial/CFSSSWP.cpp -text
