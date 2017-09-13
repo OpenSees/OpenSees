@@ -185,11 +185,11 @@ void* OPS_ReinforcingSteel()
     
 }
 
-ReinforcingSteel::ReinforcingSteel(int tag, double fy, double fsu, double Es, double Esh_, double esh_, double esu, 
+ReinforcingSteel::ReinforcingSteel(int tag, double fy_, double fsu_, double Es_, double Esh_, double esh_, double esu_, 
                                    int buckModel, double slenderness, double alpha, double r, double gama, 
                                    double Fatigue1, double Fatigue2, double Degrade, double rc1, double rc2, double rc3, 
                                    double A1, double HardLim)
-  :UniaxialMaterial(tag,MAT_TAG_ReinforcingSteel), esh(esh_), Esh(Esh_), a1(A1), hardLim(HardLim),
+  :UniaxialMaterial(tag,MAT_TAG_ReinforcingSteel), fy(fy_), fsu(fsu_), Es(Es_), Esh(Esh_), esh(esh_), esu(esu_), a1(A1), hardLim(HardLim),
   BuckleModel(buckModel),LDratio(slenderness),beta(alpha),fsu_fraction(gama),Fat1(Fatigue1),RC1(rc1),RC2(rc2),RC3(rc3)
 { 
   if((r>=0.0) & (r<=1.0)) 
@@ -866,27 +866,30 @@ ReinforcingSteel::recvSelf(int cTag, Channel &theChannel,
 void 
 ReinforcingSteel::Print(OPS_Stream &s, int flag)
 {
-	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-		s << "\t\t\t{";
-		s << "\"name\": \"" << this->getTag() << "\", ";
-		s << "\"type\": \"ReinforcingSteel\", ";
-		s << "\"E\": " << "" << ", ";
-		s << "\"Eh\": " << Esh << ", ";
-		s << "\"fy\": " << "" << ", ";
-		s << "\"fu\": " << "" << "}";
-	}
-	
-	if(flag == 3) {
-		s << CStrain << "  " << CStress << "  " << CTangent << endln;
-	
-	} else {
-		s << "ReinforcingSteel, tag: " << this->getTag() << endln;
-		s << "  N2p: " << CFatDamage << endln;
-		//s << "  sigmaY: " << sigmaY << endln;
-		//s << "  Hiso: " << Hiso << endln;
-		//s << "  Hkin: " << Hkin << endln;
-		//s << "  eta: " << eta << endln;
-	}
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "ReinforcingSteel, tag: " << this->getTag() << endln;
+        s << "  N2p: " << CFatDamage << endln;
+        //s << "  sigmaY: " << sigmaY << endln;
+        //s << "  Hiso: " << Hiso << endln;
+        //s << "  Hkin: " << Hkin << endln;
+        //s << "  eta: " << eta << endln;
+    }
+    
+    if (flag == 3) {
+        s << CStrain << "  " << CStress << "  " << CTangent << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ReinforcingSteel\", ";
+        s << "\"E\": " << Es << ", ";
+        s << "\"Eh\": " << Esh << ", ";
+        s << "\"fy\": " << fy << ", ";
+        s << "\"fu\": " << fsu << ", ";
+        s << "\"epsh\": " << esh << ", ";
+        s << "\"epsu\": " << esu << "}";
+    }
 }
 
 int

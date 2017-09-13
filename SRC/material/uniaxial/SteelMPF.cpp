@@ -1220,13 +1220,13 @@ int SteelMPF::recvSelf (int commitTag, Channel& theChannel, FEM_ObjectBroker& th
 		a6 = data(12);
 
 		// CONVERGED History variables
-		incold = data(13);
+		incold = int(data(13));
 
 		Rptwoprevold = data(14);
 		Rntwoprevold = data(15);
 
-		outpold = data(16);
-		outnold = data(17);
+		outpold = int(data(16));
+		outnold = int(data(17));
 
 		erpold = data(18);
 		sigrpold = data(19);
@@ -1256,7 +1256,7 @@ int SteelMPF::recvSelf (int commitTag, Channel& theChannel, FEM_ObjectBroker& th
 		Rpold = data(36);
 		Rnold = data(37);
 
-		nloopold = data(38);
+		nloopold = int(data(38));
 
 		// CONVERGED State variables
 		defold = data(39);
@@ -1315,18 +1315,37 @@ int SteelMPF::recvSelf (int commitTag, Channel& theChannel, FEM_ObjectBroker& th
 
 void SteelMPF::Print (OPS_Stream& s, int flag)
 {
-	s << "SteelMPF tag: " << this->getTag() << "\n";
-	s << "fyp = " << sigyieldp << "\n";
-	s << "fyn = " << sigyieldn << "\n";
-	s << " E0 = " << E0 << "\n";
-	s << " bp = " << bp << "\n";
-	s << " bn = " << bn << "\n";
-	s << "  R = " << R0 << "\n";
-	s << "cR1 = " << aa1 << "\n";
-	s << "cR2 = " << a2 << "\n";
-	s << " a1 = " << a3 << "\n";
-	s << " a2 = " << a4 << "\n";
-	s << " a3 = " << a5 << "\n";
-	s << " a4 = " << a6 << "\n\n";
-
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "SteelMPF tag: " << this->getTag() << endln;
+        s << "fyp = " << sigyieldp << "\n";
+        s << "fyn = " << sigyieldn << "\n";
+        s << " E0 = " << E0 << "\n";
+        s << " bp = " << bp << "\n";
+        s << " bn = " << bn << "\n";
+        s << "  R = " << R0 << "\n";
+        s << "cR1 = " << aa1 << "\n";
+        s << "cR2 = " << a2 << "\n";
+        s << " a1 = " << a3 << "\n";
+        s << " a2 = " << a4 << "\n";
+        s << " a3 = " << a5 << "\n";
+        s << " a4 = " << a6 << "\n\n";
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"SteelMPF\", ";
+        s << "\"E\": " << E0 << ", ";
+        s << "\"fyp\": " << sigyieldp << ", ";
+        s << "\"fyn\": " << sigyieldn << ", ";
+        s << "\"bp\": " << bp << ", ";
+        s << "\"bn\": " << bn << ", ";
+        s << "\"R0\": " << R0 << ", ";
+        s << "\"cR1\": " << aa1 << ", ";
+        s << "\"cR2\": " << a2 << ", ";
+        s << "\"a1\": " << a3 << ", ";
+        s << "\"a2\": " << a4 << ", ";
+        s << "\"a3\": " << a5 << ", ";
+        s << "\"a4\": " << a6 << "}";
+    }
 }

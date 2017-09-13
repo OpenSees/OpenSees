@@ -346,8 +346,19 @@ MinMaxMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 MinMaxMaterial::Print(OPS_Stream &s, int flag)
 {
-  s << "MinMaxMaterial tag: " << this->getTag() << endln;
-  s << "\tMaterial: " << theMaterial->getTag() << endln;
-  s << "\tMin strain: " << minStrain << endln;
-  s << "\tMax strain: " << maxStrain << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "MinMaxMaterial, tag: " << this->getTag() << endln;
+        s << "  material: " << theMaterial->getTag() << endln;
+        s << "  min strain: " << minStrain << endln;
+        s << "  max strain: " << maxStrain << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"MinMaxMaterial\", ";
+        s << "\"material\": \"" << theMaterial->getTag() << "\", ";
+        s << "\"epsMin\": " << minStrain << ", ";
+        s << "\"epsMax\": " << maxStrain << "}";
+    }
 }

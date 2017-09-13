@@ -2183,7 +2183,6 @@ Domain::Print(OPS_Stream &s, int flag)
 {
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
 
-    s << "{\n";
     s << "\t\"properties\": {\n";
 
     OPS_printUniaxialMaterial(s, flag);

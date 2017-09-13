@@ -108,8 +108,12 @@ class ReinforcingSteel : public UniaxialMaterial
   double eyp;   // natural strain at yield
   double fyp;   // natural yield stress
 
-  double esh;   // engineering hardening strain (user input)
+  double fy;    // engineering yield strength (user input)
+  double fsu;   // engineering ultimate strength (user input)
+  double Es;    // engineering elastic modulus (user input)
   double Esh;   // engineering hardening slope (user input)
+  double esh;   // engineering hardening strain (user input)
+  double esu;   // engineering ultimate strain (user input)
 
   double eshpa;	// Curve smoothing Parameters (at SH transition)
   double Eshpb;	// These are used to eliminate a sudden discontinuity in stiffness
@@ -240,4 +244,3 @@ class ReinforcingSteel : public UniaxialMaterial
 };
 
 #endif
-
