@@ -53,16 +53,26 @@ void* OPS_FiberSection3d()
 {
     int numData = OPS_GetNumRemainingInputArgs();
     if(numData < 1) {
-	opserr<<"insufficient arguments for FiberSection3d\n";
-	return 0;
+	    opserr<<"insufficient arguments for FiberSection3d\n";
+	    return 0;
     }
-
+    
     numData = 1;
     int tag;
-    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
-
+    if (OPS_GetIntInput(&numData, &tag) < 0) return 0;
+    
+    double GJ = 0.0;
+    ElasticMaterial *torsion = 0;
+    if (OPS_GetNumRemainingInputArgs() >= 2) {
+        const char* opt = OPS_GetString();
+        if (strcmp(opt, "-GJ") == 0) {
+            if (OPS_GetDoubleInput(&numData, &GJ) < 0) return 0;
+            torsion = new ElasticMaterial(0, GJ);
+        }
+    }
+    
     int num = 30;
-    return new FiberSection3d(tag,num);
+    return new FiberSection3d(tag, num, torsion);
 }
 
 // constructors:
@@ -117,7 +127,7 @@ FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers, UniaxialMateria
   } else {
     // assign zero torsional stiffness because people often use
     // the aggregator section to assign torsional stiffness
-    theTorsion = new ElasticMaterial(0, 0.0);
+    theTorsion = new ElasticMaterial(0, 1.0E-10);
   }
   if (theTorsion == 0) {
     opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
@@ -173,7 +183,7 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial *torsion):
   } else {
     // assign zero torsional stiffness because people often use
     // the aggregator section to assign torsional stiffness
-    theTorsion = new ElasticMaterial(0, 0.0);
+    theTorsion = new ElasticMaterial(0, 1.0E-10);
   }
   if (theTorsion == 0) {
     opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
@@ -252,7 +262,7 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
   } else {
     // assign zero torsional stiffness because people often use
     // the aggregator section to assign torsional stiffness
-    theTorsion = new ElasticMaterial(0, 0.0);
+    theTorsion = new ElasticMaterial(0, 1.0E-10);
   }
   if (theTorsion == 0) {
     opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
