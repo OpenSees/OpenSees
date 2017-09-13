@@ -201,7 +201,7 @@ TripleFrictionPendulum::TripleFrictionPendulum(int tag,
     v3Fact = L2/(L2 - L1);
     v5Fact = L3/(L3 - L1);
     
-    Gap2 = 2*(L1/L3*Ubar3 + Ubar1);
+    Gap2 = 2.0*(L1/L3*Ubar3 + Ubar1);
     Gap4 = Ubar2*(1 - L1/L2);
     Gap6 = Ubar3*(1 - L1/L3);
     
@@ -385,9 +385,9 @@ int TripleFrictionPendulum::revertToStart()
     Fy3 = theFrnMdls[1]->getFrictionCoeff();
     Fy5 = theFrnMdls[2]->getFrictionCoeff();
     
-    E1 = E2 = 3*Fy1/Uy;
-    E3 = E4 = 3*Fy1/Uy;
-    E5 = E6 = 3*Fy1/Uy;
+    E1 = E2 = 3.0*Fy1/Uy;
+    E3 = E4 = 3.0*Fy1/Uy;
+    E5 = E6 = 3.0*Fy1/Uy;
     
     double E1p = 1.0/(2.0*L1);
     double E3p = 1.0/(L2 - L1);
@@ -439,9 +439,6 @@ int TripleFrictionPendulum::update()
     // get current time
     Domain *theDomain = this->getDomain();
     double time = theDomain->getCurrentTime();
-    
-    //if (time >= 6.6)
-    //    opserr << "time = " << time << endln;
     
     const Vector &duNd1 = theNodes[0]->getIncrDisp();
     const Vector &duNd2 = theNodes[1]->getIncrDisp();
@@ -990,15 +987,15 @@ Response* TripleFrictionPendulum::setResponse(const char **argv, int argc,
     else if (strcmp(argv[0],"localForce") == 0 ||
         strcmp(argv[0],"localForces") == 0)
     {
-        output.tag("ResponseType","N_ 1");
+        output.tag("ResponseType","N_1");
         output.tag("ResponseType","Vy_1");
         output.tag("ResponseType","Vz_1");
         output.tag("ResponseType","T_1");
         output.tag("ResponseType","My_1");
-        output.tag("ResponseType","Tz_1");
+        output.tag("ResponseType","Mz_1");
         output.tag("ResponseType","N_2");
-        output.tag("ResponseType","Py_2");
-        output.tag("ResponseType","Pz_2");
+        output.tag("ResponseType","Vy_2");
+        output.tag("ResponseType","Vz_2");
         output.tag("ResponseType","T_2");
         output.tag("ResponseType","My_2");
         output.tag("ResponseType","Mz_2");
