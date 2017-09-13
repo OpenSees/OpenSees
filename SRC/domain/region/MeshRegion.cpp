@@ -67,7 +67,6 @@ MeshRegion::MeshRegion(int tag, int cTag)
     // does nothing
 }
 
-
 MeshRegion::~MeshRegion() 
 {
   if (theNodes != 0)
@@ -85,11 +84,7 @@ MeshRegion::setNodes(const ID &theNods)
   if (theElements != 0)
     delete theElements;
 
-  //
   // create new element & node lists
-  //
-
-  // create empty lists
   Domain *theDomain = this->getDomain();
   if (theDomain == 0) {
     opserr << "MeshRegion::setNodes() - no domain yet set\n";
@@ -100,7 +95,7 @@ MeshRegion::setNodes(const ID &theNods)
   theNodes = new ID(0, numNodes);
   theElements = new ID(0, numNodes);
   if (theNodes == 0 || theElements == 0) {
-    opserr << "MeshRegion::setElements() - ran out of memory\n";
+    opserr << "MeshRegion::setNodes() - ran out of memory\n";
     return -1;
   }
 
@@ -148,6 +143,40 @@ MeshRegion::setNodes(const ID &theNods)
   return 0;
 }
 
+int
+MeshRegion::setNodesOnly(const ID &theNods)
+{
+    // destroy the old node list
+    if (theNodes != 0)
+        delete theNodes;
+    
+    // create new node list
+    Domain *theDomain = this->getDomain();
+    if (theDomain == 0) {
+        opserr << "MeshRegion::setNodesOnly() - no domain yet set\n";
+        return -1;
+    }
+    
+    int numNodes = theNods.Size();
+    theNodes = new ID(0, numNodes);
+    if (theNodes == 0) {
+        opserr << "MeshRegion::setNodesOnly() - ran out of memory\n";
+        return -1;
+    }
+    
+    // add nodes to the node list if in the domain
+    int loc = 0;
+    for (int i = 0; i<numNodes; i++) {
+        int nodeTag = theNods(i);
+        Node *theNode = theDomain->getNode(nodeTag);
+        if (theNode != 0) {
+            if (theNodes->getLocation(nodeTag) < 0)
+                (*theNodes)[loc++] = nodeTag;
+        }
+    }
+    
+    return 0;
+}
 
 int 
 MeshRegion::setElements(const ID &theEles)
@@ -159,7 +188,6 @@ MeshRegion::setElements(const ID &theEles)
     delete theElements;
 
   // create new element & node lists
-
   int numEle = theEles.Size();
 
   theElements = new ID(0, numEle); // don't copy yet .. make sure ele in domain
@@ -174,7 +202,6 @@ MeshRegion::setElements(const ID &theEles)
   // NOTE - node added to region if any element has it as an external node
   int locEle = 0;
   int locNode = 0;
-
 
   Domain *theDomain = this->getDomain();
   if (theDomain == 0) {
@@ -205,6 +232,40 @@ MeshRegion::setElements(const ID &theEles)
   return 0;
 }
 
+int
+MeshRegion::setElementsOnly(const ID &theEles)
+{
+    // destroy the old element list
+    if (theElements != 0)
+        delete theElements;
+
+    // create new element list
+    Domain *theDomain = this->getDomain();
+    if (theDomain == 0) {
+        opserr << "MeshRegion::setElementsOnly() - no domain yet set\n";
+        return -1;
+    }
+
+    int numEles = theEles.Size();
+    theElements = new ID(0, numEles);
+    if (theElements == 0) {
+        opserr << "MeshRegion::setElementsOnly() - ran out of memory\n";
+        return -1;
+    }
+
+    // add elements to the ele list if in the domain
+    int loc = 0;
+    for (int i = 0; i<numEles; i++) {
+        int eleTag = theEles(i);
+        Element *theEle = theDomain->getElement(eleTag);
+        if (theEle != 0) {
+            if (theElements->getLocation(eleTag) < 0)
+                (*theElements)[loc++] = eleTag;
+        }
+    }
+
+    return 0;
+}
 
 const ID &
 MeshRegion::getNodes(void)
@@ -223,7 +284,6 @@ MeshRegion::getElements(void)
   
   return *theElements;
 }
-
 
 int
 MeshRegion::setRayleighDampingFactors(double alpham, double betak, double betak0, double betakc)
@@ -289,8 +349,7 @@ MeshRegion::sendSelf(int commitTag, Channel &theChannel)
   if (theChannel.sendID(myDbTag, commitTag, lpData) < 0) {
    opserr << "MeshRegion::sendSelf - channel failed to send the initial ID\n";
     return -1;
-  }    
-
+  }
 
   // now check if data defining the objects in the LoadPAttern needs to be sent 
   // NOTE THIS APPROACH MAY NEED TO CHANGE FOR VERY LARGE PROBLEMS IF CHANNEL CANNOT
@@ -321,8 +380,6 @@ MeshRegion::sendSelf(int commitTag, Channel &theChannel)
     // set the lst send db tag so we don't have to send them again unless they change
     lastGeoSendTag = currentGeoTag;
   }    
-
-
   
   return 0;
 }
@@ -388,11 +445,9 @@ MeshRegion::recvSelf(int commitTag, Channel &theChannel,
     betaKc = dData(3);
   }
 
-
   this->setRayleighDampingFactors(alphaM, betaK, betaK0, betaKc);
   return 0;
 }
-
 
 void 
 MeshRegion::Print(OPS_Stream &s, int flag)

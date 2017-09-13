@@ -57,6 +57,9 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
   int numNodes = 0;
   int numElements = 0;
 
+  bool eleOnly = false;
+  bool nodeOnly = false;
+
   // first get tag for region
   if (argc < 2) {
     opserr << "WARNING region tag? - no tag specified\n";
@@ -73,8 +76,11 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
   // now contine until end of command
   while (loc < argc) {
 
-    if (strcmp(argv[loc],"-ele") == 0) {
+    if (strcmp(argv[loc],"-ele") == 0 || strcmp(argv[loc], "-eleOnly") == 0) {
       
+      if (strcmp(argv[loc], "-eleOnly") == 0)
+        eleOnly = true;
+
       // ensure no segmentation fault if user messes up
       if (argc < loc+2) {
 	opserr << "WARNING region tag? .. -ele tag1? .. - no ele tags specified\n";
@@ -95,7 +101,10 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
       }
       if (loc < argc) loc--;
 
-    } else if (strcmp(argv[loc],"-eleRange") == 0) {
+    } else if (strcmp(argv[loc],"-eleRange") == 0 || strcmp(argv[loc], "-eleOnlyRange") == 0) {
+
+      if (strcmp(argv[loc], "-eleOnlyRange") == 0)
+        eleOnly = true;
 
       // ensure no segmentation fault if user messes up
       if (argc < loc+3) {
@@ -130,7 +139,10 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
 
       loc += 3;
       
-    } else if (strcmp(argv[loc],"-node") == 0) {
+    } else if (strcmp(argv[loc],"-node") == 0 || strcmp(argv[loc], "-nodeOnly") == 0) {
+
+      if (strcmp(argv[loc], "-nodeOnly") == 0)
+        nodeOnly = true;
 
       // ensure no segmentation fault if user messes up
       if (argc < loc+2) {
@@ -151,7 +163,10 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
       
       if (loc < argc) loc--;
 
-    } else if (strcmp(argv[loc],"-nodeRange") == 0) {
+    } else if (strcmp(argv[loc],"-nodeRange") == 0 || strcmp(argv[loc], "-nodeOnlyRange") == 0) {
+
+      if (strcmp(argv[loc], "-nodeOnlyRange") == 0)
+        nodeOnly = true;
 
       // ensure no segmentation fault if user messes up
       if (argc < loc+3) {
@@ -280,14 +295,23 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
   } 
 
   // if elements or nodes have been set, set them in the Region
-  if (theElements != 0)
-    theRegion->setElements(*theElements);
+  if (theElements != 0) {
+    if (eleOnly == false)
+      theRegion->setElements(*theElements);
+    else
+      theRegion->setElementsOnly(*theElements);
+  }
 
   if (theNodes != 0) {
-    if (theElements == 0)
-      theRegion->setNodes(*theNodes);  
-    else
-      opserr << "WARNING region - both elements & nodes set, ONLY set using elements\n";
+    if (nodeOnly == false) {
+      if (theElements == 0)
+        theRegion->setNodes(*theNodes);
+      else
+        opserr << "WARNING region - both elements & nodes set, ONLY set using elements\n";
+    }
+    else {
+      theRegion->setNodesOnly(*theNodes);
+    }
   }
 
   // if damping has been specified set the damping factors
@@ -302,4 +326,3 @@ TclAddMeshRegion(ClientData clientData, Tcl_Interp *interp, int argc,
 
   return TCL_OK;
 }
-
