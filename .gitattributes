@@ -262,7 +262,13 @@ EXAMPLES/ExamplePython/Example2.1.py -text
 EXAMPLES/ExamplePython/Example3.1.py -text
 EXAMPLES/ExamplePython/Example3.2.py -text
 EXAMPLES/ExamplePython/Example3.3.py -text
+EXAMPLES/ExamplePython/Example4.1.py -text
+EXAMPLES/ExamplePython/Example5.1.py -text
+EXAMPLES/ExamplePython/Example6.1.py -text
 EXAMPLES/ExamplePython/MomentCurvature.py -text
+EXAMPLES/ExamplePython/RCsection.py -text
+EXAMPLES/ExamplePython/tabasFN.txt -text
+EXAMPLES/ExamplePython/tabasFP.txt -text
 EXAMPLES/ExampleScripts/27NodeCorrected.ops -text
 EXAMPLES/ExampleScripts/ARL360.at2 -text
 EXAMPLES/ExampleScripts/ArcLength01.tcl -text

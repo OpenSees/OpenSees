@@ -65,55 +65,47 @@ fix 19   0  0  1  1  1  0
 # Define materials for nonlinear columns
 # --------------------------------------
 # CONCRETE
+set fc 4.0
+set Ec [expr 57000.0*sqrt($fc*1000)/1000];
 # Core concrete (confined)
 #                           tag  f'c  epsc0  f'cu  epscu
 uniaxialMaterial Concrete01  1  -5.0 -0.005  -3.5  -0.02
 
 # Cover concrete (unconfined)
-set fc 4.0
 uniaxialMaterial Concrete01  2   -$fc -0.002   0.0 -0.006
 
 # STEEL
+set fy 60.0;       # Yield stress
+set Es 30000.0;    # Young's modulus
 # Reinforcing steel
-#                        tag fy   E     b
-uniaxialMaterial Steel01  3  60 30000 0.02
+#                        tag fy   E   b
+uniaxialMaterial Steel01  3  $fy $Es 0.02
 
 # Column width
 set h 18.0
+set GJ 1.0e10;
+set colSec 1
 
 # Source in a procedure for generating an RC fiber section
 source RCsection.tcl
 
 # Call the procedure to generate the column section
-#          id  h  b cover core cover steel nBars barArea nfCoreY nfCoreZ nfCoverY nfCoverZ
-RCsection   1 $h $h   2.5    1     2     3     3    0.79       8       8       10       10
+#               id  h  b cover core cover steel nBars barArea nfCoreY nfCoreZ nfCoverY nfCoverZ GJ
+RCsection  $colSec $h $h   2.5    1     2     3     3    0.79       8       8       10       10 $GJ
 
 # Concrete elastic stiffness
-set E [expr 57000.0*sqrt($fc*1000)/1000];
-
-# Column torsional stiffness
-set GJ 1.0e10;
-
-# Linear elastic torsion for the column
-uniaxialMaterial Elastic 10 $GJ
-
-# Attach torsion to the RC column section
-#                 tag uniTag uniCode       secTag
-section Aggregator 2    10      T    -section 1
-set colSec 2
 
 # Define column elements
 # ----------------------
-
-#set PDelta "ON"
 set PDelta "OFF"
+#set PDelta "ON"
 
 # Geometric transformation for columns
-if {$PDelta == "ON"} {
+if {$PDelta == "OFF"} {
    #                           tag  vecxz
-   geomTransf LinearWithPDelta  1   1 0 0
-} else {
    geomTransf Linear  1   1 0 0
+} else {
+   geomTransf PDelta  1   1 0 0
 }
 
 # Number of column integration points (sections)
@@ -142,15 +134,15 @@ element nonlinearBeamColumn 12  13  18   $np  $colSec    1
 # Define material properties for elastic beams
 # Using beam depth of 24 and width of 18
 # --------------------------------------------
-set Abeam [expr 18*24];
+set Abeam [expr 18.0*24.0];
 # "Cracked" second moments of area
-set Ibeamzz [expr 0.5*1.0/12*18*pow(24,3)];
-set Ibeamyy [expr 0.5*1.0/12*24*pow(18,3)];
+set Ibeamzz [expr 0.5*1.0/12.0*18.0*pow(24.0,3)];
+set Ibeamyy [expr 0.5*1.0/12.0*24.0*pow(18.0,3)];
+set beamSec 2
 
 # Define elastic section for beams
-#               tag  E    A      Iz       Iy     G   J
-section Elastic  3  $E $Abeam $Ibeamzz $Ibeamyy $GJ 1.0
-set beamSec 3
+#                  tag    E    A      Iz       Iy     G   J
+section Elastic $beamSec $Ec $Abeam $Ibeamzz $Ibeamyy $GJ 1.0
 
 # Geometric transformation for beams
 #                tag  vecxz
@@ -184,7 +176,7 @@ set p [expr 0.1*$fc*$h*$h]
 
 # Mass lumped at master nodes
 set g 386.4;            # Gravitational constant
-set m [expr (4*$p)/$g]
+set m [expr (4.0*$p)/$g]
 
 # Rotary inertia of floor about master node
 set i [expr $m*($bx*$bx+$by*$by)/12.0]
@@ -242,7 +234,7 @@ constraints Transformation
 integrator Newmark   0.5  0.25 
 
 # Create the system of equation storage and solver
-system SparseGeneral -piv
+system UmfPack
 
 # Create the DOF numberer
 numberer Plain
@@ -268,6 +260,9 @@ recorder plot Node51.out Node9_14_19_Xdisp 10 340 300 300 -columns 1 2 -columns 
 # Perform the analysis
 # --------------------
 
+# record once at time 0
+record
+
 # Analysis duration of 20 seconds
 #       numSteps  dt
 set ok [analyze   2000   0.01]
@@ -278,3 +273,4 @@ if {$ok != 0} {
     puts "analysis SUCCESSFULL"
 }
 
+wipe

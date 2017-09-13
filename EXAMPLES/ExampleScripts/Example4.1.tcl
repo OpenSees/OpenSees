@@ -24,7 +24,7 @@ set pid [getPID]
 
 
 # Parameter identifying the number of bays
-set numBay          10
+set numBay          3
 
 # ------------------------------
 # Start of model generation
@@ -254,7 +254,7 @@ analysis Static
 initialize
 
 # perform the gravity load analysis, requires 10 steps to reach the load level
-#analyze 10
+analyze 10
 
 
 # set gravity loads to be const and set pseudo time to be 0.0

@@ -170,7 +170,7 @@ ops.analysis("Static")
 # perform the gravity load analysis, requires 10 steps to reach the load level
 ops.analyze(10)
 
-print("Gravity load analysis completed")
+print("Gravity load analysis completed\n")
 
 # Set the gravity loads to be constant & reset the time in the domain
 ops.loadConst("-time", 0.0)
@@ -270,11 +270,10 @@ if (ok != 0):
         currentDisp = ops.nodeDisp(3, 1)
         
 # Print a message to indicate if analysis succesfull or not
-print("");
 if (ok == 0):
-    print("Pushover analysis completed SUCCESSFULLY")
+    print("\nPushover analysis completed SUCCESSFULLY\n")
 else:
-    print("Pushover analysis FAILED")    
+    print("\nPushover analysis FAILED\n")
 
 # Print the state at node 3
 ops.Print('node', 0, 3)

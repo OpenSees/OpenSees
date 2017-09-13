@@ -95,19 +95,19 @@ ops.beamIntegration("Lobatto", 1, 1, np)
 
 # Define column elements
 # ----------------------
-# Geometry of column elements
+# Geometric transformation for columns
 #                       tag 
 ops.geomTransf("PDelta", 1)
 
-# Create the coulumns using Beam-column elements
-#                   tag ndI ndJ transfTag integrationTag
+# Create the column elements
 eleType = "forceBeamColumn"
+#                   tag ndI ndJ transfTag integrationTag
 ops.element(eleType, 1, 1, 3, 1, 1)
 ops.element(eleType, 2, 2, 4, 1, 1)
 
 # Define beam elment
-# -----------------------------
-# Geometry of column elements
+# ------------------
+# Geometric transformation for beams
 #                tag 
 ops.geomTransf("Linear", 2)
 
@@ -173,7 +173,7 @@ ops.analysis("Static")
 # perform the gravity load analysis, requires 10 steps to reach the load level
 ops.analyze(10)
 
-print("Gravity load analysis completed")
+print("Gravity load analysis completed\n")
 
 # Set the gravity loads to be constant & reset the time in the domain
 ops.loadConst("-time", 0.0)
@@ -279,7 +279,7 @@ ops.record()
 # Perform an eigenvalue analysis
 lam = ops.eigen(2)
 Tstart = 2.0*math.pi/math.sqrt(lam[0])
-print("Fundamental period at start of transient analysis: ", Tstart, "sec")
+print("Fundamental period at start of transient analysis: ", Tstart, "sec\n")
 
 # set some variables
 tFinal = 2000 * 0.01
@@ -305,11 +305,10 @@ while ((ok == 0) and (tCurrent < tFinal)):
     tCurrent = ops.getTime()
 
 # Print a message to indicate if analysis succesfull or not
-print("");
 if (ok == 0):
-    print("Transient analysis completed SUCCESSFULLY")
+    print("\nTransient analysis completed SUCCESSFULLY\n")
 else:
-    print("Transient analysis FAILED")    
+    print("\nTransient analysis FAILED\n")
 
 # Perform an eigenvalue analysis
 lam = ops.eigen(2)

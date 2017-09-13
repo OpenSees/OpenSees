@@ -39,7 +39,7 @@
 #    The reinforcing bars are all the same size.
 #    The number of fibers in the short direction of the cover patches is set to 1.
 # 
-proc RCsection {id h b cover coreID coverID steelID numBars barArea nfCoreY nfCoreZ nfCoverY nfCoverZ} {
+proc RCsection {id h b cover coreID coverID steelID numBars barArea nfCoreY nfCoreZ nfCoverY nfCoverZ GJ} {
 
    # The distance from the section z-axis to the edge of the cover concrete
    # in the positive y direction
@@ -61,7 +61,7 @@ proc RCsection {id h b cover coreID coverID steelID numBars barArea nfCoreY nfCo
    set ncoreZ [expr -$coreZ]
 
    # Define the fiber section
-   section fiberSec $id {
+   section fiberSec $id -GJ $GJ {
 
 	# Define the core patch
 	patch quadr $coreID $nfCoreZ $nfCoreY $ncoreY $coreZ $ncoreY $ncoreZ $coreY $ncoreZ $coreY $coreZ
@@ -86,5 +86,3 @@ proc RCsection {id h b cover coreID coverID steelID numBars barArea nfCoreY nfCo
 	layer straight $steelID $numBars $barArea [expr $coreY-$spacingY] $coreZ [expr $ncoreY+$spacingY] $coreZ
 	layer straight $steelID $numBars $barArea [expr $coreY-$spacingY] $ncoreZ [expr $ncoreY+$spacingY] $ncoreZ
    }
-
-}
