@@ -46,7 +46,7 @@ static char outBuf[OUTBUF_SIZE+1];
 static char inBuf[OUTBUF_SIZE+1];
 
 static char *lastURL = 0;
-static socket_type lastSockfd;
+//static socket_type lastSockfd;
 
 socket_type
 establishHTTPConnection(const char* URL, unsigned int port) {
@@ -523,14 +523,14 @@ httpsGet(char const *URL, char const *page, char const *cookie, unsigned int por
 
   SSL *ssl;
   SSL_CTX *ctx;
-  SSL_METHOD *client_method;
+  
   int err;
 
   /* ******************************************************
    * init SSL library from http: the definitive guide
    * **************************************************** */
   SSLeay_add_ssl_algorithms();
-  client_method = SSLv2_client_method();
+  const SSL_METHOD *client_method = SSLv2_client_method();
   SSL_load_error_strings();
   ctx = SSL_CTX_new(client_method);
   /* ********************* from http:the definitive guide */  
@@ -651,7 +651,7 @@ httpsSEND(const char *URL,
 
   SSL *ssl;
   SSL_CTX *ctx;
-  SSL_METHOD *client_method;
+
 
   int err;
 
@@ -663,7 +663,7 @@ httpsSEND(const char *URL,
    * code taken from O'Reilly book: 'http: the definitive guide'
    */
   SSLeay_add_ssl_algorithms();
-  client_method = SSLv2_client_method();
+  const SSL_METHOD *  client_method = SSLv2_client_method();
   SSL_load_error_strings();
   ctx = SSL_CTX_new(client_method);
   /* end of code taken from http: the definitive guide */  
@@ -703,7 +703,8 @@ httpsSEND(const char *URL,
   }
 
   //  strcat(outBuf, "Connection:close\n\n");
-  sprintf(inBuf, "Content-Length: %d\n\n", strlen(dataToPost));
+  int sizeDataPost = strlen(dataToPost);
+  sprintf(inBuf, "Content-Length: %d\n\n", sizeDataPost);
   strcat(outBuf, inBuf);
   strcat(outBuf, dataToPost);
 
@@ -810,14 +811,14 @@ httpsGET_File(char const *URL, char const *page, const char *cookie, unsigned in
 
   SSL *ssl;
   SSL_CTX *ctx;
-  SSL_METHOD *client_method;
+
   int err;
 
   /* ******************************************************
    * init SSL library from http: the definitive guide
    * **************************************************** */
   SSLeay_add_ssl_algorithms();
-  client_method = SSLv2_client_method();
+  const SSL_METHOD *  client_method = SSLv2_client_method();
   SSL_load_error_strings();
   ctx = SSL_CTX_new(client_method);
   /* ********************* from http:the definitive guide */  
@@ -931,13 +932,12 @@ httpsSEND_File(const char *URL,
   
   SSL *ssl;
   SSL_CTX *ctx;
-  SSL_METHOD *client_method;
+
 
   int err;
 
   // in case we fail, set return pointer to 0
   *resPtr = 0;
-
 
   // get filesize
   int fileSize = 0;
@@ -962,7 +962,7 @@ httpsSEND_File(const char *URL,
    * code taken from O'Reilly book: 'http: the definitive guide'
    */
   SSLeay_add_ssl_algorithms();
-  client_method = SSLv2_client_method();
+  const SSL_METHOD *  client_method = SSLv2_client_method();
   SSL_load_error_strings();
   ctx = SSL_CTX_new(client_method);
   /* end of code taken from http: the definitive guide */  
