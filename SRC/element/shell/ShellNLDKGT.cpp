@@ -113,7 +113,7 @@ double ShellNLDKGT::wg[4] ;
 
 //null constructor
 ShellNLDKGT::ShellNLDKGT( ) :                              
-Element( 0, ELE_TAG_ShellDKGQ ),
+Element( 0, ELE_TAG_ShellNLDKGT ),
 connectedExternalNodes(3), CstrainGauss(32),TstrainGauss(32),load(0), Ki(0)
 { 
   for (int i = 0 ;  i < 4; i++ ) 
@@ -150,7 +150,7 @@ ShellNLDKGT::ShellNLDKGT(  int tag,
                          int node2,
    	                     int node3,
 	                     SectionForceDeformation &theMaterial ) :
-Element( tag, ELE_TAG_ShellDKGQ ),
+Element( tag, ELE_TAG_ShellDKGT ),
 connectedExternalNodes(3), CstrainGauss(32),TstrainGauss(32),load(0), Ki(0)
 {
   int i;

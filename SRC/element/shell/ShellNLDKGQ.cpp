@@ -112,7 +112,7 @@ double ShellNLDKGQ::wg[4] ;
 
 //null constructor
 ShellNLDKGQ::ShellNLDKGQ( ) :
-Element( 0, ELE_TAG_ShellNLDKGQ ),
+Element( 0, ELE_TAG_ShellNLDKGQ),
 connectedExternalNodes(4), CstrainGauss(32),TstrainGauss(32),load(0), Ki(0)  //modify for geometric nonlinearity
 { 
   for (int i = 0 ;  i < 4; i++ ) 
