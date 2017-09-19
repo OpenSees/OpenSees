@@ -123,7 +123,7 @@ void *OPS_SFI_MVLEM(void)
     } 
     
     // clean up the str
-    delete [] str;
+    //    delete [] str;
 
     numArgs = OPS_GetNumRemainingInputArgs();
     

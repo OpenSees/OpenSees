@@ -53,7 +53,6 @@ Vector MVLEM::MVLEMR(6);
 // Read input parameters and build the material
 void *OPS_MVLEM(void)
 {
-  
   // Pointer to a uniaxial material that will be returned                       
   Element *theElement = 0;
   
@@ -76,7 +75,7 @@ void *OPS_MVLEM(void)
 
   numData = 1;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid data for element MVLEM " << iData[0] << endln;
+    opserr << "Invalid density value for element MVLEM " << iData[0] << endln;
     return 0;
   }
 
@@ -168,11 +167,8 @@ void *OPS_MVLEM(void)
 	  return 0;
 	}
       }
-    } 
+    }
     
-    // clean up the str
-    delete [] str;
-
     numArgs = OPS_GetNumRemainingInputArgs();
     
   }
