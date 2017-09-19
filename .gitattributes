@@ -3978,6 +3978,8 @@ SRC/recorder/FilePlotter.cpp -text
 SRC/recorder/FilePlotter.h -text
 SRC/recorder/GSA_Recorder.cpp -text
 SRC/recorder/GSA_Recorder.h -text
+SRC/recorder/MPCORecorder.cpp -text
+SRC/recorder/MPCORecorder.h -text
 SRC/recorder/Makefile -text
 SRC/recorder/MaxNodeDispRecorder.cpp -text
 SRC/recorder/MaxNodeDispRecorder.h -text

@@ -1,4 +1,4 @@
- /* ****************************************************************** **
+/* ****************************************************************** **
  **    OpenSees - Open System for Earthquake Engineering Simulation    **
  **          Pacific Earthquake Engineering Research Center            **
  **                                                                    **
@@ -53,8 +53,9 @@
  #include <NormElementRecorder.h>
  #include <NormEnvelopeElementRecorder.h>
  #include <PVDRecorder.h>
-
+// #include <MPCORecorder.h>
 extern void* OPS_PVDRecorder();
+extern void* OPS_MPCORecorder();
 
  #include <NodeIter.h>
  #include <ElementIter.h>
@@ -1819,11 +1820,18 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 								    displayRecord, fileName);
 	 (*theRecorder) = thePlotter;
  #endif
-     } else if (strcmp(argv[1],"pvd") == 0 || strcmp(argv[1],"PVD") == 0) {
+     } 
+	 else if (strcmp(argv[1],"pvd") == 0 || strcmp(argv[1],"PVD") == 0) {
 	 OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
 	 (*theRecorder) = (Recorder*) OPS_PVDRecorder();
      }
-     
+	 else if (strcmp(argv[1], "mpco") == 0) {
+		 OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+		 //		 (*theRecorder) = (Recorder*)OPS_MPCORecorder();
+		 if (theRecorder == 0) {
+			 return TCL_ERROR;
+		 }
+	 }
 
      /* *****************************************
      else if (strcmp(argv[1],"GSA") == 0) {

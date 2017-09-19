@@ -20,7 +20,7 @@ OBJS       = Recorder.o \
 	PatternRecorder.o \
 	RemoveRecorder.o \
 	DamageRecorder.o $(GRAPHIC_OBJECTS) \
-	PVDRecorder.o
+	PVDRecorder.o MPCORecorder.o
 
 
 
