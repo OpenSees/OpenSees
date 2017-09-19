@@ -161,7 +161,7 @@ StressDensityModel3D::commitState(void)
 	strainCurrent=strainNext;
 
 	//Commit hardening parameters
-	for(int i=0;i<(Nsurface*13+3);i++) {
+	for(int i=0;i<(Nsurface*13+5);i++) {
         hard_para_real[i] = _hard_para_real[i]; 
     }
 	for(int i=0;i<2;i++) {
@@ -232,7 +232,7 @@ StressDensityModel3D::sendSelf(int commitTag, Channel &theChannel)
     vData(79) = currentTangent(5,0); vData(91) = currentTangent(5,1); vData(103) = currentTangent(5,2);
     vData(80) = currentTangent(5,3); vData(92) = currentTangent(5,4); vData(104) = currentTangent(5,5);
 
-    for (int i=0;i<Nsurface*13+3;i++) {
+    for (int i=0;i<Nsurface*13+5;i++) {
         vData(105+i) = hard_para_real[i];
     }
 
@@ -312,7 +312,7 @@ StressDensityModel3D::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBrok
     currentTangent(5,0) = vData(79); currentTangent(5,1) = vData(91); currentTangent(5,2) = vData(103);
     currentTangent(5,3) = vData(80); currentTangent(5,4) = vData(92); currentTangent(5,5) = vData(104);
 
-    for (int i=0;i<Nsurface*13+3;i++) {
+    for (int i=0;i<Nsurface*13+5;i++) {
          hard_para_real[i] = vData(105+i);
     }
 	
@@ -325,7 +325,7 @@ void
 StressDensityModel3D::initialise() 
 {
     // initialise hardening parameters to zeros
-    for (int i=0;i<13*Nsurface+3;i++) {
+    for (int i=0;i<13*Nsurface+5;i++) {
         hard_para_real[i]=0.0;
     }
 	for (int i=0;i<2;i++) {
@@ -356,7 +356,7 @@ StressDensityModel3D::initialise()
         _strain_next[i] = 0.0;
 	    _anisotropy[i] = 0.0;
     }
-    for (int i=0;i<13*Nsurface+3;i++) {
+    for (int i=0;i<13*Nsurface+5;i++) {
         _hard_para_real[i]=0.0;
     }
 	for (int i=0;i<2;i++) {
@@ -426,7 +426,7 @@ StressDensityModel3D::GetCurrentStress(void)
         _hsl_pressure[i] = refPressure[i];
     }
 
-	for(int i=0;i<(Nsurface*13+3);i++) {
+	for(int i=0;i<(Nsurface*13+5);i++) {
         _hard_para_real[i] = hard_para_real[i];
     }
 

@@ -130,7 +130,7 @@ public:
 	Matrix initialTangent,
 		   currentTangent;
 
-    double hard_para_real[458];
+    double hard_para_real[250];
 
     // parameters sent to FORTRAN 
 	double _stress_current[3], 
@@ -141,7 +141,7 @@ public:
 		   _ssl_pressure[10], 
 		   _hsl_void_ratio[10], 
 		   _hsl_pressure[10], 
-           _hard_para_real[248],
+           _hard_para_real[250],
 		   _tangent[3][3];
     int _hard_para_int[2];
 

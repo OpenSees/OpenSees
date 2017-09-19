@@ -184,6 +184,7 @@
 #include <ManzariDafaliasRO.h>
 #include <ManzariDafalias3DRO.h>
 #include <ManzariDafaliasPlaneStrainRO.h>
+#include <PM4Sand.h>
 #include <InitialStateAnalysisWrapper.h>
 #include <StressDensityModel.h>
 #include <StressDensityModel2D.h>
@@ -1381,6 +1382,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_ManzariDafaliasPlaneStrainRO:
     return new ManzariDafaliasPlaneStrainRO();   
+
+  case ND_TAG_PM4Sand:
+    return new PM4Sand();
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 

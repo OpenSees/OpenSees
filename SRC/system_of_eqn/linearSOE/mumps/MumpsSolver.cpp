@@ -35,7 +35,10 @@
 
 #define ICNTL(I) icntl[(I)-1] /* macro s.t. indices match documentation */
 
+#ifdef _PARALLEL_PROCESSING
+#else
 #include <libseq\mpi.h>
+#endif
 
 MumpsSolver::MumpsSolver(int ICNTL7, int ICNTL14)
   :LinearSOESolver(SOLVER_TAGS_MumpsSolver),

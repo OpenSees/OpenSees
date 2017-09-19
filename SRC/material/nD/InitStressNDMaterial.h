@@ -38,8 +38,7 @@
 class InitStressNDMaterial : public NDMaterial
 {
   public:
-    InitStressNDMaterial(int tag, NDMaterial &material,
-			 const Vector &sigInit); 
+    InitStressNDMaterial(int tag, NDMaterial &material, const Vector &sigInit, int ndim = 3); 
     InitStressNDMaterial();
     ~InitStressNDMaterial();
     
@@ -62,7 +61,7 @@ class InitStressNDMaterial : public NDMaterial
 
     NDMaterial *getCopy(void);
     NDMaterial *getCopy(const char *type);
-    const char *getType(void) const {return "ThreeDimensional";}
+    const char *getType(void) const;
 
     int sendSelf(int commitTag, Channel &theChannel);  
     int recvSelf(int commitTag, Channel &theChannel, 
@@ -71,6 +70,9 @@ class InitStressNDMaterial : public NDMaterial
     void Print(OPS_Stream &s, int flag =0);
     
     int setParameter(const char **argv, int argc, Parameter &param);
+
+    // send mass density to element in dynamic analysis
+	double getRho(void);
 
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     const Vector &getStressSensitivity(int gradIndex, bool conditional);
@@ -83,6 +85,7 @@ class InitStressNDMaterial : public NDMaterial
     NDMaterial *theMaterial;
     Vector epsInit;
     Vector sigInit;
+    int numDim;
 };
 
 

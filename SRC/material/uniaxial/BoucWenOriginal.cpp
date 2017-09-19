@@ -33,11 +33,13 @@
 #include <Vector.h>
 #include <Channel.h>
 #include <math.h>
+#include <float.h>
 #include <Matrix.h>
 #include <Information.h>
 #include <Parameter.h>
 #include <string.h>
 #include <elementAPI.h>
+#include <OPS_Globals.h>
 
 void* OPS_BoucWenOriginal()
 {
