@@ -956,6 +956,7 @@
 #define RECORDER_TAGS_NormNodeRecorder	        17
 #define RECORDER_TAGS_NormEnvelopeElementRecorder	18
 #define RECORDER_TAGS_PVDRecorder               19
+#define RECORDER_TAGS_MPCORecorder               20
 
 #define OPS_STREAM_TAGS_FileStream		1
 #define OPS_STREAM_TAGS_StandardStream		2
