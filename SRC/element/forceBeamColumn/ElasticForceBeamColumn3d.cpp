@@ -151,7 +151,8 @@ void* OPS_ElasticForceBeamColumn3d()
 ElasticForceBeamColumn3d::ElasticForceBeamColumn3d(): 
   Element(0,ELE_TAG_ElasticForceBeamColumn3d), connectedExternalNodes(2), 
   beamIntegr(0), numSections(0), crdTransf(0),
-  rho(0.0), initialFlag(0), Se(NEBD), numEleLoads(0),
+  rho(0.0), initialFlag(0), Se(NEBD),
+  numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0),
   parameterID(0)
 {
   theNodes[0] = 0;  
@@ -175,7 +176,7 @@ ElasticForceBeamColumn3d::ElasticForceBeamColumn3d (int tag,
   beamIntegr(0), numSections(numSec), crdTransf(0),
   rho(massDensPerUnitLength),
   initialFlag(0), Se(NEBD), 
-  numEleLoads(0),
+  numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0),
   parameterID(0)
 {
   theNodes[0] = 0;
@@ -219,6 +220,14 @@ ElasticForceBeamColumn3d::~ElasticForceBeamColumn3d()
   for (int i=0; i < numSections; i++)
     if (sections[i] != 0)
       delete sections[i];
+  
+  if (sizeEleLoads != 0) {
+      if (eleLoads != 0)
+          delete[] eleLoads;
+
+      if (eleLoadFactors != 0)
+          delete[] eleLoadFactors;
+  }
   
   if (crdTransf != 0)
     delete crdTransf;
@@ -358,43 +367,47 @@ ElasticForceBeamColumn3d::getTangentStiff(void)
 void
 ElasticForceBeamColumn3d::computeReactions(double *p0)
 {
-	// Not doing element forces yet
-	return;
+    int type;
+    double L = crdTransf->getInitialLength();
 
-  int type;
-  double L = crdTransf->getInitialLength();
-  
-  for (int i = 0; i < numEleLoads; i++) {
-    
-    const Vector &data = eleLoads[i]->getData(type, 1.0);
-    
-    if (type == LOAD_TAG_Beam2dUniformLoad) {
-      double wa = data(1)*1.0;  // Axial
-      double wy = data(0)*1.0;  // Transverse
-      
-      p0[0] -= wa*L;
-      double V = 0.5*wy*L;
-      p0[1] -= V;
-      p0[2] -= V;
+    for (int i = 0; i < numEleLoads; i++) {
+
+        double loadFactor = eleLoadFactors[i];
+        const Vector &data = eleLoads[i]->getData(type, loadFactor);
+
+        if (type == LOAD_TAG_Beam3dUniformLoad) {
+            double wy = data(0)*loadFactor;  // Transverse
+            double wz = data(1)*loadFactor;  // Transverse
+            double wa = data(2)*loadFactor;  // Axial
+
+            p0[0] -= wa*L;
+            double V = 0.5*wy*L;
+            p0[1] -= V;
+            p0[2] -= V;
+            V = 0.5*wz*L;
+            p0[3] -= V;
+            p0[4] -= V;
+        }
+        else if (type == LOAD_TAG_Beam3dPointLoad) {
+            double Py = data(0)*loadFactor;
+            double Pz = data(1)*loadFactor;
+            double N = data(2)*loadFactor;
+            double aOverL = data(3);
+
+            if (aOverL < 0.0 || aOverL > 1.0)
+                continue;
+
+            double V1 = Py*(1.0 - aOverL);
+            double V2 = Py*aOverL;
+            p0[0] -= N;
+            p0[1] -= V1;
+            p0[2] -= V2;
+            V1 = Pz*(1.0 - aOverL);
+            V2 = Pz*aOverL;
+            p0[3] -= V1;
+            p0[4] -= V2;
+        }
     }
-    else if (type == LOAD_TAG_Beam2dPointLoad) {
-      double P = data(0)*1.0;
-      double N = data(1)*1.0;
-      double aOverL = data(2);
-      
-      if (aOverL < 0.0 || aOverL > 1.0)
-	continue;
-      
-      double a = aOverL*L;
-      
-      double V1 = P*(1.0-aOverL);
-      double V2 = P*aOverL;
-      
-      p0[0] -= N;
-      p0[1] -= V1;
-      p0[2] -= V2;
-    }
-  }
 }
 
 const Vector &
@@ -512,7 +525,8 @@ ElasticForceBeamColumn3d::getMass(void)
   
   double L = crdTransf->getInitialLength();
   if (rho != 0.0)
-    theMatrix(0,0) = theMatrix(1,1) = theMatrix(2,2) = theMatrix(6,6) = theMatrix(7,7) = theMatrix(8,8) = 0.5*L*rho;
+    theMatrix(0,0) = theMatrix(1,1) = theMatrix(2,2) =
+      theMatrix(6,6) = theMatrix(7,7) = theMatrix(8,8) = 0.5*L*rho;
   
   return theMatrix;
 }
@@ -529,108 +543,149 @@ ElasticForceBeamColumn3d::zeroLoad(void)
 int
 ElasticForceBeamColumn3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
-  if (numEleLoads < maxNumEleLoads)
-    eleLoads[numEleLoads++] = theLoad;
-  else
-    opserr << "ElasticForceBeamColumn3d::addLoad -- maxNumEleLoads exceeded\n";
+    if (numEleLoads == sizeEleLoads) {
 
-  return 0;
+        //
+        // create larger arrays, copy old, delete old & set as new
+        //
+
+        ElementalLoad ** theNextEleLoads = new ElementalLoad *[sizeEleLoads + 1];
+        double *theNextEleLoadFactors = new double[sizeEleLoads + 1];
+        for (int i = 0; i<numEleLoads; i++) {
+            theNextEleLoads[i] = eleLoads[i];
+            theNextEleLoadFactors[i] = eleLoadFactors[i];
+        }
+        delete[] eleLoads;
+        delete[] eleLoadFactors;
+        eleLoads = theNextEleLoads;
+        eleLoadFactors = theNextEleLoadFactors;
+
+        // increment array size
+        sizeEleLoads += 1;
+    }
+
+    eleLoadFactors[numEleLoads] = loadFactor;
+    eleLoads[numEleLoads] = theLoad;
+    numEleLoads++;
+
+    return 0;
 }
 
 void
 ElasticForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 {
-	// Have not implemented 3d element loads
-	return;
+    int type;
 
-  int type;
+    double L = crdTransf->getInitialLength();
 
-  double L = crdTransf->getInitialLength();
+    double xi[maxNumSections];
+    beamIntegr->getSectionLocations(numSections, L, xi);
+    double x = xi[isec] * L;
 
-  double xi[maxNumSections];
-  beamIntegr->getSectionLocations(numSections, L, xi);
-  double x = xi[isec]*L;
+    int order = sections[isec]->getOrder();
+    const ID &code = sections[isec]->getType();
 
-  int order = sections[isec]->getOrder();
-  const ID &code = sections[isec]->getType();
+    for (int i = 0; i < numEleLoads; i++) {
 
-  for (int i = 0; i < numEleLoads; i++) {
+        double loadFactor = eleLoadFactors[i];
+        const Vector &data = eleLoads[i]->getData(type, loadFactor);
 
-    const Vector &data = eleLoads[i]->getData(type, 1.0);
-    
-    if (type == LOAD_TAG_Beam2dUniformLoad) {
-      double wa = data(1)*1.0;  // Axial
-      double wy = data(0)*1.0;  // Transverse
-      
-      for (int ii = 0; ii < order; ii++) {
-	
-	switch(code(ii)) {
-	case SECTION_RESPONSE_P:
-	  sp(ii) += wa*(L-x);
-	  break;
-	case SECTION_RESPONSE_MZ:
-	  sp(ii) += wy*0.5*x*(x-L);
-	  break;
-	case SECTION_RESPONSE_VY:
-	  sp(ii) += wy*(x-0.5*L);
-	  break;
-	default:
-	  break;
-	}
-      }
+        if (type == LOAD_TAG_Beam3dUniformLoad) {
+            double wy = data(0)*loadFactor;  // Transverse
+            double wz = data(1)*loadFactor;  // Transverse
+            double wa = data(2)*loadFactor;  // Axial
+
+            for (int ii = 0; ii < order; ii++) {
+
+                switch (code(ii)) {
+                case SECTION_RESPONSE_P:
+                    sp(ii) += wa*(L - x);
+                    break;
+                case SECTION_RESPONSE_MZ:
+                    sp(ii) += wy*0.5*x*(x - L);
+                    break;
+                case SECTION_RESPONSE_VY:
+                    sp(ii) += wy*(x - 0.5*L);
+                    break;
+                case SECTION_RESPONSE_MY:
+                    sp(ii) += wz*0.5*x*(L - x);
+                    break;
+                case SECTION_RESPONSE_VZ:
+                    sp(ii) += wz*(x - 0.5*L);
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+        else if (type == LOAD_TAG_Beam3dPointLoad) {
+            double Py = data(0)*loadFactor;
+            double Pz = data(1)*loadFactor;
+            double N = data(2)*loadFactor;
+            double aOverL = data(3);
+
+            if (aOverL < 0.0 || aOverL > 1.0)
+                continue;
+
+            double a = aOverL*L;
+
+            double Vy1 = Py*(1.0 - aOverL);
+            double Vy2 = Py*aOverL;
+
+            double Vz1 = Pz*(1.0 - aOverL);
+            double Vz2 = Pz*aOverL;
+
+            for (int ii = 0; ii < order; ii++) {
+
+                if (x <= a) {
+                    switch (code(ii)) {
+                    case SECTION_RESPONSE_P:
+                        sp(ii) += N;
+                        break;
+                    case SECTION_RESPONSE_MZ:
+                        sp(ii) -= x*Vy1;
+                        break;
+                    case SECTION_RESPONSE_VY:
+                        sp(ii) -= Vy1;
+                        break;
+                    case SECTION_RESPONSE_MY:
+                        sp(ii) += x*Vz1;
+                        break;
+                    case SECTION_RESPONSE_VZ:
+                        sp(ii) -= Vz1;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                else {
+                    switch (code(ii)) {
+                    case SECTION_RESPONSE_MZ:
+                        sp(ii) -= (L - x)*Vy2;
+                        break;
+                    case SECTION_RESPONSE_VY:
+                        sp(ii) += Vy2;
+                        break;
+                    case SECTION_RESPONSE_MY:
+                        sp(ii) += (L - x)*Vz2;
+                        break;
+                    case SECTION_RESPONSE_VZ:
+                        sp(ii) += Vz2;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
+        }
+        else {
+            opserr << "ForceBeamColumn3d::addLoad -- load type unknown for element with tag: " <<
+                this->getTag() << endln;
+        }
     }
-    else if (type == LOAD_TAG_Beam2dPointLoad) {
-      double P = data(0)*1.0;
-      double N = data(1)*1.0;
-      double aOverL = data(2);
-      
-      if (aOverL < 0.0 || aOverL > 1.0)
-	continue;
-      
-      double a = aOverL*L;
-      
-      double V1 = P*(1.0-aOverL);
-      double V2 = P*aOverL;
-      
-      for (int ii = 0; ii < order; ii++) {
-	
-	if (x <= a) {
-	  switch(code(ii)) {
-	  case SECTION_RESPONSE_P:
-	    sp(ii) += N;
-	    break;
-	  case SECTION_RESPONSE_MZ:
-	    sp(ii) -= x*V1;
-	    break;
-	  case SECTION_RESPONSE_VY:
-	    sp(ii) -= V1;
-	    break;
-	  default:
-	    break;
-	  }
-	}
-	else {
-	  switch(code(ii)) {
-	  case SECTION_RESPONSE_MZ:
-	    sp(ii) -= (L-x)*V2;
-	    break;
-	  case SECTION_RESPONSE_VY:
-	    sp(ii) += V2;
-	    break;
-	  default:
-	    break;
-	  }
-	}
-      }
-    }
-    else {
-      opserr << "ElasticForceBeamColumn3d::addLoad -- load type unknown for element with tag: " <<
-	this->getTag() << endln;
-    }
-  }
-  
-  // Don't think we need to do this anymore -- MHS
-  //this->update(); // quick fix -- MHS
+
+    // Don't think we need to do this anymore -- MHS
+    //this->update(); // quick fix -- MHS
 }
 
 int 

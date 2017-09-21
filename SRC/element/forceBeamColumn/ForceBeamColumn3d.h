@@ -84,6 +84,7 @@ class ForceBeamColumn3d: public Element
 		    int maxNumIters = 10, double tolerance = 1.0e-12);
   
   ~ForceBeamColumn3d();
+
   const char *getClassType(void) const {return "ForceBeamColumn3d";};
   
   int getNumExternalNodes(void) const;
@@ -177,19 +178,15 @@ class ForceBeamColumn3d: public Element
   Vector *vscommit;              // array of commited section deformation vectors
   
   enum {maxNumEleLoads = 100};
-  enum {NDM = 2};         // dimension of the problem (2d)
-  enum {NND = 3};         // number of nodal dof's
-  enum {NEGD = 6};         // number of element global dof's
-  enum {NEBD = 3};         // number of element dof's in the basic system
+  enum {NDM = 3};         // dimension of the problem (3d)
+  enum {NND = 6};         // number of nodal dof's
+  enum {NEGD = 12};        // number of element global dof's
+  enum {NEBD = 6};         // number of element dof's in the basic system
 
   int numEleLoads; // Number of element load objects
   int sizeEleLoads;
   ElementalLoad **eleLoads;
   double *eleLoadFactors;
-
-  Matrix *sp;
-  double p0[5]; // Reactions in the basic system due to element loads
-  double v0[5]; // Initial deformations due to element loads
 
   Matrix *Ki;
 

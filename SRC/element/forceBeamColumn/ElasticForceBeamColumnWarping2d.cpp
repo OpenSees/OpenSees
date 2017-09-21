@@ -169,7 +169,8 @@ void* OPS_ElasticForceBeamColumnWarping2d()
 ElasticForceBeamColumnWarping2d::ElasticForceBeamColumnWarping2d(): 
   Element(0,ELE_TAG_ElasticForceBeamColumnWarping2d), connectedExternalNodes(2), 
   beamIntegr(0), numSections(0), crdTransf(0),
-  rho(0.0), initialFlag(0), numEleLoads(0),
+  rho(0.0), initialFlag(0),
+  numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0),
   parameterID(0)
 {
   theNodes[0] = 0;  
@@ -193,7 +194,8 @@ ElasticForceBeamColumnWarping2d::ElasticForceBeamColumnWarping2d (int tag,
   Element(tag,ELE_TAG_ElasticForceBeamColumnWarping2d), connectedExternalNodes(2),
   beamIntegr(0), numSections(numSec), crdTransf(0),
   rho(massDensPerUnitLength),
-  initialFlag(0), numEleLoads(0),
+  initialFlag(0),
+  numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0),
   parameterID(0)
 {
   theNodes[0] = 0;
@@ -239,6 +241,14 @@ ElasticForceBeamColumnWarping2d::~ElasticForceBeamColumnWarping2d()
     if (sections[i] != 0)
       delete sections[i];
   
+  if (sizeEleLoads != 0) {
+      if (eleLoads != 0)
+          delete[] eleLoads;
+
+      if (eleLoadFactors != 0)
+          delete[] eleLoadFactors;
+  }
+
   if (crdTransf != 0)
     delete crdTransf;
 
@@ -411,11 +421,12 @@ ElasticForceBeamColumnWarping2d::computeReactions(double *p0)
   
   for (int i = 0; i < numEleLoads; i++) {
     
-    const Vector &data = eleLoads[i]->getData(type, 1.0);
+    double loadFactor = eleLoadFactors[i];
+    const Vector &data = eleLoads[i]->getData(type, loadFactor);
     
     if (type == LOAD_TAG_Beam2dUniformLoad) {
-      double wa = data(1)*1.0;  // Axial
-      double wy = data(0)*1.0;  // Transverse
+      double wa = data(1)*loadFactor;  // Axial
+      double wy = data(0)*loadFactor;  // Transverse
       
       p0[0] -= wa*L;
       double V = 0.5*wy*L;
@@ -423,8 +434,8 @@ ElasticForceBeamColumnWarping2d::computeReactions(double *p0)
       p0[2] -= V;
     }
     else if (type == LOAD_TAG_Beam2dPointLoad) {
-      double P = data(0)*1.0;
-      double N = data(1)*1.0;
+      double P = data(0)*loadFactor;
+      double N = data(1)*loadFactor;
       double aOverL = data(2);
       
       if (aOverL < 0.0 || aOverL > 1.0)
@@ -591,12 +602,32 @@ ElasticForceBeamColumnWarping2d::zeroLoad(void)
 int
 ElasticForceBeamColumnWarping2d::addLoad(ElementalLoad *theLoad, double loadFactor)
 {
-  if (numEleLoads < maxNumEleLoads)
-    eleLoads[numEleLoads++] = theLoad;
-  else
-    opserr << "ElasticForceBeamColumnWarping2d::addLoad -- maxNumEleLoads exceeded\n";
+    if (numEleLoads == sizeEleLoads) {
 
-  return 0;
+        //
+        // create larger arrays, copy old, delete old & set as new
+        //
+
+        ElementalLoad ** theNextEleLoads = new ElementalLoad *[sizeEleLoads + 1];
+        double *theNextEleLoadFactors = new double[sizeEleLoads + 1];
+        for (int i = 0; i<numEleLoads; i++) {
+            theNextEleLoads[i] = eleLoads[i];
+            theNextEleLoadFactors[i] = eleLoadFactors[i];
+        }
+        delete[] eleLoads;
+        delete[] eleLoadFactors;
+        eleLoads = theNextEleLoads;
+        eleLoadFactors = theNextEleLoadFactors;
+
+        // increment array size
+        sizeEleLoads += 1;
+    }
+
+    eleLoadFactors[numEleLoads] = loadFactor;
+    eleLoads[numEleLoads] = theLoad;
+    numEleLoads++;
+
+    return 0;
 }
 
 void
@@ -615,11 +646,12 @@ ElasticForceBeamColumnWarping2d::computeSectionForces(Vector &sp, int isec)
 
   for (int i = 0; i < numEleLoads; i++) {
 
-    const Vector &data = eleLoads[i]->getData(type, 1.0);
+    double loadFactor = eleLoadFactors[i];
+    const Vector &data = eleLoads[i]->getData(type, loadFactor);
     
     if (type == LOAD_TAG_Beam2dUniformLoad) {
-      double wa = data(1)*1.0;  // Axial
-      double wy = data(0)*1.0;  // Transverse
+      double wa = data(1)*loadFactor;  // Axial
+      double wy = data(0)*loadFactor;  // Transverse
       
       for (int ii = 0; ii < order; ii++) {
 	
@@ -645,8 +677,8 @@ ElasticForceBeamColumnWarping2d::computeSectionForces(Vector &sp, int isec)
       }
     }
     else if (type == LOAD_TAG_Beam2dPointLoad) {
-      double P = data(0)*1.0;
-      double N = data(1)*1.0;
+      double P = data(0)*loadFactor;
+      double N = data(1)*loadFactor;
       double aOverL = data(2);
       
       if (aOverL < 0.0 || aOverL > 1.0)

@@ -161,7 +161,9 @@ class ElasticForceBeamColumn2d: public Element
   enum {NEBD = 3};         // number of element dof's in the basic system
 
   int numEleLoads; // Number of element load objects
-  ElementalLoad *eleLoads[maxNumEleLoads];
+  int sizeEleLoads;
+  ElementalLoad **eleLoads;
+  double *eleLoadFactors;
 
   static Matrix theMatrix;
   static Vector theVector;
