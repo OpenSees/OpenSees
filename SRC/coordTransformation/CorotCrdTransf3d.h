@@ -90,6 +90,7 @@ private:
     void compTransfMatrixBasicGlobal(void);
     void compTransfMatrixBasicGlobalNew(void);
     void compTransfMatrixLocalGlobal(Matrix &Tlg);
+    void compTransfMatrixBasicLocal(Matrix &Tbl);
     const Vector &getQuaternionFromRotMatrix(const Matrix &RotMatrix) const;
     const Vector &getQuaternionFromPseudoRotVector(const Vector &theta) const;
     const Vector &getTangScaledPseudoVectorFromQuaternion(const Vector &theta) const;
@@ -131,6 +132,8 @@ private:
     static Matrix Tp;           // transformation matrix to renumber dofs
     static Matrix T;            // transformation matrix from basic to global system
     static Matrix Tlg;          // transformation matrix from global to local system
+    static Matrix TlgInv;       // inverse of transformation matrix from global to local system
+    static Matrix Tbl;          // transformation matrix from local to basic system
     static Matrix kg;           // global stiffness matrix
     static Matrix Lr2, Lr3, A;  // auxiliary matrices
     

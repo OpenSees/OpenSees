@@ -50,6 +50,8 @@ Matrix CorotCrdTransf3d::e(3,3);
 Matrix CorotCrdTransf3d::Tp(6,7); 
 Matrix CorotCrdTransf3d::T(7,12);
 Matrix CorotCrdTransf3d::Tlg(12,12);
+Matrix CorotCrdTransf3d::TlgInv(12, 12);
+Matrix CorotCrdTransf3d::Tbl(6,12);
 Matrix CorotCrdTransf3d::kg(12,12);
 Matrix CorotCrdTransf3d::Lr2(12,3);
 Matrix CorotCrdTransf3d::Lr3(12,3);
@@ -1005,14 +1007,34 @@ CorotCrdTransf3d::compTransfMatrixLocalGlobal(Matrix &Tlg)
     Tlg.Zero();
     
     Tlg(0,0) = Tlg(3,3) = Tlg(6,6) = Tlg(9,9)   = R0(0,0);
-    Tlg(0,1) = Tlg(3,4) = Tlg(6,7) = Tlg(9,10)  = R0(0,1);
-    Tlg(0,2) = Tlg(3,5) = Tlg(6,8) = Tlg(9,11)  = R0(0,2);
-    Tlg(1,0) = Tlg(4,3) = Tlg(7,6) = Tlg(10,9)  = R0(1,0);
+    Tlg(0,1) = Tlg(3,4) = Tlg(6,7) = Tlg(9,10)  = R0(1,0);
+    Tlg(0,2) = Tlg(3,5) = Tlg(6,8) = Tlg(9,11)  = R0(2,0);
+    Tlg(1,0) = Tlg(4,3) = Tlg(7,6) = Tlg(10,9)  = R0(0,1);
     Tlg(1,1) = Tlg(4,4) = Tlg(7,7) = Tlg(10,10) = R0(1,1);
-    Tlg(1,2) = Tlg(4,5) = Tlg(7,8) = Tlg(10,11) = R0(1,2);
-    Tlg(2,0) = Tlg(5,3) = Tlg(8,6) = Tlg(11,9)  = R0(2,0);
-    Tlg(2,1) = Tlg(5,4) = Tlg(8,7) = Tlg(11,10) = R0(2,1);
+    Tlg(1,2) = Tlg(4,5) = Tlg(7,8) = Tlg(10,11) = R0(2,1);
+    Tlg(2,0) = Tlg(5,3) = Tlg(8,6) = Tlg(11,9)  = R0(0,2);
+    Tlg(2,1) = Tlg(5,4) = Tlg(8,7) = Tlg(11,10) = R0(1,2);
     Tlg(2,2) = Tlg(5,5) = Tlg(8,8) = Tlg(11,11) = R0(2,2);
+}
+
+
+void
+CorotCrdTransf3d::compTransfMatrixBasicLocal(Matrix &Tbl)
+{
+    // setup transformation matrix from basic to local
+    Tbl.Zero();
+
+    // first get transformation matrix from basic to global 
+    static Matrix Tbg(6, 12);
+    Tbg.addMatrixProduct(0.0, Tp, T, 1.0);
+
+    // get inverse of transformation matrix from local to global
+    this->compTransfMatrixLocalGlobal(Tlg);
+    // Tlg.Invert(TlgInv);
+    TlgInv.addMatrixTranspose(0.0, Tlg, 1.0);  // for square rot-matrix: Tlg^-1 = Tlg'
+
+    // finally get transformation matrix from basic to local
+    Tbl.addMatrixProduct(0.0, Tbg, TlgInv, 1.0);
 }
 
 
@@ -1089,29 +1111,61 @@ CorotCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
 {
     this->update();
     
-    //   opserr << "basic forces: " << pb;  
-    // transform resisting forces from the basic system to local coordinates
-    static Vector pl(7);
-    pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
-    //opserr << "pl: " << pl;
-    // Add effects of member loads
-    // Assuming member loads in local system
-    //pl(0) += p0(0);
-    //pl(1) += p0(1);
-    //pl(7) += p0(2);
-    //pl(2) += p0(3);
-    //pl(8) += p0(4);
-    
-    // transform resisting forces  from local to global coordinates
     static Vector pg(12);
-    pg.addMatrixTransposeVector(0.0, T, pl, 1.0);   // pg = T ^ pl; residual
-    //opserr << "pg: " << pg;
+    pg.Zero();
     
-    /*
-    this->compTransfMatrixBasicGlobalNew();
-    opserr << T;
-    opserr << "global forces( " << pg;
-    */
+    // if there are no element loads present
+    if (p0 == 0.0) {
+        // transform resisting forces from the basic system to local coordinates
+        static Vector pl(7);
+        pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
+
+        // transform resisting forces from local to global coordinates
+        pg.addMatrixTransposeVector(0.0, T, pl, 1.0);   // pg = T ^ pl; residual
+    }
+
+    // if there are element loads present
+    else {
+        // SLOWER!!!! THIS IS SAME APPROACH AS 2D CASE
+        // ===========================================
+        /* transform resisting forces from the basic system to local coordinates
+        this->compTransfMatrixBasicLocal(Tbl);
+        static Vector pl(12);
+        pl.addMatrixTransposeVector(0.0, Tbl, pb, 1.0);    // pl = Tbl ^ pb;
+
+        // add end forces due to element p0 loads
+        // assuming member loads are in local system
+        pl(0) += p0(0);
+        pl(1) += p0(1);
+        pl(7) += p0(2);
+        pl(2) += p0(3);
+        pl(8) += p0(4);
+
+        // transform resisting forces from local to global coordinates
+        pg.addMatrixTransposeVector(0.0, Tlg, pl, 1.0);   // pg = Tlg ^ pl;*/
+
+        // FASTER!!!! TRANSFORM REACTIONS AND ADD AT END
+        // =============================================
+        // transform resisting forces from the basic system to local coordinates
+        static Vector pl(7);
+        pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
+
+        // transform resisting forces from local to global coordinates
+        pg.addMatrixTransposeVector(0.0, T, pl, 1.0);   // pg = T ^ pl; residual
+
+        // add end forces due to element p0 loads
+        // assuming member loads are in local system
+        static Vector pl0(12), pg0(12);
+        pl0.Zero();
+        pl0(0) = p0(0);
+        pl0(1) = p0(1);
+        pl0(7) = p0(2);
+        pl0(2) = p0(3);
+        pl0(8) = p0(4);
+        this->compTransfMatrixLocalGlobal(Tlg);
+        pg0.addMatrixTransposeVector(0.0, Tlg, pl0, 1.0);
+        pg.addVector(1.0, pg0, 1.0);
+    }
     
     return pg;
 }
@@ -1120,7 +1174,6 @@ CorotCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
 const Matrix &
 CorotCrdTransf3d::getGlobalStiffMatrix(const Matrix &kb, const Vector &pb)
 {
-    
     this->update();
     
     int i, j, k;   
@@ -1478,7 +1531,7 @@ CorotCrdTransf3d::getLocalAxes(Vector &XAxis, Vector &YAxis, Vector &ZAxis)
         R0(i,0) = xAxis(i);
         R0(i,1) = yAxis(i);
         R0(i,2) = zAxis(i);
-    }      
+    }
     
     return 0;
 }
@@ -2078,10 +2131,10 @@ CorotCrdTransf3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theB
 
 
 const Matrix &
-CorotCrdTransf3d::getGlobalMatrixFromLocal(const Matrix &ml)
+CorotCrdTransf3d::getGlobalMatrixFromLocal(const Matrix &local)
 {
     this->compTransfMatrixLocalGlobal(Tlg);  // OPTIMIZE LATER
-    kg.addMatrixTripleProduct(0.0, Tlg, ml, 1.0);  // OPTIMIZE LATER
+    kg.addMatrixTripleProduct(0.0, Tlg, local, 1.0);  // OPTIMIZE LATER
 
     return kg;
 }
