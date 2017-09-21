@@ -1909,9 +1909,12 @@ printModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	  (strcmp(argv[currentArg],"-file") == 0)) 
 	currentArg++;
 	
-      if (outputFile.setFile(argv[currentArg], APPEND) != 0) {
-	opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
-	return TCL_ERROR;
+      openMode mode = APPEND;
+      if (flag == OPS_PRINT_PRINTMODEL_JSON)
+          mode = OVERWRITE;
+      if (outputFile.setFile(argv[currentArg], mode) != 0) {
+          opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
+          return TCL_ERROR;
       }
       currentArg++;
 
