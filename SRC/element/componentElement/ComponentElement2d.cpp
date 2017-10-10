@@ -80,7 +80,7 @@ OPS_ComponentElement2d(void)
     return 0;
   }
 
-  CrdTransf *theTrans = OPS_GetCrdTransf(iData[3]);
+  CrdTransf *theTrans = OPS_getCrdTransf(iData[3]);
 
   UniaxialMaterial *end1 = OPS_getUniaxialMaterial(iData[4]);
   UniaxialMaterial *end2 = OPS_getUniaxialMaterial(iData[5]);

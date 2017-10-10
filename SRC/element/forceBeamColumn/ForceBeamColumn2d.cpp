@@ -137,7 +137,7 @@ void* OPS_ForceBeamColumn2d()
     }
 
     // check transf
-    CrdTransf* theTransf = OPS_GetCrdTransf(iData[3]);
+    CrdTransf* theTransf = OPS_getCrdTransf(iData[3]);
     if(theTransf == 0) {
 	opserr<<"coord transfomration not found\n";
 	return 0;
@@ -204,7 +204,7 @@ int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
     }
 
     // check transf
-    CrdTransf* theTransf = OPS_GetCrdTransf(iData[0]);
+    CrdTransf* theTransf = OPS_getCrdTransf(iData[0]);
     if(theTransf == 0) {
 	opserr<<"coord transfomration not found\n";
 	return -1;

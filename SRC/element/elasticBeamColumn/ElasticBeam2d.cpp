@@ -114,7 +114,7 @@ void* OPS_ElasticBeam2d(void)
     }
 
     // check transf
-    CrdTransf* theTransf = OPS_GetCrdTransf(transfTag);
+    CrdTransf* theTransf = OPS_getCrdTransf(transfTag);
     if(theTransf == 0) {
 	opserr<<"coord transfomration not found\n";
 	return 0;
@@ -164,7 +164,7 @@ int OPS_ElasticBeam2d(Domain& theDomain, const ID& elenodes, ID& eletags)
     }
 
     // check transf
-    CrdTransf* theTransf = OPS_GetCrdTransf(transfTag);
+    CrdTransf* theTransf = OPS_getCrdTransf(transfTag);
     if(theTransf == 0) {
 	opserr<<"coord transfomration not found\n";
 	return -1;

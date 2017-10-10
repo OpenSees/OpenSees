@@ -94,7 +94,7 @@ void *OPS_ElasticTimoshenkoBeam2d()
         return 0;
     }
 
-    CrdTransf *theTrans = OPS_GetCrdTransf(iData[3]);
+    CrdTransf *theTrans = OPS_getCrdTransf(iData[3]);
     if (theTrans == 0)  {
 	    opserr << "WARNING transformation object not found for ElasticTimoshenkoBeam2d " << iData[0] << endln;
 	    return 0;

@@ -104,7 +104,7 @@ OPS_BeamContact3D(void)
   }
 
   int transfTag = iData[5];
-  CrdTransf *theTransf = OPS_GetCrdTransf(transfTag);
+  CrdTransf *theTransf = OPS_getCrdTransf(transfTag);
   if (theTransf == 0) {
     opserr << "WARNING element BeamContact3D " << iData[0] << endln;
     opserr << " coordTransf: " << transfTag << "not found\n";

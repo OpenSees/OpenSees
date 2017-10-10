@@ -89,7 +89,7 @@ void* OPS_ElasticBeam3d(void)
 	    opserr<<"no section is found\n";
 	    return 0;
 	}
-	theTrans = OPS_GetCrdTransf(transfTag);
+	theTrans = OPS_getCrdTransf(transfTag);
 	if(theTrans == 0) {
 	    opserr<<"no CrdTransf is found\n";
 	    return 0;
@@ -99,7 +99,7 @@ void* OPS_ElasticBeam3d(void)
 	if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
 	numData = 1;
 	if(OPS_GetIntInput(&numData,&transfTag) < 0) return 0;
-	theTrans = OPS_GetCrdTransf(transfTag);
+	theTrans = OPS_getCrdTransf(transfTag);
 	if(theTrans == 0) {
 	    opserr<<"no CrdTransf is found\n";
 	    return 0;
