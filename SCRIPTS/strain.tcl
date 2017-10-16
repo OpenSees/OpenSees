@@ -24,8 +24,8 @@ set interpreterWidth 60
 set interpreterHeight 8
 
 # absolute max values for strain & stress drawn
-set maxStress 50.0
-set maxStrain  1.0
+set maxStress 100.0
+set maxStrain  0.05
 
 # last point plotted on canvas
 set xLast [expr $height /2]
