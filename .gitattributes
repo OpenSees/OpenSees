@@ -265,6 +265,8 @@ EXAMPLES/ExamplePython/Example3.3.py -text
 EXAMPLES/ExamplePython/Example4.1.py -text
 EXAMPLES/ExamplePython/Example5.1.py -text
 EXAMPLES/ExamplePython/Example6.1.py -text
+EXAMPLES/ExamplePython/Example7.1.py -text
+EXAMPLES/ExamplePython/Example8.1.py -text
 EXAMPLES/ExamplePython/MomentCurvature.py -text
 EXAMPLES/ExamplePython/RCsection.py -text
 EXAMPLES/ExamplePython/tabasFN.txt -text

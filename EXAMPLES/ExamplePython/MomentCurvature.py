@@ -2,8 +2,8 @@
 # moment-curvature, but can be easily modified to do any mode
 # of section reponse.
 #
-# MHS
-# October 2000
+# Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
+# Date: June 2017
 #
 # Arguments
 #	secTag -- tag identifying section to be analyzed

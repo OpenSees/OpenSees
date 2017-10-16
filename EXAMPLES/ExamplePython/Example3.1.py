@@ -14,8 +14,8 @@
 #
 # Units: kips, in, sec
 #
-# Written: GLF/MHS/fmk
-# Date: January 2001
+# Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
+# Date: June 2017
 
 # import the OpenSees Python module
 import opensees as ops

@@ -14,8 +14,8 @@
 #
 # Units: kips, in, sec
 #
-# Written: GLF/MHS/fmk
-# Date: January 2001
+# Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
+# Date: September 2017
 
 # import the OpenSees Python module
 import opensees as ops
@@ -32,7 +32,8 @@ ops.model("BasicBuilder", "-ndm",2, "-ndf",2)
 
 # Define the material
 # -------------------
-ops.nDMaterial("ElasticIsotropic", 1, 1000.0, 0.25, 6.75/386.4) 
+#                               matTag  E      nu      rho
+ops.nDMaterial("ElasticIsotropic", 1, 1000.0, 0.25, 6.75/386.088) 
 
 # Define geometry
 # ---------------
@@ -79,7 +80,7 @@ ops.fix( 1, 1, 1)
 ops.fix(bn, 0, 1)
 
 # Define gravity loads
-# create a Constant TimeSeries
+# create a Linear time series
 ops.timeSeries("Linear", 1)
 # create a Plain load pattern
 ops.pattern("Plain", 1, 1, "-fact", 1.0)
@@ -182,7 +183,7 @@ ops.analysis("Transient")
 ops.record()
 
 # Perform the transient analysis (20 sec)
-#        numSteps dt
+#        numSteps  dt
 ops.analyze(1000, 0.05)
 
 ops.wipe()

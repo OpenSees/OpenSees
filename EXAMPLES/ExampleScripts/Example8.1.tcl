@@ -87,7 +87,9 @@ analyze 5
 # ----------------------------
 
 recorder Node -file Node.out -time -node $nn -dof 1 disp
-#recorder plot Node.out CenterNodeDisp 625 10 625 450 -columns 1 2
+#recorder Element -file Elem.out -eleRange 1 10 strains
+recorder Element -file Elem.out -time -eleRange 1 10 material 1 strains
+recorder plot Node.out CenterNodeDisp 625 10 625 450 -columns 1 2
 
 recorder display ShakingBeam 100 40 500 500 -wipe
 prp -100 100 120.5
@@ -117,7 +119,8 @@ rayleigh 0.01 0.0 0.0 0.0
 test EnergyIncr     1.0e-10    20   0
 algorithm Newton
 numberer RCM
-constraints Plain 
+constraints Plain
+system ProfileSPD
 integrator Newmark 0.5 0.25
 #integrator GeneralizedMidpoint 0.50
 analysis Transient
@@ -125,10 +128,6 @@ analysis Transient
 
 # Perform the transient analysis (20 sec)
 #       numSteps  dt
-
-#recorder Element -file ele.out -eleRange 1 10 strains
-recorder Element -file 3d/ele.out -eleRange 1 10 material 1 strains
-
 analyze 1000 1.0
 
 

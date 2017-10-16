@@ -39,6 +39,9 @@
 #    The reinforcing bars are all the same size.
 #    The number of fibers in the short direction of the cover patches is set to 1.
 # 
+# Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
+# Date: June 2017
+#
 def create(ops, id, h, b, cover, coreID, coverID, steelID, numBars, barArea, nfCoreY, nfCoreZ, nfCoverY, nfCoverZ, GJ):
     
     # The distance from the section z-axis to the edge of the cover concrete
