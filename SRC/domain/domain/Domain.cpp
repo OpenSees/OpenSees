@@ -2227,7 +2227,8 @@ Domain::Print(OPS_Stream &s, int flag)
 
 	s << "\t}\n";
 	s << "}\n";
-    
+    s << "}\n";
+
 	return;
   }
       

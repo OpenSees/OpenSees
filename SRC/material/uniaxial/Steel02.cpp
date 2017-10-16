@@ -529,16 +529,16 @@ Steel02::Print(OPS_Stream &s, int flag)
   if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {      
     //    s << "Steel02:(strain, stress, tangent) " << eps << " " << sig << " " << e << endln;
     s << "Steel02 tag: " << this->getTag() << endln;
-    s << "  fy: " << Fy << " ";
-    s << "  E0: " << E0 << " ";
-    s << "   b: " << b << " ";
-    s << "  R0: " << R0 << ",";
-    s << " cR1: " << cR1 << ",";
-    s << " cR2: " << cR2 << ",";    
-    s << "  a1: " << a1 << " ";
-    s << "  a2: " << a2 << " ";
-    s << "  a3: " << a3 << " ";
-    s << "  a4: " << a4 << " ";    
+    s << "  fy: " << Fy << ", ";
+    s << "  E0: " << E0 << ", ";
+    s << "   b: " << b << ", ";
+    s << "  R0: " << R0 << ", ";
+    s << " cR1: " << cR1 << ", ";
+    s << " cR2: " << cR2 << ", ";    
+    s << "  a1: " << a1 << ", ";
+    s << "  a2: " << a2 << ", ";
+    s << "  a3: " << a3 << ", ";
+    s << "  a4: " << a4;    
   }
   
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {

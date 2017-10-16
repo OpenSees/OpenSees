@@ -808,5 +808,63 @@ Steel4::recvSelf(int commitTag, Channel &theChannel,
 void
 Steel4::Print(OPS_Stream &s, int flag)
 {
-  s << "Steel4:(strain, stress, tangent) " << eps << " " << sig << " " << E << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "Steel4 tag: " << this->getTag() << endln;
+        s << "  fy: " << f_y << ", ";
+        s << "  E0: " << E_0 << ", ";
+        s << "  b_kt: " << b_k << ", ";
+        s << "  R0_kt: " << R_0 << ", ";
+        s << "  cR1_kt: " << r_1 << ", ";
+        s << "  cR2_kt: " << r_2 << ", ";
+        s << "  b_kc: " << b_kc << ", ";
+        s << "  R0_kc: " << R_0c << ", ";
+        s << "  cR1_kc: " << r_1c << ", ";
+        s << "  cR2_kc: " << r_2c << ", ";
+        s << "  lyp: " << l_yp << ", ";
+        s << "  b_it: " << b_i << ", ";
+        s << "  R_it: " << R_i << ", ";
+        s << "  rho_it: " << rho_i << ", ";
+        s << "  bl_it: " << b_l << ", ";
+        s << "  b_ic: " << b_ic << ", ";
+        s << "  R_ic: " << R_ic << ", ";
+        s << "  rho_ic: " << rho_ic << ", ";
+        s << "  bl_ic: " << b_lc << ", ";
+        s << "  fu_t: " << f_u << ", ";
+        s << "  Ru_t: " << R_u << ", ";
+        s << "  fu_c: " << f_uc << ", ";
+        s << "  Ru_c: " << R_uc << ", ";
+        s << "  sigini: " << sig_init << ", ";
+        s << "  cycNum: " << cycNum;
+    }
+
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"Steel4\", ";
+        s << "\"E\": " << E_0 << ", ";
+        s << "\"fy\": " << f_y << ", ";
+        s << "\"b_kt\": " << b_k << ", ";
+        s << "\"R0_kt\": " << R_0 << ", ";
+        s << "\"cR1_kt\": " << r_1 << ", ";
+        s << "\"cR2_kt\": " << r_2 << ", ";
+        s << "\"b_kc\": " << b_kc << ", ";
+        s << "\"R0_kc\": " << R_0c << ", ";
+        s << "\"cR1_kc\": " << r_1c << ", ";
+        s << "\"cR2_kc\": " << r_2c << ", ";
+        s << "\"lyp\": " << l_yp << ", ";
+        s << "\"b_it\": " << b_i << ", ";
+        s << "\"R_it\": " << R_i << ", ";
+        s << "\"rho_it\": " << rho_i << ", ";
+        s << "\"bl_it\": " << b_l << ", ";
+        s << "\"b_ic\": " << b_ic << ", ";
+        s << "\"R_ic\": " << R_ic << ", ";
+        s << "\"rho_ic\": " << rho_ic << ", ";
+        s << "\"bl_ic\": " << b_lc << ", ";
+        s << "\"fu_t\": " << f_u << ", ";
+        s << "\"Ru_t\": " << R_u << ", ";
+        s << "\"fu_c\": " << f_uc << ", ";
+        s << "\"Ru_c\": " << R_uc << ", ";
+        s << "\"sigini\": " << sig_init << ", ";
+        s << "\"cycNum\": " << cycNum << "}";
+    }
 }

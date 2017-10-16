@@ -812,17 +812,35 @@ int Bond_SP01::recvSelf (int cTag, Channel& theChannel,
 
 void Bond_SP01::Print (OPS_Stream& s, int flag)
 {
-   s << "Bond_SP01 tag: " << this->getTag() << endln;
-   s << "  sy: " << sy << " ";
-   s << "  fy: " << fy << " ";
-   s << "  su: " << su << " ";
-   s << "  fu: " << fu << " ";
-   s << "  Kz: " << Kz << " ";
-   s << "  R: " << R << " ";
-   s << "  Cd: " << Cd << " ";
-   s << "  db: " << db << " ";
-   s << "  fc: " << fc << " ";
-   s << "  lba:" << lba << " ";
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "Bond_SP01 tag: " << this->getTag() << endln;
+        s << "  sy: " << sy << ", ";
+        s << "  fy: " << fy << ", ";
+        s << "  su: " << su << ", ";
+        s << "  fu: " << fu << ", ";
+        s << "  Kz: " << Kz << ", ";
+        s << "  R: " << R << ", ";
+        s << "  Cd: " << Cd << ", ";
+        s << "  db: " << db << ", ";
+        s << "  fc: " << fc << ", ";
+        s << "  lba:" << lba;
+    }
+
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"Bond_SP01\", ";
+        s << "\"sy\": " << sy << ", ";
+        s << "\"fy\": " << fy << ", ";
+        s << "\"su\": " << su << ", ";
+        s << "\"fu\": " << fu << ", ";
+        s << "\"Kz\": " << Kz << ", ";
+        s << "\"R\": " << R << ", ";
+        s << "\"Cd\": " << Cd << ", ";
+        s << "\"db\": " << db << ", ";
+        s << "\"fc\": " << fc << ", ";
+        s << "\"lba\": " << lba << "}";
+    }
 }
 
 
