@@ -855,7 +855,7 @@ int OPS_doBlock3D()
 {
     int ndm = OPS_GetNDM();
     if (ndm < 3) {
-	opserr << "WARNING block3D numX? numY? startNode? startEle? eleType? eleArgs?";
+	opserr << "WARNING block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs?";
 	opserr << " : model dimension (ndm) must be at leat 3 \n";
 	return -1;
     }
@@ -864,8 +864,8 @@ int OPS_doBlock3D()
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
-    if (OPS_GetNumRemainingInputArgs() < 7) {
-	opserr << "WARNING incorrect numer of args :block3D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
+    if (OPS_GetNumRemainingInputArgs() < 8) {
+	opserr << "WARNING incorrect numer of args :block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs? coords?";
 	return -1;
     }
 
@@ -931,7 +931,7 @@ int OPS_doBlock3D()
     // create Block3D object
     Block3D theBlock(idata[0], idata[1], idata[2], haveNode, Coordinates);
 
-    // create the nodes: (numX+1)*(numY+1) nodes to be created
+    // create the nodes: (numX+1)*(numY+1)*(numZ+1) nodes to be created
     int nodeID = idata[3];
     Node* theNode = 0;
     for (int k=0; k<=idata[2]; k++) {
@@ -942,7 +942,7 @@ int OPS_doBlock3D()
 		double yLoc = nodeCoords(1);
 		double zLoc = nodeCoords(2);
 
-		theNode = new Node(nodeID,ndf,xLoc, yLoc, zLoc);
+		theNode = new Node(nodeID, ndf, xLoc, yLoc, zLoc);
 
 		if (theNode == 0) {
 		    opserr << "WARNING ran out of memory creating node\n";
@@ -961,9 +961,9 @@ int OPS_doBlock3D()
 	}
     }
 
-    // create the elements: numX*numY elements to be created if 4 node elements
-    //                      numX/2 * numY /2 nodes to be created if 9 node elements
-    int eleID = idata[3];
+    // create the elements: numX*numY*numZ elements to be created if 4 node elements
+    //                      numX/2*numY/2*numZ/2 nodes to be created if 9 node elements
+    int eleID = idata[4];
     Element* theEle = 0;
 
     NDMaterial* mat = OPS_getNDMaterial(matTag);
@@ -980,14 +980,14 @@ int OPS_doBlock3D()
 	    for (int i=0; i<idata[0]; i++) {
 
 		const ID& nodeTags = theBlock.getElementNodes(i,j,k);
-		int nd1 = nodeTags(0) + idata[2];
-		int nd2 = nodeTags(1) + idata[2];
-		int nd3 = nodeTags(2) + idata[2];
-		int nd4 = nodeTags(3) + idata[2];
-		int nd5 = nodeTags(4) + idata[2];
-		int nd6 = nodeTags(5) + idata[2];
-		int nd7 = nodeTags(6) + idata[2];
-		int nd8 = nodeTags(7) + idata[2];
+		int nd1 = nodeTags(0) + idata[3];
+		int nd2 = nodeTags(1) + idata[3];
+		int nd3 = nodeTags(2) + idata[3];
+		int nd4 = nodeTags(3) + idata[3];
+		int nd5 = nodeTags(4) + idata[3];
+		int nd6 = nodeTags(5) + idata[3];
+		int nd7 = nodeTags(6) + idata[3];
+		int nd8 = nodeTags(7) + idata[3];
 
 		if (strcmp(type, "stdBrick") == 0) {
 		    
