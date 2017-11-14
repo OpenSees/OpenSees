@@ -22,9 +22,9 @@
 //          Nov 2016, University of Washington
 
 // Description: This file contains the implementation for the PM4Sand class.
-// PM4Sand(Version 3): A Sand Plasticity Model For Earthquake Engineering Applications
+// PM4Sand(Version 3.1): A Sand Plasticity Model For Earthquake Engineering Applications
 // by R.W.Boulanger and K.Ziotopoulou
-// March 2015
+// Oct 2017
 
 #ifndef PM4Sand_h
 #define PM4Sand_h
@@ -55,13 +55,13 @@ public:
 	PM4Sand(int tag, int classTag, double Dr, double G0, double hp0, double mDen, double P_atm = 101.3, double h0 = -1, double emax = 0.8,
 		double emin = 0.5, double nb = 0.5, double nd = 0.1, double Ado = -1, double z_max = -1, double cz = 250,
 		double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Ckaf = -1, double Q = 10,
-		double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, int FirstCall = 0, int integrationScheme = 1, int tangentType = 0,
+		double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, double residualP = 0.0, int FirstCall = 0, int integrationScheme = 1, int tangentType = 0,
 		double TolF = 1.0e-7, double TolR = 1.0e-7);
 	// full constructor
 	PM4Sand(int tag, double Dr, double G0, double hp0, double mDen, double P_atm = 101.3, double h0 = -1, double emax = 0.8,
 		double emin = 0.5, double nb = 0.5, double nd = 0.1, double Ado = -1, double z_max = -1, double cz = 250,
 		double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Ckaf = -1, double Q = 10,
-		double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, int FirstCall = 0, int integrationScheme = 1, int tangentType = 0,
+		double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, double residualP = 0.0, int FirstCall = 0, int integrationScheme = 1, int tangentType = 0,
 		double TolF = 1.0e-7, double TolR = 1.0e-7);
 	// null constructor
 	PM4Sand();
@@ -75,7 +75,7 @@ public:
 
 	int setTrialStrain(const Vector &v);
 	int setTrialStrain(const Vector &v, const Vector &r);
-	int initialize(const Vector& initStress);
+	int initialize(Vector initStress);
 	int initialize();
 	NDMaterial *getCopy(const char *type);
 
@@ -89,12 +89,12 @@ public:
 
 	// Recorder functions
 	virtual const Vector& getStressToRecord() { return mSigma; };
-	const double getDGamma();
+	double getDGamma();
 	const Vector getState();
 	const Vector getAlpha();
 	const Vector getFabric();
 	const Vector getAlpha_in();
-	const double getDilatancy();
+	double getDilatancy();
 	const Vector getAlpha_in_p();
 	const Matrix &getTangent();
 	const Matrix &getInitialTangent();
@@ -142,6 +142,7 @@ protected:
 	double m_chg;
 	double m_z_max;
 	int m_FirstCall;
+	int m_PostShake;
 
 	// internal variables
 	Vector mEpsilon;    // strain tensor
@@ -150,6 +151,7 @@ protected:
 	Vector mSigma;      // stress tensor
 	Vector mSigma_n;    // stress tensor (last committed)
 	Vector mSigma_r;    // negative stress tensor for returning
+	Vector mSigma_b;    // stress tensor offset from initial stress state outside bounding surface correction
 	Vector mEpsilonE;	// elastic strain tensor
 	Vector mEpsilonE_n;	// elastic strain tensor (last committed)
 	Vector mEpsilonE_r; // negative elastic strain tensor for returning
@@ -176,10 +178,11 @@ protected:
 	double mzcum;       // current cumulated fabric
 	double mzpeak;      // current peak fabric
 	double mpzp;
-	bool   pzpFlag;
+	double mzxp;        // product of z and p
 	double mMb;
 	double mMd;
 	double mMcur;       // current stress ratio
+	double mresidualP;    // residualP to avoid negative p during calculation
 
 	double	mTolF;			// max drift from yield surface
 	double	mTolR;			// tolerance for Newton iterations
@@ -189,7 +192,7 @@ protected:
 	char unsigned mOrgTangType;
 	double	m_Pmin;			// Minimum allowable mean effective stress
 	double  m_Pmin2;        // Minimum p for Cpzp2 and Cpmin
-	bool	m_isSmallp;		// flag for small p
+	bool	m_firstCycle;		// flag for first half cycle
 	static char unsigned mElastFlag;	// 1: enforce elastic response
 
 	static Vector mI1;			// 2nd Order Identity Tensor
@@ -251,42 +254,41 @@ protected:
 		const Vector& NextStrain, Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha,
 		double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
 	void	explicit_integrator(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& alpha_in_p, const Vector& NextStrain,
 		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
 		double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
 	void	ForwardEuler(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& alpha_in_p, const Vector& NextStrain,
 		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
 		double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
 	void	ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& alpha_in_p, const Vector& NextStrain,
 		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
 		double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
 	void	RungeKutta4(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& alpha_in_p, const Vector& NextStrain,
 		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
 		double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
 	void	MaxStrainInc(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
-		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+		const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& alpha_in_p, const Vector& NextStrain,
 		Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
 		double& NextDGamma, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent);
 
 	double	IntersectionFactor(const Vector& CurStress, const Vector& CurStrain, const Vector& NextStrain, const Vector& CurAlpha,
 		double a0, double a1);
 	double	IntersectionFactor_Unloading(const Vector& CurStress, const Vector& CurStrain, const Vector& NextStrain, const Vector& CurAlpha);
-	void Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& alpha_in, const Vector& CurFabric, double& NextVoidRatio);
+	void Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& alpha_in, const Vector& alpha_in_p, const Vector& CurFabric, double& NextVoidRatio);
 	void Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& dAlpha, const double m, const Vector& R, const Vector& n, const Vector& r);
 	// Material Specific Methods
 	double	Macauley(double x);
 	double	MacauleyIndex(double x);
-	double	g(const double cos3theta, const double c);
 	double	GetF(const Vector& nStress, const Vector& nAlpha);
 	double	GetKsi(const double& e, const double& p);
 	void	GetElasticModuli(const Vector& sigma, double &K, double &G);
 	void	GetElasticModuli(const Vector& sigma, double &K, double &G, double &Mcur, const double& zcum);
 	Matrix	GetStiffness(const double& K, const double& G);
 	Matrix	GetCompliance(const double& K, const double& G);
-	void	GetStateDependent(const Vector &stress, const Vector &alpha, const Vector &alpha_in
+	void	GetStateDependent(const Vector &stress, const Vector &alpha, const Vector &alpha_in, const Vector& alpha_in_p
 		, const Vector &fabric, const Vector &fabric_in, const double &G, const double &zcum, const double &zpeak
 		, const double &pzp, const double &Mcur, const double &dr, Vector &n, double &D, Vector &R, double &K_p
 		, Vector &alphaD, double &Cka, double &h, Vector &b);
