@@ -1490,34 +1490,69 @@ ModIMKPinching02::recvSelf(int cTag, Channel &theChannel,
 void
 ModIMKPinching02::Print(OPS_Stream &s, int flag)
 {
-  s << "ModIMKPinching02 tag: " << this->getTag() << endln;
-  s << "  Ke: " << Ke0 << endln;					// Updated: Filipe Ribeiro and Andre Barbosa
-  s << "  AlfaPos: " << AlfanPos << endln;		// Updated: Filipe Ribeiro and Andre Barbosa
-  s << "  AlfaNeg: " << AlfanNeg << endln;		// Updated: Filipe Ribeiro and Andre Barbosa
-  s << "  My_pos: " << My_pos << endln;
-  s << "  My_neg: " << My_neg << endln;
-  s << "  FprPos: " << FprPos << endln;
-  s << "  FprNeg: " << FprNeg << endln;
-  s << "  A_Pinch: " << A_pinch << endln;      
-  s << "  Ls: " << Ls << endln;
-  s << "  Ld: " << Ld << endln;
-  s << "  La: " << La << endln;
-  s << "  Lk: " << Lk << endln;
-  s << "  Cs: " << Cs << endln;
-  s << "  Cd: " << Cd << endln;
-  s << "  Ca: " << Ca << endln;
-  s << "  Ck: " << Ck << endln;
-  s << "  ThetaPpos: " << ThetaPpos << endln;
-  s << "  ThetaPneg: " << ThetaPneg << endln;
-  s << "  ThetaPCpos: " << ThetaPCpos << endln;
-  s << "  ThetaPCneg: " << ThetaPCneg << endln;
-  s << "  ResfacPos: " << ResfacPos << endln;
-  s << "  ResfacNeg: " << ResfacNeg << endln;
-  s << "  FracDispPos: " << FracDispPos << endln;
-  s << "  FracDispNeg: " << FracDispNeg << endln;
-  s << "  DPos: " << DPos << endln;
-  s << "  DNeg: " << DNeg << endln;
-  s << "  nFactor: " << nFactor << endln;			// Updated: Filipe Ribeiro and Andre Barbosa
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "ModIMKPinching02 tag: " << this->getTag() << endln;
+        s << "  Ke: " << Ke0 << endln;					// Updated: Filipe Ribeiro and Andre Barbosa
+        s << "  AlfaPos: " << AlfanPos << endln;		// Updated: Filipe Ribeiro and Andre Barbosa
+        s << "  AlfaNeg: " << AlfanNeg << endln;		// Updated: Filipe Ribeiro and Andre Barbosa
+        s << "  My_pos: " << My_pos << endln;
+        s << "  My_neg: " << My_neg << endln;
+        s << "  FprPos: " << FprPos << endln;
+        s << "  FprNeg: " << FprNeg << endln;
+        s << "  A_Pinch: " << A_pinch << endln;
+        s << "  Ls: " << Ls << endln;
+        s << "  Ld: " << Ld << endln;
+        s << "  La: " << La << endln;
+        s << "  Lk: " << Lk << endln;
+        s << "  Cs: " << Cs << endln;
+        s << "  Cd: " << Cd << endln;
+        s << "  Ca: " << Ca << endln;
+        s << "  Ck: " << Ck << endln;
+        s << "  ThetaPpos: " << ThetaPpos << endln;
+        s << "  ThetaPneg: " << ThetaPneg << endln;
+        s << "  ThetaPCpos: " << ThetaPCpos << endln;
+        s << "  ThetaPCneg: " << ThetaPCneg << endln;
+        s << "  ResfacPos: " << ResfacPos << endln;
+        s << "  ResfacNeg: " << ResfacNeg << endln;
+        s << "  FracDispPos: " << FracDispPos << endln;
+        s << "  FracDispNeg: " << FracDispNeg << endln;
+        s << "  DPos: " << DPos << endln;
+        s << "  DNeg: " << DNeg << endln;
+        s << "  nFactor: " << nFactor << endln;			// Updated: Filipe Ribeiro and Andre Barbosa
+    }
+
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ModIMKPinching02\", ";
+        s << "\"Ke0\": " << Ke0 << ", ";
+        s << "\"AlfaPos\": " << AlfanPos << ", ";
+        s << "\"AlfaNeg\": " << AlfanNeg << ", ";
+        s << "\"My_pos\": " << My_pos << ", ";
+        s << "\"My_neg\": " << My_neg << ", ";
+        s << "\"FprPos\": " << FprPos << ", ";
+        s << "\"FprNeg\": " << FprNeg << ", ";
+        s << "\"A_Pinch\": " << A_pinch << ", ";
+        s << "\"Ls\": " << Ls << ", ";
+        s << "\"Ld\": " << Ld << ", ";
+        s << "\"La\": " << La << ", ";
+        s << "\"Lk\": " << Lk << ", ";
+        s << "\"Cs\": " << Cs << ", ";
+        s << "\"Cd\": " << Cd << ", ";
+        s << "\"Ca\": " << Ca << ", ";
+        s << "\"Ck\": " << Ck << ", ";
+        s << "\"ThetaPpos\": " << ThetaPpos << ", ";
+        s << "\"ThetaPneg\": " << ThetaPneg << ", ";
+        s << "\"ThetaPCpos\": " << ThetaPCpos << ", ";
+        s << "\"ThetaPCneg\": " << ThetaPCneg << ", ";
+        s << "\"ResfacPos\": " << ResfacPos << ", ";
+        s << "\"ResfacNeg\": " << ResfacNeg << ", ";
+        s << "\"FracDispPos\": " << FracDispPos << ", ";
+        s << "\"FracDispNeg\": " << FracDispNeg << ", ";
+        s << "\"DPos\": " << DPos << ", ";
+        s << "\"DNeg\": " << DNeg << ", ";
+        s << "\"nFactor\": " << nFactor << "}";
+    }
 }
 
 // Positive and Negative Envelope SubRoutines

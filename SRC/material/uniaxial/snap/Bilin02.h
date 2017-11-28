@@ -18,7 +18,7 @@
 **                                                                    **
 ** ****************************************************************** */
 
-//Modified Ibarra-Medina-Krawinkler with Bilin02ear hysteretic response
+//Modified Ibarra-Medina-Krawinkler with Bilinear hysteretic response
 
 //**********************************************************************                                                                    
 // Code Developed by: Dimitrios G. Lignos

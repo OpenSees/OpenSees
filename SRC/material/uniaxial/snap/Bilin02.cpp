@@ -1916,10 +1916,63 @@ Bilin02::recvSelf(int cTag, Channel &theChannel,
 void
 Bilin02::Print(OPS_Stream &s, int flag)
 {
-    //s << "Bilin02 tag: " << this->getTag() << endln;
-    //s << "  G: " << G << endln;
-    //s << "  t: " << t << endln;
-        //s << "  A: " << A << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "Bilin02 tag: " << this->getTag() << endln;
+        s << "Ke0: " << Ke0 << ", ";
+        s << "AsPos: " << AsPos << ", ";
+        s << "AsNeg: " << AsNeg << ", ";
+        s << "My_pos: " << My_pos << ", ";
+        s << "My_neg: " << My_neg << ", ";
+        s << "LamdaS: " << LamdaS << ", ";
+        s << "LamdaK: " << LamdaK << ", ";
+        s << "LamdaA: " << LamdaA << ", ";
+        s << "LamdaD: " << LamdaD << ", ";
+        s << "Cs: " << Cs << ", ";
+        s << "Ck: " << Ck << ", ";
+        s << "Ca: " << Ca << ", ";
+        s << "Cd: " << Cd << ", ";
+        s << "Thetap_pos: " << Thetap_pos << ", ";
+        s << "Thetap_neg: " << Thetap_neg << ", ";
+        s << "Thetapc_pos: " << Thetapc_pos << ", ";
+        s << "Thetapc_neg: " << Thetapc_neg << ", ";
+        s << "KPos: " << KPos << ", ";
+        s << "KNeg: " << KNeg << ", ";
+        s << "Thetau_pos: " << Thetau_pos << ", ";
+        s << "Thetau_neg: " << Thetau_neg << ", ";
+        s << "PDPlus: " << PDPlus << ", ";
+        s << "PDNeg: " << PDNeg << ", ";
+        s << "nFactor: " << nFactor;
+    }
+
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"Bilin02\", ";
+        s << "\"Ke0\": " << Ke0 << ", ";
+        s << "\"AsPos\": " << AsPos << ", ";
+        s << "\"AsNeg\": " << AsNeg << ", ";
+        s << "\"My_pos\": " << My_pos << ", ";
+        s << "\"My_neg\": " << My_neg << ", ";
+        s << "\"LamdaS\": " << LamdaS << ", ";
+        s << "\"LamdaK\": " << LamdaK << ", ";
+        s << "\"LamdaA\": " << LamdaA << ", ";
+        s << "\"LamdaD\": " << LamdaD << ", ";
+        s << "\"Cs\": " << Cs << ", ";
+        s << "\"Ck\": " << Ck << ", ";
+        s << "\"Ca\": " << Ca << ", ";
+        s << "\"Cd\": " << Cd << ", ";
+        s << "\"Thetap_pos\": " << Thetap_pos << ", ";
+        s << "\"Thetap_neg\": " << Thetap_neg << ", ";
+        s << "\"Thetapc_pos\": " << Thetapc_pos << ", ";
+        s << "\"Thetapc_neg\": " << Thetapc_neg << ", ";
+        s << "\"KPos\": " << KPos << ", ";
+        s << "\"KNeg\": " << KNeg << ", ";
+        s << "\"Thetau_pos\": " << Thetau_pos << ", ";
+        s << "\"Thetau_neg\": " << Thetau_neg << ", ";
+        s << "\"PDPlus\": " << PDPlus << ", ";
+        s << "\"PDNeg\": " << PDNeg << ", ";
+        s << "\"nFactor\": " << nFactor << "}";
+    }
 }
 
 //my functions
