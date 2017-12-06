@@ -44,7 +44,6 @@ PythonModule::run()
     return 0;
 }
 
-
 int
 PythonModule::addCommand(const char *, Command &)
 {
@@ -166,6 +165,12 @@ PythonModule::setString(const char* str)
     wrapper.setOutputs(str);
     
     return 0;
+}
+
+int
+PythonModule::runCommand(const char* cmd)
+{
+    return PyRun_SimpleString(cmd);
 }
 
 

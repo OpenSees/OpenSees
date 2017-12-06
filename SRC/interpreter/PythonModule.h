@@ -39,7 +39,6 @@
 #include "PythonWrapper.h"
 #include "OpenSeesCommands.h"
 
-
 class PythonModule: public DL_Interpreter
 {
   public:
@@ -65,6 +64,9 @@ class PythonModule: public DL_Interpreter
     virtual int setInt(int *, int numArgs);
     virtual int setDouble(double *, int numArgs);
     virtual int setString(const char*);
+
+    // methods to run a command in the interpreter
+    virtual int runCommand(const char*);
 
     // getwrapper
     PythonWrapper* getWrapper() {return &wrapper;}

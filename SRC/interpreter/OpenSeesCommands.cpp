@@ -421,7 +421,6 @@ OpenSeesCommands::setAlgorithm(EquiSolnAlgo* algorithm)
     }
 }
 
-
 void
 OpenSeesCommands::setStaticAnalysis()
 {
@@ -1166,7 +1165,6 @@ int OPS_model()
     return 0;
 }
 
-
 int OPS_System()
 {
     if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -1685,7 +1683,6 @@ int OPS_Analysis()
 
 int OPS_analyze()
 {
-
     int result = 0;
     StaticAnalysis* theStaticAnalysis = cmds->getStaticAnalysis();
     TransientAnalysis* theTransientAnalysis = cmds->getTransientAnalysis();
@@ -1933,6 +1930,98 @@ int OPS_printB()
     outputFile.close();
 
     return 0;
+}
+
+int printNode(OPS_Stream& output);
+int printElement(OPS_Stream& output);
+int printAlgorithm(OPS_Stream& output);
+int printIntegrator(OPS_Stream& output);
+
+int OPS_printModel()
+{
+    int res = 0;
+
+    int flag = OPS_PRINT_CURRENTSTATE;
+
+    FileStream outputFile;
+    OPS_Stream *output = &opserr;
+    bool done = false;
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    // if just 'print' then print out the entire domain
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+        opserr << *theDomain;
+        return 0;
+    }
+
+    while (done == false && OPS_GetNumRemainingInputArgs() > 0) {
+
+        const char* arg = OPS_GetString();
+
+        // if 'print ele i j k..' print out some elements
+        if ((strcmp(arg, "-ele") == 0) || (strcmp(arg, "ele") == 0)) {
+            res = printElement(*output);
+            done = true;
+        }
+        // if 'print node i j k ..' print out some nodes
+        else if ((strcmp(arg, "-node") == 0) || (strcmp(arg, "node") == 0)) {
+            res = printNode(*output);
+            done = true;
+        }
+
+        // if 'print integrator flag' print out the integrator
+        else if ((strcmp(arg, "integrator") == 0) || (strcmp(arg, "-integrator") == 0)) {
+            res = printIntegrator(*output);
+            done = true;
+        }
+
+        // if 'print algorithm flag' print out the algorithm
+        else if ((strcmp(arg, "algorithm") == 0) || (strcmp(arg, "-algorithm") == 0)) {
+            res = printAlgorithm(*output);
+            done = true;
+        }
+
+        // if 'print -JSON' print using JSON format
+        else if ((strcmp(arg, "JSON") == 0) || (strcmp(arg, "-JSON") == 0)) {
+            flag = OPS_PRINT_PRINTMODEL_JSON;
+        }
+
+        else {
+
+            if ((strcmp(arg, "file") == 0) || (strcmp(arg, "-file") == 0)) {}
+
+            if (OPS_GetNumRemainingInputArgs() < 1) break;
+            const char* filename = OPS_GetString();
+
+            openMode mode = APPEND;
+            if (flag == OPS_PRINT_PRINTMODEL_JSON)
+                mode = OVERWRITE;
+            if (outputFile.setFile(filename, mode) != 0) {
+                opserr << "print <filename> .. - failed to open file: " << filename << endln;
+                return -1;
+            }
+
+            SimulationInformation* simulationInfo = cmds->getSimulationInformation();
+            if (simulationInfo == 0) return -1;
+
+            // if just 'print <filename>' then print out the entire domain to eof
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                if (flag == OPS_PRINT_PRINTMODEL_JSON)
+                    simulationInfo->Print(outputFile, flag);
+                theDomain->Print(outputFile, flag);
+                return 0;
+            }
+
+            output = &outputFile;
+
+        }
+    }
+
+    // close the output file
+    outputFile.close();
+    return res;
 }
 
 void* OPS_KrylovNewton()
@@ -2618,6 +2707,210 @@ int OPS_neesUpload()
     }
 
     simulationInfo->neesUpload(userName, userPasswd, projID, expID);
+
+    return 0;
+}
+
+int OPS_defaultUnits()
+{
+    if (OPS_GetNumRemainingInputArgs() < 8) {
+        opserr << "WARNING defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
+        return -1;
+    }
+
+    const char *force = 0;
+    const char *length = 0;
+    const char *time = 0;
+    const char *temperature = 0;
+
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* unitType = OPS_GetString();
+
+        if ((strcmp(unitType, "-force") == 0) || (strcmp(unitType, "-Force") == 0)
+            || (strcmp(unitType, "-FORCE") == 0)) {
+            force = OPS_GetString();
+        }
+        else if ((strcmp(unitType, "-length") == 0) || (strcmp(unitType, "-Length") == 0)
+            || (strcmp(unitType, "-LENGTH") == 0)) {
+            length = OPS_GetString();
+        }
+        else if ((strcmp(unitType, "-time") == 0) || (strcmp(unitType, "-Time") == 0)
+            || (strcmp(unitType, "-TIME") == 0)) {
+            time = OPS_GetString();
+        }
+        else if ((strcmp(unitType, "-temperature") == 0) || (strcmp(unitType, "-Temperature") == 0)
+            || (strcmp(unitType, "-TEMPERATURE") == 0) || (strcmp(unitType, "-temp") == 0)
+            || (strcmp(unitType, "-Temp") == 0) || (strcmp(unitType, "-TEMP") == 0)) {
+            temperature = OPS_GetString();
+        }
+        else {
+            opserr << "WARNING defaultUnits - unrecognized unit: " << unitType << " want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
+            return -1;
+        }
+    }
+
+    if (length == 0 || force == 0 || time == 0 || temperature == 0) {
+        opserr << "defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
+        return -1;
+    }
+
+    double lb, kip, n, kn, mn, kgf, tonf;
+    double in, ft, mm, cm, m;
+    double sec, msec;
+    double F, C;
+
+    if ((strcmp(force, "lb") == 0) || (strcmp(force, "lbs") == 0)) {
+        lb = 1.0;
+    }
+    else if ((strcmp(force, "kip") == 0) || (strcmp(force, "kips") == 0)) {
+        lb = 0.001;
+    }
+    else if ((strcmp(force, "N") == 0)) {
+        lb = 4.4482216152605;
+    }
+    else if ((strcmp(force, "kN") == 0) || (strcmp(force, "KN") == 0) || (strcmp(force, "kn") == 0)) {
+        lb = 0.0044482216152605;
+    }
+    else if ((strcmp(force, "mN") == 0) || (strcmp(force, "MN") == 0) || (strcmp(force, "mn") == 0)) {
+        lb = 0.0000044482216152605;
+    }
+    else if ((strcmp(force, "kgf") == 0)) {
+        lb = 9.80665*4.4482216152605;
+    }
+    else if ((strcmp(force, "tonf") == 0)) {
+        lb = 9.80665 / 1000.0*4.4482216152605;
+    }
+    else {
+        lb = 1.0;
+        opserr << "defaultUnits - unknown force type, valid options: lb, kip, N, kN, MN, kgf, tonf\n";
+        return -1;
+    }
+
+    if ((strcmp(length, "in") == 0) || (strcmp(length, "inch") == 0)) {
+        in = 1.0;
+    }
+    else if ((strcmp(length, "ft") == 0) || (strcmp(length, "feet") == 0)) {
+        in = 1.0 / 12.0;
+    }
+    else if ((strcmp(length, "mm") == 0)) {
+        in = 25.4;
+    }
+    else if ((strcmp(length, "cm") == 0)) {
+        in = 2.54;
+    }
+    else if ((strcmp(length, "m") == 0)) {
+        in = 0.0254;
+    }
+    else {
+        in = 1.0;
+        opserr << "defaultUnits - unknown length type, valid options: in, ft, mm, cm, m\n";
+        return -1;
+    }
+
+    if ((strcmp(time, "sec") == 0) || (strcmp(time, "Sec") == 0)) {
+        sec = 1.0;
+    }
+    else if ((strcmp(time, "msec") == 0) || (strcmp(time, "mSec") == 0)) {
+        sec = 1000.0;
+    }
+    else {
+        sec = 1.0;
+        opserr << "defaultUnits - unknown time type, valid options: sec, msec\n";
+        return -1;
+    }
+
+    if ((strcmp(temperature, "F") == 0) || (strcmp(temperature, "degF") == 0)) {
+        F = 1.0;
+    }
+    else if ((strcmp(temperature, "C") == 0) || (strcmp(temperature, "degC") == 0)) {
+        F = 9.0 / 5.0 + 32.0;
+    }
+    else {
+        F = 1.0;
+        opserr << "defaultUnits - unknown temperature type, valid options: F, C\n";
+        return -1;
+    }
+
+    kip = lb / 0.001;
+    n = lb / 4.4482216152605;
+    kn = lb / 0.0044482216152605;
+    mn = lb / 0.0000044482216152605;
+    kgf = lb / (9.80665*4.4482216152605);
+    tonf = lb / (9.80665 / 1000.0*4.4482216152605);
+
+    ft = in * 12.0;
+    mm = in / 25.44;
+    cm = in / 2.54;
+    m = in / 0.0254;
+
+    msec = sec * 0.001;
+
+    C = (F - 32.0)*5.0 / 9.0;
+
+    char string[50];
+    DL_Interpreter* theInter = cmds->getInterpreter();
+    if (theInter == 0) return -1;
+
+    sprintf(string, "lb = %.18e", lb);   theInter->runCommand(string);
+    sprintf(string, "lbf = %.18e", lb);   theInter->runCommand(string);
+    sprintf(string, "kip = %.18e", kip);   theInter->runCommand(string);
+    sprintf(string, "N = %.18e", n);   theInter->runCommand(string);
+    sprintf(string, "kN = %.18e", kn);   theInter->runCommand(string);
+    sprintf(string, "Newton = %.18e", n);   theInter->runCommand(string);
+    sprintf(string, "kNewton = %.18e", kn);   theInter->runCommand(string);
+    sprintf(string, "MN = %.18e", mn);   theInter->runCommand(string);
+    sprintf(string, "kgf = %.18e", kgf);   theInter->runCommand(string);
+    sprintf(string, "tonf = %.18e", tonf);   theInter->runCommand(string);
+
+    //sprintf(string, "in = %.18e", in);   theInter->runCommand(string);  // "in" is a keyword in Python
+    sprintf(string, "inch = %.18e", in);   theInter->runCommand(string);
+    sprintf(string, "ft = %.18e", ft);   theInter->runCommand(string);
+    sprintf(string, "mm = %.18e", mm);   theInter->runCommand(string);
+    sprintf(string, "cm = %.18e", cm);   theInter->runCommand(string);
+    sprintf(string, "m = %.18e", m);   theInter->runCommand(string);
+    sprintf(string, "meter = %.18e", m);   theInter->runCommand(string);
+
+    sprintf(string, "sec = %.18e", sec);   theInter->runCommand(string);
+    sprintf(string, "msec = %.18e", msec);   theInter->runCommand(string);
+
+    sprintf(string, "F = %.18e", F);   theInter->runCommand(string);
+    sprintf(string, "degF = %.18e", F);   theInter->runCommand(string);
+    sprintf(string, "C = %.18e", C);   theInter->runCommand(string);
+    sprintf(string, "degC = %.18e", C);   theInter->runCommand(string);
+
+    double g = 32.174049*ft / (sec*sec);
+    sprintf(string, "g = %.18e", g);   theInter->runCommand(string);
+    sprintf(string, "kg = %.18e", n*sec*sec / m);   theInter->runCommand(string);
+    sprintf(string, "Mg = %.18e", 1e3*n*sec*sec / m);   theInter->runCommand(string);
+    sprintf(string, "slug = %.18e", lb*sec*sec / ft);   theInter->runCommand(string);
+    sprintf(string, "Pa = %.18e", n / (m*m));   theInter->runCommand(string);
+    sprintf(string, "kPa = %.18e", 1e3*n / (m*m));   theInter->runCommand(string);
+    sprintf(string, "MPa = %.18e", 1e6*n / (m*m));   theInter->runCommand(string);
+    sprintf(string, "psi = %.18e", lb / (in*in));   theInter->runCommand(string);
+    sprintf(string, "ksi = %.18e", kip / (in*in));   theInter->runCommand(string);
+    sprintf(string, "psf = %.18e", lb / (ft*ft));   theInter->runCommand(string);
+    sprintf(string, "ksf = %.18e", kip / (ft*ft));   theInter->runCommand(string);
+    sprintf(string, "pcf = %.18e", lb / (ft*ft*ft));   theInter->runCommand(string);
+    sprintf(string, "in2 = %.18e", in*in);   theInter->runCommand(string);
+    sprintf(string, "ft2 = %.18e", ft*ft);   theInter->runCommand(string);
+    sprintf(string, "mm2 = %.18e", mm*mm);   theInter->runCommand(string);
+    sprintf(string, "cm2 = %.18e", cm*cm);   theInter->runCommand(string);
+    sprintf(string, "m2 = %.18e", m*m);   theInter->runCommand(string);
+    sprintf(string, "in4 = %.18e", in*in*in*in);   theInter->runCommand(string);
+    sprintf(string, "ft4 = %.18e", ft*ft*ft*ft);   theInter->runCommand(string);
+    sprintf(string, "mm4 = %.18e", mm*mm*mm*mm);   theInter->runCommand(string);
+    sprintf(string, "cm4 = %.18e", cm*cm*cm*cm);   theInter->runCommand(string);
+    sprintf(string, "m4 = %.18e", m*m*m*m);   theInter->runCommand(string);
+    sprintf(string, "pi = %.18e", 2.0*asin(1.0));   theInter->runCommand(string);
+    sprintf(string, "PI = %.18e", 2.0*asin(1.0));   theInter->runCommand(string);
+
+    SimulationInformation* simulationInfo = cmds->getSimulationInformation();
+    if (simulationInfo == 0) return -1;
+
+    simulationInfo->setForceUnit(force);
+    simulationInfo->setLengthUnit(length);
+    simulationInfo->setTimeUnit(time);
+    simulationInfo->setTemperatureUnit(temperature);
 
     return 0;
 }

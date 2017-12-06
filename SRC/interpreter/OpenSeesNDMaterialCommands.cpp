@@ -151,10 +151,8 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("BeamFiberMaterial", &OPS_BeamFiberMaterial));
 	nDMaterialsMap.insert(std::make_pair("BeamFiber", &OPS_BeamFiberMaterial));
 
-	
 	return 0;
     }
-
 }
 
 int

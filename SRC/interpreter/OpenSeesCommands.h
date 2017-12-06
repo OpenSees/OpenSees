@@ -173,6 +173,9 @@ int OPS_LimitCurve();
 /* OpenSeesNDMaterialCommands.cpp */
 int OPS_NDMaterial();
 
+/* OpenSeesFrictionModelCommands.cpp */
+int OPS_FrictionModel();
+
 /* OpenSeesElementCommands.cpp */
 int OPS_Element();
 int OPS_doBlock2D();
@@ -208,7 +211,6 @@ int OPS_nodeEigenvector();
 int OPS_getTime();
 int OPS_eleResponse();
 int OPS_getLoadFactor();
-int OPS_printModel();
 int OPS_printModelGID();
 int OPS_getCTestNorms();
 int OPS_getCTestIter();
@@ -251,7 +253,9 @@ int OPS_setTime();
 int OPS_removeObject();
 int OPS_addNodalMass();
 int OPS_buildModel();
+int OPS_setNodeDisp();
 int OPS_setNodeVel();
+int OPS_setNodeAccel();
 int OPS_setElementRayleighDampingFactors();
 int OPS_MeshRegion();
 int OPS_peerNGA();
@@ -284,6 +288,7 @@ int OPS_resetModel();
 int OPS_initializeAnalysis();
 int OPS_printA();
 int OPS_printB();
+int OPS_printModel();
 int OPS_Database();
 int OPS_save();
 int OPS_restore();
@@ -293,6 +298,7 @@ int OPS_modalDamping();
 int OPS_modalDampingQ();
 int OPS_neesMetaData();
 int OPS_neesUpload();
+int OPS_defaultUnits();
 int OPS_totalCPU();
 int OPS_solveCPU();
 int OPS_accelCPU();
@@ -306,7 +312,6 @@ void* OPS_MillerNewton();
 void* OPS_SecantNewton();
 void* OPS_PeriodicNewton();
 void* OPS_NewtonLineSearch();
-
 
 /* Defined in its own class.cpp*/
 int OPS_Node();
@@ -416,11 +421,11 @@ void* OPS_BFGS();
 //    elasticForceBeamColumn nonlinearBeamColumn dispBeamColumnWithSensitivity
 //
 //    missing : video, logFile, getNP, getPI, barrier, send, recv, partition,
-//              defaultUnits, setParameter, reliability, wipeReliability,
+//              setParameter, reliability, wipeReliability,
 //              parameter, addToParameter, updateParameter, FiberThermal, FiberInt,
 //              UCFiber, TclModelBuilderYS_SectionCommand, yieldSurface_BC,
 //              ysEvolutionModel, plasticMaterial, cyclicModel, damageModel,
-//              FirePattern, PySimple1Gen, TzSimple1Gen, Hfiber, frictionModel,
+//              FirePattern, PySimple1Gen, TzSimple1Gen, Hfiber,
 //              stiffnessDegradation, unloadingRule, strengthDegradation,
 //              hystereticBackbone, updateMaterialStage, updateMaterials,
 //              loadPackage

@@ -648,19 +648,19 @@ int OPS_GetNodeVel(int *nodeTag, int *sizeData, double *data)
 }
 
 extern "C" 
-int OPS_GetNodeAcc(int *nodeTag, int *sizeData, double *data)
+int OPS_GetNodeAccel(int *nodeTag, int *sizeData, double *data)
 {
    Node *theNode = theDomain->getNode(*nodeTag);
 
   if (theNode == 0) {
-    opserr << "OPS_GetNodeAcc - no node with tag " << *nodeTag << endln;
+    opserr << "OPS_GetNodeAccel - no node with tag " << *nodeTag << endln;
     return -1;
   }
   int size = *sizeData;
   const Vector &accel = theNode->getTrialAccel();
 
   if (accel.Size() != size) {
-    opserr << "OPS_GetNodeAcc - accel size mismatch\n";
+    opserr << "OPS_GetNodeAccel - accel size mismatch\n";
     return -1;
   }
   for (int i=0; i < size; i++) 

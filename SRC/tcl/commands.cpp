@@ -8391,7 +8391,7 @@ int
 defaultUnits(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
     if (argc < 9) {
-        opserr << "defaultUnits - missing a unit type want: units -Force type? -Length type? -Time ?type -Temperature ?type\n";
+        opserr << "defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
         return -1;
     }
 
@@ -8420,14 +8420,14 @@ defaultUnits(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
             temperature = argv[count + 1];
         }
         else {
-            opserr << "units - unrecognized unit: " << argv[count] << " want: units -Force type? -Length type? -Time ?type -Temperature ?type\n";
+            opserr << "defaultUnits - unrecognized unit: " << argv[count] << " want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
             return -1;
         }
         count += 2;
     }
 
     if (length == 0 || force == 0 || time == 0 || temperature == 0) {
-        opserr << "defaultUnits - missing a unit type want: units -Force type? -Length type? -Time ?type -Temperature ?type\n";
+        opserr << "defaultUnits - missing a unit type want: defaultUnits -Force type? -Length type? -Time type? -Temperature type?\n";
         return -1;
     }
 

@@ -401,23 +401,23 @@ int OPS_buildModel()
     return 0;
 }
 
-
-int OPS_setNodeVel()
+int OPS_setNodeDisp()
 {
     // make sure at least one other argument to contain type of system
     if (OPS_GetNumRemainingInputArgs() < 3) {
-	opserr << "WARNING want - setNodeVel nodeTag? dof? value?\n";
-	return -1;
+        opserr << "WARNING want - setNodeDisp nodeTag? dof? value? <-commit>\n";
+        return -1;
     }
 
     int tag;
     int dof = -1;
     double value = 0.0;
+    bool commit = false;
     int numdata = 1;
 
     if (OPS_GetIntInput(&numdata, &tag) < 0) {
-	opserr << "WARNING nodeVel nodeTag? dof? - could not read nodeTag? \n";
-	return -1;
+        opserr << "WARNING setNodeDisp nodeTag? dof? - could not read nodeTag? \n";
+        return -1;
     }
 
     Domain* theDomain = OPS_GetDomain();
@@ -425,18 +425,24 @@ int OPS_setNodeVel()
 
     Node *theNode = theDomain->getNode(tag);
     if (theNode == 0) {
-	opserr << "WARNING setNodeVel -- node with tag " << tag << " not found" << endln;
-	return -1;
+        opserr << "WARNING setNodeDisp -- node with tag " << tag << " not found" << endln;
+        return -1;
     }
 
     if (OPS_GetIntInput(&numdata, &dof) < 0) {
-	opserr << "WARNING setNodeVel nodeTag? dof? value?- could not read dof? \n";
-	return -1;
+        opserr << "WARNING setNodeDisp nodeTag? dof? value?- could not read dof? \n";
+        return -1;
     }
 
     if (OPS_GetDoubleInput(&numdata, &value) < 0) {
-	opserr << "WARNING setNodeVel nodeTag? dof? value?- could not read dof? \n";
-	return -1;
+        opserr << "WARNING setNodeDisp nodeTag? dof? value?- could not read dof? \n";
+        return -1;
+    }
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* optArg = OPS_GetString();
+        if (strcmp(optArg, "-commit") == 0)
+            commit = true;
     }
 
     dof--;
@@ -444,11 +450,133 @@ int OPS_setNodeVel()
     int numDOF = theNode->getNumberDOF();
 
     if (dof >= 0 && dof < numDOF) {
-	Vector vel(numDOF);
-	vel = theNode->getVel();
-	vel(dof) = value;
-	theNode->setTrialVel(vel);
+        Vector disp(numDOF);
+        disp = theNode->getDisp();
+        disp(dof) = value;
+        theNode->setTrialDisp(disp);
     }
+    if (commit)
+        theNode->commitState();
+
+    return 0;
+}
+
+int OPS_setNodeVel()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+        opserr << "WARNING want - setNodeVel nodeTag? dof? value? <-commit>\n";
+        return -1;
+    }
+
+    int tag;
+    int dof = -1;
+    double value = 0.0;
+    bool commit = false;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+        opserr << "WARNING setNodeVel nodeTag? dof? - could not read nodeTag? \n";
+        return -1;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Node *theNode = theDomain->getNode(tag);
+    if (theNode == 0) {
+        opserr << "WARNING setNodeVel -- node with tag " << tag << " not found" << endln;
+        return -1;
+    }
+
+    if (OPS_GetIntInput(&numdata, &dof) < 0) {
+        opserr << "WARNING setNodeVel nodeTag? dof? value?- could not read dof? \n";
+        return -1;
+    }
+
+    if (OPS_GetDoubleInput(&numdata, &value) < 0) {
+        opserr << "WARNING setNodeVel nodeTag? dof? value?- could not read dof? \n";
+        return -1;
+    }
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* optArg = OPS_GetString();
+        if (strcmp(optArg, "-commit") == 0)
+            commit = true;
+    }
+
+    dof--;
+
+    int numDOF = theNode->getNumberDOF();
+
+    if (dof >= 0 && dof < numDOF) {
+        Vector vel(numDOF);
+        vel = theNode->getVel();
+        vel(dof) = value;
+        theNode->setTrialVel(vel);
+    }
+    if (commit)
+        theNode->commitState();
+
+    return 0;
+}
+
+int OPS_setNodeAccel()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+        opserr << "WARNING want - setNodeAccel nodeTag? dof? value? <-commit>\n";
+        return -1;
+    }
+
+    int tag;
+    int dof = -1;
+    double value = 0.0;
+    bool commit = false;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+        opserr << "WARNING setNodeAccel nodeTag? dof? - could not read nodeTag? \n";
+        return -1;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Node *theNode = theDomain->getNode(tag);
+    if (theNode == 0) {
+        opserr << "WARNING setNodeAccel -- node with tag " << tag << " not found" << endln;
+        return -1;
+    }
+
+    if (OPS_GetIntInput(&numdata, &dof) < 0) {
+        opserr << "WARNING setNodeAccel nodeTag? dof? value?- could not read dof? \n";
+        return -1;
+    }
+
+    if (OPS_GetDoubleInput(&numdata, &value) < 0) {
+        opserr << "WARNING setNodeAccel nodeTag? dof? value?- could not read dof? \n";
+        return -1;
+    }
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* optArg = OPS_GetString();
+        if (strcmp(optArg, "-commit") == 0)
+            commit = true;
+    }   
+
+    dof--;
+
+    int numDOF = theNode->getNumberDOF();
+
+    if (dof >= 0 && dof < numDOF) {
+        Vector accel(numDOF);
+        accel = theNode->getAccel();
+        accel(dof) = value;
+        theNode->setTrialAccel(accel);
+    }
+    if (commit)
+        theNode->commitState();
 
     return 0;
 }
@@ -1001,7 +1129,6 @@ int OPS_convertBinaryToText()
     
     return binaryToText(inputFile, outputFile);
 }
-
 
 int OPS_convertTextToBinary()
 {

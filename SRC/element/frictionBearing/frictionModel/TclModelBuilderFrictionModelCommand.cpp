@@ -31,17 +31,13 @@
 
 #include <FrictionModel.h>
 #include <tcl.h>
+#include <elementAPI.h>
 
-#include <Coulomb.h>
-#include <VelDependent.h>
-#include <VelPressureDep.h>
-#include <VelDepMultiLinear.h>
-#include <VelNormalFrcDep.h>
-
-#include <ID.h>
-#include <Vector.h>
-#include <string.h>
-#include <FrictionModel.h>
+extern void *OPS_Coulomb();
+extern void *OPS_VelDependent();
+extern void *OPS_VelDepMultiLinear();
+extern void *OPS_VelNormalFrcDep();
+extern void *OPS_VelPressureDep();
 
 
 static void printCommand(int argc, TCL_Char **argv)
@@ -67,248 +63,47 @@ int TclModelBuilderFrictionModelCommand(ClientData clientData, Tcl_Interp *inter
     
     // ----------------------------------------------------------------------------	
     if (strcmp(argv[1],"Coulomb") == 0 || strcmp(argv[1],"Constant") == 0)  {
-        if (argc != 4)  {
-            opserr << "WARNING invalid number of arguments\n";
-            printCommand(argc,argv);
-            opserr << "Want: frictionModel Coulomb tag mu\n";
+        void *theFrn = OPS_Coulomb();
+        if (theFrn != 0)
+            theFrnMdl = (FrictionModel *)theFrn;
+        else
             return TCL_ERROR;
-        }    
-        
-        int tag;
-        double mu;
-        
-        if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK)  {
-            opserr << "WARNING invalid Coulomb friction model tag\n";
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[3], &mu) != TCL_OK)  {
-            opserr << "WARNING invalid mu\n";
-            opserr << "Coulomb friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        
-        // parsing was successful, allocate the friction model
-        theFrnMdl = new Coulomb(tag, mu);
     }
     
     // ----------------------------------------------------------------------------	
     if (strcmp(argv[1],"VelDependent") == 0 || strcmp(argv[1],"VDependent") == 0)  {
-        if (argc != 6)  {
-            opserr << "WARNING invalid number of arguments\n";
-            printCommand(argc,argv);
-            opserr << "Want: frictionModel VelDependent tag muSlow muFast transRate\n";
+        void *theFrn = OPS_VelDependent();
+        if (theFrn != 0)
+            theFrnMdl = (FrictionModel *)theFrn;
+        else
             return TCL_ERROR;
-        }    
-        
-        int tag;
-        double muSlow, muFast, transRate;
-        
-        if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK)  {
-            opserr << "WARNING invalid VelDependent friction model tag\n";
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[3], &muSlow) != TCL_OK)  {
-            opserr << "WARNING invalid muSlow\n";
-            opserr << "VelDependent friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[4], &muFast) != TCL_OK)  {
-            opserr << "WARNING invalid muFast\n";
-            opserr << "VelDependent friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[5], &transRate) != TCL_OK)  {
-            opserr << "WARNING invalid transRate\n";
-            opserr << "VelDependent friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        
-        // parsing was successful, allocate the friction model
-        theFrnMdl = new VelDependent(tag, muSlow, muFast, transRate);
     }
     
+    // ----------------------------------------------------------------------------	
+    if (strcmp(argv[1], "VelDepMultiLinear") == 0 || strcmp(argv[1], "VDependentMultiLinear") == 0) {
+        void *theFrn = OPS_VelDepMultiLinear();
+        if (theFrn != 0)
+            theFrnMdl = (FrictionModel *)theFrn;
+        else
+            return TCL_ERROR;
+    }
+
+    // ----------------------------------------------------------------------------	
+    if (strcmp(argv[1], "VelNormalFrcDep") == 0 || strcmp(argv[1], "VNDependent") == 0) {
+        void *theFrn = OPS_VelNormalFrcDep();
+        if (theFrn != 0)
+            theFrnMdl = (FrictionModel *)theFrn;
+        else
+            return TCL_ERROR;
+    }
+
     // ----------------------------------------------------------------------------	
     if (strcmp(argv[1],"VelPressureDep") == 0 || strcmp(argv[1],"VPDependent") == 0)  {
-        if (argc != 9)  {
-            opserr << "WARNING invalid number of arguments\n";
-            printCommand(argc,argv);
-            opserr << "Want: frictionModel VelPressureDep tag muSlow muFast0 A deltaMu alpha transRate\n";
+        void *theFrn = OPS_VelPressureDep();
+        if (theFrn != 0)
+            theFrnMdl = (FrictionModel *)theFrn;
+        else
             return TCL_ERROR;
-        }    
-        
-        int tag;
-        double muSlow, muFast0, A, deltaMu, alpha, transRate;
-        
-        if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK)  {
-            opserr << "WARNING invalid VelPressureDep friction model tag\n";
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[3], &muSlow) != TCL_OK)  {
-            opserr << "WARNING invalid muSlow\n";
-            opserr << "VelPressureDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[4], &muFast0) != TCL_OK)  {
-            opserr << "WARNING invalid muFast0\n";
-            opserr << "VelPressureDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[5], &A) != TCL_OK)  {
-            opserr << "WARNING invalid A\n";
-            opserr << "VelPressureDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[6], &deltaMu) != TCL_OK)  {
-            opserr << "WARNING invalid deltaMu\n";
-            opserr << "VelPressureDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[7], &alpha) != TCL_OK)  {
-            opserr << "WARNING invalid alpha\n";
-            opserr << "VelPressureDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[8], &transRate) != TCL_OK)  {
-            opserr << "WARNING invalid transRate\n";
-            opserr << "VelPressureDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        
-        // parsing was successful, allocate the friction model
-        theFrnMdl = new VelPressureDep(tag, muSlow, muFast0, A, deltaMu, alpha, transRate);
-    }
-    
-    // ----------------------------------------------------------------------------	
-    if (strcmp(argv[1],"VelDepMultiLinear") == 0 || strcmp(argv[1],"VDependentMultiLinear") == 0)  {
-        if (argc < 9)  {
-            opserr << "WARNING invalid number of arguments\n";
-            printCommand(argc,argv);
-            opserr << "Want: frictionModel VelDepMultiLinear tag ";
-            opserr << "-vel velocityPoints -frn frictionPoints  ";
-            opserr << "(with at least two friction-velocity points)";
-            return TCL_ERROR;
-        }    
-        
-        int tag, numVelPts, numFrnPts, i;
-        double velData[64];
-        double frnData[64];
-        
-        if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK)  {
-            opserr << "WARNING invalid VelDepMultiLinear friction model tag\n";
-            return TCL_ERROR;
-        }
-        
-        // get velocity data points
-        i = 3;
-        if (strcmp(argv[i],"-vel") == 0)  {
-            i++;
-            numVelPts = 0;
-            while (i < argc && strcmp(argv[i],"-frn") != 0)  {
-                if (Tcl_GetDouble(interp, argv[i], (velData+numVelPts)) != TCL_OK)  {
-                    opserr << "WARNING invalid velocity value\n";
-                    opserr << "VelDepMultiLinear friction model: " << tag << endln;
-                    return TCL_ERROR;
-                }
-                numVelPts++;
-                i++;
-            }
-        } else  {
-            opserr << "WARNING expecting -vel but got " << argv[i] << endln;
-            opserr << "VelDepMultiLinear friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        Vector velocityPts(velData,numVelPts);
-        
-        // get friction data points
-        if (strcmp(argv[i],"-frn") == 0)  {
-            i++;
-            numFrnPts = 0;
-            while (i < argc)  {
-                if (Tcl_GetDouble(interp, argv[i], (frnData+numFrnPts)) != TCL_OK)  {
-                    opserr << "WARNING invalid friction value\n";
-                    opserr << "VelDepMultiLinear friction model: " << tag << endln;
-                    return TCL_ERROR;
-                }
-                numFrnPts++;
-                i++;
-            }
-        } else  {
-            opserr << "WARNING expecting -frn but got " << argv[i] << endln;
-            opserr << "VelDepMultiLinear friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (numVelPts != numFrnPts)  {
-            opserr << "WARNING velocity and friction arrays have different length\n";
-            opserr << "VelDepMultiLinear friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        Vector frictionPts(frnData,numFrnPts);
-        
-        // parsing was successful, allocate the friction model
-        theFrnMdl = new VelDepMultiLinear(tag, velocityPts, frictionPts);
-    }
-    
-    // ----------------------------------------------------------------------------	
-    if (strcmp(argv[1],"VelNormalFrcDep") == 0 || strcmp(argv[1],"VNDependent") == 0)  {
-        if (argc != 11)  {
-            opserr << "WARNING invalid number of arguments\n";
-            printCommand(argc,argv);
-            opserr << "Want: frictionModel VelNormalFrcDep tag aSlow nSlow aFast nFast alpha0 alpha1 alpha2 maxMuFact\n";
-            return TCL_ERROR;
-        }    
-        
-        int tag;
-        double aSlow, nSlow, aFast, nFast;
-        double alpha0, alpha1, alpha2, maxMuFact;
-        
-        if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK)  {
-            opserr << "WARNING invalid VelNormalFrcDep friction model tag\n";
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[3], &aSlow) != TCL_OK)  {
-            opserr << "WARNING invalid aSlow\n";
-            opserr << "VelNormalFrcDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[4], &nSlow) != TCL_OK)  {
-            opserr << "WARNING invalid nSlow\n";
-            opserr << "VelNormalFrcDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[5], &aFast) != TCL_OK)  {
-            opserr << "WARNING invalid aFast\n";
-            opserr << "VelNormalFrcDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[6], &nFast) != TCL_OK)  {
-            opserr << "WARNING invalid nFast\n";
-            opserr << "VelNormalFrcDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[7], &alpha0) != TCL_OK)  {
-            opserr << "WARNING invalid alpha0\n";
-            opserr << "VelNormalFrcDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[8], &alpha1) != TCL_OK)  {
-            opserr << "WARNING invalid alpha1\n";
-            opserr << "VelNormalFrcDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[9], &alpha2) != TCL_OK)  {
-            opserr << "WARNING invalid alpha2\n";
-            opserr << "VelNormalFrcDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[10], &maxMuFact) != TCL_OK)  {
-            opserr << "WARNING invalid maxMuFact\n";
-            opserr << "VelNormalFrcDep friction model: " << tag << endln;
-            return TCL_ERROR;
-        }
-        
-        // parsing was successful, allocate the friction model
-        theFrnMdl = new VelNormalFrcDep(tag, aSlow, nSlow, aFast, nFast,
-            alpha0, alpha1, alpha2, maxMuFact);
     }
     
     // ----------------------------------------------------------------------------	

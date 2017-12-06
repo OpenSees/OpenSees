@@ -326,15 +326,6 @@ static PyObject *Py_ops_analyze(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-static PyObject *Py_ops_nodeDisp(PyObject *self, PyObject *args)
-{
-    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
-
-    if (OPS_nodeDisp() < 0) return NULL;
-
-    return wrapper->getResults();
-}
-
 static PyObject *Py_ops_test(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -740,6 +731,24 @@ static PyObject *Py_ops_nodeUnbalance(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_nodeDisp(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_nodeDisp() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_setNodeDisp(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_setNodeDisp() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_nodeVel(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -763,6 +772,15 @@ static PyObject *Py_ops_nodeAccel(PyObject *self, PyObject *args)
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
     if (OPS_nodeAccel() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_setNodeAccel(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_setNodeAccel() < 0) return NULL;
 
     return wrapper->getResults();
 }
@@ -934,6 +952,15 @@ static PyObject *Py_ops_metaData(PyObject *self, PyObject *args)
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
     if (OPS_neesMetaData() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_defaultUnits(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_defaultUnits() < 0) return NULL;
 
     return wrapper->getResults();
 }
@@ -1300,7 +1327,6 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("algorithm", &Py_ops_algorithm);
     addCommand("analysis", &Py_ops_analysis);
     addCommand("analyze", &Py_ops_analyze);
-    addCommand("nodeDisp", &Py_ops_nodeDisp);
     addCommand("test", &Py_ops_test);
     addCommand("section", &Py_ops_section);
     addCommand("fiber", &Py_ops_fiber);
@@ -1333,7 +1359,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("initialize", &Py_ops_initialize);
     addCommand("getLoadFactor", &Py_ops_getLoadFactor);
     addCommand("build", &Py_ops_build);
-    addCommand("Print", &Py_ops_print);
+    addCommand("print", &Py_ops_print);
     addCommand("printA", &Py_ops_printA);
     addCommand("printB", &Py_ops_printB);
     addCommand("printGID", &Py_ops_printGID);
@@ -1346,9 +1372,12 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("eleForce", &Py_ops_eleForce);
     addCommand("eleDynamicalForce", &Py_ops_eleDynamicalForce);
     addCommand("nodeUnbalance", &Py_ops_nodeUnbalance);
+    addCommand("nodeDisp", &Py_ops_nodeDisp);
+    addCommand("setNodeDisp", &Py_ops_setNodeDisp);
     addCommand("nodeVel", &Py_ops_nodeVel);
     addCommand("setNodeVel", &Py_ops_setNodeVel);
     addCommand("nodeAccel", &Py_ops_nodeAccel);
+    addCommand("setNodeAccel", &Py_ops_setNodeAccel);
     addCommand("nodeResponse", &Py_ops_nodeResponse);
     addCommand("nodeCoord", &Py_ops_nodeCoord);
     addCommand("setNodeCoord", &Py_ops_setNodeCoord);
@@ -1368,6 +1397,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("domainChange", &Py_ops_domainChange);
     addCommand("record", &Py_ops_record);
     addCommand("metaData", &Py_ops_metaData);
+    addCommand("defaultUnits", &Py_ops_defaultUnits);
     addCommand("neesUpload", &Py_ops_neesUpload);
     addCommand("stripXML", &Py_ops_stripXML);
     addCommand("convertBinaryToText", &Py_ops_convertBinaryToText);

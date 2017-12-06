@@ -23,12 +23,10 @@
 
 // Description: This file contains the class definition for DL_Interpreter
 // DL_Interpreter is the abstract base class for dynamic language interpreters
-//   concrete examples being TclInterpreter, PythonInterpreter, MatlabInterpreter,...
-//
+// concrete examples being TclInterpreter, PythonInterpreter, MatlabInterpreter,...
 
 #ifndef DL_Interpreter_h
 #define DL_Interpreter_h
-
 
 class Command;
 
@@ -39,7 +37,7 @@ class DL_Interpreter
     virtual ~DL_Interpreter();
 
     // method to run once the interpreter is set up
-    virtual int run() =0;
+    virtual int run() = 0;
 
     // methods to add & remove additional commands
     virtual int addCommand(const char *, Command &);
@@ -57,11 +55,12 @@ class DL_Interpreter
     virtual int setInt(int *, int numArgs);
     virtual int setDouble(double *, int numArgs);
     virtual int setString(const char*);
+
+    // methods to run a command in the interpreter
+    virtual int runCommand(const char*);
     
   private:
 
 };
 
-
 #endif
-

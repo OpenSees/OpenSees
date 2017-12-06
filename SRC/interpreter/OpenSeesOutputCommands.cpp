@@ -395,84 +395,6 @@ int OPS_getLoadFactor()
     return 0;
 }
 
-int printElement(OPS_Stream& output);
-int printNode(OPS_Stream& output);
-int printIntegrator(OPS_Stream& output);
-int printAlgorithm(OPS_Stream& output);
-
-int OPS_printModel()
-{
-
-    int res = 0;
-
-    FileStream outputFile;
-    OPS_Stream *output = &opserr;
-    bool done = false;
-
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-
-    // if just 'print' then print out the entire domain
-    if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr << *theDomain;
-	return 0;
-    }
-
-    while(done == false && OPS_GetNumRemainingInputArgs() > 0) {
-
-	const char* flag = OPS_GetString();
-
-	// if 'print ele i j k..' print out some elements
-	if ((strcmp(flag,"-ele") == 0) || (strcmp(flag,"ele") == 0)) {
-	    res = printElement(*output);
-	    done = true;
-	}
-	// if 'print node i j k ..' print out some nodes
-	else if ((strcmp(flag,"-node") == 0) || (strcmp(flag,"node") == 0)) {
-	    res = printNode(*output);
-	    done = true;
-	}
-
-	// if 'print integrator flag' print out the integrator
-	else if ((strcmp(flag,"integrator") == 0) || (strcmp(flag,"-integrator") == 0)) {
-	    res = printIntegrator(*output);
-	    done = true;
-	}
-
-	// if 'print algorithm flag' print out the algorithm
-	else if ((strcmp(flag,"algorithm") == 0) || (strcmp(flag,"-algorithm") == 0)) {
-	    res = printAlgorithm(*output);
-	    done = true;
-	}
-
-	else {
-
-	    if ((strcmp(flag,"file") == 0) || (strcmp(flag,"-file") == 0)) {
-	    }
-
-	    if (OPS_GetNumRemainingInputArgs() < 1) break;
-	    const char* filename = OPS_GetString();
-	    if (outputFile.setFile(filename, APPEND) != 0) {
-		opserr << "print <filename> .. - failed to open file: " << filename << endln;
-		return -1;
-	    }
-
-	    // if just 'print <filename>' then print out the entire domain to eof
-	    if (OPS_GetNumRemainingInputArgs() < 1) {
-		outputFile << theDomain;
-		return 0;
-	    }
-
-	    output = &outputFile;
-
-	}
-    }
-
-    // close the output file
-    outputFile.close();
-    return res;
-}
-
 // printNode():
 // function to print out the nodal information conatined in line
 //     print <filename> node <flag int> <int int int>
@@ -482,129 +404,138 @@ int OPS_printModel()
 int printNode(OPS_Stream &output)
 {
     int flag = 0; // default flag sent to a nodes Print() method
+    int nodeArg = 0;
+    int argc = OPS_GetNumRemainingInputArgs();
 
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
     // if just 'print <filename> node' print all the nodes - no flag
-    if (OPS_GetNumRemainingInputArgs() < 1) {
-	NodeIter &theNodes = theDomain->getNodes();
-	Node *theNode;
-	while ((theNode = theNodes()) != 0) {
-	    theNode->Print(output);
-	}
-	return 0;
+    if (argc == 0) {
+        NodeIter &theNodes = theDomain->getNodes();
+        Node *theNode;
+        while ((theNode = theNodes()) != 0) {
+            theNode->Print(output);
+        }
+        return 0;
     }
 
     // if 'print <filename> node flag int <int int ..>' get the flag
     const char* flagArg = OPS_GetString();
-    if ((strcmp(flagArg,"flag") == 0) || (strcmp(flagArg,"-flag") == 0)) {
-	// get the specified flag
-	if (OPS_GetNumRemainingInputArgs() < 1) {
-	    opserr << "WARNING print <filename> node <flag int> no int specified \n";
-	    return -1;
-	}
-	int numdata = 1;
-	if (OPS_GetIntInput(&numdata, &flag) < 0) {
-	    opserr << "WARNING print node failed to get integer flag: \n";
-	    return -1;
-	}
+    if ((strcmp(flagArg, "flag") == 0) || (strcmp(flagArg, "-flag") == 0)) {
+        // get the specified flag
+        if (argc < 2) {
+            opserr << "WARNING print <filename> node <flag int> no int specified \n";
+            return -1;
+        }
+        int numdata = 1;
+        if (OPS_GetIntInput(&numdata, &flag) < 0) {
+            opserr << "WARNING print node failed to get integer flag: \n";
+            return -1;
+        }
+        nodeArg += 2;
+    }
+    else {
+        OPS_ResetCurrentInputArg(2);
     }
 
     // now print the nodes with the specified flag, 0 by default
 
     // if 'print <filename> node flag'
     //     print out all the nodes in the domain with flag
-    if (OPS_GetNumRemainingInputArgs() < 1) {
-	NodeIter &theNodes = theDomain->getNodes();
-	Node *theNode;
-	while ((theNode = theNodes()) != 0) {
-	    theNode->Print(output, flag);
-	}
-	return 0;
-
-    } else {
-	// otherwise print out the specified nodes i j k .. with flag
-	int numNodes = OPS_GetNumRemainingInputArgs();
-	ID *theNodes = new ID(numNodes);
-	for (int i= 0; i<numNodes; i++) {
-	    int nodeTag;
-	    int numdata = 1;
-	    if (OPS_GetIntInput(&numdata, &nodeTag) < 0) {
-		opserr << "WARNING print node failed to get integer: " << endln;
-		delete theNodes;
-		return -1;
-	    }
-	    (*theNodes)(i) = nodeTag;
-	}
-
-	theDomain->Print(output, theNodes, 0, flag);
-	delete theNodes;
+    if (argc == nodeArg) {
+        NodeIter &theNodes = theDomain->getNodes();
+        Node *theNode;
+        while ((theNode = theNodes()) != 0) {
+            theNode->Print(output, flag);
+        }
+        return 0;
+    }
+    else {
+        // otherwise print out the specified nodes i j k .. with flag
+        int numNodes = argc - nodeArg;
+        ID *theNodes = new ID(numNodes);
+        for (int i = 0; i < numNodes; i++) {
+            int nodeTag;
+            int numdata = 1;
+            if (OPS_GetIntInput(&numdata, &nodeTag) < 0) {
+                opserr << "WARNING print node failed to get integer: " << endln;
+                delete theNodes;
+                return -1;
+            }
+            (*theNodes)(i) = nodeTag;
+            nodeArg++;
+        }
+        theDomain->Print(output, theNodes, 0, flag);
+        delete theNodes;
     }
 
     return 0;
-
 }
 
 int printElement(OPS_Stream &output)
 {
     int flag = 0; // default flag sent to a nodes Print() method
+    int eleArg = 0;
+    int argc = OPS_GetNumRemainingInputArgs();
 
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
     // if just 'print <filename> node' print all the nodes - no flag
-    if (OPS_GetNumRemainingInputArgs() == 0) {
-	ElementIter &theElements = theDomain->getElements();
-	Element *theElement;
-	while ((theElement = theElements()) != 0) {
-	    theElement->Print(output);
-	}
-	return 0;
+    if (argc == 0) {
+        ElementIter &theElements = theDomain->getElements();
+        Element *theElement;
+        while ((theElement = theElements()) != 0) {
+            theElement->Print(output);
+        }
+        return 0;
     }
 
     // if 'print <filename> Element flag int <int int ..>' get the flag
     const char* eleflag = OPS_GetString();
-    if ((strcmp(eleflag,"flag") == 0) ||
-	(strcmp(eleflag,"-flag")) == 0) { // get the specified flag
-	if (OPS_GetNumRemainingInputArgs() < 1) {
-	    opserr << "WARNING print <filename> ele <flag int> no int specified \n";
-	    return -1;
-	}
-	int numdata = 1;
-	if (OPS_GetIntInput(&numdata, &flag) < 0) {
-	    opserr << "WARNING print ele failed to get integer flag: \n";
-	    return -1;
-	}
+    if ((strcmp(eleflag, "flag") == 0) || (strcmp(eleflag, "-flag")) == 0) {
+        // get the specified flag
+        if (argc < 2) {
+            opserr << "WARNING print <filename> ele <flag int> no int specified \n";
+            return -1;
+        }
+        int numdata = 1;
+        if (OPS_GetIntInput(&numdata, &flag) < 0) {
+            opserr << "WARNING print ele failed to get integer flag: \n";
+            return -1;
+        }
+        eleArg += 2;
+    }
+    else {
+        OPS_ResetCurrentInputArg(2);
     }
 
     // now print the Elements with the specified flag, 0 by default
-    if (OPS_GetNumRemainingInputArgs() < 1) {
-	ElementIter &theElements = theDomain->getElements();
-	Element *theElement;
-	while ((theElement = theElements()) != 0) {
-	    theElement->Print(output, flag);
-	}
-	return 0;
-
-    } else {
-
-	// otherwise print out the specified nodes i j k .. with flag
-	int numEle = OPS_GetNumRemainingInputArgs();
-	ID *theEle = new ID(numEle);
-	for (int i= 0; i<numEle; i++) {
-	    int eleTag;
-	    int numdata = 1;
-	    if (OPS_GetIntInput(&numdata, &eleTag) < 0) {
-		opserr << "WARNING print ele failed to get integer: " << endln;
-		delete theEle;
-		return -1;
-	    }
-	    (*theEle)(i) = eleTag;
-	}
-
-	theDomain->Print(output, 0, theEle, flag);
-	delete theEle;
+    if (argc == eleArg) {
+        ElementIter &theElements = theDomain->getElements();
+        Element *theElement;
+        while ((theElement = theElements()) != 0) {
+            theElement->Print(output, flag);
+        }
+        return 0;
+    }
+    else {
+        // otherwise print out the specified nodes i j k .. with flag
+        int numEle = argc - eleArg;
+        ID *theEle = new ID(numEle);
+        for (int i = 0; i < numEle; i++) {
+            int eleTag;
+            int numdata = 1;
+            if (OPS_GetIntInput(&numdata, &eleTag) < 0) {
+                opserr << "WARNING print ele failed to get integer: " << endln;
+                delete theEle;
+                return -1;
+            }
+            (*theEle)(i) = eleTag;
+        }
+        theDomain->Print(output, 0, theEle, flag);
+        delete theEle;
     }
 
     return 0;
@@ -612,11 +543,62 @@ int printElement(OPS_Stream &output)
 
 int printAlgorithm(OPS_Stream &output)
 {
+    /*int eleArg = 0;
+    int argc = OPS_GetNumRemainingInputArgs();
+
+    EquiSolnAlgo** theAlgorithm = OPS_GetAlgorithm();
+    if (theAlgorithm == 0) return -1;
+
+    // if just 'print <filename> algorithm'- no flag
+    if (argc == 0) {
+        theAlgorithm->Print(output);
+        return 0;
+    }
+
+    // if 'print <filename> Algorithm flag' get the flag
+    int flag;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &flag) < 0) {
+        opserr << "WARNING print algorithm failed to get integer flag: \n";
+        return -1;
+    }
+    theAlgorithm->Print(output, flag);*/
+
     return 0;
 }
 
 int printIntegrator(OPS_Stream &output)
 {
+    /*int eleArg = 0;
+    int argc = OPS_GetNumRemainingInputArgs();
+
+    StaticIntegrator** theStaticIntegrator = OPS_GetStaticIntegrator();
+    TransientIntegrator** theTransientIntegrator = OPS_GetTransientIntegrator();
+
+    if (theStaticIntegrator == 0 && theTransientIntegrator == 0)
+        return 0;
+
+    IncrementalIntegrator *theIntegrator;
+    if (theStaticIntegrator != 0)
+        theIntegrator = theStaticIntegrator;
+    else
+        theIntegrator = *theTransientIntegrator;
+
+    // if just 'print <filename> algorithm'- no flag
+    if (argc == 0) {
+        theIntegrator->Print(output);
+        return 0;
+    }
+
+    // if 'print <filename> Algorithm flag' get the flag
+    int flag;
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &flag) < 0) {
+        opserr << "WARNING print integrator failed to get integer flag: \n";
+        return -1;
+    }
+    theIntegrator->Print(output, flag);*/
+
     return 0;
 }
 

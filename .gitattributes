@@ -3052,6 +3052,7 @@ SRC/interpreter/OpenSeesCommandsPython.cpp -text
 SRC/interpreter/OpenSeesCommandsTcl.cpp -text
 SRC/interpreter/OpenSeesCrdTransfCommands.cpp -text
 SRC/interpreter/OpenSeesElementCommands.cpp -text
+SRC/interpreter/OpenSeesFrictionModelCommands.cpp -text
 SRC/interpreter/OpenSeesMiscCommands.cpp -text
 SRC/interpreter/OpenSeesNDMaterialCommands.cpp -text
 SRC/interpreter/OpenSeesOutputCommands.cpp -text
