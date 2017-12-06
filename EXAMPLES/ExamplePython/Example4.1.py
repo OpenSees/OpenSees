@@ -35,6 +35,9 @@ ops.wipe()
 # create ModelBuilder (with two-dimensions and 3 DOF/node)
 ops.model("BasicBuilder", "-ndm",2, "-ndf",3)
 
+# set default units
+ops.defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
+
 # Create nodes
 # ------------
 # Set parameters for overall model geometry
@@ -185,7 +188,8 @@ for i in range(numBay+1):
         ops.load(node2, 0.0, P,     0.0)
 
 # print model
-#ops.Print()
+#ops.print()
+ops.print("-JSON", "-file", "Example4.1.json")
 
 # ------------------------------
 # End of model generation
@@ -313,5 +317,5 @@ else:
     print("\nPushover analysis FAILED\n")
 
 # Print the state at node 3
-ops.Print('node', 0, 3)
+ops.print("node", 3)
 ops.wipe()

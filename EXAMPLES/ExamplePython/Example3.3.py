@@ -34,6 +34,9 @@ ops.wipe()
 # create ModelBuilder (with two-dimensions and 3 DOF/node)
 ops.model("BasicBuilder", "-ndm",2, "-ndf",3)
 
+# set default units
+ops.defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
+
 # Create nodes
 # ------------
 # Set parameters for overall model geometry
@@ -188,7 +191,6 @@ ops.loadConst("-time", 0.0)
 # ----------------------------------------------------
 
 # Define nodal mass in terms of axial load on columns
-g = 386.4
 m = P/g
 
 #       tag MX MY RZ
@@ -220,7 +222,7 @@ ops.rayleigh(0.0, 0.0, 0.0, 0.000625)
 # Start of modifications to analysis for transient analysis
 # ---------------------------------------------------------
 
-# delete the old analysis and all it's component objects
+# delete the old analysis and all its component objects
 ops.wipeAnalysis()
 
 # create the system of equation, a banded general storage scheme
@@ -316,5 +318,5 @@ Tend = 2.0*math.pi/math.sqrt(lam[0])
 print("Fundamental period at end of transient analysis: ", Tend, "sec")
 
 # Print state of node 3
-ops.Print('node', 0, 3)
+ops.print("node", 3)
 ops.wipe()

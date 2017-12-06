@@ -30,6 +30,9 @@ ops.wipe()
 # create ModelBuilder (with three-dimensions and 3 DOF/node)
 ops.model("BasicBuilder", "-ndm",3, "-ndf",3)
 
+# set default units
+ops.defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
+
 # Define the material
 # -------------------
 #                               matTag  E     nu   rho
@@ -72,7 +75,8 @@ ops.pattern("Plain", 1, 1, "-fact", 1.0)
 ops.load(nn, load, load, 0.0)
 
 # print model
-#ops.Print()
+#ops.print()
+ops.print("-JSON", "-file", "Example8.1.json")
 
 # ----------------------- 
 # End of model generation

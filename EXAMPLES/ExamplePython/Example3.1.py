@@ -30,6 +30,9 @@ ops.wipe()
 # create ModelBuilder (with two-dimensions and 3 DOF/node)
 ops.model("BasicBuilder", "-ndm",2, "-ndf",3)
 
+# set default units
+ops.defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
+
 # Create nodes
 # ------------
 # Set parameters for overall model geometry
@@ -127,7 +130,8 @@ ops.load(3, 0.0, -P, 0.0)
 ops.load(4, 0.0, -P, 0.0)
 
 # print model
-#ops.Print()
+#ops.print()
+ops.print("-JSON", "-file", "Example3.1.json")
 
 # ------------------------------
 # End of model generation
@@ -173,9 +177,8 @@ ops.analysis("Static")
 ops.analyze(10)
 
 # Print out the state of nodes 3 and 4
-ops.Print('node', 0, 3)
-ops.Print('node', 0, 4)
+ops.print("node", 3, 4)
 
 # Print out the state of element 1
-ops.Print('ele', 0, 1)
+ops.print("ele", 1)
 ops.wipe()

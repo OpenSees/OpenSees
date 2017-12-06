@@ -33,6 +33,9 @@ ops.wipe()
 # create ModelBuilder (with three-dimensions and 6 DOF/node)
 ops.model("BasicBuilder", "-ndm",3, "-ndf",6)
 
+# set default units
+ops.defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
+
 # Define geometry
 # ---------------
 
@@ -197,7 +200,6 @@ ops.element(eleType, 24, 18, 15, 2, beamSec)
 p = 0.1*fc*h*h
 
 # Mass lumped at master nodes
-g = 386.4;            # Gravitational constant
 m = (4.0*p)/g
 
 # Rotary inertia of floor about master node
@@ -234,7 +236,8 @@ ops.pattern("UniformExcitation", 2, 1, "-accel", 2)
 ops.pattern("UniformExcitation", 3, 2, "-accel", 3)
 
 # print model
-#ops.Print()
+#ops.print()
+ops.print("-JSON", "-file", "Example5.1.json")
 
 # ----------------------- 
 # End of model generation

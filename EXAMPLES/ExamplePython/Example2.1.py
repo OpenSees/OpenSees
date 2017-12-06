@@ -30,6 +30,9 @@ ops.wipe()
 # create ModelBuilder (with two-dimensions and 3 DOF/node)
 ops.model("BasicBuilder", "-ndm",2, "-ndf",3)
 
+# set default units
+ops.defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
+
 # Define materials for nonlinear columns
 # ------------------------------------------
 # CONCRETE                        tag  f'c    ec0    f'cu   ecu
@@ -82,7 +85,7 @@ print("Estimated yield curvature: ", Ky)
 # Set axial load 
 P = -180.0
 
-mu  = 15.0;       # Target ductility for analysis
+mu  = 15.0;     # Target ductility for analysis
 numIncr = 100;  # Number of analysis increments
 
 # Call the section analysis procedure

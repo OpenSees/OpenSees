@@ -29,6 +29,9 @@ ops.wipe()
 # create ModelBuilder (with two-dimensions and 2 DOF/node)
 ops.model("BasicBuilder", "-ndm",2, "-ndf",2)
 
+# set default units
+ops.defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
+
 # create nodes & add to Domain - command: node nodeId xCrd yCrd
 #ops.node(1, 0.0,    0.0, "-disp",0.0,0.0, "-vel", 0.0,0.0, "-mass", 0.0,0.0)
 ops.node(1, 0.0,    0.0)
@@ -64,7 +67,8 @@ ops.pattern("Plain", 1, 1, "-fact", 1.0)
 ops.load(4, 100.0, -50.0)
 
 # print model
-#ops.Print()
+#ops.print()
+ops.print("-JSON", "-file", "Example1.1.json")
 
 # ------------------------------
 # End of model generation
@@ -106,8 +110,8 @@ ops.analysis("Static")
 ops.recorder("Node", "-file", "example.out", "-time", "-node", 4, "-dof", 1, 2, "disp")
 
 # create a recorder for element forces, one in global and the other local system
-#ops.recorder("Element", "-file", "eleGlobal.out", "-time", "-ele", 1, 2, 3, "forces")
-#ops.recorder("Element", "-file", "eleLocal.out", "-time", "-ele", 1, 2, 3, "basicForces")
+ops.recorder("Element", "-file", "eleGlobal.out", "-time", "-ele", 1, 2, 3, "forces")
+ops.recorder("Element", "-file", "eleLocal.out", "-time", "-ele", 1, 2, 3, "basicForces")
 
 # ------------------------------
 # End of recorder generation
@@ -128,6 +132,6 @@ ops.analyze(1)
 
 # print the current state at node 4 and at all elements
 #print("node 4 displacement: ", ops.nodeDisp(4))
-ops.Print('node', 0, 4)
-ops.Print('ele')
+ops.print("node", 4)
+ops.print("ele")
 ops.wipe()

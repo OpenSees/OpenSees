@@ -30,10 +30,13 @@ ops.wipe()
 # create ModelBuilder (with two-dimensions and 2 DOF/node)
 ops.model("BasicBuilder", "-ndm",2, "-ndf",2)
 
+# set default units
+ops.defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
+
 # Define the material
 # -------------------
 #                               matTag  E      nu      rho
-ops.nDMaterial("ElasticIsotropic", 1, 1000.0, 0.25, 6.75/386.088) 
+ops.nDMaterial("ElasticIsotropic", 1, 1000.0, 0.25, 6.75/g) 
 
 # Define geometry
 # ---------------
@@ -88,7 +91,8 @@ ops.load(l1, 0.0, -1.0)
 ops.load(l2, 0.0, -1.0)
 
 # print model
-#ops.Print()
+#ops.print()
+ops.print("-JSON", "-file", "Example6.1.json")
 
 # ----------------------- 
 # End of model generation

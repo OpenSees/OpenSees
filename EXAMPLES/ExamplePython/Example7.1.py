@@ -29,6 +29,9 @@ ops.wipe()
 # create ModelBuilder (with three-dimensions and 6 DOF/node)
 ops.model("BasicBuilder", "-ndm",3, "-ndf",6)
 
+# set default units
+ops.defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
+
 # Define the section
 # ------------------
 #                                       secTag  E     nu     h    rho
@@ -71,7 +74,8 @@ ops.load(side1, 0.0, -0.25, 0.0, 0.0, 0.0, 0.0)
 ops.load(side2, 0.0, -0.25, 0.0, 0.0, 0.0, 0.0)
 
 # print model
-#ops.Print()
+#ops.print()
+ops.print("-JSON", "-file", "Example7.1.json")
 
 # ----------------------- 
 # End of model generation

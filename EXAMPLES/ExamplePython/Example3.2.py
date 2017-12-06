@@ -31,6 +31,9 @@ ops.wipe()
 # create ModelBuilder (with two-dimensions and 3 DOF/node)
 ops.model("BasicBuilder", "-ndm",2, "-ndf",3)
 
+# set default units
+ops.defaultUnits("-force", "kip", "-length", "in", "-time", "sec", "-temp", "F")
+
 # Create nodes
 # ------------
 # Set parameters for overall model geometry
@@ -276,5 +279,5 @@ else:
     print("\nPushover analysis FAILED\n")
 
 # Print the state at node 3
-ops.Print('node', 0, 3)
+ops.print("node", 3)
 ops.wipe()
