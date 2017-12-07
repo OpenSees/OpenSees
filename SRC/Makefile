@@ -705,6 +705,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ViscousMaterial.o \
 	$(FE)/material/uniaxial/Maxwell.o \
 	$(FE)/material/uniaxial/ViscousDamper.o \
+	$(FE)/material/uniaxial/DamperMaterial.o \
 	$(FE)/material/uniaxial/BilinearOilDamper.o \
 	$(FE)/material/uniaxial/Cast.o \
 	$(FE)/material/uniaxial/DoddRestrepo.o \
