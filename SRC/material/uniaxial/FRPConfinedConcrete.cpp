@@ -33,8 +33,8 @@
 #include <Channel.h>
 #include <Information.h>
 #include <Parameter.h>
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
 #include <float.h>
 #include <iostream>
 #include <algorithm>
@@ -59,12 +59,12 @@ OPS_FRPConfinedConcrete(void)
   UniaxialMaterial *theMaterial = 0;
 
   int iData[1];
-  double dData[16];  // size of arg list
+  double dData[18];  // size of arg list
   int numData;
 
-  if (OPS_GetNumRemainingInputArgs() != 17) {
+  if (OPS_GetNumRemainingInputArgs() != 18) {
 	  opserr << "WARNING invalid #args: uniaxialMaterial FRPConfinedConcrete $tag $fpc1 $fpc2 $epsc0";
-	  opserr << " $D $c $Ej $Sj $tj $eju $S $fyh $dlong $dtrans Es v0 $k\n";
+	  opserr << " $D $c $Ej $Sj $tj $eju $S $fyl $fyh $dlong $dtrans $Es $v0 $k $useBuck\n";
 	  return 0;
   }
 
@@ -75,7 +75,7 @@ OPS_FRPConfinedConcrete(void)
   }
 
 
-  numData = 16;
+  numData = 18;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
 	  opserr << "WARNING invalid Material Properties: fpc1: Concrete Core Compressive Strength \n";
 	  opserr << "fpc2: Concrete Cover Compressive Strength \n";
@@ -86,18 +86,20 @@ OPS_FRPConfinedConcrete(void)
 	  opserr << "Sj = Clear Spacing of the FRP strips - zero if it's continuous \n";
 	  opserr << "tj = Thickness of the FRP Jacket\n";
 	  opserr << "eju = Rupture strain of the Jacket\n";
-	  opserr << "S = Spacing of the stirrups\n";
+	  opserr << "S = Spacing of the stirrups\n";	  
+	  opserr << "fyl = Yielding Strength of longitudinal steel bars\n";
 	  opserr << "fyh = Yielding Strength of the hoops\n";
 	  opserr << "dlong = Diameter of the longitudinal bars\n";
 	  opserr << "dtrans = diameter of the stirrups\n";
 	  opserr << "Es = Steel's Elastic modulus\n";
 	  opserr << "vo = Poisson's coefficient for concrete\n";
       opserr << "k = reduction factor (0.5-0.8) for the rupture strain of the FRP\n";
+	  opserr << "useBuck = FRP Jacket Failure Criterion due to Buckling of Longitudinal Compressive Steel Bars (0 = not include it, 1= to include it)\n";
     return 0;	
   }
 
     theMaterial = new FRPConfinedConcrete(iData[0],dData[0],dData[1],dData[2],dData[3],dData[4],dData[5],dData[6],
-		dData[7],dData[8],dData[9],dData[10],dData[11],dData[12],dData[13],dData[14],dData[15]);    
+		dData[7],dData[8],dData[9],dData[10],dData[11],dData[12],dData[13],dData[14],dData[15],dData[16],dData[17]);    
 
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type FRPConfinedConcrete\n";
@@ -110,8 +112,8 @@ OPS_FRPConfinedConcrete(void)
 /*
 Input:
 D = Diameter of the Circular Section, c = concrete cover, Ej = Elastic Modulus of the Jacket, Sj = Clear Spacing of the FRP strips - zero if it's continuous, tj = Thickness of the FRP Jacket, eju = Rupture strain of the Jacket,
-S = Spacing of the stirrups, fyh = Yielding Strength of the hoops, dlong = Diameter of the longitudinal bars, dtrans = diameter of the stirrups
-Es = Steel's Elastic modulus, vo = Poisson's coefficient for concrete, k = reduction factor (0.5-0.8) for the rupture strain of the FRP. 
+S = Spacing of the stirrups, fyl = Yielding Strength of longitudinal steel bars, fyh = Yielding Strength of the hoops, dlong = Diameter of the longitudinal bars, dtrans = diameter of the stirrups
+Es = Steel's Elastic modulus, vo = Poisson's coefficient for concrete, k = reduction factor (0.5-0.8) for the rupture strain of the FRP, useBuck = FRP Jacket Failure Criterion due to Buckling of Longitudinal Compressive Steel Bars (0 = not include it, 1= to include it).
 */
 
  FRPConfinedConcrete::FRPConfinedConcrete(int tag, 
@@ -125,14 +127,16 @@ Es = Steel's Elastic modulus, vo = Poisson's coefficient for concrete, k = reduc
 	 double tj_, 
 	 double eju_, 
 	 double S_, 
+	 double fyl_,
 	 double fyh_, 
 	 double dlong_, 
 	 double dtrans_, 
 	 double Es_, 
 	 double v0_, 
-	 double k_ )
+	 double k_,
+	 double useBuck_)
  :UniaxialMaterial(tag, MAT_TAG_FRPConfinedConcrete),fpc1(fpc1), fpc2(fpc2), epsc0(epsc0), CminStrain(0.0), CendStrain(0.0),Cstrain(0.0), Cstress(0.0), CaLatstress(0.0) ,
-   CbLatstress(0.00001),CLatStrain(0.0) ,CConvFlag(false) ,CConfRat(1.0) ,CConfStrain(epsc0)
+   CbLatstress(0.00001),CLatStrain(0.0) ,CConvFlag(false) ,CConfRat(1.0) ,CConfStrain(epsc0),CLBuck(0.0)
 {
   fpc1 = fpc1_;
   fpc2 = fpc2_;
@@ -144,12 +148,14 @@ Es = Steel's Elastic modulus, vo = Poisson's coefficient for concrete, k = reduc
   tj = tj_;
   eju = eju_;
   S=S_;
+  fyl = fyl_;
   fyh = fyh_;
   dlong = dlong_;
   dtrans = dtrans_;
   Es = Es_;
   v0=v0_;
   k = k_;
+  useBuck = useBuck_;
 
    double Ec0;
    R=D/2.;
@@ -187,11 +193,15 @@ Es = Steel's Elastic modulus, vo = Poisson's coefficient for concrete, k = reduc
   parameterID = 0;
   SHVs = 0;
   // AddingSensitivity:END //////////////////////////////////////
+
+  //bucklong criterion always initialized to false
+  buckCrInit = false;
 }
+
 FRPConfinedConcrete::FRPConfinedConcrete():UniaxialMaterial(0, MAT_TAG_FRPConfinedConcrete),
  fpc1(0.0),fpc2(0.0), epsc0(0.0),
  CminStrain(0.0), CunloadSlope(0.0), CendStrain(0.0),
- Cstrain(0.0), Cstress(0.0),CaLatstress(0.0) ,CbLatstress(0.00001),CLatStrain(0.0) ,CConvFlag(true) ,CConfRat(1.0),CConfStrain(epsc0)
+ Cstrain(0.0), Cstress(0.0),CaLatstress(0.0) ,CbLatstress(0.00001),CLatStrain(0.0) ,CConvFlag(true) ,CConfRat(1.0),CConfStrain(epsc0),CLBuck(0.0)
 {
   // Set trial values
   this->revertToLastCommit();
@@ -224,6 +234,7 @@ int FRPConfinedConcrete::setTrialStrain (double strain, double strainRate)
    TConfRat = CConfRat;
    TConfStrain = CConfStrain ;
    TLatStrain = CLatStrain ;
+   TLBuck = CLBuck;
 
   // Determine change in strain from last converged state
   double dStrain = strain - Cstrain;
@@ -292,6 +303,7 @@ FRPConfinedConcrete::setTrial (double strain, double &stress, double &tangent, d
   TConfRat = CConfRat;
   TConfStrain = CConfStrain ;
   TLatStrain = CLatStrain ;
+  TLBuck = CLBuck;
 
   // Determine change in strain from last converged state
   double dStrain = strain - Cstrain;
@@ -514,11 +526,118 @@ void FRPConfinedConcrete::envelope ( )
     }
   }
   double et_cover = arrayLatC[4];
-  if (et_cover >= k*eju)
-    opserr << "FRP Rupture" ;
+  if (et_cover >= k*eju){
+    opserr << "FRP Rupture" ; 
+  }
+  //2017 adds. 
+
+	if(useBuck>0.5){ //0 false, 1 true
+		double eyl = fyl/Es;
+		double el_cover = arrayLatC[5];
+		double vcover = el_cover / Tstrain;
+   
+		if ( (Tstrain>=eyl) && (vcover >= 0.5 ) ){
+			if (!buckCrInit){
+				opserr << "Initiation of Buckling of Long.Bar under Compression";
+				double Ib = (pi*(pow(dlong,4)))/64;
+				double EIred = 0.5*Es*Ib*sqrt(fyl/400);
+				double Abar = (pi*(pow(dlong,2)))/4;
+				//Ash = pi*dtrans^2/4; Ash Has already been calculated in the constructor function
+				double Dcore = D - 2*c;
+				int mBuck = 1; //buckling mode for critical load
+				double Pcr = fyl*Abar;
+				bool convFlag2 = false; //secondary convergence flag
+				double n;
+				bool convFlag = myRegulaFalsi(Pcr,EIred,Es,Ash,Dcore,S,mBuck,n,convFlag2);
+	  
+				double LBuck;
+				if (!convFlag){
+					LBuck = S;
+				}
+				else{
+					if (n<=1){
+						LBuck = S;
+					}
+					else{// if (n>1)
+						n = floor(n + 0.5);//round(n)
+						LBuck = (n+1)*S;
+					}
+				}
+				TLBuck = LBuck;
+				buckCrInit = true;// never going inside again, LBuck computed only once 
+			}	//end of lbuck calculation for once
+
+			double esl = Tstrain;     
+			double theta = (6.9/(pow((TLBuck/dlong),2)))-0.05;
+			double wa = (esl*dlong)/((0.035*cos(theta)+theta)/(cos(theta)-0.035*theta)); 
+			double wb = (esl/((0.07*cos(theta)+theta)/(cos(theta)-0.07*theta))+0.035)*dlong;
+			double w = std::max(wa,wb);
+			double ecbuck;
+
+			if (Sj<0.000001){ //practically zero
+				ecbuck =( 2*pi*abs(((w-c))))/(pi*D);
+			}
+			else{ //nonzero
+				ecbuck = (2*pi*abs((w-c/2)))/(pi*D);
+			}
+
+			if( (ecbuck > 0) && (ecbuck >= eju)){
+				opserr << "FRP Rupture due to Buckling of Long.Bar under compression";
+			}
+		}//end of (Tstrain>=eyl) && (vcover >= 0.5 )
+	}//end of useBuck
   
   if (changedStrain == true)
     Tstrain = -Tstrain;
+}
+
+bool FRPConfinedConcrete::myRegulaFalsi(double Pcr, double EIred, double Es, double Ash, double Dcore, double S, int mBuck, double& xRes, bool& returnFlag){
+	
+	int insIter = 0; int insMaxIter = 1000;
+	double xA = 0; 
+	double xB = 10;
+	double xNew;
+
+	double fxA =  PCriticalSolve(xA,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
+	double fxÂ =  PCriticalSolve(xB,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
+
+	xNew = xA - (fxA)*(xA - xB)/(fxA - fxÂ);
+	double fxNew = PCriticalSolve(xNew,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
+	
+	while (( abs(fxNew)> 1E-6) && (insIter<=insMaxIter)){
+		insIter++;
+		if  (fxÂ*fxNew>0){
+			xB = xNew;
+			fxÂ = fxNew;
+		}
+		else{
+			xA = xNew;
+			fxA = fxNew;
+		}
+		
+		xNew = xA - (fxA)*(xA - xB)/(fxA - fxÂ);
+		fxNew = PCriticalSolve(xNew,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
+
+		if ((abs(xA-xB)<1E-12) && (fxA*fxÂ<0)){
+			returnFlag = true;	
+			break;
+		}
+	}
+
+
+	xRes = xNew;
+	if(insIter<=insMaxIter){
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+
+double  
+FRPConfinedConcrete::PCriticalSolve(double n, double Pcr, double EIred, double Es, double Ash, double Dcore, double S, int mBuck){//has to become zero
+	double f = Pcr-((pow(pi,2)*EIred)/pow(((n+1)*S),2))*(pow(mBuck,2.0) + (1/(pow(mBuck,2.0)))*((((n*Es*Ash)/((n+1)*S*pi*Dcore))*pow(((n+1)*S),4))/(pow(pi,4)*EIred)));
+	return f;
 }
 
 void 
@@ -665,6 +784,7 @@ int FRPConfinedConcrete::commitState ()
    CConvFlag = TConvFlag;
    CConfRat = TConfRat;
    CConfStrain = TConfStrain ;
+   CLBuck = TLBuck;
 
    // State variables
    Cstrain = Tstrain;
@@ -685,6 +805,7 @@ int FRPConfinedConcrete::revertToLastCommit ()
    TConvFlag = CConvFlag;
    TConfRat = CConfRat;
    TConfStrain = CConfStrain ;
+   TLBuck = CLBuck;
 
    // Recompute trial stress and tangent
    Tstrain = Cstrain;
@@ -710,6 +831,7 @@ int FRPConfinedConcrete::revertToStart ()
    CConvFlag = 0.0;
    CConfRat = 1.0;
    CConfStrain = 0.0 ;
+   CLBuck = 0.0;
 
    // State variables
    Cstrain = 0.0;
@@ -717,6 +839,7 @@ int FRPConfinedConcrete::revertToStart ()
    Ctangent = Ec0;
    CLatStrain = 0.0;
    CaLatstress = 0.0;
+
 
    // Reset trial variables and state
    this->revertToLastCommit();
@@ -731,7 +854,7 @@ int FRPConfinedConcrete::revertToStart ()
 UniaxialMaterial* FRPConfinedConcrete::getCopy()
 {
    FRPConfinedConcrete* theCopy = new FRPConfinedConcrete(this->getTag(),
-							  fpc1, fpc2, epsc0, D, c, Ej, Sj, tj, eju, S, fyh, dlong, dtrans, Es, v0, k);
+							  fpc1, fpc2, epsc0, D, c, Ej, Sj, tj, eju, S, fyl, fyh, dlong, dtrans, Es, v0, k, useBuck);
 
    // Converged history variables
    theCopy->CminStrain = CminStrain;
@@ -741,6 +864,7 @@ UniaxialMaterial* FRPConfinedConcrete::getCopy()
    theCopy->CConvFlag = CConvFlag;
    theCopy->CConfRat = CConfRat;
    theCopy->CConfStrain = CConfStrain;
+   theCopy->CLBuck = CLBuck;
 
    // Converged state variables
    theCopy->Cstrain = Cstrain;
@@ -755,7 +879,7 @@ UniaxialMaterial* FRPConfinedConcrete::getCopy()
 int FRPConfinedConcrete::sendSelf (int commitTag, Channel& theChannel)
 {
    int res = 0;
-   static Vector data(28);
+   static Vector data(31);
    data(0) = this->getTag();
 
    // Material properties
@@ -769,27 +893,30 @@ int FRPConfinedConcrete::sendSelf (int commitTag, Channel& theChannel)
    data(8)  = tj;
    data(9)  = eju;
    data(10) = S;
-   data(11) = fyh;
-   data(12) = dlong;
-   data(13) = dtrans;
-   data(14) = Es;
-   data(15) = v0;
-   data(16) = k;
+   data(11) = fyl;
+   data(12) = fyh;
+   data(13) = dlong;
+   data(14) = dtrans;
+   data(15) = Es;
+   data(16) = v0;
+   data(17) = k;
+   data(18) = useBuck;
 
    // History variables from last converged state
-   data(17) = CminStrain;
-   data(18) = CunloadSlope;
-   data(19) = CendStrain;
-   data(20) = CbLatstress;
-   data(21) = CConfRat;
-   data(22) = CConfStrain;
+   data(19) = CminStrain;
+   data(20) = CunloadSlope;
+   data(21) = CendStrain;
+   data(22) = CbLatstress;
+   data(23) = CConfRat;
+   data(24) = CConfStrain;
+   data(25) = CLBuck;
 
    // State variables from last converged state
-   data(23) = Cstrain;
-   data(24) = Cstress;
-   data(25) = Ctangent;
-   data(26) = CLatStrain;
-   data(27) = CaLatstress;
+   data(26) = Cstrain;
+   data(27) = Cstress;
+   data(28) = Ctangent;
+   data(29) = CLatStrain;
+   data(30) = CaLatstress;
 
    // Data is only sent after convergence, so no trial variables
    // need to be sent through data vector
@@ -805,7 +932,7 @@ int FRPConfinedConcrete::recvSelf (int commitTag, Channel& theChannel,
                                  FEM_ObjectBroker& theBroker)
 {
    int res = 0;
-   static Vector data(28);
+   static Vector data(31);
    res = theChannel.recvVector(this->getDbTag(), commitTag, data);
 
    if (res < 0) {
@@ -826,27 +953,30 @@ int FRPConfinedConcrete::recvSelf (int commitTag, Channel& theChannel,
    tj    = data(8);
    eju   = data(9);
    S     = data(10);
-   fyh   = data(11);
-   dlong = data(12);
-   dtrans= data(13);
-   Es    = data(14);
-   v0    = data(15);
-   k     = data(16);
+   fyl   = data(11);
+   fyh   = data(12);
+   dlong = data(13);
+   dtrans= data(14);
+   Es    = data(15);
+   v0    = data(16);
+   k     = data(17);
+   useBuck = data(18);
 
    // History variables from last converged state
-   CminStrain   = data(17);
-   CunloadSlope = data(18);
-   CendStrain   = data(19);
-   CbLatstress  = data(20);
-   CConfRat     = data(21);
-   CConfStrain  = data(22);
+   CminStrain   = data(19);
+   CunloadSlope = data(20);
+   CendStrain   = data(21);
+   CbLatstress  = data(22);
+   CConfRat     = data(23);
+   CConfStrain  = data(24);
+   CConfStrain  = data(25);
 
    // State variables from last converged state
-   Cstrain      = data(23);
-   Cstress      = data(24);
-   Ctangent     = data(25);
-   CLatStrain   = data(26);
-   CaLatstress  = data(27);
+   Cstrain      = data(26);
+   Cstress      = data(27);
+   Ctangent     = data(28);
+   CLatStrain   = data(29);
+   CaLatstress  = data(30);
 
    // Set trial state variables
 	  Tstrain = Cstrain;
@@ -872,12 +1002,14 @@ void FRPConfinedConcrete::Print (OPS_Stream& s, int flag)
    s << "  Thickness of the Jacket: " << tj << endln;
    s << "  Ultimate Strain of the Jacket: " << eju << endln;
    s << "  Spacing of the Stirrups: " << S << endln;
+   s << "  Yielding Strength of Longitudinal Steel Bars: " << fyl << endln;
    s << "  Yielding Strength of Stirrups: " << fyh << endln;
    s << "  Diameter of Longitudinal Bars: " << dlong << endln;
    s << "  Diameter of Stirrups " << dtrans << endln;
    s << "  Poisson's Coeffcient for Concrete" << v0 << endln;
    s << "  Elastic Modulus for Steel " << Es << endln;
    s << "  Reduction Factor for FRP Ultimate Strain (0.5-0.8) " << k << endln;
+   s << "  FRP Jacket Failure Criterion due to Buckling of Longitudinal Compressive Steel Bars (0 = not include it, 1= to include it) " << useBuck << endln;
 }
 
 // AddingSensitivity:BEGIN ///////////////////////////////////
@@ -915,23 +1047,29 @@ FRPConfinedConcrete::setParameter(const char **argv, int argc, Parameter &param)
   else if (strcmp(argv[0],"S") == 0)      {// Spacing of the Stirrups
     return param.addObject(10, this);
   }
-  else if (strcmp(argv[0],"fyh") == 0)    {// Yielding Strength of Stirrups
+  else if (strcmp(argv[0],"fyl") == 0)    {// Yielding Strength of Longitudinal Steel Bars
     return param.addObject(11, this);
   }
-  else if (strcmp(argv[0],"dlong") == 0)  {// Diameter of Longitudinal bar
+  else if (strcmp(argv[0],"fyh") == 0)    {// Yielding Strength of Stirrups
     return param.addObject(12, this);
   }
-  else if (strcmp(argv[0],"dtrans") == 0) {// Diameter of Stirrups
+  else if (strcmp(argv[0],"dlong") == 0)  {// Diameter of Longitudinal bar
     return param.addObject(13, this);
   }
-  else if (strcmp(argv[0],"Es") == 0)     {// Elastic modulus for Steel
+  else if (strcmp(argv[0],"dtrans") == 0) {// Diameter of Stirrups
     return param.addObject(14, this);
   }
-  else if (strcmp(argv[0],"vo") == 0)     {// Poisson's Coefficient for Concrete
+  else if (strcmp(argv[0],"Es") == 0)     {// Elastic modulus for Steel
     return param.addObject(15, this);
   }
-  else if (strcmp(argv[0],"k") == 0)      {// Reduction Factor For FRP Ultimate Strain
+  else if (strcmp(argv[0],"vo") == 0)     {// Poisson's Coefficient for Concrete
     return param.addObject(16, this);
+  }
+  else if (strcmp(argv[0],"k") == 0)      {// Reduction Factor For FRP Ultimate Strain
+    return param.addObject(17, this);
+  }
+  else if (strcmp(argv[0],"useBuck") == 0)      {// FRP Jacket Failure Criterion due to Buckling of Longitudinal Compressive Steel Bars (0 = not include it, 1= to include it) 
+    return param.addObject(18, this);
   }
   
   return -1;
@@ -972,23 +1110,29 @@ FRPConfinedConcrete::updateParameter(int parameterID, Information &info)
 		case 10:
                 this->S      = info.theDouble;
                 break;
-	    case 11:
+		 case 11:
+                this->fyl    = info.theDouble;
+                break;
+	    case 12:
                 this->fyh    = info.theDouble;
                 break;
-		case 12:
+		case 13:
                 this->dlong  = info.theDouble;
                 break;
-		case 13:
+		case 14:
                 this->dtrans = info.theDouble;
                 break;
-		case 14:
+		case 15:
                 this->Es     = info.theDouble;
                 break;
-		case 15:
+		case 16:
                 this->v0 = info.theDouble;
                 break;
-		case 16:
+		case 17:
                 this->k = info.theDouble;
+                break;
+		case 18:
+                this->useBuck = info.theDouble;
                 break;
         default:
                 break;

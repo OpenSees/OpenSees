@@ -34,7 +34,7 @@
 class FRPConfinedConcrete : public UniaxialMaterial
 {
  public:
-  FRPConfinedConcrete(int tag, double fpc1, double fpc2, double epsc0, double D, double c,double Ej, double Sj, double tj, double eju, double S, double fyh, double dlong, double dtrans, double Es, double v0, double k);
+  FRPConfinedConcrete(int tag, double fpc1, double fpc2, double epsc0, double D, double c,double Ej, double Sj, double tj, double eju, double S, double fyl, double fyh, double dlong, double dtrans, double Es, double v0, double k, double useBuck);
   FRPConfinedConcrete();
   ~FRPConfinedConcrete();
 
@@ -84,14 +84,16 @@ class FRPConfinedConcrete : public UniaxialMaterial
   double tj;
   double eju;
   double S;
+  double fyl;
   double fyh;
   double dlong;
   double dtrans;
   double Es;
   double v0;
   double k;
+  double useBuck; //practically boolean but declared as double to maintain input uniformity
 
-// History variables from last converged state
+// History variables from last converged state (Past)
   double CminStrain;
   double CunloadSlope;
   double CendStrain;
@@ -99,15 +101,17 @@ class FRPConfinedConcrete : public UniaxialMaterial
   bool   CConvFlag;
   double CConfRat;
   double CConfStrain;
+  double CLBuck;
 
-// State variables from last converged state
+
+// State variables from last converged state (Past)
   double Cstrain;
   double Cstress;
   double Ctangent;
   double CLatStrain;
   double CaLatstress;
 
-// History variables from last converged state
+// History variables from last converged state (Present)
   double TminStrain; 
   double TunloadSlope;
   double TendStrain;
@@ -115,15 +119,14 @@ class FRPConfinedConcrete : public UniaxialMaterial
   bool   TConvFlag;
   double TConfRat;
   double TConfStrain;
+  double TLBuck;
 
-  // State variables from last converged state
+  // State variables from last converged state (Present)
   double Tstrain;
   double Tstress;
   double Ttangent;
   double TLatStrain;
   double TaLatstress;
-
-
 
   void determineTrialState (double dStrain);
   void reload (void);
@@ -135,8 +138,12 @@ class FRPConfinedConcrete : public UniaxialMaterial
   int parameterID;
   Matrix *SHVs;
  // AddingSensitivity:END ///////////////////////////////////////////
-
+	
+  bool buckCrInit;
+  //addon for help
+  bool myRegulaFalsi(double Pcr, double EIred, double Es, double Ash, double Dcore, double S, int mBuck, double& xRes, bool& returnFlag);
+  double PCriticalSolve(double n, double Pcr, double EIred, double Es, double Ash, double Dcore, double S, int mBuck);
 };
 
-#endif
 
+#endif
