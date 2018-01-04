@@ -318,5 +318,5 @@ Tend = 2.0*math.pi/math.sqrt(lam[0])
 print("Fundamental period at end of transient analysis: ", Tend, "sec")
 
 # Print state of node 3
-ops.print("node", 3)
+ops.printModel("node", 3)
 ops.wipe()

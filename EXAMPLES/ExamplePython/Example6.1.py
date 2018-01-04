@@ -91,8 +91,8 @@ ops.load(l1, 0.0, -1.0)
 ops.load(l2, 0.0, -1.0)
 
 # print model
-#ops.print()
-ops.print("-JSON", "-file", "Example6.1.json")
+#ops.printModel()
+ops.printModel("-JSON", "-file", "Example6.1.json")
 
 # ----------------------- 
 # End of model generation

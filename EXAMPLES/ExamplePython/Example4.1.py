@@ -188,8 +188,8 @@ for i in range(numBay+1):
         ops.load(node2, 0.0, P,     0.0)
 
 # print model
-#ops.print()
-ops.print("-JSON", "-file", "Example4.1.json")
+#ops.printModel()
+ops.printModel("-JSON", "-file", "Example4.1.json")
 
 # ------------------------------
 # End of model generation
@@ -317,5 +317,5 @@ else:
     print("\nPushover analysis FAILED\n")
 
 # Print the state at node 3
-ops.print("node", 3)
+ops.printModel("node", 3)
 ops.wipe()

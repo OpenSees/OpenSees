@@ -67,8 +67,8 @@ ops.pattern("Plain", 1, 1, "-fact", 1.0)
 ops.load(4, 100.0, -50.0)
 
 # print model
-#ops.print()
-ops.print("-JSON", "-file", "Example1.1.json")
+#ops.printModel()
+ops.printModel("-JSON", "-file", "Example1.1.json")
 
 # ------------------------------
 # End of model generation
@@ -132,6 +132,6 @@ ops.analyze(1)
 
 # print the current state at node 4 and at all elements
 #print("node 4 displacement: ", ops.nodeDisp(4))
-ops.print("node", 4)
-ops.print("ele")
+ops.printModel("node", 4)
+ops.printModel("ele")
 ops.wipe()

@@ -236,8 +236,8 @@ ops.pattern("UniformExcitation", 2, 1, "-accel", 2)
 ops.pattern("UniformExcitation", 3, 2, "-accel", 3)
 
 # print model
-#ops.print()
-ops.print("-JSON", "-file", "Example5.1.json")
+#ops.printModel()
+ops.printModel("-JSON", "-file", "Example5.1.json")
 
 # ----------------------- 
 # End of model generation

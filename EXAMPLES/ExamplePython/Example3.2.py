@@ -279,5 +279,5 @@ else:
     print("\nPushover analysis FAILED\n")
 
 # Print the state at node 3
-ops.print("node", 3)
+ops.printModel("node", 3)
 ops.wipe()

@@ -74,8 +74,8 @@ ops.load(side1, 0.0, -0.25, 0.0, 0.0, 0.0, 0.0)
 ops.load(side2, 0.0, -0.25, 0.0, 0.0, 0.0, 0.0)
 
 # print model
-#ops.print()
-ops.print("-JSON", "-file", "Example7.1.json")
+#ops.printModel()
+ops.printModel("-JSON", "-file", "Example7.1.json")
 
 # ----------------------- 
 # End of model generation

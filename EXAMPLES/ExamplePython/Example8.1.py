@@ -75,8 +75,8 @@ ops.pattern("Plain", 1, 1, "-fact", 1.0)
 ops.load(nn, load, load, 0.0)
 
 # print model
-#ops.print()
-ops.print("-JSON", "-file", "Example8.1.json")
+#ops.printModel()
+ops.printModel("-JSON", "-file", "Example8.1.json")
 
 # ----------------------- 
 # End of model generation
