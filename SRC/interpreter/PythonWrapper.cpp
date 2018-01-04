@@ -1359,7 +1359,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("initialize", &Py_ops_initialize);
     addCommand("getLoadFactor", &Py_ops_getLoadFactor);
     addCommand("build", &Py_ops_build);
-    addCommand("print", &Py_ops_print);
+    addCommand("printModel", &Py_ops_print);
     addCommand("printA", &Py_ops_printA);
     addCommand("printB", &Py_ops_printB);
     addCommand("printGID", &Py_ops_printGID);
