@@ -55,13 +55,13 @@ public:
 	PM4Sand(int tag, int classTag, double Dr, double G0, double hp0, double mDen, double P_atm = 101.3, double h0 = -1, double emax = 0.8,
 		double emin = 0.5, double nb = 0.5, double nd = 0.1, double Ado = -1, double z_max = -1, double cz = 250,
 		double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Ckaf = -1, double Q = 10,
-		double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, double residualP = 0.0, int FirstCall = 0, int integrationScheme = 1, int tangentType = 0,
+		double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, double residualP = 0.0, int integrationScheme = 1, int tangentType = 0,
 		double TolF = 1.0e-7, double TolR = 1.0e-7);
 	// full constructor
 	PM4Sand(int tag, double Dr, double G0, double hp0, double mDen, double P_atm = 101.3, double h0 = -1, double emax = 0.8,
 		double emin = 0.5, double nb = 0.5, double nd = 0.1, double Ado = -1, double z_max = -1, double cz = 250,
 		double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Ckaf = -1, double Q = 10,
-		double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, double residualP = 0.0, int FirstCall = 0, int integrationScheme = 1, int tangentType = 0,
+		double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, double residualP = 0.0, int integrationScheme = 1, int tangentType = 0,
 		double TolF = 1.0e-7, double TolR = 1.0e-7);
 	// null constructor
 	PM4Sand();
@@ -95,6 +95,8 @@ public:
 	const Vector getFabric();
 	const Vector getAlpha_in();
 	double getDilatancy();
+	double getG();
+	double getKp();
 	const Vector getAlpha_in_p();
 	const Matrix &getTangent();
 	const Matrix &getInitialTangent();
@@ -183,6 +185,7 @@ protected:
 	double mMd;
 	double mMcur;       // current stress ratio
 	double mresidualP;    // residualP to avoid negative p during calculation
+	double mDilat;      // D
 
 	double	mTolF;			// max drift from yield surface
 	double	mTolR;			// tolerance for Newton iterations
@@ -192,7 +195,7 @@ protected:
 	char unsigned mOrgTangType;
 	double	m_Pmin;			// Minimum allowable mean effective stress
 	double  m_Pmin2;        // Minimum p for Cpzp2 and Cpmin
-	bool	m_firstCycle;		// flag for first half cycle
+	bool    m_pzpFlag;          // flag for updating pzp
 	static char unsigned mElastFlag;	// 1: enforce elastic response
 
 	static Vector mI1;			// 2nd Order Identity Tensor
@@ -203,7 +206,7 @@ protected:
 	static Matrix mIIdevCon;	// 4th order deviatoric tensor, contravariant
 	static Matrix mIIdevMix;	// 4th order deviatoric tensor, mixed variant
 	static Matrix mIIdevCo;		// 4th order deviatoric tensor, covariant
-	// initialize these Vector and Matrices:
+								// initialize these Vector and Matrices:
 	static class initTensors {
 	public:
 		initTensors() {
@@ -247,8 +250,8 @@ protected:
 	static const double		maxStrainInc;
 	static const char unsigned	mMaxSubStep; // Max number of substepping
 
-	//Member Functions specific for PM4Sand model
-	//void	initialize();
+											 //Member Functions specific for PM4Sand model
+											 //void	initialize();
 	void	integrate();
 	void	elastic_integrator(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
 		const Vector& NextStrain, Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha,
