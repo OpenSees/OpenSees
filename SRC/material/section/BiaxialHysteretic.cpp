@@ -107,7 +107,7 @@ BiaxialHysteretic::BiaxialHysteretic(int tag, double _k, double _fc, double _fn,
     fn(_fn), fc(_fc), k(_k), alp(_alp), als(_als), eta(_eta),
     Rs(_Rs), sig(_sig), lmbda(_lmbda), ufx(2), ufy(2),
     ui(2), u(2), Li(2), Fi(2), L(2), F(2), sF(2),
-    du(2), loading(2),
+    du(2), loading(2), loadingprev(2),
     uxmax(2), uymax(2), Kt(2,2), code(2),
     otherDbTag(0), parameterID(0), dedh(2)
 {
@@ -132,7 +132,7 @@ BiaxialHysteretic::BiaxialHysteretic():
     fn(0.0), fc(0.0), k(0.0), alp(0.0), als(0.0), eta(0.0),
     Rs(0.0), sig(0.0), lmbda(0.0), ufx(2), ufy(2),
     ui(2), u(2), Li(2), Fi(2), L(2), F(2), sF(2),
-    du(2), loading(2),
+    du(2), loading(2), loadingprev(2),
     uxmax(2), uymax(2), Kt(2,2), code(2),
     otherDbTag(0), parameterID(0), dedh(2)
 {
@@ -298,6 +298,7 @@ BiaxialHysteretic::commitState(void)
     Li = L;
     du[0] = Vector(1);
     du[1] = Vector(1);
+    loadingprev = loading;
     loading = ID(2);
     
     return 0;
@@ -407,44 +408,46 @@ BiaxialHysteretic::getdedh(void)
 void
 BiaxialHysteretic::updateSprings()
 {
-    double energyRatio = -Eh/Et;
+    if (loadingprev(0)*loading(0) == -1 ||
+	loadingprev(1)*loading(1) == -1) {
+	double energyRatio = -Eh/Et;
 
-    double phi0 = exp(r0*energyRatio);
-    double phip = exp(rp*energyRatio);
-    double phis = exp(rs*energyRatio);
-    double phic = exp(rc*energyRatio);
-    double phin = exp(rn*energyRatio);
+	double phi0 = exp(r0*energyRatio);
+	double phip = exp(rp*energyRatio);
+	double phis = exp(rs*energyRatio);
+	double phic = exp(rc*energyRatio);
+	double phin = exp(rn*energyRatio);
 
-    double k0 = phi0*k;
-    double kp0 = phip*alp*k;
+	double k0 = phi0*k;
+	double kp0 = phip*alp*k;
     
-    // ultimate spring
-    ku = phis*als*k;
+	// ultimate spring
+	ku = phis*als*k;
     
-    double fc0 = phic*fc;
-    double fn0 = phin*fn;
+	double fc0 = phic*fc;
+	double fn0 = phin*fn;
     
     
-    double uc = fc0/k0;
-    double un = uc + (fn0-fc0)/kp0;
+	double uc = fc0/k0;
+	double un = uc + (fn0-fc0)/kp0;
         
-    double k1 = k0 - ku;
-    double k2 = kp0 - ku;
+	double k1 = k0 - ku;
+	double k2 = kp0 - ku;
 
-    double fn1 = fn0 - ku*un;
-    double fc1 = fc0 - ku*uc;
+	double fn1 = fn0 - ku*un;
+	double fc1 = fc0 - ku*uc;
 
-    double uc1 = fc1/k1;
+	double uc1 = fc1/k1;
 
-    // hysteretic spring
-    Fh = fc1 - k2*uc1;
-    kh = k1 - k2;
+	// hysteretic spring
+	Fh = fc1 - k2*uc1;
+	kh = k1 - k2;
 
-    // post-yielding spring
-    Fp = fn1-Fh;
-    kp = k2;
+	// post-yielding spring
+	Fp = fn1-Fh;
+	kp = k2;
 
-    
+    }
 }
 
 int
@@ -619,9 +622,32 @@ BiaxialHysteretic::updateTangent(int a)
 void
 BiaxialHysteretic::updateEnergy()
 {
-    for (int a = 0; a<2; ++a) {
-	double f = 0.5*(F(a)+Fi(a));
-	Eh += fabs(f*du[a](0));
+    bool adding = true;
+    if (loadingprev(0)*loading(0) == -1) {
+	// first spring
+	double b = Fh/(eta*sign(du[0](0))+1-eta);
+	double s =Rs*sqrt((uxmax(0)-uxmax(1))*(uxmax(0)-uxmax(1))+
+			  (uymax(0)-uymax(1))*(uymax(0)-uymax(1)));
+	double Q = (F(0)-lmbda*Fh*sign(du[0](0)))/(sqrttwo*sig*Fh);
+	double dFdu = 1.0/(s*sqrttwo*exp(-Q*Q)/(sqrtpi*sig*Fh)+b/(kh*(b-F(0))));
+
+	Eh -= 0.5*F(0)*F(0)/dFdu;
+	if (Eh < 0) Eh = 0;
+	adding = false;
+    }
+    if (loadingprev(1)*loading(1) == -1) {
+	
+	// second spring
+	Eh -= 0.5*F(1)*F(1)/kp;
+	if (Eh < 0) Eh = 0;
+	adding = false;
+    }
+    
+    if (adding) {
+	for (int a=0; a<2; ++a) {
+	    double f = 0.5*(F(a)+Fi(a));
+	    Eh += fabs(f*du[a](0));
+	}
     }
 }
 

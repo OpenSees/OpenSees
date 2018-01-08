@@ -160,7 +160,7 @@ private:
     std::vector<Vector> du;
 
     // loading state for spring1 and 2, [spring1 and spring2]
-    ID loading;
+    ID loading, loadingprev;
 
     // maximum inelastic displacement of the system in + and - directions
     // [positive, negative]
