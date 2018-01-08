@@ -119,6 +119,7 @@
 #define MAT_TAG_ElasticPPMaterial		 2
 #define MAT_TAG_ParallelMaterial		 3
 #define MAT_TAG_Concrete01			 4
+#define MAT_TAG_Concrete01A			 444
 #define MAT_TAG_Steel01				 5
 #define MAT_TAG_Hardening			 6
 #define MAT_TAG_Hysteretic			 7
@@ -126,6 +127,7 @@
 #define MAT_TAG_Viscous				 9
 #define MAT_TAG_Backbone			10
 #define MAT_TAG_PathIndependent			11
+#define MAT_TAG_Multiplier			111
 #define MAT_TAG_SeriesMaterial			12
 #define MAT_TAG_CableMaterial                   13
 #define MAT_TAG_ENTMaterial			14
@@ -274,6 +276,7 @@
 #define SEC_TAG_FiberSection2d		         9
 #define SEC_TAG_NDFiberSection2d		         900
 #define SEC_TAG_FiberSection3d		        10
+#define SEC_TAG_FiberSectionWarping3d		        1010
 #define SEC_TAG_NDFiberSection3d		         1000
 #define SEC_TAG_FiberSectionGJ		        11
 #define SEC_TAG_BeamFiberSection	        12
@@ -300,6 +303,7 @@
 #define SEC_TAG_FiberSectionGJThermal           33   // L.Jiang[SIF]
 #define SEC_TAG_MembranePlateFiberSectionThermal 34  // L.Jiang[SIF]
 #define SEC_TAG_LayeredShellFiberSectionThermal 35     //L.Jiang[SIF]
+#define SEC_TAG_BiaxialHysteretic 36
 
 #define SEC_TAG_McftSection2dfiber 7601
 
@@ -517,6 +521,7 @@
 #define ELE_TAG_ElasticBeam2d            3
 #define ELE_TAG_ModElasticBeam2d         4
 #define ELE_TAG_ElasticBeam3d            5
+#define ELE_TAG_ElasticWarpingBeam3d            5001
 #define ELE_TAG_Beam2d    	         6
 #define ELE_TAG_beam2d02    	         7
 #define ELE_TAG_beam2d03    	         8
@@ -538,6 +543,7 @@
 #define ELE_TAG_ZeroLengthContactNTS2D	24
 #define ELE_TAG_ZeroLengthInterface2D	25
 #define ELE_TAG_CoupledZeroLength	26
+#define ELE_TAG_BiaxialZeroLength	260
 #define ELE_TAG_ZeroLengthRocking       27
 #define ELE_TAG_NLBeamColumn2d	        28
 #define ELE_TAG_NLBeamColumn3d	        29
@@ -744,6 +750,7 @@
 #define CRDTR_TAG_PDeltaCrdTransf3d 5
 #define CRDTR_TAG_ModerateDispCrdTransf3d 9
 #define CRDTR_TAG_CorotCrdTransf3d  6
+#define CRDTR_TAG_CorotCrdTransfWarping3d  61
 #define CRDTR_TAG_LinearCrdTransf2dInt 7
 
 #define NOD_TAG_Node      	1
