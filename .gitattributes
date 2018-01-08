@@ -3347,6 +3347,8 @@ SRC/material/nD/stressDensityModel/StressDensityModel2D.cpp -text
 SRC/material/nD/stressDensityModel/StressDensityModel2D.h -text
 SRC/material/nD/stressDensityModel/StressDensityModel3D.cpp -text
 SRC/material/nD/stressDensityModel/StressDensityModel3D.h -text
+SRC/material/section/BiaxialHysteretic.cpp -text
+SRC/material/section/BiaxialHysteretic.h -text
 SRC/material/section/Bidirectional.cpp -text
 SRC/material/section/Bidirectional.h -text
 SRC/material/section/ElasticBDShearSection2d.cpp -text
