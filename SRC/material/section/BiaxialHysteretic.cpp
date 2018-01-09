@@ -119,9 +119,16 @@ BiaxialHysteretic::BiaxialHysteretic(int tag, double _k, double _fc, double _fn,
 	opserr << "WARNING: fn <= 0 ::BiaxialHysteretic\n";
 	return;
     }
+    du[0] = Vector(1);
+    du[1] = Vector(1);
+
+    loading(0) = 1.0;
+    loadingprev(0) = -1.0;
+
     updateSprings();
     code(0) = code1;
     code(1) = code2;
+
 }
 
 // constructor for blank object that recvSelf needs to be invoked upon
@@ -136,6 +143,11 @@ BiaxialHysteretic::BiaxialHysteretic():
     uxmax(2), uymax(2), Kt(2,2), code(2),
     otherDbTag(0), parameterID(0), dedh(2)
 {
+    du[0] = Vector(1);
+    du[1] = Vector(1);
+    loading(0) = 1.0;
+    loadingprev(0) = -1.0;
+
     updateSprings();
 }
 
@@ -630,11 +642,11 @@ BiaxialHysteretic::updateEnergy()
 			  (uymax(0)-uymax(1))*(uymax(0)-uymax(1)));
 	double Q = (F(0)-lmbda*Fh*sign(du[0](0)))/(sqrttwo*sig*Fh);
 	double dFdu = 1.0/(s*sqrttwo*exp(-Q*Q)/(sqrtpi*sig*Fh)+b/(kh*(b-F(0))));
-
 	Eh -= 0.5*F(0)*F(0)/dFdu;
 	if (Eh < 0) Eh = 0;
 	adding = false;
     }
+
     if (loadingprev(1)*loading(1) == -1) {
 	
 	// second spring
@@ -642,7 +654,7 @@ BiaxialHysteretic::updateEnergy()
 	if (Eh < 0) Eh = 0;
 	adding = false;
     }
-    
+
     if (adding) {
 	for (int a=0; a<2; ++a) {
 	    double f = 0.5*(F(a)+Fi(a));
