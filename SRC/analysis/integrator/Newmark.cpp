@@ -201,9 +201,6 @@ int Newmark::newStep(double deltaT)
 
     converged = true;
 
-
-
-
     (*Ut) = *U;        
     (*Utdot) = *Udot;  
     (*Utdotdot) = *Udotdot;
@@ -270,7 +267,7 @@ int Newmark::formEleTangent(FE_Element *theEle)
 {
     if (determiningMass == true)
         return 0;
-    
+
     theEle->zeroTangent();
     
     if (statusFlag == CURRENT_TANGENT)  {
@@ -281,6 +278,13 @@ int Newmark::formEleTangent(FE_Element *theEle)
         theEle->addKiToTang(c1);
         theEle->addCtoTang(c2);
         theEle->addMtoTang(c3);
+    } else if (statusFlag == HALL_TANGENT)  {
+        theEle->addKtToTang(c1*cFactor);
+        theEle->addKiToTang(c1*iFactor);
+        theEle->addCtoTang(c2);
+        theEle->addMtoTang(c3);
+    } else {
+      opserr << "Newmark::formEleTangent - unknown FLAG\n";
     }
     
     return 0;
@@ -891,7 +895,6 @@ Newmark::computeSensitivities(void)
   */
   // Zero out the old right-hand side of the SOE
   theSOE->zeroB();
-  
   
   if (this == 0) {
     opserr << "ERROR SensitivityAlgorithm::computeSensitivities() -";

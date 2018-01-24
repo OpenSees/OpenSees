@@ -48,25 +48,28 @@
 class NewtonRaphson: public EquiSolnAlgo
 {
   public:
-    NewtonRaphson(int tangent = CURRENT_TANGENT);    
-    NewtonRaphson(ConvergenceTest &theTest, int tangent = CURRENT_TANGENT);
-    ~NewtonRaphson();
-
-    int solveCurrentStep(void);    
+  NewtonRaphson(int tangent = CURRENT_TANGENT, double iFactor = 0.0, double cFactor = 0.0);    
+  NewtonRaphson(ConvergenceTest &theTest, int tangent = CURRENT_TANGENT);
+  ~NewtonRaphson();
+  
+  int solveCurrentStep(void);    
     
-    virtual int sendSelf(int commitTag, Channel &theChannel);
-    virtual int recvSelf(int commitTag, Channel &theChannel, 
-			 FEM_ObjectBroker &theBroker);
-    void Print(OPS_Stream &s, int flag =0);    
-
-    int getNumIterations(void);
-    
-  protected:
-
-    
-  private:
-    int tangent;
-    int numIterations;
+  virtual int sendSelf(int commitTag, Channel &theChannel);
+  virtual int recvSelf(int commitTag, Channel &theChannel, 
+		       FEM_ObjectBroker &theBroker);
+  void Print(OPS_Stream &s, int flag =0);    
+  
+  int getNumIterations(void);
+  
+ protected:
+  
+  
+ private:
+  int tangent;
+  int numIterations;
+  
+  double iFactor;
+  double cFactor;
 };
 
 #endif
