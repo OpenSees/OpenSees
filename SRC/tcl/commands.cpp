@@ -74,6 +74,7 @@ OPS_Stream *opserrPtr = &sserr;
 
 #endif
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -174,6 +175,8 @@ OPS_Stream *opserrPtr = &sserr;
 
 #include <PFEMIntegrator.h>
 #include<Integrator.h>//Abbas
+
+extern void *OPS_NewtonRaphsonAlgorithm(void);
 
 extern void *OPS_Newmark(void);
 extern void *OPS_AlphaOS(void);
@@ -3523,6 +3526,7 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }    
   EquiSolnAlgo *theNewAlgo = 0;
+  OPS_ResetInput(clientData, interp, 2, argc, argv, &theDomain, NULL);	  
 
   // check argv[1] for type of Algorithm and create the object
   if (strcmp(argv[1],"Linear") == 0) {
@@ -3543,23 +3547,13 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   else if (strcmp(argv[1],"Newton") == 0) {
-    int formTangent = CURRENT_TANGENT;
-    if (argc > 2) {
-      if (strcmp(argv[2],"-secant") == 0) {
-	formTangent = CURRENT_SECANT;
-      } else if (strcmp(argv[2],"-initial") == 0) {
-	formTangent = INITIAL_TANGENT;
-      } else if ((strcmp(argv[2],"-initialThenCurrent") == 0) || 
-		 (strcmp(argv[2],"-initialCurrent") == 0))  {
-	formTangent = INITIAL_THEN_CURRENT_TANGENT;
-      }
-    }
+    void *theNewtonAlgo = OPS_NewtonRaphsonAlgorithm();
+    if (theNewtonAlgo == 0)
+      return TCL_ERROR;
 
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return TCL_ERROR;	  
-    }
-    theNewAlgo = new NewtonRaphson(*theTest, formTangent); 
+    theNewAlgo = (EquiSolnAlgo *)theNewtonAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
   }
 
   else if (strcmp(argv[1],"KrylovNewton") == 0) {
