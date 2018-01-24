@@ -3246,6 +3246,8 @@ SRC/material/nD/UWmaterials/DruckerPragerPlaneStrain.cpp -text
 SRC/material/nD/UWmaterials/DruckerPragerPlaneStrain.h -text
 SRC/material/nD/UWmaterials/InitialStateAnalysisWrapper.cpp -text
 SRC/material/nD/UWmaterials/InitialStateAnalysisWrapper.h -text
+SRC/material/nD/UWmaterials/J2CyclicBoundingSurface.cpp -text
+SRC/material/nD/UWmaterials/J2CyclicBoundingSurface.h -text
 SRC/material/nD/UWmaterials/Makefile -text
 SRC/material/nD/UWmaterials/ManzariDafalias.cpp -text
 SRC/material/nD/UWmaterials/ManzariDafalias.h -text
@@ -3261,6 +3263,8 @@ SRC/material/nD/UWmaterials/ManzariDafaliasRO.cpp -text
 SRC/material/nD/UWmaterials/ManzariDafaliasRO.h -text
 SRC/material/nD/UWmaterials/PM4Sand.cpp -text
 SRC/material/nD/UWmaterials/PM4Sand.h -text
+SRC/material/nD/UWmaterials/PM4Silt.cpp -text
+SRC/material/nD/UWmaterials/PM4Silt.h -text
 SRC/material/nD/WrapperNDMaterial.cpp -text
 SRC/material/nD/WrapperNDMaterial.h -text
 SRC/material/nD/cyclicSoil/Makefile -text

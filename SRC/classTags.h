@@ -425,8 +425,12 @@
 #define ND_TAG_StressDensityModel             14018
 #define ND_TAG_StressDensityModel2D           14019
 #define ND_TAG_StressDensityModel3D           14020
-// PM4Sand material  L.Chen
+// PM4Sand material - L.Chen
 #define ND_TAG_PM4Sand                        14021
+// PM4Silt material - L.Chen
+#define ND_TAG_PM4Silt                        14022
+// J2CyclicBoundingSurface material - D.Turello
+#define ND_TAG_J2CyclicBoundingSurface        14023
 
 // MultiaxialCyclicPlasticity, add by Gang Wang
 #define ND_TAG_MultiaxialCyclicPlasticity             10031
