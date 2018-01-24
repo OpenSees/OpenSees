@@ -248,7 +248,8 @@ PyInit_opensees(void)
 #else
 #define INITERROR return
 
-void
+//void
+PyMODINIT_FUNC
 initopensees(void)
 #endif
 {
