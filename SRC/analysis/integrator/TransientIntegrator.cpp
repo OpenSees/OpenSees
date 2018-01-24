@@ -61,7 +61,7 @@ TransientIntegrator::formTangent(int statFlag, double iFact, double cFact)
 {
   iFactor = iFact;
   cFactor = cFact;
-  this->formTangent(statFlag);
+  return this->formTangent(statFlag);
 }
 
 int 
