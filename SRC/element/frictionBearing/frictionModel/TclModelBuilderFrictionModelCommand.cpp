@@ -39,6 +39,13 @@ extern void *OPS_VelDepMultiLinear();
 extern void *OPS_VelNormalFrcDep();
 extern void *OPS_VelPressureDep();
 
+extern int OPS_ResetInputNoBuilder(ClientData clientData,
+    Tcl_Interp *interp,
+    int cArg,
+    int mArg,
+    TCL_Char **argv,
+    Domain *domain);
+
 
 static void printCommand(int argc, TCL_Char **argv)
 {
@@ -57,6 +64,8 @@ int TclModelBuilderFrictionModelCommand(ClientData clientData, Tcl_Interp *inter
         opserr << "Want: frictionModel type tag <specific friction model args>\n";
         return TCL_ERROR;
     }
+    
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);
     
     // pointer to a friction model that will be added to the model builder
     FrictionModel *theFrnMdl = 0;
