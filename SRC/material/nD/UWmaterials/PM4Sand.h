@@ -54,14 +54,14 @@ public:
 	// full constructor
 	PM4Sand(int tag, int classTag, double Dr, double G0, double hp0, double mDen, double P_atm = 101.3, double h0 = -1, double emax = 0.8,
 		double emin = 0.5, double nb = 0.5, double nd = 0.1, double Ado = -1, double z_max = -1, double cz = 250,
-		double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Ckaf = -1, double Q = 10,
-		double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, double residualP = 0.0, int integrationScheme = 1, int tangentType = 0,
+		double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Cdr = -1, double Ckaf = -1, double Q = 10,
+		double R = 1.5, double m = 0.01, double Fsed_min = -1, double p_sdeo = -1, int integrationScheme = 1, int tangentType = 0,
 		double TolF = 1.0e-7, double TolR = 1.0e-7);
 	// full constructor
 	PM4Sand(int tag, double Dr, double G0, double hp0, double mDen, double P_atm = 101.3, double h0 = -1, double emax = 0.8,
 		double emin = 0.5, double nb = 0.5, double nd = 0.1, double Ado = -1, double z_max = -1, double cz = 250,
-		double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Ckaf = -1, double Q = 10,
-		double R = 1.5, double m = 0.01, double crhg = 0.005, double chg = -1, double residualP = 0.0, int integrationScheme = 1, int tangentType = 0,
+		double ce = -1, double phi_cv = 33.0, double nu = 0.3, double Cgd = 2.0, double Cdr = -1, double Ckaf = -1, double Q = 10,
+		double R = 1.5, double m = 0.01, double Fsed_min = -1, double p_sdeo = -1, int integrationScheme = 1, int tangentType = 0,
 		double TolF = 1.0e-7, double TolR = 1.0e-7);
 	// null constructor
 	PM4Sand();
@@ -94,7 +94,7 @@ public:
 	const Vector getAlpha();
 	const Vector getFabric();
 	const Vector getAlpha_in();
-	double getDilatancy();
+	double getTracker();
 	double getG();
 	double getKp();
 	const Vector getAlpha_in_p();
@@ -136,13 +136,14 @@ protected:
 	double m_Mc;
 	double m_nu;
 	double m_Cgd;
+	double m_Cdr;
 	double m_Ckaf;
 	double m_Q;
 	double m_R;
 	double m_m;
-	double m_crhg;
-	double m_chg;
 	double m_z_max;
+	double m_Fsed_min;
+	double m_p_sedo;
 	int m_FirstCall;
 	int m_PostShake;
 
@@ -184,8 +185,7 @@ protected:
 	double mMb;
 	double mMd;
 	double mMcur;       // current stress ratio
-	double mresidualP;    // residualP to avoid negative p during calculation
-	double mDilat;      // D
+	double mTracker;      // internal paramter tracker
 
 	double	mTolF;			// max drift from yield surface
 	double	mTolR;			// tolerance for Newton iterations
@@ -196,7 +196,7 @@ protected:
 	double	m_Pmin;			// Minimum allowable mean effective stress
 	double  m_Pmin2;        // Minimum p for Cpzp2 and Cpmin
 	bool    m_pzpFlag;          // flag for updating pzp
-	static char unsigned mElastFlag;	// 1: enforce elastic response
+	static char unsigned   me2p;	// 0: enforce elastic response
 
 	static Vector mI1;			// 2nd Order Identity Tensor
 	static Matrix mIIco;		// 4th-order identity tensor, covariant
@@ -314,9 +314,5 @@ protected:
 	Vector ToContraviant(const Vector& v1);
 	Vector ToCovariant(const Vector& v1);
 };
-
-// Other auxillary functions
-Vector Vector2Max(const Vector& v1, const Vector& v2);
-Vector Vector2Min(const Vector& v1, const Vector& v2);
 
 #endif

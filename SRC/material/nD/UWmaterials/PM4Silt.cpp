@@ -1261,9 +1261,9 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 				dSigma1 = 2.0 * G * mIIcon * dDevStrain + K*dVolStrain*mI1 - Macauley(NextL)*
 					(2.0 * G * n + K * D * mI1);
 				// update fabric
-				if (DoubleDot2_2_Contr(alphaD - CurAlpha, n) < 0.0) {
+				// if (DoubleDot2_2_Contr(alphaD - CurAlpha, n) < 0.0) {
 					dFabric1 = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + CurFabric);
-				}
+				// }
 				dPStrain1 = NextL * mIIco * R1;
 				dAlpha1 = two3 * NextL * h * b;
 			}
@@ -1284,7 +1284,7 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 			continue;
 		}
 
-		GetStateDependent(NextStress + dSigma1, CurAlpha + dAlpha1, alpha_in, alpha_in_p, NextFabric + dFabric1, mFabric_in, G, mzcum
+		GetStateDependent(NextStress + dSigma1, NextAlpha + dAlpha1, alpha_in, alpha_in_p, NextFabric + dFabric1, mFabric_in, G, mzcum
 			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R2, mKp, alphaD, Cka, h, b);
 		r = GetDevPart(NextStress + dSigma1) / p;
 
@@ -1314,9 +1314,9 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 				dSigma2 = 2.0 * G * mIIcon * dDevStrain + K*dVolStrain*mI1 - Macauley(NextL)*
 					(2.0 * G * n + K * D * mI1);
 				// update fabric
-				if (DoubleDot2_2_Contr(alphaD - (CurAlpha + dAlpha1), n) < 0.0) {
+				// if (DoubleDot2_2_Contr(alphaD - (CurAlpha + dAlpha1), n) < 0.0) {
 					dFabric2 = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + CurFabric + dFabric1);
-				}
+				// }
 				dPStrain2 = NextL * mIIco * R2;
 				dAlpha2 = two3 * NextL * h * b;
 			}
@@ -2150,7 +2150,7 @@ PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 			D = D + (Drot - D)*Macauley(mMb - Mcur) / (Macauley(mMb - Mcur) + 0.01);
 		}
 		if (p <= 2 * m_Pmin) {
-			D = -3.5 * m_Ado * Macauley(mMb - mMd) * (2 * m_Pmin - p) / m_Pmin;
+			D = fmin(D, -3.5 * m_Ado * Macauley(mMb - mMd) * (2 * m_Pmin - p) / m_Pmin);
 		}
 	}
 	else {
