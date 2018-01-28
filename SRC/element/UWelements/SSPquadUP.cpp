@@ -928,12 +928,26 @@ SSPquadUP::displaySelf(Renderer &theViewer, int displayMode, float fact, const c
 void
 SSPquadUP::Print(OPS_Stream &s, int flag)
 {
-    opserr << "SSPquadUP, element id:  " << this->getTag() << endln;
-    opserr << "   Connected external nodes:  ";
-    for (int i = 0; i < SQUP_NUM_NODE; i++) {
-        opserr << mExternalNodes(i) << " ";
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        opserr << "SSPquadUP, element id:  " << this->getTag() << endln;
+        opserr << "   Connected external nodes:  ";
+        for (int i = 0; i < SQUP_NUM_NODE; i++) {
+            opserr << mExternalNodes(i) << " ";
+        }
     }
-    return;
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"SSPquadUP\", ";
+        s << "\"nodes\": [" << mExternalNodes(0) << ", ";
+        s << mExternalNodes(1) << ", ";
+        s << mExternalNodes(2) << ", ";
+        s << mExternalNodes(3) << "], ";
+        s << "\"thickness\": " << mThickness << ", ";
+        s << "\"bodyForces\": [" << b[0] << ", " << b[1] << "], ";
+        s << "\"material\": \"" << theMaterial->getTag() << "\"}";
+    }
 }
 
 Response*

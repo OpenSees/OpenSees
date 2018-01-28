@@ -44,7 +44,8 @@ class EnhancedQuad : public Element {
 		 int nd3, 
 		 int nd4,
 		 NDMaterial &theMaterial, 
-		 const char *type ) ;
+		 const char *type,
+         double t);
 
     //null constructor
     EnhancedQuad();
@@ -128,6 +129,9 @@ class EnhancedQuad : public Element {
 
     //enhanced strain parameters
     Vector alpha ;
+
+    //element thickness
+    double thickness ;
 
     //material information
     NDMaterial *materialPointers[4] ; //pointers to four materials

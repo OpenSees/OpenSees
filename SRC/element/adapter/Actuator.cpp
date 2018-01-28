@@ -716,7 +716,7 @@ int Actuator::displaySelf(Renderer &theViewer,
 
 void Actuator::Print(OPS_Stream &s, int flag)
 {
-    if (flag == 0)  {
+    if (flag == OPS_PRINT_CURRENTSTATE)  {
         // print everything
         s << "Element: " << this->getTag() << endln;
         s << "  type: Actuator, iNode: " << connectedExternalNodes(0)
@@ -727,8 +727,18 @@ void Actuator::Print(OPS_Stream &s, int flag)
         s << "  mass per unit length: " << rho << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
-    } else if (flag == 1)  {
-        // does nothing
+    }
+
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"Actuator\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
+        s << "\"EA\": " << EA << ", ";
+        s << "\"L\": " << L << ", ";
+        s << "\"ipPort\": " << ipPort << ", ";
+        s << "\"addRayleigh\": " << addRayleigh << ", ";
+        s << "\"massperlength\": " << rho << "}";
     }
 }
 

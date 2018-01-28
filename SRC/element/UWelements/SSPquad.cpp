@@ -59,63 +59,64 @@ OPS_SSPquad(void)
     	num_SSPquad++;
     	opserr << "SSPquad element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n";
   	}
-
+    
   	// Pointer to an element that will be returned
   	Element *theElement = 0;
-
-  	int numRemainingInputArgs = OPS_GetNumRemainingInputArgs();
-
-  	if (numRemainingInputArgs < 8) {
-    	opserr << "Invalid #args, want: element SSPquad eleTag? iNode? jNode? kNode? lNode? matTag? type? thickness? <b1? b2?>?\n";
+    
+  	if (OPS_GetNumRemainingInputArgs() < 8) {
+    	opserr << "Invalid #args, want: element SSPquad eleTag? iNode? jNode? kNode? lNode? thick? type? matTag? <b1? b2?>?\n";
 		return 0;
   	}
-
-  	int iData[6];
+    
+  	int iData[5];
+    double thick = 1.0;
   	const char *theType;
-	double dData[3];
-	dData[1] = 0.0;
-	dData[2] = 0.0;
-
-  	int numData = 6;
+    int matTag;
+    double b[2] = { 0.0,0.0 };
+    
+  	int numData = 5;
   	if (OPS_GetIntInput(&numData, iData) != 0) {
     	opserr << "WARNING invalid integer data: element SSPquad " << iData[0] << endln;
 		return 0;
   	}
-
-	theType = OPS_GetString();
-
-
-	numData = 1;
-	if (OPS_GetDoubleInput(&numData, dData) != 0) {
-		opserr << "WARNING invalid thickness data: element SSPquad " << iData[0] << endln;
-		return 0;
-	}
-
-  	int matID = iData[5];
-  	NDMaterial *theMaterial = OPS_getNDMaterial(matID);
+    
+    numData = 1;
+    if (OPS_GetDoubleInput(&numData, &thick) != 0) {
+        opserr << "WARNING invalid thickness: element SSPquad " << iData[0] << endln;
+        return 0;
+    }
+    
+    theType = OPS_GetString();
+    
+    if (OPS_GetIntInput(&numData, &matTag) != 0) {
+        opserr << "WARNING invalid matTag: element SSPquad " << iData[0] << endln;
+        return 0;
+    }
+    
+  	NDMaterial *theMaterial = OPS_getNDMaterial(matTag);
   	if (theMaterial == 0) {
     	opserr << "WARNING element SSPquad " << iData[0] << endln;
-		opserr << " Material: " << matID << "not found\n";
+		opserr << " Material: " << matTag << "not found\n";
 		return 0;
   	}
-
-	if (numRemainingInputArgs == 10) {
+    
+	if (OPS_GetNumRemainingInputArgs() > 2) {
     	numData = 2;
-    	if (OPS_GetDoubleInput(&numData, &dData[1]) != 0) {
-      		opserr << "WARNING invalid optional data: element SSPquad " << iData[0] << endln;
+    	if (OPS_GetDoubleInput(&numData, b) != 0) {
+      		opserr << "WARNING invalid b data: element SSPquad " << iData[0] << endln;
 	  		return 0;
     	}
   	}
-
+    
   	// parsing was successful, allocate the element
   	theElement = new SSPquad(iData[0], iData[1], iData[2], iData[3], iData[4],
-                                 *theMaterial, theType, dData[0], dData[1], dData[2]);
-
+                                 *theMaterial, theType, thick, b[0], b[1]);
+    
   	if (theElement == 0) {
     	opserr << "WARNING could not create element of type SSPquad\n";
 		return 0;
   	}
-
+    
   	return theElement;
 }
 
@@ -674,12 +675,26 @@ SSPquad::displaySelf(Renderer &theViewer, int displayMode, float fact, const cha
 void
 SSPquad::Print(OPS_Stream &s, int flag)
 {
-	opserr << "SSPquad, element id:  " << this->getTag() << endln;
-	opserr << "   Connected external nodes:  ";
-	for (int i = 0; i < SSPQ_NUM_NODE; i++) {
-		opserr << mExternalNodes(i) << " ";
-	}
-	return;
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        opserr << "SSPquad, element id:  " << this->getTag() << endln;
+        opserr << "   Connected external nodes:  ";
+        for (int i = 0; i < SSPQ_NUM_NODE; i++) {
+            opserr << mExternalNodes(i) << " ";
+        }
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"SSPquad\", ";
+        s << "\"nodes\": [" << mExternalNodes(0) << ", ";
+        s << mExternalNodes(1) << ", ";
+        s << mExternalNodes(2) << ", ";
+        s << mExternalNodes(3) << "], ";
+        s << "\"thickness\": " << mThickness << ", ";
+        s << "\"bodyForces\": [" << b[0] << ", " << b[1] << "], ";
+        s << "\"material\": \"" << theMaterial->getTag() << "\"}";
+    }
 }
 
 Response*

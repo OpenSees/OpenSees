@@ -2460,16 +2460,16 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
 
 	 if (flag == OPS_PRINT_PRINTMODEL_JSON) {
 		 s << "\t\t\t{";
-		 s << "\"name\": \"" << this->getTag() << "\", ";
+		 s << "\"name\": " << this->getTag() << ", ";
 		 s << "\"type\": \"ForceBeamColumn3d\", ";
-		 s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+		 s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
 		 s << "\"sections\": [";
 		 for (int i = 0; i < numSections - 1; i++)
 			 s << "\"" << sections[i]->getTag() << "\", ";
 		 s << "\"" << sections[numSections - 1]->getTag() << "\"], ";
 		 s << "\"integration\": ";
 		 beamIntegr->Print(s, flag);
-		 s << ", \"rho\": " << rho << ", ";
+		 s << ", \"massperlength\": " << rho << ", ";
 		 s << "\"crdTransformation\": \"" << crdTransf->getTag() << "\"}";
 	 }
   }

@@ -545,7 +545,7 @@ int OPS_doBlock2D()
 
     // get args
     const char* subtype = "";
-    double thick = 0.0;
+    double thick = 1.0;
     int matTag=-1, secTag=-1;
     int cArg = 6;
     if (strcmp(type, "quad") == 0  || (strcmp(type,"stdQuad") == 0)) {
@@ -579,33 +579,41 @@ int OPS_doBlock2D()
 	cArg = 7;
 	
     } else if (strcmp(type, "bbarQuad") == 0 || strcmp(type,"mixedQuad") == 0) {
-	if (OPS_GetNumRemainingInputArgs() < 1) {
-	    opserr<<"WARNING: want - matTag\n";
-	    return -1;
-	}
-	int numdata = 1;
-	if (OPS_GetIntInput(&numdata, &matTag) < 0) {
-	    opserr << "WARNING invalid matTag\n";
-	    return -1;
-	}
-	cArg = 7;
-	
-    } else if (strcmp(type, "enhancedQuad") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 2) {
-	    opserr<<"WARNING: want - type, matTag\n";
+	    opserr<<"WARNING: want - thick, matTag\n";
 	    return -1;
 	}
-	int numdata = 1;
-	subtype = OPS_GetString();
+    int numdata = 1;
+    if (OPS_GetDoubleInput(&numdata, &thick) < 0) {
+        opserr << "WARNING invalid thick\n";
+        return -1;
+    }
 	if (OPS_GetIntInput(&numdata, &matTag) < 0) {
 	    opserr << "WARNING invalid matTag\n";
 	    return -1;
 	}
 	cArg = 8;
 	
+    } else if (strcmp(type, "enhancedQuad") == 0) {
+	if (OPS_GetNumRemainingInputArgs() < 3) {
+	    opserr<<"WARNING: want - thick, type, matTag\n";
+	    return -1;
+	}
+    int numdata = 1;
+    if (OPS_GetDoubleInput(&numdata, &thick) < 0) {
+        opserr << "WARNING invalid thick\n";
+        return -1;
+    }
+	subtype = OPS_GetString();
+	if (OPS_GetIntInput(&numdata, &matTag) < 0) {
+	    opserr << "WARNING invalid matTag\n";
+	    return -1;
+	}
+	cArg = 9;
+	
     } else if (strcmp(type, "SSPquad") == 0 || strcmp(type, "SSPQuad") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 3) {
-	    opserr<<"WARNING: want - matTag, type, thick\n";
+	    opserr<<"WARNING: want - thick, type, matTag\n";
 	    return -1;
 	}
 	int numdata = 1;
@@ -753,8 +761,7 @@ int OPS_doBlock2D()
 		int nd2 = nodeTags(1) + idata[2];
 		int nd3 = nodeTags(2) + idata[2];
 		int nd4 = nodeTags(3) + idata[2];
-		theEle = new FourNodeQuad(eleID,nd1,nd2,nd3,nd4,
-					  *mat,subtype,thick);
+		theEle = new FourNodeQuad(eleID,nd1,nd2,nd3,nd4,*mat,subtype,thick);
 					  
 		
 	    } else if (strcmp(type, "ShellMITC4") == 0 || strcmp(type, "shellMITC4") == 0 ||
@@ -795,7 +802,7 @@ int OPS_doBlock2D()
 		int nd2 = nodeTags(1) + idata[2];
 		int nd3 = nodeTags(2) + idata[2];
 		int nd4 = nodeTags(3) + idata[2];
-		theEle = new ConstantPressureVolumeQuad(eleID,nd1,nd2,nd3,nd4,*mat);
+		theEle = new ConstantPressureVolumeQuad(eleID,nd1,nd2,nd3,nd4,*mat,thick);
 	
 	    } else if (strcmp(type, "enhancedQuad") == 0) {
 
@@ -814,7 +821,7 @@ int OPS_doBlock2D()
 		int nd2 = nodeTags(1) + idata[2];
 		int nd3 = nodeTags(2) + idata[2];
 		int nd4 = nodeTags(3) + idata[2];
-		theEle = new EnhancedQuad(eleID,nd1,nd2,nd3,nd4,*mat,subtype);
+		theEle = new EnhancedQuad(eleID,nd1,nd2,nd3,nd4,*mat,subtype,thick);
 	
 	    } else if (strcmp(type, "SSPquad") == 0 || strcmp(type, "SSPQuad") == 0) {
 		
@@ -833,8 +840,7 @@ int OPS_doBlock2D()
 		int nd2 = nodeTags(1) + idata[2];
 		int nd3 = nodeTags(2) + idata[2];
 		int nd4 = nodeTags(3) + idata[2];
-		theEle = new SSPquad(eleID,nd1,nd2,nd3,nd4,
-				     *mat,subtype,thick);
+		theEle = new SSPquad(eleID,nd1,nd2,nd3,nd4,*mat,subtype,thick);
 	    }
 
 	    if (theDomain->addElement(theEle) == false) {
@@ -1001,11 +1007,11 @@ int OPS_doBlock3D()
 
 		} else if (strcmp(type, "SSPbrick") == 0 || strcmp(type,"SSPBrick") == 0) {
 
-		    theEle = new BbarBrick(eleID,nd1,nd2,nd3,nd4,nd5,nd6,nd7,nd8,
+		    theEle = new SSPbrick(eleID,nd1,nd2,nd3,nd4,nd5,nd6,nd7,nd8,
 					   *mat,0.,0.,0.);
 		    
 		} else {
-		    opserr << "WARNING element type "<<type<<" is currently unknown by this command.\n";
+		    opserr << "WARNING element type " << type << " is currently unknown by this command.\n";
 		    return -1;
 		}
 		

@@ -317,17 +317,27 @@ const Matrix&  ElasticMembranePlateSection::getInitialTangent( )
 //print out data
 void  ElasticMembranePlateSection::Print( OPS_Stream &s, int flag )
 {
-  s << "ElasticMembranePlateSection: \n " ;
-  s <<  "  Young's Modulus E = "  <<  E  <<  endln ;
-  s <<  "  Poisson's Ratio nu = " <<  nu <<  endln ;
-  s <<  "  Thickness h = "        <<  h  <<  endln ;
-  s <<  "  Density rho = "        <<  (rhoH/h)  <<  endln ;
-
-  return ;
+    if (flag == OPS_PRINT_PRINTMODEL_SECTION) {
+        s << "ElasticMembranePlateSection: \n ";
+        s << "  Young's Modulus E = " << E << endln;
+        s << "  Poisson's Ratio nu = " << nu << endln;
+        s << "  Thickness h = " << h << endln;
+        s << "  Density rho = " << (rhoH/h) << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ElasticMembranePlateSection\", ";
+        s << "\"E\": " << E << ", ";
+        s << "\"nu\": " << nu << ", ";
+        s << "\"thickness\": " << h << ", ";
+        s << "\"masspervolume\": " << (rhoH/h) << "}";
+    }
 }
 
-int 
-ElasticMembranePlateSection::sendSelf(int cTag, Channel &theChannel) 
+
+int ElasticMembranePlateSection::sendSelf(int cTag, Channel &theChannel) 
 {
   int res = 0;
   static Vector data(5);
@@ -345,8 +355,7 @@ ElasticMembranePlateSection::sendSelf(int cTag, Channel &theChannel)
 }
 
 
-int 
-ElasticMembranePlateSection::recvSelf(int cTag, Channel &theChannel, 
+int ElasticMembranePlateSection::recvSelf(int cTag, Channel &theChannel, 
 				      FEM_ObjectBroker &theBroker)
 {
   int res = 0;
@@ -364,4 +373,3 @@ ElasticMembranePlateSection::recvSelf(int cTag, Channel &theChannel,
 
   return res;
 }
- 

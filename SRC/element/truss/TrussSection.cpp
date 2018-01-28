@@ -1062,10 +1062,10 @@ TrussSection::Print(OPS_Stream &s, int flag)
     
     if (flag == OPS_PRINT_PRINTMODEL_JSON) {
         s << "\t\t\t{";
-        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"TrussSection\", ";
-        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
-        s << "\"rho\": " << rho << ", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
+        s << "\"massperlength\": " << rho << ", ";
         s << "\"section\": \"" << theSection->getTag() << "\"}";
     }
 }

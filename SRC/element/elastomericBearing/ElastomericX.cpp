@@ -1070,7 +1070,7 @@ int ElastomericX::displaySelf(Renderer &theViewer,
 
 void ElastomericX::Print(OPS_Stream &s, int flag)
 {
-    if (flag == 0)  {
+    if (flag == OPS_PRINT_CURRENTSTATE) {
         // print everything
         s << "************************************************************" << endln;
         s << "Element: " << this->getTag();
@@ -1089,8 +1089,25 @@ void ElastomericX::Print(OPS_Stream &s, int flag)
         s << "  resisting force: " << this->getResistingForce() << endln;
         s << "************************************************************" << endln;
         //s <<" time: " << tCommit <<" ke0: " << G*A/Tr  <<" ke: " << ke <<" Fcr: "<< Fcr << " Fcrmin: "<< Fcrmin <<" Kv0: "<< Kv0 <<" Kv: "<< Kv << endln;
-    } else if (flag == 1)  {
-        // does nothing
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"ElastomericX\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
+        s << "\"D1\": " << D1 << ", ";
+        s << "\"D2\": " << D2 << ", ";
+        s << "\"L\": " << L << ", ";
+        s << "\"Tr\": " << Tr << ", ";
+        s << "\"S\": " << S << ", ";
+        s << "\"A\": " << A << ", ";
+        s << "\"G\": " << G << ", ";
+        s << "\"kc\": " << kc << ", ";
+        s << "\"ac\": " << ac << ", ";
+        s << "\"PhiM\": " << PhiM << ", ";
+        s << "\"shearDistI\": " << shearDistI << ", ";
+        s << "\"mass\": " << mass << "}";
     }
 }
 

@@ -310,11 +310,23 @@ ElasticTubeSection3d::recvSelf(int commitTag, Channel &theChannel,
 void
 ElasticTubeSection3d::Print(OPS_Stream &s, int flag)
 {
-  s << "ElasticTubeSection3d, tag: " << this->getTag() << endln;
-  s << "\tE: " << E << endln;
-  s << "\td: " << d << endln;
-  s << "\ttw: " << tw << endln;
-  s << "\tG: " << G << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_SECTION) {
+        s << "ElasticTubeSection3d, tag: " << this->getTag() << endln;
+        s << "\tE: " << E << endln;
+        s << "\td: " << d << endln;
+        s << "\ttw: " << tw << endln;
+        s << "\tG: " << G << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ElasticTubeSection3d\", ";
+        s << "\"E\": " << E << ", ";
+        s << "\"G\": " << G << ", ";
+        s << "\"diameter\": " << d << ", ";
+        s << "\"thickness\": " << tw << "}";
+    }
 }
 
 int

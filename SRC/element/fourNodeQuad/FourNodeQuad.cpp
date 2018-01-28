@@ -69,7 +69,7 @@ void* OPS_FourNodeQuad()
 	return 0;
     }
 
-    double thk = 0.0;
+    double thk = 1.0;
     num = 1;
     if (OPS_GetDoubleInput(&num,&thk) < 0) {
 	opserr<<"WARNING: invalid double inputs\n";
@@ -107,7 +107,7 @@ void* OPS_FourNodeQuad()
     }
 
     return new FourNodeQuad(idata[0],idata[1],idata[2],idata[3],idata[4],
-			    *mat,type,thk,data[0],data[1],data[2],data[3]);
+			                *mat,type,thk,data[0],data[1],data[2],data[3]);
 }
 
 
@@ -731,17 +731,17 @@ FourNodeQuad::sendSelf(int commitTag, Channel &theChannel)
   
   // Quad packs its data into a Vector and sends this to theChannel
   // along with its dbTag and the commitTag passed in the arguments
-  static Vector data(10);
+  static Vector data(9);
   data(0) = this->getTag();
   data(1) = thickness;
-  data(3) = b[0];
-  data(4) = b[1];
-  data(5) = pressure;
+  data(2) = b[0];
+  data(3) = b[1];
+  data(4) = pressure;
 
-  data(6) = alphaM;
-  data(7) = betaK;
-  data(8) = betaK0;
-  data(9) = betaKc;
+  data(5) = alphaM;
+  data(6) = betaK;
+  data(7) = betaK0;
+  data(8) = betaKc;
   
   res += theChannel.sendVector(dataTag, commitTag, data);
   if (res < 0) {
@@ -794,7 +794,7 @@ FourNodeQuad::sendSelf(int commitTag, Channel &theChannel)
 
 int
 FourNodeQuad::recvSelf(int commitTag, Channel &theChannel,
-						FEM_ObjectBroker &theBroker)
+                       FEM_ObjectBroker &theBroker)
 {
   int res = 0;
   
@@ -802,7 +802,7 @@ FourNodeQuad::recvSelf(int commitTag, Channel &theChannel,
 
   // Quad creates a Vector, receives the Vector and then sets the 
   // internal data with the data in the Vector
-  static Vector data(10);
+  static Vector data(9);
   res += theChannel.recvVector(dataTag, commitTag, data);
   if (res < 0) {
     opserr << "WARNING FourNodeQuad::recvSelf() - failed to receive Vector\n";
@@ -811,14 +811,14 @@ FourNodeQuad::recvSelf(int commitTag, Channel &theChannel,
   
   this->setTag((int)data(0));
   thickness = data(1);
-  b[0] = data(3);
-  b[1] = data(4);
-  pressure = data(5);
+  b[0] = data(2);
+  b[1] = data(3);
+  pressure = data(4);
 
-  alphaM = data(6);
-  betaK = data(7);
-  betaK0 = data(8);
-  betaKc = data(9);
+  alphaM = data(5);
+  betaK = data(6);
+  betaK0 = data(7);
+  betaKc = data(8);
 
   static ID idData(12);
   // Quad now receives the tags of its four external nodes
@@ -833,7 +833,6 @@ FourNodeQuad::recvSelf(int commitTag, Channel &theChannel,
   connectedExternalNodes(2) = idData(10);
   connectedExternalNodes(3) = idData(11);
   
-
   if (theMaterial == 0) {
     // Allocate new materials
     theMaterial = new NDMaterial *[4];
@@ -847,15 +846,15 @@ FourNodeQuad::recvSelf(int commitTag, Channel &theChannel,
       // Allocate new material with the sent class tag
       theMaterial[i] = theBroker.getNewNDMaterial(matClassTag);
       if (theMaterial[i] == 0) {
-	opserr << "FourNodeQuad::recvSelf() - Broker could not create NDMaterial of class type " << matClassTag << endln;
-	return -1;
+	    opserr << "FourNodeQuad::recvSelf() - Broker could not create NDMaterial of class type " << matClassTag << endln;
+	    return -1;
       }
       // Now receive materials into the newly allocated space
       theMaterial[i]->setDbTag(matDbTag);
       res += theMaterial[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
-opserr << "NLBeamColumn3d::recvSelf() - material " << i << "failed to recv itself\n";
-	return res;
+        opserr << "FourNodeQuad::recvSelf() - material " << i << "failed to recv itself\n";
+	    return res;
       }
     }
   }
@@ -868,20 +867,19 @@ opserr << "NLBeamColumn3d::recvSelf() - material " << i << "failed to recv itsel
       // Check that material is of the right type; if not,
       // delete it and create a new one of the right type
       if (theMaterial[i]->getClassTag() != matClassTag) {
-	delete theMaterial[i];
-	theMaterial[i] = theBroker.getNewNDMaterial(matClassTag);
-	if (theMaterial[i] == 0) {
-opserr << "NLBeamColumn3d::recvSelf() - material " << i << "failed to create\n";
-				
-	  return -1;
-	}
+	    delete theMaterial[i];
+	    theMaterial[i] = theBroker.getNewNDMaterial(matClassTag);
+	    if (theMaterial[i] == 0) {
+          opserr << "FourNodeQuad::recvSelf() - material " << i << "failed to create\n";
+	      return -1;
+	    }
       }
       // Receive the material
       theMaterial[i]->setDbTag(matDbTag);
       res += theMaterial[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
-opserr << "NLBeamColumn3d::recvSelf() - material " << i << "failed to recv itself\n";
-	return res;
+        opserr << "FourNodeQuad::recvSelf() - material " << i << "failed to recv itself\n";
+	    return res;
       }
     }
   }
@@ -929,17 +927,34 @@ FourNodeQuad::Print(OPS_Stream &s, int flag)
     for (i=0; i<nstress; i++)
       s << avgStrain(i) << " " ;
     s << endln;
-
-  } else {
-	s << "\nFourNodeQuad, element id:  " << this->getTag() << endln;
+  }
+  
+  if (flag == OPS_PRINT_CURRENTSTATE) {
+    s << "\nFourNodeQuad, element id:  " << this->getTag() << endln;
 	s << "\tConnected external nodes:  " << connectedExternalNodes;
 	s << "\tthickness:  " << thickness << endln;
 	s << "\tsurface pressure:  " << pressure << endln;
-	s << "\tbody forces:  " << b[0] << " " << b[1] << endln;
+    s << "\tmass density:  " << rho << endln;
+    s << "\tbody forces:  " << b[0] << " " << b[1] << endln;
 	theMaterial[0]->Print(s,flag);
 	s << "\tStress (xx yy xy)" << endln;
 	for (int i = 0; i < 4; i++)
 		s << "\t\tGauss point " << i+1 << ": " << theMaterial[i]->getStress();
+  }
+  
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+      s << "\t\t\t{";
+      s << "\"name\": " << this->getTag() << ", ";
+      s << "\"type\": \"FourNodeQuad\", ";
+      s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
+      s << connectedExternalNodes(1) << ", ";
+      s << connectedExternalNodes(2) << ", ";
+      s << connectedExternalNodes(3) << "], ";
+      s << "\"thickness\": " << thickness << ", ";
+      s << "\"surfacePressure\": " << pressure << ", ";
+      s << "\"masspervolume\": " << rho << ", ";
+      s << "\"bodyForces\": [" << b[0] << ", " << b[1] << "], ";
+      s << "\"material\": \"" << theMaterial[0]->getTag() << "\"}";
   }
 }
 

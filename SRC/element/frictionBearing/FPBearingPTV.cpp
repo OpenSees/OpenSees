@@ -1354,13 +1354,13 @@ int FPBearingPTV::displaySelf(Renderer &theViewer,
 
 void FPBearingPTV::Print(OPS_Stream &s, int flag)
 {
-    if (flag == 0)  {
+    if (flag == OPS_PRINT_CURRENTSTATE) {
         // print everything
         s << "Element: " << this->getTag(); 
         s << "  type: FPBearingPTV  iNode: " << connectedExternalNodes(0);
         s << "  jNode: " << connectedExternalNodes(1) << endln;
-        /*s << "  FrictionModel: " << theFrnMdl->getTag() << endln;*/
-        s << "  kInit: " << k0 << endln;
+        //s << "  FrictionModel: " << theFrnMdl->getTag() << endln;
+        s << "  Reff: " << Reffective << "  kInit: " << k0 << endln;
         s << "  Material ux: " << theMaterials[0]->getTag() << endln;
         s << "  Material rx: " << theMaterials[1]->getTag() << endln;
         s << "  Material ry: " << theMaterials[2]->getTag() << endln;
@@ -1370,8 +1370,26 @@ void FPBearingPTV::Print(OPS_Stream &s, int flag)
         s << "  maxIter: " << maxIter << "  tol: " << tol << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
-    } else if (flag == 1)  {
-        // does nothing
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"FPBearingPTV\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
+        //s << "\"frictionModel\": \"" << theFrnMdl->getTag() << "\", ";
+        s << "\"Reff\": " << Reffective << ", ";
+        s << "\"kInit\": " << k0 << ", ";
+        s << "\"materials\": [\"";
+        s << theMaterials[0]->getTag() << "\", \"";
+        s << theMaterials[1]->getTag() << "\", \"";
+        s << theMaterials[2]->getTag() << "\", \"";
+        s << theMaterials[3]->getTag() << "\"], ";
+        s << "\"shearDistI\": " << shearDistI << ", ";
+        s << "\"addRayleigh\": " << addRayleigh << ", ";
+        s << "\"mass\": " << mass << ", ";
+        s << "\"maxIter\": " << maxIter << ", ";
+        s << "\"tol\": " << tol << "}";
     }
 }
 

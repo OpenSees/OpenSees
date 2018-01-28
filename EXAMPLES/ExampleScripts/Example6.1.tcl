@@ -6,29 +6,30 @@
 model basic -ndm 2 -ndf 2
 
 # create the material
-nDMaterial ElasticIsotropic   1   1000   0.25  6.75 
-
+nDMaterial ElasticIsotropic   1   1000   0.25  [expr 6.75/(12.0*32.174)]
 
 # Define geometry
 # ---------------
 
 # define some  parameters
-
 set Quad  quad
-set Quad  bbarQuad
-set Quad  enhancedQuad
+#set Quad SSPquad
+#set Quad  bbarQuad
+#set Quad  enhancedQuad
 
-if {$Quad == "enhancedQuad" } {
-    set eleArgs "PlaneStrain2D  1"
-} 
-
+set thick 2.0
 if {$Quad == "quad" } {
-    set eleArgs "1 PlaneStrain2D  1"
+    set eleArgs "$thick PlaneStrain  1"
 } 
-
+if {$Quad == "SSPquad" } {
+    set eleArgs "$thick PlaneStrain  1"
+} 
 if {$Quad == "bbarQuad" } {
-    set eleArgs "1"
+    set eleArgs "$thick 1"
 }
+if {$Quad == "enhancedQuad" } {
+    set eleArgs "$thick PlaneStrain  1"
+} 
 
 set nx 10; # NOTE: nx MUST BE EVEN FOR THIS EXAMPLE
 set ny 4
@@ -54,6 +55,11 @@ pattern Plain 1 Linear {
     load $l1  0.0  -1.0
     load $l2  0.0  -1.0
 }
+
+# ----------------------------
+# End of model generation
+# ----------------------------
+
 
 # --------------------------------------------------------------------
 # Start of static analysis (creation of the analysis & analysis itself)
@@ -85,20 +91,20 @@ analysis Static
 # Perform the analysis
 analyze   10     
 
-
 # --------------------------
 # End of static analysis
 # --------------------------
+
 
 # ----------------------------
 # Start of recorder generation
 # ----------------------------
 
 recorder Node -file Node.out -time -node $l1 -dof 2 disp
-recorder plot Node.out CenterNodeDisp 625 10 625 450 -columns 1 2
+recorder plot Node.out CenterNodeDisp 10 210 800 400 -columns 1 2
 
 # create the display
-recorder display g3 10 10 800 200 -wipe
+recorder display OpenSees 10 10 800 200 -wipe
 prp 20 5.0 100.0
 vup 0 1 0
 viewWindow -30 30 -10 10
@@ -130,7 +136,10 @@ system ProfileSPD
 #integrator GeneralizedMidpoint 0.50
 analysis Transient
 
+record
+
 # Perform the transient analysis (20 sec)
 #       numSteps  dt
-analyze  500     0.5
+analyze  1000     0.05
 
+print node $l1 $l2

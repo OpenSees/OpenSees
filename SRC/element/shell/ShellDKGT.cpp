@@ -366,10 +366,11 @@ void  ShellDKGT::Print( OPS_Stream &s, int flag )
 
     if (flag == OPS_PRINT_PRINTMODEL_JSON) {
         s << "\t\t\t{";
-        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"ShellDKGT\", ";
-        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\", ";
-        s << "\"" << connectedExternalNodes(2) << "\"], ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
+        s << connectedExternalNodes(1) << ", ";
+        s << connectedExternalNodes(2) << "], ";
         s << "\"section\": \"" << materialPointers[0]->getTag() << "\"}";
     }
 }

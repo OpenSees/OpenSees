@@ -44,12 +44,13 @@ class ConstantPressureVolumeQuad : public Element
   public :
     
     ConstantPressureVolumeQuad( ) ;
-    ConstantPressureVolumeQuad( int tag, 
+    ConstantPressureVolumeQuad(int tag, 
 			        int node1,
 			        int node2,
 			        int node3,
 			        int node4,
-			        NDMaterial &theMaterial ) ;
+			        NDMaterial &theMaterial,
+                    double t) ;
     virtual ~ConstantPressureVolumeQuad( ) ;
 
     const char *getClassType(void) const {return "ConstantPressureVolumeQuad";};
@@ -118,7 +119,10 @@ class ConstantPressureVolumeQuad : public Element
     //node information
     ID connectedExternalNodes ;  //four node numbers
     Node *nodePointers[4] ;      //pointers to four nodes
-					
+    
+    //element thickness
+    double thickness;
+    
     //material information
     NDMaterial *materialPointers[4] ; //pointers to four materials
 					  

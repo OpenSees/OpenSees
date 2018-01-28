@@ -435,9 +435,21 @@ Bidirectional::recvSelf(int cTag, Channel &theChannel,
 void
 Bidirectional::Print(OPS_Stream &s, int flag)
 {
-	s << "Bidirectional, tag: " << this->getTag() << endln;
-	s << "\tE:    " << E << endln;
-	s << "\tsigY: " << sigY<< endln;
-	s << "\tHiso: " << Hiso << endln;
-	s << "\tHkin: " << Hkin << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_SECTION) {
+        s << "Bidirectional, tag: " << this->getTag() << endln;
+        s << "\tE:    " << E << endln;
+        s << "\tsigY: " << sigY << endln;
+        s << "\tHiso: " << Hiso << endln;
+        s << "\tHkin: " << Hkin << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"Bidirectional\", ";
+        s << "\"E\": " << E << ", ";
+        s << "\"sigY\": " << sigY << ", ";
+        s << "\"Hiso\": " << Hiso << ", ";
+        s << "\"Hkin\": " << Hkin << "}";
+    }
 }

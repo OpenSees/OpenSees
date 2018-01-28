@@ -83,7 +83,7 @@ TclModelBuilder_addFourNodeQuad(ClientData clientData, Tcl_Interp *interp,
 
   // get the id and end nodes 
   int FourNodeQuadId, iNode, jNode, kNode, lNode, matID;
-  double thickness;
+  double thickness = 1.0;
   double p = 0.0;		// uniform normal traction (pressure)
   double rho = 0.0;		// mass density
   double b1 = 0.0;
@@ -213,15 +213,16 @@ TclModelBuilder_addConstantPressureVolumeQuad(ClientData clientData, Tcl_Interp 
   // check the number of arguments is correct
   int argStart = 2;
 
-  if ((argc-argStart) < 6) {
+  if ((argc-argStart) < 7) {
     opserr << "WARNING insufficient arguments\n";
     printCommand(argc, argv);
-    opserr << "Want: element ConstantPressureVolumeQuad eleTag? iNode? jNode? kNode? lNode? matTag?\n"; 
+    opserr << "Want: element ConstantPressureVolumeQuad eleTag? iNode? jNode? kNode? lNode? thk? matTag?\n"; 
     return TCL_ERROR;
   }    
 
   // get the id and end nodes 
   int ConstantPressureVolumeQuadId, iNode, jNode, kNode, lNode, matID;
+  double thickness = 1.0;
 
   if (Tcl_GetInt(interp, argv[argStart], &ConstantPressureVolumeQuadId) != TCL_OK) {
     opserr << "WARNING invalid ConstantPressureVolumeQuad eleTag" << endln;
@@ -251,7 +252,13 @@ TclModelBuilder_addConstantPressureVolumeQuad(ClientData clientData, Tcl_Interp 
      return TCL_ERROR;
   }  
 
-  if (Tcl_GetInt(interp, argv[5+argStart], &matID) != TCL_OK) {
+  if (Tcl_GetDouble(interp, argv[5+argStart], &thickness) != TCL_OK) {
+      opserr << "WARNING invalid thickness\n";
+      opserr << "ConstantPressureVolumeQuad element: " << ConstantPressureVolumeQuadId << endln;
+      return TCL_ERROR;
+  }
+
+  if (Tcl_GetInt(interp, argv[6+argStart], &matID) != TCL_OK) {
      opserr << "WARNING invalid matID\n";
      opserr << "ConstantPressureVolumeQuad element: " << ConstantPressureVolumeQuadId << endln;
      return TCL_ERROR;
@@ -269,13 +276,12 @@ TclModelBuilder_addConstantPressureVolumeQuad(ClientData clientData, Tcl_Interp 
   // now create the ConstantPressureVolumeQuad and add it to the Domain
   ConstantPressureVolumeQuad *theConstantPressureVolumeQuad = 
       new ConstantPressureVolumeQuad(ConstantPressureVolumeQuadId,iNode,jNode,kNode,lNode,
-		       *theMaterial);
+		       *theMaterial,thickness);
   if (theConstantPressureVolumeQuad == 0) {
       opserr << "WARNING ran out of memory creating element\n";
       opserr << "ConstantPressureVolumeQuad element: " << ConstantPressureVolumeQuadId << endln;
       return TCL_ERROR;
   }
-
 
   if (theTclDomain->addElement(theConstantPressureVolumeQuad) == false) {
       opserr << "WARNING could not add element to the domain\n";
@@ -315,15 +321,17 @@ TclModelBuilder_addEnhancedQuad(ClientData clientData, Tcl_Interp *interp,
   // check the number of arguments is correct
   int argStart = 2;
 
-  if ((argc-argStart) < 7) {
+  if ((argc-argStart) < 8) {
     opserr << "WARNING insufficient arguments\n";
     printCommand(argc, argv);
-    opserr << "Want: element EnhancedQuad eleTag? iNode? jNode? kNode? lNode? type? matTag? \n";
+    opserr << "Want: element EnhancedQuad eleTag? iNode? jNode? kNode? lNode? thk? type? matTag? \n";
     return TCL_ERROR;
   }    
 
   // get the id and end nodes 
   int EnhancedQuadId, iNode, jNode, kNode, lNode, matID;
+  double thickness = 1.0;
+
   if (Tcl_GetInt(interp, argv[argStart], &EnhancedQuadId) != TCL_OK) {
     opserr << "WARNING invalid EnhancedQuad eleTag" << endln;
     return TCL_ERROR;
@@ -352,11 +360,15 @@ TclModelBuilder_addEnhancedQuad(ClientData clientData, Tcl_Interp *interp,
      return TCL_ERROR;
   }  
 
-  
-  TCL_Char *type = argv[5+argStart];
+  if (Tcl_GetDouble(interp, argv[5+argStart], &thickness) != TCL_OK) {
+      opserr << "WARNING invalid thickness\n";
+      opserr << "EnhancedQuad element: " << EnhancedQuadId << endln;
+      return TCL_ERROR;
+  }
 
+  TCL_Char *type = argv[6+argStart];
   
-  if (Tcl_GetInt(interp, argv[6+argStart], &matID) != TCL_OK) {
+  if (Tcl_GetInt(interp, argv[7+argStart], &matID) != TCL_OK) {
      opserr << "WARNING invalid matID\n";
      opserr << "EnhancedQuad element: " << EnhancedQuadId << endln;
      return TCL_ERROR;
@@ -374,7 +386,7 @@ TclModelBuilder_addEnhancedQuad(ClientData clientData, Tcl_Interp *interp,
   // now create the EnhancedQuad and add it to the Domain
   EnhancedQuad *theEnhancedQuad = 
       new EnhancedQuad(EnhancedQuadId,iNode,jNode,kNode,lNode,
-		       *theMaterial, type );
+		       *theMaterial, type, thickness);
   if (theEnhancedQuad == 0) {
       opserr << "WARNING ran out of memory creating element\n";
       opserr << "EnhancedQuad element: " << EnhancedQuadId << endln;
@@ -565,7 +577,7 @@ TclModelBuilder_addFourNodeQuadWithSensitivity(ClientData clientData, Tcl_Interp
 
   // get the id and end nodes 
   int FourNodeQuadId, iNode, jNode, kNode, lNode, matID;
-  double thickness;
+  double thickness = 1.0;
 	double p = 0.0;		// uniform normal traction (pressure)
 	double r = 0.0;		// mass density
 	double b1 = 0.0;
@@ -666,4 +678,3 @@ TclModelBuilder_addFourNodeQuadWithSensitivity(ClientData clientData, Tcl_Interp
   // if get here we have sucessfully created the element and added it to the domain
   return TCL_OK;
 }
-

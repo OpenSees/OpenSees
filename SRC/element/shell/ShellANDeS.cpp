@@ -557,25 +557,40 @@ int ShellANDeS::recvSelf (int commitTag, Channel &theChannel, FEM_ObjectBroker &
     return 0;
 }
 
-void ShellANDeS::Print(OPS_Stream &s, int flag = 0)
+void ShellANDeS::Print(OPS_Stream &s, int flag)
 {   
-    s << "\nShell ANDeS ----- tag = " << this->getTag() << endln;
-    s << "       connectedExternalNodes = "  << connectedExternalNodes ;
-    s << "       thickness = "  << thickness << endln;
-    s << "       xl1 = "  << xl1 ;
-    s << "       xl2 = "  << xl2 ;
-    s << "       xl3 = "  << xl3 ;
-    s << "       x0 = "  << x0 ;
-    s << "       Area = "  << Area << endln;
-    s << "       x12 = "  << x12 << endln;
-    s << "       x23 = "  << x23 << endln;
-    s << "       x31 = "  << x31 << endln;
-    s << "       y12 = "  << y12 << endln;
-    s << "       y23 = "  << y23 << endln;
-    s << "       y31 = "  << y31 << endln;
-    s << "       E = "  << E << endln;
-    s << "       nu = "  << nu << endln;
-    s << "       rho = "  << rho << endln;
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        s << "\nShell ANDeS ----- tag = " << this->getTag() << endln;
+        s << "       connectedExternalNodes = " << connectedExternalNodes;
+        s << "       thickness = " << thickness << endln;
+        s << "       xl1 = " << xl1;
+        s << "       xl2 = " << xl2;
+        s << "       xl3 = " << xl3;
+        s << "       x0 = " << x0;
+        s << "       Area = " << Area << endln;
+        s << "       x12 = " << x12 << endln;
+        s << "       x23 = " << x23 << endln;
+        s << "       x31 = " << x31 << endln;
+        s << "       y12 = " << y12 << endln;
+        s << "       y23 = " << y23 << endln;
+        s << "       y31 = " << y31 << endln;
+        s << "       E = " << E << endln;
+        s << "       nu = " << nu << endln;
+        s << "       rho = " << rho << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"ShellANDeS\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
+        s << connectedExternalNodes(1) << ", ";
+        s << connectedExternalNodes(2) << "], ";
+        s << "\"thickness\": " << thickness << ", ";
+        s << "\"E\": " << E << ", ";
+        s << "\"nu\": " << nu << ", ";
+        s << "\"masspervolume\": " << rho << "\"}";
+    }
 }
 
 Response* ShellANDeS::setResponse (const char** argv, int argc, Information& eleInformation)

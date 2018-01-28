@@ -703,9 +703,9 @@ void ElasticTimoshenkoBeam3d::Print(OPS_Stream &s, int flag)
 	
 	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
 		s << "\t\t\t{";
-		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"name\": " << this->getTag() << ", ";
 		s << "\"type\": \"ElasticTimoshenkoBeam3d\", ";
-		s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+		s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
 		s << "\"E\": " << E << ", ";
 		s << "\"G\": " << G << ", ";
 		s << "\"A\": " << A << ", ";
@@ -714,7 +714,7 @@ void ElasticTimoshenkoBeam3d::Print(OPS_Stream &s, int flag)
 		s << "\"Jx\": " << Jx << ", ";
 		s << "\"Iy\": " << Iy << ", ";
 		s << "\"Iz\": " << Iz << ", ";
-		s << "\"rho\": " << rho << ", ";
+		s << "\"massperlength\": " << rho << ", ";
 		s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
 	}
 }

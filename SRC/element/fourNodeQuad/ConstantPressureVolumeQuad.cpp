@@ -54,33 +54,48 @@ void* OPS_ConstantPressureVolumeQuad()
 	return 0;
     }
     
-    if (OPS_GetNumRemainingInputArgs() < 6) {
+    if (OPS_GetNumRemainingInputArgs() < 7) {
 	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: element ConstantPressureVolumeQuad eleTag? iNode? jNode? kNode? lNode? matTag?\n";
+	opserr << "Want: element ConstantPressureVolumeQuad eleTag? iNode? jNode? kNode? lNode? thk? matTag?\n";
 	return 0;
     }
 
-    // ConstantPressureVolumeQuadId, iNode, jNode, kNode, lNode, matID
-    int data[6];
-    int num = 6;
-    if (OPS_GetIntInput(&num,data) < 0) {
+    // ConstantPressureVolumeQuadId, iNode, jNode, kNode, lNode
+    int idata[5];
+    int num = 5;
+    if (OPS_GetIntInput(&num,idata) < 0) {
 	opserr<<"WARNING: invalid integer input\n";
 	return 0;
     }
 
-    NDMaterial* mat = OPS_getNDMaterial(data[5]);
+    double thk = 1.0;
+    num = 1;
+    if (OPS_GetDoubleInput(&num, &thk) < 0) {
+        opserr << "WARNING: invalid double inputs\n";
+        return 0;
+    }
+
+    int matTag;
+    num = 1;
+    if (OPS_GetIntInput(&num, &matTag) < 0) {
+        opserr << "WARNING: invalid matTag\n";
+        return 0;
+    }
+    
+    NDMaterial* mat = OPS_getNDMaterial(matTag);
     if (mat == 0) {
 	opserr << "WARNING material not found\n";
-	opserr << "Material: " << data[5];
-	opserr << "\nConstantPressureVolumeQuad element: " << data[0] << endln;
+	opserr << "Material: " << matTag;
+	opserr << "\nConstantPressureVolumeQuad element: " << idata[0] << endln;
 	return 0;
     }
 
-    return new ConstantPressureVolumeQuad(data[0],data[1],data[2],data[3],data[4],*mat);
+    return new ConstantPressureVolumeQuad(idata[0],idata[1],idata[2],idata[3],idata[4],
+                                          *mat,thk);
 }
 
 //static data
-double ConstantPressureVolumeQuad::matrixData[64];
+double ConstantPressureVolumeQuad :: matrixData[64];
 Matrix ConstantPressureVolumeQuad :: stiff(matrixData,8,8)   ;
 Vector ConstantPressureVolumeQuad :: resid(8)     ;
 Matrix ConstantPressureVolumeQuad :: mass(8,8)    ;
@@ -112,23 +127,22 @@ double ConstantPressureVolumeQuad :: wg[] = { 1.0, 1.0, 1.0, 1.0 } ;
 //null constructor
 ConstantPressureVolumeQuad :: ConstantPressureVolumeQuad( ) :
 Element( 0, ELE_TAG_ConstantPressureVolumeQuad ),
-connectedExternalNodes(4), load(0)
+connectedExternalNodes(4), thickness(0.0), load(0)
 { 
   for (int i=0; i<4; i++)
     materialPointers[i] = 0;
 }
 
-
 //full constructor
-ConstantPressureVolumeQuad :: ConstantPressureVolumeQuad( 
-                            int tag, 
-                  	    int node1,
-			    int node2,
-			    int node3,
-			    int node4,
-			    NDMaterial &theMaterial ) :
+ConstantPressureVolumeQuad::ConstantPressureVolumeQuad(int tag, 
+                                                       int node1,
+                                                       int node2,
+                                                       int node3,
+                                                       int node4,
+                                                       NDMaterial &theMaterial,
+                                                       double t) :
 Element( tag, ELE_TAG_ConstantPressureVolumeQuad ),
-connectedExternalNodes(4), load(0)
+connectedExternalNodes(4), thickness(t), load(0)
 {
   connectedExternalNodes(0) = node1 ;
   connectedExternalNodes(1) = node2 ;
@@ -149,7 +163,6 @@ connectedExternalNodes(4), load(0)
 
 }
 
-
 //destructor 
 ConstantPressureVolumeQuad :: ~ConstantPressureVolumeQuad( )
 {
@@ -165,7 +178,6 @@ ConstantPressureVolumeQuad :: ~ConstantPressureVolumeQuad( )
   if (load != 0)
     delete load;
 }
-
 
 //set domain
 void ConstantPressureVolumeQuad :: setDomain( Domain *theDomain ) 
@@ -187,13 +199,11 @@ void ConstantPressureVolumeQuad :: setDomain( Domain *theDomain )
   this->DomainComponent::setDomain(theDomain);
 }
 
-
 //get the number of external nodes
 int ConstantPressureVolumeQuad :: getNumExternalNodes( ) const
 {
   return 4 ;
 } 
-
 
 //return connected external nodes
 const ID& ConstantPressureVolumeQuad :: getExternalNodes( ) 
@@ -201,20 +211,17 @@ const ID& ConstantPressureVolumeQuad :: getExternalNodes( )
   return connectedExternalNodes ;
 } 
 
-
 Node **
 ConstantPressureVolumeQuad::getNodePtrs(void) 
 {
   return nodePointers;
 } 
 
-
 //return number of dofs
 int ConstantPressureVolumeQuad :: getNumDOF( ) 
 {
   return 8 ;
 }
-
 
 //commit state
 int ConstantPressureVolumeQuad :: commitState( )
@@ -231,8 +238,6 @@ int ConstantPressureVolumeQuad :: commitState( )
   
   return success ;
 }
- 
-
 
 //revert to last commit 
 int ConstantPressureVolumeQuad :: revertToLastCommit( ) 
@@ -246,7 +251,6 @@ int ConstantPressureVolumeQuad :: revertToLastCommit( )
   return success ;
 }
     
-
 //revert to start 
 int ConstantPressureVolumeQuad :: revertToStart( ) 
 {
@@ -320,7 +324,7 @@ ConstantPressureVolumeQuad :: update( )
     
     shape2d( sg[i], tg[i], xl, tmp_shp, xsj, sx ) ;
 
-    dvol[i] = wg[i] * xsj ;  // multiply by radius for axisymmetry 
+    dvol[i] = wg[i] * xsj * thickness;  // multiply by radius for axisymmetry 
 
     volume += dvol[i] ;
 
@@ -410,18 +414,29 @@ ConstantPressureVolumeQuad :: update( )
 //print out element data
 void ConstantPressureVolumeQuad :: Print( OPS_Stream &s, int flag )
 {
-  s << endln ;
-  s << "Four Node Quad -- Mixed Pressure/Volume -- Plane Strain \n" ;
-  s << "Element Number " << this->getTag() << endln ;
-  s << "Node 1 : " << connectedExternalNodes(0) << endln ;
-  s << "Node 2 : " << connectedExternalNodes(1) << endln ;
-  s << "Node 3 : " << connectedExternalNodes(2) << endln ;
-  s << "Node 4 : " << connectedExternalNodes(3) << endln ;
-  s << "Material Information : \n " ;
-
-  materialPointers[0]->Print( s, flag ) ;
-
-  s << endln ;
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        s << endln;
+        s << "Four Node Quad -- Mixed Pressure/Volume -- Plane Strain \n";
+        s << "Element Number " << this->getTag() << endln;
+        s << "Node 1 : " << connectedExternalNodes(0) << endln;
+        s << "Node 2 : " << connectedExternalNodes(1) << endln;
+        s << "Node 3 : " << connectedExternalNodes(2) << endln;
+        s << "Node 4 : " << connectedExternalNodes(3) << endln;
+        s << "Material Information : \n ";
+        materialPointers[0]->Print(s, flag);
+        s << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"bbarQuad\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
+        s << connectedExternalNodes(1) << ", ";
+        s << connectedExternalNodes(2) << ", ";
+        s << connectedExternalNodes(3) << "], ";
+        s << "\"material\": \"" << materialPointers[0]->getTag() << "\"}";
+    }
 }
 
 //return stiffness matrix 
@@ -536,7 +551,7 @@ const Matrix& ConstantPressureVolumeQuad :: getInitialStiff( )
     
     shape2d( sg[i], tg[i], xl, tmp_shp, xsj, sx ) ;
 
-    dvol[i] = wg[i] * xsj ;  // multiply by radius for axisymmetry 
+    dvol[i] = wg[i] * xsj * thickness;  // multiply by radius for axisymmetry 
 
     volume += dvol[i] ;
 
@@ -684,8 +699,6 @@ const Matrix& ConstantPressureVolumeQuad :: getMass( )
   return mass ;
 } 
 
-
-
 void ConstantPressureVolumeQuad :: zeroLoad( )
 {
   if (load != 0)
@@ -828,7 +841,7 @@ void   ConstantPressureVolumeQuad::formInertiaTerms( int tangFlag )
     shape2d( sg[i], tg[i], xl, shp, xsj, sx ) ;
     
     //volume element
-    dvol = wg[i] * xsj ;
+    dvol = wg[i] * xsj * thickness;
 
     //node loop to compute acceleration
     momentum.Zero( ) ;
@@ -886,7 +899,6 @@ void   ConstantPressureVolumeQuad::formInertiaTerms( int tangFlag )
 }
 
 //*********************************************************************
-
 //form residual and tangent
 void ConstantPressureVolumeQuad ::  formResidAndTangent( int tang_flag ) 
 {
@@ -1002,7 +1014,7 @@ void ConstantPressureVolumeQuad ::  formResidAndTangent( int tang_flag )
     
     shape2d( sg[i], tg[i], xl, tmp_shp, xsj, sx ) ;
 
-    dvol[i] = wg[i] * xsj ;  // multiply by radius for axisymmetry 
+    dvol[i] = wg[i] * xsj * thickness;  // multiply by radius for axisymmetry 
 
     volume += dvol[i] ;
 
@@ -1240,7 +1252,6 @@ void ConstantPressureVolumeQuad ::  formResidAndTangent( int tang_flag )
   return ;
 }
 
-
 //shape function routine for four node quads
 void ConstantPressureVolumeQuad :: shape2d( double ss, double tt, 
 		                            const double x[2][4], 
@@ -1298,8 +1309,6 @@ void ConstantPressureVolumeQuad :: shape2d( double ss, double tt,
 
   return ;
 }
-	
-//***********************************************************************
 
 int
 ConstantPressureVolumeQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **mode, int numModes)
@@ -1366,7 +1375,6 @@ ConstantPressureVolumeQuad::displaySelf(Renderer &theViewer, int displayMode, fl
 
     return error;
 }
-
 
 Response*
 ConstantPressureVolumeQuad::setResponse(const char **argv, int argc, 
@@ -1505,10 +1513,9 @@ ConstantPressureVolumeQuad::getResponse(int responseID, Information &eleInfo)
 
     return -1;
 }
-   
-//-----------------------------------------------------------------------
 
-int ConstantPressureVolumeQuad :: sendSelf (int commitTag, Channel &theChannel)
+int
+ConstantPressureVolumeQuad :: sendSelf (int commitTag, Channel &theChannel)
 {
   int res = 0;
   
@@ -1517,11 +1524,28 @@ int ConstantPressureVolumeQuad :: sendSelf (int commitTag, Channel &theChannel)
   // object - don't want to have to do the check if sending data
   int dataTag = this->getDbTag();
   
+  // Quad packs its data into a Vector and sends this to theChannel
+  // along with its dbTag and the commitTag passed in the arguments
+  static Vector data(6);
+  data(0) = this->getTag();
+  data(1) = thickness;
+
+  data(2) = alphaM;
+  data(3) = betaK;
+  data(4) = betaK0;
+  data(5) = betaKc;
+  
+  res += theChannel.sendVector(dataTag, commitTag, data);
+  if (res < 0) {
+    opserr << "WARNING ConstantPressureVolumeQuad::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+    return res;
+  }	      
+  
 
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(14);
+  static ID idData(12);
   
   int i;
   for (i = 0; i < 4; i++) {
@@ -1532,52 +1556,31 @@ int ConstantPressureVolumeQuad :: sendSelf (int commitTag, Channel &theChannel)
     if (matDbTag == 0) {
       matDbTag = theChannel.getDbTag();
 			if (matDbTag != 0)
-			  materialPointers[i]->setDbTag(matDbTag);
+                materialPointers[i]->setDbTag(matDbTag);
     }
     idData(i+4) = matDbTag;
   }
   
-  idData(8) = this->getTag();
-  idData(9) = connectedExternalNodes(0);
-  idData(10) = connectedExternalNodes(1);
-  idData(11) = connectedExternalNodes(2);
-  idData(12) = connectedExternalNodes(3);
-
-  if (alphaM != 0 || betaK != 0 || betaK0 != 0 || betaKc != 0) 
-    idData(13) = 1;
-  else
-    idData(13) = 0;
-
+  idData(8) = connectedExternalNodes(0);
+  idData(9) = connectedExternalNodes(1);
+  idData(10) = connectedExternalNodes(2);
+  idData(11) = connectedExternalNodes(3);
 
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
-    opserr << "WARNING ConstantPressureVolumeQuad::sendSelf() - " << this->getTag() << " failed to send ID\n"; 
-			    
+    opserr << "WARNING ConstantPressureVolumeQuad::sendSelf() - " << this->getTag() << " failed to send ID\n";
     return res;
   }
-
-  if (idData(13) == 1) {
-    // send damping coefficients
-    static Vector dData(4); 
-    dData(0) = alphaM;
-    dData(1) = betaK;
-    dData(2) = betaK0;
-    dData(3) = betaKc;
-    if (theChannel.sendVector(dataTag, commitTag, dData) < 0) {
-      opserr << "EnahnacedQuad::sendSelf() - failed to send double data\n";
-      return -1;
-    }    
-  }
-
 
   // Finally, quad asks its material objects to send themselves
   for (i = 0; i < 4; i++) {
     res += materialPointers[i]->sendSelf(commitTag, theChannel);
     if (res < 0) {
-      opserr << "WARNING ConstantPressureVolumeQuad::sendSelf() - " << this->getTag() << "failed to send its Material\n";
+      opserr << "WARNING ConstantPressureVolumeQuad::sendSelf() - " << this->getTag() << " failed to send its Material\n";
       return res;
     }
   }
+  
   return res;
 }
     
@@ -1590,7 +1593,24 @@ ConstantPressureVolumeQuad :: recvSelf (int commitTag,
   
   int dataTag = this->getDbTag();
 
-  static ID idData(14);
+  // Quad creates a Vector, receives the Vector and then sets the 
+  // internal data with the data in the Vector
+  static Vector data(6);
+  res += theChannel.recvVector(dataTag, commitTag, data);
+  if (res < 0) {
+    opserr << "WARNING ConstantPressureVolumeQuad::recvSelf() - failed to receive Vector\n";
+    return res;
+  }
+  
+  this->setTag((int)data(0));
+  thickness = data(1);
+
+  alphaM = data(2);
+  betaK = data(3);
+  betaK0 = data(4);
+  betaKc = data(5);
+
+  static ID idData(12);
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -1598,76 +1618,55 @@ ConstantPressureVolumeQuad :: recvSelf (int commitTag,
     return res;
   }
 
-  this->setTag(idData(8));
-  connectedExternalNodes(0) = idData(9);
-  connectedExternalNodes(1) = idData(10);
-  connectedExternalNodes(2) = idData(11);
-  connectedExternalNodes(3) = idData(12);
-
-  int i;
-
-  if (idData(13) == 1) {
-    // recv damping coefficients
-    static Vector dData(4);
-    if (theChannel.recvVector(dataTag, commitTag, dData) < 0) {
-      opserr << "EnahancesQuad::sendSelf() - failed to recv double data\n";
-      return -1;
-    }    
-    alphaM = dData(0);
-    betaK = dData(1);
-    betaK0 = dData(2);
-    betaKc = dData(3);
-  }
-
-
+  connectedExternalNodes(0) = idData(8);
+  connectedExternalNodes(1) = idData(9);
+  connectedExternalNodes(2) = idData(10);
+  connectedExternalNodes(3) = idData(11);
+  
   if (materialPointers[0] == 0) {
-    for (i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
       int matClassTag = idData(i);
       int matDbTag = idData(i+4);
       // Allocate new material with the sent class tag
       materialPointers[i] = theBroker.getNewNDMaterial(matClassTag);
       if (materialPointers[i] == 0) {
-	opserr << "ConstantPressureVolumeQuad::recvSelf() - " <<
-	  "Broker could not create NDMaterial of class type" << matClassTag << endln;
-	return -1;
+	    opserr << "ConstantPressureVolumeQuad::recvSelf() - Broker could not create NDMaterial of class type " << matClassTag << endln;
+	    return -1;
       }
       // Now receive materials into the newly allocated space
       materialPointers[i]->setDbTag(matDbTag);
       res += materialPointers[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
-	opserr << "NLBeamColumn3d::recvSelf() - material " << 
-	  i << "failed to recv itself\n";
-	return res;
+        opserr << "ConstantPressureVolumeQuad::recvSelf() - material " << i << "failed to recv itself\n";
+	    return res;
       }
     }
   }
-  // Number of materials is the same, receive materials into current space
+
+  // materials exist , ensure materials of correct type and recvSelf on them
   else {
-    for (i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
       int matClassTag = idData(i);
       int matDbTag = idData(i+4);
       // Check that material is of the right type; if not,
       // delete it and create a new one of the right type
       if (materialPointers[i]->getClassTag() != matClassTag) {
-	delete materialPointers[i];
-	materialPointers[i] = theBroker.getNewNDMaterial(matClassTag);
-	if (materialPointers[i] == 0) {
-	  opserr << "ConstantPressureVolumeQuad::recvSelf() - " << 
-	    "Broker could not create NDMaterial of class type" << matClassTag << endln;
-	exit(-1);
-	}
+	    delete materialPointers[i];
+        materialPointers[i] = theBroker.getNewNDMaterial(matClassTag);
+	    if (materialPointers[i] == 0) {
+          opserr << "ConstantPressureVolumeQuad::recvSelf() - material " << i << "failed to create\n";
+	      return -1;
+	    }
       }
       // Receive the material
       materialPointers[i]->setDbTag(matDbTag);
       res += materialPointers[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
-	opserr << "ConstantPressureVolumeQuad::recvSelf() - material  " << i <<
-	  "failed to recv itself\n";
-	return res;
+        opserr << "ConstantPressureVolumeQuad::recvSelf() - material " << i << "failed to recv itself\n";
+	    return res;
       }
     }
   }
   
   return res;
 }
-

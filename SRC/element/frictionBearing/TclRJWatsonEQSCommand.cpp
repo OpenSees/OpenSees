@@ -70,19 +70,17 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
         }
         
         // check the number of arguments is correct
-        if ((argc-eleArgStart) < 13)  {
+        if ((argc-eleArgStart) < 12)  {
             opserr << "WARNING insufficient arguments\n";
             printCommand(argc, argv);
-            opserr << "Want: RJWatsonEqsBearing eleTag iNode jNode frnMdlTag kInit k2 k3 mu -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
+            opserr << "Want: RJWatsonEqsBearing eleTag iNode jNode frnMdlTag kInit -P matTag -Vy matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
             return TCL_ERROR;
         }
         
         // get the id and end nodes
         int iNode, jNode, frnMdlTag, matTag, argi, i, j;
         int recvMat = 0;
-        double kInit, k2;
-        double k3 = 0.0;
-        double mu = 2.0;
+        double kInit;
         double shearDistI = 1.0;
         int doRayleigh = 0;
         double mass = 0.0;
@@ -121,27 +119,12 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
             opserr << "RJWatsonEqsBearing element: " << tag << endln;
             return TCL_ERROR;
         }
-         if (Tcl_GetDouble(interp, argv[6+eleArgStart], &k2) != TCL_OK)  {
-            opserr << "WARNING invalid k2\n";
-            opserr << "RJWatsonEqsBearing element: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[7+eleArgStart], &k3) != TCL_OK)  {
-            opserr << "WARNING invalid k3\n";
-            opserr << "RJWatsonEqsBearing element: " << tag << endln;
-            return TCL_ERROR;
-        }
-        if (Tcl_GetDouble(interp, argv[8+eleArgStart], &mu) != TCL_OK)  {
-            opserr << "WARNING invalid mu\n";
-            opserr << "RJWatsonEqsBearing element: " << tag << endln;
-            return TCL_ERROR;
-        }
-        UniaxialMaterial *theMaterials[2];
-        for (i = 9+eleArgStart; i < argc; i++)  {
+        UniaxialMaterial *theMaterials[3];
+        for (i = 6+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-P") == 0)  {
                 theMaterials[0] = 0;
                 if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
-                    opserr << "WARNING invalid matTag\n";
+                    opserr << "WARNING invalid axial matTag\n";
                     opserr << "RJWatsonEqsBearing element: " << tag << endln;
                     return TCL_ERROR;
                 }
@@ -155,15 +138,15 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
                 recvMat++;
             }
         }
-        for (i = 9+eleArgStart; i < argc; i++)  {
-            if (i+1 < argc && strcmp(argv[i], "-Mz") == 0)  {
-                if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
-                    opserr << "WARNING invalid matTag\n";
+        for (i = 6+eleArgStart; i < argc; i++) {
+            if (i+1 < argc && strcmp(argv[i], "-Vy") == 0) {
+                if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK) {
+                    opserr << "WARNING invalid shear y matTag\n";
                     opserr << "RJWatsonEqsBearing element: " << tag << endln;
                     return TCL_ERROR;
                 }
                 theMaterials[1] = OPS_getUniaxialMaterial(matTag);
-                if (theMaterials[1] == 0)  {
+                if (theMaterials[1] == 0) {
                     opserr << "WARNING material model not found\n";
                     opserr << "uniaxialMaterial: " << matTag << endln;
                     opserr << "RJWatsonEqsBearing element: " << tag << endln;
@@ -172,9 +155,26 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
                 recvMat++;
             }
         }
-        if (recvMat != 2)  {
+        for (i = 6+eleArgStart; i < argc; i++)  {
+            if (i+1 < argc && strcmp(argv[i], "-Mz") == 0)  {
+                if (Tcl_GetInt(interp, argv[i+1], &matTag) != TCL_OK)  {
+                    opserr << "WARNING invalid moment z matTag\n";
+                    opserr << "RJWatsonEqsBearing element: " << tag << endln;
+                    return TCL_ERROR;
+                }
+                theMaterials[2] = OPS_getUniaxialMaterial(matTag);
+                if (theMaterials[2] == 0)  {
+                    opserr << "WARNING material model not found\n";
+                    opserr << "uniaxialMaterial: " << matTag << endln;
+                    opserr << "RJWatsonEqsBearing element: " << tag << endln;
+                    return TCL_ERROR;
+                }
+                recvMat++;
+            }
+        }
+        if (recvMat != 3)  {
             opserr << "WARNING wrong number of materials\n";
-            opserr << "got " << recvMat << " materials, but want 2 materials\n";
+            opserr << "got " << recvMat << " materials, but want 3 materials\n";
             opserr << "RJWatsonEqsBearing element: " << tag << endln;
             return TCL_ERROR;
         }
@@ -182,7 +182,7 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
         // check for optional arguments
         Vector x = 0;
         Vector y = 0;
-        for (i = 9+eleArgStart; i < argc; i++)  {
+        for (i = 6+eleArgStart; i < argc; i++)  {
             if (strcmp(argv[i],"-orient") == 0)  {
                 j = i+1;
                 int numOrient = 0;
@@ -230,7 +230,7 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
                 }
             }
         }
-        for (int i = 9+eleArgStart; i < argc; i++)  {
+        for (int i = 6+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-shearDist") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &shearDistI) != TCL_OK)  {
                     opserr << "WARNING invalid -shearDist value\n";
@@ -239,11 +239,11 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
                 }
             }
         }
-        for (int i = 9+eleArgStart; i < argc; i++)  {
+        for (int i = 6+eleArgStart; i < argc; i++)  {
             if (strcmp(argv[i], "-doRayleigh") == 0)
                 doRayleigh = 1;
         }
-        for (int i = 9+eleArgStart; i < argc; i++)  {
+        for (int i = 6+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-mass") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &mass) != TCL_OK)  {
                     opserr << "WARNING invalid -mass value\n";
@@ -252,7 +252,7 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
                 }
             }
         }
-        for (int i = 9+eleArgStart; i < argc; i++)  {
+        for (int i = 6+eleArgStart; i < argc; i++)  {
             if (i+2 < argc && strcmp(argv[i], "-iter") == 0)  {
                 if (Tcl_GetInt(interp, argv[i+1], &maxIter) != TCL_OK)  {
                     opserr << "WARNING invalid maxIter\n";
@@ -266,7 +266,7 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
                 }
             }
         }
-        for (int i = 9+eleArgStart; i < argc; i++)  {
+        for (int i = 6+eleArgStart; i < argc; i++)  {
             if (i+1 < argc && strcmp(argv[i], "-kFactUplift") == 0)  {
                 if (Tcl_GetDouble(interp, argv[i+1], &kFactUplift) != TCL_OK)  {
                     opserr << "WARNING invalid kFactUplift\n";
@@ -277,9 +277,9 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
         }
         
         // now create the RJWatsonEqsBearing
-        theElement = new RJWatsonEQS2d(tag, iNode, jNode, *theFrnMdl, kInit, k2,
-            theMaterials, y, x, k3, mu, shearDistI, doRayleigh, mass,
-            maxIter, tol, kFactUplift);
+        theElement = new RJWatsonEQS2d(tag, iNode, jNode, *theFrnMdl, kInit,
+            theMaterials, y, x, shearDistI, doRayleigh, mass, maxIter, tol,
+            kFactUplift);
         
         if (theElement == 0)  {
             opserr << "WARNING ran out of memory creating element\n";

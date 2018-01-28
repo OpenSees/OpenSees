@@ -808,25 +808,39 @@ ComponentElement2d::Print(OPS_Stream &s, int flag)
   this->getResistingForce();
 
   if (flag == -1) {
-    int eleTag = this->getTag();
-    s << "EL_BEAM\t" << eleTag << "\t";
-    s << 0 << "\t" << 0 << "\t" << connectedExternalNodes(0) << "\t" << connectedExternalNodes(1) ;
-    s << "0\t0.0000000\n";
-  } else {
-    this->getResistingForce();
-    s << "\nComponentElement2d: " << this->getTag() << endln;
-    s << "\tConnected Nodes: " << connectedExternalNodes ;
-    s << "\tCoordTransf: " << theCoordTransf->getTag() << endln;
-    s << "\tmass density:  " << rho << endln;
-    double P  = q(0);
-    double M1 = q(1);
-    double M2 = q(2);
-    double L = theCoordTransf->getInitialLength();
-    double V = (M1+M2)/L;
-    s << "\tEnd 1 Forces (P V M): " << -P+p0[0]
-      << " " << V+p0[1] << " " << M1 << endln;
-    s << "\tEnd 2 Forces (P V M): " << P
-      << " " << -V+p0[2] << " " << M2 << endln;
+      int eleTag = this->getTag();
+      s << "EL_BEAM\t" << eleTag << "\t";
+      s << 0 << "\t" << 0 << "\t" << connectedExternalNodes(0) << "\t" << connectedExternalNodes(1);
+      s << "0\t0.0000000\n";
+  }
+
+  if (flag == OPS_PRINT_CURRENTSTATE) {
+      this->getResistingForce();
+      s << "\nComponentElement2d: " << this->getTag() << endln;
+      s << "\tConnected Nodes: " << connectedExternalNodes;
+      s << "\tCoordTransf: " << theCoordTransf->getTag() << endln;
+      s << "\tmass density:  " << rho << endln;
+      double P = q(0);
+      double M1 = q(1);
+      double M2 = q(2);
+      double L = theCoordTransf->getInitialLength();
+      double V = (M1 + M2) / L;
+      s << "\tEnd 1 Forces (P V M): " << -P + p0[0]
+          << " " << V + p0[1] << " " << M1 << endln;
+      s << "\tEnd 2 Forces (P V M): " << P
+          << " " << -V + p0[2] << " " << M2 << endln;
+  }
+
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+      s << "\t\t\t{";
+      s << "\"name\": " << this->getTag() << ", ";
+      s << "\"type\": \"ComponentElement2d\", ";
+      s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
+      s << "\"E\": " << E << ", ";
+      s << "\"A\": " << A << ", ";
+      s << "\"Iz\": " << I << ", ";
+      s << "\"massperlength\": " << rho << ", ";
+      s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
   }
 }
 

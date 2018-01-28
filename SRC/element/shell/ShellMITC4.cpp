@@ -339,7 +339,7 @@ void  ShellMITC4::Print( OPS_Stream &s, int flag )
         s << endln;
     }
     
-    else if (flag < -1) {
+    if (flag < -1) {
         
         int counter = (flag + 1) * -1;
         int eleTag = this->getTag();
@@ -371,10 +371,10 @@ void  ShellMITC4::Print( OPS_Stream &s, int flag )
     
     if (flag == OPS_PRINT_PRINTMODEL_JSON) {
         s << "\t\t\t{";
-        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"ShellMITC4\", ";
-        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\", ";
-        s << "\"" << connectedExternalNodes(2) << "\", \"" << connectedExternalNodes(3) << "\"], ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << ", ";
+        s << connectedExternalNodes(2) << ", " << connectedExternalNodes(3) << "], ";
         s << "\"section\": \"" << materialPointers[0]->getTag() << "\"}";
     }
 }

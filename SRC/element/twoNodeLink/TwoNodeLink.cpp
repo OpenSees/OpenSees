@@ -62,146 +62,151 @@ void* OPS_TwoNodeLink()
 {
     int ndm = OPS_GetNDM();
     if (OPS_GetNumRemainingInputArgs() < 7) {
-	opserr << "WARNING insufficient arguments\n";
+        opserr << "WARNING insufficient arguments\n";
         opserr << "Want: twoNodeLink eleTag iNode jNode -mat matTags -dir dirs <-orient <x1 x2 x3> y1 y2 y3> <-pDelta Mratios> <-shearDist sDratios> <-doRayleigh> <-mass m>\n";
-	return 0;
+        return 0;
     }
-
+    
     // tags
     int idata[3];
     int numdata = 3;
     if (OPS_GetIntInput(&numdata, idata) < 0) {
-	opserr<<"WARNING: invalid integer data\n";
-	return 0;
+        opserr << "WARNING: invalid integer data\n";
+        return 0;
     }
-
+    
     // mats
     const char* type = OPS_GetString();
-    if (strcmp(type,"-mat") != 0) {
-	opserr << "WARNING expecting -mat matTags\n";
-	return 0;
+    if (strcmp(type, "-mat") != 0) {
+        opserr << "WARNING expecting -mat matTags\n";
+        return 0;
     }
     std::vector<UniaxialMaterial*> mats;
     while (OPS_GetNumRemainingInputArgs() > 0) {
-	int mattag;
-	numdata = 1;
-	if (OPS_GetIntInput(&numdata, &mattag) < 0) {
-	    OPS_ResetCurrentInputArg(-1);
-	    break;
-	}
-	UniaxialMaterial* mat = OPS_getUniaxialMaterial(mattag);
-	if (mat == 0) {
-	    opserr << "WARNING material model not found\n";
+        int mattag;
+        numdata = 1;
+        if (OPS_GetIntInput(&numdata, &mattag) < 0) {
+            OPS_ResetCurrentInputArg(-1);
+            break;
+        }
+        UniaxialMaterial* mat = OPS_getUniaxialMaterial(mattag);
+        if (mat == 0) {
+            opserr << "WARNING material model not found\n";
             opserr << "uniaxialMaterial " << mattag << endln;
-	    return 0;
-	}
-	mats.push_back(mat);
+            return 0;
+        }
+        mats.push_back(mat);
     }
-
+    
     // dirs
     type = OPS_GetString();
-    if (strcmp(type,"-dir") != 0) {
-	opserr << "WARNING expecting -dir dirs\n";
-	return 0;
+    if (strcmp(type, "-dir") != 0) {
+        opserr << "WARNING expecting -dir dirs\n";
+        return 0;
     }
     ID dirs(mats.size());
     if (OPS_GetNumRemainingInputArgs() < dirs.Size()) {
-	opserr << "WARNING wrong number of directions specified\n";
-	return 0;
+        opserr << "WARNING wrong number of directions specified\n";
+        return 0;
     }
     numdata = dirs.Size();
     if (OPS_GetIntInput(&numdata, &dirs(0)) < 0) {
-	opserr << "WARNING invalid direction ID\n";
-	return 0;
+        opserr << "WARNING invalid direction ID\n";
+        return 0;
     }
-
+    
     // options
-    Vector x,y,Mratio,sDistI;
+    Vector x, y, Mratio, sDistI;
     int doRayleigh = 0;
     double mass = 0.0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
-	return new TwoNodeLink(idata[0],ndm,idata[1],idata[2],
-			       dirs,&mats[0],y,x,Mratio,sDistI,
-			       doRayleigh,mass);
+        return new TwoNodeLink(idata[0], ndm, idata[1], idata[2],
+            dirs, &mats[0], y, x, Mratio, sDistI,
+            doRayleigh, mass);
     }
-
+    
     while (OPS_GetNumRemainingInputArgs() > 0) {
-	type = OPS_GetString();
-	if (strcmp(type,"-orient") == 0) {
-	    if (OPS_GetNumRemainingInputArgs() < 3) {
-		opserr<<"WARNING: insufficient arguments after -orient\n";
-		return 0;
-	    }
-	    numdata = 3;
-	    x.resize(3);
-	    if (OPS_GetDoubleInput(&numdata, &x(0)) < 0) {
-		opserr<<"WARNING: invalid -orient values\n";
-		    return 0;
-	    }
-	    if (OPS_GetNumRemainingInputArgs() < 3) {
-		y = x;
-		x = Vector();
-		continue;
-	    }
-	    y.resize(3);
-	    if (OPS_GetDoubleInput(&numdata, &y(0)) < 0) {
-		y = x;
-		x = Vector();
-		continue;
-	    }
-	} else if (strcmp(type,"-pDelta") == 0) {
-	    Mratio.resize(4);
-	    Mratio.Zero();
-	    numdata = 4;
-	    double* ptr = &Mratio(0);
-	    if (ndm == 2) {
-		numdata = 2;
-		ptr += 2;
-	    }
-	    if (OPS_GetNumRemainingInputArgs() < numdata) {
-		opserr<<"WARNING: insufficient data for -pDelta\n";
-		return 0;
-	    }
-	    if (OPS_GetDoubleInput(&numdata, ptr) < 0) {
-		opserr<<"WARNING: invalid -pDelta value\n";
-		return 0;
-	    }
-	} else if (strcmp(type,"-shearDist") == 0) {
-	    sDistI.resize(2);
-	    numdata = 2;
-	    if (ndm == 2) {
-		numdata = 1;
-		sDistI(1) = 0.5;
-	    }
-	    if (OPS_GetNumRemainingInputArgs() < numdata) {
-		opserr<<"WARNING: insufficient data for -shearDist\n";
-		return 0;
-	    }
-	    if (OPS_GetDoubleInput(&numdata, &sDistI(0)) < 0) {
-		opserr<<"WARNING: invalid -shearDist value\n";
-		return 0;
-	    }
-	} else if (strcmp(type,"-doRayleigh") == 0) {
-	    doRayleigh = 1;
-	} else if (strcmp(type,"-mass") == 0) {
-	    if (OPS_GetNumRemainingInputArgs() < 1) {
-		opserr<<"WANRING: insufficient mass value\n";
-		return 0;
-	    }
-	    numdata = 1;
-	    if (OPS_GetDoubleInput(&numdata, &mass) < 0) {
-		opserr<<"WANRING: invalid -mass value\n";
-		return 0;
-	    }
-	}
-	
-    }
+        type = OPS_GetString();
+        if (strcmp(type, "-orient") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 3) {
+                opserr << "WARNING: insufficient arguments after -orient\n";
+                return 0;
+            }
+            numdata = 3;
+            x.resize(3);
+            if (OPS_GetDoubleInput(&numdata, &x(0)) < 0) {
+                opserr << "WARNING: invalid -orient values\n";
+                return 0;
+            }
+            if (OPS_GetNumRemainingInputArgs() < 3) {
+                y = x;
+                x = Vector();
+                continue;
+            }
+            y.resize(3);
+            if (OPS_GetDoubleInput(&numdata, &y(0)) < 0) {
+                y = x;
+                x = Vector();
+                continue;
+            }
+        }
+        else if (strcmp(type, "-pDelta") == 0) {
+            Mratio.resize(4);
+            Mratio.Zero();
+            numdata = 4;
+            double* ptr = &Mratio(0);
+            if (ndm == 2) {
+                numdata = 2;
+                ptr += 2;
+            }
+            if (OPS_GetNumRemainingInputArgs() < numdata) {
+                opserr << "WARNING: insufficient data for -pDelta\n";
+                return 0;
+            }
+            if (OPS_GetDoubleInput(&numdata, ptr) < 0) {
+                opserr << "WARNING: invalid -pDelta value\n";
+                return 0;
+            }
+        }
+        else if (strcmp(type, "-shearDist") == 0) {
+            sDistI.resize(2);
+            numdata = 2;
+            if (ndm == 2) {
+                numdata = 1;
+                sDistI(1) = 0.5;
+            }
+            if (OPS_GetNumRemainingInputArgs() < numdata) {
+                opserr << "WARNING: insufficient data for -shearDist\n";
+                return 0;
+            }
+            if (OPS_GetDoubleInput(&numdata, &sDistI(0)) < 0) {
+                opserr << "WARNING: invalid -shearDist value\n";
+                return 0;
+            }
+        }
+        else if (strcmp(type, "-doRayleigh") == 0) {
+            doRayleigh = 1;
+        }
+        else if (strcmp(type, "-mass") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WANRING: insufficient mass value\n";
+                return 0;
+            }
+            numdata = 1;
+            if (OPS_GetDoubleInput(&numdata, &mass) < 0) {
+                opserr << "WANRING: invalid -mass value\n";
+                return 0;
+            }
+        }
 
+    }
+    
     // create object
-    return new TwoNodeLink(idata[0],ndm,idata[1],idata[2],
-			   dirs,&mats[0],y,x,Mratio,sDistI,
-			   doRayleigh,mass);
+    return new TwoNodeLink(idata[0], ndm, idata[1], idata[2],
+        dirs, &mats[0], y, x, Mratio, sDistI,
+        doRayleigh, mass);
 }
+
 
 // responsible for allocating the necessary space needed
 // by each object and storing the tags of the end nodes.
@@ -273,7 +278,7 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
             << "failed to allocate pointers for uniaxial materials.\n";
         exit(-1);
     }
-
+    
     // get copies of the uniaxial materials
     for (int i=0; i<numDir; i++)  {
         if (materials[i] == 0)  {
@@ -370,7 +375,7 @@ TwoNodeLink::~TwoNodeLink()
             if (theMaterials[i] != 0)
                 delete theMaterials[i];
         delete [] theMaterials;
-    }    
+    }
 }
 
 
@@ -507,7 +512,7 @@ void TwoNodeLink::setDomain(Domain *theDomain)
     
     // set transformation matrix from global to local system
     this->setTranGlobalLocal();
-
+    
     // set transformation matrix from local to basic system
     this->setTranLocalBasic();
 }
@@ -719,7 +724,7 @@ int TwoNodeLink::addInertiaLoadToUnbalance(const Vector &accel)
     // check for quick return
     if (mass == 0.0)  {
         return 0;
-    }    
+    }
     
     // get R * accel from the nodes
     const Vector &Raccel1 = theNodes[0]->getRV(accel);
@@ -821,7 +826,7 @@ int TwoNodeLink::sendSelf(int commitTag, Channel &sChannel)
     
     // send the two end nodes
     sChannel.sendID(0, commitTag, connectedExternalNodes);
-
+    
     // send the direction array
     sChannel.sendID(0, commitTag, *dir);
     
@@ -977,14 +982,14 @@ int TwoNodeLink::displaySelf(Renderer &theViewer,
     // the display factor (a measure of the distorted image)
     const Vector &end1Crd = theNodes[0]->getCrds();
     const Vector &end2Crd = theNodes[1]->getCrds();
-
+    
     static Vector v1(3);
     static Vector v2(3);
-
+    
     if (displayMode >= 0)  {
         const Vector &end1Disp = theNodes[0]->getDisp();
         const Vector &end2Disp = theNodes[1]->getDisp();
-
+        
         for (int i=0; i<numDIM; i++)  {
             v1(i) = end1Crd(i) + end1Disp(i)*fact;
             v2(i) = end2Crd(i) + end2Disp(i)*fact;
@@ -993,7 +998,7 @@ int TwoNodeLink::displaySelf(Renderer &theViewer,
         int mode = displayMode * -1;
         const Matrix &eigen1 = theNodes[0]->getEigenvectors();
         const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-
+        
         if (eigen1.noCols() >= mode)  {
             for (int i=0; i<numDIM; i++)  {
                 v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
@@ -1006,7 +1011,7 @@ int TwoNodeLink::displaySelf(Renderer &theViewer,
             }
         }
     }
-
+    
     return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag(), 0);
 }
 
@@ -1031,9 +1036,9 @@ void TwoNodeLink::Print(OPS_Stream &s, int flag)
     
     if (flag == OPS_PRINT_PRINTMODEL_JSON) {
         s << "\t\t\t{";
-        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"TwoNodeLink\", ";
-        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
         s << "\"materials\": [";
         for (int i = 0; i < numDir - 1; i++)
             s << "\"" << theMaterials[i]->getTag() << "\", ";
@@ -1078,9 +1083,11 @@ void TwoNodeLink::Print(OPS_Stream &s, int flag)
                 else if (j == 2 && i < 2)
                     s << trans(i, j) << "], [";
                 else if (j == 2 && i == 2)
-                    s << trans(i, j) << "]]}";
+                    s << trans(i, j) << "]]";
             }
         }
+        s << "\"addRayleigh\": " << addRayleigh << ", ";
+        s << "\"mass\": " << mass << "}";
     }
 }
 
@@ -1089,15 +1096,15 @@ Response* TwoNodeLink::setResponse(const char **argv, int argc,
     OPS_Stream &output)
 {
     Response *theResponse = 0;
-
+    
     output.tag("ElementOutput");
     output.attr("eleType","TwoNodeLink");
     output.attr("eleTag",this->getTag());
     output.attr("node1",connectedExternalNodes[0]);
     output.attr("node2",connectedExternalNodes[1]);
-
+    
     char outputData[10];
-
+    
     // global forces
     if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0 ||
         strcmp(argv[0],"globalForce") == 0 || strcmp(argv[0],"globalForces") == 0)
@@ -1588,29 +1595,30 @@ void TwoNodeLink::addPDeltaStiff(Matrix &kLocal)
 }
 
 
-int 
-TwoNodeLink::setParameter(const char **argv, int argc, Parameter &param)
+int TwoNodeLink::setParameter(const char **argv, int argc, Parameter &param)
 {
-  int result = -1;
-            
-  if (argc < 1)
-    return -1;
-             
-  if (strcmp(argv[0], "material") == 0) {
-      if (argc > 2) {
-        int matNum = atoi(argv[1]);
-        if (matNum >= 1 && matNum <= numDir)
-          return theMaterials[matNum-1]->setParameter(&argv[2], argc-2, param);
-      } else {
+    int result = -1;
+    
+    if (argc < 1)
         return -1;
-      }
-  }
-
-  for (int i=0; i<numDir; i++) {
-    int res = theMaterials[i]->setParameter(argv, argc, param);
-    if (res != -1) {
-      result = res;
+    
+    if (strcmp(argv[0], "material") == 0) {
+        if (argc > 2) {
+            int matNum = atoi(argv[1]);
+            if (matNum >= 1 && matNum <= numDir)
+                return theMaterials[matNum - 1]->setParameter(&argv[2], argc - 2, param);
+        }
+        else {
+            return -1;
+        }
     }
-  } 
-  return result;
+    
+    for (int i = 0; i < numDir; i++) {
+        int res = theMaterials[i]->setParameter(argv, argc, param);
+        if (res != -1) {
+            result = res;
+        }
+    }
+    
+    return result;
 }

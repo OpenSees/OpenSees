@@ -251,12 +251,21 @@ const Matrix& ElasticPlateSection::getInitialTangent( )
 //print out data
 void  ElasticPlateSection::Print( OPS_Stream &s, int flag )
 {
-  s << "ElasticPlateSection: \n " ;
-  s <<  "  Young's Modulus E  = "  <<  E  <<  endln ;
-  s <<  "  Poisson's Ratio nu = " <<  nu <<  endln ;
-  s <<  "  Thickness h = "        <<  h  <<  endln ;
+    if (flag == OPS_PRINT_PRINTMODEL_SECTION) {
+        s << "ElasticPlateSection: \n ";
+        s << "  Young's Modulus E  = " << E << endln;
+        s << "  Poisson's Ratio nu = " << nu << endln;
+        s << "  Thickness h = " << h << endln;
+    }
 
-  return ;
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ElasticPlateSection\", ";
+        s << "\"E\": " << E << ", ";
+        s << "\"nu\": " << nu << ", ";
+        s << "\"thickness\": " << h << "}";
+    }
 }
 
 

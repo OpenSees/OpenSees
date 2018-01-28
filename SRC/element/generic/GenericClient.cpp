@@ -710,7 +710,7 @@ int GenericClient::displaySelf(Renderer &theViewer,
 void GenericClient::Print(OPS_Stream &s, int flag)
 {
     int i;
-    if (flag == 0)  {
+    if (flag == OPS_PRINT_CURRENTSTATE) {
         // print everything
         s << "Element: " << this->getTag() << endln;
         s << "  type: GenericClient" << endln;
@@ -722,8 +722,19 @@ void GenericClient::Print(OPS_Stream &s, int flag)
         s << "  addRayleigh: " << addRayleigh << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
-    } else if (flag == 1)  {
-        // does nothing
+    }
+
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"GenericClient\", ";
+        s << "\"nodes\": [";
+        for (i = 0; i < numExternalNodes - 1; i++)
+            s << connectedExternalNodes(i) << ", ";
+        s << connectedExternalNodes(numExternalNodes) << "], ";
+        s << "\"ipAddress\": " << machineInetAddr << ", ";
+        s << "\"ipPort\": " << port << ", ";
+        s << "\"addRayleigh\": " << addRayleigh << "}";
     }
 }
 

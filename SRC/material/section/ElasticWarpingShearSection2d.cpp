@@ -352,15 +352,31 @@ ElasticWarpingShearSection2d::recvSelf(int commitTag, Channel &theChannel,
 void
 ElasticWarpingShearSection2d::Print(OPS_Stream &s, int flag)
 {
-  s << "ElasticWarpingShearSection2d, tag: " << this->getTag() << endln;
-  s << "\tE: " << E << endln;
-  s << "\tA: " << A << endln;
-  s << "\tI: " << I << endln;
-  s << "\tG: " << G << endln;
-  s << "\talpha: " << alpha << endln;
-  s << "\tJ: " << J << endln;
-  s << "\tB: " << B << endln;
-  s << "\tC: " << C << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_SECTION) {
+        s << "ElasticWarpingShearSection2d, tag: " << this->getTag() << endln;
+        s << "\tE: " << E << endln;
+        s << "\tA: " << A << endln;
+        s << "\tI: " << I << endln;
+        s << "\tG: " << G << endln;
+        s << "\talpha: " << alpha << endln;
+        s << "\tJ: " << J << endln;
+        s << "\tB: " << B << endln;
+        s << "\tC: " << C << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"ElasticWarpingShearSection2d\", ";
+        s << "\"E\": " << E << ", ";
+        s << "\"G\": " << G << ", ";
+        s << "\"A\": " << A << ", ";
+        s << "\"I\": " << I << ", ";
+        s << "\"J\": " << J << ", ";
+        s << "\"B\": " << B << ", ";
+        s << "\"C\": " << C << ", ";
+        s << "\"alpha\": " << alpha << "}";
+    }
 }
 
 int

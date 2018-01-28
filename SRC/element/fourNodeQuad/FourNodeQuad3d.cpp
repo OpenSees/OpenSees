@@ -984,55 +984,72 @@ opserr << "NLBeamColumn3d::recvSelf() - material " << i << "failed to recv itsel
 void
 FourNodeQuad3d::Print(OPS_Stream &s, int flag)
 {
-  if (flag == 2) {
+    if (flag == 2) {
 
-    s << "#FourNodeQuad3d\n";
-    
-    int i;
-    const int numNodes = 4;
-    const int nstress = 3 ;
-    
-    for (i=0; i<numNodes; i++) {
-      const Vector &nodeCrd = theNodes[i]->getCrds();
-      const Vector &nodeDisp = theNodes[i]->getDisp();
-      s << "#NODE " << nodeCrd(0) << " " << nodeCrd(1) << " " << endln;
-     }
-    
-    // spit out the section location & invoke print on the scetion
-    const int numMaterials = 4;
+        s << "#FourNodeQuad3d\n";
 
-    static Vector avgStress(nstress);
-    static Vector avgStrain(nstress);
-    avgStress.Zero();
-    avgStrain.Zero();
-    for (i=0; i<numMaterials; i++) {
-      avgStress += theMaterial[i]->getStress();
-      avgStrain += theMaterial[i]->getStrain();
+        int i;
+        const int numNodes = 4;
+        const int nstress = 3;
+
+        for (i = 0; i < numNodes; i++) {
+            const Vector &nodeCrd = theNodes[i]->getCrds();
+            const Vector &nodeDisp = theNodes[i]->getDisp();
+            s << "#NODE " << nodeCrd(0) << " " << nodeCrd(1) << " " << endln;
+        }
+
+        // spit out the section location & invoke print on the scetion
+        const int numMaterials = 4;
+
+        static Vector avgStress(nstress);
+        static Vector avgStrain(nstress);
+        avgStress.Zero();
+        avgStrain.Zero();
+        for (i = 0; i < numMaterials; i++) {
+            avgStress += theMaterial[i]->getStress();
+            avgStrain += theMaterial[i]->getStrain();
+        }
+        avgStress /= numMaterials;
+        avgStrain /= numMaterials;
+
+        s << "#AVERAGE_STRESS ";
+        for (i = 0; i < nstress; i++)
+            s << avgStress(i) << " ";
+        s << endln;
+
+        s << "#AVERAGE_STRAIN ";
+        for (i = 0; i < nstress; i++)
+            s << avgStrain(i) << " ";
+        s << endln;
     }
-    avgStress /= numMaterials;
-    avgStrain /= numMaterials;
-
-    s << "#AVERAGE_STRESS ";
-    for (i=0; i<nstress; i++)
-      s << avgStress(i) << " " ;
-    s << endln;
-
-    s << "#AVERAGE_STRAIN ";
-    for (i=0; i<nstress; i++)
-      s << avgStrain(i) << " " ;
-    s << endln;
-
-  } else {
-	s << "\nFourNodeQuad3d, element id:  " << this->getTag() << endln;
-	s << "\tConnected external nodes:  " << connectedExternalNodes;
-	s << "\tthickness:  " << thickness << endln;
-	s << "\tsurface pressure:  " << pressure << endln;
-	s << "\tbody forces:  " << b[0] << " " << b[1] << endln;
-	theMaterial[0]->Print(s,flag);
-	s << "\tStress (xx yy xy)" << endln;
-	for (int i = 0; i < 4; i++)
-	  s << "\t\tGauss point " << i+1 << ": " << theMaterial[i]->getStress();
-  }
+    
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        s << "\nFourNodeQuad3d, element id:  " << this->getTag() << endln;
+        s << "\tConnected external nodes:  " << connectedExternalNodes;
+        s << "\tthickness:  " << thickness << endln;
+        s << "\tsurface pressure:  " << pressure << endln;
+        s << "\tmass density:  " << rho << endln;
+        s << "\tbody forces:  " << b[0] << " " << b[1] << endln;
+        theMaterial[0]->Print(s, flag);
+        s << "\tStress (xx yy xy)" << endln;
+        for (int i = 0; i < 4; i++)
+            s << "\t\tGauss point " << i + 1 << ": " << theMaterial[i]->getStress();
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"FourNodeQuad3d\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
+        s << connectedExternalNodes(1) << ", ";
+        s << connectedExternalNodes(2) << ", ";
+        s << connectedExternalNodes(3) << "], ";
+        s << "\"thickness\": " << thickness << ", ";
+        s << "\"surfacePressure\": " << pressure << ", ";
+        s << "\"masspervolume\": " << rho << ", ";
+        s << "\"bodyForces\": [" << b[0] << ", " << b[1] << "], ";
+        s << "\"material\": \"" << theMaterial[0]->getTag() << "\"}";
+    }
 }
 
 int

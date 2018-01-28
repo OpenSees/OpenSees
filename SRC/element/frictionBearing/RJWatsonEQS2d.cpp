@@ -52,154 +52,175 @@ void* OPS_RJWatsonEQS2d()
 {
     int ndf = OPS_GetNDF();
     if (ndf != 3) {
-	opserr << "WARNING invalid ndf: " << ndf;
-	opserr << ", for plane problem need 3 - RJWatsonEqsBearing\n";    
-	return 0;
+        opserr << "WARNING invalid ndf: " << ndf;
+        opserr << ", for plane problem need 3 - RJWatsonEqsBearing\n";
+        return 0;
     }
     
-    if (OPS_GetNumRemainingInputArgs() < 12) {
-	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: RJWatsonEqsBearing eleTag iNode jNode frnMdlTag kInit k2 k3 mu -P matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
-	return 0;
+    if (OPS_GetNumRemainingInputArgs() < 11) {
+        opserr << "WARNING insufficient arguments\n";
+        opserr << "Want: RJWatsonEqsBearing eleTag iNode jNode frnMdlTag kInit -P matTag -Vy matTag -Mz matTag <-orient x1 x2 x3 y1 y2 y3> <-shearDist sDratio> <-doRayleigh> <-mass m> <-iter maxIter tol>\n";
+        return 0;
     }
-
+    
     // tags
     int idata[4];
     int num = 4;
     if (OPS_GetIntInput(&num, idata) < 0) {
-	opserr<<"WARNING: invalid integer inputs\n";
-	return 0;
+        opserr << "WARNING: invalid integer inputs\n";
+        return 0;
     }
-
+    
     FrictionModel* theFrnMdl = OPS_getFrictionModel(idata[3]);
     if (theFrnMdl == 0) {
-	opserr << "WARNING friction model not found\n";
-	opserr << "frictionModel: " << idata[3] << endln;
-	return 0;
+        opserr << "WARNING friction model not found\n";
+        opserr << "frictionModel: " << idata[3] << endln;
+        return 0;
     }
-
+    
     // data
-    double data[4];
-    num = 4;
-    if (OPS_GetDoubleInput(&num, data) < 0) {
-	opserr<<"WARNING: invalid double\n";
-	return 0;
+    double kInit;
+    num = 1;
+    if (OPS_GetDoubleInput(&num, &kInit) < 0) {
+        opserr << "WARNING: invalid double\n";
+        return 0;
     }
-
+    
     // materials
-    UniaxialMaterial* mats[2] = {0,0};
+    UniaxialMaterial* mats[3] = { 0,0,0 };
     const char* type = OPS_GetString();
-    if (strcmp(type,"-P") != 0) {
-	opserr<<"WARNING: want -P\n";
-	return 0;
+    if (strcmp(type, "-P") != 0) {
+        opserr << "WARNING: want -P\n";
+        return 0;
     }
     int matTag;
     num = 1;
     if (OPS_GetIntInput(&num, &matTag) < 0) {
-	opserr<<"WARNING: invalid matTag\n";
-	return 0;
+        opserr << "WARNING: invalid axial matTag\n";
+        return 0;
     }
     mats[0] = OPS_getUniaxialMaterial(matTag);
     if (mats[0] == 0) {
-	opserr<<"WARNING: material not found\n";
-	return 0;
+        opserr << "WARNING: material not found\n";
+        return 0;
     }
-
+    
     type = OPS_GetString();
-    if (strcmp(type,"-Mz") == 0) {
-	opserr<<"WARNING: want -Mz\n";
-	return 0;
+    if (strcmp(type, "-Vy") == 0) {
+        opserr << "WARNING: want -Vy\n";
+        return 0;
     }
     num = 1;
     if (OPS_GetIntInput(&num, &matTag) < 0) {
-	opserr<<"WARNING: invalid matTag\n";
-	return 0;
+        opserr << "WARNING: invalid shear y matTag\n";
+        return 0;
     }
     mats[1] = OPS_getUniaxialMaterial(matTag);
     if (mats[1] == 0) {
-	opserr<<"WARNING: material not found\n";
-	return 0;
+        opserr << "WARNING: material not found\n";
+        return 0;
     }
-
+    
+    type = OPS_GetString();
+    if (strcmp(type, "-Mz") == 0) {
+        opserr << "WARNING: want -Mz\n";
+        return 0;
+    }
+    num = 1;
+    if (OPS_GetIntInput(&num, &matTag) < 0) {
+        opserr << "WARNING: invalid moment z matTag\n";
+        return 0;
+    }
+    mats[2] = OPS_getUniaxialMaterial(matTag);
+    if (mats[2] == 0) {
+        opserr << "WARNING: material not found\n";
+        return 0;
+    }
+    
     // options
-    Vector x,y;
+    Vector x, y;
     double sDistI = 0.0;
     int doRayleigh = 0;
     double mass = 0.0;
     int maxIter = 25;
     double tol = 1e-12;
-    double kFactUplift = 1e-6;
-
+    double kFactUplift = 1e-12;
+    
     while (OPS_GetNumRemainingInputArgs() > 0) {
-	type = OPS_GetString();
-	if (strcmp(type,"-orient") == 0) {
-	    if (OPS_GetNumRemainingInputArgs() < 6) {
-		opserr<<"WARNING: insufficient arguments after -orient\n";
-		return 0;
-	    }
-	    num = 3;
-	    x.resize(3);
-	    if (OPS_GetDoubleInput(&num, &x(0)) < 0) {
-		opserr<<"WARNING: invalid orient value\n";
-		return 0;
-	    }
-	    y.resize(3);
-	    if (OPS_GetDoubleInput(&num, &y(0)) < 0) {
-		opserr<<"WARNING: invalid orient value\n";
-		return 0;
-	    }
-	} else if (strcmp(type,"-shearDist") == 0) {
-	    if (OPS_GetNumRemainingInputArgs() < 1) {
-		opserr<<"WARNING: insufficient args\n";
-		return 0;
-	    }
-	    num = 1;
-	    if (OPS_GetDoubleInput(&num, &sDistI) < 0) {
-		opserr<<"WARNING: invalid shearDist\n";
-		return 0;
-	    }
-	} else if (strcmp(type,"-doRayleigh") == 0) {
-	    doRayleigh = 1;
-	} else if (strcmp(type,"-mass") == 0) {
-	    if (OPS_GetNumRemainingInputArgs() < 1) {
-		opserr<<"WARNING: insufficient args\n";
-		return 0;
-	    }
-	    num = 1;
-	    if (OPS_GetDoubleInput(&num, &mass) < 0) {
-		opserr<<"WARNING: invalid mass\n";
-		return 0;
-	    }
-	} else if (strcmp(type,"-iter") == 0) {
-	    if (OPS_GetNumRemainingInputArgs() < 2) {
-		opserr<<"WARNING: insufficient args\n";
-		return 0;
-	    }
-	    num = 1;
-	    if (OPS_GetIntInput(&num,&maxIter) < 0) {
-		opserr<<"WARNING: invalid maxIter\n";
-		return 0;
-	    }
-	    if (OPS_GetDoubleInput(&num,&tol) < 0) {
-		opserr<<"WARNING: invalid tol\n";
-		return 0;
-	    }
-	} else if (strcmp(type,"-kFactUplift") == 0) {
-	    if (OPS_GetNumRemainingInputArgs() < 1) {
-		opserr<<"WARNING: insufficient args\n";
-		return 0;
-	    }
-	    num = 1;
-	    if (OPS_GetDoubleInput(&num,&kFactUplift) < 0) {
-		opserr<<"WARNING: invalid kFactuplift\n";
-		return 0;
-	    }
-	}
+        type = OPS_GetString();
+        if (strcmp(type, "-orient") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 6) {
+                opserr << "WARNING: insufficient arguments after -orient\n";
+                return 0;
+            }
+            num = 3;
+            x.resize(3);
+            if (OPS_GetDoubleInput(&num, &x(0)) < 0) {
+                opserr << "WARNING: invalid orient value\n";
+                return 0;
+            }
+            y.resize(3);
+            if (OPS_GetDoubleInput(&num, &y(0)) < 0) {
+                opserr << "WARNING: invalid orient value\n";
+                return 0;
+            }
+        }
+        else if (strcmp(type, "-shearDist") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: insufficient args\n";
+                return 0;
+            }
+            num = 1;
+            if (OPS_GetDoubleInput(&num, &sDistI) < 0) {
+                opserr << "WARNING: invalid shearDist\n";
+                return 0;
+            }
+        }
+        else if (strcmp(type, "-doRayleigh") == 0) {
+            doRayleigh = 1;
+        }
+        else if (strcmp(type, "-mass") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: insufficient args\n";
+                return 0;
+            }
+            num = 1;
+            if (OPS_GetDoubleInput(&num, &mass) < 0) {
+                opserr << "WARNING: invalid mass\n";
+                return 0;
+            }
+        }
+        else if (strcmp(type, "-iter") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 2) {
+                opserr << "WARNING: insufficient args\n";
+                return 0;
+            }
+            num = 1;
+            if (OPS_GetIntInput(&num, &maxIter) < 0) {
+                opserr << "WARNING: invalid maxIter\n";
+                return 0;
+            }
+            if (OPS_GetDoubleInput(&num, &tol) < 0) {
+                opserr << "WARNING: invalid tol\n";
+                return 0;
+            }
+        }
+        else if (strcmp(type, "-kFactUplift") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: insufficient args\n";
+                return 0;
+            }
+            num = 1;
+            if (OPS_GetDoubleInput(&num, &kFactUplift) < 0) {
+                opserr << "WARNING: invalid kFactuplift\n";
+                return 0;
+            }
+        }
     }
-
-    return new RJWatsonEQS2d(idata[0],idata[1],idata[2],*theFrnMdl,
-			     data[0],data[1],mats,y,x,data[2],data[3],sDistI,doRayleigh,
-			     mass,maxIter,tol,kFactUplift);
+    
+    return new RJWatsonEQS2d(idata[0], idata[1], idata[2], *theFrnMdl,
+        kInit, mats, y, x, sDistI, doRayleigh, mass, maxIter, tol,
+        kFactUplift);
 }
 
 
@@ -209,14 +230,13 @@ Vector RJWatsonEQS2d::theVector(6);
 
 
 RJWatsonEQS2d::RJWatsonEQS2d(int tag, int Nd1, int Nd2,
-    FrictionModel &thefrnmdl, double kInit, double _k2,
-    UniaxialMaterial **materials, const Vector _y, const Vector _x,
-    double _k3, double _mu, double sdI, int addRay, double m,
+    FrictionModel &thefrnmdl, double kInit, UniaxialMaterial **materials,
+    const Vector _y, const Vector _x, double sdI, int addRay, double m,
     int maxiter, double _tol, double kfactuplift)
     : Element(tag, ELE_TAG_RJWatsonEQS2d),
-    connectedExternalNodes(2), theFrnMdl(0), k0(0.0), k2(_k2), k3(_k3),
-    mu(_mu), x(_x), y(_y), shearDistI(sdI), addRayleigh(addRay),
-    mass(m), maxIter(maxiter), tol(_tol), kFactUplift(kfactuplift),
+    connectedExternalNodes(2), theFrnMdl(0), k0(kInit), x(_x), y(_y),
+    shearDistI(sdI), addRayleigh(addRay), mass(m), maxIter(maxiter), tol(_tol),
+    kFactUplift(kfactuplift),
     L(0.0), onP0(true), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
     Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3), theLoad(6)
 {
@@ -243,9 +263,6 @@ RJWatsonEQS2d::RJWatsonEQS2d(int tag, int Nd1, int Nd2,
         exit(-1);
     }
     
-    // initialize parameters
-    k0 = kInit - k2;
-
     // check material input
     if (materials == 0)  {
         opserr << "RJWatsonEQS2d::RJWatsonEQS2d() - "
@@ -254,7 +271,7 @@ RJWatsonEQS2d::RJWatsonEQS2d(int tag, int Nd1, int Nd2,
     }
     
     // get copies of the uniaxial materials
-    for (int i=0; i<2; i++)  {
+    for (int i=0; i<3; i++)  {
         if (materials[i] == 0)  {
             opserr << "RJWatsonEQS2d::RJWatsonEQS2d() - "
                 "null uniaxial material pointer passed.\n";
@@ -271,8 +288,8 @@ RJWatsonEQS2d::RJWatsonEQS2d(int tag, int Nd1, int Nd2,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = kInit;
-    kbInit(2,2) = theMaterials[1]->getInitialTangent();
+    kbInit(1,1) = k0 + theMaterials[1]->getInitialTangent();
+    kbInit(2,2) = theMaterials[2]->getInitialTangent();
     
     // initialize other variables
     this->revertToStart();
@@ -281,11 +298,11 @@ RJWatsonEQS2d::RJWatsonEQS2d(int tag, int Nd1, int Nd2,
 
 RJWatsonEQS2d::RJWatsonEQS2d()
     : Element(0, ELE_TAG_RJWatsonEQS2d),
-    connectedExternalNodes(2), theFrnMdl(0), k0(0.0), k2(0.0), k3(0.0),
-    mu(2.0), x(0), y(0), shearDistI(0.0), addRayleigh(0), mass(0.0),
-    maxIter(25), tol(1E-12), kFactUplift(1E-6), L(0.0), onP0(false),
-    ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6), Tgl(6,6), Tlb(3,6),
-    ubPlasticC(0.0), kbInit(3,3), theLoad(6)
+    connectedExternalNodes(2), theFrnMdl(0), k0(0.0), x(0), y(0),
+    shearDistI(0.0), addRayleigh(0), mass(0.0), maxIter(25), tol(1E-12),
+    kFactUplift(1E-12),
+    L(0.0), onP0(false), ub(3), ubPlastic(0.0), qb(3), kb(3,3), ul(6),
+    Tgl(6,6), Tlb(3,6), ubPlasticC(0.0), kbInit(3,3), theLoad(6)
 {
     // ensure the connectedExternalNode ID is of correct size
     if (connectedExternalNodes.Size() != 2)  {
@@ -299,7 +316,7 @@ RJWatsonEQS2d::RJWatsonEQS2d()
         theNodes[i] = 0;
     
     // set material pointers to NULL
-    for (int i=0; i<2; i++)
+    for (int i=0; i<3; i++)
         theMaterials[i] = 0;
 }
 
@@ -311,7 +328,7 @@ RJWatsonEQS2d::~RJWatsonEQS2d()
     if (theFrnMdl)
         delete theFrnMdl;
     
-    for (int i=0; i<2; i++)
+    for (int i=0; i<3; i++)
         if (theMaterials[i] != 0)
             delete theMaterials[i];
 }
@@ -408,7 +425,7 @@ int RJWatsonEQS2d::commitState()
     errCode += theFrnMdl->commitState();
     
     // commit material models
-    for (int i=0; i<2; i++)
+    for (int i=0; i<3; i++)
         errCode += theMaterials[i]->commitState();
     
     // commit the base class
@@ -426,7 +443,7 @@ int RJWatsonEQS2d::revertToLastCommit()
     errCode += theFrnMdl->revertToLastCommit();
     
     // revert material models
-    for (int i=0; i<2; i++)
+    for (int i=0; i<3; i++)
         errCode += theMaterials[i]->revertToLastCommit();
     
     return errCode;
@@ -452,7 +469,7 @@ int RJWatsonEQS2d::revertToStart()
     errCode += theFrnMdl->revertToStart();
     
     // revert material models
-    for (int i=0; i<2; i++)
+    for (int i=0; i<3; i++)
         errCode += theMaterials[i]->revertToStart();
     
     return errCode;
@@ -491,31 +508,38 @@ int RJWatsonEQS2d::update()
     kb(0,0) = theMaterials[0]->getTangent();
     
     // check for uplift
-    if (qb(0) >= 0.0)  {
+    if (qb(0) >= 0.0) {
+        theMaterials[1]->setTrialStrain(ub(1), ubdot(1));
+        // update plastic displacements
+        ubPlastic = ub(1);
+        // set basic forces
+        qb.Zero();
+        qb(1) = theMaterials[1]->getStress();
+        // set tangent stiffnesses
         kb = kbInit;
-        if (qb(0) > 0.0)  {
+        if (qb(0) > 0.0) {
             theMaterials[0]->setTrialStrain(ub0Old, 0.0);
-            //kb = DBL_EPSILON*kbInit;
-            kb = kFactUplift*kbInit;
-            // update plastic displacement
-            ubPlastic = ub(1);
-            //opserr << "WARNING: RJWatsonEQS2d::update() - element: "
+            kb = kFactUplift*kbInit;  // kb = DBL_EPSILON*kbInit;
+            kb(1,1) = theMaterials[1]->getTangent();
+            //opserr << "WARNING: RJWatsonEQS3d::update() - element: "
             //    << this->getTag() << " - uplift encountered, scaling "
             //    << "stiffness matrix by: " << kFactUplift << endln;
         }
-        qb.Zero();
         return 0;
     }
-    
-    // 2) calculate shear force and stiffness in basic y-direction
+
+    // 2a) calculate sliding shear forces and stiffnesses in basic y-direction
     int iter = 0;
     double qb1Old = 0.0;
+    qb(1) -= theMaterials[1]->getStress();
     do  {
         // save old shear force
+        iter++;
         qb1Old = qb(1);
         
         // get normal and friction (yield) forces
         double N = -qb(0) - qb(1)*ul(5);
+        N = N > 0.0 ? N : 0.0;  // can not be negative
         theFrnMdl->setTrial(N, ubdotAbs);
         double qYield = (theFrnMdl->getFrictionForce());
         
@@ -529,10 +553,9 @@ int RJWatsonEQS2d::update()
         // elastic step -> no updates required
         if (Y <= 0.0)  {
             // set shear force
-            qb(1) = qTrial + k2*ub(1)
-                  + k3*sgn(ub(1))*pow(fabs(ub(1)),mu) - N*ul(5);
+            qb(1) = qTrial - N*ul(5);
             // set tangent stiffness
-            kb(1,1) = k0 + k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
+            kb(1,1) = k0;
         }
         // plastic step -> return mapping
         else  {
@@ -541,12 +564,10 @@ int RJWatsonEQS2d::update()
             // update plastic displacement
             ubPlastic = ubPlasticC + dGamma*qTrial/qTrialNorm;
             // set shear force
-            qb(1) = qYield*qTrial/qTrialNorm + k2*ub(1)
-                  + k3*sgn(ub(1))*pow(fabs(ub(1)),mu) - N*ul(5);
+            qb(1) = qYield*qTrial/qTrialNorm - N*ul(5);
             // set tangent stiffness
-            kb(1,1) = k2 + k3*mu*pow(fabs(ub(1)),mu-1.0);
+            kb(1,1) = 0.0;
         }
-        iter++;
     } while ((fabs(qb(1)-qb1Old) >= tol) && (iter <= maxIter));
     
     // issue warning if iteration did not converge
@@ -557,10 +578,15 @@ int RJWatsonEQS2d::update()
         return -1;
     }
     
+    // 2b) add MER-spring contributions to shear forces in basic y-direction
+    theMaterials[1]->setTrialStrain(ub(1), ubdot(1));
+    qb(1) += theMaterials[1]->getStress();
+    kb(1,1) += theMaterials[1]->getTangent();
+    
     // 3) get moment and stiffness in basic z-direction
-    theMaterials[1]->setTrialStrain(ub(2), ubdot(2));
-    qb(2) = theMaterials[1]->getStress();
-    kb(2,2) = theMaterials[1]->getTangent();
+    theMaterials[2]->setTrialStrain(ub(2), ubdot(2));
+    qb(2) = theMaterials[2]->getStress();
+    kb(2,2) = theMaterials[2]->getTangent();
     
     return 0;
 }
@@ -621,7 +647,8 @@ const Matrix& RJWatsonEQS2d::getDamp()
     static Matrix cb(3,3);
     cb.Zero();
     cb(0,0) = theMaterials[0]->getDampTangent();
-    cb(2,2) = theMaterials[1]->getDampTangent();
+    cb(1,1) = theMaterials[1]->getDampTangent();
+    cb(2,2) = theMaterials[2]->getDampTangent();
     
     // transform from basic to local system
     static Matrix cl(6,6);
@@ -755,24 +782,21 @@ const Vector& RJWatsonEQS2d::getResistingForceIncInertia()
 int RJWatsonEQS2d::sendSelf(int commitTag, Channel &sChannel)
 {
     // send element parameters
-    static Vector data(17);
-    data(0) = this->getTag();
-    data(1) = k0;
-    data(2) = k2;
-    data(3) = k3;
-    data(4) = mu;
-    data(5) = shearDistI;
-    data(6) = addRayleigh;
-    data(7) = mass;
-    data(8) = maxIter;
-    data(9) = tol;
-    data(10) = kFactUplift;
-    data(11) = x.Size();
-    data(12) = y.Size();
-    data(13) = alphaM;
-    data(14) = betaK;
-    data(15) = betaK0;
-    data(16) = betaKc;
+    static Vector data(14);
+    data(0)  = this->getTag();
+    data(1)  = k0;
+    data(2)  = shearDistI;
+    data(3)  = addRayleigh;
+    data(4)  = mass;
+    data(5)  = maxIter;
+    data(6)  = tol;
+    data(7)  = kFactUplift;
+    data(8)  = x.Size();
+    data(9)  = y.Size();
+    data(10) = alphaM;
+    data(11) = betaK;
+    data(12) = betaK0;
+    data(13) = betaKc;
     sChannel.sendVector(0, commitTag, data);
     
     // send the two end nodes
@@ -787,13 +811,13 @@ int RJWatsonEQS2d::sendSelf(int commitTag, Channel &sChannel)
     theFrnMdl->sendSelf(commitTag, sChannel);
     
     // send the material class tags
-    ID matClassTags(2);
-    for (int i=0; i<2; i++)
+    ID matClassTags(3);
+    for (int i=0; i<3; i++)
         matClassTags(i) = theMaterials[i]->getClassTag();
     sChannel.sendID(0, commitTag, matClassTags);
     
     // send the material models
-    for (int i=0; i<2; i++)
+    for (int i=0; i<3; i++)
         theMaterials[i]->sendSelf(commitTag, sChannel);
     
     // send remaining data
@@ -810,28 +834,25 @@ int RJWatsonEQS2d::recvSelf(int commitTag, Channel &rChannel,
     FEM_ObjectBroker &theBroker)
 {
     // delete material memory
-    for (int i=0; i<2; i++)
+    for (int i=0; i<3; i++)
         if (theMaterials[i] != 0)
             delete theMaterials[i];
     
     // receive element parameters
-    static Vector data(17);
+    static Vector data(14);
     rChannel.recvVector(0, commitTag, data);
     this->setTag((int)data(0));
     k0 = data(1);
-    k2 = data(2);
-    k3 = data(3);
-    mu = data(4);
-    shearDistI = data(5);
-    addRayleigh = (int)data(6);
-    mass = data(7);
-    maxIter = (int)data(8);
-    tol = data(9);
-    kFactUplift = data(10);
-    alphaM = data(13);
-    betaK = data(14);
-    betaK0 = data(15);
-    betaKc = data(16);
+    shearDistI = data(2);
+    addRayleigh = (int)data(3);
+    mass = data(4);
+    maxIter = (int)data(5);
+    tol = data(6);
+    kFactUplift = data(7);
+    alphaM = data(10);
+    betaK = data(11);
+    betaK0 = data(12);
+    betaKc = data(13);
     
     // receive the two end nodes
     rChannel.recvID(0, commitTag, connectedExternalNodes);
@@ -850,11 +871,11 @@ int RJWatsonEQS2d::recvSelf(int commitTag, Channel &rChannel,
     theFrnMdl->recvSelf(commitTag, rChannel, theBroker);
     
     // receive the material class tags
-    ID matClassTags(2);
+    ID matClassTags(3);
     rChannel.recvID(0, commitTag, matClassTags);
     
     // receive the material models
-    for (int i=0; i<2; i++)  {
+    for (int i=0; i<3; i++)  {
         theMaterials[i] = theBroker.getNewUniaxialMaterial(matClassTags(i));
         if (theMaterials[i] == 0) {
             opserr << "RJWatsonEQS2d::recvSelf() - "
@@ -865,11 +886,11 @@ int RJWatsonEQS2d::recvSelf(int commitTag, Channel &rChannel,
     }
     
     // receive remaining data
-    if ((int)data(11) == 3)  {
+    if ((int)data(8) == 3)  {
         x.resize(3);
         rChannel.recvVector(0, commitTag, x);
     }
-    if ((int)data(12) == 3)  {
+    if ((int)data(9) == 3)  {
         y.resize(3);
         rChannel.recvVector(0, commitTag, y);
     }
@@ -878,8 +899,8 @@ int RJWatsonEQS2d::recvSelf(int commitTag, Channel &rChannel,
     // initialize initial stiffness matrix
     kbInit.Zero();
     kbInit(0,0) = theMaterials[0]->getInitialTangent();
-    kbInit(1,1) = k0 + k2;
-    kbInit(2,2) = theMaterials[1]->getInitialTangent();
+    kbInit(1,1) = k0 + theMaterials[1]->getInitialTangent();
+    kbInit(2,2) = theMaterials[2]->getInitialTangent();
     
     // initialize other variables
     this->revertToStart();
@@ -940,23 +961,39 @@ int RJWatsonEQS2d::displaySelf(Renderer &theViewer,
 
 void RJWatsonEQS2d::Print(OPS_Stream &s, int flag)
 {
-    if (flag == 0)  {
+    if (flag == OPS_PRINT_CURRENTSTATE) {
         // print everything
         s << "Element: " << this->getTag(); 
         s << "  type: RJWatsonEQS2d  iNode: " << connectedExternalNodes(0);
         s << "  jNode: " << connectedExternalNodes(1) << endln;
         s << "  FrictionModel: " << theFrnMdl->getTag() << endln;
-        s << "  k0: " << k0 << "  k2: " << k2 << endln;
-        s << "  k3: " << k3 << "  mu: " << mu << endln;
+        s << "  k0: " << k0 << endln;
         s << "  Material ux: " << theMaterials[0]->getTag() << endln;
-        s << "  Material rz: " << theMaterials[1]->getTag() << endln;
+        s << "  Material uy: " << theMaterials[1]->getTag() << endln;
+        s << "  Material rz: " << theMaterials[2]->getTag() << endln;
         s << "  shearDistI: " << shearDistI << "  addRayleigh: "
             << addRayleigh << "  mass: " << mass << endln;
         s << "  maxIter: " << maxIter << "  tol: " << tol << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
-    } else if (flag == 1)  {
-        // does nothing
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"RJWatsonEQS2d\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
+        s << "\"frictionModel\": \"" << theFrnMdl->getTag() << "\", ";
+        s << "\"k0\": " << k0 << ", ";
+        s << "\"materials\": [\"";
+        s << theMaterials[0]->getTag() << "\", \"";
+        s << theMaterials[1]->getTag() << "\", \"";
+        s << theMaterials[2]->getTag() << "\"], ";
+        s << "\"shearDistI\": " << shearDistI << ", ";
+        s << "\"addRayleigh\": " << addRayleigh << ", ";
+        s << "\"mass\": " << mass << ", ";
+        s << "\"maxIter\": " << maxIter << ", ";
+        s << "\"tol\": " << tol << "}";
     }
 }
 
@@ -1041,7 +1078,7 @@ Response* RJWatsonEQS2d::setResponse(const char **argv, int argc,
     else if (strcmp(argv[0],"material") == 0)  {
         if (argc > 2)  {
             int matNum = atoi(argv[1]);
-            if (matNum >= 1 && matNum <= 2)
+            if (matNum >= 1 && matNum <= 3)
                 theResponse = theMaterials[matNum-1]->setResponse(&argv[2], argc-2, output);
         }
     }
@@ -1161,15 +1198,4 @@ void RJWatsonEQS2d::setUp()
     Tlb(0,3) = Tlb(1,4) = Tlb(2,5) = 1.0;
     Tlb(1,2) = -shearDistI*L;
     Tlb(1,5) = -(1.0 - shearDistI)*L;
-}
-
-
-double RJWatsonEQS2d::sgn(double x)
-{
-    if (x > 0)
-        return 1.0;
-    else if (x < 0)
-        return -1.0;
-    else
-        return 0.0;
 }

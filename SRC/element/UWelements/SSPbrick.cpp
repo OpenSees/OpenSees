@@ -983,16 +983,26 @@ SSPbrick::displaySelf(Renderer &theViewer, int displayMode, float fact, const ch
 void
 SSPbrick::Print(OPS_Stream &s, int flag)
 {
-  /*
-	opserr << "SSPbrick, element id:  " << this->getTag() << endln;
-	opserr << "   Connected external nodes:  ";
-	for (int i = 0; i < SSPB_NUM_NODE; i++) {
-		opserr << mExternalNodes(i) << " ";
-	}
-	opserr << endln;
-  */
-
-	return;
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        opserr << "SSPbrick, element id:  " << this->getTag() << endln;
+        opserr << "   Connected external nodes:  ";
+        for (int i = 0; i < SSPB_NUM_NODE; i++) {
+            opserr << mExternalNodes(i) << " ";
+        }
+        opserr << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"SSPbrick\", ";
+        s << "\"nodes\": [" << mExternalNodes(0) << ", ";
+        for (int i = 1; i < 6; i++)
+            s << mExternalNodes(i) << ", ";
+        s << mExternalNodes(7) << "], ";
+        s << "\"bodyForces\": [" << b[0] << ", " << b[1] << ", " << b[2] << "], ";
+        s << "\"material\": \"" << theMaterial->getTag() << "\"}";
+    }
 }
 
 Response*

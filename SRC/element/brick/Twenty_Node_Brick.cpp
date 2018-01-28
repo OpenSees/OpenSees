@@ -329,87 +329,98 @@ int  Twenty_Node_Brick::revertToStart( )
 }
 
 //print out element data
-void  Twenty_Node_Brick::Print( OPS_Stream &s, int flag )
+void  Twenty_Node_Brick::Print(OPS_Stream &s, int flag)
 {
+    if (flag == 2) {
 
-	if (flag == 2) {
+        s << "#20NodeBrick\n";
 
-		s << "#20NodeBrick\n";
+        int i;
+        const int numNodes = 20;
+        const int nstress = 6;
 
-		int i;
-		const int numNodes = 20;
-		const int nstress = 6 ;
+        for (i = 0; i < numNodes; i++) {
+            const Vector &nodeCrd = nodePointers[i]->getCrds();
+            const Vector &nodeDisp = nodePointers[i]->getDisp();
+            s << "#NODE " << nodeCrd(0) << " " << nodeCrd(1) << " " << nodeCrd(2)
+                << " " << nodeDisp(0) << " " << nodeDisp(1) << " " << nodeDisp(2) << endln;
+        }
 
-		for (i=0; i<numNodes; i++) {
-			const Vector &nodeCrd = nodePointers[i]->getCrds();
-			const Vector &nodeDisp = nodePointers[i]->getDisp();
-			s << "#NODE " << nodeCrd(0) << " " << nodeCrd(1) << " " << nodeCrd(2)
-				<< " " << nodeDisp(0) << " " << nodeDisp(1) << " " << nodeDisp(2) << endln;
-		}
+        // spit out the section location & invoke print on the scetion
+        const int numMaterials = nintu;
 
-		// spit out the section location & invoke print on the scetion
-		const int numMaterials = nintu;
+        static Vector avgStress(7);
+        static Vector avgStrain(nstress);
+        avgStress.Zero();
+        avgStrain.Zero();
+        for (i = 0; i < numMaterials; i++) {
+            avgStress += materialPointers[i]->getStress();
+            avgStrain += materialPointers[i]->getStrain();
+        }
+        avgStress /= numMaterials;
+        avgStrain /= numMaterials;
 
-		static Vector avgStress(7);
-		static Vector avgStrain(nstress);
-		avgStress.Zero();
-		avgStrain.Zero();
-		for (i=0; i<numMaterials; i++) {
-			avgStress += materialPointers[i]->getStress();
-			avgStrain += materialPointers[i]->getStrain();
-		}
-		avgStress /= numMaterials;
-		avgStrain /= numMaterials;
+        s << "#AVERAGE_STRESS ";
+        for (i = 0; i < 7; i++)
+            s << avgStress(i) << " ";
+        s << endln;
 
-		s << "#AVERAGE_STRESS ";
-		for (i=0; i<7; i++)
-			s << avgStress(i) << " " ;
-		s << endln;
+        s << "#AVERAGE_STRAIN ";
+        for (i = 0; i < nstress; i++)
+            s << avgStrain(i) << " ";
+        s << endln;
 
-		s << "#AVERAGE_STRAIN ";
-		for (i=0; i<nstress; i++)
-			s << avgStrain(i) << " " ;
-		s << endln;
+        /*
+        for (i=0; i<numMaterials; i++) {
+        s << "#MATERIAL\n";
+        //      materialPointers[i]->Print(s, flag);
+        s << materialPointers[i]->getStress();
+        }
+        */
+    }
+    
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        s << endln;
+        s << "20NodeBrick Twenty_Node_Brick \n";
+        s << "Element Number: " << this->getTag() << endln;
+        s << "Node 1 : " << connectedExternalNodes(0) << endln;
+        s << "Node 2 : " << connectedExternalNodes(1) << endln;
+        s << "Node 3 : " << connectedExternalNodes(2) << endln;
+        s << "Node 4 : " << connectedExternalNodes(3) << endln;
+        s << "Node 5 : " << connectedExternalNodes(4) << endln;
+        s << "Node 6 : " << connectedExternalNodes(5) << endln;
+        s << "Node 7 : " << connectedExternalNodes(6) << endln;
+        s << "Node 8 : " << connectedExternalNodes(7) << endln;
+        s << "Node 9 : " << connectedExternalNodes(8) << endln;
+        s << "Node 10 : " << connectedExternalNodes(9) << endln;
+        s << "Node 11 : " << connectedExternalNodes(10) << endln;
+        s << "Node 12 : " << connectedExternalNodes(11) << endln;
+        s << "Node 13 : " << connectedExternalNodes(12) << endln;
+        s << "Node 14 : " << connectedExternalNodes(13) << endln;
+        s << "Node 15 : " << connectedExternalNodes(14) << endln;
+        s << "Node 16 : " << connectedExternalNodes(15) << endln;
+        s << "Node 17 : " << connectedExternalNodes(16) << endln;
+        s << "Node 18 : " << connectedExternalNodes(17) << endln;
+        s << "Node 19 : " << connectedExternalNodes(18) << endln;
+        s << "Node 20 : " << connectedExternalNodes(19) << endln;
+        
+        s << "Material Information : \n ";
+        materialPointers[0]->Print(s, flag);
+        
+        s << endln;
+    }
 
-		/*
-		for (i=0; i<numMaterials; i++) {
-		s << "#MATERIAL\n";
-		//      materialPointers[i]->Print(s, flag);
-		s << materialPointers[i]->getStress();
-		}
-		*/
-
-	} else {
-
-		s << endln ;
-		s << "20NodeBrick Twenty_Node_Brick \n" ;
-		s << "Element Number: " << this->getTag() << endln ;
-		s << "Node 1 : " << connectedExternalNodes(0) << endln ;
-		s << "Node 2 : " << connectedExternalNodes(1) << endln ;
-		s << "Node 3 : " << connectedExternalNodes(2) << endln ;
-		s << "Node 4 : " << connectedExternalNodes(3) << endln ;
-		s << "Node 5 : " << connectedExternalNodes(4) << endln ;
-		s << "Node 6 : " << connectedExternalNodes(5) << endln ;
-		s << "Node 7 : " << connectedExternalNodes(6) << endln ;
-		s << "Node 8 : " << connectedExternalNodes(7) << endln ;
-		s << "Node 9 : " << connectedExternalNodes(8) << endln ;
-		s << "Node 10 : " << connectedExternalNodes(9) << endln ;
-		s << "Node 11 : " << connectedExternalNodes(10) << endln ;
-		s << "Node 12 : " << connectedExternalNodes(11) << endln ;
-		s << "Node 13 : " << connectedExternalNodes(12) << endln ;
-		s << "Node 14 : " << connectedExternalNodes(13) << endln ;
-		s << "Node 15 : " << connectedExternalNodes(14) << endln ;
-		s << "Node 16 : " << connectedExternalNodes(15) << endln ;
-		s << "Node 17 : " << connectedExternalNodes(16) << endln ;
-		s << "Node 18 : " << connectedExternalNodes(17) << endln ;
-		s << "Node 19 : " << connectedExternalNodes(18) << endln ;
-		s << "Node 20 : " << connectedExternalNodes(19) << endln ;
-
-		s << "Material Information : \n " ;
-		materialPointers[0]->Print( s, flag ) ;
-
-		s << endln ;
-	}
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"20NodeBrick\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
+        for (int i = 1; i < 18; i++)
+            s << connectedExternalNodes(i) << ", ";
+        s << connectedExternalNodes(19) << "], ";
+        s << "\"bodyForces\": [" << b[0] << ", " << b[1] << ", " << b[2] << "], ";
+        s << "\"material\": \"" << materialPointers[0]->getTag() << "\"}";
+    }
 }
 
 int

@@ -393,13 +393,13 @@ void  ShellMITC9::Print( OPS_Stream &s, int flag )
     
     if (flag == OPS_PRINT_PRINTMODEL_JSON) {
         s << "\t\t\t{";
-        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"ShellMITC9\", ";
-        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\", ";
-        s << "\"" << connectedExternalNodes(2) << "\", \"" << connectedExternalNodes(3) << "\", ";
-        s << "\"" << connectedExternalNodes(4) << "\", \"" << connectedExternalNodes(5) << "\", ";
-        s << "\"" << connectedExternalNodes(6) << "\", \"" << connectedExternalNodes(7) << "\", ";
-        s << "\"" << connectedExternalNodes(8) << "\"], ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << ", ";
+        s << connectedExternalNodes(2) << ", " << connectedExternalNodes(3) << ", ";
+        s << connectedExternalNodes(4) << ", " << connectedExternalNodes(5) << ", ";
+        s << connectedExternalNodes(6) << ", " << connectedExternalNodes(7) << ", ";
+        s << connectedExternalNodes(8) << "], ";
         s << "\"section\": \"" << materialPointers[0]->getTag() << "\"}";
     }
 }

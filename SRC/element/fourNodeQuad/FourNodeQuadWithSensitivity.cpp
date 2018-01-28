@@ -936,19 +936,34 @@ FourNodeQuadWithSensitivity::Print(OPS_Stream &s, int flag)
       s << avgStrain(i) << " " ;
     s << endln;
 
-  } else {
-	s << "\nFourNodeQuadWithSensitivity, element id:  " << this->getTag() << endln;
+  }
+  
+  if (flag == OPS_PRINT_CURRENTSTATE) {
+    s << "\nFourNodeQuadWithSensitivity, element id:  " << this->getTag() << endln;
 	s << "\tConnected external nodes:  " << connectedExternalNodes;
 	s << "\tthickness:  " << thickness << endln;
-//	s << "\tmass density:  " << rho << endln;
 	s << "\tsurface pressure:  " << pressure << endln;
-	s << "\tbody forces:  " << b[0] << " " << b[1] << endln;
-
-
+    s << "\tmass density:  " << rho << endln;
+    s << "\tbody forces:  " << b[0] << " " << b[1] << endln;
 	theMaterial[0]->Print(s,flag);
 	s << "\tStress (xx yy xy)" << endln;
 	for (int i = 0; i < 4; i++)
 		s << "\t\tGauss point " << i+1 << ": " << theMaterial[i]->getStress();
+  }
+  
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+      s << "\t\t\t{";
+      s << "\"name\": " << this->getTag() << ", ";
+      s << "\"type\": \"nFourNodeQuadWithSensitivity\", ";
+      s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
+      s << connectedExternalNodes(1) << ", ";
+      s << connectedExternalNodes(2) << ", ";
+      s << connectedExternalNodes(3) << "], ";
+      s << "\"thickness\": " << thickness << ", ";
+      s << "\"surfacePressure\": " << pressure << ", ";
+      s << "\"masspervolume\": " << rho << ", ";
+      s << "\"bodyForces\": [" << b[0] << ", " << b[1] << "], ";
+      s << "\"material\": \"" << theMaterial[0]->getTag() << "\"}";
   }
 }
 

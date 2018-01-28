@@ -930,7 +930,7 @@ int TripleFrictionPendulum::displaySelf(Renderer &theViewer,
 
 void TripleFrictionPendulum::Print(OPS_Stream &s, int flag)
 {
-    if (flag == 0)  {
+    if (flag == OPS_PRINT_CURRENTSTATE) {
         // print everything
         s << "Element: " << this->getTag(); 
         s << "  type: TripleFrictionPendulum, iNode: " << externalNodes(0);
@@ -945,8 +945,31 @@ void TripleFrictionPendulum::Print(OPS_Stream &s, int flag)
         s << "  uy: " << Uy << ", kvt: " << Kvt << ",  minFv: " << MinFv << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
-    } else if (flag == 1)  {
-        // does nothing
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"TripleFrictionPendulum\", ";
+        s << "\"nodes\": [" << externalNodes(0) << ", " << externalNodes(1) << "], ";
+        s << "\"frictionModels\": [\"";
+        s << theFrnMdls[0]->getTag() << "\", \"";
+        s << theFrnMdls[1]->getTag() << "\", \"";
+        s << theFrnMdls[2]->getTag() << "\"], ";
+        s << "\"materials\": [\"";
+        s << theMaterials[0]->getTag() << "\", \"";
+        s << theMaterials[1]->getTag() << "\", \"";
+        s << theMaterials[2]->getTag() << "\", \"";
+        s << theMaterials[3]->getTag() << "\"], ";
+        s << "\"L1\": " << L1 << ", ";
+        s << "\"L2\": " << L2 << ", ";
+        s << "\"L3\": " << L3 << ", ";
+        s << "\"d1\": " << Ubar1 << ", ";
+        s << "\"d2\": " << Ubar2 << ", ";
+        s << "\"d3\": " << Ubar3 << ", ";
+        s << "\"uy\": " << Uy << ", ";
+        s << "\"kvt\": " << Kvt << ", ";
+        s << "\"minFv\": " << MinFv << "}";
     }
 }
 

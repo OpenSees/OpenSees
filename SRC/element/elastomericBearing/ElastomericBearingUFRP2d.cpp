@@ -896,7 +896,7 @@ int ElastomericBearingUFRP2d::displaySelf(Renderer &theViewer,
 
 void ElastomericBearingUFRP2d::Print(OPS_Stream &s, int flag)
 {
-    if (flag == 0)  {
+    if (flag == OPS_PRINT_CURRENTSTATE) {
         // print everything
         s << "Element: " << this->getTag() << endln; 
         s << "  type: ElastomericBearingUFRP2d\n";
@@ -905,7 +905,7 @@ void ElastomericBearingUFRP2d::Print(OPS_Stream &s, int flag)
         s << "  uy: " << uy << endln;
         s << "  a1: " << a1 << "  a2: " << a2 << "  a3: " << a3;
         s << "  a4: " << a4 << "  a5: " << a5 << endln;
-        s << "  b: " << a4 << "  c: " << a5 << endln;
+        s << "  b: " << b << "  c: " << c << endln;
         s << "  eta: " << eta << "  beta: " << beta << "  gamma: " << gamma << endln;
         s << "  Material ux: " << theMaterials[0]->getTag();
         s << "  Material rz: " << theMaterials[1]->getTag() << endln;
@@ -914,8 +914,30 @@ void ElastomericBearingUFRP2d::Print(OPS_Stream &s, int flag)
         s << "  maxIter: " << maxIter << "  tol: " << tol << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
-    } else if (flag == 1)  {
-        // does nothing
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"ElastomericBearingUFRP2d\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
+        s << "\"uy\": " << uy << ", ";
+        s << "\"a1\": " << a1 << ", ";
+        s << "\"a2\": " << a2 << ", ";
+        s << "\"a3\": " << a3 << ", ";
+        s << "\"a4\": " << a4 << ", ";
+        s << "\"a5\": " << a5 << ", ";
+        s << "\"b\": " << b << ", ";
+        s << "\"c\": " << c << ", ";
+        s << "\"eta\": " << eta << ", ";
+        s << "\"beta\": " << beta << ", ";
+        s << "\"gamma\": " << gamma << ", ";
+        s << "\"materials\": [\"";
+        s << theMaterials[0]->getTag() << "\", \"";
+        s << theMaterials[1]->getTag() << "\"], ";
+        s << "\"shearDistI\": " << shearDistI << ", ";
+        s << "\"addRayleigh\": " << addRayleigh << ", ";
+        s << "\"mass\": " << mass << "}";
     }
 }
 

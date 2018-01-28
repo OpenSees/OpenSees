@@ -781,9 +781,9 @@ ZeroLengthND::Print(OPS_Stream &s, int flag)
     
     if (flag == OPS_PRINT_PRINTMODEL_JSON) {
         s << "\t\t\t{";
-        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"ZeroLengthND\", ";
-        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
         s << "\"ndMaterial\": \"" << theNDMaterial->getTag() << "\", ";
         if (the1DMaterial != 0)
             s << "\"uniaxialMaterial\": \"" << the1DMaterial->getTag() << "\", ";

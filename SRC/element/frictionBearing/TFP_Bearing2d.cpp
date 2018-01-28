@@ -771,9 +771,18 @@ TFP_Bearing2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &th
 void
 TFP_Bearing2d::Print(OPS_Stream &s, int flag)
 {
-  s << "Element: " << this->getTag(); 
-  s << " type: TFP_Bearing2d  iNode: " << externalNodes(0);
-  s << " jNode: " << externalNodes(1) << endln;
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        s << "Element: " << this->getTag();
+        s << " type: TFP_Bearing2d  iNode: " << externalNodes(0);
+        s << " jNode: " << externalNodes(1) << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"TFP_Bearing2d\", ";
+        s << "\"nodes\": [" << externalNodes(0) << ", " << externalNodes(1) << "]}";
+    }
 }
 
 

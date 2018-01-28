@@ -48,9 +48,9 @@ void* OPS_EnhancedQuad()
 	return 0;
     }
     
-    if (OPS_GetNumRemainingInputArgs() < 7) {
+    if (OPS_GetNumRemainingInputArgs() < 8) {
 	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: element ConstantPressureVolumeQuad eleTag? iNode? jNode? kNode? lNode? type? matTag?\n";
+	opserr << "Want: element ConstantPressureVolumeQuad eleTag? iNode? jNode? kNode? lNode? thk? type? matTag?\n";
 	return 0;
     }
 
@@ -60,6 +60,13 @@ void* OPS_EnhancedQuad()
     if (OPS_GetIntInput(&num,data) < 0) {
 	opserr<<"WARNING: invalid integer input\n";
 	return 0;
+    }
+
+    double thk = 1.0;
+    num = 1;
+    if (OPS_GetDoubleInput(&num, &thk) < 0) {
+        opserr << "WARNING: invalid double inputs\n";
+        return 0;
     }
 
     const char* type = OPS_GetString();
@@ -78,7 +85,8 @@ void* OPS_EnhancedQuad()
 	return 0;
     }
 
-    return new EnhancedQuad(data[0],data[1],data[2],data[3],data[4],*mat,type);
+    return new EnhancedQuad(data[0],data[1],data[2],data[3],data[4],
+                            *mat,type,thk);
 }
 
 
@@ -114,7 +122,7 @@ const double  EnhancedQuad::wg[] = { 1.0, 1.0, 1.0, 1.0 } ;
 EnhancedQuad::EnhancedQuad( ) :
 Element( 0, ELE_TAG_EnhancedQuad ),
 connectedExternalNodes(4),
-alpha(4) , load(0), Ki(0)
+alpha(4), thickness(0.0), load(0), Ki(0)
 { 
   for ( int i = 0 ;  i < 4; i++ ) {
     materialPointers[i] = 0;
@@ -124,19 +132,19 @@ alpha(4) , load(0), Ki(0)
   alpha.Zero( ) ;
 }
 
-
 //full constructor
-EnhancedQuad::EnhancedQuad(  int tag, 
-                         int node1,
-                         int node2,
-   	                 int node3,
-                         int node4,
-	                 NDMaterial &theMaterial,
-			 const char *type ) 
+EnhancedQuad::EnhancedQuad(int tag, 
+                           int node1,
+                           int node2,
+                           int node3,
+                           int node4,
+                           NDMaterial &theMaterial,
+                           const char *type,
+                           double t) 
   :
 Element( tag, ELE_TAG_EnhancedQuad ),
 connectedExternalNodes(4),
-alpha(4), load(0), Ki(0)
+alpha(4), thickness(t), load(0), Ki(0)
 {
 
   connectedExternalNodes(0) = node1 ;
@@ -167,7 +175,6 @@ alpha(4), load(0), Ki(0)
 
 }
 
-
 //destructor 
 EnhancedQuad::~EnhancedQuad( )
 {
@@ -183,7 +190,6 @@ EnhancedQuad::~EnhancedQuad( )
     delete Ki;
 }
 
-
 //set domain
 void  EnhancedQuad::setDomain( Domain *theDomain ) 
 {  
@@ -197,20 +203,17 @@ void  EnhancedQuad::setDomain( Domain *theDomain )
   this->DomainComponent::setDomain(theDomain) ;
 }
 
-
 //get the number of external nodes
 int  EnhancedQuad::getNumExternalNodes( ) const
 {
   return 4 ;
 } 
- 
 
 //return connected external nodes
 const ID&  EnhancedQuad::getExternalNodes( ) 
 {
   return connectedExternalNodes ;
 } 
-
 
 Node **
 EnhancedQuad::getNodePtrs(void) 
@@ -223,7 +226,6 @@ int  EnhancedQuad::getNumDOF( )
 {
   return 8 ;
 }
-
 
 //commit state
 int  EnhancedQuad::commitState( )
@@ -240,8 +242,6 @@ int  EnhancedQuad::commitState( )
   
   return success ;
 }
- 
-
 
 //revert to last commit 
 int  EnhancedQuad::revertToLastCommit( ) 
@@ -254,7 +254,6 @@ int  EnhancedQuad::revertToLastCommit( )
   
   return success ;
 }
-    
 
 //revert to start 
 int  EnhancedQuad::revertToStart( ) 
@@ -274,18 +273,31 @@ int  EnhancedQuad::revertToStart( )
 //print out element data
 void  EnhancedQuad::Print( OPS_Stream &s, int flag )
 {
-  s << endln ;
-  s << "Enhanced Strain Four Node Quad \n" ;
-  s << "Element Number: " << this->getTag() << endln ;
-  s << "Node 1 : " << connectedExternalNodes(0) << endln ;
-  s << "Node 2 : " << connectedExternalNodes(1) << endln ;
-  s << "Node 3 : " << connectedExternalNodes(2) << endln ;
-  s << "Node 4 : " << connectedExternalNodes(3) << endln ;
-
-  s << "Material Information : \n " ;
-  materialPointers[0]->Print( s, flag ) ;
-
-  s << endln ;
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        s << endln;
+        s << "Enhanced Strain Four Node Quad \n";
+        s << "Element Number: " << this->getTag() << endln;
+        s << "Node 1 : " << connectedExternalNodes(0) << endln;
+        s << "Node 2 : " << connectedExternalNodes(1) << endln;
+        s << "Node 3 : " << connectedExternalNodes(2) << endln;
+        s << "Node 4 : " << connectedExternalNodes(3) << endln;
+        s << "thickness : " << thickness << endln;
+        s << "Material Information : \n ";
+        materialPointers[0]->Print(s, flag);
+        s << endln;
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"EnhancedQuad\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
+        s << connectedExternalNodes(1) << ", ";
+        s << connectedExternalNodes(2) << ", ";
+        s << connectedExternalNodes(3) << "], ";
+        s << "\"thickness\": " << thickness << ", ";
+        s << "\"material\": \"" << materialPointers[0]->getTag() << "\"}";
+    }
 }
 
 //return stiffness matrix 
@@ -298,7 +310,6 @@ const Matrix&  EnhancedQuad::getTangentStiff( )
 
   return stiff ;
 }    
-
 
 //return secant matrix 
 const Matrix&  EnhancedQuad::getInitialStiff( ) 
@@ -420,7 +431,7 @@ const Matrix&  EnhancedQuad::getInitialStiff( )
     xsj[i] = det ;
 
     //volume element to also be saved
-    dvol[i] = wg[i] * det ;  
+    dvol[i] = wg[i] * det * thickness;  
 
   } // end for i gauss loop
 
@@ -572,8 +583,6 @@ const Matrix&  EnhancedQuad::getInitialStiff( )
 
   return stiff;
 }
-    
-
 
 //return mass matrix
 const Matrix&  EnhancedQuad::getMass( ) 
@@ -587,8 +596,6 @@ const Matrix&  EnhancedQuad::getMass( )
 
 } 
 
-
-
 void  EnhancedQuad::zeroLoad( )
 {
   if (load != 0)
@@ -596,7 +603,6 @@ void  EnhancedQuad::zeroLoad( )
 
   return ;
 }
-
 
 int 
 EnhancedQuad::addLoad(ElementalLoad *theLoad, double loadFactor)
@@ -646,7 +652,6 @@ EnhancedQuad::addInertiaLoadToUnbalance(const Vector &accel)
   return 0;
 }
 
-
 //get residual
 const Vector&  EnhancedQuad::getResistingForce( ) 
 {
@@ -660,7 +665,6 @@ const Vector&  EnhancedQuad::getResistingForce( )
 
   return resid ;   
 }
-
 
 //get residual with inertia terms
 const Vector&  EnhancedQuad::getResistingForceIncInertia( )
@@ -687,7 +691,6 @@ const Vector&  EnhancedQuad::getResistingForceIncInertia( )
 
   return res;
 }
-
 
 //*********************************************************************
 //form inertia terms
@@ -732,7 +735,7 @@ void   EnhancedQuad::formInertiaTerms( int tangFlag )
     shape2d( sg[i], tg[i], xl, shp, xsj ) ;
     
     //volume element
-    dvol = wg[i] * xsj ;
+    dvol = wg[i] * xsj * thickness;
 
     //node loop to compute acceleration
     momentum.Zero( ) ;
@@ -909,10 +912,9 @@ void  EnhancedQuad::formResidAndTangent( int tang_flag )
     xsj[i] = det ;
 
     //volume element to also be saved
-    dvol[i] = wg[i] * det ;  
+    dvol[i] = wg[i] * det * thickness;  
 
   } // end for i gauss loop
-
 
   //-------------------------------------------------------------------
   //newton loop to solve for enhanced strain parameters
@@ -1057,7 +1059,6 @@ void  EnhancedQuad::formResidAndTangent( int tang_flag )
   //end enhanced strain parameters newton loop
   //-------------------------------------------------------------------
 
-
   //gauss loop 
   for ( i = 0; i < numberGauss; i++ ) {
 
@@ -1179,17 +1180,12 @@ void  EnhancedQuad::formResidAndTangent( int tang_flag )
   return ;
 }
 
-
-
-
-
 int  
 EnhancedQuad::update(void) 
 {
   return 0;
 }
   
-
 //************************************************************************
 void   
 EnhancedQuad::saveData(int gp, 
@@ -1211,7 +1207,6 @@ EnhancedQuad::saveData(int gp,
 
   return ;
 }
-
 
 //************************************************************************
 //recover stress and tangent data
@@ -1456,8 +1451,6 @@ void  EnhancedQuad::shape2d( double ss, double tt,
 
   return ;
 }
-	   
-//**********************************************************************
 
 const Matrix&
 EnhancedQuad::transpose( const Matrix &M ) 
@@ -1479,8 +1472,6 @@ EnhancedQuad::transpose( const Matrix &M )
 
   return Mtran ;
 }
-
-//**********************************************************************
 
 Response*
 EnhancedQuad::setResponse(const char **argv, int argc, 
@@ -1617,9 +1608,8 @@ EnhancedQuad::getResponse(int responseID, Information &eleInfo)
     return -1;
 }
 
-
-
-int  EnhancedQuad::sendSelf (int commitTag, Channel &theChannel)
+int
+EnhancedQuad::sendSelf (int commitTag, Channel &theChannel)
 {
   int res = 0;
   
@@ -1630,17 +1620,26 @@ int  EnhancedQuad::sendSelf (int commitTag, Channel &theChannel)
   
   // Quad packs its data into a Vector and sends this to theChannel
   // along with its dbTag and the commitTag passed in the arguments
+  static Vector data(6);
+  data(0) = this->getTag();
+  data(1) = thickness;
+
+  data(2) = alphaM;
+  data(3) = betaK;
+  data(4) = betaK0;
+  data(5) = betaKc;
+  
+  res += theChannel.sendVector(dataTag, commitTag, data);
+  if (res < 0) {
+    opserr << "WARNING EnhancedQuad::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+    return res;
+  }	      
+  
 
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(14);
-
-  idData(12) = this->getTag();
-  if (alphaM != 0 || betaK != 0 || betaK0 != 0 || betaKc != 0) 
-    idData(13) = 1;
-  else
-    idData(13) = 0;
+  static ID idData(12);
   
   int i;
   for (i = 0; i < 4; i++) {
@@ -1651,7 +1650,7 @@ int  EnhancedQuad::sendSelf (int commitTag, Channel &theChannel)
     if (matDbTag == 0) {
       matDbTag = theChannel.getDbTag();
 			if (matDbTag != 0)
-			  materialPointers[i]->setDbTag(matDbTag);
+                materialPointers[i]->setDbTag(matDbTag);
     }
     idData(i+4) = matDbTag;
   }
@@ -1667,26 +1666,6 @@ int  EnhancedQuad::sendSelf (int commitTag, Channel &theChannel)
     return res;
   }
 
-  res += theChannel.sendVector(dataTag, commitTag, alpha);
-  if (res < 0) {
-    opserr << "WARNING EnhancedQuad::sendSelf() - " << this->getTag() << " failed to send ID\n";
-    return res;
-  }
-
-  if (idData(13) == 1) {
-    // send damping coefficients
-    static Vector dData(5); // one larger than needed because of alpha
-    dData(0) = alphaM;
-    dData(1) = betaK;
-    dData(2) = betaK0;
-    dData(3) = betaKc;
-    if (theChannel.sendVector(dataTag, commitTag, dData) < 0) {
-      opserr << "EnahnacedQuad::sendSelf() - failed to send double data\n";
-      return -1;
-    }    
-  }
-
-
   // Finally, quad asks its material objects to send themselves
   for (i = 0; i < 4; i++) {
     res += materialPointers[i]->sendSelf(commitTag, theChannel);
@@ -1699,15 +1678,32 @@ int  EnhancedQuad::sendSelf (int commitTag, Channel &theChannel)
   return res;
 }
     
-int  EnhancedQuad::recvSelf (int commitTag, 
-		       Channel &theChannel, 
-		       FEM_ObjectBroker &theBroker)
+int
+EnhancedQuad::recvSelf (int commitTag, Channel &theChannel, 
+                        FEM_ObjectBroker &theBroker)
 {
   int res = 0;
   
   int dataTag = this->getDbTag();
 
-  static ID idData(14);
+  // Quad creates a Vector, receives the Vector and then sets the 
+  // internal data with the data in the Vector
+  static Vector data(6);
+  res += theChannel.recvVector(dataTag, commitTag, data);
+  if (res < 0) {
+    opserr << "WARNING EnhancedQuad::recvSelf() - failed to receive Vector\n";
+    return res;
+  }
+  
+  this->setTag((int)data(0));
+  thickness = data(1);
+
+  alphaM = data(2);
+  betaK = data(3);
+  betaK0 = data(4);
+  betaKc = data(5);
+
+  static ID idData(12);
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -1715,83 +1711,58 @@ int  EnhancedQuad::recvSelf (int commitTag,
     return res;
   }
 
-  this->setTag(idData(12));
-
   connectedExternalNodes(0) = idData(8);
   connectedExternalNodes(1) = idData(9);
   connectedExternalNodes(2) = idData(10);
   connectedExternalNodes(3) = idData(11);
   
-  res += theChannel.recvVector(dataTag, commitTag, alpha);
-  if (res < 0) {
-    opserr << "WARNING EnhancedQuad::sendSelf() - " << this->getTag() << " failed to send ID\n";
-    return res;
-  }
-
-  if (idData(13) == 1) {
-    // recv damping coefficients
-    static Vector dData(5);
-    if (theChannel.recvVector(dataTag, commitTag, dData) < 0) {
-      opserr << "EnahancesQuad::sendSelf() - failed to recv double data\n";
-      return -1;
-    }    
-    alphaM = dData(0);
-    betaK = dData(1);
-    betaK0 = dData(2);
-    betaKc = dData(3);
-  }
-
-  int i;
-
   if (materialPointers[0] == 0) {
-    for (i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
       int matClassTag = idData(i);
       int matDbTag = idData(i+4);
       // Allocate new material with the sent class tag
       materialPointers[i] = theBroker.getNewNDMaterial(matClassTag);
       if (materialPointers[i] == 0) {
-	opserr << "EnhancedQuad::recvSelf() - Broker could not create NDMaterial of class type " << matClassTag << endln;
-	return -1;
+	    opserr << "EnhancedQuad::recvSelf() - Broker could not create NDMaterial of class type " << matClassTag << endln;
+	    return -1;
       }
       // Now receive materials into the newly allocated space
       materialPointers[i]->setDbTag(matDbTag);
       res += materialPointers[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
-	opserr << "NLBeamColumn3d::recvSelf() - material " << i << "failed to recv itself\n";
-	return res;
+        opserr << "EnhancedQuad::recvSelf() - material " << i << "failed to recv itself\n";
+	    return res;
       }
     }
   }
 
   // materials exist , ensure materials of correct type and recvSelf on them
   else {
-    for (i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
       int matClassTag = idData(i);
       int matDbTag = idData(i+4);
       // Check that material is of the right type; if not,
       // delete it and create a new one of the right type
       if (materialPointers[i]->getClassTag() != matClassTag) {
-	delete materialPointers[i];
-	materialPointers[i] = theBroker.getNewNDMaterial(matClassTag);
-	if (materialPointers[i] == 0) {
-	  opserr << "EnhancedQuad::recvSelf() - Broker could not create NDMaterial of class type" << matClassTag << endln;
-	  exit(-1);
-	}
-      materialPointers[i]->setDbTag(matDbTag);
+	    delete materialPointers[i];
+        materialPointers[i] = theBroker.getNewNDMaterial(matClassTag);
+	    if (materialPointers[i] == 0) {
+          opserr << "EnhancedQuad::recvSelf() - material " << i << "failed to create\n";
+	      return -1;
+	    }
       }
       // Receive the material
-
+      materialPointers[i]->setDbTag(matDbTag);
       res += materialPointers[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
-	opserr << "EnhancedQuad::recvSelf() - material " << i << "failed to recv itself\n";
-	return res;
+        opserr << "EnhancedQuad::recvSelf() - material " << i << "failed to recv itself\n";
+	    return res;
       }
     }
   }
-
+  
   return res;
 }
-//**************************************************************************
 
 int
 EnhancedQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
@@ -1867,4 +1838,3 @@ EnhancedQuad::displaySelf(Renderer &theViewer, int displayMode, float fact, cons
 
     return error;
 }
-

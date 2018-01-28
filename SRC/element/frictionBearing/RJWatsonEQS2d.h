@@ -50,14 +50,13 @@ class RJWatsonEQS2d : public Element
 public:
     // constructors
     RJWatsonEQS2d(int tag, int Nd1, int Nd2,
-        FrictionModel &theFrnMdl, double kInit, double k2,
+        FrictionModel &theFrnMdl, double kInit,
         UniaxialMaterial **theMaterials,
         const Vector y = 0, const Vector x = 0,
-        double k3 = 0.0, double mu = 2.0,
         double shearDistI = 1.0,
         int addRayleigh = 0, double mass = 0.0,
         int maxIter = 25, double tol = 1E-12,
-        double kFactUplift = 1E-6);
+        double kFactUplift = 1E-12);
     RJWatsonEQS2d();
     
     // destructor
@@ -106,19 +105,15 @@ protected:
 private:
     // private methods
     void setUp();
-    double sgn(double x);
     
     // private attributes - a copy for each object of the class
     ID connectedExternalNodes;          // contains the tags of the end nodes
     Node *theNodes[2];                  // array of nodes
     FrictionModel *theFrnMdl;           // pointer to friction model
-    UniaxialMaterial *theMaterials[2];  // array of uniaxial materials
+    UniaxialMaterial *theMaterials[3];  // array of uniaxial materials
     
     // parameters
     double k0;          // initial stiffness of hysteretic component
-    double k2;          // stiffness of elastic component
-    double k3;          // stiffness of nonlinear elastic component
-    double mu;          // exponent of nonlinear elastic component
     Vector x;           // local x direction
     Vector y;           // local y direction
     double shearDistI;  // shear distance from node I as fraction of length

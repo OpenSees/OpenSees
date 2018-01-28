@@ -45,6 +45,7 @@ Quad = "quad"
 #Quad = "bbarQuad"
 #Quad = "enhancedQuad"
 
+thick = 2.0;
 nx = 10; # NOTE: nx MUST BE EVEN FOR THIS EXAMPLE
 ny = 4
 bn = nx + 1 
@@ -52,10 +53,10 @@ l1 = int(nx/2 + 1)
 l2 = int(l1 + ny*(nx+1))
 
 # now create the nodes and elements using the block2D command
-if (Quad == "quad" or Quad == "SSPquad"):
+if (Quad == "quad" or Quad == "SSPquad" or Quad == "enhancedQuad"):
     #          numX numY startNode startEle eleType eleArgs? coords?
     ops.block2D(nx, ny, 1, 1,
-                Quad, 1.0, "PlaneStrain", 1,
+                Quad, thick, "PlaneStrain", 1,
                 1,  0.0,  0.0,
                 2, 40.0,  0.0,
                 3, 40.0, 10.0,
@@ -63,15 +64,7 @@ if (Quad == "quad" or Quad == "SSPquad"):
 elif (Quad == "bbarQuad"):
     #          numX numY startNode startEle eleType eleArgs? coords?
     ops.block2D(nx, ny, 1, 1,
-                Quad, 1,
-                1,  0.0,  0.0,
-                2, 40.0,  0.0,
-                3, 40.0, 10.0,
-                4,  0.0, 10.0)
-elif (Quad == "enhancedQuad"):
-    #          numX numY startNode startEle eleType eleArgs? coords?
-    ops.block2D(nx, ny, 1, 1,
-                Quad, "PlaneStrain", 1,
+                Quad, 1.0, 1,
                 1,  0.0,  0.0,
                 2, 40.0,  0.0,
                 3, 40.0, 10.0,

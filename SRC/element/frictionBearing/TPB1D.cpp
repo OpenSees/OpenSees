@@ -580,34 +580,57 @@ TPB1D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 void
 TPB1D::Print(OPS_Stream &s, int flag)
 {
-    // compute the strain and axial force in the member
-    if (flag == 0) { // print everything
-	s << "Element: " << this->getTag(); 
-	s << " type: TPB1D  iNode: " << connectedExternalNodes(0);
-	s << " jNode: " << connectedExternalNodes(1) << endln;
-	s << " direction: " << direction << "\n";
-	opserr << " mu1: " << mu[0] << endln;
-	opserr << " mu2: " << mu[1]<< endln;
-	opserr << " mu3: " << mu[2]<< endln;
-	
-	opserr << " R1: " << R[0]<< endln;
-	opserr << " R2: " << R[1]<< endln;
-	opserr << " R3: " << R[2]<< endln;
-
-	opserr << " h1: " << h[0]<< endln;
-	opserr << " h2: " << h[1]<< endln;
-	opserr << " h3: " << h[2]<< endln;
-	
-	opserr << " D1: " << D[0]<< endln;
-	opserr << " D2: " << D[1]<< endln;
-	opserr << " D3: " << D[2]<< endln;
-
-	opserr << " d1: " << d[0]<< endln;
-	opserr << " d2: " << d[1]<< endln;
-	opserr << " d3: " << d[2]<< endln;
-
-	s << "\tMaterial: \n";
-	s << *(theMaterial);
+    if (flag == OPS_PRINT_CURRENTSTATE) {
+        s << "Element: " << this->getTag();
+        s << " type: TPB1D  iNode: " << connectedExternalNodes(0);
+        s << " jNode: " << connectedExternalNodes(1) << endln;
+        s << " direction: " << direction << "\n";
+        opserr << " mu1: " << mu[0] << endln;
+        opserr << " mu2: " << mu[1] << endln;
+        opserr << " mu3: " << mu[2] << endln;
+        
+        opserr << " R1: " << R[0] << endln;
+        opserr << " R2: " << R[1] << endln;
+        opserr << " R3: " << R[2] << endln;
+        
+        opserr << " h1: " << h[0] << endln;
+        opserr << " h2: " << h[1] << endln;
+        opserr << " h3: " << h[2] << endln;
+        
+        opserr << " D1: " << D[0] << endln;
+        opserr << " D2: " << D[1] << endln;
+        opserr << " D3: " << D[2] << endln;
+        
+        opserr << " d1: " << d[0] << endln;
+        opserr << " d2: " << d[1] << endln;
+        opserr << " d3: " << d[2] << endln;
+        
+        s << "\tMaterial: \n";
+        s << *(theMaterial);
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"TPB1D\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
+        s << "\"direction\": " << direction << ", ";
+        s << "\"mu1\": " << mu[0] << ", ";
+        s << "\"mu2\": " << mu[1] << ", ";
+        s << "\"mu3\": " << mu[2] << ", ";
+        s << "\"R1\": " << R[0] << ", ";
+        s << "\"R2\": " << R[1] << ", ";
+        s << "\"R3\": " << R[2] << ", ";
+        s << "\"h1\": " << h[0] << ", ";
+        s << "\"h2\": " << h[1] << ", ";
+        s << "\"h3\": " << h[2] << ", ";
+        s << "\"D1\": " << D[0] << ", ";
+        s << "\"D2\": " << D[1] << ", ";
+        s << "\"D3\": " << D[2] << ", ";
+        s << "\"d1\": " << d[0] << ", ";
+        s << "\"d2\": " << d[1] << ", ";
+        s << "\"d3\": " << d[2] << ", ";
+        s << "\"material\": \"" << theMaterial->getTag() << "\"}";
     }
 }
 

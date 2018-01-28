@@ -794,9 +794,9 @@ CoupledZeroLength::Print(OPS_Stream &s, int flag)
 
     if (flag == OPS_PRINT_PRINTMODEL_JSON) {
         s << "\t\t\t{";
-        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"CoupledZeroLength\", ";
-        s << "\"nodes\": [\"" << connectedExternalNodes(0) << "\", \"" << connectedExternalNodes(1) << "\"], ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
         s << "\"material\": \"" << theMaterial->getTag() << "\", ";
         s << "\"dof\": [";
         if (dirn1 == 0)

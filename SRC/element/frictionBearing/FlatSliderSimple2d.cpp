@@ -909,7 +909,7 @@ int FlatSliderSimple2d::displaySelf(Renderer &theViewer,
 
 void FlatSliderSimple2d::Print(OPS_Stream &s, int flag)
 {
-    if (flag == 0)  {
+    if (flag == OPS_PRINT_CURRENTSTATE) {
         // print everything
         s << "Element: " << this->getTag(); 
         s << "  type: FlatSliderSimple2d  iNode: " << connectedExternalNodes(0);
@@ -923,8 +923,23 @@ void FlatSliderSimple2d::Print(OPS_Stream &s, int flag)
         s << "  maxIter: " << maxIter << "  tol: " << tol << endln;
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
-    } else if (flag == 1)  {
-        // does nothing
+    }
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"FlatSliderSimple2d\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
+        s << "\"frictionModel\": \"" << theFrnMdl->getTag() << "\", ";
+        s << "\"kInit\": " << k0 << ", ";
+        s << "\"materials\": [\"";
+        s << theMaterials[0]->getTag() << "\", \"";
+        s << theMaterials[1]->getTag() << "\"], ";
+        s << "\"shearDistI\": " << shearDistI << ", ";
+        s << "\"addRayleigh\": " << addRayleigh << ", ";
+        s << "\"mass\": " << mass << ", ";
+        s << "\"maxIter\": " << maxIter << ", ";
+        s << "\"tol\": " << tol << "}";
     }
 }
 
