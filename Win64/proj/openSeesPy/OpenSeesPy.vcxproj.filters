@@ -43,6 +43,9 @@
     <ClCompile Include="..\..\..\SRC\interpreter\PythonModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesFrictionModelCommands.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\classTags.h">

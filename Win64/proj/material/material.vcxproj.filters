@@ -1127,6 +1127,15 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\DamperMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.cpp">
+      <Filter>nD\j2Plasticity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2107,6 +2116,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BoucWenOriginal.h">
       <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\DamperMaterial.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.h">
+      <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.h">
+      <Filter>nD\j2Plasticity</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

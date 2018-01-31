@@ -14,7 +14,7 @@
     <ProjectGuid>{CB4F32EF-D915-9B5C-EF80-28840A6A89D6}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -126,7 +126,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\Elliptical2.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\FiberSection3dThermal.cpp" />
@@ -141,6 +143,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\BarSlipMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteCM.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteECThermal.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\DamperMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticMaterialThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.cpp" />
@@ -471,7 +474,9 @@
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.h" />
     <ClInclude Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.h" />
     <ClInclude Include="..\..\..\SRC\material\section\Elliptical2.h" />
     <ClInclude Include="..\..\..\SRC\material\section\FiberSection3dThermal.h" />
@@ -486,6 +491,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\BarSlipMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ConcreteCM.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ConcreteECThermal.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\DamperMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Dodd_Restrepo.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ElasticMaterialThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.h" />
