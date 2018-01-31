@@ -67,7 +67,11 @@ terms specified in this license.
 **          Pacific Earthquake Engineering Research Center            **
 ** ****************************************************************** */
 
+
 extern "C" {
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -80,7 +84,7 @@ extern "C" {
 #endif
 }
 #ifdef __WIN32__
-#include <tkWin.h>
+#   include <tkWin.h>
 #endif
 
 #include <OPS_Globals.h>

@@ -64,7 +64,6 @@ terms specified in this license.
 ** ****************************************************************** */
 
 
-
 #include <string.h>
 
 #ifndef _WIN32

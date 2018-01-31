@@ -41,7 +41,6 @@
 
 extern "C" {
 #include <tcl.h>
-//#include <tk.h>
 }
 
 #include "commands.h"
