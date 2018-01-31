@@ -53,7 +53,7 @@ l1 = int(nx/2 + 1)
 l2 = int(l1 + ny*(nx+1))
 
 # now create the nodes and elements using the block2D command
-if (Quad == "quad" or Quad == "SSPquad" or Quad == "enhancedQuad"):
+if (Quad == "quad" or Quad == "enhancedQuad"):
     #          numX numY startNode startEle eleType eleArgs? coords?
     ops.block2D(nx, ny, 1, 1,
                 Quad, thick, "PlaneStrain", 1,
@@ -61,10 +61,18 @@ if (Quad == "quad" or Quad == "SSPquad" or Quad == "enhancedQuad"):
                 2, 40.0,  0.0,
                 3, 40.0, 10.0,
                 4,  0.0, 10.0)
+elif (Quad == "SSPquad"):
+    #          numX numY startNode startEle eleType eleArgs? coords?
+    ops.block2D(nx, ny, 1, 1,
+                Quad, 1, "PlaneStrain", thick,
+                1,  0.0,  0.0,
+                2, 40.0,  0.0,
+                3, 40.0, 10.0,
+                4,  0.0, 10.0)
 elif (Quad == "bbarQuad"):
     #          numX numY startNode startEle eleType eleArgs? coords?
     ops.block2D(nx, ny, 1, 1,
-                Quad, 1.0, 1,
+                Quad, thick, 1,
                 1,  0.0,  0.0,
                 2, 40.0,  0.0,
                 3, 40.0, 10.0,

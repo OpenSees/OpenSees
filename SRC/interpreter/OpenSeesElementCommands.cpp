@@ -613,20 +613,20 @@ int OPS_doBlock2D()
 	
     } else if (strcmp(type, "SSPquad") == 0 || strcmp(type, "SSPQuad") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 3) {
-	    opserr<<"WARNING: want - thick, type, matTag\n";
+	    opserr<<"WARNING: want - matTag, type, thick\n";
 	    return -1;
 	}
 	int numdata = 1;
-	if (OPS_GetDoubleInput(&numdata, &thick) < 0) {
-	    opserr << "WARNING invalid thick\n";
-	    return -1;
-	}
+    if (OPS_GetIntInput(&numdata, &matTag) < 0) {
+        opserr << "WARNING invalid matTag\n";
+        return -1;
+    }
 	subtype = OPS_GetString();
-	if (OPS_GetIntInput(&numdata, &matTag) < 0) {
-	    opserr << "WARNING invalid matTag\n";
-	    return -1;
-	}
-	cArg = 9;
+    if (OPS_GetDoubleInput(&numdata, &thick) < 0) {
+        opserr << "WARNING invalid thick\n";
+        return -1;
+    }
+    cArg = 9;
 
 	
     } else {

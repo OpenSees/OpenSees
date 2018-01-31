@@ -59,64 +59,60 @@ OPS_SSPquad(void)
     	num_SSPquad++;
     	opserr << "SSPquad element - Written: C.McGann, P.Arduino, P.Mackenzie-Helnwein, U.Washington\n";
   	}
-    
+
   	// Pointer to an element that will be returned
   	Element *theElement = 0;
-    
-  	if (OPS_GetNumRemainingInputArgs() < 8) {
-    	opserr << "Invalid #args, want: element SSPquad eleTag? iNode? jNode? kNode? lNode? thick? type? matTag? <b1? b2?>?\n";
+
+  	int numRemainingInputArgs = OPS_GetNumRemainingInputArgs();
+
+  	if (numRemainingInputArgs < 8) {
+    	opserr << "Invalid #args, want: element SSPquad eleTag? iNode? jNode? kNode? lNode? matTag? type? thickness? <b1? b2?>?\n";
 		return 0;
   	}
-    
-  	int iData[5];
-    double thick = 1.0;
+
+  	int iData[6];
   	const char *theType;
-    int matTag;
-    double b[2] = { 0.0,0.0 };
-    
-  	int numData = 5;
+    double dData[3] = { 1.0,0.0,0.0 };
+
+  	int numData = 6;
   	if (OPS_GetIntInput(&numData, iData) != 0) {
     	opserr << "WARNING invalid integer data: element SSPquad " << iData[0] << endln;
 		return 0;
   	}
-    
-    numData = 1;
-    if (OPS_GetDoubleInput(&numData, &thick) != 0) {
-        opserr << "WARNING invalid thickness: element SSPquad " << iData[0] << endln;
-        return 0;
-    }
-    
-    theType = OPS_GetString();
-    
-    if (OPS_GetIntInput(&numData, &matTag) != 0) {
-        opserr << "WARNING invalid matTag: element SSPquad " << iData[0] << endln;
-        return 0;
-    }
-    
-  	NDMaterial *theMaterial = OPS_getNDMaterial(matTag);
+
+	theType = OPS_GetString();
+
+	numData = 1;
+	if (OPS_GetDoubleInput(&numData, dData) != 0) {
+		opserr << "WARNING invalid thickness data: element SSPquad " << iData[0] << endln;
+		return 0;
+	}
+
+  	int matID = iData[5];
+  	NDMaterial *theMaterial = OPS_getNDMaterial(matID);
   	if (theMaterial == 0) {
     	opserr << "WARNING element SSPquad " << iData[0] << endln;
-		opserr << " Material: " << matTag << "not found\n";
+		opserr << " Material: " << matID << "not found\n";
 		return 0;
   	}
-    
-	if (OPS_GetNumRemainingInputArgs() > 2) {
+
+	if (numRemainingInputArgs == 10) {
     	numData = 2;
-    	if (OPS_GetDoubleInput(&numData, b) != 0) {
-      		opserr << "WARNING invalid b data: element SSPquad " << iData[0] << endln;
+    	if (OPS_GetDoubleInput(&numData, &dData[1]) != 0) {
+      		opserr << "WARNING invalid optional data: element SSPquad " << iData[0] << endln;
 	  		return 0;
     	}
   	}
-    
+
   	// parsing was successful, allocate the element
   	theElement = new SSPquad(iData[0], iData[1], iData[2], iData[3], iData[4],
-                                 *theMaterial, theType, thick, b[0], b[1]);
-    
+                                 *theMaterial, theType, dData[0], dData[1], dData[2]);
+
   	if (theElement == 0) {
     	opserr << "WARNING could not create element of type SSPquad\n";
 		return 0;
   	}
-    
+
   	return theElement;
 }
 

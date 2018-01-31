@@ -19,16 +19,16 @@ set Quad  quad
 
 set thick 2.0
 if {$Quad == "quad" } {
-    set eleArgs "$thick PlaneStrain  1"
+    set eleArgs "$thick PlaneStrain 1"
 } 
 if {$Quad == "SSPquad" } {
-    set eleArgs "$thick PlaneStrain  1"
+    set eleArgs "1 PlaneStrain $thick"
 } 
 if {$Quad == "bbarQuad" } {
     set eleArgs "$thick 1"
 }
 if {$Quad == "enhancedQuad" } {
-    set eleArgs "$thick PlaneStrain  1"
+    set eleArgs "$thick PlaneStrain 1"
 } 
 
 set nx 10; # NOTE: nx MUST BE EVEN FOR THIS EXAMPLE
