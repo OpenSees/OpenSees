@@ -985,8 +985,12 @@ SSPquadUP::setParameter(const char **argv, int argc, Parameter &param)
         return param.addObject(10, this);     
     } else if (strcmp(argv[0],"pressureLeftSide") == 0) {
         return param.addObject(11, this);
-	} else if (strcmp(argv[0],"pressureRightSide") == 0) {
+    } else if (strcmp(argv[0],"pressureRightSide") == 0) {
         return param.addObject(12, this);
+    } else if (strcmp(argv[0],"b1") == 0) {
+      return param.addObject(13,this);
+    } else if (strcmp(argv[0],"b2") == 0) {
+      return param.addObject(14,this);
     //LM change
     } else {
         // default is to call setParameter in the material
@@ -1039,6 +1043,12 @@ SSPquadUP::updateParameter(int parameterID, Information &info)
         pressureRightSide = info.theDouble;
         this->setPressureLoadAtNodes();
         return 0;		
+    } else if (parameterID == 13) {
+      b[0] = info.theDouble;
+      return 0;
+    } else if (parameterID == 14) {
+      b[1] = info.theDouble;
+      return 0;
 	//LM change
 	} else {
         // update the material parameter
