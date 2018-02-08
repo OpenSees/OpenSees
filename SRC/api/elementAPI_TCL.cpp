@@ -183,7 +183,7 @@ int OPS_GetIntInput(int *numData, int*data)
 
   for (int i=0; i<size; i++) {
     if ((currentArg >= maxArg) || (Tcl_GetInt(theInterp, currentArgv[currentArg], &data[i]) != TCL_OK)) {    
-      opserr << "OPS_GetIntInput -- error reading " << currentArg << endln;
+      //opserr << "OPS_GetIntInput -- error reading " << currentArg << endln;
       return -1;
     }
     else
@@ -199,7 +199,7 @@ int OPS_GetDoubleInput(int *numData, double *data)
   int size = *numData;
   for (int i=0; i<size; i++) {
     if ((currentArg >= maxArg) || (Tcl_GetDouble(theInterp, currentArgv[currentArg], &data[i]) != TCL_OK)) {    
-      opserr << "OPS_GetDoubleInput -- error reading " << currentArg << endln;
+      //opserr << "OPS_GetDoubleInput -- error reading " << currentArg << endln;
       return -1;
     }
     else
