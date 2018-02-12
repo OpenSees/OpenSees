@@ -77,7 +77,7 @@ Shadow::Shadow(int actorType,
 {
     // start the remote actor process running
   theChannel = theMachineBroker->startActor(actorType, compDemand);
-  if (theChannel < 0) {
+  if (theChannel == 0) {
     opserr << "Shadow::Shadow - could not start remote actor\n";
     opserr << " using program " << actorType << endln;
     exit(-1);
