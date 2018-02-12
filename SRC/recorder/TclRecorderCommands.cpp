@@ -2001,19 +2001,27 @@ TclAddRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
   TclCreateRecorder(clientData, interp, argc, argv, theDomain, &theRecorder);
   
   if (theRecorder == 0) {
-      sprintf(interp->result,"-1");
-      return TCL_ERROR;
+
+    char buffer[] = "-1";
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+    //sprintf(interp->result,"-1");
+    return TCL_ERROR;
   }
 
   if ((theDomain.addRecorder(*theRecorder)) < 0) {
     opserr << "WARNING could not add to domain - recorder " << argv[1]<< endln;
     delete theRecorder;
-    sprintf(interp->result,"-1");
+    char buffer[] = "-1";
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+    //    sprintf(interp->result,"-1");
     return TCL_ERROR;
   } 
   
   int recorderTag = theRecorder->getTag();
-  sprintf(interp->result,"%d",recorderTag);
+  char buffer[30];
+  sprintf(buffer,"%d",recorderTag);
+  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+  //  sprintf(interp->result,"%d",recorderTag);
   
   return TCL_OK;
 }
@@ -2029,7 +2037,9 @@ TclAddAlgorithmRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
   TclCreateRecorder(clientData, interp, argc, argv, theDomain, &theRecorder);
   
   if (theRecorder == 0) {
-    sprintf(interp->result,"-1");
+    char buffer[] = "-1";
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+    //    sprintf(interp->result,"-1");
     return TCL_ERROR;
   } 
 
@@ -2045,7 +2055,10 @@ TclAddAlgorithmRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   int recorderTag = theRecorder->getTag();
-  sprintf(interp->result,"%d",recorderTag);    
+  char buffer[30];
+  sprintf(buffer,"%d",recorderTag);    
+  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
   return TCL_OK;
 }
 
