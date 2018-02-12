@@ -213,6 +213,8 @@ extern void *OPS_NewmarkHSIncrLimit(void);
 extern void *OPS_NewmarkHSIncrReduct(void);
 extern void *OPS_WilsonTheta(void);
 
+
+
 #include <Newmark.h>
 #include <TRBDF2.h>
 #include <TRBDF3.h>
@@ -1538,13 +1540,16 @@ getTime(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   // get the display format
   char format[10];
   if (argc == 1) {
-      strcpy(format,"%f");
+    //      strcpy(format,"%f");
+    sprintf(format,"%f",time);
   } else if (argc == 2) {
-      strcpy(format,argv[1]);
+    //      strcpy(format,argv[1]);
+    sprintf(format,argv[1],time);    
   }
   
   // now we copy the value to the tcl string that is returned
-  sprintf(interp->result,format,time);
+  //  sprintf(interp->result,format,time);
+  Tcl_SetResult(interp, format, TCL_VOLATILE);
   return TCL_OK;
 }
 
@@ -1570,7 +1575,12 @@ getLoadFactor(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 
   double factor = thePattern->getLoadFactor();
 
-  sprintf(interp->result,"%f",factor);
+  //  sprintf(interp->result,"%f",factor);
+
+  char buffer [40];
+  sprintf(buffer,"%f", factor);
+  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
   return TCL_OK;
 }
 
@@ -1605,7 +1615,7 @@ sensLambda(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv 
     return TCL_ERROR;
   }
   
-  IncrementalIntegrator *theIntegrator;
+  IncrementalIntegrator *theIntegrator = 0;
   
   if (theStaticAnalysis != 0 && theStaticIntegrator != 0) {
     theIntegrator = theStaticIntegrator;
@@ -1829,7 +1839,11 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     opserr << "OpenSees > analyze failed, returned: " << result << " error flag\n";
   }
 
-  sprintf(interp->result,"%d",result);    
+  char buffer [10];
+  sprintf(buffer,"%d", result);
+  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+  
+  //  sprintf(interp->result,"%d",result);    
 
   return TCL_OK;
 
@@ -2179,7 +2193,7 @@ printB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   FileStream outputFile;
   OPS_Stream *output = &opserr;
-  bool done = false;
+  //  bool done = false;
 
   int currentArg = 1;
 
@@ -3137,6 +3151,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     int factorOnce=0;
     int printTime = 0;
     int count = 2;
+
     while (count < argc) {
       if ((strcmp(argv[count],"-lValueFact") == 0) || (strcmp(argv[count],"-lvalueFact") == 0) || (strcmp(argv[count],"-LVALUE") == 0)) {
 	if (Tcl_GetInt(interp, argv[count+1], &factLVALUE) != TCL_OK)
@@ -3298,7 +3313,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     // try existing loaded packages
     ExternalClassFunction  *solverCommands = theExternalSolverCommands;
     bool found = false;
-    int result = TCL_ERROR;
+    //    int result = TCL_ERROR;
     while (solverCommands != NULL && found == false) {
 
       if (strcmp(argv[1], solverCommands->funcName) == 0) {
@@ -3635,6 +3650,7 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
     int incrementTangent = CURRENT_TANGENT;
     int iterateTangent = CURRENT_TANGENT;
     int maxDim = 3;
+
     for (int i = 2; i < argc; i++) {
       if (strcmp(argv[i],"-iterate") == 0 && i+1 < argc) {
 	i++;
@@ -4255,7 +4271,8 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;	
       if (argc==6 && Tcl_GetDouble(interp, argv[5], &u_ref) != TCL_OK)	
 	return TCL_ERROR;	
-	switch(argc)
+
+      switch(argc)
 	{
 		case 3:
 		    	theStaticIntegrator = new HSConstraint(arcLength);       
@@ -4954,7 +4971,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
     // try existing loaded packages
     ExternalClassFunction  *integratorCommands = theExternalTransientIntegratorCommands;
     bool found = false;
-    int result = TCL_ERROR;
+    //    int result = TCL_ERROR;
     while (integratorCommands != NULL && found == false) {
 
       if (strcmp(argv[2], integratorCommands->funcName) == 0) {
@@ -5812,7 +5829,11 @@ nodeDisp(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       double value = (*nodalResponse)(dof);
       
       // now we copy the value to the tcl string that is returned
-      sprintf(interp->result,"%35.20f ",value);
+
+      char buffer [40];
+      sprintf(buffer,"%35.20f", value);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+      //  sprintf(interp->result,"%35.20f ",value);
     } else {
       char buffer [40];
       for (int i=0; i<size; i++) {
@@ -5867,7 +5888,11 @@ nodeReaction(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
       double value = (*nodalResponse)(dof);
       
       // now we copy the value to the tcl string that is returned
-      sprintf(interp->result,"%35.20f ",value);
+
+      char buffer [40];
+      sprintf(buffer,"35.20%f", value);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+      //      sprintf(interp->result,"%35.20f ",value);
     } else {
       char buffer [40];
       for (int i=0; i<size; i++) {
@@ -5922,7 +5947,11 @@ nodeUnbalance(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
       double value = (*nodalResponse)(dof);
       
       // now we copy the value to the tcl string that is returned
-      sprintf(interp->result,"%35.20f ",value);
+      //      sprintf(interp->result,"%35.20f ",value);
+
+      char buffer [40];
+      sprintf(buffer,"%35.20f", value);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     } else {
       char buffer [40];
       for (int i=0; i<size; i++) {
@@ -5984,8 +6013,12 @@ nodeEigenvector(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **
 
       double value = theEigenvectors(dof, eigenvector);      
       // now we copy the value to the tcl string that is returned
-      sprintf(interp->result,"%35.20f ",value);
+      //      sprintf(interp->result,"%35.20f ",value);
+      char buffer [40];
+      sprintf(buffer,"%35.20f", value);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     } else {
+
       char buffer [40];
       for (int i=0; i<size; i++) {
 	double value = theEigenvectors(i, eigenvector);      
@@ -6050,8 +6083,12 @@ eleForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	double value = (*force)(dof);
 	
 	// now we copy the value to the tcl string that is returned
-	sprintf(interp->result,"%35.20f",value);
-	
+	//	sprintf(interp->result,"%35.20f",value);
+
+	char buffer [40];
+	sprintf(buffer,"35.20%f", value);
+	Tcl_SetResult(interp, buffer, TCL_VOLATILE);	
+
       } else {
 	char buffer[40];
 	for (int i=0; i<size; i++) {
@@ -6115,7 +6152,11 @@ localForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	double value = (*force)(dof);
 	
 	// now we copy the value to the tcl string that is returned
-	sprintf(interp->result,"%35.20f",value);
+	//	sprintf(interp->result,"%35.20f",value);
+
+	char buffer [40];
+	sprintf(buffer,"%35.20f", value);
+	Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 	
       } else {
 	char buffer[40];
@@ -6169,7 +6210,10 @@ eleDynamicalForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char 
       double value = force(dof);
       
       // now we copy the value to the tcl string that is returned
-      sprintf(interp->result,"%35.20f",value);
+      //      sprintf(interp->result,"%35.20f",value);
+      char buffer [40];
+      sprintf(buffer,"%35.20f", value);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
     } else {
       char buffer[40];
@@ -6327,7 +6371,11 @@ nodeCoord(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   }
   else if (dim < size) {
     double value = coords(dim); // -1 for OpenSees vs C indexing
-    sprintf(interp->result,"%35.20f",value);
+    //    sprintf(interp->result,"%35.20f",value);
+    char buffer [40];
+    sprintf(buffer,"%35.20f", value);
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
     return TCL_OK;
   }
 
@@ -6562,7 +6610,11 @@ nodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       double value = (*nodalResponse)(dof);
       
       // now we copy the value to the tcl string that is returned
-      sprintf(interp->result,"%35.20f",value);
+      //      sprintf(interp->result,"%35.20f",value);
+      char buffer [40];
+      sprintf(buffer,"%35.20f", value);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
     } else {
 
       char buffer[40];
@@ -6770,7 +6822,11 @@ nodeAccel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       double value = (*nodalResponse)(dof);
     
       // now we copy the value to the tcl string that is returned
-      sprintf(interp->result,"%35.20f",value);
+      //sprintf(interp->result,"%35.20f",value);
+      char buffer [40];
+      sprintf(buffer,"%35.20f", value);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
     } else {
       char buffer[40];
       for (int i=0; i<size; i++) {
@@ -6816,8 +6872,11 @@ nodeResponse(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     double value = (*nodalResponse)(dof);
     
     // now we copy the value to the tcl string that is returned
-    sprintf(interp->result,"%35.20f",value);
-	
+    //    sprintf(interp->result,"%35.20f",value);
+    char buffer [40];
+    sprintf(buffer,"%35.20f", value);
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);	
+
     return TCL_OK;
 }
 
@@ -6853,106 +6912,105 @@ sensNodeDisp(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
     // make sure at least one other argument to contain type of system
     if (argc < 4) {
-	interp->result = "WARNING want - sensNodeDisp nodeTag? dof? paramTag?\n";
-	return TCL_ERROR;
-   }    
-
-    int tag, dof, paramTag;
-
-    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-	opserr << "WARNING nodeDisp nodeTag? dof? paramTag?- could not read nodeTag? ";
-	return TCL_ERROR;	        
+      opserr << "WARNING want - sensNodeDisp nodeTag? dof? paramTag?\n";
+      return TCL_ERROR;
     }    
-    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
-	opserr << "WARNING nodeDisp nodeTag? dof? paramTag?- could not read dof? ";
-	return TCL_ERROR;	        
-    }        
-    if (Tcl_GetInt(interp, argv[3], &paramTag) != TCL_OK) {
-	opserr << "WARNING nodeDisp paramTag? dof? paramTag?- could not read paramTag? ";
-	return TCL_ERROR;	        
-    }        
-    
-    Node *theNode = theDomain.getNode(tag);
-    if (theNode == 0) {
-      opserr << "sensNodeDisp: node " << tag << " not found" << endln;
-      return TCL_ERROR;
-    }
 
-    Parameter *theParam = theDomain.getParameter(paramTag);
-    if (theParam == 0) {
-      opserr << "sensNodeDisp: parameter " << paramTag << " not found" << endln;
-      return TCL_ERROR;
-    }
+     int tag, dof, paramTag;
 
-    int gradIndex = theParam->getGradIndex();
+     if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+	 opserr << "WARNING nodeDisp nodeTag? dof? paramTag?- could not read nodeTag? ";
+	 return TCL_ERROR;	        
+     }    
+     if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+	 opserr << "WARNING nodeDisp nodeTag? dof? paramTag?- could not read dof? ";
+	 return TCL_ERROR;	        
+     }        
+     if (Tcl_GetInt(interp, argv[3], &paramTag) != TCL_OK) {
+	 opserr << "WARNING nodeDisp paramTag? dof? paramTag?- could not read paramTag? ";
+	 return TCL_ERROR;	        
+     }        
 
-    double value = theNode->getDispSensitivity(dof,gradIndex);
-    
-    char buffer[40];
-    sprintf(buffer,"%35.20f",value);
+     Node *theNode = theDomain.getNode(tag);
+     if (theNode == 0) {
+       opserr << "sensNodeDisp: node " << tag << " not found" << endln;
+       return TCL_ERROR;
+     }
 
-    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+     Parameter *theParam = theDomain.getParameter(paramTag);
+     if (theParam == 0) {
+       opserr << "sensNodeDisp: parameter " << paramTag << " not found" << endln;
+       return TCL_ERROR;
+     }
 
-    return TCL_OK;
-}
+     int gradIndex = theParam->getGradIndex();
 
-int 
-sensNodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
-{
+     double value = theNode->getDispSensitivity(dof,gradIndex);
 
-    // make sure at least one other argument to contain type of system
-    if (argc < 4) {
-	interp->result = "WARNING want - sensNodeVel nodeTag? dof? paramTag?\n";
-	return TCL_ERROR;
-   }    
+     char buffer[40];
+     sprintf(buffer,"%35.20f",value);
+     Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 
-    int tag, dof, paramTag;
+     return TCL_OK;
+ }
 
-    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-	opserr << "WARNING sensNodeVel nodeTag? dof? paramTag? - could not read nodeTag? \n";
-	return TCL_ERROR;	        
+ int 
+ sensNodeVel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+ {
+
+     // make sure at least one other argument to contain type of system
+     if (argc < 4) {
+       opserr << "WARNING want - sensNodeVel nodeTag? dof? paramTag?\n";
+       return TCL_ERROR;
     }    
-    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
-	opserr << "WARNING sensNodeVel nodeTag? dof? paramTag? - could not read dof? \n";
-	return TCL_ERROR;	        
-    }        
-    if (Tcl_GetInt(interp, argv[3], &paramTag) != TCL_OK) {
-	opserr << "WARNING sensNodeVel nodeTag? dof? paramTag? - could not read paramTag? \n";
-	return TCL_ERROR;	        
-    }        
-    
-    Node *theNode = theDomain.getNode(tag);
-    if (theNode == 0) {
-      opserr << "sensNodeVel: node " << tag << " not found" << endln;
-      return TCL_ERROR;
-    }
 
-    Parameter *theParam = theDomain.getParameter(paramTag);
-    if (theParam == 0) {
-      opserr << "sensNodeVel: parameter " << paramTag << " not found" << endln;
-      return TCL_ERROR;
-    }
+     int tag, dof, paramTag;
 
-    int gradIndex = theParam->getGradIndex();
-    
-    double value = theNode->getVelSensitivity(dof,gradIndex);
-    
-    char buffer[40];
-    sprintf(buffer,"%35.20f",value);
+     if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+	 opserr << "WARNING sensNodeVel nodeTag? dof? paramTag? - could not read nodeTag? \n";
+	 return TCL_ERROR;	        
+     }    
+     if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+	 opserr << "WARNING sensNodeVel nodeTag? dof? paramTag? - could not read dof? \n";
+	 return TCL_ERROR;	        
+     }        
+     if (Tcl_GetInt(interp, argv[3], &paramTag) != TCL_OK) {
+	 opserr << "WARNING sensNodeVel nodeTag? dof? paramTag? - could not read paramTag? \n";
+	 return TCL_ERROR;	        
+     }        
 
-    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+     Node *theNode = theDomain.getNode(tag);
+     if (theNode == 0) {
+       opserr << "sensNodeVel: node " << tag << " not found" << endln;
+       return TCL_ERROR;
+     }
 
-    return TCL_OK;
-}
+     Parameter *theParam = theDomain.getParameter(paramTag);
+     if (theParam == 0) {
+       opserr << "sensNodeVel: parameter " << paramTag << " not found" << endln;
+       return TCL_ERROR;
+     }
 
-int 
-sensNodeAccel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
-{
+     int gradIndex = theParam->getGradIndex();
 
-    // make sure at least one other argument to contain type of system
-    if (argc < 4) {
-	interp->result = "WARNING want - sensNodeAccel nodeTag? dof? paramTag?\n";
-	return TCL_ERROR;
+     double value = theNode->getVelSensitivity(dof,gradIndex);
+
+     char buffer[40];
+     sprintf(buffer,"%35.20f",value);
+
+     Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
+     return TCL_OK;
+ }
+
+ int 
+ sensNodeAccel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+ {
+
+     // make sure at least one other argument to contain type of system
+     if (argc < 4) {
+       opserr <<  "WARNING want - sensNodeAccel nodeTag? dof? paramTag?\n";
+       return TCL_ERROR;
    }    
 
     int tag, dof, paramTag;
@@ -7000,8 +7058,8 @@ sensNodePressure(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
 
     // make sure at least one other argument to contain type of system
     if (argc < 3) {
-	interp->result = "WARNING want - sensNodePressure nodeTag? paramTag?\n";
-	return TCL_ERROR;
+      opserr << "WARNING want - sensNodePressure nodeTag? paramTag?\n";
+      return TCL_ERROR;
     }    
 
     int tag, paramTag;
@@ -7142,7 +7200,7 @@ sectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 {
   // make sure at least one other argument to contain type of system
   if (argc < 3) {
-    interp->result = "WARNING want - sectionForce eleTag? <secNum?> dof? \n";
+    opserr <<  "WARNING want - sectionForce eleTag? <secNum?> dof? \n";
     return TCL_ERROR;
   }    
   
@@ -7196,7 +7254,8 @@ sectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 
   Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
   if (theResponse == 0) {
-    Tcl_SetResult(interp, "0.0", TCL_VOLATILE);
+    char buffer[] = "0.0";
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     return TCL_OK;
   }
 
@@ -7220,7 +7279,7 @@ sectionDeformation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char
 {
   // make sure at least one other argument to contain type of system
   if (argc < 4) {
-    interp->result = "WARNING want - sectionDeformation eleTag? secNum? dof? \n";
+    opserr <<"WARNING want - sectionDeformation eleTag? secNum? dof? \n";
     return TCL_ERROR;
   }    
   
@@ -7264,7 +7323,8 @@ sectionDeformation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char
 
   Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
   if (theResponse == 0) {
-    Tcl_SetResult(interp, "0.0", TCL_VOLATILE);
+    char buffer[] = "0.0";
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     return TCL_OK;
   }
 
@@ -7289,7 +7349,7 @@ sectionLocation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **
 {
   // make sure at least one other argument to contain type of system
   if (argc < 3) {
-    interp->result = "WARNING want - sectionLocation eleTag? secNum? \n";
+    opserr << "WARNING want - sectionLocation eleTag? secNum? \n";
     return TCL_ERROR;
   }    
   
@@ -7324,7 +7384,8 @@ sectionLocation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **
 
   Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
   if (theResponse == 0) {
-    Tcl_SetResult(interp, "0.0", TCL_VOLATILE);
+    char buffer [] = "0.0";
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     return TCL_OK;
   }
 
@@ -7348,7 +7409,7 @@ sectionWeight(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 {
   // make sure at least one other argument to contain type of system
   if (argc < 3) {
-    interp->result = "WARNING want - sectionWeight eleTag? secNum? \n";
+    opserr << "WARNING want - sectionWeight eleTag? secNum? \n";
     return TCL_ERROR;
   }    
   
@@ -7383,7 +7444,8 @@ sectionWeight(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 
   Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
   if (theResponse == 0) {
-    Tcl_SetResult(interp, "0.0", TCL_VOLATILE);
+    char buffer[] = "0.0";
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     return TCL_OK;
   }
 
@@ -7407,7 +7469,7 @@ sectionStiffness(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
 {
   // make sure at least one other argument to contain type of system
   if (argc < 3) {
-    interp->result = "WARNING want - sectionStiffness eleTag? secNum? \n";
+    opserr << "WARNING want - sectionStiffness eleTag? secNum? \n";
     return TCL_ERROR;
   }    
   
@@ -7447,7 +7509,8 @@ sectionStiffness(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
 
   Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
   if (theResponse == 0) {
-    Tcl_SetResult(interp, "0.0", TCL_VOLATILE);
+    char buffer [] = "0.0";
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     return TCL_OK;
   }
 
@@ -7475,7 +7538,7 @@ sectionFlexibility(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char
 {
   // make sure at least one other argument to contain type of system
   if (argc < 3) {
-    interp->result = "WARNING want - sectionFlexibility eleTag? secNum? \n";
+    opserr << "WARNING want - sectionFlexibility eleTag? secNum? \n";
     return TCL_ERROR;
   }    
   
@@ -7515,7 +7578,8 @@ sectionFlexibility(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char
 
   Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
   if (theResponse == 0) {
-    Tcl_SetResult(interp, "0.0", TCL_VOLATILE);
+    char buffer[] = "0.0";
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     return TCL_OK;
   }
 
@@ -7544,7 +7608,7 @@ basicDeformation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
 {
   // make sure at least one other argument to contain type of system
   if (argc < 2) {
-    interp->result = "WARNING want - basicDeformation eleTag? \n";
+    opserr << "WARNING want - basicDeformation eleTag? \n";
     return TCL_ERROR;
   }    
   
@@ -7581,7 +7645,8 @@ basicDeformation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
 
   Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
   if (theResponse == 0) {
-    Tcl_SetResult(interp, "0.0", TCL_VOLATILE);
+    char buffer [] = "0.0";
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     return TCL_OK;
   }
 
@@ -7607,7 +7672,7 @@ basicForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
   // make sure at least one other argument to contain type of system
   if (argc < 2) {
-    interp->result = "WARNING want - basicForce eleTag? \n";
+    opserr << "WARNING want - basicForce eleTag? \n";
     return TCL_ERROR;
   }    
   
@@ -7644,7 +7709,8 @@ basicForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
   if (theResponse == 0) {
-    Tcl_SetResult(interp, "0.0", TCL_VOLATILE);
+    char buffer[] = "0.0";
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     return TCL_OK;
   }
 
@@ -7670,7 +7736,7 @@ basicStiffness(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **a
 {
   // make sure at least one other argument to contain type of system
   if (argc < 2) {
-    interp->result = "WARNING want - basicStiffness eleTag? \n";
+    opserr << "WARNING want - basicStiffness eleTag? \n";
     return TCL_ERROR;
   }    
   
@@ -7707,7 +7773,8 @@ basicStiffness(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **a
 
   Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
   if (theResponse == 0) {
-    Tcl_SetResult(interp, "0.0", TCL_VOLATILE);
+    char buffer[] = "0.0";
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     return TCL_OK;
   }
 
@@ -8077,7 +8144,10 @@ getPID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
 
   // now we copy the value to the tcl string that is returned
-  sprintf(interp->result,"%d",pid);
+  char buffer[30];
+  sprintf(buffer,"%d",pid);
+  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
   return TCL_OK;  
 }
 
@@ -8097,7 +8167,10 @@ getNP(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
 
   // now we copy the value to the tcl string that is returned
-  sprintf(interp->result,"%d",np);
+  char buffer[30];
+  sprintf(buffer,"%d",np);
+  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
   return TCL_OK;  
 }
 
