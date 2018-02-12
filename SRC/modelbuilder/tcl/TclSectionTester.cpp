@@ -113,20 +113,20 @@ TclSectionTester_setSection(ClientData clientData, Tcl_Interp *interp, int argc,
   count = 1;
   // ensure the destructor has not been called - 
   if (theTclBuilder == 0) {
-    Tcl_SetResult(interp, "WARNING builder has been destroyed", TCL_STATIC);
+    opserr << "WARNING builder has been destroyed\n";
     return TCL_ERROR;
   }
 
   // check number of arguments in command line
   if (argc < 2) {
-    Tcl_SetResult(interp, "WARNING bad command - want: uniaxialTest matID?", TCL_STATIC);
+    opserr << "WARNING bad command - want: uniaxialTest matID?\n";
     return TCL_ERROR;
   }    
 
   // get the matID form command line
   int sectionID;
   if (Tcl_GetInt(interp, argv[1], &sectionID) != TCL_OK) {
-    Tcl_SetResult(interp, "WARNING could not read sectionID: uniaxialTest sectionID?", TCL_STATIC);
+    opserr << "WARNING could not read sectionID: uniaxialTest sectionID?\n";
     return TCL_ERROR;
   }
 
@@ -140,7 +140,7 @@ TclSectionTester_setSection(ClientData clientData, Tcl_Interp *interp, int argc,
   // and set the testing material to point to a copy of it
   SectionForceDeformation *theOrigMaterial = theTclBuilder->getSection(sectionID);
   if (theOrigMaterial == 0) {
-    Tcl_SetResult(interp, "WARNING no material found with sectionID", TCL_STATIC);
+    opserr << "WARNING no material found with sectionID\n";
     return TCL_ERROR;
   }  else {
     theTestingSection = theOrigMaterial->getCopy();
@@ -156,13 +156,13 @@ TclSectionTester_setStrainSection(ClientData clientData, Tcl_Interp *interp,
 {
   // ensure the destructor has not been called - 
   if (theTclBuilder == 0) {
-    Tcl_SetResult(interp, "WARNING builder has been destroyed", TCL_STATIC);
+    opserr << "WARNING builder has been destroyed\n";
     return TCL_ERROR;
   }
 
   // check number of arguments in command line
   if (argc < 2) {
-    Tcl_SetResult(interp, "WARNING bad command - want: strainNdTest strain?", TCL_STATIC);
+    opserr <<  "WARNING bad command - want: strainNdTest strain?\n";
     return TCL_ERROR;
   }    
 
@@ -171,7 +171,7 @@ TclSectionTester_setStrainSection(ClientData clientData, Tcl_Interp *interp,
   double strain;
   for (int i=1; i<argc; i++) {
     if (Tcl_GetDouble(interp, argv[1], &strain) != TCL_OK) {
-      Tcl_SetResult(interp, "WARNING could not read strain: strainNdTest strain?", TCL_STATIC);
+      opserr << "WARNING could not read strain: strainNdTest strain?\n";
       return TCL_ERROR;
     }
     data(i-1) = strain;
@@ -195,11 +195,15 @@ int  TclSectionTester_getStressSection(ClientData clientData, Tcl_Interp *interp
   // delete the old testing material
   if (theTestingSection !=0) {
     const Vector &stress = theTestingSection->getStressResultant();
-    for (int i=0; i<stress.Size(); i++)
-      sprintf(interp->result,"%.10e",stress(i));
+    for (int i=0; i<stress.Size(); i++) {
+      char buffer[40];
+      sprintf(buffer,"%.10e",stress(i));
+      Tcl_AppendResult(interp, buffer, TCL_VOLATILE);
+      //      sprintf(interp->result,"%.10e",stress(i));
+    }
     return TCL_OK;
   } else {
-    Tcl_SetResult(interp, "WARNING no active Section - use uniaxialTest command", TCL_STATIC);    
+    opserr <<  "WARNING no active Section - use uniaxialTest comman\n";    
     return TCL_ERROR;
   }
 }
@@ -212,11 +216,15 @@ int  TclSectionTester_getTangSection(ClientData clientData, Tcl_Interp *interp,
   if (theTestingSection !=0) {
     const Matrix &tangent = theTestingSection->getSectionTangent();
     for (int i=0; i<tangent.noRows(); i++)
-      for (int j=0; j<tangent.noCols(); j++)
-	sprintf(interp->result,"%.10e",tangent(i,j));
+      for (int j=0; j<tangent.noCols(); j++) {
+	char buffer[40];
+	sprintf(buffer,"%.10e",tangent(i,j));
+	Tcl_AppendResult(interp, buffer, TCL_VOLATILE);
+	//	sprintf(interp->result,"%.10e",tangent(i,j));
+      }
     return TCL_OK;
   } else {
-    Tcl_SetResult(interp, "WARNING no active Section - use uniaxialTest command", TCL_STATIC);    
+    opserr << "WARNING no active Section - use uniaxialTest command\n";    
     return TCL_ERROR;
   }
 }

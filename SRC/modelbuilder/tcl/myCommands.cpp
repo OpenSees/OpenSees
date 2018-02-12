@@ -214,7 +214,7 @@ specifyModelBuilder(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Cha
   }
   
   else {
-    Tcl_SetResult(interp, "WARNING unknown model builder type", TCL_STATIC);
+    opserr <<  "WARNING unknown model builder type\n";
     
     opserr << "WARNING model builder type " << argv[1]
 	   << " not supported\n";

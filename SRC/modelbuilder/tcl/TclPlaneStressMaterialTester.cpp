@@ -125,20 +125,20 @@ TclPlaneStressMaterialTester_setPlaneStressMaterial(ClientData clientData, Tcl_I
   count = 1;
   // ensure the destructor has not been called - 
   if (theTclBuilder == 0) {
-    Tcl_SetResult(interp, "WARNING builder has been destroyed", TCL_STATIC);
+    opserr << "WARNING builder has been destroyed\n";
     return TCL_ERROR;
   }
   
   // check number of arguments in command line
   if (argc < 2) {
-    Tcl_SetResult(interp, "WARNING bad command - want: plane stressTest matID?", TCL_STATIC);
+    opserr << "WARNING bad command - want: plane stressTest matID?\n";
     return TCL_ERROR;
   }    
   
   // get the matID form command line
   int matID;
   if (Tcl_GetInt(interp, argv[1], &matID) != TCL_OK) {
-    Tcl_SetResult(interp, "WARNING could not read matID: plane stressTest matID?", TCL_STATIC);
+    opserr <<  "WARNING could not read matID: plane stressTest matID?\n";
     return TCL_ERROR;
   }
   
@@ -152,7 +152,7 @@ TclPlaneStressMaterialTester_setPlaneStressMaterial(ClientData clientData, Tcl_I
   // and set the testing material to point to a copy of it
   NDMaterial *theOrigMaterial = OPS_getNDMaterial(matID);
   if (theOrigMaterial == 0) {
-    Tcl_SetResult(interp, "WARNING no material found with matID", TCL_STATIC);
+    opserr << "WARNING no material found with matID\n";
     return TCL_ERROR;
   }  else {
     theMaterial = theOrigMaterial->getCopy("PlaneStress");
@@ -168,13 +168,13 @@ TclPlaneStressMaterialTester_setStrainPlaneStressMaterial(ClientData clientData,
 {
   // ensure the destructor has not been called - 
   if (theTclBuilder == 0) {
-    Tcl_SetResult(interp, "WARNING builder has been destroyed", TCL_STATIC);
+    opserr << "WARNING builder has been destroyed\n";
     return TCL_ERROR;
   }
   
   // check number of arguments in command line
   if (argc < 4) {
-    Tcl_SetResult(interp, "WARNING bad command - want: strainPlaneStressTest strain?", TCL_STATIC);
+    opserr <<  "WARNING bad command - want: strainPlaneStressTest strain?\n";
     return TCL_ERROR;
   }    
 
@@ -182,15 +182,15 @@ TclPlaneStressMaterialTester_setStrainPlaneStressMaterial(ClientData clientData,
   static double strain[3];
   static Vector strainV(strain,3);
   if (Tcl_GetDouble(interp, argv[1], &strain[0]) != TCL_OK) {
-    Tcl_SetResult(interp, "WARNING could not read strain: strainPlaneStressTest strain?", TCL_STATIC);
+    opserr <<  "WARNING could not read strain: strainPlaneStressTest strain?\n";
     return TCL_ERROR;
   }
   if (Tcl_GetDouble(interp, argv[2], &strain[1]) != TCL_OK) {
-    Tcl_SetResult(interp, "WARNING could not read strain: strainPlaneStressTest strain?", TCL_STATIC);
+    opserr << "WARNING could not read strain: strainPlaneStressTest strain?\n";
     return TCL_ERROR;
   }
   if (Tcl_GetDouble(interp, argv[3], &strain[2]) != TCL_OK) {
-    Tcl_SetResult(interp, "WARNING could not read strain: strainPlaneStressTest strain?", TCL_STATIC);
+    opserr << "WARNING could not read strain: strainPlaneStressTest strain?\n";
     return TCL_ERROR;
   }
 
@@ -215,10 +215,12 @@ int  TclPlaneStressMaterialTester_getStressPlaneStressMaterial(ClientData client
   // delete the old testing material
   if (theMaterial !=0) {
     stress = theMaterial->getStress();
-    sprintf(interp->result,"%.10e %.10e %.10e",stress(0),stress(1),stress(2));
+    char buffer[60];
+    sprintf(buffer,"%.10e %.10e %.10e",stress(0),stress(1),stress(2));
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     return TCL_OK;
   } else {
-    Tcl_SetResult(interp, "WARNING no active Plane StressMaterial - use plane stressTest command", TCL_STATIC);    
+    opserr << "WARNING no active Plane StressMaterial - use plane stressTest command\n";
     return TCL_ERROR;
   }
 }
@@ -231,10 +233,12 @@ int  TclPlaneStressMaterialTester_getTangPlaneStressMaterial(ClientData clientDa
   // delete the old testing material
   if (theMaterial !=0) {
     tangent = theMaterial->getTangent();
-    sprintf(interp->result,"%.10e %.10e %.10e %.10e %.10e %.10e %.10e %.10e %.10e",tangent(0,0), tangent(0,1), tangent(0,2), tangent(1,0), tangent(1,1), tangent(1,2), tangent(2,0),tangent(2,1),tangent(2,2));
+    char buffer[180];
+    sprintf(buffer,"%.10e %.10e %.10e %.10e %.10e %.10e %.10e %.10e %.10e",tangent(0,0), tangent(0,1), tangent(0,2), tangent(1,0), tangent(1,1), tangent(1,2), tangent(2,0),tangent(2,1),tangent(2,2));
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
     return TCL_OK;
   } else {
-    Tcl_SetResult(interp, "WARNING no active PlaneStressMaterial - use plane stressTest command", TCL_STATIC);    
+    opserr << "WARNING no active PlaneStressMaterial - use plane stressTest command\n"; 
     return TCL_ERROR;
   }
 }
