@@ -71,10 +71,13 @@ StaticIntegrator::formEleTangent(FE_Element *theEle)
   if (statusFlag == CURRENT_TANGENT) {
     theEle->zeroTangent();
     theEle->addKtToTang();
-    
   } else if (statusFlag == INITIAL_TANGENT) {
     theEle->zeroTangent();
     theEle->addKiToTang();
+  } else if (statusFlag == HALL_TANGENT)  {
+    theEle->zeroTangent();
+    theEle->addKtToTang(cFactor);
+    theEle->addKiToTang(iFactor);
   } 
 
     return 0;
