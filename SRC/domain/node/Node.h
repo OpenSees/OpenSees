@@ -71,7 +71,7 @@ class Node : public DomainComponent
 
     // public methods for obtaining the nodal coordinates
     virtual const Vector &getCrds(void) const;
-    virtual int getDisplayCrds(Vector &results, double fact);
+    virtual int getDisplayCrds(Vector &results, double fact, int displayMode=0);
     virtual int setDisplayCrds(const Vector &theCrds);
 
     // public methods for obtaining committed and trial 

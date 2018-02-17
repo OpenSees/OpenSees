@@ -1810,8 +1810,7 @@ Node::displaySelf(Renderer &theRenderer, int displayMode, float fact)
 //  const Vector &theDisp = this->getDisp();
   static Vector position(3);
 
-  this->getDisplayCrds(position, fact);
-
+  this->getDisplayCrds(position, fact, displayMode);
   
   if (displayMode == -1) { 
     // draw a text string containing tag
@@ -2314,7 +2313,7 @@ Node::setCrds(const Vector &newCrds)
 }
 
 int
-Node::getDisplayCrds(Vector &res, double fact) 
+Node::getDisplayCrds(Vector &res, double fact, int mode) 
 {
   int ndm = Crd->Size();
   int resSize = res.Size();
@@ -2322,20 +2321,34 @@ Node::getDisplayCrds(Vector &res, double fact)
   if (resSize < ndm)
     return -1;
 
-  if (commitDisp != 0) {
-    if (displayLocation != 0)
-      for (int i=0; i<ndm; i++)
-	res(i) = (*displayLocation)(i)+(*commitDisp)(i)*fact;
-    else
+  if (mode < 0) {
+    int eigenMode = -mode;
+    if ((theEigenvectors != 0) && ((*theEigenvectors).noCols() > eigenMode)) {
+      if (displayLocation != 0)
+	for (int i=0; i<ndm; i++)
+	  res(i) = (*displayLocation)(i)+(*theEigenvectors)(i,eigenMode-1)*fact;
+      else
+	for (int i=0; i<ndm; i++)
+	  res(i) = (*Crd)(i)+(*theEigenvectors)(i,eigenMode-1)*fact;
+    }
+  } else {    
+  
+    if (commitDisp != 0) {
+      if (displayLocation != 0)
+	for (int i=0; i<ndm; i++)
+	  res(i) = (*displayLocation)(i)+(*commitDisp)(i)*fact;
+      else
       for (int i=0; i<ndm; i++)
 	res(i) = (*Crd)(i)+(*commitDisp)(i)*fact;
-  } else {
-    if (displayLocation != 0)
-      for (int i=0; i<ndm; i++)
-	res(i) = (*displayLocation)(i);
-    else
-      for (int i=0; i<ndm; i++)
-	res(i) = (*Crd)(i);
+    } else {
+      if (displayLocation != 0)
+	for (int i=0; i<ndm; i++)
+	  res(i) = (*displayLocation)(i);
+      else
+	for (int i=0; i<ndm; i++)
+	  res(i) = (*Crd)(i);
+    }
+    
   }
 
   // zero rest
