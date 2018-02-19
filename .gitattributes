@@ -2625,6 +2625,8 @@ SRC/element/componentElement/ComponentElement2d.h -text
 SRC/element/componentElement/Makefile -text
 SRC/element/componentElement/test.tcl -text
 SRC/element/componentElement/test2.tcl -text
+SRC/element/dispBeamColumn/AxEqDispBeamColumn2d.cpp -text
+SRC/element/dispBeamColumn/AxEqDispBeamColumn2d.h -text
 SRC/element/dispBeamColumn/DispBeamColumn2d.cpp -text
 SRC/element/dispBeamColumn/DispBeamColumn2d.h -text
 SRC/element/dispBeamColumn/DispBeamColumn2dThermal.cpp -text
