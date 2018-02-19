@@ -143,9 +143,9 @@ extern void *OPS_AV3D4QuadWithSensitivity(void);
 extern void *OPS_VS3D4WuadWithSensitivity(void);
 extern void *OPS_MVLEM(void);
 extern void *OPS_SFI_MVLEM(void);
-
+extern void *OPS_SFI_MVLEM(void);
+extern void *OPS_AxEqDispBeamColumn2d(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
-
 extern void *OPS_PFEMElement2DBubble();
 extern void *OPS_PFEMElement2DMini();
 extern void *OPS_PFEMElement2D();
@@ -640,6 +640,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   } else if (strcmp(argv[1],"ElastomericX") == 0) {
     
     void *theEle = OPS_ElastomericX();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+
+  } else if (strcmp(argv[1], "AxEqDispBeamColumn2d") == 0) {
+    
+    void *theEle = OPS_AxEqDispBeamColumn2d();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {

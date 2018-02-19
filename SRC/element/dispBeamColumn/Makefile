@@ -5,7 +5,8 @@ OBJS       = DispBeamColumn2d.o \
 	DispBeamColumn2dThermal.o \
 	DispBeamColumn3dThermal.o \
 	DispBeamColumn2dWithSensitivity.o \
-	DispBeamColumn3dWithSensitivity.o
+	DispBeamColumn3dWithSensitivity.o \
+	AxEqDispBeamColumn2d.o
 
 
 all:         $(OBJS)

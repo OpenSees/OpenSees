@@ -25,9 +25,7 @@ tcl: $(TclOBJS)
 	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS) \
 	 -o tclInterpreter
 
-ifdef __APPLE__
-PYTHON_LIBRARY = -framework python
-endif
+PYTHON_LIBRARY = -framework Python
 
 python:  $(PythonOBJS)
 	$(LINKER) $(LINKFLAGS) $(PythonOBJS) \

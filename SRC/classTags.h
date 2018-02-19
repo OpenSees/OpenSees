@@ -654,7 +654,6 @@
 #define ELE_TAG_BeamEndContact3Dp      125
 #define ELE_TAG_Quad4FiberOverlay      126
 #define ELE_TAG_Brick8FiberOverlay     127
-#define ELE_TAG_QuadBeamEmbedContact   500
 #define ELE_TAG_DispBeamColumn2dThermal 128
 #define ELE_TAG_TPB1D                  129
 #define ELE_TAG_TFP_Bearing            130
@@ -703,6 +702,8 @@
 #define ELE_TAG_ShellMITC4Thermal         173   //L.Jiang [SIF]
 #define ELE_TAG_ShellNLDKGQThermal        174   //L.Jiang [SIF]
 #define ELE_TAG_ShellANDeS                175   //L.Jiang [SIF]
+#define ELE_TAG_AxEqDispBeamColumn2d      178
+#define ELE_TAG_QuadBeamEmbedContact   500
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
