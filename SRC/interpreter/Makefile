@@ -17,7 +17,7 @@ PythonModuleOBJS = PythonModule.o PythonWrapper.o $(OBJS)
 
 # Compilation control
 
-all:      tcl   python pythonmodule
+all:  pythonmodule
 
 tcl: $(TclOBJS)
 	$(LINKER) $(LINKFLAGS) $(TclOBJS) \
