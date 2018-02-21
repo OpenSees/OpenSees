@@ -177,6 +177,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include<Integrator.h>//Abbas
 
 extern void *OPS_NewtonRaphsonAlgorithm(void);
+extern void *OPS_ModifiedNewton(void);
 
 extern void *OPS_Newmark(void);
 extern void *OPS_AlphaOS(void);
@@ -3571,6 +3572,16 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
       theNewAlgo->setConvergenceTest(theTest);
   }
 
+  else if (strcmp(argv[1],"ModifiedNewton") == 0) {
+    void *theNewtonAlgo = OPS_ModifiedNewton();
+    if (theNewtonAlgo == 0)
+      return TCL_ERROR;
+
+    theNewAlgo = (EquiSolnAlgo *)theNewtonAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
+  }
+
   else if (strcmp(argv[1],"KrylovNewton") == 0) {
     int incrementTangent = CURRENT_TANGENT;
     int iterateTangent = CURRENT_TANGENT;
@@ -3814,23 +3825,6 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
     else
       theNewAlgo = new BFGS(*theTest, formTangent, count); 
   }
-  
-  else if (strcmp(argv[1],"ModifiedNewton") == 0) {
-    int formTangent = CURRENT_TANGENT;
-    if (argc > 2) {
-      if (strcmp(argv[2],"-secant") == 0) {
-	formTangent = CURRENT_SECANT;
-      } else if (strcmp(argv[2],"-initial") == 0) {
-	formTangent = INITIAL_TANGENT;
-      }
-    }
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return TCL_ERROR;	  
-    }
-      
-    theNewAlgo = new ModifiedNewton(*theTest, formTangent); 
-  }  
   
   else if (strcmp(argv[1],"NewtonLineSearch") == 0) {
       if (theTest == 0) {
