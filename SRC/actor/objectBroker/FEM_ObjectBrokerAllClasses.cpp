@@ -1824,7 +1824,7 @@ FEM_ObjectBrokerAllClasses::getNewEquiSolnAlgo(int classTag)
 	     return new AcceleratedNewton();
 	     
 	case EquiALGORITHM_TAGS_ModifiedNewton:  
-	     return new ModifiedNewton();
+	     return new ModifiedNewton(CURRENT_TANGENT);
 
 	case EquiALGORITHM_TAGS_Broyden:  
 	     return new Broyden();
