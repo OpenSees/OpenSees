@@ -48,9 +48,9 @@
 class NewtonRaphson: public EquiSolnAlgo
 {
   public:
-	  NewtonRaphson();
-  NewtonRaphson(int tangent, double iFactor = 0.0, double cFactor = 0.0);    
-  NewtonRaphson(ConvergenceTest &theTest, int tangent = CURRENT_TANGENT);
+  NewtonRaphson();
+  NewtonRaphson(int tangent, double iFactor = 0.0, double cFactor = 1.0);    
+  NewtonRaphson(ConvergenceTest &theTest, int tangent = CURRENT_TANGENT, double iFactor = 0.0, double cFactor = 1.0);
   ~NewtonRaphson();
   
   int solveCurrentStep(void);    

@@ -102,15 +102,15 @@ NewtonRaphson::NewtonRaphson(int theTangentToUse, double iFact, double cFact)
 
 NewtonRaphson::NewtonRaphson()
 	:EquiSolnAlgo(EquiALGORITHM_TAGS_NewtonRaphson),
-	tangent(CURRENT_TANGENT), iFactor(0.), cFactor(0.)
+	tangent(CURRENT_TANGENT), iFactor(0.), cFactor(1.)
 {
 
 }
 
 
-NewtonRaphson::NewtonRaphson(ConvergenceTest &theT, int theTangentToUse)
+NewtonRaphson::NewtonRaphson(ConvergenceTest &theT, int theTangentToUse, double iFact, double cFact)
 :EquiSolnAlgo(EquiALGORITHM_TAGS_NewtonRaphson),
- tangent(theTangentToUse), iFactor(0.0), cFactor(1.0)
+ tangent(theTangentToUse), iFactor(iFact), cFactor(cFact)
 {
 
 }

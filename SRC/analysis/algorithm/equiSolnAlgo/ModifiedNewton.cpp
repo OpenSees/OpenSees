@@ -52,32 +52,48 @@
 void* OPS_ModifiedNewton()
 {
     int formTangent = CURRENT_TANGENT;
+    double iFactor = 0;
+    double cFactor = 1;
 
     if (OPS_GetNumRemainingInputArgs() > 0) {
-	const char* type = OPS_GetString();
-	if (strcmp(type,"-secant") == 0) {
-	    formTangent = CURRENT_SECANT;
-	} else if (strcmp(type,"-initial") == 0) {
-	    formTangent = INITIAL_TANGENT;
+      const char* type = OPS_GetString();
+      if (strcmp(type,"-secant") == 0) {
+	formTangent = CURRENT_SECANT;
+      } else if (strcmp(type,"-initial") == 0) {
+	formTangent = INITIAL_TANGENT;
+      } else if(strcmp(type,"-hall")==0 || strcmp(type,"-Hall")==0) {
+	formTangent = HALL_TANGENT;
+	iFactor = 0.1;
+	cFactor = 0.9;
+	if (OPS_GetNumRemainingInputArgs() == 2) {
+	  double data[2];
+	  int numData = 2;
+	  if(OPS_GetDoubleInput(&numData,&data[0]) < 0) {
+	    opserr << "WARNING invalid data reading 2 hall factors\n";
+	    return 0;
+	  }
+	  iFactor = data[0];
+	  cFactor = data[1];
 	}
+      }
     }
-
-    return new ModifiedNewton(formTangent);
+    
+    return new ModifiedNewton(formTangent, iFactor, cFactor);
 
 }
 
 // Constructor
-ModifiedNewton::ModifiedNewton(int theTangentToUse)
+ModifiedNewton::ModifiedNewton(int theTangentToUse, double iFact, double cFact)
 :EquiSolnAlgo(EquiALGORITHM_TAGS_ModifiedNewton),
- tangent(theTangentToUse)
+ tangent(theTangentToUse), iFactor(iFact), cFactor(cFact)
 {
   
 }
 
 
-ModifiedNewton::ModifiedNewton(ConvergenceTest &theT, int theTangentToUse)
+ModifiedNewton::ModifiedNewton(ConvergenceTest &theT, int theTangentToUse, double iFact, double cFact)
 :EquiSolnAlgo(EquiALGORITHM_TAGS_ModifiedNewton),
- tangent(theTangentToUse)
+ tangent(theTangentToUse), iFactor(iFact), cFactor(cFact)
 {
 
 }
@@ -116,7 +132,7 @@ ModifiedNewton::solveCurrentStep(void)
     }	
 
     SOLUTION_ALGORITHM_tangentFlag = tangent;
-    if (theIncIntegratorr->formTangent(tangent) < 0){
+    if (theIncIntegratorr->formTangent(tangent, iFactor, cFactor) < 0){
 	opserr << "WARNING ModifiedNewton::solveCurrentStep() -";
 	opserr << "the Integrator failed in formTangent()\n";
 	return -1;
@@ -190,9 +206,11 @@ ModifiedNewton::solveCurrentStep(void)
 int
 ModifiedNewton::sendSelf(int cTag, Channel &theChannel)
 {
-  static ID data(1);
+  static Vector data(3);
   data(0) = tangent;
-  return theChannel.sendID(this->getDbTag(), cTag, data);
+  data(1) = iFactor;
+  data(2) = cFactor;
+  return theChannel.sendVector(this->getDbTag(), cTag, data);
 }
 
 int
@@ -200,9 +218,11 @@ ModifiedNewton::recvSelf(int cTag,
 			Channel &theChannel, 
 			FEM_ObjectBroker &theBroker)
 {
-  static ID data(1);
-  theChannel.recvID(this->getDbTag(), cTag, data);
+  static Vector data(3);
+  theChannel.recvVector(this->getDbTag(), cTag, data);
   tangent = data(0);
+  iFactor = data(1);
+  cFactor = data(2);
   return 0;
 }
 
