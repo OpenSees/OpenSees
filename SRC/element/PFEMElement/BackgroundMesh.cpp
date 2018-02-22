@@ -380,7 +380,7 @@ int OPS_BackgroundMesh()
 
 	// generate particles
 	if (strcmp(geotype,"quad") == 0) {
-	    group->quad(p1,p2,p3,p4,nump(0),nump(1),vel0,p0);
+	  group->qua_d(p1,p2,p3,p4,nump(0),nump(1),vel0,p0);
 	} else if (strcmp(geotype,"tri") == 0) {
 	    group->tri(p1,p2,p3,nump(0),nump(1),vel0,p0);
 	} else if (strcmp(geotype,"line") == 0) {

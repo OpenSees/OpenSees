@@ -142,7 +142,7 @@ ParticleGroup::point(const Vector& p1, const Vector& vel0, double p0)
 }
 
 int
-ParticleGroup::quad(const Vector& p1, const Vector& p2, const Vector& p3,
+ParticleGroup::qua_d(const Vector& p1, const Vector& p2, const Vector& p3,
 		    const Vector& p4, int m, int n, const Vector& vel0, double p0)
 {
 

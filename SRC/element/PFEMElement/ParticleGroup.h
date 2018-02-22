@@ -61,7 +61,7 @@ public:
     int point(const Vector& p1, const Vector& vel0, double p0);
     int line(const Vector& p1, const Vector& p2, int num,
 	     const Vector& vel0, double p0);
-    int quad(const Vector& p1, const Vector& p2, const Vector& p3,
+    int qua_d(const Vector& p1, const Vector& p2, const Vector& p3,
 	     const Vector& p4, int m, int n, const Vector& vel0, double p0);
     int tri(const Vector& p1, const Vector& p2,
 	    const Vector& p4, int m, int n, const Vector& vel0, double p0);
