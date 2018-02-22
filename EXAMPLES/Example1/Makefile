@@ -5,16 +5,10 @@ PROGRAM         = example1
 all:         $(PROGRAM)
 
 $(PROGRAM):  main.o
-	$(LINKER) $(LINKFLAGS) main.o \
+	$(LINKER) $(LINKFLAGS) main.o ../../SRC/api/elementAPI_Dummy.o \
 	$(FE_LIBRARY) $(MACHINE_LINKLIBS) \
 	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS) \
 	-o $(PROGRAM)
-
-rohit:  rohit.o
-	$(LINKER) $(LINKFLAGS) rohit.o \
-	$(FE_LIBRARY) $(MACHINE_LINKLIBS) \
-	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS) \
-	-o rohit
 
 # Miscellaneous
 tidy:
