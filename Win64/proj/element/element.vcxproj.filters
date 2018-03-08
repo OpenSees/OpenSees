@@ -824,6 +824,9 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ShellANDeS.cpp">
       <Filter>shell</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1428,6 +1431,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\shell\ShellANDeS.h">
       <Filter>shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.h">
+      <Filter>dispBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
