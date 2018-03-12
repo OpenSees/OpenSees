@@ -1192,6 +1192,14 @@ FourNodeQuadUP::setParameter(const char **argv, int argc, Parameter &param)
   } else if (strcmp(argv[0],"vPerm") == 0) {
     return param.addObject(4, this);
   }
+  // body force in x-direction
+  else if (strcmp(argv[0],"b1") == 0) {
+    return param.addObject(5, this);
+  }
+  // body force in y-direction
+  else if (strcmp(argv[0],"b2") == 0) {
+    return param.addObject(6, this);
+  }
   // check for material parameters
   if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
 
@@ -1243,6 +1251,12 @@ FourNodeQuadUP::updateParameter(int parameterID, Information &info)
 		perm[1] = info.theDouble;
 		this->getDamp();	// update mass matrix
 		return 0;
+  case 5:
+    b[0] = info.theDouble;
+    return 0;
+  case 6:
+    b[1] = info.theDouble;
+    return 0;
 	default:
 		if (parameterID >= 100) { // material parameter
 			int pointNum = parameterID/100;
