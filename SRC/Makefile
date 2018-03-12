@@ -603,7 +603,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/Quad4FiberOverlay.o \
 	$(FE)/element/UWelements/Brick8FiberOverlay.o \
 	$(FE)/element/UWelements/QuadBeamEmbedContact.o \
-	$(FE)/element/catenaryCable/CatenaryCable.o
+	$(FE)/element/catenaryCable/CatenaryCable.o \
+	$(FE)/element/tetrahedron/FourNodeTetrahedron.o
 
 #	$(FE)/material/nD/Damage2p.o \
 #	$(FE)/material/nD/Damage2p3D.o \
@@ -791,6 +792,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/UWmaterials/InitialStateAnalysisWrapper.o \
 	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurface.o \
 	$(FE)/material/nD/UWmaterials/PM4Sand.o \
+	$(FE)/material/nD/UWmaterials/RatchySand.o \
+	$(FE)/material/nD/UWmaterials/RatchySand3D.o \
+	$(FE)/material/nD/UWmaterials/RatchySandPlaneStrain.o \
 	$(FE)/material/nD/UWmaterials/PM4Silt.o \
 	$(FE)/material/nD/LinearCap.o \
 	$(FE)/material/nD/AcousticMedium.o \

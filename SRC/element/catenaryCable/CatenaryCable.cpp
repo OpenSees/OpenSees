@@ -64,10 +64,14 @@
 
 #include <ElementalLoad.h>
 
+#include <quadmath.h>
+
 
 //Types of mass matrices available 
 #define CATENARY_CABLE_MASS_LUMPED 0
 #define CATENARY_CABLE_MASS_INTEGRATION 1
+#define CATENARY_CABLE_MASS_CLOUGHSTYLE 2
+#define CATENARY_CABLE_MASS_EQUVALENTTRUSS 3
 
 // initialise the class wide variables
 Matrix CatenaryCable::Flexibility(3,3);
@@ -102,7 +106,7 @@ OPS_CatenaryCableElement()
   if (numRemainingArgs != 13 )
   {
     opserr << "Got " << numRemainingArgs << " args. Expected 13\n";
-        opserr << "Invalid Args want: element CatenaryCable $tag $iNode $jNode $weight $E $A $L0 $alpha $temperature_change $rho $errorTol $Nsubsteps\n";
+        opserr << "Invalid Args want: element CatenaryCable $tag $iNode $jNode $weight $E $A $L0 $alpha $temperature_change $rho $errorTol $Nsubsteps $massType\n";
         return 0; // it's a CatenaryCableSection
   }
 
@@ -117,7 +121,7 @@ OPS_CatenaryCableElement()
 
   numData = 8;
   if (OPS_GetDouble(&numData, dData) != 0) {
-    opserr << "WARNING:  element CatenaryCable - invalid double data. Check $weight $E $A $L0 $alpha $temperature_change $rho $errorTol $Nsubsteps\n";
+    opserr << "WARNING:  element CatenaryCable - invalid double data. Check $weight $E $A $L0 $alpha $temperature_change $rho $errorTol $Nsubsteps $massType\n";
     return 0; 
   }
 
@@ -180,6 +184,8 @@ CatenaryCable::CatenaryCable(int tag, int node1, int node2, double weight_, doub
       theNodes[i] = 0;
 
     load = 0;
+    load_lastcommit = 0;
+    load_incl_inertia = 0;
 }
 
 // constructor:
@@ -210,6 +216,8 @@ CatenaryCable::CatenaryCable()
     theNodes[i] = 0;
 
   load = 0;
+  load_lastcommit = 0;
+  load_incl_inertia = 0;
 
 }
 
@@ -309,6 +317,11 @@ CatenaryCable::setDomain(Domain *theDomain)
     if (load == 0)
     {
       load = new Vector(6);
+      load_incl_inertia = new Vector(6);
+    }
+    if (load_lastcommit == 0)
+    {
+      load_lastcommit = new Vector(6);
     }
 
     Flexibility.Zero();
@@ -334,6 +347,10 @@ int
 CatenaryCable::commitState()
 {
   int retVal = 0;
+
+  *load_lastcommit = *load;
+  KE_n = KE;
+  PE_n = PE;
 
   // call element commitState to do any base class stuff
   if ((retVal = this->Element::commitState()) != 0) 
@@ -367,6 +384,23 @@ CatenaryCable::update(void)
   const Vector &end1Disp = theNodes[0]->getTrialDisp();
   const Vector &end2Disp = theNodes[1]->getTrialDisp();
 
+
+  // double acc1 = 0;
+  // double acc2 = 0;
+  // double acc3 = 0;
+  // int count = 0;
+  // for (int i = 0; i < 2; i++) 
+  // {
+  //   const Vector &accel = theNodes[i]->getTrialAccel();
+  //   acc1 += 0.5*accel(0);
+  //   acc2 += 0.5*accel(1);
+  //   acc3 += 0.5*accel(2);
+  // }
+  // w1 += -rho*acc1;
+  // w2 += -rho*acc2;
+  // w3 += -rho*acc3;
+
+
   // const Vector &end1Disp_commit = theNodes[0]->getTrialDisp();
   // const Vector &end2Disp_commit = theNodes[1]->getTrialDisp();
 
@@ -387,7 +421,7 @@ CatenaryCable::update(void)
   compute_lambda0();
 
   //inicializar fuerzas
-  double l10 = sqrt(lx0*lx0 + ly0*ly0);
+  double l10 = SQRT(lx0*lx0 + ly0*ly0);
   
   double f10 = (w3*l10)/(2.*lambda0);
   double f20 = 0;
@@ -518,22 +552,24 @@ CatenaryCable::update(void)
       opserr << "   end1Disp = " << end1Disp << endln;
       opserr << "   end2Crd = " << end2Crd << endln;
       opserr << "   end2Disp = " << end2Disp << endln;
-      opserr <<"    w1 = " <<  w1 << endln; 
-      opserr <<"    w2 = " <<  w2 << endln; 
-      opserr <<"    w3 = " <<  w3 << endln; 
-      opserr <<"    lambda0 = " <<  lambda0 << endln; 
-      opserr <<"    f10n = " <<  f10n << endln; 
-      opserr <<"    f20n = " <<  f20n << endln; 
-      opserr <<"    f30n = " <<  f30n << endln; 
-      opserr <<"    f1 = " <<  f1 << endln; 
-      opserr <<"    f2 = " <<  f2 << endln; 
-      opserr <<"    f3 = " <<  f3 << endln; 
-      opserr <<"    l1 = " <<  l1 << endln; 
-      opserr <<"    l2 = " <<  l2 << endln; 
-      opserr <<"    l3 = " <<  l3 << endln; 
+      opserr << "    w1 = " <<  w1 << endln; 
+      opserr << "    w2 = " <<  w2 << endln; 
+      opserr << "    w3 = " <<  w3 << endln; 
+      opserr << "    lambda0 = " <<  lambda0 << endln; 
+      opserr << "    f10n = " <<  f10n << endln; 
+      opserr << "    f20n = " <<  f20n << endln; 
+      opserr << "    f30n = " <<  f30n << endln; 
+      opserr << "    f1 = " <<  f1 << endln; 
+      opserr << "    f2 = " <<  f2 << endln; 
+      opserr << "    f3 = " <<  f3 << endln; 
+      opserr << "    l1 = " <<  l1 << endln; 
+      opserr << "    l2 = " <<  l2 << endln; 
+      opserr << "    l3 = " <<  l3 << endln; 
       return -1;
     }
   }
+
+  // opserr << "niter = " << iter << endln;
 
   return 0;
 }
@@ -606,9 +642,7 @@ CatenaryCable::addLoad(ElementalLoad *theLoad, double loadFactor)
       w1 = loadFactor*data(0);
       w2 = loadFactor*data(1);
       w3 = loadFactor*data(2);
-      // opserr <<"   w1 = " <<  w1 << endln; 
-      // opserr <<"   w2 = " <<  w2 << endln; 
-      // opserr <<"   w3 = " <<  w3 << endln; 
+      // opserr <<  "   w = ("  <<  w1 <<  ", " <<  w2 << ", " <<  w3 << ")" << endln; 
       
       return 0;
   }
@@ -620,25 +654,41 @@ CatenaryCable::addLoad(ElementalLoad *theLoad, double loadFactor)
 int 
 CatenaryCable::addInertiaLoadToUnbalance(const Vector &accel)
 {
-  static Vector resid(6);
-  resid.Zero();
+  opserr << "CatenaryCable::addInertiaLoadToUnbalance\n";
+  /* 
 
-  // check for a quick return
-  if ( rho == 0.0) 
-    return 0;
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  int count = 0;
-  for (int i = 0; i < 2; i++) 
-  {
-    const Vector &Raccel = theNodes[i]->getRV(accel);
-    for (int j = 0; j < 3; j++)
-      resid(count++) = Raccel(j);
-  }
+  IS NOT GETTING CALLED
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  */
+  // static Vector resid(6);
+  // resid.Zero();
+
+  getResistingForce();
+
+  // // check for a quick return
+  // if ( rho == 0.0) 
+  //   return 0;
+
+  // int count = 0;
+  // for (int i = 0; i < 2; i++) 
+  // {
+  //   const Vector &Raccel = theNodes[i]->getRV(accel);
+  //   for (int j = 0; j < 3; j++)
+  //     resid(count++) = Raccel(j);
+  // }
   
 
+
+  // opserr << "accel = " << accel;
+  // opserr << "load = " << accel;
+
   // // want to add ( - fact * M R * accel ) to unbalance
-  computeMass();
-  load->addMatrixVector(1.0, Mass, resid, -1.0);
+  // computeMass();
+  // load->addMatrixVector(1.0, Mass, resid, -1.0);
   
   return 0;
 }
@@ -648,6 +698,8 @@ CatenaryCable::addInertiaLoadToUnbalance(const Vector &accel)
 const Vector &
 CatenaryCable::getResistingForce()
 {	
+
+
   double f4 = -f1 - w1*L0;
   double f5 = -f2 - w2*L0;
   double f6 = -f3 - w3*L0;
@@ -659,6 +711,18 @@ CatenaryCable::getResistingForce()
   (*load)(4) = f5;
   (*load)(5) = f6;
 
+  static Vector disp(6);
+  const Vector &end1Disp = theNodes[0]->getIncrDisp();
+  const Vector &end2Disp = theNodes[1]->getIncrDisp();
+  disp(0) = end1Disp(0);
+  disp(1) = end1Disp(1);
+  disp(2) = end1Disp(2);
+  disp(3) = end2Disp(0);
+  disp(4) = end2Disp(1);
+  disp(5) = end2Disp(2);
+
+  PE = PE_n + 0.5*((*load_lastcommit + *load)^(disp));
+
   return *load;
 }
 
@@ -666,7 +730,6 @@ CatenaryCable::getResistingForce()
 const Vector &
 CatenaryCable::getResistingForceIncInertia()
 {	
-  this->getResistingForce();
   
   // // subtract external load
   // (*theVector) -= *theLoad;
@@ -706,8 +769,21 @@ CatenaryCable::getResistingForceIncInertia()
   //     theVector->addVector(1.0, this->getRayleighDampingForces(), 1.0);
   // }
 
+
+
+  this->getResistingForce();
+
+
+
+  computeMass();
+
+
+
   static Vector accel(6);
+  static Vector veloc(6);
   accel.Zero();
+  veloc.Zero();
+
 
   // check for a quick return
   if ( rho == 0.0) 
@@ -717,13 +793,36 @@ CatenaryCable::getResistingForceIncInertia()
   for (int i = 0; i < 2; i++) 
   {
     const Vector &Raccel = theNodes[i]->getTrialAccel();
+    const Vector &Rveloc = theNodes[i]->getTrialVel();
     for (int j = 0; j < 3; j++)
-      accel(count++) = Raccel(j);
+    {      
+      accel(count) = Raccel(j);
+      veloc(count) = Rveloc(j);
+      count++;
+    }
   }
-  computeMass();
-  load->addMatrixVector(1.0, Mass, accel, -1.0);
 
-  return *load;
+  *load_incl_inertia = *load;
+  load_incl_inertia->addMatrixVector(1.0, Mass, accel, 1.0);
+
+  // add the damping forces if rayleigh damping
+  if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
+      *load_incl_inertia += this->getRayleighDampingForces();
+
+
+  KE = 0;
+
+  for(int i = 0; i < 6; i++)
+  {    
+    for(int j = 0; j < 6; j++)
+    {
+      KE += veloc(i)*Mass(i,j)*veloc(j)*0.5;
+    }
+  }
+  return *load_incl_inertia;
+
+
+  
 }
 
 int
@@ -966,6 +1065,12 @@ CatenaryCable::setResponse(const char **argv, int argc, OPS_Stream &output)
             theResponse =  new ElementResponse(this, 1, Vector(6));
 
     } 
+    else if (strcmp(argv[0],"energy") == 0)
+    {
+            output.tag("ResponseType", "KineticEnergy");
+            output.tag("ResponseType", "PotentialEnergy");
+            theResponse =  new ElementResponse(this, 2, Vector(2));
+    }
 
     return theResponse;
 }
@@ -979,8 +1084,8 @@ CatenaryCable::getResponse(int responseID, Information &eleInfo)
     case 1:
         return eleInfo.setVector(this->getResistingForce());
 
-    // case 2:
-    //     return eleInfo.setDouble(A * theMaterial->getStress());
+    case 2:
+        return eleInfo.setVector(this->getEnergyVector());
 
     // case 3:
     //     if (L == 0.0) {
@@ -997,6 +1102,15 @@ CatenaryCable::getResponse(int responseID, Information &eleInfo)
 }
 
 
+Vector CatenaryCable::getEnergyVector()
+{
+  Vector energy(2);
+  energy(0) = KE_n;
+  energy(1) = PE_n;
+
+  return energy;
+}
+
 
 
 void CatenaryCable::compute_lambda0(void)
@@ -1008,7 +1122,7 @@ void CatenaryCable::compute_lambda0(void)
     else if( L0*L0 <= (lx0*lx0 + ly0*ly0 + lz0*lz0))
       lambda0 = 0.2;
     else if( L0*L0 > lx0*lx0 + ly0*ly0 + lz0*lz0)
-      lambda0 = sqrt(3*((L0*L0 - lz0*lz0) / (lx0*lx0 + ly0*ly0)) - 1);
+      lambda0 = SQRT(3*((L0*L0 - lz0*lz0) / (lx0*lx0 + ly0*ly0)) - 1);
 
     // opserr << "L0 = " << L0 << endln;
     // opserr << "lx0 = " << lx0 << endln;
@@ -1019,40 +1133,76 @@ void CatenaryCable::compute_lambda0(void)
 
 void CatenaryCable::compute_projected_lengths(void)
 {
-    double w = sqrt(w1*w1 + w2*w2 + w3*w3);
-    double a1 = (f1*w1)+(f2*w2)+(f3*w3);
-    double t1 = sqrt((f1*f1)+(f2*f2)+(f3*f3));
-    double a = (-(w1*L0)-f1);
-    double b = (-(w2*L0)-f2);
-    double c = (-(w3*L0)-f3);
-    double t2 = sqrt(a*a + b*b + c*c);
-    l1 = (-(L0*f1)/(E*A))-(((L0*L0)*w1)/(2.*E*A))+((1.+alpha*temperature_change)/(w*w*w))*((w*w1*(t1-t2))+(((w*w)*f1)-(a1*w1))*(log((a1/w)+t1)-log((L0*w)+(a1/w)+t2)));
-    l2 = (-(L0*f2)/(E*A))-(((L0*L0)*w2)/(2.*E*A))+((1.+alpha*temperature_change)/(w*w*w))*((w*w2*(t1-t2))+(((w*w)*f2)-(a1*w2))*(log((a1/w)+t1)-log((L0*w)+(a1/w)+t2)));
-    l3 = (-(L0*f3)/(E*A))-(((L0*L0)*w3)/(2.*E*A))+((1.+alpha*temperature_change)/(w*w*w))*((w*w3*(t1-t2))+(((w*w)*f3)-(a1*w3))*(log((a1/w)+t1)-log((L0*w)+(a1/w)+t2)));
+    //Correct weights for acceleration
+    // double acc1 = 0;
+    // double acc2 = 0;
+    // double acc3 = 0;
+    // int count = 0;
+    // for (int i = 0; i < 2; i++) 
+    // {
+    //   const Vector &accel = theNodes[i]->getTrialAccel();
+    //   acc1 += 0.5*accel(0);
+    //   acc2 += 0.5*accel(1);
+    //   acc3 += 0.5*accel(2);
+    // }
+    FLOATTYPE w_1 = w1;// - rho*acc1;
+    FLOATTYPE w_2 = w2;// - rho*acc2;
+    FLOATTYPE w_3 = w3;// - rho*acc3;
+
+    FLOATTYPE w = SQRT(w_1*w_1 + w_2*w_2 + w_3*w_3);
+    FLOATTYPE a1 = (f1*w_1) + (f2*w_2) + (f3*w_3);
+    FLOATTYPE t1 = SQRT((f1*f1 ) + (f2*f2) + (f3*f3));
+    FLOATTYPE a = (-(w_1*L0) - f1);
+    FLOATTYPE b = (-(w_2*L0) - f2);
+    FLOATTYPE c = (-(w_3*L0) - f3);
+    FLOATTYPE t2 = SQRT(a*a + b*b + c*c);
+    // l1 = (-(L0*f1)/(E*A))-(((L0*L0)*w_1)/(2.*E*A))+((1.+alpha*temperature_change)/(w*w*w))*((w*w_1*(t1-t2))+(((w*w)*f1)-(a1*w_1))*(log((a1/w)+t1)-log((L0*w)+(a1/w)+t2)));
+    // l2 = (-(L0*f2)/(E*A))-(((L0*L0)*w_2)/(2.*E*A))+((1.+alpha*temperature_change)/(w*w*w))*((w*w_2*(t1-t2))+(((w*w)*f2)-(a1*w_2))*(log((a1/w)+t1)-log((L0*w)+(a1/w)+t2)));
+    // l3 = (-(L0*f3)/(E*A))-(((L0*L0)*w_3)/(2.*E*A))+((1.+alpha*temperature_change)/(w*w*w))*((w*w_3*(t1-t2))+(((w*w)*f3)-(a1*w_3))*(log((a1/w)+t1)-log((L0*w)+(a1/w)+t2)));
+
+    l1 = (-(L0*f1)/(E*A))-(((L0*L0)*w_1)/(2.*E*A))+((1.+alpha*temperature_change)/(w*w*w))*((w*w_1*(t1-t2))+(((w*w)*f1)-(a1*w_1))*LOG(((a1/w)+t1)/((L0*w)+(a1/w)+t2)));
+    l2 = (-(L0*f2)/(E*A))-(((L0*L0)*w_2)/(2.*E*A))+((1.+alpha*temperature_change)/(w*w*w))*((w*w_2*(t1-t2))+(((w*w)*f2)-(a1*w_2))*LOG(((a1/w)+t1)/((L0*w)+(a1/w)+t2)));
+    l3 = (-(L0*f3)/(E*A))-(((L0*L0)*w_3)/(2.*E*A))+((1.+alpha*temperature_change)/(w*w*w))*((w*w_3*(t1-t2))+(((w*w)*f3)-(a1*w_3))*LOG(((a1/w)+t1)/((L0*w)+(a1/w)+t2)));
 
 }
 
 
 void CatenaryCable::compute_flexibility_matrix(void)
 {
-    double w = sqrt(w1*w1 + w2*w2 + w3*w3);
-    double a1 = f1*w1 + f2*w2 + f3*w3;
-    double t1 = sqrt(f1*f1+f2*f2+f3*f3);
-    double a = (-(w1*L0)-f1);
-    double b = (-(w2*L0)-f2);
-    double c = (-(w3*L0)-f3);
-    double t2 = sqrt(a*a + b*b + c*c);
+    //Correct weights for acceleration
+    // double acc1 = 0;
+    // double acc2 = 0;
+    // double acc3 = 0;
+    // int count = 0;
+    // for (int i = 0; i < 2; i++) 
+    // {
+    //   const Vector &accel = theNodes[i]->getTrialAccel();
+    //   acc1 += 0.5*accel(0);
+    //   acc2 += 0.5*accel(1);
+    //   acc3 += 0.5*accel(2);
+    // }
+    FLOATTYPE w_1 = w1;// - rho*acc1;
+    FLOATTYPE w_2 = w2;// - rho*acc2;
+    FLOATTYPE w_3 = w3;// - rho*acc3;
 
-    double W[3] = {w1, w2, w3};
-    double f4 = -f1 - w1*L0;
-    double f5 = -f2 - w2*L0;
-    double f6 = -f3 - w3*L0;
+    FLOATTYPE w = sqrt(w_1*w_1 + w_2*w_2 + w_3*w_3);
+    FLOATTYPE a1 = f1*w_1 + f2*w_2 + f3*w_3;
+    FLOATTYPE t1 = sqrt(f1*f1+f2*f2+f3*f3);
+    FLOATTYPE a = (-(w_1*L0)-f1);
+    FLOATTYPE b = (-(w_2*L0)-f2);
+    FLOATTYPE c = (-(w_3*L0)-f3);
+    FLOATTYPE t2 = sqrt(a*a + b*b + c*c);
+
+    FLOATTYPE W[3] = {w_1, w_2, w_3};
+    FLOATTYPE f4 = -f1 - w_1*L0;
+    FLOATTYPE f5 = -f2 - w_2*L0;
+    FLOATTYPE f6 = -f3 - w_3*L0;
     
-    double F[6] = {f1, f2, f3, f4, f5, f6};
+    FLOATTYPE F[6] = {f1, f2, f3, f4, f5, f6};
 
-    double b0 = 0.;
-    double b1 = 0.;
-    double b2 = 0.;
+    FLOATTYPE b0 = 0.;
+    FLOATTYPE b1 = 0.;
+    FLOATTYPE b2 = 0.;
 
     
     for(int i = 0; i < 3; i++)
@@ -1076,7 +1226,8 @@ void CatenaryCable::compute_flexibility_matrix(void)
           b0 = 0.  ;
           b2 = W[i]*W[j];
         }  
-        Flexibility(i, j) = b0 - (1 + alpha*temperature_change)/(w*w*w)*(b1 + b2*(log( a1/w + t1) - log(a1/w + t2 + L0*w)));
+        // Flexibility(i, j) = b0 - (1 + alpha*temperature_change)/(w*w*w)*(b1 + b2*(log( a1/w + t1) - log(a1/w + t2 + L0*w)));
+        Flexibility(i, j) = b0 - (1 + alpha*temperature_change)/(w*w*w)*(b1 + b2*LOG(( a1/w + t1)/(a1/w + t2 + L0*w)));
       }
     }
 
@@ -1090,8 +1241,14 @@ void CatenaryCable::computeMass()
     case CATENARY_CABLE_MASS_LUMPED:
       computeMassLumped();
       break;
+    case CATENARY_CABLE_MASS_CLOUGHSTYLE:
+      computeMassCloughStyle();
+      break;
     case CATENARY_CABLE_MASS_INTEGRATION:
       computeMassByIntegration();
+      break;    
+    case CATENARY_CABLE_MASS_EQUVALENTTRUSS:
+      computeMassEquivalentTruss();
       break;
     default:
       opserr << "CatenaryCable::computeMass() -- Unknown massType = " << massType << endln;
@@ -1109,8 +1266,42 @@ void CatenaryCable::computeMassLumped()
   Mass(5,5) = nodal_mass;
 }
 
+void CatenaryCable::computeMassEquivalentTruss()
+{
+
+  double m = rho*L0/6.0;
+  for (int i = 0; i < 3; i++) {
+    Mass(i,i) = 2.0*m;
+    Mass(i,i+3) = m;
+    Mass(i+3,i) = m;
+    Mass(i+3,i+3) = 2.0*m;
+  }
+}
+
 void CatenaryCable::computeMassByIntegration()
 {
     opserr << "CatenaryCable::computeMass() -- Mass by integration not yet available -- Defaulting to lumped " << endln;
     computeMassLumped();  // To be implemented
 }
+
+void CatenaryCable::computeMassCloughStyle()
+{
+  double total_mass = rho*L0;
+  double f1x = fabs((*load)(0));
+  double f2x = fabs((*load)(3));
+  double f1y = fabs((*load)(1));
+  double f2y = fabs((*load)(4));
+  double f1z = fabs((*load)(2));
+  double f2z = fabs((*load)(5));
+  double f1 = sqrt(f1x*f1x + f1y*f1y + f1z*f1z);
+  double f2 = sqrt(f2x*f2x + f2y*f2y + f2z*f2z);
+  double m1 = total_mass*f1/(f1+f2);
+  double m2 = total_mass*f1/(f1+f2);
+  Mass(0,0) = m1;
+  Mass(1,1) = m1;
+  Mass(2,2) = m1;
+  Mass(3,3) = m2;
+  Mass(4,4) = m2;
+  Mass(5,5) = m2;
+}
+

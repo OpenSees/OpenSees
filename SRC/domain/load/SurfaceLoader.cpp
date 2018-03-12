@@ -25,6 +25,8 @@
 
 #include <SurfaceLoader.h>
 #include <Vector.h>
+#include <Channel.h>
+#include <FEM_ObjectBroker.h>
 
 Vector SurfaceLoader::data(1);
 
@@ -53,13 +55,38 @@ SurfaceLoader::getData(int &type, double loadFactor)
 int
 SurfaceLoader::sendSelf(int commitTag, Channel &theChannel)
 {
-	return -1;
+	int res = 0;
+    static ID iddata(3);
+    int dataTag = this->getDbTag();
+    iddata(0) = this->getTag();
+    iddata(1) = dataTag;
+    iddata(2) = eleTag;
+
+    res = theChannel.sendID(dataTag, commitTag, iddata);
+    if (res < 0) {
+        opserr << "WARNING SurfaceLoader::sendSelf() - " << this->getTag() << " failed to send iddata\n";
+        return res;
+    }
+
+    return res;
 }
 
 int
 SurfaceLoader::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-	return -1;
+    int res = 0;
+    static ID iddata(3);
+    int dataTag = this->getDbTag();
+
+    res = theChannel.recvID(dataTag, commitTag, iddata);
+    if (res < 0) {
+        opserr << "WARNING SurfaceLoader::recvSelf() - " << this->getTag() << " failed to receive iddata\n";
+        return res;
+    }
+     this->setTag(iddata(0));
+     eleTag = iddata(2);
+
+	return res;
 }
 
 void

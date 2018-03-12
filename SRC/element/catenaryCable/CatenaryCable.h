@@ -43,6 +43,18 @@
 //
 // What: "@(#) CatenaryCable.h, revA"
 
+#define USE_QUADMATH 0
+
+#ifdef USE_QUADMATH
+#define FLOATTYPE __float128
+#define SQRT sqrtq
+#define LOG logq
+#else
+#define FLOATTYPE double
+#define SQRT sqrt
+#define LOG flog
+#endif
+
 #include <Element.h>
 #include <Matrix.h>
 
@@ -97,6 +109,7 @@ class CatenaryCable : public Element
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
     int getResponse(int responseID, Information &eleInformation);
 
+    Vector getEnergyVector();
 
   protected:
     
@@ -107,7 +120,8 @@ class CatenaryCable : public Element
     void computeMass();
     void computeMassLumped();
     void computeMassByIntegration();
-    
+    void computeMassCloughStyle();
+    void computeMassEquivalentTruss();
     // private attributes - a copy for each object of the class
     ID  connectedExternalNodes;     // contains the tags of the end nodes
 
@@ -134,12 +148,17 @@ class CatenaryCable : public Element
     double lambda0;
     double l[3];            //Projected lengths
 
+    double KE, PE;
+    double KE_n, PE_n;
+
     bool first_step;
 
     int massType;
 
     Node *theNodes[2];
     Vector *load;
+    Vector *load_incl_inertia;
+    Vector *load_lastcommit;
     
     // static data - single copy for all objects of the class   
     static Matrix Flexibility;       // class wide flexibility matrix for iterations
