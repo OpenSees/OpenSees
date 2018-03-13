@@ -55,6 +55,7 @@ public:
 public:
     PVDRecorder(const char *filename, const NodeData& ndata,
 		const std::vector<EleData>& edata, int ind=2, int pre=10);
+    PVDRecorder();
     ~PVDRecorder();
 
     int record(int commitTag, double timeStamp);

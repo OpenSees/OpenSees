@@ -124,6 +124,12 @@ PVDRecorder::PVDRecorder(const char *name, const NodeData& ndata,
 {
 }
 
+PVDRecorder::PVDRecorder()
+    :Recorder(RECORDER_TAGS_PVDRecorder)
+{
+}
+
+
 PVDRecorder::~PVDRecorder()
 {
 }
@@ -131,6 +137,9 @@ PVDRecorder::~PVDRecorder()
 int
 PVDRecorder::record(int ctag, double timestamp)
 {
+    if(precision==0)
+        return 0;
+
     // get current time
     timestep.push_back(timestamp);
 
@@ -1825,5 +1834,6 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_MVLEM] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_SFI_MVLEM] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_PFEMElement2DFIC] = VTK_TRIANGLE;
-
+    vtktypes[ELE_TAG_CatenaryCable] = VTK_LINE;
+    vtktypes[ELE_TAG_FourNodeTetrahedron] = VTK_TETRA;
 }
