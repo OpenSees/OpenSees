@@ -43,7 +43,7 @@
 //
 // What: "@(#) CatenaryCable.h, revA"
 
-#define USE_QUADMATH 0
+// #define USE_QUADMATH 0
 
 #ifdef USE_QUADMATH
 #define FLOATTYPE __float128
