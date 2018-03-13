@@ -2885,6 +2885,8 @@ SRC/element/shell/ShellNLDKGT.h -text
 SRC/element/surfaceLoad/Makefile -text
 SRC/element/surfaceLoad/SurfaceLoad.cpp -text
 SRC/element/surfaceLoad/SurfaceLoad.h -text
+SRC/element/surfaceLoad/TriSurfaceLoad.cpp -text
+SRC/element/surfaceLoad/TriSurfaceLoad.h -text
 SRC/element/triangle/Makefile -text
 SRC/element/triangle/Tri31.cpp -text
 SRC/element/triangle/Tri31.h -text
