@@ -1,6 +1,6 @@
 include ../../../Makefile.def
 
-OBJS       = SurfaceLoad.o 
+OBJS       = SurfaceLoad.o TriSurfaceLoad.o
 
 all:         $(OBJS)
 

@@ -101,6 +101,7 @@ extern void *OPS_BeamContact3D(void);
 extern void *OPS_BeamContact3Dp(void);
 extern void *OPS_PileToe3D(void);
 extern void *OPS_SurfaceLoad(void);
+extern void *OPS_TriSurfaceLoad(void);
 extern void *OPS_ModElasticBeam2d(void);
 extern void *OPS_ElasticBeam2d(void);
 extern void *OPS_ElasticBeam3d(void);
@@ -884,7 +885,15 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-
+  } else if ((strcmp(argv[1],"TriSurfaceLoad") == 0)) {
+    
+    void *theEle = OPS_TriSurfaceLoad();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
   } else if ((strcmp(argv[1],"TPB1D") == 0)) {
     
     void *theEle = OPS_TPB1D();

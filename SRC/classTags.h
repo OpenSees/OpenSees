@@ -704,6 +704,7 @@
 #define ELE_TAG_ShellANDeS                175   //L.Jiang [SIF]
 #define ELE_TAG_AxEqDispBeamColumn2d      178
 #define ELE_TAG_FourNodeTetrahedron       179
+#define ELE_TAG_TriSurfaceLoad            180
 #define ELE_TAG_QuadBeamEmbedContact      500
 
 #define FRN_TAG_Coulomb            1

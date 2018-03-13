@@ -226,7 +226,9 @@ private:
     static unsigned int number_of_three_node_andes_membrane;
 
     //Bending stuff
-
+   // Element formulation related
+    double disp_init[3][6];
+    
     static Matrix Mq;
 
 

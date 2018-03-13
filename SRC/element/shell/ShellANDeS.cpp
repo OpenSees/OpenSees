@@ -119,7 +119,7 @@ OPS_ShellANDeS(void)
 
     if (numArgs < 6)
     {
-        opserr << "Want: element ShellANDeS $tag $iNode $jNoe $kNode $thick $matNum";
+        opserr << "Want: element ShellANDeS $tag $iNode $jNoe $kNode $thick $E $nu $rho";
         return 0;
     }
 
@@ -722,25 +722,77 @@ const Vector &ShellANDeS::getBodyForce(double loadFactor, const Vector &data)
 }
 
 
+
 Vector ShellANDeS::get_bending_moment_field()
 {
-
     Vector m(3);
-    Vector disps(9);
+    Vector disps_global(18);
+    Vector disps_local(18);
+    Vector disps_local_bending(9);
 
     Vector d1 = theNodes[0]->getTrialDisp();
     Vector d2 = theNodes[1]->getTrialDisp();
     Vector d3 = theNodes[2]->getTrialDisp();
 
-    disps(0) = d1(0);
-    disps(1) = d1(1);
-    disps(2) = d1(2);
-    disps(3) = d2(0);
-    disps(4) = d2(1);
-    disps(5) = d2(2);
-    disps(6) = d3(0);
-    disps(7) = d3(1);
-    disps(8) = d3(2);
+    Matrix TLG(18, 18);             // Local-to-global transformation matrix
+
+    // Form TLG
+    int I, J;
+    TLG.Zero();
+    Matrix T_gl(3, 3);
+    T_lg.Invert(T_gl);
+    int offset = 0;
+
+    for (int n = 0; n < 6; n++)
+    {
+        I = 0;
+
+        for (int i = 0; i < 3; i++)
+        {
+            J = 0;
+
+            for (int j = 0; j < 3; j++)
+            {
+                TLG(I + offset, J + offset) = T_gl(i, j);
+                J++;
+            }
+
+            I++;
+        }
+        offset += 3;
+    }
+
+    disps_global(0)  = d1(0) - disp_init[0][0];
+    disps_global(1)  = d1(1) - disp_init[0][1];
+    disps_global(2)  = d1(2) - disp_init[0][2];
+    disps_global(3)  = d1(3) - disp_init[0][3];
+    disps_global(4)  = d1(4) - disp_init[0][4];
+    disps_global(5)  = d1(5) - disp_init[0][5];
+    disps_global(6)  = d2(0) - disp_init[1][0];
+    disps_global(7)  = d2(1) - disp_init[1][1];
+    disps_global(8)  = d2(2) - disp_init[1][2];    
+    disps_global(9)  = d2(3) - disp_init[1][3];
+    disps_global(10) = d2(4) - disp_init[1][4];
+    disps_global(11) = d2(5) - disp_init[1][5];
+    disps_global(12) = d3(0) - disp_init[2][0];
+    disps_global(13) = d3(1) - disp_init[2][1];
+    disps_global(14) = d3(2) - disp_init[2][2];
+    disps_global(15) = d3(3) - disp_init[2][3];
+    disps_global(16) = d3(4) - disp_init[2][4];
+    disps_global(17) = d3(5) - disp_init[2][5];
+
+    disps_local.addMatrixVector(1.0, TLG, disps_global, 1.0);
+
+    disps_local_bending(0) = disps_local(2);
+    disps_local_bending(1) = disps_local(3);
+    disps_local_bending(2) = disps_local(4);
+    disps_local_bending(3) = disps_local(8);
+    disps_local_bending(4) = disps_local(9);
+    disps_local_bending(5) = disps_local(10);
+    disps_local_bending(6) = disps_local(14);
+    disps_local_bending(7) = disps_local(15);
+    disps_local_bending(8) = disps_local(16);
+
 
     // Geometric data
     double x21 = -x12;
@@ -794,14 +846,103 @@ Vector ShellANDeS::get_bending_moment_field()
     L(2, 8) = s23 * s23 * x32 + s31 * s31 * x13;
 
     EL.Zero();
-    EL.addMatrixProduct(1.0, E_planestress * (thickness * thickness * thickness / 12 / Area), L, 1.0);
+    EL.addMatrixProduct(thickness * thickness * thickness / 12 / Area, E_planestress, L, 1.0);
 
     m.Zero();
-    m.addMatrixVector(1.0, EL , disps, 1.0);
+    m.addMatrixVector(1.0, EL , disps_local, 1.0);
+
+
+    // High-order part
+    // double lam_12 = 
+
 
 
     return m;
 }
+
+
+
+
+// Vector ShellANDeS::get_bending_moment_field()
+// {
+
+//     Vector m(3);
+//     Vector disps(9);
+
+//     Vector d1 = theNodes[0]->getTrialDisp();
+//     Vector d2 = theNodes[1]->getTrialDisp();
+//     Vector d3 = theNodes[2]->getTrialDisp();
+
+//     disps(0) = d1(0);
+//     disps(1) = d1(1);
+//     disps(2) = d1(2);
+//     disps(3) = d2(0);
+//     disps(4) = d2(1);
+//     disps(5) = d2(2);
+//     disps(6) = d3(0);
+//     disps(7) = d3(1);
+//     disps(8) = d3(2);
+
+//     // Geometric data
+//     double x21 = -x12;
+//     double y21 = -y12;
+//     double x32 = -x23;
+//     double y32 = -y23;
+//     double x13 = -x31;
+//     double y13 = -y31;
+
+//     double l12 = sqrt(x12 * x12 + y12 * y12);
+//     double l23 = sqrt(x23 * x23 + y23 * y23);
+//     double l31 = sqrt(x31 * x31 + y31 * y31);
+
+//     double c12 = x21 / l12;
+//     double c23 = x32 / l23;
+//     double c31 = x13 / l31;
+//     double s12 = y21 / l12;
+//     double s23 = y32 / l23;
+//     double s31 = y13 / l31;
+
+
+//     Matrix L(3, 9);
+//     Matrix EL(3, 9);
+
+//     L(0, 0) = -c12 * s12 + c31 * s31;
+//     L(1, 0) = -c31 * s31 + c12 * s12;
+//     L(2, 0) = (s31 * s31 - c31 * c31) - (s12 * s12 - c12 * c12);
+//     L(0, 1) = (s12 * s12 * x12 + s31 * s31 * x31) / 2.0;
+//     L(1, 1) = (c12 * c12 * x12 + c31 * c31 * x31) / 2.0;
+//     L(2, 1) = c12 * c12 * y21 + c31 * c31 * y13;
+//     L(0, 2) = (s12 * s12 * y12 + s31 * s31 * y31) / 2.0;
+//     L(1, 2) = (c12 * c12 * y12 + c31 * c31 * y31) / 2.0;
+//     L(2, 2) = s12 * s12 * x21 + s31 * s31 * x13;
+//     L(0, 3) = -c23 * s23 + c12 * s12;
+//     L(1, 3) = -c12 * s12 + c23 * s23;
+//     L(2, 3) = (s12 * s12 - c12 * c12) - (s23 * s23 - c23 * c23);
+//     L(0, 4) = (s12 * s12 * x12 + s23 * s23 * x23) / 2.0;
+//     L(1, 4) = (c12 * c12 * x12 + c23 * c23 * x23) / 2.0;
+//     L(2, 4) = c12 * c12 * y21 + c23 * c23 * y32;
+//     L(0, 5) = (s12 * s12 * y12 + s23 * s23 * y23) / 2.0;
+//     L(1, 5) = (c12 * c12 * y12 + c23 * c23 * y23) / 2.0;
+//     L(2, 5) = s12 * s12 * x21 + s23 * s23 * x32;
+//     L(0, 6) = -c31 * s31 + c23 * s23;
+//     L(1, 6) = -c23 * s23 + c31 * s31;
+//     L(2, 6) = (s23 * s23 - c23 * c23) - (s31 * s31 - c31 * c31);
+//     L(0, 7) = (s23 * s23 * x23 + s31 * s31 * x31) / 2.0;
+//     L(1, 7) = (c23 * c23 * x23 + c31 * c31 * x31) / 2.0;
+//     L(2, 7) = c23 * c23 * y32 + c31 * c31 * y13;
+//     L(0, 8) = (s23 * s23 * y23 + s31 * s31 * y31) / 2.0;
+//     L(1, 8) = (c23 * c23 * y23 + c31 * c31 * y31) / 2.0;
+//     L(2, 8) = s23 * s23 * x32 + s31 * s31 * x13;
+
+//     EL.Zero();
+//     EL.addMatrixProduct(1.0, E_planestress * (thickness * thickness * thickness / 12 / Area), L, 1.0);
+
+//     m.Zero();
+//     m.addMatrixVector(1.0, EL , disps, 1.0);
+
+
+//     return m;
+// }
 
 const Matrix &ShellANDeS::getMembraneMass ()
 {
