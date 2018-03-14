@@ -52,7 +52,7 @@
 #else
 #define FLOATTYPE double
 #define SQRT sqrt
-#define LOG flog
+#define LOG log
 #endif
 
 #include <Element.h>
