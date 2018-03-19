@@ -90,7 +90,7 @@ clean:
 	do \
 		$(CD) $$f; \
 		$(ECHO) Making lib in $$f; \
-		$(MAKE) wipe; \
+		$(MAKE) clean; \
 		$(CD) ..; \
 	done );
 	@$(RM) $(RMFLAGS) *.o *~ core
@@ -103,6 +103,7 @@ wipe:
 		$(CD) $$f; \
 		$(ECHO) Making lib in $$f; \
 		$(MAKE) wipe; \
+		$(MAKE) clean; \
 		$(CD) ..; \
 	done );
 	@$(RM) $(RMFLAGS) $(WIPE_LIBS) *.o *~ core 
