@@ -178,6 +178,7 @@ OPS_Stream *opserrPtr = &sserr;
 
 extern void *OPS_NewtonRaphsonAlgorithm(void);
 extern void *OPS_ModifiedNewton(void);
+extern void *OPS_NewtonHallM(void);
 
 extern void *OPS_Newmark(void);
 extern void *OPS_AlphaOS(void);
@@ -3564,6 +3565,16 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
 
   else if (strcmp(argv[1],"Newton") == 0) {
     void *theNewtonAlgo = OPS_NewtonRaphsonAlgorithm();
+    if (theNewtonAlgo == 0)
+      return TCL_ERROR;
+
+    theNewAlgo = (EquiSolnAlgo *)theNewtonAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
+  }
+
+  else if (strcmp(argv[1],"NewtonHallM") == 0) {
+    void *theNewtonAlgo = OPS_NewtonHallM();
     if (theNewtonAlgo == 0)
       return TCL_ERROR;
 

@@ -439,7 +439,6 @@ UTILITY_LIBS = $(FE)/utility/Timer.o \
 	$(FE)/utility/SimulationInformation.o \
 	$(FE)/utility/File.o \
 	$(FE)/utility/FileIter.o \
-	$(FE)/utility/NeesCentral.o \
 	$(FE)/utility/PeerNGA.o \
 	$(FE)/utility/StringContainer.o 
 
@@ -1133,6 +1132,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/NewtonRaphson.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/ModifiedNewton.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/NewtonLineSearch.o \
+	$(FE)/analysis/algorithm/equiSolnAlgo/NewtonHallM.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/Broyden.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/BFGS.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/KrylovNewton.o \

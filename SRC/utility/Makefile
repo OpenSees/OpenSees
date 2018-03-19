@@ -1,6 +1,6 @@
 include ../../Makefile.def
 
-OBJS       = Timer.o FileIter.o File.o SimulationInformation.o StringContainer.o NeesCentral.o PeerNGA.o
+OBJS       = Timer.o FileIter.o File.o SimulationInformation.o StringContainer.o PeerNGA.o
 
 # Compilation control
 
