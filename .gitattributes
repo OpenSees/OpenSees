@@ -1765,6 +1765,8 @@ SRC/analysis/algorithm/equiSolnAlgo/Makefile -text
 SRC/analysis/algorithm/equiSolnAlgo/ModifiedNewton.cpp -text
 SRC/analysis/algorithm/equiSolnAlgo/ModifiedNewton.h -text
 SRC/analysis/algorithm/equiSolnAlgo/ModifiedNewton.tex -text
+SRC/analysis/algorithm/equiSolnAlgo/NewtonHallM.cpp -text
+SRC/analysis/algorithm/equiSolnAlgo/NewtonHallM.h -text
 SRC/analysis/algorithm/equiSolnAlgo/NewtonLineSearch.cpp -text
 SRC/analysis/algorithm/equiSolnAlgo/NewtonLineSearch.h -text
 SRC/analysis/algorithm/equiSolnAlgo/NewtonRaphson.cpp -text
