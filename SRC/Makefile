@@ -793,9 +793,6 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/UWmaterials/InitialStateAnalysisWrapper.o \
 	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurface.o \
 	$(FE)/material/nD/UWmaterials/PM4Sand.o \
-	$(FE)/material/nD/UWmaterials/RatchySand.o \
-	$(FE)/material/nD/UWmaterials/RatchySand3D.o \
-	$(FE)/material/nD/UWmaterials/RatchySandPlaneStrain.o \
 	$(FE)/material/nD/UWmaterials/PM4Silt.o \
 	$(FE)/material/nD/LinearCap.o \
 	$(FE)/material/nD/AcousticMedium.o \
@@ -1295,6 +1292,7 @@ wipe: spotless
 	@$(CD) $(FE)/reliability; $(MAKE) wipe;
 	@$(CD) $(FE)/optimization; $(MAKE) wipe;
 	@$(CD) $(FE)/api; $(MAKE) wipe;
+	@$(CD) $(FE)/interpreter; $(MAKE) wipe;
 	@$(CD) $(FE)/damage; $(MAKE) wipe;
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.

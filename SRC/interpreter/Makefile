@@ -1,5 +1,5 @@
 
--include ../../Makefile.def
+include ../../Makefile.def
 
 OBJS       = DL_Interpreter.o \
 	TclInterpreter.o \
@@ -25,7 +25,8 @@ tcl: $(TclOBJS)
 	$(MACHINE_NUMERICAL_LIBS) $(MACHINE_SPECIFIC_LIBS) \
 	 -o tclInterpreter
 
-PYTHON_LIBRARY = -framework Python
+#PYTHON_LIBRARY = -framework Python
+PYTHON_LIBRARY =
 
 python:  $(PythonOBJS)
 	$(LINKER) $(LINKFLAGS) $(PythonOBJS) \
