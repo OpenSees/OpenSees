@@ -5895,7 +5895,7 @@ nodeReaction(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
       // now we copy the value to the tcl string that is returned
 
       char buffer [40];
-      sprintf(buffer,"35.20%f", value);
+      sprintf(buffer,"%35.20f", value);
       Tcl_SetResult(interp, buffer, TCL_VOLATILE);
       //      sprintf(interp->result,"%35.20f ",value);
     } else {
@@ -6091,7 +6091,7 @@ eleForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	//	sprintf(interp->result,"%35.20f",value);
 
 	char buffer [40];
-	sprintf(buffer,"35.20%f", value);
+	sprintf(buffer,"%35.20f", value);
 	Tcl_SetResult(interp, buffer, TCL_VOLATILE);	
 
       } else {
