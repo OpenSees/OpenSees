@@ -100,7 +100,7 @@ TclEvaluator::setVariables()
         sprintf(theIndex,"%d",paramTag);
         if (Tcl_SetVar2Ex(theTclInterp,"par",theIndex,Tcl_NewDoubleObj(xval),TCL_LEAVE_ERR_MSG) == NULL) {
             opserr << "ERROR TclEvaluator -- error in setVariables for parameter tag " << paramTag << endln;
-            opserr << "of type " << theTclInterp->result << endln;
+            opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
             return -1;
         }
 
@@ -142,7 +142,7 @@ TclEvaluator::evaluateExpression()
     
     if (Tcl_ExprDouble( theTclInterp, theExpression, &current_val) != TCL_OK) {
         opserr << "TclEvaluator::evaluateExpression -- expression \"" << theExpression;
-        opserr << "\" caused error:" << endln << theTclInterp->result << endln;
+        opserr << "\" caused error:" << endln << Tcl_GetStringResult(theTclInterp) << endln;
         return -1;
     }
 
@@ -168,8 +168,8 @@ TclEvaluator::runAnalysis()
 
     } else {
         if (Tcl_Eval(theTclInterp, fileName) == TCL_ERROR) {
-            opserr << "ERROR TclEvaluator -- error in Tcl_Eval: " << theTclInterp->result << endln;
-            return -1;
+	  opserr << "ERROR TclEvaluator -- error in Tcl_Eval: " << Tcl_GetStringResult(theTclInterp) << endln;
+	  return -1;
         }
         
         // make sure the parameter variables in the namespace update to reflect the results
@@ -203,7 +203,7 @@ TclEvaluator::setResponseVariable(const char *label, int lsfTag,
 
   if (Tcl_SetVar2Ex(theTclInterp,label,theIndex,Tcl_NewDoubleObj(value),TCL_LEAVE_ERR_MSG) == NULL) {
     opserr << "ERROR TclEvaluator -- error in setResponseVariable for object with tag " << rvTag << endln;
-    opserr << "of type " << theTclInterp->result << endln;
+    opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
     return -1;
   }
 
@@ -219,7 +219,7 @@ TclEvaluator::setResponseVariable(const char *label, int lsfTag, double value)
 
   if (Tcl_SetVar2Ex(theTclInterp,label,theIndex,Tcl_NewDoubleObj(value),TCL_LEAVE_ERR_MSG) == NULL) {
     opserr << "ERROR TclEvaluator -- error in setResponseVariable for object with tag " << lsfTag << endln;
-    opserr << "of type " << theTclInterp->result << endln;
+    opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
     return -1;
   }
 
@@ -236,7 +236,7 @@ TclEvaluator::getResponseVariable(const char *label, int lsfTag, int rvTag)
   Tcl_Obj *value = Tcl_GetVar2Ex(theTclInterp,label,theIndex,TCL_LEAVE_ERR_MSG);
   if (value == NULL) {
     opserr << "ERROR TclEvaluator -- error in getResponseVariable for object with tag " << rvTag << endln;
-    opserr << "of type " << theTclInterp->result << endln;
+    opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
     return -1;
   }
 
@@ -256,7 +256,7 @@ TclEvaluator::getResponseVariable(const char *label, int lsfTag)
   Tcl_Obj *value = Tcl_GetVar2Ex(theTclInterp,label,theIndex,TCL_LEAVE_ERR_MSG);
   if (value == NULL) {
     opserr << "ERROR TclEvaluator -- error in getResponseVariable for object with tag " << lsfTag << endln;
-    opserr << "of type " << theTclInterp->result << endln;
+    opserr << "of type " << Tcl_GetStringResult(theTclInterp) << endln;
     return -1;
   }
 
