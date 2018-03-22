@@ -442,7 +442,7 @@ StatFirstPassageAnalyzer::componentFisrtPassage2()
 	if(Pulse0!=0) {delete Pulse0;Pulse0=0;}
 	if(Tpulse0!=0) {delete Tpulse0;Tpulse0=0;}
 	if(shiftedPulse!=0) {delete shiftedPulse;shiftedPulse=0;}
-	if(alphaComp=0!=0) {
+	if(alphaComp!=0) {
 		for(i=0;i<numComp;i++){delete alphaComp[i];alphaComp[i]=0;}
 		delete [] alphaComp;
 		alphaComp=0;
