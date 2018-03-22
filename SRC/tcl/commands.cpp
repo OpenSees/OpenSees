@@ -7112,7 +7112,7 @@ sensSectionForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
 #ifdef _RELIABILITY
   // make sure at least one other argument to contain type of system
   if (argc < 4) {
-    interp->result = "WARNING want - sensSectionForce eleTag? <secNum?> dof? paramTag?\n";
+    opserr << "WARNING want - sensSectionForce eleTag? <secNum?> dof? paramTag?\n";
     return TCL_ERROR;
   }    
   
