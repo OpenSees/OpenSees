@@ -114,6 +114,9 @@
     <Filter Include="catenaryCable">
       <UniqueIdentifier>{1da57574-6bdf-44c2-b363-afb3d416e9ad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="tetrahedron">
+      <UniqueIdentifier>{9ea02351-3bae-4523-b1f6-2a3ea9a7a393}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -827,6 +830,12 @@
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.cpp">
       <Filter>dispBeamColumn</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\surfaceLoad\TriSurfaceLoad.cpp">
+      <Filter>surfaceLoad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.cpp">
+      <Filter>tetrahedron</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1434,6 +1443,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.h">
       <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\surfaceLoad\TriSurfaceLoad.h">
+      <Filter>surfaceLoad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.h">
+      <Filter>tetrahedron</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
