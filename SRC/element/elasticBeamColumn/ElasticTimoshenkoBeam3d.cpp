@@ -93,11 +93,11 @@ void *OPS_ElasticTimoshenkoBeam3d()
         opserr << "WARNING invalid element data (transTag) element ElasticTimoshenkoBeam3d " << iData[0] << endln;
         return 0;
     }
-
+    
     CrdTransf *theTrans = OPS_getCrdTransf(iData[3]);
     if (theTrans == 0)  {
-	    opserr << "WARNING transformation object not found for ElasticTimoshenkoBeam3d " << iData[0] << endln;
-	    return 0;
+        opserr << "WARNING transformation object not found for ElasticTimoshenkoBeam3d " << iData[0] << endln;
+        return 0;
     }
     
     numRemainingArgs = OPS_GetNumRemainingInputArgs();
@@ -105,7 +105,8 @@ void *OPS_ElasticTimoshenkoBeam3d()
       const char *argvLoc = OPS_GetString();
         numData = 1;
         
-        if ((strcmp(argvLoc, "-mass") == 0) || (strcmp(argvLoc, "mass") == 0))  {
+        if ((strcmp(argvLoc, "-mass") == 0) || (strcmp(argvLoc, "mass") == 0) ||
+            (strcmp(argvLoc, "-rho") == 0) || (strcmp(argvLoc, "rho") == 0))  {
             if (OPS_GetDoubleInput(&numData, &dData[8]) != 0)  {
                 opserr << "WARNING error reading element data (mass) element ElasticTimoshenkoBeam3d " << iData[0] << endln;
                 return 0;
@@ -203,7 +204,7 @@ ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d()
 ElasticTimoshenkoBeam3d::~ElasticTimoshenkoBeam3d()
 {
     if (theCoordTransf)
-	    delete theCoordTransf;
+        delete theCoordTransf;
 }
 
 
@@ -213,13 +214,13 @@ int ElasticTimoshenkoBeam3d::getNumExternalNodes() const
 }
 
 
-const ID& ElasticTimoshenkoBeam3d::getExternalNodes() 
+const ID& ElasticTimoshenkoBeam3d::getExternalNodes()
 {
     return connectedExternalNodes;
 }
 
 
-Node** ElasticTimoshenkoBeam3d::getNodePtrs() 
+Node** ElasticTimoshenkoBeam3d::getNodePtrs()
 {
     return theNodes;
 }
@@ -240,7 +241,7 @@ void ElasticTimoshenkoBeam3d::setDomain(Domain *theDomain)
         
         return;
     }
-       
+    
     // first set the node pointers
     theNodes[0] = theDomain->getNode(connectedExternalNodes(0));
     theNodes[1] = theDomain->getNode(connectedExternalNodes(1));
@@ -284,9 +285,9 @@ void ElasticTimoshenkoBeam3d::setDomain(Domain *theDomain)
     
     // initialize the coordinate transformation
     if (theCoordTransf->initialize(theNodes[0], theNodes[1]) != 0)  {
-	    opserr << "ElasticTimoshenkoBeam3d::setDomain() - "
+        opserr << "ElasticTimoshenkoBeam3d::setDomain() - "
             << "error initializing coordinate transformation.\n";
-	    return;
+        return;
     }
     
     // set up the transformation matrix for orientation
@@ -357,8 +358,8 @@ const Matrix& ElasticTimoshenkoBeam3d::getTangentStiff()
         ql.addMatrixVector(0.0, kl, ul, 1.0);
         
         // add geometric stiffness to local stiffness
-        if (ql(0) != 0.0)
-            klTot.addMatrix(1.0, klgeo, ql(0));
+        if (ql(6) != 0.0)
+            klTot.addMatrix(1.0, klgeo, ql(6));
         
         // transform from local to global system
         theMatrix.addMatrixTripleProduct(0.0, Tgl, klTot, 1.0);
@@ -437,7 +438,7 @@ int ElasticTimoshenkoBeam3d::addInertiaLoadToUnbalance(const Vector &accel)
     
     // assemble Raccel vector
     const Vector &Raccel1 = theNodes[0]->getRV(accel);
-    const Vector &Raccel2 = theNodes[1]->getRV(accel);    
+    const Vector &Raccel2 = theNodes[1]->getRV(accel);
     static Vector Raccel(12);
     for (int i=0; i<6; i++)  {
         Raccel(i)   = Raccel1(i);
@@ -472,8 +473,8 @@ const Vector& ElasticTimoshenkoBeam3d::getResistingForce()
     ql.addMatrixVector(0.0, kl, ul, 1.0);
     
     // add P-Delta moments to local forces
-    if ((ql(0) != 0.0) && (nlGeo == 1))
-        ql.addMatrixVector(1.0, klgeo, ul, ql(0));
+    if ((ql(6) != 0.0) && (nlGeo == 1))
+        ql.addMatrixVector(1.0, klgeo, ul, ql(6));
     
     // add effects of element loads, ql = ql(ul) + ql0
     ql.addVector(1.0, ql0, 1.0);
@@ -486,7 +487,7 @@ const Vector& ElasticTimoshenkoBeam3d::getResistingForce()
 
 
 const Vector& ElasticTimoshenkoBeam3d::getResistingForceIncInertia()
-{	
+{
     // first get the resisting forces
     theVector = this->getResistingForce();
     
@@ -503,7 +504,7 @@ const Vector& ElasticTimoshenkoBeam3d::getResistingForceIncInertia()
     
     // add inertia forces from element mass
     const Vector &accel1 = theNodes[0]->getTrialAccel();
-    const Vector &accel2 = theNodes[1]->getTrialAccel();    
+    const Vector &accel2 = theNodes[1]->getTrialAccel();
     static Vector accel(12);
     for (int i=0; i<6; i++)  {
         accel(i)   = accel1(i);
@@ -645,7 +646,7 @@ int ElasticTimoshenkoBeam3d::recvSelf(int commitTag, Channel &rChannel,
 
 
 int ElasticTimoshenkoBeam3d::displaySelf(Renderer &theViewer,
-    int displayMode, float fact, const char **modes, int numMode)				 
+    int displayMode, float fact, const char **modes, int numMode)
 {
     // first determine the end points of the quad based on
     // the display factor (a measure of the distorted image)
@@ -661,7 +662,7 @@ int ElasticTimoshenkoBeam3d::displaySelf(Renderer &theViewer,
         
         for (int i = 0; i < 3; i++) {
             v1(i) = end1Crd(i) + end1Disp(i)*fact;
-            v2(i) = end2Crd(i) + end2Disp(i)*fact;    
+            v2(i) = end2Crd(i) + end2Disp(i)*fact;
         }
     } else {
         int mode = displayMode * -1;
@@ -670,7 +671,7 @@ int ElasticTimoshenkoBeam3d::displaySelf(Renderer &theViewer,
         if (eigen1.noCols() >= mode) {
             for (int i = 0; i < 3; i++) {
                 v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-                v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
+                v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;
             }    
         } else {
             for (int i = 0; i < 3; i++) {
@@ -700,23 +701,23 @@ void ElasticTimoshenkoBeam3d::Print(OPS_Stream &s, int flag)
         // determine resisting forces in global system
         s << "  resisting force: " << this->getResistingForce() << endln;
     }
-	
-	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-		s << "\t\t\t{";
-		s << "\"name\": " << this->getTag() << ", ";
-		s << "\"type\": \"ElasticTimoshenkoBeam3d\", ";
-		s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
-		s << "\"E\": " << E << ", ";
-		s << "\"G\": " << G << ", ";
-		s << "\"A\": " << A << ", ";
-		s << "\"Avy\": " << Avy << ", ";
-		s << "\"Avz\": " << Avz << ", ";
-		s << "\"Jx\": " << Jx << ", ";
-		s << "\"Iy\": " << Iy << ", ";
-		s << "\"Iz\": " << Iz << ", ";
-		s << "\"massperlength\": " << rho << ", ";
-		s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
-	}
+    
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": " << this->getTag() << ", ";
+        s << "\"type\": \"ElasticTimoshenkoBeam3d\", ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
+        s << "\"E\": " << E << ", ";
+        s << "\"G\": " << G << ", ";
+        s << "\"A\": " << A << ", ";
+        s << "\"Avy\": " << Avy << ", ";
+        s << "\"Avz\": " << Avz << ", ";
+        s << "\"Jx\": " << Jx << ", ";
+        s << "\"Iy\": " << Iy << ", ";
+        s << "\"Iz\": " << Iz << ", ";
+        s << "\"massperlength\": " << rho << ", ";
+        s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
+    }
 }
 
 
@@ -780,14 +781,14 @@ int ElasticTimoshenkoBeam3d::getResponse (int responseID, Information &eleInfo)
     switch (responseID) {
     case 1: // global forces
         return eleInfo.setVector(this->getResistingForce());
-
+    
     case 2: // local forces
         theVector.Zero();
         // determine resisting forces in local system
         theVector = ql;
         
         return eleInfo.setVector(theVector);
-
+    
     default:
         return -1;
     }
@@ -942,19 +943,19 @@ void ElasticTimoshenkoBeam3d::setUp()
     kl(0,6) = kl(6,0) = -kl(0,0);
     kl(3,3) = kl(9,9) = G*Jx/L;
     kl(3,9) = kl(9,3) = -kl(3,3);
-    double a1y = E*Iy/(1.0 + phiY);
-    kl(2,2) = kl(8,8) = 12.0*a1y/(L*L*L);
+    double a1y = E*Iy/(L*L*L*(1.0 + phiY));
+    kl(2,2) = kl(8,8) = a1y*12.0;
     kl(2,8) = kl(8,2) = -kl(2,2);
-    kl(4,4) = kl(10,10) = (4.0 + phiY)*a1y/L;
-    kl(4,10) = kl(10,4) = (2.0 - phiY)*a1y/L;
-    kl(2,4) = kl(4,2) = kl(2,10) = kl(10,2) = -6.0*a1y/(L*L);
+    kl(4,4) = kl(10,10) = a1y*L*L*(4.0 + phiY);
+    kl(4,10) = kl(10,4) = a1y*L*L*(2.0 - phiY);
+    kl(2,4) = kl(4,2) = kl(2,10) = kl(10,2) = -a1y*L*6.0;
     kl(4,8) = kl(8,4) = kl(8,10) = kl(10,8) = -kl(2,4);
-    double a1z = E*Iz/(1.0 + phiZ);
-    kl(1,1) = kl(7,7) = 12.0*a1z/(L*L*L);
+    double a1z = E*Iz/(L*L*L*(1.0 + phiZ));
+    kl(1,1) = kl(7,7) = a1z*12.0;
     kl(1,7) = kl(7,1) = -kl(1,1);
-    kl(5,5) = kl(11,11) = (4.0 + phiZ)*a1z/L;
-    kl(5,11) = kl(11,5) = (2.0 - phiZ)*a1z/L;
-    kl(1,5) = kl(5,1) = kl(1,11) = kl(11,1) = 6.0*a1z/(L*L);
+    kl(5,5) = kl(11,11) = a1z*L*L*(4.0 + phiZ);
+    kl(5,11) = kl(11,5) = a1z*L*L*(2.0 - phiZ);
+    kl(1,5) = kl(5,1) = kl(1,11) = kl(11,1) = a1z*L*6.0;
     kl(5,7) = kl(7,5) = kl(7,11) = kl(11,7) = -kl(1,5);
     
     // compute geometric stiffness matrix in local system
@@ -965,14 +966,14 @@ void ElasticTimoshenkoBeam3d::setUp()
         klgeo(2,8) = klgeo(8,2) = -klgeo(2,2);
         klgeo(4,4) = klgeo(10,10) = b1y*L*L*(2.5*phiY*phiY + 5.0*phiY + 4.0);
         klgeo(4,10) = klgeo(10,4) = -b1y*L*L*(2.5*phiY*phiY + 5.0*phiY + 1.0);
-        klgeo(2,4) = klgeo(4,2) = klgeo(2,10) = klgeo(10,2) = -3.0*L;
+        klgeo(2,4) = klgeo(4,2) = klgeo(2,10) = klgeo(10,2) = -b1y*L*3.0;
         klgeo(4,8) = klgeo(8,4) = klgeo(8,10) = klgeo(10,8) = -klgeo(2,4);
         double b1z = 1.0/(30.0*L*pow(1.0 + phiZ,2));
         klgeo(1,1) = klgeo(7,7) = b1z*(30.0*phiZ*phiZ + 60.0*phiZ + 36.0);
         klgeo(1,7) = klgeo(7,1) = -klgeo(1,1);
         klgeo(5,5) = klgeo(11,11) = b1z*L*L*(2.5*phiZ*phiZ + 5.0*phiZ + 4.0);
         klgeo(5,11) = klgeo(11,5) = -b1z*L*L*(2.5*phiZ*phiZ + 5.0*phiZ + 1.0);
-        klgeo(1,5) = klgeo(5,1) = klgeo(1,11) = klgeo(11,1) = 3.0*L;
+        klgeo(1,5) = klgeo(5,1) = klgeo(1,11) = klgeo(11,1) = b1z*L*3.0;
         klgeo(5,7) = klgeo(7,5) = klgeo(7,11) = klgeo(11,7) = -klgeo(1,5);
     }
     
@@ -999,7 +1000,6 @@ void ElasticTimoshenkoBeam3d::setUp()
             double c2x = rho/A*Jx*L/210.0;
             mlTrn(3,3) = mlTrn(9,9) = c2x*70.0;
             mlTrn(3,9) = mlTrn(9,3) = c2x*35.0;
-            
             double c1y = c1x/pow(1.0 + phiY,2);
             mlTrn(2,2) = mlTrn(8,8) = c1y*(70.0*phiY*phiY + 147.0*phiY + 78.0);
             mlTrn(2,8) = mlTrn(8,2) = c1y*(35.0*phiY*phiY + 63.0*phiY + 27.0);
@@ -1016,7 +1016,6 @@ void ElasticTimoshenkoBeam3d::setUp()
             mlRot(4,10) = mlRot(10,4) = c2y*L*L*(5.0*phiY*phiY - 5.0*phiY - 1.0);
             mlRot(2,4) = mlRot(4,2) = mlRot(2,10) = mlRot(10,2) = c2y*L*(15.0*phiY - 3.0);
             mlRot(4,8) = mlRot(8,4) = mlRot(8,10) = mlRot(10,8) = -mlRot(2,4);
-            
             double c1z = c1x/pow(1.0 + phiZ,2);
             mlTrn(1,1) = mlTrn(7,7) = c1z*(70.0*phiZ*phiZ + 147.0*phiZ + 78.0);
             mlTrn(1,7) = mlTrn(7,1) = c1z*(35.0*phiZ*phiZ + 63.0*phiZ + 27.0);
