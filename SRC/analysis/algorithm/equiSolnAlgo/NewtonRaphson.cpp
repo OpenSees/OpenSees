@@ -255,7 +255,7 @@ NewtonRaphson::recvSelf(int cTag,
 {
   static Vector data(3);
   theChannel.recvVector(this->getDbTag(), cTag, data);
-  tangent = data(0);
+  tangent = int(data(0));
   iFactor = data(1);
   cFactor = data(2);
   return 0;

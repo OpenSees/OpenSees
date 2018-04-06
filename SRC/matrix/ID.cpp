@@ -277,7 +277,7 @@ ID::unique(void)
         }
     }
 
-    sz = uniquesl.size();
+    sz = int(uniquesl.size());
     int* newdata = new (nothrow) int[sz];
     for (std::list<int>::iterator pos=uniquesl.begin(); pos!=uniquesl.end(); pos++)
         newdata[count++] = *pos;

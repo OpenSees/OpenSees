@@ -1087,7 +1087,7 @@ XmlFileStream::sendSelf(int commitTag, Channel &theChannel)
   static ID idData(3);
   int fileNameLength = 0;
   if (fileName != 0)
-    fileNameLength = strlen(fileName);
+    fileNameLength = int(strlen(fileName));
 
   idData(0) = fileNameLength;
 
@@ -1321,7 +1321,7 @@ XmlFileStream::setOrder(const ID &orderData)
 int
 XmlFileStream::mergeXML() 
 {
-  int fileNameLength = strlen(fileName);
+  int fileNameLength = int(strlen(fileName));
 
   theFile.close();
   fileOpen = 0;
@@ -1347,7 +1347,7 @@ XmlFileStream::mergeXML()
       for (int k=0; k<=numLines; k++) {
 	getline(theFile0, s);  
 	const char *s1 =  s.c_str();
-	int sizeNewData = strlen(s1)+1; // for newline
+	int sizeNewData = int(strlen(s1)) + 1; // for newline
 	char *nextData = new char[sizeData + sizeNewData];
 	if (data != 0) {
 	  strncpy(nextData, data, sizeData);
@@ -1375,7 +1375,7 @@ XmlFileStream::mergeXML()
 
       theFile0.open(fileName, ios::in);
 
-      int fileNameLength = strlen(fileName);
+      int fileNameLength = int(strlen(fileName));
       sprintf(&fileName[fileNameLength-2],"");
       
       theFile.open(fileName, ios::out);

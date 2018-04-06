@@ -86,3 +86,4 @@ proc RCsection {id h b cover coreID coverID steelID numBars barArea nfCoreY nfCo
 	layer straight $steelID $numBars $barArea [expr $coreY-$spacingY] $coreZ [expr $ncoreY+$spacingY] $coreZ
 	layer straight $steelID $numBars $barArea [expr $coreY-$spacingY] $ncoreZ [expr $ncoreY+$spacingY] $ncoreZ
    }
+}

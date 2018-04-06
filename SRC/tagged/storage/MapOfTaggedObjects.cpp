@@ -61,7 +61,7 @@ int
 MapOfTaggedObjects::setSize(int newSize)
 {
     // no setSize for map template .. can only check enough space available
-    int maxSize = theMap.max_size();
+    int maxSize = int(theMap.max_size());
     if (newSize > maxSize) {
       opserr << "MapOfTaggedObjects::setSize - failed as map stl has a max size of " << maxSize << "\n";
       return -1;
@@ -115,7 +115,7 @@ MapOfTaggedObjects::removeComponent(int tag)
 	return 0;
     else { // the object exists so we remove it
 	removed = (*theEle).second;
-	int ok = theMap.erase(tag);
+	int ok = int(theMap.erase(tag));
 	if (ok != 1) { // ensure the map did remove the object
 	  opserr << "MapOfTaggedObjects::removeComponent - map STL failed to remove object with tag " << 
 	    tag << "\n";
@@ -130,7 +130,7 @@ MapOfTaggedObjects::removeComponent(int tag)
 int
 MapOfTaggedObjects::getNumComponents(void) const
 {
-    return theMap.size();
+    return int(theMap.size());
 }
 
 
