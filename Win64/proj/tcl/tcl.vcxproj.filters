@@ -38,6 +38,9 @@
     <ClCompile Include="..\..\..\SRC\modelbuilder\tcl\TclPlaneStressMaterialTester.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\api\packages.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\tcl\TclFeViewer.h">
@@ -56,6 +59,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\modelbuilder\tcl\TclPlaneStressMaterialTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\tcl\commands.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\api\packages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\api\elementAPI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

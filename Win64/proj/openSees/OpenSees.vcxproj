@@ -138,7 +138,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\classTags.h" />
-    <ClInclude Include="..\..\..\SRC\tcl\commands.h" />
     <ClInclude Include="..\..\..\SRC\OPS_Globals.h" />
   </ItemGroup>
   <ItemGroup>

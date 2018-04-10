@@ -109,7 +109,6 @@
     <ClCompile Include="..\..\..\SRC\utility\SimulationInformation.cpp" />
     <ClCompile Include="..\..\..\SRC\utility\StringContainer.cpp" />
     <ClCompile Include="..\..\..\SRC\utility\Timer.cpp" />
-    <ClCompile Include="..\..\..\SRC\api\packages.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\utility\File.h" />
@@ -117,7 +116,6 @@
     <ClInclude Include="..\..\..\SRC\utility\SimulationInformation.h" />
     <ClInclude Include="..\..\..\SRC\utility\StringContainer.h" />
     <ClInclude Include="..\..\..\SRC\utility\Timer.h" />
-    <ClInclude Include="..\..\..\SRC\api\packages.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

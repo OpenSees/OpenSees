@@ -102,6 +102,7 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\SRC\api\packages.cpp" />
     <ClCompile Include="..\..\..\SRC\modelbuilder\tcl\TclPlaneStressMaterialTester.cpp" />
     <ClCompile Include="..\..\..\SRC\tcl\TclFeViewer.cpp" />
     <ClCompile Include="..\..\..\SRC\modelbuilder\tcl\TclModelBuilder.cpp" />
@@ -113,7 +114,10 @@
     <ClCompile Include="..\..\..\SRC\modelbuilder\tcl\myCommands.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\SRC\api\elementAPI.h" />
+    <ClInclude Include="..\..\..\SRC\api\packages.h" />
     <ClInclude Include="..\..\..\SRC\modelbuilder\tcl\TclPlaneStressMaterialTester.h" />
+    <ClInclude Include="..\..\..\SRC\tcl\commands.h" />
     <ClInclude Include="..\..\..\SRC\tcl\TclFeViewer.h" />
     <ClInclude Include="..\..\..\SRC\modelbuilder\tcl\TclModelBuilder.h" />
     <ClInclude Include="..\..\..\SRC\modelbuilder\tcl\TclSectionTester.h" />

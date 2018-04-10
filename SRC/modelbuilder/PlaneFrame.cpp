@@ -150,8 +150,8 @@ PlaneFrame::buildFE_Model(void)
     }
 
     // add a LoadPattern with a LinearSeries
-    LoadPattern *theLoadPattern = new LoadPattern(0);
-    TimeSeries  *theSeries = new LinearSeries(1.0);
+    LoadPattern *theLoadPattern = new LoadPattern(1);
+    TimeSeries  *theSeries = new LinearSeries(1);
     theLoadPattern->setTimeSeries(theSeries);
     result = theDomain->addLoadPattern(theLoadPattern);
     if (result == false) {

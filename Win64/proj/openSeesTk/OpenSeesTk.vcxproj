@@ -139,7 +139,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\classTags.h" />
     <ClInclude Include="..\..\..\SRC\OPS_Globals.h" />
-    <ClInclude Include="..\..\..\SRC\tcl\commands.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\actor\actor.vcxproj">
