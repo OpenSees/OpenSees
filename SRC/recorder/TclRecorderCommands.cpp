@@ -53,7 +53,7 @@
  #include <NormElementRecorder.h>
  #include <NormEnvelopeElementRecorder.h>
  #include <PVDRecorder.h>
-// #include <MPCORecorder.h>
+ #include <MPCORecorder.h>
 extern void* OPS_PVDRecorder();
 extern void* OPS_MPCORecorder();
 
@@ -1827,7 +1827,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
      }
 	 else if (strcmp(argv[1], "mpco") == 0) {
 		 OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
-		 //		 (*theRecorder) = (Recorder*)OPS_MPCORecorder();
+		 (*theRecorder) = (Recorder*)OPS_MPCORecorder();
 		 if (theRecorder == 0) {
 			 return TCL_ERROR;
 		 }

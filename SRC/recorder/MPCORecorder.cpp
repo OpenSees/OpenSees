@@ -64,7 +64,7 @@ and path to HDF5 lib dir
 enables SWMR (Single Writer - Multiple Readers) to allow reading this database from multiple processes
 while opensees is writing data. Warning: this is a new feature in hdf5 version 1.10.0.
 */
-//#define MPCO_USE_SWMR
+#define MPCO_USE_SWMR
 
 // opensees
 #include "MPCORecorder.h"
@@ -94,7 +94,9 @@ while opensees is writing data. Warning: this is a new feature in hdf5 version 1
 #else
 // include system headers for dynamic loading of libraries
 #if defined(_WIN32)
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #else
 #include <dlfcn.h>
@@ -114,12 +116,17 @@ while opensees is writing data. Warning: this is a new feature in hdf5 version 1
 #include <cmath>
 #include <algorithm>
 #include <limits>
+#include <stdint.h>
 
 /*************************************************************************************
 
 macros
 
 **************************************************************************************/
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 // element tags not defined in an accessible .h file... \todo check them...
 #ifndef ELE_TAG_FourNodeQuadWithSensitivity
@@ -167,10 +174,10 @@ HDF5 version info
 
 #define H5_VERS_MAJOR	1	/* For major interface/format changes  	     */
 #define H5_VERS_MINOR	10	/* For minor interface/format changes  	     */
-#define H5_VERS_RELEASE	0	/* For tweaks, bug-fixes, or development     */
-#define H5_VERS_SUBRELEASE "patch1"	/* For pre-releases like snap0       */
-								  /* Empty string for real releases.           */
-#define H5_VERS_INFO    "HDF5 library version: 1.10.0-patch1"      /* Full version string */
+#define H5_VERS_RELEASE	1	/* For tweaks, bug-fixes, or development     */
+#define H5_VERS_SUBRELEASE ""	/* For pre-releases like snap0       */
+                              /* Empty string for real releases.           */
+#define H5_VERS_INFO    "HDF5 library version: 1.10.1"      /* Full version string */
 
 /*
 cout wrapper for library loader verbosity
@@ -409,7 +416,7 @@ public:
 
 public:
 	// misc
-	bool loaded = false;
+	bool loaded;
 	// lib handle
 	void *lib_handle;
 	// loaded function pointers
@@ -1335,7 +1342,7 @@ namespace mpco {
 			Material
 		};
 
-		static char* toString(mpco::ElementOutputDescriptorType::Enum _type) {
+		static const char* toString(mpco::ElementOutputDescriptorType::Enum _type) {
 			switch (_type) {
 			case mpco::ElementOutputDescriptorType::Element: return "ELEMENT";
 			case mpco::ElementOutputDescriptorType::Gauss: return "GAUSS";
@@ -2026,6 +2033,13 @@ namespace mpco {
 					m_current_mode_to_buffer = k;
 					bufferResponse(info, nodes, buffer);
 					/*
+					compute additional infos
+					*/
+					double lambda = k < info.eigen_last_values.Size() ? info.eigen_last_values[k] : 0.0;
+					double omega = std::sqrt(lambda);
+					double freq = omega / (2.0 * M_PI);
+					double period = 1.0 / freq;
+					/*
 					create modal group
 					*/
 					std::stringstream ss_dset_name;
@@ -2033,6 +2047,10 @@ namespace mpco {
 					std::string dset_name = ss_dset_name.str();
 					hid_t h_dset_data = h5::dataset::createAndWrite(h_gp_step, dset_name.c_str(), buffer, nodes.size(), m_num_components);
 					status = h5::attribute::write(h_dset_data, "MODE", k);
+					status = h5::attribute::write(h_dset_data, "LAMBDA", lambda);
+					status = h5::attribute::write(h_dset_data, "OMEGA", omega);
+					status = h5::attribute::write(h_dset_data, "FREQUENCY", freq);
+					status = h5::attribute::write(h_dset_data, "PERIOD", period);
 					status = h5::dataset::close(h_dset_data);
 				}
 				/*
@@ -2734,7 +2752,7 @@ namespace mpco {
 			std::string toString()const {
 				std::stringstream ss;
 				/*
-				this prints and xml-like structure, just for debugging purposes
+				this prints a xml-like structure, just for debugging purposes
 				*/
 				ss << "----------------------------------------------------\n";
 				ss << "OutputDescriptor info\n";
@@ -3703,7 +3721,7 @@ namespace mpco {
 					int_type = ElementIntegrationRuleType::Triangle_GaussLegendre_2C;
 				}
 				/*
-				4-node quadrlateral with 1 gp
+				4-node quadrilateral with 1 gp
 				*/
 				else if (
 					// ./UWelements
@@ -3715,7 +3733,7 @@ namespace mpco {
 					int_type = ElementIntegrationRuleType::Quadrilateral_GaussLegendre_1;
 				}
 				/*
-				4-node quadrlateral with 2x2 gp
+				4-node quadrilateral with 2x2 gp
 				*/
 				else if (
 					// ./quad
@@ -3749,6 +3767,17 @@ namespace mpco {
 					) {
 					geom_type = ElementGeometryType::Quadrilateral_9N;
 					int_type = ElementIntegrationRuleType::Quadrilateral_GaussLegendre_3;
+				}
+				/*
+				4-node tetrahedron with 1x1x1 gp
+				*/
+				else if (
+					// ./tetrahedron
+					elem_class_tag == ELE_TAG_FourNodeTetrahedron
+					)
+				{
+					geom_type = ElementGeometryType::Tetrahedron_4N;
+					int_type = ElementIntegrationRuleType::Tetrahedron_GaussLegendre_1;
 				}
 				/*
 				8-node hexahedron with 1x1x1 gp
@@ -4836,10 +4865,10 @@ int MPCORecorder::writeModelElements()
 				*/
 				if (elem_by_custom_rule.items.size() > 0) {
 					/*
-					create a name for this dataset using the following format <class_name>[<integration_rule>:<custom_rule_index>]
+					create a name for this dataset using the following format <class_tag>-<class_name>[<integration_rule>:<custom_rule_index>]
 					*/
 					std::stringstream ss_dset_name;
-					ss_dset_name << elem_by_tag.class_name
+					ss_dset_name << elem_by_tag.class_tag << "-" << elem_by_tag.class_name
 						<< "[" << elem_by_rule.int_rule_type << ":"
 						<< elem_by_custom_rule.custom_int_rule_index << "]";
 					elem_by_custom_rule.name = ss_dset_name.str();
@@ -5907,10 +5936,10 @@ int MPCORecorder::initElementRecorders()
 							mpco::element::OutputResponseCollection &eo_by_header = eo_by_custom_rule.items[header];
 							if (eo_by_header.is_new) {
 								/*
-								create a name for this dataset using the following format <class_name>[<integration_rule>:<custom_rule_index>:<header_index>]
+								create a name for this dataset using the following format <class_tag>-<class_name>[<integration_rule>:<custom_rule_index>:<header_index>]
 								*/
 								std::stringstream ss_buffer;
-								ss_buffer << elem_by_tag.class_name
+								ss_buffer << elem_by_tag.class_tag << "-" << elem_by_tag.class_name
 									<< "[" << elem_by_rule.int_rule_type << ":"
 									<< elem_by_custom_rule.custom_int_rule_index << ":"
 									<< header_local_index++ << "]";
@@ -5982,18 +6011,6 @@ int MPCORecorder::recordResultsOnNodes()
 	size_t num_nodes = m_data->nodes.size();
 	if (num_nodes == 0) 
 		return retval;
-	/*
-	some preprocessing before recording reactions.
-	we need to update the nodal reactions
-	\todo let the user specify if we should include inertia...
-	*/
-	/*bool record_reactions = false;
-	if (m_data->nodal_recorders.find(mpco::NodalResultType::ReactionForce) != m_data->nodal_recorders.end()) 
-		record_reactions = true;
-	else if (m_data->nodal_recorders.find(mpco::NodalResultType::ReactionMoment) != m_data->nodal_recorders.end())
-		record_reactions = true;
-	if (record_reactions) 
-		m_data->info.domain->calculateNodalReactions(0);*/
 	/*
 	some preprocessing before recording modes of vibration.
 	*/
