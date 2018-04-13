@@ -115,6 +115,7 @@
     <ClCompile Include="..\..\..\SRC\recorder\FilePlotter.cpp" />
     <ClCompile Include="..\..\..\Src\recorder\GSA_Recorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\MaxNodeDispRecorder.cpp" />
+    <ClCompile Include="..\..\..\SRC\recorder\MPCORecorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\NodeRecorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\NormElementRecorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\NormEnvelopeElementRecorder.cpp" />
@@ -132,6 +133,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\recorder\DamageRecorder.h" />
     <ClInclude Include="..\..\..\SRC\recorder\EnvelopeDriftRecorder.h" />
+    <ClInclude Include="..\..\..\SRC\recorder\MPCORecorder.h" />
     <ClInclude Include="..\..\..\SRC\recorder\NormElementRecorder.h" />
     <ClInclude Include="..\..\..\SRC\recorder\NormEnvelopeElementRecorder.h" />
     <ClInclude Include="..\..\..\SRC\recorder\PVDRecorder.h" />
