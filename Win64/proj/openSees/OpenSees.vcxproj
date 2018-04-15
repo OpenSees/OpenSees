@@ -126,6 +126,8 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
+      <Version>
+      </Version>
     </Link>
     <BuildLog>
       <Path>.\..\..\obj\opensees\debug\$(MSBuildProjectName).log</Path>
@@ -213,6 +215,9 @@
     <ProjectReference Include="..\utility\utility.vcxproj">
       <Project>{72ceb368-613b-3977-7be6-0155a5f1ddbc}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OpenSees.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

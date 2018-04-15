@@ -230,6 +230,9 @@
     <ClCompile Include="..\..\..\SRC\interpreter\PythonModule.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\PythonWrapper.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OpenSeesPy.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

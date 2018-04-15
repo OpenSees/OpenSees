@@ -4859,15 +4859,19 @@ Win32/proj/modelbuilder/modelbuilder.dsp -text
 Win32/proj/modelbuilder/modelbuilder.mak -text
 Win32/proj/modelbuilder/modelbuilder.vcxproj -text
 Win32/proj/modelbuilder/modelbuilder.vcxproj.filters -text
+Win32/proj/openSees/OpenSees.rc -text
 Win32/proj/openSees/OpenSees.vcxproj -text
 Win32/proj/openSees/OpenSees.vcxproj.filters -text
 Win32/proj/openSees/openSees.dsp -text
 Win32/proj/openSees/openSees.mak -text
+Win32/proj/openSees/resource.h -text
 Win32/proj/openSeesMP/OpenSeesMP.vcproj -text svneol=unset#application/octet-stream
 Win32/proj/openSeesSP/OpenSeesSP.vcproj -text svneol=unset#application/octet-stream
+Win32/proj/openSeesTk/OpenSeesTk.rc -text
 Win32/proj/openSeesTk/OpenSeesTk.vcxproj -text
 Win32/proj/openSeesTk/OpenSeesTk.vcxproj.filters -text
 Win32/proj/openSeesTk/openSeesTk.dsp -text
+Win32/proj/openSeesTk/resource.h -text
 Win32/proj/optimization/optimization.vcxproj -text
 Win32/proj/optimization/optimization.vcxproj.filters -text
 Win32/proj/parallel/parallel.vcproj -text
@@ -4939,14 +4943,20 @@ Win64/proj/minPackage/minPackageC.vcproj -text
 Win64/proj/minPackage/minPackageCPP.vcproj -text
 Win64/proj/modelbuilder/modelbuilder.vcxproj -text
 Win64/proj/modelbuilder/modelbuilder.vcxproj.filters -text
+Win64/proj/openSees/OpenSees.rc -text
 Win64/proj/openSees/OpenSees.vcxproj -text
 Win64/proj/openSees/OpenSees.vcxproj.filters -text
+Win64/proj/openSees/resource.h -text
 Win64/proj/openSeesMP/OpenSeesMP.vcproj -text
+Win64/proj/openSeesPy/OpenSeesPy.rc -text
 Win64/proj/openSeesPy/OpenSeesPy.vcxproj -text
 Win64/proj/openSeesPy/OpenSeesPy.vcxproj.filters -text
+Win64/proj/openSeesPy/resource.h -text
 Win64/proj/openSeesSP/OpenSeesSP.vcproj -text
+Win64/proj/openSeesTk/OpenSeesTk.rc -text
 Win64/proj/openSeesTk/OpenSeesTk.vcxproj -text
 Win64/proj/openSeesTk/OpenSeesTk.vcxproj.filters -text
+Win64/proj/openSeesTk/resource.h -text
 Win64/proj/optimization/optimization.vcxproj -text
 Win64/proj/optimization/optimization.vcxproj.filters -text
 Win64/proj/parallel/parallel.vcproj -text

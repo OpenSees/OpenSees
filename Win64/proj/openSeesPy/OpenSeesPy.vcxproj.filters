@@ -74,5 +74,13 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{b403a6be-237e-4ac0-984b-8a2d363d5c97}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{85a90bf6-a366-4a39-8951-a3108ee3751a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OpenSeesPy.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

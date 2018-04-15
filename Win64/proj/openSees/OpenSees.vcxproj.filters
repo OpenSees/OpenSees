@@ -9,6 +9,9 @@
       <UniqueIdentifier>{dcfc8509-b3fa-4895-b0b9-2578319c6560}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{65e1ce49-ab97-4e72-8aed-0f47c531b291}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\tcl\tclAppInit.cpp">
@@ -28,5 +31,10 @@
     <ClInclude Include="..\..\..\SRC\OPS_Globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OpenSees.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

@@ -9,6 +9,9 @@
       <UniqueIdentifier>{9a40c364-8ee0-499c-b024-db507bf20e25}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{1b467671-911e-4ad4-a9a6-fab55a41a589}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\tcl\tkMain.cpp">
@@ -28,5 +31,10 @@
     <ClInclude Include="..\..\..\SRC\OPS_Globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OpenSeesTk.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

@@ -214,6 +214,9 @@
       <Project>{72ceb368-613b-3977-7be6-0155a5f1ddbc}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OpenSeesTk.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
