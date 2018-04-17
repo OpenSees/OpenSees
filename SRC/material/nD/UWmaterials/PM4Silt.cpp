@@ -415,25 +415,22 @@ int PM4Silt::revertToStart(void)
 NDMaterial*
 PM4Silt::getCopy(void)
 {
-	opserr << "PM4Silt::getCopy -- subclass responsibility\n";
-	exit(-1);
-	return 0;
+	PM4Silt  *clone;
+	clone = new PM4Silt();
+	*clone = *this;
+	return clone;
 }
 
 const char*
 PM4Silt::getType(void) const
 {
-	opserr << "PM4Silt::getOrder -- subclass responsibility\n";
-	exit(-1);
-	return 0;
+	return "PlaneStrain";
 }
 
 int
 PM4Silt::getOrder(void) const
 {
-	opserr << "PM4Silt::getOrder -- subclass responsibility\n";
-	exit(-1);
-	return 0;
+	return 3;
 }
 
 

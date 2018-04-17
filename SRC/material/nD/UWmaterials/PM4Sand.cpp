@@ -442,25 +442,22 @@ int PM4Sand::revertToStart(void)
 NDMaterial*
 PM4Sand::getCopy(void)
 {
-	opserr << "PM4Sand::getCopy -- subclass responsibility\n";
-	exit(-1);
-	return 0;
+	PM4Sand  *clone;
+	clone = new PM4Sand();
+	*clone = *this;
+	return clone;
 }
 
 const char*
 PM4Sand::getType(void) const
 {
-	opserr << "PM4Sand::getOrder -- subclass responsibility\n";
-	exit(-1);
-	return 0;
+	return "PlaneStrain";
 }
 
 int
 PM4Sand::getOrder(void) const
 {
-	opserr << "PM4Sand::getOrder -- subclass responsibility\n";
-	exit(-1);
-	return 0;
+	return 3;
 }
 
 
@@ -529,7 +526,7 @@ PM4Sand::sendSelf(int commitTag, Channel &theChannel)
 {
 
 	int res = 0;
-	static Vector data(95);
+	static Vector data(98);
 
 	data(0) = this->getTag();
 
@@ -582,24 +579,22 @@ PM4Sand::sendSelf(int commitTag, Channel &theChannel)
 	data(69) = mAlpha_in_max(1);      data(72) = mAlpha_in_min(1);		data(75) = mAlpha_in_p(1);	   data(78) = mFabric_in(1);
 	data(70) = mAlpha_in_max(2);      data(73) = mAlpha_in_min(2);		data(76) = mAlpha_in_p(2);	   data(79) = mFabric_in(2);
 
-	data(80) = mDGamma_n;
-	data(81) = mDGamma;
-	data(82) = mK;
-	data(83) = mG;
-	data(84) = m_Pmin2;
+	data(80) = mAlpha_in_true(0); 	 data(83) = mSigma_b(0);
+	data(81) = mAlpha_in_true(1); 	 data(84) = mSigma_b(1);
+	data(82) = mAlpha_in_true(2); 	 data(85) = mSigma_b(2);
 
-	data(85) = mVoidRatio;
-	data(86) = mzcum;
-	data(87) = mzpeak;
-	data(88) = mpzp;
-	data(89) = mMcur;
-	data(90) = mzxp;
-	data(91) = m_Cdr;
-
-	data(92) = mSigma_b(0);
-	data(93) = mSigma_b(1);
-	data(94) = mSigma_b(2);
-
+	data(86) = mDGamma_n;
+	data(87) = mDGamma;
+	data(88) = mK;
+	data(89) = mG;
+	data(90) = m_Pmin2;
+	data(91) = mVoidRatio;
+	data(92) = mzcum;
+	data(93) = mzpeak;
+	data(94) = mpzp;
+	data(95) = mMcur;
+	data(96) = mzxp;
+	data(97) = m_Cdr;
 
 	res = theChannel.sendVector(this->getDbTag(), commitTag, data);
 	if (res < 0) {
@@ -615,7 +610,7 @@ PM4Sand::recvSelf(int commitTag, Channel &theChannel,
 	FEM_ObjectBroker &theBroker)
 {
 	int res = 0;
-	static Vector data(95);
+	static Vector data(98);
 
 	res = theChannel.recvVector(this->getDbTag(), commitTag, data);
 	if (res < 0) {
@@ -673,23 +668,22 @@ PM4Sand::recvSelf(int commitTag, Channel &theChannel,
 	mAlpha_in_max(1) = data(69);      mAlpha_in_min(1) = data(72);		mAlpha_in_p(1) = data(75);     mFabric_in(1) = data(78);
 	mAlpha_in_max(2) = data(70);      mAlpha_in_min(2) = data(73);		mAlpha_in_p(2) = data(76);     mFabric_in(2) = data(79);
 
-	mDGamma_n = data(80);
-	mDGamma = data(81);
-	mK = data(82);
-	mG = data(83);
-	m_Pmin2 = data(84);
-
-	mVoidRatio = data(85);
-	mzcum = data(86);
-	mzpeak = data(87);
-	mpzp = data(88);
-	mMcur = data(89);
-	mzxp = data(90);
-	m_Cdr = data(91);
-
-	mSigma_b(0) = data(92);
-	mSigma_b(1) = data(93);
-	mSigma_b(2) = data(94);
+	mAlpha_in_max(0) = data(80);      mSigma_b(0) = data(83);
+	mAlpha_in_max(1) = data(81);      mSigma_b(1) = data(84);
+	mAlpha_in_max(2) = data(82);      mSigma_b(2) = data(85);
+	
+	mDGamma_n  = data(86);
+	mDGamma = data(87);
+	mK = data(88);
+	mG = data(89);
+	m_Pmin2 = data(90);
+	mVoidRatio = data(91);
+	mzcum = data(92);
+	mzpeak = data(93);
+	mpzp = data(94);
+	mMcur = data(95);
+	mzxp = data(96);
+	m_Cdr = data(97);
 
 	return 0;
 }
@@ -1039,10 +1033,10 @@ void PM4Sand::integrate()
 		if (DoubleDot2_2_Contr(mAlpha_n - mAlpha_in_p, n_tr) < 0.0) {
 			// small unload-reload cycle, update initial back-stress ratio using apparent back-stress ratio
 			mAlpha_in_p = mAlpha_in_true;
-			mAlpha_in = mAlpha_n;
+			// mAlpha_in = mAlpha_n;
 			// update components of apparent initial back-stress ratio
 			for (int ii = 0; ii < 3; ii++) {
-				if (mAlpha_in(ii) > 0.0)
+				if (n_tr(ii) > 0.0)
 					// positive loading direction
 					mAlpha_in(ii) = fmax(0.0, mAlpha_in_min(ii));
 				else
@@ -2319,7 +2313,7 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 		double Adc = m_Ado * (1 + Macauley(DoubleDot2_2_Contr(fabric, n))) / hp / Cdz;
 		double Cin = 2.0 * Macauley(DoubleDot2_2_Contr(fabric, n)) / sqrt(2.0) / m_z_max;
 		D = fmin(Adc * pow((DoubleDot2_2_Contr(alpha - mAlpha_in_true, n) + Cin), 2), 1.5 * m_Ado) *
-			DoubleDot2_2_Contr(alphaD - alpha, n) / (DoubleDot2_2_Contr(alphaD - alpha, n) + 0.10);
+			DoubleDot2_2_Contr(alphaD - alpha, n) / (DoubleDot2_2_Contr(alphaD - alpha, n) + 0.1);
 		// Apply a factor to D so it doesn't go very big when p is small
 		double C_pmin2;
 		if (p < m_Pmin * 2.0)
