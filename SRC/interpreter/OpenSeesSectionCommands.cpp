@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // Written: Minjie
 
 // Description: command to create section
@@ -48,6 +48,11 @@
 #include <RCSectionIntegration.h>
 #include <RCTBeamSectionIntegration.h>
 #include <ParallelSection.h>
+#include <FiberSection2dThermal.h>
+#include <FiberSection3dThermal.h>
+#include <FiberSectionGJThermal.h>
+#include <MembranePlateFiberSectionThermal.h>
+#include <LayeredShellFiberSectionThermal.h>
 
 void* OPS_ElasticSection2d();
 void* OPS_ElasticSection3d();
@@ -78,19 +83,25 @@ void* OPS_MembranePlateFiberSection();
 void* OPS_LayeredShellFiberSection();
 void* OPS_Bidirectional();
 void* OPS_Isolator2spring();
+void* OPS_FiberSection2dThermal();
 
 namespace {
     static FiberSection2d* theActiveFiberSection2d = 0;
     static FiberSection3d* theActiveFiberSection3d = 0;
     static NDFiberSection2d* theActiveNDFiberSection2d = 0;
     static NDFiberSection3d* theActiveNDFiberSection3d = 0;
+
+    static FiberSection2dThermal* theActiveFiberSection2dThermal = 0;
+    static FiberSection3dThermal* theActiveFiberSection3dThermal = 0;
+    static FiberSectionGJThermal* theActiveFiberSectionGJThermal = 0;
+
     static bool initDone = false;
 
-    struct char_cmp { 
-	bool operator () (const char *a,const char *b) const 
+    struct char_cmp {
+	bool operator () (const char *a,const char *b) const
 	    {
 		return strcmp(a,b)<0;
-	    } 
+	    }
     };
 
     typedef std::map<const char *, void *(*)(void), char_cmp> OPS_ParsingFunctionMap;
@@ -121,6 +132,43 @@ namespace {
 	return theSec;
     }
 
+    static void* OPS_FiberSection3dThermal(bool& isTorsion)
+    {
+	int numData = OPS_GetNumRemainingInputArgs();
+	if(numData < 1) {
+	    opserr<<"insufficient arguments for FiberSection3dThermal\n";
+	    return 0;
+	}
+
+	numData = 1;
+	int tag;
+	if (OPS_GetIntInput(&numData, &tag) < 0) {
+	    opserr<<"WARNING: failed to read tag\n";
+	    return 0;
+	}
+
+	double GJ = 0.0;
+	isTorsion = false;
+	if (OPS_GetNumRemainingInputArgs() >= 2) {
+	    const char* opt = OPS_GetString();
+	    if (strcmp(opt, "-GJ") == 0) {
+		if (OPS_GetDoubleInput(&numData, &GJ) < 0) {
+		    opserr << "WARNING: failed to read GJ\n";
+		    return 0;
+		}
+		isTorsion = true;
+	    }
+	}
+
+	int num = 30;
+
+	if (isTorsion) {
+	    return new FiberSectionGJThermal(tag,num,GJ);
+	} else {
+	    return new FiberSection3d(tag, num);
+	}
+    }
+
     static void* OPS_FiberSection()
     {
 	void* theSec = 0;
@@ -129,8 +177,29 @@ namespace {
 	    theSec = OPS_FiberSection2d();
 	    theActiveFiberSection2d = (FiberSection2d*)theSec;
 	} else if(ndm == 3) {
-        theSec = OPS_FiberSection3d();
-        theActiveFiberSection3d = (FiberSection3d*)theSec;
+	    theSec = OPS_FiberSection3d();
+	    theActiveFiberSection3d = (FiberSection3d*)theSec;
+	}
+
+	return theSec;
+    }
+
+    static void* OPS_FiberSectionThermal()
+    {
+	void* theSec = 0;
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    theSec = OPS_FiberSection2dThermal();
+	    theActiveFiberSection2dThermal = (FiberSection2dThermal*)theSec;
+	} else if(ndm == 3) {
+	    bool isTorsion = false;
+	    theSec = OPS_FiberSection3dThermal(isTorsion);
+	    if (isTorsion) {
+		theActiveFiberSectionGJThermal = (FiberSectionGJThermal*)theSec;
+	    } else {
+		theActiveFiberSection3dThermal = (FiberSection3dThermal*)theSec;
+	    }
+
 	}
 
 	return theSec;
@@ -186,17 +255,17 @@ namespace {
 	    opserr << "Uniaxial section: " << data[0] << endln;
 	    return 0;
 	}
-		
+
 	// Retrieve the uniaxial material from the model builder
 	UniaxialMaterial *theMat = OPS_getUniaxialMaterial(data[1]);
-	
+
 	if (theMat == 0) {
 	    opserr << "WARNING uniaxial material does not exist\n";
-	    opserr << "uniaxial material: " << data[0]; 
+	    opserr << "uniaxial material: " << data[0];
 	    opserr << "\nUniaxial section: " << data[1] << endln;
 	    return 0;
 	}
-	
+
 	// Parsing was successful, allocate the section
 	//theSection = new GenericSection1d (tag, *theMat, code);
 
@@ -214,7 +283,7 @@ namespace {
 	    opserr << "Want: section WFSection2d tag? matTag? d? tw? bf? tf? nfdw? nftf? <-nd shape?>" << endln;
 	    return 0;
 	}
-	
+
 	int tag, matTag;
 	double d, tw, bf, tf;
 	int nfdw, nftf;
@@ -234,39 +303,39 @@ namespace {
 
 	if (OPS_GetDoubleInput(&numdata, &d) < 0) {
 	    opserr << "WARNING invalid d" << endln;
-	    opserr << "WFSection2d section: " << tag << endln;	    
+	    opserr << "WFSection2d section: " << tag << endln;
 	    return 0;
-	}	
+	}
 
 	if (OPS_GetDoubleInput(&numdata, &tw) < 0) {
 	    opserr << "WARNING invalid tw" << endln;
-	    opserr << "WFSection2d section: " << tag << endln;	    
+	    opserr << "WFSection2d section: " << tag << endln;
 	    return 0;
-	}	
+	}
 
 	if (OPS_GetDoubleInput(&numdata, &bf) < 0) {
 	    opserr << "WARNING invalid bf" << endln;
-	    opserr << "WFSection2d section: " << tag << endln;	    	    
+	    opserr << "WFSection2d section: " << tag << endln;
 	    return 0;
-	}	
+	}
 
 	if (OPS_GetDoubleInput(&numdata, &tf) < 0) {
 	    opserr << "WARNING invalid tf" << endln;
-	    opserr << "WFSection2d section: " << tag << endln;	    	    
+	    opserr << "WFSection2d section: " << tag << endln;
 	    return 0;
-	}	
+	}
 
 	if (OPS_GetIntInput(&numdata, &nfdw) < 0) {
 	    opserr << "WARNING invalid nfdw" << endln;
-	    opserr << "WFSection2d section: " << tag << endln;	    	    
+	    opserr << "WFSection2d section: " << tag << endln;
 	    return 0;
-	}	
+	}
 
 	if (OPS_GetIntInput(&numdata, &nftf) < 0) {
 	    opserr << "WARNING invalid nftf" << endln;
-	    opserr << "WFSection2d section: " << tag << endln;	    	    
+	    opserr << "WFSection2d section: " << tag << endln;
 	    return 0;
-	}	
+	}
 
 	WideFlangeSectionIntegration wfsect(d, tw, bf, tf, nfdw, nftf);
 
@@ -278,22 +347,22 @@ namespace {
 	    if (OPS_GetNumRemainingInputArgs() > 1) {
 		if (OPS_GetDoubleInput(&numdata, &shape) < 0) {
 		    opserr << "WARNING invalid shape" << endln;
-		    opserr << "WFSection2d section: " << tag << endln;	    	    
+		    opserr << "WFSection2d section: " << tag << endln;
 		    return 0;
 		}
 	    }
 
 	    NDMaterial *theSteel = OPS_getNDMaterial(matTag);
-	
+
 	    if (theSteel == 0) {
 		opserr << "WARNING ND material does not exist\n";
-		opserr << "material: " << matTag; 
+		opserr << "material: " << matTag;
 		opserr << "\nWFSection2d section: " << tag << endln;
 		return 0;
 	    }
-		  
+
 	    NDMaterial **theMats = new NDMaterial *[numFibers];
-	  
+
 	    wfsect.arrangeFibers(theMats, theSteel);
 
 	    // Parsing was successful, allocate the section
@@ -306,28 +375,28 @@ namespace {
 		    theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats, wfsect, shape);
 		}
 	    }
-	    delete [] theMats;	  
+	    delete [] theMats;
 	}
 	else {
 	    UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(matTag);
-	
+
 	    if (theSteel == 0) {
 		opserr << "WARNING uniaxial material does not exist\n";
-		opserr << "material: " << matTag; 
+		opserr << "material: " << matTag;
 		opserr << "\nWFSection2d section: " << tag << endln;
 		return 0;
 	    }
-	  
+
 	    UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
-	  
+
 	    wfsect.arrangeFibers(theMats, theSteel);
-	  
+
 	    // Parsing was successful, allocate the section
 	    theSection = new FiberSection2d(tag, numFibers, theMats, wfsect);
 
 	    delete [] theMats;
 	}
-	
+
 	return theSection;
     }
 
@@ -346,7 +415,7 @@ namespace {
 	    opserr << "WARNING invalid section RCSection2d int inputs" << endln;
 	    return 0;
 	}
-	
+
 	int tag = idata[0];
 	int coreTag = idata[1];
 	int coverTag = idata[2];
@@ -360,7 +429,7 @@ namespace {
 	    opserr << "RCSection2d section: " << tag << endln;
 	    return 0;
 	}
-	
+
 	double d = data[0];
 	double b = data[1];
 	double cover = data[2];
@@ -380,32 +449,32 @@ namespace {
 	int nfs = idata[2];
 
 	UniaxialMaterial *theCore = OPS_getUniaxialMaterial(coreTag);
-	
+
 	if (theCore == 0) {
 	    opserr << "WARNING uniaxial material does not exist\n";
-	    opserr << "material: " << coreTag; 
+	    opserr << "material: " << coreTag;
 	    opserr << "\nRCSection2d section: " << tag << endln;
 	    return 0;
 	}
-	
+
 	UniaxialMaterial *theCover = OPS_getUniaxialMaterial(coverTag);
-	
+
 	if (theCover == 0) {
 	    opserr << "WARNING uniaxial material does not exist\4n";
-	    opserr << "material: " << coverTag; 
+	    opserr << "material: " << coverTag;
 	    opserr << "\nRCSection2d section: " << tag << endln;
 	    return 0;
 	}
-	
+
 	UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
 
 	if (theSteel == 0) {
 	    opserr << "WARNING uniaxial material does not exist\n";
-	    opserr << "material: " << steelTag; 
+	    opserr << "material: " << steelTag;
 	    opserr << "\nRCSection2d section: " << tag << endln;
 	    return 0;
 	}
-	
+
 	RCSectionIntegration rcsect(d, b, Atop, Abottom, Aside, cover, nfcore, nfcover, nfs);
 
 	int numFibers = rcsect.getNumFibers();
@@ -446,10 +515,10 @@ namespace {
 	double data[8];
 	if (OPS_GetDoubleInput(&numdata, data) < 0) {
 	    opserr << "WARNING invalid double inputs" << endln;
-	    opserr << "RCTBeamSection2d section: " << tag << endln;	    
+	    opserr << "RCTBeamSection2d section: " << tag << endln;
 	    return 0;
 	}
-	
+
 	double d = data[0];
 	double bw = data[1];
 	double beff = data[2];
@@ -471,11 +540,11 @@ namespace {
 	int Nwcore = idata[3];
 	int NsteelTop = idata[4];
 	int NsteelBottom = idata[5];
-       
+
 	UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
 	if (theSteel == 0) {
 	    opserr << "WARNING uniaxial material does not exist\n";
-	    opserr << "material: " << steelTag; 
+	    opserr << "material: " << steelTag;
 	    opserr << "\nRCTBeamSection2d section: " << tag << endln;
 	    return 0;
 	}
@@ -489,15 +558,15 @@ namespace {
 	NDMaterial *theCore = OPS_getNDMaterial(coreTag);
 	if (theCore == 0) {
 	    opserr << "WARNING uniaxial material does not exist\n";
-	    opserr << "material: " << coreTag; 
+	    opserr << "material: " << coreTag;
 	    opserr << "\nRCTBeamSection2d section: " << tag << endln;
 	    return 0;
 	}
 
-	NDMaterial *theCover = OPS_getNDMaterial(coverTag);      
+	NDMaterial *theCover = OPS_getNDMaterial(coverTag);
 	if (theCover == 0) {
 	    opserr << "WARNING uniaxial material does not exist\4n";
-	    opserr << "material: " << coverTag; 
+	    opserr << "material: " << coverTag;
 	    opserr << "\nRCTBeamSection2d section: " << tag << endln;
 	    return 0;
 	}
@@ -520,21 +589,21 @@ namespace {
 		  NsteelTop, NsteelBottom);
 	steel.arrangeFibers(theUniMat, theNDMat, 0, 0, theSteel);
 	FiberSection2d steelSec(0, numSFibers, theUniMat, steel);
-	
+
 	RCTBeamSectionIntegration
 	    concrete(d, bw, beff, hf, Atop, Abottom, flcov, wcov,
 		     Nflcover, Nwcover, Nflcore, Nwcore,
 		     0, 0);
 	concrete.arrangeFibers(theUniMat, theNDMat, theCore, theCover, 0);
 	NDFiberSection2d concSec(0, numCFibers, theNDMat, concrete);
-	
-	
+
+
 
 	SectionForceDeformation *theSections[2];
 	theSections[1] = &steelSec;
 	theSections[0] = &concSec;
 	SectionForceDeformation *theSection = new ParallelSection(tag, 2, theSections);
-	
+
 
 
 	delete [] theNDMat;
@@ -544,72 +613,72 @@ namespace {
 
     static void* OPS_RCTBeamSectionUniMat2d()
     {
-    	if (OPS_GetNumRemainingInputArgs() < 18) {
-    	    opserr << "WARNING insufficient arguments\n";
-    	    opserr << "Want: section RCTBeamSection2d tag? coreTag? coverTag? steelTag? d? bw? beff? hf? Atop? Abottom? flcov? wcov? Nflcover? Nwcover? Nflcore? Nwcore? NsteelTop?  NsteelBottom?" << endln;
-    	    return 0;
-    	}
+	if (OPS_GetNumRemainingInputArgs() < 18) {
+	    opserr << "WARNING insufficient arguments\n";
+	    opserr << "Want: section RCTBeamSection2d tag? coreTag? coverTag? steelTag? d? bw? beff? hf? Atop? Abottom? flcov? wcov? Nflcover? Nwcover? Nflcore? Nwcore? NsteelTop?  NsteelBottom?" << endln;
+	    return 0;
+	}
 
-    	// int
-    	int numdata = 4;
-    	int idata[6];
-    	if (OPS_GetIntInput(&numdata, idata) < 0) {
-    	    opserr << "WARNING invalid section RCTBeamSection2d int inputs" << endln;
-    	    return 0;
-    	}
-    	int tag = idata[0];
-    	int coreTag = idata[1];
-    	int coverTag = idata[2];
-    	int steelTag = idata[3];
+	// int
+	int numdata = 4;
+	int idata[6];
+	if (OPS_GetIntInput(&numdata, idata) < 0) {
+	    opserr << "WARNING invalid section RCTBeamSection2d int inputs" << endln;
+	    return 0;
+	}
+	int tag = idata[0];
+	int coreTag = idata[1];
+	int coverTag = idata[2];
+	int steelTag = idata[3];
 
-    	// double
-    	numdata = 8;
-    	double data[8];
-    	if (OPS_GetDoubleInput(&numdata, data) < 0) {
-    	    opserr << "WARNING invalid double inputs" << endln;
-    	    opserr << "RCTBeamSection2d section: " << tag << endln;	    
-    	    return 0;
-    	}
-	
-    	double d = data[0];
-    	double bw = data[1];
-    	double beff = data[2];
-    	double hf = data[3];
-    	double Atop = data[4];
-    	double Abottom = data[5];
-    	double flcov = data[6];
-    	double wcov = data[7];
+	// double
+	numdata = 8;
+	double data[8];
+	if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	    opserr << "WARNING invalid double inputs" << endln;
+	    opserr << "RCTBeamSection2d section: " << tag << endln;
+	    return 0;
+	}
 
-    	// int
-    	numdata = 6;
-    	if (OPS_GetIntInput(&numdata, idata) < 0) {
-    	    opserr << "WARNING invalid section RCTBeamSection2d int inputs" << endln;
-    	    return 0;
-    	}
-    	int Nflcover = idata[0];
-    	int Nwcover = idata[1];
-    	int Nflcore = idata[2];
-    	int Nwcore = idata[3];
-    	int NsteelTop = idata[4];
-    	int NsteelBottom = idata[5];
-       
-    	UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
-    	if (theSteel == 0) {
-    	    opserr << "WARNING uniaxial material does not exist\n";
-    	    opserr << "material: " << steelTag; 
-    	    opserr << "\nRCTBeamSection2d section: " << tag << endln;
-    	    return 0;
-    	}
+	double d = data[0];
+	double bw = data[1];
+	double beff = data[2];
+	double hf = data[3];
+	double Atop = data[4];
+	double Abottom = data[5];
+	double flcov = data[6];
+	double wcov = data[7];
 
-    	RCTBeamSectionIntegration
-    	    rctbeamsect(d, bw, beff, hf, Atop, Abottom, flcov, wcov,
-    			Nflcover, Nwcover, Nflcore, Nwcore,
-    			NsteelTop, NsteelBottom);
+	// int
+	numdata = 6;
+	if (OPS_GetIntInput(&numdata, idata) < 0) {
+	    opserr << "WARNING invalid section RCTBeamSection2d int inputs" << endln;
+	    return 0;
+	}
+	int Nflcover = idata[0];
+	int Nwcover = idata[1];
+	int Nflcore = idata[2];
+	int Nwcore = idata[3];
+	int NsteelTop = idata[4];
+	int NsteelBottom = idata[5];
+
+	UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
+	if (theSteel == 0) {
+	    opserr << "WARNING uniaxial material does not exist\n";
+	    opserr << "material: " << steelTag;
+	    opserr << "\nRCTBeamSection2d section: " << tag << endln;
+	    return 0;
+	}
+
+	RCTBeamSectionIntegration
+	    rctbeamsect(d, bw, beff, hf, Atop, Abottom, flcov, wcov,
+			Nflcover, Nwcover, Nflcore, Nwcore,
+			NsteelTop, NsteelBottom);
 
 	UniaxialMaterial *theCore = OPS_getUniaxialMaterial(coreTag);
 	if (theCore == 0) {
 	    opserr << "WARNING uniaxial material does not exist\n";
-	    opserr << "material: " << coreTag; 
+	    opserr << "material: " << coreTag;
 	    opserr << "\nRCTBeamSection2d section: " << tag << endln;
 	    return 0;
 	}
@@ -617,7 +686,7 @@ namespace {
 	UniaxialMaterial *theCover = OPS_getUniaxialMaterial(coverTag);
 	if (theCover == 0) {
 	    opserr << "WARNING uniaxial material does not exist\n";
-	    opserr << "material: " << coreTag; 
+	    opserr << "material: " << coreTag;
 	    opserr << "\nRCTBeamSection2d section: " << tag << endln;
 	    return 0;
 	}
@@ -631,7 +700,7 @@ namespace {
 	SectionForceDeformation *theSection = new FiberSection2d(tag, numFibers, theUniMat, rctbeamsect);
 
 	delete [] theUniMat;
-	
+
 	return theSection;
     }
 
@@ -639,6 +708,7 @@ namespace {
     {
 	functionMap.insert(std::make_pair("Elastic", &OPS_ElasticSection));
 	functionMap.insert(std::make_pair("Fiber", &OPS_FiberSection));
+	functionMap.insert(std::make_pair("FiberThermal", &OPS_FiberSectionThermal));
 	functionMap.insert(std::make_pair("fiberSec", &OPS_FiberSection));
 	functionMap.insert(std::make_pair("NDFiber", &OPS_NDFiberSection));
 	functionMap.insert(std::make_pair("Uniaxial", &OPS_UniaxialSection));
@@ -662,7 +732,7 @@ namespace {
 	functionMap.insert(std::make_pair("LayeredShell", &OPS_LayeredShellFiberSection));
 	functionMap.insert(std::make_pair("Bidirectional", &OPS_Bidirectional));
 	functionMap.insert(std::make_pair("Isolator2spring", &OPS_Isolator2spring));
-  
+
 	return 0;
     }
 }
@@ -674,12 +744,16 @@ int OPS_Section()
     theActiveFiberSection3d = 0;
     theActiveNDFiberSection2d = 0;
     theActiveNDFiberSection3d = 0;
-    
+
+    theActiveFiberSection2dThermal = 0;
+    theActiveFiberSection3dThermal = 0;
+    theActiveFiberSectionGJThermal = 0;
+
     if (initDone == false) {
 	setUpFunctions();
 	initDone = true;
     }
-    
+
     // num args
     if(OPS_GetNumRemainingInputArgs() < 1) {
 	opserr<<"WARNING insufficient args: pattern type ...\n";
@@ -687,7 +761,7 @@ int OPS_Section()
     }
 
     const char* type = OPS_GetString();
-    
+
     OPS_ParsingFunctionMap::const_iterator iter = functionMap.find(type);
     if (iter == functionMap.end()) {
 	opserr<<"WARNING section type " << type << " is unknown\n";
@@ -706,6 +780,10 @@ int OPS_Section()
 	theActiveFiberSection3d = 0;
 	theActiveNDFiberSection2d = 0;
 	theActiveNDFiberSection3d = 0;
+
+	theActiveFiberSection2dThermal = 0;
+	theActiveFiberSection3dThermal = 0;
+	theActiveFiberSectionGJThermal = 0;
 	delete theSection;
 	return -1;
     }
@@ -716,14 +794,15 @@ int OPS_Section()
 int OPS_Fiber()
 {
     // create fiber
-    
+
     Fiber* theFiber = 0;
 
-    if (theActiveFiberSection2d != 0) {
-	
+    if (theActiveFiberSection2d != 0 || theActiveFiberSection2dThermal!=0) {
+
 	theFiber = (UniaxialFiber2d*) OPS_UniaxialFiber2d();
 
-    } else if (theActiveFiberSection3d != 0) {
+    } else if (theActiveFiberSection3d != 0 || theActiveFiberSection3dThermal!=0 ||
+	theActiveFiberSectionGJThermal != 0) {
 
 	theFiber = (UniaxialFiber3d*) OPS_UniaxialFiber3d();
 
@@ -738,16 +817,16 @@ int OPS_Fiber()
     }
 
     if (theFiber == 0) {
-	
+
 	opserr<<"WARNING failed to create fiber\n";
 	return -1;
-	
+
     }
 
     // add fiber to section
     int res = 0;
     if (theActiveFiberSection2d != 0) {
-	
+
 	res = theActiveFiberSection2d->addFiber(*theFiber);
 
     } else if (theActiveFiberSection3d != 0) {
@@ -762,6 +841,17 @@ int OPS_Fiber()
 
 	res = theActiveNDFiberSection3d->addFiber(*theFiber);
 
+    } else if (theActiveFiberSection2dThermal != 0) {
+
+	res = theActiveFiberSection2dThermal->addFiber(*theFiber);
+
+    } else if (theActiveFiberSection3dThermal != 0) {
+
+	res = theActiveFiberSection3dThermal->addFiber(*theFiber);
+
+    } else if (theActiveFiberSectionGJThermal != 0) {
+
+	res = theActiveFiberSectionGJThermal->addFiber(*theFiber);
     }
 
     if (res < 0) {
@@ -769,7 +859,7 @@ int OPS_Fiber()
 	delete theFiber;
 	return -1;
     }
-    
+
     return 0;
 }
 
@@ -780,7 +870,7 @@ int OPS_Patch()
 	opserr<<"WARNING insufficient args: patch type ...\n";
 	return -1;
     }
-    
+
     // create patch
     Patch *thePatch = 0;
     const char* type = OPS_GetString();
@@ -807,7 +897,7 @@ int OPS_Patch()
     if(cells == 0) {
 	opserr << "ERROR out of run to create fibers\n";
 	delete thePatch;
-    	return -1;
+	return -1;
     }
     for(int j=0; j<numCells; j++) {
 	// get fiber data
@@ -830,6 +920,17 @@ int OPS_Patch()
 	    theFiber = new UniaxialFiber2d(j,*material,area,cPos(0));
 	    theActiveFiberSection2d->addFiber(*theFiber);
 
+	} else if (theActiveFiberSection2dThermal != 0) {
+
+	    material = OPS_getUniaxialMaterial(matTag);
+	    if (material == 0) {
+		opserr << "WARNING material "<<matTag<<" cannot be found\n";
+		delete thePatch;
+		return -1;
+	    }
+	    theFiber = new UniaxialFiber2d(j,*material,area,cPos(0));
+	    theActiveFiberSection2dThermal->addFiber(*theFiber);
+
 	} else if (theActiveFiberSection3d != 0) {
 
 	    material = OPS_getUniaxialMaterial(matTag);
@@ -840,6 +941,28 @@ int OPS_Patch()
 	    }
 	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
 	    theActiveFiberSection3d->addFiber(*theFiber);
+
+	} else if (theActiveFiberSection3dThermal != 0) {
+
+	    material = OPS_getUniaxialMaterial(matTag);
+	    if (material == 0) {
+		opserr << "WARNING material "<<matTag<<" cannot be found\n";
+		delete thePatch;
+		return -1;
+	    }
+	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
+	    theActiveFiberSection3dThermal->addFiber(*theFiber);
+
+	} else if (theActiveFiberSectionGJThermal != 0) {
+
+	    material = OPS_getUniaxialMaterial(matTag);
+	    if (material == 0) {
+		opserr << "WARNING material "<<matTag<<" cannot be found\n";
+		delete thePatch;
+		return -1;
+	    }
+	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
+	    theActiveFiberSectionGJThermal->addFiber(*theFiber);
 
 	} else if (theActiveNDFiberSection2d != 0) {
 
@@ -879,11 +1002,11 @@ int OPS_Layer()
 	opserr<<"WARNING insufficient args: layer type ...\n";
 	return -1;
     }
-    
+
     // create patch
     ReinfLayer *theLayer = 0;
     const char* type = OPS_GetString();
-    
+
     if(strcmp(type,"straight")==0) {
 	theLayer = (ReinfLayer*) OPS_StraightReinfLayer();
     } else if(strcmp(type,"circ")==0 || strcmp(type,"circular")==0) {
@@ -904,21 +1027,21 @@ int OPS_Layer()
     int matTag = theLayer->getMaterialID();
 
     if(reinfBar == 0) {
-    	opserr<<"ERROR out of run to create fibers\n";
+	opserr<<"ERROR out of run to create fibers\n";
 	delete theLayer;
-    	return -1;
+	return -1;
     }
 
     for(int j=0; j<numReinfBars; j++) {
-	
-    	// get fiber data
-    	double area = reinfBar[j].getArea();
-    	const Vector& cPos = reinfBar[j].getPosition();
 
-    	// create fibers
-    	Fiber *theFiber = 0;
-    	UniaxialMaterial *material = 0;
-    	NDMaterial *ndmaterial = 0;
+	// get fiber data
+	double area = reinfBar[j].getArea();
+	const Vector& cPos = reinfBar[j].getPosition();
+
+	// create fibers
+	Fiber *theFiber = 0;
+	UniaxialMaterial *material = 0;
+	NDMaterial *ndmaterial = 0;
 
 	if (theActiveFiberSection2d != 0) {
 
@@ -931,6 +1054,17 @@ int OPS_Layer()
 	    theFiber = new UniaxialFiber2d(j,*material,area,cPos(0));
 	    theActiveFiberSection2d->addFiber(*theFiber);
 
+	} else if (theActiveFiberSection2dThermal != 0) {
+
+	    material = OPS_getUniaxialMaterial(matTag);
+	    if (material == 0) {
+		opserr << "WARNING material "<<matTag<<" cannot be found\n";
+		delete theLayer;
+		return -1;
+	    }
+	    theFiber = new UniaxialFiber2d(j,*material,area,cPos(0));
+	    theActiveFiberSection2dThermal->addFiber(*theFiber);
+
 	} else if (theActiveFiberSection3d != 0) {
 
 	    material = OPS_getUniaxialMaterial(matTag);
@@ -941,6 +1075,28 @@ int OPS_Layer()
 	    }
 	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
 	    theActiveFiberSection3d->addFiber(*theFiber);
+
+	} else if (theActiveFiberSection3dThermal != 0) {
+
+	    material = OPS_getUniaxialMaterial(matTag);
+	    if (material == 0) {
+		opserr << "WARNING material "<<matTag<<" cannot be found\n";
+		delete theLayer;
+		return -1;
+	    }
+	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
+	    theActiveFiberSection3dThermal->addFiber(*theFiber);
+
+	} else if (theActiveFiberSectionGJThermal != 0) {
+
+	    material = OPS_getUniaxialMaterial(matTag);
+	    if (material == 0) {
+		opserr << "WARNING material "<<matTag<<" cannot be found\n";
+		delete theLayer;
+		return -1;
+	    }
+	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
+	    theActiveFiberSectionGJThermal->addFiber(*theFiber);
 
 	} else if (theActiveNDFiberSection2d != 0) {
 
@@ -964,12 +1120,12 @@ int OPS_Layer()
 	    theFiber = new NDFiber3d(j,*ndmaterial,area,cPos(0),cPos(1));
 	    theActiveNDFiberSection3d->addFiber(*theFiber);
 	}
-	
+
     }
 
     delete [] reinfBar;
     delete theLayer;
 
-    
+
     return 0;
 }
