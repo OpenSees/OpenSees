@@ -17,19 +17,19 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision: 1.14 $
 // $Date: 2008-08-26 16:47:42 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/section/FiberSection3dThermal.h,v $
-                                                                        
+
 // Written: fmk
 // Created: 04/01
 //
-// Description: This file contains the class definition for 
-// FiberSection3dThermal.h. FiberSection3dThermal provides the abstraction of a 
+// Description: This file contains the class definition for
+// FiberSection3dThermal.h. FiberSection3dThermal provides the abstraction of a
 // 3d beam section discretized by fibers. The section stiffness and
 // stress resultants are obtained by summing fiber contributions.
-// Modified for SIF modelling by Jian Jiang,Liming Jiang [http://openseesforfire.github.io] 
+// Modified for SIF modelling by Jian Jiang,Liming Jiang [http://openseesforfire.github.io]
 
 
 #ifndef FiberSection3dThermal_h
@@ -46,35 +46,36 @@ class Response;
 class FiberSection3dThermal : public SectionForceDeformation
 {
   public:
-    FiberSection3dThermal(); 
-    FiberSection3dThermal(int tag, int numFibers, Fiber **fibers); 
+    FiberSection3dThermal();
+    FiberSection3dThermal(int tag, int numFibers, Fiber **fibers);
+    FiberSection3dThermal(int tag, int numFibers);
     ~FiberSection3dThermal();
 
     const char *getClassType(void) const {return "FiberSection3dThermal";};
 
-    int   setTrialSectionDeformation(const Vector &deforms); 
+    int   setTrialSectionDeformation(const Vector &deforms);
     const Vector &getSectionDeformation(void);
 
 	const Vector &getTemperatureStress(const Vector& dataMixed); //JJadd to get Ft=EA*Elongation//
-   
+
     const Vector &getStressResultant(void);
     const Matrix &getSectionTangent(void);
     const Matrix &getInitialTangent(void);
 
     int   commitState(void);
-    int   revertToLastCommit(void);    
+    int   revertToLastCommit(void);
     int   revertToStart(void);
- 
+
     SectionForceDeformation *getCopy(void);
     const ID &getType (void);
     int getOrder (void) const;
-    
+
     int sendSelf(int cTag, Channel &theChannel);
-    int recvSelf(int cTag, Channel &theChannel, 
+    int recvSelf(int cTag, Channel &theChannel,
 		 FEM_ObjectBroker &theBroker);
     void Print(OPS_Stream &s, int flag = 0);
-	    
-    Response *setResponse(const char **argv, int argc, 
+
+    Response *setResponse(const char **argv, int argc,
 			  OPS_Stream &s);
     int getResponse(int responseID, Information &info);
 
@@ -89,25 +90,26 @@ class FiberSection3dThermal : public SectionForceDeformation
 
     const Vector & getSectionDeformationSensitivity(int gradIndex);
     // AddingSensitivity:END ///////////////////////////////////////////
-	
-	double determineFiberTemperature(const Vector& , double , double); 
+
+	double determineFiberTemperature(const Vector& , double , double);
 
   protected:
-    
+
   private:
-    int numFibers;                   // number of fibers in the section
+    int numFibers, sizeFibers;                   // number of fibers in the section
     UniaxialMaterial **theMaterials; // array of pointers to materials
     double   *matData;               // data for the materials [yloc and area]
-    double   kData[9];               // data for ks matrix 
-    double   sData[3];               // data for s vector 
-    
+    double   kData[9];               // data for ks matrix
+    double   sData[3];               // data for s vector
+
+    double QzBar, QyBar, ABar;
     double yBar;       // Section centroid
     double zBar;
-  
+
     static ID code;
 
-    Vector e;          // trial section deformations 
-    Vector eCommit;    // committed section deformations 
+    Vector e;          // trial section deformations
+    Vector eCommit;    // committed section deformations
     Vector *s;         // section resisting forces  (axial force, bending moment)
     Matrix *ks;        // section stiffness
 
@@ -117,7 +119,7 @@ class FiberSection3dThermal : public SectionForceDeformation
     // AddingSensitivity:END ///////////////////////////////////////////
 
 
-    double   sTData[3];               //JZ data for s vector 
+    double   sTData[3];               //JZ data for s vector
 	Vector *sT;  // JZ  section resisting forces, caused by the temperature
 	//double  *TemperatureTangent; // JZ  the E of E*A*alpha*DeltaT
     double *Fiber_T;  //An array storing the TempT of the fibers.
