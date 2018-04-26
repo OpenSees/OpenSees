@@ -2,7 +2,7 @@
 Copyright (c) 2015-2017, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -26,10 +26,10 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
@@ -98,7 +98,7 @@ void* OPS_BeamContact2D();
 void* OPS_BeamContact2Dp();
 void* OPS_BeamEndContact3D();
 void* OPS_BeamEndContact3Dp();
-void* OPS_Tri31();
+void* OPS_Tri31(const ID& info);
 void* OPS_SSPquad();
 void* OPS_SSPquadUP();
 void* OPS_SSPbrick();
@@ -116,22 +116,24 @@ void* OPS_AC3D8HexWithSensitivity();
 void* OPS_AV3D4QuadWithSensitivity();
 void* OPS_ElastomericBearingBoucWenMod3d();
 void* OPS_VS3D4WuadWithSensitivity();
-void* OPS_PFEMElement2DBubble();
-void* OPS_PFEMElement2DMini();
-void* OPS_PFEMElement2D();
+void* OPS_PFEMElement2DBubble(const ID& info);
+void* OPS_TaylorHood2D();
+void* OPS_PFEMElement2DCompressible(const ID& info);
+void* OPS_PFEMElement2DQuasi();
 void* OPS_fElmt02();
-void* OPS_ElasticBeam2d();
+void* OPS_ElasticBeam2d(const ID& info);
 void* OPS_ElasticBeam3d();
 void* OPS_DispBeamColumn2dInt();
-void* OPS_ForceBeamColumn2d();
+void* OPS_ForceBeamColumn2d(const ID& info);
 void* OPS_ForceBeamColumn3d();
-void* OPS_DispBeamColumn2d();
+void* OPS_DispBeamColumn2d(const ID& info);
 void* OPS_DispBeamColumn3d();
 void* OPS_ForceBeamColumnCBDI2d();
 void* OPS_ForceBeamColumnCSBDI2d();
 void* OPS_ForceBeamColumnWarping2d();
 void* OPS_ElasticForceBeamColumnWarping2d();
 void* OPS_DispBeamColumn2dThermal();
+void* OPS_DispBeamColumn3dThermal();
 void* OPS_ElasticForceBeamColumn2d();
 void* OPS_ElasticForceBeamColumn3d();
 void* OPS_DispBeamColumn3dWithSensitivity();
@@ -182,12 +184,12 @@ void* OPS_KikuchiBearing();
 void* OPS_YamamotoBiaxialHDR();
 
 namespace {
-    
-    struct char_cmp { 
-	bool operator () (const char *a,const char *b) const 
+
+    struct char_cmp {
+	bool operator () (const char *a,const char *b) const
 	    {
 		return strcmp(a,b)<0;
-	    } 
+	    }
     };
 
     typedef std::map<const char *, void *(*)(void), char_cmp> OPS_ParsingFunctionMap;
@@ -199,7 +201,8 @@ namespace {
     {
 	int ndm = OPS_GetNDM();
 	if(ndm == 2) {
-	    return OPS_ForceBeamColumn2d();
+	    ID info;
+	    return OPS_ForceBeamColumn2d(info);
 	} else {
 	    return OPS_ForceBeamColumn3d();
 	}
@@ -219,7 +222,8 @@ namespace {
     {
 	int ndm = OPS_GetNDM();
 	if(ndm == 2) {
-	    return OPS_ElasticBeam2d();
+	    ID info;
+	    return OPS_ElasticBeam2d(info);
 	} else {
 	    return OPS_ElasticBeam3d();
 	}
@@ -229,9 +233,20 @@ namespace {
     {
 	int ndm = OPS_GetNDM();
 	if(ndm == 2) {
-	    return OPS_DispBeamColumn2d();
+	    ID info;
+	    return OPS_DispBeamColumn2d(info);
 	} else {
 	    return OPS_DispBeamColumn3d();
+	}
+    }
+
+    static void* OPS_DispBeamColumnThermal()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    return OPS_DispBeamColumn2dThermal();
+	} else {
+	    return OPS_DispBeamColumn3dThermal();
 	}
     }
 
@@ -325,6 +340,34 @@ namespace {
 	}
     }
 
+    static void* OPS_PFEMElementBubble()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    ID info;
+	    return OPS_PFEMElement2DBubble(info);
+	} else {
+	    return 0;
+	}
+    }
+
+    static void* OPS_PFEMElementCompressible()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    ID info;
+	    return OPS_PFEMElement2DCompressible(info);
+	} else {
+	    return 0;
+	}
+    }
+
+    static void* OPS_Tri31NoInfo()
+    {
+	ID info;
+	return OPS_Tri31(info);
+    }
+
     static int setUpFunctions(void)
     {
 	functionMap.insert(std::make_pair("KikuchiBearing", &OPS_KikuchiBearing));
@@ -376,14 +419,14 @@ namespace {
 	functionMap.insert(std::make_pair("stdQuad", &OPS_FourNodeQuad));
 	functionMap.insert(std::make_pair("dispBeamColumnWithSensitivity", &OPS_DispBeamColumnWithSensitivity));
 	functionMap.insert(std::make_pair("elasticForceBeamColumn", &OPS_ElasticForceBeamColumn));
-	functionMap.insert(std::make_pair("dispBeamColumnThermal", &OPS_DispBeamColumn2dThermal));
+	functionMap.insert(std::make_pair("dispBeamColumnThermal", &OPS_DispBeamColumnThermal));
 	functionMap.insert(std::make_pair("forceBeamColumnWarping", &OPS_ForceBeamColumnWarping2d));
 	functionMap.insert(std::make_pair("elasticForceBeamColumnWarping", &OPS_ElasticForceBeamColumnWarping2d));
 	functionMap.insert(std::make_pair("dispBeamColumnInt", &OPS_DispBeamColumn2dInt));
 	functionMap.insert(std::make_pair("fTruss", &OPS_fElmt02));
-	functionMap.insert(std::make_pair("PFEMElement2D", &OPS_PFEMElement2D));
-	functionMap.insert(std::make_pair("PFEMElement2DMini", &OPS_PFEMElement2DMini));
-	functionMap.insert(std::make_pair("PFEMElement2DBuble", &OPS_PFEMElement2DBubble));
+	functionMap.insert(std::make_pair("PFEMElementCompressible", &OPS_PFEMElementCompressible));
+	functionMap.insert(std::make_pair("PFEMElementBubble", &OPS_PFEMElementBubble));
+	functionMap.insert(std::make_pair("TaylorHood2D", &OPS_TaylorHood2D));
 	functionMap.insert(std::make_pair("VS3D4", &OPS_VS3D4WuadWithSensitivity));
 	functionMap.insert(std::make_pair("elastomericBearingBoucWenMod", &OPS_ElastomericBearingBoucWenMod3d));
 	functionMap.insert(std::make_pair("AV3D4", &OPS_AV3D4QuadWithSensitivity));
@@ -459,8 +502,8 @@ namespace {
 	functionMap.insert(std::make_pair("BeamEndContact3D", &OPS_BeamEndContact3D));
 	functionMap.insert(std::make_pair("BeamEndContact3dp", &OPS_BeamEndContact3Dp));
 	functionMap.insert(std::make_pair("BeamEndContact3Dp", &OPS_BeamEndContact3Dp));
-	functionMap.insert(std::make_pair("Tri31", &OPS_Tri31));
-	functionMap.insert(std::make_pair("tri31", &OPS_Tri31));
+	functionMap.insert(std::make_pair("Tri31", &OPS_Tri31NoInfo));
+	functionMap.insert(std::make_pair("tri31", &OPS_Tri31NoInfo));
 	functionMap.insert(std::make_pair("SSPquad", &OPS_SSPquad));
 	functionMap.insert(std::make_pair("SSPQuad", &OPS_SSPquad));
 	functionMap.insert(std::make_pair("SSPquadUP", &OPS_SSPquadUP));
@@ -476,10 +519,10 @@ namespace {
 	functionMap.insert(std::make_pair("dispBeamColumn", &OPS_DispBeamColumn));
 	functionMap.insert(std::make_pair("forceBeamColumnCBDI", &OPS_ForceBeamColumnCBDI2d));
 	functionMap.insert(std::make_pair("forceBeamColumnCSBDI", &OPS_ForceBeamColumnCSBDI2d));
-	functionMap.insert(std::make_pair("zeroLength", &OPS_ZeroLength));	
+	functionMap.insert(std::make_pair("zeroLength", &OPS_ZeroLength));
 	functionMap.insert(std::make_pair("zeroLengthSection", &OPS_ZeroLengthSection));
 	functionMap.insert(std::make_pair("zeroLengthND", &OPS_ZeroLengthND));
-  
+
 	return 0;
     }
 }
@@ -499,7 +542,7 @@ OPS_Element()
     }
 
     const char* type = OPS_GetString();
-    
+
     OPS_ParsingFunctionMap::const_iterator iter = functionMap.find(type);
     if (iter == functionMap.end()) {
 	opserr<<"WARNING element type " << type << " is unknown\n";
@@ -520,7 +563,7 @@ OPS_Element()
     // Now add the element to the domain
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
-    
+
     if (theDomain->addElement(theEle) == false) {
 	opserr<<"ERROR could not add element to domain.\n";
 	delete theEle;
@@ -537,7 +580,7 @@ int OPS_doBlock2D()
     int ndf = OPS_GetNDF();
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
-    
+
     if (ndm < 2) {
 	opserr << "WARNING block2D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
 	opserr << " : model dimension (ndm) must be at leat 2 \n";
@@ -581,7 +624,7 @@ int OPS_doBlock2D()
 	    return -1;
 	}
 	cArg = 9;
-	
+
     } else if (strcmp(type, "ShellMITC4") == 0 || strcmp(type, "shellMITC4") == 0 ||
 	       strcmp(type, "shell") == 0 || strcmp(type, "Shell") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -594,7 +637,7 @@ int OPS_doBlock2D()
 	    return -1;
 	}
 	cArg = 7;
-	
+
     } else if (strcmp(type, "bbarQuad") == 0 || strcmp(type,"mixedQuad") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 2) {
 	    opserr<<"WARNING: want - thick, matTag\n";
@@ -610,7 +653,7 @@ int OPS_doBlock2D()
 	    return -1;
 	}
 	cArg = 8;
-	
+
     } else if (strcmp(type, "enhancedQuad") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 3) {
 	    opserr<<"WARNING: want - thick, type, matTag\n";
@@ -627,7 +670,7 @@ int OPS_doBlock2D()
 	    return -1;
 	}
 	cArg = 9;
-	
+
     } else if (strcmp(type, "SSPquad") == 0 || strcmp(type, "SSPQuad") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 3) {
 	    opserr<<"WARNING: want - matTag, type, thick\n";
@@ -645,7 +688,7 @@ int OPS_doBlock2D()
     }
     cArg = 9;
 
-	
+
     } else {
 	opserr << "WARNING element type "<<type<<" is currently unknown by this command.\n";
 	return -1;
@@ -730,7 +773,7 @@ int OPS_doBlock2D()
 	    } else if (ndm == 3) {
 		double zLoc = nodeCoords(2);
 		theNode = new Node(nodeID,ndf,xLoc, yLoc, zLoc);
-	    } 
+	    }
 
 	    if (theNode == 0) {
 		opserr << "WARNING ran out of memory creating node\n";
@@ -779,8 +822,8 @@ int OPS_doBlock2D()
 		int nd3 = nodeTags(2) + idata[2];
 		int nd4 = nodeTags(3) + idata[2];
 		theEle = new FourNodeQuad(eleID,nd1,nd2,nd3,nd4,*mat,subtype,thick);
-					  
-		
+
+
 	    } else if (strcmp(type, "ShellMITC4") == 0 || strcmp(type, "shellMITC4") == 0 ||
 		       strcmp(type, "shell") == 0 || strcmp(type, "Shell") == 0) {
 
@@ -800,8 +843,8 @@ int OPS_doBlock2D()
 		int nd3 = nodeTags(2) + idata[2];
 		int nd4 = nodeTags(3) + idata[2];
 		theEle = new ShellMITC4(eleID,nd1,nd2,nd3,nd4,*sec);
-		
-	
+
+
 	    } else if (strcmp(type, "bbarQuad") == 0 || strcmp(type,"mixedQuad") == 0) {
 
 		if (numEleNodes != 4) {
@@ -820,7 +863,7 @@ int OPS_doBlock2D()
 		int nd3 = nodeTags(2) + idata[2];
 		int nd4 = nodeTags(3) + idata[2];
 		theEle = new ConstantPressureVolumeQuad(eleID,nd1,nd2,nd3,nd4,*mat,thick);
-	
+
 	    } else if (strcmp(type, "enhancedQuad") == 0) {
 
 		if (numEleNodes != 4) {
@@ -839,9 +882,9 @@ int OPS_doBlock2D()
 		int nd3 = nodeTags(2) + idata[2];
 		int nd4 = nodeTags(3) + idata[2];
 		theEle = new EnhancedQuad(eleID,nd1,nd2,nd3,nd4,*mat,subtype,thick);
-	
+
 	    } else if (strcmp(type, "SSPquad") == 0 || strcmp(type, "SSPQuad") == 0) {
-		
+
 		if (numEleNodes != 4) {
 		    opserr<<"WARNING SSPquad element only needs four nodes\n";
 		    return -1;
@@ -869,8 +912,8 @@ int OPS_doBlock2D()
 	    eleID++;
 	}
     }
-	    
-    
+
+
     return 0;
 }
 
@@ -882,7 +925,7 @@ int OPS_doBlock3D()
 	opserr << " : model dimension (ndm) must be at leat 3 \n";
 	return -1;
     }
-    
+
     int ndf = OPS_GetNDF();
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
@@ -918,7 +961,7 @@ int OPS_doBlock3D()
     for (int k=0; k<27; k++) {
 	haveNode(k) = -1;
     }
-    
+
     int numnodes = OPS_GetNumRemainingInputArgs() / (ndm+1);
     if (numnodes < 8) {
 	opserr<<"WARNING eight points (1-8) are required\n";
@@ -996,8 +1039,8 @@ int OPS_doBlock3D()
 	return -1;
     }
 
-    
-		    
+
+
     for (int k=0; k<idata[2]; k++) {
 	for (int j=0; j<idata[1]; j++) {
 	    for (int i=0; i<idata[0]; i++) {
@@ -1013,11 +1056,11 @@ int OPS_doBlock3D()
 		int nd8 = nodeTags(7) + idata[3];
 
 		if (strcmp(type, "stdBrick") == 0) {
-		    
+
 		    theEle = new Brick(eleID,nd1,nd2,nd3,nd4,nd5,nd6,nd7,nd8,
 				       *mat,0.,0.,0.);
-					  
-		
+
+
 		} else if (strcmp(type, "bbarBrick") == 0) {
 		    theEle = new BbarBrick(eleID,nd1,nd2,nd3,nd4,nd5,nd6,nd7,nd8,
 					   *mat,0.,0.,0.);
@@ -1026,12 +1069,12 @@ int OPS_doBlock3D()
 
 		    theEle = new SSPbrick(eleID,nd1,nd2,nd3,nd4,nd5,nd6,nd7,nd8,
 					   *mat,0.,0.,0.);
-		    
+
 		} else {
 		    opserr << "WARNING element type " << type << " is currently unknown by this command.\n";
 		    return -1;
 		}
-		
+
 		if (theDomain->addElement(theEle) == false) {
 		    opserr<<"WARNING failed to add element to domain\n";
 		    delete theEle;
@@ -1042,6 +1085,6 @@ int OPS_doBlock3D()
 	    }
 	}
     }
-    
+
     return 0;
 }
