@@ -57,7 +57,7 @@ double Tri31::wts[1];
 static int num_Tri31 = 0;
 
 OPS_Export void *
-OPS_Tri31(void)
+OPS_Tri31(const ID &info)
 {
   if (num_Tri31 == 0) {
     num_Tri31++;

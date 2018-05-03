@@ -44,7 +44,7 @@ Matrix PFEMElement2DBubble::K;
 Vector PFEMElement2DBubble::P;
 Matrix PFEMElement2DBubble::C;
 
-void* OPS_PFEMElement2DBubble()
+void* OPS_PFEMElement2DBubble(const ID &info)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if(numdata < 8) {

@@ -44,7 +44,7 @@
 Matrix PFEMElement2DCompressible::K;
 Vector PFEMElement2DCompressible::P;
 
-void* OPS_PFEMElement2DCompressible()
+void* OPS_PFEMElement2DCompressible(const ID &info)
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if(numdata < 8) {
