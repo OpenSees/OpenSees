@@ -3065,6 +3065,7 @@ SRC/interpreter/OpenSeesFrictionModelCommands.cpp -text
 SRC/interpreter/OpenSeesMiscCommands.cpp -text
 SRC/interpreter/OpenSeesNDMaterialCommands.cpp -text
 SRC/interpreter/OpenSeesOutputCommands.cpp -text
+SRC/interpreter/OpenSeesParameterCommands.cpp -text
 SRC/interpreter/OpenSeesPatternCommands.cpp -text
 SRC/interpreter/OpenSeesSectionCommands.cpp -text
 SRC/interpreter/OpenSeesTimeSeriesCommands.cpp -text
