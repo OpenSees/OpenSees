@@ -114,6 +114,8 @@ void* OPS_TwoNodeLink()
         opserr << "WARNING invalid direction ID\n";
         return 0;
     }
+    for (int i = 0; i < numdata; i++)
+      dirs(i)--;
     
     // options
     Vector x, y, Mratio, sDistI;
