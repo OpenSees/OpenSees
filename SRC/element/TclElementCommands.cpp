@@ -103,7 +103,7 @@ extern void *OPS_PileToe3D(void);
 extern void *OPS_SurfaceLoad(void);
 extern void *OPS_TriSurfaceLoad(void);
 extern void *OPS_ModElasticBeam2d(void);
-extern void *OPS_ElasticBeam2d(void);
+extern void *OPS_ElasticBeam2d(const ID &info);
 extern void *OPS_ElasticBeam3d(void);
 extern void *OPS_ElasticTimoshenkoBeam2d(void);
 extern void *OPS_ElasticTimoshenkoBeam3d(void);
@@ -116,7 +116,7 @@ extern void *OPS_FPBearingPTV();
 extern void *OPS_MultiFP2d(void);
 extern void *OPS_CoupledZeroLength(void);
 extern void *OPS_FourNodeQuad3d(void);
-extern void *OPS_Tri31(void);
+extern void *OPS_Tri31(const ID &info);
 extern void *OPS_SSPquad(void);
 extern void *OPS_SSPquadUP(void);
 extern void *OPS_SSPbrick(void);
@@ -147,7 +147,7 @@ extern void *OPS_SFI_MVLEM(void);
 extern void *OPS_SFI_MVLEM(void);
 extern void *OPS_AxEqDispBeamColumn2d(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
-extern void *OPS_PFEMElement2DBubble();
+extern void *OPS_PFEMElement2DBubble(const ID &info);
 extern void *OPS_PFEMElement2DMini();
 extern void *OPS_PFEMElement2D();
 
@@ -496,8 +496,9 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   } else if ((strcmp(argv[1],"elasticBeamColumn") == 0) || (strcmp(argv[1],"elasticBeam")) == 0) {
     Element *theEle = 0;
+    ID info;
     if (OPS_GetNDM() == 2)
-      theEle = (Element *)OPS_ElasticBeam2d();
+      theEle = (Element *)OPS_ElasticBeam2d(info);
     else
       theEle = (Element *)OPS_ElasticBeam3d();
     if (theEle != 0) 
@@ -828,7 +829,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   } else if ((strcmp(argv[1],"Tri31") == 0) || (strcmp(argv[1],"tri31") == 0)) {
     
-    void *theEle = OPS_Tri31();
+    ID info;
+    void *theEle = OPS_Tri31(info);
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
@@ -1029,7 +1031,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   }
 
   else if (strcmp(argv[1], "PFEMElement2DBuble") == 0) {
-      void *theEle = OPS_PFEMElement2DBubble();
+    ID info;
+      void *theEle = OPS_PFEMElement2DBubble(info);
       if (theEle != 0) {
 	  theElement = (Element*)theEle;
       } else {
