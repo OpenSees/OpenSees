@@ -1723,67 +1723,6 @@ int OPS_getNodeTags()
     return 0;
 }
 
-int OPS_getParamTags()
-{
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-
-    Parameter *theParam;
-    ParameterIter &paramIter = theDomain->getParameters();
-
-    std::vector<int> tags;
-    while ((theParam = paramIter()) != 0) {
-	tags.push_back(theParam->getTag());
-    }
-
-    if (tags.empty()) return 0;
-
-    int size = (int)tags.size();
-    int* data = &tags[0];
-
-    if (OPS_SetIntOutput(&size, data) < 0) {
-	opserr << "WARNING failed to set outputs\n";
-	return -1;
-    }
-
-    return 0;
-
-}
-
-int OPS_getParamValue()
-{
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
-
-    if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr << "Insufficient arguments to getParamValue" << endln;
-	return -1;
-    }
-
-    int paramTag;
-    int numdata = 1;
-
-    if (OPS_GetIntInput(&numdata, &paramTag) < 0) {
-	opserr << "WARNING getParamValue -- could not read paramTag \n";
-	return -1;
-    }
-
-    Parameter *theParam = theDomain->getParameter(paramTag);
-    if (theParam == 0) {
-	opserr << "WARNING parameter "<<paramTag<<" is not found\n";
-	return -1;
-    }
-
-    double value = theParam->getValue();
-
-    if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
-	opserr << "WARNING failed to set output\n";
-	return -1;
-    }
-
-    return 0;
-}
-
 int OPS_sectionForce()
 {
     // make sure at least one other argument to contain type of system
