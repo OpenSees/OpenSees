@@ -192,6 +192,13 @@ int OPS_NDMaterial();
 /* OpenSeesFrictionModelCommands.cpp */
 int OPS_FrictionModel();
 
+/* OpenSeesParameterCommands.cpp */
+int OPS_Parameter();
+int OPS_addToParameter();
+int OPS_updateParameter();
+int OPS_getParamTags();
+int OPS_getParamValue();
+
 /* OpenSeesElementCommands.cpp */
 int OPS_Element();
 int OPS_doBlock2D();
