@@ -2,7 +2,7 @@
 Copyright (c) 2015-2017, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -26,10 +26,10 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
@@ -43,7 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "OpenSeesCommands.h"
 #include <OPS_Globals.h>
 
-PythonWrapper* wrapper = 0;
+static PythonWrapper* wrapper = 0;
 
 PythonWrapper::PythonWrapper()
     :currentArgv(0), currentArg(0), numberArgs(0),
@@ -54,6 +54,7 @@ PythonWrapper::PythonWrapper()
 
 PythonWrapper::~PythonWrapper()
 {
+    wrapper = 0;
 }
 
 void
@@ -89,7 +90,7 @@ PythonWrapper::getMethods()
     if (methodsOpenSees.empty()) {
 	return 0;
     }
-    
+
     return &methodsOpenSees[0];
 }
 
@@ -756,15 +757,6 @@ static PyObject *Py_ops_nodeDisp(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-static PyObject *Py_ops_setNodeDisp(PyObject *self, PyObject *args)
-{
-    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
-
-    if (OPS_setNodeDisp() < 0) return NULL;
-
-    return wrapper->getResults();
-}
-
 static PyObject *Py_ops_nodeVel(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -779,6 +771,15 @@ static PyObject *Py_ops_setNodeVel(PyObject *self, PyObject *args)
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
     if (OPS_setNodeVel() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_setNodeDisp(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_setNodeDisp() < 0) return NULL;
 
     return wrapper->getResults();
 }
@@ -1216,15 +1217,6 @@ static PyObject *Py_ops_setMaxOpenFiles(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
-static PyObject *Py_ops_background(PyObject *self, PyObject *args)
-{
-    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
-
-    if (OPS_BackgroundMesh() < 0) return NULL;
-
-    return wrapper->getResults();
-}
-
 static PyObject *Py_ops_limitCurve(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -1311,6 +1303,87 @@ static PyObject *Py_ops_remesh(PyObject *self, PyObject *args)
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
     if (OPS_remesh() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_parameter(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_Parameter() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_addToParameter(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_addToParameter() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_updateParameter(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_updateParameter() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getPID(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    //if (OPS_getPID() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getNP(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    //if (OPS_getNP() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_barrier(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    //if (OPS_barrier() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_send(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    //if (OPS_send() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_recv(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    //if (OPS_recv() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_frictionModel(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_FrictionModel() < 0) return NULL;
 
     return wrapper->getResults();
 }
@@ -1440,7 +1513,6 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("systemSize", &Py_ops_systemSize);
     addCommand("version", &Py_ops_version);
     addCommand("setMaxOpenFiles", &Py_ops_setMaxOpenFiles);
-    addCommand("background", &Py_ops_background);
     addCommand("limitCurve", &Py_ops_limitCurve);
     addCommand("imposedMotion", &Py_ops_imposedMotion);
     addCommand("imposedSupportMotion", &Py_ops_imposedMotion);
@@ -1452,7 +1524,16 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("setElementRayleighFactors", &Py_ops_setElementRayleighFactors);
     addCommand("mesh", &Py_ops_mesh);
     addCommand("remesh", &Py_ops_remesh);
-    
+    addCommand("parameter", &Py_ops_parameter);
+    addCommand("addToParameter", &Py_ops_addToParameter);
+    addCommand("updateParameter", &Py_ops_updateParameter);
+    addCommand("getPID", &Py_ops_getPID);
+    addCommand("getNP", &Py_ops_getNP);
+    addCommand("barrier", &Py_ops_barrier);
+    addCommand("send", &Py_ops_send);
+    addCommand("recv", &Py_ops_recv);
+    addCommand("frictionModel", &Py_ops_frictionModel);
+
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);
 }
