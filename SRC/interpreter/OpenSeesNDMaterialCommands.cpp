@@ -9,7 +9,7 @@ void* OPS_ElasticIsotropicMaterial();
 void* OPS_PlateFiberMaterial();
 void* OPS_ReinforcedConcretePlaneStressMaterial();
 void* OPS_InitStressNDMaterial();
-void* OPS_J2BeamFiber2dMaterial();
+void* OPS_J2BeamFiber3dMaterial();
 void* OPS_J2PlateFibreMaterial();
 void* OPS_FAReinforcedConcretePlaneStressMaterial();
 void* OPS_RAFourSteelRCPlaneStressMaterial();
@@ -73,7 +73,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("ReinforceConcretePlaneStress", &OPS_ReinforcedConcretePlaneStressMaterial));
 	nDMaterialsMap.insert(std::make_pair("InitStressNDMaterial", &OPS_InitStressNDMaterial));
 	nDMaterialsMap.insert(std::make_pair("InitStressND", &OPS_InitStressNDMaterial));
-	nDMaterialsMap.insert(std::make_pair("J2BeamFiber", &OPS_J2BeamFiber2dMaterial));
+	nDMaterialsMap.insert(std::make_pair("J2BeamFiber", &OPS_J2BeamFiber3dMaterial));
 	nDMaterialsMap.insert(std::make_pair("J2PlateFibre", &OPS_J2PlateFibreMaterial));
 	nDMaterialsMap.insert(std::make_pair("FAReinforcedConcretePlaneStress", &OPS_FAReinforcedConcretePlaneStressMaterial));
 	nDMaterialsMap.insert(std::make_pair("FAReinforceConcretePlaneStress", &OPS_FAReinforcedConcretePlaneStressMaterial));
