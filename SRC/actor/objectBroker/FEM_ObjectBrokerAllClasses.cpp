@@ -68,7 +68,8 @@
 #include <Concrete01.h>
 #include <Concrete02.h>
 #include <Concrete04.h>
-#include <Concrete06.h>
+#include <Concrete06.h> 
+#include <Concrete07.h>
 #include <ConcretewBeta.h>
 #include <OriginCentered.h>
 #include <Steel01.h>
@@ -319,7 +320,7 @@
 #include <EnvelopeNodeRecorder.h>
 #include <EnvelopeElementRecorder.h>
 #include <DriftRecorder.h>
-
+#include <MPCORecorder.h>
 
 // mp_constraint header files
 #include <MP_Constraint.h>
@@ -1046,6 +1047,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Concrete06:  
 	     return new Concrete06();
 
+	case MAT_TAG_Concrete07:  
+	     return new Concrete07();
+
 	case MAT_TAG_ConcretewBeta:  
 	     return new ConcretewBeta();
 
@@ -1715,6 +1719,9 @@ FEM_ObjectBrokerAllClasses::getPtrNewRecorder(int classTag)
         case RECORDER_TAGS_TclFeViewer:  
 	  return 0;
   //           return new TclFeViewer();
+
+		case RECORDER_TAGS_MPCORecorder:
+			return new MPCORecorder();
 	     
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewRecordr - ";
