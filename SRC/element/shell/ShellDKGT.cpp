@@ -83,7 +83,7 @@ OPS_ShellDKGT(void)
     return 0;
   }
 
-  SectionForceDeformation *theSection = OPS_GetSectionForceDeformation(iData[4]);
+  SectionForceDeformation *theSection = OPS_getSectionForceDeformation(iData[4]);
 
   if (theSection == 0) {
     opserr << "ERROR:  element ShellDKGT " << iData[0] << "section " << iData[4] << " not found\n";

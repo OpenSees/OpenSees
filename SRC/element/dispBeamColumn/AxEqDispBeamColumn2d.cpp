@@ -190,7 +190,7 @@ OPS_AxEqDispBeamColumn2d(void)
   }
 
   // pointer to pointers of sections of type secTag
-  SectionForceDeformation *theSection = OPS_GetSectionForceDeformation(secTag);   // get the section of type sectionTag
+  SectionForceDeformation *theSection = OPS_getSectionForceDeformation(secTag);   // get the section of type sectionTag
   SectionForceDeformation** sections = new SectionForceDeformation *[nIP];        // pointer to vector of pointers to allocate nIP sections
   // check that the section tag exists
   if (theSection == 0) {

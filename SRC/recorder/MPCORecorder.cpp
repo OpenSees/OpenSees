@@ -5410,7 +5410,7 @@ int MPCORecorder::writeSections()
 	*/
 	for (std::map<int, mpco::element::SectionAssignment>::iterator
 		it = sec_assignments.begin(); it != sec_assignments.end(); ++it) {
-		SectionForceDeformation *sfd = OPS_GetSectionForceDeformation(it->first);
+		SectionForceDeformation *sfd = OPS_getSectionForceDeformation(it->first);
 		if (sfd) {
 			it->second.name = sfd->getClassType();
 			/*

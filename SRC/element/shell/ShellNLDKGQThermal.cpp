@@ -84,7 +84,7 @@ OPS_ShellNLDKGQThermal(void)
     return 0;
   }
 
-  SectionForceDeformation *theSection = OPS_GetSectionForceDeformation(iData[5]);
+  SectionForceDeformation *theSection = OPS_getSectionForceDeformation(iData[5]);
 
   if (theSection == 0) {
     opserr << "ERROR:  element ShellNLDKGQThermal " << iData[0] << "section " << iData[5] << " not found\n";
