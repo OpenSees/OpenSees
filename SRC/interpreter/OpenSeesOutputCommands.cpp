@@ -1531,7 +1531,7 @@ int OPS_eleNodes()
     }
 
     const char *myArgv[1];
-    char myArgv0[8];
+    char myArgv0[8+1];
     strcpy(myArgv0,"nodeTags");
     myArgv[0] = myArgv0;
 
