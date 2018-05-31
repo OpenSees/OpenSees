@@ -1640,8 +1640,9 @@ int OPS_nodeBounds()
     if (theDomain == 0) return -1;
     const Vector &bounds = theDomain->getPhysicalBounds();
     int size = bounds.Size();
-
     double* data = new double[size];
+    for (int i = 0; i < size; i++)
+      data[i] = bounds(i);
 
     if (OPS_SetDoubleOutput(&size, data) < 0) {
 	opserr << "WARNING failed to get node bounds\n";
