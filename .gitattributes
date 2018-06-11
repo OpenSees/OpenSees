@@ -3458,6 +3458,8 @@ SRC/material/section/integration/RCTBeamSectionIntegration.cpp -text
 SRC/material/section/integration/RCTBeamSectionIntegration.h -text
 SRC/material/section/integration/SectionIntegration.cpp -text
 SRC/material/section/integration/SectionIntegration.h -text
+SRC/material/section/integration/TubeSectionIntegration.cpp -text
+SRC/material/section/integration/TubeSectionIntegration.h -text
 SRC/material/section/integration/WideFlangeSectionIntegration.cpp -text
 SRC/material/section/integration/WideFlangeSectionIntegration.h -text
 SRC/material/section/repres/Makefile -text

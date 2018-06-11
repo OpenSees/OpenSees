@@ -2,7 +2,8 @@ include ../../../../Makefile.def
 
 OBJS       = SectionIntegration.o \
 	WideFlangeSectionIntegration.o RCSectionIntegration.o \
-	RCTBeamSectionIntegration.o RCCircularSectionIntegration.o
+	RCTBeamSectionIntegration.o RCCircularSectionIntegration.o \
+	TubeSectionIntegration.o
 
 # Compilation control
 
