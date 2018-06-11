@@ -2635,6 +2635,12 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
 	    theResponse = theCResponse;
     }
 
+    else if (strcmp(argv[0],"integrationPoints") == 0)
+      theResponse = new ElementResponse(this, 10, Vector(numSections));
+
+    else if (strcmp(argv[0],"integrationWeights") == 0)
+      theResponse = new ElementResponse(this, 11, Vector(numSections));
+    
     else if (strcmp(argv[0],"section") ==0) { 
 
       if (argc > 1) {
@@ -2756,6 +2762,26 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     this->getInitialDeformations(v0);
     vp.addVector(1.0, v0, -1.0);
     return eleInfo.setVector(vp);
+  }
+
+  else if (responseID == 10) {
+    double L = crdTransf->getInitialLength();
+    double pts[maxNumSections];
+    beamIntegr->getSectionLocations(numSections, L, pts);
+    Vector locs(numSections);
+    for (int i = 0; i < numSections; i++)
+      locs(i) = pts[i]*L;
+    return eleInfo.setVector(locs);
+  }
+
+  else if (responseID == 11) {
+    double L = crdTransf->getInitialLength();
+    double wts[maxNumSections];
+    beamIntegr->getSectionWeights(numSections, L, wts);
+    Vector weights(numSections);
+    for (int i = 0; i < numSections; i++)
+      weights(i) = wts[i]*L;
+    return eleInfo.setVector(weights);
   }
 
   else if (responseID == 12)
