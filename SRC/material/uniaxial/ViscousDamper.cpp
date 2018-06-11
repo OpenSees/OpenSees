@@ -50,6 +50,7 @@
 #include <Vector.h>
 #include <Channel.h>
 #include <OPS_Globals.h>
+#include <Parameter.h>
 
 static int numViscousDamperMaterials = 0;
 
@@ -547,6 +548,36 @@ ViscousDamper::recvSelf(int cTag, Channel &theChannel,
   }
     
   return res;
+}
+
+int
+ViscousDamper::setParameter(const char **argv, int argc, Parameter &param)
+{
+
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(K);
+    return param.addObject(1, this);
+  }
+  else if (strcmp(argv[0],"eta") == 0) {
+    param.setValue(C);
+    return param.addObject(4, this);
+  }
+  return -1;
+}
+
+int 
+ViscousDamper::updateParameter(int parameterID, Information &info)
+{
+  switch(parameterID) {
+  case 1:
+    K = info.theDouble;
+    return 0;
+  case 4:
+    C = info.theDouble;
+    return 0;
+  default:
+    return -1;
+  }
 }
 
 void 

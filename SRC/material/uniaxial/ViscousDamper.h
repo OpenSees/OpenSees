@@ -78,6 +78,9 @@ class ViscousDamper : public UniaxialMaterial
 
         
     UniaxialMaterial *getCopy(void);
+
+    int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
     
     int sendSelf(int commitTag, Channel &theChannel);  
     int recvSelf(int commitTag, Channel &theChannel, 
