@@ -1253,8 +1253,8 @@ DispBeamColumn3d::Print(OPS_Stream &s, int flag)
 		beamInt->Print(s, flag);
 
 		for (int i = 0; i < numSections; i++) {
-			opserr << "Section Type: " << theSections[i]->getClassTag() << endln;
-			//    theSections[i]->Print(s,flag);
+		  //opserr << "Section Type: " << theSections[i]->getClassTag() << endln;
+		  theSections[i]->Print(s,flag);
 		}
 		//  if (rho != 0)
 		//    opserr << "Mass: \n" << this->getMass();
@@ -1392,7 +1392,12 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse =  new ElementResponse(this, 12, P);
 
   }   
+    else if (strcmp(argv[0],"integrationPoints") == 0)
+      theResponse = new ElementResponse(this, 10, Vector(numSections));
 
+    else if (strcmp(argv[0],"integrationWeights") == 0)
+      theResponse = new ElementResponse(this, 11, Vector(numSections));
+    
   // section response -
   else if (strstr(argv[0],"sectionX") != 0) {
       if (argc > 2) {
@@ -1534,6 +1539,26 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(vp);
   }
 
+  else if (responseID == 10) {
+    double L = crdTransf->getInitialLength();
+    double pts[maxNumSections];
+    beamInt->getSectionLocations(numSections, L, pts);
+    Vector locs(numSections);
+    for (int i = 0; i < numSections; i++)
+      locs(i) = pts[i]*L;
+    return eleInfo.setVector(locs);
+  }
+
+  else if (responseID == 11) {
+    double L = crdTransf->getInitialLength();
+    double wts[maxNumSections];
+    beamInt->getSectionWeights(numSections, L, wts);
+    Vector weights(numSections);
+    for (int i = 0; i < numSections; i++)
+      weights(i) = wts[i]*L;
+    return eleInfo.setVector(weights);
+  }
+  
   else
     return -1;
 }
