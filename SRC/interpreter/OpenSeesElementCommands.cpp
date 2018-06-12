@@ -117,7 +117,7 @@ void* OPS_AV3D4QuadWithSensitivity();
 void* OPS_ElastomericBearingBoucWenMod3d();
 void* OPS_VS3D4WuadWithSensitivity();
 void* OPS_PFEMElement2DBubble(const ID& info);
-void* OPS_TaylorHood2D();
+//void* OPS_TaylorHood2D();
 void* OPS_PFEMElement2DCompressible(const ID& info);
 void* OPS_PFEMElement2DQuasi();
 void* OPS_fElmt02();
@@ -426,7 +426,7 @@ namespace {
 	functionMap.insert(std::make_pair("fTruss", &OPS_fElmt02));
 	functionMap.insert(std::make_pair("PFEMElementCompressible", &OPS_PFEMElementCompressible));
 	functionMap.insert(std::make_pair("PFEMElementBubble", &OPS_PFEMElementBubble));
-	functionMap.insert(std::make_pair("TaylorHood2D", &OPS_TaylorHood2D));
+	//functionMap.insert(std::make_pair("TaylorHood2D", &OPS_TaylorHood2D));
 	functionMap.insert(std::make_pair("VS3D4", &OPS_VS3D4WuadWithSensitivity));
 	functionMap.insert(std::make_pair("elastomericBearingBoucWenMod", &OPS_ElastomericBearingBoucWenMod3d));
 	functionMap.insert(std::make_pair("AV3D4", &OPS_AV3D4QuadWithSensitivity));
