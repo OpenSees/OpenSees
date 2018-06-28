@@ -1540,7 +1540,7 @@ getTime(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   double time = theDomain.getCurrentTime();
   
   // get the display format
-  char format[10];
+  char format[80];
   if (argc == 1) {
     //      strcpy(format,"%f");
     sprintf(format,"%f",time);
