@@ -70,21 +70,47 @@ void* OPS_BiaxialHysteretic()
 	return 0;
     }
   
-    double data[] = {0.0,0.0,0.0,0.0,0.0, 0.6,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.0,
-		     SECTION_RESPONSE_MZ, SECTION_RESPONSE_MY};
+    double data[] = {0.0,0.0,0.0,0.0,0.0, 0.6,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.0};
     numdata = OPS_GetNumRemainingInputArgs();
-    if (numdata > 16) numdata = 16;
+    if (numdata > 14) numdata = 14;
     if (OPS_GetDoubleInput(&numdata, data) < 0) {
 	opserr << "WARNING invalid BiaxialHysteretic input" << endln;
 	return 0;
     }
-  
+
+    int code[2];
+    code[0] = SECTION_RESPONSE_MZ;
+    code[1] = SECTION_RESPONSE_MY;
+    if (numdata == 14) {
+      for (int i = 0; i < 2; i++) {
+	const char *type = OPS_GetString();
+	code[i] = 0;
+	if (strcmp(type,"Mz") == 0) 
+	  code[i] = SECTION_RESPONSE_MZ;
+	else if (strcmp(type,"P") == 0)
+	  code[i] = SECTION_RESPONSE_P;
+	else if (strcmp(type,"Vy") == 0)
+	  code[i] = SECTION_RESPONSE_VY;
+	else if (strcmp(type,"My") == 0)
+	  code[i] = SECTION_RESPONSE_MY;
+	else if (strcmp(type,"Vz") == 0)
+	  code[i] = SECTION_RESPONSE_VZ;
+	else if (strcmp(type,"T") == 0)
+	  code[i] = SECTION_RESPONSE_T;
+	else {
+	  opserr << "WARNING invalid code" << endln;
+	  opserr << "\nsection BiaxialHysteretic: " << tag << endln;
+	  return 0;
+	}
+      }
+    }
+    
     SectionForceDeformation *sec = new BiaxialHysteretic(tag, data[0], data[1], data[2],
 							 data[3], data[4], data[5],
 							 data[6], data[7], data[8],
 							 data[9], data[10], data[11],
-							 data[12], data[13], data[14],
-							 data[15]);
+							 data[12], data[13], code[0],
+							 code[1]);
     return sec;
 }
 
