@@ -82,6 +82,7 @@
 #include <RCSectionIntegration.h>
 #include <RCTBeamSectionIntegration.h>
 //#include <RCTBeamSectionIntegrationUniMat.h>
+#include <TubeSectionIntegration.h>
 
 //#include <McftSection2dfiber.h>
 
@@ -575,6 +576,109 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	  delete [] theMats;
 	}
     }
+
+    else if (strcmp(argv[1],"Tube") == 0) {
+	if (argc < 8) {
+	    opserr << "WARNING insufficient arguments\n";
+	    opserr << "Want: section Tube tag? matTag? D? t? nfw? nfr?" << endln;
+	    return TCL_ERROR;
+	}
+	
+	int tag, matTag;
+	double D, t;
+	int nfw, nfr;
+
+	if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+	    opserr << "WARNING invalid section Tube tag" << endln;
+	    return TCL_ERROR;		
+	}
+
+	if (Tcl_GetInt(interp, argv[3], &matTag) != TCL_OK) {
+	    opserr << "WARNING invalid section Tube matTag" << endln;
+	    return TCL_ERROR;		
+	}
+
+	if (Tcl_GetDouble (interp, argv[4], &D) != TCL_OK) {
+	    opserr << "WARNING invalid D" << endln;
+	    opserr << "Tube section: " << tag << endln;	    
+	    return TCL_ERROR;
+	}	
+
+	if (Tcl_GetDouble (interp, argv[5], &t) != TCL_OK) {
+	    opserr << "WARNING invalid t" << endln;
+	    opserr << "Tube section: " << tag << endln;	    
+	    return TCL_ERROR;
+	}	
+	
+	if (Tcl_GetInt (interp, argv[6], &nfw) != TCL_OK) {
+	    opserr << "WARNING invalid nfw" << endln;
+	    opserr << "Tube section: " << tag << endln;	    	    
+	    return TCL_ERROR;
+	}	
+
+	if (Tcl_GetInt (interp, argv[7], &nfr) != TCL_OK) {
+	    opserr << "WARNING invalid nfr" << endln;
+	    opserr << "Tube  section: " << tag << endln;	    	    
+	    return TCL_ERROR;
+	}	
+
+	TubeSectionIntegration tubesect(D, t, nfw, nfr);
+
+	int numFibers = tubesect.getNumFibers();
+
+	if (argc > 8) {
+
+	  double shape = 1.0;
+	  if (argc > 9) {
+	    if (Tcl_GetDouble(interp, argv[9], &shape) != TCL_OK) {
+	      opserr << "WARNING invalid shape" << endln;
+	      opserr << "WFSection2d section: " << tag << endln;	    	    
+	      return TCL_ERROR;
+	    }
+	  }
+
+	  NDMaterial *theSteel = OPS_getNDMaterial(matTag);
+	
+	  if (theSteel == 0) {
+	    opserr << "WARNING ND material does not exist\n";
+	    opserr << "material: " << matTag; 
+	    opserr << "\nTube section: " << tag << endln;
+	    return TCL_ERROR;
+	  }
+		  
+	  NDMaterial **theMats = new NDMaterial *[numFibers];
+	  
+	  tubesect.arrangeFibers(theMats, theSteel);
+
+	  // Parsing was successful, allocate the section
+	  theSection = 0;
+	  if (strcmp(argv[8],"-nd") == 0)
+	    theSection = new NDFiberSection3d(tag, numFibers, theMats, tubesect, shape);
+	  if (strcmp(argv[8],"-ndWarping") == 0)
+	    theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats, tubesect, shape);
+
+	  delete [] theMats;	  
+	}
+	else {
+	  UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(matTag);
+	
+	  if (theSteel == 0) {
+	    opserr << "WARNING uniaxial material does not exist\n";
+	    opserr << "material: " << matTag; 
+	    opserr << "\nTube section: " << tag << endln;
+	    return TCL_ERROR;
+	  }
+	  
+	  UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+	  
+	  tubesect.arrangeFibers(theMats, theSteel);
+	  
+	  // Parsing was successful, allocate the section
+	  theSection = new FiberSection2d(tag, numFibers, theMats, tubesect);
+
+	  delete [] theMats;
+	}
+    }    
 
     else if (strcmp(argv[1],"RCSection2d") == 0) {
 	if (argc < 15) {
