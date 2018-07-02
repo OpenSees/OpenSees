@@ -25,6 +25,7 @@ OBJS       = SectionForceDeformation.o \
 	Elliptical2.o \
 	TimoshenkoSection3d.o \
 	Isolator2spring.o \
+	BiaxialHysteretic.o \
 	McftSection2dfiber.o \
 	LayeredShellFiberSection.o \
 	LayeredShellFiberSectionThermal.o \
