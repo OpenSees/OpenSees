@@ -310,7 +310,7 @@ ElasticTubeSection3d::recvSelf(int commitTag, Channel &theChannel,
 void
 ElasticTubeSection3d::Print(OPS_Stream &s, int flag)
 {
-    if (flag == OPS_PRINT_PRINTMODEL_SECTION) {
+    if (flag == OPS_PRINT_PRINTMODEL_SECTION || flag == OPS_PRINT_CURRENTSTATE) {
         s << "ElasticTubeSection3d, tag: " << this->getTag() << endln;
         s << "\tE: " << E << endln;
         s << "\td: " << d << endln;
