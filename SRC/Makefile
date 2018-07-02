@@ -419,7 +419,8 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/response/FiberResponse.o \
 	$(FE)/recorder/DamageRecorder.o \
 	$(FE)/recorder/RemoveRecorder.o \
-	$(FE)/recorder/PVDRecorder.o 
+	$(FE)/recorder/PVDRecorder.o \
+	$(FE)/recorder/MPCORecorder.o 
 
 
 DATABASE_LIBS = $(FE)/database/FileDatastore.o \
@@ -925,6 +926,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/Bidirectional.o \
 	$(FE)/material/section/Elliptical2.o \
 	$(FE)/material/section/Isolator2spring.o \
+	$(FE)/material/section/BiaxialHysteretic.o \
 	$(FE)/material/section/LayeredShellFiberSection.o \
 	$(FE)/material/section/integration/SectionIntegration.o \
 	$(FE)/material/section/integration/RCSectionIntegration.o \
