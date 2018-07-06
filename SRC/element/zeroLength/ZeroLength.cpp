@@ -192,7 +192,7 @@ void* OPS_ZeroLength()
 	    }
 	  }
 
-	} else if (strcmp(type,"orient") == 0) {
+	} else if (strcmp(type,"-orient") == 0) {
 	    if (OPS_GetNumRemainingInputArgs() < 6) {
 		opserr<<"WARNING: insufficient orient values\n";
 		return 0;
