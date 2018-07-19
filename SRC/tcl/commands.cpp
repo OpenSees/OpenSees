@@ -2422,7 +2422,26 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	    theSOE = new ProfileSPDLinSOE(*theSolver);      
 #endif
 	}
-    
+	
+	int count = 2;
+	int numSubLevels = 0;
+	int numSubSteps = 10;
+	while (count < argc) {
+	  if (strcmp(argv[count],"-numSubLevels") == 0) {
+	    count++;
+	    if (count < argc)
+	      if (Tcl_GetInt(interp, argv[count], &numSubLevels) != TCL_OK)
+		return TCL_ERROR;		     
+	  }
+	  else if ((strcmp(argv[count],"-numSubSteps") == 0) ) {
+	    count++;
+	    if (count < argc)
+	      if (Tcl_GetInt(interp, argv[count], &numSubLevels) != TCL_OK)
+		return TCL_ERROR;		     
+	  }
+	  count++;
+	}
+
 	theTransientAnalysis = new DirectIntegrationAnalysis(theDomain,
 							     *theHandler,
 							     *theNumberer,
@@ -2430,7 +2449,10 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 							     *theAlgorithm,
 							     *theSOE,
 							     *theTransientIntegrator,
-							     theTest);
+							     theTest,
+							     numSubLevels,
+							     numSubSteps);
+	  ;
 #ifdef _PARALLEL_INTERPRETERS
 	if (setMPIDSOEFlag) {
 	  ((MPIDiagonalSOE*) theSOE)->setAnalysisModel(*theAnalysisModel);
