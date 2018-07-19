@@ -72,13 +72,12 @@ void* OPS_NewtonHallM()
 	}
       } else if(strcmp(type,"-constant")==0 || strcmp(type,"-Constant")==0) {
 	method = 2;
-	int numData = 2;
+	int numData = 1;
 	if(OPS_GetDoubleInput(&numData,&data[0]) < 0) {
 	  opserr << "WARNING invalid data reading 2 hall factors\n";
 	  return 0;
 	} else {
-	  iFactor = data[0];
-	  c = data[1];
+	  c = data[0];
 	}
       }
     }
