@@ -140,10 +140,13 @@
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\section\BiaxialHysteretic.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\Elliptical2.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\FiberSection3dThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\FiberSectionGJThermal.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\section\integration\RCCircularSectionIntegration.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\section\integration\TubeSectionIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\LayeredShellFiberSectionThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\MembranePlateFiberSectionThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\NDFiberSectionWarping2d.cpp" />
@@ -488,10 +491,13 @@
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafaliasRO.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.h" />
+    <ClInclude Include="..\..\..\SRC\material\section\BiaxialHysteretic.h" />
     <ClInclude Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.h" />
     <ClInclude Include="..\..\..\SRC\material\section\Elliptical2.h" />
     <ClInclude Include="..\..\..\SRC\material\section\FiberSection3dThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\section\FiberSectionGJThermal.h" />
+    <ClInclude Include="..\..\..\SRC\material\section\integration\RCCircularSectionIntegration.h" />
+    <ClInclude Include="..\..\..\SRC\material\section\integration\TubeSectionIntegration.h" />
     <ClInclude Include="..\..\..\SRC\material\section\LayeredShellFiberSectionThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\section\MembranePlateFiberSectionThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\section\NDFiberSectionWarping2d.h" />

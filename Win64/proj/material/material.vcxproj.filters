@@ -1136,6 +1136,15 @@
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.cpp">
       <Filter>nD\j2Plasticity</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\integration\RCCircularSectionIntegration.cpp">
+      <Filter>section\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\integration\TubeSectionIntegration.cpp">
+      <Filter>section\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\BiaxialHysteretic.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2125,6 +2134,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.h">
       <Filter>nD\j2Plasticity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\integration\RCCircularSectionIntegration.h">
+      <Filter>section\integration</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\integration\TubeSectionIntegration.h">
+      <Filter>section\integration</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\BiaxialHysteretic.h">
+      <Filter>section</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

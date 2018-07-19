@@ -223,6 +223,7 @@
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesMiscCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesNDMaterialCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesOutputCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesParameterCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesPatternCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesSectionCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesTimeSeriesCommands.cpp" />
