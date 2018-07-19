@@ -1156,8 +1156,25 @@ PlasticDamageConcretePlaneStress::recvSelf(int commitTag, Channel &theChannel,
 
 void 
 PlasticDamageConcretePlaneStress::Print(OPS_Stream &s, int flag) {
-  opserr << "PlasticDamageConcretePlaneStress: " << this->getTag();
-  opserr << "strain: " << eps;
-  opserr << "strain: " << sig;
-  opserr << "tangent: " << this->getTangent();
+  if (flag == OPS_PRINT_CURRENTSTATE) {
+    opserr << "PlasticDamageConcretePlaneStress: " << this->getTag();
+    opserr << "strain: " << eps;
+    opserr << "strain: " << sig;
+    opserr << "tangent: " << this->getTangent();
+  }
+
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\t\t\t{";
+    s << "\"name\": \"" << this->getTag() << "\", ";
+    s << "\"type\": \"PlasticDamageConcretePlaneStress\", "; 
+    s << " \"E\":" << E << ","; 
+    s << " \"nu\":" << nu << ","; 
+    s << " \"ft\":" << ft << ","; 
+    s << " \"fc\":" << fc << ","; 
+    s << " \"Ap\":" << Ap << ","; 
+    s << " \"An\":"<< An << ","; 
+    s << " \"Bn\":" << Bn << ","; 
+    s << " \"beta\":" << beta << "}"; 
+  }
+
 }       

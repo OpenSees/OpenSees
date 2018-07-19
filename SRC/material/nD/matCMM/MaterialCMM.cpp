@@ -41,7 +41,7 @@ extern "C"
 
 #else
   void MAT_CMM(double *Stress,double *Strain, double *dStrain, int *kLayer,
-			double *Mat_Par, double *Stress1, double *dsdePl, double *ustatev)
+	       double *Mat_Par, double *Stress1, double *dsdePl, double *ustatev)
    
 {
   opserr << "MAT_CMM - NOT DEFINED IN THIS VERSION, SOURCE CODE RESTRICTED\n";
