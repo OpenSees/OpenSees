@@ -64,13 +64,18 @@ class DirectIntegrationAnalysis: public TransientAnalysis
 			      EquiSolnAlgo &theSolnAlgo,		   
 			      LinearSOE &theSOE,
 			      TransientIntegrator &theIntegrator,
-			      ConvergenceTest *theTest = 0);
+			      ConvergenceTest *theTest = 0,
+			      int numSubLevels = 0,
+			      int numSubSteps = 0);
+
 
     virtual ~DirectIntegrationAnalysis();
 
     void clearAll(void);	    
     
     int analyze(int numSteps, double dT);
+    int analyzeStep(double dT);
+    int analyzeSubLevel(int level, double dT);
     int eigen(int numMode, bool generlzed = true, bool findSmallest = true);
     int initialize(void);
     int domainChanged(void);
@@ -108,6 +113,8 @@ class DirectIntegrationAnalysis: public TransientAnalysis
     ConvergenceTest     *theTest;
 
     int domainStamp;
+    int numSubLevels;
+    int numSubSteps;
 
     // AddingSensitivity:BEGIN ///////////////////////////////
 #ifdef _RELIABILITY

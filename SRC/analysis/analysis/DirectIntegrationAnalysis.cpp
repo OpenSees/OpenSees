@@ -72,7 +72,9 @@ DirectIntegrationAnalysis::DirectIntegrationAnalysis(Domain &the_Domain,
 						     EquiSolnAlgo &theSolnAlgo,		   
 						     LinearSOE &theLinSOE,
 						     TransientIntegrator &theTransientIntegrator,
-						     ConvergenceTest *theConvergenceTest)
+						     ConvergenceTest *theConvergenceTest,
+						     int num_SubLevels, 
+						     int num_SubSteps)
 :TransientAnalysis(the_Domain), 
  theConstraintHandler(&theHandler),
  theDOF_Numberer(&theNumberer), 
@@ -82,7 +84,9 @@ DirectIntegrationAnalysis::DirectIntegrationAnalysis(Domain &the_Domain,
  theEigenSOE(0),
  theIntegrator(&theTransientIntegrator), 
  theTest(theConvergenceTest),
- domainStamp(0)
+ domainStamp(0),
+ numSubLevels(num_SubLevels),
+ numSubSteps(num_SubSteps)
 {
   // first we set up the links needed by the elements in the 
   // aggregation
@@ -175,78 +179,120 @@ DirectIntegrationAnalysis::initialize(void)
     return 0;
 }
 
+
 int 
 DirectIntegrationAnalysis::analyze(int numSteps, double dT)
+{
+  int result = 0;
+ // if (theEigenSOE != 0)
+ //   theIntegrator->setEigenSOE(theEigenSOE);
+
+  for (int i=0; i<numSteps; i++) {
+    result = this->analyzeStep(dT);
+    if (result < 0) {
+      if (numSubLevels != 0)
+	result = this->analyzeSubLevel(1, dT);
+      if (result < 0)
+	return result;
+    }
+  }
+  return result;
+}
+
+int 
+DirectIntegrationAnalysis::analyzeStep(double dT)
 {
   int result = 0;
   Domain *the_Domain = this->getDomainPtr();
  // if (theEigenSOE != 0)
  //   theIntegrator->setEigenSOE(theEigenSOE);
 
-  for (int i=0; i<numSteps; i++) {
 
-    if (theAnalysisModel->analysisStep(dT) < 0) {
-      opserr << "DirectIntegrationAnalysis::analyze() - the AnalysisModel failed";
-      opserr << " at time " << the_Domain->getCurrentTime() << endln;
-      the_Domain->revertToLastCommit();
-      return -2;
-    }
-    
-    // check if domain has undergone change
-    int stamp = the_Domain->hasDomainChanged();
-    if (stamp != domainStamp) {
-      domainStamp = stamp;	
-      if (this->domainChanged() < 0) {
-	opserr << "DirectIntegrationAnalysis::analyze() - domainChanged() failed\n";
-	return -1;
-      }	
-    }
-
-    if (theIntegrator->newStep(dT) < 0) {
-      opserr << "DirectIntegrationAnalysis::analyze() - the Integrator failed";
-      opserr << " at time " << the_Domain->getCurrentTime() << endln;
-      the_Domain->revertToLastCommit();
-      theIntegrator->revertToLastStep();
-      return -2;
-    }
-    
-    result = theAlgorithm->solveCurrentStep();
-    if (result < 0) {
-      opserr << "DirectIntegrationAnalysis::analyze() - the Algorithm failed";
-      opserr << " at time " << the_Domain->getCurrentTime() << endln;
-      the_Domain->revertToLastCommit();	    
-      theIntegrator->revertToLastStep();
-      return -3;
-    }    
-    
-// AddingSensitivity:BEGIN ////////////////////////////////////
+  if (theAnalysisModel->analysisStep(dT) < 0) {
+    opserr << "DirectIntegrationAnalysis::analyze() - the AnalysisModel failed";
+    opserr << " at time " << the_Domain->getCurrentTime() << endln;
+    the_Domain->revertToLastCommit();
+    return -2;
+  }
+  
+  // check if domain has undergone change
+  int stamp = the_Domain->hasDomainChanged();
+  if (stamp != domainStamp) {
+    domainStamp = stamp;	
+    if (this->domainChanged() < 0) {
+      opserr << "DirectIntegrationAnalysis::analyze() - domainChanged() failed\n";
+      return -1;
+    }	
+  }
+  
+  if (theIntegrator->newStep(dT) < 0) {
+    opserr << "DirectIntegrationAnalysis::analyze() - the Integrator failed";
+    opserr << " at time " << the_Domain->getCurrentTime() << endln;
+    the_Domain->revertToLastCommit();
+    theIntegrator->revertToLastStep();
+    return -2;
+  }
+  
+  result = theAlgorithm->solveCurrentStep();
+  if (result < 0) {
+    opserr << "DirectIntegrationAnalysis::analyze() - the Algorithm failed";
+    opserr << " at time " << the_Domain->getCurrentTime() << endln;
+    the_Domain->revertToLastCommit();	    
+    theIntegrator->revertToLastStep();
+    return -3;
+  }    
+  
+  // AddingSensitivity:BEGIN ////////////////////////////////////
 #ifdef _RELIABILITY
-   /*
+  /*
     if (theSensitivityAlgorithm != 0) {
-      result = theIntegrator->computeSensitivities();
-      if (result < 0) {
-	opserr << "StaticAnalysis::analyze() - the SensitivityAlgorithm failed";
-	opserr << " at iteration: " << i << " with domain at load factor ";
+    result = theIntegrator->computeSensitivities();
+    if (result < 0) {
+    opserr << "StaticAnalysis::analyze() - the SensitivityAlgorithm failed";
+    opserr << " at iteration: " << i << " with domain at load factor ";
 	opserr << the_Domain->getCurrentTime() << endln;
 	the_Domain->revertToLastCommit();	    
 	theIntegrator->revertToLastStep();
 	return -5;
-      }    
-    }
-    */
+	}    
+	}
+  */
 #endif
-    // AddingSensitivity:END //////////////////////////////////////
+  // AddingSensitivity:END //////////////////////////////////////
+  
+  result = theIntegrator->commit();
+  if (result < 0) {
+    opserr << "DirectIntegrationAnalysis::analyze() - ";
+    opserr << "the Integrator failed to commit";
+    opserr << " at time " << the_Domain->getCurrentTime() << endln;
+    the_Domain->revertToLastCommit();	    
+    theIntegrator->revertToLastStep();
+    return -4;
+  } 
     
-    result = theIntegrator->commit();
+  return result;
+}
+
+int
+DirectIntegrationAnalysis::analyzeSubLevel(int level, double dT) {
+  int result = 0;
+  if (numSubSteps == 0)
+    return -1;
+
+  double stepDT = dT/(numSubSteps*1.);
+
+  for (int i=0; i<numSubSteps; i++) {
+    result = this->analyzeStep(stepDT);
     if (result < 0) {
-      opserr << "DirectIntegrationAnalysis::analyze() - ";
-      opserr << "the Integrator failed to commit";
-      opserr << " at time " << the_Domain->getCurrentTime() << endln;
-      the_Domain->revertToLastCommit();	    
-      theIntegrator->revertToLastStep();
-      return -4;
-    } 
-  }    
+      if (level == numSubLevels) {
+	return result;
+      } else {
+	result = this->analyzeSubLevel(level+1, stepDT);
+	if (result < 0)
+	  return result;
+      }
+    }
+  }
   return result;
 }
 
@@ -306,7 +352,7 @@ DirectIntegrationAnalysis::eigen(int numMode, bool generalized, bool findSmalles
     //
 
     if (generalized == true) {
-      int result = 0;
+      //      int result = 0;
       FE_EleIter &theEles2 = theAnalysisModel->getFEs();    
       while((elePtr = theEles2()) != 0) {     
 	elePtr->zeroTangent();
