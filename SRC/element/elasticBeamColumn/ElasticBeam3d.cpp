@@ -630,8 +630,6 @@ const Vector &
 ElasticBeam3d::getResistingForceIncInertia()
 {	
   P = this->getResistingForce(); 
-  // subtract external load P = P - Q
-  P.addVector(1.0, Q, -1.0);
   
   // add the damping forces if rayleigh damping
   if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
@@ -704,7 +702,9 @@ ElasticBeam3d::getResistingForce()
 
   P = theCoordTransf->getGlobalResistingForce(q, p0Vec);
 
-  // opserr << P;
+  // subtract external load P = P - Q
+  if (rho != 0)
+    P.addVector(1.0, Q, -1.0);
   
   return P;
 }

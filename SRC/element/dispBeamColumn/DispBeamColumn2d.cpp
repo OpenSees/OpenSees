@@ -821,38 +821,38 @@ DispBeamColumn2d::addLoad(ElementalLoad *theLoad, double loadFactor)
 int 
 DispBeamColumn2d::addInertiaLoadToUnbalance(const Vector &accel)
 {
-	// Check for a quick return
-	if (rho == 0.0) 
-		return 0;
-
-	// Get R * accel from the nodes
-	const Vector &Raccel1 = theNodes[0]->getRV(accel);
-	const Vector &Raccel2 = theNodes[1]->getRV(accel);
-
-    if (3 != Raccel1.Size() || 3 != Raccel2.Size()) {
-      opserr << "DispBeamColumn2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
-      return -1;
+  // Check for a quick return
+  if (rho == 0.0) 
+    return 0;
+  
+  // Get R * accel from the nodes
+  const Vector &Raccel1 = theNodes[0]->getRV(accel);
+  const Vector &Raccel2 = theNodes[1]->getRV(accel);
+  
+  if (3 != Raccel1.Size() || 3 != Raccel2.Size()) {
+    opserr << "DispBeamColumn2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+    return -1;
+  }
+  
+  // want to add ( - fact * M R * accel ) to unbalance
+  if (cMass == 0)  {
+    // take advantage of lumped mass matrix
+    double L = crdTransf->getInitialLength();
+    double m = 0.5*rho*L;
+    
+    Q(0) -= m*Raccel1(0);
+    Q(1) -= m*Raccel1(1);
+    Q(3) -= m*Raccel2(0);
+    Q(4) -= m*Raccel2(1);
+  } else  {
+    // use matrix vector multip. for consistent mass matrix
+    static Vector Raccel(6);
+    for (int i=0; i<3; i++)  {
+      Raccel(i)   = Raccel1(i);
+      Raccel(i+3) = Raccel2(i);
     }
-
-    // want to add ( - fact * M R * accel ) to unbalance
-    if (cMass == 0)  {
-      // take advantage of lumped mass matrix
-      double L = crdTransf->getInitialLength();
-      double m = 0.5*rho*L;
-      
-      Q(0) -= m*Raccel1(0);
-      Q(1) -= m*Raccel1(1);
-      Q(3) -= m*Raccel2(0);
-      Q(4) -= m*Raccel2(1);
-    } else  {
-      // use matrix vector multip. for consistent mass matrix
-      static Vector Raccel(6);
-      for (int i=0; i<3; i++)  {
-        Raccel(i)   = Raccel1(i);
-        Raccel(i+3) = Raccel2(i);
-      }
-      Q.addMatrixVector(1.0, this->getMass(), Raccel, -1.0);
-    }
+    Q.addMatrixVector(1.0, this->getMass(), Raccel, -1.0);
+  }
     
     return 0;
 }
@@ -913,6 +913,10 @@ DispBeamColumn2d::getResistingForce()
   Vector p0Vec(p0, 3);
 
   P = crdTransf->getGlobalResistingForce(q, p0Vec);
+
+  // Subtract other external nodal loads ... P_res = P_int - P_ext
+  if (rho != 0)
+    P.addVector(1.0, Q, -1.0);
   
   return P;
 }
@@ -921,9 +925,6 @@ const Vector&
 DispBeamColumn2d::getResistingForceIncInertia()
 {
   P = this->getResistingForce();
-  
-  // Subtract other external nodal loads ... P_res = P_int - P_ext
-  P.addVector(1.0, Q, -1.0);
   
   if (rho != 0.0) {
     const Vector &accel1 = theNodes[0]->getTrialAccel();
