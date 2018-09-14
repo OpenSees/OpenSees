@@ -188,9 +188,11 @@ ForceBeamColumn3d::ForceBeamColumn3d():
   kv(NEBD,NEBD), Se(NEBD),
   kvcommit(NEBD,NEBD), Secommit(NEBD),
   fs(0), vs(0), Ssr(0), vscommit(0),
-  numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0),
+  numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0), load(12),
   Ki(0), isTorsion(false), parameterID(0)
 {
+  load.Zero();
+
   theNodes[0] = 0;  
   theNodes[1] = 0;
 
@@ -637,35 +639,40 @@ ForceBeamColumn3d::computeReactionSensitivity(double *dp0dh, int gradNumber)
   }
 }
 
-  const Vector &
-  ForceBeamColumn3d::getResistingForce(void)
-  {
-    // Will remove once we clean up the corotational 3d transformation -- MHS
-    crdTransf->update();
+const Vector &
+ForceBeamColumn3d::getResistingForce(void)
+{
+  // Will remove once we clean up the corotational 3d transformation -- MHS
+  crdTransf->update();
+  
+  double p0[5];
+  Vector p0Vec(p0, 5);
+  p0Vec.Zero();
+  
+  if (numEleLoads > 0)
+    this->computeReactions(p0);
+  
+  theVector =  crdTransf->getGlobalResistingForce(Se, p0Vec);
+  
+  if (rho != 0)
+    theVector.addVector(1.0, load, -1.0);
+  
+  return theVector;
+}
 
-    double p0[5];
-    Vector p0Vec(p0, 5);
-    p0Vec.Zero();
-
-    if (numEleLoads > 0)
-        this->computeReactions(p0);
-
-    return crdTransf->getGlobalResistingForce(Se, p0Vec);
-  }
-
-  void
+void
   ForceBeamColumn3d::initializeSectionHistoryVariables (void)
-  {
-    for (int i = 0; i < numSections; i++) {
-      int order = sections[i]->getOrder();
-
-      fs[i] = Matrix(order,order);
-      vs[i] = Vector(order);
-      Ssr[i] = Vector(order);
-
+{
+  for (int i = 0; i < numSections; i++) {
+    int order = sections[i]->getOrder();
+    
+    fs[i] = Matrix(order,order);
+    vs[i] = Vector(order);
+    Ssr[i] = Vector(order);
+    
       vscommit[i] = Vector(order);
-    }
   }
+}
 
   /********* NEWTON , SUBDIVIDE AND INITIAL ITERATIONS ********************
    */
@@ -1540,15 +1547,12 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
     double L = crdTransf->getInitialLength();
     double m = 0.5*rho*L;
 
-    // Should be done through p0[0]
-    /*
     load(0) -= m*Raccel1(0);
     load(1) -= m*Raccel1(1);
     load(2) -= m*Raccel1(2);
     load(6) -= m*Raccel2(0);
     load(7) -= m*Raccel2(1);
     load(8) -= m*Raccel2(2);
-    */
 
     return 0;
   }

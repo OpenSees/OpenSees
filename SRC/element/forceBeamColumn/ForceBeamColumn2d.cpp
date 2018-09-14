@@ -271,9 +271,11 @@ ForceBeamColumn2d::ForceBeamColumn2d():
   kv(NEBD,NEBD), Se(NEBD),
   kvcommit(NEBD,NEBD), Secommit(NEBD),
   fs(0), vs(0), Ssr(0), vscommit(0), 
-  numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0),
+  numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0), load(6),
   Ki(0), parameterID(0)
 {
+  load.Zero();
+
   theNodes[0] = 0;  
   theNodes[1] = 0;
 
@@ -733,8 +735,13 @@ ForceBeamColumn2d::getResistingForce(void)
 
   if (numEleLoads > 0)
     this->computeReactions(p0);
+  // Compute the current resisting force
+  theVector = crdTransf->getGlobalResistingForce(Se, p0Vec);
+  
+  if (rho != 0)
+    theVector.addVector(1.0, load, -1.0);
 
-  return crdTransf->getGlobalResistingForce(Se, p0Vec);
+  return theVector;
 }
 
 void
@@ -1517,12 +1524,10 @@ ForceBeamColumn2d::addInertiaLoadToUnbalance(const Vector &accel)
   double m = 0.5*rho*L;
 
   // Should be done through p0[0]
-  /*
   load(0) -= m*Raccel1(0);
   load(1) -= m*Raccel1(1);
   load(3) -= m*Raccel2(0);
   load(4) -= m*Raccel2(1);
-  */
 
   return 0;
 }
