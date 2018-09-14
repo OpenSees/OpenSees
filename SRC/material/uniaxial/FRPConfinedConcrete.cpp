@@ -599,26 +599,26 @@ bool FRPConfinedConcrete::myRegulaFalsi(double Pcr, double EIred, double Es, dou
 	double xNew;
 
 	double fxA =  PCriticalSolve(xA,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
-	double fxÂ =  PCriticalSolve(xB,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
+	double fxAhat =  PCriticalSolve(xB,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
 
-	xNew = xA - (fxA)*(xA - xB)/(fxA - fxÂ);
+	xNew = xA - (fxA)*(xA - xB)/(fxA - fxAhat);
 	double fxNew = PCriticalSolve(xNew,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
 	
 	while (( abs(fxNew)> 1E-6) && (insIter<=insMaxIter)){
 		insIter++;
-		if  (fxÂ*fxNew>0){
+		if  (fxAhat*fxNew>0){
 			xB = xNew;
-			fxÂ = fxNew;
+			fxAhat = fxNew;
 		}
 		else{
 			xA = xNew;
 			fxA = fxNew;
 		}
 		
-		xNew = xA - (fxA)*(xA - xB)/(fxA - fxÂ);
+		xNew = xA - (fxA)*(xA - xB)/(fxA - fxAhat);
 		fxNew = PCriticalSolve(xNew,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
 
-		if ((abs(xA-xB)<1E-12) && (fxA*fxÂ<0)){
+		if ((abs(xA-xB)<1E-12) && (fxA*fxAhat<0)){
 			returnFlag = true;	
 			break;
 		}
