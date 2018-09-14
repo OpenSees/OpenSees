@@ -42,7 +42,7 @@
 
 static double fpc,Ec, Ec1, Ec2, R, A, Rcore, Acore, Acover, beta1, beta2, Ash, rs, eyh;
 static const double pi = 3.1415926;
-//static double min(double a, double b);
+static double min(double a, double b);
 static int numFRPConfinedConcrete = 0;
 
 // NOTE: units should b in Newton(N) and MegaPascal(MPa)
@@ -62,7 +62,7 @@ OPS_FRPConfinedConcrete(void)
   double dData[18];  // size of arg list
   int numData;
 
-  if (OPS_GetNumRemainingInputArgs() != 18) {
+  if (OPS_GetNumRemainingInputArgs() != 19) {
 	  opserr << "WARNING invalid #args: uniaxialMaterial FRPConfinedConcrete $tag $fpc1 $fpc2 $epsc0";
 	  opserr << " $D $c $Ej $Sj $tj $eju $S $fyl $fyh $dlong $dtrans $Es $v0 $k $useBuck\n";
 	  return 0;
@@ -117,34 +117,26 @@ Es = Steel's Elastic modulus, vo = Poisson's coefficient for concrete, k = reduc
 */
 
  FRPConfinedConcrete::FRPConfinedConcrete(int tag, 
-					  double fpc1_,
-					  double fpc2_, 
-					  double epsc0_, 
-					  double D_, 
-					  double c_, 
-					  double Ej_, 
-					  double Sj_, 
-					  double tj_, 
-					  double eju_, 
-					  double S_, 
-					  double fyl_,
-					  double fyh_, 
-					  double dlong_, 
-					  double dtrans_, 
-					  double Es_, 
-					  double v0_, 
-					  double k_,
-					  double useBuck_)
-   :UniaxialMaterial(tag, MAT_TAG_FRPConfinedConcrete),
-    CminStrain(0.0), CendStrain(0.0),
-    CbLatstress(0.00001),
-    CConvFlag(false) ,
-    CConfRat(1.0) ,
-    CConfStrain(epsc0),
-    CLBuck(0.0),
-    Cstrain(0.0), Cstress(0.0), 
-    CLatStrain(0.0) ,
-    CaLatstress(0.0)
+	 double fpc1_,
+	 double fpc2_, 
+	 double epsc0_, 
+	 double D_, 
+	 double c_, 
+	 double Ej_, 
+	 double Sj_, 
+	 double tj_, 
+	 double eju_, 
+	 double S_, 
+	 double fyl_,
+	 double fyh_, 
+	 double dlong_, 
+	 double dtrans_, 
+	 double Es_, 
+	 double v0_, 
+	 double k_,
+	 double useBuck_)
+ :UniaxialMaterial(tag, MAT_TAG_FRPConfinedConcrete),fpc1(fpc1), fpc2(fpc2), epsc0(epsc0), CminStrain(0.0), CendStrain(0.0),Cstrain(0.0), Cstress(0.0), CaLatstress(0.0) ,
+   CbLatstress(0.00001),CLatStrain(0.0) ,CConvFlag(false) ,CConfRat(1.0) ,CConfStrain(epsc0),CLBuck(0.0)
 {
   fpc1 = fpc1_;
   fpc2 = fpc2_;
@@ -206,19 +198,10 @@ Es = Steel's Elastic modulus, vo = Poisson's coefficient for concrete, k = reduc
   buckCrInit = false;
 }
 
-FRPConfinedConcrete::FRPConfinedConcrete()
- :UniaxialMaterial(0, MAT_TAG_FRPConfinedConcrete),
-  fpc1(0.0),fpc2(0.0), epsc0(0.0),
-  CminStrain(0.0), CunloadSlope(0.0), CendStrain(0.0),
-  CbLatstress(0.00001),
-  CConvFlag(true),
-  CConfRat(1.0),
-  CConfStrain(epsc0),
-  CLBuck(0.0),
-  Cstrain(0.0), 
-  Cstress(0.0),
-  CLatStrain(0.0) ,
-  CaLatstress(0.0)
+FRPConfinedConcrete::FRPConfinedConcrete():UniaxialMaterial(0, MAT_TAG_FRPConfinedConcrete),
+ fpc1(0.0),fpc2(0.0), epsc0(0.0),
+ CminStrain(0.0), CunloadSlope(0.0), CendStrain(0.0),
+ Cstrain(0.0), Cstress(0.0),CaLatstress(0.0) ,CbLatstress(0.00001),CLatStrain(0.0) ,CConvFlag(true) ,CConfRat(1.0),CConfStrain(epsc0),CLBuck(0.0)
 {
   // Set trial values
   this->revertToLastCommit();
@@ -616,26 +599,26 @@ bool FRPConfinedConcrete::myRegulaFalsi(double Pcr, double EIred, double Es, dou
 	double xNew;
 
 	double fxA =  PCriticalSolve(xA,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
-	double fxA1 =  PCriticalSolve(xB,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
+	double fxÂ =  PCriticalSolve(xB,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
 
-	xNew = xA - (fxA)*(xA - xB)/(fxA - fxA1);
+	xNew = xA - (fxA)*(xA - xB)/(fxA - fxÂ);
 	double fxNew = PCriticalSolve(xNew,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
 	
 	while (( abs(fxNew)> 1E-6) && (insIter<=insMaxIter)){
 		insIter++;
-		if  (fxA1*fxNew>0){
+		if  (fxÂ*fxNew>0){
 			xB = xNew;
-			fxA1 = fxNew;
+			fxÂ = fxNew;
 		}
 		else{
 			xA = xNew;
 			fxA = fxNew;
 		}
 		
-		xNew = xA - (fxA)*(xA - xB)/(fxA - fxA1);
+		xNew = xA - (fxA)*(xA - xB)/(fxA - fxÂ);
 		fxNew = PCriticalSolve(xNew,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
 
-		if ((abs(xA-xB)<1E-12) && (fxA*fxA1<0)){
+		if ((abs(xA-xB)<1E-12) && (fxA*fxÂ<0)){
 			returnFlag = true;	
 			break;
 		}
