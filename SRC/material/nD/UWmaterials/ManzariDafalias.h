@@ -149,8 +149,10 @@ class ManzariDafalias : public NDMaterial
 														// 3: FE Explicit with constrained strain increment
 	char unsigned mTangType;// 0: Elastic Tangent, 1: Contiuum ElastoPlastic Tangent, 2: Consistent ElastoPlastic Tangent
 	bool    mUseElasticTan;
+        bool    mStressCorrectionInUse;
 	double	mEPS;			// machine epsilon (for FD jacobian)
 	double	m_Pmin;			// Minimum allowable mean effective stress
+    double  m_Presidual;    // small residual pressure (due to cohesion)
 	static char unsigned mElastFlag;	// 1: enforce elastic response
 
 	static Vector mI1;			// 2nd Order Identity Tensor
@@ -297,6 +299,7 @@ class ManzariDafalias : public NDMaterial
 				const Vector& n, const Vector& d, const Vector& b) ;
 	Vector	GetNormalToYield(const Vector &stress, const Vector &alpha);
 	int	Check(const Vector& TrialStress, const Vector& stress, const Vector& CurAlpha, const Vector& NextAlpha);
+        int     Elastic2Plastic();
 
 	// Symmetric Tensor Operations
 	double GetTrace(const Vector& v);
