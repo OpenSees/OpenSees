@@ -3595,7 +3595,7 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
       theNewAlgo->setConvergenceTest(theTest);
   }
 
-  else if (strcmp(argv[1],"NewtonHallM") == 0) {
+  else if ((strcmp(argv[1],"NewtonHallM") == 0) || (strcmp(argv[1],"NewtonHall") == 0)) {
     void *theNewtonAlgo = OPS_NewtonHallM();
     if (theNewtonAlgo == 0)
       return TCL_ERROR;
