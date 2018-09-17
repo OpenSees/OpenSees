@@ -969,7 +969,7 @@ int FRPConfinedConcrete::recvSelf (int commitTag, Channel& theChannel,
    CbLatstress  = data(22);
    CConfRat     = data(23);
    CConfStrain  = data(24);
-   CConfStrain  = data(25);
+   CLBuck       = data(25);
 
    // State variables from last converged state
    Cstrain      = data(26);
