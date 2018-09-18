@@ -265,6 +265,8 @@
 #define MAT_TAG_AxialSp   6111
 #define MAT_TAG_AxialSpHD 6112
 
+// GNG material - J.Cook UCanterbury
+#define MAT_TAG_GNG 7001
 
 #define SEC_TAG_Elastic2d                        3
 #define SEC_TAG_Elastic3d                        4
@@ -422,10 +424,11 @@
 #define ND_TAG_ManzariDafaliasRO                14015
 #define ND_TAG_ManzariDafalias3DRO              14016
 #define ND_TAG_ManzariDafaliasPlaneStrainRO     14017
-// Stress-Dilatancy material - C.McGann
+// Stress Density material - C.McGann
 #define ND_TAG_StressDensityModel             14018
 #define ND_TAG_StressDensityModel2D           14019
 #define ND_TAG_StressDensityModel3D           14020
+#define ND_TAG_stressDensity                  14024
 // PM4Sand material - L.Chen
 #define ND_TAG_PM4Sand                        14021
 // PM4Silt material - L.Chen
