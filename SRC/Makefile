@@ -738,6 +738,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/HyperbolicGapMaterial.o \
 	$(FE)/material/uniaxial/ImpactMaterial.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
+	$(FE)/material/uniaxial/GNGMaterial.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \
 	$(FE)/material/uniaxial/backbone/ArctangentBackbone.o \
@@ -859,7 +860,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/stressDensityModel/StressDensityModel2D.o \
 	$(FE)/material/nD/stressDensityModel/MODULE_ALL_INTERFACES_3D.o \
 	$(FE)/material/nD/stressDensityModel/SDM3D.o \
-	$(FE)/material/nD/stressDensityModel/StressDensityModel3D.o
+	$(FE)/material/nD/stressDensityModel/StressDensityModel3D.o \
+	$(FE)/material/nD/stressDensityModel/stressDensity.o \
+	$(FE)/material/nD/stressDensityModel/SDM-UC.o
 
 FEDEAS_LIBS = $(FE)/material/uniaxial/FedeasMaterial.o \
 	$(FE)/material/uniaxial/fedeas/FedeasHardeningMaterial.o \
