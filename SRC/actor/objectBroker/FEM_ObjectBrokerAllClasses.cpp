@@ -187,9 +187,7 @@
 #include <ManzariDafaliasPlaneStrainRO.h>
 #include <PM4Sand.h>
 #include <InitialStateAnalysisWrapper.h>
-#include <StressDensityModel.h>
-#include <StressDensityModel2D.h>
-#include <StressDensityModel3D.h>
+#include <stressDensity.h>
 
 // Fibers
 #include <UniaxialFiber2d.h>
@@ -1393,14 +1391,8 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
 
-  case ND_TAG_StressDensityModel:
-      return new StressDensityModel();
-
-  case ND_TAG_StressDensityModel2D:
-      return new StressDensityModel2D();
-
-  case ND_TAG_StressDensityModel3D:
-      return new StressDensityModel3D();
+  case ND_TAG_stressDensity:
+      return new stressDensity();
 
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 

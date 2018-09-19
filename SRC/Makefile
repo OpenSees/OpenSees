@@ -854,13 +854,6 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlaneStressUserMaterial.o $(PLAINCONCRETE) \
 	$(FE)/material/nD/PlateFromPlaneStressMaterial.o \
 	$(FE)/material/nD/PlateRebarMaterial.o \
-	$(FE)/material/nD/stressDensityModel/StressDensityModel.o \
-	$(FE)/material/nD/stressDensityModel/MODULE_ALL_INTERFACES_2D.o \
-	$(FE)/material/nD/stressDensityModel/SDM2D.o \
-	$(FE)/material/nD/stressDensityModel/StressDensityModel2D.o \
-	$(FE)/material/nD/stressDensityModel/MODULE_ALL_INTERFACES_3D.o \
-	$(FE)/material/nD/stressDensityModel/SDM3D.o \
-	$(FE)/material/nD/stressDensityModel/StressDensityModel3D.o \
 	$(FE)/material/nD/stressDensityModel/stressDensity.o \
 	$(FE)/material/nD/stressDensityModel/SDM-UC.o
 

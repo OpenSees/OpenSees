@@ -425,10 +425,7 @@
 #define ND_TAG_ManzariDafalias3DRO              14016
 #define ND_TAG_ManzariDafaliasPlaneStrainRO     14017
 // Stress Density material - C.McGann
-#define ND_TAG_StressDensityModel             14018
-#define ND_TAG_StressDensityModel2D           14019
-#define ND_TAG_StressDensityModel3D           14020
-#define ND_TAG_stressDensity                  14024
+#define ND_TAG_stressDensity                  14018
 // PM4Sand material - L.Chen
 #define ND_TAG_PM4Sand                        14021
 // PM4Silt material - L.Chen
