@@ -988,7 +988,7 @@ public:
     int toparraylen;
     char **toparray;
     long objects;
-    unsigned long totalmemory;
+    size_t totalmemory;
 
     void restart();
     void poolinit(int sizeofobject, int log2objperblk);
@@ -1326,7 +1326,7 @@ public:
   int autofliplinklevel;        // The increase of link levels, default is 1.
   int useinsertradius;       // Save the insertion radius for Steiner points.
   long samples;               // Number of random samples for point location.
-  unsigned long randomseed;                    // Current random number seed.
+  size_t randomseed;                    // Current random number seed.
   REAL cosmaxdihed, cosmindihed;    // The cosine values of max/min dihedral.
   REAL cossmtdihed;     // The cosine value of a bad dihedral to be smoothed.
   REAL cosslidihed;      // The cosine value of the max dihedral of a sliver.
@@ -1349,7 +1349,7 @@ public:
   long flip14count, flip26count, flipn2ncount;
   long flip23count, flip32count, flip44count, flip41count;
   long flip31count, flip22count;
-  unsigned long totalworkmemory;      // Total memory used by working arrays.
+  size_t totalworkmemory;      // Total memory used by working arrays.
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1740,7 +1740,7 @@ public:
   void brio_multiscale_sort(point*,int,int threshold,REAL ratio,int* depth);
 
   // Point location.
-  unsigned long randomnation(unsigned int choices);
+  size_t randomnation(unsigned int choices);
   void randomsample(point searchpt, triface *searchtet);
   enum locateresult locate(point searchpt, triface *searchtet);
 
@@ -2037,7 +2037,7 @@ public:
   int checkconforming(int);
 
   //  Mesh statistics.
-  void printfcomma(unsigned long n);
+  void printfcomma(size_t n);
   void qualitystatistics();
   void memorystatistics();
   void statistics();

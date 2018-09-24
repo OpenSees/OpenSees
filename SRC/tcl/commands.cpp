@@ -53,10 +53,8 @@ extern void OPS_clearAllNDMaterial(void);
 extern void OPS_clearAllSectionForceDeformation(void);
 
 
-
 // the following is a little kludgy but it works!
 #ifdef _USING_STL_STREAMS
-
 
 #include <iomanip>
 using std::ios;
@@ -69,6 +67,7 @@ using std::ofstream;
 #include <FileStream.h>
 #include <DummyStream.h>
 
+bool OPS_suppressOpenSeesOutput = false;
 StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 
@@ -372,8 +371,6 @@ int wipeReliability(ClientData, Tcl_Interp *, int, TCL_Char **);
 int optimization(ClientData, Tcl_Interp *, int, TCL_Char **);  //Quan  (2)
 
 #endif
-
-
 
 const char * getInterpPWD(Tcl_Interp *interp);
 
@@ -688,8 +685,6 @@ int OpenSees_putsCommand(ClientData dummy,  Tcl_Interp *interp, int objc, Tcl_Ob
     Tcl_Obj *string;            /* String to write. */
     Tcl_Obj *chanObjPtr = NULL; /* channel object. */
     int newline;                /* Add a newline at end? */
-    int result;                 /* Result of puts operation. */
-    int mode;                   /* Mode in which channel is opened. */
 
     switch (objc) {
     case 2: /* [puts $x] */
@@ -802,16 +797,18 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
   // redo puts command so we can capture puts into std:cerr
   //
 
-  // get a handle on puts procedure
-  Tcl_CmdInfo putsCommandInfo;
-  int res = Tcl_GetCommandInfo(interp, "puts", &putsCommandInfo);
-  Tcl_putsCommand = putsCommandInfo.objProc;
-// if handle, use ouur procedure as opposed to theirs
-  if (Tcl_putsCommand != 0) {
-    Tcl_CreateObjCommand(interp, "oldputs", Tcl_putsCommand, NULL, NULL);
-    Tcl_CreateObjCommand(interp, "puts", OpenSees_putsCommand, NULL, NULL);
+  if (OPS_suppressOpenSeesOutput == false) {
+    // get a handle on puts procedure
+    Tcl_CmdInfo putsCommandInfo;
+    Tcl_GetCommandInfo(interp, "puts", &putsCommandInfo);
+    Tcl_putsCommand = putsCommandInfo.objProc;
+    // if handle, use ouur procedure as opposed to theirs
+    if (Tcl_putsCommand != 0) {
+      Tcl_CreateObjCommand(interp, "oldputs", Tcl_putsCommand, NULL, NULL);
+      Tcl_CreateObjCommand(interp, "puts", OpenSees_putsCommand, NULL, NULL);
+    }
   }
-  
+
   theSimulationInfoPtr = &simulationInfo;
     
 #ifndef _LINUX  
@@ -2154,7 +2151,6 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   FileStream outputFile;
   OPS_Stream *output = &opserr;
-  bool done = false;
 
   int currentArg = 1;
 
@@ -7644,7 +7640,7 @@ basicDeformation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
   //  opserr << argv[i] << ' ' ;
   //opserr << endln;
 
-  int tag, secNum;
+  int tag;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
     opserr << "WARNING basicDeformation eleTag? dofNum? - could not read eleTag? \n";
@@ -7708,7 +7704,7 @@ basicForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   //  opserr << argv[i] << ' ' ;
   //opserr << endln;
 
-  int tag, secNum;
+  int tag;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
     opserr << "WARNING basicForce eleTag? dofNum? - could not read eleTag? \n";
@@ -7772,7 +7768,7 @@ basicStiffness(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **a
   //  opserr << argv[i] << ' ' ;
   //opserr << endln;
 
-  int tag, secNum;
+  int tag;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
     opserr << "WARNING basicStiffness eleTag? - could not read eleTag? \n";
@@ -9343,7 +9339,6 @@ setParameter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   } 
 
   argLoc += 2;
-  int objectCount = 0;
 
   if (strstr(argv[argLoc],"-ele") != 0) {    
 
@@ -9413,7 +9408,6 @@ int
 maxOpenFiles(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
   int maxOpenFiles;
-  int newMax = 0;
 
   if (Tcl_GetInt(interp, argv[1], &maxOpenFiles) != TCL_OK) {
       return TCL_ERROR;
@@ -9492,7 +9486,6 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **ar
 	ElementIter &theElements = theDomain.getElements();
 	Element *theElement;
 	while ((theElement = theElements()) != 0) {
-		int tag = theElement->getTag();
 		
 		// Check type of Element with Number of Nodes
 		// if 2 Nodes print the Element
