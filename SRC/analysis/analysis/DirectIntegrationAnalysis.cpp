@@ -55,12 +55,6 @@
 #include <Matrix.h>
 #include <ID.h>
 #include <Graph.h>
-// AddingSensitivity:BEGIN //////////////////////////////////
-#ifdef _RELIABILITY
-#include <SensitivityAlgorithm.h>
-#include<Integrator.h>//Abbas
-#endif
-// AddingSensitivity:END ////////////////////////////////////
 
 // Constructor
 //    sets theModel and theSysOFEqn to 0 and the Algorithm to the one supplied
@@ -102,11 +96,6 @@ DirectIntegrationAnalysis::DirectIntegrationAnalysis(Domain &the_Domain,
   else
     theTest = theAlgorithm->getConvergenceTest();
   
-// AddingSensitivity:BEGIN ////////////////////////////////////
-#ifdef _RELIABILITY
-//	theSensitivityAlgorithm = 0;
-#endif
-// AddingSensitivity:END //////////////////////////////////////
 }    
 
 DirectIntegrationAnalysis::~DirectIntegrationAnalysis()
@@ -137,11 +126,6 @@ DirectIntegrationAnalysis::clearAll(void)
   if (theTest != 0)
     delete theTest;
 
-// AddingSensitivity:BEGIN ////////////////////////////////////
-#ifdef _RELIABILITY
-//	delete theSensitivityAlgorithm;
-#endif
-// AddingSensitivity:END //////////////////////////////////////
 
     theAnalysisModel =0;
     theConstraintHandler =0;
@@ -244,19 +228,19 @@ DirectIntegrationAnalysis::analyzeStep(double dT)
   
   // AddingSensitivity:BEGIN ////////////////////////////////////
 #ifdef _RELIABILITY
-  /*
-    if (theSensitivityAlgorithm != 0) {
-    result = theIntegrator->computeSensitivities();
-    if (result < 0) {
-    opserr << "StaticAnalysis::analyze() - the SensitivityAlgorithm failed";
-    opserr << " at iteration: " << i << " with domain at load factor ";
+
+    if (theIntegrator->shouldComputeAtEachStep()) {
+	
+      result = theIntegrator->computeSensitivities();
+      if (result < 0) {
+	opserr << "DirectIntegrationAnalysis::analyze() - the SensitivityAlgorithm failed";
+	opserr << " at time ";
 	opserr << the_Domain->getCurrentTime() << endln;
 	the_Domain->revertToLastCommit();	    
 	theIntegrator->revertToLastStep();
 	return -5;
-	}    
-	}
-  */
+      }    
+    }
 #endif
   // AddingSensitivity:END //////////////////////////////////////
   
@@ -453,26 +437,6 @@ DirectIntegrationAnalysis::domainChanged(void)
 
     return 0;
 }    
-
-// AddingSensitivity:BEGIN //////////////////////////////
-#ifdef _RELIABILITY
-int 
-DirectIntegrationAnalysis::setSensitivityAlgorithm(/*SensitivityAlgorithm*/ Integrator *passedSensitivityAlgorithm)
-{
-    int result = 0;
-
-    // invoke the destructor on the old one
-  //  if (theSensitivityAlgorithm != 0) {
-   //   delete theSensitivityAlgorithm;
-  //  }
-
- //   theSensitivityAlgorithm = passedSensitivityAlgorithm;
-    
-    return 0;
-}
-#endif
-// AddingSensitivity:END ///////////////////////////////
-
 
 int 
 DirectIntegrationAnalysis::setNumberer(DOF_Numberer &theNewNumberer) 
