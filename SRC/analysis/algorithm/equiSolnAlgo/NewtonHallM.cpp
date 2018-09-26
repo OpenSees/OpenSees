@@ -160,8 +160,6 @@ NewtonHallM::solveCurrentStep(void)
 	iFact = iFactor;
 	cFact = cFactor;
       }
-
-      opserr << "iFact: " << iFact << " cFact: " << cFact << " method: " << method << " " << alpha << " " << c << endln;
       
       if (theIntegrator->formTangent(tangent, iFact, cFact) < 0){
 	opserr << "WARNING NewtonHallM::solveCurrentStep() -";
