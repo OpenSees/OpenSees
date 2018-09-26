@@ -36,6 +36,8 @@
 
 # Visual Studio
 *.vcxproj.user
+*.bsc
+*.pdb
 .vs
 obj
 
