@@ -1285,18 +1285,18 @@ sensitivityAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
 	//			 analysisTypeTag);
 	
 	
-    IncrementalIntegrator *theIntegrator;
+    IncrementalIntegrator *theIntegrator = 0;
       
 	   if (theStaticAnalysis != 0 && theStaticIntegrator != 0) {
                theIntegrator = theStaticIntegrator;
              
-        theIntegrator->shouldComputeAtEachStep();
+        theIntegrator->setComputeType(analysisTypeTag);
        	theIntegrator->activateSensitivityKey();
     
 	   } else if (theTransientAnalysis != 0 && theTransientIntegrator != 0) {
   
+	       theIntegrator->setComputeType(analysisTypeTag);
     theIntegrator = theTransientIntegrator;
-    theIntegrator->shouldComputeAtEachStep();
     theIntegrator->activateSensitivityKey();
 
 	}
@@ -1309,15 +1309,15 @@ sensitivityAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
 
 	if (theIntegrator->shouldComputeAtEachStep()) {
 	
-		if (theStaticAnalysis !=0)
-			theStaticAnalysis->setSensitivityAlgorithm(theIntegrator);
-		else if (theTransientAnalysis !=0)
-			theTransientAnalysis->setSensitivityAlgorithm(theIntegrator);
-		else if (theVariableTimeStepTransientAnalysis !=0)
-			theVariableTimeStepTransientAnalysis->setSensitivityAlgorithm(theIntegrator);
-		else {
-			// do nothing		
-		}
+	    //if (theStaticAnalysis !=0)
+		    //theStaticAnalysis->setSensitivityAlgorithm(theIntegrator);
+	    //else if (theTransientAnalysis !=0)
+		    //theTransientAnalysis->setSensitivityAlgorithm(theIntegrator);
+	    //else if (theVariableTimeStepTransientAnalysis !=0)
+		    //theVariableTimeStepTransientAnalysis->setSensitivityAlgorithm(theIntegrator);
+		// else {
+		// 	// do nothing		
+		// }
 	
 	
 	}
@@ -2309,7 +2309,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 // AddingSensitivity:BEGIN ///////////////////////////////
 #ifdef _RELIABILITY
 	if (theSensitivityAlgorithm != 0 && theSensitivityAlgorithm->shouldComputeAtEachStep()) {
-		theStaticAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
+	    //theStaticAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
 	}
 #endif
 // AddingSensitivity:END /////////////////////////////////
@@ -2467,7 +2467,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	  }
 	  */
 		
-	  theTransientAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
+	  //theTransientAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
 	}
 #endif
 // AddingSensitivity:END /////////////////////////////////
@@ -2589,7 +2589,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 		  }
 		  */
 
-		  theStaticAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
+		  //theStaticAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
 		} else {
 			opserr << "Faltal SensitivityAlgorithm must be definde before defining \n";
 			opserr << "ReliabilityStaticAnalysis with computeateachstep\n";
@@ -5757,7 +5757,7 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
 	}
     else if (strcmp(argv[1],"sensitivityAlgorithm") == 0) {
 		if (theSensitivityAlgorithm != 0) {
-			theStaticAnalysis->setSensitivityAlgorithm(0);
+		    //theStaticAnalysis->setSensitivityAlgorithm(0);
 			theSensitivityAlgorithm = 0;
 			theSensitivityIntegrator = 0;
 		}
