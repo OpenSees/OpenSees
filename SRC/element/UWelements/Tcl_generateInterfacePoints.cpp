@@ -641,7 +641,7 @@ TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, in
 
                         // 0 = local penalty, 1 = local Augmented Lagrangian, 2 = global Lagrange, 3 = global embedded lagrange
                         if (lagrangeTag == 0) {
-                            theElement = new EmbeddedBeamInterface(maxTag, beamTag, solidEleTags[ii], transfTag, loc_rho(jj), loc_theta(jj), xi, eta, zeta, radius, area, writeConnectivity, connectivityFN);
+                            // theElement = new EmbeddedBeamInterface(maxTag, beamTag, solidEleTags[ii], transfTag, loc_rho(jj), loc_theta(jj), xi, eta, zeta, radius, area, writeConnectivity, connectivityFN);
 			}
                         else if (lagrangeTag == 1)
  			{
@@ -1161,7 +1161,7 @@ TclCommand_GenerateToeInterfacePoints(ClientData clientData, Tcl_Interp *interp,
                     // 0 = local penalty, 1 = local Augmented Lagrangian, 2 = global Lagrange, 3 = global embedded lagrange
                     if (lagrangeTag == 0)
                     {
-                        theElement = new EmbeddedBeamInterface(maxTag, beamTag, solidEleTags[ii], transfTag, loc_rho(jj), loc_theta(jj), xi, eta, zeta, radius, area);
+                        // theElement = new EmbeddedBeamInterface(maxTag, beamTag, solidEleTags[ii], transfTag, loc_rho(jj), loc_theta(jj), xi, eta, zeta, radius, area);
                     }
                     else if (lagrangeTag == 1)
                     {
