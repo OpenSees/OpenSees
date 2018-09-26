@@ -187,6 +187,7 @@ class ForceBeamColumn3d: public Element
   int sizeEleLoads;
   ElementalLoad **eleLoads;
   double *eleLoadFactors;
+  Vector load;
 
   Matrix *Ki;
 
