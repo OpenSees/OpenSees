@@ -265,6 +265,8 @@
 #define MAT_TAG_AxialSp   6111
 #define MAT_TAG_AxialSpHD 6112
 
+// GNG material - J.Cook UCanterbury
+#define MAT_TAG_GNG 7001
 
 #define SEC_TAG_Elastic2d                        3
 #define SEC_TAG_Elastic3d                        4
@@ -422,10 +424,8 @@
 #define ND_TAG_ManzariDafaliasRO                14015
 #define ND_TAG_ManzariDafalias3DRO              14016
 #define ND_TAG_ManzariDafaliasPlaneStrainRO     14017
-// Stress-Dilatancy material - C.McGann
-#define ND_TAG_StressDensityModel             14018
-#define ND_TAG_StressDensityModel2D           14019
-#define ND_TAG_StressDensityModel3D           14020
+// Stress Density material - C.McGann
+#define ND_TAG_stressDensity                  14018
 // PM4Sand material - L.Chen
 #define ND_TAG_PM4Sand                        14021
 // PM4Silt material - L.Chen
@@ -706,7 +706,10 @@
 #define ELE_TAG_AxEqDispBeamColumn2d      178
 #define ELE_TAG_FourNodeTetrahedron       179
 #define ELE_TAG_TriSurfaceLoad            180
-#define ELE_TAG_QuadBeamEmbedContact      500
+#define ELE_TAG_QuadBeamEmbedContact      181
+#define ELE_TAG_EmbeddedBeamInterfaceL    182
+#define ELE_TAG_EmbeddedBeamInterfaceP    183
+#define ELE_TAG_EmbeddedEPBeamInterface   184
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
