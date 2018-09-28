@@ -54,11 +54,11 @@ class ManzariDafalias : public NDMaterial
     // full constructor
     ManzariDafalias(int tag, int classTag, double G0, double nu, double e_init, double Mc, double c, double lambda_c, double e0, double ksi,
 					double P_atm, double m, double h0, double ch, double nb, double A0, double nd, double z_max, double cz, double mDen, 
-					int integrationScheme = 2, int tangentType = 2, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
+					int integrationScheme = 1, int tangentType = 0, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
     // full constructor
     ManzariDafalias(int tag, double G0, double nu, double e_init, double Mc, double c, double lambda_c, double e0, double ksi,
 					double P_atm, double m, double h0, double ch, double nb, double A0, double nd, double z_max, double cz, double mDen, 
-					int integrationScheme = 2, int tangentType = 2, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
+					int integrationScheme = 1, int tangentType = 0, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
     // null constructor
     ManzariDafalias();
     // destructor
@@ -149,8 +149,10 @@ class ManzariDafalias : public NDMaterial
 														// 3: FE Explicit with constrained strain increment
 	char unsigned mTangType;// 0: Elastic Tangent, 1: Contiuum ElastoPlastic Tangent, 2: Consistent ElastoPlastic Tangent
 	bool    mUseElasticTan;
+        bool    mStressCorrectionInUse;
 	double	mEPS;			// machine epsilon (for FD jacobian)
 	double	m_Pmin;			// Minimum allowable mean effective stress
+    double  m_Presidual;    // small residual pressure (due to cohesion)
 	static char unsigned mElastFlag;	// 1: enforce elastic response
 
 	static Vector mI1;			// 2nd Order Identity Tensor
@@ -297,6 +299,7 @@ class ManzariDafalias : public NDMaterial
 				const Vector& n, const Vector& d, const Vector& b) ;
 	Vector	GetNormalToYield(const Vector &stress, const Vector &alpha);
 	int	Check(const Vector& TrialStress, const Vector& stress, const Vector& CurAlpha, const Vector& NextAlpha);
+        int     Elastic2Plastic();
 
 	// Symmetric Tensor Operations
 	double GetTrace(const Vector& v);
