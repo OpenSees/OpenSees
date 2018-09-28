@@ -85,7 +85,7 @@ PythonModule::getInt(int *data, int numArgs)
     if ((wrapper.getNumberArgs() - wrapper.getCurrentArg()) < numArgs) {
         return -1;
     }
-    
+
     for (int i = 0; i < numArgs; i++) {
         PyObject *o = PyTuple_GetItem(wrapper.getCurrentArgv(), wrapper.getCurrentArg());
         wrapper.incrCurrentArg();
@@ -101,7 +101,7 @@ PythonModule::getInt(int *data, int numArgs)
         data[i] = PyInt_AS_LONG(o);
 #endif
     }
-    
+
     return 0;
 }
 
@@ -111,7 +111,7 @@ PythonModule::getDouble(double *data, int numArgs)
     if ((wrapper.getNumberArgs() - wrapper.getCurrentArg()) < numArgs) {
         return -1;
     }
-    
+
     for (int i = 0; i < numArgs; i++) {
         PyObject *o = PyTuple_GetItem(wrapper.getCurrentArgv(), wrapper.getCurrentArg());
         wrapper.incrCurrentArg();
@@ -120,7 +120,7 @@ PythonModule::getDouble(double *data, int numArgs)
         }
         data[i] = PyFloat_AS_DOUBLE(o);
     }
-    
+
     return 0;
 }
 
@@ -130,20 +130,20 @@ PythonModule::getString()
     if (wrapper.getCurrentArg() >= wrapper.getNumberArgs()) {
         return 0;
     }
-    
+
     PyObject *o = PyTuple_GetItem(wrapper.getCurrentArgv(), wrapper.getCurrentArg());
     wrapper.incrCurrentArg();
 #if PY_MAJOR_VERSION >= 3
     if (!PyUnicode_Check(o)) {
         return 0;
     }
-    
+
     return PyUnicode_AsUTF8(o);
 #else
     if (!PyString_Check(o)) {
         return 0;
     }
-    
+
     return PyString_AS_STRING(o);
 #endif
 }
@@ -164,7 +164,7 @@ int
 PythonModule::setInt(int* data, int numArgs)
 {
     wrapper.setOutputs(data, numArgs);
-    
+
     return 0;
 }
 
@@ -172,7 +172,7 @@ int
 PythonModule::setDouble(double* data, int numArgs)
 {
     wrapper.setOutputs(data, numArgs);
-    
+
     return 0;
 }
 
@@ -180,7 +180,7 @@ int
 PythonModule::setString(const char* str)
 {
     wrapper.setOutputs(str);
-    
+
     return 0;
 }
 
@@ -190,13 +190,12 @@ PythonModule::runCommand(const char* cmd)
     return PyRun_SimpleString(cmd);
 }
 
-
-static PythonModule* module = 0;
+static PythonModule module;
 
 PyMethodDef* getmethodsFunc()
 {
-    module = new PythonModule();
-    PythonWrapper* wrapper = module->getWrapper();
+
+    PythonWrapper* wrapper = module.getWrapper();
     wrapper->addOpenSeesCommands();
     
     return wrapper->getMethods();
@@ -204,9 +203,10 @@ PyMethodDef* getmethodsFunc()
 
 void cleanupFunc()
 {
-    if (module != 0) {
-        delete module;
-    }
+    module.getCmds().wipe();
+    // if (module != 0) {
+    //     delete module;
+    // }
 }
 
 struct module_state {
@@ -220,28 +220,28 @@ struct module_state {
 static struct module_state _state;
 #endif
 
-static PyObject *
-error_out(PyObject *m)
-{
-    struct module_state *st = GETSTATE(m);
-    PyErr_SetString(st->error, "something bad happened");
-    
-    return NULL;
-}
+// static PyObject *
+// error_out(PyObject *m)
+// {
+//     struct module_state *st = GETSTATE(m);
+//     PyErr_SetString(st->error, "something bad happened");
+//
+//     return NULL;
+// }
 
 #if PY_MAJOR_VERSION >= 3
 
 static int opensees_traverse(PyObject *m, visitproc visit, void *arg)
 {
     Py_VISIT(GETSTATE(m)->error);
-    
+
     return 0;
 }
 
 static int opensees_clear(PyObject *m)
 {
     Py_CLEAR(GETSTATE(m)->error);
-    
+
     return 0;
 }
 
@@ -275,19 +275,19 @@ initopensees(void)
 #else
     PyObject *module = Py_InitModule("opensees", getmethodsFunc());
 #endif
-    
+
     if (module == NULL)
         INITERROR;
     struct module_state *st = GETSTATE(module);
-    
+
     st->error = PyErr_NewException("opensees.Error", NULL, NULL);
     if (st->error == NULL) {
         Py_DECREF(module);
         INITERROR;
     }
-    
+
     Py_AtExit(cleanupFunc);
-    
+
 #if PY_MAJOR_VERSION >= 3
     return module;
 #endif

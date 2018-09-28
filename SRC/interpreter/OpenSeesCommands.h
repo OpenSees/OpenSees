@@ -2,7 +2,7 @@
 Copyright (c) 2015-2017, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -26,14 +26,14 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
-                                                                        
+
 // Written: Minjie
 
 // Description: all opensees APIs are defined or declared here
@@ -58,12 +58,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <FEM_ObjectBrokerAllClasses.h>
 #include <PFEMAnalysis.h>
 #include <VariableTimeStepDirectIntegrationAnalysis.h>
-#ifdef _RELIABILITY
-#include <ReliabilityStaticAnalysis.h>
-#include <ReliabilityDirectIntegrationAnalysis.h>
-#endif
 #include <Timer.h>
 #include <SimulationInformation.h>
+#include <elementAPI.h>
+#include <MachineBroker.h>
+#include "OpenSeesReliabilityCommands.h"
 
 class OpenSeesCommands
 {
@@ -74,69 +73,64 @@ public:
 
     DL_Interpreter* getInterpreter();
     Domain* getDomain();
-    
+
     int getNDF() const {return ndf;}
     void setNDF(int n) {ndf = n;}
-    
+
     int getNDM() const {return ndm;}
     void setNDM(int n) {ndm = n;}
 
     void setSOE(LinearSOE* soe);
     LinearSOE* getSOE() {return theSOE;}
-    
+
     void setNumberer(DOF_Numberer* numberer);
     DOF_Numberer* getNumberer() {return theNumberer;}
-    
+
     void setHandler(ConstraintHandler* handler);
     ConstraintHandler* getHandler() {return theHandler;}
-    
+
     void setStaticIntegrator(StaticIntegrator* integrator);
     StaticIntegrator* getStaticIntegrator() {return theStaticIntegrator;}
-    
+
     void setTransientIntegrator(TransientIntegrator* integrator);
     TransientIntegrator* getTransientIntegrator() {return theTransientIntegrator;}
-    
+
     void setAlgorithm(EquiSolnAlgo* algo);
     EquiSolnAlgo* getAlgorithm() {return theAlgorithm;}
-    
+
     void setCTest(ConvergenceTest* test);
     ConvergenceTest* getCTest() {return theTest;}
-    
+
     void setStaticAnalysis();
     StaticAnalysis* getStaticAnalysis() {return theStaticAnalysis;}
-    
+
     int setPFEMAnalysis();
     PFEMAnalysis* getPFEMAnalysis() {return thePFEMAnalysis;}
-    
+
     void setVariableAnalysis();
     VariableTimeStepDirectIntegrationAnalysis*
     getVariableAnalysis() {return theVariableTimeStepTransientAnalysis;}
-    
+
     void setTransientAnalysis();
     DirectIntegrationAnalysis* getTransientAnalysis() {return theTransientAnalysis;}
 
     void setNumEigen(int num) {numEigen = num;}
     int getNumEigen() {return numEigen;}
     EigenSOE* getEigenSOE() {return theEigenSOE;}
-    
+
     void setFileDatabase(const char* filename);
     FE_Datastore* getDatabase() {return theDatabase;}
 
     Timer* getTimer() {return &theTimer;}
     SimulationInformation* getSimulationInformation() {return &theSimulationInfo;}
-    
-#ifdef _RELIABILITY
-    int setReliabilityStaticAnalysis();
-    int setReliabilityTransientAnalysis();
-#endif
-    
+
     void wipeAnalysis();
     void wipe();
     int eigen(int typeSolver, double shift,
 	      bool generalizedAlgo, bool findSmallest);
-    
+
 private:
-    
+
     DL_Interpreter* interpreter;
     Domain* theDomain;
     int ndf, ndm;
@@ -161,14 +155,9 @@ private:
     Timer theTimer;
     SimulationInformation theSimulationInfo;
 
-// AddingSensitivity:BEGIN /////////////////////////////////////////////
-#ifdef _RELIABILITY
-    SensitivityAlgorithm *theSensitivityAlgorithm;
-    Integrator *theSensitivityIntegrator;
-    ReliabilityStaticAnalysis* theReliabilityStaticAnalysis;
-    ReliabilityDirectIntegrationAnalysis* theReliabilityTransientAnalysis;
-#endif
-// AddingSensitivity:END ///////////////////////////////////////////////
+    MachineBroker* theMachineBroker;
+
+    OpenSeesReliabilityCommands* reliability;
 
 };
 
@@ -267,6 +256,14 @@ int OPS_basicForce();
 int OPS_basicStiffness();
 int OPS_version();
 int OPS_maxOpenFiles();
+// Sensitivity:BEGIN /////////////////////////////////////////////
+int OPS_sensNodeDisp();
+int OPS_sensNodeVel();
+int OPS_sensNodeAccel();
+int OPS_sensLambda();
+int OPS_sensSectionForce();
+int OPS_sensNodePressure();
+// Sensitivity:END /////////////////////////////////////////////
 
 /* OpenSeesMiscCommands.cpp */
 int OPS_loadConst();
@@ -293,6 +290,14 @@ int OPS_RigidDiaphragm();
 int OPS_addElementRayleigh();
 int OPS_mesh();
 int OPS_remesh();
+int OPS_getPID();
+int OPS_getNP();
+int OPS_barrier();
+int OPS_send();
+int OPS_recv();
+
+// OpenSeesReliabilityCommands.cpp
+int OPS_randomVariable();
 
 /* OpenSeesCommands.cpp */
 int OPS_wipe();
@@ -327,6 +332,7 @@ int OPS_solveCPU();
 int OPS_accelCPU();
 int OPS_numFact();
 int OPS_numIter();
+int* OPS_GetNumEigen();
 int OPS_systemSize();
 
 void* OPS_KrylovNewton();
@@ -336,6 +342,11 @@ void* OPS_SecantNewton();
 void* OPS_PeriodicNewton();
 void* OPS_NewtonLineSearch();
 
+// Sensitivity:BEGIN /////////////////////////////////////////////
+int OPS_computeGradients();
+int OPS_sensitivityAlgorithm();
+// Sensitivity:END /////////////////////////////////////////////
+
 /* Defined in its own class.cpp*/
 int OPS_Node();
 int OPS_HomogeneousBC();
@@ -344,7 +355,6 @@ int OPS_EqualDOF_Mixed();
 int OPS_HomogeneousBC_X();
 int OPS_HomogeneousBC_Y();
 int OPS_HomogeneousBC_Z();
-int OPS_BackgroundMesh();
 int OPS_ShallowFoundationGen();
 
 void* OPS_TimeSeriesIntegrator();
@@ -358,7 +368,10 @@ void* OPS_DiagonalDirectSolver();
 void* OPS_SProfileSPDLinSolver();
 void* OPS_PFEMSolver();
 void* OPS_PFEMCompressibleSolver();
+void* OPS_PFEMQuasiSolver();
 void* OPS_PFEMSolver_Umfpack();
+void* OPS_PFEMSolver_Laplace();
+void* OPS_PFEMSolver_LumpM();
 void* OPS_SymSparseLinSolver();
 void* OPS_FullGenLinLapackSolver();
 
