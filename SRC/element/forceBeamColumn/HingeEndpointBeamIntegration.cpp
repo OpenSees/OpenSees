@@ -52,19 +52,43 @@ void* OPS_HingeEndpointBeamIntegration(int& integrationTag, ID& secTags)
 	return 0;
     }
 
-    // inputs: 
-    int iData[6];
-    int numData = 6;
-    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
-
-    integrationTag = iData[0];
+        // inputs: 
+    int tag, secI,secJ,secE;
+    double lpI, lpJ;
+    int numData = 1;
+    if(OPS_GetIntInput(&numData,&tag) < 0) {
+	opserr << "WARNING: failed to get tag\n";
+	return 0;
+    }
+    if(OPS_GetIntInput(&numData,&secI) < 0) {
+	opserr << "WARNING: failed to get secTagI\n";
+	return 0;
+    }
+    if(OPS_GetDoubleInput(&numData,&lpI) < 0) {
+	opserr << "WARNING: failed to get lpI\n";
+	return 0;
+    }
+    if(OPS_GetIntInput(&numData,&secJ) < 0) {
+	opserr << "WARNING: failed to get secTagJ\n";
+	return 0;
+    }
+    if(OPS_GetDoubleInput(&numData,&lpJ) < 0) {
+	opserr << "WARNING: failed to get lpJ\n";
+	return 0;
+    }
+    if(OPS_GetIntInput(&numData,&secE) < 0) {
+	opserr << "WARNING: failed to get secTagE\n";
+	return 0;
+    }
+    
+    integrationTag = tag;
     secTags.resize(4);
-    secTags(0) = iData[1];
-    secTags(1) = iData[5];
-    secTags(2) = iData[5];
-    secTags(3) = iData[3];
+    secTags(0) = secI;
+    secTags(1) = secE;
+    secTags(2) = secE;
+    secTags(3) = secJ;
 
-    return new HingeEndpointBeamIntegration(iData[2],iData[4]);
+    return new HingeEndpointBeamIntegration(lpI,lpJ);
 }
 
 
