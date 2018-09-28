@@ -101,7 +101,7 @@ int OPS_Pattern()
 	theActiveUniformPattern = (UniformExcitation*)OPS_UniformExcitationPattern();
 	pattern = theActiveUniformPattern;
 
-    } else if (strcmp(type, "MultiSupportPattern") == 0) {
+    } else if (strcmp(type, "MultipleSupport") == 0) {
 
 	theActiveMultiSupportPattern = (MultiSupportPattern*)OPS_MultiSupportPattern();
 	pattern = theActiveMultiSupportPattern;
