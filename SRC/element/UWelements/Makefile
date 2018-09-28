@@ -15,7 +15,11 @@ OBJS       = SimpleContact2D.o \
 	     Quad4FiberOverlay.o \
 	     Brick8FiberOverlay.o \
              QuadBeamEmbedContact.o \
-	     PileToe3D.o
+	     PileToe3D.o \
+			Tcl_generateInterfacePoints.o \
+			EmbeddedBeamInterfaceL.o \
+			EmbeddedBeamInterfaceP.o \
+			EmbeddedEPBeamInterface.o
 
 all:         $(OBJS)
 
