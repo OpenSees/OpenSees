@@ -329,7 +329,7 @@ PFEMElement2DFIC::getResistingForceIncInertia()
     P.resize(ndf);
     P.Zero();
 
-    // get velocity, accleration
+    // get velocity, acceleration
     Vector v(ndf), vdot(ndf);
     for(int i=0; i<3; i++) {
         const Vector& accel = nodes[2*i]->getTrialAccel();

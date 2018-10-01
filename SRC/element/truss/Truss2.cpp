@@ -688,7 +688,7 @@ int
 #ifdef _G3DEBUG    
 	if (nodalDOF != Raccel1.Size() || nodalDOF != Raccel2.Size()) {
 		opserr <<"Truss2::addInertiaLoadToUnbalance " <<
-			"matrix and vector sizes are incompatable\n";
+			"matrix and vector sizes are incompatible\n";
 		return -1;
 	}
 #endif
@@ -739,7 +739,7 @@ int
 #ifdef _G3DEBUG    
 		if (nodalDOF != Raccel1.Size() || nodalDOF != Raccel2.Size()) {
 			opserr << "Truss2::addInertiaLoadToUnbalance " <<
-				"matrix and vector sizes are incompatable\n";
+				"matrix and vector sizes are incompatible\n";
 			return -1;
 		}
 #endif
@@ -773,7 +773,7 @@ int
 #ifdef _G3DEBUG    
 		if (nodalDOF != Raccel1.Size() || nodalDOF != Raccel2.Size()) {
 			opserr << "Truss2::addInertiaLoadToUnbalance " <<
-				"matrix and vector sizes are incompatable\n";
+				"matrix and vector sizes are incompatible\n";
 			return -1;
 		}
 #endif

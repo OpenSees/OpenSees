@@ -64,7 +64,7 @@ public:
 	// destructor
 	~SFI_MVLEM();
 
-	// public methods to obtain inforrmation about dof & comectivity
+	// public methods to obtain information about dof & comectivity
 	int getNumExternalNodes(void) const;
 	const ID &getExternalNodes(void);
 	Node **getNodePtrs(void);
@@ -119,14 +119,14 @@ private:
 	NDMaterial **theMaterial;			// array of ND materials
 	Vector *theLoad;					// pointer to element load
 	const double c;						// center of rotation
-	const int m;						// no. of RC panels 
+	const int m;						// no. of RC panels
 
 	// calculated element parameters
 	ID externalNodes;					// contains the id's of end nodes
 	Matrix trans;						// hold the transformation matrix, could use a Vector
 	double h;							// height of SFI_MVLEM element (undeformed configuration)
-	double Lw;							// lenght of SFI_MVLEM elemtn, i.e. wall length 
-	double TotalMass;					// element mass - you dont need this !!!
+	double Lw;							// length of SFI_MVLEM elemtn, i.e. wall length
+	double TotalMass;					// element mass - you don't need this !!!
 	double NodeMass;					// nodal mass
 
 	// caldulated element arrays

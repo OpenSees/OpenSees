@@ -410,7 +410,7 @@ SSPquad::addInertiaLoadToUnbalance(const Vector &accel)
 	const Vector &Raccel4 = theNodes[3]->getRV(accel);
 
 	if (2 != Raccel1.Size() || 2 != Raccel2.Size() || 2 != Raccel3.Size() || 2 != Raccel4.Size()) {
-    	opserr << "FourNodeQuad::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+    	opserr << "FourNodeQuad::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     	return -1;
 	}
 

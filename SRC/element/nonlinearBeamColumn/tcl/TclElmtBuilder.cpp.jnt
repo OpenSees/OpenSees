@@ -93,7 +93,7 @@ TclModelBuilder_addFrameElement(ClientData clientData, Tcl_Interp *interp,
        
   if (Tcl_SplitList(interp, List, &argc, &argv) != TCL_OK)
   {
-      interp->result = "WARNING - TclModelBuilder_addFrameElement - problem spliting list";
+      interp->result = "WARNING - TclModelBuilder_addFrameElement - problem splitting list";
       return TCL_ERROR;
   }
       
@@ -441,7 +441,7 @@ TclModelBuilder_addFrameElement(ClientData clientData, Tcl_Interp *interp,
 
   Tcl_Free ((char *)argv);
         
-  // if get here we have sucessfully created the element and added it to the domain
+  // if get here we have successfully created the element and added it to the domain
 
   return TCL_OK;
 }
@@ -633,7 +633,7 @@ int TclModelBuilder_addPatch(ClientData clientData, Tcl_Interp *interp, int argc
       QuadPatch *patch = new QuadPatch(matTag, numSubdivIJ, numSubdivJK, vertexCoords);
       if (!patch)
       {
-         interp->result = "WARNING cannot alocate patch";
+         interp->result = "WARNING cannot allocate patch";
          return TCL_ERROR;
       }
 
@@ -760,7 +760,7 @@ int TclModelBuilder_addPatch(ClientData clientData, Tcl_Interp *interp, int argc
                                        startAng, endAng);
       if (!patch)
       {
-         interp->result = "WARNING cannot alocate patch";
+         interp->result = "WARNING cannot allocate patch";
          return TCL_ERROR;
       }
 
@@ -916,7 +916,7 @@ int TclModelBuilder_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int
                                                    startPt, endPt);
       if (!reinfLayer)
       {
-         interp->result = "WARNING cannot alocate reinfLayer";
+         interp->result = "WARNING cannot allocate reinfLayer";
          return TCL_ERROR;
       }
       //cerr << "\nStraigthReinfLayer: " << *reinfLayer;
@@ -1033,7 +1033,7 @@ int TclModelBuilder_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int
                                                        center, radius, startAng, endAng);
       if (!reinfLayer)
       {
-         interp->result = "WARNING cannot alocate reinfLayer";
+         interp->result = "WARNING cannot allocate reinfLayer";
          return TCL_ERROR;
       }
       //cerr << "\nCircReinfLayer: " << *reinfLayer;

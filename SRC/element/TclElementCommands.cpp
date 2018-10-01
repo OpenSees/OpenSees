@@ -389,7 +389,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   if ((strcmp(argv[1],"truss") == 0) || (strcmp(argv[1],"Truss") == 0)) {
     
     void *theEle = OPS_TrussElement();
-    // for backward compatability
+    // for backward compatibility
 	if (theEle == 0) {
       theEle = OPS_TrussSectionElement(); 
 	}
@@ -417,7 +417,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     
     void *theEle = OPS_CorotTrussElement();
     
-    // for backward compatability
+    // for backward compatibility
     if (theEle == 0)
       theEle = OPS_CorotTrussSectionElement(); 
     
@@ -723,7 +723,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 	opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
 	return TCL_ERROR;
       }
-      //end of adding thermo-mechanical shell elments by L.Jiang [SIF]  
+      //end of adding thermo-mechanical shell elements by L.Jiang [SIF]  
       
   } else if ((strcmp(argv[1],"shellNL") == 0) || (strcmp(argv[1],"ShellNL") == 0) ||
 	     (strcmp(argv[1],"shellMITC9") == 0) || (strcmp(argv[1],"ShellMITC9") == 0)) {
@@ -1450,7 +1450,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
 
     //
-    // try loading new dynamic library containg a c+= class
+    // try loading new dynamic library containing a c+= class
     //
     
     void *libHandle;

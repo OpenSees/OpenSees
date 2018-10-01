@@ -98,7 +98,7 @@ ParticleGroup::line(const Vector& p1, const Vector& p2, int num,
     if(p1.Size() != p2.Size()) return -1;
     
     if(ndf == 0) {
-	opserr<<"WARNING: type of particle has not been set or unkown\n";
+	opserr<<"WARNING: type of particle has not been set or unknown\n";
 	return -1;
     }
     

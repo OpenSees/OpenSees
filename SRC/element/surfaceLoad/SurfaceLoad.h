@@ -58,7 +58,7 @@ class SurfaceLoad : public Element
     SurfaceLoad();
     ~SurfaceLoad();
 
-    // public methods to obtain inforrmation about dof & connectivity    
+    // public methods to obtain information about dof & connectivity    
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
     Node **getNodePtrs(void);

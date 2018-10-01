@@ -1138,7 +1138,7 @@ SSPbrick::GetStab(void)
 	z(6) = mNodeCrd(2,6);
 	z(7) = mNodeCrd(2,7);
 
-	// define coefficent terms for jacobian determinant
+	// define coefficient terms for jacobian determinant
     double 	a1 = x^xi;
     double 	a2 = x^et;
     double 	a3 = x^ze;

@@ -65,7 +65,7 @@ public:
     // method to get class type
     const char *getClassType() const {return "TripleFrictionPendulum";};
     
-    // public methods to obtain inforrmation about dof & connectivity
+    // public methods to obtain information about dof & connectivity
     int getNumExternalNodes() const;
     const ID &getExternalNodes();
     Node **getNodePtrs();

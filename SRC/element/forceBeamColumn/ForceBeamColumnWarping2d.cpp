@@ -29,7 +29,7 @@
  Shear Wall with Warping
  ---
 Hsiang-Chuan Tsai, James M. Kelly (2004), "Buckling of short beams with warping effect included."
-International Journal of Solids and Structures, 42:239–253
+International Journal of Solids and Structures, 42:239ï¿½253
 
 
 State Determination Algorithm
@@ -720,13 +720,13 @@ ForceBeamColumnWarping2d::update()
 
   maxSubdivisions = 4;
 
-  // fmk - modification to get compatable ele forces and deformations 
+  // fmk - modification to get compatible ele forces and deformations 
   //   for a change in deformation dV we try first a newton iteration, if
   //   that fails we try an initial flexibility iteration on first iteration 
   //   and then regular newton, if that fails we use the initial flexiblity
   //   for all iterations.
   //
-  //   if they both fail we subdivide dV & try to get compatable forces
+  //   if they both fail we subdivide dV & try to get compatible forces
   //   and deformations. if they work and we have subdivided we apply
   //   the remaining dV.
 
@@ -801,7 +801,7 @@ ForceBeamColumnWarping2d::update()
 	    double xL1 = xL-1.0;
 	    double wtL = wt[i]*L;
 
-						    // compute coeficient w
+						    // compute coefficient w
 	const Matrix &ks = sections[i]->getInitialTangent(); 
 	double EI(0), GA(0), GB(0), GC(0), EJ(0);
 	for (int k = 0; k < order; k++) {
@@ -1124,7 +1124,7 @@ void ForceBeamColumnWarping2d::getForceInterpolatMatrix(double xi, Matrix &b, co
   double L = crdTransf->getInitialLength();
   int order      = sections[isec]->getOrder();
   
-  			    // compute coeficient w
+  			    // compute coefficient w
 	const Matrix &ks = sections[isec]->getInitialTangent(); 
 	double EI(0), GA(0), GB(0), GC(0), EJ(0);
 	for (int k = 0; k < order; k++) {
@@ -1994,7 +1994,7 @@ ForceBeamColumnWarping2d::getInitialFlexibility(Matrix &fe)
     double xL1 = xL-1.0;
     double wtL = wt[i]*L;
 
-				    // compute coeficient w
+				    // compute coefficient w
 	const Matrix &ks = sections[i]->getInitialTangent(); 
 	double EI(0), GA(0), GB(0), GC(0), EJ(0);
 	for (int k = 0; k < order; k++) {
@@ -2123,7 +2123,7 @@ ForceBeamColumnWarping2d::getInitialDeformations(Vector &v0)
     double xL1 = xL-1.0;
     double wtL = wt[i]*L;
 
-					    // compute coeficient w
+					    // compute coefficient w
 	const Matrix &ks = sections[i]->getInitialTangent(); 
 	double EI(0), GA(0), GB(0), GC(0), EJ(0);
 	for (int k = 0; k < order; k++) {
@@ -2288,7 +2288,7 @@ ForceBeamColumnWarping2d::Print(OPS_Stream &s, int flag)
     double V = (M1+M2)/L;
 	double R1(0), R2(0);
 
-	// compute coeficient w
+	// compute coefficient w
 	int order      = sections[0]->getOrder();
 	const ID &code = sections[0]->getType();
 	const Matrix &ks0 = sections[0]->getInitialTangent(); 
@@ -2405,7 +2405,7 @@ ForceBeamColumnWarping2d::Print(OPS_Stream &s, int flag)
 	
 		double R1(0), R2(0);
 
-	// compute coeficient w
+	// compute coefficient w
 	int order      = sections[0]->getOrder();
 	const ID &code = sections[0]->getType();
 	const Matrix &ks0 = sections[0]->getInitialTangent(); 
@@ -2826,7 +2826,7 @@ ForceBeamColumnWarping2d::getResponse(int responseID, Information &eleInfo)
 
 		double R1(0), R2(0);
 
-			// compute coeficient w
+			// compute coefficient w
 	double L = crdTransf->getInitialLength();
 	int order      = sections[0]->getOrder();
 	const ID &code = sections[0]->getType();

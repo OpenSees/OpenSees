@@ -198,7 +198,7 @@ int OPS_Tri31(Domain& theDomain, const ID& elenodes, ID& eletags)
 			   *theMaterial, theType, thk,
 			   dData[0], dData[1], dData[2], dData[3]);
 	if (theEle == 0) {
-	    opserr<<"WARING: run out of memory for creating element\n";
+	    opserr<<"WARNING: run out of memory for creating element\n";
 	    return -1;
 	}
 	if (theDomain.addElement(theEle) == false) {
@@ -641,7 +641,7 @@ Tri31::addInertiaLoadToUnbalance(const Vector &accel)
 	const Vector &Raccel3 = theNodes[2]->getRV(accel);
 
 	if (2 != Raccel1.Size() || 2 != Raccel2.Size() || 2 != Raccel3.Size()) {
-		opserr << "Tri31::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+		opserr << "Tri31::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
 	    return -1;
 	}
 

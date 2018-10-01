@@ -676,7 +676,7 @@ BBarFourNodeQuadUP::addInertiaLoadToUnbalance(const Vector &accel)
 
   if (3 != Raccel1.Size() || 3 != Raccel2.Size() || 3 != Raccel3.Size() ||
       3 != Raccel4.Size()) {
-    opserr << "BBarFourNodeQuadUP::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+    opserr << "BBarFourNodeQuadUP::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     return -1;
   }
 

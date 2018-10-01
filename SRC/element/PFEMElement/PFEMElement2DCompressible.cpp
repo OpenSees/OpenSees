@@ -96,7 +96,7 @@ int OPS_PFEMElement2DCompressible(Domain& theDomain, const ID& elenodes, ID& ele
 	theEle = new PFEMElement2DCompressible(--currTag,elenodes(3*i),elenodes(3*i+1),elenodes(3*i+2),
 					       data[0],data[1],data[2],data[3],data[4],data[5]);
 	if (theEle == 0) {
-	    opserr<<"WARING: run out of memory for creating element\n";
+	    opserr<<"WARNING: run out of memory for creating element\n";
 	    return -1;
 	}
 	if (theDomain.addElement(theEle) == false) {
@@ -222,7 +222,7 @@ PFEMElement2DCompressible::update()
     // check Jacobi
     if(fabs(J)<1e-15) {
 	//if(J < 0) {
-        opserr<<"WARING: element area is negative";
+        opserr<<"WARNING: element area is negative";
         opserr<<" -- PFEMElement2DCompressible::update\n";
         return -1;
     }

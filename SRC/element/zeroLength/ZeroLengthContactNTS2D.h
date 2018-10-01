@@ -32,7 +32,7 @@
  +        Authors: Roozbeh Geraili Mikola  AND   Nicholas Sitar               +
  |                                                                            |
  |		  Department of Civil and Environmental Engineering                   |
- +		  Univeristy of California, Berkeley, CA 94720, USA                   +
+ +		  University of California, Berkeley, CA 94720, USA                   +
  |                                                                            |
  |        Email: Roozbeh Geraili Mikola  (roozbehg@berkeley.edu)              |
  |               Nicholas Sitar          (sitar@ce.berkeley.edu)              |
@@ -72,7 +72,7 @@
 
   References:
     [1] P. Wriggers, V.T. Vu and E. Stein, Finite-element formulation of large deformation 
-	    impact–contact problems with friction, Comput. Struct. 37 (1990), pp. 319–331.
+	    impactï¿½contact problems with friction, Comput. Struct. 37 (1990), pp. 319ï¿½331.
     [2] Peter Wriggers. Computational Contact Mechanics. John Wiley & Sons Ltd. Chichester, 2002.
 
 */

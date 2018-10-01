@@ -1159,7 +1159,7 @@ void RJWatsonEQS2d::setUp()
         exit(-1);
     }
     
-    // establish orientation of element for the tranformation matrix
+    // establish orientation of element for the transformation matrix
     // z = x cross y
     static Vector z(3);
     z(0) = x(1)*y(2) - x(2)*y(1);
