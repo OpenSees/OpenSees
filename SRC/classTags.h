@@ -706,7 +706,10 @@
 #define ELE_TAG_AxEqDispBeamColumn2d      178
 #define ELE_TAG_FourNodeTetrahedron       179
 #define ELE_TAG_TriSurfaceLoad            180
-#define ELE_TAG_QuadBeamEmbedContact      500
+#define ELE_TAG_QuadBeamEmbedContact      181
+#define ELE_TAG_EmbeddedBeamInterfaceL    182
+#define ELE_TAG_EmbeddedBeamInterfaceP    183
+#define ELE_TAG_EmbeddedEPBeamInterface   184
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2

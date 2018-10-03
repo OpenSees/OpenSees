@@ -9414,7 +9414,7 @@ maxOpenFiles(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   } 
 
   #ifdef _WIN32
-  newMax = _setmaxstdio(maxOpenFiles);
+  int newMax = _setmaxstdio(maxOpenFiles);
   if (maxOpenFiles > 2048) {
 		opserr << "setMaxOpenFiles: too many files specified (2048 max)\n";
   } else {
