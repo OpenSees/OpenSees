@@ -103,11 +103,9 @@ stressDensity::stressDensity(int tag, int classTag, double massDen,
     stressNext(3),
     strainCurrent(3),
     strainNext(3),
-    strHS(nstrp),
     materialParam(25),
     initialTangent(3,3),
     currentTangent(3,3),
-    etaHS(40,3)
 {
     massDensity = massDen;
     materialParam(0)  = eInit;
@@ -147,11 +145,9 @@ stressDensity::stressDensity()
     stressNext(3),
     strainCurrent(3),
     strainNext(3),
-    strHS(nstrp),
     materialParam(25),
     initialTangent(3,3),
     currentTangent(3,3),
-    etaHS(40,3)
 {
     theStage = 0;
     for (int i=0; i<24; i++) {
@@ -177,18 +173,10 @@ stressDensity::commitState(void)
     this->calInitialTangent();
     currentTangent = initialTangent;
 
-    // update hardening terms
-    for (int i=0; i<40; i++) {
-        for (int j=0; j<3; j++) {
-            etaHS(i,j) = etahs[i][j];
-        }
-    }
-    for (int i=0; i<nstrp; i++) {
-        strHS(i) = strhs[i];
-    }
-
     // step and iteration counters
-    istep++;
+    if (theStage == 1) {
+        istep++;
+    }
     iiter = 1;
 
 	return 0;
@@ -287,7 +275,7 @@ int
 stressDensity::sendSelf(int commitTag, Channel &theChannel)
 {
     int res = 0;
-    static Vector vData(433);
+    static Vector vData(798);
 
     vData(0)  = this->getTag();
     vData(1)  = theStage;
@@ -317,25 +305,37 @@ stressDensity::sendSelf(int commitTag, Channel &theChannel)
     vData(25) = materialParam(22);
     vData(26) = materialParam(23);
     vData(27) = materialParam(24);
-    vData(28) = stressCurrent(0); vData(29) = stressCurrent(1); vData(30) = stressCurrent(2);
-    vData(31) = strainCurrent(0); vData(32) = strainCurrent(1); vData(33) = strainCurrent(2);
-    vData(34) = currentTangent(0,0); vData(35) = currentTangent(0,1); vData(36) = currentTangent(0,2);
-    vData(37) = currentTangent(1,0); vData(38) = currentTangent(1,1); vData(39) = currentTangent(1,2);
-    vData(40) = currentTangent(2,0); vData(41) = currentTangent(2,1); vData(42) = currentTangent(2,2);
-    for (int i=0; i<10; i++) {
-        vData(43+i) = oths[i];
+    vData(28) = pFlag;
+    vData(29) = pInit;
+    for (int i=0; i<12; i++) {
+        vData(30+i) = oths[i];
     }
-    for (int i=0; i<nmats; i++) {
-        vData(53+i) = strhs[i];
+    for (int i=0; i<100; i++) {
+        vData(42+i) = strhs[i];
     }
     for (int i=0; i<280; i++) {
-        vData(153+i) = strhs0[i];
+        vData(142+i) = strhs0[i];
     }
-    
+    for (int i=0; i<40; i++) {
+        vData(422) = etahs[i][0];
+        vData(462) = etahs[i][1];
+        vData(502) = etahs[i][2];
+    }
+    for (int i=0; i<80; i++) {
+        vData(542) = hdp[i][0];
+        vData(622) = hdp[i][1];
+        vData(702) = hdp[i][2];
+    }
+    vData(782) = stressCurrent(0); vData(783) = stressCurrent(1); vData(784) = stressCurrent(2);
+    vData(785) = strainCurrent(0); vData(786) = strainCurrent(1); vData(787) = strainCurrent(2);
+    vData(788) = initialTangent(0,0); vData(789) = initialTangent(0,1); vData(790) = initialTangent(0,2);
+    vData(791) = initialTangent(1,0); vData(792) = initialTangent(1,1); vData(793) = initialTangent(1,2);
+    vData(794) = initialTangent(2,0); vData(795) = initialTangent(2,1); vData(796) = initialTangent(2,2);
+    vData(797) = istep;
         
     res = theChannel.sendVector(this->getDbTag(), commitTag, vData);
 	if (res < 0) {
-      opserr << "StressDensityModel::sendSelf() - failed to send vData\n";
+      opserr << "stressDensity::sendSelf() - failed to send vData\n";
 	  return -1;
 	}
 
@@ -348,11 +348,11 @@ stressDensity::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBroker &the
     int res = 0;
 
     // place data in a vector
-    static Vector vData(433);
+    static Vector vData(798);
 
 	res = theChannel.recvVector(this->getDbTag(), commitTag, vData);
 	if (res < 0) {
-		opserr << "StressDensityModel::recvSelf() - failed to recv vData\n";
+		opserr << "stressDensity::recvSelf() - failed to recv vData\n";
 		return -1;
     }
 	
@@ -384,20 +384,61 @@ stressDensity::recvSelf(int commitTag, Channel &theChannel,FEM_ObjectBroker &the
     materialParam(22) = vData(25);
     materialParam(23) = vData(26);
     materialParam(24) = vData(27);
-    stressCurrent(0)  = vData[28]; stressCurrent(1) = vData[29]; stressCurrent(2) = vData[30];
-    strainCurrent(0)  = vData[31]; strainCurrent(1) = vData[32]; strainCurrent(2) = vData[33];
-    currentTangent(0,0) = vData[34]; currentTangent(0,1) = vData[35]; currentTangent(0,2) = vData[36];
-    currentTangent(1,0) = vData[37]; currentTangent(1,1) = vData[38]; currentTangent(1,2) = vData[39];
-    currentTangent(2,0) = vData[40]; currentTangent(2,1) = vData[41]; currentTangent(2,2) = vData[42];
-    for (int i=0; i<10; i++) {
-        oths[i] = vData(43+i);
+    pFlag = (int)vData(28);
+    pInit = vData(29);
+    for (int i=0; i<12; i++) {
+        oths[i] = vData(30+i);
     }
-    for (int i=0; i<nmats; i++) {
-        strhs[i] = vData(53+i);
+    for (int i=0; i<100; i++) {
+        strhs[i] = vData(42+i);
     }
     for (int i=0; i<280; i++) {
-        strhs0[i] = vData(153+i);
+        strhs0[i] = vData(142+i);
     }
+    for (int i=0; i<40; i++) {
+        etahs[i][0] = vData(422);
+        etahs[i][1] = vData(462);
+        etahs[i][2] = vData(502);
+    }
+    for (int i=0; i<80; i++) {
+        hdp[i][0] = vData(542);
+        hdp[i][1] = vData(622);
+        hdp[i][2] = vData(702);
+    }
+    stressCurrent(0) = vData(782); stressCurrent(1) = vData(783); stressCurrent(2) = vData(784);
+    strainCurrent(0) = vData(785); strainCurrent(1) = vData(786); strainCurrent(2) = vData(787);
+    initialTangent(0,0) = vData(788); initialTangent(0,1) = vData(789); initialTangent(0,2) = vData(790);
+    initialTangent(1,0) = vData(791); initialTangent(1,1) = vData(792); initialTangent(1,2) = vData(793);
+    initialTangent(2,0) = vData(794); initialTangent(2,1) = vData(795); initialTangent(2,2) = vData(796);
+    istep = vData(797);
+       
+    // set current tangent
+    currentTangent = initialTangent; 
+    // populate props with model parameters (not all indices used in SDM-UC)
+    props[3]  = materialParam(1);
+    props[5]  = materialParam(2);
+    props[27] = materialParam(3);
+    props[28] = materialParam(4);
+    props[29] = materialParam(5);
+    props[26] = materialParam(6);
+    props[30] = materialParam(7);
+    props[32] = materialParam(8);
+    props[31] = materialParam(9);
+    props[34] = materialParam(10);
+    props[33] = materialParam(11);
+    props[36] = materialParam(12);
+    props[35] = materialParam(13);
+    props[37] = materialParam(14);
+    props[38] = materialParam(15);
+    props[39] = materialParam(16);
+    props[40] = materialParam(17);
+    props[41] = materialParam(18);
+    props[42] = materialParam(19);
+    props[43] = materialParam(20);
+    props[44] = materialParam(21);
+    props[45] = materialParam(22);
+    props[46] = materialParam(23);
+    props[10] = materialParam(0)/(1.0 + materialParam(0));
 
     return 0;
 }
@@ -454,7 +495,6 @@ stressDensity::initialise()
     strainNext.Zero();
     initialTangent.Zero();
     currentTangent.Zero();
-    etaHS.Zero();
 
     // get the initial material tangent
     pInit = 0.0;
@@ -487,7 +527,7 @@ stressDensity::initialise()
         hdp[i][1] = 0.0;
         hdp[i][2] = 0.0;
     }
-    for (int i=0; i<10; i++) {
+    for (int i=0; i<12; i++) {
         oths[i] = 0.0;
     }
     for (int i=0; i<nmats; i++) {
@@ -518,8 +558,7 @@ stressDensity::initialise()
     props[45] = materialParam(22);
     props[46] = materialParam(23);
     // SDM-UC expects porosity as input instead of void ratio
-    //props[10] = materialParam(0)/(1.0 + materialParam(0));
-    props[10] = materialParam(0);
+    props[10] = materialParam(0)/(1.0 + materialParam(0));
 
     // integer inputs for FORTRAN routine
     istep = 1;
@@ -544,15 +583,12 @@ stressDensity::setTrialStrain(const Vector &v, const Vector &r)
 const Matrix&
 stressDensity::getTangent(void) 
 {
-    //this->calInitialTangent();
-    //currentTangent = initialTangent;
     return currentTangent;
 }
 
 const Matrix&
 stressDensity::getInitialTangent(void) 
 {
-    //this->calInitialTangent();
     return initialTangent;
 }
 
@@ -595,12 +631,7 @@ stressDensity::getCurrentStress(void)
     stran[1] = -(strainNext(1) - strainCurrent(1));
     stran[2] =  (strainNext(2) - strainCurrent(2))/2.0;
 
-    //opserr << "istep = " << istep << endln;
-    //opserr << "time = " << 0.005*istep << endln;
-    //opserr << "iiter = " << iiter << endln;
-    //opserr << "stressCurrent = " << stressCurrent << endln;
-    //opserr << "strainCurrent = " << strainCurrent << endln;
-    //opserr << "strainNext = " << strainNext << endln;
+    // alter behaviour based on number of iterations
     if (iiter <= 3) {
         for (int i=0; i<4; i++) {
             strhs0[i]   = strsg[i];
@@ -631,17 +662,16 @@ stressDensity::getCurrentStress(void)
             strhs[i] = strhs0[i+8]; 
         }
     }
-
-    //opserr << "stran IN: " << stran[0] << " " << stran[1] << " " << stran[2] << endln;
+    // send this information to sdmuc in oths
+    oths[10] = iiter;
+    oths[11] = istep;
 
     // FORTRAN subroutine for stress integration
     sdmuc_(strhs, strsg, props, stran, nmats, nstrp,
            istep, iiter, ielem,
            strhs0, etahs, hdp, oths);
 
-    //opserr << "oths[7] OUT: " << oths[7] << endln;
-
-    // update iteration counter variable
+    // update iteration counter variable 
     iiter++;
 
     // update member stress variable from FORTRAN results
@@ -651,6 +681,7 @@ stressDensity::getCurrentStress(void)
     // update material tangent coefficient
     materialParam(2) = props[5];
 
+    // get updated tangent
     pInit = -0.5*(stressNext(0)+stressNext(1));
     this->calInitialTangent();
     currentTangent = initialTangent;
@@ -661,29 +692,13 @@ stressDensity::calInitialTangent(void)
 {
     double nu, G, A, n, eo, patm, fct, afc;
 
-    //eo   = materialParam(0);
-    eo   = materialParam(0)/(1.0-materialParam(0));
+    eo   = materialParam(0);
     nu   = materialParam(1);
     A    = materialParam(2);
     n    = materialParam(3);
     patm = materialParam(24);
 
-    /*if (oths[7] > 1.0e-5) {
-        A = oths[7];
-    } else {
-        A = materialParam(2);
-    }*/
-
     if (materialParam(4) > 0.15 && strhs[12] > 0.02) {
-        /*if (strhs[9] > 0.0) {
-            opserr << "etacum " << strhs[9] << endln;
-            opserr << "fis " << strhs[19] << endln;
-            afc = 1.0/fis;
-            if (afc > 0.5) {
-                afc = 0.5;
-            }
-            materialParam(2) = oths[7]-afc*strhs[9]*oths[7];
-        }*/
         fct = strhs[12]/0.05;
         if (fct > 1.0) {
             fct = 1.0;
@@ -698,20 +713,6 @@ stressDensity::calInitialTangent(void)
     } else {
         G = A*patm*(2.17 - eo)*(2.17 - eo)/(1.0 + eo)*(pow((pInit/patm),n));
     }
-
-	/*initialTangent(0,0) = 2*G/(1-2*nu)*(1-nu);
-	initialTangent(0,1) = 2*G/(1-2*nu)*nu;
-	initialTangent(0,2) = 0;
-
-
-	initialTangent(1,0) = 2*G/(1-2*nu)*nu;
-	initialTangent(1,1) = 2*G/(1-2*nu)*(1-nu);
-	initialTangent(1,2) = 0;
-	
-
-	initialTangent(2,0) = 0;
-	initialTangent(2,1) = 0;
-	initialTangent(2,2) = G;*/
 
     initialTangent(0,0) = 2.0*G*(1.0+nu)/(3.0*(1-2.0*nu)) + 4.0*G/3.0;
     initialTangent(0,1) = 2.0*G*(1.0+nu)/(3.0*(1-2.0*nu)) - 2.0*G/3.0;

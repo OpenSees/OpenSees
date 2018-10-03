@@ -71,9 +71,9 @@ static int numManzariDafaliasMaterials = 0;
 void *
 OPS_ManzariDafaliasMaterial(void)
 {
-  numManzariDafaliasMaterials++;
   if (numManzariDafaliasMaterials == 0) 
-    opserr << "ManzariDafalias nDmaterial - Written: A.Ghofrani, P.Arduino, U.Washington\n";
+    opserr << "ManzariDafalias nDmaterial - Written: A.Ghofrani, P.Arduino, U.Washington\n";					
+	numManzariDafaliasMaterials++;		
 
   NDMaterial *theMaterial = 0;
 
@@ -167,15 +167,15 @@ ManzariDafalias::ManzariDafalias(int tag, double G0, double nu,
     m_z_max     = z_max;
     m_cz        = cz;
 
-    massDen       = mDen;
-    mTolF         = TolF;
-    mTolR         = TolR;
-    mJacoType     = JacoType;
-    mScheme       = integrationScheme;
-    mTangType     = tangentType;
-    mUseElasticTan= false;
+    massDen                = mDen;
+    mTolF                  = TolF;
+    mTolR                  = TolR;
+    mJacoType              = JacoType;
+    mScheme                = integrationScheme;
+    mTangType              = tangentType;
+    mIter                  = 0;
+    mUseElasticTan         = false;
     mStressCorrectionInUse = true;
-    mIter         = 0;
     
     initialize();
 }
@@ -220,15 +220,15 @@ ManzariDafalias::ManzariDafalias(int tag, int classTag, double G0, double nu,
     m_z_max     = z_max;
     m_cz        = cz;
 
-    massDen      = mDen;
-    mTolF        = TolF;
-    mTolR        = TolR;
-    mJacoType    = JacoType;
-    mScheme      = integrationScheme;
-    mTangType    = tangentType;
-    mUseElasticTan= false;
+    massDen                = mDen;
+    mTolF                  = TolF;
+    mTolR                  = TolR;
+    mJacoType              = JacoType;
+    mScheme                = integrationScheme;
+    mTangType              = tangentType;
+    mIter                  = 0;
+    mUseElasticTan         = false;
     mStressCorrectionInUse = true;
-    mIter        = 0;
     
     initialize();
 }
@@ -270,14 +270,14 @@ ManzariDafalias ::ManzariDafalias()
     m_z_max     = 0.0;
     m_cz        = 0.0;
 
-    massDen      = 0.0;
-    mTolF        = 1.0e-7;
-    mTolR        = 1.0e-7;
-    mJacoType    = 1;
-    mScheme      = 1;
-    mTangType    = 0;
-    mIter        = 0;
-    mUseElasticTan= false;
+    massDen                = 0.0;
+    mTolF                  = 1.0e-7;
+    mTolR                  = 1.0e-7;
+    mJacoType              = 1;
+    mScheme                = 2;
+    mTangType              = 2;
+    mIter                  = 0;
+    mUseElasticTan         = false;
     mStressCorrectionInUse = true;
     
     this->initialize();
@@ -649,7 +649,7 @@ ManzariDafalias::setParameter(const char **argv, int argc, Parameter &param)
         else if (strcmp(argv[0],"voidRatio") == 0) {        // change e_init
             return param.addObject(8, this);
         }
-        else if (strcmp(argv[0],"stressCorrection") == 0) {        // change e_init
+        else if (strcmp(argv[0],"stressCorrection") == 0) {        // change stress correction state
             return param.addObject(9, this);
         }
     }
