@@ -142,7 +142,7 @@ class stressDensity : public NDMaterial
     double strhs0[280];
     double etahs[40][3];
     double hdp[80][3];
-    double oths[10];
+    double oths[12];
 
     // member variables for stressDensity
     int theStage;
@@ -154,10 +154,8 @@ class stressDensity : public NDMaterial
     Vector strainCurrent;
     Vector strainNext;
     Vector materialParam;
-    Vector strHS;
     Matrix initialTangent;
     Matrix currentTangent;
-    Matrix etaHS;
 
     // member functions
     void initialise();
