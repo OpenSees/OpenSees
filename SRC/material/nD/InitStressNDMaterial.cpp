@@ -111,7 +111,7 @@ OPS_InitStressNDMaterial(void)
 
 
 InitStressNDMaterial::InitStressNDMaterial(int tag, NDMaterial &material, const Vector &sigini, int ndim)
-  :NDMaterial(tag,MAT_TAG_InitStress), theMaterial(0),
+  :NDMaterial(tag,ND_TAG_InitStressNDMaterial), theMaterial(0),
    epsInit(3*ndim-3), sigInit(sigini)
 {
 
@@ -164,7 +164,7 @@ InitStressNDMaterial::InitStressNDMaterial(int tag, NDMaterial &material, const 
 }
 
 InitStressNDMaterial::InitStressNDMaterial()
-  :NDMaterial(0,MAT_TAG_InitStress), theMaterial(0),
+  :NDMaterial(0,ND_TAG_InitStressNDMaterial), theMaterial(0),
    epsInit(6), sigInit(6)
 {
 

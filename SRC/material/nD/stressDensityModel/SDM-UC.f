@@ -20,7 +20,7 @@ c  =====================================================================
       real(kind=dbl),dimension(280),intent(inout)::strhs0
       real(kind=dbl),dimension(3,40),intent(inout)::etahs
       real(kind=dbl),dimension(3,80),intent(inout)::hdp
-      real(kind=dbl),dimension(10),intent(inout)::oths
+      real(kind=dbl),dimension(12),intent(inout)::oths
 
       call dsmod(strsg, stran, props, nmats, strhs, nstrp, etahs, hdp,
      &           oths, strhs0)
@@ -59,7 +59,7 @@ c
        dimension   props(nmats), strhs(nstrp),
      1             sig(4), dsig(4), eps(4), deps(4),
      1             depse(4), depsp(4), ddeps(4),
-     2            hdp(3,80), etahs(3,40), oths(10),
+     2            hdp(3,80), etahs(3,40), oths(12),
      3             iflag(3), rna(3), coef6(3), strhs0(280)
 c                                                                       
 c
@@ -71,13 +71,16 @@ c
 c
        pi     = 3.141592654d0                                           
        refeta = 0.01d0
+
+       iitr = oths(11)
+       istp = oths(12)
 c                                                                      
        do 5 i = 1,4                                                     
        dsig(i)  = 0.d0                                                  
        depsp(i) = 0.d0
        depse(i) = 0.d0
        ddeps(i) = 0.d0
-       if ( istep.eq.1 .and. iiter.eq.0 ) eps(i) = 0.d0
+       if ( istp.eq.1 .and. iitr.eq.0 ) eps(i) = 0.d0
     5  continue                                                        
 c                                                                      
        ec     = props(11) / ( 1.d0 - props(11))
@@ -1284,6 +1287,8 @@ c
        dimension props(nmats), oths(10)
 
 c
+       iitr = oths(11)
+c       write(*,*)'iitr',iitr
        if ( fmuf.gt.0.15d0 .and. etarev(1).gt..02d0 .and. 
      1           etacum(1).gt.0.d0 ) then
 c      write (14,9821) istep,ielem,iiter,
@@ -1292,7 +1297,9 @@ c    1                      oths(8,ielem),etarev(1),etacum(1)
            afc  =  (1.d0 / fis)
            if ( afc .gt. 0.5d0 ) afc = 0.5d0
            if (etacum(1) .eq. 1.d0 ) afc = afc/fis
-           props(6)=oths(8)-afc*etacum(1)*oths(8)
+           if (iitr.ne.1) then
+               props(6)=oths(8)-afc*etacum(1)*oths(8)
+           end if 
            etacum(1) = 0.d0
        end if
 c
