@@ -188,18 +188,6 @@ NewtonHallM::solveCurrentStep(void)
       numIterations++;
       this->record(numIterations);
       
-      ///////////////////*
-      //ActivateAensitivity() is to account for the reliability effect.
-      //SensitivityintegratorScheme returns:  true for DC, and false for LC
-      if( ((theIntegrator->activateSensitivity())==true) && (theIntegrator->computeSensitivityAtEachIteration())==true)
-	{
-	  
-	  theIntegrator->computeSensitivities();
-	  theIntegrator->formUnbalance();
-	  
-	} 
-      
-      ////////////////////
       
     } while (result == -1);
     
@@ -208,14 +196,6 @@ NewtonHallM::solveCurrentStep(void)
       opserr << "the ConvergenceTest object failed in test()\n";
       return -3;
     }
-    //IntegratorSens=theIntegrator;
-    
-    if( ((theIntegrator->activateSensitivity())==true) && (theIntegrator->computeSensitivityAtEachIteration())==false)
-      {
-	theIntegrator->computeSensitivities();//Abbas
-      }    
-    // note - if postive result we are returning what the convergence test returned
-    // which should be the number of iterations
     
     return result;
 }
