@@ -34,6 +34,13 @@
 *.out
 *.app
 
+# Visual Studio
+*.vcxproj.user
+*.bsc
+*.pdb
+.vs
+obj
+
 # OTHER
 Makefile.def
 PlainConcrete.f

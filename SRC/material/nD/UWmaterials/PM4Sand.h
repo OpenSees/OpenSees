@@ -20,6 +20,7 @@
 
 // Written: Long Chen, Pedro Arduino
 //          Nov 2016, University of Washington
+//          Modified Sep 2018
 
 // Description: This file contains the implementation for the PM4Sand class.
 // PM4Sand(Version 3.1): A Sand Plasticity Model For Earthquake Engineering Applications
@@ -94,7 +95,7 @@ public:
 	const Vector getAlpha();
 	const Vector getFabric();
 	const Vector getAlpha_in();
-	double getTracker();
+	const Vector getTracker();
 	double getG();
 	double getKp();
 	const Vector getAlpha_in_p();
@@ -163,14 +164,19 @@ protected:
 	Vector mAlpha_in;	// back-stress ratio at loading reversal
 	Vector mAlpha_in_n;	// back-stress ratio at loading reversal (last committed)
 	Vector mAlpha_in_p; // previous back-stress ratio at loading reversal
+	Vector mAlpha_in_p_n; // previous back-stress ratio at loading reversal (last committed)
 	Vector mAlpha_in_true;  // true initial back stress ratio tensor
+	Vector mAlpha_in_true_n;  // true initial back stress ratio tensor (last committed)
 	Vector mAlpha_in_max; // Maximum value of initial back stress ratio
+	Vector mAlpha_in_max_n; // Maximum value of initial back stress ratio (last committed)
 	Vector mAlpha_in_min; // Minimum value of initial back stress ratio
+	Vector mAlpha_in_min_n; // Minimum value of initial back stress ratio (last committed)
 	double mDGamma;		// plastic multiplier
 	double mDGamma_n;	// plastic multiplier (last committed)
 	Vector mFabric;		// fabric tensor
 	Vector mFabric_n;	// fabric tensor (last committed)
 	Vector mFabric_in;  // fabric tensor at loading reversal
+	Vector mFabric_in_n;  // fabric tensor at loading reversal (last committed)
 	Matrix mCe;			// elastic tangent
 	Matrix mCep;		// continuum elastoplastic tangent
 	Matrix mCep_Consistent; // consistent elastoplastic tangent
@@ -185,14 +191,13 @@ protected:
 	double mMb;
 	double mMd;
 	double mMcur;       // current stress ratio
-	double mTracker;      // internal paramter tracker
+	Vector mTracker;      // internal paramter tracker
 
 	double	mTolF;			// max drift from yield surface
 	double	mTolR;			// tolerance for Newton iterations
 	char unsigned mIter;	// number of iterations
 	char unsigned mScheme;	// 1: Forward Euler Explicit, 2: Modified Euler Explicit
 	char unsigned mTangType;// 0: Elastic Tangent, 1: Contiuum ElastoPlastic Tangent, 2: Consistent ElastoPlastic Tangent
-	char unsigned mOrgTangType;
 	double	m_Pmin;			// Minimum allowable mean effective stress
 	double  m_Pmin2;        // Minimum p for Cpzp2 and Cpmin
 	bool    m_pzpFlag;          // flag for updating pzp
@@ -294,7 +299,7 @@ protected:
 	void	GetStateDependent(const Vector &stress, const Vector &alpha, const Vector &alpha_in, const Vector& alpha_in_p
 		, const Vector &fabric, const Vector &fabric_in, const double &G, const double &zcum, const double &zpeak
 		, const double &pzp, const double &Mcur, const double &dr, Vector &n, double &D, Vector &R, double &K_p
-		, Vector &alphaD, double &Cka, double &h, Vector &b);
+		, Vector &alphaD, double &Cka, double &h, Vector &b, double &AlphaAlphaBDotN);
 	Matrix	GetElastoPlasticTangent(const Vector& NextStress, const Matrix& aCe, const Vector& R, const Vector& n, const double K_p);
 	Vector	GetNormalToYield(const Vector &stress, const Vector &alpha);
 	int	Check(const Vector& TrialStress, const Vector& stress, const Vector& CurAlpha, const Vector& NextAlpha);
@@ -314,5 +319,4 @@ protected:
 	Vector ToContraviant(const Vector& v1);
 	Vector ToCovariant(const Vector& v1);
 };
-
 #endif
