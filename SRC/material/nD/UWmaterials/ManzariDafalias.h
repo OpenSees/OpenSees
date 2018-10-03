@@ -58,7 +58,11 @@ class ManzariDafalias : public NDMaterial
     // full constructor
     ManzariDafalias(int tag, double G0, double nu, double e_init, double Mc, double c, double lambda_c, double e0, double ksi,
 					double P_atm, double m, double h0, double ch, double nb, double A0, double nd, double z_max, double cz, double mDen, 
-					int integrationScheme = 1, int tangentType = 0, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
+					int integrationScheme = 2, int tangentType = 2, int JacoType = 1, double TolF = 1.0e-7, double TolR = 1.0e-7);
+    
+    //specific type null constructor
+    ManzariDafalias(int classTag);
+
     // null constructor
     ManzariDafalias();
     // destructor
@@ -96,6 +100,10 @@ class ManzariDafalias : public NDMaterial
 	double getRho(void) {return massDen;};
 	double getVoidRatio(void) {return mVoidRatio;};
 	int    getNumIterations(void) {return mIter;};
+
+	virtual const Vector& getEStrain();
+	virtual const Vector& getPStrain();
+
 
   protected:
 
@@ -243,6 +251,10 @@ class ManzariDafalias : public NDMaterial
 					const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
 					Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
 					double& NextDGamma, double& NextVoidRatio,  double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) ;
+	void	RungeKutta45(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
+					const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+					Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
+					double& NextDGamma, double& NextVoidRatio,  double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) ;  // By J.Abell @ UANDES - After Sloan
 	int		BackwardEuler_CPPM(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
 					const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
 					Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
