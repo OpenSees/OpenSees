@@ -1295,8 +1295,9 @@ sensitivityAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
     
 	   } else if (theTransientAnalysis != 0 && theTransientIntegrator != 0) {
   
-	       theIntegrator->setComputeType(analysisTypeTag);
+	     
     theIntegrator = theTransientIntegrator;
+	theIntegrator->setComputeType(analysisTypeTag);
     theIntegrator->activateSensitivityKey();
 
 	}
