@@ -238,7 +238,7 @@ AcceleratedNewton::solveCurrentStep(void)
     return -3;
   }
   
-  // note - if postive result we are returning what the convergence
+  // note - if positive result we are returning what the convergence
   // test returned which should be the number of iterations
   return result;
 }

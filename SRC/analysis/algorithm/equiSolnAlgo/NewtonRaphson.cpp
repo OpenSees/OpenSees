@@ -32,7 +32,7 @@
 
 // Description: This file contains the class definition for 
 // NewtonRaphson. NewtonRaphson is a class which uses the
-// Newton-Raphson solution algorihm
+// Newton-Raphson solution algorithm
 // to solve the equations. No member functions are declared as virtual as 
 // it is not expected that this class will be subclassed.
 // 
@@ -231,7 +231,7 @@ NewtonRaphson::solveCurrentStep(void)
     {
       theIntegrator->computeSensitivities();//Abbas
     }    
-// note - if postive result we are returning what the convergence test returned
+// note - if positive result we are returning what the convergence test returned
     // which should be the number of iterations
     
         return result;

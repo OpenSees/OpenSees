@@ -114,7 +114,7 @@ DOF_Numberer::numberDOF(int lastDOF_Group)
 	return -2;
     }    
 
-    // check we cant do quick return
+    // check we can't do quick return
     
     if (theAnalysisModel->getNumDOF_Groups() == 0)
 	return 0;
@@ -132,7 +132,7 @@ DOF_Numberer::numberDOF(int lastDOF_Group)
     
     if (orderedRefs.Size() != theAnalysisModel->getNumDOF_Groups()) {
 	opserr << "WARNING DOF_Numberer::numberDOF - ";
-	opserr << "Incompatable Sizes\n";
+	opserr << "Incompatible Sizes\n";
 	return -3;
     }
     int result = 0;
@@ -154,7 +154,7 @@ DOF_Numberer::numberDOF(int lastDOF_Group)
 	}
     }
 
-    // iterate throgh  the DOFs second time setting -3 values
+    // iterate through  the DOFs second time setting -3 values
     for (int k=0; k<size; k++) {
 	int dofTag = orderedRefs(k);
 	DOF_Group *dofPtr;	
@@ -169,7 +169,7 @@ DOF_Numberer::numberDOF(int lastDOF_Group)
 
 
     // iterate through the DOFs one last time setting any -4 values
-    // iterate throgh  the DOFs second time setting -3 values
+    // iterate through  the DOFs second time setting -3 values
     DOF_GrpIter &tDOFs = theAnalysisModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = tDOFs()) != 0) {
@@ -247,7 +247,7 @@ DOF_Numberer::numberDOF(ID &lastDOFs)
 	return -2;
     }    
 
-    // check we cant do quick return
+    // check we can't do quick return
     if (theAnalysisModel->getNumDOF_Groups() == 0)
 	return 0;
 
@@ -263,7 +263,7 @@ DOF_Numberer::numberDOF(ID &lastDOFs)
     int eqnNumber = 0;
     if (orderedRefs.Size() != theAnalysisModel->getNumDOF_Groups()) {
 	opserr << "WARNING DOF_Numberer::numberDOF - ";
-	opserr << "Incompatable Sizes\n";
+	opserr << "Incompatible Sizes\n";
 	return -3;
     }
 
@@ -285,7 +285,7 @@ DOF_Numberer::numberDOF(ID &lastDOFs)
 	}	
     }
 
-    // iterate throgh  the DOFs first time setting -3 values
+    // iterate through  the DOFs first time setting -3 values
     
     for (int k=0; k<size; k++) {
 	int dofTag = orderedRefs(k);
@@ -300,7 +300,7 @@ DOF_Numberer::numberDOF(ID &lastDOFs)
     }
 
     // iterate through the DOFs one last time setting any -4 values
-    // iterate throgh  the DOFs second time setting -3 values
+    // iterate through  the DOFs second time setting -3 values
     DOF_GrpIter &tDOFs = theAnalysisModel->getDOFs();
     DOF_Group *dofPtr;
     while ((dofPtr = tDOFs()) != 0) {
