@@ -418,7 +418,7 @@ RandomVibrationAnalysis::DesignPoints(void)
 			}
 			opserr<< "check--2\n";
 			opserr<< "check--3\n";
-			//// find TELS under defind random process /////
+			//// find TELS under defined random process /////
 			this->saveDesResults(ilocres, iresult, lsf, Performthreshold);
 			opserr<< "check--4\n";
 			theOutCrossingResults->printSinglePoint(outputFile,ilocres);
@@ -629,7 +629,7 @@ void RandomVibrationAnalysis::printPerformanceFunction(int idlsf)
 	outputFile << "\n";
 	outputFile << "      Node";
 	outputFile << " Direction";
-	outputFile << "     Coeficient\n";
+	outputFile << "     Coefficient\n";
 	thePfCoeffIter->reset();
 	PerformanceFunctionCoeff* thePfCoeff;
 	while((thePfCoeff = (*thePfCoeffIter)()) != 0){
@@ -679,12 +679,12 @@ double RandomVibrationAnalysis::setLimitState(LimitStateFunction* theLSF)
 	strcpy(lsf_forTokenizing,theExpression);
 	char tclAssignment[100];
 
-//  1st set all disp to zero and evaluate to have the constatn term //
+//  1st set all disp to zero and evaluate to have the constant term //
 	char *tokenPtr = strtok( lsf_forTokenizing, separators);
 	while ( tokenPtr != NULL ) {
 		strcpy(tempchar,tokenPtr);
 		if ( strncmp(tokenPtr, "ud", 2) == 0) {
-			opserr << "Performance Fucntion need to be \n";
+			opserr << "Performance Function need to be \n";
 			opserr << "a linear function of disp to apply \n";
 			opserr << "initial shape analysys \n";
 			opserr << "skip initial shape for this lsf \n";
@@ -698,7 +698,7 @@ double RandomVibrationAnalysis::setLimitState(LimitStateFunction* theLSF)
 			Tcl_Eval( theTclInterp, tclAssignment);
 		}
 		else if ( strncmp(tokenPtr, "rec",3) == 0) {
-			opserr << "Performance Fucntion need to be \n";
+			opserr << "Performance Function need to be \n";
 			opserr << "a linear function of disp to apply \n";
 			opserr << "initial shape analysys \n";
 			opserr << "skip initial shape for this lsf \n";
@@ -753,7 +753,7 @@ double RandomVibrationAnalysis::setLimitState(LimitStateFunction* theLSF)
 		output << "\n";
 		output << "      Node";
 		output << " Direction";
-		output << "     Coeficient\n";
+		output << "     Coefficient\n";
 		thePfCoeffIter->reset();
 		PerformanceFunctionCoeff* thePfCoeff;
 		while((thePfCoeff = (*thePfCoeffIter)()) != 0){
@@ -1005,7 +1005,7 @@ void RandomVibrationAnalysis::findTELS(void)
 
 }
 /////////////////////////////////////////////////////////////////////////////////
-//////////////////// preivous version /////////////////////////////////////////
+////////////////////// previous version /////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 /*
 void 
@@ -1097,7 +1097,7 @@ RandomVibrationAnalysis::nonStatDesignPoints(void)
 //						AnalysisStep=StartSteps;
 //						AnalysisTime=delta*(float)AnalysisStep;
 //					}
-//					/// getting intial point ///
+//					/// getting initial point ///
 //					(*xinitial)=theInitialPointBuilder->buildInitialPoint(AnalysisStep);
 //					/// getting number of dynamig response analyses ///
 //					numAnaLineSearch=theInitialPointBuilder->getnumAna();
@@ -1169,7 +1169,7 @@ RandomVibrationAnalysis::nonStatDesignPoints(void)
 
 			///// number of Analysis points /////
 			int numAnalysis=NumTimePoints;
-			if(ipos!=0) numAnalysis--;   /// alreay analyzed one of them
+			if(ipos!=0) numAnalysis--;   /// already analyzed one of them
 
 			for(int ipts=0;ipts<numAnalysis;ipts++){
 				///// curremt analysis step & time  /////

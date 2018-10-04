@@ -6,7 +6,7 @@ UNDER CONSTRUCTION
 \noindent {\bf Files}   \\
 \indent \#include $<\tilde{ }$/domain/partitioner/DomainPartitioner.h$>$  \\
 
-\noindent {\bf Class Decleration}  \\
+\noindent {\bf Class Declaration}  \\
 \indent class DomainPartitioner \\
 
 \noindent {\bf Class Hierarchy} \\
@@ -84,7 +84,7 @@ the PartitionedDomain has at least {\em numParts} Subdomains, with tags
 It then asks the domain for the element graph. This graph is then partitioned 
 using the GraphPartitioner into {\em numParts}; if partitioning fails an error 
 message is printed and  $-10 +$ number returned from GraphPartitioner is
-returned. If successfull the domain is partitioned according to the
+returned. If successful the domain is partitioned according to the
 following rules: \begin{itemize}
 \item All nodes which are internal to a partition are added using the
 {\em addNode()} method of the Subdomain. These nodes are removed from
@@ -159,7 +159,7 @@ vertex whose tag is given by {\em vertexTag} from subdomain {\em from}
 and place it in subdomain {\em to}. If {\em notAdjacentOther} is {\em
 true} a check is made to ensure that the vertex to be swapped is not
 adjacent to a vertex in any other partition. Returns $0$ if
-successfull, returns an error message and $-1$ if PartitionedDomain
+successful, returns an error message and $-1$ if PartitionedDomain
 has not been partitioned, $-2$ if {\em from} Subdomain does not exist,
 $-3$ if {\em to Subdomain} does not exist, $-4$ if a vertex given by
 {\em tag} does not exist, returns $-5$ if {\em notAdjacentOther} was
@@ -178,7 +178,7 @@ Method which when invoked will take all the boundary elements in
 subdomain {\em from} that are connected to elements in subdomain {\em
 to} and place them in subdomain {\em to}. If {\em adjacentVertexOther} is
 {\em true} no Elements which are connected to elements in subdomains other 
-than {\em to} and {\em from} are moved. Returns $0$ if successfull, returns 
+than {\em to} and {\em from} are moved. Returns $0$ if successful, returns 
 an error message and $-1$ if PartitionedDomain has not been partitioned, $-2$ 
 if {\em from} Subdomain does not exist, $-3$ if {\em to Subdomain}
 does not exist. \\ The Elements, Nodes, NodalLoads, SP\_Constraints

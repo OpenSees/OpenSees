@@ -86,7 +86,7 @@ TclEvaluator::setVariables()
     double xval;
     Parameter *theParam;
 
-    // Set values of parameters in the Tcl intepreter
+    // Set values of parameters in the Tcl interpreter
     int nparam = theOpenSeesDomain->getNumParameters();
 
     for (int i = 0; i < nparam; i++) {
@@ -176,7 +176,7 @@ TclEvaluator::runAnalysis()
         // of above analysis
         Parameter *theParam;
         
-        // Set values of parameters in the Tcl intepreter
+        // Set values of parameters in the Tcl interpreter
         int nparam = theOpenSeesDomain->getNumParameters();
         
         for (int i = 0; i < nparam; i++) {
