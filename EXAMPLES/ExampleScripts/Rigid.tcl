@@ -59,7 +59,7 @@ foreach rigidConstraint {no yes} {
 	    # Define cross-section for nonlinear columns
 	    # ------------------------------------------
 	    
-	    # set some paramaters
+	    # set some parameters
 	    set colWidth 15
 	    set colDepth 24 
 	    

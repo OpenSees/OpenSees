@@ -270,7 +270,7 @@ set ok [analyze   2000   0.01]
 if {$ok != 0} {
     puts "analysis FAILED"
 } else {
-    puts "analysis SUCCESSFULL"
+    puts "analysis SUCCESSFUL"
 }
 
 wipe

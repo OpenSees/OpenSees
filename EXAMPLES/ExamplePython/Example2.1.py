@@ -50,7 +50,7 @@ ops.uniaxialMaterial("Steel01", 3, fy, E, 0.01)
 
 # Define cross-section for nonlinear columns
 # ------------------------------------------
-# set some paramaters
+# set some parameters
 colWidth = 15.0
 colDepth = 24.0 
 cover = 1.5

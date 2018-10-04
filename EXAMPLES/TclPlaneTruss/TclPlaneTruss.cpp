@@ -28,7 +28,7 @@
 //
 // Description: This file contains the class implementation for TclPlaneTruss
 // TclPlaneTruss is a class for building a Plane Frame model in an interpreted
-// enviroment. The constructor is used to add new commands to the interpreter,
+// environment. The constructor is used to add new commands to the interpreter,
 // these commands are also defined in this file.
 //
 // What: "@(#) TclPlaneTruss.C, revA"
@@ -254,7 +254,7 @@ TclPlaneTruss_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
 
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -318,7 +318,7 @@ TclPlaneTruss_addTruss(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
 
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -387,7 +387,7 @@ TclPlaneTruss_addMyTruss(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
 
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -451,7 +451,7 @@ TclPlaneTruss_addfTruss(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
 
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -633,7 +633,7 @@ TclPlaneTruss_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
     }
   }
 
-  // if get here we have sucessfully created the node and added it to the domain
+  // if get here we have successfully created the node and added it to the domain
   return TCL_OK;
 }
 
@@ -726,7 +726,7 @@ TclPlaneTruss_addNodalLd(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }  
   
-  // if get here we have sucessfully created the node and added it 
+  // if get here we have successfully created the node and added it 
   return TCL_OK;
 }
 

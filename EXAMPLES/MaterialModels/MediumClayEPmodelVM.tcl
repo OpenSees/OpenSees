@@ -3,7 +3,7 @@
 # rho = 1.5 ton/m^3 
 # Young's modulus = 169200 kpa, 
 # Possion Ratio = 0.406, 
-# shear strenght k (=f(Cu)) = 37kpa  
+# shear strength k (=f(Cu)) = 37kpa  
 
 # Aug. 12, 2002  Feng Xiong
 # 														 Boris Jeremic (@ucdavis.edu)

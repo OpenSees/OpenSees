@@ -310,7 +310,7 @@ while ((ok == 0) and (controlDisp < maxU)):
         ops.test("NormDispIncr", 1.0e-8, 10, 0)
         ops.algorithm("Newton")
 
-# Print a message to indicate if analysis succesfull or not
+# Print a message to indicate if analysis successful or not
 if (ok == 0):
     print("\nPushover analysis completed SUCCESSFULLY\n")
 else:

@@ -1,6 +1,6 @@
 # A procedure for performing section analysis (only does
 # moment-curvature, but can be easily modified to do any mode
-# of section reponse.
+# of section response.
 #
 # Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 # Date: June 2017
