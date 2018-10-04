@@ -35,7 +35,10 @@
 // What: "@(#) Timer.h, revA"
 
 #include<Timer.h>
+
 #include <bool.h>
+
+#ifndef TIMER_USE_MPIWTIME
 
 #ifdef NOW
 extern "C" int getrusage(int who, struct rusage *rusage);
@@ -49,14 +52,21 @@ extern "C" int getrusage(int who, struct rusage *rusage);
 #define CLK_TCK sysconf(_SC_CLK_TCK)
 #endif
 
+#else  // USING TIMER_USE_MPIWTIME 
+#include <mpi.h>
+#endif  //TIMER_USE_MPIWTIME
+
+
 Timer::Timer() 
 {
+#ifndef TIMER_USE_MPIWTIME
 #ifdef _WIN32
     // fill in later
-#else    
+#else    // Not _WIN32
     r1us = &r1usage;
     r2us = &r2usage;
-#endif
+#endif // _WIN32
+#endif // TIMER_USE_MPIWTIME
 }
 
 Timer::~Timer()
@@ -67,68 +77,88 @@ Timer::~Timer()
 void 
 Timer::start(void)
 {
+#ifdef TIMER_USE_MPIWTIME
+    t1 = MPI_Wtime();
+#else // not TIMER_USE_MPIWTIME
 #ifdef _WIN32
-	SYSTEMTIME st;
-	GetSystemTime(&st);
-	opserr << "Timer::start (hr:min:millisec): " << (int)st.wHour << ":" << (int)st.wMinute << ":" << (int)st.wMilliseconds << endln;
-#else        
+    SYSTEMTIME st;
+    GetSystemTime(&st);
+    opserr << "Timer::start (hr:min:millisec): " << (int)st.wHour << ":" << (int)st.wMinute << ":" << (int)st.wMilliseconds << endln;
+#else // NOT _WIN_32
     t1 = times(&tmsstart);
     getrusage(0,r1us);
-#endif
+#endif // _WIN_32
+#endif // TIMER_USE_MPIWTIME
 }
 
 void 
 Timer::pause(void)
 {
+#ifdef TIMER_USE_MPIWTIME
+    t2 = MPI_Wtime();
+#else // not TIMER_USE_MPIWTIME
 #ifdef _WIN32
     // fill in later
-		SYSTEMTIME st;
-	GetSystemTime(&st);
-	opserr << "Timer::stop (hr:min:millisec): " << (int)st.wHour << ":" << (int)st.wMinute << ":" << (int)st.wMilliseconds << endln;
-#else        
+        SYSTEMTIME st;
+    GetSystemTime(&st);
+    opserr << "Timer::stop (hr:min:millisec): " << (int)st.wHour << ":" << (int)st.wMinute << ":" << (int)st.wMilliseconds << endln;
+#else // Not _WIN32
     t2 = times(&tmsend);
     getrusage(0,r2us);    
-#endif
+#endif // _WIN32
+#endif // TIMER_USE_MPIWTIME
 } 
 
 
 double
 Timer::getReal(void) const
 {
+#ifdef TIMER_USE_MPIWTIME
+    return t2 - t1;
+#else //Not TIMER_USE_MPIWTIME
 #ifdef _WIN32
     // fill in later
     return 0.0;
-#else        
+#else // Not _WIN32
     long clktck = CLK_TCK;    
     double Real = (t2-t1)/(double) clktck;
     return Real;
-#endif
+#endif //_WIN32
+#endif //TIMER_USE_MPIWTIME
 }    
 
 double
 Timer::getCPU(void) const
 {
+#ifdef TIMER_USE_MPIWTIME
+    return 0;
+#else //Not TIMER_USE_MPIWTIME
 #ifdef _WIN32
     // fill in later
     return 0.0;
-#else        
+#else // Not _WIN32
     long clktck = CLK_TCK;
     double CPU  = (tmsend.tms_utime - tmsstart.tms_utime)/(double) clktck;    
     return CPU;
-#endif    
+#endif //_WIN32
+#endif //TIMER_USE_MPIWTIME
 }    
 
 int
 Timer::getNumPageFaults(void) const
 {
+#ifdef TIMER_USE_MPIWTIME
+    return 0;
+#else //Not TIMER_USE_MPIWTIME
 #ifdef _WIN32
     // fill in later
     return 0;
-#else        
+#else // Not _WIN32
     int r2yes = r2us->ru_majflt;
     int r1yes = r1us->ru_majflt;
     return r2yes-r1yes;
-#endif
+#endif //_WIN32
+#endif //TIMER_USE_MPIWTIME
 }    
 
 
@@ -136,9 +166,12 @@ Timer::getNumPageFaults(void) const
 void 
 Timer::Print(OPS_Stream &s) const
 {
+#ifdef TIMER_USE_MPIWTIME
+    s << "TIME(sec) Real: " << getReal() << endln;
+#else //TIMER_USE_MPIWTIME
 #ifdef _WIN32
     // fill in later
-#else        
+#else // Not _WIN32        
     long clktck = CLK_TCK;
     double Real = (t2-t1)/(double) clktck;
     double CPU  = (tmsend.tms_utime - tmsstart.tms_utime)/(double) clktck;
@@ -173,7 +206,8 @@ Timer::Print(OPS_Stream &s) const
     
     s << "Swapped: " << r2no-r1no << " Max Res Set Size: " << r2yes << endln;
     s << endln;
-#endif    
+#endif    //_WIN32
+#endif    //TIMER_USE_MPIWTIME
 }    
 
 OPS_Stream &operator<<(OPS_Stream &s, const Timer &E)
