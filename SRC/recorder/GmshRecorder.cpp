@@ -415,7 +415,7 @@ int
 GmshRecorder::write_node_data()
 {
     
-    int rank = 1;
+    int rank = 0;
 
 #ifdef _PARALLEL_PROCESSING
     rank = theMachineBroker->getPID();  
