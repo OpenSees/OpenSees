@@ -1514,7 +1514,7 @@ ZeroLength::setUp( int Nd1, int Nd2,
     if ( x.Size() != 3 || yp.Size() != 3 )
 	opserr << "FATAL ZeroLength::setUp - incorrect dimension of orientation vectors\n";
 
-    // establish orientation of element for the tranformation matrix
+    // establish orientation of element for the transformation matrix
     // z = x cross yp
     Vector z(3);
     z(0) = x(1)*yp(2) - x(2)*yp(1);

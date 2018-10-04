@@ -252,7 +252,7 @@ TclModelBuilder_addTwentyNodeBrick(ClientData clientData, Tcl_Interp *interp,
 
 
 
-  // if get here we have sucessfully created the element and added it to the domain
+  // if get here we have successfully created the element and added it to the domain
 
   return TCL_OK;
 

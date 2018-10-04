@@ -219,19 +219,19 @@ int OPS_BackgroundMesh()
 
 	    // node coord
 	    if (OPS_GetDoubleInput(&ndm, &p1(0)) < 0) {
-		opserr<<"WARNING: failed to get cooridnates for first point\n";
+		opserr<<"WARNING: failed to get coordinates for first point\n";
 		return -1;
 	    }
 	    if (OPS_GetDoubleInput(&ndm, &p2(0)) < 0) {
-		opserr<<"WARNING: failed to get cooridnates for second point\n";
+		opserr<<"WARNING: failed to get coordinates for second point\n";
 		return -1;
 	    }
 	    if (OPS_GetDoubleInput(&ndm, &p3(0)) < 0) {
-		opserr<<"WARNING: failed to get cooridnates for third point\n";
+		opserr<<"WARNING: failed to get coordinates for third point\n";
 		return -1;
 	    }
 	    if (OPS_GetDoubleInput(&ndm, &p4(0)) < 0) {
-		opserr<<"WARNING: failed to get cooridnates for fouth point\n";
+		opserr<<"WARNING: failed to get coordinates for fourth point\n";
 		return -1;
 	    }
 
@@ -251,15 +251,15 @@ int OPS_BackgroundMesh()
 
 	    // node coord
 	    if (OPS_GetDoubleInput(&ndm, &p1(0)) < 0) {
-		opserr<<"WARNING: failed to get cooridnates for first point\n";
+		opserr<<"WARNING: failed to get coordinates for first point\n";
 		return -1;
 	    }
 	    if (OPS_GetDoubleInput(&ndm, &p2(0)) < 0) {
-		opserr<<"WARNING: failed to get cooridnates for second point\n";
+		opserr<<"WARNING: failed to get coordinates for second point\n";
 		return -1;
 	    }
 	    if (OPS_GetDoubleInput(&ndm, &p3(0)) < 0) {
-		opserr<<"WARNING: failed to get cooridnates for third point\n";
+		opserr<<"WARNING: failed to get coordinates for third point\n";
 		return -1;
 	    }
 
@@ -278,11 +278,11 @@ int OPS_BackgroundMesh()
 
 	    // node coord
 	    if (OPS_GetDoubleInput(&ndm, &p1(0)) < 0) {
-		opserr<<"WARNING: failed to get cooridnates for first point\n";
+		opserr<<"WARNING: failed to get coordinates for first point\n";
 		return -1;
 	    }
 	    if (OPS_GetDoubleInput(&ndm, &p2(0)) < 0) {
-		opserr<<"WARNING: failed to get cooridnates for second point\n";
+		opserr<<"WARNING: failed to get coordinates for second point\n";
 		return -1;
 	    }
 
@@ -301,7 +301,7 @@ int OPS_BackgroundMesh()
 	    
 	    // node coord
 	    if (OPS_GetDoubleInput(&ndm, &p1(0)) < 0) {
-		opserr<<"WARNING: failed to get cooridnates for point\n";
+		opserr<<"WARNING: failed to get coordinates for point\n";
 		return -1;
 	    }
 	    
@@ -1679,7 +1679,7 @@ BackgroundMesh::moveParticles()
 		    double ux = disp(0);
 		    double uy = disp(1);
 
-		    // node cooridnates of original step
+		    // node coordinates of original step
 		    const Vector& crds = elenodes[2*j]->getCrds();
 		    x[j] = crds(0);
 		    y[j] = crds(1);
