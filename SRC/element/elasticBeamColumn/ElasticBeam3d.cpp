@@ -594,7 +594,7 @@ ElasticBeam3d::addInertiaLoadToUnbalance(const Vector &accel)
   const Vector &Raccel2 = theNodes[1]->getRV(accel);
 	
   if (6 != Raccel1.Size() || 6 != Raccel2.Size()) {
-    opserr << "ElasticBeam3d::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+    opserr << "ElasticBeam3d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     return -1;
   }
 

@@ -320,7 +320,7 @@ MyTruss::addInertiaLoadToUnbalance(const Vector &accel)
 #ifdef _G3DEBUG    
   if (nodalDOF != Raccel1.Size() || nodalDOF != Raccel2.Size()) {
     opserr <<"Truss::addInertiaLoadToUnbalance " <<
-      "matrix and vector sizes are incompatable\n";
+      "matrix and vector sizes are incompatible\n";
     return -1;
   }
 #endif
@@ -465,7 +465,7 @@ MyTruss::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroke
 int
 MyTruss::displaySelf(Renderer &theViewer, int displayMode, float fact)
 {
-    // check setDomain() was successfull
+    // check setDomain() was successful
     if (L == 0.0)
        return 0;
 

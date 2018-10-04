@@ -123,6 +123,6 @@ int TclModelBuilder_addActuatorCorot(ClientData clientData, Tcl_Interp *interp, 
         return TCL_ERROR;
     }
     
-    // if get here we have sucessfully created the corotActuator and added it to the domain
+    // if get here we have successfully created the corotActuator and added it to the domain
     return TCL_OK;
 }

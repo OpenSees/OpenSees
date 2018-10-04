@@ -219,6 +219,6 @@ int TclModelBuilder_addAdapter(ClientData clientData, Tcl_Interp *interp,  int a
         return TCL_ERROR;
     }
     
-    // if get here we have sucessfully created the adapter and added it to the domain
+    // if get here we have successfully created the adapter and added it to the domain
     return TCL_OK;
 }

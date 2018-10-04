@@ -22,7 +22,7 @@
 // $Date: 2011/03/10 22:51:21 $
 // $Source: /usr/local/cvs/OpenSees/SRC/element/shell/ShellMITC4Thermal.cpp,v $
 
-// Written: Leopoldo Tesser, Diego A. Talledo, Véronique Le Corvec
+// Written: Leopoldo Tesser, Diego A. Talledo, Vï¿½ronique Le Corvec
 //
 // Bathe MITC 4 four node shell element with membrane and drill
 // Ref: Dvorkin,Bathe, A continuum mechanics based four node shell
@@ -2145,7 +2145,7 @@ ShellMITC4Thermal::shapefn2d( double ss, double tt ,int i)
 	   case 4:
 		   shpVal = 0.25*(1-ss)*(1+tt);break;
 	   default:
-		   opserr<<"ShellMITC4Thermal::shapefn2d recieved an invalid i: "<<i <<endln ;
+		   opserr<<"ShellMITC4Thermal::shapefn2d received an invalid i: "<<i <<endln ;
 	   }
    return shpVal;
 }

@@ -146,7 +146,7 @@ class ElasticForceBeamColumn3d: public Element
   BeamIntegration *beamIntegr;
   int numSections;
   SectionForceDeformation *sections[maxNumSections];          // array of pointers to sections
-  CrdTransf *crdTransf;        // pointer to coordinate tranformation object 
+  CrdTransf *crdTransf;        // pointer to coordinate transformation object 
   // (performs the transformation between the global and basic system)
   double rho;                    // mass density per unit length
   
