@@ -157,6 +157,7 @@ extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
 extern  void *OPS_CatenaryCableElement(void);
 extern  void *OPS_ShellANDeS(void);
 extern  void *OPS_FourNodeTetrahedron(void);
+extern  void *OPS_LysmerTriangle(void);
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -1077,6 +1078,18 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if (strcmp(argv[1], "ShellANDeS") == 0) {
       void *theEle = OPS_ShellANDeS();
+      if (theEle != 0) {
+    theElement = (Element*)theEle;
+      } else {
+    opserr<<"tclelementcommand -- unable to create element of type : "
+    <<argv[1]<<endln;
+    return TCL_ERROR;
+      }
+  }
+
+
+  else if (strcmp(argv[1], "LysmerTriangle") == 0) {
+      void *theEle = OPS_LysmerTriangle();
       if (theEle != 0) {
     theElement = (Element*)theEle;
       } else {

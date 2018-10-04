@@ -514,6 +514,7 @@
 #define LOAD_TAG_ShellThermalAction       14 // L.Jiang [ SIF ]
 #define LOAD_TAG_NodalThermalAction       15 //L.Jiang [ SIF ]
 #define LOAD_TAG_ThermalActionWrapper     16 //L.Jiang [ SIF ]
+#define LOAD_TAG_LysmerVelocityLoader      17  //Jose Abell (UANDES)
 
 
 #define MAT_TAG_IsotropicLinElastic         1001
@@ -710,6 +711,7 @@
 #define ELE_TAG_EmbeddedBeamInterfaceL    182
 #define ELE_TAG_EmbeddedBeamInterfaceP    183
 #define ELE_TAG_EmbeddedEPBeamInterface   184
+#define ELE_TAG_LysmerTriangle            185
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
