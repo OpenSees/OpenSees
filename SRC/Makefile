@@ -420,6 +420,7 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/DamageRecorder.o \
 	$(FE)/recorder/RemoveRecorder.o \
 	$(FE)/recorder/PVDRecorder.o \
+	$(FE)/recorder/GmshRecorder.o \
 	$(FE)/recorder/MPCORecorder.o 
 
 
