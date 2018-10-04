@@ -722,6 +722,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/PathIndependentMaterial.o \
 	$(FE)/material/uniaxial/BackboneMaterial.o \
 	$(FE)/material/uniaxial/MinMaxMaterial.o \
+	$(FE)/material/uniaxial/TensionOnlyMaterial.o \
 	$(FE)/material/uniaxial/SimpleFractureMaterial.o \
 	$(FE)/material/uniaxial/InitStrainMaterial.o \
 	$(FE)/material/uniaxial/InitStressMaterial.o \

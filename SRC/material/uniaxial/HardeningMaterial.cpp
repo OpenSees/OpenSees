@@ -56,8 +56,8 @@ void* OPS_HardeningMaterial()
 	return 0;
     }
 
-    double data[5];
-    numdata = 5;
+    double data[4];
+    numdata = 4;
     if (OPS_GetDoubleInput(&numdata,data)) {
 	return 0;
     }
