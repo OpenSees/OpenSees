@@ -53,7 +53,7 @@ class FEM_ObjectBroker;
 class TriSurfaceLoad : public Element
 {
   public:
-    TriSurfaceLoad(int tag, int Nd1, int Nd2, int Nd3,  double pressure); 
+    TriSurfaceLoad(int tag, int Nd1, int Nd2, int Nd3,  double pressure, double rhoH_=0); 
     TriSurfaceLoad();
     ~TriSurfaceLoad();
 
@@ -74,6 +74,7 @@ class TriSurfaceLoad : public Element
     // residual information    
     const Matrix &getTangentStiff(void);
     const Matrix &getInitialStiff(void);    
+    const Matrix &getMass(void);    
 
     void zeroLoad(void);	
     int addLoad(ElementalLoad *theLoad, double loadFactor);
@@ -100,11 +101,13 @@ class TriSurfaceLoad : public Element
     int UpdateBase(double Xi, double Eta);
 
     ID  myExternalNodes;      // contains the tags of the end nodes
-    Matrix tangentStiffness;  // Tangent Stiffness matrix
+    static Matrix tangentStiffness;  // Tangent Stiffness matrix
+    static Matrix mass;  // mass matrix
+    static Matrix damp;  // damping matrix
     Vector internalForces;    // vector of Internal Forces
-    Vector theVector;         // vector to return the residual
 
     double my_pressure;       // pressure applied to surface of element
+    double rhoH;              // A density per unit area to compute a mass matrix (lumped)
 
     Node *theNodes[SL_NUM_NODE];
     
