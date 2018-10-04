@@ -61,7 +61,7 @@ YieldSurface_BC::YieldSurface_BC(int tag, int classtag, YS_Evolution &model,
 
 // el-tawil unsym .. and probably others
 // cause problem by sending 0, 0 to the base class constructor
-// => tighly coupled - bad practice.
+// => tightly coupled - bad practice.
 // Since that is necessary... be aware
 YieldSurface_BC::YieldSurface_BC(int tag, int classtag, YS_Evolution &model,
 								double capx, double capy)
@@ -79,7 +79,7 @@ isLoading(true), ele_Tag(-1), ele_Location(-1)
    capXdim = capX_orig;
    capYdim = capY_orig;
    ele_Location  =-1;
-   ele_Tag = -1;   
+   ele_Tag = -1;
 }
 
 
@@ -113,7 +113,7 @@ YieldSurface_BC::~YieldSurface_BC()
 int YieldSurface_BC::commitState(Vector &force)
 {
 //	return 0;
-	
+
 	if(dimension == 1)
 	{
 	 	capXdim = capX_orig*hModel->getTrialIsotropicFactor(0);
@@ -475,7 +475,7 @@ void YieldSurface_BC::toLocalSystem (Matrix &eleMatrix, double &x, double &y, do
 }
 
 //////////////////////////////////////////////////////////////////////
-// Transform to Element Syatem
+// Transform to Element System
 //////////////////////////////////////////////////////////////////////
 
 void YieldSurface_BC::toElementSystem(Vector &eleVector, double &x, bool dimensionalize, bool signMult)

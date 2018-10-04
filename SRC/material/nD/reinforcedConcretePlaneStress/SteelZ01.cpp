@@ -416,7 +416,7 @@ void SteelZ01::determineTrialState (double dStrain)
 				upPath();
 			}
 		}
-		else // continue on inital envelope
+		else // continue on initial envelope
 		{
 			initialEnvelope();
 		}

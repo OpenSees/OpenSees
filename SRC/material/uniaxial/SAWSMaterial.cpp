@@ -144,7 +144,7 @@ int
 SAWSMaterial::setTrialStrain(double strain, double strainRate)
 {
 
-  // Set the initial parameters from the commited stage
+  // Set the initial parameters from the committed stage
   DISPL  = strain;
   LPATH  = cLPATH;
   LPPREV = cLPPREV;

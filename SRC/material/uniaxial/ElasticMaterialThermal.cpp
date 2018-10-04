@@ -94,7 +94,7 @@ OPS_ElasticMaterialThermal(void)
       return 0;
 	}
 	}
- //opserr<< "receieved alpha"<<dData[1]<<endln;
+ //opserr<< "received alpha"<<dData[1]<<endln;
 
   // Parsing was successful, allocate the material
   theMaterial = new ElasticMaterialThermal(iData[0], dData1[0], dData1[1], dData2[0], dData2[1], softindex);
@@ -140,7 +140,7 @@ ThermalElongation(0),Temp(0)
 			redfactors[i] = ConcreteRedfactors[i];
 	}
 	else {
-		opserr << "ElasticMaterialThermal " << this->getTag() << " recieves an invalid softening index" << endln;
+		opserr << "ElasticMaterialThermal " << this->getTag() << " receives an invalid softening index" << endln;
 	}
 		
 }

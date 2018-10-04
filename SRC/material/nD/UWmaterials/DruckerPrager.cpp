@@ -247,7 +247,7 @@ void DruckerPrager::initialize( )
 
     // 4th order Deviatoric Tensor
     // Note:  this is the contravariant form!
-    //        useable for s^a = 2G * IIdev^ab * epsilon_b
+    //        usable for s^a = 2G * IIdev^ab * epsilon_b
     // (Need a different form for s^a = IIdev ^a_b * sigma^a)
     mIIdev.Zero();
     mIIdev(0,0) = two3;

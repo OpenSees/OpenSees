@@ -193,7 +193,7 @@ protected:
 	double mC_MB;      // constant to calculate Mb for dense of critical states
 	double mMd;
 	double mMcur;       // current stress ratio
-	Vector mTracker;        // traker of internal varables;
+	Vector mTracker;        // tracker of internal variables;
 
 	double	mTolF;			// max drift from yield surface
 	double	mTolR;			// tolerance for Newton iterations
@@ -208,7 +208,7 @@ protected:
 	static Matrix mIIco;		// 4th-order identity tensor, covariant
 	static Matrix mIIcon;		// 4th-order identity tensor, contravariant
 	static Matrix mIImix;		// 4th-order identity tensor, mixed variant
-	static Matrix mIIvol;		// 4th-order volumetric tensor, IIvol = I1 tensor I1 
+	static Matrix mIIvol;		// 4th-order volumetric tensor, IIvol = I1 tensor I1
 	static Matrix mIIdevCon;	// 4th order deviatoric tensor, contravariant
 	static Matrix mIIdevMix;	// 4th order deviatoric tensor, mixed variant
 	static Matrix mIIdevCo;		// 4th order deviatoric tensor, covariant

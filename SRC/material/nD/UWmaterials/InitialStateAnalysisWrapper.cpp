@@ -73,7 +73,7 @@ OPS_InitialStateAnalysisWrapperMaterial(void)
 		return 0;
 	}
 
-	// parsing was sucessfull, allocate the material
+	// parsing was successful, allocate the material
   	theMaterial = new InitialStateAnalysisWrapper(iData[0], *theMainMaterial, iData[2]);
   
   	if (theMaterial == 0) {

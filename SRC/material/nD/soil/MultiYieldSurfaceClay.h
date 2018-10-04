@@ -224,10 +224,10 @@ private:
 	static T2Vector dStrainRate;
 	static T2Vector dContactStress;
 
-// uncommited conditional sensitivity
+// uncommitted conditional sensitivity
 	double * dMultiSurfaceCenter;
 
-// commited unconditional sensitivity
+// committed unconditional sensitivity
 
 	double * dCommittedMultiSurfaceSize;
 //	double * dCommittedMultiSurfaceElastPlastModul;

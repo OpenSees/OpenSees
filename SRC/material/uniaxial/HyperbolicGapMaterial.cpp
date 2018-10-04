@@ -63,7 +63,7 @@ OPS_HyperbolicGapMaterial()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 6) {
-        opserr << "WARNING: Insufficient arguements\n";
+        opserr << "WARNING: Insufficient arguments\n";
         return 0;
     }
 

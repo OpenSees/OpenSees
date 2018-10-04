@@ -26,7 +26,7 @@
 // Written: 		Jian Zhao, Iowa State University 		04/2004
 // Revision:		Jian Zhao, University of Wisconsin, Milwaukee 		04/2006
 //
-// Description: This file contains the class defination for Uniaxial material Bond_SP01. 
+// Description: This file contains the class definition for Uniaxial material Bond_SP01. 
 //		Bond_SP01: Strain penetration of rebars at footings w/o bond damage.
 /* *********************************************************************** **
 ** Nonlinear material model with Menegoto-Pinto type functions to define   **
