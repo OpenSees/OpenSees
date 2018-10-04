@@ -69,6 +69,10 @@ class ManzariDafalias3D : public ManzariDafalias
   //send back the state parameters
   const Vector getState();
 
+
+  const Vector& getEStrain();
+  const Vector& getPStrain();
+
   private :
 
   static Vector mSigma_M  ; // mSigma with continuum mechanic sign convention
