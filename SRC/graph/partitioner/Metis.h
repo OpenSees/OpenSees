@@ -78,7 +78,7 @@ class Metis : public GraphPartitioner, public GraphNumberer
 		       int *adjwgt, int *wgtflag, int *numflag, int *nparts, 
 		       int *options, int *edgecut, int *part, bool whichToUse);
 
-    // the follwing methods are if the object is to be used as a numberer
+    // the following methods are if the object is to be used as a numberer
     const ID &number(Graph &theGraph, int lastVertex = -1);
     const ID &number(Graph &theGraph, const ID &lastVertices);
 

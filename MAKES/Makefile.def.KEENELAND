@@ -18,7 +18,7 @@
 # in the .basrc_user, or .cshrc_user you need to add the following
 # PUT YOUR HOME DIRECTOREY HERE IF NOT THE DEFAULT ONE IN 
 
-# NOTE DOES NOT BUILD APPLICATION WHICH INLUDE MUMPS
+# NOTE DOES NOT BUILD APPLICATION WHICH INCLUDE MUMPS
 
 HOME  = /nics/b/home/fmckenna/keenland
 

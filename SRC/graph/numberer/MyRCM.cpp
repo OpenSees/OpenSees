@@ -78,7 +78,7 @@ MyRCM::setMinDegreeFlag(bool flag)
 //    Method to perform the Reverse Cuthill-mcKenn numbering scheme. The
 // user can supply a starting vertex, if none is provided the first vertex
 // returned by the iter is used. If minDegree flag is set to true, at each 
-// level set the adjacent vertices not yet added from a vertex in the previos
+// level set the adjacent vertices not yet added from a vertex in the previous
 // level set are added in descending degree. The result of the numbering scheme
 // is returned in an ID which contains the references for the vertices. If not
 // enough memory to allocate a new ID an ID of size 0 is returned.
@@ -174,7 +174,7 @@ MyRCM::number(Graph &theGraph, int startVertex)
 	
 	currentMark--;
 
-	// check to see if graph is disconneted
+	// check to see if graph is disconnected
 	
 	if ((currentMark == nextMark) && (currentMark >= 0)) {
 	    opserr << "WARNING:  MyRCM::number - Disconnected graph\n";
@@ -318,7 +318,7 @@ MyRCM::number(Graph &theGraph, const ID &startVertices)
 	
 	    currentMark--;
 
-	    // check to see if graph is disconneted
+	    // check to see if graph is disconnected
 	
 	    if (currentMark == nextMark && numFromStart < startVerticesSize) {
 		// loop over iter till we get a vertex not yet included
@@ -368,7 +368,7 @@ MyRCM::number(Graph &theGraph, const ID &startVertices)
 	
 	    currentMark--;
 
-	    // check to see if graph is disconneted
+	    // check to see if graph is disconnected
 	
 	    if ((currentMark == nextMark) && (currentMark >= 0)) {
 	    
@@ -392,7 +392,7 @@ MyRCM::number(Graph &theGraph, const ID &startVertices)
     }
 
     
-    // now we numebr based on minStartVErtexTag
+    // now we number based on minStartVErtexTag
 
     // we first set the Tmp of all vertices to -1, indicating
     // they have not yet been added.
@@ -449,7 +449,7 @@ MyRCM::number(Graph &theGraph, const ID &startVertices)
 	
 	currentMark--;
 
-	// check to see if graph is disconneted
+	// check to see if graph is disconnected
 	
 	if (currentMark == nextMark && numFromStart < startVerticesSize) {
 	    // loop over iter till we get a vertex not yet included
@@ -501,7 +501,7 @@ MyRCM::number(Graph &theGraph, const ID &startVertices)
 	
 	currentMark--;
 	
-	// check to see if graph is disconneted
+	// check to see if graph is disconnected
 	
 	if ((currentMark == nextMark) && (currentMark >= 0)) {
 	    opserr << "WARNING:  MyRCM::number - Disconnected graph ";

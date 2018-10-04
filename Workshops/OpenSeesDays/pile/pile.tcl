@@ -68,7 +68,7 @@ set phi    36.0; # soil internal friction angle (degrees)
 set Gsoil  150000; # soil shear modulus at pile tip (kPa)
 
 set puSwitch 1 ; # select pult definition method for p-y curves 1: API 2 Brich
-set kSwitch 1; # variation in coefficent of subgrade reaction with depth for p-y curves: 1 API, 2 modAPI
+set kSwitch 1; # variation in coefficient of subgrade reaction with depth for p-y curves: 1 API, 2 modAPI
 set gwtSwitch 1; # effect of ground water on subgrade reaction modulus for p-y curves: 1 above GWT, 2 below
 
 #----------------------------------------------------------

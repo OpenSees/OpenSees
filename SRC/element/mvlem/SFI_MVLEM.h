@@ -1,5 +1,5 @@
 // Code written/implemented by:	Kristijan Kolozvari (kkolozvari@fullerton.edu)
-//								California State University, Fullerton 
+//								California State University, Fullerton
 //								Kutay Orakcal
 //								Bogazici University, Istanbul, Turkey
 //								John Wallace
@@ -8,27 +8,27 @@
 // Created: 07/2015
 //
 // Description: This file contains the class definition for Shear-Flexure
-// Interaction Multiple Vertical Line Element Model - SFI_MVLEM. The element 
-// incorporates interaction between axial/flexural and shear responses under 
-// cyclic loading conditions by incorporating RC panel behavior based on the 
-// fixed-strut angle approach (nDMaterial FSAM) into a two-dimensional fiber-based 
-// MVLEM model. The element generates automatically m internal nodes with 1 DOF 
-// at each macro-fiber (theNodesX with negative Tags) and adds them to the 
-// domain. These internal DOFs are used to enforce equilibrium equation sigmaX=0 
-// at each element macro-fiber (RC panel) in order to complete its strain field; 
+// Interaction Multiple Vertical Line Element Model - SFI_MVLEM. The element
+// incorporates interaction between axial/flexural and shear responses under
+// cyclic loading conditions by incorporating RC panel behavior based on the
+// fixed-strut angle approach (nDMaterial FSAM) into a two-dimensional fiber-based
+// MVLEM model. The element generates automatically m internal nodes with 1 DOF
+// at each macro-fiber (theNodesX with negative Tags) and adds them to the
+// domain. These internal DOFs are used to enforce equilibrium equation sigmaX=0
+// at each element macro-fiber (RC panel) in order to complete its strain field;
 // for details see referenced publications.
 //
 // References:
-// 1) Kolozvari K., Orakcal K., and Wallace J. W. (2015). ”Modeling of Cyclic 
-// Shear-Flexure Interaction in Reinforced Concrete Structural Walls. I: Theory”, 
-// ASCE Journal of Structural Engineering, 141(5), 04014135 
+// 1) Kolozvari K., Orakcal K., and Wallace J. W. (2015). ”Modeling of Cyclic
+// Shear-Flexure Interaction in Reinforced Concrete Structural Walls. I: Theory”,
+// ASCE Journal of Structural Engineering, 141(5), 04014135
 // http://dx.doi.org/10.1061/(ASCE)ST.1943-541X.0001059
-// 2) Kolozvari K., Tran T., Orakcal K., and Wallace, J.W. (2015). ”Modeling 
-// of Cyclic Shear-Flexure Interaction in Reinforced Concrete Structural Walls. 
-// II: Experimental Validation”, ASCE Journal of Structural Engineering, 141(5), 
+// 2) Kolozvari K., Tran T., Orakcal K., and Wallace, J.W. (2015). ”Modeling
+// of Cyclic Shear-Flexure Interaction in Reinforced Concrete Structural Walls.
+// II: Experimental Validation”, ASCE Journal of Structural Engineering, 141(5),
 // 04014136 http://dx.doi.org/10.1061/(ASCE)ST.1943-541X.0001083
-// 3) Kolozvari K. (2013). “Analytical Modeling of Cyclic Shear-Flexure 
-// Interaction in Reinforced Concrete Structural Walls”, PhD Dissertation, 
+// 3) Kolozvari K. (2013). “Analytical Modeling of Cyclic Shear-Flexure
+// Interaction in Reinforced Concrete Structural Walls”, PhD Dissertation,
 // University of California, Los Angeles.
 //
 // Source: /usr/local/cvs/OpenSees/SRC/element/SFI_MVLEM/SFI_MVLEM.h
@@ -52,49 +52,49 @@ public:
 
 	// constructors
 	SFI_MVLEM(int tag,					// element tag
-		int Nd1, int Nd2,				// end node tags          
+		int Nd1, int Nd2,				// end node tags
 		NDMaterial **Materials,			// array of material tags
 		double *Thickness,				// array of macro-fiber thickness
 		double *Width,					// array of macro-fiber widths
 		int mm,							// number of macro-fibers (RC panels)
-		double cc);						// center of rotation					
+		double cc);						// center of rotation
 
 	SFI_MVLEM();
 
 	// destructor
 	~SFI_MVLEM();
 
-	// public methods to obtain information about dof & comectivity
+	// public methods to obtain information about dof & connectivity
 	int getNumExternalNodes(void) const;
 	const ID &getExternalNodes(void);
 	Node **getNodePtrs(void);
 	int getNumDOF(void);
 	void setDomain(Domain *theDomain);
 
-	// public methods to set the state of the element    
+	// public methods to set the state of the element
 	int commitState(void);
-	int revertToLastCommit(void);        
-	int revertToStart(void);        
+	int revertToLastCommit(void);
+	int revertToStart(void);
 	int update(void);
 
-	// public methods to obtain stiffness, mass, damping and residual information    
-	const Matrix &getTangentStiff(void); 
+	// public methods to obtain stiffness, mass, damping and residual information
+	const Matrix &getTangentStiff(void);
 	const Matrix &getInitialStiff(void);
-	const Matrix &getDamp(void);    
-	const Matrix &getMass(void);    
+	const Matrix &getDamp(void);
+	const Matrix &getMass(void);
 
-	void zeroLoad(void);	
+	void zeroLoad(void);
 	int addLoad(ElementalLoad *theLoad, double loadFactor);
-	int addInertiaLoadToUnbalance(const Vector &accel);    
+	int addInertiaLoadToUnbalance(const Vector &accel);
 	const Vector &getResistingForce(void);
 	const Vector &getResistingForceIncInertia(void);
 
-	// public methods for output    
+	// public methods for output
 	int sendSelf(int commitTag, Channel &theChannel);
 	int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 	int displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode);
 
-	void Print(OPS_Stream &s, int flag =0);    
+	void Print(OPS_Stream &s, int flag =0);
 	Response *setResponse(const char **argv, int argc, OPS_Stream &s);
 	int getResponse(int responseID, Information &eleInformation);
 
@@ -111,7 +111,7 @@ private:
 	// private attributes - a copy for each object of the class
 
 	// input variables
-	Node *theNodes[2];					// external node pointers          
+	Node *theNodes[2];					// external node pointers
 	Node **theNodesX;					// array of internal node pointers
 	Node **theNodesALL;					// array of ALL node pointers
 	Node *theNd1;						// pointer to bottom node
@@ -141,13 +141,13 @@ private:
 	double *Fx;							// macro-fiber axial force in X direction
 	double *Fy;							// macro-fiber axial force in Y direction
 	double *Fxy;						// macro-fiber shear force in (in horizontal plane)
-	double *Dx;							// macro-fiber axial deformation in X direction					
+	double *Dx;							// macro-fiber axial deformation in X direction
 	double *Dy;							// macro-fiber axial deformation in Y direction
 	double *Dxy;						// macro-fiber shear deformation (in horizontal plane)
 	double *SFI_MVLEMStrainX;			// macro-fiber axial strain in X direction (epsX)
 	double *SFI_MVLEMStrainY;			// macro-fiber axial strain in Y direction (epsY)
 	double *SFI_MVLEMStrainXY;			// macro-fiber shear strain (gammaXY)
-	double *SFI_MVLEMStrain;			// macro-fiber strains 
+	double *SFI_MVLEMStrain;			// macro-fiber strains
 	double *Dens;						// macro-fiber densities
 
 	// for recorders
@@ -157,7 +157,7 @@ private:
 	// class wide matrices
 	Matrix SFI_MVLEMK;					// stiffness
 	Matrix SFI_MVLEMD;					// damping
-	Matrix SFI_MVLEMM;					// mass 
+	Matrix SFI_MVLEMM;					// mass
 	Vector SFI_MVLEMR;					// force
 
 };

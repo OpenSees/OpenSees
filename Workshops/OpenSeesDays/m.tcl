@@ -7,7 +7,7 @@ set fy 60.0;      # Yield stress
 set E 30000.0;    # Young's modulus
 uniaxialMaterial Steel01  3  $fy $E 0.01
 
-# set some paramaters
+# set some parameters
 set width 15
 set depth 24 
 set cover  1.5

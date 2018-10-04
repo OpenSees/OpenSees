@@ -88,7 +88,7 @@ private:
 	ConstraintFunction *theConstraintFunction;
 
 	double * gradient;
-	double valueOfObjectiveFuction;
+	double valueOfObjectiveFunction;
 
 	int maxNumberOfIterations;
 	int ii; //number of steps

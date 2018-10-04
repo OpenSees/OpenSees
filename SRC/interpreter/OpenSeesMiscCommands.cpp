@@ -1300,7 +1300,7 @@ int OPS_RigidDiaphragm()
 
 int OPS_addElementRayleigh()
 {
-    // make sure corect number of arguments on command line
+    // make sure correct number of arguments on command line
     if (OPS_GetNumRemainingInputArgs() < 5) {
 	opserr << "WARNING insufficient arguments\n";
 	opserr << "Want: setElementRayleighFactors elementTag?  alphaM? $betaK? $betaKinit? $betaKcomm? \n";
@@ -1370,7 +1370,7 @@ int OPS_mesh()
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
-    // make sure corect number of arguments on command line
+    // make sure correct number of arguments on command line
     if (OPS_GetNumRemainingInputArgs() < 1) {
 	opserr << "WARNING insufficient arguments\n";
 	opserr << "Want: mesh type? ...>\n";
@@ -1403,7 +1403,7 @@ int OPS_remesh()
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
-    // make sure corect number of arguments on command line
+    // make sure correct number of arguments on command line
     if (OPS_GetNumRemainingInputArgs() < 1) {
 	opserr << "WARNING insufficient arguments\n";
 	opserr << "Want: mesh type? ...>\n";

@@ -588,7 +588,7 @@ int OPS_doBlock2D()
     }
 
     if (OPS_GetNumRemainingInputArgs() < 7) {
-	opserr << "WARNING incorrect numer of args :block2D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
+	opserr << "WARNING incorrect number of args :block2D numX? numY? startNode? startEle? eleType? eleArgs? coords?";
 	return -1;
     }
 
@@ -931,7 +931,7 @@ int OPS_doBlock3D()
     if (theDomain == 0) return -1;
 
     if (OPS_GetNumRemainingInputArgs() < 8) {
-	opserr << "WARNING incorrect numer of args :block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs? coords?";
+	opserr << "WARNING incorrect number of args :block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs? coords?";
 	return -1;
     }
 

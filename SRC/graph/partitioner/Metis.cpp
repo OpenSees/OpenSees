@@ -249,7 +249,7 @@ Metis::partition(Graph &theGraph, int numPart)
 
     if (vertexPtr == 0) {
       opserr << "WARNING Metis::partition - No partitioning done";
-      opserr << " Metis requires consequtive Vertex Numbering\n";
+      opserr << " Metis requires consecutive Vertex Numbering\n";
 
       delete [] options;
       delete [] partition;
@@ -351,7 +351,7 @@ Metis::partitionGraph(int *nvtxs, int *xadj, int *adjncy, int *vwgt,
                       int *options, int *edgecut, int *part, bool whichToUse)
 {
   // which to use -> if true use edge cut partitinioning, else uses communication
-  // based partition, standard aplications , uniformly mesh regions need use the edge-cut
+  // based partition, standard applications, uniformly mesh regions need use the edge-cut
   // first one works fine second is weird
   if (whichToUse) {
 #ifdef _USE_METIS_5p1
@@ -392,7 +392,7 @@ int
 Metis::partitionHexMesh(int* elmnts, int* epart, int* npart, int ne, int nn, int nparts, bool whichToUse)
 {
   // which to use -> if true use edge cut partitinioning, else uses communication
-  // based partition, standard aplications , uniformly mesh regions need use the edge-cut
+  // based partition, standard applications, uniformly mesh regions need use the edge-cut
   // first one works fine second is weird
   int numflag = 0;
   int edgecut = 0;
@@ -433,7 +433,7 @@ Metis::number(Graph &theGraph, int lastVertex)
   }
 
   if (checkOptions() == false) {
-    opserr << "ERROR:  Metis::number - chek options failed\n";
+    opserr << "ERROR:  Metis::number - check options failed\n";
     return *theRefResult;
   }
 
@@ -481,7 +481,7 @@ Metis::number(Graph &theGraph, int lastVertex)
 
     if (vertexPtr == 0) {
       opserr << "WARNING Metis::partition - No partitioning done";
-      opserr << " Metis requires consequtive Vertex Numbering\n";
+      opserr << " Metis requires consecutive Vertex Numbering\n";
 
       delete [] options;
       delete [] partition;
@@ -549,8 +549,8 @@ Metis::number(Graph &theGraph, int lastVertex)
   */
   opserr << "Metis::number -2\n";
   // we assign numbers now based on the partitions returned.
-  // each vertex in partion i is assigned a number less than
-  // thos in partion i+1: NOTE WE DON'T CARE WHAT THE NUMBERING IS
+  // each vertex in partition i is assigned a number less than
+  // those in partition i+1: NOTE WE DON'T CARE WHAT THE NUMBERING IS
   // WITHIN A PARTITION
   int count = 0;
   for (int i = 0; i < numPartitions; i++) {

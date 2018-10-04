@@ -1357,7 +1357,7 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   */
 
   // NOTE : DON'T do the above on theVariableTimeStepAnalysis
-  // as it and theTansientAnalysis are one in the same
+  // as it and theTransientAnalysis are one in the same
   if (theDatabase != 0)
     delete theDatabase;
 
@@ -1434,7 +1434,7 @@ wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   }
 
   // NOTE : DON'T do the above on theVariableTimeStepAnalysis
-  // as it and theTansientAnalysis are one in the same
+  // as it and theTransientAnalysis are one in the same
 
   theAlgorithm =0;
   theHandler =0;
@@ -1956,7 +1956,7 @@ printModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 								   
 
 // printNode():
-// function to print out the nodal information conatined in line
+// function to print out the nodal information contained in line
 //     print <filename> node <flag int> <int int int>
 // input: nodeArg: integer equal to arg count to node plus 1
 //        output: output stream to which the results are sent
@@ -3971,7 +3971,7 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
   }    
 
-  // get the tolerence first
+  // get the tolerance first
   double tol = 0.0;
   double tol2 = 0.0;
   double tolp = 0.0;
@@ -8366,7 +8366,7 @@ opsRecv(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 		if (myPID != otherPID)
 		MPI_Recv((void *)(&msgLength), 1, MPI_INT, otherPID, 0, MPI_COMM_WORLD, &status);
         else {
-	  opserr << "recv -pid pid? data? - " << otherPID << " cant receive from self!\n";
+	  opserr << "recv -pid pid? data? - " << otherPID << " can't receive from self!\n";
 	  return TCL_ERROR;
 	}
       else {

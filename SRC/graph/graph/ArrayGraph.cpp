@@ -78,13 +78,13 @@ ArrayGraph::~ArrayGraph()
 // Method to add a vertex to the graph. If the adjacency list
 // of the vertex is not empty the graph will first check to see all
 // vertices in the the the vertices adjacency list exist in the graph
-// before the vertex is added. It then checks if it neeeds a new array
+// before the vertex is added. It then checks if it needs a new array
 // and if so creates one, i.e. if the {\em arraySize} $=$ {\em
 // numVertex} it creates a new array, whose size is double the original
 // and copies the pointers to the vertices, before invoking {\em
 // delete()} on the old array. It now tries to add the vertex in the
 // array at location {\em vertexTag}. If this fails it adds at the first
-// empty location it comes to. Returns a 0 if successfull addition, a
+// empty location it comes to. Returns a 0 if successful addition, a
 // $-1$ otherwise and a message to opserr explaining the problem. \\ 
 
 
@@ -147,7 +147,7 @@ ArrayGraph::addVertex(Vertex *vertexPtr)
 
     } else {
 	
-	// we have to serach through the array till we find an empty spot
+	// we have to search through the array till we find an empty spot
 	
 	for (int i=0; i<sizeVertices; i++) 
 	    if (theVertices[i] == 0) {
@@ -203,7 +203,7 @@ ArrayGraph::getVertexPtr(int vertexTag)
 // {\em vertexTag} and {\em otherVertexTag} exist in the graph. If they
 // do not exist a $-1$ is returned, otherwise the method invokes {\em
 // addEdge()} on each of the corresponding vertices in the 
-// graph. Returns $0$ if sucessfull, a negative number if not.
+// graph. Returns $0$ if successful, a negative number if not.
 
 int 
 ArrayGraph::addEdge(int vertexTag, int otherVertexTag)

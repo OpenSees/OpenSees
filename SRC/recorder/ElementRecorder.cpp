@@ -60,8 +60,8 @@ void*
 OPS_ElementRecorder()
 {
     if (OPS_GetNumRemainingInputArgs() < 5) {
-        opserr << "WARING: recorder Element ";
-        opserr << "-ele <list elements> -file <fileName> -dT <dT> reponse";
+        opserr << "WARNING: recorder Element ";
+        opserr << "-ele <list elements> -file <fileName> -dT <dT> response";
         return 0;
     }
 
@@ -410,7 +410,7 @@ ElementRecorder::record(int commitTag, double timeStamp)
     //
     for (int i=0; i< numEle; i++) {
       if (theResponses[i] != 0) {
-	// ask the element for the reponse
+	// ask the element for the response
 	int res;
 	if (( res = theResponses[i]->getResponse()) < 0)
 	  result += res;
@@ -440,7 +440,7 @@ ElementRecorder::record(int commitTag, double timeStamp)
     theOutputHandler->write(*data);
   }
   
-  // succesfull completion - return 0
+  // successful completion - return 0
   return result;
 }
 
@@ -765,7 +765,7 @@ ElementRecorder::initialize(void)
   if (eleID != 0) {
 
     //
-    // if we have an eleID we know Reponse size so allocate Response holder & loop over & ask each element
+    // if we have an eleID we know Response size so allocate Response holder & loop over & ask each element
     //
 
     int eleCount = 0;
@@ -778,7 +778,7 @@ ElementRecorder::initialize(void)
       responseCount =1;
     }
 
-    // loop over ele & set Reponses
+    // loop over ele & set Responses
     for (i=0; i<numEle; i++) {
       Element *theEle = theDomain->getElement((*eleID)(i));
       if (theEle != 0) {
@@ -801,10 +801,10 @@ ElementRecorder::initialize(void)
     }
 
     //
-    // if we have an eleID we know Reponse size so allocate Response holder & loop over & ask each element
+    // if we have an eleID we know Response size so allocate Response holder & loop over & ask each element
     //
 
-    // allocate memory for Reponses & set to 0
+    // allocate memory for Responses & set to 0
     theResponses = new Response *[numEle];
     if (theResponses == 0) {
       opserr << "ElementRecorder::initialize() - out of memory\n";
@@ -814,7 +814,7 @@ ElementRecorder::initialize(void)
     for (int k=0; k<numEle; k++)
       theResponses[k] = 0;
 
-    // loop over ele & set Reponses
+    // loop over ele & set Responses
     for (i=0; i<numEle; i++) {
       Element *theEle = theDomain->getElement((*eleID)(i));
       if (theEle == 0) {
@@ -872,7 +872,7 @@ ElementRecorder::initialize(void)
     for (int k=0; k<numEle; k++)
       theResponses[k] = 0;
 
-    // loop over ele & set Reponses
+    // loop over ele & set Responses
     ElementIter &theElements = theDomain->getElements();
     Element *theEle;
 

@@ -79,7 +79,7 @@ FACE &
 View::transform(FACE &input)
 {
   // transform all the points by the transformation matrix
-  // remember that in previos pipeline all points were marked
+  // remember that in previous pipeline all points were marked
   MYPOINT *point;
   FOR_EACH(point, input.pointList) {
     point->Transform(&TMat);

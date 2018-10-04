@@ -177,7 +177,7 @@ typedef struct Namespace {
 				  * export patterns are registered. */
     int numExportPatterns;	 /* Number of export patterns currently
 				  * registered using "namespace export". */
-    int maxExportPatterns;	 /* Mumber of export patterns for which
+    int maxExportPatterns;	 /* Number of export patterns for which
 				  * space is currently allocated. */
     int cmdRefEpoch;		 /* Incremented if a newly added command
 				  * shadows a command for which this
@@ -1281,7 +1281,7 @@ typedef struct Interp {
  *			Tcl_Eval are done.
  * ERR_IN_PROGRESS:	Non-zero means an error unwind is already in
  *			progress. Zero means a command proc has been
- *			invoked since last error occured.
+ *			invoked since last error occurred.
  * ERR_ALREADY_LOGGED:	Non-zero means information has already been logged
  *			in $errorInfo for the current Tcl_Eval instance,
  *			so Tcl_Eval needn't log it (used to implement the
@@ -1301,7 +1301,7 @@ typedef struct Interp {
  *			when we first use the rand() or srand() functions.
  * SAFE_INTERP:		Non zero means that the current interp is a
  *			safe interp (ie it has only the safe commands
- *			installed, less priviledge than a regular interp).
+ *			installed, less privilege than a regular interp).
  * USE_EVAL_DIRECT:	Non-zero means don't use the compiler or byte-code
  *			interpreter; instead, have Tcl_EvalObj call
  *			Tcl_EvalEx. Used primarily for testing the

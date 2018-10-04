@@ -28,7 +28,7 @@
 // Revision: A
 //
 // Description: This file contains the function that is invoked
-// by the interpreter when the comand 'database' is invoked by the 
+// by the interpreter when the command 'database' is invoked by the 
 // user.
 //
 // What: "@(#) commands.C, revA"

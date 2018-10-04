@@ -909,7 +909,7 @@ OpenGlDevice::saveImageAsPNG(const char *fileName)
   if(!png_ptr) {
     delete [] image;
     fclose(fp);
-    cerr << "OpenGlDevice::saveImageAsPNG() - out of memery creating write structure\n";
+    cerr << "OpenGlDevice::saveImageAsPNG() - out of memory creating write structure\n";
     return -1;
   }
   
@@ -919,7 +919,7 @@ OpenGlDevice::saveImageAsPNG(const char *fileName)
 			     (png_infopp)NULL);
     delete [] image;
     fclose(fp);
-    cerr << "OpenGlDevice::saveImageAsPNG() - out of memery creating info structure\n";
+    cerr << "OpenGlDevice::saveImageAsPNG() - out of memory creating info structure\n";
 
     return -1;
   }

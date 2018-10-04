@@ -406,7 +406,7 @@ UniaxialMaterial objects in the BasicBuilder object.
 
 \noindent To construct a bilinear hysteretic model with pinching of force and
 deformation, damage due to ductility and energy, and degraded unloading 
-stiffness based on ductility. Points on the backbone are specifed by the
+stiffness based on ductility. Points on the backbone are specified by the
 arguments s1p, e1p, etc., where s indicates force, e indicates deformation,
 1 is the first point on the backbone (yield), 2 the second point, and 3 indicates
 an optional third point for a trilinear backbone. p indicates positive backbone
@@ -1396,7 +1396,7 @@ The groundMotion command is used to construct a GroundMotion object
 used by the ImposedMotionSP constraints in a MultipleSuuportExcitation
 object. The first argument to the groundMotion command, gMotionTag, is
 an integer tag which uniquely identifies the GroundMotion in the
-MultipleSupportExcitation. Folowing the tag is a type identifier,
+MultipleSupportExcitation. Following the tag is a type identifier,
 identifying the type of GroundMotion object to be constructed, and the
 specific arguments for each type. At present there are two valid
 strings for gMotionType: Plain and Interpolated.
@@ -1450,7 +1450,7 @@ InterpolatedGroundMotion.
 This command is used to construct an ImposedMotionSP constraint which
 is used to enforce the response of a dof, dirn, at a node, nodeTag, in
 the model. The response enforced at the node at any given time is
-obtained from the GroundMotion obejct associated with the
+obtained from the GroundMotion object associated with the
 constraint. This GroundMotion object is determined from the gMotionTag
 passed in the command. NOTE that the GroundMotion must be added to the
 MultipleSupportExcitation before the ImposedMotionSP. 
@@ -1620,7 +1620,7 @@ multi-point constraints into the system of equations.
 constraints to be enforced using the method of Lagrange multipliers. The alphaSP and
 alphaMP values are the factors used when adding the single-point and
 multi-point constraints into the system of equations. If no values are specified
-values of $1.0$ are assumed. Values other than $1.0$ are permited to offset numerical
+values of $1.0$ are assumed. Values other than $1.0$ are permitted to offset numerical
 roundoff problems. It should be
 noted that the resulting system of equations are not positive definite
 due to the introduction of zeroes on the diagonal by the constraint equations.
@@ -1803,7 +1803,7 @@ each iteration.
 To construct a NewtonLineSearch algorithm object which uses the Newton-Raphson
 method with line search to advance to the next time step. If the
 ratio between the residuals before and after the incremental update
-is greater than that specified by ratio, which should be betweeen 0.5
+is greater than that specified by ratio, which should be between 0.5
 and 0.8, the line search algorithm ala Crissfield is employed to try
 to improve the convergence. 
 
@@ -1977,7 +1977,7 @@ UMFPACK solver. \\
 \end{verbatim}
 }
 
-\noindent To construct a sparse symmetic positive definite system of
+\noindent To construct a sparse symmetric positive definite system of
 equation object which will be factored and solved during the analysis
 using a sparse solver developed at Stanford by Kincho Law.
 

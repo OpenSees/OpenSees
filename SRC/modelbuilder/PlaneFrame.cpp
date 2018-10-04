@@ -98,7 +98,7 @@ PlaneFrame::buildFE_Model(void)
     }
     
     //
-    // read in the model paramaters
+    // read in the model parameters
     // 	  :numNodes numElements numSP_Constraints Num MP_Constraints 
     //     numLoadCases
 

@@ -23,7 +23,7 @@ domain: - contains the classes for the domain. all in subdirectores:
         constraints - the SP_Constraint and MP_Constraint classes.
         subdomain - the Subdomain, ActorSubdomain and ShadowSubdomain
                 classes.
-        pattern - the abstact classes LoadPattern and TimeSeries and some
+        pattern - the abstract classes LoadPattern and TimeSeries and some
 		concrete classes.
         partitioner - the DomainPartitioner class.
         loadBalancer - the LoadBalancer class and some concrete
@@ -77,7 +77,7 @@ modelbuilder: - contains ModelBuilder class and some others. the
         subdirectory triangle contains TrianglePlaneStress class and the
         subdirectory Triangle contains J. Shewchucks triangle code.
 	
-	subdircetory tcl containts the TclModelBuilder.
+	subdircetory tcl contains the TclModelBuilder.
         
 tcl: - contains the stuff for the interpreter (tkAppInit.C, tkConfig.h
         tkMain.C, commands.C)
@@ -118,12 +118,12 @@ notes for holden:
   1) create a HoldenMachineBroker which starts processes on the
      alpha cluster.
 
-notes for millenium machines:
+notes for millennium machines:
   1) not yet working for CC compiler, need to bcopy() struct addr to
      addr_in
   2) the parallel domain decomposition is using ssh to start the
      remote processes, has to be set up so don't need to supply password -
-     this can be done from mill.cs - but not from any other millenium machine!
+     this can be done from mill.cs - but not from any other millennium machine!
      they must have some problem with ssh. talk to eric again.
      rsh would be nice! see if eric will allow rsh until fix ssh?
 

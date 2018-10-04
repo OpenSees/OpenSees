@@ -353,7 +353,7 @@ viscoplastic formulation is used.
 
 \noindent To construct a bilinear hysteretic model with pinching of force and
 deformation, damage due to ductility and energy, and degraded unloading 
-stiffness based on ductility. Points on the backbone are specifed by the
+stiffness based on ductility. Points on the backbone are specified by the
 arguments {\tt s1p}, {\tt e1p}, etc.,
 where {\tt s} indicates force, {\tt e} indicates deformation,
 {\tt 1} is the first point on the backbone (yield), {\tt 2} the second
@@ -643,7 +643,7 @@ dimensional material model assumed to have been previously defined.
 \end{verbatim}
 }
 The plate fiber material wrapper converts any three dimensional 
-material into a plate fiber material (by static condensation) appropiate
+material into a plate fiber material (by static condensation) appropriate
 for shell analysis.
 The argument {\tt matTag} is the material tag for a three 
 dimensional material model  assumed to have been previously defined.
@@ -959,7 +959,7 @@ which is optional (default is 0.0).
 \end{verbatim}
 }
 The plate fiber section takes any plate fiber material and by 
-thickness integration creates a plate section appropiate for shell analysis.
+thickness integration creates a plate section appropriate for shell analysis.
 The argument {\tt matTag} is the material tag for a plate
 fiber material assumed to have been previously defined. Finally,
 {\tt h} is the thickness of the plate section. Integration through the
@@ -1554,7 +1554,7 @@ which qudrilateral element is being used.  The text string {\em elementArgs}
 is a list of data parameters for said element.  This list may include, but is
 not limited to, a matTag number.
 
-The coordinates $\{x1,...,x9\}$ and $\{y1,...,y9\}$ define the coordiates
+The coordinates $\{x1,...,x9\}$ and $\{y1,...,y9\}$ define the coordinates
 of the block generation nodes in two dimensions, as seen in Figure~\ref{blocknodenumbering}.
 For three dimensional 
 problems $\{z1,...,z9\}$ are also used.  In all cases, only the first four(4) 
@@ -1598,7 +1598,7 @@ is a list of data parameters for said element.  This list may include, but is
 not limited to, a matTag number.
 
 The coordinates $\{x1,...,x27\}$, $\{y1,...,y27\}$ and $\{z1,...,z27\}$
-define the coordiates
+define the coordinates
 of the block generation nodes in three dimensions.  
 In all cases, only the first eight(8) 
 nodes are mandatory. Nodes $9-27$ are used to generate curved meshes.
@@ -1634,7 +1634,7 @@ The user specifies the xCoordinate of the nodes to be constrained and ndf (0,1)
 values. A $1$ specified for the i'th value indicates that the dof for
 the i'th degree-of-freedom is to be constrained, a $0$ that it is to be
 left unconstrained. The optional flag -tol is followed by the user defined 
-tolerence, a default of 1e-10 is used.
+tolerance, a default of 1e-10 is used.
 
 \subsection{The fixY Command}
 {\sf\small
@@ -1649,7 +1649,7 @@ The user specifies the yCoordinate of the nodes to be constrained and ndf (0,1)
 values. A $1$ specified for the i'th value indicates that the dof for
 the i'th degree-of-freedom is to be constrained, a $0$ that it is to be
 left unconstrained. The optional flag -tol is followed by the user defined 
-tolerence, a default of 1e-10 is used.
+tolerance, a default of 1e-10 is used.
 
 \subsection{The fixZ Command}
 {\sf\small
@@ -1664,7 +1664,7 @@ The user specifies the zCoordinate of the nodes to be constrained and ndf (0,1)
 values. A $1$ specified for the i'th value indicates that the dof for
 the i'th degree-of-freedom is to be constrained, a $0$ that it is to be
 left unconstrained. The optional flag -tol is followed by the user defined 
-tolerence, a default of 1e-10 is used.
+tolerance, a default of 1e-10 is used.
 
 
 \subsection{Types of TimeSeries and Args used in other commands}
@@ -1910,7 +1910,7 @@ The groundMotion command is used to construct a GroundMotion object
 used by the ImposedMotionSP constraints in a MultipleSuuportExcitation
 object. The first argument to the groundMotion command, gMotionTag, is
 an integer tag which uniquely identifies the GroundMotion in the
-MultipleSupportExcitation. Folowing the tag is a type identifier,
+MultipleSupportExcitation. Following the tag is a type identifier,
 identifying the type of GroundMotion object to be constructed, and the
 specific arguments for each type. At present there are two valid
 strings for gMotionType: Plain and Interpolated.
@@ -1964,7 +1964,7 @@ InterpolatedGroundMotion.
 This command is used to construct an ImposedMotionSP constraint which
 is used to enforce the response of a dof, dirn, at a node, nodeTag, in
 the model. The response enforced at the node at any given time is
-obtained from the GroundMotion obejct associated with the
+obtained from the GroundMotion object associated with the
 constraint. This GroundMotion object is determined from the gMotionTag
 passed in the command. NOTE that the GroundMotion must be added to the
 MultipleSupportExcitation before the ImposedMotionSP. 
@@ -2134,7 +2134,7 @@ multi-point constraints into the system of equations.
 constraints to be enforced using the method of Lagrange multipliers. The alphaSP and
 alphaMP values are the factors used when adding the single-point and
 multi-point constraints into the system of equations. If no values are specified
-values of $1.0$ are assumed. Values other than $1.0$ are permited to offset numerical
+values of $1.0$ are assumed. Values other than $1.0$ are permitted to offset numerical
 roundoff problems. It should be
 noted that the resulting system of equations are not positive definite
 due to the introduction of zeroes on the diagonal by the constraint equations.
@@ -2318,7 +2318,7 @@ each iteration.
 To construct a NewtonLineSearch algorithm object which uses the Newton-Raphson
 method with line search to advance to the next time step. If the
 ratio between the residuals before and after the incremental update
-is greater than that specified by ratio, which should be betweeen 0.5
+is greater than that specified by ratio, which should be between 0.5
 and 0.8, the line search algorithm ala Crisfield is employed to try
 to improve the convergence. 
 
@@ -2527,7 +2527,7 @@ UMFPACK solver. \\
 \end{verbatim}
 }
 
-\noindent To construct a sparse symmetic positive definite system of
+\noindent To construct a sparse symmetric positive definite system of
 equation object which will be factored and solved during the analysis
 using a sparse solver developed at Stanford by Kincho Law.
 
@@ -2646,7 +2646,7 @@ are required if a variable time step analysis method is specified.
 For both transient and variable time step the model will be moved from
 it's current time to a time >= numIncr * dt.
 
-RETURNS $0$ if successfull, a negative number if not.
+RETURNS $0$ if successful, a negative number if not.
 
 
 
@@ -2780,7 +2780,7 @@ without having to exit and restart the interpreter.
 
 \noindent To destroy all objects constructed for the analysis in order
 to start a new type of analysis. This command does not destroy elements,
-nodes, materials, etc.; only the solution strategies, i.e., the alogrithm,
+nodes, materials, etc.; only the solution strategies, i.e., the algorithm,
 analysis, equation solver, constraint handler, etc. are destroyed.
 
 \paragraph {The loadConst Command}

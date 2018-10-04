@@ -164,7 +164,7 @@ iPrint=0;
 
 // ---- cheap check for format --
 		if (((myA !=0) &&(myA->Size() !=n)) ||((myB !=0) &&(myB->noCols() !=n))){
-			opserr<<"fatal: A dimention is not compatible with design variables number!"<<endln;
+			opserr<<"fatal: A dimension is not compatible with design variables number!"<<endln;
 		    exit(-1);
 		}
 
@@ -404,7 +404,7 @@ int SNOPTAnalysis::runOptAnalysis (OptimizationDomain *passedOptimizationDomain)
 		int i;
 		if (printFlag != 0) {
 				outputFile2.setf(ios::scientific, ios::floatfield);
-				outputFile2<<"The Minimum point X is found as followings:"<<endln;
+				outputFile2<<"The Minimum point X is found as following:"<<endln;
 				for (i=0; i<n; i++) {
 						outputFile2<<x[i]*scales[i]<<endln;  //scale back
 				} //for

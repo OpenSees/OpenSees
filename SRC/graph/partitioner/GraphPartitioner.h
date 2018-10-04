@@ -31,7 +31,7 @@
 //
 // Description: This file contains the class definition for GraphPartitioner.
 // GraphPartitioner is an abstract base class. Its subtypes are responsible for
-// partioning the vertices of a graph. The partitioning is done in the method
+// partitioning the vertices of a graph. The partitioning is done in the method
 // partition which sets the colors of the vertices of the graph to colors 1
 // through numParrtitions.
 //
