@@ -126,6 +126,6 @@ int TclModelBuilder_addGenericCopy(ClientData clientData, Tcl_Interp *interp,  i
         return TCL_ERROR;
     }
     
-    // if get here we have sucessfully created the GenericCopy and added it to the domain
+    // if get here we have successfully created the GenericCopy and added it to the domain
     return TCL_OK;
 }

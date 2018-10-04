@@ -187,7 +187,7 @@ void* OPS_DispBeamColumn2dInt()
 	delete [] sections;
     }
 
-    // if get here we have sucessfully created the element and added it to the domain
+    // if get here we have successfully created the element and added it to the domain
     return theElement;
 }
 
@@ -1325,7 +1325,7 @@ DispBeamColumn2dInt::addInertiaLoadToUnbalance(const Vector &accel)
 
     if (3 != Raccel1.Size() || 3 != Raccel2.Size()) {
 
-      opserr << "DispBeamColumn2dInt::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+      opserr << "DispBeamColumn2dInt::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
 
       return -1;
 

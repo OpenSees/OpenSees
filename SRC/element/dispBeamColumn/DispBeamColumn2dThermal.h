@@ -24,10 +24,10 @@
                                                                         
 // Written: MHS
 // Created: Feb 2001
-// Modified: Jian Zhang[Univeristy of Edinburgh]
-// Modified: Panagiotis Kotsovinos[Univeristy of Edinburgh]
-// Modified: Jian Jiang[Univeristy of Edinburgh]
-// Modified: Liming Jiang[Univeristy of Edinburgh,2014
+// Modified: Jian Zhang[University of Edinburgh]
+// Modified: Panagiotis Kotsovinos[University of Edinburgh]
+// Modified: Jian Jiang[University of Edinburgh]
+// Modified: Liming Jiang[University of Edinburgh,2014
 
 
 
@@ -117,7 +117,7 @@ class DispBeamColumn2dThermal : public Element
 
     int numSections;
     SectionForceDeformation **theSections; // pointer to the ND material objects
-    CrdTransf *crdTransf;        // pointer to coordinate tranformation object 
+    CrdTransf *crdTransf;        // pointer to coordinate transformation object 
 
     BeamIntegration *beamInt;
 
@@ -143,7 +143,7 @@ class DispBeamColumn2dThermal : public Element
 
 	double q0Temperature[3];  // Fixed end thermal forces  of current step in basic system
 	double q0TemperatureP[3];  // Fixed end thermal forces of last step in basic system
-	int counterTemperature; // trace to remove thermal force from the second interation step
+	int counterTemperature; // trace to remove thermal force from the second iteration step
     double SectionThermalElong[20];
     double AverageThermalElong;
     // AddingSensitivity:BEGIN //////////////////////////////////////////

@@ -66,7 +66,7 @@ uniaxialMaterial Steel01  3  $fy $E 0.001
 # Define cross-section for nonlinear columns
 # ------------------------------------------
 
-# set some paramaters
+# set some parameters
 set colWidth 15
 set colDepth 24 
 
@@ -114,7 +114,7 @@ set eleType forceBeamColumn
 element $eleType  1   1   3   $np    1       1 
 element $eleType  2   2   4   $np    1       1 
 
-# Define beam elment
+# Define beam element
 # -----------------------------
 
 # Geometry of column elements

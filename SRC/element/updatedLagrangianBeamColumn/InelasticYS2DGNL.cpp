@@ -555,7 +555,7 @@ void InelasticYS2DGNL::forceBalance(Vector &eleforce, int algo)
 			break;
 		}
 		default:
-			opserr << "InelasticYS2DGNL::forceBalance - unkown algo\n";
+			opserr << "InelasticYS2DGNL::forceBalance - unknown algo\n";
 			break;
 	}
 

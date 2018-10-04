@@ -133,7 +133,7 @@ private:
 
     int     m_numBeamNodes, m_numSolidNodes, m_numEmbeddedPoints;
 
-    CrdTransf*  crdTransf;  // pointer to coordinate tranformation object
+    CrdTransf*  crdTransf;  // pointer to coordinate transformation object
     NDMaterial** theMat;     // pointer to the interface material
 
     Vector  m_Lambda;

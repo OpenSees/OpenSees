@@ -18,41 +18,43 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.1 $
-// $Date: 2008/12/09 20:00:16 $
-// $Source: /usr/local/cvs/OpenSees/PACKAGES/NewMaterial/cpp/ElasticPPcpp.h,v $
-                                                                        
-#ifndef ElasticPPcpp_h
-#define ElasticPPcpp_h
-
-// Written: fmk 
+// $Revision: 1.5 $
+// $Date: 2008-04-14 21:26:50 $
+// $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/TensionOnlyMaterial.h,v $
+                                                      
+// Written: MHS
+// Created: Aug 2001
 //
 // Description: This file contains the class definition for 
-// ElasticPPcpp. ElasticPPcpp provides the abstraction
-// of an elastic perfectly plastic uniaxial material, 
-//
-// What: "@(#) ElasticPPcpp.h, revA"
+// TensionOnlyMaterial.  TensionOnlyMaterial wraps a UniaxialMaterial
+// and imposes min and max strain limits.
+
+#ifndef TensionOnlyMaterial_h
+#define TensionOnlyMaterial_h
 
 #include <UniaxialMaterial.h>
 
-class ElasticPPcpp : public UniaxialMaterial
+class TensionOnlyMaterial : public UniaxialMaterial
 {
   public:
-    ElasticPPcpp(int tag, double E, double eyp);    
-    ElasticPPcpp();    
-
-    ~ElasticPPcpp();
+    TensionOnlyMaterial(int tag, UniaxialMaterial &material); 
+    TensionOnlyMaterial();
+    ~TensionOnlyMaterial();
+    
+    const char *getClassType(void) const {return "TensionOnlyMaterial";};
 
     int setTrialStrain(double strain, double strainRate = 0.0); 
+    int setTrialStrain(double strain, double FiberTemperature, double strainRate); 
     double getStrain(void);          
+    double getStrainRate(void);
     double getStress(void);
     double getTangent(void);
-
-    double getInitialTangent(void) {return E;};
+    double getDampTangent(void);
+    double getInitialTangent(void) {return theMaterial->getInitialTangent();}
 
     int commitState(void);
     int revertToLastCommit(void);    
-    int revertToStart(void);    
+    int revertToStart(void);        
 
     UniaxialMaterial *getCopy(void);
     
@@ -61,25 +63,13 @@ class ElasticPPcpp : public UniaxialMaterial
 		 FEM_ObjectBroker &theBroker);    
     
     void Print(OPS_Stream &s, int flag =0);
-    
+
   protected:
     
   private:
-    double fyp, fyn;	// positive and negative yield stress
-    double ezero;	// initial strain
-    double E;		// elastic modulus
-    double ep;		// plastic strain at last commit
-
-    double trialStrain;	// trial strain
-    double trialStress;      // current trial stress
-    double trialTangent;     // current trial tangent
-    double commitStrain;     // last committed strain
-    double commitStress;     // last committed stress
-    double commitTangent;    // last committed  tangent
+	UniaxialMaterial *theMaterial;
 };
 
 
 #endif
-
-
 

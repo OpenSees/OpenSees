@@ -25,7 +25,7 @@
 // Written: Minjie
 //
 // Description: This file contains the function that is invoked
-// by the interpreter when the comand 'PFEM2D' is invoked by the 
+// by the interpreter when the command 'PFEM2D' is invoked by the 
 // user.
 //
 
@@ -1191,7 +1191,7 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
         int type = -1;
         if(Tcl_GetInt(interp, argv[2], &type) != TCL_OK) {
-            opserr<<"WARING: invalid type "<<argv[2];
+            opserr<<"WARNING: invalid type "<<argv[2];
             opserr<<" -- PFEM2D group \n";
             return TCL_ERROR;
         }
@@ -1246,7 +1246,7 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
         } else if(strcmp(argv[2],"accel")==0 || strcmp(argv[2],"Accel")==0) {
             type = 3;
         } else {
-            opserr<<"WARNING: unkown type for updating -- ";
+            opserr<<"WARNING: unknown type for updating -- ";
             opserr<<"PFEM2D updateNode coord/disp/vel/accel tag dof val\n";
             return -1;
         }
@@ -2319,7 +2319,7 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                 return TCL_OK;
                 
             } else {
-                opserr<<"WARNING: unknow operation on region -- ";
+                opserr<<"WARNING: unknown operation on region -- ";
                 opserr<<"PFEM2D region node "<<argv[3]<<"\n";
                 return TCL_ERROR;
             }
@@ -2409,7 +2409,7 @@ TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc
                 return TCL_OK;
                 
             } else {
-                opserr<<"WARNING: unknow operation on region -- ";
+                opserr<<"WARNING: unknown operation on region -- ";
                 opserr<<"PFEM2D region ele "<<argv[3]<<"\n";
                 return TCL_ERROR;
             }

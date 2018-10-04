@@ -587,7 +587,7 @@ int ElastomericX::update()
     }
     
     //2) calculate shear forces and stiffnesses in basic y- and z-direction
-    // get displacement increments (trial-commited)
+    // get displacement increments (trial-committed)
     Vector delta_ub = ub - ubC;
     if (sqrt(pow(delta_ub(1),2)+pow(delta_ub(2),2)) > 0.0)  {
         
@@ -629,7 +629,7 @@ int ElastomericX::update()
             }
             
             // advance one step
-            // delta_z = f/Df; either write a function to do matrix devision or use the solution below
+            // delta_z = f/Df; either write a function to do matrix division or use the solution below
             delta_z(0) = (f(0)*Df(1,1)-f(1)*Df(0,1))/(Df(0,0)*Df(1,1)-Df(0,1)*Df(1,0));
             delta_z(1) = (f(0)*Df(1,0)-f(1)*Df(0,0))/(Df(0,1)*Df(1,0)-Df(0,0)*Df(1,1));
             z -= delta_z;
@@ -1351,7 +1351,7 @@ void ElastomericX::setUp()
         exit(-1);
     }
     
-    // establish orientation of element for the tranformation matrix
+    // establish orientation of element for the transformation matrix
     // z = x cross y
     Vector z(3);
     z(0) = x(1)*y(2) - x(2)*y(1);

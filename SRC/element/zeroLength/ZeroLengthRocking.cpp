@@ -111,7 +111,7 @@ void* OPS_ZeroLengthRocking()
 	numdata = 1;
         if (strcmp(flag,"-orient") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 6) {
-                opserr << "WARNING not enough paramaters after -orient flag for ele " << eleTag <<
+                opserr << "WARNING not enough parameters after -orient flag for ele " << eleTag <<
 		    "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
 		    "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";	      
                 return 0;
@@ -145,7 +145,7 @@ void* OPS_ZeroLengthRocking()
             
         } else if (strcmp(flag,"-xi") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 1) {
-                opserr << "WARNING not enough paramaters after -xi flag for ele " << eleTag << endln;
+                opserr << "WARNING not enough parameters after -xi flag for ele " << eleTag << endln;
                 return 0;
             } else {
 		if (OPS_GetDoubleInput(&numdata, &xi) < 0) {
@@ -156,7 +156,7 @@ void* OPS_ZeroLengthRocking()
             
         } else if (strcmp(flag,"-dTol") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 1) {
-                opserr << "WARNING not enough paramaters after -dTol flag for ele " << eleTag << endln;
+                opserr << "WARNING not enough parameters after -dTol flag for ele " << eleTag << endln;
                 return 0;
             } else {
 		if (OPS_GetDoubleInput(&numdata, &dTol) < 0) {
@@ -167,7 +167,7 @@ void* OPS_ZeroLengthRocking()
 
         } else if (strcmp(flag,"-vTol") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 1) {
-                opserr << "WARNING not enough paramaters after -vTol flag for ele " << eleTag << endln;
+                opserr << "WARNING not enough parameters after -vTol flag for ele " << eleTag << endln;
                 return 0;
             } else {
 		if (OPS_GetDoubleInput(&numdata, &vTol) < 0) {
@@ -875,7 +875,7 @@ ZeroLengthRocking::setUp( int Nd1, int Nd2,
     if ( x.Size() != 3 || yp.Size() != 3 )
 	opserr << "FATAL ZeroLengthRocking::setUp - incorrect dimension of orientation vectors\n";
 
-    // establish orientation of element for the tranformation matrix
+    // establish orientation of element for the transformation matrix
     // z = x cross yp
     Vector z(3);
     z(0) = x(1)*yp(2) - x(2)*yp(1);

@@ -56,7 +56,7 @@ node 20 1.0 0.0 1.0
 # Boundary conditions. 
 # Each node has seven DOF. Three for solid displacement, three for 
 # fluid displacement, and one for pore pressure. The displacement
-# at the bottom of the element is fixed, and coresponding pore pressure 
+# at the bottom of the element is fixed, and corresponding pore pressure 
 # should be added.
 # ####################################################################
 #

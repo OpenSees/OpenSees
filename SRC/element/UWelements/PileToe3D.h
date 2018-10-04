@@ -57,7 +57,7 @@ class PileToe3D : public Element
     PileToe3D();
     ~PileToe3D();
 
-    // public methods to obtain inforrmation about dof & connectivity    
+    // public methods to obtain information about dof & connectivity    
     int getNumExternalNodes(void) const;
 	int getNumExternalBNodes(void) const;
     const ID &getExternalNodes(void);
@@ -103,7 +103,7 @@ class PileToe3D : public Element
     // member functions
    
     // objects
-    CrdTransf  *crdTransf;              // pointer to coordinate tranformation object   
+    CrdTransf  *crdTransf;              // pointer to coordinate transformation object   
     ID  externalNodes;                  // contains the tags of the end nodes
 	ID  externalBNodes;                 // contains the tags of the bean element used to determine normal to pile toe
     Vector theVector;                   // vector to return the residual

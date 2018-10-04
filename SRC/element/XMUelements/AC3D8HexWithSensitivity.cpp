@@ -1221,7 +1221,7 @@ AC3D8HexWithSensitivity::setImpedance(int face, double val)
   if (impVals == 0) {
     impVals = new double[6];
     if (impVals == 0) {
-      printf("AC3D8HexWithSensitivity::setImpedance - out of memeory\n");
+      printf("AC3D8HexWithSensitivity::setImpedance - out of memory\n");
       return -3;
     }
     impVals[0] = 0.0;

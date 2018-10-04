@@ -44,6 +44,7 @@ OBJS       = UniaxialMaterial.o \
 	InitStressMaterial.o \
 	SimpleFractureMaterial.o \
 	MinMaxMaterial.o \
+	TensionOnlyMaterial.o \
         PathIndependentMaterial.o \
 	CableMaterial.o \
 	ENTMaterial.o \

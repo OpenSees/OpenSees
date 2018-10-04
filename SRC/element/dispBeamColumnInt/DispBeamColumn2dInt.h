@@ -170,7 +170,7 @@ class DispBeamColumn2dInt : public Element
     int numSections;
 
     FiberSection2dInt **theSections; // pointer to the ND material objects
-    LinearCrdTransf2dInt *crdTransf;          // pointer to coordinate tranformation object 
+    LinearCrdTransf2dInt *crdTransf;          // pointer to coordinate transformation object 
 
     double C1;
     ID connectedExternalNodes; // Tags of quad nodes

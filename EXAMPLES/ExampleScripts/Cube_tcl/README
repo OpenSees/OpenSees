@@ -52,7 +52,7 @@ shear are all disabled.
 It  should  be  noted  that by default, all these commands will
 render  results  at  step  0,  which  is  the  end  of applying
 isotropic  compression and the start of shearing. The displaced
-mesh only shows displacements occured during shearing stage. To
+mesh only shows displacements occurred during shearing stage. To
 show  the  total  displacement,  one  needs to activate [Sett.]
 button  inside  "Lights and other options" category which is at
 the top of the right window.
@@ -65,7 +65,7 @@ be  -1.  To adjust the animation speed, one can use the spinner
 To  change  the  view  angle, one simple way is to select among
 [XY],  [YZ]  and [XZ] views. One can also use mouse to drag the
 plot  in  order  to  view  at any angle. Specifically, dragging
-mouse  horzontally at the center region of the left window will
+mouse  horizontally at the center region of the left window will
 rotate the plot along Y-axis, dragging vertically at the center
 region  of  the  left  window  will  rotate  along  X-axis, and
 dragging  vertically  at the area close to the window sides but

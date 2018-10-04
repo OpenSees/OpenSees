@@ -39,8 +39,9 @@ ManzariDafalias3D::ManzariDafalias3D(int tag, double G0, double nu, double e_ini
 
 // null constructor
 ManzariDafalias3D::ManzariDafalias3D() 
-  : ManzariDafalias()
+  : ManzariDafalias(ND_TAG_ManzariDafalias3D)
 {  
+
 }
 
 // destructor
@@ -96,6 +97,22 @@ ManzariDafalias3D::getStrain()
 	mEpsilon_M = -1.0 * mEpsilon;
 	return mEpsilon_M; // -1.0 is for geotechnical sign convention
 } 
+
+// send back the strain
+const Vector& 
+ManzariDafalias3D::getEStrain() 
+{
+	mEpsilon_M = -1.0 * mEpsilonE;
+	return mEpsilon_M; // -1.0 is for geotechnical sign convention
+} 
+
+const Vector& 
+ManzariDafalias3D::getPStrain() 
+{
+	mEpsilon_M = -1.0 * (mEpsilon - mEpsilonE);
+	return mEpsilon_M; // -1.0 is for geotechnical sign convention
+} 
+
 
 // send back the stress 
 const Vector& 

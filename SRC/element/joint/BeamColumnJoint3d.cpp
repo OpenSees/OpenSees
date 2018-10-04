@@ -406,9 +406,9 @@ BeamColumnJoint3d::setDomain(Domain *theDomain)
 int
 BeamColumnJoint3d::commitState()
 {
-	// store commited external nodal displacements
+	// store committed external nodal displacements
   Uecommit = UeprCommit;
-  // store commited internal nodal displacements
+  // store committed internal nodal displacements
   UeIntcommit = UeprIntCommit;
 
   // store material history data.
@@ -460,7 +460,7 @@ BeamColumnJoint3d::update()
 	Vector Ue(28);
 	Ue.Zero();
 
-	// determine commited displacements given trial displacements
+	// determine committed displacements given trial displacements
 	this->getGlobalDispls(Ue);
  
 	// update displacements for the external nodes
@@ -1027,7 +1027,7 @@ double BeamColumnJoint3d::getStepSize(double s0,double s1,Vector uExt,Vector duE
 	Vector kSpr(13); kSpr.Zero();
 	Vector intEq(4); intEq.Zero();
 
-	double r0 = 0.0;            // tolerance chcek for line-search
+	double r0 = 0.0;            // tolerance check for line-search
 	double tolerance = 0.8;     // slack region tolerance set for line-search
     
 	if (s0 != 0.0)

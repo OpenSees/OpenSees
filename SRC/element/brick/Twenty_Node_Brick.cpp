@@ -892,7 +892,7 @@ Twenty_Node_Brick::addLoad(ElementalLoad *theLoad, double loadFactor)
       appliedB[2] += loadFactor * b[2];
     return 0;
     } else if (type == LOAD_TAG_SelfWeight) {
-      // added compatability with selfWeight class implemented for all continuum elements, C.McGann, U.W.
+      // added compatibility with selfWeight class implemented for all continuum elements, C.McGann, U.W.
       applyLoad = 1;
 	  appliedB[0] += loadFactor*data(0)*b[0];
 	  appliedB[1] += loadFactor*data(1)*b[1];
@@ -930,7 +930,7 @@ Twenty_Node_Brick::addInertiaLoadToUnbalance(const Vector &accel)
 
 		if ( 3 != Raccel.Size() ) {
 
-			opserr << "Twenty_Node_Brick::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+			opserr << "Twenty_Node_Brick::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
 
 			return -1;
 
@@ -1179,7 +1179,7 @@ const Vector&  Twenty_Node_Brick::getResistingForceIncInertia( )
 
 		if ( 3 != accel.Size() ) {
 
-			opserr << "Twenty_Node_Brick::getResistingForceIncInertia matrix and vector sizes are incompatable\n";
+			opserr << "Twenty_Node_Brick::getResistingForceIncInertia matrix and vector sizes are incompatible\n";
 
 			exit(-1);
 
@@ -1233,7 +1233,7 @@ const Vector&  Twenty_Node_Brick::getResistingForceIncInertia( )
 
 		if ( 3!= vel.Size() ) {
 
-			opserr << "Twenty_Node_Brick::getResistingForceIncInertia matrix and vector sizes are incompatable\n";
+			opserr << "Twenty_Node_Brick::getResistingForceIncInertia matrix and vector sizes are incompatible\n";
 
 			exit(-1);
 

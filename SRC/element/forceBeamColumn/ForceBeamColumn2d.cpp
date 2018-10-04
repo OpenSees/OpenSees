@@ -246,7 +246,7 @@ int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 	theEle = new ForceBeamColumn2d(--currTag,elenodes(2*i),elenodes(2*i+1),secTags.Size(),
 				       sections,*bi,*theTransf,mass,maxIter,tol);
 	if (theEle == 0) {
-	    opserr<<"WARING: run out of memory for creating element\n";
+	    opserr<<"WARNING: run out of memory for creating element\n";
 	    return -1;
 	}
 	if (theDomain.addElement(theEle) == false) {
@@ -820,13 +820,13 @@ ForceBeamColumn2d::update()
 
   maxSubdivisions = 4;
 
-  // fmk - modification to get compatable ele forces and deformations 
+  // fmk - modification to get compatible ele forces and deformations 
   //   for a change in deformation dV we try first a newton iteration, if
   //   that fails we try an initial flexibility iteration on first iteration 
   //   and then regular newton, if that fails we use the initial flexiblity
   //   for all iterations.
   //
-  //   if they both fail we subdivide dV & try to get compatable forces
+  //   if they both fail we subdivide dV & try to get compatible forces
   //   and deformations. if they work and we have subdivided we apply
   //   the remaining dV.
 

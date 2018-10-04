@@ -537,7 +537,7 @@ ModElasticBeam2d::addInertiaLoadToUnbalance(const Vector &accel)
   const Vector &Raccel2 = theNodes[1]->getRV(accel);
 	
   if (3 != Raccel1.Size() || 3 != Raccel2.Size()) {
-    opserr << "ModElasticBeam2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+    opserr << "ModElasticBeam2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     return -1;
   }
     
