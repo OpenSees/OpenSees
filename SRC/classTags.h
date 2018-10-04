@@ -133,6 +133,7 @@
 #define MAT_TAG_ENTMaterial			14
 #define MAT_TAG_Penalty				15
 #define MAT_TAG_MinMax				16
+#define MAT_TAG_TensionOnly			1601
 #define MAT_TAG_BoucWen				17
 #define MAT_TAG_Pinching4			18
 #define MAT_TAG_BarSlip				19
