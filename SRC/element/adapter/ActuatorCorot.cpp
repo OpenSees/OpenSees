@@ -326,7 +326,7 @@ void ActuatorCorot::setDomain(Domain *theDomain)
     const Vector &end1Crd = theNodes[0]->getCrds();
     const Vector &end2Crd = theNodes[1]->getCrds();	
     
-    // initalize the cosines
+    // initialize the cosines
     double cosX[3];
     cosX[0] = cosX[1] = cosX[2] = 0.0;
     for (int i=0; i<numDIM; i++)

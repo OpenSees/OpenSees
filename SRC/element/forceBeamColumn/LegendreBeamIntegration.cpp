@@ -36,7 +36,10 @@ void* OPS_LegendreBeamIntegration(int& integrationTag, ID& secTags)
     // inputs: integrationTag,secTag,N
     int iData[3];
     int numData = 3;
-    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
+	opserr << "WARNING: failed to read inputs\n";
+	return 0;
+    }
 
     integrationTag = iData[0];
     if(iData[2] > 0) {

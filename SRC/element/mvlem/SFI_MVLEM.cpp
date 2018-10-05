@@ -19,16 +19,16 @@
 // for details see referenced publications.
 //
 // References:
-// 1) Kolozvari K., Orakcal K., and Wallace J. W. (2015). ”Modeling of Cyclic 
-// Shear-Flexure Interaction in Reinforced Concrete Structural Walls. I: Theory”, 
+// 1) Kolozvari K., Orakcal K., and Wallace J. W. (2015). ï¿½Modeling of Cyclic 
+// Shear-Flexure Interaction in Reinforced Concrete Structural Walls. I: Theoryï¿½, 
 // ASCE Journal of Structural Engineering, 141(5), 04014135 
 // http://dx.doi.org/10.1061/(ASCE)ST.1943-541X.0001059
-// 2) Kolozvari K., Tran T., Orakcal K., and Wallace, J.W. (2015). ”Modeling 
+// 2) Kolozvari K., Tran T., Orakcal K., and Wallace, J.W. (2015). ï¿½Modeling 
 // of Cyclic Shear-Flexure Interaction in Reinforced Concrete Structural Walls. 
-// II: Experimental Validation”, ASCE Journal of Structural Engineering, 141(5), 
+// II: Experimental Validationï¿½, ASCE Journal of Structural Engineering, 141(5), 
 // 04014136 http://dx.doi.org/10.1061/(ASCE)ST.1943-541X.0001083
-// 3) Kolozvari K. (2013). “Analytical Modeling of Cyclic Shear-Flexure 
-// Interaction in Reinforced Concrete Structural Walls”, PhD Dissertation, 
+// 3) Kolozvari K. (2013). ï¿½Analytical Modeling of Cyclic Shear-Flexure 
+// Interaction in Reinforced Concrete Structural Wallsï¿½, PhD Dissertation, 
 // University of California, Los Angeles.
 
 #include <math.h>
@@ -645,7 +645,7 @@ void SFI_MVLEM::setDomain(Domain *theDomain)
   // Call the DomainComponent class method 
   this->DomainComponent::setDomain(theDomain);
   
-  // Ensure conected nodes have correct number of dof's
+  // Ensure connected nodes have correct number of dof's
   int dofNd1 = theNodes[0]->getNumberDOF();
   int dofNd2 = theNodes[1]->getNumberDOF();	
   if ((dofNd1 != 3) || (dofNd2 != 3)) // 3 DOFS at external nodes
@@ -692,7 +692,7 @@ int SFI_MVLEM::commitState()
   return errCode;
 }
 
-// Revert to last commited state (if convergence is not achieved)
+// Revert to last committed state (if convergence is not achieved)
 int SFI_MVLEM::revertToLastCommit()
 {
   int errCode = 0;
@@ -935,7 +935,7 @@ int SFI_MVLEM::displaySelf(Renderer &theViewer, int displayMode, float fact, con
 		NodePLotCrds(panel,7) = v2(0) + x[panel]+b[panel]/2.0; // x
 		NodePLotCrds(panel,8) = v2(1) +(x[panel]+b[panel]/2.0)*end2Disp(2)*fact; // y
 		NodePLotCrds(panel,9) = v2(2); // z
-		// Local node 4 - top rigth
+		// Local node 4 - top right
 		NodePLotCrds(panel,10) = v2(0) + x[panel]-b[panel]/2.0; // x
 		NodePLotCrds(panel,11) = v2(1) + (x[panel]-b[panel]/2.0)*end2Disp(2)*fact; // y
 		NodePLotCrds(panel,12) = v2(2); // z
@@ -1077,7 +1077,7 @@ int SFI_MVLEM::getResponse(int responseID, Information &eleInfo)
 	}
 }
 
-// Get the element intial element tangent matrix
+// Get the element initial element tangent matrix
 const Matrix & SFI_MVLEM::getInitialStiff(void)
 {
   double Kh=0.0;

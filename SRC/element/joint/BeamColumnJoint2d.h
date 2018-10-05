@@ -187,8 +187,8 @@ class BeamColumnJoint2d : public Element
   double HgtFac;               // distance in between the tension compression couple in the height direction 
   double WdtFac;               // distance in between the tension compression couple in the width direction      
   
-  Vector Uecommit;             // vector of external commited displacements
-  Vector UeIntcommit;          // vector of internal commited displacements   
+  Vector Uecommit;             // vector of external committed displacements
+  Vector UeIntcommit;          // vector of internal committed displacements   
   Vector UeprCommit;           // vector of previous external committed displacements
   Vector UeprIntCommit;        // vector of previous internal committed displacements  
   Matrix BCJoint;       // matrix describing relation between the component deformations and the external and internal deformations

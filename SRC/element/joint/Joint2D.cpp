@@ -1541,7 +1541,7 @@ int Joint2D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theB
   nodeDbTag = data(2);
   dofDbTag = data(3);
   
-  // Receving Springs
+  // Receiving Springs
   for (int i=0 ; i<5 ; i++) {
     fixedEnd[i] = data( i+4 );
     int SpringClass = data( i+9 );

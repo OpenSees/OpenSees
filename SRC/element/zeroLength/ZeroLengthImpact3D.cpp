@@ -89,7 +89,7 @@ OPS_ZeroLengthImpact3D(void)
 
   numData = 1;
   if (OPS_GetDoubleInput(&numData, &dData[0]) != 0) {
-    opserr << "WARNING ZeroLengthImpact3D intial gap input " << eleTag << endln;
+    opserr << "WARNING ZeroLengthImpact3D initial gap input " << eleTag << endln;
     return 0;
   }
 

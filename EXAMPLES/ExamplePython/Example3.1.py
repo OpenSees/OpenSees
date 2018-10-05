@@ -66,7 +66,7 @@ ops.uniaxialMaterial("Steel01", 3, fy, E, 0.01)
 
 # Define cross-section for nonlinear columns
 # ------------------------------------------
-# set some paramaters
+# set some parameters
 colWidth = 15.0
 colDepth = 24.0 
 cover = 1.5
@@ -104,7 +104,7 @@ eleType = "forceBeamColumn"
 ops.element(eleType, 1, 1, 3, 1, 1)
 ops.element(eleType, 2, 2, 4, 1, 1)
 
-# Define beam elment
+# Define beam element
 # -----------------------------
 # Geometry of column elements
 #                tag 

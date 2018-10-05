@@ -152,7 +152,7 @@ ActorTruss::setDomain(void)
     static Vector coords(4);
     this->recvVector(coords);
 
-    // determin transformation & length
+    // determine transformation & length
     double dx = coords(2)-coords(0);
     double dy = coords(3)-coords(1);
     

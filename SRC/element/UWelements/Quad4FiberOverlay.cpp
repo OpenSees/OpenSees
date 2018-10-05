@@ -171,7 +171,7 @@ Quad4FiberOverlay::Quad4FiberOverlay(int tag, int nd1, int nd2, int nd3, int nd4
 	AA(1) = A(1)*A(1);
 	AA(2) = A(1)*A(0);  // note that gamma = 2 * eps12
 	    
-	//Set up integration paramaters 
+	//Set up integration parameters 
 	pts[0] = 0.5 * (nFi(0)+nFj(0));   
 	pts[1] = 0.5 * (nFi(1)+nFj(1)); 
 	wts	   = 2.0;       

@@ -81,7 +81,7 @@ class MP_Joint2D : public MP_Constraint
     int nodeRetained;			// to identify the retained node
     int nodeConstrained;		// to identify  the constrained node
     int MainDOF;				// main degree of freedom for rotation
-    int AuxDOF;					// Auxilary degree of freedom for shear
+    int AuxDOF;					// Auxiliary degree of freedom for shear
     int FixedEnd;				// fixed rotational degree of freedom at the end 
                                 // released = 0 , fixed = 1
     

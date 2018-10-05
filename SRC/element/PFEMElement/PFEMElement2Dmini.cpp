@@ -336,7 +336,7 @@ PFEMElement2Dmini::getResistingForceIncInertia()
     P.resize(ndf);
     P.Zero();
     
-    // get velocity, accleration
+    // get velocity, acceleration
     Vector v(ndf), vdot(ndf);
     for(int a=0; a<3; a++) {
 

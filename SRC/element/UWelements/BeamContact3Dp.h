@@ -56,7 +56,7 @@ class BeamContact3Dp : public Element
     BeamContact3Dp();
     ~BeamContact3Dp();
 
-    // public methods to obtain inforrmation about dof & connectivity    
+    // public methods to obtain information about dof & connectivity    
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
     Node **getNodePtrs(void);
@@ -122,7 +122,7 @@ class BeamContact3Dp : public Element
     Vector Getddx_c(double xi);                            // returns d^2(x_c)/ dxi^2
    
     // objects
-    CrdTransf  *crdTransf;                                 // pointer to coordinate tranformation object
+    CrdTransf  *crdTransf;                                 // pointer to coordinate transformation object
     ContactMaterial3D *theMaterial;                        // contact material object
    
     ID  externalNodes;                                     // contains the tags of the end nodes

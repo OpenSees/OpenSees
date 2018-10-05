@@ -126,7 +126,7 @@ SumElementForcesRecorder::record(int commitTag, double timeStamp)
 
   theOutput->write(*data);
 
-  // succesfull completion - return 0
+  // successful completion - return 0
   return 0;
 }
 
@@ -178,7 +178,7 @@ SumElementForcesRecorder::setDomain(Domain &theDom)
   //
   // loop over the list of elements, 
   //    if element exists add it's pointer o the array
-  //    get its resisting force, check size to determine compatable with others
+  //    get its resisting force, check size to determine compatible with others
   // 
 
   int sizeArray = -1;

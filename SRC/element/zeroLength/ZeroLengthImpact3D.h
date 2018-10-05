@@ -55,7 +55,7 @@ class ZeroLengthImpact3D : public Element
     ~ZeroLengthImpact3D();
 
     
-    // public methods to obtain inforrmation about dof & connectivity
+    // public methods to obtain information about dof & connectivity
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
     Node **getNodePtrs(void);
@@ -131,7 +131,7 @@ class ZeroLengthImpact3D : public Element
     static Vector resid;   // for force residual vector
     static Matrix zeroMatrix;
 
-	double initGap; //intial gap
+	double initGap; //initial gap
 	double Kn1; //normal stiffness before yielding
 	double Kn2; //normal stiffness after yielding
 	double Delta_y; //yielding displacement

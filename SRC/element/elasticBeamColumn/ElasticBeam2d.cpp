@@ -50,12 +50,14 @@
 #include <elementAPI.h>
 #include <string>
 #include <ElementIter.h>
+#include <string.h>
+#include <map>
 
 Matrix ElasticBeam2d::K(6,6);
 Vector ElasticBeam2d::P(6);
 Matrix ElasticBeam2d::kb(3,3);
 
-void* OPS_ElasticBeam2d(const ID &info)
+void* OPS_ElasticBeam2d()
 {
     if(OPS_GetNumRemainingInputArgs() < 7) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,A,E,Iz,transfTag\n";
@@ -182,7 +184,7 @@ int OPS_ElasticBeam2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 	theEle = new ElasticBeam2d(--currTag,data[0],data[1],data[2],elenodes(2*i),elenodes(2*i+1),
 				   *theTransf,alpha,depth,mass,cMass);
 	if (theEle == 0) {
-	    opserr<<"WARING: run out of memory for creating element\n";
+	    opserr<<"WARNING: run out of memory for creating element\n";
 	    return -1;
 	}
 	if (theDomain.addElement(theEle) == false) {
@@ -194,6 +196,144 @@ int OPS_ElasticBeam2d(Domain& theDomain, const ID& elenodes, ID& eletags)
     }
 
     return 0;
+}
+
+void* OPS_ElasticBeam2d(const ID &info)
+{
+    // data
+    int iData[3];
+    double data[3];
+    int transfTag;
+    double mass = 0.0;
+    double alpha=0.0;
+    double depth=0.0;
+    int cMass = 0;
+    int numData;
+
+    // regular element, not in a mesh, get tags
+    if (info.Size() == 0) {
+	if(OPS_GetNumRemainingInputArgs() < 7) {
+	    opserr<<"insufficient arguments:eleTag,iNode,jNode,A,E,Iz,transfTag\n";
+	    return 0;
+	}
+
+	int ndm = OPS_GetNDM();
+	int ndf = OPS_GetNDF();
+	if(ndm != 2 || ndf != 3) {
+	    opserr<<"ndm must be 2 and ndf must be 3\n";
+	    return 0;
+	}
+
+	// inputs:
+	numData = 3;
+	if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
+	    opserr<<"WARNING failed to read integers\n";
+	    return 0;
+	}
+    }
+
+    // regular element, or in a mesh
+    if (info.Size()==0 || info(0)==1) {
+	if(OPS_GetNumRemainingInputArgs() < 4) {
+	    opserr<<"insufficient arguments: A,E,Iz,transfTag\n";
+	    return 0;
+	}
+
+	if(OPS_GetDoubleInput(&numData,&data[0]) < 0) {
+	    opserr<<"WARNING failed to read doubles\n";
+	    return 0;
+	}
+
+	numData = 1;
+	if(OPS_GetIntInput(&numData,&transfTag) < 0) {
+	    opserr<<"WARNING transfTag is not integer\n";
+	    return 0;
+	}
+
+	// options
+	while(OPS_GetNumRemainingInputArgs() > 0) {
+	    const char* type = OPS_GetString();
+	    if(strcmp(type,"-alpha") == 0) {
+		if(OPS_GetNumRemainingInputArgs() > 0) {
+		    if(OPS_GetDoubleInput(&numData,&alpha) < 0) {
+			opserr << "WARNING: failed to get alpha\n";
+			return 0;
+		    }
+		}
+	    } else if(strcmp(type,"-depth") == 0) {
+		if(OPS_GetNumRemainingInputArgs() > 0) {
+		    if(OPS_GetDoubleInput(&numData,&depth) < 0) {
+			opserr << "WARNING: failed to get depth\n";
+			return 0;
+		    }
+		}
+
+	    } else if(strcmp(type,"-mass") == 0) {
+		if(OPS_GetNumRemainingInputArgs() > 0) {
+		    if(OPS_GetDoubleInput(&numData,&mass) < 0) {
+			opserr << "WARNING: failed to get mass\n";
+			return 0;
+		    }
+		}
+	    } else if(strcmp(type,"-cMass") == 0) {
+		cMass = 1;
+	    }
+	}
+    }
+
+    // store data for different mesh
+    static std::map<int, Vector> meshdata;
+    if (info.Size()>0 && info(0)==1) {
+	if (info.Size() < 2) {
+	    opserr << "WARNING: need info -- inmesh, meshtag\n";
+	    return 0;
+	}
+
+	// save the data for a mesh
+	Vector& mdata = meshdata[info(1)];
+	mdata.resize(8);
+	mdata(0) = data[0];
+	mdata(1) = data[1];
+	mdata(2) = data[2];
+	mdata(3) = transfTag;
+	mdata(4) = mass;
+	mdata(5) = alpha;
+	mdata(6) = depth;
+	mdata(7) = cMass;
+	return &meshdata;
+
+    } else if (info.Size()>0 && info(0)==2) {
+	if (info.Size() < 5) {
+	    opserr << "WARNING: need info -- inmesh, meshtag, eleTag, nd1, nd2\n";
+	    return 0;
+	}
+
+	// get the data for a mesh
+	Vector& mdata = meshdata[info(1)];
+	if (mdata.Size() < 8) return 0;
+
+	iData[0] = info(2);
+	iData[1] = info(3);
+	iData[2] = info(4);
+	data[0] = mdata(0);
+	data[1] = mdata(1);
+	data[2] = mdata(2);
+	transfTag = mdata(3);
+	mass = mdata(4);
+	alpha = mdata(5);
+	depth = mdata(6);
+	cMass = mdata(7);
+    }
+
+    // check transf
+    CrdTransf* theTransf = OPS_getCrdTransf(transfTag);
+    if(theTransf == 0) {
+	opserr<<"coord transfomration not found\n";
+	return 0;
+    }
+
+    return new ElasticBeam2d(iData[0],data[0],data[1],data[2],iData[1],iData[2],
+			     *theTransf,alpha,depth,mass,cMass);
 }
 
 ElasticBeam2d::ElasticBeam2d()
@@ -556,7 +696,7 @@ ElasticBeam2d::addInertiaLoadToUnbalance(const Vector &accel)
   const Vector &Raccel2 = theNodes[1]->getRV(accel);
 	
   if (3 != Raccel1.Size() || 3 != Raccel2.Size()) {
-    opserr << "ElasticBeam2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+    opserr << "ElasticBeam2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     return -1;
   }
     

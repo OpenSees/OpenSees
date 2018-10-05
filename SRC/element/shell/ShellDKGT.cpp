@@ -1045,11 +1045,11 @@ ShellDKGT::formResidAndTangent( int tang_flag )
 
 	static Vector strain(nstress); //strain
 
-	static double shp[3][numnodes]; //shape fuction 2d at a gauss point
+	static double shp[3][numnodes]; //shape function 2d at a gauss point
 
 	static double shpDrill[4][numnodes]; //shape function drilling dof at a gauss point
 
-	static double shpBend[6][9]; //shape fuction - bending part at a gauss point
+	static double shpBend[6][9]; //shape function - bending part at a gauss point
 
 	static Vector residJ(ndf); //nodeJ residual, global coordinates
 
@@ -1558,7 +1558,7 @@ int  ShellDKGT::sendSelf (int commitTag, Channel &theChannel)
 
 int  ShellDKGT::recvSelf (int commitTag, 
 		       Channel &theChannel, 
-		       FEM_ObjectBroker &theBroker)      //idDataºóÃæµÄ±àºÅÊÇÊ²Ã´ÒâË¼
+		       FEM_ObjectBroker &theBroker)      //idDataï¿½ï¿½ï¿½ï¿½Ä±ï¿½ï¿½ï¿½ï¿½Ê²Ã´ï¿½ï¿½Ë¼
 {
   int res = 0;
   
