@@ -462,7 +462,7 @@ RemoveRecorder::record(int commitTag, double timeStamp)
     }
   }
   
-  // succesfull completion - return 0
+  // successful completion - return 0
   return result;
 }
 int 
@@ -670,7 +670,7 @@ RemoveRecorder::elimNode(int theNodeTag, double timeStamp)
   
   while ((thePattern = theLoadPatterns()) != 0) {
     
-    // start with nodal laods
+    // start with nodal loads
     NodalLoadIter theLoads = thePattern->getNodalLoads();
     NodalLoad *theLoad;
     

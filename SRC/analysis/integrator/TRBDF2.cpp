@@ -27,7 +27,7 @@
 //
 // Description: This file contains the implementation of the TRBDF2 class.
 // ref: K.J.Bathe, "Conserving Energy and Momentum in Nonlinear Dynamics: A Simple
-//      Implicit Time Integration Scheme", Computers ans Structures 85(2007),437-445
+//      Implicit Time Integration Scheme", Computers and Structures 85(2007),437-445
 //
 // NOTE: In the implementation we use deltaT as opposed to deltaT/2 in the paper.
 //

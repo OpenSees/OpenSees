@@ -5,7 +5,7 @@
                                                                         
 /*
 // NOTE: this is a modified file of f2c.h to work with most C++ compilers.
-//       f2c.h for example, defines abs() as a macro, casuing parsing
+//       f2c.h for example, defines abs() as a macro, causing parsing
 //		 problems when it encounters abs() in stdlib.h, and so on.
 //		 It is needed in Lapack++ because some of the C/Lapack functions, like
 //		 ilaenv_(), need to know what ftn_len is (system dependent.)

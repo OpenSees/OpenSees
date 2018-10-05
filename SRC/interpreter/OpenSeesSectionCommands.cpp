@@ -997,7 +997,7 @@ int OPS_Patch()
     } else if(strcmp(type,"circ")==0 || strcmp(type,"circular")==0) {
 	thePatch = (CircPatch*) OPS_CircPatch();
     } else {
-	opserr<<"ERROR unknow patch type\n";
+	opserr<<"ERROR unknown patch type\n";
 	return -1;
     }
 
@@ -1128,7 +1128,7 @@ int OPS_Layer()
     } else if(strcmp(type,"circ")==0 || strcmp(type,"circular")==0) {
 	theLayer = (ReinfLayer*) OPS_CircReinfLayer();
     } else {
-	opserr<<"ERROR unknow layer type\n";
+	opserr<<"ERROR unknown layer type\n";
 	return -1;
     }
 

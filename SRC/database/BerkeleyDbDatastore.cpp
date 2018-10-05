@@ -66,7 +66,7 @@ BerkeleyDbDatastore::BerkeleyDbDatastore(const char *projectName,
   // Set up error handling.
   dbenv->set_errpfx(dbenv, project);
 
-  // now create the enviroment
+  // now create the environment
   if ((ret = dbenv->open(dbenv, project,
 			 DB_CREATE | DB_INIT_LOG | DB_PRIVATE | DB_INIT_MPOOL, 
 			 S_IRUSR | S_IWUSR)) != 0) {

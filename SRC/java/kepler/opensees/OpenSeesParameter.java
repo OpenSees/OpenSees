@@ -75,7 +75,7 @@ import ptolemy.kernel.util.*;
 /**
  * OpenSeesParameter: 
 "This is the implementation of a OpenSeesParameter actor using Ptolemy II. 
-This actor has a parameter, an input port and an output port. The ouput
+This actor has a parameter, an input port and an output port. The output
 is the concatanation of the string parameter and the string in the input port.
  *  @author Frank McKenna, UC Berkeley, March 2007
 */

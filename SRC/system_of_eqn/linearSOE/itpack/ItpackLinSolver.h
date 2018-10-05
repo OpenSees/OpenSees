@@ -30,7 +30,7 @@
 //
 // Description: This file contains the class definition for ItpackLinSolver.
 // ItpackLinSolver is a concrete subclass of LinearSOE. It stores full
-// unsymmetric linear system of equations using 1d arrays in Fortan style
+// unsymmetric linear system of equations using 1d arrays in Fortran style
 
 #include <LinearSOESolver.h>
 

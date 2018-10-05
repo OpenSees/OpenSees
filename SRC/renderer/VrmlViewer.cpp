@@ -30,7 +30,7 @@
 // Revision: A
 //
 // Description: This file contains the class definition for VrmlViewer.
-// VrmlViewer is an class which diplays using X11 or openGL.
+// VrmlViewer is an class which displays using X11 or openGL.
 //
 // What: "@(#) VrmlViewer.h, revA"
 

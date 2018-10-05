@@ -56,7 +56,7 @@ ErrorHandler::outputMessage(ostream &theStream, const char *msg, va_list args)
   int done =0;
   
   // parse the msg string until end of string '\0' is
-  // encounterd, send to the output stream any character,
+  // encountered, send to the output stream any character,
   // if we encounter a %d or a %f get the integer or double 
   // from the next arg on the va_list and send it to the stream
 

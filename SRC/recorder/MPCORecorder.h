@@ -41,7 +41,7 @@ The MPCORecorder writes data to an HDF5 database.
 MPCORecorder uses the HDF5 library version 1.10 from the HDF Group:
 The HDF Group, "Hierarchical Data Format, version 5," 1997-2017. [Online]. Available: http://www.hdfgroup.org/HDF5/.
 
-The HDF5 shared libary is loaded at run-time and should be available on your machine if you use this
+The HDF5 shared library is loaded at run-time and should be available on your machine if you use this
 recorder.
 For more information about HDF5 library, licensing terms and download:
 http://www.hdfgroup.org

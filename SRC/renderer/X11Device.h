@@ -91,7 +91,7 @@ class X11Device: public  Device
   GC theGC;         // the graphic context associated with the X11Device
   int winOpen;
   unsigned long foreground, background;  
-  XSizeHints hints; // conatins the infor about where window is and its size
+  XSizeHints hints; // contains the info about where window is and its size
   int height;       // current height of the window
 
   XStandardColormap theMap;  

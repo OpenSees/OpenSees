@@ -23,12 +23,12 @@
  +             Authors: Gang Wang  AND  Professor Nicholas Sitar            +
  |                                                                          |
  |			   Department of Civil and Environmental Engineering            |
- +			   Univeristy of California, Berkeley, CA 94720, USA            +
+ +			   University of California, Berkeley, CA 94720, USA            +
  |                                                                          |
  |             Email: wang@ce.berkeley.edu (G.W.)                           |
  +                                                                          + 
  |  Disclaimers:                                                            |
- |  (1) This is implemenation of MultiaxialCyclicPlasticity for clays       |
+ |  (1) This is implementation of MultiaxialCyclicPlasticity for clays      |
  +      Model References:                                                   +
  |      Borja R.I, Amies, A.P. Multiaxial Cyclic Plasticity Model for       |
  |            Clays, ASCE J. Geotech. Eng. Vol 120, No 6, 1051-1070         |
@@ -104,7 +104,7 @@ void* OPS_MultiaxialCyclicPlasticity()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 10) {
-	opserr << "WARNING: Insufficient arguements\n";
+	opserr << "WARNING: Insufficient arguments\n";
 	opserr << "Want: nDMaterial MultiaxialCyclicPlasticity tag? rho? K? G? Su? Ho? h? m? beta? KCoeff? <eta?>" << endln;
 	return 0;
     }
@@ -1237,7 +1237,7 @@ void MultiaxialCyclicPlasticity::plastic_integrator()
  
 LABEL6:
   if (plasticflag==0){
-	// intitialize
+	// initialize
 
     // converge better
 	X[1] = Psi  ;         // stiff at time n
@@ -1514,7 +1514,7 @@ LABEL6:
  }
 
 	
- //(8) Compute consistent tangent, consistency paramter, and update stresses
+ //(8) Compute consistent tangent, consistency parameter, and update stresses
 
 ////////////////////////////// TANGENT /////////////////////
 

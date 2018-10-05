@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision: 1.3 $
 // $Date: 2007-06-28 22:16:50 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/Concrete07.cpp,v $
@@ -25,7 +25,7 @@
 // Written: Jon Waugh, Iowa State University
 // Created: 10/2006
 //
-// Description: This file contains the class defination for Uniaxial material Concrete07 
+// Description: This file contains the class definition for Uniaxial material Concrete07
 //				A implementation of the Chang & Mander Concrrete model from 1994.
 
 #include <Concrete07.h>
@@ -43,7 +43,7 @@ void* OPS_Concrete07()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 9) {
-	opserr << "WARNING: Insufficient arguements\n";
+	opserr << "WARNING: Insufficient arguments\n";
 	opserr << "Want: uniaxialMaterial Concrete07 tag? ";
 	opserr << "fpc? epsc0? Ec? fpt? epst0? xcrp? xcrn? r?\n";
 	return 0;
@@ -80,7 +80,7 @@ Concrete07::Concrete07 (int tag, double FPC, double EPSC0, double EC, double FPT
 	np = (Ec*epst0)/fpt;
 
 	double y(0),z(0);
-	
+
 	calculateYandZ(xcrn,y,z,nn);
 
 	xsp = xcrn - y/(nn*z);
@@ -91,7 +91,7 @@ Concrete07::Concrete07 (int tag, double FPC, double EPSC0, double EC, double FPT
 
 	e0 = 0;
 
-	// Set all history adn state variables to initial values
+	// Set all history and state variables to initial values
 	this->revertToStart();
 }
 
@@ -124,7 +124,7 @@ int Concrete07::setTrialStrain(double strain, double strainRate)
 
 	// Set trial strain
 	Tstrain = strain;
-	
+
 	// Determine change in strain
 	double dStrain = strain - Cstrain;
 
@@ -184,9 +184,9 @@ void Concrete07::calculateYandZ(double x, double& y, double& z, double n)
 void Concrete07::calculateStressTransition(double& fc, double& Et, double ec, double eI, double fI, double EI, double eF, double fF, double EF, int rule)
 {
 	double er, ea, eb, fa, fb;
-	int dir; 
+	int dir;
 
-	// where er is the strain at the breakpoint.  This is the intersetcion of the two straight 
+	// where er is the strain at the breakpoint.  This is the intersetcion of the two straight
 	// lines defined by the beginning and ending points and slopes.
 
 	// Calculate the strain at the breakpoint between the two lines
@@ -196,7 +196,7 @@ void Concrete07::calculateStressTransition(double& fc, double& Et, double ec, do
 	fa = EI*(ea - eI)+fI;
 	fb = EF*(eb - eF)+fF;
 
-	// Deterine if the strain is above or below the breakpoint and calculate the stress and stiffness accordingly
+	// Determine if the strain is above or below the breakpoint and calculate the stress and stiffness accordingly
 
 	if (eI < eF)
 	{
@@ -207,7 +207,7 @@ void Concrete07::calculateStressTransition(double& fc, double& Et, double ec, do
 		{
 			Et = fabs((fF-fI)/(eF-eI));
 			fc = Et*(ec-eI)+fI;
-			
+
 			return;
 		}
 	}
@@ -276,7 +276,7 @@ void Concrete07::calculateStressTransition(double& fc, double& Et, double ec, do
 
 void Concrete07::calculate13Stress(double &fc, double &Et, double ec, double eI, double eF, double fF, double EF)
 {
-	double A;				// Equation paramter
+	double A;				// Equation parameter
 	double R(0);			// Equation Parameter
 	double ESEC;			// Secant Modulus
 	double fI = 0;			// Initial Stress
@@ -291,13 +291,13 @@ void Concrete07::calculate13Stress(double &fc, double &Et, double ec, double eI,
 	 if (R > 100)
 	{
 		calculateStressTransition(fc, Et, ec, eI, 0.0, 0.25*ESEC, eF, fF, EF, 666);
-		
+
 		return;
 	}
 
 	if (eF/eI > 0.9999 && eF/eI < 1.0001)
 		R = 0;
-	
+
 	A = (ESEC-EI)/pow(fabs(eF-eI),R);
 
 	if (A > pow(10.0,300.0))
@@ -316,10 +316,10 @@ void Concrete07::calculate13Stress(double &fc, double &Et, double ec, double eI,
 void Concrete07::envelope(double x, double& fc, double& Et, int flag)
 {
 	double y,z;
-	
+
 	if (flag >= 0)
 	{
-			
+
 		if (x<xcrp)
 		{
 			calculateYandZ(x,y,z,np);
@@ -366,7 +366,7 @@ void Concrete07::envelope(double x, double& fc, double& Et, int flag)
 			Trule = 1;
 		}
 
-		else 
+		else
 		{
 			fc = 0.0;
 			Et = 0.0;
@@ -380,11 +380,11 @@ void Concrete07::envelope(double x, double& fc, double& Et, int flag)
 void Concrete07::determineTrialState(double dStrain)
 {
 	double eunn;			// unloading strain from the compression envelope
-	double funn;			// unloading stress from the compression envelope 
+	double funn;			// unloading stress from the compression envelope
 	double Esecn;			// secant modulus at loading point in compression
 	double epln;			// plastic strain in compression
 	double eunp;			// reloading strain from the tension envelope
-	double funp;			// reloading stress from the tension envelope	
+	double funp;			// reloading stress from the tension envelope
 	double Esecp;			// secant modulus at loading point in tension
 	double eplp;			// plastic strain in tension
 	double x;
@@ -397,7 +397,7 @@ void Concrete07::determineTrialState(double dStrain)
 	epln = eunn-funn/Esecn;
 
 	eunp = TmaxStrain;
-	e0 = 0.0;	
+	e0 = 0.0;
 
 	//if (fabs((eunp-e0)/epst0)<(eunn/epsc0))
 	if (eunp == 0 && eunn/epsc0 <= xsp)
@@ -423,7 +423,7 @@ void Concrete07::determineTrialState(double dStrain)
 		eplp = 0;
 
 	// Calculate x for the given strain;
-	
+
 	if (Tstrain >= 0.0)
 	{
 		x = fabs((Tstrain-e0)/epst0);
@@ -446,7 +446,7 @@ void Concrete07::determineTrialState(double dStrain)
 	{
 		if (Tstrain >= 0)
 		{
-			
+
 			envelope(x, Tstress, Ttangent, 1);
 
 			Tloading = -1;
@@ -476,7 +476,7 @@ void Concrete07::determineTrialState(double dStrain)
 		{
 			if (Tstrain <= eunn)
 			{
-				
+
 				envelope(x, Tstress, Ttangent, -1);
 
 				TminStrain = Tstrain;
@@ -484,14 +484,14 @@ void Concrete07::determineTrialState(double dStrain)
 
 				return;
 			}
-				
+
 			else if (Tstrain < eplp && !Tcracked)
 			{
 				if (Trule == 71)				// we are on the transition curve for reloading from a partial unloading in compression
 				{
-					double eron;			// strain at which reversal occured in a partial unloading
-					double fron;			// stress at which reversal occured in a parial unloading
-										
+					double eron;			// strain at which reversal occurred in a partial unloading
+					double fron;			// stress at which reversal occurred in a partial unloading
+
 					eron = TReloadStrain;
 					fron = TReloadStress;
 
@@ -505,8 +505,8 @@ void Concrete07::determineTrialState(double dStrain)
 
 				else if (Trule == 11)				// we are on the transition curve for parital reloading after a partial unloading
 				{
-					double er = TReloadStrain;	// strain when reversal occurred. 
-					double fr = TReloadStress;	// stress when reversal occured.
+					double er = TReloadStrain;	// strain when reversal occurred.
+					double fr = TReloadStress;	// stress when reversal occurred.
 					double Eplp;				// Modulus at plastic point in tension
 					double fb;					// target stress on rule 10
 					double eb;					// target strain on rule 10;
@@ -584,7 +584,7 @@ void Concrete07::determineTrialState(double dStrain)
 
 				else if (Trule == 811 && Tstrain > TUnloadStrain)
 				{
-					double Enewps;			// stiffness at strain reloading from tension evelope after unloading
+					double Enewps;			// stiffness at strain reloading from tension envelope after unloading
 					double erop;			// strain at last reversal;
 					double frop;			// stress at last reversal;
 
@@ -603,8 +603,8 @@ void Concrete07::determineTrialState(double dStrain)
 
 				else if (Trule == 11)
 				{
-					double er = TReloadStrain;	// strain when reversal occurred. 
-					double fr = TReloadStress;	// stress when reversal occured.
+					double er = TReloadStrain;	// strain when reversal occurred.
+					double fr = TReloadStress;	// stress when reversal occurred.
 					double Eplp;				// Modulus at plastic point in tension
 					double fb;					// target stress on rule 10
 					double eb;					// target strain on rule 10;
@@ -637,7 +637,7 @@ void Concrete07::determineTrialState(double dStrain)
 						return;
 					}
 				}
-				else 
+				else
 				{
 					double Eplp;			// Modulus at plastic point in tension
 
@@ -653,14 +653,14 @@ void Concrete07::determineTrialState(double dStrain)
 
 			else if (Trule == 71)				// we are on the transition curve for reloading from a partial unloading in compression
 			{
-				double eron;			// strain at which reversal occured in a partial unloading
-				double fron;			// stress at which reversal occurded in a parial unloading
-				double Enewns;			// stiffness at strain unloading from compression evelope after reloading
+				double eron;			// strain at which reversal occurred in a partial unloading
+				double fron;			// stress at which reversal occurred in a partial unloading
+				double Enewns;			// stiffness at strain unloading from compression envelope after reloading
 
 				eron = TReloadStrain;
 				fron = TReloadStress;
 				Enewns = (funn-fron)/(eunn-eron);
-				
+
 				Ttangent = Enewns;
 				Tstress = Ttangent * (Tstrain - eron) + fron;
 
@@ -671,7 +671,7 @@ void Concrete07::determineTrialState(double dStrain)
 
 			else if (Trule == 15)
 			{
-				double ea = T13Strain;			// Strain at unloadins on rule 13
+				double ea = T13Strain;			// Strain at unloading on rule 13
 				double fa = T13Stress;			// Stress at unloading on rule 13
 				double er = TReloadStrain;		// Strain at last reloading
 				double fr = TReloadStress;		// Stress at last reloading
@@ -692,10 +692,10 @@ void Concrete07::determineTrialState(double dStrain)
 					double Edum;
 
 					Enewn = funn/(eunn-epln);
-					
+
 					Edum = (funn) / (eunn - T13Zero);
 					calculate13Stress(Tstress, Ttangent, Tstrain, T13Zero, eunn, funn, Enewn);
-					
+
 					Trule = 13;
 
 					return;
@@ -710,7 +710,7 @@ void Concrete07::determineTrialState(double dStrain)
 					Ttangent = 0.0;
 					Trule = 5;
 					Tcracked = true;
-					
+
 					return;
 				}
 
@@ -734,7 +734,7 @@ void Concrete07::determineTrialState(double dStrain)
 		else if (dStrain > 0.0)
 		{
 			// Previously Loading, now unloading, strain has reversed.  Need to determine what rule we are on.
-			
+
 			if (Trule == 1)
 			{
 				// Reversing from the compression envelop envelope.  We use rule 3
@@ -743,13 +743,13 @@ void Concrete07::determineTrialState(double dStrain)
 				TminStrain = Cstrain;
 				eunn = Cstrain;
 				funn = Cstress;
-				
+
 				double Epln;			// Modulus at plastic point in compression
 				double Enewp;			// reloading stiffness in tension;
 
 				Epln = 0.1*Ec*exp(-2*(eunn/epsc0));
 				Enewp = funp/(eunp-eplp);
-				
+
 				if (Tstrain <= epln)
 				{
 					calculateStressTransition(Tstress, Ttangent, Tstrain, eunn, funn, Ec, epln, 0.0, Epln, 3);
@@ -758,7 +758,7 @@ void Concrete07::determineTrialState(double dStrain)
 
 					return;
 				}
-				
+
 				else if (Tstrain < eunp && !Tcracked)
 				{
 					calculateStressTransition(Tstress, Ttangent, Tstrain, epln, 0.0, Epln, eunp, funp, Enewp, 9);
@@ -766,12 +766,12 @@ void Concrete07::determineTrialState(double dStrain)
 					Trule = 9;
 
 					return;
-				}	
+				}
 
 				else if (!Tcracked)
 				{
 					envelope (x, Tstress, Ttangent, 1);
-					
+
 					TmaxStrain = Tstrain;
 					TmaxStress = Tstress;
 
@@ -796,10 +796,10 @@ void Concrete07::determineTrialState(double dStrain)
 
 				double erop = Cstrain;
 				double frop = Cstress;
-				
+
 				TUnloadStrain = erop;
 				TUnloadStress = frop;
-								
+
 				if (Tstrain < eunp)			// Are in the transition curve for unloading from partial reloading
 				{
 					Ttangent = (funp - frop)/(eunp - erop);
@@ -827,7 +827,7 @@ void Concrete07::determineTrialState(double dStrain)
 				Tloading = -1;
 
 				double erop = TUnloadStrain;
-				double frop = TUnloadStress;				
+				double frop = TUnloadStress;
 
 				if (Tstrain < eunp)			// Are in the transition curve for unloading from partial reloading
 				{
@@ -854,10 +854,10 @@ void Concrete07::determineTrialState(double dStrain)
 			{
 				Tloading = -1;
 
-				double er = Cstrain;	// strain when reversal occured. 
-				double fr = Cstress;	// stress when reversal occured.
-				double eron;			// strain at which reversal occured in a partial unloading
-				double fron;			// stress at which reversal occured in a parial unloading
+				double er = Cstrain;	// strain when reversal occurred.
+				double fr = Cstress;	// stress when reversal occurred.
+				double eron;			// strain at which reversal occurred in a partial unloading
+				double fron;			// stress at which reversal occurred in a partial unloading
 
 				eron = TReloadStrain;
 				fron = TReloadStress;
@@ -878,7 +878,7 @@ void Concrete07::determineTrialState(double dStrain)
 
 				Epln = 0.1*Ec*exp(-2*(eunn/epsc0));
 				Enewp = funp/(eunp-eplp);
-				
+
 				if (Tstrain <= epln)
 				{
 					calculateStressTransition(Tstress, Ttangent, Tstrain, eunn, funn, Ec, epln, 0.0, Epln, 3);
@@ -895,12 +895,12 @@ void Concrete07::determineTrialState(double dStrain)
 					Trule = 9;
 
 					return;
-				}	
+				}
 
 				else if (!Tcracked)
 				{
 					envelope (x, Tstress, Ttangent, 1);
-					
+
 					TmaxStrain = Tstrain;
 					TmaxStress = Tstress;
 
@@ -916,22 +916,22 @@ void Concrete07::determineTrialState(double dStrain)
 
 					return;
 				}
-			}		
+			}
 
 			else if (Trule == 10 || Trule == 11)
 			{
-				// Paritial reloading in compression zone
+				// Partial reloading in compression zone
 				Tloading = -1;
 
-				double er = Cstrain;	// strain when reversal occurred. 
-				double fr = Cstress;	// stress when reversal occured.
+				double er = Cstrain;	// strain when reversal occurred.
+				double fr = Cstress;	// stress when reversal occurred.
 				double Eplp;			// Modulus at plastic point in tension
 				double Epln;			// Modulus at plastic point in compression
 				double fa;				// target stress on rule 9
 				double ea;				// target strain on rule 9;
 				double Ea;				// slope at target point (ea,fa)
 				double Enewp;			// reloading stiffness in tension;
-				
+
 				TUnloadStrain = er;
 				TUnloadStress = fr;
 				TUnloadStiffness = Ctangent;
@@ -939,8 +939,8 @@ void Concrete07::determineTrialState(double dStrain)
 				Epln = 0.1*Ec*exp(-2*(eunn/epsc0));
 				Enewp = funp/(eunp-eplp);
 				ea = (eunn-er)/(eunn-eplp)*(eunp-epln)+epln;
-				
-				if (Tstrain < ea)				// On the transition curve 
+
+				if (Tstrain < ea)				// On the transition curve
 				{
 					calculateStressTransition(fa, Ea, ea, epln, 0.0, Epln, eunp, funp, Enewp, 9);
 
@@ -975,7 +975,7 @@ void Concrete07::determineTrialState(double dStrain)
 
 			}
 
-			else							// Unloading after cracking of the concrete has occured.
+			else							// Unloading after cracking of the concrete has occurred.
 			{
 
 				Tloading = -1;
@@ -992,8 +992,8 @@ void Concrete07::determineTrialState(double dStrain)
 				}
 
 
-				double er = Cstrain;	// strain when reversal occurred. 
-				double fr = Cstress;	// stress when reversal occured.
+				double er = Cstrain;	// strain when reversal occurred.
+				double fr = Cstress;	// stress when reversal occurred.
 				TUnloadStiffness = Ctangent;
 				TUnloadStrain = er;
 				TUnloadStress = fr;
@@ -1030,11 +1030,11 @@ void Concrete07::determineTrialState(double dStrain)
 
 	if (Tloading < 0)					// Previously where unloading the concrete
 	{
-		if (dStrain > 0.0)				// We are continueing to unload the concrete
+		if (dStrain > 0.0)				// We are continuing to unload the concrete
 		{
 			if (Tstrain > eunp && !Tcracked)
 			{
-				
+
 				envelope(x, Tstress, Ttangent, 1);
 
 				TmaxStrain = Tstrain;
@@ -1047,7 +1047,7 @@ void Concrete07::determineTrialState(double dStrain)
 			{
 				if (Trule == 81)
 				{
-					double Enewps;			// stiffness at strain reloading from tension evelope after unloading
+					double Enewps;			// stiffness at strain reloading from tension envelope after unloading
 					double erop;			// strain at last reversal;
 					double frop;			// stress at last reversal;
 
@@ -1083,7 +1083,7 @@ void Concrete07::determineTrialState(double dStrain)
 
 						Ttangent = (fa - fr) / (ea - er);
 						Tstress = Ttangent*(Tstrain - er) + fr;
-						
+
 						Trule = 12;
 
 						return;
@@ -1164,13 +1164,13 @@ void Concrete07::determineTrialState(double dStrain)
 					{
 						Ttangent = (0.0 - fr)/(eb - er);
 						Tstress = Ttangent*(Tstrain - er) + fr;
-						
+
 						Trule = 14;
 
 						return;
 					}
 
-					else 
+					else
 					{
 						Tstress = 0.0;
 						Ttangent = 0.0;
@@ -1183,8 +1183,8 @@ void Concrete07::determineTrialState(double dStrain)
 
 				if (Trule == 711 && Tstrain < TReloadStrain)
 				{
-					double eron;			// strain at which reversal occured in a partial unloading
-					double fron;			// stress at which reversal occured in a parial unloading
+					double eron;			// strain at which reversal occurred in a partial unloading
+					double fron;			// stress at which reversal occurred in a partial unloading
 
 					eron = TReloadStrain;
 					fron = TReloadStress;
@@ -1198,13 +1198,13 @@ void Concrete07::determineTrialState(double dStrain)
 				}
 
 				double Epln;			// Modulus at plastic point in compression
-				
+
 				Epln = 0.1*Ec*exp(-2*(eunn/epsc0));
-				
+
 				calculateStressTransition(Tstress, Ttangent, Tstrain, eunn, funn, Ec, epln, 0.0, Epln, 3);
 
 				Trule = 3;
-				
+
 				return;
 			}
 
@@ -1236,7 +1236,7 @@ void Concrete07::determineTrialState(double dStrain)
 			}
 		}
 
-		if (dStrain < 0.0)				// Previosuly unloading, now reloading
+		if (dStrain < 0.0)				// Previously unloading, now reloading
 		{
 			// We need to determine what rule we are on
 
@@ -1251,7 +1251,7 @@ void Concrete07::determineTrialState(double dStrain)
 
 				double Eplp;			// Modulus at plastic point in tension
 				double Enewn;			// reloading stiffness in compression;
-				
+
 				if (eunn == 0 && funn == 0)
 				{
 					double Edum;
@@ -1262,14 +1262,14 @@ void Concrete07::determineTrialState(double dStrain)
 					Esecn = Ec*((funn/(Ec*epsc0)+0.57)/(eunn/epsc0+0.57));
 					epln = eunn-funn/Esecn;
 				}
-				
+
 				Eplp = Ec/(pow(fabs((eunp-e0)/epst0),1.1)+1.00);
 				Enewn = funn/(eunn-epln);
 
 				if (Tstrain >= eplp)
 				{
 					calculateStressTransition(Tstress, Ttangent, Tstrain, eunp, funp, Ec, eplp, 0.0, Eplp, 4);
-					
+
 					Trule = 4;
 
 					return;
@@ -1303,8 +1303,8 @@ void Concrete07::determineTrialState(double dStrain)
 
 				double eron = Cstrain;
 				double fron = Cstress;
-				double Enewns;			// stiffness at strain unloading from compression evelope after reloading
-				
+				double Enewns;			// stiffness at strain unloading from compression envelope after reloading
+
 				TReloadStrain = eron;
 				TReloadStress = fron;
 				Enewns = (funn-fron)/(eunn-eron);
@@ -1334,8 +1334,8 @@ void Concrete07::determineTrialState(double dStrain)
 			{
 				Tloading = 1;
 
-				double eron;			// strain at which reversal occured in a partial unloading
-				double fron;			// stress at which reversal occured in a parial unloading
+				double eron;			// strain at which reversal occurred in a partial unloading
+				double fron;			// stress at which reversal occurred in a partial unloading
 
 				eron = TReloadStrain;
 				fron = TReloadStress;
@@ -1366,12 +1366,12 @@ void Concrete07::determineTrialState(double dStrain)
 			{
 				Tloading = 1;
 
-				double Enewps;			// stiffness at strain reloading from tension evelope after unloading
+				double Enewps;			// stiffness at strain reloading from tension envelope after unloading
 				double erop;			// strain at last reversal;
 				double frop;			// stress at last reversal;
 				double Eplp;			// Modulus at plastic point in tension
 				double Enewn;			// reloading stiffness in compression;
-				
+
 				if (eunn == 0 && funn == 0)
 				{
 					double Edum;
@@ -1382,7 +1382,7 @@ void Concrete07::determineTrialState(double dStrain)
 					Esecn = Ec*((funn/(Ec*epsc0)+0.57)/(eunn/epsc0+0.57));
 					epln = eunn-funn/Esecn;
 				}
-				
+
 				Eplp = Ec/(pow(fabs((eunp-e0)/epst0),1.1)+1.00);
 				Enewn = funn/(eunn-epln);
 				erop = TUnloadStrain;
@@ -1402,7 +1402,7 @@ void Concrete07::determineTrialState(double dStrain)
 				else if (Tstrain >= eplp)
 				{
 					calculateStressTransition(Tstress, Ttangent, Tstrain, eunp, funp, Ec, eplp, 0.0, Eplp, 4);
-					
+
 					Trule = 4;
 
 					return;
@@ -1435,8 +1435,8 @@ void Concrete07::determineTrialState(double dStrain)
 
 				Tloading = 1;
 
-				double er = Cstrain;	// strain when reversal occurred. 
-				double fr = Cstress;	// stress when reversal occured.
+				double er = Cstrain;	// strain when reversal occurred.
+				double fr = Cstress;	// stress when reversal occurred.
 				double Eplp;			// Modulus at plastic point in tension
 				double fb;				// target stress on rule 10
 				double eb;				// target strain on rule 10;
@@ -1514,9 +1514,9 @@ void Concrete07::determineTrialState(double dStrain)
 					double Edum;
 
 					Edum = (funn)/(eunn - T13Zero);
-					
+
 					calculate13Stress(Tstress, Ttangent, Tstrain, T13Zero, eunn, funn, Enewn);
-					
+
 					Trule = 13;
 					return;
 				}
@@ -1540,7 +1540,7 @@ void Concrete07::determineTrialState(double dStrain)
 				double fr = Cstress;		// stress at reversal
 				double Enewn;			// reloading stiffness in tension;
 				double Edum;
-					
+
 				if (eunn == 0 && funn == 0)
 				{
 					eunn = .05*epsc0;
@@ -1550,7 +1550,7 @@ void Concrete07::determineTrialState(double dStrain)
 					Esecn = Ec*((funn/(Ec*epsc0)+0.57)/(eunn/epsc0+0.57));
 					epln = eunn-funn/Esecn;
 				}
-					
+
 				TReloadStrain = er;
 				TReloadStress = fr;
 				Enewn = funn/(eunn-epln);
@@ -1561,7 +1561,7 @@ void Concrete07::determineTrialState(double dStrain)
 					Ttangent = 0.0;
 					Trule = 5;
 					Tcracked = true;
-					
+
 					return;
 				}
 
@@ -1832,11 +1832,11 @@ int Concrete07::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& t
 
 	if ( res < 0)
 	{
-		opserr << "Concrete07::recvSelf() - failed to recieve data\n";
+		opserr << "Concrete07::recvSelf() - failed to receive data\n";
 		this->setTag(0);
 	}
 
-	else 
+	else
 	{
 		this->setTag(int(data(0)));
 

@@ -27,7 +27,7 @@
 // Revision: A
 //
 // Description: This file contains the class definition for OpenGLRenderer.
-// OpenGLRenderer is an class which diplays using X11 or openGL.
+// OpenGLRenderer is an class which displays using X11 or openGL.
 //
 // What: "@(#) OpenGLRenderer.h, revA"
 
@@ -568,7 +568,7 @@ OpenGLRenderer::drawPolygon(const Matrix &pos, const Vector &data, int tag, int 
     return -1;
   }
   if (pos.noRows() != data.Size()) {
-    opserr << "OpenGLRenderer::drawPolygon - matrix & vector incompatable\n";
+    opserr << "OpenGLRenderer::drawPolygon - matrix & vector incompatible\n";
     return -1;
   }
 #endif
@@ -609,7 +609,7 @@ OpenGLRenderer::drawPolygon(const Matrix &pos, const Matrix &rgbData, int tag, i
     return -1;
   }
   if (pos.noRows() != rgbData.noRows()) {
-    opserr << "OpenGLRenderer::drawPolygon - matrix & vector incompatable\n";
+    opserr << "OpenGLRenderer::drawPolygon - matrix & vector incompatible\n";
     return -1;
   }
 #endif

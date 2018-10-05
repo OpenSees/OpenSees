@@ -25,7 +25,7 @@
 // Written: Jon Waugh, Iowa State University
 // Created: 11/2005
 //
-// Description: This file contains the class defination for Uniaxial material Concrete07 
+// Description: This file contains the class definition for Uniaxial material Concrete07 
 //				A simplified form of Chang & Mander Concrrete model from 1994.
 
 #ifndef Concrete07_h
@@ -138,7 +138,7 @@ class Concrete07 : public UniaxialMaterial
 	  // Calculates trial state variables based on the trail strain
       void determineTrialState (double dStrain);
 
-	  // Determines is a strain reversal has occured based on the trial strain
+	  // Determines is a strain reversal has occurred based on the trial strain
 	  void detectStrainReversal (double dStrain);
 
 	  // Calculates the value of y(x) and z(x)

@@ -22,13 +22,13 @@
  |                                                                          |
  +             Authors: Gang Wang  AND  Professor Nicholas Sitar            +
  |                                                                          |
- |			   Department of Civil and Environmental Engineering            |
- +			   Univeristy of California, Berkeley, CA 94720, USA            +
+ |			   Department of Civil and Environmental Engineering                |
+ +			   University of California, Berkeley, CA 94720, USA                +
  |                                                                          |
  |             Email: wang@ce.berkeley.edu (G.W.)                           |
  +                                                                          + 
  |  Disclaimers:                                                            |
- |  (1) This is implemenation of MultiaxialCyclicPlasticity for clays       |
+ |  (1) This is implementation of MultiaxialCyclicPlasticity for clays      |
  +      Model References:                                                   +
  |      Borja R.I, Amies, A.P. Multiaxial Cyclic Plasticity Model for       |
  |            Clays, ASCE J. Geotech. Eng. Vol 120, No 6, 1051-1070         |
@@ -184,7 +184,7 @@ class MultiaxialCyclicPlasticity : public NDMaterial {
   Matrix stress ;			     // stress @ t=n+1, computed this step
   Matrix stress_n;			     // stress @ t=n;   stored before
   Matrix so;                     // unload deviatoric back stress
-  //memeory variables
+  //memory variables
   Matrix strain_n;               // strain @ t=n;   stored before
   Matrix backs_n;                // back stress for BS @ t=n+1
   Matrix backs;                  // back stress for BS @ t=n

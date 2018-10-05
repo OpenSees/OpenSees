@@ -481,7 +481,7 @@ Steel01Thermal::getElongTangent(double TempT, double &ET, double &Elong, double 
     opserr << "the temperature is invalid\n"; 
   } 
 
-  // caculation of thermal elongation of reinforcing steel. JZ
+  // calculation of thermal elongation of reinforcing steel. JZ
 ///*	
 	if (TempT <= 1) {
 		  ThermalElongation = TempT * 1.2164e-5;

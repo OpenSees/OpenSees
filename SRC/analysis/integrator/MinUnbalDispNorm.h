@@ -30,7 +30,7 @@
 // Revision: A
 //
 // Description: This file contains the class definition for MinUnbalDispNorm.
-// MinUnbalDispNorm is an algorithmic class for perfroming a static analysis
+// MinUnbalDispNorm is an algorithmic class for performing a static analysis
 // using the minimum unbalanced displacement norm (Chan IJNME 26(2657:2669)1988
 //
 // What: "@(#) MinUnbalDispNorm.h, revA"

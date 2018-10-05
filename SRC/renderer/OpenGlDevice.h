@@ -98,7 +98,7 @@ class OpenGlDevice
   Colormap cmap;        // the colormap all X11 Window objects share   
   GC theGC;
   GLXContext cx;    
-  XSizeHints hints; // conatins the infor about where window is and its size
+  XSizeHints hints; // contains the info about where window is and its size
                     //  static unsigned long foreground, background;
   XEvent theEvent;
   XVisualInfo *visual;

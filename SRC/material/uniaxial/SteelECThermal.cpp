@@ -293,7 +293,7 @@ void SteelECThermal::determineTrialState (double dStrain)
 	  double BT = pow(CT*(EpsiYT-EpsiPT)*E0+CT*CT, 0.5);
 	  double AT = pow((EpsiYT-EpsiPT)*(EpsiYT-EpsiPT+CT/E0),0.5);
 	
-	  //Calculating the POSITIVE stress accoring to EC3
+	  //Calculating the POSITIVE stress according to EC3
       double fabsTstrain = fabs(Tstrain);
 	 // opserr<<"fabsTstrain is: "<< fabsTstrain <<" at Temp "<<Ttemp<<endln;
 	 // opserr<<"EpsiPT: "<<EpsiPT<< " fp: "<< fp <<" E0: "<<E0<<endln;
@@ -480,7 +480,7 @@ SteelECThermal::getElongTangent(double TempT, double &ET, double &Elong, double 
 	//opserr<<", TempT:"<<TempT<< " fy: "<< fy<< " fp: "<< fp <<" E0T:  "<< E0<<endln;
 #endif
 
-  // caculation of thermal elongation of reinforcing steel. JZ
+  // calculation of thermal elongation of reinforcing steel. JZ
 ///*	
 	if (TempT <= 1) {
 		  ThermalElongation = TempT * 1.2164e-5;

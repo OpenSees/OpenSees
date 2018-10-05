@@ -40,7 +40,7 @@ Does nothing. \\
 To set the corresponding EquiSolnAlgo class. \\
 
 \indent {\em virtual int test(void) =0;} \\
-To return a postive number if the convergence criteria defined for the
+To return a positive number if the convergence criteria defined for the
 object has been satisfied, the positibe number equal to the number of times 
 since {\em start} that {\em test()} has been invoked. Otherwise a negative number 
 is to be returned. A {\em -2} 
@@ -49,5 +49,5 @@ performed due to limits set, i.e. the maximum number of iterations, otherwise a
 {\em -1} is to be returned.  \\
 
 \indent {\em virtual int start(void) =0;} \\
-This is invoked at the start of each iteration. To return {\em 0} if sucessfull, i.e 
+This is invoked at the start of each iteration. To return {\em 0} if successful, i.e 
 that testing can proceed, a negative number if not. \\

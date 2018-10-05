@@ -17,21 +17,21 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision: 1.5 $
 // $Date: 2007-04-02 23:42:26 $
 // $Source: /usr/local/cvs/OpenSees/SRC/analysis/integrator/ArcLength1.cpp,v $
-                                                                        
-                                                                        
+
+
 // File: ~/analysis/integrator/ArcLength1.C
-// 
-// Written: fmk 
+//
+// Written: fmk
 // Created: 07/98
 // Revision: A
 //
 // Description: This file contains the class definition for ArcLength1.
-// ArcLength1 is an algorithmic class for perfroming a static analysis
-// using the arc length scheme, that is within a load step the follwing
+// ArcLength1 is an algorithmic class for performing a static analysis
+// using the arc length scheme, that is within a load step the following
 // constraint is enforced: dU^TdU + alpha^2*dLambda^2 = ArcLength1^2
 // where dU is change in nodal displacements for step, dLambda is
 // change in applied load and ArcLength1 is a control parameter.
@@ -59,21 +59,21 @@ void* OPS_ArcLength1()
 
     int numdata = 1;
     if (OPS_GetDoubleInput(&numdata, &arcLength) < 0) {
-	opserr << "WARNING integrator ArcLength failed to read arc lenght\n";
+	opserr << "WARNING integrator ArcLength failed to read arc length\n";
 	return 0;
     }
     if (OPS_GetDoubleInput(&numdata, &alpha) < 0) {
 	opserr << "WARNING integrator ArcLength failed to read alpha\n";
 	return 0;
     }
-    return new ArcLength1(arcLength,alpha); 
+    return new ArcLength1(arcLength,alpha);
 }
 
 ArcLength1::ArcLength1(double arcLength, double alpha)
 :StaticIntegrator(INTEGRATOR_TAGS_ArcLength1),
  arcLength2(arcLength*arcLength), alpha2(alpha*alpha),
- deltaUhat(0), deltaUbar(0), deltaU(0), deltaUstep(0), 
- phat(0), deltaLambdaStep(0.0), currentLambda(0.0), 
+ deltaUhat(0), deltaUbar(0), deltaU(0), deltaUstep(0),
+ phat(0), deltaLambdaStep(0.0), currentLambda(0.0),
  signLastDeltaLambdaStep(1)
 {
 
@@ -99,7 +99,7 @@ ArcLength1::newStep(void)
 {
     // get pointers to AnalysisModel and LinearSOE
     AnalysisModel *theModel = this->getAnalysisModel();
-    LinearSOE *theLinSOE = this->getLinearSOE();    
+    LinearSOE *theLinSOE = this->getLinearSOE();
     if (theModel == 0 || theLinSOE == 0) {
 	opserr << "WARNING ArcLength1::newStep() ";
 	opserr << "No AnalysisModel or LinearSOE has been set\n";
@@ -120,7 +120,7 @@ ArcLength1::newStep(void)
     theLinSOE->solve();
     (*deltaUhat) = theLinSOE->getX();
     Vector &dUhat = *deltaUhat;
-    
+
     // determine delta lambda(1) == dlambda
     double dLambda = sqrt(arcLength2/((dUhat^dUhat)+alpha2));
     dLambda *= signLastDeltaLambdaStep; // base sign of load change
@@ -134,8 +134,8 @@ ArcLength1::newStep(void)
     (*deltaUstep) = (*deltaU);
 
     // update model with delta lambda and delta U
-    theModel->incrDisp(*deltaU);    
-    theModel->applyLoadDomain(currentLambda);    
+    theModel->incrDisp(*deltaU);
+    theModel->applyLoadDomain(currentLambda);
     theModel->updateDomain();
 
     return 0;
@@ -145,7 +145,7 @@ int
 ArcLength1::update(const Vector &dU)
 {
     AnalysisModel *theModel = this->getAnalysisModel();
-    LinearSOE *theLinSOE = this->getLinearSOE();    
+    LinearSOE *theLinSOE = this->getLinearSOE();
     if (theModel == 0 || theLinSOE == 0) {
 	opserr << "WARNING ArcLength1::update() ";
 	opserr << "No AnalysisModel or LinearSOE has been set\n";
@@ -154,10 +154,10 @@ ArcLength1::update(const Vector &dU)
 
     (*deltaUbar) = dU; // have to do this as the SOE is gonna change
 
-    // determine dUhat    
+    // determine dUhat
     theLinSOE->setB(*phat);
     theLinSOE->solve();
-    (*deltaUhat) = theLinSOE->getX();    
+    (*deltaUhat) = theLinSOE->getX();
 
     // determine delta lambda(i)
     double a = (*deltaUstep)^(*deltaUbar);
@@ -170,19 +170,19 @@ ArcLength1::update(const Vector &dU)
     double dLambda = -a/b;
 
     // determine delta U(i)
-    (*deltaU) = (*deltaUbar);    
+    (*deltaU) = (*deltaUbar);
     deltaU->addVector(1.0, *deltaUhat,dLambda);
-    
+
     // update dU and dlambda
     (*deltaUstep) += *deltaU;
     deltaLambdaStep += dLambda;
     currentLambda += dLambda;
 
     // update the model
-    theModel->incrDisp(*deltaU);    
-    theModel->applyLoadDomain(currentLambda);    
+    theModel->incrDisp(*deltaU);
+    theModel->applyLoadDomain(currentLambda);
     theModel->updateDomain();
-    
+
     // set the X soln in linearSOE to be deltaU for convergence Test
     theLinSOE->setX(*deltaU);
 
@@ -191,17 +191,17 @@ ArcLength1::update(const Vector &dU)
 
 
 
-int 
+int
 ArcLength1::domainChanged(void)
 {
     // we first create the Vectors needed
     AnalysisModel *theModel = this->getAnalysisModel();
-    LinearSOE *theLinSOE = this->getLinearSOE();    
+    LinearSOE *theLinSOE = this->getLinearSOE();
     if (theModel == 0 || theLinSOE == 0) {
 	opserr << "WARNING ArcLength1::update() ";
 	opserr << "No AnalysisModel or LinearSOE has been set\n";
 	return -1;
-    }    
+    }
     int size = theModel->getNumEqn(); // ask model in case N+1 space
 
     if (deltaUhat == 0 || deltaUhat->Size() != size) { // create new Vector
@@ -226,7 +226,7 @@ ArcLength1::domainChanged(void)
 	}
     }
 
-    
+
     if (deltaU == 0 || deltaU->Size() != size) { // create new Vector
 	if (deltaU != 0)
 	    delete deltaU;   // delete the old
@@ -238,39 +238,39 @@ ArcLength1::domainChanged(void)
 	}
     }
 
-    if (deltaUstep == 0 || deltaUstep->Size() != size) { 
+    if (deltaUstep == 0 || deltaUstep->Size() != size) {
 	if (deltaUstep != 0)
-	    delete deltaUstep;  
+	    delete deltaUstep;
 	deltaUstep = new Vector(size);
-	if (deltaUstep == 0 || deltaUstep->Size() != size) { 
+	if (deltaUstep == 0 || deltaUstep->Size() != size) {
 	    opserr << "FATAL ArcLength1::domainChanged() - ran out of memory for";
 	    opserr << " deltaUstep Vector of size " << size << endln;
 	    exit(-1);
 	}
     }
 
-    if (phat == 0 || phat->Size() != size) { 
+    if (phat == 0 || phat->Size() != size) {
 	if (phat != 0)
-	    delete phat;  
+	    delete phat;
 	phat = new Vector(size);
-	if (phat == 0 || phat->Size() != size) { 
+	if (phat == 0 || phat->Size() != size) {
 	    opserr << "FATAL ArcLength1::domainChanged() - ran out of memory for";
 	    opserr << " phat Vector of size " << size << endln;
 	    exit(-1);
 	}
-    }    
+    }
 
     // now we have to determine phat
     // do this by incrementing lambda by 1, applying load
     // and getting phat from unbalance.
     currentLambda = theModel->getCurrentDomainTime();
     currentLambda += 1.0;
-    theModel->applyLoadDomain(currentLambda);    
+    theModel->applyLoadDomain(currentLambda);
     this->formUnbalance(); // NOTE: this assumes unbalance at last was 0
     (*phat) = theLinSOE->getB();
     currentLambda -= 1.0;
-    theModel->setCurrentDomainTime(currentLambda);    
-    
+    theModel->setCurrentDomainTime(currentLambda);
+
     return 0;
 }
 
@@ -301,7 +301,7 @@ ArcLength1::recvSelf(int cTag,
   if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
       opserr << "ArcLength1::sendSelf() - failed to send the data\n";
       return -1;
-  }      
+  }
 
   // set the data
   arcLength2 = data(0);
@@ -321,14 +321,6 @@ ArcLength1::Print(OPS_Stream &s, int flag)
 	s << "\t ArcLength1 - currentLambda: " << cLambda;
 	s << "  ArcLength1: " << sqrt(arcLength2) <<  "  alpha: ";
 	s << sqrt(alpha2) << endln;
-    } else 
+    } else
 	s << "\t ArcLength1 - no associated AnalysisModel\n";
 }
-
-
-
-
-
-
-
-

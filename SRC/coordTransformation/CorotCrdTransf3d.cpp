@@ -691,7 +691,7 @@ CorotCrdTransf3d::compTransfMatrixBasicGlobal(void)
             T(5,i+9) =  Se(i);
         }
         
-        // setup tranformation matrix
+        // setup transformation matrix
         static Vector Lr(12);
         
         // T(:,1) += Lr3*rI2 - Lr2*rI3;

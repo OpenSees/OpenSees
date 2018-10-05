@@ -26,7 +26,7 @@
 // Created: 04/2011
 //
 // Description: This file contains the class implementation of Cast. 
-// This Cast is a material model tha descibes the Cast Fuse brace
+// This Cast is a material model that describes the Cast Fuse brace
 // Developed by Gray et al. (2010).
 // this model is based on:
 // 1. Modified Menegotto-Pinto Steel Model with Filippou Isotropic Hardening

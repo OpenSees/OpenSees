@@ -97,7 +97,7 @@ public:
   double TrialNegPHC;
   double TrialDamage;
   
-  // Commited state
+  // Committed state
   double CommPlasticDefo;
   double CommDefoIncr;
   double CommTempPDefo;

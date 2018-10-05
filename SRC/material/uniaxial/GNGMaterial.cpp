@@ -70,8 +70,8 @@
 #include <OPS_Stream.h>
 
 //External Procedure
-//This is the all importat extenal procedure that the interpreter will parse when it 
-//comes accross your element on the command line. You need to parse the command line, 
+//This is the all importat external procedure that the interpreter will parse when it 
+//comes across your element on the command line. You need to parse the command line, 
 //create a material using the command line arguments you parsed and then return this 
 //material. The name of the procedure must be OPS_YourClassName (no exceptions). If this 
 //procedure is missing or the name is incorrect, your material will fail to load.
@@ -400,7 +400,7 @@ GNGMaterial::getCopy(void)
 
 //Methods Dealing With Databases/Parallel Processing
 //There are two methods provided which are required if the user wishes to use the 
-//database or parallel procesing features of the OpenSees applications. If neither 
+//database or parallel processing features of the OpenSees applications. If neither 
 //are to be used, the developer need simply return a negative value in both methods. 
 //The idea is that the material must pack up it's information using Vector and ID 
 //objects and send it off to a Channel object. On the flip side, the receiving blank 

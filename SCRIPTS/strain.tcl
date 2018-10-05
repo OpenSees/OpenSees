@@ -44,7 +44,7 @@ set toggleFrame .interpreter
 wm title . "Uniaxial Material"
 
 # ##############################################################
-# Invoke OpenSees command to make avaliable commands for testing
+# Invoke OpenSees command to make available commands for testing
 # the materials: 
 #     1)uniaxialMaterial 
 #     2)strainUniaxialTest 

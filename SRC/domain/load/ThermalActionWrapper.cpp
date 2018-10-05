@@ -23,7 +23,7 @@
 // $Source: /usr/local/cvs/OpenSees/SRC/domain/load/ThermalActionWrapper.cpp,v $
 
 
-//Added by Liming Jiang, [Univeristy of Edinburgh]
+//Added by Liming Jiang, [University of Edinburgh]
 
 
 
@@ -272,24 +272,24 @@ ThermalActionWrapper::setRatios(const Vector& theRatio){
 		theRatios = theRatio;
 	}
 	else{
-		opserr<<"WARNIGN::ThermalActionWrapper recieved invalid ratios"<<endln;
+		opserr<<"WARNIGN::ThermalActionWrapper received invalid ratios"<<endln;
 		return -1;
 	}
   
   //check the num of interpolation points
   if (theRatios.Size()!=NodalLocs.noRows()) {
-    opserr<<"WARNIGN::ThermalActionWrapper recieved an incompatible ratio"<<endln;
+    opserr<<"WARNIGN::ThermalActionWrapper received an incompatible ratio"<<endln;
     return -2;
   }
   
   int NumNodTA = NodalLocs.noRows();
   
   if(theRatios(NumNodTA-1)>2){
-    opserr<<"WARNING::ThermalActionWrapper recived a ration vector ends up with "<<theRatios(NumNodTA-1)<< " , which should be 1.0 or 2.0"<<endln;
+    opserr<<"WARNING::ThermalActionWrapper received a ration vector ends up with "<<theRatios(NumNodTA-1)<< " , which should be 1.0 or 2.0"<<endln;
     return -2;
   }
   else if(theRatios(0)<0){
-	  opserr<<"WARNING::ThermalActionWrapper recived a ration vector ends up with "<<theRatios(NumNodTA-1)<< " , which should be 0 or greater"<<endln;
+	  opserr<<"WARNING::ThermalActionWrapper received a ration vector ends up with "<<theRatios(NumNodTA-1)<< " , which should be 0 or greater"<<endln;
     return -2;
   }
   else {
@@ -606,7 +606,7 @@ ThermalActionWrapper::getIntData(const Vector& locs)
 	ratio[2] = (distInt-Transpoint)*(distInt-r3)/(r-Transpoint)/(r-r3);
    }
    else{
-	opserr<<"WARNIGN ThermalActionWrapper recieved a int Value "<<distInt<<" out of range"<<endln;
+	opserr<<"WARNIGN ThermalActionWrapper received a int Value "<<distInt<<" out of range"<<endln;
 	   }
   
    // ratio[2]= (locs(crdi)-NodalLocs(0,crdi))*(locs(crdi)-NodalLocs(1,crdi))/(NodalLocs(2,crdi)-NodalLocs(0,crdi))/(NodalLocs(2,crdi)-NodalLocs(1,crdi));

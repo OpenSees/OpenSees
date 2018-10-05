@@ -579,7 +579,7 @@ DistributedSparseGenRowLinSOE::setB(const Vector &v, double fact)
 
     if (v.Size() != n) {
 	opserr << "WARNING BandGenLinSOE::setB() -";
-	opserr << " incomptable ns " << n << " and " << v.Size() << endln;
+	opserr << " incompatible ns " << n << " and " << v.Size() << endln;
 	return -1;
     }
     

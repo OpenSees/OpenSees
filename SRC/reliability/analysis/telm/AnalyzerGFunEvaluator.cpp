@@ -49,7 +49,7 @@ AnalyzerGFunEvaluator::AnalyzerGFunEvaluator(Tcl_Interp *passedTclInterp,
 {
 	theDomain=passedDomain;
 	theAnalyzer=passedAnalyzer;
-	// (here the user has provided a file with the analysis commmands)
+	// (here the user has provided a file with the analysis commands)
 	createRecorders();
 
 }

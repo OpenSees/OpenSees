@@ -119,7 +119,7 @@ typedef struct {
 typedef struct {
     int    size;      /* size of the panel */
     int    pnum;      /* which processor grabs this panel */
-    double starttime; /* at waht time this panel is assigned to a proc */
+    double starttime; /* at what time this panel is assigned to a proc */
     double fctime;    /* factorization time */
     float  flopcnt;   /* floating-point operations */
     int    pipewaits; /* how many times the panel waited during pipelining */

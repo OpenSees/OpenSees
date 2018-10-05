@@ -4,7 +4,7 @@
 
 // Written: ZHYang, UCDavis
 
-// Purpose: This file contains the class definition for 8 node brick self weigth load.
+// Purpose: This file contains the class definition for 8 node brick self weight load.
 
 #include <ElementalLoad.h>
 
