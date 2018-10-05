@@ -109,7 +109,10 @@ int OPS_Node()
 		return -1;
 	    }
 	    disp.resize(ndf);
-	    if(OPS_GetDoubleInput(&ndf, &disp(0)) < 0) return -1;
+	    if(OPS_GetDoubleInput(&ndf, &disp(0)) < 0) {
+		opserr << "WARNING: failed to read disp\n";
+		return -1;
+	    }
 
 	} else if(strcmp(type,"-vel")==0 || strcmp(type,"-Vel")==0) {
 	    if(OPS_GetNumRemainingInputArgs() < ndf) {
@@ -117,7 +120,10 @@ int OPS_Node()
 		return -1;
 	    }
 	    vel.resize(ndf);
-	    if(OPS_GetDoubleInput(&ndf, &vel(0)) < 0) return -1;
+	    if(OPS_GetDoubleInput(&ndf, &vel(0)) < 0) {
+		opserr << "WARNING: failed to read vel\n";
+		return -1;
+	    }
 
 	} else if(strcmp(type,"-mass")==0 || strcmp(type,"-Mass")==0) {
 	    if(OPS_GetNumRemainingInputArgs() < ndf) {
@@ -125,7 +131,10 @@ int OPS_Node()
 		return -1;
 	    }
 	    Vector data(ndf);
-	    if(OPS_GetDoubleInput(&ndf, &data(0)) < 0) return -1;
+	    if(OPS_GetDoubleInput(&ndf, &data(0)) < 0) {
+		opserr << "WARNING: failed to read mass\n";
+		return -1;
+	    }
 	    ndmass.resize(ndf,ndf);
 	    ndmass.Zero();
 	    for(int i=0; i<ndf; i++) {
@@ -138,7 +147,21 @@ int OPS_Node()
 		return -1;
 	    }
 	    dispLoc.resize(ndm);
-	    if(OPS_GetDoubleInput(&ndm, &dispLoc(0)) < 0) return -1;
+	    if(OPS_GetDoubleInput(&ndm, &dispLoc(0)) < 0) {
+		opserr << "WARNING: failed to read dispLoc\n";
+		return -1;
+	    }
+
+	} else if(strcmp(type,"-ndf")==0 || strcmp(type,"-NDF")==0) {
+	    if(OPS_GetNumRemainingInputArgs() < 1) {
+		opserr<<"incorrect number for ndf\n";
+		return -1;
+	    }
+	    int numdata = 1;
+	    if(OPS_GetIntInput(&numdata, &ndf) < 0) {
+		opserr << "WARNING: failed to read ndf\n";
+		return -1;
+	    }
 
 	}
     }
@@ -163,7 +186,7 @@ int OPS_Node()
 	theNode->setTrialDisp(disp);
     }
     if(vel.Size() == ndf) {
-	theNode->setTrialVel(disp);
+	theNode->setTrialVel(vel);
     }
     if(ndmass.noRows() == ndf) {
 	theNode->setMass(ndmass);

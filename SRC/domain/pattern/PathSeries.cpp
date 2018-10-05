@@ -67,8 +67,8 @@ void* OPS_PathSeries()
     TimeSeries* theSeries = 0;
     numData = OPS_GetNumRemainingInputArgs();
     if(numData < 1) return 0;
-    std::string type = OPS_GetString();
-    if(type == "-dt") {
+    const char* type = OPS_GetString();
+    if(strcmp(type,"-dt") == 0 || strcmp(type,"-dT") == 0) {
 	numData = OPS_GetNumRemainingInputArgs();
 	// get dt
 	if(numData < 1) {
@@ -87,7 +87,7 @@ void* OPS_PathSeries()
 
 	// get data type
 	type = OPS_GetString();
-	if(type == "-values") {
+	if(strcmp(type,"-values") == 0) {
 	    
 	    // value list
 	    numData = OPS_GetNumRemainingInputArgs();
@@ -109,7 +109,7 @@ void* OPS_PathSeries()
 	    values.resize(nval);
 	    if(OPS_GetDoubleInput(&nval,&values(0)) < 0) return 0;
 	    
-	} else if(type == "-filePath") {
+	} else if(strcmp(type,"-filePath") == 0) {
 	    // value file
 	    numData = OPS_GetNumRemainingInputArgs();
 	    if(numData <= 0) {
@@ -122,20 +122,20 @@ void* OPS_PathSeries()
 	// get factor
 	numData = OPS_GetNumRemainingInputArgs();
 	if(numData > 1) {
-	    if(std::string(OPS_GetString()) == "-factor") {
+	    if(strcmp(OPS_GetString(),"-factor") == 0) {
 		numData = 1;
 		if(OPS_GetDoubleInput(&numData,&factor) < 0) return 0;
 	    }
 	}
 
 	// path serise
-	if(type == "-values") {
+	if(strcmp(type,"-values") == 0) {
 	    theSeries = new PathSeries(tag,values,dt,factor);
-	} else if(type == "-filePath") {
+	} else if(strcmp(type,"-filePath") == 0) {
 	    theSeries = new PathSeries(tag,valfile,dt,factor);
 	}
 
-    } else if(type == "-time") {
+    } else if(strcmp(type,"-time") == 0) {
 	numData = OPS_GetNumRemainingInputArgs();
 	if(numData <= 0) {
 	    opserr<<"number of time points is not specified\n";
@@ -178,7 +178,7 @@ void* OPS_PathSeries()
 	// get factor
 	numData = OPS_GetNumRemainingInputArgs();
 	if(numData > 1) {
-	    if(std::string(OPS_GetString()) == "-factor") {
+	    if(strcmp(OPS_GetString(),"-factor") == 0) {
 		numData = 1;
 		if(OPS_GetDoubleInput(&numData,&factor) < 0) return 0;
 	    }
@@ -187,7 +187,7 @@ void* OPS_PathSeries()
 	// path time
 	theSeries = new PathTimeSeries(tag,values,times,factor);
 	    
-    } else if(type == "-fileTime") {
+    } else if(strcmp(type,"-fileTime") == 0) {
 	numData = OPS_GetNumRemainingInputArgs();
 	if(numData < 2) {
 	    opserr<<"fileTime and filePath are not specified\n";
@@ -199,7 +199,7 @@ void* OPS_PathSeries()
 	// get factor
 	numData = OPS_GetNumRemainingInputArgs();
 	if(numData > 1) {
-	    if(std::string(OPS_GetString()) == "-factor") {
+	    if(strcmp(OPS_GetString(),"-factor") == 0) {
 		numData = 1;
 		if(OPS_GetDoubleInput(&numData,&factor) < 0) return 0;
 	    }

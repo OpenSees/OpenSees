@@ -122,11 +122,14 @@ Beam2dUniformLoad::setParameter(const char **argv, int argc, Parameter &param)
   if (argc < 1)
     return -1;
   
-  if (strcmp(argv[0],"wTrans") == 0 || strcmp(argv[0],"wy") == 0)
+  if (strcmp(argv[0],"wTrans") == 0 || strcmp(argv[0],"wy") == 0) {
+    param.setValue(wTrans);
     return param.addObject(1, this);
-
-  if (strcmp(argv[0],"wAxial") == 0 || strcmp(argv[0],"wx") == 0)
+  }
+  if (strcmp(argv[0],"wAxial") == 0 || strcmp(argv[0],"wx") == 0) {
+    param.setValue(wAxial);
     return param.addObject(2, this);
+  }
 
   return -1;
 }

@@ -18,80 +18,56 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.4 $
-// $Date: 2003-02-14 23:02:12 $
-// $Source: /usr/local/cvs/OpenSees/SRC/utility/Timer.h,v $
-                                                                        
-                                                                        
-// File: ~/utility/Timer.h
+// $Revision: 1.5 $
+// $Date: 2008-04-14 21:26:50 $
+// $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/TensionOnlyMaterial.h,v $
+                                                      
+// Written: MHS
+// Created: Aug 2001
 //
-// Written: fmk 
-// Created: Mar 1997
-// Revision: A
-//
-// Description: This file contains the class definition for Timer.
-// Timer is a stopwatch.
-//
-// What: "@(#) Timer.h, revA"
+// Description: This file contains the class definition for 
+// TensionOnlyMaterial.  TensionOnlyMaterial wraps a UniaxialMaterial
+// and imposes min and max strain limits.
 
-#ifndef Timer_h
-#define Timer_h
+#ifndef TensionOnlyMaterial_h
+#define TensionOnlyMaterial_h
 
-#ifdef _WIN32
+#include <UniaxialMaterial.h>
 
-#else
-#ifdef _MAC
-#include <sys/time.h>
-#else
-
-#include <time.h>
-#include <unistd.h>
-
-#endif
-#include <sys/times.h>
-#include <sys/resource.h>
-#endif
-
-#include <OPS_Globals.h>
-
-class Timer
+class TensionOnlyMaterial : public UniaxialMaterial
 {
   public:
-    Timer();    
-    virtual ~Timer();
-
-    void start(void);
-    void pause(void);
-    double getReal(void) const;
-    double getCPU(void) const;
-    int getNumPageFaults(void) const;
+    TensionOnlyMaterial(int tag, UniaxialMaterial &material); 
+    TensionOnlyMaterial();
+    ~TensionOnlyMaterial();
     
-    virtual void Print(OPS_Stream &s) const;   
-    friend OPS_Stream &operator<<(OPS_Stream &s, const Timer &E);    
+    const char *getClassType(void) const {return "TensionOnlyMaterial";};
+
+    int setTrialStrain(double strain, double strainRate = 0.0); 
+    int setTrialStrain(double strain, double FiberTemperature, double strainRate); 
+    double getStrain(void);          
+    double getStrainRate(void);
+    double getStress(void);
+    double getTangent(void);
+    double getDampTangent(void);
+    double getInitialTangent(void) {return theMaterial->getInitialTangent();}
+
+    int commitState(void);
+    int revertToLastCommit(void);    
+    int revertToStart(void);        
+
+    UniaxialMaterial *getCopy(void);
+    
+    int sendSelf(int commitTag, Channel &theChannel);  
+    int recvSelf(int commitTag, Channel &theChannel, 
+		 FEM_ObjectBroker &theBroker);    
+    
+    void Print(OPS_Stream &s, int flag =0);
 
   protected:
     
   private:
-
-#ifdef _WIN32
-
-// fill in later
-
-#else
-
-#ifdef TIMER_USE_MPIWTIME
-    double t1, t2;
-    double tmsstart, tmsend;
-    // struct rusage r1usage, r2usage;
-    // struct rusage *r1us, *r2us;
-#else 
-    clock_t t1, t2;
-    struct tms tmsstart, tmsend;
-    struct rusage r1usage, r2usage;
-    struct rusage *r1us, *r2us;
-#endif //TIMER_USE_MPIWTIME
-
-#endif
+	UniaxialMaterial *theMaterial;
 };
 
 
