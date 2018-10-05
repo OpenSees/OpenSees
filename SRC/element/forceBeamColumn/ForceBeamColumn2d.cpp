@@ -78,6 +78,7 @@ Journal of Structural Engineering, Approved for publication, February 2007.
 #include <CompositeResponse.h>
 #include <ElementalLoad.h>
 #include <ElementIter.h>
+#include <map>
 
 Matrix ForceBeamColumn2d::theMatrix(6,6);
 Vector ForceBeamColumn2d::theVector(6);
