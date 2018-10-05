@@ -53,18 +53,24 @@ void* OPS_HingeEndpointBeamIntegration(int& integrationTag, ID& secTags)
     }
 
     // inputs: 
-    int iData[6];
-    int numData = 6;
+    int iData[4];
+    double dData[2];
+    int numData = 2;
     if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
+    numData = 1;
+    if(OPS_GetDoubleInput(&numData,&dData[0]) < 0) return 0;
+    if(OPS_GetIntInput(&numData,&iData[2]) < 0) return 0;
+    if(OPS_GetDoubleInput(&numData,&dData[1]) < 0) return 0;
+    if(OPS_GetIntInput(&numData,&iData[3]) < 0) return 0;
 
     integrationTag = iData[0];
     secTags.resize(4);
     secTags(0) = iData[1];
-    secTags(1) = iData[5];
-    secTags(2) = iData[5];
-    secTags(3) = iData[3];
+    secTags(1) = iData[3];
+    secTags(2) = iData[3];
+    secTags(3) = iData[2];
 
-    return new HingeEndpointBeamIntegration(iData[2],iData[4]);
+    return new HingeEndpointBeamIntegration(dData[0],dData[1]);
 }
 
 
