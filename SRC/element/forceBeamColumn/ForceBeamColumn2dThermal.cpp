@@ -802,13 +802,13 @@ ForceBeamColumn2dThermal::update()
 
   maxSubdivisions = 4;
 
-  // fmk - modification to get compatable ele forces and deformations 
+  // fmk - modification to get compatible ele forces and deformations 
   //   for a change in deformation dV we try first a newton iteration, if
   //   that fails we try an initial flexibility iteration on first iteration 
   //   and then regular newton, if that fails we use the initial flexiblity
   //   for all iterations.
   //
-  //   if they both fail we subdivide dV & try to get compatable forces
+  //   if they both fail we subdivide dV & try to get compatible forces
   //   and deformations. if they work and we have subdivided we apply
   //   the remaining dV.
   int ThermalCounter =0;
@@ -956,7 +956,7 @@ ForceBeamColumn2dThermal::update()
 #ifdef _BDEBUG
 		opserr<<"ForceBeamColumn:: "<< this->getTag()<<" Sec "<< i<< "flex"<<fsSubdivide[i]<<endln
 			<<" Sec Force incr dSs:"<<dSs<<" Sec deform incr dVs:"<<dvs
-			<<" Trial vs brfore compensation "<<vsSubdivide[i]<<endln;
+			<<" Trial vs before compensation "<<vsSubdivide[i]<<endln;
 #endif
 		
 		
@@ -1163,7 +1163,7 @@ ForceBeamColumn2dThermal::update()
 	    // if we have failed to convrege for all of our newton schemes
 	    // - reduce step size by the factor specified
 		#ifdef _BDEBUG
-		opserr<< "Commited vs for sec1 "<<vs[1]<<endln<<"Committed Ssr "<<Ssr[1]<<endln;
+		opserr<< "Committed vs for sec1 "<<vs[1]<<endln<<"Committed Ssr "<<Ssr[1]<<endln;
 #endif
 	    if (j == (numIters-1) && (l == 2)) {
 	      dvTrial /= factor;

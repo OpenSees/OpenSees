@@ -140,7 +140,7 @@ Brick8FiberOverlay::Brick8FiberOverlay(int tag, int nd1, int nd2, int nd3, int n
 	Vf = nFj - nFi; 
 	Vf.Normalize();
 
-	//set up integration paramaters (2 intgr pts)
+	//set up integration parameters (2 intgr pts)
 	pts[0][0] = nFi(0)+Vf(0)*(1-0.5773502691896258);   
 	pts[0][1] = nFi(1)+Vf(1)*(1-0.5773502691896258);	
 	pts[0][2] = nFi(2)+Vf(2)*(1-0.5773502691896258);		

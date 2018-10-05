@@ -46,6 +46,7 @@
 #define INT_MAXSTR_MFE    7
 #define INT_MAXSTR_RK     8
 #define INT_MAXSTR_FE     9
+#define INT_RungeKutta45  45 // By Jose Abell @ UANDES
 
 const double        ManzariDafalias::one3            = 1.0/3.0 ;
 const double        ManzariDafalias::two3            = 2.0/3.0;
@@ -233,9 +234,63 @@ ManzariDafalias::ManzariDafalias(int tag, int classTag, double G0, double nu,
     initialize();
 }
 
+
+// specific-type full constructor... needed in parallel mode [J.Abell jaabell@miuandes.cl]
+ManzariDafalias ::ManzariDafalias(int classTag) 
+    : NDMaterial(0, classTag),
+    mEpsilon(6), 
+    mEpsilon_n(6),
+    mEpsilonE(6),
+    mEpsilonE_n(6),
+    mSigma(6),
+    mSigma_n(6),
+    mAlpha(6),
+    mAlpha_n(6),
+    mAlpha_in(6),
+    mAlpha_in_n(6),
+    mFabric(6),
+    mFabric_n(6),
+    mCe(6,6),
+    mCep(6,6),
+    mCep_Consistent(6,6)
+{
+    m_G0        = 0.0;
+    m_nu        = 0.0;
+    m_e_init    = 0.0;
+    m_Mc        = 0.0;
+    m_c         = 0.0;
+    m_lambda_c  = 0.0;
+    m_e0        = 0.0;
+    m_ksi       = 0.0;
+    m_P_atm     = 0.0;
+    m_m         = 0.0;
+    m_h0        = 0.0;
+    m_ch        = 0.0;
+    m_nb        = 0.0;
+    m_A0        = 0.0;
+    m_nd        = 0.0;
+    m_z_max     = 0.0;
+    m_cz        = 0.0;
+
+    massDen      = 0.0;
+    mTolF        = 1.0e-7;
+    mTolR        = 1.0e-7;
+    mJacoType    = 1;
+    mScheme      = 2;
+    mTangType    = 2;
+    mIter        = 0;
+    mUseElasticTan= false;
+    
+    mElastFlag = 0;
+
+    this->initialize();
+}
+
+
+
 // null constructor
 ManzariDafalias ::ManzariDafalias() 
-    : NDMaterial(),
+    : NDMaterial(0, ND_TAG_ManzariDafalias),
     mEpsilon(6), 
     mEpsilon_n(6),
     mEpsilonE(6),
@@ -415,6 +470,14 @@ ManzariDafalias::setResponse (const char **argv, int argc, OPS_Stream &output)
         return new MaterialResponse(this, 5, this->getFabric());
     else if (strcmp(argv[0], "alpha_in") == 0 || strcmp(argv[0],"alphain") == 0)
         return new MaterialResponse(this, 6, this->getAlpha_in());
+    else if (strcmp(argv[0], "elasticstrains") == 0 || strcmp(argv[0],"estrains") == 0)
+    {    
+        return new MaterialResponse(this, 7, this->getEStrain());
+    }
+    else if (strcmp(argv[0], "plasticstrains") == 0 || strcmp(argv[0],"pstrains") == 0)
+    {
+        return new MaterialResponse(this, 8, this->getPStrain());
+    }
     else
         return 0;
 }
@@ -448,6 +511,14 @@ ManzariDafalias::getResponse(int responseID, Information &matInfo)
         case 6:
             if (matInfo.theVector != 0)
                 *(matInfo.theVector) = getAlpha_in();
+            return 0;
+        case 7://elasticstrains
+            if (matInfo.theVector != 0)
+                *(matInfo.theVector) = getEStrain();
+            return 0;
+        case 8://plasticstrains
+            if (matInfo.theVector != 0)
+                *(matInfo.theVector) = getPStrain();
             return 0;
         default:
             return -1;
@@ -862,6 +933,10 @@ void ManzariDafalias::explicit_integrator(const Vector& CurStress, const Vector&
         case INT_RungeKutta       :    // Runge Kutta 4th order
             exp_int = &ManzariDafalias::RungeKutta4;
             break;
+
+        case INT_RungeKutta45        :    // Runge Kutta 45 with error control after Sloan (J. Abell @ UANDES added)
+            exp_int = &ManzariDafalias::RungeKutta45;
+            break;        
 
         case INT_MAXSTR_FE        :    // Forward Euler constraining maximum strain increment
         case INT_MAXSTR_MFE       :    // Modified Euler constraining maximum strain increment
@@ -1542,6 +1617,313 @@ void ManzariDafalias::RungeKutta4(const Vector& CurStress, const Vector& CurStra
     }
     return;
 }
+
+
+
+
+// RK45 integrator added by Jose Abell @ UANDES. (www.joseabell.com)
+// Theory by Scott Sloan. 
+// Sloan, S. W., Abbo, A. J., & Sheng, D. (2001). 
+//  " Refined explicit integration of elastoplastic models with automatic error control. ""
+//  Engineering Computations, 18(1/2), 121–194. https://doi.org/10.1108/02644400110365842
+void ManzariDafalias::RungeKutta45(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
+        const Vector& CurAlpha, const Vector& CurFabric, const Vector& alpha_in, const Vector& NextStrain,
+        Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
+        double& NextDGamma, double& NextVoidRatio,  double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent) 
+{    
+    static bool do_once = true;
+
+    if (do_once) {
+        opserr << 
+        "ManzariDafalias::RungeKutta45 - RK45 integrator added by Jose Abell @ UANDES. (www.joseabell.com). \n\
+                                         Theory by Scott Sloan. " << endln;
+        do_once = false;
+    }
+
+    double CurVoidRatio, dVolStrain;
+    double T = 0.0, dT = 1.0, dT_min = 1e-3 , TolE = mTolR;
+    double Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0,A, B, C, D, p, Kp;
+    double temp4, q;
+
+    //Static allocation so we can avoid mallocs and get maximum speed. This is not thread-safe
+    static Vector n(6), d(6), b(6), R(6), dDevStrain(6), r(6); 
+    static Vector nStress(6), nAlpha(6), nFabric(6), ndPStrain(6);
+    static Vector dSigma1(6), dSigma2(6), dSigma3(6), dSigma4(6), dSigma5(6), dSigma6(6), dSigma(6), 
+        dAlpha1(6), dAlpha2(6), dAlpha3(6), dAlpha4(6), dAlpha5(6), dAlpha6(6), dAlpha(6), 
+        dFabric1(6), dFabric2(6), dFabric3(6), dFabric4(6), dFabric5(6), dFabric6(6), dFabric(6),
+        dPStrain1(6), dPStrain2(6), dPStrain3(6), dPStrain4(6), dPStrain5(6), dPStrain6(6), dPStrain(6);
+    static Matrix aCep1(6,6), aCep2(6,6), aCep3(6,6), aCep4(6,6), aCep5(6,6), aCep6(6,6), aCep_thisStep(6,6), aD(6,6);
+    static Vector thisSigma(6), thisAlpha(6), thisFabric(6);    
+    
+    // Zero everything out for good measure. 
+    n.Zero(); d.Zero(); b.Zero(); R.Zero(); dDevStrain.Zero(); r.Zero();
+    nStress.Zero(); nAlpha.Zero(); nFabric.Zero(); ndPStrain.Zero();
+    dSigma1.Zero(); dSigma2.Zero(); dSigma3.Zero(); dSigma4.Zero(); dSigma5.Zero(); dSigma6.Zero(); dSigma.Zero(); 
+    dAlpha1.Zero(); dAlpha2.Zero(); dAlpha3.Zero(); dAlpha4.Zero(); dAlpha5.Zero(); dAlpha6.Zero(); dAlpha.Zero(); 
+    dFabric1.Zero(); dFabric2.Zero(); dFabric3.Zero(); dFabric4.Zero(); dFabric5.Zero(); dFabric6.Zero(); dFabric.Zero();
+    dPStrain1.Zero(); dPStrain2.Zero(); dPStrain3.Zero(); dPStrain4.Zero(); dPStrain5.Zero(); dPStrain6.Zero(); dPStrain.Zero();
+    aCep1.Zero(); aCep2.Zero(); aCep3.Zero(); aCep4.Zero(); aCep5.Zero(); aCep6.Zero(); aCep_thisStep.Zero(); aD.Zero();
+    thisSigma.Zero(); thisAlpha.Zero(); thisFabric.Zero();    
+    
+    CurVoidRatio      = m_e_init - (1 + m_e_init) * GetTrace(CurStrain);
+    NextVoidRatio     = m_e_init - (1 + m_e_init) * GetTrace(NextStrain);
+    NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain);
+
+    GetElasticModuli(CurStress, CurVoidRatio, K, G);
+    aC = GetStiffness(K, G);
+    aD = GetCompliance(K, G);
+
+    NextStress = CurStress;
+    NextAlpha = CurAlpha;
+    NextFabric = CurFabric;
+
+    p = one3 * GetTrace(NextStress);
+    if (p < m_Pmin)
+    {
+        if (debugFlag)
+            opserr << "ManzariDafalias::RungeKutta45() - Tag = " << this->getTag() << " : I have a problem (p < 0) - This should not happen!!!" << endln;        
+        NextStress = GetDevPart(NextStress) + m_Pmin * mI1;
+        p = one3 * GetTrace(NextStress);
+    }
+
+    // Set aCep_Consistent to zero for substepping process
+    aCep_Consistent.Zero();
+
+    while (T < 1.0)
+    {
+        NextVoidRatio     = m_e_init - (1 + m_e_init) * GetTrace(NextStrain + T * (NextStrain - CurStrain));
+        
+        dVolStrain = dT * GetTrace(NextStrain - CurStrain);
+        dDevStrain = dT * GetDevPart(NextStrain - CurStrain);
+
+
+        // Calc Delta 1
+        thisSigma = NextStress;
+        thisAlpha = NextAlpha;
+        thisFabric = NextFabric;
+
+        GetStateDependent(thisSigma, thisAlpha, thisFabric,  NextVoidRatio, alpha_in, n, d, b, Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, D, B, C, R);
+        GetElasticModuli(thisSigma , NextVoidRatio, K, G);
+
+        r = GetDevPart(NextStress) / p;
+        Kp = two3 * p * h * DoubleDot2_2_Contr(b, n);
+        temp4 = (Kp + 2.0*G*(B-C*GetTrace(SingleDot(n,SingleDot(n,n)))) 
+            - K*D*DoubleDot2_2_Contr(n,r));
+        if (fabs(temp4) < small) temp4 = small;
+        NextDGamma      = (2.0*G*DoubleDot2_2_Mixed(n,dDevStrain) - K*dVolStrain*DoubleDot2_2_Contr(n,r))/temp4;
+        dSigma1   = 2.0*G* ToContraviant(dDevStrain) + K*dVolStrain*mI1 - Macauley(NextDGamma)*
+             (2.0*G*(B*n-C*(SingleDot(n,n)-1.0/3.0*mI1)) + K*D*mI1);
+        dAlpha1   = Macauley(NextDGamma) * two3 * h * b;
+        dFabric1   = -1.0 * Macauley(NextDGamma) * m_cz * Macauley(-1.0*D) * (m_z_max * n + thisFabric);
+        dPStrain1 = NextDGamma * ToCovariant(R);
+        
+        aCep1 = GetElastoPlasticTangent(thisSigma, NextDGamma, CurStrain, NextStrain, G, K, B, C, D, h, n, d, b);
+
+
+
+        // Calc Delta 2
+        thisSigma = NextStress  + 0.5*dSigma1;
+        thisAlpha = NextAlpha   + 0.5*dAlpha1;
+        thisFabric = NextFabric + 0.5*dFabric1;
+
+        GetStateDependent(thisSigma, thisAlpha, thisFabric, NextVoidRatio,  alpha_in,  n, d, b, Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, D, B, C, R);
+        r = GetDevPart(NextStress) / p;
+        Kp = two3 * p * h * DoubleDot2_2_Contr(b, n);
+        temp4 = (Kp + 2.0*G*(B-C*GetTrace(SingleDot(n,SingleDot(n,n)))) 
+            - K*D*DoubleDot2_2_Contr(n,r));
+        if (fabs(temp4) < small) temp4 = small;
+        NextDGamma      = (2.0*G*DoubleDot2_2_Mixed(n,dDevStrain) - K*dVolStrain*DoubleDot2_2_Contr(n,r))/temp4;
+        dSigma2   = 2.0*G* ToContraviant(dDevStrain) + K*dVolStrain*mI1 - Macauley(NextDGamma)*
+             (2.0*G*(B*n-C*(SingleDot(n,n)-1.0/3.0*mI1)) + K*D*mI1);
+        dAlpha2   = Macauley(NextDGamma) * two3 * h * b;
+        dFabric2   = -1.0 * Macauley(NextDGamma) * m_cz * Macauley(-1.0*D) * (m_z_max * n + thisFabric);
+        dPStrain2 = NextDGamma * ToCovariant(R);
+
+        aCep2 = GetElastoPlasticTangent(thisSigma, NextDGamma, CurStrain, NextStrain, G, K, B, C, D, h, n, d, b);
+
+
+        // Calc Delta 3
+        thisSigma = NextStress  + 0.25*(dSigma1  + dSigma2);
+        thisAlpha = NextAlpha   + 0.25*(dAlpha1  + dAlpha2);
+        thisFabric = NextFabric + 0.25*(dFabric1 + dFabric2);
+        GetElasticModuli(thisSigma , NextVoidRatio, K, G);
+        GetStateDependent(thisSigma, thisAlpha, thisFabric, NextVoidRatio,  alpha_in,  n, d, b, Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, D, B, C, R);
+        r = GetDevPart(NextStress) / p;
+        Kp = two3 * p * h * DoubleDot2_2_Contr(b, n);
+        temp4 = (Kp + 2.0*G*(B-C*GetTrace(SingleDot(n,SingleDot(n,n)))) 
+            - K*D*DoubleDot2_2_Contr(n,r));
+        if (fabs(temp4) < small) temp4 = small;
+        NextDGamma      = (2.0*G*DoubleDot2_2_Mixed(n,dDevStrain) - K*dVolStrain*DoubleDot2_2_Contr(n,r))/temp4;
+        dSigma3   = 2.0*G* ToContraviant(dDevStrain) + K*dVolStrain*mI1 - Macauley(NextDGamma)*
+             (2.0*G*(B*n-C*(SingleDot(n,n)-1.0/3.0*mI1)) + K*D*mI1);
+        dFabric3   = -1.0 * Macauley(NextDGamma) * m_cz * Macauley(-1.0*D) * (m_z_max * n + thisFabric);
+        dPStrain3 = NextDGamma * ToCovariant(R);
+
+        aCep3 = GetElastoPlasticTangent(thisSigma, NextDGamma, CurStrain, NextStrain, G, K, B, C, D, h, n, d, b);
+
+
+        // Calc Delta 4
+        thisSigma = NextStress  - dSigma2  + 2*dSigma3;
+        thisAlpha = NextAlpha   - dAlpha2  + 2*dAlpha3;
+        thisFabric = NextFabric - dFabric2 + 2*dFabric3;
+        GetElasticModuli(thisSigma , NextVoidRatio, K, G);
+        GetStateDependent(thisSigma, thisAlpha, thisFabric, NextVoidRatio,  alpha_in,  n, d, b, Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, D, B, C, R);
+        r = GetDevPart(NextStress) / p;
+        Kp = two3 * p * h * DoubleDot2_2_Contr(b, n);
+        temp4 = (Kp + 2.0*G*(B-C*GetTrace(SingleDot(n,SingleDot(n,n)))) 
+            - K*D*DoubleDot2_2_Contr(n,r));
+        if (fabs(temp4) < small) temp4 = small;
+        NextDGamma      = (2.0*G*DoubleDot2_2_Mixed(n,dDevStrain) - K*dVolStrain*DoubleDot2_2_Contr(n,r))/temp4;
+        dSigma4   = 2.0*G* ToContraviant(dDevStrain) + K*dVolStrain*mI1 - Macauley(NextDGamma)*
+             (2.0*G*(B*n-C*(SingleDot(n,n)-1.0/3.0*mI1)) + K*D*mI1);
+        dFabric4   = -1.0 * Macauley(NextDGamma) * m_cz * Macauley(-1.0*D) * (m_z_max * n + thisFabric);
+        dPStrain4 = NextDGamma * ToCovariant(R);
+
+        aCep4 = GetElastoPlasticTangent(thisSigma, NextDGamma, CurStrain, NextStrain, G, K, B, C, D, h, n, d, b);
+
+
+        // Calc Delta 5
+        thisSigma = NextStress  + (7*dSigma1  + 10*dSigma2  + dSigma4)/27;
+        thisAlpha = NextAlpha   + (7*dAlpha1  + 10*dAlpha2  + dAlpha4)/27;
+        thisFabric = NextFabric + (7*dFabric1 + 10*dFabric2 + dFabric4)/27;
+        GetElasticModuli(thisSigma , NextVoidRatio, K, G);
+        GetStateDependent(thisSigma, thisAlpha, thisFabric, NextVoidRatio,  alpha_in,  n, d, b, Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, D, B, C, R);
+        r = GetDevPart(NextStress) / p;
+        Kp = two3 * p * h * DoubleDot2_2_Contr(b, n);
+        temp4 = (Kp + 2.0*G*(B-C*GetTrace(SingleDot(n,SingleDot(n,n)))) 
+            - K*D*DoubleDot2_2_Contr(n,r));
+        if (fabs(temp4) < small) temp4 = small;
+        NextDGamma      = (2.0*G*DoubleDot2_2_Mixed(n,dDevStrain) - K*dVolStrain*DoubleDot2_2_Contr(n,r))/temp4;
+        dSigma5   = 2.0*G* ToContraviant(dDevStrain) + K*dVolStrain*mI1 - Macauley(NextDGamma)*
+             (2.0*G*(B*n-C*(SingleDot(n,n)-1.0/3.0*mI1)) + K*D*mI1);
+        dAlpha5   = Macauley(NextDGamma) * two3 * h * b;
+        dFabric5   =  -1.0 * Macauley(NextDGamma) * m_cz * Macauley(-1.0*D) * (m_z_max * n + thisFabric);
+        dPStrain5 = NextDGamma * ToCovariant(R);
+   
+        aCep5 = GetElastoPlasticTangent(thisSigma, NextDGamma, CurStrain, NextStrain, G, K, B, C, D, h, n, d, b);
+
+
+        // Calc Delta 6
+        thisSigma = NextStress  + (28*dSigma1  - 125*dSigma2  + 546*dSigma3  + 54*dSigma4  - 378*dSigma5)/625;
+        thisAlpha = NextAlpha   + (28*dAlpha1  - 125*dAlpha2  + 546*dAlpha3  + 54*dAlpha4  - 378*dAlpha5)/625;
+        thisFabric = NextFabric + (28*dFabric1 - 125*dFabric2 + 546*dFabric3 + 54*dFabric4 - 378*dFabric5)/625;
+        GetElasticModuli(thisSigma , NextVoidRatio, K, G);
+        GetStateDependent(thisSigma, thisAlpha, thisFabric, NextVoidRatio,  alpha_in,  n, d, b, Cos3Theta, h, psi, alphaBtheta, alphaDtheta, b0, A, D, B, C, R);
+        r = GetDevPart(NextStress) / p;
+        Kp = two3 * p * h * DoubleDot2_2_Contr(b, n);
+        temp4 = (Kp + 2.0*G*(B-C*GetTrace(SingleDot(n,SingleDot(n,n)))) 
+            - K*D*DoubleDot2_2_Contr(n,r));
+        if (fabs(temp4) < small) temp4 = small;
+        NextDGamma      = (2.0*G*DoubleDot2_2_Mixed(n,dDevStrain) - K*dVolStrain*DoubleDot2_2_Contr(n,r))/temp4;
+        dSigma6   = 2.0*G* ToContraviant(dDevStrain) + K*dVolStrain*mI1 - Macauley(NextDGamma)*
+             (2.0*G*(B*n-C*(SingleDot(n,n)-1.0/3.0*mI1)) + K*D*mI1);
+        dAlpha6   = Macauley(NextDGamma) * two3 * h * b;
+        dFabric6   =  -1.0 * Macauley(NextDGamma) * m_cz * Macauley(-1.0*D) * (m_z_max * n + thisFabric);
+        dPStrain6 = NextDGamma * ToCovariant(R);
+
+        aCep6 = GetElastoPlasticTangent(thisSigma, NextDGamma, CurStrain, NextStrain, G, K, B, C, D, h, n, d, b);
+
+
+
+
+        // Update
+        dSigma =   ( 14*dSigma1   + 35*dSigma4   + 162*dSigma5   + 125*dSigma6   ) / 336;
+        dAlpha =   ( 14*dAlpha1   + 35*dAlpha4   + 162*dAlpha5   + 125*dAlpha6   ) / 336;
+        dFabric =  ( 14*dFabric1  + 35*dFabric4  + 162*dFabric5  + 125*dFabric6  ) / 336;
+        dPStrain = ( 14*dPStrain1 + 35*dPStrain4 + 162*dPStrain5 + 125*dPStrain6 ) / 336;
+
+        nStress = NextStress + dSigma;
+        nAlpha  = NextAlpha  + dAlpha;
+        nFabric  = NextFabric  + dFabric;
+
+        // Compute the error 
+        p = one3 * GetTrace(nStress);
+        
+        if (p < 0)
+        {
+            if (dT == dT_min)
+                return;
+            dT = fmax(0.1 * dT, dT_min);
+            continue;
+        }
+
+        double stressNorm = GetNorm_Contr(NextStress);
+        double alphaNorm = GetNorm_Contr(NextAlpha);
+
+        double curStepError1 = GetNorm_Contr(-42*dSigma1 - 224*dSigma3 - 21*dSigma4 + 162*dSigma5 + 125*dSigma6 )/336;
+        if (stressNorm >= 0.5) {curStepError1 /= (2 * stressNorm);}
+    
+        double curStepError2 = GetNorm_Contr(-42*dAlpha1 - 224*dAlpha3 - 21*dAlpha4 + 162*dAlpha5 + 125*dAlpha6 )/336;
+        if (alphaNorm >= 0.5) {curStepError2 /=  (2 * alphaNorm);}
+    
+        double curStepError = fmax(curStepError1, curStepError2);
+    
+        if (curStepError > TolE)
+        {
+            if (debugFlag) 
+            {
+                opserr << "--- Unsuccessful increment (tag = " << this->getTag() << "): Error =  " << curStepError << endln;
+                opserr << "                           T = " << T << ", dT = " << dT << endln;
+            }
+            
+            q = fmax(0.8 * sqrt(TolE / curStepError), 0.1);
+            // q = fmax(0.8 * pow(TolE / curStepError, 0.2), 0.1);
+
+            if (dT == dT_min) {
+                // opserr << "--- ManzariDafalias::RungeKutta45() (tag = " << this->getTag() << "): Warning! Convergence not achieved."<< endln;
+                mUseElasticTan = true;
+
+                NextElasticStrain -= dPStrain;// 0.5* (dPStrain1 + dPStrain2);
+                NextStress = nStress;
+                double eta = sqrt(13.5) * GetNorm_Contr(GetDevPart(NextStress)) / GetTrace(NextStress);
+                if (eta > m_Mc)
+                    NextStress = one3 * GetTrace(NextStress) * mI1 + m_Mc / eta * GetDevPart(NextStress);
+                NextAlpha  = CurAlpha + 3.0 * (GetDevPart(NextStress)/GetTrace(NextStress) - GetDevPart(CurStress)/GetTrace(CurStress));
+                
+                // ++N_nonconverged;
+                // max_error = fmax(max_error, curStepError);
+
+                T += dT;
+            }
+            dT = fmax(q * dT, dT_min);
+        } else {
+            
+            if (debugFlag) 
+                opserr << "+++ Successful increment: T = " << T << ", dT = " << dT <<  "  Error =  " << curStepError << endln;
+
+            NextElasticStrain -= dPStrain;
+            NextStress = nStress;
+            NextAlpha  = nAlpha;
+            NextFabric = nFabric;
+
+            // Stress_Correction(CurStress, CurStrain, CurElasticStrain, CurAlpha, CurFabric, alpha_in, NextStrain, NextElasticStrain, NextStress,
+            //     NextAlpha, NextFabric, NextDGamma, NextVoidRatio, G, K, aC, aCep, aCep_Consistent);
+
+            T += dT;
+
+            aCep_thisStep =   ( 14*aCep1 + 35*aCep4 + 162*aCep5 + 125*aCep6 ) /336;
+            aCep_Consistent = aCep_thisStep * (aD * aCep_Consistent + T * mIImix);
+        
+            if(curStepError == 0)
+                dT = 1 - T;
+            else
+            {
+                // q = fmax(0.8 * sqrt(TolE / curStepError), 0.5);
+                q = fmax(0.8 * pow(TolE / curStepError, 0.2), 0.5);
+                dT = fmax(q * dT, dT_min);
+                dT = fmin(dT, 1 - T);
+            }
+        }        
+    }
+
+    aCep = aCep_thisStep;
+
+    return;
+}
+
+
+
+
 
 
 int ManzariDafalias::BackwardEuler_CPPM(const Vector& CurStress, const Vector& CurStrain, const Vector& CurElasticStrain,
@@ -4664,3 +5046,22 @@ Matrix ManzariDafalias::ToCovariant(const Matrix& m1)
     
     return res;
 }
+
+// send back the strain
+const Vector& 
+ManzariDafalias::getEStrain() 
+{
+    opserr << "ManzariDafalias::getEStrain - base class function called. This is an error\n ";
+    return mEpsilonE; 
+} 
+
+const Vector& 
+ManzariDafalias::getPStrain() 
+{
+    opserr << "ManzariDafalias::getPStrain - base class function called. This is an error\n ";
+    static Vector result(6);
+    result = mEpsilon - mEpsilonE;
+    return result; 
+} 
+
+

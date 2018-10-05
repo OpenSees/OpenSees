@@ -170,7 +170,7 @@ analyze 1
 set ok 0
 
 #
-# print pretty output of comparsions
+# print pretty output of comparisons
 #
 
 #               SAP2000   SeismoStruct

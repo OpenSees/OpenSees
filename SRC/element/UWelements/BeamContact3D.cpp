@@ -391,8 +391,8 @@ BeamContact3D::setDomain(Domain *theDomain)
     opserr << "BeamContact3D::setDomain(): Error initializing coordinate transformation";  
     exit(0);
     }
-    // Note: the following intialization is already performed in crdTransf
-    //       but it doesnt return the values to beamContact element
+    // Note: the following initialization is already performed in crdTransf
+    //       but it doesn't return the values to beamContact element
     Vector initXAxis(3);
     Vector initYAxis(3);
     Vector initZAxis(3);
@@ -737,7 +737,7 @@ BeamContact3D::project(double xi)
                 // initialize xi_P to previous value of xi
                 xi_P = xi;
 
-                // Perform exponential update of coordinate tranforms Qa, Qb
+                // Perform exponential update of coordinate transforms Qa, Qb
                 UpdateTransforms();
                 // set tangent vectors from Qa, Qb for calc of x_c_P
                 a1 = Geta1();
@@ -782,7 +782,7 @@ BeamContact3D::project(double xi)
                 // update norm, n, for current projection
                 mn = (mDcrd_s - x_c_P) / ( (mDcrd_s - x_c_P).Norm() );
 
-                // set value of c1 for current proejction for use in ComputeQc
+                // set value of c1 for current projection for use in ComputeQc
                 Setc1( (tc/tc.Norm()) );
 
                 // update Hermitian Basis functions for use in ComputeB

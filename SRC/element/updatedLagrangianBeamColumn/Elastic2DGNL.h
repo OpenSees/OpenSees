@@ -81,7 +81,7 @@ class Elastic2dGNL : public UpdatedLagrangianBeam2D
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Warnings are generally issued if the standard implementation of a
  * method may not be possible.  Further analysis may lead to incorrect
- * solution, eventhough it may be possible to continue.
+ * solution, even though it may be possible to continue.
  *           
  * Warnings
  * --------

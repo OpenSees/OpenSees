@@ -611,6 +611,6 @@ int TclModelBuilder_addElastomericBearingUFRP(ClientData clientData,
         return TCL_ERROR;
     }
     
-    // if get here we have sucessfully created the elastomericBearingUFRP and added it to the domain
+    // if get here we have successfully created the elastomericBearingUFRP and added it to the domain
     return TCL_OK;
 }

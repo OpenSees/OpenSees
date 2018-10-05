@@ -24,10 +24,10 @@
                                                                         
 // Written: MHS
 // Created: Feb 2001
-// Modified: Jian Zhang[Univeristy of Edinburgh]
-// Modified: Panagiotis Kotsovinos[Univeristy of Edinburgh]
-// Modified: Jian Jiang[Univeristy of Edinburgh]
-// Modified: Liming Jiang[Univeristy of Edinburgh,2014
+// Modified: Jian Zhang[University of Edinburgh]
+// Modified: Panagiotis Kotsovinos[University of Edinburgh]
+// Modified: Jian Jiang[University of Edinburgh]
+// Modified: Liming Jiang[University of Edinburgh,2014
 
 
 
@@ -1122,7 +1122,7 @@ DispBeamColumn2dThermal::addInertiaLoadToUnbalance(const Vector &accel)
 	const Vector &Raccel2 = theNodes[1]->getRV(accel);
 
     if (3 != Raccel1.Size() || 3 != Raccel2.Size()) {
-      opserr << "DispBeamColumn2dThermal::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+      opserr << "DispBeamColumn2dThermal::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
       return -1;
     }
 

@@ -113,7 +113,7 @@ RotationNode(0), DisplacementNode(0)
   }
   
   
-  // check the main degree of freedom. Assign auxilary DOF 
+  // check the main degree of freedom. Assign auxiliary DOF 
   if ( RotDOF<6 || RotDOF>8 || DispDOF<6 || DispDOF>8 || RotDOF==DispDOF ) {
     opserr << "MP_Joint3D::MP_Joint3D - Wrong degrees of freedom" ;
     return;
@@ -276,7 +276,7 @@ MP_Joint3D::applyConstraint(double timeStamp)
       const Vector &crdRot = RotationNode->getCrds();
       const Vector &crdDsp = DisplacementNode->getCrds();
       
-      // get commited displacements of nodes to get updated coordinates
+      // get committed displacements of nodes to get updated coordinates
       const Vector &dispRet = RetainedNode->getDisp();
       const Vector &dispCon = ConstrainedNode->getDisp();
       const Vector &dispRot = RotationNode->getDisp();
@@ -358,7 +358,7 @@ const Matrix &MP_Joint3D::getConstraint(void)
 	const Vector &crdR = RetainedNode->getCrds();
 	const Vector &crdC = ConstrainedNode->getCrds();
 	
-	// get commited displacements of nodes to get updated coordinates
+	// get committed displacements of nodes to get updated coordinates
 	const Vector &dispR = RetainedNode->getTrialDisp();
 	const Vector &dispC = ConstrainedNode->getTrialDisp();
 	

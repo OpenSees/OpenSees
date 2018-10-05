@@ -181,7 +181,7 @@ eigen 4
 # create the analysis object
 analysis Transient
 
-#type "Starting Tansient Analysis .. hang on"
+#type "Starting Transient Analysis .. hang on"
 
 #        numSteps   dt
 analyze    1000    0.01

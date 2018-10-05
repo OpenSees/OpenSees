@@ -18,7 +18,7 @@ set tol 1.0e-2
 
 # procedure to build a linear model
 #   input args: K - desired stiffness
-#               periodStruct - desired structre period (used to compute mass)
+#               periodStruct - desired structure period (used to compute mass)
 #               dampRatio (zeta) - desired damping ratio
 
 proc buildModel {K periodStruct dampRatio} {

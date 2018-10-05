@@ -325,7 +325,7 @@ SimpleContact3D::setDomain(Domain *theDomain)
 	  exit(-1);
 	}
 
-        XiEta_n.Zero();  // initally xi and eta = 0
+        XiEta_n.Zero();  // initially xi and eta = 0
 
         XiEta_n = this->project(XiEta_n);
         // this->UpdateBase(XiEta_n);

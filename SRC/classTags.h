@@ -133,6 +133,7 @@
 #define MAT_TAG_ENTMaterial			14
 #define MAT_TAG_Penalty				15
 #define MAT_TAG_MinMax				16
+#define MAT_TAG_TensionOnly			1601
 #define MAT_TAG_BoucWen				17
 #define MAT_TAG_Pinching4			18
 #define MAT_TAG_BarSlip				19
@@ -452,7 +453,7 @@
 #define ND_TAG_PlateRebarMaterialThermal      7007   //L.Jiang[SIF]
 #define ND_TAG_PlateFromPlaneStressMaterialThermal 7008   //L.Jiang[SIF]
 
-
+#define ND_TAG_InitStressNDMaterial 7009
 
 
 
@@ -514,6 +515,7 @@
 #define LOAD_TAG_ShellThermalAction       14 // L.Jiang [ SIF ]
 #define LOAD_TAG_NodalThermalAction       15 //L.Jiang [ SIF ]
 #define LOAD_TAG_ThermalActionWrapper     16 //L.Jiang [ SIF ]
+#define LOAD_TAG_LysmerVelocityLoader      17  //Jose Abell (UANDES)
 
 
 #define MAT_TAG_IsotropicLinElastic         1001
@@ -710,6 +712,7 @@
 #define ELE_TAG_EmbeddedBeamInterfaceL    182
 #define ELE_TAG_EmbeddedBeamInterfaceP    183
 #define ELE_TAG_EmbeddedEPBeamInterface   184
+#define ELE_TAG_LysmerTriangle            185
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
@@ -977,6 +980,7 @@
 #define RECORDER_TAGS_NormEnvelopeElementRecorder	18
 #define RECORDER_TAGS_PVDRecorder               19
 #define RECORDER_TAGS_MPCORecorder               20
+#define RECORDER_TAGS_GmshRecorder               21
 
 #define OPS_STREAM_TAGS_FileStream		1
 #define OPS_STREAM_TAGS_StandardStream		2

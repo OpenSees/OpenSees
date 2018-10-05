@@ -64,7 +64,9 @@
 
 #include <ElementalLoad.h>
 
+#ifdef _USEQUADMATH
 //#include <quadmath.h>
+#endif
 
 
 //Types of mass matrices available 
@@ -86,10 +88,16 @@ Vector CatenaryCable::Forces(6);
 
 #include <elementAPI.h>
 #define OPS_Export 
+static int num_CatenaryCableElement = 0;
 
 OPS_Export void *
 OPS_CatenaryCableElement()
 {
+
+  if (num_CatenaryCableElement == 0) {
+    num_CatenaryCableElement++;
+    opserr<<"CatenaryCableElement element - Written: P. Ibanez and J. A. Abell (UANDES). www.joseabell.com.\n";
+  }
 
   Element *theElement = 0;
 

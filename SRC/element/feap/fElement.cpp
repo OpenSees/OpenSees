@@ -106,7 +106,7 @@ fElement::fElement(int tag,
     for (int i=0; i<sizeD; i++) d[i] = 0.0;
     data = new Vector(d, sizeD);
 
-    // allocate space for static varaibles on creation of first instance
+    // allocate space for static variables on creation of first instance
     if (numfElements == 0) {
 	fElementM = new Matrix *[MAX_NST+1];
 	fElementV = new Vector *[MAX_NST+1];
@@ -188,7 +188,7 @@ fElement::fElement(int tag,
 	    for (int i=0; i<sizeH; i++) h[i] = 0.0;
     }
 
-    // allocate space for static varaibles on creation of first instance
+    // allocate space for static variables on creation of first instance
     if (numfElements == 0) {
 	fElementM = new Matrix *[MAX_NST+1];
 	fElementV = new Vector *[MAX_NST+1];
@@ -463,7 +463,7 @@ fElement::getTangentStiff(void)
     
     // check nst is as determined in readyfRoutine()
     if (nstI != nstR) {
-	opserr << "FATAL fElement::getTangentStiff() problems with incompatable nst";
+	opserr << "FATAL fElement::getTangentStiff() problems with incompatible nst";
 	opserr << " ready: " << nstR << " invoke: " << nstI << endln;
 	exit(-1);
     }
@@ -506,7 +506,7 @@ fElement::getDamp(void)
     
     // check nst is as determined in readyfRoutine()
     if (nstI != nstR) {
-	opserr << "FATAL fElement::getTangentStiff() problems with incompatable nst";
+	opserr << "FATAL fElement::getTangentStiff() problems with incompatible nst";
 	opserr << " ready: " << nstR << " invoke: " << nstI << endln;
 	exit(-1);
     }
@@ -536,7 +536,7 @@ fElement::getMass(void)
     int NH1, NH2, NH3;    
     int nstR = this->readyfRoutine(true);
     
-    // zero the matrix and vector (consistant and lumped)
+    // zero the matrix and vector (consistent and lumped)
     fElementM[nstR]->Zero();    
     fElementV[nstR]->Zero();        
     
@@ -546,7 +546,7 @@ fElement::getMass(void)
     
     // check nst is as determined in readyfRoutine()
     if (nstI != nstR) {
-	opserr << "FATAL fElement::getTangentStiff() problems with incompatable nst";
+	opserr << "FATAL fElement::getTangentStiff() problems with incompatible nst";
 	opserr << " ready: " << nstR << " invoke: " << nstI << endln;
 	exit(-1);
     }
@@ -582,7 +582,7 @@ fElement::addInertiaLoadToUnbalance(const Vector &accel)
   Vector &resid = *(fElementV[nstR]);    
   static const int numberNodes = 4 ;
 
-  // store computed RV fro nodes in resid vector
+  // store computed RV for nodes in resid vector
   int count = 0;
   for (int i=0; i<nen; i++) {
     const Vector &Raccel = theNodes[i]->getRV(accel);
@@ -631,7 +631,7 @@ fElement::getResistingForce()
     
     // check nst is as determined in readyfRoutine()
     if (nstI != nstR) {
-	opserr << "FATAL fElement::getTangentStiff() problems with incompatable nst";
+	opserr << "FATAL fElement::getTangentStiff() problems with incompatible nst";
 	opserr << " ready: " << nstR << " invoke: " << nstI << endln;
 	exit(-1);
     }
@@ -676,7 +676,7 @@ fElement::getResistingForceIncInertia()
     
     // check nst is as determined in readyfRoutine()
     if (nstI != nstR) {
-	opserr << "FATAL fElement::getTangentStiff() problems with incompatable nst";
+	opserr << "FATAL fElement::getTangentStiff() problems with incompatible nst";
 	opserr << " ready: " << nstR << " invoke: " << nstI << endln;
 	exit(-1);
     }

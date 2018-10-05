@@ -107,6 +107,7 @@ void* OPS_ImpactMaterial();
 void* OPS_HyperbolicGapMaterial();
 void* OPS_LimiStateMaterial();
 void* OPS_MinMaxMaterial();
+void* OPS_TensionOnlyMaterial();
 void* OPS_ElasticBilin();
 void* OPS_ElasticMultiLinear();
 void* OPS_MultiLinear();
@@ -232,6 +233,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("LimitState", &OPS_LimiStateMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("MinMax", &OPS_MinMaxMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("MinMaxMaterial", &OPS_MinMaxMaterial));
+	uniaxialMaterialsMap.insert(std::make_pair("TensionOnly", &OPS_TensionOnlyMaterial));
 	uniaxialMaterialsMap.insert(std::make_pair("ElasticBilin", &OPS_ElasticBilin));
 	uniaxialMaterialsMap.insert(std::make_pair("ElasticBilinear", &OPS_ElasticBilin));
 	uniaxialMaterialsMap.insert(std::make_pair("ElasticMultiLinear", &OPS_ElasticMultiLinear));

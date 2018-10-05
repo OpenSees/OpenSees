@@ -600,11 +600,11 @@ const Matrix&  ShellNLDKGQThermal::getInitialStiff( )
 	static Vector dstrain_li(nstress); //linear incr strain
 	static Vector dstrain_nl(3);//geometric nonlinear strain
 
-	static double shp[3][numnodes]; //shape fuction 2d at a gauss point
+	static double shp[3][numnodes]; //shape function 2d at a gauss point
 
 	static double shpDrill[4][numnodes]; //shape function drilling dof at a gauss point
 
-	static double shpBend[6][12]; //shape fuction - bending part at a gauss point
+	static double shpBend[6][12]; //shape function - bending part at a gauss point
 
 	//static Vector residJ(ndf); //nodeJ residual, global coordinates
 
@@ -1462,11 +1462,11 @@ ShellNLDKGQThermal::formResidAndTangent( int tang_flag )
 	static Vector dstrain_li(nstress); //linear incr strain
 	static Vector dstrain_nl(3);//geometric nonlinear strain
 
-	static double shp[3][numnodes]; //shape fuction 2d at a gauss point
+	static double shp[3][numnodes]; //shape function 2d at a gauss point
 
 	static double shpDrill[4][numnodes]; //shape function drilling dof at a gauss point
 
-	static double shpBend[6][12]; //shape fuction - bending part at a gauss point
+	static double shpBend[6][12]; //shape function - bending part at a gauss point
 
 	static Vector residJ(ndf); //nodeJ residual, global coordinates
 
@@ -2276,7 +2276,7 @@ ShellNLDKGQThermal::shape2d( double ss, double tt,
  // static double sx[2][2] ;  //have been defined before
 
   for ( i = 0; i < 4; i++ ) {
-      shp[2][i] = ( 0.5 + s[i]*ss )*( 0.5 + t[i]*tt ) ; //shape fuction for 2d isoparametric element
+      shp[2][i] = ( 0.5 + s[i]*ss )*( 0.5 + t[i]*tt ) ; //shape function for 2d isoparametric element
       shp[0][i] = s[i] * ( 0.5 + t[i]*tt ) ; // derivative to isoparametric coordinates 1
       shp[1][i] = t[i] * ( 0.5 + s[i]*ss ) ; // derivative to isoparametric coordinates 2
   } // end for i
@@ -2332,7 +2332,7 @@ ShellNLDKGQThermal::shapefn2d( double ss, double tt ,int i)
 	   case 4:
 		   shpVal = 0.25*(1-ss)*(1+tt);break;
 	   default:
-		   opserr<<"ShellNLDKGQThermal::shapefn2d recieved an invalid i: "<<i <<endln ;
+		   opserr<<"ShellNLDKGQThermal::shapefn2d received an invalid i: "<<i <<endln ;
 	   }
    return shpVal;
 }

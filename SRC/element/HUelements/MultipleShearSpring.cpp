@@ -185,7 +185,7 @@ void* OPS_MultipleShearSpring()
 		    }
 		}
 
-	    } else if (strcmp(flag,"-orient")==0 && OPS_GetNumRemainingInputArgs()>=3) { // <-orient yp1? yp2? yp3?> ‚Ì“Ç‚İ‚İ	  
+	    } else if (strcmp(flag,"-orient")==0 && OPS_GetNumRemainingInputArgs()>=3) { // <-orient yp1? yp2? yp3?> ï¿½Ì“Ç‚İï¿½ï¿½ï¿½	  
 
 		for (int j=1; j<=3; j++) {
 		    if (OPS_GetDoubleInput(&numdata, &value) < 0) {
@@ -196,13 +196,13 @@ void* OPS_MultipleShearSpring()
 		    }
 		}
 
-	    } else if (strcmp(flag,"-mass")==0 && OPS_GetNumRemainingInputArgs()>0) { // <-mass m?> ‚Ì“Ç‚İ‚İ
+	    } else if (strcmp(flag,"-mass")==0 && OPS_GetNumRemainingInputArgs()>0) { // <-mass m?> ï¿½Ì“Ç‚İï¿½ï¿½ï¿½
 		if (OPS_GetDoubleInput(&numdata, &mass) < 0 || mass <= 0) {
 		    opserr << "WARNING invalid mass\n";
 		    ifNoError = false;
 		}
 
-	    } else if (strcmp(flag,"-lim")==0 && OPS_GetNumRemainingInputArgs()>0) { // <-lim limDisp?> ‚Ì“Ç‚İ‚İ
+	    } else if (strcmp(flag,"-lim")==0 && OPS_GetNumRemainingInputArgs()>0) { // <-lim limDisp?> ï¿½Ì“Ç‚İï¿½ï¿½ï¿½
 		if (OPS_GetDoubleInput(&numdata, &limDisp) < 0 || limDisp < 0) {
 		    opserr << "WARNING invalid limDisp\n";
 		    ifNoError = false;
@@ -315,7 +315,7 @@ MultipleShearSpring::MultipleShearSpring(int Tag, int Nd1, int Nd2,
 
 
   //calculate Feq and Seq
-  //imaginary material to caluculate Feq and Seq
+  //imaginary material to calculate Feq and Seq
   dmyMssMaterial = Material->getCopy();
   if (dmyMssMaterial == 0) {
     opserr << "MultipleShearSpring::MultipleShearSpring() - "
@@ -438,7 +438,7 @@ MultipleShearSpring::MultipleShearSpring(int Tag, int Nd1, int Nd2,
 
 
   //calculate Feq and Seq
-  //imaginary material to caluculate Feq and Seq
+  //imaginary material to calculate Feq and Seq
   dmyMssMaterial = theMaterials[0]->getCopy();
   if (dmyMssMaterial == 0) {
     opserr << "MultipleShearSpring::MultipleShearSpring() - "
@@ -1106,7 +1106,7 @@ void MultipleShearSpring::setUp()
     exit(-1);
   }
     
-  // establish orientation of element for the tranformation matrix
+  // establish orientation of element for the transformation matrix
   // z = x cross yp
   Vector oriZ(3);
   oriZ(0) = oriX(1)*oriYp(2) - oriX(2)*oriYp(1);

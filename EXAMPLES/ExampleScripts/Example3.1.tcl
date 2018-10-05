@@ -72,7 +72,7 @@ uniaxialMaterial Steel01  3  $fy $E 0.01
 # Define cross-section for nonlinear columns
 # ------------------------------------------
 
-# set some paramaters
+# set some parameters
 set colWidth 15
 set colDepth 24 
 
@@ -123,7 +123,7 @@ element $eleType  6   4   6   $np    1       1
 element $eleType  8   5   7   $np    1       1 
 element $eleType  9   6   8   $np    1       1 
 
-# Define beam elment
+# Define beam element
 # -----------------------------
 
 # Geometry of column elements
