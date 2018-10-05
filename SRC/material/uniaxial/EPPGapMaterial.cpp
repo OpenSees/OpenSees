@@ -34,8 +34,11 @@
 #include <stdlib.h>
 
 #include <EPPGapMaterial.h>
+#include <Matrix.h>
 #include <Vector.h>
 #include <Channel.h>
+#include <Information.h>
+#include <Parameter.h>
 #include <math.h>
 #include <float.h>
 #include <elementAPI.h>
@@ -96,7 +99,7 @@ void* OPS_EPPGapMaterial()
 EPPGapMaterial::EPPGapMaterial(int tag, double e, double fyl, double gap0, double eta0, int accum)
 :UniaxialMaterial(tag,MAT_TAG_EPPGap),
  commitStrain(0.0), trialStrain(0.0), E(e), fy(fyl), gap(gap0), eta(eta0),
- minElasticYieldStrain(gap0),damage(accum)
+ minElasticYieldStrain(gap0),damage(accum), parameterID(0), SHVs(0)
 {
 	if (E == 0.0) {
 	  opserr << "EPPGapMaterial::EPPGapMaterial -- E is zero, continuing with E = fy/0.002\n";
@@ -126,7 +129,7 @@ EPPGapMaterial::EPPGapMaterial(int tag, double e, double fyl, double gap0, doubl
 
 EPPGapMaterial::EPPGapMaterial()
 :UniaxialMaterial(0,MAT_TAG_EPPGap),
- E(0.0), fy(0.0), gap(0.0), eta(0.0), minElasticYieldStrain(0.0), damage(0)
+ E(0.0), fy(0.0), gap(0.0), eta(0.0), minElasticYieldStrain(0.0), damage(0), parameterID(0), SHVs(0)
 {
 
 }
@@ -247,6 +250,11 @@ EPPGapMaterial::revertToStart(void)
     maxElasticYieldStrain = fy/E+gap;
     minElasticYieldStrain = gap;
 
+// AddingSensitivity:BEGIN /////////////////////////////////
+    if (SHVs != 0) 
+      SHVs->Zero();
+// AddingSensitivity:END //////////////////////////////////
+
     return 0;
 }
 
@@ -258,6 +266,9 @@ EPPGapMaterial::getCopy(void)
     theCopy->trialStrain = trialStrain;
     theCopy->maxElasticYieldStrain = maxElasticYieldStrain;
     theCopy->minElasticYieldStrain = minElasticYieldStrain;
+
+    theCopy->parameterID = parameterID;
+
     return theCopy;
 }
 
@@ -331,4 +342,158 @@ EPPGapMaterial::Print(OPS_Stream &s, int flag)
 		s << "\"gap\": " << gap << ", ";
 		s << "\"damageFlag\": " << damage << "}";
 	}
+}
+
+int
+EPPGapMaterial::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strcmp(argv[0],"E") == 0) {
+    param.setValue(E);
+    return param.addObject(1, this);
+  }
+  if (strcmp(argv[0],"Fy") == 0 || strcmp(argv[0],"fy") == 0) {
+    param.setValue(fy);
+    return param.addObject(2, this);
+  }
+  if (strcmp(argv[0],"gap") == 0) {
+    param.setValue(gap);
+    return param.addObject(3, this);
+  }
+
+  return 0;
+}
+
+int
+EPPGapMaterial::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case 1:
+    E = info.theDouble;
+    break;
+  case 2:
+    fy = info.theDouble;
+    break;
+  case 3:
+    gap = info.theDouble;
+    break;
+  default:
+    return -1;
+  }
+
+  return 0;
+}
+
+int
+EPPGapMaterial::activateParameter(int passedParameterID)
+{
+  parameterID = passedParameterID;
+  
+  return 0;
+}
+
+double
+EPPGapMaterial::getStressSensitivity(int gradIndex, bool conditional)
+{
+  double dsdh = 0.0;
+
+  double dEdh = 0.0;
+  double dfydh = 0.0;
+  double dgapdh = 0.0;
+
+  if (parameterID == 1)
+    dEdh = 1.0;
+  if (parameterID == 2)
+    dfydh = 1.0;
+  if (parameterID == 3)
+    dgapdh = 1.0;
+
+  double depsyMindh = 0.0;
+  if (SHVs != 0) {
+    depsyMindh = (*SHVs)(0,gradIndex);
+  }
+
+  if (fy >= 0) {
+    if (trialStrain > maxElasticYieldStrain) {
+      dsdh = dfydh + (-dgapdh-dfydh/E+fy/(E*E)*dEdh)*eta*E + (trialStrain-gap-fy/E)*eta*dEdh;
+    } else if (trialStrain < minElasticYieldStrain) {
+      dsdh = 0.0;
+    } else {
+      dsdh = dEdh*(trialStrain-minElasticYieldStrain) - E*depsyMindh;
+    }
+  } else {
+    if (trialStrain < maxElasticYieldStrain) {
+      dsdh = dfydh + (-dgapdh-dfydh/E+fy/(E*E)*dEdh)*eta*E + (trialStrain-gap-fy/E)*eta*dEdh;
+    } else if (trialStrain > minElasticYieldStrain) {
+      dsdh = 0.0;
+    } else {
+      dsdh = dEdh*(trialStrain-minElasticYieldStrain) - E*depsyMindh;
+    }
+  }
+
+  return dsdh;
+}
+
+double 
+EPPGapMaterial::getTangentSensitivity(int gradIndex)
+{
+  return 0.0;
+}
+
+double
+EPPGapMaterial::getInitialTangentSensitivity(int gradIndex)
+{
+  if (parameterID == 1)
+    return 1.0;
+  else
+    return 0.0;
+}
+
+int
+EPPGapMaterial::commitSensitivity(double dedh, int gradIndex, int numGrads)
+{
+  if (SHVs == 0) {
+    SHVs = new Matrix(1,numGrads);
+  }
+  
+  //return 0;
+
+  if (gradIndex >= SHVs->noCols()) {
+    //opserr << gradIndex << ' ' << SHVs->noCols() << endln;
+    return 0;
+  }
+  
+  double dEdh = 0.0;
+  double dfydh = 0.0;
+  double dgapdh = 0.0;
+
+  if (parameterID == 1)
+    dEdh = 1.0;
+  if (parameterID == 2)
+    dfydh = 1.0;
+  if (parameterID == 3)
+    dgapdh = 1.0;
+
+  double depsyMindh = (*SHVs)(0,gradIndex);
+
+  if (fy >= 0) {
+    if (trialStrain > maxElasticYieldStrain) {
+      double dsdh = this->getStressSensitivity(gradIndex, true);
+      dsdh += eta*E*dedh; // unconditional
+      depsyMindh = dedh - (-trialStress)/(E*E)*dEdh - dsdh/E;
+    }
+    else if (trialStrain < minElasticYieldStrain && trialStrain > gap && damage == 0)
+      depsyMindh = dedh;
+  } else {
+    if (trialStrain < maxElasticYieldStrain) {
+      double dsdh = this->getStressSensitivity(gradIndex, true);
+      dsdh += eta*E*dedh; // unconditional
+      depsyMindh = dedh - (-trialStress)/(E*E)*dEdh - dsdh/E;
+    }
+    else if (trialStrain > minElasticYieldStrain && trialStrain < gap && damage == 0)
+      depsyMindh = dedh;
+  }
+
+  (*SHVs)(0,gradIndex) = depsyMindh;
+
+  return 0;
 }

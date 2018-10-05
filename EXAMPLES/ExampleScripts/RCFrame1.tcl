@@ -212,7 +212,7 @@ while {$ok == 0 && $currentDisp < $maxU} {
 }
 
 if {$ok == 0} {
-   puts "analysis SUCCESSFULL";
+   puts "analysis SUCCESSFUL";
 } else {
    puts "analysis FAILED";    
 }

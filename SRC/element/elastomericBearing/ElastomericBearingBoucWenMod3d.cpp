@@ -9,7 +9,7 @@
 // $Date: 2015-10-12 18:46:30 $
 // $URL: 
 
-// Written: Ping Tan £¨Guangzhou University, China£©
+// Written: Ping Tan ï¿½ï¿½Guangzhou University, Chinaï¿½ï¿½
 // Created: 2015-10-12 18:46:30
 // Revision: A
 //
@@ -471,7 +471,7 @@ int ElastomericBearingBoucWenMod3d::update()
 			qb(0)=kb(0,0)*ub(0);
     
     // 2) calculate shear forces and stiffnesses in basic y- and z-direction
-    // get displacement increments (trial - commited)
+    // get displacement increments (trial - committed)
     Vector delta_ub = ub - ubC;
 	// calculate dependency parameters
 	double alphaT = b1+b2*T+b3*pow(T,2)+b4*pow(T,3);
@@ -1148,7 +1148,7 @@ void ElastomericBearingBoucWenMod3d::setUp()
         exit(-1);
     }
     
-    // establish orientation of element for the tranformation matrix
+    // establish orientation of element for the transformation matrix
     // z = x cross y
     Vector z(3);
     z(0) = x(1)*y(2) - x(2)*y(1);

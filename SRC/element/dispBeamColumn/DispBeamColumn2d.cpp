@@ -334,7 +334,7 @@ int OPS_DispBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 	theEle = new DispBeamColumn2d(--currTag,elenodes(2*i),elenodes(2*i+1),secTags.Size(),
 				      sections,*bi,*theTransf,mass,cmass);
 	if (theEle == 0) {
-	    opserr<<"WARING: run out of memory for creating element\n";
+	    opserr<<"WARNING: run out of memory for creating element\n";
 	    return -1;
 	}
 	if (theDomain.addElement(theEle) == false) {
@@ -965,7 +965,7 @@ DispBeamColumn2d::addInertiaLoadToUnbalance(const Vector &accel)
   const Vector &Raccel2 = theNodes[1]->getRV(accel);
   
   if (3 != Raccel1.Size() || 3 != Raccel2.Size()) {
-    opserr << "DispBeamColumn2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+    opserr << "DispBeamColumn2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     return -1;
   }
   

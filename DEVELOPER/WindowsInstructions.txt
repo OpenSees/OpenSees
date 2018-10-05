@@ -2,7 +2,7 @@
 2. File -> New Project
 3. Give it name of New class and location of current class files (ElasticPPcpp and C:\???\OpenSeesDeveloper\material (VisualStudio2010 want VisualStudio C++ Win32 - Win32 Project)
 4. Select OK (visual Studio20
-5. New windows pops up, Select Application Settins
+5. New windows pops up, Select Application Settings
 6. Select DLL AND select Empty Project
 7. Select Finish
 

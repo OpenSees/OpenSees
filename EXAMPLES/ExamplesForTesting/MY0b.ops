@@ -164,7 +164,7 @@ recorder Element 1 -time -file stress3 material 3 stress
 recorder Element 1 -time -file strain3 material 3 strain
 recorder Element 1 -time -file stress4 material 4 stress
 recorder Element 1 -time -file strain4 material 4 strain
-if { $matOpt == 2 || $matOpt == 3 } {   ;#excess pore pressure ouput
+if { $matOpt == 2 || $matOpt == 3 } {   ;#excess pore pressure output
   recorder Element 1 -time -file press1 material 1 pressure
   recorder Element 1 -time -file press2 material 2 pressure
   recorder Element 1 -time -file press3 material 3 pressure
@@ -177,7 +177,7 @@ analysis Static
 #analyze the structure
 analyze $numAnalysisSteps
 
-wipe  #flush ouput stream
+wipe  #flush output stream
 
 
 

@@ -266,7 +266,7 @@ LineMesh::mesh(double size, int tag1, int tag2, ID& nodes, ID& elenodes)
     int currtag = 0;
     if(theNode != 0) currtag = theNode->getTag();
 
-    // creat nodes
+    // create nodes
     if(nele > 1) {
 	nodes.resize(nele-1);
     }

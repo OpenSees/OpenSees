@@ -736,7 +736,7 @@ BeamContact2D::UpdateEndFrames(void)
 	// perform update for node a
 	ma_1 += rot_a*mEyeS*ma_1;
 
-	// perfrom update for node b
+	// perform update for node b
 	mb_1 += rot_b*mEyeS*mb_1;
 
 	// update displacement vectors for next step

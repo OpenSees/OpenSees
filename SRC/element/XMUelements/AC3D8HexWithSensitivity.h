@@ -141,7 +141,7 @@ class AC3D8HexWithSensitivity: public Element
     static Vector P;		   // Element resisting force vector
     // static Matrix B;		   // [B] matrix
     static Matrix mass ; 
-    static ID actDOFs;     // actived element dofs, add Yichao Gao
+    static ID actDOFs;     // activated element dofs, add Yichao Gao
     
     static const int numDOF;               // DOF number of element
     static const int nodes_in_elem;        // number of nodes in element
