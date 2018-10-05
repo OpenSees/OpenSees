@@ -143,7 +143,6 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/element/beamWithHinges/TclBeamWithHingesBuilder.o \
 	$(FE)/element/frictionBearing/frictionModel/TclModelBuilderFrictionModelCommand.o \
 	$(FE)/element/PFEMElement/TclModelBuilder_addPFEMElement.o \
-	$(FE)/element/PFEMElement/TclPFEMCommands.o \
 	$(FE)/material/uniaxial/backbone/TclModelBuilderBackboneCommand.o \
 	$(FE)/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.o \
 	$(FE)/material/nD/TclModelBuilderNDMaterialCommand.o \
