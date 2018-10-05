@@ -44,6 +44,7 @@
 #include <ElementResponse.h>
 #include <ElementIter.h>
 #include <elementAPI.h>
+#include <map>
 
 double Tri31::matrixData[36];
 Matrix Tri31::K(matrixData, 6, 6);
