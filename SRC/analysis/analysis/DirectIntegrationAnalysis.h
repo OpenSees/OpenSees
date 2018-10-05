@@ -38,12 +38,6 @@
 // What: "@(#) DirectIntegrationAnalysis.h, revA"
 
 #include <TransientAnalysis.h>
-// AddingSensitivity:BEGIN //////////////////////////////////
-#ifdef _RELIABILITY
-#include <SensitivityAlgorithm.h>
-#include<Integrator.h>//Abbas
-#endif
-// AddingSensitivity:END ////////////////////////////////////
 
 class ConstraintHandler;
 class DOF_Numberer;
@@ -94,12 +88,6 @@ class DirectIntegrationAnalysis: public TransientAnalysis
     ConvergenceTest     *getConvergenceTest(void); 
     AnalysisModel       *getModel(void) ;
 
-    // AddingSensitivity:BEGIN ///////////////////////////////
-#ifdef _RELIABILITY
-    int setSensitivityAlgorithm(/*SensitivityAlgorithm*/ Integrator  *theSensitivityAlgorithm);
-#endif
-    // AddingSensitivity:END /////////////////////////////////
-    
   protected:
     
   private:
@@ -116,13 +104,6 @@ class DirectIntegrationAnalysis: public TransientAnalysis
     int numSubLevels;
     int numSubSteps;
 
-    // AddingSensitivity:BEGIN ///////////////////////////////
-#ifdef _RELIABILITY
-//    SensitivityAlgorithm *theSensitivityAlgorithm;
- //Integrator *theSensitivityAlgorithm;
-
-#endif
-    // AddingSensitivity:END ///////////////////////////////
 
 };
 
