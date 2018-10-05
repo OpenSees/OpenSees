@@ -194,6 +194,18 @@ int OPS_GetIntInput(int *numData, int*data)
 }
 
 extern "C" 
+int OPS_SetIntOutput(int *numData, int *data)
+{
+    int numArgs = *numData;
+    char buffer[40];
+    for (int i=0; i<numArgs; i++) {
+	sprintf(buffer, "%d ", data[i]);
+	Tcl_AppendResult(theInterp, buffer, NULL);
+    }
+  return 0;  
+}
+
+extern "C" 
 int OPS_GetDoubleInput(int *numData, double *data)
 {
   int size = *numData;
@@ -208,6 +220,17 @@ int OPS_GetDoubleInput(int *numData, double *data)
   return 0;  
 }
 
+extern "C" 
+int OPS_SetDoubleOutput(int *numData, double *data)
+{
+    int numArgs = *numData;
+    char buffer[40];
+    for (int i=0; i<numArgs; i++) {
+	sprintf(buffer, "%35.20f ", data[i]);
+	Tcl_AppendResult(theInterp, buffer, NULL);
+    }
+  return 0;  
+}
 
 
 extern "C" 
@@ -225,6 +248,12 @@ const char * OPS_GetString(void)
   return res;
 }
 
+extern "C" 
+int OPS_SetString(const char* str)
+{
+  Tcl_SetResult(theInterp, (char*)str, TCL_VOLATILE);
+  return 0;
+}
 
 int OPS_GetStringCopy(char **arrayData)
 {
@@ -1086,4 +1115,9 @@ ConvergenceTest **OPS_GetTest(void)
 bool *OPS_builtModel(void)
 {
 	return &builtModel;
+}
+
+int OPS_numIter()
+{
+    return 0;
 }
