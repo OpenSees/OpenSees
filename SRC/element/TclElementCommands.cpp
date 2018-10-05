@@ -148,7 +148,7 @@ extern void *OPS_SFI_MVLEM(void);
 extern void *OPS_AxEqDispBeamColumn2d(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
 extern void *OPS_PFEMElement2DBubble(const ID &info);
-extern void *OPS_PFEMElement2DMini();
+extern void *OPS_PFEMElement2Dmini(const ID &info);
 extern void *OPS_PFEMElement2D();
 
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
@@ -1043,7 +1043,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   }
 
   else if (strcmp(argv[1], "PFEMElement2DMini") == 0) {
-      void *theEle = OPS_PFEMElement2DMini();
+      ID info;
+      void *theEle = OPS_PFEMElement2Dmini(info);
       if (theEle != 0) {
 	  theElement = (Element*)theEle;
       } else {
