@@ -713,6 +713,10 @@
 #define ELE_TAG_EmbeddedBeamInterfaceP    183
 #define ELE_TAG_EmbeddedEPBeamInterface   184
 #define ELE_TAG_LysmerTriangle            185
+#define ELE_TAG_TaylorHood2D              186
+#define ELE_TAG_PFEMElement2DQuasi        187
+#define ELE_TAG_MINI                      188
+#define ELE_TAG_PFEMElement3DBubble       189
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
@@ -926,6 +930,8 @@
 #define LinSOE_TAGS_PFEMLinSOE 26
 #define LinSOE_TAGS_SProfileSPDLinSOE		27
 #define LinSOE_TAGS_PFEMCompressibleLinSOE 28
+#define LinSOE_TAGS_PFEMQuasiLinSOE 29
+#define LinSOE_TAGS_PFEMDiaLinSOE 30
 
 
 #define SOLVER_TAGS_FullGenLinLapackSolver  	1
@@ -959,6 +965,8 @@
 #define SOLVER_TAGS_CulaSparseS4                        29
 #define SOLVER_TAGS_CulaSparseS5                        30
 #define SOLVER_TAGS_CuSP                                31
+#define SOLVER_TAGS_PFEMQuasiSolver                     32
+#define SOLVER_TAGS_PFEMDiaSolver                       33
 
 #define RECORDER_TAGS_ElementRecorder		1
 #define RECORDER_TAGS_NodeRecorder		2
