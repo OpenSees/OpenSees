@@ -113,6 +113,27 @@ VariableTimeStepDirectIntegrationAnalysis::analyze(int numSteps, double dT, doub
 	result = -3;
     }    
 
+    // AddingSensitivity:BEGIN ////////////////////////////////////
+#ifdef _RELIABILITY
+
+    TransientIntegrator* theIntegrator = this->getIntegrator();
+
+    if (theIntegrator->shouldComputeAtEachStep()) {
+	
+      result = theIntegrator->computeSensitivities();
+      if (result < 0) {
+	opserr << "VariableTimeStepDirectIntegrationAnalysis::analyze() - the SensitivityAlgorithm failed";
+	opserr << " at time ";
+	opserr << theDom->getCurrentTime() << endln;
+	theDom->revertToLastCommit();
+	theIntegrator->revertToLastStep();
+	return -5;
+      }    
+    }
+
+#endif
+    // AddingSensitivity:END //////////////////////////////////////
+
     if (result >= 0) {
       result = theIntegratr->commit();
       if (result < 0) 
