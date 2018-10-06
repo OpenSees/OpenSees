@@ -100,6 +100,8 @@ extern  void *OPS_InitialStateAnalysisWrapperMaterial(void);
 extern  void *OPS_ManzariDafaliasMaterial(void);
 extern  void *OPS_ManzariDafaliasMaterialRO(void);
 extern  void *OPS_PM4Sand(void);
+extern  void *OPS_PM4Silt(void);
+extern  void *OPS_J2CyclicBoundingSurface(void);
 extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
 extern  void *OPS_InitStressNDMaterial(void);
@@ -442,6 +444,24 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else 
 	return TCL_ERROR;
     }
+
+	else if ((strcmp(argv[1], "J2CyclicBoundingSurface") == 0)) {
+
+		void *theMat = OPS_J2CyclicBoundingSurface();
+		if (theMat != 0)
+			theMaterial = (NDMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+	
+	else if ((strcmp(argv[1], "PM4Silt") == 0)) {
+
+		void *theMat = OPS_PM4Silt();
+		if (theMat != 0)
+			theMaterial = (NDMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
 
     else if ((strcmp(argv[1],"ContactMaterial2D") == 0)){
 
