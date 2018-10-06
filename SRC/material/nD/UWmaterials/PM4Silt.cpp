@@ -66,7 +66,7 @@ PM4Silt::initTensors PM4Silt::initTensorOps;
 static int numPM4SiltMaterials = 0;
 
 void *
-OPS_PM4Silt(void)
+OPS_PM4SiltMaterial(void)
 {
 	if (numPM4SiltMaterials == 0) {
 		numPM4SiltMaterials++;
