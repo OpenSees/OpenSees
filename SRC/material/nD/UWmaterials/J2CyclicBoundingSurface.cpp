@@ -41,7 +41,7 @@
 char  unsigned      J2CyclicBoundingSurface::m_ElastFlag = 1;
 
 
-void* OPS_J2CyclicBoundingSurface()
+void* OPS_J2CyclicBoundingSurfaceMaterial()
 {
 	int numdata = OPS_GetNumRemainingInputArgs();
 
