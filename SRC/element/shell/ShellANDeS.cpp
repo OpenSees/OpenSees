@@ -2551,7 +2551,7 @@ void ShellANDeS::initializeGeometry(double n1, double n2, double n3)
      e2.Normalize();
 
      //If local e1 axis is given, then use it instead but keep the normal!!
-     if (n1 != 0 or n2 != 0 or n3 != 0)
+     if (n1 != 0 || n2 != 0 || n3 != 0)
      {
           static Vector nn(3);
           static Vector temp1(3);
