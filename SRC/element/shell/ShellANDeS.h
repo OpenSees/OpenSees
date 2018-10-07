@@ -96,9 +96,9 @@ public:
 
     ShellANDeS ();
 
-    ShellANDeS(int element_number,
-                        int node_numb_1, int node_numb_2, int node_numb_3, double t,
-                        double E, double nu, double rho);
+    ShellANDeS(int element_number, int node_numb_1, int node_numb_2, int node_numb_3, double t, double E, double nu, double rho);
+    ShellANDeS(int element_number, int node_numb_1, int node_numb_2, int node_numb_3, double t, double E11, double E22,
+    double E33, double E12, double E13, double E23, double n1, double n2, double n3, double rho);
     
     // ShellANDeS(int element_number,
     //                     int node_numb_1, int node_numb_2, int node_numb_3,
@@ -133,7 +133,7 @@ public:
     int recvSelf (int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
     void Print(OPS_Stream &s, int flag = 0);
-    Response* setResponse (const char** argv, int argc, Information& eleInformation);
+    Response* setResponse (const char** argv, int argc, OPS_Stream& theHandler);
     int getResponse (int responseID, Information& eleInformation);
 
     Matrix returnMass(void);
@@ -146,7 +146,7 @@ public:
     const Vector FormEquiBodyForce(void);
 
     //For stress recovery
-    Vector get_bending_moment_field();
+    const Vector & get_bending_moment_field();
 
     //Utility
     bool gotMass() const;           // Got Mass?  (check for rho value)
@@ -163,7 +163,7 @@ private:
     const Matrix &getBendingMass ();
     
     //Membrane functions
-    void initializeGeometry();                              // Calculates all geometry related internal variables
+    void initializeGeometry(double n1, double n2, double n3);                              // Calculates all geometry related internal variables
     void calculate_E_planestress_and_beta0();
     void initializeBetaArrays();
     Matrix getMembraneForceLumpingMatrix();
@@ -177,7 +177,12 @@ private:
     Matrix getBendingBasicStiffness();
     Matrix getBendingHighOrderStiffness();
 
-
+    inline int sendAndCheckVector(int dataTag , int commitTag , Vector& v , Channel & channel , const std::string &name);
+    inline int recvAndCheckVector(int dataTag , int commitTag , Vector& v , Channel & channel , const std::string &name);
+    inline int sendAndCheckMatrix(int dataTag , int commitTag , Matrix& v , Channel & channel , const std::string &name);
+    inline int recvAndCheckMatrix(int dataTag , int commitTag , Matrix& v , Channel & channel , const std::string &name);
+    inline int sendAndCheckID(int dataTag     , int commitTag , ID& v     , Channel & channel , const std::string &name);
+    inline int recvAndCheckID(int dataTag     , int commitTag , ID& v     , Channel & channel , const std::string &name);
 
     //===================================================================================
     // Internal variables
@@ -215,7 +220,9 @@ private:
 
 
     // Material related
-    double E, nu, rho;
+    double rho;
+    double mE11, mE22, mE33, mE12, mE13, mE23;
+    double n1, n2, n3;              // 1-1 direction
     Matrix E_planestress;           // Plane stress constitutive matrix
 
     // Element formulation related
@@ -231,7 +238,7 @@ private:
     
     static Matrix Mq;
 
-
+    int initialized_disps;
 };
 
 

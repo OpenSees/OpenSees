@@ -53,12 +53,14 @@ void* OPS_HardeningMaterial()
     int tag;
     numdata = 1;
     if (OPS_GetIntInput(&numdata,&tag) < 0) {
+	opserr << "WARNING: failed to read tag\n";
 	return 0;
     }
 
     double data[4];
     numdata = 4;
     if (OPS_GetDoubleInput(&numdata,data)) {
+	opserr << "WARING: failed to read data\n";
 	return 0;
     }
 
@@ -67,6 +69,7 @@ void* OPS_HardeningMaterial()
     if (numdata > 0) {
 	numdata = 1;
 	if (OPS_GetDouble(&numdata,&eta)<0) {
+	    opserr << "WARNING: failed to read eta\n";
 	    return 0;
 	}
     }

@@ -49,6 +49,16 @@ bool OPS_addSectionForceDeformation(SectionForceDeformation *newComponent) {
   return theSectionForceDeformationObjects.addComponent(newComponent);
 }
 
+bool OPS_removeSectionForceDeformation(int tag)
+{
+    TaggedObject* obj = theSectionForceDeformationObjects.removeComponent(tag);
+    if (obj != 0) {
+	delete obj;
+	return true;
+    }
+    return false;
+}
+
 SectionForceDeformation *OPS_getSectionForceDeformation(int tag) {
 
   TaggedObject *theResult = theSectionForceDeformationObjects.getComponentPtr(tag);
