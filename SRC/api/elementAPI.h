@@ -241,6 +241,8 @@ extern "C" TransientIntegrator	**OPS_GetTransientIntegrator(void);
 extern "C" ConvergenceTest		**OPS_GetTest(void);
 extern "C" bool								*OPS_builtModel(void);
 
+int OPS_numIter();
+
 #else
 
 int     OPS_GetNDF();

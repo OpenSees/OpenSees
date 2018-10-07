@@ -103,7 +103,7 @@ extern void *OPS_PileToe3D(void);
 extern void *OPS_SurfaceLoad(void);
 extern void *OPS_TriSurfaceLoad(void);
 extern void *OPS_ModElasticBeam2d(void);
-extern void *OPS_ElasticBeam2d(const ID &info);
+extern void *OPS_ElasticBeam2d();
 extern void *OPS_ElasticBeam3d(void);
 extern void *OPS_ElasticTimoshenkoBeam2d(void);
 extern void *OPS_ElasticTimoshenkoBeam3d(void);
@@ -157,6 +157,7 @@ extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
 extern  void *OPS_CatenaryCableElement(void);
 extern  void *OPS_ShellANDeS(void);
 extern  void *OPS_FourNodeTetrahedron(void);
+extern  void *OPS_LysmerTriangle(void);
 
 extern int TclModelBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp,  int argc,
 					TCL_Char **argv, Domain*, TclModelBuilder *, int argStart);
@@ -496,9 +497,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   } else if ((strcmp(argv[1],"elasticBeamColumn") == 0) || (strcmp(argv[1],"elasticBeam")) == 0) {
     Element *theEle = 0;
-    ID info;
     if (OPS_GetNDM() == 2)
-      theEle = (Element *)OPS_ElasticBeam2d(info);
+      theEle = (Element *)OPS_ElasticBeam2d();
     else
       theEle = (Element *)OPS_ElasticBeam3d();
     if (theEle != 0) 
@@ -1077,6 +1077,18 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if (strcmp(argv[1], "ShellANDeS") == 0) {
       void *theEle = OPS_ShellANDeS();
+      if (theEle != 0) {
+    theElement = (Element*)theEle;
+      } else {
+    opserr<<"tclelementcommand -- unable to create element of type : "
+    <<argv[1]<<endln;
+    return TCL_ERROR;
+      }
+  }
+
+
+  else if (strcmp(argv[1], "LysmerTriangle") == 0) {
+      void *theEle = OPS_LysmerTriangle();
       if (theEle != 0) {
     theElement = (Element*)theEle;
       } else {

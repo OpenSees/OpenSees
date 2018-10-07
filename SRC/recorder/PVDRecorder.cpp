@@ -1836,4 +1836,8 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_PFEMElement2DFIC] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_CatenaryCable] = VTK_LINE;
     vtktypes[ELE_TAG_FourNodeTetrahedron] = VTK_TETRA;
+    vtktypes[ELE_TAG_TriSurfaceLoad] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_ShellANDeS] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
 }
