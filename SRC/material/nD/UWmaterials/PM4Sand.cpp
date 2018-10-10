@@ -66,7 +66,7 @@ PM4Sand::initTensors PM4Sand::initTensorOps;
 static int numPM4SandMaterials = 0;
 
 void *
-OPS_PM4Sand(void)
+OPS_PM4SandMaterial(void)
 {
 	if (numPM4SandMaterials == 0) {
 		numPM4SandMaterials++;
