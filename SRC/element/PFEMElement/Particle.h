@@ -21,7 +21,7 @@
 
 // $Revision: 1.0 $
 // $Date: 2016-1-27  $
-                                                                        
+
 // Written: Minjie Zhu
 //
 // Description: This class defines the Particle class
@@ -30,46 +30,85 @@
 #ifndef Particle_h
 #define Particle_h
 
-#include <Vector.h>
-
-class ParticleGroup;
+#include "BackgroundDef.h"
 
 class Particle
 {
+
 public:
-    Particle():coord(),velocity(),pressure(0),group(0) {}
-    ~Particle() {}
+    Particle();
+    ~Particle();
 
-    void moveTo(const Vector& coord) {
+    void moveTo(const VDouble& coord, double subdt) {
 	this->coord = coord;
+	dt -= subdt;
+	if (dt < 0) dt = 0.0;
     }
 
-    void move(const Vector& disp) {
+    void move(const VDouble& disp, double subdt) {
 	this->coord += disp;
+	dt -= subdt;
+	if (dt < 0) dt = 0.0;
     }
 
-    void setVel(const Vector& vel) {
-	this->velocity = vel;
+    void setVel(const VDouble& vel) {
+	if (!updated) {
+	    this->velocity = vel;
+	    updated = true;
+	}
+    }
+
+    void incrVel(const VDouble& dv) {
+	if (!updated) {
+	    this->velocity += dv;
+	    updated = true;
+	}
     }
 
     void setPressure(double p) {
 	pressure = p;
     }
 
-    void setGroup(ParticleGroup* g) {group = g;}
+    void setAccel(const VDouble& accel) {
+	this->accel = accel;
+    }
 
-    void print();
+    void setPdot(double pdot) {
+	this->pdot = pdot;
+    }
 
-    const Vector& getCrds() const {return coord;}
-    const Vector& getVel() const {return velocity;}
+    void setGroupTag(int tag) {
+	this->gtag = tag;
+    }
+
+    void needUpdate(double dt) {
+	updated = false;
+	this->dt = dt;
+    }
+
+    void setFixed() {
+	fixed = true;
+    }
+
+    const VDouble& getCrds() const {return coord;}
+    const VDouble& getVel() const {return velocity;}
+    const VDouble& getAccel() const {return accel;}
     double getPressure() const {return pressure;}
-    ParticleGroup* getGroup() {return group;}
-    
+    double getPdot() const {return pdot;}
+    int getGroupTag() const {return gtag;}
+    bool isUpdated() const {return updated;}
+    bool isFixed() const {return fixed;}
+    double getDt() const {return dt;}
+
 private:
-    Vector coord;
-    Vector velocity;
-    double pressure;
-    ParticleGroup* group;
+    VDouble coord;
+    VDouble velocity;
+    VDouble accel;
+    double pressure, pdot;
+    int gtag;
+    bool updated;
+    double dt;
+    bool fixed;
 };
 
 

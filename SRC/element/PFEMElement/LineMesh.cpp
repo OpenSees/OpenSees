@@ -31,66 +31,73 @@
 #include <Node.h>
 #include <NodeIter.h>
 #include <Domain.h>
-#include <cmath>
-#include <MeshRegion.h>
-#include <string>
 #include <elementAPI.h>
+#include <Element.h>
+#include <LineMeshGenerator.h>
 
-extern int OPS_ElasticBeam2d(Domain& theDomain, const ID& elenodes, ID& eletags);
-extern int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags);
-extern int OPS_DispBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags);
-
-int OPS_LineMesh(Domain& domain, int ndm)
+int OPS_LineMesh()
 {
-    if (OPS_GetNumRemainingInputArgs() < 4) {
-	opserr<<"WARNING: want rtag? ndf? size? numnodes? nd1? ... bound1? ... eletype? ...\n";
+    if (OPS_GetNumRemainingInputArgs() < 6) {
+	opserr<<"WARNING: want tag? numnodes? ndtags? id? ndf? size? <eleType? eleArgs?>\n";
 	return -1;
     }
 
-    // get inputs
+    // get tag and number of nodes
     int num = 2;
-    int rtag[2];
-    if (OPS_GetIntInput(&num,rtag) < 0) {
-	opserr<<"WARNING: failed to read region tag\n";
+    int idata[2];
+    if (OPS_GetIntInput(&num,idata) < 0) {
+	opserr<<"WARNING: failed to read mesh tag, and number of nodes\n";
 	return -1;
     }
 
+    if (OPS_GetNumRemainingInputArgs() < idata[1]+3) {
+	opserr<<"WARNING: want ndtags? id? ndf? size? <eleType? eleArgs?>\n";
+	return -1;
+    }
+    
+    // create mesh
+    LineMesh* mesh = new LineMesh(idata[0]);
+    if(OPS_addMesh(mesh) == false) {
+	opserr<<"WARNING: failed to add mesh\n";
+	return -1;
+    }
+
+    // get node tags
+    num = idata[1];
+    ID ndtags(num);
+    if (OPS_GetIntInput(&num,&ndtags(0)) < 0) {
+	opserr<<"WARNING: failed to read node tags\n";
+	return -1;
+    }
+    mesh->setNodeTags(ndtags);
+
+    // get id and ndf
+    num = 2;
+    int id[2];
+    if (OPS_GetIntInput(&num,id) < 0) {
+	opserr<<"WARNING: failed to read mesh id and node ndf\n";
+	return -1;
+    }
+    mesh->setID(id[0]);
+    mesh->setNdf(id[1]);
+
+    // get size
     num = 1;
     double size;
     if (OPS_GetDoubleInput(&num,&size) < 0) {
 	opserr<<"WARNING: failed to read mesh size\n";
 	return -1;
     }
+    mesh->setMeshsize(size);
 
-    num = 1;
-    int numnodes;
-    if (OPS_GetIntInput(&num,&numnodes) < 0) {
-	opserr<<"WARNING: failed to read number of nodes\n";
+    // set eleArgs
+    if (mesh->setEleArgs() < 0) {
+	opserr << "WARNING: failed to set element arguments\n";
 	return -1;
     }
-
-    if (OPS_GetNumRemainingInputArgs() < 2*numnodes) {
-	opserr<<"WARNING: insufficient input args\n";
-	return -1;
-    }
-
-    ID nodes(numnodes);
-    if (OPS_GetIntInput(&numnodes, &nodes(0)) < 0) {
-	opserr<<"WARNING: failed to read node tags\n";
-	return -1;
-    }
-
-    ID bound(numnodes);
-    if (OPS_GetIntInput(&numnodes, &bound(0)) < 0) {
-	opserr<<"WARNING: failed to read boundary values\n";
-	return -1;
-    }
-
-    // create mesher
-    LineMesh mesh(domain,ndm,rtag[1]);
 
     // mesh
-    if (mesh.mesh(rtag[0],size,nodes,bound) < 0) {
+    if (mesh->mesh() < 0) {
 	opserr<<"WARNING: failed to mesh line\n";
 	return -1;
     }
@@ -98,8 +105,8 @@ int OPS_LineMesh(Domain& domain, int ndm)
     return 0;
 }
 
-LineMesh::LineMesh(Domain& domain, int m, int n)
-    :theDomain(&domain), ndm(m), ndf(n)
+LineMesh::LineMesh(int tag)
+    :Mesh(tag,2)
 {
 }
 
@@ -109,207 +116,111 @@ LineMesh::~LineMesh()
 
 
 int
-LineMesh::mesh(int rtag, double size, const ID& nodes,const ID& bound)
+LineMesh::mesh()
 {
-    if(size <= 0) {
-	opserr<<"WARNING: mesh size <= 0\n";
-	return -1;
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) {
+    	opserr << "WARNING: domain is not created\n";
+    	return -1;
     }
-    
-    int nodesize = nodes.Size();
-    if(nodesize < 2) {
-	opserr<<"WARNING: the number of input nodes < 2\n";
-	return -1;
-    }
-    if(bound.Size() < nodesize) {
-	opserr<<"WARNING: the number of boundary ID < number of nodes\n";
-	return -1;
-    }
-    
-    // get region
-    MeshRegion* theRegion = theDomain->getRegion(rtag);
-    if(theRegion == 0) {
-	theRegion = new MeshRegion(rtag);
-	if(theDomain->addRegion(*theRegion) < 0) {
-	    opserr<<"WARNING: failed to add region\n";
+
+    // get data
+    const ID& tags = this->getNodeTags();
+    double meshsize = this->getMeshsize();
+
+    // line mesh generator
+    LineMeshGenerator gen;
+
+    // add points and lines
+    for (int i=0; i<tags.Size(); ++i) {
+	Node* node = domain->getNode(tags(i));
+	if (node == 0) {
+	    opserr << "WARNING: node "<<tags(i)<<" does not exist\n";
 	    return -1;
 	}
-    }
-    
-    // get region nodes
-    ID regnodes, regelenodes;
-    for(int i=0; i<nodesize; i++) {
 
-	// last node
-	int num = regnodes.Size();
-	if (i == nodesize-1) {
-	    if (bound(i) != 0) {
-		regnodes[num] = nodes(i);
+	// current crds of the node
+	Vector crds = node->getCrds();
+	const Vector& disp = node->getTrialDisp();
+	if (disp.Size() >= crds.Size()) {
+	    for (int j=0; j<crds.Size(); ++j) {
+		crds(j) += disp(j);
 	    }
-	    break;
 	}
 
-	// end nodes
-	int nd1 = nodes(i);
-	int nd2 = nodes(i+1);
+	// add the node
+	gen.addPoint(crds);
 
-	// mesh line
-	ID lnodes, elenodes;
-	if(this->mesh(size,nd1,nd2,lnodes,elenodes) < 0) {
-	    opserr<<"WARNING: failed to mesh line\n";
+	// add the line
+	if (i>0) {
+	    ID line(2);
+	    line(0) = i-1;
+	    line(1) = i;
+	    gen.addLine(line);
+	}
+    }
+
+    // mesh the lines
+    if (gen.mesh(meshsize) < 0) {
+	opserr << "WARNIGN: failed to mesh line\n";
+	return -1;
+    }
+
+    // get points and create nodes
+    int nump = gen.getNumPoints();
+    if (nump == 0) {
+	opserr << "WARNING: no nodes is meshed\n";
+	return -1;
+    }
+    ID newndtags(nump-tags.Size());
+    ID allndtags(nump);
+    for (int i=0; i<tags.Size(); ++i) {
+	allndtags(i) = tags(i);
+    }
+
+    int nodecounter = nextNodeTag();
+    for (int i=tags.Size(); i<nump; ++i) {
+	Vector crds;
+	gen.getPoint(i,crds);
+	Node* node = newNode(nodecounter++,crds);
+	if (node == 0) {
+	    opserr << "WARING: failed to create node\n";
 	    return -1;
 	}
-	
-	// add nodes to region
-	if(bound(i) != 0) {
-	    regnodes.resize(num+lnodes.Size()+1);
-	    regnodes(num) = nd1;
-	    num++;
-	} else {
-	    regnodes.resize(num+lnodes.Size());
-	}
-	for(int j=0; j<lnodes.Size(); j++) {
-	    regnodes(num+j) = lnodes(j);
-	}
-	
-	// add elenodes to region
-	num = regelenodes.Size();
-	regelenodes.resize(num+elenodes.Size());
-	for(int j=0; j<elenodes.Size(); j++) {
-	    regelenodes(num+j) = elenodes(j);
-	}
-    }
-
-    // add to region
-    theRegion->setNodes(regnodes);
-        
-    // create elements
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-	
-	std::string eletype = OPS_GetString();
-	ID eletags;
-	if (eletype=="elasticBeamColumn") {
-	    if (ndm == 2) {
-		if (OPS_ElasticBeam2d(*theDomain,regelenodes,eletags) < 0) {
-		    return -1;
-		}
-	    }
-	} else if (eletype == "forceBeamColumn") {
-	    if (ndm == 2) {
-		if (OPS_ForceBeamColumn2d(*theDomain,regelenodes,eletags) < 0) {
-		    return -1;
-		}
-	    }
-
-	} else if (eletype == "dispBeamColumn") {
-	    if (ndm == 2) {
-		if (OPS_DispBeamColumn2d(*theDomain,regelenodes,eletags) < 0) {
-		    return -1;
-		}
-	    }
-
-	} else {
-	    opserr<<"WARNING: element "<<eletype.c_str()<<" can't be used for line mesh at this time\n";
-	    return -1;
-	}
-	theRegion->setExtraEles(eletags);
-    }
-
-    
-
-    return 0;
-}
-
-int
-LineMesh::mesh(double size, int tag1, int tag2, ID& nodes, ID& elenodes)
-{
-    if(tag1 == tag2) {
-	opserr<<"WARNING: same tags are given as ends of line\n";
-	return -1;
-    }
-    
-    // get end nodes
-    Node* nd1 = theDomain->getNode(tag1);
-    Node* nd2 = theDomain->getNode(tag2);
-    if(nd1==0) {
-	opserr<<"node "<<tag1<<" is not definde\n";
-	return -1;
-    }
-    if(nd2==0) {
-	opserr<<"node "<<tag2<<" is not definde\n";
-	return -1;
-    }
-
-    // node coordinats
-    const Vector& crds1 = nd1->getCrds();
-    const Vector& crds2 = nd2->getCrds();
-    if(crds1.Size()!=ndm || crds2.Size()!=ndm) {
-	opserr<<"WARNING: node "<<tag1<<" and "<<tag2;
-	opserr<<" have different ndm to the model\n";
-	return -1;
-    }
-
-    // num of ele
-    Vector incr = crds2-crds1;
-    int nele = ceil(incr.Norm()/size);
-    if(nele == 0) {
-	opserr<<"WARNING: two nodes are at same location\n";
-	return -1;
-    }
-
-    // increment
-    incr /= nele;
-
-    // get node tag
-    NodeIter& theNodes = theDomain->getNodes();
-    Node* theNode = theNodes();
-    int currtag = 0;
-    if(theNode != 0) currtag = theNode->getTag();
-
-    // create nodes
-    if(nele > 1) {
-	nodes.resize(nele-1);
-    }
-    Vector crds = crds1;
-    for(int i=0; i<nele-1; i++) {
-	crds += incr;
-	Node* node = 0;
-	if(ndm == 1) {
-	    node = new Node(--currtag,ndf,crds(0));
-	} else if(ndm == 2) {
-	    node = new Node(--currtag,ndf,crds(0),crds(1));
-	} else if(ndm == 3) {
-	    node = new Node(--currtag,ndf,crds(0),crds(1),crds(2));
-	}
-	if(node == 0) {
-	    opserr<<"run out of memory for creating Node\n";
-	    return -1;
-	}
-	if(theDomain->addNode(node) == false) {
-	    opserr<<"Failed to add node to domain\n";
+	if (domain->addNode(node) == false) {
+	    opserr << "WARNING: failed to add node to domain\n";
 	    delete node;
 	    return -1;
 	}
-	nodes(i) = currtag;
+	allndtags(i) = node->getTag();
+	newndtags(i-tags.Size()) = node->getTag();
     }
+    this->setNewNodeTags(newndtags);
 
-    // line elements
-    int index = 0;
-    elenodes.resize(nele*2);
-    elenodes(index++) = tag1;
-    if(nele == 1) {
-	elenodes(index++) = tag2;
-    } else {
-	elenodes(index++) = nodes(0);
+    // get lines 
+    int numlines = gen.getNumLines();
+    if (numlines == 0) return 0;
+    ID elenodes(numlines*2);
+
+    for (int i=0; i<numlines; ++i) {
+	ID pts;
+	gen.getLine(i,pts);
+	elenodes(2*i) = allndtags(pts(0));
+	elenodes(2*i+1) = allndtags(pts(1));
+	if (elenodes(2*i) > elenodes(2*i+1)) {
+	    elenodes(2*i) = allndtags(pts(1));
+	    elenodes(2*i+1) = allndtags(pts(0));
+	}
+		
     }
-    for(int i=1; i<nele-1; i++) {
-	elenodes(index++) = nodes(i-1);
-	elenodes(index++) = nodes(i);
-    }
-    if(nele > 1) {
-	elenodes(index++) = nodes(nele-2);
-	elenodes(index++) = tag2;
+    this->setEleNodes(elenodes);
+
+    // create elemnts
+    if (this->newElements(elenodes) < 0) {
+	opserr << "WARNING: failed to create elements\n";
+	return -1;
     }
 
     return 0;
 }
+

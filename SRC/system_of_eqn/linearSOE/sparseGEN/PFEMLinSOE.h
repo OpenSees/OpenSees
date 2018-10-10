@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision: 1.0 $
 // $Date: 2012-08-31 11:36:36 $
 // $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/PFEMLinSOE.h,v $
@@ -27,7 +27,7 @@
 //
 // Description: This file contains the class definition for PFEMLinSOE
 // PFEMLinSOE is a subclass of SparseGenColLinSOE. It stores the matrix equation
-// Ax=b using the sparse column-compacted storage scheme for storing the 
+// Ax=b using the sparse column-compacted storage scheme for storing the
 // matrix A. It solves the equations using the Fractional Step Method in PFEM.
 //
 // What: "@(#) PFEMLinSOE.h, revA"
@@ -47,32 +47,32 @@ class PFEMSolver;
 class PFEMLinSOE : public LinearSOE
 {
   public:
-    PFEMLinSOE(PFEMSolver &theSolver);        
-    PFEMLinSOE(int classTag);        
-    PFEMLinSOE();        
-    PFEMLinSOE(PFEMSolver& theSolver, int classTag);        
+    PFEMLinSOE(PFEMSolver &theSolver);
+    PFEMLinSOE(int classTag);
+    PFEMLinSOE();
+    PFEMLinSOE(PFEMSolver& theSolver, int classTag);
 
     virtual ~PFEMLinSOE();
 
     virtual int getNumEqn(void) const;
     virtual int setSize(Graph& theGraph);
     virtual int addA(const Matrix &, const ID &, double fact = 1.0);
-    virtual int addB(const Vector &, const ID &, double fact = 1.0);    
-    virtual int setB(const Vector &, double fact = 1.0);        
-    
+    virtual int addB(const Vector &, const ID &, double fact = 1.0);
+    virtual int setB(const Vector &, double fact = 1.0);
+
     virtual void zeroA(void);
     virtual void zeroB(void);
-    
+
     virtual const Vector &getX(void);
-    virtual const Vector &getB(void);    
+    virtual const Vector &getB(void);
     virtual double normRHS(void);
 
-    virtual void setX(int loc, double value);        
-    virtual void setX(const Vector &x);        
-    int setPFEMSolver(PFEMSolver& newSolver);   
+    virtual void setX(int loc, double value);
+    virtual void setX(const Vector &x);
+    int setPFEMSolver(PFEMSolver& newSolver);
 
     virtual int sendSelf(int commitTag, Channel &theChannel);
-    virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);    
+    virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
     virtual const ID& getDofType()const {return dofType;}
     virtual const ID& getDofID()const {return dofID;}
@@ -80,8 +80,10 @@ class PFEMLinSOE : public LinearSOE
     friend class PFEMSolver;
     friend class PFEMSolver_Mumps;
     friend class PFEMSolver_Umfpack;
+    friend class PFEMSolver_Laplace;
+    friend class PFEMSolver_LumpM;
 
-private:    
+private:
 
     virtual int setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int& Pisize);
     virtual int setMatIDs(Graph& theGraph, int Ssize, int Fsize, int Isize, int Psize, int Pisize);
@@ -94,4 +96,3 @@ private:
 };
 
 #endif
-
