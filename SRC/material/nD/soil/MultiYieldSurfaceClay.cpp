@@ -2908,7 +2908,7 @@ opserr << "---------------------------------"<< endln;
 
 
 	
-int MultiYieldSurfaceClay::commitSensitivity (Vector & strainSens, int passedGradNumber, int numGrads) {
+int MultiYieldSurfaceClay::commitSensitivity (const Vector & strainSens, int passedGradNumber, int numGrads) {
 
 //	gradNumber=passedGradNumber;  
 
