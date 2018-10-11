@@ -152,18 +152,21 @@ ReinfBar *
 CircReinfLayer::getReinfBars (void) const
 {
    double theta, dtheta;
-   Vector barPosit(2);
+   static Vector barPosit(2);
    int i;
    ReinfBar *reinfBars;
    double pi = acos(-1.0);
    double initAngRad, finalAngRad;
 
-   if (nReinfBars > 1)
+   if (nReinfBars > 0)
    {
       initAngRad  = pi * initAng  / 180.0;
       finalAngRad = pi * finalAng / 180.0;
- 
-      dtheta = (finalAngRad - initAngRad) /(nReinfBars - 1);
+
+      if (nReinfBars > 1) 
+	dtheta = (finalAngRad - initAngRad) /(nReinfBars - 1);
+      else
+	dtheta = 0.0; // Doesn't really matter what this is
 
       reinfBars = new ReinfBar [nReinfBars];
 

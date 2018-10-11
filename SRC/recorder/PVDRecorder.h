@@ -54,7 +54,7 @@ public:
     
 public:
     PVDRecorder(const char *filename, const NodeData& ndata,
-		const std::vector<EleData>& edata, int ind=2, int pre=10);
+		const std::vector<EleData>& edata, int ind=2, int pre=10, double dt=0);
     PVDRecorder();
     ~PVDRecorder();
 
@@ -78,7 +78,7 @@ private:
     virtual void getParts();
     virtual int savePart(int partno, int ctag, int ndf);
     virtual int savePart0(int ndf);
-    virtual int savePartParticle(int ndf);
+    virtual int savePartParticle(int partno, int gtag, int ndf);
     
 private:
     int indentsize, precision, indentlevel;
@@ -92,6 +92,7 @@ private:
     std::vector<EleData> eledata;
     Domain* theDomain;
     std::map<int,int> partnum;
+    double dT, nextTime;
 
 public:
     enum VtkType {

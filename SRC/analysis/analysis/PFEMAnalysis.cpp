@@ -141,6 +141,8 @@ PFEMAnalysis::identify()
 {
     Domain* theDomain = this->getDomainPtr();
 
+    if (theDomain->getNumPCs() == 0) return 0;
+
     // disconnect pcs from structural elements
     Pressure_ConstraintIter& thePCs = theDomain->getPCs();
     Pressure_Constraint* thePC = 0;

@@ -105,6 +105,7 @@ class NDMaterial : public Material
 
 extern bool OPS_addNDMaterial(NDMaterial *newComponent);
 extern NDMaterial *OPS_getNDMaterial(int tag);
+extern bool OPS_removeNDMaterial(int tag);
 extern void OPS_clearAllNDMaterial(void);
 extern void OPS_printNDMaterial(OPS_Stream &s, int flag = 0);
 

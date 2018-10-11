@@ -21,7 +21,7 @@ uniaxialMaterial Steel01  3  $fy $E 0.01
 # Define cross-section for nonlinear columns
 # ------------------------------------------
 
-# set some paramaters
+# set some parameters
 set colWidth 15
 set colDepth 24 
 

@@ -25,8 +25,8 @@ The example subdirectories include:
 			procedure
                 RCFrameDisplay.tcl - commands for opening a window
 	                used to display the RCFrame1-5 examples
-	        RigidFrame3D.tcl - a nonlinear EQ analysis of a 3d fframe
-                        with elastic columns and nonlinear beams with rigid 
+	        RigidFrame3D.tcl - a nonlinear EQ analysis of a 3d frame
+                        with elastic columns and nonlinear beams with rigid
                         diaphragm constraints
 		genPlaneFrame.tcl - defines node and element generating
 			TCL procedure
@@ -44,20 +44,19 @@ The example subdirectories include:
 
 
         TclModelBuilder: contains the files outlined in the document
-		'Adding an Element to g3'. 
+		'Adding an Element to g3'.
 
                 myG3 - an executable.
                 myCommands.C - contains procedure for adding new commands to g3
                 TclPlaneTruss.h/.C - an example of a tcl model builder
                 MyTruss.h/.C - files to add the new truss member
 		example1.tcl, example2.tcl - the two tcl scripts
-		     presented in the cocument 'Adding an Element to g3'
+		     presented in the document 'Adding an Element to g3'
 
-		examples - a dircetory containg some more scripts
+		examples - a directory containing some more scripts
 
                 to load a script in the running interpreter type
                     source testX.tcl
-                
-                typing 'make' builds the executable myG3
-                typing 'make wipe' remove myG3 and .o files  
 
+                typing 'make' builds the executable myG3
+                typing 'make wipe' remove myG3 and .o files

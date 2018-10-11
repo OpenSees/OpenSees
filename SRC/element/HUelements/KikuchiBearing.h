@@ -134,7 +134,7 @@ class KikuchiBearing : public Element
 
 
   //MNS
-  int nMNS; //section is devided into (nMNS)*(nMNS) springs
+  int nMNS; //section is divided into (nMNS)*(nMNS) springs
   double lambda; //parameter, =(D/t)*sqrt(3G/K)
   double incA; //area of each spring
 

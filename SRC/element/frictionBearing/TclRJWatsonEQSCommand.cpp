@@ -601,6 +601,6 @@ int TclModelBuilder_addRJWatsonEqsBearing(ClientData clientData,
         return TCL_ERROR;
     }
     
-    // if get here we have sucessfully created the RJWatsonEqsBearing and added it to the domain
+    // if get here we have successfully created the RJWatsonEqsBearing and added it to the domain
     return TCL_OK;
 }

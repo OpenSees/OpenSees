@@ -112,13 +112,13 @@ class MVLEM : public Element {
   const double c;							// center of rotation
   const int m;							// no. of RC panels
   Vector *theLoad;						// pointer to element load
-  
+
   // calculated element parameters
   double h;								// height of MVLEM element (undeformed configuration)
-  double Lw;								// lenght of MVLEM elemtn, i.e. wall length 
+  double Lw;								// length of MVLEM elemtn, i.e. wall length 
   double A;								// Wall cross-section area
   double NodeMass;						// nodal mass
-  
+
   // caldulated element arrays
   double *x;
   double *b;								// fiber widths

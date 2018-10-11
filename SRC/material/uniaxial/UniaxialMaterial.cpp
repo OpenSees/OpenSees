@@ -49,6 +49,16 @@ bool OPS_addUniaxialMaterial(UniaxialMaterial *newComponent) {
   return theUniaxialMaterialObjects.addComponent(newComponent);
 }
 
+bool OPS_removeUniaxialMaterial(int tag)
+{
+    TaggedObject* obj = theUniaxialMaterialObjects.removeComponent(tag);
+    if (obj != 0) {
+	delete obj;
+	return true;
+    }
+    return false;
+}
+
 UniaxialMaterial *OPS_getUniaxialMaterial(int tag) {
 
   TaggedObject *theResult = theUniaxialMaterialObjects.getComponentPtr(tag);

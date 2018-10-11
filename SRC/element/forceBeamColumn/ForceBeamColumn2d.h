@@ -155,7 +155,7 @@ class ForceBeamColumn2d: public Element
   BeamIntegration *beamIntegr;
   int numSections;
   SectionForceDeformation **sections;          // array of pointers to sections
-  CrdTransf *crdTransf;        // pointer to coordinate tranformation object 
+  CrdTransf *crdTransf;        // pointer to coordinate transformation object 
   // (performs the transformation between the global and basic system)
   double rho;                    // mass density per unit length
   int    maxIters;               // maximum number of local iterations
@@ -168,14 +168,14 @@ class ForceBeamColumn2d: public Element
   Matrix kv;                     // stiffness matrix in the basic system 
   Vector Se;                     // element resisting forces in the basic system
   
-  Matrix kvcommit;               // commited stiffness matrix in the basic system
-  Vector Secommit;               // commited element end forces in the basic system
+  Matrix kvcommit;               // committed stiffness matrix in the basic system
+  Vector Secommit;               // committed element end forces in the basic system
   
   Matrix *fs;                    // array of section flexibility matrices
   Vector *vs;                    // array of section deformation vectors
   Vector *Ssr;                   // array of section resisting force vectors
   
-  Vector *vscommit;              // array of commited section deformation vectors
+  Vector *vscommit;              // array of committed section deformation vectors
   
   enum {maxNumEleLoads = 100};
   enum {NDM = 2};         // dimension of the problem (2d)

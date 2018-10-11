@@ -125,11 +125,11 @@ TclModelBuilder_addPFEMElement2D(ClientData clientData, Tcl_Interp *interp,
     if(type == 0) {
         ele = new PFEMElement2DFIC(tag,nd1,nd2,nd3,rho,mu,b1,b2,thickness);
     } else if(type == 1) {
-        ele = new PFEMElement2DCompressible(tag,nd1,nd2,nd3,rho,mu,b1,b2,thickness,kappa);
+        //ele = new PFEMElement2DCompressible(tag,nd1,nd2,nd3,rho,mu,b1,b2,thickness,kappa);
     } else if(type == 2) {
-        ele = new PFEMElement2DBubble(tag,nd1,nd2,nd3,rho,mu,b1,b2,thickness,kappa);
+        //ele = new PFEMElement2DBubble(tag,nd1,nd2,nd3,rho,mu,b1,b2,thickness,kappa);
     } else if(type == 3) {
-        ele = new PFEMElement2Dmini(tag,nd1,nd2,nd3,rho,mu,b1,b2,thickness,kappa,lumped,checkJ);
+        //ele = new PFEMElement2Dmini(tag,nd1,nd2,nd3,rho,mu,b1,b2,thickness,kappa,lumped,checkJ);
     }
     if (ele == 0) {
         opserr << "WARNING ran out of memory creating element\n";
@@ -162,7 +162,7 @@ TclModelBuilder_addPFEMElement3D(ClientData clientData, Tcl_Interp *interp,
     }
 
     int loc = 2;
-    
+
     int tag;
     if(Tcl_GetInt(interp, argv[loc], &tag) != TCL_OK) {
         opserr<< "WARNING invalid tag "<< argv[loc] << ": element PFEMElement3D\n";

@@ -342,7 +342,7 @@ PFEMElement3Dmini::getResistingForceIncInertia()
     int numnodes = ntags.Size()/2;
     int ndm = body.Size();
     
-    // get velocity, accleration
+    // get velocity, acceleration
     Vector v(ndf), vdot(ndf);
     for(int a=0; a<numnodes; a++) {
 

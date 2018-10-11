@@ -93,7 +93,7 @@ MP_Joint2D::MP_Joint2D(Domain *theDomain, int nodeRetain, int nodeConstr,
     return;
   }
   
-  // check the main degree of freedom. Assign auxilary DOF 
+  // check the main degree of freedom. Assign auxiliary DOF 
   if ( MainDOF!= 2 && MainDOF!=3 ) {
     opserr << "MP_Joint2D::MP_Joint2D - Wrong main degree of freedom" ;
     return;
@@ -253,7 +253,7 @@ MP_Joint2D::applyConstraint(double timeStamp)
 		const Vector &crdR = RetainedNode->getCrds();
 		const Vector &crdC = ConstrainedNode->getCrds();
 
-		// get commited displacements of nodes to get updated coordinates
+		// get committed displacements of nodes to get updated coordinates
 		const Vector &dispR = RetainedNode->getDisp();
 		const Vector &dispC = ConstrainedNode->getDisp();
 
@@ -446,7 +446,7 @@ const Matrix &MP_Joint2D::getConstraint(void)
 		const Vector &crdR = RetainedNode->getCrds();
 		const Vector &crdC = ConstrainedNode->getCrds();
 
-		// get commited displacements of nodes to get updated coordinates
+		// get committed displacements of nodes to get updated coordinates
 		const Vector &dispR = RetainedNode->getTrialDisp();
 		const Vector &dispC = ConstrainedNode->getTrialDisp();
 

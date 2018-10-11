@@ -72,7 +72,7 @@ while {$ok == 0 && $tCurrent < $tFinal} {
     set tCurrent [getTime]
 }
 
-# Print a message to indicate if analysis succesfull or not
+# Print a message to indicate if analysis successful or not
 if {$ok == 0} {
    puts "Transient analysis completed SUCCESSFULLY";
 } else {

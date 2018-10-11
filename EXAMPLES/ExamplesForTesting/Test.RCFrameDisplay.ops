@@ -1,7 +1,7 @@
 # a window showing the displaced shape
 #recorder display g3 10 10 300 300 -wipe
 
-# next three commmands define viewing system, all values in global coords
+# next three commands define viewing system, all values in global coords
 vrp 288.0 150.0 0    # point on the view plane in global coord, center of local viewing system
 vup 0 1 0            # dirn defining up direction of view plane
 vpn 0 0 1            # direction of outward normal to view plane

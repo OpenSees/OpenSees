@@ -7,7 +7,7 @@ there are a number of example classes and example scripts to test these
 classes. In addition for elements and materials there are example c and 
 fortran routines.
 
-typing make in the DEVLOPER directory will build them all. the resulting
+typing make in the DEVELOPER directory will build them all. the resulting
 shared object libraries (dynamic link libraries) will be found in the same
 directory as the source code.
 

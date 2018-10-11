@@ -30,22 +30,15 @@
 #ifndef LineMesh_h
 #define LineMesh_h
 
-class Domain;
-class ID;
+#include "Mesh.h"
 
-class LineMesh
+class LineMesh : public Mesh
 {
 public:
-    LineMesh(Domain& theDomain, int ndm, int ndf);
+    explicit LineMesh(int tag);
     ~LineMesh();
 
-    virtual int mesh(int rtag, double size, const ID& nodes,const ID& bound);
-    
-private:
-    virtual int mesh(double size, int nd1, int nd2, ID& nodes, ID& elenodes);
-
-    Domain* theDomain;
-    int ndm, ndf;
+    int mesh();
 };
 
 #endif
