@@ -61,7 +61,7 @@ source ReadSMDFile.tcl
 
 # Permform the conversion from SMD record to OpenSees record
 #              inFile     outFile dt
-ReadSMDFile ARL360.at2 $outFile dt
+ReadSMDFile elCentro.AT2 $outFile dt
 
 # Set time series to be passed to uniform excitation
 timeSeries Path 1 -filePath $outFile -dt $dt -factor $g
@@ -118,9 +118,8 @@ analysis Transient
 # ------------------------------
 
 # Create a recorder to monitor nodal displacements
-recorder Node -time -file disp.out -node 3 4 -dof 1 2 3 disp
-recorder Node -time -file a2.out -timeSeries 1 -node 3 4 -dof 1 2 3 accel
-recorder Node -time -file a1.out -node 3 4 -dof 1 2 3 accel
+recorder EnvelopeNode -time -file disp.out -node 3 4 -dof 1 disp
+recorder EnvelopeNode -time -file accel.out -timeSeries 1 -node 3 4 -dof 1 accel
 
 # Create recorders to monitor section forces and deformations
 # at the base of the left column
@@ -141,7 +140,7 @@ puts "eigen values at start of transient: [eigen 2]"
 
 
 # set some variables
-set tFinal [expr 2000 * 0.01]
+set tFinal [expr 1560 * 0.02]
 set tCurrent [getTime]
 set ok 0
 
@@ -170,14 +169,3 @@ if {$ok == 0} {
 } else {
    puts "Transient analysis completed FAILED";    
 }
-
-# Perform an eigenvalue analysis
-puts "eigen values at start of transient: [eigen -Umfpack 1]"
-puts "eigen values at start of transient: [eigen -Umfpack 2]"
-puts "eigen values at start of transient: [eigen -Umfpack 2]"
-
-# Print state of node 3
-print node 3
-
-
-
