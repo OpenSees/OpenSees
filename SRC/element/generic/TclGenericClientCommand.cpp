@@ -214,6 +214,6 @@ int TclModelBuilder_addGenericClient(ClientData clientData, Tcl_Interp *interp, 
         return TCL_ERROR;
     }
     
-    // if get here we have sucessfully created the genericClient and added it to the domain
+    // if get here we have successfully created the genericClient and added it to the domain
     return TCL_OK;
 }

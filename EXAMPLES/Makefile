@@ -1,6 +1,6 @@
 include ../Makefile.def
 
-# the example dircetories that 
+# the example directories that 
 
 EXAMPLE1 = $(FE)/../EXAMPLES/Example1
 PLANE_FRAME = $(FE)/../EXAMPLES/PlaneFrame

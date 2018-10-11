@@ -32,7 +32,7 @@
 //
 // Description: This file contains the class definition for Truss. A Truss object
 // provides the abstraction of the small deformation bar element. Each truss
-// object is assocaited with a material object. This Truss element will work
+// object is associated with a material object. This Truss element will work
 // in 1d, 2d or 3d problems.
 //
 // What: "@(#) Truss.h, revA"
@@ -59,7 +59,7 @@ class Truss : public Element
 
     const char *getClassType(void) const {return "Truss";};
 
-    // public methods to obtain inforrmation about dof & connectivity    
+    // public methods to obtain information about dof & connectivity    
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
     Node **getNodePtrs(void);

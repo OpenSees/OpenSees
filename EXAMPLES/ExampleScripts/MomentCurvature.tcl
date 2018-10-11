@@ -1,6 +1,6 @@
 # A procedure for performing section analysis (only does
 # moment-curvature, but can be easily modified to do any mode
-# of section reponse.
+# of section response.
 #
 # MHS
 # October 2000

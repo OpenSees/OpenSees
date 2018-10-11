@@ -54,7 +54,9 @@
  #include <NormEnvelopeElementRecorder.h>
  #include <PVDRecorder.h>
  #include <MPCORecorder.h>
+ #include <GmshRecorder.h>
 extern void* OPS_PVDRecorder();
+extern void* OPS_GmshRecorder();
 extern void* OPS_MPCORecorder();
 
  #include <NodeIter.h>
@@ -1832,6 +1834,14 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 			 return TCL_ERROR;
 		 }
 	 }
+    else if (strcmp(argv[1],"gmsh") == 0 || strcmp(argv[1],"GMSH") == 0) {
+     OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+     (*theRecorder) = (Recorder*) OPS_GmshRecorder();
+     }
+    // else if (strcmp(argv[1],"gmshparallel") == 0 || strcmp(argv[1],"GMSHPARALLEL") == 0) {
+    //  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    //  (*theRecorder) = (Recorder*) OPS_GmshRecorderParallel();
+    //  }
 
      /* *****************************************
      else if (strcmp(argv[1],"GSA") == 0) {

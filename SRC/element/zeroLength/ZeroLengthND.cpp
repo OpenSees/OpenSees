@@ -932,7 +932,7 @@ ZeroLengthND::setUp(int Nd1, int Nd2, const Vector &x, const Vector &yp)
 		opserr << "ZeroLengthND -- incorrect dimension of orientation vectors\n";
 	exit(-1);
 	}
-    // establish orientation of element for the tranformation matrix
+    // establish orientation of element for the transformation matrix
     // z = x cross yp
     static Vector z(3);
     z(0) = x(1)*yp(2) - x(2)*yp(1);

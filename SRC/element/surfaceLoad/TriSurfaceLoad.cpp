@@ -43,9 +43,11 @@
 #include <stdlib.h>
 #include <stdio.h> 
 
-double TriSurfaceLoad :: oneOverRoot3 = 1.0/sqrt(3.0);
-double TriSurfaceLoad :: GsPts[1][1];
-
+double TriSurfaceLoad::oneOverRoot3 = 1.0/sqrt(3.0);
+double TriSurfaceLoad::GsPts[1][1];
+Matrix TriSurfaceLoad::tangentStiffness(SL_NUM_DOF, SL_NUM_DOF);
+Matrix TriSurfaceLoad::mass(SL_NUM_DOF, SL_NUM_DOF);
+Matrix TriSurfaceLoad::damp(SL_NUM_DOF, SL_NUM_DOF);
 #include <elementAPI.h>
 static int num_TriSurfaceLoad = 0;
 
@@ -60,8 +62,8 @@ OPS_TriSurfaceLoad(void)
   // Pointer to a uniaxial material that will be returned
   Element *theElement = 0;
 
-  if (OPS_GetNumRemainingInputArgs() != 5) {
-    opserr << "Want: element TriSurfaceLoad eleTag?  iNode? jNode? kNode? pressure?\n";
+  if (OPS_GetNumRemainingInputArgs() < 5) {
+    opserr << "Want: element TriSurfaceLoad eleTag?  iNode? jNode? kNode? pressure? <rhoH?>\n";
     return 0;
   }
     
@@ -80,8 +82,18 @@ OPS_TriSurfaceLoad(void)
     return 0;	
   }
 
+  double rhoH = 0;
+  int num_args_remaining = OPS_GetNumRemainingInputArgs();
+
+  if (num_args_remaining > 0)
+  {
+    numData = 1;
+    OPS_GetDoubleInput(&numData, &rhoH);
+  }
+
+
   // Parsing was successful, allocate the material
-  theElement = new TriSurfaceLoad(iData[0], iData[1], iData[2], iData[3], dData[0]);
+  theElement = new TriSurfaceLoad(iData[0], iData[1], iData[2], iData[3], dData[0], rhoH);
 
   if (theElement == 0) {
     opserr << "WARNING could not create element of type TriSurfaceLoadElement\n";
@@ -92,10 +104,9 @@ OPS_TriSurfaceLoad(void)
 }
 
 // constructors:
-TriSurfaceLoad::TriSurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, double pressure)
+TriSurfaceLoad::TriSurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, double pressure,  double rhoH_)
  :Element(tag,ELE_TAG_TriSurfaceLoad),     
    myExternalNodes(SL_NUM_NODE),
-   tangentStiffness(SL_NUM_DOF, SL_NUM_DOF),
    internalForces(SL_NUM_DOF),
    g1(SL_NUM_NDF), 
    g2(SL_NUM_NDF),
@@ -114,6 +125,7 @@ TriSurfaceLoad::TriSurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, double pressu
 	GsPts[0][0] = 0.5;
 
   my_pressure = pressure;
+  rhoH = rhoH_;
 
 	mLoadFactor = 1.0;
 }
@@ -121,7 +133,6 @@ TriSurfaceLoad::TriSurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, double pressu
 TriSurfaceLoad::TriSurfaceLoad()
   :Element(0,ELE_TAG_TriSurfaceLoad),     
    	myExternalNodes(SL_NUM_NODE),
-   	tangentStiffness(SL_NUM_DOF, SL_NUM_DOF),
    	internalForces(SL_NUM_DOF),
    	g1(SL_NUM_NDF), 
    	g2(SL_NUM_NDF),
@@ -131,6 +142,11 @@ TriSurfaceLoad::TriSurfaceLoad()
    	dcrd2(SL_NUM_NDF),
    	dcrd3(SL_NUM_NDF)
 {
+  MyTag = 0;
+  GsPts[0][0] = 0;
+  my_pressure = 0;
+  rhoH = 0;
+  mLoadFactor = 0;
 }
 
 //  destructor:
@@ -230,8 +246,8 @@ TriSurfaceLoad::UpdateBase(double Xi, double Eta)
     myNhat(2) = g1(0)*g2(1) - g1(1)*g2(0);
 
     // Normalize
-    double norm = myNhat.Norm();
-    myNhat = myNhat / norm;
+    // double norm = myNhat.Norm();
+    myNhat = myNhat / 2;
 
     return 0;
 }
@@ -263,6 +279,7 @@ TriSurfaceLoad::addLoad(ElementalLoad *theLoad, double loadFactor)
 
 	if (type == LOAD_TAG_SurfaceLoader) {
 		mLoadFactor = loadFactor;
+    // opserr << "Trisurface - loadFactor = " << loadFactor << endln;
 		return 0;
 	} else {
 		opserr << "TriSurfaceLoad::addLoad() - ele with tag: " << this->getTag() << " does not accept load type: " << type << endln;
@@ -275,7 +292,7 @@ TriSurfaceLoad::addLoad(ElementalLoad *theLoad, double loadFactor)
 int 
 TriSurfaceLoad::addInertiaLoadToUnbalance(const Vector &accel)
 {
-	return 0;
+  return 0;
 }
 
 const Vector &
@@ -301,8 +318,23 @@ TriSurfaceLoad::getResistingForce()
 
 const Vector &
 TriSurfaceLoad::getResistingForceIncInertia()
-{       
-  	return getResistingForce();
+{   
+    static Vector accel(SL_NUM_DOF);
+    accel.Zero();
+    
+    internalForces = getResistingForce();
+
+    int pos = 0;
+    for (int i = 0; i < SL_NUM_NODE; ++i)
+    {
+      const Vector &a = theNodes[i]->getAccel();
+      accel(pos++) = a(i);
+    }
+    
+    mass = getMass();
+    internalForces.addMatrixVector(1.0, mass, accel, -1.0);
+  	
+    return internalForces;
 }
 
 int
@@ -318,11 +350,12 @@ TriSurfaceLoad::sendSelf(int commitTag, Channel &theChannel)
   // TriSurfaceLoad packs it's data into a Vector and sends this to theChannel
   // along with it's dbTag and the commitTag passed in the arguments
 
-  static Vector data(4);
+  static Vector data(5);
   data(0) = this->getTag();
   data(1) = SL_NUM_DOF;
   data(2) = my_pressure;
   data(3) = mLoadFactor;
+  data(4) = rhoH;
 
   res = theChannel.sendVector(dataTag, commitTag, data);
   if (res < 0) {
@@ -340,11 +373,6 @@ TriSurfaceLoad::sendSelf(int commitTag, Channel &theChannel)
   res = theChannel.sendVector(dataTag, commitTag, internalForces);
   if (res < 0) {
     opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send internalForces\n";
-    return -2;
-  }
-  res = theChannel.sendVector(dataTag, commitTag, theVector);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send theVector\n";
     return -2;
   }
   res = theChannel.sendVector(dataTag, commitTag, g1);
@@ -395,7 +423,7 @@ TriSurfaceLoad::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
 
   // TriSurfaceLoad creates a Vector, receives the Vector and then sets the 
   // internal data with the data in the Vector
-  static Vector data(4);
+  static Vector data(5);
   res = theChannel.recvVector(dataTag, commitTag, data);
   if (res < 0) {
     opserr <<"WARNING TriSurfaceLoad::recvSelf() - failed to receive Vector\n";
@@ -405,6 +433,7 @@ TriSurfaceLoad::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
   MyTag = data(0);
   my_pressure = data(2);
   mLoadFactor = data(3);
+  rhoH = data(4);
 
   this->setTag((int)MyTag);
 
@@ -419,11 +448,6 @@ TriSurfaceLoad::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
   res = theChannel.recvVector(dataTag, commitTag, internalForces);
   if (res < 0) {
     opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive internalForces\n";
-    return -2;
-  }
-  res = theChannel.recvVector(dataTag, commitTag, theVector);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive theVector\n";
     return -2;
   }
   res = theChannel.recvVector(dataTag, commitTag, g1);
@@ -495,3 +519,21 @@ TriSurfaceLoad::getResponse(int responseID, Information &eleInfo)
 	return -1;
 }
 
+
+// Compute a mass matrix using zangar's idea:
+const Matrix & TriSurfaceLoad::getMass(void)
+{
+    double Area = myNhat.Norm();
+
+    mass.Zero();
+    
+    if(rhoH > 0)
+    {
+      for (int i = 0; i < SL_NUM_DOF; ++i)
+      {
+        mass(i,i) = rhoH * Area /3;
+      }
+    }
+
+    return mass;
+}

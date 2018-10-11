@@ -301,6 +301,6 @@ ok = ops.analyze(2000, 0.01)
 if (ok != 0):
     print("analysis FAILED")
 else:
-    print("analysis SUCCESSFULL")
+    print("analysis SUCCESSFUL")
 
 ops.wipe()

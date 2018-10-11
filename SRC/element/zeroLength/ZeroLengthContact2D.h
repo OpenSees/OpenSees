@@ -70,7 +70,7 @@
 
  |			   Department of Civil and Environmental Engineering            |
 
- +			   Univeristy of California, Berkeley, CA 94720, USA            +
+ +			   University of California, Berkeley, CA 94720, USA            +
 
  |                                                                          |
 

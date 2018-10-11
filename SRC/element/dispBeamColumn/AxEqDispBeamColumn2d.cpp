@@ -473,7 +473,7 @@ AxEqDispBeamColumn2d::revertToStart()
 int
 AxEqDispBeamColumn2d::update(void)
 {
-	// CASE IN WHICH THE SECTIONAL AXIAL FORCES ARE IN EQUILIBRIUM: SAME PROCEDURE AS FOR TEH CLASSICAL DB ELEMENT 
+	// CASE IN WHICH THE SECTIONAL AXIAL FORCES ARE IN EQUILIBRIUM: SAME PROCEDURE AS FOR THE CLASSICAL DB ELEMENT 
 	// However some modifications were made by DT in order to have obtain same procedure described in Tarquini et al. 2017
 	// namely the use of displacement increments as starting point computed as total displacements (trial) - committed (at convergence) displacements
 	//opserr << "I AM HERE" << endln;
@@ -679,7 +679,7 @@ void
 AxEqDispBeamColumn2d::getBasicStiff(Matrix &kb, int initial)
 {
 
-	// CASE IN WHICH THE SECTIONAL AXIAL FORCES ARE IN EQUILIBRIUM: SAME PROCEDURE AS FOR TEH CLASSICAL DB ELEMENT 
+	// CASE IN WHICH THE SECTIONAL AXIAL FORCES ARE IN EQUILIBRIUM: SAME PROCEDURE AS FOR THE CLASSICAL DB ELEMENT 
 	if (flagDBae==0) {
 		//opserr << "I am here NORMAL Stiff" << endln;
 	// Zero for integral
@@ -1131,7 +1131,7 @@ AxEqDispBeamColumn2d::addInertiaLoadToUnbalance(const Vector &accel)
 	const Vector &Raccel2 = theNodes[1]->getRV(accel);
 
 	if (3 != Raccel1.Size() || 3 != Raccel2.Size()) {
-		opserr << "AxEqDispBeamColumn2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+		opserr << "AxEqDispBeamColumn2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
 		return -1;
 	}
 

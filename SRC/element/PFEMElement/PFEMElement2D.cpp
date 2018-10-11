@@ -93,7 +93,7 @@ int OPS_PFEMElement2D(Domain& theDomain, const ID& elenodes, ID& eletags)
 	theEle = new PFEMElement2D(--currTag,elenodes(3*i),elenodes(3*i+1),elenodes(3*i+2),
 				   data[0],data[1],data[2],data[3],data[4],data[5],data[6]);
 	if (theEle == 0) {
-	    opserr<<"WARING: run out of memory for creating element\n";
+	    opserr<<"WARNING: run out of memory for creating element\n";
 	    return -1;
 	}
 	if (theDomain.addElement(theEle) == false) {
@@ -182,7 +182,7 @@ PFEMElement2D::update()
     double J = cc[0]*dd[1]-dd[0]*cc[1];
 
     if(fabs(J)<1e-15) {
-        opserr<<"WARING: element area is nearly zero";
+        opserr<<"WARNING: element area is nearly zero";
         opserr<<" -- PFEMElement2D::update\n";
 	for (int i=0; i<3; i++) {
 	    opserr<<"node "<<ntags[2*i]<<"\n";

@@ -245,7 +245,7 @@ PileToe3D::setDomain(Domain *theDomain)
 	//mNodeCrd(0,0) = mIcrd_1(0);  
   }
 
-  //Initialize Coordinate Tranformation
+  //Initialize Coordinate Transformation
   if (crdTransf->initialize(theBNodes[0], theBNodes[1])) {
 	  // Add some error check
   }

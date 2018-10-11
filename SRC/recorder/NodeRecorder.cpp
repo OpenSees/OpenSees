@@ -36,6 +36,7 @@
 #include <Matrix.h>
 #include <FE_Datastore.h>
 #include <FEM_ObjectBroker.h>
+#include <Pressure_Constraint.h>
 #include <MeshRegion.h>
 #include <TimeSeries.h>
 
@@ -404,6 +405,9 @@ NodeRecorder::NodeRecorder(const ID &dofs,
   } else if (((strcmp(dataToStore, "nodalRayleighForces") == 0))) {
     dataFlag = 10001;
 
+  } else if (((strcmp(dataToStore, "pressure") == 0))) {
+    dataFlag = 10002;
+
   } else if ((strcmp(dataToStore, "dispNorm") == 0)) {
     dataFlag = 10000;
 
@@ -539,7 +543,7 @@ NodeRecorder::record(int commitTag, double timeStamp)
       for (int i=0; i<numValidNodes; i++) {
 
 	int cnt = i*numDOF + timeOffset; 
-	if (dataFlag == 10000)
+	if (dataFlag == 10000 || dataFlag == 10002)
 	  cnt = i + timeOffset;
 
 	Node *theNode = theNodes[i];
@@ -610,6 +614,22 @@ NodeRecorder::record(int commitTag, double timeStamp)
 
 	  response(cnt) = sqrt(sum);
 	  cnt++;
+
+	} else if (dataFlag == 10002) {
+
+	    if (theTimeSeries != 0) {
+		timeSeriesTerm = timeSeriesValues[0];
+	    }
+	    
+	    // get node pressure
+	    double pressure = timeSeriesTerm;
+	    Pressure_Constraint* pc = theDomain->getPressure_Constraint(theNode->getTag());
+	    if (pc != 0) {
+		pressure += pc->getPressure();
+	    }
+
+	    response(cnt) = pressure;
+	    cnt++;
 
 	} else if (dataFlag == 2) {
 
@@ -1104,8 +1124,9 @@ NodeRecorder::initialize(void)
 
 
   int numValidResponse = numValidNodes*theDofs->Size() + timeOffset;
-  if (dataFlag == 10000)
-    numValidResponse = numValidNodes + timeOffset;  
+  if (dataFlag == 10000 || dataFlag == 10002) {
+      numValidResponse = numValidNodes + timeOffset;
+  }
 
   response.resize(numValidResponse);
   response.Zero();

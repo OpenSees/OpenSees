@@ -44,6 +44,16 @@ OPS_addCrdTransf(CrdTransf *newComponent) {
   return theCrdTransfObjects.addComponent(newComponent);
 }
 
+bool OPS_removeCrdTransf(int tag)
+{
+    TaggedObject* obj = theCrdTransfObjects.removeComponent(tag);
+    if (obj != 0) {
+	delete obj;
+	return true;
+    }
+    return false;
+}
+
 CrdTransf *
 OPS_getCrdTransf(int tag) {
 

@@ -46,7 +46,7 @@ set period 2.5;
 set mag 5.0;
 set w [expr 2.0 * $PI / $period]
 
-#inital velocity condition for uniform exciation = -udotg
+#initial velocity condition for uniform excitation = -udotg
 set vel0 [expr -1.0 * $mag * $w]
 
 # ground motion 
@@ -207,7 +207,7 @@ eigen 4
 # create the analysis object
 analysis Transient
 
-#type "Starting Tansient Analysis .. hang on"
+#type "Starting Transient Analysis .. hang on"
 
 
 #        numSteps   dt

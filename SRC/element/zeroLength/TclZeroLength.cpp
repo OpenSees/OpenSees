@@ -118,7 +118,7 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
 	argi++;
     }
 
-    if (argi == argc) { // check we encounterd the -dirn flag
+    if (argi == argc) { // check we encountered the -dirn flag
       opserr << "WARNING no -dirn flag encountered " <<
 	"- element ZeroLength eleTag? iNode? jNode? " <<
 	"-mat matID1? ... -dir dirMat1? .. " <<
@@ -235,7 +235,7 @@ TclModelBuilder_addZeroLength(ClientData clientData, Tcl_Interp *interp,
     while (argi < argc) {
 	if (strcmp(argv[argi],"-orient") == 0) {
 	    if (argc < (argi+7)) {
-	      opserr << "WARNING not enough paramaters after -orient flag for ele " << eleTag <<
+	      opserr << "WARNING not enough parameters after -orient flag for ele " << eleTag <<
 		"- element ZeroLength eleTag? iNode? jNode? " <<
 		"-mat matID1? ... -dir dirMat1? .. " <<
 		"<-orient x1? x2? x3? y1? y2? y3?>\n";	      
@@ -424,7 +424,7 @@ TclModelBuilder_addZeroLengthSection(ClientData clientData, Tcl_Interp *interp,
     while (argi < argc) {
       if (strcmp(argv[argi],"-orient") == 0) {
 	if (argc < (argi+7)) {
-	  opserr << "WARNING not enough paramaters after -orient flag for ele " <<
+	  opserr << "WARNING not enough parameters after -orient flag for ele " <<
 	    eleTag << "- element zeroLengthSection eleTag? iNode? jNode? secTag? " <<
 	    "<-orient x1? x2? x3? y1? y2? y3?>\n";			
 	  return TCL_ERROR;		
@@ -828,7 +828,7 @@ TclModelBuilder_addZeroLengthND(ClientData clientData, Tcl_Interp *interp,
     if (argi < argc) {
 	if (strcmp(argv[argi],"-orient") == 0) {
 	    if (argc < (argi+7)) {
-		opserr << "WARNING not enough paramaters after -orient flag for ele "  << 
+		opserr << "WARNING not enough parameters after -orient flag for ele "  << 
 		  eleTag << "- element zeroLengthND eleTag? iNode? jNode? " <<
 		  "NDTag? <1DTag?> <-orient x1? x2? x3? y1? y2? y3?>\n";	
 		return TCL_ERROR;		
@@ -990,7 +990,7 @@ TclModelBuilder_addZeroLengthRocking(ClientData clientData, Tcl_Interp *interp,
     while (argi < argc) {
         if (strcmp(argv[argi],"-orient") == 0) {
             if (argc < (argi+7)) {
-                opserr << "WARNING not enough paramaters after -orient flag for ele " << eleTag <<
+                opserr << "WARNING not enough parameters after -orient flag for ele " << eleTag <<
                 "- element ZeroLengthRocking eleTag? iNode? jNode? " <<
                 "kr? radius? theta0? kappa? <-orient x1? x2? x3? y1? y2? y3?>\n";	      
                 return TCL_ERROR;
@@ -1027,7 +1027,7 @@ TclModelBuilder_addZeroLengthRocking(ClientData clientData, Tcl_Interp *interp,
             
         } else if (strcmp(argv[argi],"-xi") == 0) {
             if (argc < (argi+2)) {
-                opserr << "WARNING not enough paramaters after -xi flag for ele " << eleTag << endln;
+                opserr << "WARNING not enough parameters after -xi flag for ele " << eleTag << endln;
                 return TCL_ERROR;
             } else {
                 argi++;
@@ -1040,7 +1040,7 @@ TclModelBuilder_addZeroLengthRocking(ClientData clientData, Tcl_Interp *interp,
             
         } else if (strcmp(argv[argi],"-dTol") == 0) {
             if (argc < (argi+2)) {
-                opserr << "WARNING not enough paramaters after -dTol flag for ele " << eleTag << endln;
+                opserr << "WARNING not enough parameters after -dTol flag for ele " << eleTag << endln;
                 return TCL_ERROR;
             } else {
                 argi++;
@@ -1053,7 +1053,7 @@ TclModelBuilder_addZeroLengthRocking(ClientData clientData, Tcl_Interp *interp,
 
         } else if (strcmp(argv[argi],"-vTol") == 0) {
             if (argc < (argi+2)) {
-                opserr << "WARNING not enough paramaters after -vTol flag for ele " << eleTag << endln;
+                opserr << "WARNING not enough parameters after -vTol flag for ele " << eleTag << endln;
                 return TCL_ERROR;
             } else {
                 argi++;

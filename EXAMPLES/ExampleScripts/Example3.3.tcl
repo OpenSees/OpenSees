@@ -11,7 +11,7 @@
 # 
 # Example Objectives
 # -----------------
-#  Nonlinear dynamic analyis using Portal Frame Example 1 as staring point
+#  Nonlinear dynamic analysis using Portal Frame Example 1 as staring point
 #  Using Tcl Procedures 
 #
 # 
@@ -163,7 +163,7 @@ while {$ok == 0 && $tCurrent < $tFinal} {
     set tCurrent [getTime]
 }
 
-# Print a message to indicate if analysis succesfull or not
+# Print a message to indicate if analysis successful or not
 if {$ok == 0} {
    puts "Transient analysis completed SUCCESSFULLY";
 } else {

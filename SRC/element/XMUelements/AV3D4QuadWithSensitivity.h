@@ -146,7 +146,7 @@ class AV3D4QuadWithSensitivity: public Element
     static Matrix QMAT;		 // [Q] matrix
     
     static ID integFlags;  // integrator flags
-    static ID actDOFs;     // actived element dofs, add Yichao Gao
+    static ID actDOFs;     // activated element dofs, add Yichao Gao
     
     static const int numDOF;               // DOF number of element
     static const int nodes_in_elem;        // number of nodes in element

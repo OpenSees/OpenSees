@@ -78,11 +78,18 @@ class Timer
 // fill in later
 
 #else
-    
+
+#ifdef TIMER_USE_MPIWTIME
+    double t1, t2;
+    double tmsstart, tmsend;
+    // struct rusage r1usage, r2usage;
+    // struct rusage *r1us, *r2us;
+#else 
     clock_t t1, t2;
     struct tms tmsstart, tmsend;
     struct rusage r1usage, r2usage;
     struct rusage *r1us, *r2us;
+#endif //TIMER_USE_MPIWTIME
 
 #endif
 };
