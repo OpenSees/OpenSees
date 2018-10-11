@@ -2715,7 +2715,7 @@ int OPS_sensSectionForce()
     Vector theVec = *(info.theVector);
 
     numdata = theVec.Size();
-    if (OPS_SetDoubleOutput(&numdata, &theVec(0)) < 0) {
+    if (OPS_SetDoubleOutput(&numdata, &theVec(dof-1)) < 0) {
 	opserr<<"WARNING failed to set output\n";
 	return -1;
     }

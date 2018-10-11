@@ -31,6 +31,7 @@
 #define BackgroundMesh_h
 
 #include "BackgroundDef.h"
+#include <Recorder.h>
 
 class BackgroundMesh
 {
@@ -41,7 +42,8 @@ public:
     BackgroundMesh();
     virtual ~BackgroundMesh();
 
-
+    void addRecorder(Recorder*);
+    int remesh();
 
 private:
 
