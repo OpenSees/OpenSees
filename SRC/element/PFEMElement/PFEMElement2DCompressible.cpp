@@ -40,81 +40,103 @@
 #include <ElementIter.h>
 #include <NodeIter.h>
 #include <Parameter.h>
+#include <map>
 
 Matrix PFEMElement2DCompressible::K;
 Vector PFEMElement2DCompressible::P;
+bool PFEMElement2DCompressible::dispon = true;
 
 void* OPS_PFEMElement2DCompressible(const ID &info)
 {
-    int numdata = OPS_GetNumRemainingInputArgs();
-    if(numdata < 8) {
-	opserr<<"WARNING: insufficient number of arguments\n";
-	return 0;
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) {
+    	opserr << "WARNING: domain is not created\n";
+    	return 0;
     }
 
-    // tag, nd1, nd2, nd3
-    numdata = 4;
-    int idata[4];
-    if(OPS_GetIntInput(&numdata,idata)<0) return 0;
-
-    // rho, mu, b1, b2, (thickness, kappa)
-    numdata = OPS_GetNumRemainingInputArgs();
-    if(numdata > 6) numdata = 6;
+    int idata[5];
     double data[6] = {0,0,0,0,1.0,2.15e9};
-    if(OPS_GetDoubleInput(&numdata,data) < 0) return 0;
+    int numdata;
 
-    return new PFEMElement2DCompressible(idata[0],idata[1],idata[2],idata[3],
+    // regular element, not in a mesh, get tags
+    if (info.Size() == 0) {
+	numdata = OPS_GetNumRemainingInputArgs();
+	if(numdata < 5) {
+	    opserr<<"WARNING: insufficient number of arguments: tag, nd1, nd2, nd3, nd4\n";
+	    return 0;
+	}
+
+	// tag, nd1, nd2, nd3, nd4
+	numdata = 5;
+	if(OPS_GetIntInput(&numdata,idata)<0) {
+	    opserr << "WARNING: failed to get tags\n";
+	    return 0;
+	}
+    }
+
+    // regular element, or in a mesh
+    if (info.Size()==0 || info(0)==1) {
+	if(OPS_GetNumRemainingInputArgs() < 4) {
+	    opserr<<"insufficient arguments: rho, mu, b1, b2, (thinknes,kappa)\n";
+	    return 0;
+	}
+
+	// rho, mu, b1, b2, (thickness, kappa)
+	numdata = OPS_GetNumRemainingInputArgs();
+	if(numdata > 6) numdata = 6;
+	if(OPS_GetDoubleInput(&numdata,data) < 0) {
+	    opserr << "WARNING: failed to get fluid properties\n";
+	    return 0;
+	}
+    }
+
+    // save/load data for different mesh
+    static std::map<int, Vector> meshdata;
+    if (info.Size()>0 && info(0)==1) {
+	if (info.Size() < 2) {
+	    opserr << "WARNING: need info -- inmesh, meshtag\n";
+	    return 0;
+	}
+
+	// save the data for a mesh
+	Vector& mdata = meshdata[info(1)];
+	mdata.resize(6);
+	for (int i=0; i<6; ++i) {
+	    mdata(i) = data[i];
+	}
+	return &meshdata;
+
+    } else if (info.Size()>0 && info(0)==2) {
+	if (info.Size() < 7) {
+	    opserr << "WARNING: need info -- inmesh, meshtag, eleTag, nd1, nd2, nd3, nd4\n";
+	    return 0;
+	}
+
+	// get the data for a mesh
+	Vector& mdata = meshdata[info(1)];
+	if (mdata.Size() < 6) return 0;
+
+	idata[0] = info(2);
+	for (int i=0; i<4; ++i) {
+	    idata[i+1] = info(3+i);
+	}
+
+	for (int i=0; i<6; ++i) {
+	    data[i] = mdata(i);
+	}
+
+    }
+
+    return new PFEMElement2DCompressible(idata[0],idata[1],idata[2],idata[3],idata[4],
 					 data[0],data[1],data[2],data[3],data[4],
 					 data[5]);
-}
-
-int OPS_PFEMElement2DCompressible(Domain& theDomain, const ID& elenodes, ID& eletags)
-{
-    int numdata = OPS_GetNumRemainingInputArgs();
-    if(numdata < 4) {
-	opserr<<"WARNING: insufficient number of arguments\n";
-	return 0;
-    }
-
-    // rho, mu, b1, b2, (thickness, kappa)
-    numdata = OPS_GetNumRemainingInputArgs();
-    if(numdata > 6) numdata = 6;
-    double data[6] = {0,0,0,0,1.0,2.15e9};
-    if(OPS_GetDoubleInput(&numdata,data) < 0) return 0;
-
-    // create elements
-    ElementIter& theEles = theDomain.getElements();
-    Element* theEle = theEles();
-    int currTag = 0;
-    if (theEle != 0) {
-	currTag = theEle->getTag();
-    }
-
-    eletags.resize(elenodes.Size()/3);
-
-    for (int i=0; i<eletags.Size(); i++) {
-	theEle = new PFEMElement2DCompressible(--currTag,elenodes(3*i),elenodes(3*i+1),elenodes(3*i+2),
-					       data[0],data[1],data[2],data[3],data[4],data[5]);
-	if (theEle == 0) {
-	    opserr<<"WARNING: run out of memory for creating element\n";
-	    return -1;
-	}
-	if (theDomain.addElement(theEle) == false) {
-	    opserr<<"WARNING: failed to add element to domain\n";
-	    delete theEle;
-	    return -1;
-	}
-	eletags(i) = currTag;
-    }
-
-    return 0;
 }
 
 // for FEM_ObjectBroker, recvSelf must invoke
 PFEMElement2DCompressible::PFEMElement2DCompressible()
     :Element(0, ELE_TAG_PFEMElement2DCompressible), ntags(7),
      rho(0), mu(0), b1(0), b2(0), thickness(1.0), kappa(2.15e9),
-     ndf(0), J(0.0), parameterID(0)
+     ndf(0), J(0.0), parameterID(0), bubblenode(0)
 {
     for(int i=0;i<4;i++)
     {
@@ -123,10 +145,10 @@ PFEMElement2DCompressible::PFEMElement2DCompressible()
 	vxdof[i] = 0;
 	vydof[i] = 0;
 	pdof[i] = 0;
+	thePCs[i] = 0;
 	if (i < 3) {
 	    nodes[2*i+1] = 0;
 	    ntags(2*i+1) = 0;
-	    thePCs[i] = 0;
 	    cc[i] = 0;
 	    dd[i] = 0;
 	}
@@ -136,24 +158,25 @@ PFEMElement2DCompressible::PFEMElement2DCompressible()
 
 // for object
 PFEMElement2DCompressible::PFEMElement2DCompressible(
-    int tag, int nd1, int nd2, int nd3,
+    int tag, int nd1, int nd2, int nd3, int nd4,
     double r, double m, double bx, double by, double thk,
     double ka)
     :Element(tag, ELE_TAG_PFEMElement2DCompressible), ntags(7),
      rho(r), mu(m), b1(bx), b2(by), thickness(thk), kappa(ka),
-     ndf(0), J(0.0), parameterID(0)
+     ndf(0), J(0.0), parameterID(0), bubblenode(nd4)
 {
-    ntags(0)=nd1; ntags(2)=nd2; ntags(4)=nd3; ntags(6) = nd3;
+    ntags(0)=nd1; ntags(2)=nd2; ntags(4)=nd3;
+    ntags(1)=nd1; ntags(3)=nd2; ntags(5)=nd3;
+    ntags(6)=nd3;
     for(int i=0;i<4;i++)
     {
 	nodes[2*i] = 0;
 	vxdof[i] = 0;
 	vydof[i] = 0;
 	pdof[i] = 0;
+	thePCs[i] = 0;
 	if (i < 3) {
 	    nodes[2*i+1] = 0;
-	    ntags(2*i+1) = ntags(2*i);
-	    thePCs[i] = 0;
 	    cc[i] = 0;
 	    dd[i] = 0;
 	}
@@ -178,26 +201,44 @@ PFEMElement2DCompressible::~PFEMElement2DCompressible()
 	    delete nodes[6];
 	    nodes[6] = 0;
 	}
+	if (thePCs[3] != 0) {
+	    domain->removePressure_Constraint(thePCs[3]->getTag());
+	    delete thePCs[3];
+	    thePCs[3] = 0;
+	}
     }
 }
 
 int
 PFEMElement2DCompressible::commitState()
 {
-    Vector bdisp(2);
-    for(int a=0; a<3; a++) {
-        const Vector& disp = nodes[2*a]->getTrialDisp();
-	bdisp(0) += disp(0);
-	bdisp(1) += disp(1);
+    // Vector bdisp(2);
+    // for(int a=0; a<3; a++) {
+    //     const Vector& disp = nodes[2*a]->getTrialDisp();
+    // 	bdisp(0) += disp(0);
+    // 	bdisp(1) += disp(1);
+    // }
+    // bdisp /= 3.0;
+    // nodes[6]->setTrialDisp(bdisp);
+    // nodes[6]->commitState();
+    if (!dispon) {
+	if (updateJacobian() < 0) return -1;
     }
-    bdisp /= 3.0;
-    nodes[6]->setTrialDisp(bdisp);
-    nodes[6]->commitState();
     return Element::commitState();
 }
 
 int
 PFEMElement2DCompressible::update()
+{
+    if (dispon) {
+	return updateJacobian();
+    }
+
+    return 0;
+}
+
+int
+PFEMElement2DCompressible::updateJacobian()
 {
     // get nodal coordinates
     double x[3], y[3];
@@ -238,33 +279,37 @@ PFEMElement2DCompressible::getMass()
     K.Zero();
 
     // M
-    double M = rho*J*thickness/24.0;
-    double M2 = 2.0*M;
-    double M3 = 3.0*rho*J*thickness/40.0;
-    double M4 = 81.0*rho*J*thickness/560.0;
+    // double M = rho*J*thickness/24.0;
+    // double M2 = 2.0*M;
+    // double M3 = 3.0*rho*J*thickness/40.0;
+    // double M4 = 81.0*rho*J*thickness/560.0;
+    double m = rho*J*thickness/6.0;
+    double m4 = 27.0*rho*J*thickness/120.0;
     for (int a=0; a<3; a++) {
-	// M(a,b) a,b=1,2,3
-	for (int b=0; b<3; b++) {
-	    if (a == b) {
-		K(vxdof[a], vxdof[b]) = M2;
-		K(vydof[a], vydof[b]) = M2;
-	    } else {
-		K(vxdof[a], vxdof[b]) = M;
-		K(vydof[a], vydof[b]) = M;	    
-	    }
-	}
-	// M(4,a)
-	K(vxdof[3],vxdof[a]) = M3;
-	K(vydof[3],vydof[a]) = M3;
+	K(vxdof[a], vxdof[a]) = m;
+	K(vydof[a], vydof[a]) = m;
+	// // M(a,b) a,b=1,2,3
+	// for (int b=0; b<3; b++) {
+	//     if (a == b) {
+	// 	K(vxdof[a], vxdof[b]) = M2;
+	// 	K(vydof[a], vydof[b]) = M2;
+	//     } else {
+	// 	K(vxdof[a], vxdof[b]) = M;
+	// 	K(vydof[a], vydof[b]) = M;
+	//     }
+	// }
+	// // M(4,a)
+	// K(vxdof[3],vxdof[a]) = M3;
+	// K(vydof[3],vydof[a]) = M3;
 
-	// M(a,4)
-	K(vxdof[a],vxdof[3]) = M3;
-	K(vydof[a],vydof[3]) = M3;
+	// // M(a,4)
+	// K(vxdof[a],vxdof[3]) = M3;
+	// K(vydof[a],vydof[3]) = M3;
     }
 
     // M(4,4)
-    K(vxdof[3],vxdof[3]) = M4;
-    K(vydof[3],vydof[3]) = M4;
+    K(vxdof[3],vxdof[3]) = m4;
+    K(vydof[3],vydof[3]) = m4;
 
     // Mp
     double Mp = J*thickness/6.0/kappa;
@@ -285,13 +330,13 @@ PFEMElement2DCompressible::getDamp()
 
     // Km
     double km = mu*thickness/(6.*J);
-    double kb = 27.0*mu*thickness/(40.*J);
+    double kb = 729.0*mu*thickness/(1080.*J);
 
     // G
     double g = thickness/6.0;
-    double gb = -9.0*thickness/40.0;
+    double gb = -27.0*thickness/120.0;
     double gt = thickness/6.0;
-    double gtb = -9.0*thickness/40.0;
+    double gtb = -27.0*thickness/120.0;
 
     // K(a,b) a,b = 1,2,3
     for (int a=0; a<3; a++) {
@@ -303,7 +348,7 @@ PFEMElement2DCompressible::getDamp()
 	    K(vydof[a], vxdof[b]) += km*(3*cc[a]*dd[b]-2*dd[a]*cc[b]); // Kyx
 	    K(vydof[a], vydof[b]) += km*(3*cc[a]*cc[b]+4*dd[a]*dd[b]); // Kyy
 
-	    // -G 
+	    // -G
 	    K(vxdof[a], pdof[b]) = -g*cc[a];
 	    K(vydof[a], pdof[b]) = -g*dd[a];
 
@@ -359,7 +404,7 @@ PFEMElement2DCompressible::getGeometricTangentStiff()
     for(int a=0; a<4; a++) {
 	const Vector& vel = nodes[2*a]->getTrialVel();
 	const Vector& accel = nodes[2*a]->getTrialAccel();
-	
+
 	vdot(2*a) = accel(0);
 	vdot(2*a+1) = accel(1);
 
@@ -370,7 +415,7 @@ PFEMElement2DCompressible::getGeometricTangentStiff()
     for(int a=0; a<3; a++) {
 	const Vector& pre = nodes[2*a+1]->getTrialVel();
 	const Vector& predot = nodes[2*a+1]->getTrialAccel();
-	
+
 	pdot(a) = predot(0);
 	p(a) = pre(0);
     }
@@ -395,7 +440,7 @@ PFEMElement2DCompressible::getGeometricTangentStiff()
 	}
     }
 
-    
+
 /*
     // K44
     double cc2=0.0, dd2=0.0, cd2=0.0;
@@ -416,7 +461,7 @@ PFEMElement2DCompressible::getGeometricTangentStiff()
     mvdot(6) = vdot(0)*3.0/40.0+vdot(2)*3.0/40.0+vdot(4)*3.0/40.0+vdot(6)*207.0/506.0-9.0*b1/40.0;
     mvdot(7) = vdot(1)*3.0/40.0+vdot(3)*3.0/40.0+vdot(5)*3.0/40.0+vdot(7)*207.0/506.0-9.0*b2/40.0;
     mvdot *= rho;
-    
+
     for (int b=0; b<3; b++) {
 	for (int a=0; a<3; a++) {
 	    mvdot(2*a) += -mu/(6.0*J*J)*((4*cc[a]*cc[b]+3*dd[a]*dd[b])*v(2*b)+(3*dd[a]*cc[b]-2*cc[a]*dd[b])*v(2*b+1));
@@ -492,7 +537,7 @@ PFEMElement2DCompressible::getGeometricTangentStiff()
     dK(6,6) = 8*kb*(cc[2]-cc[1]);
     dK(6,7) = dK(7,6) = kb*(dd[2]-dd[1]);
     dK(7,7) = kb*6*(cc[2]-cc[1]);
-    
+
     kv.addMatrixVector(0.0,dK,v,1.0);
     for (int a=0; a<4; a++) {
 	K(vxdof[a],1) += kv(2*a);
@@ -522,7 +567,7 @@ PFEMElement2DCompressible::getGeometricTangentStiff()
     dK(6,6) = kb*6*(dd[2]-dd[0]);
     dK(6,7) = dK(7,6) = kb*(cc[2]-cc[0]);
     dK(7,7) = 8*kb*(dd[2]-dd[0]);
-    
+
     kv.addMatrixVector(0.0,dK,v,1.0);
     for (int a=0; a<4; a++) {
 	K(vxdof[a],2) += kv(2*a);
@@ -552,7 +597,7 @@ PFEMElement2DCompressible::getGeometricTangentStiff()
     dK(6,6) = kb*8*(cc[0]-cc[2]);
     dK(6,7) = kb*(dd[0]-dd[2]);
     dK(7,7) = kb*6*(cc[0]-cc[2]);
-    
+
     kv.addMatrixVector(0.0,dK,v,1.0);
     for (int a=0; a<4; a++) {
 	K(vxdof[a],3) += kv(2*a);
@@ -582,7 +627,7 @@ PFEMElement2DCompressible::getGeometricTangentStiff()
     dK(6,6) = kb*6*(dd[0]-dd[1]);
     dK(6,7) = kb*(cc[0]-cc[1]);
     dK(7,7) = kb*8*(dd[0]-dd[1]);
-    
+
     kv.addMatrixVector(0.0,dK,v,1.0);
     for (int a=0; a<4; a++) {
 	K(vxdof[a],4) += kv(2*a);
@@ -612,7 +657,7 @@ PFEMElement2DCompressible::getGeometricTangentStiff()
     dK(6,6) = kb*8*(cc[1]-cc[0]);
     dK(6,7) = kb*(dd[1]-dd[0]);
     dK(7,7) = kb*6*(cc[1]-cc[0]);
-	
+
     kv.addMatrixVector(0.0,dK,v,1.0);
     for (int a=0; a<4; a++) {
 	K(vxdof[a],5) += kv(2*a);
@@ -649,9 +694,9 @@ PFEMElement2DCompressible::getGeometricTangentStiff()
 	K(pdof[b2], vydof[b]) += v(6)*9.0/(-40.0)*kappa;
     }
 
-    
+
     K *= thickness;
-*/    
+*/
     return K;
 }
 
@@ -696,16 +741,16 @@ PFEMElement2DCompressible::getResistingForceIncInertia()
     }
 
     // F4
-    double fb = 9.0*rho*J*thickness/40.0;
+    double fb = 27.0*rho*J*thickness/120.0;
     P(vxdof[3]) = fb*b1;
     P(vydof[3]) = fb*b2;
-    
+
     // vdot, v
     Vector vdot(ndf), v(ndf);
     for(int a=0; a<4; a++) {
 	const Vector& vel = nodes[2*a]->getTrialVel();
 	const Vector& accel = nodes[2*a]->getTrialAccel();
-	
+
 	vdot(vxdof[a]) = accel(0);
 	vdot(vydof[a]) = accel(1);
 
@@ -715,7 +760,7 @@ PFEMElement2DCompressible::getResistingForceIncInertia()
 	if (a < 3) {
 	    const Vector& p = nodes[2*a+1]->getTrialVel();
 	    const Vector& pdot = nodes[2*a+1]->getTrialAccel();
-	    
+
 	    vdot(pdof[a]) = pdot(0);
 	    v(pdof[a]) = p(0);
 	}
@@ -815,6 +860,10 @@ PFEMElement2DCompressible::setDomain(Domain *theDomain)
     Vector bcrds(2);
     for(int i=0; i<3; i++) {
 
+	// set ndf
+	vxdof[i] = ndf;
+	vydof[i] = ndf+1;
+
         // get node
         nodes[2*i] = theDomain->getNode(ntags(2*i));
         if(nodes[2*i] == 0) {
@@ -831,30 +880,18 @@ PFEMElement2DCompressible::setDomain(Domain *theDomain)
 	for (int j=0; j<2; j++) {
 	    bcrds(j) += crds(j);
 	}
-	vxdof[i] = ndf;
-	vydof[i] = ndf+1;
         ndf += nodes[2*i]->getNumberDOF();
 
+	// set ndf
+	pdof[i] = ndf;
+
         // get pc
-        int pndf = 1;
         thePCs[i] = theDomain->getPressure_Constraint(ntags(2*i));
-        if(thePCs[i] != 0) {
-            thePCs[i]->setDomain(theDomain);
-        } else {
-            thePCs[i] = new Pressure_Constraint(ntags(2*i), pndf);
-            if(thePCs[i] == 0) {
-                opserr<<"WARNING: no enough memory for Pressure_Constraint -- ";
-                opserr<<"PFEMElement2DCompressible::setDomain "<<eletag<<"\n";
-                return;
-            }
-            if(theDomain->addPressure_Constraint(thePCs[i]) == false) {
-                opserr<<"WARNING: failed to add Pressure_Constraint to domain -- ";
-                opserr<<"PFEMElement2DCompressible::setDomain "<<eletag<<"\n";
-                delete thePCs[i];
-                thePCs[i] = 0;
-                return;
-            }
+	if(thePCs[i] == 0) {
+	    opserr << "WARNING: failed to get PC -- PFEMElement2DBubble\n";
+	    return;
         }
+	thePCs[i]->setDomain(theDomain);
 
         // connect
         thePCs[i]->connect(eletag);
@@ -866,21 +903,12 @@ PFEMElement2DCompressible::setDomain(Domain *theDomain)
             opserr<<"in PFEMElement2DCompressible - setDomain() "<<eletag<<"\n ";
             return;
         }
-        ntags(2*i+1) = nodes[2*i+1]->getTag();
-	pdof[i] = ndf;
+	ntags(2*i+1) = nodes[2*i+1]->getTag();
         ndf += nodes[2*i+1]->getNumberDOF();
     }
 
-    // get a node tag
-    NodeIter& theNodes = theDomain->getNodes();
-    Node* theNode = theNodes();
-    ntags[6] = 0;
-    if (theNode != 0) {
-	ntags[6] = theNode->getTag();
-    }
-    ntags[6]--;
-
     // create bubble node
+    ntags[6] = bubblenode;
     bcrds /= 3.0;
     nodes[6] = new Node(ntags[6],2,bcrds(0),bcrds(1));
     if (nodes[6] == 0) {
@@ -895,6 +923,26 @@ PFEMElement2DCompressible::setDomain(Domain *theDomain)
     vxdof[3] = ndf++;
     vydof[3] = ndf++;
 
+    // create pc for bubble node
+    thePCs[3] = theDomain->getPressure_Constraint(ntags[6]);
+    if (thePCs[3] != 0) {
+	opserr<<"WARNING: pc for bubble node already exists\n";
+	return;
+    }
+    thePCs[3] = new Pressure_Constraint(ntags[6], 0.0);
+    if (thePCs[3] == 0) {
+	opserr<<"WARNING: failed to create PC for buble node\n";
+	return;
+    }
+    if (theDomain->addPressure_Constraint(thePCs[3]) == false) {
+	opserr<<"WARNING: failed to add PC to domain\n";
+	delete thePCs[3];
+	return;
+    }
+
+    if (!dispon) {
+	updateJacobian();
+    }
 }
 
 void
@@ -959,12 +1007,12 @@ PFEMElement2DCompressible::displaySelf(Renderer &theViewer, int displayMode, flo
 }
 
 int
-PFEMElement2DCompressible::setParameter(const char **argv, int argc, 
+PFEMElement2DCompressible::setParameter(const char **argv, int argc,
 					Parameter &parameter)
 {
     if (argc < 1)
         return -1;
-    
+
     if (strcmp(argv[0],"mu") == 0) {
         parameter.setValue(mu);
         return parameter.addObject(1, this);
@@ -1004,7 +1052,7 @@ PFEMElement2DCompressible::updateParameter(int passparameterID, Information &inf
     case 5:
 	thickness = info.theDouble;
 	return 0;
-	
+
     default:
         return -1;
     }
@@ -1014,7 +1062,7 @@ int
 PFEMElement2DCompressible::activateParameter(int passedParameterID)
 {
     parameterID = passedParameterID;
-  
+
     return 0;
 }
 
@@ -1028,7 +1076,7 @@ PFEMElement2DCompressible::getDampSensitivity(int gradNumber)
     // Km and G
     double km=0.0, kb=0.0, g=0.0, gb=0.0, gt=0.0, gtb=0.0;
     if (parameterID == 1) {
-	
+
 	// mu
 	km = thickness/(6.*J);
 	kb = 27.0*thickness/(40.*J);
@@ -1053,7 +1101,7 @@ PFEMElement2DCompressible::getDampSensitivity(int gradNumber)
 	    K(vydof[a], vxdof[b]) += km*(3*cc[a]*dd[b]-2*dd[a]*cc[b]); // Kyx
 	    K(vydof[a], vydof[b]) += km*(3*cc[a]*cc[b]+4*dd[a]*dd[b]); // Kyy
 
-	    // -G 
+	    // -G
 	    K(vxdof[a], pdof[b]) = -g*cc[a];
 	    K(vydof[a], pdof[b]) = -g*dd[a];
 
@@ -1082,7 +1130,7 @@ PFEMElement2DCompressible::getDampSensitivity(int gradNumber)
     K(vxdof[3], vxdof[3]) += kb*(4*cc2+3*dd2); // Kxx
     K(vxdof[3], vydof[3]) += kb*cd2; // Kxy
     K(vydof[3], vxdof[3]) += kb*cd2; // Kyx
-    K(vydof[3], vydof[3]) += kb*(3*cc2+4*dd2); // Kyy    
+    K(vydof[3], vydof[3]) += kb*(3*cc2+4*dd2); // Kyy
 
     return K;
 }
@@ -1107,7 +1155,7 @@ PFEMElement2DCompressible::getMassSensitivity(int gradNumber)
 	M2 = 2.0*M;
 	M3 = 3.0*J*thickness/40.0;
 	M4 = 207.0*J*thickness/506.0;
-	
+
     } else if (parameterID == 6) {
 	// thickness
 	M =  rho*J/24.0;
@@ -1116,7 +1164,7 @@ PFEMElement2DCompressible::getMassSensitivity(int gradNumber)
 	M4 = 207.0*rho*J/506.0;
 	Mp = J/6.0/kappa;
     }
-    
+
     for (int a=0; a<3; a++) {
 	// M(a,b) a,b=1,2,3
 	for (int b=0; b<3; b++) {
@@ -1125,7 +1173,7 @@ PFEMElement2DCompressible::getMassSensitivity(int gradNumber)
 		K(vydof[a], vydof[b]) = M2;
 	    } else {
 		K(vxdof[a], vxdof[b]) = M;
-		K(vydof[a], vydof[b]) = M;	    
+		K(vydof[a], vydof[b]) = M;
 	    }
 	}
 	// M(4,a)
@@ -1168,14 +1216,14 @@ PFEMElement2DCompressible::getResistingForceSensitivity(int gradNumber)
 	fy = J*thickness*b2/6.0;
 	fbx = 9.0*J*thickness*b1/40.0;
 	fby = 9.0*J*thickness*b2/40.0;
-    
+
     } else if (parameterID == 6) {
 	// thickness
 	fx = rho*J*b1/6.0;
 	fy = rho*J*b2/6.0;
 	fbx = 9.0*rho*J*b1/40.0;
 	fby = 9.0*rho*J*b2/40.0;
-	
+
     } else if (parameterID == 3) {
 	// bx
 	fx = rho*J*thickness/6.0;
@@ -1187,7 +1235,7 @@ PFEMElement2DCompressible::getResistingForceSensitivity(int gradNumber)
 	fby = 9.0*rho*J*thickness/40.0;
     }
 
-    
+
     for (int a=0; a<3; a++) {
 	P(vxdof[a]) = -fx;
 	P(vydof[a]) = -fy;
@@ -1197,7 +1245,7 @@ PFEMElement2DCompressible::getResistingForceSensitivity(int gradNumber)
     P(vxdof[3]) = -fbx;
     P(vydof[3]) = -fby;
 
-    return P;    
+    return P;
 }
 
 int
@@ -1226,7 +1274,7 @@ PFEMElement2DCompressible::getdM(const Vector& vdot, Matrix& dm) const
 		dm(2*a+1, 2*b+1) = M2;
 	    } else {
 		dm(2*a,2*b) = M;
-		dm(2*a+1,2*b+1) = M;	    
+		dm(2*a+1,2*b+1) = M;
 	    }
 	}
 	// M(4,a)
@@ -1245,7 +1293,7 @@ PFEMElement2DCompressible::getdM(const Vector& vdot, Matrix& dm) const
     // dMdA*vdot
     Vector v = dm*vdot;
     dm.Zero();
-    
+
     for(int a=0; a<8; a++) {
         for(int b=0; b<3; b++) {
             dm(a,2*b) = v(a)*cc[b];
@@ -1288,7 +1336,7 @@ PFEMElement2DCompressible::getdK(const Vector& v, Matrix& dk) const
     // dKdu
     k = mu*thickness/(6.0*J);
     kb = 27.0*mu*thickness/(40.0*J);
-    
+
     // dKdu1
     dk.Zero();
     dk(0,2) = dk(2,0) = 3*dd[0]*k;
@@ -1313,7 +1361,7 @@ PFEMElement2DCompressible::getdK(const Vector& v, Matrix& dk) const
     dk(6,7) = dk(7,6) = kb*(cc[1]-cc[2]);
     dk(7,7) = kb*8*(dd[1]-dd[2]);
     kv[0] = dk*v;
-    
+
     // dkdu2
     dk.Zero();
     dk(0,2) = dk(2,0) = -4*cc[0]*k;
@@ -1362,7 +1410,7 @@ PFEMElement2DCompressible::getdK(const Vector& v, Matrix& dk) const
     dk(6,6) = kb*6*(dd[2]-dd[0]);
     dk(6,7) = dk(7,6) = kb*(cc[2]-cc[0]);
     dk(7,7) = 8*kb*(dd[2]-dd[0]);
-    kv[2] = dk*v;    
+    kv[2] = dk*v;
 
     // dkdu4
     dk.Zero();
@@ -1387,7 +1435,7 @@ PFEMElement2DCompressible::getdK(const Vector& v, Matrix& dk) const
     dk(6,6) = kb*8*(cc[0]-cc[2]);
     dk(6,7) = kb*(dd[0]-dd[2]);
     dk(7,7) = kb*6*(cc[0]-cc[2]);
-    kv[3] = dk*v;    
+    kv[3] = dk*v;
 
     // dkdu5
     dk.Zero();
@@ -1412,7 +1460,7 @@ PFEMElement2DCompressible::getdK(const Vector& v, Matrix& dk) const
     dk(6,6) = kb*6*(dd[0]-dd[1]);
     dk(6,7) = dk(7,6) = kb*(cc[0]-cc[1]);
     dk(7,7) = kb*8*(dd[0]-dd[1]);
-    kv[4] = dk*v;    
+    kv[4] = dk*v;
 
     // dkdu6
     dk.Zero();
@@ -1437,7 +1485,7 @@ PFEMElement2DCompressible::getdK(const Vector& v, Matrix& dk) const
     dk(6,6) = kb*8*(cc[1]-cc[0]);
     dk(6,7) = dk(7,6) = kb*(dd[1]-dd[0]);
     dk(7,7) = kb*6*(cc[1]-cc[0]);
-    kv[5] = dk*v;	
+    kv[5] = dk*v;
 
     // dAdu
     dk.Zero();

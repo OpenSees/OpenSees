@@ -77,7 +77,7 @@ namespace {
     int setUpFunctions(void) {
 	functionMap.insert(std::make_pair("Lobatto", &OPS_LobattoBeamIntegration));
 	functionMap.insert(std::make_pair("Legendre", &OPS_LegendreBeamIntegration));
-	functionMap.insert(std::make_pair("NewtoCotes", &OPS_NewtonCotesBeamIntegration));
+	functionMap.insert(std::make_pair("NewtonCotes", &OPS_NewtonCotesBeamIntegration));
 	functionMap.insert(std::make_pair("Radau", &OPS_RadauBeamIntegration));
 	functionMap.insert(std::make_pair("Trapezoidal", &OPS_TrapezoidalBeamIntegration));
 	functionMap.insert(std::make_pair("CompositeSimpson", &OPS_CompositeSimpsonBeamIntegration));

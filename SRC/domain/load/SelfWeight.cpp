@@ -107,4 +107,5 @@ SelfWeight::Print(OPS_Stream &s, int flag)
 {
 	s << "SelfWeight...";
 	s << "  element acted on: " << eleTag << endln;;
+	s << "  (xFact, yFact, zFact) = (" << xFact << ", " << yFact << ", " << zFact << ") " << endln;;
 }

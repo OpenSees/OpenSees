@@ -30,21 +30,24 @@
 #ifndef TriMesh_h
 #define TriMesh_h
 
-class Domain;
-class ID;
+#include "Mesh.h"
 
-class TriMesh
+class TriMesh : public Mesh
 {
 public:
-    TriMesh(Domain& theDomain, int ndf);
+    explicit TriMesh(int tag);
     ~TriMesh();
 
-    virtual int mesh(int rtag, double size, const ID& nodes,const ID& bound);
-    virtual int mesh(double alpha, const ID& rtagsfree, const ID& rtagsfix);
-    
+    virtual const ID& getLineTags() const {return ltags;}
+    virtual void setLineTags(const ID& tags) {ltags=tags;}
+
+    int mesh();
+
+    // remesh all
+    static int remesh(double alpha);
+
 private:
-    Domain* theDomain;
-    int ndf;
+    ID ltags;
 };
 
 #endif

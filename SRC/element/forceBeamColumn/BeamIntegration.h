@@ -80,7 +80,7 @@ public:
     BeamIntegration* getBeamIntegration(){return theInt;}
     const ID& getSectionTags() const {return secTags;}
 
-    void Print(OPS_Stream &s, int flag){return;}
+    void Print(OPS_Stream &s, int flag){theInt->Print(s);}
 private:
     BeamIntegration* theInt;
     ID secTags;

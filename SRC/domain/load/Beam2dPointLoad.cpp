@@ -122,14 +122,18 @@ Beam2dPointLoad::setParameter(const char **argv, int argc, Parameter &param)
   if (argc < 1)
     return 0;
 
-  if (strcmp(argv[0],"Ptrans") == 0 || strcmp(argv[0],"P") == 0)
+  if (strcmp(argv[0],"Ptrans") == 0 || strcmp(argv[0],"P") == 0) {
+    param.setValue(Ptrans);
     return param.addObject(1, this);
-
-  if (strcmp(argv[0],"Paxial") == 0 || strcmp(argv[0],"N") == 0)
+  }
+  if (strcmp(argv[0],"Paxial") == 0 || strcmp(argv[0],"N") == 0) {
+    param.setValue(Paxial);
     return param.addObject(2, this);
-
-  if (strcmp(argv[0],"x") == 0)
+  }
+  if (strcmp(argv[0],"x") == 0) {
+    param.setValue(x);
     return param.addObject(3, this);
+  }
 
   return 0;
 }
