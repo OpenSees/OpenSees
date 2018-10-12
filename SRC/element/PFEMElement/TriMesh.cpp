@@ -17,10 +17,10 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision: 1.0 $
 // $Date: 2015-10-19 $
-                                                                        
+
 // Written: Minjie Zhu
 // Created: Oct. 19
 //
@@ -31,141 +31,90 @@
 #include <Node.h>
 #include <NodeIter.h>
 #include <Domain.h>
-#include <cmath>
-#include <MeshRegion.h>
-#include <string>
+#include <string.h>
 #include "TriangleMeshGenerator.h"
 #include <elementAPI.h>
 #include <Element.h>
+#include "LineMesh.h"
+#include <set>
+#include <map>
+#include <vector>
+#include <Pressure_Constraint.h>
+#include "BackgroundDef.h"
+#include <cmath>
 
-extern int OPS_PFEMElement2D(Domain& theDomain, const ID& elenodes, ID& eletags);
-extern int OPS_PFEMElement2DCompressible(Domain& theDomain, const ID& elenodes, ID& eletags);
-extern int OPS_PFEMElement2DBubble(Domain& theDomain, const ID& elenodes, ID& eletags);
-extern int OPS_Tri31(Domain& theDomain, const ID& elenodes, ID& eletags);
-
-int OPS_TriMesh(Domain& domain)
+int OPS_TriMesh()
 {
-    if (OPS_GetNumRemainingInputArgs() < 4) {
-	opserr<<"WARNING: want rtag? ndf? size? numnodes? nd1? ... bound1? ... eletype? ...\n";
-	return -1;
+    if (OPS_GetNumRemainingInputArgs() < 6) {
+        opserr<<"WARNING: want tag? numlines? ltags? id? ndf? size? eleType? eleArgs?\n";
+        return -1;
     }
 
+    // get tag and number lines
     int num = 2;
-    int rtag[2];
-    if (OPS_GetIntInput(&num,&rtag[0]) < 0) {
-	opserr<<"WARNING: failed to read region tag\n";
-	return -1;
+    int idata[2];
+    if (OPS_GetIntInput(&num,idata) < 0) {
+        opserr<<"WARNING: failed to read mesh tag and number of lines\n";
+        return -1;
     }
 
+    if (OPS_GetNumRemainingInputArgs() < idata[1]+3) {
+        opserr<<"WARNING: want ltags? id? ndf? size? <eleType? eleArgs?>\n";
+        return -1;
+    }
+
+    // create mesh
+    TriMesh* mesh = new TriMesh(idata[0]);
+    if(OPS_addMesh(mesh) == false) {
+        opserr<<"WARNING: failed to add mesh\n";
+        return -1;
+    }
+
+    // get line tags
+    num = idata[1];
+    ID ltags(num);
+    if (OPS_GetIntInput(&num,&ltags(0)) < 0) {
+        opserr<<"WARNING: failed to read line tags\n";
+        return -1;
+    }
+    mesh->setLineTags(ltags);
+
+    // get id and ndf
+    num = 2;
+    int data[2];
+    if (OPS_GetIntInput(&num,data) < 0) {
+        opserr<<"WARNING: failed to read id and ndf\n";
+        return -1;
+    }
+    mesh->setID(data[0]);
+    mesh->setNdf(data[1]);
+
+    // get size
     num = 1;
     double size;
     if (OPS_GetDoubleInput(&num,&size) < 0) {
-	opserr<<"WARNING: failed to read mesh size\n";
-	return -1;
+        opserr<<"WARNING: failed to read mesh size\n";
+        return -1;
+    }
+    mesh->setMeshsize(size);
+
+    // set eleArgs
+    if (mesh->setEleArgs() < 0) {
+        opserr << "WARNING: failed to set element arguments\n";
+        return -1;
     }
 
-    num = 1;
-    int numnodes;
-    if (OPS_GetIntInput(&num,&numnodes) < 0) {
-	opserr<<"WARNING: failed to read number of nodes\n";
-	return -1;
+    // mesh
+    if (mesh->mesh() < 0) {
+        opserr<<"WARNING: failed to do triangular mesh\n";
+        return -1;
     }
 
-    if (OPS_GetNumRemainingInputArgs() < 2*numnodes) {
-	opserr<<"WARNING: insufficient input args\n";
-	return -1;
-    }
-
-    ID nodes(numnodes);
-    if (OPS_GetIntInput(&numnodes, &nodes(0)) < 0) {
-	opserr<<"WARNING: failed to read node tags\n";
-	return -1;
-    }
-
-    ID bound(numnodes);
-    if (OPS_GetIntInput(&numnodes, &bound(0)) < 0) {
-	opserr<<"WARNING: failed to read boundary values\n";
-	return -1;
-    }
-
-    TriMesh mesh(domain,rtag[1]);
-
-    return mesh.mesh(rtag[0],size,nodes,bound);
+    return 0;
 }
 
-int OPS_TriReMesh(Domain& domain, int ndf)
-{
-    if (OPS_GetNumRemainingInputArgs() < 3) {
-	opserr<<"WARNING: want alpha? numfreeregions? rtag1? ... numfixregions? rtag1? ...\n";
-	return -1;
-    }
-
-    int num = 1;
-    double alpha;
-    if (OPS_GetDoubleInput(&num,&alpha) < 0) {
-	opserr<<"WARNING: failed to read alpha\n";
-	return -1;
-    }
-
-    int numfreeregions;
-    if (OPS_GetIntInput(&num,&numfreeregions) < 0) {
-	opserr<<"WARNING: failed to read number of regions to be remeshed\n";
-	return -1;
-    }
-    if (numfreeregions < 1) {
-	opserr << "WARNING: numfreeregions < 1\n";
-	return -1;
-    }
-    
-    if (OPS_GetNumRemainingInputArgs() < numfreeregions+1) {
-	opserr<<"WARNING: insufficient args for free regions\n";
-	return -1;
-    }
-
-    ID rtagsfree(numfreeregions);
-    if (OPS_GetIntInput(&numfreeregions, &rtagsfree(0)) < 0) {
-	opserr<<"WARNING: failed to read region tags\n";
-	return -1;
-    }
-
-    ID rtagsfix;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-	int numfixregions;
-	if (OPS_GetIntInput(&num,&numfixregions) < 0) {
-	    opserr<<"WARNING: failed to read number of regions to be fixed\n";
-	    return -1;
-	}
-	
-	if (numfixregions > 0) {
-	    if (OPS_GetNumRemainingInputArgs() < numfixregions) {
-		opserr<<"WARNING: insufficient args for fixed regions\n";
-		return -1;
-	    }
-	    
-	    rtagsfix.resize(numfixregions);
-	    if (OPS_GetIntInput(&numfixregions, &rtagsfix(0)) < 0) {
-		opserr<<"WARNING: failed to read region tags\n";
-		return -1;
-	    }
-	}
-    }
-
-
-    // element args
-    if (OPS_GetNumRemainingInputArgs() == 0) {
-	opserr<<"WARNING: element args are not given\n";
-	return -1;
-    }
-
-    TriMesh mesh(domain,ndf);
-
-    return mesh.mesh(alpha,rtagsfree,rtagsfix);
-}
-
-
-
-TriMesh::TriMesh(Domain& domain, int n)
-    :theDomain(&domain), ndf(n)
+TriMesh::TriMesh(int tag)
+    :Mesh(tag,3), ltags()
 {
 }
 
@@ -174,282 +123,511 @@ TriMesh::~TriMesh()
 }
 
 int
-TriMesh::mesh(int rtag, double size, const ID& nodes,const ID& bound)
+TriMesh::mesh()
 {
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) {
+        opserr << "WARNING: domain is not created\n";
+        return -1;
+    }
+
     // check
+    double size = this->getMeshsize();
     if(size <= 0) {
-	opserr<<"WARNING: mesh size <= 0\n";
-	return -1;
+        opserr<<"WARNING: mesh size <= 0\n";
+        return -1;
     }
-    if(nodes.Size() < 3) {
-	opserr<<"WARNING: input number of nodes < 3\n";
-	return -1;
+    if (ltags.Size() == 0) return 0;
+
+    // get nodes and elements from lines
+    ID ndtags, lndtags;
+    std::set<ID> elenodeset;
+    for (int i=0; i<ltags.Size(); ++i) {
+        LineMesh* line = dynamic_cast<LineMesh*>(OPS_getMesh(ltags(i)));
+        if (line == 0) {
+            opserr << "WARNING: mesh "<<ltags(i)<<" is not a line\n";
+            return -1;
+        }
+        const ID& tags = line->getNodeTags();
+        for (int j=0; j<tags.Size(); ++j) {
+            ndtags.insert(tags(j));
+	    lndtags.insert(tags(j));
+        }
+        const ID& newtags = line->getNewNodeTags();
+        for (int j=0; j<newtags.Size(); ++j) {
+            ndtags.insert(newtags(j));
+        }
+        const ID& elends = line->getEleNodes();
+        for (int j=0; j<elends.Size()/2; ++j) {
+            ID twonds(2);
+            twonds(0) = elends(2*j);
+            twonds(1) = elends(2*j+1);
+            elenodeset.insert(twonds);
+        }
     }
-    if(bound.Size() < nodes.Size()) {
-	opserr<<"WARNING: the number of boundary ID < number of nodes\n";
-	return -1;
+    if(ndtags.Size() < 3) {
+        opserr<<"WARNING: input number of nodes < 3\n";
+        return -1;
     }
-    
+    if(lndtags.Size() < 3) {
+        opserr<<"WARNING: input number of lnodes < 3\n";
+        return -1;
+    }
+    if(elenodeset.size() < 3) {
+        opserr<<"WARNING: input number of segments < 3\n";
+        return -1;
+    }
+    this->setNodeTags(ndtags);
+
+    // direction of the plane if 3D
+    int ndm = OPS_GetNDM();
+    VVDouble dir(ndm);
+    if (ndm == 3) {
+	for (int j=0; j<lndtags.Size()-2; ++j) {
+
+	    for (int i=0; i<ndm; ++i) {
+		// get node
+		Node* theNode = domain->getNode(lndtags[j+i]);
+		if(theNode == 0) {
+		    opserr<<"WARNING: node "<<lndtags(j+i)<<" is not defined\n";
+		    return -1;
+		}
+		const Vector& crds = theNode->getCrds();
+		const Vector& disp = theNode->getTrialDisp();
+		if(crds.Size() < ndm) {
+		    opserr<<"WARNING: ndm < 3\n";
+		    return -1;
+		}
+		if (disp.Size() >= ndm) {
+		    dir[i].resize(ndm, 0.0);
+		    for (int k=0; k<ndm; ++k) {
+			dir[i][k] = disp(k)+crds(k);
+		    }
+		}
+	    }
+
+	    // direction 2->0, 2->1
+	    dir[0] -= dir[2];
+	    dir[1] -= dir[2];
+
+	    // check if same direction
+	    if (fabs(dotVDouble(dir[0],dir[1])-1) < 1e-3) {
+		continue;
+	    }
+
+	    // normal direction
+	    VDouble nor;
+	    crossVDouble(dir[0],dir[1],nor);
+
+	    // direction perpenticular to 2->0 and norm
+	    crossVDouble(dir[0],nor,dir[1]);
+
+	    // normalize
+	    dir[0] /= normVDouble(dir[0]);
+	    dir[1] /= normVDouble(dir[1]);
+
+	    break;
+	}
+    }
+
+    // get segments from lines
+    ID segs(elenodeset.size()*2);
+    int iseg = 0;
+    for (std::set<ID>::iterator it=elenodeset.begin(); it!=elenodeset.end(); ++it) {
+        const ID& twonds = *it;
+        segs(2*iseg) = ndtags.getLocationOrdered(twonds(0));
+        segs(2*iseg+1) = ndtags.getLocationOrdered(twonds(1));
+        ++iseg;
+    }
+
     // calling mesh generator
     TriangleMeshGenerator gen;
-    for(int i=0; i<nodes.Size(); i++) {
-	// get node
-	Node* theNode = theDomain->getNode(nodes(i));
-	if(theNode == 0) {
-	    opserr<<"WARNING: node "<<nodes(i)<<" is not defined\n";
-	    return -1;
-	}
-	const Vector& crds = theNode->getCrds();
-	if(crds.Size() < 2) {
-	    opserr<<"WARNING: ndm < 2\n";
-	    return -1;
-	}
-	// add point
-	gen.addPoint(crds(0), crds(1));
+    int nodecounter = nextNodeTag();
+    for(int i=0; i<ndtags.Size(); i++) {
+	
+        // get node
+        Node* theNode = domain->getNode(ndtags(i));
+        if(theNode == 0) {
+            opserr<<"WARNING: node "<<ndtags(i)<<" is not defined\n";
+            return -1;
+        }
+        const Vector& crds = theNode->getCrds();
+        const Vector& disp = theNode->getTrialDisp();
+        if(crds.Size() < ndm) {
+            opserr<<"WARNING: ndm < "<<ndm<<"\n";
+            return -1;
+        }
+	
+	VDouble vcrds(ndm);
+        if (disp.Size() >= ndm) {
+            for (int j=0; j<ndm; ++j) {
+                vcrds[j] = crds(j) + disp(j);
+            }
+        }
 
-	// add segment
-	int p1 = i;
-	int p2;
-	if(i==nodes.Size()-1) {
-	    p2 = 0;
-	} else {
-	    p2 = i+1;
+	// x and y
+	double x = vcrds[0];
+	double y = vcrds[1];
+	if (ndm == 3) {
+	    VDouble temp = vcrds;
+	    temp -= dir[2];
+	    x = dotVDouble(temp,dir[0]);
+	    y = dotVDouble(temp,dir[1]);
 	}
-	if(bound(i) == 0) {
-	    gen.addSegment(p1,p2,-1);
-	} else {
-	    gen.addSegment(p1,p2,0);
-	}
+
+        // add point
+        gen.addPoint(x, y);
+
+        // add pc
+        if (this->isFluid()) {
+	    // create pressure constraint
+	    Pressure_Constraint* thePC = domain->getPressure_Constraint(ndtags(i));
+	    if(thePC != 0) {
+		thePC->setDomain(domain);
+	    } else {
+
+		// create pressure node
+		Node* pnode = 0;
+		if (ndm == 2) {
+		    pnode = new Node(nodecounter++, 1, vcrds[0], vcrds[1]);
+		} else if (ndm == 3) {
+		    pnode = new Node(nodecounter++, 1, vcrds[0], vcrds[1], vcrds[2]);
+		}
+		if (pnode == 0) {
+		    opserr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
+		    return -1;
+		}
+		if (domain->addNode(pnode) == false) {
+		    opserr << "WARNING: failed to add node to domain -- BgMesh::gridNodes\n";
+		    delete pnode;
+		    return -1;
+		}
+
+		thePC = new Pressure_Constraint(ndtags(i), pnode->getTag());
+		if(thePC == 0) {
+		    opserr<<"WARNING: no enough memory for Pressure_Constraint\n";
+		    return -1;
+		}
+		if (domain->addPressure_Constraint(thePC) == false) {
+		    opserr << "WARNING: failed to add PC to domain -- BgMesh::gridNodes\n";
+		    delete thePC;
+		    return -1;
+		}
+	    }
+        }
+    }
+    for (int i=0; i<segs.Size()/2; ++i) {
+        // add segment
+        gen.addSegment(segs(2*i), segs(2*i+1), 0);
     }
 
     // meshing
-    gen.mesh(size*size*0.5);
+    gen.mesh(size*size*0.5,false);
 
-    // get node tag
-    NodeIter& theNodes = theDomain->getNodes();
-    Node* theNode = theNodes();
-    int currtag = 0;
-    if(theNode != 0) currtag = theNode->getTag();
-
-    // get nodes
-    ID regnodes(0,gen.getNumPoints());
-    ID ptmark(gen.getNumPoints());
-    ID ptnode(gen.getNumPoints());
-    int index = 0;
-    for(int i=0; i<nodes.Size(); i++) {
-	int j = i-1;
-	if(i==0) j = nodes.Size()-1;
-	if(bound(i)!=0 && bound(j)!=0) {
-	    regnodes[index++] = nodes(i);
-	    ptmark(i) = 0;
-	} else {
-	    ptmark(i) = -1;
-	}
-	ptnode(i) = nodes(i);
+    // get points and create nodes
+    int nump = gen.getNumPoints();
+    if (nump == 0) {
+        opserr << "WARNING: no nodes is meshed\n";
+        return -1;
     }
-    for(int i=nodes.Size(); i<gen.getNumPoints(); i++) {
-	// get point
-	double x, y;
-	int mark = 0;
-	gen.getPoint(i,x,y,mark);
+    ID newndtags(nump-ndtags.Size());
+    ID allndtags(nump);
+    for (int i=0; i<ndtags.Size(); ++i) {
+        allndtags(i) = ndtags(i);
+    }
 
-	// if on unwanted boundary
-	if(mark == -1) {
-	    ptmark(i) = -1;
-	    continue;
-	} else {
-	    ptmark(i) = 0;
+    for (int i=ndtags.Size(); i<nump; ++i) {
+        // get point
+        Vector crds(ndm);
+        int mark = 0;
+        gen.getPoint(i,crds(0),crds(1),mark);
+
+	// 3D transformatin
+	if (ndm == 3) {
+	    VDouble vcrds = dir[2];
+	    VDouble incr = dir[0];
+	    incr *= crds(0);
+	    vcrds += incr;
+	    incr = dir[1];
+	    incr *= crds(1);
+	    vcrds += incr;
+	    toVector(vcrds, crds);
 	}
 
 	// create node
-	Node* node = new Node(--currtag,ndf,x,y);
-	if(node == 0) {
-	    opserr<<"run out of memory for creating Node\n";
-	    return -1;
-	}
-	if(theDomain->addNode(node) == false) {
-	    opserr<<"Failed to add node to domain\n";
-	    delete node;
-	    return -1;
-	}
+        Node* node = newNode(nodecounter++,crds);
+        if (node == 0) {
+            opserr << "WARING: failed to create node\n";
+            return -1;
+        }
+        if (domain->addNode(node) == false) {
+            opserr << "WARNING: failed to add node to domain\n";
+            delete node;
+            return -1;
+        }
+        allndtags(i) = node->getTag();
+        newndtags(i-ndtags.Size()) = node->getTag();
 
-	// add to region
-	regnodes[index++] = currtag;
-	ptnode(i) = currtag;
+        // add pc
+        if (this->isFluid()) {
+	    // create pressure constraint
+	    Pressure_Constraint* thePC = domain->getPressure_Constraint(node->getTag());
+	    if(thePC != 0) {
+		thePC->setDomain(domain);
+	    } else {
+
+		// create pressure node
+		Node* pnode = 0;
+		if (ndm == 2) {
+		    pnode = new Node(nodecounter++, 1, crds(0), crds(1));
+		} else {
+		    pnode = new Node(nodecounter++, 1, crds(0), crds(1), crds(2));
+		}
+		if (pnode == 0) {
+		    opserr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
+		    return -1;
+		}
+		if (domain->addNode(pnode) == false) {
+		    opserr << "WARNING: failed to add node to domain -- BgMesh::gridNodes\n";
+		    delete pnode;
+		    return -1;
+		}
+
+		thePC = new Pressure_Constraint(node->getTag(), pnode->getTag());
+		if(thePC == 0) {
+		    opserr<<"WARNING: no enough memory for Pressure_Constraint\n";
+		    return -1;
+		}
+		if (domain->addPressure_Constraint(thePC) == false) {
+		    opserr << "WARNING: failed to add PC to domain -- BgMesh::gridNodes\n";
+		    delete thePC;
+		    return -1;
+		}
+	    }
+        }
+    }
+    this->setNewNodeTags(newndtags);
+
+    // get triangles
+    int numtri = gen.getNumTriangles();
+    if (numtri == 0) return 0;
+    ID elenodes(numtri*3);
+
+    for(int i=0; i<numtri; i++) {
+        int p1,p2,p3;
+        gen.getTriangle(i,p1,p2,p3);
+        elenodes(3*i) = allndtags(p1);
+        elenodes(3*i+1) = allndtags(p2);
+        elenodes(3*i+2) = allndtags(p3);
+    }
+    this->setEleNodes(elenodes);
+
+    // create elemnts
+    if (this->newElements(elenodes) < 0) {
+        opserr << "WARNING: failed to create elements\n";
+        return -1;
     }
 
-    // get elenodes
-    ID regelenodes(0,gen.getNumTriangles());
-    index = 0;
-    for(int i=0; i<gen.getNumTriangles(); i++) {
-	int p1,p2,p3;
-	gen.getTriangle(i,p1,p2,p3);
-	if(ptmark(p1)==0 && ptmark(p2)==0 && ptmark(p3)==0) {
-	    regelenodes[index++] = ptnode(p1);
-	    regelenodes[index++] = ptnode(p2);
-	    regelenodes[index++] = ptnode(p3);
-	}
-    }
-
-    // get region
-    MeshRegion* theRegion = theDomain->getRegion(rtag);
-    if(theRegion == 0) {
-	theRegion = new MeshRegion(rtag);
-	if(theDomain->addRegion(*theRegion) < 0) {
-	    opserr<<"WARNING: failed to add region\n";
-	    return -1;
-	}
-    }
-
-    // add to region
-    theRegion->setNodes(regnodes);
-    
     return 0;
 }
 
 int
-TriMesh::mesh(double alpha, const ID& rtags2, const ID& rtags)
+TriMesh::remesh(double alpha)
 {
-    // get all regions
-    int numregions = rtags.Size()+rtags2.Size();
-    int numpoints = 0;
-    std::vector<MeshRegion*> regions(numregions);
-    for(int i=0; i<rtags.Size(); i++) {
-	MeshRegion* region = theDomain->getRegion(rtags(i));
-	if(region == 0) {
-	    opserr<<"WARNING: region "<<rtags(i)<<" is not defined\n";
-	    return -1;
-	}
-	numpoints += region->getNodes().Size();
-	regions[i] = region;
+    if (OPS_GetNDM() != 2) {
+	opserr << "WARNING: TriMesh::remesh is only for 2D problem\n";
+	return -1;
     }
-    for(int i=0; i<rtags2.Size(); i++) {
-	MeshRegion* region = theDomain->getRegion(rtags2(i));
-	if(region == 0) {
-	    opserr<<"WARNING: region "<<rtags2(i)<<" is not defined\n";
-	    return -1;
-	}
-	numpoints += region->getNodes().Size();
-	regions[i+rtags.Size()] = region;
-
-	// remove elements
-	const ID& eles = region->getExtraEles();
-	for (int j=0; j<eles.Size(); j++) {
-	    Element* ele = theDomain->removeElement(eles(j));
-	    if (ele != 0) {
-		delete ele;
-	    }
-	}
-
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) {
+        opserr << "WARNING: domain is not created\n";
+        return -1;
     }
 
-    // get all points
-    ID ptreg(0,numpoints), ptnode(0,numpoints);
-    for(int i=0; i<numregions; i++) {
-	const ID& nodes = regions[i]->getNodes();
-	for(int j=0; j<nodes.Size(); j++) {
-	    int index = ptreg.Size();
-	    ptreg[index] = i;
-	    ptnode[index] = nodes(j);
-	}
+    // get all nodes
+    std::map<int, std::vector<int> > ndinfo;
+    TaggedObjectIter& meshes = OPS_getAllMesh();
+    ID nodetags;
+    Mesh* msh = 0;
+    while((msh = dynamic_cast<Mesh*>(meshes())) != 0) {
+
+        int id = msh->getID();
+        int mtag = msh->getTag();
+
+        if (id == 0) continue;
+
+        // get bound nodes
+        const ID& tags = msh->getNodeTags();
+        for (int i=0; i<tags.Size(); ++i) {
+            std::vector<int>& info = ndinfo[tags(i)];
+            info.push_back(mtag);
+            info.push_back(id);
+            nodetags.insert(tags(i));
+        }
+
+        // get internal nodes
+        const ID& newtags = msh->getNewNodeTags();
+        for (int i=0; i<newtags.Size(); ++i) {
+            std::vector<int>& info = ndinfo[newtags(i)];
+            info.push_back(mtag);
+            info.push_back(id);
+            nodetags.insert(newtags(i));
+        }
     }
+
+    if (nodetags.Size() == 0) return 0;
 
     // calling mesh generator
     TriangleMeshGenerator gen;
-    for(int i=0; i<ptnode.Size(); i++) {
-	// get node
-	Node* theNode = theDomain->getNode(ptnode(i));
-	if(theNode == 0) {
-	    opserr<<"WARNING: node "<<ptnode(i)<<" is not defined\n";
-	    return -1;
+    int nodecounter = nextNodeTag();
+    for(int i=0; i<nodetags.Size(); ++i) {
+
+        // get node
+        Node* theNode = domain->getNode(nodetags(i));
+        if(theNode == 0) {
+            opserr<<"WARNING: node "<<nodetags(i)<<" is not defined\n";
+            return -1;
+        }
+        const Vector& crds = theNode->getCrds();
+        const Vector& disp = theNode->getTrialDisp();
+        if(crds.Size() < 2 || disp.Size() < 2) {
+            opserr<<"WARNING: ndm < 2 or ndf < 2\n";
+            return -1;
+        }
+
+	// create pc if not
+	Pressure_Constraint* thePC = domain->getPressure_Constraint(nodetags(i));
+	if(thePC != 0) {
+	    thePC->setDomain(domain);
+	} else {
+
+	    // create pressure node
+	    Node* pnode = 0;
+	    pnode = new Node(nodecounter++, 1, crds[0], crds[1]);
+
+	    if (pnode == 0) {
+		opserr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
+		return -1;
+	    }
+	    if (domain->addNode(pnode) == false) {
+		opserr << "WARNING: failed to add node to domain -- BgMesh::gridNodes\n";
+		delete pnode;
+		return -1;
+	    }
+
+	    thePC = new Pressure_Constraint(nodetags(i), pnode->getTag());
+	    if(thePC == 0) {
+		opserr<<"WARNING: no enough memory for Pressure_Constraint\n";
+		return -1;
+	    }
+	    if (domain->addPressure_Constraint(thePC) == false) {
+		opserr << "WARNING: failed to add PC to domain -- BgMesh::gridNodes\n";
+		delete thePC;
+		return -1;
+	    }
 	}
-	const Vector& crds = theNode->getCrds();
-	const Vector& disp = theNode->getTrialDisp();
-	if(crds.Size() < 2 || disp.Size() < 2) {
-	    opserr<<"WARNING: ndm < 2 or ndf < 2\n";
-	    return -1;
-	}
-	
-	// add point
-	gen.addPoint(crds(0)+disp(0), crds(1)+disp(1));
+
+        // add point
+        gen.addPoint(crds(0)+disp(0), crds(1)+disp(1));
     }
 
     // meshing
     gen.remesh(alpha);
 
     // get elenodes
-    std::vector<ID> regelenodes(rtags2.Size());
+    std::map<int,ID> meshelenodes;
     for(int i=0; i<gen.getNumTriangles(); i++) {
-	int p1,p2,p3;
-	gen.getTriangle(i,p1,p2,p3);
 
-	// if all connected to fixed regions
-	int numfix = rtags.Size();
-	if(ptreg(p1)<numfix && ptreg(p2)<numfix && ptreg(p3)<numfix) {
-	    continue;
-	}
-	
-	// which region it belongs to
-	int reg = ptreg(p1);
-	if(reg<numfix || (reg>ptreg(p2) && ptreg(p2)>=numfix)) reg = ptreg(p2);
-	if(reg<numfix || (reg>ptreg(p3) && ptreg(p3)>=numfix)) reg = ptreg(p3);
-	reg -= numfix;
+        // get points
+        int p1,p2,p3;
+        gen.getTriangle(i,p1,p2,p3);
 
-	// elenodes
-	int index = regelenodes[reg].Size();
-	regelenodes[reg][index++] = ptnode(p1);
-	regelenodes[reg][index++] = ptnode(p2);
-	regelenodes[reg][index++] = ptnode(p3);
+        // get nodes
+        int nds[3];
+        nds[0] = nodetags(p1);
+        nds[1] = nodetags(p2);
+        nds[2] = nodetags(p3);
+
+        // check if all nodes in same mesh
+        std::vector<int>& info1 = ndinfo[nds[0]];
+        int mtag = 0, id = 0;
+        bool same = false;
+        for (int k=0; k<(int)info1.size()/2; ++k) {
+            // check if any mesh of node 1 is same for another two nodes
+            mtag = info1[2*k];
+            id = info1[2*k+1];
+
+            int num = 0;
+            for (int j=1; j<3; ++j) {
+                std::vector<int>& infoj = ndinfo[nds[j]];
+                for (int kj=0; kj<(int)infoj.size()/2; ++kj) {
+                    int mtagj = infoj[2*kj];
+                    if (mtag == mtagj) {
+                        ++num;
+                        break;
+                    }
+                }
+
+            }
+            if (num == 2) {
+                same = true;
+                break;
+            }
+        }
+
+        // nodes in different mesh
+        if (!same) {
+            mtag = 0;
+            id = 0;
+            for (int j=0; j<3; ++j) {
+                std::vector<int>& info = ndinfo[nds[j]];
+                for (int k=0; k<(int)info.size()/2; ++k) {
+                    if (info[2*k+1] < id) {
+                        if (dynamic_cast<TriMesh*>(OPS_getMesh(info[2*k])) != 0) {
+                            mtag = info[2*k];
+                            id = info[2*k+1];
+                        }
+                    }
+                }
+            }
+        }
+
+        // if all connected to structure
+        if (id >= 0) continue;
+
+        // add elenodes to its mesh
+        ID& elenodes = meshelenodes[mtag];
+        for (int j=0; j<3; ++j) {
+            elenodes[elenodes.Size()] = nds[j];
+        }
     }
 
-    // all elenodes
-    ID allelenodes;
-    for(int i=0; i<(int)regelenodes.size(); i++) {
-	int num = allelenodes.Size();
-	int num1 = regelenodes[i].Size();
-	allelenodes.resize(num+num1);
-	for (int j=0; j<num1; j++) {
-	    allelenodes(num+j) = regelenodes[i](j);
-	}
+    // creat elements
+    for (std::map<int,ID>::iterator it=meshelenodes.begin();
+	 it!=meshelenodes.end(); ++it) {
+
+        int mtag = it->first;
+        ID& elenodes = it->second;
+
+        msh = OPS_getMesh(mtag);
+        if (msh != 0) {
+
+            int id = msh->getID();
+
+            // remove mesh for id<0
+            if (id < 0) {
+                if (msh->clearEles() < 0) {
+                    opserr << "WARNING: failed to clear element in mesh"<<mtag<<"\n";
+                    return -1;
+                }
+
+                if (msh->newElements(elenodes) < 0) {
+                    opserr << "WARNING: failed to create new elements in mesh"<<mtag<<"\n";
+                    return -1;
+                }
+            }
+        }
     }
 
-    // create elements
-    std::string eletype = OPS_GetString();
-    ID eletags;
-    if (eletype=="PFEMElement2D") {
-	if (OPS_PFEMElement2D(*theDomain,allelenodes,eletags) < 0) {
-	    return -1;
-	}
-    } else if (eletype=="PFEMElement2DQuasi") {
-	if (OPS_PFEMElement2DCompressible(*theDomain,allelenodes,eletags) < 0) {
-	    return -1;
-	}
-    } else if (eletype=="PFEMElement2DBubble") {
-	if (OPS_PFEMElement2DBubble(*theDomain,allelenodes,eletags) < 0) {
-	    return -1;
-	}
-
-    }  else if (eletype=="tri31") {
-	if (OPS_Tri31(*theDomain,allelenodes,eletags) < 0) {
-	    return -1;
-	}
-
-    } else {
-	opserr<<"WARNING: element "<<eletype.c_str()<<" can't be used for tri mesh at this time\n";
-	return -1;
-    }
-
-    // add to region
-    int num = 0;
-
-    for(int i=rtags.Size(); i<numregions; i++) {
-	int num1 = regelenodes[i-rtags.Size()].Size()/3;
-	ID eletag(num1);
-	for (int j=0; j<num1; j++) {
-	    eletag(j) = eletags(num+j);
-	}
-	num += num1;
-	regions[i]->setExtraEles(eletag);
-    }
     return 0;
 }

@@ -29,8 +29,8 @@
 #ifndef TriangleMeshGenerator_h
 #define TriangleMeshGenerator_h
 
-#define REAL double
-#define VOID void
+//#define REAL double
+//#define VOID void
 extern "C" {
 #include <triangle.h>
 }
@@ -44,7 +44,7 @@ public:
     ~TriangleMeshGenerator();
 
     // mesh
-    int mesh(double size);
+    int mesh(double size, bool pointOnBoundary=true);
     int remesh(double alpha);
 
     // inputs
@@ -56,6 +56,7 @@ public:
     void getPoint(int i, double& x, double& y, int& mark);
     int getNumTriangles() const;
     void getTriangle(int i, int& p1, int& p2, int& p3);
+    void getNeighbor(int i, int& t1, int& t2, int& t3);
 
     // clear
     void clear();
@@ -73,6 +74,7 @@ private:
     std::vector<int> segmentlist;
     std::vector<int> segmentmarkerlist;
     std::vector<int> trianglelist;
+    std::vector<int> neighborlist;
     int numberofcorners;
 };
 
