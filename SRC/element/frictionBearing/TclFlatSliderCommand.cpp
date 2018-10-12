@@ -539,6 +539,6 @@ int TclModelBuilder_addFlatSliderBearing(ClientData clientData,
         return TCL_ERROR;
     }
     
-    // if get here we have sucessfully created the flatSliderBearing and added it to the domain
+    // if get here we have successfully created the flatSliderBearing and added it to the domain
     return TCL_OK;
 }

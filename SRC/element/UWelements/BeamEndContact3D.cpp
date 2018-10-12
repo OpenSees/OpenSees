@@ -217,7 +217,7 @@ BeamEndContact3D::setDomain(Domain *theDomain)
 	x_b = theDomain->getNode(mBeamNode);
 	mIcrd_b = x_b->getCrds();
 
-	// intialize the normal vector
+	// initialize the normal vector
 	mIniNormal = -1*(mIcrd_b - mIcrd_a)/(mIcrd_b - mIcrd_a).Norm();
 	mNormal = mIniNormal;
 

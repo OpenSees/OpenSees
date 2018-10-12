@@ -29,7 +29,7 @@
  Shear Wall with Warping
  ---
 Hsiang-Chuan Tsai, James M. Kelly (2004), "Buckling of short beams with warping effect included."
-International Journal of Solids and Structures, 42:239–253
+International Journal of Solids and Structures, 42:239ï¿½253
 
 
 State Determination Algorithm
@@ -152,7 +152,7 @@ class ElasticForceBeamColumnWarping2d: public Element
   BeamIntegration *beamIntegr;
   int numSections;
   SectionForceDeformation *sections[maxNumSections];          // array of pointers to sections
-  CrdTransf *crdTransf;        // pointer to coordinate tranformation object 
+  CrdTransf *crdTransf;        // pointer to coordinate transformation object 
   // (performs the transformation between the global and basic system)
   double rho;                    // mass density per unit length
   

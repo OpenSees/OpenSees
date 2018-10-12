@@ -59,6 +59,16 @@ bool OPS_addNDMaterial(NDMaterial *newComponent)
     return theNDMaterialObjects.addComponent(newComponent);
 }
 
+bool OPS_removeNDMaterial(int tag)
+{
+    TaggedObject* obj = theNDMaterialObjects.removeComponent(tag);
+    if (obj != 0) {
+	delete obj;
+	return true;
+    }
+    return false;
+}
+
 NDMaterial *OPS_getNDMaterial(int tag)
 {
   TaggedObject *theResult = theNDMaterialObjects.getComponentPtr(tag);

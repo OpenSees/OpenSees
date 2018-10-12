@@ -170,7 +170,7 @@ beam2d02::setDomain(Domain *theDomain)
     cs = dx/L;
     sn = dy/L;
     
-    // set the mass variable equal to 1/2 tha mass of the beam = 0.5 * rho*A*L
+    // set the mass variable equal to 1/2 the mass of the beam = 0.5 * rho*A*L
     M = 0.5*M*A*L;    
 }
 

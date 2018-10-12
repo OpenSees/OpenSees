@@ -236,7 +236,7 @@ void* OPS_MultipleNormalSpring()
 
 		recvOrient++ ;
 
-	    } else if (strcmp(flag,"-mass")==0 && OPS_GetNumRemainingInputArgs()>0) { // <-mass m?> ‚Ì“Ç‚İ‚İ
+	    } else if (strcmp(flag,"-mass")==0 && OPS_GetNumRemainingInputArgs()>0) { // <-mass m?> ï¿½Ì“Ç‚İï¿½ï¿½ï¿½
 		numdata = 1;
 		if (OPS_GetDoubleInput(&numdata, &mass)<0 || mass<=0) {
 		    ifNoError = errDetected(ifNoError,"invalid mass");
@@ -1038,7 +1038,7 @@ void MultipleNormalSpring::setUp()
     exit(-1);
   }
     
-  // establish orientation of element for the tranformation matrix
+  // establish orientation of element for the transformation matrix
   // z = x cross yp
   Vector oriZ(3);
   oriZ(0) = oriX(1)*oriYp(2) - oriX(2)*oriYp(1);

@@ -188,6 +188,7 @@
 #include <PM4Sand.h>
 #include <InitialStateAnalysisWrapper.h>
 #include <stressDensity.h>
+#include <InitStressNDMaterial.h>
 
 // Fibers
 #include <UniaxialFiber2d.h>
@@ -1405,6 +1406,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_CycLiqCPSPPlaneStrain:
       return new CycLiqCPSPPlaneStrain(); 
+
+  case ND_TAG_InitStressNDMaterial:
+      return new InitStressNDMaterial();
     
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNDMaterial - ";

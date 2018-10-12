@@ -600,7 +600,7 @@ DispBeamColumn3dThermal::getTangentStiff()
 
   #ifdef _bDEBUG
   if(this->getTag() == 601 || this->getTag() == 602){
-  opserr<<"DispBeam3d "<<this->getTag()<<" q afer tangent: "<<q<<endln;
+  opserr<<"DispBeam3d "<<this->getTag()<<" q after tangent: "<<q<<endln;
 	  }
   #endif
 
@@ -1102,7 +1102,7 @@ DispBeamColumn3dThermal::addInertiaLoadToUnbalance(const Vector &accel)
   const Vector &Raccel2 = theNodes[1]->getRV(accel);
 
   if (6 != Raccel1.Size() || 6 != Raccel2.Size()) {
-    opserr << "DispBeamColumn3dThermal::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+    opserr << "DispBeamColumn3dThermal::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     return -1;
   }
 

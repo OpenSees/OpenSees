@@ -836,6 +836,18 @@
     <ClCompile Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.cpp">
       <Filter>tetrahedron</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.cpp">
+      <Filter>UWelements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceP.cpp">
+      <Filter>UWelements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedEPBeamInterface.cpp">
+      <Filter>UWelements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\UWelements\Tcl_generateInterfacePoints.cpp">
+      <Filter>UWelements</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1449,6 +1461,18 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.h">
       <Filter>tetrahedron</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.h">
+      <Filter>UWelements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceP.h">
+      <Filter>UWelements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedEPBeamInterface.h">
+      <Filter>UWelements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\UWelements\Tcl_generateInterfacePoints.h">
+      <Filter>UWelements</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

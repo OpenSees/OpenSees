@@ -672,7 +672,7 @@ Truss::addInertiaLoadToUnbalance(const Vector &accel)
 #ifdef _G3DEBUG    
   if (nodalDOF != Raccel1.Size() || nodalDOF != Raccel2.Size()) {
     opserr <<"Truss::addInertiaLoadToUnbalance " <<
-      "matrix and vector sizes are incompatable\n";
+      "matrix and vector sizes are incompatible\n";
     return -1;
   }
 #endif
@@ -724,7 +724,7 @@ Truss::addInertiaLoadSensitivityToUnbalance(const Vector &accel, bool somethingR
 #ifdef _G3DEBUG    
     if (nodalDOF != Raccel1.Size() || nodalDOF != Raccel2.Size()) {
       opserr << "Truss::addInertiaLoadToUnbalance " <<
-	"matrix and vector sizes are incompatable\n";
+	"matrix and vector sizes are incompatible\n";
       return -1;
     }
 #endif
@@ -758,7 +758,7 @@ Truss::addInertiaLoadSensitivityToUnbalance(const Vector &accel, bool somethingR
 #ifdef _G3DEBUG    
     if (nodalDOF != Raccel1.Size() || nodalDOF != Raccel2.Size()) {
       opserr << "Truss::addInertiaLoadToUnbalance " <<
-	"matrix and vector sizes are incompatable\n";
+	"matrix and vector sizes are incompatible\n";
       return -1;
     }
 #endif
@@ -1204,13 +1204,15 @@ int
 Truss::getResponse(int responseID, Information &eleInfo)
 {
     double strain;
+    static Vector fVec(1);
 
     switch (responseID) {
     case 1:
         return eleInfo.setVector(this->getResistingForce());
 
     case 2:
-        return eleInfo.setDouble(A * theMaterial->getStress());
+      fVec(0) = A*theMaterial->getStress();
+      return eleInfo.setVector(fVec);
 
     case 3:
         if (L == 0.0) {
@@ -1218,7 +1220,8 @@ Truss::getResponse(int responseID, Information &eleInfo)
         } else {
             strain = theMaterial->getStrain();
         }
-        return eleInfo.setDouble(L * strain);
+	fVec(0) = L*strain;
+        return eleInfo.setVector(fVec);
 
     default:
         return 0;

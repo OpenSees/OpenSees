@@ -95,7 +95,7 @@ TclModelBuilder_addFrameElement(ClientData clientData, Tcl_Interp *interp,
        
   if (Tcl_SplitList(interp, List, &argc, &argv) != TCL_OK)
   {
-    opserr <<  "WARNING - TclModelBuilder_addFrameElement - problem spliting list\n";
+    opserr <<  "WARNING - TclModelBuilder_addFrameElement - problem splitting list\n";
     return TCL_ERROR;
   }
       
@@ -284,7 +284,7 @@ TclModelBuilder_addFrameElement(ClientData clientData, Tcl_Interp *interp,
 
   Tcl_Free ((char *)argv);
 
-  // if get here we have sucessfully created the element and added it to the domain
+  // if get here we have successfully created the element and added it to the domain
   
   return TCL_OK;
 }

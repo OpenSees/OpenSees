@@ -136,7 +136,7 @@ private:
 	// CLASS MEMBERS
 	int numSections;
 	SectionForceDeformation **theSections; // pointer to the ND material objects
-	CrdTransf *crdTransf;        // pointer to coordinate tranformation object 
+	CrdTransf *crdTransf;        // pointer to coordinate transformation object 
 
 	BeamIntegration *beamInt;
 

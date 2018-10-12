@@ -376,6 +376,9 @@ Domain::~Domain()
   if (theEigenvalues != 0)
     delete theEigenvalues;
 
+  if (theLoadPatternIter != 0)
+      delete theLoadPatternIter;
+
   if (theModalDampingFactors != 0)
     delete theModalDampingFactors;
   

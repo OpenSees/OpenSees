@@ -420,6 +420,7 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/DamageRecorder.o \
 	$(FE)/recorder/RemoveRecorder.o \
 	$(FE)/recorder/PVDRecorder.o \
+	$(FE)/recorder/GmshRecorder.o \
 	$(FE)/recorder/MPCORecorder.o 
 
 
@@ -578,23 +579,32 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/triangle/Tri31.o \
 	$(FE)/element/PFEMElement/PFEMElement2D.o \
 	$(FE)/element/PFEMElement/PFEMElement3D.o \
-	$(FE)/element/PFEMElement/PFEMMesher2D.o \
-	$(FE)/element/PFEMElement/PFEMMesher3D.o \
 	$(FE)/element/PFEMElement/PFEMElement2DCompressible.o \
 	$(FE)/element/PFEMElement/PFEMElement2DBubble.o \
+	$(FE)/element/PFEMElement/PFEMElement3DBubble.o \
 	$(FE)/element/PFEMElement/PFEMElement2Dmini.o \
 	$(FE)/element/PFEMElement/PFEMElement2DFIC.o \
+	$(FE)/element/PFEMElement/PFEMElement2DQuasi.o \
+	$(FE)/element/PFEMElement/MINI.o \
 	$(FE)/element/PFEMElement/LineMesh.o \
 	$(FE)/element/PFEMElement/TriMesh.o \
+	$(FE)/element/PFEMElement/TetMesh.o \
+	$(FE)/element/PFEMElement/QuadMesh.o \
 	$(FE)/element/PFEMElement/TriangleMeshGenerator.o \
+	$(FE)/element/PFEMElement/TetMeshGenerator.o \
+	$(FE)/element/PFEMElement/LineMeshGenerator.o \
+	$(FE)/element/PFEMElement/QuadMeshGenerator.o \
 	$(FE)/element/PFEMElement/tetgen.o \
 	$(FE)/element/PFEMElement/predicates.o \
 	$(FE)/element/PFEMElement/triangle.o \
 	$(FE)/element/PFEMElement/BackgroundMesh.o \
 	$(FE)/element/PFEMElement/ParticleGroup.o \
 	$(FE)/element/PFEMElement/Particle.o \
-	$(FE)/element/PFEMElement/BackgroundFixData.o \
-	$(FE)/element/PFEMElement/BackgroundGrid.o \
+	$(FE)/element/PFEMElement/BackgroundDef.o \
+	$(FE)/element/PFEMElement/TaylorHood2D.o \
+	$(FE)/element/PFEMElement/TriGaussPoints.o \
+	$(FE)/element/PFEMElement/HigherOrder.o \
+	$(FE)/element/PFEMElement/Mesh.o \
 	$(FE)/element/UWelements/SSPquad.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \
@@ -605,7 +615,12 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/Brick8FiberOverlay.o \
 	$(FE)/element/UWelements/QuadBeamEmbedContact.o \
 	$(FE)/element/catenaryCable/CatenaryCable.o \
-	$(FE)/element/tetrahedron/FourNodeTetrahedron.o
+	$(FE)/element/tetrahedron/FourNodeTetrahedron.o \
+	$(FE)/element/absorbentBoundaries/LysmerTriangle.o \
+	$(FE)/element/UWelements/EmbeddedBeamInterfaceL.o \
+	$(FE)/element/UWelements/EmbeddedBeamInterfaceP.o \
+	$(FE)/element/UWelements/EmbeddedEPBeamInterface.o \
+	$(FE)/element/UWelements/Tcl_generateInterfacePoints.o
 
 #	$(FE)/material/nD/Damage2p.o \
 #	$(FE)/material/nD/Damage2p3D.o \
@@ -615,6 +630,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 ifdef DAMAGE2P_FLAG
 	DAMAGE_2P = $(FE)/material/nD/Damage2p.o $(FE)/material/nD/Damage2p3D.o $(FE)/material/nD/Damage2ppstress.o \
 	$(FE)/material/nD/Concrete.o $(FE)/material/nD/CPlaneStress.o $(FE)/material/nD/CPlaneStress2d.o $(FE)/material/nD/CPlaneStrain.o $(FE)/material/nD/CThreeDimensional.o 
+
 else
 	DAMAGE_2P =
 endif
@@ -718,6 +734,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/PathIndependentMaterial.o \
 	$(FE)/material/uniaxial/BackboneMaterial.o \
 	$(FE)/material/uniaxial/MinMaxMaterial.o \
+	$(FE)/material/uniaxial/TensionOnlyMaterial.o \
 	$(FE)/material/uniaxial/SimpleFractureMaterial.o \
 	$(FE)/material/uniaxial/InitStrainMaterial.o \
 	$(FE)/material/uniaxial/InitStressMaterial.o \
@@ -1005,9 +1022,15 @@ SequentialSysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_Umfpack.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMCompressibleSolver.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMQuasiLinSOE.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMQuasiSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenRowLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenRowLinSolver.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMDiaLinSOE.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMDiaSolver.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_Laplace.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/PFEMSolver_LumpM.o \
 	$(SUPER_LU_OBJ) \
 	$(FE)/system_of_eqn/linearSOE/umfGEN/UmfpackGenLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/umfGEN/UmfpackGenLinSolver.o \
@@ -1077,6 +1100,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/load/Beam3dPointLoad.o \
 	$(FE)/domain/load/BrickSelfWeight.o \
 	$(FE)/domain/load/SurfaceLoader.o \
+	$(FE)/domain/load/LysmerVelocityLoader.o \
 	$(FE)/domain/load/SelfWeight.o \
 	$(FE)/domain/pattern/LoadPattern.o \
 	$(FE)/domain/pattern/FireLoadPattern.o \

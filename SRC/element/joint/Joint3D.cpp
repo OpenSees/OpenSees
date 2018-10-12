@@ -167,7 +167,7 @@ void* OPS_Joint3D()
 				  iNode,jNode,kNode,lNode,mNode,nNode,CenterNodeTag,
 				  *MatX,*MatY,*MatZ, theDomain, LargeDisp);
     
-	// if get here we have sucessfully created the element and added it to the domain
+	// if get here we have successfully created the element and added it to the domain
 	return theJoint3D;
     }
   
@@ -416,7 +416,7 @@ Joint3D::~Joint3D()
 		{
 			int intnodetag = theNodes[6]->getTag();
 			Node *theNode = TheDomain->removeNode( intnodetag );
-			if (theNode != 0) // have to check against eurned node in case node alrady gone!
+			if (theNode != 0) // have to check against eurned node in case node already gone!
 			  delete theNode;
 		}
 	}

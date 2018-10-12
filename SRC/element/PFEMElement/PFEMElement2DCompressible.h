@@ -17,11 +17,11 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // $Revision: 1.00 $
 // $Date: 2012/01/11 13:48:46 $
 // $Source: /usr/local/cvs/OpenSees/SRC/element/PFEMElement/PFEMElement2DCompressible.h,v $
-                                                                        
+
 // Written: Minjie Zhu (zhum@engr.orst.edu)
 // Created: Jan 2012
 // Revised: --------
@@ -41,10 +41,10 @@ class PFEMElement2DCompressible : public Element
 {
 public:
     PFEMElement2DCompressible();
-    PFEMElement2DCompressible(int tag, int nd1, int nd2, int nd3,
-			      double r, double m, double b1, double b2, double thk=1.0,
-			      double ka=2.15e9);
-    
+    PFEMElement2DCompressible(int tag, int nd1, int nd2, int nd3, int nd4,
+			      double r, double m, double b1, double b2,
+			      double thk=1.0, double ka=2.15e9);
+
     ~PFEMElement2DCompressible();
 
     // methods dealing with nodes and number of external dof
@@ -53,25 +53,25 @@ public:
     Node **getNodePtrs(void) {return nodes;}
     int getNumDOF(void) {return ndf;}
 
-    // public methods to set the state of the element    
+    // public methods to set the state of the element
     int revertToLastCommit(void) {return 0;}
     int revertToStart(void) {return Element::revertToStart();}
     int update(void);
     int commitState(void);
 
-    // public methods to obtain stiffness, mass, damping and residual information    
+    // public methods to obtain stiffness, mass, damping and residual information
     const Matrix &getTangentStiff(void);
     const Matrix &getGeometricTangentStiff(void);
-    const Matrix &getInitialStiff(void);    
+    const Matrix &getInitialStiff(void);
     const Matrix &getDamp();
-    const Matrix &getMass(void);    
+    const Matrix &getMass(void);
 
     // methods for applying loads
     int addInertiaLoadToUnbalance(const Vector &accel);
 
     // methods for obtaining resisting force (force includes elemental loads)
     const Vector &getResistingForce(void);
-    const Vector &getResistingForceIncInertia(void);   
+    const Vector &getResistingForceIncInertia(void);
 
     // MovableObject
     const char *getClassType(void) const;
@@ -79,7 +79,7 @@ public:
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
     // DomainComponent
-    void setDomain(Domain *theDomain); 
+    void setDomain(Domain *theDomain);
 
     // TaggedObject
     void Print(OPS_Stream &s, int flag =0);
@@ -94,11 +94,13 @@ public:
     const Vector& getResistingForceSensitivity(int gradNumber);
     int commitSensitivity(int gradNumber, int numGrads);
 
+    static bool dispon;
+
 private:
 
     ID ntags; // Tags of nodes
     Node* nodes[7]; // pointers of nodes
-    Pressure_Constraint* thePCs[3];
+    Pressure_Constraint* thePCs[4];
     double rho;  // density
     double mu;   // viscocity
     double b1, b2; // body force
@@ -108,9 +110,12 @@ private:
     double J;
     double cc[3], dd[3];
     int parameterID;
+    int bubblenode;
 
     static Matrix K;
     static Vector P;
+
+    int updateJacobian();
 
     // geometric sensitivity
     void getdM(const Vector& vdot, Matrix& dm) const;
@@ -121,5 +126,3 @@ private:
 };
 
 #endif
-
-

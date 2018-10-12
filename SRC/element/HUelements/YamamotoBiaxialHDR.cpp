@@ -1077,7 +1077,7 @@ void YamamotoBiaxialHDR::setUp()
     exit(-1);
   }
     
-  // establish orientation of element for the tranformation matrix
+  // establish orientation of element for the transformation matrix
   // z = x cross yp
   Vector oriZ(3);
   oriZ(0) = oriX(1)*oriYp(2) - oriX(2)*oriYp(1);

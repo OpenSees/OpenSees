@@ -48,6 +48,7 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
+#include <map>
 
 void* OPS_FourNodeTetrahedron()
 {
@@ -92,11 +93,102 @@ void* OPS_FourNodeTetrahedron()
     return new FourNodeTetrahedron(idata[0],idata[1],idata[2],idata[3],idata[4],*mat,data[0],data[1],data[2]);
 }
 
+void* OPS_FourNodeTetrahedron(const ID& info)
+{
+    if (info.Size() == 0) {
+	opserr << "WARNING: info is empty -- FourNodeTetrahedron\n";
+	return 0;
+    }
+
+    // save data
+    static std::map<int, Vector> meshdata;
+    int idata[6];
+    double data[3] = {0,0,0};
+    if (info(0) == 1) {
+
+	// check input
+	if (info.Size() < 2) {
+	    opserr << "WARNING: need info -- inmesh, meshtag\n";
+	    return 0;
+	}
+	if (OPS_GetNumRemainingInputArgs() < 1) {
+	    opserr << "WARNING insufficient arguments:\n";
+	    opserr << "matTag <b1, b2, b3>\n";
+	    return 0;
+	}
+
+	// get tag
+	int numdata = 1;
+	if (OPS_GetIntInput(&numdata, &idata[5]) < 0) {
+	    opserr << "WARNING: failed to get material tag -- FourNodeTetrahedron\n";
+	    return 0;
+	}
+
+	// get body forces
+	numdata = OPS_GetNumRemainingInputArgs();
+	if (numdata > 3) {
+	    numdata = 3;
+	}
+	if (numdata > 0) {
+	    if (OPS_GetDoubleInput(&numdata,data) < 0) {
+		opserr << "WARNING: failed to get body force -- FourNodeTetrahedron\n";
+		return 0;
+	    }
+	}
+
+	// save data for a mesh
+	Vector& mdata = meshdata[info(1)];
+	mdata.resize(4);
+	mdata(0) = (double)idata[5];
+	for (int i=0; i<3; ++i) {
+	    mdata(i+1) = data[i];
+	}
+	return &meshdata;
+    }
+
+    // load data
+    if (info(0) == 2) {
+	if (info.Size() < 7) {
+	    opserr << "WARNING: need info -- inmesh, meshtag, eleTag, nd1, nd2, nd3, nd4\n";
+	    return 0;
+	}
+
+	// get data for a mesh
+	Vector& mdata = meshdata[info(1)];
+	if (mdata.Size() < 4) {
+	    return 0;
+	}
+
+	idata[5] = (int)mdata(0);
+	for (int i=0; i<3; ++i) {
+	    data[i] = mdata(i+1);
+	}
+
+	for (int i=2; i<7; ++i) {
+	    idata[i-2] = info(i);
+	}
+
+	// check material
+	NDMaterial* mat = OPS_getNDMaterial(idata[5]);
+	if (mat == 0) {
+	    opserr << "WARNING material not found\n";
+	    opserr << "material tag: " << idata[5];
+	    opserr << "\nFourNodeTetrahedron element: " << idata[0] << endln;
+	}
+
+	return new FourNodeTetrahedron(idata[0],idata[1],idata[2],idata[3],idata[4],*mat,data[0],data[1],data[2]);
+    }
+
+    return 0;
+    
+}
+
 //static data
 double  FourNodeTetrahedron::xl[3][NumNodes] ;
 Matrix  FourNodeTetrahedron::stiff(NumDOFsTotal,NumDOFsTotal) ;
 Vector  FourNodeTetrahedron::resid(NumDOFsTotal) ;
 Matrix  FourNodeTetrahedron::mass(NumDOFsTotal,NumDOFsTotal) ;
+Matrix  FourNodeTetrahedron::damping(NumDOFsTotal,NumDOFsTotal) ;
 
     
 //quadrature data
@@ -126,6 +218,13 @@ FourNodeTetrahedron::FourNodeTetrahedron( )
   b[2] = 0.0;
   
   materialPointers[0] = 0;
+
+  for (int i = 0; i < NumNodes; ++i)
+  {
+    initDisp[i] = Vector(3);
+    initDisp[i].Zero();
+  }
+  do_update = 1;
 }
 
 
@@ -142,7 +241,7 @@ FourNodeTetrahedron::FourNodeTetrahedron(int tag,
    connectedExternalNodes(4), applyLoad(0), load(0), Ki(0)
 {
   B.Zero();
-
+  do_update = 1;
   connectedExternalNodes(0) = node1 ;
   connectedExternalNodes(1) = node2 ;
   connectedExternalNodes(2) = node3 ;
@@ -164,6 +263,12 @@ FourNodeTetrahedron::FourNodeTetrahedron(int tag,
   b[0] = b1;
   b[1] = b2;
   b[2] = b3;
+
+  for (int i = 0; i < NumNodes; ++i)
+  {
+    initDisp[i] = Vector(3);
+    initDisp[i].Zero();
+  }
 }
 //******************************************************************
 
@@ -572,14 +677,18 @@ FourNodeTetrahedron::addLoad(ElementalLoad *theLoad, double loadFactor)
       appliedB[2] += loadFactor * b[2];
     return 0;
   } else if (type == LOAD_TAG_SelfWeight) {
-      // added compatability with selfWeight class implemented for all continuum elements, C.McGann, U.W.
+      // added compatibility with selfWeight class implemented for all continuum elements, C.McGann, U.W.
       applyLoad = 1;
       appliedB[0] += loadFactor*data(0)*b[0];
       appliedB[1] += loadFactor*data(1)*b[1];
       appliedB[2] += loadFactor*data(2)*b[2];
-      // opserr << "loadfactor = " << loadFactor << endln;
-      // opserr << "      data = " << data;
-      // opserr << "      b    = " << b   ;
+      // if( loadFactor > 0)
+      // {
+      //     opserr << "loadfactor = " << loadFactor << endln;
+      //       opserr << "      data = " << data;
+      //       opserr << "      b    = " << b[0] << " " << b[1] << " " << b[2] << "\n"   ;
+      //       opserr << "      appliedB    = " << appliedB[0] << " " << appliedB[1] << " " << appliedB[2] << "\n"   ;
+      //     }
       return 0;
   } else {
     opserr << "FourNodeTetrahedron::addLoad() - ele with tag: " << this->getTag() << " does not deal with load type: " << type << "\n";
@@ -612,7 +721,7 @@ FourNodeTetrahedron::addInertiaLoadToUnbalance(const Vector &accel)
   int tangFlag = 1 ;
   formInertiaTerms( tangFlag ) ;
 
-  // store computed RV fro nodes in resid vector
+  // store computed RV for nodes in resid vector
   int count = 0;
   for (i=0; i<numberNodes; i++) 
   {
@@ -649,7 +758,7 @@ const Vector&  FourNodeTetrahedron::getResistingForce( )
 //get residual with inertia terms
 const Vector&  FourNodeTetrahedron::getResistingForceIncInertia( )
 {
-  static Vector res(12);
+  static Vector res(12); res.Zero();
 
   int tang_flag = 0 ; //don't get the tangent
 
@@ -709,6 +818,12 @@ void   FourNodeTetrahedron::formInertiaTerms( int tangFlag )
 
   //zero mass 
   mass.Zero( ) ;
+
+  if(do_update == 0)
+  {
+    return ;
+  }
+
 
   //compute basis vectors and local nodal coordinates
   computeBasis( ) ;
@@ -823,6 +938,16 @@ void   FourNodeTetrahedron::formInertiaTerms( int tangFlag )
 int  
 FourNodeTetrahedron::update(void) 
 {
+
+  if(do_update == 0)
+  {
+    stiff.Zero();
+    resid.Zero();
+    mass.Zero();
+    // damping.Zero();
+    return 0;
+  }
+
 
   //strains ordered : eps11, eps22, eps33, 2*eps12, 2*eps23, 2*eps31 
 
@@ -1054,6 +1179,11 @@ void  FourNodeTetrahedron::formResidAndTangent( int tang_flag )
   stiff.Zero( ) ;
   resid.Zero( ) ;
 
+  if (do_update == 0)
+  {
+    return ;
+  }
+
   //compute basis vectors and local nodal coordinates
   computeBasis( ) ;
 
@@ -1186,7 +1316,7 @@ void  FourNodeTetrahedron::formResidAndTangent( int tang_flag )
         resid( jj + p ) += residJ(p)  ;
         if (applyLoad == 0)
         {
-          resid( jj + p ) -= dvol[i]*b[p]*shp[3][j];
+          // resid( jj + p ) -= dvol[i]*b[p]*shp[3][j];
         }
         else
         {
@@ -1322,7 +1452,7 @@ int  FourNodeTetrahedron::sendSelf (int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(26);
+  static ID idData(27);
 
   idData(24) = this->getTag();
   if (alphaM != 0 || betaK != 0 || betaK0 != 0 || betaKc != 0) 
@@ -1352,6 +1482,7 @@ int  FourNodeTetrahedron::sendSelf (int commitTag, Channel &theChannel)
   idData(17) = connectedExternalNodes(1);
   idData(18) = connectedExternalNodes(2);
   idData(19) = connectedExternalNodes(3);
+  idData(26) = do_update;
   // idData(20) = connectedExternalNodes(4);
   // idData(21) = connectedExternalNodes(5);
   // idData(22) = connectedExternalNodes(6);
@@ -1399,7 +1530,7 @@ int  FourNodeTetrahedron::recvSelf (int commitTag,
   
   int dataTag = this->getDbTag();
 
-  static ID idData(26);
+  static ID idData(27);
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
     opserr << "WARNING FourNodeTetrahedron::recvSelf() - " << this->getTag() << " failed to receive ID\n";
@@ -1426,6 +1557,7 @@ int  FourNodeTetrahedron::recvSelf (int commitTag,
   connectedExternalNodes(1) = idData(17);
   connectedExternalNodes(2) = idData(18);
   connectedExternalNodes(3) = idData(19);
+  do_update = idData(26);
   // connectedExternalNodes(4) = idData(20);
   // connectedExternalNodes(5) = idData(21);
   // connectedExternalNodes(6) = idData(22);
@@ -1666,6 +1798,14 @@ FourNodeTetrahedron::setParameter(const char **argv, int argc, Parameter &param)
       return -1;
     }
   }
+  else if ((strstr(argv[0],"setDispInit") != 0) && (strcmp(argv[0],"setdispinit") == 0)) 
+  {
+    return param.addObject(1313, this);
+  }
+  else if ( strcmp(argv[0],"update") == 0 )
+  {
+    return param.addObject(1414, this);
+  }
   else // otherwise it could be just a forall material parameter
   {
     int matRes = res;
@@ -1691,6 +1831,46 @@ FourNodeTetrahedron::updateParameter(int parameterID, Information &info)
     {
         return -1;
     } 
+    else if (parameterID == 1313)
+    {
+      int doit = info.theDouble;
+      if (doit == 1)
+      {
+        Domain * mydomain = this->getDomain();
+        opserr << "FourNodeTetrahedron::updateParameter - ele tag = " << this->getTag()  << " - sets init disp ";
+        for ( int i = 0; i < NumNodes; i++ ) 
+        {
+            nodePointers[i] = mydomain->getNode( connectedExternalNodes(i) ) ;
+            initDisp[i] = nodePointers[i]->getDisp();
+            opserr << " (" << initDisp[i](0) << " " << initDisp[i](1) << " " << initDisp[i](1) << ") ";
+        }
+        opserr << endln;
+      }
+      return 0;
+    }
+    else if (parameterID == 1414)
+    {
+      int new_do_update = info.theDouble;
+      if (do_update == 0 & new_do_update == 1)
+      {
+        do_update = 1;
+        Domain * mydomain = this->getDomain();
+        opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - sets to update and init disp ";
+        for ( int i = 0; i < NumNodes; i++ ) 
+        {
+            nodePointers[i] = mydomain->getNode( connectedExternalNodes(i) ) ;
+            initDisp[i] = nodePointers[i]->getDisp();
+            opserr << " (" << initDisp[i](0) << " " << initDisp[i](1) << " " << initDisp[i](1) << ") ";
+        }
+        opserr << endln;
+      }
+      if(new_do_update == 0)
+      {
+        opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - will not update\n";
+      }
+      do_update = new_do_update;
+      return 0;
+    }
     else 
     {
       for (int i = 0; i<1; i++) 
