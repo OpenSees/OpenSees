@@ -56,11 +56,18 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ParameterIter.h>
 #include <DummyStream.h>
 #include <Response.h>
+#include <Mesh.h>
+#include <BackgroundMesh.h>
+#include <Parameter.h>
+#include <ParameterIter.h>
 
 void* OPS_NodeRecorder();
 void* OPS_EnvelopeNodeRecorder();
 void* OPS_ElementRecorder();
 void* OPS_EnvelopeElementRecorder();
+void* OPS_PVDRecorder();
+BackgroundMesh& OPS_getBgMesh();
+
 //void* OPS_DriftRecorder();
 //void* OPS_PatternRecorder();
 
@@ -82,6 +89,8 @@ namespace {
         recordersMap.insert(std::make_pair("EnvelopeNode", &OPS_EnvelopeNodeRecorder));
         recordersMap.insert(std::make_pair("Element", &OPS_ElementRecorder));
         recordersMap.insert(std::make_pair("EnvelopeElement", &OPS_EnvelopeElementRecorder));
+	recordersMap.insert(std::make_pair("PVD", &OPS_PVDRecorder));
+	recordersMap.insert(std::make_pair("BgPVD", &OPS_PVDRecorder));
         //recordersMap.insert(std::make_pair("Drift", &OPS_DriftRecorder));
         //recordersMap.insert(std::make_pair("Pattern", &OPS_PatternRecorder));
 
@@ -115,14 +124,20 @@ int OPS_Recorder()
         return -1;
     }
 
-    // now add the recorder to the domain
-    Domain* theDomain = OPS_GetDomain();
-    if (theDomain == 0) return -1;
+    if (strcmp(type,"BgPVD") == 0) {
+	BackgroundMesh& bg = OPS_getBgMesh();
+	bg.addRecorder(theRecorder);
+    } else {
 
-    if (theDomain->addRecorder(*theRecorder) < 0) {
-        opserr << "ERROR could not add to domain - recorder.\n";
-        delete theRecorder;
-        return -1;
+	// now add the recorder to the domain
+	Domain* theDomain = OPS_GetDomain();
+	if (theDomain == 0) return -1;
+
+	if (theDomain->addRecorder(*theRecorder) < 0) {
+	    opserr << "ERROR could not add to domain - recorder.\n";
+	    delete theRecorder;
+	    return -1;
+	}
     }
 
     return 0;
@@ -1677,12 +1692,37 @@ int OPS_getEleTags()
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
-    Element *theEle;
-    ElementIter &eleIter = theDomain->getElements();
-
     std::vector<int> eletags;
-    while ((theEle = eleIter()) != 0) {
-	eletags.push_back(theEle->getTag());
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	// return all elements
+
+	Element *theEle;
+	ElementIter &eleIter = theDomain->getElements();
+
+	while ((theEle = eleIter()) != 0) {
+	    eletags.push_back(theEle->getTag());
+	}
+    } else if (OPS_GetNumRemainingInputArgs() == 2) {
+
+	// return nodes in mesh
+	const char* type = OPS_GetString();
+	if (strcmp(type,"-mesh") == 0) {
+	    int tag;
+	    int num = 1;
+	    if (OPS_GetIntInput(&num, &tag) < 0) {
+		opserr << "WARNING: failed to get mesh tag\n";
+		return -1;
+	    }
+	    Mesh* msh = OPS_getMesh(tag);
+	    if (msh == 0) {
+		opserr << "WARNING: mesh "<<tag<<" does not exist\n";
+		return -1;
+	    }
+	    const ID& tags = msh->getEleTags();
+	    for (int i=0; i<tags.Size(); ++i) {
+		eletags.push_back(tags(i));
+	    }
+	}
     }
 
     if (eletags.empty()) return 0;
@@ -1703,12 +1743,41 @@ int OPS_getNodeTags()
     Domain* theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
 
-    Node *theNode;
-    NodeIter &nodeIter = theDomain->getNodes();
-
     std::vector<int> nodetags;
-    while ((theNode = nodeIter()) != 0) {
-	nodetags.push_back(theNode->getTag());
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+
+	// return all nodes
+	Node *theNode;
+	NodeIter &nodeIter = theDomain->getNodes();
+
+	while ((theNode = nodeIter()) != 0) {
+	    nodetags.push_back(theNode->getTag());
+	}
+    } else if (OPS_GetNumRemainingInputArgs() == 2) {
+
+	// return nodes in mesh
+	const char* type = OPS_GetString();
+	if (strcmp(type,"-mesh") == 0) {
+	    int tag;
+	    int num = 1;
+	    if (OPS_GetIntInput(&num, &tag) < 0) {
+		opserr << "WARNING: failed to get mesh tag\n";
+		return -1;
+	    }
+	    Mesh* msh = OPS_getMesh(tag);
+	    if (msh == 0) {
+		opserr << "WARNING: mesh "<<tag<<" does not exist\n";
+		return -1;
+	    }
+	    const ID& tags = msh->getNodeTags();
+	    for (int i=0; i<tags.Size(); ++i) {
+		nodetags.push_back(tags(i));
+	    }
+	    const ID& newtags = msh->getNewNodeTags();
+	    for (int i=0; i<newtags.Size(); ++i) {
+		nodetags.push_back(newtags(i));
+	    }
+	}
     }
 
     if (nodetags.empty()) return 0;
@@ -1784,16 +1853,16 @@ int OPS_sectionForce()
 	delete theResponse;
 	return -1;
     }
-	
+
     double value = theVec(dof-1);
     numdata = 1;
-    
+
     if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
     }
-    
+
     delete theResponse;
 
     return 0;
@@ -1859,16 +1928,16 @@ int OPS_sectionDeformation()
 	delete theResponse;
 	return -1;
     }
-	
+
     double value = theVec(dof-1);
     numdata = 1;
-    
+
     if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
     }
-    
+
     delete theResponse;
 
     return 0;
@@ -1943,13 +2012,13 @@ int OPS_sectionStiffness()
 	    values.push_back(theMat(i,j));
 	}
     }
-    
+
     if (OPS_SetDoubleOutput(&size, &values[0]) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
     }
-    
+
     delete theResponse;
 
     return 0;
@@ -2024,13 +2093,13 @@ int OPS_sectionFlexibility()
 	    values.push_back(theMat(i,j));
 	}
     }
-    
+
     if (OPS_SetDoubleOutput(&size, &values[0]) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
     }
-    
+
     delete theResponse;
 
     return 0;
@@ -2093,13 +2162,13 @@ int OPS_sectionLocation()
 
     double value = theVec(secNum-1);
     numdata = 1;
-    
+
     if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
     }
-    
+
     delete theResponse;
 
     return 0;
@@ -2162,13 +2231,13 @@ int OPS_sectionWeight()
 
     double value = theVec(secNum-1);
     numdata = 1;
-    
+
     if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
 	return -1;
     }
-    
+
     delete theResponse;
 
     return 0;
@@ -2226,7 +2295,7 @@ int OPS_basicDeformation()
     for (int i=0; i<nbf; i++) {
 	data[i] = theVec(i);
     }
-    
+
     if (OPS_SetDoubleOutput(&nbf, &data[0]) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
@@ -2277,6 +2346,11 @@ int OPS_basicForce()
 
     Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
     if (theResponse == 0) {
+	double res = 0.0;
+	if (OPS_SetDoubleOutput(&numdata, &res) < 0) {
+	    opserr << "WARNING: failed to set output\n";
+	    return -1;
+	}
 	return 0;
     }
 
@@ -2290,7 +2364,7 @@ int OPS_basicForce()
     for (int i=0; i<nbf; i++) {
 	data[i] = theVec(i);
     }
-    
+
     if (OPS_SetDoubleOutput(&nbf, &data[0]) < 0) {
 	opserr << "WARNING failed to set output\n";
 	delete theResponse;
@@ -2382,3 +2456,321 @@ int OPS_version()
 
     return 0;
 }
+
+// Sensitivity:BEGIN /////////////////////////////////////////////
+int OPS_sensNodeDisp()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+	opserr << "WARNING want - sensNodeDisp nodeTag? dof? paramTag?\n";
+	return -1;
+    }    
+
+    int data[3];
+    int numdata = 3;
+    if (OPS_GetIntInput(&numdata, &data[0]) < 0) {
+	opserr << "WARNING: failed to get tag, dof or paramTag\n";
+	return -1;
+    }
+
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) return 0;
+
+
+    Node *theNode = domain->getNode(data[0]);
+    if (theNode == 0) {
+	opserr << "sensNodeDisp: node " << data[0] << " not found" << "\n";
+	return -1;
+    }
+
+    Parameter *theParam = domain->getParameter(data[2]);
+    if (theParam == 0) {
+	opserr << "sensNodeDisp: parameter " << data[2] << " not found" << "\n";
+	return -1;
+    }
+
+    int gradIndex = theParam->getGradIndex();
+
+    double value = theNode->getDispSensitivity(data[1],gradIndex);
+
+    numdata = 1;
+    if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
+	opserr<<"WARNING failed to set output\n";
+	return -1;
+    }
+
+    return 0;
+}
+
+int OPS_sensNodeVel()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+	opserr << "WARNING want - sensNodeVel nodeTag? dof? paramTag?\n";
+	return -1;
+    }    
+
+    int data[3];
+    int numdata = 3;
+    if (OPS_GetIntInput(&numdata, &data[0]) < 0) {
+	opserr << "WARNING: failed to get tag, dof or paramTag\n";
+	return -1;
+    }
+
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) return 0;
+
+
+    Node *theNode = domain->getNode(data[0]);
+    if (theNode == 0) {
+	opserr << "sensNodeVel: node " << data[0] << " not found" << "\n";
+	return -1;
+    }
+
+    Parameter *theParam = domain->getParameter(data[2]);
+    if (theParam == 0) {
+	opserr << "sensNodeVel: parameter " << data[2] << " not found" << "\n";
+	return -1;
+    }
+
+    int gradIndex = theParam->getGradIndex();
+
+    double value = theNode->getVelSensitivity(data[1],gradIndex);
+
+    numdata = 1;
+    if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
+	opserr<<"WARNING failed to set output\n";
+	return -1;
+    }
+
+    return 0;
+}
+
+int OPS_sensNodeAccel()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+	opserr << "WARNING want - sensNodeAccel nodeTag? dof? paramTag?\n";
+	return -1;
+    }    
+
+    int data[3];
+    int numdata = 3;
+    if (OPS_GetIntInput(&numdata, &data[0]) < 0) {
+	opserr << "WARNING: failed to get tag, dof or paramTag\n";
+	return -1;
+    }
+
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) return 0;
+
+
+    Node *theNode = domain->getNode(data[0]);
+    if (theNode == 0) {
+	opserr << "sensNodeAccel: node " << data[0] << " not found" << "\n";
+	return -1;
+    }
+
+    Parameter *theParam = domain->getParameter(data[2]);
+    if (theParam == 0) {
+	opserr << "sensNodeAccel: parameter " << data[2] << " not found" << "\n";
+	return -1;
+    }
+
+    int gradIndex = theParam->getGradIndex();
+
+    double value = theNode->getAccSensitivity(data[1],gradIndex);
+
+    numdata = 1;
+    if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
+	opserr<<"WARNING failed to set output\n";
+	return -1;
+    }
+
+    return 0;
+}
+
+int OPS_sensLambda()
+{
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	opserr << "WARNING no load pattern supplied -- getLoadFactor\n";
+	return -1;
+    }
+
+    int data[2];
+    int numdata = 2;
+    if (OPS_GetIntInput(&numdata, &data[0]) < 0) {
+	opserr << "WARNING: failed to read patternTag or paramTag\n";
+	return -1;
+    }
+
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) return 0;
+
+    LoadPattern *thePattern = domain->getLoadPattern(data[0]);
+    if (thePattern == 0) {
+	opserr << "ERROR load pattern with tag " << data[0] << " not found in domain\n";
+	return -1;
+    }
+
+    Parameter *theParam = domain->getParameter(data[1]);
+    if (theParam == 0) {
+	opserr << "sensLambda: parameter " << data[1] << " not found" << "\n";
+	return -1;
+    }
+  
+    int gradIndex = theParam->getGradIndex();
+    double factor = thePattern->getLoadFactorSensitivity(gradIndex);
+
+    numdata = 1;
+    if (OPS_SetDoubleOutput(&numdata, &factor) < 0) {
+	opserr<<"WARNING failed to set output\n";
+	return -1;
+    }
+
+    return 0;
+}
+
+int OPS_sensSectionForce()
+{
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+	opserr << "WARNING want - sensSectionForce eleTag? <secNum?> dof? paramTag?\n";
+	return -1;
+    }    
+  
+    //opserr << "sensSectionForce: ";
+    //for (int i = 0; i < argc; i++) 
+    //  opserr << argv[i] << ' ' ;
+    //opserr << endln;
+
+    int numdata = OPS_GetNumRemainingInputArgs();
+    std::vector<int> data(numdata);
+    if (OPS_GetIntInput(&numdata, &data[0]) < 0) {
+	opserr << "WARNING: failed to read input data\n";
+	return -1;
+    }
+
+    int tag, dof, paramTag;
+    int secNum = -1;
+    if (numdata == 3) {
+	tag = data[0];
+	dof = data[1];
+	paramTag = data[2]; 
+    } else {
+	tag = data[0];
+	secNum = data[1];
+	dof = data[2];
+	paramTag = data[3]; 
+    }
+
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) return 0;
+
+    ParameterIter &pIter = domain->getParameters();
+    Parameter *theParam;
+    while ((theParam = pIter()) != 0) {
+	theParam->activate(false);
+    }
+
+    theParam = domain->getParameter(paramTag);
+    int gradIndex = theParam->getGradIndex();
+    theParam->activate(true);
+
+    Element *theElement = domain->getElement(tag);
+    if (theElement == 0) {
+	opserr << "WARNING sensSectionForce element with tag " << tag << " not found in domain \n";
+	return -1;
+    }
+
+    char a[80] = "section";
+    char b[80];
+    sprintf(b, "%d", secNum);
+    char c[80] = "dsdh";
+    const char *argvv[3];
+    int argcc = 3;
+    argvv[0] = a;
+    argvv[1] = b;
+    argvv[2] = c;
+    if (secNum < 0) { // For zeroLengthSection
+	argcc = 2;
+	argvv[1] = c;
+    }
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == 0) {
+	numdata = 1;
+	double res = 0.0;
+	if (OPS_SetDoubleOutput(&numdata, &res) < 0) {
+	    opserr<<"WARNING failed to set output\n";
+	    return -1;
+	}
+	return 0;
+    }
+
+    theResponse->getResponseSensitivity(gradIndex);
+    Information &info = theResponse->getInformation();
+
+    Vector theVec = *(info.theVector);
+
+    numdata = theVec.Size();
+    if (OPS_SetDoubleOutput(&numdata, &theVec(dof-1)) < 0) {
+	opserr<<"WARNING failed to set output\n";
+	return -1;
+    }
+
+    theParam->activate(false);
+
+    delete theResponse;
+
+    return 0;
+}
+
+int OPS_sensNodePressure()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	opserr << "WARNING want - sensNodePressure nodeTag? paramTag?\n";
+	return -1;
+    }    
+
+    int data[2];
+    int numdata = 2;
+    if (OPS_GetIntInput(&numdata, &data[0]) < 0) {
+	opserr << "WARNING: failed to get tag or paramTag\n";
+	return -1;
+    }
+
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) return 0;
+
+    double dp = 0.0;
+    Pressure_Constraint* thePC = domain->getPressure_Constraint(data[0]);
+    if(thePC != 0) {
+        // int ptag = thePC->getPressureNode();
+        // Node* pNode = theDomain.getNode(ptag);
+        Node* pNode = thePC->getPressureNode();
+        if(pNode != 0) {
+
+            Parameter *theParam = domain->getParameter(data[1]);
+            if (theParam == 0) {
+                opserr << "sensNodePressure: parameter " << data[1] << " not found" << endln;
+                return -1;
+            }
+
+            int gradIndex = theParam->getGradIndex();
+            dp = pNode->getVelSensitivity(1,gradIndex);
+        }
+    }
+
+    numdata = 1;
+    if (OPS_SetDoubleOutput(&numdata, &dp) < 0) {
+	opserr<<"WARNING failed to set output\n";
+	return -1;
+    }
+
+    return 0;
+}
+
+// Sensitivity:END /////////////////////////////////////////////

@@ -87,6 +87,7 @@ class PythonModule: public DL_Interpreter
 
     // getwrapper
     PythonWrapper* getWrapper() {return &wrapper;}
+    OpenSeesCommands& getCmds() {return cmds;}
     
   private:
     PythonWrapper wrapper;
