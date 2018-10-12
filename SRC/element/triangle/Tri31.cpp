@@ -44,6 +44,7 @@
 #include <ElementResponse.h>
 #include <ElementIter.h>
 #include <elementAPI.h>
+#include <map>
 
 double Tri31::matrixData[36];
 Matrix Tri31::K(matrixData, 6, 6);
@@ -57,7 +58,7 @@ double Tri31::wts[1];
 static int num_Tri31 = 0;
 
 OPS_Export void *
-OPS_Tri31(const ID &info)
+OPS_Tri31()
 {
   if (num_Tri31 == 0) {
     num_Tri31++;
@@ -134,6 +135,147 @@ OPS_Tri31(const ID &info)
   }
   
   return theElement;
+}
+
+void *
+OPS_Tri31(const ID &info)
+{
+    if (num_Tri31 == 0) {
+	num_Tri31++;
+	opserr<<"Tri31 - Written by Roozbeh G. Mikola and N.Sitar, UC Berkeley\n";
+	//OPS_Error("Tri31 - Written by Roozbeh G. Mikola and N.Sitar, UC Berkeley\n",1);
+    }
+
+    int iData[5];
+    char *theType = (char*) "PlaneStress";
+    double dData[5];
+    dData[1] = 0.0;
+    dData[2] = 0.0;
+    dData[3] = 0.0;
+    dData[4] = 0.0;
+    int numData;
+
+    // Pointer to an element that will be returned
+    Element *theElement = 0;
+
+    // regular element, not in a mesh, get tags
+    if (info.Size() == 0) {
+	int numRemainingInputArgs = OPS_GetNumRemainingInputArgs();
+
+	if (numRemainingInputArgs < 4) {
+	    opserr << "Invalid #args, want: element element Tri31 eleTag? iNode? jNode? kNode?\n";
+	    return 0;
+	}
+
+	numData = 4;
+	if (OPS_GetIntInput(&numData, iData) != 0) {
+	    opserr << "WARNING invalid integer data: element Tri31\n";
+	    return 0;
+	}
+    }
+
+    // regular element, or in a mesh
+    if (info.Size()==0 || info(0)==1) {
+	if(OPS_GetNumRemainingInputArgs() < 3) {
+	    opserr<<"insufficient arguments: thk? type? matTag? <pressure? rho? b1? b2?>\n";
+	    return 0;
+	}
+
+	numData = 1;
+	if (OPS_GetDoubleInput(&numData, dData) != 0) {
+	    opserr << "WARNING invalid thickness data: element Tri31 " << endln;
+	    return 0;
+	}
+
+	// if (OPS_GetStringCopy(&theType) != 0) {
+	//   opserr << "WARNING invalid type, want: ""PlaneStress"" or ""PlaneStrain""  element SSPquad " << iData[0] << endln;
+	//   return 0;
+	// }
+	theType = (char*)OPS_GetString();
+
+	numData = 1;
+	if (OPS_GetIntInput(&numData, &iData[4]) != 0) {
+	    opserr << "WARNING invalid integer data: element Tri31\n";
+	    return 0;
+	}
+
+	if (OPS_GetNumRemainingInputArgs() == 4) {
+	    numData = 4;
+	    if (OPS_GetDoubleInput(&numData, &dData[1]) != 0) {
+		opserr << "WARNING invalid optional data: element Tri31 " << endln;
+		return 0;
+	    }
+	}
+    }
+
+    // store data for different mesh
+    static std::map<int, Vector> meshdata;
+    if (info.Size()>0 && info(0)==1) {
+	if (info.Size() < 2) {
+	    opserr << "WARNING: need info -- inmesh, meshtag\n";
+	    return 0;
+	}
+
+	// save the data for a mesh
+	Vector& mdata = meshdata[info(1)];
+	mdata.resize(7);
+	for (int i=0; i<5; ++i) {
+	    mdata(i) = dData[i];
+	}
+	mdata(5) = iData[4];
+	if (strcmp(theType,"PlaneStrain") == 0 ||
+	    strcmp(theType,"PlaneStrain2D") == 0) {
+	    mdata(6) = 1;
+	} else if (strcmp(theType,"PlaneStress") == 0 ||
+		   strcmp(theType,"PlaneStress2D") == 0) {
+	    mdata(6) = 2;
+	}
+
+	return &meshdata;
+
+    } else if (info.Size()>0 && info(0)==2) {
+	if (info.Size() < 6) {
+	    opserr << "WARNING: need info -- inmesh, meshtag, eleTag, nd1, nd2, nd3\n";
+	    return 0;
+	}
+
+	// get the data for a mesh
+	Vector& mdata = meshdata[info(1)];
+	if (mdata.Size() < 7) return 0;
+
+	for (int i=0; i<5; ++i) {
+	    dData[i] = mdata(i);
+	}
+	for (int i=0; i<4; ++i) {
+	    iData[i] = info(2+i);
+	}
+	iData[4] = mdata(5);
+	if (mdata(6) == 1) {
+	    theType = (char*)"PlaneStrain";
+	} else if (mdata(6) == 2) {
+	    theType = (char*)"PlaneStress";
+	}
+    }
+
+    int matID = iData[4];
+    NDMaterial *theMaterial = OPS_getNDMaterial(matID);
+    if (theMaterial == 0) {
+	opserr << "WARNING element Tri31 " << iData[0] << endln;
+	opserr << " Material: " << matID << "not found\n";
+	return 0;
+    }
+
+    // parsing was successful, allocate the element
+    theElement = new Tri31(iData[0], iData[1], iData[2], iData[3],
+			   *theMaterial, theType,
+			   dData[0], dData[1], dData[2], dData[3], dData[4]);
+
+    if (theElement == 0) {
+	opserr << "WARNING could not create element of type Tri31\n";
+	return 0;
+    }
+
+    return theElement;
 }
 
 int OPS_Tri31(Domain& theDomain, const ID& elenodes, ID& eletags)

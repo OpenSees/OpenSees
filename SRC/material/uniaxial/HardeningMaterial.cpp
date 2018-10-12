@@ -455,20 +455,20 @@ HardeningMaterial::getStressSensitivity(int gradIndex, bool conditional)
 
 		int sign = (xsi < 0) ? -1 : 1;
 
-		//double dGamma = f / (E+Hiso+Hkin);
+		double dGamma = f / (E+Hiso+Hkin);
 		
 		double CbackStressSensitivity = (HkinSensitivity*CplasticStrain + Hkin*CplasticStrainSensitivity);
 
 		double fSensitivity = (TstressSensitivity-CbackStressSensitivity)*sign
 			- SigmaYSensitivity - HisoSensitivity*Chardening - Hiso*ChardeningSensitivity;
 		
-		//double dGammaSensitivity = 
-		//	(fSensitivity*(E+Hkin+Hiso)-f*(ESensitivity+HkinSensitivity+HisoSensitivity))
-		//	/((E+Hkin+Hiso)*(E+Hkin+Hiso));
-		double dGammaSensitivity = fSensitivity/(E+Hkin+Hiso);
+		double dGammaSensitivity = 
+			(fSensitivity*(E+Hkin+Hiso)-f*(ESensitivity+HkinSensitivity+HisoSensitivity))
+			/((E+Hkin+Hiso)*(E+Hkin+Hiso));
+		//double dGammaSensitivity = fSensitivity/(E+Hkin+Hiso);
 		
-		//sensitivity = (TstressSensitivity-dGammaSensitivity*E*sign-dGamma*ESensitivity*sign);
-		sensitivity = TstressSensitivity-dGammaSensitivity*E*sign;
+		sensitivity = (TstressSensitivity-dGammaSensitivity*E*sign-dGamma*ESensitivity*sign);
+		//sensitivity = TstressSensitivity-dGammaSensitivity*E*sign;
 	}
 
 	return sensitivity;
@@ -589,17 +589,15 @@ HardeningMaterial::commitSensitivity(double TstrainSensitivity, int gradIndex, i
 
 		int sign = (xsi < 0) ? -1 : 1;
 		//f = 0.0;
-		//double dGamma = f / (E+Hiso+Hkin);
+		double dGamma = f / (E+Hiso+Hkin);
 
 		double CbackStressSensitivity = (HkinSensitivity*CplasticStrain + Hkin*CplasticStrainSensitivity);
 
 		double fSensitivity = (TstressSensitivity-CbackStressSensitivity)*sign
 			- SigmaYSensitivity - HisoSensitivity*Chardening - Hiso*ChardeningSensitivity;
 
-		//double dGammaSensitivity = 
-		//	(fSensitivity*(E+Hkin+Hiso)-f*(ESensitivity+HkinSensitivity+HisoSensitivity))
-		//	/((E+Hkin+Hiso)*(E+Hkin+Hiso));
-		double dGammaSensitivity = fSensitivity/(E+Hkin+Hiso);
+	    double dGammaSensitivity = (fSensitivity*(E+Hkin+Hiso)-f*(ESensitivity+HkinSensitivity+HisoSensitivity))/((E+Hkin+Hiso)*(E+Hkin+Hiso));
+		//double dGammaSensitivity = fSensitivity/(E+Hkin+Hiso);
 
 		(*SHVs)(0,gradIndex) += dGammaSensitivity*sign;
 		(*SHVs)(1,gradIndex) += dGammaSensitivity;
