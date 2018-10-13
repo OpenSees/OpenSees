@@ -9,7 +9,7 @@ OBJS       = DL_Interpreter.o \
 	OpenSeesUniaxialMaterialCommands.o \
 	PythonModelBuilder.o PythonAnalysisBuilder.o
 
-OBJS  = DL_Interpreter.o OpenSeesCommands.o OpenSeesUniaxialMaterialCommands.o OpenSeesElementCommands.o OpenSeesTimeSeriesCommands.o OpenSeesPatternCommands.o OpenSeesSectionCommands.o OpenSeesOutputCommands.o OpenSeesCrdTransfCommands.o OpenSeesBeamIntegrationCommands.o OpenSeesNDMaterialCommands.o OpenSeesMiscCommands.o OpenSeesParameterCommands.o OpenSeesFrictionModelCommands.o
+OBJS  = DL_Interpreter.o OpenSeesCommands.o OpenSeesUniaxialMaterialCommands.o OpenSeesElementCommands.o OpenSeesTimeSeriesCommands.o OpenSeesPatternCommands.o OpenSeesSectionCommands.o OpenSeesOutputCommands.o OpenSeesCrdTransfCommands.o OpenSeesBeamIntegrationCommands.o OpenSeesNDMaterialCommands.o OpenSeesMiscCommands.o OpenSeesParameterCommands.o OpenSeesFrictionModelCommands.o OpenSeesReliabilityCommands.o
 
 TclOBJS =  tclMain.o TclInterpreter.o TclWrapper.o $(OBJS)
 PythonOBJS = pythonMain.o PythonInterpreter.o PythonWrapper.o $(OBJS)
