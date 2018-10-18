@@ -1918,10 +1918,81 @@ DispBeamColumn2d::activateParameter(int passedParameterID)
 
 
 const Matrix &
-DispBeamColumn2d::getKiSensitivity(int gradNumber)
+DispBeamColumn2d::getInitialStiffSensitivity(int gradNumber)
 {
-	K.Zero();
-	return K;
+  static Matrix kb(3,3);
+
+  // Zero for integral
+  kb.Zero();
+  
+  double L = crdTransf->getInitialLength();
+  double oneOverL = 1.0/L;
+  
+  double xi[maxNumSections];
+  beamInt->getSectionLocations(numSections, L, xi);
+  double wt[maxNumSections];
+  beamInt->getSectionWeights(numSections, L, wt);
+
+  // Loop over the integration points
+  for (int i = 0; i < numSections; i++) {
+    
+    int order = theSections[i]->getOrder();
+    const ID &code = theSections[i]->getType();
+
+    Matrix ka(workArea, order, 3);
+    ka.Zero();
+
+    double xi6 = 6.0*xi[i];
+
+    // Get the section tangent stiffness and stress resultant
+    const Matrix &ks = theSections[i]->getInitialTangentSensitivity(gradNumber);
+        
+    // Perform numerical integration
+    //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
+    //double wti = wts(i)*oneOverL;
+    double wti = wt[i]*oneOverL;
+    double tmp;
+    int j, k;
+    for (j = 0; j < order; j++) {
+      switch(code(j)) {
+      case SECTION_RESPONSE_P:
+	for (k = 0; k < order; k++)
+	  ka(k,0) += ks(k,j)*wti;
+	break;
+      case SECTION_RESPONSE_MZ:
+	for (k = 0; k < order; k++) {
+	  tmp = ks(k,j)*wti;
+	  ka(k,1) += (xi6-4.0)*tmp;
+	  ka(k,2) += (xi6-2.0)*tmp;
+	}
+	break;
+      default:
+	break;
+      }
+    }
+    for (j = 0; j < order; j++) {
+      switch (code(j)) {
+      case SECTION_RESPONSE_P:
+	for (k = 0; k < 3; k++)
+	  kb(0,k) += ka(j,k);
+	break;
+      case SECTION_RESPONSE_MZ:
+	for (k = 0; k < 3; k++) {
+	  tmp = ka(j,k);
+	  kb(1,k) += (xi6-4.0)*tmp;
+	  kb(2,k) += (xi6-2.0)*tmp;
+	}
+	break;
+      default:
+	break;
+      }
+    }
+  }
+
+  // Transform to global stiffness
+  K = crdTransf->getInitialGlobalStiffMatrix(kb);
+  
+  return K;
 }
 
 const Matrix &
