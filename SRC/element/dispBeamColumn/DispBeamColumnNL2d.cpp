@@ -1748,7 +1748,7 @@ DispBeamColumnNL2d::getInitialStiffSensitivity(int gradNumber)
     double xi6 = 6.0*xi[i];
     
     // Get the section tangent stiffness and stress resultant
-    const Matrix &ks = theSections[i]->getInitialTangentSensitivity(gradIndex);
+    const Matrix &ks = theSections[i]->getInitialTangentSensitivity(gradNumber);
     
     // Perform numerical integration
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
