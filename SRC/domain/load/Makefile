@@ -8,6 +8,7 @@ OBJS       = Load.o \
 	Beam2dPartialUniformLoad.o \
 	Beam3dUniformLoad.o \
 	Beam3dPointLoad.o \
+	Beam3dPartialUniformLoad.o \
 	BrickSelfWeight.o \
 	Beam2dTempLoad.o \
 	Beam2dThermalAction.o \

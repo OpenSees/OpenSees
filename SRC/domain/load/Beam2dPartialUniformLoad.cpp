@@ -91,7 +91,7 @@ Beam2dPartialUniformLoad::recvSelf(int commitTag, Channel &theChannel,  FEM_Obje
 {
   int dbTag = this->getDbTag();
 
-  static Vector vectData(4);
+  static Vector vectData(6);
 
   int result = theChannel.recvVector(dbTag, commitTag, vectData);
   if (result < 0) {
