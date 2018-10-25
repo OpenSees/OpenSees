@@ -1098,6 +1098,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/load/Beam3dThermalAction.o \
 	$(FE)/domain/load/ShellThermalAction.o \
 	$(FE)/domain/load/Beam3dUniformLoad.o \
+	$(FE)/domain/load/Beam3dPartialUniformLoad.o \
 	$(FE)/domain/load/Beam3dPointLoad.o \
 	$(FE)/domain/load/BrickSelfWeight.o \
 	$(FE)/domain/load/SurfaceLoader.o \
