@@ -1284,6 +1284,15 @@ static int Tcl_ops_randomVariable(ClientData clientData, Tcl_Interp *interp, int
     return TCL_OK;
 }
 
+static int Tcl_ops_updateMaterialStage(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_updateMaterialStage() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 //////////////////////////////////////////////
 ////////////// Add Tcl commands //////////////
 //////////////////////////////////////////////
@@ -1438,4 +1447,5 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"sensSectionForce", &Tcl_ops_sensSectionForce);
     addCommand(interp,"sensNodePressure", &Tcl_ops_sensNodePressure);
     addCommand(interp,"randomVariable", &Tcl_ops_randomVariable);
+    addCommand(interp,"updateMaterialStage", &Tcl_ops_updateMaterialStage);
 }
