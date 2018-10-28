@@ -31,7 +31,7 @@
 #	$ termux-chroot
 # 3. alter the legacy identifer <bcmp> to <memcmp> in all the files including <string.h>
 #	Use clang to compile c++ and c codes and use gfortran-7 to compile fortran codes.
-#	The files using <bcmp> are in under the folder /src/actor/channel, search all of them and switch to <memcmp>
+#	The files using <bcmp> are under the folder /src/actor/channel, search all of them and switch to <memcmp>
 # The following steps are similar with Linux 
 #  apt-get update 
 #  apt-get install git
