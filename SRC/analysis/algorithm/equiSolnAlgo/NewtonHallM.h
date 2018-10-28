@@ -33,7 +33,7 @@
 
 // Description: This file contains the class definition for 
 // NewtonHallM. NewtonHallM is a class which performs a modified Newton-Raphson-Hall
-// solution algorihm in solving the equations
+// solution algorithm in solving the equations
 // 
 // What: "@(#)NewtonHallM.h, revA"
 

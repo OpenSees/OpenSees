@@ -324,7 +324,7 @@ int WilsonTheta::update(const Vector &deltaU)
     
     // check deltaU is of correct size
     if (deltaU.Size() != U->Size())  {
-        opserr << "WARNING WilsonTheta::update() - Vectors of incompatable size ";
+        opserr << "WARNING WilsonTheta::update() - Vectors of incompatible size ";
         opserr << " expecting " << U->Size() << " obtained " << deltaU.Size() << endln;
         return -3;
     }
