@@ -45,7 +45,7 @@
 #  mkdir lib
 #  mkdir bin
 #  cd OpenSees
-#  cp ./MAKES/Makefile.def.termux ./Makefile.def   (NOTE: open file and make sure INTERPRETER_LANGUAGE set to PYTHON, line 62)
+#  cp ./MAKES/Makefile.def.ANDROID-TERMUX ./Makefile.def   (NOTE: open file and make sure INTERPRETER_LANGUAGE set to PYTHON, line 62)
 #  make
 #  cd SRC/interpreter
 #  make                       (NOTE: if you check you should find opensees.so in the ~bin directory and an OpenSees.exe cmpiled with -fPIC which is slow)
