@@ -291,6 +291,20 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
     return result;
 }
 
+int* OPS_GetNumEigen()                                                          
+{                                                                               
+    static int numEigen = 0;                                                    
+    if (cmds == 0) return 0;                                                    
+    numEigen = cmds->getNumEigen();                                             
+    int numdata = 1;                                                            
+    if (OPS_SetIntOutput(&numdata, &numEigen) < 0) {                            
+        opserr << "WARNING failed to set output\n";                             
+        return 0;                                                               
+    }                                                                           
+                                                                                
+    return &numEigen;                                                           
+}
+
 void
 OpenSeesCommands::setNumberer(DOF_Numberer* numberer)
 {
