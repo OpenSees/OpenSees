@@ -75,7 +75,7 @@ extern "C" {
   typedef int socklen_type;
   #define bzero(s,n) memset((s),0,(n))
   #define bcopy(s,d,len) memcpy((d),(s),(len))
-  #define bcmp(s1,s2,n) memcmp((s1),(s2),(n))
+  #define memcmp(s1,s2,n) memcmp((s1),(s2),(n))
 #else
   typedef int socket_type;
   typedef socklen_t socklen_type;
