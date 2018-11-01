@@ -135,7 +135,7 @@ NewtonLineSearch::solveCurrentStep(void)
 	//line search direction 
 	const Vector &dx0 = theSOE->getX() ;
 
-	//intial value of s
+	//initial value of s
 	double s0 = - (dx0 ^ Resid0) ; 
 
 	if (theIntegrator->update(theSOE->getX()) < 0) {
@@ -177,7 +177,7 @@ NewtonLineSearch::solveCurrentStep(void)
       return -3;
     }
 
-    // note - if postive result we are returning what the convergence test returned
+    // note - if positive result we are returning what the convergence test returned
     // which should be the number of iterations
     return result;
 }

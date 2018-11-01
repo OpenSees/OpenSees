@@ -105,7 +105,7 @@ SecantLineSearch::search(double s0,
   //                                     ------------------------
   //                                           s(j-1) - s(j)
 
-  int count = 0; //intial value of iteration counter 
+  int count = 0; //initial value of iteration counter 
   while ( r > tolerance  &&  count < maxIter ) {
     
     count++;

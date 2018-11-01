@@ -58,7 +58,7 @@ class EigenAlgorithm : public SolutionAlgorithm
 		   EigenIntegrator &theIntegrator,
 		   EigenSOE &theSOE);
      
-     // pure virtural functions
+     // pure virtual functions
      virtual int solveCurrentStep(int numModes) = 0;
      virtual void Print(OPS_Stream &s, int flag=0) = 0;
      
