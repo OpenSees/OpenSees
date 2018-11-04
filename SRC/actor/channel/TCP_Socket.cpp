@@ -300,7 +300,7 @@ TCP_Socket::setNextAddress(const ChannelAddress &theAddress)
     if (theAddress.getType() == SOCKET_TYPE) {
         theSocketAddress = (SocketAddress *)(&theAddress);    
         // check address is the only address a TCP_socket can send to
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_Socket::setNextAddress() - a TCP_Socket ";
@@ -335,7 +335,7 @@ TCP_Socket::sendObj(int commitTag,
             return -1;	    
         }		    
 
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_Socket::sendObj() - a TCP_Socket ";
@@ -365,7 +365,7 @@ TCP_Socket::recvObj(int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		    
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_Socket::recvObj() - a TCP_Socket ";
@@ -395,7 +395,7 @@ TCP_Socket::recvMsg(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		    
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_Socket::recvMsg() - a TCP_Socket ";
@@ -438,7 +438,7 @@ TCP_Socket::recvMsgUnknownSize(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;
         }		    
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_Socket::recvMsgUnknownSize() - a TCP_Socket ";
@@ -490,7 +490,7 @@ TCP_Socket::sendMsg(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		    
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_Socket::sendMsg() - a TCP_Socket ";
@@ -532,7 +532,7 @@ TCP_Socket::recvMatrix(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		    
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_Socket::recvMatrix() - a TCP_Socket ";
@@ -583,7 +583,7 @@ TCP_Socket::sendMatrix(int dbTag, int commitTag,
             return -1;	    
         }		        SocketAddress *theSocketAddress = 0;
 
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_Socket::sendMatrix() - a TCP_Socket ";
@@ -638,7 +638,7 @@ TCP_Socket::recvVector(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_Socket::recvVector() - a TCP_Socket ";
@@ -688,7 +688,7 @@ TCP_Socket::sendVector(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_Socket::sendVector() - a TCP_Socket ";
@@ -743,7 +743,7 @@ TCP_Socket::recvID(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_Socket::recvID() - a TCP_Socket ";
@@ -793,7 +793,7 @@ TCP_Socket::sendID(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_Socket::sendID() - a TCP_Socket ";

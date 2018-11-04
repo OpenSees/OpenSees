@@ -27,8 +27,8 @@
 // Revision: A
 //
 // Description: This file contains the class definition for DistributedDisplacementControl.
-// DistributedDisplacementControl is an algorithmic class for perfroming a static analysis
-// using the arc length scheme, that is within a load step the follwing
+// DistributedDisplacementControl is an algorithmic class for performing a static analysis
+// using the arc length scheme, that is within a load step the following
 // constraint is enforced: 
 //  i=1        delta U^T delta U + alpha^2 delta lambda^2 = delta s^2
 //  i>1        dU^T delta U + alpha^2 dLambda delta lambda = 0
@@ -80,7 +80,7 @@ class DistributedDisplacementControl : public StaticIntegrator
     int theNode;          // the node that is being followed
     int theDof;           // the dof at the node being followed
     double theIncrement;  // deltaU at step (i)
-    int theDofID;         // the syste level id of the dof being followed
+    int theDofID;         // the system level id of the dof being followed
     bool allHaveDofID;
     
     Vector *deltaUhat, *deltaUbar, *deltaU, *deltaUstep;

@@ -445,7 +445,7 @@ StaticDomainDecompositionAnalysis::domainChanged(void)
     return -5;
   }	        
 
-  // if get here successfull
+  // if get here successful
   return 0;
 }    
 
