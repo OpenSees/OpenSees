@@ -159,8 +159,8 @@ GmshRecorder::GmshRecorder(const char *name, const NodeData& ndata,
       timestep(), timeparts(), theFile(), nodedata(ndata), eledata(edata), theDomain(NULL), current_step(0),
       write_graph_mesh(write_graph_mesh_), write_update_time(write_update_time_)
 {
-    DEBUGSTREAM << "edata.size() = " << edata.size() << endln;
-    DEBUGSTREAM << "eledata.size() = " << eledata.size() << endln;
+    DEBUGSTREAM << "edata.size() = " << (int)edata.size() << endln;
+    DEBUGSTREAM << "eledata.size() = " << (int)eledata.size() << endln;
 }
 
 GmshRecorder::GmshRecorder()
@@ -286,7 +286,7 @@ int
 GmshRecorder::write_mesh()
 {
 
-    if(not write_mesh_now)
+    if(!write_mesh_now)
     {
         return 0;
     }
@@ -439,7 +439,7 @@ GmshRecorder::write_node_data()
     if(nodedata.unbalanced) viewname = std::string("\"Unbalanced Forces\"");
     if(nodedata.mass) viewname = std::string("\"Mass\"");
 
-    if(not theFile.is_open())
+    if(!theFile.is_open())
     {
         std::stringstream ss;
     
@@ -684,7 +684,7 @@ GmshRecorder::write_element_data()
 
     DEBUGSTREAM << "mshname = " << mshname.c_str() << endln;
 
-    if(not theFile.is_open())
+    if(!theFile.is_open())
     {
         if(write_binary_mode)
         {

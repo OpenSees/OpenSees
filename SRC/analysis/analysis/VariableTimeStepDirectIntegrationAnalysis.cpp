@@ -140,8 +140,8 @@ VariableTimeStepDirectIntegrationAnalysis::analyze(int numSteps, double dT, doub
 	result = -4;
     }
 
-    // if the time step was successfull increment delta T for the analysis
-    // othewise revert the Domain to last committed state & see if can go on
+    // if the time step was successful increment delta T for the analysis
+    // otherwise revert the Domain to last committed state & see if can go on
 
     if (result >= 0) 
       currentTimeIncr += currentDt;

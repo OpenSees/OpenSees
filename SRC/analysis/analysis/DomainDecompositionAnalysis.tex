@@ -7,7 +7,7 @@ UNDER CONSTRUCTION
 \indent \#include $<\tilde{
 }$/analysis/analysis/DomainDecompositionAnalysis.h$>$  \\ 
 
-\noindent {\bf Class Decleration}  \\
+\noindent {\bf Class Declaration}  \\
 \indent class DomainDecompositionAnalysis: public Analysis, public MovableObject;  \\
 
 \noindent {\bf Class Hierarchy} \\
@@ -40,7 +40,7 @@ update()} method which is invoked to set up the appropriate dof
 response values once the solution algorithm has formed and solved the
 system of equations.
 \item {\bf DomainDecompositionAlgo} - an algorithmic class specifying the
-sequence of operations to be performed in determing the response
+sequence of operations to be performed in determining the response
 for the external dof and placing these in the system of equations.
 \item {\bf DomainSolver} - an algorithmic class specifying the
 sequence of operations to be performed in performing the numerical 
@@ -159,7 +159,7 @@ that the residual could be determined. If this is not the case {\em
 formTangent()} is invoked on {\em theIntegrator}, {\em condenseA()} is
 invoked on {\em theSolver} object, a flag is set to indicate that the
 tangent has been formed, and the {\em counter} is incremented. Returns
-a $0$ if successfull, if either the {\em formTangent()} or {\em
+a $0$ if successful, if either the {\em formTangent()} or {\em
 condenseA()} method returns a negative number this number is
 returned. \\  
 

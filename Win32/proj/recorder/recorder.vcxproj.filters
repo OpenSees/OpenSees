@@ -89,6 +89,9 @@
     <ClCompile Include="..\..\..\SRC\recorder\MPCORecorder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\recorder\GmshRecorder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\recorder\AlgorithmIncrements.h">
@@ -161,6 +164,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\recorder\MPCORecorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\recorder\GmshRecorder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -310,7 +310,7 @@ ParallelNumberer::numberDOF(int lastDOF)
 
 
   // iterate through the DOFs one last time setting any -4 values
-  // iterate throgh  the DOFs second time setting -3 values
+  // iterate through  the DOFs second time setting -3 values
   AnalysisModel *theAModel = this->getAnalysisModelPtr();
   DOF_GrpIter &tDOFs = theAModel->getDOFs();
 
