@@ -30,7 +30,7 @@
 // to define the UDP_Socket class interface.
 
 #include "UDP_Socket.h"
-#include <strings.h>
+#include <string.h>
 #include <Matrix.h>
 #include <Vector.h>
 #include <ID.h>
