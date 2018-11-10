@@ -81,6 +81,7 @@
 #include <WideFlangeSectionIntegration.h>
 #include <RCSectionIntegration.h>
 #include <RCTBeamSectionIntegration.h>
+#include <RCCircularSectionIntegration.h>
 //#include <RCTBeamSectionIntegrationUniMat.h>
 #include <TubeSectionIntegration.h>
 
@@ -806,6 +807,120 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	delete [] theMats;
     }
 
+    else if (strcmp(argv[1],"RCCircularSection") == 0) {
+        if (argc < 13) {
+            opserr << "WARNING insufficient arguments\n";
+            opserr << "Want: section RCCircularSection tag? coreTag? coverTag? steelTag? d? cover? As? NringsCore? NringsCover Nwedges? Nsteel?" << endln;
+            return TCL_ERROR;
+        }
+        
+        int tag, coreTag, coverTag, steelTag;
+        double d, cover, As;
+        int ncore, ncover, nwedge, nsteel;
+
+        if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+            opserr << "WARNING invalid section RCCircularSection tag" << endln;
+            return TCL_ERROR;           
+        }
+
+        if (Tcl_GetInt(interp, argv[3], &coreTag) != TCL_OK) {
+            opserr << "WARNING invalid section RCCircularSection coreTag" << endln;
+            return TCL_ERROR;           
+        }
+
+        if (Tcl_GetInt(interp, argv[4], &coverTag) != TCL_OK) {
+            opserr << "WARNING invalid section RCCircularSection coverTag" << endln;
+            return TCL_ERROR;           
+        }
+
+        if (Tcl_GetInt(interp, argv[5], &steelTag) != TCL_OK) {
+            opserr << "WARNING invalid section RCCircularSection steelTag" << endln;
+            return TCL_ERROR;           
+        }
+
+        if (Tcl_GetDouble (interp, argv[6], &d) != TCL_OK) {
+            opserr << "WARNING invalid d" << endln;
+            opserr << "RCCircularSection section: " << tag << endln;        
+            return TCL_ERROR;
+        }       
+
+	       if (Tcl_GetDouble (interp, argv[7], &cover) != TCL_OK) {
+            opserr << "WARNING invalid cover" << endln;
+            opserr << "RCCircularSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }       
+
+        if (Tcl_GetDouble (interp, argv[8], &As) != TCL_OK) {
+            opserr << "WARNING invalid As" << endln;
+            opserr << "RCCircularSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }       
+
+        if (Tcl_GetInt (interp, argv[9], &ncore) != TCL_OK) {
+            opserr << "WARNING invalid Ncore" << endln;
+            opserr << "RCCircularSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }
+
+        if (Tcl_GetInt (interp, argv[10], &ncover) != TCL_OK) {
+            opserr << "WARNING invalid ncover" << endln;
+            opserr << "RCCircularSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }       
+
+        if (Tcl_GetInt (interp, argv[11], &nwedge) != TCL_OK) {
+            opserr << "WARNING invalid nwedge" << endln;
+            opserr << "RCCircularSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }       
+
+        if (Tcl_GetInt (interp, argv[12], &nsteel) != TCL_OK) {
+            opserr << "WARNING invalid nsteel" << endln;
+            opserr << "RCCircularSection section: " << tag << endln;                
+            return TCL_ERROR;
+        }       
+
+        UniaxialMaterial *theCore = OPS_getUniaxialMaterial(coreTag);
+        
+        if (theCore == 0) {
+            opserr << "WARNING uniaxial material does not exist\n";
+            opserr << "material: " << coreTag; 
+            opserr << "\nRCCircularSection section: " << tag << endln;
+            return TCL_ERROR;
+        }
+        
+        UniaxialMaterial *theCover = OPS_getUniaxialMaterial(coverTag);
+        
+        if (theCover == 0) {
+            opserr << "WARNING uniaxial material does not exist\4n";
+            opserr << "material: " << coverTag; 
+            opserr << "\nRCCircularSection section: " << tag << endln;
+            return TCL_ERROR;
+        }
+        
+        UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
+
+        if (theSteel == 0) {
+            opserr << "WARNING uniaxial material does not exist\n";
+            opserr << "material: " << steelTag; 
+            opserr << "\nRCCircularSection section: " << tag << endln;
+            return TCL_ERROR;
+        }
+        
+        RCCircularSectionIntegration rcsect(d, As, cover, ncore, ncover, nwedge, nsteel);
+
+        int numFibers = rcsect.getNumFibers();
+
+        UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+
+        rcsect.arrangeFibers(theMats, theCore, theCover, theSteel);
+
+        // Parsing was successful, allocate the section
+        theSection = new FiberSection3d(tag, numFibers, theMats, rcsect);
+
+        delete [] theMats;
+    }
+	
     else if (strcmp(argv[1],"RCTBeamSection2d") == 0 || strcmp(argv[1],"RCTBeamSectionUniMat2d") == 0) {
       if (argc < 20) {
 	opserr << "WARNING insufficient arguments\n";
