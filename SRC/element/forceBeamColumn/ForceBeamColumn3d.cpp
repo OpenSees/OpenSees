@@ -223,9 +223,11 @@ ForceBeamColumn3d::ForceBeamColumn3d (int tag, int nodeI, int nodeJ,
   kv(NEBD,NEBD), Se(NEBD), 
   kvcommit(NEBD,NEBD), Secommit(NEBD),
   fs(0), vs(0),Ssr(0), vscommit(0),
-  numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0), 
+  numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0), load(12),
   Ki(0), isTorsion(false), parameterID(0)
 {
+  load.Zero();
+  
   theNodes[0] = 0;
   theNodes[1] = 0;
 
@@ -1244,6 +1246,8 @@ void
   void 
   ForceBeamColumn3d::zeroLoad(void)
   {
+    load.Zero();
+    
     // This is a semi-hack -- MHS
     numEleLoads = 0;
     
