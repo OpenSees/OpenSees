@@ -2432,7 +2432,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	  else if ((strcmp(argv[count],"-numSubSteps") == 0) ) {
 	    count++;
 	    if (count < argc)
-	      if (Tcl_GetInt(interp, argv[count], &numSubLevels) != TCL_OK)
+	      if (Tcl_GetInt(interp, argv[count], &numSubSteps) != TCL_OK)
 		return TCL_ERROR;		     
 	  }
 	  count++;

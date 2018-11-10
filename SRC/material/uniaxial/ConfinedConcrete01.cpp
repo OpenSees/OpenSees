@@ -121,6 +121,7 @@ ConfinedConcrete01::ConfinedConcrete01(int tag, int secType, int dim, std::vecto
    Cstrain(0.0), Cstress(0.0) 
 {
   int ii;
+  /*
   opserr << tag << " " <<  secType << " " << dim << " " << rhos << " " << fpc << " " << stRatio << " " << Ec << endln;
   opserr << epscuOption << " " <<  epscu << " " << epscuLimit << " " << nuOption << " " << nuc << " " << phiLon << " " ;
   opserr << concrType << " " << aggrType << " " << tol << " " << maxNumIter << endln;
@@ -134,9 +135,7 @@ ConfinedConcrete01::ConfinedConcrete01(int tag, int secType, int dim, std::vecto
   opserr << "7: "; for(ii=0; ii < mueps.size(); ii++) opserr << mueps[ii] << " ";  opserr << endln;
   opserr << "8: "; for(ii=0; ii < As.size(); ii++) opserr << As[ii] << " ";  opserr << endln;
   opserr << "9: "; for(ii=0; ii < Is.size(); ii++) opserr << Is[ii] << " ";  opserr << endln;
-
-
-
+  */
   
   double epsc, epsic, fic, ft, fpl, alpha, Eti;
   double fc = fpc * stRatio;
