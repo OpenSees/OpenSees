@@ -35,7 +35,7 @@
 // is actually described in an earlier paper by Bathe, as well as the basis 
 // for TRBDF3 used here:
 // ref: K.J.Bathe and M.M.I. Baige, "On a composite implicit time integration procedure
-//      for nonlinear dynamics", Computers ans Structures 83(2005),2513-2524
+//      for nonlinear dynamics", Computers and Structures 83(2005),2513-2524
 //
 // But here we further subdivide the step into a total of 3 sub-steps with the first being
 // trapezoid rule, second three point backward Euler, and third is Houbolt (although 

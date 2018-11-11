@@ -96,7 +96,7 @@ PlainHandler::handle(const ID *nodesLast)
 	allSPs.insert(std::make_pair(theSP->getNodeTag(),theSP));
     }
 
-    // initialse the DOF_Groups and add them to the AnalysisModel.
+    // initialise the DOF_Groups and add them to the AnalysisModel.
     //    : must of course set the initial IDs
     NodeIter &theNod = theDomain->getNodes();
     Node *nodPtr;

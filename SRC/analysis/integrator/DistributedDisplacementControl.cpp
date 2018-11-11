@@ -27,8 +27,8 @@
 // Created: 07/98
 //
 // Description: This file contains the class definition for DistributedDisplacementControl.
-// DistributedDisplacementControl is an algorithmic class for perfroming a static analysis
-// using the arc length scheme, that is within a load step the follwing
+// DistributedDisplacementControl is an algorithmic class for performing a static analysis
+// using the arc length scheme, that is within a load step the following
 // constraint is enforced: dU^TdU + alpha^2*dLambda^2 = DistributedDisplacementControl^2
 // where dU is change in nodal displacements for step, dLambda is
 // change in applied load and DistributedDisplacementControl is a control parameter.

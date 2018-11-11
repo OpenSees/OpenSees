@@ -75,7 +75,7 @@ InitialInterpolatedLineSearch::search(double s0,
 {
   double s = s1;
 
-  //intialize r = ratio of residuals 
+  //initialize r = ratio of residuals 
   double r0 = 0.0;
 
   if ( s0 != 0.0 ) 
@@ -90,7 +90,7 @@ InitialInterpolatedLineSearch::search(double s0,
 
   const Vector &dU = theSOE.getX();
 
-  int count = 0; //intial value of iteration counter 
+  int count = 0; //initial value of iteration counter 
 
   if (printFlag == 0) {
     opserr << "InitialInterpolated Line Search - initial       "

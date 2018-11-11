@@ -56,6 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Brick.h>
 #include <BbarBrick.h>
 #include <ShellMITC4.h>
+#include <FourNodeTetrahedron.h>
 
 // no 'beamWithHinges', 'GenericClient', 'GenericCopy', 'flBrick', 'Adapter'
 
@@ -117,9 +118,10 @@ void* OPS_AV3D4QuadWithSensitivity();
 void* OPS_ElastomericBearingBoucWenMod3d();
 void* OPS_VS3D4WuadWithSensitivity();
 void* OPS_PFEMElement2DBubble(const ID& info);
+void* OPS_PFEMElement3DBubble(const ID& info);
 //void* OPS_TaylorHood2D();
 void* OPS_PFEMElement2DCompressible(const ID& info);
-void* OPS_PFEMElement2DQuasi();
+void* OPS_PFEMElement2Dmini(const ID& info);
 void* OPS_fElmt02();
 void* OPS_ElasticBeam2d(const ID& info);
 void* OPS_ElasticBeam3d();
@@ -182,6 +184,7 @@ void* OPS_MultipleShearSpring();
 void* OPS_MultipleNormalSpring();
 void* OPS_KikuchiBearing();
 void* OPS_YamamotoBiaxialHDR();
+void* OPS_FourNodeTetrahedron();
 
 namespace {
 
@@ -343,9 +346,20 @@ namespace {
     static void* OPS_PFEMElementBubble()
     {
 	int ndm = OPS_GetNDM();
+	ID info;
+	if(ndm == 2) {
+	    return OPS_PFEMElement2DBubble(info);
+	} else {
+	    return OPS_PFEMElement3DBubble(info);;
+	}
+    }
+
+    static void* OPS_PFEMElementmini()
+    {
+	int ndm = OPS_GetNDM();
 	if(ndm == 2) {
 	    ID info;
-	    return OPS_PFEMElement2DBubble(info);
+	    return OPS_PFEMElement2Dmini(info);
 	} else {
 	    return 0;
 	}
@@ -426,6 +440,7 @@ namespace {
 	functionMap.insert(std::make_pair("fTruss", &OPS_fElmt02));
 	functionMap.insert(std::make_pair("PFEMElementCompressible", &OPS_PFEMElementCompressible));
 	functionMap.insert(std::make_pair("PFEMElementBubble", &OPS_PFEMElementBubble));
+	functionMap.insert(std::make_pair("MINI", &OPS_PFEMElementmini));
 	//functionMap.insert(std::make_pair("TaylorHood2D", &OPS_TaylorHood2D));
 	functionMap.insert(std::make_pair("VS3D4", &OPS_VS3D4WuadWithSensitivity));
 	functionMap.insert(std::make_pair("elastomericBearingBoucWenMod", &OPS_ElastomericBearingBoucWenMod3d));
@@ -522,6 +537,7 @@ namespace {
 	functionMap.insert(std::make_pair("zeroLength", &OPS_ZeroLength));
 	functionMap.insert(std::make_pair("zeroLengthSection", &OPS_ZeroLengthSection));
 	functionMap.insert(std::make_pair("zeroLengthND", &OPS_ZeroLengthND));
+	functionMap.insert(std::make_pair("FourNodeTetrahedron", &OPS_FourNodeTetrahedron));
 
 	return 0;
     }

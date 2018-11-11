@@ -30,8 +30,8 @@
 // Revision: A
 //
 // Description: This file contains the class definition for ArcLength1.
-// ArcLength1 is an algorithmic class for perfroming a static analysis
-// using the arc length scheme, that is within a load step the follwing
+// ArcLength1 is an algorithmic class for performing a static analysis
+// using the arc length scheme, that is within a load step the following
 // constraint is enforced: dU^TdU + alpha^2*dLambda^2 = ArcLength1^2
 // where dU is change in nodal displacements for step, dLambda is
 // change in applied load and ArcLength1 is a control parameter.
@@ -59,7 +59,7 @@ void* OPS_ArcLength1()
 
     int numdata = 1;
     if (OPS_GetDoubleInput(&numdata, &arcLength) < 0) {
-	opserr << "WARNING integrator ArcLength failed to read arc lenght\n";
+	opserr << "WARNING integrator ArcLength failed to read arc length\n";
 	return 0;
     }
     if (OPS_GetDoubleInput(&numdata, &alpha) < 0) {

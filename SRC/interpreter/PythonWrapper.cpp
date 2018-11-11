@@ -1388,6 +1388,87 @@ static PyObject *Py_ops_frictionModel(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_computeGradients(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_computeGradients() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_sensitivityAlgorithm(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_sensitivityAlgorithm() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_sensNodeDisp(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_sensNodeDisp() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_sensNodeVel(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_sensNodeVel() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_sensNodeAccel(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_sensNodeAccel() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_sensLambda(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_sensLambda() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_sensSectionForce(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_sensSectionForce() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_sensNodePressure(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_sensNodePressure() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_randomVariable(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_randomVariable() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
 /////////////////////////////////////////////////
 ////////////// Add Python commands //////////////
 /////////////////////////////////////////////////
@@ -1533,6 +1614,15 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("send", &Py_ops_send);
     addCommand("recv", &Py_ops_recv);
     addCommand("frictionModel", &Py_ops_frictionModel);
+    addCommand("computeGradients", &Py_ops_computeGradients);
+    addCommand("sensitivityAlgorithm", &Py_ops_sensitivityAlgorithm);
+    addCommand("sensNodeDisp", &Py_ops_sensNodeDisp);
+    addCommand("sensNodeVel", &Py_ops_sensNodeVel);
+    addCommand("sensNodeAccel", &Py_ops_sensNodeAccel);
+    addCommand("sensLambda", &Py_ops_sensLambda);
+    addCommand("sensSectionForce", &Py_ops_sensSectionForce);
+    addCommand("sensNodePressure", &Py_ops_sensNodePressure);
+    addCommand("randomVariable", &Py_ops_randomVariable);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);

@@ -13,47 +13,51 @@
 #
 ############################################################################
 
-#
-# https://help.ubuntu.com/community/EC2StartersGuide
-
-## ssh to machine from your own:
-#
-# chmod 'go+rwx' XXX.pem
-# ssh -i XXX.pem ubuntu@YYY.amazonaws.com
-#
-
-# Instructuction for building OpenSees on Ubuntu
-# using amazon EC-2 instance ami-d0f89fb9 (running Ubunto 12.04) once logged in
-
-# sudo in and type the following:
-# sudo apt-get update 
-
-# sudo apt-get install subversion
-# svn co svn://peera.berkeley.edu/usr/local/svn/OpenSees/trunk OpenSees
-# sudo apt-get install emacs
-# sudo apt-get install make
-# sudo apt-get install tcl8.6
-# sudo apt-get install tcl8.6-dev
-# sudo apt-get install gcc
-# sudo apt-get install g++
-# sudo apt-get install gfortran
-# sudo apt-get install python3-dev
-# mkdir lib
-# mkdir bin
-# cd OpenSees
-# cp ./MAKES/Makefile.def.EC2-UBUNTU ./Makefile.def   (NOTE: open file and maje sure INTERPRETER_LANGUAGE set to PYTHON, line 62)
-# make
-# cd SRC/interpreter
-# make                       (NOTE: if you check you should find opensees.so in the ~bin directory and an OpenSees.exe cmpiled with -fPIC which is slow)
-# cd ../..
-# edit Makefile.def, comment out INTERPRETER_LANGUAGE=PYTHON (LINE 62) and UNCOMMENT INTERPRTETER_LNAGUAGE=TCL (LINE 63)
-# make wipe
-# make                       (NOTE: new OpenSees.exe compiled with optimization flags)
-
+# Updated by Pu Jiao <jiaopu94@hotmail.com>
+# I made some modifications to make sure the code can be compiled 
+# On termux, 3 things you have to do before compiling OpenSees on Android Termux
+# 1. gfortran for termux: https://github.com/its-pointless/gcc_termu:
+#	add 
+#	deb https://its-pointless.github.io/files/  termux extras
+#	to sources.list or add a file with .list suffix in $PREFIX/etc/apt/sources.list.d/
+#	gpg key is https://its-pointless.github.io/pointless.gpg
+#	if not installed install gnupg
+#	apt-get install gnupg
+#	apt-key add pointless.gpg will add the key to apt
+#	apt-get update
+#	or use https://its-pointless.github.io/setup-pointless-repo.sh
+# 2. linux like directory for termux: https://wiki.termux.com/wiki/Differences_from_Linux
+#	$ pkg install proot
+#	$ termux-chroot
+# 3. alter the legacy identifer <bcmp> to <memcmp> in all the files including <string.h>
+#	Use clang to compile c++ and c codes and use gfortran-7 to compile fortran codes.
+#	The files using <bcmp> are under the folder /src/actor/channel, search all of them and switch to <memcmp>
+# The following steps are similar with Linux 
+#  apt-get update 
+#  apt-get install git
+#  git clone https://github.com/OpenSees/OpenSees.git
+#  apt-get install emacs
+#  apt-get install make
+#  apt-get install tcl
+#  apt-get install tcl-dev
+#  apt-get install clang
+#  apt-get install python
+#  mkdir lib
+#  mkdir bin
+#  cd OpenSees
+#  cp ./MAKES/Makefile.def.ANDROID-TERMUX ./Makefile.def   (NOTE: open file and make sure INTERPRETER_LANGUAGE set to PYTHON, line 62)
+#  make
+#  cd SRC/interpreter
+#  make                       (NOTE: if you check you should find opensees.so in the ~bin directory and an OpenSees.exe cmpiled with -fPIC which is slow)
+#  cd ../..
+#  edit Makefile.def, comment out INTERPRETER_LANGUAGE=PYTHON (LINE 62) and UNCOMMENT INTERPRTETER_LNAGUAGE=TCL (LINE 63)
+#  make wipe
+#  make                       (NOTE: new OpenSees.exe compiled with optimization flags)
+  
 
 # NOTE: if 64 bit the TCL dir is placed elsewhere; make will fail
 # you need to uncomment out the correct line below TL_LIBS = 
-# TCL_LIBS should point to the following: /usr/lib/x86_64-linux/gnu/libtcl8.6.so
+#TCL_LIBS should point to the following: /usr/lib/x86_64-linux/gnu/libtcl8.6.so
 
 # you can always find it using the find command:
 # find / -name libtcl8.6.so 2>/dev/null
@@ -86,9 +90,9 @@ RELIABILITY = NO_RELIABILITY
 # Note: if vendor supplied BLAS and LAPACK libraries or if you have
 # any of the libraries already leave the directory location blank AND
 # remove the directory from DIRS.
-
-BASE		= ./usr/local
-HOME		= ./home
+# JP update different from Ubuntu Linux. Use proot termux-chroot to make the dir like Linux
+BASE		= /usr
+HOME		= /home
 FE		= $(HOME)/OpenSees/SRC
 
 AMDdir       = $(HOME)/OpenSees/OTHER/AMD
@@ -135,8 +139,8 @@ UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY   = $(HOME)/lib/libMetis.a
 CSPARSE_LIBRARY   = $(HOME)/lib/libCSparse.a
 
-TCL_LIBRARY = /usr/lib/x86_64-linux-gnu/libtcl8.6.so
-
+TCL_LIBRARY = /usr/lib/libtcl8.6.so
+# JP update different from Ubuntu Linux
 BLITZ_LIBRARY = $(HOME)/blitz/lib/libblitz.a
 GRAPHIC_LIBRARY     = 
 
@@ -162,7 +166,7 @@ WIPE_LIBS	= $(FE_LIBRARY) \
 # Compilers
 CC++	= /usr/bin/g++
 CC      = /usr/bin/gcc
-FC	= /usr/bin/gfortran
+FC	= /usr/bin/gfortran-7
 
 AR		= ar 
 ARFLAGS		= cqls
@@ -289,7 +293,7 @@ include $(FE)/Makefile.incl
 
 #TCL_INCLUDES = -I/usr/includes/tcl-private/generic
 TCL_INCLUDES = -I/usr/include/tcl8.6
-PYTHON_INCLUDES = -I/usr/include/python3.5
+PYTHON_INCLUDES = -I/usr/include/python3.7
 
 INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES) $(PYTHON_INCLUDES)
 

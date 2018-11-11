@@ -31,7 +31,7 @@
 //
 // Description: This file contains the method definitions for class 
 // SimpleFE_Iter. SimpleFE_Iter is a class for iterating through the 
-// elements of an analysis mdoel. 
+// elements of an analysis model. 
 
 
 #include <AnalysisModel.h>
