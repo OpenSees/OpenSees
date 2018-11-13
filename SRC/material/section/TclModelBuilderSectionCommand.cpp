@@ -2311,7 +2311,7 @@ TclCommand_addPatch(ClientData clientData, Tcl_Interp *interp, int argc,
       QuadPatch *patch = new QuadPatch(matTag, numSubdivIJ, numSubdivJK, vertexCoords);
       if (!patch)
       {
-         opserr <<  "WARNING cannot alocate patch\n";
+         opserr <<  "WARNING cannot allocate patch\n";
          return TCL_ERROR;
       }
 
@@ -2402,7 +2402,7 @@ TclCommand_addPatch(ClientData clientData, Tcl_Interp *interp, int argc,
       QuadPatch *patch = new QuadPatch(matTag, numSubdivIJ, numSubdivJK, vertexCoords);
       if (!patch)
       {
-         opserr <<  "WARNING cannot alocate patch\n";
+         opserr <<  "WARNING cannot allocate patch\n";
          return TCL_ERROR;
       }
 
@@ -2531,7 +2531,7 @@ TclCommand_addPatch(ClientData clientData, Tcl_Interp *interp, int argc,
                                        startAng, endAng);
       if (!patch)
       {
-         opserr <<  "WARNING cannot alocate patch\n";
+         opserr <<  "WARNING cannot allocate patch\n";
          return TCL_ERROR;
       }
 
@@ -2920,7 +2920,7 @@ TclCommand_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int argc,
                                                    startPt, endPt);
       if (!reinfLayer)
       {
-         opserr <<  "WARNING cannot alocate reinfLayer\n";
+         opserr <<  "WARNING cannot allocate reinfLayer\n";
          return TCL_ERROR;
       }
       //opserr << "\nStraigthReinfLayer: " << *reinfLayer;
@@ -3051,7 +3051,7 @@ TclCommand_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int argc,
 
       if (!reinfLayer)
       {
-         opserr <<  "WARNING cannot alocate reinfLayer\n";
+         opserr <<  "WARNING cannot allocate reinfLayer\n";
          return TCL_ERROR;
       }
       //opserr << "\nCircReinfLayer: " << *reinfLayer;
@@ -3651,7 +3651,7 @@ TclCommand_addUCFiberSection (ClientData clientData, Tcl_Interp *interp, int arg
     }
 
     //
-    // now parse the ouput file containing the fiber data, 
+    // now parse the output file containing the fiber data, 
     // create fibers and add them to the section
     //
 

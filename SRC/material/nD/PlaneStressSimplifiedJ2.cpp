@@ -271,7 +271,7 @@ int PlaneStressSimplifiedJ2::setTrialStrainIncr(const Vector &v){
 
 		strain[0] = Cstrain[0]+v[0];
 		strain[1] = Cstrain[1]+v[1];
-		strain[2] = Cstrain[2]+v[2];     //  no need to devide by 2.0;
+		strain[2] = Cstrain[2]+v[2];     //  no need to divide by 2.0;
 	  
 	 this->plastIntegrator();
 
