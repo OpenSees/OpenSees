@@ -25,7 +25,7 @@
 // Created: 04/2011
 //
 // Description: This file contains the class implementation of Cast. 
-// This Cast is a material model tha descibes the Cast Fuse brace
+// This Cast is a material model that describes the Cast Fuse brace
 // Developed by Gray et al. (2010).
 // this model is based on:
 // 1. Modified Menegotto-Pinto Steel Model with Filippou Isotropic Hardening
@@ -290,7 +290,7 @@ double  epsmaxr = epsmaxrP;
     kon = 1;
 
 	// MG: This variable is used to evaluate if the strain is enough since the
-	// previous reveral to consider an increase in strain hardening
+	// previous reversal to consider an increase in strain hardening
 	double yieldcheck = (eps - epsr)/(epss0 - epsr);
 
     epsr = epsP;
@@ -305,7 +305,7 @@ double  epsmaxr = epsmaxrP;
 	// MG: This is redundant
     // epsmin = min(epsP, epsmin);
 
-	// MG: This stores the min strain that was used to calcualte the strain
+	// MG: This stores the min strain that was used to calculate the strain
 	// hardening before this load reversal.  In the case where there
 	// is a quick double back we won't consider strain hardening
 	// epsminr = epsmin;
@@ -338,7 +338,7 @@ double  epsmaxr = epsmaxrP;
     kon = 2;
 
 	// MG: This variable is used to evaluate if strain the strain is enough since the
-	// previous reveral to consider strain hardening
+	// previous reversal to consider strain hardening
 	double yieldcheck = (eps - epsr)/(epss0 - epsr);
 
     epsr = epsP;
@@ -355,7 +355,7 @@ double  epsmaxr = epsmaxrP;
 	// MG: This is redundant
     // epsmax = max(epsP, epsmax);
 
-	// MG: This stores the max strain that was used to calcualte the strain
+	// MG: This stores the max strain that was used to calculate the strain
 	// hardening before this load reversal.  In the case where there
 	// is a quick double back we won't consider strain hardening
 	// epsmaxr = epsmax;
@@ -391,7 +391,7 @@ double  epsmaxr = epsmaxrP;
   sig = sig*(sigs0-sigr);
  
   sig = sig+sigr;
-  // MG: This vaiable is used in the tangent calc when post-yield stiffening is considered	
+  // MG: This variable is used in the tangent calc when post-yield stiffening is considered	
   double sign = 1;
 
   if ((eps-epsr) < 0){
@@ -400,7 +400,7 @@ double  epsmaxr = epsmaxrP;
 	  sign = 1;
   }
   
-  // MG: Checks which quadrant we are in and then consideres post-yield stiffneing when appropriate
+  // MG: Checks which quadrant we are in and then considers post-yield stiffening when appropriate
   // this is not technically correct but it fixes the problem that occurs when there is a load
   // reversal in the elastic rebound
 

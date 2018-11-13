@@ -1918,7 +1918,7 @@ PM4Sand::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 			NextStress += (m_Pmin / 5.0 - p)  * mI1;
 		}
 		else {
-			// stress state ouside yield surface
+			// stress state outside yield surface
 			NextStress = m_Pmin / 5.0 * mI1;
 			NextStress(2) = 0.8 * m_Mc * m_Pmin / 5.0;
 			NextAlpha.Zero();
@@ -1997,7 +1997,7 @@ PM4Sand::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 				}
 			}
 
-			// // stress state ouside yield surface
+			// // stress state outside yield surface
 			// double CurDr = (m_emax - NextVoidRatio) / (m_emax - m_emin);
 			// Vector nStress = NextStress;
 			// Vector nAlpha = NextAlpha;

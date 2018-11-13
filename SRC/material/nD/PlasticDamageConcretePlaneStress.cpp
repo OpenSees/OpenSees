@@ -368,7 +368,7 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
        taun = taunt * lam;
        taup = taupt * lam;
 
-       //  update damage funciton
+       //  update damage function
        gp = taup - rp;
        gn = taun - rn;
        

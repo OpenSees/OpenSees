@@ -72,7 +72,7 @@ void* OPS_J2Plasticity()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 7) {
-	opserr << "WARNING: Insufficient arguements\n";
+	opserr << "WARNING: Insufficient arguments\n";
 	opserr << "Want: nDMaterial J2Plasticity tag? K? G? sig0? sigInf? delta? H? <eta?>\n";
 	return 0;
     }

@@ -182,7 +182,7 @@ int SimplifiedJ2::plastIntegrator(){
 // --- check elastic or plastic--
 	double yieldFunction = pow( (Teta &&  Teta),0.5)-pow(2./3,0.5)*CsigmaY;     // to replace Yn=(2/3)^.5*sigmaYn
 
-   // opserr<<"yield funciton is:"<<yieldFunction<<endln;
+   // opserr<<"yield function is:"<<yieldFunction<<endln;
 
 	if (yieldFunction >0) {    // plastic corrector
 

@@ -656,7 +656,7 @@ getIndexNeg(Vector v,double value)
 	    envlpNegStrain(6) = 1e+6*strain4n;
 	    envlpNegStress(6) = (k2>0.0)? envlpNegStress(5)+k1*(envlpNegStrain(6) - envlpNegStrain(5)):envlpNegStress(5)*1.1;
        
-         // define crtical material properties
+         // define critical material properties
          kElasticPos = envlpPosStress(1)/envlpPosStrain(1);      
          kElasticNeg = envlpNegStress(1)/envlpNegStrain(1);
  

@@ -853,7 +853,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     }
 
 
-    // Pressure Independend Multi-yield, by ZHY
+    // Pressure Independent Multi-yield, by ZHY
     else if (strcmp(argv[1],"PressureIndependMultiYield") == 0) {
 	const int numParam = 6;
 	const int totParam = 10;
@@ -915,7 +915,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	   }
     }
 
-    // Pressure Independend Multi-yield, by Quan Gu
+    // Pressure Independent Multi-yield, by Quan Gu
     else if (strcmp(argv[1],"MultiYieldSurfaceClay") == 0) {
 		const int numParam = 6;
 		const int totParam = 10;
@@ -978,7 +978,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     }
 	// ============
 
-    // Pressure Dependend Multi-yield, by ZHY
+    // Pressure Dependent Multi-yield, by ZHY
     else if (strcmp(argv[1],"PressureDependMultiYield") == 0) {
 	const int numParam = 15;
 	const int totParam = 24;
@@ -1077,7 +1077,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	   }
 	}
 
-    // Pressure Dependend Multi-yield, by ZHY
+    // Pressure Dependent Multi-yield, by ZHY
     else if (strcmp(argv[1],"PressureDependMultiYield02") == 0) {
 	const int numParam = 13;
 	const int totParam = 26;
