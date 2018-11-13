@@ -946,7 +946,8 @@ OpenGlDevice::saveImageAsPNG(const char *fileName)
   // compression (NOT the default); and remaining compression flags should
   // be left alone
 
-  png_set_compression_level(png_ptr, Z_BEST_COMPRESSION);
+  //png_set_compression_level(png_ptr, Z_BEST_COMPRESSION);
+  png_set_compression_level(png_ptr, X_PROTOCOL_REVISION);  
   //
   // this is default for no filtering; Z_FILTERED is default otherwise:
   // png_set_compression_strategy(png_ptr, Z_DEFAULT_STRATEGY);

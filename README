@@ -1,5 +1,5 @@
-The git OpenSees source code repository.
-This repository contains all revisions to OpenSees source code since Version 2.3.2.
+The OpenSees source code repository.
+This git repository contains all revisions to OpenSees source code since Version 2.3.2.
 
 Older revisions of the code are available upon request.
 
@@ -7,10 +7,10 @@ If you plan on collaborating or even using OpenSees as your base code it is high
 you FORK this repo to your own account and work on it there. We will not allow anybody to write to
 this repo. Only PULL requests will be considered. To fork the repo click on the FORK at the top of this page.
 
-For a brief outline on forking topic we suggest:
+For a brief outline on forking we suggest:
 https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow
 
-For a brief into to using your new FORK we suggest:
+For a brief introduction to using your new FORK we suggest:
 https://www.atlassian.com/git/tutorials/saving-changes
 
 
