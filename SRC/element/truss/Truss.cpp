@@ -1181,15 +1181,20 @@ Truss::setResponse(const char **argv, int argc, OPS_Stream &output)
 	       (strcmp(argv[0],"localForce") == 0) || 
 	       (strcmp(argv[0],"basicForces") == 0)) {
             output.tag("ResponseType", "N");
-            theResponse =  new ElementResponse(this, 2, 0.0);
+            theResponse =  new ElementResponse(this, 2, Vector(1));
 
     } else if (strcmp(argv[0],"defo") == 0 || strcmp(argv[0],"deformation") == 0 ||
         strcmp(argv[0],"deformations") == 0 || strcmp(argv[0],"basicDefo") == 0 ||
         strcmp(argv[0],"basicDeformation") == 0 || strcmp(argv[0],"basicDeformations") == 0) {
 
             output.tag("ResponseType", "U");
-            theResponse = new ElementResponse(this, 3, 0.0);
+            theResponse = new ElementResponse(this, 3, Vector(1));
 
+    } else if (strcmp(argv[0],"basicStiffness") == 0) {
+
+      output.tag("ResponseType", "K");
+      theResponse = new ElementResponse(this, 4, Matrix(1,1));
+	    
     // a material quantity
     } else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"-material") == 0) {
 
@@ -1203,8 +1208,9 @@ Truss::setResponse(const char **argv, int argc, OPS_Stream &output)
 int 
 Truss::getResponse(int responseID, Information &eleInfo)
 {
-    double strain;
+  double strain, force;
     static Vector fVec(1);
+    static Matrix kVec(1,1);
 
     switch (responseID) {
     case 1:
@@ -1223,8 +1229,15 @@ Truss::getResponse(int responseID, Information &eleInfo)
 	fVec(0) = L*strain;
         return eleInfo.setVector(fVec);
 
+    case 4:
+      force = 0.0;
+      if (L > 0.0)
+	force = theMaterial->getTangent();
+      kVec(0,0) = A*force/L;
+      return eleInfo.setMatrix(kVec);
+      
     default:
-        return 0;
+      return 0;
     }
 }
 

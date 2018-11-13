@@ -511,6 +511,7 @@
 #define LOAD_TAG_SelfWeight              10 // C.McGann, U.W.
 #define LOAD_TAG_Beam2dThermalAction      11
 #define LOAD_TAG_Beam2dPartialUniformLoad 12
+#define LOAD_TAG_Beam3dPartialUniformLoad 121
 #define LOAD_TAG_Beam3dThermalAction      13 // L.Jiang [ SIF ]
 #define LOAD_TAG_ShellThermalAction       14 // L.Jiang [ SIF ]
 #define LOAD_TAG_NodalThermalAction       15 //L.Jiang [ SIF ]

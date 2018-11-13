@@ -1136,7 +1136,7 @@ TrussSection::setResponse(const char **argv, int argc, OPS_Stream &output)
 
     } else if (strcmp(argv[0],"basicStiffness") == 0) {
 
-            output.tag("ResponseType", "U");
+            output.tag("ResponseType", "K");
             theResponse = new ElementResponse(this, 4, Matrix(1,1));
 
     // a section quantity
