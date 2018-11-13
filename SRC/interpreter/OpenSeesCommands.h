@@ -177,6 +177,7 @@ int OPS_LimitCurve();
 
 /* OpenSeesNDMaterialCommands.cpp */
 int OPS_NDMaterial();
+int OPS_updateMaterialStage();
 
 /* OpenSeesFrictionModelCommands.cpp */
 int OPS_FrictionModel();
