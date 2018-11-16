@@ -321,7 +321,7 @@ void Steel01Thermal::determineTrialState (double dStrain)
             signpl=1;
         }
         
-        int n=500;
+        const int n=500;
         double eps [n+1];
         double sig [n+1];
         double epl_prop [n+1];
