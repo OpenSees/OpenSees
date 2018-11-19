@@ -6159,7 +6159,7 @@ localForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     */
 
     const char *myArgv[1];
-    char myArgv0[8]; 
+    char myArgv0[80]; 
     strcpy(myArgv0,"localForces");
     myArgv[0] = myArgv0;
 
@@ -6477,7 +6477,7 @@ eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   char buffer[20];
 
   const char *myArgv[1];
-  char myArgv0[8]; 
+  char myArgv0[80]; 
   strcpy(myArgv0,"nodeTags");
   myArgv[0] = myArgv0;
 
