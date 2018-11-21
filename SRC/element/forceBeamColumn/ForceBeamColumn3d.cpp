@@ -1723,7 +1723,7 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
     if (beamIntegrDbTag  == 0) {
       beamIntegrDbTag = theChannel.getDbTag();
       if (beamIntegrDbTag  != 0) 
-	beamIntegr->setDbTag(crdTransfDbTag);
+	beamIntegr->setDbTag(beamIntegrDbTag);
     }
     idData(10) = beamIntegrDbTag;
 
