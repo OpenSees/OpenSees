@@ -635,7 +635,7 @@ FiberSection2d::sendSelf(int commitTag, Channel &theChannel)
 
   // create an id to send objects tag and numFibers, 
   //     size 3 so no conflict with matData below if just 1 fiber
-  static ID data(3);
+  static ID data(2);
   data(0) = this->getTag();
   data(1) = numFibers;
   int dbTag = this->getDbTag();
@@ -690,7 +690,7 @@ FiberSection2d::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static ID data(3);
+  static ID data(2);
   
   int dbTag = this->getDbTag();
   res += theChannel.recvID(dbTag, commitTag, data);
@@ -919,9 +919,9 @@ FiberSection2d::setResponse(const char **argv, int argc,
     int numData = numFibers*5;
     for (int j = 0; j < numFibers; j++) {
       output.tag("FiberOutput");
-      output.attr("yLoc", matData[3*j]);
-      output.attr("zLoc", matData[3*j+1]);
-      output.attr("area", matData[3*j+2]);    
+      output.attr("yLoc", matData[2*j]);
+      output.attr("zLoc", 0.0);
+      output.attr("area", matData[2*j+1]);    
       output.tag("ResponseType","yCoord");
       output.tag("ResponseType","zCoord");
       output.tag("ResponseType","area");
@@ -958,9 +958,9 @@ FiberSection2d::getResponse(int responseID, Information &sectInfo)
     int count = 0;
     for (int j = 0; j < numFibers; j++) {
       double yLoc, zLoc, A, stress, strain;
-      yLoc = matData[3*j];
-      zLoc = matData[3*j+1];
-      A = matData[3*j+2];
+      yLoc = matData[2*j];
+      zLoc = 0.0;
+      A = matData[2*j+1];
       stress = theMaterials[j]->getStress();
       strain = theMaterials[j]->getStrain();
       data(count) = yLoc; data(count+1) = zLoc; data(count+2) = A;
