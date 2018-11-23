@@ -635,7 +635,7 @@ FiberSection2d::sendSelf(int commitTag, Channel &theChannel)
 
   // create an id to send objects tag and numFibers, 
   //     size 3 so no conflict with matData below if just 1 fiber
-  static ID data(2);
+  static ID data(3);
   data(0) = this->getTag();
   data(1) = numFibers;
   int dbTag = this->getDbTag();
@@ -690,7 +690,7 @@ FiberSection2d::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static ID data(2);
+  static ID data(3);
   
   int dbTag = this->getDbTag();
   res += theChannel.recvID(dbTag, commitTag, data);
