@@ -988,7 +988,7 @@ int OPS_Patch()
     // create patch
     Patch *thePatch = 0;
     const char* type = OPS_GetString();
-    if(strcmp(type,"quad")==0 || strcmp(type,"quadrilateral")==0) {
+    if(strcmp(type,"quad")==0 || strcmp(type,"quadr")==0 || strcmp(type,"quadrilateral")==0) {
 	thePatch = (QuadPatch*) OPS_QuadPatch();
     } else if(strcmp(type,"rect")==0 || strcmp(type,"rectangular")==0) {
 	thePatch = (QuadPatch*) OPS_RectPatch();
