@@ -62,6 +62,12 @@ class NodalLoad : public Load
     int            activateParameter(int parameterID);
     const Vector & getExternalForceSensitivity(int gradNumber);
     // AddingSensitivity:END ///////////////////////////////////////////
+
+	//Change made by Liming for NodalThermalAction [SIF]
+	virtual void applyLoad(Vector& loadFactors);
+	virtual const Vector &getData(int& type);
+	//Change made by Liming for NodalThermalAction [SIF]
+
   protected:
 
   private:

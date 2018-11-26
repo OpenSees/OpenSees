@@ -52,6 +52,7 @@ class Vector;
 #define INITIAL_THEN_CURRENT_TANGENT  3
 #define NO_TANGENT  4
 #define SECOND_TANGENT 5
+#define HALL_TANGENT 6
 
 class IncrementalIntegrator : public Integrator
 {
@@ -67,7 +68,10 @@ class IncrementalIntegrator : public Integrator
 
 
     // methods to set up the system of equations
-    virtual int  formTangent(int statusFlag = CURRENT_TANGENT);    
+    virtual int  formTangent(int statusFlag = CURRENT_TANGENT);
+    virtual int  formTangent(int statusFlag, 
+			     double iFactor,
+			     double cFactor);    
     virtual int  formUnbalance(void);
 
     // pure virtual methods to define the FE_ELe and DOF_Group contributions
@@ -108,6 +112,8 @@ class IncrementalIntegrator : public Integrator
     virtual int  formNodalUnbalance(void);        
     virtual int  formElementResidual(void);            
     int statusFlag;
+    double iFactor;
+    double cFactor;
 
     //    Vector *modalDampingValues;
     EigenSOE *theEigenSOE;

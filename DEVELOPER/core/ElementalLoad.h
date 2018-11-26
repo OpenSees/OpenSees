@@ -54,9 +54,10 @@ class ElementalLoad : public Load
 
   protected:
     int eleTag;
+    Element *theElement;  // pointer to associated element
 
   private:
-    Element *theElement;  // pointer to associated element
+
 };
 
 #endif

@@ -48,6 +48,7 @@ class Channel;
 class Renderer;
 
 class DOF_Group;
+class NodalThermalAction; //L.Jiang [ SIF ]
 
 class Node : public DomainComponent
 {
@@ -70,7 +71,7 @@ class Node : public DomainComponent
 
     // public methods for obtaining the nodal coordinates
     virtual const Vector &getCrds(void) const;
-    virtual int getDisplayCrds(Vector &results, double fact);
+    virtual int getDisplayCrds(Vector &results, double fact, int displayMode=0);
     virtual int setDisplayCrds(const Vector &theCrds);
 
     // public methods for obtaining committed and trial 
@@ -148,6 +149,12 @@ class Node : public DomainComponent
 
     // AddingSensitivity:END ///////////////////////////////////////////
 
+	//Add Pointer to NodalThermalAction id applicable------begin-----L.Jiang [ SIF ]
+	virtual NodalThermalAction* getNodalThermalActionPtr(void);
+	virtual void setNodalThermalActionPtr(NodalThermalAction* theAction);
+	//Add Pointer to NodalThermalAction id applicable-----end------L.Jiang [ SIF ]
+
+
     virtual const Vector &getReaction();
     virtual int   addReactionForce(const Vector &, double factor);
     virtual int   resetReactionForce(int flag);
@@ -171,7 +178,7 @@ class Node : public DomainComponent
     int numberDOF;                    // number of dof at Node
     DOF_Group *theDOF_GroupPtr;       // pointer to associated DOF_Group
     Vector *Crd;                      // original nodal coords
-    Vector *commitDisp, *commitVel, *commitAccel; // committed quantities
+    Vector *commitDisp, *commitVel, *commitAccel; // commited quantities
     Vector *trialDisp, *trialVel, *trialAccel;     // trial quantities
     Vector *unbalLoad;                // unbalanced load
     Vector *incrDisp;
@@ -194,6 +201,8 @@ class Node : public DomainComponent
     Matrix *accSensitivity;
     int parameterID;
     // AddingSensitivity:END ///////////////////////////////////////////
+
+    NodalThermalAction *theNodalThermalActionPtr; //Added by Liming Jiang for pointer to nodalThermalAction, [SIF]
 
     static Matrix **theMatrices;
     static int numMatrices;
