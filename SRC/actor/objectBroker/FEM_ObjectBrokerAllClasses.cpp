@@ -295,11 +295,20 @@
 #include <HingeEndpointBeamIntegration.h>
 #include <HingeRadauBeamIntegration.h>
 #include <HingeRadauTwoBeamIntegration.h>
+#include <UserDefinedHingeIntegration.h>
+#include <DistHingeIntegration.h>
+#include <RegularizedHingeIntegration.h>
+
 #include <LobattoBeamIntegration.h>
 #include <LegendreBeamIntegration.h>
 #include <RadauBeamIntegration.h>
 #include <NewtonCotesBeamIntegration.h>
+#include <TrapezoidalBeamIntegration.h>
 #include <UserDefinedBeamIntegration.h>
+#include <FixedLocationBeamIntegration.h>
+#include <LowOrderBeamIntegration.h>
+#include <MidDistanceBeamIntegration.h>
+#include <CompositeSimpsonBeamIntegration.h>
 
 // node header files
 #include <Node.h>
@@ -991,8 +1000,23 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
   case BEAM_INTEGRATION_TAG_NewtonCotes:        
     return new NewtonCotesBeamIntegration();
 
+  case BEAM_INTEGRATION_TAG_Trapezoidal:        
+    return new TrapezoidalBeamIntegration();
+
   case BEAM_INTEGRATION_TAG_UserDefined:        
     return new UserDefinedBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_FixedLocation:        
+    return new FixedLocationBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_LowOrder:        
+    return new LowOrderBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_MidDistance:        
+    return new MidDistanceBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_CompositeSimpson:        
+    return new CompositeSimpsonBeamIntegration();
 
   case BEAM_INTEGRATION_TAG_HingeMidpoint:
     return new HingeMidpointBeamIntegration();
@@ -1005,6 +1029,15 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
     
   case BEAM_INTEGRATION_TAG_HingeEndpoint:
     return new HingeEndpointBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_UserHinge:
+    return new UserDefinedHingeIntegration();
+
+  case BEAM_INTEGRATION_TAG_DistHinge:
+    return new DistHingeIntegration();
+
+  case BEAM_INTEGRATION_TAG_RegularizedHinge:
+    return new RegularizedHingeIntegration();
 
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getBeamIntegration - ";
