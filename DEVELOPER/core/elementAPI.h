@@ -123,7 +123,7 @@ class ConvergenceTest;
 
 #define OPS_Error ops_error_
 #define OPS_GetIntInput ops_getintinput_
-#define OPS_SetIntoutput ops_setintoutput_
+#define OPS_SetIntOutput ops_setintoutput_
 #define OPS_GetDoubleInput ops_getdoubleinput_
 #define OPS_SetDoubleOutput ops_setdoubleoutput_
 #define OPS_AllocateMaterial ops_allocatematerial_
@@ -201,7 +201,7 @@ extern "C" int    OPS_InvokeMaterialDirectly2(matObject *, modelState *, double 
 extern "C" int    OPS_GetNodeCrd(int *nodeTag, int *sizeData, double *data);
 extern "C" int    OPS_GetNodeDisp(int *nodeTag, int *sizeData, double *data);
 extern "C" int    OPS_GetNodeVel(int *nodeTag, int *sizeData, double *data);
-extern "C" int    OPS_GetNodeAcc(int *nodeTag, int *sizeData, double *data);
+extern "C" int    OPS_GetNodeAccel(int *nodeTag, int *sizeData, double *data);
 extern "C" int    OPS_GetNodeIncrDisp(int *nodeTag, int *sizeData, double *data);
 extern "C" int    OPS_GetNodeIncrDeltaDisp(int *nodeTag, int *sizeData, double *data);
 
@@ -240,6 +240,8 @@ extern "C" StaticIntegrator		**OPS_GetStaticIntegrator(void);
 extern "C" TransientIntegrator	**OPS_GetTransientIntegrator(void);
 extern "C" ConvergenceTest		**OPS_GetTest(void);
 extern "C" bool								*OPS_builtModel(void);
+
+int OPS_numIter();
 
 #else
 

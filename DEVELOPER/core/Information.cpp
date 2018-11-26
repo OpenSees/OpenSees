@@ -167,10 +167,10 @@ Information::setMatrix(const Matrix &newMatrix)
 int 
 Information::setString(const char *newString)
 {
-  int newLength = strlen(newString);
+  int newLength = int(strlen(newString));
 
   if (theString != 0) {
-    int oldLength = strlen(theString);
+    int oldLength = int(strlen(theString));
     if (oldLength >= newLength) 
       strcpy(theString, newString);
     else {
