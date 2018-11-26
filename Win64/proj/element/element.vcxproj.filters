@@ -881,6 +881,9 @@
     <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.cpp">
       <Filter>absorbentBoundaries</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1536,6 +1539,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.h">
       <Filter>absorbentBoundaries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.h">
+      <Filter>dispBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
