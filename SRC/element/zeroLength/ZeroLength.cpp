@@ -460,23 +460,24 @@ ZeroLength::~ZeroLength()
   int numMat = numMaterials1d;
   if (useRayleighDamping == 2)
     numMat *= 2;
-    for (int mat=0; mat<numMat; mat++) 
-	delete theMaterial1d[mat];
 
-    // delete memory of 1d materials    
-    if (theMaterial1d != 0)
-	delete [] theMaterial1d;
-
-    if (t1d != 0)
-	delete t1d;
-    if (dir1d != 0 )
-	delete dir1d;
-
-    if (d0 != 0)
-      delete d0;
-
-    if (v0 != 0)
-      delete v0;
+  for (int mat=0; mat<numMat; mat++) 
+    delete theMaterial1d[mat];
+  
+  // delete memory of 1d materials    
+  if (theMaterial1d != 0)
+    delete [] theMaterial1d;
+  
+  if (t1d != 0)
+    delete t1d;
+  if (dir1d != 0 )
+    delete dir1d;
+  
+  if (d0 != 0)
+    delete d0;
+  
+  if (v0 != 0)
+    delete v0;
 }
 
 
@@ -1149,7 +1150,6 @@ ZeroLength::displaySelf(Renderer &theViewer, int displayMode, float fact, const 
     static Vector v2(3);
 
     float d1 = 1.0;
-    float d2 = 1.0;
 
     if (displayMode == 1 || displayMode == 2) {
 
@@ -1272,7 +1272,7 @@ ZeroLength::setResponse(const char **argv, int argc, OPS_Stream &output)
     if ((strcmp(argv[0],"force") == 0) || (strcmp(argv[0],"forces") == 0) 
         || (strcmp(argv[0],"globalForces") == 0) || (strcmp(argv[0],"globalforces") == 0)) {
 
-            char outputData[10];
+            char outputData[20];
             int numDOFperNode = numDOF/2;
             for (int i=0; i<numDOFperNode; i++) {
                 sprintf(outputData,"P1_%d", i+1);

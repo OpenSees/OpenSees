@@ -52,7 +52,8 @@ class SectionForceDeformation;
 class UniaxialMaterial : public Material
 {
   public:
-    UniaxialMaterial (int tag, int classTag);    
+    UniaxialMaterial(int tag, int classTag);    
+    UniaxialMaterial();
     virtual ~UniaxialMaterial();
 
     virtual int setTrialStrain (double strain, double strainRate =0) =0;
@@ -97,7 +98,8 @@ class UniaxialMaterial : public Material
 
 extern bool OPS_addUniaxialMaterial(UniaxialMaterial *newComponent);
 extern UniaxialMaterial *OPS_getUniaxialMaterial(int tag);
+extern bool OPS_removeUniaxialMaterial(int tag);
 extern void OPS_clearAllUniaxialMaterial(void);
+extern void OPS_printUniaxialMaterial(OPS_Stream &s, int flag = 0);
 
 #endif
-

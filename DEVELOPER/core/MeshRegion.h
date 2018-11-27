@@ -52,7 +52,9 @@ class MeshRegion : public DomainComponent
 
     // methods dealing with setting up the region
     virtual int setNodes(const ID &theNodes);
+    virtual int setNodesOnly(const ID &theNodes);
     virtual int setElements(const ID &theEles);
+    virtual int setElementsOnly(const ID &theEles);
     virtual void setExtraEles(const ID& theEles) {xEles=theEles;}
 
     // methods getting the ID's of nodes & ele

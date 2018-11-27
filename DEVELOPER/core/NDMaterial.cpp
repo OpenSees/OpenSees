@@ -59,9 +59,18 @@ bool OPS_addNDMaterial(NDMaterial *newComponent)
     return theNDMaterialObjects.addComponent(newComponent);
 }
 
+bool OPS_removeNDMaterial(int tag)
+{
+    TaggedObject* obj = theNDMaterialObjects.removeComponent(tag);
+    if (obj != 0) {
+	delete obj;
+	return true;
+    }
+    return false;
+}
+
 NDMaterial *OPS_getNDMaterial(int tag)
 {
-
   TaggedObject *theResult = theNDMaterialObjects.getComponentPtr(tag);
   if(theResult == 0) {
       opserr << "NDMaterial no found with tag: " << tag << "\n";
@@ -72,8 +81,28 @@ NDMaterial *OPS_getNDMaterial(int tag)
   return theMat;
 }
 
-void OPS_clearAllNDMaterial(void) {
+void OPS_clearAllNDMaterial(void)
+{
     theNDMaterialObjects.clearAll();
+}
+
+void OPS_printNDMaterial(OPS_Stream &s, int flag) {
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\"ndMaterials\": [\n";
+        MapOfTaggedObjectsIter theObjects = theNDMaterialObjects.getIter();
+        theObjects.reset();
+        TaggedObject *theObject;
+        int count = 0;
+        int numComponents = theNDMaterialObjects.getNumComponents();
+        while ((theObject = theObjects()) != 0) {
+            NDMaterial *theMaterial = (NDMaterial *)theObject;
+            theMaterial->Print(s, flag);
+            if (count < numComponents - 1)
+                s << ",\n";
+            count++;
+        }
+        s << "\n\t\t]";
+    }
 }
 
 NDMaterial::NDMaterial(int tag, int classTag)
@@ -179,6 +208,31 @@ NDMaterial::getStrain(void)
    return errVector;    
 }
 
+
+
+//Functions for obtaining and updating temperature-dependent information Added by L.Jiang [SIF]
+double
+NDMaterial::getThermalTangentAndElongation(double &TempT, double &ET, double &Elong)
+{
+	opserr << "NDMaterial::getThermalTangentAndElongation -- subclass responsibility\n";
+	return -1;
+}
+
+double
+NDMaterial::setThermalTangentAndElongation(double &TempT, double &ET, double &Elong)
+{
+	opserr << "NDMaterial::setThermalTangentAndElongation -- subclass responsibility\n";
+	return -1;
+}
+
+const Vector&
+NDMaterial::getTempAndElong()
+{
+	opserr << "NDMaterial::getTempAndElong -- subclass responsibility\n";
+	return errVector;
+}
+//end of adding thermo-mechanical functions, L.Jiang [SIF]
+
 Response*
 NDMaterial::setResponse (const char **argv, int argc, 
 			 OPS_Stream &output)
@@ -233,6 +287,24 @@ NDMaterial::setResponse (const char **argv, int argc,
     }      
     theResponse =  new MaterialResponse(this, 2, this->getStress());
   }
+  //Adding temperature and thermal expansion output,L.Jiang [SIF]
+  else if (strcmp(argv[0], "TempAndElong") == 0 || strcmp(argv[0], "TempAndElong") == 0) {
+	  const Vector &res = this->getTempAndElong();
+	  int size = res.Size();
+	  if (size == 2) {
+		  output.tag("ResponseType", "Temp");
+		  output.tag("ResponseType", "Elong");
+	  }
+	  //opserr<<"tempElong "<<this->getTempAndElong()<<endln;
+	  theResponse = new MaterialResponse(this, 3, this->getTempAndElong());
+
+  }
+  else if (strcmp(argv[0], "Tangent") == 0 || strcmp(argv[0], "tangent") == 0) {
+	  const Matrix &res = this->getTangent();
+	  theResponse = new MaterialResponse(this, 4, this->getTangent());
+
+  }
+  //end of adding output request,L.Jiang [SIF]
 
   output.endTag(); // NdMaterialOutput
 

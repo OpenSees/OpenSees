@@ -277,7 +277,7 @@ ID::unique(void)
         }
     }
 
-    sz = uniquesl.size();
+    sz = int(uniquesl.size());
     int* newdata = new (nothrow) int[sz];
     for (std::list<int>::iterator pos=uniquesl.begin(); pos!=uniquesl.end(); pos++)
         newdata[count++] = *pos;
@@ -419,7 +419,7 @@ ID::resize(int newSize){
 
 // ID &operator=(const ID  &V):
 //	the assignment operator, This is assigned to be a copy of V. if sizes
-//	are not compatible this.data [] is deleted. The data pointers will not
+//	are not compatable this.data [] is deleted. The data pointers will not
 //	point to the same area in mem after the assignment.
 //
 
@@ -429,7 +429,7 @@ ID::operator=(const ID &V)
     // first check we are not trying v = v
     if (this != &V) {
 	
-	// check size compatibility, if different delete
+	// check size compatability, if different delete
 	// old and make room for new.
 	if (sz != V.sz) {
 	    if (arraySize < V.sz) {
