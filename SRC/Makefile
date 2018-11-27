@@ -215,6 +215,7 @@ GLF_LIBS = $(FE)/element/zeroLength/ZeroLength.o \
 	$(FE)/element/zeroLength/ZeroLengthSection.o \
 	$(FE)/element/zeroLength/CoupledZeroLength.o \
 	$(FE)/element/zeroLength/ZeroLengthND.o \
+	$(FE)/element/zeroLength/ZeroLengthVG_HG.o \
 	$(FE)/element/zeroLength/ZeroLengthImpact3D.o
 
 REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \

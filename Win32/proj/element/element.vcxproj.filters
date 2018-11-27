@@ -176,6 +176,9 @@
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLength.cpp">
       <Filter>zeroLength</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthVG_HG.cpp">
+      <Filter>zeroLength</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact2D.cpp">
       <Filter>zeroLength</Filter>
     </ClCompile>
