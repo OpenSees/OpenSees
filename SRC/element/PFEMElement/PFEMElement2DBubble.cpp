@@ -233,7 +233,7 @@ PFEMElement2DBubble::update()
     }
 
     // this is the trick to check negative jacobian
-    if((kappa==-2 && J<0) || (kappa!=-2 && J<1e-15)) {
+    if((kappa==-2 && J<0) || (kappa!=-2 && fabs(J)<1e-15)) {
         opserr<<"WARING: element "<<this->getTag()<<" area is "<<J<<"\n";
 	for (int i=0; i<3; i++) {
 	    opserr << "node "<<nodes[2*i]->getTag()<<": \n";
