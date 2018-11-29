@@ -884,6 +884,9 @@
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.cpp">
       <Filter>dispBeamColumn</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.cpp">
+      <Filter>elasticBeamColumn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1542,6 +1545,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.h">
       <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.h">
+      <Filter>elasticBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
