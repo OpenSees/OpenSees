@@ -525,7 +525,7 @@ double WheelRail::getResidualOfDeltaU(double pFhz,double uWheel){
 	double deltaU1=railDisp(1)-uF-uWheel+theDeltaY;
 	double deltaU2=0;	
 	if(pFhz>0){
-		 deltaU2=pow(pFhz,0.666666666666667)*G;
+	  deltaU2=pow(pFhz,0.666666666666667)*G;
 	}
 	return (deltaU1-deltaU2);
 }
@@ -568,7 +568,7 @@ void WheelRail::NewtonBisection(Vector limits,double uWheel){
 	}
 	if (i>maxIterT)	opserr<<maxIterT<<"次迭代后失败！";//previous process*/ 
 //===========================
-	/*/该牛顿二分法可行
+	/*
 	int maxIterT=30;double tol=1.0e-5;
 	double FHL=limits(0),FHH=limits(1);
 	double FHzi=0.5*(FHL+FHH);
@@ -601,7 +601,7 @@ void WheelRail::NewtonBisection(Vector limits,double uWheel){
 	}
 	if (i>maxIterT)	opserr<<maxIterT<<"次迭代后失败！";//previous process*/ 
 //========================================
-	/*/该牛顿二分法可行
+	/*
 	int maxIterT=15;double tol=1.0e-6;
 	double FhzL=limits(0),FhzH=limits(1);
 	double FhzLastIter=0.5*(FhzL+FhzH);
@@ -673,7 +673,8 @@ double WheelRail::FalsePostionAlgorithm(Vector limits,double uWheel){
 		//opserr<<"i="<<i<<"  FalsePostionAlgorithm:  fhz=  "<<fhz<<" "<<Phi<<endln;
 	}
 	if (i>=maxIterT)
-		opserr<<maxIterT<<"次迭代后失败！";
+		opserr<<maxIterT<<" WHEEL RAIL MAX ITER EXCEEDED";
+	return 0.;
 }
 
 void WheelRail::getDeltaY(){
@@ -700,7 +701,7 @@ void WheelRail::getActiveDof(){
 
 void WheelRail::getShapeFuns(){
 
-	theEleLength = sqrt((rearRailNode(0)-frontRailNode(0))*(rearRailNode(0)-frontRailNode(0))+ (rearRailNode(1)-frontRailNode(1))*(rearRailNode(1)-frontRailNode(1)));//二维坐标计算公式
+	theEleLength = sqrt((rearRailNode(0)-frontRailNode(0))*(rearRailNode(0)-frontRailNode(0))+ (rearRailNode(1)-frontRailNode(1))*(rearRailNode(1)-frontRailNode(1)));
 	a=currentLocation-rearRailNode(0);
 	b=theEleLength-a;
 
