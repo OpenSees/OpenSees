@@ -5,7 +5,8 @@ OBJS       = 	ElasticBeam2d.o \
 	ElasticBeam3d.o \
     ElasticTimoshenkoBeam2d.o \
     ElasticTimoshenkoBeam3d.o \
-	TclElasticBeamCommand.o
+	TclElasticBeamCommand.o \
+	WheelRail.o
 
 # Compilation control
 
