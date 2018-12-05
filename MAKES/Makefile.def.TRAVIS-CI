@@ -89,19 +89,19 @@ RELIABILITY_FLAG = -D_RELIABILITY
 # remove the directory from DIRS.
 
 BASE		= /usr/local
-HOME            = /home/travis/build/frqc
-FE		= $(HOME)/OpenSees/SRC
+HOME            = ${TRAVIS_BUILD_DIR}
+FE		= $(HOME)/SRC
 
-AMDdir       = $(HOME)/OpenSees/OTHER/AMD
-BLASdir      = $(HOME)/OpenSees/OTHER/BLAS
-CBLASdir     = $(HOME)/OpenSees/OTHER/CBLAS
-LAPACKdir    = $(HOME)/OpenSees/OTHER/LAPACK
-SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_5.1.1/SRC
-ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
-UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
-METISdir     = $(HOME)/OpenSees/OTHER/METIS
-CSPARSEdir   = $(HOME)/OpenSees/OTHER/CSPARSE
-SRCdir       = $(HOME)/OpenSees/SRC
+AMDdir       = $(HOME)/OTHER/AMD
+BLASdir      = $(HOME)/OTHER/BLAS
+CBLASdir     = $(HOME)/OTHER/CBLAS
+LAPACKdir    = $(HOME)/OTHER/LAPACK
+SUPERLUdir   = $(HOME)/OTHER/SuperLU_5.1.1/SRC
+ARPACKdir    = $(HOME)/OTHER/ARPACK
+UMFPACKdir   = $(HOME)/OTHER/UMFPACK
+METISdir     = $(HOME)/OTHER/METIS
+CSPARSEdir   = $(HOME)/OTHER/CSPARSE
+SRCdir       = $(HOME)/SRC
 
 
 DIRS        = $(BLASdir) $(CBLASdir) $(LAPACKdir) $(AMDdir) $(CSPARSEdir) \
