@@ -440,7 +440,7 @@ StaticAnalysis::domainChanged(void)
 	return -5;
     }	        
 
-    // if get here successfull
+    // if get here successful
     return 0;
 }    
 
@@ -475,7 +475,7 @@ StaticAnalysis::setAlgorithm(EquiSolnAlgo &theNewAlgorithm)
     
     if (theTest != 0)
       theAlgorithm->setConvergenceTest(theTest);
-    else   // this else is for backward compatability.
+    else   // this else is for backward compatibility.
       theTest = theAlgorithm->getConvergenceTest();
     
     // invoke domainChanged() either indirectly or directly

@@ -1,0 +1,308 @@
+############################################################################
+#
+#  Program:  OpenSees
+#
+#  Purpose:  A Top-level Makefile to create the libraries needed
+#	     to use the OpenSees framework. Works on Linux version 6.1
+#            and below.
+#
+#  Written: fmk 
+#  Created: 10/99
+#
+#  Send bug reports, comments or suggestions to fmckenna@ce.berkeley.edu
+#
+############################################################################
+
+#
+# https://help.ubuntu.com/community/EC2StartersGuide
+
+## ssh to machine from your own:
+#
+# chmod 'go+rwx' XXX.pem
+# ssh -i XXX.pem ubuntu@YYY.amazonaws.com
+#
+
+# Instructuction for building OpenSees on Ubuntu
+# using amazon EC-2 instance ami-d0f89fb9 (running Ubunto 12.04) once logged in
+
+# sudo in and type the following:
+# sudo apt-get update 
+
+# sudo apt-get install subversion
+# svn co svn://peera.berkeley.edu/usr/local/svn/OpenSees/trunk OpenSees
+# sudo apt-get install emacs
+# sudo apt-get install make
+# sudo apt-get install tcl8.6
+# sudo apt-get install tcl8.6-dev
+# sudo apt-get install gcc
+# sudo apt-get install g++
+# sudo apt-get install gfortran
+# sudo apt-get install python3-dev
+# mkdir lib
+# mkdir bin
+# cd OpenSees
+# cp ./MAKES/Makefile.def.EC2-UBUNTU ./Makefile.def   (NOTE: open file and maje sure INTERPRETER_LANGUAGE set to PYTHON, line 62)
+# make
+# cd SRC/interpreter
+# make                       (NOTE: if you check you should find opensees.so in the ~bin directory and an OpenSees.exe cmpiled with -fPIC which is slow)
+# cd ../..
+# edit Makefile.def, comment out INTERPRETER_LANGUAGE=PYTHON (LINE 62) and UNCOMMENT INTERPRTETER_LNAGUAGE=TCL (LINE 63)
+# make wipe
+# make                       (NOTE: new OpenSees.exe compiled with optimization flags)
+
+
+# NOTE: if 64 bit the TCL dir is placed elsewhere; make will fail
+# you need to uncomment out the correct line below TL_LIBS = 
+# TCL_LIBS should point to the following: /usr/lib/x86_64-linux/gnu/libtcl8.6.so
+
+# you can always find it using the find command:
+# find / -name libtcl8.6.so 2>/dev/null
+
+
+INTERPRETER_LANGUAGE = PYTHON
+#INTERPRETER_LANGUAGE = TCL
+
+# %---------------------------------%
+# |  SECTION 1: PROGRAM             |
+# %---------------------------------%
+#
+# Specify the location and name of the OpenSees interpreter program
+# that will be created (if this all works!)
+
+OpenSees_PROGRAM = $(HOME)/bin/OpenSees
+
+OPERATING_SYSTEM = LINUX
+GRAPHICS = NONE
+GRAPHIC_FLAG = -D_NOGRAPHICS
+PROGRAMMING_MODE = SEQUENTIAL
+DEBUG_MODE = NO_DEBUG
+RELIABILITY = YES_RELIABILITY
+RELIABILITY_FLAG = -D_RELIABILITY
+
+
+# %---------------------------------%
+# |  SECTION 2: PATHS               |
+# %---------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries or if you have
+# any of the libraries already leave the directory location blank AND
+# remove the directory from DIRS.
+
+BASE		= /usr/local
+HOME            = ${TRAVIS_BUILD_DIR}
+FE		= $(HOME)/SRC
+
+AMDdir       = $(HOME)/OTHER/AMD
+BLASdir      = $(HOME)/OTHER/BLAS
+CBLASdir     = $(HOME)/OTHER/CBLAS
+LAPACKdir    = $(HOME)/OTHER/LAPACK
+SUPERLUdir   = $(HOME)/OTHER/SuperLU_5.1.1/SRC
+ARPACKdir    = $(HOME)/OTHER/ARPACK
+UMFPACKdir   = $(HOME)/OTHER/UMFPACK
+METISdir     = $(HOME)/OTHER/METIS
+CSPARSEdir   = $(HOME)/OTHER/CSPARSE
+SRCdir       = $(HOME)/SRC
+
+
+DIRS        = $(BLASdir) $(CBLASdir) $(LAPACKdir) $(AMDdir) $(CSPARSEdir) \
+	$(SUPERLUdir) $(ARPACKdir) $(UMFPACKdir) $(SRCdir) $(METISdir)
+
+# %-------------------------------------------------------%
+# | SECTION 3: LIBRARIES                                  |
+# |                                                       |
+# | The following section defines the libraries that will |
+# | be created and/or linked with when the libraries are  | 
+# | being created or linked with.                         |
+# %-------------------------------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries leave the
+# libraries blank. You have to get your own copy of the tcl/tk 
+# library!! 
+#
+# Note: For libraries that will be created (any in DIRS above)
+# make sure the directory exsists where you want the library to go!
+
+FE_LIBRARY      = $(HOME)/lib/libOpenSees.a
+RELIABILITY_LIBRARY = $(HOME)/lib/libReliability.a
+OPTIMIZATION_LIBRARY = $(HOME)/lib/libOptimization.a
+NDARRAY_LIBRARY = $(HOME)/lib/libndarray.a # BJ_UCD jeremic@ucdavis.edu
+MATMOD_LIBRARY  = $(HOME)/lib/libmatmod.a  # BJ_UCD jeremic@ucdavis.edu
+BJMISC_LIBRARY  = $(HOME)/lib/libBJmisc.a  # BJ_UCD jeremic@ucdavis.edu
+LAPACK_LIBRARY  = $(HOME)/lib/libLapack.a
+BLAS_LIBRARY    = $(HOME)/lib/libBlas.a
+SUPERLU_LIBRARY = $(HOME)/lib/libSuperLU.a
+CBLAS_LIBRARY   = $(HOME)/lib/libCBlas.a
+ARPACK_LIBRARY  = $(HOME)/lib/libArpack.a
+AMD_LIBRARY  = $(HOME)/lib/libAMD.a
+UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
+METIS_LIBRARY   = $(HOME)/lib/libMetis.a
+CSPARSE_LIBRARY   = $(HOME)/lib/libCSparse.a
+
+TCL_LIBRARY = /usr/lib/x86_64-linux-gnu/libtcl8.6.so
+
+BLITZ_LIBRARY = $(HOME)/blitz/lib/libblitz.a
+GRAPHIC_LIBRARY     = 
+
+# WATCH OUT .. These libraries are removed when 'make wipe' is invoked.
+WIPE_LIBS	= $(FE_LIBRARY) \
+		$(LAPACK_LIBRARY) \
+		$(BLAS_LIBRARY) \
+		$(CBLAS_LIBRARY) \
+		$(SUPERLU_LIBRARY) \
+		$(ARPACK_LIBRARY) \
+		$(UMFPACK_LIBRARY) \
+		$(CSPARSE_LIBRARY) \
+	        $(METIS_LIBRARY)
+
+# %---------------------------------------------------------%
+# | SECTION 4: COMPILERS                                    |
+# |                                                         |
+# | The following macros specify compilers, linker/loaders, |
+# | the archiver, and their options.  You need to make sure |
+# | these are correct for your system.                      |
+# %---------------------------------------------------------%
+
+# Compilers
+CC++	= /usr/bin/g++
+CC      = /usr/bin/gcc
+FC	= /usr/bin/gfortran
+
+AR		= ar 
+ARFLAGS		= cqls
+RANLIB		= ranlib
+RANLIBFLAGS     =
+
+# Compiler Flags
+#
+# NOTES:
+#    C++ FLAGS TAKE need _UNIX or _WIN32 for preprocessor dircetives
+#         - the _WIN32 for the Windows95/98 or NT operating system.
+#    C FLAGS used -DUSE_VENDOR_BLAS (needed in SuperLU) if UNIX in C++ FLAGS
+#
+
+# modified as optimizaton currently causing problems with Steeln01 code
+ifeq ($(INTERPRETER_LANGUAGE), PYTHON)
+
+
+# C++FLAGS         = -Wall -D_LINUX -D_UNIX  -D_TCL85  
+C++FLAGS         = -D_LINUX -D_UNIX  -D_TCL85  \
+	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) \
+	$(PROGRAMMING_FLAG) -fPIC -ffloat-store 
+CFLAGS          = -Wall -fPIC
+FFLAGS          = -Wall -fPIC
+
+# Linker
+LINKER          = $(CC++)
+LINKFLAGS       = -g -pg
+
+else
+
+C++FLAGS         = -Wall -D_LINUX -D_UNIX  -D_TCL85  \
+	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) \
+	$(PROGRAMMING_FLAG) -O3 -ffloat-store 
+CFLAGS          = -Wall -O2
+FFLAGS          = -Wall -O
+
+# Linker
+LINKER          = $(CC++)
+LINKFLAGS       = -rdynamic 
+
+endif
+
+
+# Misc
+MAKE		= make
+CD              = cd
+ECHO            = echo
+RM              = rm
+RMFLAGS         = -f
+SHELL           = /bin/sh
+
+# %---------------------------------------------------------%
+# | SECTION 5: COMPILATION                                  |
+# |                                                         |
+# | The following macros specify the macros used in         |
+# | to compile the source code into object code.            |
+# %---------------------------------------------------------%
+
+.SUFFIXES:
+.SUFFIXES:	.C .c .f .f90 .cpp .o .cpp
+
+#
+# %------------------%
+# | Default command. |
+# %------------------%
+#
+.DEFAULT:
+	@$(ECHO) "Unknown target $@, try:  make help"
+#
+# %-------------------------------------------%
+# |  Command to build .o files from .f files. |
+# %-------------------------------------------%
+#
+
+.cpp.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $< -o $@
+
+.C.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $< -o $@
+.c.o:
+	@$(ECHO) Making $@ from $<
+	$(CC) $(CFLAGS) -c $< -o $@
+.f.o:      
+	@$(ECHO) Making $@ from $<
+	$(FC) $(FFLAGS) -c $< -o $@
+
+# %---------------------------------------------------------%
+# | SECTION 6: OTHER LIBRARIES                              |
+# |                                                         |
+# | The following macros specify other libraries that must  |
+# | be linked with when creating executables. These are     |
+# | platform specific and typically order does matter!!     |
+# %---------------------------------------------------------%
+MACHINE_LINKLIBS  = -L$(BASE)/lib \
+		-L$(HOME)/lib  \
+		-lm $(RELIABILITY_LIBRARY) \
+		$(OPTIMIZATION_LIBRARY)
+
+MACHINE_NUMERICAL_LIBS  = -lm \
+		$(ARPACK_LIBRARY) \
+		$(SUPERLU_LIBRARY) \
+		$(UMFPACK_LIBRARY) $(CSPARSE_LIBRARY) \
+	        $(LAPACK_LIBRARY) $(BLAS_LIBRARY) $(CBLAS_LIBRARY) \
+		$(AMD_LIBRARY) $(GRAPHIC_LIBRARY)\
+		-ldl -lgfortran 
+
+MACHINE_SPECIFIC_LIBS = 
+
+
+
+# %---------------------------------------------------------%
+# | SECTION 7: INCLUDE FILES                                |
+# |                                                         |
+# | The following macros specify include files needed for   |
+# | compilation.                                            |
+# %---------------------------------------------------------%
+MACHINE_INCLUDES        = -I/usr/include \
+			  -I$(BASE)/include \
+			  -I/usr/include/cxx \
+			  -I$(HOME)/include -I$(HOME)/blitz
+
+# this file contains all the OpenSees/SRC includes
+include $(FE)/Makefile.incl
+
+#TCL_INCLUDES = -I/usr/includes/tcl-private/generic
+TCL_INCLUDES = -I/usr/include/tcl8.6
+PYTHON_INCLUDES = -I/usr/include/python3.5
+
+INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES) $(PYTHON_INCLUDES)
+
+
+
+
+
+
+
+

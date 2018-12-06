@@ -309,7 +309,7 @@ LysmerTriangle::getTangentStiff(void)
     // = 1 (pure stiffness) 
     // = 2 (damping and stiffness) 
     // = 3 (damping but preserve elastic forces from springs after gravity analysis)
-    if (stage == 1 or stage == 2)  
+    if (stage == 1 || stage == 2)  
     {
       double L = 0; // Actual length used
       if (element_length != 0)
@@ -382,7 +382,7 @@ LysmerTriangle::getDamp(void)
     // = 2 (damping and stiffness) 
     // = 3 (damping but preserve elastic forces from springs after gravity analysis)
     tangentDamping.Zero();
-    if(stage == 0 or stage == 2 or stage ==3)
+    if(stage == 0 || stage == 2 || stage == 3)
     {
       static Matrix subDamp(3,3);
       static Matrix T(3,3);
@@ -451,7 +451,7 @@ LysmerTriangle::getResistingForce()
   {
     springForces.Zero();
   }
-  else if ( stage == 1  or stage == 2 )
+  else if ( stage == 1  || stage == 2 )
   {
     static Vector displacements(9);
     springForces.Zero();
@@ -486,7 +486,7 @@ LysmerTriangle::getResistingForceIncInertia()
   // = 1 (pure stiffness) 
   // = 2 (damping and stiffness) 
   // = 3 (damping but preserve elastic forces from springs after gravity analysis)
-  if (stage == 0 or stage == 2 or stage == 3) 
+  if (stage == 0 || stage == 2 || stage == 3) 
   {    
     static Vector velocities(9);
     internalForces.Zero();
@@ -615,7 +615,7 @@ LysmerTriangle::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
     return -1;
   }           
   
-  MyTag = data(0);
+  MyTag = (int)data(0);
   rho = data(2);
   Vs = data(3);
   Vp = data(4);

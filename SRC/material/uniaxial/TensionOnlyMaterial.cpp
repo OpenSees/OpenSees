@@ -325,3 +325,15 @@ TensionOnlyMaterial::Print(OPS_Stream &s, int flag)
         s << "\"material\": \"" << theMaterial->getTag() << "\", ";
     }
 }
+
+int
+TensionOnlyMaterial::setParameter(const char **argv, int argc, Parameter &param)
+{
+  return theMaterial->setParameter(argv, argc, param);
+}
+
+int
+TensionOnlyMaterial::updateParameter(int parameterID, Information &info)
+{
+  return 0;
+}

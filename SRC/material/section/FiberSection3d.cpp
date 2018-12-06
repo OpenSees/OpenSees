@@ -25,7 +25,7 @@
 // Written: fmk
 // Created: 04/04
 //
-// Description: This file contains the class implementation of FiberSection2d.
+// Description: This file contains the class implementation of FiberSection3d.
 
 #include <stdlib.h>
 #include <math.h>
@@ -802,7 +802,7 @@ FiberSection3d::sendSelf(int commitTag, Channel &theChannel)
 
   res += theChannel.sendID(dbTag, commitTag, data);
   if (res < 0) {
-    opserr << "FiberSection2d::sendSelf - failed to send ID data\n";
+    opserr << "FiberSection3d::sendSelf - failed to send ID data\n";
     return res;
   }    
 
@@ -826,7 +826,7 @@ FiberSection3d::sendSelf(int commitTag, Channel &theChannel)
     
     res += theChannel.sendID(dbTag, commitTag, materialData);
     if (res < 0) {
-     opserr << "FiberSection2d::sendSelf - failed to send material data\n";
+     opserr << "FiberSection3d::sendSelf - failed to send material data\n";
      return res;
     }    
 
@@ -834,7 +834,7 @@ FiberSection3d::sendSelf(int commitTag, Channel &theChannel)
     Vector fiberData(matData, 3*numFibers);
     res += theChannel.sendVector(dbTag, commitTag, fiberData);
     if (res < 0) {
-     opserr << "FiberSection2d::sendSelf - failed to send material data\n";
+     opserr << "FiberSection3d::sendSelf - failed to send fiber data\n";
      return res;
     }    
 
@@ -858,7 +858,7 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
   res += theChannel.recvID(dbTag, commitTag, data);
 
   if (res < 0) {
-   opserr << "FiberSection2d::sendSelf - failed to recv ID data\n";
+   opserr << "FiberSection3d::recvSelf - failed to recv ID data\n";
    return res;
   } 
    
@@ -870,11 +870,11 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
 	  theTorsion->setDbTag(dbTag);
   } 
   if (theTorsion == 0) {
-	    opserr << "FiberSection3d::sendSelf - failed to get torsion material \n";
+	    opserr << "FiberSection3d::recvSelf - failed to get torsion material \n";
 		return -1;
   }
   if (theTorsion->recvSelf(commitTag, theChannel, theBroker) < 0) {
-	   opserr << "FiberSection3d::sendSelf - torsion failed to recvSelf \n";
+	   opserr << "FiberSection3d::recvSelf - torsion failed to recvSelf \n";
        return -2;
   }
   
@@ -883,7 +883,7 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
     ID materialData(2*data(1));
     res += theChannel.recvID(dbTag, commitTag, materialData);
     if (res < 0) {
-     opserr << "FiberSection2d::sendSelf - failed to send material data\n";
+     opserr << "FiberSection3d::recvSelf - failed to recv material data\n";
      return res;
     }    
 
@@ -908,7 +908,7 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
 	theMaterials = new UniaxialMaterial *[numFibers];
 	
 	if (theMaterials == 0) {
-	  opserr << "FiberSection2d::recvSelf -- failed to allocate Material pointers\n";
+	  opserr << "FiberSection3d::recvSelf -- failed to allocate Material pointers\n";
 	  exit(-1);
 	}
 
@@ -918,7 +918,7 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
 	matData = new double [numFibers*3];
 
 	if (matData == 0) {
-	  opserr << "FiberSection2d::recvSelf  -- failed to allocate double array for material data\n";
+	  opserr << "FiberSection3d::recvSelf  -- failed to allocate double array for material data\n";
 	  exit(-1);
 	}
       }
@@ -927,7 +927,7 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
     Vector fiberData(matData, 3*numFibers);
     res += theChannel.recvVector(dbTag, commitTag, fiberData);
     if (res < 0) {
-     opserr << "FiberSection2d::sendSelf - failed to send material data\n";
+     opserr << "FiberSection3d::recvSelf - failed to recv fiber data\n";
      return res;
     }    
     
@@ -946,7 +946,7 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
       }
 
       if (theMaterials[i] == 0) {
-	opserr << "FiberSection2d::recvSelf -- failed to allocate double array for material data\n";
+	opserr << "FiberSection3d::recvSelf -- failed to allocate double array for material data\n";
 	exit(-1);
       }
 

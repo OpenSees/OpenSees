@@ -4,6 +4,7 @@ OBJS       = DispBeamColumn2d.o \
 	DispBeamColumn3d.o \
 	DispBeamColumn2dThermal.o \
 	DispBeamColumn3dThermal.o \
+	DispBeamColumnNL2d.o \
 	DispBeamColumn2dWithSensitivity.o \
 	DispBeamColumn3dWithSensitivity.o \
 	AxEqDispBeamColumn2d.o

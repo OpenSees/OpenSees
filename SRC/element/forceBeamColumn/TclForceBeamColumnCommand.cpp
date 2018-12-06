@@ -41,7 +41,7 @@
 //#include <TimoshenkoBeamColumn2d.h>
 #include <DispBeamColumn2d.h>
 #include <DispBeamColumn3d.h>
-//#include <DispBeamColumnNL2d.h>
+#include <DispBeamColumnNL2d.h>
 #include <DispBeamColumn2dThermal.h>
 #include <DispBeamColumn3dThermal.h> //L.Jiang [SIF]
 #include <ForceBeamColumn2dThermal.h> //L.Jiang [SIF]
@@ -374,10 +374,8 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       */
       else if (strcmp(argv[1],"dispBeamColumn") == 0)
 	theElement = new DispBeamColumn2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass, cMass);
-      /*
       else if (strcmp(argv[1],"dispBeamColumnNL") == 0)
 	theElement = new DispBeamColumnNL2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
-      */
       else if (strcmp(argv[1],"forceBeamColumnCBDI") == 0)
 	theElement = new ForceBeamColumnCBDI2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
       else if (strcmp(argv[1],"forceBeamColumnCSBDI") == 0)
@@ -1314,10 +1312,8 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
     */
     else if (strcmp(argv[1],"dispBeamColumn") == 0)
       theElement = new DispBeamColumn2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, mass, cMass);
-    /*
     else if (strcmp(argv[1],"dispBeamColumnNL") == 0)
       theElement = new DispBeamColumnNL2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, mass);
-    */
     else if (strcmp(argv[1],"forceBeamColumnCBDI") == 0)
       theElement = new ForceBeamColumnCBDI2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, mass);
     else if (strcmp(argv[1],"forceBeamColumnCSBDI") == 0)

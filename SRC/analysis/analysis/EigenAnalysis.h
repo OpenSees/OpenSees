@@ -31,7 +31,7 @@
 //
 // Description: This file contains the class definition of EigenAnalysis.
 // EigenAnalysis is a subclass of Analysis, it is used to perform the 
-// eigen vlaue analysis on the FE_Model.
+// eigen value analysis on the FE_Model.
 //
 // This class is inheritanted from the base class of Analysis
 // which was created by fmk (Frank).

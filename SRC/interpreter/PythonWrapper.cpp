@@ -1469,6 +1469,15 @@ static PyObject *Py_ops_randomVariable(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_updateMaterialStage(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_updateMaterialStage() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
 /////////////////////////////////////////////////
 ////////////// Add Python commands //////////////
 /////////////////////////////////////////////////
@@ -1623,6 +1632,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("sensSectionForce", &Py_ops_sensSectionForce);
     addCommand("sensNodePressure", &Py_ops_sensNodePressure);
     addCommand("randomVariable", &Py_ops_randomVariable);
+    addCommand("updateMaterialStage", &Py_ops_updateMaterialStage);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);

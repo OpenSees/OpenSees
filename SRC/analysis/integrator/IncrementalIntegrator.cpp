@@ -174,7 +174,7 @@ IncrementalIntegrator::getLastResponse(Vector &result, const ID &id)
 	}
 	else {
 	    opserr << "WARNING IncrementalIntegrator::getLastResponse() -";
-	    opserr << "location " << loc << "in ID ouside bounds ";
+	    opserr << "location " << loc << "in ID outside bounds ";
 	    opserr << size << "\n";	
 	    res = -2;
 	}

@@ -67,7 +67,9 @@ FileDatastore::FileDatastore(const char *dataBaseName,
 
 FileDatastore::~FileDatastore() 
 {
-
+  if (dataBase != 0)
+    delete [] dataBase;
+  
   if (data != 0)
     delete [] data;
 
