@@ -119,7 +119,7 @@ File::addFile(const char *fileName, const char *path, const char *fileDescriptio
 
     if (description.length() == 0) {
 
-      int rootPathLength = pathCurrent-combined;
+      int rootPathLength = int(pathCurrent-combined);
       char *rootPath = new char[rootPathLength+2];
      
       if (rootPathLength > 0) {
@@ -144,7 +144,7 @@ File::addFile(const char *fileName, const char *path, const char *fileDescriptio
 	combinedFile = prev;
 	pathCurrent = 0;
       } else {
-	dirNameLength = next-prev;
+	dirNameLength = int(next-prev);
 	strncpy(dirName, prev, dirNameLength);
 	strcpy(&dirName[dirNameLength],"");
 	pathCurrent = next+1;
@@ -269,6 +269,5 @@ File::getFiles(void)
 int
 File::getNumFiles(void)
 {
-  return dirFiles.size();
+  return int(dirFiles.size());
 }
-

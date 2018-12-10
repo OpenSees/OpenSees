@@ -63,6 +63,12 @@ class NDMaterial : public Material
     virtual const Matrix &getTangent(void);
     virtual const Matrix &getInitialTangent(void) {return this->getTangent();};
 
+	//Added by L.Jiang, [SIF]
+	virtual double getThermalTangentAndElongation(double &TempT, double &, double &);
+	virtual double setThermalTangentAndElongation(double &TempT, double &, double &);
+	virtual const Vector& getTempAndElong(void);
+	//Added by L.Jiang, [SIF]
+
     virtual const Vector &getStress(void);
     virtual const Vector &getStrain(void);
 
@@ -97,9 +103,10 @@ class NDMaterial : public Material
     static Vector errVector;
 };
 
-bool OPS_addNDMaterial(NDMaterial *newComponent);
-NDMaterial *OPS_getNDMaterial(int tag);
-void OPS_clearAllNDMaterial(void);
-
+extern bool OPS_addNDMaterial(NDMaterial *newComponent);
+extern NDMaterial *OPS_getNDMaterial(int tag);
+extern bool OPS_removeNDMaterial(int tag);
+extern void OPS_clearAllNDMaterial(void);
+extern void OPS_printNDMaterial(OPS_Stream &s, int flag = 0);
 
 #endif

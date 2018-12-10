@@ -57,6 +57,14 @@ TransientIntegrator::~TransientIntegrator()
 }
 
 int 
+TransientIntegrator::formTangent(int statFlag, double iFact, double cFact)
+{
+  iFactor = iFact;
+  cFactor = cFact;
+  return this->formTangent(statFlag);
+}
+
+int 
 TransientIntegrator::formTangent(int statFlag)
 {
     int result = 0;

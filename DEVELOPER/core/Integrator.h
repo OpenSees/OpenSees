@@ -50,7 +50,7 @@ class Matrix;
 class Integrator: public MovableObject
 {
 public:
-     Integrator(int classTag);
+    Integrator(int classTag);
     virtual ~Integrator();
     
     virtual int domainChanged(void);
@@ -77,19 +77,18 @@ public:
     virtual int computeSensitivities();//Abbas
     int sensitivityDomainChanged();//Abbass
     bool shouldComputeAtEachStep(void);
-    bool newAlgorithm(void) {return true;};
-    virtual  bool computeSensitivityAtEachIteration();
-    bool activateSensitivityKey();
-    bool activateSensitivity( ){return SensitivityKey;}; 
+    void setComputeType(int flag);
+    bool newAlgorithm(void) {return true;}
+    void activateSensitivityKey() {SensitivityKey=true;}
+    bool activateSensitivity() {return SensitivityKey;};
      ///////////////////////////////Abbas//////////////////
 
- protected:
+protected:
 private:
 
 
-int analysisTypeTag;
-bool SensitivityKey; // toactivate the sensitivity ind 
-
+    int analysisTypeTag;
+    bool SensitivityKey;
 };
 
 #endif

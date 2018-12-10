@@ -46,7 +46,7 @@ class Vector
     // constructors and destructor
     Vector();
     Vector(int);
-    Vector(const Vector &); 
+    Vector(const Vector &);    
 #ifdef USE_CXX11   
     Vector(Vector &&);    
 #endif

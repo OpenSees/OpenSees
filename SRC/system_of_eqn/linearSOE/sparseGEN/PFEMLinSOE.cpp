@@ -520,7 +520,7 @@ PFEMLinSOE::setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int&
                     }
                 }
 	    } else if(thePC->isFluid() || thePC->isInterface()) {
-                if(pid(10) >= 0) {
+                if(pid(0) >= 0) {
                     dofType(pid(0)) = 3;          // pressure
                     dofID(pid(0)) = Psize++;
                 }

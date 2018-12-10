@@ -48,124 +48,82 @@
 #include <DOF_Group.h>
 
 Pressure_Constraint::Pressure_Constraint(int classTag)
-    :DomainComponent(0,classTag), pTag(0), fluidEleTags(), otherEleTags()
+    :DomainComponent(0,classTag), pTag(0), fluidEleTags(), otherEleTags(),
+     pval(0), freesurf(false)
 {
 }
 
-Pressure_Constraint::Pressure_Constraint(int classTag, int nodeId, int ptag, int ndf)
-    :DomainComponent(nodeId,classTag), pTag(ptag), fluidEleTags(), otherEleTags(), pndf(ndf)
+Pressure_Constraint::Pressure_Constraint(int nodeId, int ptag)
+    :DomainComponent(nodeId,CNSTRNT_TAG_Pressure_Constraint),
+     pTag(ptag), fluidEleTags(), otherEleTags(), pval(0), freesurf(false)
 {
 }
 
-Pressure_Constraint::Pressure_Constraint(int nodeId, int ptag, int ndf)
-    :DomainComponent(nodeId,CNSTRNT_TAG_Pressure_Constraint), 
-     pTag(ptag), fluidEleTags(), otherEleTags(), pndf(ndf)
+Pressure_Constraint::Pressure_Constraint(int nodeId, double val)
+    :DomainComponent(nodeId,CNSTRNT_TAG_Pressure_Constraint),
+     pTag(nodeId), fluidEleTags(), otherEleTags(),
+     pval(0), freesurf(false)
 {
-}
-
-Pressure_Constraint::Pressure_Constraint(int nodeId, int ndf)
-    :DomainComponent(nodeId,CNSTRNT_TAG_Pressure_Constraint), 
-     pTag(nodeId), fluidEleTags(), otherEleTags(), pndf(ndf)
-{
+    pval = new double[2];
+    pval[0] = val;
+    pval[1] = 0.0;
 }
 
 Pressure_Constraint::~Pressure_Constraint()
 {
     Domain* theDomain = this->getDomain();
     if(theDomain != 0) {
-        Node* pNode = theDomain->removeNode(pTag);
-        if(pNode != 0) {
-            delete pNode;
-        }
+	if (pval == 0) {
+	    Node* pNode = theDomain->removeNode(pTag);
+	    if(pNode != 0) {
+		delete pNode;
+	    }
+	}
     }
+    if (pval != 0) delete [] pval;
 }
 
 void
 Pressure_Constraint::setDomain(Domain* theDomain)
 {
-    // get old domain
-    // Domain* oldDomain = this->getDomain();
-    // if(oldDomain != 0) {
-    //     Node* pNode = oldDomain->removeNode(pTag);
-    //     if(pNode != 0) {
-    //         delete pNode;
-    //     }
-    // }
-
+    freesurf = false;
     // set new domain
     DomainComponent::setDomain(theDomain);
 
     // check domain
     if(theDomain == 0) return;
 
-    // check pndf
-    int nodeId = this->getTag();
-    if(pndf <= 0) {
-        return;
-    }
-
-    // create pressure node
-    Node* pNode = 0;
-    if(pTag != nodeId) {
-        pNode = theDomain->getNode(pTag);
-        if(pNode != 0) return;
-    } else {
-        pTag = findNodeTag(theDomain);
-    }
-
     // check the node
+    int nodeId = this->getTag();
     Node* theNode = theDomain->getNode(nodeId);
     if(theNode == 0) {
         opserr<<"WARNING: node "<<nodeId<<" does not exist ";
         opserr<<"-- Pressure_Constraint::setDomain\n";
         return;
     }
-    
-    // check ndm
-    const Vector& coord = theNode->getCrds();
-    int ndm = coord.Size();
-    if(ndm<2 || ndm>3) {
-        opserr<<"WARNING: bad ndm "<<ndm<<" of node "<<nodeId;
-        opserr<<" -- Pressure_Constraint::setDomain\n";
-        return;
+
+    // check pval
+    if (pval != 0) return;
+
+    if (pTag == nodeId) {
+	opserr << "WARNING: pressure node has the same tag as the PC\n";
+	return;
     }
 
-    // check ndf
-    int ndf = theNode->getNumberDOF();
-    if(ndf < ndm) {
-        opserr<<"WARNING: wrong ndf of node "<<nodeId;
-        opserr<<": must be at least "<<ndm;
-        opserr<<" -- Pressure_Constraint::setDomain\n";
-        return;
-    }
-
-    // create pressure node
-    if(ndm == 2) {
-        pNode = new Node(pTag, pndf, coord(0), coord(1));
-    } else {
-        pNode = new Node(pTag, pndf, coord(0), coord(1), coord(2));
-    }
+    // check the pressure node
+    Node* pNode = theDomain->getNode(pTag);
     if(pNode == 0) {
-        opserr<<"WARNING: run out of memory to create Node";
-        opserr<<" -- Pressure_Constraint::setDomain\n";
+        opserr<<"WARNING: pressure node "<<pTag<<" does not exist ";
+        opserr<<"-- Pressure_Constraint::setDomain\n";
         return;
     }
-    if(theDomain->addNode(pNode) == false) {
-        opserr<<"WARNING: failed to add node to domain";
-        opserr<<" -- Pressure_Constraint::setDomain\n";
-        delete pNode;
-        return;
-    }
-
-
-
 }
 
 Node*
 Pressure_Constraint::getPressureNode()
 {
-    if(pTag == this->getTag()) return 0;
-    if(pndf <= 0) return 0;
+    if(pval != 0) return 0;
+
     Domain* theDomain = this->getDomain();
     if(theDomain == 0) {
         opserr<<"WARNING: domain has not been set";
@@ -178,6 +136,11 @@ Pressure_Constraint::getPressureNode()
 void
 Pressure_Constraint::setPressure(double p)
 {
+    if (pval != 0) {
+	pval[0] = p;
+	return;
+    }
+
     Node* pnode = this->getPressureNode();
     if (pnode == 0) return;
     const Vector& vel = pnode->getVel();
@@ -188,24 +151,67 @@ Pressure_Constraint::setPressure(double p)
     pnode->commitState();
 }
 
+void
+Pressure_Constraint::setPdot(double pdot)
+{
+    if (pval != 0) {
+    	pval[1] = pdot;
+    	return;
+    }
+
+    Node* pnode = this->getPressureNode();
+    if (pnode == 0) return;
+    const Vector& accel = pnode->getAccel();
+    Vector newaccel(accel);
+    newaccel.Zero();
+    newaccel(0) = pdot;
+    pnode->setTrialAccel(newaccel);
+    pnode->commitState();
+}
+
 double
 Pressure_Constraint::getPressure(int last)
 {
-    if(pndf <= 0) return 0.0;
+    if (pval != 0) {
+	return pval[0];
+    }
+
     Domain* theDomain = this->getDomain();
     if(theDomain == 0) {
         opserr<<"WARNING: domain has not been set";
         opserr<<" -- Pressure_Constraint::getPressureNode\n";
         return 0;
     }
-    int ntag = this->getTag();
-    if(ntag == pTag) return 0.0;
     Node* pNode = theDomain->getNode(pTag);
     if(pNode == 0) return 0.0;
     const Vector& vel = pNode->getVel();
     if(last == 1) {
         if(vel.Size()==0) return 0.0;
         return vel(0);
+    }
+    return 0.0;
+}
+
+double
+Pressure_Constraint::getPdot(int last)
+{
+    if (pval != 0) {
+	return pval[1];
+    }
+
+    Domain* theDomain = this->getDomain();
+    if(theDomain == 0) {
+        opserr<<"WARNING: domain has not been set";
+        opserr<<" -- Pressure_Constraint::getPressureNode\n";
+        return 0;
+    }
+
+    Node* pNode = theDomain->getNode(pTag);
+    if(pNode == 0) return 0.0;
+    const Vector& accel = pNode->getAccel();
+    if(last == 1) {
+        if(accel.Size()==0) return 0.0;
+        return accel(0);
     }
     return 0.0;
 }
@@ -304,21 +310,6 @@ Pressure_Constraint::isIsolated() const
 int 
 Pressure_Constraint::sendSelf(int commitTag, Channel& theChannel)
 {
-    int res = 0;
-    int dataTag = this->getDbTag();
-
-    // send size of IDs
-    ID idsize(3);
-    idsize(0) = pTag;
-    idsize(1) = pndf;
-    idsize(2) = this->getTag();
-    res = theChannel.sendID(dataTag, commitTag, idsize);
-    if(res < 0) {
-        opserr<<"WARNING: Pressure_Constraint::sendSelf - ";
-        opserr<<this->getTag()<<" failed to send idsize\n";
-        return -1;
-    }
-
     return 0;
 }
 
@@ -326,20 +317,6 @@ int
 Pressure_Constraint::recvSelf(int commitTag, Channel &theChannel, 
                                   FEM_ObjectBroker &theBroker)
 {
-    int res = 0;
-    int dataTag = this->getDbTag();
-
-    // receive idsize
-    ID idsize(3);
-    res = theChannel.recvID(dataTag, commitTag, idsize);
-    if(res < 0) {
-        opserr<<"WARNING: PFEMElement2D::recvSelf - failed to receive idsize\n";
-        return -1;
-    }
-    pTag = idsize(0);
-    pndf = idsize(1);
-    this->setTag(idsize(2));
-
     return 0;
 }
 
@@ -349,16 +326,3 @@ Pressure_Constraint::Print(OPS_Stream& s, int flag)
     s << "Pressure_Constraint: " << this->getTag() << "\n";
     s << "pressure node -- "<<pTag<<"\n";
 }
-
-int 
-Pressure_Constraint::findNodeTag(Domain* theDomain)
-{
-    NodeIter& theNodes = theDomain->getNodes();
-    Node* firstNode = theNodes();
-    if(firstNode == 0) {
-        return -1;
-    }
-    int tag = firstNode->getTag();
-    return tag-1;
-}
-
