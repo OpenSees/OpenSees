@@ -462,7 +462,33 @@ int ConcretewBeta::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
 
 void ConcretewBeta::Print(OPS_Stream &s, int flag)
 {
-	s << "ConcretewBeta, tag: " << this->getTag() << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"ConcretewBeta\", ";
+		s << "\"fpc\": " << fpc << ", ";
+		s << "\"ec0\": " << ec0 << ", ";
+		s << "\"fcint\": " << fcint << ", ";
+		s << "\"ecint\": " << ecint << ", ";
+		s << "\"fcres\": " << fcres << ", ";
+		s << "\"ecres\": " << ecres << ", ";
+		s << "\"ft\": " << fct << ", ";
+		s << "\"ftint\": " << ftint << ", ";
+		s << "\"etint\": " << etint << ", ";
+		s << "\"ftres\": " << ftres << ", ";
+		s << "\"etres\": " << etres << ", ";
+		s << "\"lambda\": " << lambda << ", ";
+		s << "\"alpha\": " << alpha << ", ";
+		s << "\"bint\": " << bint << ", ";
+		s << "\"ebint\": " << etbint << ", ";
+		s << "\"bres\": " << bres << ", ";
+		s << "\"ebres\": " << etbres << ", ";
+		s << "\"E\": " << E0 << ", ";
+		s << "\"fcc\": " << fcc << ", ";
+		s << "\"ecc\": " << ecc << "}";
+	} else {
+		s << "ConcretewBeta, tag: " << this->getTag() << endln;
+	}
 }
 
 
