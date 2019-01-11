@@ -46,14 +46,15 @@ analyze 5
 
 recorder Node -file Node.out -time -node $nn -dof 1 disp
 
+
 # Remove the static analysis & reset the time to 0.0
 wipeAnalysis
+
 setTime 0.0
 
 remove loadPattern 1
 
 rayleigh 0.01 0.0 0.0 0.0
-
 
 # Create the transient analysis
 test EnergyIncr     1.0e-10    20   0
@@ -67,12 +68,10 @@ puts "EIGEN: [eigen 2]"
 
 analyze 10 1.0
 
-
 puts "EIGEN: [eigen 2]"
 
-puts [nodeDisp $nn]
+puts "NODEDISP $nn: [nodeDisp $nn]"
 puts "ele1: [lindex [eleResponse 1 forces] 1]"
 
+
 exit
-
-
