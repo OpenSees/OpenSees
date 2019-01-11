@@ -80,6 +80,20 @@ OPS_ComponentElement2d(void)
     return 0;
   }
 
+  double mass = 0.0;
+  int cMass = 0;
+  while(OPS_GetNumRemainingInputArgs() > 0) {
+    std::string type = OPS_GetString();
+    if(type == "-rho") {
+      int numData = 1;
+      if(OPS_GetNumRemainingInputArgs() > 0) {
+	if(OPS_GetDoubleInput(&numData,&mass) < 0) return 0;
+      }
+    } else if(type == "-cMass") {
+      cMass = 1;
+    }
+  }
+
   CrdTransf *theTrans = OPS_getCrdTransf(iData[3]);
 
   UniaxialMaterial *end1 = OPS_getUniaxialMaterial(iData[4]);
@@ -88,7 +102,8 @@ OPS_ComponentElement2d(void)
   // Parsing was successful, allocate the material
   theElement = new ComponentElement2d(iData[0], dData[0], dData[1], dData[2], 
 				      iData[1], iData[2], 
-				      *theTrans, end1, end2);
+				      *theTrans, end1, end2, 
+				      mass,cMass);
 
   if (theElement == 0) {
     opserr << "WARNING could not create element of type ComponentElement2d\n";
@@ -101,8 +116,8 @@ OPS_ComponentElement2d(void)
 
 ComponentElement2d::ComponentElement2d()
   :Element(0,ELE_TAG_ComponentElement2d), 
-  A(0.0), E(0.0), I(0.0), rho(0.0), 
-  Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0)
+   A(0.0), E(0.0), I(0.0), rho(0.0), cMass(0),
+   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0)
 {
   // does nothing
   q0[0] = 0.0;
@@ -121,9 +136,9 @@ ComponentElement2d::ComponentElement2d()
 ComponentElement2d::ComponentElement2d(int tag, double a, double e, double i, 
 				       int Nd1, int Nd2, CrdTransf &coordTransf,
 				       UniaxialMaterial *end1, UniaxialMaterial *end2,
-				       double r)
+				       double r, int cm)
   :Element(tag,ELE_TAG_ComponentElement2d), 
-  A(a), E(e), I(i), rho(r), 
+   A(a), E(e), I(i), rho(r), cMass(cm),
    Q(6), q(3), kb(3,3),
    connectedExternalNodes(2), theCoordTransf(0), end1Hinge(0), end2Hinge(0),
    kTrial(2,2), R(4), uTrial(4), uCommit(4), init(false)
@@ -293,7 +308,7 @@ int
 ComponentElement2d::update(void)
 {
   // get previous displacements and the new end delta displacements
-  int res = theCoordTransf->update();
+  theCoordTransf->update();
 
   double u1 = uTrial(0);
   double u2 = uTrial(1);
@@ -497,7 +512,7 @@ ComponentElement2d::getTangentStiff(void)
   kb(2,2) = kTrial(1,1);
   kb(1,2) = kTrial(0,1);
   kb(2,1) = kTrial(1,0);
-  
+
   return theCoordTransf->getGlobalStiffMatrix(kb, q);
 }
 
@@ -535,11 +550,33 @@ ComponentElement2d::getMass(void)
     // get initial element length
     double L = theCoordTransf->getInitialLength();
     
-    // lumped mass matrix
-    double m = 0.5*rho*L;
-    K(0,0) = K(1,1) = K(3,3) = K(4,4) = m;
+        if (cMass == 0)  {
+
+            // lumped mass matrix
+            double m = 0.5*rho*L;
+            K(0,0) = K(1,1) = K(3,3) = K(4,4) = m;
+
+        } else  {
+            // consistent mass matrix
+            static Matrix ml(6,6);
+            double m = rho*L/420.0;
+            ml(0,0) = ml(3,3) = m*140.0;
+            ml(0,3) = ml(3,0) = m*70.0;
+
+            ml(1,1) = ml(4,4) = m*156.0;
+            ml(1,4) = ml(4,1) = m*54.0;
+            ml(2,2) = ml(5,5) = m*4.0*L*L;
+            ml(2,5) = ml(5,2) = -m*3.0*L*L;
+            ml(1,2) = ml(2,1) = m*22.0*L;
+            ml(4,5) = ml(5,4) = -ml(1,2);
+            ml(1,5) = ml(5,1) = -m*13.0*L;
+            ml(2,4) = ml(4,2) = -ml(1,5);
+            
+            // transform local mass matrix to global system
+            K = theCoordTransf->getGlobalMatrixFromLocal(ml);
+        }
   }
-  
+
   return K;
 }
 
