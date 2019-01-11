@@ -79,10 +79,11 @@ private:
     virtual int savePart(int partno, int ctag, int ndf);
     virtual int savePart0(int ndf);
     virtual int savePartParticle(int partno, int gtag, int ndf);
+    void getfilename(const char* name);
     
 private:
     int indentsize, precision, indentlevel;
-    std::string filename;
+    std::string pathname,basename;
     std::vector<double> timestep;
     std::vector<ID> timeparts;
     std::ofstream theFile;
