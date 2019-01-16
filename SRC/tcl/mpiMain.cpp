@@ -216,20 +216,20 @@ main(int argc, char **argv)
     //    OPS_MACHINE = &theMachine;
     OPS_MACHINE = theMachineBroker;
     OPS_PARALLEL_PROCESSING = OPS_np;
-
-	/* only use p0 if even number of partitions
-    if (OPS_np%2 == 0) {
-      OPS_NUM_SUBDOMAINS = OPS_np;
-      OPS_USING_MAIN_DOMAIN = true;
-      OPS_MAIN_DOMAIN_PARTITION_ID = 1;
-    } else
-      OPS_NUM_SUBDOMAINS = OPS_np - 1;
-	  */
-	// always use p0 even if ODD number of partitions
-	  OPS_NUM_SUBDOMAINS = OPS_np;
-      OPS_USING_MAIN_DOMAIN = true;
-      OPS_MAIN_DOMAIN_PARTITION_ID = 1;
-
+    
+    /* only use p0 if even number of partitions
+       if (OPS_np%2 == 0) {
+       OPS_NUM_SUBDOMAINS = OPS_np;
+       OPS_USING_MAIN_DOMAIN = true;
+       OPS_MAIN_DOMAIN_PARTITION_ID = 1;
+       } else
+       OPS_NUM_SUBDOMAINS = OPS_np - 1;
+    */
+    // always use p0 even if ODD number of partitions
+    OPS_NUM_SUBDOMAINS = OPS_np;
+    OPS_USING_MAIN_DOMAIN = true;
+    OPS_MAIN_DOMAIN_PARTITION_ID = 1;
+    
     OPS_PARTITIONED    = false;
     
     //
