@@ -92,7 +92,7 @@ void* OPS_NineFourNodeQuadUP()
 
     return new NineFourNodeQuadUP(tags[0],tags[1],tags[2],tags[3],tags[4],
 				  tags[5],tags[6],tags[7],tags[8],tags[9],
-				  *mat,"PlainStrain",thk,data[0],data[1],data[2],data[3],
+				  *mat,"PlaneStrain",thk,data[0],data[1],data[2],data[3],
 				  opt[0],opt[1]);
 }
 
