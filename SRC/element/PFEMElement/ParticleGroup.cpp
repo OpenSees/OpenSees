@@ -66,7 +66,7 @@ int OPS_ParticleGroup()
     int ndm = OPS_GetNDM();
     VDouble p1(ndm), p2(ndm), p3(ndm), p4(ndm);
     VDouble p5(ndm), p6(ndm), p7(ndm), p8(ndm);
-    VInt nump(2);
+    VInt nump(3);
     const char *geotype = OPS_GetString();
     if (strcmp(geotype, "quad") == 0)
     {
