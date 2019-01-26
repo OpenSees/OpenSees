@@ -52,6 +52,7 @@ void* OPS_PlateFromPlaneStressMaterial();
 void* OPS_ConcreteS();
 void* OPS_PlaneStressUserMaterial();
 void* OPS_BeamFiberMaterial();
+void* OPS_PM4Sand();
 
 namespace {
 
@@ -141,7 +142,8 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("PlaneStressUserMaterial", &OPS_PlaneStressUserMaterial));
 	nDMaterialsMap.insert(std::make_pair("BeamFiberMaterial", &OPS_BeamFiberMaterial));
 	nDMaterialsMap.insert(std::make_pair("BeamFiber", &OPS_BeamFiberMaterial));
-
+	nDMaterialsMap.insert(std::make_pair("PM4Sand", &OPS_BeamFiberMaterial));
+	
 	return 0;
     }
 }
