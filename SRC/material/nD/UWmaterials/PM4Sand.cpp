@@ -1042,10 +1042,16 @@ void PM4Sand::integrate()
 	mFabric = mFabric_n;
 	mFabric_in = mFabric_in_n;
 
-	Vector n_tr(3);
-	n_tr = GetNormalToYield(mSigma_n + mCe*(mEpsilon - mEpsilon_n), mAlpha);
+	Vector n_tr(3), tmp0(3), tmp1(3), mAlpha_mAlpha_in_true(3);
+	// n_tr = GetNormalToYield(mSigma_n + mCe*(mEpsilon - mEpsilon_n), mAlpha);
+	tmp0 += mSigma_n; tmp1 = mEpsilon; tmp1 -= mEpsilon_n;
+	tmp0 += (mCe * tmp1);
+	n_tr = GetNormalToYield(tmp0, mAlpha);
 	// n_tr = GetNormalToYield(mSigma_n, mAlpha);
-	if ((DoubleDot2_2_Contr(mAlpha - mAlpha_in_true, n_tr) < 0.0) && me2p) {
+
+	// if ((DoubleDot2_2_Contr(mAlpha - mAlpha_in_true, n_tr) < 0.0) && me2p) {
+	mAlpha_mAlpha_in_true = mAlpha; mAlpha_mAlpha_in_true -= mAlpha_in_true;
+	if ((DoubleDot2_2_Contr(mAlpha_mAlpha_in_true, n_tr) < 0.0) && me2p) {
 		mAlpha_in_p = mAlpha_in;
 		mAlpha_in_true = mAlpha;
 		mFabric_in = mFabric;
@@ -1108,9 +1114,11 @@ void PM4Sand::elastic_integrator(const Vector& CurStress, const Vector& CurStrai
 	Vector dStrain(3);
 
 	// calculate elastic response
-	dStrain = NextStrain - CurStrain;
+	// dStrain = NextStrain - CurStrain;
+	dStrain = NextStrain; dStrain -= CurStrain;
 	NextVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(NextStrain);
-	NextElasticStrain = CurElasticStrain + dStrain;
+	// NextElasticStrain = CurElasticStrain + dStrain;
+	NextElasticStrain = CurElasticStrain; NextElasticStrain += dStrain;
 	GetElasticModuli(CurStress, K, G);
 	aCep_Consistent = aCep = aC = GetStiffness(K, G);
 	NextStress = CurStress + DoubleDot4_2(aC, dStrain);
@@ -1156,15 +1164,23 @@ void PM4Sand::explicit_integrator(const Vector& CurStress, const Vector& CurStra
 	}
 
 	double elasticRatio, f, fn, dVolStrain;
-	Vector dSigma(3), dDevStrain(3), n(3);
+	Vector dStrain(3), dSigma(3), dDevStrain(3), n(3), tmp(3);
 
 	NextVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(NextStrain);
-	NextElasticStrain = CurElasticStrain + NextStrain - CurStrain;
-	dVolStrain = GetTrace(NextStrain - CurStrain);
-	dDevStrain = (NextStrain - CurStrain) - dVolStrain / 3.0 * mI1;
+	// NextElasticStrain = CurElasticStrain + NextStrain - CurStrain;
+	// dVolStrain = GetTrace(NextStrain - CurStrain);
+	// dDevStrain = (NextStrain - CurStrain) - dVolStrain / 3.0 * mI1;
+	dStrain = NextStrain; dStrain -= CurStrain;
+	NextElasticStrain = CurElasticStrain; NextElasticStrain += dStrain;
+	dVolStrain = GetTrace(dStrain);
+	dDevStrain += mI1; dDevStrain *= (-1.0 * dVolStrain / 3.0); dDevStrain += dStrain;
+
 	aC = GetStiffness(K, G);
-	dSigma = 2 * mG * ToContraviant(dDevStrain) + mK * dVolStrain * mI1;
-	NextStress = CurStress + dSigma;
+	// dSigma = 2 * mG * ToContraviant(dDevStrain) + mK * dVolStrain * mI1;
+	tmp = ToContraviant(dDevStrain); tmp *= (2 * mG);
+	dSigma = mI1; dSigma *= (mK * dVolStrain); dSigma += tmp;
+	// NextStress = CurStress + dSigma;
+	NextStress = CurStress; NextStress += dSigma;
 
 	f = GetF(NextStress, CurAlpha);
 
@@ -1188,8 +1204,11 @@ void PM4Sand::explicit_integrator(const Vector& CurStress, const Vector& CurStra
 	else if (fn < -mTolF) {
 		// This is a transition from elastic to plastic
 		elasticRatio = IntersectionFactor(CurStress, CurStrain, NextStrain, CurAlpha, 0.0, 1.0);
-		dSigma = DoubleDot4_2(aC, elasticRatio*(NextStrain - CurStrain));
-		(this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio*(NextStrain - CurStrain), CurElasticStrain + elasticRatio*(NextStrain - CurStrain),
+		dSigma = DoubleDot4_2(aC, elasticRatio*(dStrain));
+		// (this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio*(NextStrain - CurStrain), CurElasticStrain + elasticRatio*(NextStrain - CurStrain),
+		// 	CurAlpha, CurFabric, alpha_in, alpha_in_p, NextStrain, NextElasticStrain, NextStress, NextAlpha, NextFabric, NextL, NextVoidRatio,
+		// 	G, K, aC, aCep, aCep_Consistent);
+		(this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio * dStrain, CurElasticStrain + elasticRatio * dStrain,
 			CurAlpha, CurFabric, alpha_in, alpha_in_p, NextStrain, NextElasticStrain, NextStress, NextAlpha, NextFabric, NextL, NextVoidRatio,
 			G, K, aC, aCep, aCep_Consistent);
 
@@ -1207,7 +1226,7 @@ void PM4Sand::explicit_integrator(const Vector& CurStress, const Vector& CurStra
 			// This is an elastic unloding followed by plastic loading
 			elasticRatio = IntersectionFactor_Unloading(CurStress, CurStrain, NextStrain, CurAlpha);
 			dSigma = DoubleDot4_2(aC, elasticRatio*(NextStrain - CurStrain));
-			(this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio*(NextStrain - CurStrain), CurElasticStrain + elasticRatio*(NextStrain - CurStrain),
+			(this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio*(dStrain), CurElasticStrain + elasticRatio*(dStrain),
 				CurAlpha, CurFabric, alpha_in, alpha_in_p, NextStrain, NextElasticStrain, NextStress, NextAlpha, NextFabric, NextL, NextVoidRatio,
 				G, K, aC, aCep, aCep_Consistent);
 
@@ -2299,7 +2318,7 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	, const double &pzp, const double &Mcur, const double &CurDr, Vector &n, double &D, Vector &R, double &K_p
 	, Vector &alphaD, double &Cka, double &h, Vector &b, double &AlphaAlphaBDotN)
 {
-	Vector alphaD_alpha(3), alphaDr_alpha(3), alpha_mAlpha_in(3), alpha_mAlpha_in_true(3);
+	Vector alphaD_alpha(3), alphaDr_alpha(3), alpha_mAlpha_in(3), alpha_mAlpha_in_true(3), alpha_mAlpha_p(3), minusFabric(3);
 	double Czpk1, Czpk2, Cpzp2, Cg1, Ckp, AlphaAlphaInDotN, AlphaAlphaInTrueDotN, Czin1, Crot1, Mdr;
 	double p = 0.5 * GetTrace(stress);
 	if (p <= m_Pmin) p = m_Pmin;
@@ -2344,7 +2363,9 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	AlphaAlphaInTrueDotN = Macauley(DoubleDot2_2_Contr(alpha_mAlpha_in_true, n));
 	Cka = 1.0 + m_Ckaf / (1.0 + pow(2.5*AlphaAlphaInTrueDotN, 2))*Cpzp2*Czpk1;
 	// updataed K_p formulation following PM4Sand V3.1. mAlpha_in is the apparent back-stress ratio. 
-	if (DoubleDot2_2_Contr(alpha - alpha_in_p, n) <= 0) {
+	// if (DoubleDot2_2_Contr(alpha - alpha_in_p, n) <= 0) {
+	alpha_mAlpha_p = alpha; alpha_mAlpha_p -= alpha_in_p;
+	if (DoubleDot2_2_Contr(alpha_mAlpha_p, n) <= 0) {
 		h = 1.5 * G * m_h0 / p / (exp(AlphaAlphaInDotN) - 1 + Cg1) / sqrt(fabs(AlphaAlphaBDotN)) *
 			Cka / (1 + Ckp * zpeak / m_z_max * Macauley(AlphaAlphaBDotN) * sqrt(1 - Czpk2));
 		h = h * (AlphaAlphaInDotN + Cg1) / (AlphaAlphaInTrueDotN + Cg1);
@@ -2357,7 +2378,8 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	K_p = two3 * h * p * DoubleDot2_2_Contr(b, n);
 	Czin1 = Macauley(1.0 - exp(-2.0*fabs((DoubleDot2_2_Contr(fabric_in, n) - DoubleDot2_2_Contr(fabric, n)) / m_z_max)));
 	// rotated dilatancy surface
-	Crot1 = fmax((1.0 + 2 * Macauley(DoubleDot2_2_Contr(-1.0*fabric, n)) / (sqrt(2.0)*m_z_max)*(1 - Czin1)), 1.0);
+	minusFabric = fabric; minusFabric *= (-1.0);
+	Crot1 = fmax((1.0 + 2 * Macauley(DoubleDot2_2_Contr(minusFabric, n)) / (sqrt(2.0)*m_z_max)*(1 - Czin1)), 1.0);
 	Mdr = mMd / Crot1;
 	// Vector alphaDr = root12 * (Mdr - m_m) * n;
 	alphaDr_alpha = n; alphaDr_alpha *= (root12 * (Mdr - m_m)); alphaDr_alpha -= alpha;
@@ -2365,12 +2387,10 @@ PM4Sand::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	if (DoubleDot2_2_Contr(alphaDr_alpha, n) <= 0) {
 		// dilation
 		double Cpzp, Cpmin, Czin2, temp, Ad, Drot;
-		Vector minusFabric(3);
 		Cpzp = (pzp == 0.0) ? 1.0 : 1.0 / (1.0 + pow((2.5*p / pzp), 5.0));
 		Cpmin = 1.0 / (1.0 + pow((m_Pmin2 / p), 2));
 		Czin2 = (1 + Czin1*(zcum - zpeak) / 3.0 / m_z_max) / (1 + 3.0 * Czin1*(zcum - zpeak) / 3 / m_z_max);
 		// double temp = pow((1.0 - Macauley(DoubleDot2_2_Contr(-1.0 * fabric, n)) * root12 / zpeak), 3);
-		minusFabric = fabric; minusFabric *= (-1.0);
 		temp = pow((1.0 - Macauley(DoubleDot2_2_Contr(minusFabric, n)) * root12 / zpeak), 3);
 		Ad = m_Ado * Czin2 / ((pow(zcum, 2) / m_z_max)* temp * pow(m_ce, 2)*Cpzp*Cpmin*Czin1 + 1.0);
 		// D = Ad * DoubleDot2_2_Contr(alphaD - alpha, n);
