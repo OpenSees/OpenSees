@@ -36,7 +36,16 @@
 #define ICNTL(I) icntl[(I)-1] /* macro s.t. indices match documentation */
 
 #ifdef _PARALLEL_PROCESSING
-#else
+#include <mpi.h>
+#define OPENSEES_INCLUDED_MPI
+#endif
+
+#ifdef _PARALLEL_INTERPRETERS
+#include <mpi.h>
+#define OPENSEES_INCLUDED_MPI
+#endif
+
+#ifndef OPENSEES_INCLUDED_MPI
 #include <libseq\mpi.h>
 #endif
 

@@ -14,7 +14,7 @@
     <ProjectGuid>{10BE1D68-585D-6B54-0C7F-0CF2962C52F1}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -109,6 +109,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\domain\component\LoadFactorParameter.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\load\Beam2dPartialUniformLoad.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\load\Beam3dThermalAction.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\load\NodalThermalAction.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\load\ShellThermalAction.cpp" />
@@ -199,6 +200,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\domain\component\LoadFactorParameter.h" />
     <ClInclude Include="..\..\..\SRC\domain\load\Beam2dPartialUniformLoad.h" />
+    <ClInclude Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoad.h" />
     <ClInclude Include="..\..\..\SRC\domain\load\Beam3dThermalAction.h" />
     <ClInclude Include="..\..\..\SRC\domain\load\NodalThermalAction.h" />
     <ClInclude Include="..\..\..\SRC\domain\load\ShellThermalAction.h" />

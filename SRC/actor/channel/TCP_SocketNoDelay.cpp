@@ -252,7 +252,7 @@ TCP_SocketNoDelay::setNextAddress(const ChannelAddress &theAddress)
     if (theAddress.getType() == SOCKET_TYPE) {
 	    theSocketAddress = (SocketAddress *)(&theAddress);    
 	    // check address is the only address a TCP_SocketNoDelay can send to
-	    if (bcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
+	    if (memcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
 		     theSocketAddress->addrLength) != 0) {
 		
 		opserr << "TCP_SocketNoDelay::recvMsg() - a TCP_SocketNoDelay ";
@@ -289,7 +289,7 @@ TCP_SocketNoDelay::sendObj(MovableObject &theObject,
 	    return -1;	    
 	}		    
 	    
-	if (bcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
+	if (memcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
 		 theSocketAddress->addrLength) != 0) {
 
 	    opserr << "TCP_SocketNoDelay::sendObj() - a TCP_SocketNoDelay ";
@@ -317,7 +317,7 @@ TCP_SocketNoDelay::recvObj(MovableObject &theObject,
 	    opserr << " address given is not of type SocketAddress\n"; 
 	    return -1;	    
 	}		    
-	if (bcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
+	if (memcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
 	     theSocketAddress->addrLength) != 0) {
 
 	    opserr << "TCP_SocketNoDelay::recvMsg() - a TCP_SocketNoDelay ";
@@ -346,7 +346,7 @@ TCP_SocketNoDelay::recvMsg(Message &msg, ChannelAddress *theAddress)
 	    opserr << " address given is not of type SocketAddress\n"; 
 	    return -1;	    
 	}		    
-	if (bcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
+	if (memcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
 	     theSocketAddress->addrLength) != 0) {
 
 	    opserr << "TCP_SocketNoDelay::recvMsg() - a TCP_SocketNoDelay ";
@@ -388,7 +388,7 @@ TCP_SocketNoDelay::sendMsg(const Message &msg, ChannelAddress *theAddress)
 	    opserr << " address given is not of type SocketAddress\n"; 
 	    return -1;	    
 	}		    
-	if (bcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
+	if (memcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
 	     theSocketAddress->addrLength) != 0) {
 
 	    opserr << "TCP_SocketNoDelay::recvMsg() - a TCP_SocketNoDelay ";
@@ -430,7 +430,7 @@ TCP_SocketNoDelay::recvMatrix(Matrix &theMatrix, ChannelAddress *theAddress)
 	    opserr << " address given is not of type SocketAddress\n"; 
 	    return -1;	    
 	}		    
-	if (bcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
+	if (memcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
 	     theSocketAddress->addrLength) != 0) {
 
 	    opserr << "TCP_SocketNoDelay::recvMatrix() - a TCP_SocketNoDelay ";
@@ -473,7 +473,7 @@ TCP_SocketNoDelay::sendMatrix(const Matrix &theMatrix, ChannelAddress *theAddres
 	    return -1;	    
 	}		        SocketAddress *theSocketAddress = 0;
 
-	if (bcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
+	if (memcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
 	     theSocketAddress->addrLength) != 0) {
 
 	    opserr << "TCP_SocketNoDelay::recvMatrix() - a TCP_SocketNoDelay ";
@@ -520,7 +520,7 @@ TCP_SocketNoDelay::recvVector(Vector &theVector, ChannelAddress *theAddress)
 	    opserr << " address given is not of type SocketAddress\n"; 
 	    return -1;	    
 	}		
-	if (bcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
+	if (memcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
 	     theSocketAddress->addrLength) != 0) {
 
 	    opserr << "TCP_SocketNoDelay::recvVector() - a TCP_SocketNoDelay ";
@@ -562,7 +562,7 @@ TCP_SocketNoDelay::sendVector(const Vector &theVector, ChannelAddress *theAddres
 	    opserr << " address given is not of type SocketAddress\n"; 
 	    return -1;	    
 	}		
-	if (bcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
+	if (memcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
 	     theSocketAddress->addrLength) != 0) {
 
 	    opserr << "TCP_SocketNoDelay::recvVector() - a TCP_SocketNoDelay ";
@@ -604,7 +604,7 @@ TCP_SocketNoDelay::recvID(ID &theID, ChannelAddress *theAddress)
 	    opserr << " address given is not of type SocketAddress\n"; 
 	    return -1;	    
 	}		
-	if (bcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
+	if (memcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
 	     theSocketAddress->addrLength) != 0) {
 
 	    opserr << "TCP_SocketNoDelay::recvID() - a TCP_SocketNoDelay ";
@@ -646,7 +646,7 @@ TCP_SocketNoDelay::sendID(const ID &theID, ChannelAddress *theAddress)
 	    opserr << " address given is not of type SocketAddress\n"; 
 	    return -1;	    
 	}		
-	if (bcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
+	if (memcmp((char *) &other_Addr, (char *) &theSocketAddress->addr, 
 	     theSocketAddress->addrLength) != 0) {
 
 	    opserr << "TCP_SocketNoDelay::recvID() - a TCP_SocketNoDelay ";

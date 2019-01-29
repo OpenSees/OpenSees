@@ -7,7 +7,7 @@ POINTER TO LAST INTEGRATOR. \\
 \noindent {\bf Files}   \\
 \indent \#include $<\tilde{ }$/analysis/dof\_grp/DOF\_Group.h$>$  \\
 
-\noindent {\bf Class Decleration}  \\
+\noindent {\bf Class Declaration}  \\
 \indent class DOF\_Group;  \\
 
 \noindent {\bf Description}  \\
@@ -213,7 +213,7 @@ is set as the corresponding nodal displacement for the node. Creates a Vector
 to store the correct components of {\em u}, then invokes {\em setTrialDisp()}
 on the node object; if no node object an error message is
 printed. CURRENTLY THERE IS NO CHECK TO SEE IF myID(i) DOES NOT OVERFLOW
-ADMISSABLE VALUES IN U - THIS NEEDS TO CHANGE \\
+ADMISSIBLE VALUES IN U - THIS NEEDS TO CHANGE \\
 
 
 {\em virtual int setNodeVel(const Vector \&$u^{.}$);}\\
@@ -248,7 +248,7 @@ These methods are similar to those three just outlined, the only
 difference being that the trial response quantities at the nodes are
 incremented, not set, with the values now given; this is done by
 invoking {\em incrTrialDisp()}, {\em incrTrialVel()}, and {\em 
-incrTrialAccel()} respectivly on the nodes. MUST ALL CHANGE AS
+incrTrialAccel()} respectively on the nodes. MUST ALL CHANGE AS
 setNodeDisp \\ 
 
 

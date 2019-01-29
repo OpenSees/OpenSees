@@ -101,7 +101,7 @@ class Matrix
 
     // matrix operations which generate a new Matrix. They are not the
     // most efficient to use, as constructors must be called twice. They
-    // however are useful for matlab like expressions involving Matrices.
+    // however are usefull for matlab like expressions involving Matrices.
 
     // matrix-scalar operations
     Matrix operator+(double fact) const;

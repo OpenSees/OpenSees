@@ -31,7 +31,7 @@
 //
 
 // Description: This file contains the class definition for 
-// Linear. Linear is a class which performs a linear solution algorihm
+// Linear. Linear is a class which performs a linear solution algorithm
 // to solve the equations. No member functions are declared as virtual as 
 // it is not expected that this class will be subclassed.
 // 

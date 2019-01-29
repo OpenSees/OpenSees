@@ -451,9 +451,11 @@ ForceBeamColumn2d::ForceBeamColumn2d (int tag, int nodeI, int nodeJ,
   kv(NEBD,NEBD), Se(NEBD), 
   kvcommit(NEBD,NEBD), Secommit(NEBD),
   fs(0), vs(0),Ssr(0), vscommit(0), 
-  numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0),
+  numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0), load(6),
   Ki(0), parameterID(0)
 {
+  load.Zero();
+  
   theNodes[0] = 0;
   theNodes[1] = 0;
 
@@ -1348,6 +1350,8 @@ ForceBeamColumn2d::getMass(void)
 void 
 ForceBeamColumn2d::zeroLoad(void)
 {
+  load.Zero();
+  
   // This is a semi-hack -- MHS
   numEleLoads = 0;
 

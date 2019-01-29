@@ -26,7 +26,7 @@
   typedef SOCKET socket_type;
   typedef int socklen_type;
   #define bzero(s,n) memset((s),0,(n))
-  #define bcmp(s1,s2,n) memcmp((s1),(s2),(n))
+  #define memcmp(s1,s2,n) memcmp((s1),(s2),(n))
   static int numSockets = 0;
 #else
   typedef int socket_type;

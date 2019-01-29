@@ -23,13 +23,15 @@ OBJS       = SparseGenColLinSOE.o \
 	PFEMCompressibleSolver.o \
 	PFEMCompressibleLinSOE.o \
 	PFEMSolver_Mumps.o \
+	PFEMSolver_LumpM.o \
 	PFEMSolver_Umfpack.o \
 	PFEMCompressibleSolver_Mumps.o \
 	PFEMQuasiLinSOE.o \
 	PFEMQuasiSolver.o \
 	PFEMDiaLinSOE.o \
 	PFEMDiaSolver.o \
-	PFEMSolver_Laplace.o
+	PFEMSolver_Laplace.o \
+	PFEMSolver_LumpM.o
 else
 
 ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
@@ -53,7 +55,8 @@ OBJS       = SparseGenColLinSOE.o \
 	PFEMQuasiSolver.o \
 	PFEMDiaLinSOE.o \
 	PFEMDiaSolver.o \
-	PFEMSolver_Laplace.o
+	PFEMSolver_Laplace.o \
+	PFEMSolver_LumpM.o
 else
 
 OBJS       = $(CULA_SOLVER) SparseGenColLinSOE.o \

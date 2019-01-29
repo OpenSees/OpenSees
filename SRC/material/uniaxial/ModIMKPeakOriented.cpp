@@ -1266,7 +1266,7 @@ ModIMKPeakOriented::recvSelf(int cTag, Channel &theChannel,
                                FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(67);
+  static Vector data(76);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
  
   if (res < 0) {

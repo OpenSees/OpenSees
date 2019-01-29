@@ -61,22 +61,34 @@ void* OPS_PressureIndependMultiYield()
 	return 0;
     }
 
-    double param[10];
-    param[6] = 0.0;
-    param[7] = 100.;
-    param[8] = 0.0;
-    param[9] = 20;
-    numdata = 10;
-    if (OPS_GetDoubleInput(&numdata, param) < 0) {
+    int nd;
+    if (OPS_GetIntInput(&numdata, &nd) < 0) {
+	opserr << "WARNING invalid PressureIndependMultiYield nd" << "\n";
+	return 0;
+    }
+
+    double param[8];
+    param[5] = 0.0;
+    param[6] = 100.;
+    param[7] = 0.0;
+    numdata = 8;
+    if (OPS_GetDoubleInput(&numdata, &param[0]) < 0) {
 	opserr << "WARNING invalid PressureIndependMultiYield double inputs" << "\n";
+	return 0;
+    }
+
+    int numberOfYieldSurf = 20;
+    numdata = 1;
+    if (OPS_GetIntInput(&numdata, &numberOfYieldSurf) < 0) {
+	opserr << "WARNING invalid PressureIndependMultiYield numberOfYieldSurf" << "\n";
 	return 0;
     }
 
     static double * gredu = 0;
     // user defined yield surfaces
-    if (param[9] < 0 && param[9] > -40) {
-	param[9] = -int(param[9]);
-	numdata = int(2*param[9]);
+    if (numberOfYieldSurf < 0 && numberOfYieldSurf > -40) {
+	numberOfYieldSurf = -int(numberOfYieldSurf);
+	numdata = int(2*numberOfYieldSurf);
 	gredu = new double[numdata];
 	if (OPS_GetDoubleInput(&numdata, gredu) < 0) {
 	    opserr << "WARNING invalid PressureIndependMultiYield double inputs" << "\n";
@@ -85,9 +97,9 @@ void* OPS_PressureIndependMultiYield()
     }
 
     PressureIndependMultiYield * temp =
-	new PressureIndependMultiYield (tag, param[0], param[1], param[2],
+	new PressureIndependMultiYield (tag, nd, param[0], param[1], param[2],
 					param[3], param[4], param[5], param[6],
-					param[7], param[8], param[9], gredu);
+					param[7], numberOfYieldSurf, gredu);
     if (gredu != 0) {
 	delete [] gredu;
 	gredu = 0;

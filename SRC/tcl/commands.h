@@ -205,6 +205,9 @@ getParamTags(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 int 
 getParamValue(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
+int 
+sdfResponse(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
 // AddingSensitivity:BEGIN /////////////////////////////////////////////////
 
 

@@ -30,8 +30,8 @@
 // Revision: A
 //
 // Description: This file contains the class definition for DisplacementControl.
-// DisplacementControl is an algorithmic class for perfroming a static analysis
-// using the arc length scheme, that is within a load step the follwing
+// DisplacementControl is an algorithmic class for performing a static analysis
+// using the arc length scheme, that is within a load step the following
 // constraint is enforced: dU^TdU + alpha^2*dLambda^2 = DisplacementControl^2
 // where dU is change in nodal displacements for step, dLambda is
 // change in applied load and DisplacementControl is a control parameter.
@@ -843,7 +843,7 @@ DisplacementControl::formSensitivityRHS(int passedGradNumber)
 
   
   //    if(CallParam==1) {
-  //  opserr<<"inside if statment of gradIndex # "<<gradNumber<<endln;
+  //  opserr<<"inside if statement of gradIndex # "<<gradNumber<<endln;
   //  this->formTangDispSensitivity(dUhatdh,gradNumber);
   //  this->formdLambdaDh(gradNumber);
   // }
@@ -1081,7 +1081,7 @@ DisplacementControl::computeSensitivities(void)
     theSOE->zeroB();//reset the SOE to zero ;Abbas
  
   } 
-  // end of if statment to be run only one time during the iteration process.
+  // end of if statement to be run only one time during the iteration process.
   //  opserr<<"computeSensitivity: End"<<endln;
   //  CallParam=0;
   // opserr<<"CallParam now is "<<CallParam<<endln;

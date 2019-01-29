@@ -40,6 +40,7 @@
 class Channel;
 class Information;
 class CrdTransf;
+class SectionForceDeformation;
 class Response;
 class Renderer;
 
@@ -50,7 +51,12 @@ class ElasticBeam2d : public Element
     ElasticBeam2d(int tag, double A, double E, double I, 
 		  int Nd1, int Nd2, CrdTransf &theTransf, 
 		  double alpha = 0.0, double d = 0.0,
-          double rho = 0.0, int cMass = 0);
+		  double rho = 0.0, int cMass = 0);
+    ElasticBeam2d(int tag, int Nd1, int Nd2, 
+		  SectionForceDeformation& theSection, CrdTransf &theTransf, 
+		  double alpha = 0.0, double d = 0.0,
+		  double rho = 0.0, int cMass = 0);
+
     ~ElasticBeam2d();
 
     const char *getClassType(void) const {return "ElasticBeam2d";};
