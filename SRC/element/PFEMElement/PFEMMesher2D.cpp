@@ -1505,7 +1505,7 @@ PFEMMesher2D::addPC(const ID& groups, int pndf, int startpnode, Domain* theDomai
         if(theNode==0) continue;
         Pressure_Constraint* thePC = theDomain->getPressure_Constraint(tag);
         if(thePC == 0) {
-            thePC = new Pressure_Constraint(tag, ++endpnode, pndf);
+            thePC = new Pressure_Constraint(tag, ++endpnode);
             if(thePC == 0) {
                 opserr<<"WARNING: no enough memory for Pressure_Constraint -- ";
                 opserr<<"PFEMMesher2D::addPC \n";

@@ -159,8 +159,8 @@ GmshRecorder::GmshRecorder(const char *name, const NodeData& ndata,
       timestep(), timeparts(), theFile(), nodedata(ndata), eledata(edata), theDomain(NULL), current_step(0),
       write_graph_mesh(write_graph_mesh_), write_update_time(write_update_time_)
 {
-    DEBUGSTREAM << "edata.size() = " << edata.size() << endln;
-    DEBUGSTREAM << "eledata.size() = " << eledata.size() << endln;
+    /*DEBUGSTREAM << "edata.size() = " << edata.size() << endln;
+    DEBUGSTREAM << "eledata.size() = " << eledata.size() << endln;*/
 }
 
 GmshRecorder::GmshRecorder()
@@ -286,7 +286,7 @@ int
 GmshRecorder::write_mesh()
 {
 
-    if(not write_mesh_now)
+    if(! write_mesh_now)
     {
         return 0;
     }
@@ -300,7 +300,7 @@ GmshRecorder::write_mesh()
     DEBUGSTREAM << " Saving mesh for rank ---> " << rank << endln;
 
     if (theDomain == 0) {
-        opserr << "WARNING: setDomain has not been called -- GmshRecorder\n";
+        opserr << "WARNING: setDomain has ! been called -- GmshRecorder\n";
         return -1;
     }
 
@@ -424,7 +424,7 @@ GmshRecorder::write_node_data()
     DEBUGSTREAM << "GmshRecorder -- Saving mesh for rank ---> " << rank << endln;
 
     if (theDomain == 0) {
-        opserr << "GmshRecorder::write_data() - WARNING: setDomain has not been called -- GmshRecorder\n";
+        opserr << "GmshRecorder::write_data() - WARNING: setDomain has ! been called -- GmshRecorder\n";
         return -1;
     }
 
@@ -439,7 +439,7 @@ GmshRecorder::write_node_data()
     if(nodedata.unbalanced) viewname = std::string("\"Unbalanced Forces\"");
     if(nodedata.mass) viewname = std::string("\"Mass\"");
 
-    if(not theFile.is_open())
+    if(! theFile.is_open())
     {
         std::stringstream ss;
     
@@ -539,7 +539,7 @@ GmshRecorder::write_eleupdatetime_now()
     DEBUGSTREAM << "GmshRecorder -- write_eleupdatetime_now---> " << rank << endln;
 
     if (theDomain == 0) {
-        opserr << "GmshRecorder::write_data() - WARNING: setDomain has not been called -- GmshRecorder\n";
+        opserr << "GmshRecorder::write_data() - WARNING: setDomain has ! been called -- GmshRecorder\n";
         return -1;
     }
 
@@ -560,7 +560,7 @@ GmshRecorder::write_eleupdatetime_now()
 
     DEBUGSTREAM << "mshname = " << mshname.c_str() << endln;
 
-    if(not theFile.is_open())
+    if(! theFile.is_open())
     {
         if(write_binary_mode)
         {
@@ -663,7 +663,7 @@ GmshRecorder::write_element_data()
     DEBUGSTREAM << "GmshRecorder -- Saving mesh for rank ---> " << rank << endln;
 
     if (theDomain == 0) {
-        opserr << "GmshRecorder::write_data() - WARNING: setDomain has not been called -- GmshRecorder\n";
+        opserr << "GmshRecorder::write_data() - WARNING: setDomain has ! been called -- GmshRecorder\n";
         return -1;
     }
 
@@ -684,7 +684,7 @@ GmshRecorder::write_element_data()
 
     DEBUGSTREAM << "mshname = " << mshname.c_str() << endln;
 
-    if(not theFile.is_open())
+    if(! theFile.is_open())
     {
         if(write_binary_mode)
         {
@@ -824,7 +824,7 @@ GmshRecorder::write_element_graph()
     // DEBUGSTREAM << "Saving mesh for rank ---> " << rank << endln;
 
     if (theDomain == 0) {
-        opserr << "WARNING: setDomain has not been called -- GmshRecorder\n";
+        opserr << "WARNING: setDomain has ! been called -- GmshRecorder\n";
         return -1;
     }
 
@@ -1017,7 +1017,7 @@ GmshRecorder::write_update_time_now()
     nproc = theMachineBroker->getNP();  
 #endif
     if (theDomain == 0) {
-        opserr << "WARNING: setDomain has not been called -- GmshRecorder\n";
+        opserr << "WARNING: setDomain has ! been called -- GmshRecorder\n";
         return -1;
     }
 
