@@ -195,7 +195,7 @@ EPPGapMaterial::getTangent(void)
 double 
 EPPGapMaterial::getInitialTangent(void)
 {
-  if (gap > 0.0) 
+  if ((fy >= 0.0 && gap > 0.0) || (fy < 0.0 && gap < 0.0)) 
     return 0.0; 
   else 
     return E;

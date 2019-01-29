@@ -60,9 +60,8 @@ class Pressure_Constraint : public DomainComponent
 public:
     // constructors
     explicit Pressure_Constraint(int classTag);
-    Pressure_Constraint(int classTag, int nodeId, int ptag, int ndf);
-    Pressure_Constraint(int nodeId, int ptag, int ndf);
-    Pressure_Constraint(int nodeId, int ndf);
+    Pressure_Constraint(int nodeId, int ptag);
+    Pressure_Constraint(int nodeId, double val);
 
     // destructor
     virtual ~Pressure_Constraint();
@@ -71,7 +70,9 @@ public:
     virtual void setDomain(Domain* theDomain);
     virtual Node* getPressureNode();
     virtual double getPressure(int last=1);
+    virtual double getPdot(int last=1);
     virtual void setPressure(double p);
+    virtual void setPdot(double pdot);
     virtual const ID& getFluidElements();
     virtual const ID& getOtherElements();
     virtual void connect(int eleId, bool fluid=true);
@@ -81,6 +82,8 @@ public:
     virtual bool isInterface() const;
     virtual bool isStructure() const;
     virtual bool isIsolated() const;
+    virtual void setFreeSurf() {freesurf = true;}
+    virtual bool isFreeSurf() const {return freesurf;}
 
     // methods for output
     virtual int sendSelf(int commitTag, Channel &theChannel);
@@ -91,12 +94,11 @@ public:
 
 private:
 
-    static int findNodeTag(Domain* theDomain);
-
     int pTag;
     ID fluidEleTags;
     ID otherEleTags;
-    int pndf;
+    double* pval;
+    bool freesurf;
 };
 
 #endif

@@ -87,8 +87,8 @@ RELIABILITY = NO_RELIABILITY
 # any of the libraries already leave the directory location blank AND
 # remove the directory from DIRS.
 
-BASE		= /usr/local
-HOME		= /home/ubuntu
+BASE		= ./usr/local
+HOME		= ./home
 FE		= $(HOME)/OpenSees/SRC
 
 AMDdir       = $(HOME)/OpenSees/OTHER/AMD

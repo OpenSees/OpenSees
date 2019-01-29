@@ -50,3 +50,13 @@ BackgroundMesh::~BackgroundMesh()
 {
 }
 
+void
+BackgroundMesh::addRecorder(Recorder*)
+{
+}
+
+int
+BackgroundMesh::remesh()
+{
+    return 0;
+}

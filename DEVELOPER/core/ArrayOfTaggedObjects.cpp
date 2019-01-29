@@ -102,7 +102,7 @@ ArrayOfTaggedObjects::setSize(int newSize)
     TaggedObject **oldArray = theComponents;
     int oldArrayLastEntry = positionLastEntry;
 
-    // set data for new array
+    // set data for new aray
     theComponents = newArray;
     sizeComponentArray = newSize;		
 
@@ -125,7 +125,7 @@ ArrayOfTaggedObjects::setSize(int newSize)
 	positionLastNoFitEntry = 0;
 	fitFlag = true;
 
-	// now add all the components of the old array into the new one
+	// now add all the componets of the old array into the new one
 	// we add using addComponent() to see if false fitFlag will now be true
 	for (int j=0; j<=oldArrayLastEntry; j++)
 	    if (oldArray[j] != 0)

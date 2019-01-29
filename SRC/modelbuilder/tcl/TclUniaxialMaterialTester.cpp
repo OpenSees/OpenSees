@@ -169,20 +169,31 @@ TclUniaxialMaterialTester_setStrainUniaxialMaterial(ClientData clientData, Tcl_I
 
   // check number of arguments in command line
   if (argc < 2) {
-    opserr << "WARNING bad command - want: strainUniaxialTest strain?\n";
+    opserr << "WARNING bad command - want: strainUniaxialTest strain? <temp?>\n";
     return TCL_ERROR;
   }    
 
   // get the matID form command line
   double strain;
   if (Tcl_GetDouble(interp, argv[1], &strain) != TCL_OK) {
-    opserr <<  "WARNING could not read strain: strainUniaxialTest strain?\n";
+    opserr <<  "WARNING could not read strain: strainUniaxialTest strain? <temp?>\n";
     return TCL_ERROR;
+  }
+
+  double temp = 0.0;
+  if (argc > 2) {
+    if (Tcl_GetDouble(interp, argv[2], &temp) != TCL_OK) {
+      opserr <<  "WARNING could not read strain: strainUniaxialTest strain? <temp?>\n";
+      return TCL_ERROR;
+    }
   }
 
   // delete the old testing material
   if (theTestingUniaxialMaterial !=0) {
-    theTestingUniaxialMaterial->setTrialStrain(strain);
+    if (argc > 2)
+      theTestingUniaxialMaterial->setTrialStrain(strain,temp,0.0); // last arg is strain rate
+    else
+      theTestingUniaxialMaterial->setTrialStrain(strain);
     if (count == countsTillCommit) {
       theTestingUniaxialMaterial->commitState();    
       count = 1;

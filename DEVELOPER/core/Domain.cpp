@@ -66,6 +66,11 @@
 #include <SingleDomAllSP_Iter.h>
 #include <SingleDomParamIter.h>
 
+#include <UniaxialMaterial.h>
+#include <NDMaterial.h>
+#include <SectionForceDeformation.h>
+#include <CrdTransf.h>
+
 #include <Vertex.h>
 #include <Matrix.h>
 #include <Graph.h>
@@ -370,6 +375,9 @@ Domain::~Domain()
 
   if (theEigenvalues != 0)
     delete theEigenvalues;
+
+  if (theLoadPatternIter != 0)
+      delete theLoadPatternIter;
 
   if (theModalDampingFactors != 0)
     delete theModalDampingFactors;
@@ -2176,34 +2184,80 @@ Domain::hasDomainChanged(void)
 void
 Domain::Print(OPS_Stream &s, int flag) 
 {
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+
+    s << "\t\"properties\": {\n";
+
+    OPS_printUniaxialMaterial(s, flag);
+    s << ",\n";   
+    OPS_printNDMaterial(s, flag);
+    s << ",\n";
+    OPS_printSectionForceDeformation(s, flag);
+    s << ",\n";   
+    OPS_printCrdTransf(s, flag);      
+
+    s << "\n\t},\n";
+	s << "\t\"geometry\": {\n";
+
+    int numToPrint = theNodes->getNumComponents();
+    NodeIter &theNodess = this->getNodes();
+    Node *theNode;
+    int numPrinted = 0;
+    s << "\t\t\"nodes\": [\n";
+    while ((theNode = theNodess()) != 0) {    
+      theNode->Print(s, flag);
+      numPrinted += 1;
+      if (numPrinted < numToPrint)
+	s << ",\n";
+      else
+	s << "\n\t\t],\n";
+    }
+
+
+    Element *theEle;
+    ElementIter &theElementss = this->getElements();
+    numToPrint = theElements->getNumComponents();
+    numPrinted = 0;
+    s << "\t\t\"elements\": [\n";
+    while ((theEle = theElementss()) != 0) {
+      theEle->Print(s, flag);
+      numPrinted += 1;
+      if (numPrinted < numToPrint)
+	s << ",\n";
+      else
+	s << "\n\t\t]\n";
+      }
+
+	s << "\t}\n";
+	s << "}\n";
+    s << "}\n";
+
+	return;
+  }
+      
+  
   s << "Current Domain Information\n";
   s << "\tCurrent Time: " << currentTime;
-  s << "\ntCommitted Time: " << committedTime << endln;
-
-  s << "\nNODE DATA: NumNodes: " << theNodes->getNumComponents() << "\n";
+  s << "\ntCommitted Time: " << committedTime << endln;    
+  s << "NODE DATA: NumNodes: " << theNodes->getNumComponents() << "\n";  
   theNodes->Print(s, flag);
-
-  s << "\nELEMENT DATA: NumEle: " << theElements->getNumComponents() << "\n";
+  
+  s << "ELEMENT DATA: NumEle: " << theElements->getNumComponents() << "\n";
   theElements->Print(s, flag);
   
-  s << "\nSP_Constraints: numConstraints: ";
-  s << theSPs->getNumComponents() << "\n";
+  s << "\nSP_Constraints: numConstraints: " << theSPs->getNumComponents() << "\n";
   theSPs->Print(s, flag);
-
-  s << "\nPressure_Constraints: numConstraints: ";
-  s << thePCs->getNumComponents() << "\n";
+  
+  s << "\nPressure_Constraints: numConstraints: " << thePCs->getNumComponents() << "\n";
   thePCs->Print(s, flag);
   
-  s << "\nMP_Constraints: numConstraints: ";
-  s << theMPs->getNumComponents() << "\n";
+  s << "\nMP_Constraints: numConstraints: " << theMPs->getNumComponents() << "\n";
   theMPs->Print(s, flag);
-
-  s << "\nLOAD PATTERNS: numPatterns: ";
-  s << theLoadPatterns->getNumComponents() << "\n\n";
+  
+  s << "\nLOAD PATTERNS: numPatterns: " << theLoadPatterns->getNumComponents() << "\n\n";
   theLoadPatterns->Print(s, flag);
-
-  s << "\nPARAMETERS: numParameters: ";
-  s << theParameters->getNumComponents() << "\n\n";
+  
+  s << "\nPARAMETERS: numParameters: " << theParameters->getNumComponents() << "\n\n";
   theParameters->Print(s, flag);
 }
 
@@ -2391,7 +2445,7 @@ Domain::buildEleGraph(Graph *theEleGraph)
       if (theEleToVertexMapEle == theEleToVertexMap.end()) {
         theEleToVertexMap.insert(MAP_INT_TYPE(eleTag, count));
 
-        // check if successfully added
+        // check if sucessfully added
         theEleToVertexMapEle = theEleToVertexMap.find(eleTag);
         if (theEleToVertexMapEle == theEleToVertexMap.end()) {
           opserr << "Domain::buildEleGraph - map STL failed to add object with tag : " << eleTag << endln;
@@ -2403,11 +2457,11 @@ Domain::buildEleGraph(Graph *theEleGraph)
     }
 
     //
-    // We now need to determine which elements are associated with each node.
+    // We now need to determine which elements are asssociated with each node.
     // As this info is not in the Node interface we must build it;
     //
     // again we will use an stl map, index will be nodeTag, object will be Vertex
-    // do using vertices for each node, when we addVertex at these nodes we
+    // do using vertices for each node, when we addVertex at thes nodes we
     // will not be adding vertices but element tags.
     //
 
@@ -2434,7 +2488,7 @@ Domain::buildEleGraph(Graph *theEleGraph)
       if (theNodeEle == theNodeToVertexMap.end()) {
         theNodeToVertexMap.insert(MAP_ID_TYPE(nodeTag, eleTags));
 
-        // check if successfully added
+        // check if sucessfully added
         theNodeEle = theNodeToVertexMap.find(nodeTag);
         if (theNodeEle == theNodeToVertexMap.end()) {
           opserr << "Domain::buildEleGraph - map STL failed to add object with tag : " << nodeTag << endln;
@@ -2698,7 +2752,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     }
 
     // we do the same for elements as we did for nodes above .. see comments
-    // for nodes if you can't figure what's going on!
+    // for nodes if you can't figure whats going on!
 
     if (numEle != 0) {
       ID elementData(numEle*2);
@@ -2728,7 +2782,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     }
 
     // we do the same for SP_Constraints as for Nodes above .. see comments
-    // for nodes if you can't figure what's going on!    
+    // for nodes if you can't figure whats going on!    
     
     if (numSPs != 0) {
       ID spData(numSPs*2);
@@ -2757,7 +2811,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     }
 
     // we do the same for Pressure_Constraints as for Nodes above .. see comments
-    // for nodes if you can't figure what's going on!    
+    // for nodes if you can't figure whats going on!    
     
     if (numPCs != 0) {
         ID pData(numPCs*2);
@@ -2786,7 +2840,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     }
 
     // we do the same for MP_Constraints as for Nodes above .. see comments
-    // for nodes if you can't figure what's going on!    
+    // for nodes if you can't figure whats going on!    
     
     if (numMPs != 0) {
       ID mpData(numMPs*2);
@@ -2815,7 +2869,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     }
 
     // we do the same for LoadPatterns as we did for Nodes above .. see comments
-    // for nodes if you can't figure what's going on!    
+    // for nodes if you can't figure whats going on!    
 
 
     if (numLPs != 0) {
@@ -2955,7 +3009,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     }
   }  
 
-  // if get here we were successful
+  // if get here we were successfull
   return commitTag;
 }
 
@@ -2985,7 +3039,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
   committedTime = currentTime;
 
   // 
-  // now if the currentGeoTag does not agree with what's in the domain
+  // now if the currentGeoTag does not agree with whats in the domain
   // we must wipe everything in the domain and recreate the domain based on the info from the channel
   //
 
@@ -3388,7 +3442,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
   // now set the domains lastGeoSendTag and currentDomainChangedFlag
   lastGeoSendTag = currentGeoTag;  
 
-  // if get here we were successful
+  // if get here we were successfull
   return 0;
 }
 

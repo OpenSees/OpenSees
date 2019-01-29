@@ -99,7 +99,9 @@ class Element : public DomainComponent
 // AddingSensitivity:BEGIN //////////////////////////////////////////
     virtual int addInertiaLoadSensitivityToUnbalance(const Vector &accel, bool tag);
     virtual const Vector & getResistingForceSensitivity(int gradIndex);
+    virtual const Matrix & getTangentStiffSensitivity(int gradIndex);
     virtual const Matrix & getInitialStiffSensitivity(int gradIndex);
+    virtual const Matrix & getCommittedStiffSensitivity(int gradIndex);
     virtual const Matrix & getDampSensitivity(int gradIndex);
     virtual const Matrix & getMassSensitivity(int gradIndex);
     virtual int   commitSensitivity(int gradIndex, int numGrads);
@@ -118,13 +120,14 @@ class Element : public DomainComponent
     Matrix **previousK;
     int numPreviousK;
 
-  private:
     int index, nodeIndex;
 
     static Matrix ** theMatrices; 
     static Vector ** theVectors1; 
     static Vector ** theVectors2; 
     static int numMatrices;
+
+  private:
 };
 
 

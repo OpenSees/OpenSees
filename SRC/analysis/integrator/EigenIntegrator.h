@@ -62,7 +62,7 @@ class EigenIntegrator : public Integrator
      virtual int formM();
      
      // methods to instruct the FE_Element and DOF_Group objects
-     // how to determing their contribution to M and K
+     // how to determining their contribution to M and K
      virtual int formEleTangK(FE_Element *theEle);
      virtual int formEleTangM(FE_Element *theEle);
      virtual int formNodTangM(DOF_Group *theDof);

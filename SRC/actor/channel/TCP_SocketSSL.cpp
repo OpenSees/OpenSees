@@ -464,7 +464,7 @@ TCP_SocketSSL::setNextAddress(const ChannelAddress &theAddress)
     if (theAddress.getType() == SOCKET_TYPE) {
         theSocketAddress = (SocketAddress *)(&theAddress);    
         // check address is the only address a TCP_socket can send to
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_SocketSSL::setNextAddress() - a TCP_SocketSSL ";
@@ -499,7 +499,7 @@ TCP_SocketSSL::sendObj(int commitTag,
             return -1;	    
         }		    
 
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_SocketSSL::sendObj() - a TCP_SocketSSL ";
@@ -529,7 +529,7 @@ TCP_SocketSSL::recvObj(int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		    
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_SocketSSL::recvObj() - a TCP_SocketSSL ";
@@ -559,7 +559,7 @@ TCP_SocketSSL::recvMsg(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		    
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_SocketSSL::recvMsg() - a TCP_SocketSSL ";
@@ -610,7 +610,7 @@ TCP_SocketSSL::recvMsgUnknownSize(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		    
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_SocketSSL::recvMsgUnknownSize() - a TCP_SocketSSL ";
@@ -670,7 +670,7 @@ TCP_SocketSSL::sendMsg(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		    
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_SocketSSL::sendMsg() - a TCP_SocketSSL ";
@@ -714,7 +714,7 @@ TCP_SocketSSL::recvMatrix(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		    
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_SocketSSL::recvMatrix() - a TCP_SocketSSL ";
@@ -773,7 +773,7 @@ TCP_SocketSSL::sendMatrix(int dbTag, int commitTag,
             return -1;	    
         }		        SocketAddress *theSocketAddress = 0;
 
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_SocketSSL::sendMatrix() - a TCP_SocketSSL ";
@@ -831,7 +831,7 @@ TCP_SocketSSL::recvVector(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_SocketSSL::recvVector() - a TCP_SocketSSL ";
@@ -889,7 +889,7 @@ TCP_SocketSSL::sendVector(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_SocketSSL::sendVector() - a TCP_SocketSSL ";
@@ -947,7 +947,7 @@ TCP_SocketSSL::recvID(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_SocketSSL::recvID() - a TCP_SocketSSL ";
@@ -1005,7 +1005,7 @@ TCP_SocketSSL::sendID(int dbTag, int commitTag,
             opserr << " address given is not of type SocketAddress\n"; 
             return -1;	    
         }		
-        if (bcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
+        if (memcmp((char *) &other_Addr.addr_in, (char *) &theSocketAddress->address.addr_in, 
             theSocketAddress->addrLength) != 0) {
 
                 opserr << "TCP_SocketSSL::sendID() - a TCP_SocketSSL ";

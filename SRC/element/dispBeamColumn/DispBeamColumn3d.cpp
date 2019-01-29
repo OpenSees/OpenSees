@@ -1251,7 +1251,7 @@ DispBeamColumn3d::Print(OPS_Stream &s, int flag)
 			<< -N + p0[0] << ' ' << Mz1 << ' ' << Vy + p0[1] << ' ' << My1 << ' ' << Vz + p0[3] << ' ' << -T << endln;
 		s << "\tEnd 2 Forces (P Mz Vy My Vz T): "
 			<< N << ' ' << Mz2 << ' ' << -Vy + p0[2] << ' ' << My2 << ' ' << -Vz + p0[4] << ' ' << T << endln;
-
+		s << "Number of sections: " << numSections << endln;
 		beamInt->Print(s, flag);
 
 		for (int i = 0; i < numSections; i++) {
