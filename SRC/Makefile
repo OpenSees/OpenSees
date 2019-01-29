@@ -522,6 +522,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam3d.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam3d.o \
+	$(FE)/element/elasticBeamColumn/WheelRail.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuad3d.o \
 	$(FE)/element/fourNodeQuad/FourNodeQuadWithSensitivity.o \
