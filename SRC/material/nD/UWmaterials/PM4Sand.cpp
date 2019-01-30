@@ -1121,7 +1121,8 @@ void PM4Sand::elastic_integrator(const Vector& CurStress, const Vector& CurStrai
 	NextElasticStrain = CurElasticStrain; NextElasticStrain += dStrain;
 	GetElasticModuli(CurStress, K, G);
 	aCep_Consistent = aCep = aC = GetStiffness(K, G);
-	NextStress = CurStress + DoubleDot4_2(aC, dStrain);
+	// NextStress = CurStress + DoubleDot4_2(aC, dStrain);
+	NextStress = CurStress; NextStress += DoubleDot4_2(aC, dStrain);
 	double p = 0.5 * GetTrace(NextStress);
 	if (p > m_Pmin) {
 		NextAlpha = GetDevPart(NextStress) / p;
@@ -1164,7 +1165,7 @@ void PM4Sand::explicit_integrator(const Vector& CurStress, const Vector& CurStra
 	}
 
 	double elasticRatio, f, fn, dVolStrain;
-	Vector dStrain(3), dSigma(3), dDevStrain(3), n(3), tmp(3);
+	Vector dStrain(3), dSigma(3), dDevStrain(3), n(3), tmp(3), dElasStrain(3);
 
 	NextVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(NextStrain);
 	// NextElasticStrain = CurElasticStrain + NextStrain - CurStrain;
@@ -1204,11 +1205,13 @@ void PM4Sand::explicit_integrator(const Vector& CurStress, const Vector& CurStra
 	else if (fn < -mTolF) {
 		// This is a transition from elastic to plastic
 		elasticRatio = IntersectionFactor(CurStress, CurStrain, NextStrain, CurAlpha, 0.0, 1.0);
-		dSigma = DoubleDot4_2(aC, elasticRatio*(dStrain));
+		// dSigma = DoubleDot4_2(aC, elasticRatio*(dStrain));
+		dElasStrain = dStrain; dElasStrain *= elasticRatio;
+		dSigma = DoubleDot4_2(aC, dElasStrain);
 		// (this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio*(NextStrain - CurStrain), CurElasticStrain + elasticRatio*(NextStrain - CurStrain),
 		// 	CurAlpha, CurFabric, alpha_in, alpha_in_p, NextStrain, NextElasticStrain, NextStress, NextAlpha, NextFabric, NextL, NextVoidRatio,
 		// 	G, K, aC, aCep, aCep_Consistent);
-		(this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio * dStrain, CurElasticStrain + elasticRatio * dStrain,
+		(this->*exp_int)(CurStress + dSigma, CurStrain + dElasStrain, CurElasticStrain + dElasStrain,
 			CurAlpha, CurFabric, alpha_in, alpha_in_p, NextStrain, NextElasticStrain, NextStress, NextAlpha, NextFabric, NextL, NextVoidRatio,
 			G, K, aC, aCep, aCep_Consistent);
 
@@ -1225,8 +1228,10 @@ void PM4Sand::explicit_integrator(const Vector& CurStress, const Vector& CurStra
 		else {
 			// This is an elastic unloding followed by plastic loading
 			elasticRatio = IntersectionFactor_Unloading(CurStress, CurStrain, NextStrain, CurAlpha);
-			dSigma = DoubleDot4_2(aC, elasticRatio*(NextStrain - CurStrain));
-			(this->*exp_int)(CurStress + dSigma, CurStrain + elasticRatio*(dStrain), CurElasticStrain + elasticRatio*(dStrain),
+			// dSigma = DoubleDot4_2(aC, elasticRatio*(NextStrain - CurStrain));
+			dElasStrain = dStrain; dElasStrain *= elasticRatio;
+			dSigma = DoubleDot4_2(aC, dElasStrain);
+			(this->*exp_int)(CurStress + dSigma, CurStrain + dElasStrain, CurElasticStrain + dElasStrain,
 				CurAlpha, CurFabric, alpha_in, alpha_in_p, NextStrain, NextElasticStrain, NextStress, NextAlpha, NextFabric, NextL, NextVoidRatio,
 				G, K, aC, aCep, aCep_Consistent);
 
