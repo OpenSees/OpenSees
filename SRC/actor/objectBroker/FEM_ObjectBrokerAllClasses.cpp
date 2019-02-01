@@ -187,9 +187,8 @@
 #include <ManzariDafaliasPlaneStrainRO.h>
 #include <PM4Sand.h>
 #include <InitialStateAnalysisWrapper.h>
-#include <StressDensityModel.h>
-#include <StressDensityModel2D.h>
-#include <StressDensityModel3D.h>
+#include <stressDensity.h>
+#include <InitStressNDMaterial.h>
 
 // Fibers
 #include <UniaxialFiber2d.h>
@@ -296,11 +295,20 @@
 #include <HingeEndpointBeamIntegration.h>
 #include <HingeRadauBeamIntegration.h>
 #include <HingeRadauTwoBeamIntegration.h>
+#include <UserDefinedHingeIntegration.h>
+#include <DistHingeIntegration.h>
+#include <RegularizedHingeIntegration.h>
+
 #include <LobattoBeamIntegration.h>
 #include <LegendreBeamIntegration.h>
 #include <RadauBeamIntegration.h>
 #include <NewtonCotesBeamIntegration.h>
+#include <TrapezoidalBeamIntegration.h>
 #include <UserDefinedBeamIntegration.h>
+#include <FixedLocationBeamIntegration.h>
+#include <LowOrderBeamIntegration.h>
+#include <MidDistanceBeamIntegration.h>
+#include <CompositeSimpsonBeamIntegration.h>
 
 // node header files
 #include <Node.h>
@@ -992,8 +1000,23 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
   case BEAM_INTEGRATION_TAG_NewtonCotes:        
     return new NewtonCotesBeamIntegration();
 
+  case BEAM_INTEGRATION_TAG_Trapezoidal:        
+    return new TrapezoidalBeamIntegration();
+
   case BEAM_INTEGRATION_TAG_UserDefined:        
     return new UserDefinedBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_FixedLocation:        
+    return new FixedLocationBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_LowOrder:        
+    return new LowOrderBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_MidDistance:        
+    return new MidDistanceBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_CompositeSimpson:        
+    return new CompositeSimpsonBeamIntegration();
 
   case BEAM_INTEGRATION_TAG_HingeMidpoint:
     return new HingeMidpointBeamIntegration();
@@ -1006,6 +1029,15 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
     
   case BEAM_INTEGRATION_TAG_HingeEndpoint:
     return new HingeEndpointBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_UserHinge:
+    return new UserDefinedHingeIntegration();
+
+  case BEAM_INTEGRATION_TAG_DistHinge:
+    return new DistHingeIntegration();
+
+  case BEAM_INTEGRATION_TAG_RegularizedHinge:
+    return new RegularizedHingeIntegration();
 
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getBeamIntegration - ";
@@ -1393,14 +1425,8 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 
 
-  case ND_TAG_StressDensityModel:
-      return new StressDensityModel();
-
-  case ND_TAG_StressDensityModel2D:
-      return new StressDensityModel2D();
-
-  case ND_TAG_StressDensityModel3D:
-      return new StressDensityModel3D();
+  case ND_TAG_stressDensity:
+      return new stressDensity();
 
   case ND_TAG_CycLiqCP3D:
       return new CycLiqCP3D(); 
@@ -1413,6 +1439,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_CycLiqCPSPPlaneStrain:
       return new CycLiqCPSPPlaneStrain(); 
+
+  case ND_TAG_InitStressNDMaterial:
+      return new InitStressNDMaterial();
     
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNDMaterial - ";

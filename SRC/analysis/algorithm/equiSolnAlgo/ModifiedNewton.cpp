@@ -31,7 +31,7 @@
 //
 // Description: This file contains the class definition for 
 // ModifiedNewton. ModifiedNewton is a class which uses the
-// Newton-Raphson solution algorihm
+// Newton-Raphson solution algorithm
 // to solve the equations. No member functions are declared as virtual as 
 // it is not expected that this class will be subclassed.
 // 
@@ -175,12 +175,6 @@ ModifiedNewton::solveCurrentStep(void)
 	this->record(numIterations++);
 	result = theTest->test();
 
-	if(((theIncIntegratorr->activateSensitivity())==true) && (theIncIntegratorr->computeSensitivityAtEachIteration())==true)
-	{
-	theIncIntegratorr->computeSensitivities();
-	theIncIntegratorr->formUnbalance();
-	
-	}
 
     } while (result == -1);
 
@@ -192,14 +186,6 @@ ModifiedNewton::solveCurrentStep(void)
       opserr << "the ConvergenceTest object failed in test()\n";
       return -3;
     }
-    //////////////////////////Abbas////////////////////////////////
-	if(((theIncIntegratorr->activateSensitivity())==true) && (theIncIntegratorr->computeSensitivityAtEachIteration())==false)
-	{
-	theIncIntegratorr->computeSensitivities();
-	
-	
-	}
-/////////////////////Abbas/////////////////////////////
     return result;
 }
 

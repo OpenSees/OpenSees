@@ -24,9 +24,8 @@
 # ------------------------------
 
 # Create ModelBuilder (with two-dimensions and 3 DOF/node)
-puts "HI 1"
+
 model basic -ndm 2 -ndf 3
-puts "HI 2"
 # Create nodes
 # ------------
 
@@ -40,10 +39,6 @@ node  1       0.0     0.0
 node  2    $width     0.0 
 node  3       0.0 $height
 node  4    $width $height
-node  5       0.0 [expr 2*$height]
-node  6    $width [expr 2*$height]
-node  7       0.0 [expr 3*$height]
-node  8    $width [expr 3*$height]
 
 
 # Fix supports at base of columns
@@ -51,7 +46,6 @@ node  8    $width [expr 3*$height]
 fix   1     1    1    1
 fix   2     1    1    1
 
-puts "HI 3"
 
 # Define materials for nonlinear columns
 # ------------------------------------------
@@ -64,15 +58,15 @@ uniaxialMaterial Concrete01  2  -5.0   -0.002   0.0     -0.006
 
 # STEEL
 # Reinforcing steel 
-set fy 60.0;      # Yield stress
-set E 30000.0;    # Young's modulus
+pset fy 60.0;      # Yield stress
+pset E 30000.0;    # Young's modulus
 #                        tag  fy E0    b
 uniaxialMaterial Steel01  3  $fy $E 0.01
 
 # Define cross-section for nonlinear columns
 # ------------------------------------------
 
-# set some paramaters
+# set some parameters
 set colWidth 15
 set colDepth 24 
 
@@ -115,15 +109,11 @@ set np 5
 
 # Create the coulumns using Beam-column elements
 #               e            tag ndI ndJ nsecs secID transfTag
-set eleType forceBeamColumn
+set eleType dispBeamColumn
 element $eleType  1   1   3   $np    1       1 
 element $eleType  2   2   4   $np    1       1 
-element $eleType  5   3   5   $np    1       1 
-element $eleType  6   4   6   $np    1       1 
-element $eleType  8   5   7   $np    1       1 
-element $eleType  9   6   8   $np    1       1 
 
-# Define beam elment
+# Define beam element
 # -----------------------------
 
 # Geometry of column elements
@@ -133,9 +123,6 @@ geomTransf Linear 2
 # Create the beam element
 #                          tag ndI ndJ     A       E    Iz   transfTag
 element elasticBeamColumn   3   3   4    360    4030  8640    2
-element elasticBeamColumn   7   5   6    360    4030  8640    2
-element elasticBeamColumn   10   7   8    360    4030  8640    2
-
 
 # Define gravity loads
 # --------------------
@@ -213,10 +200,3 @@ analysis Static
 # perform the gravity load analysis, requires 10 steps to reach the load level
 analyze 10
 
-# Print out the state of nodes 3 and 4
-print node 3 4
-
-# Print out the state of element 1
-print ele 1 2 3
-
-print -JSON -file test.json 

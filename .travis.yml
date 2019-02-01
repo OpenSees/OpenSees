@@ -1,0 +1,19 @@
+language: cpp
+
+dist: xenial
+
+before_install:
+  - sudo apt-get install -y g++ gcc gfortran make python3 python3-dev tcl8.6 tcl8.6-dev
+  - mkdir bin
+  - mkdir lib
+  - cp MAKES/Makefile.def.TRAVIS-CI Makefile.def
+
+script: 
+  - make --silent
+  - cd ./SRC/interpreter
+  - make --silent
+  - python3 -c 'import opensees'
+
+addons:
+  apt:
+    update: true

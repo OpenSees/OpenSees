@@ -112,6 +112,14 @@ IncrementalIntegrator::formTangent(int statFlag)
     return result;
 }
 
+int 
+IncrementalIntegrator::formTangent(int statFlag, double iFact, double cFact)
+{
+    iFactor = iFact;
+    cFactor = cFact;
+    return this->formTangent(statFlag);
+}
+
 int
 IncrementalIntegrator::formIndependentSensitivityLHS(int statFlag)
 {
@@ -166,7 +174,7 @@ IncrementalIntegrator::getLastResponse(Vector &result, const ID &id)
 	}
 	else {
 	    opserr << "WARNING IncrementalIntegrator::getLastResponse() -";
-	    opserr << "location " << loc << "in ID ouside bounds ";
+	    opserr << "location " << loc << "in ID outside bounds ";
 	    opserr << size << "\n";	
 	    res = -2;
 	}

@@ -11,7 +11,7 @@
 # 
 # Example Objectives
 # -----------------
-#  Nonlinear dynamic analyis using Portal Frame Example 1 as staring point
+#  Nonlinear dynamic analysis using Portal Frame Example 1 as staring point
 #  Using Tcl Procedures 
 #
 # 
@@ -70,7 +70,7 @@ ops.uniaxialMaterial("Steel01", 3, fy, E, 0.01)
 
 # Define cross-section for nonlinear columns
 # ------------------------------------------
-# set some paramaters
+# set some parameters
 colWidth = 15.0
 colDepth = 24.0 
 cover = 1.5
@@ -108,7 +108,7 @@ eleType = "forceBeamColumn"
 ops.element(eleType, 1, 1, 3, 1, 1)
 ops.element(eleType, 2, 2, 4, 1, 1)
 
-# Define beam elment
+# Define beam element
 # ------------------
 # Geometric transformation for beams
 #                tag 
@@ -306,7 +306,7 @@ while ((ok == 0) and (tCurrent < tFinal)):
     
     tCurrent = ops.getTime()
 
-# Print a message to indicate if analysis succesfull or not
+# Print a message to indicate if analysis successful or not
 if (ok == 0):
     print("\nTransient analysis completed SUCCESSFULLY\n")
 else:

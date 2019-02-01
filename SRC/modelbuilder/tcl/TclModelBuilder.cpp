@@ -71,6 +71,7 @@
 
 #include <Beam3dPointLoad.h>
 #include <Beam3dUniformLoad.h>
+#include <Beam3dPartialUniformLoad.h>
 #include <BrickSelfWeight.h>
 #include <SurfaceLoader.h>
 #include <SelfWeight.h>
@@ -166,14 +167,6 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
 int
 TclCommand_addElement(ClientData clientData, Tcl_Interp *interp,  int argc, 
 		      TCL_Char **argv);
-
-int
-TclCommand_PFEM2D(ClientData clientData, Tcl_Interp *interp,  int argc, 
-                  TCL_Char **argv);
-
-int
-TclCommand_PFEM3D(ClientData clientData, Tcl_Interp *interp,  int argc, 
-                  TCL_Char **argv);
 
 int
 TclCommand_mesh(ClientData clientData, Tcl_Interp *interp,  int argc, 
@@ -437,7 +430,12 @@ TclCommand_addGeomTransf(ClientData, Tcl_Interp *, int, TCL_Char **,
 int
 TclCommand_Package(ClientData clientData, Tcl_Interp *interp, int argc, 
 		   TCL_Char **argv);
-
+		   
+// Added by Alborz Ghofrani - U.Washington
+int
+TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, int argc,
+  		                   TCL_Char **argv);
+// End Added by Alborz				  
 
 //
 // CLASS CONSTRUCTOR & DESTRUCTOR
@@ -474,12 +472,6 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 		    (ClientData)NULL, NULL);
 
   Tcl_CreateCommand(interp, "element", TclCommand_addElement,
-		    (ClientData)NULL, NULL);
-
-  Tcl_CreateCommand(interp, "PFEM2D", TclCommand_PFEM2D,
-		    (ClientData)NULL, NULL);
-
-  Tcl_CreateCommand(interp, "PFEM3D", TclCommand_PFEM3D,
 		    (ClientData)NULL, NULL);
 
   Tcl_CreateCommand(interp, "mesh", TclCommand_mesh,
@@ -657,6 +649,11 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 		    (ClientData)NULL, NULL);
   /////////////////////////////////////////////////////////////////////
 
+  // Added by Alborz Ghofrani - U.Washington
+  Tcl_CreateCommand(interp, "generateInterfacePoints",
+                    TclCommand_GenerateInterfacePoints,
+                    (ClientData)NULL, NULL);
+  // End Added by Alborz
   // set the static pointers in this file
   theTclBuilder = this;
   theTclDomain = &theDomain;
@@ -725,8 +722,6 @@ TclModelBuilder::~TclModelBuilder()
   Tcl_DeleteCommand(theInterp, "updateParameter");
   Tcl_DeleteCommand(theInterp, "node");
   Tcl_DeleteCommand(theInterp, "element");
-  Tcl_DeleteCommand(theInterp, "PFEM2D");
-  Tcl_DeleteCommand(theInterp, "PFEM3D");
   Tcl_DeleteCommand(theInterp, "mesh");
   Tcl_DeleteCommand(theInterp, "remesh");
   Tcl_DeleteCommand(theInterp, "background");
@@ -775,6 +770,7 @@ TclModelBuilder::~TclModelBuilder()
   Tcl_DeleteCommand(theInterp, "damageModel");
 
   Tcl_DeleteCommand(theInterp, "loadPackage");
+    Tcl_DeleteCommand(theInterp, "generateInterfacePoints"); // Added by Alborz Ghofrani - U.Washington
 }
 
 
@@ -1378,41 +1374,9 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp,
 				       argc, argv, theTclDomain, theTclBuilder);
 }
 
-extern int
-TclModelBuilderPFEM2DCommand(ClientData clientData, Tcl_Interp *interp, int argc,   
-                             TCL_Char **argv, Domain* theDomain);
-
-int
-TclCommand_PFEM2D(ClientData clientData, Tcl_Interp *interp,  int argc, 
-                  TCL_Char **argv) 
-{
-#ifdef _PFEM
-    return TclModelBuilderPFEM2DCommand(clientData, interp, argc,   
-                                        argv, theTclDomain);
-#else
-    return 0;
-#endif
-}
-
-extern int
-TclModelBuilderPFEM3DCommand(ClientData clientData, Tcl_Interp *interp, int argc,   
-                             TCL_Char **argv, Domain* theDomain);
-
-int
-TclCommand_PFEM3D(ClientData clientData, Tcl_Interp *interp,  int argc, 
-                  TCL_Char **argv) 
-{
-#ifdef _PFEM
-    return TclModelBuilderPFEM3DCommand(clientData, interp, argc,   
-                                        argv, theTclDomain);
-#else
-    return 0;
-#endif
-}
-
-extern int OPS_LineMesh(Domain& domain, int ndm);
-extern int OPS_TriMesh(Domain& domain);
-extern int OPS_TriReMesh(Domain& domain, int ndf);
+// extern int OPS_LineMesh(Domain& domain, int ndm);
+// extern int OPS_TriMesh(Domain& domain);
+// extern int OPS_TriReMesh(Domain& domain, int ndf);
 int
 TclCommand_mesh(ClientData clientData, Tcl_Interp *interp,  int argc, 
 		TCL_Char **argv) 
@@ -1436,14 +1400,14 @@ TclCommand_mesh(ClientData clientData, Tcl_Interp *interp,  int argc,
 
     // mesh type
     int res = 0;
-    if (strcmp(argv[1], "line") == 0) {
-	res = OPS_LineMesh(*theTclDomain,ndm);
-    } else if (strcmp(argv[1], "tri") == 0) {
-	res = OPS_TriMesh(*theTclDomain);
-    } else {
-	opserr<<"WARNING: mesh type "<<argv[1]<<" is unknown\n";
-	return TCL_ERROR;
-    }
+    // if (strcmp(argv[1], "line") == 0) {
+    // 	res = OPS_LineMesh(*theTclDomain,ndm);
+    // } else if (strcmp(argv[1], "tri") == 0) {
+    // 	res = OPS_TriMesh(*theTclDomain);
+    // } else {
+    // 	opserr<<"WARNING: mesh type "<<argv[1]<<" is unknown\n";
+    // 	return TCL_ERROR;
+    // }
 
     if (res < 0) {
 	return TCL_ERROR;
@@ -1476,14 +1440,14 @@ TclCommand_remesh(ClientData clientData, Tcl_Interp *interp,  int argc,
 
     // mesh type
     int res = 0;
-    if (strcmp(argv[1], "line") == 0) {
-	//res = OPS_LineMesh(*theTclDomain,ndm);
-    } else if (strcmp(argv[1], "tri") == 0) {
-	res = OPS_TriReMesh(*theTclDomain,ndf);
-    } else {
-	opserr<<"WARNING: remesh type "<<argv[1]<<" is unknown\n";
-	return TCL_ERROR;
-    }
+    // if (strcmp(argv[1], "line") == 0) {
+    // 	//res = OPS_LineMesh(*theTclDomain,ndm);
+    // } else if (strcmp(argv[1], "tri") == 0) {
+    // 	res = OPS_TriReMesh(*theTclDomain,ndf);
+    // } else {
+    // 	opserr<<"WARNING: remesh type "<<argv[1]<<" is unknown\n";
+    // 	return TCL_ERROR;
+    // }
 
     if (res < 0) {
 	return TCL_ERROR;
@@ -1493,7 +1457,7 @@ TclCommand_remesh(ClientData clientData, Tcl_Interp *interp,  int argc,
 
 }
 
-extern int OPS_BackgroundMesh();
+extern int OPS_BgMesh();
 
 int 
 TclCommand_backgroundMesh(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -1506,7 +1470,7 @@ TclCommand_backgroundMesh(ClientData clientData, Tcl_Interp *interp, int argc, T
     
     OPS_ResetInput(clientData, interp, 1, argc, argv, theTclDomain, theTclBuilder);
 
-    if(OPS_BackgroundMesh() >= 0) return TCL_OK;
+    if(OPS_BgMesh() >= 0) return TCL_OK;
     else return TCL_ERROR;
     return TCL_OK;
 }
@@ -2152,9 +2116,24 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 	opserr << "WARNING eleLoad - invalid wx for beamUniform \n";
 	return TCL_ERROR;
       }
+      double aL = 0.0;
+      double bL = 1.0;
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &aL) != TCL_OK) {
+	opserr << "WARNING eleLoad - invalid aOverL for beamUniform \n";
+	return TCL_ERROR;
+      }
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &bL) != TCL_OK) {
+	opserr << "WARNING eleLoad - invalid bOverL for beamUniform \n";
+	return TCL_ERROR;
+      }
 
       for (int i=0; i<theEleTags.Size(); i++) {
-	theLoad = new Beam3dUniformLoad(eleLoadTag, wy, wz, wx, theEleTags(i));    
+	if (aL > 0.0 || bL < 1.0)
+	  theLoad = new Beam3dPartialUniformLoad(eleLoadTag, wy, wz, wx, aL, bL, theEleTags(i));
+	else 
+	  theLoad = new Beam3dUniformLoad(eleLoadTag, wy, wz, wx, theEleTags(i));    	
 
 	if (theLoad == 0) {
 	  opserr << "WARNING eleLoad - out of memory creating load of type " << argv[count] ;
@@ -4737,3 +4716,8 @@ TclCommand_Package(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char
 
 
 
+// Added by Alborz Ghofrani - U.Washington
+extern int
+TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, int argc,
+ 		TCL_Char **argv);
+// End Added by Alborz

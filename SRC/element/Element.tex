@@ -78,15 +78,15 @@ setDomain()} method.\\
 
 {\em virtual int commitState(void) =0;} \\
 The element is to commit its current state. To return $0$ if
-sucessfull, a negative number if not. \\
+successful, a negative number if not. \\
 
 {\em virtual int revertToLastCommit(void) =0;} \\
 The element is to set it's current state to the last committed
-state. To return $0$ if sucessfull, a negative number if not. \\
+state. To return $0$ if successful, a negative number if not. \\
 
 {\em virtual int revertToStart(void) =0;} \\
 The element is to set it's current state to the state it was at before
-the analysis started. To return $0$ if sucessfull, a negative number
+the analysis started. To return $0$ if successful, a negative number
 if not. \\ 
 
 {\em virtual int update(void);} \\
@@ -185,7 +185,7 @@ class responds to no requests and will always return $-1$. \\
 \&eleInformation);}\\ 
 getResponse is a method invoked to obtain information from an
 analysis. The method is invoked with the integer argument returned and
-the Information object that was prepared in a successfull {\em
-setResponse()} method invocation. To return $0$ if successfull, a
+the Information object that was prepared in a successful {\em
+setResponse()} method invocation. To return $0$ if successful, a
 negative number if not. The base class implementation will always
 return $-1$. 

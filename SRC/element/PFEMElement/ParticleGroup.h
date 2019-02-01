@@ -21,7 +21,7 @@
 
 // $Revision: 1.0 $
 // $Date: 2016-1-27  $
-                                                                        
+
 // Written: Minjie Zhu
 //
 // Description: This class defines the ParticleGroup class
@@ -31,47 +31,41 @@
 #define ParticleGroup_h
 
 
-#include <vector>
+#include "BackgroundDef.h"
 #include "Particle.h"
-#include <string.h>
+#include "Mesh.h"
 
-class ParticleGroup
+class ParticleGroup : public Mesh
 {
 public:
-    ParticleGroup();
+    explicit ParticleGroup(int tag);
     ~ParticleGroup();
 
-    void addParticle(const Vector& coord, const Vector& vel, double p);
+    // particles
+    void addParticle(const VDouble& coord, const VDouble& vel, double p);
+    void removeParticles(const VInt& rm);
     int numParticles() const {return (int)particles.size();}
-    Particle* getParticle(int i) {return (i>=0&&i<this->numParticles())? particles[i]:0;}
+    Particle* getParticle(int i) {
+        return (i>=0&&i<numParticles())? particles[i]:0;
+    }
 
+    // dummy mesh
+    int mesh(){return 0;}
 
-    void setType(const char* eletype);
-    const char* getType() const {return type;}
+    // create particles
+    int point(const VDouble& p1, const VDouble& vel0, double p0);
+    int line(const VDouble& p1, const VDouble& p2, int num,
+	     const VDouble& vel0, double p0);
+    int qua_d(const VDouble& p1, const VDouble& p2, const VDouble& p3,
+	     const VDouble& p4, int m, int n, const VDouble& vel0, double p0);
+    int tri(const VDouble& p1, const VDouble& p2,
+	    const VDouble& p4, int m, int n, const VDouble& vel0, double p0);
+    int cube(const VVDouble& pts, const VInt& num, const VDouble& vel0, double p0);
+    int readfile(const char* crdsfile, const char* velfile);
 
-    void setProp(const Vector& p) {prop = p;}
-    const Vector& getProp() const {return prop;}
-
-    int getNDF() const {return ndf;}
-
-    // printing
-    void print();
-
-    // a line of particles
-    int point(const Vector& p1, const Vector& vel0, double p0);
-    int line(const Vector& p1, const Vector& p2, int num,
-	     const Vector& vel0, double p0);
-    int qua_d(const Vector& p1, const Vector& p2, const Vector& p3,
-	     const Vector& p4, int m, int n, const Vector& vel0, double p0);
-    int tri(const Vector& p1, const Vector& p2,
-	    const Vector& p4, int m, int n, const Vector& vel0, double p0);
-    
 private:
-    
-    std::vector<Particle*> particles;
-    char* type;
-    Vector prop;
-    int ndf;
+
+    VParticle particles;
 };
 
 #endif

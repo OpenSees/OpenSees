@@ -1164,6 +1164,14 @@ N4BiaxialTruss::Print(OPS_Stream &s, int flag)
 		s << endln;
 		s << this->getTag()+1 << "  " << strain2 << "  ";
 		s << force2 << endln;
+	} else if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": " << this->getTag() << ", ";
+		s << "\"type\": \"N4BiaxialTruss\", ";
+		s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << ", " << connectedExternalNodes(2) << ", " << connectedExternalNodes(3) << "], ";
+		s << "\"A\": " << A << ", ";
+		s << "\"massperlength\": " << rho << ", ";
+		s << "\"material\": \"" << theMaterial_1->getTag() << "\"}";
 	}
 }
 

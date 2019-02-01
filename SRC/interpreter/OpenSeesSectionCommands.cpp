@@ -48,6 +48,7 @@
 #include <NDFiberSectionWarping2d.h>
 #include <RCSectionIntegration.h>
 #include <RCTBeamSectionIntegration.h>
+#include <RCCircularSectionIntegration.h>
 #include <ParallelSection.h>
 #include <FiberSection2dThermal.h>
 #include <FiberSection3dThermal.h>
@@ -83,7 +84,6 @@ void* OPS_ElasticMembranePlateSection();
 void* OPS_MembranePlateFiberSection();
 void* OPS_LayeredShellFiberSection();
 void* OPS_Bidirectional();
-void* OPS_BiaxialHysteretic();
 void* OPS_Isolator2spring();
 void* OPS_FiberSection2dThermal();
 
@@ -818,6 +818,82 @@ namespace {
 	return theSection;
     }
 
+    static void* OPS_RCCircularSection()
+    {
+        if (OPS_GetNumRemainingInputArgs() < 11) {
+            opserr << "WARNING insufficient arguments\n";
+            opserr << "Want: section RCCircularSection tag? coreTag? coverTag? steelTag? d? cover? As? NringsCore? NringsCover? Nwedges? Nsteel?\n";
+            return 0;
+        }
+
+	int idata[8];
+	double ddata[3];
+
+	int numdata = 4;
+	if (OPS_GetIntInput(&numdata, idata) < 0) {
+	    opserr << "WARNING invalid section RCCircularSection input\n";
+	    return 0;
+	}
+
+	numdata = 3;
+	if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
+	    opserr << "WARNING invalid section RCCircularSection input\n";
+	    return 0;
+	}
+
+	numdata = 4;
+	if (OPS_GetIntInput(&numdata, &idata[4]) < 0) {
+	    opserr << "WARNING invalid section RCCircularSection input\n";
+	    return 0;
+	}
+	
+        int tag=idata[0], coreTag=idata[1], coverTag=idata[2], steelTag=idata[3];
+        double d=ddata[0], cover=ddata[1], As=ddata[2];
+        int ncore=idata[4], ncover=idata[5], nwedge=idata[6], nsteel=idata[7];
+
+        UniaxialMaterial *theCore = OPS_getUniaxialMaterial(coreTag);
+        
+        if (theCore == 0) {
+            opserr << "WARNING uniaxial material does not exist\n";
+            opserr << "material: " << coreTag; 
+            opserr << "\nRCCircularSection section: " << tag << endln;
+            return 0;
+        }
+        
+        UniaxialMaterial *theCover = OPS_getUniaxialMaterial(coverTag);
+        
+        if (theCover == 0) {
+            opserr << "WARNING uniaxial material does not exist\4n";
+            opserr << "material: " << coverTag; 
+            opserr << "\nRCCircularSection section: " << tag << endln;
+            return 0;
+        }
+        
+        UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(steelTag);
+
+        if (theSteel == 0) {
+            opserr << "WARNING uniaxial material does not exist\n";
+            opserr << "material: " << steelTag; 
+            opserr << "\nRCCircularSection section: " << tag << endln;
+            return 0;
+        }
+        
+        RCCircularSectionIntegration rcsect(d, As, cover, ncore, ncover, nwedge, nsteel);
+
+        int numFibers = rcsect.getNumFibers();
+
+        UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+
+        rcsect.arrangeFibers(theMats, theCore, theCover, theSteel);
+
+        // Parsing was successful, allocate the section
+        SectionForceDeformation* theSection = new FiberSection3d(tag, numFibers, theMats, rcsect);
+
+        delete [] theMats;
+
+	return theSection;
+    }
+
     static int setUpFunctions(void)
     {
 	functionMap.insert(std::make_pair("Elastic", &OPS_ElasticSection));
@@ -846,8 +922,8 @@ namespace {
 	functionMap.insert(std::make_pair("PlateFiber", &OPS_MembranePlateFiberSection));
 	functionMap.insert(std::make_pair("LayeredShell", &OPS_LayeredShellFiberSection));
 	functionMap.insert(std::make_pair("Bidirectional", &OPS_Bidirectional));
-	functionMap.insert(std::make_pair("BiaxialHysteretic", &OPS_BiaxialHysteretic));
 	functionMap.insert(std::make_pair("Isolator2spring", &OPS_Isolator2spring));
+	functionMap.insert(std::make_pair("RCCircularSection", &OPS_RCCircularSection));
 
 	return 0;
     }
@@ -990,7 +1066,7 @@ int OPS_Patch()
     // create patch
     Patch *thePatch = 0;
     const char* type = OPS_GetString();
-    if(strcmp(type,"quad")==0 || strcmp(type,"quadrilateral")==0) {
+    if(strcmp(type,"quad")==0 || strcmp(type,"quadr")==0 || strcmp(type,"quadrilateral")==0) {
 	thePatch = (QuadPatch*) OPS_QuadPatch();
     } else if(strcmp(type,"rect")==0 || strcmp(type,"rectangular")==0) {
 	thePatch = (QuadPatch*) OPS_RectPatch();

@@ -188,6 +188,8 @@ class FourNodeTetrahedron : public Element {
     Matrix transpose( int dim1, int dim2, const Matrix &M ) ;
     Vector initDisp[4];
 
+    int do_update;
+
 } ; 
 
 #endif

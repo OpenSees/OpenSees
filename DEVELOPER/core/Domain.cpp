@@ -66,6 +66,11 @@
 #include <SingleDomAllSP_Iter.h>
 #include <SingleDomParamIter.h>
 
+#include <UniaxialMaterial.h>
+#include <NDMaterial.h>
+#include <SectionForceDeformation.h>
+#include <CrdTransf.h>
+
 #include <Vertex.h>
 #include <Matrix.h>
 #include <Graph.h>
@@ -370,6 +375,9 @@ Domain::~Domain()
 
   if (theEigenvalues != 0)
     delete theEigenvalues;
+
+  if (theLoadPatternIter != 0)
+      delete theLoadPatternIter;
 
   if (theModalDampingFactors != 0)
     delete theModalDampingFactors;
@@ -2176,34 +2184,80 @@ Domain::hasDomainChanged(void)
 void
 Domain::Print(OPS_Stream &s, int flag) 
 {
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+
+    s << "\t\"properties\": {\n";
+
+    OPS_printUniaxialMaterial(s, flag);
+    s << ",\n";   
+    OPS_printNDMaterial(s, flag);
+    s << ",\n";
+    OPS_printSectionForceDeformation(s, flag);
+    s << ",\n";   
+    OPS_printCrdTransf(s, flag);      
+
+    s << "\n\t},\n";
+	s << "\t\"geometry\": {\n";
+
+    int numToPrint = theNodes->getNumComponents();
+    NodeIter &theNodess = this->getNodes();
+    Node *theNode;
+    int numPrinted = 0;
+    s << "\t\t\"nodes\": [\n";
+    while ((theNode = theNodess()) != 0) {    
+      theNode->Print(s, flag);
+      numPrinted += 1;
+      if (numPrinted < numToPrint)
+	s << ",\n";
+      else
+	s << "\n\t\t],\n";
+    }
+
+
+    Element *theEle;
+    ElementIter &theElementss = this->getElements();
+    numToPrint = theElements->getNumComponents();
+    numPrinted = 0;
+    s << "\t\t\"elements\": [\n";
+    while ((theEle = theElementss()) != 0) {
+      theEle->Print(s, flag);
+      numPrinted += 1;
+      if (numPrinted < numToPrint)
+	s << ",\n";
+      else
+	s << "\n\t\t]\n";
+      }
+
+	s << "\t}\n";
+	s << "}\n";
+    s << "}\n";
+
+	return;
+  }
+      
+  
   s << "Current Domain Information\n";
   s << "\tCurrent Time: " << currentTime;
-  s << "\ntCommitted Time: " << committedTime << endln;
-
-  s << "\nNODE DATA: NumNodes: " << theNodes->getNumComponents() << "\n";
+  s << "\ntCommitted Time: " << committedTime << endln;    
+  s << "NODE DATA: NumNodes: " << theNodes->getNumComponents() << "\n";  
   theNodes->Print(s, flag);
-
-  s << "\nELEMENT DATA: NumEle: " << theElements->getNumComponents() << "\n";
+  
+  s << "ELEMENT DATA: NumEle: " << theElements->getNumComponents() << "\n";
   theElements->Print(s, flag);
   
-  s << "\nSP_Constraints: numConstraints: ";
-  s << theSPs->getNumComponents() << "\n";
+  s << "\nSP_Constraints: numConstraints: " << theSPs->getNumComponents() << "\n";
   theSPs->Print(s, flag);
-
-  s << "\nPressure_Constraints: numConstraints: ";
-  s << thePCs->getNumComponents() << "\n";
+  
+  s << "\nPressure_Constraints: numConstraints: " << thePCs->getNumComponents() << "\n";
   thePCs->Print(s, flag);
   
-  s << "\nMP_Constraints: numConstraints: ";
-  s << theMPs->getNumComponents() << "\n";
+  s << "\nMP_Constraints: numConstraints: " << theMPs->getNumComponents() << "\n";
   theMPs->Print(s, flag);
-
-  s << "\nLOAD PATTERNS: numPatterns: ";
-  s << theLoadPatterns->getNumComponents() << "\n\n";
+  
+  s << "\nLOAD PATTERNS: numPatterns: " << theLoadPatterns->getNumComponents() << "\n\n";
   theLoadPatterns->Print(s, flag);
-
-  s << "\nPARAMETERS: numParameters: ";
-  s << theParameters->getNumComponents() << "\n\n";
+  
+  s << "\nPARAMETERS: numParameters: " << theParameters->getNumComponents() << "\n\n";
   theParameters->Print(s, flag);
 }
 

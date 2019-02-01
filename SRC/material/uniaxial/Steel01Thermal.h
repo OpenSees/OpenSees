@@ -19,10 +19,10 @@
 ** ****************************************************************** */
 //Modified by:  Jian Zhang(j.zhang@ed.ac.uk)---------07,2010// 
 //              Panagiotis Kotsovinos(P.Kotsovinos@ed.ac.uk)// 
-//              Liming Jiang(Liming.Jiang@ed.ac.uk)---- 2013//
+
                                                                                                                                                 
-#ifndef Steel01Thermal_h
-#define Steel01Thermal_h
+#ifndef Steel01Temperature_h
+#define Steel01Temperature_h
 
 
 #include <UniaxialMaterial.h>
@@ -91,8 +91,7 @@ class Steel01Thermal : public UniaxialMaterial
     double fyT;
     double E0T;
     double fp; // 11/10
-	
-	
+    double TemperautreC;
     //JZ 07/10 /////////////////////////////////////////////////////////////end 
     
     
@@ -114,28 +113,27 @@ class Steel01Thermal : public UniaxialMaterial
                         // 1 = loading (positive strain increment)
                         // -1 = unloading (negative strain increment)
                         // 0 initially
-    bool Cmono;   //state of monotonic loading,added by liming,2013
-	
+    
     /*** CONVERGED State Variables ***/    
     double Cstrain;
     double Cstress;
-    double Ctangent;    
-    double Ctemperature;
-	
+    double Ctangent;
+    double Cmodulus; //added by Princeton
+
     /*** TRIAL History Variables ***/
     double TminStrain;
     double TmaxStrain;
     double TshiftP;
     double TshiftN;
     int Tloading;
-    bool Tmono;   //state of monotonic loading,added by liming,2013
-	
+    
     /*** TRIAL State Variables ***/
     double Tstrain;
     double Tstress;
     double Ttangent; // Not really a state variable, but declared here
                      // for convenience
-    double Ttemperature; //(Trial) Temperature,added by liming,2013
+    double Tmodulus; //added by Princeton
+
     // Calculates the trial state variables based on the trial strain
     void determineTrialState (double dStrain);
 

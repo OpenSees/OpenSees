@@ -631,8 +631,13 @@ ZeroLengthSection::setResponse(const char **argv, int argc, OPS_Stream &output)
         }
         theResponse = new ElementResponse(this, 2, Vector(order));
 
+    } else if (strcmp(argv[0],"basicStiffness") == 0) {
+
+      theResponse = new ElementResponse(this, 13, Matrix(order,order));
+
+
     } else if (strcmp(argv[0],"defo") == 0 || strcmp(argv[0],"deformations") == 0 ||
-        strcmp(argv[0],"deformation") == 0) {
+        strcmp(argv[0],"deformation") == 0 || strcmp(argv[0],"basicDeformation") == 0) {
 
             for (int i=0; i<order; i++) {
                 sprintf(outputData,"e%d",i+1);
@@ -654,6 +659,7 @@ int
 ZeroLengthSection::getResponse(int responseID, Information &eleInfo)
 {
     Vector q(order);
+    Matrix kb(order,order);
 
     switch (responseID) {
     case 1:
@@ -667,6 +673,11 @@ ZeroLengthSection::getResponse(int responseID, Information &eleInfo)
     case 3:
         this->computeSectionDefs();
         return eleInfo.setVector(*v);
+
+    case 13:
+      kb = theSection->getSectionTangent();
+      return eleInfo.setMatrix(kb);
+
 
     default:
         return -1;
@@ -699,7 +710,7 @@ ZeroLengthSection::setUp(int Nd1, int Nd2, const Vector &x, const Vector &yp)
       opserr << "ZeroLengthSection::setUp -- incorrect dimension of orientation vectors\n";
 			
 
-    // establish orientation of element for the tranformation matrix
+    // establish orientation of element for the transformation matrix
     // z = x cross yp
     static Vector z(3);
     z(0) = x(1)*yp(2) - x(2)*yp(1);

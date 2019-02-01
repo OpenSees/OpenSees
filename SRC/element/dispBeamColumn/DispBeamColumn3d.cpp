@@ -810,7 +810,7 @@ DispBeamColumn3d::addInertiaLoadToUnbalance(const Vector &accel)
   const Vector &Raccel2 = theNodes[1]->getRV(accel);
   
   if (6 != Raccel1.Size() || 6 != Raccel2.Size()) {
-    opserr << "DispBeamColumn3d::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+    opserr << "DispBeamColumn3d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
     return -1;
   }
   
@@ -1251,7 +1251,7 @@ DispBeamColumn3d::Print(OPS_Stream &s, int flag)
 			<< -N + p0[0] << ' ' << Mz1 << ' ' << Vy + p0[1] << ' ' << My1 << ' ' << Vz + p0[3] << ' ' << -T << endln;
 		s << "\tEnd 2 Forces (P Mz Vy My Vz T): "
 			<< N << ' ' << Mz2 << ' ' << -Vy + p0[2] << ' ' << My2 << ' ' << -Vz + p0[4] << ' ' << T << endln;
-
+		s << "Number of sections: " << numSections << endln;
 		beamInt->Print(s, flag);
 
 		for (int i = 0; i < numSections; i++) {

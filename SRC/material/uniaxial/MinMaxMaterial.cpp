@@ -362,3 +362,18 @@ MinMaxMaterial::Print(OPS_Stream &s, int flag)
         s << "\"epsMax\": " << maxStrain << "}";
     }
 }
+
+int
+MinMaxMaterial::setParameter(const char **argv, int argc, Parameter &param)
+{
+  //
+  // I suppose epsMin and epsMax could be parameters, but not for now -- MHS
+  // 
+  return theMaterial->setParameter(argv, argc, param);
+}
+  
+int
+MinMaxMaterial::updateParameter(int parameterID, Information &info)
+{
+  return 0;
+}

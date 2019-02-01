@@ -190,11 +190,10 @@ PFEMSolver_Umfpack::solve()
 
 	    // check error
 	    if (status!=UMFPACK_OK) {
-		opserr<<"WARNING: solving returns "<<status<<" -- PFEMSolver_Umfpack::solve\n";
+		opserr<<"WARNING: solving interface returns "<<status<<" -- PFEMSolver_Umfpack::solve\n";
 		if (Numeric != 0) {
 		    umfpack_di_free_numeric(&Numeric);
 		}
-		return -1;
 	    }
 	    
             // copy
@@ -397,7 +396,7 @@ PFEMSolver_Umfpack::solve()
     cs_spfree(Gi);
     cs_spfree(invMi);
     cs_spfree(invMsi);
-    opserr<<"dV = "<<deltaV.Norm()<<"\n";
+    //opserr<<"dV = "<<deltaV.Norm()<<"\n";
 
     // fluid corrector: deltaVf = deltaVf1 + Mf^{-1}*Gf*deltaP
     Vector deltaVf(Fsize);
@@ -411,7 +410,7 @@ PFEMSolver_Umfpack::solve()
         deltaVf += deltaVf1;
     }
     cs_spfree(Gf);
-    opserr<<"dVf = "<<deltaVf.Norm()<<"\n";
+    //opserr<<"dVf = "<<deltaVf.Norm()<<"\n";
 
     // deltaPi = Mhatd^{-1}*(Qt*deltaP - rpi)
     Vector deltaPi(Pisize);

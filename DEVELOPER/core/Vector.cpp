@@ -85,7 +85,12 @@ Vector::Vector(int size)
 Vector::Vector(double *data, int size)
 : sz(size),theData(data),fromFree(1)
 {
-  
+#ifdef _G3DEBUG
+  if (sz <= 0) {
+    opserr << "Vector::Vector(double *, size) - size " << size << " specified <= 0\n";
+    sz = 0;
+  }
+#endif
 }
  
 

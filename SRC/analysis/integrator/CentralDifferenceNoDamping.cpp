@@ -230,7 +230,7 @@ CentralDifferenceNoDamping::update(const Vector &X)
 
   // check deltaU is of correct size
   if (X.Size() != U->Size()) {
-    opserr << "WARNING CentralDifferenceNoDamping::update() - Vectors of incompatable size ";
+    opserr << "WARNING CentralDifferenceNoDamping::update() - Vectors of incompatible size ";
     opserr << " expecting " << U->Size() << " obtained " << X.Size() << endln;
     return -3;
   }

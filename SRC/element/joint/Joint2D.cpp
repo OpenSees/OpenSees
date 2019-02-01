@@ -101,7 +101,6 @@ void* OPS_Joint2D()
     int LargeDisp;
 
     // Decide to use which constructor, based on the number of arguments
-    numdata = OPS_GetNumRemainingInputArgs();
     if ( numdata == 8 || numdata == 12 ) {
     
 	// Using Joint2D constructor without damage 
@@ -1541,7 +1540,7 @@ int Joint2D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theB
   nodeDbTag = data(2);
   dofDbTag = data(3);
   
-  // Receving Springs
+  // Receiving Springs
   for (int i=0 ; i<5 ; i++) {
     fixedEnd[i] = data( i+4 );
     int SpringClass = data( i+9 );

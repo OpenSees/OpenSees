@@ -468,7 +468,7 @@ int ElastomericBearingUFRP2d::update()
     kb(0,0) = theMaterials[0]->getTangent();
     
     // 2) calculate shear force and stiffness in basic y-direction
-    // get displacement increment (trial - commited)
+    // get displacement increment (trial - committed)
     double delta_ub = ub(1) - ubC(1);
     if (fabs(delta_ub) > 0.0)  {
         
@@ -1108,7 +1108,7 @@ void ElastomericBearingUFRP2d::setUp()
         exit(-1);
     }
     
-    // establish orientation of element for the tranformation matrix
+    // establish orientation of element for the transformation matrix
     // z = x cross y
     static Vector z(3);
     z(0) = x(1)*y(2) - x(2)*y(1);

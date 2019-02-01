@@ -248,7 +248,7 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
     dir = new ID(numDir);
     if (dir == 0)  {
         opserr << "TwoNodeLink::TwoNodeLink() - "
-            << "failed to creat direction array\n";
+            << "failed to create direction array\n";
         exit(-1);
     }
     
@@ -890,7 +890,7 @@ int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
     dir = new ID(numDir);
     if (dir == 0)  {
         opserr << "TwoNodeLink::recvSelf() - "
-            << "failed to creat direction array\n";
+            << "failed to create direction array\n";
         return -1;
     }
     rChannel.recvID(0, commitTag, *dir);
@@ -1085,7 +1085,7 @@ void TwoNodeLink::Print(OPS_Stream &s, int flag)
                 else if (j == 2 && i < 2)
                     s << trans(i, j) << "], [";
                 else if (j == 2 && i == 2)
-                    s << trans(i, j) << "]]";
+                    s << trans(i, j) << "]],";
             }
         }
         s << "\"addRayleigh\": " << addRayleigh << ", ";
@@ -1280,7 +1280,7 @@ void TwoNodeLink::setUp()
         exit(-1);
     }
     
-    // establish orientation of element for the tranformation matrix
+    // establish orientation of element for the transformation matrix
     // z = x cross yp
     static Vector z(3);
     z(0) = x(1)*y(2) - x(2)*y(1);

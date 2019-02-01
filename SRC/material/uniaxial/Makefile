@@ -44,6 +44,7 @@ OBJS       = UniaxialMaterial.o \
 	InitStressMaterial.o \
 	SimpleFractureMaterial.o \
 	MinMaxMaterial.o \
+	TensionOnlyMaterial.o \
         PathIndependentMaterial.o \
 	CableMaterial.o \
 	ENTMaterial.o \
@@ -59,6 +60,7 @@ OBJS       = UniaxialMaterial.o \
 	SteelMP.o \
 	SmoothPSConcrete.o \
 	Steel02.o \
+	GNGMaterial.o \
 	Concrete02.o \
 	Steel03.o \
 	MultiLinear.o \

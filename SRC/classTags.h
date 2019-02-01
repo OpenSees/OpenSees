@@ -133,6 +133,7 @@
 #define MAT_TAG_ENTMaterial			14
 #define MAT_TAG_Penalty				15
 #define MAT_TAG_MinMax				16
+#define MAT_TAG_TensionOnly			1601
 #define MAT_TAG_BoucWen				17
 #define MAT_TAG_Pinching4			18
 #define MAT_TAG_BarSlip				19
@@ -265,6 +266,8 @@
 #define MAT_TAG_AxialSp   6111
 #define MAT_TAG_AxialSpHD 6112
 
+// GNG material - J.Cook UCanterbury
+#define MAT_TAG_GNG 7001
 
 #define SEC_TAG_Elastic2d                        3
 #define SEC_TAG_Elastic3d                        4
@@ -422,10 +425,8 @@
 #define ND_TAG_ManzariDafaliasRO                14015
 #define ND_TAG_ManzariDafalias3DRO              14016
 #define ND_TAG_ManzariDafaliasPlaneStrainRO     14017
-// Stress-Dilatancy material - C.McGann
-#define ND_TAG_StressDensityModel             14018
-#define ND_TAG_StressDensityModel2D           14019
-#define ND_TAG_StressDensityModel3D           14020
+// Stress Density material - C.McGann
+#define ND_TAG_stressDensity                  14018
 // PM4Sand material - L.Chen
 #define ND_TAG_PM4Sand                        14021
 // PM4Silt material - L.Chen
@@ -452,7 +453,7 @@
 #define ND_TAG_PlateRebarMaterialThermal      7007   //L.Jiang[SIF]
 #define ND_TAG_PlateFromPlaneStressMaterialThermal 7008   //L.Jiang[SIF]
 
-
+#define ND_TAG_InitStressNDMaterial 7009
 
 
 
@@ -510,10 +511,12 @@
 #define LOAD_TAG_SelfWeight              10 // C.McGann, U.W.
 #define LOAD_TAG_Beam2dThermalAction      11
 #define LOAD_TAG_Beam2dPartialUniformLoad 12
+#define LOAD_TAG_Beam3dPartialUniformLoad 121
 #define LOAD_TAG_Beam3dThermalAction      13 // L.Jiang [ SIF ]
 #define LOAD_TAG_ShellThermalAction       14 // L.Jiang [ SIF ]
 #define LOAD_TAG_NodalThermalAction       15 //L.Jiang [ SIF ]
 #define LOAD_TAG_ThermalActionWrapper     16 //L.Jiang [ SIF ]
+#define LOAD_TAG_LysmerVelocityLoader      17  //Jose Abell (UANDES)
 
 
 #define MAT_TAG_IsotropicLinElastic         1001
@@ -706,7 +709,15 @@
 #define ELE_TAG_AxEqDispBeamColumn2d      178
 #define ELE_TAG_FourNodeTetrahedron       179
 #define ELE_TAG_TriSurfaceLoad            180
-#define ELE_TAG_QuadBeamEmbedContact      500
+#define ELE_TAG_QuadBeamEmbedContact      181
+#define ELE_TAG_EmbeddedBeamInterfaceL    182
+#define ELE_TAG_EmbeddedBeamInterfaceP    183
+#define ELE_TAG_EmbeddedEPBeamInterface   184
+#define ELE_TAG_LysmerTriangle            185
+#define ELE_TAG_TaylorHood2D              186
+#define ELE_TAG_PFEMElement2DQuasi        187
+#define ELE_TAG_MINI                      188
+#define ELE_TAG_PFEMElement3DBubble       189
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
@@ -920,6 +931,8 @@
 #define LinSOE_TAGS_PFEMLinSOE 26
 #define LinSOE_TAGS_SProfileSPDLinSOE		27
 #define LinSOE_TAGS_PFEMCompressibleLinSOE 28
+#define LinSOE_TAGS_PFEMQuasiLinSOE 29
+#define LinSOE_TAGS_PFEMDiaLinSOE 30
 
 
 #define SOLVER_TAGS_FullGenLinLapackSolver  	1
@@ -953,6 +966,8 @@
 #define SOLVER_TAGS_CulaSparseS4                        29
 #define SOLVER_TAGS_CulaSparseS5                        30
 #define SOLVER_TAGS_CuSP                                31
+#define SOLVER_TAGS_PFEMQuasiSolver                     32
+#define SOLVER_TAGS_PFEMDiaSolver                       33
 
 #define RECORDER_TAGS_ElementRecorder		1
 #define RECORDER_TAGS_NodeRecorder		2
@@ -974,6 +989,7 @@
 #define RECORDER_TAGS_NormEnvelopeElementRecorder	18
 #define RECORDER_TAGS_PVDRecorder               19
 #define RECORDER_TAGS_MPCORecorder               20
+#define RECORDER_TAGS_GmshRecorder               21
 
 #define OPS_STREAM_TAGS_FileStream		1
 #define OPS_STREAM_TAGS_StandardStream		2

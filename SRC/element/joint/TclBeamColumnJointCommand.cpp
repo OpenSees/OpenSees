@@ -426,6 +426,6 @@ int TclModelBuilder_addBeamColumnJoint(ClientData clientData, Tcl_Interp *interp
 		return TCL_ERROR;
 	}      
 
-	//the element succesfully created and added to the domain
+	//the element successfully created and added to the domain
 	return TCL_OK;
 }

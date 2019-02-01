@@ -2,7 +2,7 @@
 Copyright (c) 2015-2017, The Regents of the University of California (Regents).
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -26,10 +26,10 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 
-REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS 
-PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, 
+THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS
+PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
@@ -94,13 +94,19 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <RegulaFalsiLineSearch.h>
 #include <NewtonLineSearch.h>
 #include <FileDatastore.h>
+#include <Mesh.h>
+
+#ifdef _PARALLEL_INTERPRETERS
+#include <mpi.h>
+#include <MPI_MachineBroker.h>
+#endif
 
 
 // active object
 static OpenSeesCommands* cmds = 0;
 
 // define opserr
-StandardStream sserr;
+static StandardStream sserr;
 OPS_Stream *opserrPtr = &sserr;
 
 OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
@@ -110,27 +116,35 @@ OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
      theAlgorithm(0), theStaticAnalysis(0), theTransientAnalysis(0),
      thePFEMAnalysis(0),
      theAnalysisModel(0), theTest(0), numEigen(0), theDatabase(0),
-     theBroker(), theTimer(), theSimulationInfo()
+     theBroker(), theTimer(), theSimulationInfo(), theMachineBroker(0),
+     reliability(0)
 {
+#ifdef _PARALLEL_INTERPRETERS
+    theMachineBroker = new MPI_MachineBroker(&theBroker, 0, 0);
+#endif
+
     cmds = this;
 
     theDomain = new Domain;
 
-// AddingSensitivity:BEGIN /////////////////////////////////////////////
-#ifdef _RELIABILITY
-    theSensitivityAlgorithm = 0;
-    theSensitivityIntegrator = 0;
-    theReliabilityStaticAnalysis = 0;
-    theReliabilityTransientAnalysis = 0;
-#endif
-// AddingSensitivity:END ///////////////////////////////////////////////
+    reliability = new OpenSeesReliabilityCommands(theDomain);
 }
 
 OpenSeesCommands::~OpenSeesCommands()
 {
-    this->wipe();
+    if (reliability != 0) delete reliability;
     if (theDomain != 0) delete theDomain;
     if (theDatabase != 0) delete theDatabase;
+    cmds = 0;
+
+#ifdef _PARALLEL_INTERPRETERS
+    if (theMachineBroker != 0) {
+	opserr << "Process "<<theMachineBroker->getPID() << " Terminating\n";
+	theMachineBroker->shutdown();
+	delete theMachineBroker;
+    }
+#endif
+
 }
 
 DL_Interpreter*
@@ -275,6 +289,20 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
     }
 
     return result;
+}
+
+int* OPS_GetNumEigen()                                                          
+{                                                                               
+    static int numEigen = 0;                                                    
+    if (cmds == 0) return 0;                                                    
+    numEigen = cmds->getNumEigen();                                             
+    int numdata = 1;                                                            
+    if (OPS_SetIntOutput(&numdata, &numEigen) < 0) {                            
+        opserr << "WARNING failed to set output\n";                             
+        return 0;                                                               
+    }                                                                           
+                                                                                
+    return &numEigen;                                                           
 }
 
 void
@@ -496,14 +524,6 @@ OpenSeesCommands::setStaticAnalysis()
     					   *theStaticIntegrator,
     					   theTest);
 
-// AddingSensitivity:BEGIN ///////////////////////////////
-#ifdef _RELIABILITY
-    // if (theSensitivityAlgorithm != 0 && theSensitivityAlgorithm->shouldComputeAtEachStep()) {
-    // 	theStaticAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
-    // }
-#endif
-// AddingSensitivity:END /////////////////////////////////
-
     if (theEigenSOE != 0) {
 	theStaticAnalysis->setEigenSOE(*theEigenSOE);
     }
@@ -588,15 +608,6 @@ OpenSeesCommands::setPFEMAnalysis()
 	theTransientAnalysis->setEigenSOE(*theEigenSOE);
     }
 
-// AddingSensitivity:BEGIN ///////////////////////////////
-#ifdef _RELIABILITY
-    // if (theSensitivityAlgorithm != 0 && theSensitivityAlgorithm->shouldComputeAtEachStep()) {
-
-    // 	thePFEMAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
-    // }
-#endif
-// AddingSensitivity:END /////////////////////////////////
-
     return 0;
 }
 
@@ -673,15 +684,6 @@ OpenSeesCommands::setVariableAnalysis()
 	theTransientAnalysis->setEigenSOE(*theEigenSOE);
     }
 
-    // AddingSensitivity:BEGIN ///////////////////////////////
-#ifdef _RELIABILITY
-    // if (theSensitivityAlgorithm != 0 && theSensitivityAlgorithm->shouldComputeAtEachStep()) {
-
-    // 	thePFEMAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
-    // }
-#endif
-// AddingSensitivity:END /////////////////////////////////
-
 }
 
 void
@@ -745,160 +747,7 @@ OpenSeesCommands::setTransientAnalysis()
 	theTransientAnalysis->setEigenSOE(*theEigenSOE);
     }
 
-// AddingSensitivity:BEGIN ///////////////////////////////
-#ifdef _RELIABILITY
-    // if (theSensitivityAlgorithm != 0 && theSensitivityAlgorithm->shouldComputeAtEachStep()) {
-    // 	theTransientAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
-    // }
-#endif
-// AddingSensitivity:END /////////////////////////////////
 }
-
-#ifdef _RELIABILITY
-int
-OpenSeesCommands::setReliabilityStaticAnalysis()
-{
-    // delete the old analysis
-    if (theReliabilityStaticAnalysis != 0) {
-	delete theReliabilityStaticAnalysis;
-	theReliabilityStaticAnalysis = 0;
-    }
-    if (theReliabilityTransientAnalysis != 0) {
-	delete theReliabilityTransientAnalysis;
-	theReliabilityTransientAnalysis = 0;
-    }
-
-    // make sure all the components have been built,
-    // otherwise print a warning and use some defaults
-    if (theAnalysisModel == 0) {
-	theAnalysisModel = new AnalysisModel();
-    }
-    if (theTest == 0) {
-	theTest = new CTestNormUnbalance(1.0e-6,25,0);
-    }
-    if (theAlgorithm == 0) {
-	opserr << "WARNING analysis Static - no Algorithm yet specified, \n";
-	opserr << " NewtonRaphson default will be used\n";
-	theAlgorithm = new NewtonRaphson(*theTest);
-    }
-    if (theHandler == 0) {
-	opserr << "WARNING analysis Static - no ConstraintHandler yet specified, \n";
-	opserr << " PlainHandler default will be used\n";
-	theHandler = new PlainHandler();
-    }
-    if (theNumberer == 0) {
-	opserr << "WARNING analysis Static - no Numberer specified, \n";
-	opserr << " RCM default will be used\n";
-	RCM *theRCM = new RCM(false);
-	theNumberer = new DOF_Numberer(*theRCM);
-    }
-    if (theStaticIntegrator == 0) {
-	opserr << "Fatal ! theStaticIntegrator must be defined before defining\n";
-	opserr << "ReliabilityStaticAnalysis by NewStaticSensitivity\n";
-	return -1;
-    }
-    if (theSOE == 0) {
-	opserr << "WARNING analysis Static - no LinearSOE specified, \n";
-	opserr << " ProfileSPDLinSOE default will be used\n";
-	ProfileSPDLinSolver *theSolver;
-	theSolver = new ProfileSPDLinDirectSolver();
-	theSOE = new ProfileSPDLinSOE(*theSolver);
-    }
-
-    theReliabilityStaticAnalysis = new ReliabilityStaticAnalysis(*theDomain,
-								 *theHandler,
-								 *theNumberer,
-								 *theAnalysisModel,
-								 *theAlgorithm,
-								 *theSOE,
-								 *theStaticIntegrator,
-								 theTest);
-
-    // if (theSensitivityAlgorithm != 0 && theSensitivityAlgorithm->shouldComputeAtEachStep()) {
-
-    // 	theStaticAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
-    // } else {
-    // 	opserr << "Faltal SensitivityAlgorithm must be definde before defining \n";
-    // 	opserr << "ReliabilityStaticAnalysis with computeateachstep\n";
-    // 	return -1;
-    // }
-
-    return 0;
-}
-
-int
-OpenSeesCommands::setReliabilityTransientAnalysis()
-{
-    // delete the old analysis
-    if (theReliabilityStaticAnalysis != 0) {
-	delete theReliabilityStaticAnalysis;
-	theReliabilityStaticAnalysis = 0;
-    }
-    if (theReliabilityTransientAnalysis != 0) {
-	delete theReliabilityTransientAnalysis;
-	theReliabilityTransientAnalysis = 0;
-    }
-
-    // make sure all the components have been built,
-    // otherwise print a warning and use some defaults
-    if (theAnalysisModel == 0) {
-	theAnalysisModel = new AnalysisModel();
-    }
-    if (theTest == 0) {
-	theTest = new CTestNormUnbalance(1.0e-6,25,0);
-    }
-    if (theAlgorithm == 0) {
-	opserr << "WARNING analysis Static - no Algorithm yet specified, \n";
-	opserr << " NewtonRaphson default will be used\n";
-	theAlgorithm = new NewtonRaphson(*theTest);
-    }
-    if (theHandler == 0) {
-	opserr << "WARNING analysis Static - no ConstraintHandler yet specified, \n";
-	opserr << " PlainHandler default will be used\n";
-	theHandler = new PlainHandler();
-    }
-    if (theNumberer == 0) {
-	opserr << "WARNING analysis Static - no Numberer specified, \n";
-	opserr << " RCM default will be used\n";
-	RCM *theRCM = new RCM(false);
-	theNumberer = new DOF_Numberer(*theRCM);
-    }
-    if (theTransientIntegrator == 0) {
-	opserr << "Fatal ! theStaticIntegrator must be defined before defining\n";
-	opserr << "ReliabilityStaticAnalysis by NewStaticSensitivity\n";
-	return -1;
-    }
-    if (theSOE == 0) {
-	opserr << "WARNING analysis Static - no LinearSOE specified, \n";
-	opserr << " ProfileSPDLinSOE default will be used\n";
-	ProfileSPDLinSolver *theSolver;
-	theSolver = new ProfileSPDLinDirectSolver();
-	theSOE = new ProfileSPDLinSOE(*theSolver);
-    }
-
-    theReliabilityTransientAnalysis = new ReliabilityDirectIntegrationAnalysis(*theDomain,
-									       *theHandler,
-									       *theNumberer,
-									       *theAnalysisModel,
-									       *theAlgorithm,
-									       *theSOE,
-									       *theTransientIntegrator,
-									       theTest);
-
-
-    // if (theSensitivityAlgorithm != 0 && theSensitivityAlgorithm->shouldComputeAtEachStep()) {
-
-    // 	theStaticAnalysis->setSensitivityAlgorithm(theSensitivityAlgorithm);
-    // } else {
-    // 	opserr << "Faltal SensitivityAlgorithm must be definde before defining \n";
-    // 	opserr << "ReliabilityTransientAnalysis with computeateachstep\n";
-    // 	return -1;
-    // }
-
-    return 0;
-}
-
-#endif
 
 void
 OpenSeesCommands::wipeAnalysis()
@@ -912,11 +761,6 @@ OpenSeesCommands::wipeAnalysis()
 	if (theTransientIntegrator != 0) delete theTransientIntegrator;
 	if (theAlgorithm != 0) delete theAlgorithm;
 	if (theTest != 0) delete theTest;
-#ifdef _RELIABILITY
-	if (theSensitivityAlgorithm != 0) delete theSensitivityAlgorithm;
-	if (theReliabilityStaticAnalysis != 0) delete theReliabilityStaticAnalysis;
-	if (theReliabilityTransientAnalysis != 0) delete theReliabilityTransientAnalysis;
-#endif
     }
 
     if (theStaticAnalysis != 0) {
@@ -941,15 +785,6 @@ OpenSeesCommands::wipeAnalysis()
     thePFEMAnalysis = 0;
     theTest = 0;
 
-// AddingSensitivity:BEGIN /////////////////////////////////////////////////
-#ifdef _RELIABILITY
-    theSensitivityAlgorithm = 0;
-    theSensitivityIntegrator = 0;
-    theReliabilityStaticAnalysis = 0;
-    theReliabilityTransientAnalysis = 0;
-#endif
-// AddingSensitivity:END /////////////////////////////////////////////////
-
 }
 
 void
@@ -962,6 +797,9 @@ OpenSeesCommands::wipe()
 	delete theDatabase;
 	theDatabase = 0;
     }
+
+    // wipe all meshes
+    OPS_clearAllMesh();
 
     // wipe domain
     if (theDomain != 0) {
@@ -1023,12 +861,14 @@ OpenSeesCommands::setFileDatabase(const char* filename)
 /////////////////////////////
 int OPS_GetNumRemainingInputArgs()
 {
+    if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
     return interp->getNumRemainingInputArgs();
 }
 
 int OPS_GetIntInput(int *numData, int*data)
 {
+    if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
     if (numData == 0 || data == 0) return -1;
     return interp->getInt(data, *numData);
@@ -1036,6 +876,7 @@ int OPS_GetIntInput(int *numData, int*data)
 
 int OPS_SetIntOutput(int *numData, int*data)
 {
+    if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
     if (numData == 0 || data == 0) return -1;
     return interp->setInt(data, *numData);
@@ -1043,6 +884,7 @@ int OPS_SetIntOutput(int *numData, int*data)
 
 int OPS_GetDoubleInput(int *numData, double *data)
 {
+    if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
     if (numData == 0 || data == 0) return -1;
     return interp->getDouble(data, *numData);
@@ -1050,6 +892,7 @@ int OPS_GetDoubleInput(int *numData, double *data)
 
 int OPS_SetDoubleOutput(int *numData, double *data)
 {
+    if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
     if (numData == 0 || data == 0) return -1;
     return interp->setDouble(data, *numData);
@@ -1057,32 +900,37 @@ int OPS_SetDoubleOutput(int *numData, double *data)
 
 const char * OPS_GetString(void)
 {
+    if (cmds == 0) return "Invalid String Input!";
     DL_Interpreter* interp = cmds->getInterpreter();
     const char* res = interp->getString();
     if (res == 0) {
-	return "Invalid String Input!\n";
+	return "Invalid String Input!";
     }
     return res;
 }
 
 int OPS_SetString(const char* str)
 {
+    if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
     return interp->setString(str);
 }
 
 Domain* OPS_GetDomain(void)
 {
+    if (cmds == 0) return 0;
     return cmds->getDomain();
 }
 
 int OPS_GetNDF()
 {
+    if (cmds == 0) return 0;
     return cmds->getNDF();
 }
 
 int OPS_GetNDM()
 {
+    if (cmds == 0) return 0;
     return cmds->getNDM();
 }
 
@@ -1092,6 +940,7 @@ int OPS_ResetCurrentInputArg(int cArg)
 	opserr << "WARNING can't reset to argv[0]\n";
 	return -1;
     }
+    if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
     interp->resetInput(cArg);
     return 0;
@@ -1105,7 +954,9 @@ UniaxialMaterial *OPS_GetUniaxialMaterial(int matTag)
 int OPS_wipe()
 {
     // wipe
-    cmds->wipe();
+    if (cmds != 0) {
+	cmds->wipe();
+    }
 
     return 0;
 }
@@ -1113,7 +964,9 @@ int OPS_wipe()
 int OPS_wipeAnalysis()
 {
     // wipe analysis
-    cmds->wipeAnalysis();
+    if (cmds != 0) {
+	cmds->wipeAnalysis();
+    }
 
     return 0;
 }
@@ -1176,8 +1029,10 @@ int OPS_model()
     }
 
     // set ndm and ndf
-    cmds->setNDF(ndf);
-    cmds->setNDM(ndm);
+    if (cmds != 0) {
+	cmds->setNDF(ndf);
+	cmds->setNDM(ndm);
+    }
 
     return 0;
 }
@@ -1225,18 +1080,32 @@ int OPS_System()
 	// PFEM SOE & SOLVER
 
 	if(OPS_GetNumRemainingInputArgs() < 1) {
-	    theSOE = (LinearSOE*)OPS_PFEMSolver();
+	    theSOE = (LinearSOE*)OPS_PFEMSolver_Umfpack();
 	} else {
 
 	    const char* type = OPS_GetString();
 
-	    if(strcmp(type, "-quasi") == 0) {
+	    if(strcmp(type, "-compressible") == 0) {
 
 		theSOE = (LinearSOE*)OPS_PFEMCompressibleSolver();
 
-	    } else if(strcmp(type, "-umfpack") == 0) {
+	    } else if (strcmp(type, "-laplace") == 0) {
 
-		theSOE = (LinearSOE*)OPS_PFEMSolver_Umfpack();
+	    	theSOE = (LinearSOE*)OPS_PFEMSolver_Laplace();
+	    } else if (strcmp(type, "-lumpM") == 0) {
+	    	theSOE = (LinearSOE*)OPS_PFEMSolver_LumpM();		
+
+	    // } else if(strcmp(type, "-umfpack") == 0) {
+
+	    // 	theSOE = (LinearSOE*)OPS_PFEMSolver_Umfpack();
+
+	    // } else if(strcmp(type, "-diag") == 0) {
+
+	    // 	theSOE = (LinearSOE*)OPS_PFEMDiaSolver();
+
+	    // } else if(strcmp(type, "-egen") == 0) {
+
+	    //  theSOE = (LinearSOE*)OPS_EgenSolver();
 
 	    } else if (strcmp(type,"-mumps") ==0) {
 // #ifdef _PARALLEL_INTERPRETERS
@@ -1298,7 +1167,9 @@ int OPS_System()
     }
 
     // set soe
-    cmds->setSOE(theSOE);
+    if (cmds != 0) {
+	cmds->setSOE(theSOE);
+    }
 
     return 0;
 }
@@ -1334,7 +1205,9 @@ int OPS_Numberer()
     }
 
     // set numberer
-    cmds->setNumberer(theNumberer);
+    if (cmds != 0) {
+	cmds->setNumberer(theNumberer);
+    }
 
     return 0;
 }
@@ -1371,7 +1244,9 @@ int OPS_ConstraintHandler()
     }
 
     // set handler
-    cmds->setHandler(theHandler);
+    if (cmds != 0) {
+	cmds->setHandler(theHandler);
+    }
 
     return 0;
 }
@@ -1428,7 +1303,9 @@ int OPS_CTest()
     }
 
     // set test
-    cmds->setCTest(theTest);
+    if (cmds != 0) {
+	cmds->setCTest(theTest);
+    }
 
     return 0;
 }
@@ -1591,9 +1468,13 @@ int OPS_Integrator()
 
     // set integrator
     if (si != 0) {
-	cmds->setStaticIntegrator(si);
+	if (cmds != 0) {
+	    cmds->setStaticIntegrator(si);
+	}
     } else if (ti != 0) {
-	cmds->setTransientIntegrator(ti);
+	if (cmds != 0) {
+	    cmds->setTransientIntegrator(ti);
+	}
     }
 
     return 0;
@@ -1650,7 +1531,9 @@ int OPS_Algorithm()
 
     // set algorithm
     if (theAlgo != 0) {
-	cmds->setAlgorithm(theAlgo);
+	if (cmds != 0) {
+	    cmds->setAlgorithm(theAlgo);
+	}
     }
 
     return 0;
@@ -1667,29 +1550,25 @@ int OPS_Analysis()
 
     // create analysis
     if (strcmp(type, "Static") == 0) {
-	cmds->setStaticAnalysis();
+	if (cmds != 0) {
+	    cmds->setStaticAnalysis();
+	}
     } else if (strcmp(type, "Transient") == 0) {
-	cmds->setTransientAnalysis();
+	if (cmds != 0) {
+	    cmds->setTransientAnalysis();
+	}
     } else if (strcmp(type, "PFEM") == 0) {
-	if (cmds->setPFEMAnalysis() < 0) {
-	    return -1;
+	if (cmds != 0) {
+	    if (cmds->setPFEMAnalysis() < 0) {
+		return -1;
+	    }
 	}
     } else if (strcmp(type, "VariableTimeStepTransient") == 0 ||
 	       (strcmp(type,"TransientWithVariableTimeStep") == 0) ||
 	       (strcmp(type,"VariableTransient") == 0)) {
-	cmds->setVariableAnalysis();
-
-#ifdef _RELIABILITY
-    } else if (strcmp(type, "ReliabilityStatic") == 0) {
-	if (cmds->setReliabilityStaticAnalysis() < 0) {
-	    return -1;
+	if (cmds != 0) {
+	    cmds->setVariableAnalysis();
 	}
-
-    } else if (strcmp(type,"ReliabilityTransient") == 0) {
-	if (cmds->setReliabilityTransientAnalysis() < 0) {
-	    return -1;
-	}
-#endif
 
     } else {
 	opserr<<"WARNING unknown analysis type "<<type<<"\n";
@@ -1700,6 +1579,8 @@ int OPS_Analysis()
 
 int OPS_analyze()
 {
+    if (cmds == 0) return 0;
+
     int result = 0;
     StaticAnalysis* theStaticAnalysis = cmds->getStaticAnalysis();
     TransientAnalysis* theTransientAnalysis = cmds->getTransientAnalysis();
@@ -1835,6 +1716,7 @@ int OPS_eigenAnalysis()
 
 int OPS_resetModel()
 {
+    if (cmds == 0) return 0;
     Domain* theDomain = OPS_GetDomain();
     if (theDomain != 0) {
 	theDomain->revertToStart();
@@ -1848,6 +1730,7 @@ int OPS_resetModel()
 
 int OPS_initializeAnalysis()
 {
+    if (cmds == 0) return 0;
     DirectIntegrationAnalysis* theTransientAnalysis =
 	cmds->getTransientAnalysis();
 
@@ -1870,6 +1753,7 @@ int OPS_initializeAnalysis()
 
 int OPS_printA()
 {
+    if (cmds == 0) return 0;
     FileStream outputFile;
     OPS_Stream *output = &opserr;
 
@@ -1912,6 +1796,7 @@ int OPS_printA()
 
 int OPS_printB()
 {
+    if (cmds == 0) return 0;
     FileStream outputFile;
     OPS_Stream *output = &opserr;
 
@@ -2043,6 +1928,7 @@ int OPS_printModel()
 
 void* OPS_KrylovNewton()
 {
+    if (cmds == 0) return 0;
     int incrementTangent = CURRENT_TANGENT;
     int iterateTangent = CURRENT_TANGENT;
     int maxDim = 3;
@@ -2098,6 +1984,7 @@ void* OPS_KrylovNewton()
 
 void* OPS_RaphsonNewton()
 {
+    if (cmds == 0) return 0;
     int incrementTangent = CURRENT_TANGENT;
     int iterateTangent = CURRENT_TANGENT;
 
@@ -2145,6 +2032,7 @@ void* OPS_RaphsonNewton()
 
 void* OPS_MillerNewton()
 {
+    if (cmds == 0) return 0;
     int incrementTangent = CURRENT_TANGENT;
     int iterateTangent = CURRENT_TANGENT;
     int maxDim = 3;
@@ -2198,6 +2086,7 @@ void* OPS_MillerNewton()
 
 void* OPS_SecantNewton()
 {
+    if (cmds == 0) return 0;
     int incrementTangent = CURRENT_TANGENT;
     int iterateTangent = CURRENT_TANGENT;
     int maxDim = 3;
@@ -2253,6 +2142,7 @@ void* OPS_SecantNewton()
 
 void* OPS_PeriodicNewton()
 {
+    if (cmds == 0) return 0;
     int incrementTangent = CURRENT_TANGENT;
     int iterateTangent = CURRENT_TANGENT;
     int maxDim = 3;
@@ -2308,6 +2198,7 @@ void* OPS_PeriodicNewton()
 
 void* OPS_NewtonLineSearch()
 {
+    if (cmds == 0) return 0;
     ConvergenceTest* theTest = cmds->getCTest();
 
     if (theTest == 0) {
@@ -2395,6 +2286,7 @@ void* OPS_NewtonLineSearch()
 
 int OPS_getCTestNorms()
 {
+    if (cmds == 0) return 0;
     ConvergenceTest* theTest = cmds->getCTest();
 
     if (theTest != 0) {
@@ -2421,6 +2313,7 @@ int OPS_getCTestNorms()
 
 int OPS_getCTestIter()
 {
+    if (cmds == 0) return 0;
     ConvergenceTest* theTest = cmds->getCTest();
 
     if (theTest != 0) {
@@ -2440,6 +2333,7 @@ int OPS_getCTestIter()
 
 int OPS_Database()
 {
+    if (cmds == 0) return 0;
     // make sure at least one other argument to contain integrator
     if (OPS_GetNumRemainingInputArgs() < 1) {
 	opserr << "WARNING need to specify a Database type; valid type File, MySQL, BerkeleyDB \n";
@@ -2472,6 +2366,7 @@ int OPS_Database()
 
 int OPS_save()
 {
+    if (cmds == 0) return 0;
     // make sure at least one other argument to contain type of system
     if (OPS_GetNumRemainingInputArgs() < 1) {
 	opserr << "WARNING save no commit tag - want save commitTag?";
@@ -2502,6 +2397,7 @@ int OPS_save()
 
 int OPS_restore()
 {
+    if (cmds == 0) return 0;
     // make sure at least one other argument to contain type of system
     if (OPS_GetNumRemainingInputArgs() < 1) {
 	opserr << "WARNING restore no commit tag - want restore commitTag?";
@@ -2532,6 +2428,7 @@ int OPS_restore()
 
 int OPS_startTimer()
 {
+    if (cmds == 0) return 0;
     Timer* timer = cmds->getTimer();
     if (timer == 0) return -1;
     timer->start();
@@ -2540,6 +2437,7 @@ int OPS_startTimer()
 
 int OPS_stopTimer()
 {
+    if (cmds == 0) return 0;
     Timer* theTimer = cmds->getTimer();
     if (theTimer == 0) return -1;
     theTimer->pause();
@@ -2549,6 +2447,7 @@ int OPS_stopTimer()
 
 int OPS_modalDamping()
 {
+    if (cmds == 0) return 0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
 	opserr << "WARNING modalDamping ?factor - not enough arguments to command\n";
 	return -1;
@@ -2584,6 +2483,7 @@ int OPS_modalDamping()
 
 int OPS_modalDampingQ()
 {
+    if (cmds == 0) return 0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
 	opserr << "WARNING modalDamping ?factor - not enough arguments to command\n";
 	return -1;
@@ -2619,6 +2519,7 @@ int OPS_modalDampingQ()
 
 int OPS_neesMetaData()
 {
+    if (cmds == 0) return 0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
 	opserr << "WARNING missing args \n";
 	return -1;
@@ -2626,7 +2527,7 @@ int OPS_neesMetaData()
 
     SimulationInformation* simulationInfo = cmds->getSimulationInformation();
     if (simulationInfo == 0) return -1;
-    
+
     while (OPS_GetNumRemainingInputArgs() > 0) {
 	const char* flag = OPS_GetString();
 
@@ -2680,6 +2581,7 @@ int OPS_neesMetaData()
 
 int OPS_neesUpload()
 {
+    if (cmds == 0) return 0;
     if (OPS_GetNumRemainingInputArgs() < 2) {
 	opserr << "WARNING neesUpload -user isername? -pass passwd? -proj projID? -exp expID? -title title? -description description\n";
 	return -1;
@@ -2934,6 +2836,7 @@ int OPS_defaultUnits()
 
 int OPS_totalCPU()
 {
+    if (cmds == 0) return 0;
     EquiSolnAlgo* theAlgorithm = cmds->getAlgorithm();
     if (theAlgorithm == 0) {
 	opserr << "WARNING no algorithm is set\n";
@@ -2952,6 +2855,7 @@ int OPS_totalCPU()
 
 int OPS_solveCPU()
 {
+    if (cmds == 0) return 0;
     EquiSolnAlgo* theAlgorithm = cmds->getAlgorithm();
     if (theAlgorithm == 0) {
 	opserr << "WARNING no algorithm is set\n";
@@ -2970,6 +2874,7 @@ int OPS_solveCPU()
 
 int OPS_accelCPU()
 {
+    if (cmds == 0) return 0;
     EquiSolnAlgo* theAlgorithm = cmds->getAlgorithm();
     if (theAlgorithm == 0) {
 	opserr << "WARNING no algorithm is set\n";
@@ -2988,6 +2893,7 @@ int OPS_accelCPU()
 
 int OPS_numFact()
 {
+    if (cmds == 0) return 0;
     EquiSolnAlgo* theAlgorithm = cmds->getAlgorithm();
     if (theAlgorithm == 0) {
 	opserr << "WARNING no algorithm is set\n";
@@ -3006,24 +2912,26 @@ int OPS_numFact()
 
 int OPS_numIter()
 {
+    if (cmds == 0) return 0;
     EquiSolnAlgo* theAlgorithm = cmds->getAlgorithm();
     if (theAlgorithm == 0) {
 	opserr << "WARNING no algorithm is set\n";
 	return -1;
     }
 
-    double value = theAlgorithm->getNumIterations();
+    int value = theAlgorithm->getNumIterations();
     int numdata = 1;
-    if (OPS_SetDoubleOutput(&numdata, &value) < 0) {
+    if (OPS_SetIntOutput(&numdata, &value) < 0) {
 	opserr << "WARNING failed to set output\n";
 	return -1;
     }
 
-    return 0;
+    return value;
 }
 
 int OPS_systemSize()
 {
+    if (cmds == 0) return 0;
     LinearSOE* theSOE = cmds->getSOE();
     if (theSOE == 0) {
 	opserr << "WARNING no system is set\n";
@@ -3039,3 +2947,67 @@ int OPS_systemSize()
 
     return 0;
 }
+
+// Sensitivity:BEGIN /////////////////////////////////////////////
+
+int OPS_computeGradients()
+{
+    Integrator* theIntegrator = 0;
+    if(cmds->getStaticIntegrator() != 0) {
+    	theIntegrator = cmds->getStaticIntegrator();
+    } else if(cmds->getTransientIntegrator() != 0) {
+    	theIntegrator = cmds->getTransientIntegrator();
+    }
+
+    if (theIntegrator == 0) {
+    	opserr << "WARNING: No integrator is created\n";
+    	return -1;
+    }
+
+    if (theIntegrator->computeSensitivities() < 0) {
+	opserr << "WARNING: failed to compute sensitivities\n";
+	return -1;
+    }
+    
+    return 0;
+}
+
+int OPS_sensitivityAlgorithm()
+{
+    if (cmds == 0) return 0;
+
+    int analysisTypeTag = 1;
+    Integrator* theIntegrator = 0;
+    if(cmds->getStaticIntegrator() != 0) {
+    	theIntegrator = cmds->getStaticIntegrator();
+    } else if(cmds->getTransientIntegrator() != 0) {
+    	theIntegrator = cmds->getTransientIntegrator();
+    }
+    
+    // 1: compute at each step (default); 2: compute by command; 
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+    	opserr << "ERROR: Wrong number of parameters to sensitivity algorithm." << "\n";
+    	return -1;
+    }
+    if (theIntegrator == 0) {
+    	opserr << "The integrator needs to be instantiated before " << "\n"
+    	       << " setting  sensitivity algorithm." << "\n";
+    	return -1;
+    }
+
+    const char* type = OPS_GetString();
+    if (strcmp(type,"-computeAtEachStep") == 0)
+    	analysisTypeTag = 1;
+    else if (strcmp(type,"-computeByCommand") == 0)
+    	analysisTypeTag = 2;
+    else {
+    	opserr << "Unknown sensitivity algorithm option: " << type << "\n";
+    	return -1;
+    }
+
+    theIntegrator->setComputeType(analysisTypeTag);
+    theIntegrator->activateSensitivityKey();
+	
+    return 0;
+}
+// Sensitivity:END /////////////////////////////////////////////

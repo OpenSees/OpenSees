@@ -35,7 +35,8 @@
 
 TriangleMeshGenerator::TriangleMeshGenerator()
     :in(),out(),vout(),pointlist(),pointmarkerlist(),
-     segmentlist(),segmentmarkerlist(),trianglelist(),numberofcorners(0)
+     segmentlist(),segmentmarkerlist(),trianglelist(),
+     neighborlist(),numberofcorners(0)
 {
     initializeTri(in);
     initializeTri(out);
@@ -103,8 +104,18 @@ TriangleMeshGenerator::getTriangle(int i, int& p1, int& p2, int& p3)
     p3 = trianglelist[numberofcorners*i+2];
 }
 
+void
+TriangleMeshGenerator::getNeighbor(int i, int& t1, int& t2, int& t3)
+{
+    int num = 3;
+    if(i<0 || num*i>=(int)neighborlist.size()) return;
+    t1 = neighborlist[num*i];
+    t2 = neighborlist[num*i+1];
+    t3 = neighborlist[num*i+2];
+}
+
 int
-TriangleMeshGenerator::mesh(double size)
+TriangleMeshGenerator::mesh(double size, bool pointOnBoundary)
 {
     // reset
     this->reset();
@@ -124,7 +135,11 @@ TriangleMeshGenerator::mesh(double size)
 
     // meshing
     char s[128];
-    sprintf(s, "DQzqpa%.20f", size);
+    if (pointOnBoundary) {
+	sprintf(s, "DnQzqpa%.20f", size);
+    } else {
+	sprintf(s, "DnYYQzqpa%.20f", size);
+    }
     triangulate(s, &in, &out, &vout);
 
     // reset pointers
@@ -138,6 +153,7 @@ TriangleMeshGenerator::mesh(double size)
     segmentlist.clear();
     segmentmarkerlist.clear();
     trianglelist.clear();
+    neighborlist.clear();
     
     // copy output data
     numberofcorners = out.numberofcorners;
@@ -147,6 +163,8 @@ TriangleMeshGenerator::mesh(double size)
 		     out.pointmarkerlist+out.numberofpoints);
     trianglelist.assign(out.trianglelist,
 			out.trianglelist+out.numberoftriangles*numberofcorners);
+    neighborlist.assign(out.neighborlist,
+			out.neighborlist+out.numberoftriangles*3);
 
 
     // clear memory
@@ -171,7 +189,7 @@ TriangleMeshGenerator::remesh(double alpha)
     in.pointlist = &pointlist[0];
 
     // meshing
-    char s[] = "Qzv";
+    char s[] = "Qnzv";
     triangulate(s, &in, &out, &vout);
 
     // reset pointers
@@ -182,6 +200,10 @@ TriangleMeshGenerator::remesh(double alpha)
     segmentlist.clear();
     segmentmarkerlist.clear();
     trianglelist.clear();
+    neighborlist.clear();
+
+    neighborlist.assign(out.neighborlist,
+			out.neighborlist+out.numberoftriangles*3);
 
     // radius and average size of triangles
     numberofcorners = out.numberofcorners;
@@ -236,7 +258,7 @@ TriangleMeshGenerator::remesh(double alpha)
 	
 	// if pass the alpha test
     	//if(radius[i] / avesize <= alpha && beta[i] <= 50.*alpha) {
-	if(radius[i] / avesize <= alpha) {
+	if(radius[i] / avesize <= alpha || alpha < 0) {
 	    for(int j=0; j<3; j++) {
 		trianglelist.push_back(out.trianglelist[numberofcorners*i+j]);
 	    }
@@ -260,6 +282,7 @@ TriangleMeshGenerator::clear()
     segmentlist.clear();
     segmentmarkerlist.clear();
     trianglelist.clear();
+    neighborlist.clear();
     numberofcorners = 0;
     this->reset();
 }

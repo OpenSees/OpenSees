@@ -506,7 +506,7 @@ BinaryFileStream::sendSelf(int commitTag, Channel &theChannel)
   static ID idData(3);
   int fileNameLength = 0;
   if (fileName != 0)
-    fileNameLength = strlen(fileName);
+    fileNameLength = int(strlen(fileName));
 
   idData(0) = fileNameLength;
 
@@ -722,7 +722,7 @@ textToBinary(const char *inputFilename, const char *outputFilename)
     const char *cNext = c;
 
     int loc = 0;
-    int endLoc = inputLine.length();
+    int endLoc = int(inputLine.length());
     int numNumbers = 0;
 
     while (loc < endLoc) {

@@ -19,7 +19,7 @@
 ** ****************************************************************** */
 
 // Written: Long Chen, Pedro Arduino
-//          Jan 2018, University of Washington
+//          Sep 2018, University of Washington
 
 // Description: This file contains the implementation for the PM4Silt class.
 // PM4Silt(Version 1): A Silt Plasticity Model For Earthquake Engineering Applications
@@ -66,7 +66,7 @@ PM4Silt::initTensors PM4Silt::initTensorOps;
 static int numPM4SiltMaterials = 0;
 
 void *
-OPS_PM4Silt(void)
+OPS_PM4SiltMaterial(void)
 {
 	if (numPM4SiltMaterials == 0) {
 		numPM4SiltMaterials++;
@@ -84,35 +84,32 @@ OPS_PM4Silt(void)
 
 	int tag;
 	double dData[5];
-	double oData[27];
+	double oData[24];
 
 	oData[0] = 1.0;      // Fsu
 	oData[1] = 101.3;    // p_atm
-	oData[2] = 0.75;     // nG
-	oData[3] = 0.5;      // h0
-	oData[4] = 0.9;      // e_init
-	oData[5] = 0.06;     // Lambda
-	oData[6] = 32.0;     // phi_cv
-	oData[7] = 0.8;      // nb_wet
-	oData[8] = 0.5;      // nb_dry
-	oData[9] = 0.3;      // nd
-	oData[10] = 0.8;     // Ado
-	oData[11] = -1;      // ru_max
-	oData[12] = -1;      // z_max
-	oData[13] = 100.0;   // Cz
-	oData[14] = -1;      // Ce
-	oData[15] = 3.0;     // Cgd
-	oData[16] = 4.0;     // Ckaf
-	oData[17] = 0.3;     // nu
+	oData[2] = 0.3;      // nu
+	oData[3] = 0.75;     // nG
+	oData[4] = 0.5;      // h0
+	oData[5] = 0.9;      // e_init
+	oData[6] = 0.06;     // Lambda
+	oData[7] = 32.0;     // phi_cv
+	oData[8] = 0.8;      // nb_wet
+	oData[9] = 0.5;      // nb_dry
+	oData[10] = 0.3;     // nd
+	oData[11] = 0.8;     // Ado
+	oData[12] = -1;      // ru_max
+	oData[13] = -1;      // z_max
+	oData[14] = 100.0;   // Cz
+	oData[15] = -1;      // Ce
+	oData[16] = 3.0;     // Cgd
+	oData[17] = 4.0;     // Ckaf
 	oData[18] = 0.01;    // m
-	oData[19] = 0.005;   // crhg
-	oData[20] = -1;		 // chg
-	oData[21] = 2.0;	 // CG_consol
-	oData[22] = 0.0;     // residualP
-	oData[23] = 1;       // integratoin scheme
-	oData[24] = 0;       // tangent type
-	oData[25] = 1.0e-7;	// TolF
-	oData[26] = 1.0e-10;	// TolR
+	oData[19] = 2.0;	 // CG_consol
+	oData[20] = 1;       // integration scheme
+	oData[21] = 0;       // tangent type
+	oData[22] = 1.0e-7;	 // TolF
+	oData[23] = 1.0e-10;	// TolR
 
 	int numData = 1;
 	if (OPS_GetInt(&numData, &tag) != 0) {
@@ -135,7 +132,7 @@ OPS_PM4Silt(void)
 
 	theMaterial = new PM4Silt(tag, ND_TAG_PM4Silt, dData[0], dData[1], dData[2], dData[3], dData[4], oData[0], oData[1], oData[2],
 		oData[3], oData[4], oData[5], oData[6], oData[7], oData[8], oData[9], oData[10], oData[11], oData[12], oData[13], oData[14],
-		oData[15], oData[16], oData[17], oData[18], oData[19], oData[20], oData[21], oData[22], (int)oData[23], (int)oData[24], oData[25], oData[26]);
+		oData[15], oData[16], oData[17], oData[18], oData[19], (int)oData[20], (int)oData[21], oData[22], oData[23]);
 
 
 	if (theMaterial == 0) {
@@ -146,11 +143,9 @@ OPS_PM4Silt(void)
 }
 
 // full constructor
-PM4Silt::PM4Silt(int tag, int classTag, double Su, double Su_rate, double G0, double hpo, double mDen, double Fsu, double P_atm, double nG, double h0,
-	double einit, double lambda, double phi_cv, double nbwet, double nbdry, double nd, double Ado,
-	double ru_max, double z_max, double cz, double ce, double Cgd, double Ckaf, double nu, double m,
-	double crhg, double chg, double CG_consol, double residualP, int integrationScheme, int tangentType,
-	double TolF, double TolR) : NDMaterial(tag, classTag),
+PM4Silt::PM4Silt(int tag, int classTag, double Su, double Su_rate, double G0, double hpo, double mDen, double Fsu, double P_atm, double nu, double nG, double h0,
+	double einit, double lambda, double phi_cv, double nbwet, double nbdry, double nd, double Ado, double ru_max, double z_max, double cz, double ce,
+	double Cgd, double Ckaf, double m, double CG_consol, int integrationScheme, int tangentType, double TolF, double TolR) : NDMaterial(tag, classTag),
 	mEpsilon(3),
 	mEpsilon_n(3),
 	mEpsilonE(3),
@@ -163,15 +158,21 @@ PM4Silt::PM4Silt(int tag, int classTag, double Su, double Su_rate, double G0, do
 	mAlpha_in(3),
 	mAlpha_in_n(3),
 	mAlpha_in_p(3),
+	mAlpha_in_p_n(3),
 	mAlpha_in_true(3),
+	mAlpha_in_true_n(3),
 	mAlpha_in_max(3),
+	mAlpha_in_max_n(3),
 	mAlpha_in_min(3),
+	mAlpha_in_min_n(3),
 	mFabric(3),
 	mFabric_n(3),
 	mFabric_in(3),
+	mFabric_in_n(3),
 	mCe(3, 3),
 	mCep(3, 3),
-	mCep_Consistent(3, 3)
+	mCep_Consistent(3, 3),
+	mTracker(3)
 {
 	m_Su = Su;
 	m_Su_rate = Su_rate;
@@ -180,10 +181,20 @@ PM4Silt::PM4Silt(int tag, int classTag, double Su, double Su_rate, double G0, do
 	massDen = mDen;
 	m_Fsu = Fsu;
 	m_P_atm = P_atm;
+	m_nu = nu;
+	if (m_nu < 0.0) {
+		m_nu = 0.3;
+	}
+	else if (m_nu >= 0.5) {
+		opserr << "Warning, Poisson's ratio is larger than 0.5, using 0.49 instead. \n";
+		m_nu = 0.49;
+	}
 	m_nG = nG;
+	if (m_nG < 0.0) m_nG = 0.75;
 	m_h0 = h0;
 	m_e_init = einit;
 	m_lambda = lambda;
+	if (phi_cv < 0.0) phi_cv = 32.0;
 	m_Mc = 2 * sin(phi_cv / 180.0 * 3.14159265359);
 	m_nbwet = nbwet;
 	m_nbdry = nbdry;
@@ -192,12 +203,10 @@ PM4Silt::PM4Silt(int tag, int classTag, double Su, double Su_rate, double G0, do
 	m_ru_max = ru_max;
 	m_z_max = z_max;
 	m_cz = cz;
+	m_ce = ce;
 	m_Cgd = Cgd;
 	m_Ckaf = Ckaf;
-	m_nu = nu;
 	m_m = m;
-	m_crhg = crhg;
-	m_chg = chg;
 	m_FirstCall = 0;
 	m_PostShake = 0;
 	m_CG_consol = CG_consol;
@@ -205,18 +214,16 @@ PM4Silt::PM4Silt(int tag, int classTag, double Su, double Su_rate, double G0, do
 	mTangType = tangentType;
 	mTolF = TolF;
 	mTolR = TolR;
-	mresidualP = residualP;
 	mIter = 0;
 
 	initialize();
 }
 
 // full constructor
-PM4Silt::PM4Silt(int tag, double Su, double Su_rate, double G0, double hpo, double mDen, double Fsu, double P_atm, double nG, double h0,
-	double einit, double lambda, double phi_cv, double nbwet, double nbdry, double nd, double Ado,
-	double ru_max, double z_max, double cz, double ce, double Cgd, double Ckaf, double nu, double m,
-	double crhg, double chg, double CG_consol, double residualP, int integrationScheme, int tangentType,
-	double TolF, double TolR) : NDMaterial(tag, ND_TAG_PM4Silt),
+PM4Silt::PM4Silt(int tag, double Su, double Su_rate, double G0, double hpo, double mDen, double Fsu, double P_atm, double nu, double nG, double h0,
+	double einit, double lambda, double phi_cv, double nbwet, double nbdry, double nd, double Ado, double ru_max, double z_max, double cz,
+	double ce, double Cgd, double Ckaf, double m, double CG_consol, int integrationScheme, int tangentType, double TolF, double TolR)
+	: NDMaterial(tag, ND_TAG_PM4Silt),
 	mEpsilon(3),
 	mEpsilon_n(3),
 	mEpsilonE(3),
@@ -229,27 +236,43 @@ PM4Silt::PM4Silt(int tag, double Su, double Su_rate, double G0, double hpo, doub
 	mAlpha_in(3),
 	mAlpha_in_n(3),
 	mAlpha_in_p(3),
+	mAlpha_in_p_n(3),
 	mAlpha_in_true(3),
+	mAlpha_in_true_n(3),
 	mAlpha_in_max(3),
+	mAlpha_in_max_n(3),
 	mAlpha_in_min(3),
+	mAlpha_in_min_n(3),
 	mFabric(3),
 	mFabric_n(3),
 	mFabric_in(3),
+	mFabric_in_n(3),
 	mCe(3, 3),
 	mCep(3, 3),
-	mCep_Consistent(3, 3)
+	mCep_Consistent(3, 3),
+	mTracker(3)
 {
 	m_Su = Su;
 	m_Su_rate = Su_rate;
 	m_G0 = G0;
 	m_hpo = hpo;
-	massDen = mDen;
+	massDen = 1.5;
 	m_Fsu = Fsu;
 	m_P_atm = P_atm;
+	m_nu = nu;
+	if (m_nu < 0.0) {
+		m_nu = 0.3;
+	}
+	else if (m_nu >= 0.5) {
+		opserr << "Warning, Poisson's ratio is larger than 0.5, using 0.49 instead. \n";
+		m_nu = 0.49;
+	}
 	m_nG = nG;
+	if (m_nG < 0.0) m_nG = 0.75;
 	m_h0 = h0;
 	m_e_init = einit;
 	m_lambda = lambda;
+	if (phi_cv < 0.0) phi_cv = 32.0;
 	m_Mc = 2 * sin(phi_cv / 180.0 * 3.14159265359);
 	m_nbwet = nbwet;
 	m_nbdry = nbdry;
@@ -258,12 +281,10 @@ PM4Silt::PM4Silt(int tag, double Su, double Su_rate, double G0, double hpo, doub
 	m_ru_max = ru_max;
 	m_z_max = z_max;
 	m_cz = cz;
+	m_ce = ce;
 	m_Cgd = Cgd;
 	m_Ckaf = Ckaf;
-	m_nu = nu;
 	m_m = m;
-	m_crhg = crhg;
-	m_chg = chg;
 	m_FirstCall = 0;
 	m_PostShake = 0;
 	m_CG_consol = CG_consol;
@@ -271,7 +292,6 @@ PM4Silt::PM4Silt(int tag, double Su, double Su_rate, double G0, double hpo, doub
 	mTangType = tangentType;
 	mTolF = TolF;
 	mTolR = TolR;
-	mresidualP = residualP;
 	mIter = 0;
 
 	initialize();
@@ -292,49 +312,53 @@ PM4Silt::PM4Silt()
 	mAlpha_in(3),
 	mAlpha_in_n(3),
 	mAlpha_in_p(3),
+	mAlpha_in_p_n(3),
 	mAlpha_in_true(3),
+	mAlpha_in_true_n(3),
 	mAlpha_in_max(3),
+	mAlpha_in_max_n(3),
 	mAlpha_in_min(3),
+	mAlpha_in_min_n(3),
 	mFabric(3),
 	mFabric_n(3),
 	mFabric_in(3),
+	mFabric_in_n(3),
 	mCe(3, 3),
 	mCep(3, 3),
-	mCep_Consistent(3, 3)
+	mCep_Consistent(3, 3),
+	mTracker(3)
 {
 	m_Su = 0.0;
 	m_Su_rate = -1.0;
 	m_G0 = 0.0;
 	m_hpo = 0.0;
-	massDen = 0.0;
+	massDen = 1.4;
 	m_Fsu = 0.0;
-	m_P_atm = 0.0;
-	m_nG = 0.0;
-	m_h0 = 0.0;
-	m_e_init = 0.0;
-	m_lambda = 0.0;
+	m_P_atm = 101.3;
+	m_nu = 0.3;
+	m_nG = 0.75;
+	m_h0 = 0.5;
+	m_e_init = 0.9;
+	m_lambda = 0.06;
 	m_Mc = 0.0;
-	m_nbwet = 0.0;
-	m_nbdry = 0.0;
-	m_nd = 0.0;
-	m_Ado = 0.0;
-	m_ru_max = 0.0;
-	m_z_max = 0.0;
-	m_cz = 0.0;
-	m_Cgd = 0.0;
-	m_Ckaf = 0.0;
-	m_nu = 0.0;
-	m_m = 0.0;
-	m_crhg = 0.0;
-	m_chg = 0.0;
+	m_nbwet = 0.8;
+	m_nbdry = 0.5;
+	m_nd = 0.3;
+	m_Ado = 0.8;
+	m_ru_max = -1.0;
+	m_z_max = -1.0;
+	m_cz = 100.0;
+	m_ce = -1.0;
+	m_Cgd = 3.0;
+	m_Ckaf = 4.0;
+	m_m = 0.01;
 	m_FirstCall = 0;
 	m_PostShake = 0;
-	m_CG_consol = 0.0;
+	m_CG_consol = 2.0;
 	mScheme = 1;
 	mTangType = 0;
 	mTolF = 1.0e-7;
 	mTolR = 1.0e-7;
-	mresidualP = 0.0;
 
 	mIter = 0;
 
@@ -352,9 +376,9 @@ PM4Silt::getCopy(const char *type)
 	if (strcmp(type, "PlaneStrain2D") == 0 || strcmp(type, "PlaneStrain") == 0) {
 		PM4Silt *clone;
 		double phi_cv = asin(m_Mc / 2.0) * 180.0 / 3.14159265359;
-		clone = new PM4Silt(this->getTag(), m_Su, m_Su_rate, m_G0, m_hpo, massDen, m_Fsu, m_P_atm, m_nG, m_h0, m_e_init,
-			m_lambda, phi_cv, m_nbwet, m_nbdry, m_nd, m_Ado, m_ru_max, m_z_max, m_cz, m_ce, m_Cgd, m_Ckaf, m_nu, m_m,
-			m_crhg, m_chg, m_CG_consol, mresidualP, mScheme, mTangType, mTolF, mTolR);
+		clone = new PM4Silt(this->getTag(), m_Su, m_Su_rate, m_G0, m_hpo, massDen, m_Fsu, m_P_atm, m_nu, m_nG, m_h0,
+			m_e_init, m_lambda, phi_cv, m_nbwet, m_nbdry, m_nd, m_Ado, m_ru_max, m_z_max, m_cz, m_ce, m_Cgd, m_Ckaf, m_m,
+			m_CG_consol, mScheme, mTangType, mTolF, mTolR);
 		return clone;
 	}
 	else if (strcmp(type, "ThreeDimensional") == 0 || strcmp(type, "3D") == 0) {
@@ -374,6 +398,10 @@ PM4Silt::commitState(void)
 
 	mAlpha_in_n = mAlpha_in;
 	mAlpha_n = mAlpha;
+	mAlpha_in_p_n = mAlpha_in_p;
+	mAlpha_in_true_n = mAlpha_in_true;
+	mAlpha_in_max_n = mAlpha_in_max;
+	mAlpha_in_min_n = mAlpha_in_min;
 	mSigma_n = mSigma;
 	mEpsilon_n = mEpsilon;
 	mEpsilonE_n = mEpsilonE;
@@ -382,6 +410,7 @@ PM4Silt::commitState(void)
 	mzcum = mzcum + sqrt(DoubleDot2_2_Contr(dFabric, dFabric) / 2.0);
 	mzpeak = fmax(sqrt(DoubleDot2_2_Contr(mFabric, mFabric) / 2.0), mzpeak);
 	mFabric_n = mFabric;
+	mFabric_in_n = mFabric_in;
 	mDGamma_n = mDGamma;
 	mVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(mEpsilon);
 
@@ -415,22 +444,25 @@ int PM4Silt::revertToStart(void)
 NDMaterial*
 PM4Silt::getCopy(void)
 {
-	PM4Silt  *clone;
-	clone = new PM4Silt();
-	*clone = *this;
-	return clone;
+	opserr << "PM4Silt::getCopy -- subclass responsibility\n";
+	exit(-1);
+	return 0;
 }
 
 const char*
 PM4Silt::getType(void) const
 {
-	return "PlaneStrain";
+	opserr << "PM4Silt::getOrder -- subclass responsibility\n";
+	exit(-1);
+	return 0;
 }
 
 int
 PM4Silt::getOrder(void) const
 {
-	return 3;
+	opserr << "PM4Silt::getOrder -- subclass responsibility\n";
+	exit(-1);
+	return 0;
 }
 
 
@@ -449,8 +481,8 @@ PM4Silt::setResponse(const char **argv, int argc, OPS_Stream &output)
 		return new MaterialResponse(this, 5, this->getFabric());
 	else if (strcmp(argv[0], "alpha_in") == 0 || strcmp(argv[0], "alphain") == 0)
 		return new MaterialResponse(this, 6, this->getAlpha_in());
-	else if (strcmp(argv[0], "dilatancy") == 0 || strcmp(argv[0], "dilatancy") == 0)
-		return new MaterialResponse(this, 7, this->getTraker());
+	else if (strcmp(argv[0], "trackers") == 0 || strcmp(argv[0], "tracker") == 0)
+		return new MaterialResponse(this, 7, this->getTracker());
 	else
 		return 0;
 }
@@ -487,7 +519,7 @@ PM4Silt::getResponse(int responseID, Information &matInfo)
 		return 0;
 	case 7:
 		if (matInfo.theVector != 0)
-			*(matInfo.theVector) = getTraker();
+			*(matInfo.theVector) = getTracker();
 		return 0;
 	default:
 		return -1;
@@ -499,11 +531,79 @@ PM4Silt::sendSelf(int commitTag, Channel &theChannel)
 {
 
 	int res = 0;
-	static Vector data(95);
+	static Vector data(105);
 
 	data(0) = this->getTag();
 
-	// need to be implemented
+	data(1) = m_Su;
+	data(2) = m_Su_rate;
+	data(3) = m_G0;
+	data(4) = m_hpo;
+	data(5) = massDen;
+	data(6) = m_Fsu;
+	data(7) = m_P_atm;
+	data(8) = m_nG;
+	data(9) = m_h0;
+	data(10) = m_e_init;
+	data(11) = m_lambda;
+	data(12) = m_nbwet;
+	data(13) = m_nbdry;
+	data(14) = m_nd;
+	data(15) = m_Ado;
+	data(16) = m_ru_max;
+	data(17) = m_z_max;
+	data(18) = m_cz;
+	data(19) = m_ce;
+	data(20) = m_Mc;
+	data(21) = m_Cgd;
+	data(22) = m_Ckaf;
+	data(23) = m_nu;
+	data(24) = m_m;
+	data(25) = m_CG_consol;
+	data(26) = m_FirstCall;
+	data(27) = m_PostShake;
+
+	data(28) = mTolF;
+	data(29) = mTolR;
+	data(30) = mScheme;
+	data(31) = mTangType;
+	data(32) = m_Pmin;
+	data(35) = m_pzpFlag;
+	data(36) = me2p;
+
+	data(37) = mDGamma;
+	data(38) = mDGamma_n;
+	data(39) = me0;
+	data(40) = mpcs;
+	data(41) = mK;
+	data(42) = mG;
+	data(43) = mVoidRatio;
+	data(44) = mKp;
+	data(45) = mzcum;
+	data(46) = mzpeak;
+	data(47) = mpzp;
+	data(48) = mzxp;
+	data(49) = mMb;
+	data(50) = mMb_max;
+	data(51) = mC_MB;
+	data(52) = mMd;
+	data(53) = mMcur;
+
+	data(54) = mEpsilon(0);		  data(57) = mEpsilon_n(0);	    data(60) = mSigma(0);	data(63) = mSigma_n(0);   data(66) = mSigma_b(0);
+	data(55) = mEpsilon(1);		  data(58) = mEpsilon_n(1);	    data(61) = mSigma(1);	data(64) = mSigma_n(1);	  data(67) = mSigma_b(1);
+	data(56) = mEpsilon(2);		  data(59) = mEpsilon_n(2);	    data(62) = mSigma(2);	data(65) = mSigma_n(2);	  data(68) = mSigma_b(2);
+
+	data(69) = mEpsilonE(0);	  data(72) = mEpsilonE_n(0);	data(75) = mAlpha(0);	data(78) = mAlpha_n(0);   data(81) = mAlpha_in_n(0);
+	data(70) = mEpsilonE(1);	  data(73) = mEpsilonE_n(1);	data(76) = mAlpha(1);	data(79) = mAlpha_n(1);	  data(82) = mAlpha_in_n(1);
+	data(71) = mEpsilonE(2);	  data(74) = mEpsilonE_n(2);	data(77) = mAlpha(2);	data(80) = mAlpha_n(2);	  data(83) = mAlpha_in_n(2);
+
+	data(84) = mAlpha_in_p_n(0);  data(87) = mAlpha_in_true_n(0);    data(90) = mAlpha_in_max_n(0);      data(93) = mAlpha_in_min_n(0);
+	data(85) = mAlpha_in_p_n(1);  data(88) = mAlpha_in_true_n(1);    data(91) = mAlpha_in_max_n(1);      data(94) = mAlpha_in_min_n(1);
+	data(86) = mAlpha_in_p_n(2);  data(89) = mAlpha_in_true_n(2);    data(92) = mAlpha_in_max_n(2);      data(95) = mAlpha_in_min_n(2);
+
+	data(96) = mFabric(0);		data(99) = mFabric_n(0);	 data(102) = mFabric_in_n(0);
+	data(97) = mFabric(1);		data(100) = mFabric_n(1);	 data(103) = mFabric_in_n(1);
+	data(98) = mFabric(2);		data(101) = mFabric_n(2);	 data(104) = mFabric_in_n(2);
 
 	res = theChannel.sendVector(this->getDbTag(), commitTag, data);
 	if (res < 0) {
@@ -519,7 +619,7 @@ PM4Silt::recvSelf(int commitTag, Channel &theChannel,
 	FEM_ObjectBroker &theBroker)
 {
 	int res = 0;
-	static Vector data(95);
+	static Vector data(105);
 
 	res = theChannel.recvVector(this->getDbTag(), commitTag, data);
 	if (res < 0) {
@@ -528,7 +628,75 @@ PM4Silt::recvSelf(int commitTag, Channel &theChannel,
 	}
 	this->setTag((int)data(0));
 
-	// need to be implemented
+	m_Su = data(1);
+	m_Su_rate = data(2);
+	m_G0 = data(3);
+	m_hpo = data(4);
+	massDen = data(5);
+	m_Fsu = data(6);
+	m_P_atm = data(7);
+	m_nG = data(8);
+	m_h0 = data(9);
+	m_e_init = data(10);
+	m_lambda = data(11);
+	m_nbwet = data(12);
+	m_nbdry = data(13);
+	m_nd = data(14);
+	m_Ado = data(15);
+	m_ru_max = data(16);
+	m_z_max = data(17);
+	m_cz = data(18);
+	m_ce = data(19);
+	m_Mc = data(20);
+	m_Cgd = data(21);
+	m_Ckaf = data(22);
+	m_nu = data(23);
+	m_m = data(24);
+	m_CG_consol = data(25);
+	m_FirstCall = data(26);
+	m_PostShake = data(27);
+
+	mTolF = data(28);
+	mTolR = data(29);
+	mScheme = data(30);
+	mTangType = data(31);
+	m_Pmin = data(32);
+	m_pzpFlag = data(35);
+	me2p = data(36);
+
+	mDGamma = data(37);
+	mDGamma_n = data(38);
+	me0 = data(39);
+	mpcs = data(40);
+	mK = data(41);
+	mG = data(42);
+	mVoidRatio = data(43);
+	mKp = data(44);
+	mzcum = data(45);
+	mzpeak = data(46);
+	mpzp = data(47);
+	mzxp = data(48);
+	mMb = data(49);
+	mMb_max = data(50);
+	mC_MB = data(51);
+	mMd = data(52);
+	mMcur = data(53);
+
+	mEpsilon(0) = data(54); 		mEpsilon_n(0) = data(57); 	    mSigma(0) = data(60); 	  mSigma_n(0) = data(63);       mSigma_b(0) = data(66);
+	mEpsilon(1) = data(55); 		mEpsilon_n(1) = data(58); 	    mSigma(1) = data(61); 	  mSigma_n(1) = data(64); 	     mSigma_b(1) = data(67);
+	mEpsilon(2) = data(56); 		mEpsilon_n(2) = data(59); 	    mSigma(2) = data(62); 	  mSigma_n(2) = data(65); 	     mSigma_b(2) = data(68);
+
+	mEpsilonE(0) = data(69); 	    mEpsilonE_n(0) = data(72); 	  mAlpha(0) = data(75); 	   mAlpha_n(0) = data(78);     mAlpha_in_n(0) = data(81);
+	mEpsilonE(1) = data(70); 	    mEpsilonE_n(1) = data(73); 	  mAlpha(1) = data(76); 	   mAlpha_n(1) = data(79);	    mAlpha_in_n(1) = data(82);
+	mEpsilonE(2) = data(71); 	    mEpsilonE_n(2) = data(74); 	  mAlpha(2) = data(77); 	   mAlpha_n(2) = data(80);	    mAlpha_in_n(2) = data(83);
+
+	mAlpha_in_p_n(0) = data(84);    mAlpha_in_true_n(0) = data(87);       mAlpha_in_max_n(0) = data(90);       mAlpha_in_min_n(0) = data(93);
+	mAlpha_in_p_n(1) = data(85);    mAlpha_in_true_n(1) = data(88);       mAlpha_in_max_n(1) = data(91);       mAlpha_in_min_n(1) = data(94);
+	mAlpha_in_p_n(2) = data(86);    mAlpha_in_true_n(2) = data(89);       mAlpha_in_max_n(2) = data(92);       mAlpha_in_min_n(2) = data(95);
+
+	mFabric(0) = data(96);		  mFabric_n(0) = data(99);  	   mFabric_in_n(0) = data(102);
+	mFabric(1) = data(97);		  mFabric_n(1) = data(100); 	   mFabric_in_n(1) = data(103);
+	mFabric(2) = data(98);		  mFabric_n(2) = data(101); 	   mFabric_in_n(2) = data(104);
 
 	return 0;
 }
@@ -640,7 +808,24 @@ PM4Silt::initialize(Vector initStress)
 {
 	double p0;
 	p0 = 0.5 * GetTrace(initStress);
-
+	// check secondary input parameters, use default values if negative values are assigned
+	if (m_Fsu <= 0.0) m_Fsu = 1.0;
+	if (m_h0 < 0.0) m_h0 = 0.5;
+	if (m_e_init < 0.0) m_e_init = 0.9;
+	if (m_lambda < 0.0) m_lambda = 0.06;
+	if (m_nbwet < 0.0) m_nbwet = 0.8;
+	if (m_nbdry < 0.0) m_nbdry = 0.5;
+	if (m_nd < 0.0) m_nd = 0.3;
+	if (m_Ado < 0.0) m_Ado = 0.8;
+	if (m_cz < 0.0) m_cz = 100.0;
+	if (m_Cgd < 0.0) m_Cgd = 3.0;
+	if (m_Ckaf < 0.0) m_Ckaf = 4.0;
+	if (m_m < 0.0) m_m = 0.01;
+	if (m_CG_consol < 0.0) m_CG_consol = 2.0;
+	// set phi_max as 60 degree
+	mMb_max = 2 * sin(60.0 / 180.0 * 3.14159265359);
+	mC_MB = 1 / (pow(mMb_max / m_Mc, 1 / m_nbdry) - 1.0);
+	//
 	if (p0 < m_P_atm / 200.0) {
 		//stress tensile, increase residualP to prevent negative initial p
 		if (debugFlag)
@@ -654,7 +839,7 @@ PM4Silt::initialize(Vector initStress)
 	else {
 		mSigma_n = initStress;
 		mSigma_b.Zero();
-		mAlpha_n = GetDevPart(initStress) / (p0 + mresidualP);
+		mAlpha_n = GetDevPart(initStress) / p0;
 	}
 	if (m_Su <= 0.0) {
 		m_Su = m_Su_rate * initStress(1);
@@ -672,8 +857,6 @@ PM4Silt::initialize(Vector initStress)
 		m_Pmin = (1 - m_ru_max) * p0 / 2.0;
 	}
 	m_Pmin = fmax(m_Pmin, m_P_atm / 200.0);
-	// initialize chg
-	m_chg = fmax(p0 * m_crhg, m_chg);
 	// initialize zmax
 	if (m_z_max < 0) {
 		if (m_Su_rate <= 0.25)
@@ -689,28 +872,24 @@ PM4Silt::initialize(Vector initStress)
 	// positioning the critical state line
 	me0 = m_e_init + m_lambda * log(101.3 * 2 * m_Su / m_Mc / m_P_atm);
 	double ksi = GetKsi(m_e_init, p0);
-	mMd = m_Mc * exp(m_nd * ksi);
-	// the maximum friction angle that can be mobilized near the origin needed to be defined
-	mphi_max = 40.0;
+	mMd = fmin(1.4142136, m_Mc * exp(m_nd * ksi / m_lambda));
 	if (ksi < 0) {
 		// dense of critical
-		double Mb_max = 2 * sin(mphi_max / 180.0 * 3.14159265359);
-		double C_Mb = 1 / (pow(Mb_max / m_Mc, 1 / m_nbdry) - 1.0);
-		mMb = m_Mc * pow((1 + C_Mb) / (p0 / mpcs + C_Mb), m_nbdry);
+		mMb = m_Mc * pow((1 + mC_MB) / (p0 / mpcs + mC_MB), m_nbdry);
 	}
 	else {
 		//loose of critical
-		mMb = m_Mc * exp(-1.0 * m_nbwet * ksi);
+		mMb = m_Mc * exp(-1.0 * m_nbwet * ksi / m_lambda);
 	}
 
 	// check if initial stresses are inside bounding/dilatancy surface 
 	double Mcut = fmax(mMb, mMd);
 	double Mfin = sqrt(2) * GetNorm_Contr(GetDevPart(mSigma_n));
-	Mfin = Mfin / (p0 + mresidualP);
+	Mfin = Mfin / p0;
 	if (Mfin > Mcut)
 	{
-		Vector r = (mSigma_n - p0 * mI1) / (p0 + mresidualP) * Mcut / Mfin;
-		mSigma_n = p0 * mI1 + r * (p0 + mresidualP);
+		Vector r = (mSigma_n - p0 * mI1) / p0 * Mcut / Mfin;
+		mSigma_n = p0 * mI1 + r * p0;
 		mSigma_b = initStress - mSigma_n;
 		mAlpha_n = r * (Mcut - m_m) / Mcut;
 	}
@@ -721,17 +900,22 @@ PM4Silt::initialize(Vector initStress)
 	mAlpha = mAlpha_n;
 	mAlpha_in_n = mAlpha_n;
 	mAlpha_in_p = mAlpha_n;
+	mAlpha_in_p_n.Zero();
 	mAlpha_in_true = mAlpha_n;
+	mAlpha_in_true_n = mAlpha_n;
 	mAlpha_in_max = mAlpha_n;
+	mAlpha_in_max_n = mAlpha_n;
 	mAlpha_in_min = mAlpha_n;
+	mAlpha_in_min_n = mAlpha_n;
 	mFabric.Zero();
 	mFabric_in.Zero();
+	mFabric_in_n.Zero();
 	mFabric_n.Zero();
 	mzpeak = m_z_max / 100000.0;
 	mpzp = fmax(p0, m_Pmin) / 100.0;
 	mzxp = 0.0;
-	m_FirstCall = 1;
 	m_pzpFlag = true;
+	mTracker.Zero();
 
 	return 0;
 }
@@ -787,13 +971,13 @@ PM4Silt::getState()
 const Vector
 PM4Silt::getAlpha()
 {
-	return mAlpha;
+	return mAlpha_n;
 }
 //send back fabric tensor
 const Vector
 PM4Silt::getFabric()
 {
-	return mFabric;
+	return mFabric_n;
 }
 //send back alpha_in tensor
 const Vector
@@ -802,8 +986,8 @@ PM4Silt::getAlpha_in()
 	return mAlpha_in_n;
 }
 //send back internal parameter for tracking
-double
-PM4Silt::getTraker()
+const Vector
+PM4Silt::getTracker()
 {
 	return mTracker;
 }
@@ -824,7 +1008,7 @@ PM4Silt::getG()
 const Vector
 PM4Silt::getAlpha_in_p()
 {
-	return mAlpha_in_p;
+	return mAlpha_in_p_n;
 }
 //send back previous L
 double
@@ -870,39 +1054,44 @@ PM4Silt::getElasticStrain() {
 /*************************************************************/
 void PM4Silt::integrate()
 {
-	// update alpha_in in case of unloading
-	Vector n_tr(3);
-	n_tr = GetNormalToYield(mSigma_n + mCe*(mEpsilon - mEpsilon_n), mAlpha_n);
+	mAlpha = mAlpha_n;
+	mAlpha_in = mAlpha_in_n;
+	mAlpha_in_true = mAlpha_in_true_n;
+	mAlpha_in_p = mAlpha_in_p_n;
+	mAlpha_in_max = mAlpha_in_max_n;
+	mAlpha_in_min = mAlpha_in_min_n;
+	mFabric = mFabric_n;
+	mFabric_in = mFabric_in_n;
 
-	if (DoubleDot2_2_Contr(mAlpha_n - mAlpha_in_n, n_tr) < 0.0) {
+	Vector n_tr(3);
+	n_tr = GetNormalToYield(mSigma_n + mCe*(mEpsilon - mEpsilon_n), mAlpha);
+	// n_tr = GetNormalToYield(mSigma_n, mAlpha);
+	if ((DoubleDot2_2_Contr(mAlpha - mAlpha_in_true, n_tr) < 0.0) && me2p) {
+		mAlpha_in_p = mAlpha_in;
+		mAlpha_in_true = mAlpha;
+		mFabric_in = mFabric;
 		// This is a loading reversal
 		// update pzp
 		double p = 0.5 * GetTrace(mSigma_n);
 		p = (p <= m_Pmin) ? (m_Pmin) : p;
 		double zxpTemp = GetNorm_Contr(mFabric_n) * p;
-		if (zxpTemp > mzxp && p > mpzp && m_pzpFlag) {
+		if (((zxpTemp > mzxp) && (p > mpzp)) || m_pzpFlag) {
 			mzxp = zxpTemp;
 			mpzp = p;
-			// only update pzp once
 			m_pzpFlag = false;
 		}
 		// track initial back-stress ratio history 
 		for (int ii = 0; ii < 3; ii++) {
 			if (mAlpha_in(ii) > 0.0)
 				// minimum positive value
-				mAlpha_in_min(ii) = fmin(mAlpha_in_min(ii), mAlpha_n(ii));
+				mAlpha_in_min(ii) = fmin(mAlpha_in_min(ii), mAlpha(ii));
 			else
 				// maximum negative value
-				mAlpha_in_max(ii) = fmax(mAlpha_in_max(ii), mAlpha_n(ii));
+				mAlpha_in_max(ii) = fmax(mAlpha_in_max(ii), mAlpha(ii));
 		}
-		// update initial back-stress ratio
-		if (DoubleDot2_2_Contr(mAlpha_n - mAlpha_in_p, n_tr) < 0.0) {
-			// small unload-reload cycle, update initial back-stress ratio using apparent back-stress ratio
-			mAlpha_in_p = mAlpha_in_true;
-			mAlpha_in = mAlpha_n;
-			// update components of apparent initial back-stress ratio
+		if (mAlpha(2) * mAlpha_in_p(2) > 0) {
 			for (int ii = 0; ii < 3; ii++) {
-				if (mAlpha_in(ii) > 0.0)
+				if (n_tr(ii) > 0.0)
 					// positive loading direction
 					mAlpha_in(ii) = fmax(0.0, mAlpha_in_min(ii));
 				else
@@ -910,16 +1099,9 @@ void PM4Silt::integrate()
 					mAlpha_in(ii) = fmin(0.0, mAlpha_in_max(ii));
 			}
 		}
-		else {
-			// update initial back-stress ratio using true back-stress ratio
-			mAlpha_in_p = mAlpha_in_true;
-			mAlpha_in = mAlpha_n;
-		}
-		mAlpha_in_true = mAlpha_n;
-		mFabric_in = mFabric_n;
+		else
+			mAlpha_in = mAlpha;
 	}
-	else
-		mAlpha_in = mAlpha_in_n;
 
 	// Force elastic response
 	if (me2p == 0) {
@@ -951,7 +1133,7 @@ void PM4Silt::elastic_integrator(const Vector& CurStress, const Vector& CurStrai
 	NextElasticStrain = CurElasticStrain + dStrain;
 	aCep_Consistent = aCep = aC = GetStiffness(K, G);
 	NextStress = CurStress + DoubleDot4_2(aC, dStrain);
-	double p = 0.5 * GetTrace(NextStress) + mresidualP;
+	double p = 0.5 * GetTrace(NextStress);
 	if (p > m_Pmin) {
 		NextAlpha = GetDevPart(NextStress) / p;
 	}
@@ -1016,7 +1198,6 @@ void PM4Silt::explicit_integrator(const Vector& CurStress, const Vector& CurStra
 		NextFabric = CurFabric;
 		NextL = 0;
 		aCep_Consistent = aCep = aC;
-		mTracker = 0.0;
 		// Stress_Correction(CurStress, CurStrain, CurElasticStrain, CurAlpha, CurFabric, alpha_in, NextStrain, NextElasticStrain, 
 		// NextStress, NextAlpha, NextFabric, NextL, NextVoidRatio, G, K , aC, aCep, aCep_Consistent);
 
@@ -1071,23 +1252,27 @@ void PM4Silt::ForwardEuler(const Vector& CurStress, const Vector& CurStrain, con
 	Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
 	double& NextL, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent)
 {
-	double CurVoidRatio, Cka, h, p, dVolStrain, D;
+	double CurVoidRatio, Cka, h, p, dVolStrain, D, AlphaAlphaBDotN;
 	Vector n(3), R(3), alphaD(3), dPStrain(3), b(3), dDevStrain(3), r(3);
 	Vector dSigma(3), dAlpha(3), dFabric(3);
 
 	CurVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(CurStrain);
-	p = 0.5 * GetTrace(CurStress) + mresidualP;
-	p = p < (m_Pmin + mresidualP) ? (m_Pmin + mresidualP) : p;
+	p = 0.5 * GetTrace(CurStress);
+	p = p < m_Pmin ? m_Pmin : p;
 	NextVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(NextStrain);
 	NextElasticStrain = CurElasticStrain + (NextStrain - CurStrain);
 	// using NextStress instead of CurStress to get correct n
 	GetStateDependent(NextStress, CurAlpha, alpha_in, alpha_in_p, CurFabric, mFabric_in, mG, mzcum
-		, mzpeak, mpzp, mMcur, CurVoidRatio, n, D, R, mKp, alphaD, Cka, h, b);
+		, mzpeak, mpzp, mMcur, CurVoidRatio, n, D, R, mKp, alphaD, Cka, h, b, AlphaAlphaBDotN);
 	dVolStrain = GetTrace(NextStrain - CurStrain);
 	dDevStrain = (NextStrain - CurStrain) - dVolStrain / 3.0 * mI1;
 	r = GetDevPart(CurStress) / p;
 	double temp4 = mKp + 2 * mG - mK* D *DoubleDot2_2_Contr(n, r);
-
+	if (temp4 < 0.0) {
+		mKp = -0.5 * (2 * G - K* D *DoubleDot2_2_Contr(n, r));
+		temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
+		h = 1.5 * mKp / (p * AlphaAlphaBDotN);
+	}
 	if (fabs(temp4) < small) {
 		// Neutral loading
 		dSigma.Zero();
@@ -1104,8 +1289,9 @@ void PM4Silt::ForwardEuler(const Vector& CurStress, const Vector& CurStrain, con
 				opserr << "NextL = " << NextL << endln;
 			}
 			dSigma = 2 * mG * ToContraviant(dDevStrain) + mK * dVolStrain * mI1;
-			dAlpha = GetDevPart(NextStress + dSigma) / (0.5 * GetTrace(NextStress + dSigma) + mresidualP)
-				- GetDevPart(NextStress) / (0.5 * GetTrace(NextStress) + mresidualP);
+			// dAlpha = GetDevPart(NextStress + dSigma) / (0.5 * GetTrace(NextStress + dSigma))
+			// 	- GetDevPart(NextStress) / (0.5 * GetTrace(NextStress));
+			dAlpha.Zero();
 			dFabric.Zero();
 			dPStrain.Zero();
 		}
@@ -1202,7 +1388,7 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 	Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
 	double& NextL, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent)
 {
-	double dVolStrain, p, Cka, temp4, curStepError, q, stressNorm, h, D;
+	double dVolStrain, p, Cka, temp4, curStepError, q, stressNorm, h, D, AlphaAlphaBDotN;
 	Vector n(3), R1(3), R2(3), alphaD(3), dDevStrain(3), r(3), b(3);
 	Vector nStress(3), nAlpha(3), nFabric(3);
 	Vector dSigma1(3), dSigma2(3), dAlpha1(3), dAlpha2(3), dAlpha(3), dFabric1(3), dFabric2(3), dPStrain1(3), dPStrain2(3);
@@ -1215,8 +1401,8 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 
 	this->GetElasticModuli(NextStress, K, G, mMcur, mzcum);
 
-	p = 0.5 * GetTrace(CurStress) + mresidualP;
-	if (p < m_Pmin / 5.0 + mresidualP)
+	p = 0.5 * GetTrace(CurStress);
+	if (p < m_Pmin / 5.0)
 	{
 		if (debugFlag)
 			opserr << "Tag = " << this->getTag() << " : p < pmin / 5, should not happen" << endln;
@@ -1227,14 +1413,19 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 		NextVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(CurStrain + T*(NextStrain - CurStrain));
 		dVolStrain = dT * GetTrace(NextStrain - CurStrain);
 		dDevStrain = dT * (NextStrain - CurStrain) - dVolStrain / 3.0 * mI1;
-		p = 0.5 * GetTrace(NextStress) + mresidualP;
+		p = 0.5 * GetTrace(NextStress);
 		// Calc Delta 1
 		GetStateDependent(NextStress, NextAlpha, alpha_in, alpha_in_p, NextFabric, mFabric_in, G, mzcum
-			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R1, mKp, alphaD, Cka, h, b);
+			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R1, mKp, alphaD, Cka, h, b, AlphaAlphaBDotN);
 
 		r = GetDevPart(NextStress) / p;
 
 		temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
+		if (temp4 < 0.0) {
+			mKp = -0.5 * (2 * G - K* D *DoubleDot2_2_Contr(n, r));
+			temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
+			h = 1.5 * mKp / (p * AlphaAlphaBDotN);
+		}
 		if (fabs(temp4) < small) {
 			// neutral loading
 			dSigma1.Zero();
@@ -1250,7 +1441,8 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 					opserr << "NextL = " << NextL << endln;
 				}
 				dSigma1 = 2 * G * ToContraviant(dDevStrain) + K * dVolStrain * mI1;
-				dAlpha1 = 2.0*(GetDevPart(NextStress + dSigma1) / GetTrace(NextStress + dSigma1) - GetDevPart(NextStress) / GetTrace(NextStress));
+				// dAlpha1 = 2.0*(GetDevPart(NextStress + dSigma1) / GetTrace(NextStress + dSigma1) - GetDevPart(NextStress) / GetTrace(NextStress));
+				dAlpha1.Zero();
 				dFabric1.Zero();
 				dPStrain1.Zero();
 			}
@@ -1258,15 +1450,15 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 				dSigma1 = 2.0 * G * mIIcon * dDevStrain + K*dVolStrain*mI1 - Macauley(NextL)*
 					(2.0 * G * n + K * D * mI1);
 				// update fabric
-				// if (DoubleDot2_2_Contr(alphaD - CurAlpha, n) < 0.0) {
+				if (DoubleDot2_2_Contr(alphaD - CurAlpha, n) < 0.0) {
 					dFabric1 = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + CurFabric);
-				// }
+				}
 				dPStrain1 = NextL * mIIco * R1;
 				dAlpha1 = two3 * NextL * h * b;
 			}
 		}
 		//Calc Delta 2
-		p = 0.5 * GetTrace(NextStress + dSigma1) + mresidualP;
+		p = 0.5 * GetTrace(NextStress + dSigma1);
 		if (p < 0) {
 			if (dT == dT_min) {
 				if (debugFlag)
@@ -1282,7 +1474,7 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 		}
 
 		GetStateDependent(NextStress + dSigma1, NextAlpha + dAlpha1, alpha_in, alpha_in_p, NextFabric + dFabric1, mFabric_in, G, mzcum
-			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R2, mKp, alphaD, Cka, h, b);
+			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R2, mKp, alphaD, Cka, h, b, AlphaAlphaBDotN);
 		r = GetDevPart(NextStress + dSigma1) / p;
 
 		temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
@@ -1303,7 +1495,8 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 					opserr << "NextL = " << NextL << endln;
 				}
 				dSigma2 = 2 * G * ToContraviant(dDevStrain) + K * dVolStrain * mI1;
-				dAlpha2 = 2.0*(GetDevPart(NextStress + dSigma2) / GetTrace(NextStress + dSigma2) - GetDevPart(NextStress) / GetTrace(NextStress));
+				// dAlpha2 = 2.0*(GetDevPart(NextStress + dSigma2) / GetTrace(NextStress + dSigma2) - GetDevPart(NextStress) / GetTrace(NextStress));
+				dAlpha2.Zero();
 				dFabric2.Zero();
 				dPStrain2.Zero();
 			}
@@ -1311,9 +1504,9 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 				dSigma2 = 2.0 * G * mIIcon * dDevStrain + K*dVolStrain*mI1 - Macauley(NextL)*
 					(2.0 * G * n + K * D * mI1);
 				// update fabric
-				// if (DoubleDot2_2_Contr(alphaD - (CurAlpha + dAlpha1), n) < 0.0) {
+				if (DoubleDot2_2_Contr(alphaD - (CurAlpha + dAlpha1), n) < 0.0) {
 					dFabric2 = -1.0 * m_cz / (1 + Macauley(mzcum / 2.0 / m_z_max - 1.0)) * Macauley(NextL)*MacauleyIndex(-D)*(m_z_max * n + CurFabric + dFabric1);
-				// }
+				}
 				dPStrain2 = NextL * mIIco * R2;
 				dAlpha2 = two3 * NextL * h * b;
 			}
@@ -1326,7 +1519,7 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 		dAlpha = 0.5 * (dAlpha1 + dAlpha2);
 		nAlpha = NextAlpha + dAlpha;
 
-		p = 0.5 * GetTrace(nStress) + mresidualP;
+		p = 0.5 * GetTrace(nStress);
 		if (p < 0)
 		{
 			if (dT == dT_min) {
@@ -1354,7 +1547,7 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 				NextElasticStrain -= 0.5* (dPStrain1 + dPStrain2);
 				NextStress = nStress;
 				NextAlpha = nAlpha;
-				// Stress_Correction(NextStress, NextAlpha, alpha_in, alpha_in_p, CurFabric, NextVoidRatio);
+				Stress_Correction(NextStress, NextAlpha, alpha_in, alpha_in_p, CurFabric, NextVoidRatio);
 				//Stress_Correction(NextStress, NextAlpha, dAlpha, m_m, 0.5 * (R1 + R2), n, r);
 				T += dT;
 			}
@@ -1365,7 +1558,7 @@ void PM4Silt::ModifiedEuler(const Vector& CurStress, const Vector& CurStrain, co
 			NextStress = nStress;
 			NextAlpha = nAlpha;
 			NextFabric = nFabric;
-			// Stress_Correction(NextStress, NextAlpha, alpha_in, alpha_in_p, CurFabric, NextVoidRatio);
+			Stress_Correction(NextStress, NextAlpha, alpha_in, alpha_in_p, CurFabric, NextVoidRatio);
 			//Stress_Correction(NextStress, NextAlpha, dAlpha, m_m, 0.5 * (R1 + R2), n, r);
 
 			T += dT;
@@ -1386,7 +1579,7 @@ void PM4Silt::RungeKutta4(const Vector& CurStress, const Vector& CurStrain, cons
 	Vector& NextElasticStrain, Vector& NextStress, Vector& NextAlpha, Vector& NextFabric,
 	double& NextL, double& NextVoidRatio, double& G, double& K, Matrix& aC, Matrix& aCep, Matrix& aCep_Consistent)
 {
-	double dVolStrain, p, Cka, D, K_p, temp4, h;
+	double dVolStrain, p, Cka, D, K_p, temp4, h, AlphaAlphaBDotN;
 	Vector n(3), R1(3), R2(3), R3(3), R4(3), alphaD(3), dDevStrain(3), r(3), b(3);
 	Vector nStress(3), nAlpha(3), nFabric(3);
 	Vector dSigma1(3), dSigma2(3), dSigma3(3), dSigma4(3), dSigma(3), dAlpha1(3), dAlpha2(3),
@@ -1399,8 +1592,8 @@ void PM4Silt::RungeKutta4(const Vector& CurStress, const Vector& CurStrain, cons
 	NextAlpha = CurAlpha;
 	NextFabric = CurFabric;
 
-	p = 0.5 * GetTrace(CurStress) + mresidualP;
-	if (p < m_Pmin / 5.0 + mresidualP)
+	p = 0.5 * GetTrace(CurStress);
+	if (p < m_Pmin / 5.0)
 	{
 		if (debugFlag)
 			opserr << "Tag = " << this->getTag() << " : p < pmin / 5, should not happen" << endln;
@@ -1411,14 +1604,19 @@ void PM4Silt::RungeKutta4(const Vector& CurStress, const Vector& CurStrain, cons
 		NextVoidRatio = m_e_init - (1 + m_e_init) * GetTrace(CurStrain + T*(NextStrain - CurStrain));
 		dVolStrain = dT * GetTrace(NextStrain - CurStrain);
 		dDevStrain = dT * (NextStrain - CurStrain) - dVolStrain / 3.0 * mI1;
-		p = 0.5 * GetTrace(NextStress) + mresidualP;
+		p = 0.5 * GetTrace(NextStress);
 		// Calc Delta 1
 		GetStateDependent(NextStress, NextAlpha, alpha_in, alpha_in_p, NextFabric, mFabric_in, mG, mzcum
-			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R1, K_p, alphaD, Cka, h, b);
+			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R1, K_p, alphaD, Cka, h, b, AlphaAlphaBDotN);
 
 		r = GetDevPart(NextStress) / p;
 
 		temp4 = K_p + 2 * mG - mK* D *DoubleDot2_2_Contr(n, r);
+		if (temp4 < 0.0) {
+			mKp = -0.5 * (2 * G - K* D *DoubleDot2_2_Contr(n, r));
+			temp4 = mKp + 2 * G - K* D *DoubleDot2_2_Contr(n, r);
+			h = 1.5 * mKp / (p * AlphaAlphaBDotN);
+		}
 		if (fabs(temp4) < small) {
 			// neutral loading
 			dSigma1.Zero();
@@ -1434,8 +1632,9 @@ void PM4Silt::RungeKutta4(const Vector& CurStress, const Vector& CurStrain, cons
 					opserr << "NextL = " << NextL << endln;
 				}
 				dSigma1 = 2 * mG * ToContraviant(dDevStrain) + mK * dVolStrain * mI1;
-				dAlpha1 = GetDevPart(NextStress + dSigma1) / (0.5 * GetTrace(NextStress + dSigma1) + mresidualP)
-					- GetDevPart(NextStress) / (0.5 * GetTrace(NextStress) + mresidualP);
+				// dAlpha1 = GetDevPart(NextStress + dSigma1) / (0.5 * GetTrace(NextStress + dSigma1))
+				//	- GetDevPart(NextStress) / (0.5 * GetTrace(NextStress));
+				dAlpha1.Zero();
 				dFabric1.Zero();
 				dPStrain1.Zero();
 			}
@@ -1451,10 +1650,10 @@ void PM4Silt::RungeKutta4(const Vector& CurStress, const Vector& CurStrain, cons
 			}
 		}
 		//Calc Delta 2
-		p = 0.5 * GetTrace(NextStress + 0.5 * dSigma1) + mresidualP;
+		p = 0.5 * GetTrace(NextStress + 0.5 * dSigma1);
 
 		GetStateDependent(NextStress + 0.5 * dSigma1, CurAlpha + 0.5 * dAlpha1, alpha_in, alpha_in_p, NextFabric + 0.5 * dFabric1, mFabric_in, mG, mzcum
-			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R2, K_p, alphaD, Cka, h, b);
+			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R2, K_p, alphaD, Cka, h, b, AlphaAlphaBDotN);
 		r = GetDevPart(NextStress + 0.5 * dSigma1) / p;
 
 		temp4 = K_p + 2 * mG - mK* D *DoubleDot2_2_Contr(n, r);
@@ -1474,8 +1673,9 @@ void PM4Silt::RungeKutta4(const Vector& CurStress, const Vector& CurStrain, cons
 					opserr << "NextL = " << NextL << endln;
 				}
 				dSigma2 = 2 * mG * ToContraviant(dDevStrain) + mK * dVolStrain * mI1;
-				dAlpha2 = GetDevPart(NextStress + dSigma2) / (0.5 * GetTrace(NextStress + dSigma2) + mresidualP)
-					- GetDevPart(NextStress) / (0.5 * GetTrace(NextStress) + mresidualP);
+				// dAlpha2 = GetDevPart(NextStress + dSigma2) / (0.5 * GetTrace(NextStress + dSigma2))
+				// 	- GetDevPart(NextStress) / (0.5 * GetTrace(NextStress));
+				dAlpha2.Zero();
 				dFabric2.Zero();
 				dPStrain2.Zero();
 			}
@@ -1491,10 +1691,10 @@ void PM4Silt::RungeKutta4(const Vector& CurStress, const Vector& CurStrain, cons
 			}
 		}
 		//Calc Delta 3
-		p = 0.5 * GetTrace(NextStress + 0.5 * dSigma2) + mresidualP;
+		p = 0.5 * GetTrace(NextStress + 0.5 * dSigma2);
 
 		GetStateDependent(NextStress + 0.5 * dSigma2, CurAlpha + 0.5 * dAlpha2, alpha_in, alpha_in_p, NextFabric + 0.5 * dFabric2, mFabric_in, mG, mzcum
-			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R3, K_p, alphaD, Cka, h, b);
+			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R3, K_p, alphaD, Cka, h, b, AlphaAlphaBDotN);
 		r = GetDevPart(NextStress + 0.5 * dSigma2) / p;
 
 		temp4 = K_p + 2 * mG - mK* D *DoubleDot2_2_Contr(n, r);
@@ -1514,8 +1714,9 @@ void PM4Silt::RungeKutta4(const Vector& CurStress, const Vector& CurStrain, cons
 					opserr << "NextL = " << NextL << endln;
 				}
 				dSigma3 = 2 * mG * ToContraviant(dDevStrain) + mK * dVolStrain * mI1;
-				dAlpha3 = GetDevPart(NextStress + dSigma3) / (0.5 * GetTrace(NextStress + dSigma3) + mresidualP)
-					- GetDevPart(NextStress) / (0.5 * GetTrace(NextStress) + mresidualP);
+				// dAlpha3 = GetDevPart(NextStress + dSigma3) / (0.5 * GetTrace(NextStress + dSigma3))
+				// 	- GetDevPart(NextStress) / (0.5 * GetTrace(NextStress));
+				dAlpha3.Zero();
 				dFabric3.Zero();
 				dPStrain3.Zero();
 			}
@@ -1531,10 +1732,10 @@ void PM4Silt::RungeKutta4(const Vector& CurStress, const Vector& CurStrain, cons
 			}
 		}
 		//Calc Delta 4
-		p = 0.5 * GetTrace(NextStress + dSigma3) + mresidualP;
+		p = 0.5 * GetTrace(NextStress + dSigma3);
 
 		GetStateDependent(NextStress + dSigma3, CurAlpha + dAlpha3, alpha_in, alpha_in_p, NextFabric + dFabric3, mFabric_in, mG, mzcum
-			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R4, K_p, alphaD, Cka, h, b);
+			, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R4, K_p, alphaD, Cka, h, b, AlphaAlphaBDotN);
 		r = GetDevPart(NextStress + dSigma3) / p;
 
 		temp4 = K_p + 2 * mG - mK* D *DoubleDot2_2_Contr(n, r);
@@ -1554,8 +1755,9 @@ void PM4Silt::RungeKutta4(const Vector& CurStress, const Vector& CurStrain, cons
 					opserr << "NextL = " << NextL << endln;
 				}
 				dSigma4 = 2 * mG * ToContraviant(dDevStrain) + mK * dVolStrain * mI1;
-				dAlpha4 = GetDevPart(NextStress + dSigma4) / (0.5 * GetTrace(NextStress + dSigma4) + mresidualP)
-					- GetDevPart(NextStress) / (0.5 * GetTrace(NextStress) + mresidualP);
+				// dAlpha4 = GetDevPart(NextStress + dSigma4) / (0.5 * GetTrace(NextStress + dSigma4))
+				// 	- GetDevPart(NextStress) / (0.5 * GetTrace(NextStress));
+				dAlpha4.Zero();
 				dFabric4.Zero();
 				dPStrain4.Zero();
 			}
@@ -1719,12 +1921,12 @@ PM4Silt::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 	const Vector& CurFabric, double& NextVoidRatio)
 {
 	Vector dSigmaP(3), dfrOverdSigma(3), dfrOverdAlpha(3), n(3), R(3), alphaD(3), b(3), aBar(3), r(3);
-	double lambda, D, K_p, Cka, h, p, fr;
+	double lambda, D, K_p, Cka, h, p, fr, AlphaAlphaBDotN;
 	Matrix aC(3, 3);
 	// Vector CurStress = NextStress;
 
 	int maxIter = 25;
-	p = 0.5 * GetTrace(NextStress) + mresidualP;
+	p = 0.5 * GetTrace(NextStress);
 	if (p < m_Pmin / 5.0) {
 		fr = GetF(NextStress, NextAlpha);
 		if (fr < mTolF) {
@@ -1752,7 +1954,7 @@ PM4Silt::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 			for (int i = 1; i <= maxIter; i++) {
 				r = GetDevPart(nStress) / p;
 				GetStateDependent(nStress, nAlpha, alpha_in, alpha_in_p, CurFabric, mFabric_in, mG, mzcum
-					, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R, K_p, alphaD, Cka, h, b);
+					, mzpeak, mpzp, mMcur, NextVoidRatio, n, D, R, K_p, alphaD, Cka, h, b, AlphaAlphaBDotN);
 				aC = GetStiffness(mK, mG);
 				dSigmaP = DoubleDot4_2(aC, mDGamma * ToCovariant(R));
 				aBar = two3 * h * b;
@@ -1775,7 +1977,7 @@ PM4Silt::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 					return;
 				}
 
-				p = fmax(0.5 * GetTrace(nStress) + mresidualP, m_Pmin);
+				p = fmax(0.5 * GetTrace(nStress), m_Pmin);
 			}
 			// if (fabs(fr) < fabs(GetF(NextStress, NextAlpha))) {
 			// 	NextStress = nStress;
@@ -1905,7 +2107,7 @@ PM4Silt::Stress_Correction(Vector& NextStress, Vector& NextAlpha, const Vector& 
 			NextStress = NextStress - R*lambda;
 			NextAlpha = NextAlpha - dAlpha*lambda;
 			f = GetF(NextStress, NextAlpha);
-			if (abs(f) < mTolF) {
+			if (fabs(f) < mTolF) {
 				break;
 			}
 			if (i == maxIter)
@@ -1939,7 +2141,7 @@ PM4Silt::GetF(const Vector& nStress, const Vector& nAlpha)
 {
 	// PM4Silt's yield function
 	Vector s(3); s = GetDevPart(nStress);
-	double p = 0.5 * GetTrace(nStress) + mresidualP;
+	double p = 0.5 * GetTrace(nStress);
 	s = s - p * nAlpha;
 	double f = GetNorm_Contr(s) - root12 * m_m * p;
 	return f;
@@ -1951,7 +2153,7 @@ PM4Silt::GetKsi(const double& e, const double& p)
 {
 	double pn = p;
 	pn = (pn <= m_Pmin) ? (m_Pmin) : pn;
-	double ksi = e - me0 + m_lambda * log(101.3 * pn / m_P_atm / m_Fsu);
+	double ksi = e - me0 + m_lambda * log(101.3 * pn / (m_P_atm * m_Fsu));
 	return ksi;
 }
 /*************************************************************/
@@ -1968,8 +2170,7 @@ PM4Silt::GetElasticModuli(const Vector& sigma, double &K, double &G, double &Mcu
 	//double q = sqrt(2.0 * DoubleDot2_2_Contr(GetDevPart(sigma), GetDevPart(sigma)));
 	// Mcur = 2 * sqrt(2) * GetNorm_Contr(GetDevPart(sigma)) / GetTrace(sigma);
 	Mcur = qn / pn;
-	double Csr = 1 - Csr0 *pow((Mcur / mMb), msr);
-	Csr = (Csr < 0.4) ? 0.4 : Csr;
+	double Csr = 1 - Csr0 * fmin(1.0, pow((Mcur / mMb), msr));
 	double temp = zcum / m_z_max;
 	if (me2p == 0)
 		G = m_G0 * m_P_atm;
@@ -1996,7 +2197,7 @@ PM4Silt::GetElasticModuli(const Vector& sigma, double &K, double &G)
 		G = m_G0 * m_P_atm;
 	else
 		G = m_G0 * m_P_atm * sqrt(pn / m_P_atm);
-	m_nu = (m_nu == 0.5) ? 0.4999 : m_nu;
+	m_nu = (0.5 - m_nu < small) ? 0.4999 : m_nu;
 	K = two3 * (1 + m_nu) / (1 - 2 * m_nu) * G;
 }
 /*************************************************************/
@@ -2034,7 +2235,7 @@ Matrix
 PM4Silt::GetElastoPlasticTangent(const Vector& NextStress, const Matrix& aCe, const Vector& R,
 	const Vector& n, const double K_p)
 {
-	double p = 0.5 * GetTrace(NextStress) + mresidualP;
+	double p = 0.5 * GetTrace(NextStress);
 	if (p < m_Pmin) p = m_Pmin;
 	Vector r = GetDevPart(NextStress) / p;
 	Matrix aCep(3, 3);
@@ -2057,7 +2258,7 @@ Vector
 PM4Silt::GetNormalToYield(const Vector &stress, const Vector &alpha)
 {
 	Vector devStress(3); devStress = GetDevPart(stress);
-	double p = 0.5 * GetTrace(stress) + mresidualP;
+	double p = 0.5 * GetTrace(stress);
 	Vector n(3);
 	if (fabs(p) < small) {
 		n.Zero();
@@ -2084,26 +2285,22 @@ void
 PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vector &alpha_in, const Vector &alpha_in_p
 	, const Vector &fabric, const Vector &fabric_in, const double &G, const double &zcum, const double &zpeak
 	, const double &pzp, const double &Mcur, const double &CurVoidRatio, Vector &n, double &D, Vector &R, double &K_p
-	, Vector &alphaD, double &Cka, double &h, Vector &b)
+	, Vector &alphaD, double &Cka, double &h, Vector &b, double &AlphaAlphaBDotN)
 {
 	double p = 0.5 * GetTrace(stress);
 	if (p <= m_Pmin) p = m_Pmin;
 	double ksi = GetKsi(CurVoidRatio, p);
 	n = GetNormalToYield(stress, alpha);
 
-	mMd = m_Mc * exp(m_nd * ksi);
+	mMd = fmin(1.4142136, m_Mc * exp(m_nd * ksi / m_lambda));
 	if (ksi < 0) {
 		// dense of critical
-		double phi_max = 40.0;   // max phi at p = 1kPa
-		double Mb_max = 2 * sin(phi_max / 180.0 * 3.14159265359);
-		double C_Mb = 1 / (pow(Mb_max / m_Mc, 1 / m_nbdry) - 1.0);
-		mMb = m_Mc * pow((1 + C_Mb) / (p / mpcs + C_Mb), m_nbdry);
+		mMb = m_Mc * pow((1 + mC_MB) / (p / mpcs + mC_MB), m_nbdry);
 	}
 	else {
 		//loose of critical
-		mMb = m_Mc * exp(-1.0 * m_nbwet * ksi);
+		mMb = m_Mc * exp(-1.0 * m_nbwet * ksi / m_lambda);
 	}
-
 	Vector alphaB = root12 * (mMb - m_m) * n;
 	alphaD = root12 * (mMd - m_m) * n;
 	double Czpk1 = zpeak / (zcum + m_z_max / 5.0);
@@ -2113,52 +2310,54 @@ PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 	double Ckp = 2.0;
 
 	b = alphaB - alpha;
-	Cka = 1.0 + m_Ckaf / (1.0 + pow(2.5*Macauley(DoubleDot2_2_Contr(alpha - mAlpha_in_true, n)), 2.0))*Cpzp2*Czpk1;
-	double AlphaAlphaBDotN = fabs(DoubleDot2_2_Contr(b, n));
-
-	// updataed K_p formulation following PM4Silt V3.1. mAlpha_in is apparent back-stress ratio. 
+	AlphaAlphaBDotN = DoubleDot2_2_Contr(b, n);
+	double AlphaAlphaInDotN = Macauley(DoubleDot2_2_Contr(alpha - mAlpha_in, n));
+	double AlphaAlphaInTrueDotN = Macauley(DoubleDot2_2_Contr(alpha - mAlpha_in_true, n));
+	Cka = 1.0 + m_Ckaf / (1.0 + pow(2.5*AlphaAlphaInTrueDotN, 2)) * Cpzp2 * Czpk1;
+	// updataed K_p formulation following PM4Silt V1. mAlpha_in is the apparent back-stress ratio.
 	if (DoubleDot2_2_Contr(alpha - alpha_in_p, n) <= 0) {
-		h = 1.5 * G * m_h0 / p / (exp(DoubleDot2_2_Contr(alpha - mAlpha_in, n)) - 1 + Cg1) / sqrt(AlphaAlphaBDotN) *
+		h = 1.5 * G * m_h0 / p / (exp(AlphaAlphaInDotN) - 1 + Cg1) / sqrt(fabs(AlphaAlphaBDotN)) *
 			Cka / (1 + Ckp * zpeak / m_z_max * Macauley(AlphaAlphaBDotN) * sqrt(1 - Czpk2));
-		h = h * (DoubleDot2_2_Contr(alpha - mAlpha_in, n) + Cg1) / (DoubleDot2_2_Contr(alpha - mAlpha_in_true, n) + Cg1);
+		h = h * (AlphaAlphaInDotN + Cg1) / (AlphaAlphaInTrueDotN + Cg1);
 	}
 	else {
-		h = 1.5 * G * m_h0 / p / (exp(DoubleDot2_2_Contr(alpha - mAlpha_in, n)) - 1 + Cg1) / sqrt(AlphaAlphaBDotN) *
+		h = 1.5 * G * m_h0 / p / (exp(AlphaAlphaInDotN) - 1 + Cg1) / sqrt(fabs(AlphaAlphaBDotN)) *
 			Cka / (1 + Ckp * zpeak / m_z_max * Macauley(AlphaAlphaBDotN) * sqrt(1 - Czpk2));
 	}
 
-	K_p = two3 * h * p * DoubleDot2_2_Contr(b, n);
-	// bound K_p to non - negative, following flac practice
-	K_p = fmax(0.0, K_p);
-	double Czin1 = Macauley(1.0 - exp(-2.0*abs((DoubleDot2_2_Contr(fabric_in, n) - DoubleDot2_2_Contr(fabric, n)) / m_z_max)));
+	K_p = two3 * h * p * AlphaAlphaBDotN;
+	double Czin1 = Macauley(1.0 - exp(-2.0*fabs((DoubleDot2_2_Contr(fabric_in, n) - DoubleDot2_2_Contr(fabric, n)) / m_z_max)));
 	// rotated dilatancy surface
-	double Crot1 = fmax((1.0 + 2 * Macauley(DoubleDot2_2_Contr(-1.0 * fabric, n)) / (sqrt(2.0)*m_z_max)*(1 - Czin1)), 1.0);
+	double temp = Macauley(DoubleDot2_2_Contr(-1.0 * fabric, n)) * root12;
+	double Crot1 = fmax((1.0 + 2 * temp / m_z_max * (1 - Czin1)), 1.0);
 	double Mdr = mMd / Crot1;
 	Vector alphaDr = root12 * (Mdr - m_m) * n;
 	// dilation
 	if (DoubleDot2_2_Contr(alphaDr - alpha, n) <= 0) {
 		double Cpzp = 1.0 / (1.0 + pow((2.5* p / mpzp), 5.0));
-		double Czin2 = (1 + Czin1*(zcum - zpeak) / 3.0 / m_z_max) / (1 + 3.0 * Czin1*(zcum - zpeak) / 3 / m_z_max);
-		double temp = pow((1.0 - Macauley(DoubleDot2_2_Contr(-1.0 * fabric, n)) * root12 / zpeak), 3);
-		double Ad = m_Ado * Czin2 / ((pow(zcum, 2) / m_z_max) * temp * pow(m_ce, 2.0) * Cpzp * Czin1 + 1.0);
-		D = Ad *(-1.0 * Macauley(-DoubleDot2_2_Contr(alphaD - alpha, n)));
-		double Drot = Ad * Macauley(DoubleDot2_2_Contr(-1.0*fabric, n)) / (sqrt(2.0)*m_z_max) * DoubleDot2_2_Contr(alphaDr - alpha, n) / 3.0;
+		double Czin2 = (1 + Czin1*(zcum - zpeak) / (3.0 * m_z_max)) / (1 + 3.0 * Czin1*(zcum - zpeak) / (3.0 * m_z_max));
+		double Ad = m_Ado * Czin2 / ((pow(zcum, 2) / m_z_max) * pow(1.0 - temp / zpeak, 3) * pow(m_ce, 2.0) * Cpzp * Czin1 + 1.0);
+		D = Ad * DoubleDot2_2_Contr(alphaD - alpha, n);
+		double Drot = Ad * temp / m_z_max * DoubleDot2_2_Contr(alphaDr - alpha, n) / 3.0;
 		if (D > Drot) {
 			D = D + (Drot - D)*Macauley(mMb - Mcur) / (Macauley(mMb - Mcur) + 0.01);
 		}
 		if (p <= 2 * m_Pmin) {
-			D = fmin(D, -3.5 * m_Ado * Macauley(mMb - mMd) * (2 * m_Pmin - p) / m_Pmin);
+			D = -3.5 * m_Ado * Macauley(mMb - mMd) * (2 * m_Pmin - p) / m_Pmin;
 		}
 	}
 	else {
 		//contraction
+		// bound K_p to non - negative, following flac practice
+		K_p = fmax(0.0, K_p);
 		double hp = m_hpo * exp(-0.7 + 0.2 * pow(Macauley(3 - ksi / m_lambda), 2.0));
 		double Crot2 = 1 - Czpk2;
-		double Cdz = fmax((1 - Crot2*sqrt(2.0)*zpeak / m_z_max)*(m_z_max / (m_z_max + Crot2*zcum)), 1 / (1 + m_z_max / 2.0));
-		double Cwet = fmin(1.0, 1.0 / (1 / (1 + pow(0.02 / AlphaAlphaBDotN, 4)) + 1 / (1 + pow(ksi / m_lambda / 0.1, 2.0))));
+		double Cdz = fmax((1 - Crot2 * sqrt(2.0) * zpeak / m_z_max)*(m_z_max / (m_z_max + Crot2*zcum)), 1 / (1 + m_z_max / 2.0));
+		// double Cdz = (1 - Crot2 * sqrt(2.0) * zpeak / m_z_max)*(m_z_max / (m_z_max + Crot2*zcum));
+		double Cwet = fmin(1.0, (1.0 / (1 + pow(0.02 / AlphaAlphaBDotN, 4.0)) + 1.0 / (1 + pow(ksi / m_lambda / 0.1, 2.0))));
 		double Adc = m_Ado * (1 + Macauley(DoubleDot2_2_Contr(fabric, n))) / (hp * Cdz * Cwet);
-		double Cin = 2.0 * Macauley(DoubleDot2_2_Contr(fabric, n)) / sqrt(2.0) / m_z_max;
-		D = fmin(Adc * pow((DoubleDot2_2_Contr(alpha - mAlpha_in_true, n) + Cin), 2), 1.5 * m_Ado) *
+		double Cin = 2.0 * Macauley(DoubleDot2_2_Contr(fabric, n)) * root12 / m_z_max;
+		D = fmin(Adc * pow((DoubleDot2_2_Contr(alpha - mAlpha_in, n) + Cin), 2.0), m_Ado) *
 			DoubleDot2_2_Contr(alphaD - alpha, n) / (DoubleDot2_2_Contr(alphaD - alpha, n) + 0.10);
 		// Apply a factor to D so it doesn't go very big when p is small
 		double C_pmin;
@@ -2176,6 +2375,7 @@ PM4Silt::GetStateDependent(const Vector &stress, const Vector &alpha, const Vect
 		D *= C_pmin;
 	}
 	R = n + one3 * D * mI1;
+	mTracker(1) = D;
 }
 
 

@@ -542,7 +542,7 @@ BbarBrickWithSensitivity::addLoad(ElementalLoad *theLoad, double loadFactor)
       appliedB[2] += loadFactor * b[2];
     return 0;
   } else if (type == LOAD_TAG_SelfWeight) {
-      // added compatability with selfWeight class implemented for all continuum elements, C.McGann, U.W.
+      // added compatibility with selfWeight class implemented for all continuum elements, C.McGann, U.W.
       applyLoad = 1;
 	  appliedB[0] += loadFactor*data(0)*b[0];
 	  appliedB[1] += loadFactor*data(1)*b[1];
@@ -579,7 +579,7 @@ BbarBrickWithSensitivity::addInertiaLoadToUnbalance(const Vector &accel)
   int tangFlag = 1 ;
   formInertiaTerms( tangFlag ) ;
 
-  // store computed RV fro nodes in resid vector
+  // store computed RV for nodes in resid vector
   int count = 0;
   for (i=0; i<numberNodes; i++) {
     const Vector &Raccel = nodePointers[i]->getRV(accel);

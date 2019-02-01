@@ -19,7 +19,7 @@
 ** ****************************************************************** */
 
 // Written: Long Chen, Pedro Arduino
-//          Jan 2018, University of Washington
+//          Sep 2018, University of Washington
 
 // Description: This file contains the implementation for the PM4Silt class.
 // PM4Silt(Version 1): A Silt Plasticity Model For Earthquake Engineering Applications
@@ -52,17 +52,15 @@ class PM4Silt : public NDMaterial
 {
 public:
 	// full constructor
-	PM4Silt(int tag, int classTag, double Su, double Su_rate, double G0, double hpo, double mDen, double Fsu = 1.0, double P_atm = 101.3, double nG = 0.75, double h0 = 0.5,
-		double einit = 0.9, double lambda = 0.06, double phi_cv = 32.0, double nbwet = 0.8, double nbdry = 0.5, double nd = 0.3, double Ado = 0.8,
-		double ru_max = -1, double z_max = -1, double cz = 100.0, double ce = -1, double Cgd = 3.0, double Ckaf = 4.0, double nu = 0.3, double m = 0.01,
-		double crhg = 0.005, double chg = -1, double CG_consol = 2.0, double residualP = 0.0, int integrationScheme = 1, int tangentType = 0,
-		double TolF = 1.0e-7, double TolR = 1.0e-7);
+	PM4Silt(int tag, int classTag, double Su, double Su_rate, double G0, double hpo, double mDen, double Fsu = 1.0, double P_atm = 101.3, double nu = 0.3,
+		double nG = 0.75, double h0 = 0.5, double einit = 0.9, double lambda = 0.06, double phi_cv = 32.0, double nbwet = 0.8, double nbdry = 0.5, double nd = 0.3,
+		double Ado = 0.8, double ru_max = -1, double z_max = -1, double cz = 100.0, double ce = -1, double Cgd = 3.0, double Ckaf = 4.0, double m = 0.01,
+		double CG_consol = 2.0, int integrationScheme = 1, int tangentType = 0,	double TolF = 1.0e-7, double TolR = 1.0e-7);
 	// full constructor
-	PM4Silt(int tag, double Su, double Su_rate, double G0, double hpo, double mDen, double Fsu = 1.0, double P_atm = 101.3, double nG = 0.75, double h0 = 0.5,
-		double einit = 0.9, double lambda = 0.06, double phi_cv = 32.0, double nbwet = 0.8, double nbdry = 0.5, double nd = 0.3, double Ado = 0.8,
-		double ru_max = -1, double z_max = -1, double cz = 100.0, double ce = -1, double Cgd = 3.0, double Ckaf = 4.0, double nu = 0.3, double m = 0.01,
-		double crhg = 0.005, double chg = -1, double CG_consol = 2.0, double residualP = 0.0, int integrationScheme = 1, int tangentType = 0,
-		double TolF = 1.0e-7, double TolR = 1.0e-7);
+	PM4Silt(int tag, double Su, double Su_rate, double G0, double hpo, double mDen, double Fsu = 1.0, double P_atm = 101.3, double nu = 0.3,
+		double nG = 0.75, double h0 = 0.5, double einit = 0.9, double lambda = 0.06, double phi_cv = 32.0, double nbwet = 0.8, double nbdry = 0.5, double nd = 0.3,
+		double Ado = 0.8, double ru_max = -1, double z_max = -1, double cz = 100.0, double ce = -1, double Cgd = 3.0, double Ckaf = 4.0,  double m = 0.01,
+		double CG_consol = 2.0, int integrationScheme = 1, int tangentType = 0,	double TolF = 1.0e-7, double TolR = 1.0e-7);
 	// null constructor
 	PM4Silt();
 	// destructor
@@ -94,7 +92,7 @@ public:
 	const Vector getAlpha();
 	const Vector getFabric();
 	const Vector getAlpha_in();
-	double getTraker();
+	const Vector getTracker();
 	double getG();
 	double getKp();
 	const Vector getAlpha_in_p();
@@ -143,8 +141,6 @@ protected:
 	double m_Ckaf;
 	double m_nu;
 	double m_m;
-	double m_crhg;
-	double m_chg;
 	double m_CG_consol;
 
 	int m_FirstCall;
@@ -166,14 +162,19 @@ protected:
 	Vector mAlpha_in;	// back-stress ratio at loading reversal
 	Vector mAlpha_in_n;	// back-stress ratio at loading reversal (last committed)
 	Vector mAlpha_in_p; // previous back-stress ratio at loading reversal
+	Vector mAlpha_in_p_n; // previous back-stress ratio at loading reversal (last committed)
 	Vector mAlpha_in_true;  // true initial back stress ratio tensor
+	Vector mAlpha_in_true_n;  // true initial back stress ratio tensor (last committed)
 	Vector mAlpha_in_max; // Maximum value of initial back stress ratio
+	Vector mAlpha_in_max_n; // Maximum value of initial back stress ratio (last committed)
 	Vector mAlpha_in_min; // Minimum value of initial back stress ratio
+	Vector mAlpha_in_min_n; // Minimum value of initial back stress ratio (last committed)
 	double mDGamma;		// plastic multiplier
 	double mDGamma_n;	// plastic multiplier (last committed)
 	Vector mFabric;		// fabric tensor
 	Vector mFabric_n;	// fabric tensor (last committed)
 	Vector mFabric_in;  // fabric tensor at loading reversal
+	Vector mFabric_in_n;  // fabric tensor at loading reversal (last committed)
 	Matrix mCe;			// elastic tangent
 	Matrix mCep;		// continuum elastoplastic tangent
 	Matrix mCep_Consistent; // consistent elastoplastic tangent
@@ -188,11 +189,11 @@ protected:
 	double mpzp;
 	double mzxp;        // product of z and p
 	double mMb;
-	double mphi_max;    // the maximum frictoin angle that can be mobilized near the origin
+	double mMb_max;    // the maximum Mb at the origin
+	double mC_MB;      // constant to calculate Mb for dense of critical states
 	double mMd;
 	double mMcur;       // current stress ratio
-	double mresidualP;    // residualP to avoid negative p during calculation
-	double mTracker;        // traker of internal varables;
+	Vector mTracker;        // traker of internal varables;
 
 	double	mTolF;			// max drift from yield surface
 	double	mTolR;			// tolerance for Newton iterations
@@ -299,7 +300,7 @@ protected:
 	void	GetStateDependent(const Vector &stress, const Vector &alpha, const Vector &alpha_in, const Vector& alpha_in_p
 		, const Vector &fabric, const Vector &fabric_in, const double &G, const double &zcum, const double &zpeak
 		, const double &pzp, const double &Mcur, const double &dr, Vector &n, double &D, Vector &R, double &K_p
-		, Vector &alphaD, double &Cka, double &h, Vector &b);
+		, Vector &alphaD, double &Cka, double &h, Vector &b, double &AlphaAlphaBDotN);
 	Matrix	GetElastoPlasticTangent(const Vector& NextStress, const Matrix& aCe, const Vector& R, const Vector& n, const double K_p);
 	Vector	GetNormalToYield(const Vector &stress, const Vector &alpha);
 	int	Check(const Vector& TrialStress, const Vector& stress, const Vector& CurAlpha, const Vector& NextAlpha);
@@ -319,5 +320,4 @@ protected:
 	Vector ToContraviant(const Vector& v1);
 	Vector ToCovariant(const Vector& v1);
 };
-
 #endif

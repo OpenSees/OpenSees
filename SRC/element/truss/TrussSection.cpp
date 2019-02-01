@@ -673,7 +673,7 @@ TrussSection::addInertiaLoadToUnbalance(const Vector &accel)
 #ifdef _G3DEBUG    
   if (nodalDOF != Raccel1.Size() || nodalDOF != Raccel2.Size()) {
     opserr <<"TrussSection::addInertiaLoadToUnbalance " <<
-      "matrix and vector sizes are incompatable\n";
+      "matrix and vector sizes are incompatible\n";
     return -1;
   }
 #endif
@@ -1136,7 +1136,7 @@ TrussSection::setResponse(const char **argv, int argc, OPS_Stream &output)
 
     } else if (strcmp(argv[0],"basicStiffness") == 0) {
 
-            output.tag("ResponseType", "U");
+            output.tag("ResponseType", "K");
             theResponse = new ElementResponse(this, 4, Matrix(1,1));
 
     // a section quantity
@@ -1622,7 +1622,7 @@ TrussSection::addInertiaLoadSensitivityToUnbalance(const Vector &accel, bool som
 #ifdef _G3DEBUG    
     if (nodalDOF != Raccel1.Size() || nodalDOF != Raccel2.Size()) {
       opserr << "Truss::addInertiaLoadToUnbalance " <<
-	"matrix and vector sizes are incompatable\n";
+	"matrix and vector sizes are incompatible\n";
       return -1;
     }
 #endif
@@ -1656,7 +1656,7 @@ TrussSection::addInertiaLoadSensitivityToUnbalance(const Vector &accel, bool som
 #ifdef _G3DEBUG    
     if (nodalDOF != Raccel1.Size() || nodalDOF != Raccel2.Size()) {
       opserr << "Truss::addInertiaLoadToUnbalance " <<
-	"matrix and vector sizes are incompatable\n";
+	"matrix and vector sizes are incompatible\n";
       return -1;
     }
 #endif

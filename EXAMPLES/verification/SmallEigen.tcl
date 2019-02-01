@@ -11,14 +11,14 @@
 # M=[[11.1 0 0];[0 22.2 0];[0 0 33.3]]
 # eig(K,M)
 
-puts "SmallEigen.tcl: Small 3 dof 2 spring model: checking eigen results of smallest and larget values"
-puts "  using masses defined through node and mass command, results compared for eaxct against Matlab\n"
+puts "SmallEigen.tcl: Small 3 dof 2 spring model: checking eigen results of smallest and largest values"
+puts "  using masses defined through node and mass command, results compared for exact against Matlab\n"
 
 set exactResults {0.139300647653736 1.05865310768512  4.9582024008173}
 
 wipe
 model Basic -ndm 1 -ndf 1
-node 1 0 
+node 1 0
 node 2 0 -mass 11.1
 node 3 0 -mass 22.2
 node 4 0 -mass 33.3
@@ -73,10 +73,10 @@ for {set i 0} {$i<$numEigen} {incr i 1} {
 wipe
 wipe
 model Basic -ndm 1 -ndf 1
-node 1 0 
-node 2 0 
-node 3 0 
-node 4 0 
+node 1 0
+node 2 0
+node 3 0
+node 4 0
 uniaxialMaterial Elastic 1 30
 uniaxialMaterial Elastic 2 20
 uniaxialMaterial Elastic 3 10

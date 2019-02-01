@@ -25,7 +25,7 @@ set integratorCmds {"Newmark Average Acceleration" "integrator Newmark 0.5 0.25"
 
 # procedure to build a linear model
 #   input args: K - desired stiffness
-#               periodStruct - desired structre period (used to compute mass)
+#               periodStruct - desired structure period (used to compute mass)
 #               dampRatio (zeta) - desired damping ratio
 proc buildModel {k m dampRatio yieldDisp} {
 

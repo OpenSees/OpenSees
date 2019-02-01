@@ -14,7 +14,7 @@
     <ProjectGuid>{D185C84D-AB56-0F30-1A62-44B095869005}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -109,6 +109,8 @@
     <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\EigenSolver.cpp" />
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\LinearSOE.cpp" />
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\LinearSOESolver.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMSolver_Laplace.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMSolver_LumpM.cpp" />
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMSolver_Umfpack.cpp" />
     <ClCompile Include="..\..\..\SRC\system_of_eqn\Solver.cpp" />
     <ClCompile Include="..\..\..\SRC\system_of_eqn\SystemOfEqn.cpp" />
@@ -169,6 +171,8 @@
     <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\EigenSolver.h" />
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\LinearSOE.h" />
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\LinearSOESolver.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMSolver_Laplace.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMSolver_LumpM.h" />
     <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMSolver_Umfpack.h" />
     <ClInclude Include="..\..\..\SRC\system_of_eqn\Solver.h" />
     <ClInclude Include="..\..\..\SRC\system_of_eqn\SystemOfEqn.h" />

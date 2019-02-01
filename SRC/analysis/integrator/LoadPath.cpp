@@ -30,7 +30,7 @@
 // Revision: A
 //
 // Description: This file contains the class definition for LoadPath.
-// LoadPath is an algorithmic class for perfroming a static analysis
+// LoadPath is an algorithmic class for performing a static analysis
 // using a load control integration scheme.
 //
 // What: "@(#) LoadPath.h, revA"

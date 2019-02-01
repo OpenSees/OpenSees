@@ -325,7 +325,7 @@ UDP_Socket::recvObj(int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            if (bcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
                 theSocketAddress->addrLength) != 0) {
                     opserr << "UDP_Socket::recvObj() - a UDP_Socket ";
                     opserr << "can only look at first incoming message\n"; 
@@ -375,7 +375,7 @@ UDP_Socket::recvMsg(int dbTag, int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            if (bcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
                 theSocketAddress->addrLength) != 0) {
                     opserr << "UDP_Socket::recvMsg() - a UDP_Socket ";
                     opserr << "can only look at first incoming message\n"; 
@@ -486,7 +486,7 @@ UDP_Socket::recvMatrix(int dbTag, int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;	
             
-            if (bcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
                 theSocketAddress->addrLength) != 0) {
                     opserr << "UDP_Socket::recvMsg() - a UDP_Socket ";
                     opserr << "can only look at first incoming message\n"; 
@@ -602,7 +602,7 @@ UDP_Socket::recvVector(int dbTag, int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            if (bcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
                 theSocketAddress->addrLength) != 0) {
                     opserr << "UDP_Socket::recvMsg() - a UDP_Socket ";
                     opserr << "can only look at first incoming message\n";
@@ -718,7 +718,7 @@ UDP_Socket::recvID(int dbTag, int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            if (bcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
                 theSocketAddress->addrLength) != 0) {
                     opserr << "UDP_Socket::recvMsg() - a UDP_Socket ";
                     opserr << "can only look at first incoming message\n";

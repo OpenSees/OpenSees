@@ -92,7 +92,7 @@ void* OPS_NineFourNodeQuadUP()
 
     return new NineFourNodeQuadUP(tags[0],tags[1],tags[2],tags[3],tags[4],
 				  tags[5],tags[6],tags[7],tags[8],tags[9],
-				  *mat,"PlainStrain",thk,data[0],data[1],data[2],data[3],
+				  *mat,"PlaneStrain",thk,data[0],data[1],data[2],data[3],
 				  opt[0],opt[1]);
 }
 
@@ -1131,7 +1131,7 @@ NineFourNodeQuadUP::addInertiaLoadToUnbalance(const Vector &accel)
 
       if ((i<nenp && 3 != Raccel.Size()) || (i>=nenp && 2 != Raccel.Size())) {
 
-         opserr << "NineFourNodeQuadUP::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+         opserr << "NineFourNodeQuadUP::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
 
          return -1;
 
@@ -1311,7 +1311,7 @@ NineFourNodeQuadUP::getResistingForceIncInertia()
 
     if ((i<nenp && 3 != accel.Size()) || (i>=nenp && 2 != accel.Size())) {
 
-      opserr << "NineFourNodeQuadUP::getResistingForceIncInertia matrix and vector sizes are incompatable\n";
+      opserr << "NineFourNodeQuadUP::getResistingForceIncInertia matrix and vector sizes are incompatible\n";
 
          return P;
 
@@ -1365,7 +1365,7 @@ NineFourNodeQuadUP::getResistingForceIncInertia()
 
       if ((i<nenp && 3 != vel.Size()) || (i>=nenp && 2 != vel.Size())) {
 
-         opserr << "NineFourNodeQuadUP::getResistingForceIncInertia matrix and vector sizes are incompatable\n";
+         opserr << "NineFourNodeQuadUP::getResistingForceIncInertia matrix and vector sizes are incompatible\n";
 
          return P;
 

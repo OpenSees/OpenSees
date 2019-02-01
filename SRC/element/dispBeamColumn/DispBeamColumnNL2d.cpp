@@ -380,7 +380,7 @@ DispBeamColumnNL2d::getBasicStiff(Matrix &kb, int initial)
 
     Matrix B(order,3);
     Matrix C(order,3);
-    Matrix C1(1,3);
+    static Matrix C1(1,3);
     for (j = 0; j < order; j++) {
       switch(code(j)) {
       case SECTION_RESPONSE_P:
@@ -409,7 +409,7 @@ DispBeamColumnNL2d::getBasicStiff(Matrix &kb, int initial)
     kb.addMatrixTransposeProduct(1.0, B, kC, theta*wt[i]);
 
     Matrix ks1(1,order);
-    Matrix ksB(1,3);
+    static Matrix ksB(1,3);
 
     for (j = 0; j < order; j++) {
       if (code(j) == SECTION_RESPONSE_P) {
@@ -751,7 +751,7 @@ DispBeamColumnNL2d::addInertiaLoadToUnbalance(const Vector &accel)
 	const Vector &Raccel2 = theNodes[1]->getRV(accel);
 
     if (3 != Raccel1.Size() || 3 != Raccel2.Size()) {
-      opserr << "DispBeamColumnNL2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatable\n";
+      opserr << "DispBeamColumnNL2d::addInertiaLoadToUnbalance matrix and vector sizes are incompatible\n";
       return -1;
     }
 
@@ -1718,10 +1718,85 @@ DispBeamColumnNL2d::activateParameter(int passedParameterID)
 
 
 const Matrix &
-DispBeamColumnNL2d::getKiSensitivity(int gradNumber)
+DispBeamColumnNL2d::getInitialStiffSensitivity(int gradNumber)
 {
-	K.Zero();
-	return K;
+  static Matrix kb(3,3);
+
+  // Zero for integral
+  kb.Zero();
+  
+  double L = crdTransf->getInitialLength();
+  double oneOverL = 1.0/L;
+  
+  //const Matrix &pts = quadRule.getIntegrPointCoords(numSections);
+  //const Vector &wts = quadRule.getIntegrPointWeights(numSections);
+  double xi[maxNumSections];
+  beamInt->getSectionLocations(numSections, L, xi);
+  double wt[maxNumSections];
+  beamInt->getSectionWeights(numSections, L, wt);
+
+  // Loop over the integration points
+  for (int i = 0; i < numSections; i++) {
+    
+    int order = theSections[i]->getOrder();
+    const ID &code = theSections[i]->getType();
+  
+    Matrix ka(workArea, order, 3);
+    ka.Zero();
+
+    //double xi6 = 6.0*pts(i,0);
+    double xi6 = 6.0*xi[i];
+    
+    // Get the section tangent stiffness and stress resultant
+    const Matrix &ks = theSections[i]->getInitialTangentSensitivity(gradNumber);
+    
+    // Perform numerical integration
+    //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
+    //double wti = wts(i)*oneOverL;
+    double wti = wt[i]*oneOverL;
+    double tmp;
+    int j, k;
+    for (j = 0; j < order; j++) {
+      switch(code(j)) {
+      case SECTION_RESPONSE_P:
+	for (k = 0; k < order; k++)
+	  ka(k,0) += ks(k,j)*wti;
+	break;
+      case SECTION_RESPONSE_MZ:
+	for (k = 0; k < order; k++) {
+	  tmp = ks(k,j)*wti;
+	  ka(k,1) += (xi6-4.0)*tmp;
+	  ka(k,2) += (xi6-2.0)*tmp;
+	}
+	break;
+      default:
+	break;
+      }
+    }
+    for (j = 0; j < order; j++) {
+      switch (code(j)) {
+      case SECTION_RESPONSE_P:
+	for (k = 0; k < 3; k++)
+	  kb(0,k) += ka(j,k);
+	break;
+      case SECTION_RESPONSE_MZ:
+	for (k = 0; k < 3; k++) {
+	  tmp = ka(j,k);
+	  kb(1,k) += (xi6-4.0)*tmp;
+	  kb(2,k) += (xi6-2.0)*tmp;
+	}
+	break;
+      default:
+	break;
+      }
+    }
+    
+  }
+
+  // Transform to global stiffness
+  K = crdTransf->getInitialGlobalStiffMatrix(kb);
+  
+  return K;
 }
 
 const Matrix &

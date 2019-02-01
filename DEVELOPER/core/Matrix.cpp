@@ -172,15 +172,15 @@ Matrix::Matrix(const Matrix &other)
       data = new (nothrow) double[dataSize];
       // data = (double *)malloc(dataSize*sizeof(double));
       if (data == 0) {
-  opserr << "WARNING:Matrix::Matrix(Matrix &): ";
-  opserr << "Ran out of memory on init of size " << dataSize << endln; 
-  numRows = 0; numCols =0; dataSize = 0;
+	opserr << "WARNING:Matrix::Matrix(Matrix &): ";
+	opserr << "Ran out of memory on init of size " << dataSize << endln; 
+	numRows = 0; numCols =0; dataSize = 0;
       } else {
-  // copy the data
-  double *dataPtr = data;
-  double *otherDataPtr = other.data;
-  for (int i=0; i<dataSize; i++)
-    *dataPtr++ = *otherDataPtr++;
+	// copy the data
+	double *dataPtr = data;
+	double *otherDataPtr = other.data;
+	for (int i=0; i<dataSize; i++)
+	  *dataPtr++ = *otherDataPtr++;
       }
     }
 }

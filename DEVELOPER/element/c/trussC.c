@@ -182,7 +182,7 @@ trussC (eleObj *thisObj, modelState *model, double *tang, double *resid, int *is
 
     theMat->matFunctPtr(theMat, model, matStrain, matTang, matStress, isw, errFlag); 
 
-    /* ******************* instead of call material funtion
+    /* ******************* instead of call material function
     int matNum = 0;
     *errFlag = OPS_InvokeMaterial(thisObj, &matNum, model, matStrain, matStress, matTang, isw); 
     fprintf(stderr,"strain, tang, stress: %e %e %e\n",matStrain[0], matTang[0], matStress[0]);

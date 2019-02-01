@@ -575,10 +575,10 @@ void FRPConfinedConcrete::envelope ( )
 			double ecbuck;
 
 			if (Sj<0.000001){ //practically zero
-				ecbuck =( 2*pi*abs(((w-c))))/(pi*D);
+				ecbuck =( 2*pi*fabs(((w-c))))/(pi*D);
 			}
 			else{ //nonzero
-				ecbuck = (2*pi*abs((w-c/2)))/(pi*D);
+				ecbuck = (2*pi*fabs((w-c/2)))/(pi*D);
 			}
 
 			if( (ecbuck > 0) && (ecbuck >= eju)){
@@ -604,7 +604,7 @@ bool FRPConfinedConcrete::myRegulaFalsi(double Pcr, double EIred, double Es, dou
 	xNew = xA - (fxA)*(xA - xB)/(fxA - fxAhat);
 	double fxNew = PCriticalSolve(xNew,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
 	
-	while (( abs(fxNew)> 1E-6) && (insIter<=insMaxIter)){
+	while (( fabs(fxNew)> 1E-6) && (insIter<=insMaxIter)){
 		insIter++;
 		if  (fxAhat*fxNew>0){
 			xB = xNew;
@@ -618,7 +618,7 @@ bool FRPConfinedConcrete::myRegulaFalsi(double Pcr, double EIred, double Es, dou
 		xNew = xA - (fxA)*(xA - xB)/(fxA - fxAhat);
 		fxNew = PCriticalSolve(xNew,Pcr,EIred,Es,Ash,Dcore,S,mBuck);
 
-		if ((abs(xA-xB)<1E-12) && (fxA*fxAhat<0)){
+		if ((fabs(xA-xB)<1E-12) && (fxA*fxAhat<0)){
 			returnFlag = true;	
 			break;
 		}

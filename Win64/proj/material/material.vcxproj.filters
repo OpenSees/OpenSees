@@ -1004,15 +1004,6 @@
     <ClCompile Include="..\..\..\SRC\material\nD\FSAM.cpp">
       <Filter>nD</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.cpp">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.cpp">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.cpp">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -1144,6 +1135,15 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\section\BiaxialHysteretic.cpp">
       <Filter>section</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\GNGMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\stressDensityModel\stressDensity.cpp">
+      <Filter>nD\stressDensityModel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.cpp">
+      <Filter>uniaxial</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2000,15 +2000,6 @@
     <ClInclude Include="..\..\..\SRC\material\nD\FSAM.h">
       <Filter>nD</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel.h">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel2D.h">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\StressDensityModel3D.h">
-      <Filter>nD\stressDensityModel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
@@ -2143,6 +2134,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\section\BiaxialHysteretic.h">
       <Filter>section</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\GNGMaterial.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\stressDensityModel\stressDensity.h">
+      <Filter>nD\stressDensityModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.h">
+      <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

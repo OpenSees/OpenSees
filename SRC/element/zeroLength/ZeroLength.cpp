@@ -107,8 +107,12 @@ void* OPS_ZeroLength()
         int mtag;
         numdata = 1;
 	// the first one not an int
+	int numArgs = OPS_GetNumRemainingInputArgs();
         if (OPS_GetIntInput(&numdata,&mtag) < 0) {
-	    OPS_ResetCurrentInputArg(-1); // move current arg back by one
+	    if (numArgs > OPS_GetNumRemainingInputArgs()) {
+		// move current arg back by one
+		OPS_ResetCurrentInputArg(-1); 
+	    }
 	    break;
         }
 	matTags[numMats] = mtag;
@@ -218,7 +222,7 @@ void* OPS_ZeroLength()
     // return the memory we stole and return OK
     delete [] theMats;    
     delete [] theDampMats;
-    
+
     return theEle;
 }
 
@@ -456,23 +460,24 @@ ZeroLength::~ZeroLength()
   int numMat = numMaterials1d;
   if (useRayleighDamping == 2)
     numMat *= 2;
-    for (int mat=0; mat<numMat; mat++) 
-	delete theMaterial1d[mat];
 
-    // delete memory of 1d materials    
-    if (theMaterial1d != 0)
-	delete [] theMaterial1d;
-
-    if (t1d != 0)
-	delete t1d;
-    if (dir1d != 0 )
-	delete dir1d;
-
-    if (d0 != 0)
-      delete d0;
-
-    if (v0 != 0)
-      delete v0;
+  for (int mat=0; mat<numMat; mat++) 
+    delete theMaterial1d[mat];
+  
+  // delete memory of 1d materials    
+  if (theMaterial1d != 0)
+    delete [] theMaterial1d;
+  
+  if (t1d != 0)
+    delete t1d;
+  if (dir1d != 0 )
+    delete dir1d;
+  
+  if (d0 != 0)
+    delete d0;
+  
+  if (v0 != 0)
+    delete v0;
 }
 
 
@@ -1145,7 +1150,6 @@ ZeroLength::displaySelf(Renderer &theViewer, int displayMode, float fact, const 
     static Vector v2(3);
 
     float d1 = 1.0;
-    float d2 = 1.0;
 
     if (displayMode == 1 || displayMode == 2) {
 
@@ -1268,7 +1272,7 @@ ZeroLength::setResponse(const char **argv, int argc, OPS_Stream &output)
     if ((strcmp(argv[0],"force") == 0) || (strcmp(argv[0],"forces") == 0) 
         || (strcmp(argv[0],"globalForces") == 0) || (strcmp(argv[0],"globalforces") == 0)) {
 
-            char outputData[10];
+            char outputData[20];
             int numDOFperNode = numDOF/2;
             for (int i=0; i<numDOFperNode; i++) {
                 sprintf(outputData,"P1_%d", i+1);
@@ -1514,7 +1518,7 @@ ZeroLength::setUp( int Nd1, int Nd2,
     if ( x.Size() != 3 || yp.Size() != 3 )
 	opserr << "FATAL ZeroLength::setUp - incorrect dimension of orientation vectors\n";
 
-    // establish orientation of element for the tranformation matrix
+    // establish orientation of element for the transformation matrix
     // z = x cross yp
     Vector z(3);
     z(0) = x(1)*yp(2) - x(2)*yp(1);

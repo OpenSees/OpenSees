@@ -101,7 +101,7 @@ class DispBeamColumnNL2d : public Element
     int            updateParameter(int parameterID, Information &info);
     int            activateParameter(int parameterID);
     const Vector & getResistingForceSensitivity(int gradNumber);
-    const Matrix & getKiSensitivity(int gradNumber);
+    const Matrix & getInitialStiffSensitivity(int gradNumber);
     const Matrix & getMassSensitivity(int gradNumber);
     int            commitSensitivity(int gradNumber, int numGrads);
     // AddingSensitivity:END ///////////////////////////////////////////
@@ -114,7 +114,7 @@ class DispBeamColumnNL2d : public Element
 
     int numSections;
     SectionForceDeformation **theSections; // pointer to the ND material objects
-    CrdTransf *crdTransf;        // pointer to coordinate tranformation object 
+    CrdTransf *crdTransf;        // pointer to coordinate transformation object 
 
     BeamIntegration *beamInt;
 
