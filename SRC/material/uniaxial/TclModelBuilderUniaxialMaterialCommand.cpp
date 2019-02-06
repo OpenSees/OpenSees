@@ -86,10 +86,12 @@ extern void *OPS_Steel01(void);
 extern void *OPS_FRPConfinedConcrete02(void);
 //extern void *OPS_HoehlerStanton(void);
 extern void *OPS_Steel02(void);
+extern void *OPS_Steel02Fatigue(void);
 extern void *OPS_RambergOsgoodSteel(void);
 extern void *OPS_ReinforcingSteel(void);
 extern void *OPS_Concrete01(void);
 extern void *OPS_Concrete02(void);
+extern void *OPS_Concrete02IS(void);
 extern void *OPS_PinchingLimitStateMaterial(void);
 extern void *OPS_SAWSMaterial(void);
 extern void *OPS_ConcreteZ01Material(void);
@@ -262,7 +264,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;
-
+    } else if (strcmp(argv[1],"Steel02Fatigue") == 0) {
+      void *theMat = OPS_Steel02Fatigue();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
     } else if (strcmp(argv[1],"Steel4") == 0) {
       void *theMat = OPS_Steel4();
       if (theMat != 0) 
@@ -300,6 +307,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       */
     } else if (strcmp(argv[1],"Concrete02") == 0) {
       void *theMat = OPS_Concrete02();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    } else if (strcmp(argv[1],"Concrete02IS") == 0) {
+      void *theMat = OPS_Concrete02IS();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
