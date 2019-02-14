@@ -1,0 +1,1905 @@
+!===============================================================================
+! Copyright 1999-2018 Intel Corporation All Rights Reserved.
+!
+! The source code,  information  and material  ("Material") contained  herein is
+! owned by Intel Corporation or its  suppliers or licensors,  and  title to such
+! Material remains with Intel  Corporation or its  suppliers or  licensors.  The
+! Material  contains  proprietary  information  of  Intel or  its suppliers  and
+! licensors.  The Material is protected by  worldwide copyright  laws and treaty
+! provisions.  No part  of  the  Material   may  be  used,  copied,  reproduced,
+! modified, published,  uploaded, posted, transmitted,  distributed or disclosed
+! in any way without Intel's prior express written permission.  No license under
+! any patent,  copyright or other  intellectual property rights  in the Material
+! is granted to  or  conferred  upon  you,  either   expressly,  by implication,
+! inducement,  estoppel  or  otherwise.  Any  license   under such  intellectual
+! property rights must be express and approved by Intel in writing.
+!
+! Unless otherwise agreed by Intel in writing,  you may not remove or alter this
+! notice or  any  other  notice   embedded  in  Materials  by  Intel  or Intel's
+! suppliers or licensors in any way.
+!===============================================================================
+
+!  Content:
+!      Intel(R) Math Kernel Library (Intel(R) MKL) FORTRAN interface for BLAS routines
+!*******************************************************************************
+
+      INTERFACE
+      subroutine xerbla(srname,info)
+      character*(*) srname
+      integer*4     info
+      END
+      END INTERFACE
+
+      INTERFACE
+      logical function lsame(ca,cb)
+      character*(*) ca,cb
+      END
+      END INTERFACE
+
+      INTERFACE
+      real function scabs1(c)
+      complex   c
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine saxpy(n,sa,sx,incx,sy,incy)
+      real       sx(*),sy(*),sa
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine saxpby(n,sa,sx,incx,sb,sy,incy)
+      real       sx(*),sy(*),sa,sb
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine scopy(n,sx,incx,sy,incy)
+      real       sx(*),sy(*)
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      real function sdot(n,sx,incx,sy,incy)
+      real       sx(*),sy(*)
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      real function sdsdot(n,sb,sx,incx,sy,incy)
+      real       sb,sx(*),sy(*)
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sscal(n,sa,sx,incx)
+      real       sa,sx(*)
+      integer    incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sswap (n,sx,incx,sy,incy)
+      real       sx(*),sy(*)
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      real function snrm2 ( n, x, incx )
+      integer    incx, n
+      real       x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      integer function isamax(n,sx,incx)
+      real       sx(*)
+      integer    incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      integer function isamin(n,sx,incx)
+      real       sx(*)
+      integer    incx, n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine srot (n,sx,incx,sy,incy,c,s)
+      real       sx(*),sy(*),c,s
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine srotg(sa,sb,c,s)
+      real       sa,sb,c,s
+      END
+      END INTERFACE
+
+      INTERFACE
+      real function sasum(n,sx,incx)
+      real       sx(*)
+      integer    incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine saxpyi( nz, a, x, indx, y )
+      integer    nz, indx (*)
+      real       y (*), x (*), a
+      END
+      END INTERFACE
+
+      INTERFACE
+      real function sdoti( nz, x, indx, y )
+      integer    nz, indx (*)
+      real       x (*), y (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sgthr( nz, y, x, indx )
+      integer    nz, indx (*)
+      real       y (*), x (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sgthrz( nz, y, x, indx )
+      integer    nz, indx (*)
+      real       y (*), x (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sroti( nz, x, indx, y, c, s )
+      integer    nz, indx (*)
+      real       x (*), y (*), c, s
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine srotm (n,sx,incx,sy,incy,sparam)
+      real       sx, sy, sparam
+      integer    n, incx, incy
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine srotmg (sd1,sd2,sx1,sy1,sparam)
+      real       sd1, sd2, sx1, sy1, sparam
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ssctr ( nz, x, indx, y )
+      integer    nz, indx (*)
+      real       x (*), y (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      double precision function dcabs1(z)
+      double complex   z
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine daxpy(n,da,dx,incx,dy,incy)
+      double precision dx(*),dy(*),da
+      integer          incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine daxpby(n,da,dx,incx,db,dy,incy)
+      double precision dx(*),dy(*),da,db
+      integer          incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine  dcopy(n,dx,incx,dy,incy)
+      double precision dx(*),dy(*)
+      integer          incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      double precision function ddot(n,dx,incx,dy,incy)
+      double precision dx(*),dy(*)
+      integer          incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      double precision function dsdot(n,sx,incx,sy,incy)
+      real             sx(*),sy(*)
+      integer          incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine  dscal(n,da,dx,incx)
+      double precision da,dx(*)
+      integer          incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine  dswap (n,dx,incx,dy,incy)
+      double precision dx(*),dy(*)
+      integer          incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      double precision function dnrm2 ( n, x, incx )
+      integer          incx, n
+      double precision x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      integer function idamax(n,dx,incx)
+      double precision dx(*)
+      integer          incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      integer function idamin(n,dx,incx)
+      double precision dx(*)
+      integer          incx, n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine  drot (n,dx,incx,dy,incy,c,s)
+      double precision dx(*),dy(*),c,s
+      integer          incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine drotg(da,db,c,s)
+      double precision da,db,c,s
+      END
+      END INTERFACE
+
+      INTERFACE
+      double precision function dasum(n,dx,incx)
+      double precision dx(*)
+      integer          incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine daxpyi( nz, a, x, indx, y )
+      integer          nz, indx (*)
+      double precision y (*), x (*), a
+      END
+      END INTERFACE
+
+      INTERFACE
+      double precision function ddoti( nz, x, indx, y )
+      integer          nz, indx (*)
+      double precision x (*), y (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dgthr( nz, y, x, indx )
+      integer          nz, indx (*)
+      double precision y (*), x (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dgthrz( nz, y, x, indx )
+      integer          nz, indx (*)
+      double precision y (*), x (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine droti( nz, x, indx, y, c, s )
+      integer           nz, indx (*)
+      double precision  x (*), y (*), c, s
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine drotm(n,dx,incx,dy,incy,dparam)
+      double precision dparam, dx, dy
+      integer          n,incx,incy
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine drotmg(dd1,dd2,dx1,dy1,dparam)
+      double precision dd1, dd2, dx1, dy1, dparam
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dsctr( nz, x, indx, y )
+      integer          nz, indx (*)
+      double precision x (*), y (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine caxpy(n,ca,cx,incx,cy,incy)
+      complex    cx(*),cy(*),ca
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine caxpby(n,ca,cx,incx,cb,cy,incy)
+      complex    cx(*),cy(*),ca,cb
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ccopy(n,cx,incx,cy,incy)
+      complex    cx(*),cy(*)
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      complex function cdotc(n,cx,incx,cy,incy)
+      complex    cx(*),cy(*)
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      complex function cdotu(n,cx,incx,cy,incy)
+      complex    cx(*),cy(*)
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cscal(n,ca,cx,incx)
+      complex    ca,cx(*)
+      integer    incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine csscal(n,sa,cx,incx)
+      complex    cx(*)
+      real       sa
+      integer    incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cswap(n,cx,incx,cy,incy)
+      complex    cx(*),cy(*)
+      integer    incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      real function scnrm2( n, x, incx )
+      integer    incx, n
+      complex    x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      integer function icamax(n,cx,incx)
+      complex    cx(*)
+      integer    incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      integer function icamin(n,cx,incx)
+      complex    cx(*)
+      integer    incx, n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine csrot (n,sx,incx,sy,incy,c,s)
+      integer    n
+      complex    sx(*), sy(*)
+      real       c, s
+      integer    incx, incy
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine crotg(ca,cb,c,s)
+      complex    ca,cb,s
+      real       c
+      END
+      END INTERFACE
+
+      INTERFACE
+      real function scasum(n,cx,incx)
+      complex    cx(*)
+      integer    incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine caxpyi( nz, a, x, indx, y )
+      integer    nz, indx (*)
+      complex    y (*), x (*), a
+      END
+      END INTERFACE
+
+      INTERFACE
+      complex function cdotci( nz, x, indx, y )
+      integer    nz, indx (*)
+      complex    x (*), y (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      complex function cdotui( nz, x, indx, y )
+      integer    nz, indx (*)
+      complex    x (*), y (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cgthr( nz, y, x, indx )
+      integer    nz, indx (*)
+      complex    y (*), x (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cgthrz( nz, y, x, indx )
+      integer    nz, indx (*)
+      complex    y (*), x (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine csctr( nz, x, indx, y )
+      integer    nz, indx (*)
+      complex    x (*), y (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zaxpy(n,za,zx,incx,zy,incy)
+      double complex zx(*),zy(*),za
+      integer        incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zaxpby(n,za,zx,incx,zb,zy,incy)
+      double complex zx(*),zy(*),za,zb
+      integer        incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine  zcopy(n,zx,incx,zy,incy)
+      double complex zx(*),zy(*)
+      integer        incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      double complex function zdotc(n,zx,incx,zy,incy)
+      double complex zx(*),zy(*)
+      integer        incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      double complex function zdotu(n,zx,incx,zy,incy)
+      double complex zx(*),zy(*)
+      integer        incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine  zscal(n,za,zx,incx)
+      double complex za,zx(*)
+      integer        incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine  zdscal(n,da,zx,incx)
+      double complex   zx(*)
+      double precision da
+      integer          incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine  zswap (n,zx,incx,zy,incy)
+      double complex zx(*),zy(*)
+      integer        incx,incy,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      double precision function dznrm2( n, x, incx )
+      integer        incx, n
+      complex*16     x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      integer function izamax(n,zx,incx)
+      double complex zx(*)
+      integer        incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      integer function izamin(n,zx,incx)
+      double complex zx(*)
+      integer        incx, n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zdrot(n,dx,incx,dy,incy,c,s)
+      double complex   dx(1), dy(1)
+      double precision c, s
+      integer          incx, incy, n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zrotg(ca,cb,c,s)
+      double complex   ca,cb,s
+      double precision c
+      END
+      END INTERFACE
+
+      INTERFACE
+      double precision function dzasum(n,zx,incx)
+      double complex   zx(*)
+      integer          incx,n
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zaxpyi( nz, a, x, indx, y )
+      integer          nz, indx (*)
+      complex*16       y (*), x (*), a
+      END
+      END INTERFACE
+
+      INTERFACE
+      function zdotci( nz, x, indx, y )
+      integer          nz, indx (*)
+      complex*16       x (*), y (*), zdotci
+      END
+      END INTERFACE
+
+      INTERFACE
+      function zdotui( nz, x, indx, y )
+      integer          nz, indx (*)
+      complex*16       x (*), y (*), zdotui
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zgthr( nz, y, x, indx )
+      integer          nz, indx (*)
+      complex*16       y (*), x (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zgthrz( nz, y, x, indx )
+      integer          nz, indx (*)
+      complex*16       y (*), x (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zsctr( nz, x, indx, y )
+      integer          nz, indx (*)
+      complex*16       x (*), y (*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sgemv ( trans, m, n, alpha, a, lda, x, incx,           &
+     &beta, y, incy )
+      real               alpha, beta
+      integer            incx, incy, lda, m, n
+      character*1        trans
+      real               a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sgem2vu ( m, n, alpha, a, lda, x1, incx1,              &
+     &x2, incx2, beta, y1, incy1, y2, incy2 )
+      real               alpha, beta
+      integer            incx1, incx2, incy1, incy2, lda, m, n
+      real               a( lda, * ), x1( * ), y1( * ),                 &
+     &x2( * ), y2( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sger  ( m, n, alpha, x, incx, y, incy, a, lda )
+      real               alpha
+      integer            incx, incy, lda, m, n
+      real               a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine strsv ( uplo, trans, diag, n, a, lda, x, incx )
+      integer            incx, lda, n
+      character*1        diag, trans, uplo
+      real               a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sgbmv ( trans, m, n, kl, ku, alpha, a, lda, x, incx,   &
+     &beta, y, incy )
+      real               alpha, beta
+      integer            incx, incy, kl, ku, lda, m, n
+      character*1        trans
+      real               a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ssbmv ( uplo, n, k, alpha, a, lda, x, incx,            &
+     &beta, y, incy )
+      real               alpha, beta
+      integer            incx, incy, k, lda, n
+      character*1        uplo
+      real               a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sspmv ( uplo, n, alpha, ap, x, incx, beta, y, incy )
+      real               alpha, beta
+      integer            incx, incy, n
+      character*1        uplo
+      real               ap( * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ssymv ( uplo, n, alpha, a, lda, x, incx,               &
+     &beta, y, incy )
+      real               alpha, beta
+      integer            incx, incy, lda, n
+      character*1        uplo
+      real               a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine strmv ( uplo, trans, diag, n, a, lda, x, incx )
+      integer            incx, lda, n
+      character*1        diag, trans, uplo
+      real               a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine stbmv ( uplo, trans, diag, n, k, a, lda, x, incx )
+      integer            incx, k, lda, n
+      character*1        diag, trans, uplo
+      real               a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine stbsv ( uplo, trans, diag, n, k, a, lda, x, incx )
+      integer            incx, k, lda, n
+      character*1        diag, trans, uplo
+      real               a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine stpmv ( uplo, trans, diag, n, ap, x, incx )
+      integer            incx, n
+      character*1        diag, trans, uplo
+      real               ap( * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine stpsv ( uplo, trans, diag, n, ap, x, incx )
+      integer            incx, n
+      character*1        diag, trans, uplo
+      real               ap( * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ssyr  ( uplo, n, alpha, x, incx, a, lda )
+      real               alpha
+      integer            incx, lda, n
+      character*1        uplo
+      real               a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sspr  ( uplo, n, alpha, x, incx, ap )
+      real               alpha
+      integer            incx, n
+      character*1        uplo
+      real               ap( * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sspr2 ( uplo, n, alpha, x, incx, y, incy, ap )
+      real               alpha
+      integer            incx, incy, n
+      character*1        uplo
+      real               ap( * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ssyr2 ( uplo, n, alpha, x, incx, y, incy, a, lda )
+      real               alpha
+      integer            incx, incy, lda, n
+      character*1        uplo
+      real               a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dgemv ( trans, m, n, alpha, a, lda, x, incx,           &
+     &beta, y, incy )
+      double precision   alpha, beta
+      integer            incx, incy, lda, m, n
+      character*1        trans
+      double precision   a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dgem2vu ( m, n, alpha, a, lda, x1, incx1,              &
+     &x2, incx2, beta, y1, incy1, y2, incy2 )
+      double precision   alpha, beta
+      integer            incx1, incx2, incy1, incy2, lda, m, n
+      double precision   a( lda, * ), x1( * ), y1( * ),                 &
+     &x2( * ), y2( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dger  ( m, n, alpha, x, incx, y, incy, a, lda )
+      double precision   alpha
+      integer            incx, incy, lda, m, n
+      double precision   a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dtrsv ( uplo, trans, diag, n, a, lda, x, incx )
+      integer            incx, lda, n
+      character*1        diag, trans, uplo
+      double precision   a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dgbmv ( trans, m, n, kl, ku, alpha, a, lda, x, incx,   &
+     &beta, y, incy )
+      double precision   alpha, beta
+      integer            incx, incy, kl, ku, lda, m, n
+      character*1        trans
+      double precision   a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dsbmv ( uplo, n, k, alpha, a, lda, x, incx,            &
+     &beta, y, incy )
+      double precision   alpha, beta
+      integer            incx, incy, k, lda, n
+      character*1        uplo
+      double precision   a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dspmv ( uplo, n, alpha, ap, x, incx, beta, y, incy )
+      double precision   alpha, beta
+      integer            incx, incy, n
+      character*1        uplo
+      double precision   ap( * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dsymv ( uplo, n, alpha, a, lda, x, incx,               &
+     &beta, y, incy )
+      double precision   alpha, beta
+      integer            incx, incy, lda, n
+      character*1        uplo
+      double precision   a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dtrmv ( uplo, trans, diag, n, a, lda, x, incx )
+      integer            incx, lda, n
+      character*1        diag, trans, uplo
+      double precision   a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dtbmv ( uplo, trans, diag, n, k, a, lda, x, incx )
+      integer            incx, k, lda, n
+      character*1        diag, trans, uplo
+      double precision   a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dtbsv ( uplo, trans, diag, n, k, a, lda, x, incx )
+      integer            incx, k, lda, n
+      character*1        diag, trans, uplo
+      double precision   a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dtpmv ( uplo, trans, diag, n, ap, x, incx )
+      integer            incx, n
+      character*1        diag, trans, uplo
+      double precision   ap( * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dtpsv ( uplo, trans, diag, n, ap, x, incx )
+      integer            incx, n
+      character*1        diag, trans, uplo
+      double precision   ap( * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dsyr  ( uplo, n, alpha, x, incx, a, lda )
+      double precision   alpha
+      integer            incx, lda, n
+      character*1        uplo
+      double precision   a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dspr  ( uplo, n, alpha, x, incx, ap )
+      double precision   alpha
+      integer            incx, n
+      character*1        uplo
+      double precision   ap( * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dspr2 ( uplo, n, alpha, x, incx, y, incy, ap )
+      double precision   alpha
+      integer            incx, incy, n
+      character*1        uplo
+      double precision   ap( * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dsyr2 ( uplo, n, alpha, x, incx, y, incy, a, lda )
+      double precision   alpha
+      integer            incx, incy, lda, n
+      character*1        uplo
+      double precision   a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cgemv ( trans, m, n, alpha, a, lda, x, incx,           &
+     &beta, y, incy )
+      complex            alpha, beta
+      integer            incx, incy, lda, m, n
+      character*1        trans
+      complex            a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine scgemv ( trans, m, n, alpha, a, lda, x, incx,          &
+     &beta, y, incy )
+      complex            alpha, beta
+      integer            incx, incy, lda, m, n
+      character*1        trans
+      complex            x( * ), y( * )
+      real               a( lda, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cgem2vc ( m, n, alpha, a, lda, x1, incx1,              &
+     &x2, incx2, beta, y1, incy1, y2, incy2 )
+      complex            alpha, beta
+      integer            incx1, incx2, incy1, incy2, lda, m, n
+      complex            a( lda, * ), x1( * ), y1( * ),                 &
+     &x2( * ), y2( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cgerc ( m, n, alpha, x, incx, y, incy, a, lda )
+      complex            alpha
+      integer            incx, incy, lda, m, n
+      complex            a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cgeru ( m, n, alpha, x, incx, y, incy, a, lda )
+      complex            alpha
+      integer            incx, incy, lda, m, n
+      complex            a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ctrsv ( uplo, trans, diag, n, a, lda, x, incx )
+      integer            incx, lda, n
+      character*1        diag, trans, uplo
+      complex            a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cgbmv ( trans, m, n, kl, ku, alpha, a, lda, x, incx,   &
+     &beta, y, incy )
+      complex            alpha, beta
+      integer            incx, incy, kl, ku, lda, m, n
+      character*1        trans
+      complex            a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine chbmv ( uplo, n, k, alpha, a, lda, x, incx,            &
+     &beta, y, incy )
+      complex            alpha, beta
+      integer            incx, incy, k, lda, n
+      character*1        uplo
+      complex            a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine chpmv ( uplo, n, alpha, ap, x, incx, beta, y, incy )
+      complex            alpha, beta
+      integer            incx, incy, n
+      character*1        uplo
+      complex            ap( * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine chemv ( uplo, n, alpha, a, lda, x, incx,               &
+     &beta, y, incy )
+      complex            alpha, beta
+      integer            incx, incy, lda, n
+      character*1        uplo
+      complex            a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ctrmv ( uplo, trans, diag, n, a, lda, x, incx )
+      integer            incx, lda, n
+      character*1        diag, trans, uplo
+      complex            a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ctbmv ( uplo, trans, diag, n, k, a, lda, x, incx )
+      integer            incx, k, lda, n
+      character*1        diag, trans, uplo
+      complex            a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ctbsv ( uplo, trans, diag, n, k, a, lda, x, incx )
+      integer            incx, k, lda, n
+      character*1        diag, trans, uplo
+      complex            a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ctpmv ( uplo, trans, diag, n, ap, x, incx )
+      integer            incx, n
+      character*1        diag, trans, uplo
+      complex            ap( * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ctpsv ( uplo, trans, diag, n, ap, x, incx )
+      integer            incx, n
+      character*1        diag, trans, uplo
+      complex            ap( * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cher  ( uplo, n, alpha, x, incx, a, lda )
+      real               alpha
+      integer            incx, lda, n
+      character*1        uplo
+      complex            a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine chpr  ( uplo, n, alpha, x, incx, ap )
+      real               alpha
+      integer            incx, n
+      character*1        uplo
+      complex            ap( * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine chpr2 ( uplo, n, alpha, x, incx, y, incy, ap )
+      complex            alpha
+      integer            incx, incy, n
+      character*1        uplo
+      complex            ap( * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cher2 ( uplo, n, alpha, x, incx, y, incy, a, lda )
+      complex            alpha
+      integer            incx, incy, lda, n
+      character*1        uplo
+      complex            a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zgemv ( trans, m, n, alpha, a, lda, x, incx,           &
+     &beta, y, incy )
+      complex*16         alpha, beta
+      integer            incx, incy, lda, m, n
+      character*1        trans
+      complex*16         a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dzgemv ( trans, m, n, alpha, a, lda, x, incx,           &
+     &beta, y, incy )
+      complex*16         alpha, beta
+      integer            incx, incy, lda, m, n
+      character*1        trans
+      complex*16         x( * ), y( * )
+      double precision   a( lda, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zgem2vc ( m, n, alpha, a, lda, x1, incx1,              &
+     &x2, incx2, beta, y1, incy1, y2, incy2 )
+      complex*16         alpha, beta
+      integer            incx1, incx2, incy1, incy2, lda, m, n
+      complex*16         a( lda, * ), x1( * ), y1( * ),                 &
+     &x2( * ), y2( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zgerc ( m, n, alpha, x, incx, y, incy, a, lda )
+      complex*16         alpha
+      integer            incx, incy, lda, m, n
+      complex*16         a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zgeru ( m, n, alpha, x, incx, y, incy, a, lda )
+      complex*16         alpha
+      integer            incx, incy, lda, m, n
+      complex*16         a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ztrsv ( uplo, trans, diag, n, a, lda, x, incx )
+      integer            incx, lda, n
+      character*1        diag, trans, uplo
+      complex*16         a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zgbmv ( trans, m, n, kl, ku, alpha, a, lda, x, incx,   &
+     &beta, y, incy )
+      complex*16         alpha, beta
+      integer            incx, incy, kl, ku, lda, m, n
+      character*1        trans
+      complex*16         a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zhbmv ( uplo, n, k, alpha, a, lda, x, incx,            &
+     &beta, y, incy )
+      complex*16         alpha, beta
+      integer            incx, incy, k, lda, n
+      character*1        uplo
+      complex*16         a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zhpmv ( uplo, n, alpha, ap, x, incx, beta, y, incy )
+      complex*16         alpha, beta
+      integer            incx, incy, n
+      character*1        uplo
+      complex*16         ap( * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zhemv ( uplo, n, alpha, a, lda, x, incx,               &
+     &beta, y, incy )
+      complex*16         alpha, beta
+      integer            incx, incy, lda, n
+      character*1        uplo
+      complex*16         a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ztrmv ( uplo, trans, diag, n, a, lda, x, incx )
+      integer            incx, lda, n
+      character*1        diag, trans, uplo
+      complex*16         a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ztbmv ( uplo, trans, diag, n, k, a, lda, x, incx )
+      integer            incx, k, lda, n
+      character*1        diag, trans, uplo
+      complex*16         a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ztbsv ( uplo, trans, diag, n, k, a, lda, x, incx )
+      integer            incx, k, lda, n
+      character*1        diag, trans, uplo
+      complex*16         a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ztpmv ( uplo, trans, diag, n, ap, x, incx )
+      integer            incx, n
+      character*1        diag, trans, uplo
+      complex*16         ap( * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ztpsv ( uplo, trans, diag, n, ap, x, incx )
+      integer            incx, n
+      character*1        diag, trans, uplo
+      complex*16         ap( * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zher  ( uplo, n, alpha, x, incx, a, lda )
+      double precision   alpha
+      integer            incx, lda, n
+      character*1        uplo
+      complex*16         a( lda, * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zhpr  ( uplo, n, alpha, x, incx, ap )
+      double precision   alpha
+      integer            incx, n
+      character*1        uplo
+      complex*16         ap( * ), x( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zhpr2 ( uplo, n, alpha, x, incx, y, incy, ap )
+      complex*16         alpha
+      integer            incx, incy, n
+      character*1        uplo
+      complex*16         ap( * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zher2 ( uplo, n, alpha, x, incx, y, incy, a, lda )
+      complex*16         alpha
+      integer            incx, incy, lda, n
+      character*1        uplo
+      complex*16         a( lda, * ), x( * ), y( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sgemm ( transa, transb, m, n, k, alpha, a, lda,        &
+     &b, ldb, beta, c, ldc )
+      character*1        transa, transb
+      integer            m, n, k, lda, ldb, ldc
+      real               alpha, beta
+      real               a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sgemm_batch ( transa_array, transb_array, m_array,     &
+     &n_array, k_array, alpha_array, a_array, lda_array, b_array,       &
+     &ldb_array, beta_array, c_array, ldc_array, group_count,           &
+     &group_size )
+      use, intrinsic :: ISO_C_BINDING
+      character*1        transa_array(*), transb_array(*)
+      integer            m_array(*), n_array(*), k_array(*)
+      integer            lda_array(*), ldb_array(*), ldc_array(*)
+      real               alpha_array(*), beta_array(*)
+      integer(KIND=C_INTPTR_T) a_array(*), b_array(*), c_array(*)
+      integer            group_count, group_size(*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ssymm ( side, uplo, m, n, alpha, a, lda, b, ldb,       &
+     &beta, c, ldc )
+      character*1        side, uplo
+      integer            m, n, lda, ldb, ldc
+      real               alpha, beta
+      real               a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ssyrk ( uplo, trans, n, k, alpha, a, lda,              &
+     &beta, c, ldc )
+      character*1        uplo, trans
+      integer            n, k, lda, ldc
+      real               alpha, beta
+      real               a( lda, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ssyr2k( uplo, trans, n, k, alpha, a, lda, b, ldb,      &
+     &beta, c, ldc )
+      character*1        uplo, trans
+      integer            n, k, lda, ldb, ldc
+      real               alpha, beta
+      real               a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine strmm ( side, uplo, transa, diag, m, n, alpha, a, lda, &
+     &b, ldb )
+      character*1        side, uplo, transa, diag
+      integer            m, n, lda, ldb
+      real               alpha
+      real               a( lda, * ), b( ldb, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine strsm ( side, uplo, transa, diag, m, n, alpha, a, lda, &
+     &b, ldb )
+      character*1        side, uplo, transa, diag
+      integer            m, n, lda, ldb
+      real               alpha
+      real               a( lda, * ), b( ldb, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine strsm_batch ( side_array, uplo_array, transa_array,     &
+     &diag_array, m_array, n_array, alpha_array, a_array, lda_array,     &
+     &b_array, ldb_array, group_count, group_size )
+      use, intrinsic :: ISO_C_BINDING
+      character*1        side_array(*), uplo_array(*)
+      character*1        transa_array(*), diag_array(*)
+      integer            m_array(*), n_array(*)
+      integer            lda_array(*), ldb_array(*)
+      real               alpha_array(*)
+      integer(KIND=C_INTPTR_T) a_array(*), b_array(*)
+      integer            group_count, group_size(*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sgemmt ( uplo, transa, transb, n, k, alpha, a, lda,    &
+     &b, ldb, beta, c, ldc )
+      character*1        uplo, transa, transb
+      integer            n, k, lda, ldb, ldc
+      real               alpha, beta
+      real               a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      function sgemm_alloc ( identifier, m, n, k )
+      use, intrinsic :: ISO_C_BINDING
+      INTEGER(KIND=C_INTPTR_T) sgemm_alloc
+      character*1        identifier
+      integer            m, n, k
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sgemm_compute ( transa, transb, m, n, k, a, lda,       &
+     &b, ldb, beta, c, ldc )
+      character*1        transa, transb
+      integer            m, n, k, lda, ldb, ldc
+      real               beta
+      real               a( * ), b( * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sgemm_free ( dest )
+      real               dest( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine sgemm_pack ( identifier, trans, m, n, k, alpha, src,   &
+     &ld, dest )
+      character*1        identifier, trans
+      integer            m, n, k, ld
+      real               alpha
+      real               src( ld, * ), dest( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dgemm ( transa, transb, m, n, k, alpha, a, lda,        &
+     &b, ldb, beta, c, ldc )
+      character*1        transa, transb
+      integer            m, n, k, lda, ldb, ldc
+      double precision   alpha, beta
+      double precision   a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dgemm_batch ( transa_array, transb_array, m_array,     &
+     &n_array, k_array, alpha_array, a_array, lda_array, b_array,       &
+     &ldb_array, beta_array, c_array, ldc_array, group_count,           &
+     &group_size )
+      use, intrinsic :: ISO_C_BINDING
+      character*1        transa_array(*), transb_array(*)
+      integer            m_array(*), n_array(*), k_array(*)
+      integer            lda_array(*), ldb_array(*), ldc_array(*)
+      double precision   alpha_array(*), beta_array(*)
+      integer(KIND=C_INTPTR_T) a_array(*), b_array(*), c_array(*)
+      integer            group_count, group_size(*)
+      END
+      END INTERFACE
+
+
+      INTERFACE
+      subroutine dsymm ( side, uplo, m, n, alpha, a, lda, b, ldb,       &
+     &beta, c, ldc )
+      character*1        side, uplo
+      integer            m, n, lda, ldb, ldc
+      double precision   alpha, beta
+      double precision   a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dsyrk ( uplo, trans, n, k, alpha, a, lda,              &
+     &beta, c, ldc )
+      character*1        uplo, trans
+      integer            n, k, lda, ldc
+      double precision   alpha, beta
+      double precision   a( lda, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dsyr2k( uplo, trans, n, k, alpha, a, lda, b, ldb,      &
+     &beta, c, ldc )
+      character*1        uplo, trans
+      integer            n, k, lda, ldb, ldc
+      double precision   alpha, beta
+      double precision   a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dtrmm ( side, uplo, transa, diag, m, n, alpha, a, lda, &
+     &b, ldb )
+      character*1        side, uplo, transa, diag
+      integer            m, n, lda, ldb
+      double precision   alpha
+      double precision   a( lda, * ), b( ldb, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dtrsm ( side, uplo, transa, diag, m, n, alpha, a, lda, &
+     &b, ldb )
+      character*1        side, uplo, transa, diag
+      integer            m, n, lda, ldb
+      double precision   alpha
+      double precision   a( lda, * ), b( ldb, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dtrsm_batch ( side_array, uplo_array, transa_array,     &
+     &diag_array, m_array, n_array, alpha_array, a_array, lda_array,     &
+     &b_array, ldb_array, group_count, group_size )
+      use, intrinsic :: ISO_C_BINDING
+      character*1        side_array(*), uplo_array(*)
+      character*1        transa_array(*), diag_array(*)
+      integer            m_array(*), n_array(*)
+      integer            lda_array(*), ldb_array(*)
+      double precision   alpha_array(*)
+      integer(KIND=C_INTPTR_T) a_array(*), b_array(*)
+      integer            group_count, group_size(*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dgemmt ( uplo, transa, transb, n, k, alpha, a, lda,    &
+     &b, ldb, beta, c, ldc )
+      character*1        uplo, transa, transb
+      integer            n, k, lda, ldb, ldc
+      double precision   alpha, beta
+      double precision   a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      function dgemm_alloc ( identifier, m, n, k )
+      use, intrinsic :: ISO_C_BINDING
+      INTEGER(KIND=C_INTPTR_T) dgemm_alloc
+      character*1        identifier
+      integer            m, n, k
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dgemm_compute ( transa, transb, m, n, k, a, lda,       &
+     &b, ldb, beta, c, ldc )
+      character*1        transa, transb
+      integer            m, n, k, lda, ldb, ldc
+      double precision   beta
+      double precision   a( * ), b( * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dgemm_free ( dest )
+      double precision   dest( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dgemm_pack ( identifier, trans, m, n, k, alpha, src,   &
+     &ld, dest )
+      character*1        identifier, trans
+      integer            m, n, k, ld
+      double precision   alpha
+      double precision   src( ld, * ), dest( * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cgemm ( transa, transb, m, n, k, alpha, a, lda,        &
+     &b, ldb, beta, c, ldc )
+      character*1        transa, transb
+      integer            m, n, k, lda, ldb, ldc
+      complex            alpha, beta
+      complex            a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cgemm_batch ( transa_array, transb_array, m_array,     &
+     &n_array, k_array, alpha_array, a_array, lda_array, b_array,       &
+     &ldb_array, beta_array, c_array, ldc_array, group_count,           &
+     &group_size )
+      use, intrinsic :: ISO_C_BINDING
+      character*1        transa_array(*), transb_array(*)
+      integer            m_array(*), n_array(*), k_array(*)
+      integer            lda_array(*), ldb_array(*), ldc_array(*)
+      complex            alpha_array(*), beta_array(*)
+      integer(KIND=C_INTPTR_T) a_array(*), b_array(*), c_array(*)
+      integer            group_count, group_size(*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cgemm3m_batch ( transa_array, transb_array, m_array,   &
+     &n_array, k_array, alpha_array, a_array, lda_array, b_array,       &
+     &ldb_array, beta_array, c_array, ldc_array, group_count,           &
+     &group_size )
+      use, intrinsic :: ISO_C_BINDING
+      character*1        transa_array(*), transb_array(*)
+      integer            m_array(*), n_array(*), k_array(*)
+      integer            lda_array(*), ldb_array(*), ldc_array(*)
+      complex            alpha_array(*), beta_array(*)
+      integer(KIND=C_INTPTR_T) a_array(*), b_array(*), c_array(*)
+      integer            group_count, group_size(*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine scgemm ( transa, transb, m, n, k, alpha, a, lda,        &
+     &b, ldb, beta, c, ldc )
+      character*1        transa, transb
+      integer            m, n, k, lda, ldb, ldc
+      complex            alpha, beta
+      real               a( lda, * )
+      complex            b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cgemm3m ( transa, transb, m, n, k, alpha, a, lda,      &
+     &b, ldb, beta, c, ldc )
+      character*1        transa, transb
+      integer            m, n, k, lda, ldb, ldc
+      complex            alpha, beta
+      complex            a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine csymm ( side, uplo, m, n, alpha, a, lda, b, ldb,       &
+     &beta, c, ldc )
+      character*1        side, uplo
+      integer            m, n, lda, ldb, ldc
+      complex            alpha, beta
+      complex            a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine chemm ( side, uplo, m, n, alpha, a, lda, b, ldb,       &
+     &beta, c, ldc )
+      character*1        side, uplo
+      integer            m, n, lda, ldb, ldc
+      complex            alpha, beta
+      complex            a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine csyrk ( uplo, trans, n, k, alpha, a, lda,              &
+     &beta, c, ldc )
+      character*1        uplo, trans
+      integer            n, k, lda, ldc
+      complex            alpha, beta
+      complex            a( lda, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cherk ( uplo, trans, n, k, alpha, a, lda,              &
+     &beta, c, ldc )
+      character*1        uplo, trans
+      integer            n, k, lda, ldc
+      real               alpha, beta
+      complex            a( lda, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine csyr2k( uplo, trans, n, k, alpha, a, lda, b, ldb,      &
+     &beta, c, ldc )
+      character*1        uplo, trans
+      integer            n, k, lda, ldb, ldc
+      complex            alpha, beta
+      complex            a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cher2k( uplo, trans, n, k, alpha, a, lda, b, ldb,      &
+     &beta, c, ldc )
+      character*1        uplo, trans
+      integer            n, k, lda, ldb, ldc
+      real               beta
+      complex            alpha
+      complex            a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ctrmm ( side, uplo, transa, diag, m, n, alpha, a, lda, &
+     &b, ldb )
+      character*1        side, uplo, transa, diag
+      integer            m, n, lda, ldb
+      complex            alpha
+      complex            a( lda, * ), b( ldb, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ctrsm ( side, uplo, transa, diag, m, n, alpha, a, lda, &
+     &b, ldb )
+      character*1        side, uplo, transa, diag
+      integer            m, n, lda, ldb
+      complex            alpha
+      complex            a( lda, * ), b( ldb, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ctrsm_batch ( side_array, uplo_array, transa_array,    &
+     &diag_array, m_array, n_array, alpha_array, a_array, lda_array,    &
+     &b_array, ldb_array, group_count, group_size )
+      use, intrinsic :: ISO_C_BINDING
+      character*1        side_array(*), uplo_array(*)
+      character*1        transa_array(*), diag_array(*)
+      integer            m_array(*), n_array(*)
+      integer            lda_array(*), ldb_array(*)
+      complex            alpha_array(*)
+      integer(KIND=C_INTPTR_T) a_array(*), b_array(*)
+      integer            group_count, group_size(*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine cgemmt ( uplo, transa, transb, n, k, alpha, a, lda,    &
+     &b, ldb, beta, c, ldc )
+      character*1        uplo, transa, transb
+      integer            n, k, lda, ldb, ldc
+      complex            alpha, beta
+      complex            a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zgemm ( transa, transb, m, n, k, alpha, a, lda,        &
+     &b, ldb, beta, c, ldc )
+      character*1        transa, transb
+      integer            m, n, k, lda, ldb, ldc
+      complex*16         alpha, beta
+      complex*16         a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zgemm_batch ( transa_array, transb_array, m_array,     &
+     &n_array, k_array, alpha_array, a_array, lda_array, b_array,       &
+     &ldb_array, beta_array, c_array, ldc_array, group_count,           &
+     &group_size )
+      use, intrinsic :: ISO_C_BINDING
+      character*1        transa_array(*), transb_array(*)
+      integer            m_array(*), n_array(*), k_array(*)
+      integer            lda_array(*), ldb_array(*), ldc_array(*)
+      complex*16         alpha_array(*), beta_array(*)
+      integer(KIND=C_INTPTR_T) a_array(*), b_array(*), c_array(*)
+      integer            group_count, group_size(*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zgemm3m_batch ( transa_array, transb_array, m_array,   &
+     &n_array, k_array, alpha_array, a_array, lda_array, b_array,       &
+     &ldb_array, beta_array, c_array, ldc_array, group_count,           &
+     &group_size )
+      use, intrinsic :: ISO_C_BINDING
+      character*1        transa_array(*), transb_array(*)
+      integer            m_array(*), n_array(*), k_array(*)
+      integer            lda_array(*), ldb_array(*), ldc_array(*)
+      complex*16         alpha_array(*), beta_array(*)
+      integer(KIND=C_INTPTR_T) a_array(*), b_array(*), c_array(*)
+      integer            group_count, group_size(*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine dzgemm ( transa, transb, m, n, k, alpha, a, lda,        &
+     &b, ldb, beta, c, ldc )
+      character*1        transa, transb
+      integer            m, n, k, lda, ldb, ldc
+      complex*16         alpha, beta
+      double precision   a( lda, * )
+      complex*16         b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zgemm3m ( transa, transb, m, n, k, alpha, a, lda,      &
+     &b, ldb, beta, c, ldc )
+      character*1        transa, transb
+      integer            m, n, k, lda, ldb, ldc
+      complex*16         alpha, beta
+      complex*16         a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zsymm ( side, uplo, m, n, alpha, a, lda, b, ldb,       &
+     &beta, c, ldc )
+      character*1        side, uplo
+      integer            m, n, lda, ldb, ldc
+      complex*16         alpha, beta
+      complex*16         a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zhemm ( side, uplo, m, n, alpha, a, lda, b, ldb,       &
+     &beta, c, ldc )
+      character*1        side, uplo
+      integer            m, n, lda, ldb, ldc
+      complex*16         alpha, beta
+      complex*16         a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zsyrk ( uplo, trans, n, k, alpha, a, lda,              &
+     &beta, c, ldc )
+      character*1        uplo, trans
+      integer            n, k, lda, ldc
+      complex*16         alpha, beta
+      complex*16         a( lda, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zherk( uplo, trans, n, k, alpha, a, lda, beta,         &
+     &c, ldc )
+      character          trans, uplo
+      integer            k, lda, ldc, n
+      double precision   alpha, beta
+      complex*16         a( lda, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zsyr2k( uplo, trans, n, k, alpha, a, lda, b, ldb,      &
+     &beta, c, ldc )
+      character*1        uplo, trans
+      integer            n, k, lda, ldb, ldc
+      complex*16         alpha, beta
+      complex*16         a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zher2k( uplo, trans, n, k, alpha, a, lda, b, ldb,      &
+     &beta, c, ldc )
+      character          trans, uplo
+      integer            k, lda, ldb, ldc, n
+      double precision   beta
+      complex*16         alpha
+      complex*16         a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ztrmm ( side, uplo, transa, diag, m, n, alpha, a, lda, &
+     &b, ldb )
+      character*1        side, uplo, transa, diag
+      integer            m, n, lda, ldb
+      complex*16         alpha
+      complex*16         a( lda, * ), b( ldb, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ztrsm ( side, uplo, transa, diag, m, n, alpha, a, lda, &
+     &b, ldb )
+      character*1        side, uplo, transa, diag
+      integer            m, n, lda, ldb
+      complex*16         alpha
+      complex*16         a( lda, * ), b( ldb, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine ztrsm_batch ( side_array, uplo_array, transa_array,    &
+     &diag_array, m_array, n_array, alpha_array, a_array, lda_array,    &
+     &b_array, ldb_array, group_count, group_size )
+      use, intrinsic :: ISO_C_BINDING
+      character*1        side_array(*), uplo_array(*)
+      character*1        transa_array(*), diag_array(*)
+      integer            m_array(*), n_array(*)
+      integer            lda_array(*), ldb_array(*)
+      complex*16         alpha_array(*)
+      integer(KIND=C_INTPTR_T) a_array(*), b_array(*)
+      integer            group_count, group_size(*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine zgemmt ( uplo, transa, transb, n, k, alpha, a, lda,    &
+     &b, ldb, beta, c, ldc )
+      character*1        uplo, transa, transb
+      integer            n, k, lda, ldb, ldc
+      complex*16         alpha, beta
+      complex*16         a( lda, * ), b( ldb, * ), c( ldc, * )
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine gemm_s8u8s32 ( transa, transb, offsetc, m, n, k,       &
+     &alpha, a, lda, ao, b, ldb, bo, beta, c, ldc, co )
+      character*1        transa, transb, offsetc
+      integer            m, n, k
+      real               alpha
+      integer            lda, ldb, ldc
+      integer*1          a(lda,*)
+      integer*1          ao
+      integer*1          b(ldb,*)
+      integer*1          bo
+      real               beta
+      integer*4          c(ldc,*)
+      integer*4          co(*)
+      END
+      END INTERFACE
+
+      INTERFACE
+      subroutine gemm_s16s16s32 ( transa, transb, offsetc, m, n, k,     &
+     &alpha, a, lda, ao, b, ldb, bo, beta, c, ldc, co )
+      character*1        transa, transb, offsetc
+      integer            m, n, k
+      real               alpha
+      integer            lda, ldb, ldc
+      integer*2          a(lda,*)
+      integer*2          ao
+      integer*2          b(ldb,*)
+      integer*2          bo
+      real               beta
+      integer*4          c(ldc,*)
+      integer*4          co(*)
+      END
+      END INTERFACE

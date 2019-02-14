@@ -1,0 +1,597 @@
+!===============================================================================
+! Copyright 2012-2018 Intel Corporation All Rights Reserved.
+!
+! The source code,  information  and material  ("Material") contained  herein is
+! owned by Intel Corporation or its  suppliers or licensors,  and  title to such
+! Material remains with Intel  Corporation or its  suppliers or  licensors.  The
+! Material  contains  proprietary  information  of  Intel or  its suppliers  and
+! licensors.  The Material is protected by  worldwide copyright  laws and treaty
+! provisions.  No part  of  the  Material   may  be  used,  copied,  reproduced,
+! modified, published,  uploaded, posted, transmitted,  distributed or disclosed
+! in any way without Intel's prior express written permission.  No license under
+! any patent,  copyright or other  intellectual property rights  in the Material
+! is granted to  or  conferred  upon  you,  either   expressly,  by implication,
+! inducement,  estoppel  or  otherwise.  Any  license   under such  intellectual
+! property rights must be express and approved by Intel in writing.
+!
+! Unless otherwise agreed by Intel in writing,  you may not remove or alter this
+! notice or  any  other  notice   embedded  in  Materials  by  Intel  or Intel's
+! suppliers or licensors in any way.
+!===============================================================================
+
+!  Content:
+!      Intel(R) Math Kernel Library (Intel(R) MKL) Fortran interface for
+!      Intel(R) MKL Extended Eigensolvers routines
+!*******************************************************************************
+ !!!!!!!!!!!!! RCI interfaces
+
+      interface
+      subroutine dfeast_srci(ijob,N,Ze,work,workc,Aq,Sq,fpm,            &
+     &           epsout,loop,Emin,Emax,M0,lambda,q,M,res,info)
+      integer              ijob,N,M0
+      complex*16           Ze
+      double precision     work(N, *)
+      complex*16           workc(N, *)
+      double precision     Aq(M0,*), Sq(M0,*)
+      integer              fpm(*)
+      double precision     epsout
+      integer              loop
+      double precision     Emin,Emax
+      double precision     lambda(*)
+      double precision     q(N,*)
+      integer              M
+      double precision     res(*)
+      integer    info
+      end
+      end interface
+
+      interface
+      subroutine zfeast_hrci(ijob,N,Ze,work,workc,zAq,zSq,fpm,epsout,   &
+     &    loop,Emin,Emax,M0,lambda,q,M,res,info)
+      integer          ijob,N,M0
+      complex*16       Ze
+      complex*16       work(N, *)
+      complex*16       workc(N, *)
+      complex*16       zAq(M0,*), zSq(M0,*)
+      integer          fpm(*)
+      double precision epsout
+      integer          loop
+      double precision Emin,Emax
+      double precision lambda(*)
+      complex*16       q(N,*)
+      integer          M
+      double precision res(*)
+      integer          info
+      end
+      end interface
+
+
+      interface
+      subroutine sfeast_srci(ijob,N,Ze,work,workc,Aq,Sq,fpm,            &
+     &           epsout,loop,Emin,Emax,M0,lambda,q,M,res,info)
+      integer    ijob,N,M0
+      complex    Ze
+      real       work(N, *)
+      complex    workc(N, *)
+      real       Aq(M0,*), Sq(M0,*)
+      integer    fpm(*)
+      real       epsout
+      integer    loop
+      real       Emin, Emax
+      real       lambda(*)
+      real       q(N,*)
+      integer    M
+      real       res(*)
+      integer    info
+      end
+      end interface
+
+      interface
+      subroutine cfeast_hrci(ijob,N,Ze,work,workc,zAq,zSq,fpm,epsout,   &
+     &    loop,Emin,Emax,M0,lambda,q,M,res,info)
+      integer    ijob,N,M0
+      complex    Ze
+      complex    work(N, *)
+      complex    workc(N, *)
+      complex    zAq(M0,*), zSq(M0,*)
+      integer    fpm(*)
+      real       epsout
+      integer    loop
+      real       Emin,Emax
+      real       lambda(*)
+      complex    q(N,*)
+      integer    M
+      real       res(*)
+      integer    info
+      end
+      end interface
+
+
+!!!!!!!!!! DENSE interfaces
+
+      interface
+      subroutine dfeast_sygv(UPLO,N,A,LDA,B,LDB,fpm,epsout,loop,        &
+     &             Emin,Emax,M0,E,X,M,res,info)
+      character        UPLO
+      integer          N,LDA,LDB
+      double precision A(LDA,*)
+      double precision B(LDB,*)
+      integer          fpm(*)
+      double precision epsout
+      integer          loop
+      double precision Emin,Emax
+      integer          M0
+      double precision E(*)
+      double precision X(N,*)
+      integer          M
+      double precision res(*)
+      integer  info
+      end
+      end interface
+
+
+      interface
+      subroutine dfeast_syev(UPLO,N,A,LDA,fpm,epsout,loop,Emin,Emax,    &
+     &             M0,E,X,M,res,info)
+      character        UPLO
+      integer          N,LDA
+      double precision A(LDA,*)
+      integer          fpm(*)
+      double precision epsout
+      integer          loop
+      double precision Emin,Emax
+      integer          M0
+      double precision E(*)
+      double precision X(N,*)
+      integer          M
+      double precision res(*)
+      integer          info
+      end
+      end interface
+
+      interface
+      subroutine sfeast_sygv(UPLO,N,A,LDA,B,LDB,fpm,epsout,loop,        &
+     &             Emin,Emax,M0,E,X,M,res,info)
+      character UPLO
+      integer   N,LDA,LDB
+      real      A(LDA,*)
+      real      B(LDB,*)
+      integer   fpm(*)
+      real      epsout
+      integer   loop
+      real      Emin,Emax
+      integer   M0
+      real      E(*)
+      real      X(N,*)
+      integer   M
+      real      res(*)
+      integer   info
+      end
+      end interface
+
+
+      interface
+      subroutine sfeast_syev(UPLO,N,A,LDA,fpm,epsout,loop,              &
+     &             Emin,Emax,M0,E,X,M,res,info)
+      character  UPLO
+      integer    N,LDA
+      real       A(LDA,*)
+      integer    fpm(*)
+      real       epsout
+      integer    loop
+      real       Emin,Emax
+      integer    M0
+      real       E(*)
+      real       X(N,*)
+      integer    M
+      real       res(*)
+      integer    info
+      end
+      end interface
+
+      interface
+      subroutine zfeast_hegv(UPLO,N,A,LDA,B,LDB,fpm,epsout,loop,        &
+     &         Emin,Emax,M0,E,X,M,res,info)
+      character         UPLO
+      integer           N, LDA, LDB
+      complex*16        A(LDA,*)
+      complex*16        B(LDB,*)
+      integer           fpm(*)
+      double precision  epsout
+      integer           loop
+      double precision  Emin,Emax
+      integer           M0
+      double precision  E(*)
+      complex           X(N,*)
+      integer           M
+      double precision  res(*)
+      integer           info
+      end
+      end interface
+
+      interface
+      subroutine zfeast_heev(UPLO,N,A,LDA,fpm,epsout,loop,Emin,Emax,    &
+     &           M0,E,X,M,res,info)
+      character        UPLO
+      integer          N,LDA
+      complex          A(LDA,*)
+      integer          fpm(*)
+      double precision epsout
+      integer          loop
+      double precision Emin,Emax
+      integer          M0
+      double precision E(*)
+      complex          X(N,*)
+      integer          M
+      double precision res(*)
+      integer          info
+      end
+      end interface
+
+      interface
+      subroutine cfeast_hegv(UPLO,N,A,LDA,B,LDB,fpm,epsout,loop,        &
+     &         Emin,Emax,M0,E,X,M,res,info)
+      character  UPLO
+      integer    N,LDA,LDB
+      complex    A(LDA,*)
+      complex    B(LDB,*)
+      integer    fpm(*)
+      real       epsout
+      integer    loop
+      real       Emin,Emax
+      integer    M0
+      real       E(*)
+      complex    X(N,*)
+      integer    M
+      real       res(*)
+      integer    info
+      end
+      end interface
+
+      interface
+      subroutine cfeast_heev(UPLO,N,A,LDA,fpm,epsout,loop,Emin,Emax,    &
+     &           M0,E,X,M,res,info)
+      character UPLO
+      integer   N,LDA
+      complex   A(LDA,*)
+      integer   fpm(*)
+      real      epsout
+      integer   loop
+      real      Emin,Emax
+      integer   M0
+      real      E(*)
+      complex   X(N,*)
+      integer   M
+      real      res(*)
+      integer   info
+      end
+      end interface
+
+
+!!!!!!!!!! BANDED interfaces
+
+      interface
+      subroutine dfeast_sbgv(UPLO,N,kla,A,LDA,klb,B,LDB,fpm,epsout,     &
+     &             loop,Emin,Emax,M0,E,X,M,res,info)
+      character           UPLO
+      integer             N,LDA,LDB,kla,klb
+      double precision    A(LDA,*)
+      double precision    B(LDB,*)
+      integer             fpm(*)
+      double precision    epsout
+      integer             loop
+      double precision    Emin,Emax
+      integer             M0
+      double precision    E(*)
+      double precision    X(N,*)
+      integer             M
+      double precision    res(*)
+      integer  info
+      end
+      end interface
+
+      interface
+      subroutine dfeast_sbev(UPLO,N,kla,A,LDA,fpm,epsout,loop,          &
+     &            Emin,Emax,M0,E,X,M,res,info)
+      character           UPLO
+      integer             N,LDA,kla
+      double precision    A(LDA,*)
+      integer             fpm(*)
+      double precision    epsout
+      integer             loop
+      double precision    Emin,Emax
+      integer             M0
+      double precision    E(*)
+      double precision    X(N,*)
+      integer             M
+      double precision    res(*)
+      integer             info
+      end
+      end interface
+
+      interface
+      subroutine sfeast_sbgv(UPLO,N,kla,A,LDA,klb,B,LDB,fpm,epsout,     &
+     &             loop,Emin,Emax,M0,E,X,M,res,info)
+      character  UPLO
+      integer    N,LDA,LDB,kla,klb
+      real       A(LDA,*)
+      real       B(LDB,*)
+      integer    fpm(*)
+      real       epsout
+      integer    loop
+      real       Emin,Emax
+      integer    M0
+      real       E(*)
+      real       X(N,*)
+      integer    M
+      real       res(*)
+      integer    info
+      end
+      end interface
+
+      interface
+      subroutine sfeast_sbev(UPLO,N,kla,A,LDA,fpm,epsout,loop,          &
+     &            Emin,Emax,M0,E,X,M,res,info)
+      character  UPLO
+      integer    N,LDA,kla
+      real       A(LDA,*)
+      integer    fpm(*)
+      real       epsout
+      integer    loop
+      real       Emin,Emax
+      integer    M0
+      real       E(*)
+      real       X(N,*)
+      integer    M
+      real       res(*)
+      integer    info
+      end
+      end interface
+
+
+
+      interface
+      subroutine cfeast_hbgv(UPLO,N,kla,A,LDA,klb,B,LDB,fpm,epsout,     &
+     &            loop,Emin,Emax,M0,E,X,M,res,info)
+      character  UPLO
+      integer    N,LDA,LDB,kla,klb
+      complex    A(LDA,*)
+      complex    B(LDB,*)
+      integer    fpm(*)
+      real       epsout
+      integer    loop
+      real       Emin,Emax
+      integer    M0
+      real       E(*)
+      complex    X(N,*)
+      integer    M
+      real       res(*)
+      integer    info
+      end
+      end interface
+
+      interface
+      subroutine cfeast_hbev(UPLO,N,kla,A,LDA,fpm,epsout,loop,          &
+     &           Emin,Emax,M0,E,X,M,res,info)
+      character UPLO
+      integer   N,LDA,kla
+      complex   A(LDA,*)
+      integer   fpm(*)
+      real      epsout
+      integer   loop
+      real      Emin,Emax
+      integer   M0
+      real      E(*)
+      complex   X(N,*)
+      integer   M
+      real      res(*)
+      integer   info
+      end
+      end interface
+
+      interface
+      subroutine zfeast_hbgv(UPLO,N,kla,A,LDA,klb,B,LDB,fpm,epsout,     &
+     &            loop,Emin,Emax,M0,E,X,M,res,info)
+      character          UPLO
+      integer            N,LDA,LDB,kla,klb
+      complex*16         A(LDA,*)
+      complex*16         B(LDB,*)
+      integer            fpm(*)
+      double precision   epsout
+      integer            loop
+      double precision   Emin,Emax
+      integer            M0
+      double precision   E(*)
+      complex            X(N,*)
+      integer            M
+      double precision   res(*)
+      integer            info
+      end
+      end interface
+
+      interface
+      subroutine zfeast_hbev(UPLO,N,kla,A,LDA,fpm,epsout,loop,          &
+     &           Emin,Emax,M0,E,X,M,res,info)
+      character         UPLO
+      integer           N,LDA,kla
+      complex*16        A(LDA,*)
+      integer           fpm(*)
+      double precision  epsout
+      integer           loop
+      double precision  Emin,Emax
+      integer           M0
+      double precision  E(*)
+      complex*16        X(N,*)
+      integer           M
+      double precision  res(*)
+      integer           info
+      end
+      end interface
+
+
+
+!!!!!!!!!! SPARSE interfaces
+
+      interface
+      subroutine dfeast_scsrgv(UPLO,N,sa,isa,jsa,sb,isb,jsb,fpm,        &
+     &               epsout,loop,Emin,Emax,M0,E,X,M,res,info)
+      character         UPLO
+      integer           N
+      double precision  sa(*),sb(*)
+      integer           isa(*),jsa(*),isb(*),jsb(*)
+      integer           fpm(*)
+      double precision  epsout
+      integer           loop
+      double precision  Emin,Emax
+      integer           M0
+      double precision  E(*)
+      double precision  X(N,*)
+      integer           M
+      double precision  res(*)
+      integer           info
+      end
+      end interface
+
+      interface
+      subroutine dfeast_scsrev(UPLO,N,sa,isa,jsa,fpm,epsout,loop,       &
+     &           Emin,Emax,M0,E,X,M,res,info)
+      character         UPLO
+      integer           N
+      double precision  sa(*)
+      integer           isa(*),jsa(*)
+      integer           fpm(*)
+      double precision  epsout
+      integer           loop
+      double precision  Emin,Emax
+      integer           M0
+      double precision  E(*)
+      double precision  X(N,*)
+      integer           M
+      double precision  res(*)
+      integer           info
+      end
+      end interface
+
+      interface
+      subroutine sfeast_scsrgv(UPLO,N,sa,isa,jsa,sb,isb,jsb,fpm,        &
+     &               epsout,loop,Emin,Emax,M0,E,X,M,res,info)
+      character  UPLO
+      integer    N
+      real       sa(*),sb(*)
+      integer    isa(*),jsa(*),isb(*),jsb(*)
+      integer    fpm(*)
+      real       epsout
+      integer    loop
+      real       Emin,Emax
+      integer    M0
+      real       E(*)
+      real       X(N,*)
+      integer    M
+      real       res(*)
+      integer    info
+      end
+      end interface
+
+      interface
+      subroutine sfeast_scsrev(UPLO,N,sa,isa,jsa,fpm,epsout,loop,       &
+     &           Emin,Emax,M0,E,X,M,res,info)
+      character UPLO
+      integer   N
+      real      sa(*)
+      integer   isa(*),jsa(*)
+      integer   fpm(*)
+      real      epsout
+      integer   loop
+      real      Emin,Emax
+      integer   M0
+      real      E(*)
+      real      X(N,*)
+      integer   M
+      real      res(*)
+      integer   info
+      end
+      end interface
+
+
+      interface
+      subroutine  zfeast_hcsrgv(UPLO,N,sa,isa,jsa,sb,isb,jsb,fpm,       &
+     &             epsout,loop,Emin,Emax,M0,E,X,M,res,info)
+      character        UPLO
+      integer          N
+      complex*16       sa(*),sb(*)
+      integer          isa(*),jsa(*),isb(*),jsb(*)
+      integer          fpm(*)
+      double precision epsout
+      integer          loop
+      double precision Emin,Emax
+      integer          M0
+      double precision E(*)
+      complex*16       X(N,*)
+      integer          M
+      double precision res(*)
+      integer          info
+      end
+      end interface
+
+
+      interface
+      subroutine zfeast_hcsrev(UPLO,N,sa,isa,jsa,fpm,epsout,loop,       &
+     &            Emin,Emax,M0,E,X,M,res,info)
+      character         UPLO
+      integer           N
+      complex*16        sa(*)
+      integer           isa(*),jsa(*)
+      integer           fpm(*)
+      double precision  epsout
+      integer           loop
+      double precision  Emin,Emax
+      integer           M0
+      double precision  E(*)
+      complex*16        X(N,*)
+      integer           M
+      double precision  res(*)
+      integer           info
+      end
+      end interface
+
+      interface
+      subroutine cfeast_hcsrgv(UPLO,N,sa,isa,jsa,sb,isb,jsb,fpm,        &
+     &             epsout,loop,Emin,Emax,M0,E,X,M,res,info)
+      character UPLO
+      integer   N
+      complex   sa(*),sb(*)
+      integer   isa(*),jsa(*),isb(*),jsb(*)
+      integer   fpm(*)
+      real      epsout
+      integer   loop
+      real      Emin,Emax
+      integer   M0
+      real      E(*)
+      complex   X(N,*)
+      integer   M
+      real      res(*)
+      integer   info
+      end
+      end interface
+
+
+      interface
+      subroutine cfeast_hcsrev(UPLO,N,sa,isa,jsa,fpm,epsout,loop,       &
+     &            Emin,Emax,M0,E,X,M,res,info)
+      character  UPLO
+      integer    N
+      complex    sa(*)
+      integer    isa(*),jsa(*)
+      integer    fpm(*)
+      real       epsout
+      integer    loop
+      real       Emin,Emax
+      integer    M0
+      real       E(*)
+      complex    X(N,*)
+      integer    M
+      real       res(*)
+      integer    info
+      end
+      end interface
+

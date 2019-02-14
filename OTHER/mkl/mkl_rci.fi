@@ -1,0 +1,468 @@
+!===============================================================================
+! Copyright 2005-2018 Intel Corporation All Rights Reserved.
+!
+! The source code,  information  and material  ("Material") contained  herein is
+! owned by Intel Corporation or its  suppliers or licensors,  and  title to such
+! Material remains with Intel  Corporation or its  suppliers or  licensors.  The
+! Material  contains  proprietary  information  of  Intel or  its suppliers  and
+! licensors.  The Material is protected by  worldwide copyright  laws and treaty
+! provisions.  No part  of  the  Material   may  be  used,  copied,  reproduced,
+! modified, published,  uploaded, posted, transmitted,  distributed or disclosed
+! in any way without Intel's prior express written permission.  No license under
+! any patent,  copyright or other  intellectual property rights  in the Material
+! is granted to  or  conferred  upon  you,  either   expressly,  by implication,
+! inducement,  estoppel  or  otherwise.  Any  license   under such  intellectual
+! property rights must be express and approved by Intel in writing.
+!
+! Unless otherwise agreed by Intel in writing,  you may not remove or alter this
+! notice or  any  other  notice   embedded  in  Materials  by  Intel  or Intel's
+! suppliers or licensors in any way.
+!===============================================================================
+
+!  Content:
+!    Intel(R) Math Kernel Library (Intel(R) MKL) interface for preconditioners, RCI ISS
+!    and TR solvers routines
+!******************************************************************************
+
+! PARAMETERS
+
+      INTEGER(KIND=4) TR_SUCCESS
+      INTEGER(KIND=4) TR_INVALID_OPTION
+      INTEGER(KIND=4) TR_OUT_OF_MEMORY
+      PARAMETER (TR_SUCCESS          = 1501)
+      PARAMETER (TR_INVALID_OPTION   = 1502)
+      PARAMETER (TR_OUT_OF_MEMORY    = 1503)
+
+! SUBROUTINES
+
+      INTERFACE
+       SUBROUTINE DCG(n,x,b,rci_request,ipar,dpar,tmp)
+       INTEGER            n, rci_request
+       DOUBLE PRECISION   x( * ), b( * ), dpar( * )
+       DOUBLE PRECISION   tmp( n, * )
+       INTEGER            ipar( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DCG_INIT(n,x,b,rci_request,ipar,dpar,tmp)
+       INTEGER            n, rci_request
+       DOUBLE PRECISION   x( * ), b( * ), dpar( * )
+       DOUBLE PRECISION   tmp( n, * )
+       INTEGER            ipar( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DCG_CHECK(n,x,b,rci_request,ipar,dpar,tmp)
+       INTEGER            n, rci_request
+       DOUBLE PRECISION   x( * ), b( * ), dpar( * )
+       DOUBLE PRECISION   tmp( n, * )
+       INTEGER            ipar( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DCG_GET(n,x,b,rci_request,ipar,dpar,tmp,itercount)
+       INTEGER            n, rci_request, itercount
+       DOUBLE PRECISION   x( * ), b( * ), dpar( * )
+       DOUBLE PRECISION   tmp( n, * )
+       INTEGER            ipar( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DCSRILU0(n,a,ia,ja,alu,ipar,dpar,ierr)
+       INTEGER            n, ierr
+       DOUBLE PRECISION   a( * ), dpar( * ), alu( * )
+       INTEGER            ia( * ), ja( * ), ipar( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DCSRILUT(n,a,ia,ja,alut,ialut,jalut,tol,maxfil,       &
+     & ipar,dpar,ierr)
+       INTEGER            n, maxfil, ierr
+       DOUBLE PRECISION   tol
+       DOUBLE PRECISION   a( * ), dpar( * ), alut( * )
+       INTEGER            ia( * ), ja( * ), ipar( * ), ialut( * )
+       INTEGER            jalut( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DFGMRES(n,x,b,rci_request,ipar,dpar,tmp)
+       INTEGER            n, rci_request
+       DOUBLE PRECISION   x( * ), b( * ), tmp( * ), dpar( * )
+       INTEGER            ipar( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DFGMRES_INIT(n,x,b,rci_request,ipar,dpar,tmp)
+       INTEGER            n, rci_request
+       DOUBLE PRECISION   x( * ), b( * ), tmp( * ), dpar( * )
+       INTEGER            ipar( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DFGMRES_CHECK(n,x,b,rci_request,ipar,dpar,tmp)
+       INTEGER            n, rci_request
+       DOUBLE PRECISION   x( * ), b( * ), tmp( * ), dpar( * )
+       INTEGER            ipar( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DFGMRES_GET(n,x,b,rci_request,ipar,dpar,              &
+     & tmp,itercount)
+       INTEGER            n, rci_request, itercount
+       DOUBLE PRECISION   x( * ), b( * ), tmp( * ), dpar( * )
+       INTEGER            ipar( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DCGMRHS(n,x,nRhs,b,rci_request,ipar,dpar,tmp)
+       INTEGER            n, rci_request, nRhs
+       DOUBLE PRECISION   x( * ), b( * ), dpar( * )
+       DOUBLE PRECISION   tmp( n, * )
+       INTEGER            ipar( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DCGMRHS_INIT(n,x,nRhs,b,method,rci_request,           &
+     & ipar,dpar,tmp)
+       INTEGER            n, rci_request, nRhs, method
+       DOUBLE PRECISION   x( * ), b( * ), dpar( * )
+       DOUBLE PRECISION   tmp( n, * )
+       INTEGER            ipar( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DCGMRHS_CHECK(n,x,nRhs,b,rci_request,ipar,dpar,tmp)
+       INTEGER            n, rci_request, nRhs
+       DOUBLE PRECISION   x( * ), dpar( * )
+       DOUBLE PRECISION   tmp( n, * ), b( nRhs, * )
+       INTEGER            ipar( * )
+       END SUBROUTINE
+      END INTERFACE
+
+      INTERFACE
+       SUBROUTINE DCGMRHS_GET(n,x,nRhs,b,rci_request,ipar,dpar,         &
+     & tmp,itercount)
+       INTEGER            n, rci_request, nRhs
+       DOUBLE PRECISION   x( * ), dpar( * )
+       DOUBLE PRECISION   tmp( n, * ), b( nRhs, * )
+       INTEGER            ipar( * ), itercount( * )
+       END SUBROUTINE
+      END INTERFACE
+
+! FUNCTIONS
+
+      INTERFACE
+        INTEGER FUNCTION DTRNLSP_INIT(handle, n, m, x, eps,             &
+     &  iter1, iter2, rs)
+        INTEGER             n, m, iter1, iter2
+        DOUBLE PRECISION    x( * ), eps( * )
+        DOUBLE PRECISION    rs
+        INTEGER(KIND=8)     handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DTRNLSP_CHECK(handle, n, m, fjac, fvec,        &
+     &  eps, info)
+        INTEGER             n, m
+        INTEGER             info( * )
+        DOUBLE PRECISION    fvec( * ), eps( * )
+        DOUBLE PRECISION    fjac( m, * )
+        DOUBLE PRECISION    rs
+        INTEGER(KIND=8)     handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DTRNLSP_SOLVE(handle, fvec, fjac, rci_request)
+        INTEGER             rci_request
+        DOUBLE PRECISION    fvec( * )
+        DOUBLE PRECISION    fjac( 1 , * ) ! ignore 1, the first dimension should be handle->m
+        INTEGER(KIND=8)     handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DTRNLSP_GET(handle, iter, st_cr, r1, r2)
+        INTEGER             iter, st_cr
+        DOUBLE PRECISION    r1, r2
+        INTEGER(KIND=8)     handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DTRNLSP_DELETE(handle)
+        INTEGER(KIND=8)     handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DTRNLSPBC_INIT(handle, n, m, x, low, up, e,    &
+     &  iter1, iter2, rs)
+        INTEGER                n, m, iter1, iter2
+        DOUBLE PRECISION       x( * ), low( * ), up( * ), e( * )
+        DOUBLE PRECISION       rs
+        INTEGER(KIND=8)        handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DTRNLSPBC_CHECK(handle, n, m, fjac, fvec,      &
+     &  low, up, eps, info)
+        INTEGER                n, m
+        DOUBLE PRECISION       fvec( * ), low( * ), up( * )
+        DOUBLE PRECISION       fjac( m, * )
+        DOUBLE PRECISION       eps( * )
+        INTEGER                info( * )
+        INTEGER(KIND=8)        handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DTRNLSPBC_SOLVE(handle, fjac, fvec,            &
+     &  rci_request)
+        INTEGER                rci_request
+        DOUBLE PRECISION       fvec( * )
+        DOUBLE PRECISION       fjac( 1, * ) ! ignore 1, the first dimension should be handle->m
+        INTEGER(KIND=8)        handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DTRNLSPBC_GET(handle, iter, st_cr, r1, r2)
+        INTEGER                iter, st_cr
+        DOUBLE PRECISION       r1, r2
+        INTEGER(KIND=8)        handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DTRNLSPBC_DELETE(handle)
+        INTEGER(KIND=8)         handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DJACOBI_INIT(handle, n, m, x, fjac, eps)
+        INTEGER                    n, m
+        DOUBLE PRECISION           x( * )
+        DOUBLE PRECISION           fjac( m , * )
+        DOUBLE PRECISION           eps
+        INTEGER(KIND=8)            handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DJACOBI_SOLVE(handle, f1, f2, rci_request)
+        INTEGER                    rci_request
+        DOUBLE PRECISION           f1( * ), f2( * )
+        INTEGER(KIND=8)            handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DJACOBI_DELETE(handle)
+        INTEGER(KIND=8)           handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DJACOBI(fcn, n, m, fjac, x, eps)
+        INTEGER                    n, m
+        DOUBLE PRECISION           eps
+        DOUBLE PRECISION           x( * )
+        DOUBLE PRECISION           fjac( m , * )
+        INTEGER(KIND=8)            handle
+        INTERFACE
+            SUBROUTINE fcn(m,n,x,f)
+                INTEGER            n, m
+                DOUBLE PRECISION   x( * ), f( * )
+            END SUBROUTINE
+        END INTERFACE
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION DJACOBIX(fcn, n, m, fjac, x, eps, user_data)
+        USE, INTRINSIC :: ISO_C_BINDING
+        INTEGER                    n, m
+        DOUBLE PRECISION           eps
+        DOUBLE PRECISION           x( * )
+        DOUBLE PRECISION           fjac( m , * )
+        INTEGER(KIND=8)            handle
+        INTEGER(C_INTPTR_T)        user_data
+        INTERFACE
+            SUBROUTINE fcn(m,n,x,f,user_data)
+                USE, INTRINSIC :: ISO_C_BINDING
+                INTEGER             n, m
+                DOUBLE PRECISION    x( * ), f( * )
+                INTEGER(C_INTPTR_T) user_data
+            END SUBROUTINE
+        END INTERFACE
+        END FUNCTION
+      END INTERFACE
+
+
+      INTERFACE
+        INTEGER FUNCTION STRNLSP_INIT(handle, n, m, x, eps,             &
+     &  iter1, iter2, rs)
+        INTEGER             n, m, iter1, iter2
+        REAL                x( * ), eps( * )
+        REAL                rs
+        INTEGER(KIND=8)     handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION STRNLSP_CHECK(handle, n, m, fjac, fvec,        &
+     &  eps, info)
+        INTEGER             n, m
+        INTEGER             info( * )
+        REAL                fvec( * ), eps( * )
+        REAL                fjac( m, * )
+        REAL                rs
+        INTEGER(KIND=8)     handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION STRNLSP_SOLVE(handle, fvec, fjac, rci_request)
+        INTEGER             rci_request
+        REAL                fvec( * )
+        REAL                fjac( 1, * ) ! ignore 1, the first dimension should be handle->m
+        INTEGER(KIND=8)     handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION STRNLSP_GET(handle, iter, st_cr, r1, r2)
+        INTEGER             iter, st_cr
+        REAL                r1, r2
+        INTEGER(KIND=8)     handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION STRNLSP_DELETE(handle)
+        INTEGER(KIND=8)     handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION STRNLSPBC_INIT(handle, n, m, x, low, up, e,    &
+     &  iter1, iter2, rs)
+        INTEGER                n, m, iter1, iter2
+        REAL                   x( * ), low( * ), up( * ), e( * )
+        REAL                   rs
+        INTEGER(KIND=8)        handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION STRNLSPBC_CHECK(handle, n, m, fjac, fvec,      &
+     &  low, up, eps, info)
+        INTEGER                n, m
+        REAL                   fvec( * ), low( * ), up( * )
+        REAL                   fjac( m, * )
+        REAL                   eps( * )
+        INTEGER                info( * )
+        INTEGER(KIND=8)        handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION STRNLSPBC_SOLVE(handle, fjac, fvec,            &
+     &  rci_request)
+        INTEGER                rci_request
+        REAL                   fvec( * )
+        REAL                   fjac( 1, * ) ! ignore 1, the first dimension should be handle->m
+        INTEGER(KIND=8)        handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION STRNLSPBC_GET(handle, iter, st_cr, r1, r2)
+        INTEGER                iter, st_cr
+        REAL                   r1, r2
+        INTEGER(KIND=8)        handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION STRNLSPBC_DELETE(handle)
+        INTEGER(KIND=8)         handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION SJACOBI_INIT(handle, n, m, x, fjac, eps)
+        INTEGER                    n, m
+        REAL                       x( * )
+        REAL                       fjac( m , * )
+        REAL                       eps
+        INTEGER(KIND=8)            handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION SJACOBI_SOLVE(handle, f1, f2, rci_request)
+        INTEGER                    rci_request
+        REAL                       f1( * ), f2( * )
+        INTEGER(KIND=8)            handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION SJACOBI_DELETE(handle)
+        INTEGER(KIND=8)            handle
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION SJACOBI(fcn, n, m, fjac, x, eps)
+        INTEGER                    n, m
+        REAL                       eps
+        REAL                       x( * )
+        REAL                       fjac( m , * )
+        INTEGER(KIND=8)            handle
+        INTERFACE
+            SUBROUTINE fcn(m,n,x,f)
+                INTEGER            n, m
+                REAL               x( * ), f( * )
+            END SUBROUTINE
+        END INTERFACE
+        END FUNCTION
+      END INTERFACE
+
+      INTERFACE
+        INTEGER FUNCTION SJACOBIX(fcn, n, m, fjac, x, eps, user_data)
+        USE, INTRINSIC :: ISO_C_BINDING
+        INTEGER                    n, m
+        REAL                       eps
+        REAL                       x( * )
+        REAL                       fjac( m , * )
+        INTEGER(KIND=8)            handle
+        INTEGER(C_INTPTR_T)        user_data
+        INTERFACE
+            SUBROUTINE fcn(m,n,x,f,user_data)
+                USE, INTRINSIC :: ISO_C_BINDING
+                INTEGER             n, m
+                REAL                x( * ), f( * )
+                INTEGER(C_INTPTR_T) user_data
+            END SUBROUTINE
+        END INTERFACE
+        END FUNCTION
+      END INTERFACE
+
