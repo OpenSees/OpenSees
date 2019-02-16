@@ -122,6 +122,7 @@ void* OPS_BoucWenMaterial();
 void* OPS_BWBN();
 void* OPS_PySimple1();
 void* OPS_TzSimple1();
+void* OPS_QzSimple1();
 void* OPS_PyLiq1();
 void* OPS_TzLiq1();
 void* OPS_KikuchiAikenHDR();
@@ -251,6 +252,7 @@ namespace {
 	uniaxialMaterialsMap.insert(std::make_pair("BWBN", &OPS_BWBN));
 	uniaxialMaterialsMap.insert(std::make_pair("PySimple1", &OPS_PySimple1));
 	uniaxialMaterialsMap.insert(std::make_pair("TzSimple1", &OPS_TzSimple1));
+	uniaxialMaterialsMap.insert(std::make_pair("QzSimple1", &OPS_QzSimple1));
 	uniaxialMaterialsMap.insert(std::make_pair("PyLiq1", &OPS_PyLiq1));
 	uniaxialMaterialsMap.insert(std::make_pair("TzLiq1", &OPS_TzLiq1));
 	uniaxialMaterialsMap.insert(std::make_pair("KikuchiAikenHDR", &OPS_KikuchiAikenHDR));
