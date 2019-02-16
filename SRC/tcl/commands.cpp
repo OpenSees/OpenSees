@@ -215,7 +215,6 @@ extern void *OPS_NewmarkHSIncrReduct(void);
 extern void *OPS_WilsonTheta(void);
 
 
-
 #include <Newmark.h>
 #include <TRBDF2.h>
 #include <TRBDF3.h>
@@ -434,8 +433,8 @@ int OPS_MAIN_DOMAIN_PARTITION_ID =0;
 DomainPartitioner *OPS_DOMAIN_PARTITIONER =0;
 GraphPartitioner  *OPS_GRAPH_PARTITIONER =0;
 LoadBalancer      *OPS_BALANCER = 0;
-FEM_ObjectBroker  *OPS_OBJECT_BROKER;
-MachineBroker     *OPS_MACHINE;
+FEM_ObjectBroker  *OPS_OBJECT_BROKER =0;
+MachineBroker     *OPS_MACHINE =0;
 Channel          **OPS_theChannels = 0;
 
 bool setMPIDSOEFlag = false;
@@ -1676,13 +1675,16 @@ buildModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 int 
 partitionModel(int eleTag)
 {
+  if (OPS_PARTITIONED == true)
+    return 0;
+
   int result = 0;
   
   if (OPS_theChannels != 0)
     delete [] OPS_theChannels;
 
   OPS_theChannels = new Channel *[OPS_NUM_SUBDOMAINS];
-  
+
   // create some subdomains
   for (int i=1; i<=OPS_NUM_SUBDOMAINS; i++) {
     if (i != OPS_MAIN_DOMAIN_PARTITION_ID) {
@@ -1700,10 +1702,11 @@ partitionModel(int eleTag)
     OPS_DOMAIN_PARTITIONER = new DomainPartitioner(*OPS_GRAPH_PARTITIONER);
     theDomain.setPartitioner(OPS_DOMAIN_PARTITIONER);
   }
+
  // opserr << "commands.cpp - partition numPartitions: " << OPS_NUM_SUBDOMAINS << endln;
 
   result = theDomain.partition(OPS_NUM_SUBDOMAINS, OPS_USING_MAIN_DOMAIN, OPS_MAIN_DOMAIN_PARTITION_ID, eleTag);
-  
+
   if (result < 0) 
     return result;
 
@@ -1740,7 +1743,7 @@ partitionModel(int eleTag)
     theSub->setDomainDecompAnalysis(*theSubAnalysis);
     //  delete theSubAnalysis;
   }
-
+  
   return result;
 }
 
@@ -1758,7 +1761,6 @@ opsPartition(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     }
   }
   partitionModel(eleTag);
-
 #endif
   return TCL_OK;
 }
@@ -1773,12 +1775,13 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   int result = 0;
 
 #ifdef _PARALLEL_PROCESSING
-  if (OPS_PARTITIONED == false && OPS_NUM_SUBDOMAINS > 1) 
+  if (OPS_PARTITIONED == false && OPS_NUM_SUBDOMAINS > 1) {
     if (partitionModel(0) < 0) {
       opserr << "WARNING before analysis; partition failed - too few elements\n";
       OpenSeesExit(clientData, interp, argc, argv);
       return TCL_ERROR;
     }
+  }
 #endif
 
   if (theStaticAnalysis != 0) {
@@ -1792,6 +1795,7 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
       return TCL_ERROR;	      
 
     result = theStaticAnalysis->analyze(numIncr);
+
 #ifdef _PFEM
   } else if(thePFEMAnalysis != 0) {
       result = thePFEMAnalysis->analyze();
@@ -5395,12 +5399,14 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 
 #ifdef _PARALLEL_PROCESSING
-      if (OPS_PARTITIONED == false && OPS_NUM_SUBDOMAINS > 1) 
+
+      if (OPS_PARTITIONED == false && OPS_NUM_SUBDOMAINS > 1) {
 	if (partitionModel(0) < 0) {
 	  opserr << "WARNING before analysis; partition failed - too few elements\n";
 	  OpenSeesExit(clientData, interp, argc, argv);
 	  return TCL_ERROR;
 	}
+      }
 
       if (theStaticAnalysis != 0 || theTransientAnalysis != 0) {
 	SubdomainIter &theSubdomains = theDomain.getSubdomains();
@@ -8481,7 +8487,7 @@ opsSend(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     }
 
   } else {
-    if (myPID == 0) {
+    if (myPID == 0) { 
       MPI_Bcast((void *)(&msgLength), 1, MPI_INT,  0, MPI_COMM_WORLD);
       MPI_Bcast((void *)gMsg, msgLength, MPI_CHAR, 0, MPI_COMM_WORLD);
     } else {

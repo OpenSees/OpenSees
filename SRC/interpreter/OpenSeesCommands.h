@@ -297,6 +297,7 @@ int OPS_getNP();
 int OPS_barrier();
 int OPS_send();
 int OPS_recv();
+int OPS_sdfResponse();
 
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
