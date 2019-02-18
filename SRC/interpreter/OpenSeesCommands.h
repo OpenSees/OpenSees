@@ -238,6 +238,7 @@ int OPS_nodeCoord();
 int OPS_setNodeCoord();
 int OPS_updateElementDomain();
 int OPS_eleNodes();
+int OPS_nodeDOFs();
 int OPS_nodeMass();
 int OPS_nodePressure();
 int OPS_nodeBounds();
