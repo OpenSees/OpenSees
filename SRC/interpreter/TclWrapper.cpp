@@ -725,6 +725,14 @@ static int Tcl_ops_eleNodes(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_OK;
 }
 
+static int Tcl_ops_nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_nodeDOFs() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_nodeMass(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
     wrapper->resetCommandLine(argc, 1, argv);
 
@@ -1395,6 +1403,7 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"updateElementDomain", &Tcl_ops_updateElementDomain);
     addCommand(interp,"eleNodes", &Tcl_ops_eleNodes);
     addCommand(interp,"nodeMass", &Tcl_ops_nodeMass);
+    addCommand(interp,"nodeDOFs", &Tcl_ops_nodeDOFs);
     addCommand(interp,"nodePressure", &Tcl_ops_nodePressure);
     addCommand(interp,"nodeBounds", &Tcl_ops_nodeBounds);
     addCommand(interp,"start", &Tcl_ops_startTimer);
