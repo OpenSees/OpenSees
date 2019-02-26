@@ -250,9 +250,17 @@ InitStrainMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 InitStrainMaterial::Print(OPS_Stream &s, int flag)
 {
-  s << "InitStrainMaterial tag: " << this->getTag() << endln;
-  s << "\tMaterial: " << theMaterial->getTag() << endln;
-  s << "\tinitital strain: " << epsInit << endln;
+	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+		s << "\t\t\t{";
+		s << "\"name\": \"" << this->getTag() << "\", ";
+		s << "\"type\": \"InitStrainMaterial\", ";
+		s << "\"Material\": " << theMaterial->getTag() << ", ";
+		s << "\"initialStrain\": " << epsInit <<  "}";
+	} else {
+		s << "InitStrainMaterial tag: " << this->getTag() << endln;
+		s << "\tMaterial: " << theMaterial->getTag() << endln;
+		s << "\tinitital strain: " << epsInit << endln;
+	}
 }
 
 int 

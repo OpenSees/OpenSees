@@ -325,7 +325,9 @@ ElasticPPMaterial::Print(OPS_Stream &s, int flag)
 		s << "\"name\": \"" << this->getTag() << "\", ";
 		s << "\"type\": \"ElasticPPMaterial\", ";
 		s << "\"E\": " << E << ", ";
-		s << "\"epsp\": " << ep << "}";
+		s << "\"epsyp\": " << fyp/E << ", ";
+		s << "\"epsyn\": " << fyn/E << ", ";
+		s << "\"eps0\": " << ezero << "}";
 	}
 }
 

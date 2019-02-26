@@ -1107,7 +1107,7 @@ void
         s << "\t\t\t{";
         s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"Truss2\", ";
-        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << "], ";
+        s << "\"nodes\": [" << connectedExternalNodes(0) << ", " << connectedExternalNodes(1) << ", " << connectedExternalOtherNodes(0) << ", " << connectedExternalOtherNodes(1) << "], ";
         s << "\"A\": " << A << ", ";
         s << "\"massperlength\": " << rho << ", ";
         s << "\"material\": \"" << theMaterial->getTag() << "\"}";

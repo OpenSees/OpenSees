@@ -94,7 +94,7 @@ void* OPS_BBarFourNodeQuadUP()
     }
 
     return new BBarFourNodeQuadUP(tags[0],tags[1],tags[2],tags[3],tags[4],
-				  *mat,"PlainStrain",thk,data[0],data[1],data[2],data[3],
+				  *mat,"PlaneStrain",thk,data[0],data[1],data[2],data[3],
 				  opt[0],opt[1],opt[2]);
 }
 

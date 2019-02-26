@@ -92,7 +92,7 @@ void* OPS_NineFourNodeQuadUP()
 
     return new NineFourNodeQuadUP(tags[0],tags[1],tags[2],tags[3],tags[4],
 				  tags[5],tags[6],tags[7],tags[8],tags[9],
-				  *mat,"PlainStrain",thk,data[0],data[1],data[2],data[3],
+				  *mat,"PlaneStrain",thk,data[0],data[1],data[2],data[3],
 				  opt[0],opt[1]);
 }
 
@@ -1731,7 +1731,7 @@ NineFourNodeQuadUP::setResponse(const char **argv, int argc, OPS_Stream &output)
   char outputData[32];
 
   output.tag("ElementOutput");
-  output.attr("eleType","NineFOurNodeQuadUP");
+  output.attr("eleType","NineFourNodeQuadUP");
   output.attr("eleTag",this->getTag());
   for (int i=1; i<=9; i++) {
     sprintf(outputData,"node%d",i);

@@ -1085,7 +1085,7 @@ void TwoNodeLink::Print(OPS_Stream &s, int flag)
                 else if (j == 2 && i < 2)
                     s << trans(i, j) << "], [";
                 else if (j == 2 && i == 2)
-                    s << trans(i, j) << "]]";
+                    s << trans(i, j) << "]],";
             }
         }
         s << "\"addRayleigh\": " << addRayleigh << ", ";
