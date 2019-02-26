@@ -199,7 +199,7 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
     rho = r;
     cMass = cm;
 
-    const Matrix &sectTangent = section->getSectionTangent();
+    const Matrix &sectTangent = section->getInitialTangent();
     const ID &sectCode = section->getType();
     for (int i=0; i<sectCode.Size(); i++) {
       int code = sectCode(i);

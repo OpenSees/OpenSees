@@ -42,6 +42,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Domain.h>
 #include <Node.h>
 #include <NodeIter.h>
+#include <DOF_Group.h>
 #include <Matrix.h>
 #include <LoadPattern.h>
 #include <FileStream.h>
@@ -1570,6 +1571,51 @@ int OPS_eleNodes()
 
 	delete [] data;
     }
+
+    return 0;
+}
+
+int OPS_nodeDOFs()
+{
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - nodeDOFs nodeTag?\n";
+	return -1;
+    }
+
+    int tag;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING nodeDOFs nodeTag?\n";
+	return -1;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Node *theNode = theDomain->getNode(tag);
+    if (theNode == 0) {
+	opserr << "WARNING nodeDOFs node " << tag << " not found" << endln;
+	return -1;
+    }
+    int numDOF = theNode->getNumberDOF();
+
+    DOF_Group *theDOFgroup = theNode->getDOF_GroupPtr();
+    if (theDOFgroup == 0) {
+      opserr << "WARNING nodeDOFs DOF group null" << endln;
+      return -1;
+    }
+    const ID &eqnNumbers = theDOFgroup->getID();
+    int *data = new int[numDOF];
+    for (int i = 0; i < numDOF; i++) {
+      data[i] = eqnNumbers(i);
+    }
+    if (OPS_SetIntOutput(&numDOF, data) < 0) {
+      opserr << "WARNING nodeDOFs failed to set outputs\n";
+      delete [] data;
+      return -1;
+    }
+    delete [] data;
 
     return 0;
 }

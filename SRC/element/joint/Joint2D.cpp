@@ -101,7 +101,6 @@ void* OPS_Joint2D()
     int LargeDisp;
 
     // Decide to use which constructor, based on the number of arguments
-    numdata = OPS_GetNumRemainingInputArgs();
     if ( numdata == 8 || numdata == 12 ) {
     
 	// Using Joint2D constructor without damage 

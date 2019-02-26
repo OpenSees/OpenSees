@@ -847,6 +847,15 @@ static PyObject *Py_ops_eleNodes(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_nodeDOFs(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_nodeDOFs() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_nodeMass(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -1478,6 +1487,15 @@ static PyObject *Py_ops_updateMaterialStage(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_sdfResponse(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_sdfResponse() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
 /////////////////////////////////////////////////
 ////////////// Add Python commands //////////////
 /////////////////////////////////////////////////
@@ -1562,6 +1580,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("setNodeCoord", &Py_ops_setNodeCoord);
     addCommand("updateElementDomain", &Py_ops_updateElementDomain);
     addCommand("eleNodes", &Py_ops_eleNodes);
+    addCommand("nodeDOFs", &Py_ops_nodeDOFs);
     addCommand("nodeMass", &Py_ops_nodeMass);
     addCommand("nodePressure", &Py_ops_nodePressure);
     addCommand("nodeBounds", &Py_ops_nodeBounds);
@@ -1633,6 +1652,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("sensNodePressure", &Py_ops_sensNodePressure);
     addCommand("randomVariable", &Py_ops_randomVariable);
     addCommand("updateMaterialStage", &Py_ops_updateMaterialStage);
+    addCommand("sdfResponse", &Py_ops_sdfResponse);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);
