@@ -18,7 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// Written: M. Salehi
+// Written: M. Salehi opensees.net@gmail.com
+// website : http://opensees.net
 // Created: 02/19
 // Revision: A
 

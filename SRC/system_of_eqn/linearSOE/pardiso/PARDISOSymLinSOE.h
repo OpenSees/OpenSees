@@ -20,14 +20,13 @@
 
 // $Revision: 1.2 $
 // $Date: 2006-01-10 00:42:51 $
-// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/sparseGEN/PARDISOSymLinSOE.h,v $
-
-#ifndef PARDISOSymLinSOE_h
-#define PARDISOSymLinSOE_h
-
-// Written: fmk 
-// Created: 04/05
+// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/linearSOE/pardiso/PARDISOSymLinSOE.h,v $
+//
+// Written: M. Salehi opensees.net@gmail.com
+// website : http://opensees.net
+// Created: 02/19
 // Revision: A
+//
 //
 // Description: This file contains the class definition for PARDISOSymLinSOE
 // PARDISOSymLinSOE is a subclass of LinearSOE. It stores the matrix equation
@@ -35,6 +34,9 @@
 // matrix A. 
 //
 // What: "@(#) PARDISOSymLinSOE.h, revA"
+
+#ifndef PARDISOSymLinSOE_h
+#define PARDISOSymLinSOE_h
 
 #include <LinearSOE.h>
 #include <Vector.h>
