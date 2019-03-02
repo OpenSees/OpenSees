@@ -27,7 +27,7 @@
 OPS_Stream::OPS_Stream(int classTag)
   :MovableObject(classTag)
 {
-  
+  addCommonFlag = 0;
 }
 OPS_Stream::~OPS_Stream()
 {
@@ -116,3 +116,7 @@ OPS_Stream::setOrder(const ID &order)
 }
 
 
+void
+OPS_Stream::setAddCommon(int flag) {
+  addCommonFlag = flag;
+}
