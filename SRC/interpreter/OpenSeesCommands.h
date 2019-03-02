@@ -238,6 +238,7 @@ int OPS_nodeCoord();
 int OPS_setNodeCoord();
 int OPS_updateElementDomain();
 int OPS_eleNodes();
+int OPS_nodeDOFs();
 int OPS_nodeMass();
 int OPS_nodePressure();
 int OPS_nodeBounds();
@@ -296,6 +297,7 @@ int OPS_getNP();
 int OPS_barrier();
 int OPS_send();
 int OPS_recv();
+int OPS_sdfResponse();
 
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();

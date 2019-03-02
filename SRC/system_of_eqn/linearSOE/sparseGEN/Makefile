@@ -23,6 +23,7 @@ OBJS       = SparseGenColLinSOE.o \
 	PFEMCompressibleSolver.o \
 	PFEMCompressibleLinSOE.o \
 	PFEMSolver_Mumps.o \
+	PFEMSolver_LumpM.o \
 	PFEMSolver_Umfpack.o \
 	PFEMCompressibleSolver_Mumps.o \
 	PFEMQuasiLinSOE.o \
