@@ -1258,7 +1258,17 @@ Steel01Thermal::getVariable(const char *variable, Information &info)
 	  (*theVector)(3) = TempTmax;
     }
     return 0;
-  }
+  } else if (strcmp(variable,"TempAndElong") == 0) {
+    Vector *theVector = info.theVector;
+	if (theVector!= 0) {
+	  (*theVector)(0) = Temp;//Ttemperature;
+	  (*theVector)(1) = ThermalElongation;
+	}else{
+		opserr<<"null Vector in Steel01Thermal"<<endln;
+	}
+	return 0;
+ }
+ //end of adding "TempAndElong"
   return -1;
 }
 
