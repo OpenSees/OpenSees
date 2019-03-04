@@ -78,10 +78,14 @@ class OPS_Stream:  public MovableObject
   virtual OPS_Stream& operator<<(float n);
 
   // parallel stuff
+  virtual void setAddCommon(int);
   virtual int setOrder(const ID &order);
   virtual int sendSelf(int commitTag, Channel &theChannel) =0;  
   virtual int recvSelf(int commitTag, Channel &theChannel, 
 		       FEM_ObjectBroker &theBroker) =0;
+
+ protected:
+  int addCommonFlag;
 
  private:
   void indent();

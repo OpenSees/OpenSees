@@ -196,6 +196,7 @@ void* OPS_MultipleNormalSpring();
 void* OPS_KikuchiBearing();
 void* OPS_YamamotoBiaxialHDR();
 void* OPS_FourNodeTetrahedron();
+void* OPS_CatenaryCableElement();
 
 namespace {
 
@@ -561,6 +562,7 @@ namespace {
 	functionMap.insert(std::make_pair("zeroLengthSection", &OPS_ZeroLengthSection));
 	functionMap.insert(std::make_pair("zeroLengthND", &OPS_ZeroLengthND));
 	functionMap.insert(std::make_pair("FourNodeTetrahedron", &OPS_FourNodeTetrahedron));
+	functionMap.insert(std::make_pair("CatenaryCable", &OPS_CatenaryCableElement));
 
 	return 0;
     }
