@@ -405,6 +405,7 @@ void* OPS_PFEMSolver();
 void* OPS_PFEMCompressibleSolver();
 void* OPS_PFEMQuasiSolver();
 void* OPS_PFEMSolver_Umfpack();
+void* OPS_PFEMSolver_Mumps();
 void* OPS_PFEMSolver_Laplace();
 void* OPS_PFEMSolver_LumpM();
 void* OPS_SymSparseLinSolver();

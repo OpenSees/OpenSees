@@ -56,8 +56,8 @@ PFEMSolver_Umfpack::~PFEMSolver_Umfpack()
 int
 PFEMSolver_Umfpack::solve()
 {
-    // Timer timer;
-    // timer.start();
+    Timer timer;
+    timer.start();
     cs* M = theSOE->M;
     cs* Gft = theSOE->Gft;
     cs* Git = theSOE->Git;
@@ -461,8 +461,8 @@ PFEMSolver_Umfpack::solve()
 
     }
     // opserr<<"dvi = "<<dvi.Norm()<<"\n";
-    // timer.pause();
-    // opserr<<"solving time for PFEMSolver_Umfpack = "<<timer.getReal()<<"\n";
+    timer.pause();
+    opserr<<"solving time for PFEMSolver_Umfpack = "<<timer.getReal()<<"\n";
 
     return 0;
 }
