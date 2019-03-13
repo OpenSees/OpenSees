@@ -190,12 +190,12 @@ PythonModule::runCommand(const char* cmd)
     return PyRun_SimpleString(cmd);
 }
 
-static PythonModule module;
+static PythonModule* module = 0;
 
 PyMethodDef* getmethodsFunc()
 {
-
-    PythonWrapper* wrapper = module.getWrapper();
+    module = new PythonModule;
+    PythonWrapper* wrapper = module->getWrapper();
     wrapper->addOpenSeesCommands();
     
     return wrapper->getMethods();
@@ -203,7 +203,7 @@ PyMethodDef* getmethodsFunc()
 
 void cleanupFunc()
 {
-    module.getCmds().wipe();
+    module->getCmds().wipe();
     // if (module != 0) {
     //     delete module;
     // }
