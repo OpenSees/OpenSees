@@ -4,7 +4,7 @@
 #include <NDMaterial.h>
 #include <elementAPI.h>
 #include <map>
-#include <MatParameter.h>
+#include <MaterialStageParameter.h>
 #include <string.h>
 #include <Domain.h>
 
@@ -221,14 +221,10 @@ OPS_updateMaterialStage()
     }
 
     int value;
-    double valueD;
     int res = OPS_GetIntInput(&numdata, &value);
     if (res < 0) {
-	res = OPS_GetDoubleInput(&numdata, &valueD);
-	if (res < 0) {
-	    opserr << "WARNING updateMaterialStage: could not read value\n";
-	    return -1;
-	}
+	opserr << "WARNING updateMaterialStage: value must be integer\n";
+	return -1;
     }
 
     Domain* theDomain = OPS_GetDomain();
@@ -244,7 +240,7 @@ OPS_updateMaterialStage()
 	}
     }
 
-    MatParameter *theParameter = new MatParameter(parTag, materialTag, opt2);
+    MaterialStageParameter *theParameter = new MaterialStageParameter(parTag, materialTag);
 
     if (theDomain->addParameter(theParameter) == false) {
 	opserr << "WARNING could not add updateMaterialStage - MaterialStageParameter to domain\n";
@@ -252,7 +248,7 @@ OPS_updateMaterialStage()
     }
 
     if (res == 0) {
-	res = theDomain->updateParameter(parTag, valueD);
+	res = theDomain->updateParameter(parTag, value);
 	theDomain->removeParameter(parTag);
     }
 
