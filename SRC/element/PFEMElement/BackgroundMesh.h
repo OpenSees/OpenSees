@@ -135,8 +135,6 @@ public:
     int record(bool init=false);
     void setLocs(const VDouble& l) {this->locs = l;}
     int setFile(const char* name);
-    void setFreeSurf() {freesurf = true;}
-    bool isFreeSurf() const {return freesurf;}
     void setNumSub(int num) {numsub = num;}
     void addStructuralNodes(VInt& snodes);
 
@@ -164,7 +162,7 @@ public:
     int addStructure();
     int gridNodes();
     int gridFluid();
-    int gridFSI();
+    int gridFSI(ID& freenodes);
     int gridEles();
 
     // particle kernel
@@ -202,9 +200,9 @@ public:
 		  int dim, double crd, double& k);
     bool inEle(const VDouble& N);
 
-    // prescribe pressure on free surface
-    void getFreeSurface(VInt& fsnodes);
-    int freeSurface();
+    // find free surface
+    int findFreeSurface(const ID& freenodes);
+    void setFreeSurface() {freesurface = true;}
 
 private:
 
@@ -218,9 +216,8 @@ private:
     VDouble locs;
     double currentTime;
     std::ofstream theFile;
-    bool freesurf;
-    double atomsP;
     std::set<int> fixedNodes, structuralNodes;
+    bool freesurface;
 };
 
 

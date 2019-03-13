@@ -72,7 +72,7 @@ int OPS_BgMesh()
 
     // check input
     if(OPS_GetNumRemainingInputArgs() < 2*ndm+1) {
-	std::cerr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? numl? locs? -freesurface -numsub numsub? -fixed numnodes? fixNodes? -structure numnodes? structuralNodes?>\n";
+	std::cerr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? numl? locs? -numsub numsub? -fixed numnodes? fixNodes? -structure numnodes? structuralNodes? -freesurface?>\n";
 	return -1;
     }
 
@@ -168,8 +168,6 @@ int OPS_BgMesh()
 		bgmesh.setLocs(locs);
 	    }
 	    
-	} else if (strcmp(opt, "-freesurface") == 0) {
-	    bgmesh.setFreeSurf();
 	} else if (strcmp(opt, "-numsub") == 0) {
 	    if (OPS_GetNumRemainingInputArgs() < 1) {
 		opserr << "WARNING: need numsub\n";
@@ -231,6 +229,8 @@ int OPS_BgMesh()
 		}
 		bgmesh.addFixed(fixednodes);
 	    }
+	} else if (strcmp(opt, "-freesurface") == 0) {
+	    bgmesh.setFreeSurface();
 	}
     }
 
@@ -254,8 +254,8 @@ BackgroundMesh::BackgroundMesh()
      tol(1e-10), meshtol(0.1), bsize(-1.0),
      numave(2), numsub(4), recorders(),locs(),
      currentTime(0.0), theFile(),
-     freesurf(false), atomsP(0.0),
-     fixedNodes(), structuralNodes()
+     fixedNodes(), structuralNodes(),
+     freesurface(false)
 {
 }
 
@@ -825,7 +825,8 @@ BackgroundMesh::remesh(bool init)
 #endif
 
     // create FSI elements
-    if (gridFSI() < 0) {
+    ID freenodes;
+    if (gridFSI(freenodes) < 0) {
     	std::cerr << "WARNING: failed to create FSI elements\n";
     	return -1;
     }
@@ -836,14 +837,16 @@ BackgroundMesh::remesh(bool init)
     timer.start();
 #endif
 
-    // if (freeSurface() < 0) {
-    // 	opserr << "WARNING: failed to add pressures on free surface\n";
-    // 	return -1;
-    // }
+    if (findFreeSurface(freenodes) < 0) {
+    	opserr << "WARNING: failed to add pressures on free surface\n";
+    	return -1;
+    }
 
-    // timer.pause();
-    // std::cout<<"time for free surface = "<<timer.getReal()<<"\n";
-    // timer.start();
+#ifdef _LINUX    
+    timer.pause();
+    std::cout<<"time for free surface = "<<timer.getReal()<<"\n";
+    timer.start();
+#endif
 
     if (record(init) < 0) {
 	std::cerr << "WARNING: failed to record\n";
@@ -1797,7 +1800,7 @@ BackgroundMesh::gridFluid()
 }
 
 int
-BackgroundMesh::gridFSI()
+BackgroundMesh::gridFSI(ID& freenodes)
 {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) return 0;
@@ -1863,6 +1866,7 @@ BackgroundMesh::gridFSI()
 	    }
 	}
     }
+    VInt ndfree(ndtags.size());
 
     // no mesh
     int numpoints = 0;
@@ -1961,14 +1965,14 @@ BackgroundMesh::gridFSI()
 	}
 
 	// check if same plane
-	bool sameplane = false;
-	for (int k=0; k<ndm; ++k) {
-	    if (minind[k] == maxind[k]) {
-		sameplane = true;
-		break;
-	    }
-	}
-	if (sameplane) continue;
+	// bool sameplane = false;
+	// for (int k=0; k<ndm; ++k) {
+	//     if (minind[k] == maxind[k]) {
+	// 	sameplane = true;
+	// 	break;
+	//     }
+	// }
+	// if (sameplane) continue;
 
 	// check if triangle out side of FSI
 	bool outside = false;
@@ -2019,12 +2023,18 @@ BackgroundMesh::gridFSI()
 
 	// gather particles
 	VParticle tripts;
-	// if (!fluid) {
-	//     minind -= 1;
-	//     maxind += 1;
-	// }
+	if (!fluid) {
+	    minind -= 1;
+	    maxind += 1;
+	}
 	gatherParticles(minind,maxind,tripts,true);
-	if (tripts.empty()) continue;
+	if (tripts.empty()) {
+	    // set free surface
+	    for (int j=0; j<(int)tri.size(); ++j) {
+		ndfree[tri[j]] = 1;
+	    }
+	    continue;
+	}
 
 	// find the group of this mesh
 	std::map<int,int> numpts;
@@ -2043,6 +2053,14 @@ BackgroundMesh::gridFSI()
 	elends[i].resize(tri.size());
 	for (int j=0; j<(int)tri.size(); ++j) {
 	    elends[i][j] = ndtags[tri[j]];
+	}
+    }
+
+    // get free surface nodes
+    freenodes = ID();
+    for (int i=0; i<(int)ndtags.size(); ++i) {
+	if (ndfree[i] == 1 && ndtypes[i] == FLUID) {
+	    freenodes.insert(ndtags[i]);
 	}
     }
 
@@ -2769,18 +2787,26 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
     return 0;
 }
 
-void
-BackgroundMesh::getFreeSurface(VInt& fsnodes)
+int
+BackgroundMesh::findFreeSurface(const ID& freenodes)
 {
+    // quick return
+    if (!freesurface) return 0;
+
+    // get domain
+    Domain* domain = OPS_GetDomain();
+    if (domain == 0) return -1;
+
+    // for all fluid nodes
     for (std::map<VInt,BNode>::iterator it=bnodes.begin(); it!=bnodes.end(); ++it) {
 
-	// check if fixed
+	// check if fluid
 	VInt index = it->first;
 	BNode& bnode = it->second;
-	// if (bnode.type != FLUID) {
-	//     continue;
-	// }
 	if (bnode.tags.size() != 1) {
+	    continue;
+	}
+	if (bnode.type[0] != FLUID) {
 	    continue;
 	}
 
@@ -2795,75 +2821,38 @@ BackgroundMesh::getFreeSurface(VInt& fsnodes)
 		free = true;
 		break;
 	    }
+	    if (it->second.type != FLUID) continue;
 	    if (it->second.pts.empty()) {
 		free = true;
 		break;
 	    }
 	}
 
-	// add free surface node
+	// set free surface 
 	if (free) {
-	    fsnodes.push_back(bnode.tags[0]);
+	    int ndtag = bnode.tags[0];
+	    Pressure_Constraint* pc = domain->getPressure_Constraint(ndtag);
+	    if (pc == 0) {
+		opserr << "WARNING: node "<<ndtag;
+		opserr <<" has no pc -- BgMesh::findFreeSurface()\n";
+		return -1;
+	    }
+	    
+	    pc->setFreeSurf();
 	}
     }
-}
 
-int
-BackgroundMesh::freeSurface()
-{
-    if (!freesurf) {
-	return 0;
-    }
-
-    // get domain
-    Domain* domain = OPS_GetDomain();
-    if (domain == 0) return -1;
-
-    // clear previous sps
-    // for (int i=0; i<(int)sps.size(); i++) {
-    // 	SP_Constraint* sp = domain->removeSP_Constraint(sps[i]);
-    // 	if (sp != 0) {
-    // 	    delete sp;
-    // 	}
-    // }
-    // sps.clear();
-
-    // get free surface
-    VInt fsnodes;
-    getFreeSurface(fsnodes);
-    if (fsnodes.empty()) {
-	return 0;
-    }
-
-    // add SP_Constraint for pressure nodes
-    for (int i=0; i<(int)fsnodes.size(); ++i) {
-	Pressure_Constraint* pc = domain->getPressure_Constraint(fsnodes[i]);
+    // for all fsi nodes on free surface
+    for (int i=0; i<freenodes.Size(); ++i) {
+	int ndtag = freenodes(i);
+	Pressure_Constraint* pc = domain->getPressure_Constraint(ndtag);
 	if (pc == 0) {
-	    continue;
+	    opserr << "WARNING: node "<<ndtag;
+	    opserr <<" has no pc -- BgMesh::findFreeSurface()\n";
+	    return -1;
 	}
+	    
 	pc->setFreeSurf();
-
-	Node* node = pc->getPressureNode();
-	if (node == 0) {
-	    continue;
-	}
-
-	Vector vel = node->getTrialVel();
-	vel.Zero();
-	node->setTrialVel(vel);
-	node->commitState();
-
-	// SP_Constraint* sp = new SP_Constraint(node->getTag(), 0, atomsP, true);
-	// if (sp == 0) {
-	//     opserr<<"WARING: run out of memory -- BackgroundMesh::freeSurface\n";
-	//     return -1;
-	// }
-	// if (domain->addSP_Constraint(sp) == false) {
-	//     opserr<<"WARNING: failed to add sp to domain -- BackgroundMesh::freeSurface\n";
-	//     delete sp;
-	//     return -1;
-	// }
-	// sps.push_back(sp->getTag());
     }
 
     return 0;

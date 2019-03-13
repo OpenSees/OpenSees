@@ -516,7 +516,7 @@ PFEMLinSOE::setDofIDs(int size,int& Ssize, int&Fsize, int& Isize,int& Psize,int&
         if(pnode != 0) {
             const ID& pid = pDOF->getID();
 
-	    if(thePC->isFreeSurf()) {
+	    if(thePC->isFreeSurf() && thePC->isFluid()) {
 		for(int i=0; i<pid.Size(); i++) {
                     if(pid(i) >= 0) {
                         dofType(pid(i)) = -1;    
