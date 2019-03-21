@@ -847,6 +847,15 @@ static PyObject *Py_ops_eleNodes(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_nodeDOFs(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_nodeDOFs() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_nodeMass(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -1334,6 +1343,15 @@ static PyObject *Py_ops_updateParameter(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_setParameter(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_setParameter() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_getPID(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -1571,6 +1589,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("setNodeCoord", &Py_ops_setNodeCoord);
     addCommand("updateElementDomain", &Py_ops_updateElementDomain);
     addCommand("eleNodes", &Py_ops_eleNodes);
+    addCommand("nodeDOFs", &Py_ops_nodeDOFs);
     addCommand("nodeMass", &Py_ops_nodeMass);
     addCommand("nodePressure", &Py_ops_nodePressure);
     addCommand("nodeBounds", &Py_ops_nodeBounds);
@@ -1626,6 +1645,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("parameter", &Py_ops_parameter);
     addCommand("addToParameter", &Py_ops_addToParameter);
     addCommand("updateParameter", &Py_ops_updateParameter);
+    addCommand("setParameter", &Py_ops_setParameter);
     addCommand("getPID", &Py_ops_getPID);
     addCommand("getNP", &Py_ops_getNP);
     addCommand("barrier", &Py_ops_barrier);

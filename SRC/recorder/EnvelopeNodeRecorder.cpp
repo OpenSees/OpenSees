@@ -422,6 +422,13 @@ EnvelopeNodeRecorder::EnvelopeNodeRecorder(const ID &dofs,
     opserr << "EnvelopeNodeRecorder::NodeRecorder - dataToStore " << dataToStore;
     opserr << "not recognized (disp, vel, accel, incrDisp, incrDeltaDisp)\n";
   }
+
+  if (dataFlag == 7 || dataFlag == 8 || dataFlag == 9) {
+    if (echoTime == true)
+      theOutputHandler.setAddCommon(2);
+    else
+      theOutputHandler.setAddCommon(1);
+  }
 }
 
 
