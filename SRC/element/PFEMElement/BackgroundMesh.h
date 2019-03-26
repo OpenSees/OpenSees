@@ -158,7 +158,7 @@ public:
     int moveFixedParticles();
 
     // create grid nodes and elements
-    int addFixed(const VInt& ndtags);
+    int addWall(const VDouble& lower, const VDouble& upper);
     int addStructure();
     int gridNodes();
     int gridFluid();
@@ -207,6 +207,7 @@ public:
 private:
 
     VInt lower, upper;
+    VVDouble wlower, wupper;
     std::map<VInt,BCell> bcells;
     std::map<VInt,BNode> bnodes;
     double tol, meshtol;
@@ -216,8 +217,9 @@ private:
     VDouble locs;
     double currentTime;
     std::ofstream theFile;
-    std::set<int> fixedNodes, structuralNodes;
+    std::set<int> structuralNodes;
     bool freesurface;
+    VInt sptags;
 };
 
 

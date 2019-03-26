@@ -72,7 +72,7 @@ int OPS_BgMesh()
 
     // check input
     if(OPS_GetNumRemainingInputArgs() < 2*ndm+1) {
-	std::cerr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? numl? locs? -numsub numsub? -fixed numnodes? fixNodes? -structure numnodes? structuralNodes? -freesurface?>\n";
+	std::cerr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? numl? locs? -numsub numsub? -wall lower? upper? -structure numnodes? structuralNodes? -freesurface?>\n";
 	return -1;
     }
 
@@ -206,29 +206,22 @@ int OPS_BgMesh()
 		bgmesh.addStructuralNodes(snodes);
 	    }
 	    
-	} else if (strcmp(opt, "-fixed") == 0) {
-	    if (OPS_GetNumRemainingInputArgs() < 1) {
-		opserr << "WARNING: need numnodes\n";
+	} else if (strcmp(opt, "-wall") == 0) {
+	    if (OPS_GetNumRemainingInputArgs() < 2*ndm) {
+		opserr << "WARNING: need wlower and wupper\n";
 		return -1;
 	    }
-	    int numnodes;
-	    num = 1;
-	    if (OPS_GetIntInput(&num, &numnodes) < 0) {
-		opserr << "WARNING: failed to read numnodes\n";
+	    VDouble wlower(ndm), wupper(ndm);
+	    if (OPS_GetDoubleInput(&ndm, &wlower[0]) < 0) {
+		opserr << "WARNING: failed to get wlower\n";
 		return -1;
 	    }
-	    if (OPS_GetNumRemainingInputArgs() < numnodes) {
-		opserr << "WARNING: insufficient number of fixed nodes\n";
+	    if (OPS_GetDoubleInput(&ndm, &wupper[0]) < 0) {
+		opserr << "WARNING: failed to get wupper\n";
 		return -1;
 	    }
-	    if (numnodes > 0) {
-		VInt fixednodes(numnodes);
-		if (OPS_GetIntInput(&numnodes, &fixednodes[0]) < 0) {
-		    opserr << "WARNING: failed to read fixed nodes\n";
-		    return -1;
-		}
-		bgmesh.addFixed(fixednodes);
-	    }
+	    bgmesh.addWall(wlower,wupper);
+
 	} else if (strcmp(opt, "-freesurface") == 0) {
 	    bgmesh.setFreeSurface();
 	}
@@ -250,12 +243,12 @@ int OPS_BgMesh()
 }
 
 BackgroundMesh::BackgroundMesh()
-    :lower(), upper(), bcells(),
+    :lower(), upper(), wlower(), wupper(), bcells(),
      tol(1e-10), meshtol(0.1), bsize(-1.0),
      numave(2), numsub(4), recorders(),locs(),
      currentTime(0.0), theFile(),
-     fixedNodes(), structuralNodes(),
-     freesurface(false)
+     structuralNodes(),
+     freesurface(false), sptags()
 {
 }
 
@@ -655,16 +648,23 @@ BackgroundMesh::clearGrid()
     Domain* domain = OPS_GetDomain();
     if (domain == 0) return;
 
+    // remove sps
+    for (int i=0; i<(int)sptags.size(); ++i) {
+	SP_Constraint* sp = domain->removeSP_Constraint(sptags[i]);
+	if (sp != 0) {
+	    delete sp;
+	}
+    }
+    sptags.clear();
+
     // remove cells
-    std::map<VInt,BNode> fixedbnodes;
     for (std::map<VInt,BNode>::iterator it=bnodes.begin(); it!=bnodes.end(); ++it) {
 	BNode& bnode = it->second;
 	const VInt& tags = bnode.tags;
 	const VInt& types = bnode.type;
 
-	BNode newbnode;
 	for (int i=0; i<(int)types.size(); ++i) {
-	    if (types[i] == FLUID) {
+	    if (types[i] == FLUID || types[i] == FIXED) {
 		// remove node
 		Node* nd = domain->removeNode(tags[i]);
 		if (nd != 0) {
@@ -676,25 +676,12 @@ BackgroundMesh::clearGrid()
 		if (pc != 0) {
 		    delete pc;
 		}
-	    } else if (types[i] == FIXED) {
-		newbnode.tags.push_back(tags[i]);
-		newbnode.crdsn.push_back(bnode.crdsn[i]);
-		newbnode.vn.push_back(bnode.vn[i]);
-		newbnode.dvn.push_back(bnode.dvn[i]);
-		newbnode.pn.push_back(bnode.pn[i]);
-		newbnode.dpn.push_back(bnode.dpn[i]);
-		newbnode.type.push_back(types[i]);
 	    }
-	}
-
-	if (newbnode.tags.empty() == false) {
-	    fixedbnodes[it->first] = newbnode;
 	}
     }
 
     bnodes.clear();
     bcells.clear();
-    bnodes = fixedbnodes;
 }
 
 bool
@@ -862,124 +849,22 @@ BackgroundMesh::remesh(bool init)
     return 0;
 }
 
-// for each fixed node
-// the list is unique
-// get current states
-// get nearest grid
-// check if on that grid, if not skip it
-// check if already a node, error
-// add to bnode with type = FIXED
 int
-BackgroundMesh::addFixed(const VInt& ndtags)
+BackgroundMesh::addWall(const VDouble& lower, const VDouble& upper)
 {
-    // get domain
-    int ndm = OPS_GetNDM();
-    Domain* domain = OPS_GetDomain();
-    if (domain == 0) return 0;
-
-    // add node
-    int ndtag = Mesh::nextNodeTag();
-    for (int i=0; i<(int)ndtags.size(); ++i) {
-
-	// if already there
-	if (fixedNodes.find(ndtags[i]) != fixedNodes.end()) continue;
-
-	// get node
-	Node* nd = domain->getNode(ndtags[i]);
-	if (nd == 0) continue;
-
-	// nodal data
-	const Vector& crds = nd->getCrds();
-    	const Vector& disp = nd->getTrialDisp();
-    	const Vector& vel = nd->getTrialVel();
-	const Vector& accel = nd->getTrialAccel();
-
-	if (crds.Size()!=ndm || disp.Size()<ndm) {
-	    continue;
-	}
-
-	// nodal crds
-	VDouble crdsn(ndm), vn(ndm), dvn(ndm);
-	for (int j=0; j<ndm; ++j) {
-	    crdsn[j] = crds(j)+disp(j);
-	    vn[j] = vel(j);
-	    dvn[j] = accel(j);
-	}
-
-	// near index
-	VInt index;
-	nearIndex(crdsn, index);
-
-	// if not on a grid point
-	VDouble gridcrds;
-	getCrds(index,gridcrds);
-	gridcrds -= crdsn;
-	if (normVDouble(gridcrds) > meshtol*bsize) continue;
-
-	// create pressure constraint
-	Pressure_Constraint* pc = domain->getPressure_Constraint(nd->getTag());
-	if(pc != 0) {
-	    pc->setDomain(domain);
-	} else {
-
-	    // create pressure node
-	    Node* pnode = 0;
-	    if (ndm == 2) {
-		pnode = new Node(ndtag++, 1, crds[0], crds[1]);
-	    } else if (ndm == 3) {
-		pnode = new Node(ndtag++, 1, crds[0], crds[1], crds[2]);
-	    }
-	    if (pnode == 0) {
-		std::cerr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
-		return -1;
-	    }
-	    if (domain->addNode(pnode) == false) {
-		std::cerr << "WARNING: failed to add node to domain -- BgMesh::gridNodes\n";
-		delete pnode;
-		return -1;
-	    }
-
-	    pc = new Pressure_Constraint(nd->getTag(), pnode->getTag());
-	    if(pc == 0) {
-		std::cerr<<"WARNING: no enough memory for Pressure_Constraint\n";
-		return -1;
-	    }
-	    if (domain->addPressure_Constraint(pc) == false) {
-		std::cerr << "WARNING: failed to add PC to domain -- BgMesh::gridNodes\n";
-		delete pc;
-		return -1;
-	    }
-	}
-
-	// nodal pressures
-	double pressure = pc->getPressure();
-	double pdot = pc->getPdot();
-
-	// create bnode
-	BNode& bnode = bnodes[index];
-	if (bnode.tags.empty() == false) {
-	    opserr << "WARNING: two fixed nodes are at same location -- addFixed\n";
-	    return -1;
-	}
-
-	bnode.addNode(nd->getTag(),crdsn,vn,dvn,pressure,pdot,FIXED);
-
-	fixedNodes.insert(ndtags[i]);
-    }
-
+    wlower.push_back(lower);
+    wupper.push_back(upper);
     return 0;
 }
 
 // for each structural node
-// if it's in fixed, skip it
 // get current states
 // find nearest bnode
-// if bnode is fixed, check if too close to it
 // if bnode is empty, clear it
 // add structure node to bnodes
 // get min and max of FSI area
 // set cells close to the structures as STRUCTURE
-// set grids close to the structures as EMPTY unless it's FIXED or STRUCTURE
+// set grids close to the structures as EMPTY unless it's STRUCTURE
 // set FSI area bnodes and cells
 int
 BackgroundMesh::addStructure()
@@ -993,9 +878,6 @@ BackgroundMesh::addStructure()
     int ndtag = Mesh::nextNodeTag();
     for (std::set<int>::iterator it=structuralNodes.begin();
 	 it!=structuralNodes.end(); ++it) {
-
-	// if fixed
-	if (fixedNodes.find(*it) != fixedNodes.end()) continue;
 
 	// get node
 	Node* nd = domain->getNode(*it);
@@ -1065,14 +947,9 @@ BackgroundMesh::addStructure()
 	// add structural node to the bnode
 	BNode& bnode = bnodes[index];
 
-	// check with fixed bnodes and empty bnodes
+	// check with bnodes and empty bnodes
 	for (int i=0; i<(int)bnode.type.size(); ++i) {
-	    if (bnode.type[i] == FIXED) {
-		// check the model
-		opserr<<"WARNING: structural nodes are too close to fixed nodes\n";
-		return-1;
-
-	    } else if (bnode.type[i] == EMPTY) {
+	    if (bnode.type[i] == EMPTY) {
 		bnode.clear();
 		break;
 
@@ -1096,10 +973,6 @@ BackgroundMesh::addStructure()
 	    } else if (bnd.type[0] == FLUID) {
 		bnd.clear();
 		bnd.addNode(EMPTY);
-	    } else if (bnd.type[0] == FIXED) {
-		// check the model
-		opserr<<"WARNING: structural nodes are too close to fixed nodes\n";
-		return-1;
 	    }
 	}
 
@@ -1130,10 +1003,6 @@ BackgroundMesh::addStructure()
 	    BNode& bnd = bnodes[indices[i]];
 	    if (bnd.size() == 0) {
 		bnd.addNode(FLUID);
-	    } else if (bnd.type[0] == FIXED) {
-		// check the model
-		opserr<<"WARNING: structural nodes are too close to fixed nodes\n";
-		return-1;
 	    }
 	}
 
@@ -1268,6 +1137,7 @@ BackgroundMesh::gridNodes()
     int ndtag = Mesh::nextNodeTag();
     std::vector<Node*> newnodes(iters.size(),0), newpnodes(iters.size(), 0);
     std::vector<Pressure_Constraint*> newpcs(iters.size(), 0);
+    std::vector<SP_Constraint*> newsps(iters.size()*ndm, 0);
 
     int res = 0;
 
@@ -1370,8 +1240,38 @@ BackgroundMesh::gridNodes()
 	// add to newnodes
 	newnodes[j] = node;
 
+	// check if a wall
+	bool wall = false;
+	for (int i=0; i<(int)wlower.size(); ++i) {
+	    bool wl = true;
+	    for (int k=0; k<ndm; ++k) {
+		if (crds[k]<wlower[i][k]-0.1*bsize || crds[k]>wupper[i][k]+0.1*bsize) {
+		    wl = false;
+		    break;
+		}
+	    }
+	    if (wl) {
+		wall = true;
+		break;
+	    }
+	}
+
+	if (wall) {
+	    for (int k=0; k<ndm; ++k) {
+		SP_Constraint* sp = new SP_Constraint(node->getTag(), k, 0.0, true);
+		if (sp != 0) {
+		    newsps[j*ndm+k] = sp;
+		}		
+	    }
+	}
+
+
 	// set the bnode
-	bnode.setNode(0,node->getTag(),crds,vel,accel,pre,pdot,FLUID);
+	if (wall) {
+	    bnode.setNode(0,node->getTag(),crds,vel,accel,pre,pdot,FIXED);
+	} else {
+	    bnode.setNode(0,node->getTag(),crds,vel,accel,pre,pdot,FLUID);
+	}
 
 	// set pressure
 	Pressure_Constraint* thePC = domain->getPressure_Constraint(node->getTag());
@@ -1456,6 +1356,23 @@ BackgroundMesh::gridNodes()
 	    std::cerr<<"WARNING: failed to add PC to domain -- BgMesh::gridNodes\n";
 	    delete newpcs[i];
 	    return -1;
+	}
+    }
+    for (int i=0; i<(int)newpcs.size(); ++i) {
+	for (int k=0; k<ndm; ++k) {
+	    if (newsps[i*ndm+k] == 0) {
+		continue;
+	    }
+
+	    // add to domain
+	    if (domain->addSP_Constraint(newsps[i*ndm+k]) == false) {
+		opserr << "WARNING: failed to add sp to domain\n";
+		delete newsps[i*ndm+k];
+		return -1;
+	    }
+
+	    // add sp tags
+	    sptags.push_back(newsps[i*ndm+k]->getTag());
 	}
     }
 
