@@ -1137,7 +1137,7 @@ BackgroundMesh::gridNodes()
     int ndtag = Mesh::nextNodeTag();
     std::vector<Node*> newnodes(iters.size(),0), newpnodes(iters.size(), 0);
     std::vector<Pressure_Constraint*> newpcs(iters.size(), 0);
-    std::vector<SP_Constraint*> newsps(iters.size()*ndm, 0);
+    std::vector<Node*> newsps(iters.size(), 0);
 
     int res = 0;
 
@@ -1161,50 +1161,70 @@ BackgroundMesh::gridNodes()
 	VDouble crds;
 	getCrds(index,crds);
 
+	// check if a wall
+	bool wall = false;
+	for (int i=0; i<(int)wlower.size(); ++i) {
+	    bool wl = true;
+	    for (int k=0; k<ndm; ++k) {
+		if (crds[k]<wlower[i][k]-0.1*bsize || crds[k]>wupper[i][k]+0.1*bsize) {
+		    wl = false;
+		    break;
+		}
+	    }
+	    if (wl) {
+		wall = true;
+		break;
+	    }
+	}
+
 	// get particles
 	VParticle pts;
 	VInt minind = index;
 	VInt maxind = index;
 	minind -= numave;
 	maxind += numave;
-	gatherParticles(minind,maxind,pts);
+	if (wall == false) {
+	    gatherParticles(minind,maxind,pts);
+	}
 
 	// get information
 	double wt = 0.0, pre = 0.0, pdot = 0.0;
 	VDouble vel(ndm), accel(ndm);
-	for (int i=0; i<(int)pts.size(); ++i) {
+	if (wall == false) {
+	    for (int i=0; i<(int)pts.size(); ++i) {
 
-	    // get particle
-	    if (pts[i] == 0) continue;
+		// get particle
+		if (pts[i] == 0) continue;
 
-	    // particle coordinates
-	    const VDouble& pcrds = pts[i]->getCrds();
+		// particle coordinates
+		const VDouble& pcrds = pts[i]->getCrds();
 
-	    // distance from particle to current location
-	    VDouble dist = pcrds;
-	    dist -= crds;
-	    double q = normVDouble(dist) / (bsize);
+		// distance from particle to current location
+		VDouble dist = pcrds;
+		dist -= crds;
+		double q = normVDouble(dist) / (bsize);
 
-	    // weight for the particle
-	    double w = QuinticKernel(q, bsize, ndm);
+		// weight for the particle
+		double w = QuinticKernel(q, bsize, ndm);
 
-	    // add weight
-	    wt += w;
+		// add weight
+		wt += w;
 
-	    // add pressure
-	    pre +=  pts[i]->getPressure() * w;
-	    pdot += pts[i]->getPdot() * w;
+		// add pressure
+		pre +=  pts[i]->getPressure() * w;
+		pdot += pts[i]->getPdot() * w;
 
-	    // add velocity
-	    const VDouble& pvel = pts[i]->getVel();
-	    for (int k=0; k<ndm; k++) {
-		vel[k] += w*pvel[k];
-	    }
+		// add velocity
+		const VDouble& pvel = pts[i]->getVel();
+		for (int k=0; k<ndm; k++) {
+		    vel[k] += w*pvel[k];
+		}
 
-	    // add acceleration
-	    const VDouble& paccel = pts[i]->getAccel();
-	    for (int k=0; k<ndm; k++) {
-		accel[k] += w*paccel[k];
+		// add acceleration
+		const VDouble& paccel = pts[i]->getAccel();
+		for (int k=0; k<ndm; k++) {
+		    accel[k] += w*paccel[k];
+		}
 	    }
 	}
 	if (wt > 0) {
@@ -1240,29 +1260,9 @@ BackgroundMesh::gridNodes()
 	// add to newnodes
 	newnodes[j] = node;
 
-	// check if a wall
-	bool wall = false;
-	for (int i=0; i<(int)wlower.size(); ++i) {
-	    bool wl = true;
-	    for (int k=0; k<ndm; ++k) {
-		if (crds[k]<wlower[i][k]-0.1*bsize || crds[k]>wupper[i][k]+0.1*bsize) {
-		    wl = false;
-		    break;
-		}
-	    }
-	    if (wl) {
-		wall = true;
-		break;
-	    }
-	}
-
+	// add to newsps
 	if (wall) {
-	    for (int k=0; k<ndm; ++k) {
-		SP_Constraint* sp = new SP_Constraint(node->getTag(), k, 0.0, true);
-		if (sp != 0) {
-		    newsps[j*ndm+k] = sp;
-		}		
-	    }
+	    newsps[j] = node;
 	}
 
 
@@ -1358,21 +1358,21 @@ BackgroundMesh::gridNodes()
 	    return -1;
 	}
     }
-    for (int i=0; i<(int)newpcs.size(); ++i) {
+    for (int i=0; i<(int)newsps.size(); ++i) {
+	if (newsps[i] == 0) continue;
 	for (int k=0; k<ndm; ++k) {
-	    if (newsps[i*ndm+k] == 0) {
-		continue;
-	    }
+	    SP_Constraint* sp = new SP_Constraint(newsps[i]->getTag(), k, 0.0, true);
+	    if (sp != 0) {
+		// add to domain
+		if (domain->addSP_Constraint(sp) == false) {
+		    opserr << "WARNING: failed to add sp to domain\n";
+		    delete sp;
+		    return -1;
+		}
 
-	    // add to domain
-	    if (domain->addSP_Constraint(newsps[i*ndm+k]) == false) {
-		opserr << "WARNING: failed to add sp to domain\n";
-		delete newsps[i*ndm+k];
-		return -1;
-	    }
-
-	    // add sp tags
-	    sptags.push_back(newsps[i*ndm+k]->getTag());
+		// add sp tags
+		sptags.push_back(sp->getTag());
+	    }		
 	}
     }
 
