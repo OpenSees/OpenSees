@@ -42,12 +42,11 @@ class BackgroundMesh
 {
 private:
 
-    static int FLUID, STRUCTURE, FIXED, EMPTY, FSI;
+    static int FLUID, STRUCTURE, FIXED;
 
     // FLUID - a grid fluid node
     // STRUCTURE - a structural node
     // FIXED - a fixed grid fluid node
-    // EMPTY - an empty node
     struct BNode {
 
 	VInt tags;
@@ -109,7 +108,6 @@ private:
 
     // FLUID - a grid fluid cell
     // STRUCTURE - a structural cell, which should have no particles
-    // FSI - a FSI cell
     struct BCell {
 	VParticle pts;
 	int type;

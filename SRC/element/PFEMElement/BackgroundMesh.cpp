@@ -55,8 +55,6 @@
 int BackgroundMesh::FLUID = 1;
 int BackgroundMesh::STRUCTURE = 2;
 int BackgroundMesh::FIXED = 3;
-int BackgroundMesh::EMPTY = 4;
-int BackgroundMesh::FSI = 5;
 
 static BackgroundMesh bgmesh;
 
@@ -947,13 +945,9 @@ BackgroundMesh::addStructure()
 	// add structural node to the bnode
 	BNode& bnode = bnodes[index];
 
-	// check with bnodes and empty bnodes
+	// check FIXED bnode
 	for (int i=0; i<(int)bnode.type.size(); ++i) {
-	    if (bnode.type[i] == EMPTY) {
-		bnode.clear();
-		break;
-
-	    } else if (bnode.type[i] == FLUID) {
+	    if (bnode.type[i] == FIXED) {
 		bnode.clear();
 		break;
 	    }
@@ -961,7 +955,7 @@ BackgroundMesh::addStructure()
 
 	bnode.addNode(nd->getTag(),crdsn,vn,dvn,pressure,pdot,STRUCTURE);
 
-	// set empty bnodes
+	// set fixed  bnodes
 	VInt ind = index;
 	ind -= 1;
 	VVInt indices;
@@ -969,10 +963,7 @@ BackgroundMesh::addStructure()
 	for (int i=0; i<(int)indices.size(); ++i) {
 	    BNode& bnd = bnodes[indices[i]];
 	    if (bnd.size() == 0) {
-		bnd.addNode(EMPTY);
-	    } else if (bnd.type[0] == FLUID) {
-		bnd.clear();
-		bnd.addNode(EMPTY);
+		bnd.addNode(FIXED);
 	    }
 	}
 
@@ -996,38 +987,48 @@ BackgroundMesh::addStructure()
 	    }
 	}
 
-	// set FSI bnodes
-	ind -= 1;
-	getCorners(ind, 4, indices);
-	for (int i=0; i<(int)indices.size(); ++i) {
-	    BNode& bnd = bnodes[indices[i]];
-	    if (bnd.size() == 0) {
-		bnd.addNode(FLUID);
-	    }
-	}
-
-	// set STRUCTURE cells
-	getCorners(ind, 3, indices);
-	for (int i=0; i<(int)indices.size(); ++i) {
-	    BCell& bcell = bcells[indices[i]];
-	    if (bcell.type == FLUID) {
-		bcell.type = FSI;
-	    }
-
-	    // set corners
-	    if (bcell.bnodes.empty()) {
-
-		VVInt corners;
-		getCorners(indices[i], 1, corners);
-
-		for (int j=0; j<(int)corners.size(); ++j) {
-		    BNode& bnode = bnodes[corners[j]];
-		    bcell.bnodes.push_back(&bnode);
-		    bcell.bindex.push_back(corners[j]);
-		}
-	    }
-	}
     }
+
+    // add wall nodes
+    for (int i=0; i<(int)wlower.size(); ++i) {
+	VInt wlow, wup;
+	lowerIndex(wlower[i], wlow);
+	lowerIndex(wupper[i], wup);
+	if (ndm ==2) {
+	    for (int j=wlow[0]; j<=wup[0]; ++j) {
+		for (int k=wlow[1]; k<=wup[1]; ++k) {
+		    VInt ind(ndm);
+		    ind[0] = j;
+		    ind[1] = k;
+		    BNode& bnd = bnodes[ind];
+		    if (bnd.size() == 0) {
+			bnd.addNode(FIXED);
+		    }
+		}
+
+	    }
+	    
+	} else if (ndm == 3) {
+	    for (int j=wlow[0]; j<=wup[0]; ++j) {
+		for (int k=wlow[1]; k<=wup[1]; ++k) {
+		    for (int l=wlow[2]; l<=wup[2]; ++l) {
+			VInt ind(ndm);
+			ind[0] = j;
+			ind[1] = k;
+			ind[2] = l;
+			BNode& bnd = bnodes[ind];
+			if (bnd.size() == 0) {
+			    bnd.addNode(FIXED);
+			}
+		    }
+		}
+
+	    }
+	}
+
+    }
+
+
 
     return 0;
 }
@@ -1154,8 +1155,7 @@ BackgroundMesh::gridNodes()
 	    opserr << "WARNING: bnode.size() = 0 -- gridNodes\n";
 	    continue;
 	}
-	if (bnode.size() > 1) continue;
-	if (bnode.type[0] != FLUID) continue;
+	if (bnode.type[0] == STRUCTURE) {continue;}
 
 	// coordinates
 	VDouble crds;
@@ -1183,48 +1183,44 @@ BackgroundMesh::gridNodes()
 	VInt maxind = index;
 	minind -= numave;
 	maxind += numave;
-	if (wall == false) {
-	    gatherParticles(minind,maxind,pts);
-	}
+	gatherParticles(minind,maxind,pts);
 
 	// get information
 	double wt = 0.0, pre = 0.0, pdot = 0.0;
 	VDouble vel(ndm), accel(ndm);
-	if (wall == false) {
-	    for (int i=0; i<(int)pts.size(); ++i) {
+	for (int i=0; i<(int)pts.size(); ++i) {
 
-		// get particle
-		if (pts[i] == 0) continue;
+	    // get particle
+	    if (pts[i] == 0) continue;
 
-		// particle coordinates
-		const VDouble& pcrds = pts[i]->getCrds();
+	    // particle coordinates
+	    const VDouble& pcrds = pts[i]->getCrds();
 
-		// distance from particle to current location
-		VDouble dist = pcrds;
-		dist -= crds;
-		double q = normVDouble(dist) / (bsize);
+	    // distance from particle to current location
+	    VDouble dist = pcrds;
+	    dist -= crds;
+	    double q = normVDouble(dist) / (bsize);
 
-		// weight for the particle
-		double w = QuinticKernel(q, bsize, ndm);
+	    // weight for the particle
+	    double w = QuinticKernel(q, bsize, ndm);
 
-		// add weight
-		wt += w;
+	    // add weight
+	    wt += w;
 
-		// add pressure
-		pre +=  pts[i]->getPressure() * w;
-		pdot += pts[i]->getPdot() * w;
+	    // add pressure
+	    pre +=  pts[i]->getPressure() * w;
+	    pdot += pts[i]->getPdot() * w;
 
-		// add velocity
-		const VDouble& pvel = pts[i]->getVel();
-		for (int k=0; k<ndm; k++) {
-		    vel[k] += w*pvel[k];
-		}
+	    // add velocity
+	    const VDouble& pvel = pts[i]->getVel();
+	    for (int k=0; k<ndm; k++) {
+		vel[k] += w*pvel[k];
+	    }
 
-		// add acceleration
-		const VDouble& paccel = pts[i]->getAccel();
-		for (int k=0; k<ndm; k++) {
-		    accel[k] += w*paccel[k];
-		}
+	    // add acceleration
+	    const VDouble& paccel = pts[i]->getAccel();
+	    for (int k=0; k<ndm; k++) {
+		accel[k] += w*paccel[k];
 	    }
 	}
 	if (wt > 0) {
@@ -1233,6 +1229,23 @@ BackgroundMesh::gridNodes()
 	    vel /= wt;
 	    accel /= wt;
 	}
+
+	// update pressure for structural nodes
+	if (bnode.type[0] == STRUCTURE) {
+	    for (int i = 0; i < (int)bnode.size(); ++i) {
+	    	Pressure_Constraint* pc = domain->getPressure_Constraint(bnode.tags[i]);
+	    	if (pc == 0) {
+	    	    opserr << "WARNING: structural node "<<bnode.tags[i];
+	    	    opserr << " has not pc associated\n";
+	    	    continue;
+	    	}
+	    	pc->setPressure(pre);
+	    	pc->setPdot(pdot);
+	    }
+
+	    continue;
+	}
+
 
 	// create node
 	Node* node = 0;
@@ -1247,7 +1260,7 @@ BackgroundMesh::gridNodes()
 	    continue;
 	}
 
-	if (wt > 0) {
+	if (wt > 0 && !wall) {
 	    Vector vvel;
 	    toVector(vel, vvel);
 	    Vector vaccel;
@@ -1264,7 +1277,6 @@ BackgroundMesh::gridNodes()
 	if (wall) {
 	    newsps[j] = node;
 	}
-
 
 	// set the bnode
 	if (wall) {
@@ -1608,8 +1620,7 @@ BackgroundMesh::gridFluid()
     for (int j=0; j<(int)cells.size(); ++j) {
 
 	// structural cell
-	if (cells[j]->type == STRUCTURE ||
-	    cells[j]->type == FSI) continue;
+	if (cells[j]->type == STRUCTURE) continue;
 
 	// find the group of this mesh
 	std::map<int,int> numpts;
@@ -1730,7 +1741,7 @@ BackgroundMesh::gridFSI(ID& freenodes)
     std::map<VInt,BNode*> fsibnodes;
     for (std::map<VInt,BCell>::iterator it=bcells.begin(); it!=bcells.end(); ++it) {
 
-	// only for structural and FSI cells
+	// only for structural cells
 	BCell& bcell = it->second;
 	if (bcell.type == FLUID) continue;
 
@@ -1760,7 +1771,6 @@ BackgroundMesh::gridFSI(ID& freenodes)
 	VInt& type = bnode->type;
 
 	for (int i=0; i<(int)tags.size(); ++i) {
-	    if (type[i] == EMPTY) continue;
 	    ndtags.push_back(tags[i]);
 	    ndtypes.push_back(type[i]);
 	    ndindex.push_back(bindex);
@@ -1859,14 +1869,21 @@ BackgroundMesh::gridFSI(ID& freenodes)
 	}
 	if (extra) continue;
 
-	// check if connect to fluid only
-	bool fluid = true;
+	// get fluid and structural indices
+	VVInt findex, sindex;
+	//bool fluid = true;
 	for (int j=0; j<(int)tri.size(); ++j) {
 	    if (ndtypes[tri[j]] == STRUCTURE) {
-		fluid = false;
-		break;
+		sindex.push_back(ndindex[tri[j]]);
+		// fluid = false;
+		// break;
+	    } else {
+		findex.push_back(ndindex[tri[j]]);
 	    }
 	}
+
+	// if all structure
+	if (sindex.size() == tri.size()) continue;
 
 	// get min and max ind
 	VInt maxind = ndindex[tri[0]];
@@ -1880,20 +1897,10 @@ BackgroundMesh::gridFSI(ID& freenodes)
 		}
 	    }
 	}
-
-	// check if same plane
-	// bool sameplane = false;
-	// for (int k=0; k<ndm; ++k) {
-	//     if (minind[k] == maxind[k]) {
-	// 	sameplane = true;
-	// 	break;
-	//     }
-	// }
-	// if (sameplane) continue;
-
+	
 	// check if triangle out side of FSI
 	bool outside = false;
-	if (fluid) {
+	if (findex.size() == tri.size()) {
 	    VInt currind(ndm);
 	    if (ndm == 2) {
 		for (int j=minind[0]; j<maxind[0]; ++j) {
@@ -1937,14 +1944,23 @@ BackgroundMesh::gridFSI(ID& freenodes)
  	    }
  	}
 	if (outside) continue;
-
+	
 	// gather particles
 	VParticle tripts;
-	if (!fluid) {
-	    minind -= 1;
-	    maxind += 1;
+	for (int j=0; j<(int)findex.size(); ++j) {
+	    VInt ind = findex[j];
+	    ind -= 1;
+	    VVInt indices;
+	    getCorners(ind, 2, indices);
+	    for (int k=0; k<(int)indices.size(); ++k) {
+		std::map<VInt,BCell>::iterator cellit = bcells.find(indices[k]);
+		if (cellit == bcells.end()) continue;
+		if (cellit->second.type == STRUCTURE) continue;
+		if (cellit->second.pts.empty()) continue;
+		const VParticle& pts = cellit->second.pts;
+		tripts.insert(tripts.end(), pts.begin(), pts.end());
+	    }
 	}
-	gatherParticles(minind,maxind,tripts,true);
 	if (tripts.empty()) {
 	    // set free surface
 	    for (int j=0; j<(int)tri.size(); ++j) {
@@ -2504,10 +2520,17 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
 
 		// get fixed
 		for (int j=0; j<(int)bnode.size(); ++j) {
-		    if (bnode.type[j] != FLUID) {
+		    if (bnode.type[j] == FLUID) {
+			fixed[i] = 0;
+			break;
+		    } else if (bnode.type[j] == FIXED) {
+			fixed[i] = 2;
+			break;
+		    } else if (bnode.type[j] == STRUCTURE) {
 			fixed[i] = 1;
 			break;
 		    }
+		    
 		}
 		if (fixed[i] == 1) {
 		    continue;
@@ -2666,39 +2689,50 @@ BackgroundMesh::interpolate(Particle* pt, const VVInt& index,
     pvel.resize(ndm, 0.0);
     VDouble pdvn(ndm);
     double ppre=0.0, pdp=0.0;
-    double Nsum = 0.0;
+    double Nvsum = 0.0, Npsum = 0.0;
     for (int j=0; j<(int)vels.size(); ++j) {
 
 	// no vel at this corner
 	if (vels[j].empty()) continue;
 
 	// free point
-	for (int k=0; k<ndm; ++k) {
-	    pvel[k] += N[j]*vels[j][k];
-	    if (pt->isUpdated() == false) {
-		pdvn[k] += N[j]*dvns[j][k];
+	if (fixed[j] == 0) {
+	    for (int k=0; k<ndm; ++k) {
+		pvel[k] += N[j]*vels[j][k];
+		if (pt->isUpdated() == false) {
+		    pdvn[k] += N[j]*dvns[j][k];
+		}
 	    }
+	    Nvsum += N[j];
 	}
 	if (pt->isUpdated() == false) {
 	    ppre += N[j]*pns[j];
 	    pdp += N[j]*dpns[j];
 	}
-	Nsum += N[j];
+	Npsum += N[j];
     }
 
-    if (Nsum > 0) {
-	pvel /= Nsum;
-	if (pt->isUpdated() == false) {
-	    pdvn /= Nsum;
-	    ppre /= Nsum;
-	    pdp /= Nsum;
-	    pt->setVel(pvel);
-	    pt->setAccel(pdvn);
-	    pt->setPressure(ppre);
-	    pt->setPdot(pdp);
-	}
+    if (Nvsum > 0) {
+	pvel /= Nvsum;
+	pdvn /= Nvsum;
     } else {
 	pvel = pt->getVel();
+	pdvn = pt->getAccel();
+    }
+
+    if (Npsum > 0) {
+	ppre /= Npsum;
+	pdp /= Npsum;
+    } else {
+	ppre = pt->getPressure();
+	pdp = pt->getPdot();
+    }
+
+    if (pt->isUpdated() == false) {
+	pt->setVel(pvel);
+	pt->setAccel(pdvn);
+	pt->setPressure(ppre);
+	pt->setPdot(pdp);
     }
 
     return 0;
