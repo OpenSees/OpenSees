@@ -58,7 +58,7 @@ void* OPS_PFEMSolver_Mumps()
     int add = 0;
     int print = 0;
     double ptol = 1e-4;
-    double Bitol = 1e-6;
+    double Bitol = 1e-16;
     int maxiter = 100;
 
     while (OPS_GetNumRemainingInputArgs() > 0) {
@@ -329,7 +329,7 @@ PFEMSolver_Mumps::solve()
 	    int numignore = 0;
 	    for (int j=0; j<Isize; ++j) {
 		for (int i=0; i<Isize; ++i) {
-		    if (fabs(rhs_val[Isize*j+i]) > Bitol*mf) {
+		    if (fabs(rhs_val[Isize*j+i]) > Bitol) {
 			cs_entry(Bi1, i, j,rhs_val[Isize*j+i]);
 		    } else {
 			numignore++;
