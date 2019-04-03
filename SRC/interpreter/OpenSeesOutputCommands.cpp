@@ -197,7 +197,7 @@ int OPS_nodeDisp()
 	for (int i=0; i<size; i++) {
 	    values[i] = (*nodalResponse)(i);
 	}
-	if (OPS_SetDoubleOutput(&size, &values[0])) {
+	if (OPS_SetDoubleOutput(&size, &values[0]) < 0) {
 	    opserr<<"WARNING nodeDisp - failed to read double inputs\n";
 	    return -1;
 	}
