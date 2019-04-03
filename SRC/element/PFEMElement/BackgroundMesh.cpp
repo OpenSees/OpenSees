@@ -70,23 +70,23 @@ int OPS_BgMesh()
 
     // check input
     if(OPS_GetNumRemainingInputArgs() < 2*ndm+1) {
-	std::cerr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? numl? locs? -numsub numsub? -wall lower? upper? -structure numnodes? structuralNodes? -freesurface?>\n";
+	opserr<<"WARNING: basicsize? lower? upper? <-tol tol? -meshtol tol? -wave wavefilename? numl? locs? -numsub numsub? -wall lower? upper? -structure numnodes? structuralNodes? -freesurface?>\n";
 	return -1;
     }
 
     // get basicsize
     double size;
     if (OPS_GetNumRemainingInputArgs() < 1) {
-	std::cerr << "WARNING: need basic size\n";
+	opserr << "WARNING: need basic size\n";
 	return -1;
     }
     int num = 1;
     if (OPS_GetDoubleInput(&num, &size) < 0) {
-	std::cerr << "WARNING: failed to get basic size\n";
+	opserr << "WARNING: failed to get basic size\n";
 	return -1;
     }
     if (size <= 0) {
-	std::cerr << "WARNING: basic size <= 0\n";
+	opserr << "WARNING: basic size <= 0\n";
 	return -1;
     }
     bgmesh.setBasicSize(size);
@@ -95,12 +95,12 @@ int OPS_BgMesh()
     VDouble lower(ndm), upper(ndm);
     double* ptr = &lower[0];
     if (OPS_GetDoubleInput(&ndm, ptr) < 0) {
-	std::cerr << "WARNING: failed to get min\n";
+	opserr << "WARNING: failed to get min\n";
 	return -1;
     }
     ptr = &upper[0];
     if (OPS_GetDoubleInput(&ndm, ptr) < 0) {
-	std::cerr << "WARNING: failed to get max\n";
+	opserr << "WARNING: failed to get max\n";
 	return -1;
     }
     bgmesh.setRange(lower,upper);
@@ -117,7 +117,7 @@ int OPS_BgMesh()
 	    }
 	    double tol;
 	    if (OPS_GetDoubleInput(&num, &tol) < 0) {
-		std::cerr << "WARNING: failed to read tolerance\n";
+		opserr << "WARNING: failed to read tolerance\n";
 		return -1;
 	    }
 	    bgmesh.setTol(tol);
@@ -128,7 +128,7 @@ int OPS_BgMesh()
 	    }
 	    double tol;
 	    if (OPS_GetDoubleInput(&num, &tol) < 0) {
-		std::cerr << "WARNING: failed to read mesh tolerance\n";
+		opserr << "WARNING: failed to read mesh tolerance\n";
 		return -1;
 	    }
 	    bgmesh.setMeshTol(tol);
@@ -160,7 +160,7 @@ int OPS_BgMesh()
 		
 		VDouble locs(num);
 		if (OPS_GetDoubleInput(&num, &locs[0]) < 0) {
-		    std::cerr << "WARNING: failed to read wave recording locations\n";
+		    opserr << "WARNING: failed to read wave recording locations\n";
 		    return -1;
 		}
 		bgmesh.setLocs(locs);
@@ -703,11 +703,11 @@ BackgroundMesh::solveLine(const VDouble& p1, const VDouble& dir,
 {
     // check
     if (p1.size()!=dir.size()) {
-	std::cerr << "WARNING: sizes are not compatible -- BgMesh::solveLine\n";
+	opserr << "WARNING: sizes are not compatible -- BgMesh::solveLine\n";
 	return -1;
     }
     if (dim<0 || dim>=(int)dir.size()) {
-	std::cerr << "WARNING: dim is out of range -- BgMesh::solveLine\n";
+	opserr << "WARNING: dim is out of range -- BgMesh::solveLine\n";
 	return -1;
     }
 
@@ -726,7 +726,7 @@ BackgroundMesh::remesh(bool init)
 {
     // clear and check
     if (bsize <= 0.0) {
-	std::cerr << "WARNING: basic mesh size has not been set -- BgMesh::addParticles\n";
+	opserr << "WARNING: basic mesh size has not been set -- BgMesh::addParticles\n";
 	return -1;
     }
 
@@ -737,13 +737,13 @@ BackgroundMesh::remesh(bool init)
 
     // move particles
     if (moveParticles() < 0) {
-	std::cerr << "WARNING: failed to move particles\n";
+	opserr << "WARNING: failed to move particles\n";
 	return -1;
     }
 
 #ifdef _LINUX
     timer.pause();
-    std::cout<<"time for move particles = "<<timer.getReal()<<"\n";
+    opserr<<"time for move particles = "<<timer.getReal()<<"\n";
     timer.start();
 #endif
 
@@ -752,36 +752,36 @@ BackgroundMesh::remesh(bool init)
 
     // add structure
     if (addStructure() < 0) {
-	std::cerr << "WARNING: failed to add structure\n";
+	opserr << "WARNING: failed to add structure\n";
 	return -1;
     }
 
 #ifdef _LINUX
     timer.pause();
-    std::cout<<"time for add structure = "<<timer.getReal()<<"\n";
+    opserr<<"time for add structure = "<<timer.getReal()<<"\n";
     timer.start();
 #endif
     // add particles
     if (addParticles(init) < 0) {
-	std::cerr << "WARNING: failed to add particles\n";
+	opserr << "WARNING: failed to add particles\n";
 	return -1;
     }
 
 #ifdef _LINUX
     timer.pause();
-    std::cout<<"time for add particles = "<<timer.getReal()<<"\n";
+    opserr<<"time for add particles = "<<timer.getReal()<<"\n";
     timer.start();
 #endif
 
     // create grid nodes
     if (gridNodes() < 0) {
-	std::cerr << "WARNING: failed to create grid nodes\n";
+	opserr << "WARNING: failed to create grid nodes\n";
 	return -1;
     }
 
 #ifdef _LINUX
     timer.pause();
-    std::cout<<"time for grid nodes = "<<timer.getReal()<<"\n";
+    opserr<<"time for grid nodes = "<<timer.getReal()<<"\n";
     timer.start();
 #endif
 
@@ -793,32 +793,32 @@ BackgroundMesh::remesh(bool init)
 
 #ifdef _LINUX
     timer.pause();
-    std::cout<<"time for moving fixed particles = "<<timer.getReal()<<"\n";
+    opserr<<"time for moving fixed particles = "<<timer.getReal()<<"\n";
     timer.start();
 #endif
 
     // create grid elements
     if (gridFluid() < 0) {
-    	std::cerr << "WARNING: failed to create fluid elements\n";
+    	opserr << "WARNING: failed to create fluid elements\n";
     	return -1;
     }
 
 #ifdef _LINUX
     timer.pause();
-    std::cout<<"time for fluid eles = "<<timer.getReal()<<"\n";
+    opserr<<"time for fluid eles = "<<timer.getReal()<<"\n";
     timer.start();
 #endif
 
     // create FSI elements
     ID freenodes;
     if (gridFSI(freenodes) < 0) {
-    	std::cerr << "WARNING: failed to create FSI elements\n";
+    	opserr << "WARNING: failed to create FSI elements\n";
     	return -1;
     }
 
 #ifdef _LINUX
     timer.pause();
-    std::cout<<"time for fsi eles = "<<timer.getReal()<<"\n";
+    opserr<<"time for fsi eles = "<<timer.getReal()<<"\n";
     timer.start();
 #endif
 
@@ -829,21 +829,21 @@ BackgroundMesh::remesh(bool init)
 
 #ifdef _LINUX    
     timer.pause();
-    std::cout<<"time for free surface = "<<timer.getReal()<<"\n";
+    opserr<<"time for free surface = "<<timer.getReal()<<"\n";
     timer.start();
 #endif
 
     if (record(init) < 0) {
-	std::cerr << "WARNING: failed to record\n";
+	opserr << "WARNING: failed to record\n";
 	return -1;
     }
 
 #ifdef _LINUX
     timer.pause();
-    std::cout<<"time for recording = "<<timer.getReal()<<"\n";
+    opserr<<"time for recording = "<<timer.getReal()<<"\n";
     timer.start();
 #endif
-
+ 
     return 0;
 }
 
@@ -905,22 +905,22 @@ BackgroundMesh::addStructure()
 		pnode = new Node(ndtag++, 1, crds[0], crds[1], crds[2]);
 	    }
 	    if (pnode == 0) {
-		std::cerr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
+		opserr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
 		return -1;
 	    }
 	    if (domain->addNode(pnode) == false) {
-		std::cerr << "WARNING: failed to add node to domain -- BgMesh::gridNodes\n";
+		opserr << "WARNING: failed to add node to domain -- BgMesh::gridNodes\n";
 		delete pnode;
 		return -1;
 	    }
 
 	    pc = new Pressure_Constraint(nd->getTag(), pnode->getTag());
 	    if(pc == 0) {
-		std::cerr<<"WARNING: no enough memory for Pressure_Constraint\n";
+		opserr<<"WARNING: no enough memory for Pressure_Constraint\n";
 		return -1;
 	    }
 	    if (domain->addPressure_Constraint(pc) == false) {
-		std::cerr << "WARNING: failed to add PC to domain -- BgMesh::gridNodes\n";
+		opserr << "WARNING: failed to add PC to domain -- BgMesh::gridNodes\n";
 		delete pc;
 		return -1;
 	    }
@@ -1255,7 +1255,7 @@ BackgroundMesh::gridNodes()
 	    node = new Node(ndtag+2*j, ndm, crds[0], crds[1], crds[2]);
 	}
 	if (node == 0) {
-	    std::cerr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
+	    opserr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
 	    res = -1;
 	    continue;
 	}
@@ -1292,7 +1292,7 @@ BackgroundMesh::gridNodes()
 	    thePC->setDomain(domain);
 	    pnode = thePC->getPressureNode();
 	    if (pnode == 0) {
-		std::cerr << "WARNING: pressure does not exist -- BgMesh::gridNodes\n";
+		opserr << "WARNING: pressure does not exist -- BgMesh::gridNodes\n";
 		res = -1;
 		continue;
 	    }
@@ -1305,7 +1305,7 @@ BackgroundMesh::gridNodes()
 		pnode = new Node(ndtag+2*j+1, 1, crds[0], crds[1], crds[2]);
 	    }
 	    if (pnode == 0) {
-		std::cerr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
+		opserr << "WARNING: run out of memory -- BgMesh::gridNodes\n";
 		res = -1;
 		continue;
 	    }
@@ -1313,7 +1313,7 @@ BackgroundMesh::gridNodes()
 
 	    thePC = new Pressure_Constraint(node->getTag(), pnode->getTag());
 	    if(thePC == 0) {
-		std::cerr<<"WARNING: no enough memory for Pressure_Constraint\n";
+		opserr<<"WARNING: no enough memory for Pressure_Constraint\n";
 		res = -1;
 		continue;
 	    }
@@ -1345,7 +1345,7 @@ BackgroundMesh::gridNodes()
 
 	// add to domain
 	if (domain->addNode(newnodes[i]) == false) {
-	    std::cerr<<"WARNING: failed to add node to domain -- BgMesh::gridNodes\n";
+	    opserr<<"WARNING: failed to add node to domain -- BgMesh::gridNodes\n";
 	    delete newnodes[i];
 	    return -1;
 	}
@@ -1355,7 +1355,7 @@ BackgroundMesh::gridNodes()
 
 	// add to domain
 	if (domain->addNode(newpnodes[i]) == false) {
-	    std::cerr<<"WARNING: failed to add node to domain -- BgMesh::gridNodes\n";
+	    opserr<<"WARNING: failed to add node to domain -- BgMesh::gridNodes\n";
 	    delete newpnodes[i];
 	    return -1;
 	}
@@ -1365,7 +1365,7 @@ BackgroundMesh::gridNodes()
 
 	// add to domain
 	if(domain->addPressure_Constraint(newpcs[i]) == false) {
-	    std::cerr<<"WARNING: failed to add PC to domain -- BgMesh::gridNodes\n";
+	    opserr<<"WARNING: failed to add PC to domain -- BgMesh::gridNodes\n";
 	    delete newpcs[i];
 	    return -1;
 	}
@@ -1712,14 +1712,14 @@ BackgroundMesh::gridFluid()
     for (std::map<int,ID>::iterator it=elenodes.begin(); it!=elenodes.end(); ++it) {
 	ParticleGroup* group = dynamic_cast<ParticleGroup*>(OPS_getMesh(it->first));
 	if (group == 0) {
-	    std::cerr << "WARNING: failed to get particle group -- BgMesh::gridFluid\n";
+	    opserr << "WARNING: failed to get particle group -- BgMesh::gridFluid\n";
 	    return -1;
 	}
 	group->setEleNodes(it->second);
 
 	if (group->newElements(it->second) < 0) {
-	    std::cerr << "WARNING: failed to create elements for mesh ";
-	    std::cerr << group->getTag()<<" -- BgMesh::gridFluid\n";
+	    opserr << "WARNING: failed to create elements for mesh ";
+	    opserr << group->getTag()<<" -- BgMesh::gridFluid\n";
 	    return -1;
 	}
     }
@@ -2015,14 +2015,14 @@ BackgroundMesh::gridFSI(ID& freenodes)
     for (std::map<int,ID>::iterator it=elenodes.begin(); it!=elenodes.end(); ++it) {
 	ParticleGroup* group = dynamic_cast<ParticleGroup*>(OPS_getMesh(it->first));
 	if (group == 0) {
-	    std::cerr << "WARNING: failed to get particle group -- BgMesh::gridFSI\n";
+	    opserr << "WARNING: failed to get particle group -- BgMesh::gridFSI\n";
 	    return -1;
 	}
 	group->addEleNodes(it->second);
 
 	if (group->newElements(it->second) < 0) {
-	    std::cerr << "WARNING: failed to create elements for mesh ";
-	    std::cerr << group->getTag()<<" -- BgMesh::gridFSI\n";
+	    opserr << "WARNING: failed to create elements for mesh ";
+	    opserr << group->getTag()<<" -- BgMesh::gridFSI\n";
 	    return -1;
 	}
     }
@@ -2134,10 +2134,6 @@ BackgroundMesh::gridEles()
 	} else if (ndm == 3) {
 	    if (preNForTet(ptcrds[0],ptcrds[1],ptcrds[2],ptcrds[3],
 			   tetcoeff) < 0) {
-		std::cout<<ptcrds[0];
-		std::cout<<ptcrds[1];
-		std::cout<<ptcrds[2];
-		std::cout<<ptcrds[3];
 		zerovol = true;
 	    }
 	}
@@ -2228,14 +2224,14 @@ BackgroundMesh::gridEles()
     for (std::map<int,ID>::iterator it=elenodes.begin(); it!=elenodes.end(); ++it) {
 	ParticleGroup* group = dynamic_cast<ParticleGroup*>(OPS_getMesh(it->first));
 	if (group == 0) {
-	    std::cerr << "WARNING: failed to get particle group -- BgMesh::gridEles\n";
+	    opserr << "WARNING: failed to get particle group -- BgMesh::gridEles\n";
 	    return -1;
 	}
 	group->setEleNodes(it->second);
 
 	if (group->newElements(it->second) < 0) {
-	    std::cerr << "WARNING: failed to create elements for mesh ";
-	    std::cerr << group->getTag()<<" -- BgMesh::gridEles\n";
+	    opserr << "WARNING: failed to create elements for mesh ";
+	    opserr << group->getTag()<<" -- BgMesh::gridEles\n";
 	    return -1;
 	}
     }
@@ -2261,7 +2257,7 @@ BackgroundMesh::record(bool init)
     for (int i=0; i<(int)recorders.size(); ++i) {
 	if (recorders[i] != 0) {
 	    if (recorders[i]->record(domain->getCommitTag(),currentTime)) {
-		std::cerr << "WARNING: failed to record -- BgMesh::gridEles\n";
+		opserr << "WARNING: failed to record -- BgMesh::gridEles\n";
 		return -1;
 	    }
 	}
@@ -2438,8 +2434,8 @@ BackgroundMesh::moveParticles()
 
 	    // convect the particle
 	    if (convectParticle(pts[i],indices[j],numsub) < 0) {
-		std::cerr << "WARNING: failed to convect particle";
-		std::cerr << " -- BgMesh::moveParticles\n";
+		opserr << "WARNING: failed to convect particle";
+		opserr << " -- BgMesh::moveParticles\n";
 		res = -1;
 		continue;
 	    }
@@ -2538,8 +2534,8 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
 
 		// get vn and dvn
 		if (bnode.tags.size() != 1) {
-		    std::cerr << "WARNING: fluid bnode tags.size() != 1 ";
-		    std::cerr << "-- BgMesh::convectParticle\n";
+		    opserr << "WARNING: fluid bnode tags.size() != 1 ";
+		    opserr << "-- BgMesh::convectParticle\n";
 		    return -1;
 		}
 		vels[i] = bnode.vn[0];
@@ -2552,8 +2548,8 @@ BackgroundMesh::convectParticle(Particle* pt, VInt index, int nums)
 	// get particle velocity
 	VDouble pvel;
 	if (interpolate(pt,indices,vels,dvns,pns,dpns,crds,fixed,pvel) < 0) {
-	    std::cerr << "WARNING: failed to interpolate particle velocity";
-	    std::cerr << "-- BgMesh::convectParticle\n";
+	    opserr << "WARNING: failed to interpolate particle velocity";
+	    opserr << "-- BgMesh::convectParticle\n";
 	    return -1;
 	}
 
