@@ -1532,6 +1532,15 @@ static PyObject *Py_ops_setNumThreads(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_logFile(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_logFile() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
 /////////////////////////////////////////////////
 ////////////// Add Python commands //////////////
 /////////////////////////////////////////////////
@@ -1693,6 +1702,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("probabilityTransformation", &Py_ops_probabilityTransformation);
     addCommand("getNumThreads", &Py_ops_getNumThreads);
     addCommand("setNumThreads", &Py_ops_setNumThreads);
+    addCommand("logFile", &Py_ops_logFile);
 
     PyMethodDef method = {NULL,NULL,0,NULL};
     methodsOpenSees.push_back(method);
