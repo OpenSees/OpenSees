@@ -304,6 +304,7 @@ int OPS_setNumThreads();
 
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
+int OPS_probabilityTransformation();
 
 /* OpenSeesCommands.cpp */
 int OPS_wipe();
