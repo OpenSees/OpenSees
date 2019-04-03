@@ -1115,7 +1115,7 @@ int OPS_System()
 	// PFEM SOE & SOLVER
 
 	if(OPS_GetNumRemainingInputArgs() < 1) {
-	    theSOE = (LinearSOE*)OPS_PFEMSolver_Mumps();
+	    theSOE = (LinearSOE*)OPS_PFEMSolver_Umfpack();
 	} else {
 
 	    const char* type = OPS_GetString();
@@ -1124,15 +1124,9 @@ int OPS_System()
 
 		theSOE = (LinearSOE*)OPS_PFEMCompressibleSolver();
 
-	    } else if(strcmp(type, "-umfpack") == 0) {
+	    } else if(strcmp(type, "-mumps") == 0) {
 		
-	    	theSOE = (LinearSOE*)OPS_PFEMSolver_Umfpack();
-
-	    } else {
-
-		OPS_ResetCurrentInputArg(-1);
-
-		theSOE = (LinearSOE*)OPS_PFEMSolver_Mumps();
+	    	theSOE = (LinearSOE*)OPS_PFEMSolver_Mumps();
 
 	    }
 	}
