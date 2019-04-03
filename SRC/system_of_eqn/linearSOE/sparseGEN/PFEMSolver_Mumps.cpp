@@ -388,7 +388,7 @@ PFEMSolver_Mumps::solve()
 			amgcl::coarsening::smoothed_aggregation,
 			amgcl::relaxation::spai0
 			>,
-		amgcl::solver::lgmres<amgcl::backend::builtin<double>>
+		amgcl::solver::lgmres<amgcl::backend::builtin<double> >
 		> Solver;
 
 
@@ -422,7 +422,7 @@ PFEMSolver_Mumps::solve()
 			  << prof << std::endl;
 	    }
 	    
-	    if (iters==100 && error>1e-4) {
+	    if (iters>=pmaxiter && error>ptol) {
 	    	opserr<<"WARNING: failed to solve pressure\n";
 	    	return -1;
 	    }
