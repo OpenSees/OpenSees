@@ -299,9 +299,12 @@ int OPS_barrier();
 int OPS_send();
 int OPS_recv();
 int OPS_sdfResponse();
+int OPS_getNumThreads();
+int OPS_setNumThreads();
 
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
+int OPS_probabilityTransformation();
 
 /* OpenSeesCommands.cpp */
 int OPS_wipe();
