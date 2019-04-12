@@ -125,7 +125,7 @@ class ForceBeamColumn2d: public Element
   int updateParameter(int parameterID, Information &info);
   int activateParameter(int parameterID);
   const Vector &getResistingForceSensitivity(int gradNumber);
-  const Matrix &getKiSensitivity(int gradNumber);
+  const Matrix &getInitialStiffSensitivity(int gradNumber);
   const Matrix &getMassSensitivity(int gradNumber);
   int commitSensitivity(int gradNumber, int numGrads);
   int getResponseSensitivity(int responseID, int gradNumber,

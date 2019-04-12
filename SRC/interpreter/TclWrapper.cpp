@@ -1381,6 +1381,24 @@ static int Tcl_ops_sdfResponse(ClientData clientData, Tcl_Interp *interp, int ar
     return TCL_OK;
 }
 
+static int Tcl_ops_getNumThreads(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_getNumThreads() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_setNumThreads(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_setNumThreads() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 //////////////////////////////////////////////
 ////////////// Add Tcl commands //////////////
 //////////////////////////////////////////////
@@ -1539,4 +1557,6 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"randomVariable", &Tcl_ops_randomVariable);
     addCommand(interp,"updateMaterialStage", &Tcl_ops_updateMaterialStage);
     addCommand(interp,"sdfResponse", &Tcl_ops_sdfResponse);
+    addCommand(interp,"getNumThreads", &Tcl_ops_getNumThreads);
+    addCommand(interp,"setNumThreads", &Tcl_ops_setNumThreads);
 }

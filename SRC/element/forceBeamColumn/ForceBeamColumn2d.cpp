@@ -781,16 +781,22 @@ ForceBeamColumn2d::computeReactions(double *p0)
       p0[2] -= V;
     }
     else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
-      double wa = data(1)*loadFactor;  // Axial
-      double wy = data(0)*loadFactor;  // Transverse
-      double a = data(2)*L;
-      double b = data(3)*L;
+      double waa = data(2)*loadFactor;  // Axial
+      double wab = data(3)*loadFactor;  // Axial
+      double wya = data(0)*loadFactor;  // Transverse
+      double wyb = data(1)*loadFactor;  // Transverse      
+      double a = data(4)*L;
+      double b = data(5)*L;
 
-      p0[0] -= wa*(b-a);
-      double Fy = wy*(b-a);
+      p0[0] -= waa*(b-a) + 0.5*(wab-waa)*(b-a);
+      double Fy = wya*(b-a);
       double c = a + 0.5*(b-a);
       p0[1] -= Fy*(1-c/L);
       p0[2] -= Fy*c/L;
+      Fy = 0.5*(wyb-wya)*(b-a);
+      c = a + 2.0/3.0*(b-a);
+      p0[1] -= Fy*(1-c/L);
+      p0[2] -= Fy*c/L;      
     }
     else if (type == LOAD_TAG_Beam2dPointLoad) {
       double P = data(0)*loadFactor;
@@ -1069,7 +1075,7 @@ ForceBeamColumn2d::update()
 
 	    // Add the effects of element loads, if present
 	    // s = b*q + sp
-	    if (numEleLoads > 0)
+	    if (numEleLoads > 0) 
 	      this->computeSectionForces(Ss, i);
 
 	    // dSs = Ss - Ssr[i];
@@ -1430,16 +1436,22 @@ ForceBeamColumn2d::computeSectionForces(Vector &sp, int isec)
       }
     }
     else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
-      double wa = data(1)*loadFactor;  // Axial
-      double wy = data(0)*loadFactor;  // Transverse
-      double a = data(2)*L;
-      double b = data(3)*L;
+      double waa = data(2)*loadFactor;  // Axial
+      double wab = data(3)*loadFactor;  // Axial
+      double wya = data(0)*loadFactor;  // Transverse
+      double wyb = data(1)*loadFactor;  // Transverse
+      double a = data(4)*L;
+      double b = data(5)*L;
 
-      double Fa = wa*(b-a); // resultant axial load
-      double Fy = wy*(b-a); // resultant transverse load
+      double Fa = waa*(b-a) + 0.5*(wab-waa)*(b-a); // resultant axial load
+      double Fy = wya*(b-a); // resultant transverse load
       double c = a + 0.5*(b-a);
       double VI = Fy*(1-c/L);
       double VJ = Fy*c/L;
+      Fy = 0.5*(wyb-wya)*(b-a); // resultant transverse load
+      c = a + 2.0/3.0*(b-a);
+      VI += Fy*(1-c/L);
+      VJ += Fy*c/L;      
 
       for (int ii = 0; ii < order; ii++) {
 	
@@ -1471,15 +1483,16 @@ ForceBeamColumn2d::computeSectionForces(Vector &sp, int isec)
 	  }
 	}
 	else {
+	  double wx = wya + (wyb-wya)/(b-a)*(x-a);
 	  switch(code(ii)) {
 	  case SECTION_RESPONSE_P:
-	    sp(ii) += Fa-wa*(x-a);
+	    sp(ii) += Fa - waa*(x-a) - 0.5*(wab-waa)/(b-a)*(x-a)*(x-a);
 	    break;
 	  case SECTION_RESPONSE_MZ:
-	    sp(ii) += -VI*x + 0.5*wy*x*x + wy*a*(0.5*a-x);
+	    sp(ii) += -VI*x + wya*(x-a)*0.5*(x-a) + 0.5*(wx-wya)*(x-a)*(x-a)/3.0;
 	    break;
 	  case SECTION_RESPONSE_VY:
-	    sp(ii) += -VI + wy*(x-a);
+	    sp(ii) += -VI + wya*(x-a) + 0.5*(wx-wya)*(x-a);
 	    break;
 	  default:
 	    break;
@@ -1594,6 +1607,10 @@ ForceBeamColumn2d::computeSectionForceSensitivity(Vector &dspdh, int isec,
 	  break;
 	}
       }
+    }
+    else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
+      // Needs to be done
+      // Do nothing for now
     }
     else if (type == LOAD_TAG_Beam2dPointLoad) {
       double P = data(0)*1.0;
@@ -3166,7 +3183,7 @@ ForceBeamColumn2d::activateParameter(int passedParameterID)
 }
 
 const Matrix&
-ForceBeamColumn2d::getKiSensitivity(int gradNumber)
+ForceBeamColumn2d::getInitialStiffSensitivity(int gradNumber)
 {
   theMatrix.Zero();
   return theMatrix;
