@@ -1929,7 +1929,7 @@ PVDRecorder::getfilename(const char* name)
     // no slash at all
     std::size_t found = fname.find_last_of("/\\");
     if (found == std::string::npos) {
-	pathname = ".";
+	pathname = "./";
 	basename = fname;
 	return;
     }
@@ -1942,7 +1942,7 @@ PVDRecorder::getfilename(const char* name)
     
     // only trailing slash
     if(found == std::string::npos) {
-	pathname = ".";
+	pathname = "./";
 	basename = fname;
 	return;
     }

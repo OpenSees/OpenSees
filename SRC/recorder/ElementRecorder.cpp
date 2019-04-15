@@ -298,12 +298,12 @@ ElementRecorder::ElementRecorder(const ID *ele,
 				 int argc,
 				 bool echoTime, 
 				 Domain &theDom, 
-				 OPS_Stream &theOutputHandler,
+				 OPS_Stream &theOutput,
 				 double dT,
 				 const ID *theDOFs)
 :Recorder(RECORDER_TAGS_ElementRecorder),
  numEle(0), numDOF(0), eleID(0), dof(0), theResponses(0), 
- theDomain(&theDom), theOutputHandler(&theOutputHandler),
+ theDomain(&theDom), theOutputHandler(&theOutput),
  echoTimeFlag(echoTime), deltaT(dT), nextTimeStampToRecord(0.0), data(0),
  initializationDone(false), responseArgs(0), numArgs(0), addColumnInfo(0)
 {

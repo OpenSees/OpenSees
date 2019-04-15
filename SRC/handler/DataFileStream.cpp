@@ -43,7 +43,7 @@ using std::getline;
 DataFileStream::DataFileStream(int indent)
   :OPS_Stream(OPS_STREAM_TAGS_DataFileStream), 
    fileOpen(0), fileName(0), indentSize(indent), sendSelfCount(0), theChannels(0), numDataRows(0),
-   mapping(0), maxCount(0), sizeColumns(0), theColumns(0), theData(0), theRemoteData(0), doCSV(0)
+   mapping(0), maxCount(0), sizeColumns(0), theColumns(0), theData(0), theRemoteData(0), doCSV(0), commonColumns(0)
 {
   if (indentSize < 1) indentSize = 1;
   indentString = new char[indentSize+5];
@@ -58,7 +58,7 @@ DataFileStream::DataFileStream(const char *file, openMode mode, int indent, int 
    theChannels(0), numDataRows(0),
    mapping(0), maxCount(0), sizeColumns(0), 
    theColumns(0), theData(0), theRemoteData(0), 
-   doCSV(csv), closeOnWrite(closeWrite)
+   doCSV(csv), closeOnWrite(closeWrite), commonColumns(0)
 {
   thePrecision = prec;
   doScientific = scientific;
@@ -107,6 +107,7 @@ DataFileStream::~DataFileStream()
     if (theRemoteData != 0) delete [] theRemoteData;
     if (theColumns != 0) delete [] theColumns;
     if (sizeColumns != 0) delete sizeColumns;
+    if (commonColumns != 0) delete commonColumns;
   }    
 }
 
@@ -268,7 +269,7 @@ DataFileStream::attr(const char *name, const char *value)
 int 
 DataFileStream::write(Vector &data)
 {
-  if (fileOpen == 0)
+  if (fileOpen == 0 && sendSelfCount >= 0)
     this->open();
 
   //
@@ -323,27 +324,85 @@ DataFileStream::write(Vector &data)
 
   // write data
   if (doCSV == 0) {
+
     for (int i=0; i<maxCount+1; i++) {
       int fileID = (int)printMapping(0,i);
-      int startLoc = (int)printMapping(1,i);
       int numData = (int)printMapping(2,i);
-      double *data = theData[fileID];
-      for (int j=0; j<numData; j++)
-	theFile << data[startLoc++] << " ";
+      
+      if (fileID == -2)
+	;
+
+      else if (fileID != -1) {
+	int startLoc = (int)printMapping(1,i);
+	double *data = theData[fileID];
+	for (int j=0; j<numData; j++) {
+	  theFile << data[startLoc++] << " ";
+	}
+      } 
+
+      else {
+	int numProc = (int)printMapping(4,i);
+	int colAddLoc = (int)printMapping(3,i);
+
+	for (int j=0; j<numData; j++) {
+	  double value = 0.0;
+	  for (int k=0; k<numProc; k++) {
+	    int fileID = (*commonColumns)(colAddLoc+k*2);
+	    int startLoc = (*commonColumns)(colAddLoc+k*2+1);
+	    double *data = theData[fileID];
+	    if (i == 0 && addCommonFlag == 2)
+	      value = data[startLoc+j];
+	    else
+	      value += data[startLoc+j];
+	  }
+	  theFile << value << " ";
+	}
+      }
     }
     theFile << "\n";
   } else {
+
     for (int i=0; i<maxCount+1; i++) {
       int fileID = (int)printMapping(0,i);
-      int startLoc = (int)printMapping(1,i);
       int numData = (int)printMapping(2,i);
-      double *data = theData[fileID];
-      int nM1 = numData-1;
-      for (int j=0; j<numData; j++)
-	if ((i ==maxCount) && (j == nM1))
-	  theFile << data[startLoc++] << "\n";
-	else
-	  theFile << data[startLoc++] << ",";
+
+      if (fileID == -2)
+	;
+
+      else if (fileID != -1) {
+	int startLoc = (int)printMapping(1,i);
+	double *data = theData[fileID];
+	int nM1 = numData-1;
+
+	for (int j=0; j<numData; j++)
+	  if ((i ==maxCount) && (j == nM1))
+	    theFile << data[startLoc++] << "\n";
+	  else
+	    theFile << data[startLoc++] << ",";
+      } 
+
+      else {
+	int numProc = (int)printMapping(4,i);
+	int colAddLoc = (int)printMapping(3,i);
+	int nM1 = numData-1;
+
+	for (int j=0; j<numData; j++) {
+	  double value = 0.0;
+	  for (int k=0; k<numProc; k++) {
+	    int fileID = (*commonColumns)(colAddLoc+k*2);
+	    int startLoc = (*commonColumns)(colAddLoc+k*2+1);
+	    double *data = theData[fileID];
+	    if (i == 0 && addCommonFlag == 2)
+	      value = data[startLoc+j];
+	    else
+	      value += data[startLoc+j];
+	  }
+	  if ((i ==maxCount) && (j == nM1))
+	    theFile << value << "\n";
+	  else
+	    theFile << value << ",";
+	}
+      }
     }
   }
 
@@ -699,6 +758,8 @@ DataFileStream::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
 
     sprintf(&fileName[fileNameLength],".%d",tag);
 
+    /* don't write anymore .. so don't need to open file
+
     if (this->setFile(fileName, theOpenMode) < 0) {
       opserr << "DataFileStream::DataFileStream() - setFile() failed\n";
       if (fileName != 0) {
@@ -706,6 +767,7 @@ DataFileStream::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
 	fileName = 0;
       }
     }
+    */
   }
   
   return 0;
@@ -801,9 +863,24 @@ DataFileStream::setOrder(const ID &orderData)
     if (mapping != 0)
       delete mapping;
 
-    mapping = new Matrix(3, maxCount+1);
+    mapping = new Matrix(5, maxCount+1);
+    commonColumns = new ID(0, 64);
 
     Matrix &printMapping = *mapping;
+
+    // set all values equal -1
+    printMapping.Zero(); 
+    for (int i=0; i<maxCount+1; i++)
+      printMapping(0,i)=-2;
+
+    /*
+    for (int i=0; i<=sendSelfCount; i++) {
+      opserr << "COLUMN: " << i << " ";
+      if (theColumns[i] != 0) {
+	opserr << *(theColumns[i]);
+      } else opserr << "\n";
+    }
+    */
 	
     for (int i=0; i<=sendSelfCount; i++) {
       currentLoc(i) = 0;
@@ -813,24 +890,42 @@ DataFileStream::setOrder(const ID &orderData)
 	currentCount(i) = -1;
     }
 
+    int colAddCount = 0;
     int count =0;
     while (count <= maxCount) {
+
+      printMapping(3,count)=colAddCount; // set index for start of data entry in commonColumns
       for (int i=0; i<=sendSelfCount; i++) {
+
 	if (currentCount(i) == count) {
-	  printMapping(0,count) = i;
+
+	  if (addCommonFlag == 0)
+	    printMapping(0,count) = i;
+	  else {
+	    if (printMapping(0, count) == -2)
+	      printMapping(0,count) = i;
+	    else
+	      printMapping(0,count) = -1;
+	  }
 	  
 	  int maxLoc = theColumns[i]->Size();
 	  int loc = currentLoc(i);
 	  int columnCounter = 0;
 	  
 	  printMapping(1,count) = loc;
+
+	  (*commonColumns)[colAddCount] = i;
+	  (*commonColumns)[colAddCount+1] = loc;
 	  
 	  while (loc < maxLoc && (*theColumns[i])(loc) == count) {
 	    loc++;
 	    columnCounter++;
 	  }
-	  
+
 	  printMapping(2,count) = columnCounter;
+	  printMapping(4,count) = printMapping(4,count) +1;
+
+	  colAddCount+=2;
 	  
 	  currentLoc(i) = loc;
 	  
@@ -842,6 +937,11 @@ DataFileStream::setOrder(const ID &orderData)
       }
       count++;
     }
+    /*  
+	opserr << "PRINT MAPPING: " << printMapping;
+	opserr << "colADD" << *commonColumns;
+	opserr << "DONE";
+    */
   }
 
   return 0;
