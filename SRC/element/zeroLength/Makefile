@@ -10,6 +10,7 @@ OBJS       = ZeroLength.o \
 	ZeroLengthRocking.o \
 	CoupledZeroLength.o \
 	ZeroLengthImpact3D.o \
+	ZeroLengthVG_HG.o \
 	TclZeroLength.o
 
 
