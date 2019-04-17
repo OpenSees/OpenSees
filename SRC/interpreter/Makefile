@@ -38,6 +38,8 @@ python:  $(PythonOBJS)
 
 OBJSm = OpenSeesCommandsPython.o OpenSeesUniaxialMaterialCommands.o PythonModelBuilder.o PythonAnalysisBuilder.o
 
+LINKFLAGS = -Wl,-rpath,\$$ORIGIN/lib
+
 pythonmodule: $(PythonModuleOBJS)
 	$(RM) $(RMFLAGS) opensees.so;
 	@( \

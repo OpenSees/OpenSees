@@ -2503,6 +2503,43 @@ int OPS_version()
     return 0;
 }
 
+int OPS_logFile()
+{
+    if (OPS_GetNumRemainingInputArgs() < 1) { 
+	opserr << "WARNING logFile fileName? - no filename supplied\n";
+	return -1;
+    }
+    openMode mode = OVERWRITE;
+    bool echo = true;
+
+    const char* filename = OPS_GetString();
+    if (strcmp(filename, "Invalid String Input!") == 0) {
+	opserr << "WARNING: invalid string input\n";
+	return -1;
+    }
+
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+
+	const char* opt = OPS_GetString();
+	
+	if (strcmp(opt,"-append") == 0) {
+	    mode = APPEND;
+	} else if (strcmp(opt,"-noEcho") == 0) {
+	    echo = false;
+	}
+    }
+
+    if (opserr.setFile(filename, mode, echo) < 0) {
+	opserr << "WARNING logFile " << filename << " failed to set the file\n";
+	return -1;
+    }
+
+    // const char *pwd = getInterpPWD(interp);  
+    // simulationInfo.addOutputFile(argv[1], pwd);
+
+    return 0;
+}
+
 // Sensitivity:BEGIN /////////////////////////////////////////////
 int OPS_sensNodeDisp()
 {

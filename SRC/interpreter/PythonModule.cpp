@@ -42,6 +42,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 //
 
 #include "PythonModule.h"
+#include "PythonStream.h"
+
+// define opserr
+static PythonStream sserr;
+OPS_Stream *opserrPtr = &sserr;
 
 
 PythonModule::PythonModule()
@@ -280,11 +285,14 @@ initopensees(void)
         INITERROR;
     struct module_state *st = GETSTATE(module);
 
-    st->error = PyErr_NewException("opensees.Error", NULL, NULL);
+    st->error = PyErr_NewException("opensees.error", NULL, NULL);
+    PyObject* ops_msg = PyErr_NewException("opensees.msg", NULL, NULL);
     if (st->error == NULL) {
         Py_DECREF(module);
         INITERROR;
     }
+
+    sserr.setError(st->error,ops_msg);
 
     Py_AtExit(cleanupFunc);
 

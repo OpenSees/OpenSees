@@ -448,3 +448,9 @@ int OPS_randomVariable()
     return 0;
 
 }
+
+
+int OPS_probabilityTransformation()
+{
+    return 0;
+}

@@ -43,7 +43,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "OpenSeesCommands.h"
 #include <OPS_Globals.h>
 #include <elementAPI.h>
-#include <StandardStream.h>
 #include <UniaxialMaterial.h>
 #include <NDMaterial.h>
 #include <SectionForceDeformation.h>
@@ -104,10 +103,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // active object
 static OpenSeesCommands* cmds = 0;
-
-// define opserr
-static StandardStream sserr;
-OPS_Stream *opserrPtr = &sserr;
 
 OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
     :interpreter(interp), theDomain(0), ndf(0), ndm(0),

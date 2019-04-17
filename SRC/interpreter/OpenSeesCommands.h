@@ -259,6 +259,7 @@ int OPS_basicForce();
 int OPS_basicStiffness();
 int OPS_version();
 int OPS_maxOpenFiles();
+int OPS_logFile();
 // Sensitivity:BEGIN /////////////////////////////////////////////
 int OPS_sensNodeDisp();
 int OPS_sensNodeVel();
