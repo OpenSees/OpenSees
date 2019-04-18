@@ -61,6 +61,7 @@
 
 // uniaxial material model header files
 #include <BoucWenMaterial.h>		//SAJalali
+#include <SPSW02.h>			;//SAJalali
 #include <ElasticMaterial.h>
 #include <ElasticMultiLinear.h>
 #include <Elastic2Material.h>
@@ -1053,6 +1054,8 @@ UniaxialMaterial *
 FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 {
     switch(classTag) {
+	case MAT_TAG_SPSW02:
+		return new SPSW02(); // SAJalali
 	case MAT_TAG_BoucWen:
 		return new BoucWenMaterial(); // SAJalali
 	case MAT_TAG_ElasticMaterial:

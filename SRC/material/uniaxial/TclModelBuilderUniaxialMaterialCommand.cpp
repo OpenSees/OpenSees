@@ -74,6 +74,7 @@
 
 #include <UniaxialJ2Plasticity.h>   // Quan 
 
+extern void *OPS_SPSW02(void);		// SAJalali
 extern void *OPS_ElasticMaterial(void);
 extern void *OPS_ElasticPPMaterial(void);
 extern void *OPS_ParallelMaterial(void);
@@ -248,7 +249,17 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
-    } else if (strcmp(argv[1],"Steel01") == 0) {
+    }
+	
+	// SAJalali
+	else if (strcmp(argv[1], "SPSW02") == 0) {
+		void *theMat = OPS_SPSW02();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+	else if (strcmp(argv[1],"Steel01") == 0) {
 
       void *theMat = OPS_Steel01();
       if (theMat != 0) 

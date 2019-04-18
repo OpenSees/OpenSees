@@ -212,6 +212,7 @@
 #define MAT_TAG_ConcreteECThermal		95   //L.Jiang [SIF]
 #define MAT_TAG_BoucWenOriginal                 96
 #define MAT_TAG_DamperMaterial                  97
+#define MAT_TAG_SPSW02			                98	//SAJalali
 
 #define MAT_TAG_PySimple1                    205
 #define MAT_TAG_TzSimple1                    206
