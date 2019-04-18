@@ -228,6 +228,7 @@
 #include <ConstantPressureVolumeQuad.h>
 #include <ElasticBeam2d.h>
 #include <ElasticBeam3d.h>
+#include <ModElasticBeam2d.h>			//SAJalali
 #include <ElasticTimoshenkoBeam2d.h>
 #include <ElasticTimoshenkoBeam3d.h>
 #include <ForceBeamColumn2d.h>
@@ -671,7 +672,11 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_ElasticBeam2d:
       return new ElasticBeam2d();
       
-    case ELE_TAG_ElasticBeam3d:
+	  //SAJalali
+	case ELE_TAG_ModElasticBeam2d:
+		return new ModElasticBeam2d();
+
+	case ELE_TAG_ElasticBeam3d:
       return new ElasticBeam3d();
       
     case ELE_TAG_ElasticTimoshenkoBeam2d:
