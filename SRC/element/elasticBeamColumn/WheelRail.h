@@ -20,7 +20,7 @@
 #include <ElasticBeam2d.h>
 #include <Matrix.h>
 #include <Vector.h>
-#include <math.h>
+
 class Channel;
 class UniaxialMaterial;
 
@@ -30,21 +30,21 @@ class WheelRail : public Element
 {
   public:
     WheelRail(int pTag, double pDeltT, double pVel, double pInitLocation, int pNd1, 
-		double pRWheel,double pI,double pE,double pA,CrdTransf *ptheCoordTransf,int pnLoad,
-		Vector * pNodeList,
-		Vector * pDeltaYList=0,Vector * pDeltaYLocationList=0);
+	      double pRWheel,double pI,double pE,double pA,CrdTransf *ptheCoordTransf,
+	      int pnLoad, Vector *pNodeList,
+	      Vector * pDeltaYList=0,Vector * pDeltaYLocationList=0);
     ~WheelRail();
 
-	const char *getClassType(void) const {return "WheelRail";};
+    const char *getClassType(void) const {return "WheelRail";};
 
     // public methods to obtain inforrmation about dof & connectivity    
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
     Node **getNodePtrs(void);
     int getNumDOF(void);	
-	double getResidualOfDeltaU(double pFhz,double uWheel);//为了求解赫兹力而构造的函数
+    double getResidualOfDeltaU(double pFhz,double uWheel);
     void setDomain(Domain *theDomain);
-	void getDeltaY();
+    void getDeltaY();
     // public methods to set the state of the element    
     int commitState(void);
     int revertToLastCommit(void);        
@@ -54,67 +54,67 @@ class WheelRail : public Element
     // public methods to obtain stiffness, mass, damping and 
     const Matrix &getTangentStiff(void);
     const Matrix &getInitialStiff(void);    
-	//---------new Algorithm--------------
-	void NewtonBisection(Vector limits,double uWheel);
-	double FalsePostionAlgorithm(Vector limits,double uWheel);
-	void getActiveDof();
-	void getShapeFuns();
-
+    //---------new Algorithm--------------
+    void NewtonBisection(Vector limits,double uWheel);
+    double FalsePostionAlgorithm(Vector limits,double uWheel);
+    void getActiveDof();
+    void getShapeFuns();
+    
     void zeroLoad(void);	
     int addLoad(const Vector &addP);
     int addInertiaLoadToUnbalance(const Vector &accel);
     const Vector &getResistingForce(void);
     const Vector &getResistingForceIncInertia(void);            
-
+    
     // public methods for element output
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, 
 		 FEM_ObjectBroker &theBroker);
     int displaySelf(Renderer &theViewer, int displayMode, float fact);    
     void Print(OPS_Stream &s, int flag =0);    
-
+    
     Response *setResponse(const char **argv, int argc, OPS_Stream &);
     int getResponse(int responseID, Information &eleInformation);
-
+    
     int setParameter (const char **argv, int argc, Parameter &param);
     int updateParameter (int parameterID, Information &info);
-
-  protected:
     
-  private:
+ protected:
+    
+ private:
 //--------------------members in the construtor--------------------------
 
-	ID  connectedExternalNodes;    // must reset using above four values   // contains the tags of the end nodes
-	ID activeDof;
-
-	Node **theNodes;
-	Vector *P;
-	Matrix *theTangent;
-
-	CrdTransf *theCoordTransf;
-	Domain *theDomain;
-
-	Vector shapFun1,shapFun2;
-
-	double deltT,vel,initLocation;
-	double I,E,A;
-	double currentLocation;  // from left node of the last commited beam element.
-	double deltaU,Fhz,uF,theDeltaY;
-	double theEleLength,a,b;
-	double G, rollingRadiusWheel;
-
-	int nLoad, loadStep, activeBeamIndex;
+    ID  connectedExternalNodes;    // must reset using above four values   // contains the tags of the end nodes
+    ID activeDof;
+    
+    Node **theNodes;
+    Vector *P;
+    Matrix *theTangent;
+    
+    CrdTransf *theCoordTransf;
+    Domain *theDomain;
+    
+    Vector shapFun1,shapFun2;
+    
+    double deltT,vel,initLocation;
+    double I,E,A;
+    double currentLocation;  // from left node of the last commited beam element.
+    double deltaU,Fhz,uF,theDeltaY;
+    double theEleLength,a,b;
+    double G, rollingRadiusWheel;
+    
+    int nLoad, loadStep, activeBeamIndex;
     int wheelNodeNum;
-	int numRailNodeList;
-	int theNumOfDeltaYList;
-
-	Vector rearRailNode,frontRailNode,railDisp;
-
-	Vector * theNodeList;
-	Vector * theDeltaYList;
-	Vector * theDeltaYLocationList;
-
-	static Vector contactData,localActiveForce,activeData;
+    int numRailNodeList;
+    int theNumOfDeltaYList;
+    
+    Vector rearRailNode,frontRailNode,railDisp;
+    
+    Vector * theNodeList;
+    Vector * theDeltaYList;
+    Vector * theDeltaYLocationList;
+    
+    static Vector contactData,localActiveForce,activeData;
 
 };
 

@@ -188,6 +188,7 @@ int OPS_addToParameter();
 int OPS_updateParameter();
 int OPS_getParamTags();
 int OPS_getParamValue();
+int OPS_setParameter();
 
 /* OpenSeesElementCommands.cpp */
 int OPS_Element();
@@ -258,6 +259,7 @@ int OPS_basicForce();
 int OPS_basicStiffness();
 int OPS_version();
 int OPS_maxOpenFiles();
+int OPS_logFile();
 // Sensitivity:BEGIN /////////////////////////////////////////////
 int OPS_sensNodeDisp();
 int OPS_sensNodeVel();
@@ -298,9 +300,12 @@ int OPS_barrier();
 int OPS_send();
 int OPS_recv();
 int OPS_sdfResponse();
+int OPS_getNumThreads();
+int OPS_setNumThreads();
 
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
+int OPS_probabilityTransformation();
 
 /* OpenSeesCommands.cpp */
 int OPS_wipe();
@@ -453,15 +458,10 @@ void* OPS_BFGS();
 //////////////////////////////////////////////////////
 
 // commands that changed or added:
-//    pattern section block2d block3d beamIntegration
-//    forceBeamColumn dispBeamColumn timoshenkoBeamColumn
-//    forceBeamColumnCBDI forceBeamColumnCSBDI forceBeamColumnWarping
-//    elasticForceBeamColumnWarping dispBeamColumnNL dispBeamColumnThermal
-//    elasticForceBeamColumn nonlinearBeamColumn dispBeamColumnWithSensitivity
 //
-//    missing : video, logFile, getNP, getPI, barrier, send, recv, partition,
-//              setParameter, reliability, wipeReliability,
-//              parameter, addToParameter, updateParameter, FiberThermal, FiberInt,
+//    missing : video, logFile, partition,
+//              reliability, wipeReliability,
+//              FiberThermal, FiberInt,
 //              UCFiber, TclModelBuilderYS_SectionCommand, yieldSurface_BC,
 //              ysEvolutionModel, plasticMaterial, cyclicModel, damageModel,
 //              FirePattern, PySimple1Gen, TzSimple1Gen, Hfiber,

@@ -725,6 +725,14 @@ static int Tcl_ops_eleNodes(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_OK;
 }
 
+static int Tcl_ops_nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_nodeDOFs() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_nodeMass(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
     wrapper->resetCommandLine(argc, 1, argv);
 
@@ -1149,6 +1157,14 @@ static int Tcl_ops_updateParameter(ClientData clientData, Tcl_Interp *interp, in
     return TCL_OK;
 }
 
+static int Tcl_ops_setParameter(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_setParameter() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_getPID(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
 {
     wrapper->resetCommandLine(argc, 1, argv);
@@ -1302,6 +1318,24 @@ static int Tcl_ops_sdfResponse(ClientData clientData, Tcl_Interp *interp, int ar
     return TCL_OK;
 }
 
+static int Tcl_ops_getNumThreads(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_getNumThreads() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_setNumThreads(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_setNumThreads() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 //////////////////////////////////////////////
 ////////////// Add Tcl commands //////////////
 //////////////////////////////////////////////
@@ -1387,6 +1421,7 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"updateElementDomain", &Tcl_ops_updateElementDomain);
     addCommand(interp,"eleNodes", &Tcl_ops_eleNodes);
     addCommand(interp,"nodeMass", &Tcl_ops_nodeMass);
+    addCommand(interp,"nodeDOFs", &Tcl_ops_nodeDOFs);
     addCommand(interp,"nodePressure", &Tcl_ops_nodePressure);
     addCommand(interp,"nodeBounds", &Tcl_ops_nodeBounds);
     addCommand(interp,"start", &Tcl_ops_startTimer);
@@ -1441,6 +1476,7 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"parameter", &Tcl_ops_parameter);
     addCommand(interp,"addToParameter", &Tcl_ops_addToParameter);
     addCommand(interp,"updateParameter", &Tcl_ops_updateParameter);
+    addCommand(interp,"setParameter", &Tcl_ops_setParameter);
     addCommand(interp,"getPID", &Tcl_ops_getPID);
     addCommand(interp,"getNP", &Tcl_ops_getNP);
     addCommand(interp,"barrier", &Tcl_ops_barrier);
@@ -1458,4 +1494,6 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"randomVariable", &Tcl_ops_randomVariable);
     addCommand(interp,"updateMaterialStage", &Tcl_ops_updateMaterialStage);
     addCommand(interp,"sdfResponse", &Tcl_ops_sdfResponse);
+    addCommand(interp,"getNumThreads", &Tcl_ops_getNumThreads);
+    addCommand(interp,"setNumThreads", &Tcl_ops_setNumThreads);
 }

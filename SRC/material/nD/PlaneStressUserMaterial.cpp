@@ -184,9 +184,7 @@ NDMaterial*
 PlaneStressUserMaterial::getCopy( ) 
 {
   PlaneStressUserMaterial *clone ;   //new instance of this class
-
   clone = new PlaneStressUserMaterial(this->getTag(), nstatevs, nprops, props);
-
   return clone ;
 }
 
@@ -195,7 +193,8 @@ PlaneStressUserMaterial::getCopy( )
 NDMaterial* 
 PlaneStressUserMaterial::getCopy( const char *type ) 
 {
-  if (strcmp(type, this->getType()) == 0)
+  if ((strcmp(type, "PlaneStress") == 0) ||
+      (strcmp(type, "PlaneStress2D") == 0))
     return this->getCopy( ) ;
   else
     return 0;
