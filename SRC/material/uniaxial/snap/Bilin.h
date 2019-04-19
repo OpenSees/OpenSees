@@ -73,7 +73,9 @@ class Bilin : public UniaxialMaterial
                FEM_ObjectBroker &theBroker);    
  
   void Print(OPS_Stream &s, int flag =0);
- 
+  
+  virtual double getEnergy(void) { return CEnrgtot; } //by SAJalali
+
  protected:
  
  private:

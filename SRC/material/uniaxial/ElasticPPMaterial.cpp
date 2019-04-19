@@ -89,7 +89,8 @@ ElasticPPMaterial::ElasticPPMaterial(int tag, double e, double eyp)
  trialStrain(0.0), trialStress(0.0), trialTangent(E),
  commitStrain(0.0), commitStress(0.0), commitTangent(E)
 {
-  fyp = E*eyp;
+	EnergyP = 0;	//by SAJalali
+	fyp = E*eyp;
   fyn = -fyp;
 }
 
@@ -108,7 +109,8 @@ ElasticPPMaterial::ElasticPPMaterial(int tag, double e, double eyp,
 	opserr << "ElasticPPMaterial::ElasticPPMaterial() - eyn > 0, setting < 0\n";
 	eyn *= -1.;
     }    
-    
+	EnergyP = 0;	//by SAJalali
+
     fyp = E*eyp;
     fyn = E*eyn;
 }
@@ -119,6 +121,7 @@ ElasticPPMaterial::ElasticPPMaterial()
  trialStrain(0.0), trialStress(0.0), trialTangent(0.0),
  commitStrain(0.0), commitStress(0.0), commitTangent(0.0)
 {
+	EnergyP = 0;	//by SAJalali
 
 }
 
@@ -218,6 +221,9 @@ ElasticPPMaterial::commitState(void)
       }
     }
 
+	//added by SAJalali for energy recorder
+	EnergyP += 0.5*(commitStress + trialStress)*(trialStrain - commitStrain);
+
     commitStrain = trialStrain;
     commitTangent=trialTangent;
     commitStress = trialStress;
@@ -245,7 +251,8 @@ ElasticPPMaterial::revertToStart(void)
   trialStress = commitStress = 0.0;
 
   ep = 0.0;
-  
+  EnergyP = 0;	//by SAJalali
+
   return 0;
 }
 
