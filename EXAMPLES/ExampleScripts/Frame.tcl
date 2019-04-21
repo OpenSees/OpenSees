@@ -1,28 +1,3 @@
-# OpenSees -- Open System for Earthquake Engineering Simulation
-# Pacific Earthquake Engineering Research Center
-# http://opensees.berkeley.edu/
-#
-# Portal Frame Example 3.1
-# ------------------------
-#  Reinforced concrete one-bay, one-story frame
-#  Distributed vertical load on girder
-# 
-# Example Objectives
-# -----------------
-#  Nonlinear beam-column elements
-#  Gravity load analysis and eigenvalue analysis
-#
-# 
-# Units: kips, in, sec
-#
-# Written: GLF/MHS/fmk
-# Date: January 2001
-
-
-# ------------------------------
-# Start of model generation
-# ------------------------------
-
 # Create ModelBuilder (with two-dimensions and 3 DOF/node)
 
 model basic -ndm 2 -ndf 3
@@ -40,12 +15,10 @@ node  2    $width     0.0
 node  3       0.0 $height
 node  4    $width $height
 
-
 # Fix supports at base of columns
 #    tag   DX   DY   RZ
 fix   1     1    1    1
 fix   2     1    1    1
-
 
 # Define materials for nonlinear columns
 # ------------------------------------------
@@ -58,15 +31,15 @@ uniaxialMaterial Concrete01  2  -5.0   -0.002   0.0     -0.006
 
 # STEEL
 # Reinforcing steel 
-pset fy 60.0;      # Yield stress
-pset E 30000.0;    # Young's modulus
+set fy 60.0;      # Yield stress
+set E 30000.0;    # Young's modulus
 #                        tag  fy E0    b
 uniaxialMaterial Steel01  3  $fy $E 0.01
 
 # Define cross-section for nonlinear columns
 # ------------------------------------------
 
-# set some parameters
+# set some paramaters
 set colWidth 15
 set colDepth 24 
 
@@ -101,7 +74,7 @@ section Fiber 1 {
 
 # Geometry of column elements
 #                tag 
-puts "HI 4"
+
 geomTransf Corotational 1  
 
 # Number of integration points along length of element
@@ -109,11 +82,15 @@ set np 5
 
 # Create the coulumns using Beam-column elements
 #               e            tag ndI ndJ nsecs secID transfTag
-set eleType forceBeamColumn
+set eleType dispBeamColumn
 element $eleType  1   1   3   $np    1       1 
 element $eleType  2   2   4   $np    1       1 
+element $eleType  5   3   5   $np    1       1 
+element $eleType  6   4   6   $np    1       1 
+element $eleType  8   5   7   $np    1       1 
+element $eleType  9   6   8   $np    1       1 
 
-# Define beam element
+# Define beam elment
 # -----------------------------
 
 # Geometry of column elements
@@ -123,6 +100,8 @@ geomTransf Linear 2
 # Create the beam element
 #                          tag ndI ndJ     A       E    Iz   transfTag
 element elasticBeamColumn   3   3   4    360    4030  8640    2
+element elasticBeamColumn   7   5   6    360    4030  8640    2
+element elasticBeamColumn   10   7   8    360    4030  8640    2
 
 # Define gravity loads
 # --------------------
@@ -138,15 +117,6 @@ pattern Plain 1 "Linear" {
 	load  3   0.0  [expr -$P] 0.0
 	load  4   0.0  [expr -$P] 0.0
 }
-
-# initialize in case we need to do an initial stiffness iteration
-initialize
-
-# ------------------------------
-# End of model generation
-# ------------------------------
-
-
 
 # ------------------------------
 # Start of analysis generation
@@ -178,25 +148,25 @@ analysis Static
 # End of analysis generation
 # ------------------------------
 
-
-
-# ------------------------------
-# Start of recorder generation
-# ------------------------------
-
-# Create a recorder to monitor nodal displacements
-#recorder Node -xml nodeGravity.out -time -node 3 4 -dof 1 2 3 disp
-#recorder Element -file ele.out -ele 1 section  forces
-
-# --------------------------------
-# End of recorder generation
-# ---------------------------------
-
-
-# ------------------------------
-# Finally perform the analysis
-# ------------------------------
-
 # perform the gravity load analysis, requires 10 steps to reach the load level
 analyze 10
+
+loadConst -time 0.0
+
+# ----------------------------------------------------
+# End of Model Generation & Initial Gravity Analysis
+# ----------------------------------------------------
+
+
+# ----------------------------------------------------
+# Start of additional modelling for dynamic loads
+# ----------------------------------------------------
+
+# Define nodal mass in terms of axial load on columns
+set g 386.4
+set m [expr $P/$g];       # expr command to evaluate an expression
+
+#    tag   MX   MY   RZ
+mass  3    $m   $m    0
+mass  4    $m   $m    0
 

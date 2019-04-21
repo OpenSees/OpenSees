@@ -215,6 +215,7 @@ GLF_LIBS = $(FE)/element/zeroLength/ZeroLength.o \
 	$(FE)/element/zeroLength/ZeroLengthSection.o \
 	$(FE)/element/zeroLength/CoupledZeroLength.o \
 	$(FE)/element/zeroLength/ZeroLengthND.o \
+	$(FE)/element/zeroLength/ZeroLengthVG_HG.o \
 	$(FE)/element/zeroLength/ZeroLengthImpact3D.o
 
 REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
@@ -517,6 +518,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/dispBeamColumnInt/FiberSection2dInt.o \
 	$(FE)/element/dispBeamColumnInt/LinearCrdTransf2dInt.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam2d.o \
+	$(FE)/element/elasticBeamColumn/WheelRail.o \
 	$(FE)/element/elasticBeamColumn/ModElasticBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam3d.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam2d.o \
