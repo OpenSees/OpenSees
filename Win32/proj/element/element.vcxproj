@@ -180,6 +180,7 @@
     <ClCompile Include="..\..\..\SRC\element\zeroLength\CoupledZeroLength.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\TclZeroLength.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLength.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthVG_HG.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact2D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactNTS2D.cpp" />

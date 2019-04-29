@@ -1731,7 +1731,7 @@ NineFourNodeQuadUP::setResponse(const char **argv, int argc, OPS_Stream &output)
   char outputData[32];
 
   output.tag("ElementOutput");
-  output.attr("eleType","NineFOurNodeQuadUP");
+  output.attr("eleType","NineFourNodeQuadUP");
   output.attr("eleTag",this->getTag());
   for (int i=1; i<=9; i++) {
     sprintf(outputData,"node%d",i);

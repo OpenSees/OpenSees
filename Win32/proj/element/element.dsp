@@ -197,6 +197,10 @@ SOURCE=..\..\..\SRC\element\zeroLength\ZeroLength.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\SRC\element\zeroLength\ZeroLengthVG_HG.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\SRC\element\zeroLength\ZeroLength.h
 # End Source File
 # Begin Source File
