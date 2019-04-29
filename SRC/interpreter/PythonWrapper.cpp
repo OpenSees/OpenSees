@@ -1934,6 +1934,69 @@ static PyObject *Py_ops_randomVariable(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_getRVTags(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getRVTags() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getRVMean(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getRVMean() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getRVStdv(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getRVStdv() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getRVPDF(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getRVPDF() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getRVCDF(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getRVCDF() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getRVInverseCDF(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getRVInverseCDF() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_addCorrelate(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_addCorrelate() < 0) return NULL;
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_probabilityTransformation(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -1942,6 +2005,15 @@ static PyObject *Py_ops_probabilityTransformation(PyObject *self, PyObject *args
 	opserr<<(void*)0;
 	return NULL;
     }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_transformUtoX(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_transformUtoX() < 0) return NULL;
 
     return wrapper->getResults();
 }
@@ -2162,6 +2234,14 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("sensSectionForce", &Py_ops_sensSectionForce);
     addCommand("sensNodePressure", &Py_ops_sensNodePressure);
     addCommand("randomVariable", &Py_ops_randomVariable);
+    addCommand("getRVTags", &Py_ops_getRVTags);
+    addCommand("getMean", &Py_ops_getRVMean);
+    addCommand("getStdv", &Py_ops_getRVStdv);
+    addCommand("getPDF", &Py_ops_getRVPDF);
+    addCommand("getCDF", &Py_ops_getRVCDF);
+    addCommand("getInverseCDF", &Py_ops_getRVInverseCDF);
+    addCommand("correlate", &Py_ops_addCorrelate);
+    addCommand("transformUtoX", &Py_ops_transformUtoX);
     addCommand("updateMaterialStage", &Py_ops_updateMaterialStage);
     addCommand("sdfResponse", &Py_ops_sdfResponse);
     addCommand("probabilityTransformation", &Py_ops_probabilityTransformation);
