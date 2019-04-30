@@ -451,7 +451,7 @@ BackgroundMesh::preNForTri(double x1, double y1, double x2, double y2,
     double A = coeff[0]+coeff[1]+coeff[2];
 
     if (A<0 || fabs(A) < 1e-15) {
-	opserr << "A <= 0\n";
+	//opserr << "A <= 0\n";
 	return -1;
     }
 
@@ -505,7 +505,7 @@ BackgroundMesh::preNForTet(const VDouble& crds1, const VDouble& crds2,
     }
 
     if (vol < 0 || fabs(vol) < 1e-15) {
-	opserr<<"vol "<<vol<<" <= 0\n";
+	//opserr<<"vol "<<vol<<" <= 0\n";
 	return -1;
     }
 
@@ -1946,7 +1946,7 @@ BackgroundMesh::gridFSI(ID& freenodes)
 	if (outside) continue;
 	
 	// gather particles
-	VParticle tripts;
+	VParticle alltripts;
 	for (int j=0; j<(int)findex.size(); ++j) {
 	    VInt ind = findex[j];
 	    ind -= 1;
@@ -1958,16 +1958,68 @@ BackgroundMesh::gridFSI(ID& freenodes)
 		if (cellit->second.type == STRUCTURE) continue;
 		if (cellit->second.pts.empty()) continue;
 		const VParticle& pts = cellit->second.pts;
-		tripts.insert(tripts.end(), pts.begin(), pts.end());
+		alltripts.insert(alltripts.end(), pts.begin(), pts.end());
 	    }
 	}
-	if (tripts.empty()) {
+	if (alltripts.empty()) {
 	    // set free surface
 	    for (int j=0; j<(int)tri.size(); ++j) {
 		ndfree[tri[j]] = 1;
 	    }
 	    continue;
 	}
+
+	// in-element check
+	VVDouble ptcrds(tri.size());
+	for (int j=0; j<(int)tri.size(); ++j) {
+	    ptcrds[j].resize(ndm);
+	    int mark;
+	    if (ndm == 2) {
+		gen.getPoint(tri[j], ptcrds[j][0], ptcrds[j][1], mark);
+	    } else if (ndm == 3) {
+		tetgen.getPoint(tri[j], ptcrds[j][0], ptcrds[j][1], ptcrds[j][2], mark);
+	    }
+	}
+
+	VDouble coeff;
+	VVDouble tetcoeff;
+	bool zerovol = false;
+	if (ndm == 2) {
+	    if (preNForTri(ptcrds[0][0],ptcrds[0][1],
+			   ptcrds[1][0],ptcrds[1][1],
+			   ptcrds[2][0],ptcrds[2][1],
+			   coeff) < 0) {
+		zerovol = true;
+	    }
+	} else if (ndm == 3) {
+	    if (preNForTet(ptcrds[0],ptcrds[1],ptcrds[2],ptcrds[3],
+			   tetcoeff) < 0) {
+		zerovol = true;
+	    }
+	}
+
+	if (zerovol) {
+	    continue;
+	}
+
+	VParticle tripts;
+	for (int j=0; j<(int)alltripts.size(); ++j) {
+
+	    // get shape function
+	    const VDouble& pcrds = alltripts[j]->getCrds();
+	    VDouble N;
+	    if (ndm == 2) {
+		getNForTri(coeff,pcrds[0],pcrds[1],N);
+	    } else if (ndm == 3) {
+		getNForTet(tetcoeff,pcrds,N);
+	    }
+	    if (inEle(N)) {
+		// in tri
+		tripts.push_back(alltripts[j]);
+	    }
+	}
+
+	if (tripts.empty()) continue;
 
 	// find the group of this mesh
 	std::map<int,int> numpts;
