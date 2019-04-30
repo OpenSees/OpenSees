@@ -117,6 +117,9 @@
     <Filter Include="tetrahedron">
       <UniqueIdentifier>{f5452ba9-6ab4-420a-bc56-865295386031}</UniqueIdentifier>
     </Filter>
+    <Filter Include="absorbentBoundaries">
+      <UniqueIdentifier>{a137f837-5e33-4139-aaa5-d2044974edf4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -171,6 +174,9 @@
       <Filter>zeroLength</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLength.cpp">
+      <Filter>zeroLength</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthVG_HG.cpp">
       <Filter>zeroLength</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact2D.cpp">
@@ -680,27 +686,6 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQ.cpp">
       <Filter>shell</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement3D.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMMesher2D.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMMesher3D.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TclModelBuilder_addPFEMElement.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\HUelements\DBESI0.C">
       <Filter>HUelements</Filter>
     </ClCompile>
@@ -761,42 +746,6 @@
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnWarping2d.cpp">
       <Filter>forceBeamColumn</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundFixData.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundGrid.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundStructure.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\LineMesh.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\Particle.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\ParticleGroup.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DFIC.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2Dmini.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TclPFEMCommands.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriangleMeshGenerator.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriMesh.cpp">
-      <Filter>pfem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\OTHER\Triangle\triangle.c">
       <Filter>pfem</Filter>
     </ClCompile>
@@ -835,6 +784,111 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.cpp">
       <Filter>tetrahedron</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\HigherOrder.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\LineMesh.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\LineMeshGenerator.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\Mesh.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\MINI.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\Particle.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\ParticleGroup.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DFIC.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2Dmini.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DQuasi.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement3D.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement3DBubble.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\QuadMesh.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\QuadMeshGenerator.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TaylorHood2D.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TclModelBuilder_addPFEMElement.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TetMesh.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TetMeshGenerator.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriangleMeshGenerator.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriGaussPoints.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriMesh.cpp">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\OTHER\tetgen1.4.3\predicates.cxx">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\OTHER\tetgen1.4.3\tetgen.cxx">
+      <Filter>pfem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.cpp">
+      <Filter>absorbentBoundaries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.cpp">
+      <Filter>UWelements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceP.cpp">
+      <Filter>UWelements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedEPBeamInterface.cpp">
+      <Filter>UWelements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\UWelements\Tcl_generateInterfacePoints.cpp">
+      <Filter>UWelements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.cpp">
+      <Filter>elasticBeamColumn</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1297,27 +1351,6 @@
     <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGQ.h">
       <Filter>shell</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement3D.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMMesher2D.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMMesher3D.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TclModelBuilder_addPFEMElement.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\HUelements\KikuchiBearing.h">
       <Filter>HUelements</Filter>
     </ClInclude>
@@ -1372,39 +1405,6 @@
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumnWarping2d.h">
       <Filter>forceBeamColumn</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundFixData.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundGrid.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundStructure.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\LineMesh.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\Particle.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\ParticleGroup.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DFIC.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2Dmini.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriangleMeshGenerator.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriMesh.h">
-      <Filter>pfem</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\OTHER\Triangle\triangle.h">
       <Filter>pfem</Filter>
     </ClInclude>
@@ -1449,6 +1449,108 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.h">
       <Filter>tetrahedron</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\HigherOrder.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\LineMesh.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\LineMeshGenerator.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\Mesh.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\MINI.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\Particle.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\ParticleGroup.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DFIC.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2Dmini.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DQuasi.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement3D.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement3DBubble.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\QuadMesh.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\QuadMeshGenerator.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TaylorHood2D.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TclModelBuilder_addPFEMElement.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TetMesh.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TetMeshGenerator.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriangleMeshGenerator.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriGaussPoints.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriMesh.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\OTHER\tetgen1.4.3\tetgen.h">
+      <Filter>pfem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.h">
+      <Filter>absorbentBoundaries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.h">
+      <Filter>UWelements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceP.h">
+      <Filter>UWelements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedEPBeamInterface.h">
+      <Filter>UWelements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\UWelements\Tcl_generateInterfacePoints.h">
+      <Filter>UWelements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.h">
+      <Filter>elasticBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

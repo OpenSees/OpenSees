@@ -38,10 +38,10 @@
 #include <ForceBeamColumn3d.h>
 #include <ForceBeamColumnWarping2d.h>
 #include <ElasticForceBeamColumnWarping2d.h>
-//#include <TimoshenkoBeamColumn2d.h>
+#include <TimoshenkoBeamColumn2d.h>
 #include <DispBeamColumn2d.h>
 #include <DispBeamColumn3d.h>
-//#include <DispBeamColumnNL2d.h>
+#include <DispBeamColumnNL2d.h>
 #include <DispBeamColumn2dThermal.h>
 #include <DispBeamColumn3dThermal.h> //L.Jiang [SIF]
 #include <ForceBeamColumn2dThermal.h> //L.Jiang [SIF]
@@ -368,16 +368,12 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
     if (ndm == 2) {
       if (strcmp(argv[1],"elasticForceBeamColumn") == 0)
 	theElement = new ElasticForceBeamColumn2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
-      /*
       else if (strcmp(argv[1],"timoshenkoBeamColumn") == 0)
 	theElement = new TimoshenkoBeamColumn2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
-      */
       else if (strcmp(argv[1],"dispBeamColumn") == 0)
 	theElement = new DispBeamColumn2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass, cMass);
-      /*
       else if (strcmp(argv[1],"dispBeamColumnNL") == 0)
 	theElement = new DispBeamColumnNL2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
-      */
       else if (strcmp(argv[1],"forceBeamColumnCBDI") == 0)
 	theElement = new ForceBeamColumnCBDI2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
       else if (strcmp(argv[1],"forceBeamColumnCSBDI") == 0)
@@ -1308,16 +1304,12 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
   if (ndm == 2) {
     if (strcmp(argv[1],"elasticForceBeamColumn") == 0)
       theElement = new ElasticForceBeamColumn2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, mass);
-    /*
     else if (strcmp(argv[1],"timoshenkoBeamColumn") == 0)
       theElement = new TimoshenkoBeamColumn2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, mass);
-    */
     else if (strcmp(argv[1],"dispBeamColumn") == 0)
       theElement = new DispBeamColumn2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, mass, cMass);
-    /*
     else if (strcmp(argv[1],"dispBeamColumnNL") == 0)
       theElement = new DispBeamColumnNL2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, mass);
-    */
     else if (strcmp(argv[1],"forceBeamColumnCBDI") == 0)
       theElement = new ForceBeamColumnCBDI2d(eleTag, iNode, jNode, numSections, sections, *beamIntegr, *theTransf2d, mass);
     else if (strcmp(argv[1],"forceBeamColumnCSBDI") == 0)

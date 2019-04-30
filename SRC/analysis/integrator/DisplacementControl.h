@@ -30,8 +30,8 @@
 // Revision: A
 //
 // Description: This file contains the class definition for DisplacementControl.
-// DisplacementControl is an algorithmic class for perfroming a static analysis
-// using the arc length scheme, that is within a load step the follwing
+// DisplacementControl is an algorithmic class for performing a static analysis
+// using the arc length scheme, that is within a load step the following
 // constraint is enforced: 
 //  i=1        delta U^T delta U + alpha^2 delta lambda^2 = delta s^2
 //  i>1        dU^T delta U + alpha^2 dLambda delta lambda = 0
@@ -101,8 +101,8 @@ class DisplacementControl : public StaticIntegrator
       int theNode;          // the node that is being followed
       int theDof;           // the dof at the node being followed
       double theIncrement;  // deltaU at step (i)
-      Domain *theDomain;    // the domain containg the node being followed
-      int theDofID;         // the syste level id of the dof being followed
+      Domain *theDomain;    // the domain containing the node being followed
+      int theDofID;         // the system level id of the dof being followed
       Vector *deltaUhat, *deltaUbar, *deltaU,*phat,*deltaUstep,*dphatdh;
     //  Vector *deltaUhat_newStep ;
       Vector *dLAMBDAdh; 
@@ -110,7 +110,7 @@ class DisplacementControl : public StaticIntegrator
       // Pointers used for sensitivity analysis
       Vector  *dUhatdh,*dUIJdh, *Residual,*Residual2, *sensU,*d_deltaU_dh ;
       // the created pointers shown above are
-      // *dUhatdh     : The derivative of the tangent displacement w/r to prameter h
+      // *dUhatdh     : The derivative of the tangent displacement w/r to parameter h
       // *sensU       : Displacement sensitivity using displacement control scheme
       // *d_deltaU_dh : The derivative of the residual displacement
       // *dUIJdh      : The sensitivity of the residual displacement

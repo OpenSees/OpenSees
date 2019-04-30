@@ -314,17 +314,18 @@ NodeRecorder::NodeRecorder(const ID &dofs,
 			   int psensitivity,
 			   const char *dataToStore,
 			   Domain &theDom,
-			   OPS_Stream &theOutputHandler,
+			   OPS_Stream &theOutput,
 			   double dT,
 			   bool timeFlag,
 			   TimeSeries **theSeries)
 :Recorder(RECORDER_TAGS_NodeRecorder),
  theDofs(0), theNodalTags(0), theNodes(0), response(0), 
- theDomain(&theDom), theOutputHandler(&theOutputHandler),
+ theDomain(&theDom), theOutputHandler(&theOutput),
  echoTimeFlag(timeFlag), dataFlag(0), 
  deltaT(dT), nextTimeStampToRecord(0.0), 
  sensitivity(psensitivity), 
- initializationDone(false), numValidNodes(0), addColumnInfo(0), theTimeSeries(theSeries), timeSeriesValues(0)
+ initializationDone(false), numValidNodes(0), addColumnInfo(0), 
+ theTimeSeries(theSeries), timeSeriesValues(0)
 {
 
   //
@@ -440,6 +441,13 @@ NodeRecorder::NodeRecorder(const ID &dofs,
     dataFlag = 10;
     opserr << "NodeRecorder::NodeRecorder - dataToStore " << dataToStore;
     opserr << "not recognized (disp, vel, accel, incrDisp, incrDeltaDisp)\n";
+  }
+
+  if (dataFlag == 7 || dataFlag == 8 || dataFlag == 9) {
+    if (timeFlag == true)
+      theOutputHandler->setAddCommon(2);
+    else
+      theOutputHandler->setAddCommon(1);
   }
 }
 

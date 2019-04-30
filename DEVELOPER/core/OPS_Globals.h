@@ -28,7 +28,7 @@
 // if you change some of the variables, you must recompile ALL the code.
 
 
-#define OPS_VERSION "2.5.0 (rev 6248)"
+#define OPS_VERSION "3.0.3"
 
 #ifndef _WIN64
 #define WIN_ARCH "32-Bit"
@@ -75,5 +75,9 @@ extern bool  ops_InitialStateAnalysis;
 #define OPS_DISPLAYMODE_STRESS 5
 #define OPS_DISPLAYMODE_STRAIN 7
 #define OPS_DISPLAYMODE_AXIAL 11
+#define OPS_PRINT_CURRENTSTATE 0
+#define OPS_PRINT_PRINTMODEL_SECTION  1
+#define OPS_PRINT_PRINTMODEL_MATERIAL 2
+#define OPS_PRINT_PRINTMODEL_JSON   25000
 
 #endif

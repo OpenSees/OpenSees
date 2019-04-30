@@ -56,6 +56,7 @@ class SimulationInformation
   int setLengthUnit(const char *name);
   int setForceUnit(const char *name);
   int setTimeUnit(const char *name);
+  int setTemperatureUnit(const char *name);
 
   int addInputFile(const char *filename, const char *path);
   int addOutputFile(const char *filename, const char *path);
@@ -70,7 +71,7 @@ class SimulationInformation
 
   /*  int addTclInformationCommands(Tcl_Interp *interp); */
 
-  void Print(OPS_Stream &s) const;   
+  void Print(OPS_Stream &s, int flag = 0) const;
   friend OPS_Stream &operator<<(OPS_Stream &s, const SimulationInformation &E);    
   
   int neesUpload(const char *username, const char *passwd, int projID, int expID);
@@ -85,6 +86,7 @@ class SimulationInformation
   char *lengthUnit;
   char *forceUnit;
   char *timeUnit;
+  char *temperatureUnit;
 
   char startTime[30];
   char endTime[30];
@@ -100,6 +102,5 @@ class SimulationInformation
   StringContainer elementTypes;
   StringContainer materialTypes;
 };
-
 
 #endif

@@ -85,7 +85,12 @@ Vector::Vector(int size)
 Vector::Vector(double *data, int size)
 : sz(size),theData(data),fromFree(1)
 {
-  
+#ifdef _G3DEBUG
+  if (sz <= 0) {
+    opserr << "Vector::Vector(double *, size) - size " << size << " specified <= 0\n";
+    sz = 0;
+  }
+#endif
 }
  
 
@@ -246,11 +251,11 @@ Vector::addVector(double thisFact, const Vector &other, double otherFact )
   if (otherFact == 0.0 && thisFact == 1.0)
     return 0; 
 
-  // if sizes are compatible add
+  // if sizes are compatable add
 #ifdef _G3DEBUG
   if (sz != other.sz) {
-    // else sizes are incompatible, do nothing but warning
-    opserr <<  "WARNING Vector::addVector() - incompatible Vector sizes\n";
+    // else sizes are incompatable, do nothing but warning
+    opserr <<  "WARNING Vector::addVector() - incompatable Vector sizes\n";
     return -1;
   }
 #endif
@@ -310,7 +315,7 @@ Vector::addVector(double thisFact, const Vector &other, double otherFact )
       }
   } 
 
-  // successful
+  // successfull
   return 0;
 }
 	    
@@ -322,12 +327,12 @@ Vector::addMatrixVector(double thisFact, const Matrix &m, const Vector &v, doubl
   if (thisFact == 1.0 && otherFact == 0.0)
     return 0;
 
-  // check the sizes are compatible
+  // check the sizes are compatable
 #ifdef _G3DEBUG
-  // check the sizes are compatible
+  // check the sizes are compatable
   if ((sz != m.noRows()) && (m.noCols() != v.sz)) {
-    // otherwise incompatible sizes
-    opserr << "Vector::addMatrixVector() - incompatible sizes\n";
+    // otherwise incompatable sizes
+    opserr << "Vector::addMatrixVector() - incompatable sizes\n";
     return -1;    
   }
 #endif
@@ -440,7 +445,7 @@ Vector::addMatrixVector(double thisFact, const Matrix &m, const Vector &v, doubl
     }
   }
   
-  // successful
+  // successfull
   return 0;
 }
 
@@ -457,10 +462,10 @@ Vector::addMatrixTransposeVector(double thisFact,
     return 0;
 
 #ifdef _G3DEBUG
-  // check the sizes are compatible
+  // check the sizes are compatable
   if ((sz != m.noRows()) && (m.noRows() != v.sz)) {
-    // otherwise incompatible sizes
-    opserr << "Vector::addMatrixTransposeVector() - incompatible sizes\n";
+    // otherwise incompatable sizes
+    opserr << "Vector::addMatrixTransposeVector() - incompatable sizes\n";
     return -1;    
   }
 #endif
@@ -687,7 +692,7 @@ Vector::operator()(const ID &rows) const
     return result;
   }
 
-  // copy the appropriate contents from current to result     
+  // copy the appropraite contents from current to result     
   int pos;
   for (int i=0; i<rows.Size(); i++) {
     pos = rows(i);
@@ -702,7 +707,7 @@ Vector::operator()(const ID &rows) const
 
 // Vector &operator=(const Vector  &V):
 //	the assignment operator, This is assigned to be a copy of V. if sizes
-//	are not compatible this.theData [] is deleted. The data pointers will not
+//	are not compatable this.theData [] is deleted. The data pointers will not
 //	point to the same area in mem after the assignment.
 //
 
@@ -714,7 +719,7 @@ Vector::operator=(const Vector &V)
 
 	  /*
 #ifdef _G3DEBUG
-    // check size compatibility, if different warning
+    // check size compatability, if different warning
     if (sz != V.sz) 
       opserr << "Vector::operator=() - vectors of differing sizes\n");
 #endif
@@ -1179,11 +1184,11 @@ Vector::Extract(const Vector &V, int init_pos, double fact)
 
 Matrix Vector::operator%(const Vector &V) const
 {
-  // if sizes are compatible add
+  // if sizes are compatable add
 #ifdef _G3DEBUG
   if (sz != V.sz) {
-    // else sizes are incompatible, do nothing but warning
-    opserr <<  "WARNING Vector::tensor multiplication operator % - incompatible Vector sizes\n";
+    // else sizes are incompatable, do nothing but warning
+    opserr <<  "WARNING Vector::tensor multiplication operator % - incompatable Vector sizes\n";
     return -1;
   }
 #endif

@@ -119,7 +119,8 @@ extern  void *OPS_DruckerPragerMaterialThermal(void);//L.Jiang [SIF]
 //extern  void *OPS_PlasticDamageConcretePlaneStressThermal(void);//L.Jiang [SIF]
 
 #ifdef _HAVE_Faria1998
-//extern void *OPS_Faria1998(void);
+extern void *OPS_NewFaria1998Material(void);
+extern void *OPS_NewConcreteMaterial(void);
 #endif
 
 extern  void *OPS_FSAMMaterial(void); // K Kolozvari      
@@ -251,13 +252,20 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
     }
 
 #ifdef _HAVE_Faria1998
-    //    else if (strcmp(argv[1],"Faria1998") == 0) {
-    //      void *theMat = OPS_Faria1998();
-    //      if (theMat != 0) 
-    //        theMaterial = (NDMaterial *)theMat;
-    //      else 
-    //	return TCL_ERROR;
-    //    }
+    else if (strcmp(argv[1],"Faria1998") == 0) {
+      void *theMat = OPS_NewFaria1998Material();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+       	return TCL_ERROR;
+    }
+    else if (strcmp(argv[1],"Concrete") == 0) {
+      void *theMat = OPS_NewConcreteMaterial();
+      if (theMat != 0) 
+	theMaterial = (NDMaterial *)theMat;
+      else 
+       	return TCL_ERROR;
+    }
 #endif
 
     else if ((strcmp(argv[1],"FAReinforceConcretePlaneStress") == 0) || (strcmp(argv[1],"FAReinforcedConcretePlaneStress") == 0)) {

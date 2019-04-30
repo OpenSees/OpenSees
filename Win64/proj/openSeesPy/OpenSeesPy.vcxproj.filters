@@ -49,6 +49,9 @@
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesParameterCommands.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesReliabilityCommands.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\classTags.h">

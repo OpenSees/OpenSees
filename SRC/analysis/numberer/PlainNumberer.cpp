@@ -94,7 +94,7 @@ PlainNumberer::numberDOF(int lastDOF)
 	opserr << " does not use the lastDOF as requested\n";
     }
     
-    // iterate throgh  the DOFs first time setting -2 values
+    // iterate through  the DOFs first time setting -2 values
     DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     
@@ -105,7 +105,7 @@ PlainNumberer::numberDOF(int lastDOF)
 	      dofPtr->setID(i,eqnNumber++);
     }
 
-    // iterate throgh  the DOFs second time setting -3 values
+    // iterate through  the DOFs second time setting -3 values
     DOF_GrpIter &moreDOFs = theModel->getDOFs();
     
     while ((dofPtr = moreDOFs()) != 0) {
@@ -200,7 +200,7 @@ PlainNumberer::numberDOF(ID &lastDOFs)
     opserr << "WARNING PlainNumberer::numberDOF(ID):";
     opserr << " does not use the lastDOFs as requested\n";
     
-    // iterate throgh  the DOFs first time setting -2 values
+    // iterate through  the DOFs first time setting -2 values
     DOF_GrpIter &theDOFs = theModel->getDOFs();
     DOF_Group *dofPtr;
     
@@ -210,7 +210,7 @@ PlainNumberer::numberDOF(ID &lastDOFs)
 	    if (theID(i) == -2) dofPtr->setID(i,eqnNumber++);
     }
 
-    // iterate throgh  the DOFs first time setting -3 values
+    // iterate through  the DOFs first time setting -3 values
     DOF_GrpIter &moreDOFs = theModel->getDOFs();
     
     while ((dofPtr = moreDOFs()) != 0) {

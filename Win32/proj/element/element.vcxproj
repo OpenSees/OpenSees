@@ -14,7 +14,7 @@
     <ProjectGuid>{1AB34CD5-BDCC-29ED-1FA4-9049F955E2B9}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -106,12 +106,17 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\OTHER\tetgen1.4.3\predicates.cxx" />
+    <ClCompile Include="..\..\..\OTHER\tetgen1.4.3\tetgen.cxx" />
     <ClCompile Include="..\..\..\OTHER\Triangle\triangle.c" />
     <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.cpp" />
     <ClCompile Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.cpp" />
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dThermal.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.cpp" />
     <ClCompile Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWenMod3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\Element.cpp" />
     <ClCompile Include="..\..\..\SRC\element\ElementalLoad.cpp" />
@@ -121,17 +126,31 @@
     <ClCompile Include="..\..\..\SRC\element\Information.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundFixData.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundGrid.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundStructure.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\HigherOrder.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\LineMesh.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\LineMeshGenerator.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\Mesh.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\MINI.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\Particle.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\ParticleGroup.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DFIC.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2Dmini.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TclPFEMCommands.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DQuasi.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement3D.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement3DBubble.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\QuadMesh.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\QuadMeshGenerator.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TaylorHood2D.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TclModelBuilder_addPFEMElement.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TetMesh.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TetMeshGenerator.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriangleMeshGenerator.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriGaussPoints.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\TriMesh.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellANDeS.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGT.cpp" />
@@ -142,7 +161,11 @@
     <ClCompile Include="..\..\..\SRC\element\surfaceLoad\TriSurfaceLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\element\TclElementCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceP.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedEPBeamInterface.cpp" />
     <ClCompile Include="..\..\..\SRC\element\UWelements\QuadBeamEmbedContact.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\UWelements\Tcl_generateInterfacePoints.cpp" />
     <ClCompile Include="..\..\..\SRC\element\WrapperElement.cpp" />
     <ClCompile Include="..\..\..\SRC\element\truss\CorotTruss.cpp" />
     <ClCompile Include="..\..\..\SRC\element\truss\CorotTruss2.cpp" />
@@ -157,6 +180,7 @@
     <ClCompile Include="..\..\..\SRC\element\zeroLength\CoupledZeroLength.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\TclZeroLength.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLength.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthVG_HG.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact2D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContact3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthContactNTS2D.cpp" />
@@ -330,13 +354,6 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGQ.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC4.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQ.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement3D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMMesher2D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMMesher3D.cpp" />
-    <ClCompile Include="..\..\..\SRC\element\PFEMElement\TclModelBuilder_addPFEMElement.cpp" />
     <ClCompile Include="..\..\..\SRC\element\HUelements\DBESI0.C" />
     <ClCompile Include="..\..\..\SRC\element\HUelements\DBESI1.C" />
     <ClCompile Include="..\..\..\SRC\element\HUelements\KikuchiBearing.cpp" />
@@ -350,14 +367,18 @@
     <ClCompile Include="..\..\..\SRC\element\NewElement.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\OTHER\tetgen1.4.3\tetgen.h" />
     <ClInclude Include="..\..\..\OTHER\Triangle\triangle.h" />
     <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping2d.h" />
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.h" />
     <ClInclude Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.h" />
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h" />
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.h" />
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn2dWithSensitivity.h" />
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dThermal.h" />
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumn3dWithSensitivity.h" />
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL2d.h" />
+    <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.h" />
     <ClInclude Include="..\..\..\SRC\element\elastomericBearing\ElastomericBearingBoucWenMod3d.h" />
     <ClInclude Include="..\..\..\SRC\element\Element.h" />
     <ClInclude Include="..\..\..\SRC\element\ElementalLoad.h" />
@@ -367,16 +388,31 @@
     <ClInclude Include="..\..\..\SRC\element\Information.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.h" />
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundFixData.h" />
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundGrid.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.h" />
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundStructure.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\HigherOrder.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\LineMesh.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\LineMeshGenerator.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\Mesh.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\MINI.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\Particle.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\ParticleGroup.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DFIC.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2Dmini.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DQuasi.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement3D.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement3DBubble.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\QuadMesh.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\QuadMeshGenerator.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TaylorHood2D.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TclModelBuilder_addPFEMElement.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TetMesh.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TetMeshGenerator.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriangleMeshGenerator.h" />
+    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriGaussPoints.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\TriMesh.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellANDeS.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellDKGT.h" />
@@ -386,7 +422,11 @@
     <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGT.h" />
     <ClInclude Include="..\..\..\SRC\element\surfaceLoad\TriSurfaceLoad.h" />
     <ClInclude Include="..\..\..\SRC\element\tetrahedron\FourNodeTetrahedron.h" />
+    <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.h" />
+    <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceP.h" />
+    <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedEPBeamInterface.h" />
     <ClInclude Include="..\..\..\SRC\element\UWelements\QuadBeamEmbedContact.h" />
+    <ClInclude Include="..\..\..\SRC\element\UWelements\Tcl_generateInterfacePoints.h" />
     <ClInclude Include="..\..\..\SRC\element\WrapperElement.h" />
     <ClInclude Include="..\..\..\SRC\api\elementAPI.h" />
     <ClInclude Include="..\..\..\SRC\element\truss\CorotTruss.h" />
@@ -538,13 +578,6 @@
     <ClInclude Include="..\..\..\SRC\element\shell\ShellDKGQ.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellMITC4.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGQ.h" />
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.h" />
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.h" />
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.h" />
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement3D.h" />
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMMesher2D.h" />
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMMesher3D.h" />
-    <ClInclude Include="..\..\..\SRC\element\PFEMElement\TclModelBuilder_addPFEMElement.h" />
     <ClInclude Include="..\..\..\SRC\element\HUelements\KikuchiBearing.h" />
     <ClInclude Include="..\..\..\SRC\element\HUelements\MultipleNormalSpring.h" />
     <ClInclude Include="..\..\..\SRC\element\HUelements\MultipleShearSpring.h" />

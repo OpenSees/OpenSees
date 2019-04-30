@@ -172,15 +172,15 @@ Matrix::Matrix(const Matrix &other)
       data = new (nothrow) double[dataSize];
       // data = (double *)malloc(dataSize*sizeof(double));
       if (data == 0) {
-  opserr << "WARNING:Matrix::Matrix(Matrix &): ";
-  opserr << "Ran out of memory on init of size " << dataSize << endln; 
-  numRows = 0; numCols =0; dataSize = 0;
+	opserr << "WARNING:Matrix::Matrix(Matrix &): ";
+	opserr << "Ran out of memory on init of size " << dataSize << endln; 
+	numRows = 0; numCols =0; dataSize = 0;
       } else {
-  // copy the data
-  double *dataPtr = data;
-  double *otherDataPtr = other.data;
-  for (int i=0; i<dataSize; i++)
-    *dataPtr++ = *otherDataPtr++;
+	// copy the data
+	double *dataPtr = data;
+	double *otherDataPtr = other.data;
+	for (int i=0; i<dataSize; i++)
+	  *dataPtr++ = *otherDataPtr++;
       }
     }
 }
@@ -664,7 +664,7 @@ Matrix::addMatrix(double factThis, const Matrix &other, double factOther)
 
 #ifdef _G3DEBUG
     if ((other.numRows != numRows) || (other.numCols != numCols)) {
-      opserr << "Matrix::addMatrix(): incompatible matrices\n";
+      opserr << "Matrix::addMatrix(): incompatable matrices\n";
       return -1;
     }
 #endif
@@ -721,7 +721,7 @@ Matrix::addMatrix(double factThis, const Matrix &other, double factOther)
       }
     } 
 
-    // successful
+    // successfull
     return 0;
 }
 
@@ -734,7 +734,7 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
 
 #ifdef _G3DEBUG
     if ((other.numRows != numCols) || (other.numCols != numRows)) {
-      opserr << "Matrix::addMatrixTranspose(): incompatible matrices\n";
+      opserr << "Matrix::addMatrixTranspose(): incompatable matrices\n";
       return -1;
     }
 #endif
@@ -797,7 +797,7 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
       }
     } 
 
-    // successful
+    // successfull
     return 0;
 }
 
@@ -812,7 +812,7 @@ Matrix::addMatrixProduct(double thisFact,
       return 0;
 #ifdef _G3DEBUG
     if ((B.numRows != numRows) || (C.numCols != numCols) || (B.numCols != C.numRows)) {
-      opserr << "Matrix::addMatrixProduct(): incompatible matrices, this\n";
+      opserr << "Matrix::addMatrixProduct(): incompatable matrices, this\n";
       return -1;
     }
 #endif
@@ -887,7 +887,7 @@ Matrix::addMatrixTransposeProduct(double thisFact,
 
 #ifdef _G3DEBUG
   if ((B.numCols != numRows) || (C.numCols != numCols) || (B.numRows != C.numRows)) {
-    opserr << "Matrix::addMatrixProduct(): incompatible matrices, this\n";
+    opserr << "Matrix::addMatrixProduct(): incompatable matrices, this\n";
     return -1;
   }
 #endif
@@ -953,7 +953,7 @@ Matrix::addMatrixTripleProduct(double thisFact,
 #ifdef _G3DEBUG
     if ((numCols != numRows) || (B.numCols != B.numRows) || (T.numCols != numRows) ||
 	(T.numRows != B.numCols)) {
-      opserr << "Matrix::addMatrixTripleProduct() - incompatible matrices\n";
+      opserr << "Matrix::addMatrixTripleProduct() - incompatable matrices\n";
       return -1;
     }
 #endif
@@ -1052,7 +1052,7 @@ Matrix::addMatrixTripleProduct(double thisFact,
 #ifdef _G3DEBUG
     if ((numRows != A.numRows) || (A.numCols != B.numRows) || (B.numCols != C.numRows) ||
 	(C.numCols != numCols)) {
-      opserr << "Matrix::addMatrixTripleProduct() - incompatible matrices\n";
+      opserr << "Matrix::addMatrixTripleProduct() - incompatable matrices\n";
       return -1;
     }
 #endif
@@ -1158,7 +1158,7 @@ Matrix::operator()(const ID &rows, const ID & cols) const
 		
 // Matrix &operator=(const Matrix  &V):
 //      the assignment operator, This is assigned to be a copy of V. if sizes
-//      are not compatible this.data [] is deleted. The data pointers will not
+//      are not compatable this.data [] is deleted. The data pointers will not
 //      point to the same area in mem after the assignment.
 //
 
@@ -1372,7 +1372,7 @@ Matrix::operator*(const Vector &V) const
     Vector result(numRows);
     
     if (V.Size() != numCols) {
-	opserr << "Matrix::operator*(Vector): incompatible sizes\n";
+	opserr << "Matrix::operator*(Vector): incompatable sizes\n";
 	return result;
     } 
     
@@ -1405,7 +1405,7 @@ Matrix::operator^(const Vector &V) const
     Vector result(numCols);
     
     if (V.Size() != numRows) {
-      opserr << "Matrix::operator*(Vector): incompatible sizes\n";
+      opserr << "Matrix::operator*(Vector): incompatable sizes\n";
       return result;
     } 
 
@@ -1446,7 +1446,7 @@ Matrix::operator*(const Matrix &M) const
     Matrix result(numRows,M.numCols);
     
     if (numCols != M.numRows || result.numRows != numRows) {
-	opserr << "Matrix::operator*(Matrix): incompatible sizes\n";
+	opserr << "Matrix::operator*(Matrix): incompatable sizes\n";
 	return result;
     } 
 
@@ -1487,7 +1487,7 @@ Matrix::operator^(const Matrix &M) const
   Matrix result(numCols,M.numCols);
   
   if (numRows != M.numRows || result.numRows != numCols) {
-    opserr << "Matrix::operator*(Matrix): incompatible sizes\n";
+    opserr << "Matrix::operator*(Matrix): incompatable sizes\n";
     return result;
   } 
 
@@ -1519,7 +1519,7 @@ Matrix::operator+=(const Matrix &M)
 {
 #ifdef _G3DEBUG
   if (numRows != M.numRows || numCols != M.numCols) {
-    opserr << "Matrix::operator+=(const Matrix &M) - matrices incompatible\n";
+    opserr << "Matrix::operator+=(const Matrix &M) - matrices incompatable\n";
     return *this;
   }
 #endif
@@ -1537,7 +1537,7 @@ Matrix::operator-=(const Matrix &M)
 {
 #ifdef _G3DEBUG
   if (numRows != M.numRows || numCols != M.numCols) {
-    opserr << "Matrix::operator-=(const Matrix &M) - matrices incompatible [" << numRows << " " ;
+    opserr << "Matrix::operator-=(const Matrix &M) - matrices incompatable [" << numRows << " " ;
     opserr << numCols << "]" << "[" << M.numRows << "]" << M.numCols << "]\n";
 
     return *this;

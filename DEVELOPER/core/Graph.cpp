@@ -175,7 +175,7 @@ Graph::addVertex(Vertex *vertexPtr, bool checkAdjacency)
 // {\em vertexTag} and {\em otherVertexTag} exist in the graph. If they
 // do not exist a $-1$ is returned, otherwise the method invokes {\em
 // addEdge()} on each of the corresponding vertices in the 
-// graph. Returns $0$ if successful, a negative number if not.
+// graph. Returns $0$ if sucessfull, a negative number if not.
 
 int 
 Graph::addEdge(int vertexTag, int otherVertexTag)

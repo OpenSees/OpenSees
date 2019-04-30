@@ -1,9 +1,13 @@
-                                                                        
+
 // Description: command to create nD material
 
 #include <NDMaterial.h>
 #include <elementAPI.h>
 #include <map>
+#include <MaterialStageParameter.h>
+#include <string.h>
+#include <Domain.h>
+
 
 void* OPS_ElasticIsotropicMaterial();
 void* OPS_PlateFiberMaterial();
@@ -56,11 +60,11 @@ void* OPS_PM4Sand();
 
 namespace {
 
-    struct char_cmp { 
-	bool operator () (const char *a,const char *b) const 
+    struct char_cmp {
+	bool operator () (const char *a,const char *b) const
 	    {
 		return strcmp(a,b)<0;
-	    } 
+	    }
     };
 
     typedef std::map<const char *, void *(*)(void), char_cmp> OPS_ParsingFunctionMap;
@@ -143,7 +147,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("BeamFiberMaterial", &OPS_BeamFiberMaterial));
 	nDMaterialsMap.insert(std::make_pair("BeamFiber", &OPS_BeamFiberMaterial));
 	nDMaterialsMap.insert(std::make_pair("PM4Sand", &OPS_BeamFiberMaterial));
-	
+
 	return 0;
     }
 }
@@ -163,7 +167,7 @@ OPS_NDMaterial()
     }
 
     const char* matType = OPS_GetString();
-    
+
     OPS_ParsingFunctionMap::const_iterator iter = nDMaterialsMap.find(matType);
     if (iter == nDMaterialsMap.end()) {
 	opserr<<"WARNING material type " << matType << " is unknown\n";
@@ -184,4 +188,69 @@ OPS_NDMaterial()
 
     return 0;
 
+}
+
+int
+OPS_updateMaterialStage()
+{
+
+    if (OPS_GetNumRemainingInputArgs() < 4) {
+	opserr << "WARNING insufficient number of UpdateMaterialStage arguments\n";
+	opserr << "Want: updateMaterialStage -material matTag? -stage value? -parameter paramTag?\n";
+	return -1;
+    }
+
+    const char* opt1 = OPS_GetString();
+    if (strcmp(opt1,"-material") != 0) {
+	opserr << "WARNING updateMaterialStage: Only accept parameter '-material' for now\n";
+	return -1;
+    }
+
+    int materialTag;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &materialTag) < 0) {
+	opserr << "WARNING MYSstage: invalid material tag\n";
+	return -1;
+    }
+
+    const char* opt2 = OPS_GetString();
+    if (strcmp(opt2,"-stage") != 0) {
+	opserr << "WARNING updateMaterialStage: Only accept parameter '-stage' for now\n";
+	return -1;
+    }
+
+    int value;
+    int res = OPS_GetIntInput(&numdata, &value);
+    if (res < 0) {
+	opserr << "WARNING updateMaterialStage: value must be integer\n";
+	return -1;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    int parTag = theDomain->getNumParameters();
+    parTag++;
+    if (OPS_GetNumRemainingInputArgs() > 1) {
+	const char* opt3 = OPS_GetString();
+	if (strcmp(opt3,"-parameter") == 0) {
+	    if (OPS_GetIntInput(&numdata, &parTag) < 0) {
+		opserr << "WARNING updateMaterialStage: invalid parameter tag\n";
+		return -1;
+	    }
+	}
+    }
+
+    MaterialStageParameter *theParameter = new MaterialStageParameter(parTag, materialTag);
+
+    if (theDomain->addParameter(theParameter) == false) {
+	opserr << "WARNING could not add updateMaterialStage - MaterialStageParameter to domain\n";
+	return -1;
+    }
+
+    if (res == 0) {
+	res = theDomain->updateParameter(parTag, value);
+	theDomain->removeParameter(parTag);
+    }
+
+    return res;
 }

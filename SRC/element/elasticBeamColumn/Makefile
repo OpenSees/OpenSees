@@ -3,8 +3,9 @@ include ../../../Makefile.def
 OBJS       = 	ElasticBeam2d.o \
 	ModElasticBeam2d.o \
 	ElasticBeam3d.o \
-    ElasticTimoshenkoBeam2d.o \
-    ElasticTimoshenkoBeam3d.o \
+	ElasticTimoshenkoBeam2d.o \
+	ElasticTimoshenkoBeam3d.o \
+	WheelRail.o \
 	TclElasticBeamCommand.o
 
 # Compilation control

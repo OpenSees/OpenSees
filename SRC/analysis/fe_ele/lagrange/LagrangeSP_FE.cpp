@@ -145,7 +145,7 @@ LagrangeSP_FE::getResidual(Integrator *theNewIntegrator)
 
     if (constrainedDOF < 0 || constrainedDOF >= nodeDisp.Size()) {
 	opserr << "LagrangeSP_FE::formResidual() -";
-	opserr << " constrained DOF " << constrainedDOF << " ouside range\n";
+	opserr << " constrained DOF " << constrainedDOF << " outside range\n";
 	(*resid)(1) = 0;
     }
     

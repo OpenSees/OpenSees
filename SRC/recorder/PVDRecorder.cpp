@@ -138,12 +138,13 @@ PVDRecorder::PVDRecorder(const char *name, const NodeData& ndata,
 			 const std::vector<EleData>& edata, int ind, int pre,
 			 double dt)
     :Recorder(RECORDER_TAGS_PVDRecorder), indentsize(ind), precision(pre),
-     indentlevel(0), filename(name),
+     indentlevel(0), pathname(), basename(),
      timestep(), timeparts(), theFile(), quota('\"'), parts(),
      nodedata(ndata), eledata(edata), theDomain(0), partnum(),
      dT(dt), nextTime(0.0)
 {
     PVDRecorder::setVTKType();
+    getfilename(name);
 }
 
 PVDRecorder::PVDRecorder()
@@ -212,7 +213,7 @@ PVDRecorder::pvd()
 {
     // open pvd file
     theFile.close();
-    std::string pvdname = filename+".pvd";
+    std::string pvdname = pathname+basename+".pvd";
 
     theFile.open(pvdname.c_str(), std::ios::trunc|std::ios::out);
     if(theFile.fail()) {
@@ -243,7 +244,8 @@ PVDRecorder::pvd()
 	    theFile<<"<DataSet timestep="<<quota<<t<<quota;
 	    theFile<<" group="<<quota<<quota;
 	    theFile<<" part="<<quota<<partno(j)<<quota;
-	    theFile<<" file="<<quota<<filename.c_str()<<'/'<<filename.c_str()<<"_T"<<t<<"_P";
+	    theFile<<" file="<<quota<<basename.c_str();
+	    theFile<<"/"<<basename.c_str()<<"_T"<<t<<"_P";
 	    theFile<<partno(j)<<".vtu"<<quota;
 	    theFile<<"/>\n";
 	}
@@ -371,7 +373,7 @@ PVDRecorder::savePart0(int nodendf)
 
     // open file
     theFile.close();
-    std::string vtuname = filename+'/'+filename+"_T"+stime+"_P"+spart+".vtu";
+    std::string vtuname = pathname+basename+"/"+basename+"_T"+stime+"_P"+spart+".vtu";
     theFile.open(vtuname.c_str(), std::ios::trunc|std::ios::out);
     if(theFile.fail()) {
 	opserr<<"WARNING: Failed to open file "<<vtuname.c_str()<<"\n";
@@ -809,7 +811,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
 
     // open file
     theFile.close();
-    std::string vtuname = filename+'/'+filename+"_T"+stime+"_P"+spart+".vtu";
+    std::string vtuname = pathname+basename+"/"+basename+"_T"+stime+"_P"+spart+".vtu";
     theFile.open(vtuname.c_str(), std::ios::trunc|std::ios::out);
     if(theFile.fail()) {
 	opserr<<"WARNING: Failed to open file "<<vtuname.c_str()<<"\n";
@@ -1195,7 +1197,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
 
     // open file
     theFile.close();
-    std::string vtuname = filename+'/'+filename+"_T"+stime+"_P"+spart+".vtu";
+    std::string vtuname = pathname+basename+"/"+basename+"_T"+stime+"_P"+spart+".vtu";
     theFile.open(vtuname.c_str(), std::ios::trunc|std::ios::out);
     if(theFile.fail()) {
 	opserr<<"WARNING: Failed to open file "<<vtuname.c_str()<<"\n";
@@ -1916,4 +1918,36 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_ShellANDeS] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
+}
+
+void
+PVDRecorder::getfilename(const char* name)
+{
+    // use string
+    std::string fname(name);
+    
+    // no slash at all
+    std::size_t found = fname.find_last_of("/\\");
+    if (found == std::string::npos) {
+	pathname = "./";
+	basename = fname;
+	return;
+    }
+
+    // remove trailing slash
+    if (found == fname.length()-1) {
+	fname = fname.substr(0,fname.length()-1);
+	found = fname.find_last_of("/\\");
+    }
+    
+    // only trailing slash
+    if(found == std::string::npos) {
+	pathname = "./";
+	basename = fname;
+	return;
+    }
+
+    // more slash
+    pathname = fname.substr(0,found+1);
+    basename = fname.substr(found+1);
 }

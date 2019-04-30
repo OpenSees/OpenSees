@@ -58,6 +58,15 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ShellMITC4.h>
 #include <FourNodeTetrahedron.h>
 
+#include <BeamIntegration.h>
+#include <LobattoBeamIntegration.h>
+#include <LegendreBeamIntegration.h>
+#include <RadauBeamIntegration.h>
+#include <NewtonCotesBeamIntegration.h>
+#include <TrapezoidalBeamIntegration.h>
+#include <ForceBeamColumn2d.h>
+#include <ForceBeamColumn3d.h>
+
 // no 'beamWithHinges', 'GenericClient', 'GenericCopy', 'flBrick', 'Adapter'
 
 void* OPS_ZeroLengthND();
@@ -93,6 +102,7 @@ void* OPS_MultiFP2d();
 void* OPS_ShellMITC4();
 void* OPS_ShellMITC9();
 void* OPS_ShellDKGQ();
+void* OPS_ShellDKGT();
 void* OPS_ShellNLDKGQ();
 void* OPS_CoupledZeroLength();
 void* OPS_BeamContact2D();
@@ -127,8 +137,10 @@ void* OPS_ElasticBeam2d(const ID& info);
 void* OPS_ElasticBeam3d();
 void* OPS_DispBeamColumn2dInt();
 void* OPS_ForceBeamColumn2d(const ID& info);
+void* OPS_NonlinearBeamColumn();
 void* OPS_ForceBeamColumn3d();
 void* OPS_DispBeamColumn2d(const ID& info);
+void* OPS_DispBeamColumnNL2d(const ID& info);
 void* OPS_DispBeamColumn3d();
 void* OPS_ForceBeamColumnCBDI2d();
 void* OPS_ForceBeamColumnCSBDI2d();
@@ -185,6 +197,7 @@ void* OPS_MultipleNormalSpring();
 void* OPS_KikuchiBearing();
 void* OPS_YamamotoBiaxialHDR();
 void* OPS_FourNodeTetrahedron();
+void* OPS_CatenaryCableElement();
 
 namespace {
 
@@ -238,6 +251,17 @@ namespace {
 	if(ndm == 2) {
 	    ID info;
 	    return OPS_DispBeamColumn2d(info);
+	} else {
+	    return OPS_DispBeamColumn3d();
+	}
+    }
+
+  static void* OPS_DispBeamColumnNL()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    ID info;
+	    return OPS_DispBeamColumnNL2d(info);
 	} else {
 	    return OPS_DispBeamColumn3d();
 	}
@@ -504,7 +528,7 @@ namespace {
 	functionMap.insert(std::make_pair("shellMITC9", &OPS_ShellMITC9));
 	functionMap.insert(std::make_pair("ShellMITC9", &OPS_ShellMITC9));
 	functionMap.insert(std::make_pair("ShellDKGQ", &OPS_ShellDKGQ));
-	functionMap.insert(std::make_pair("shellDKGQ", &OPS_ShellDKGQ));
+	functionMap.insert(std::make_pair("shellDKGT", &OPS_ShellDKGT));
 	functionMap.insert(std::make_pair("ShellNLDKGQ", &OPS_ShellNLDKGQ));
 	functionMap.insert(std::make_pair("shellNLDKGQ", &OPS_ShellNLDKGQ));
 	functionMap.insert(std::make_pair("CoupledZeroLength", &OPS_CoupledZeroLength));
@@ -530,14 +554,16 @@ namespace {
 	functionMap.insert(std::make_pair("SurfaceLoad", &OPS_SurfaceLoad));
 	functionMap.insert(std::make_pair("elasticBeamColumn", &OPS_ElasticBeam));
 	functionMap.insert(std::make_pair("forceBeamColumn", &OPS_ForceBeamColumn));
-	functionMap.insert(std::make_pair("nonlinearBeamColumn", &OPS_ForceBeamColumn));
+	functionMap.insert(std::make_pair("nonlinearBeamColumn", &OPS_NonlinearBeamColumn));
 	functionMap.insert(std::make_pair("dispBeamColumn", &OPS_DispBeamColumn));
+	functionMap.insert(std::make_pair("dispBeamColumnNL", &OPS_DispBeamColumnNL));
 	functionMap.insert(std::make_pair("forceBeamColumnCBDI", &OPS_ForceBeamColumnCBDI2d));
 	functionMap.insert(std::make_pair("forceBeamColumnCSBDI", &OPS_ForceBeamColumnCSBDI2d));
 	functionMap.insert(std::make_pair("zeroLength", &OPS_ZeroLength));
 	functionMap.insert(std::make_pair("zeroLengthSection", &OPS_ZeroLengthSection));
 	functionMap.insert(std::make_pair("zeroLengthND", &OPS_ZeroLengthND));
 	functionMap.insert(std::make_pair("FourNodeTetrahedron", &OPS_FourNodeTetrahedron));
+	functionMap.insert(std::make_pair("CatenaryCable", &OPS_CatenaryCableElement));
 
 	return 0;
     }
@@ -1103,4 +1129,121 @@ int OPS_doBlock3D()
     }
 
     return 0;
+}
+
+// For backward compatability
+void* OPS_NonlinearBeamColumn()
+{
+    int ndm = OPS_GetNDM();
+
+    if(OPS_GetNumRemainingInputArgs() < 5) {
+	opserr<<"insufficient arguments:eleTag,iNode,jNode,numIntgrPts,secTag,transfTag,<-mass, massDens> <-iter,maxIters,tol> <-integration intType>\n";
+	return 0;
+    }
+
+    int ndf = OPS_GetNDF();
+    if(ndm != 2 || ndf != 3) {
+	opserr<<"ndm must be 2 and ndf must be 3\n";
+	return 0;
+    }
+
+    // inputs: 
+    int iData[6];
+    int numData = 6;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
+	opserr << "WARNING invalid int inputs\n";
+	return 0;
+    }
+
+    // options
+    double mass = 0.0, tol=1e-12;
+    int maxIter = 10;
+    const char* integrationType = "Lobatto";
+    numData = 1;
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+	const char* type = OPS_GetString();
+	if(strcmp(type,"-iter") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 1) {
+		if(OPS_GetIntInput(&numData,&maxIter) < 0) {
+		    opserr << "WARNING invalid maxIter\n";
+		    return 0;
+		}
+		if(OPS_GetDoubleInput(&numData,&tol) < 0) {
+		    opserr << "WARNING invalid tol\n";
+		    return 0;
+		}
+	    }
+	} else if(strcmp(type,"-mass") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetDoubleInput(&numData,&mass) < 0) {
+		    opserr << "WARNING invalid mass\n";
+		    return 0;
+		}
+	    }
+	} else if (strcmp(type,"-integration") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		integrationType = OPS_GetString();
+	    }
+	}
+    }
+
+    // check transf
+    CrdTransf* theTransf = OPS_getCrdTransf(iData[5]);
+    if(theTransf == 0) {
+	opserr<<"coord transfomration not found\n";
+	return 0;
+    }
+
+    // check beam integrataion
+    BeamIntegration* bi = 0;
+    if (strcmp(integrationType,"Lobatto") == 0) {
+	bi = new LobattoBeamIntegration;
+    } else if (strcmp(integrationType,"Legendre") == 0) {
+	bi = new LegendreBeamIntegration;
+    } else if (strcmp(integrationType,"Radau") == 0) {
+	bi = new RadauBeamIntegration;
+    } else if (strcmp(integrationType,"NewtonCotes") == 0) {
+	bi = new NewtonCotesBeamIntegration;
+    } else if (strcmp(integrationType,"Trapezoidal") == 0) {
+	bi = new TrapezoidalBeamIntegration;
+    } else {
+	opserr<<"WARNING: Integration type "<<integrationType;
+	opserr<<" is not available for nonlinearBeamColumn\n";
+	return 0;
+    }
+    if (bi == 0) {
+	opserr << "WARNING: failed to create beam integration\n";
+	return 0;
+    }
+
+    int numSecs = iData[3];
+    int secTag = iData[4];
+
+    // check sections
+    SectionForceDeformation** sections = new SectionForceDeformation *[numSecs];
+    for(int i=0; i<numSecs; i++) {
+	sections[i] = OPS_getSectionForceDeformation(secTag);
+	if(sections[i] == 0) {
+	    opserr<<"section "<<secTag<<"not found\n";
+	    delete [] sections;
+	    return 0;
+	}
+    }
+
+    Element *theEle = 0;
+
+    if (ndm == 2) {
+
+	theEle = new ForceBeamColumn2d(iData[0],iData[1],iData[2],numSecs,
+				       sections,*bi,*theTransf,mass,maxIter,tol);
+    } else if (ndm == 3) {
+	
+	theEle = new ForceBeamColumn3d(iData[0],iData[1],iData[2],numSecs,
+				       sections,*bi,*theTransf,mass,maxIter,tol);
+    }
+    
+    delete [] sections;
+    delete bi;
+	
+    return theEle;
 }

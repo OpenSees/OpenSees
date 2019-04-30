@@ -455,6 +455,18 @@ Element::setResponse(const char **argv, int argc, OPS_Stream &output)
     }
     theResponse = new ElementResponse(this, 333333, this->getResistingForce());
   }
+
+  else if (strcmp(argv[0],"inertialForce") == 0 || strcmp(argv[0],"inertialForces") == 0) {
+    const Vector &force = this->getResistingForce();
+    int size = force.Size();
+    for (int i=0; i<size; i++) {
+      sprintf(nodeData,"P%d",i+1);
+      output.tag("ResponseType",nodeData);
+    }
+    theResponse = new ElementResponse(this, 444444, this->getResistingForce());
+  }
+
+
   output.endTag();
   return theResponse;
 }
@@ -469,6 +481,9 @@ Element::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(this->getRayleighDampingForces());
   case 333333:
     return eleInfo.setVector(this->getResistingForceIncInertia());
+  case 444444:
+    return eleInfo.setVector(this->getResistingForceIncInertia()-this->getRayleighDampingForces()-this->getResistingForce());
+
   default:
     return -1;
   }
@@ -496,10 +511,55 @@ Element::getResistingForceSensitivity(int gradIndex)
 }
 
 const Matrix &
+Element::getTangentStiffSensitivity(int gradIndex)
+{
+  if (index == -1) {
+    this->setRayleighDampingFactors(alphaM, betaK, betaK0, betaKc);
+  }
+
+  static bool warningShown = false;
+  if (!warningShown) {
+    opserr << "Rayleigh damping with non-zero betaCurrentTangent is not implemented for DDM sensitivity analysis with this element" << endln;
+    warningShown = true;
+  }
+
+  Matrix *theMatrix = theMatrices[index];
+  theMatrix->Zero();
+
+  return *theMatrix;
+}
+
+const Matrix &
+
 Element::getInitialStiffSensitivity(int gradIndex)
 {
   if (index == -1) {
     this->setRayleighDampingFactors(alphaM, betaK, betaK0, betaKc);
+  }
+
+  static bool warningShown = false;
+  if (!warningShown) {
+    opserr << "Rayleigh damping with non-zero betaInitialTangent is not implemented for DDM sensitivity analysis with this element" << endln;
+    warningShown = true;
+  }
+
+  Matrix *theMatrix = theMatrices[index];
+  theMatrix->Zero();
+
+  return *theMatrix;
+}
+
+const Matrix &
+Element::getCommittedStiffSensitivity(int gradIndex)
+{
+  if (index == -1) {
+    this->setRayleighDampingFactors(alphaM, betaK, betaK0, betaKc);
+  }
+
+  static bool warningShown = false;
+  if (!warningShown) {
+    opserr << "Rayleigh damping with non-zero betaCommittedTangent is not implemented for DDM sensitivity analysis with this element" << endln;
+    warningShown = true;
   }
 
   Matrix *theMatrix = theMatrices[index];
@@ -552,15 +612,13 @@ Element::getDampSensitivity(int gradIndex)
     theMatrix->addMatrix(0.0, this->getMassSensitivity(gradIndex), alphaM);
   }
   if (betaK != 0.0) {
-	theMatrix->addMatrix(1.0, this->getTangentStiff(), 0.0); // Don't use this and DDM      
-	//opserr << "Rayleigh damping with non-zero betaCurrentTangent is not compatible with DDM sensitivity analysis" << endln;
+    theMatrix->addMatrix(1.0, this->getTangentStiffSensitivity(gradIndex), betaK);
   }
   if (betaK0 != 0.0) {
     theMatrix->addMatrix(1.0, this->getInitialStiffSensitivity(gradIndex), betaK0);      
   }
   if (betaKc != 0.0) {
-    theMatrix->addMatrix(1.0, *Kc, 0.0);      // Don't use this and DDM   
-    //opserr << "Rayleigh damping with non-zero betaCommittedTangent is not compatible with DDM sensitivity analysis" << endln;
+    theMatrix->addMatrix(1.0, this->getCommittedStiffSensitivity(gradIndex), betaKc);
   }
 
   // return the computed matrix

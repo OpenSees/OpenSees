@@ -74,6 +74,22 @@ tk:
 	@$(CD) $(FE)/tcl;  $(MAKE) tk;
 	@$(CD) $(FE)/modelbuilder/tcl;  $(MAKE) tk;
 
+OpenSeesPy: python
+
+python: 
+ifdef MKDIR
+	$(MKDIR) $(HOME)/bin
+	$(MKDIR) $(HOME)/lib
+endif
+	@( \
+	for f in $(DIRS); \
+	do \
+		$(CD) $$f; \
+		$(MAKE); \
+		$(CD) ..; \
+	done );
+	@$(ECHO) LIBRARIES BUILT ... NOW LINKING OpenSeesPy Module;
+	@$(CD) $(FE)/interpreter; $(MAKE) pythonmodule;
 
 libs:
 	@( \

@@ -109,12 +109,14 @@ class DataFileStream : public OPS_Stream
   ID **theColumns;
   double **theData;
   Vector **theRemoteData;
-
+  
   int doCSV;
   bool closeOnWrite;
 
   int thePrecision;
   bool doScientific;
+
+  ID *commonColumns;
 };
 
 #endif

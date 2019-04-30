@@ -213,7 +213,7 @@ CentralDifferenceAlternative::update(const Vector &X)
 
   // check deltaU is of correct size
   if (X.Size() != Ut->Size()) {
-    opserr << "WARNING CentralDifferenceAlternative::update() - Vectors of incompatable size ";
+    opserr << "WARNING CentralDifferenceAlternative::update() - Vectors of incompatible size ";
     opserr << " expecting " << Ut->Size() << " obtained " << X.Size() << endln;
     return -3;
   }

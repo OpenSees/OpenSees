@@ -34,7 +34,9 @@
 class Beam2dPartialUniformLoad : public ElementalLoad
 {
  public:
+  Beam2dPartialUniformLoad(int tag, double wTrans, double wAxial, int eleTag);
   Beam2dPartialUniformLoad(int tag, double wTrans, double wAxial, double aL, double bL, int eleTag);
+  Beam2dPartialUniformLoad(int tag, double wTransA, double wTransB, double wAxialA, double wAxialB, double aL, double bL, int eleTag);
   Beam2dPartialUniformLoad();    
   ~Beam2dPartialUniformLoad();
 
@@ -53,8 +55,10 @@ class Beam2dPartialUniformLoad : public ElementalLoad
  protected:
   
  private:
-  double wTrans;
-  double wAxial;
+  double wTrans_a;
+  double wTrans_b;
+  double wAxial_a;
+  double wAxial_b;
   double aOverL;
   double bOverL;
   static Vector data;

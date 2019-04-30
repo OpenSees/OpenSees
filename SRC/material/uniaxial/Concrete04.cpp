@@ -538,6 +538,7 @@ void Concrete04::Print (OPS_Stream& s, int flag)
 		s << "\"epsc\": " << epsc0 << ", ";
 		s << "\"ft\": " << fct << ", ";
 		s << "\"epstu\": " << etu << ", ";
+		s << "\"epscu\": " << epscu << ", ";
 		s << "\"beta\": " << beta << "}";
 	}
 }
