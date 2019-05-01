@@ -59,7 +59,7 @@ RCCircularSectionIntegration::RCCircularSectionIntegration(double D,
 }
 
 RCCircularSectionIntegration::RCCircularSectionIntegration():
-  SectionIntegration(SECTION_INTEGRATION_TAG_RC),
+  SectionIntegration(SECTION_INTEGRATION_TAG_RCCIRCULAR),
   d(0.0), As(0.0), cover(0.0),
   NringsCore(1), NringsCover(1), Nwedges(2), Nsteel(1),
   parameterID(0)
