@@ -60,6 +60,8 @@
 
 
 // uniaxial material model header files
+#include <BoucWenMaterial.h>		//SAJalali
+#include <SPSW02.h>			;//SAJalali
 #include <ElasticMaterial.h>
 #include <ElasticMultiLinear.h>
 #include <Elastic2Material.h>
@@ -226,6 +228,7 @@
 #include <ConstantPressureVolumeQuad.h>
 #include <ElasticBeam2d.h>
 #include <ElasticBeam3d.h>
+#include <ModElasticBeam2d.h>			//SAJalali
 #include <ElasticTimoshenkoBeam2d.h>
 #include <ElasticTimoshenkoBeam3d.h>
 #include <ForceBeamColumn2d.h>
@@ -669,7 +672,11 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_ElasticBeam2d:
       return new ElasticBeam2d();
       
-    case ELE_TAG_ElasticBeam3d:
+	  //SAJalali
+	case ELE_TAG_ModElasticBeam2d:
+		return new ModElasticBeam2d();
+
+	case ELE_TAG_ElasticBeam3d:
       return new ElasticBeam3d();
       
     case ELE_TAG_ElasticTimoshenkoBeam2d:
@@ -1052,7 +1059,11 @@ UniaxialMaterial *
 FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 {
     switch(classTag) {
-	case MAT_TAG_ElasticMaterial:  
+	case MAT_TAG_SPSW02:
+		return new SPSW02(); // SAJalali
+	case MAT_TAG_BoucWen:
+		return new BoucWenMaterial(); // SAJalali
+	case MAT_TAG_ElasticMaterial:
 	     return new ElasticMaterial(); // values set in recvSelf
 
 	case MAT_TAG_Elastic2Material:  

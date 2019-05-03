@@ -435,7 +435,9 @@ ReinforcingSteel::commitState(void) {
     Cfb[TBranchMem]   = Tfb;
     CEb[TBranchMem]   = TEb;
   }
-  
+  //by SAJalali
+  Energy += 0.5*(TStress + CStress)*(TStrain - CStrain);
+
   // commit trial state variables
   CStrain    = TStrain;  
   CStress    = TStress;
@@ -474,7 +476,8 @@ ReinforcingSteel::revertToLastCommit(void) {
 int 
 ReinforcingSteel::revertToStart(void)
 {
-  theBarFailed = 0;
+	Energy = 0;	// by SAJalali
+	theBarFailed = 0;
   
   THardFact = 1.0;
   CHardFact = 1.0;

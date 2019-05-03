@@ -3495,3 +3495,25 @@ Domain::calculateNodalReactions(int flag)
       theElement->addResistingForceToNodalReaction(flag);
   return 0;
 }
+
+//added by SAJalali
+Recorder*
+Domain::getRecorder(int tag)
+{
+	Recorder* res = 0;
+
+	// invoke record on all recorders
+	for (int i = 0; i < numRecorders; i++)
+	{
+		if (theRecorders[i] == 0)
+			break;
+		if (theRecorders[i]->getTag() == tag)
+		{
+			res = theRecorders[i];
+			break;
+		}
+	}
+
+	return res;
+}
+
