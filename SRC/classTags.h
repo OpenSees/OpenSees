@@ -315,7 +315,8 @@
 #define SECTION_INTEGRATION_TAG_RCT 3
 #define SECTION_INTEGRATION_TAG_RCTUM 4
 #define SECTION_INTEGRATION_TAG_RCCIRCULAR 5
-#define SECTION_INTEGRATION_TAG_Tube 6
+#define SECTION_INTEGRATION_TAG_RCTUNNEL 6
+#define SECTION_INTEGRATION_TAG_Tube 7
 
 #define ND_TAG_WrapperNDMaterial		9
 #define ND_TAG_ElasticIsotropic			10
@@ -1032,6 +1033,7 @@
 #define RANDOM_VARIABLE_uniform				17
 #define RANDOM_VARIABLE_weibull				18
 #define RANDOM_VARIABLE_userdefined             19
+#define RANDOM_VARIABLE_python             20
 
 #define RANDOM_VARIABLE_POSITIONER        1
 #define PARAMETER_POSITIONER              2
