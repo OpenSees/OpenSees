@@ -12,8 +12,8 @@ public:
 	
 	SPSW02(void);
 	virtual ~SPSW02();
-	const char* getClassType(void) const override {return "SPSW02";};
-	double getInitialTangent() override;
+	const char* getClassType(void) const {return "SPSW02";};
+	double getInitialTangent();
 	UniaxialMaterial* getCopy();
 	virtual int setTrialStrain(double strain, double strainRate = 0.0);
 	virtual double getStrain();
