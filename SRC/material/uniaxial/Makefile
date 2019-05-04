@@ -114,6 +114,7 @@ OBJS       = UniaxialMaterial.o \
 	DamperMaterial.o \
 	MaterialState.o \
 	OOHystereticMaterial.o \
+	SPSW02.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)

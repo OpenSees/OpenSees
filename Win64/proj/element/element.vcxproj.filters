@@ -890,6 +890,9 @@
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\WheelRail.cpp">
       <Filter>elasticBeamColumn</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\TimoshenkoBeamColumn2d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">

@@ -178,7 +178,7 @@ RCTunnelSectionIntegration::getFiberWeights(int nFibers, double *wt)
 
   int loc = 0;
 
-  //std::ofstream ofs ("areas.out", std::ofstream::out);
+  //std::ofstream ofs ("areasTunnel.out", std::ofstream::out);
 
   // 1. Concrete region
   double dr = h/Nrings;

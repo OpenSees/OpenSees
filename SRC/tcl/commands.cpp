@@ -173,7 +173,10 @@ OPS_Stream *opserrPtr = &sserr;
 #include <DisplacementControl.h>
 
 #include <PFEMIntegrator.h>
-#include<Integrator.h>//Abbas
+#include <Integrator.h>//Abbas
+
+//  recorders
+#include <Recorder.h> //SAJalali
 
 extern void *OPS_NewtonRaphsonAlgorithm(void);
 extern void *OPS_ModifiedNewton(void);
@@ -816,7 +819,11 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
 #endif
 	
     //Tcl_CreateObjCommand(interp, "interp", Tcl_InterpOpenSeesObjCmd, NULL, NULL);
-    Tcl_CreateObjCommand(interp, "pset", &OPS_SetObjCmd,
+	
+	Tcl_CreateCommand(interp, "recorderValue", &OPS_recorderValue,
+		(ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); //by SAJalali
+
+	Tcl_CreateObjCommand(interp, "pset", &OPS_SetObjCmd,
 			 (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL); 
 	
     Tcl_CreateObjCommand(interp, "source", &OPS_SourceCmd,
@@ -1467,6 +1474,57 @@ wipeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
   return TCL_OK;  
 }
 
+// by SAJalali
+int OPS_recorderValue(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+	// make sure at least one other argument to contain type of system
+
+	// clmnID starts from 1
+	if (argc < 3) {
+		opserr << "WARNING want - recorderValue recorderTag clmnID <rowOffset> <-reset>\n";
+		return TCL_ERROR;
+	}
+
+	int tag, rowOffset;
+	int dof = -1;
+
+	if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+		opserr << "WARNING recorderValue recorderTag? clmnID <rowOffset> <-reset> could not read recorderTag \n";
+		return TCL_ERROR;
+	}
+
+	if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+		opserr << "WARNING recorderValue recorderTag? clmnID - could not read clmnID \n";
+		return TCL_ERROR;
+	}
+	dof--;
+	rowOffset = 0;
+	int curArg = 3;
+	if (argc > curArg)
+	{
+		if (Tcl_GetInt(interp, argv[curArg], &rowOffset) != TCL_OK) {
+			opserr << "WARNING recorderValue recorderTag? clmnID <rowOffset> <-reset> could not read rowOffset \n";
+			return TCL_ERROR;
+		}
+		curArg++;
+	}
+	bool reset = false;
+	if (argc > curArg)
+	{
+		if (strcmp(argv[curArg], "-reset") == 0)
+			reset = true;
+		curArg++;
+	}
+	Recorder* theRecorder = theDomain.getRecorder(tag);
+	double res = theRecorder->getRecordedValue(dof, rowOffset, reset);
+	// now we copy the value to the tcl string that is returned
+	//sprintf(interp->result, "%35.8f ", res);
+	char buffer [40];
+	sprintf(buffer,"%35.8f", res);	
+	Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+	
+	return TCL_OK;
+}
 
 int 
 resetModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)

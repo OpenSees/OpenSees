@@ -111,6 +111,11 @@ maxNumIter(pMaxNumIter)
     this->revertToStart();
 }
 
+//SAJalali
+BoucWenMaterial::BoucWenMaterial()
+	:UniaxialMaterial(0, MAT_TAG_BoucWen)
+{
+}
 
 BoucWenMaterial::~BoucWenMaterial()
 {
@@ -332,13 +337,72 @@ BoucWenMaterial::getCopy(void)
 int 
 BoucWenMaterial::sendSelf(int cTag, Channel &theChannel)
 {
-  return 0;
+	// SAJalali
+	static Vector data(21);
+	data(0) = alpha;
+	data(1) = ko;
+	data(2) = n;
+	data(3) = gamma;
+	data(4) = beta;
+	data(5) = Ao;
+	data(6) = deltaA;
+	data(7) = deltaNu;
+	data(8) = deltaEta;
+	data(9) = Tstrain;
+	data(10) = Cstrain;
+	data(11) = Tz;
+	data(12) = Cz;
+	data(13) = Te;
+	data(14) = Ce;
+	data(15) = Tstress;
+	data(16) = Ttangent;
+	data(17) = tolerance;
+	data(18) = maxNumIter;
+	data(19) = this->getTag();
+	data(20) = parameterID;
+
+	if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
+		opserr << "BoucWenMaterial::sendSelf() - failed to send Vector\n";
+		return -1;
+	}
+
+	return 0;
 }
 
 int 
 BoucWenMaterial::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  return 0;
+	// SAJalali
+	static Vector data(21);
+
+	if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
+		opserr << "BoucWenMaterial::recvSelf() - failed to recvSelf\n";
+		return -1;
+	}
+
+	alpha = data(0);
+	ko = data(1);
+	n = data(2);
+	gamma = data(3);
+	beta = data(4);
+	Ao = data(5);
+	deltaA = data(6);
+	deltaNu = data(7);
+	deltaEta = data(8);
+	Tstrain = data(9);
+	Cstrain = data(10);
+	Tz = data(11);
+	Cz = data(12);
+	Te = data(13);
+	Ce = data(14);
+	Tstress = data(15);
+	Ttangent = data(16);
+	tolerance = data(17);
+	maxNumIter = data(18);
+	this->setTag((int)data(19));
+	parameterID = data(20);
+	
+	return 0;
 }
 
 void 

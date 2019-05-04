@@ -84,11 +84,14 @@ class Steel01 : public UniaxialMaterial
     double getInitialTangentSensitivity(int gradIndex);
     int    commitSensitivity        (double strainGradient, int gradIndex, int numGrads);
     // AddingSensitivity:END ///////////////////////////////////////////
-    
+	//by SAJalali
+	virtual double getEnergy() { return Energy; }
+
  protected:
     
  private:
-    /*** Material Properties ***/
+	 double Energy;	//by SAJalali
+	/*** Material Properties ***/
     double fy;  // Yield stress
     double E0;  // Initial stiffness
     double b;   // Hardening ratio (b = Esh/E0)

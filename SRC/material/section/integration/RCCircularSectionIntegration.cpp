@@ -193,7 +193,7 @@ RCCircularSectionIntegration::getFiberWeights(int nFibers, double *wt)
 
   int loc = 0;
 
-  //std::ofstream ofs ("areas.out", std::ofstream::out);
+  //std::ofstream ofs ("areasCircular.out", std::ofstream::out);
 
   // 1. Core region
   double dr = (0.5*d-cover)/NringsCore;
