@@ -129,6 +129,9 @@ extern void *OPS_ConcreteECThermal(void);// L.Jiang [SIF]
 extern void *OPS_ElasticMaterialThermal(void); //L.Jiang[SIF]
 
 extern void *OPS_BWBN(void);
+extern void *OPS_IMKPeakOriented(void);
+extern void *OPS_IMKBilin(void);
+extern void *OPS_IMKPinching(void);
 extern void *OPS_ModIMKPeakOriented(void);
 extern void *OPS_ModIMKPeakOriented02(void);
 extern void *OPS_ModIMKPinching(void);
