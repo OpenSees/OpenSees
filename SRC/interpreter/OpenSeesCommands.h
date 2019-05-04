@@ -305,7 +305,15 @@ int OPS_setNumThreads();
 
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
+int OPS_getRVTags();
+int OPS_getRVMean();
+int OPS_getRVStdv();
+int OPS_getRVPDF();
+int OPS_getRVCDF();
+int OPS_getRVInverseCDF();
+int OPS_addCorrelate();
 int OPS_probabilityTransformation();
+int OPS_transformUtoX();
 
 /* OpenSeesCommands.cpp */
 int OPS_wipe();

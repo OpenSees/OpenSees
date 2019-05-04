@@ -81,11 +81,14 @@ class Steel02 : public UniaxialMaterial
 		 FEM_ObjectBroker &theBroker);    
     
     void Print(OPS_Stream &s, int flag =0);
-    
+	//by SAJalali
+	virtual double getEnergy() { return EnergyP; };
+
  protected:
     
  private:
-    // matpar : STEEL FIXED PROPERTIES
+	 double EnergyP; //by SAJalali
+	 // matpar : STEEL FIXED PROPERTIES
     double Fy;  //  = matpar(1)  : yield stress
     double E0;  //  = matpar(2)  : initial stiffness
     double b;   //  = matpar(3)  : hardening ratio (Esh/E0)

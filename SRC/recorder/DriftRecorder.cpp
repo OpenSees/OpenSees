@@ -461,3 +461,14 @@ DriftRecorder::initialize(void)
 
   return 0;
 }
+//added by SAJalali
+double DriftRecorder::getRecordedValue(int clmnId, int rowOffset, bool reset)
+{
+	double res = 0;
+	if (!initializationDone)
+		return res;
+	if (clmnId >= data->Size())
+		return res;
+	res = (*data)(clmnId);
+	return res;
+}

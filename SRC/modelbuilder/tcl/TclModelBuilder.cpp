@@ -2050,14 +2050,14 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
       strcmp(argv[count],"beamUniform") == 0){
     count++;
     if (ndm == 2) {
-      double wt;
-      double wa = 0.0;
-      if (count >= argc || Tcl_GetDouble(interp, argv[count], &wt) != TCL_OK) {
+      double wta;
+      double waa = 0.0;
+      if (count >= argc || Tcl_GetDouble(interp, argv[count], &wta) != TCL_OK) {
 	opserr << "WARNING eleLoad - invalid wt for beamUniform \n";
 	return TCL_ERROR;
       }
       count++;
-      if (count < argc && Tcl_GetDouble(interp, argv[count], &wa) != TCL_OK) {
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &waa) != TCL_OK) {
 	opserr << "WARNING eleLoad - invalid wa for beamUniform \n";
 	return TCL_ERROR;
       }
@@ -2073,11 +2073,23 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 	opserr << "WARNING eleLoad - invalid bOverL for beamUniform \n";
 	return TCL_ERROR;
       }
+      double wab = waa;
+      double wtb = wta;
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &wtb) != TCL_OK) {
+	opserr << "WARNING eleLoad - invalid wt for beamUniform \n";
+	return TCL_ERROR;
+      }
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &wab) != TCL_OK) {
+	opserr << "WARNING eleLoad - invalid wa for beamUniform \n";
+	return TCL_ERROR;
+      }      
       for (int i=0; i<theEleTags.Size(); i++) {
-	if (aL > 0.0 || bL < 1.0)
-	  theLoad = new Beam2dPartialUniformLoad(eleLoadTag, wt, wa, aL, bL, theEleTags(i));
+	if (aL > 0.0 || bL < 1.0 || wta != wtb || waa != wab)
+	  theLoad = new Beam2dPartialUniformLoad(eleLoadTag, wta, wtb, waa, wab, aL, bL, theEleTags(i));
 	else 
-	  theLoad = new Beam2dUniformLoad(eleLoadTag, wt, wa, theEleTags(i));    
+	  theLoad = new Beam2dUniformLoad(eleLoadTag, wta, waa, theEleTags(i));    
 
 	if (theLoad == 0) {
 	  opserr << "WARNING eleLoad - out of memory creating load of type " << argv[count] ;
