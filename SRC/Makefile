@@ -762,6 +762,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/GNGMaterial.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
+	$(FE)/material/uniaxial/SPSW02.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \
 	$(FE)/material/uniaxial/backbone/ArctangentBackbone.o \
 	$(FE)/material/uniaxial/backbone/TrilinearBackbone.o \

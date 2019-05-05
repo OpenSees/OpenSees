@@ -112,6 +112,7 @@ OBJS       = UniaxialMaterial.o \
 	StainlessECThermal.o \
 	SteelECThermal.o \
 	DamperMaterial.o \
+	SPSW02.o \
         TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
