@@ -173,10 +173,10 @@ OPS_Stream *opserrPtr = &sserr;
 #include <DisplacementControl.h>
 
 #include <PFEMIntegrator.h>
-#include<Integrator.h>//Abbas
+#include <Integrator.h>//Abbas
 
 //  recorders
-#include <Recorder/Recorder.h> //SAJalali
+#include <Recorder.h> //SAJalali
 
 extern void *OPS_NewtonRaphsonAlgorithm(void);
 extern void *OPS_ModifiedNewton(void);
@@ -1518,8 +1518,11 @@ int OPS_recorderValue(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
 	Recorder* theRecorder = theDomain.getRecorder(tag);
 	double res = theRecorder->getRecordedValue(dof, rowOffset, reset);
 	// now we copy the value to the tcl string that is returned
-	sprintf(interp->result, "%35.8f ", res);
-
+	//sprintf(interp->result, "%35.8f ", res);
+	char buffer [40];
+	sprintf(buffer,"%35.8f", res);	
+	Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+	
 	return TCL_OK;
 }
 
