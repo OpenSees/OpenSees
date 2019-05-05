@@ -322,22 +322,33 @@ RCTunnelSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double
 
   static const double pi = 3.141592653589793;
 
+  // theta, Nrings, and Nwedges are constant
+  // when taking derivatives
   double theta = pi/Nwedges;
   double twoTheta = 2.0*theta;
 
   int loc = 0;
 
-  // 1. Core region
-  double drdh = dhdh/Nrings;
-  double rinner = 0.5*dddh - dhdh;
+  // 1. Concrete region
+  double dr = h/Nrings;
+  double ddrdh = dhdh/Nrings;
+  double rinner = 0.5*d - h;
+  double drinnerdh = 0.5*dddh - dhdh;
   double Ainner = rinner*rinner*theta;
+  double dAinnerdh = 2*rinner*drinnerdh*theta;
   double xinner = 2.0/3.0*rinner*sin(theta)/theta;
+  double dxinnerdh = 2.0/3.0*drinnerdh*sin(theta)/theta;
   for (int i = 0; i < Nrings; i++) {
-    double router = 0.5*dddh - dhdh + (i+1)*drdh;
+    double router = 0.5*d - h + (i+1)*dr;
+    double drouterdh = 0.5*dddh - dhdh + (i+1)*ddrdh;
     double Aouter = router*router*theta;
+    double dAouterdh = 2*router*drouterdh*theta;
     double xouter = 2.0/3.0*router*sin(theta)/theta;
+    double dxouterdh = 2.0/3.0*drouterdh*sin(theta)/theta;
     double area = Aouter-Ainner;
-    double dxbardh = (xouter*Aouter-xinner*Ainner)/area;
+    double dareadh = dAouterdh-dAinnerdh;
+    double xbar = (xouter*Aouter-xinner*Ainner)/area;
+    double dxbardh = (area*(xouter*dAouterdh+dxouterdh*Aouter-xinner*dAinnerdh-dxinnerdh*Ainner)-(xouter*Aouter-xinner*Ainner)*dareadh)/(area*area);
     double angle = theta;
     for (int j = 0; j < Nwedges; j++) {
       dyidh[loc] = dxbardh*cos(angle);
@@ -346,7 +357,9 @@ RCTunnelSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double
       loc++;
     }
     Ainner = Aouter;
+    dAinnerdh = dAouterdh;
     xinner = xouter;
+    dxinnerdh = dxouterdh;
   }  
 
   // 2. Inner steel bars
@@ -406,21 +419,30 @@ RCTunnelSectionIntegration::getWeightsDeriv(int nFibers, double *dwtsdh)
 
   static const double pi = 3.141592653589793;
 
+  // theta, Nrings, and Nwedges are contant
+  // when taking derivatives
   double theta = pi/Nwedges;
 
   int loc = 0;
 
   // 1. Concrete region
-  double drdh = dhdh/Nrings;
-  double rinner = 0.5*dddh - dhdh;
+  double dr = h/Nrings;
+  double ddrdh = dhdh/Nrings;
+  double rinner = 0.5*d - h;
+  double drinnerdh = 0.5*dddh - dhdh;
   double Ainner = rinner*rinner*theta;
+  double dAinnerdh = 2*rinner*drinnerdh*theta;
   for (int i = 0; i < Nrings; i++) {
-    double router = 0.5*dddh - dhdh + (i+1)*drdh;
+    double router = 0.5*d - h + (i+1)*dr;
+    double drouterdh = 0.5*dddh - dhdh + (i+1)*ddrdh;
     double Aouter = router*router*theta;
+    double dAouterdh = 2*router*drouterdh*theta;
     double area = Aouter-Ainner;
+    double dareadh = dAouterdh-dAinnerdh;
     for (int j = 0; j < Nwedges; j++)
-      dwtsdh[loc++] = area;
+      dwtsdh[loc++] = dareadh;
     Ainner = Aouter;
+    dAinnerdh = dAouterdh;
   }
 
   // 2. Inner steel bars
