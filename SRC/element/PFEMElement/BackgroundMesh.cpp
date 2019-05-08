@@ -1946,7 +1946,7 @@ BackgroundMesh::gridFSI(ID& freenodes)
 	if (outside) continue;
 	
 	// gather particles
-	VParticle alltripts;
+	VParticle tripts;
 	for (int j=0; j<(int)findex.size(); ++j) {
 	    VInt ind = findex[j];
 	    ind -= 1;
@@ -1958,10 +1958,10 @@ BackgroundMesh::gridFSI(ID& freenodes)
 		if (cellit->second.type == STRUCTURE) continue;
 		if (cellit->second.pts.empty()) continue;
 		const VParticle& pts = cellit->second.pts;
-		alltripts.insert(alltripts.end(), pts.begin(), pts.end());
+		tripts.insert(tripts.end(), pts.begin(), pts.end());
 	    }
 	}
-	if (alltripts.empty()) {
+	if (tripts.empty()) {
 	    // set free surface
 	    for (int j=0; j<(int)tri.size(); ++j) {
 		ndfree[tri[j]] = 1;
@@ -2002,24 +2002,24 @@ BackgroundMesh::gridFSI(ID& freenodes)
 	    continue;
 	}
 
-	VParticle tripts;
-	for (int j=0; j<(int)alltripts.size(); ++j) {
-
-	    // get shape function
-	    const VDouble& pcrds = alltripts[j]->getCrds();
-	    VDouble N;
-	    if (ndm == 2) {
-		getNForTri(coeff,pcrds[0],pcrds[1],N);
-	    } else if (ndm == 3) {
-		getNForTet(tetcoeff,pcrds,N);
-	    }
-	    if (inEle(N)) {
-		// in tri
-		tripts.push_back(alltripts[j]);
-	    }
-	}
-
-	if (tripts.empty()) continue;
+//	VParticle tripts;
+//	for (int j=0; j<(int)tripts.size(); ++j) {
+//
+//	    // get shape function
+//        const VDouble& pcrds = tripts[j]->getCrds();
+//        VDouble N;
+//        if (ndm == 2) {
+//            getNForTri(coeff,pcrds[0],pcrds[1],N);
+//	    } else if (ndm == 3) {
+//            getNForTet(tetcoeff,pcrds,N);
+//	    }
+//	    if (inEle(N)) {
+//            // in tri
+//            tripts.push_back(tripts[j]);
+//	    }
+//	}
+//
+//	if (tripts.empty()) continue;
 
 	// find the group of this mesh
 	std::map<int,int> numpts;
